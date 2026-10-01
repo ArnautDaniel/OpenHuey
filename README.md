@@ -56,6 +56,9 @@ process: each C file is compiled once and the game's symbol table is cached in
 `build/difftest_syms.pickle`, so batch functions into one call rather than one call per function.
 
 Rules that keep C correct next to the remaining asm:
+- **Float constants**: the ps2dev GCC rounds decimal float literals toward zero (`0.6f` ->
+  0x3F199999; the original has 0x3F19999A). Run `tools/fixfloats.py file.c` to rewrite inexact
+  literals as exact hex floats (`0x1.333334p-1f /* 0.6 */`)
 - **Calling convention**: C is compiled with `-mabi=eabi -mlong32`, matching the original code
   (int and float arguments fill `a0..`/`f12..` in order). GCC's default n32 assigns registers by
   argument position, which silently breaks any call mixing int and float arguments.
