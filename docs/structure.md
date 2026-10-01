@@ -44,9 +44,9 @@ Members (from `SceneGame_ctor`):
 | Offset | Size | Vtable chain | Global | Notes |
 |---|---|---|---|---|
 | +0x40 | | 0x46A260 -> 0x47A7E8 | gProgress (0x44E4D8) | second base: Progress (flags at +0x8, byte vars at +0x9C, bit set at +0x100, room flags at +0x124; extends to at least +0x6FC214) |
-| +0xC88840 | 0x1AD740 | 0x469C20 -> 0x469C60 -> 0x46AAB0 | `gFiona` (0x44E588) | Fiona: loads O_FIN\FIN_D000.MTN; 37 virtuals |
-| +0xE35F80 | 0xF37C0 | 0x469C20 -> 0x469C60 -> 0x46A120 | 0x44E580 | second character, same base as Fiona (Hewie?) |
-| +0xF29740 | | 0x46ABB0 | | ? (15 virtuals, 0x1A4970..) |
+| +0xC88840 | 0x1AD740 | 0x469C20 -> 0x469C60 -> 0x46AAB0 | `gCharPlayer` (character slot 0) | Fiona: loads O_FIN\FIN_D000.MTN; 37 virtuals |
+| +0xE35F80 | 0xF37C0 | 0x469C20 -> 0x469C60 -> 0x46A120 | `gCharPartner` (slot 1) | Hewie |
+| +0xF29740 | | 0x46ABB0 | `gSceneGameF29740` (0x44E588) | ? (15 virtuals, 0x1A4970..) |
 | +0xF6A940 | | 0x46C520 | | |
 | +0xF6AFB0 | | 0x46B3A0 (+0xC: 0x46B3B8) | 0x44E4C8 | has a 3231-instruction method (0x1FC760) |
 | +0xF6C1C0 | | 0x46B300 | | |
@@ -92,7 +92,7 @@ Vtables (Metrowerks, +0x8 dtor): base `0x469C20` -> `0x469C60` (14 entries, code
 |---|---|---|
 | 0x44E4E0 | gFileLoader | file loader: +0x34 Load(name, dest), +0xC LoadAsync(name, dest, flags, 0) |
 | 0x44E998 | gBootMessage | SceneBoot's message display |
-| 0x44E588 | gFiona | Fiona (set by SceneGame_ctor) |
+| 0x44E588 | gSceneGameF29740 | SceneGame +0xF29740 (was misnamed gFiona) |
 | 0x44F800 | gCharacters | character slots; `gCharPlayer`/`gCharPartner`/`gCharPursuer` at 0x44F818/820/828 |
 | 0x44E4D8 | gProgress | game progress (SceneGame+0x40): story flags, byte vars - `src/game/progress.c` |
 | 0x44E568 | (room manager?) | vtable +0x10 returns the current room number |

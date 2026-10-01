@@ -92,7 +92,7 @@ src/leaf/b0_00130A40.c func_0016B420
 src/leaf/b0_00130A40.c func_0016B470
 src/leaf/b0_00130A40.c func_0016B510
 src/leaf/b0_00130A40.c func_0016CD30
-src/leaf/b0_00130A40.c func_0016D5E0
+src/leaf/b0_00130A40.c Characters_Register
 src/leaf/b0_00130A40.c func_0016F740
 src/leaf/b0_00130A40.c func_0016FAE0
 src/leaf/b0_00130A40.c func_0016FB60
@@ -1293,3 +1293,10 @@ src/game/scene_boot.c func_0037FAC0 --pre=a0+0x1C=0..0x3F --stub-ret=3 --runs=60
 src/game/scene_boot.c func_0037FE50
 src/game/scene_boot.c func_0037F980 --pre=a0+0x1C=0..0x3F --runs=60
 src/game/scene_boot.c func_00380050 --pre=a0+0x1C=0..5 --runs=200
+
+# actor base / nav mesh
+src/game/actor.c func_00122B50
+src/game/actor.c func_00122C20
+src/game/actor.c func_00122C90 --runs=100
+src/game/actor.c func_00122E80 --runs=100
+src/game/actor.c func_00123080 --runs=200

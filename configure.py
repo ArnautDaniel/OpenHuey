@@ -41,7 +41,8 @@ CFLAGS = (
     # EABI, like the original code: int and float arguments fill a0.. and f12.. in order
     # (n32 assigns registers by argument position, which breaks calls into the asm)
     "-EL -march=r5900 -mabi=eabi -mlong32 -G 0 -O2 -fno-common -ffreestanding -fno-strict-aliasing "
-    "-fno-builtin -fno-pic -mno-abicalls -I include -I src"
+    "-fno-builtin -fno-pic -mno-abicalls -fno-delete-null-pointer-checks "
+    "-fno-isolate-erroneous-paths-dereference -I include -I src"
 )
 CXXFLAGS = CFLAGS + " -fno-exceptions -fno-rtti"
 
