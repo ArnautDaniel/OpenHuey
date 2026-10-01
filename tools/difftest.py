@@ -1517,9 +1517,12 @@ PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi)
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    g = re.fullmatch(r"@(0x[0-9A-Fa-f]+)=(-?\w+)\.\.(-?\w+)", spec)
+    if g:  # a global: u32 at an absolute address (register 0 + address)
+        return 0, int(g.group(1), 16), int(g.group(2), 0), int(g.group(3), 0)
     m = re.fullmatch(r"a([0-7])(?:\+(0x[0-9A-Fa-f]+|\d+))?=(-?\w+)\.\.(-?\w+)", spec)
     if not m:
-        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8 or a1=0..3")
+        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8, a1=0..3 or @0x44E568=lo..hi")
     off = int(m.group(2), 0) if m.group(2) is not None else None
     return 4 + int(m.group(1)), off, int(m.group(3), 0), int(m.group(4), 0)
 
@@ -1639,7 +1642,7 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--pre", action="append", default=[],
-                    help="input precondition, e.g. a0+0x18=0..8 (u32 at arg0+0x18 is in 0..8)")
+                    help="input precondition: a0+0x18=0..8 (u32 at arg0+0x18), a1=0..3 (argument), @0x44E568=lo..hi (global)")
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")

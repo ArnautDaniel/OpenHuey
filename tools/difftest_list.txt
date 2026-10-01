@@ -1382,3 +1382,4 @@ src/game/actor.c func_001274E0 --runs=100 --pre=a0+0x128=0..2 --pre=a0+0x124=0..
 src/game/actor.c func_00127650
 src/game/actor.c func_00127660
 src/game/actor.c func_00125E10 --runs=100 --stub-ret=0
+src/game/actor.c func_001264D0 --runs=300 --pre=a0+0xF8=5..6 --pre=a0+0xFC=0x16..0x17 --pre=a0+0x14C0=0..0x200 --pre=@0x44E568=0x0A000000..0x0A0FFFF0 --pre=@0x44E558=0x0A000000..0x0A0FFFF0

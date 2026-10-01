@@ -1306,8 +1306,7 @@ void func_001269A0(Character *c) {
 void func_001269B0(Character *c) {
 }
 
-/* Remaining distance of the current path move (0 if not following one). */
-f32 func_00126E40(Character *c) {
+static inline f32 Character_PathRemaining(Character *c) {
     if (c->moveMode == 6) {
         if (c->moveSub == 0x16) {
             return VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
@@ -1318,6 +1317,11 @@ f32 func_00126E40(Character *c) {
         }
     }
     return 0.0f;
+}
+
+/* Remaining distance of the current path move (0 if not following one). */
+f32 func_00126E40(Character *c) {
+    return Character_PathRemaining(c);
 }
 
 extern VObject *D_0044E580;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
@@ -1618,4 +1622,76 @@ void func_00125E10(Character *c, f32 *pos, s32 big) {
         sp.v[7] = 0x1.333334p-3f;
     }
     func_002D6090(mgr, Effect_New(mgr, 0x720, Splash_Init), &sp);
+}
+
+extern u32 func_001788F0(VObject *prog, u32 room);   /* returns u8 */
+
+/* Room the current route move leads to (0xFFFF: none). */
+static inline u32 Character_RouteRoom(Character *c) {
+    if (c->moveMode == 6) {
+        if (c->moveSub == 0x16) {
+            return c->unk14C0;
+        }
+        if (c->moveSub == 0x17) {
+            if ((c->unk1388 < c->unk1384) == 1) {
+                return ((u16 *)c->unk138C)[c->unk1388];
+            }
+            return 0xFFFF;
+        }
+        return 0xFFFF;
+    }
+    return 0xFFFF;
+}
+
+/* If the character's route leads into a neighbouring room through one of this room's exits,
+ * `out` (optional) = a point past that exit at the remaining distance + 100 (150 if progress
+ * says so for the room). True if so. */
+s32 func_001264D0(Character *c, f32 *out) {
+    VObject *rooms, *prog;
+    sceVu0FVECTOR a, b;
+    u32 next = Character_RouteRoom(c) & 0xFFFF;
+    s32 cur, exit;
+    u32 i;
+    u8 found;
+    f32 dist;
+
+    if (next >= 400) {
+        return 0;
+    }
+    rooms = D_0044E568;
+    if (rooms == NULL || D_0044E558 == NULL) {
+        return 0;
+    }
+    prog = gProgress;
+    cur = VCALL(prog, 0xC, s32 (*)(VObject *))(prog);
+    exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, next, cur) & 0xFF;
+    if (exit == 0xFF) {
+        return 0;
+    }
+    found = 0;
+    for (i = 0; i < 8; i++) {
+        if (next == (VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, cur, i & 0xFF) & 0xFFFF)) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        return 0;
+    }
+    dist = Character_PathRemaining(c);
+    if (dist <= 0.0f) {
+        return 0;
+    }
+    if (out != NULL) {
+        rooms = D_0044E568;
+        VCALL(rooms, 0x30, void (*)(VObject *, s32, f32 *))(rooms, exit, a);
+        VCALL(rooms, 0x34, void (*)(VObject *, s32, f32 *))(rooms, exit, b);
+        sceVu0SubVector(out, a, b);
+        out[3] = 1.0f;
+        sceVu0Normalize(out, out);
+        sceVu0ScaleVector(out, out, dist + ((func_001788F0(prog, next) & 0xFF) ? 100.0f : 150.0f));
+        sceVu0AddVector(out, out, a);
+        out[3] = 1.0f;
+    }
+    return 1;
 }
