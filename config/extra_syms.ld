@@ -23,3 +23,6 @@ D_003AAE00 = vu_microcode + 0x9280;
 D_003AB3A0 = vu_microcode + 0x9820;
 D_003ABCF0 = vu_microcode + 0xA170;
 D_003AC3F0 = vu_microcode + 0xA870;
+
+/* Small-data base: 0x4828F0 in the original, 0x76F0 into BSS. */
+_gp = sinit_BSS_START + 0x76F0;

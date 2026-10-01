@@ -1,0 +1,40 @@
+# Data words that are pointers spimdisasm left raw (or vice versa). See tools/ptrpatch.py.
+# <vram of the word>            -> .word <containing label> + offset
+# <vram> = <expr>               -> explicit expression
+# <vram> raw                    -> not a pointer, keep the number
+
+## libkernl kernel-patch block (0x3EA980..): descriptor + tables used by InitTLB etc.
+0x003EA99C = _end               # memory top handed to the kernel patch
+0x003EAA58
+0x003EAA6C
+0x003EADF4
+0x003EAE04
+0x003EB0B0                      # -> TLB table inside this block
+0x003EB0B4
+0x003EB0B8
+0x003EB0CC
+0x003EB0D4
+0x003EB88C
+0x003EB8A4
+0x003EC014
+
+## MW pointer-to-member records {delta, -1, func, 0} after the kernel block
+0x003EC148
+0x003EC168
+0x003EC278
+0x003EC288
+0x003EC298
+0x003EC2A8
+0x003EC2B8
+0x003EC2C8
+0x003EC2D8
+0x003EC2E8
+0x003EC2F8
+0x003EC318
+0x003EC328
+0x003EC338
+0x003EC348
+0x003EC358
+0x003EC368
+0x003EC378
+0x003EC388

@@ -27,6 +27,8 @@ LD_SCRIPT = f"build/{BASENAME}.ld"
 ELF = f"build/{BASENAME}.elf"
 BIN = f"build/{BASENAME}.bin"
 EXTRA_LD = "config/extra_syms.ld"
+SHIFT_LD_SCRIPT = f"build/{BASENAME}.shift.ld"
+SHIFT_ELF = f"build/{BASENAME}.shift.elf"
 
 ASFLAGS = "-EL -march=r5900 -mabi=n32 -G 0 -no-pad-sections -I include"
 CFLAGS = (
@@ -43,9 +45,11 @@ def run_splat() -> None:
     subprocess.run(
         [sys.executable, "-m", "splat", "split", YAML], cwd=ROOT, check=True
     )
+    subprocess.run([sys.executable, "tools/ptrpatch.py"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, "tools/offpatch.py"], cwd=ROOT, check=True)
 
 
-def make_ld_script() -> list[str]:
+def make_ld_script(out_path: str = LD_SCRIPT, shift: int = 0) -> list[str]:
     """Turn splat's script into one that links a bootable ELF.
 
     splat emits the ELF header as an output section at address 0; we drop it
@@ -65,8 +69,16 @@ def make_ld_script() -> list[str]:
     text = text[: m.end()] + "    _end = .;\n" + text[m.end() :]
     # Load address = run address (splat's AT(ROM_START) is meant for cart ROMs)
     text = re.sub(r" AT\([A-Za-z0-9_]+\)", "", text)
+    # _gp is defined relative to BSS in config/extra_syms.ld
+    text = re.sub(r"\n    _gp = 0x[0-9A-Fa-f]+;", "", text)
+    if shift:
+        # Test build: pad after crt0 so every later function and datum moves.
+        text = text.replace(
+            "build/asm/crt0.s.o(.text);\n",
+            f"build/asm/crt0.s.o(.text);\n        . += 0x{shift:X};\n",
+        )
     text = "ENTRY(_start)\n" + text
-    out = ROOT / LD_SCRIPT
+    out = ROOT / out_path
     out.parent.mkdir(parents=True, exist_ok=True)
     if not out.exists() or out.read_text() != text:
         out.write_text(text)
@@ -110,12 +122,19 @@ def source_for(obj: str) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", action="store_true", help="re-run splat")
+    ap.add_argument(
+        "--shift",
+        type=lambda x: int(x, 0),
+        default=0x1000,
+        help="padding for the `ninja shift` test build (default 0x1000)",
+    )
     args = ap.parse_args()
 
     if args.split or not (ROOT / LD_SCRIPT_SPLAT).exists():
         run_splat()
 
     objs = make_ld_script()
+    make_ld_script(SHIFT_LD_SCRIPT, args.shift)
     undef = filter_undefined(objs)
 
     with open(ROOT / "build.ninja", "w") as f:
@@ -197,6 +216,19 @@ def main() -> None:
             },
         )
         n.build(BIN, "objcopy", ELF)
+        # Shiftability test: same objects, padding inserted after crt0
+        n.build(
+            SHIFT_ELF,
+            "ld",
+            [],
+            implicit=objs + [SHIFT_LD_SCRIPT, EXTRA_LD, *undef],
+            variables={
+                "ldscript": SHIFT_LD_SCRIPT,
+                "undef_scripts": " ".join(f"-T {u}" for u in undef),
+                "mapfile": f"build/{BASENAME}.shift.map",
+            },
+        )
+        n.build("shift", "phony", SHIFT_ELF)
         n.build("build/check.ok", "check", BIN)
         n.build(
             "build.ninja",

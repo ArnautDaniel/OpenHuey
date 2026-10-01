@@ -49,6 +49,11 @@ def main() -> None:
             else:  # address formed with addiu: look at the next dereference
                 m = re.search(r"\*/\s+(l[bhwdq]u?|s[bhwdq]|lwc1|swc1)\s", asm[i : i + 600])
                 t = WIDTH.get(m.group(1), "u8") if m else "u8"
+        if addr % 4 == 0:
+            # Aligned: just a label; let spimdisasm infer (a forced type would
+            # stop it from seeing pointers in the object).
+            out.append(f"{name} = 0x{addr:08X};")
+            continue
         if addr % ALIGN[t]:
             t = "u8"
         out.append(f"{name} = 0x{addr:08X}; // type:{t}")
