@@ -4,6 +4,9 @@
 
 #include "actor.h"
 
+/* Fiona fields not understood yet, by offset. */
+#define FI(f, off, type) (*(type *)((u8 *)(f) + (off)))
+
 typedef struct Fiona {
     /* 0x000000 */ Character c;
     /* 0x001540 */ u8 pad1540[0x1AD540 - 0x1540];
