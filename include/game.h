@@ -89,7 +89,7 @@ void Game_StateMain(Game *game);
 void Game_StateShutdown(Game *game);
 void Game_StartNextScene(Game *game);
 
-void Scene_SetSlot(Scene *scene, u8 slot);
+void Scene_SetSlot(Scene *scene, u32 slot); /* u8 */
 void Scene_Activate(Scene *scene);
 Scene *Scene_dtor(Scene *scene, s32 flags);
 void Scene_Update(Scene *scene, s32 arg);

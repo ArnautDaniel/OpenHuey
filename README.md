@@ -49,6 +49,13 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
    `build/SLUS_210.75.elf` (pure asm) must still match
 5. `ninja shift` + `tools/boottest.py build/SLUS_210.75.shift-all.elf` every so often
 
+Rules that keep C correct next to the remaining asm:
+- **Sub-word parameters and return values** (`u8`/`s8`/`u16`/`s16`): declare them as `u32`/`s32`
+  and mask/extend explicitly in the function (`(u8)id`). Metrowerks masks inside the callee and
+  its callers may pass junk upper bits; GCC assumes the caller already extended them.
+- Static PTMF constants are separate 16-byte objects (`PTMF16`), not 12-byte arrays.
+- Build flags include `-fno-strict-aliasing` (the code type-puns vtables and PTMFs).
+
 ## Shiftability pipeline
 
 `configure.py --split` runs splat, then fixes up its output:

@@ -4,8 +4,8 @@
 
 extern void *Scene_vtable[];
 
-void Scene_SetSlot(Scene *scene, u8 slot) {
-    scene->slot = slot;
+void Scene_SetSlot(Scene *scene, u32 slot) {
+    scene->slot = (u8)slot;
 }
 
 /* Post a "run" request and reset the status; Scene_Update picks it up next frame. */

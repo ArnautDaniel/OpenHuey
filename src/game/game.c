@@ -143,7 +143,7 @@ extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
 extern Scene *Scene5_ctor(void *mem);     /* mode 5: unknown */
 extern void func_001779B0(void *obj, s32 param);
 extern VObject *D_0044E968; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
-extern VObject *D_0044E4D8; /* global object, type unknown */
+extern void *gProgress;     /* include/progress.h */
 
 static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
     void *mem = VCALL(&game->sceneHeap, 0x10, void *(*)(VObject *, u32))(&game->sceneHeap, size);
@@ -175,7 +175,7 @@ void Game_StartNextScene(Game *game) {
         break;
     case 3:
         Game_NewScene(game, 0x1065080, SceneGame_ctor, 1);
-        func_001779B0(D_0044E4D8, game->modeParam);
+        func_001779B0(gProgress, game->modeParam);
         game->softResetEnabled = 1;
         break;
     case 5:

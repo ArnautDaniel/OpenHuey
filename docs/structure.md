@@ -43,7 +43,7 @@ Members (from `SceneGame_ctor`):
 
 | Offset | Size | Vtable chain | Global | Notes |
 |---|---|---|---|---|
-| +0x40 | | 0x46A260 -> 0x47A7E8 | | second base |
+| +0x40 | | 0x46A260 -> 0x47A7E8 | gProgress (0x44E4D8) | second base: Progress (flags at +0x8, byte vars at +0x9C, bit set at +0x100, room flags at +0x124; extends to at least +0x6FC214) |
 | +0xC88840 | 0x1AD740 | 0x469C20 -> 0x469C60 -> 0x46AAB0 | `gFiona` (0x44E588) | Fiona: loads O_FIN\FIN_D000.MTN; 37 virtuals |
 | +0xE35F80 | 0xF37C0 | 0x469C20 -> 0x469C60 -> 0x46A120 | 0x44E580 | second character, same base as Fiona (Hewie?) |
 | +0xF29740 | | 0x46ABB0 | | ? (15 virtuals, 0x1A4970..) |
@@ -62,6 +62,8 @@ Members (from `SceneGame_ctor`):
 | 0x44E4E0 | gFileLoader | file loader: +0x34 Load(name, dest), +0xC LoadAsync(name, dest, flags, 0) |
 | 0x44E998 | gBootMessage | SceneBoot's message display |
 | 0x44E588 | gFiona | Fiona (set by SceneGame_ctor) |
+| 0x44E4D8 | gProgress | game progress (SceneGame+0x40): story flags, byte vars - `src/game/progress.c` |
+| 0x44E568 | (room manager?) | vtable +0x10 returns the current room number |
 | 0x47E374 | (pad) | buttons held: bit 0 Select, bit 3 Start |
 | 0x47E37C | (pad) | buttons pressed? (bit 14 used by boot steps) |
 
