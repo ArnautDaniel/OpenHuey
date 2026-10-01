@@ -5,5 +5,65 @@ FlushCache = 0x0026C420; // type:func
 main = 0x0020D860; // type:func
 _gp = 0x004828F0;
 _fbss = 0x0047B200;
-// _end (0x01992000) is defined by the linker script
+_end = 0x01992000; // absolute:True  (also defined by the linker script after BSS)
 _args = 0x019709C0;
+
+// Code addresses referenced as data (eret targets, constant tables inside .text)
+L_00276000 = 0x00276000; // type:label
+L_00276140 = 0x00276140; // type:label
+L_0027623C = 0x0027623C; // type:label
+L_002A2A30 = 0x002A2A30; // type:label
+L_00304BF4 = 0x00304BF4; // type:label
+
+// Data referenced at unaligned/offset addresses (tables indexed from 1, etc.)
+D_003B127E = 0x003B127E; // type:s16
+D_003B3041 = 0x003B3041; // type:u8
+D_003B3051 = 0x003B3051; // type:u8
+D_003B35B6 = 0x003B35B6; // type:u16
+D_003C3BC9 = 0x003C3BC9; // type:s8
+D_003C3BCA = 0x003C3BCA; // type:u8
+D_003D8991 = 0x003D8991; // type:u8
+D_003D8BC2 = 0x003D8BC2; // type:u8
+D_003D8BC6 = 0x003D8BC6; // type:u16
+D_003DCFC2 = 0x003DCFC2; // type:u8
+D_003EA971 = 0x003EA971; // type:u8
+D_00412772 = 0x00412772; // type:s16
+D_00412776 = 0x00412776; // type:s16
+D_0041277A = 0x0041277A; // type:s16
+D_0041277E = 0x0041277E; // type:s16
+D_00412782 = 0x00412782; // type:s16
+D_00429E02 = 0x00429E02; // type:u16
+D_00429E06 = 0x00429E06; // type:u16
+D_00429E0A = 0x00429E0A; // type:u16
+D_0044B012 = 0x0044B012; // type:u16
+D_0044B572 = 0x0044B572; // type:s8
+D_0044B576 = 0x0044B576; // type:s8
+D_0044B57A = 0x0044B57A; // type:s8
+D_0044B642 = 0x0044B642; // type:u8
+D_0044B702 = 0x0044B702; // type:u16
+D_0044B71A = 0x0044B71A; // type:u16
+D_0044C086 = 0x0044C086; // type:u16
+D_0044C162 = 0x0044C162; // type:u16
+D_0044C166 = 0x0044C166; // type:u16
+D_0044C16A = 0x0044C16A; // type:u16
+D_0044C282 = 0x0044C282; // type:u8
+D_0044C286 = 0x0044C286; // type:u16
+D_0044C28A = 0x0044C28A; // type:u8
+D_0044C28E = 0x0044C28E; // type:u8
+D_0044D949 = 0x0044D949; // type:u8
+D_00460612 = 0x00460612; // type:u8
+D_004608F2 = 0x004608F2; // type:s16
+D_00460921 = 0x00460921; // type:u8
+D_00460922 = 0x00460922; // type:u8
+D_00460923 = 0x00460923; // type:u8
+D_00460926 = 0x00460926; // type:s16
+D_00460929 = 0x00460929; // type:u8
+D_0047AC91 = 0x0047AC91; // type:u8
+D_0047AE81 = 0x0047AE81; // type:u8
+D_0047AE82 = 0x0047AE82; // type:u8
+D_0047B0AD = 0x0047B0AD; // type:u8
+D_0047B181 = 0x0047B181; // type:u8
+
+// Embedded IOP module (bin segment); labels come from configure.py's bin2o wrapper + config/extra_syms.ld
+cdvdman_irx = 0x0044A9A0;
+cdvdman_irx_end = 0x0044ACF9;

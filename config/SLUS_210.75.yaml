@@ -16,7 +16,9 @@ options:
   ld_script_path: linker/SLUS_210.75.ld
   ld_dependencies: True
 
-  symbol_addrs_path: config/symbol_addrs.txt
+  symbol_addrs_path:
+    - config/symbol_addrs.txt
+    - config/ignore_addrs.txt
   undefined_funcs_auto_path: linker/undefined_funcs_auto.txt
   undefined_syms_auto_path: linker/undefined_syms_auto.txt
 
@@ -46,7 +48,8 @@ segments:
     subsegments:
       - [0x80, asm, crt0]
       - [0x2B0, asm, game]
-      - [0x2A1C00, data]
+      - [0x2A1C00, bin, vu_microcode]
+      - [0x2AC800, data]
       - [0x34AA20, bin, cdvdman_irx]
       - [0x34AD80, data]
       - { start: 0x37B280, type: bss, vram: 0x0047B200 }

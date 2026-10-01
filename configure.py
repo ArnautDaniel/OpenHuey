@@ -25,6 +25,7 @@ LD_SCRIPT_SPLAT = f"linker/{BASENAME}.ld"
 LD_SCRIPT = f"build/{BASENAME}.ld"
 ELF = f"build/{BASENAME}.elf"
 BIN = f"build/{BASENAME}.bin"
+EXTRA_LD = "config/extra_syms.ld"
 
 ASFLAGS = "-EL -march=r5900 -mabi=n32 -G 0 -no-pad-sections -I include"
 CFLAGS = (
@@ -69,6 +70,35 @@ def make_ld_script() -> list[str]:
     return sorted(set(re.findall(r"(build/\S+?\.o)\(", text)))
 
 
+LABEL_RE = re.compile(r"^\s*(?:glabel|alabel|dlabel|jlabel|ehlabel)\s+(\S+)", re.M)
+
+
+def filter_undefined(objs: list[str]) -> list[str]:
+    """Drop symbols the asm defines from splat's undefined_*_auto.txt.
+
+    A linker-script assignment overrides the object's definition, which would
+    pin the symbol to its original address and break shiftability.
+    """
+    defined: set[str] = set()
+    for obj in objs:
+        src = ROOT / source_for(obj)
+        if src.suffix == ".s":
+            defined.update(LABEL_RE.findall(src.read_text()))
+        elif src.suffix == ".bin":
+            defined.add(src.stem)
+    defined.update(re.findall(r"^(\w+)\s*=", (ROOT / EXTRA_LD).read_text(), re.M))
+    outs = []
+    for name in ("undefined_syms_auto.txt", "undefined_funcs_auto.txt"):
+        lines = (ROOT / "linker" / name).read_text().splitlines(keepends=True)
+        kept = [l for l in lines if l.split("=")[0].strip() not in defined]
+        out = ROOT / "build" / name
+        text = "".join(kept)
+        if not out.exists() or out.read_text() != text:
+            out.write_text(text)
+        outs.append(f"build/{name}")
+    return outs
+
+
 def source_for(obj: str) -> str:
     """build/asm/foo.s.o -> asm/foo.s, build/src/a.c.o -> src/a.c, etc."""
     return obj[len("build/") : -len(".o")]
@@ -83,6 +113,7 @@ def main() -> None:
         run_splat()
 
     objs = make_ld_script()
+    undef = filter_undefined(objs)
 
     with open(ROOT / "build.ninja", "w") as f:
         n = ninja_syntax.Writer(f, width=120)
@@ -110,13 +141,16 @@ def main() -> None:
         n.rule(
             "bin2o",
             # objcopy -I binary output lacks the n32 ABI flags, so wrap via as
-            r"""printf '.section .data\n.incbin "%s"\n' $in | ${tc}as $asflags -o $out -""",
+            # The blob gets global labels named after the file (assets/foo.bin -> foo, foo_bin_end).
+            r"""printf '.section .data\n.globl %s, %s_bin_end\n%s:\n.incbin "%s"\n%s_bin_end:\n'"""
+            " $sym $sym $sym $in $sym"
+            " | ${tc}as $asflags -o $out -",
             description="BIN $in",
         )
         n.rule(
             "ld",
-            "${tc}ld -EL -m elf32lr5900n32 -T $ldscript -T linker/undefined_syms_auto.txt "
-            "-T linker/undefined_funcs_auto.txt -Map $mapfile -o $out",
+            f"${{tc}}ld -EL -m elf32lr5900n32 -T $ldscript -T {EXTRA_LD} $undef_scripts "
+            "--emit-relocs -Map $mapfile -o $out",
             description="LD $out",
         )
         n.rule("objcopy", "${tc}objcopy -O binary $in $out", description="OBJCOPY $out")
@@ -142,7 +176,7 @@ def main() -> None:
             elif src.endswith((".cpp", ".cc")):
                 n.build(obj, "cxx", src)
             elif src.startswith("assets/"):
-                n.build(obj, "bin2o", src)
+                n.build(obj, "bin2o", src, variables={"sym": Path(src).stem})
             else:
                 raise SystemExit(f"don't know how to build {obj}")
         n.newline()
@@ -152,15 +186,24 @@ def main() -> None:
             "ld",
             [],
             implicit=objs
-            + [LD_SCRIPT, "linker/undefined_syms_auto.txt", "linker/undefined_funcs_auto.txt"],
-            variables={"ldscript": LD_SCRIPT, "mapfile": f"build/{BASENAME}.map"},
+            + [LD_SCRIPT, EXTRA_LD, *undef],
+            variables={
+                "ldscript": LD_SCRIPT,
+                "undef_scripts": " ".join(f"-T {u}" for u in undef),
+                "mapfile": f"build/{BASENAME}.map",
+            },
         )
         n.build(BIN, "objcopy", ELF)
         n.build("build/check.ok", "check", BIN)
         n.build(
             "build.ninja",
             "configure",
-            implicit=["configure.py", LD_SCRIPT_SPLAT],
+            implicit=[
+                "configure.py",
+                LD_SCRIPT_SPLAT,
+                "linker/undefined_syms_auto.txt",
+                "linker/undefined_funcs_auto.txt",
+            ],
         )
         n.default("build/check.ok")
 
