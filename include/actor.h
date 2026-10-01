@@ -60,7 +60,9 @@ typedef struct Character {
     /* 0x00E2 */ u8 unkE2;
     /* 0x00E3 */ u8 unkE3;
     /* 0x00E4 */ u8 unkE4;
-    /* 0x00E5 */ u8 padE5[0xF0 - 0xE5];
+    /* 0x00E5 */ u8 padE5[3];
+    /* 0x00E8 */ s32 unkE8;
+    /* 0x00EC */ s32 unkEC;
     /* 0x00F0 */ void *motion;           /* animation player (root motion) */
     /* 0x00F4 */ s32 unkF4;
     /* 0x00F8 */ s32 moveMode;        /* 6 = following a path */
@@ -69,7 +71,8 @@ typedef struct Character {
     /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
     /* 0x0124 */ s32 unk124;
     /* 0x0128 */ s32 unk128;
-    /* 0x012C */ u8 unk12C[0x1380 - 0x12C];
+    /* 0x012C */ u8 unk12C[0x1330 - 0x12C];  /* waypoints */
+    /* 0x1330 */ PathRequest req;         /* pathReq normally points here */
     /* 0x1380 */ PathRequest *pathReq;
     /* 0x1384 */ s32 unk1384;
     /* 0x1388 */ s32 unk1388;
@@ -81,16 +84,22 @@ typedef struct Character {
     /* 0x14C8 */ u8 pad14C8[8];
     /* 0x14D0 */ s32 unk14D0;
     /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
-    /* 0x14D5 */ u8 pad14D5[0x14E8 - 0x14D5];
+    /* 0x14D5 */ u8 unk14D5;
+    /* 0x14D6 */ u8 pad14D6[0x14E8 - 0x14D6];
     /* 0x14E8 */ s32 state[8];        /* state block (func_002A8410 resets it); [0] 4/5 = special */
     /* 0x1508 */ s32 state2[8];
     /* 0x1528 */ u8 pad1528[4];
     /* 0x152C */ s32 unk152C;         /* 10 / 15 set by the region fade (vtable +0x80) */
+    /* 0x1530 */ s32 unk1530;
+    /* 0x1534 */ s32 unk1534;
+    /* 0x1538 */ s32 unk1538;
 } Character;
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");
 _Static_assert(__builtin_offsetof(Character, door) == 0x14D4, "door");
 _Static_assert(__builtin_offsetof(Character, motion) == 0xF0, "motion");
+_Static_assert(__builtin_offsetof(Character, req) == 0x1330, "req");
+_Static_assert(sizeof(PathRequest) == 0x50, "PathRequest size");
 _Static_assert(__builtin_offsetof(Character, unk148C) == 0x148C, "unk148C");
 _Static_assert(__builtin_offsetof(Character, state) == 0x14E8, "state");
 _Static_assert(__builtin_offsetof(Character, state2) == 0x1508, "state2");

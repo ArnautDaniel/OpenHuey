@@ -1392,3 +1392,112 @@ s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt)
     c->pathId = VCALL(gSceneGameF29740, 0xC, s32 (*)(VObject *, PathRequest *, s32))(gSceneGameF29740, c->pathReq, opt);
     return c->pathId;
 }
+
+/* Advance along the fetched waypoints by `speed` (planner +0x24), facing the direction moved.
+ * -1 while waypoints remain, 0 at the end (or if there were none). */
+s32 func_001272B0(Character *c, f32 speed) {
+    sceVu0FVECTOR p;
+    u32 tri;
+    f32 dx, dz;
+
+    if (!(c->unk128 < c->unk124)) {
+        return 0;
+    }
+    tri = c->a.navTri;
+    sceVu0CopyVector(p, c->a.pos);
+    c->unk128 = VCALL(gSceneGameF29740, 0x24, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
+        gSceneGameF29740, &tri, p, c->unk128, c->unk124, c->unk12C, speed);
+    dx = p[0] - c->a.pos[0];
+    dz = p[2] - c->a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        f32 yaw = func_0031C5C0(dx, dz);
+
+        c->a.angle[1] = yaw;
+        sceVu0UnitMatrix(c->a.rot);
+        sceVu0RotMatrixY(c->a.rot, c->a.rot, yaw);
+    }
+    c->a.navTri = tri;
+    sceVu0CopyVector(c->a.pos, p);
+    return (c->unk128 < c->unk124) ? -1 : 0;
+}
+
+/* Where `step` along the waypoints would lead (planner +0x20), without moving; the current
+ * position if that point is blocked for the character. */
+s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step) {
+    s32 r;
+
+    *triOut = c->a.navTri;
+    sceVu0CopyVector(posOut, c->a.pos);
+    if (!(c->unk128 < c->unk124)) {
+        return c->unk124;
+    }
+    r = VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
+        gSceneGameF29740, triOut, posOut, c->unk128, c->unk124, c->unk12C, step);
+    if (NavMesh_Tri(D_0044E570, *triOut)->flags & c->a.navMask) {
+        *triOut = c->a.navTri;
+        sceVu0CopyVector(posOut, c->a.pos);
+        return c->unk124;
+    }
+    return r;
+}
+
+/* Like func_001272B0 with planner +0x20, but a step into a triangle blocked for the character
+ * ends the path instead. */
+s32 func_001274E0(Character *c, f32 speed) {
+    sceVu0FVECTOR p;
+    u32 tri;
+    f32 dx, dz;
+
+    if (!(c->unk128 < c->unk124)) {
+        return 0;
+    }
+    tri = c->a.navTri;
+    sceVu0CopyVector(p, c->a.pos);
+    c->unk128 = VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
+        gSceneGameF29740, &tri, p, c->unk128, c->unk124, c->unk12C, speed);
+    dx = p[0] - c->a.pos[0];
+    dz = p[2] - c->a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        f32 yaw = func_0031C5C0(dx, dz);
+
+        c->a.angle[1] = yaw;
+        sceVu0UnitMatrix(c->a.rot);
+        sceVu0RotMatrixY(c->a.rot, c->a.rot, yaw);
+    }
+    if (NavMesh_Tri(D_0044E570, tri)->flags & c->a.navMask) {
+        c->unk128 = c->unk124;
+        return 0;
+    }
+    c->a.navTri = tri;
+    sceVu0CopyVector(c->a.pos, p);
+    return -(c->unk128 < c->unk124);
+}
+
+/* vtable +0x24 (Character): as the base. */
+void func_00127650(Character *c) {
+    func_00124D00(&c->a);
+}
+
+/* vtable +0xC (Character): reset. */
+void func_00127660(Character *c) {
+    func_00124DB0(&c->a);
+    c->pathReq = &c->req;
+    c->pathId = -1;
+    c->moveMode = 0;
+    c->unk128 = 0;
+    c->unk124 = 0;
+    func_002A8410(c->state);
+    func_002A8410(c->state2);
+    c->unkE0 = 0;
+    c->unkE1 = 0;
+    c->unkE2 = 0;
+    c->unkE3 = 0;
+    c->unkE4 = 1;
+    c->unkE8 = 0;
+    c->unkEC = -1;
+    c->unk152C = 10;
+    c->unk1530 = 0;
+    c->unk1538 = 0;
+    c->unk1534 = 0;
+    c->unk14D5 = 0xFF;
+}
