@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "game.h"
+#include "ptmf.h"
 
 #define ACTOR_AT(a, off, type) (*(type *)((u8 *)(a) + (off)))
 
@@ -28,7 +29,8 @@ typedef struct Actor {
     /* 0x40 */ f32 prevPos[4] __attribute__((aligned(16)));
     /* 0x50 */ f32 angle[4];      /* rotation; [1] = heading (yaw) */
     /* 0x60 */ f32 rot[4][4] __attribute__((aligned(16)));   /* orientation matrix */
-    /* 0xA0 */ u8 padA0[0x10];
+    /* 0xA0 */ PTMF state;         /* behaviour state (pointer-to-member) */
+    /* 0xAC */ u8 padAC[4];
     /* 0xB0 */ f32 unkB0[4] __attribute__((aligned(16)));
     /* 0xC0 */ u32 navMask;       /* triangle flags that block this actor */
     /* 0xC4 */ s32 unkC4;
@@ -101,12 +103,14 @@ typedef struct Character {
     /* 0x14D8 */ NoiseEvent heard;     /* copy of that event */
     /* 0x14E8 */ s32 state[8];        /* state block (func_002A8410 resets it); [0] 4/5 = special */
     /* 0x1508 */ s32 state2[8];
-    /* 0x1528 */ u8 pad1528[2];
+    /* 0x1528 */ u8 msgSlot;          /* message display slot (gBootMessage) */
+    /* 0x1529 */ u8 pad1529;
     /* 0x152A */ u16 hearThreshold;   /* events must be louder than this */
     /* 0x152C */ s32 unk152C;         /* 10 / 15 set by the region fade (vtable +0x80) */
     /* 0x1530 */ s32 unk1530;
     /* 0x1534 */ s32 unk1534;
     /* 0x1538 */ s32 unk1538;
+    /* 0x153C */ u8 unk153C;          /* 0 Fiona, 1 Hewie (set by SceneGame_ctor) */
 } Character;
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");

@@ -1100,9 +1100,9 @@ s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     return r;
 }
 
-/* Move to room `room` (vtable +0x5C notifies first). */
-s32 func_00125BA0(Character *c, s32 room) {
-    VCALL(c, 0x5C, void (*)(Character *, s32))(c, room);
+/* Move to room `room` (vtable +0x5C notifies first; the other arguments are passed on). */
+s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3) {
+    VCALL(c, 0x5C, void (*)(Character *, s32, s32, s32))(c, room, a2, a3);
     c->a.room = room;
     return 0;
 }

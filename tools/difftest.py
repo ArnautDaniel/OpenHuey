@@ -1584,6 +1584,10 @@ def event_equal(a, b) -> bool:
     # for it if the original also wrote that register (MW reuses e.g. a compare constant as
     # an argument; GCC can leave dead loop-invariant writes, which the original won't match)
     regs = aa["pending"] | (ab["pending"] & aa["written"])
+    if ta in FUNC_STARTS:
+        # a known callee reads exactly these: one the original passes through untouched
+        # (e.g. an argument of its own) must reach the callee unchanged in the C too
+        regs |= {r for r in aa if isinstance(r, int) and r not in aa["written"]}
     fregs = fa["pending"] | fb["pending"]
     return all(aa.get(r) == ab.get(r) for r in regs) and all(fa.get(r) == fb.get(r) for r in fregs)
 

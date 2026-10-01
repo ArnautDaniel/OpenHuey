@@ -1386,3 +1386,12 @@ src/game/actor.c func_001264D0 --runs=300 --pre=a0+0xF8=5..6 --pre=a0+0xFC=0x16.
 src/game/actor.c func_001269C0 --runs=200 --pre=a0+0x20=0..3 --pre=a0+0x152A=0..0x40 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=-1 --stub-ret-prob=1.0
 src/game/actor.c func_00125CC0
 src/game/actor.c func_00125D40
+
+# Fiona
+src/game/fiona.c func_0019A300
+src/game/fiona.c func_0019A420
+src/game/fiona.c func_0019AF10
+src/game/fiona.c func_0019AA20
+src/game/fiona.c func_0019AAC0
+src/game/fiona.c func_0019A8C0
+src/game/fiona.c func_0019AB40
