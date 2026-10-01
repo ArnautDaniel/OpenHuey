@@ -10,7 +10,7 @@
 typedef struct Fiona {
     /* 0x000000 */ Character c;
     /* 0x001540 */ u8 pad1540[0x1AD540 - 0x1540];
-    /* 0x1AD540 */ s32 msgId;          /* message shown while she is disabled, 0 = none */
+    /* 0x1AD540 */ void *msgImage;     /* message image shown while she is disabled, NULL = none */
     /* 0x1AD544 */ u8 pad1AD544[0x1AD580 - 0x1AD544];
     /* 0x1AD580 */ s32 unk1AD580;
     /* 0x1AD584 */ u8 pad1AD584[4];
@@ -32,7 +32,7 @@ typedef struct Fiona {
     /* 0x1AD631 */ u8 pad1AD631[0x1AD740 - 0x1AD631];
 } Fiona;
 _Static_assert(sizeof(Character) == 0x1540, "Character size");
-_Static_assert(__builtin_offsetof(Fiona, msgId) == 0x1AD540, "msgId");
+_Static_assert(__builtin_offsetof(Fiona, msgImage) == 0x1AD540, "msgImage");
 _Static_assert(__builtin_offsetof(Fiona, target) == 0x1AD600, "target");
 _Static_assert(sizeof(Fiona) == 0x1AD740, "Fiona size");
 

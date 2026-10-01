@@ -45,7 +45,8 @@ _Static_assert(sizeof(Actor) == 0xE0, "Actor size");
 /* Request for the path planner (gSceneGameF29740, vtable +0xC plan(req, 0) -> id, +0x14 length). */
 typedef struct PathRequest {
     /* 0x00 */ s32 unk0;
-    /* 0x04 */ u8 pad04[8];
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ u8 pad08[4];
     /* 0x0C */ u32 startTri;
     /* 0x10 */ f32 startPos[4] __attribute__((aligned(16)));
     /* 0x20 */ u32 goalTri;

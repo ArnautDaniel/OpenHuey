@@ -69,9 +69,9 @@ void func_0019AA20(Fiona *f) {
     f->unk1AD5D1 = 1;
     f->unk1AD630 = 0;
     f->unk1AD62E = 0;
-    if (f->msgId != 0) {
+    if (f->msgImage != NULL) {
         VCALL(gBootMessage, 0x14, void (*)(VObject *, u32))(gBootMessage, f->c.msgSlot);
-        f->msgId = 0;
+        f->msgImage = NULL;
     }
 }
 
@@ -81,8 +81,8 @@ void func_0019AAC0(Fiona *f) {
     MOTION_U8(f->c.motion, 0x4D8) = 1;
     f->unk1AD630 = 0;
     f->unk1AD62E = 0;
-    if (f->msgId != 0) {
-        VCALL(gBootMessage, 0x10, void (*)(VObject *, u32, s32, s32))(gBootMessage, f->c.msgSlot, f->msgId, 0);
+    if (f->msgImage != NULL) {
+        VCALL(gBootMessage, 0x10, void (*)(VObject *, u32, void *, s32))(gBootMessage, f->c.msgSlot, f->msgImage, 0);
     }
 }
 
@@ -285,4 +285,55 @@ s32 func_0019A670(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
     default:
         return 0;
     }
+}
+
+extern void func_00127650(Character *c);
+extern void func_00127660(Character *c);
+extern VObject *gFileLoader;
+
+void func_001A4330(Fiona *f) {
+}
+
+/* vtable +0x24: remember the previous position, and her heading. */
+void func_001A2CC0(Fiona *f) {
+    func_00127650(&f->c);
+    FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
+}
+
+/* vtable +0x20: take down her message (unkD0) and stop the animation (unkD1) if requested. */
+void func_001A3E60(Fiona *f) {
+    if (f->c.a.unkD0) {
+        VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, f->c.msgSlot);
+        f->c.a.unkD0 = 0;
+    }
+    if (f->c.a.unkD1) {
+        VCALL(f->c.motion, 0x10, void (*)(void *))(f->c.motion);
+        f->c.a.unkD1 = 0;
+    }
+}
+
+/* vtable +0x54: start loading her message image (file named by the animation player +0xAC). */
+s32 func_001A4080(Fiona *f) {
+    if (VCALL(f->c.motion, 0xAC, s32 (*)(void *))(f->c.motion) == 0) {
+        return 0;
+    }
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, s32, void *, u32, s32))(
+        gFileLoader, VCALL(f->c.motion, 0xAC, s32 (*)(void *))(f->c.motion), f->msgImage,
+        f->c.a.flags24 | f->c.a.slot, 0);
+    return 1;
+}
+
+/* vtable +0xC: reset; her collision cylinder (radius 2, height 15) and blocking mask. */
+void func_001A4340(Fiona *f) {
+    func_00127660(&f->c);
+    f->c.a.radius = 2.0f;
+    f->c.a.height = 15.0f;
+    f->c.a.navMask = 0x28020018;
+    f->c.pathReq->unk4 = 6;
+    f->c.pathReq->mask = f->c.a.navMask;
+    f->c.hearThreshold = 0;
+    FI(f, 0x1AD5F4, s32) = 0;
+    FI(f, 0x1AD5F8, s32) = 0;
+    FI(f, 0x1AD548, s32) = 0;
+    VCALL(f, 0x5C, void (*)(Fiona *))(f);
 }

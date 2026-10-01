@@ -1400,3 +1400,9 @@ src/game/fiona.c func_0019A450 --runs=200 --pre=a0+0xF8=7..8 --pre=a0+0xFC=0x1A.
 src/game/fiona.c func_0019A670 --runs=400 --pre=a1=0..13 --pre=a2=0..2 --pre=a0+0xF8=0..0xA --pre=@0x44F800=0x0A000000..0x0A0FFFF0 --pre=@0x44F804=0x0A000000..0x0A0FFFF0 --pre=@0x44F808=0x0A000000..0x0A0FFFF0 --stub-ret=1
 src/game/fiona.c func_0019A670 --runs=300 --pre=a1=0..13 --pre=a2=0xFF..0xFF --pre=a0+0xF8=0..0xA --pre=a0+0xFC=0xB..0x12 --stub-ret=1
 src/game/fiona.c func_0019A670 --runs=400 --pre=a1=3..5 --pre=a2=0xFF..0xFF --pre=a0+0xF8=3..4 --pre=a0+0xFC=0xB..0xB --pre=@0x44E4D8=0x0A000000..0x0A000000 --stub-ret=1
+src/game/fiona.c func_001A4330 --stub-ret=1
+src/game/fiona.c func_001A2CC0 --stub-ret=1
+src/game/fiona.c func_001A3E60 --stub-ret=1
+src/game/fiona.c func_001A4080 --stub-ret=1
+src/game/fiona.c func_001A4340 --stub-ret=1
+src/game/random.c func_001A43D0
