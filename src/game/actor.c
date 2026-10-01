@@ -1327,3 +1327,68 @@ s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
     return VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
         D_0044E580, a1, a2, a3, c->unk148C, c->unk138C, a4, a5);
 }
+
+/* Route request to D_0044E580 +0xC toward `target`; side -1: the side of the current exit
+ * (room manager +0x50 with 1), if any. Result kept in unk1384. */
+s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4) {
+    s32 useExit = 0;
+
+    c->unk1388 = 0;
+    if (side == -1) {
+        useExit = 1;
+        if (c->door != 0xFF) {
+            side = VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, c->a.room, c->door, 1);
+        }
+    }
+    c->unk1384 = VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
+        D_0044E580, c->a.room, target, c->a.slot, c->unk148C, c->unk138C, useExit, side);
+    return c->unk1384;
+}
+
+/* Release the current path (keeps the waypoint state). */
+void func_00127060(Character *c) {
+    VCALL(gSceneGameF29740, 0x28, void (*)(VObject *, s32))(gSceneGameF29740, c->pathId);
+    c->pathId = -1;
+}
+
+/* Fetch the path's waypoints into unk12C (planner +0x1C); returns their count. */
+s32 func_001270A0(Character *c) {
+    c->unk128 = 0;
+    c->unk124 = VCALL(gSceneGameF29740, 0x1C, s32 (*)(VObject *, s32, void *))(gSceneGameF29740, c->pathId, c->unk12C);
+    return c->unk124;
+}
+
+/* Same with planner +0x18. */
+s32 func_001270F0(Character *c) {
+    c->unk128 = 0;
+    c->unk124 = VCALL(gSceneGameF29740, 0x18, s32 (*)(VObject *, s32, void *))(gSceneGameF29740, c->pathId, c->unk12C);
+    return c->unk124;
+}
+
+static inline void Character_FillRequest(Character *c, s32 kind, u32 goalTri, const f32 *goal) {
+    c->pathReq->unk0 = kind;
+    c->pathReq->startTri = c->a.navTri;
+    sceVu0CopyVector(c->pathReq->startPos, c->a.pos);
+    c->pathReq->goalTri = goalTri;
+    sceVu0CopyVector(c->pathReq->goalPos, goal);
+}
+
+/* Plan a path of request kind `kind` to `goal`; returns its length (-1: none). */
+s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal) {
+    VObject *planner;
+
+    Character_FillRequest(c, kind, goalTri, goal);
+    planner = gSceneGameF29740;
+    c->pathId = VCALL(planner, 0xC, s32 (*)(VObject *, PathRequest *, s32))(planner, c->pathReq, 0);
+    if (c->pathId == -1) {
+        return -1;
+    }
+    return VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+}
+
+/* Plan a path with planner option `opt`; returns the path id. */
+s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt) {
+    Character_FillRequest(c, kind, goalTri, goal);
+    c->pathId = VCALL(gSceneGameF29740, 0xC, s32 (*)(VObject *, PathRequest *, s32))(gSceneGameF29740, c->pathReq, opt);
+    return c->pathId;
+}
