@@ -44,13 +44,22 @@ segments:
     type: code
     start: 0x80
     vram: 0x00100000
-    bss_size: 0x1516E00
     subsegments:
       - [0x80, asm, crt0]
       - [0x2B0, asm, game]
       - [0x2A1C00, bin, vu_microcode]
       - [0x2AC800, data]
       - [0x34AA20, bin, cdvdman_irx]
-      - [0x34AD80, data]
+      - [0x34AD80, rodata]
+  # Static-initializer code (MW __sinit_*) that the linker placed after .rodata
+  - name: sinit
+    type: code
+    start: 0x364500
+    vram: 0x00464480
+    follows_vram: main
+    bss_size: 0x1516E00
+    subsegments:
+      - [0x364500, asm, sinit]
+      - [0x3694E0, data, sinit_data]
       - { start: 0x37B280, type: bss, vram: 0x0047B200 }
   - [0x37B280]

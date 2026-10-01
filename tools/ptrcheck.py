@@ -65,8 +65,16 @@ def main() -> None:
     args = ap.parse_args()
 
     elf = ELFFile(open(ELF, "rb"))
-    main = elf.get_section_by_name(".main")
-    base, blob = main["sh_addr"], main.data()
+    # All loaded sections, stitched into one image (they are contiguous).
+    loaded = sorted(
+        (s for s in elf.iter_sections() if s["sh_type"] == "SHT_PROGBITS" and s["sh_flags"] & 2 and s["sh_size"]),
+        key=lambda s: s["sh_addr"],
+    )
+    base = loaded[0]["sh_addr"]
+    blob = bytearray()
+    for s in loaded:
+        blob += bytes(s["sh_addr"] - base - len(blob)) + s.data()
+    blob = bytes(blob)
     symtab = elf.get_section_by_name(".symtab")
 
     syms = [s for s in symtab.iter_symbols() if s.name and s["st_info"]["type"] != "STT_FILE"]
@@ -84,13 +92,16 @@ def main() -> None:
 
     relocs: dict[int, tuple[int, str]] = {}
     for sec in elf.iter_sections():
-        if isinstance(sec, RelocationSection) and sec.name.endswith(".main"):
+        if isinstance(sec, RelocationSection):
             for r in sec.iter_relocations():
                 name = symtab.get_symbol(r["r_info_sym"]).name
                 relocs[r["r_offset"]] = (r["r_info_type"], name)
 
     ignored = load_ignored()
-    text_end = next(s["st_value"] for s in syms if s.name == "main_TEXT_END")
+    sv = {s.name: s["st_value"] for s in syms}
+    text_ranges = [
+        (sv[n], sv[n[: -len("START")] + "END"]) for n in sv if n.endswith("_TEXT_START")
+    ]
 
     # Opaque blobs (assets/*.bin): contents are not pointers by construction.
     ends = {s.name[: -len("_bin_end")]: s["st_value"] for s in syms if s.name.endswith("_bin_end")}
@@ -103,7 +114,7 @@ def main() -> None:
         rel = relocs.get(addr)
         if rel and rel[1] in abs_syms:
             hits["pinned"].append(f"{addr:08x} type={rel[0]} -> {rel[1]}")
-        if addr < text_end:
+        if any(a <= addr < b for a, b in text_ranges):
             if (w >> 26) == 0x0F and rel is None:  # lui
                 imm = w & 0xFFFF
                 if LO >> 16 <= imm <= HI >> 16:

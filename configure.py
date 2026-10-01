@@ -9,6 +9,7 @@ Usage:
 import argparse
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +37,9 @@ CXXFLAGS = CFLAGS + " -fno-exceptions -fno-rtti"
 
 
 def run_splat() -> None:
+    # splat never deletes outputs; stale files would linger after layout changes
+    for d in ("asm", "assets"):
+        shutil.rmtree(ROOT / d, ignore_errors=True)
     subprocess.run(
         [sys.executable, "-m", "splat", "split", YAML], cwd=ROOT, check=True
     )
@@ -56,10 +60,9 @@ def make_ld_script() -> list[str]:
         flags=re.S,
     )
     # _end marks the top of BSS; crt0 and the heap setup in main use it.
-    text = text.replace(
-        "    main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);\n    }\n",
-        "    main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);\n    }\n    _end = .;\n",
-    )
+    # Put it after the last BSS output section.
+    m = list(re.finditer(r"\w+_BSS_SIZE = ABSOLUTE\(.*\);\n    }\n", text))[-1]
+    text = text[: m.end()] + "    _end = .;\n" + text[m.end() :]
     # Load address = run address (splat's AT(ROM_START) is meant for cart ROMs)
     text = re.sub(r" AT\([A-Za-z0-9_]+\)", "", text)
     text = "ENTRY(_start)\n" + text
