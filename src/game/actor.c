@@ -8,6 +8,7 @@
 extern VObject *D_0044E568;   /* room manager: +0x80 GetRoomOrigin(room, out) -> bool */
 extern VObject *D_0044E560;   /* sound manager */
 extern VObject *gProgress;    /* +0xC current room */
+extern VObject *gFileLoader;  /* +0x28 load state(file id): 2 = done */
 
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
@@ -580,4 +581,234 @@ void func_001247E0(Actor *a, const f32 *delta) {
         a->navTri = tri;
         sceVu0CopyVector(a->pos, out);
     }
+}
+
+#define F_PI 0x1.921fb6p+1f       /* 0x40490FDB */
+#define F_2PI 0x1.921fb6p+2f      /* 0x40C90FDB */
+
+/* Angle wrapped into -pi..pi (one turn at most). */
+static inline f32 WrapAngle(f32 x) {
+    if (!(x <= F_PI)) {
+        return x - F_2PI;
+    }
+    if (x < -F_PI) {
+        return x + F_2PI;
+    }
+    return x;
+}
+
+/* Turn toward heading `target` by at most `step`; updates the rotation matrix. Returns how far
+ * the heading still is from the target (0 when reached). */
+f32 func_00124530(Actor *a, f32 target, f32 step) {
+    f32 yaw = a->angle[1];
+    f32 d = WrapAngle(target - yaw);
+    f32 ad = (d <= 0.0f) ? -d : d;
+    f32 rest;
+
+    if (ad <= step) {
+        yaw = target;
+        rest = 0.0f;
+    } else {
+        yaw = WrapAngle((d <= 0.0f) ? yaw - step : yaw + step);
+        rest = WrapAngle(target - yaw);
+    }
+    a->angle[1] = yaw;
+    sceVu0UnitMatrix(a->rot);
+    sceVu0RotMatrixY(a->rot, a->rot, yaw);
+    return (rest <= 0.0f) ? -rest : rest;
+}
+
+extern VObject *D_0044E550;      /* random numbers: +0x18 / +0x1C -> f32 in 0..1 */
+extern VObject *D_0044E4D0;      /* +0x10(point, id, tri) -> bool: point taken by room object `id` */
+
+/* Teleport to a random free triangle of the current room's mesh (only if the actor is in the
+ * current room). `kind` selects the area flags: 0 -> 0x100000, 1 -> 0x200000, else both;
+ * for -1 and 2 the triangle must have them, otherwise it must not. Placed via vtable +0x28. */
+void func_00124890(Actor *a, s32 kind) {
+    NavMesh *nm;
+    VObject *rng, *rooms, *objs;
+    u32 area, n;
+
+    if (a->room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress)) {
+        return;
+    }
+    if (kind == 1) {
+        area = 0x200000;
+    } else if (kind == 0) {
+        area = 0x100000;
+    } else {
+        area = 0x300000;
+    }
+    nm = D_0044E570;
+    rng = D_0044E550;
+    n = nm->numTris;
+    rooms = D_0044E568;
+    objs = D_0044E4D0;
+    for (;;) {
+        sceVu0FVECTOR center;
+        u32 tri, flags;
+        u8 free, i;
+
+        tri = (u32)((f32)n * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng));
+        flags = NavMesh_Tri(nm, tri)->flags;
+        if (flags & a->navMask) {
+            continue;
+        }
+        if (kind == -1 || kind == 2) {
+            if ((area & flags) != area) {
+                tri = NAV_NONE;
+            }
+        } else if (flags & area) {
+            tri = NAV_NONE;
+        }
+        if (tri == NAV_NONE) {
+            continue;
+        }
+        VCALL(nm, 0xC, void (*)(NavMesh *, u32, f32 *))(nm, tri, center);
+        free = 1;
+        for (i = 0; i < 8; i++) {
+            u32 id = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, a->room, i) & 0xFFFF;
+
+            if (id != 0xFFFF
+                && (VCALL(objs, 0x10, u32 (*)(VObject *, f32 *, u32, u32))(objs, center, id, a->navTri) & 0xFF) == 1) {
+                free = 0;
+                break;
+            }
+        }
+        if (free == 1) {
+            VCALL(a, 0x28, void (*)(Actor *, u32, s32, s32))(a, tri, 0, 0);
+            return;
+        }
+    }
+}
+
+extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
+
+/* vtable +0x28: place the actor in triangle `tri`, optionally turning to `*heading` and moving
+ * to `pos` (which must lie in the triangle; it is put on the surface), else to the triangle's
+ * centre. 0, or -1 if the triangle is invalid, blocked or doesn't contain `pos`. */
+s32 func_00124B80(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
+    NavMesh *nm = D_0044E570;
+
+    a->prevNavTri = tri;
+    a->navTri = tri;
+    if (tri >= nm->numTris) {
+        return -1;
+    }
+    if (NavMesh_Tri(nm, tri)->flags & a->navMask) {
+        return -1;
+    }
+    if (heading != NULL) {
+        f32 yaw = *heading;
+
+        a->angle[1] = yaw;
+        sceVu0UnitMatrix(a->rot);
+        sceVu0RotMatrixY(a->rot, a->rot, yaw);
+    }
+    if (pos != NULL) {
+        sceVu0CopyVector(a->pos, pos);
+        if (VCALL(nm, 0x10, s32 (*)(NavMesh *, u32, const f32 *))(nm, tri, pos) != NAV_EDGE_INSIDE) {
+            return -1;
+        }
+        VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, tri, pos);
+    } else {
+        VCALL(nm, 0xC, void (*)(NavMesh *, u32, f32 *))(nm, tri, a->pos);
+    }
+    sceVu0CopyVector(a->prevPos, a->pos);
+    a->disabled = 0;
+    a->unk2D = 0;
+    a->unk2B = 0;
+    return 0;
+}
+
+/* vtable +0x24: remember the current position and triangle as the previous ones. */
+void func_00124D00(Actor *a) {
+    a->prevNavTri = a->navTri;
+    func_0010E5F0(a->prevPos, a->pos);
+}
+
+/* vtable +0x20 (base): nothing */
+void func_00124D20(Actor *a) {
+}
+
+/* vtable +0x1C (base): nothing */
+void func_00124D30(Actor *a) {
+}
+
+/* Has the actor's data file (id flags24 | slot) finished loading? */
+s32 func_00124D40(Actor *a) {
+    return VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, a->flags24 | a->slot) == 2;
+}
+
+/* vtable +0x18 (base): nothing */
+void func_00124D80(Actor *a) {
+}
+
+/* vtable +0x14 (base): nothing */
+void func_00124D90(Actor *a) {
+}
+
+/* vtable +0x10 (base): nothing */
+void func_00124DA0(Actor *a) {
+}
+
+/* vtable +0xC: reset position, orientation and state. */
+void func_00124DB0(Actor *a) {
+    a->navTri = NAV_NONE;
+    a->pos[2] = 0.0f;
+    a->pos[1] = 0.0f;
+    a->pos[0] = 0.0f;
+    a->pos[3] = 1.0f;
+    a->prevPos[3] = 1.0f;
+    a->angle[0] = 0.0f;
+    a->angle[1] = 0.0f;
+    a->angle[2] = 0.0f;
+    a->angle[3] = 1.0f;
+    a->unkB0[2] = 0.0f;
+    a->unkB0[1] = 0.0f;
+    a->unkB0[0] = 0.0f;
+    a->unkB0[3] = 1.0f;
+    sceVu0UnitMatrix(a->rot);
+    a->unkD0 = 0;
+    a->unkD1 = 0;
+    a->active = 0;
+    a->disabled = 0;
+    a->unk2A = 0;
+    a->unk2B = 0;
+    a->unk2C = 0;
+    a->unk2D = 0;
+}
+
+void func_00124E40(Actor *a) {
+}
+
+void *func_00124E50(void *a, void *b) {
+    return b;
+}
+
+extern void *D_00469C20[];   /* Actor base vtable */
+extern void *D_00469C60[];   /* Actor vtable */
+
+/* vtable +0x8 (0x469C60): destructor. Actors live inside their scene, so "delete" does nothing. */
+Actor *func_00124E60(Actor *a, s32 flags) {
+    if (a != NULL) {
+        a->vtbl = D_00469C60;
+        a->vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(a);
+        }
+    }
+    return a;
+}
+
+s32 func_00124EC0(Actor *a) {
+    return 0;
+}
+
+s32 func_00124F10(Actor *a) {
+    return 0;
+}
+
+/* vtable +0x38 (base): per-frame update - nothing for a plain actor */
+void func_00120F80(Actor *a) {
 }
