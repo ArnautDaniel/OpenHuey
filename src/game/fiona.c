@@ -468,3 +468,89 @@ void func_001A3EE0(Fiona *f) {
         f->unk1AD62E = 0;
     }
 }
+
+extern void *func_001776B0(Progress *p, s32);
+
+static const char sFionaMotion[] = "O_FIN\\FIN_D000.MTN";
+
+/* LoadAsync(name, dest) for her files, tagged with her file id. */
+#define Fiona_Load(f, loader, name, dest) \
+    VCALL(loader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))( \
+        loader, name, dest, (f)->c.a.flags24 | (f)->c.a.slot, 0)
+
+/* vtable +0x14: start loading her files: model (by costume, which comes from the unlocked
+ * costume bits in the progress flags), message data, motions, animation set. */
+void func_001A4110(Fiona *f) {
+    Progress *p = gProgress;
+    VObject *loader;
+    u32 costume = 0;
+
+    if ((((u32 *)p)[0x24 / 4] & 0x2) != 0) {
+        costume = 1;
+    }
+    if ((((u32 *)p)[0x28 / 4] & 0x8000) != 0) {
+        costume = 2;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x4) != 0) {
+        costume = 3;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x100) != 0) {
+        costume = 4;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x100000) != 0) {
+        costume = 5;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x200000) != 0) {
+        costume = 6;
+    }
+    loader = gFileLoader;
+    FI(f, 0x1AD548, s32) = costume;
+    Fiona_Load(f, loader, VCALL(f->c.motion, 0xA0, void *(*)(void *, u32))(f->c.motion, costume), (u8 *)f + 0x1540);
+    FI(f, 0x1AD544, void *) = func_001776B0(p, 0);
+    Fiona_Load(f, loader, VCALL(f->c.motion, 0xA8, void *(*)(void *))(f->c.motion), FI(f, 0x1AD544, void *));
+    Fiona_Load(f, loader, sFionaMotion, VCALL(D_0044E558, 0x48, void *(*)(VObject *, s32))(D_0044E558, 0));
+    Fiona_Load(f, loader, VCALL(f->c.motion, 0xA4, void *(*)(void *, u32))(f->c.motion, costume), (u8 *)f + 0x1AA540);
+}
+
+extern Character *gCharPartner;
+extern Character *gCharPursuer;
+extern void func_00126450(Character *c);
+
+#define Character_ToIdle(c) VCALL(c, 0x7C, void (*)(Character *))(c)
+
+/* vtable +0x8C: interrupted (e.g. a cutscene starts): stop, and release Hewie and the pursuer
+ * from joint actions with her. */
+void func_0019D2B0(Fiona *f) {
+    Progress *p;
+
+    func_00126450(&f->c);
+    func_00184BF0(f);
+    FI(f, 0x1AD58C, s32) = 6;
+    FI(f, 0x1AD5D2, u8) = 0;
+    p = gProgress;
+    FI(f, 0x1AD5FC, u8) = 0;
+    if ((Progress_TestFlag(p, 0xA) & 0xFF) == 1) {
+        Progress_ClearFlag(p, 0xA);
+        f->unk1AD630 = 0;
+        f->unk1AD62E = 0;
+    }
+    if (gCharPartner != NULL && gCharPartner->a.active == 1 && !gCharPartner->unkE0) {
+        s32 sub;
+
+        if (f->c.moveMode == 0xC) {
+            Character_ToIdle(gCharPartner);
+        }
+        if (f->c.moveMode == 0xD) {
+            sub = f->c.moveSub;
+            if (sub == 0x2A || sub == 0x24 || sub == 0x28 || sub == 0x2B) {
+                Character_ToIdle(gCharPartner);
+            }
+        }
+    }
+    if (gCharPursuer != NULL && gCharPursuer->a.active == 1 && !gCharPursuer->unkE0) {
+        if ((f->c.moveMode == 4 && f->c.moveSub == 9)
+            || (gCharPursuer->moveMode == 8 && gCharPursuer->moveSub == 0x18)) {
+            Character_ToIdle(gCharPursuer);
+        }
+    }
+}

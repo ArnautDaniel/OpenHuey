@@ -1411,3 +1411,6 @@ src/game/fiona.c func_0019D190 --stub-ret=1
 src/game/fiona.c func_001A38E0 --runs=300 --stub-ret=0x89 --stub-ret=0 --stub-ret=1 --pre=a0+0xE4=0..1 --pre=a0+0x152C=0x16..0x18 --pre=@0x44E4F8=0x0A000000..0x0A0FFFF0 --pre=@0x44E4D8=0x0A000000..0x0A000010
 src/game/fiona.c func_001A38E0 --runs=200 --stub-ret=0x89 --stub-ret=0 --stub-ret-prob=1.0 --pre=a0+0xE4=0..1 --pre=a0+0x152C=0x16..0x18 --pre=@0x44E4F8=0x0A000000..0x0A0FFFF0 --pre=@0x44E4D8=0x0A000000..0x0A000010
 src/game/fiona.c func_001A3EE0 --runs=100 --stub-ret=0x89 --stub-ret=0 --stub-ret=1
+src/game/fiona.c func_001A4110 --runs=60
+src/game/fiona.c func_0019D2B0 --runs=300 --pre=@0x44F820=0x0A000000..0x0A000000 --pre=@0x44F828=0x0A000000..0x0A000000 --pre=@0x0A000028=1..1 --pre=@0x0A0000E0=0..0 --pre=@0x0A0000F8=7..8 --pre=@0x0A0000FC=0x17..0x18 --pre=a0+0xF8=0xC..0xD --pre=a0+0xFC=0x24..0x2B --stub-ret=1
+src/game/fiona.c func_0019D2B0 --runs=200 --pre=@0x44F820=0x0A000000..0x0A000000 --pre=@0x44F828=0x0A000000..0x0A000000 --pre=@0x0A000028=1..1 --pre=@0x0A0000E0=0..0 --pre=@0x0A0000F8=7..8 --pre=@0x0A0000FC=0x17..0x18 --pre=a0+0xF8=3..4 --pre=a0+0xFC=8..9
