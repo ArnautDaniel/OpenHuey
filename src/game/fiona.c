@@ -822,3 +822,81 @@ void func_00199ED0(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B27F8);
     }
 }
+
+extern s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin);
+extern s32 func_00188280(Fiona *f, s32, f32 reach);
+extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
+extern VObject *D_0044FE08;   /* pushable objects: +0x30 blocked(id, dir), +0x3C/+0x1C/+0x20/+0x28 move */
+extern const PTMF D_003B2808;  /* push: let go */
+extern const PTMF D_003B2818;  /* push: moving */
+extern const PTMF D_003B2828;  /* push: stop straining */
+
+#define FIONA_STICK(f) ((f32 *)((u8 *)(f) + 0x1AD570))
+#define FIONA_PUSH_OBJ(f) FI(f, 0x1AD560, s32)
+
+/* State: pushing an object (animations 0x1200..0x1203). */
+void func_001998F0(Fiona *f) {
+    s32 blocked;
+    void *m;
+
+    blocked = 0;
+    if (!(FI(f, 0x1AD584, s32) & 0x2)) {
+        if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+            blocked = 1;
+        } else {
+            func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
+        }
+    } else {
+        blocked = 1;
+    }
+    if (blocked) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    func_00125A10(&f->c);
+    if (sceVu0InnerProduct(FIONA_STICK(f), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */) {
+        /* stick released: let go once the animation has stopped */
+        m = f->c.motion;
+        if (!(*(f32 *)((u8 *)m + 0x550) <= 0.0f)) {
+            return;
+        }
+        if (*(s32 *)((u8 *)m + 0x55C) == 0x1203) {
+            func_002DDE20(m, 0x1202, -1);
+            Actor_SetState(&f->c.a, &D_003B2828);
+        } else {
+            Fiona_ToIdle(f);
+        }
+        return;
+    }
+    m = f->c.motion;
+    if ((*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18) & 0x20) == 0) {
+        /* between steps */
+        if (*(s32 *)((u8 *)m + 0x55C) == 0x1203) {
+            FI(f, 0x1AD5D2, u8) = 1;
+        }
+        return;
+    }
+    if (FIONA_PUSH_OBJ(f) == -1 && func_00188280(f, 1, 0x1.19999ap+1f /* 2.2 */) == -1) {
+        func_002DDE20(f->c.motion, 0x1202, -1);
+        Actor_SetState(&f->c.a, &D_003B2808);
+        return;
+    }
+    if (FIONA_PUSH_OBJ(f) == -1
+        || VCALL(D_0044FE08, 0x30, s32 (*)(VObject *, s32, f32 *))(D_0044FE08, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) != 0) {
+        /* it won't move: strain */
+        FI(f, 0x1AD5D2, u8) = 1;
+        func_002DDE20(f->c.motion, 0x1203, -1);
+        return;
+    }
+    {
+        VObject *objs = D_0044FE08;
+
+        VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
+        VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
+        VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
+        func_002DDE20(f->c.motion, 0x1201, -1);
+        VCALL(objs, 0x28, void (*)(VObject *, s32, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), 0, FIONA_STICK(f));
+        func_00122C20(&f->c.a, 0x45, 5, 0, 0, NULL);
+        Actor_SetState(&f->c.a, &D_003B2818);
+    }
+}
