@@ -15,7 +15,7 @@ extern VObject *D_0044E4E0; /* global manager object, type unknown */
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
 extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
 extern const PTMF sGameStateNull;     /* all zero: ends Game_Run */
-extern const PTMF sActorResetState;   /* virtual: actor vtable +0x14 */
+extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 
 #define PAD_SELECT 0x1
 #define PAD_START 0x8
@@ -32,8 +32,8 @@ void Game_Init(Game *game) {
     func_002CFA10(game);
     func_001F44D0(game->unk14E8C90);
     func_002BFB20(game->unk20);
-    game->unk4 = 1;
-    game->unk10 = 0;
+    game->nextMode = 1;
+    game->modeParam = 0;
     game->resetHoldFrames = 0;
     game->state = sGameStateMain;
 }
@@ -48,15 +48,15 @@ void Game_SetState(Game *game, const PTMF *state) {
     game->state = *state;
 }
 
-static inline Actor *Game_GetActor(Game *game, s32 i) {
-    return (u32)i < GAME_NUM_ACTORS ? game->actors[i] : NULL;
+static inline Scene *Game_GetScene(Game *game, s32 i) {
+    return (u32)i < GAME_NUM_SCENES ? game->scenes[i] : NULL;
 }
 
-static inline s32 Game_HasActors(Game *game) {
+static inline s32 Game_HasScenes(Game *game) {
     u32 i;
 
-    for (i = 0; i < GAME_NUM_ACTORS; i++) {
-        if (game->actors[i] != NULL) {
+    for (i = 0; i < GAME_NUM_SCENES; i++) {
+        if (game->scenes[i] != NULL) {
             return 1;
         }
     }
@@ -67,28 +67,28 @@ static inline s32 Game_HasActors(Game *game) {
 void Game_StateMain(Game *game) {
     u32 i;
 
-    for (i = 0; i < GAME_NUM_ACTORS; i++) {
-        Actor *actor = game->actors[i];
+    for (i = 0; i < GAME_NUM_SCENES; i++) {
+        Scene *scene = game->scenes[i];
 
-        if (actor == NULL) {
+        if (scene == NULL) {
             continue;
         }
-        if (actor->unk12 == 1) {
+        if (scene->finished == 1) {
             /* finished: delete it (virtual destructor) and hand the slot back */
-            VCALL(actor, 0x8, void (*)(Actor *, s32))(actor, 1);
-            VCALL(&game->unk14D9A40, 0x14, void (*)(VObject *, Actor *))(&game->unk14D9A40, game->actors[i]);
-            game->actors[i] = NULL;
+            VCALL(scene, 0x8, void (*)(Scene *, s32))(scene, 1);
+            VCALL(&game->sceneHeap, 0x14, void (*)(VObject *, Scene *))(&game->sceneHeap, game->scenes[i]);
+            game->scenes[i] = NULL;
         } else {
-            VCALL(actor, 0xC, void (*)(Actor *, s32))(actor, 1);
+            VCALL(scene, 0xC, void (*)(Scene *, s32))(scene, 1);
         }
     }
 
-    if (!Game_HasActors(game)) {
+    if (!Game_HasScenes(game)) {
         VCALL(game, 0x24, void (*)(Game *))(game);
     }
     VCALL(&game->unk69AC0, 0x10, void (*)(VObject *))(&game->unk69AC0);
 
-    if (game->unkC == 0) {
+    if (game->softResetEnabled == 0) {
         game->resetHoldFrames = 0;
         return;
     }
@@ -104,27 +104,27 @@ void Game_StateMain(Game *game) {
     }
     if (game->resetHoldFrames >= 60) {
         game->resetHoldFrames = 0;
-        for (i = 0; i < GAME_NUM_ACTORS; i++) {
-            if (Game_GetActor(game, (s8)i) != NULL) {
-                Actor *actor = Game_GetActor(game, (u8)i);
+        for (i = 0; i < GAME_NUM_SCENES; i++) {
+            if (Game_GetScene(game, (s8)i) != NULL) {
+                Scene *scene = Game_GetScene(game, (u8)i);
 
-                if (actor != NULL) {
-                    PTMF reset = sActorResetState;
+                if (scene != NULL) {
+                    PTMF reset = sSceneResetState;
 
                     if (ptmf_test(&reset)) {
-                        actor->state = reset;
+                        scene->state = reset;
                     }
-                    actor = game->actors[(u8)i];
-                    VCALL(actor, 0x14, void (*)(Actor *))(actor);
+                    scene = game->scenes[(u8)i];
+                    VCALL(scene, 0x14, void (*)(Scene *))(scene);
                 }
             }
         }
         VCALL(D_0044E4E0, 0x1C, void (*)(VObject *))(D_0044E4E0);
-        game->unk4 = 2;
-        game->unk10 = 1;
-        if (game->unk8 == 2) {
-            game->unk4 = 0;
-            game->unk10 = 0;
+        game->nextMode = 2;
+        game->modeParam = 1;
+        if (game->mode == 2) {
+            game->nextMode = 0;
+            game->modeParam = 0;
         }
     }
 }
@@ -134,4 +134,56 @@ void Game_StateShutdown(Game *game) {
     func_001F4100(game->unk14E8C90);
     VCALL(&game->unk69AC0, 0x18, void (*)(VObject *))(&game->unk69AC0);
     game->state = sGameStateNull;
+}
+
+/* Scene constructors (placement: they construct in memory from the scene heap and return it). */
+extern Scene *SceneBoot_ctor(void *mem);  /* mode 1: memory card check, logos */
+extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen, menus */
+extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
+extern Scene *Scene5_ctor(void *mem);     /* mode 5: unknown */
+extern void func_001779B0(void *obj, s32 param);
+extern VObject *D_0044E968; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
+extern VObject *D_0044E4D8; /* global object, type unknown */
+
+static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
+    void *mem = VCALL(&game->sceneHeap, 0x10, void *(*)(VObject *, u32))(&game->sceneHeap, size);
+
+    if (mem != NULL) {
+        Scene *scene = ctor(mem);
+
+        game->scenes[slot] = scene;
+        Scene_SetSlot(game->scenes[slot], slot);
+        if (game->scenes[slot] != NULL) {
+            Scene_Activate(game->scenes[slot]);
+        }
+    }
+    return game->scenes[slot];
+}
+
+/* Game vtable +0x24: called by Game_StateMain once no scene is left; starts game->nextMode. */
+void Game_StartNextScene(Game *game) {
+    game->mode = game->nextMode;
+    switch (game->nextMode) {
+    case 1:
+        Game_NewScene(game, 0xC7700, SceneBoot_ctor, 0);
+        game->softResetEnabled = 0;
+        break;
+    case 2:
+        Game_NewScene(game, 0x140D00, SceneTitle_ctor, 0);
+        *(s32 *)((u8 *)D_0044E968 + 0x14) = game->modeParam;
+        game->softResetEnabled = 0;
+        break;
+    case 3:
+        Game_NewScene(game, 0x1065080, SceneGame_ctor, 1);
+        func_001779B0(D_0044E4D8, game->modeParam);
+        game->softResetEnabled = 1;
+        break;
+    case 5:
+        Game_NewScene(game, 0x117540, Scene5_ctor, 0);
+        game->softResetEnabled = 1;
+        break;
+    default:
+        game->state = sGameStateShutdown;
+        break;
+    }
 }

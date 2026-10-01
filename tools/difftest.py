@@ -54,7 +54,7 @@ BASEROM = ROOT / "baserom/SLUS_210.75"
 BUILD_ELF = ROOT / "build/SLUS_210.75.elf"
 TC = ROOT / "tools/ps2dev/ps2dev/ee/bin/mips64r5900el-ps2-elf-"
 IMAGE_LO, IMAGE_HI = 0x00100000, 0x0047B200
-C_BASE = 0x0E000000          # where the C version is loaded
+C_BASE = 0x0F000000          # where the C version is loaded: same 256 MB jal region as the game, clear of random pointers
 PTR_LO, PTR_HI = 0x0A000000, 0x0D000000  # random "heap" pointers handed to functions
 STACK_TOP = 0x01FF0000
 FRAME = 0x10000              # writes within this much below sp are the function's own frame
@@ -63,7 +63,7 @@ MAX_STEPS = 200_000
 OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
 # Runtime helpers that are executed instead of stubbed: they are part of how the
 # original code expresses something C code writes inline (e.g. PTMF calls).
-INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test")
+INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
 HELPER_RANGES: list[tuple[int, int]] = []
 FPR_WRITERS = {"lwc1", "mtc1"}
@@ -385,9 +385,10 @@ class CPU:
             if not taken:
                 pc, npc = ds + 4, ds + 8
                 continue
-            if kind == "call" and target in INLINE_ADDRS:
-                pc, npc = target, target + 4  # run the helper; it returns via $ra
-            elif kind == "call":
+            if kind == "call" and (target in INLINE_ADDRS or self.func_lo <= target < self.func_hi):
+                # direct call to a runtime helper, our own static helper, or recursion: run it
+                pc, npc = target, target + 4
+            elif kind in ("call", "vcall"):  # indirect calls (vtables, function pointers) are always stubbed
                 self.stub_call(target, "call")
                 pc, npc = pc + 8, pc + 12
             elif kind == "jump" and target in INLINE_ADDRS:
@@ -939,7 +940,7 @@ def _jr(c, w, pc):
 
 
 @H("jalr")
-def _jalr(c, w, pc): return (True, c.g(_rs(w)) & M32, False, _rd(w), "call")
+def _jalr(c, w, pc): return (True, c.g(_rs(w)) & M32, False, _rd(w), "vcall")
 
 
 @H("syscall")
@@ -1184,7 +1185,9 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
     overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
                 if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
     sym = next(s for s in e.get_section_by_name(".symtab").iter_symbols() if s.name == func)
-    return overlays, sym["st_value"], sym["st_value"] + max(sym["st_size"], 4)
+    text = e.get_section_by_name(".text")
+    # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
+    return overlays, sym["st_value"], (text["sh_addr"], text["sh_addr"] + text["sh_size"])
 
 
 def harvest_constants(rom: bytes, lo: int, hi: int) -> None:
@@ -1345,7 +1348,7 @@ def main() -> None:
     rom = BASEROM.read_bytes()
     orig_range = original_range(args.func)
     with tempfile.TemporaryDirectory() as td:
-        overlays, c_lo, c_hi = build_c(args.src.resolve(), args.func, Path(td))
+        overlays, c_entry, c_range = build_c(args.src.resolve(), args.func, Path(td))
     ret_kind = return_kind(args.src, args.func) if args.ret == "auto" else args.ret
 
     load_helpers()
@@ -1363,7 +1366,7 @@ def main() -> None:
             print(f"original: unsupported instruction {e}")
             sys.exit(2)
         try:
-            n = run_one(rom, overlays, c_lo, (c_lo, c_hi), seed)
+            n = run_one(rom, overlays, c_entry, c_range, seed)
         except Trap as t:
             print(f"FAIL seed {seed}: C version trapped ({t})")
             sys.exit(1)
