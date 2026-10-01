@@ -976,3 +976,147 @@ void func_001991E0(Fiona *f) {
         VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x40, 0x10);
     }
 }
+
+extern VObject *D_0044E568;      /* rooms */
+extern VObject *D_0044E4D0;      /* room objects: +0x2C(chr) */
+extern s32 func_00122B50(Actor *a, f32 *out);
+extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
+extern void func_00126270(Character *c);
+extern void func_00124890(Actor *a, s32 kind);
+extern s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32);
+extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);
+extern const PTMF D_003B27D8;
+
+#define Fiona_Place(f, tri, pos) VCALL(f, 0x28, s32 (*)(Fiona *, u32, const f32 *, f32 *))(f, tri, NULL, pos)
+#define Room_ExitPosIn(rooms, door, out) VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, door, out)
+#define Room_ExitPosOut(rooms, door, out) VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, door, out)
+#define Room_DoorTo(rooms, route, room) VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, route, room)
+#define FIONA_ROUTE0(f) (*(u16 *)(f)->c.unk138C)
+
+/* vtable +0x38: room (re-)entry - place her in the current room, or keep her out of it. */
+void func_0019AF20(Fiona *f) {
+    Progress *p = gProgress;
+    VObject *rooms;
+    s32 room;
+    u8 ok;
+
+    if (*((u8 *)p + 0x1FBEC1) == 0) {
+        FI(f, 0x1AD5FC, u8) = 0;
+        VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Fiona *))(D_0044E4D0, f);
+        return;
+    }
+    if ((u32)((Progress_GetVar(p, 0x26) & 0xFF) - 6) < 2) {
+        VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+    }
+    if (FI(f, 0x1AD718, u8) == 1) {
+        /* coming in through a door */
+        f->c.a.room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+        rooms = D_0044E568;
+        f->c.door = Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room);
+        if (FI(f, 0x1AD6C0, s32) == 0) {
+            f->c.a.navTri = Room_ExitPosIn(rooms, f->c.door, f->c.a.pos);
+        } else {
+            f->c.a.navTri = Room_ExitPosOut(rooms, f->c.door, f->c.a.pos);
+        }
+    }
+    room = f->c.a.room;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        /* not in the room being played: out of the game until she comes in */
+        f->c.a.disabled = 1;
+        FI(f, 0x1AD73C, f32) = 0.0f;
+        FI(f, 0x1AD738, s32) = (s32)(30.0f * (2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) + 90;
+        return;
+    }
+    f->c.a.disabled = 0;
+    ok = 0;
+    if (f->c.a.navTri != NAV_NONE) {
+        if (Fiona_Place(f, f->c.a.navTri, f->c.a.pos) == 0 || Fiona_Place(f, f->c.a.navTri, NULL) == 0) {
+            ok = 1;
+        }
+    }
+    if (!ok) {
+        f->c.a.navTri = Room_ExitPosIn(D_0044E568, f->c.door, f->c.a.pos);
+        if (Fiona_Place(f, f->c.a.navTri, f->c.a.pos) == 0) {
+            ok = 1;
+        }
+    }
+    if (!ok) {
+        func_00124890(&f->c.a, VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, f->c.a.room, f->c.door, 0));
+    }
+    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Fiona *))(D_0044E4D0, f);
+    if (f->c.a.navTri == NAV_NONE) {
+        f->c.a.pos[0] = 0.0f;
+        f->c.a.pos[1] = 0.0f;
+        f->c.a.pos[2] = 0.0f;
+        f->c.a.pos[3] = 0x1.99999ap-4f;   /* 0.1 */
+    }
+    {
+        sceVu0FVECTOR v;
+
+        if (func_00122B50(&f->c.a, v)) {
+            func_001264C0(&f->c, 3, (s32)v, 0, 0, 0);
+        }
+    }
+    func_00126270(&f->c);
+    if (*((u8 *)p + 0x7B8) == 5) {
+        FI(f, 0x1AD71C, s32) = 0;
+        f->c.moveMode = 0xA;
+        f->unk1AD580 = 0xB;
+        func_002DDE20(f->c.motion, 0xB01, -1);
+        Actor_SetState(&f->c.a, &D_003B27D8);
+        return;
+    }
+    switch (FI(f, 0x1AD71C, u32)) {
+    case 9:
+        FI(f, 0x1AD71C, s32) = FI(f, 0x1AD719, u8) ? 1 : 0;
+        break;
+    case 10:
+        FI(f, 0x1AD71C, s32) = 0;
+        break;
+    case 4:
+    case 8:
+        FI(f, 0x1AD71C, s32) = 3;
+        FI(f, 0x1AD720, u8) = 0xFF;
+        break;
+    case 6:
+        FI(f, 0x1AD71C, s32) = 5;
+        FI(f, 0x1AD720, u8) = 0xFF;
+        break;
+    case 11:
+    case 13:
+    case 14: {
+        /* walking in through the door: continue along the route */
+        sceVu0FVECTOR exitPos, back, d;
+        u32 exit, tri;
+        f32 step;
+
+        rooms = D_0044E568;
+        exit = Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room) & 0xFF;
+        if (exit == 0xFF) {
+            return;
+        }
+        if (f->c.a.navTri == NAV_NONE) {
+            f->c.a.navTri = Room_ExitPosIn(rooms, f->c.door, f->c.a.pos);
+        }
+        if (func_00180D60(f, Room_ExitPosIn(rooms, exit, exitPos), exitPos, 0) != 0) {
+            return;
+        }
+        tri = f->c.a.navTri;
+        step = FI(f, 0x1AD73C, f32) - 5.0f;
+        if (step < 0.0f) {
+            step = 0.0f;
+        }
+        func_001273D0(&f->c, &tri, back, step);
+        func_001273D0(&f->c, &f->c.a.navTri, f->c.a.pos, FI(f, 0x1AD73C, f32));
+        sceVu0SubVector(d, f->c.a.pos, back);
+        {
+            f32 yaw = func_0031C5C0(d[0], d[2]);
+
+            f->c.a.angle[1] = yaw;
+            sceVu0UnitMatrix(f->c.a.rot);
+            sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
+        }
+        break;
+    }
+    }
+}
