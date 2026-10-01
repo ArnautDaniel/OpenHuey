@@ -1300,3 +1300,6 @@ src/game/actor.c func_00122C20
 src/game/actor.c func_00122C90 --runs=100
 src/game/actor.c func_00122E80 --runs=100
 src/game/actor.c func_00123080 --runs=200
+src/game/actor.c func_00123470 --runs=100
+src/game/actor.c func_001235C0 --runs=100
+src/game/actor.c func_00123710 --runs=100

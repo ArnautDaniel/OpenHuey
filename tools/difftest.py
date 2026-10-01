@@ -286,6 +286,7 @@ class CPU:
         self.acc = 0
         self.fcc = False
         self.hi = self.lo = self.hi1 = self.lo1 = 0
+        self.save_addrs: set[int] = set()
         self.sa = 0
         self.func_lo, self.func_hi = func_lo, func_hi
         self.events: list[tuple] = []
@@ -346,6 +347,8 @@ class CPU:
             if STACK_TOP - FRAME <= p < STACK_TOP:
                 v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * OUTPARAM)
                 self.m.write(p, OUTPARAM, v)
+                for i in range(OUTPARAM):  # not the function's own store (see arg_value)
+                    self.m.written.pop(Memory.norm(p + i), None)
         self.call_n += 1
         rv = interesting(self.rng)
         if STUB_RETURNS and self.rng.random() < 0.5:
@@ -363,6 +366,21 @@ class CPU:
     def arg_value(self, v: int):
         """How an argument compares: stack pointers as "stack", C strings by content, else the value."""
         if STACK_TOP - FRAME <= v < STACK_TOP:
+            # a local passed by reference: frame layouts differ, so compare what the function
+            # stored there (a 16-byte aligned pointer is taken as a vector; unwritten bytes
+            # don't count) rather than the address
+            if v % 16 == 0:
+                w = self.m.written
+                content = tuple(None if v + i in self.save_addrs else w.get(v + i) for i in range(16))
+                if any(b is not None for b in content):
+                    words = []
+                    for i in range(0, 16, 4):
+                        bs = content[i:i + 4]
+                        if None in bs:
+                            words.append("?" if all(b is None for b in bs) else "".join("??" if b is None else f"{b:02X}" for b in reversed(bs)))
+                        else:
+                            words.append(f"{b2f(int.from_bytes(bytes(bs), 'little')):g}")
+                    return "stack{" + ",".join(words) + "}"
             return "stack"
         if IMAGE_LO <= v < IMAGE_HI or C_BASE <= v < C_BASE + 0x100000:
             bs = bytearray()
@@ -378,6 +396,15 @@ class CPU:
     def visible_writes(self) -> dict[int, int]:
         sp0 = STACK_TOP
         return {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0)}
+
+    SAVE_STORES = {"sq": 16, "sd": 8, "sw": 4, "swc1": 4}
+    SAVED_REGS = set(range(16, 24)) | {30, 31}
+
+    def note_save(self, name: str, w: int) -> None:
+        """Remember where the prologue saves callee-saved registers (not data for arg_value)."""
+        if name in self.SAVE_STORES and _rs(w) == 29 and (_rt(w) >= 20 if name == "swc1" else _rt(w) in self.SAVED_REGS):
+            a = (self.g(29) + _imm(w)) & M32
+            self.save_addrs.update(range(a, a + self.SAVE_STORES[name]))
 
     # -- main loop
     def run(self, entry: int) -> None:
@@ -400,6 +427,7 @@ class CPU:
                 raise Unsupported(f"{name} at 0x{pc:08X}")
             self.in_func = self.func_lo <= pc < self.func_hi
             if self.in_func:
+                self.note_save(name, w)
                 # a value read again before the call is scratch, not an argument
                 self.wset -= reads
                 self.fwset -= freads
@@ -435,6 +463,7 @@ class CPU:
             self.visited.add(ds)
             self.in_func = self.func_lo <= ds < self.func_hi
             if self.in_func:
+                self.note_save(dname, dw)
                 self.wset -= dreads
                 self.fwset -= dfreads
             if self.in_func and (dname.endswith(".s") or dname in FPR_WRITERS):

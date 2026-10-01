@@ -16,7 +16,7 @@ typedef struct NavMesh {
     /* 0x04 */ NavTri *tris;
     /* 0x08 */ u32 numTris;
     /* 0x0C */ u8 pad0C[8];
-    /* 0x14 */ u32 unk14;        /* count of something iterated with vtable +0x50 */
+    /* 0x14 */ u32 numDoors;      /* door regions: +0x50 occupied?(i), +0x58 angle(i, side), +0x5C pos(i, side, out) -> tri */
 } NavMesh;
 
 extern NavMesh *D_0044E570;

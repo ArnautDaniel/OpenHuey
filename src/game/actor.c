@@ -172,3 +172,107 @@ s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *po
     }
     return (mask & NavMesh_TriFlags(D_0044E570, r2)) ? 0 : 1;
 }
+
+#define NAV_NO_STAND 0x80001     /* triangle flags where nothing may stand */
+
+extern VObject *D_0044E558;      /* +0x2C(i, arg) -> bool, 8 entries */
+extern u32 func_00177BF0(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
+extern u32 func_00177A20(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
+
+/* Is triangle `tri` free: standable, and not claimed by any of D_0044E558's 8 entries or the
+ * nav mesh's extra regions (vtable +0x50)? (The flags read goes through a NULL triangle for an
+ * out-of-range index, like the original.) */
+s32 func_00123470(void *self, u32 tri, s32 arg) {
+    NavMesh *nm = D_0044E570;
+    VObject *obj;
+    u32 n;
+    u8 i;
+
+    if (NavMesh_Tri(nm, tri)->flags & NAV_NO_STAND) {
+        return 0;
+    }
+    obj = D_0044E558;
+    for (i = 0; i < 8; i++) {
+        if ((VCALL(obj, 0x2C, u32 (*)(VObject *, u32, s32))(obj, i, arg) & 0xFF) == 1) {
+            return 0;
+        }
+    }
+    n = nm->numDoors;
+    for (i = 0; i < n; i++) {
+        if ((VCALL(nm, 0x50, u32 (*)(NavMesh *, u32, s32))(nm, i, arg) & 0xFF) == 1) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Same test for an actor's current triangle, using the progress flags for its slot. */
+s32 func_001235C0(void *self, Actor *a) {
+    NavMesh *nm = D_0044E570;
+    VObject *prog;
+    u32 n;
+    u8 i;
+
+    if (NavMesh_Tri(nm, a->navTri)->flags & NAV_NO_STAND) {
+        return 0;
+    }
+    prog = gProgress;
+    for (i = 0; i < 8; i++) {
+        if (func_00177BF0(prog, i, *(u8 *)&a->slot) & 0x20) {
+            return 0;
+        }
+    }
+    n = nm->numDoors;
+    for (i = 0; i < n; i++) {
+        if (func_00177A20(prog, i, *(u8 *)&a->slot) & 0x8) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Point in front of door `door` on `side` (0/1), 5 units out and shifted by `ofs` in the door's
+ * frame; walks the mesh from the door to it. Returns its triangle (point in `out`), or -1. */
+u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out) {
+    NavMesh *nm;
+    sceVu0FMATRIX m;
+    sceVu0FVECTOR d, base, target, cur;
+    u32 tri;
+
+    if (!(door >= 0 && (u32)door < D_0044E570->numDoors)) {
+        return NAV_NONE;
+    }
+    if (side < 0 || side >= 2) {
+        return NAV_NONE;
+    }
+    d[0] = -ofs[0];
+    *(s32 *)&d[1] = 0;
+    if (side == 0) {
+        d[2] = 5.0f + ofs[2];
+    } else {
+        d[2] = -(ofs[2] - 5.0f);
+    }
+    sceVu0UnitMatrix(m);
+    nm = D_0044E570;
+    sceVu0RotMatrixY(m, m, VCALL(nm, 0x58, f32 (*)(NavMesh *, s32, s32))(nm, door, side));
+    sceVu0ApplyMatrix(d, m, d);
+    tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, door, side, base);
+    sceVu0AddVector(target, base, d);
+    sceVu0CopyVector(cur, base);
+    for (;;) {
+        s32 e = NavMesh_Exit(nm, tri, cur, target);
+
+        if (e == NAV_EDGE_INSIDE) {
+            sceVu0CopyVector(out, target);
+            return tri;
+        }
+        if (e == NAV_EDGE_CORNER) {
+            return NAV_NONE;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE) {
+            return NAV_NONE;
+        }
+        VCALL(nm, 0xC, void (*)(NavMesh *, u32, f32 *))(nm, tri, cur);
+    }
+}
