@@ -1216,8 +1216,8 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
     cxx = src.suffix in (".cpp", ".cc")
     comp = f"{TC}{'g++' if cxx else 'gcc'}"
     flags = cflags().split() + (["-fno-exceptions", "-fno-rtti"] if cxx else [])
-    subprocess.run([comp, "-c", *flags, "-I", str(ROOT / "include"), "-I", str(ROOT / "src"), "-o", str(obj), str(src)],
-                   check=True, cwd=ROOT)
+    subprocess.run([sys.executable, str(ROOT / "tools/eecc.py"), comp, "-c", *flags, "-I", str(ROOT / "include"),
+                    "-I", str(ROOT / "src"), "-o", str(obj), str(src)], check=True, cwd=ROOT)
     defined = set(subprocess.run([f"{TC}nm", "--defined-only", "-j", str(obj)], capture_output=True,
                                  text=True, check=True).stdout.split())
     # every game symbol the C may reference, except the ones the C defines itself

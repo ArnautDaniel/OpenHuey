@@ -224,14 +224,14 @@ def main() -> None:
         n.rule("as", "${tc}as $asflags -o $out $in", description="AS $in")
         n.rule(
             "cc",
-            "${tc}gcc -c $cflags -MMD -MF $out.d -o $out $in",
+            f"{PY} tools/eecc.py ${{tc}}gcc -c $cflags -MMD -MF $out.d -o $out $in",
             description="CC $in",
             depfile="$out.d",
             deps="gcc",
         )
         n.rule(
             "cxx",
-            "${tc}g++ -c $cxxflags -MMD -MF $out.d -o $out $in",
+            f"{PY} tools/eecc.py ${{tc}}g++ -c $cxxflags -MMD -MF $out.d -o $out $in",
             description="CXX $in",
             depfile="$out.d",
             deps="gcc",
