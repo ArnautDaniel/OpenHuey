@@ -7,6 +7,21 @@ a function (a `glabel` in the code asm), and either
   - the value is not 4K-aligned (round values are usually packed shorts/sizes).
 0x00100000 (crt0's header pseudo-label) is never a pointer.
 
+Also (table rule): an aligned raw word pointing into the data range whose
+neighbour (+-2 words) is a relocated pointer to aligned data,
+i.e. an entry of a pointer table into a cluster of nearby objects.
+
+Also (jumptable tails): a raw word right after a relocated code pointer that
+targets the same function continues that table (spimdisasm sometimes cuts a
+jumptable short; the remaining cases would jump to stale addresses).
+
+Also (false positives): a data word that spimdisasm symbolized as a pointer
+into BSS, whose target is never referenced by code, is forced back to a raw
+number (`raw`). These are packed bytes/colours (0x01020304, 0x01000404, ...);
+moving them would corrupt the data (e.g. +0x1000 tints RGBA colours green).
+Likewise data->data "pointers" whose value is odd or a grey colour
+(three equal low bytes, e.g. 0x00404040) are forced raw.
+
 Also: a 4-aligned 3-character `.asciz` whose 4 bytes, read as a word, point into
 the data range is a pointer that the string guesser decoded as text (e.g.
 0x00462040 -> "@ F"). Fill patterns ("ZZZ", "@@@") are excluded.
@@ -72,6 +87,76 @@ def main() -> None:
             (value,) = struct.unpack_from("<I", rom, addr - 0x100000 + 0x80)
             if 0x003AC780 <= value < 0x0047B200:
                 out.append(f"0x{addr:08X}  # string-guessed pointer")
+    # table rule (needs relocation info from the current build)
+    from elftools.elf.elffile import ELFFile
+    from elftools.elf.relocation import RelocationSection
+
+    elf = ELFFile(open("build/SLUS_210.75.elf", "rb"))
+    rel_target: dict[int, int] = {}
+    for sec in elf.iter_sections():
+        if isinstance(sec, RelocationSection):
+            for r in sec.iter_relocations():
+                if r["r_info_type"] == 2:
+                    (v,) = struct.unpack_from("<I", rom, r["r_offset"] - 0x100000 + 0x80)
+                    rel_target[r["r_offset"]] = v
+    DATA_LO, DATA_HI = 0x003AC780, 0x0047B200
+    raw_words = {}
+    for line in res.stdout.splitlines():
+        m = re.match(r"\s+([0-9a-f]{8}) \.word 0x([0-9a-f]{8})", line)
+        if m:
+            raw_words[int(m.group(1), 16)] = int(m.group(2), 16)
+    # Propagate: an accepted entry counts as a relocated neighbour for the next pass.
+    changed = True
+    while changed:
+        changed = False
+        for addr, value in raw_words.items():
+            if addr in rel_target or value % 4 or not (DATA_LO <= value < DATA_HI):
+                continue
+            for d in (-8, -4, 4, 8):
+                t = rel_target.get(addr + d)
+                if t is not None and t % 4 == 0 and DATA_LO <= t < DATA_HI:
+                    out.append(f"0x{addr:08X}  # table entry")
+                    rel_target[addr] = value
+                    changed = True
+                    break
+    # jumptable tails: same-function continuation of a relocated code pointer
+    func_list = sorted(funcs)
+
+    def func_of(v: int) -> int:
+        import bisect as _b
+        i = _b.bisect_right(func_list, v) - 1
+        return func_list[i] if i >= 0 else -1
+
+    TEXT_LO, TEXT_HI = 0x00100230, 0x003A1990
+    changed = True
+    while changed:
+        changed = False
+        for addr, value in sorted(raw_words.items()):
+            if addr in rel_target or value % 4 or not (TEXT_LO <= value < TEXT_HI):
+                continue
+            prev = rel_target.get(addr - 4)
+            if prev is not None and TEXT_LO <= prev < TEXT_HI and func_of(prev) == func_of(value):
+                out.append(f"0x{addr:08X}  # jumptable tail")
+                rel_target[addr] = value
+                changed = True
+
+    # false-positive BSS pointers
+    code = "".join(Path(f).read_text() for f in ("asm/game.s", "asm/sinit.s"))
+    coderef = set(re.findall(r"%(?:hi|lo|gp_rel)\((\w+)\)", code))
+    symtab = elf.get_section_by_name(".symtab")
+    BSS_LO, BSS_HI = 0x0047B200, 0x01992000
+    for sec in elf.iter_sections():
+        if not isinstance(sec, RelocationSection):
+            continue
+        for r in sec.iter_relocations():
+            a = r["r_offset"]
+            if r["r_info_type"] != 2 or not (DATA_LO <= a < DATA_HI):
+                continue
+            (v,) = struct.unpack_from("<I", rom, a - 0x100000 + 0x80)
+            if BSS_LO <= v < BSS_HI and symtab.get_symbol(r["r_info_sym"]).name not in coderef:
+                out.append(f"0x{a:08X} raw  # false BSS pointer")
+            elif DATA_LO <= v < DATA_HI and (v % 4 or (v & 0xFF) == (v >> 8 & 0xFF) == (v >> 16 & 0xFF)):
+                out.append(f"0x{a:08X} raw  # false data pointer (odd/grey)")
     p = Path("config/pointers_auto.txt")
     old = set(p.read_text().splitlines()[2:]) if p.exists() else set()
     # Words already patched are no longer raw, so keep previous entries that
@@ -80,7 +165,7 @@ def main() -> None:
         a = int(line.split()[0], 16)
         (v,) = struct.unpack_from("<I", rom, a - 0x100000 + 0x80)
         (prev,) = struct.unpack_from("<I", rom, a - 4 - 0x100000 + 0x80)
-        if "string-guessed" in line or (
+        if "string-guessed" in line or "table entry" in line or "false BSS" in line or "false data" in line or "jumptable tail" in line or (
             v in funcs and v != 0x00100000 and (prev == 0xFFFFFFFF or v & 0xFFF)
         ):
             out.append(line)

@@ -31,7 +31,8 @@ NO_DEST = {
     "b", "mtc1", "mtc0", "ctc1", "sync", "sync.p", "nop", "div", "divu", "mult", "multu",
     "mtlo", "mthi", "syscall", "break", "cache", "pref", "qmtc2",
 }
-SYM_ADDR = re.compile(r"_([0-9A-F]{8})$")
+SYM_ADDR = re.compile(r"(?:_|^\.L)([0-9A-F]{8})$")
+ADDR_NAMED = ("D_", ".L", "func_", "L_")  # auto-named symbols whose name is their address
 
 
 PTR_OPS = {"arg", "lw", "lwu", "ld", "lq"}  # base came from a pointer load or an argument
@@ -50,20 +51,20 @@ def scan_function(lines: list[str]) -> tuple[dict[int, str], dict[str, set[str]]
             continue
         op, args = m.group(2), m.group(3)
         a = [x.strip() for x in args.split(",")]
-        ml = re.search(r"%lo\((\w+)\)\((\$\w+)\)", args)
+        ml = re.search(r"%lo\(([\w.]+)\)\((\$\w+)\)", args)
         if ml and ml.group(2) in his and his[ml.group(2)] == (ml.group(1), his[ml.group(2)][1]) and len(his[ml.group(2)][1]) == 1:
             kinds[ml.group(1)].add("direct")  # lui %hi(sym); op %lo(sym)(same reg): a real global
         if ml and ml.group(2) in derived and derived[ml.group(2)][0] == ml.group(1):
             sym, src = derived[ml.group(2)]
             for j in src + [i]:
                 patch[j] = sym
-        mh = re.search(r"%hi\((\w+)\)", args)
+        mh = re.search(r"%hi\(([\w.]+)\)", args)
         if op == "lui" and mh:
             his[a[0]] = (mh.group(1), [i])
             defs[a[0]] = "lui"
             derived.pop(a[0], None)
             continue
-        mlo = re.search(r"%lo\((\w+)\)", args)
+        mlo = re.search(r"%lo\(([\w.]+)\)", args)
         if op in ("addiu", "daddiu") and mlo and len(a) == 3 and a[1] in his and his[a[1]][0] == mlo.group(1):
             his[a[0]] = (mlo.group(1), his[a[1]][1] + [i])
             defs[a[0]] = "lui"
@@ -92,12 +93,19 @@ def scan_function(lines: list[str]) -> tuple[dict[int, str], dict[str, set[str]]
                     hit = True
                     break
             if hit:
-                defs[d] = "addu"
+                defs[d] = "lw"  # base + offset is still a pointer
                 his.pop(d, None)
                 continue
         if op in NO_DEST or not a or not a[0].startswith("$"):
             continue
-        defs[a[0]] = op
+        # Pointer-ness survives pointer arithmetic: ptr + imm and ptr + x stay pointers.
+        if op in ("addiu", "daddiu") and len(a) == 3 and a[1] != "$zero":
+            defs[a[0]] = "lw" if (a[1] == "$sp" or defs.get(a[1], "arg") in PTR_OPS) else op
+        elif op in ("addu", "daddu") and len(a) == 3:
+            ptrish = any(r == "$sp" or defs.get(r, "arg") in PTR_OPS for r in a[1:] if r != "$zero")
+            defs[a[0]] = "lw" if ptrish else op
+        else:
+            defs[a[0]] = op
         his.pop(a[0], None)
         if not ml:
             derived.pop(a[0], None)
@@ -139,7 +147,7 @@ def main() -> None:
         # flow across branches, which the linear scan can't follow).
         syms = {sym for sym in patch.values()}
         for sym in sorted(syms):
-            if sym in direct or sym in keep or not sym.startswith("D_") or "index" in kinds[sym]:
+            if sym in direct or sym in keep or not sym.startswith(ADDR_NAMED) or "index" in kinds[sym]:
                 continue
             v = value_of(sym, {})
             if v is None:

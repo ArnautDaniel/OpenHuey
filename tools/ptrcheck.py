@@ -98,6 +98,13 @@ def main() -> None:
                 relocs[r["r_offset"]] = (r["r_info_type"], name)
 
     ignored = load_ignored()
+    # words deliberately left raw (config/pointers*.txt `raw`) are not suspects
+    forced_raw = set()
+    for f in ("config/pointers.txt", "config/pointers_auto.txt"):
+        for line in open(f):
+            m = re.match(r"0x([0-9A-Fa-f]+)\s+raw\b", line)
+            if m:
+                forced_raw.add(int(m.group(1), 16))
     sv = {s.name: s["st_value"] for s in syms}
     text_ranges = [
         (sv[n], sv[n[: -len("START")] + "END"]) for n in sv if n.endswith("_TEXT_START")
@@ -121,7 +128,7 @@ def main() -> None:
                     full = pair_lo(blob, off, imm)
                     if full is not None and LO <= full < HI and full not in ignored:
                         hits["hi"].append(f"{addr:08x} lui 0x{imm:04x} -> 0x{full:08x}")
-        elif LO <= w < HI and rel is None and not any(a <= addr < b for a, b in blobs):
+        elif LO <= w < HI and rel is None and addr not in forced_raw and not any(a <= addr < b for a, b in blobs):
             hits["data"].append(f"{addr:08x} .word 0x{w:08x}")
 
     for kind, lst in hits.items():

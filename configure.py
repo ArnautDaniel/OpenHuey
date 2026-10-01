@@ -27,8 +27,6 @@ LD_SCRIPT = f"build/{BASENAME}.ld"
 ELF = f"build/{BASENAME}.elf"
 BIN = f"build/{BASENAME}.bin"
 EXTRA_LD = "config/extra_syms.ld"
-SHIFT_LD_SCRIPT = f"build/{BASENAME}.shift.ld"
-SHIFT_ELF = f"build/{BASENAME}.shift.elf"
 
 ASFLAGS = "-EL -march=r5900 -mabi=n32 -G 0 -no-pad-sections -I include"
 CFLAGS = (
@@ -47,9 +45,21 @@ def run_splat() -> None:
     )
     subprocess.run([sys.executable, "tools/ptrpatch.py"], cwd=ROOT, check=True)
     subprocess.run([sys.executable, "tools/offpatch.py"], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, "tools/align_data.py"], cwd=ROOT, check=True)
 
 
-def make_ld_script(out_path: str = LD_SCRIPT, shift: int = 0) -> list[str]:
+# Where `ninja shift-<name>` inserts padding (anchor line in the linker script).
+SHIFT_POINTS = {
+    "all": "        build/asm/game.s.o(.text);\n",  # everything after crt0 moves
+    "data": "        main_DATA_START = .;\n",        # data, rodata, sinit, bss move
+    "sinit": "        sinit_TEXT_START = .;\n",      # sinit code/data and bss move
+    "bss": "        sinit_BSS_START = .;\n",         # only bss moves
+    "irx": "        build/assets/cdvdman_irx.bin.o(.data);\n",
+    "rodata": "        main_RODATA_START = .;\n",
+}
+
+
+def make_ld_script(out_path: str = LD_SCRIPT, shift: int = 0, at: str = "all") -> list[str]:
     """Turn splat's script into one that links a bootable ELF.
 
     splat emits the ELF header as an output section at address 0; we drop it
@@ -67,16 +77,18 @@ def make_ld_script(out_path: str = LD_SCRIPT, shift: int = 0) -> list[str]:
     # Put it after the last BSS output section.
     m = list(re.finditer(r"\w+_BSS_SIZE = ABSOLUTE\(.*\);\n    }\n", text))[-1]
     text = text[: m.end()] + "    _end = .;\n" + text[m.end() :]
+    # Input sections keep their own alignment (tools/align_data.py); splat's
+    # SUBALIGN(16) would override it and break 64-byte aligned objects on a shift.
+    text = text.replace(" SUBALIGN(16)", "")
     # Load address = run address (splat's AT(ROM_START) is meant for cart ROMs)
     text = re.sub(r" AT\([A-Za-z0-9_]+\)", "", text)
     # _gp is defined relative to BSS in config/extra_syms.ld
     text = re.sub(r"\n    _gp = 0x[0-9A-Fa-f]+;", "", text)
     if shift:
-        # Test build: pad after crt0 so every later function and datum moves.
-        text = text.replace(
-            "build/asm/crt0.s.o(.text);\n",
-            f"build/asm/crt0.s.o(.text);\n        . += 0x{shift:X};\n",
-        )
+        # Test build: pad before the anchor so everything after it moves.
+        anchor = SHIFT_POINTS[at]
+        assert anchor in text, f"shift anchor for {at!r} not found"
+        text = text.replace(anchor, f"        . += 0x{shift:X};\n" + anchor, 1)
     text = "ENTRY(_start)\n" + text
     out = ROOT / out_path
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -134,7 +146,8 @@ def main() -> None:
         run_splat()
 
     objs = make_ld_script()
-    make_ld_script(SHIFT_LD_SCRIPT, args.shift)
+    for at in SHIFT_POINTS:
+        make_ld_script(f"build/{BASENAME}.shift-{at}.ld", args.shift, at)
     undef = filter_undefined(objs)
 
     with open(ROOT / "build.ninja", "w") as f:
@@ -164,7 +177,7 @@ def main() -> None:
             "bin2o",
             # objcopy -I binary output lacks the n32 ABI flags, so wrap via as
             # The blob gets global labels named after the file (assets/foo.bin -> foo, foo_bin_end).
-            r"""printf '.section .data\n.globl %s, %s_bin_end\n%s:\n.incbin "%s"\n%s_bin_end:\n'"""
+            r"""printf '.section .data\n.balign 16\n.globl %s, %s_bin_end\n%s:\n.incbin "%s"\n%s_bin_end:\n'"""
             " $sym $sym $sym $in $sym"
             " | ${tc}as $asflags -o $out -",
             description="BIN $in",
@@ -216,19 +229,23 @@ def main() -> None:
             },
         )
         n.build(BIN, "objcopy", ELF)
-        # Shiftability test: same objects, padding inserted after crt0
-        n.build(
-            SHIFT_ELF,
-            "ld",
-            [],
-            implicit=objs + [SHIFT_LD_SCRIPT, EXTRA_LD, *undef],
-            variables={
-                "ldscript": SHIFT_LD_SCRIPT,
-                "undef_scripts": " ".join(f"-T {u}" for u in undef),
-                "mapfile": f"build/{BASENAME}.shift.map",
-            },
-        )
-        n.build("shift", "phony", SHIFT_ELF)
+        # Shiftability tests: same objects, padding inserted at SHIFT_POINTS
+        for at in SHIFT_POINTS:
+            elf = f"build/{BASENAME}.shift-{at}.elf"
+            ld = f"build/{BASENAME}.shift-{at}.ld"
+            n.build(
+                elf,
+                "ld",
+                [],
+                implicit=objs + [ld, EXTRA_LD, *undef],
+                variables={
+                    "ldscript": ld,
+                    "undef_scripts": " ".join(f"-T {u}" for u in undef),
+                    "mapfile": f"build/{BASENAME}.shift-{at}.map",
+                },
+            )
+            n.build(f"shift-{at}", "phony", elf)
+        n.build("shift", "phony", [f"shift-{at}" for at in SHIFT_POINTS])
         n.build("build/check.ok", "check", BIN)
         n.build(
             "build.ninja",

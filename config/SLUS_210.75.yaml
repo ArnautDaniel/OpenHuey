@@ -60,6 +60,7 @@ segments:
     bss_size: 0x1516E00
     subsegments:
       - [0x364500, asm, sinit]
-      - [0x3694E0, data, sinit_data]
+      - [0x3694E0, data, sinit_ctors]
+      - [0x369500, data, sinit_data]
       - { start: 0x37B280, type: bss, vram: 0x0047B200 }
   - [0x37B280]

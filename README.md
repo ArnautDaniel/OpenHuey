@@ -28,10 +28,39 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 ## Status
 
 - [x] Full-binary split with splat; assemble and link round-trip is byte-identical
-- [ ] Shiftable build (all pointers symbolized, so functions can change size)
+- [x] **Shiftable build**: with padding inserted after crt0 (4 bytes, 16 bytes, or 4 KB),
+      the game boots, shows the memory-card check and the Capcom logo with correct colours,
+      and plays the intro movie
 - [ ] Identify SDK / CRI library functions by signature
 - [ ] Split `asm/game.s` into per-file / per-function units
 - [ ] Start decompiling game code
+
+## Shiftability pipeline
+
+`configure.py --split` runs splat, then fixes up its output:
+
+| Step | What it fixes |
+|---|---|
+| `config/ignore_addrs.txt` | large struct offsets that look like addresses inside .text |
+| `tools/ptrpatch.py` + `config/pointers*.txt` | data words that are pointers but stayed raw, or numbers that were wrongly symbolized (`raw`) |
+| `tools/offpatch.py` | `lui/addu base/%lo` struct-field offsets turned back into numbers |
+| `tools/align_data.py` | preserves 64-byte data alignment and 16-byte function alignment |
+
+Helpers to keep these lists current (run after a build; then `configure.py --split` again):
+
+- `tools/find_pointers.py`: regenerates `config/pointers_auto.txt` (pointer-to-member
+  records, pointer tables, jumptable tails, pointers decoded as strings, false BSS/colour pointers)
+- `tools/find_vfuncs.py`: functions reached only through vtables
+- `tools/promote_undefined.py`: unlabeled references that need symbols
+- `tools/ptrcheck.py`: static audit (unrelocated data pointers / `lui`, pinned addresses)
+
+Testing:
+
+- `ninja shift` links `build/SLUS_210.75.shift-<point>.elf` with padding at several points
+  (`configure.py --shift 0x4` to change the amount)
+- `tools/boottest.py <elf>` boots it in PCSX2 (private data dir under `build/pcsx2`) and
+  checks the frame at 20 s; `tools/ramdiff.py` compares EE RAM from two save states
+- `tools/bisect_shift.py` lists clean split points for bisecting a broken data range
 
 ## Notes
 
