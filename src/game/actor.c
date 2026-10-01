@@ -1142,3 +1142,106 @@ s32 func_00125D80(Character *c) {
     }
     return 0;
 }
+
+extern void func_00100490(void *p);    /* operator delete */
+extern void func_002D63B0(void *p);    /* free from the scene heap? */
+extern void *D_0046FC30[];
+extern void *D_00469D00[];
+extern void *D_0046F580[];
+
+/* Destructors of small helper objects (vtables 0x46FC30 -> 0x469D00, 0x469D00, 0x46F580). */
+void **func_00126170(void **obj, s32 flags) {
+    if (obj != NULL) {
+        *obj = D_0046FC30;
+        *obj = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(obj);
+        }
+    }
+    return obj;
+}
+
+void **func_001261D0(void **obj, s32 flags) {
+    if (obj != NULL) {
+        *obj = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(obj);
+        }
+    }
+    return obj;
+}
+
+void **func_00126220(void **obj, s32 flags) {
+    if (obj != NULL) {
+        *obj = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(obj);
+        }
+    }
+    return obj;
+}
+
+/* Mark in the progress data which of the room's 8 objects the character stands on
+ * (byte 1 of gProgress +0xFD0 + 6*i gets bit `slot`). */
+void func_00126270(Character *c) {
+    u8 *prog = (u8 *)gProgress;
+    VObject *rooms = D_0044E568;
+    VObject *objs = D_0044E4D0;
+    u32 i;
+
+    for (i = 0; i < 8; i++, prog += 6) {
+        u8 *entry = prog + 0xFD0;
+        u32 id = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, i & 0xFF) & 0xFFFF;
+
+        if (id != 0xFFFF
+            && VCALL(objs, 0x10, s32 (*)(VObject *, f32 *, u32, u32))(objs, c->a.pos, id, c->a.navTri) != 0) {
+            entry[1] |= (u8)(1 << c->a.slot);
+        }
+    }
+}
+
+/* Full stop: forget path and movement state, clear the flags. */
+void func_00126360(Character *c) {
+    s32 i;
+
+    c->unk14C0 = 0xFFFF;
+    c->unk14C4 = 0;
+    Character_CancelPath(c);
+    c->unk1388 = 0;
+    c->unk1384 = 0;
+    for (i = 0; i < 13; i++) {
+        c->unk148C[i] = 0;
+    }
+    func_002A8410(c->state);
+    func_002A8410(c->state2);
+    if (Character_Tracked(c)) {
+        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+    }
+    c->unkE0 = 0;
+    c->unkE1 = 0;
+    c->a.unk2C = 0;
+    c->a.unk2D = 0;
+    c->a.unk2B = 0;
+    c->unkE4 = 1;
+}
+
+extern void func_001F6E10(void *motion);
+
+void func_00126450(Character *c) {
+    c->unk14D0 = 0;
+    func_001F6E10(c->motion);
+    c->unkE0 = 1;
+    c->unkE1 = 0;
+    c->unkF4 = 0;
+    VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+}
+
+void func_001264B0(Character *c) {
+}
+
+extern void func_002FF600(VObject *snd, s32, s32, s32, s32, s32);
+
+/* Forward to the sound manager. */
+void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
+    func_002FF600(D_0044E560, a1, a2, a3, a4, a5);
+}

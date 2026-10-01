@@ -38,6 +38,8 @@ typedef struct Actor {
     /* 0xD1 */ u8 unkD1;
 } Actor;
 
+_Static_assert(sizeof(Actor) == 0xE0, "Actor size");
+
 /* Request for the path planner (gSceneGameF29740, vtable +0xC plan(req, 0) -> id, +0x14 length). */
 typedef struct PathRequest {
     /* 0x00 */ s32 unk0;
@@ -53,9 +55,15 @@ typedef struct PathRequest {
 /* Character: Actor with path finding (vtable 0x469C60; Fiona, Hewie and the pursuers derive from it). */
 typedef struct Character {
     /* 0x0000 */ Actor a;
-    /* 0x00E0 */ u8 padE0[0xF0 - sizeof(Actor)];
+    /* 0x00E0 */ u8 unkE0;
+    /* 0x00E1 */ u8 unkE1;
+    /* 0x00E2 */ u8 unkE2;
+    /* 0x00E3 */ u8 unkE3;
+    /* 0x00E4 */ u8 unkE4;
+    /* 0x00E5 */ u8 padE5[0xF0 - 0xE5];
     /* 0x00F0 */ void *motion;           /* animation player (root motion) */
-    /* 0x00F4 */ u8 padF4[0x120 - 0xF4];
+    /* 0x00F4 */ s32 unkF4;
+    /* 0x00F8 */ u8 padF8[0x120 - 0xF8];
     /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
     /* 0x0124 */ s32 unk124;
     /* 0x0128 */ s32 unk128;

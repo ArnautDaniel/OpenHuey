@@ -1353,3 +1353,11 @@ src/game/actor.c func_00125AD0 --runs=60 --stub-ret=1
 src/game/actor.c func_00125BA0
 src/game/actor.c func_00125BE0 --runs=60 --stub-ret=1
 src/game/actor.c func_00125D80 --runs=60 --stub-ret=1
+src/game/actor.c func_00126170 --stub-ret=1
+src/game/actor.c func_001261D0 --stub-ret=1
+src/game/actor.c func_00126220 --stub-ret=1
+src/game/actor.c func_00126270 --stub-ret=1
+src/game/actor.c func_00126360 --stub-ret=1
+src/game/actor.c func_00126450 --stub-ret=1
+src/game/actor.c func_001264B0 --stub-ret=1
+src/game/actor.c func_001264C0 --stub-ret=1
