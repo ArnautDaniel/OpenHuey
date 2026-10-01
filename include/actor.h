@@ -38,4 +38,29 @@ typedef struct Actor {
     /* 0xD1 */ u8 unkD1;
 } Actor;
 
+/* Request for the path planner (gSceneGameF29740, vtable +0xC plan(req, 0) -> id, +0x14 length). */
+typedef struct PathRequest {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ u8 pad04[8];
+    /* 0x0C */ u32 startTri;
+    /* 0x10 */ f32 startPos[4] __attribute__((aligned(16)));
+    /* 0x20 */ u32 goalTri;
+    /* 0x24 */ u8 pad24[0xC];
+    /* 0x30 */ f32 goalPos[4] __attribute__((aligned(16)));
+} PathRequest;
+
+/* Character: Actor with path finding (vtable 0x469C60; Fiona, Hewie and the pursuers derive from it). */
+typedef struct Character {
+    /* 0x0000 */ Actor a;
+    /* 0x00E0 */ u8 padE0[0x120 - sizeof(Actor)];
+    /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
+    /* 0x0124 */ u8 pad124[0x1380 - 0x124];
+    /* 0x1380 */ PathRequest *pathReq;
+    /* 0x1384 */ u8 pad1384[0x14D4 - 0x1384];
+    /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
+} Character;
+_Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
+_Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");
+_Static_assert(__builtin_offsetof(Character, door) == 0x14D4, "door");
+
 #endif

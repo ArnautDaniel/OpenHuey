@@ -1515,11 +1515,13 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
 PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
 
 
-def parse_pre(spec: str) -> tuple[int, int, int, int]:
-    m = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=(-?\w+)\.\.(-?\w+)", spec)
+def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
+    """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    m = re.fullmatch(r"a([0-7])(?:\+(0x[0-9A-Fa-f]+|\d+))?=(-?\w+)\.\.(-?\w+)", spec)
     if not m:
-        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8")
-    return 4 + int(m.group(1)), int(m.group(2), 0), int(m.group(3), 0), int(m.group(4), 0)
+        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8 or a1=0..3")
+    off = int(m.group(2), 0) if m.group(2) is not None else None
+    return 4 + int(m.group(1)), off, int(m.group(3), 0), int(m.group(4), 0)
 
 
 def run_one(rom, overlays, entry, frange, seed, max_steps=None):
@@ -1532,11 +1534,15 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
         c.s(r, v)
     for reg, off, lo, hi in PRECONDITIONS:
         # a constrained input: write it without logging it as a function write
-        a = Memory.norm((c.g(reg) & M32) + off)
-        rnd = random.Random(seed * 7 + off)
+        rnd = random.Random(seed * 7 + (off if off is not None else 0x7FFF0000 + reg))
         # half the time a boundary or one of the function's own constants within the range
         special = sorted({lo, lo + 1, hi, hi - 1} | {d for d in DICTIONARY if lo <= d <= hi})
+        special = [x for x in special if lo <= x <= hi]
         v = (rnd.choice(special) if rnd.random() < 0.5 else rnd.randint(lo, hi)) & M32
+        if off is None:
+            c.s32(reg, v)
+            continue
+        a = Memory.norm((c.g(reg) & M32) + off)
         for i, b in enumerate(v.to_bytes(4, "little")):
             mem._page(a + i)[(a + i) & 0xFFF] = b
     for r, v in zip(FARG_REGS, floats):

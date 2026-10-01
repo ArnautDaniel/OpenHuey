@@ -812,3 +812,113 @@ s32 func_00124F10(Actor *a) {
 /* vtable +0x38 (base): per-frame update - nothing for a plain actor */
 void func_00120F80(Actor *a) {
 }
+
+extern VObject *gSceneGameF29740;   /* path planner */
+
+/* Room manager exits (8 per room). */
+#define Room_ExitId(rooms, room, i) VCALL(rooms, 0x40, u32 (*)(VObject *, s32, u32))(rooms, room, i)
+#define Room_ExitFlag(rooms, room, i) VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, room, i)
+#define Room_ExitSide(rooms, room, i) VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, room, i, 0)
+#define Room_ExitPos(rooms, i, out) VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, i, out)
+
+/* Ask the path planner for a path from the character to `goal` in triangle `goalTri`;
+ * returns its length (<= 0: no path). */
+static inline s32 Character_PlanPath(Character *c, VObject *planner, u32 goalTri, const f32 *goal) {
+    c->pathReq->unk0 = 0;
+    c->pathReq->startTri = c->a.navTri;
+    sceVu0CopyVector(c->pathReq->startPos, c->a.pos);
+    c->pathReq->goalTri = goalTri;
+    sceVu0CopyVector(c->pathReq->goalPos, goal);
+    c->pathId = VCALL(planner, 0xC, s32 (*)(VObject *, PathRequest *, s32))(planner, c->pathReq, 0);
+    if (c->pathId == -1) {
+        return -1;
+    }
+    return VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+}
+
+/* Choose the room exit to head for (`door` != 0xFF: just set it). Standing in a marked area
+ * (nav flags 0x100000 / 0x200000), take an exit on that side; else keep the current exit if a
+ * path leads there, else the first reachable exit, preferring flagged ones (vtable +0x74). */
+void func_00124F20(Character *c, u32 door) {
+    VObject *rooms, *planner;
+    sceVu0FVECTOR goal;
+    s32 room, side;
+    u32 area, goalTri;
+    u8 pick, i;
+
+    if ((door & 0xFF) != 0xFF) {
+        c->door = door;
+        return;
+    }
+    room = c->a.room;
+    if (room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress) || c->a.navTri == NAV_NONE) {
+        return;
+    }
+    area = NavMesh_Tri(D_0044E570, c->a.navTri)->flags & 0x300000;
+    side = -1;
+    if (area == 0 || area == 0x200000) {
+        side = 0;
+    } else if (area == 0x100000) {
+        side = 1;
+    }
+    pick = 0xFF;
+    if (side != -1) {
+        if (c->door != 0xFF && side == Room_ExitSide(D_0044E568, room, c->door)) {
+            return;
+        }
+        rooms = D_0044E568;
+        for (i = 0; i < 8; i++) {
+            if (i != c->door && side == Room_ExitSide(rooms, c->a.room, i)) {
+                pick = i;
+                if ((Room_ExitFlag(rooms, c->a.room, i) & 0xFF) == 1) {
+                    break;
+                }
+            }
+        }
+        if (pick != 0xFF) {
+            c->door = pick;
+            return;
+        }
+    }
+    if (c->a.room == 0x17) {
+        return;
+    }
+    if (c->door != 0xFF) {
+        rooms = D_0044E568;
+        /* (the original compares the low byte with 0xFFFF: always true) */
+        if ((Room_ExitId(rooms, c->a.room, c->door) & 0xFF) != 0xFFFF) {
+            goalTri = Room_ExitPos(rooms, c->door, goal);
+            if (goalTri != NAV_NONE && Character_PlanPath(c, gSceneGameF29740, goalTri, goal) > 0) {
+                return;
+            }
+        }
+    }
+    rooms = D_0044E568;
+    pick = 0xFF;
+    planner = gSceneGameF29740;
+    for (i = 0; i < 8; i++) {
+        if (i != c->door && (Room_ExitId(rooms, c->a.room, i) & 0xFF) != 0xFFFF
+            && (Room_ExitFlag(rooms, c->a.room, i) & 0xFF) == 1) {
+            pick = i;
+            goalTri = Room_ExitPos(rooms, i, goal);
+            if (goalTri != NAV_NONE && Character_PlanPath(c, planner, goalTri, goal) > 0) {
+                c->door = i;
+                return;
+            }
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        if (i != c->door && (Room_ExitId(rooms, c->a.room, i) & 0xFF) != 0xFFFF
+            && !(Room_ExitFlag(rooms, c->a.room, i) & 0xFF)) {
+            if (pick == 0xFF) {
+                pick = i;
+            }
+            goalTri = Room_ExitPos(rooms, i, goal);
+            if (goalTri != NAV_NONE && Character_PlanPath(c, planner, goalTri, goal) > 0) {
+                c->door = i;
+                return;
+            }
+        }
+    }
+    c->door = pick;
+}
