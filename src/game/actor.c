@@ -922,3 +922,151 @@ void func_00124F20(Character *c, u32 door) {
     }
     c->door = pick;
 }
+
+extern VObject *D_0044E4F0;   /* GS manager: +0x70 set screen fade colour (RGBA, A in the top byte) */
+
+/* vtable +0x80: screen fade by how far the character is past the boundary of the first region
+ * flagged for its slot (progress flag bit 0): alpha 0..128 over half the boundary length. */
+void func_001254B0(Character *c) {
+    VObject *rooms, *objs;
+    sceVu0FVECTOR a, b, fwd, p0, p1, p2, e, n, q;
+    f32 d, ad, half, t;
+    u32 color;
+    u8 i;
+
+    for (i = 0; i < 8; i++) {
+        if (func_00177BF0(gProgress, i, *(u8 *)&c->a.slot) & 0x1) {
+            break;
+        }
+    }
+    if (i == 8) {
+        c->unk152C = 10;
+        return;
+    }
+    rooms = D_0044E568;
+    VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, i, a);
+    VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, i, b);
+    sceVu0SubVector(fwd, b, a);
+    *(s32 *)&fwd[1] = 0;
+    sceVu0Normalize(fwd, fwd);
+    objs = D_0044E4D0;
+    VCALL(objs, 0x24, void (*)(VObject *, u32, f32 *, f32 *, f32 *))(objs, i, p0, p1, p2);
+    sceVu0SubVector(e, p1, p0);
+    *(s32 *)&e[1] = 0;
+    sceVu0Normalize(n, e);
+    d = sceVu0InnerProduct(fwd, n);
+    ad = (d <= 0.0f) ? -d : d;
+    if (ad < 0x1.6a09e6p-1f /* 0.70710677 */) {
+        sceVu0SubVector(e, p1, p2);
+        *(s32 *)&e[1] = 0;
+        sceVu0Normalize(n, e);
+        d = sceVu0InnerProduct(fwd, n);
+    }
+    if (d < 0.0f) {
+        sceVu0ScaleVector(n, n, -1.0f);
+    }
+    half = 0.5f * __builtin_sqrtf(e[2] * e[2] + e[0] * e[0]);
+    VCALL(objs, 0x20, void (*)(VObject *, u32, f32 *))(objs, i, q);
+    sceVu0SubVector(e, q, c->a.pos);
+    t = sceVu0InnerProduct(e, n);
+    c->unk152C = 15;
+    if (t <= 0.0f) {
+        color = 0x808080;
+    } else {
+        u32 alpha = (u32)(128.0f * (t / half));
+
+        if (alpha > 0x80) {
+            alpha = 0x80;
+        }
+        color = (alpha << 24) | 0x808080;
+    }
+    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, color);
+}
+
+/* Path length from the character to `goal` (in triangle `goalTri`), avoiding triangles with
+ * `mask` (-1: the request's current mask); -1.0 if there is no path. */
+f32 func_001257B0(Character *c, u32 goalTri, const f32 *goal, u32 mask) {
+    VObject *planner;
+    u32 saved = c->pathReq->mask;
+    s32 n;
+
+    c->pathReq->mask = (mask == NAV_NONE) ? saved : mask;
+    c->pathReq->unk0 = 0;
+    c->pathReq->startTri = c->a.navTri;
+    sceVu0CopyVector(c->pathReq->startPos, c->a.pos);
+    c->pathReq->goalTri = goalTri;
+    sceVu0CopyVector(c->pathReq->goalPos, goal);
+    planner = gSceneGameF29740;
+    c->pathId = VCALL(planner, 0xC, s32 (*)(VObject *, PathRequest *, s32))(planner, c->pathReq, 0);
+    n = -1;
+    if (c->pathId != -1) {
+        n = VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+    }
+    c->pathReq->mask = saved;
+    if (n <= 0) {
+        return -1.0f;
+    }
+    return VCALL(planner, 0x40, f32 (*)(VObject *, s32))(planner, c->pathId);
+}
+
+void func_001258D0(Character *c) {
+}
+
+void func_001258E0(Character *c) {
+}
+
+s32 func_001258F0(Character *c) {
+    return 0;
+}
+
+extern f32 func_001F6140(void *motion, f32 t);              /* root rotation (yaw delta) */
+extern void func_001F6370(void *motion, f32 *out, f32 t);   /* root translation */
+extern f32 func_002E2D00(f32 angle);                        /* angle wrapped to -pi..pi */
+
+/* Turn by the animation's root rotation. */
+static inline void Character_ApplyRootTurn(Character *c) {
+    f32 yaw = func_002E2D00(c->a.angle[1] + func_001F6140(c->motion, 0.0f));
+
+    c->a.angle[1] = yaw;
+    sceVu0UnitMatrix(c->a.rot);
+    sceVu0RotMatrixY(c->a.rot, c->a.rot, yaw);
+}
+
+/* Apply the animation's root rotation. */
+void func_00125900(Character *c) {
+    Character_ApplyRootTurn(c);
+}
+
+/* Apply the animation's root motion; unk2B set: move ignoring the blocking mask. */
+void func_00125960(Character *c) {
+    sceVu0FVECTOR d;
+
+    func_001F6370(c->motion, d, 0.0f);
+    Character_ApplyRootTurn(c);
+    sceVu0ApplyMatrix(d, c->a.rot, d);
+    if (!c->a.unk2B) {
+        func_001247E0(&c->a, d);
+    } else {
+        func_00124720(&c->a, d);
+    }
+}
+
+/* Apply the animation's root motion (always within the blocking mask). */
+void func_00125A10(Character *c) {
+    sceVu0FVECTOR d;
+
+    func_001F6370(c->motion, d, 0.0f);
+    Character_ApplyRootTurn(c);
+    sceVu0ApplyMatrix(d, c->a.rot, d);
+    func_001247E0(&c->a, d);
+}
+
+void func_00125AA0(Character *c) {
+}
+
+void func_00125AB0(Character *c) {
+}
+
+s32 func_00125AC0(Character *c) {
+    return 1;
+}

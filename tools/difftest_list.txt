@@ -1338,3 +1338,14 @@ src/game/actor.c func_00124EC0
 src/game/actor.c func_00124F10
 src/game/actor.c func_00120F80
 src/game/actor.c func_00124F20 --runs=300 --pre=a1=0xFE..0xFF --pre=a0+0x30=0..1 --pre=a0+0x14D4=0..255 --stub-ret=0 --stub-ret=1 --stub-ret=-1
+src/game/actor.c func_001254B0 --runs=100
+src/game/actor.c func_001257B0 --runs=60
+src/game/actor.c func_001258D0
+src/game/actor.c func_001258E0
+src/game/actor.c func_001258F0
+src/game/actor.c func_00125900
+src/game/actor.c func_00125960 --runs=60
+src/game/actor.c func_00125A10
+src/game/actor.c func_00125AA0
+src/game/actor.c func_00125AB0
+src/game/actor.c func_00125AC0

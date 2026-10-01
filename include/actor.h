@@ -47,17 +47,22 @@ typedef struct PathRequest {
     /* 0x20 */ u32 goalTri;
     /* 0x24 */ u8 pad24[0xC];
     /* 0x30 */ f32 goalPos[4] __attribute__((aligned(16)));
+    /* 0x40 */ u32 mask;              /* blocking triangle flags */
 } PathRequest;
 
 /* Character: Actor with path finding (vtable 0x469C60; Fiona, Hewie and the pursuers derive from it). */
 typedef struct Character {
     /* 0x0000 */ Actor a;
-    /* 0x00E0 */ u8 padE0[0x120 - sizeof(Actor)];
+    /* 0x00E0 */ u8 padE0[0xF0 - sizeof(Actor)];
+    /* 0x00F0 */ void *motion;           /* animation player (root motion) */
+    /* 0x00F4 */ u8 padF4[0x120 - 0xF4];
     /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
     /* 0x0124 */ u8 pad124[0x1380 - 0x124];
     /* 0x1380 */ PathRequest *pathReq;
     /* 0x1384 */ u8 pad1384[0x14D4 - 0x1384];
     /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
+    /* 0x14D5 */ u8 pad14D5[0x152C - 0x14D5];
+    /* 0x152C */ s32 unk152C;         /* 10 / 15 set by the region fade (vtable +0x80) */
 } Character;
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");
