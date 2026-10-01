@@ -17,4 +17,4 @@
 0x0026BD80 0x00278490 gcc       Sony SDK: libkernl (syscall stubs, threads, TLB/kernel patch), sifcmd/sifrpc, stdio/fileio, TTY
 0x0029FF10 0x002A7720 gcc       Sony SDK: libmpeg (IPU MPEG decoder)
 0x00319B00 0x0031CAA0 gcc       float math library (acosf, asinf, atan2f, logf, log10f, sqrtf...)
-0x003A1990 0x003A1B80 mw        C++ this-adjusting thunks (compiler generated)
+0x003A19B0 0x003A1B80 mw        C++ this-adjusting thunks (compiler generated)

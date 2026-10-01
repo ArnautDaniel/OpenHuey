@@ -57,8 +57,18 @@ def main() -> None:
     ap.add_argument("extra", nargs="*", help="extra m2c arguments (after --)")
     args = ap.parse_args()
 
-    body = "\n".join(normalize(l) for l in extract(args.func).splitlines())
+    func_asm = extract(args.func)
+    body = "\n".join(normalize(l) for l in func_asm.splitlines())
     src = f".set noat\n.set noreorder\n.section .text\n{body}\n"
+    # jump tables the function uses (m2c needs them to decompile switches)
+    tables = sorted(set(re.findall(r"%lo\((jtbl_[0-9A-F]+)\)", func_asm)))
+    if tables:
+        data = "".join(p.read_text() for p in sorted((ROOT / "asm/data").glob("*.s")))
+        src += ".section .rodata\n"
+        for t in tables:
+            m = re.search(rf"^dlabel {t}\n.*?^enddlabel {t}\n", data, re.M | re.S)
+            if m:
+                src += m.group(0)
     with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as f:
         f.write(src)
     cmd = [sys.executable, str(M2C), "-t", "mipsee-gcc-c", "--valid-syntax"]
