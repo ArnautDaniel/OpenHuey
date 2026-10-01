@@ -554,3 +554,60 @@ void func_0019D2B0(Fiona *f) {
         }
     }
 }
+
+extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
+extern void func_001F1D60(void *obj);
+extern void func_002DDE20(void *motion, s32 set, s32 variant);
+
+/* Animation blend weight (motion +0x6A4 -> +0x1C), mirrored at +0x1AD628. */
+static inline void Fiona_SetPose(Fiona *f, s32 set, s32 variant, f32 w) {
+    func_002DDE20(f->c.motion, set, variant);
+    *(f32 *)((u8 *)MOTION_PTR(f->c.motion, 0x6A4) + 0x1C) = w;
+    FI(f, 0x1AD628, f32) = w;
+}
+
+/* vtable +0x28: place her (Character), reset interaction state, and on the first placement
+ * pick her starting pose from her condition (+0x1AD5F4 of 100, +0x1AD5F8 of 1800 frames). */
+s32 func_001A3A80(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = func_00125AD0(&f->c, tri, heading, pos);
+
+    FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
+    f->savedYaw = f->c.a.angle[1];
+    f->unk1AD5C0 = 0;
+    VCALL(f->c.motion, 0x54, void (*)(void *))(f->c.motion);
+    f->unk1AD5D0 = 1;
+    f->unk1AD5D1 = 1;
+    FI(f, 0x1AD5DC, s32) = 0;
+    FI(f, 0x1AD664, s32) = 0;
+    f->targetParam = 0;
+    FI(f, 0x1AD624, f32) = 1.0f;
+    FI(f, 0x1AD720, u8) = 0xFF;
+    FI(f, 0x1AD721, u8) = 0xFF;
+    FI(f, 0x1AD72C, s32) = 30;
+    FI(f, 0x1AD730, s32) = 30;
+    func_001F1D60((u8 *)f + 0x1AD668);
+    FI(f, 0x1AD6B8, s32) = -1;
+    f->c.a.unk2A = 1;
+    if (FI(f, 0x1AD5D3, u8) == 1) {
+        FI(f, 0x1AD5D3, u8) = 0;
+        if (FI(f, 0x1AD584, s32) & 0x2) {
+            Fiona_SetPose(f, 4, -1, 1.0f);
+        } else {
+            f32 a = (100.0f - FI(f, 0x1AD5F4, f32)) / 60.0f;
+            f32 b = (f32)(1800 - FI(f, 0x1AD5F8, s32)) / 1800.0f;
+
+            if (b < 0.5f || !(0.25f + a <= b)) {
+                Fiona_SetPose(f, 0, 3, b);
+            } else if (a < 1.0f) {
+                Fiona_SetPose(f, 0, 2, a);
+            } else {
+                Fiona_SetPose(f, 0, -1, 1.0f);
+            }
+        }
+        Fiona_ToIdle(f);
+    }
+    if (f->c.unkE2 == 0) {
+        MOTION_U8(f->c.motion, 0x850) = 1;
+    }
+    return r;
+}
