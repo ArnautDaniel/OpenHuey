@@ -900,3 +900,79 @@ void func_001998F0(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B2818);
     }
 }
+
+extern u32 func_00124480(Actor *a, const f32 *target, u32 mask);
+extern const PTMF D_003B2838;  /* push: let go */
+
+#define NAV_PUSHABLE 0x800000   /* triangle flag: an object may be pushed onto it */
+
+static inline s32 Fiona_PushBlocked(Fiona *f) {
+    if (FI(f, 0x1AD584, s32) & 0x2) {
+        return 1;
+    }
+    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+        return 1;
+    }
+    func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
+    return 0;
+}
+
+/* State: pushing an object, moving it step by step while the stick holds the direction. */
+void func_001991E0(Fiona *f) {
+    void *m;
+    s32 anim;
+
+    if (Fiona_PushBlocked(f)) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    func_00125A10(&f->c);
+    m = f->c.motion;
+    anim = *(s32 *)((u8 *)m + 0x55C);
+    if ((*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18) & 0x20) != 0) {
+        /* step event */
+        if (anim == 0x1201) {
+            VCALL(D_0044FE08, 0x2C, void (*)(VObject *, s32))(D_0044FE08, FIONA_PUSH_OBJ(f));
+        }
+        if (!(sceVu0InnerProduct(FIONA_STICK(f), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */)) {
+            VObject *objs = D_0044FE08;
+            s32 ok = -1;
+
+            if (objs != NULL && f->c.moveMode == 0
+                && Fiona_AnimGroup(*(s32 *)((u8 *)f->c.motion + 0x55C)) == 6) {
+                sceVu0FVECTOR v, target;
+                u32 tri;
+
+                *(s32 *)&v[0] = 0;
+                *(s32 *)&v[1] = 0;
+                v[2] = 0x1.19999ap+1f;   /* 2.2 */
+                sceVu0ApplyMatrix(v, f->c.a.rot, v);
+                sceVu0AddVector(target, f->c.a.prevPos, v);
+                tri = func_00124480(&f->c.a, target, 0);
+                if (tri != NAV_NONE && (NavMesh_Tri(D_0044E570, tri)->flags & NAV_PUSHABLE)) {
+                    ok = 0;
+                }
+            }
+            if (ok == 0
+                && VCALL(objs, 0x30, s32 (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) == 0) {
+                objs = D_0044FE08;
+                VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
+                VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
+                VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
+                func_002DDE20(f->c.motion, 0x1201, -1);
+                VCALL(objs, 0x28, void (*)(VObject *, s32, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), 0, FIONA_STICK(f));
+                return;
+            }
+            FI(f, 0x1AD5D2, u8) = 1;
+            func_002DDE20(f->c.motion, 0x1203, -1);
+            return;
+        }
+        func_002DDE20(f->c.motion, 0x1202, -1);
+        Actor_SetState(&f->c.a, &D_003B2838);
+    } else if (anim == 0x1203) {
+        FI(f, 0x1AD5D2, u8) = 1;
+    }
+    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x40, 0x10);
+    }
+}
