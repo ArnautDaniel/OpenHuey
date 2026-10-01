@@ -22,6 +22,19 @@ same "world". Inputs that make the *original* run away are skipped.
 
 Floating point is modelled loosely after the EE (no denormals, clamping on
 overflow); it is the same model for both versions, which is what matters.
+
+Small MW runtime helpers (INLINE_HELPERS, e.g. __ptmf_scall) are executed rather
+than stubbed, since C code expresses them inline. Functions that never return
+with stubbed callees (main loops) are compared by the calls made before the
+step cap. Random values favour 0/1/-1/small numbers, realistic floats and the
+constants the function itself compares against (+-2).
+
+Limits: random testing reliably finds wrong constants, operands, offsets,
+branches and call sequences, but an off-by-one that only shows when several
+conditions coincide (e.g. a counter at exactly N-2 *and* two flags set) can
+slip through; review such comparisons by hand. Argument registers of calls to
+unknown targets (random vtable entries) are only compared when both versions
+set them.
 """
 import argparse
 import hashlib
@@ -48,8 +61,16 @@ FRAME = 0x10000              # writes within this much below sp are the function
 RET_MAGIC = 0x0DEAD000       # return address sentinel
 MAX_STEPS = 200_000
 OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
+# Runtime helpers that are executed instead of stubbed: they are part of how the
+# original code expresses something C code writes inline (e.g. PTMF calls).
+INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test")
+INLINE_ADDRS: set[int] = set()
+HELPER_RANGES: list[tuple[int, int]] = []
+FPR_WRITERS = {"lwc1", "mtc1"}
+DIRECT_GPR_WRITERS = {"lq", "pcpyld", "pcpyud", "por", "pand", "pxor", "pnor", "paddub", "pextlw", "pextuw"}
 
 M32, M64, M128 = (1 << 32) - 1, (1 << 64) - 1, (1 << 128) - 1
+CODE_LO, CODE_HI = 0x00100230, 0x003A1990
 ARG_REGS = list(range(4, 12))  # n32: a0-a7 = r4-r11
 FARG_REGS = list(range(12, 20))
 CALLEE_SAVED = [16, 17, 18, 19, 20, 21, 22, 23, 28, 29, 30, 31]
@@ -107,8 +128,13 @@ def b2f(b: int) -> float:
 
 
 # ---------------------------------------------------------------- value distribution
+DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
+
+
 def interesting(rnd: random.Random, bits: int = 32) -> int:
     """Random value biased towards boundary cases (0, 1, -1, small) so branches get exercised."""
+    if DICTIONARY and rnd.random() < 0.20:
+        return rnd.choice(DICTIONARY) & ((1 << bits) - 1)
     k = rnd.random()
     if k < 0.30:
         return 0
@@ -237,6 +263,10 @@ class CPU:
         self.steps = 0
         self.decoded: dict[int, tuple] = {}
         self.visited: set[int] = set()
+        self.wset: set[int] = set()   # GPRs written by the function itself since entry/last call
+        self.fwset: set[int] = set()  # same for FPRs
+        self.in_func = False
+        self.helper_ranges: list[tuple[int, int]] = HELPER_RANGES
         self.done = False
 
     # -- register helpers (writes keep the upper 64 bits of the 128-bit GPR)
@@ -246,6 +276,8 @@ class CPU:
     def s(self, i: int, v: int) -> None:
         if i:
             self.r[i] = (self.r[i] & ~M64 & M128) | (v & M64)
+            if self.in_func:
+                self.wset.add(i)
 
     def s32(self, i: int, v: int) -> None:
         self.s(i, u64_of_s32(v))
@@ -260,12 +292,14 @@ class CPU:
     def stub_call(self, target: int, kind: str) -> None:
         ints, floats = callee_args(self.rom, target)
         # pointers into the frame compare as "a stack pointer": layouts differ between compilers
-        args = tuple("stack" if STACK_TOP - FRAME <= (self.g(r) & M32) < STACK_TOP else self.g(r) & M32 for r in ints)
-        fargs = tuple(self.f[r] for r in floats)
+        args = {r: ("stack" if STACK_TOP - FRAME <= (self.g(r) & M32) < STACK_TOP else self.g(r) & M32)
+                for r in ints if r in self.wset}
+        fargs = {r: self.f[r] for r in floats if r in self.fwset}
         dig = hashlib.blake2b(
             repr(sorted(self.visible_writes().items())).encode(), digest_size=6
         ).hexdigest()
         self.events.append((kind, target, args, fargs, dig))
+        self.in_func = False  # the stub's own register writes below don't count as the function's
         # Out-parameters: a pointer into the stack frame gets a deterministic
         # value written through it (frame layouts differ between compilers, so
         # leftover stack bytes would otherwise differ between the versions).
@@ -282,6 +316,8 @@ class CPU:
         for r in SCRAMBLE:
             if r != 3:
                 self.s(r, self.rng.getrandbits(64))
+        self.wset = set()
+        self.fwset = set()
 
     def visible_writes(self) -> dict[int, int]:
         sp0 = STACK_TOP
@@ -307,7 +343,15 @@ class CPU:
             h = HANDLERS.get(name)
             if h is None:
                 raise Unsupported(f"{name} at 0x{pc:08X}")
-            nxt = h(self, w, pc)
+            self.in_func = self.func_lo <= pc < self.func_hi
+            if self.in_func and (name.endswith(".s") or name in FPR_WRITERS):
+                before = list(self.f)
+                nxt = h(self, w, pc)
+                self.fwset.update(i for i in range(32) if self.f[i] != before[i] or (name in FPR_WRITERS and i == _ft(w)))
+            else:
+                nxt = h(self, w, pc)
+            if self.in_func and name in DIRECT_GPR_WRITERS:
+                self.wset.add(_rd(w) if name != "lq" else _rt(w))
             if nxt is None:
                 pc, npc = npc, npc + 4
                 continue
@@ -330,17 +374,29 @@ class CPU:
             if dh is None:
                 raise Unsupported(f"{dname} at 0x{ds:08X}")
             self.visited.add(ds)
+            self.in_func = self.func_lo <= ds < self.func_hi
+            if self.in_func and (dname.endswith(".s") or dname in FPR_WRITERS):
+                self.fwset.add(_fd(dw) if dname.endswith(".s") else _ft(dw) if dname == "lwc1" else _fs(dw))
+            if self.in_func and dname in DIRECT_GPR_WRITERS:
+                self.wset.add(_rd(dw) if dname != "lq" else _rt(dw))
             if dh(self, dw, ds) is not None:
                 raise Unsupported(f"branch in delay slot at 0x{ds:08X}")
             self.steps += 1
             if not taken:
                 pc, npc = ds + 4, ds + 8
                 continue
-            if kind == "call":
+            if kind == "call" and target in INLINE_ADDRS:
+                pc, npc = target, target + 4  # run the helper; it returns via $ra
+            elif kind == "call":
                 self.stub_call(target, "call")
                 pc, npc = pc + 8, pc + 12
-            elif kind == "jump" and not (self.func_lo <= target < self.func_hi) and target != RET_MAGIC:
-                # tail call: callee returns to our caller
+            elif kind == "jump" and target in INLINE_ADDRS:
+                pc, npc = target, target + 4
+            elif kind == "jump" and target != RET_MAGIC and (
+                any(lo <= pc < hi for lo, hi in self.helper_ranges)  # helper's final jump (e.g. jr $t9)
+                or not (self.func_lo <= target < self.func_hi)       # tail call out of the function
+            ):
+                # the callee returns straight to our caller
                 self.stub_call(target, "call")
                 pc, npc = self.g(31) & M32, (self.g(31) & M32) + 4
             else:
@@ -1131,6 +1187,32 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
     return overlays, sym["st_value"], sym["st_value"] + max(sym["st_size"], 4)
 
 
+def harvest_constants(rom: bytes, lo: int, hi: int) -> None:
+    """Immediates used by the original function (compare thresholds, masks...) and their +-2 neighbours
+    (a counter is often incremented before it is compared)."""
+    vals = set()
+    for a in range(lo, hi, 4):
+        w = struct.unpack_from("<I", rom, a - IMAGE_LO + 0x80)[0]
+        op = w >> 26
+        rs = (w >> 21) & 31
+        # comparisons and masks (slti/sltiu/andi/ori/xori), and constants loaded with
+        # addiu/daddiu from $zero; not offsets added to a base register
+        if op in (0x0A, 0x0B, 0x0C, 0x0D, 0x0E) or (op in (0x09, 0x19) and rs == 0):
+            imm = w & 0xFFFF
+            simm = imm - 0x10000 if imm & 0x8000 else imm
+            for v in {imm, simm}:
+                if abs(v) > 1:
+                    vals.update({v - 2, v - 1, v, v + 1, v + 2})
+    DICTIONARY[:] = sorted(v & M32 for v in vals)
+
+
+def load_helpers() -> None:
+    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
+        if s.name in INLINE_HELPERS:
+            INLINE_ADDRS.add(s["st_value"])
+            HELPER_RANGES.append((s["st_value"], s["st_value"] + max(s["st_size"], 4)))
+
+
 def original_range(func: str) -> tuple[int, int]:
     for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
         if s.name == func:
@@ -1187,16 +1269,37 @@ def run_one(rom, overlays, entry, frange, seed):
     for i in range(20, 32):
         c.f[i] = f2b(random.Random(seed * 37 + i).uniform(-10, 10))
     fsaved = {i: c.f[i] for i in range(20, 32)}
-    c.run(entry)
+    c.timed_out = False
+    try:
+        c.run(entry)
+    except TimeoutError:
+        c.timed_out = True
     return c, saved, fsaved
+
+
+def event_equal(a, b) -> bool:
+    """Same call, and every argument the original explicitly set has the same value in the C call."""
+    (ka, ta, aa, fa, da), (kb, tb, ab, fb, db) = a, b
+    if (ka, ta, da) != (kb, tb, db):
+        return False
+    if CODE_LO <= ta < CODE_HI:
+        # known callee: every argument it reads that the original set must match
+        return all(ab.get(r) == v for r, v in aa.items()) and all(fb.get(r) == v for r, v in fa.items())
+    # unknown target (e.g. a vtable slot read from random memory): its argument count is
+    # unknown, so only registers both versions set are compared (scratch use isn't an argument)
+    return all(ab[r] == v for r, v in aa.items() if r in ab) and all(fb[r] == v for r, v in fa.items() if r in fb)
+
+
+def events_equal(ea, eb) -> bool:
+    return len(ea) == len(eb) and all(event_equal(a, b) for a, b in zip(ea, eb))
 
 
 def compare(seed, orig, new, ret_kind):
     (co, so, fso), (cn, sn, fsn) = orig, new
     diffs = []
-    if co.events != cn.events:
+    if not events_equal(co.events, cn.events):
         for i, (a, b) in enumerate(zip(co.events, cn.events)):
-            if a != b:
+            if not event_equal(a, b):
                 diffs.append(f"call #{i}: original {fmt_ev(a)}\n               C       {fmt_ev(b)}")
                 break
         else:
@@ -1224,8 +1327,8 @@ def compare(seed, orig, new, ret_kind):
 
 def fmt_ev(e):
     kind, tgt, args, fargs, dig = e
-    a = ", ".join(x if isinstance(x, str) else f"0x{x:X}" for x in args)
-    fa = (" f:" + ", ".join(repr(b2f(x)) for x in fargs)) if fargs else ""
+    a = ", ".join(f"a{r - 4}=" + (x if isinstance(x, str) else f"0x{x:X}") for r, x in sorted(args.items()))
+    fa = (" f:" + ", ".join(f"f{r}={b2f(x)!r}" for r, x in sorted(fargs.items()))) if fargs else ""
     return f"{kind} 0x{tgt:08X}({a}){fa} [writes {dig}]"
 
 
@@ -1245,15 +1348,14 @@ def main() -> None:
         overlays, c_lo, c_hi = build_c(args.src.resolve(), args.func, Path(td))
     ret_kind = return_kind(args.src, args.func) if args.ret == "auto" else args.ret
 
-    ok = skipped = 0
+    load_helpers()
+    harvest_constants(rom, *orig_range)
+    ok = skipped = runaway_ok = 0
     covered: set[int] = set()
     for i in range(args.runs):
         seed = args.seed * 100003 + i
         try:
-            o = run_one(rom, [], orig_range[0], orig_range, seed)
-        except TimeoutError:
-            skipped += 1
-            continue
+            o = run_one(rom, overlays, orig_range[0], orig_range, seed)  # same world: C code mapped in both
         except Trap:
             skipped += 1
             continue
@@ -1262,9 +1364,6 @@ def main() -> None:
             sys.exit(2)
         try:
             n = run_one(rom, overlays, c_lo, (c_lo, c_hi), seed)
-        except TimeoutError:
-            print(f"FAIL seed {seed}: C version ran away (original finished in {o[0].steps} steps)")
-            sys.exit(1)
         except Trap as t:
             print(f"FAIL seed {seed}: C version trapped ({t})")
             sys.exit(1)
@@ -1272,6 +1371,23 @@ def main() -> None:
             print(f"C version: unsupported instruction {e}")
             sys.exit(2)
         covered |= {a for a in o[0].visited if orig_range[0] <= a < orig_range[1]}
+        if o[0].timed_out or n[0].timed_out:
+            if not (o[0].timed_out and n[0].timed_out):
+                who = "C version" if n[0].timed_out else "original"
+                print(f"FAIL seed {seed}: only the {who} ran away")
+                sys.exit(1)
+            # both loop forever (e.g. a main loop with stubbed callees): compare the calls made
+            k = min(len(o[0].events), len(n[0].events))
+            if k < 3 or not events_equal(o[0].events[:k], n[0].events[:k]):
+                if k < 3:
+                    skipped += 1
+                    continue
+                i = next(i for i in range(k) if not event_equal(o[0].events[i], n[0].events[i]))
+                print(f"FAIL seed {seed}: endless loop, call #{i} differs:\n  original {fmt_ev(o[0].events[i])}\n  C        {fmt_ev(n[0].events[i])}")
+                sys.exit(1)
+            runaway_ok += 1
+            ok += 1
+            continue
         diffs = compare(seed, o, n, ret_kind)
         if diffs:
             print(f"FAIL seed {seed} (run {i}):")
@@ -1291,7 +1407,8 @@ def main() -> None:
     total = len(addrs)
     missed = sorted(set(addrs) - covered)
     print(f"PASS {args.func}: {ok} runs identical ({skipped} inputs skipped: original ran away or trapped), "
-          f"return={ret_kind}, coverage {len(covered)}/{total} instructions")
+          f"return={ret_kind}, coverage {len(covered)}/{total} instructions"
+          + (f" ({runaway_ok} endless-loop runs compared by their first calls)" if runaway_ok else ""))
     if args.verbose and missed:
         print("  never executed:", " ".join(f"0x{a:08X}" for a in missed[:20]))
 

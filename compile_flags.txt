@@ -1,0 +1,5 @@
+-Iinclude
+-Isrc
+-std=gnu11
+-ffreestanding
+-m32

@@ -500,3 +500,19 @@ iGetTLBEntry = 0x00275C78; // type:func
 ProbeTLBEntry = 0x00275C88; // type:func
 FindAddress = 0x002763C0; // type:func
 _sceMpegSliceA0 = 0x002A3958; // type:func
+
+// Metrowerks C++ runtime (MSL): pointer-to-member-function helpers
+__ptmf_scall = 0x00100B40; // type:func  (this in a0, PTMF* in t9, tail-jumps to the target)
+__ptmf_test = 0x00100BD0; // type:func
+
+// Game object and top-level state machine (src/game/game.c)
+gGame = 0x00487A00;
+Game_Run = 0x002D1F20; // type:func
+Game_Init = 0x002D1E40; // type:func
+Game_SetState = 0x0020E0E0; // type:func
+Game_StateMain = 0x002D1B20; // type:func
+Game_StateShutdown = 0x002D1AA0; // type:func
+sActorResetState = 0x00414360;
+sGameStateMain = 0x00414370;
+sGameStateShutdown = 0x00414380;
+sGameStateNull = 0x0047B388;
