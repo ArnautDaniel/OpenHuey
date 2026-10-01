@@ -186,6 +186,10 @@ class Memory:
             if IMAGE_LO <= lo < IMAGE_HI:
                 off = lo - IMAGE_LO + 0x80
                 p = bytearray(self.rom[off : off + 0x1000].ljust(0x1000, b"\0"))
+            elif STACK_TOP - FRAME <= lo < STACK_TOP:
+                # uninitialised locals (e.g. the unused w of a vector) read as 0: random bytes
+                # would differ between the two versions' frame layouts
+                p = bytearray(0x1000)
             else:
                 rnd = random.Random(self.seed * 0x9E3779B1 ^ pn)
                 p = bytearray(b"".join(interesting(rnd).to_bytes(4, "little") for _ in range(0x400)))
@@ -206,6 +210,98 @@ class Memory:
             x = a + i
             self._page(x)[x & 0xFFF] = b
             self.written[x] = b
+
+
+# ---------------------------------------------------------------- libvu0 high-level emulation
+# Game code builds vectors on the stack and passes them through libvu0 (VU0 macro code the
+# interpreter doesn't run). Stubbing them leaves outputs as garbage that differs between frame
+# layouts, so the common ones are emulated: the call is still recorded and compared, but its
+# outputs are real (the same model for both versions; exact VU rounding doesn't matter).
+import math
+
+VU0_ADDRS: dict[int, str] = {}
+
+
+def _rv(c, a):
+    return [b2f(c.m.read(a + 4 * i, 4)) for i in range(4)]
+
+
+def _wv(c, a, v):
+    for i, x in enumerate(v):
+        c.m.write(a + 4 * i, 4, f2b(x))
+
+
+def _rm(c, a):
+    return [_rv(c, a + 16 * k) for k in range(4)]
+
+
+def _wm(c, a, m):
+    for k in range(4):
+        _wv(c, a + 16 * k, m[k])
+
+
+def _apply(m, v):
+    return [sum(m[j][i] * v[j] for j in range(4)) for i in range(4)]
+
+
+def _mulm(a, b):
+    return [_apply(a, b[k]) for k in range(4)]
+
+
+def _rot(axis, t):
+    c, s = math.cos(t), math.sin(t)
+    if axis == "X":
+        return [[1, 0, 0, 0], [0, c, s, 0], [0, -s, c, 0], [0, 0, 0, 1]]
+    if axis == "Y":
+        return [[c, 0, -s, 0], [0, 1, 0, 0], [s, 0, c, 0], [0, 0, 0, 1]]
+    return [[c, s, 0, 0], [-s, c, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+
+
+def vu0_hle(c, name: str) -> bool:
+    """Run libvu0 function `name` on the CPU state; False if it isn't emulated."""
+    a0, a1, a2 = (c.g(r) & M32 for r in (4, 5, 6))
+    f12 = b2f(c.f[12])
+    if name == "sceVu0CopyVector":
+        c.m.write(a0, 8, c.m.read(a1, 8)); c.m.write(a0 + 8, 8, c.m.read(a1 + 8, 8))
+    elif name == "sceVu0CopyMatrix":
+        for i in range(0, 64, 8):
+            c.m.write(a0 + i, 8, c.m.read(a1 + i, 8))
+    elif name in ("sceVu0AddVector", "sceVu0SubVector", "sceVu0MulVector"):
+        x, y = _rv(c, a1), _rv(c, a2)
+        op = {"sceVu0AddVector": lambda p, q: p + q, "sceVu0SubVector": lambda p, q: p - q,
+              "sceVu0MulVector": lambda p, q: p * q}[name]
+        _wv(c, a0, [op(p, q) for p, q in zip(x, y)])
+    elif name == "sceVu0ScaleVector":
+        _wv(c, a0, [p * f12 for p in _rv(c, a1)])
+    elif name == "sceVu0InnerProduct":
+        x, y = _rv(c, a0), _rv(c, a1)
+        c.f[0] = f2b(x[0] * y[0] + x[1] * y[1] + x[2] * y[2])
+    elif name == "sceVu0OuterProduct":
+        x, y = _rv(c, a1), _rv(c, a2)
+        _wv(c, a0, [x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0], 0.0])
+    elif name == "sceVu0Normalize":
+        v = _rv(c, a1)
+        n = math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
+        k = 1.0 / n if n else 0.0
+        _wv(c, a0, [v[0] * k, v[1] * k, v[2] * k, v[3]])
+    elif name == "sceVu0UnitMatrix":
+        _wm(c, a0, [[1.0 if i == k else 0.0 for i in range(4)] for k in range(4)])
+    elif name == "sceVu0ApplyMatrix":
+        _wv(c, a0, _apply(_rm(c, a1), _rv(c, a2)))
+    elif name == "sceVu0MulMatrix":
+        _wm(c, a0, _mulm(_rm(c, a1), _rm(c, a2)))
+    elif name == "sceVu0TransposeMatrix":
+        m = _rm(c, a1)
+        _wm(c, a0, [[m[i][k] for i in range(4)] for k in range(4)])
+    elif name in ("sceVu0RotMatrixX", "sceVu0RotMatrixY", "sceVu0RotMatrixZ"):
+        _wm(c, a0, _mulm(_rot(name[-1], f12), _rm(c, a1)))
+    elif name == "sceVu0TransMatrix":
+        m, v = _rm(c, a1), _rv(c, a2)
+        m[3] = [m[3][0] + v[0], m[3][1] + v[1], m[3][2] + v[2], m[3][3]]
+        _wm(c, a0, m)
+    else:
+        return False
+    return True
 
 
 # ---------------------------------------------------------------- argument usage of callees
@@ -339,6 +435,19 @@ class CPU:
         ).hexdigest()
         self.events.append((kind, target, args, fargs, dig))
         self.in_func = False  # the stub's own register writes below don't count as the function's
+        if target in VU0_ADDRS:
+            f0 = self.f[0]
+            if vu0_hle(self, VU0_ADDRS[target]):
+                keep_f0 = VU0_ADDRS[target] == "sceVu0InnerProduct"
+                res_f0 = self.f[0]
+                self.call_n += 1
+                for r in SCRAMBLE:
+                    self.s(r, self.rng.getrandbits(64))
+                self.f[0] = res_f0 if keep_f0 else f0
+                self.wset = set()
+                self.wall = set()
+                self.fwset = set()
+                return
         # Out-parameters: a pointer into the stack frame gets a deterministic
         # value written through it (frame layouts differ between compilers, so
         # leftover stack bytes would otherwise differ between the versions).
@@ -1356,6 +1465,8 @@ def load_helpers() -> None:
     if FUNC_STARTS:
         return
     for name, value, size, _, typ in game_symbols():
+        if name.startswith("sceVu0") and "." not in name:
+            VU0_ADDRS[value] = name
         if typ == "STT_FUNC" and CODE_LO <= value < CODE_HI:
             FUNC_STARTS.add(value)
         if name in INLINE_HELPERS:

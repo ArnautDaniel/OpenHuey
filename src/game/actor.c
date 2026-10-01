@@ -276,3 +276,308 @@ u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out) {
         VCALL(nm, 0xC, void (*)(NavMesh *, u32, f32 *))(nm, tri, cur);
     }
 }
+
+/* Is the actor facing the same way as door `door`'s `side` (positive dot of the forward axes)? */
+s32 func_00123960(Actor *a, s32 door, s32 side) {
+    sceVu0FMATRIX m;
+    sceVu0FVECTOR fwd, dir;
+
+    if (!(door >= 0 && (u32)door < D_0044E570->numDoors)) {
+        return 0;
+    }
+    if (side < 0 || side >= 2) {
+        return 0;
+    }
+    *(s32 *)&dir[0] = 0;
+    *(s32 *)&dir[1] = 0;
+    dir[2] = 1.0f;
+    sceVu0ApplyMatrix(fwd, a->rot, dir);
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixY(m, m, VCALL(D_0044E570, 0x58, f32 (*)(NavMesh *, s32, s32))(D_0044E570, door, side));
+    sceVu0ApplyMatrix(dir, m, dir);
+    return !(sceVu0InnerProduct(fwd, dir) <= 0.0f);
+}
+
+/* Free distance from `pos` (in triangle `tri`) along heading `angle`, up to `dist`: walks the
+ * mesh until the ray leaves it or enters a triangle blocked by `mask` (-1 = the actor's own
+ * mask). Horizontal distance to that edge, `dist` if unobstructed, 0 through a corner. */
+f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist) {
+    NavMesh *nm;
+    sceVu0FMATRIX m;
+    sceVu0FVECTOR d, target, hit;
+
+    if (mask == NAV_NONE) {
+        mask = a->navMask;
+    }
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixY(m, m, angle);
+    *(s32 *)&d[0] = 0;
+    d[2] = dist;
+    *(s32 *)&d[1] = 0;
+    sceVu0ApplyMatrix(d, m, d);
+    sceVu0AddVector(target, pos, d);
+    nm = D_0044E570;
+    for (;;) {
+        /* +0x24: like +0x20, also returns the exit point */
+        s32 e = VCALL(nm, 0x24, s32 (*)(NavMesh *, u32, f32 *, const f32 *, const f32 *))(
+            nm, tri, hit, pos, target);
+
+        if (e == NAV_EDGE_INSIDE) {
+            return dist;
+        }
+        if (e == NAV_EDGE_CORNER) {
+            return 0.0f;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE || (NavMesh_Tri(nm, tri)->flags & mask)) {
+            break;
+        }
+    }
+    sceVu0SubVector(d, hit, pos);
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+}
+
+/* Is the actor nearer to room `room`'s origin than `pos` is? */
+s32 func_00123C60(Actor *a, s32 room, const f32 *pos) {
+    sceVu0FVECTOR origin, da, dp;
+    f32 la;
+
+    VCALL(D_0044E568, 0x30, void (*)(VObject *, s32, f32 *))(D_0044E568, room, origin);
+    sceVu0SubVector(da, a->pos, origin);
+    sceVu0SubVector(dp, pos, origin);
+    la = sceVu0InnerProduct(da, da);
+    return la < sceVu0InnerProduct(dp, dp);
+}
+
+/* vtable +0x3C (base): always true */
+s32 func_00123D00(Actor *a) {
+    return 1;
+}
+
+/* vtable +0x34 (base): nothing */
+void func_00123D10(Actor *a) {
+}
+
+/* Triangle containing `p`, found by walking from the actor's triangle toward it; -1 if the
+ * walk leaves the mesh or passes a corner. */
+u32 func_00123D20(Actor *a, const f32 *p) {
+    NavMesh *nm = D_0044E570;
+    u32 tri = a->navTri;
+
+    for (;;) {
+        s32 e = NavMesh_Exit(nm, tri, a->pos, p);
+
+        if (e == NAV_EDGE_INSIDE) {
+            return tri;
+        }
+        if (e == NAV_EDGE_CORNER) {
+            return NAV_NONE;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE) {
+            return NAV_NONE;
+        }
+    }
+}
+
+/* Same, and put `p` on the mesh: its height from the triangle (vtable +0x14), or the actor's
+ * height if it isn't on the mesh. */
+u32 func_00123E20(Actor *a, f32 *p) {
+    NavMesh *nm = D_0044E570;
+    u32 tri = a->navTri;
+
+    for (;;) {
+        s32 e = NavMesh_Exit(nm, tri, a->pos, p);
+
+        if (e == NAV_EDGE_INSIDE) {
+            VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, tri, p);
+            return tri;
+        }
+        if (e == NAV_EDGE_CORNER) {
+            tri = NAV_NONE;
+            break;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE) {
+            break;
+        }
+    }
+    p[1] = a->pos[1];
+    return tri;
+}
+
+/* vtable +0x30 (base): nothing */
+void func_00123F50(Actor *a) {
+}
+
+/* vtable +0x2C (base): nothing */
+void func_00123F60(Actor *a) {
+}
+
+/* Triangle containing `target`, walking from triangle `tri` at `from`; -1 if the walk leaves
+ * the mesh, passes a corner or enters a triangle blocked by `mask` (-1 = the actor's mask). */
+u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask) {
+    NavMesh *nm;
+
+    if (mask == NAV_NONE) {
+        mask = a->navMask;
+    }
+    nm = D_0044E570;
+    for (;;) {
+        s32 e = NavMesh_Exit(nm, tri, from, target);
+
+        if (e == NAV_EDGE_INSIDE) {
+            return tri;
+        }
+        if (e == NAV_EDGE_CORNER) {
+            return NAV_NONE;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE || (NavMesh_Tri(nm, tri)->flags & mask)) {
+            return NAV_NONE;
+        }
+    }
+}
+
+/* Move to `target` (now in triangle `tri`), on the mesh surface. */
+static inline void Actor_PlaceAt(Actor *a, u32 tri, const f32 *target) {
+    a->navTri = tri;
+    sceVu0CopyVector(a->pos, target);
+    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, a->navTri, a->pos);
+}
+
+/* Push this actor out of `other`'s collision cylinder. If the straight push is blocked, try
+ * directions rotated 2, 4, ... 180 degrees either way. 0 on success, -1 if nowhere fits. */
+s32 func_00123F70(Actor *a, Actor *other) {
+    sceVu0FMATRIX rotNeg, rotPos;
+    sceVu0FVECTOR dir, target, left, right;
+    f32 dist = 0x1.47ae14p-7f /* 0.01 */ + (a->radius + other->radius);
+    u32 tri;
+    s32 deg;
+
+    sceVu0SubVector(dir, a->pos, other->pos);
+    *(s32 *)&dir[1] = 0;
+    sceVu0Normalize(dir, dir);
+    sceVu0ScaleVector(dir, dir, dist);
+    sceVu0AddVector(target, other->pos, dir);
+    target[3] = 1.0f;
+    tri = func_00124320(a, target, a->navTri, a->pos, NAV_NONE);
+    if (tri != NAV_NONE) {
+        Actor_PlaceAt(a, tri, target);
+        return 0;
+    }
+    sceVu0UnitMatrix(rotNeg);
+    sceVu0RotMatrixY(rotNeg, rotNeg, -0x1.1df46ap-5f /* -2 deg */);
+    sceVu0UnitMatrix(rotPos);
+    sceVu0RotMatrixY(rotPos, rotPos, 0x1.1df46ap-5f /* 2 deg */);
+    sceVu0CopyVector(left, dir);
+    sceVu0CopyVector(right, dir);
+    for (deg = 2; deg < 181; deg += 2) {
+        sceVu0ApplyMatrix(left, rotNeg, left);
+        sceVu0AddVector(target, other->pos, left);
+        target[3] = 1.0f;
+        tri = func_00124320(a, target, a->navTri, a->pos, NAV_NONE);
+        if (tri != NAV_NONE) {
+            Actor_PlaceAt(a, tri, target);
+            return 0;
+        }
+        sceVu0ApplyMatrix(right, rotPos, right);
+        sceVu0AddVector(target, other->pos, right);
+        target[3] = 1.0f;
+        tri = func_00124320(a, target, a->navTri, a->pos, NAV_NONE);
+        if (tri != NAV_NONE) {
+            Actor_PlaceAt(a, tri, target);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+/* Are the two actors touching: both enabled, vertically within the lower one's height
+ * (+ `vmargin`) and horizontally within their radii (+ `margin`)? */
+s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin) {
+    sceVu0FVECTOR d;
+    f32 r;
+
+    if (!a->active || a->disabled) {
+        return 0;
+    }
+    if (b == NULL || !b->active || b->disabled) {
+        return 0;
+    }
+    if (a->pos[1] < b->pos[1]) {
+        if (!(b->pos[1] - a->pos[1] <= a->height + vmargin)) {
+            return 0;
+        }
+    } else if (!(a->pos[1] - b->pos[1] <= b->height + vmargin)) {
+        return 0;
+    }
+    sceVu0SubVector(d, a->pos, b->pos);
+    r = a->radius + b->radius;
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= margin + r;
+}
+
+extern f32 func_0031C5C0(f32 x, f32 z);   /* float math library: heading of (x, z), atan2-like */
+
+/* Triangle containing `target` reached from the actor's position (see func_00124320). */
+u32 func_00124480(Actor *a, const f32 *target, u32 mask) {
+    return func_00124320(a, target, a->navTri, a->pos, mask);
+}
+
+/* Distance from the actor to `p`. */
+f32 func_00124490(Actor *a, const f32 *p) {
+    sceVu0FVECTOR d;
+
+    sceVu0SubVector(d, p, a->pos);
+    return __builtin_sqrtf(sceVu0InnerProduct(d, d));
+}
+
+/* Heading from the actor to `p` (its current heading if `p` is right above or below it). */
+f32 func_001244D0(Actor *a, const f32 *p) {
+    f32 dx = p[0] - a->pos[0];
+    f32 dz = p[2] - a->pos[2];
+
+    if (dx == 0.0f && dz == 0.0f) {
+        return a->angle[1];
+    }
+    return func_0031C5C0(dx, dz);
+}
+
+/* NavMesh vtable +0x40: slide from `from` toward `to` within the mesh starting in `tri`;
+ * the reachable point goes to `out`, returns its triangle or -1. */
+static inline u32 NavMesh_Slide(NavMesh *nm, u32 tri, f32 *out, const f32 *from, const f32 *to, u32 mask) {
+    return VCALL(nm, 0x40, u32 (*)(NavMesh *, u32, f32 *, const f32 *, const f32 *, u32))(
+        nm, tri, out, from, to, mask);
+}
+
+/* Move by `delta` horizontally as far as the mesh allows (any triangle), and by delta y. */
+void func_00124720(Actor *a, const f32 *delta) {
+    sceVu0FVECTOR to, out;
+    u32 tri;
+
+    sceVu0CopyVector(to, a->pos);
+    to[0] += delta[0];
+    to[2] += delta[2];
+    tri = NavMesh_Slide(D_0044E570, a->navTri, out, a->pos, to, 0);
+    if (tri != NAV_NONE) {
+        a->navTri = tri;
+        a->pos[0] = out[0];
+        a->pos[2] = out[2];
+        a->pos[1] += delta[1];
+    }
+}
+
+/* Move by `delta` horizontally as far as the actor's blocking mask allows. */
+void func_001247E0(Actor *a, const f32 *delta) {
+    sceVu0FVECTOR to, out;
+    u32 tri;
+
+    sceVu0CopyVector(to, a->pos);
+    to[0] += delta[0];
+    to[2] += delta[2];
+    tri = NavMesh_Slide(D_0044E570, a->navTri, out, a->pos, to, a->navMask);
+    if (tri != NAV_NONE) {
+        a->navTri = tri;
+        sceVu0CopyVector(a->pos, out);
+    }
+}

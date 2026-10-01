@@ -1303,3 +1303,20 @@ src/game/actor.c func_00123080 --runs=200
 src/game/actor.c func_00123470 --runs=100
 src/game/actor.c func_001235C0 --runs=100
 src/game/actor.c func_00123710 --runs=100
+src/game/actor.c func_00123960 --runs=60
+src/game/actor.c func_00123A70 --runs=100
+src/game/actor.c func_00123C60
+src/game/actor.c func_00123D00
+src/game/actor.c func_00123D10
+src/game/actor.c func_00123D20 --runs=60
+src/game/actor.c func_00123E20 --runs=60
+src/game/actor.c func_00123F50
+src/game/actor.c func_00123F60
+src/game/actor.c func_00124320 --runs=60
+src/game/actor.c func_00123F70 --runs=100
+src/game/actor.c func_001241F0 --runs=60
+src/game/actor.c func_00124480
+src/game/actor.c func_00124490
+src/game/actor.c func_001244D0
+src/game/actor.c func_00124720
+src/game/actor.c func_001247E0
