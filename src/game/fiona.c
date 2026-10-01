@@ -684,3 +684,67 @@ void func_001A2D00(Fiona *f) {
         }
     }
 }
+
+extern void func_002DCDD0(void *motion, Fiona *f, f32, f32);
+extern void func_002DCB40(void *motion);
+extern void func_002DC960(void *motion);
+
+/* Group of an animation id (motion +0x55C). */
+static inline s32 Fiona_AnimGroup(s32 anim) {
+    switch (anim) {
+    case 0x0: case 0x2: case 0x3: case 0x4: case 0x5:
+        return 0;
+    case 0x1:
+        return 5;
+    case 0x200: case 0x201: case 0x204: case 0x208: case 0x400: case 0x401: case 0x402:
+        return 1;
+    case 0x202: case 0x203: case 0x205: case 0x206:
+        return 2;
+    case 0x207:
+        return 3;
+    case 0xB01:
+        return 4;
+    case 0x1200: case 0x1201: case 0x1202: case 0x1203:
+        return 6;
+    case 0x700: case 0x701: case 0x702: case 0x703: case 0x704: case 0x705: case 0x706: case 0x707:
+        return 7;
+    case 0x708: case 0x709:
+        return 8;
+    case 0x403:
+        return 9;
+    case 0xE01:
+        return 10;
+    default:
+        return 11;
+    }
+}
+
+/* vtable +0x40: animation update - ground alignment (by animation group), advance, events. */
+void func_0019BE70(Fiona *f) {
+    s32 room;
+
+    if (!f->c.a.disabled) {
+        if (f->c.a.navTri == NAV_NONE) {
+            func_002DCDD0(f->c.motion, f, 0.0f, 0.0f);
+        } else if (FI(f, 0x1AD5BC, u8) == 1) {
+            void *m = f->c.motion;
+            s32 g = Fiona_AnimGroup(*(s32 *)((u8 *)m + 0x55C));
+
+            if (g != 2 && g != 9 && g != 10 && g != 3) {
+                VCALL(m, 0x40, void (*)(void *, Fiona *, f32, f32))(m, f, 11.0f, -1.0f);
+            } else {
+                VCALL(m, 0x40, void (*)(void *, Fiona *, f32, f32))(m, f, 5.0f, 0.5f);
+            }
+        } else {
+            VCALL(f->c.motion, 0x40, void (*)(void *, Fiona *, f32, f32))(f->c.motion, f, 0.0f, 0.0f);
+        }
+    }
+    func_002DCB40(f->c.motion);
+    func_002DC960(f->c.motion);
+    func_001F6AF0(f->c.motion);
+    room = f->c.a.room;
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && f->c.a.navTri != NAV_NONE) {
+        VCALL(f->c.motion, 0x4C, void (*)(void *, u32, Fiona *))(f->c.motion, FI(f, 0x1AD5BC, u8), f);
+    }
+    VCALL(f->c.motion, 0x3C, void (*)(void *))(f->c.motion);
+}
