@@ -611,3 +611,76 @@ s32 func_001A3A80(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
     }
     return r;
 }
+
+extern void func_001A1CA0(Fiona *f);
+extern s32 func_001F1B90(void *input, void *pad);
+extern u8 D_0047E3B0[];   /* pad state */
+extern void func_001A12B0(Fiona *f);
+extern void func_00185FC0(Fiona *f);
+extern void func_00181F20(Fiona *f);
+extern void func_001869D0(Fiona *f);
+extern f32 func_00124490(Actor *a, const f32 *p);
+extern void func_00177630(Progress *p, s32 level);
+
+#define FIONA_NAV_MASK 0x28020018
+
+/* vtable +0x44: per-frame update - controls, behaviour state, sub-systems; tells progress when
+ * the pursuer is close (within 200 / 150 units). */
+void func_001A2D00(Fiona *f) {
+    sceVu0FVECTOR head;
+    Progress *p;
+    f32 h;
+    u8 near, veryNear;
+
+    f->c.a.navMask = f->c.a.unk2B ? 0 : FIONA_NAV_MASK;
+    f->c.pathReq->mask = f->c.a.navMask;
+    VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, head);
+    h = head[1] - f->c.a.pos[1];
+    f->c.a.height = h;
+    if (h < 3.0f) {
+        f->c.a.height = 3.0f;
+    }
+    FI(f, 0x1AD5D4, u8) = 0;
+    FI(f, 0x1AD5D5, u8) = 0;
+    if (gCharPartner != NULL && gCharPartner->a.active == 1) {
+        FI(f, 0x1AD5D4, u8) = 1;
+        if (gCharPartner->a.disabled == 0) {
+            FI(f, 0x1AD5D5, u8) = 1;
+        }
+    }
+    FI(f, 0x1AD5D6, u8) = 0;
+    FI(f, 0x1AD5D7, u8) = 0;
+    if (gCharPursuer != NULL && gCharPursuer->a.active == 1) {
+        FI(f, 0x1AD5D6, u8) = 1;
+        if (gCharPursuer->a.disabled == 0) {
+            FI(f, 0x1AD5D7, u8) = 1;
+        }
+    }
+    func_001A1CA0(f);
+    p = gProgress;
+    if ((Progress_TestFlag(p, 0xD) & 0xFF) == 1 && !(Progress_TestFlag(p, 0x2B) & 0xFF)) {
+        FI(f, 0x1AD6B8, s32) = func_001F1B90((u8 *)f + 0x1AD668, D_0047E3B0);
+    }
+    FI(f, 0x1AD6BC, s32) = -1;
+    VCALL(f, 0x88, void (*)(Fiona *))(f);
+    ptmf_scall(f, &f->c.a.state);
+    func_001A12B0(f);
+    func_00185FC0(f);
+    func_00181F20(f);
+    func_001869D0(f);
+    VCALL(f, 0x40, void (*)(Fiona *))(f);
+    near = 0;
+    veryNear = 0;
+    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
+        near = 1;
+        if (func_00124490(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
+            veryNear = 1;
+        }
+    }
+    if (near == 1) {
+        func_00177630(p, 5);
+        if (veryNear == 1) {
+            func_00177630(p, 0);
+        }
+    }
+}
