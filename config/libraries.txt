@@ -7,7 +7,7 @@
 0x00100000 0x00100230 sdk       crt0
 0x00100230 0x0010BDC0 mw        MSL C/C++ runtime (std::exception, bad_alloc, ios_base, operator new...)
 0x0010BDC0 0x00117F00 gcc       Sony SDK: libgraph (sceGs*), libdma, libcdvd (sceCd*), libmc (sceMc*), libpad?
-0x00117F00 0x0011F9C0 gcc       Sony libc (string/mem functions, vfprintf, number formatting)
+0x00117F00 0x0011F970 gcc       Sony libc (string/mem functions, vfprintf, number formatting)
 0x001C2B68 0x001EE798 gcc       CRI ADX: ADXT/ADXB/ADXF/AFS/AHX, CVFS, DVCI, PS2RNA, PL2ENC, ROFS/ROCI/RSU
 0x001EE798 0x001EFA38 gcc       Sony SDK: libdbc (DualShock socket manager)
 0x001EFA38 0x001F0250 gcc       Sony SDK: libpad2

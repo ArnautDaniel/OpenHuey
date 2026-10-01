@@ -59,7 +59,7 @@ PTR_LO, PTR_HI = 0x0A000000, 0x0D000000  # random "heap" pointers handed to func
 STACK_TOP = 0x01FF0000
 FRAME = 0x10000              # writes within this much below sp are the function's own frame
 RET_MAGIC = 0x0DEAD000       # return address sentinel
-MAX_STEPS = 200_000
+MAX_STEPS = 50_000           # per run; --max-steps to change
 OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
 # Runtime helpers that are executed instead of stubbed: they are part of how the
 # original code expresses something C code writes inline (e.g. PTMF calls).
@@ -206,7 +206,7 @@ def callee_args(rom: bytes, target: int) -> tuple[list[int], list[int]]:
     """Which a0-a7 / f12-f19 a callee reads before writing (linear scan of the original code)."""
     if target in _arg_cache:
         return _arg_cache[target]
-    if not (IMAGE_LO + 0x230 <= target < 0x003A1990):
+    if target not in FUNC_STARTS:  # random/mid-function target: no meaningful analysis
         res = (ARG_REGS, FARG_REGS)
         _arg_cache[target] = res
         return res
@@ -245,6 +245,27 @@ def callee_args(rom: bytes, target: int) -> tuple[list[int], list[int]]:
     return res
 
 
+# ---------------------------------------------------------------- decoding
+def decode(w: int, pc: int) -> tuple:
+    """(opcode name, word, GPRs read, FPRs read)"""
+    ins = rz.Instruction(w, vram=pc, category=rz.InstrCategory.R5900)
+    reads = set()
+    if ins.readsRs():
+        reads.add((w >> 21) & 31)
+    if ins.readsRt():
+        reads.add((w >> 16) & 31)
+    if ins.readsRd():
+        reads.add((w >> 11) & 31)
+    freads = set()
+    if ins.readsFs():
+        freads.add((w >> 11) & 31)
+    if ins.readsFt():
+        freads.add((w >> 16) & 31)
+    if (w >> 26) == 0x39:  # swc1 reads ft
+        freads.add((w >> 16) & 31)
+    return ins.getOpcodeName(), w, frozenset(reads), frozenset(freads)
+
+
 # ---------------------------------------------------------------- CPU
 class CPU:
     def __init__(self, mem: Memory, rom: bytes, func_lo: int, func_hi: int, seed: int):
@@ -263,7 +284,9 @@ class CPU:
         self.steps = 0
         self.decoded: dict[int, tuple] = {}
         self.visited: set[int] = set()
-        self.wset: set[int] = set()   # GPRs written by the function itself since entry/last call
+        self.max_steps = MAX_STEPS
+        self.wset: set[int] = set()   # GPRs written by the function and not read since (entry/last call)
+        self.wall: set[int] = set()   # GPRs written by the function at all since entry/last call
         self.fwset: set[int] = set()  # same for FPRs
         self.in_func = False
         self.helper_ranges: list[tuple[int, int]] = HELPER_RANGES
@@ -278,6 +301,7 @@ class CPU:
             self.r[i] = (self.r[i] & ~M64 & M128) | (v & M64)
             if self.in_func:
                 self.wset.add(i)
+                self.wall.add(i)
 
     def s32(self, i: int, v: int) -> None:
         self.s(i, u64_of_s32(v))
@@ -292,9 +316,13 @@ class CPU:
     def stub_call(self, target: int, kind: str) -> None:
         ints, floats = callee_args(self.rom, target)
         # pointers into the frame compare as "a stack pointer": layouts differ between compilers
-        args = {r: ("stack" if STACK_TOP - FRAME <= (self.g(r) & M32) < STACK_TOP else self.g(r) & M32)
-                for r in ints if r in self.wset}
-        fargs = {r: self.f[r] for r in floats if r in self.fwset}
+        # all argument values the callee might read, plus which ones this version set for the
+        # call (written and not read since: a caller-saved value left for the call)
+        args = {r: self.arg_value(self.g(r) & M32) for r in ints}
+        args["pending"] = frozenset(r for r in ints if r in self.wset)
+        args["written"] = frozenset(r for r in ints if r in self.wall)
+        fargs = {r: self.f[r] for r in floats}
+        fargs["pending"] = frozenset(r for r in floats if r in self.fwset)
         dig = hashlib.blake2b(
             repr(sorted(self.visible_writes().items())).encode(), digest_size=6
         ).hexdigest()
@@ -317,7 +345,23 @@ class CPU:
             if r != 3:
                 self.s(r, self.rng.getrandbits(64))
         self.wset = set()
+        self.wall = set()
         self.fwset = set()
+
+    def arg_value(self, v: int):
+        """How an argument compares: stack pointers as "stack", C strings by content, else the value."""
+        if STACK_TOP - FRAME <= v < STACK_TOP:
+            return "stack"
+        if IMAGE_LO <= v < IMAGE_HI or C_BASE <= v < C_BASE + 0x100000:
+            bs = bytearray()
+            for i in range(256):
+                b = self.m.read(v + i, 1)
+                if b == 0:
+                    break
+                bs.append(b)
+            if 3 <= len(bs) < 256 and all(32 <= b < 127 for b in bs):
+                return '"' + bs.decode() + '"'
+        return v
 
     def visible_writes(self) -> dict[int, int]:
         sp0 = STACK_TOP
@@ -330,20 +374,23 @@ class CPU:
             if pc == RET_MAGIC:
                 return
             self.steps += 1
-            if self.steps > MAX_STEPS:
+            if self.steps > self.max_steps:
                 raise TimeoutError
             self.visited.add(pc)
             d = self.decoded.get(pc)
             if d is None:
                 w = self.m.read(pc, 4)
-                ins = rz.Instruction(w, vram=pc, category=rz.InstrCategory.R5900)
-                d = (ins.getOpcodeName(), w)
+                d = decode(w, pc)
                 self.decoded[pc] = d
-            name, w = d
+            name, w, reads, freads = d
             h = HANDLERS.get(name)
             if h is None:
                 raise Unsupported(f"{name} at 0x{pc:08X}")
             self.in_func = self.func_lo <= pc < self.func_hi
+            if self.in_func:
+                # a value read again before the call is scratch, not an argument
+                self.wset -= reads
+                self.fwset -= freads
             if self.in_func and (name.endswith(".s") or name in FPR_WRITERS):
                 before = list(self.f)
                 nxt = h(self, w, pc)
@@ -352,6 +399,7 @@ class CPU:
                 nxt = h(self, w, pc)
             if self.in_func and name in DIRECT_GPR_WRITERS:
                 self.wset.add(_rd(w) if name != "lq" else _rt(w))
+                self.wall.add(_rd(w) if name != "lq" else _rt(w))
             if nxt is None:
                 pc, npc = npc, npc + 4
                 continue
@@ -364,21 +412,24 @@ class CPU:
             ds = npc
             if link is not None:
                 self.s(link, (pc + 8) & M64)
-            dname, dw = self.decoded.get(ds) or (None, None)
-            if dname is None:
-                w2 = self.m.read(ds, 4)
-                dname = rz.Instruction(w2, vram=ds, category=rz.InstrCategory.R5900).getOpcodeName()
-                dw = w2
-                self.decoded[ds] = (dname, dw)
+            dd = self.decoded.get(ds)
+            if dd is None:
+                dd = decode(self.m.read(ds, 4), ds)
+                self.decoded[ds] = dd
+            dname, dw, dreads, dfreads = dd
             dh = HANDLERS.get(dname)
             if dh is None:
                 raise Unsupported(f"{dname} at 0x{ds:08X}")
             self.visited.add(ds)
             self.in_func = self.func_lo <= ds < self.func_hi
+            if self.in_func:
+                self.wset -= dreads
+                self.fwset -= dfreads
             if self.in_func and (dname.endswith(".s") or dname in FPR_WRITERS):
                 self.fwset.add(_fd(dw) if dname.endswith(".s") else _ft(dw) if dname == "lwc1" else _fs(dw))
             if self.in_func and dname in DIRECT_GPR_WRITERS:
                 self.wset.add(_rd(dw) if dname != "lq" else _rt(dw))
+                self.wall.add(_rd(dw) if dname != "lq" else _rt(dw))
             if dh(self, dw, ds) is not None:
                 raise Unsupported(f"branch in delay slot at 0x{ds:08X}")
             self.steps += 1
@@ -397,8 +448,10 @@ class CPU:
                 any(lo <= pc < hi for lo, hi in self.helper_ranges)  # helper's final jump (e.g. jr $t9)
                 or not (self.func_lo <= target < self.func_hi)       # tail call out of the function
             ):
-                # the callee returns straight to our caller
-                self.stub_call(target, "call")
+                # the callee returns straight to our caller. A jump out of __ptmf_scall is a
+                # pointer-to-member call: a member function taking only `this`.
+                in_helper = any(lo <= pc < hi for lo, hi in self.helper_ranges)
+                self.stub_call(target, "ptmf" if in_helper else "call")
                 pc, npc = self.g(31) & M32, (self.g(31) & M32) + 4
             else:
                 pc, npc = target & M32, (target + 4) & M32
@@ -941,6 +994,7 @@ def _jr(c, w, pc):
 
 @H("jalr")
 def _jalr(c, w, pc): return (True, c.g(_rs(w)) & M32, False, _rd(w), "vcall")
+# (an indirect call in the C version is recorded as "call"; see stub_call)
 
 
 @H("syscall")
@@ -1209,8 +1263,13 @@ def harvest_constants(rom: bytes, lo: int, hi: int) -> None:
     DICTIONARY[:] = sorted(v & M32 for v in vals)
 
 
+FUNC_STARTS: set[int] = set()
+
+
 def load_helpers() -> None:
     for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
+        if s["st_info"]["type"] == "STT_FUNC" and CODE_LO <= s["st_value"] < CODE_HI:
+            FUNC_STARTS.add(s["st_value"])
         if s.name in INLINE_HELPERS:
             INLINE_ADDRS.add(s["st_value"])
             HELPER_RANGES.append((s["st_value"], s["st_value"] + max(s["st_size"], 4)))
@@ -1254,12 +1313,30 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
     return ints, floats
 
 
-def run_one(rom, overlays, entry, frange, seed):
+PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
+
+
+def parse_pre(spec: str) -> tuple[int, int, int, int]:
+    m = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=(-?\w+)\.\.(-?\w+)", spec)
+    if not m:
+        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8")
+    return 4 + int(m.group(1)), int(m.group(2), 0), int(m.group(3), 0), int(m.group(4), 0)
+
+
+def run_one(rom, overlays, entry, frange, seed, max_steps=None):
     mem = Memory(rom, seed, overlays)
     c = CPU(mem, rom, frange[0], frange[1], seed)
+    if max_steps:
+        c.max_steps = max_steps
     ints, floats = make_inputs(seed)
     for r, v in zip(ARG_REGS, ints):
         c.s(r, v)
+    for reg, off, lo, hi in PRECONDITIONS:
+        # a constrained input: write it without logging it as a function write
+        a = Memory.norm((c.g(reg) & M32) + off)
+        v = random.Random(seed * 7 + off).randint(lo, hi) & M32
+        for i, b in enumerate(v.to_bytes(4, "little")):
+            mem._page(a + i)[(a + i) & 0xFFF] = b
     for r, v in zip(FARG_REGS, floats):
         c.f[r] = v
     for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:
@@ -1281,16 +1358,22 @@ def run_one(rom, overlays, entry, frange, seed):
 
 
 def event_equal(a, b) -> bool:
-    """Same call, and every argument the original explicitly set has the same value in the C call."""
+    """Same call, same digest, same arguments (a = original, b = C).
+
+    "pending" = written and not read again before the call (caller-saved, so an argument
+    or a dead write). For a known callee only the registers it actually reads count."""
     (ka, ta, aa, fa, da), (kb, tb, ab, fb, db) = a, b
+    if "ptmf" in (ka, kb):
+        # pointer-to-member call (original via __ptmf_scall, C inline): only `this` is an argument
+        return (ta, da) == (tb, db) and aa.get(4) == ab.get(4)
     if (ka, ta, da) != (kb, tb, db):
         return False
-    if CODE_LO <= ta < CODE_HI:
-        # known callee: every argument it reads that the original set must match
-        return all(ab.get(r) == v for r, v in aa.items()) and all(fb.get(r) == v for r, v in fa.items())
-    # unknown target (e.g. a vtable slot read from random memory): its argument count is
-    # unknown, so only registers both versions set are compared (scratch use isn't an argument)
-    return all(ab[r] == v for r, v in aa.items() if r in ab) and all(fb[r] == v for r, v in fa.items() if r in fb)
+    # a = original, b = C. Compare what the original left for the call, plus what the C left
+    # for it if the original also wrote that register (MW reuses e.g. a compare constant as
+    # an argument; GCC can leave dead loop-invariant writes, which the original won't match)
+    regs = aa["pending"] | (ab["pending"] & aa["written"])
+    fregs = fa["pending"] | fb["pending"]
+    return all(aa.get(r) == ab.get(r) for r in regs) and all(fa.get(r) == fb.get(r) for r in fregs)
 
 
 def events_equal(ea, eb) -> bool:
@@ -1303,7 +1386,7 @@ def compare(seed, orig, new, ret_kind):
     if not events_equal(co.events, cn.events):
         for i, (a, b) in enumerate(zip(co.events, cn.events)):
             if not event_equal(a, b):
-                diffs.append(f"call #{i}: original {fmt_ev(a)}\n               C       {fmt_ev(b)}")
+                diffs.append(f"call #{i}: original {fmt_ev(a, b)}\n               C       {fmt_ev(b, a)}")
                 break
         else:
             diffs.append(f"call count: original {len(co.events)}, C {len(cn.events)}"
@@ -1328,10 +1411,15 @@ def compare(seed, orig, new, ret_kind):
     return diffs
 
 
-def fmt_ev(e):
+def fmt_ev(e, other=None):
     kind, tgt, args, fargs, dig = e
-    a = ", ".join(f"a{r - 4}=" + (x if isinstance(x, str) else f"0x{x:X}") for r, x in sorted(args.items()))
-    fa = (" f:" + ", ".join(f"f{r}={b2f(x)!r}" for r, x in sorted(fargs.items()))) if fargs else ""
+    if other is not None:  # show everything the comparison looked at
+        args = dict(args, pending=args.get("pending", frozenset()) | other[2].get("pending", frozenset()))
+        fargs = dict(fargs, pending=fargs.get("pending", frozenset()) | other[3].get("pending", frozenset()))
+    pend, fpend = args.get("pending", ()), fargs.get("pending", ())
+    a = ", ".join(f"a{r - 4}=" + (x if isinstance(x, str) else f"0x{x:X}")
+                  for r, x in sorted((k, v) for k, v in args.items() if k in pend))
+    fa = (" f:" + ", ".join(f"f{r}={b2f(x)!r}" for r, x in sorted((k, v) for k, v in fargs.items() if k in fpend))) if fpend else ""
     return f"{kind} 0x{tgt:08X}({a}){fa} [writes {dig}]"
 
 
@@ -1343,6 +1431,9 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--pre", action="append", default=[],
+                    help="input precondition, e.g. a0+0x18=0..8 (u32 at arg0+0x18 is in 0..8)")
+    ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     args = ap.parse_args()
 
     rom = BASEROM.read_bytes()
@@ -1352,13 +1443,14 @@ def main() -> None:
     ret_kind = return_kind(args.src, args.func) if args.ret == "auto" else args.ret
 
     load_helpers()
+    PRECONDITIONS[:] = [parse_pre(p) for p in args.pre]
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()
     for i in range(args.runs):
         seed = args.seed * 100003 + i
         try:
-            o = run_one(rom, overlays, orig_range[0], orig_range, seed)  # same world: C code mapped in both
+            o = run_one(rom, overlays, orig_range[0], orig_range, seed, args.max_steps)  # same world: C mapped in both
         except Trap:
             skipped += 1
             continue
@@ -1366,7 +1458,7 @@ def main() -> None:
             print(f"original: unsupported instruction {e}")
             sys.exit(2)
         try:
-            n = run_one(rom, overlays, c_entry, c_range, seed)
+            n = run_one(rom, overlays, c_entry, c_range, seed, args.max_steps)
         except Trap as t:
             print(f"FAIL seed {seed}: C version trapped ({t})")
             sys.exit(1)
@@ -1397,8 +1489,11 @@ def main() -> None:
             for d in diffs:
                 print("  " + d)
             if args.verbose:
-                print("  original calls:", *map(fmt_ev, o[0].events), sep="\n    ")
-                print("  C calls:", *map(fmt_ev, n[0].events), sep="\n    ")
+                k = max(len(o[0].events), len(n[0].events))
+                oe = o[0].events + [None] * (k - len(o[0].events))
+                ne = n[0].events + [None] * (k - len(n[0].events))
+                print("  original calls:", *[fmt_ev(a, b) if a else "-" for a, b in zip(oe, ne)], sep="\n    ")
+                print("  C calls:", *[fmt_ev(b, a) if b else "-" for a, b in zip(oe, ne)], sep="\n    ")
             sys.exit(1)
         ok += 1
         if args.verbose and i < 3:

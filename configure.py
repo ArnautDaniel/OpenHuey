@@ -38,7 +38,7 @@ EXTRA_LD = "config/extra_syms.ld"
 
 ASFLAGS = "-EL -march=r5900 -mabi=n32 -msingle-float -G 0 -no-pad-sections -I include"
 CFLAGS = (
-    "-EL -march=r5900 -mabi=n32 -G 0 -O2 -fno-common -ffreestanding "
+    "-EL -march=r5900 -mabi=n32 -G 0 -O2 -fno-common -ffreestanding -fno-strict-aliasing "
     "-fno-builtin -fno-pic -mno-abicalls -I include -I src"
 )
 CXXFLAGS = CFLAGS + " -fno-exceptions -fno-rtti"

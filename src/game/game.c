@@ -10,7 +10,7 @@ extern void func_001F4100(void *obj);           /* shut down Game.unk14E8C90 */
 extern void func_002BFB20(void *obj);           /* init Game.unk20 */
 
 extern u32 D_0047E374;     /* pad buttons held (bit 0 Select, bit 3 Start) */
-extern VObject *D_0044E4E0; /* global manager object, type unknown */
+extern VObject *gFileLoader; /* the game's file loader (see SceneBoot) */
 
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
 extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
@@ -73,7 +73,7 @@ void Game_StateMain(Game *game) {
         if (scene == NULL) {
             continue;
         }
-        if (scene->finished == 1) {
+        if (scene->status == SCENE_STATUS_FINISHED) {
             /* finished: delete it (virtual destructor) and hand the slot back */
             VCALL(scene, 0x8, void (*)(Scene *, s32))(scene, 1);
             VCALL(&game->sceneHeap, 0x14, void (*)(VObject *, Scene *))(&game->sceneHeap, game->scenes[i]);
@@ -119,7 +119,7 @@ void Game_StateMain(Game *game) {
                 }
             }
         }
-        VCALL(D_0044E4E0, 0x1C, void (*)(VObject *))(D_0044E4E0);
+        VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
         game->nextMode = 2;
         game->modeParam = 1;
         if (game->mode == 2) {

@@ -36,14 +36,15 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
       237 library functions named (`tools/name_libs.py`: syscall stubs + API names from error strings)
 - [ ] Split `asm/game.s` into per-file / per-function units
 - [x] C build path: `src/**/*.c` replaces the matching asm functions in `build/SLUS_210.75.decomp.elf`
-- [ ] Decompile game code (2 functions so far: `src/game/`)
+- [ ] Decompile game code: Game top level, Scene base class, SceneBoot framework (18 functions, `src/game/`)
 
 ## Decompiling a function
 
 1. `tools/decomp.py func_XXXXXXXX` - first draft via m2c
 2. Clean it up into a `.c` file under `src/` (include `common.h`; keep the `func_`/`D_` names
-   of things not yet understood)
+   of things not yet understood; `tools/name.py` to name symbols)
 3. `tools/difftest.py src/path/file.c func_XXXXXXXX` - must PASS with good coverage
+   (`--pre a0+0x18=0..8` to constrain an input field to its real range)
 4. `ninja` - the function's asm is stripped from `build/decomp/game.s` and the C linked instead;
    `build/SLUS_210.75.elf` (pure asm) must still match
 5. `ninja shift` + `tools/boottest.py build/SLUS_210.75.shift-all.elf` every so often

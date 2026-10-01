@@ -18,16 +18,32 @@ typedef struct VObject {
 /*
  * Base of the top-level scenes / game modes the Game owns (Game.scenes[]). Each mode
  * is a large object allocated from Game.sceneHeap: see Game_StartNextScene.
- * Vtable (Metrowerks layout): +0x8 destructor, +0xC update(s32), +0x14 soft-reset hook.
+ * Vtable (Metrowerks layout): +0x8 destructor, +0xC Update(s32), +0x10 entry state (pure
+ * virtual; the initial state is a virtual PTMF to it), +0x14 OnSoftReset.
  */
 typedef struct Scene {
     /* 0x00 */ void **vtbl;
     /* 0x04 */ PTMF state;
-    /* 0x10 */ u8 slot;     /* index in Game.scenes[] */
-    /* 0x11 */ u8 unk11;    /* 2 when activated */
-    /* 0x12 */ s8 finished; /* 1 = done: deleted at the next update */
-    /* 0x13 */ u8 unk13;
+    /* 0x10 */ u8 slot;       /* index in Game.scenes[] */
+    /* 0x11 */ s8 request;    /* SCENE_REQ_*, consumed by Scene_Update */
+    /* 0x12 */ s8 status;     /* SCENE_STATUS_*; FINISHED scenes are deleted by Game_StateMain */
+    /* 0x13 */ s8 waitFrames; /* for SCENE_REQ_WAIT */
 } Scene;
+
+enum {
+    SCENE_REQ_NONE = 0,
+    SCENE_REQ_FINISH = 1,
+    SCENE_REQ_RUN = 2,
+    SCENE_REQ_RESUME = 3,
+    SCENE_REQ_WAIT = 4,
+};
+enum {
+    SCENE_STATUS_IDLE = 0,
+    SCENE_STATUS_FINISHED = 1,
+    SCENE_STATUS_2 = 2, /* treated like FINISHED */
+    SCENE_STATUS_RUNNING = 3,
+    SCENE_STATUS_WAITING = 4,
+};
 
 #define GAME_NUM_SCENES 4
 
@@ -75,5 +91,8 @@ void Game_StartNextScene(Game *game);
 
 void Scene_SetSlot(Scene *scene, u8 slot);
 void Scene_Activate(Scene *scene);
+Scene *Scene_dtor(Scene *scene, s32 flags);
+void Scene_Update(Scene *scene, s32 arg);
+void Scene_OnSoftReset(Scene *scene);
 
 #endif /* GAME_H */

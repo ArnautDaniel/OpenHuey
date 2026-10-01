@@ -22,6 +22,13 @@ typedef struct PTMF {
     } u;
 } PTMF;
 
+/* Static PTMF constants in the original's rodata are separate 16-byte aligned objects;
+ * this describes a run of consecutive ones. */
+typedef struct PTMF16 {
+    PTMF p;
+    u32 pad;
+} PTMF16;
+
 static inline s32 ptmf_test(const PTMF *p) {
     return p->this_delta != 0 || p->vtbl_offset != 0 || p->u.func != NULL;
 }
@@ -38,6 +45,20 @@ static inline void ptmf_scall(void *self, const PTMF *p) {
         fn = *(void (**)(void *))(vtbl + p->vtbl_offset);
     }
     fn(obj);
+}
+
+/* (self->*p)() for a member function returning an int/bool */
+static inline s32 ptmf_scall_r(void *self, const PTMF *p) {
+    char *obj = (char *)self + p->this_delta;
+    s32 (*fn)(void *);
+
+    if (p->vtbl_offset < 0) {
+        fn = (s32 (*)(void *))p->u.func;
+    } else {
+        char *vtbl = *(char **)(obj + p->u.vptr_offset);
+        fn = *(s32 (**)(void *))(vtbl + p->vtbl_offset);
+    }
+    return fn(obj);
 }
 
 /* Call a virtual function by its byte offset in the (Metrowerks-layout) vtable at obj+0:
