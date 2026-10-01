@@ -2,6 +2,7 @@
 #include "common.h"
 #include "fiona.h"
 #include "progress.h"
+#include "navmesh.h"
 
 extern Character *gCharacters[6];
 extern VObject *gBootMessage;      /* message display, also used in game */
@@ -336,4 +337,61 @@ void func_001A4340(Fiona *f) {
     FI(f, 0x1AD5F8, s32) = 0;
     FI(f, 0x1AD548, s32) = 0;
     VCALL(f, 0x5C, void (*)(Fiona *))(f);
+}
+
+extern void func_001F6AF0(void *motion);
+extern VObject *D_0044FE10;
+
+/* vtable +0x48: follow the animation (cutscene): position from the root bone, room from
+ * progress, triangle from the mesh. */
+void func_001A3000(Fiona *f) {
+    sceVu0FMATRIX m;
+
+    sceVu0UnitMatrix(m);
+    VCALL(f->c.motion, 0x28, void (*)(void *, sceVu0FMATRIX))(f->c.motion, m);
+    if (f->c.state[0] != 0) {
+        f->c.state[0] = 0;
+    }
+    if (f->c.a.disabled) {
+        return;
+    }
+    func_001F6AF0(f->c.motion);
+    if (VCALL(D_0044FE10, 0x54, s32 (*)(VObject *, s32, s32))(D_0044FE10, 0, 0) > 0) {
+        MOTION_U8(f->c.motion, 0x850) = 1;
+    }
+    VCALL(f->c.motion, 0x3C, void (*)(void *))(f->c.motion);
+    f->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    sceVu0CopyVector(f->c.a.pos, func_0017CE80(MOTION_SKELETON(f->c.motion), 0) + 12);
+    f->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, f->c.a.pos, 0);
+}
+
+extern void func_00126360(Character *c);
+extern void func_00187650(Fiona *f);
+extern void func_001792C0(Progress *p, s32);
+extern VObject *D_0044E4F8;
+
+/* vtable +0x90: full stop - movement, interaction and the related progress flags. */
+void func_0019D190(Fiona *f) {
+    Progress *p;
+
+    func_00126360(&f->c);
+    FI(f, 0x1AD5FC, u8) = 0;
+    func_00187650(f);
+    f->unk1AD5D0 = 1;
+    f->unk1AD5D1 = 1;
+    FI(f, 0x1AD5F0, s32) = 0;
+    FI(f, 0x1AD5C8, s32) = 0;
+    p = gProgress;
+    FI(f, 0x1AD5C4, s32) = 0;
+    Progress_ClearFlag(p, 9);
+    Progress_ClearFlag(p, 0xA);
+    if (*((u8 *)p + 0x1FBEC1) == 0) {
+        func_001792C0(p, 0);
+    }
+    FI(f, 0x1AD5A0, s32) = 0;
+    FI(f, 0x1AD5A4, s32) = 0;
+    FI(f, 0x1AD5A8, s32) = 0;
+    FI(f, 0x1AD5AC, s32) = 0;
+    VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
+    Progress_ClearFlag(p, 0x17);
 }

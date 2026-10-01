@@ -1406,3 +1406,5 @@ src/game/fiona.c func_001A3E60 --stub-ret=1
 src/game/fiona.c func_001A4080 --stub-ret=1
 src/game/fiona.c func_001A4340 --stub-ret=1
 src/game/random.c func_001A43D0
+src/game/fiona.c func_001A3000 --stub-ret=1
+src/game/fiona.c func_0019D190 --stub-ret=1
