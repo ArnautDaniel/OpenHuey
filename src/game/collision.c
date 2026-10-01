@@ -1,8 +1,5 @@
-/* Example for tools/difftest.py: func_0017CA80, point-in-triangle test on the
- * XZ plane against triangle `index` of a mesh. */
-typedef int s32;
-typedef unsigned int u32;
-typedef float f32;
+/* Collision mesh queries. */
+#include "common.h"
 
 typedef struct { f32 x, y, z, w; } Vec4;
 typedef struct { Vec4 v[3]; u32 pad[8]; } Tri;          /* 0x50 bytes */

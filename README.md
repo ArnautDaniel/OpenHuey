@@ -35,7 +35,18 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
       CRI ADX/Sofdec, MSL runtime and libm; ~6,950 functions / 2 MB are Capcom game code.
       237 library functions named (`tools/name_libs.py`: syscall stubs + API names from error strings)
 - [ ] Split `asm/game.s` into per-file / per-function units
-- [ ] Start decompiling game code
+- [x] C build path: `src/**/*.c` replaces the matching asm functions in `build/SLUS_210.75.decomp.elf`
+- [ ] Decompile game code (2 functions so far: `src/game/`)
+
+## Decompiling a function
+
+1. `tools/decomp.py func_XXXXXXXX` - first draft via m2c
+2. Clean it up into a `.c` file under `src/` (include `common.h`; keep the `func_`/`D_` names
+   of things not yet understood)
+3. `tools/difftest.py src/path/file.c func_XXXXXXXX` - must PASS with good coverage
+4. `ninja` - the function's asm is stripped from `build/decomp/game.s` and the C linked instead;
+   `build/SLUS_210.75.elf` (pure asm) must still match
+5. `ninja shift` + `tools/boottest.py build/SLUS_210.75.shift-all.elf` every so often
 
 ## Shiftability pipeline
 

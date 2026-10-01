@@ -1,8 +1,5 @@
-/* Example for tools/difftest.py (not linked into the game yet).
- * func_002D1E40: part of the main game object's init; loads the embedded
- * cdvdman IRX and exits if it reports a problem. */
-typedef int s32;
-typedef float f32;
+/* Game object initialisation. */
+#include "common.h"
 
 extern void func_001136E8(s32 status);          /* exit() */
 extern s32 func_0037E1F0(s32 *result);          /* load embedded IRX */
