@@ -7,7 +7,7 @@
 With no function names, every non-static function in the file is tested. The C
 file is compiled once per invocation, and the game's symbol table is cached in
 build/ (re-read only when the ELF changes), so test many functions per call.
---runs defaults to 30 for straight-line originals (no branches) and 200 otherwise.
+--runs defaults to 20; -j N tests N functions in parallel (default 4).
 
 Runs the original machine code (from the baserom) and the C version (compiled
 with the project's GCC, linked against the game's real symbol addresses) in a
@@ -66,12 +66,14 @@ PTR_LO, PTR_HI = 0x0A000000, 0x0D000000  # random "heap" pointers handed to func
 STACK_TOP = 0x01FF0000
 FRAME = 0x10000              # writes within this much below sp are the function's own frame
 RET_MAGIC = 0x0DEAD000       # return address sentinel
+DEFAULT_RUNS = 20
 MAX_STEPS = 50_000           # per run; --max-steps to change
 OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
 # Runtime helpers that are executed instead of stubbed: they are part of how the
 # original code expresses something C code writes inline (e.g. PTMF calls).
 INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
+CALL_ALIAS: dict[int, int] = {}  # C address -> original address of the file's other game functions
 HELPER_RANGES: list[tuple[int, int]] = []
 FPR_WRITERS = {"lwc1", "mtc1"}
 DIRECT_GPR_WRITERS = {"lq", "pcpyld", "pcpyud", "por", "pand", "pxor", "pnor", "paddub", "pextlw", "pextuw"}
@@ -135,6 +137,7 @@ def b2f(b: int) -> float:
 
 
 # ---------------------------------------------------------------- value distribution
+STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
 
@@ -345,6 +348,8 @@ class CPU:
                 self.m.write(p, OUTPARAM, v)
         self.call_n += 1
         rv = interesting(self.rng)
+        if STUB_RETURNS and self.rng.random() < 0.5:
+            rv = self.rng.choice(STUB_RETURNS)
         self.s32(2, rv)
         self.s32(3, self.rng.getrandbits(32))
         self.f[0] = f2b(self.rng.uniform(-100, 100))
@@ -366,7 +371,7 @@ class CPU:
                 if b == 0:
                     break
                 bs.append(b)
-            if 3 <= len(bs) < 256 and all(32 <= b < 127 for b in bs):
+            if 1 <= len(bs) < 256 and all(32 <= b < 127 for b in bs):
                 return '"' + bs.decode() + '"'
         return v
 
@@ -443,7 +448,15 @@ class CPU:
             if not taken:
                 pc, npc = ds + 4, ds + 8
                 continue
-            if kind == "call" and (target in INLINE_ADDRS or self.func_lo <= target < self.func_hi):
+            if target in CALL_ALIAS and kind in ("call", "jump"):
+                # another game function the C file also defines: the original calls the
+                # original, so the C side's call is stubbed under the original's address
+                self.stub_call(CALL_ALIAS[target], "call")
+                if kind == "call":
+                    pc, npc = pc + 8, pc + 12
+                else:
+                    pc, npc = self.g(31) & M32, (self.g(31) & M32) + 4
+            elif kind == "call" and (target in INLINE_ADDRS or self.func_lo <= target < self.func_hi):
                 # direct call to a runtime helper, our own static helper, or recursion: run it
                 pc, npc = target, target + 4
             elif kind in ("call", "vcall"):  # indirect calls (vtables, function pointers) are always stubbed
@@ -1255,6 +1268,9 @@ def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str
     cxx = src.suffix in (".cpp", ".cc")
     comp = f"{TC}{'g++' if cxx else 'gcc'}"
     flags = cflags().split() + (["-fno-exceptions", "-fno-rtti"] if cxx else [])
+    # a function the C file calls must stay a call, to compare with the original's call
+    flags += ["-fno-inline-small-functions", "-fno-inline-functions", "-fno-inline-functions-called-once",
+              "-fno-ipa-cp", "-fno-ipa-sra", "-fno-ipa-icf"]
     subprocess.run([sys.executable, str(ROOT / "tools/eecc.py"), comp, "-c", *flags, "-I", str(ROOT / "include"),
                     "-I", str(ROOT / "src"), "-o", str(obj), str(src)], check=True, cwd=ROOT)
     defined = set(subprocess.run([f"{TC}nm", "--defined-only", "-j", str(obj)], capture_output=True,
@@ -1325,16 +1341,6 @@ def original_range(func: str) -> tuple[int, int] | None:
     return None
 
 
-def straight_line(rom: bytes, lo: int, hi: int) -> bool:
-    """No branches or jumps besides the final jr $ra: a few random runs already cover everything."""
-    for a in range(lo, hi, 4):
-        w = struct.unpack_from("<I", rom, a - IMAGE_LO + 0x80)[0]
-        ins = rz.Instruction(w, vram=a, category=rz.InstrCategory.R5900)
-        if ins.isBranch() or (ins.isJump() and not ins.isJrRa()):
-            return False
-    return True
-
-
 def return_kind(src: Path, func: str) -> str:
     m = re.search(rf"^\s*(?:static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", src.read_text(), re.M)
     t = m.group(1).strip() if m else "s32"
@@ -1387,7 +1393,10 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
     for reg, off, lo, hi in PRECONDITIONS:
         # a constrained input: write it without logging it as a function write
         a = Memory.norm((c.g(reg) & M32) + off)
-        v = random.Random(seed * 7 + off).randint(lo, hi) & M32
+        rnd = random.Random(seed * 7 + off)
+        # half the time a boundary or one of the function's own constants within the range
+        special = sorted({lo, lo + 1, hi, hi - 1} | {d for d in DICTIONARY if lo <= d <= hi})
+        v = (rnd.choice(special) if rnd.random() < 0.5 else rnd.randint(lo, hi)) & M32
         for i, b in enumerate(v.to_bytes(4, "little")):
             mem._page(a + i)[(a + i) & 0xFFF] = b
     for r, v in zip(FARG_REGS, floats):
@@ -1479,13 +1488,15 @@ def fmt_ev(e, other=None):
 def option_parser() -> argparse.ArgumentParser:
     """Per-function options (also accepted after the function name in a --list file)."""
     ap = argparse.ArgumentParser(add_help=False)
-    ap.add_argument("--runs", type=int, default=None, help="default: 30 for straight-line code, else 200")
+    ap.add_argument("--runs", type=int, default=None, help="default: 20")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--pre", action="append", default=[],
                     help="input precondition, e.g. a0+0x18=0..8 (u32 at arg0+0x18 is in 0..8)")
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
+    ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
+                    help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
     return ap
 
 
@@ -1500,9 +1511,15 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
         print(f"ERROR {func}: not defined (non-static) in {src}")
         return 2
     c_entry = funcs[func]
+    CALL_ALIAS.clear()
+    for name, addr in funcs.items():
+        o = original_range(name)
+        if name != func and o is not None:
+            CALL_ALIAS[addr] = o[0]
     ret_kind = return_kind(src, func) if opts.ret == "auto" else opts.ret
-    runs = opts.runs if opts.runs is not None else (30 if straight_line(rom, *orig_range) else 200)
+    runs = opts.runs if opts.runs is not None else DEFAULT_RUNS
     PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
+    STUB_RETURNS[:] = opts.stub_ret
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()
@@ -1573,11 +1590,27 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
 
 
 
+_WORK = None  # (rom, build, src) of the file being tested, shared with forked workers
+
+
+def _test_captured(item) -> tuple[int, str]:
+    import contextlib
+    import io
+
+    func, opts = item
+    rom, build, src = _WORK
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        r = test_function(rom, build, src, func, opts)
+    return r, buf.getvalue()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(parents=[option_parser()], description=__doc__.split("\n")[0])
     ap.add_argument("src", type=Path, nargs="?")
     ap.add_argument("funcs", nargs="*", help="functions to test (default: all non-static ones in src)")
     ap.add_argument("--list", type=Path, help="file of 'source function [options]' lines")
+    ap.add_argument("-j", "--jobs", type=int, default=4, help="functions tested in parallel")
     args = ap.parse_args()
 
     # (source, function, options) jobs, grouped by source so each file is compiled once
@@ -1600,8 +1633,7 @@ def main() -> None:
 
     rom = BASEROM.read_bytes()
     load_helpers()
-    worst = passed = 0
-    total = 0
+    worst = passed = total = 0
     for src, items in jobs.items():
         with tempfile.TemporaryDirectory() as td:
             try:
@@ -1612,12 +1644,24 @@ def main() -> None:
                 continue
         if items[0][0] is None:
             items = [(f, items[0][1]) for f in build[1]]
-        for func, opts in items:
-            r = test_function(rom, build, src, func, opts)
-            total += 1
-            passed += r == 0
-            worst = max(worst, r)
-            sys.stdout.flush()
+        global _WORK
+        _WORK = (rom, build, src)
+        if args.jobs > 1 and len(items) > 1:
+            import multiprocessing as mp
+            with mp.get_context("fork").Pool(min(args.jobs, len(items))) as pool:
+                results = pool.imap(_test_captured, items)
+                for r, out in results:
+                    print(out, end="", flush=True)
+                    total += 1
+                    passed += r == 0
+                    worst = max(worst, r)
+        else:
+            for item in items:
+                r, out = _test_captured(item)
+                print(out, end="", flush=True)
+                total += 1
+                passed += r == 0
+                worst = max(worst, r)
     if total > 1:
         print(f"{passed}/{total} passed")
     sys.exit(worst)

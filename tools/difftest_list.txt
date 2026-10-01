@@ -1281,3 +1281,15 @@ src/leaf/b7_00351D50.c func_0035A170
 src/leaf/b7_00351D50.c func_0035AE90
 src/leaf/b7_00351D50.c func_0035AF20
 src/leaf/b7_00351D50.c func_0035AF30
+
+# boot scene steps (PS2 platform code: to be shimmed on PC)
+src/game/scene_boot.c func_0037EC00
+src/game/scene_boot.c func_0037F2E0
+src/game/scene_boot.c func_0037F510
+src/game/scene_boot.c func_0037FEF0
+src/game/scene_boot.c func_00380410
+src/game/scene_boot.c func_0037FC60 --pre=a0+0x1C=0..0x3F --stub-ret=3 --runs=60
+src/game/scene_boot.c func_0037FAC0 --pre=a0+0x1C=0..0x3F --stub-ret=3 --runs=60
+src/game/scene_boot.c func_0037FE50
+src/game/scene_boot.c func_0037F980 --pre=a0+0x1C=0..0x3F --runs=60
+src/game/scene_boot.c func_00380050 --pre=a0+0x1C=0..5 --runs=200

@@ -165,3 +165,413 @@ void SceneBoot_StateDone(SceneBoot *boot) {
     ((s32 *)D_0044E978)[4] = 2;
     VCALL(boot, 0x14, void (*)(SceneBoot *))(boot);
 }
+
+/* ---- boot steps and their helpers ---- */
+
+extern s8 D_0047E360;          /* 0 = (no controller?): boot steps then wait for a button */
+extern u32 D_0047E37C;         /* pad buttons pressed this frame; bit 14 used to continue */
+extern u8 D_0047B350;
+extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
+extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
+extern VObject *D_0044E4F0;    /* GS packet / texture manager: +0x10 alloc(kind, qwords), +0x44 upload? */
+extern VObject *D_0044E9A0;    /* +0x28 builds a TEX0 register value */
+
+static const char sMsgSubBin[] = "SUBSCR\\MSG_SUB.BIN";
+static const char sMsgBaseBin[] = "SUBSCR\\MSG_BASE.BIN";
+static const char sMsgBaseTex[] = "SUBSCR\\MSG_BASE.TEX";
+
+/* Load the subtitle message file into the resident buffer. */
+void func_0037EC00(SceneBoot *boot) {
+    VObject *res = D_0044E978;
+
+    VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
+        gFileLoader, sMsgSubBin, VCALL(res, 0x14, void *(*)(VObject *))(res));
+    D_01991EC8 = VCALL(res, 0x14, void *(*)(VObject *))(res);
+}
+
+/* GS packet head shared by the message sprites: GIF tags and drawing registers up to TEX0.
+ * The vertex part (XYZ/UV) follows at p[15]. */
+static inline void BootSprite_Head(u64 *p, s32 id, const u8 *img) {
+    p[0] = 0x1000000A;
+    ((u32 *)p)[2] = 0;
+    ((u32 *)p)[3] = 0x5000000A;
+    p[2] = 0x1000000000008004ULL;
+    p[3] = 0xE;
+    p[4] = 0x44;
+    p[5] = 0x42;
+    p[6] = 0x60;
+    p[7] = 0x14;
+    p[8] = 0x0000008000008080ULL;
+    p[9] = 0x3B;
+    p[10] = 0x116;
+    p[11] = 0;
+    p[12] = 0x8400000000008001ULL;
+    p[13] = 0xFFFFFFFFF5353186ULL;
+    p[14] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, s32, u32, u32, u32, u32))(
+        D_0044E9A0, id, img[0], *(const u16 *)(img + 4), *(const u16 *)(img + 6), img[1]);
+}
+
+/* Message sprite `line` of message slot 6: its image id (-1 = none) and image header.
+ * Returns the GS packet to fill, or NULL if there is nothing to draw. */
+static inline u64 *BootSprite_Begin(s32 line, s32 prio, s32 *idOut, u8 **imgOut) {
+    VObject *msg = gBootMessage;
+    VObject *gs = D_0044E4F0;
+    s32 id = VCALL(msg, 0x24, s32 (*)(VObject *, s32, s32))(msg, 6, line);
+    u8 *img;
+
+    if (id == -1) {
+        return NULL;
+    }
+    img = VCALL(msg, 0x28, u8 *(*)(VObject *, s32, s32))(msg, 6, line);
+    if (id & 0x80000000) {
+        /* texture not resident yet: upload it first */
+        id &= 0x7FFFFFFF;
+        if ((VCALL(gs, 0x44, u32 (*)(VObject *, s32, void *, s32))(gs, id, img, prio) & 0xFF) == 0) {
+            return NULL;
+        }
+    }
+    *idOut = id;
+    *imgOut = img;
+    return VCALL(gs, 0x10, u64 *(*)(VObject *, s32, s32))(gs, 0xB, prio);
+}
+
+/* Draw the single large boot message sprite (slot 6, line 0). */
+void func_0037F2E0(SceneBoot *boot) {
+    s32 id;
+    u8 *img;
+    u64 *p = BootSprite_Begin(0, 1, &id, &img);
+
+    if (p == NULL) {
+        return;
+    }
+    BootSprite_Head(p, id, img);
+    p[15] = 0x000008000080000AULL;
+    p[16] = 0x0000000180808080ULL;
+    p[17] = 0;
+    p[18] = 0xFFFFFFFF72007000ULL;
+    p[19] = 0x20002000;
+    p[20] = 0xFFFFFFFF92009000ULL;
+    p[21] = 0;
+}
+
+/* Draw the two boot message lines (slot 6, lines 0 and 1). */
+void func_0037F510(SceneBoot *boot) {
+    s32 i;
+
+    for (i = 0; i < 2; i++) {
+        s32 id;
+        u8 *img;
+        u64 *p = BootSprite_Begin(i, 0x30, &id, &img);
+        u64 y0, y1;
+
+        if (p == NULL) {
+            continue;
+        }
+        BootSprite_Head(p, id, img);
+        p[15] = 0x000004000080000AULL;
+        p[16] = 0x0000000180808080ULL;
+        p[17] = 0;
+        y0 = (u32)((i * 0x100 + 0x720) * 16);
+        y1 = (u32)(((i + 1) * 0x100 + 0x720) * 16);
+        p[18] = (y0 << 16) | 0xFFFFFFFF00007000ULL;
+        p[19] = 0x10002000;
+        p[20] = (y1 << 16) | 0xFFFFFFFF00009000ULL;
+        p[21] = 0;
+    }
+}
+
+/* Shared start of the boot steps: without (a controller?), show the message and wait
+ * until button bit 14 is pressed. Returns nonzero while still waiting. */
+static inline s32 SceneBoot_WaitButton(SceneBoot *boot) {
+    if (D_0047E360 == 0) {
+        boot->stepFlag = 1;
+    }
+    if (boot->stepFlag != 0) {
+        if (!(D_0047E37C & 0x4000)) {
+            func_0037F510(boot);
+            return 1;
+        }
+        boot->stepFlag = 0;
+    }
+    return 0;
+}
+
+/* Boot step: load the boot message texts. */
+u32 func_0037FEF0(SceneBoot *boot) {
+    VObject *res;
+    VObject *loader;
+
+    if (SceneBoot_WaitButton(boot)) {
+        return 1;
+    }
+    boot->stepFlag = 0;
+    res = D_0044E978;
+    loader = gFileLoader;
+    VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
+        loader, sMsgBaseBin, VCALL(res, 0xC, void *(*)(VObject *))(res));
+    D_01991EC0 = VCALL(res, 0xC, void *(*)(VObject *))(res);
+    VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
+        loader, sMsgBaseTex, VCALL(res, 0x10, void *(*)(VObject *))(res));
+    VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(
+        D_0044E4E8, VCALL(res, 0x10, void *(*)(VObject *))(res), 0x14);
+    func_0037EC00(boot);
+    D_0047B350 = 2;
+    return 0;
+}
+
+/* Boot step (first): just the button wait. */
+u32 func_00380410(SceneBoot *boot) {
+    return SceneBoot_WaitButton(boot);
+}
+
+/* ---- logo steps: a 64-frame timer (stepTimer); the image is drawn on frames 0..0x3D and
+ * the screen fades (colour at +0xC) around the last frames. ---- */
+
+typedef struct BootScreen {
+    /* 0x00 */ u32 unk0;
+    /* 0x04 */ u32 unk4;     /* 0x88000 for the fade */
+    /* 0x08 */ u32 unk8;
+    /* 0x0C */ u32 color;    /* 0x80808080 = normal, 0 = black */
+    /* 0x10 */ u8 pad10[8];
+    /* 0x18 */ s16 width;
+    /* 0x1A */ s16 height;
+} BootScreen;
+
+static const char sLogoDolby[] = "SYSTEM\\LOGO_DOLBY.BIN";
+static const char sCautionTex[] = "SYSTEM\\CAUTION.TEX";
+
+#define BOOT_IMAGE_67C40(boot) ((u8 *)(boot) + 0x67C40)   /* second image buffer, inside logoCri's area */
+
+/* The common frame handling of the logo steps. Returns 0 when the logo is done. */
+static inline s32 BootLogo_Frame(SceneBoot *boot, BootScreen *scr) {
+    switch (boot->stepTimer) {
+    case 0x3F:
+        scr->color = 0x80808080;
+        return 0;
+    case 0x3E:
+        scr->unk4 = 0x88000;
+        scr->color = 0;
+        scr->width = 0x200;
+        scr->height = 0x1C0;
+        break;
+    case 0x3D:
+        scr->color = 0;
+        break;
+    case 1:
+        scr->color = 0x80808080;
+        break;
+    }
+    boot->stepTimer++;
+    return 1;
+}
+
+/* Boot step: CRI logo (loaded by SceneBoot_StateLoadSystem); starts loading the Dolby logo. */
+u32 func_0037FC60(SceneBoot *boot) {
+    VObject *gs;
+    BootScreen *scr;
+
+    if (boot->stepTimer == 0 && VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) != 3) {
+        return 1;
+    }
+    gs = D_0044E4F0;
+    scr = VCALL(gs, 0x2C, BootScreen *(*)(VObject *))(gs);
+    if (boot->stepTimer == 0) {
+        VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
+            gFileLoader, sLogoDolby, BOOT_IMAGE_67C40(boot), 0x10000000, 0);
+        scr->color = 0;
+        scr->width = 0x280;
+        scr->height = 0x1C0;
+        boot->stepTimer++;
+    } else if (!BootLogo_Frame(boot, scr)) {
+        return 0;
+    }
+    if ((u32)boot->stepTimer < 0x3E) {
+        VCALL(gs, 0x48, void (*)(VObject *, void *, s32, s32, s32, s32))(
+            gs, boot->logoCri, scr->width, scr->height, 0x88000, 0x34);
+    }
+    return 1;
+}
+
+/* Boot step: Dolby logo, once its load has finished. */
+u32 func_0037FAC0(SceneBoot *boot) {
+    VObject *gs;
+    BootScreen *scr;
+
+    if (VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) != 3) {
+        return 1;
+    }
+    gs = D_0044E4F0;
+    scr = VCALL(gs, 0x2C, BootScreen *(*)(VObject *))(gs);
+    if (boot->stepTimer == 0) {
+        scr->color = 0;
+        scr->width = 0x2D0;
+        scr->height = 0x21C;
+        boot->stepTimer++;
+    } else if (!BootLogo_Frame(boot, scr)) {
+        return 0;
+    }
+    if ((u32)boot->stepTimer < 0x3E) {
+        VCALL(gs, 0x48, void (*)(VObject *, void *, s32, s32, s32, s32))(
+            gs, BOOT_IMAGE_67C40(boot), scr->width, scr->height, 0x88000, 0x34);
+    }
+    return 1;
+}
+
+extern void func_002BFB00(void *obj, s32, s32);
+extern void func_002BF2F0(void *obj);
+
+/* Boot step: run the object at +0xC7440 until it reports done (+0xC7444 < 0). */
+u32 func_0037FE50(SceneBoot *boot) {
+    if (boot->stepTimer == 0) {
+        func_002BFB00(&boot->unkC7440Vtbl, 0, 0);
+        boot->unkC7444 = 0;
+        boot->unkC7448 = 0;
+        boot->stepTimer = 1;
+    }
+    if (boot->unkC7444 < 0) {
+        return 0;
+    }
+    func_002BF2F0(&boot->unkC7440Vtbl);
+    return 1;
+}
+
+extern void func_003844E0(Task *task);
+extern void func_00384A90(Task *task, s32);
+extern void func_00384BC0(Task *task);
+
+/* Boot step (last): the caution screen, shown with tasks[0] until frame 0x3F. */
+u32 func_0037F980(SceneBoot *boot) {
+    if (boot->stepTimer == 0x3F) {
+        func_003844E0(&boot->tasks[0]);
+        return 0;
+    }
+    if (boot->stepTimer == 0) {
+        VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
+            gFileLoader, sCautionTex, BOOT_IMAGE_67C40(boot));
+        VCALL(gBootMessage, 0x10, void (*)(VObject *, s32, void *, s32))(
+            gBootMessage, 6, BOOT_IMAGE_67C40(boot), 0);
+    }
+    boot->stepTimer++;
+    if (boot->stepTimer != 0) {
+        func_0037F2E0(boot);
+        func_00384A90(&boot->tasks[0], 1);
+    }
+    func_00384BC0(&boot->tasks[0]);
+    return 1;
+}
+
+#define PAD_TRIANGLE 0x1000
+#define PAD_CROSS 0x4000
+#define VIDEO_MODE_480P 0x50
+
+extern u32 D_0047E374;   /* pad buttons held */
+extern void func_00384590(Task *task, s32, s32, s32, s32);
+extern void func_00384730(Task *task, s32 x, s32 y, s32, s32, s32, const char *fmt, u32 value);
+extern void func_00384B60(Task *task);
+extern void func_00384BA0(Task *task);
+extern void func_002CF390(void *obj, u32 alpha);
+
+static const char sProgTex[] = "SYSTEM\\PROG.TEX";
+static const char sCountFmt[] = "%d";
+
+/* Boot step: progressive scan. Holding triangle + cross at boot asks whether to switch to 480p
+ * (tasks[0] runs the question); after switching, the choice must be confirmed within 10 s
+ * (countdown via tasks[2]) or the previous video mode is restored. */
+u32 func_00380050(SceneBoot *boot) {
+    VObject *gs;
+    s32 result = 1;
+    s32 counting = 0;
+    u8 busy = boot->stepFlag;   /* low byte */
+    Task *ask = &boot->tasks[0];
+
+    switch (boot->stepTimer) {
+    case 0:
+        VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
+            gFileLoader, sProgTex, BOOT_IMAGE_67C40(boot));
+        VCALL(gBootMessage, 0x10, void (*)(VObject *, s32, void *, s32))(
+            gBootMessage, 6, BOOT_IMAGE_67C40(boot), 0);
+        gs = D_0044E4F0;
+        boot->savedVideoMode = VCALL(gs, 0x28, u32 (*)(VObject *))(gs);
+        if ((D_0047E374 & PAD_TRIANGLE) && (D_0047E374 & PAD_CROSS)) {
+            boot->stepTimer = 1;
+        } else {
+            result = 0;
+        }
+        break;
+    case 1:
+        /* ask: switch to progressive? */
+        func_00384A90(ask, 9);
+        func_00384BA0(ask);
+        boot->stepTimer = 2;
+        /* fall through */
+    case 2:
+        if (busy || ask->unk10) {
+            break;
+        }
+        if (ask->unk48 != 0) {
+            result = 0;   /* answered no */
+            break;
+        }
+        boot->countdown = 300;
+        boot->stepTimer = 3;
+        VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, VIDEO_MODE_480P);
+        break;
+    case 3:
+        /* ask: keep this mode? */
+        func_00384A90(ask, 10);
+        func_00384BA0(ask);
+        boot->stepTimer = 4;
+        /* fall through */
+    case 4:
+        if (boot->countdown != 0 && --boot->countdown == 0) {
+            /* timed out: back to the old mode, ask again */
+            VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
+            boot->stepTimer = 1;
+        }
+        if (busy || ask->unk10) {
+            counting = 1;
+            break;
+        }
+        if (ask->unk48 != 0) {
+            /* answered no: back to the old mode, ask again */
+            VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
+            boot->stepTimer = 1;
+            break;
+        }
+        result = 0;
+        break;
+    }
+
+    if (boot->stepFlag == 0) {
+        func_00384BA0(ask);
+    }
+    func_00384B60(ask);
+    if (counting) {
+        u32 secs = (u8)(boot->countdown / 30);
+
+        if ((s32)secs >= 10) {
+            secs = 9;
+        }
+        func_00384730(&boot->tasks[2], 0xF8, 0xB3, 0, 0x80, 0x30, sCountFmt, secs & 0xFF);
+    }
+
+    /* same button wait as the other steps, but drawn through tasks[1] */
+    if (D_0047E360 == 0) {
+        boot->stepFlag = 1;
+    }
+    busy = 0;
+    if (boot->stepFlag != 0) {
+        if (!(D_0047E37C & PAD_CROSS)) {
+            func_00384590(&boot->tasks[1], 8, 0, 0x80, 0x33);
+            busy = 1;
+        } else {
+            boot->stepFlag = 0;
+        }
+    }
+    func_002CF390(&boot->unkC75D0Vtbl, (u32)(busy ? 0x5F : 0) << 24);
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, &boot->unkC75D0Vtbl, 0x31, 0);
+    if (boot->stepTimer != 0 && ask->unk10) {
+        func_0037F2E0(boot);
+    }
+    return busy ? busy : result;
+}

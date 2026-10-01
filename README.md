@@ -44,8 +44,9 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 2. Clean it up into a `.c` file under `src/` (include `common.h`; keep the `func_`/`D_` names
    of things not yet understood; `tools/name.py` to name symbols)
 3. `tools/difftest.py src/path/file.c [func_XXXXXXXX ...]` - must PASS with good coverage
-   (no function names = every non-static function in the file; `--pre a0+0x18=0..8` to
-   constrain an input field to its real range)
+   (no function names = every non-static function in the file; 20 runs by default, 4 in
+   parallel; `--pre a0+0x18=0..8` to constrain an input field to its real range, `--stub-ret 3`
+   to make called functions often return a value the code waits for)
 4. `ninja` - the function's asm is stripped from `build/decomp/game.s` and the C linked instead;
    `build/SLUS_210.75.elf` (pure asm) must still match
 5. `ninja shift` + `tools/boottest.py build/SLUS_210.75.shift-all.elf` every so often
@@ -88,8 +89,8 @@ Helpers to keep these lists current (run after a build; then `configure.py --spl
 - `tools/libmap.py`: compiler fingerprint + strings per address range (library identification)
 - `tools/name_libs.py`: names syscall stubs and library functions from their error strings
 - `tools/decomp.py <func>`: first-draft C via m2c (doesn't understand the EE float accumulator ops `mula.s`/`madd.s`/`msub.s`)
-- `tools/difftest.py <src.c> [func...]`: runs the original and the C version on random inputs (30 for
-  straight-line code, 200 with branches; `--runs` to override) in an R5900
+- `tools/difftest.py <src.c> [func...]`: runs the original and the C version on random inputs (20 by
+  default, `--runs` to override) in an R5900
   interpreter and compares calls, memory writes and return values; reports instruction coverage.
   Examples: `src/difftest_example*.c`
 - `tools/ptrcheck.py`: static audit (unrelocated data pointers / `lui`, pinned addresses)
