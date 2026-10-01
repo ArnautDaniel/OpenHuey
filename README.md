@@ -31,7 +31,9 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 - [x] **Shiftable build**: with padding inserted after crt0 (4 bytes, 16 bytes, or 4 KB),
       the game boots, shows the memory-card check and the Capcom logo with correct colours,
       and plays the intro movie
-- [ ] Identify SDK / CRI library functions by signature
+- [x] Library code mapped (`config/libraries.txt`): ~4,350 functions / 616 KB are Sony SDK,
+      CRI ADX/Sofdec, MSL runtime and libm; ~6,950 functions / 2 MB are Capcom game code.
+      237 library functions named (`tools/name_libs.py`: syscall stubs + API names from error strings)
 - [ ] Split `asm/game.s` into per-file / per-function units
 - [ ] Start decompiling game code
 
@@ -52,6 +54,9 @@ Helpers to keep these lists current (run after a build; then `configure.py --spl
   records, pointer tables, jumptable tails, pointers decoded as strings, false BSS/colour pointers)
 - `tools/find_vfuncs.py`: functions reached only through vtables
 - `tools/promote_undefined.py`: unlabeled references that need symbols
+- `tools/libmap.py`: compiler fingerprint + strings per address range (library identification)
+- `tools/name_libs.py`: names syscall stubs and library functions from their error strings
+- `tools/decomp.py <func>`: first-draft C via m2c
 - `tools/ptrcheck.py`: static audit (unrelocated data pointers / `lui`, pinned addresses)
 
 Testing:

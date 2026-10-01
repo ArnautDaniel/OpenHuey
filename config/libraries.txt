@@ -1,0 +1,20 @@
+# Library code in SLUS_210.75 (vram ranges, start inclusive / end exclusive).
+# Identified from compiler fingerprints (MW saves $s regs with sq, GCC 2.96 with sd),
+# version banners / error strings, and the call graph. See tools/libmap.py.
+# Everything not listed here between 0x00100230 and 0x003A1990 is Capcom game code.
+#
+# start      end        compiler  library
+0x00100000 0x00100230 sdk       crt0
+0x00100230 0x0010BDC0 mw        MSL C/C++ runtime (std::exception, bad_alloc, ios_base, operator new...)
+0x0010BDC0 0x00117F00 gcc       Sony SDK: libgraph (sceGs*), libdma, libcdvd (sceCd*), libmc (sceMc*), libpad?
+0x00117F00 0x0011F9C0 gcc       Sony libc (string/mem functions, vfprintf, number formatting)
+0x001C2B68 0x001EE798 gcc       CRI ADX: ADXT/ADXB/ADXF/AFS/AHX, CVFS, DVCI, PS2RNA, PL2ENC, ROFS/ROCI/RSU
+0x001EE798 0x001EFA38 gcc       Sony SDK: libdbc (DualShock socket manager)
+0x001EFA38 0x001F0250 gcc       Sony SDK: libpad2
+0x002267B0 0x0022A5A0 gcc       CRI CFT (colour format conversion)
+0x0022A5A0 0x0025C440 gcc       CRI Sofdec: MWSFD/mwPly, SFD, SFH, SFX, MPV/M2V, SUD
+0x00260250 0x002604F0 gcc       unidentified (GCC-compiled, no strings; called from game code)
+0x0026BD80 0x00278490 gcc       Sony SDK: libkernl (syscall stubs, threads, TLB/kernel patch), sifcmd/sifrpc, stdio/fileio, TTY
+0x0029FF10 0x002A7720 gcc       Sony SDK: libmpeg (IPU MPEG decoder)
+0x00319B00 0x0031CAA0 gcc       float math library (acosf, asinf, atan2f, logf, log10f, sqrtf...)
+0x003A1990 0x003A1B80 mw        C++ this-adjusting thunks (compiler generated)
