@@ -395,3 +395,76 @@ void func_0019D190(Fiona *f) {
     VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
     Progress_ClearFlag(p, 0x17);
 }
+
+extern VObject *D_0044E988;   /* +0x10 current area id (0x89: special) */
+extern VObject *D_0044E4F0;   /* GS manager: +0x70 screen fade colour */
+
+#define AREA_SPECIAL 0x89
+
+static inline void Fiona_Fade(Fiona *f) {
+    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, 0x808080 | ((u32)FI(f, 0x1AD62C, u16) << 24));
+}
+
+/* vtable +0x2C: choose the screen mode (unk152C) for this frame and pass it to the animation. */
+void func_001A38E0(Fiona *f) {
+    Progress *p = gProgress;
+    s32 s;
+
+    if (*((u8 *)p + 0x1FBEC1) != 0) {
+        if (f->c.unkE4 == 1) {
+            VCALL(f, 0x80, void (*)(Fiona *))(f);
+        }
+    } else {
+        s = f->c.unk152C;
+        if (s != 0x17 && s != 0x1E && D_0044E4F8 != NULL
+            && !(VCALL(D_0044E4F8, 0x38, u32 (*)(VObject *))(D_0044E4F8) & 0xFF)) {
+            if (f->c.unkE4 == 1) {
+                f->c.unk152C = 0xA;
+            } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *))(D_0044E988) == AREA_SPECIAL) {
+                if (FI(f, 0x1AD62C, u16) == 0) {
+                    f->c.unk152C = 0x1C;
+                } else {
+                    f->c.unk152C = 0x1A;
+                    Fiona_Fade(f);
+                }
+            } else {
+                f->c.unk152C = 0xF;
+                Fiona_Fade(f);
+            }
+        }
+    }
+    VCALL(f->c.motion, 0x38, void (*)(void *, s32, u32, s32))(f->c.motion, f->c.unk152C, f->c.a.navTri, 0);
+}
+
+extern void func_00182FC0(Fiona *f);
+
+/* Resource table offset (from +0x1540) to pointer, 0 = none. */
+#define FIONA_RES(f, off) (FI(f, off, s32) != 0 ? (void *)((u8 *)(f) + FI(f, off, s32) + 0x1540) : NULL)
+#define MOTION_PTR(m, off) (*(void **)((u8 *)(m) + (off)))
+
+/* vtable +0x1C: hook her data up to the animation player and the message display. */
+void func_001A3EE0(Fiona *f) {
+    void *m = f->c.motion;
+
+    MOTION_PTR(m, 0x4C0) = FIONA_RES(f, 0x1544);
+    MOTION_PTR(m, 0x4D0) = FIONA_RES(f, 0x1548);
+    MOTION_PTR(m, 0x4CC) = FIONA_RES(f, 0x154C);
+    MOTION_PTR(m, 0x4C4) = FIONA_RES(f, 0x1550);
+    f->c.msgSlot = 0;
+    if ((VCALL(gBootMessage, 0x8, u32 (*)(VObject *, u32, void *))(gBootMessage, f->c.msgSlot,
+                                                                  FI(f, 0x1AD544, void *)) & 0xFF) == 1) {
+        f->c.a.unkD0 = 1;
+    }
+    VCALL(f->c.motion, 0xC, void (*)(void *))(f->c.motion);
+    f->c.a.unkD1 = 1;
+    MOTION_U8(f->c.motion, 0x24) = f->c.msgSlot;
+    VCALL(D_0044E558, 0x4C, void (*)(VObject *, s32))(D_0044E558, 0);
+    MOTION_PTR(f->c.motion, 0x4D4) = (u8 *)f + 0x1AA540;
+    func_00182FC0(f);
+    if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_SPECIAL) {
+        f->c.unkE4 = 0;
+        FI(f, 0x1AD62C, u16) = 0;
+        f->unk1AD630 = 1;
+        f->unk1AD62E = 0;
+    }
+}

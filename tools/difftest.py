@@ -74,6 +74,7 @@ OUTPARAM = 4                 # bytes a stub writes through a stack pointer argum
 INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
 CALL_ALIAS: dict[int, int] = {}  # C address -> original address of the file's other game functions
+C_ENTRIES: set[int] = set()      # entry points of the C file's functions
 HELPER_RANGES: list[tuple[int, int]] = []
 FPR_WRITERS = {"lwc1", "mtc1"}
 DIRECT_GPR_WRITERS = {"lq", "pcpyld", "pcpyud", "por", "pand", "pxor", "pnor", "paddub", "pextlw", "pextuw"}
@@ -587,7 +588,7 @@ class CPU:
             if not taken:
                 pc, npc = ds + 4, ds + 8
                 continue
-            if target in CALL_ALIAS and kind in ("call", "jump"):
+            if target in CALL_ALIAS and name in ("jal", "j"):
                 # another game function the C file also defines: the original calls the
                 # original, so the C side's call is stubbed under the original's address
                 self.stub_call(CALL_ALIAS[target], "call")
@@ -606,6 +607,7 @@ class CPU:
             elif kind == "jump" and target != RET_MAGIC and (
                 any(lo <= pc < hi for lo, hi in self.helper_ranges)  # helper's final jump (e.g. jr $t9)
                 or not (self.func_lo <= target < self.func_hi)       # tail call out of the function
+                or (name == "jr" and target in C_ENTRIES)            # computed tail call to a function
             ):
                 # the callee returns straight to our caller. A jump out of __ptmf_scall is a
                 # pointer-to-member call: a member function taking only `this`.
@@ -1668,6 +1670,8 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
         return 2
     c_entry = funcs[func]
     CALL_ALIAS.clear()
+    C_ENTRIES.clear()
+    C_ENTRIES.update(funcs.values())
     for name, addr in funcs.items():
         o = original_range(name)
         if name != func and o is not None:
