@@ -32,7 +32,7 @@ extern void func_00179EA0(void *);
 extern void func_0017D220(void *);
 extern void func_00176780(Progress *);
 extern void func_00120C80(void *);
-extern void func_0016D5E0(Progress *, u32, void *character);
+extern void Characters_Register(Progress *, u32, void *character);
 extern void func_002A7C70(void *src, void *dst);  /* copies saved flags into Progress */
 extern void func_00171160(Progress *, u32);
 extern void func_0016D350(Progress *, s32);
@@ -70,7 +70,7 @@ static inline void SetupCharacter(Progress *prog, void *chr, void (*setup)(Progr
     u32 index = AT(chr, 0x20, u32);
 
     if (index < 2) {
-        func_0016D5E0(prog, index, chr);
+        Characters_Register(prog, index, chr);
         setup(prog, AT(chr, 0x20, u32));
     }
 }

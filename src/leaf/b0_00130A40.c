@@ -7,10 +7,10 @@
 extern f32 D_003B1B48;
 extern f32 D_003B1B4C;
 extern f32 D_003B1B50;
-extern void *D_0044F800[6]; /* registered room objects, by kind */
-extern void *D_0044F818;
-extern void *D_0044F820;
-extern void *D_0044F828;
+extern void *gCharacters[6]; /* registered room objects, by kind */
+extern void *gCharPlayer;
+extern void *gCharPartner;
+extern void *gCharPursuer;
 extern void *D_00469C20[];
 extern void *D_00469C60[];
 extern void *D_00469D00[];
@@ -195,19 +195,19 @@ void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3) {
     VCALL(obj, 0x14, void (*)(void *, s32, s32, s32))(obj, FLD(p, 0x73EDC0, s32), a2, a3);
 }
 
-s32 func_0016D5E0(void *self, u32 kind, void *obj) {
-    if (kind < 6 && D_0044F800[kind] == NULL) {
-        D_0044F800[kind] = obj;
-        FLD(D_0044F800[kind], 0x20, u32) = kind;
+s32 Characters_Register(void *self, u32 kind, void *obj) {
+    if (kind < 6 && gCharacters[kind] == NULL) {
+        gCharacters[kind] = obj;
+        FLD(gCharacters[kind], 0x20, u32) = kind;
         switch (kind) {
         case 0:
-            D_0044F818 = obj;
+            gCharPlayer = obj;
             break;
         case 1:
-            D_0044F820 = obj;
+            gCharPartner = obj;
             break;
         case 2:
-            D_0044F828 = obj;
+            gCharPursuer = obj;
             break;
         }
         return 1;

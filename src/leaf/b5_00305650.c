@@ -41,7 +41,7 @@ extern u8 D_004223A0[];
 extern u8 D_004223C0[];
 extern u8 D_004223E0[];
 extern u8 D_004224C0[];
-extern u8 *D_0044F818; /* global object; +0x1AD5F4 f32, +0x1AD5F8 s32 (see func_00331510) */
+extern u8 *gCharPlayer; /* global object; +0x1AD5F4 f32, +0x1AD5F8 s32 (see func_00331510) */
 extern u8 D_0045EC50[];
 extern u8 D_0045EC70[];
 extern u8 D_0045EC90[];
@@ -167,7 +167,7 @@ void *func_00308A70(void *self, s32 i) {
 }
 
 s32 func_00308AC0(void *self, u8 *obj) {
-    U32(obj, 0x104) = U32(D_0044F818, 0x34);
+    U32(obj, 0x104) = U32(gCharPlayer, 0x34);
     S32(obj, 0x108) = 0x204;
     obj[0xE1] = 0;
     S32(obj, 0xF4) = 6;

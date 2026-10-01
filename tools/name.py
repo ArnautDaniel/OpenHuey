@@ -23,8 +23,8 @@ def main() -> None:
     name, addr = sys.argv[1], int(sys.argv[2], 0)
     kind = sys.argv[3] if len(sys.argv) > 3 else None
     note = sys.argv[4] if len(sys.argv) > 4 else None
-    if note and ":" in note:
-        sys.exit("comments must not contain ':'")
+    if note and (":" in note or ";" in note):
+        sys.exit("comments must not contain ':' or ';' (splat parses them)")
     lines = SYM.read_text().splitlines()
     out, replaced = [], False
     for line in lines:

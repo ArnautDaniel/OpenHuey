@@ -1,5 +1,5 @@
 #include "common.h"
-extern u8 *D_0044F818; /* global manager object */
+extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
 
@@ -240,7 +240,7 @@ s32 func_0031FC40(u8 *self) {
     if (S32(self, 0x16B8) == 2) {
         return 0x205;
     }
-    if (self[0x1544] != 0 && PTR(self, 0x1540) == D_0044F818) {
+    if (self[0x1544] != 0 && PTR(self, 0x1540) == gCharPlayer) {
         d = F32(self, 0x1588);
         if (d < 100.0f && !(d <= 0.0f)) {
             return 0x206;

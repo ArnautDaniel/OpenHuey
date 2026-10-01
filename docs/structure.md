@@ -55,6 +55,37 @@ Members (from `SceneGame_ctor`):
 | +0x1053480 | | 0x473440 | | |
 | (sub-heaps) | | 0x46A1C0 | 0x44E578 | heap class, same as Game.sceneHeap |
 
+### SceneGame per-frame flow
+
+`SceneGame_StateEntry` -> state `D_0044C7B0` = `func_003A06E0` every frame: frame counter at
++0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `func_003A04A0`: room
+load, returns 1 while busy), else the gameplay tick `func_003A0160`:
+
+1. `func_00225550(+0xF6CBB0)`, `func_001792C0(Progress, 0)`, `func_0039D310(game)` (416 insns:
+   events, items, camera? - calls Progress flags, `func_00124F20(gCharPlayer, ...)`)
+2. **characters**: vtable +0x38 (per-frame update) on `gCharacters[0..2]` whose byte +0x28 == 1
+3. `func_002E2650(+0x706480)`, game vtable +0xDC, `func_00175430(Progress)` (620 insns),
+   `func_002252B0(+0xF6CBB0, ...)` (camera/collision?)
+
+## Characters
+
+`Characters_Register(prog, slot, chr)` (0x16D5E0) fills `gCharacters[6]` (0x44F800) and sets
+`chr+0x20 = slot`. Shortcuts: `gCharPlayer` (0x44F818) = slot 0 Fiona (2934 references),
+`gCharPartner` (0x44F820) = slot 1 Hewie, `gCharPursuer` (0x44F828) = slot 2.
+
+Vtables (Metrowerks, +0x8 dtor): base `0x469C20` -> `0x469C60` (14 entries, code ~0x120F80..0x127660)
+-> Fiona `0x46AAB0` / Hewie `0x46A120` (37 entries each).
+
+| vtbl | Base 0x469C60 | Fiona (0x19A300..0x1A4340) | Hewie (0x130A70..0x168A10) |
+|---|---|---|---|
+| +0x08 | dtor 0x124E60 | 0x17FCD0 | 0x130A70 |
+| +0x28 | 0x125AD0 | 0x1A3A80 (259) | 0x1683D0 |
+| +0x30 | 0x123F50 (empty) | 0x1A3110 (543) | 0x167BC0 (528) |
+| +0x34 | 0x123D10 (empty) | 0x19B4F0 (639) | 0x166DF0 (567) |
+| +0x38 | 0x120F80 (empty) - **per-frame update** | 0x19AF20 (403) | 0x166CE0 (72) |
+| +0x84 | - | 0x1A0370 (1059) | 0x163DC0 (748) |
+| +0x88 | - | 0x19F8A0 (736) | 0x1635B0 (572) |
+
 ## Globals
 
 | Address | Name | What |
@@ -62,6 +93,7 @@ Members (from `SceneGame_ctor`):
 | 0x44E4E0 | gFileLoader | file loader: +0x34 Load(name, dest), +0xC LoadAsync(name, dest, flags, 0) |
 | 0x44E998 | gBootMessage | SceneBoot's message display |
 | 0x44E588 | gFiona | Fiona (set by SceneGame_ctor) |
+| 0x44F800 | gCharacters | character slots; `gCharPlayer`/`gCharPartner`/`gCharPursuer` at 0x44F818/820/828 |
 | 0x44E4D8 | gProgress | game progress (SceneGame+0x40): story flags, byte vars - `src/game/progress.c` |
 | 0x44E568 | (room manager?) | vtable +0x10 returns the current room number |
 | 0x47E374 | (pad) | buttons held: bit 0 Select, bit 3 Start |
