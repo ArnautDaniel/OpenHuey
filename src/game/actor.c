@@ -1245,3 +1245,85 @@ extern void func_002FF600(VObject *snd, s32, s32, s32, s32, s32);
 void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
     func_002FF600(D_0044E560, a1, a2, a3, a4, a5);
 }
+
+void func_001267F0(Character *c, s32 v) {
+    c->unk152C = v;
+}
+
+s32 func_00126800(Character *c) {
+    return c->unk152C;
+}
+
+/* Halt: forget path and movement state, stop the animation (motion vtable +0x68). */
+void func_00126810(Character *c) {
+    s32 i;
+
+    c->unk14C0 = 0xFFFF;
+    c->unk14C4 = 0;
+    Character_CancelPath(c);
+    c->unk1388 = 0;
+    c->unk1384 = 0;
+    for (i = 0; i < 13; i++) {
+        c->unk148C[i] = 0;
+    }
+    func_002A8410(c->state);
+    func_002A8410(c->state2);
+    if (Character_Tracked(c)) {
+        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+    }
+    c->unkE2 = 0;
+    c->unkE3 = 0;
+    c->unkE4 = 1;
+    c->a.unk2A = 0;
+    c->unkE1 = 0;
+    c->unkF4 = 0;
+    VCALL(c->motion, 0x68, void (*)(void *))(c->motion);
+}
+
+extern void func_002DCAE0(void *motion);
+
+/* Disable the character (vtable +0x60 first). */
+void func_00126910(Character *c) {
+    s32 s;
+
+    VCALL(c, 0x60, void (*)(Character *))(c);
+    c->a.disabled = 1;
+    c->unkE0 = 1;
+    c->unkE2 = 1;
+    c->unkE3 = 0;
+    c->unkE4 = 0;
+    s = c->unk152C;
+    if (s == 0xF || s == 0x1C || s == 0x1A) {
+        c->unk152C = 0xA;
+    }
+    c->a.unk2A = 1;
+    func_002DCAE0(c->motion);
+}
+
+void func_001269A0(Character *c) {
+}
+
+void func_001269B0(Character *c) {
+}
+
+/* Remaining distance of the current path move (0 if not following one). */
+f32 func_00126E40(Character *c) {
+    if (c->moveMode == 6) {
+        if (c->moveSub == 0x16) {
+            return VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+                gSceneGameF29740, c->a.pos, c->unk128, c->unk124, c->unk12C);
+        }
+        if (c->moveSub == 0x17) {
+            return *(f32 *)&c->unk14C4;
+        }
+    }
+    return 0.0f;
+}
+
+extern VObject *D_0044E580;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
+
+/* Forward to D_0044E580 +0xC with the character's buffers at +0x148C and +0x138C. */
+s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
+    return VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
+        D_0044E580, a1, a2, a3, c->unk148C, c->unk138C, a4, a5);
+}

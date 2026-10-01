@@ -63,19 +63,21 @@ typedef struct Character {
     /* 0x00E5 */ u8 padE5[0xF0 - 0xE5];
     /* 0x00F0 */ void *motion;           /* animation player (root motion) */
     /* 0x00F4 */ s32 unkF4;
-    /* 0x00F8 */ u8 padF8[0x120 - 0xF8];
+    /* 0x00F8 */ s32 moveMode;        /* 6 = following a path */
+    /* 0x00FC */ s32 moveSub;         /* with moveMode 6: 0x16 planner path, 0x17 direct */
+    /* 0x0100 */ u8 pad100[0x120 - 0x100];
     /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
     /* 0x0124 */ s32 unk124;
     /* 0x0128 */ s32 unk128;
-    /* 0x012C */ u8 pad12C[0x1380 - 0x12C];
+    /* 0x012C */ u8 unk12C[0x1380 - 0x12C];
     /* 0x1380 */ PathRequest *pathReq;
     /* 0x1384 */ s32 unk1384;
     /* 0x1388 */ s32 unk1388;
-    /* 0x138C */ u8 pad138C[0x148C - 0x138C];
+    /* 0x138C */ u8 unk138C[0x148C - 0x138C];
     /* 0x148C */ u32 unk148C[13];
     /* 0x14C0 */ u16 unk14C0;
     /* 0x14C2 */ u8 pad14C2[2];
-    /* 0x14C4 */ s32 unk14C4;
+    /* 0x14C4 */ s32 unk14C4;         /* (read as f32 for moveSub 0x17) */
     /* 0x14C8 */ u8 pad14C8[8];
     /* 0x14D0 */ s32 unk14D0;
     /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
