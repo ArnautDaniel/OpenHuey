@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """Differential tester: does a decompiled C function behave like the original?
 
-    tools/difftest.py src/foo.c func_002D1E40 [--runs 200] [--seed 1] [-v]
+    tools/difftest.py src/foo.c [func_002D1E40 ...] [--runs N] [--seed 1] [-v]
+    tools/difftest.py --list tools/difftest_list.txt [--runs N]
+
+With no function names, every non-static function in the file is tested. The C
+file is compiled once per invocation, and the game's symbol table is cached in
+build/ (re-read only when the ELF changes), so test many functions per call.
+--runs defaults to 30 for straight-line originals (no branches) and 200 otherwise.
 
 Runs the original machine code (from the baserom) and the C version (compiled
 with the project's GCC, linked against the game's real symbol addresses) in a
@@ -38,6 +44,7 @@ set them.
 """
 import argparse
 import hashlib
+import pickle
 import random
 import re
 import struct
@@ -1210,7 +1217,39 @@ def cflags() -> str:
     return configure.CFLAGS
 
 
-def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]], int, int]:
+SYM_CACHE = ROOT / "build/difftest_syms.pickle"
+_SYMS: list[tuple[str, int, int, str, str]] | None = None
+
+
+def game_symbols() -> list[tuple[str, int, int, str, str]]:
+    """(name, value, size, bind, type) of every symbol of the game ELF. Reading the symtab
+    with pyelftools takes ~30 s, so the result is cached and redone when the ELF changes."""
+    global _SYMS
+    if _SYMS is not None:
+        return _SYMS
+    st = BUILD_ELF.stat()
+    key = (st.st_mtime_ns, st.st_size)
+    try:
+        with open(SYM_CACHE, "rb") as f:
+            k, syms = pickle.load(f)
+        if k == key:
+            _SYMS = syms
+            return syms
+    except (OSError, EOFError, ValueError, pickle.UnpicklingError):
+        pass
+    with open(BUILD_ELF, "rb") as f:
+        syms = [(s.name, s["st_value"], s["st_size"], s["st_info"]["bind"], s["st_info"]["type"])
+                for s in ELFFile(f).get_section_by_name(".symtab").iter_symbols()]
+    tmp = SYM_CACHE.with_suffix(".tmp")
+    with open(tmp, "wb") as f:
+        pickle.dump((key, syms), f)
+    tmp.replace(SYM_CACHE)
+    _SYMS = syms
+    return syms
+
+
+def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str, int], tuple[int, int]]:
+    """Compile and link a C file once: (loadable sections, address of each global function, .text range)."""
     obj = workdir / "t.o"
     elf = workdir / "t.elf"
     cxx = src.suffix in (".cpp", ".cc")
@@ -1221,10 +1260,8 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
     defined = set(subprocess.run([f"{TC}nm", "--defined-only", "-j", str(obj)], capture_output=True,
                                  text=True, check=True).stdout.split())
     # every game symbol the C may reference, except the ones the C defines itself
-    syms = []
-    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
-        if s.name and s["st_info"]["bind"] == "STB_GLOBAL" and s.name not in defined and re.fullmatch(r"[A-Za-z_.$][\w.$]*", s.name):
-            syms.append(f"{s.name} = 0x{s['st_value']:08X};")
+    syms = [f"{name} = 0x{value:08X};" for name, value, _, bind, _ in game_symbols()
+            if name and bind == "STB_GLOBAL" and name not in defined and re.fullmatch(r"[A-Za-z_.$][\w.$]*", name)]
     ld = workdir / "t.ld"
     ld.write_text(
         "SECTIONS {\n"
@@ -1236,13 +1273,16 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
     )
     subprocess.run([f"{TC}ld", "-EL", "-m", "elf32lr5900n32", "--no-warn-mismatch", "-T", str(ld), "-o", str(elf), str(obj)],
                    check=True, cwd=ROOT)
-    e = ELFFile(open(elf, "rb"))
-    overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
-                if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
-    sym = next(s for s in e.get_section_by_name(".symtab").iter_symbols() if s.name == func)
-    text = e.get_section_by_name(".text")
-    # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
-    return overlays, sym["st_value"], (text["sh_addr"], text["sh_addr"] + text["sh_size"])
+    with open(elf, "rb") as f:
+        e = ELFFile(f)
+        overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
+                    if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
+        funcs = {s.name: s["st_value"] for s in e.get_section_by_name(".symtab").iter_symbols()
+                 if s["st_info"]["type"] == "STT_FUNC" and s["st_info"]["bind"] == "STB_GLOBAL"}
+        text = e.get_section_by_name(".text")
+        # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
+        trange = (text["sh_addr"], text["sh_addr"] + text["sh_size"])
+    return overlays, dict(sorted(funcs.items(), key=lambda kv: kv[1])), trange
 
 
 def harvest_constants(rom: bytes, lo: int, hi: int) -> None:
@@ -1268,19 +1308,31 @@ FUNC_STARTS: set[int] = set()
 
 
 def load_helpers() -> None:
-    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
-        if s["st_info"]["type"] == "STT_FUNC" and CODE_LO <= s["st_value"] < CODE_HI:
-            FUNC_STARTS.add(s["st_value"])
-        if s.name in INLINE_HELPERS:
-            INLINE_ADDRS.add(s["st_value"])
-            HELPER_RANGES.append((s["st_value"], s["st_value"] + max(s["st_size"], 4)))
+    if FUNC_STARTS:
+        return
+    for name, value, size, _, typ in game_symbols():
+        if typ == "STT_FUNC" and CODE_LO <= value < CODE_HI:
+            FUNC_STARTS.add(value)
+        if name in INLINE_HELPERS:
+            INLINE_ADDRS.add(value)
+            HELPER_RANGES.append((value, value + max(size, 4)))
 
 
-def original_range(func: str) -> tuple[int, int]:
-    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
-        if s.name == func:
-            return s["st_value"], s["st_value"] + max(s["st_size"], 4)
-    sys.exit(f"{func} not found in {BUILD_ELF}")
+def original_range(func: str) -> tuple[int, int] | None:
+    for name, value, size, _, _ in game_symbols():
+        if name == func:
+            return value, value + max(size, 4)
+    return None
+
+
+def straight_line(rom: bytes, lo: int, hi: int) -> bool:
+    """No branches or jumps besides the final jr $ra: a few random runs already cover everything."""
+    for a in range(lo, hi, 4):
+        w = struct.unpack_from("<I", rom, a - IMAGE_LO + 0x80)[0]
+        ins = rz.Instruction(w, vram=a, category=rz.InstrCategory.R5900)
+        if ins.isBranch() or (ins.isJump() and not ins.isJrRa()):
+            return False
+    return True
 
 
 def return_kind(src: Path, func: str) -> str:
@@ -1424,54 +1476,60 @@ def fmt_ev(e, other=None):
     return f"{kind} 0x{tgt:08X}({a}){fa} [writes {dig}]"
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("src", type=Path)
-    ap.add_argument("func")
-    ap.add_argument("--runs", type=int, default=200)
+def option_parser() -> argparse.ArgumentParser:
+    """Per-function options (also accepted after the function name in a --list file)."""
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--runs", type=int, default=None, help="default: 30 for straight-line code, else 200")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--pre", action="append", default=[],
                     help="input precondition, e.g. a0+0x18=0..8 (u32 at arg0+0x18 is in 0..8)")
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
-    args = ap.parse_args()
+    return ap
 
-    rom = BASEROM.read_bytes()
-    orig_range = original_range(args.func)
-    with tempfile.TemporaryDirectory() as td:
-        overlays, c_entry, c_range = build_c(args.src.resolve(), args.func, Path(td))
-    ret_kind = return_kind(args.src, args.func) if args.ret == "auto" else args.ret
 
-    load_helpers()
-    PRECONDITIONS[:] = [parse_pre(p) for p in args.pre]
+def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
+    """0 = pass, 1 = fail, 2 = could not test."""
+    overlays, funcs, c_range = build
+    orig_range = original_range(func)
+    if orig_range is None:
+        print(f"ERROR {func}: not found in {BUILD_ELF}")
+        return 2
+    if func not in funcs:
+        print(f"ERROR {func}: not defined (non-static) in {src}")
+        return 2
+    c_entry = funcs[func]
+    ret_kind = return_kind(src, func) if opts.ret == "auto" else opts.ret
+    runs = opts.runs if opts.runs is not None else (30 if straight_line(rom, *orig_range) else 200)
+    PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()
-    for i in range(args.runs):
-        seed = args.seed * 100003 + i
+    for i in range(runs):
+        seed = opts.seed * 100003 + i
         try:
-            o = run_one(rom, overlays, orig_range[0], orig_range, seed, args.max_steps)  # same world: C mapped in both
+            o = run_one(rom, overlays, orig_range[0], orig_range, seed, opts.max_steps)  # same world: C mapped in both
         except Trap:
             skipped += 1
             continue
         except Unsupported as e:
-            print(f"original: unsupported instruction {e}")
-            sys.exit(2)
+            print(f"ERROR {func}: original uses an unsupported instruction {e}")
+            return 2
         try:
-            n = run_one(rom, overlays, c_entry, c_range, seed, args.max_steps)
+            n = run_one(rom, overlays, c_entry, c_range, seed, opts.max_steps)
         except Trap as t:
-            print(f"FAIL seed {seed}: C version trapped ({t})")
-            sys.exit(1)
+            print(f"FAIL {func} seed {seed}: C version trapped ({t})")
+            return 1
         except Unsupported as e:
-            print(f"C version: unsupported instruction {e}")
-            sys.exit(2)
+            print(f"ERROR {func}: C version uses an unsupported instruction {e}")
+            return 2
         covered |= {a for a in o[0].visited if orig_range[0] <= a < orig_range[1]}
         if o[0].timed_out or n[0].timed_out:
             if not (o[0].timed_out and n[0].timed_out):
                 who = "C version" if n[0].timed_out else "original"
-                print(f"FAIL seed {seed}: only the {who} ran away")
-                sys.exit(1)
+                print(f"FAIL {func} seed {seed}: only the {who} ran away")
+                return 1
             # both loop forever (e.g. a main loop with stubbed callees): compare the calls made
             k = min(len(o[0].events), len(n[0].events))
             if k < 3 or not events_equal(o[0].events[:k], n[0].events[:k]):
@@ -1479,25 +1537,25 @@ def main() -> None:
                     skipped += 1
                     continue
                 i = next(i for i in range(k) if not event_equal(o[0].events[i], n[0].events[i]))
-                print(f"FAIL seed {seed}: endless loop, call #{i} differs:\n  original {fmt_ev(o[0].events[i])}\n  C        {fmt_ev(n[0].events[i])}")
-                sys.exit(1)
+                print(f"FAIL {func} seed {seed}: endless loop, call #{i} differs:\n  original {fmt_ev(o[0].events[i])}\n  C        {fmt_ev(n[0].events[i])}")
+                return 1
             runaway_ok += 1
             ok += 1
             continue
         diffs = compare(seed, o, n, ret_kind)
         if diffs:
-            print(f"FAIL seed {seed} (run {i}):")
+            print(f"FAIL {func} seed {seed} (run {i}):")
             for d in diffs:
                 print("  " + d)
-            if args.verbose:
+            if opts.verbose:
                 k = max(len(o[0].events), len(n[0].events))
                 oe = o[0].events + [None] * (k - len(o[0].events))
                 ne = n[0].events + [None] * (k - len(n[0].events))
                 print("  original calls:", *[fmt_ev(a, b) if a else "-" for a, b in zip(oe, ne)], sep="\n    ")
                 print("  C calls:", *[fmt_ev(b, a) if b else "-" for a, b in zip(oe, ne)], sep="\n    ")
-            sys.exit(1)
+            return 1
         ok += 1
-        if args.verbose and i < 3:
+        if opts.verbose and i < 3:
             print(f"seed {seed}: {o[0].steps} steps, {len(o[0].events)} calls, {len(o[0].visible_writes())} bytes written")
     addrs = list(range(orig_range[0], orig_range[1], 4))
     # trailing alignment padding (zero words never executed) doesn't count
@@ -1505,11 +1563,64 @@ def main() -> None:
         addrs.pop()
     total = len(addrs)
     missed = sorted(set(addrs) - covered)
-    print(f"PASS {args.func}: {ok} runs identical ({skipped} inputs skipped: original ran away or trapped), "
+    print(f"PASS {func}: {ok} runs identical ({skipped} inputs skipped: original ran away or trapped), "
           f"return={ret_kind}, coverage {len(covered)}/{total} instructions"
           + (f" ({runaway_ok} endless-loop runs compared by their first calls)" if runaway_ok else ""))
-    if args.verbose and missed:
+    if opts.verbose and missed:
         print("  never executed:", " ".join(f"0x{a:08X}" for a in missed[:20]))
+    return 0
+
+
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(parents=[option_parser()], description=__doc__.split("\n")[0])
+    ap.add_argument("src", type=Path, nargs="?")
+    ap.add_argument("funcs", nargs="*", help="functions to test (default: all non-static ones in src)")
+    ap.add_argument("--list", type=Path, help="file of 'source function [options]' lines")
+    args = ap.parse_args()
+
+    # (source, function, options) jobs, grouped by source so each file is compiled once
+    jobs: dict[Path, list[tuple[str | None, argparse.Namespace]]] = {}
+    if args.list:
+        sub = option_parser()
+        for line in args.list.read_text().splitlines():
+            parts = line.split()
+            if not parts or parts[0].startswith("#"):
+                continue
+            opts = sub.parse_args(parts[2:])
+            if args.runs is not None and opts.runs is None:
+                opts.runs = args.runs
+            opts.verbose |= args.verbose
+            jobs.setdefault(Path(parts[0]), []).append((parts[1], opts))
+    elif args.src:
+        jobs[args.src] = [(f, args) for f in args.funcs] or [(None, args)]
+    else:
+        ap.error("give a source file or --list")
+
+    rom = BASEROM.read_bytes()
+    load_helpers()
+    worst = passed = 0
+    total = 0
+    for src, items in jobs.items():
+        with tempfile.TemporaryDirectory() as td:
+            try:
+                build = build_c(src.resolve(), Path(td))
+            except subprocess.CalledProcessError:
+                print(f"ERROR {src}: does not compile/link")
+                worst = 2
+                continue
+        if items[0][0] is None:
+            items = [(f, items[0][1]) for f in build[1]]
+        for func, opts in items:
+            r = test_function(rom, build, src, func, opts)
+            total += 1
+            passed += r == 0
+            worst = max(worst, r)
+            sys.stdout.flush()
+    if total > 1:
+        print(f"{passed}/{total} passed")
+    sys.exit(worst)
 
 
 if __name__ == "__main__":

@@ -43,14 +43,17 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 1. `tools/decomp.py func_XXXXXXXX` - first draft via m2c
 2. Clean it up into a `.c` file under `src/` (include `common.h`; keep the `func_`/`D_` names
    of things not yet understood; `tools/name.py` to name symbols)
-3. `tools/difftest.py src/path/file.c func_XXXXXXXX` - must PASS with good coverage
-   (`--pre a0+0x18=0..8` to constrain an input field to its real range)
+3. `tools/difftest.py src/path/file.c [func_XXXXXXXX ...]` - must PASS with good coverage
+   (no function names = every non-static function in the file; `--pre a0+0x18=0..8` to
+   constrain an input field to its real range)
 4. `ninja` - the function's asm is stripped from `build/decomp/game.s` and the C linked instead;
    `build/SLUS_210.75.elf` (pure asm) must still match
 5. `ninja shift` + `tools/boottest.py build/SLUS_210.75.shift-all.elf` every so often
 
 `tools/difftest_all.sh` runs the tester on every function in `tools/difftest_list.txt` (add new
-ones there).
+ones there), `tools/difftest_file.sh src/x.c` on every function of one file. Both run niced in one
+process: each C file is compiled once and the game's symbol table is cached in
+`build/difftest_syms.pickle`, so batch functions into one call rather than one call per function.
 
 Rules that keep C correct next to the remaining asm:
 - **Calling convention**: C is compiled with `-mabi=eabi -mlong32`, matching the original code
@@ -82,7 +85,8 @@ Helpers to keep these lists current (run after a build; then `configure.py --spl
 - `tools/libmap.py`: compiler fingerprint + strings per address range (library identification)
 - `tools/name_libs.py`: names syscall stubs and library functions from their error strings
 - `tools/decomp.py <func>`: first-draft C via m2c (doesn't understand the EE float accumulator ops `mula.s`/`madd.s`/`msub.s`)
-- `tools/difftest.py <src.c> <func>`: runs the original and the C version on 200 random inputs in an R5900
+- `tools/difftest.py <src.c> [func...]`: runs the original and the C version on random inputs (30 for
+  straight-line code, 200 with branches; `--runs` to override) in an R5900
   interpreter and compares calls, memory writes and return values; reports instruction coverage.
   Examples: `src/difftest_example*.c`
 - `tools/ptrcheck.py`: static audit (unrelocated data pointers / `lui`, pinned addresses)
