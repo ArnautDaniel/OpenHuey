@@ -1,0 +1,9 @@
+// crt0 / SDK
+_start = 0x00100008; // type:func
+_InitSys = 0x00276518; // type:func
+FlushCache = 0x0026C420; // type:func
+main = 0x0020D860; // type:func
+_gp = 0x004828F0;
+_fbss = 0x0047B200;
+// _end (0x01992000) is defined by the linker script
+_args = 0x019709C0;

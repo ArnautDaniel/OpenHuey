@@ -1,0 +1,53 @@
+name: Haunting Ground (USA)
+sha1: e0867d2ec83e6e2fccf147ad9e645a9a662d1c15
+options:
+  basename: SLUS_210.75
+  target_path: baserom/SLUS_210.75
+  elf_path: build/SLUS_210.75.elf
+  base_path: ..
+  platform: ps2
+  compiler: GCC
+
+  asm_path: asm
+  src_path: src
+  build_path: build
+  extensions_path: tools/splat_ext
+
+  ld_script_path: linker/SLUS_210.75.ld
+  ld_dependencies: True
+
+  symbol_addrs_path: config/symbol_addrs.txt
+  undefined_funcs_auto_path: linker/undefined_funcs_auto.txt
+  undefined_syms_auto_path: linker/undefined_syms_auto.txt
+
+  find_file_boundaries: True
+  gp_value: 0x004828F0
+  mips_abi_gpr: n32
+  mips_abi_float_regs: numeric
+  # Non-matching/shiftable build: every address must become a symbol
+  ld_bss_is_noload: True
+  migrate_rodata_to_functions: False
+  string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  named_regs_for_c_funcs: False
+  create_asm_dependencies: True
+  disasm_unknown: True
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  auto_link_sections: [".data", ".rodata", ".bss"]
+
+segments:
+  - [0, databin, elf_header]
+  - name: main
+    type: code
+    start: 0x80
+    vram: 0x00100000
+    bss_size: 0x1516E00
+    subsegments:
+      - [0x80, asm, crt0]
+      - [0x2B0, asm, game]
+      - [0x2A1C00, data]
+      - [0x34AA20, bin, cdvdman_irx]
+      - [0x34AD80, data]
+      - { start: 0x37B280, type: bss, vram: 0x0047B200 }
+  - [0x37B280]
