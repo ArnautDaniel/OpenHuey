@@ -1204,9 +1204,10 @@ def _pextuw(c, w, pc):
 
 # ---------------------------------------------------------------- building the C side
 def cflags() -> str:
-    text = (ROOT / "configure.py").read_text()
-    m = re.search(r'CFLAGS = \(\s*((?:"[^"]*"\s*)+)\)', text)
-    return " ".join(re.findall(r'"([^"]*)"', m.group(1)))
+    sys.path.insert(0, str(ROOT))
+    import configure  # noqa: E402  (main() only runs as a script)
+
+    return configure.CFLAGS
 
 
 def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]], int, int]:
@@ -1233,7 +1234,7 @@ def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]
         "  /DISCARD/ : { *(.MIPS.abiflags) *(.reginfo) *(.comment) *(.pdr) *(.gnu.attributes) *(.mdebug*) }\n"
         "}\n" + "\n".join(syms) + "\n"
     )
-    subprocess.run([f"{TC}ld", "-EL", "-m", "elf32lr5900n32", "-T", str(ld), "-o", str(elf), str(obj)],
+    subprocess.run([f"{TC}ld", "-EL", "-m", "elf32lr5900n32", "--no-warn-mismatch", "-T", str(ld), "-o", str(elf), str(obj)],
                    check=True, cwd=ROOT)
     e = ELFFile(open(elf, "rb"))
     overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
@@ -1419,7 +1420,7 @@ def fmt_ev(e, other=None):
     pend, fpend = args.get("pending", ()), fargs.get("pending", ())
     a = ", ".join(f"a{r - 4}=" + (x if isinstance(x, str) else f"0x{x:X}")
                   for r, x in sorted((k, v) for k, v in args.items() if k in pend))
-    fa = (" f:" + ", ".join(f"f{r}={b2f(x)!r}" for r, x in sorted((k, v) for k, v in fargs.items() if k in fpend))) if fpend else ""
+    fa = (" f:" + ", ".join(f"f{r}={b2f(x)!r}(0x{x:08X})" for r, x in sorted((k, v) for k, v in fargs.items() if k in fpend))) if fpend else ""
     return f"{kind} 0x{tgt:08X}({a}){fa} [writes {dig}]"
 
 

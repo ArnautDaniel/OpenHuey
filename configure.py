@@ -38,7 +38,9 @@ EXTRA_LD = "config/extra_syms.ld"
 
 ASFLAGS = "-EL -march=r5900 -mabi=n32 -msingle-float -G 0 -no-pad-sections -I include"
 CFLAGS = (
-    "-EL -march=r5900 -mabi=n32 -G 0 -O2 -fno-common -ffreestanding -fno-strict-aliasing "
+    # EABI, like the original code: int and float arguments fill a0.. and f12.. in order
+    # (n32 assigns registers by argument position, which breaks calls into the asm)
+    "-EL -march=r5900 -mabi=eabi -mlong32 -G 0 -O2 -fno-common -ffreestanding -fno-strict-aliasing "
     "-fno-builtin -fno-pic -mno-abicalls -I include -I src"
 )
 CXXFLAGS = CFLAGS + " -fno-exceptions -fno-rtti"
@@ -245,7 +247,9 @@ def main() -> None:
         )
         n.rule(
             "ld",
-            f"${{tc}}ld -EL -m elf32lr5900n32 -T $ldscript -T {EXTRA_LD} $undef_scripts "
+            # --no-warn-mismatch: C objects are EABI, the asm is assembled as n32 (only its
+            # register names and ELF tag differ; the code itself follows the original's ABI)
+            f"${{tc}}ld -EL -m elf32lr5900n32 --no-warn-mismatch -T $ldscript -T {EXTRA_LD} $undef_scripts "
             "--emit-relocs -Map $mapfile -o $out",
             description="LD $out",
         )

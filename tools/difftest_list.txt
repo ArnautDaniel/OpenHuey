@@ -1,0 +1,29 @@
+# source  function  [difftest options]   -- every decompiled function, run by tools/difftest_all.sh
+src/game/game.c Game_Init
+src/game/game.c Game_Run
+src/game/game.c Game_SetState
+src/game/game.c Game_StateMain
+src/game/game.c Game_StateShutdown
+src/game/game.c Game_StartNextScene
+src/game/scene.c Scene_SetSlot
+src/game/scene.c Scene_Activate
+src/game/scene.c Scene_dtor
+src/game/scene.c Scene_OnSoftReset
+src/game/scene.c Scene_Update
+src/game/scene_boot.c SceneBoot_ctor
+src/game/scene_boot.c SceneBoot_dtor
+src/game/scene_boot.c SceneBoot_StateEntry
+src/game/scene_boot.c SceneBoot_StateLoadSystem
+src/game/scene_boot.c SceneBoot_StateSequence --pre=a0+0x18=0..8
+src/game/scene_boot.c SceneBoot_StateDone
+src/game/progress.c Progress_TestFlag
+src/game/progress.c Progress_SetFlag
+src/game/progress.c Progress_ClearFlag
+src/game/progress.c Progress_GetVar
+src/game/progress.c Progress_SetVar
+src/game/progress.c Progress_IncVar
+src/game/progress.c Progress_IsBitClear
+src/game/progress.c Progress_CurRoomFlag
+src/game/scene_game.c SceneGame_StateEntry --runs=1500
+src/game/scene_game.c SceneGame_StateEntry --pre=a0+0x6FC254=0x29..0x38
+src/game/collision.c func_0017CA80
