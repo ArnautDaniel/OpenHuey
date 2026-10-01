@@ -20,8 +20,8 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 | Range (vram)              | Contents |
 |---------------------------|----------|
 | `0x00100000`–`0x00100230` | SDK `crt0` |
-| `0x00100230`–`0x003A1980` | Code: game (C++), Sony SDK 3.0.2 libs (GCC 2.96), CRI ADX/Sofdec middleware |
-| `0x003A1980`–`0x003A1B80` | C++ `this`-adjusting thunks |
+| `0x00100230`–`0x003A1990` | Code: game (C++), Sony SDK 3.0.2 libs (GCC 2.96), CRI ADX/Sofdec middleware |
+| `0x003A1990`–`0x003A1B80` | C++ `this`-adjusting thunks |
 | `0x003A1B80`–`0x0047B200` | data / rodata (incl. embedded `cdvdman` IRX at `0x0044A9A0`) |
 | `0x0047B200`–`0x01992000` | BSS (`_gp` = `0x004828F0`) |
 
