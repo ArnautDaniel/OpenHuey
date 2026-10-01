@@ -1501,3 +1501,121 @@ void func_00127660(Character *c) {
     c->unk1534 = 0;
     c->unk14D5 = 0xFF;
 }
+
+/* Effect manager (D_0044E578): a heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
+ * effect slots at +0x18034; func_002D6090 starts the effect in a slot with its parameters. */
+extern u8 *D_0044E578;
+extern void *func_002D63C0(u32 size, void *mem);            /* placement new */
+extern void func_002D6090(u8 *mgr, s32 slot, void *params);
+extern void *D_00479AE0[];   /* ripple effect vtable */
+extern void *D_00479AA0[];   /* splash particle effect vtable */
+
+#define EFFECT_HEAP(mgr) ((VObject *)((mgr) + 0x10000))
+#define EFFECT_SLOTS(mgr) ((void ***)((mgr) + 0x18034))
+#define EFFECT_NUM_SLOTS 0x400
+
+typedef struct RippleParams {
+    f32 pos[4] __attribute__((aligned(16)));
+    u8 rgba[4];
+    f32 size;
+} RippleParams;
+
+typedef struct SplashParams {
+    f32 pos[4] __attribute__((aligned(16)));
+    u8 rgba[4];
+    s32 count;
+    f32 v[10];
+} SplashParams;
+
+/* Construct an effect of `size` bytes in a free slot (`init` sets its vtables); -1 if the heap
+ * or the slot table is full. */
+static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
+    void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), size);
+    s32 i;
+
+    if (mem == NULL) {
+        return -1;
+    }
+    for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
+        if (EFFECT_SLOTS(mgr)[i] == NULL) {
+            void **obj = func_002D63C0(size, mem);
+
+            if (obj != NULL) {
+                init(obj);
+            }
+            EFFECT_SLOTS(mgr)[i] = obj;
+            VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
+            return i;
+        }
+    }
+    return -1;
+}
+
+static inline void Ripple_Init(void **obj) {
+    obj[0] = D_00479AE0;
+}
+
+static inline void Splash_Init(void **obj) {
+    obj[0] = D_00479AA0;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* Footstep in water: if `pos` (reached from the character) is on a water triangle (flags
+ * 0x2008000), put it on the surface and spawn a ripple and a splash (`big`: larger). */
+void func_00125E10(Character *c, f32 *pos, s32 big) {
+    NavMesh *nm;
+    RippleParams rp;
+    SplashParams sp;
+    u8 *mgr;
+    u32 tri, flags;
+
+    tri = func_00124480(&c->a, pos, 0);
+    if (tri == NAV_NONE) {
+        return;
+    }
+    nm = D_0044E570;
+    flags = NavMesh_Tri(nm, tri)->flags;
+    if ((flags & 0x2008000) != 0x2008000) {
+        return;
+    }
+    VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, tri, pos);
+
+    sceVu0CopyVector(rp.pos, pos);
+    rp.rgba[0] = 0x30;
+    rp.rgba[1] = 0x30;
+    rp.rgba[2] = 0x30;
+    rp.rgba[3] = 0x30;
+    rp.pos[1] = rp.pos[1] + 0x1.99999ap-4f /* 0.1 */;
+    rp.size = big ? 0x1.99999ap-3f /* 0.2 */ : 0x1.333334p-3f /* 0.15 */;
+    mgr = D_0044E578;
+    func_002D6090(mgr, Effect_New(mgr, 0x40, Ripple_Init), &rp);
+
+    sceVu0CopyVector(sp.pos, pos);
+    sp.rgba[3] = 0x40;
+    sp.rgba[0] = 0x20;
+    sp.count = 16;
+    sp.rgba[1] = 0x20;
+    sp.rgba[2] = 0x20;
+    sp.v[2] = 0x1.99999ap-4f;   /* 0.1 */
+    sp.v[8] = 0x1.99999ap-4f;
+    sp.v[3] = 0x1.99999ap-3f;   /* 0.2 */
+    sp.v[9] = 0x1.99999ap-4f;
+    if (!big) {
+        sp.v[0] = 0x1.99999ap-3f;
+        sp.v[1] = 0x1.99999ap-3f;
+        sp.v[4] = 0x1.99999ap-3f;
+        sp.v[6] = 0x1.99999ap-3f;
+        sp.v[5] = 0x1.99999ap-4f;
+        sp.v[7] = 0x1.99999ap-4f;
+    } else {
+        sp.v[0] = 0.25f;
+        sp.v[1] = 0.25f;
+        sp.v[4] = 0.25f;
+        sp.v[6] = 0.25f;
+        sp.v[5] = 0x1.333334p-3f;   /* 0.15 */
+        sp.v[7] = 0x1.333334p-3f;
+    }
+    func_002D6090(mgr, Effect_New(mgr, 0x720, Splash_Init), &sp);
+}
