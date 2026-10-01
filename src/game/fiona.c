@@ -801,3 +801,24 @@ void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
         VCALL(f, 0x90, void (*)(Fiona *))(f);
     }
 }
+
+extern void func_00125A10(Character *c);
+extern f32 func_00124530(Actor *a, f32 target, f32 step);
+extern f32 func_0031C5C0(f32 x, f32 z);
+extern void func_002DDD20(void *motion, s32 anim, s32);
+extern const PTMF D_003B27F8;
+
+/* State: turn on the spot toward the stick direction (+0x1AD570) by 10 degrees a frame;
+ * back to idle if it no longer matches +0x1AD550 (dot <= 0.6). */
+void func_00199ED0(Fiona *f) {
+    func_00125A10(&f->c);
+    if (sceVu0InnerProduct((f32 *)((u8 *)f + 0x1AD570), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    if (func_00124530(&f->c.a, func_0031C5C0(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
+                      0x1.657186p-3f /* 10 deg */) == 0.0f) {
+        func_002DDD20(f->c.motion, 0x1200, -1);
+        Actor_SetState(&f->c.a, &D_003B27F8);
+    }
+}

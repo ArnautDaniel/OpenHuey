@@ -140,6 +140,7 @@ def b2f(b: int) -> float:
 # ---------------------------------------------------------------- value distribution
 STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
 STUB_RET_PROB = [0.5]         # --stub-ret-prob
+STUB_FRETURNS: list[float] = []  # --stub-fret: float values calls return (f0)
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
 
@@ -467,6 +468,8 @@ class CPU:
         self.s32(2, rv)
         self.s32(3, self.rng.getrandbits(32))
         self.f[0] = f2b(self.rng.uniform(-100, 100))
+        if STUB_FRETURNS and self.rng.random() < STUB_RET_PROB[0]:
+            self.f[0] = f2b(self.rng.choice(STUB_FRETURNS))
         for r in SCRAMBLE:
             if r != 3:
                 self.s(r, self.rng.getrandbits(64))
@@ -1653,6 +1656,8 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
+    ap.add_argument("--stub-fret", action="append", default=[], type=float,
+                    help="a float value stubbed calls return half the time, repeatable")
     ap.add_argument("--stub-ret-prob", type=float, default=0.5,
                     help="how often stubs return a --stub-ret value (1.0: only those)")
     return ap
@@ -1681,6 +1686,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob
+    STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()

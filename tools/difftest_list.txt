@@ -1422,3 +1422,4 @@ src/game/fiona.c func_0019A210
 src/game/fiona.c func_0019A280
 src/game/fiona.c func_0019A2B0 --pre=a0+0xF8=0..1
 src/game/fiona.c func_0019A0D0 --runs=100 --stub-ret=6 --stub-ret=1
+src/game/fiona.c func_00199ED0 --runs=200 --stub-fret=0 --stub-fret=1

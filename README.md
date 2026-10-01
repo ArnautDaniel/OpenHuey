@@ -46,7 +46,7 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 3. `tools/difftest.py src/path/file.c [func_XXXXXXXX ...]` - must PASS with good coverage
    (no function names = every non-static function in the file; 20 runs by default, 4 in
    parallel; `--pre a0+0x18=0..8` to constrain an input field to its real range (`--pre a1=0..3`
-   an argument, `--pre @0x44E568=lo..hi` a global), `--stub-ret 3`
+   an argument, `--pre @0x44E568=lo..hi` a global), `--stub-ret 3` (`--stub-fret 0.0` for floats)
    to make called functions often return a value the code waits for)
 4. `ninja` - the function's asm is stripped from `build/decomp/game.s` and the C linked instead;
    `build/SLUS_210.75.elf` (pure asm) must still match
