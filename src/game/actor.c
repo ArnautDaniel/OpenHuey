@@ -1070,3 +1070,75 @@ void func_00125AB0(Character *c) {
 s32 func_00125AC0(Character *c) {
     return 1;
 }
+
+extern void func_002A8410(s32 *state);   /* reset a state block */
+
+/* Drop the current path. */
+static inline void Character_CancelPath(Character *c) {
+    VCALL(gSceneGameF29740, 0x28, void (*)(VObject *, s32))(gSceneGameF29740, c->pathId);
+    c->pathId = -1;
+    c->unk128 = 0;
+    c->unk124 = 0;
+}
+
+/* vtable +0x98: true for characters whose progress entry follows them (see gProgress +0x34) */
+#define Character_Tracked(c) ((VCALL(c, 0x98, u32 (*)(Character *))(c) & 0xFF) == 1)
+
+/* vtable +0x28 (Character): place, then drop any path and reset the state blocks. */
+s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = func_00124B80(&c->a, tri, heading, pos);
+
+    Character_CancelPath(c);
+    c->unk14D0 = 0;
+    if (c->state[0] != 5) {
+        func_002A8410(c->state);
+    }
+    func_002A8410(c->state2);
+    if (Character_Tracked(c)) {
+        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+    }
+    return r;
+}
+
+/* Move to room `room` (vtable +0x5C notifies first). */
+s32 func_00125BA0(Character *c, s32 room) {
+    VCALL(c, 0x5C, void (*)(Character *, s32))(c, room);
+    c->a.room = room;
+    return 0;
+}
+
+/* Forget the path and movement state. */
+void func_00125BE0(Character *c) {
+    s32 i;
+
+    c->unk14C0 = 0xFFFF;
+    c->unk14C4 = 0;
+    Character_CancelPath(c);
+    c->unk1388 = 0;
+    c->unk1384 = 0;
+    for (i = 0; i < 13; i++) {
+        c->unk148C[i] = 0;
+    }
+    func_002A8410(c->state);
+    func_002A8410(c->state2);
+    if (Character_Tracked(c)) {
+        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+    }
+}
+
+extern u32 func_00177770(VObject *prog, u32 slot);   /* returns u8 */
+
+/* Tracked character in a special state (4/5), or flagged by progress for its slot. */
+s32 func_00125D80(Character *c) {
+    if (Character_Tracked(c)) {
+        s32 s = c->state[0];
+
+        if (s == 4 || s == 5) {
+            return 1;
+        }
+        if ((func_00177770(gProgress, *(u8 *)&c->a.slot) & 0xFF) == 1) {
+            return 1;
+        }
+    }
+    return 0;
+}

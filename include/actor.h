@@ -57,15 +57,33 @@ typedef struct Character {
     /* 0x00F0 */ void *motion;           /* animation player (root motion) */
     /* 0x00F4 */ u8 padF4[0x120 - 0xF4];
     /* 0x0120 */ s32 pathId;          /* planner result, -1 = none */
-    /* 0x0124 */ u8 pad124[0x1380 - 0x124];
+    /* 0x0124 */ s32 unk124;
+    /* 0x0128 */ s32 unk128;
+    /* 0x012C */ u8 pad12C[0x1380 - 0x12C];
     /* 0x1380 */ PathRequest *pathReq;
-    /* 0x1384 */ u8 pad1384[0x14D4 - 0x1384];
+    /* 0x1384 */ s32 unk1384;
+    /* 0x1388 */ s32 unk1388;
+    /* 0x138C */ u8 pad138C[0x148C - 0x138C];
+    /* 0x148C */ u32 unk148C[13];
+    /* 0x14C0 */ u16 unk14C0;
+    /* 0x14C2 */ u8 pad14C2[2];
+    /* 0x14C4 */ s32 unk14C4;
+    /* 0x14C8 */ u8 pad14C8[8];
+    /* 0x14D0 */ s32 unk14D0;
     /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
-    /* 0x14D5 */ u8 pad14D5[0x152C - 0x14D5];
+    /* 0x14D5 */ u8 pad14D5[0x14E8 - 0x14D5];
+    /* 0x14E8 */ s32 state[8];        /* state block (func_002A8410 resets it); [0] 4/5 = special */
+    /* 0x1508 */ s32 state2[8];
+    /* 0x1528 */ u8 pad1528[4];
     /* 0x152C */ s32 unk152C;         /* 10 / 15 set by the region fade (vtable +0x80) */
 } Character;
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");
 _Static_assert(__builtin_offsetof(Character, door) == 0x14D4, "door");
+_Static_assert(__builtin_offsetof(Character, motion) == 0xF0, "motion");
+_Static_assert(__builtin_offsetof(Character, unk148C) == 0x148C, "unk148C");
+_Static_assert(__builtin_offsetof(Character, state) == 0x14E8, "state");
+_Static_assert(__builtin_offsetof(Character, state2) == 0x1508, "state2");
+_Static_assert(__builtin_offsetof(Character, unk152C) == 0x152C, "unk152C");
 
 #endif
