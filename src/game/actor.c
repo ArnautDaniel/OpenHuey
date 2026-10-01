@@ -1503,7 +1503,7 @@ void func_00127660(Character *c) {
     c->unk1530 = 0;
     c->unk1538 = 0;
     c->unk1534 = 0;
-    c->unk14D5 = 0xFF;
+    c->heardSlot = 0xFF;
 }
 
 /* Effect manager (D_0044E578): a heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
@@ -1694,4 +1694,148 @@ s32 func_001264D0(Character *c, f32 *out) {
         out[3] = 1.0f;
     }
     return 1;
+}
+
+#define NOISE_EVENTS(prog) ((NoiseEvent *)((u8 *)(prog) + 0x778))
+#define NOISE_LEVEL_SETTING(prog) (*((u8 *)(prog) + 0x1114))
+
+/* Hearing: pick the first noise event (of the other characters' slots) still louder than the
+ * character's threshold after attenuation - by distance in the current room, or by the number
+ * of rooms between (32 loudness per room hop; quiet sounds only through rooms progress marks).
+ * The chosen event is copied to `heard` (heardSlot 0xFF: none). */
+void func_001269C0(Character *c) {
+    VObject *prog = gProgress;
+    VObject *rooms = D_0044E568;
+    NavMesh *nm = D_0044E570;
+    VObject *doors = D_0044E558;
+    VObject *router = D_0044E580;
+    NoiseEvent *ev = NOISE_EVENTS(prog);
+    s32 i;
+    u32 exit = 0;
+
+    for (i = 0; i < 4; i++, ev++) {
+        s16 loud, base;
+        u8 heard;
+
+        if (i == c->a.slot) {
+            continue;
+        }
+        loud = ev->level;
+        if (loud < 0x80) {
+            switch (NOISE_LEVEL_SETTING(prog)) {
+            case 1:
+                loud = loud - 0x1F;
+                break;
+            case 2:
+                loud = loud - 0x3F;
+                break;
+            case 3:
+                loud = loud - 0x5F;
+                break;
+            }
+        }
+        base = loud;
+        if (base <= 0) {
+            continue;
+        }
+        heard = 0;
+        if (c->a.room == ev->room) {
+            heard = 1;
+        } else if (ev->exitId != 0xFFFF) {
+            exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, ev->exitId, ev->room) & 0xFF;
+            if (exit == 0xFF || c->a.room == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, ev->room, exit)) {
+                heard = 1;
+            }
+        }
+        if (heard == 1) {
+            s32 room = c->a.room;
+
+            if (room == VCALL(prog, 0xC, s32 (*)(VObject *))(prog)) {
+                sceVu0FVECTOR src, d;
+                f32 dist, dy;
+
+                if (ev->tri != -1) {
+                    VCALL(nm, 0xC, void (*)(NavMesh *, s32, f32 *))(nm, ev->tri, src);
+                } else if (ev->exitId != 0xFFFF) {
+                    exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, ev->exitId, room) & 0xFF;
+                    if (exit != 0xFF) {
+                        VCALL(doors, 0x34, void (*)(VObject *, u32, f32 *))(doors, exit, src);
+                    } else {
+                        sceVu0CopyVector(src, c->a.pos);
+                    }
+                }
+                sceVu0SubVector(d, src, c->a.pos);
+                dist = __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+                dy = (d[1] <= 0.0f) ? -d[1] : d[1];
+                loud = loud - (s16)(s32)(0x1.99999ap-4f /* 0.1 */ * ((0.0f + dist) + 3.0f * dy));
+            }
+        } else {
+            struct {
+                u16 before;       /* the original reads route[-1] for an empty route */
+                u16 route[8];
+            } r;
+            s32 n = VCALL(router, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, u16 *, s32, s32, s32, s32))(
+                router, c->a.room, ev->room, 0xFF, NULL, r.route, 1, -1, -1, 2);
+
+            if (ev->exitId != 0xFFFF && n > 0
+                && (exit & 0xFF) == (VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, r.route[n - 1], ev->room) & 0xFF)) {
+                n--;
+            }
+            if (n == -1) {
+                if (base < 0x60) {
+                    loud = 0;
+                }
+            } else if (base < (n << 5)) {
+                loud = 0;
+            } else if (base < 0x41 && !(func_001788F0(prog, r.route[n - 1]) & 0xFF)) {
+                loud = 0;
+            }
+        }
+        if ((s32)c->hearThreshold < loud) {
+            NoiseEvent *e = &NOISE_EVENTS(gProgress)[i];
+
+            c->heardSlot = i;
+            c->heard.level = e->level;
+            c->heard.room = e->room;
+            c->heard.tri = e->tri;
+            c->heard.exitId = e->exitId;
+            return;
+        }
+    }
+    c->heardSlot = 0xFF;
+}
+
+/* Activate the character (state reset), then vtable +0x60. Shares its tail with func_00125D40
+ * in the original. */
+void func_00125CC0(Character *c) {
+    c->a.active = 1;
+    c->a.unkC4 = 0;
+    c->unkE0 = 0;
+    c->unkE2 = 0;
+    c->unkE3 = 0;
+    c->unkE4 = 1;
+    c->a.disabled = 1;
+    c->unkE1 = 0;
+    c->a.unk2B = 0;
+    c->a.unk2D = 0;
+    c->a.unk2A = 0;
+    c->moveMode = 0;
+    c->unk100 = -1;
+    c->unk104[0] = 0;
+    c->unk104[1] = 0;
+    c->unk104[2] = 0;
+    c->unk110[0] = 0.0f;
+    c->unk110[1] = 0.0f;
+    c->unk110[2] = 0.0f;
+    c->unk110[3] = 1.0f;
+    c->door = 0xFF;
+    c->heardSlot = 0xFF;
+    VCALL(c, 0x60, void (*)(Character *))(c);
+}
+
+/* Deactivate: vtable +0x60, then off the mesh. */
+void func_00125D40(Character *c) {
+    VCALL(c, 0x60, void (*)(Character *))(c);
+    c->a.active = 0;
+    c->a.navTri = NAV_NONE;
 }

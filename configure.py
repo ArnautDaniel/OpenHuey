@@ -124,7 +124,7 @@ def decompiled_funcs(sources: list[str]) -> dict[str, list[str]]:
         defined.update(FUNC_DEF_RE.findall((ROOT / src).read_text()))
     out: dict[str, list[str]] = {}
     for asm in CODE_ASM:
-        names = set(re.findall(r"^glabel (\S+)", (ROOT / asm).read_text(), re.M))
+        names = set(re.findall(r"^\s*(?:glabel|alabel) (\S+)", (ROOT / asm).read_text(), re.M))
         out[asm] = sorted(defined & names)
     return out
 

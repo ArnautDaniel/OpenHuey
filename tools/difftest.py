@@ -138,6 +138,7 @@ def b2f(b: int) -> float:
 
 # ---------------------------------------------------------------- value distribution
 STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
+STUB_RET_PROB = [0.5]         # --stub-ret-prob
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
 
@@ -460,7 +461,7 @@ class CPU:
                     self.m.written.pop(Memory.norm(p + i), None)
         self.call_n += 1
         rv = interesting(self.rng)
-        if STUB_RETURNS and self.rng.random() < 0.5:
+        if STUB_RETURNS and self.rng.random() < STUB_RET_PROB[0]:
             rv = self.rng.choice(STUB_RETURNS)
         self.s32(2, rv)
         self.s32(3, self.rng.getrandbits(32))
@@ -1646,6 +1647,8 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
+    ap.add_argument("--stub-ret-prob", type=float, default=0.5,
+                    help="how often stubs return a --stub-ret value (1.0: only those)")
     return ap
 
 
@@ -1669,6 +1672,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     runs = opts.runs if opts.runs is not None else DEFAULT_RUNS
     PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
     STUB_RETURNS[:] = opts.stub_ret
+    STUB_RET_PROB[0] = opts.stub_ret_prob
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()

@@ -5,7 +5,8 @@
 
 Removes each function's `nonmatching`/`glabel`...`endlabel` block (and the
 `.balign` emitted by tools/align_data.py right before it). Jump table labels (jlabel) are kept, so the now-unused table in rodata still
-links. Refuses if a removed block has alternate entry points (alabel/ehlabel).
+links. Refuses if a removed block has alternate entry points (alabel/ehlabel) that aren't
+themselves in the list of decompiled functions.
 """
 import re
 import sys
@@ -35,14 +36,17 @@ def main() -> None:
             if j == len(lines):
                 sys.exit(f"strip_funcs: no endlabel for {name} in {src}")
         block = lines[i : j + 1]
+        # alternate entry points must be decompiled too (C defines them as functions)
         inner = [l.split()[:2] for l in block if re.match(r"\s*(alabel|ehlabel) ", l)]
-        if inner:
-            sys.exit(f"strip_funcs: {name} has labels referenced from elsewhere: {inner}")
+        missing_entries = [lbl for kind, lbl in inner if kind != "alabel" or lbl not in want]
+        if missing_entries:
+            sys.exit(f"strip_funcs: {name} has labels referenced from elsewhere: {missing_entries}")
         # Jump table targets: the table in rodata is unused once the C replaces the
         # function, but its entries must still resolve, so keep the labels (all at the
         # place the function was).
         out += [f"  jlabel {l.split()[1]}\n" for l in block if re.match(r"\s*jlabel ", l)]
         found.add(name)
+        found.update(lbl for kind, lbl in inner if kind == "alabel")
         i = j + 1
     missing = want - found
     if missing:
