@@ -9,3 +9,7 @@ if [ ! -x tools/ps2dev/ps2dev/ee/bin/mips64r5900el-ps2-elf-as ]; then
     curl -L https://github.com/ps2dev/ps2dev/releases/download/v2.0.0/ps2dev-ubuntu-latest.tar.gz \
         | tar xz -C tools/ps2dev
 fi
+if [ ! -d tools/m2c ]; then
+    git clone --depth 1 https://github.com/matt-kempster/m2c.git tools/m2c
+    .venv/bin/pip install -e tools/m2c
+fi
