@@ -748,3 +748,56 @@ void func_0019BE70(Fiona *f) {
     }
     VCALL(f->c.motion, 0x3C, void (*)(void *))(f->c.motion);
 }
+
+/* Lower the +0x1AD5F8 counter (frames, of 1800) by 60 / n, not below 0. */
+void func_0019A210(Fiona *f, s32 n) {
+    FI(f, 0x1AD5F8, s32) -= 60 / (s16)n;
+    if (FI(f, 0x1AD5F8, s32) < 0) {
+        FI(f, 0x1AD5F8, s32) = 0;
+    }
+}
+
+extern void func_00181010(Fiona *f, f32 angle);
+
+/* Turn by -n/30 (forwarded to func_00181010). */
+void func_0019A280(Fiona *f, s32 n) {
+    func_00181010(f, -(0x1.11105ep-5f /* 0x3D08882F, ~1/30 */ * (f32)n));
+}
+
+/* Is she idle (action 0, state not 1/0xE/0xF)? */
+s32 func_0019A2B0(Fiona *f) {
+    s32 s;
+
+    if (f->c.moveMode != 0) {
+        return 0;
+    }
+    s = f->unk1AD580;
+    if (s == 0xE || s == 1 || s == 0xF) {
+        return 0;
+    }
+    return 1;
+}
+
+extern VObject *D_0044E7A8;   /* sound effects: +0x18(?, id, ?) */
+extern void func_00182E80(Fiona *f);
+extern const PTMF D_003B27E8;
+
+/* Start action 4 / sub 0xA with parameter `arg` (`flag` 1: also func_00182E80). */
+void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
+    func_00184BF0(f);
+    if ((u32)((Progress_GetVar(gProgress, 0x26) & 0xFF) - 6) < 2) {
+        VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+    }
+    f->c.moveMode = 4;
+    f->c.moveSub = 0xA;
+    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+    f->c.unk100 = arg & 0xFF;
+    if ((flag & 0xFF) == 1) {
+        func_00182E80(f);
+    }
+    f->c.a.unk2A = 1;
+    Actor_SetState(&f->c.a, &D_003B27E8);
+    if (f->c.unkE0 == 1) {
+        VCALL(f, 0x90, void (*)(Fiona *))(f);
+    }
+}
