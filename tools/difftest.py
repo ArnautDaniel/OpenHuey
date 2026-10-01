@@ -1,0 +1,1300 @@
+#!/usr/bin/env python3
+"""Differential tester: does a decompiled C function behave like the original?
+
+    tools/difftest.py src/foo.c func_002D1E40 [--runs 200] [--seed 1] [-v]
+
+Runs the original machine code (from the baserom) and the C version (compiled
+with the project's GCC, linked against the game's real symbol addresses) in a
+small R5900 interpreter on the same random inputs, and compares:
+
+  * the sequence of calls made (target + the argument registers the callee
+    actually reads + a digest of memory written so far),
+  * memory written (excluding the function's own stack frame),
+  * the return value (v0, or f0 for float functions; nothing for void),
+  * that callee-saved registers are preserved.
+
+Calls to other functions are not executed: they are recorded and return
+deterministic random values, so each function is tested in isolation.
+Memory nobody has written reads as deterministic pseudo-random bytes derived
+from the address and run seed (the game image reads from the rom), so random
+pointers can be followed without knowing any types and both versions see the
+same "world". Inputs that make the *original* run away are skipped.
+
+Floating point is modelled loosely after the EE (no denormals, clamping on
+overflow); it is the same model for both versions, which is what matters.
+"""
+import argparse
+import hashlib
+import random
+import re
+import struct
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+import rabbitizer as rz
+from elftools.elf.elffile import ELFFile
+
+ROOT = Path(__file__).resolve().parent.parent
+BASEROM = ROOT / "baserom/SLUS_210.75"
+BUILD_ELF = ROOT / "build/SLUS_210.75.elf"
+TC = ROOT / "tools/ps2dev/ps2dev/ee/bin/mips64r5900el-ps2-elf-"
+IMAGE_LO, IMAGE_HI = 0x00100000, 0x0047B200
+C_BASE = 0x0E000000          # where the C version is loaded
+PTR_LO, PTR_HI = 0x0A000000, 0x0D000000  # random "heap" pointers handed to functions
+STACK_TOP = 0x01FF0000
+FRAME = 0x10000              # writes within this much below sp are the function's own frame
+RET_MAGIC = 0x0DEAD000       # return address sentinel
+MAX_STEPS = 200_000
+OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
+
+M32, M64, M128 = (1 << 32) - 1, (1 << 64) - 1, (1 << 128) - 1
+ARG_REGS = list(range(4, 12))  # n32: a0-a7 = r4-r11
+FARG_REGS = list(range(12, 20))
+CALLEE_SAVED = [16, 17, 18, 19, 20, 21, 22, 23, 28, 29, 30, 31]
+SCRAMBLE = [1, 3] + list(range(4, 16)) + [24, 25]  # caller-saved besides v0
+
+rz.config.pseudos_enablePseudos = False
+
+
+class Unsupported(Exception):
+    pass
+
+
+class Trap(Exception):
+    pass
+
+
+def sx32(v: int) -> int:
+    v &= M32
+    return (v ^ 0x80000000) - 0x80000000
+
+
+def sx64(v: int) -> int:
+    v &= M64
+    return (v ^ (1 << 63)) - (1 << 63)
+
+
+def u64_of_s32(v: int) -> int:
+    return sx32(v) & M64
+
+
+# ---------------------------------------------------------------- floats (EE-ish)
+FMAX = 0x7F7FFFFF
+
+
+def f2b(x: float) -> int:
+    if x != x:
+        return FMAX
+    try:
+        b = struct.unpack("<I", struct.pack("<f", x))[0]
+    except OverflowError:
+        return FMAX | (0x80000000 if x < 0 else 0)
+    if b & 0x7F800000 == 0x7F800000:  # inf -> clamp
+        return FMAX | (b & 0x80000000)
+    if b & 0x7F800000 == 0:  # denormal -> signed zero
+        return b & 0x80000000
+    return b
+
+
+def b2f(b: int) -> float:
+    if b & 0x7F800000 == 0:
+        return -0.0 if b & 0x80000000 else 0.0
+    if b & 0x7F800000 == 0x7F800000:  # EE has no inf/nan: treat as huge
+        b = FMAX | (b & 0x80000000)
+    return struct.unpack("<f", struct.pack("<I", b & M32))[0]
+
+
+# ---------------------------------------------------------------- value distribution
+def interesting(rnd: random.Random, bits: int = 32) -> int:
+    """Random value biased towards boundary cases (0, 1, -1, small) so branches get exercised."""
+    k = rnd.random()
+    if k < 0.30:
+        return 0
+    if k < 0.40:
+        return 1
+    if k < 0.48:
+        return (1 << bits) - 1
+    if k < 0.65:
+        return rnd.randrange(2, 16)
+    if k < 0.85 and bits == 32:
+        # a "realistic" float: game data is coordinates/angles/scales, not random bit patterns
+        return f2b(rnd.uniform(-1000.0, 1000.0))
+    return rnd.getrandbits(bits)
+
+
+# ---------------------------------------------------------------- memory
+class Memory:
+    def __init__(self, rom: bytes, seed: int, overlays: list[tuple[int, bytes]]):
+        self.rom = rom
+        self.seed = seed
+        self.pages: dict[int, bytearray] = {}
+        self.written: dict[int, int] = {}
+        for base, data in overlays:
+            for i, b in enumerate(data):
+                self._page(base + i)[(base + i) & 0xFFF] = b
+
+    @staticmethod
+    def norm(a: int) -> int:
+        a &= M32
+        if 0x20000000 <= a < 0x40000000:  # uncached mirrors of RAM
+            a &= 0x1FFFFFFF
+        return a
+
+    def _page(self, a: int) -> bytearray:
+        pn = a >> 12
+        p = self.pages.get(pn)
+        if p is None:
+            lo = pn << 12
+            if IMAGE_LO <= lo < IMAGE_HI:
+                off = lo - IMAGE_LO + 0x80
+                p = bytearray(self.rom[off : off + 0x1000].ljust(0x1000, b"\0"))
+            else:
+                rnd = random.Random(self.seed * 0x9E3779B1 ^ pn)
+                p = bytearray(b"".join(interesting(rnd).to_bytes(4, "little") for _ in range(0x400)))
+            self.pages[pn] = p
+        return p
+
+    def read(self, a: int, n: int) -> int:
+        a = self.norm(a)
+        if (a & 0xFFF) + n <= 0x1000:
+            p = self._page(a)
+            o = a & 0xFFF
+            return int.from_bytes(p[o : o + n], "little")
+        return int.from_bytes(bytes(self.read(a + i, 1) for i in range(n)), "little")
+
+    def write(self, a: int, n: int, v: int) -> None:
+        a = self.norm(a)
+        for i, b in enumerate((v & ((1 << (8 * n)) - 1)).to_bytes(n, "little")):
+            x = a + i
+            self._page(x)[x & 0xFFF] = b
+            self.written[x] = b
+
+
+# ---------------------------------------------------------------- argument usage of callees
+_arg_cache: dict[int, tuple[list[int], list[int]]] = {}
+
+
+def callee_args(rom: bytes, target: int) -> tuple[list[int], list[int]]:
+    """Which a0-a7 / f12-f19 a callee reads before writing (linear scan of the original code)."""
+    if target in _arg_cache:
+        return _arg_cache[target]
+    if not (IMAGE_LO + 0x230 <= target < 0x003A1990):
+        res = (ARG_REGS, FARG_REGS)
+        _arg_cache[target] = res
+        return res
+    used, fused, written, fwritten = set(), set(), set(), set()
+    a = target
+    for _ in range(300):
+        w = struct.unpack_from("<I", rom, a - IMAGE_LO + 0x80)[0]
+        ins = rz.Instruction(w, vram=a, category=rz.InstrCategory.R5900)
+        op = w >> 26
+        rs, rt, rd = (w >> 21) & 31, (w >> 16) & 31, (w >> 11) & 31
+        fs, ft = (w >> 11) & 31, (w >> 16) & 31
+        if ins.readsRs() and rs not in written:
+            used.add(rs)
+        if ins.readsRt() and rt not in written:
+            used.add(rt)
+        if ins.isFloat() or op in (0x31, 0x39):  # cop1 / lwc1 / swc1
+            if ins.readsFs() and fs not in fwritten:
+                fused.add(fs)
+            if ins.readsFt() and ft not in fwritten:
+                fused.add(ft)
+            if op == 0x39 and ft not in fwritten:  # swc1 reads ft
+                fused.add(ft)
+            if ins.modifiesFd():
+                fwritten.add((w >> 6) & 31)
+            if ins.modifiesFt() or op == 0x31:
+                fwritten.add(ft)
+        if ins.modifiesRt():
+            written.add(rt)
+        if ins.modifiesRd():
+            written.add(rd)
+        if ins.isJrRa() or (ins.isJump() and not ins.doesLink() and not ins.isBranch()):
+            break
+        a += 4
+    res = ([r for r in ARG_REGS if r in used], [f for f in FARG_REGS if f in fused])
+    _arg_cache[target] = res
+    return res
+
+
+# ---------------------------------------------------------------- CPU
+class CPU:
+    def __init__(self, mem: Memory, rom: bytes, func_lo: int, func_hi: int, seed: int):
+        self.m = mem
+        self.rom = rom
+        self.r = [0] * 32
+        self.f = [0] * 32
+        self.acc = 0
+        self.fcc = False
+        self.hi = self.lo = self.hi1 = self.lo1 = 0
+        self.sa = 0
+        self.func_lo, self.func_hi = func_lo, func_hi
+        self.events: list[tuple] = []
+        self.rng = random.Random(seed * 7919 + 17)
+        self.call_n = 0
+        self.steps = 0
+        self.decoded: dict[int, tuple] = {}
+        self.visited: set[int] = set()
+        self.done = False
+
+    # -- register helpers (writes keep the upper 64 bits of the 128-bit GPR)
+    def g(self, i: int) -> int:
+        return self.r[i] & M64
+
+    def s(self, i: int, v: int) -> None:
+        if i:
+            self.r[i] = (self.r[i] & ~M64 & M128) | (v & M64)
+
+    def s32(self, i: int, v: int) -> None:
+        self.s(i, u64_of_s32(v))
+
+    def ff(self, i: int) -> float:
+        return b2f(self.f[i])
+
+    def sf(self, i: int, x: float) -> None:
+        self.f[i] = f2b(x)
+
+    # -- calls
+    def stub_call(self, target: int, kind: str) -> None:
+        ints, floats = callee_args(self.rom, target)
+        # pointers into the frame compare as "a stack pointer": layouts differ between compilers
+        args = tuple("stack" if STACK_TOP - FRAME <= (self.g(r) & M32) < STACK_TOP else self.g(r) & M32 for r in ints)
+        fargs = tuple(self.f[r] for r in floats)
+        dig = hashlib.blake2b(
+            repr(sorted(self.visible_writes().items())).encode(), digest_size=6
+        ).hexdigest()
+        self.events.append((kind, target, args, fargs, dig))
+        # Out-parameters: a pointer into the stack frame gets a deterministic
+        # value written through it (frame layouts differ between compilers, so
+        # leftover stack bytes would otherwise differ between the versions).
+        for k, r in enumerate(ints):
+            p = self.g(r) & M32
+            if STACK_TOP - FRAME <= p < STACK_TOP:
+                v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * OUTPARAM)
+                self.m.write(p, OUTPARAM, v)
+        self.call_n += 1
+        rv = interesting(self.rng)
+        self.s32(2, rv)
+        self.s32(3, self.rng.getrandbits(32))
+        self.f[0] = f2b(self.rng.uniform(-100, 100))
+        for r in SCRAMBLE:
+            if r != 3:
+                self.s(r, self.rng.getrandbits(64))
+
+    def visible_writes(self) -> dict[int, int]:
+        sp0 = STACK_TOP
+        return {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0)}
+
+    # -- main loop
+    def run(self, entry: int) -> None:
+        pc, npc = entry, entry + 4
+        while not self.done:
+            if pc == RET_MAGIC:
+                return
+            self.steps += 1
+            if self.steps > MAX_STEPS:
+                raise TimeoutError
+            self.visited.add(pc)
+            d = self.decoded.get(pc)
+            if d is None:
+                w = self.m.read(pc, 4)
+                ins = rz.Instruction(w, vram=pc, category=rz.InstrCategory.R5900)
+                d = (ins.getOpcodeName(), w)
+                self.decoded[pc] = d
+            name, w = d
+            h = HANDLERS.get(name)
+            if h is None:
+                raise Unsupported(f"{name} at 0x{pc:08X}")
+            nxt = h(self, w, pc)
+            if nxt is None:
+                pc, npc = npc, npc + 4
+                continue
+            # branch/jump: nxt = (taken, target, likely, link_reg, kind)
+            taken, target, likely, link, kind = nxt
+            if likely and not taken:
+                pc, npc = npc + 4, npc + 8  # skip delay slot
+                continue
+            # execute delay slot
+            ds = npc
+            if link is not None:
+                self.s(link, (pc + 8) & M64)
+            dname, dw = self.decoded.get(ds) or (None, None)
+            if dname is None:
+                w2 = self.m.read(ds, 4)
+                dname = rz.Instruction(w2, vram=ds, category=rz.InstrCategory.R5900).getOpcodeName()
+                dw = w2
+                self.decoded[ds] = (dname, dw)
+            dh = HANDLERS.get(dname)
+            if dh is None:
+                raise Unsupported(f"{dname} at 0x{ds:08X}")
+            self.visited.add(ds)
+            if dh(self, dw, ds) is not None:
+                raise Unsupported(f"branch in delay slot at 0x{ds:08X}")
+            self.steps += 1
+            if not taken:
+                pc, npc = ds + 4, ds + 8
+                continue
+            if kind == "call":
+                self.stub_call(target, "call")
+                pc, npc = pc + 8, pc + 12
+            elif kind == "jump" and not (self.func_lo <= target < self.func_hi) and target != RET_MAGIC:
+                # tail call: callee returns to our caller
+                self.stub_call(target, "call")
+                pc, npc = self.g(31) & M32, (self.g(31) & M32) + 4
+            else:
+                pc, npc = target & M32, (target + 4) & M32
+
+
+# ---------------------------------------------------------------- instruction handlers
+def _rs(w): return (w >> 21) & 31
+def _rt(w): return (w >> 16) & 31
+def _rd(w): return (w >> 11) & 31
+def _sa(w): return (w >> 6) & 31
+def _imm(w): return (w & 0xFFFF) - 0x10000 if w & 0x8000 else w & 0xFFFF
+def _uimm(w): return w & 0xFFFF
+def _fs(w): return (w >> 11) & 31
+def _ft(w): return (w >> 16) & 31
+def _fd(w): return (w >> 6) & 31
+
+
+def _br(c, w, pc, cond, likely=False, link=None):
+    return (cond, (pc + 4 + (_imm(w) << 2)) & M32, likely, link, "branch")
+
+
+def _addr(c, w):
+    return (c.g(_rs(w)) + _imm(w)) & M32
+
+
+HANDLERS = {}
+
+
+def H(*names):
+    def deco(fn):
+        for n in names:
+            HANDLERS[n] = fn
+        return fn
+    return deco
+
+
+@H("nop", "sync", "sync.p", "sync.l", "ei", "di", "cache", "pref", "ssnop")
+def _nop(c, w, pc): return None
+
+
+@H("addiu", "addi")
+def _addiu(c, w, pc): c.s32(_rt(w), c.g(_rs(w)) + _imm(w))
+
+
+@H("daddiu", "daddi")
+def _daddiu(c, w, pc): c.s(_rt(w), c.g(_rs(w)) + _imm(w))
+
+
+@H("lui")
+def _lui(c, w, pc): c.s32(_rt(w), _uimm(w) << 16)
+
+
+@H("ori")
+def _ori(c, w, pc): c.s(_rt(w), c.g(_rs(w)) | _uimm(w))
+
+
+@H("andi")
+def _andi(c, w, pc): c.s(_rt(w), c.g(_rs(w)) & _uimm(w))
+
+
+@H("xori")
+def _xori(c, w, pc): c.s(_rt(w), c.g(_rs(w)) ^ _uimm(w))
+
+
+@H("slti")
+def _slti(c, w, pc): c.s(_rt(w), int(sx64(c.g(_rs(w))) < _imm(w)))
+
+
+@H("sltiu")
+def _sltiu(c, w, pc): c.s(_rt(w), int(c.g(_rs(w)) < (_imm(w) & M64)))
+
+
+@H("addu", "add")
+def _addu(c, w, pc): c.s32(_rd(w), c.g(_rs(w)) + c.g(_rt(w)))
+
+
+@H("subu", "sub")
+def _subu(c, w, pc): c.s32(_rd(w), c.g(_rs(w)) - c.g(_rt(w)))
+
+
+@H("daddu", "dadd")
+def _daddu(c, w, pc): c.s(_rd(w), c.g(_rs(w)) + c.g(_rt(w)))
+
+
+@H("dsubu", "dsub")
+def _dsubu(c, w, pc): c.s(_rd(w), c.g(_rs(w)) - c.g(_rt(w)))
+
+
+@H("and")
+def _and(c, w, pc): c.s(_rd(w), c.g(_rs(w)) & c.g(_rt(w)))
+
+
+@H("or")
+def _or(c, w, pc): c.s(_rd(w), c.g(_rs(w)) | c.g(_rt(w)))
+
+
+@H("xor")
+def _xor(c, w, pc): c.s(_rd(w), c.g(_rs(w)) ^ c.g(_rt(w)))
+
+
+@H("nor")
+def _nor(c, w, pc): c.s(_rd(w), ~(c.g(_rs(w)) | c.g(_rt(w))))
+
+
+@H("slt")
+def _slt(c, w, pc): c.s(_rd(w), int(sx64(c.g(_rs(w))) < sx64(c.g(_rt(w)))))
+
+
+@H("sltu")
+def _sltu(c, w, pc): c.s(_rd(w), int(c.g(_rs(w)) < c.g(_rt(w))))
+
+
+@H("movz")
+def _movz(c, w, pc):
+    if c.g(_rt(w)) == 0:
+        c.s(_rd(w), c.g(_rs(w)))
+
+
+@H("movn")
+def _movn(c, w, pc):
+    if c.g(_rt(w)) != 0:
+        c.s(_rd(w), c.g(_rs(w)))
+
+
+@H("sll")
+def _sll(c, w, pc): c.s32(_rd(w), c.g(_rt(w)) << _sa(w))
+
+
+@H("srl")
+def _srl(c, w, pc): c.s32(_rd(w), (c.g(_rt(w)) & M32) >> _sa(w))
+
+
+@H("sra")
+def _sra(c, w, pc): c.s32(_rd(w), sx32(c.g(_rt(w))) >> _sa(w))
+
+
+@H("sllv")
+def _sllv(c, w, pc): c.s32(_rd(w), c.g(_rt(w)) << (c.g(_rs(w)) & 31))
+
+
+@H("srlv")
+def _srlv(c, w, pc): c.s32(_rd(w), (c.g(_rt(w)) & M32) >> (c.g(_rs(w)) & 31))
+
+
+@H("srav")
+def _srav(c, w, pc): c.s32(_rd(w), sx32(c.g(_rt(w))) >> (c.g(_rs(w)) & 31))
+
+
+@H("dsll")
+def _dsll(c, w, pc): c.s(_rd(w), c.g(_rt(w)) << _sa(w))
+
+
+@H("dsrl")
+def _dsrl(c, w, pc): c.s(_rd(w), c.g(_rt(w)) >> _sa(w))
+
+
+@H("dsra")
+def _dsra(c, w, pc): c.s(_rd(w), sx64(c.g(_rt(w))) >> _sa(w))
+
+
+@H("dsll32")
+def _dsll32(c, w, pc): c.s(_rd(w), c.g(_rt(w)) << (_sa(w) + 32))
+
+
+@H("dsrl32")
+def _dsrl32(c, w, pc): c.s(_rd(w), c.g(_rt(w)) >> (_sa(w) + 32))
+
+
+@H("dsra32")
+def _dsra32(c, w, pc): c.s(_rd(w), sx64(c.g(_rt(w))) >> (_sa(w) + 32))
+
+
+@H("dsllv")
+def _dsllv(c, w, pc): c.s(_rd(w), c.g(_rt(w)) << (c.g(_rs(w)) & 63))
+
+
+@H("dsrlv")
+def _dsrlv(c, w, pc): c.s(_rd(w), c.g(_rt(w)) >> (c.g(_rs(w)) & 63))
+
+
+@H("dsrav")
+def _dsrav(c, w, pc): c.s(_rd(w), sx64(c.g(_rt(w))) >> (c.g(_rs(w)) & 63))
+
+
+def _mult(c, w, signed, pipe1=False):
+    a, b = c.g(_rs(w)) & M32, c.g(_rt(w)) & M32
+    if signed:
+        a, b = sx32(a), sx32(b)
+    p = a * b
+    lo, hi = u64_of_s32(p), u64_of_s32(p >> 32)
+    if pipe1:
+        c.lo1, c.hi1 = lo, hi
+    else:
+        c.lo, c.hi = lo, hi
+    if _rd(w):
+        c.s(_rd(w), lo)
+
+
+@H("mult")
+def _h_mult(c, w, pc): _mult(c, w, True)
+
+
+@H("multu")
+def _h_multu(c, w, pc): _mult(c, w, False)
+
+
+@H("mult1")
+def _h_mult1(c, w, pc): _mult(c, w, True, True)
+
+
+@H("multu1")
+def _h_multu1(c, w, pc): _mult(c, w, False, True)
+
+
+def _madd(c, w, signed, pipe1=False):
+    a, b = c.g(_rs(w)) & M32, c.g(_rt(w)) & M32
+    if signed:
+        a, b = sx32(a), sx32(b)
+    lo, hi = (c.lo1, c.hi1) if pipe1 else (c.lo, c.hi)
+    accv = ((hi & M32) << 32) | (lo & M32)
+    accv = (accv + a * b) & M64
+    lo, hi = u64_of_s32(accv), u64_of_s32(accv >> 32)
+    if pipe1:
+        c.lo1, c.hi1 = lo, hi
+    else:
+        c.lo, c.hi = lo, hi
+    if _rd(w):
+        c.s(_rd(w), lo)
+
+
+@H("madd")
+def _h_madd(c, w, pc): _madd(c, w, True)
+
+
+@H("maddu")
+def _h_maddu(c, w, pc): _madd(c, w, False)
+
+
+@H("madd1")
+def _h_madd1(c, w, pc): _madd(c, w, True, True)
+
+
+def _div(c, w, signed, pipe1=False):
+    a, b = c.g(_rs(w)) & M32, c.g(_rt(w)) & M32
+    if signed:
+        a, b = sx32(a), sx32(b)
+    if b == 0:
+        q, r = (1 if (signed and a < 0) else -1), a
+    elif signed and a == -0x80000000 and b == -1:
+        q, r = a, 0
+    else:
+        q = abs(a) // abs(b) * (1 if (a < 0) == (b < 0) else -1)
+        r = a - q * b
+    lo, hi = u64_of_s32(q), u64_of_s32(r)
+    if pipe1:
+        c.lo1, c.hi1 = lo, hi
+    else:
+        c.lo, c.hi = lo, hi
+
+
+@H("div")
+def _h_div(c, w, pc): _div(c, w, True)
+
+
+@H("divu")
+def _h_divu(c, w, pc): _div(c, w, False)
+
+
+@H("div1")
+def _h_div1(c, w, pc): _div(c, w, True, True)
+
+
+@H("divu1")
+def _h_divu1(c, w, pc): _div(c, w, False, True)
+
+
+@H("mflo")
+def _mflo(c, w, pc): c.s(_rd(w), c.lo)
+
+
+@H("mfhi")
+def _mfhi(c, w, pc): c.s(_rd(w), c.hi)
+
+
+@H("mflo1")
+def _mflo1(c, w, pc): c.s(_rd(w), c.lo1)
+
+
+@H("mfhi1")
+def _mfhi1(c, w, pc): c.s(_rd(w), c.hi1)
+
+
+@H("mtlo")
+def _mtlo(c, w, pc): c.lo = c.g(_rs(w))
+
+
+@H("mthi")
+def _mthi(c, w, pc): c.hi = c.g(_rs(w))
+
+
+@H("mtlo1")
+def _mtlo1(c, w, pc): c.lo1 = c.g(_rs(w))
+
+
+@H("mthi1")
+def _mthi1(c, w, pc): c.hi1 = c.g(_rs(w))
+
+
+@H("mfsa")
+def _mfsa(c, w, pc): c.s(_rd(w), c.sa)
+
+
+@H("mtsa")
+def _mtsa(c, w, pc): c.sa = c.g(_rs(w)) & 0xF
+
+
+# -- loads/stores
+@H("lb")
+def _lb(c, w, pc):
+    v = c.m.read(_addr(c, w), 1)
+    c.s(_rt(w), (v - 0x100 if v & 0x80 else v) & M64)
+
+
+@H("lbu")
+def _lbu(c, w, pc): c.s(_rt(w), c.m.read(_addr(c, w), 1))
+
+
+@H("lh")
+def _lh(c, w, pc):
+    v = c.m.read(_addr(c, w), 2)
+    c.s(_rt(w), (v - 0x10000 if v & 0x8000 else v) & M64)
+
+
+@H("lhu")
+def _lhu(c, w, pc): c.s(_rt(w), c.m.read(_addr(c, w), 2))
+
+
+@H("lw")
+def _lw(c, w, pc): c.s32(_rt(w), c.m.read(_addr(c, w), 4))
+
+
+@H("lwu")
+def _lwu(c, w, pc): c.s(_rt(w), c.m.read(_addr(c, w), 4))
+
+
+@H("ld")
+def _ld(c, w, pc): c.s(_rt(w), c.m.read(_addr(c, w), 8))
+
+
+@H("lq")
+def _lq(c, w, pc):
+    if _rt(w):
+        c.r[_rt(w)] = c.m.read(_addr(c, w) & ~0xF, 16)
+
+
+@H("sb")
+def _sb(c, w, pc): c.m.write(_addr(c, w), 1, c.g(_rt(w)))
+
+
+@H("sh")
+def _sh(c, w, pc): c.m.write(_addr(c, w), 2, c.g(_rt(w)))
+
+
+@H("sw")
+def _sw(c, w, pc): c.m.write(_addr(c, w), 4, c.g(_rt(w)))
+
+
+@H("sd")
+def _sd(c, w, pc): c.m.write(_addr(c, w), 8, c.g(_rt(w)))
+
+
+@H("sq")
+def _sq(c, w, pc): c.m.write(_addr(c, w) & ~0xF, 16, c.r[_rt(w)])
+
+
+def _unaligned(c, w, size, left, store):
+    a = _addr(c, w)
+    base = a & ~(size - 1)
+    k = a & (size - 1)
+    mem = c.m.read(base, size)
+    reg = c.g(_rt(w))
+    bits = 8 * size
+    if not store:
+        if left:  # lwl/ldl: high bytes of reg <- mem bytes [0..k]
+            n = k + 1
+            mask = ((1 << (8 * n)) - 1) << (bits - 8 * n)
+            v = (reg & ~mask) | ((mem << (bits - 8 * n)) & mask)
+        else:     # lwr/ldr: low bytes of reg <- mem bytes [k..size-1]
+            n = size - k
+            mask = (1 << (8 * n)) - 1
+            v = (reg & ~mask) | ((mem >> (8 * k)) & mask)
+        if size == 4:
+            c.s32(_rt(w), v)
+        else:
+            c.s(_rt(w), v)
+    else:
+        if left:  # swl/sdl
+            n = k + 1
+            mask = (1 << (8 * n)) - 1
+            v = (mem & ~mask) | ((reg >> (bits - 8 * n)) & mask)
+        else:     # swr/sdr
+            n = size - k
+            mask = ((1 << (8 * n)) - 1) << (8 * k)
+            v = (mem & ~mask) | ((reg << (8 * k)) & mask)
+        c.m.write(base, size, v)
+
+
+@H("lwl")
+def _lwl(c, w, pc): _unaligned(c, w, 4, True, False)
+
+
+@H("lwr")
+def _lwr(c, w, pc): _unaligned(c, w, 4, False, False)
+
+
+@H("swl")
+def _swl(c, w, pc): _unaligned(c, w, 4, True, True)
+
+
+@H("swr")
+def _swr(c, w, pc): _unaligned(c, w, 4, False, True)
+
+
+@H("ldl")
+def _ldl(c, w, pc): _unaligned(c, w, 8, True, False)
+
+
+@H("ldr")
+def _ldr(c, w, pc): _unaligned(c, w, 8, False, False)
+
+
+@H("sdl")
+def _sdl(c, w, pc): _unaligned(c, w, 8, True, True)
+
+
+@H("sdr")
+def _sdr(c, w, pc): _unaligned(c, w, 8, False, True)
+
+
+@H("lwc1")
+def _lwc1(c, w, pc): c.f[_ft(w)] = c.m.read(_addr(c, w), 4)
+
+
+@H("swc1")
+def _swc1(c, w, pc): c.m.write(_addr(c, w), 4, c.f[_ft(w)])
+
+
+# -- branches / jumps
+@H("beq")
+def _beq(c, w, pc): return _br(c, w, pc, c.g(_rs(w)) == c.g(_rt(w)))
+
+
+@H("bne")
+def _bne(c, w, pc): return _br(c, w, pc, c.g(_rs(w)) != c.g(_rt(w)))
+
+
+@H("beql")
+def _beql(c, w, pc): return _br(c, w, pc, c.g(_rs(w)) == c.g(_rt(w)), True)
+
+
+@H("bnel")
+def _bnel(c, w, pc): return _br(c, w, pc, c.g(_rs(w)) != c.g(_rt(w)), True)
+
+
+@H("blez")
+def _blez(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) <= 0)
+
+
+@H("bgtz")
+def _bgtz(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) > 0)
+
+
+@H("blezl")
+def _blezl(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) <= 0, True)
+
+
+@H("bgtzl")
+def _bgtzl(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) > 0, True)
+
+
+@H("bltz")
+def _bltz(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) < 0)
+
+
+@H("bgez")
+def _bgez(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) >= 0)
+
+
+@H("bltzl")
+def _bltzl(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) < 0, True)
+
+
+@H("bgezl")
+def _bgezl(c, w, pc): return _br(c, w, pc, sx64(c.g(_rs(w))) >= 0, True)
+
+
+@H("bltzal")
+def _bltzal(c, w, pc):
+    t = _br(c, w, pc, sx64(c.g(_rs(w))) < 0)
+    return (t[0], t[1], False, 31, "call")
+
+
+@H("bgezal")
+def _bgezal(c, w, pc):
+    t = _br(c, w, pc, sx64(c.g(_rs(w))) >= 0)
+    return (t[0], t[1], False, 31, "call")
+
+
+@H("bc1t")
+def _bc1t(c, w, pc): return _br(c, w, pc, c.fcc)
+
+
+@H("bc1f")
+def _bc1f(c, w, pc): return _br(c, w, pc, not c.fcc)
+
+
+@H("bc1tl")
+def _bc1tl(c, w, pc): return _br(c, w, pc, c.fcc, True)
+
+
+@H("bc1fl")
+def _bc1fl(c, w, pc): return _br(c, w, pc, not c.fcc, True)
+
+
+@H("j")
+def _j(c, w, pc): return (True, (pc & 0xF0000000) | ((w & 0x3FFFFFF) << 2), False, None, "jump")
+
+
+@H("jal")
+def _jal(c, w, pc): return (True, (pc & 0xF0000000) | ((w & 0x3FFFFFF) << 2), False, 31, "call")
+
+
+@H("jr")
+def _jr(c, w, pc):
+    t = c.g(_rs(w)) & M32
+    if _rs(w) == 31 or t == RET_MAGIC:
+        return (True, t, False, None, "return")
+    return (True, t, False, None, "jump")
+
+
+@H("jalr")
+def _jalr(c, w, pc): return (True, c.g(_rs(w)) & M32, False, _rd(w), "call")
+
+
+@H("syscall")
+def _syscall(c, w, pc):
+    c.stub_call(0xFFFF0000 | (c.g(3) & 0xFFFF), "syscall")
+
+
+@H("break", "teq", "tne", "tlt", "tltu", "tge", "tgeu", "teqi", "tnei", "tlti", "tltiu", "tgei", "tgeiu")
+def _trap(c, w, pc):
+    name = rz.Instruction(w, category=rz.InstrCategory.R5900).getOpcodeName()
+    a, b = sx64(c.g(_rs(w))), sx64(c.g(_rt(w)))
+    cond = {"break": True, "teq": a == b, "tne": a != b, "tlt": a < b, "tge": a >= b,
+            "tltu": c.g(_rs(w)) < c.g(_rt(w)), "tgeu": c.g(_rs(w)) >= c.g(_rt(w))}.get(name, False)
+    if cond:
+        raise Trap(name)
+
+
+# -- FPU
+@H("mtc1")
+def _mtc1(c, w, pc): c.f[_fs(w)] = c.g(_rt(w)) & M32
+
+
+@H("mfc1")
+def _mfc1(c, w, pc): c.s32(_rt(w), c.f[_fs(w)])
+
+
+@H("ctc1", "cfc1")
+def _cxc1(c, w, pc):
+    if (w >> 21) & 31 == 2:  # cfc1
+        c.s32(_rt(w), (0x800000 if c.fcc else 0) | 1)
+
+
+@H("mov.s")
+def _movs(c, w, pc): c.f[_fd(w)] = c.f[_fs(w)]
+
+
+@H("neg.s")
+def _negs(c, w, pc): c.f[_fd(w)] = c.f[_fs(w)] ^ 0x80000000
+
+
+@H("abs.s")
+def _abss(c, w, pc): c.f[_fd(w)] = c.f[_fs(w)] & 0x7FFFFFFF
+
+
+@H("add.s")
+def _adds(c, w, pc): c.sf(_fd(w), c.ff(_fs(w)) + c.ff(_ft(w)))
+
+
+@H("sub.s")
+def _subs(c, w, pc): c.sf(_fd(w), c.ff(_fs(w)) - c.ff(_ft(w)))
+
+
+@H("mul.s")
+def _muls(c, w, pc): c.sf(_fd(w), c.ff(_fs(w)) * c.ff(_ft(w)))
+
+
+@H("div.s")
+def _divs(c, w, pc):
+    a, b = c.ff(_fs(w)), c.ff(_ft(w))
+    c.sf(_fd(w), a / b if b != 0 else (3.4e38 if (a >= 0) == (str(b)[0] != "-") else -3.4e38))
+
+
+@H("sqrt.s")
+def _sqrts(c, w, pc): c.sf(_fd(w), abs(c.ff(_ft(w))) ** 0.5)
+
+
+@H("c1")
+def _c1(c, w, pc):
+    # rabbitizer names some EE COP1 ops just "c1"; function 4 is the EE's sqrt.s fd, ft
+    if (w >> 21) & 31 == 16 and w & 0x3F == 4:
+        return _sqrts(c, w, pc)
+    raise Unsupported(f"c1 0x{w:08X} at 0x{pc:08X}")
+
+
+@H("rsqrt.s")
+def _rsqrts(c, w, pc):
+    b = abs(c.ff(_ft(w))) ** 0.5
+    c.sf(_fd(w), c.ff(_fs(w)) / b if b else 3.4e38)
+
+
+@H("max.s")
+def _maxs(c, w, pc): c.sf(_fd(w), max(c.ff(_fs(w)), c.ff(_ft(w))))
+
+
+@H("min.s")
+def _mins(c, w, pc): c.sf(_fd(w), min(c.ff(_fs(w)), c.ff(_ft(w))))
+
+
+@H("adda.s")
+def _addas(c, w, pc): c.acc = f2b(c.ff(_fs(w)) + c.ff(_ft(w)))
+
+
+@H("suba.s")
+def _subas(c, w, pc): c.acc = f2b(c.ff(_fs(w)) - c.ff(_ft(w)))
+
+
+@H("mula.s")
+def _mulas(c, w, pc): c.acc = f2b(c.ff(_fs(w)) * c.ff(_ft(w)))
+
+
+# multiply-accumulate: like hardware (and PCSX2), the product is rounded to single first
+def _prod(c, w): return b2f(f2b(c.ff(_fs(w)) * c.ff(_ft(w))))
+
+
+@H("madda.s")
+def _maddas(c, w, pc): c.acc = f2b(b2f(c.acc) + _prod(c, w))
+
+
+@H("msuba.s")
+def _msubas(c, w, pc): c.acc = f2b(b2f(c.acc) - _prod(c, w))
+
+
+@H("madd.s")
+def _madds(c, w, pc): c.sf(_fd(w), b2f(c.acc) + _prod(c, w))
+
+
+@H("msub.s")
+def _msubs(c, w, pc): c.sf(_fd(w), b2f(c.acc) - _prod(c, w))
+
+
+@H("cvt.s.w")
+def _cvtsw(c, w, pc): c.sf(_fd(w), float(sx32(c.f[_fs(w)])))
+
+
+@H("cvt.w.s")
+def _cvtws(c, w, pc):
+    x = c.ff(_fs(w))
+    v = int(x)  # truncate
+    c.f[_fd(w)] = max(-0x80000000, min(0x7FFFFFFF, v)) & M32
+
+
+@H("c.eq.s")
+def _ceq(c, w, pc): c.fcc = c.ff(_fs(w)) == c.ff(_ft(w))
+
+
+@H("c.lt.s")
+def _clt(c, w, pc): c.fcc = c.ff(_fs(w)) < c.ff(_ft(w))
+
+
+@H("c.le.s")
+def _cle(c, w, pc): c.fcc = c.ff(_fs(w)) <= c.ff(_ft(w))
+
+
+@H("c.f.s")
+def _cf(c, w, pc): c.fcc = False
+
+
+# -- MMI (only what the game uses; extend as needed)
+@H("pcpyld")
+def _pcpyld(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = ((c.r[_rs(w)] & M64) << 64) | (c.r[_rt(w)] & M64)
+
+
+@H("pcpyud")
+def _pcpyud(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = (c.r[_rs(w)] >> 64) | ((c.r[_rt(w)] >> 64) << 64)
+
+
+@H("por")
+def _por(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = c.r[_rs(w)] | c.r[_rt(w)]
+
+
+@H("pand")
+def _pand(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = c.r[_rs(w)] & c.r[_rt(w)]
+
+
+@H("pxor")
+def _pxor(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = c.r[_rs(w)] ^ c.r[_rt(w)]
+
+
+@H("pnor")
+def _pnor(c, w, pc):
+    if _rd(w):
+        c.r[_rd(w)] = ~(c.r[_rs(w)] | c.r[_rt(w)]) & M128
+
+
+@H("paddub")
+def _paddub(c, w, pc):
+    if _rd(w):
+        a, b = c.r[_rs(w)], c.r[_rt(w)]
+        c.r[_rd(w)] = sum(min(255, ((a >> (8 * i)) & 255) + ((b >> (8 * i)) & 255)) << (8 * i) for i in range(16))
+
+
+@H("pextlw")
+def _pextlw(c, w, pc):
+    if _rd(w):
+        a, b = c.r[_rs(w)], c.r[_rt(w)]
+        lw = lambda x, i: (x >> (32 * i)) & M32
+        c.r[_rd(w)] = lw(b, 0) | (lw(a, 0) << 32) | (lw(b, 1) << 64) | (lw(a, 1) << 96)
+
+
+@H("pextuw")
+def _pextuw(c, w, pc):
+    if _rd(w):
+        a, b = c.r[_rs(w)], c.r[_rt(w)]
+        lw = lambda x, i: (x >> (32 * i)) & M32
+        c.r[_rd(w)] = lw(b, 2) | (lw(a, 2) << 32) | (lw(b, 3) << 64) | (lw(a, 3) << 96)
+
+
+# ---------------------------------------------------------------- building the C side
+def cflags() -> str:
+    text = (ROOT / "configure.py").read_text()
+    m = re.search(r'CFLAGS = \(\s*((?:"[^"]*"\s*)+)\)', text)
+    return " ".join(re.findall(r'"([^"]*)"', m.group(1)))
+
+
+def build_c(src: Path, func: str, workdir: Path) -> tuple[list[tuple[int, bytes]], int, int]:
+    obj = workdir / "t.o"
+    elf = workdir / "t.elf"
+    cxx = src.suffix in (".cpp", ".cc")
+    comp = f"{TC}{'g++' if cxx else 'gcc'}"
+    flags = cflags().split() + (["-fno-exceptions", "-fno-rtti"] if cxx else [])
+    subprocess.run([comp, "-c", *flags, "-I", str(ROOT / "include"), "-I", str(ROOT / "src"), "-o", str(obj), str(src)],
+                   check=True, cwd=ROOT)
+    defined = set(subprocess.run([f"{TC}nm", "--defined-only", "-j", str(obj)], capture_output=True,
+                                 text=True, check=True).stdout.split())
+    # every game symbol the C may reference, except the ones the C defines itself
+    syms = []
+    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
+        if s.name and s["st_info"]["bind"] == "STB_GLOBAL" and s.name not in defined and re.fullmatch(r"[A-Za-z_.$][\w.$]*", s.name):
+            syms.append(f"{s.name} = 0x{s['st_value']:08X};")
+    ld = workdir / "t.ld"
+    ld.write_text(
+        "SECTIONS {\n"
+        f"  . = 0x{C_BASE:08X};\n"
+        "  .text : { *(.text*) }\n  .rodata : { *(.rodata*) }\n"
+        "  .data : { *(.data*) *(.sdata*) }\n  .bss : { *(.bss*) *(.sbss*) *(COMMON) }\n"
+        "  /DISCARD/ : { *(.MIPS.abiflags) *(.reginfo) *(.comment) *(.pdr) *(.gnu.attributes) *(.mdebug*) }\n"
+        "}\n" + "\n".join(syms) + "\n"
+    )
+    subprocess.run([f"{TC}ld", "-EL", "-m", "elf32lr5900n32", "-T", str(ld), "-o", str(elf), str(obj)],
+                   check=True, cwd=ROOT)
+    e = ELFFile(open(elf, "rb"))
+    overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
+                if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
+    sym = next(s for s in e.get_section_by_name(".symtab").iter_symbols() if s.name == func)
+    return overlays, sym["st_value"], sym["st_value"] + max(sym["st_size"], 4)
+
+
+def original_range(func: str) -> tuple[int, int]:
+    for s in ELFFile(open(BUILD_ELF, "rb")).get_section_by_name(".symtab").iter_symbols():
+        if s.name == func:
+            return s["st_value"], s["st_value"] + max(s["st_size"], 4)
+    sys.exit(f"{func} not found in {BUILD_ELF}")
+
+
+def return_kind(src: Path, func: str) -> str:
+    m = re.search(rf"^\s*(?:static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", src.read_text(), re.M)
+    t = m.group(1).strip() if m else "s32"
+    if t == "void":
+        return "none"
+    if t in ("f32", "float"):
+        return "f0"
+    if t in ("s64", "u64", "long long", "unsigned long long"):
+        return "v0_64"
+    return "v0"
+
+
+# ---------------------------------------------------------------- one run
+def make_inputs(seed: int) -> tuple[list[int], list[int]]:
+    rnd = random.Random(seed)
+
+    def ival() -> int:
+        k = rnd.random()
+        if k < 0.35:
+            return rnd.randrange(PTR_LO, PTR_HI) & ~3
+        if k < 0.6:
+            return rnd.randrange(-4, 16) & M64
+        if k < 0.75:
+            return rnd.randrange(0x00400000, 0x00480000) & ~3  # into game data
+        return rnd.getrandbits(32)
+
+    ints = [ival() for _ in ARG_REGS]
+    floats = [f2b(rnd.choice([0.0, 1.0, -1.0, 0.5, rnd.uniform(-1000, 1000)])) for _ in FARG_REGS]
+    return ints, floats
+
+
+def run_one(rom, overlays, entry, frange, seed):
+    mem = Memory(rom, seed, overlays)
+    c = CPU(mem, rom, frange[0], frange[1], seed)
+    ints, floats = make_inputs(seed)
+    for r, v in zip(ARG_REGS, ints):
+        c.s(r, v)
+    for r, v in zip(FARG_REGS, floats):
+        c.f[r] = v
+    for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:
+        if r not in (28, 29, 31):
+            c.s(r, random.Random(seed * 31 + r).getrandbits(64))
+    c.s(28, 0x004828F0)       # gp
+    c.s(29, STACK_TOP)        # sp
+    c.s(31, RET_MAGIC)        # ra
+    saved = {r: c.g(r) for r in CALLEE_SAVED}
+    for i in range(20, 32):
+        c.f[i] = f2b(random.Random(seed * 37 + i).uniform(-10, 10))
+    fsaved = {i: c.f[i] for i in range(20, 32)}
+    c.run(entry)
+    return c, saved, fsaved
+
+
+def compare(seed, orig, new, ret_kind):
+    (co, so, fso), (cn, sn, fsn) = orig, new
+    diffs = []
+    if co.events != cn.events:
+        for i, (a, b) in enumerate(zip(co.events, cn.events)):
+            if a != b:
+                diffs.append(f"call #{i}: original {fmt_ev(a)}\n               C       {fmt_ev(b)}")
+                break
+        else:
+            diffs.append(f"call count: original {len(co.events)}, C {len(cn.events)}"
+                         + (f" (next original: {fmt_ev(co.events[len(cn.events)])})" if len(co.events) > len(cn.events) else
+                            f" (next C: {fmt_ev(cn.events[len(co.events)])})"))
+    wo, wn = co.visible_writes(), cn.visible_writes()
+    if wo != wn:
+        keys = sorted(set(wo) | set(wn))
+        bad = [k for k in keys if wo.get(k) != wn.get(k)]
+        k = bad[0]
+        diffs.append(f"memory: {len(bad)} byte(s) differ, first at 0x{k:08X}: "
+                     f"original {wo.get(k, 'unwritten')} vs C {wn.get(k, 'unwritten')}")
+    if ret_kind == "v0" and (co.g(2) & M32) != (cn.g(2) & M32):
+        diffs.append(f"return v0: original 0x{co.g(2) & M32:08X}, C 0x{cn.g(2) & M32:08X}")
+    if ret_kind == "v0_64" and co.g(2) != cn.g(2):
+        diffs.append(f"return v0: original 0x{co.g(2):016X}, C 0x{cn.g(2):016X}")
+    if ret_kind == "f0" and co.f[0] != cn.f[0]:
+        diffs.append(f"return f0: original {b2f(co.f[0])!r}, C {b2f(cn.f[0])!r}")
+    for r in CALLEE_SAVED:
+        if cn.g(r) != sn[r]:
+            diffs.append(f"C version clobbered callee-saved r{r}")
+    return diffs
+
+
+def fmt_ev(e):
+    kind, tgt, args, fargs, dig = e
+    a = ", ".join(x if isinstance(x, str) else f"0x{x:X}" for x in args)
+    fa = (" f:" + ", ".join(repr(b2f(x)) for x in fargs)) if fargs else ""
+    return f"{kind} 0x{tgt:08X}({a}){fa} [writes {dig}]"
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("src", type=Path)
+    ap.add_argument("func")
+    ap.add_argument("--runs", type=int, default=200)
+    ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
+    ap.add_argument("-v", "--verbose", action="store_true")
+    args = ap.parse_args()
+
+    rom = BASEROM.read_bytes()
+    orig_range = original_range(args.func)
+    with tempfile.TemporaryDirectory() as td:
+        overlays, c_lo, c_hi = build_c(args.src.resolve(), args.func, Path(td))
+    ret_kind = return_kind(args.src, args.func) if args.ret == "auto" else args.ret
+
+    ok = skipped = 0
+    covered: set[int] = set()
+    for i in range(args.runs):
+        seed = args.seed * 100003 + i
+        try:
+            o = run_one(rom, [], orig_range[0], orig_range, seed)
+        except TimeoutError:
+            skipped += 1
+            continue
+        except Trap:
+            skipped += 1
+            continue
+        except Unsupported as e:
+            print(f"original: unsupported instruction {e}")
+            sys.exit(2)
+        try:
+            n = run_one(rom, overlays, c_lo, (c_lo, c_hi), seed)
+        except TimeoutError:
+            print(f"FAIL seed {seed}: C version ran away (original finished in {o[0].steps} steps)")
+            sys.exit(1)
+        except Trap as t:
+            print(f"FAIL seed {seed}: C version trapped ({t})")
+            sys.exit(1)
+        except Unsupported as e:
+            print(f"C version: unsupported instruction {e}")
+            sys.exit(2)
+        covered |= {a for a in o[0].visited if orig_range[0] <= a < orig_range[1]}
+        diffs = compare(seed, o, n, ret_kind)
+        if diffs:
+            print(f"FAIL seed {seed} (run {i}):")
+            for d in diffs:
+                print("  " + d)
+            if args.verbose:
+                print("  original calls:", *map(fmt_ev, o[0].events), sep="\n    ")
+                print("  C calls:", *map(fmt_ev, n[0].events), sep="\n    ")
+            sys.exit(1)
+        ok += 1
+        if args.verbose and i < 3:
+            print(f"seed {seed}: {o[0].steps} steps, {len(o[0].events)} calls, {len(o[0].visible_writes())} bytes written")
+    addrs = list(range(orig_range[0], orig_range[1], 4))
+    # trailing alignment padding (zero words never executed) doesn't count
+    while addrs and addrs[-1] not in covered and struct.unpack_from("<I", rom, addrs[-1] - IMAGE_LO + 0x80)[0] == 0:
+        addrs.pop()
+    total = len(addrs)
+    missed = sorted(set(addrs) - covered)
+    print(f"PASS {args.func}: {ok} runs identical ({skipped} inputs skipped: original ran away or trapped), "
+          f"return={ret_kind}, coverage {len(covered)}/{total} instructions")
+    if args.verbose and missed:
+        print("  never executed:", " ".join(f"0x{a:08X}" for a in missed[:20]))
+
+
+if __name__ == "__main__":
+    main()

@@ -56,7 +56,10 @@ Helpers to keep these lists current (run after a build; then `configure.py --spl
 - `tools/promote_undefined.py`: unlabeled references that need symbols
 - `tools/libmap.py`: compiler fingerprint + strings per address range (library identification)
 - `tools/name_libs.py`: names syscall stubs and library functions from their error strings
-- `tools/decomp.py <func>`: first-draft C via m2c
+- `tools/decomp.py <func>`: first-draft C via m2c (doesn't understand the EE float accumulator ops `mula.s`/`madd.s`/`msub.s`)
+- `tools/difftest.py <src.c> <func>`: runs the original and the C version on 200 random inputs in an R5900
+  interpreter and compares calls, memory writes and return values; reports instruction coverage.
+  Examples: `src/difftest_example*.c`
 - `tools/ptrcheck.py`: static audit (unrelocated data pointers / `lui`, pinned addresses)
 
 Testing:
