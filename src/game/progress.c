@@ -1288,3 +1288,20 @@ s32 func_001788F0(Progress *p, u32 door) {
     }
     return (w & 2) != 0;
 }
+
+
+/* is the door at exit `exit` of room `room` open (as func_001788F0) */
+s32 func_00178980(Progress *p, s32 room, s32 exit) {
+    VObject *rooms = D_0044E568;
+    u32 door = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, s32))(rooms, room, exit);
+    u32 w;
+
+    if ((u8)VCALL(rooms, 0x44, s32 (*)(VObject *, u32))(rooms, door) & 1) {
+        return 1;
+    }
+    w = AT(p, 0x124 + door * 4, u32);
+    if (w & 8) {
+        return 0;
+    }
+    return (w & 2) != 0;
+}
