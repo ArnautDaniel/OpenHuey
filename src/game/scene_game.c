@@ -903,6 +903,11 @@ void func_0039EAB0(Scene *g) {
     if (hg_debug_freeplay()) {   /* native/platform/debug.c: HG_FREEPLAY */
         Progress_ClearFlag(prog, 8);
     }
+    {
+        extern void hg_debug_flaglog(s32 flag, s32 on);
+
+        hg_debug_flaglog(8, (u8)Progress_TestFlag(prog, 8));
+    }
 #endif
     if (AT(g, 0x44, s32) == 0) {
         func_00120660(rooms, AT(g, 0xF6C1B0, s32) == 0);

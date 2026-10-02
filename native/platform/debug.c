@@ -67,3 +67,21 @@ void hg_debug_evlog(const void *ev, const uint8_t *pc) {
         fprintf(stderr, "ev %p: %02X %02X %02X %02X %02X\n", ev, pc[0], pc[1], pc[2], pc[3], pc[4]);
     }
 }
+
+/* HG_FLAGLOG=1: report when a watched progress flag changes (once per gameplay frame) */
+void hg_debug_flaglog(int32_t flag, int32_t on) {
+    static int32_t last[64], frame, init = -1;
+
+    if (init < 0) {
+        init = getenv("HG_FLAGLOG") != NULL;
+        for (frame = 0; frame < 64; frame++) {
+            last[frame] = -1;
+        }
+        frame = 0;
+    }
+    frame++;
+    if (init && last[flag & 63] != on) {
+        fprintf(stderr, "flag %d -> %d (gameplay frame %d)\n", (int)flag, (int)on, (int)frame);
+        last[flag & 63] = on;
+    }
+}
