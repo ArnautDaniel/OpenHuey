@@ -415,3 +415,79 @@ void func_001B75E0(u8 *r) {
     p[25] = 0;
     p[23] = (u64)(((w >> 1) + 0x800 + ox) * 16) | (u64)(((h >> 1) + 0x800 + oy) * 16) << 16;
 }
+
+/* a texture's entry in a .TEX file */
+typedef struct TexHeader {
+    /* 0x0 */ u8 psm;
+    /* 0x1 */ u8 cpsm;      /* CLUT format */
+    /* 0x2 */ u8 pad2[2];
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+    /* 0x8 */ u16 imageQwc;
+    /* 0xA */ u16 clutQwc;
+    /* 0xC */ s32 data;     /* image then CLUT, from this entry */
+} TexHeader;
+
+#define VRAM_TEX_ADDR(v, id) VCALL(v, 0x68, u32 (*)(VObject *, s32))(v, id)    /* in 64-word blocks */
+#define VRAM_CLUT_ADDR(v, id) VCALL(v, 0x6C, u32 (*)(VObject *, s32))(v, id)
+
+/* one upload: the tags (written first) */
+static inline void Rend_UploadTags(u64 *p) {
+    p[0] = DMA_TAG(DMA_CNT, 6, 0);
+    ((u32 *)p)[2] = VIF_NOP;
+    ((u32 *)p)[3] = VIF_DIRECT(6);
+    p[2] = GIF_TAG(4, 1, GIF_PACKED, 1);
+    p[3] = GIF_REG_AD;
+}
+
+/* ... then BITBLTBUF / TRXPOS / TRXREG / TRXDIR, the IMAGE tag and a DMA ref to the data */
+static inline void Rend_UploadRegs(u64 *p, u64 bitblt, u32 w, u32 h, u32 qwc, u8 *data) {
+    p[4] = bitblt;
+    p[5] = GS_BITBLTBUF;
+    p[6] = 0;
+    p[7] = GS_TRXPOS;
+    p[8] = w | (u64)h << 32;
+    p[9] = GS_TRXREG;
+    p[10] = 0;
+    p[11] = GS_TRXDIR;
+    p[12] = GIF_TAG(qwc, 1, GIF_IMAGE, 0);
+    p[13] = 0;
+    p[14] = DMA_TAG(DMA_REF, qwc, (u32)data & 0x0FFFFFFF);
+    ((u32 *)p)[30] = VIF_NOP;
+    ((u32 *)p)[31] = VIF_DIRECT(qwc);
+}
+
+/* +0x44 upload texture `t` (CLUT, image) to its VRAM entry `id` (bit 31 ignored), on layer
+ * `layer` (-1: right away, unlinked). 0 if there's no room. */
+s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
+    u64 *p;
+    VObject *v;
+    u8 *image, *clut;
+    u32 vid;
+
+    if (layer == -1) {
+        p = VCALL(r, 0x14, u64 *(*)(u8 *, s32))(r, 0x13);
+    } else {
+        p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x13, layer);
+    }
+    if (p == NULL) {
+        return 0;
+    }
+    v = D_0044E9A0;
+    vid = (u32)id & 0x7FFFFFFF;
+    image = (u8 *)t + t->data;
+    clut = image + t->imageQwc * 16;
+    Rend_UploadTags(p);
+    Rend_UploadRegs(p, (u64)t->cpsm << 56 | (u64)VRAM_CLUT_ADDR(v, vid) << 32 | (u64)1 << 48, 16, 16, t->clutQwc, clut);
+    Rend_UploadTags(p + 16);
+    Rend_UploadRegs(p + 16, (u64)t->psm << 56 | (u64)(s64)((t->w + 63) >> 6) << 48 | (u64)VRAM_TEX_ADDR(v, vid) << 32,
+                    t->w, t->h, t->imageQwc, image);
+    p[32] = DMA_TAG(DMA_CNT, 2, 0);
+    ((u32 *)p)[66] = VIF_NOP;
+    ((u32 *)p)[67] = VIF_DIRECT(2);
+    p[34] = GIF_TAG(1, 1, GIF_PACKED, 1);
+    p[35] = GIF_REG_AD;
+    p[36] = 0;
+    p[37] = GS_TEXFLUSH;
+    return 1;
+}

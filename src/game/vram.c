@@ -5,21 +5,18 @@
 
 #define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
-/* an area: page (0xFF = none) and a position */
-typedef struct VramPos {
-    s16 page;
-    s16 x;
-    s16 y;
-} VramPos;
-
 /* allocation entry (0x12 bytes, 64 at +0x98) */
 typedef struct VramEntry {
     /* 0x00 */ u8 used;
-    /* 0x01 */ u8 unk1;
-    /* 0x02 */ s16 unk2;
-    /* 0x04 */ s16 unk4;
-    /* 0x06 */ VramPos a;
-    /* 0x0C */ VramPos b;
+    /* 0x01 */ u8 locked;    /* kept by +0x20 */
+    /* 0x02 */ s16 w;
+    /* 0x04 */ s16 h;
+    /* 0x06 */ s16 psm;      /* 0xFF: CLUT only */
+    /* 0x08 */ s16 page;     /* first page (texture pages, or upper-bit pages for 8/4-bit H formats) */
+    /* 0x0A */ s16 npages;
+    /* 0x0C */ s16 cpsm;     /* CLUT format, 0xFF none */
+    /* 0x0E */ s16 cregion;  /* CLUT region (page from 0xFC000) */
+    /* 0x10 */ s16 cslot;    /* slot in the region */
 } VramEntry;
 
 /* +0xC init: 8 free regions, 64 empty entries */
@@ -39,15 +36,15 @@ void func_001C2970(u8 *v) {
     AT(v, 0x50, s32) = 0;
     for (i = 0; i < 64; i++, e++) {
         e->used = 0;
-        e->unk1 = 0;
-        e->unk2 = 0;
-        e->unk4 = 0;
-        e->a.page = 0xFF;
-        e->a.x = 0;
-        e->a.y = 0;
-        e->b.page = 0xFF;
-        e->b.x = 0;
-        e->b.y = 0;
+        e->locked = 0;
+        e->w = 0;
+        e->h = 0;
+        e->psm = 0xFF;
+        e->page = 0;
+        e->npages = 0;
+        e->cpsm = 0xFF;
+        e->cregion = 0;
+        e->cslot = 0;
     }
     AT(v, 0x518, s32) = 0;
 }
@@ -116,14 +113,14 @@ s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
         clut = (s16)func_001C0D40(v, clutpsm);
         if ((psm == PSM_NONE || pos >= 0) && (clutpsm == PSM_NONE || clut >= 0)) {
             e->used = 1;
-            e->a.page = psm;
-            e->a.x = pos;
-            e->unk2 = w;
-            e->unk4 = h;
-            e->a.y = func_001C04B0(v, psm, w, h);
-            e->b.page = clutpsm_;
-            e->b.x = clut >> 4;
-            e->b.y = clut & 0xF;
+            e->psm = psm;
+            e->page = pos;
+            e->w = w;
+            e->h = h;
+            e->npages = func_001C04B0(v, psm, w, h);
+            e->cpsm = clutpsm_;
+            e->cregion = clut >> 4;
+            e->cslot = clut & 0xF;
             return i;
         }
         /* give back what was taken */
@@ -139,7 +136,7 @@ s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
             }
         }
         if (pos != -1) {
-            end = pos + (u16)e->a.y;
+            end = pos + (u16)e->npages;
             switch (psm) {
             case PSMT8H:
                 for (p = pos; p < end; p++) {
@@ -183,7 +180,7 @@ void func_001C1460(u8 *v, s32 id) {
     VramEntry *e = (VramEntry *)(v + 0x98) + id;
 
     if (e->used) {
-        e->unk1 = 1;
+        e->locked = 1;
     }
 }
 
@@ -193,7 +190,7 @@ void func_001C14A0(VObject *v) {
     u32 i;
 
     for (i = 0; i < 64; i++, e++) {
-        if (e->used && !e->unk1) {
+        if (e->used && !e->locked) {
             VCALL(v, 0x1C, void (*)(VObject *, u32))(v, i);
         }
     }
@@ -462,4 +459,65 @@ s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
         return start;
     }
     return -1;
+}
+
+#define VRAM_ENTRY(v, id) ((VramEntry *)((v) + 0x98) + (id))
+
+/* +0x6C CLUT address of entry `id` (64-word blocks): CLUT pages from 0xFC000, 16 slots per page
+ * for 16-bit CLUTs, 8 for 32-bit */
+u32 func_001BFDB0(u8 *v, s32 id) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+
+    return ((e->cregion << 11) + 0xFC000 + (u32)((u16)e->cslot << 11) / ((u16)e->cpsm == 2 ? 16 : 8)) >> 6;
+}
+
+/* +0x68 texture address of entry `id` (64-word blocks) */
+u32 func_001BFE10(u8 *v, s32 id) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+    u16 psm = e->psm;
+
+    if (psm != PSMT8H && psm != PSMT4HL && psm != PSMT4HH) {
+        return (u32)((e->page << 11) + 0xC0000) >> 6;
+    }
+    return (u32)(e->page << 11) >> 6;
+}
+
+/* +0x64 / +0x60 height / width of entry `id` */
+u16 func_001BFE80(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->h; }
+u16 func_001BFEA0(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->w; }
+
+/* a .TEX file's texture entry */
+typedef struct TexHeader {
+    u8 psm, cpsm, pad[2];
+    u16 w, h, imageQwc, clutQwc;
+    s32 data;
+} TexHeader;
+
+/* +0x5C allocate room for texture `t` and fill it (+0x48); `upper`: 8 / 4-bit textures go to the
+ * frame buffers' upper bits. The entry, -1 if there's no room. */
+s32 func_001BFEC0(VObject *v, TexHeader *t, s32 upper) {
+    u16 psm;
+    s32 id;
+    u8 *image, *clut;
+
+    if (t == NULL) {
+        return -1;
+    }
+    psm = t->psm;
+    if (upper != 0 && (u32)(psm - 0x13) < 2) {
+        psm = psm == 0x14 ? PSMT4HL : PSMT8H;
+    }
+    id = VCALL(v, 0x14, s32 (*)(VObject *, s32, s32, s32, s32))(v, (u8)psm, t->w, t->h, t->cpsm);
+    if (id != -1) {
+        image = NULL;
+        clut = NULL;
+        if (t->imageQwc != 0) {
+            image = (u8 *)t + t->data;
+        }
+        if (t->clutQwc != 0) {
+            clut = t->imageQwc != 0 ? image + t->imageQwc * 16 : (u8 *)t + t->data;
+        }
+        VCALL(v, 0x48, void (*)(VObject *, s32, u8 *, u8 *))(v, id, image, clut);
+    }
+    return id;
 }
