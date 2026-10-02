@@ -236,6 +236,12 @@ void func_001792C0(Progress *p, u8 idx) {
     }
     dir = D_0044E4F8;
     c = (u8 *)gCharacters[AT(p, 0x1130, u8)];
+#ifdef HG_NATIVE
+    if (c == NULL) {   /* (a character the PC build leaves out, e.g. HG_NOPARTNER) */
+        VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, NULL, 0.0f, 0.0f, 0.0f);
+        return;
+    }
+#endif
     VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, c, 0.0f, 10.0f, 0.0f);
     VCALL(dir, 0x28, void (*)(VObject *, s32, s32))(dir, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
 }
