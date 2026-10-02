@@ -2012,3 +2012,27 @@ void func_001F5D70(u8 *m, void *skel) {
         rec += 0x70;
     }
 }
+
+
+/* +0x14 per posed bone (the look-at): bone +0x8B0 is turned by -+0x854 about X and half of
+ * +0x858 about Y in its own frame, bone +0x8B4 by half of +0x858 about Y about its own
+ * position */
+void func_002117C0(u8 *m, s32 i, f32 (*b)[4], void *local) {
+    f32 r[4][4] __attribute__((aligned(16)));
+
+    if (i == AT(m, 0x8B0, s32)) {
+        sceVu0UnitMatrix(r);
+        sceVu0RotMatrixX(r, r, -AT(m, 0x854, f32));
+        sceVu0RotMatrixY(r, r, 0.5f * AT(m, 0x858, f32));
+        sceVu0MulMatrix(b, b, r);
+    }
+    if (i == AT(m, 0x8B4, s32)) {
+        sceVu0UnitMatrix(r);
+        sceVu0RotMatrixY(r, r, 0.5f * AT(m, 0x858, f32));
+        sceVu0CopyVector(r[3], b[3]);
+        b[3][2] = 0.0f;
+        b[3][1] = 0.0f;
+        b[3][0] = 0.0f;
+        sceVu0MulMatrix(b, r, b);
+    }
+}
