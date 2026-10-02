@@ -1302,3 +1302,88 @@ void func_001602A0(Hewie *h) {
 void func_00154D50(Hewie *h) {
     Hewie_ToDefault(h);
 }
+
+/* Switch his behaviour (the pointer to member at +0xF35D0). */
+static inline void Hewie_SetBehaviour(Hewie *h, const PTMF *s) {
+    *HEWIE_STATE(h) = *s;
+}
+
+#define ANIM_DONE(h) ((MOTION_EVENTS((h)->c.motion) & 0x20) != 0)   /* animation event 0x20 */
+
+extern s32 func_00140CD0(Hewie *h, s32 kind);
+extern void func_001431F0(Hewie *h);
+extern const PTMF D_003B1B58, D_003B1B48, D_003B1B38, D_003B19A8, D_003B1778, D_003B1B68;
+
+void func_0014E190(Hewie *h) {
+    if (func_00140CD0(h, 3) == 0) {
+        func_001431F0(h);
+        Hewie_SetBehaviour(h, &D_003B1B58);
+    }
+}
+
+void func_0014E200(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        HW(h, 0xF36BC, s32) = 90;
+        Hewie_SetBehaviour(h, &D_003B1B48);
+    }
+}
+
+void func_00154DC0(Hewie *h) {
+    if (HW(h, 0xF35C8, s32) == 0) {
+        Hewie_ToDefault(h);
+    }
+}
+
+void func_0014E280(Hewie *h) {
+    if (func_00140CD0(h, 1) == 0) {
+        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Hewie_SetBehaviour(h, &D_003B1B38);
+    }
+}
+
+void func_00151740(Hewie *h) {
+    if (func_00140CD0(h, 1) == 0) {
+        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Hewie_SetBehaviour(h, &D_003B19A8);
+    }
+}
+
+void func_0015BD10(Hewie *h) {
+    if (func_00140CD0(h, 1) == 0) {
+        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Hewie_SetBehaviour(h, &D_003B1778);
+    }
+}
+
+void func_0014E110(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        func_00141C00(h, 1);
+        Hewie_SetBehaviour(h, &D_003B1B68);
+    }
+}
+
+/* Animation over: back to his default action. */
+void func_001506A0(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        Hewie_ToDefault(h);
+    }
+}
+
+void func_0015AD90(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        Hewie_ToDefault(h);
+    }
+}
+
+void func_0015BC90(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        Hewie_ToDefault(h);
+    }
+}
+
+void func_0014DFB0(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        h->c.a.unk2D = 0;
+        Hewie_ToDefault(h);
+    }
+}
