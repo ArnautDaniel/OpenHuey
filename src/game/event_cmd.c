@@ -240,6 +240,16 @@ static void cmd_scene_change(VObject *ev, Progress *p, const u8 *pc) {
     AT(p, 0x1151, u8) = PC(ev)[3];
 }
 
+extern s32 func_001FC390(VObject *ev, void *c, s32 area);   /* a character's relation to an area */
+extern s32 func_00171160(Progress *p, u32 id);        /* load character id as the partner */
+extern s32 func_0016D670(Progress *p, u32 id, u32 slot);
+extern void func_00177350(Progress *p, s32 slot);
+extern void func_001772B0(Progress *p, s32 slot);
+extern void func_00177300(Progress *p, s32 slot);
+extern s32 func_00177260(Progress *p, s32 slot);
+extern void func_002ECB50(u8 *p);
+extern void func_0029EF80(void *c, s32 room);
+
 void func_002029B0(VObject *ev) {
     Progress *p;
     const u8 *pc;
@@ -247,6 +257,13 @@ void func_002029B0(VObject *ev) {
     EV_JUMPED(ev) = 0;
     p = gProgress;
     pc = PC(ev);
+#ifdef HG_NATIVE
+    {
+        extern void hg_debug_evlog(const void *ev, const u8 *pc);
+
+        hg_debug_evlog(ev, pc);
+    }
+#endif
     switch (pc[0]) {
     case 0x00:
         cmd_exit(ev, p, pc);
@@ -379,6 +396,70 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0x27: {   /* each character whose relation to area pc[1] is pc[4]: +0xE8 / +0xEC = pc[2] / pc[3] */
+        s32 i;
+
+        for (i = 0; i < 6; i++) {
+            if (gCharacters[i] != NULL) {
+                const u8 *q = PC(ev);
+
+                if ((s8)func_001FC390(ev, gCharacters[i], q[1]) == (s8)q[4]) {
+                    AT(gCharacters[i], 0xE8, s32) = (s8)q[2];
+                    AT(gCharacters[i], 0xEC, s32) = (s8)PC(ev)[3];
+                }
+            }
+        }
+        break;
+    }
+    case 0x11:   /* bring in character pc[1] as the partner (slot 2) */
+        if ((u8)func_00171160(p, pc[1]) == 1) {
+            func_00177350(p, 2);
+            func_001772B0(p, 2);
+            func_002ECB50((u8 *)p + 0x764);
+        }
+        break;
+    case 0x12:   /* bring in character pc[1] in slot pc[2], placed at exit pc[3] of this room (0xFF: as is) */
+        if ((u8)func_0016D670(p, pc[1], pc[2]) == 1) {
+            func_00177350(p, PC(ev)[2]);
+            if (PC(ev)[3] == 0xFF) {
+                func_001772B0(p, PC(ev)[2]);
+            } else {
+                s32 room = VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, AT(ev, 0x560, s32),
+                                                                                PC(ev)[3]);
+
+                func_0029EF80(gCharacters[PC(ev)[2]], room);
+            }
+        }
+        break;
+    case 0x13: {   /* take out the character in slot pc[1] (wait while it can't go) */
+        u8 *c = gCharacters[pc[1]];
+
+        if (c != NULL && AT(c, 0xD0, u8) == 0 && AT(c, 0xD1, u8) == 0) {
+            if ((u8)func_00177260(p, pc[1])) {
+                EV_WAIT(ev) = 1;
+            } else {
+                func_00177300(p, PC(ev)[1]);
+                if (PC(ev)[1] == 2) {
+                    AT(p, 0x875, u8) = 0;
+                }
+            }
+        }
+        break;
+    }
+    case 0x7C:   /* zone pc[1] (32): on, kind pc[18]; centre (3 x be32 / 1000), radius, height */
+        if (pc[1] < 0x20) {
+            u8 *z = (u8 *)ev + pc[1] * 0x30;
+
+            AT(z, 0xBF4, u8) = 1;
+            AT(z, 0xBF5, u8) = pc[0x12];
+            AT(z, 0xC00, f32) = (f32)be32(pc + 2) / 1000.0f;
+            AT(z, 0xC04, f32) = (f32)be32(pc + 6) / 1000.0f;
+            AT(z, 0xC08, f32) = (f32)be32(pc + 0xA) / 1000.0f;
+            AT(z, 0xC0C, f32) = 1.0f;
+            AT(z, 0xC10, f32) = (f32)(u16)be16(pc + 0xE);
+            AT(z, 0xC14, f32) = (f32)(s16)be16(pc + 0x10);
+        }
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);

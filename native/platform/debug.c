@@ -55,3 +55,15 @@ void hg_debug_todo_cond(int32_t op) {
         fprintf(stderr, "event: condition 0x%02X not decompiled yet (false)\n", (int)op);
     }
 }
+
+/* HG_EVLOG=1: each event script command as it runs (script object, offset, opcode, bytes) */
+void hg_debug_evlog(const void *ev, const uint8_t *pc) {
+    static int on = -1;
+
+    if (on < 0) {
+        on = getenv("HG_EVLOG") != NULL;
+    }
+    if (on) {
+        fprintf(stderr, "ev %p: %02X %02X %02X %02X %02X\n", ev, pc[0], pc[1], pc[2], pc[3], pc[4]);
+    }
+}
