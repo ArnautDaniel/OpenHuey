@@ -1271,3 +1271,16 @@ s32 func_002D6090(u8 *mgr, s32 slot, void *params) {
     VCALL(o, 0x18, void (*)(VObject *, void *))(o, params);
     return 1;
 }
+
+/* SceneGame +0x706480: the active creatures (10 slots) enter the room (+0x38) */
+void func_002E2650(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c != NULL && AT(c, 0x28, u8) == 1) {
+            VCALL(c, 0x38, void (*)(VObject *))(c);
+        }
+    }
+}

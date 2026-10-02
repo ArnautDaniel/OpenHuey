@@ -144,3 +144,13 @@ void func_0021B210(VObject *r, u16 d) {
     }
     AT(r, 0x4 + (d >> 5) * 4, u32) &= ~(1u << (d % 32));
 }
+
+extern u8 D_003D8BC6[];   /* the room table (0x40 bytes per room, 8 entries of 8 bytes), at +6 */
+
+/* +0x48 the camera area of entry `k` of room `room` (0xFFFF: none) */
+u32 func_0021BE00(VObject *r, u32 room, u32 k) {
+    if (room >= 0x110) {
+        return 0xFFFF;
+    }
+    return AT(D_003D8BC6, room * 0x40 + (k & 0xFF) * 8, u16);
+}

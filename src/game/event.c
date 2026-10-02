@@ -3,6 +3,7 @@
  * for each phase (+0xC entering, +0x10.. +0x20 other phases). */
 #include "common.h"
 #include "game.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -332,4 +333,46 @@ void func_00209060(VObject *ev, u8 *c) {
     AT(ev, 0x8, u8) = depth;
     AT(ev, 0x6FC, void *) = saved;
     AT(ev, 0x701, u8) = 0;
+}
+
+extern VObject *D_0044E570;   /* the nav mesh */
+
+/* +0xD8 whether `pos` (on nav triangle `tri`) is inside area `area` of the room's event data
+ * (+0x10: area offsets; a type 1 area is 4 corners (x, z at +0x10.., 0x10 apart) and a
+ * height range +0x24..+0x8) */
+s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
+    f32 at[4] __attribute__((aligned(16)));
+    u8 *data = AT(ev, 0x10, u8 *);
+    u8 *a;
+    s32 inside = 0;
+    s32 k;
+    f32 y;
+
+    if (data == NULL) {
+        return 0;
+    }
+    a = data + AT(data, area * 4, u32) * 4;
+    if (AT(a, 0, s32) != 1) {
+        return 0;
+    }
+    for (k = 0; k < 4; k++) {
+        const f32 *p0 = (f32 *)(a + 0x10 + k * 0x10);
+        const f32 *p1 = (f32 *)(a + 0x10 + ((k + 1) & 3) * 0x10);
+
+        if ((pos[0] - p0[0]) * (p1[2] - p0[2]) - (pos[2] - p0[2]) * (p1[0] - p0[0]) <= 0.0f) {
+            inside++;
+        }
+    }
+    sceVu0CopyVector(at, (f32 *)pos);
+    if (VCALL(D_0044E570, 0x10, s32 (*)(VObject *, s32, f32 *))(D_0044E570, tri, at) == 3) {
+        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, tri, at);
+    }
+    if (inside != 4) {
+        return 0;
+    }
+    y = 1.0f + at[1];
+    if (y < AT(a, 0x24, f32) || !(y <= AT(a, 0x8, f32))) {
+        return 0;
+    }
+    return 1;
 }

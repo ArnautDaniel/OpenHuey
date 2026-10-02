@@ -327,6 +327,25 @@ void func_002029B0(VObject *ev) {
     case 0x59:
         func_002003C0(ev);
         break;
+    case 0x29: {   /* camera setup (pc[2], pc[3]) for the characters in this room inside area pc[1] */
+        s32 i;
+
+        for (i = 0; i < 6; i++) {
+            u8 *c = (u8 *)gCharacters[i];
+            u32 area;
+
+            if (c == NULL || AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
+                continue;
+            }
+            area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(D_0044E568, AT(ev, 0x560, s32), PC(ev)[1]);
+            if ((u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)(c + 0x10), area & 0xFFFF,
+                                                                          AT(c, 0x34, s32)) == 1) {
+                AT(c, 0xE8, s32) = (s8)PC(ev)[2];
+                AT(c, 0xEC, s32) = (s8)PC(ev)[3];
+            }
+        }
+        break;
+    }
     case 0x4C: {   /* a door's state, in the progress and on the door */
         s32 a = pc[1];
 

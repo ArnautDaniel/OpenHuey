@@ -736,3 +736,58 @@ void func_0039BAE0(Scene *g, s32 set, u8 a, s32 b) {
         *w &= ~(1 << (bit & 0x1F));
     }
 }
+
+extern VObject *D_0044E4D0;   /* the event system (its second base) */
+extern void func_00175DE0(Progress *p);
+extern void func_002F0500(void *o);
+extern void func_002A7720(void *o);
+extern void func_002EC940(void *o);
+extern void func_0039B2D0(Scene *g);
+
+/* (+0xDC) the start of play in a room: the room's 8 trigger areas, which of the characters in
+ * the room each holds (+0x1010 + k * 6: +1 by position, +2 by the character test) */
+void func_0039CDC0(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    u8 *dir = (u8 *)g + 0xF6CBB0;
+    VObject *rooms, *ev;
+    s32 room;
+    u32 k;
+    s32 i;
+
+    func_00175DE0(prog);
+    if (!((s32 (*)(u8 *))AT(AT(dir, 0x64, u8 *), 0x6C, void *))(dir)) {
+        if (!(u8)Progress_TestFlag(prog, 0xF)) {
+            func_002F0500((u8 *)g + 0x7F8);
+        }
+        func_002A7720((u8 *)g + 0xA20);
+    }
+    room = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
+    rooms = D_0044E568;
+    ev = D_0044E4D0;
+    for (k = 0; k < 8; k++) {
+        u8 *z = (u8 *)g + 0x1010 + k * 6;
+        u32 area;
+
+        z[2] = 0;
+        z[1] = 0;
+        area = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, s32))(rooms, room, (u8)k) & 0xFFFF;
+        for (i = 0; i < 6; i++) {
+            u8 *c = (u8 *)gCharacters[i];
+
+            if (c == NULL || room != AT(c, 0x30, s32) || area == 0xFFFF || AT(c, 0x28, u8) != 1 ||
+                AT(c, 0x29, u8)) {
+                continue;
+            }
+            if (VCALL(ev, 0x10, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)(c + 0x10), area, AT(c, 0x34, s32))) {
+                z[1] |= (u8)(1 << i);
+            }
+            if (VCALL(ev, 0x14, s32 (*)(VObject *, void *, u32))(ev, gCharacters[i], area)) {
+                z[2] |= (u8)(1 << i);
+            }
+        }
+    }
+    func_002EC940((u8 *)g + 0x7A4);
+    if (Progress_TestFlag(prog, 0x16)) {
+        func_0039B2D0(g);
+    }
+}

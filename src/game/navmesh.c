@@ -146,3 +146,24 @@ void func_0017CB60(NavMesh *nm, u32 i, f32 *out) {
     out[2] = (v[1][2] + v[0][2] + v[2][2]) / 3.0f;
     out[3] = 1.0f;
 }
+
+/* +0x14 put pos onto triangle i's plane (its y from x, z) */
+void func_0017C9D0(NavMesh *nm, u32 i, f32 *pos) {
+    f32 (*v)[4];
+    f32 e1x, e1y, e1z, e2x, e2y, e2z, nx, ny, nz;
+
+    if (i >= nm->numTris || nm->tris == NULL) {
+        return;
+    }
+    v = nm->tris[i].v;
+    e2x = v[2][0] - v[0][0];
+    e2y = v[2][1] - v[0][1];
+    e1y = v[1][1] - v[0][1];
+    e1x = v[1][0] - v[0][0];
+    e1z = v[1][2] - v[0][2];
+    e2z = v[2][2] - v[0][2];
+    nx = e1y * e2z - e2y * e1z;
+    nz = e1x * e2y - e2x * e1y;
+    ny = e1z * e2x - e2z * e1x;
+    pos[1] = v[0][1] - ((pos[2] - v[0][2]) * nz + (pos[0] - v[0][0]) * nx) / ny;
+}
