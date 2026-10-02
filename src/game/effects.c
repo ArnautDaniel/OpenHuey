@@ -128,3 +128,40 @@ void func_002BB280(u8 *o) {
         }
     }
 }
+
+
+/* +0x10 each frame: a pulsing colour (+0x10 RGBA, direction +0x30): modes 3 / 4 a grey
+ * breathing between 0x20 and 0x80, mode 2 red and alpha between 0x80 and 0xC0 */
+void func_0026B350(u8 *o) {
+    s32 mode = AT(o, 0x14, s32);
+
+    if (mode == 2) {
+        if (AT(o, 0x30, s32) == 0) {
+            AT(o, 0x10, u32) += 0x10000010;
+            if (AT(o, 0x10, u8) >= 0xC0) {
+                AT(o, 0x10, u32) = 0xC00040C0;
+                AT(o, 0x30, s32) = 1;
+            }
+        } else {
+            AT(o, 0x10, u32) += 0xEFFFFFF0;
+            if (AT(o, 0x10, u8) < 0x81) {
+                AT(o, 0x10, u32) = 0x80004080;
+                AT(o, 0x30, s32) = 0;
+            }
+        }
+    } else if ((u32)(mode - 3) < 2) {
+        if (AT(o, 0x30, s32) == 0) {
+            AT(o, 0x10, u32) += 0x01010101;
+            if (AT(o, 0x10, u8) >= 0x80) {
+                AT(o, 0x10, u32) = 0x80808080;
+                AT(o, 0x30, s32) = 1;
+            }
+        } else {
+            AT(o, 0x10, u32) += 0xFEFEFEFF;
+            if (AT(o, 0x10, u8) < 0x21) {
+                AT(o, 0x10, u32) = 0x20202020;
+                AT(o, 0x30, s32) = 0;
+            }
+        }
+    }
+}
