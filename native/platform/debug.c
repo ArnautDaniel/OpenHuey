@@ -34,3 +34,13 @@ void hg_debug_todo_opcode(int32_t op) {
         fprintf(stderr, "event: command 0x%02X not decompiled yet (skipped)\n", (int)op);
     }
 }
+
+/* an event script condition whose C isn't written yet (func_001FC760): logged once, false */
+void hg_debug_todo_cond(int32_t op) {
+    static uint8_t seen[256];
+
+    if (!seen[op & 0xFF]) {
+        seen[op & 0xFF] = 1;
+        fprintf(stderr, "event: condition 0x%02X not decompiled yet (false)\n", (int)op);
+    }
+}

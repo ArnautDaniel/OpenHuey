@@ -48,11 +48,6 @@ void *func_00120F40(void *p) {
     return p;
 }
 
-void func_00121890(void *p, s32 a) {
-    FLD(p, 0x4, s32) = a;
-    FLD(p, 0x8, u8) = 0;
-}
-
 /* Copy the translation column of a matrix (rows at +0xC4) into a vec4 (w = 0). */
 s32 func_00121B40(void *p, f32 a, f32 b) {
     f32 f10, fc, d, lo, hi;

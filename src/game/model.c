@@ -624,3 +624,300 @@ void func_002F7B90(u8 *m) {
     AT(m, 0x17D4, f32) = 1.0f;
     AT(m, 0x17D0, f32) = 1.0f;
 }
+
+extern s32 func_001F4710(u8 *m, s32 anim);   /* the animation's index in the table +0x874 (-1) */
+extern void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
+
+/* play animation `anim` (its flags from the table +0x874, 6 bytes per entry) from the start,
+ * at the default speeds +0x87C / +0x880 */
+void func_002DDE20(u8 *m, s32 anim, s32 variant) {
+    s32 i = func_001F4710(m, anim);
+    u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+
+    AT(m, 0x85C, u8) = 0;
+    AT(m, 0x85D, u8) = 0;
+    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = AT(m, 0x880, s32);
+    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+    AT(m, 0x50, s32) = 0;
+    func_001F7890(m, anim, flags & 0xFFFF, variant, 0.0f);
+}
+
+/* the index of animation `anim` in the motion file (+0x4C4: at its +0xC a table: count, then
+ * 8-byte entries from +0x10 starting with the id); -1: not there */
+s32 func_001F4710(u8 *m, s32 anim) {
+    u8 *mtn = AT(m, 0x4C4, u8 *);
+    u8 *tbl;
+    u32 i;
+
+    if (mtn == NULL) {
+        return -1;
+    }
+    tbl = mtn + AT(mtn, 0xC, u32);
+    for (i = 0; i < AT(tbl, 0, u32); i++) {
+        if (AT(tbl, 0x10 + i * 8, s32) == anim) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* the entry (0x14 bytes from +0x10: +0x4 the body's motion, +0x8.. the 3 parts') of animation
+ * `anim` in motion file `mtn` (the last match in its id table); NULL: not there */
+u8 *func_001F4B80(u8 *m, u8 *mtn, s32 anim) {
+    u8 *tbl;
+    s32 j = -1;
+    u32 i;
+
+    if (mtn == NULL) {
+        return NULL;
+    }
+    tbl = mtn + AT(mtn, 0xC, u32);
+    for (i = 0; i < AT(tbl, 0, u32); i++) {
+        if (AT(tbl, 0x10 + i * 8, s32) == anim) {
+            j = AT(tbl, 0x14 + i * 8, s32);
+        }
+    }
+    if (j == -1) {
+        return NULL;
+    }
+    return mtn + j * 0x14 + 0x10;
+}
+
+extern void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend);
+extern void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *channel, f32 blend);
+extern void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
+
+/* animation `anim`'s entry, from the main motion file (+0x4C4) or else the second (+0x4C8) */
+static u8 *motion_entry(u8 *m, s32 anim) {
+    u8 *e = func_001F4B80(m, AT(m, 0x4C4, u8 *), anim);
+
+    if (e == NULL) {
+        e = func_001F4B80(m, AT(m, 0x4C8, u8 *), anim);
+    }
+    return e;
+}
+
+/* start animation `anim`: the body (if the animation has it), then each of the 3 parts that
+ * the animation covers (blend channels +0x6B0); a part it doesn't cover keeps / resumes its
+ * own animation (+0x4E4) */
+void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+    s32 k;
+
+    AT(m, 0x4E0, s32) = AT(m, 0x4DC, s32);
+    AT(m, 0x4DC, s32) = anim;
+    if (AT(motion_entry(m, anim), 0x4, s32) != 0) {
+        func_001F71E0(m, anim, 1, flags, variant, blend);
+    } else {
+        for (k = 0; k < 3; k++) {
+            if (AT(motion_entry(m, anim), 0x8 + k * 4, s32) != 0) {
+                AT(m, 0x4E4 + k * 4, s32) = anim;
+            }
+        }
+    }
+    for (k = 0; k < 3; k++) {
+        if (AT(motion_entry(m, anim), 0x8 + k * 4, s32) != 0) {
+            func_001F6E50(m, anim, k + 2, flags, m + k * 0x60 + 0x6B0, blend);
+            if (AT(m, 0x504 + k * 0x14, u8)) {
+                AT(m, 0x504 + k * 0x14, u8) = 0;
+                AT(m, 0x4E4 + k * 4, s32) = AT(m, 0x508 + k * 0x14, s32);
+            }
+        } else {
+            s32 own = AT(m, 0x4E4 + k * 4, s32);
+
+            if (own != -1 && own != AT(m, 0x6C8 + k * 0x60, s32)) {
+                func_001F7460(m, own, flags, -1, blend);
+            }
+        }
+    }
+}
+
+extern void func_001F5020(u8 *m, s32 slot);
+extern void func_001F4C10(u8 *m, u8 **motion, u8 **skel, s32 anim, s32 part);
+extern void func_001F6FD0(u8 *m, s32 anim, s32 variant);
+
+#define MOTION_SLOT(m, i) ((m) + 0x564 + (i) * 0xA0)
+
+/* the frame count of a slot's motion (its +0x4 header, +0xC) */
+static s32 motion_frames(u8 *motion) {
+    return AT(AT(motion, 0x4, u8 *), 0xC, s32);
+}
+
+/* start body animation `anim` (with `variant`, -1: none) in the other motion slot, cross-fading
+ * from the current one over `blend`; synced animations (flag 2 in both) keep the phase */
+void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend) {
+    u8 *cur;
+    u8 *prev;
+
+    AT(m, 0x548, f32) = blend;
+    AT(m, 0x54C, f32) = blend;
+    AT(m, 0x550, f32) = 1.0f;
+    AT(m, 0x544, s32) = AT(m, 0x540, s32);
+    AT(m, 0x540, s32) ^= 1;
+    AT(m, 0x6A4, u8 *) = MOTION_SLOT(m, AT(m, 0x540, s32));
+    AT(m, 0x6A8, u8 *) = MOTION_SLOT(m, AT(m, 0x544, s32));
+    AT(m, 0x554, s32) = AT(m, 0x55C, s32);
+    AT(m, 0x55C, s32) = anim;
+    AT(m, 0x558, s32) = AT(m, 0x560, s32);
+    AT(m, 0x560, s32) = variant;
+    cur = AT(m, 0x6A4, u8 *);
+    AT(cur, 0x18, u32) = flags & 0xFFFF;
+    if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 8) {
+        AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x10;
+        if (AT(m, 0x6A8, u8 *) != NULL) {
+            AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
+        }
+    }
+    func_001F5020(m, AT(m, 0x540, s32));
+    cur = AT(m, 0x6A4, u8 *);
+    func_001F4C10(m, (u8 **)(cur + 0x20), (u8 **)(cur + 0x28), anim, part);
+    cur = AT(m, 0x6A4, u8 *);
+    prev = AT(m, 0x6A8, u8 *);
+    if (AT(cur, 0x18, u32) & AT(prev, 0x18, u32) & 2) {
+        u8 *old = MOTION_SLOT(m, AT(m, 0x544, s32));
+
+        AT(cur, 0x0, f32) = (f32)motion_frames(AT(cur, 0x20, u8 *)) *
+                            (AT(old, 0x0, f32) / (f32)motion_frames(AT(old, 0x20, u8 *)));
+    } else {
+        AT(cur, 0x0, f32) = 0.0f;
+    }
+    AT(AT(m, 0x6A4, u8 *), 0x8, f32) = -1.0f;
+    AT(AT(m, 0x6A4, u8 *), 0x10, f32) = 1.0f;
+    AT(AT(m, 0x6A4, u8 *), 0x98, s32) = 0;
+    if (variant != -1) {
+        cur = AT(m, 0x6A4, u8 *);
+        func_001F4C10(m, (u8 **)(cur + 0x24), (u8 **)(cur + 0x2C), variant, part);
+        cur = AT(m, 0x6A4, u8 *);
+        prev = AT(m, 0x6A8, u8 *);
+        if (AT(cur, 0x18, u32) & AT(prev, 0x18, u32) & 2) {
+            u8 *old = MOTION_SLOT(m, AT(m, 0x544, s32));
+
+            AT(cur, 0x4, f32) = (f32)motion_frames(AT(cur, 0x24, u8 *)) *
+                                (AT(old, 0x0, f32) / (f32)motion_frames(AT(old, 0x20, u8 *)));
+        } else {
+            AT(cur, 0x4, f32) = 0.0f;
+        }
+        AT(AT(m, 0x6A4, u8 *), 0x8, f32) = -1.0f;
+        AT(AT(m, 0x6A4, u8 *), 0x14, f32) = 1.0f;
+        AT(AT(m, 0x6A4, u8 *), 0x9C, s32) = 0;
+    }
+    func_001F6FD0(m, anim, variant);
+}
+
+/* free motion slot `i`'s two tracks (skeleton +0x28, data +0x20 / +0x30) and clear their
+ * 12 keys (+0x38, 8 apart) */
+void func_001F5020(u8 *m, s32 i) {
+    void *skels = D_004562A8;
+    void *bufs = D_004562B0;
+    u8 *slot = MOTION_SLOT(m, i);
+    s32 j, k;
+
+    for (j = 0; j < 2; j++) {
+        u8 *t = slot + j * 4;
+
+        if (AT(t, 0x28, u8 *) != NULL) {
+            func_0017CED0(skels, AT(t, 0x28, u8 *));
+            AT(t, 0x28, s32) = 0;
+        }
+        if (AT(t, 0x20, void *) != NULL) {
+            func_00179BC0(bufs, AT(t, 0x20, void *));
+            AT(t, 0x20, s32) = 0;
+        }
+        if (AT(t, 0x30, void *) != NULL) {
+            func_00179BC0(bufs, AT(t, 0x30, void *));
+            AT(t, 0x30, s32) = 0;
+        }
+        for (k = 0; k < 12; k++) {
+            if (AT(t, 0x38 + k * 8, s32) != 0) {
+                AT(t, 0x38 + k * 8, s32) = 0;
+            }
+        }
+    }
+}
+
+extern u8 *func_00179CD0(void *pool, s32 n);   /* allocate a chain of n entries */
+extern void func_001F40F0(u8 *key, s32 a, u8 *data, s32 b);
+
+/* set up a motion track of animation `anim`'s part `part` (1 the body, 2.. the 3 parts): a
+ * chain of per-bone keys (*keys) and a skeleton (*skel), each bone with its index in the
+ * model's bone table */
+void func_001F4C10(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
+    u8 *e = motion_entry(m, anim);
+    u8 *mot = e + AT(e, part * 4, u32);
+    u8 *tracks;
+    u8 *key;
+    u8 *node;
+    s32 i;
+
+    *keys = func_00179CD0(D_004562B0, AT(mot, 0, s32));
+    *skel = func_0017D000(D_004562A8, AT(mot, 0, s32));
+    node = AT(*skel, 0x4, u8 *);
+    key = AT(*keys, 0x4, u8 *);
+    tracks = mot + AT(mot, 0x8, u32);
+    for (i = 0; i < AT(*keys, 0x8, s32); i++) {
+        u8 *bones;
+        s32 bone;
+
+        func_001F40F0(key + 4, AT(tracks, 0x4, s32), tracks + AT(tracks, 0x8, u32), AT(mot, 0x4, s32));
+        bones = AT(m, 0x4C0, u8 *);
+        bone = AT(bones, 0xC, u32) != 0 ? AT(bones + AT(bones, 0xC, u32) + AT(tracks, 0, u32), 1, s8) : 0;
+        AT(key, 0x0, s32) = bone;
+        AT(node, 0x40, s32) = bone;
+        key = AT(key, 0x10, u8 *);
+        node = AT(node, 0x48, u8 *);
+        tracks += 0xC;
+    }
+}
+
+/* the event keys of the current motion slot's animation and variant (-1: none): a chain per
+ * track (+0x30 / +0x34) of the animation's event part, and the 12 event tracks (+0x38 + k * 8:
+ * the key of track -1 - k, if any) */
+void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
+    s32 ids[2];
+    void *bufs = D_004562B0;
+    s32 t, k, i;
+
+    ids[0] = anim;
+    ids[1] = variant;
+    for (t = 0; t < 2; t++) {
+        u8 **chain;
+        u8 *e;
+        u8 *evp;
+        u8 *key;
+        u8 *tracks;
+
+        if (ids[t] == -1) {
+            continue;
+        }
+        chain = (u8 **)(AT(m, 0x6A4, u8 *) + t * 4 + 0x30);
+        e = motion_entry(m, ids[t]);
+        evp = e + AT(e, 0, u32);
+        *chain = func_00179CD0(bufs, AT(evp, 0, s32));
+        key = AT(*chain, 0x4, u8 *);
+        tracks = evp + AT(evp, 0x8, u32);
+        for (i = 0; i < AT(*chain, 0x8, s32); i++) {
+            func_001F40F0(key + 4, AT(tracks, 0x4, s32), tracks + AT(tracks, 0x8, u32), AT(evp, 0x4, s32));
+            AT(key, 0x0, s32) = AT(tracks, 0, s32);
+            key = AT(key, 0x10, u8 *);
+            tracks += 0xC;
+        }
+        {
+            u8 *c = AT(AT(m, 0x6A4, u8 *) + t * 4, 0x30, u8 *);
+
+            for (k = 0; k < 12; k++) {
+                u8 *x;
+
+                AT(AT(m, 0x6A4, u8 *) + t * 4 + k * 8, 0x38, u8 *) = NULL;
+                x = AT(c, 0x4, u8 *);
+                for (i = 0; i < AT(c, 0x8, s32); i++) {
+                    if (AT(x, 0, s32) == -1 - k) {
+                        AT(AT(m, 0x6A4, u8 *) + t * 4 + k * 8, 0x38, u8 *) = x + 4;
+                    }
+                    x = AT(x, 0x10, u8 *);
+                }
+            }
+        }
+    }
+}

@@ -55,3 +55,64 @@ void func_00179BC0(u8 *pool, u8 *chain) {
     n = (u32)(chain - pool) / 12;
     AT(pool, 0x2718 + (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
 }
+
+/* link entry `e` after `prev` (0: prev already has a next) */
+s32 func_00179EE0(u8 *prev, u8 *e) {
+    if (AT(prev, 0x10, u8 *) != NULL) {
+        return 0;
+    }
+    AT(prev, 0x10, u8 *) = e;
+    return 1;
+}
+
+/* allocate a chain of `n` linked entries (NULL: no chain free; a short chain if the entries run
+ * out) */
+u8 *func_00179CD0(u8 *pool, u32 n) {
+    u8 *chain = NULL;
+    u8 *first = NULL;   /* (left unset by the original for 0 entries) */
+    u8 *e = NULL;
+    u32 i;
+    s32 j;
+
+    for (j = 0; j < 0x40; j++) {
+        u32 *used = &AT(pool, 0x2718 + (j >> 5) * 4, u32);
+
+        if (!(*used & (1 << (j & 0x1F)))) {
+            *used |= 1 << (j & 0x1F);
+            chain = pool + j * 12;
+            AT(chain, 0, s32) = 0;
+            AT(chain, 4, s32) = 0;
+            AT(chain, 8, s32) = 0;
+            break;
+        }
+    }
+    for (i = 0; i < n; i++) {
+        u8 *prev = e;
+
+        e = NULL;
+        for (j = 0; j < 0x1CE; j++) {
+            u32 *used = &AT(pool, 0x2720 + (j >> 5) * 4, u32);
+
+            if (!(*used & (1 << (j & 0x1F)))) {
+                *used |= 1 << (j & 0x1F);
+                e = pool + 0x300 + j * 0x14;
+                AT(e, 0x10, s32) = 0;
+                AT(e, 0xC, s32) = 0;
+                AT(e, 0x4, s32) = 0;
+                AT(e, 0x8, s32) = 0;
+                break;
+            }
+        }
+        if (e == NULL) {
+            break;
+        }
+        if (i == 0) {
+            first = e;
+        } else {
+            func_00179EE0(prev, e);
+        }
+    }
+    AT(chain, 4, u8 *) = first;
+    AT(chain, 8, u32) = n;
+    return chain;
+}

@@ -239,3 +239,45 @@ void func_001792C0(Progress *p, u8 idx) {
     VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, c, 0.0f, 10.0f, 0.0f);
     VCALL(dir, 0x28, void (*)(VObject *, s32, s32))(dir, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
 }
+
+extern char D_0044F860[], D_0044F880[], D_0044F8A0[];   /* ST_%03X\ST1_%03X.HD / .SDT / .BD */
+
+/* the room's sound bank (ST_xxx\ST1_xxx.HD / .SDT / .BD) into sound bank 6 */
+void func_0016D480(Progress *p, s32 room) {
+    char name[0x100];
+    VObject *snd = D_0044E560;
+    u8 *prog;
+
+    VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
+    VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
+    func_0026EDD0(name, sizeof(name), D_0044F860, room & ~7, room);
+    prog = (u8 *)gProgress;
+    VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 0, prog + 0x1CA6C0);
+    func_0026EDD0(name, sizeof(name), D_0044F880, room & ~7, room);
+    VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 2, prog + 0x1CAEC0);
+    func_0026EDD0(name, sizeof(name), D_0044F8A0, room & ~7, room);
+    VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
+}
+
+extern u8 *D_0044F808;   /* the stalker in play */
+
+/* the gCharacters index of the character with script id `id` (0xFE: the stalker, slot 2;
+ * 0xFF / not found: 0xFF) */
+s32 func_001770D0(Progress *p, s32 id) {
+    s32 i;
+
+    id &= 0xFF;
+    if (id == 0xFF) {
+        return 0xFF;
+    }
+    if (id == 0xFE) {
+        return D_0044F808 != NULL ? 2 : 0xFF;
+    }
+    for (i = 0; i < 6; i++) {
+        if (gCharacters[i] != NULL && AT(gCharacters[i], 0x153C, u8) == id) {
+            return (u8)i;
+        }
+    }
+    return 0xFF;
+}

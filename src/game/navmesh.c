@@ -1,7 +1,9 @@
-/* The room's mesh set (room manager +0x3E0): the meshes of the current room (PAC section 0,
- * 0x50-byte entries) with their per-mesh flags (section 16) and section 1. */
+/* The nav mesh (room manager +0x3E0, D_0044E570): the room's walkable triangles (PAC section
+ * 0) with their flags (section 16), section 1, and the door regions (pairs of triangles with a
+ * door group in their flags). */
 #include "common.h"
 #include "game.h"
+#include "navmesh.h"
 
 #define MESH_SIZE 0x50
 
@@ -56,7 +58,7 @@ extern f32 func_0031C5C0(f32 x, f32 z);                      /* heading of (x, z
 #define TRI(set, i) (AT(set, 0x4, u8 *) + (i) * MESH_SIZE)
 #define LINK(set, g) ((set) + 0x20 + (g) * 0x30)
 
-/* +0x4C find the links: triangles whose flags carry a link group (bits 9..13) pair up (the
+/* +0x4C find the door regions: triangles whose flags carry a link group (bits 9..13) pair up (the
  * higher one first; up to 5 links at +0x20, 0x30 each). For each side of a link: the edge
  * facing the other triangle (vt+0x20), its midpoint (+0x10 / +0x20) and the heading across
  * it (+0x8 / +0xC). +0x14: the number of links. */
@@ -129,4 +131,18 @@ void func_0017B660(u8 *set) {
         }
     }
     AT(set, 0x14, s32) = g;
+}
+
+/* +0xC the centre of triangle `i` (w 1) */
+void func_0017CB60(NavMesh *nm, u32 i, f32 *out) {
+    f32 (*v)[4];
+
+    if (i >= nm->numTris || nm->tris == NULL) {
+        return;
+    }
+    v = nm->tris[i].v;
+    out[0] = (v[1][0] + v[0][0] + v[2][0]) / 3.0f;
+    out[1] = (v[1][1] + v[0][1] + v[2][1]) / 3.0f;
+    out[2] = (v[1][2] + v[0][2] + v[2][2]) / 3.0f;
+    out[3] = 1.0f;
 }

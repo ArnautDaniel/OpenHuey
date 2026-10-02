@@ -11,6 +11,8 @@ extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
 extern VObject *D_0044E4B8;   /* the camera */
 extern u8 D_0047B350;         /* the message language set */
+extern VObject *D_00456E00;
+extern void func_0016D480(Progress *p, s32 room);
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index (0xFF) */
@@ -273,6 +275,16 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0x1D:   /* D_00456E00 +0xC (operand 1 = 1) or +0x10 with a byte and a word */
+        if (pc[1] == 1) {
+            VCALL(D_00456E00, 0xC, void (*)(VObject *, s32, s32))(D_00456E00, pc[2], be32(pc + 3));
+        } else {
+            VCALL(D_00456E00, 0x10, void (*)(VObject *, s32, s32))(D_00456E00, pc[2], be32(pc + 3));
+        }
+        break;
+    case 0xA8:
+        func_0016D480(p, AT(ev, 0x560, s32));
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
@@ -336,5 +348,160 @@ void func_001FF9E0(VObject *ev) {
         PC(ev) = pc + pc[2] + 3;
     } else {
         PC(ev) = PC(ev) + sCmdLength[pc[0]];
+    }
+}
+
+#include "sce/libvu0.h"
+
+extern VObject *D_0044E568;   /* the rooms */
+extern VObject *D_0044E570;   /* the nav mesh */
+extern u8 *D_0044E4C0;        /* the room effects */
+extern VObject *D_0044E4F0;   /* the renderer */
+extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
+extern s32 func_001F4770(u8 *model, s32, s32, s32);
+extern void func_001267F0(u8 *c, s32 n);
+extern void func_00266C70(u8 *fx, s32 n, void *arg);
+
+/* pi as the original's constant (ee-gcc rounds the literal 3.1415927f down) */
+static const union {
+    u32 u;
+    f32 f;
+} sPi = {0x40490FDB};
+
+#define DEG(v) (sPi.f * (f32)(s16)(v) / 180.0f)
+
+/* place character c on nav triangle `tri` (vt+0x28; angle / position optional) in the event's
+ * room, keeping its byte +0x2D */
+static void char_place(VObject *ev, u8 *c, s32 tri, f32 *angle, f32 *pos) {
+    u8 keep = AT(c, 0x2D, u8);
+
+    VCALL(c, 0x28, void (*)(u8 *, s32, f32 *, f32 *))(c, tri, angle, pos);
+    AT(c, 0x2D, u8) = keep;
+    AT(c, 0x30, s32) = AT(ev, 0x560, s32);
+}
+
+/* commands on a character (operand 1: its id, 0xFF: the script's own) */
+void func_002013F0(VObject *ev) {
+    const u8 *pc = PC(ev);
+    u8 *c;
+    f32 angle;
+    f32 pos[4] __attribute__((aligned(16)));
+
+    if (pc[1] == 0xFF) {
+        c = *AT(ev, 0x6FC, u8 **);
+    } else {
+        c = char_by_id(gProgress, pc[1]);
+    }
+    if (c == NULL) {
+        return;
+    }
+    pc = PC(ev);
+    switch (pc[0]) {
+    case 0x02:   /* onto a triangle */
+        char_place(ev, c, be16(pc + 2), NULL, NULL);
+        break;
+    case 0x04: {   /* to a room point */
+        s32 tri = VCALL(D_0044E568, 0x2C, s32 (*)(VObject *, s32, f32 *))(D_0044E568, pc[2], pos);
+
+        char_place(ev, c, tri, NULL, pos);
+        break;
+    }
+    case 0x3B:   /* onto a triangle, facing */
+        angle = DEG(be16(pc + 4));
+        char_place(ev, c, be16(PC(ev) + 2), &angle, NULL);
+        break;
+    case 0x3D:
+        AT(c, 0x2C, u8) = pc[2] != 0;
+        break;
+    case 0x45:
+        func_00122C20(c, be32(pc + 2), pc[6], 0, 0, 0);
+        break;
+    case 0x47:
+        AT(c, 0xC4, s32) = be32(pc + 2);
+        break;
+    case 0x48:
+        AT(c, 0x14C8, s32) = AT(c, 0x14CC, s32);
+        break;
+    case 0x1F: {   /* visible flag, if in the current room */
+        s32 room = AT(c, 0x30, s32);
+
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            AT(c, 0x29, u8) = PC(ev)[2] != 0;
+        }
+        break;
+    }
+    case 0x67:   /* find its triangle */
+        AT(c, 0x34, s32) = VCALL(D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(D_0044E570, (f32 *)(c + 0x10), 0);
+        break;
+    case 0x79: {   /* to (x, z) on a triangle, facing */
+        pos[0] = (f32)be32(pc + 4) / 1000.0f;
+        pos[2] = (f32)be32(PC(ev) + 8) / 1000.0f;
+        pos[3] = 1.0f;
+        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, be16(PC(ev) + 2), pos);
+        angle = DEG(be16(PC(ev) + 0xC));
+        char_place(ev, c, be16(PC(ev) + 2), &angle, pos);
+        break;
+    }
+    case 0xB3: {   /* to (x, y, z), facing */
+        f32 *at = (f32 *)(c + 0x10);
+        s32 tri;
+
+        at[0] = (f32)be32(pc + 2) / 1000.0f;
+        at[2] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
+        at[3] = 1.0f;
+        angle = DEG(be16(PC(ev) + 0xE));
+        AT(c, 0x34, s32) = VCALL(D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(D_0044E570, at, 0);
+        tri = AT(c, 0x34, s32);
+        {
+            u8 keep = AT(c, 0x2D, u8);
+
+            VCALL(c, 0x28, void (*)(u8 *, s32, f32 *, f32 *))(c, tri, &angle, at);
+            AT(c, 0x2D, u8) = keep;
+        }
+        at[1] = (f32)be32(PC(ev) + 6) / 1000.0f;
+        AT(c, 0x30, s32) = AT(ev, 0x560, s32);
+        AT(c, 0x54, f32) = angle;
+        sceVu0UnitMatrix((f32 (*)[4])(c + 0x60));
+        sceVu0RotMatrixY((f32 (*)[4])(c + 0x60), (f32 (*)[4])(c + 0x60), angle);
+        break;
+    }
+    case 0x7B:   /* wait for its model's flags */
+        if ((pc[2] & (u8)func_001F4770(AT(c, 0xF0, u8 *), 0, 0, 1)) == 0) {
+            AT(ev, 0x700, u8) = 1;
+        }
+        break;
+    case 0x8F:
+        AT(AT(c, 0xF0, u8 *), 0x4D9, u8) = pc[2] != 0;
+        break;
+    case 0xAE:
+        if (pc[6] == 0) {
+            AT(c, 0xE4, u8) = 1;
+        } else {
+            AT(c, 0xE4, u8) = 0;
+            VCALL(D_0044E4F0, 0x70, void (*)(VObject *, s32))(D_0044E4F0, be32(PC(ev) + 2));
+            func_001267F0(c, 0xF);
+        }
+        break;
+    case 0xB5:
+        func_001267F0(c, pc[2]);
+        break;
+    case 0x87: {   /* an effect at it: 1 if it hasn't moved (from +0x40), else 2 */
+        f32 a[4] __attribute__((aligned(16)));
+        f32 b[4] __attribute__((aligned(16)));
+        struct {
+            u32 pad[4];
+            s32 moving;
+        } arg;
+        f32 dx, dy, dz;
+
+        sceVu0CopyVector(a, (f32 *)(c + 0x10));
+        sceVu0CopyVector(b, (f32 *)(c + 0x40));
+        dy = a[1] - b[1];
+        dx = a[0] - b[0];
+        dz = a[2] - b[2];
+        arg.moving = dy * dy + dx * dx + dz * dz < 0.5f ? 1 : 2;
+        func_00266C70(D_0044E4C0, PC(ev)[2], &arg);
+        break;
+    }
     }
 }

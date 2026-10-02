@@ -549,7 +549,7 @@ void func_0019D2B0(Fiona *f) {
 }
 
 extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
-extern void func_001F1D60(void *obj);
+extern void func_001F1D60(u8 *obj);
 extern void func_002DDE20(void *motion, s32 set, s32 variant);
 
 /* Animation blend weight (motion +0x6A4 -> +0x1C), mirrored at +0x1AD628. */
@@ -3144,5 +3144,15 @@ void func_00182FC0(Fiona *f) {
     case 0x8C: VCALL(m, 0xC4, void (*)(void *, s32))(m, 8); break;
     case 0x8D: VCALL(m, 0xC4, void (*)(void *, s32))(m, 9); break;
     default:   VCALL(m, 0xC4, void (*)(void *, s32))(m, 5); break;
+    }
+}
+
+/* clear the two 5-word lists at +0x14 and +0x28 */
+void func_001F1D60(u8 *o) {
+    u32 i;
+
+    for (i = 0; i < 5; i++) {
+        AT(o, 0x28 + i * 4, s32) = 0;
+        AT(o, 0x14 + i * 4, s32) = 0;
     }
 }

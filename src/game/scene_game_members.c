@@ -1121,3 +1121,49 @@ void func_00305520(u8 *m, s32 room) {
         }
     }
 }
+
+/* ---- room manager +0x9360 (D_00456E00): the room's triangle groups (PAC section 14: count,
+ * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
+
+extern u8 *D_0044E570;   /* the nav mesh (room manager +0x3E0): +0x4 triangles, +0x8 count */
+
+/* set (`clear` 0) or clear (1) flag bits `bits` on the triangles of group `g` (-1: no group) */
+s32 func_002A8730(u8 *o, s32 clear, u32 g, u32 bits) {
+    u8 *sec = AT(o, 0x4, u8 *);
+    u8 *grp;
+    u32 n, i;
+
+    if (sec == NULL || g >= AT(o, 0x8, u32)) {
+        return -1;
+    }
+    grp = sec + AT(sec, 0x4 + g * 4, u32);
+    n = AT(grp, 0, u32);
+    if (clear == 1) {
+        for (i = 0; i < n; i++) {
+            u32 t = AT(grp, 4 + i * 4, u32);
+            u8 *tri = t < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL
+                          ? AT(D_0044E570, 0x4, u8 *) + t * 0x50 : NULL;
+
+            AT(tri, 0x3C, u32) &= ~bits;
+        }
+    } else if (clear == 0) {
+        for (i = 0; i < n; i++) {
+            u32 t = AT(grp, 4 + i * 4, u32);
+            u8 *tri = t < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL
+                          ? AT(D_0044E570, 0x4, u8 *) + t * 0x50 : NULL;
+
+            AT(tri, 0x3C, u32) |= bits;
+        }
+    }
+    return 0;
+}
+
+/* +0xC set flag bits on group g */
+s32 func_002A8590(u8 *o, u32 g, u32 bits) {
+    return func_002A8730(o, 0, g, bits);
+}
+
+/* +0x10 clear them */
+s32 func_002A85B0(u8 *o, u32 g, u32 bits) {
+    return func_002A8730(o, 1, g, bits);
+}
