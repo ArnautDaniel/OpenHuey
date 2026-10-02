@@ -1743,3 +1743,37 @@ void func_002671F0(u8 *o) {
         }
     }
 }
+
+
+extern s32 func_002CC5A0(u8 *o, s32 group);
+extern s32 func_002C9930(u8 *o, u32 k);
+
+/* +0x80 the group for slot `i`: groups 1 and 2 and those (3..31) any entry of the table +0x18
+ * ({u16 count at +2}, masks every 12 bytes from +0x24) uses, in order; looked up through
+ * func_002CC5A0 and func_002C9930. Without the director's +0x38 or a table: i itself */
+s32 func_002C9730(u8 *o, s32 i) {
+    s32 list[32];
+    s32 n = 0, b;
+
+    if (D_0044E4F8 == NULL || !VCALL(D_0044E4F8, 0x38, s32 (*)(void *))(D_0044E4F8) ||
+        AT(o, 0x18, u8 *) == NULL) {
+        return i;
+    }
+    for (b = 1; b < 32; b++) {
+        u32 mask = 0;
+        s32 k, cnt;
+
+        if (b == 1 || b == 2) {
+            list[n++] = b;
+            continue;
+        }
+        cnt = AT(AT(o, 0x18, u8 *), 0x2, u16);
+        for (k = 0; k < cnt; k++) {
+            mask |= AT(AT(o, 0x18, u8 *), 0x24 + k * 12, u32);
+        }
+        if (mask & (1u << b)) {
+            list[n++] = b;
+        }
+    }
+    return (u8)func_002C9930(o, (u8)func_002CC5A0(o, list[i & 0xFF]));
+}
