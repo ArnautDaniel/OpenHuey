@@ -83,8 +83,10 @@ int main(int argc, char **argv) {
     const char *path = argc > 1 ? argv[1] : "build/models/hewie_costume0.glb";
     // --shot out.png [bone angleX]: render one frame (optionally with one bone bent) and exit
     const char *shot = (argc > 3 && strcmp(argv[2], "--shot") == 0) ? argv[3] : NULL;
-    int shotBone = argc > 5 ? atoi(argv[4]) : -1;
-    float shotAngle = argc > 5 ? (float)atof(argv[5]) : 0.0f;
+    // --shot out.png anim N F: animation N at frame F instead
+    bool shotAnim = argc > 6 && strcmp(argv[4], "anim") == 0;
+    int shotBone = (argc > 5 && !shotAnim) ? atoi(argv[4]) : -1;
+    float shotAngle = (argc > 5 && !shotAnim) ? (float)atof(argv[5]) : 0.0f;
     int frameNo = 0;
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(1280, 800, "hgview");
@@ -126,9 +128,15 @@ int main(int argc, char **argv) {
     cam.fovy = 40.0f;
     cam.projection = CAMERA_PERSPECTIVE;
 
-    bool poseMode = v.animCount == 0 || shot, paused = false, showSkel = true, showNames = false, showGrid = true, help = true;
+    bool poseMode = v.animCount == 0 || (shot && !shotAnim), paused = false, showSkel = true, showNames = false, showGrid = true, help = true;
     int sel = 0, anim = 0;
     float frame = 0.0f, speed = 1.0f;
+    if (shotAnim && v.animCount) {
+        anim = atoi(argv[5]) % v.animCount;
+        frame = (float)atof(argv[6]);
+        paused = true;
+        help = false;
+    }
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();

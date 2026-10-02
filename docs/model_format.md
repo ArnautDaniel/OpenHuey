@@ -11,7 +11,7 @@ Worked out from the loader and renderer; `tools/hg_model.py` converts a model to
 | `HEW_00n.PCK` | model vtbl +0xA0 (0x1F8090), n = costume 0..4 | skeleton, meshes, motion bank |
 | `HEW_00n.MRK` | model vtbl +0xA4 (0x1F8010) | (index tables, not decoded yet) |
 | `HEW_000.TEX` | model vtbl +0xA8 (0x1F7F00) | textures, by the mesh parts' texture id |
-| `HEW_1xx.MTN` | | animations (not decoded yet) |
+| `HEW_1xx.MTN` | | extra motion banks (same format as the PCK's motion bank) |
 
 Hewie's model class: vtable `D_0046B240`, 0xB90 bytes at Character +0xF0, built by
 `func_003A10B0` (base `func_0016F4B0`). Fiona's loader `func_001A4110` (vtbl +0x14) shows the
@@ -89,3 +89,33 @@ the tongue). The head mesh has holes where the eyes go, so without these the eye
 `u32 psm, u16 width, u16 height, u16 ?, u16 ?, u32 offset (from the record)`.
 psm 0x13 (PSMT8): `width * height` index bytes, then a 256-entry RGBA palette in PS2 CLUT
 order (in each 32 entries, 8..15 and 16..23 swapped), alpha 0x80 = opaque.
+
+## Motions (PCK resource 3, and .MTN files)
+
+Read by `func_001F4B80` / `func_001F4C10`, sampled by `func_001F36B0`, posed by `func_001F5930`.
+
+Bank: `u32 records, u32 ?, u32 ?, u32 idMap`. Id map (at bank + idMap): `u32 count`, then at +0x10
+`(u32 motion id, u32 record index)` pairs (Hewie: 0x000.., 0x100.., 0x200.., ...).
+Records: 0x14 bytes at bank + 0x10, five part offsets (from the record, 0 = none). Parts cover
+disjoint bones (Hewie: 0 special channels, 1 body, 2 ears, 3 tail, 4 jaw/tongue).
+Part: `u32 tracks, u32 frames, u32 trackTable` (from the part). Track (0xC bytes):
+`s32 code, u32 type, u32 keys (from the track)`. `code < 0`: special channel (-1 root motion,
+-5/-6 ...); else bone = skeleton byte table[code + 1] (resource 0 + header[3]).
+`type & 0x10000`: static (one key); low 16 bits:
+
+| Type | Key | Values |
+|---|---|---|
+| 0 | 3 x s16 | Euler rotation x 2pi/65536 |
+| 1 | 3 x s16 | translation / 256 |
+| 2, 4 | 6 x s16 | rotation (as 0) + translation (as 1) |
+| 3 | 4 x s16 | quaternion / 32768 |
+| 5 | s16, s16, s16 | two raw values + one / 32768 |
+| 6 | 8 x f32 | |
+| 7 | 6 x f32 | rotation + translation |
+| 8, 9 | 3 x f32 | |
+
+One key per frame; the game interpolates linearly between frames (angles the short way round).
+A track's values **replace** the bone's rest values (rest record +0x10 Euler, +0x20 translation);
+a rotation-only track keeps the rest translation and vice versa. Bone local matrix
+(`func_002E2E00`): rotate X, then Y, then Z, then translate (row-vector `Rx Ry Rz T`);
+world = local x parent world.

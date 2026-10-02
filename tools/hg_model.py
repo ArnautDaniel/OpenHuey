@@ -24,6 +24,22 @@ from pathlib import Path
 
 POS_SCALE = 1.0 / 4096
 UNIT = 1.0 / 32768
+FPS = 30.0            # motion frames per second (exported key spacing; not confirmed from the code yet)
+ANGLE = 2 * math.pi / 65536
+TRANS = 1.0 / 256
+
+
+def euler_quat(r):
+    """Quaternion (x, y, z, w) for the game's Euler rotation: rotate about X, then Y, then Z
+    (row-vector Rx * Ry * Rz, i.e. column-vector Rz * Ry * Rx)."""
+    cx, sx = math.cos(r[0] / 2), math.sin(r[0] / 2)
+    cy, sy = math.cos(r[1] / 2), math.sin(r[1] / 2)
+    cz, sz = math.cos(r[2] / 2), math.sin(r[2] / 2)
+    # q = qz * qy * qx
+    return (sx * cy * cz - cx * sy * sz,
+            cx * sy * cz + sx * cy * sz,
+            cx * cy * sz - sx * sy * cz,
+            cx * cy * cz + sx * sy * sz)
 
 
 # ---------------------------------------------------------------- matrices (row-vector, row-major)
@@ -56,8 +72,10 @@ def read_model(d: bytes):
     for i in range(nbones):
         b = r0 + 0x10 + i * 0x70
         parent = struct.unpack_from("<i", d, b)[0]
+        rest_rot = struct.unpack_from("<3f", d, b + 0x10)      # Euler X, Y, Z (radians)
+        rest_pos = struct.unpack_from("<3f", d, b + 0x20)
         ibm = list(struct.unpack_from("<16f", d, b + 0x30))
-        bones.append((parent, ibm))
+        bones.append((parent, ibm, rest_rot, rest_pos))
 
     mt = r0 + mesh_off
     nparts = struct.unpack_from("<I", d, mt)[0]
@@ -129,6 +147,57 @@ def strip_triangles(verts):
     return tris
 
 
+# ---------------------------------------------------------------- motions
+def read_motions(d: bytes, bank: int, bone_table: bytes, prefix=""):
+    """Motions of a bank (PCK resource 3, or a .MTN file): u32 records, u32 ?, u32 ?, u32 id map.
+    Record (0x14 bytes, at +0x10): up to 5 part offsets (from the record); a part: u32 tracks,
+    u32 frames, u32 track table (from the part). Track (0xC): s32 bone code (< 0: special channel;
+    else bone = bone_table[code + 1]), u32 type | 0x10000 static, u32 keys (from the track)."""
+    nrec = struct.unpack_from("<I", d, bank)[0]
+    mp = bank + struct.unpack_from("<I", d, bank + 12)[0]
+    ids = {}
+    for i in range(struct.unpack_from("<I", d, mp)[0]):
+        mid, idx = struct.unpack_from("<2I", d, mp + 0x10 + i * 8)
+        ids[idx] = mid
+    out = []
+    for i in range(nrec):
+        rec = bank + 0x10 + i * 0x14
+        tracks, frames = {}, 0
+        for off in struct.unpack_from("<5I", d, rec):
+            if not off:
+                continue
+            m = rec + off
+            n, frames, toff = struct.unpack_from("<3I", d, m)
+            for k in range(n):
+                t = m + toff + k * 12
+                code, typ, koff = struct.unpack_from("<iII", d, t)
+                if code < 0:
+                    continue        # root motion / special channels (not exported yet)
+                bone = struct.unpack("<b", bone_table[code + 1:code + 2])[0]
+                static, typ = typ >> 16 & 1, typ & 0xFFFF
+                cnt = 1 if static else frames
+                keys = t + koff
+                rots, poss = [], []
+                for f in range(cnt):
+                    if typ == 0:
+                        rots.append([v * ANGLE for v in struct.unpack_from("<3h", d, keys + f * 6)])
+                    elif typ == 1:
+                        poss.append(tuple(v * TRANS for v in struct.unpack_from("<3h", d, keys + f * 6)))
+                    elif typ in (2, 4):
+                        v = struct.unpack_from("<6h", d, keys + f * 12)
+                        rots.append([x * ANGLE for x in v[:3]])
+                        poss.append(tuple(x * TRANS for x in v[3:]))
+                    elif typ == 7:
+                        v = struct.unpack_from("<6f", d, keys + f * 24)
+                        rots.append(list(v[:3]))
+                        poss.append(tuple(v[3:]))
+                    else:
+                        break       # (types 3, 5, 6, 8, 9: not used by the characters seen so far)
+                tracks[bone] = (rots, poss)
+        out.append(dict(name=f"{prefix}{ids.get(i, i):04X}", frames=max(frames, 1), tracks=tracks))
+    return out
+
+
 # ---------------------------------------------------------------- textures
 def read_textures(d: bytes):
     count = struct.unpack_from("<I", d, 0)[0]
@@ -198,19 +267,19 @@ class Gltf:
 FLOAT, USHORT, UINT = 5126, 5123, 5125
 
 
-def build(bones, parts, images, name):
+def build(bones, parts, images, name, motions=()):
     g = Gltf()
-    # skeleton: world bind = inverse of the stored inverse bind; local = world * parent world^-1
-    worlds = [mat_inv(ibm) for _, ibm in bones]
-    for i, (parent, _) in enumerate(bones):
-        local = worlds[i] if parent < 0 else mat_mul(worlds[i], mat_inv(worlds[parent]))
-        g.j["nodes"].append({"name": f"bone_{i:02d}", "matrix": [round(v, 7) for v in local]})
-    for i, (parent, _) in enumerate(bones):
-        if parent >= 0:
-            g.j["nodes"][parent].setdefault("children", []).append(i)
-    roots = [i for i, (p, _) in enumerate(bones) if p < 0]
+    # skeleton: the bones' rest records (local Euler rotation + translation), as the game's
+    # pose code builds it; the stored inverse bind matrices agree (except the root's, unused)
+    for i, (parent, _, rot, pos) in enumerate(bones):
+        g.j["nodes"].append({"name": f"bone_{i:02d}", "rotation": list(euler_quat(rot)),
+                             "translation": list(pos)})
+    for i, b in enumerate(bones):
+        if b[0] >= 0:
+            g.j["nodes"][b[0]].setdefault("children", []).append(i)
+    roots = [i for i, b in enumerate(bones) if b[0] < 0]
     # glTF matrices are column-major column-vector = our row-major row-vector, as stored
-    ibm = g.accessor("16f", FLOAT, "MAT4", [tuple(m) for _, m in bones])
+    ibm = g.accessor("16f", FLOAT, "MAT4", [tuple(b[1]) for b in bones])
     g.j["skins"].append({"inverseBindMatrices": ibm, "joints": list(range(len(bones))), "skeleton": roots[0]})
 
     g.j["samplers"].append({"magFilter": 9729, "minFilter": 9729, "wrapS": 10497, "wrapT": 10497})
@@ -247,23 +316,66 @@ def build(bones, parts, images, name):
     g.j["meshes"].append({"name": name, "primitives": prims})
     mesh_node = len(g.j["nodes"])
     g.j["nodes"].append({"name": name, "mesh": 0, "skin": 0})
-    g.j["scenes"].append({"nodes": roots + [mesh_node]})
+    # an armature node above the skeleton (as exporters write it; raylib's loader needs the
+    # first joint to have a parent)
+    arm = len(g.j["nodes"])
+    g.j["nodes"].append({"name": "Armature", "children": roots})
+    g.j["scenes"].append({"nodes": [arm, mesh_node]})
     g.j["scene"] = 0
+
+    # motions: one key per frame; bones without a track keep their rest pose
+    anims = []
+    for mo in motions:
+        n = mo["frames"]
+        times = g.accessor("f", FLOAT, "SCALAR", [(k / FPS,) for k in range(n)], minmax=True)
+        samplers, channels = [], []
+        for bone, (rots, poss) in sorted(mo["tracks"].items()):
+            if bone >= len(bones):
+                continue
+            rest = bones[bone]
+            rk = [euler_quat(rots[min(k, len(rots) - 1)]) for k in range(n)] if rots else [euler_quat(rest[2])] * n
+            for k in range(1, n):     # keep neighbouring keys in the same hemisphere
+                if sum(a * b for a, b in zip(rk[k], rk[k - 1])) < 0:
+                    rk[k] = tuple(-c for c in rk[k])
+            pk = [poss[min(k, len(poss) - 1)] for k in range(n)] if poss else [tuple(rest[3])] * n
+            samplers.append({"input": times, "output": g.accessor("4f", FLOAT, "VEC4", rk), "interpolation": "LINEAR"})
+            channels.append({"sampler": len(samplers) - 1, "target": {"node": bone, "path": "rotation"}})
+            samplers.append({"input": times, "output": g.accessor("3f", FLOAT, "VEC3", pk), "interpolation": "LINEAR"})
+            channels.append({"sampler": len(samplers) - 1, "target": {"node": bone, "path": "translation"}})
+        if channels:
+            anims.append({"name": mo["name"], "samplers": samplers, "channels": channels})
+    if anims:
+        g.j["animations"] = anims
     return g.glb()
 
 
 def main():
+    global FPS
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pck", type=Path)
     ap.add_argument("--tex", type=Path, help="texture file (.TEX) for the parts' texture ids")
+    ap.add_argument("--mtn", type=Path, action="append", default=[], help="extra motion file (.MTN), repeatable")
+    ap.add_argument("--no-motions", action="store_true", help="leave out the model's own motion bank")
+    ap.add_argument("--fps", type=float, default=30.0, help="motion frames per second (default 30)")
     ap.add_argument("-o", "--out", type=Path)
     a = ap.parse_args()
-    bones, parts = read_model(a.pck.read_bytes())
+    FPS = a.fps
+    d = a.pck.read_bytes()
+    bones, parts = read_model(d)
     images = read_textures(a.tex.read_bytes()) if a.tex else []
+    res = struct.unpack_from(f"<{struct.unpack_from('<I', d, 0)[0]}I", d, 4)
+    r0 = res[0]
+    bone_table = d[r0 + struct.unpack_from("<I", d, r0 + 12)[0]:][:256]
+    motions = []
+    if not a.no_motions and len(res) > 3 and res[3]:
+        motions += read_motions(d, res[3], bone_table)
+    for f in a.mtn:
+        motions += read_motions(f.read_bytes(), 0, bone_table, prefix=f.stem + "_")
     out = a.out or a.pck.with_suffix(".glb")
-    out.write_bytes(build(bones, parts, images, a.pck.stem))
+    out.write_bytes(build(bones, parts, images, a.pck.stem, motions))
     nv = sum(len(p["verts"]) for p in parts)
-    print(f"{out}: {len(bones)} bones, {len(parts)} parts, {nv} vertices, {len(images)} textures")
+    print(f"{out}: {len(bones)} bones, {len(parts)} parts, {nv} vertices, {len(images)} textures, "
+          f"{len(motions)} motions")
 
 
 if __name__ == "__main__":
