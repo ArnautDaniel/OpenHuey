@@ -289,3 +289,30 @@ s32 func_00321FE0(u8 *o) {
     }
     return 1;
 }
+
+
+extern void func_002E56C0(u8 *quad);   /* draw a textured quad (corners +0x14, record +0x10) */
+
+/* +0x14 draw: each of the 16 particles is a unit quad in the xz plane turned by its spin
+ * (+0x660), drawn by the quad drawer (+0x610) from the current buffer's record */
+void func_00321E30(u8 *o) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 c[4][4] __attribute__((aligned(16)));
+    s32 i;
+
+    AT(o, 0x624, f32 *) = c[0];
+    for (i = 0; i < 16; i++) {
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrix(m, m, (f32 *)(o + 0x660 + i * 0x10));
+        c[0][0] = 0.5f;  c[0][1] = 0.0f; c[0][2] = -0.5f; c[0][3] = 1.0f;
+        sceVu0ApplyMatrix(c[0], m, c[0]);
+        c[1][0] = 0.5f;  c[1][1] = 0.0f; c[1][2] = 0.5f;  c[1][3] = 1.0f;
+        sceVu0ApplyMatrix(c[1], m, c[1]);
+        c[2][0] = -0.5f; c[2][1] = 0.0f; c[2][2] = -0.5f; c[2][3] = 1.0f;
+        sceVu0ApplyMatrix(c[2], m, c[2]);
+        c[3][0] = -0.5f; c[3][1] = 0.0f; c[3][2] = 0.5f;  c[3][3] = 1.0f;
+        sceVu0ApplyMatrix(c[3], m, c[3]);
+        AT(o, 0x620, u8 *) = o + 0x10 + AT(o, 0x8F4, s32) * 0x300 + i * 0x30;
+        func_002E56C0(o + 0x610);
+    }
+}
