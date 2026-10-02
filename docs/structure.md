@@ -101,6 +101,22 @@ Vtables (Metrowerks, +0x8 dtor): base `0x469C20` -> `0x469C60` (14 entries, code
   `D_0044E4D0` room objects, `D_0044E550` random numbers, `D_0044E578` effects
   (0x400 slots), `D_0044E4F0` GS manager (platform), `D_0044E560` sound.
 
+### Fiona (`src/game/fiona.c`, `include/fiona.h`)
+
+All 46 functions of her class are in C. Behaviour states are PTMFs (`D_003B25A8`..) set
+into `Actor.state`; `+0x1AD580` names the current one, `Character.moveMode`/`moveSub` the move.
+
+- Requests: `+0x88` (0x19F8A0) handles the state block (grabbed/released) and scripted
+  commands (`+0xF4`); `+0x84` (0x1A0370) handles action requests (`state[0]` 2/3/9 exits,
+  8, 0xB, 0xC, 0xD, 0xE) while she is free to act.
+- Mood / flight AI (0x19D4E0, `+0x1AD71C`): 0 calm near Hewie, 1 waiting, 2 following him,
+  3/4 fleeing through the best exit (nearest, preferring exits she reaches before the
+  pursuer), 5..8 leaving through a random usable exit, 9 a given exit, 10 caught;
+  0xB..0xE are the same while she is not in the room being played. Exit chosen at
+  `+0x1AD720`. Panic (`+0x1AD584` bit 1) or the threat level (gProgress +0x7BC, 10..80+)
+  starts a flight; she also tells Hewie to stay / come (`+0x1AD6B8`).
+- Fear 0..100 at `+0x1AD5F4`, stamina timer at `+0x1AD5F8` (frames of 1800).
+
 ## Globals
 
 | Address | Name | What |

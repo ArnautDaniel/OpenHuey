@@ -2564,3 +2564,519 @@ void func_001A0370(Fiona *f) {
         st[0] = 0;
     }
 }
+
+extern u32 func_00178610(Progress *p, u32 route);               /* u8 */
+extern u32 func_00178840(Progress *p, s32 room, u32 exit);      /* u8 */
+extern u32 func_00178200(Progress *p, u32 route, u32 slot);     /* u8 */
+extern u32 func_00178980(Progress *p, s32 room, u32 exit);      /* u8 */
+extern u32 func_00177BF0(Progress *p, u32 i, u32 slot);         /* u8 flags */
+
+#define FIONA_MOOD(f) FI(f, 0x1AD71C, s32)
+#define FIONA_EXIT(f) FI(f, 0x1AD720, u8)    /* exit the mood is about, 0xFF = none yet */
+#define FIONA_EXIT2(f) FI(f, 0x1AD721, u8)
+#define FIONA_AWAY_T(f) FI(f, 0x1AD738, s32)
+
+#define Room_Side(r, room, door) VCALL(r, 0x50, s32 (*)(VObject *, s32, u32, s32))(r, room, door, 0)
+#define Room_ExitTo(r, room, i) VCALL(r, 0x18, s32 (*)(VObject *, s32, u32))(r, room, i)
+#define Room_ExitToSide(r, room, i) VCALL(r, 0x58, s32 (*)(VObject *, s32, u32, s32))(r, room, i, 0)
+#define Room_ExitDoor(r, room, i) (VCALL(r, 0x14, u32 (*)(VObject *, s32, u32))(r, room, i) & 0xFF)
+#define Room_ExitRoute(r, room, i) VCALL(r, 0x10, u32 (*)(VObject *, s32, u32))(r, room, i)
+#define Room_ExitOpen(r, room, i) (VCALL(r, 0x74, u32 (*)(VObject *, s32, u32))(r, room, i) & 0xFF)
+#define Room_Exit70(r, room, i) (VCALL(r, 0x70, u32 (*)(VObject *, s32, u32))(r, room, i) & 0xFF)
+#define Room_Exit78(r, room, i) (VCALL(r, 0x78, u32 (*)(VObject *, s32, u32))(r, room, i) & 0xFF)
+
+/* Exit triangle flags that rule an exit out from side `side` of the room. */
+static inline s32 Fiona_WrongSide(s32 side, u32 tri) {
+    u32 fl = NavMesh_Tri(D_0044E570, tri)->flags & 0x300000;
+
+    return (side == 0 && fl == 0x100000) || (side == 1 && fl == 0x200000);
+}
+
+/* Whether exit `i` may be used: open, route not locked, allowed for her. */
+static inline s32 Fiona_ExitUsable(Fiona *f, Progress *p, VObject *rooms, u32 i) {
+    u32 route;
+
+    if (Room_ExitOpen(rooms, f->c.a.room, i) != 1) {
+        return 0;
+    }
+    route = Room_ExitRoute(rooms, f->c.a.room, i) & 0xFFFF;
+    if (func_00178610(p, route) & 0xFF) {
+        return 0;
+    }
+    if (func_00178840(p, f->c.a.room, i) & 0xFF) {
+        return 0;
+    }
+    return (func_00178200(p, route, SLOT_U8(f)) & 0xFF) == 1;
+}
+
+/* Walking distance estimate from `from` to `to`: horizontal distance + 3 * height difference. */
+static inline f32 Fiona_ExitScore(f32 *d, const f32 *from, f32 *to) {
+    f32 dy;
+
+    sceVu0SubVector(d, (f32 *)from, to);
+    dy = d[1];
+    dy = (dy <= 0.0f) ? -dy : dy;
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) + 3.0f * dy;
+}
+
+/* Post a "go through exit" request (state[0] = 2) into her own state block, if it is free. */
+static inline s32 Fiona_PostExit(Fiona *f, u32 exit) {
+    s32 *st = f->c.state;
+
+    if (st[0] != 0) {
+        return 0;
+    }
+    if (st[0] != 7) {
+        st[0] = 2;
+        st[1] = 1;
+        st[2] = exit;
+        st[3] = 0;
+        st[4] = 0;
+        st[5] = 0;
+        st[6] = 0;
+        st[7] = 0;
+    }
+    return 1;
+}
+
+static inline f32 Fiona_Dist(Fiona *f, const f32 *p) {
+    return func_00124490(&f->c.a, p);
+}
+
+/* Mood/flight AI (+0x1AD71C): 0 calm near Hewie, 1 waiting, 2 following Hewie, 3/4 fleeing
+ * through the best exit (away from the pursuer), 5..8 leaving through some exit, 9 a given exit,
+ * 10 caught; 0xB..0xE the same while she is not in the room being played. */
+void func_0019D4E0(Fiona *f) {
+    Progress *p = gProgress;
+    s32 room = f->c.a.room;
+    VObject *rooms;
+    /* (separate vectors, as in the original: out-parameters keep their own leftovers) */
+    sceVu0FVECTOR at, in, out, out2, d;
+    u32 tri;
+
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        /* not in the room being played */
+        switch (FIONA_MOOD(f)) {
+        case 0: case 2: case 7: case 8: case 9:
+            FIONA_MOOD(f) = 0xB;
+            break;
+        case 1: case 10:
+            FIONA_MOOD(f) = 0xC;
+            break;
+        case 3: case 4:
+            FIONA_MOOD(f) = 0xE;
+            break;
+        case 5: case 6:
+            FIONA_MOOD(f) = 0xD;
+            break;
+        }
+        if (FIONA_PANIC(f) && FIONA_MOOD(f) != 0xE) {
+            FIONA_MOOD(f) = 0xE;
+        }
+        if (FI(f, 0x1AD719, u8) == 0) {
+            if (FIONA_MOOD(f) == 0xC) {
+                FIONA_MOOD(f) = 0xB;
+            }
+        } else if (FIONA_MOOD(f) == 0xC) {
+            FIONA_AWAY_T(f) -= 1;
+            if (FIONA_AWAY_T(f) < 0) {
+                FIONA_MOOD(f) = 0xD;
+                f->c.unk124 = f->c.unk128;
+                *(f32 *)&f->c.unk14C4 = -1.0f;
+            }
+        } else {
+            FIONA_AWAY_T(f) = (s32)(30.0f * (2.0f * RNG01())) + 90;
+        }
+        return;
+    }
+
+    switch (FIONA_MOOD(f)) {
+    case 0xB:
+        FIONA_MOOD(f) = 0;
+        break;
+    case 0xC:
+        FIONA_MOOD(f) = 1;
+        break;
+    case 0xD:
+        FIONA_MOOD(f) = 5;
+        FIONA_EXIT(f) = 0xFF;
+        break;
+    case 0xE: {
+        u8 found = 0;
+
+        if (gCharPursuer != NULL && gCharPursuer->a.active == 1 && gCharPursuer->a.room != room) {
+            s32 pr = gCharPursuer->a.room;
+            s32 ps, fs;
+
+            rooms = D_0044E568;
+            ps = Room_Side(rooms, pr, gCharPursuer->door);
+            fs = Room_Side(rooms, f->c.a.room, f->c.door);
+            if (func_00126F80(&f->c, pr, ps, fs, 1) != -1) {
+                found = 1;
+                f->c.unk14C0 = FIONA_ROUTE0(f);
+                FIONA_MOOD(f) = 3;
+                FIONA_EXIT(f) = 0xFF;
+            }
+        }
+        if (!found) {
+            if (FI(f, 0x1AD719, u8) == 0) {
+                FIONA_MOOD(f) = 0;
+            } else if (RNG01() < 0.5f) {
+                FIONA_MOOD(f) = 1;
+            } else {
+                FIONA_MOOD(f) = 5;
+                FIONA_EXIT(f) = 0xFF;
+            }
+        }
+        break;
+    }
+    }
+
+    if (f->c.moveMode == 2) {
+        return;
+    }
+    if (f->c.moveMode != 0) {
+        FIONA_MOOD(f) = 0;
+        return;
+    }
+    if (FIONA_PANIC(f) && FIONA_MOOD(f) != 3 && FIONA_MOOD(f) != 4) {
+        FIONA_MOOD(f) = 3;
+        FIONA_EXIT(f) = 0xFF;
+    }
+
+    /* what Hewie should do (+0x1AD6B8: 0 stay, 1 come, 2 ?) */
+    if ((u32)FIONA_MOOD(f) < 11 && FI(f, 0x1AD71A, u8) == 0 && FI(f, 0x1AD734, s32) == 0) {
+        if (FI(f, 0x1AD5D7, u8) == 1) {
+            if (Fiona_Dist(f, gCharPursuer->a.pos) < 50.0f) {
+                FIONA_CMD(f) = 0;
+            } else if (!(Fiona_Dist(f, gCharPartner->a.pos) <= 100.0f)) {
+                FIONA_CMD(f) = 1;
+            }
+        } else if (Fiona_Dist(f, gCharPartner->a.pos) < 50.0f) {
+            FIONA_CMD(f) = (RNG01() < 0.5f) ? 0 : 2;
+        } else if (!(Fiona_Dist(f, gCharPartner->a.pos) <= 100.0f)) {
+            FIONA_CMD(f) = 1;
+        }
+    }
+
+    /* the pursuer is in sight: run, more likely the higher the threat (gProgress +0x7BC) */
+    if (FI(f, 0x1AD72C, s32) == 0 && FIONA_MOOD(f) != 3 && FIONA_MOOD(f) != 4 && FI(f, 0x1AD5D7, u8) == 1) {
+        s32 t = (s32)*(f32 *)((u8 *)p + 0x7BC);
+        u8 flee = 0;
+
+        if (t > 80) {
+            flee = 1;
+        } else if (t > 60) {
+            if (RNG01() < 0.2f) flee = 1;
+        } else if (t > 40) {
+            if (RNG01() < 0.15f) flee = 1;
+        } else if (t > 20) {
+            if (RNG01() < 0.1f) flee = 1;
+        } else if (t > 10) {
+            if (RNG01() < 0.05f) flee = 1;
+        }
+        if (flee == 1) {
+            FIONA_MOOD(f) = 3;
+            FIONA_EXIT(f) = 0xFF;
+        }
+    }
+
+    switch (FIONA_MOOD(f)) {
+    case 3: case 4: case 7: case 8: case 10:
+        break;
+    default:
+        if (FI(f, 0x1AD719, u8) == 1) {
+            if (FIONA_MOOD(f) == 0 || FIONA_MOOD(f) == 2) {
+                if (RNG01() < 0.5f) {
+                    FIONA_MOOD(f) = 1;
+                } else {
+                    FIONA_MOOD(f) = 5;
+                    FIONA_EXIT(f) = 0xFF;
+                }
+            }
+        } else if (FIONA_MOOD(f) != 0 && FIONA_MOOD(f) != 2 && FIONA_MOOD(f) != 9) {
+            FIONA_MOOD(f) = 0;
+        }
+        break;
+    }
+
+    switch (FIONA_MOOD(f)) {
+    case 0:
+        if (!(Fiona_Dist(f, gCharPartner->a.pos) <= 50.0f)) {
+            FIONA_MOOD(f) = 2;
+        }
+        break;
+    case 1:
+        break;
+    case 2:
+        if (func_00180D60(f, gCharPartner->a.navTri, gCharPartner->a.pos, 0) != 0) {
+            FIONA_MOOD(f) = 7;
+            FIONA_EXIT(f) = 0xFF;
+            f->c.unk124 = f->c.unk128;
+        } else if (Fiona_Dist(f, gCharPartner->a.pos) < 30.0f) {
+            FIONA_MOOD(f) = 0;
+        }
+        break;
+
+    case 3:
+        rooms = D_0044E568;
+        if (FIONA_EXIT(f) != 0xFF) {
+            tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
+            if (func_00180D60(f, tri, at, 0) != 0) {
+                FIONA_MOOD(f) = 0;
+                break;
+            }
+            if (Fiona_Dist(f, at) < 1.0f) {
+                if (!(func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) && !Fiona_PostExit(f, FIONA_EXIT(f))) {
+                    FIONA_MOOD(f) = 0;
+                    break;
+                }
+                FIONA_MOOD(f) = 4;
+                FIONA_EXIT2(f) = FIONA_EXIT(f);
+            }
+            break;
+        }
+        {
+            /* pick the best exit: the nearest, preferring ones she reaches before the pursuer */
+            s32 side = Room_Side(rooms, f->c.a.room, f->c.door);
+            u8 skip = 0;
+            u8 beatsHim = 0;
+            f32 best = 0.0f;
+            u32 i;
+
+            if (FI(f, 0x1AD5D6, u8) == 1 && FI(f, 0x1AD5D7, u8) == 0) {
+                s32 pr = gCharPursuer->a.room;
+                s32 ps = Room_Side(rooms, pr, gCharPursuer->door);
+
+                /* not the exits into the pursuer's room on his side */
+                for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+                    if (Room_ExitTo(rooms, f->c.a.room, i) == pr && Room_ExitToSide(rooms, f->c.a.room, i) == ps) {
+                        skip |= 1 << i;
+                    }
+                }
+            }
+            tri = 0;
+            for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+                u32 t;
+                f32 score;
+                u8 take;
+
+                if (skip & (1 << i)) {
+                    continue;
+                }
+                if (!Fiona_ExitUsable(f, p, rooms, i)) {
+                    continue;
+                }
+                t = Room_ExitPosIn(rooms, i, in);
+                if (Fiona_WrongSide(side, t)) {
+                    continue;
+                }
+                take = 0;
+                Room_ExitPosOut(rooms, i, out);
+                score = Fiona_ExitScore(d, f->c.a.pos, out);
+                if (FI(f, 0x1AD5D7, u8) == 1) {
+                    u8 first = score < Fiona_ExitScore(d, gCharPursuer->a.pos, out);
+
+                    if (FIONA_EXIT(f) == 0xFF) {
+                        beatsHim = first;
+                        take = 1;
+                    } else if (beatsHim == 0) {
+                        if (first == 1) {
+                            beatsHim = 1;
+                            take = 1;
+                        } else if (score < best) {
+                            take = 1;
+                        }
+                    } else if (first == 1 && score < best) {
+                        take = 1;
+                    }
+                } else if (FIONA_EXIT(f) == 0xFF || score < best) {
+                    take = 1;
+                }
+                if (take == 1) {
+                    FIONA_EXIT(f) = i;
+                    tri = t;
+                    sceVu0CopyVector(at, in);
+                    best = score;
+                }
+            }
+        }
+        if (FIONA_EXIT(f) == 0xFF) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        if (Room_Exit78(rooms, f->c.a.room, FIONA_EXIT(f)) == 0) {
+            FIONA_MOOD(f) = 4;
+            FIONA_EXIT2(f) = FIONA_EXIT(f);
+        }
+        if (func_00180D60(f, tri, at, 0) != 0) {
+            FIONA_EXIT(f) = 0xFF;
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        FIONA_ROUTE0(f) = Room_ExitRoute(rooms, f->c.a.room, FIONA_EXIT(f));
+        if ((func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) == 1) {
+            Room_ExitPosOut(rooms, FIONA_EXIT(f), out2);
+            if (Fiona_Dist(f, out2) < Fiona_Dist(f, at)) {
+                FIONA_MOOD(f) = 4;
+                FIONA_EXIT2(f) = FIONA_EXIT(f);
+            }
+        }
+        break;
+
+    case 5: case 7:
+        rooms = D_0044E568;
+        if (FIONA_EXIT(f) != 0xFF) {
+            tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
+            if (func_00180D60(f, tri, at, 0) != 0) {
+                FIONA_MOOD(f) = 0;
+                break;
+            }
+            if (Fiona_Dist(f, at) < 1.0f) {
+                if (!(func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) && !Fiona_PostExit(f, FIONA_EXIT(f))) {
+                    FIONA_MOOD(f) = 0;
+                    break;
+                }
+                FIONA_MOOD(f) = (FIONA_MOOD(f) == 5) ? 6 : 8;
+                FIONA_EXIT2(f) = FIONA_EXIT(f);
+            }
+            break;
+        }
+        {
+            /* pick a usable exit at random (other than the one she came through) */
+            s32 side = Room_Side(rooms, f->c.a.room, f->c.door);
+            u8 tried = (u8)(1 << (f->c.door & 0x1F));
+
+            tri = 0;
+            while (tried != 0xFF) {
+                u32 i = (u8)(u32)(8.0f * RNG01());
+                u32 bit = 1 << (i & 0x1F);
+
+                if (tried & bit) {
+                    continue;
+                }
+                tried |= (u8)bit;
+                if (!Fiona_ExitUsable(f, p, rooms, i)) {
+                    continue;
+                }
+                tri = Room_ExitPosIn(rooms, i, at);
+                if (Fiona_WrongSide(side, tri)) {
+                    continue;
+                }
+                FIONA_EXIT(f) = i;
+                break;
+            }
+        }
+        if (FIONA_EXIT(f) == 0xFF) {
+            FIONA_EXIT(f) = f->c.door;
+            tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
+        }
+        if (FIONA_EXIT(f) == 0xFF) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        if (Room_Exit78(rooms, f->c.a.room, FIONA_EXIT(f)) == 0) {
+            FIONA_MOOD(f) = (FIONA_MOOD(f) == 5) ? 6 : 8;
+            FIONA_EXIT2(f) = FIONA_EXIT(f);
+        }
+        if (func_00180D60(f, tri, at, 0) != 0) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        FIONA_ROUTE0(f) = Room_ExitRoute(rooms, f->c.a.room, FIONA_EXIT(f));
+        if ((func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) == 1) {
+            Room_ExitPosOut(rooms, FIONA_EXIT(f), out2);
+            if (Fiona_Dist(f, out2) < Fiona_Dist(f, at)) {
+                FIONA_MOOD(f) = (FIONA_MOOD(f) == 5) ? 6 : 8;
+                FIONA_EXIT2(f) = FIONA_EXIT(f);
+            }
+        }
+        break;
+
+    case 4: case 6: case 8:
+        /* at / through the exit */
+        rooms = D_0044E568;
+        if (FIONA_EXIT2(f) == 0xFF) {
+            tri = Room_ExitPosOut(rooms, FIONA_EXIT(f), at);
+            if (func_00180D60(f, tri, at, 0) != 0) {
+                FIONA_MOOD(f) = 0;
+                break;
+            }
+            FIONA_ROUTE0(f) = Room_ExitRoute(rooms, f->c.a.room, FIONA_EXIT(f));
+            f->c.unk14C0 = FIONA_ROUTE0(f);
+            break;
+        }
+        tri = Room_ExitPosOut(rooms, FIONA_EXIT(f), at);
+        if (Fiona_Dist(f, at) < 1.0f) {
+            u32 door = Room_ExitDoor(rooms, f->c.a.room, FIONA_EXIT(f));
+
+            if (door != 0xFF) {
+                u32 i;
+
+                /* through: she is now in the next room, out of sight */
+                for (i = 0; i < 13; i++) {
+                    f->c.unk148C[i] = 0;
+                }
+                rooms = D_0044E568;
+                f->c.a.room = Room_ExitTo(rooms, f->c.a.room, FIONA_EXIT(f));
+                f->c.door = door;
+                f->c.a.navTri = NAV_NONE;
+                f->c.a.disabled = 1;
+                f->c.unk124 = f->c.unk128;
+                FIONA_ROUTE0(f) = Room_ExitRoute(rooms, f->c.a.room, f->c.door);
+                f->c.unk14C0 = FIONA_ROUTE0(f);
+                *(f32 *)&f->c.unk14C4 = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, FIONA_ROUTE0(f), f->c.a.room);
+                FI(f, 0x1AD6C0, s32) = 1;
+                FI(f, 0x1AD73C, s32) = 0;
+                FIONA_AWAY_T(f) = (s32)(30.0f * (2.0f * RNG01())) + 90;
+                break;
+            }
+        }
+        if (func_00180D60(f, tri, at, 0) != 0) {
+            FIONA_MOOD(f) = 0;
+        }
+        break;
+
+    case 9: {
+        s32 side;
+
+        if (FIONA_EXIT(f) == 0xFF) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        rooms = D_0044E568;
+        side = Room_Side(rooms, f->c.a.room, f->c.door);
+        if (Room_Exit78(rooms, f->c.a.room, FIONA_EXIT(f)) != 1 || Room_Exit70(rooms, f->c.a.room, FIONA_EXIT(f)) != 0
+            || (func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF)) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
+        if (Fiona_WrongSide(side, tri) || func_00180D60(f, tri, at, 0) != 0) {
+            FIONA_MOOD(f) = 0;
+            break;
+        }
+        if (!(func_00177BF0(p, FIONA_EXIT(f), 0) & 0x4)) {
+            break;
+        }
+        if (func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) {
+            break;
+        }
+        Fiona_PostExit(f, FIONA_EXIT(f));
+        FIONA_MOOD(f) = 0;
+        break;
+    }
+
+    case 10:
+        if (FI(f, 0x1AD5D7, u8) == 0 || gCharPursuer->a.unkC4 == 2) {
+            FIONA_MOOD(f) = 0;
+        } else {
+            f32 r = gCharPursuer->a.radius;
+
+            if (!(Fiona_Dist(f, gCharPursuer->a.pos) <= 1.5f * (f->c.a.radius + r)) || FIONA_PANIC(f)) {
+                FIONA_MOOD(f) = 0;
+            }
+        }
+        break;
+    }
+}

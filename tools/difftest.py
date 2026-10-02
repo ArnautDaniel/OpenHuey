@@ -75,6 +75,8 @@ INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
 CALL_ALIAS: dict[int, int] = {}  # C address -> original address of the file's other game functions
 C_ENTRIES: set[int] = set()      # entry points of the C file's functions
+C_ALL_ENTRIES: set[int] = set()  # ... including static helpers (a computed jump to one is a tail call
+                                 # through a random pointer, not a jump inside the function)
 HELPER_RANGES: list[tuple[int, int]] = []
 FPR_WRITERS = {"lwc1", "mtc1"}
 DIRECT_GPR_WRITERS = {"lq", "pcpyld", "pcpyud", "por", "pand", "pxor", "pnor", "paddub", "pextlw", "pextuw"}
@@ -611,12 +613,13 @@ class CPU:
             elif kind in ("call", "vcall"):  # indirect calls (vtables, function pointers) are always stubbed
                 self.stub_call(target, "call")
                 pc, npc = pc + 8, pc + 12
-            elif kind == "jump" and target in INLINE_ADDRS:
+            elif kind == "jump" and target in INLINE_ADDRS and name == "j":
+                # (only a direct jump: a computed one landing there came from random memory)
                 pc, npc = target, target + 4
             elif kind == "jump" and target != RET_MAGIC and (
                 any(lo <= pc < hi for lo, hi in self.helper_ranges)  # helper's final jump (e.g. jr $t9)
                 or not (self.func_lo <= target < self.func_hi)       # tail call out of the function
-                or (name == "jr" and target in C_ENTRIES)            # computed tail call to a function
+                or (name == "jr" and target in C_ALL_ENTRIES)       # computed tail call to a function
             ):
                 # the callee returns straight to our caller. A jump out of __ptmf_scall is a
                 # pointer-to-member call: a member function taking only `this`.
@@ -1445,6 +1448,10 @@ def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str
                     if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
         funcs = {s.name: s["st_value"] for s in e.get_section_by_name(".symtab").iter_symbols()
                  if s["st_info"]["type"] == "STT_FUNC" and s["st_info"]["bind"] == "STB_GLOBAL"}
+        C_ALL_ENTRIES.clear()
+        C_ALL_ENTRIES.update(s["st_value"] for s in e.get_section_by_name(".symtab").iter_symbols()
+                             if s["st_info"]["type"] == "STT_FUNC")
+        C_ALL_ENTRIES.update(INLINE_ADDRS)
         text = e.get_section_by_name(".text")
         # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
         trange = (text["sh_addr"], text["sh_addr"] + text["sh_size"])
