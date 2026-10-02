@@ -1777,3 +1777,20 @@ s32 func_002C9730(u8 *o, s32 i) {
     }
     return (u8)func_002C9930(o, (u8)func_002CC5A0(o, list[i & 0xFF]));
 }
+
+
+/* the effects, each frame: each live one (0x400 slots at +0x18034) runs (+0x10); a finished
+ * one goes back to the heap (+0x10000, +0x14) */
+void func_002D6280(u8 *mgr) {
+    u32 i;
+
+    for (i = 0; i < 0x400; i++) {
+        VObject *e = AT(mgr, 0x18034 + i * 4, VObject *);
+
+        if (e == NULL || (u8)VCALL(e, 0x10, s32 (*)(VObject *))(e)) {
+            continue;
+        }
+        VCALL(mgr + 0x10000, 0x14, void (*)(void *, VObject *))(mgr + 0x10000, AT(mgr, 0x18034 + i * 4, VObject *));
+        AT(mgr, 0x18034 + i * 4, VObject *) = NULL;
+    }
+}
