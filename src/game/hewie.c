@@ -1727,3 +1727,118 @@ void func_00147480(Hewie *h) {
     h->c.a.navMask &= ~0x80001;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* Can he take a command now: active in the room being played, idle, not angry (mode 3), a
+ * command queued (+0xF356C > 0; any in condition 2), nothing pending. */
+s32 func_00138EC0(Hewie *h) {
+    Progress *p;
+    s32 room;
+
+    if (h->c.a.active != 1) {
+        return 0;
+    }
+    room = h->c.a.room;
+    p = gProgress;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return 0;
+    }
+    if (h->c.unkE0 || h->c.moveMode != 0 || h->c.moveSub == 2 || HEWIE_MODE(h) == 3) {
+        return 0;
+    }
+    if (h->c.a.unkC4 != 2 && (HW(h, 0xF356C, s32) == 0 || (HW(h, 0xF356C, s32) & 0x80000000))) {
+        return 0;
+    }
+    if ((func_00177770(p, 1) & 0xFF) || h->c.state[0] != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+void func_00157360(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        HW(h, 0xF3688, s16) = 300;
+        if (HW(h, 0xF36B4, s32) == 0) {
+            Hewie_ToDefault(h);
+        } else if (MOTION_ANIM(h->c.motion) == 0x2213) {
+            if (h->c.a.unkC4 != 2) {
+                func_002DDED0(h->c.motion, 0x1003, -1);
+            } else {
+                func_0013C300(h);
+            }
+        } else if (MOTION_ANIM(h->c.motion) == 0x1003) {
+            func_0013C300(h);
+        }
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+extern void func_002E3130(sceVu0FMATRIX out, const f32 *pos, f32 angle);
+extern void func_002E2DD0(f32 *out, sceVu0FMATRIX m, const f32 *v);
+
+/* A point 24 units out from door `door` on his side of it (if the door is usable). */
+void func_00144940(Hewie *h, s32 door, f32 *out) {
+    VObject *doors;
+    sceVu0FMATRIX m;
+    sceVu0FVECTOR at;
+    f32 off[4] __attribute__((aligned(16)));
+    f32 yaw;
+    s32 side;
+
+    if (!(VCALL(D_0044E558, 0x40, u32 (*)(VObject *, s32))(D_0044E558, door) & 0xFF)) {
+        return;
+    }
+    doors = D_0044E558;
+    yaw = VCALL(doors, 0x3C, f32 (*)(VObject *, s32))(doors, door);
+    side = VCALL(doors, 0x18, s32 (*)(VObject *, s32, f32 *))(doors, door, h->c.a.pos);
+    VCALL(doors, 0x44, void (*)(VObject *, s32))(doors, door);
+    VCALL(doors, 0x34, void (*)(VObject *, s32, f32 *))(doors, door, at);
+    if (side == 0) {
+        yaw = func_002E2D00(F_PI + yaw);
+    }
+    *(s32 *)&off[0] = 0;
+    *(s32 *)&off[1] = 0;
+    off[2] = 24.0f;
+    func_002E3130(m, at, yaw);
+    func_002E2DD0(out, m, off);
+}
+
+extern s32 func_00125D80(Character *c);
+
+/* 1 unless he is with Fiona's party in the room being played and cannot reach her. */
+s32 func_001364F0(Hewie *h) {
+    Progress *p;
+    s32 room;
+
+    if (!h->c.a.active || !h->c.unkE0) {
+        return 1;
+    }
+    room = h->c.a.room;
+    p = gProgress;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return 1;
+    }
+    if (h->c.a.unk2D || h->c.a.unk2B || (func_00125D80(&h->c) & 0xFF)) {
+        return 0;
+    }
+    if (gCharPlayer == NULL || !gCharPlayer->a.active) {
+        return 1;
+    }
+    room = gCharPlayer->a.room;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return 1;
+    }
+    return ((func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) ? 1 : 0;
+}
+
+/* A random idle action: 1 (50%), 4 (15%), 5 (35%). */
+void func_00140050(Hewie *h) {
+    s32 r = (s32)(100.0f * RNG01());
+
+    if (r < 50) {
+        Hewie_Start(h, 1);
+    } else if (r < 65) {
+        Hewie_Start(h, 4);
+    } else {
+        Hewie_Start(h, 5);
+    }
+}

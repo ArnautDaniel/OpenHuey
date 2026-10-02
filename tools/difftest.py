@@ -620,6 +620,7 @@ class CPU:
                 any(lo <= pc < hi for lo, hi in self.helper_ranges)  # helper's final jump (e.g. jr $t9)
                 or not (self.func_lo <= target < self.func_hi)       # tail call out of the function
                 or (name == "jr" and target in C_ALL_ENTRIES)       # computed tail call to a function
+                or (name == "jr" and target & 3)                   # (misaligned: through a random pointer)
             ):
                 # the callee returns straight to our caller. A jump out of __ptmf_scall is a
                 # pointer-to-member call: a member function taking only `this`.
