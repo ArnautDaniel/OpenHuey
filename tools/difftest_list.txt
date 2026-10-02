@@ -2743,3 +2743,4 @@ src/game/model.c func_002EE710 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B0000
 src/game/model.c func_002EED20 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/model.c func_002DDAC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0046F9E0..0x0046F9E0 --stub-ret=0
 src/game/model.c func_001F6870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0A..0x1C --stub-ret=0x0B300000 --stub-ret-prob=1
+src/game/effects.c func_002241C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x164=bytes:??000000 --pre=@0x44E4C0=0x0B100000..0x0B100000 --pre=@0x0B101400=0x0046BF20..0x0046BF20 --pre=@0x0B1014A8=0..1 --stub-ret=0 --stub-ret=0x0B200000 --stub-ret-prob=1

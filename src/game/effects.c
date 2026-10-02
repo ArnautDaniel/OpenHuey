@@ -273,3 +273,54 @@ s32 func_002E5660(u8 *d) {
     }
     return (u8)func_002E4760(d);
 }
+
+
+extern void *D_0046EC60[];      /* the effect 0x1C kind */
+extern VObject *D_0044E4C0;     /* the room effects */
+extern void *func_00266C40(void *fx, s32 k);       /* effect slot k */
+extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
+extern void func_002670F0(void *fx, s32 k);        /* remove effect k */
+extern void *func_002672F0(u32 size, void *place); /* placement new */
+
+/* hold (`on`) or give back screen effect 0x1C (+0x69): held, its colour (+0x50..+0x5C) is
+ * kept at +0x154 and the effect removed; given back, a new one (D_0046EC60, from the effects'
+ * heap +0x1400, at +0x14A8) is started with that colour */
+void func_002241C0(u8 *o, s32 on) {
+    u8 *fx;
+    u8 *e;
+    void *mem;
+
+    AT(o, 0x69, u8) = on;
+    if (AT(o, 0x69, u8) == 0) {
+        if (AT(o, 0x164, u8) == 0) {
+            return;
+        }
+        AT(o, 0x164, u8) = 0;
+        fx = (u8 *)D_0044E4C0;
+        if (AT(fx, 0x14A8, void *) != NULL) {
+            VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, AT(fx, 0x14A8, void *));
+            AT(fx, 0x14A8, void *) = NULL;
+        }
+        mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+        if (mem != NULL) {
+            e = func_002672F0(0xA0, mem);
+            if (e != NULL) {
+                AT(e, 0x0, void **) = D_0046EC60;
+            }
+            AT(fx, 0x14A8, u8 *) = e;
+            VCALL(AT(fx, 0x14A8, u8 *), 0xC, void (*)(u8 *))(AT(fx, 0x14A8, u8 *));
+        }
+        func_00266C70(fx, 0x1C, o + 0x154);
+        return;
+    }
+    fx = (u8 *)D_0044E4C0;
+    e = func_00266C40(fx, 0x1C);
+    if (e != NULL) {
+        AT(o, 0x164, u8) = 1;
+        AT(o, 0x154, f32) = AT(e, 0x50, f32);
+        AT(o, 0x158, f32) = AT(e, 0x54, f32);
+        AT(o, 0x15C, f32) = AT(e, 0x58, f32);
+        AT(o, 0x160, f32) = AT(e, 0x5C, f32);
+        func_002670F0(fx, 0x1C);
+    }
+}
