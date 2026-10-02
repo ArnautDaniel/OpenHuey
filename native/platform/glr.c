@@ -38,6 +38,7 @@
     X(PFNGLUSEPROGRAMPROC, glUseProgram) \
     X(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation) \
     X(PFNGLPROGRAMUNIFORMMATRIX4FVPROC, glProgramUniformMatrix4fv) \
+    X(PFNGLPROGRAMUNIFORM1IPROC, glProgramUniform1i) \
     X(PFNGLCREATETEXTURESPROC, glCreateTextures) \
     X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) \
@@ -75,6 +76,7 @@ typedef struct GlrVertex {
 typedef struct GlrDraw {
     float mvp[16];
     int first, n;
+    const uint8_t *tex;
     uint64_t tex0;
     uint32_t prim;
 } GlrDraw;
@@ -105,7 +107,7 @@ static void put_vertex(GlrFrame *f, const float *xyzw, const float *st, const ui
  * triangle ending at that vertex isn't drawn, which is how one VU1 batch holds many strips. The
  * strip becomes a triangle list without those. */
 void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, const uint8_t *rgba,
-               uint64_t tex0, uint32_t prim) {
+               const void *tex, uint64_t tex0, uint32_t prim) {
     GlrFrame *f = &sFrames[sBuilding];
     GlrDraw *d;
     int i, max = (n - 2) * 3;
@@ -139,6 +141,7 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
         return;
     }
     memcpy(d->mvp, mvp, sizeof(d->mvp));
+    d->tex = tex;
     d->tex0 = tex0;
     d->prim = prim;
     f->nd++;
@@ -173,7 +176,7 @@ void glr_end_frame(void) {
 #define GLR_HEIGHT 448
 
 static GLuint sMeshProg, sQuadProg, sVao, sQuadVao, sVbo;
-static GLint sMvpLoc;
+static GLint sMvpLoc, sTexModeLoc, sTccLoc;
 static GLuint sFbo, sColor, sDepth, sGsTex;
 static int sGsW, sGsH;
 
@@ -193,13 +196,31 @@ static const char *kMeshVs =
     "    vSt = aSt;\n"
     "}\n";
 
+/* the GS texture function: modulate (vertex colour times texel, 0x80 = 1.0) or decal; TCC
+ * takes the texel's alpha (0x80 = 1.0 too). Fully transparent texels are dropped (the
+ * game's alpha test). */
 static const char *kMeshFs =
     "#version 460 core\n"
     "in vec4 vCol;\n"
     "in vec2 vSt;\n"
+    "uniform sampler2D uTex;\n"
+    "uniform int uTexMode;\n"   /* 0 none, 1 modulate, 2 decal */
+    "uniform int uTcc;\n"
     "out vec4 oColor;\n"
     "void main() {\n"
-    "    oColor = vec4(clamp(vCol.rgb, 0.0, 1.0), 1.0);\n"
+    "    vec4 c = vCol;\n"
+    "    if (uTexMode != 0) {\n"
+    "        vec4 t = texture(uTex, vSt);\n"
+    "        t.a *= 255.0 / 128.0;\n"
+    "        c.rgb = uTexMode == 1 ? c.rgb * t.rgb : t.rgb;\n"
+    "        if (uTcc != 0) {\n"
+    "            c.a = uTexMode == 1 ? c.a * t.a : t.a;\n"
+    "        }\n"
+    "        if (c.a < 1.0 / 255.0) {\n"
+    "            discard;\n"
+    "        }\n"
+    "    }\n"
+    "    oColor = clamp(c, 0.0, 1.0);\n"
     "}\n";
 
 /* a full-screen triangle pair from gl_VertexID, showing the software GS frame */
@@ -220,6 +241,154 @@ static const char *kQuadFs =
     "void main() {\n"
     "    oColor = vec4(texture(uTex, vUv).rgb, 1.0);\n"
     "}\n";
+
+/* ---- textures: decoded from the game's .TEX entries in memory ---- */
+
+/* a .TEX entry (as src/game/renderer.c's TexHeader): the image (rows of w pixels in `psm`)
+ * then the CLUT (a 16 x 16 block of `cpsm` colours as uploaded; indexed formats look entries up
+ * in the GS's CSM1 order), both from the entry */
+typedef struct TexEntry {
+    uint8_t psm, cpsm, pad[2];
+    uint16_t w, h, imageQwc, clutQwc;
+    int32_t data;
+} TexEntry;
+
+enum { PSMCT32 = 0x00, PSMCT24 = 0x01, PSMCT16 = 0x02, PSMT8 = 0x13, PSMT4 = 0x14 };
+
+static uint32_t ct16(uint16_t c) {   /* alpha bit set: 0x80 */
+    return (uint32_t)(c & 0x1F) << 3 | (uint32_t)((c >> 5) & 0x1F) << 11 | (uint32_t)((c >> 10) & 0x1F) << 19 |
+           (c & 0x8000 ? 0x80000000u : 0);
+}
+
+static uint32_t clut_entry(const TexEntry *t, const uint8_t *clut, int i, int n) {
+    int x, y, k;
+
+    if (n == 256) {   /* CSM1: entries 8..15 and 16..23 of each 32 swapped */
+        x = i % 8 + ((i / 16) % 2) * 8;
+        y = (i / 32) * 2 + (i / 8) % 2;
+    } else {
+        x = i & 7;
+        y = i >> 3;
+    }
+    k = y * 16 + x;
+    if (t->cpsm == PSMCT16) {
+        return k * 2 < t->clutQwc * 16 ? ct16((uint16_t)(clut[k * 2] | clut[k * 2 + 1] << 8)) : 0;
+    }
+    if (k * 4 >= t->clutQwc * 16) {
+        return 0;
+    }
+    return (uint32_t)clut[k * 4] | (uint32_t)clut[k * 4 + 1] << 8 | (uint32_t)clut[k * 4 + 2] << 16 |
+           (uint32_t)clut[k * 4 + 3] << 24;
+}
+
+/* RGBA8 texels (alpha as the GS keeps it, 0x80 = 1.0); 0 for a format not handled */
+static int tex_decode(const TexEntry *t, uint32_t *out) {
+    const uint8_t *img = (const uint8_t *)t + t->data, *clut = img + t->imageQwc * 16;
+    uint32_t pal[256];
+    int w = t->w, h = t->h, i, n;
+
+    switch (t->psm) {
+    case PSMT8:
+    case PSMT4:
+        n = t->psm == PSMT8 ? 256 : 16;
+        for (i = 0; i < n; i++) {
+            pal[i] = clut_entry(t, clut, i, n);
+        }
+        for (i = 0; i < w * h; i++) {
+            out[i] = t->psm == PSMT8 ? pal[img[i]] : pal[(img[i >> 1] >> ((i & 1) * 4)) & 0xF];
+        }
+        return 1;
+    case PSMCT32:
+        memcpy(out, img, (size_t)w * h * 4);
+        return 1;
+    case PSMCT24:
+        for (i = 0; i < w * h; i++) {
+            out[i] = (uint32_t)img[i * 3] | (uint32_t)img[i * 3 + 1] << 8 | (uint32_t)img[i * 3 + 2] << 16 | 0x80000000u;
+        }
+        return 1;
+    case PSMCT16:
+        for (i = 0; i < w * h; i++) {
+            out[i] = ct16((uint16_t)(img[i * 2] | img[i * 2 + 1] << 8));
+        }
+        return 1;
+    }
+    return 0;
+}
+
+typedef struct GlrTex {
+    const TexEntry *entry;   /* NULL: free */
+    uint32_t check;          /* the entry's contents when decoded (a room's file reloads in place) */
+    GLuint tex;
+} GlrTex;
+
+static GlrTex sTex[1024];
+static uint32_t *sTexels;
+
+static uint32_t tex_check(const TexEntry *t) {
+    const uint8_t *img = (const uint8_t *)t + t->data;
+    uint32_t c = 2166136261u;
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        c = (c ^ ((const uint8_t *)t)[i]) * 16777619u;
+    }
+    for (i = 0; i < 64 && i < t->imageQwc * 16; i++) {
+        c = (c ^ img[i]) * 16777619u;
+    }
+    return c;
+}
+
+static GLuint texture_for(const TexEntry *t) {
+    uint32_t h = (uint32_t)(uintptr_t)t * 2654435761u >> 22, check = tex_check(t), i;
+    GlrTex *e = NULL;
+
+    for (i = 0; i < 1024; i++) {
+        e = &sTex[(h + i) & 1023];
+        if (e->entry == t || e->entry == NULL) {
+            break;
+        }
+    }
+    if (e->entry == t && e->check == check) {
+        return e->tex;
+    }
+    if (e->tex != 0) {   /* changed, or the table is full: the slot is reused */
+        p_glDeleteTextures(1, &e->tex);
+        e->tex = 0;
+    }
+    e->entry = t;
+    e->check = check;
+    if (t->w == 0 || t->h == 0 || t->w > 1024 || t->h > 1024) {
+        return 0;
+    }
+    if (sTexels == NULL) {
+        sTexels = malloc(1024 * 1024 * sizeof(uint32_t));
+    }
+    if (!tex_decode(t, sTexels)) {
+        fprintf(stderr, "glr: texture format 0x%02X not handled\n", t->psm);
+        return 0;
+    }
+    if (getenv("HG_TEXDUMP")) {   /* each decoded texture as <dir>/tex_<address>.ppm */
+        char path[512];
+        FILE *fp;
+        int k;
+
+        snprintf(path, sizeof(path), "%s/tex_%p.ppm", getenv("HG_TEXDUMP"), (const void *)t);
+        if ((fp = fopen(path, "wb")) != NULL) {
+            fprintf(fp, "P6\n%d %d\n255\n", t->w, t->h);
+            for (k = 0; k < t->w * t->h; k++) {
+                fwrite(&sTexels[k], 1, 3, fp);
+            }
+            fclose(fp);
+        }
+    }
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &e->tex);
+    p_glTextureStorage2D(e->tex, 1, GL_RGBA8, t->w, t->h);
+    p_glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    p_glTextureSubImage2D(e->tex, 0, 0, 0, t->w, t->h, GL_RGBA, GL_UNSIGNED_BYTE, sTexels);
+    p_glTextureParameteri(e->tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    p_glTextureParameteri(e->tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    return e->tex;
+}
 
 static GLuint shader(GLenum type, const char *src) {
     GLuint s = p_glCreateShader(type);
@@ -274,6 +443,8 @@ int glr_init(void) {
 
     sMeshProg = program(kMeshVs, kMeshFs);
     sMvpLoc = p_glGetUniformLocation(sMeshProg, "uMvp");
+    sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
+    sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
     sQuadProg = program(kQuadVs, kQuadFs);
 
     p_glCreateBuffers(1, &sVbo);
@@ -378,10 +549,29 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         p_glDepthMask(GL_TRUE);
         p_glUseProgram(sMeshProg);
         p_glBindVertexArray(sVao);
+        p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         for (i = 0; i < f->nd; i++) {
-            p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, f->d[i].mvp);
-            p_glDrawArrays(GL_TRIANGLES, f->d[i].first, f->d[i].n);
+            const GlrDraw *d = &f->d[i];
+            int mode = 0;
+
+            if ((d->prim & 0x10) && d->tex != NULL) {   /* TME */
+                GLuint t = texture_for((const TexEntry *)d->tex);
+                uint32_t tfx = (uint32_t)(d->tex0 >> 35) & 3;
+
+                mode = t == 0 ? 0 : tfx == 1 ? 2 : 1;
+                p_glBindTextureUnit(0, t);
+                p_glProgramUniform1i(sMeshProg, sTccLoc, (int)(d->tex0 >> 34) & 1);
+            }
+            p_glProgramUniform1i(sMeshProg, sTexModeLoc, mode);
+            if (d->prim & 0x40) {   /* ABE */
+                p_glEnable(GL_BLEND);
+            } else {
+                p_glDisable(GL_BLEND);
+            }
+            p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
+            p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
         }
+        p_glDisable(GL_BLEND);
         p_glDisable(GL_DEPTH_TEST);
     }
 

@@ -8,9 +8,11 @@ extern VObject *D_0044E4B8;   /* the camera */
 
 #ifdef HG_NATIVE
 /* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, u64 tex0,
-                      u32 prim);
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern VObject *D_0044E4E8;   /* the texture cache */
 static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
+static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;
 static u32 sGlPrim;
 #endif
@@ -143,6 +145,8 @@ s32 func_0025E2B0(u8 *o) {
                 sGlMvp[i][3] = b[i][3];
             }
             sGlTex0 = newTex ? AT(o, 0x10, u64) : 0;
+            sGlTex = newTex ? VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(o, 0x80, s32), 0)
+                            : NULL;
             sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6;
 #endif
             p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 9);
@@ -315,7 +319,7 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
         show = g == 0 || (AT(o, 0x6C + (g >> 5) * 4, u32) & (1u << (g & 0x1F)));
         if (show && ok == 1) {
 #ifdef HG_NATIVE
-            glr_strip(&sGlMvp[0][0], a.n, a.xyz, (f32 *)a.st, a.rgba, sGlTex0, sGlPrim);
+            glr_strip(&sGlMvp[0][0], a.n, a.xyz, (f32 *)a.st, a.rgba, sGlTex, sGlTex0, sGlPrim);
 #else
             func_002B7500((u8 *)&a);
 #endif
