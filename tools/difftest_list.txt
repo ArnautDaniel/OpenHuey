@@ -1909,3 +1909,6 @@ src/game/vram.c func_001BFEC0 --runs=100 --pre=a1=0x0A000000..0x0A000000 --pre=@
 src/game/vram.c func_001C12E0 --runs=100 --pre=a1=0..63 --pre=a2=0..0x14 --pre=a3=1..1024 --pre=a4=1..1024 --pre=a5=0..2
 src/game/vram.c func_001C1160 --runs=100 --pre=a1=0..63 --pre=a2=1..1024 --pre=a3=1..1024 --pre=a4=0..2
 src/game/vram.c func_001C0FE0 --runs=100 --pre=a1=0..63 --pre=a2=0..15 --pre=a3=0..0x14 --pre=a4=1..1024 --pre=a5=1..1024 --pre=a6=0..2
+src/game/pad.c func_001BE220 --runs=200 --pre=a1=0..1 --pre=a0+0x48=0..2 --pre=a0+0x4C=1..2
+src/game/pad.c func_0037E320 --pre=a1=0..0
+src/game/pad.c func_002D4780 --runs=300 --pre=a0+0x0=0x0046ADB0..0x0046ADB0 --pre=@0x0047E360=0..1 --pre=a0+0xA=0x30..0xD0 --pre=a0+0x8=0x30..0xD0 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret-prob=1
