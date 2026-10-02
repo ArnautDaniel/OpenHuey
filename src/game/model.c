@@ -2656,3 +2656,38 @@ void func_002EE970(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
+
+
+/* +0x10 step of a free hanging point { +0x0 position, +0x10 velocity, +0x20 anchored to a bone
+ * (+0x24) else the point +0x2C, +0x40 length } in system `s` (+0x0 force, +0x10 damping, +0x18
+ * the colliders, +0x20 / +0x1C a floor height): pushed by each collider (+0x8, strength 1) and
+ * up off the floor, damped, moved, then kept at its length from the anchor; its velocity is
+ * how far it went */
+void func_002ECE50(u8 *p, u8 *s) {
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u8 *c;
+
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), (f32 *)s);
+    for (c = AT(s, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        VCALL(c + 0x30, 0x8, void (*)(u8 *, f32 *, u8 *, f32))(c, d, p, 1.0f);
+        sceVu0AddVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), d);
+    }
+    if (AT(s, 0x20, u8) != 0 && AT(p, 0x4, f32) < AT(s, 0x1C, f32)) {
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + (AT(s, 0x1C, f32) - AT(p, 0x4, f32));
+    }
+    sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+    }
+    sceVu0SubVector(d, (f32 *)p, anchor);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, anchor, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
+}
