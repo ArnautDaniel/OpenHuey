@@ -10,6 +10,7 @@
 #include "task.h"
 
 extern MemCard *D_0044FF00;
+extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
 extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
 extern u32 D_0047E37C;      /* pad buttons pressed */
@@ -216,5 +217,20 @@ BootCard *func_002D0300(BootCard *b) {
     b->vtbl = D_0046A058;
     Task_Construct(&b->task);
     b->state = -1;
+    return b;
+}
+
+/* destructor */
+BootCard *func_0012C730(BootCard *b, s32 flags) {
+    if (b != NULL) {
+        b->vtbl = D_0046A058;
+        if (&b->task != NULL && b->task.child != NULL) {
+            Task_dtor(b->task.child, 1);
+            b->task.child = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(b);
+        }
+    }
     return b;
 }

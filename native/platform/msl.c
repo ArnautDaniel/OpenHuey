@@ -67,3 +67,13 @@ float func_0031C6E8(float x) { return x < 0.0f ? MSL_HUGE : x == 0.0f ? -0x1.fff
 float func_0031C830(float x) { return x < 0.0f ? MSL_HUGE : x == 0.0f ? -0x1.fffffep+127f : log10f(x); }
 float func_0031C980(float x) { return x < 0.0f ? MSL_HUGE : sqrtf(x); }
 float func_0031BDB0(float x) { return atanf(x); }
+
+/* __destroy_arr (PS2 0x001002C0): destroy n objects of `size` bytes, last first */
+void func_001002C0(void *block, void (*dtor)(void *, int), unsigned size, unsigned n) {
+    char *p = (char *)block + size * n;
+
+    while (n-- != 0) {
+        p -= size;
+        dtor(p, -1);
+    }
+}

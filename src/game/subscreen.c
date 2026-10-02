@@ -4,6 +4,8 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
+#include "progress.h"
+#include "task.h"
 
 #define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
@@ -156,4 +158,295 @@ void func_003913B0(u8 *s, s32 type) {
         D_0047E3C0[0xA + i] = D_0044B5E0[type][i][0];
         func_00380990(s + 0x97764, D_0047B150[i], D_0044B5E0[type][i][1]);
     }
+}
+
+extern VObject *D_0044E4E8;      /* the texture cache */
+extern void *func_00322570(u32 size, void *p);   /* placement new */
+extern void func_00305380(void *p);
+extern void func_002BFB00(void *card, void *buf, void *buf2);
+extern void func_0038F7D0(void *s);
+extern void func_00388D30(void *s);
+extern void *D_00474020[];       /* the 0x15C helper's base vtable */
+extern void *D_00474040[];
+extern void *D_00474060[];
+
+void func_00393BD0(void *s);
+void func_003912E0(void *s);
+void func_003908B0(void *s);
+void func_00390790(void *s);
+void func_00391250(void *s);
+void func_0038FBE0(void *s);
+void func_0038E0C0(void *s);
+void func_003894F0(void *s);
+void func_0038D7E0(void *s);
+void func_00388FF0(void *s);
+void func_003888A0(void *s);
+void func_00387F00(void *s);
+void func_00386150(void *s);
+void func_003984D0(void *s);
+void func_00398100(void *s);
+
+static const char sSubSave[] = "SUBSCR\\SUBSAVE.TEX";
+static const char sPlate[] = "SUBSCR\\PLATE.TEX";
+static const char sSynSlot[] = "SUBSCR\\SYN_SLOT.TEX";
+static const char sSubMg[] = "SUBSCR\\SUBMG.TEX";
+static const char sGalMovie[] = "SUBSCR\\GAL_MOVIE.TEX";
+static const char sThumbnail[] = "SUBSCR\\THUMBNAIL.TXS";
+static const char sGalModel[] = "SUBSCR\\GAL_MODEL.TEX";
+static const char sGalMusic[] = "SUBSCR\\GAL_MUSIC.TEX";
+static const char sGalArt[] = "SUBSCR\\GAL_ART.TEX";
+static const char sArtLen[] = "SUBSCR\\ART00.LEN";
+static const char sGalType[] = "SUBSCR\\GAL_TYPE.TEX";
+
+#define SUB_KIND(s)     AT(s, 0xA8C66, u8)   /* what the screen shows (0x80..0x8F) */
+#define SUB_STATE(s)    AT(s, 0x1708, PTMF)
+#define SUB_DRAW(s)     AT(s, 0x16FC, PTMF)
+
+static void sub_load(u8 *s, const char *name, void *dst) {
+    VObject *ld = gFileLoader;
+
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, dst, 0x6000000, 0);
+}
+
+static void sub_free_vram(void) {
+    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+}
+
+static void sub_se(void) {
+    VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0x94, 5);
+}
+
+/* the options being edited: a copy of the system data's */
+static void sub_copy_options(u8 *s) {
+    u8 *sys = D_0044E978;
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        AT(s, 0xA8C44 + i, u8) = sys[0x30 + i];
+    }
+    AT(s, 0xA8C4C, f32) = AT(sys, 0x38, f32);
+}
+
+/* the save slot screen's helper object (0x15C bytes at +0xA8C80) */
+static void sub_new_slots(u8 *s, void **vtbl) {
+    u8 *p = func_00322570(0x15C, s + 0xA8C80);
+
+    if (p != NULL) {
+        AT(p, 0, void **) = D_00474020;
+        Task_Construct((Task *)(p + 0x14));
+        VCALL((VObject *)p, 0xC, void (*)(VObject *))((VObject *)p);
+        AT(p, 0, void **) = vtbl;
+        VCALL((VObject *)p, 0xC, void (*)(VObject *))((VObject *)p);
+    }
+}
+
+/* open the sub screen in mode +4: 0 the in-game menu, 5 options, 6 load (title), the rest
+ * save screens and the galleries */
+void func_00398850(u8 *s) {
+    u8 *sys;
+    u8 n;
+
+    AT(s, 0xA8DE5, u8) = 1;
+    switch (AT(s, 0x4, u8)) {
+    case 0:
+        sub_copy_options(s);
+        if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
+            SUB_KIND(s) = 0xA;
+            set_state(&SUB_STATE(s), func_00393BD0);
+        } else {
+            func_00305380(s + 0x97980);
+            SUB_KIND(s) = AT(s, 0xA8C67, u8);
+            SUB_STATE(s) = AT(s, 0x1714, PTMF);
+        }
+        sub_se();
+        break;
+    case 1:
+        sub_free_vram();
+        sub_load(s, sSubSave, s + 0x11F40);
+        func_002BFB00(s + 0xA8AC0, s + 0x42F40, s + 0x43740);
+        AT(s, 0xA8AC4, s32) = 0;
+        AT(s, 0xA8AC8, s32) = 0;
+        SUB_KIND(s) = 0x85;
+        set_state(&SUB_STATE(s), func_003912E0);
+        break;
+    case 2:
+        sub_free_vram();
+        sub_load(s, sPlate, s + 0x11F40);
+        AT(s, 0xA8C57, u8) = 0;
+        for (n = 0; n < 8; n++) {
+            AT(s, 0xA8C58 + n, u8) = 0;
+        }
+        AT(s, 0xA8C60, u8) = 0;
+        SUB_KIND(s) = 0x84;
+        set_state(&SUB_STATE(s), func_003908B0);
+        sub_se();
+        break;
+    case 3:
+        sub_free_vram();
+        sub_load(s, sSynSlot, s + 0x11F40);
+        sub_new_slots(s, D_00474060);
+        SUB_KIND(s) = 0x86;
+        set_state(&SUB_STATE(s), func_00390790);
+        sub_se();
+        break;
+    case 4:
+        sub_free_vram();
+        sub_load(s, sSynSlot, s + 0x11F40);
+        sub_new_slots(s, D_00474040);
+        SUB_KIND(s) = 0x87;
+        set_state(&SUB_STATE(s), func_00390790);
+        sub_se();
+        break;
+    case 5:
+        sub_copy_options(s);
+        sub_se();
+        SUB_KIND(s) = 0x8A;
+        set_state(&SUB_STATE(s), func_00393BD0);
+        break;
+    case 6:
+        sub_free_vram();
+        sub_load(s, sSubSave, s + 0x11F40);
+        func_002BFB00(s + 0xA8AC0, NULL, NULL);
+        AT(s, 0xA8AC4, s32) = 0;
+        AT(s, 0xA8AC8, s32) = 0;
+        SUB_KIND(s) = 0x85;
+        set_state(&SUB_STATE(s), func_00391250);
+        break;
+    case 7:
+        sub_free_vram();
+        sub_load(s, sSubMg, s + 0x11F40);
+        SUB_KIND(s) = 0x80;
+        func_0038F7D0(s);
+        set_state(&SUB_STATE(s), func_0038FBE0);
+        break;
+    case 8: {
+        VObject *ld;
+        Progress *p;
+
+        sub_free_vram();
+        ld = gFileLoader;
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalMovie, s + 0x11F40, 0x6000000, 0);
+        p = gProgress;
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sThumbnail, (u8 *)p + 0x16C0, 0x6000000, 0);
+        SUB_KIND(s) = 0x8B;
+        AT(s, 0xA8C80, u8) = Progress_GetVar(p, 0x2B);
+        set_state(&SUB_STATE(s), func_0038E0C0);
+        break;
+    }
+    case 9:
+        func_002BFB00(s + 0xA8AC0, s + 0x42F40, s + 0x43740);
+        AT(s, 0xA8AC4, s32) = 0;
+        AT(s, 0xA8AC8, s32) = 1;
+        SUB_KIND(s) = 0x85;
+        set_state(&SUB_STATE(s), func_003912E0);
+        break;
+    case 10:
+        /* the extras menu: entries 0..2, then 3 and 4 when unlocked, then 5 */
+        sub_free_vram();
+        sub_load(s, sSubMg, s + 0x11F40);
+        SUB_KIND(s) = 0x80;
+        AT(s, 0xA8C80, u8) = 0;
+        AT(s, 0xA8C81, u8) = 1;
+        AT(s, 0xA8C82, u8) = 2;
+        n = 3;
+        sys = D_0044E978;
+        if ((AT(sys, 0x2C, u32) & 0x40000) != 0) {
+            AT(s, 0xA8C83, u8) = 3;
+            n++;
+        }
+        if ((AT(sys, 0x2C, u32) & 0x80000) != 0) {
+            AT(s, 0xA8C80 + n, u8) = 4;
+            n++;
+        }
+        AT(s, 0xA8C80 + n, u8) = 5;
+        AT(s, 0xA8C86, u8) = n + 1;
+        AT(s, 0xA8C87, u8) = 0;
+        set_state(&SUB_STATE(s), func_003894F0);
+        break;
+    case 11:
+        sub_free_vram();
+        sub_load(s, sGalModel, s + 0x11F40);
+        SUB_KIND(s) = 0x8C;
+        AT(s, 0xA8C80, u8) = 0;
+        set_state(&SUB_STATE(s), func_0038D7E0);
+        break;
+    case 12:
+        SUB_KIND(s) = 0x80;
+        func_00388D30(s);
+        set_state(&SUB_STATE(s), func_00388FF0);
+        break;
+    case 13:
+        sub_free_vram();
+        sub_load(s, sGalMusic, s + 0x11F40);
+        SUB_KIND(s) = 0x8D;
+        AT(s, 0xA8C80, u8) = 0;
+        AT(s, 0xA8C82, u8) = 0xFF;
+        AT(s, 0xA8C81, u8) = 0xFF;
+        set_state(&SUB_STATE(s), func_003888A0);
+        break;
+    case 14: {
+        VObject *ld;
+        void *buf;
+
+        sub_free_vram();
+        ld = gFileLoader;
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalArt, s + 0x11F40, 0x6000000, 0);
+        SUB_KIND(s) = 0x8E;
+        AT(s, 0xA8C80, u8) = 0;
+        AT(s, 0xA8C81, u8) = 0;
+        AT(s, 0xA8C82, u8) = 0;
+        AT(s, 0xA8C83, u8) = 1;
+        buf = VCALL((VObject *)gProgress, 0x88, void *(*)(VObject *))((VObject *)gProgress);
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sArtLen, buf, 0x6000000, 0);
+        AT(s, 0xA8C84, s16) = 0;
+        AT(s, 0xA8C86, s16) = 0;
+        AT(s, 0xA8C88, u8) = 0;
+        AT(s, 0xA8C89, u8) = 1;
+        AT(s, 0xA8C8A, u8) = 0;
+        AT(s, 0xA8C8B, u8) = 0;
+        AT(s, 0xA8C8C, u8) = 0;
+        set_state(&SUB_STATE(s), func_00387F00);
+        break;
+    }
+    case 15:
+        sub_free_vram();
+        sub_load(s, sGalType, s + 0x11F40);
+        SUB_KIND(s) = 0x8F;
+        AT(s, 0xA8C80, u8) = 0;
+        set_state(&SUB_STATE(s), func_00386150);
+        break;
+    }
+    AT(s, 0x16F8, u8) = 1;
+    AT(s, 0xA8C61, u8) = 1;
+    AT(s, 0xA8C62, s16) = 0;
+    AT(s, 0xA8C64, s16) = 0x10;
+    set_state(&SUB_DRAW(s), func_003984D0);
+    if (AT(s, 0x4, u8) == 7 || AT(s, 0x4, u8) == 0xC || AT(s, 0x4, u8) == 0xA) {
+        AT(s, 0xA8C64, s16) = 8;
+        set_state(&SUB_DRAW(s), func_00398100);
+    }
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+}
+
+/* per frame: run the draw/step state (+0x16FC); true while the menu behind should be drawn */
+s32 func_003999C0(u8 *s) {
+    ptmf_scall(s, &AT(s, 0x16FC, PTMF));
+    AT(s, 0xA8DE0, s32)++;
+    return AT(s, 0x16F8, u8);
+}
+
+/* state: wait for the textures, upload them (VRAM slots 0x18, 0x19), set the screen up */
+void func_00399920(void *self) {
+    u8 *s = self;
+    VObject *tc;
+
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) == 2) {
+        return;
+    }
+    tc = D_0044E4E8;
+    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x1740, 0x18);
+    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x11F40, 0x19);
+    func_00398850(s);
 }

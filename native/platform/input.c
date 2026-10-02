@@ -4,7 +4,9 @@
  *
  * Keyboard: arrows d-pad, X / Space cross, C / Backspace circle, Z square, V triangle, Q / E L1 / R1,
  * 1 / 3 L2 / R2, Enter start, Tab select, WASD left stick.
- * HG_AUTOCROSS=1 (tests without a window): tap cross every 2 seconds. */
+ * HG_AUTOCROSS=1 (tests without a window): tap cross every 2 seconds.
+ * HG_INPUT="frame:button,..." (tests): press button (up down left right cross circle square
+ * triangle start select l1 r1 l2 r2) for 6 video frames from frame `frame`. */
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,6 +17,39 @@ enum {
     B_L2, B_R2, B_L1, B_R1, B_TRIANGLE, B_CIRCLE, B_CROSS, B_SQUARE
 };
 
+/* HG_INPUT: the buttons the script holds at input frame `f` */
+static unsigned scripted(unsigned f) {
+    static const char *const names[16] = {
+        "select", "l3", "r3", "start", "up", "right", "down", "left",
+        "l2", "r2", "l1", "r1", "triangle", "circle", "cross", "square"};
+    const char *s = getenv("HG_INPUT");
+    unsigned held = 0;
+
+    while (s != NULL && *s) {
+        char *end;
+        unsigned at = (unsigned)strtoul(s, &end, 10);
+        int i;
+
+        if (*end != ':') {
+            break;
+        }
+        s = end + 1;
+        for (i = 0; i < 16; i++) {
+            size_t n = strlen(names[i]);
+
+            if (strncmp(s, names[i], n) == 0 && (s[n] == ',' || s[n] == 0)) {
+                if (f >= at && f < at + 6) {
+                    held |= 1u << i;
+                }
+                break;
+            }
+        }
+        s = strchr(s, ',');
+        s = s ? s + 1 : NULL;
+    }
+    return held;
+}
+
 /* analog byte (from 4) of each button's pressure, -1 none */
 static const signed char sPressure[16] = {
     -1, -1, -1, -1, 6, 4, 7, 5, 14, 15, 12, 13, 8, 9, 10, 11
@@ -22,6 +57,7 @@ static const signed char sPressure[16] = {
 
 static SDL_Gamepad *sPad;
 static unsigned sFrames;
+extern unsigned hg_video_frame;   /* video.c */
 
 static void add_key(unsigned *b, const bool *k, SDL_Scancode sc, int button) {
     if (k[sc]) {
@@ -37,6 +73,7 @@ void hg_input_read(unsigned char *data) {
     if (getenv("HG_AUTOCROSS") && sFrames % 120 < 4) {
         b |= 1u << B_CROSS;
     }
+    b |= scripted(hg_video_frame);
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         const bool *k = SDL_GetKeyboardState(NULL);
 

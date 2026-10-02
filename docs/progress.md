@@ -15,6 +15,7 @@ Screenshots: `docs/img/native_*.png`.
   Q / E = L1 / R1, 1 / 3 = L2 / R2, Return = Start, Tab = Select, WASD = left stick; SDL gamepads.
 - Environment: `HG_HEADLESS=1` (no window), `HG_DUMP=dir` (every 30th frame as PPM),
   `HG_MAXFRAMES=n` (exit after n frames), `HG_AUTOCROSS=1` (press cross every 2 s),
+  `HG_INPUT="frame:button,..."` (scripted presses, e.g. `1250:start,1440:down,1520:cross`),
   `HG_SAVE=dir` (the memory card in slot 1, default `./save`), `HG_GSDEBUG=1`.
 - Silent: ADX / SPU sound and music are shims (the game-side music logic runs). Movies: Sofdec is
   a shim whose player creation fails, which the game treats as "no movie".

@@ -492,9 +492,8 @@ src/leaf/b4_002CF0C0.c func_002CF0E0
 src/leaf/b4_002CF0C0.c func_002CF140
 src/leaf/b4_002CF0C0.c func_002CF180
 src/leaf/b4_002CF0C0.c func_002CF6F0
-src/leaf/b4_002CF0C0.c func_002CF9F0
-src/leaf/b4_002CF0C0.c func_002CFA00
-src/leaf/b4_002CF0C0.c func_002D0570
+src/game/game.c func_002CF9F0
+src/game/game.c func_002CFA00
 src/leaf/b4_002CF0C0.c func_002D0FE0
 src/leaf/b4_002CF0C0.c func_002D1000
 src/leaf/b4_002CF0C0.c func_002D1020
@@ -2029,7 +2028,6 @@ src/game/movie.c func_00226640 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_00226620 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_002265D0 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_002B6E50 --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B69B0 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_002B6310 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_002B6330 --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c func_002B6340 --pre=a0=0x0B000000..0x0B000000
@@ -2121,3 +2119,32 @@ src/game/bgm.c func_00130A40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xFE..0xFF
 src/game/bgm.c func_00130A40 --pre=a0=0x0B000000..0x0B000000
 src/game/bgm.c func_001309D0 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c func_0012DDB0 --pre=a0=0x0B000000..0x0B000000 --runs=100 --pre=a0+0x20=0x0000..0x0500 --pre=a0+0x11DA94=0..1 --pre=a0+0x74940=0..1 --pre=a0+0x1C=0..360000
+src/game/subscreen.c func_00398850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E978=0x0B200000..0x0B200000 --pre=a0+4=0..16 --pre=@0x0044E4D8=0..0 --runs=100
+src/game/subscreen.c func_00398850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E978=0x0B200000..0x0B200000 --pre=a0+4=0..16 --pre=@0x0044E4D8=0x0B400000..0x0B400000 --runs=100
+src/game/subscreen.c func_00398850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E978=0x0B200000..0x0B200000 --pre=a0+4=10..10 --pre=@0x0044E4D8=0..0 --runs=40
+src/game/subscreen.c func_00398850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E978=0x0B200000..0x0B200000 --pre=a0+4=0..0 --pre=@0x0044E4D8=0x0B400000..0x0B400000 --pre=@0x0B5FBEC1=bytes:01 --runs=40
+src/game/subscreen.c func_003999C0 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_00399920 --pre=a0=0x0B000000..0x0B000000 --stub-ret=2 --stub-ret=0
+src/game/scene_title.c func_0012E6C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11D865=0..1
+src/game/scene_title.c func_0012E780 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11D865=0..1 --pre=a0+0x11D544=-2..-1 --runs=60
+src/game/scene_title.c func_0012E450 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E560=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --runs=60 --pre=a0+0x20=0..7 --pre=a0+0x74940=0..1 --stub-ret=0 --stub-ret=1
+src/game/scene_title.c func_00130520 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --stub-ret=0 --stub-ret=0x0B300000
+src/game/scene_title.c func_0012CB30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --stub-ret=0 --stub-ret=0x0B300000
+src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0..1 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_0012CA70 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_0012FEA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=a0+0x140CCC=0x3C000000..0x3F800000
+src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0..0
+src/game/scene_title.c func_0012C7B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=a0+0x140CCC=0x3C000000..0x3F800000
+src/game/scene_title.c func_0012C7B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0..0 --pre=a0+0x20=4..6
+src/game/scene_title.c func_0012FBB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=a0+0x140CCC=0x3C000000..0x3F800000
+src/game/scene_title.c func_0012FBB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0..0
+src/game/scene_title.c func_0012FF60 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=a0+0x140CD0=0..6 --stub-ret=0 --stub-ret=0x0B300000
+src/game/scene_title.c func_0012E1B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000
+src/game/scene_title.c func_0012C220 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0012C420 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0012C6B0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_00304EF0 --pre=a0=0x0B000000..0x0B000000
+src/game/bootcard.c func_0012C730 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002E31D0 --pre=@0x0044E980=0..1

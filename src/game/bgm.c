@@ -307,7 +307,7 @@ void func_002E3200(BgmCtl *c) {
 }
 
 /* stop the music at once */
-void func_002E31D0(void) {
+void func_002E31D0(BgmCtl *c) {
     if (D_0044E980 != NULL) {
         func_002D1F90(D_0044E980);
     }

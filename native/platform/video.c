@@ -18,7 +18,7 @@ static SDL_Renderer *sRenderer;
 static SDL_Texture *sTexture;
 static int sHeadless = -1;
 static uint32_t sPixels[MAXW * MAXH];
-static unsigned sFrame;
+unsigned hg_video_frame;
 
 static void video_init(void) {
     sHeadless = getenv("HG_HEADLESS") != NULL;
@@ -48,10 +48,10 @@ static void dump(int w, int h) {
     FILE *f;
     int x, y;
 
-    if (dir == NULL || sFrame % 30 != 0) {
+    if (dir == NULL || hg_video_frame % 30 != 0) {
         return;
     }
-    snprintf(path, sizeof(path), "%s/frame_%05u.ppm", dir, sFrame);
+    snprintf(path, sizeof(path), "%s/frame_%05u.ppm", dir, hg_video_frame);
     if ((f = fopen(path, "wb")) == NULL) {
         return;
     }
@@ -76,13 +76,13 @@ void hg_frame(void) {
         video_init();
     }
     gs_display(sPixels, MAXW, MAXH, &w, &h);
-    if (getenv("HG_GSDEBUG") && sFrame % 60 == 0) {
+    if (getenv("HG_GSDEBUG") && hg_video_frame % 60 == 0) {
         extern unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
 
-        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written\n", sFrame, gs_stat_prims, gs_stat_pixels, gs_stat_written);
+        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written\n", hg_video_frame, gs_stat_prims, gs_stat_pixels, gs_stat_written);
     }
     dump(w, h);
-    sFrame++;
+    hg_video_frame++;
     {
         static long maxFrames = -1;
 
@@ -91,7 +91,7 @@ void hg_frame(void) {
 
             maxFrames = m ? atol(m) : 0;
         }
-        if (maxFrames > 0 && sFrame >= (unsigned)maxFrames) {
+        if (maxFrames > 0 && hg_video_frame >= (unsigned)maxFrames) {
             exit(0);
         }
     }

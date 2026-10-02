@@ -25,6 +25,8 @@
 #define TITLE_WORK 0x74A80
 #define TITLE_BGM_WORK 0x11DAC0
 #define TITLE_UNK140CA4 0x140CA4
+#define MENU_CURSOR AT(t, 0x21, s8)  /* the main menu's entry */
+#define TITLE_NEXT AT(t, 0x20, u8)   /* what the title leads to (2 new game, 5 / 6 extras) */
 
 extern void *Scene_vtable[];
 extern void *D_0046A040[];          /* SceneTitle */
@@ -221,8 +223,8 @@ void func_00130460(Scene *t);
 
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
 
-/* state: start the attract movie (as scene 1) at the title's movie volume */
-void func_00130520(Scene *t) {
+/* start movie `name` as scene 1 at the title's movie volume (+0x140CCC, reset to 1) */
+static inline void title_movie_start(Scene *t, const char *name) {
     void *table = D_0044E960;
     VObject *heap = (VObject *)((u8 *)table + 0x10D9040);
     Scene *movie;
@@ -257,7 +259,7 @@ void func_00130520(Scene *t) {
         u8 *m = D_0044E958;
         f32 *v = &AT(m, 0x1D4, f32);
 
-        func_002B6D10(m, D_0044E940, 1, 0);
+        func_002B6D10(m, name, 1, 0);
         *v = AT(t, 0x140CCC, f32);
         if (*v < 0.0f) {
             *v = 0.0f;
@@ -267,21 +269,51 @@ void func_00130520(Scene *t) {
         }
         func_002B6340(m);
     }
-    set_state_fn(&t->state, func_00130460);
+}
+
+/* ... then state `next` */
+static inline void title_movie(Scene *t, const char *name, void (*next)(Scene *)) {
+    title_movie_start(t, name);
+    set_state_fn(&t->state, next);
+}
+
+/* state: start the attract movie */
+void func_00130520(Scene *t) {
+    title_movie(t, D_0044E940, func_00130460);
+}
+
+extern const char D_0044E888[];   /* "OPENING.SFD" */
+void func_0012CA70(Scene *t);
+
+/* state: a new game: the opening movie first */
+void func_0012CB30(Scene *t) {
+    title_movie(t, D_0044E888, func_0012CA70);
 }
 
 extern u32 D_0047E37C;      /* pad buttons pressed */
 void func_00130170(Scene *t);
 
-/* state: the attract movie; Start (once it shows) skips it */
-void func_00130460(Scene *t) {
+/* wait for the movie (Start, once it shows, skips it), then state `next` */
+static inline void title_movie_wait(Scene *t, void (*next)(Scene *)) {
     if ((D_0047E37C & 8) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
         AT(t, 0x22, u8) = 1;
     }
     if (D_0044E958 != NULL && !AT(t, 0x22, u8)) {
         return;
     }
-    set_state_fn(&t->state, func_00130170);
+    set_state_fn(&t->state, next);
+}
+
+/* state: the attract movie */
+void func_00130460(Scene *t) {
+    title_movie_wait(t, func_00130170);
+}
+
+void func_0012C7B0(Scene *t);
+
+/* state: the opening movie */
+void func_0012CA70(Scene *t) {
+    title_movie_wait(t, func_0012C7B0);
 }
 
 extern VObject *D_0044E4F0;      /* the renderer */
@@ -290,16 +322,15 @@ static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 /* the renderer's +0x7C: a rectangle (x, y, w, h; colour; layer ...) */
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
 
-/* state: fade the attract movie out (sound and picture, 1/30 a frame), then the title */
-void func_00130170(Scene *t) {
+/* fade the movie out (sound and picture, 1/30 a frame; at 0 its scene is finished); 0 once
+ * it's gone */
+static inline s32 title_movie_fade(Scene *t) {
     u8 *m = D_0044E958;
     f32 *level = &AT(t, 0x140CCC, f32);
     f32 l;
 
     if (m == NULL) {
-        set_state_fn(&t->state, func_0012FB50);
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
-        return;
+        return 0;
     }
     l = *level - 0x1.111112p-5f;
     *level = l;
@@ -335,6 +366,25 @@ void func_00130170(Scene *t) {
             a = 0x7F;
         }
         VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
+    }
+    return 1;
+}
+
+/* state: fade the attract movie out, then the title */
+void func_00130170(Scene *t) {
+    if (!title_movie_fade(t)) {
+        set_state_fn(&t->state, func_0012FB50);
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+    }
+}
+
+/* state: fade the opening out, then start the game (mode 3, stage 0x2A; flagged for the extra
+ * mode) */
+void func_0012C7B0(Scene *t) {
+    if (!title_movie_fade(t)) {
+        AT(D_0044E978, 0x4, s32) = 3;
+        AT(D_0044E978, 0x10, s32) = TITLE_NEXT == 5 ? 0x4000002A : 0x2A;
+        VCALL(t, 0x14, void (*)(Scene *))(t);
     }
 }
 
@@ -886,8 +936,6 @@ void func_0012E6C0(Scene *t);
     VCALL(D_0044E970, 0x8, void (*)(void *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, level)
 #define SE(id, bank) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, bank)
 
-#define MENU_CURSOR AT(t, 0x21, s8)
-#define TITLE_NEXT AT(t, 0x20, u8)   /* what the title leads to (2 new game, 5 / 6 extras) */
 
 /* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
  * takes the entry; 900 idle frames: the attract movie */
@@ -1015,4 +1063,250 @@ void func_0012DDB0(Scene *t, f32 alpha) {
         }
     }
     func_00384BC0((Task *)((u8 *)t + TITLE_TASK));
+}
+
+extern s32 func_002D20D0(void *bgm);
+void func_0012FF60(Scene *t);
+void func_0012CB30(Scene *t);
+
+/* leave the title once the music has stopped: release the title textures and sound bank, then
+ * what the title leads to (TITLE_NEXT): 0 the attract movie, 1 the opening, 2 / 5 a new game,
+ * 3 / 6 straight into game mode 3 (stage -1 / 0x37), 4 nothing */
+void func_0012E450(Scene *t) {
+    VObject *snd;
+
+    if (!(u8)func_002D20D0(D_0044E980)) {
+        return;
+    }
+    if (AT(t, 0x74940, u8)) {
+        VObject *msg = gBootMessage;
+
+        VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
+        VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
+        AT(t, 0x74940, u8) = 0;
+    }
+    snd = D_0044E560;
+    VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0xF000);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
+    switch (TITLE_NEXT) {
+    case 0:
+        set_state_fn(&t->state, func_00130520);
+        break;
+    case 1:
+        set_state_fn(&t->state, func_0012FF60);
+        break;
+    case 2:
+        set_state_fn(&t->state, func_0012CB30);
+        break;
+    case 3:
+        AT(D_0044E978, 0x4, s32) = 3;
+        AT(D_0044E978, 0x10, s32) = -1;
+        VCALL(t, 0x14, void (*)(Scene *))(t);
+        break;
+    case 4:
+        break;
+    case 5:
+        set_state_fn(&t->state, func_0012CB30);
+        break;
+    case 6:
+        AT(D_0044E978, 0x4, s32) = 3;
+        AT(D_0044E978, 0x10, s32) = 0x37;
+        VCALL(t, 0x14, void (*)(Scene *))(t);
+        break;
+    }
+}
+
+extern void func_0026BC00(void *msg);
+
+/* +0x14 finish: end the movie scene, drop the sub screen's textures (group 0x19), reset the
+ * message object, ask to be finished */
+void func_0012E1B0(Scene *t) {
+    Scene *s = SCENE_TABLE_SCENE(1);
+
+    if (s != NULL) {
+        set_state(&s->state, &sSceneFinish);
+        VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
+    }
+    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+    func_0026BC00((u8 *)t + 0x24);
+    t->request = SCENE_REQ_FINISH;
+}
+
+extern void func_00100490(void *p);   /* operator delete */
+extern void func_0011F9A0(void *p);   /* operator delete (scene heap) */
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+extern void func_002E31D0(void *bgmctl);
+extern void func_002D2330(void *bgm);
+extern void *func_0012C730(void *card, s32 flags);   /* BootCard destructor */
+extern void *D_0046A100[], *D_0046A0D0[];
+
+/* the text object: release (its loads, its textures: group 0x28) */
+void func_00304EF0(u8 *o) {
+    VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, 0x6000000);
+    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x28);
+    AT(o, 0x108, s32) = -1;
+    AT(o, 0x10C, u8) = 0xFF;
+    AT(o, 0x10E, u8) = 0xFF;
+}
+
+/* the text object: destructor */
+void *func_0012C6B0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        Task *t;
+
+        AT(o, 0x0, void **) = D_0046A068;
+        func_00304EF0(o);
+        t = (Task *)(o + 4);
+        if (t != NULL && t->child != NULL) {
+            Task_dtor(t->child, 1);
+            t->child = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the title work's base: destructor (the pool and its entries) */
+void *func_0012C420(u8 *w, s32 flags) {
+    if (w != NULL) {
+        u8 *pool = w + 8;
+
+        AT(w, 0x0, void **) = D_0046A090;
+        if (pool != NULL) {
+            AT(pool, 0x0, void **) = D_0046A078;
+            if (pool + 0x1208 != NULL) {
+                AT(pool, 0x1208, void **) = D_004699C0;
+                if (pool + 0x1208 != NULL) {
+                    AT(pool, 0x1208, void **) = D_004699E0;
+                }
+            }
+            func_001002C0(pool + 8, func_0012C500, 0x18, 0xC0);
+            if (pool != NULL) {
+                D_0044E990 = NULL;
+            }
+        }
+        if (w != NULL) {
+            D_0044E988 = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(w);
+        }
+    }
+    return w;
+}
+
+/* destructor */
+Scene *func_0012C220(Scene *t, s32 flags) {
+    if (t != NULL) {
+        u8 *w;
+        Task *task;
+
+        t->vtbl = D_0046A040;
+        func_002E31D0((u8 *)t + TITLE_UNK140CA4);
+        func_002D2330(D_0044E980);
+        if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
+            AT(t, TITLE_UNK140CA4, void **) = D_0046A110;
+            if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
+                AT(t, TITLE_UNK140CA4, void **) = D_0046A100;
+                if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
+                    D_0044E970 = NULL;
+                }
+            }
+        }
+        w = (u8 *)t + TITLE_WORK;
+        if (w != NULL) {
+            AT(w, 0x0, void **) = D_0047A790;
+            func_0012C730(w + 0xA8AC0, -1);
+            func_0012C6B0(w + 0x97980, -1);
+            Task_dtor((Task *)(w + 0x97868), -1);
+            Task_dtor((Task *)(w + 0x97764), -1);
+            func_0012C420(w, 0);
+        }
+        task = (Task *)((u8 *)t + TITLE_TASK);
+        if (task != NULL && task->child != NULL) {
+            Task_dtor(task->child, 1);
+            task->child = NULL;
+        }
+        if ((u8 *)t + 0x24 != NULL) {
+            AT(t, 0x24, void **) = D_0046D7D0;
+            if ((u8 *)t + 0x24 != NULL) {
+                AT(t, 0x24, void **) = D_0046A0D0;
+                if ((u8 *)t + 0x24 != NULL) {
+                    gBootMessage = NULL;
+                }
+            }
+        }
+        if ((u8 *)t + 0x14 != NULL) {
+            D_0044E968 = NULL;
+        }
+        if (t != NULL) {
+            t->vtbl = Scene_vtable;
+        }
+        if ((s16)flags > 0) {
+            func_0011F9A0(t);
+        }
+    }
+    return t;
+}
+
+extern const char *D_003B0050[7];   /* "SYSTEM\\PLAY_DEMO_1.SFD" .. _7 */
+void func_0012FEA0(Scene *t);
+void func_0012FBB0(Scene *t);
+
+/* state: the next of the seven gameplay demos */
+void func_0012FF60(Scene *t) {
+    title_movie_start(t, D_003B0050[AT(t, 0x140CD0, u8)]);
+    AT(t, 0x140CD0, u8) = (u8)(AT(t, 0x140CD0, u8) + 1) % 7;
+    set_state_fn(&t->state, func_0012FEA0);
+}
+
+/* state: the demo */
+void func_0012FEA0(Scene *t) {
+    title_movie_wait(t, func_0012FBB0);
+}
+
+/* state: fade the demo out, then the title (as after the attract movie) */
+void func_0012FBB0(Scene *t) {
+    if (!title_movie_fade(t)) {
+        set_state_fn(&t->state, func_0012FB50);
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+    }
+}
+
+extern s32 func_003999C0(void *sub);
+
+#define SUB_OPEN    AT(t, TITLE_WORK + 0xA8DE5, u8)   /* the sub screen is open */
+#define SUB_LOADED  AT(t, TITLE_WORK + 0xA8AC4, s32)  /* the load screen's result, -2 a game loaded */
+
+/* state: the options screen (over the menu); back to the menu when it closes */
+void func_0012E6C0(Scene *t) {
+    if (AT(t, TITLE_WORK + 0x16F8, u8)) {
+        func_0012DDB0(t, 1.0f);
+    }
+    func_003999C0((u8 *)t + TITLE_WORK);
+    if (!SUB_OPEN) {
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        AT(t, 0x18, s32) = 0;
+    }
+}
+
+/* state: the load screen; when it closes, leave the title with the loaded game (next 3) or go
+ * back to the menu */
+void func_0012E780(Scene *t) {
+    if (AT(t, TITLE_WORK + 0x16F8, u8) && SUB_LOADED != -2) {
+        func_0012DDB0(t, 1.0f);
+    }
+    func_003999C0((u8 *)t + TITLE_WORK);
+    if (SUB_OPEN) {
+        return;
+    }
+    if (SUB_LOADED == -2) {
+        TITLE_NEXT = 3;
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    } else {
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        AT(t, 0x18, s32) = 0;
+    }
 }
