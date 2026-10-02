@@ -712,3 +712,15 @@ s32 func_00268090(u8 *o) {
     }
     return 1;
 }
+
+
+/* reset a room mesh drawer: no matrix row (+0x90), no mesh (+0x4), parallax off (+0x60, +0x68) */
+void func_0025EEC0(u8 *o) {
+    AT(o, 0x90, s32) = 0;
+    AT(o, 0x94, s32) = 0;
+    AT(o, 0x98, s32) = 0;
+    AT(o, 0x9C, s32) = 0;
+    AT(o, 0x4, s32) = 0;
+    AT(o, 0x68, s32) = 0;
+    AT(o, 0x60, u8) = 0;
+}
