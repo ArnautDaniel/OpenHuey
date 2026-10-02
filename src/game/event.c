@@ -507,3 +507,18 @@ void func_001FB1F0(u8 *ev, u32 id) {
 void func_001FB190(u8 *ev, s32 n) {
     AT(ev, 0x890, u32) |= 1u << (n & 0xFF);
 }
+
+
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* draw the event's screen fade (+0x20) in renderer layer `layer` */
+void func_001FBA20(u8 *ev, s32 layer) {
+#ifdef HG_NATIVE
+    extern void glr_overlay(u32 rgba);
+
+    (void)layer;
+    glr_overlay(AT(ev, 0x20 + 0xF8, u32));
+#else
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, void *))(D_0044E4F0, ev + 0x20, layer, NULL);
+#endif
+}

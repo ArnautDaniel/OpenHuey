@@ -39,6 +39,7 @@
     X(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation) \
     X(PFNGLPROGRAMUNIFORMMATRIX4FVPROC, glProgramUniformMatrix4fv) \
     X(PFNGLPROGRAMUNIFORM1IPROC, glProgramUniform1i) \
+    X(PFNGLPROGRAMUNIFORM4FPROC, glProgramUniform4f) \
     X(PFNGLCREATETEXTURESPROC, glCreateTextures) \
     X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) \
@@ -82,6 +83,7 @@ typedef struct GlrDraw {
 } GlrDraw;
 
 typedef struct GlrFrame {
+    uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
     GlrVertex *v;
     int nv, capv;
     GlrDraw *d;
@@ -168,6 +170,11 @@ void glr_end_frame(void) {
     sBuilding ^= 1;
     sFrames[sBuilding].nv = 0;
     sFrames[sBuilding].nd = 0;
+    sFrames[sBuilding].overlay = 0;
+}
+
+void glr_overlay(uint32_t rgba) {
+    sFrames[sBuilding].overlay = rgba;
 }
 
 /* ---- GL objects ---- */
@@ -175,7 +182,8 @@ void glr_end_frame(void) {
 #define GLR_WIDTH 640
 #define GLR_HEIGHT 448
 
-static GLuint sMeshProg, sQuadProg, sVao, sQuadVao, sVbo;
+static GLuint sMeshProg, sQuadProg, sFillProg, sVao, sQuadVao, sVbo;
+static GLint sFillLoc;
 static GLint sMvpLoc, sTexModeLoc, sTccLoc;
 static GLuint sFbo, sColor, sDepth, sGsTex;
 static int sGsW, sGsH;
@@ -392,6 +400,16 @@ static GLuint texture_for(const TexEntry *t) {
     return e->tex;
 }
 
+/* a full-screen fill in one colour (the overlay) */
+static const char *kFillFs =
+    "#version 460 core\n"
+    "in vec2 vUv;\n"
+    "uniform vec4 uColor;\n"
+    "out vec4 oColor;\n"
+    "void main() {\n"
+    "    oColor = uColor;\n"
+    "}\n";
+
 static GLuint shader(GLenum type, const char *src) {
     GLuint s = p_glCreateShader(type);
     GLint ok;
@@ -448,6 +466,8 @@ int glr_init(void) {
     sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
     sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
     sQuadProg = program(kQuadVs, kQuadFs);
+    sFillProg = program(kQuadVs, kFillFs);
+    sFillLoc = p_glGetUniformLocation(sFillProg, "uColor");
 
     p_glCreateBuffers(1, &sVbo);
     p_glCreateVertexArrays(1, &sVao);
@@ -575,6 +595,21 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         }
         p_glDisable(GL_BLEND);
         p_glDisable(GL_DEPTH_TEST);
+    }
+
+    /* the overlay (screen fades) */
+    if (f->overlay >> 24) {
+        float a = (float)(f->overlay >> 24) / 128.0f;
+
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        p_glUseProgram(sFillProg);
+        p_glProgramUniform4f(sFillProg, sFillLoc, (float)(f->overlay & 0xFF) / 255.0f,
+                             (float)((f->overlay >> 8) & 0xFF) / 255.0f, (float)((f->overlay >> 16) & 0xFF) / 255.0f,
+                             a > 1.0f ? 1.0f : a);
+        p_glBindVertexArray(sQuadVao);
+        p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        p_glDisable(GL_BLEND);
     }
 
     /* into the window, 4:3 letterboxed (nothing when there is no window) */

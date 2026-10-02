@@ -17,6 +17,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* a draw path not ported to OpenGL yet: reported once (nothing is drawn) */
 void glr_todo(const char *what);
 
+/* a full-screen tint over this frame (RGBA, alpha 0x80 = opaque): the screen fades */
+void glr_overlay(uint32_t rgba);
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 
