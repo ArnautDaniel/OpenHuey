@@ -187,3 +187,34 @@ void Game_StartNextScene(Game *game) {
         break;
     }
 }
+
+extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
+extern VObject *D_0044E560;                 /* the sound driver */
+extern void *func_00114DA8(u32 align, u32 size);   /* memalign */
+extern void func_00114FD0(void *p);                /* free */
+
+#define LOADER_SIZE(l, name) VCALL(l, 0x30, u32 (*)(VObject *, const char *))(l, name)
+#define LOADER_LOAD(l, name, dst) VCALL(l, 0x34, void (*)(VObject *, const char *, void *))(l, name, dst)
+
+/* load file `name` into a temporary buffer and hand it to sound driver method `method` (bank 5) */
+static inline void Game_LoadSoundFile(VObject *loader, const char *name, s32 method) {
+    u32 size = LOADER_SIZE(loader, name);
+    void *buf;
+
+    if (size != 0 && (buf = func_00114DA8(0x40, size)) != NULL) {
+        LOADER_LOAD(loader, name, buf);
+        VCALL(D_0044E560, method, void (*)(VObject *, s32, void *, u32))(D_0044E560, 5, buf, size);
+        func_00114FD0(buf);
+    }
+}
+
+/* Load the common sound bank C_0000 (header, sequence data, wave data) into the sound driver. */
+void func_002CFA10(Game *game) {
+    VObject *loader = gFileLoader;
+
+    (void)game;
+    Game_LoadSoundFile(loader, D_0045D7C0, 0x4C);
+    Game_LoadSoundFile(loader, D_0045D7D0, 0x50);
+    Game_LoadSoundFile(loader, D_0045D7E0, 0x58);
+    VCALL(D_0044E560, 0x60, void (*)(VObject *, s32))(D_0044E560, 5);
+}

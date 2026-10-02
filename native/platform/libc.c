@@ -21,3 +21,17 @@ int func_0026EDD0(char *buf, int size, const char *fmt, ...) {
     va_end(ap);
     return n;
 }
+
+#include <stdlib.h>
+
+/* memalign / free (Sony libc) */
+void *func_00114DA8(unsigned align, unsigned size) {
+    void *p = NULL;
+
+    if (align < sizeof(void *)) {
+        align = sizeof(void *);
+    }
+    return posix_memalign(&p, align, size ? size : 1) == 0 ? p : NULL;
+}
+
+void func_00114FD0(void *p) { free(p); }

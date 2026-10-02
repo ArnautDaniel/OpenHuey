@@ -32,7 +32,7 @@ set(DATA_S
     ${GEN}/data/34AD80.rodata.S
     ${GEN}/data/37B280.bss.S)
 add_custom_command(
-    OUTPUT ${DATA_S} ${GEN}/stubs.c
+    OUTPUT ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S
     COMMAND ${PY} ${ROOT}/tools/native_gen.py -o ${GEN}
     DEPENDS ${ROOT}/tools/native_gen.py ${PS2_DATA} ${ROOT}/asm/game.s ${ROOT}/asm/sinit.s
     COMMENT "Generating native data and stubs"
@@ -41,7 +41,7 @@ add_custom_command(
 file(GLOB GAME_C CONFIGURE_DEPENDS ${ROOT}/src/game/*.c ${ROOT}/src/leaf/*.c ${ROOT}/src/sdk/*.c)
 file(GLOB PLATFORM_C CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/platform/*.c)
 
-add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GAME_C} ${PLATFORM_C})
+add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S ${GAME_C} ${PLATFORM_C})
 target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURRENT_SOURCE_DIR}/platform)
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O1 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)

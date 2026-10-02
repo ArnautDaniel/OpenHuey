@@ -164,3 +164,112 @@ void func_00169680(u8 *l) {
         Loader_AddDir(l, sys, sLoaderDirs[i]);
     }
 }
+
+/* a request: the folder's listing (+0xC) and the file name (+0x20) */
+#define REQ_DIR(q) AT(q, 0xC, void *)
+#define REQ_NAME(q) ((char *)(q) + 0x20)
+
+extern VObject *gFileLoader;
+extern char *func_00118978(char *dst, const char *src, u32 n);   /* strncpy */
+extern void *func_00100660(u32 size);                          /* operator new */
+extern void func_00100490(void *p);                            /* operator delete */
+extern void *func_001C9438(const char *name, void *dir);         /* ADXF open in a folder */
+extern void func_001C9800(void *f);                              /* ADXF close */
+extern s32 func_001CA0B8(void *f);                               /* ADXF file size (sectors) */
+extern void ADXF_Seek(void *f, s32 pos, s32 type);
+extern s32 ADXF_ReadNw(void *f, s32 nsct, u32 buf);
+extern s32 ADXF_GetStat(void *f);
+
+#define ADXF_STAT_READEND 3
+#define ADXF_STAT_ERROR 4
+
+/* Split "FOLDER\FILE" into the folder's listing (+0x3C lookup; none: the root) and the name. */
+void func_001694D0(u8 *q, const char *path) {
+    char dir[0x100];
+    s32 i;
+
+    REQ_DIR(q) = NULL;
+    dir[0] = 0;
+    for (i = 0; i < 0x100 && path[i] != 0; i++) {
+        if (path[i] == '\\') {
+            func_001183C0(REQ_NAME(q), path + i + 1);
+            func_00118978(dir, path, i);
+            dir[i] = 0;
+            break;
+        }
+    }
+    if (dir[0] != 0) {
+        REQ_DIR(q) = VCALL(gFileLoader, 0x3C, void *(*)(VObject *, const char *))(gFileLoader, dir);
+    } else {
+        REQ_DIR(q) = VCALL(gFileLoader, 0x3C, void *(*)(VObject *, const char *))(gFileLoader, NULL);
+        func_001183C0(REQ_NAME(q), path);
+    }
+}
+
+/* +0x2C size of file `path` in sectors (0: not found) */
+s32 func_00169450(VObject *l, const char *path) {
+    u8 *q = func_00100660(0x128);
+    void *f;
+    s32 n;
+
+    func_001694D0(q, path);
+    f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
+    func_00100490(q);
+    if (f == NULL) {
+        return 0;
+    }
+    n = func_001CA0B8(f);
+    func_001C9800(f);
+    return n;
+}
+
+/* +0x30 size of file `path` in bytes (whole sectors) */
+u32 func_00169420(VObject *l, const char *path) {
+    return VCALL(l, 0x2C, s32 (*)(VObject *, const char *))(l, path) << 11;
+}
+
+/* +0x34 load all of file `path` into `dst` (waiting; retried on read errors); returns its size */
+u32 func_001692F0(VObject *l, const char *path, u32 dst) {
+    u8 *q = func_00100660(0x128);
+    void *f;
+    s32 st;
+    u32 size;
+
+    func_001694D0(q, path);
+    do {
+        f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
+    } while (f == NULL);
+    func_00100490(q);
+    if (f == NULL) {
+        return 0;
+    }
+    size = func_001CA0B8(f);
+    ADXF_Seek(f, 0, 0);
+    dst |= 0x20000000;   /* uncached */
+    ADXF_ReadNw(f, size, dst);
+    do {
+        st = ADXF_GetStat(f);
+        if (st == ADXF_STAT_ERROR) {
+            ADXF_Seek(f, 0, 0);
+            ADXF_ReadNw(f, func_001CA0B8(f), dst);
+        }
+    } while (st != ADXF_STAT_READEND);
+    size = func_001CA0B8(f) << 11;
+    func_001C9800(f);
+    return size;
+}
+
+/* +0x3C the listing of registered folder `dir` (NULL: the root's); NULL if not registered */
+void *func_0016B1F0(u8 *l, const char *dir) {
+    s32 i;
+
+    if (dir == NULL) {
+        return l + 0x1FB80;
+    }
+    for (i = 0; i < LOADER_DIRS; i++) {
+        if (func_00118278(dir, LOADER_DIR_NAME(l, i)) == 0) {
+            return LOADER_DIR_LIST(l, i);
+        }
+    }
+    return NULL;
+}
