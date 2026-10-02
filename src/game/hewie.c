@@ -9,6 +9,7 @@ extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
+#define SLOT_U8(h) (*(u8 *)&(h)->c.a.slot)
 
 extern void *D_0046A120[];   /* Hewie vtable */
 extern void *D_00469C60[];   /* Character vtable */
@@ -587,4 +588,87 @@ s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
     func_00126270(&h->c);
     return r;
+}
+
+#define HEWIE_NAV_MASK 0x29020008
+#define HEWIE_STATE(h) ((PTMF *)((u8 *)(h) + 0xF35D0))   /* current behaviour (pointer to member) */
+
+extern f32 func_00124490(Actor *a, const f32 *p);          /* distance to a point */
+extern s32 func_001F1B90(void *input, void *pad);
+extern u8 D_0047E3B0[];                                   /* pad state */
+extern f32 func_001F6140(void *motion, f32 t);            /* animation turn this frame */
+extern void func_001F6370(void *motion, f32 *out, f32 t); /* animation root motion this frame */
+extern void func_001247E0(Actor *a, const f32 *delta);
+extern u32 func_00177870(Progress *p, u32 slot);          /* joint action pending (u8) */
+extern void func_001777D0(Progress *p, u32 slot);         /* cancelled */
+extern void func_00146130(Hewie *h);
+extern void func_0013A650(Hewie *h);
+extern void func_00145080(Hewie *h);
+
+/* vtable +0x44: per-frame update - frame counter (up to 3000), surroundings, how close Fiona
+ * is (gProgress +0x7B9: 1 within 20, 2 within 50, 3 further), requests, behaviour, turning and
+ * root motion from the animation, then his sub-systems. */
+void func_00167760(Hewie *h) {
+    Progress *p;
+    f32 yaw;
+    u8 ok;
+
+    h->c.a.navMask = h->c.a.unk2B ? 0 : HEWIE_NAV_MASK;
+    h->c.pathReq->mask = h->c.a.navMask;
+    HW(h, 0xF35A8, s16) += 1;
+    if (HW(h, 0xF35A8, s16) > 3000) {
+        HW(h, 0xF35A8, s16) = 3000;
+    }
+    func_00143840(h);
+    if (h->c.a.unkC4 != 2) {
+        ok = (gCharPlayer != NULL && gCharPlayer->a.active == 1) ? 1 : 0;
+        if (ok == 1 && gCharPlayer->a.unkC4 != 2 && h->c.a.room == gCharPlayer->a.room) {
+            s32 room = h->c.a.room;
+
+            ok = (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) || gCharPlayer->a.navTri != NAV_NONE) ? 1 : 0;
+        } else {
+            ok = 0;
+        }
+        if (ok == 1) {
+            f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+
+            if (d <= 20.0f) {
+                *((u8 *)gProgress + 0x7B9) = 1;
+            } else if (d <= 50.0f) {
+                *((u8 *)gProgress + 0x7B9) = 2;
+            } else {
+                *((u8 *)gProgress + 0x7B9) = 3;
+            }
+        }
+    }
+    VCALL(h, 0x88, void (*)(Hewie *))(h);
+    p = gProgress;
+    if (*((u8 *)p + 0x1FBEC1) == 1) {
+        HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, D_0047E3B0);
+    }
+    HW(h, 0xF3558, u8) = 0;
+    HW(h, 0xF3582, u8) = 1;
+    ptmf_scall(h, HEWIE_STATE(h));
+    yaw = func_002E2D00(h->c.a.angle[1] + func_001F6140(h->c.motion, 0.0f));
+    h->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix(h->c.a.rot);
+    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
+    if (!h->c.a.disabled && !HW(h, 0xF3558, u8)) {
+        sceVu0FVECTOR root;
+        f32 k;
+
+        func_001F6370(h->c.motion, root, 0.0f);
+        k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+        *(s32 *)&root[1] = 0;
+        root[2] = root[2] * k;
+        sceVu0ApplyMatrix(root, h->c.a.rot, root);
+        func_001247E0(&h->c.a, root);
+    }
+    if ((func_00177870(p, SLOT_U8(h)) & 0xFF) == 1) {
+        func_001777D0(p, SLOT_U8(h));
+    }
+    func_00146130(h);
+    func_0013A650(h);
+    VCALL(h, 0x40, void (*)(Hewie *))(h);
+    func_00145080(h);
 }
