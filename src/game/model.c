@@ -2356,3 +2356,23 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
     sceVu0AddVector(a + 12, a + 12, dl);
     sceVu0AddVector(b + 12, b + 12, dl);
 }
+
+
+/* set up a two-bone IK solver { +0x0 root position, +0x10 middle, +0x20 end (the target), +0x40
+ * lengths and bend, +0x4C / +0x50 / +0x54 the chain's nodes }: from the bones root / mid / end
+ * of `skel` */
+void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend) {
+    f32 *r = func_0017CE80(skel, root);
+    f32 *mi = func_0017CE80(skel, mid);
+    f32 *e = func_0017CE80(skel, end);
+
+    AT(ik, 0x4C, f32 *) = r;
+    AT(ik, 0x50, f32 *) = mi;
+    AT(ik, 0x54, f32 *) = e;
+    sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x20), AT(ik, 0x54, f32 *) + 12);
+    AT(ik, 0x40, f32) = len1;
+    AT(ik, 0x44, f32) = len2;
+    AT(ik, 0x48, f32) = bend;
+}
