@@ -1170,3 +1170,134 @@ s32 func_0039A7C0(Scene *g) {
     }
     return (u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev) == 0;
 }
+
+
+extern s32 func_00177620(Progress *p);   /* who is controlled (u8): 2 = Hewie */
+
+/* show (event +0x3C) or hide (+0x40) the action markers 0x800A..0x800D */
+static void prompt_show(s32 id) {
+    VCALL(D_0044E4D0, 0x3C, void (*)(VObject *, s32))(D_0044E4D0, id);
+}
+
+static void prompt_hide_all(void) {
+    VObject *ev = D_0044E4D0;
+
+    VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800A);
+    VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800B);
+    VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800C);
+    VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800D);
+}
+
+/* the action prompt, each frame: for the action Fiona could take now (+0x16B4; last shown
+ * +0x16D4) the marker of its kind (+0x16D1: 1..3 0x800B, 4 0x800C, 5 / 6 0x800A or, with Hewie
+ * controlled, 0x800D, others 0x800A; 7 / 0xFF none) is shown when the action changed (5 / 6
+ * also while the chase music state +0x50 / +0x52 changes to or from 2); no action, or Fiona
+ * busy: all hidden */
+void func_0039C880(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    u8 *cur = (u8 *)g + 0x16B4;
+    u8 *last = (u8 *)g + 0x16D4;
+    s32 show = 0, changed, c1, c2;
+
+    if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0) {
+        return;
+    }
+    if (Progress_TestFlag(prog, 0x12)) {
+        func_002A8410(cur);
+        func_002A8410(last);
+    }
+    if (AT(gCharPlayer, 0xE0, u8) != 0) {
+        prompt_hide_all();
+        return;
+    }
+    if (AT(gCharPlayer, 0xF8, s32) == 0) {
+        switch (AT(cur, 0x0, s32)) {
+        case (s32)0x80000002:
+        case (s32)0x80000001:
+        case (s32)0x80000000:
+            show = 1;
+            break;
+        case (s32)0x80000003:
+        case 5:
+            if (AT(gCharPlayer, 0xE0, u8) == 0) {
+                show = 1;
+            }
+            break;
+        case 0xD:
+        case 3:
+        case 2:
+            show = 1;
+            break;
+        case 0:
+            func_002A8410(last);
+            break;
+        }
+    }
+    if (!((show & ~(Progress_TestFlag(prog, 0x12) & 0xFF)) != 0 &&
+          AT(gCharPlayer, 0x1AD580, s32) != 0xD)) {
+        prompt_hide_all();
+        return;
+    }
+    c1 = !(AT(last, 0x0, s32) == AT(cur, 0x0, s32) && AT(last, 0x8, s32) == AT(cur, 0x8, s32));
+    c2 = c1 || AT(last, 0x1D, u8) != AT(cur, 0x1D, u8);
+    changed = c2 || AT(last, 0x4, s32) != AT(cur, 0x4, s32);
+    if (AT(cur, 0x0, s32) == AT(last, 0x0, s32)) {
+        if (AT(cur, 0x0, s32) == 3) {
+            if (AT(cur, 0x18, s32) == AT(last, 0x18, s32) && AT(cur, 0x8, s32) == AT(last, 0x8, s32)) {
+                changed = 0;
+            }
+        } else if (AT(cur, 0x0, s32) == 2) {
+            VObject *rooms = D_0044E568;
+            u16 a = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(cur, 0x18, s32), AT(cur, 0x8, u8));
+            u16 b = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(last, 0x18, s32), AT(last, 0x8, u8));
+
+            if (a == b) {
+                changed = 0;
+            }
+        }
+    }
+    switch (AT(cur, 0x1D, u8)) {
+    case 7:
+    case 0xFF:
+        break;
+    case 4:
+        if (changed) {
+            prompt_show(0x800C);
+        }
+        break;
+    case 3:
+    case 2:
+    case 1:
+        if (changed) {
+            prompt_show(0x800B);
+        }
+        break;
+    case 6:
+    case 5: {
+        s32 blink = 0;
+
+        if (AT(g, 0x52, u8) != AT(g, 0x50, u8) && (AT(g, 0x50, u8) == 2 || AT(g, 0x52, u8) == 2)) {
+            blink = 1;
+        }
+        if (changed || blink) {
+            prompt_show((u8)func_00177620(prog) == 2 ? 0x800D : 0x800A);
+        }
+        break;
+    }
+    default:
+        if (changed) {
+            prompt_show(0x800A);
+        }
+        break;
+    }
+    AT(last, 0x0, s32) = AT(cur, 0x0, s32);
+    AT(last, 0x4, s32) = AT(cur, 0x4, s32);
+    AT(last, 0x8, s32) = AT(cur, 0x8, s32);
+    AT(last, 0xC, s32) = AT(cur, 0xC, s32);
+    AT(last, 0x10, s32) = AT(cur, 0x10, s32);
+    AT(last, 0x14, f32) = AT(cur, 0x14, f32);
+    AT(last, 0x18, s32) = AT(cur, 0x18, s32);
+    AT(last, 0x1C, u8) = AT(cur, 0x1C, u8);
+    AT(last, 0x1D, u8) = AT(cur, 0x1D, u8);
+    AT(last, 0x1E, u16) = AT(cur, 0x1E, u16);
+}
