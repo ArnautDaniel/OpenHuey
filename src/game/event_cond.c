@@ -41,6 +41,7 @@ extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and 
 extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
+extern u8 *D_0044F808;                        /* the stalker in play */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -229,6 +230,20 @@ s32 func_001FC760(VObject *ev) {
         if (cond_char(p, pc[1]) != NULL) {
             r = AT(cond_char(p, PC(ev)[1]), 0xC4, s32) == PC(ev)[2];
         }
+        break;
+    case 0x49:     /* character pc[1]'s action (+0xF8) is pc[2] */
+        if (cond_char(p, pc[1]) != NULL) {
+            r = AT(cond_char(p, PC(ev)[1]), 0xF8, s32) == PC(ev)[2];
+        }
+        break;
+    case 0x4B:     /* the stalker is active and its +0x10C says so */
+        if (D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0 &&
+            VCALL((VObject *)D_0044F808, 0x10C, s32 (*)(VObject *))((VObject *)D_0044F808) != 0) {
+            r = 1;
+        }
+        break;
+    case 0x64:     /* the progress' +0x1050 is 0xD */
+        r = AT(p, 0x1050, u8) == 0xD;
         break;
     case 0x08:     /* progress flag be16 pc[1] */
         r = Progress_TestFlag(p, be16(pc + 1)) != 0;
