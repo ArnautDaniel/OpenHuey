@@ -1508,3 +1508,74 @@ void func_002A84E0(u8 *r) {
     AT(r, 0x4, u16) = 0;
     AT(r, 0x8, s32) = 0;
 }
+
+
+extern void *func_00266C40(void *effects, s32 kind);   /* the effect of a kind, if any */
+extern void func_002239C0(void *doors);
+extern void func_0021AC10(void *o);
+
+/* draw the room, each frame: the room mesh's parts (PAC section header +0x998C: offsets of
+ * the opaque part, two alpha parts drawn in layer 8 under the 0x1D effect (fog) else 0x19,
+ * and the parts for layers 0x26 and 0x1F) are queued with the renderer (+0xC) as the room
+ * object (+0x8 mesh, +0x18 part); the lights are reset (+0x18) before each pass. Then the
+ * extra object +0x340 (flag 0x80), the doors, +0x9380 and +0x6740. */
+void func_0011FB20(u8 *rm, s32 slot) {
+    VObject *lights;
+    void *fx;
+    s32 o0, o1, o2, o4, o5;
+    s32 layer;
+
+    if (AT(rm, 0x998C, u8 *) == NULL) {
+        return;
+    }
+    lights = D_0044E4E8;
+    VCALL(lights, 0x18, void (*)(VObject *))(lights);
+    AT(rm, 0x64, s32) = -1;
+    o0 = AT(AT(rm, 0x998C, u8 *), 0x0, s32);
+    o2 = AT(AT(rm, 0x998C, u8 *), 0x8, s32);
+    o4 = AT(AT(rm, 0x998C, u8 *), 0x10, s32);
+    o5 = AT(AT(rm, 0x998C, u8 *), 0x14, s32);
+    o1 = AT(AT(rm, 0x998C, u8 *), 0x4, s32);
+    if (o0 != 0) {
+        AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o0;
+        AT(rm, 0x18, s32) = 0;
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm, 1, 0);
+    }
+    VCALL(lights, 0x18, void (*)(VObject *))(lights);
+    AT(rm, 0x64, s32) = -1;
+    fx = D_0044E4C0 != NULL ? func_00266C40(D_0044E4C0, 0x1D) : NULL;
+    layer = (fx != NULL && AT(fx, 0x1C, s32) != 0) ? 8 : 0x19;
+    if (o1 != 0) {
+        AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o1;
+        AT(rm, 0x18, s32) = 1;
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm, layer, 0);
+    }
+    if (o4 != 0) {
+        AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o4;
+        AT(rm, 0x18, s32) = 4;
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm, layer, 0);
+        AT(rm, 0x8B, u8) = 1;
+    }
+    if (o2 != 0) {
+        VCALL(lights, 0x18, void (*)(VObject *))(lights);
+        AT(rm, 0x64, s32) = -1;
+        AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o2;
+        AT(rm, 0x18, s32) = 2;
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm, 0x26, 0);
+    }
+    if (o5 != 0) {
+        VCALL(lights, 0x18, void (*)(VObject *))(lights);
+        AT(rm, 0x64, s32) = -1;
+        AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o5;
+        AT(rm, 0x18, s32) = 5;
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm, 0x1F, 0);
+    }
+    VCALL(lights, 0x18, void (*)(VObject *))(lights);
+    AT(rm, 0x358, s32) = -1;
+    if (AT(rm, 0x35C, u8) & 0x80) {
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, rm + 0x340, 1, 0);
+    }
+    func_002239C0(rm + 0x1640);
+    func_0021AC10(rm + 0x9380);
+    VCALL(rm + 0x6740, 0x24, void (*)(void *))(rm + 0x6740);
+}

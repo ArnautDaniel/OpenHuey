@@ -63,6 +63,7 @@ static inline void Scene_SetState(Scene *scene, const PTMF *state) {
 /* Character setup helper: the character's index (+0x20) must be 0 or 1. */
 #ifdef HG_NATIVE
 extern s32 hg_debug_no_partner(void);
+extern s32 hg_debug_freeplay(void);
 #endif
 
 static inline void SetupCharacter(Progress *prog, void *chr, void (*setup)(Progress *, u32)) {
@@ -898,6 +899,11 @@ void func_0039EAB0(Scene *g) {
     s32 menu;
     s32 i;
 
+#ifdef HG_NATIVE
+    if (hg_debug_freeplay()) {   /* native/platform/debug.c: HG_FREEPLAY */
+        Progress_ClearFlag(prog, 8);
+    }
+#endif
     if (AT(g, 0x44, s32) == 0) {
         func_00120660(rooms, AT(g, 0xF6C1B0, s32) == 0);
         if ((D_0047E37C >> 3) & 1 || D_0047E360 == 0) {

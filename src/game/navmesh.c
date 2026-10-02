@@ -247,3 +247,66 @@ s32 func_0017C050(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) 
     VCALL(nm, 0x14, void (*)(NavMesh *, s32, f32 *))(nm, cur, out);
     return cur;
 }
+
+
+extern s32 func_0017AE80(NavTri *t, f32 *from, f32 *to);   /* the edge the segment leaves by */
+
+/* vtable +0x20: which edge of triangle `i` the step from -> to leaves by (3: stays inside),
+ * 4 for no such triangle */
+s32 func_0017C750(NavMesh *nm, u32 i, f32 *from, f32 *to) {
+    if (i < nm->numTris && nm->tris != NULL) {
+        return func_0017AE80(&nm->tris[i], from, to);
+    }
+    return 4;
+}
+
+
+/* which edge of triangle `t` (in x/z) the step from -> to leaves it by: 0..2, 3 if `to` is
+ * inside, 4 if it is outside but the step crosses no edge */
+s32 func_0017AE80(NavTri *t, f32 *from, f32 *to) {
+    f32 x2 = to[0], z2 = to[2];
+    u32 inside = 0, tested = 0;
+    u32 e;
+
+    for (e = 0; e < 3; e++) {
+        f32 *a = t->v[e];
+        f32 *b = t->v[e < 2 ? e + 1 : 0];
+        f32 ax = a[0], az = a[2];
+        f32 ez = b[2] - az;
+        f32 ex = b[0] - ax;
+        f32 x1, z1, p, q, dx, dz, den, s, u;
+
+        tested |= 1 << e;
+        if (!((x2 - ax) * ez - (z2 - az) * ex < 0.0f)) {
+            inside |= 1 << e;
+            continue;
+        }
+        x1 = from[0];
+        z1 = from[2];
+        q = (z1 - az) * ex;
+        p = (x1 - ax) * ez;
+        if (p - q < 0.0f) {
+            continue;
+        }
+        dx = x2 - x1;
+        dz = z2 - z1;
+        den = dx * ez - dz * ex;
+        if (den == 0.0f) {
+            continue;
+        }
+        s = (q - p) / den;
+        if (s < 0.0f || !(s <= 1.0f)) {
+            continue;
+        }
+        if ((ex <= 0.0f ? -ex : ex) <= (ez <= 0.0f ? -ez : ez)) {
+            u = (z1 + s * dz - az) / ez;
+        } else {
+            u = (x1 + s * dx - ax) / ex;
+        }
+        if (u < 0.0f || !(u <= 1.0f)) {
+            continue;
+        }
+        return e;
+    }
+    return inside == tested ? 3 : 4;
+}

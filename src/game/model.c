@@ -1219,3 +1219,57 @@ f32 func_001F6140(u8 *m, f32 dt) {
     func_001F36B0(track, tmp, t);
     return AT(s, 0x574, f32) * tmp[1];
 }
+
+
+/* the event flags of layer `layer`'s motion at its current frame + `dt` frames (m +0x4D4: per
+ * motion of the library +0x4C4, one byte per frame); wrapped into the motion when `loop` and
+ * the track loops (+0x18 bit 1), else 0 outside it */
+s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
+    u8 *ev = AT(m, 0x4D4, u8 *);
+    u8 *lib = AT(m, 0x4C4, u8 *);
+    s32 id, idx = -1;
+    u8 *trk, *anim, *bytes;
+    s32 t, len;
+
+    if (ev == NULL) {
+        return 0;
+    }
+    id = AT(m, 0x55C + layer * 4, s32);
+    if (lib != NULL) {
+        u8 *tbl = lib + AT(lib, 0xC, s32);
+        u32 n = AT(tbl, 0x0, u32);
+        u32 i;
+
+        for (i = 0; i < n; i++) {
+            if (AT(tbl, 0x10 + i * 8, s32) == id) {
+                idx = i;
+                break;
+            }
+        }
+    }
+    if (idx == -1) {
+        return 0;
+    }
+    trk = AT(m, 0x6A4, u8 *);
+    t = (s32)((f32)dt + AT(trk, layer * 4, f32));
+    anim = AT(trk, 0x20 + layer * 4, u8 *);
+    len = AT(AT(anim, 0x4, u8 *), 0xC, s32);
+    bytes = ev + AT(ev, 0x4 + AT(ev, 0x0, s32) * 4 + idx * 4, s32);
+    if (AT(trk, 0x18, u32) & (loop & 1)) {
+        f32 ft = (f32)t;
+
+        if (ft < 0.0f) {
+            do {
+                ft += (f32)len;
+            } while (ft < 0.0f);
+        }
+        while (!(ft < (f32)len)) {
+            ft -= (f32)len;
+        }
+        return bytes[(s32)ft];
+    }
+    if (t < 0 || len - 1 < t) {
+        return 0;
+    }
+    return bytes[t];
+}

@@ -25,6 +25,12 @@ int32_t hg_debug_no_partner(void) {
     return getenv("HG_NOPARTNER") != NULL;
 }
 
+/* HG_FREEPLAY: gameplay runs the world even while the opening keeps it stopped (Progress
+ * flag 8), for looking at a room before its events work */
+int32_t hg_debug_freeplay(void) {
+    return getenv("HG_FREEPLAY") != NULL;
+}
+
 /* an event script command whose C isn't written yet (func_002029B0): logged once, skipped */
 void hg_debug_todo_opcode(int32_t op) {
     static uint8_t seen[256];

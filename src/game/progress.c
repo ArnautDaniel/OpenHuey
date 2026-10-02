@@ -1113,3 +1113,9 @@ void func_001762B0(Progress *p) {
         }
     }
 }
+
+
+/* character slot k has a pending relation command (+0x10B0) */
+s32 func_00177870(Progress *p, u32 k) {
+    return AT(p, 0x10B0 + (k & 0xFF) * 0xC, u8) != 0;
+}

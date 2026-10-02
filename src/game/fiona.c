@@ -3622,3 +3622,209 @@ void func_0018B600(Fiona *f) {
     }
     func_00125A10(&f->c);
 }
+
+
+extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
+extern void func_002DD110(void *motion, f32 *target, f32 *pitch, f32 *yaw);   /* head angles to a point */
+extern void func_002DD310(void *motion, f32 pitch, f32 yaw, f32 pitchSpeed, f32 yawSpeed);
+
+#define FLOOK_ON     0x1AD5FC   /* u8: looking at a character */
+#define FLOOK_WHO    0x1AD600   /* Character *: whom */
+#define FLOOK_POINT  0x1AD610   /* vec: its head */
+#define FLOOK_HOLD   0x1AD620   /* s32: frames to keep looking */
+
+/* whether Fiona notices character c: near enough, ahead of her (cos > 0.6 with `fwd`) and
+ * reachable on the nav mesh */
+static s32 fiona_sees(Fiona *f, Character *c, f32 range, f32 *fwd) {
+    static const union { u32 u; f32 f; } k06 = {0x3F19999A};
+    f32 d[4] __attribute__((aligned(16)));
+
+    if (!(func_00124490(&f->c.a, c->a.pos) < range)) {
+        return 0;
+    }
+    sceVu0SubVector(d, c->a.pos, f->c.a.pos);
+    if (sceVu0InnerProduct(fwd, d) <= k06.f) {
+        return 0;
+    }
+    return (u8)func_00122C90(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
+}
+
+/* Fiona's head, each frame: she looks at the pursuer (within 200) or Hewie (within 50) when
+ * ahead of her and reachable, the head angles clamped (pitch -18..45 degrees, yaw +-90, or
+ * +-108 while held or in moves 0xD / 0xB-0x20); otherwise towards where she is turning. The
+ * motion eases the head there, faster for bigger changes and while she turns. */
+void func_00186180(Fiona *f) {
+    static const union { u32 u; f32 f; } kPitchMax = {0x3F490FDB}, kPitchMin = {0xBEA0D97C},
+        kYaw = {0x3FC90FDB}, kYawWide = {0x3FF1463B}, k01 = {0x3DCCCCCD};
+    f32 fwd[4] __attribute__((aligned(16)));
+    f32 pitch, yaw, dp, dy, turn;
+    u8 *m;
+    s32 a;
+
+    if (f->c.unkE0 == 1) {
+        return;
+    }
+    if (FI(f, FLOOK_ON, u8) == 0) {
+        if (FI(f, FLOOK_HOLD, s32) != 0) {
+            FI(f, FLOOK_HOLD, s32)--;
+            FI(f, FLOOK_ON, u8) = 1;
+        }
+    }
+    if (FI(f, FLOOK_ON, u8) == 0 && f->c.moveMode == 0) {
+        a = FI(f, 0x1AD580, s32);
+        if (a != 0xE && a != 1 && a != 0xF && !(FI(f, 0x1AD584, u32) & 2) &&
+            fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) != 5) {
+            fwd[0] = 0.0f;
+            fwd[1] = 0.0f;
+            fwd[2] = 1.0f;
+            sceVu0ApplyMatrix(fwd, f->c.a.rot, fwd);
+            if (FI(f, 0x1AD5D7, u8) == 1 && fiona_sees(f, gCharPursuer, 200.0f, fwd)) {
+                FI(f, FLOOK_ON, u8) = 1;
+                FI(f, FLOOK_WHO, Character *) = gCharPursuer;
+            }
+            if (FI(f, FLOOK_ON, u8) == 0 && FI(f, 0x1AD5D5, u8) == 1 &&
+                fiona_sees(f, gCharPartner, 50.0f, fwd)) {
+                FI(f, FLOOK_ON, u8) = 1;
+                FI(f, FLOOK_WHO, Character *) = gCharPartner;
+            }
+        }
+    }
+    if (FI(f, FLOOK_ON, u8) != 0) {
+        Character *c = FI(f, FLOOK_WHO, Character *);
+
+        if (c == NULL || c->a.active != 1 || c->a.disabled != 0) {
+            pitch = 0.0f;
+            yaw = 0.0f;
+        } else {
+            VCALL(c->motion, 0x60, void (*)(void *, f32 *))(c->motion, &FI(f, FLOOK_POINT, f32));
+            func_002DD110(f->c.motion, &FI(f, FLOOK_POINT, f32), &pitch, &yaw);
+            if (!(pitch <= kPitchMax.f)) {
+                pitch = kPitchMax.f;
+            }
+            if (pitch < kPitchMin.f) {
+                pitch = kPitchMin.f;
+            }
+            if (FI(f, FLOOK_HOLD, s32) != 0 || f->c.moveMode == 0xD ||
+                (f->c.moveMode == 0xB && f->c.moveSub == 0x20)) {
+                if (!(yaw <= kYawWide.f)) {
+                    yaw = kYawWide.f;
+                }
+                if (yaw < -kYawWide.f) {
+                    yaw = -kYawWide.f;
+                }
+            } else {
+                if (!(yaw <= kYaw.f)) {
+                    yaw = 0.0f;
+                }
+                if (yaw < -kYaw.f) {
+                    yaw = 0.0f;
+                }
+            }
+        }
+    } else {
+        a = FI(f, 0x1AD580, s32);
+        if (f->c.moveMode != 0 || a == 0xE || a == 1 || a == 0xF || (FI(f, 0x1AD584, u32) & 2)) {
+            pitch = 0.0f;
+            yaw = 0.0f;
+        } else {
+            pitch = 0.0f;
+            yaw = func_002E2D00(FI(f, 0x1AD5E0, f32) - f->c.a.angle[1]);
+        }
+    }
+    m = f->c.motion;
+    dp = pitch - AT(m, 0x854, f32);
+    dp = dp <= 0.0f ? -dp : dp;
+    dy = yaw - AT(m, 0x858, f32);
+    dy = dy <= 0.0f ? -dy : dy;
+    dp = k01.f * dp;
+    dy = k01.f * dy;
+    turn = wrap_abs(f->c.a.angle[1] - FI(f, 0x1AD5B8, f32));
+    func_002DD310(f->c.motion, pitch, yaw, dp, dy + turn);
+}
+
+
+extern void func_00181180(Fiona *f, s32 id, s32, s32, s32);   /* a voice */
+extern void func_00183960(Fiona *f);
+
+/* the sounds of Fiona's motions, on their key frames (motion events 1 and 0x10): steps,
+ * crouching, falling (with a noise others hear), voices */
+void func_00181F20(Fiona *f) {
+    s32 v;
+
+    if (f->c.unk14D0 != 0 && f->c.unk14D0 != 5) {
+        return;
+    }
+    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 1) {
+        switch (AT(f->c.motion, 0x55C, s32)) {
+        case 1:
+            if (f->c.moveMode == 0xD) {
+                func_00122C20(&f->c.a, 0x39, 5, 0, 0, NULL);
+            }
+            break;
+        case 0xC0E:
+        case 0xC0D:
+        case 0xC0A:
+        case 0xC07:
+        case 0xC06:
+        case 0xC04:
+        case 0xC03:
+        case 0xC02:
+        case 0xC00:
+            if (f->c.moveMode == 0xD) {
+                if (!(u8)Progress_TestFlag(gProgress, 0x25)) {
+                    func_00183960(f);
+                } else {
+                    func_00122C20(&f->c.a, 0x33, 5, 0, 0, NULL);
+                }
+            }
+            break;
+        case 0xD01:
+        case 0xD00:
+            func_00122C20(&f->c.a, 0x3C, 5, 0, 0, NULL);
+            break;
+        case 0xE00: {
+            Progress *p = gProgress;
+
+            v = Progress_GetVar(p, 0x26) & 0xFF;
+            if (v != 7 && v != 6) {
+                func_00122C20(&f->c.a, 0x3C, 5, 0, 0, NULL);
+            }
+            func_002A8440((u8 *)p + 0x778, 0x1F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            break;
+        }
+        }
+    }
+    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 0x10) {
+        switch (AT(f->c.motion, 0x55C, s32)) {
+        case 0x403:
+            func_00122C20(&f->c.a, 0xF, 5, 0, 0, NULL);
+            break;
+        case 0xF02:
+        case 0x1404:
+        case 0x1403:
+        case 0x1500:
+            func_00181180(f, 0x7D, 5, 0, 0);
+            break;
+        case 0xB01:
+            func_00122C20(&f->c.a, 0x7E, 5, 0, 0, NULL);
+            break;
+        case 0x100B:
+        case 0x1008:
+        case 0xB00:
+            func_00181180(f, 0x80, 5, 0, 0);
+            break;
+        case 0x609:
+        case 0x608:
+            func_00122C20(&f->c.a, 0x71, 5, 0, 0, NULL);
+            break;
+        case 0xE00:
+            v = Progress_GetVar(gProgress, 0x26) & 0xFF;
+            if (v == 6) {
+                func_00122C20(&f->c.a, 0x21, 5, 0, 0, NULL);
+            } else if (v == 7) {
+                func_00122C20(&f->c.a, 0x20, 5, 0, 0, NULL);
+            }
+            break;
+        }
+    }
+}
