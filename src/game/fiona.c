@@ -1435,3 +1435,128 @@ void func_0019C210(Fiona *f) {
         FI(f, 0x1AD6C0, s32) += 2;
     }
 }
+
+extern s32 func_001848F0(Fiona *f, s32 cmd, s32 state);
+extern u32 func_00177620(Progress *p);
+extern void func_00183F10(Fiona *f);
+extern void func_00183780(Fiona *f);
+extern const PTMF D_003B2788;  /* panic: fall */
+extern const PTMF D_003B2798;  /* panic: stumble */
+extern const PTMF D_003B27A8;  /* panic attack */
+extern const PTMF D_003B27B8;  /* joint action */
+
+#define FIONA_CMD(f) FI(f, 0x1AD6B8, s32)   /* command from the controls, -1 = none */
+#define FIONA_PANIC(f) (FI(f, 0x1AD584, s32) & 0x2)
+
+/* Remember where an action started. */
+static inline void Fiona_MarkActionStart(Fiona *f, s32 code) {
+    f->c.moveSub = code;
+    FI(f, 0x1AD6BC, s32) = code;
+    FI(f, 0x1AD6D0, f32) = f->savedYaw;
+    FI(f, 0x1AD6C0, u32) = f->c.a.navTri;
+    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD6E0), f->c.a.pos);
+}
+
+/* Act on the controls' command: panic stumbles and panic attacks, calling Hewie, and starting
+ * actions (codes from func_001848F0; 44/45 have their own setup, others are joint actions). */
+void func_0019F1E0(Fiona *f) {
+    s32 cmd, mode, s, code;
+    u8 joint;
+
+    if (f->c.moveMode == 0) {
+        if (FIONA_PANIC(f)) {
+            sceVu0FMATRIX m;
+            sceVu0FVECTOR r;
+
+            if (FI(f, 0x1AD5EC, s32) != 0) {
+                FI(f, 0x1AD5EC, s32) -= 1;
+            }
+            func_001F6370(f->c.motion, r, 0.0f);
+            func_002E3130(m, f->c.a.pos,
+                          FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
+                                                    : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
+            func_002E2DD0(r, m, r);
+            if (func_00124480(&f->c.a, r, NAV_NONE) == NAV_NONE) {
+                /* ran into something while panicking */
+                func_00122C20(&f->c.a, 0x7F, 5, 0, 0, NULL);
+                if (FI(f, 0x1AD5EC, s32) == 0) {
+                    FI(f, 0x1AD5EC, s32) = 30;
+                    if (RNG01() < 0x1.99999ap-3f /* 0.2 */) {
+                        *(f32 *)((u8 *)gProgress + 0x7D8) = 1000.0f;
+                        f->c.moveMode = 4;
+                        f->unk1AD580 = 0xA;
+                        f->c.a.unk2D = 1;
+                        Actor_SetState(&f->c.a, &D_003B2788);
+                        return;
+                    }
+                }
+                f->c.moveMode = 4;
+                f->unk1AD580 = 0xA;
+                func_002DDED0(f->c.motion, 0x1001, -1);
+                Actor_SetState(&f->c.a, &D_003B2798);
+                return;
+            }
+        } else if (!(FI(f, 0x1AD5F4, f32) < 100.0f)) {
+            /* panic attack */
+            FI(f, 0x1AD6C0, s32) = 150;
+            FI(f, 0x1AD5F4, f32) = 75.0f;
+            f->unk1AD580 = 0xE;
+            f->c.a.unk2D = 0;
+            Actor_SetState(&f->c.a, &D_003B27A8);
+            return;
+        }
+    }
+
+    cmd = FIONA_CMD(f);
+    if (cmd == -1) {
+        return;
+    }
+    mode = f->c.moveMode;
+    if (FIONA_PANIC(f) || (mode == 4 && (f->c.moveSub == 9 || f->c.moveSub == 0x12))) {
+        /* call Hewie */
+        if (f->c.state[0] == 0 && *((u8 *)gProgress + 0x1FBEC1) == 0 && gCharPartner->state[0] != 7) {
+            /* (the original copies a local whose other fields are never set) */
+            gCharPartner->state[0] = 0xD;
+            gCharPartner->state[1] = 0x30;
+            gCharPartner->state[2] = 0;
+            gCharPartner->state[3] = 0;
+            gCharPartner->state[4] = 0;
+            gCharPartner->state[5] = 0;
+            gCharPartner->state[6] = 0;
+            gCharPartner->state[7] = 0;
+        }
+        func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+        FI(f, 0x1AD5C8, s32) = 60;
+        return;
+    }
+    if (mode != 0) {
+        return;
+    }
+    s = f->unk1AD580;
+    if (s == 0xE || s == 1 || s == 0xF) {
+        return;
+    }
+    code = func_001848F0(f, cmd, s);
+    if (code == -1) {
+        return;
+    }
+    joint = 1;
+    if ((code == 44 || code == 45) && f->c.moveSub != 0
+        && !(code == 45 && (func_00177620(gProgress) & 0xFF) == 1)) {
+        Fiona_MarkActionStart(f, code);
+        joint = 0;
+        func_00183F10(f);
+        func_00183780(f);
+        if (!(Progress_TestFlag(gProgress, 0x25) & 0xFF)) {
+            f->targetParam = 30;
+            f->target = gCharacters[1];
+        }
+        FI(f, 0x1AD5C8, s32) = 60;
+    }
+    if (joint == 1) {
+        f->c.moveMode = 0xD;
+        f->unk1AD580 = 0xC;
+        Fiona_MarkActionStart(f, code);
+        Actor_SetState(&f->c.a, &D_003B27B8);
+    }
+}
