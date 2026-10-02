@@ -1923,3 +1923,20 @@ void func_002D74E0(u8 *o) {
         }
     }
 }
+
+
+/* the effects, drawn each frame (texture cache and gBootMessage reset first): each of the 32
+ * (+0x14) */
+void func_00267160(u8 *o) {
+    s32 i;
+
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    for (i = 0; i < 32; i++) {
+        VObject *e = AT(o, 0x1438 + i * 4, VObject *);
+
+        if (e != NULL) {
+            VCALL(e, 0x14, void (*)(VObject *))(e);
+        }
+    }
+}
