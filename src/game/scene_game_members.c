@@ -1653,3 +1653,32 @@ void func_002C8DC0(u8 *o) {
         }
     }
 }
+
+
+extern void func_001F36B0(void *track, f32 *out, f32 t);
+
+/* a placed object's animation, each frame: its track (+0x98 { keys, format, count }) at the
+ * frame +0x90 gives its position (+0x10; format 9: +0x20); at the end it loops (+0x1) or
+ * stops */
+void func_0025FA50(u8 *obj) {
+    if (AT(obj, 0x94, s32) == 0 || AT(obj, 0x98, void *) == NULL) {
+        return;
+    }
+    if (AT(obj, 0x9C, u16) == 9) {
+        func_001F36B0(obj + 0x98, (f32 *)(obj + 0x20), (f32)AT(obj, 0x90, s32));
+    } else {
+        func_001F36B0(obj + 0x98, (f32 *)(obj + 0x10), (f32)AT(obj, 0x90, s32));
+    }
+    AT(obj, 0x90, s32)++;
+    if (AT(obj, 0x90, s32) < AT(obj, 0xA0, s32)) {
+        return;
+    }
+    if (AT(obj, 0x1, u8) != 0) {
+        AT(obj, 0x90, s32) = 0;
+    } else {
+        AT(obj, 0x94, s32) = 0;
+        AT(obj, 0xA0, s32) = 0;
+        AT(obj, 0x98, s32) = 0;
+        AT(obj, 0x9C, s32) = 0;
+    }
+}

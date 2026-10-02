@@ -2663,3 +2663,4 @@ src/game/scene_game_members.c func_0011FEB0 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/scene_game_members.c func_00223A90 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..0x0B300000
 src/game/rooms.c func_0021AFD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=bytes:?? --pre=a0+0xC0=bytes:01
 src/game/scene_game_members.c func_002C8DC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC=0..0xFFFFFFFF --pre=a0+0x10=0..0xFFFFFFFF
+src/game/scene_game_members.c func_0025FA50 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x94=0..1 --pre=a0+0x98=0..1 --pre=a0+0x9C=8..9 --pre=a0+0x90=0..10 --pre=a0+0xA0=0..10 --pre=a0+0x1=bytes:?? --runs=60
