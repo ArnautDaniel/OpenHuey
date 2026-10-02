@@ -4224,3 +4224,73 @@ void func_00188960(Fiona *f) {
     }
     AT(a, 0x124, s32) = AT(a, 0x128, s32);
 }
+
+
+extern void func_002DDED0(void *motion, s32 anim, s32 blend);   /* play anim blended with another (-1 none) */
+
+#define FWALK_BLEND 0x1AD628   /* f32: the walk blend last set */
+
+/* the walk's look, each frame (+0xFC set while idle +0xF8): from Fiona's state +0x1AD5F4
+ * ((100 - it) / 60) and +0x1AD5F8 ((1800 - it) / 1800) - the walk (0x200, mode 2 0x208) alone,
+ * or blended with 0x201 or 0x204 by those amounts; a blend is reset only when it moves more
+ * than 0.1 */
+void func_00185CF0(Fiona *f) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
+    void *m;
+    s32 cur, next, base, change;
+    f32 a, b, d;
+
+    if (AT(f, 0xF8, s32) == 0) {
+        AT(f, 0xFC, s32) = 1;
+    }
+    cur = AT(f->c.motion, 0x55C, s32);
+    next = AT(f->c.motion, 0x560, s32);
+    base = (u8)func_00177620(gProgress) == 2 ? 0x208 : 0x200;
+    a = (100.0f - FI(f, 0x1AD5F4, f32)) / 60.0f;
+    b = (f32)(0x708 - FI(f, 0x1AD5F8, s32)) / 1800.0f;
+    change = 0;
+    if (b < 0.5f || !(a + 0.25f <= b)) {
+        if (cur == base && next == 0x204) {
+            d = b - FI(f, FWALK_BLEND, f32);
+            if (d <= 0.0f) {
+                d = -d;
+            }
+            if (!(d <= k01.f)) {
+                change = 1;
+            }
+        } else {
+            change = 1;
+        }
+        if (change == 1) {
+            func_002DDED0(f->c.motion, base, 0x204);
+        }
+        m = f->c.motion;
+        AT(AT(m, 0x6A4, u8 *), 0x1C, f32) = b;
+        FI(f, FWALK_BLEND, f32) = b;
+        return;
+    }
+    if (a < 1.0f) {
+        if (cur == base && next == 0x201) {
+            d = a - FI(f, FWALK_BLEND, f32);
+            if (d <= 0.0f) {
+                d = -d;
+            }
+            if (!(d <= k01.f)) {
+                change = 1;
+            }
+        } else {
+            change = 1;
+        }
+        if (change == 1) {
+            func_002DDED0(f->c.motion, base, 0x201);
+        }
+        m = f->c.motion;
+        AT(AT(m, 0x6A4, u8 *), 0x1C, f32) = a;
+        FI(f, FWALK_BLEND, f32) = a;
+        return;
+    }
+    if (!(cur == base && next == -1)) {
+        func_002DDED0(f->c.motion, base, -1);
+    }
+    AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
+}
