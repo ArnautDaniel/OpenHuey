@@ -1431,3 +1431,25 @@ void func_0039BB60(Scene *g) {
         func_00177630(prog, 6);
     }
 }
+
+
+extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's state */
+
+/* set the state (a, b) of every door with a side in room `room` (the rooms' doors, +0x6C side
+ * 0 / 1, up to 400, ending at -1) */
+void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    VObject *rooms = D_0044E568;
+    u32 d;
+    s32 r;
+
+    for (d = 0; d < 0x190; d++) {
+        r = VCALL(rooms, 0x6C, s32 (*)(VObject *, u32, s32))(rooms, d & 0xFFFF, 0);
+        if (r == -1) {
+            return;
+        }
+        if (r == room || VCALL(rooms, 0x6C, s32 (*)(VObject *, u32, s32))(rooms, d & 0xFFFF, 1) == room) {
+            func_001780C0(prog, d & 0xFFFF, a, b);
+        }
+    }
+}
