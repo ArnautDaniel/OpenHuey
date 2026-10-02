@@ -258,13 +258,10 @@ void *func_0020E110(u8 *p) {
 extern void *D_0046B1D0[];
 extern void *D_0044E4E8;      /* Game +0x14E8C90 */
 
-/* Game +0x14E8C90 (shut down by func_001F4100): 64 slots, and the ids of the renderer's 10
- * layers (renderer +0x3C). */
-void *func_001F4600(u8 *o) {
+/* reset: 64 empty slots; the ids of the renderer's 10 layers (renderer +0x3C) */
+static inline void Slots_Reset(u8 *o) {
     s32 i;
 
-    AT(o, 0x0, void **) = D_0046B1D0;
-    D_0044E4E8 = o;
     for (i = 0; i < 64; i++) {
         u8 *e = o + 4 + i * 0xC;
 
@@ -280,7 +277,19 @@ void *func_001F4600(u8 *o) {
     for (i = 0; i < 10; i++) {
         AT(o, 0x304 + i * 4, s32) = VCALL(D_0044E4F0, 0x3C, s32 (*)(VObject *, s32))(D_0044E4F0, i);
     }
+}
+
+/* Game +0x14E8C90 (shut down by func_001F4100): constructor */
+void *func_001F4600(u8 *o) {
+    AT(o, 0x0, void **) = D_0046B1D0;
+    D_0044E4E8 = o;
+    Slots_Reset(o);
     return o;
+}
+
+/* ... init (from Game_Init) */
+void func_001F44D0(u8 *o) {
+    Slots_Reset(o);
 }
 
 /* ---- system init (vtable +0xC, from Game_Init) ---- */

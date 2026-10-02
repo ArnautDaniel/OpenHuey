@@ -1847,3 +1847,12 @@ src/game/loader.c func_00169420
 src/game/loader.c func_001692F0 --runs=50 --stub-ret=0x0A100000 --stub-ret=3 --stub-ret=4 --stub-ret-prob=1
 src/game/loader.c func_0016B1F0 --runs=100 --pre=a1=0..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1
 src/game/game.c func_002CFA10 --runs=50 --stub-ret=0 --stub-ret=0x100 --stub-ret-prob=0.7
+src/game/system.c func_001F44D0
+src/game/system.c func_001F4600
+src/game/game.c func_002BFB20
+src/game/renderer.c func_001BB9D0
+src/game/renderer.c func_001BB9C0
+src/game/renderer.c func_001BB9A0
+src/game/renderer.c func_001BB990
+src/game/renderer.c func_001BB980
+src/game/game.c func_002A7AA0

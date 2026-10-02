@@ -301,3 +301,21 @@ u64 *func_001BBC20(u8 *r, s32 n, s32 layer) {
     AT(r, 0x304BA8, u8 *) += 16;
     return p;
 }
+
+/* +0x28 video mode (2: NTSC 448 lines) */
+u8 func_001BB9D0(u8 *r) { return AT(r, 0x304C09, u8); }
+
+/* +0x2C display settings (+0x1F / +0x20: screen offset) */
+u8 *func_001BB9C0(u8 *r) { return r + 0x304BE8; }
+
+/* +0x30 set the screen offset */
+void func_001BB9A0(u8 *r, s32 x, s32 y) {
+    AT(r, 0x304C07, u8) = x;
+    AT(r, 0x304C08, u8) = y;
+}
+
+/* +0x34 */
+void func_001BB990(u8 *r, s32 v) { AT(r, 0x304BF8, s32) = v; }
+
+/* +0x38 the renderer's own VRAM entry */
+s32 func_001BB980(u8 *r) { return AT(r, 0x304BE4, s32); }

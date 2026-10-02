@@ -218,3 +218,44 @@ void func_002CFA10(Game *game) {
     Game_LoadSoundFile(loader, D_0045D7E0, 0x58);
     VCALL(D_0044E560, 0x60, void (*)(VObject *, s32))(D_0044E560, 5);
 }
+
+extern void func_002A7AA0(u8 *o);
+
+/* Game.unk20 (records / options?): reset; 12 times at 99:59:59 */
+void func_002BFB20(void *obj) {
+    u8 *d = obj;
+    s32 i;
+
+    *(s32 *)(d + 0x0) = -1;
+    *(s32 *)(d + 0x4) = 0;
+    *(s32 *)(d + 0x8) = 0;
+    *(s32 *)(d + 0xC) = 0;
+    func_002A7AA0(d + 0x10);
+    for (i = 0; i < 12; i++) {
+        d[0x1C + i * 4] = 99;
+        d[0x1D + i * 4] = 59;
+        d[0x1E + i * 4] = 59;
+        d[0x1F + i * 4] = 0;
+    }
+    *(s32 *)(d + 0x4C) = 0;
+}
+
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
+ * from the renderer, +4 on, +8 = 1.0. */
+void func_002A7AA0(u8 *o) {
+    VObject *r;
+    u8 *disp;
+
+    o[0] = VCALL(D_0044E560, 0x6C, s32 (*)(VObject *))(D_0044E560);
+    r = D_0044E4F0;
+    o[1] = VCALL(r, 0x28, u8 (*)(VObject *))(r);
+    disp = VCALL(r, 0x2C, u8 *(*)(VObject *))(r);
+    o[2] = (s8)disp[0x1F];
+    o[3] = (s8)disp[0x20];
+    o[4] = 1;
+    o[5] = 0;
+    o[6] = 0;
+    *(u32 *)(o + 8) = 0x3F800000;   /* 1.0f */
+}
