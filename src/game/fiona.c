@@ -615,7 +615,7 @@ s32 func_001A3A80(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
 extern void func_001A1CA0(Fiona *f);
 extern s32 func_001F1B90(void *input, void *pad);
 extern u8 D_0047E3B0[];   /* pad state */
-extern void func_001A12B0(Fiona *f);
+extern s32 func_001A12B0(Fiona *f);
 extern void func_00185FC0(Fiona *f);
 extern void func_00181F20(Fiona *f);
 extern void func_001869D0(Fiona *f);
@@ -1237,4 +1237,138 @@ void func_001A1860(Fiona *f) {
     } else {
         FI(f, 0x1AD72C, s32) -= 1;
     }
+}
+
+extern u32 func_00177870(Progress *p, u32 slot);   /* joint action pending (u8) */
+extern u32 func_00177850(Progress *p, u32 slot);   /* its partner's slot (u8) */
+extern u32 func_00177830(Progress *p, u32 slot);   /* its kind (u8) */
+extern u32 func_00177810(Progress *p, u32 slot);   /* its event type (u8) */
+extern void func_001777F0(Progress *p, u32 slot);  /* accepted */
+extern void func_001777D0(Progress *p, u32 slot);  /* cancelled */
+extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
+extern s32 func_001235C0(void *self, Actor *a);
+extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
+extern u32 func_00123D20(Actor *a, const f32 *p);
+extern f32 func_002E2D00(f32 angle);
+extern void func_002E3130(sceVu0FMATRIX out, const f32 *pos, f32 angle);
+extern void func_002E2DD0(f32 *out, sceVu0FMATRIX m, const f32 *v);
+
+typedef struct MeetOffset {
+    f32 x, z;
+    f32 deg;
+} MeetOffset;
+extern MeetOffset D_003B2460[];
+extern f32 D_003B24A8, D_003B24AC;
+
+#define SLOT_U8(f) (*(u8 *)&(f)->c.a.slot)
+#define F_PI 0x1.921fb6p+1f   /* 0x40490FDB */
+
+/* Meeting-point table index by costume and event type (6 or other). */
+static inline s32 Fiona_MeetIndex(u32 costume, u32 type) {
+    switch (costume) {
+    case 0: return type == 6 ? 4 : 5;
+    case 1:
+    case 2: return type == 6 ? 7 : 8;
+    case 3: return type == 6 ? 9 : 0xB;
+    case 4: return type == 6 ? 0xA : 0xC;
+    case 5: return 0xD;
+    case 6: return type == 6 ? 0xE : 0xF;
+    default: return 0;   /* (uninitialised in the original; costumes are 0..6) */
+    }
+}
+
+/* Start the joint action progress has queued for her: 0 if she is on her way, -1 if not. */
+s32 func_001A12B0(Fiona *f) {
+    Progress *p = gProgress;
+    Progress *q;
+    Character *o;
+    u32 kind, type;
+
+    if ((func_00177870(p, SLOT_U8(f)) & 0xFF) != 1) {
+        return -1;
+    }
+    q = gProgress;
+    o = gCharacters[func_00177850(q, SLOT_U8(f)) & 0xFF];
+    kind = func_00177830(q, SLOT_U8(f)) & 0xFF;
+    type = func_00177810(q, SLOT_U8(f)) & 0xFF;
+    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && !(Progress_TestFlag(p, 8) & 0xFF)
+        && o != NULL && o->a.active == 1 && o->a.disabled == 0) {
+        if (kind == 1) {
+            if (f->c.moveMode == 0) {
+                const MeetOffset *mo = &D_003B2460[Fiona_MeetIndex(FI(f, 0x1AD548, u32), type)];
+                sceVu0FMATRIX m;
+                sceVu0FVECTOR v, target;
+                f32 turn;
+                u32 tri;
+
+                *(s32 *)&v[1] = 0;
+                *(s32 *)&v[3] = 0;
+                v[0] = mo->x;
+                v[2] = mo->z;
+                turn = (F_PI * mo->deg) / 180.0f;
+                sceVu0CopyMatrix(m, o->a.rot);
+                sceVu0ApplyMatrix(v, m, v);
+                sceVu0AddVector(target, o->a.pos, v);
+                tri = func_00124320(&f->c.a, target, o->a.navTri, o->a.pos, NAV_NONE);
+                if (tri != NAV_NONE && f->c.a.navTri == func_00124320(&f->c.a, f->c.a.pos, tri, target, NAV_NONE)
+                    && (func_001235C0(f, &f->c.a) & 0xFF) == 1 && func_00127140(&f->c, 0, tri, target) > 0) {
+                    FI(f, 0x1AD6F0, u32) = tri;
+                    FI(f, 0x1AD6F4, f32) = func_002E2D00(turn + o->a.angle[1]);
+                    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD700), target);
+                    func_001777F0(p, SLOT_U8(f));
+                    return 0;
+                }
+            }
+        } else if (kind == 2 && type == 6 && f->c.moveMode == 0) {
+            Character *h = gCharPartner;
+            f32 base = *(f32 *)&h->unk104[2];
+            sceVu0FVECTOR offs;
+            s32 deg, side;
+
+            offs[0] = D_003B24A8;
+            *(s32 *)&offs[1] = 0;
+            offs[2] = D_003B24AC;
+            *(s32 *)&offs[3] = 0;
+            for (deg = 0; deg < 181; deg += 10) {
+                f32 a = F_PI * (f32)deg;
+
+                for (side = 0;;) {
+                    sceVu0FMATRIX m;
+                    sceVu0FVECTOR pt;
+                    f32 ang;
+                    u32 tri;
+
+                    if (side != 0) {
+                        ang = func_002E2D00(base + a / 180.0f);
+                    } else {
+                        ang = func_002E2D00(base - a / 180.0f);
+                    }
+                    func_002E3130(m, f->c.a.pos, ang);
+                    func_002E2DD0(pt, m, offs);
+                    tri = func_00123D20(&f->c.a, pt);
+                    if (tri != NAV_NONE && tri == func_00124320(&f->c.a, pt, h->a.navTri, h->a.pos, FIONA_NAV_MASK)) {
+                        *(f32 *)&h->unk104[2] = ang;
+                        h->unk104[0] = tri;
+                        *(f32 *)&f->c.unk104[2] = func_002E2D00(F_PI + ang);
+                        func_001777F0(p, SLOT_U8(f));
+                        /* queue it (the original copies a local whose other fields are never set) */
+                        f->c.state2[0] = 0xC;
+                        f->c.state2[1] = type;
+                        f->c.state2[2] = 0;
+                        f->c.state2[3] = 0;
+                        f->c.state2[4] = 0;
+                        f->c.state2[5] = 0;
+                        f->c.state2[6] = 0;
+                        f->c.state2[7] = 0;
+                        return 0;
+                    }
+                    if (deg == 0 || deg == 180 || ++side >= 2) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    func_001777D0(p, SLOT_U8(f));
+    return -1;
 }

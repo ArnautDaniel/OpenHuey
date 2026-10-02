@@ -1751,7 +1751,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
           f"return={ret_kind}, coverage {len(covered)}/{total} instructions"
           + (f" ({runaway_ok} endless-loop runs compared by their first calls)" if runaway_ok else ""))
     if opts.verbose and missed:
-        print("  never executed:", " ".join(f"0x{a:08X}" for a in missed[:20]))
+        print("  never executed:", " ".join(f"0x{a:08X}" for a in missed))
     return 0
 
 
