@@ -7,6 +7,10 @@
 
 extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
+extern Character *gCharacters[6];
+extern Character *gCharPlayer;    /* Fiona */
+extern Character *gCharPartner;   /* Hewie */
+extern Character *gCharPursuer;
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
 #define SLOT_U8(h) (*(u8 *)&(h)->c.a.slot)
@@ -224,27 +228,134 @@ s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
     return -(r < 0);
 }
 
-extern void func_0013C5D0(Hewie *h);
+
+
+#define HEWIE_MODE(h) HW(h, 0xF35C0, s32)        /* 0 normal, 1..3 (timed by +0xF35BE) */
+
+/* gProgress +0xFB6 / +0xFB8 counters, kept within 0..10000. */
+static inline void Progress_AddCounter(Progress *p, u32 off, s32 n) {
+    s16 *v = (s16 *)((u8 *)p + off);
+
+    *v += n;
+    if (*v < 0) {
+        *v = 0;
+    } else if (*v > 10000) {
+        *v = 10000;
+    }
+}
+
+extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
+extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
+
+/* Set his mode (and its timer: `time`, or -1 for the mode's default: 1 and 2 1800 frames, 3 450).
+ * Down: only mode 0; in condition 1 only mode 3. Entering mode 1 / 3 counts in the progress
+ * counters; mode 1 refills his pool and may restart action 0x34. */
+void func_00138AD0(Hewie *h, s32 mode, s32 time) {
+    s32 m = mode;
+
+    if (h->c.hp == 0 && h->c.a.unkC4 == 2) {
+        m = 0;
+    }
+    if (h->c.a.unkC4 == 1 && mode != 3) {
+        m = 0;
+    }
+    if ((s16)time != -1) {
+        HW(h, 0xF35BE, s16) = time;
+    } else {
+        switch (m) {
+        case 0:
+            HW(h, 0xF35BE, s16) = 0;
+            break;
+        case 1:
+            if (HEWIE_MODE(h) != 1) {
+                Progress *p = gProgress;
+                s16 *n = (s16 *)((u8 *)p + 0xFB8);
+
+                *n += 1;
+                if (*n > 10000) {
+                    *n = 10000;
+                }
+                Progress_AddCounter(p, 0xFB6, -1);
+            }
+            HW(h, 0xF35BE, s16) = 1800;
+            break;
+        case 2:
+            HW(h, 0xF35BE, s16) = 1800;
+            break;
+        case 3:
+            if (HEWIE_MODE(h) != 3) {
+                Progress_AddCounter(gProgress, 0xFB6, 20);
+            }
+            HW(h, 0xF35BE, s16) = 450;
+            break;
+        }
+    }
+    HEWIE_MODE(h) = m;
+    if (mode != 1) {
+        return;
+    }
+    HW(h, 0xF3598, s32) = 0;
+    if ((Progress_GetVar(gProgress, 0x27) & 0xFF) == 1) {
+        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+    } else {
+        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+    }
+    if ((HW(h, 0xF356C, s32) & 0x80000001) == 1) {
+        if (!h->c.a.disabled) {
+            HW(h, 0xF3559, u8) = 1;
+        } else {
+            func_00130AF0(h, func_0013B2C0(h, 0x34), 0);
+        }
+    }
+    HW(h, 0xF3586, u8) = 0;
+}
+
+/* His feeling score about a character, by its id (NULL: not one he has feelings about). */
+static inline s16 *Hewie_Feeling(Hewie *h, u32 id) {
+    switch (id) {
+    case 0xA: case 0xB: case 0xC: case 0x27:
+        return &HW(h, 0xF3678, s16);
+    case 0x4: case 0x17: case 0x25:
+        return &HW(h, 0xF367A, s16);
+    case 0x3: case 0x22: case 0x23: case 0x24:
+        return &HW(h, 0xF3676, s16);
+    case 0x2: case 0x6: case 0x7: case 0x1B:
+        return &HW(h, 0xF3674, s16);
+    }
+    return NULL;
+}
+
+extern const s16 D_003B1264[];   /* by feeling score */
+
+/* In mode 0 with an active pursuer: by his feeling about it, maybe (16-sided roll below the
+ * score's threshold) switch to mode 2. */
+void func_0013C5D0(Hewie *h) {
+    u8 ok;
+    s16 *v;
+    s32 score;
+
+    if (HEWIE_MODE(h) != 0) {
+        return;
+    }
+    ok = (gCharPursuer != NULL && gCharPursuer->a.active == 1) ? 1 : 0;
+    if (!ok) {
+        return;
+    }
+    v = Hewie_Feeling(h, gCharPursuer->unk153C);
+    if (v == NULL) {
+        return;
+    }
+    score = *v;
+    if ((s32)(16.0f * RNG01()) < D_003B1264[score]) {
+        func_00138AD0(h, 2, -1);
+    }
+}
 
 /* His feeling about the kind of character `other` is (-10..10, saved with him), changed by
  * `delta`; then re-evaluated. */
 void func_00166150(Hewie *h, Character *other, s32 delta) {
-    s16 *v = NULL;
+    s16 *v = Hewie_Feeling(h, other->unk153C);
 
-    switch (other->unk153C) {
-    case 0xA: case 0xB: case 0xC: case 0x27:
-        v = &HW(h, 0xF3678, s16);
-        break;
-    case 0x4: case 0x17: case 0x25:
-        v = &HW(h, 0xF367A, s16);
-        break;
-    case 0x3: case 0x22: case 0x23: case 0x24:
-        v = &HW(h, 0xF3676, s16);
-        break;
-    case 0x2: case 0x6: case 0x7: case 0x1B:
-        v = &HW(h, 0xF3674, s16);
-        break;
-    }
     if (v != NULL) {
         *v += delta;
         if (*v < -10) {
@@ -341,7 +452,6 @@ void func_0015FBE0(Hewie *h) {
     Progress_ClearFlag(gProgress, 0xB);
 }
 
-extern void func_00138AD0(Hewie *h, s32 a, s32 b);
 
 /* vtable +0x78: left the room being played during action 0x38 -> default action. */
 void func_0015FB30(Hewie *h) {
@@ -513,9 +623,6 @@ void func_00167620(Hewie *h) {
 }
 
 extern void func_00126450(Character *c);
-extern Character *gCharPlayer;
-extern Character *gCharPartner;
-extern Character *gCharPursuer;
 
 #define Character_ToIdle(c) VCALL(c, 0x7C, void (*)(Character *))(c)
 
@@ -682,7 +789,6 @@ s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     return r;
 }
 
-extern Character *gCharacters[6];
 extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
 extern f32 func_002E2D00(f32 angle);                  /* angle wrapped to -pi..pi */
 extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
