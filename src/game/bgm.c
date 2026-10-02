@@ -1,6 +1,7 @@
 /* Streamed music (CRI ADX): methods of the ADX sound system (system +0x305280, global
  * D_0044E980) for its music stream. ADXT_* are CRI's library (native: silent). */
 #include "common.h"
+#include "bgm.h"
 #include "game.h"
 #include "ptmf.h"
 
@@ -204,18 +205,6 @@ void func_002D2330(Bgm *b) {
 
 /* ---- the music controller (SceneTitle +0x140CA4, global D_0044E970): plays a track from the
  * table, fading it in and out ---- */
-
-typedef struct BgmCtl {
-    /* 0x00 */ void **vtbl;
-    /* 0x04 */ u8 cur;          /* the track playing, 0xFF none */
-    /* 0x05 */ u8 req;          /* the track wanted */
-    /* 0x06 */ u8 pad6[2];
-    /* 0x08 */ f32 fade;        /* 0..1 */
-    /* 0x0C */ f32 fadeSpeed;   /* per frame */
-    /* 0x10 */ f32 level;       /* 0..1 */
-    /* 0x14 */ f32 levelSpeed;
-    /* 0x18 */ u8 pause;        /* start the next track paused */
-} BgmCtl;
 
 typedef struct BgmTrack {
     /* 0x0 */ const char *name;

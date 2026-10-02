@@ -6,6 +6,7 @@
 #include "ptmf.h"
 #include "progress.h"
 #include "task.h"
+#include "subscreen.h"
 #include "input.h"
 #include "sound.h"
 #include "gs.h"
@@ -23,9 +24,9 @@ extern void func_002B6340(void *movie);   /* apply the movie volume */
 extern void func_002D1FD0(void *bgm);     /* apply the music volume */
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);
 
-void func_00396900(void *s);
-void func_00399920(void *s);
-void func_00398850(void *s);
+void func_00396900(SubScreen *s);
+void func_00399920(SubScreen *s);
+void func_00398850(SubScreen *s);
 
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
@@ -62,33 +63,33 @@ void func_00264900(u8 *pool) {
 }
 
 /* start: load the textures, reset */
-void func_00399A10(u8 *s) {
+void func_00399A10(SubScreen *s) {
     VObject *ld = gFileLoader;
     s32 i;
 
-    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sSubBase, s + 0x1740, 0x6000000, 0);
-    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sSubBack, s + 0x11F40, 0x6000000, 0);
-    func_00264900(s + 8);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sSubBase, s->baseTex, 0x6000000, 0);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sSubBack, s->pageTex, 0x6000000, 0);
+    func_00264900(s->pool);
     for (i = 0; i < 9; i++) {
-        AT(s, 0x97740 + i * 4, s32) = 0;
+        s->unk97740[i] = 0;
     }
     for (i = 0; i < 0x80; i++) {
-        AT(s, 0x15F8 + i * 2, u16) = 0;
+        s->unk15F8[i] = 0;
     }
-    AT(s, 0x4, u8) = 0;
-    AT(s, 0xA8DE0, s32) = 0;
-    AT(s, 0x16F8, u8) = 1;
-    AT(s, 0xA8C50, u8) = 0;
+    s->mode = 0;
+    s->frame = 0;
+    s->showBehind = 1;
+    s->unkA8C50 = 0;
     for (i = 0; i < 3; i++) {
-        AT(s, 0xA8C51 + i, u8) = 0;
+        s->unkA8C51[i] = 0;
     }
-    AT(s, 0xA8C55, u8) = 0;
-    AT(s, 0xA8C56, u8) = 0;
-    AT(s, 0xA8DE5, u8) = 0;
-    AT(s, 0xA8C67, u8) = 0;
-    AT(s, 0xA8C66, u8) = 0;
-    ptmf_set_fn(&AT(s, 0x1714, PTMF), func_00396900);
-    ptmf_set_fn(&AT(s, 0x16FC, PTMF), func_00399920);
+    s->unkA8C55 = 0;
+    s->optCursor = 0;
+    s->open = 0;
+    s->resumeKind = 0;
+    s->kind = 0;
+    ptmf_set_fn(&s->resume, func_00396900);
+    ptmf_set_fn(&s->draw, func_00399920);
 }
 
 /* the master volume (0..1): sound effects, voices (D_00456DF0), the movie, the music */
@@ -150,12 +151,12 @@ extern u8 D_0047B150[6];         /* the name slot of each action */
 extern void func_00380990(void *self, s32 slot, s32 id);
 
 /* +0x34 apply controller layout `type`: map the six actions and name their buttons */
-void func_003913B0(u8 *s, s32 type) {
+void func_003913B0(SubScreen *s, s32 type) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
         D_0047E3C0[0xA + i] = D_0044B5E0[type][i][0];
-        func_00380990(s + 0x97764, D_0047B150[i], D_0044B5E0[type][i][1]);
+        func_00380990(&s->ask, D_0047B150[i], D_0044B5E0[type][i][1]);
     }
 }
 
@@ -168,21 +169,21 @@ extern void *D_00474020[];       /* the 0x15C helper's base vtable */
 extern void *D_00474040[];
 extern void *D_00474060[];
 
-void func_00393BD0(void *s);
-void func_003912E0(void *s);
-void func_003908B0(void *s);
-void func_00390790(void *s);
-void func_00391250(void *s);
-void func_0038FBE0(void *s);
-void func_0038E0C0(void *s);
-void func_003894F0(void *s);
-void func_0038D7E0(void *s);
-void func_00388FF0(void *s);
-void func_003888A0(void *s);
-void func_00387F00(void *s);
-void func_00386150(void *s);
-void func_003984D0(void *s);
-void func_00398100(void *s);
+void func_00393BD0(SubScreen *s);
+void func_003912E0(SubScreen *s);
+void func_003908B0(SubScreen *s);
+void func_00390790(SubScreen *s);
+void func_00391250(SubScreen *s);
+void func_0038FBE0(SubScreen *s);
+void func_0038E0C0(SubScreen *s);
+void func_003894F0(SubScreen *s);
+void func_0038D7E0(SubScreen *s);
+void func_00388FF0(SubScreen *s);
+void func_003888A0(SubScreen *s);
+void func_00387F00(SubScreen *s);
+void func_00386150(SubScreen *s);
+void func_003984D0(SubScreen *s);
+void func_00398100(SubScreen *s);
 
 static const char sSubSave[] = "SUBSCR\\SUBSAVE.TEX";
 static const char sPlate[] = "SUBSCR\\PLATE.TEX";
@@ -196,11 +197,8 @@ static const char sGalArt[] = "SUBSCR\\GAL_ART.TEX";
 static const char sArtLen[] = "SUBSCR\\ART00.LEN";
 static const char sGalType[] = "SUBSCR\\GAL_TYPE.TEX";
 
-#define SUB_KIND(s)     AT(s, 0xA8C66, u8)   /* what the screen shows (0x80..0x8F) */
-#define SUB_STATE(s)    AT(s, 0x1708, PTMF)
-#define SUB_DRAW(s)     AT(s, 0x16FC, PTMF)
 
-static void sub_load(u8 *s, const char *name, void *dst) {
+static void sub_load(SubScreen *s, const char *name, void *dst) {
     VObject *ld = gFileLoader;
 
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, dst, 0x6000000, 0);
@@ -215,19 +213,19 @@ static void sub_se(void) {
 }
 
 /* the options being edited: a copy of the system data's */
-static void sub_copy_options(u8 *s) {
+static void sub_copy_options(SubScreen *s) {
     u8 *sys = D_0044E978;
     s32 i;
 
     for (i = 0; i < 7; i++) {
-        AT(s, 0xA8C44 + i, u8) = sys[0x30 + i];
+        s->opt[i] = sys[0x30 + i];
     }
-    AT(s, 0xA8C4C, f32) = AT(sys, 0x38, f32);
+    s->optVolume = AT(sys, 0x38, f32);
 }
 
 /* the save slot screen's helper object (0x15C bytes at +0xA8C80) */
-static void sub_new_slots(u8 *s, void **vtbl) {
-    u8 *p = func_00322570(0x15C, s + 0xA8C80);
+static void sub_new_slots(SubScreen *s, void **vtbl) {
+    u8 *p = func_00322570(0x15C, s->page);
 
     if (p != NULL) {
         AT(p, 0, void **) = D_00474020;
@@ -240,83 +238,82 @@ static void sub_new_slots(u8 *s, void **vtbl) {
 
 /* open the sub screen in mode +4: 0 the in-game menu, 5 options, 6 load (title), the rest
  * save screens and the galleries */
-void func_00398850(void *self) {
-    u8 *s = self;
+void func_00398850(SubScreen *s) {
     u8 *sys;
     u8 n;
 
-    AT(s, 0xA8DE5, u8) = 1;
-    switch (AT(s, 0x4, u8)) {
+    s->open = 1;
+    switch (s->mode) {
     case 0:
         sub_copy_options(s);
         if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
-            SUB_KIND(s) = 0xA;
-            ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+            s->kind = 0xA;
+            ptmf_set_fn(&s->state, func_00393BD0);
         } else {
-            func_00305380(s + 0x97980);
-            SUB_KIND(s) = AT(s, 0xA8C67, u8);
-            SUB_STATE(s) = AT(s, 0x1714, PTMF);
+            func_00305380(s->textObj);
+            s->kind = s->resumeKind;
+            s->state = s->resume;
         }
         sub_se();
         break;
     case 1:
         sub_free_vram();
-        sub_load(s, sSubSave, s + 0x11F40);
-        func_002BFB00(s + 0xA8AC0, s + 0x42F40, s + 0x43740);
-        AT(s, 0xA8AC4, s32) = 0;
-        AT(s, 0xA8AC8, s32) = 0;
-        SUB_KIND(s) = 0x85;
-        ptmf_set_fn(&SUB_STATE(s), func_003912E0);
+        sub_load(s, sSubSave, s->pageTex);
+        func_002BFB00(&s->card, s->saveBuf0, s->saveBuf1);
+        s->card.state = 0;
+        s->card.hidden = 0;
+        s->kind = 0x85;
+        ptmf_set_fn(&s->state, func_003912E0);
         break;
     case 2:
         sub_free_vram();
-        sub_load(s, sPlate, s + 0x11F40);
-        AT(s, 0xA8C57, u8) = 0;
+        sub_load(s, sPlate, s->pageTex);
+        s->unkA8C57 = 0;
         for (n = 0; n < 8; n++) {
-            AT(s, 0xA8C58 + n, u8) = 0;
+            s->unkA8C58[n] = 0;
         }
-        AT(s, 0xA8C60, u8) = 0;
-        SUB_KIND(s) = 0x84;
-        ptmf_set_fn(&SUB_STATE(s), func_003908B0);
+        s->unkA8C60 = 0;
+        s->kind = 0x84;
+        ptmf_set_fn(&s->state, func_003908B0);
         sub_se();
         break;
     case 3:
         sub_free_vram();
-        sub_load(s, sSynSlot, s + 0x11F40);
+        sub_load(s, sSynSlot, s->pageTex);
         sub_new_slots(s, D_00474060);
-        SUB_KIND(s) = 0x86;
-        ptmf_set_fn(&SUB_STATE(s), func_00390790);
+        s->kind = 0x86;
+        ptmf_set_fn(&s->state, func_00390790);
         sub_se();
         break;
     case 4:
         sub_free_vram();
-        sub_load(s, sSynSlot, s + 0x11F40);
+        sub_load(s, sSynSlot, s->pageTex);
         sub_new_slots(s, D_00474040);
-        SUB_KIND(s) = 0x87;
-        ptmf_set_fn(&SUB_STATE(s), func_00390790);
+        s->kind = 0x87;
+        ptmf_set_fn(&s->state, func_00390790);
         sub_se();
         break;
     case 5:
         sub_copy_options(s);
         sub_se();
-        SUB_KIND(s) = 0x8A;
-        ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+        s->kind = 0x8A;
+        ptmf_set_fn(&s->state, func_00393BD0);
         break;
     case 6:
         sub_free_vram();
-        sub_load(s, sSubSave, s + 0x11F40);
-        func_002BFB00(s + 0xA8AC0, NULL, NULL);
-        AT(s, 0xA8AC4, s32) = 0;
-        AT(s, 0xA8AC8, s32) = 0;
-        SUB_KIND(s) = 0x85;
-        ptmf_set_fn(&SUB_STATE(s), func_00391250);
+        sub_load(s, sSubSave, s->pageTex);
+        func_002BFB00(&s->card, NULL, NULL);
+        s->card.state = 0;
+        s->card.hidden = 0;
+        s->kind = 0x85;
+        ptmf_set_fn(&s->state, func_00391250);
         break;
     case 7:
         sub_free_vram();
-        sub_load(s, sSubMg, s + 0x11F40);
-        SUB_KIND(s) = 0x80;
+        sub_load(s, sSubMg, s->pageTex);
+        s->kind = 0x80;
         func_0038F7D0(s);
-        ptmf_set_fn(&SUB_STATE(s), func_0038FBE0);
+        ptmf_set_fn(&s->state, func_0038FBE0);
         break;
     case 8: {
         VObject *ld;
@@ -324,64 +321,64 @@ void func_00398850(void *self) {
 
         sub_free_vram();
         ld = gFileLoader;
-        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalMovie, s + 0x11F40, 0x6000000, 0);
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalMovie, s->pageTex, 0x6000000, 0);
         p = gProgress;
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sThumbnail, (u8 *)p + 0x16C0, 0x6000000, 0);
-        SUB_KIND(s) = 0x8B;
-        AT(s, 0xA8C80, u8) = Progress_GetVar(p, 0x2B);
-        ptmf_set_fn(&SUB_STATE(s), func_0038E0C0);
+        s->kind = 0x8B;
+        s->page[0] = Progress_GetVar(p, 0x2B);
+        ptmf_set_fn(&s->state, func_0038E0C0);
         break;
     }
     case 9:
-        func_002BFB00(s + 0xA8AC0, s + 0x42F40, s + 0x43740);
-        AT(s, 0xA8AC4, s32) = 0;
-        AT(s, 0xA8AC8, s32) = 1;
-        SUB_KIND(s) = 0x85;
-        ptmf_set_fn(&SUB_STATE(s), func_003912E0);
+        func_002BFB00(&s->card, s->saveBuf0, s->saveBuf1);
+        s->card.state = 0;
+        s->card.hidden = 1;
+        s->kind = 0x85;
+        ptmf_set_fn(&s->state, func_003912E0);
         break;
     case 10:
         /* the extras menu: entries 0..2, then 3 and 4 when unlocked, then 5 */
         sub_free_vram();
-        sub_load(s, sSubMg, s + 0x11F40);
-        SUB_KIND(s) = 0x80;
-        AT(s, 0xA8C80, u8) = 0;
-        AT(s, 0xA8C81, u8) = 1;
-        AT(s, 0xA8C82, u8) = 2;
+        sub_load(s, sSubMg, s->pageTex);
+        s->kind = 0x80;
+        s->page[0] = 0;
+        s->page[1] = 1;
+        s->page[2] = 2;
         n = 3;
         sys = D_0044E978;
         if ((AT(sys, 0x2C, u32) & 0x40000) != 0) {
-            AT(s, 0xA8C83, u8) = 3;
+            s->page[3] = 3;
             n++;
         }
         if ((AT(sys, 0x2C, u32) & 0x80000) != 0) {
-            AT(s, 0xA8C80 + n, u8) = 4;
+            s->page[n] = 4;
             n++;
         }
-        AT(s, 0xA8C80 + n, u8) = 5;
-        AT(s, 0xA8C86, u8) = n + 1;
-        AT(s, 0xA8C87, u8) = 0;
-        ptmf_set_fn(&SUB_STATE(s), func_003894F0);
+        s->page[n] = 5;
+        s->page[6] = n + 1;
+        s->page[7] = 0;
+        ptmf_set_fn(&s->state, func_003894F0);
         break;
     case 11:
         sub_free_vram();
-        sub_load(s, sGalModel, s + 0x11F40);
-        SUB_KIND(s) = 0x8C;
-        AT(s, 0xA8C80, u8) = 0;
-        ptmf_set_fn(&SUB_STATE(s), func_0038D7E0);
+        sub_load(s, sGalModel, s->pageTex);
+        s->kind = 0x8C;
+        s->page[0] = 0;
+        ptmf_set_fn(&s->state, func_0038D7E0);
         break;
     case 12:
-        SUB_KIND(s) = 0x80;
+        s->kind = 0x80;
         func_00388D30(s);
-        ptmf_set_fn(&SUB_STATE(s), func_00388FF0);
+        ptmf_set_fn(&s->state, func_00388FF0);
         break;
     case 13:
         sub_free_vram();
-        sub_load(s, sGalMusic, s + 0x11F40);
-        SUB_KIND(s) = 0x8D;
-        AT(s, 0xA8C80, u8) = 0;
-        AT(s, 0xA8C82, u8) = 0xFF;
-        AT(s, 0xA8C81, u8) = 0xFF;
-        ptmf_set_fn(&SUB_STATE(s), func_003888A0);
+        sub_load(s, sGalMusic, s->pageTex);
+        s->kind = 0x8D;
+        s->page[0] = 0;
+        s->page[2] = 0xFF;
+        s->page[1] = 0xFF;
+        ptmf_set_fn(&s->state, func_003888A0);
         break;
     case 14: {
         VObject *ld;
@@ -389,40 +386,40 @@ void func_00398850(void *self) {
 
         sub_free_vram();
         ld = gFileLoader;
-        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalArt, s + 0x11F40, 0x6000000, 0);
-        SUB_KIND(s) = 0x8E;
-        AT(s, 0xA8C80, u8) = 0;
-        AT(s, 0xA8C81, u8) = 0;
-        AT(s, 0xA8C82, u8) = 0;
-        AT(s, 0xA8C83, u8) = 1;
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sGalArt, s->pageTex, 0x6000000, 0);
+        s->kind = 0x8E;
+        s->page[0] = 0;
+        s->page[1] = 0;
+        s->page[2] = 0;
+        s->page[3] = 1;
         buf = VCALL((VObject *)gProgress, 0x88, void *(*)(VObject *))((VObject *)gProgress);
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sArtLen, buf, 0x6000000, 0);
-        AT(s, 0xA8C84, s16) = 0;
-        AT(s, 0xA8C86, s16) = 0;
-        AT(s, 0xA8C88, u8) = 0;
-        AT(s, 0xA8C89, u8) = 1;
-        AT(s, 0xA8C8A, u8) = 0;
-        AT(s, 0xA8C8B, u8) = 0;
-        AT(s, 0xA8C8C, u8) = 0;
-        ptmf_set_fn(&SUB_STATE(s), func_00387F00);
+        SUB_PAGE(s, 4, s16) = 0;
+        SUB_PAGE(s, 6, s16) = 0;
+        s->page[8] = 0;
+        s->page[9] = 1;
+        s->page[10] = 0;
+        s->page[11] = 0;
+        s->page[12] = 0;
+        ptmf_set_fn(&s->state, func_00387F00);
         break;
     }
     case 15:
         sub_free_vram();
-        sub_load(s, sGalType, s + 0x11F40);
-        SUB_KIND(s) = 0x8F;
-        AT(s, 0xA8C80, u8) = 0;
-        ptmf_set_fn(&SUB_STATE(s), func_00386150);
+        sub_load(s, sGalType, s->pageTex);
+        s->kind = 0x8F;
+        s->page[0] = 0;
+        ptmf_set_fn(&s->state, func_00386150);
         break;
     }
-    AT(s, 0x16F8, u8) = 1;
-    AT(s, 0xA8C61, u8) = 1;
-    AT(s, 0xA8C62, s16) = 0;
-    AT(s, 0xA8C64, s16) = 0x10;
-    ptmf_set_fn(&SUB_DRAW(s), func_003984D0);
-    if (AT(s, 0x4, u8) == 7 || AT(s, 0x4, u8) == 0xC || AT(s, 0x4, u8) == 0xA) {
-        AT(s, 0xA8C64, s16) = 8;
-        ptmf_set_fn(&SUB_DRAW(s), func_00398100);
+    s->showBehind = 1;
+    s->fading = 1;
+    s->fade = 0;
+    s->fadeStep = 0x10;
+    ptmf_set_fn(&s->draw, func_003984D0);
+    if (s->mode == 7 || s->mode == 0xC || s->mode == 0xA) {
+        s->fadeStep = 8;
+        ptmf_set_fn(&s->draw, func_00398100);
     }
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);
@@ -430,23 +427,22 @@ void func_00398850(void *self) {
 }
 
 /* per frame: run the draw/step state (+0x16FC); true while the menu behind should be drawn */
-s32 func_003999C0(u8 *s) {
-    ptmf_scall(s, &AT(s, 0x16FC, PTMF));
-    AT(s, 0xA8DE0, s32)++;
-    return AT(s, 0x16F8, u8);
+s32 func_003999C0(SubScreen *s) {
+    ptmf_scall(s, &s->draw);
+    s->frame++;
+    return s->showBehind;
 }
 
 /* state: wait for the textures, upload them (VRAM slots 0x18, 0x19), set the screen up */
-void func_00399920(void *self) {
-    u8 *s = self;
+void func_00399920(SubScreen *s) {
     VObject *tc;
 
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) == 2) {
         return;
     }
     tc = D_0044E4E8;
-    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x1740, 0x18);
-    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x11F40, 0x19);
+    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->baseTex, 0x18);
+    VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->pageTex, 0x19);
     func_00398850(s);
 }
 
@@ -455,10 +451,8 @@ extern u8 D_0047B350;
 extern void *D_0046F350[];       /* overlay vtable */
 extern void *D_00469D00[];       /* its base */
 extern void func_002CF390(void *ov, u32 rgba);
-void func_00397F00(void *s);
+void func_00397F00(SubScreen *s);
 
-#define SUB_FADE(s)     AT(s, 0xA8C62, s16)   /* 0 .. 0x80 */
-#define SUB_FADESTEP(s) AT(s, 0xA8C64, s16)
 
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 
@@ -570,10 +564,10 @@ void func_003854C0(void *s, s32 x, s32 y, s32 part, s32 alpha, s32 top) {
 
 /* the fade: a black overlay over the menu for screens 0x80.., else the screen's panels
  * (D_0044C120) drawn at the fade's alpha */
-static void sub_draw_fade(u8 *s) {
+static void sub_draw_fade(SubScreen *s) {
     u8 kind;
 
-    kind = SUB_KIND(s);
+    kind = s->kind;
     if (kind & 0x80) {
         /* a full-screen black overlay */
         u8 ov[0x100] __attribute__((aligned(16)));
@@ -583,11 +577,11 @@ static void sub_draw_fade(u8 *s) {
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
-        func_002CF390(ov, (u32)SUB_FADE(s) << 24);
+        func_002CF390(ov, (u32)s->fade << 24);
         VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
-        u8 alpha = SUB_FADE(s);
+        u8 alpha = s->fade;
 
         if (alpha != 0 && kind != 0xFF) {
             s8 *panel = D_0044C120[kind & 0x7F];
@@ -604,10 +598,10 @@ static void sub_draw_fade(u8 *s) {
 }
 
 /* the sound and music volume follow the fade (`vol` = 1 - fade / 255) */
-static void sub_set_volume(u8 *s, f32 vol) {
+static void sub_set_volume(SubScreen *s, f32 vol) {
     u8 *bgm;
 
-    VCALL(D_0044E560, 0x94, void (*)(VObject *, s32))(D_0044E560, (u8)(0xFF - SUB_FADE(s)));
+    VCALL(D_0044E560, 0x94, void (*)(VObject *, s32))(D_0044E560, (u8)(0xFF - s->fade));
     bgm = D_0044E980;
     AT(bgm, 0x114, f32) = vol;
     if (vol < 0.0f) {
@@ -624,27 +618,26 @@ static void sub_set_volume(u8 *s, f32 vol) {
 
 /* draw state: fade the screen in (the music and sound down with it); at full the screen takes
  * over (virtual +0x28, its texture uploaded) and the fade turns round (func_00397F00) */
-void func_003984D0(void *self) {
-    u8 *s = self;
+void func_003984D0(SubScreen *s) {
     f32 vol;
 
-    SUB_FADE(s) += SUB_FADESTEP(s);
-    if (SUB_FADE(s) >= 0x80) {
-        AT(s, 0x16F8, u8) = 0;
-        SUB_FADE(s) = 0x80;
-        if (AT(s, 0x4, u8) == 0
+    s->fade += s->fadeStep;
+    if (s->fade >= 0x80) {
+        s->showBehind = 0;
+        s->fade = 0x80;
+        if (s->mode == 0
             || VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
             VCALL((VObject *)s, 0x28, void (*)(VObject *))((VObject *)s);
-            if (AT(s, 0x4, u8) != 0) {
-                VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s + 0x11F40, 0x19);
+            if (s->mode != 0) {
+                VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
             }
             D_0047B350 = 2;
-            SUB_FADESTEP(s) = -0x20;
-            ptmf_set_fn(&SUB_DRAW(s), func_00397F00);
+            s->fadeStep = -0x20;
+            ptmf_set_fn(&s->draw, func_00397F00);
         }
     }
 
-    vol = 100.0f * (f32)(0xFF - SUB_FADE(s)) / 255.0f / 100.0f;
+    vol = 100.0f * (f32)(0xFF - s->fade) / 255.0f / 100.0f;
     sub_set_volume(s, vol);
 
     sub_draw_fade(s);
@@ -653,22 +646,21 @@ void func_003984D0(void *self) {
     }
 }
 
-void func_00397D60(void *s);
+void func_00397D60(SubScreen *s);
 
 /* draw state: run the screen (+0x1708) while fading back from black; at 0 the fade is done
  * (func_00397D60) */
-void func_00397F00(void *self) {
-    u8 *s = self;
+void func_00397F00(SubScreen *s) {
 
-    SUB_FADE(s) += SUB_FADESTEP(s);
-    if (SUB_FADE(s) < 0) {
-        AT(s, 0xA8C61, u8) = 0;
-        SUB_FADE(s) = 0;
-        AT(s, 0xA8C68, u8) = 0;
-        AT(s, 0xA8DE4, u8) = 0;
-        ptmf_set_fn(&SUB_DRAW(s), func_00397D60);
+    s->fade += s->fadeStep;
+    if (s->fade < 0) {
+        s->fading = 0;
+        s->fade = 0;
+        s->quietClose = 0;
+        s->close = 0;
+        ptmf_set_fn(&s->draw, func_00397D60);
     }
-    ptmf_scall(s, &SUB_STATE(s));
+    ptmf_scall(s, &s->state);
     sub_draw_fade(s);
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);
@@ -676,78 +668,74 @@ void func_00397F00(void *self) {
 }
 
 /* +0x28 the screen takes over */
-void func_00384C30(u8 *s) {
-    AT(s, 0xA8DDD, u8) = 0;
-    AT(s, 0xA8DDE, u8) = 1;
+void func_00384C30(SubScreen *s) {
+    s->unkA8DDD = 0;
+    s->unkA8DDE = 1;
 }
 
 
-#define SUB_FADING(s)  AT(s, 0xA8C61, u8)
-#define SUB_CLOSE(s)   AT(s, 0xA8DE4, u8)   /* leave the screen */
-#define OPT_CURSOR(s)  AT(s, 0xA8C56, u8)
 
-void func_00393880(void *s);
-void func_00393480(void *s);
-void func_003930C0(void *s);
-void func_00392B50(void *s);
-void func_00392670(void *s);
-void func_00392360(void *s);
-void func_00394260(void *s);
-void func_00391450(u8 *s, s32 editing);
+void func_00393880(SubScreen *s);
+void func_00393480(SubScreen *s);
+void func_003930C0(SubScreen *s);
+void func_00392B50(SubScreen *s);
+void func_00392670(SubScreen *s);
+void func_00392360(SubScreen *s);
+void func_00394260(SubScreen *s);
+void func_00391450(SubScreen *s, s32 editing);
 
 
 /* in-game, not in a special scene (gProgress +0x1FBEC1) */
-static s32 sub_ingame_menu(u8 *s) {
-    return gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 0 && AT(s, 0x4, u8) == 0;
+static s32 sub_ingame_menu(SubScreen *s) {
+    return gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 0 && s->mode == 0;
 }
 
 /* state: the options list (controller, vibration, sound, brightness / position, ...): up / down
  * choose of 5, confirm opens the entry's editor, the default button asks to restore the
  * defaults; in game the page buttons switch to the other menu pages */
-void func_00393BD0(void *self) {
-    static void (*const sEditors[5])(void *) = {
+void func_00393BD0(SubScreen *s) {
+    static void (*const sEditors[5])(SubScreen *) = {
         func_00393880, func_00393480, func_003930C0, func_00392B50, func_00392670,
     };
-    u8 *s = self;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         if (D_0047E36C & MENU_CONFIRM) {
-            if (OPT_CURSOR(s) < 5) {
-                ptmf_set_fn(&SUB_STATE(s), sEditors[OPT_CURSOR(s)]);
+            if (s->optCursor < 5) {
+                ptmf_set_fn(&s->state, sEditors[s->optCursor]);
             }
             Sound_PlaySE(SE_DECIDE);
         } else if (D_0047E36C & MENU_UP) {
-            if (OPT_CURSOR(s) != 0) {
-                OPT_CURSOR(s)--;
+            if (s->optCursor != 0) {
+                s->optCursor--;
             } else {
-                OPT_CURSOR(s) = 4;
+                s->optCursor = 4;
             }
             Sound_PlaySE(SE_CURSOR);
         } else if (D_0047E36C & MENU_DOWN) {
-            OPT_CURSOR(s)++;
-            if (OPT_CURSOR(s) >= 5) {
-                OPT_CURSOR(s) = 0;
+            s->optCursor++;
+            if (s->optCursor >= 5) {
+                s->optCursor = 0;
             }
             Sound_PlaySE(SE_CURSOR);
         } else if (D_0047E36C & MENU_DEFAULT) {
-            func_00384A90((Task *)(s + 0x97764), 0x84);
-            ptmf_set_fn(&SUB_STATE(s), func_00392360);
+            func_00384A90(&s->ask, 0x84);
+            ptmf_set_fn(&s->state, func_00392360);
             Sound_PlaySE(SE_DECIDE);
         } else if ((D_0047E36C & MENU_NEXT) && sub_ingame_menu(s)) {
-            AT(s, 0xA8C50, u8) = 0;
-            ptmf_set_fn(&SUB_STATE(s), func_00396900);
-            ptmf_set_fn(&AT(s, 0x1714, PTMF), func_00396900);
+            s->unkA8C50 = 0;
+            ptmf_set_fn(&s->state, func_00396900);
+            ptmf_set_fn(&s->resume, func_00396900);
             Sound_PlaySE(SE_PAGE);
         } else if ((D_0047E36C & MENU_PREV) && sub_ingame_menu(s)) {
-            ptmf_set_fn(&SUB_STATE(s), func_00394260);
-            ptmf_set_fn(&AT(s, 0x1714, PTMF), func_00394260);
+            ptmf_set_fn(&s->state, func_00394260);
+            ptmf_set_fn(&s->resume, func_00394260);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_CANCEL) {
-            SUB_CLOSE(s) = 1;
+            s->close = 1;
         }
     }
     func_00391450(s, 0);
-    func_00384650((Task *)(s + 0x97868), 0x46, 0x186, 0x80, func_00384B00(s + 0x97868, 0x82), 0x80, 0x30, 0x10, 0x15);
+    func_00384650(&s->text, 0x46, 0x186, 0x80, func_00384B00(&s->text, 0x82), 0x80, 0x30, 0x10, 0x15);
 }
 
 extern u16 D_0044B570[2][4][7];   /* [special scene][controller layout]: the action names */
@@ -757,26 +745,24 @@ extern u16 func_00382970(Task *t, s32 id, s32 glyphW);
 static const char sPosX[] = "X : %d";
 static const char sPosY[] = "Y : %d";
 
-#define OPT(s, i)      AT(s, 0xA8C44 + (i), s8)   /* the options being edited (system data +0x30) */
-#define OPT_VOLUME(s)  AT(s, 0xA8C4C, f32)
 
 /* one line of text in the options' text task */
-static void opt_text(u8 *s, s32 x, s32 y, s32 color, s32 id) {
-    Task *t = (Task *)(s + 0x97868);
+static void opt_text(SubScreen *s, s32 x, s32 y, s32 color, s32 id) {
+    Task *t = &s->text;
 
     func_00384650(t, x, y, color, func_00384B00(t, id), 0x80, 0x30, 0x10, 0x15);
 }
 
 /* a line centred on x = 0x160 */
-static void opt_text_centred(u8 *s, s32 y, s32 id) {
-    s32 x = 0x160 - (func_00382970((Task *)(s + 0x97868), id, 0x10) >> 1);
+static void opt_text_centred(SubScreen *s, s32 y, s32 id) {
+    s32 x = 0x160 - (func_00382970(&s->text, id, 0x10) >> 1);
 
     opt_text(s, x, y, 0x80, id);
 }
 
 /* draw the options: the panels, the controller layout's action names, vibration, sound output,
  * volume bar, screen position, and the cursor bar; `editing` highlights the current entry */
-void func_00391450(u8 *s, s32 editing) {
+void func_00391450(SubScreen *s, s32 editing) {
     u8 special = 0;
     u8 kind;
     u16 (*names)[7];
@@ -786,14 +772,14 @@ void func_00391450(u8 *s, s32 editing) {
     if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
         special = 1;
     }
-    if (AT(s, 0x4, u8) != 0) {
-        SUB_KIND(s) = 0x8A;
+    if (s->mode != 0) {
+        s->kind = 0x8A;
     } else if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
-        SUB_KIND(s) = 0xA;
+        s->kind = 0xA;
     } else {
-        SUB_KIND(s) = 3;
+        s->kind = 3;
     }
-    kind = SUB_KIND(s);
+    kind = s->kind;
     if (kind != 0xFF) {
         s8 *panel = D_0044C120[kind & 0x7F];
 
@@ -807,117 +793,115 @@ void func_00391450(u8 *s, s32 editing) {
 
     /* controller layout */
     func_003854C0(s, 0x20, 0x54, 0x10, 0x80, 0);
-    opt_text(s, 0x48, 0x5A, OPT_CURSOR(s) == 0 && editing ? 0x82 : 0x80, 0x60);
+    opt_text(s, 0x48, 0x5A, s->optCursor == 0 && editing ? 0x82 : 0x80, 0x60);
     names = D_0044B570[special];
-    w = 0x160 - (func_00382970((Task *)(s + 0x97868), 0x61, 0x10) >> 1);
-    opt_text(s, w, 0x5A, 0x80, names[OPT(s, 6)][0]);
+    w = 0x160 - (func_00382970(&s->text, 0x61, 0x10) >> 1);
+    opt_text(s, w, 0x5A, 0x80, names[s->opt[6]][0]);
     opt_text(s, 0x40, 0x74, 0x80, 0x65);
-    opt_text(s, 0x60, 0x74, 0x80, names[OPT(s, 6)][1]);
+    opt_text(s, 0x60, 0x74, 0x80, names[s->opt[6]][1]);
     opt_text(s, 0x40, 0x94, 0x80, 0x66);
-    opt_text(s, 0x60, 0x94, 0x80, names[OPT(s, 6)][2]);
+    opt_text(s, 0x60, 0x94, 0x80, names[s->opt[6]][2]);
     opt_text(s, 0x40, 0xB4, 0x80, 0x67);
-    opt_text(s, 0x60, 0xB4, 0x80, names[OPT(s, 6)][3]);
+    opt_text(s, 0x60, 0xB4, 0x80, names[s->opt[6]][3]);
     opt_text(s, 0x40, 0xD4, 0x80, 0x68);
-    opt_text(s, 0x60, 0xD4, 0x80, names[OPT(s, 6)][4]);
+    opt_text(s, 0x60, 0xD4, 0x80, names[s->opt[6]][4]);
     opt_text(s, 0x110, 0x74, 0x80, 0x69);
     opt_text(s, 0x130, 0x74, 0x80, 0x73);
     opt_text(s, 0x110, 0x94, 0x80, 0x6A);
     opt_text(s, 0x130, 0x94, 0x80, 0x74);
     opt_text(s, 0x110, 0xB4, 0x80, 0x6B);
-    opt_text(s, 0x130, 0xB4, 0x80, names[OPT(s, 6)][5]);
+    opt_text(s, 0x130, 0xB4, 0x80, names[s->opt[6]][5]);
     opt_text(s, 0x110, 0xD4, 0x80, 0x6C);
-    opt_text(s, 0x130, 0xD4, 0x80, names[OPT(s, 6)][6]);
+    opt_text(s, 0x130, 0xD4, 0x80, names[s->opt[6]][6]);
 
     /* vibration */
     func_003854C0(s, 0x20, 0xF4, 0x11, 0x80, 0);
-    opt_text(s, 0x48, 0xFA, OPT_CURSOR(s) == 1 && editing ? 0x82 : 0x80, 0x77);
-    opt_text_centred(s, 0xFA, OPT(s, 4) == 1 ? 0x78 : 0x79);
+    opt_text(s, 0x48, 0xFA, s->optCursor == 1 && editing ? 0x82 : 0x80, 0x77);
+    opt_text_centred(s, 0xFA, s->opt[4] == 1 ? 0x78 : 0x79);
 
     /* sound output */
     func_003854C0(s, 0x20, 0x114, 0x12, 0x80, 0);
-    opt_text(s, 0x48, 0x11A, OPT_CURSOR(s) == 2 && editing ? 0x82 : 0x80, 0x7A);
-    opt_text_centred(s, 0x11A, OPT(s, 0) == 0 ? 0x7B : OPT(s, 0) == 1 ? 0x7C : 0x7D);
+    opt_text(s, 0x48, 0x11A, s->optCursor == 2 && editing ? 0x82 : 0x80, 0x7A);
+    opt_text_centred(s, 0x11A, s->opt[0] == 0 ? 0x7B : s->opt[0] == 1 ? 0x7C : 0x7D);
 
     /* volume: a bar from 0x118 to 0x198 */
     func_003854C0(s, 0x20, 0x134, 0x13, 0x80, 0);
-    opt_text(s, 0x48, 0x13A, OPT_CURSOR(s) == 3 && editing ? 0x82 : 0x80, 0x7E);
-    w = 0x118 - func_00382970((Task *)(s + 0x97868), 0x7F, 0x10);
+    opt_text(s, 0x48, 0x13A, s->optCursor == 3 && editing ? 0x82 : 0x80, 0x7E);
+    w = 0x118 - func_00382970(&s->text, 0x7F, 0x10);
     opt_text(s, w, 0x13A, 0x80, 0x7F);
     opt_text(s, 0x1A8, 0x13A, 0x80, 0x80);
-    bar = (u32)(128.0f * OPT_VOLUME(s));
+    bar = (u32)(128.0f * s->optVolume);
     func_003854C0(s, (u16)(bar + 0x118), 0x134, 0x19, 0x80, 0);
 
     /* screen position */
     func_003854C0(s, 0x20, 0x154, 0x14, 0x80, 0);
-    opt_text(s, 0x48, 0x15A, OPT_CURSOR(s) == 4 && editing ? 0x82 : 0x80, 0x81);
-    func_00384800((Task *)(s + 0x97868), 0x11C, 0x15A, 0x80, sPosX, OPT(s, 2));
-    func_00384800((Task *)(s + 0x97868), 0x170, 0x15A, 0x80, sPosY, OPT(s, 3));
+    opt_text(s, 0x48, 0x15A, s->optCursor == 4 && editing ? 0x82 : 0x80, 0x81);
+    func_00384800(&s->text, 0x11C, 0x15A, 0x80, sPosX, s->opt[2]);
+    func_00384800(&s->text, 0x170, 0x15A, 0x80, sPosY, s->opt[3]);
 
     /* the cursor bar */
-    func_003854C0(s, 0x20, D_0044B558[OPT_CURSOR(s)], 0x1C, 0x80, 0);
+    func_003854C0(s, 0x20, D_0044B558[s->optCursor], 0x1C, 0x80, 0);
 }
 
-void func_003977D0(void *s);
+void func_003977D0(SubScreen *s);
 
 /* draw state: the screen is up; run it until it asks to close (+0xA8DE4, or in game the
  * menu button: Progress flag 4), then fade out (func_003977D0) */
-void func_00397D60(void *self) {
-    u8 *s = self;
+void func_00397D60(SubScreen *s) {
     Progress *p = gProgress;
 
-    if (p != NULL && AT(s, 0x4, u8) != 0) {
+    if (p != NULL && s->mode != 0) {
         Progress_ClearFlag(p, 4);
     }
-    ptmf_scall(s, &SUB_STATE(s));
-    if (SUB_CLOSE(s) != 1 && (p == NULL || !Progress_TestFlag(p, 4))) {
+    ptmf_scall(s, &s->state);
+    if (s->close != 1 && (p == NULL || !Progress_TestFlag(p, 4))) {
         return;
     }
-    if (p != NULL && AT(p, 0x1FBEC1, u8) == 0 && AT(s, 0x4, u8) == 0) {
-        AT(s, 0xA8C67, u8) = SUB_KIND(s);   /* reopen on this page */
+    if (p != NULL && AT(p, 0x1FBEC1, u8) == 0 && s->mode == 0) {
+        s->resumeKind = s->kind;   /* reopen on this page */
     }
-    SUB_FADING(s) = 1;
-    SUB_FADE(s) = 0;
-    SUB_FADESTEP(s) = 0x20;
-    ptmf_set_fn(&SUB_DRAW(s), func_003977D0);
+    s->fading = 1;
+    s->fade = 0;
+    s->fadeStep = 0x20;
+    ptmf_set_fn(&s->draw, func_003977D0);
     if (p != NULL) {
         Progress_ClearFlag(p, 4);
     }
-    if (AT(s, 0xA8C68, u8) == 0) {
+    if (s->quietClose == 0) {
         Sound_PlaySE(SE_CLOSE);
     }
 }
 
 extern VObject *D_0044E4F8;
-void func_003974A0(void *s);
+void func_003974A0(SubScreen *s);
 
 /* draw state: fade back to black over the screen; at black restore the menu's background
  * texture (the screens that replaced it) and fade the game back in (func_003974A0) */
-void func_003977D0(void *self) {
-    u8 *s = self;
+void func_003977D0(SubScreen *s) {
     u8 mode;
 
-    SUB_FADE(s) += SUB_FADESTEP(s);
-    if (SUB_FADE(s) < 0x80) {
-        ptmf_scall(s, &SUB_STATE(s));
+    s->fade += s->fadeStep;
+    if (s->fade < 0x80) {
+        ptmf_scall(s, &s->state);
     } else {
-        mode = AT(s, 0x4, u8);
+        mode = s->mode;
         if (mode != 0 && mode != 5) {
             sub_free_vram();
-            sub_load(s, sSubBack, s + 0x11F40);
+            sub_load(s, sSubBack, s->pageTex);
         }
         D_0047B350 = 1;
-        AT(s, 0x16F8, u8) = 1;
-        SUB_FADE(s) = 0x80;
-        SUB_FADESTEP(s) = -0x10;
-        mode = AT(s, 0x4, u8);
+        s->showBehind = 1;
+        s->fade = 0x80;
+        s->fadeStep = -0x10;
+        mode = s->mode;
         if (mode == 0xB || mode == 8 || (u32)(mode - 0xD) < 3) {
             VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
         }
-        if (AT(s, 0x4, u8) == 8) {
-            SUB_FADE(s) = 0;
+        if (s->mode == 8) {
+            s->fade = 0;
             Progress_SetFlag(gProgress, 8);
         }
-        ptmf_set_fn(&SUB_DRAW(s), func_003974A0);
+        ptmf_set_fn(&s->draw, func_003974A0);
     }
     sub_draw_fade(s);
     if (gProgress != NULL) {
@@ -929,21 +913,20 @@ void func_003977D0(void *self) {
 /* draw state: fade the menu back in (once the background texture is loaded); at the end the
  * screen is closed (in game: Progress flag 4) and the next update opens it again
  * (func_00398850) */
-void func_003974A0(void *self) {
-    u8 *s = self;
+void func_003974A0(SubScreen *s) {
     f32 vol;
 
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
-        SUB_FADE(s) += SUB_FADESTEP(s);
+        s->fade += s->fadeStep;
     }
-    if (SUB_FADE(s) < 0) {
-        SUB_FADE(s) = 0;
-        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s + 0x11F40, 0x19);
-        ptmf_set_fn(&SUB_DRAW(s), func_00398850);
+    if (s->fade < 0) {
+        s->fade = 0;
+        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+        ptmf_set_fn(&s->draw, func_00398850);
         if (gProgress != NULL) {
             Progress_SetFlag(gProgress, 4);
         } else {
-            AT(s, 0xA8DE5, u8) = 0;
+            s->open = 0;
         }
         vol = 1.0f;
     } else {
@@ -951,7 +934,7 @@ void func_003974A0(void *self) {
         if (gProgress != NULL) {
             Progress_ClearFlag(gProgress, 4);
         }
-        vol = 100.0f * (f32)(0xFF - SUB_FADE(s)) / 255.0f / 100.0f;
+        vol = 100.0f * (f32)(0xFF - s->fade) / 255.0f / 100.0f;
     }
     sub_set_volume(s, vol);
 }
@@ -961,30 +944,29 @@ extern void func_002BCAC0(void *card);
 
 /* state: the save-data screen (the card UI at +0xA8AC0) for loading; when it finishes
  * (+0xA8AC4 < 0) the screen closes */
-void func_00391250(void *self) {
-    u8 *s = self;
+void func_00391250(SubScreen *s) {
 
-    SUB_KIND(s) = 0x85;
-    if (AT(s, 0xA8AC4, s32) >= 0) {
-        func_002BCAC0(s + 0xA8AC0);
+    s->kind = 0x85;
+    if (s->card.state >= 0) {
+        func_002BCAC0(&s->card);
         return;
     }
-    if (!SUB_FADING(s)) {
-        SUB_CLOSE(s) = 1;
+    if (!s->fading) {
+        s->close = 1;
     }
-    func_002BC460(s + 0xA8AC0, 1);
+    func_002BC460(&s->card, 1);
 }
 
 /* the blinking of the editors' arrows: |0x80 - (frame * 4 & 0xFF)| */
-static u8 opt_blink(u8 *s) {
-    s32 a = 0x80 - (u8)(AT(s, 0xA8DE0, s32) << 2);
+static u8 opt_blink(SubScreen *s) {
+    s32 a = 0x80 - (u8)(s->frame << 2);
 
     return a > 0 ? (u8)a : (u8)-a;
 }
 
 /* an editor's frame: the options with the entry lit, blinking arrows either side of the value,
  * the help line */
-static void opt_editor_draw(u8 *s, s32 xl, s32 xr, s32 y) {
+static void opt_editor_draw(SubScreen *s, s32 xl, s32 xr, s32 y) {
     u8 a;
 
     func_00391450(s, 1);
@@ -1000,38 +982,37 @@ static s32 opt_cancelled(void) {
 }
 
 /* leave an editor: back to the list */
-static void opt_back(u8 *s, s32 se) {
-    ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+static void opt_back(SubScreen *s, s32 se) {
+    ptmf_set_fn(&s->state, func_00393BD0);
     Sound_PlaySE(se);
 }
 
 /* editing the controller layout (4 types): left / right choose, confirm applies it, cancel
  * (or the in-game menu button) restores it */
-void func_00393880(void *self) {
-    u8 *s = self;
+void func_00393880(SubScreen *s) {
     s8 *opt = (s8 *)D_0044E978 + 0x30;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         if (D_0047E36C & MENU_LEFT) {
-            if (OPT(s, 6) != 0) {
-                OPT(s, 6)--;
+            if (s->opt[6] != 0) {
+                s->opt[6]--;
             } else {
-                OPT(s, 6) = 3;
+                s->opt[6] = 3;
             }
             Sound_PlaySE(SE_CURSOR);
         } else if (D_0047E36C & MENU_RIGHT) {
-            OPT(s, 6)++;
-            if (OPT(s, 6) >= 4) {
-                OPT(s, 6) = 0;
+            s->opt[6]++;
+            if (s->opt[6] >= 4) {
+                s->opt[6] = 0;
             }
             Sound_PlaySE(SE_CURSOR);
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            opt[6] = OPT(s, 6);
-            VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, OPT(s, 6));
+            opt[6] = s->opt[6];
+            VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, s->opt[6]);
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
-            OPT(s, 6) = opt[6];
+            s->opt[6] = opt[6];
             opt_back(s, 0x2C);
         }
     }
@@ -1043,20 +1024,19 @@ void func_00393880(void *self) {
 
 
 /* editing the vibration: left / right toggle it (turning it on buzzes the pad) */
-void func_00393480(void *self) {
-    u8 *s = self;
+void func_00393480(SubScreen *s) {
     s8 *opt = (s8 *)D_0044E978 + 0x30;
     VObject *o;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         if ((D_0047E36C & MENU_LEFT) || (D_0047E36C & MENU_RIGHT)) {
             o = D_0044E7A8;
-            if (OPT(s, 4) == 1) {
-                OPT(s, 4) = 0;
+            if (s->opt[4] == 1) {
+                s->opt[4] = 0;
                 VCALL(o, 0x10, void (*)(VObject *))(o);
                 VIB_ENABLE(o, 0);
             } else {
-                OPT(s, 4) = 1;
+                s->opt[4] = 1;
                 VCALL(o, 0x10, void (*)(VObject *))(o);
                 VIB_ENABLE(o, 1);
                 VCALL(o, 0x14, void (*)(VObject *, s32, s32, s32))(o, 0, 1, 4);
@@ -1066,13 +1046,13 @@ void func_00393480(void *self) {
         }
         if (D_0047E36C & MENU_CONFIRM) {
             o = D_0044E7A8;
-            opt[4] = OPT(s, 4);
+            opt[4] = s->opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
             o = D_0044E7A8;
-            OPT(s, 4) = opt[4];
+            s->opt[4] = opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
             opt_back(s, 0x2C);
@@ -1085,26 +1065,25 @@ void func_00393480(void *self) {
 #define SND_OUTPUT(o, mode) VCALL(o, 0x68, void (*)(VObject *, s32))(o, mode)
 
 /* editing the sound output: left / right cycle it (heard at once) */
-void func_003930C0(void *self) {
-    u8 *s = self;
+void func_003930C0(SubScreen *s) {
     s8 *opt = (s8 *)D_0044E978 + 0x30;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         if (D_0047E36C & MENU_LEFT) {
-            OPT(s, 0) = OPT(s, 0) == 0 ? 2 : OPT(s, 0) == 1 ? 0 : 1;
-            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            s->opt[0] = s->opt[0] == 0 ? 2 : s->opt[0] == 1 ? 0 : 1;
+            SND_OUTPUT(D_0044E560, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
         } else if (D_0047E36C & MENU_RIGHT) {
-            OPT(s, 0) = OPT(s, 0) == 0 ? 1 : OPT(s, 0) == 1 ? 2 : 0;
-            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            s->opt[0] = s->opt[0] == 0 ? 1 : s->opt[0] == 1 ? 2 : 0;
+            SND_OUTPUT(D_0044E560, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            opt[0] = OPT(s, 0);
+            opt[0] = s->opt[0];
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
-            OPT(s, 0) = opt[0];
-            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            s->opt[0] = opt[0];
+            SND_OUTPUT(D_0044E560, s->opt[0]);
             opt_back(s, 0x2C);
         }
     }
@@ -1112,47 +1091,46 @@ void func_003930C0(void *self) {
 }
 
 /* editing the volume: left / right in steps of 1/64 (heard at once) */
-void func_00392B50(void *self) {
-    u8 *s = self;
+void func_00392B50(SubScreen *s) {
     u8 *opt = (u8 *)D_0044E978 + 0x30;
     VObject *snd;
     f32 v;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         if (D_0047E36C & MENU_LEFT) {
-            if (!(OPT_VOLUME(s) < 0.0f)) {
-                OPT_VOLUME(s) = v = OPT_VOLUME(s) - 0.015625f;
+            if (!(s->optVolume < 0.0f)) {
+                s->optVolume = v = s->optVolume - 0.015625f;
                 if (v < 0.0f) {
-                    OPT_VOLUME(s) = 0.0f;
+                    s->optVolume = 0.0f;
                 }
                 snd = D_0044E560;
-                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, OPT_VOLUME(s));
+                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, s->optVolume);
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
         } else if (D_0047E36C & MENU_RIGHT) {
-            if (OPT_VOLUME(s) < 1.0f) {
-                OPT_VOLUME(s) = v = OPT_VOLUME(s) + 0.015625f;
+            if (s->optVolume < 1.0f) {
+                s->optVolume = v = s->optVolume + 0.015625f;
                 if (!(v < 1.0f)) {
-                    OPT_VOLUME(s) = 1.0f;
+                    s->optVolume = 1.0f;
                 }
                 snd = D_0044E560;
-                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, OPT_VOLUME(s));
+                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, s->optVolume);
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
         }
         if (D_0047E36C & MENU_CONFIRM) {
             snd = D_0044E560;
-            v = OPT_VOLUME(s);
+            v = s->optVolume;
             AT(opt, 8, f32) = v;
             opt_apply_volume(snd, v);
             Sound_Play(snd, SE_DECIDE, SE_BANK_MENU);
-            ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+            ptmf_set_fn(&s->state, func_00393BD0);
         } else if (opt_cancelled()) {
             snd = D_0044E560;
-            OPT_VOLUME(s) = AT(opt, 8, f32);
+            s->optVolume = AT(opt, 8, f32);
             opt_apply_volume(snd, AT(opt, 8, f32));
             Sound_Play(snd, SE_CANCEL, SE_BANK_MENU);
-            ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+            ptmf_set_fn(&s->state, func_00393BD0);
         }
     }
     opt_editor_draw(s, 0xE0, 0x1C0, 0x134);
@@ -1161,55 +1139,54 @@ void func_00392B50(void *self) {
 #define SCREEN_POS(x, y) VCALL(D_0044E4F0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4F0, x, y)
 
 /* editing the screen position: the D-pad moves it (-32..32 each way, seen at once) */
-void func_00392670(void *self) {
-    u8 *s = self;
+void func_00392670(SubScreen *s) {
     s8 *opt = (s8 *)D_0044E978 + 0x30;
     s32 a;
 
-    if (!SUB_FADING(s)) {
+    if (!s->fading) {
         u32 pad = D_0047E36C;
 
         if (pad & MENU_UP) {
-            if (OPT(s, 3) >= -0x1F) {
-                OPT(s, 3)--;
-                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+            if (s->opt[3] >= -0x1F) {
+                s->opt[3]--;
+                SCREEN_POS(s->opt[2], s->opt[3]);
                 Sound_PlaySE(SE_CURSOR);
             }
         } else if (pad & MENU_DOWN) {
-            if (OPT(s, 3) < 0x20) {
-                OPT(s, 3)++;
-                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+            if (s->opt[3] < 0x20) {
+                s->opt[3]++;
+                SCREEN_POS(s->opt[2], s->opt[3]);
                 Sound_PlaySE(SE_CURSOR);
             }
         }
         pad = D_0047E36C;
         if (pad & MENU_LEFT) {
-            if (OPT(s, 2) >= -0x1F) {
-                OPT(s, 2)--;
-                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+            if (s->opt[2] >= -0x1F) {
+                s->opt[2]--;
+                SCREEN_POS(s->opt[2], s->opt[3]);
                 Sound_PlaySE(SE_CURSOR);
             }
         } else if (pad & MENU_RIGHT) {
-            if (OPT(s, 2) < 0x20) {
-                OPT(s, 2)++;
-                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+            if (s->opt[2] < 0x20) {
+                s->opt[2]++;
+                SCREEN_POS(s->opt[2], s->opt[3]);
                 Sound_PlaySE(SE_CURSOR);
             }
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            opt[2] = OPT(s, 2);
-            opt[3] = OPT(s, 3);
+            opt[2] = s->opt[2];
+            opt[3] = s->opt[3];
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
-            OPT(s, 2) = opt[2];
-            OPT(s, 3) = opt[3];
+            s->opt[2] = opt[2];
+            s->opt[3] = opt[3];
             SCREEN_POS(opt[2], opt[3]);
             opt_back(s, 0x2C);
         }
     }
     func_00391450(s, 1);
     /* the corner marks pulse */
-    a = 0x40 - ((AT(s, 0xA8DE0, s32) << 1) & 0x7F);
+    a = 0x40 - ((s->frame << 1) & 0x7F);
     a = (a > 0 ? a : -a) + 0x20;
     func_003854C0(s, 0x10, 0x10, 0x15, (u8)a, 0);
     func_003854C0(s, 0x1D2, 0x10, 0x16, (u8)a, 0);
@@ -1220,9 +1197,8 @@ void func_00392670(void *self) {
 
 /* the "restore the defaults?" question (message 0x84): on yes the options go back to mono,
  * vibration on, full volume, centred, layout A, and are applied */
-void func_00392360(void *self) {
-    u8 *s = self;
-    Task *t = (Task *)(s + 0x97764);
+void func_00392360(SubScreen *s) {
+    Task *t = &s->ask;
 
     func_00391450(s, 0);
     if (t->mode) {
@@ -1249,5 +1225,5 @@ void func_00392360(void *self) {
         opt_apply_volume(o, AT(sys, 0x38, f32));
         SCREEN_POS(sys[0x32], sys[0x33]);
     }
-    ptmf_set_fn(&SUB_STATE(s), func_00393BD0);
+    ptmf_set_fn(&s->state, func_00393BD0);
 }

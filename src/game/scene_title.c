@@ -4,30 +4,11 @@
 #include "game.h"
 #include "ptmf.h"
 #include "task.h"
+#include "scene_title.h"
 #include "input.h"
 #include "sound.h"
 
 
-/*
- * SceneTitle layout (what's known):
- *   0x000000 Scene
- *   0x000014 s32
- *   0x000024 the message object (vtable D_0046D7D0; gBootMessage points here)
- *   0x074940 u8
- *   0x074944 Task
- *   0x074A80 the title work (vtable D_0047A790, see func_002D04C0), with
- *            +0x097764 / +0x097868 Tasks, +0x097980 a text object (func_002D03A0),
- *            +0x0A8AC0 a memory card check (BootCard)
- *   0x11DA80 s32, 0x11DA94 u8
- *   0x11DAC0 the music stream's work buffer (0x231E4 bytes)
- *   0x140CA4 a small object (vtable D_0046A110, global D_0044E970), its state at +0x1C
- */
-#define TITLE_TASK 0x74944
-#define TITLE_WORK 0x74A80
-#define TITLE_BGM_WORK 0x11DAC0
-#define TITLE_UNK140CA4 0x140CA4
-#define MENU_CURSOR AT(t, 0x21, s8)  /* the main menu's entry */
-#define TITLE_NEXT AT(t, 0x20, u8)   /* what the title leads to (2 new game, 5 / 6 extras) */
 
 extern void *Scene_vtable[];
 extern void *D_0046A040[];          /* SceneTitle */
@@ -68,12 +49,12 @@ void *func_0012C500(void *e, s32 flags) {
     return e;
 }
 
-/* the title work's base: a pool of 192 entries (global D_0044E990) and its list */
-void *func_002D04C0(u8 *w) {
-    u8 *pool = w + 8;
+/* the sub screen's base: a pool of 192 entries (global D_0044E990) and its list */
+void *func_002D04C0(SubScreen *w) {
+    u8 *pool = w->pool;
 
     D_0044E988 = w;
-    AT(w, 0x0, void **) = D_0046A090;
+    w->vtbl = D_0046A090;
     D_0044E990 = pool;
     AT(pool, 0x0, void **) = D_0046A078;
     func_00100340(pool + 8, func_002D0570, func_0012C500, 0x18, 0xC0);
@@ -84,7 +65,7 @@ void *func_002D04C0(u8 *w) {
     AT(pool, 0x1214, s32) = 0;
     AT(pool, 0x1218, s32) = 0;
     AT(pool, 0x121C, s32) = 0;
-    AT(w, 0x4, u8) = 0;
+    w->mode = 0;
     return w;
 }
 
@@ -99,32 +80,32 @@ void *func_002D03A0(u8 *o) {
 }
 
 /* constructor */
-Scene *SceneTitle_ctor(Scene *t) {
-    u8 *w;
+SceneTitle *SceneTitle_ctor(SceneTitle *t) {
+    SubScreen *w;
 
-    t->vtbl = Scene_vtable;
-    ptmf_set(&t->state, &sSceneEntryState);
+    t->base.vtbl = Scene_vtable;
+    ptmf_set(&t->base.state, &sSceneEntryState);
     D_0044E968 = t;
-    gBootMessage = (u8 *)t + 0x24;
-    t->vtbl = D_0046A040;
-    AT(t, 0x24, void **) = D_0046D7D0;
-    Task_Construct((Task *)((u8 *)t + TITLE_TASK));
-    w = (u8 *)t + TITLE_WORK;
+    gBootMessage = t->msg;
+    t->base.vtbl = D_0046A040;
+    AT(t->msg, 0, void **) = D_0046D7D0;
+    Task_Construct(&t->task);
+    w = &t->sub;
     func_002D04C0(w);
-    AT(w, 0x0, void **) = D_0047A790;
-    func_002D0440((Task *)(w + 0x97764));
-    func_002D0440((Task *)(w + 0x97868));
-    func_002D03A0(w + 0x97980);
-    func_002D0300(w + 0xA8AC0);
-    D_0044E970 = (u8 *)t + TITLE_UNK140CA4;
-    AT(t, TITLE_UNK140CA4, void **) = D_0046A110;
-    AT(t, 0x11DA80, s32) = 0;
-    AT(t, 0x74940, u8) = 0;
-    AT(t, 0x14, s32) = 0;
-    AT(t, 0x11DA94, u8) = 0;
-    AT(t, TITLE_UNK140CA4 + 0x1C, PTMF) = sGameStateNull;
-    func_002D2370(D_0044E980, (u8 *)t + TITLE_BGM_WORK);
-    func_002E34D0((u8 *)t + TITLE_UNK140CA4);
+    w->vtbl = D_0047A790;
+    func_002D0440(&w->ask);
+    func_002D0440(&w->text);
+    func_002D03A0(w->textObj);
+    func_002D0300(&w->card);
+    D_0044E970 = &t->bgm;
+    t->bgm.vtbl = D_0046A110;
+    t->unk11DA80 = 0;
+    t->loaded = 0;
+    t->returnTo = 0;
+    t->extras = 0;
+    t->seq = sGameStateNull;
+    func_002D2370(D_0044E980, t->bgmWork);
+    func_002E34D0(&t->bgm);
     return t;
 }
 
@@ -133,67 +114,67 @@ extern u8 D_0047B350;           /* the language */
 extern void func_0026BCC0(void *msg);
 extern void func_00399A10(void *sub);
 extern void func_003921A0(void *sub);
-void func_001306E0(Scene *t);
+void func_001306E0(SceneTitle *t);
 
 /* +0x10 entry: reset the message object and the sub screen, apply the options, then the title
  * sequence (func_001306E0) */
-void func_00130810(Scene *t) {
+void func_00130810(SceneTitle *t) {
     u8 *sys = D_0044E978;
     PTMF s = {0, -1, {(void *)func_001306E0}};
 
-    AT(t, 0x18, s32) = 0;
+    t->timer = 0;
     if (AT(sys, 0x2C, u32) & 0x100000) {
-        AT(t, 0x21, u8) = 1;
+        t->cursor = 1;
     } else {
-        AT(t, 0x21, u8) = 0;
+        t->cursor = 0;
     }
-    AT(t, 0x20, u8) = 0;
-    AT(t, 0x22, u8) = 0;
-    func_0026BCC0((u8 *)t + 0x24);
-    func_00399A10((u8 *)t + TITLE_WORK);
-    func_003921A0((u8 *)t + TITLE_WORK);
+    t->next = 0;
+    t->movieSkipped = 0;
+    func_0026BCC0(t->msg);
+    func_00399A10(&t->sub);
+    func_003921A0(&t->sub);
     D_0047B350 = 2;
-    AT(t, 0x11DA94, u8) = 0;
+    t->extras = 0;
     if (AT(sys, 0x24, u32) & 1) {
-        AT(t, 0x11DA94, u8) = 1;
+        t->extras = 1;
     }
-    AT(t, 0x140CD0, u8) = 0;
+    t->demo = 0;
     if (ptmf_test(&s)) {
-        t->state = s;
+        t->base.state = s;
     }
 }
 
 extern VObject *gFileLoader;
-void func_00130520(Scene *t);
-void func_0012FB50(Scene *t);
-void func_0012F720(Scene *t);
+void func_00130520(SceneTitle *t);
+void func_0012FB50(SceneTitle *t);
+void func_0012F720(SceneTitle *t);
 
 /* state: once the textures are loaded, either back to the menu (+0x14 = 2) or the title
  * (func_0012FB50, with the +0x140CA4 object running func_0012F720) */
-void func_001306E0(Scene *t) {
+void func_001306E0(SceneTitle *t) {
     if (VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) == 2) {
         return;
     }
-    if (AT(t, 0x14, s32) == 2) {
-        AT(t, 0x14, s32) = 0;
-        ptmf_set_fn(&t->state, func_00130520);
+    if (t->returnTo == 2) {
+        t->returnTo = 0;
+        ptmf_set_fn(&t->base.state, func_00130520);
         return;
     }
-    ptmf_set_fn(&t->state, func_0012FB50);
-    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+    ptmf_set_fn(&t->base.state, func_0012FB50);
+    ptmf_set_fn(&t->seq, func_0012F720);
 }
 
 extern void func_002E3200(void *obj);
 
 /* state: the title; run the title's own sequence (its state at +0x140CC0), then the
  * +0x140CA4 object */
-void func_0012FB50(Scene *t) {
-    PTMF *seq = &AT(t, TITLE_UNK140CA4 + 0x1C, PTMF);
+void func_0012FB50(SceneTitle *t) {
+    PTMF *seq = &t->seq;
 
     if (ptmf_test(seq)) {
         ptmf_scall(t, seq);
     }
-    func_002E3200((u8 *)t + TITLE_UNK140CA4);
+    func_002E3200(&t->bgm);
 }
 
 extern void *D_0044E960;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
@@ -204,21 +185,21 @@ extern void *__nw__FUiPv(u32 size, void *p);
 extern void *func_002B70D0(void *movie);
 extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
 extern void func_002B6340(void *movie);
-void func_00130460(Scene *t);
+void func_00130460(SceneTitle *t);
 
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
 
 /* start movie `name` as scene 1 at the title's movie volume (+0x140CCC, reset to 1) */
-static inline void title_movie_start(Scene *t, const char *name) {
+static inline void title_movie_start(SceneTitle *t, const char *name) {
     void *table = D_0044E960;
     VObject *heap = (VObject *)((u8 *)table + 0x10D9040);
     Scene *movie;
     void *mem;
     s32 ok;
 
-    AT(t, 0x18, s32) = 0;
-    AT(t, 0x22, u8) = 0;
-    AT(t, 0x140CCC, f32) = 1.0f;
+    t->timer = 0;
+    t->movieSkipped = 0;
+    t->movieVolume = 1.0f;
     mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x600200);
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
@@ -245,7 +226,7 @@ static inline void title_movie_start(Scene *t, const char *name) {
         f32 *v = &AT(m, 0x1D4, f32);
 
         func_002B6D10(m, name, 1, 0);
-        *v = AT(t, 0x140CCC, f32);
+        *v = t->movieVolume;
         if (*v < 0.0f) {
             *v = 0.0f;
         }
@@ -257,46 +238,46 @@ static inline void title_movie_start(Scene *t, const char *name) {
 }
 
 /* ... then state `next` */
-static inline void title_movie(Scene *t, const char *name, void (*next)(Scene *)) {
+static inline void title_movie(SceneTitle *t, const char *name, void (*next)(SceneTitle *)) {
     title_movie_start(t, name);
-    ptmf_set_fn(&t->state, next);
+    ptmf_set_fn(&t->base.state, next);
 }
 
 /* state: start the attract movie */
-void func_00130520(Scene *t) {
+void func_00130520(SceneTitle *t) {
     title_movie(t, D_0044E940, func_00130460);
 }
 
 extern const char D_0044E888[];   /* "OPENING.SFD" */
-void func_0012CA70(Scene *t);
+void func_0012CA70(SceneTitle *t);
 
 /* state: a new game: the opening movie first */
-void func_0012CB30(Scene *t) {
+void func_0012CB30(SceneTitle *t) {
     title_movie(t, D_0044E888, func_0012CA70);
 }
 
-void func_00130170(Scene *t);
+void func_00130170(SceneTitle *t);
 
 /* wait for the movie (Start, once it shows, skips it), then state `next` */
-static inline void title_movie_wait(Scene *t, void (*next)(Scene *)) {
+static inline void title_movie_wait(SceneTitle *t, void (*next)(SceneTitle *)) {
     if ((D_0047E37C & PAD_START) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
-        AT(t, 0x22, u8) = 1;
+        t->movieSkipped = 1;
     }
-    if (D_0044E958 != NULL && !AT(t, 0x22, u8)) {
+    if (D_0044E958 != NULL && !t->movieSkipped) {
         return;
     }
-    ptmf_set_fn(&t->state, next);
+    ptmf_set_fn(&t->base.state, next);
 }
 
 /* state: the attract movie */
-void func_00130460(Scene *t) {
+void func_00130460(SceneTitle *t) {
     title_movie_wait(t, func_00130170);
 }
 
-void func_0012C7B0(Scene *t);
+void func_0012C7B0(SceneTitle *t);
 
 /* state: the opening movie */
-void func_0012CA70(Scene *t) {
+void func_0012CA70(SceneTitle *t) {
     title_movie_wait(t, func_0012C7B0);
 }
 
@@ -308,9 +289,9 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 /* fade the movie out (sound and picture, 1/30 a frame; at 0 its scene is finished); 0 once
  * it's gone */
-static inline s32 title_movie_fade(Scene *t) {
+static inline s32 title_movie_fade(SceneTitle *t) {
     u8 *m = D_0044E958;
-    f32 *level = &AT(t, 0x140CCC, f32);
+    f32 *level = &t->movieVolume;
     f32 l;
 
     if (m == NULL) {
@@ -355,20 +336,20 @@ static inline s32 title_movie_fade(Scene *t) {
 }
 
 /* state: fade the attract movie out, then the title */
-void func_00130170(Scene *t) {
+void func_00130170(SceneTitle *t) {
     if (!title_movie_fade(t)) {
-        ptmf_set_fn(&t->state, func_0012FB50);
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+        ptmf_set_fn(&t->base.state, func_0012FB50);
+        ptmf_set_fn(&t->seq, func_0012F720);
     }
 }
 
 /* state: fade the opening out, then start the game (mode 3, stage 0x2A; flagged for the extra
  * mode) */
-void func_0012C7B0(Scene *t) {
+void func_0012C7B0(SceneTitle *t) {
     if (!title_movie_fade(t)) {
         AT(D_0044E978, 0x4, s32) = 3;
-        AT(D_0044E978, 0x10, s32) = TITLE_NEXT == 5 ? 0x4000002A : 0x2A;
-        VCALL(t, 0x14, void (*)(Scene *))(t);
+        AT(D_0044E978, 0x10, s32) = t->next == 5 ? 0x4000002A : 0x2A;
+        VCALL(t, 0x14, void (*)(SceneTitle *))(t);
     }
 }
 
@@ -380,8 +361,8 @@ extern const char D_0044E8E0[];   /* "SYSTEM\\TITLE_BACK.BIN" */
 extern const char D_0044E900[];   /* "SYSTEM\\TITLE.HD" */
 extern const char D_0044E910[];   /* "SYSTEM\\TITLE.SDT" */
 extern const char D_0044E930[];   /* "SYSTEM\\TITLE.BD" */
-void func_0012F290(Scene *t);
-void func_0012F500(Scene *t);
+void func_0012F290(SceneTitle *t);
+void func_0012F500(SceneTitle *t);
 
 #define LOADER_SIZE(name) VCALL(gFileLoader, 0x30, s32 (*)(VObject *, const char *))(gFileLoader, name)
 #define LOADER_LOAD(name, dst) VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(gFileLoader, name, dst)
@@ -405,18 +386,18 @@ static inline void load_bank_part(VObject *snd, const char *name, s32 m) {
 
 /* the title sequence, first: load the title picture and its sound bank, then the logo
  * (func_0012F500, title music) or, after a game, the menu straight away (func_0012F290) */
-void func_0012F720(Scene *t) {
+void func_0012F720(SceneTitle *t) {
     VObject *msg;
     VObject *snd;
 
-    AT(t, 0x18, s32) = 0;
-    LOADER_LOAD(D_0044E8C0, (u8 *)t + 0x140);
+    t->timer = 0;
+    LOADER_LOAD(D_0044E8C0, t->titleTex);
     msg = gBootMessage;
-    VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, (u8 *)t + 0x140);
-    VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, (u8 *)t + 0x140, 0);
-    LOADER_LOAD(D_0044E8E0, (u8 *)t + 0x51140);
+    VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, t->titleTex);
+    VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, t->titleTex, 0);
+    LOADER_LOAD(D_0044E8E0, t->backImage);
     snd = D_0044E560;
-    AT(t, 0x74940, u8) = 1;
+    t->loaded = 1;
     VCALL(snd, 0xA0, void (*)(VObject *))(snd);
     VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
     {
@@ -440,46 +421,46 @@ void func_0012F720(Scene *t) {
         VCALL(s, 0x60, void (*)(VObject *, s32))(s, 7);
         VCALL(s, 0x7C, void (*)(VObject *, s32, s32))(s, 1, 0);
     }
-    if (AT(t, 0x22, u8) == 0 && AT(t, 0x14, s32) == 0) {
+    if (t->movieSkipped == 0 && t->returnTo == 0) {
         VObject *s;
 
-        AT(t, 0x1C, s32) = 0;
+        t->anim = 0;
         s = D_0044E560;
         Sound_Play(s, 0, 7);
         if ((s8)VCALL(s, 0x6C, s32 (*)(VObject *))(s) != 0) {
             Sound_Play(snd, 1, 7);
         }
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F500);
+        ptmf_set_fn(&t->seq, func_0012F500);
         return;
     }
-    AT(t, 0x14, s32) = 0;
-    AT(t, 0x1C, s32) = 90000;
-    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
+    t->returnTo = 0;
+    t->anim = 90000;
+    ptmf_set_fn(&t->seq, func_0012F290);
 }
 
 extern f32 func_0031C248(f32 x);   /* sinf */
-void func_0012D7F0(Scene *t);
-void func_0037E950(Scene *t, f32 alpha);
-void func_0037E6A0(Scene *t, f32 alpha, f32 scale);
+void func_0012D7F0(SceneTitle *t);
+void func_0037E950(SceneTitle *t, f32 alpha);
+void func_0037E6A0(SceneTitle *t, f32 alpha, f32 scale);
 
 
 /* the title fading in over 150 frames: the picture, then (from frame 90) the logo coming in
  * from large; then the menu (func_0012F290) */
-void func_0012F500(Scene *t) {
+void func_0012F500(SceneTitle *t) {
     s32 done = 0;
     f32 a, b, f;
 
-    AT(t, 0x1C, s32)++;
-    if (AT(t, 0x1C, s32) >= 0x97) {
-        AT(t, 0x1C, s32) = 150;
+    t->anim++;
+    if (t->anim >= 0x97) {
+        t->anim = 150;
         done = 1;
     }
     a = 1.0f;
-    f = (f32)AT(t, 0x1C, s32) / 150.0f;
+    f = (f32)t->anim / 150.0f;
     if (f <= 1.0f) {
         a = f;
     }
-    f = (f32)(AT(t, 0x1C, s32) - 90) / 60.0f;
+    f = (f32)(t->anim - 90) / 60.0f;
     if (f < 0.0f) {
         f = 0.0f;
     }
@@ -487,15 +468,15 @@ void func_0012F500(Scene *t) {
     if (f <= 1.0f) {
         b = f;
     }
-    if (!AT(t, 0x74940, u8)) {
+    if (!t->loaded) {
         return;
     }
     func_0012D7F0(t);
     func_0037E950(t, a);
     func_0037E6A0(t, b, 1.0f + 4.0f * func_0031C248(0x1.921fb6p+1f * (90.0f * (1.0f - b)) / 180.0f));
     if (done) {
-        AT(t, 0x1C, s32) = 90000;
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
+        t->anim = 90000;
+        ptmf_set_fn(&t->seq, func_0012F290);
     }
 }
 
@@ -503,11 +484,11 @@ extern VObject *D_0044E4E8;   /* the texture cache */
 
 /* the title picture's two textures: their VRAM slots (+0x11DA84 / +0x11DA88; bit 31 just
  * assigned) and entries (+0x11DA8C / +0x11DA90) */
-#define TITLE_TEX_SLOT(i) AT(t, 0x11DA84 + (i) * 4, s32)
-#define TITLE_TEX(i) AT(t, 0x11DA8C + (i) * 4, void *)
+#define TITLE_TEX_SLOT(i) (t->texSlot[i])
+#define TITLE_TEX(i) (t->tex[i])
 
 /* make sure texture `i` of the title set (6) is in VRAM: 0 if it can't be uploaded */
-static inline s32 title_texture(Scene *t, VObject *msg, s32 i) {
+static inline s32 title_texture(SceneTitle *t, VObject *msg, s32 i) {
     TITLE_TEX_SLOT(i) = VCALL(msg, 0x24, s32 (*)(VObject *, s32, s32))(msg, 6, i);
     if (TITLE_TEX_SLOT(i) == -1) {
         return 1;
@@ -522,7 +503,7 @@ static inline s32 title_texture(Scene *t, VObject *msg, s32 i) {
 }
 
 /* draw the title background (TITLE_BACK.BIN, 640 x 448) after loading the title textures */
-void func_0012D7F0(Scene *t) {
+void func_0012D7F0(SceneTitle *t) {
     VObject *msg;
 
     VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
@@ -535,14 +516,14 @@ void func_0012D7F0(Scene *t) {
         return;
     }
     VCALL(D_0044E4F0, 0x4C, s32 (*)(VObject *, void *, s32, s32, s32))(
-        D_0044E4F0, (u8 *)t + 0x51140, 0x280, 0x1C0, 0);
+        D_0044E4F0, t->backImage, 0x280, 0x1C0, 0);
 }
 
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 
 /* the start of a title sprite packet (layer 0x30): Z writes off, blending, a textured sprite
  * of the title texture 0 with clamp `clamp`; returns the packet (NULL: no room) */
-static inline u64 *title_sprite(Scene *t, u64 clamp) {
+static inline u64 *title_sprite(SceneTitle *t, u64 clamp) {
     u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, 0x30);
     u8 *tex;
 
@@ -578,7 +559,7 @@ static inline void title_sprite_end(u64 *p) {
 }
 
 /* the title picture (512 x 336 of texture 0), `alpha` 0..1 */
-void func_0037E950(Scene *t, f32 alpha) {
+void func_0037E950(SceneTitle *t, f32 alpha) {
     u64 *p = title_sprite(t, (0x53CULL << 32) | 0x7FC00A);
 
     if (p == NULL) {
@@ -594,7 +575,7 @@ void func_0037E950(Scene *t, f32 alpha) {
 }
 
 /* the logo (texture 0, from v 336), centred, `alpha` 0..1, `scale` x its size (512 x 176) */
-void func_0037E6A0(Scene *t, f32 alpha, f32 scale) {
+void func_0037E6A0(SceneTitle *t, f32 alpha, f32 scale) {
     u64 *p = title_sprite(t, (0x7FDULL << 32) | 0x507FC00A);
     s32 hh, hw;
 
@@ -614,7 +595,7 @@ void func_0037E6A0(Scene *t, f32 alpha, f32 scale) {
 
 /* Draw the w x h rectangle at u, v of title texture 1 (CLUT `clut`) at screen x, y, `alpha`
  * 0..1 (as vertex alpha, or with `fix` as fixed alpha). */
-void func_0012D140(Scene *t, s32 u, s32 v, s32 w, s32 h, s32 x, s32 y, s32 clut, s32 fix, f32 alpha) {
+void func_0012D140(SceneTitle *t, s32 u, s32 v, s32 w, s32 h, s32 x, s32 y, s32 clut, s32 fix, f32 alpha) {
     u64 *p;
     u8 *tex;
     u8 a8;
@@ -673,34 +654,34 @@ void func_0012D140(Scene *t, s32 u, s32 v, s32 w, s32 h, s32 x, s32 y, s32 clut,
 }
 
 /* "PRESS START BUTTON" */
-void func_0037EB80(Scene *t, f32 alpha) {
+void func_0037EB80(SceneTitle *t, f32 alpha) {
     func_0012D140(t, 0, 0xC0, 0x170, 0x20, 0x48, 0x188, 2, 0, alpha);
 }
 
 /* the pulsing part of it */
-void func_0037EBC0(Scene *t, f32 alpha) {
+void func_0037EBC0(SceneTitle *t, f32 alpha) {
     func_0012D140(t, 0, 0xA0, 0xC0, 0x20, 0xA0, 0x130, 3, 0, alpha);
 }
 
-void func_0012EE30(Scene *t);
-void func_0012E450(Scene *t);
+void func_0012EE30(SceneTitle *t);
+void func_0012E450(SceneTitle *t);
 
 /* the title waiting for Start; idle for 900 frames: the attract movie */
-void func_0012F290(Scene *t) {
+void func_0012F290(SceneTitle *t) {
     VObject *snd;
 
-    AT(t, 0x1C, s32) = (AT(t, 0x1C, s32) + 5000) % 360000;
-    if (!AT(t, 0x74940, u8)) {
+    t->anim = (t->anim + 5000) % 360000;
+    if (!t->loaded) {
         return;
     }
     func_0012D7F0(t);
     func_0037E950(t, 1.0f);
     func_0037E6A0(t, 1.0f, 1.0f);
     func_0037EB80(t, 1.0f);
-    func_0037EBC0(t, 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)AT(t, 0x1C, s32) / 1000.0f) / 180.0f)));
+    func_0037EBC0(t, 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f)));
     if ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START)) {
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012EE30);
-        AT(t, 0x18, s32) = 0;
+        ptmf_set_fn(&t->seq, func_0012EE30);
+        t->timer = 0;
         snd = D_0044E560;
         Sound_Play(snd, 2, 7);
         if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
@@ -708,20 +689,20 @@ void func_0012F290(Scene *t) {
         }
         return;
     }
-    if (++AT(t, 0x18, s32) < 0x385) {
+    if (++t->timer < 0x385) {
         return;
     }
-    AT(t, 0x20, u8) = AT(t, 0x20, u8) ? 0 : 1;
-    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    t->next = t->next ? 0 : 1;
+    ptmf_set_fn(&t->seq, func_0012E450);
 }
 
-void func_0012D530(Scene *t, f32 alpha, f32 scroll);
-void func_0012CCF0(Scene *t, f32 alpha, f32 open);
-void func_0012E8C0(Scene *t);
+void func_0012D530(SceneTitle *t, f32 alpha, f32 scroll);
+void func_0012CCF0(SceneTitle *t, f32 alpha, f32 open);
+void func_0012E8C0(SceneTitle *t);
 
 /* the main menu's entries (texture 1, CLUT 1): New Game, Load Game, Options and, once the game
  * has been cleared (+0x11DA94), two more; with `stagger` the k-th at alpha - k / 8 */
-static inline void menu_entries(Scene *t, f32 alpha, s32 stagger, s32 all) {
+static inline void menu_entries(SceneTitle *t, f32 alpha, s32 stagger, s32 all) {
     func_0012D140(t, 0, 0x00, 0xC0, 0x20, 0x20, 0x40, 1, 0, alpha);
     func_0012D140(t, 0, 0x20, 0xC0, 0x20, 0x20, 0x70, 1, 0, stagger ? -0.125f + alpha : alpha);
     func_0012D140(t, 0, 0x40, 0xC0, 0x20, 0x20, 0xA0, 1, 0, stagger ? -0.25f + alpha : alpha);
@@ -734,48 +715,48 @@ static inline void menu_entries(Scene *t, f32 alpha, s32 stagger, s32 all) {
 
 /* the title turning into the main menu: (1) a 30-frame fade of the title layer, (2) the menu
  * coming in, (3) then the menu (func_0012E8C0) */
-void func_0012EE30(Scene *t) {
+void func_0012EE30(SceneTitle *t) {
     f32 f;
 
-    if (!AT(t, 0x74940, u8)) {
+    if (!t->loaded) {
         return;
     }
     func_0012D7F0(t);
-    switch (AT(t, 0x18, s32)) {
+    switch (t->timer) {
     case 0:
-        AT(t, 0x1C, s32) = 0;
-        AT(t, 0x18, s32)++;
+        t->anim = 0;
+        t->timer++;
         /* fall through */
     case 1:
         func_0037E950(t, 1.0f);
         func_0037E6A0(t, 1.0f, 1.0f);
         func_0037EB80(t, 1.0f);
         func_0037EBC0(t, 1.0f);
-        f = (f32)AT(t, 0x1C, s32)++ / 30.0f;
-        if (AT(t, 0x1C, s32) >= 0x1F) {
-            AT(t, 0x1C, s32) = 0;
+        f = (f32)t->anim++ / 30.0f;
+        if (t->anim >= 0x1F) {
+            t->anim = 0;
             f = 1.0f;
-            AT(t, 0x18, s32)++;
+            t->timer++;
         }
         func_0012D530(t, f, 1.0f);
         break;
     case 2:
-        f = (f32)AT(t, 0x1C, s32)++ / 30.0f;
-        if (AT(t, 0x1C, s32) >= 0x1F) {
-            AT(t, 0x1C, s32) = 0;
+        f = (f32)t->anim++ / 30.0f;
+        if (t->anim >= 0x1F) {
+            t->anim = 0;
             f = 1.0f;
-            AT(t, 0x18, s32)++;
+            t->timer++;
         }
         func_0012D530(t, 1.0f, 1.0f - f);
         func_0012CCF0(t, f, f);
-        menu_entries(t, 1.5f * f, 1, AT(t, 0x11DA94, u8));
+        menu_entries(t, 1.5f * f, 1, t->extras);
         break;
     case 3:
         func_0012D530(t, 1.0f, 0.0f);
         func_0012CCF0(t, 1.0f, 1.0f);
-        menu_entries(t, 1.0f, 0, AT(t, 0x11DA94, u8));
-        AT(t, 0x1C, s32) = 90000;
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        menu_entries(t, 1.0f, 0, t->extras);
+        t->anim = 90000;
+        ptmf_set_fn(&t->seq, func_0012E8C0);
         break;
     }
 }
@@ -783,7 +764,7 @@ void func_0012EE30(Scene *t) {
 /* The title background (TITLE_BACK.BIN as uploaded by the renderer's +0x4C: 4-bit 640 x 448
  * at block 0x3400, its CLUT from the renderer's VRAM entry), `alpha` 0..1, scrolled left by
  * scroll x 128 pixels. */
-void func_0012D530(Scene *t, f32 alpha, f32 scroll) {
+void func_0012D530(SceneTitle *t, f32 alpha, f32 scroll) {
     VObject *r = D_0044E4F0;
     u64 *p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0xC, 0x30);
     u64 tex0;
@@ -822,7 +803,7 @@ void func_0012D530(Scene *t, f32 alpha, f32 scroll) {
 
 /* The menu's panel: two bands (texture 1, CLUT 1) shaded left to right, opening with `open`
  * 0..1 (the left side first, then the right), `alpha` 0..1. */
-void func_0012CCF0(Scene *t, f32 alpha, f32 open) {
+void func_0012CCF0(SceneTitle *t, f32 alpha, f32 open) {
     u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x1C, 0x30);
     u64 left, right;
     u8 *tex;
@@ -909,10 +890,10 @@ void func_0012CCF0(Scene *t, f32 alpha, f32 open) {
     p[55] = 0x4E;
 }
 
-void func_0012DDB0(Scene *t, f32 alpha);
-void func_0012E270(Scene *t);
-void func_0012E780(Scene *t);
-void func_0012E6C0(Scene *t);
+void func_0012DDB0(SceneTitle *t, f32 alpha);
+void func_0012E270(SceneTitle *t);
+void func_0012E780(SceneTitle *t);
+void func_0012E6C0(SceneTitle *t);
 
 #define BGM_WANT(track, pause, restart, level) \
     VCALL(D_0044E970, 0x8, void (*)(void *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, level)
@@ -920,65 +901,65 @@ void func_0012E6C0(Scene *t);
 
 /* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
  * takes the entry; 900 idle frames: the attract movie */
-void func_0012E8C0(Scene *t) {
+void func_0012E8C0(SceneTitle *t) {
     s8 old;
     s8 n;
 
     BGM_WANT(0x33, 0, 0, 1.0f);
     func_0012DDB0(t, 1.0f);
-    old = MENU_CURSOR;
-    n = AT(t, 0x11DA94, u8) ? 5 : 3;
+    old = t->cursor;
+    n = t->extras ? 5 : 3;
     if (D_0047E36C & MENU_UP) {
-        MENU_CURSOR = old - 1;
-        if (MENU_CURSOR < 0) {
-            MENU_CURSOR = n - 1;
+        t->cursor = old - 1;
+        if (t->cursor < 0) {
+            t->cursor = n - 1;
         }
     } else if (D_0047E36C & MENU_DOWN) {
-        MENU_CURSOR++;
-        if (n - 1 < MENU_CURSOR) {
-            MENU_CURSOR = 0;
+        t->cursor++;
+        if (n - 1 < t->cursor) {
+            t->cursor = 0;
         }
     }
-    if (old != MENU_CURSOR) {
-        AT(t, 0x18, s32) = 0;
+    if (old != t->cursor) {
+        t->timer = 0;
         Sound_PlaySE(SE_CURSOR);
-        AT(t, 0x1C, s32) = 90000;
+        t->anim = 90000;
     }
     if (D_0047E36C & MENU_CANCEL) {
         Sound_PlaySE(SE_CANCEL);
-        AT(t, 0x18, s32) = 0;
+        t->timer = 0;
         BGM_WANT(0xFF, 0, 0, 1.0f);
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E270);
+        ptmf_set_fn(&t->seq, func_0012E270);
         return;
     }
-    if (old == MENU_CURSOR && ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START))) {
+    if (old == t->cursor && ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START))) {
         BGM_WANT(0xFF, 0, 0, 1.0f);
-        switch (MENU_CURSOR) {
+        switch (t->cursor) {
         case 0:
             Sound_PlaySE(SE_DECIDE);
-            TITLE_NEXT = 2;
+            t->next = 2;
             break;
         case 1:
             Sound_PlaySE(SE_DECIDE);
-            AT(t, TITLE_WORK + 4, u8) = 6;   /* the sub screen: load a game */
-            ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E780);
+            t->sub.mode = 6;   /* the sub screen: load a game */
+            ptmf_set_fn(&t->seq, func_0012E780);
             return;
         case 2:
-            AT(t, TITLE_WORK + 4, u8) = 5;   /* the sub screen: options */
-            ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E6C0);
+            t->sub.mode = 5;   /* the sub screen: options */
+            ptmf_set_fn(&t->seq, func_0012E6C0);
             return;
         case 3:
             Sound_PlaySE(SE_DECIDE);
-            TITLE_NEXT = 5;
+            t->next = 5;
             break;
         case 4:
             Sound_PlaySE(SE_DECIDE);
-            TITLE_NEXT = 6;
+            t->next = 6;
             break;
         default: {
             VObject *snd = D_0044E560;
 
-            TITLE_NEXT = 2;
+            t->next = 2;
             Sound_Play(snd, 0, 6);
             if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
                 Sound_Play(snd, 1, 6);
@@ -986,43 +967,43 @@ void func_0012E8C0(Scene *t) {
             break;
         }
         }
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+        ptmf_set_fn(&t->seq, func_0012E450);
         return;
     }
-    if (++AT(t, 0x18, s32) < 0x385) {
+    if (++t->timer < 0x385) {
         return;
     }
     BGM_WANT(0xFF, 0, 0, 1.0f);
-    TITLE_NEXT = TITLE_NEXT ? 0 : 1;
-    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    t->next = t->next ? 0 : 1;
+    ptmf_set_fn(&t->seq, func_0012E450);
 }
 
 /* the highlighted entry k: drawn again in CLUT 0 (`a`, fixed alpha), its description shown */
-static inline void menu_highlight(Scene *t, s32 k, f32 a) {
+static inline void menu_highlight(SceneTitle *t, s32 k, f32 a) {
     func_0012D140(t, 0, k * 0x20, 0xC0, 0x20, 0x20, 0x40 + k * 0x30, 0, 1, a);
-    func_00384A90((Task *)((u8 *)t + TITLE_TASK), 2 + k);
+    func_00384A90(&t->task, 2 + k);
 }
 
 /* draw the main menu at `alpha`: the panel and entries, the chosen one pulsing with its
  * description below */
-void func_0012DDB0(Scene *t, f32 alpha) {
+void func_0012DDB0(SceneTitle *t, f32 alpha) {
     f32 pulse;
     u8 bit;
 
     D_0047B350 = 2;
-    AT(t, 0x1C, s32) = (AT(t, 0x1C, s32) + 5000) % 360000;
-    if (!AT(t, 0x74940, u8)) {
+    t->anim = (t->anim + 5000) % 360000;
+    if (!t->loaded) {
         return;
     }
     func_0012D7F0(t);
-    pulse = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)AT(t, 0x1C, s32) / 1000.0f) / 180.0f));
-    bit = 1 << MENU_CURSOR;
+    pulse = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
+    bit = 1 << t->cursor;
     func_0012D530(t, alpha, 0.0f);
     func_0012CCF0(t, alpha, 1.0f);
     func_0012D140(t, 0, 0x00, 0xC0, 0x20, 0x20, 0x40, 1, 0, alpha);
     func_0012D140(t, 0, 0x20, 0xC0, 0x20, 0x20, 0x70, 1, 0, alpha);
     func_0012D140(t, 0, 0x40, 0xC0, 0x20, 0x20, 0xA0, 1, 0, alpha);
-    if (AT(t, 0x11DA94, u8)) {
+    if (t->extras) {
         func_0012D140(t, 0, 0x60, 0xC0, 0x20, 0x20, 0xD0, 1, 0, alpha);
         func_0012D140(t, 0, 0x80, 0xC0, 0x20, 0x20, 0x100, 1, 0, alpha);
     }
@@ -1035,7 +1016,7 @@ void func_0012DDB0(Scene *t, f32 alpha) {
     if (bit & 4) {
         menu_highlight(t, 2, pulse * alpha);
     }
-    if (AT(t, 0x11DA94, u8)) {
+    if (t->extras) {
         if (bit & 8) {
             menu_highlight(t, 3, pulse * alpha);
         }
@@ -1043,56 +1024,56 @@ void func_0012DDB0(Scene *t, f32 alpha) {
             menu_highlight(t, 4, pulse * alpha);
         }
     }
-    func_00384BC0((Task *)((u8 *)t + TITLE_TASK));
+    func_00384BC0(&t->task);
 }
 
 extern s32 func_002D20D0(void *bgm);
-void func_0012FF60(Scene *t);
-void func_0012CB30(Scene *t);
+void func_0012FF60(SceneTitle *t);
+void func_0012CB30(SceneTitle *t);
 
 /* leave the title once the music has stopped: release the title textures and sound bank, then
- * what the title leads to (TITLE_NEXT): 0 the attract movie, 1 the opening, 2 / 5 a new game,
+ * what the title leads to (t->next): 0 the attract movie, 1 the opening, 2 / 5 a new game,
  * 3 / 6 straight into game mode 3 (stage -1 / 0x37), 4 nothing */
-void func_0012E450(Scene *t) {
+void func_0012E450(SceneTitle *t) {
     VObject *snd;
 
     if (!(u8)func_002D20D0(D_0044E980)) {
         return;
     }
-    if (AT(t, 0x74940, u8)) {
+    if (t->loaded) {
         VObject *msg = gBootMessage;
 
         VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
         VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
-        AT(t, 0x74940, u8) = 0;
+        t->loaded = 0;
     }
     snd = D_0044E560;
     VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0xF000);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
-    switch (TITLE_NEXT) {
+    switch (t->next) {
     case 0:
-        ptmf_set_fn(&t->state, func_00130520);
+        ptmf_set_fn(&t->base.state, func_00130520);
         break;
     case 1:
-        ptmf_set_fn(&t->state, func_0012FF60);
+        ptmf_set_fn(&t->base.state, func_0012FF60);
         break;
     case 2:
-        ptmf_set_fn(&t->state, func_0012CB30);
+        ptmf_set_fn(&t->base.state, func_0012CB30);
         break;
     case 3:
         AT(D_0044E978, 0x4, s32) = 3;
         AT(D_0044E978, 0x10, s32) = -1;
-        VCALL(t, 0x14, void (*)(Scene *))(t);
+        VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     case 4:
         break;
     case 5:
-        ptmf_set_fn(&t->state, func_0012CB30);
+        ptmf_set_fn(&t->base.state, func_0012CB30);
         break;
     case 6:
         AT(D_0044E978, 0x4, s32) = 3;
         AT(D_0044E978, 0x10, s32) = 0x37;
-        VCALL(t, 0x14, void (*)(Scene *))(t);
+        VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     }
 }
@@ -1101,7 +1082,7 @@ extern void func_0026BC00(void *msg);
 
 /* +0x14 finish: end the movie scene, drop the sub screen's textures (group 0x19), reset the
  * message object, ask to be finished */
-void func_0012E1B0(Scene *t) {
+void func_0012E1B0(SceneTitle *t) {
     Scene *s = SCENE_TABLE_SCENE(1);
 
     if (s != NULL) {
@@ -1109,8 +1090,8 @@ void func_0012E1B0(Scene *t) {
         VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
     }
     VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
-    func_0026BC00((u8 *)t + 0x24);
-    t->request = SCENE_REQ_FINISH;
+    func_0026BC00(t->msg);
+    t->base.request = SCENE_REQ_FINISH;
 }
 
 extern void func_00100490(void *p);   /* operator delete */
@@ -1149,12 +1130,12 @@ void *func_0012C6B0(u8 *o, s32 flags) {
     return o;
 }
 
-/* the title work's base: destructor (the pool and its entries) */
-void *func_0012C420(u8 *w, s32 flags) {
+/* the sub screen's base: destructor (the pool and its entries) */
+void *func_0012C420(SubScreen *w, s32 flags) {
     if (w != NULL) {
-        u8 *pool = w + 8;
+        u8 *pool = w->pool;
 
-        AT(w, 0x0, void **) = D_0046A090;
+        w->vtbl = D_0046A090;
         if (pool != NULL) {
             AT(pool, 0x0, void **) = D_0046A078;
             if (pool + 0x1208 != NULL) {
@@ -1179,51 +1160,51 @@ void *func_0012C420(u8 *w, s32 flags) {
 }
 
 /* destructor */
-Scene *func_0012C220(Scene *t, s32 flags) {
+SceneTitle *func_0012C220(SceneTitle *t, s32 flags) {
     if (t != NULL) {
-        u8 *w;
+        SubScreen *w;
         Task *task;
 
-        t->vtbl = D_0046A040;
-        func_002E31D0((u8 *)t + TITLE_UNK140CA4);
+        t->base.vtbl = D_0046A040;
+        func_002E31D0(&t->bgm);
         func_002D2330(D_0044E980);
-        if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
-            AT(t, TITLE_UNK140CA4, void **) = D_0046A110;
-            if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
-                AT(t, TITLE_UNK140CA4, void **) = D_0046A100;
-                if ((u8 *)t + TITLE_UNK140CA4 != NULL) {
+        if (&t->bgm != NULL) {
+            t->bgm.vtbl = D_0046A110;
+            if (&t->bgm != NULL) {
+                t->bgm.vtbl = D_0046A100;
+                if (&t->bgm != NULL) {
                     D_0044E970 = NULL;
                 }
             }
         }
-        w = (u8 *)t + TITLE_WORK;
+        w = &t->sub;
         if (w != NULL) {
-            AT(w, 0x0, void **) = D_0047A790;
-            func_0012C730(w + 0xA8AC0, -1);
-            func_0012C6B0(w + 0x97980, -1);
-            Task_dtor((Task *)(w + 0x97868), -1);
-            Task_dtor((Task *)(w + 0x97764), -1);
+            w->vtbl = D_0047A790;
+            func_0012C730(&w->card, -1);
+            func_0012C6B0(w->textObj, -1);
+            Task_dtor(&w->text, -1);
+            Task_dtor(&w->ask, -1);
             func_0012C420(w, 0);
         }
-        task = (Task *)((u8 *)t + TITLE_TASK);
+        task = &t->task;
         if (task != NULL && task->child != NULL) {
             Task_dtor(task->child, 1);
             task->child = NULL;
         }
-        if ((u8 *)t + 0x24 != NULL) {
-            AT(t, 0x24, void **) = D_0046D7D0;
-            if ((u8 *)t + 0x24 != NULL) {
-                AT(t, 0x24, void **) = D_0046A0D0;
-                if ((u8 *)t + 0x24 != NULL) {
+        if (t->msg != NULL) {
+            AT(t->msg, 0, void **) = D_0046D7D0;
+            if (t->msg != NULL) {
+                AT(t->msg, 0, void **) = D_0046A0D0;
+                if (t->msg != NULL) {
                     gBootMessage = NULL;
                 }
             }
         }
-        if ((u8 *)t + 0x14 != NULL) {
+        if (&t->returnTo != NULL) {   /* (MW tests the address of the next base) */
             D_0044E968 = NULL;
         }
         if (t != NULL) {
-            t->vtbl = Scene_vtable;
+            t->base.vtbl = Scene_vtable;
         }
         if ((s16)flags > 0) {
             func_0011F9A0(t);
@@ -1233,61 +1214,58 @@ Scene *func_0012C220(Scene *t, s32 flags) {
 }
 
 extern const char *D_003B0050[7];   /* "SYSTEM\\PLAY_DEMO_1.SFD" .. _7 */
-void func_0012FEA0(Scene *t);
-void func_0012FBB0(Scene *t);
+void func_0012FEA0(SceneTitle *t);
+void func_0012FBB0(SceneTitle *t);
 
 /* state: the next of the seven gameplay demos */
-void func_0012FF60(Scene *t) {
-    title_movie_start(t, D_003B0050[AT(t, 0x140CD0, u8)]);
-    AT(t, 0x140CD0, u8) = (u8)(AT(t, 0x140CD0, u8) + 1) % 7;
-    ptmf_set_fn(&t->state, func_0012FEA0);
+void func_0012FF60(SceneTitle *t) {
+    title_movie_start(t, D_003B0050[t->demo]);
+    t->demo = (u8)(t->demo + 1) % 7;
+    ptmf_set_fn(&t->base.state, func_0012FEA0);
 }
 
 /* state: the demo */
-void func_0012FEA0(Scene *t) {
+void func_0012FEA0(SceneTitle *t) {
     title_movie_wait(t, func_0012FBB0);
 }
 
 /* state: fade the demo out, then the title (as after the attract movie) */
-void func_0012FBB0(Scene *t) {
+void func_0012FBB0(SceneTitle *t) {
     if (!title_movie_fade(t)) {
-        ptmf_set_fn(&t->state, func_0012FB50);
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+        ptmf_set_fn(&t->base.state, func_0012FB50);
+        ptmf_set_fn(&t->seq, func_0012F720);
     }
 }
 
-extern s32 func_003999C0(void *sub);
 
-#define SUB_OPEN    AT(t, TITLE_WORK + 0xA8DE5, u8)   /* the sub screen is open */
-#define SUB_LOADED  AT(t, TITLE_WORK + 0xA8AC4, s32)  /* the load screen's result, -2 a game loaded */
 
 /* state: the options screen (over the menu); back to the menu when it closes */
-void func_0012E6C0(Scene *t) {
-    if (AT(t, TITLE_WORK + 0x16F8, u8)) {
+void func_0012E6C0(SceneTitle *t) {
+    if (t->sub.showBehind) {
         func_0012DDB0(t, 1.0f);
     }
-    func_003999C0((u8 *)t + TITLE_WORK);
-    if (!SUB_OPEN) {
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
-        AT(t, 0x18, s32) = 0;
+    func_003999C0(&t->sub);
+    if (!t->sub.open) {
+        ptmf_set_fn(&t->seq, func_0012E8C0);
+        t->timer = 0;
     }
 }
 
 /* state: the load screen; when it closes, leave the title with the loaded game (next 3) or go
  * back to the menu */
-void func_0012E780(Scene *t) {
-    if (AT(t, TITLE_WORK + 0x16F8, u8) && SUB_LOADED != -2) {
+void func_0012E780(SceneTitle *t) {
+    if (t->sub.showBehind && t->sub.card.state != -2) {
         func_0012DDB0(t, 1.0f);
     }
-    func_003999C0((u8 *)t + TITLE_WORK);
-    if (SUB_OPEN) {
+    func_003999C0(&t->sub);
+    if (t->sub.open) {
         return;
     }
-    if (SUB_LOADED == -2) {
-        TITLE_NEXT = 3;
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    if (t->sub.card.state == -2) {
+        t->next = 3;
+        ptmf_set_fn(&t->seq, func_0012E450);
     } else {
-        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
-        AT(t, 0x18, s32) = 0;
+        ptmf_set_fn(&t->seq, func_0012E8C0);
+        t->timer = 0;
     }
 }

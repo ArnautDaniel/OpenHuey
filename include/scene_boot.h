@@ -30,10 +30,9 @@ typedef struct BootCard {
     /* 0x124 */ void *buf1;
     /* 0x128 */ u8 slots[12];   /* per save: 0 used, 1 empty, 2 broken */
     /* 0x134 */ SysData saved;  /* restored when reading fails */
-    /* 0x184 */ u8 pad184[0xC];
 } BootCard;
 _Static_assert(__builtin_offsetof(BootCard, saved) == 0x134, "BootCard.saved");
-_Static_assert(sizeof(BootCard) == 0x190, "BootCard size");
+_Static_assert(sizeof(BootCard) == 0x184, "BootCard size");   /* (the sub screen keeps data right after it) */
 
 /* Mode 1 scene: memory card check, pad check, logos (0xC7700 bytes from the scene heap). */
 typedef struct SceneBoot {
@@ -51,6 +50,7 @@ typedef struct SceneBoot {
     /* 0x00440 */ u8 errMesTex[0x21440 - 0x440];   /* SYSTEM\ERRMES.TEX */
     /* 0x21440 */ u8 logoCri[0xC7440 - 0x21440];   /* SYSTEM\LOGO_CRI.BIN */
     /* 0xC7440 */ BootCard card;
+    /* 0xC75C4 */ u8 padC75C4[0xC];
     /* 0xC75D0 */ void **unkC75D0Vtbl;
     /* 0xC75D4 */ s32 unkC75D4;                    /* -1 */
     /* 0xC75D8 */ u8 padC75D8[8];
