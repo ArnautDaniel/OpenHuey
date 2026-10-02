@@ -9,6 +9,7 @@
  *        rectangle itself is drawn in screen space.
  *   +0xF8 u32  colour (RGBA, alpha in the top byte) */
 #include "common.h"
+#include "game.h"
 #include "gs.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
@@ -82,4 +83,15 @@ s32 func_002CF8C0(void *ov) {
     func_002CF700(ov);
     AT(ov, 0x10, s32) = AT(ov, 0x24, s32);
     return 1;
+}
+
+/* a full-screen colour (vtable D_0046D7A0): colour `rgba` and `arg`, drawn in renderer layer
+ * `layer` at once (+0x58: the renderer sends what's queued) */
+void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 arg) {
+    VObject *r = (VObject *)D_0044E4F0;
+
+    AT(o, 0x8, u32) = rgba;
+    AT(o, 0xC, s32) = arg;
+    VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, o, layer, 0);
+    VCALL(r, 0x58, void (*)(VObject *))(r);
 }

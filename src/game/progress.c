@@ -145,3 +145,50 @@ void func_00177CC0(Progress *p, u8 k) {
         }
     }
 }
+
+/* every character: vtable +0x14 (load) */
+void func_00176550(Progress *p) {
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (i < 6 && gCharacters[i] != NULL) {
+            VCALL(gCharacters[i], 0x14, void (*)(VObject *))(gCharacters[i]);
+        }
+    }
+}
+
+/* the resident load buffer of character `k`: only the player's (+0x16C0) */
+void *func_001776B0(Progress *p, u8 k) {
+    if (k == 1) {
+        return NULL;
+    }
+    if (k == 0) {
+        return (u8 *)p + 0x16C0;
+    }
+    return NULL;
+}
+
+extern s32 func_00124D40(void *c);   /* a character still loading */
+
+/* is any character still loading? */
+s32 func_001764C0(Progress *p) {
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        u8 busy = (i < 6 && gCharacters[i] != NULL) ? (u8)func_00124D40(gCharacters[i]) : 0;
+
+        if (busy == 1) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* activate character `i` (vtable +0x5C); 0 if there is none */
+s32 func_001771A0(Progress *p, u32 i) {
+    if (i < 6 && gCharacters[i] != NULL) {
+        VCALL(gCharacters[i], 0x5C, void (*)(VObject *))(gCharacters[i]);
+        return 1;
+    }
+    return 0;
+}

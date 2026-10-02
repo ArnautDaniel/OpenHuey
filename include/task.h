@@ -95,6 +95,7 @@ void Task_Prepare(Task *t, s32 id);
 void Task_OpenAt(Task *t, s32 id, s32 pos);
 void Task_Open(Task *t, s32 id);
 u8 *Task_MessageText(void *self, s32 id);
+u16 Task_MessageWidth(Task *t, s32 id, s32 glyphW);
 void Task_Draw(Task *t);
 void Task_Update(Task *t);
 void Task_Run(Task *t);

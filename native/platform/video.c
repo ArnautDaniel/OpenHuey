@@ -78,8 +78,12 @@ void hg_frame(void) {
     gs_display(sPixels, MAXW, MAXH, &w, &h);
     if (getenv("HG_GSDEBUG") && hg_video_frame % 60 == 0) {
         extern unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
+        extern void vu1_stats(long *runs, long *pairs);
+        long runs, pairs;
 
-        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written\n", hg_video_frame, gs_stat_prims, gs_stat_pixels, gs_stat_written);
+        vu1_stats(&runs, &pairs);
+        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written; VU1 %ld runs, %ld instructions\n",
+                hg_video_frame, gs_stat_prims, gs_stat_pixels, gs_stat_written, runs, pairs);
     }
     dump(w, h);
     hg_video_frame++;

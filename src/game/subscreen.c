@@ -740,7 +740,6 @@ void Options_StateList(SubScreen *s) {
 
 extern u16 D_0044B570[2][4][7];   /* [special scene][controller layout]: the action names */
 extern u16 D_0044B558[5];         /* the options' rows (y) */
-extern u16 Task_MessageWidth(Task *t, s32 id, s32 glyphW);
 
 static const char sPosX[] = "X : %d";
 static const char sPosY[] = "Y : %d";

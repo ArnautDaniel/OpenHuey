@@ -528,7 +528,9 @@ class CPU:
 
     def visible_writes(self) -> dict[int, int]:
         sp0 = STACK_TOP
-        w = {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0)}
+        # the function's frame and its incoming stack arguments (callee-owned in the EABI: GCC
+        # may keep a variable in an argument's slot) are private
+        w = {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0 + 0x80)}
         if CALL_ALIAS:
             # a stored address of another function of the C file (a state, a callback): as the
             # original's

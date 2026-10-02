@@ -123,3 +123,56 @@ void sceVu0TransMatrix(Mat d, const Mat m, const Vec v) {
     d[3][1] += v[1];
     d[3][2] += v[2];
 }
+
+/* the view-to-screen (perspective) matrix: x, y scaled by scrz * a and centred on c, z mapped
+ * from near..far to zmin..zmax (after the divide by w = z) */
+void sceVu0ViewScreenMatrix(Mat m, float scrz, float ax, float ay, float cx, float cy,
+                            float zmin, float zmax, float nearz, float farz) {
+    float cz = (-zmax * nearz + zmin * farz) / (-nearz + farz);
+    float az = farz * nearz * (-zmin + zmax) / (-nearz + farz);
+    int i, j;
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            m[i][j] = 0.0f;
+        }
+    }
+    m[0][0] = ax * scrz;
+    m[1][1] = ay * scrz;
+    m[2][0] = cx;
+    m[2][1] = cy;
+    m[2][2] = cz;
+    m[2][3] = 1.0f;
+    m[3][2] = az;
+}
+
+/* the world-to-camera matrix for a camera at p looking along zd with up yd: the inverse of the
+ * camera's frame (x = yd x zd, z = zd, y = z x x; all unit), a rigid transform */
+void sceVu0CameraMatrix(Mat m, const Vec p, const Vec zd, const Vec yd) {
+    Vec x, y, z, t;
+    int i;
+
+    sceVu0OuterProduct(t, yd, zd);
+    sceVu0Normalize(x, t);
+    sceVu0Normalize(z, zd);
+    sceVu0OuterProduct(y, z, x);
+    for (i = 0; i < 3; i++) {
+        m[i][0] = x[i];
+        m[i][1] = y[i];
+        m[i][2] = z[i];
+        m[i][3] = 0.0f;
+    }
+    m[3][0] = -(x[0] * p[0] + x[1] * p[1] + x[2] * p[2]);
+    m[3][1] = -(y[0] * p[0] + y[1] * p[1] + y[2] * p[2]);
+    m[3][2] = -(z[0] * p[0] + z[1] * p[1] + z[2] * p[2]);
+    m[3][3] = 1.0f;
+}
+
+/* rotate about x, then y, then z by rot[0..2] */
+void sceVu0RotMatrix(Mat d, const Mat m, const Vec r) {
+    Mat t;
+
+    sceVu0RotMatrixX(t, m, r[0]);
+    sceVu0RotMatrixY(t, t, r[1]);
+    sceVu0RotMatrixZ(d, t, r[2]);
+}

@@ -80,6 +80,20 @@ static inline s32 ptmf_scall_r(void *self, const PTMF *p) {
     return fn(obj);
 }
 
+/* (self->*p)(a, b) returning an int */
+static inline s32 ptmf_scall_r2(void *self, const PTMF *p, s32 a, s32 b) {
+    char *obj = (char *)self + p->this_delta;
+    s32 (*fn)(void *, s32, s32);
+
+    if (p->vtbl_offset < 0) {
+        fn = (s32 (*)(void *, s32, s32))p->u.func;
+    } else {
+        char *vtbl = *(char **)(obj + p->u.vptr_offset);
+        fn = *(s32 (**)(void *, s32, s32))(vtbl + p->vtbl_offset);
+    }
+    return fn(obj, a, b);
+}
+
 /* Call a virtual function by its byte offset in the (Metrowerks-layout) vtable at obj+0:
  * VCALL(obj, 0x14, void (*)(void *, s32))(obj, 1);
  * Used while the surrounding code is still asm; becomes a real C++ virtual call later. */

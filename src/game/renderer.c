@@ -698,3 +698,244 @@ s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
     p[37] = GS_TEXFLUSH;
     return 1;
 }
+
+#include "ptmf.h"
+
+extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) -> RGBA */
+
+/* +0x94: build a 256-colour palette with generator `mode` and send it to VRAM slot `slot`'s
+ * CLUT (in renderer layer `layer`, -1 the immediate list); colours go as HWREG writes, two per
+ * quadword, in the CLUT's entry order (bit 3 and 4 of the index swapped) */
+s32 func_001B8D30(VObject *r, s32 slot, s32 mode, s32 layer, s32 arg) {
+    u64 *p;
+    const PTMF *gen;
+    u32 i, k, s;
+    static const s8 sStep[4] = {8, -16, 8, 0};
+
+    if (layer == -1) {
+        p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 0x86);
+    } else {
+        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x86, layer);
+    }
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = 0x10000085;              /* DMA cnt 0x85 */
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000085;   /* VIF DIRECT 0x85 */
+    p[2] = 0x8084 | (0x10000000ULL << 32);   /* GIF tag: 0x84 A+D, EOP */
+    p[3] = 0xE;
+    p[4] = ((u64)(u32)VCALL(D_0044E9A0, 0x6C, s32 (*)(VObject *, s32))(D_0044E9A0, slot) << 32) | (0x10000ULL << 32);
+    p[5] = GS_BITBLTBUF;            /* to the CLUT's place, width 64 */
+    p[6] = 0x10 | (0x10ULL << 32);
+    p[7] = GS_TRXREG;               /* 16 x 16 */
+    p[8] = 0;
+    p[9] = GS_TRXPOS;
+    p[10] = 0;
+    p[11] = GS_TRXDIR;
+    p += 12;
+    gen = &D_0047E300[mode];
+    i = 0;
+    do {
+        for (s = 0; s < 4; s++) {
+            for (k = 0; k < 8; k += 2) {
+                AT(p, 0x0, u32) = ptmf_scall_r2(r, gen, i, arg);
+                AT(p, 0x4, u32) = ptmf_scall_r2(r, gen, i + 1, arg);
+                p[1] = 0x54;        /* HWREG */
+                i += 2;
+                p += 2;
+            }
+            i += sStep[s];
+        }
+    } while (i < 0x100);
+    return 1;
+}
+
+/* palette generator 0: grey levels squeezed to 0x7E..0x81 around the middle (a nearly flat
+ * ramp, the index clamped to 0x7E..0x80, plus one), in all four channels */
+u32 func_001B8CE0(VObject *r, u32 i) {
+    u32 v;
+
+    if (i > 0x80) {
+        v = 0x81;
+    } else if (i < 0x7E) {
+        v = 0x7E;
+    } else {
+        v = i + 1;
+    }
+    return v | v << 8 | v << 16 | v << 24;
+}
+
+/* palette generator 1: the same, the index clamped to 0x7F..0x81, minus one */
+u32 func_001B8C90(VObject *r, u32 i) {
+    u32 v;
+
+    if (i < 0x7F) {
+        v = 0x7E;
+    } else if (i >= 0x82) {
+        v = 0x81;
+    } else {
+        v = i - 1;
+    }
+    return v | v << 8 | v << 16 | v << 24;
+}
+
+/* the 3D layers' start (layer 0x25): clear the frame's alpha (a sprite over the screen writing only
+ * alpha 0, in strips of 64 pixels), then Z test on, alpha test (frame alpha marks what's
+ * drawn), the full scissor, bilinear textures, FBA on; at layer 0x27 the frame's mask and FBA
+ * are put back */
+s32 func_001B1E50(u8 *rp) {
+    VObject *r = (VObject *)rp;
+    static const u64 sStrips[8] = {
+        0x01BF0000003F0000ULL, 0x01BF0000007F0040ULL, 0x01BF000000BF0080ULL, 0x01BF000000FF00C0ULL,
+        0x01BF0000013F0100ULL, 0x01BF0000017F0140ULL, 0x01BF000001BF0180ULL, 0x01BF000001FF01C0ULL,
+    };
+    u64 *p;
+    s32 i;
+
+    p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x25, 0x25);
+
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = 0x10000024;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000024;   /* DIRECT 0x24 */
+    p[2] = 0x8023 | (0x10000000ULL << 32);
+    p[3] = 0xE;
+    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: Z24 at 0xA0, no Z writes */
+    p[5] = GS_ZBUF_1;
+    p[6] = 0x30000;                     /* TEST_1: Z always */
+    p[7] = GS_TEST_1;
+    p[8] = 0x80110 | (0xFFFFFFULL << 32);   /* FRAME_1: 512 wide at 0x110, only alpha written */
+    p[9] = GS_FRAME_1;
+    p[10] = 0;
+    p[11] = GS_TEX1_1;
+    p[12] = (u64)0x3F800000 << 32;      /* RGBAQ: 0, Q 1 */
+    p[13] = GS_RGBAQ;
+    p[14] = 6;                          /* PRIM: sprite */
+    p[15] = GS_PRIM;
+    for (i = 0; i < 8; i++) {
+        p[16 + i * 6] = sStrips[i];     /* SCISSOR_1: 64 pixels wide */
+        p[17 + i * 6] = GS_SCISSOR_1;
+        p[18 + i * 6] = 0x72007000;     /* (0, 0) */
+        p[19 + i * 6] = GS_XYZ2;
+        p[20 + i * 6] = 0x8E009000;     /* (512, 448) */
+        p[21 + i * 6] = GS_XYZ2;
+    }
+    p[64] = 0x310000A0;                 /* ZBUF_1: Z writes on */
+    p[65] = GS_ZBUF_1;
+    p[66] = 0x5000F;                    /* TEST_1: alpha test, Z test GEQUAL */
+    p[67] = GS_TEST_1;
+    p[68] = 0x01BF000001FF0000ULL;      /* SCISSOR_1: the screen */
+    p[69] = GS_SCISSOR_1;
+    p[70] = 0x60;                       /* TEX1_1: bilinear */
+    p[71] = GS_TEX1_1;
+    p[72] = 1;                          /* FBA_1 */
+    p[73] = GS_FBA_1;
+    p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x4, 0x27);
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = 0x10000003;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000003;
+    p[2] = 0x8002 | (0x10000000ULL << 32);
+    p[3] = 0xE;
+    p[4] = 0x80110;                     /* FRAME_1: all channels */
+    p[5] = GS_FRAME_1;
+    p[6] = 0;                           /* FBA_1 off */
+    p[7] = GS_FBA_1;
+    return 1;
+}
+
+/* +0x80 draw a box described by 13 words (+0x7C with them as arguments) */
+void func_001B9810(VObject *r, const s32 *b) {
+    VCALL(r, 0x7C, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32))(
+        r, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]);
+}
+
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *D_0044E4F0;   /* the renderer (this one) */
+
+#define SX32(x) ((s64)(s32)(u32)(x))
+
+/* +0x7C a sprite: the w x h rectangle at x, y (screen pixels), coloured `rgba` (alpha over 0x80:
+ * opaque), textured with the tw x th texels at u, v of texture `tex` of group `group` (-1:
+ * untextured; `clut` -1: its own palette, else CLUT `clut`), in renderer layer `layer` */
+s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, s32 th, u32 rgba,
+                  s32 tex, s32 group, s32 layer, s32 clut) {
+    s32 textured = tex != -1, n, opaque;
+    u64 tex0 = 0, tex2 = 0;
+    u64 *p;
+
+    if (textured) {
+        VObject *tc = D_0044E4E8, *vram;
+        s32 slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, tex, group);
+        u8 *hdr;
+
+        if (slot == -1) {
+            return 0;
+        }
+        hdr = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, tex, group);
+        if (slot & 0x80000000) {
+            slot &= 0x7FFFFFFF;
+            if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, hdr, layer)) {
+                return 0;
+            }
+        }
+        vram = D_0044E9A0;
+        if (clut == -1) {
+            tex0 = VCALL(vram, 0x28, u64 (*)(VObject *, s32, s32, s32, s32, s32))(
+                vram, slot, hdr[0], AT(hdr, 4, u16), AT(hdr, 6, u16), hdr[1]);
+        } else {
+            tex0 = VCALL(vram, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
+                vram, slot, AT(hdr, 4, u16), AT(hdr, 6, u16), hdr[1]);
+            tex2 = VCALL(vram, 0x34, u64 (*)(VObject *, s32, s32, s32, s32))(vram, slot, clut, hdr[0], hdr[1]);
+        }
+    }
+    n = clut != -1 ? 5 : 4;
+    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, n + 9, layer);
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = (u32)((n + 8) | 0x10000000);
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = (n + 8) | 0x50000000;   /* DIRECT */
+    p[2] = (u64)(s64)n | 0x8000 | (0x10000000ULL << 32);
+    p[3] = 0xE;
+    p[4] = 0x310000A0 | (1ULL << 32);          /* ZBUF_1: no Z writes */
+    p[5] = GS_ZBUF_1;
+    p[6] = tex0;
+    p[7] = GS_TEX0_1;
+    p += 8;
+    if (clut != -1) {
+        p[0] = tex2;
+        p[1] = 0x16;                           /* TEX2_1 */
+        p += 2;
+    }
+    p[0] = 0x44;                               /* ALPHA_1: (Cs - Cd) * As + Cd */
+    p[1] = GS_ALPHA_1;
+    /* PRIM: sprite, UV (textured), blended; an alpha over 0x80 means opaque (alpha 0x80) */
+    opaque = rgba >= 0x81000000;
+    p[2] = ((u64)(s64)textured << 4) | (opaque ? 0x106 : 0x146);
+    p[7] = opaque ? (rgba & 0xFFFFFF) | 0x80000000 : rgba;
+    p[3] = GS_PRIM;
+    p[4] = 0x8001 | (0x84ULL << 56);          /* reglist: CLAMP RGBAQ UV XYZ3 UV XYZ2 CLAMP NOP */
+    p[5] = 0xFFFFFFFFF853D318ULL;
+    /* (32-bit arithmetic, sign-extended, as the original) */
+    p[6] = 0xA | ((u64)SX32(u) << 4) | ((u64)SX32((u32)u + tw - 1) << 14) | ((u64)SX32(v) << 24)
+           | ((u64)SX32((u32)v + th - 1) << 34);
+    p[8] = (u64)SX32((u32)u * 16 + 8) | ((u64)SX32((u32)v * 16 + 8) << 16);
+    p[9] = gs_xyz2(x + 0x700, y + 0x720);
+    p[10] = (u64)SX32(((u32)u + tw) * 16 + 8) | ((u64)SX32(((u32)v + th) * 16 + 8) << 16);
+    p[11] = gs_xyz2(x + 0x700 + w, y + 0x720 + h);
+    p[12] = 5;                                 /* CLAMP_1: clamp */
+    p[13] = 0;
+    p[14] = 0x8001 | (0x10000000ULL << 32);
+    p[15] = 0xE;
+    p[16] = 0x310000A0;                        /* ZBUF_1: Z writes on */
+    p[17] = GS_ZBUF_1;
+    return 1;
+}

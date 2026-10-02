@@ -157,3 +157,77 @@ void func_003A1860(Progress *p, u32 slot) {
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
+
+/* ---- Fiona's model (vtable D_00470620): her files (the game starts with her in a sheet,
+ * O_FIS) ---- */
+
+extern void sceVu0CopyVector(f32 *dst, const f32 *src);
+extern const char D_0045E520[];   /* "O_FIS\FIS_000.PCK" */
+extern const char D_0045E500[];   /* "O_FIN\FIN_000.MRK" */
+extern const char D_0045E540[];   /* "O_FIS\FIS_000.TEX" */
+extern const char D_0045E560[];   /* "O_FIS\FIS_200.TEX" (the names are returned as such) */
+
+/* +0xA0 the model file */
+const char *func_002F7B80(void) {
+    return D_0045E520;
+}
+
+/* +0xA4 the marker file */
+const char *func_002F7B70(void) {
+    return D_0045E500;
+}
+
+/* +0xA8 the textures */
+const char *func_002F7B30(void) {
+    return D_0045E540;
+}
+
+/* +0xAC the second texture set */
+const char *func_002F7B40(void) {
+    return D_0045E560;
+}
+
+/* +0xB0 the model file's buffer size */
+u32 func_002F7B50(void) {
+    return 0x41000;
+}
+
+/* +0xC8 set the vector at +0x1740 */
+void func_002F7B60(u8 *m, const f32 *v) {
+    sceVu0CopyVector((f32 *)(m + 0x1740), v);
+}
+
+/* ---- Hewie's model (vtable D_0046B240): his files by costume 0..4 ---- */
+
+extern const char D_00456360[], D_00456380[], D_004563A0[], D_004563C0[], D_004563E0[];   /* HEW_00n.PCK */
+extern const char D_004562C0[], D_004562E0[], D_00456300[], D_00456320[], D_00456340[];   /* HEW_00n.MRK */
+extern const char D_00456400[];   /* O_HEW\HEW_000.TEX */
+
+/* +0xA0 the model file of costume `n` */
+const char *func_001F8090(void *m, s32 n) {
+    switch (n) {
+    case 0: return D_00456360;
+    case 1: return D_00456380;
+    case 2: return D_004563A0;
+    case 3: return D_004563C0;
+    case 4: return D_004563E0;
+    }
+    return NULL;
+}
+
+/* +0xA4 the marker file of costume `n` */
+const char *func_001F8010(void *m, s32 n) {
+    switch (n) {
+    case 0: return D_004562C0;
+    case 1: return D_004562E0;
+    case 2: return D_00456300;
+    case 3: return D_00456320;
+    case 4: return D_00456340;
+    }
+    return NULL;
+}
+
+/* +0xA8 the textures (all costumes) */
+const char *func_001F7F00(void) {
+    return D_00456400;
+}

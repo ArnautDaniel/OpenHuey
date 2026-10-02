@@ -974,6 +974,17 @@ void gs_write_reg(uint32_t reg, uint64_t v) {
     case 0x51: gs.trxpos = v; break;
     case 0x52: gs.trxreg = v; break;
     case 0x53: gs.trxdir = v; xfer_start(); break;
+    case 0x54: {   /* HWREG: 64 bits of transfer data */
+        uint32_t dpsm = BITS(gs.bitbltbuf, 56, 6);
+        int bits = (dpsm == PSMCT32 || dpsm == PSMZ32) ? 32 : (dpsm == PSMT8 || dpsm == PSMT8H) ? 8
+                 : (dpsm == PSMT4 || dpsm == PSMT4HL || dpsm == PSMT4HH) ? 4 : 16, n;
+
+        for (n = 0; n < 64 / bits && gs.xfer; n++) {
+            xfer_pixel((uint32_t)(v & ((1ULL << bits) - 1)));
+            v >>= bits;
+        }
+        break;
+    }
     default: break;
     }
 }

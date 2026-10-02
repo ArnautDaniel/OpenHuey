@@ -429,3 +429,100 @@ void func_002A8500(u8 *e) {
     AT(e, 0x8, s32) = 0;
     AT(e, 0xC, u8) = 0;
 }
+
+/* the doors (D_0044E558) +0x48: door `i`'s data buffer (0x2000 bytes each, from +0x10C0) */
+void *func_00221E70(u8 *d, s32 i) {
+    return d + (i << 13) + 0x10C0;
+}
+
+/* ---- SceneGame +0xF6C1C0 (vtable D_0046B300, global D_0044E4C8): the scene's lights (16, set
+ * through +0x20; an ambient colour at +0x10) and two VRAM areas (+0x320 / +0x324) ---- */
+
+extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* reset: ambient (0, 128, 128, 128), the 16 lights to "none" */
+void func_001F9C80(u8 *o) {
+    f32 light[12] __attribute__((aligned(16)));   /* (read with lq) */
+    s32 i;
+
+    AT(o, 0x9E0, s32) = 0;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, f32) = 128.0f;
+    AT(o, 0x18, f32) = 128.0f;
+    AT(o, 0x1C, f32) = 128.0f;
+    light[3] = 1.0f;
+    light[0] = 0.0f;
+    light[1] = 0.0f;
+    light[2] = 0.0f;
+    for (i = 4; i < 12; i++) {
+        light[i] = 0.0f;
+    }
+    for (i = 0; i < 16; i++) {
+        VCALL((VObject *)o, 0x20, void (*)(VObject *, f32 *, s32))((VObject *)o, light, i);
+    }
+}
+
+/* a VRAM area for an offscreen picture: its slot, and TEX0 for drawing it (64 x 64? psm 0) */
+static void vram_area(u8 *o, u32 slotOff, u32 tex0Off, s32 which) {
+    VObject *vram = D_0044E9A0;
+    s32 slot = VCALL(vram, 0x14, s32 (*)(VObject *, s32, s32, s32, s32))(vram, 0xFF, 0, 0, 0);
+
+    AT(o, slotOff, s32) = slot;
+    if (AT(o, slotOff, s32) != -1) {
+        u64 v = VCALL(vram, 0x38, u64 (*)(VObject *, s32))(vram, AT(o, slotOff, s32));
+
+        AT(o, tex0Off, u64) = (v & 0xFFFFFFE000000000ULL) | (0x21B13000 | (6ULL << 32));
+        VCALL(D_0044E4F0, 0x94, void (*)(VObject *, s32, s32, s32, s32))(D_0044E4F0, AT(o, slotOff, s32), which, 1, 0);
+    }
+}
+
+/* start of a room: reset the lights, get the two VRAM areas if not yet held */
+void func_001F9D90(u8 *o) {
+    func_001F9C80(o);
+    if (AT(o, 0x320, s32) == -1) {
+        vram_area(o, 0x320, 0x328, 0);
+    }
+    if (AT(o, 0x324, s32) == -1) {
+        vram_area(o, 0x324, 0x330, 1);
+    }
+    AT(o, 0x944, s32) = 0;
+    AT(o, 0x950, u8) = 0;
+    AT(o, 0x960, s32) = 0;
+    AT(o, 0x964, s32) = 0;
+    AT(o, 0x968, s32) = 0;
+    AT(o, 0x970, f32) = 1.0f;
+    AT(o, 0x990, s32) = 0;
+    AT(o, 0x994, s32) = 0;
+    AT(o, 0x998, s32) = 0;
+    AT(o, 0x9A0, s32) = 0;
+    AT(o, 0x9A4, s32) = 0;
+    AT(o, 0x9C0, s32) = 0;
+    AT(o, 0x9C4, s32) = 0;
+    AT(o, 0x9C8, s32) = 0;
+    AT(o, 0x9D0, s32) = 0;
+    AT(o, 0x9D4, s32) = 0;
+}
+
+/* +0x20 set light `i` (3 vectors) */
+void func_001FA5E0(u8 *o, const f32 *light, s32 i) {
+    f32 *d = (f32 *)(o + 0x20 + i * 0x30);
+    s32 k;
+
+    for (k = 0; k < 12; k++) {
+        d[k] = light[k];
+    }
+}
+
+extern VObject *gFileLoader;
+static const char sHmbPck[] = "O_HMB\\HMB_000.PCK";
+static const char sHmbTex[] = "O_HMB\\HMB_000.TEX";
+
+/* SceneGame +0x706480 (the creatures' resources, HMB): load the model and its textures (the
+ * second argument is unused) */
+void func_002E2890(u8 *o, const void *unused) {
+    VObject *ld = gFileLoader;
+
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbPck, o + 0xF680, 0x10000000, 0);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbTex, o + 0x27680, 0x10000000, 0);
+}

@@ -61,6 +61,10 @@ static inline void Scene_SetState(Scene *scene, const PTMF *state) {
 }
 
 /* Character setup helper: the character's index (+0x20) must be 0 or 1. */
+#ifdef HG_NATIVE
+extern s32 hg_debug_no_partner(void);
+#endif
+
 static inline void SetupCharacter(Progress *prog, void *chr, void (*setup)(Progress *, u32)) {
     u32 index = AT(chr, 0x20, u32);
 
@@ -93,6 +97,9 @@ void SceneGame_StateEntry(Scene *game) {
         Progress *p;
         s32 flag;
 
+#ifdef HG_NATIVE
+        if (!hg_debug_no_partner())   /* native/platform/debug.c: HG_NOPARTNER */
+#endif
         SetupCharacter(prog, partner, func_003A10B0);
         p = gProgress;
         Progress_SetVar(p, 0x27, 0);
@@ -369,4 +376,95 @@ Scene *SceneGame_ctor(Scene *g) {
 void SceneGame_Update(Scene *g, s32 arg) {
     AT(g, 0x73EE40, s32)++;
     Scene_Update(g, arg);
+}
+
+#include "input.h"
+
+extern void *D_00476F40[], *D_00469D00[];
+extern void func_0033E2A0(u8 *loading, s32 frame);
+extern void func_003A0160(Scene *g);
+
+/* state, every frame: count the frame (twice while a button is pressed: it feeds the random
+ * numbers, seeded here), then the sub-state (+0x1053450: the room load) if any, else the
+ * gameplay tick */
+void func_003A06E0(Scene *g) {
+    u8 rng[0x80] __attribute__((aligned(16)));
+
+    AT(g, 0x1065040, s32)++;
+    if ((u16)D_0047E37C != 0) {
+        AT(g, 0x1065040, s32)++;
+    }
+    AT(rng, 0x0, void **) = D_00476F40;
+    AT(rng, 0x4, s32) = -1;
+    func_0033E2A0(rng, AT(g, 0x1065040, s32));
+    AT(rng, 0x0, void **) = D_00469D00;
+    if (ptmf_test(&AT(g, 0x1053450, PTMF))) {
+        ptmf_scall(g, &AT(g, 0x1053450, PTMF));
+        return;
+    }
+    func_003A0160(g);
+}
+
+
+extern s32 func_001764C0(Progress *p);
+extern void SubScreen_Start(SubScreen *s);
+extern void func_002F39B0(void *o);
+extern void func_0031E150(void *o);
+extern void func_001771A0(Progress *p, s32 arg);
+extern void func_001765D0(Progress *p);
+extern void func_00209850(void *o);
+extern void func_0039AD90(Scene *g);
+extern void func_00120720(void *rooms, s32 room, s32 slot);
+extern void func_001AABC0(void *o);
+extern void func_00267250(void *o);
+extern void func_002D6330(void *o);
+extern void func_00385030(SubScreen *s, void *save);
+extern VObject *D_0044FE08;
+extern VObject *D_0044E568;   /* the rooms */
+extern const PTMF D_0044C7C0; /* { 0, -1, func_003A0390 } */
+extern void *gCharacters[6];
+
+/* sub-state: start the room. Once the progress data is ready: reset the sub screen, the
+ * members, the characters; when continuing from a save (+0xF6CD28), its entry room and the
+ * sub screen's state from the system data; then request the room's file (the room buffers,
+ * +0x73EE80), put the characters in the room, and wait for it (func_003A0390). Returns 1 while
+ * the progress data isn't ready. */
+s32 func_003A04A0(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    s32 i;
+
+    if (func_001764C0(prog)) {
+        return 1;
+    }
+    SubScreen_Start((SubScreen *)((u8 *)g + 0xF87240));
+    func_002F39B0((u8 *)g + 0x73EB40);
+    func_0031E150((u8 *)g + 0x1053480);
+    if (AT(g, 0xF6CD28, u8) != 1) {
+        func_001771A0(prog, 1);
+        VCALL(D_0044E568, 0xC, void (*)(VObject *, void *))(D_0044E568, NULL);
+    } else {
+        u8 *save = (u8 *)D_0044E978 + 0x190;
+
+        AT(g, SG_ENTRY, s32) = AT(D_0044E978, 0x194, s32);
+        func_00385030((SubScreen *)((u8 *)g + 0xF87240), save);
+        VCALL(D_0044E568, 0xC, void (*)(VObject *, void *))(D_0044E568, save + 0x1010);
+    }
+    func_001771A0(prog, 0);
+    func_001765D0(prog);
+    VCALL(D_0044FE08, 0xC, void (*)(VObject *))(D_0044FE08);
+    func_00209850((u8 *)g + 0xF6AFB0);
+    func_0039AD90(g);
+    func_00120720((u8 *)g + 0x73EE80, AT(g, SG_ENTRY, s32), AT(g, 0xF6C1B0, s32));
+    func_001AABC0((u8 *)g + 0xF29740);
+    for (i = 0; i < 6; i++) {
+        if (gCharacters[i] != NULL) {
+            AT(gCharacters[i], 0x30, s32) = AT(g, SG_ENTRY, s32);   /* their room */
+        }
+    }
+    AT(g, 0xF6CD20, u8) = 0xFF;
+    AT(g, 0xF6CD24, s32) = 0;
+    func_00267250((u8 *)g + 0xF6CD30);
+    func_002D6330((u8 *)g + 0xF6E200);
+    AT(g, 0x1053450, PTMF) = D_0044C7C0;
+    return 0;
 }
