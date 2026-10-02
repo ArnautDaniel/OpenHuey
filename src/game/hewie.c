@@ -13,6 +13,7 @@ extern Character *gCharPartner;   /* Hewie */
 extern Character *gCharPursuer;
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
+#define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
 #define SLOT_U8(h) (*(u8 *)&(h)->c.a.slot)
 
 extern void *D_0046A120[];   /* Hewie vtable */
@@ -61,10 +62,49 @@ void func_00165CD0(Hewie *h) {
 extern void func_00125BE0(Character *c);
 extern void func_00130AF0(Hewie *h, s32 action, s32 arg);
 
-extern s32 func_001669A0(Hewie *h);
 extern s32 func_001235C0(Actor *a, Actor *b);
 extern u32 func_00177620(Progress *p);          /* u8 */
 extern VObject *D_0044E4F8;
+
+/* Group of his current animation (0 idle .. 0xE, 0xF other). */
+s32 func_001669A0(Hewie *h) {
+    switch (MOTION_ANIM(h->c.motion)) {
+    case 0x0: case 0x3: case 0x4: case 0x5: case 0x6: case 0x9:
+        return 0;
+    case 0x1:
+        return 1;
+    case 0x2: case 0x7:
+        return 2;
+    case 0x8:
+        return 3;
+    case 0x101: case 0x103: case 0x1000: case 0x1003: case 0x1301: case 0x1B00: case 0x1B03:
+    case 0x1B04: case 0x1B05: case 0x1C02: case 0x2212:
+        return 4;
+    case 0x100: case 0x105: case 0x107: case 0x1B01: case 0x1C00: case 0x1C01: case 0x1C04:
+    case 0x1C05: case 0x1C06: case 0x1D00: case 0x1D01: case 0x1D02:
+        return 5;
+    case 0x102: case 0x104: case 0x301: case 0x1B02: case 0x1C07:
+        return 6;
+    case 0x106:
+        return 7;
+    case 0x202:
+        return 8;
+    case 0x201:
+        return 9;
+    case 0x200: case 0x204: case 0x205: case 0x206:
+        return 0xA;
+    case 0x203:
+        return 0xB;
+    case 0x300:
+        return 0xC;
+    case 0x1002:
+        return 0xD;
+    case 0x1001: case 0x2213:
+        return 0xE;
+    default:
+        return 0xF;
+    }
+}
 
 /* Adjust a requested action to his situation: down (no health) -> 0x52 (and progress +0xFB6
  * counts up, max 10000); while blocked (D_0044E4F8 +0x38) or with progress flags 0x13 / 0x2B
@@ -422,7 +462,6 @@ void func_0013D190(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-#define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
 extern f32 *func_0017CE80(void *skeleton, s32 bone);        /* bone matrix */
@@ -1047,4 +1086,51 @@ void func_00165D40(Hewie *h) {
     func_002DDE20(h->c.motion, 0, -1);
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
     func_00130AF0(h, 0x83, 0);
+}
+
+extern void func_002A8440(void *noise, s32 level, s32 room, u32 tri, s32 exitId);
+extern void func_00122C20(Actor *a, s32 sound, s32, s32, s32, void *);
+
+#define HEWIE_LAST_SOUND(h) HW(h, 0xF35A4, s32)
+#define HEWIE_SOUND_T(h) HW(h, 0xF35A8, s16)      /* frames since then (up to 3000) */
+
+/* Make sound `snd` (not within 10 frames of the last one; some repeat only after 40..60
+ * frames). Barks 0x65/0x66 (loud) and 0x5D/0x5E also make a noise others can hear. */
+void func_0013A430(Hewie *h, s32 snd) {
+    s32 prev = HEWIE_LAST_SOUND(h);
+
+    if (prev != 0x59 && prev != 0x58 && prev != 0x70 && prev != 0x6F && HEWIE_SOUND_T(h) < 10) {
+        return;
+    }
+    switch (snd) {
+    case 0x65: case 0x66:
+        func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
+        break;
+    case 0x5D: case 0x5E:
+        func_002A8440((u8 *)gProgress + 0x788, 0x1B, h->c.a.room, h->c.a.navTri, 0xFFFF);
+        break;
+    case 0x59:
+        if (prev == 0x59 && HEWIE_SOUND_T(h) < 40) {
+            return;
+        }
+        break;
+    case 0x58: case 0x6F: case 0x70:
+        if (prev == 0x58) {
+            if (HEWIE_SOUND_T(h) < 50) {
+                return;
+            }
+        } else if (prev == 0x70) {
+            if (HEWIE_SOUND_T(h) < 60) {
+                return;
+            }
+        } else if (prev == 0x6F) {
+            if (HEWIE_SOUND_T(h) < 40) {
+                return;
+            }
+        }
+        break;
+    }
+    func_00122C20(&h->c.a, snd, 5, 0, 0, NULL);
+    HEWIE_LAST_SOUND(h) = snd;
+    HEWIE_SOUND_T(h) = 0;
 }
