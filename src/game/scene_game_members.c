@@ -2,6 +2,7 @@
  * the classes they belong to are identified (then they move to their subsystem's file). */
 #include "common.h"
 #include "game.h"
+#include "sce/libvu0.h"
 
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
@@ -652,11 +653,11 @@ extern VObject *D_0044E4B8;   /* the camera */
 extern u8 D_0047B350;
 extern u8 *D_01991EC4;   /* the current room's section 10 */
 extern void func_0017CC00(void *o, void *a, void *b, void *c);
-extern void func_00223B60(void *o, void *sec);
-extern void func_002A88A0(void *o, void *sec);
-extern void func_0025D370(u8 *rm, void *sec);
+extern void func_00223B60(u8 *d, u8 *sec);
+extern s32 func_002A88A0(u8 *o, u8 *sec);
+extern void func_0025D370(u8 *rm, u8 *sec);
 extern void func_0025E0D0(u8 *rm);
-extern void func_00266CD0(VObject *o, void *sec);
+extern void func_00266CD0(u8 *o, u8 *sec);
 extern void func_0021B040(void *o);
 
 /* A room PAC starts with 17 section offsets (0: none); the room manager keeps pointers to
@@ -737,7 +738,386 @@ void func_0011FFB0(u8 *rm, s32 slot) {
     o = (VObject *)(rm + 0x6740);
     VCALL(o, 0x10, void (*)(VObject *, void *, void *))(o, ROOM_SEC(rm, 0x99B0), ROOM_SEC(rm, 0x99B8));
     VCALL(o, 0x14, void (*)(VObject *))(o);
-    func_00266CD0(D_0044E4C0, room_section(pac, 13));
+    func_00266CD0((u8 *)D_0044E4C0, room_section(pac, 13));
     func_0021B040(rm + 0x9380);
     VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+}
+
+extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
+
+/* the doors: take the room's doors (PAC section 7: 8 offsets, 0 = no door). Each door
+ * (+0x10, 0x210 each): +0x4 index, +0x8 its id (-1: none, else +0x70 set), +0x10 / +0x20
+ * two points, +0x30 / +0x40 a third (w 0), +0x72 present */
+void func_00223B60(u8 *d, u8 *sec) {
+    u8 i;
+
+    AT(d, 0x4, u8 *) = sec;
+    if (sec == NULL) {
+        return;
+    }
+    for (i = 0; i < 8; i++) {
+        u8 *e = d + 0x10 + i * 0x210;
+        u8 *src;
+
+        AT(e, 0x70, u8) = 0;
+        if (AT(sec, i * 4, u32) == 0) {
+            continue;
+        }
+        src = sec + AT(sec, i * 4, u32);
+        AT(e, 0x4, u8) = i;
+        AT(e, 0x8, s32) = AT(src, 0, s32);
+        if (AT(e, 0x8, s32) != -1) {
+            AT(e, 0x70, u8) = 1;
+        }
+        func_0010E5F0((f32 *)(e + 0x10), (f32 *)(src + 0x4));
+        AT(e, 0x1C, f32) = 1.0f;
+        func_0010E5F0((f32 *)(e + 0x20), (f32 *)(src + 0x10));
+        AT(e, 0x2C, f32) = 1.0f;
+        func_0010E5F0((f32 *)(e + 0x40), (f32 *)(src + 0x1C));
+        AT(e, 0x4C, f32) = 0.0f;
+        sceVu0CopyVector((f32 *)(e + 0x30), (f32 *)(e + 0x40));
+        AT(e, 0x72, u8) = 1;
+    }
+}
+
+/* room manager +0x9360: take PAC section 14 (+0x4; its count at +0x8) */
+s32 func_002A88A0(u8 *o, u8 *sec) {
+    if (sec != NULL) {
+        AT(o, 0x8, s32) = AT(sec, 0, s32);
+        AT(o, 0x4, u8 *) = sec;
+    } else {
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0x4, u8 *) = NULL;
+    }
+    return 0;
+}
+
+/* the room manager: take up to 8 areas from PAC section 3 (+0x10: offset of a list of
+ * 0xC0-byte entries, -1 terminated). Per area: 7 bytes at +0xD8 (+0x8 bits 16..23, the low and
+ * high nibble of +0xC, 0, the low nibble again, the size of its (x, z) quad in 1/256: width,
+ * depth) and the quad (4 points in 0..1 from entry +0x50) at +0x140 and +0x240 (0x20 each) */
+void func_0025D370(u8 *rm, u8 *sec) {
+    u8 *e;
+    s32 j;
+    s32 k;
+
+    if (AT(sec, 0x10, u32) == 0) {
+        return;
+    }
+    e = sec + AT(sec, 0x10, u32);
+    if (AT(e, 0, s32) == -1) {
+        return;
+    }
+    for (j = 0; ; ) {
+        u8 *b = rm + 0xD8 + j * 7;
+        f32 *q = &AT(rm, 0x140 + j * 0x20, f32);
+        f32 minX = 1.0f, maxX = 0.0f, minZ = 1.0f, maxZ = 0.0f;
+
+        b[0] = (AT(e, 0x8, u32) & 0xFF0000) >> 16;
+        b[1] = AT(e, 0xC, u32) & 0xF;
+        b[2] = (AT(e, 0xC, u32) & 0xF0) >> 4;
+        b[3] = 0;
+        b[4] = b[1];
+        for (k = 0; k < 4; k++) {
+            f32 x = AT(e, 0x50 + k * 8, f32);
+            f32 z;
+
+            if (!(minX <= x)) {
+                minX = x;
+            }
+            if (maxX < x) {
+                maxX = x;
+            }
+            q[k * 2] = x;
+            z = AT(e, 0x54 + k * 8, f32);
+            if (!(minZ <= z)) {
+                minZ = z;
+            }
+            if (maxZ < z) {
+                maxZ = z;
+            }
+            q[k * 2 + 1] = z;
+        }
+        b[5] = (u8)(u32)(maxX * 256.0f - minX * 256.0f);
+        b[6] = (u8)(u32)(maxZ * 256.0f - minZ * 256.0f);
+        for (k = 0; k < 8; k++) {
+            AT(rm, 0x240 + j * 0x20 + k * 4, f32) = q[k];
+        }
+        if (++j >= 8) {
+            return;
+        }
+        e += 0xC0;
+        if (AT(e, 0, s32) == -1) {
+            return;
+        }
+    }
+}
+
+/* the room manager: reset the area state */
+void func_0025E0D0(u8 *rm) {
+    AT(rm, 0x6C, s32) = 0;
+    AT(rm, 0x70, s32) = 0;
+    AT(rm, 0x74, s32) = 0;
+    AT(rm, 0x78, s32) = 0;
+    AT(rm, 0x4, s32) = 0;
+    AT(rm, 0x68, s32) = 0;
+    AT(rm, 0x60, u8) = 0;
+    AT(rm, 0x8B, u8) = 0;
+}
+
+/* the lights +0xC: take the room's lights (PAC section 4: count, ambient colour, then 0x30
+ * bytes per light, set through +0x20); no section: reset */
+void func_001FAF70(VObject *l, u8 *sec) {
+    f32 light[12];
+    s32 i, k;
+    u8 *p;
+
+    if (sec == NULL) {
+        func_001F9C80((u8 *)l);
+        return;
+    }
+    AT(l, 0x9E0, u8 *) = sec;
+    AT(l, 0x10, s32) = AT(sec, 0x0, s32);
+    AT(l, 0x14, f32) = AT(sec, 0x4, f32);
+    AT(l, 0x18, f32) = AT(sec, 0x8, f32);
+    AT(l, 0x1C, f32) = AT(sec, 0xC, f32);
+    p = sec + 0x10;
+    for (i = 0; i < AT(l, 0x10, s32); i++) {
+        for (k = 0; k < 12; k++) {
+            light[k] = AT(p, k * 4, f32);
+        }
+        p += 0x30;
+        VCALL(l, 0x20, void (*)(VObject *, f32 *, s32))(l, light, i);
+    }
+}
+
+extern void func_0025EEC0(u8 *o);
+extern void func_00221880(u8 *door);
+
+/* the doors +0x24: PAC section 8 (one offset per present door, in door order; entries
+ * placed 0x10 apart): reset each present door and point it at its entry, then +0x7C */
+void func_00222F60(VObject *d, u8 *sec) {
+    u8 i;
+    s32 n = 0;
+
+    if (sec == NULL) {
+        return;
+    }
+    for (i = 0; i < 8; i++) {
+        u8 *tbl = AT(d, 0x4, u8 *);
+        u8 *e;
+
+        if (tbl == NULL || AT(tbl, i * 4, s32) == 0) {
+            continue;
+        }
+        e = (u8 *)d + i * 0x210;
+        func_0025EEC0(e + 0x90);
+        e += 0x10;
+        func_00221880(e);
+        /* (the original then skips doors whose byte +0x70 equals -1, which a byte never is) */
+        AT(e, 0x0, u8 *) = sec + AT(sec, n * 4, u32) + n * 0x10;
+        n++;
+    }
+    VCALL(d, 0x7C, void (*)(VObject *))(d);
+}
+
+extern void func_0025FC50(u8 *o);
+extern void func_0025F970(u8 *o, u8 *def);
+extern void func_0025F910(u8 *o, u8 *def);
+extern void func_0025F8B0(u8 *o, u8 *def);
+extern void func_0025F850(u8 *o, u8 *def);
+
+/* room manager +0x6740 +0x14: create the room's placed objects from its table (+0x4: four
+ * counts, one per kind, then offsets from +0x20), each in a free slot of 64 (0xB0 each from
+ * +0x20, use bitmap +0xC) */
+void func_002C92A0(u8 *o) {
+    u8 *h = AT(o, 0x4, u8 *);
+    s32 end0, end1, end2, total;
+    s32 i, j;
+
+    if (h == NULL) {
+        return;
+    }
+    end0 = AT(h, 0x0, s32);
+    end1 = end0 + AT(h, 0x4, s32);
+    end2 = end1 + AT(h, 0x8, s32);
+    total = end2 + AT(h, 0xC, s32);
+    for (i = 0; i < total; i++) {
+        u8 *slot = NULL;
+        u8 *def;
+
+        for (j = 0; j < 0x40; j++) {
+            u32 *used = &AT(o, 0xC + (j >> 5) * 4, u32);
+
+            if (!(*used & (1 << (j & 0x1F)))) {
+                *used |= 1 << (j & 0x1F);
+                slot = o + j * 0xB0 + 0x20;
+                func_0025FC50(slot);
+                break;
+            }
+        }
+        if (slot == NULL) {
+            continue;
+        }
+        def = h + AT(h, 0x20 + i * 4, u32);
+        if (i < end0) {
+            func_0025F970(slot, def);
+        } else if (i < end1) {
+            func_0025F910(slot, def);
+        } else if (i < end2) {
+            func_0025F8B0(slot, def);
+        } else {
+            func_0025F850(slot, def);
+        }
+    }
+}
+
+/* ---- the room's placed objects (room manager +0x6740 slots, 0xB0 each): +0x4 kind (0..3),
+ * +0x10 / +0x20 two vectors from the definition, +0x70 the definition ---- */
+
+static void placed_init(u8 *o, s32 kind, u8 *def) {
+    AT(o, 0x4, s32) = kind;
+    AT(o, 0x48, s32) = AT(o, 0x4, s32);
+    AT(o, 0x70, u8 *) = def;
+    sceVu0CopyVector((f32 *)(o + 0x10), (f32 *)(def + 0x10));
+    sceVu0CopyVector((f32 *)(o + 0x20), (f32 *)(def + 0x20));
+}
+
+void func_0025F970(u8 *o, u8 *def) {
+    placed_init(o, 0, def);
+}
+
+void func_0025F910(u8 *o, u8 *def) {
+    placed_init(o, 1, def);
+}
+
+void func_0025F8B0(u8 *o, u8 *def) {
+    placed_init(o, 2, def);
+}
+
+void func_0025F850(u8 *o, u8 *def) {
+    placed_init(o, 3, def);
+}
+
+extern void *D_0046D750[], *D_0046D7B0[], *D_0046EB40[], *D_0046EC60[];   /* the 4 effect classes */
+extern void *func_002672F0(u32 size, void *place);   /* placement new */
+
+/* (re)create effect `slot` of class `vtbl` from the pool (+0x1400) */
+static s32 effect_create(u8 *o, s32 slot, void **vtbl) {
+    VObject *pool = (VObject *)(o + 0x1400);
+    VObject *e;
+    void *mem;
+
+    if (AT(o, slot, void *) != NULL) {
+        VCALL(pool, 0x14, void (*)(VObject *, void *))(pool, AT(o, slot, void *));
+        AT(o, slot, void *) = NULL;
+    }
+    mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
+    if (mem == NULL) {
+        return 0;
+    }
+    e = func_002672F0(0xA0, mem);
+    if (e != NULL) {
+        e->vtbl = vtbl;
+    }
+    AT(o, slot, VObject *) = e;
+    e = AT(o, slot, VObject *);
+    VCALL(e, 0xC, void (*)(VObject *))(e);
+    return 1;
+}
+
+/* SceneGame +0xF6CD30 (D_0044E4C0): the room's effects from PAC section 13 (offsets at
+ * +0x8.. +0x14 for the four effect slots +0x14B4.. +0x14A8; the third gets 4 words and 3
+ * zeros); no section: the camera's default depth range */
+void func_00266CD0(u8 *o, u8 *sec) {
+    static const u16 sSlots[4] = {0x14B4, 0x14B0, 0x14AC, 0x14A8};
+    void **classes[4];
+    s32 k;
+
+    classes[0] = D_0046D750;
+    classes[1] = D_0046D7B0;
+    classes[2] = D_0046EB40;
+    classes[3] = D_0046EC60;
+    if (sec == NULL) {
+        VCALL(D_0044E4B8, 0xC0, void (*)(VObject *, f32, f32))(D_0044E4B8, 20.0f, 1000.0f);
+        return;
+    }
+    for (k = 0; k < 4; k++) {
+        u8 *data;
+        VObject *e;
+
+        if (AT(sec, 0x8 + k * 4, u32) == 0) {
+            continue;
+        }
+        if (!effect_create(o, sSlots[k], classes[k])) {
+            continue;
+        }
+        data = sec + AT(sec, 0x8 + k * 4, u32);
+        e = AT(D_0044E4C0, sSlots[k], VObject *);
+        if (k == 2) {
+            u32 args[7];
+
+            args[0] = AT(data, 0x0, u32);
+            args[1] = AT(data, 0x4, u32);
+            args[2] = AT(data, 0x8, u32);
+            args[3] = AT(data, 0xC, u32);
+            args[4] = 0;
+            args[5] = 0;
+            args[6] = 0;
+            if (e != NULL) {
+                VCALL(e, 0x18, void (*)(VObject *, void *))(e, args);
+            }
+        } else if (e != NULL) {
+            VCALL(e, 0x18, void (*)(VObject *, void *))(e, data);
+        }
+    }
+}
+
+/* placement new (the effects' copy) */
+void *func_002672F0(u32 size, void *place) {
+    return place;
+}
+
+/* SceneGame +0xF6E200: per-room reset (its heap +0x10000 via +0xC, the 0x400 slots +0x18034) */
+void func_002D6100(u8 *o) {
+    VObject *heap = (VObject *)(o + 0x10000);
+    u32 i;
+
+    VCALL(heap, 0xC, void (*)(VObject *))(heap);
+    for (i = 0; i < 0x400; i++) {
+        AT(o, 0x18034 + i * 4, s32) = 0;
+    }
+    AT(o, 0x19034, u8) = 0;
+}
+
+extern u8 *D_00420B20[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
+extern void **D_0041F950[];  /* per map: its pages (by the entry's +0x4) */
+
+/* SceneGame +0x101EBC0 (the map): find which map and page show room `room` (+0x108 the room,
+ * +0x10C/+0x10D the map, +0x10E/+0x10F the page; -1: none) */
+void func_00305520(u8 *m, s32 room) {
+    s32 i;
+    u8 *e;
+
+    AT(m, 0x108, s32) = -1;
+    AT(m, 0x10D, s8) = -1;
+    AT(m, 0x10C, s8) = -1;
+    AT(m, 0x10F, s8) = -1;
+    AT(m, 0x10E, s8) = -1;
+    if (room == -1 || (u32)room >= 0x110) {
+        return;
+    }
+    for (i = 0; D_00420B20[i] != NULL; i++) {
+        for (e = D_00420B20[i]; AT(e, 0, s32) != -1; e += 0x18) {
+            if (AT(e, 0, s32) == room && D_0041F950[i] != NULL &&
+                D_0041F950[i][AT(e, 4, s8)] != NULL) {
+                AT(m, 0x108, s32) = room;
+                AT(m, 0x10D, s8) = i;
+                AT(m, 0x10C, s8) = i;
+                AT(m, 0x10F, s8) = AT(e, 4, s8);
+                AT(m, 0x10E, s8) = AT(e, 4, s8);
+                return;
+            }
+        }
+    }
 }

@@ -540,6 +540,13 @@ class CPU:
                     if v in CALL_ALIAS:
                         for i, b in enumerate(CALL_ALIAS[v].to_bytes(4, "little")):
                             w[a + i] = b
+        # a stored address of one of the function's own locals (frames differ between the two)
+        for a in [a for a in w if a % 4 == 0]:
+            if a + 1 in w and a + 2 in w and a + 3 in w:
+                v = w[a] | w[a + 1] << 8 | w[a + 2] << 16 | w[a + 3] << 24
+                if sp0 - FRAME <= v < sp0:
+                    for i in range(4):
+                        w[a + i] = 0x5F
         return w
 
     SAVE_STORES = {"sq": 16, "sd": 8, "sw": 4, "swc1": 4}

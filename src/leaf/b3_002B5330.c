@@ -127,20 +127,6 @@ u32 func_002BA6E0(u8 *self, u8 *out) {
     return self[0x1C4];
 }
 
-void func_002BB390(u8 *self) {
-    *(u32 *)(self + 0x10) = 0x808080;
-    *(u32 *)(self + 0x14) = 0xC0808080;
-    *(f32 *)(self + 0x50) = 20.0f;
-    *(f32 *)(self + 0x54) = 1000.0f;
-    *(u32 *)(self + 0x1C) = 0;
-    *(u32 *)(self + 0x20) = 0;
-    *(u32 *)(self + 0x24) = 0;
-    *(u32 *)(self + 0x28) = 0;
-    *(u32 *)(self + 0x2C) = 0;
-    *(u32 *)(self + 0x30) = 0;
-    *(u32 *)(self + 0x34) = 0;
-}
-
 extern void *D_0044E4F0;
 
 /* Stores its arguments, then tail-calls D_0044E4F0->vfunc_0xC(self, c, 0). */
@@ -178,22 +164,6 @@ u32 func_002C6250(u8 *self, u8 *out) {
         out[0x9] = 1;
     }
     return self[0x1C4];
-}
-
-void func_002C6540(u8 *self, f32 *v) {
-    if (v != NULL) {
-        *(f32 *)(self + 0x50) = v[0];
-        *(f32 *)(self + 0x54) = v[1];
-        *(f32 *)(self + 0x58) = v[2];
-        *(f32 *)(self + 0x5C) = v[3];
-    }
-}
-
-void func_002C6630(u8 *self) {
-    *(f32 *)(self + 0x50) = 1.0f;
-    *(f32 *)(self + 0x54) = 1.0f;
-    *(f32 *)(self + 0x58) = 2000.0f;
-    *(f32 *)(self + 0x5C) = 2000.0f;
 }
 
 s32 func_002C8D90(u8 *self) {

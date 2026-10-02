@@ -79,3 +79,32 @@ void func_0021AF90(VObject *rooms) {
     VCALL(gFileLoader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
         gFileLoader, D_004572A0, (u8 *)rooms + 0x380, 0x10000000, 0);
 }
+
+extern void func_0017FC80(u8 *o);
+
+/* reset the 5 obstacles (+0x10, 0xB0 each) */
+void func_0021B040(u8 *rooms) {
+    s32 i;
+
+    for (i = 0; i < 5; i++) {
+        func_0017FC80(rooms + 0x10 + i * 0xB0);
+    }
+}
+
+/* reset an obstacle */
+void func_0017FC80(u8 *o) {
+    AT(o, 0x0, u8) = 0;
+    AT(o, 0x1, u8) = 0;
+    AT(o, 0x54, s32) = -1;
+    AT(o, 0x58, s32) = -1;
+    AT(o, 0x5C, s32) = -1;
+    AT(o, 0x60, s32) = -1;
+    AT(o, 0x48, f32) = 0.0f;
+    AT(o, 0x44, f32) = 0.0f;
+    AT(o, 0x40, f32) = 0.0f;
+    AT(o, 0x4C, f32) = 1.0f;
+    AT(o, 0x64, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x50, s32) = 0;
+}

@@ -11,3 +11,34 @@ s32 func_00260690(u8 *items, u8 slot) {
     }
     return VCALL(e, 0xC, s32 (*)(VObject *))(e);
 }
+
+#include "progress.h"
+#include "sce/libvu0.h"
+
+extern VObject *D_0044E570;   /* the nav mesh */
+extern void *func_00120D60(void *pool, u32 i);   /* BlockPool: block i if in use */
+
+/* (D_0044F260, the placed things: 128 blocks of 0x140 in the pool +0xA040) +0x20: put the
+ * active ones of kinds 0, 2, 3, 5, 7, 8 that are in the current room onto their nav mesh
+ * triangle (+0x34; position +0x10, copied to +0x40) */
+void func_002D69E0(u8 *mgr) {
+    s32 room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    VObject *nav = D_0044E570;
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        u8 *t = func_00120D60(mgr + 0xA040, i);
+
+        if (t == NULL || AT(t, 0x28, u8) != 1) {
+            continue;
+        }
+        switch (AT(t, 0x20, u32)) {
+        case 0: case 2: case 3: case 5: case 7: case 8:
+            if (AT(t, 0x30, s32) == room && AT(t, 0x34, s32) != -1) {
+                VCALL(nav, 0x14, void (*)(VObject *, s32, f32 *))(nav, AT(t, 0x34, s32), (f32 *)(t + 0x10));
+                sceVu0CopyVector((f32 *)(t + 0x40), (f32 *)(t + 0x10));
+            }
+            break;
+        }
+    }
+}

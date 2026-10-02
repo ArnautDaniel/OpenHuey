@@ -719,3 +719,8 @@ void func_0039D310(Scene *g) {
         }
     }
 }
+
+/* the current room (the tag of the active room slot) */
+s32 func_0039D2E0(Scene *g) {
+    return AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32);
+}

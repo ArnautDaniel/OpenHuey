@@ -5,6 +5,7 @@
  *                    files)
  *   HG_NOPARTNER=1   no partner (Hewie) in the game scene */
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void hg_debug_next_scene(int32_t *mode, int32_t *param) {
@@ -22,4 +23,14 @@ void hg_debug_next_scene(int32_t *mode, int32_t *param) {
 /* HG_NOPARTNER=1: no partner (Hewie) in the game scene (his class isn't fully decompiled) */
 int32_t hg_debug_no_partner(void) {
     return getenv("HG_NOPARTNER") != NULL;
+}
+
+/* an event script command whose C isn't written yet (func_002029B0): logged once, skipped */
+void hg_debug_todo_opcode(int32_t op) {
+    static uint8_t seen[256];
+
+    if (!seen[op & 0xFF]) {
+        seen[op & 0xFF] = 1;
+        fprintf(stderr, "event: command 0x%02X not decompiled yet (skipped)\n", (int)op);
+    }
 }

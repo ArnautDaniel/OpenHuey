@@ -1,6 +1,8 @@
-/* The event script system (SceneGame +0xF6AFB0): the room scripts, run by a table of
- * opcode handler objects (+0x120). */
+/* The event script system (SceneGame +0xF6AFB0, D_0044E4D0): runs the rooms' event scripts.
+ * +0x120 holds one handler object per room (0x110 rooms); its vtable gives the room's scripts
+ * for each phase (+0xC entering, +0x10.. +0x20 other phases). */
 #include "common.h"
+#include "game.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -34,11 +36,11 @@ extern void *D_0047A610[], *D_0047A650[], *D_0047A690[];
 
 extern void *func_002A8970(u32 size, void *place);   /* placement new */
 
-/* the opcode handlers' vtables (the other opcodes keep the base handler) */
+/* the rooms' handler classes (the other rooms keep the base handler) */
 static const struct {
-    s16 op;
+    s16 room;
     void **vtbl;
-} sOpcodes[] = {
+} sRooms[] = {
     {0x00, D_0046DBC0}, {0x01, D_0046B8B0}, {0x02, D_0046DC00}, {0x03, D_0046DC40},
     {0x04, D_0046DC80}, {0x05, D_0046B870}, {0x06, D_0046DCC0}, {0x07, D_0046B830},
     {0x08, D_0046DD00}, {0x09, D_0046DD40}, {0x0A, D_0046DD80}, {0x0B, D_0046DDC0},
@@ -84,16 +86,16 @@ static const struct {
     {0x109, D_0046FE40}, {0x10A, D_0046FE80}, {0x10B, D_0046FEC0},
 };
 
-/* install the event opcode handlers (+0x120: 0x110 4-byte handler objects; each gets its
- * opcode's vtable) */
+/* install the room handlers (+0x120: 0x110 4-byte handler objects; each gets its room's
+ * vtable) */
 void func_00209850(u8 *ev) {
     s32 i;
 
-    for (i = 0; i < (s32)(sizeof(sOpcodes) / sizeof(sOpcodes[0])); i++) {
-        void ***h = func_002A8970(4, ev + 0x120 + sOpcodes[i].op * 4);
+    for (i = 0; i < (s32)(sizeof(sRooms) / sizeof(sRooms[0])); i++) {
+        void ***h = func_002A8970(4, ev + 0x120 + sRooms[i].room * 4);
 
         if (h != NULL) {
-            *h = sOpcodes[i].vtbl;
+            *h = sRooms[i].vtbl;
         }
     }
     AT(ev, 0x704, s32) = 0;
@@ -103,4 +105,126 @@ void func_00209850(u8 *ev) {
 /* placement new */
 void *func_002A8970(u32 size, void *place) {
     return place;
+}
+
+/* (D_0044E4D0) +0xC the room's event script (PAC section 2) */
+void func_00209840(u8 *ev, void *script) {
+    AT(ev, 0x10, void *) = script;
+}
+
+#include "progress.h"
+#include "task.h"
+
+extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *D_0044E988;   /* the item manager */
+extern VObject *D_0044E970;
+extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 and 1 */
+extern void func_00121890(u8 *ev, u8 *script);   /* start a script */
+extern void func_00121730(u8 *ev);   /* a control op (0xF0..) */
+extern void func_002029B0(u8 *ev);   /* a command */
+
+#define EV_ROOM(ev) ((VObject *)((ev) + 0x120 + AT(ev, 0x560, s32) * 4))
+
+static void run_script(u8 *ev, u8 *script) {
+    func_00121890(ev, script);
+    AT(ev, 0x700, u8) = 0;
+    while (*AT(ev, 0x4, u8 *) != 0xFF) {
+        if (*AT(ev, 0x4, u8 *) >= 0xF0) {
+            func_00121730(ev);
+        } else {
+            func_002029B0(ev);
+        }
+    }
+}
+
+/* run the current room's script for `phase` (0: entering the room: note it as visited and
+ * reset the event state), then the built-in script of phases 1 and 2. Progress flag 0x26
+ * suppresses all room scripts but phase 3's. */
+void func_00209390(u8 *ev, u8 phase) {
+    struct {
+        s32 a, b, c, d;
+        u8 e, f, g, h;
+        s16 i;
+    } ctx;
+    u8 *script = NULL;
+    u8 *builtin;
+    s32 i;
+
+    ctx.c = 0;
+    ctx.d = 0;
+    ctx.a = 0;
+    ctx.h = 0xFF;
+    ctx.b = 0;
+    ctx.e = 0;
+    ctx.f = 0;
+    ctx.g = 0;
+    ctx.i = 0;
+    AT(ev, 0x6FC, void *) = &ctx;
+    switch (phase) {
+    case 0: {
+        Progress *p = gProgress;
+        VObject *o;
+
+        AT(ev, 0x560, s32) = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+        AT(p, 0xDC + (AT(ev, 0x560, s32) >> 5) * 4, u32) |= 1 << (AT(ev, 0x560, s32) & 0x1F);
+        VCALL(D_0044E560, 0x7C, void (*)(VObject *, s32, s32))(D_0044E560, 1, 0);
+        for (i = 0; i < 32; i++) {
+            AT(ev, 0x810 + i * 4, s32) = 0;
+        }
+        AT(ev, 0x890, s32) = 0;
+        for (i = 0; i < 8; i++) {
+            AT(ev, 0x894 + i * 0x14, s32) = -1;
+        }
+        Task_Close((Task *)(ev + 0x708));
+        for (i = 0; i < 17; i++) {
+            AT(ev, 0x564 + i * 0x18, s32) = 0;
+        }
+        VCALL(D_0044E988, 0x28, void (*)(VObject *))(D_0044E988);
+        VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, 0xFF, 0, 0, 1.0f);
+        AT(ev, 0x80C, s32) = 0;
+        o = EV_ROOM(ev);
+        script = VCALL(o, 0xC, u8 *(*)(VObject *))(o);
+        break;
+    }
+    case 1: {
+        VObject *o;
+
+        AT(ev, 0x704, s32)++;
+        for (i = 0; i < 32; i++) {
+            AT(ev, 0xBF4 + i * 0x30, u8) = 0;
+        }
+        o = EV_ROOM(ev);
+        script = VCALL(o, 0x10, u8 *(*)(VObject *))(o);
+        break;
+    }
+    case 2:
+        script = VCALL(EV_ROOM(ev), 0x14, u8 *(*)(VObject *))(EV_ROOM(ev));
+        break;
+    case 3:
+        script = VCALL(EV_ROOM(ev), 0x18, u8 *(*)(VObject *))(EV_ROOM(ev));
+        break;
+    case 4:
+        script = VCALL(EV_ROOM(ev), 0x1C, u8 *(*)(VObject *))(EV_ROOM(ev));
+        break;
+    case 5:
+        Progress_ClearFlag(gProgress, 0x22);
+        script = VCALL(EV_ROOM(ev), 0x20, u8 *(*)(VObject *))(EV_ROOM(ev));
+        break;
+    }
+    if (Progress_TestFlag(gProgress, 0x26) && phase != 3) {
+        script = NULL;
+    }
+    if (script != NULL) {
+        run_script(ev, script);
+    }
+    if (phase == 2) {
+        builtin = D_003D6230;
+    } else if (phase == 1) {
+        builtin = D_003D6240;
+    } else {
+        builtin = NULL;
+    }
+    if (builtin != NULL) {
+        run_script(ev, builtin);
+    }
 }
