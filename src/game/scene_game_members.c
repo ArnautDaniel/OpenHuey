@@ -1704,3 +1704,28 @@ void func_002A7630(u8 *t) {
     t[1] = 0;
     t[0]++;
 }
+
+
+extern VObject *func_00120D60(void *pool, s32 i);   /* the pool's object i (NULL if free) */
+
+/* the dynamic actors, each frame (128 slots in the pool +0xA040): an active one updates
+ * (+0x30), a finished one is given back to the pool (+0x14) and destroyed */
+void func_002D75C0(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        VObject *a = func_00120D60(o + 0xA040, i);
+
+        if (a == NULL) {
+            continue;
+        }
+        if (AT(a, 0x28, u8) != 0) {
+            VCALL(a, 0x30, void (*)(VObject *))(a);
+        } else {
+            VCALL(o + 0xA040, 0x14, void (*)(void *, VObject *))(o + 0xA040, a);
+            if (a != NULL) {
+                VCALL(a, 0x8, void (*)(VObject *, s32))(a, 1);
+            }
+        }
+    }
+}
