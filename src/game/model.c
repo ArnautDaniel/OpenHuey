@@ -3101,3 +3101,10 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
         func_001F3530(m + 0x1D0, a, b, light, layer);
     }
 }
+
+
+/* `m` = a turn of `a` about Y */
+void func_002E3190(f32 (*m)[4], f32 a) {
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixY(m, m, a);
+}
