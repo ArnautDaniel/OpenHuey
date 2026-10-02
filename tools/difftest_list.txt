@@ -139,7 +139,6 @@ src/leaf/b0_001727C0.c func_00173510
 src/leaf/b0_001727C0.c func_00173560
 src/leaf/b0_001727C0.c func_001735B0
 src/leaf/b0_001727C0.c func_00173600
-src/leaf/b0_001727C0.c func_001762A0
 src/leaf/b2_002645D0.c func_002645D0
 src/leaf/b2_002645D0.c func_00264600
 src/leaf/b2_002645D0.c func_00264630
@@ -1876,3 +1875,18 @@ src/game/loader.c func_0016BFB0 --runs=300 --pre=a0=0x0B000000..0x0B000000 --pre
 src/game/rumble.c func_002D42A0 --runs=300 --pre=a0+0x4=0..1 --pre=a0+0x5=0..1 --pre=a0+0x8=0..2 --pre=a0+0x14=0..2 --pre=a0+0x68=0..2 --pre=a0+0x74=0..2 --pre=a0+0x84=0..1 --pre=a0+0x80=0..1 --pre=@0x0044FEB0=0x0A200000..0x0A200000 --pre=@0x0A200000=0x0046ADB0..0x0046ADB0 --pre=a0+0x0=0x0046F4F0..0x0046F4F0
 src/game/pad.c func_001BE1F0 --pre=a1=0..2
 src/game/pad.c func_001BE4B0 --runs=300 --pre=a0+0x88=0..3 --pre=a0+0x8C=0..2 --pre=a0+0x282=0..3 --pre=a0+0x288=0..1 --pre=a0+0x28A=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret-prob=0.8
+src/game/message.c func_0026BCC0
+src/game/message.c func_0026BC00
+src/game/message.c func_0026B690 --pre=a1=0x0A000000..0x0A000000 --pre=@0x0A000000=0..4 --stub-ret=-1 --stub-ret=3
+src/game/message.c func_0026B570 --pre=a1=0x0A000000..0x0A000000 --pre=@0x0A000000=0..4 --stub-ret=-1 --stub-ret=3
+src/game/message.c func_0026BB00 --runs=100 --pre=a1=0..7 --pre=a2=0x0A000000..0x0A000000 --pre=@0x0A000000=0..4 --stub-ret=-1 --stub-ret=3
+src/game/message.c func_0026B9C0 --runs=100 --pre=a1=0..6 --pre=a0+0x4=0..3 --pre=a0+0x28=0..3 --pre=a0+0x10=0..4 --pre=a0+0x34=0..4
+src/game/message.c func_0026B950 --runs=100 --pre=a1=0..6 --pre=a3=0..0x90 --pre=a0+0x4=0..1 --pre=a0+0x10=0..9
+src/game/message.c func_0026B4A0 --pre=a1=0..6
+src/game/message.c func_0026B4D0 --pre=a1=0..6 --pre=a0+0x8=0..1
+src/game/message.c func_0026B520 --pre=a1=0..6 --pre=a0+0x8=0..1
+src/game/message.c func_001762A0
+src/game/message.c func_0026B860 --runs=200 --pre=a1=0..1 --pre=a2=0..2 --pre=a0+0x4=0..3 --pre=a0+0x6=0..2 --pre=a0+0x8=0..1 --pre=a0+0x104=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x100=0..1
+src/game/message.c func_0026B860 --runs=200 --pre=a1=0..1 --pre=a2=0..2 --pre=a0+0x4=0..3 --pre=a0+0x6=0..2 --pre=a0+0x8=0..1 --pre=a0+0x104=0..3 --pre=a0+0x100=0..1
+src/game/message.c func_0026B7B0 --runs=200 --pre=a1=0..1 --pre=a2=0..2 --pre=a0+0x4=0..3 --pre=a0+0x6=0..2 --pre=a0+0x8=0..1 --pre=a0+0x104=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x10=0..3
+src/game/message.c func_0026B7B0 --runs=200 --pre=a1=0..1 --pre=a2=0..2 --pre=a0+0x4=0..3 --pre=a0+0x6=0..2 --pre=a0+0x8=0..1 --pre=a0+0x104=0..3 --pre=a0+0x10=0..3

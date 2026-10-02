@@ -26,7 +26,7 @@ extern VObject *D_0044E4E8;   /* global object, type unknown (+0x10 upload(buf, 
 
 extern Task *Task_dtor(Task *task, s32 flags);
 extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
-extern void func_0026BCC0(VObject *msg);
+extern void func_0026BCC0(void *msg);
 extern void func_0026BC00(VObject *msg);
 
 static const char sErrMesTex[] = "SYSTEM\\ERRMES.TEX";

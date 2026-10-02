@@ -204,6 +204,3 @@ void *func_00173600(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x2, arg, D_00469D10);
 }
 
-void func_001762A0(void *p) {
-    FLD(p, 0x100, u8) = 0xFF;
-}

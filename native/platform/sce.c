@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 /* Sony SDK functions (libgraph, libdma, libkernl...) the game calls, replaced on PC. */
 
 /* sceDmaGetChan(i): the register block of DMA channel i (0 VIF0, 1 VIF1, 2 GIF, ...). The game
@@ -30,6 +32,9 @@ void func_0010D6E8(void *chan, void *tag) {
 
 /* sceGsPutDispEnv(disp): PMODE, SMODE2, DISPFB2, DISPLAY2, BGCOLOR */
 void func_0010C440(unsigned long long *disp) {
+    if (getenv("HG_GSDEBUG")) {
+        fprintf(stderr, "PutDispEnv %llx %llx %llx %llx\n", disp[0], disp[1], disp[2], disp[3]);
+    }
     gs_set_display(disp[0], disp[1], disp[2], disp[3], disp[4]);
 }
 

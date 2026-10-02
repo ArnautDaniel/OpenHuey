@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "gs_local.h"
@@ -938,6 +939,14 @@ void gs_display(uint32_t *out, int maxw, int maxh, int *w, int *h) {
     uint32_t dbx = BITS(fb, 32, 11), dby = BITS(fb, 43, 11);
     int dw = (int)(BITS(disp, 32, 12) + 1) / (int)(BITS(disp, 23, 4) + 1), dh = (int)BITS(disp, 44, 11) + 1, x, y;
 
+    if (getenv("HG_GSDEBUG")) {
+        static int n;
+
+        if (n++ < 3) {
+            fprintf(stderr, "gs_display: pmode %llx dispfb %llx display %llx -> %dx%d\n",
+                    (unsigned long long)gs.pmode, (unsigned long long)fb, (unsigned long long)disp, dw, dh);
+        }
+    }
     if (dw > maxw) dw = maxw;
     if (dh > maxh) dh = maxh;
     for (y = 0; y < dh; y++) {
