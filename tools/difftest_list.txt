@@ -2109,3 +2109,4 @@ src/game/scene_title.c func_0012D140 --pre=a0=0x0B000000..0x0B000000 --stub-ret=
 src/game/scene_title.c func_0037EB80 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c func_0037EBC0 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c func_0012F290 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..360000 --pre=a0+0x18=0x380..0x386 --pre=@0x0047E36C=0..0x10
+src/game/vram.c func_001C0F40 --runs=100 --pre=a1=0..63 --pre=a2=0..15 --pre=a3=0..0x14 --pre=a4=1..1024 --pre=a5=1..1024 --pre=a6=0..2

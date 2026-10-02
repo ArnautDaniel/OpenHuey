@@ -570,3 +570,12 @@ u64 func_001C1160(u8 *v, s32 id, u32 w, u32 h, s32 cpsm) {
 u64 func_001C0FE0(u8 *v, s32 id, u32 csa, s32 psm, u32 w, u32 h, s32 cpsm) {
     return Vram_Tex0(v, id, psm, w, h, cpsm, (u64)csa << 56);
 }
+
+/* +0x34 TEX2 for entry `id`: format psm, CLUT `csa` of the entry's CLUT region (format cpsm) */
+u64 func_001C0F40(u8 *v, s32 id, u32 csa, s32 psm, s32 cpsm) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+    u32 slots = (u16)e->cpsm == 2 ? 16 : 8;
+    u32 cbp = ((e->cregion << 11) + 0xFC000 + (u32)((u16)e->cslot << 11) / slots) >> 6;
+
+    return ((u64)csa << 56) | ((u64)(cpsm & 0xFFFF) << 51) | ((u64)cbp << 37) | ((u64)(psm & 0xFFFF) << 20);
+}

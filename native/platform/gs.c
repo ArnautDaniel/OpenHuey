@@ -825,7 +825,7 @@ void gs_write_reg(uint32_t reg, uint64_t v) {
     case 0x0D: push_vertex(v, 0, 0); break;   /* XYZ3 */
     case 0x14: case 0x15: gs.ctx[reg - 0x14].tex1 = v; break;
     case 0x16: case 0x17:                     /* TEX2: TEX0 without the base */
-        gs.ctx[reg - 0x16].tex0 = (gs.ctx[reg - 0x16].tex0 & 0x3FFFFFFFFULL) | (v & ~0x3FFFFFFFFULL) | (v & 0x3F00000);
+        gs.ctx[reg - 0x16].tex0 = (gs.ctx[reg - 0x16].tex0 & 0x3FFFFFFFFULL & ~0x3F00000ULL) | (v & ~0x3FFFFFFFFULL) | (v & 0x3F00000);
         clut_load(gs.ctx[reg - 0x16].tex0);
         break;
     case 0x18: case 0x19: gs.ctx[reg - 0x18].xyoffset = v; break;
