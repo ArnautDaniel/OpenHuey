@@ -112,7 +112,7 @@ typedef struct Character {
     /* 0x1530 */ s32 unk1530;
     /* 0x1534 */ s32 unk1534;
     /* 0x1538 */ s32 unk1538;
-    /* 0x153C */ u8 unk153C;          /* 0 Fiona, 1 Hewie (set by SceneGame_ctor) */
+    /* 0x153C */ u8 unk153C;          /* character id: 0 Fiona, 1 Hewie (set by SceneGame_ctor), ... */
 } Character;
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");

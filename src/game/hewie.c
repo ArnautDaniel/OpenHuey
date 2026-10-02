@@ -159,6 +159,103 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
     return act;
 }
 
+extern VObject *D_0044E550;   /* random numbers: +0x1C -> 0..1 */
+#define RNG01() VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)
+
+/* One chance in `n`: sets +0xF3586. */
+void func_00138DE0(Hewie *h, s32 n) {
+    if ((s32)((f32)n * RNG01()) == 0) {
+        HW(h, 0xF3586, u8) = 1;
+    }
+}
+
+/* Spend `amount` of his pool (+0xF359C) while it is in use (+0xF3598). */
+void func_00138E60(Hewie *h, s32 amount) {
+    if (HW(h, 0xF3598, s32) == 1) {
+        HW(h, 0xF359C, s32) -= amount;
+        HW(h, 0xF3587, u8) = 0;
+    }
+}
+
+extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
+extern s32 func_001270A0(Character *c);
+extern s32 func_001270F0(Character *c);
+extern VObject *gSceneGameF29740;   /* path planner */
+
+/* Triangles on opposite sides of a divided room (flags 0x100000 / 0x200000). */
+static inline s32 Hewie_OtherSide(Hewie *h, u32 tri) {
+    NavTri *t = NavMesh_Tri(D_0044E570, tri);
+    NavTri *cur = NavMesh_Tri(D_0044E570, h->c.a.navTri);
+    u32 ft = t->flags & 0x300000, fc = cur->flags & 0x300000;
+
+    return (ft == 0x100000 && fc == 0x200000) || (ft == 0x200000 && fc == 0x100000);
+}
+
+/* Plan a path to `pos` on `tri` (not across the room's divider); 1 if one was found. */
+s32 func_0013C1E0(Hewie *h, u32 tri, const f32 *pos) {
+    s32 r;
+
+    if (Hewie_OtherSide(h, tri)) {
+        return 0;
+    }
+    r = func_00127140(&h->c, 0, tri, pos);
+    if (r > 0) {
+        r = VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
+    }
+    return r > 0;
+}
+
+/* Plan a path to `pos` on `tri` (not across the divider) and start it (`direct`: the straight
+ * variant); `keep` keeps the planner's previous request. 0 = ok, -1 = failed. */
+s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
+    s32 r;
+
+    if (Hewie_OtherSide(h, tri)) {
+        return -1;
+    }
+    r = func_00127140(&h->c, 0, tri, pos);
+    if (r <= 0) {
+        return -(r < 0);
+    }
+    if (!keep) {
+        VCALL(gSceneGameF29740, 0x34, void (*)(VObject *, s32, s32))(gSceneGameF29740, h->c.pathId, 3);
+    }
+    r = direct ? func_001270A0(&h->c) : func_001270F0(&h->c);
+    return -(r < 0);
+}
+
+extern void func_0013C5D0(Hewie *h);
+
+/* His feeling about the kind of character `other` is (-10..10, saved with him), changed by
+ * `delta`; then re-evaluated. */
+void func_00166150(Hewie *h, Character *other, s32 delta) {
+    s16 *v = NULL;
+
+    switch (other->unk153C) {
+    case 0xA: case 0xB: case 0xC: case 0x27:
+        v = &HW(h, 0xF3678, s16);
+        break;
+    case 0x4: case 0x17: case 0x25:
+        v = &HW(h, 0xF367A, s16);
+        break;
+    case 0x3: case 0x22: case 0x23: case 0x24:
+        v = &HW(h, 0xF3676, s16);
+        break;
+    case 0x2: case 0x6: case 0x7: case 0x1B:
+        v = &HW(h, 0xF3674, s16);
+        break;
+    }
+    if (v != NULL) {
+        *v += delta;
+        if (*v < -10) {
+            *v = -10;
+        } else if (*v > 10) {
+            *v = 10;
+        }
+    }
+    func_0013C5D0(h);
+}
+
 /* vtable +0x60: forget path/movement state, then his default action. */
 void func_00165D00(Hewie *h) {
     func_00125BE0(&h->c);
