@@ -583,6 +583,7 @@ void func_002029B0(VObject *ev) {
 
 #ifdef HG_NATIVE
         if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
+            EV_WAIT(ev) = 1;   /* (not loaded in the PC build yet: its script idles) */
             break;
         }
 #endif
