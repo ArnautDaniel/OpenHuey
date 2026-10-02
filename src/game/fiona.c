@@ -4158,3 +4158,69 @@ void func_00185FC0(Fiona *f) {
     AT(f->c.motion, 0x854, f32) = AT(f->c.motion, 0x854, f32) + k01.f * (pitch - AT(f->c.motion, 0x854, f32));
     AT(f->c.motion, 0x858, f32) = AT(f->c.motion, 0x858, f32) + k01.f * (yaw - AT(f->c.motion, 0x858, f32));
 }
+
+
+extern s32 func_00123F70(Actor *a, Actor *b);   /* step `a` out of `b` (its triangle, -1: can't) */
+extern void func_0010E640(f32 *d, const f32 *a, f32 s);   /* scale x, y, z */
+
+/* keep Fiona out of the others, each frame: overlapping the pursuer (when +0x1AD5D7), she is
+ * pushed out to their radii (+0xC8) apart - along the pursuer's walk when it comes at her, else
+ * straight away from it - unless that is off the floor (then +0x2A); overlapping the partner
+ * (+0x1AD5D5, unless Progress +0x1FBEC1) she steps out of it or back to where she was */
+void func_00188960(Fiona *f) {
+    static const union { u32 u; f32 f; } k20 = {0x41A00000};
+    u8 *a = (u8 *)f;
+    u8 *pu = (u8 *)gCharPursuer;
+    f32 d[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dist, rsum;
+    s32 along;
+    u32 tri;
+
+    if (FI(f, 0x1AD5D7, u8) == 1 && AT(pu, 0x2A, u8) == 0 &&
+        (u8)func_001241F0(&f->c.a, (Actor *)pu, 0.0f, 0.0f) == 1) {
+        sceVu0SubVector(d, (f32 *)(a + 0x10), (f32 *)(pu + 0x10));
+        dist = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
+        rsum = AT(a, 0xC8, f32) + AT(gCharPursuer, 0xC8, f32);
+        func_001F6370(AT(gCharPursuer, 0xF0, u8 *), v, 0.0f);
+        along = 0;
+        if (!(v[2] <= 0.0f)) {
+            sceVu0CopyMatrix(m, (f32 (*)[4])((u8 *)gCharPursuer + 0x60));
+            sceVu0ApplyMatrix(v, m, v);
+            if (!(sceVu0InnerProduct(v, d) <= 0.0f)) {
+                along = 1;
+                func_0010E640(v, v, k20.f);
+                sceVu0AddVector(v, v, d);
+            }
+        }
+        if (!along) {
+            sceVu0CopyVector(v, d);
+        }
+        v[1] = 0.0f;
+        sceVu0Normalize(v, v);
+        func_0010E640(v, v, rsum - dist);
+        sceVu0AddVector(at, (f32 *)(a + 0x10), v);
+        tri = func_00124480(&f->c.a, at, -1);
+        if (tri == NAV_NONE) {
+            AT(a, 0x2A, u8) = 1;
+        } else {
+            AT(a, 0x34, u32) = tri;
+            sceVu0CopyVector((f32 *)(a + 0x10), at);
+        }
+        AT(a, 0x124, s32) = AT(a, 0x128, s32);
+        return;
+    }
+    if (AT(gProgress, 0x1FBEC1, u8) != 0 || FI(f, 0x1AD5D5, u8) != 1 || AT(gCharPartner, 0x2A, u8) != 0) {
+        return;
+    }
+    if ((u8)func_001241F0(&f->c.a, (Actor *)gCharPartner, 0.0f, 0.0f) != 1) {
+        return;
+    }
+    if (func_00123F70(&f->c.a, (Actor *)gCharPartner) == -1) {
+        AT(a, 0x34, u32) = AT(a, 0x38, u32);
+        sceVu0CopyVector((f32 *)(a + 0x10), (f32 *)(a + 0x40));
+    }
+    AT(a, 0x124, s32) = AT(a, 0x128, s32);
+}
