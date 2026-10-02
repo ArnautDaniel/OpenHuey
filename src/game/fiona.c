@@ -2168,3 +2168,188 @@ void func_001A1FD0(Fiona *f) {
         FIONA_FADE_T(f) = 0;
     }
 }
+
+extern void func_00185CF0(Fiona *f);   /* walk */
+extern void func_00185310(Fiona *f);   /* run */
+extern const PTMF D_003B27C8;          /* start pushing */
+
+#define FIONA_STICK_IDLE(f) FI(f, 0x1AD58C, s32)   /* frames since the stick was released, 0 = held */
+#define FIONA_STICK_HEADING(f) func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32))
+
+/* Exhausted from running in panic: catch breath (animation 0x207), new panic run length.
+ * (`g` is passed to the random call only because the original leaves it in $a2 there; the
+ * callee ignores it - it keeps the differential test's argument check exact.) */
+static inline void Fiona_Exhausted(Fiona *f, s32 g) {
+    FI(f, 0x1AD5E8, s32) = (s32)(3.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *, s32, s32))(D_0044E550, 0, g)) * 30 + 120;
+    f->unk1AD580 = 0xF;
+    func_002DDED0(f->c.motion, 0x207, -1);
+}
+
+static inline void Fiona_Stand(Fiona *f) {
+    FI(f, 0x1AD5C0, u32) = 0;
+    func_001855F0(f, -1);
+}
+
+/* State: idle and moving by the stick - stand, rest, walk, run, panic running, turning,
+ * root motion; starts pushing when she stops against an object. */
+void func_0019C600(Fiona *f) {
+    sceVu0FMATRIX m;
+    sceVu0FVECTOR d, fwd, dir, axis, moved;
+    void *mo;
+    s32 g, idle;
+    f32 dz;
+
+    if (FIONA_STICK_IDLE(f) == 0) {
+        FI(f, 0x1AD624, f32) = 1.0f;
+    } else {
+        FI(f, 0x1AD624, f32) = FI(f, 0x1AD624, f32) - 0x1.99999ap-5f /* 0.05 */;
+        if (FI(f, 0x1AD624, f32) < 0.0f) {
+            FI(f, 0x1AD624, f32) = 0.0f;
+        }
+    }
+    mo = f->c.motion;
+    g = Fiona_AnimGroup(MOTION_ANIM(mo));
+    if (MOTION_SPEED(mo) <= 0.0f) {
+        if (f->unk1AD580 == 0) {
+            if (!(FI(f, 0x1AD584, s32) & 0x2)) {
+                idle = FIONA_STICK_IDLE(f);
+                if (idle != 0) {
+                    /* stick released */
+                    switch (g) {
+                    case 0:
+                        if ((func_00177620(gProgress) & 0xFF) == 1 && FI(f, 0x1AD584, s32) == 0
+                            && FIONA_FEAR(f) < 20.0f && FI(f, 0x1AD5F8, s32) < 360) {
+                            if (++FI(f, 0x1AD5C0, u32) >= 90) {
+                                func_002DDED0(f->c.motion, 1, -1);   /* rest */
+                            } else {
+                                func_001855F0(f, -1);
+                            }
+                        } else {
+                            Fiona_Stand(f);
+                        }
+                        FI(f, 0x1AD5C4, s32) = 0;
+                        break;
+                    case 5:
+                        if ((*(s32 *)((u8 *)MOTION_PTR(mo, 0x6A4) + 0x18) & 0x20) != 0) {
+                            Fiona_Stand(f);
+                        }
+                        FI(f, 0x1AD5C4, s32) = 0;
+                        break;
+                    case 1:
+                        if (idle < 6) {
+                            func_00185CF0(f);
+                        } else {
+                            Fiona_Stand(f);
+                        }
+                        FI(f, 0x1AD5C4, s32) = 0;
+                        break;
+                    case 2:
+                        if (idle < 6) {
+                            func_00185310(f);
+                        } else {
+                            FI(f, 0x1AD5C0, u32) = 0;
+                            FI(f, 0x1AD5C4, s32) = 0;
+                            func_001855F0(f, -1);
+                        }
+                        break;
+                    default:
+                        FI(f, 0x1AD5C0, u32) = 0;
+                        FI(f, 0x1AD5C4, s32) = 0;
+                        func_001855F0(f, -1);
+                        break;
+                    }
+                } else {
+                    /* stick held: walk, or run with the run button */
+                    f->savedYaw = FIONA_STICK_HEADING(f);
+                    if (!(Progress_TestFlag(gProgress, 0x1E) & 0xFF) && FI(f, 0x1AD5D8, u8) == 1) {
+                        if (FI(f, 0x1AD584, s32) & 0x1) {
+                            if (--FI(f, 0x1AD5E8, s32) >= 0) {
+                                FI(f, 0x1AD5C4, s32) += 1;
+                                func_00185310(f);
+                            } else {
+                                Fiona_Exhausted(f, g);
+                                FI(f, 0x1AD5C4, s32) = 0;
+                            }
+                        } else {
+                            FI(f, 0x1AD5C4, s32) += 1;
+                            func_00185310(f);
+                        }
+                    } else {
+                        FI(f, 0x1AD5C4, s32) = 0;
+                        func_00185CF0(f);
+                    }
+                }
+            } else {
+                /* full panic: run until out of breath */
+                FI(f, 0x1AD624, f32) = 1.0f;
+                if (--FI(f, 0x1AD5E8, s32) >= 0) {
+                    func_00185310(f);
+                    if (FIONA_STICK_IDLE(f) == 0) {
+                        f->savedYaw = FIONA_STICK_HEADING(f);
+                    }
+                } else {
+                    Fiona_Exhausted(f, g);
+                }
+                FI(f, 0x1AD5C4, s32) = 0;
+            }
+        } else {
+            FI(f, 0x1AD624, f32) = 1.0f;
+            if ((*(s32 *)((u8 *)MOTION_PTR(f->c.motion, 0x6A4) + 0x18) & 0x20) != 0) {
+                f->unk1AD580 = 0;
+                if (!(FI(f, 0x1AD584, s32) & 0x2)) {
+                    idle = FIONA_STICK_IDLE(f);
+                    if (idle != 0) {
+                        if (idle >= 6) {
+                            Fiona_Stand(f);
+                        }
+                    } else {
+                        func_00185310(f);
+                    }
+                } else {
+                    func_00185310(f);
+                }
+            }
+        }
+    }
+
+    func_00125900(&f->c);
+    if (f->unk1AD588 == 2) {
+        /* accelerating turn toward +0x1AD5E4 */
+        FI(f, 0x1AD5B4, f32) = FI(f, 0x1AD5B4, f32) + 0x1.57254ep-10f /* 0x3AAB92A7 */;
+        if (!(FI(f, 0x1AD5B4, f32) <= 0x1.aceea0p-5f /* 3 deg */)) {
+            FI(f, 0x1AD5B4, f32) = 0x1.aceea0p-5f;
+        }
+        if (func_00124530(&f->c.a, FI(f, 0x1AD5E4, f32), FI(f, 0x1AD5B4, f32)) < FI(f, 0x1AD5B4, f32)) {
+            f->unk1AD588 = 0;
+        }
+        f->savedYaw = f->c.a.angle[1];
+    } else {
+        func_00124530(&f->c.a, f->savedYaw, 0x1.657186p-3f /* 10 deg */);
+    }
+
+    /* root motion, scaled down when the stick points away from where she faces */
+    func_001F6370(f->c.motion, d, 0.0f);
+    dz = d[2] * VCALL(f->c.motion, 0x44, f32 (*)(void *, Fiona *))(f->c.motion, f);
+    d[2] = dz;
+    func_002E3190(m, f->savedYaw);
+    func_002E2DA0(d, m, d);
+    axis[2] = 1.0f;
+    *(s32 *)&axis[0] = 0;
+    *(s32 *)&axis[1] = 0;
+    sceVu0ApplyMatrix(fwd, f->c.a.rot, axis);
+    sceVu0ApplyMatrix(dir, m, axis);
+    func_0010E640(d, d, ((1.0f + sceVu0InnerProduct(dir, fwd)) / 2.0f) * FI(f, 0x1AD624, f32));
+    *(s32 *)&d[3] = 0;
+    func_001247E0(&f->c.a, d);
+    sceVu0SubVector(moved, f->c.a.pos, f->c.a.prevPos);
+    if (sceVu0InnerProduct(d, moved) < 0.0f) {
+        f->c.a.navTri = f->c.a.prevNavTri;
+        sceVu0CopyVector(f->c.a.pos, f->c.a.prevPos);
+    }
+    if (!(FI(f, 0x1AD584, s32) & 0x2) && f->unk1AD580 != 0xF && MOTION_SPEED(f->c.motion) <= 0.0f
+        && func_00188280(f, 0, dz) == 0) {
+        f->unk1AD580 = 1;
+        f->c.moveSub = 5;
+        Actor_SetState(&f->c.a, &D_003B27C8);
+    }
+}
