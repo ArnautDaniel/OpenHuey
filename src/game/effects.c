@@ -217,3 +217,23 @@ void func_0026B2C0(u8 *o) {
     }
     AT(drawer, 0x0, void **) = D_00469D00;
 }
+
+
+extern void *D_0046D790[];
+extern void func_00269940(void *drawer, u32 rgba, s32 which, s32 arg);
+
+/* +0x14 draw of a two-colour screen effect: a temporary drawer paints each colour (+0x10 first,
+ * then +0x14) that has alpha, both with +0x18 */
+void func_002673E0(u8 *o) {
+    u8 drawer[0x10] __attribute__((aligned(16)));
+
+    AT(drawer, 0x0, void **) = D_0046D790;
+    AT(drawer, 0x4, s32) = -1;
+    if (AT(o, 0x10, u32) & 0xFF000000) {
+        func_00269940(drawer, AT(o, 0x10, u32), 0, AT(o, 0x18, s32));
+    }
+    if (AT(o, 0x14, u32) & 0xFF000000) {
+        func_00269940(drawer, AT(o, 0x14, u32), 1, AT(o, 0x18, s32));
+    }
+    AT(drawer, 0x0, void **) = D_00469D00;
+}

@@ -2695,3 +2695,4 @@ src/game/scene_game_members.c func_00267160 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/effects.c func_002BB1A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..1
 src/game/effects.c func_002BC000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50
 src/game/effects.c func_0026B2C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0..5 --pre=a0+0x10=0..0x02000000
+src/game/effects.c func_002673E0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..0x02000000 --pre=a0+0x14=0..0x02000000
