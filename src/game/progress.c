@@ -365,3 +365,87 @@ s32 func_00178A30(Progress *p, u32 d) {
     DOOR_STATE(p, d) = DOOR_STATE(p, d) & ~2;
     return 1;
 }
+
+extern VObject *D_0044E570;   /* the nav mesh */
+
+/* whether character c counts for the room's occupancy tests */
+static s32 occupant(u8 *c, s32 room) {
+    return c != NULL && room == AT(c, 0x30, s32) && AT(c, 0x28, u8) == 1 && !AT(c, 0x29, u8);
+}
+
+/* which characters are where: per exit k (+0xFD0 + k * 6: +5 at the door, +0 at its front, +3
+ * may pass, +4 in its way) and per nav door region d (+0x1000 + d * 4: +3 inside, +2 / +1 the
+ * side) */
+void func_00175DE0(Progress *p) {
+    s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    VObject *doors = D_0044E558;
+    VObject *nav;
+    u32 k, d;
+    s32 i;
+
+    for (k = 0; k < 8; k++) {
+        u8 *e = (u8 *)p + 0xFD0 + k * 6;
+
+        e[5] = 0;
+        e[3] = 0;
+        e[4] = 0;
+        e[0] = 0;
+        for (i = 0; i < 6; i++) {
+            u8 *c = (u8 *)gCharacters[i];
+            s32 r;
+
+            if (!occupant(c, room)) {
+                continue;
+            }
+            r = VCALL(doors, 0x2C, s32 (*)(VObject *, s32, f32 *))(doors, (u8)k, (f32 *)((u8 *)gCharacters[i] + 0x10));
+            if ((u8)r == 1) {
+                u8 bit = (u8)(r << i);
+
+                e[5] |= bit;
+                if ((u8)VCALL(doors, 0x6C, s32 (*)(VObject *, s32, s32, f32 *))(
+                        doors, 0, (u8)k, (f32 *)((u8 *)gCharacters[i] + 0x10)) == 1) {
+                    e[0] |= bit;
+                }
+                if (VCALL(doors, 0x10, s32 (*)(VObject *, s32, s32, s32))(doors, (u8)k, 1, i) == 1 ||
+                    VCALL(doors, 0x10, s32 (*)(VObject *, s32, s32, s32))(doors, (u8)k, 0, i) == 1) {
+                    e[3] |= bit;
+                }
+            }
+            if (VCALL(doors, 0x18, s32 (*)(VObject *, s32, f32 *))(doors, (u8)k, (f32 *)((u8 *)gCharacters[i] + 0x10)) == 1) {
+                e[4] |= (u8)(1 << i);
+            }
+        }
+    }
+    nav = D_0044E570;
+    for (d = 0; d < 5; d++) {
+        u8 *q = (u8 *)p + 0x1000 + d * 4;
+
+        q[3] = 0;
+        q[2] = 0;
+        q[1] = 0;
+        for (i = 0; i < 6; i++) {
+            u8 *c = (u8 *)gCharacters[i];
+            u8 bit;
+            s32 r;
+
+            if (!occupant(c, room)) {
+                continue;
+            }
+            if ((u8)VCALL(nav, 0x50, s32 (*)(VObject *, u32, f32 *))(nav, d, (f32 *)((u8 *)gCharacters[i] + 0x10)) != 1) {
+                continue;
+            }
+            bit = (u8)(1 << i);
+            q[3] |= bit;
+            r = VCALL(nav, 0x60, s32 (*)(VObject *, u32, s32, f32 *))(
+                nav, d, AT(gCharacters[i], 0x34, s32), (f32 *)((u8 *)gCharacters[i] + 0x10));
+            if (r < 0) {
+                continue;
+            }
+            if (r == 0) {
+                q[2] |= bit;
+            } else {
+                q[1] |= bit;
+            }
+        }
+    }
+}

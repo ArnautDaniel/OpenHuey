@@ -167,3 +167,27 @@ void func_0017C9D0(NavMesh *nm, u32 i, f32 *pos) {
     ny = e1z * e2x - e2z * e1x;
     pos[1] = v[0][1] - ((pos[2] - v[0][2]) * nz + (pos[0] - v[0][0]) * nx) / ny;
 }
+
+/* +0x50 whether `pos` is at door region d (within 5 vertically and 20 across of either side's
+ * edge midpoint) */
+s32 func_0017B540(NavMesh *nm, s32 d, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+    s32 s;
+
+    if (d < 0 || (u32)d >= nm->numDoors) {
+        return 0;
+    }
+    for (s = 0; s < 2; s++) {
+        f32 dy;
+
+        sceVu0SubVector(v, (f32 *)pos, (f32 *)((u8 *)nm + 0x30 + d * 0x30 + s * 0x10));
+        dy = v[1];
+        if (dy <= 0.0f) {
+            dy = -dy;
+        }
+        if (dy <= 5.0f && __builtin_sqrtf(v[2] * v[2] + v[0] * v[0]) <= 20.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}

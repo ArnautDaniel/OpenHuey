@@ -1284,3 +1284,51 @@ void func_002E2650(u8 *o) {
         }
     }
 }
+
+/* the doors +0x2C: whether `pos` is at door k (within 5 vertically and 20 across of its point
+ * +0x20) */
+s32 func_00222D30(VObject *doors, u32 k, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+    u8 *tbl = AT(doors, 0x4, u8 *);
+    f32 dy;
+
+    k &= 0xFF;
+    if (tbl == NULL || k >= 8 || AT(tbl, k * 4, s32) == 0) {
+        return 0;
+    }
+    sceVu0SubVector(v, (f32 *)((u8 *)doors + k * 0x210 + 0x30), (f32 *)pos);
+    dy = v[1];
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    if (!(dy <= 5.0f)) {
+        return 0;
+    }
+    return __builtin_sqrtf(v[2] * v[2] + v[0] * v[0]) <= 20.0f;
+}
+
+extern void func_002E3190(f32 m[4][4], f32 angle);           /* rotation about y */
+extern void func_002E2DA0(f32 *out, f32 m[4][4], const f32 *v);   /* m * v */
+
+/* the doors +0x18: which side of door k `pos` is on (1: in front, along its facing +0x44; 0:
+ * behind; -1: no door) */
+s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 diff[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    u8 *tbl = AT(doors, 0x4, u8 *);
+    u8 *e;
+
+    k &= 0xFF;
+    if (tbl == NULL || k >= 8 || AT(tbl, k * 4, s32) == 0) {
+        return -1;
+    }
+    e = (u8 *)doors + k * 0x210 + 0x10;
+    dir[0] = 0.0f;
+    dir[1] = 0.0f;
+    dir[2] = 1.0f;   /* (w is left unset, as in the original) */
+    func_002E3190(m, AT(e, 0x44, f32));
+    func_002E2DA0(dir, m, dir);
+    sceVu0SubVector(diff, (f32 *)pos, (f32 *)(e + 0x20));
+    return !(sceVu0InnerProduct(dir, diff) < 0.0f);
+}

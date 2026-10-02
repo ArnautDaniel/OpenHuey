@@ -76,3 +76,8 @@ void func_00223E30(u8 *f, s32 a, s32 b) {
     AT(f, 0x6C, s32) = a;
     AT(f, 0x70, s32) = b;
 }
+
+/* +0x6C the mode flag +0xF4 */
+s32 func_00223E20(u8 *d) {
+    return AT(d, 0xF4, u8);
+}
