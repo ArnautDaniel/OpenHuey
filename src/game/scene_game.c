@@ -907,6 +907,7 @@ void func_0039EAB0(Scene *g) {
         extern void hg_debug_flaglog(s32 flag, s32 on);
 
         hg_debug_flaglog(8, (u8)Progress_TestFlag(prog, 8));
+        hg_debug_flaglog(63, VCALL(prog, 0xC, s32 (*)(Progress *))(prog));   /* (63: the current room) */
     }
 #endif
     if (AT(g, 0x44, s32) == 0) {
