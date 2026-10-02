@@ -1441,3 +1441,89 @@ void func_001519B0(Hewie *h) {
     }
     func_00141C00(h, 3);
 }
+
+extern const PTMF D_003B1998, D_003B1B78;
+extern void func_001391E0(Hewie *h, s32 a, s32 b);
+
+void func_00151A60(Hewie *h) {
+    if (--HW(h, 0xF36B4, s32) == 0) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF36B4, s32) = 15;
+        Hewie_SetBehaviour(h, &D_003B1998);
+    }
+    func_00141C00(h, 3);
+}
+
+/* Follow the animation's root motion, keeping the height it gives (not during action 0x47). */
+void func_0014B4D0(Hewie *h) {
+    if (HEWIE_ACTION(h) == 0x47) {
+        HW(h, 0xF3558, u8) = 1;
+        return;
+    }
+    if (h->c.a.unk2B == 1) {
+        sceVu0FVECTOR root;
+        f32 y = h->c.a.pos[1];
+
+        func_001F6370(h->c.motion, root, 0.0f);
+        sceVu0ApplyMatrix(root, h->c.a.rot, root);
+        func_001247E0(&h->c.a, root);
+        h->c.a.pos[1] = y + root[1];
+        HW(h, 0xF3558, u8) = 1;
+        HW(h, 0xF3582, u8) = 0;
+    }
+}
+
+void func_001531F0(Hewie *h) {
+    if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) == 0x1C01) {
+        Hewie_ToDefault(h);
+    } else if (func_00140CD0(h, 1) == 0) {
+        func_002DDED0(h->c.motion, 0x1C01, -1);
+    }
+}
+
+/* `other` is active, not in condition 2, in his room and (in the room being played) on the
+ * nav mesh. */
+s32 func_00137650(Hewie *h, Character *other) {
+    u8 ok = (other != NULL && other->a.active == 1) ? 1 : 0;
+    s32 room;
+
+    if (ok != 1 || other->a.unkC4 == 2) {
+        return 0;
+    }
+    room = h->c.a.room;
+    if (room != other->a.room) {
+        return 0;
+    }
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return 1;
+    }
+    return other->a.navTri != NAV_NONE;
+}
+
+void func_0014EB40(Hewie *h) {
+    if (--HW(h, 0xF36BC, s32) == 0) {
+        HW(h, 0xF368C, s32) = 0;
+        HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
+        func_001391E0(h, 1, 1);
+        Hewie_ToDefault(h);
+    }
+    func_00141C00(h, 3);
+}
+
+#define HEWIE_TARGET(h) HW(h, 0xF3544, Character *)
+
+void func_0014E040(Hewie *h) {
+    if (func_00140CD0(h, 1) == 0) {
+        func_00141C00(h, 1);
+        HW(h, 0xF36BC, s32) = 90;
+        HEWIE_TARGET(h) = gCharPlayer;
+        if (HW(h, 0xF3604, s32) != 0) {
+            HW(h, 0xF3604, s32) = 0;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        Hewie_SetBehaviour(h, &D_003B1B78);
+    }
+}
