@@ -2163,3 +2163,79 @@ void func_001F5130(u8 *m) {
         AT(l, 0x6C0, f32) = fade_weight(AT(l, 0x6BC, f32), AT(l, 0x6B8, f32));
     }
 }
+
+
+extern void func_00211530(u8 *m, f32 *right, f32 *left, f32 height);   /* bend the legs to the feet */
+
+/* a foot bone's position (row 3 of its matrix) into `out`; with the slope weight `k` < 1 its
+ * height above the floor is eased: out = position (+0x800) + side (+0x7F0) x k x (its offset
+ * along it) + forward (+0x7D0) x (its offset along that) */
+static void foot_point(u8 *m, s32 bone, f32 *out, f32 k) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 a, b, c, d;
+
+    sceVu0CopyVector(out, func_0017CE80(AT(m, 0x810, void *), bone) + 12);
+    if (k < 1.0f) {
+        a = sceVu0InnerProduct((f32 *)(m + 0x7D0), (f32 *)(m + 0x800));
+        b = sceVu0InnerProduct((f32 *)(m + 0x7F0), (f32 *)(m + 0x800));
+        c = sceVu0InnerProduct((f32 *)(m + 0x7D0), out);
+        d = sceVu0InnerProduct((f32 *)(m + 0x7F0), out);
+        sceVu0CopyVector(out, (f32 *)(m + 0x800));
+        sceVu0ScaleVector(v, (f32 *)(m + 0x7F0), k * (d - b));
+        sceVu0AddVector(out, out, v);
+        sceVu0ScaleVector(v, (f32 *)(m + 0x7D0), c - a);
+        sceVu0AddVector(out, out, v);
+    }
+}
+
+/* put the feet on the floor (`on`; off: the weight +0x8C4 back to 1): the weight eases 3:1
+ * towards +0x44's for the actor `a`; each foot (left bone +0x8AC, right +0x89C) is dropped onto
+ * the floor unless (track flags 0x100 without 4) it isn't planted (+0x64), in which case it keeps
+ * the actor's height; then the legs are bent to them */
+void func_00211190(u8 *m, s32 on, u8 *a) {
+    f32 l[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+    f32 k;
+    u32 dl, dr, flags;
+    s32 useL, useR;
+
+    if (on == 0) {
+        AT(m, 0x8C4, f32) = 1.0f;
+        return;
+    }
+    k = VCALL(m, 0x44, f32 (*)(u8 *, u8 *))(m, a);
+    k = 0.75f * AT(m, 0x8C4, f32) + 0.25f * k;
+    foot_point(m, AT(m, 0x8AC, s32), l, k);
+    dl = (u8)VCALL(m, 0x64, s32 (*)(u8 *, s32, s32))(m, 1, -1);
+    foot_point(m, AT(m, 0x89C, s32), r, k);
+    dr = (u8)VCALL(m, 0x64, s32 (*)(u8 *, s32, s32))(m, 0, -1);
+    useL = 1;
+    useR = 1;
+    flags = AT(AT(m, 0x6A4, u8 *), 0x18, u32);
+    if (!(flags & 4) && (flags & 0x100)) {
+        if (dl == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
+            dl = (u8)func_002DD860(m, 1, 0.0f);
+        }
+        if (dl == 0) {
+            useL = 0;
+        }
+        if (dr == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
+            dr = (u8)func_002DD860(m, 0, 0.0f);
+        }
+        if (dr == 0) {
+            useR = 0;
+        }
+    }
+    if (useL == 1) {
+        func_002DC710(m, l, a);
+    } else {
+        l[1] = AT(a, 0x14, f32);
+    }
+    if (useR == 1) {
+        func_002DC710(m, r, a);
+    } else {
+        r[1] = AT(a, 0x14, f32);
+    }
+    func_00211530(m, r, l, AT(m, 0x804, f32));
+    AT(m, 0x8C4, f32) = k;
+}
