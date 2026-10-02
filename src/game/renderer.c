@@ -302,6 +302,97 @@ u64 *func_001BBC20(u8 *r, s32 n, s32 layer) {
     return p;
 }
 
+extern s32 func_001B4330(u8 *r);
+extern s32 func_001B2160(u8 *r);
+extern s32 func_001B18E0(u8 *r);
+extern s32 func_001B0D40(u8 *r);
+extern s32 func_001AF3B0(u8 *r);
+extern s32 func_001AC0D0(u8 *r);
+extern s32 func_001AB960(u8 *r);
+extern s32 func_001AB3F0(u8 *r);
+
+/* Make layer `layer`'s state packet: for these layers, the first draw of a frame runs a setup
+ * function that fills the layer before (layer - 1). If the setup fails, the arena is rolled
+ * back and the layers before and after are skipped (their slots chain straight on); 0 is
+ * returned. Layers 15 and 26 run their own checks. Other layers need nothing. */
+static s32 layer_begin(u8 *r, s32 layer, s32 (*setup)(u8 *r), u8 *saved) {
+    u8 *chain;
+
+    chain = REND_CHAIN(r, REND_BUF(r));
+    if (REND_LAYER_TAIL(r, layer - 1) != (u64 *)(chain + (layer - 1) * 16) || (u8)setup(r)) {
+        return 1;
+    }
+    AT(r, 0x304BA8, u8 *) = saved;
+    AT(REND_CHAIN(r, REND_BUF(r)), (layer - 1) * 16, u64) =
+        DMA_TAG(DMA_NEXT, 0, (u32)(REND_CHAIN(r, REND_BUF(r)) + layer * 16) & 0x0FFFFFFF);
+    AT(REND_CHAIN(r, REND_BUF(r)), (layer - 1) * 16 + 8, u64) = 0;
+    REND_LAYER_TAIL(r, layer - 1) = (u64 *)(REND_CHAIN(r, REND_BUF(r)) + (layer - 1) * 16);
+    AT(REND_CHAIN(r, REND_BUF(r)), (layer + 1) * 16, u64) =
+        DMA_TAG(DMA_NEXT, 0, (u32)(REND_CHAIN(r, REND_BUF(r)) + (layer + 2) * 16) & 0x0FFFFFFF);
+    AT(REND_CHAIN(r, REND_BUF(r)), (layer + 1) * 16 + 8, u64) = 0;
+    REND_LAYER_TAIL(r, layer + 1) = (u64 *)(REND_CHAIN(r, REND_BUF(r)) + (layer + 1) * 16);
+    return 0;
+}
+
+s32 func_001B5EC0(u8 *r, s32 layer) {
+    u8 *saved = AT(r, 0x304BA8, u8 *);
+
+    switch (layer) {
+    case 0x1A: return (u8)func_001AB3F0(r) ? 1 : 0;
+    case 0x1C: return layer_begin(r, layer, func_001AB960, saved);
+    case 0x23: return layer_begin(r, layer, func_001AC0D0, saved);
+    case 0x14: return layer_begin(r, layer, func_001AF3B0, saved);
+    case 0x17: return layer_begin(r, layer, func_001B0D40, saved);
+    case 0x0F: return (u8)func_001B18E0(r) ? 1 : 0;
+    case 0x26: return layer_begin(r, layer, func_001B1E50, saved);
+    case 0x11: return layer_begin(r, layer, func_001B2160, saved);
+    case 0x0D: return layer_begin(r, layer, func_001B4330, saved);
+    case 0x06: return layer_begin(r, layer, func_001B4F30, saved);
+    }
+    return 1;
+}
+
+extern void func_001B6CD0(u8 *r, u64 *packet, void *arg);
+extern s32 func_001B1370(u8 *r);
+extern s32 func_001AAE80(u8 *r);
+
+/* +0xC draw `obj` into layer `layer` (0..52): its +0xC method writes its packets at the arena
+ * cursor, which are then linked into the layer (layer 10 with `arg` goes through
+ * func_001B6CD0 instead). 0 if the layer can't be drawn or the object drew nothing; layers 15
+ * and 26 finish with their own step. */
+s32 func_001BBE60(u8 *r, void *obj, s32 layer, void *arg) {
+    u64 *start;
+
+    if (obj == NULL || layer >= 53 || !(u8)func_001B5EC0(r, layer)) {
+        return 0;
+    }
+    start = AT(r, 0x304BA8, u64 *);
+    if (!(u8)VCALL(obj, 0xC, s32 (*)(void *))(obj)) {
+        AT(r, 0x304BA8, u64 *) = start;
+        return 0;
+    }
+    if (layer == 10 && arg != NULL) {
+        func_001B6CD0(r, start, arg);
+    } else {
+        u64 *back;
+
+        REND_LAYER_TAIL(r, layer)[0] = DMA_TAG(DMA_NEXT, 0, (u32)start & 0x0FFFFFFF);
+        REND_LAYER_TAIL(r, layer)[1] = 0;
+        back = AT(r, 0x304BA8, u64 *);
+        back[0] = DMA_TAG(DMA_NEXT, 0, (u32)(REND_CHAIN(r, REND_BUF(r)) + (layer + 1) * 16) & 0x0FFFFFFF);
+        AT(r, 0x304BA8, u64 *)[1] = 0;
+        REND_LAYER_TAIL(r, layer) = AT(r, 0x304BA8, u64 *);
+        AT(r, 0x304BA8, u8 *) += 16;
+    }
+    if (layer == 0x1A) {
+        return (u8)func_001AAE80(r) != 0;
+    }
+    if (layer == 0x0F) {
+        return (u8)func_001B1370(r) != 0;
+    }
+    return 1;
+}
+
 /* +0x28 video mode (2: NTSC 448 lines) */
 u8 func_001BB9D0(u8 *r) { return AT(r, 0x304C09, u8); }
 

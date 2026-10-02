@@ -41,6 +41,7 @@
 #define GS_RGBAQ 0x01
 #define GS_XYZ2 0x05
 #define GS_CLAMP_1 0x08
+#define GS_XYZ3 0x0D
 #define GS_TEX1_1 0x14
 #define GS_XYOFFSET_1 0x18
 #define GS_TEXA 0x3B

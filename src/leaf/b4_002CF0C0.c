@@ -40,19 +40,6 @@ void func_002CF6F0(u8 *p) {
     p[0x20] = 0;
 }
 
-void *func_002CF9E0(u8 *p) { return p + 0x102C0; }
-void *func_002CF9F0(u8 *p) { return p + 0x312C0; }
-void *func_002CFA00(u8 *p) { return p + 0x38AC0; }
-
-/* Constructors: store the vtable, init fields, return this. */
-void *func_002D0570(u8 *p) {
-    F(p, 0x0, void *) = D_0046C790;
-    F(p, 0x4, s32) = -1;
-    p[0x8] = 0;
-    F(p, 0x10, u64) = 0;
-    return p;
-}
-
 void *func_002D0FE0(u8 *p) {
     F(p, 0x0, void *) = D_0046BA68;
     p[0x4] = 0;

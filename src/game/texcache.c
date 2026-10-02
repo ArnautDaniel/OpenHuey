@@ -2,6 +2,9 @@
  * textures (groups of a .TEX file each) share the renderer's 10 texture layers (+0x304). */
 #include "common.h"
 #include "game.h"
+#include "ptmf.h"
+
+#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 typedef struct TexEntry {
     /* 0x0 */ u8 *tex;     /* the texture's .TEX entry */
@@ -143,4 +146,29 @@ void func_001F44A0(TexCache *c) {
         c->e[i].age = -1;
         c->e[i].layer = -1;
     }
+}
+
+extern TexCache *D_0044E4E8;
+extern void *D_0044E9A0;   /* VRAM manager */
+extern void *D_0044E4F0;   /* renderer */
+
+/* TEX0 to draw cached texture `sel` (group 0) with, uploading it first when its VRAM slot was
+ * just (re)assigned. 0 if there's no such texture. */
+u64 func_002B71D0(s32 sel) {
+    TexCache *c = D_0044E4E8;
+    s32 slot;
+    u8 *tex;
+    u64 tex0;
+
+    slot = VCALL(c, 0x8, s32 (*)(TexCache *, s32, s32))(c, sel, 0);
+    if (slot == -1) {
+        return 0;
+    }
+    tex = VCALL(c, 0xC, u8 *(*)(TexCache *, s32, s32))(c, sel, 0);
+    tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(void *, s32, s32, u32, u32, s32))(
+        D_0044E9A0, slot & 0x7FFFFFFF, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+    if (slot & 0x80000000) {
+        VCALL(D_0044E4F0, 0x44, s32 (*)(void *, s32, u8 *, s32))(D_0044E4F0, slot, tex, -1);
+    }
+    return tex0;
 }

@@ -101,23 +101,6 @@ void func_00121890(void *p, s32 a) {
 }
 
 /* Copy the translation column of a matrix (rows at +0xC4) into a vec4 (w = 0). */
-void func_00121970(void *p, f32 *out) {
-    out[0] = FLD(p, 0xD4, f32);
-    out[1] = FLD(p, 0xE4, f32);
-    out[2] = FLD(p, 0xF4, f32);
-    FLD(out, 0xC, s32) = 0;
-}
-
-void func_001219D0(void *p, f32 a, f32 b) {
-    FLD(p, 0x20, f32) = a;
-    FLD(p, 0x24, f32) = b;
-}
-
-void func_00121B30(void *p, f32 a, f32 b) {
-    FLD(p, 0x28, f32) = a;
-    FLD(p, 0x2C, f32) = b;
-}
-
 s32 func_00121B40(void *p, f32 a, f32 b) {
     f32 f10, fc, d, lo, hi;
     s32 n;
@@ -151,84 +134,10 @@ s32 func_00121B40(void *p, f32 a, f32 b) {
     return 1;
 }
 
-s32 func_00121C50(void *p, f32 a) {
-    f32 f10 = FLD(p, 0x10, f32);
-    f32 fc = FLD(p, 0xC, f32);
-    f32 f1c = FLD(p, 0x1C, f32);
-    f32 f18 = FLD(p, 0x18, f32);
-    f32 d = f10 - fc;
-    f32 x = (((f10 * fc) * (f1c - f18)) / d) / a;
-    f32 y = (f1c * fc - f18 * f10) / d;
-
-    return (s32)(x - y);
-}
-
 /* Count 32-byte records up to a -1 terminator. */
-s32 func_00121F80(void *p) {
-    s32 *r = FLD(p, 0x290, s32 *);
-    s32 n = 0;
-
-    if (r == NULL) {
-        return 0;
-    }
-    while (*r != -1) {
-        r += 8;
-        n++;
-    }
-    return n;
-}
-
-void func_00121FD0(void *p, void *list) {
-    FLD(p, 0x290, void *) = list;
-    FLD(p, 0x294, s32) = -1;
-    FLD(p, 0x298, s32) = -1;
-}
-
 /* Move the point at +0x50 and translate +0x40 by the same delta. */
-void func_00122500(void *p, f32 x, f32 y, f32 z) {
-    f32 dx = x - FLD(p, 0x50, f32);
-    f32 dy = y - FLD(p, 0x54, f32);
-    f32 dz = z - FLD(p, 0x58, f32);
-
-    FLD(p, 0x50, f32) = x;
-    FLD(p, 0x54, f32) = y;
-    FLD(p, 0x58, f32) = z;
-    FLD(p, 0x40, f32) += dx;
-    FLD(p, 0x44, f32) += dy;
-    FLD(p, 0x48, f32) += dz;
-}
-
 /* Move the point at +0x40 and translate +0x50 by the same delta. */
-void func_00122550(void *p, f32 x, f32 y, f32 z) {
-    f32 dx = x - FLD(p, 0x40, f32);
-    f32 dy = y - FLD(p, 0x44, f32);
-    f32 dz = z - FLD(p, 0x48, f32);
-
-    FLD(p, 0x40, f32) = x;
-    FLD(p, 0x44, f32) = y;
-    FLD(p, 0x48, f32) = z;
-    FLD(p, 0x50, f32) += dx;
-    FLD(p, 0x54, f32) += dy;
-    FLD(p, 0x58, f32) += dz;
-}
-
-void func_001225B0(void *p, f32 x, f32 y, f32 z) {
-    FLD(p, 0x50, f32) = x;
-    FLD(p, 0x54, f32) = y;
-    FLD(p, 0x58, f32) = z;
-}
-
-void func_001225E0(void *p, f32 x, f32 y, f32 z) {
-    FLD(p, 0x40, f32) = x;
-    FLD(p, 0x44, f32) = y;
-    FLD(p, 0x48, f32) = z;
-}
-
 /* Tail call of virtual function 0xC (arguments passed through). */
-s32 func_00122A20(void *p, s32 a1, s32 a2, s32 a3) {
-    return VCALL(p, 0xC, s32 (*)(void *, s32, s32, s32))(p, a1, a2, a3);
-}
-
 void *func_00122B30(void *p) {
     if (p != NULL) {
         *(void **)p = D_00469C20;

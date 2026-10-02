@@ -259,3 +259,11 @@ void func_002A7AA0(u8 *o) {
     o[6] = 0;
     *(u32 *)(o + 8) = 0x3F800000;   /* 1.0f */
 }
+
+/* Game vtable +0xC..+0x20: resident buffers inside the Game (in Game.unk20) */
+u8 *func_0037E310(Game *game) { return (u8 *)game + 0x1AC0; }    /* +0xC: message base (MSG_BASE.BIN) */
+u8 *func_0037E300(Game *game) { return (u8 *)game + 0x2AC0; }    /* +0x10: MSG_BASE.TEX */
+u8 *func_0037E2F0(Game *game) { return (u8 *)game + 0xB2C0; }    /* +0x14: MSG_SUB.BIN */
+u8 *func_002CF9E0(Game *game) { return (u8 *)game + 0x102C0; }   /* +0x18 */
+u8 *func_002CF9F0(Game *game) { return (u8 *)game + 0x312C0; }   /* +0x1C: GAME_FIX.GFM */
+u8 *func_002CFA00(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: GAME_FIX.TEX */

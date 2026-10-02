@@ -1539,11 +1539,15 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
     return ints, floats
 
 
+REL_BASE = -(1 << 40)   # lo = REL_BASE - register: the value is that argument + hi
 PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
 
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    r = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=a([0-7])\+(0x[0-9A-Fa-f]+|\d+)", spec)
+    if r:  # a pointer into an argument (3 runs in 4): a0+0x304A14=a0+0x60; lo = REL_BASE - register marks it
+        return 4 + int(r.group(1)), int(r.group(2), 0), REL_BASE - (4 + int(r.group(3))), int(r.group(4), 0)
     g = re.fullmatch(r"@(0x[0-9A-Fa-f]+)=(-?\w+)\.\.(-?\w+)", spec)
     if g:  # a global: u32 at an absolute address (register 0 + address)
         return 0, int(g.group(1), 16), int(g.group(2), 0), int(g.group(3), 0)
@@ -1565,6 +1569,13 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
     for reg, off, lo, hi in PRECONDITIONS:
         # a constrained input: write it without logging it as a function write
         rnd = random.Random(seed * 7 + (off if off is not None else 0x7FFF0000 + reg))
+        if lo <= REL_BASE - 4:
+            if rnd.random() < 0.75:
+                v = ((c.g(REL_BASE - lo) & M32) + hi) & M32
+                a = Memory.norm((c.g(reg) & M32) + off)
+                for i, b in enumerate(v.to_bytes(4, "little")):
+                    mem._page(a + i)[(a + i) & 0xFFF] = b
+            continue
         # half the time a boundary or one of the function's own constants within the range
         special = sorted({lo, lo + 1, hi, hi - 1} | {d for d in DICTIONARY if lo <= d <= hi})
         special = [x for x in special if lo <= x <= hi]
@@ -1681,7 +1692,7 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--pre", action="append", default=[],
-                    help="input precondition: a0+0x18=0..8 (u32 at arg0+0x18), a1=0..3 (argument), @0x44E568=lo..hi (global)")
+                    help="input precondition: a0+0x18=0..8 (u32 at arg0+0x18), a1=0..3 (argument), @0x44E568=lo..hi (global), a0+0x10=a0+0x60 (a pointer into an argument, 3 runs in 4)")
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")

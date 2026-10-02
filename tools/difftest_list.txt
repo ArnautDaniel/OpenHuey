@@ -36,18 +36,7 @@ src/leaf/b0_00120530.c func_00120E10
 src/leaf/b0_00120530.c func_00120E80
 src/leaf/b0_00120530.c func_00120F40
 src/leaf/b0_00120530.c func_00121890
-src/leaf/b0_00120530.c func_00121970
-src/leaf/b0_00120530.c func_001219D0
-src/leaf/b0_00120530.c func_00121B30
 src/leaf/b0_00120530.c func_00121B40
-src/leaf/b0_00120530.c func_00121C50
-src/leaf/b0_00120530.c func_00121F80
-src/leaf/b0_00120530.c func_00121FD0
-src/leaf/b0_00120530.c func_00122500
-src/leaf/b0_00120530.c func_00122550
-src/leaf/b0_00120530.c func_001225B0
-src/leaf/b0_00120530.c func_001225E0
-src/leaf/b0_00120530.c func_00122A20
 src/leaf/b0_00120530.c func_00122B30
 src/leaf/b0_00120530.c func_00124ED0
 src/leaf/b0_00120530.c func_00126EC0
@@ -511,7 +500,6 @@ src/leaf/b4_002CF0C0.c func_002CF0E0
 src/leaf/b4_002CF0C0.c func_002CF140
 src/leaf/b4_002CF0C0.c func_002CF180
 src/leaf/b4_002CF0C0.c func_002CF6F0
-src/leaf/b4_002CF0C0.c func_002CF9E0
 src/leaf/b4_002CF0C0.c func_002CF9F0
 src/leaf/b4_002CF0C0.c func_002CFA00
 src/leaf/b4_002CF0C0.c func_002D0570
@@ -1912,3 +1900,72 @@ src/game/vram.c func_001C0FE0 --runs=100 --pre=a1=0..63 --pre=a2=0..15 --pre=a3=
 src/game/pad.c func_001BE220 --runs=200 --pre=a1=0..1 --pre=a0+0x48=0..2 --pre=a0+0x4C=1..2
 src/game/pad.c func_0037E320 --pre=a1=0..0
 src/game/pad.c func_002D4780 --runs=300 --pre=a0+0x0=0x0046ADB0..0x0046ADB0 --pre=@0x0047E360=0..1 --pre=a0+0xA=0x30..0xD0 --pre=a0+0x8=0x30..0xD0 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret-prob=1
+src/game/task.c func_00384BA0
+src/game/task.c func_00384B60 --pre=a0+0x10=0..5
+src/game/task.c Task_StateIdle
+src/game/overlay.c func_002CF390
+src/game/renderer.c func_001B5EC0 --runs=100 --pre=a1=0..54 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=6..6 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A14=a0+0x60 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=13..13 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A30=a0+0xD0 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=17..17 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A40=a0+0x110 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=38..38 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A94=a0+0x260 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=23..23 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A58=a0+0x170 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=20..20 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A4C=a0+0x140 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=35..35 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A88=a0+0x230 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001B5EC0 --runs=20 --pre=a1=28..28 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A6C=a0+0x1C0 --stub-ret=0 --stub-ret=1
+src/game/renderer.c func_001BBE60 --runs=100 --pre=a2=0..54 --stub-ret=0 --stub-ret=1
+src/game/overlay.c func_002CF700
+src/game/overlay.c func_002CF8C0
+src/game/texcache.c func_002B71D0 --stub-ret=-1 --stub-ret=0x80000003 --stub-ret=2
+src/game/camera.c func_001218A0
+src/game/camera.c func_00122A30
+src/game/camera.c func_00122A20
+src/game/camera.c func_001225E0
+src/game/camera.c func_001225D0
+src/game/camera.c func_001225C0
+src/game/camera.c func_001225B0
+src/game/camera.c func_001225A0
+src/game/camera.c func_00122550
+src/game/camera.c func_00122500
+src/game/camera.c func_00122090
+src/game/camera.c func_00122080
+src/game/camera.c func_00122050
+src/game/camera.c func_00122070
+src/game/camera.c func_00122060
+src/game/camera.c func_00122040
+src/game/camera.c func_00122030
+src/game/camera.c func_00122010
+src/game/camera.c func_00122020
+src/game/camera.c func_00122000
+src/game/camera.c func_00121FF0
+src/game/camera.c func_00121910
+src/game/camera.c func_00121920
+src/game/camera.c func_00121FD0
+src/game/camera.c func_00121FC0
+src/game/camera.c func_00121F80
+src/game/camera.c func_00121D00
+src/game/camera.c func_00121CB0
+src/game/camera.c func_00121930
+src/game/camera.c func_00121940
+src/game/camera.c func_00121950
+src/game/camera.c func_00121CA0
+src/game/camera.c func_00121960
+src/game/camera.c func_00121970
+src/game/camera.c func_00121990
+src/game/camera.c func_001219A0
+src/game/camera.c func_001219B0
+src/game/camera.c func_001219C0
+src/game/camera.c func_00121C50
+src/game/camera.c func_00121B30
+src/game/camera.c func_001219D0
+src/game/camera.c func_00121B20
+src/game/camera.c func_001219E0
+src/game/camera.c func_001219F0
+src/game/memcard.c func_001BF550
+src/game/memcard.c func_001BF340
+src/game/memcard.c func_001BF390
+src/game/memcard.c func_001BF3F0
+src/game/memcard.c func_001BF450
+src/game/memcard.c func_001BF4B0
+src/game/memcard.c func_001BF500
+src/game/memcard.c func_00226510
