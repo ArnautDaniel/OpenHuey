@@ -260,3 +260,16 @@ void func_002E56C0(u8 *d) {
         VCALL(r, 0x58, void (*)(VObject *))(r);
     }
 }
+
+
+extern s32 func_002E3500(u8 *d);
+extern s32 func_002E4760(u8 *d);
+
+/* +0xC draw of the quad drawer: flagged ones (+0x32 bit 7) outside layer 0x17 by
+ * func_002E3500, the rest by func_002E4760 */
+s32 func_002E5660(u8 *d) {
+    if ((AT(d, 0x32, u8) & 0x80) && AT(d, 0x20, s32) != 0x17) {
+        return (u8)func_002E3500(d);
+    }
+    return (u8)func_002E4760(d);
+}
