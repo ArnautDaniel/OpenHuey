@@ -24,7 +24,8 @@ own meshes with glTF morph targets (shape keys in Blender), textures as PNG (a s
 normal parts, one with alpha for the cut-out parts), and the motions as glTF animations named by
 their motion id (`0100`, `HEW_100_0002`, ...). Blender: File > Import > glTF 2.0.
 
-Known gaps: root motion (special channels -1/-5/-6) is not exported, so motions play in place;
+Known gaps: the human characters' hands (morph parts, kind 0) look glitchy - the converter's
+reading of those parts is still wrong somewhere; root motion (special channels -1/-5/-6) is not exported, so motions play in place;
 the playback rate is assumed (30 fps); motion and shape names are only numbers; the `.MRK` files,
 resource 2 (per-bone shadow volumes) and `*_D000.MTN` (door data) are not decoded; `O_T00` uses
 other formats (.MDL/.SHD/.SHP). Textures other than 8-bit indexed (psm 0x13) are not handled
