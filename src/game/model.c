@@ -1577,3 +1577,24 @@ void func_002DCB40(u8 *m) {
         AT(m, 0x85C + hand, u8) = on;
     }
 }
+
+
+extern f32 D_00415B60[14];   /* the eyelids through a blink */
+extern VObject *D_0044E550;  /* random numbers: +0x1C -> 0..1 */
+
+/* the eyes, each frame: a blink plays the eyelid curve over 14 frames (+0x870 counts, both
+ * lids +0x74 / +0x78); from frame 30 a new blink starts at random, surely by frame 150 */
+void func_002DC960(u8 *m) {
+    if (AT(m, 0x870, s32) < 14) {
+        AT(m, 0x78, f32) = D_00415B60[AT(m, 0x870, s32)];
+        AT(m, 0x74, f32) = D_00415B60[AT(m, 0x870, s32)];
+    }
+    if (AT(m, 0x870, s32) >= 30) {
+        f32 r = VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+
+        if ((s32)((f32)(150 - AT(m, 0x870, s32)) * r) == 0) {
+            AT(m, 0x870, s32) = 0;
+        }
+    }
+    AT(m, 0x870, s32)++;
+}
