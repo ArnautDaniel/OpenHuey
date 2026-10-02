@@ -2433,3 +2433,27 @@ s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f3
     mid[2] = root[2] + a * d[2] + h * side[2];
     return out;
 }
+
+
+/* a bone's matrix aimed from `from` to `to`: X along it, Z from the pole (+0x30) made square
+ * to it, Y = Z x X, all unit, at `from` */
+static void ik_aim(f32 (*m)[4], const f32 *from, const f32 *to, const f32 *pole) {
+    sceVu0UnitMatrix(m);
+    m[0][0] = to[0] - from[0];
+    m[0][1] = to[1] - from[1];
+    m[0][2] = to[2] - from[2];
+    sceVu0CopyVector(m[2], (f32 *)pole);
+    sceVu0OuterProduct(m[1], m[2], m[0]);
+    sceVu0OuterProduct(m[2], m[0], m[1]);
+    sceVu0Normalize(m[0], m[0]);
+    sceVu0Normalize(m[1], m[1]);
+    sceVu0Normalize(m[2], m[2]);
+    sceVu0TransMatrix(m, m, (f32 *)from);
+}
+
+/* turn the chain's bones to the solved joints: the root (+0x4C) towards the middle, the
+ * middle (+0x50) towards the end */
+void func_001F0F40(u8 *ik) {
+    ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
+    ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
+}
