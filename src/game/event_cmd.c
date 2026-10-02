@@ -249,6 +249,8 @@ extern void func_00177300(Progress *p, s32 slot);
 extern s32 func_00177260(Progress *p, s32 slot);
 extern void func_002ECB50(u8 *p);
 extern void func_0029EF80(void *c, s32 room);
+extern s32 func_0016D6D0(Progress *p, u32 id, u32 slot);
+extern void func_001FFC70(VObject *ev);
 
 void func_002029B0(VObject *ev) {
     Progress *p;
@@ -446,6 +448,20 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0xB9:   /* bring in character pc[1] in slot pc[2] (second kind) */
+        if ((u8)func_0016D6D0(p, pc[1], pc[2]) == 1) {
+            func_00177350(p, PC(ev)[2]);
+        }
+        break;
+    case 0x3C: {   /* the progress' +0x24 for character pc[1]: value be16 pc[2..3], pc[4] */
+        u8 who = (u8)func_001770D0(p, pc[1]);
+
+        VCALL(p, 0x24, void (*)(Progress *, u32, u32, u32))(p, (u16)be16(PC(ev) + 2), who, PC(ev)[4]);
+        break;
+    }
+    case 0x6A: case 0x6B: case 0x6C:
+        func_001FFC70(ev);
+        break;
     case 0x7C:   /* zone pc[1] (32): on, kind pc[18]; centre (3 x be32 / 1000), radius, height */
         if (pc[1] < 0x20) {
             u8 *z = (u8 *)ev + pc[1] * 0x30;
