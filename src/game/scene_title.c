@@ -682,3 +682,337 @@ void func_0012F290(Scene *t) {
     AT(t, 0x20, u8) = AT(t, 0x20, u8) ? 0 : 1;
     set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
 }
+
+void func_0012D530(Scene *t, f32 alpha, f32 scroll);
+void func_0012CCF0(Scene *t, f32 alpha, f32 open);
+void func_0012E8C0(Scene *t);
+
+/* the main menu's entries (texture 1, CLUT 1): New Game, Load Game, Options and, once the game
+ * has been cleared (+0x11DA94), two more; with `stagger` the k-th at alpha - k / 8 */
+static inline void menu_entries(Scene *t, f32 alpha, s32 stagger, s32 all) {
+    func_0012D140(t, 0, 0x00, 0xC0, 0x20, 0x20, 0x40, 1, 0, alpha);
+    func_0012D140(t, 0, 0x20, 0xC0, 0x20, 0x20, 0x70, 1, 0, stagger ? -0.125f + alpha : alpha);
+    func_0012D140(t, 0, 0x40, 0xC0, 0x20, 0x20, 0xA0, 1, 0, stagger ? -0.25f + alpha : alpha);
+    if (!all) {
+        return;
+    }
+    func_0012D140(t, 0, 0x60, 0xC0, 0x20, 0x20, 0xD0, 1, 0, stagger ? -0.375f + alpha : alpha);
+    func_0012D140(t, 0, 0x80, 0xC0, 0x20, 0x20, 0x100, 1, 0, stagger ? -0.5f + alpha : alpha);
+}
+
+/* the title turning into the main menu: (1) a 30-frame fade of the title layer, (2) the menu
+ * coming in, (3) then the menu (func_0012E8C0) */
+void func_0012EE30(Scene *t) {
+    f32 f;
+
+    if (!AT(t, 0x74940, u8)) {
+        return;
+    }
+    func_0012D7F0(t);
+    switch (AT(t, 0x18, s32)) {
+    case 0:
+        AT(t, 0x1C, s32) = 0;
+        AT(t, 0x18, s32)++;
+        /* fall through */
+    case 1:
+        func_0037E950(t, 1.0f);
+        func_0037E6A0(t, 1.0f, 1.0f);
+        func_0037EB80(t, 1.0f);
+        func_0037EBC0(t, 1.0f);
+        f = (f32)AT(t, 0x1C, s32)++ / 30.0f;
+        if (AT(t, 0x1C, s32) >= 0x1F) {
+            AT(t, 0x1C, s32) = 0;
+            f = 1.0f;
+            AT(t, 0x18, s32)++;
+        }
+        func_0012D530(t, f, 1.0f);
+        break;
+    case 2:
+        f = (f32)AT(t, 0x1C, s32)++ / 30.0f;
+        if (AT(t, 0x1C, s32) >= 0x1F) {
+            AT(t, 0x1C, s32) = 0;
+            f = 1.0f;
+            AT(t, 0x18, s32)++;
+        }
+        func_0012D530(t, 1.0f, 1.0f - f);
+        func_0012CCF0(t, f, f);
+        menu_entries(t, 1.5f * f, 1, AT(t, 0x11DA94, u8));
+        break;
+    case 3:
+        func_0012D530(t, 1.0f, 0.0f);
+        func_0012CCF0(t, 1.0f, 1.0f);
+        menu_entries(t, 1.0f, 0, AT(t, 0x11DA94, u8));
+        AT(t, 0x1C, s32) = 90000;
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        break;
+    }
+}
+
+/* The title background (TITLE_BACK.BIN as uploaded by the renderer's +0x4C: 4-bit 640 x 448
+ * at block 0x3400, its CLUT from the renderer's VRAM entry), `alpha` 0..1, scrolled left by
+ * scroll x 128 pixels. */
+void func_0012D530(Scene *t, f32 alpha, f32 scroll) {
+    VObject *r = D_0044E4F0;
+    u64 *p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0xC, 0x30);
+    u64 tex0;
+    s32 s;
+
+    if (p == NULL) {
+        return;
+    }
+    p[0] = 0x1000000B;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000000B;
+    p[2] = 0x8003 | (1ULL << 60);
+    p[3] = 0xE;
+    p[4] = (1ULL << 32) | 0x310000A0;   /* ZBUF_1: masked */
+    p[5] = 0x4E;
+    p[6] = 0x44;
+    p[7] = 0x42;
+    p[8] = 0x156;
+    p[9] = 0;
+    p[10] = 0x8001 | (0x84ULL << 56);   /* reglist: CLAMP TEX0 RGBAQ UV XYZ2 UV XYZ2 NOP */
+    p[11] = 0xF5353168;
+    p[12] = (0x6FCULL << 32) | 0x9FC00A;
+    tex0 = VCALL(D_0044E9A0, 0x38, u64 (*)(VObject *, s32))(
+        D_0044E9A0, VCALL(r, 0x38, s32 (*)(VObject *))(r));
+    /* its CLUT; the texture: PSMT4 1024 x 512 at 0x3400, 640 wide, TCC */
+    p[13] = (tex0 & 0xFFFFFFE000000000ULL) | (6ULL << 32) | 0x6942B400;
+    s = (u8)(u32)(128.0f * scroll);
+    p[14] = ((u64)(u8)(u32)(128.0f * alpha) << 24) | 0x808080;
+    p[15] = (u64)(s64)((s << 4) + 8) | 0x80000;
+    p[16] = 0xFFFFFFFF72007000ULL;
+    p[17] = (u64)(s64)(((s + 0x200) << 4) + 8) | 0x1C080000;
+    p[18] = 0xFFFFFFFF8E009000ULL;
+    p[19] = 0;
+    title_sprite_end(p);
+}
+
+/* The menu's panel: two bands (texture 1, CLUT 1) shaded left to right, opening with `open`
+ * 0..1 (the left side first, then the right), `alpha` 0..1. */
+void func_0012CCF0(Scene *t, f32 alpha, f32 open) {
+    u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x1C, 0x30);
+    u64 left, right;
+    u8 *tex;
+    f32 f;
+
+    if (p == NULL) {
+        return;
+    }
+    p[0] = 0x1000001B;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000001B;
+    p[2] = 0x801A | (1ULL << 60);   /* GIF tag: 26 A+D, EOP */
+    p[3] = 0xE;
+    p[4] = (1ULL << 32) | 0x310000A0;
+    p[5] = 0x4E;
+    p[6] = 0x15C;                   /* PRIM: triangle strip, Gouraud, textured, blended, UV */
+    p[7] = 0;
+    tex = TITLE_TEX(1);
+    p[8] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
+        D_0044E9A0, TITLE_TEX_SLOT(1), AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+    p[9] = 0x06;
+    tex = TITLE_TEX(1);
+    p[10] = VCALL(D_0044E9A0, 0x34, u64 (*)(VObject *, s32, s32, s32, s32))(
+        D_0044E9A0, TITLE_TEX_SLOT(1), 1, tex[0], tex[1]);
+    p[11] = 0x16;
+    p[12] = 0x44;
+    p[13] = 0x42;
+    f = 2.0f * open;
+    p[14] = (0x3FCULL << 32) | 0xE07FC00A;
+    p[15] = 0x08;                   /* CLAMP_1 */
+    if (!(f <= 1.0f)) {
+        f = 1.0f;
+    }
+    left = ((u64)(u8)(u32)(128.0f * f * alpha) << 24) | 0x808080;
+    f = 2.0f * (open - 0.5f);
+    if (f <= 1.0f) {
+        if (f < 0.0f) {
+            f = 0.0f;
+        }
+    } else {
+        f = 1.0f;
+    }
+    /* RGBAQ 1, UV 3, XYZ3 0xD (no kick), XYZ2 5 */
+    p[16] = left;
+    p[17] = 1;
+    p[18] = 0x0E080008;
+    p[19] = 3;
+    p[20] = 0xFFFFFFFF73007000ULL;
+    p[21] = 0xD;
+    p[22] = 0x10080008;
+    p[23] = 3;
+    p[24] = 0xFFFFFFFF75007000ULL;
+    p[25] = 0xD;
+    right = ((u64)(u8)(u32)(128.0f * f * alpha) << 24) | 0x808080;
+    p[26] = right;
+    p[27] = 1;
+    p[28] = 0x0E082008;
+    p[29] = 3;
+    p[30] = 0xFFFFFFFF73009000ULL;
+    p[31] = 5;
+    p[32] = 0x10082008;
+    p[33] = 3;
+    p[34] = 0xFFFFFFFF75009000ULL;
+    p[35] = 5;
+    p[36] = 0x0E080008;
+    p[37] = 3;
+    p[38] = 0xFFFFFFFF8B007000ULL;
+    p[39] = 0xD;
+    p[40] = 0x10080008;
+    p[41] = 3;
+    p[42] = 0xFFFFFFFF8D007000ULL;
+    p[43] = 0xD;
+    p[44] = left;
+    p[45] = 1;
+    p[46] = 0x0E082008;
+    p[47] = 3;
+    p[48] = 0xFFFFFFFF8B009000ULL;
+    p[49] = 5;
+    p[50] = 0x10082008;
+    p[51] = 3;
+    p[52] = 0xFFFFFFFF8D009000ULL;
+    p[53] = 5;
+    p[54] = 0x310000A0;
+    p[55] = 0x4E;
+}
+
+void func_0012DDB0(Scene *t, f32 alpha);
+void func_0012E270(Scene *t);
+void func_0012E780(Scene *t);
+void func_0012E6C0(Scene *t);
+
+#define BGM_WANT(track, pause, restart, level) \
+    VCALL(D_0044E970, 0x8, void (*)(void *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, level)
+#define SE(id, bank) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, bank)
+
+#define MENU_CURSOR AT(t, 0x21, s8)
+#define TITLE_NEXT AT(t, 0x20, u8)   /* what the title leads to (2 new game, 5 / 6 extras) */
+
+/* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
+ * takes the entry; 900 idle frames: the attract movie */
+void func_0012E8C0(Scene *t) {
+    s8 old;
+    s8 n;
+
+    BGM_WANT(0x33, 0, 0, 1.0f);
+    func_0012DDB0(t, 1.0f);
+    old = MENU_CURSOR;
+    n = AT(t, 0x11DA94, u8) ? 5 : 3;
+    if (D_0047E36C & 1) {
+        MENU_CURSOR = old - 1;
+        if (MENU_CURSOR < 0) {
+            MENU_CURSOR = n - 1;
+        }
+    } else if (D_0047E36C & 4) {
+        MENU_CURSOR++;
+        if (n - 1 < MENU_CURSOR) {
+            MENU_CURSOR = 0;
+        }
+    }
+    if (old != MENU_CURSOR) {
+        AT(t, 0x18, s32) = 0;
+        SE(0x2A, 5);
+        AT(t, 0x1C, s32) = 90000;
+    }
+    if (D_0047E36C & 0x20) {
+        SE(0x2C, 5);
+        AT(t, 0x18, s32) = 0;
+        BGM_WANT(0xFF, 0, 0, 1.0f);
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E270);
+        return;
+    }
+    if (old == MENU_CURSOR && ((D_0047E36C & 0x10) || (D_0047E37C & 8))) {
+        BGM_WANT(0xFF, 0, 0, 1.0f);
+        switch (MENU_CURSOR) {
+        case 0:
+            SE(0x2B, 5);
+            TITLE_NEXT = 2;
+            break;
+        case 1:
+            SE(0x2B, 5);
+            AT(t, TITLE_WORK + 4, u8) = 6;   /* the sub screen: load a game */
+            set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E780);
+            return;
+        case 2:
+            AT(t, TITLE_WORK + 4, u8) = 5;   /* the sub screen: options */
+            set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E6C0);
+            return;
+        case 3:
+            SE(0x2B, 5);
+            TITLE_NEXT = 5;
+            break;
+        case 4:
+            SE(0x2B, 5);
+            TITLE_NEXT = 6;
+            break;
+        default: {
+            VObject *snd = D_0044E560;
+
+            TITLE_NEXT = 2;
+            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0, 6);
+            if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
+                VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 1, 6);
+            }
+            break;
+        }
+        }
+        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+        return;
+    }
+    if (++AT(t, 0x18, s32) < 0x385) {
+        return;
+    }
+    BGM_WANT(0xFF, 0, 0, 1.0f);
+    TITLE_NEXT = TITLE_NEXT ? 0 : 1;
+    set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+}
+
+/* the highlighted entry k: drawn again in CLUT 0 (`a`, fixed alpha), its description shown */
+static inline void menu_highlight(Scene *t, s32 k, f32 a) {
+    func_0012D140(t, 0, k * 0x20, 0xC0, 0x20, 0x20, 0x40 + k * 0x30, 0, 1, a);
+    func_00384A90((Task *)((u8 *)t + TITLE_TASK), 2 + k);
+}
+
+/* draw the main menu at `alpha`: the panel and entries, the chosen one pulsing with its
+ * description below */
+void func_0012DDB0(Scene *t, f32 alpha) {
+    f32 pulse;
+    u8 bit;
+
+    D_0047B350 = 2;
+    AT(t, 0x1C, s32) = (AT(t, 0x1C, s32) + 5000) % 360000;
+    if (!AT(t, 0x74940, u8)) {
+        return;
+    }
+    func_0012D7F0(t);
+    pulse = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)AT(t, 0x1C, s32) / 1000.0f) / 180.0f));
+    bit = 1 << MENU_CURSOR;
+    func_0012D530(t, alpha, 0.0f);
+    func_0012CCF0(t, alpha, 1.0f);
+    func_0012D140(t, 0, 0x00, 0xC0, 0x20, 0x20, 0x40, 1, 0, alpha);
+    func_0012D140(t, 0, 0x20, 0xC0, 0x20, 0x20, 0x70, 1, 0, alpha);
+    func_0012D140(t, 0, 0x40, 0xC0, 0x20, 0x20, 0xA0, 1, 0, alpha);
+    if (AT(t, 0x11DA94, u8)) {
+        func_0012D140(t, 0, 0x60, 0xC0, 0x20, 0x20, 0xD0, 1, 0, alpha);
+        func_0012D140(t, 0, 0x80, 0xC0, 0x20, 0x20, 0x100, 1, 0, alpha);
+    }
+    if (bit & 1) {
+        menu_highlight(t, 0, pulse * alpha);
+    }
+    if (bit & 2) {
+        menu_highlight(t, 1, pulse * alpha);
+    }
+    if (bit & 4) {
+        menu_highlight(t, 2, pulse * alpha);
+    }
+    if (AT(t, 0x11DA94, u8)) {
+        if (bit & 8) {
+            menu_highlight(t, 3, pulse * alpha);
+        }
+        if (bit & 0x10) {
+            menu_highlight(t, 4, pulse * alpha);
+        }
+    }
+    func_00384BC0((Task *)((u8 *)t + TITLE_TASK));
+}

@@ -66,7 +66,6 @@ src/leaf/b0_00120530.c func_0012BF80
 src/leaf/b0_00120530.c func_0012BFA0
 src/leaf/b0_00120530.c func_0012BFB0
 src/leaf/b0_00120530.c func_0012BFF0
-src/leaf/b0_00130A40.c func_00130A40
 src/leaf/b0_00130A40.c func_001695D0
 src/leaf/b0_00130A40.c func_0016B420
 src/leaf/b0_00130A40.c func_0016B470
@@ -2110,3 +2109,15 @@ src/game/scene_title.c func_0037EB80 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c func_0037EBC0 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c func_0012F290 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..360000 --pre=a0+0x18=0x380..0x386 --pre=@0x0047E36C=0..0x10
 src/game/vram.c func_001C0F40 --runs=100 --pre=a1=0..63 --pre=a2=0..15 --pre=a3=0..0x14 --pre=a4=1..1024 --pre=a5=1..1024 --pre=a6=0..2
+src/game/scene_title.c func_0012D530 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0
+src/game/vram.c func_001C0F10 --pre=a1=0..63
+src/game/vram.c func_001C0EE0 --pre=a1=0..63
+src/game/vram.c func_001C0EB0 --pre=a1=0..63
+src/game/vram.c func_001C0E80 --pre=a1=0..63
+src/game/scene_title.c func_0012EE30 --pre=a0=0x0B000000..0x0B000000 --runs=60 --pre=a0+0x18=0..4 --pre=a0+0x1C=0..32 --pre=a0+0x74940=0..1 --pre=a0+0x11DA94=0..1
+src/game/scene_title.c func_0012CCF0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA90=a0+0x200
+src/game/scene_title.c func_0012E8C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E560=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --pre=@0x0044E970=0x0B180000..0x0B180000 --pre=@0x0B180000=0x0046A110..0x0046A110 --runs=100 --pre=a0+0x20=0x0000..0x0700 --pre=@0x0047E36C=0..0x3F --pre=a0+0x11DA94=0..1 --pre=a0+0x18=0x380..0x386
+src/game/bgm.c func_00130A40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xFE..0xFF
+src/game/bgm.c func_00130A40 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_001309D0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0012DDB0 --pre=a0=0x0B000000..0x0B000000 --runs=100 --pre=a0+0x20=0x0000..0x0500 --pre=a0+0x11DA94=0..1 --pre=a0+0x74940=0..1 --pre=a0+0x1C=0..360000

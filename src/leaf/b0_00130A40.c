@@ -30,17 +30,6 @@ extern void *D_00472C10[];
 extern void *D_004737F0[];
 extern void *D_00473810[];
 
-void func_00130A40(u8 *p, u32 id, u32 b, s32 flag, f32 f) {
-    p[5] = (u8)id;
-    if ((u8)id != 0xFF) {
-        FLD(p, 0x10, f32) = f;
-        if (flag != 0) {
-            p[4] = 0xFF;
-        }
-    }
-    p[0x18] = (u8)b;
-}
-
 /* Memory block list: +0x4 base, +0x8 size, +0xC block table (16 bytes each), +0x10 count. */
 typedef struct B0_Block {
     s32 used;

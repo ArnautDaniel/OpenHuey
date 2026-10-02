@@ -312,3 +312,38 @@ void func_002E31D0(void) {
         func_002D1F90(D_0044E980);
     }
 }
+
+extern void *D_0046A110[];   /* BgmCtl */
+extern void *D_0046A100[];   /* its base */
+extern BgmCtl *D_0044E970;
+extern void func_00100490(void *p);   /* operator delete */
+
+/* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start
+ * even if it's the one playing; `pause`: start it paused */
+void func_00130A40(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
+    c->req = track;
+    if ((u8)track != 0xFF) {
+        c->level = level;
+        if (restart) {
+            c->cur = 0xFF;
+        }
+    }
+    c->pause = pause;
+}
+
+/* +0xC */
+BgmCtl *func_001309D0(BgmCtl *c, s32 flags) {
+    if (c != NULL) {
+        c->vtbl = D_0046A110;
+        if (c != NULL) {
+            c->vtbl = D_0046A100;
+            if (c != NULL) {
+                D_0044E970 = NULL;
+            }
+        }
+        if ((s16)flags > 0) {
+            func_00100490(c);
+        }
+    }
+    return c;
+}

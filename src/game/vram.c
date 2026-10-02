@@ -579,3 +579,28 @@ u64 func_001C0F40(u8 *v, s32 id, u32 csa, s32 psm, s32 cpsm) {
 
     return ((u64)csa << 56) | ((u64)(cpsm & 0xFFFF) << 51) | ((u64)cbp << 37) | ((u64)(psm & 0xFFFF) << 20);
 }
+
+/* +0x38 .. +0x44: the same, with the entry's own format and size */
+u64 func_001C0F10(u8 *v, s32 id) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+
+    return VCALL(v, 0x28, u64 (*)(u8 *, s32, s32, u32, u32, s32))(v, id, (u16)e->psm, (u16)e->w, (u16)e->h, (u16)e->cpsm);
+}
+
+u64 func_001C0EE0(u8 *v, s32 id) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+
+    return VCALL(v, 0x2C, u64 (*)(u8 *, s32, u32, u32, s32))(v, id, (u16)e->w, (u16)e->h, (u16)e->cpsm);
+}
+
+u64 func_001C0EB0(u8 *v, s32 id, u32 csa) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+
+    return VCALL(v, 0x30, u64 (*)(u8 *, s32, u32, s32, u32, u32, s32))(v, id, csa, (u16)e->psm, (u16)e->w, (u16)e->h, (u16)e->cpsm);
+}
+
+u64 func_001C0E80(u8 *v, s32 id, u32 csa) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+
+    return VCALL(v, 0x34, u64 (*)(u8 *, s32, u32, s32, s32))(v, id, csa, (u16)e->psm, (u16)e->cpsm);
+}
