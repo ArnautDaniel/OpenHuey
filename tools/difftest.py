@@ -325,13 +325,23 @@ def callee_args(rom: bytes, target: int) -> tuple[list[int], list[int]]:
     """Which a0-a7 / f12-f19 a callee reads before writing (linear scan of the original code)."""
     if target in _arg_cache:
         return _arg_cache[target]
-    if target not in FUNC_STARTS:  # random/mid-function target: no meaningful analysis
+    def is_thunk(t: int) -> bool:   # `j f` (+ a this adjustment): a vtable thunk
+        if not IMAGE_LO <= t < IMAGE_HI:
+            return False
+        w0 = struct.unpack_from("<I", rom, t - IMAGE_LO + 0x80)[0]
+        return w0 >> 26 == 2 and ((t & 0xF0000000) | ((w0 & 0x3FFFFFF) << 2)) in FUNC_STARTS
+
+    if target not in FUNC_STARTS and not is_thunk(target):  # random/mid-function target
         res = (ARG_REGS, FARG_REGS)
         _arg_cache[target] = res
         return res
     used, fused, written, fwritten = set(), set(), set(), set()
     a = target
+    tail = None   # a tail call (thunk: `j f` with an adjustment in the delay slot): follow it
     for _ in range(300):
+        if tail is not None and a == tail[0] + 8:
+            a = tail[1]
+            tail = None
         w = struct.unpack_from("<I", rom, a - IMAGE_LO + 0x80)[0]
         ins = rz.Instruction(w, vram=a, category=rz.InstrCategory.R5900)
         op = w >> 26
@@ -356,7 +366,9 @@ def callee_args(rom: bytes, target: int) -> tuple[list[int], list[int]]:
             written.add(rt)
         if ins.modifiesRd():
             written.add(rd)
-        if ins.isJrRa() or (ins.isJump() and not ins.doesLink() and not ins.isBranch()):
+        if op == 2 and tail is None and ((a & 0xF0000000) | ((w & 0x3FFFFFF) << 2)) in FUNC_STARTS:
+            tail = (a, (a & 0xF0000000) | ((w & 0x3FFFFFF) << 2))   # after the delay slot
+        elif ins.isJrRa() or (ins.isJump() and not ins.doesLink() and not ins.isBranch()):
             break
         a += 4
     res = ([r for r in ARG_REGS if r in used], [f for f in FARG_REGS if f in fused])

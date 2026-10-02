@@ -449,3 +449,178 @@ void func_00175DE0(Progress *p) {
         }
     }
 }
+
+extern void func_002A8410(void *o);
+extern s32 func_00123960(void *c, s32 d, s32 side);
+
+/* a character's (mask) state at exit e (+0xFD0 + k * 6): bit 0 e[1], 1 e[2], 2 e[0], 3 e[3],
+ * 4 e[4], 5 e[5] */
+static u8 exit_flags(const u8 *e, u8 mask) {
+    u8 f = 0;
+
+    if (e[1] & mask) f |= 1;
+    if (e[2] & mask) f |= 2;
+    if (e[0] & mask) f |= 4;
+    if (e[3] & mask) f |= 8;
+    if (e[4] & mask) f |= 0x10;
+    if (e[5] & mask) f |= 0x20;
+    return f;
+}
+
+static u32 door_state(Progress *p, VObject *rooms, u32 k) {
+    u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), k) & 0xFFFF;
+
+    return AT(p, 0x124 + d * 4, u32);
+}
+
+/* the characters' requests from where they stand (per character slot, +0x1134 + i * 0xE0: +0
+ * the request: 2 through an exit (0x80000002 locked), 3 a door region, 0x80000004 a scene
+ * thing), from the exits they are at and the door regions they are in */
+void func_00175430(Progress *p) {
+    s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    VObject *rooms = D_0044E568;
+    Progress *gp = gProgress;
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        u8 *blk = (u8 *)p + i * 0xE0 + 0x1134;
+        u8 *c = (u8 *)gCharacters[i];
+        u8 mask = (u8)(1 << i);
+        u32 k;
+        s32 j;
+
+        for (j = 0; j < 7; j++) {
+            func_002A8410(blk + j * 0x20);
+        }
+        if (c == NULL || room != AT(c, 0x30, s32) || AT(c, 0xE0, u8) == 1 ||
+            (AT(p, 0x8, u32) & 0x40000) != 0) {
+            continue;
+        }
+        for (k = 0; k < 8; k++) {
+            if (exit_flags((u8 *)p + 0xFD0 + k * 6, mask) & 4) {
+                break;
+            }
+        }
+        if (k < 8 && !(door_state(p, rooms, k) & 1)) {
+            u8 flags = exit_flags((u8 *)p + 0xFD0 + k * 6, mask);
+            s32 ok = 1;
+
+            if (i != 0 && (flags & 8)) {
+                goto regions;
+            }
+            /* nobody else (but Hewie, for her) may be in the doorway */
+            for (j = 0; j < 6; j++) {
+                u8 *cj;
+                u8 f;
+
+                if ((i == 0 && j == 1) || j == i) {
+                    continue;
+                }
+                cj = (u8 *)gCharacters[j];
+                if (cj == NULL || AT(cj, 0x28, u8) != 1 || AT(cj, 0x29, u8)) {
+                    continue;
+                }
+                f = exit_flags((u8 *)p + 0xFD0 + k * 6, (u8)(1 << j));
+                if ((f & 8) || (f & 0x14) == 0x14) {
+                    ok = 0;
+                    break;
+                }
+            }
+            if (ok == 1) {
+                u32 d;
+                s32 locked;
+
+                blk[0x1D] = 1;
+                d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), k) & 0xFFFF;
+                if ((u8)VCALL(rooms, 0x44, s32 (*)(VObject *, u32))(rooms, d) & 1) {
+                    locked = 1;
+                } else if ((AT(p, 0x124 + d * 4, u32) >> 3) & 1) {
+                    locked = 0;
+                } else {
+                    locked = (AT(p, 0x124 + d * 4, u32) >> 1) & 1;
+                }
+                if (locked == 1) {
+                    AT(blk, 0x0, u32) = (door_state(p, rooms, k) >> 3) & 1 ? 0x80000002 : 2;
+                    AT(blk, 0x8, u32) = (u8)k;
+                    AT(blk, 0x4, s32) = 0;
+                    AT(blk, 0x18, s32) = room;
+                    blk[0x1C] = flags;
+                } else if ((door_state(p, rooms, k) >> 3) & 1) {
+                    AT(blk, 0x0, u32) = 0x80000002;
+                    AT(blk, 0x8, u32) = (u8)k;
+                    AT(blk, 0x4, s32) = 1;
+                    AT(blk, 0x18, s32) = room;
+                    blk[0x1C] = flags;
+                    continue;
+                } else {
+                    u8 r2 = (u8)VCALL(rooms, 0x4C, s32 (*)(VObject *, s32, u32))(
+                        rooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), k);
+                    u32 d3 = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(
+                                 rooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), k) & 0xFFFF;
+                    s32 open;
+
+                    if ((u8)VCALL(rooms, 0x44, s32 (*)(VObject *, u32))(rooms, d3) & 1) {
+                        open = 0;
+                    } else if ((AT(gp, 0x124 + d3 * 4, u32) >> 3) & 1) {
+                        open = 1;
+                    } else {
+                        open = (AT(gp, 0x124 + d3 * 4, u32) >> 2) & 1;
+                    }
+                    AT(blk, 0x0, u32) = 2;
+                    AT(blk, 0x8, u32) = (u8)k;
+                    AT(blk, 0x4, s32) = 1;
+                    AT(blk, 0x18, s32) = room;
+                    blk[0x1C] = flags;
+                    if (r2 == 1) {
+                        AT(blk, 0x40, s32) = 9;
+                        AT(blk, 0x48, u32) = (u8)k;
+                        AT(blk, 0x44, s32) = open == 1 ? 1 : 0;
+                        AT(blk, 0x58, s32) = room;
+                    }
+                }
+            }
+        }
+    regions:
+        if (i == 0 && AT(p, 0x7B8, u8) >= 4) {
+            continue;
+        }
+        if (AT(blk, 0x0, u32) == 0) {
+            u8 sel = i != 0 ? 0xFF : 0xFD;
+            u32 d;
+
+            for (d = 0; d < 5; d++) {
+                u8 *q = (u8 *)p + 0x1000 + d * 4;
+                u8 rf = 0;
+
+                if (q[0] & mask) rf |= 1;
+                if (q[1] & mask) rf |= 2;
+                if (q[2] & mask) rf |= 4;
+                if (q[3] & mask) rf |= 8;
+                if ((u32)(q[2] & sel) == (u32)(1 << i)) {
+                    if (i == 0 && !(u8)func_00123960(gCharacters[i], d, 0)) {
+                        continue;
+                    }
+                    AT(blk, 0x0, u32) = 3;
+                    AT(blk, 0x4, s32) = 0;
+                    AT(blk, 0x8, u32) = d;
+                } else if ((u32)(q[1] & sel) == (u32)(1 << i)) {
+                    if (i == 0 && !(u8)func_00123960(gCharacters[i], d, 1)) {
+                        continue;
+                    }
+                    AT(blk, 0x0, u32) = 3;
+                    AT(blk, 0x4, s32) = 1;
+                    AT(blk, 0x8, u32) = d;
+                }
+                AT(blk, 0x18, s32) = room;
+                blk[0x1C] = rf;
+                blk[0x1D] = 2;
+            }
+        }
+        if (i == 0 && AT(blk, 0x0, u32) == 0) {
+            c = (u8 *)gCharacters[0];
+            if (c != NULL && AT(c, 0x28, u8) == 1 && !AT(c, 0xE0, u8) && AT(c, 0x1AD5D2, u8) == 1) {
+                AT(blk, 0x0, u32) = 0x80000004;
+            }
+        }
+    }
+}
