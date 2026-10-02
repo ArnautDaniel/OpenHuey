@@ -2691,3 +2691,23 @@ void func_002ECE50(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
+
+
+/* +0x8 a sphere collider { +0x0 centre, +0x20 radius, +0x24 falloff }: the push `out` on the
+ * point `at` (strength `k`): inside the sphere its offset from the centre x (1 - distance x
+ * falloff) x k, else none */
+void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dd = 0.0f;
+
+    sceVu0SubVector(d, at, (f32 *)c);
+    dd = sceVu0InnerProduct(d, d);
+    if (dd < AT(c, 0x20, f32) * AT(c, 0x20, f32) && !(dd <= 0.0f)) {
+        sceVu0ScaleVector(out, d, (1.0f - __builtin_sqrtf(__builtin_fabsf(dd)) * AT(c, 0x24, f32)) * k);
+        return;
+    }
+    out[3] = 0.0f;
+    out[2] = 0.0f;
+    out[1] = 0.0f;
+    out[0] = 0.0f;
+}
