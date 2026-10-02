@@ -3073,3 +3073,54 @@ void func_0019D4E0(Fiona *f) {
         break;
     }
 }
+
+extern VObject *D_0044E558;   /* the doors */
+extern VObject *D_0044E568;   /* the rooms */
+extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);
+extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);
+extern void func_001779C0(Progress *p, s32 door, s32 slot);
+
+#define DOOR_ISOPEN(d, door) VCALL(d, 0x28, s32 (*)(VObject *, s32))(d, door)
+#define DOOR_KIND(d, door) VCALL(d, 0x30, s32 (*)(VObject *, s32))(d, door)
+#define DOOR_SET(d, slot, door, side, v) VCALL(d, slot, void (*)(VObject *, s32, s32, s32))(d, door, side, v)
+#define ROOM_DOOR_LINK(r, room, door) VCALL(r, 0x10, s32 (*)(VObject *, s32, s32))(r, room, door)
+
+/* at the start in a door (+0xF8: 2 passing through, 3 standing in it): set the door's state
+ * (open sides) and the progress records for it */
+void func_00184BF0(Fiona *f) {
+    u8 *c = (u8 *)f;
+    s32 st = AT(c, 0xF8, s32);
+    VObject *doors;
+
+    if (st == 3) {
+        func_001779C0(gProgress, AT(c, 0x100, u8), AT(c, 0x20, u8));
+        AT(c, 0x104, s32) = AT(c, 0x100, s32);
+        return;
+    }
+    if (st != 2) {
+        return;
+    }
+    AT(c, 0x2B, u8) = 0;
+    AT(c, 0xC0, u32) = 0x28020018;
+    if (AT(c, 0x108, s32) == 0) {
+        return;
+    }
+    doors = D_0044E558;
+    if (!DOOR_ISOPEN(doors, AT(c, 0x100, u8))) {
+        if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
+            && (u16)ROOM_DOOR_LINK(D_0044E568, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
+            func_00178C10(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
+        }
+        doors = D_0044E558;
+        DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 0, 0x60000);
+        DOOR_SET(doors, 0x1C, AT(c, 0x100, u8), 1, 0x60000);
+    } else {
+        if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
+            && (u16)ROOM_DOOR_LINK(D_0044E568, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
+            func_00178A90(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
+        }
+        doors = D_0044E558;
+        DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 1, 0x60000);
+        DOOR_SET(doors, 0x1C, AT(c, 0x100, u8), 0, 0x60000);
+    }
+}

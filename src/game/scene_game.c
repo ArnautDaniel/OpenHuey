@@ -175,3 +175,198 @@ void SceneGame_StateEntry(Scene *game) {
     AT(game, 0x1053450, PTMF) = D_0044C7A0;
     Scene_SetState(game, &D_0044C7B0);
 }
+
+/* ---- construction ---- */
+
+#include "actor.h"
+#include "subscreen.h"
+#include "task.h"
+
+extern void *Scene_vtable[], *SceneGame_vtable[], *Progress_vtable[], *Fiona_vtable[];
+extern void *D_0047A7E8[];          /* SceneGame's second base (Progress) */
+extern void *D_00469C20[], *D_00469C60[];   /* Actor, Character */
+extern void *D_0046A120[];          /* the partner (Hewie) */
+extern void *D_0046ABB0[], *D_0046C520[], *D_0046B3A0[], *D_0046B3B8[], *D_0046B300[];
+extern void *D_0046C6F0[], *D_0046C660[], *D_0046C668[];
+extern void *D_004699E0[], *D_004699C0[], *D_0046A1C0[];
+extern void *D_0047A790[];          /* the sub screen */
+extern void *D_0046A110[];          /* the music controller */
+extern void *D_00473440[];
+extern const PTMF sSceneEntryState;
+extern void *gSceneGameF29740, *D_0044E580, *D_0044E4C8, *D_0044E4F8, *D_0044E4C0, *D_0044E578;
+extern void *D_0044E970, *D_0045D1F0, *D_00456DE8;
+
+extern void func_002D15C0(void *);
+extern void func_002D15B0(void *);
+extern void func_002D1580(void *);
+extern void func_002D1560(void *);
+extern void func_002D1510(void *);
+extern void func_002D1490(void *);
+extern void func_002D1470(void *);
+extern void func_002D13B0(void *);
+extern void func_00169260(void *, void *, u32, void *, s32);
+extern void func_002D1360(void *);
+extern void func_002D1320(void *);
+extern void func_002D12E0(void *);
+extern void func_002D12C0(void *);
+extern void func_002D1200(void *);
+extern void func_002D1160(void *);
+extern void func_002D1130(void *);
+extern void func_002D10C0(void *);
+extern void func_002D10A0(void *);
+extern void func_002D1080(void *);
+extern void func_002D1040(void *);
+extern void *func_002D1020(void *);
+extern void *func_001FB3B0(void *, s32);
+extern void func_002D1000(void *);
+extern void *func_002D0FE0(void *);
+extern void *func_001FB400(void *, s32);
+extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void *SubScreenBase_ctor(SubScreen *w);
+extern void *TextObj_ctor(void *o);
+extern BootCard *BootCard_ctor(BootCard *b);
+
+/* the characters' common construction (Actor, then Character) */
+static inline void Character_Construct(Character *c, s32 slot) {
+    c->a.vtbl = D_00469C20;
+    c->a.slot = slot;
+    c->a.flags24 = 0x2000000;
+    c->a.vtbl = D_00469C60;
+    c->pathReq = NULL;
+}
+
+Scene *SceneGame_ctor(Scene *g) {
+    u8 *prog, *m, *o;
+    Character *c;
+    SubScreen *sub;
+    s32 i;
+
+    g->vtbl = Scene_vtable;
+    ptmf_set(&g->state, &sSceneEntryState);
+
+    /* the Progress base (+0x40) and its members */
+    prog = (u8 *)g + SG_PROGRESS;
+    func_002D15C0(prog);
+    AT(prog, 0x0, void **) = Progress_vtable;
+    func_002D15B0(prog + 8);
+    AT(prog, 0x1FBEC0, u8) = 0;
+    AT(prog, 0x1FBEC1, u8) = 0;
+    func_002D1580(prog + 0x6FBF00);
+    func_002D1560(prog + 0x6FC218);
+    func_002D1510(prog + 0x6FC340);
+    func_002D1490(prog + 0x706440);
+    func_002D1470(prog + 0x73EB00);
+    func_002D13B0(prog + 0x73EB60);
+    func_00176780((Progress *)prog);
+    func_00169260(prog + 0x6FBF00, prog + 0x1FBF00, 0x500000, prog + 0x6FBF14, 0x22);
+    AT(prog, 0x6FC214, s32) = 0x2A;   /* the entry: room 0x2A (a new game) */
+    g->vtbl = SceneGame_vtable;
+    AT(g, SG_PROGRESS, void **) = D_0047A7E8;
+
+    m = (u8 *)g + 0x73EE80;
+    func_002D1360(m);
+    func_002D1320(m + 0x340);
+    func_002D12E0(m + 0x3E0);
+    func_002D12C0(m + 0x4F0);
+    func_002D1200(m + 0x1640);
+    func_002D1160(m + 0x6740);
+    func_002D1130(m + 0x9360);
+    func_002D10C0(m + 0x9380);
+    func_00120C80(m);
+
+    /* the player (Fiona) and the partner (Hewie) */
+    c = (Character *)((u8 *)g + SG_FIONA);
+    Character_Construct(c, 0);
+    c->unk153C = 0;
+    c->a.vtbl = Fiona_vtable;
+    c = (Character *)((u8 *)g + SG_PARTNER);
+    Character_Construct(c, 1);
+    gSceneGameF29740 = (u8 *)g + 0xF29740;
+    c->unk153C = 1;
+    c->a.vtbl = D_0046A120;
+    AT(g, 0xF29740, void **) = D_0046ABB0;
+    D_0044E580 = (u8 *)g + 0xF6A940;
+    AT(g, 0xF6A940, void **) = D_0046C520;
+
+    o = (u8 *)g + 0xF6AFB0;
+    func_002D10A0(o);
+    func_002D1080(o + 0xC);
+    AT(o, 0x0, void **) = D_0046B3A0;
+    AT(o, 0xC, void **) = D_0046B3B8;
+    func_002D1040(o + 0x20);
+    func_00100340(o + 0x120, func_002D1020, func_001FB3B0, 4, 0x110);
+    Task_ctor((Task *)(o + 0x708));
+    func_002D1000(o + 0x938);
+    func_00100340(o + 0xBF0, func_002D0FE0, func_001FB400, 0x30, 0x20);
+    AT(o, 0x702, u8) = 0xFF;
+    for (i = 0; i < 17; i++) {
+        AT(o, 0x564 + i * 0x18, s32) = 0;
+    }
+    D_0044E4C8 = (u8 *)g + 0xF6C1C0;
+    AT(o, 0x6FC, s32) = 0;
+
+    o = (u8 *)g + 0xF6C1C0;
+    AT(o, 0x0, void **) = D_0046B300;
+    AT(o, 0x320, s32) = -1;
+    AT(o, 0x324, s32) = -1;
+
+    o = (u8 *)g + 0xF6CBB0;
+    AT(o, 0x8, s32) = 0;
+    AT(o, 0xC, s32) = 0;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x18, s32) = 0;
+    AT(o, 0x1C, s32) = 0;
+    AT(o, 0x20, s32) = 0;
+    AT(o, 0x2C, s32) = 0;
+    AT(o, 0x38, s32) = 0;
+    AT(o, 0x50, f32) = 6.0f;
+    AT(o, 0x60, void **) = D_0046C6F0;
+    AT(o, 0x64, void **) = D_0046C660;
+    AT(o, 0x60, void **) = D_0046C668;
+    D_0044E4F8 = o + 0x60;
+
+    o = (u8 *)g + 0xF6CD30;
+    AT(o, 0x1400, void **) = D_004699E0;
+    AT(o, 0x1404, s32) = 0;
+    D_0044E4C0 = o;
+    AT(o, 0x1408, s32) = 0;
+    AT(o, 0x1400, void **) = D_004699C0;
+    AT(o, 0x140C, s32) = 0;
+    D_0044E578 = (u8 *)g + 0xF6E200;   /* a sub-heap (its header after its 64 KB) */
+    AT(o, 0x1410, s32) = 0;
+    AT(o, 0x1414, s32) = 0;
+    o = (u8 *)g + 0xF6E200;
+    AT(o, 0x10000, void **) = D_004699E0;
+    AT(o, 0x10004, s32) = 0;
+    AT(o, 0x10008, s32) = 0;
+    AT(o, 0x10000, void **) = D_0046A1C0;
+    AT(o, 0x1000C, s32) = 0;
+    AT(o, 0x10010, s32) = 0;
+
+    /* the sub screen (the in-game menu) */
+    sub = (SubScreen *)((u8 *)g + 0xF87240);
+    SubScreenBase_ctor(sub);
+    sub->vtbl = D_0047A790;
+    Task_ctor(&sub->ask);
+    Task_ctor(&sub->text);
+    TextObj_ctor(sub->textObj);
+    BootCard_ctor(&sub->card);
+
+    /* the music controller */
+    D_0044E970 = (u8 *)g + 0x1053424;
+    AT(g, 0x1053424, void **) = D_0046A110;
+    D_0045D1F0 = (u8 *)g + 0x105344C;
+
+    o = (u8 *)g + 0x1053480;
+    D_00456DE8 = o;
+    AT(o, 0x0, void **) = D_00473440;
+    Task_Construct((Task *)(o + 0x11048));
+    return g;
+}
+
+/* vtable +0xC: count the frame (+0x73EE40), then the scene's request / state machine */
+void SceneGame_Update(Scene *g, s32 arg) {
+    AT(g, 0x73EE40, s32)++;
+    Scene_Update(g, arg);
+}

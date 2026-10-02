@@ -1,6 +1,5 @@
 /* DMA on PC: walk a source chain (the tags the game builds) and hand the data to the GIF
- * (channel 2) or to VIF1 (channel 1: VIF codes; DIRECT data goes to the GIF). VU1 (UNPACK / MPG /
- * MSCAL: the 3D path) isn't emulated yet: its data is skipped and reported once.
+ * (channel 2) or to VIF1 (channel 1: VIF codes, VU1 - see vu1.c).
  *
  * Addresses in tags are 28 bits: the native build is 32-bit with its data below 0x10000000. */
 #include <stdint.h>
@@ -23,53 +22,6 @@ static void push_words(const uint32_t *w, size_t n) {
 }
 
 static void *host(uint32_t addr) { return (void *)(uintptr_t)(addr & 0x0FFFFFF0u); }
-
-/* ---- VIF1 ---- */
-
-static void vif1_run(const uint32_t *w, size_t n) {
-    static int warned;
-    size_t i = 0;
-
-    while (i < n) {
-        uint32_t code = w[i++], cmd = (code >> 24) & 0x7F, imm = code & 0xFFFF, num = (code >> 16) & 0xFF;
-
-        switch (cmd) {
-        case 0x20:            /* STMASK */
-            i += 1;
-            break;
-        case 0x30: case 0x31: /* STROW / STCOL */
-            i += 4;
-            break;
-        case 0x4A:            /* MPG: microprogram (num 64-bit instructions) */
-            i += (num ? num : 256) * 2;
-            break;
-        case 0x50: case 0x51: { /* DIRECT / DIRECTHL: quadwords to the GIF, 128-bit aligned */
-            uint32_t q = imm ? imm : 65536;
-
-            i = (i + 3) & ~(size_t)3;
-            if (i + q * 4 > n) {
-                q = (uint32_t)((n - i) / 4);
-            }
-            gs_gif((const uint64_t *)(w + i), q);
-            i += q * 4;
-            break;
-        }
-        default:
-            if (cmd >= 0x60) {   /* UNPACK: num vectors of vn+1 elements of 32 >> vl bits */
-                uint32_t vl = cmd & 3, vn = (cmd >> 2) & 3, cnt = num ? num : 256;
-                uint32_t bits = (32u >> vl) * (vn + 1) * cnt;
-
-                i += (bits + 31) / 32;
-                if (!warned) {
-                    warned = 1;
-                    fprintf(stderr, "dma: VIF1 UNPACK (VU1 geometry) not emulated yet; skipped\n");
-                }
-            }
-            /* NOP, STCYCL, OFFSET, BASE, ITOP, STMOD, MSKPATH3, MARK, FLUSH*, MSCAL*, MSCNT */
-            break;
-        }
-    }
-}
 
 /* ---- chain walking ---- */
 

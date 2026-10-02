@@ -159,7 +159,14 @@ static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slo
 }
 
 /* Game vtable +0x24: called by Game_StateMain once no scene is left; starts game->nextMode. */
+#ifdef HG_NATIVE
+extern void hg_debug_next_scene(s32 *mode, s32 *param);   /* native/platform/debug.c */
+#endif
+
 void Game_StartNextScene(Game *game) {
+#ifdef HG_NATIVE
+    hg_debug_next_scene(&game->nextMode, &game->modeParam);
+#endif
     game->mode = game->nextMode;
     switch (game->nextMode) {
     case 1:

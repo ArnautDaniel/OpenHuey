@@ -2,6 +2,7 @@
 #ifndef GS_LOCAL_H
 #define GS_LOCAL_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 enum {
@@ -27,5 +28,8 @@ void gs_display(uint32_t *out, int maxw, int maxh, int *w, int *h);
 
 /* DMA (dma.c) */
 void dma_send(int chan, uint32_t tag, int tte);
+
+/* VIF1 / VU1 (vu1.c) */
+void vif1_run(const uint32_t *w, size_t n);
 
 #endif
