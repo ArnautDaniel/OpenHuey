@@ -600,3 +600,44 @@ void func_00224770(u8 *d) {
     AT(d, 0x74, u8) = AT(d, 0x68, u8);
     AT(d, 0x150, u8) = AT(d, 0x69, u8);
 }
+
+
+extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
+extern f32 func_002E2D00(f32 angle);     /* wrapped into -pi..pi */
+/* keep the target in view: the director's target (a character +0xB0's position plus +0xC0, else
+ * the point +0xA0) against where the camera looks (+0x2C) from its eye (+0x20); beyond 5 degrees
+ * up / down or 10 across, the camera turns (+0x3C) `rate` percent of the rest of the way */
+void func_002243D0(u8 *o, s32 rate) {
+    static const union { u32 u; f32 f; } k5deg = {0x3DB2B8C3}, k10deg = {0x3E32B8C3};
+    VObject *cam;
+    f32 t[4] __attribute__((aligned(16)));
+    f32 eye[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 ht, hd, a, b;
+
+    if (AT(o, 0xB0, u8 *) != NULL) {
+        sceVu0AddVector(t, (f32 *)(AT(o, 0xB0, u8 *) + 0x10), (f32 *)(o + 0xC0));
+    } else {
+        sceVu0CopyVector(t, (f32 *)(o + 0xA0));
+    }
+    cam = D_0044E4B8;
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, eye);
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, d);
+    sceVu0SubVector(d, d, eye);
+    sceVu0SubVector(t, t, eye);
+    ht = __builtin_sqrtf(__builtin_fabsf(t[2] * t[2] + t[0] * t[0]));
+    hd = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
+    a = func_0031C5C0(t[1], ht);
+    b = -func_002E2D00(a - func_0031C5C0(d[1], hd));
+    if (!((b <= 0.0f ? -b : b) <= k5deg.f)) {
+        b = !(b <= 0.0f) ? b - k5deg.f : b + k5deg.f;
+        VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, b * (f32)rate / 100.0f, 0.0f);
+    }
+    a = func_0031C5C0(t[0], t[2]);
+    b = func_002E2D00(a - func_0031C5C0(d[0], d[2]));
+    if ((b <= 0.0f ? -b : b) <= k10deg.f) {
+        return;
+    }
+    b = !(b <= 0.0f) ? b - k10deg.f : b + k10deg.f;
+    VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, 0.0f, b * (f32)rate / 100.0f);
+}
