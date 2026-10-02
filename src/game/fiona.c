@@ -1372,3 +1372,66 @@ s32 func_001A12B0(Fiona *f) {
     func_001777D0(p, SLOT_U8(f));
     return -1;
 }
+
+extern void func_002DDED0(void *motion, s32 anim, s32);
+extern void func_001F6370(void *motion, f32 *out, f32 t);
+extern void func_00125900(Character *c);
+extern void func_001247E0(Actor *a, const f32 *delta);
+extern s32 func_00183190(Fiona *f);
+
+#define MOTION_SPEED(m) (*(f32 *)((u8 *)(m) + 0x550))
+#define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
+#define MOTION_EVENTS(m) (*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18))
+
+/* State: the special room entry (animations 0xB01 -> 0xB02), moving by root motion. */
+void func_0019C210(Fiona *f) {
+    sceVu0FVECTOR root, target;
+    sceVu0FVECTOR probe = {0.0f, 0.0f, 0.0f, 0.0f};   /* (never set in the original without forward motion) */
+    void *m;
+
+    FI(f, 0x1AD5BC, u8) = 0;
+    m = f->c.motion;
+    if (MOTION_SPEED(m) <= 0.0f) {
+        if (MOTION_ANIM(m) == 0xB01) {
+            if (FI(f, 0x1AD58C, s32) == 0) {
+                f->savedYaw = func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32));
+            }
+            if (!(FI(f, 0x1AD584, s32) & 0x1)) {
+                func_002DDED0(f->c.motion, 0xB02, -1);
+            }
+        } else if (MOTION_ANIM(m) == 0xB02 && (MOTION_EVENTS(m) & 0x20) != 0) {
+            Fiona_ToIdle(f);
+        }
+    }
+    func_001F6370(f->c.motion, root, 0.0f);
+    if (!(root[2] <= 0.0f)) {
+        f32 yaw0 = f->c.a.angle[1];
+
+        func_00124530(&f->c.a, f->savedYaw, (F_PI * (10.0f * root[2])) / 180.0f);
+        *(s32 *)&target[0] = 0;
+        *(s32 *)&target[1] = 0;
+        target[2] = 4.0f;
+        sceVu0ApplyMatrix(probe, f->c.a.rot, target);
+        sceVu0AddVector(target, f->c.a.pos, probe);
+        if (func_00124480(&f->c.a, target, NAV_NONE) == NAV_NONE) {
+            f->c.a.angle[1] = yaw0;
+            sceVu0UnitMatrix(f->c.a.rot);
+            sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw0);
+        }
+    }
+    func_00125900(&f->c);
+    f->savedYaw = f->c.a.angle[1];
+    sceVu0ApplyMatrix(root, f->c.a.rot, root);
+    f->c.a.navMask |= 1;
+    func_001247E0(&f->c.a, root);
+    f->c.a.navMask &= ~1;
+    sceVu0AddVector(target, f->c.a.pos, probe);
+    if (func_00124480(&f->c.a, target, NAV_NONE) == NAV_NONE) {
+        f->c.a.navTri = f->c.a.prevNavTri;
+        sceVu0CopyVector(f->c.a.pos, f->c.a.prevPos);
+    }
+    if (FI(f, 0x1AD6C0, s32) < 0x97 && func_00183190(f) != 0) {
+        *(s16 *)((u8 *)gProgress + 0x7BA) -= 2;
+        FI(f, 0x1AD6C0, s32) += 2;
+    }
+}

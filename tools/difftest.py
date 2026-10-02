@@ -140,6 +140,7 @@ def b2f(b: int) -> float:
 # ---------------------------------------------------------------- value distribution
 STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
 STUB_RET_PROB = [0.5]         # --stub-ret-prob
+OUTPARAM_BYTES = [OUTPARAM]   # --outparam
 STUB_FRETURNS: list[float] = []  # --stub-fret: float values calls return (f0)
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
@@ -457,9 +458,10 @@ class CPU:
         for k, r in enumerate(ints):
             p = self.g(r) & M32
             if STACK_TOP - FRAME <= p < STACK_TOP:
-                v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * OUTPARAM)
-                self.m.write(p, OUTPARAM, v)
-                for i in range(OUTPARAM):  # not the function's own store (see arg_value)
+                n = OUTPARAM_BYTES[0]
+                v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * n)
+                self.m.write(p, n, v)
+                for i in range(n):  # not the function's own store (see arg_value)
                     self.m.written.pop(Memory.norm(p + i), None)
         self.call_n += 1
         rv = interesting(self.rng)
@@ -485,7 +487,9 @@ class CPU:
             # don't count) rather than the address
             if v % 16 == 0:
                 w = self.m.written
-                content = tuple(None if v + i in self.save_addrs else w.get(v + i) for i in range(16))
+                # (unwritten stack reads as 0, so "never set" and "set to 0" compare equal)
+                content = tuple(None if v + i in self.save_addrs else w.get(v + i, self.m.read(v + i, 1))
+                                for i in range(16))
                 if any(b is not None for b in content):
                     words = []
                     for i in range(0, 16, 4):
@@ -1594,7 +1598,15 @@ def event_equal(a, b) -> bool:
         # (e.g. an argument of its own) must reach the callee unchanged in the C too
         regs |= {r for r in aa if isinstance(r, int) and r not in aa["written"]}
     fregs = fa["pending"] | fb["pending"]
-    return all(aa.get(r) == ab.get(r) for r in regs) and all(fa.get(r) == fb.get(r) for r in fregs)
+    return all(_arg_eq(aa.get(r), ab.get(r)) for r in regs) and all(fa.get(r) == fb.get(r) for r in fregs)
+
+
+def _arg_eq(x, y) -> bool:
+    """Argument values equal; a stack pointer compares by content only if both are vectors."""
+    if isinstance(x, str) and isinstance(y, str) and x.startswith("stack") and y.startswith("stack"):
+        if x == "stack" or y == "stack":
+            return True
+    return x == y
 
 
 def events_equal(ea, eb) -> bool:
@@ -1658,6 +1670,8 @@ def option_parser() -> argparse.ArgumentParser:
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
     ap.add_argument("--stub-fret", action="append", default=[], type=float,
                     help="a float value stubbed calls return half the time, repeatable")
+    ap.add_argument("--outparam", type=int, default=OUTPARAM,
+                    help="bytes stubs write through stack pointer arguments (16: a whole vector)")
     ap.add_argument("--stub-ret-prob", type=float, default=0.5,
                     help="how often stubs return a --stub-ret value (1.0: only those)")
     return ap
@@ -1686,6 +1700,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob
+    OUTPARAM_BYTES[0] = opts.outparam
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
     ok = skipped = runaway_ok = 0
