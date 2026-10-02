@@ -51,6 +51,10 @@ target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURREN
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O2 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
 target_compile_definitions(hg PRIVATE HG_NATIVE)
+# the default data folder: the extracted DATA.CVM next to the repository, as an absolute path so
+# hg runs from any directory (override with an argument or $HG_DATA)
+get_filename_component(HG_DEFAULT_DATA "${ROOT}/../Haunting Ground (USA)/data" ABSOLUTE)
+target_compile_definitions(hg PRIVATE "HG_DEFAULT_DATA=\"${HG_DEFAULT_DATA}\"")
 # SDL3 (32-bit): Gentoo's multilib puts it in /usr/lib (CMake would rewrite that to lib64)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS TRUE)

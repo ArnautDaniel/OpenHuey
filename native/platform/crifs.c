@@ -8,7 +8,7 @@
 
 #define SECTOR 2048
 
-const char *hg_data_dir = "../Haunting Ground (USA)/data";
+const char *hg_data_dir = HG_DEFAULT_DATA;   /* (native/CMakeLists.txt) */
 
 /* listing buffer contents (our own format: the game only passes the buffer around) */
 #define DIR_MAGIC 0x52494447u   /* "GDIR" */

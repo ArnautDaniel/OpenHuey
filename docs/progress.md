@@ -5,7 +5,9 @@ Last updated 2026-10-02.
 ## Native PC build (the "slice to the menu")
 
 `cmake -S native -B build/native/cmake && cmake --build build/native/cmake -j4`, then
-`build/native/cmake/hg [extracted DATA.CVM folder]` (default `../Haunting Ground (USA)/data`).
+`build/native/cmake/hg [extracted DATA.CVM folder]` from any directory (default: the absolute
+path of `../Haunting Ground (USA)/data` next to the repository, fixed at configure time; or
+`$HG_DATA`). Without the data it exits with a message.
 It boots through the controller check, the memory card check, the Dolby logo (the Capcom movie
 ends at once: no Sofdec yet), the caution screen, the title (fade in, PRESS START) and the main
 menu (New Game / Load Game / Options with their descriptions), at 60 fps with the software GS.

@@ -1,4 +1,5 @@
 /* Native entry point: what the PS2 main (0x0020D860) does, minus the PS2 runtime setup. */
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,11 +18,26 @@ extern void gs_init(void);
 int main(int argc, char **argv) {
     Ctor *c;
 
-    /* the extracted DATA.CVM folder: argument, $HG_DATA, or next to the repository */
+    /* the extracted DATA.CVM folder: argument, $HG_DATA, or the one next to the repository */
     if (argc > 1) {
         hg_data_dir = argv[1];
     } else if (getenv("HG_DATA") != NULL) {
         hg_data_dir = getenv("HG_DATA");
+    }
+    {
+        char probe[1024];
+        DIR *d;
+
+        snprintf(probe, sizeof(probe), "%s/SYSTEM", hg_data_dir);
+        d = opendir(probe);
+        if (d == NULL) {
+            fprintf(stderr,
+                    "hg: no game data in \"%s\" (expected the extracted DATA.CVM folder, with SYSTEM/ in it).\n"
+                    "Pass the folder as the first argument or set HG_DATA.\n",
+                    hg_data_dir);
+            return 1;
+        }
+        closedir(d);
     }
     gs_init();
     for (c = D_00469460; c < D_0046969C; c++) {
