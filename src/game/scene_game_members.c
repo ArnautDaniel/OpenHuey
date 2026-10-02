@@ -1603,3 +1603,18 @@ void func_002E2A60(u8 *o) {
         }
     }
 }
+
+
+extern void func_00223A90(void *doors);
+extern void func_0021AFD0(void *o);
+
+/* the room, each frame: the doors (with a room loaded), +0x9380, +0x6740 (+0x28), and
+ * whether Progress +0x54 lets the alpha parts show (+0x8B) */
+void func_0011FEB0(u8 *rm) {
+    if (AT(rm, 0x998C, u8 *) != NULL) {
+        func_00223A90(rm + 0x1640);
+    }
+    func_0021AFD0(rm + 0x9380);
+    VCALL(rm + 0x6740, 0x28, void (*)(void *))(rm + 0x6740);
+    AT(rm, 0x8B, u8) = VCALL(gProgress, 0x54, s32 (*)(void *))(gProgress);
+}
