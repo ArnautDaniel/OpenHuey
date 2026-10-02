@@ -1644,3 +1644,86 @@ void func_00149DD0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1CC0);
     }
 }
+
+extern const PTMF D_003B1958, D_003B1948, D_003B1D00;
+
+void func_00153350(Hewie *h) {
+    if (!(func_00177620(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
+        if (func_00140CD0(h, 3) == 0) {
+            func_001431F0(h);
+            Hewie_SetBehaviour(h, &D_003B1958);
+        }
+    } else if (func_00140CD0(h, 0) == 0) {
+        func_001431F0(h);
+        Hewie_SetBehaviour(h, &D_003B1948);
+    }
+}
+
+void func_00149EC0(Hewie *h) {
+    u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
+
+    if ((stopped ^ 1) != 0) {
+        return;
+    }
+    if (MOTION_ANIM(h->c.motion) == 0x1300) {
+        if (!(func_00177620(gProgress) & 0xFF)) {
+            func_002DDC60(h->c.motion, 0, 5, -1);
+        } else {
+            func_002DDC60(h->c.motion, 3, 5, -1);
+        }
+        return;
+    }
+    h->c.unkE1 = 1;
+    Hewie_ToDefault(h);
+}
+
+void func_00149270(Hewie *h) {
+    switch (HEWIE_ACTION(h)) {
+    case 0x4B:
+        func_002DDED0(h->c.motion, 0x1C05, -1);
+        break;
+    case 0x4A:
+        func_002DDED0(h->c.motion, 0x1D00, -1);
+        HW(h, 0xF36BC, s32) = (h->c.hp == h->c.hpMax) ? 1 : 0;
+        break;
+    case 0x49:
+        func_002DDED0(h->c.motion, 0x1C04, -1);
+        break;
+    }
+    Hewie_SetBehaviour(h, &D_003B1D00);
+}
+
+void func_0014B680(Hewie *h) {
+    u8 stopped;
+
+    if (func_001669A0(h) != 0) {
+        if (--HW(h, 0xF36B8, s32) == 0) {
+            func_00143550(h, -1);
+        }
+        return;
+    }
+    stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
+    if ((stopped ^ 1) == 0) {
+        Hewie_Start(h, HW(h, 0xF36B4, s32));
+    }
+}
+
+void func_00147480(Hewie *h) {
+    sceVu0FVECTOR root;
+    f32 k;
+
+    if (func_00140CD0(h, 0) == 0) {
+        func_00141C00(h, 0);
+        func_00130AF0(h, 0, 0);
+    }
+    h->c.a.navMask |= 0x80001;
+    func_001F6370(h->c.motion, root, 0.0f);
+    k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    *(s32 *)&root[1] = 0;
+    root[2] = root[2] * k;
+    sceVu0ApplyMatrix(root, h->c.a.rot, root);
+    func_001247E0(&h->c.a, root);
+    HW(h, 0xF3558, u8) = 1;
+    h->c.a.navMask &= ~0x80001;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
