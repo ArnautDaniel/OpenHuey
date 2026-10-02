@@ -3045,7 +3045,23 @@ static void gl_rigid_parts(u8 *m, const f32 *mvp) {
     }
 }
 
-/* morphing parts (faces, hands): the rest shape for now (TODO: blend the shapes) */
+/* a morph shape's position and normal (shape table entry: offsets from it), into acc by w */
+static void morph_add(u8 *rec, s32 shape, s32 k, f32 w, f32 *pos, f32 *nrm) {
+    u8 *e = rec + AT(rec, 0x10, s32) + shape * 8;
+    const s16 *p = (const s16 *)(e + AT(e, 0x0, s32)) + k * 3;
+    const s16 *n = (const s16 *)(e + AT(e, 0x4, s32)) + k * 3;
+    s32 j;
+
+    for (j = 0; j < 3; j++) {
+        pos[j] += w * (f32)p[j];
+        nrm[j] += w * (f32)n[j];
+    }
+}
+
+/* morphing parts (resource 1, as func_001BD650 picks them): the face (kind 1) blends the rest
+ * shape with shapes 1 (mouth), 7 and 8 (eyes) by the model's weights (+0x58 + 4 x shape; the
+ * rest gets what is left); the hands (kind 0) blend two shapes - the second part by +0x38 /
+ * +0x3C / +0x40 (shapes, weight), the others by +0x48 / +0x4C / +0x50 */
 static void gl_morph_parts(u8 *m, const f32 *mvp) {
     u8 *r1 = AT(m, 0x4D0, u8 *);
     f32 b[4][4] __attribute__((aligned(16)));
@@ -3056,34 +3072,61 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
     }
     for (i = 0; i < AT(r1, 0x0, s32); i++) {
         u8 *rec = r1 + 0x10 + i * 0x40;
-        s32 n = AT(rec, 0x4, s32);
+        s32 n = AT(rec, 0x4, s32), nshape = AT(rec, 0x0, s32);
         const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
         const u32 *fl = (const u32 *)(rec + AT(rec, 0xC, s32));
-        u8 *e = rec + AT(rec, 0x10, s32);
-        const s16 *p = (const s16 *)(e + AT(e, 0x0, s32));
-        const s16 *nrm = (const s16 *)(e + AT(e, 0x4, s32));
         const s32 *base = (const s32 *)(rec + 0x30);
+        s32 sh[4], ns = 0;
+        f32 w[4];
 
         if (n <= 0) {
             continue;
         }
+        if (AT(rec, 0x1C, s32) != 0) {
+            const f32 *fw = (const f32 *)(m + 0x58);
+
+            sh[0] = 0; sh[1] = 1; sh[2] = 7; sh[3] = 8;
+            w[1] = fw[1];
+            w[2] = fw[7];
+            w[3] = fw[8];
+            w[0] = 1.0f - w[1] - w[2] - w[3];
+            ns = nshape > 8 ? 4 : 1;
+        } else {
+            u8 *h = m + (i == 1 ? 0x38 : 0x48);
+
+            sh[0] = AT(h, 0x0, s32);
+            sh[1] = AT(h, 0x4, s32);
+            w[1] = AT(h, 0x8, f32);
+            w[0] = 1.0f - w[1];
+            ns = sh[0] >= 0 && sh[0] < nshape && sh[1] >= 0 && sh[1] < nshape ? 2 : 0;
+            if (ns == 0) {
+                sh[0] = 0;
+                w[0] = 1.0f;
+                ns = 1;
+            }
+        }
+        if (ns == 1) {
+            w[0] = 1.0f;
+        }
         bone_skin(m, AT(rec, 0x14, s32), b);
         mb_reserve(n);
         for (k = 0; k < n; k++) {
-            f32 v[4], t[4];
+            f32 v[4], t[4], p[3] = {0, 0, 0}, nn[3] = {0, 0, 0}, wn[3] = {0, 0, 0};
+            s32 j;
 
-            v[0] = (base[0] + p[k * 3]) / 4096.0f;
-            v[1] = (base[1] + p[k * 3 + 1]) / 4096.0f;
-            v[2] = (base[2] + p[k * 3 + 2]) / 4096.0f;
+            for (j = 0; j < ns; j++) {
+                morph_add(rec, sh[j], k, w[j], p, nn);
+            }
+            v[0] = (base[0] + p[0]) / 4096.0f;
+            v[1] = (base[1] + p[1]) / 4096.0f;
+            v[2] = (base[2] + p[2]) / 4096.0f;
             v[3] = 1.0f;
             sceVu0ApplyMatrix(t, b, v);
             vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 0x8000);
-            {
-                f32 nn[3] = {0, 0, 0};
-
-                normal_add(nn, b, nrm + k * 3, 1.0f);
-                AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
+            for (j = 0; j < 3; j++) {
+                wn[j] = b[0][j] * nn[0] + b[1][j] * nn[1] + b[2][j] * nn[2];
             }
+            AT(sMb.rgba, k * 4, u32) = light_rgba(wn);
         }
         model_emit(m, mvp, n, AT(rec, 0x18, s32), AT(rec, 0x20, s32));
     }
