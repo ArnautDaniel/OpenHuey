@@ -3204,3 +3204,32 @@ void func_002DDED0(u8 *m, s32 anim, s32 variant) {
     motion_reset_play(m);
     func_001F7890(m, anim, flags & 0xFFFF, variant, blend);
 }
+
+
+/* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
+ * previous slot's animation (+0x6A8; the time wrapped into it) */
+s32 func_002DD860(u8 *m, s32 foot, f32 ofs) {
+    f32 c[4] __attribute__((aligned(16)));
+    u8 *slot = AT(m, 0x6A8, u8 *);
+    f32 t, len;
+
+    c[3] = 0.0f;
+    c[2] = 0.0f;
+    c[1] = 0.0f;
+    c[0] = 0.0f;
+    if (AT(slot, 0x20, void *) == NULL) {
+        return 0;
+    }
+    t = AT(slot, 0x0, f32) + ofs;
+    len = (f32)AT(AT(AT(slot, 0x20, u8 *), 0x4, u8 *), 0xC, s32);
+    while (t < 0.0f) {
+        t = t + len;
+    }
+    while (!(t < len)) {
+        t = t - len;
+    }
+    if (AT(slot, 0x50, void *) != NULL && AT(AT(slot, 0x50, u8 *), 0x0, void *) != NULL) {
+        func_001F36B0(AT(slot, 0x50, void *), c, t);
+    }
+    return !(c[foot] <= 0.0f);
+}
