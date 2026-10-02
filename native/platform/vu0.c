@@ -217,3 +217,16 @@ void func_002E2DA0(Vec d, const Mat m, const Vec v) {
     r[3] = 0.0f;
     sceVu0CopyVector(d, r);
 }
+
+/* d.xyz = point v (w taken as 1) through m; d.w is whatever the VU0 register held - 1 here
+ * (PS2 0x002E2DD0) */
+void func_002E2DD0(Vec d, const Mat m, const Vec v) {
+    Vec r;
+    int k;
+
+    for (k = 0; k < 3; k++) {
+        r[k] = m[0][k] * v[0] + m[1][k] * v[1] + m[2][k] * v[2] + m[3][k];
+    }
+    r[3] = 1.0f;
+    sceVu0CopyVector(d, r);
+}
