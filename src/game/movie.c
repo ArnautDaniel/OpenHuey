@@ -4,7 +4,6 @@
 #include "common.h"
 #include "ptmf.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 typedef struct MovieLib {
     /* 0x00 */ void **vtbl;
@@ -168,19 +167,11 @@ void func_002B69B0(Movie *m);
 static const PTMF sMovieEntry = {0, 0x10, {(void *)0}};   /* virtual +0x10 */
 
 static inline void Movie_SetState(Movie *m, const PTMF *state) {
-    PTMF s = *state;
-
-    if (ptmf_test(&s)) {
-        m->base.state = s;
-    }
+    ptmf_set(&m->base.state, state);
 }
 
 static inline void Movie_SetStateFn(Movie *m, void (*fn)(Movie *)) {
-    PTMF s = {0, -1, {(void *)fn}};
-
-    if (ptmf_test(&s)) {
-        m->base.state = s;
-    }
+    ptmf_set_fn(&m->base.state, (void *)fn);
 }
 
 /* the output level in 0.1 dB, -96 dB for silence */

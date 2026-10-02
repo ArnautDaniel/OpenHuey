@@ -8,8 +8,9 @@
 #include "gs.h"
 #include "ptmf.h"
 #include "task.h"
+#include "input.h"
+#include "sound.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 extern u8 *D_01991EC0[];        /* message tables, by language */
 extern char D_01991ED0[][32];   /* parameter strings (code 0x08) */
@@ -20,13 +21,9 @@ extern u16 D_0044B010[][2];     /* box position presets */
 extern u8 D_0047B140[];         /* frames per glyph, by speed */
 extern u8 D_0047B144[];         /* the choice cursor glyph */
 extern u8 D_0047B148[];         /* the page arrow glyph */
-extern u32 D_0047E36C;          /* menu buttons pressed: 1 up, 2 right, 4 down, 8 left,
-                                   0x10 confirm, 0x20 cancel */
-extern u32 D_0047E37C;          /* pad buttons pressed */
 extern void *D_0044E4E8;        /* texture cache */
 extern void *D_0044E4F0;        /* renderer */
 extern void *D_0044E9A0;        /* VRAM manager */
-extern void *D_0044E560;        /* sound driver */
 
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vsnprintf */
@@ -62,15 +59,7 @@ s32 func_003821F0(Task *t, TextCursor *c);
 #define XYZ(x, y) ((u64)(u32)((x) << 4) | ((u64)(u32)((y) << 4) << 16) | 0xFFFFFFFF00000000ULL)
 
 static inline void Task_SetState(Task *t, void (*state)(Task *)) {
-    PTMF s = {0, -1, {(void *)state}};
-
-    if (ptmf_test(&s)) {
-        t->state = s;
-    }
-}
-
-static inline void play_se(s32 id) {
-    VCALL(D_0044E560, 0x14, void (*)(void *, s32, s32))(D_0044E560, id, 5);
+    ptmf_set_fn(&t->state, (void *)state);
 }
 
 /* the text of message `id` (bit 15: from the language 0 table) */
@@ -878,7 +867,7 @@ void func_00383550(Task *t) {
     u32 b = D_0047E36C;
     u8 old;
 
-    if (b & 0x10) {
+    if (b & MENU_CONFIRM) {
         u16 id = t->optId[t->answer];
 
         if (id == 0xFFFF) {
@@ -893,19 +882,19 @@ void func_00383550(Task *t) {
             t->x = x;
             t->y = y;
         }
-        play_se(0x2B);
+        Sound_PlaySE(SE_DECIDE);
         return;
     }
-    if ((t->flags & 1) && (b & 0x20)) {
+    if ((t->flags & 1) && (b & MENU_CANCEL)) {
         if (t->answer == t->nOptions - 1) {
             return;
         }
         t->answer = t->nOptions - 1;
-        play_se(0x2C);
+        Sound_PlaySE(SE_CANCEL);
         return;
     }
     old = t->answer;
-    if (b & (2 | 8)) {
+    if (b & (MENU_RIGHT | MENU_LEFT)) {
         u8 row[8];
         s32 n = 0, pos = 0, i;
         s16 rowY = t->optY[old];
@@ -918,7 +907,7 @@ void func_00383550(Task *t) {
                 row[n++] = i;
             }
         }
-        if (b & 2) {
+        if (b & MENU_RIGHT) {
             if (n < 2) {
                 t->answer++;
                 if (t->answer >= t->nOptions) {
@@ -940,20 +929,20 @@ void func_00383550(Task *t) {
         } else {
             t->answer = row[pos - 1];
         }
-    } else if (b & 1) {
+    } else if (b & MENU_UP) {
         if (old != 0) {
             t->answer--;
         } else {
             t->answer = t->nOptions - 1;
         }
-    } else if (b & 4) {
+    } else if (b & MENU_DOWN) {
         t->answer++;
         if (t->answer >= t->nOptions) {
             t->answer = 0;
         }
     }
     if (t->answer != old) {
-        play_se(0x2A);
+        Sound_PlaySE(SE_CURSOR);
     }
 }
 
@@ -990,7 +979,7 @@ void func_00383AB0(Task *t) {
 
 /* state: the delay after a glyph (cancel skips it) */
 void func_00383BF0(Task *t) {
-    if (D_0047E36C & 0x20) {
+    if (D_0047E36C & MENU_CANCEL) {
         t->wait = 0;
         func_00383D20(t);
     } else if (--t->wait == 0) {
@@ -1105,7 +1094,7 @@ void func_00383D20(Task *t) {
             n = (u8)func_003821F0(t, &t->cur);
             if (n != 0) {
                 t->cur.p += n;
-                if (!(D_0047E36C & 0x20) && !hidden) {
+                if (!(D_0047E36C & MENU_CANCEL) && !hidden) {
                     t->wait = D_0047B140[t->speed];
                     if (t->wait != 0) {
                         Task_SetState(t, func_00383BF0);

@@ -3,7 +3,6 @@
 #include "common.h"
 #include "game.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 /* allocation entry (0x12 bytes, 64 at +0x98) */
 typedef struct VramEntry {

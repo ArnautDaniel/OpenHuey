@@ -3,7 +3,6 @@
 #include "common.h"
 #include "game.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 extern s32 func_001EF990(s32 mode);                 /* libpad2: init */
 extern s32 func_001EFA38(s32 port, void *buffer);   /* libpad2: create a socket for port, DMA buffer */

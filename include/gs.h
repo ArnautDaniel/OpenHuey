@@ -31,6 +31,7 @@
 #define GIF_XYZ2 0x5
 #define GIF_TEX0_1 0x6
 #define GIF_CLAMP_1 0x8
+#define GIF_NOP 0xF
 #define GIF_REGS(...) GIF_REGS_(__VA_ARGS__)
 #define GIF_REGS_(a, b, c, d, e, f, g, h) \
     ((u64)(a) | (u64)(b) << 4 | (u64)(c) << 8 | (u64)(d) << 12 | (u64)(e) << 16 | (u64)(f) << 20 | \
@@ -40,6 +41,7 @@
 #define GS_PRIM 0x00
 #define GS_RGBAQ 0x01
 #define GS_XYZ2 0x05
+#define GS_TEX0_1 0x06
 #define GS_CLAMP_1 0x08
 #define GS_XYZ3 0x0D
 #define GS_TEX1_1 0x14
@@ -64,4 +66,23 @@
 #define GS_PSMCT32 0x00
 #define GS_PSMT8 0x13
 
-#endif
+/* register values in the 12.4 fixed point the GS uses; the drawing area's top left is at
+ * (0x700, 0x720) in the game's sub-screen sprites */
+static inline u64 gs_xyz2(s32 x, s32 y) {   /* x, y in pixels; z = max */
+    return (u64)(u32)(x << 4) | ((u64)(u32)(y << 4) << 16) | 0xFFFFFFFF00000000ULL;
+}
+
+static inline u64 gs_uv(s32 u, s32 v) {     /* texels */
+    return (u64)(u32)(u << 4) | ((u64)(u32)(v << 4) << 16);
+}
+
+/* CLAMP_1 region clamp to the w x h rectangle at u, v */
+static inline u64 gs_clamp_region(s32 u, s32 v, s32 w, s32 h) {
+    return 0xA | ((u64)(s64)u << 4) | ((u64)(s64)(u + w) << 14) | ((u64)(s64)v << 24) | ((u64)(s64)(v + h) << 34);
+}
+
+/* the textured-sprite register list (TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP) as the game stores
+ * it: built with lui / ori, so sign-extended */
+#define GIF_REGS_TEX_SPRITE ((u64)(s64)(s32)GIF_REGS(GIF_TEX0_1, GIF_CLAMP_1, GIF_RGBAQ, GIF_UV, GIF_XYZ2, GIF_UV, GIF_XYZ2, GIF_NOP))
+
+#endif /* GS_H */

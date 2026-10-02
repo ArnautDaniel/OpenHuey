@@ -1,6 +1,7 @@
 /* The game object's top level: initialisation and the state machine main loop. */
 #include "common.h"
 #include "game.h"
+#include "input.h"
 
 extern void func_001136E8(s32 status);         /* exit() */
 extern s32 func_0037E1F0(s32 *result);         /* load the embedded IOP module, *result = its status */
@@ -9,7 +10,6 @@ extern void func_001F44D0(void *obj);           /* init Game.unk14E8C90 */
 extern void func_001F4100(void *obj);           /* shut down Game.unk14E8C90 */
 extern void func_002BFB20(void *obj);           /* init Game.unk20 */
 
-extern u32 D_0047E374;     /* pad buttons held (bit 0 Select, bit 3 Start) */
 extern VObject *gFileLoader; /* the game's file loader (see SceneBoot) */
 
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
@@ -17,8 +17,6 @@ extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
 extern const PTMF sGameStateNull;     /* all zero: ends Game_Run */
 extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 
-#define PAD_SELECT 0x1
-#define PAD_START 0x8
 
 void Game_Init(Game *game) {
     s32 result;

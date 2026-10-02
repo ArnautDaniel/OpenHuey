@@ -4,7 +4,6 @@
 #include "game.h"
 #include "ptmf.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 typedef struct TexEntry {
     /* 0x0 */ u8 *tex;     /* the texture's .TEX entry */

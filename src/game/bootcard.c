@@ -8,15 +8,17 @@
 #include "memcard.h"
 #include "scene_boot.h"
 #include "task.h"
+#include "input.h"
+#include "sound.h"
+#include "gs.h"
+#include "texcache.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 #define AT32(p, off) AT(p, off, s32)
 
 extern MemCard *D_0044FF00;
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
 extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
-extern u32 D_0047E37C;      /* pad buttons pressed */
 
 static const char sFmtDec[] = "%d";
 static const char sSlot1[] = "1";
@@ -240,14 +242,11 @@ BootCard *func_0012C730(BootCard *b, s32 flags) {
 
 /* ---- the save-data screen (the sub screen's load page; mode 6) ---- */
 
-extern u32 D_0047E36C;      /* menu buttons pressed */
-extern VObject *D_0044E560; /* the sound driver */
 extern void *D_0044E978;    /* the system data */
 extern void func_002BC040(BootCard *b, s32 part);
 void func_002BC530(BootCard *b);
 void func_002BC9C0(BootCard *b, SysData *cur, SysData *loaded);
 
-#define SE(id) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, 5)
 #define MEMCARD_POLL(mc, port) VCALL(mc, 0x20, void (*)(MemCard *, s32))(mc, port)
 
 /* the save headers after the system data: 12 x 0x18, then the saves (0x1900 each) */
@@ -262,34 +261,22 @@ void func_002BFB00(BootCard *b, void *buf0, void *buf1) {
     b->buf1 = buf1;
 }
 
-extern VObject *D_0044E4E8;   /* the texture cache */
-extern VObject *D_0044E4F0;   /* the renderer */
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 
 /* the save screen's parts (texture group 0x19): texture, CLUT (0x80: blend with the alpha
  * channel as is), u, v, w, h, x, y, screen w, h */
 extern s16 D_00412770[][10];
 
-#define XYZ2(x, y) ((u64)(u32)((x) << 4) | ((u64)(u32)((y) << 4) << 16) | 0xFFFFFFFF00000000ULL)
-
 /* draw part `part` of the save screen (layer 0x30) */
 void func_002BC040(BootCard *b, s32 part) {
     s16 *e = D_00412770[(u8)part];
-    VObject *tc = D_0044E4E8;
-    s32 slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, e[0], 0x19);
-    s32 u, v, w, h, x, y, sw, sh;
     u8 *tex;
+    s32 slot = TexCache_Resident(e[0], 0x19, 0x30, &tex);
+    s32 u, v, w, h, x, y, sw, sh;
     u64 *p;
 
     if (slot == -1) {
         return;
-    }
-    tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, e[0], 0x19);
-    if (slot & 0x80000000) {
-        slot &= 0x7FFFFFFF;
-        if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, tex, 0x30)) {
-            return;
-        }
     }
     p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, 0x30);
     if (p == NULL) {
@@ -307,7 +294,7 @@ void func_002BC040(BootCard *b, s32 part) {
     }
     p[5] = 0x42;
     p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
-        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX1_1 */
+        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX0_1: loads the CLUT */
     p[7] = 0x6;
     p[8] = 0x60;
     p[9] = 0x14;
@@ -324,16 +311,15 @@ void func_002BC040(BootCard *b, s32 part) {
     sw = e[8];
     sh = e[9];
     p[14] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
-    p[15] = 0xFFFFFFFFF5353186ULL;
+    p[15] = GIF_REGS_TEX_SPRITE;
     p[16] = VCALL(D_0044E9A0, 0x30, u64 (*)(VObject *, s32, s32, s32, s32, s32, s32))(
         D_0044E9A0, slot, e[1] & 0x7F, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    p[17] = 0xA | ((u64)(s64)u << 4) | ((u64)(s64)(u + w) << 14) | ((u64)(s64)v << 24)
-            | ((u64)(s64)(v + h) << 34);   /* CLAMP_1: region clamp */
+    p[17] = gs_clamp_region(u, v, w, h);
     p[18] = 0x80808080 | (1ULL << 32);
-    p[19] = (u64)(u32)(u << 4) | ((u64)(u32)(v << 4) << 16);
-    p[20] = XYZ2(x + 0x700, y + 0x720);
-    p[21] = (u64)(u32)((u + w) << 4) | ((u64)(u32)((v + h) << 4) << 16);
-    p[22] = XYZ2(x + sw + 0x700, y + sh + 0x720);
+    p[19] = gs_uv(u, v);
+    p[20] = gs_xyz2(x + 0x700, y + 0x720);
+    p[21] = gs_uv(u + w, v + h);
+    p[22] = gs_xyz2(x + sw + 0x700, y + sh + 0x720);
     p[23] = 0;
 }
 
@@ -512,25 +498,25 @@ void func_002BCAC0(BootCard *b) {
         b->state++;
         break;
     case 2:
-        if (D_0047E36C & 0x10) {
+        if (D_0047E36C & MENU_CONFIRM) {
             MEMCARD_CHECK(mc, b->port);
             func_00380B80(&b->task, 0, sFmtDec, b->port + 1);
             func_00384A90(&b->task, 0x13);
             b->state++;
-            SE(0x2B);
-        } else if (D_0047E36C & 0x20) {
+            Sound_PlaySE(SE_DECIDE);
+        } else if (D_0047E36C & MENU_CANCEL) {
             b->state = 300;
         } else {
             pad = D_0047E36C;
-            if ((pad & 8) || (pad & 0x40)) {
+            if ((pad & MENU_LEFT) || (pad & MENU_PREV)) {
                 if (b->port != 0) {
                     b->port = 0;
-                    SE(0x2A);
+                    Sound_PlaySE(SE_CURSOR);
                 }
-            } else if ((pad & 2) || (pad & 0x80)) {
+            } else if ((pad & MENU_RIGHT) || (pad & MENU_NEXT)) {
                 if (b->port != 1) {
                     b->port = 1;
-                    SE(0x2A);
+                    Sound_PlaySE(SE_CURSOR);
                 }
             }
         }
@@ -575,7 +561,7 @@ void func_002BCAC0(BootCard *b) {
             } else {
                 func_00384A90(&b->task, 0x25);
             }
-            SE(0x85);
+            Sound_PlaySE(SE_BUZZER);
             b->state = 101;
             break;
         }
@@ -605,31 +591,31 @@ void func_002BCAC0(BootCard *b) {
             break;
         }
         pad = D_0047E36C;
-        if (pad & 0x10) {
+        if (pad & MENU_CONFIRM) {
             if (b->slots[b->cursor] == 0) {
                 func_00384A90(&b->task, 0x23);
                 b->state++;
-                SE(0x2B);
+                Sound_PlaySE(SE_DECIDE);
             } else {
-                SE(0x85);
+                Sound_PlaySE(SE_BUZZER);
             }
-        } else if (pad & 0x20) {
+        } else if (pad & MENU_CANCEL) {
             b->state = 1;
-            SE(0x2C);
+            Sound_PlaySE(SE_CANCEL);
         } else {
             u32 row = (u32)b->cursor % 6;
             u32 col = (u32)b->cursor / 6 * 6;
 
             pad = D_0047E36C;
-            if (pad & 1) {
+            if (pad & MENU_UP) {
                 b->cursor = (row != 0 ? row - 1 : 5) + col;
-                SE(0x2A);
-            } else if (pad & 4) {
+                Sound_PlaySE(SE_CURSOR);
+            } else if (pad & MENU_DOWN) {
                 b->cursor = (row + 1 < 6 ? row + 1 : 0) + col;
-                SE(0x2A);
-            } else if ((pad & 8) || (pad & 2)) {
+                Sound_PlaySE(SE_CURSOR);
+            } else if ((pad & MENU_LEFT) || (pad & MENU_RIGHT)) {
                 b->cursor = ((u32)b->cursor + 6) % 12;
-                SE(0x2A);
+                Sound_PlaySE(SE_CURSOR);
             }
         }
         flags |= 4;
@@ -643,7 +629,7 @@ void func_002BCAC0(BootCard *b) {
                 b->state++;
             } else {
                 func_00384A90(&b->task, 0x25);
-                SE(0x85);
+                Sound_PlaySE(SE_BUZZER);
                 b->state = 100;
             }
         }
@@ -658,7 +644,7 @@ void func_002BCAC0(BootCard *b) {
         if (st == 0) {
             if (save_valid((u8 *)b->sys + SAVE_DATA_OFF)) {
                 func_00384A90(&b->task, 0x24);
-                SE(0xE);
+                Sound_PlaySE(SE_LOADED);
                 b->state = 150;
                 break;
             }
@@ -669,7 +655,7 @@ void func_002BCAC0(BootCard *b) {
         } else {
             func_00384A90(&b->task, 0x25);
         }
-        SE(0x85);
+        Sound_PlaySE(SE_BUZZER);
         b->state = 100;
         break;
     case 100:

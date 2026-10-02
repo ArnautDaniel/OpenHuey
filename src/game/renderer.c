@@ -6,7 +6,6 @@
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 /* +0x1C */
 void func_001BBB20(u8 *r) {

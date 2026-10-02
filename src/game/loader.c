@@ -5,7 +5,6 @@
 #include "common.h"
 #include "game.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 #define LOADER_DIRS 208
 #define LOADER_DIR_NAME(l, i) ((char *)(l) + 0x12810 + (i) * 0x104)

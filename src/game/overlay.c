@@ -13,7 +13,6 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 #define V(p, off) ((f32 *)((u8 *)(p) + (off)))
 
 extern void *D_0044E4B8;   /* camera */

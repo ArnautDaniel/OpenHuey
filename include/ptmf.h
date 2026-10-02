@@ -33,6 +33,25 @@ static inline s32 ptmf_test(const PTMF *p) {
     return p->this_delta != 0 || p->vtbl_offset != 0 || p->u.func != NULL;
 }
 
+/* dst = src, unless src is null (the original's `PTMF s = ...; if (__ptmf_test(&s)) dst = s;`,
+ * inlined at every state change) */
+static inline void ptmf_set(PTMF *dst, const PTMF *src) {
+    PTMF s = *src;
+
+    if (ptmf_test(&s)) {
+        *dst = s;
+    }
+}
+
+/* dst = the non-virtual member function fn */
+static inline void ptmf_set_fn(PTMF *dst, void *fn) {
+    PTMF s = {0, -1, {fn}};
+
+    if (ptmf_test(&s)) {
+        *dst = s;
+    }
+}
+
 /* (self->*p)() for a member function taking no arguments */
 static inline void ptmf_scall(void *self, const PTMF *p) {
     char *obj = (char *)self + p->this_delta;

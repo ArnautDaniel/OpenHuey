@@ -4,7 +4,6 @@
 #include "progress.h"
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
-#define AT(base, off, type) (*(type *)((u8 *)(base) + (off)))
 
 /* SceneGame member offsets */
 #define SG_PROGRESS 0x40        /* Progress (second base class) */
@@ -58,11 +57,7 @@ extern void func_003A1020(Progress *, u32);
 extern void func_003A0F90(Progress *, u32);
 
 static inline void Scene_SetState(Scene *scene, const PTMF *state) {
-    PTMF s = *state;
-
-    if (ptmf_test(&s)) {
-        scene->state = s;
-    }
+    ptmf_set(&scene->state, state);
 }
 
 /* Character setup helper: the character's index (+0x20) must be 0 or 1. */

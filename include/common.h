@@ -14,6 +14,9 @@ typedef unsigned long long u64;
 typedef float f32;
 typedef double f64;
 
+/* a field at a byte offset, for structures not (fully) declared yet */
+#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif

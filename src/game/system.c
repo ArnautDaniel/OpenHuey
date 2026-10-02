@@ -4,7 +4,6 @@
 #include "game.h"
 #include "ptmf.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 extern void *D_0044E978;   /* the Game (set by its base constructor) */
 extern void *D_0046BEE0[];

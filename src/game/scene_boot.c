@@ -2,6 +2,7 @@
  * (pad check, memory card check and messages, logos) one after another. */
 #include "common.h"
 #include "scene_boot.h"
+#include "input.h"
 
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
@@ -34,11 +35,7 @@ static const char sGameFixGfm[] = "GAME_FIX.GFM";
 static const char sLogoCri[] = "SYSTEM\\LOGO_CRI.BIN";
 
 static inline void Scene_SetState(Scene *scene, const PTMF *state) {
-    PTMF s = *state;
-
-    if (ptmf_test(&s)) {
-        scene->state = s;
-    }
+    ptmf_set(&scene->state, state);
 }
 
 static inline void Task_Init(Task *task) {
@@ -168,7 +165,6 @@ void SceneBoot_StateDone(SceneBoot *boot) {
 /* ---- boot steps and their helpers ---- */
 
 extern s8 D_0047E360;          /* 0 = (no controller?): boot steps then wait for a button */
-extern u32 D_0047E37C;         /* pad buttons pressed this frame; bit 14 used to continue */
 extern u8 D_0047B350;
 extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
 extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
@@ -517,11 +513,8 @@ u32 func_0037F980(SceneBoot *boot) {
     return 1;
 }
 
-#define PAD_TRIANGLE 0x1000
-#define PAD_CROSS 0x4000
 #define VIDEO_MODE_480P 0x50
 
-extern u32 D_0047E374;   /* pad buttons held */
 extern void func_002CF390(void *obj, u32 alpha);
 
 static const char sProgTex[] = "SYSTEM\\PROG.TEX";

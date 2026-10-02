@@ -5,7 +5,6 @@
 #include "common.h"
 #include "game.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 extern VObject *D_0044E4F0;   /* the renderer */
 extern VObject *D_0044E9A0;   /* the VRAM manager */

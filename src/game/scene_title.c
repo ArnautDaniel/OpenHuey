@@ -4,8 +4,9 @@
 #include "game.h"
 #include "ptmf.h"
 #include "task.h"
+#include "input.h"
+#include "sound.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 /*
  * SceneTitle layout (what's known):
@@ -47,14 +48,6 @@ extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void func_002D2370(void *bgm, void *work);
 extern void func_002E34D0(void *obj);
 extern void *func_002D0300(void *card);   /* BootCard constructor */
-
-static inline void set_state(PTMF *dst, const PTMF *state) {
-    PTMF s = *state;
-
-    if (ptmf_test(&s)) {
-        *dst = s;
-    }
-}
 
 /* a pool entry: constructor / destructor */
 void *func_002D0570(void *e) {
@@ -110,7 +103,7 @@ Scene *SceneTitle_ctor(Scene *t) {
     u8 *w;
 
     t->vtbl = Scene_vtable;
-    set_state(&t->state, &sSceneEntryState);
+    ptmf_set(&t->state, &sSceneEntryState);
     D_0044E968 = t;
     gBootMessage = (u8 *)t + 0x24;
     t->vtbl = D_0046A040;
@@ -175,14 +168,6 @@ void func_00130520(Scene *t);
 void func_0012FB50(Scene *t);
 void func_0012F720(Scene *t);
 
-static inline void set_state_fn(PTMF *dst, void *fn) {
-    PTMF s = {0, -1, {fn}};
-
-    if (ptmf_test(&s)) {
-        *dst = s;
-    }
-}
-
 /* state: once the textures are loaded, either back to the menu (+0x14 = 2) or the title
  * (func_0012FB50, with the +0x140CA4 object running func_0012F720) */
 void func_001306E0(Scene *t) {
@@ -191,11 +176,11 @@ void func_001306E0(Scene *t) {
     }
     if (AT(t, 0x14, s32) == 2) {
         AT(t, 0x14, s32) = 0;
-        set_state_fn(&t->state, func_00130520);
+        ptmf_set_fn(&t->state, func_00130520);
         return;
     }
-    set_state_fn(&t->state, func_0012FB50);
-    set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+    ptmf_set_fn(&t->state, func_0012FB50);
+    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
 }
 
 extern void func_002E3200(void *obj);
@@ -274,7 +259,7 @@ static inline void title_movie_start(Scene *t, const char *name) {
 /* ... then state `next` */
 static inline void title_movie(Scene *t, const char *name, void (*next)(Scene *)) {
     title_movie_start(t, name);
-    set_state_fn(&t->state, next);
+    ptmf_set_fn(&t->state, next);
 }
 
 /* state: start the attract movie */
@@ -290,18 +275,17 @@ void func_0012CB30(Scene *t) {
     title_movie(t, D_0044E888, func_0012CA70);
 }
 
-extern u32 D_0047E37C;      /* pad buttons pressed */
 void func_00130170(Scene *t);
 
 /* wait for the movie (Start, once it shows, skips it), then state `next` */
 static inline void title_movie_wait(Scene *t, void (*next)(Scene *)) {
-    if ((D_0047E37C & 8) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
+    if ((D_0047E37C & PAD_START) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
         AT(t, 0x22, u8) = 1;
     }
     if (D_0044E958 != NULL && !AT(t, 0x22, u8)) {
         return;
     }
-    set_state_fn(&t->state, next);
+    ptmf_set_fn(&t->state, next);
 }
 
 /* state: the attract movie */
@@ -342,7 +326,7 @@ static inline s32 title_movie_fade(Scene *t) {
         Scene *s = SCENE_TABLE_SCENE(1);
 
         if (s != NULL) {
-            set_state(&s->state, &sSceneFinish);
+            ptmf_set(&s->state, &sSceneFinish);
             VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
         }
     }
@@ -373,8 +357,8 @@ static inline s32 title_movie_fade(Scene *t) {
 /* state: fade the attract movie out, then the title */
 void func_00130170(Scene *t) {
     if (!title_movie_fade(t)) {
-        set_state_fn(&t->state, func_0012FB50);
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+        ptmf_set_fn(&t->state, func_0012FB50);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
     }
 }
 
@@ -391,7 +375,6 @@ void func_0012C7B0(Scene *t) {
 extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
 extern void func_00114FD0(void *p);                /* free */
 extern void func_002D1FD0(void *bgm);
-extern VObject *D_0044E560;                        /* the sound driver */
 extern const char D_0044E8C0[];   /* "SYSTEM\\TITLE.TEX" */
 extern const char D_0044E8E0[];   /* "SYSTEM\\TITLE_BACK.BIN" */
 extern const char D_0044E900[];   /* "SYSTEM\\TITLE.HD" */
@@ -462,16 +445,16 @@ void func_0012F720(Scene *t) {
 
         AT(t, 0x1C, s32) = 0;
         s = D_0044E560;
-        VCALL(s, 0x14, void (*)(VObject *, s32, s32))(s, 0, 7);
+        Sound_Play(s, 0, 7);
         if ((s8)VCALL(s, 0x6C, s32 (*)(VObject *))(s) != 0) {
-            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 1, 7);
+            Sound_Play(snd, 1, 7);
         }
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F500);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F500);
         return;
     }
     AT(t, 0x14, s32) = 0;
     AT(t, 0x1C, s32) = 90000;
-    set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
+    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
 }
 
 extern f32 func_0031C248(f32 x);   /* sinf */
@@ -512,7 +495,7 @@ void func_0012F500(Scene *t) {
     func_0037E6A0(t, b, 1.0f + 4.0f * func_0031C248(0x1.921fb6p+1f * (90.0f * (1.0f - b)) / 180.0f));
     if (done) {
         AT(t, 0x1C, s32) = 90000;
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F290);
     }
 }
 
@@ -699,7 +682,6 @@ void func_0037EBC0(Scene *t, f32 alpha) {
     func_0012D140(t, 0, 0xA0, 0xC0, 0x20, 0xA0, 0x130, 3, 0, alpha);
 }
 
-extern u32 D_0047E36C;      /* menu buttons pressed: 0x10 confirm */
 void func_0012EE30(Scene *t);
 void func_0012E450(Scene *t);
 
@@ -716,13 +698,13 @@ void func_0012F290(Scene *t) {
     func_0037E6A0(t, 1.0f, 1.0f);
     func_0037EB80(t, 1.0f);
     func_0037EBC0(t, 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)AT(t, 0x1C, s32) / 1000.0f) / 180.0f)));
-    if ((D_0047E36C & 0x10) || (D_0047E37C & 8)) {
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012EE30);
+    if ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START)) {
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012EE30);
         AT(t, 0x18, s32) = 0;
         snd = D_0044E560;
-        VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 2, 7);
+        Sound_Play(snd, 2, 7);
         if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
-            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 3, 7);
+            Sound_Play(snd, 3, 7);
         }
         return;
     }
@@ -730,7 +712,7 @@ void func_0012F290(Scene *t) {
         return;
     }
     AT(t, 0x20, u8) = AT(t, 0x20, u8) ? 0 : 1;
-    set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
 }
 
 void func_0012D530(Scene *t, f32 alpha, f32 scroll);
@@ -793,7 +775,7 @@ void func_0012EE30(Scene *t) {
         func_0012CCF0(t, 1.0f, 1.0f);
         menu_entries(t, 1.0f, 0, AT(t, 0x11DA94, u8));
         AT(t, 0x1C, s32) = 90000;
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
         break;
     }
 }
@@ -934,7 +916,6 @@ void func_0012E6C0(Scene *t);
 
 #define BGM_WANT(track, pause, restart, level) \
     VCALL(D_0044E970, 0x8, void (*)(void *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, level)
-#define SE(id, bank) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, bank)
 
 
 /* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
@@ -947,12 +928,12 @@ void func_0012E8C0(Scene *t) {
     func_0012DDB0(t, 1.0f);
     old = MENU_CURSOR;
     n = AT(t, 0x11DA94, u8) ? 5 : 3;
-    if (D_0047E36C & 1) {
+    if (D_0047E36C & MENU_UP) {
         MENU_CURSOR = old - 1;
         if (MENU_CURSOR < 0) {
             MENU_CURSOR = n - 1;
         }
-    } else if (D_0047E36C & 4) {
+    } else if (D_0047E36C & MENU_DOWN) {
         MENU_CURSOR++;
         if (n - 1 < MENU_CURSOR) {
             MENU_CURSOR = 0;
@@ -960,52 +941,52 @@ void func_0012E8C0(Scene *t) {
     }
     if (old != MENU_CURSOR) {
         AT(t, 0x18, s32) = 0;
-        SE(0x2A, 5);
+        Sound_PlaySE(SE_CURSOR);
         AT(t, 0x1C, s32) = 90000;
     }
-    if (D_0047E36C & 0x20) {
-        SE(0x2C, 5);
+    if (D_0047E36C & MENU_CANCEL) {
+        Sound_PlaySE(SE_CANCEL);
         AT(t, 0x18, s32) = 0;
         BGM_WANT(0xFF, 0, 0, 1.0f);
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E270);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E270);
         return;
     }
-    if (old == MENU_CURSOR && ((D_0047E36C & 0x10) || (D_0047E37C & 8))) {
+    if (old == MENU_CURSOR && ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START))) {
         BGM_WANT(0xFF, 0, 0, 1.0f);
         switch (MENU_CURSOR) {
         case 0:
-            SE(0x2B, 5);
+            Sound_PlaySE(SE_DECIDE);
             TITLE_NEXT = 2;
             break;
         case 1:
-            SE(0x2B, 5);
+            Sound_PlaySE(SE_DECIDE);
             AT(t, TITLE_WORK + 4, u8) = 6;   /* the sub screen: load a game */
-            set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E780);
+            ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E780);
             return;
         case 2:
             AT(t, TITLE_WORK + 4, u8) = 5;   /* the sub screen: options */
-            set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E6C0);
+            ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E6C0);
             return;
         case 3:
-            SE(0x2B, 5);
+            Sound_PlaySE(SE_DECIDE);
             TITLE_NEXT = 5;
             break;
         case 4:
-            SE(0x2B, 5);
+            Sound_PlaySE(SE_DECIDE);
             TITLE_NEXT = 6;
             break;
         default: {
             VObject *snd = D_0044E560;
 
             TITLE_NEXT = 2;
-            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0, 6);
+            Sound_Play(snd, 0, 6);
             if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
-                VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 1, 6);
+                Sound_Play(snd, 1, 6);
             }
             break;
         }
         }
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
         return;
     }
     if (++AT(t, 0x18, s32) < 0x385) {
@@ -1013,7 +994,7 @@ void func_0012E8C0(Scene *t) {
     }
     BGM_WANT(0xFF, 0, 0, 1.0f);
     TITLE_NEXT = TITLE_NEXT ? 0 : 1;
-    set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+    ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
 }
 
 /* the highlighted entry k: drawn again in CLUT 0 (`a`, fixed alpha), its description shown */
@@ -1090,13 +1071,13 @@ void func_0012E450(Scene *t) {
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
     switch (TITLE_NEXT) {
     case 0:
-        set_state_fn(&t->state, func_00130520);
+        ptmf_set_fn(&t->state, func_00130520);
         break;
     case 1:
-        set_state_fn(&t->state, func_0012FF60);
+        ptmf_set_fn(&t->state, func_0012FF60);
         break;
     case 2:
-        set_state_fn(&t->state, func_0012CB30);
+        ptmf_set_fn(&t->state, func_0012CB30);
         break;
     case 3:
         AT(D_0044E978, 0x4, s32) = 3;
@@ -1106,7 +1087,7 @@ void func_0012E450(Scene *t) {
     case 4:
         break;
     case 5:
-        set_state_fn(&t->state, func_0012CB30);
+        ptmf_set_fn(&t->state, func_0012CB30);
         break;
     case 6:
         AT(D_0044E978, 0x4, s32) = 3;
@@ -1124,7 +1105,7 @@ void func_0012E1B0(Scene *t) {
     Scene *s = SCENE_TABLE_SCENE(1);
 
     if (s != NULL) {
-        set_state(&s->state, &sSceneFinish);
+        ptmf_set(&s->state, &sSceneFinish);
         VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
     }
     VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
@@ -1259,7 +1240,7 @@ void func_0012FBB0(Scene *t);
 void func_0012FF60(Scene *t) {
     title_movie_start(t, D_003B0050[AT(t, 0x140CD0, u8)]);
     AT(t, 0x140CD0, u8) = (u8)(AT(t, 0x140CD0, u8) + 1) % 7;
-    set_state_fn(&t->state, func_0012FEA0);
+    ptmf_set_fn(&t->state, func_0012FEA0);
 }
 
 /* state: the demo */
@@ -1270,8 +1251,8 @@ void func_0012FEA0(Scene *t) {
 /* state: fade the demo out, then the title (as after the attract movie) */
 void func_0012FBB0(Scene *t) {
     if (!title_movie_fade(t)) {
-        set_state_fn(&t->state, func_0012FB50);
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
+        ptmf_set_fn(&t->state, func_0012FB50);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012F720);
     }
 }
 
@@ -1287,7 +1268,7 @@ void func_0012E6C0(Scene *t) {
     }
     func_003999C0((u8 *)t + TITLE_WORK);
     if (!SUB_OPEN) {
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
         AT(t, 0x18, s32) = 0;
     }
 }
@@ -1304,9 +1285,9 @@ void func_0012E780(Scene *t) {
     }
     if (SUB_LOADED == -2) {
         TITLE_NEXT = 3;
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E450);
     } else {
-        set_state_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
+        ptmf_set_fn(&AT(t, TITLE_UNK140CA4 + 0x1C, PTMF), func_0012E8C0);
         AT(t, 0x18, s32) = 0;
     }
 }

@@ -4,7 +4,6 @@
 #include "game.h"
 #include "ptmf.h"
 
-#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
 typedef struct Bgm {
     /* 0x000 */ void **vtbl;
