@@ -973,3 +973,17 @@ void func_00201B90(VObject *ev) {
         VCALL(ev, 0xC, void (*)(VObject *))(ev);
     }
 }
+
+/* a script's character id to a character slot: below 0xF0 (and 0xFB..) one-based (id + 1),
+ * 0xF0 the player (0), 0xF1..0xFA slots 7..0x10 */
+s32 func_001FBF70(VObject *ev, s32 id) {
+    u8 x = id;
+
+    if (x < 0xF0 || x >= 0xFB) {
+        return (u8)(id + 1);
+    }
+    if (x == 0xF0) {
+        return 0;
+    }
+    return x - 0xF1 + 7;
+}

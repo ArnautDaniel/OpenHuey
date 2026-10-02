@@ -624,3 +624,440 @@ void func_00175430(Progress *p) {
         }
     }
 }
+
+extern void func_002EC4F0(void *o, void *timer);
+extern void func_002A84A0(void *timer);
+
+/* each frame: the pursuer request (+0x778) is handled; the 4 requests (+0x778, 0x10 each) are
+ * kept as last frame's (+0x10D4) and cleared */
+void func_001776F0(Progress *p) {
+    u8 *t = (u8 *)p;
+    s32 i;
+
+    if (AT(t, 0x778, u8) != 0) {
+        func_002EC4F0(t + 0x764, t + 0x778);
+    }
+    for (i = 0; i < 4; i++, t += 0x10) {
+        AT(t, 0x10D4, u8) = AT(t, 0x778, u8);
+        AT(t, 0x10D8, s32) = AT(t, 0x77C, s32);
+        AT(t, 0x10DC, s32) = AT(t, 0x780, s32);
+        AT(t, 0x10E0, u16) = AT(t, 0x784, u16);
+        func_002A84A0(t + 0x778);
+    }
+}
+
+
+/* a character action (Character +0x14E8: current, +0x1508: saved); state 7 = held by
+ * another character's relation */
+typedef struct CharAction {
+    s32 state, a, b, c, d;
+    f32 e;
+    s32 f;
+    u8 g, h;
+    u16 i;
+} CharAction;
+
+static void char_set_action(u8 *c, const CharAction *act) {
+    AT(c, 0x14E8, s32) = act->state;
+    AT(c, 0x14EC, s32) = act->a;
+    AT(c, 0x14F0, s32) = act->b;
+    AT(c, 0x14F4, s32) = act->c;
+    AT(c, 0x14F8, s32) = act->d;
+    AT(c, 0x14FC, f32) = act->e;
+    AT(c, 0x1500, s32) = act->f;
+    AT(c, 0x1504, u8) = act->g;
+    AT(c, 0x1505, u8) = act->h;
+    AT(c, 0x1506, u16) = act->i;
+}
+
+/* the pending relation changes of the 3 character slots (+0x10B0, 12 bytes each: kind, sub,
+ * other slot, arg, s32, f32): kind 1 sub 1 starts a relation on the other's +0x1014 entry;
+ * sub 2 (either kind) holds the other character (action state 7); kind 2 sub 1 releases the
+ * own character, restoring its saved action. The entry is then cleared. */
+void func_00173670(Progress *p) {
+    u8 *b = (u8 *)p;
+    CharAction act;
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        u8 *e = b + 0x10B0 + i * 0xC;
+        u8 *c;
+
+        if (e[0] == 2) {
+            if (e[1] == 2) {
+                goto hold;
+            } else if (e[1] == 1) {
+                c = (u8 *)gCharacters[i];
+                act.state = AT(c, 0x1508, s32);
+                act.a = AT(c, 0x150C, s32);
+                act.b = AT(c, 0x1510, s32);
+                act.c = AT(c, 0x1514, s32);
+                act.d = AT(c, 0x1518, s32);
+                act.e = AT(c, 0x151C, f32);
+                act.f = AT(c, 0x1520, s32);
+                act.g = AT(c, 0x1524, u8);
+                act.h = AT(c, 0x1525, u8);
+                act.i = AT(c, 0x1526, u16);
+                if (act.state != 0 && AT(gCharacters[i], 0x14E8, s32) != 7) {
+                    char_set_action((u8 *)gCharacters[i], &act);
+                }
+                func_002A84C0(e);
+            }
+        } else if (e[0] == 1) {
+            if (e[1] == 2) {
+            hold:
+                c = (u8 *)gCharacters[e[2]];
+                act.state = 7;
+                if (AT(c, 0x14E8, s32) != 7) {
+                    char_set_action(c, &act);
+                }
+                func_002A84C0(e);
+            } else if (e[1] == 1) {
+                u8 *r = b + e[2] * 0x10;
+
+                AT(r, 0x1014, u8) = 1 << i;
+                AT(r, 0x1015, u8) = 10;
+                AT(r, 0x1016, u16) = AT(e, 0x4, s32);
+                AT(r, 0x1018, u16) = e[3];
+                AT(r, 0x101C, f32) = AT(e, 0x8, f32);
+                func_002A84C0(e);
+            }
+        }
+    }
+}
+
+extern s32 func_00125D80(void *c);   /* the character can't take part (u8) */
+
+/* character slot k is free for slot i's kind-9 command: neither has a pending command nor is
+ * another's target (+0x10B0 entries) */
+static s32 rel_slot_free(u8 *b, s32 k) {
+    s32 n;
+
+    if (AT(b, 0x10B0 + k * 0xC, u8) != 0) {
+        return 0;
+    }
+    for (n = 0; n < 3; n++) {
+        if (AT(b, 0x10B2 + n * 0xC, u8) == k) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* resolve the relation requests (+0x1014, 16 bytes per slot: target mask, kind, u16, s16, f32,
+ * accepted mask +0xC): each target character is claimed by one requester (kind 6 last; Hewie,
+ * slot 1, not while +0xC bit 0x2000), then asked (vtable +0x68); accepting ones take action 4
+ * or, kind 9, queue a command for both (+0x10B0); requests of kind 9/10 nobody took hold their
+ * requester (action 7). The requests are cleared. */
+void func_00173B60(Progress *p) {
+    u8 *b = (u8 *)p;
+    u8 owner[3];
+    CharAction act;
+    u8 taken;
+    u16 relA = 0;   /* the original leaves these as whatever its caller had when no request */
+    s16 relB = 0;   /* was accepted before a kind 9/10 one holds its requester */
+    s32 i, j, k;
+
+    if (AT(b, 0x8, u32) & 0x800000) {
+        goto clear;
+    }
+    AT(b, 0x1020, u8) = 0;
+    AT(b, 0x1030, u8) = 0;
+    owner[0] = 0xFF;
+    owner[1] = 0xFF;
+    owner[2] = 0xFF;
+    AT(b, 0x1040, u8) = 0;
+    taken = 0;
+    for (j = 2; j >= 0; j--) {
+        u8 *r = b + 0x1014 + j * 0x10;
+        u8 m;
+
+        if (gCharacters[j] == NULL || AT(gCharacters[j], 0x28, u8) == 0 || (taken & (1 << j)) ||
+            r[1] == 6 || r[0] == 0) {
+            continue;
+        }
+        m = r[0];
+        for (k = 0; k < 3; k++) {
+            u8 *c = (u8 *)gCharacters[k];
+
+            if (c == NULL || !(m & (1 << k)) || AT(gCharacters[k], 0x28, u8) == 0) {
+                continue;
+            }
+            if (r[1] != 5) {
+                if (AT(gCharacters[k], 0x2D, u8) == 1) {
+                    continue;
+                }
+            } else if (AT(gCharacters[k], 0xE0, u8) == 1 && AT(gCharacters[k], 0x2D, u8) == 1) {
+                continue;
+            }
+            if (k == 1 && (AT(b, 0xC, u32) & 0x2000)) {
+                continue;
+            }
+            if (taken & (1 << k)) {
+                continue;
+            }
+            owner[k] = j;
+            taken |= 1 << k;
+        }
+    }
+    for (j = 2; j >= 0; j--) {
+        u8 *r = b + 0x1014 + j * 0x10;
+        u8 m;
+
+        if (gCharacters[j] == NULL || AT(gCharacters[j], 0x28, u8) == 0 || (taken & (1 << j)) ||
+            r[1] != 6 || r[0] == 0) {
+            continue;
+        }
+        m = r[0];
+        for (k = 0; k < 3; k++) {
+            if (gCharacters[k] == NULL || !(m & (1 << k)) || AT(gCharacters[k], 0x28, u8) == 0 ||
+                AT(gCharacters[k], 0x2D, u8) == 1) {
+                continue;
+            }
+            if (k == 1 && (AT(b, 0xC, u32) & 0x2000)) {
+                continue;
+            }
+            if (taken & (1 << k)) {
+                continue;
+            }
+            owner[k] = j;
+            taken |= 1 << k;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        u8 *r;
+        u8 kind;
+        f32 f;
+
+        if (!(taken & (1 << i))) {
+            continue;
+        }
+        r = b + 0x1014 + owner[i] * 0x10;
+        kind = r[1];
+        relB = AT(r, 0x4, s16);
+        if ((u8)func_00125D80(gCharacters[i]) ||
+            (u8)VCALL(gCharacters[i], 0x68, s32 (*)(VObject *, s32, s32, s32))(
+                gCharacters[i], kind, owner[i], relB) != 1) {
+            owner[i] = 0xFF;
+            continue;
+        }
+        r = b + 0x1014 + owner[i] * 0x10;
+        r[0xC] |= 1 << i;
+        f = AT(r, 0x8, f32);
+        relA = AT(r, 0x2, u16);
+        if (kind == 9) {
+            u8 *q = b + 0x10B0 + i * 0xC;
+
+            if (!rel_slot_free(b, owner[i]) || !rel_slot_free(b, i)) {
+                owner[i] = 0xFF;
+                continue;
+            }
+            q[0] = 1;
+            q[2] = owner[i];
+            q[1] = 0;
+            q[3] = relB;
+            AT(q, 0x4, s32) = relA;
+            AT(q, 0x8, f32) = f;
+        } else {
+            u8 *c = (u8 *)gCharacters[i];
+
+            act.state = 4;
+            act.a = kind;
+            act.b = owner[i];
+            act.c = relA;
+            act.d = relB;
+            act.e = f;
+            if (AT(c, 0x14E8, s32) != 7) {
+                char_set_action(c, &act);
+            }
+            func_002A84C0(b + 0x10B0 + i * 0xC);
+        }
+    }
+    for (j = 0; j < 3; j++) {
+        u8 kind = AT(b, 0x1015 + j * 0x10, u8);
+
+        if (kind == 9 || kind == 10) {
+            for (k = 0; k < 3; k++) {
+                if (owner[k] == j) {
+                    break;
+                }
+            }
+            if (k == 3) {
+                u8 *c = (u8 *)gCharacters[j];
+
+                act.state = 7;
+                act.a = kind;
+                act.b = j;
+                act.c = relA;
+                act.d = relB;
+                act.e = 0.0f;
+                if (AT(c, 0x14E8, s32) != 7) {
+                    char_set_action(c, &act);
+                }
+            }
+        }
+    }
+clear:
+    for (j = 0; j < 3; j++) {
+        AT(b, 0x1014 + j * 0x10, u8) = 0;
+        AT(b, 0x1015 + j * 0x10, u8) = 0;
+        AT(b, 0x1016 + j * 0x10, u16) = 0;
+        AT(b, 0x1018 + j * 0x10, u16) = 0;
+    }
+}
+
+extern void func_002A84E0(u8 *r);
+
+/* the characters' own requests (+0x1050, 32 bytes per slot: kind, u16, s16, f32): an active,
+ * free character takes action 4 for it (no partner: 0xFF). The requests are cleared. */
+void func_001739A0(Progress *p) {
+    u8 *b = (u8 *)p;
+    CharAction act;
+    u32 i;
+
+    if (!(AT(b, 0x8, u32) & 0x800000)) {
+        for (i = 0; i < 3; i++) {
+            u8 *r = b + 0x1050 + i * 0x20;
+            u8 *c;
+
+            if (gCharacters[i] == NULL || AT(gCharacters[i], 0x28, u8) != 1 ||
+                AT(gCharacters[i], 0x2D, u8) != 0 || r[0] == 0 ||
+                (u8)func_00125D80(gCharacters[i])) {
+                continue;
+            }
+            c = (u8 *)gCharacters[i];
+            act.state = 4;
+            act.b = 0xFF;
+            act.e = AT(r, 0x8, f32);
+            act.a = r[0];
+            act.c = AT(r, 0x2, u16);
+            act.d = AT(r, 0x4, s16);
+            if (AT(c, 0x14E8, s32) != 7) {
+                char_set_action(c, &act);
+            }
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        func_002A84E0(b + 0x1050 + i * 0x20);
+    }
+}
+
+extern s32 func_0019A2B0(u8 *c);   /* the player can be controlled (u8) */
+extern void func_0019A420(u8 *c, s32, s32);
+extern u32 D_0047E37C;
+extern VObject *D_0044E4D0;
+extern VObject *D_0044E988;        /* the sub screen (items) */
+
+static void act_copy(u8 *dst, const u8 *src) {
+    AT(dst, 0x0, s32) = AT(src, 0x0, s32);
+    AT(dst, 0x4, s32) = AT(src, 0x4, s32);
+    AT(dst, 0x8, s32) = AT(src, 0x8, s32);
+    AT(dst, 0xC, s32) = AT(src, 0xC, s32);
+    AT(dst, 0x10, s32) = AT(src, 0x10, s32);
+    AT(dst, 0x14, f32) = AT(src, 0x14, f32);
+    AT(dst, 0x18, s32) = AT(src, 0x18, s32);
+    AT(dst, 0x1C, u8) = AT(src, 0x1C, u8);
+    AT(dst, 0x1D, u8) = AT(src, 0x1D, u8);
+    AT(dst, 0x1E, u16) = AT(src, 0x1E, u16);
+}
+
+/* give the player the action in Progress slot `off` (unless held, state 7); it is also kept
+ * at +0x6FB000 from the slot */
+static void player_take_action(u8 *b, s32 off) {
+    if (AT(gCharPlayer, 0x14E8, s32) != 7) {
+        act_copy(gCharPlayer + 0x14E8, b + off);
+    }
+    act_copy(b + off + 0x6FB000, b + off);
+}
+
+/* the player's buttons, each frame while Fiona is controlled and free: 0x2000 the prepared
+ * action +0x1134 (0x80000000..2: becomes 2; 5: the event check first; 0x80000005: an event
+ * call; 0x80000003/4, 0: none), 0x8000 action 8, 0x1000 the selected item (action 0xE),
+ * 0x800 action 0xB */
+void func_00174920(Progress *p) {
+    u8 *b = (u8 *)p;
+    u8 *pl;
+    s32 noAct;
+
+    if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0 || AT(gCharPlayer, 0xF8, s32) != 0 ||
+        AT(gCharPlayer, 0xFC, s32) == 5) {
+        return;
+    }
+    pl = gCharPlayer;
+    if (!(u8)func_0019A2B0(pl)) {
+        return;
+    }
+    if ((u8)func_00125D80(gCharPlayer) == 1 || AT(b, 0x4, s32) != 0) {
+        return;
+    }
+    noAct = AT(pl, 0x1AD580, s32) == 0xD;
+    if (AT(gCharPlayer, 0xE0, u8) == 0) {
+        act_copy(b + 0x1674, b + 0x1134);
+    }
+    if ((D_0047E37C & 0x2000) && !noAct) {
+        s32 taken = 0;
+
+        switch (AT(b, 0x1134, s32)) {
+        case (s32)0x80000002:
+        case (s32)0x80000001:
+        case (s32)0x80000000:
+            AT(b, 0x1134, s32) = 2;
+            player_take_action(b, 0x1134);
+            taken = 1;
+            break;
+        case 5:
+            VCALL(D_0044E4D0, 0x18, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, AT(b, 0x113C, u8));
+            player_take_action(b, 0x1134);
+            taken = 1;
+            break;
+        case (s32)0x80000005: {
+            VObject *ev = D_0044E4D0;
+
+            if (ev != NULL) {
+                func_0019A420(gCharPlayer, 2, 0x1E);
+                VCALL(ev, 0x3C, void (*)(VObject *, s32))(ev, AT(b, 0x1152, u16));
+            }
+            break;
+        }
+        case (s32)0x80000004:
+        case (s32)0x80000003:
+        case 0:
+            break;
+        default:
+            player_take_action(b, 0x1134);
+            taken = 1;
+            break;
+        }
+        if (taken) {
+            act_copy(b + 0x1694, b + 0x1134);
+            act_copy(b + 0x1674, b + 0x1694);
+        }
+    }
+    if (AT(b, 0x7B8, u8) >= 4 || (AT(b, 0x8, u32) & 0x100000)) {
+        return;
+    }
+    if ((D_0047E37C & 0x8000) && AT(gCharPlayer, 0xF8, s32) == 0) {
+        AT(b, 0x1154, s32) = 8;
+        AT(b, 0x1158, s32) = 0x1A;
+        AT(b, 0x115C, s32) = 0;
+        player_take_action(b, 0x1154);
+    }
+    if ((D_0047E37C & 0x1000) && !noAct) {
+        VObject *sub = D_0044E988;
+        s32 item = VCALL(sub, 0x14, s32 (*)(VObject *))(sub);
+        s32 n = VCALL(sub, 0x18, s32 (*)(VObject *))(sub);
+
+        if (AT(gCharPlayer, 0xF8, s32) == 0 && item != 0) {
+            AT(b, 0x1194, s32) = 0xE;
+            AT(b, 0x1198, s32) = item;
+            AT(b, 0x119C, s32) = n;
+            player_take_action(b, 0x1194);
+        }
+    }
+    if ((D_0047E37C & 0x800) && AT(gCharPlayer, 0xF8, s32) == 0) {
+        AT(b, 0x11B4, s32) = 0xB;
+        AT(b, 0x11B8, s32) = 0x22;
+        AT(b, 0x11BC, s32) = 0;
+        player_take_action(b, 0x11B4);
+    }
+}

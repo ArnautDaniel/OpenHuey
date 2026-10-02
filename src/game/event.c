@@ -428,3 +428,55 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
     }
     return 1;
 }
+
+
+/* each frame: the characters' running scripts (17 slots at +0x564, each the context a script
+ * runs with: the character (-1: none needed), pc, depth +0x10, frame count +0x14), until one
+ * waits (+0x700). A character that is no longer in a special state (+0xE0 clear, action not 5)
+ * loses its script, and the message it owns (+0x80C) is closed. Then the message window. */
+void func_00209210(VObject *ev) {
+    u8 *e = (u8 *)ev;
+    s32 i;
+
+    AT(e, 0x11F3, u8) = 0;
+    for (i = 0; i < 17; i++) {
+        u8 *s = e + 0x564 + i * 0x18;
+        u8 *c = AT(s, 0x0, u8 *);
+
+        if (c == NULL) {
+            continue;
+        }
+        if (c != (u8 *)-1 && AT(c, 0xE0, u8) == 0 && AT(c, 0x14E8, s32) != 5) {
+            if (AT(e, 0x718, u8) != 0 && AT(e, 0x80C, u8 *) == c) {
+                Task_Close((Task *)(e + 0x708));
+                AT(e, 0x80C, u8 *) = NULL;
+            }
+            AT(s, 0x0, u8 *) = NULL;
+            continue;
+        }
+        AT(s, 0x14, u16)++;
+        AT(e, 0x4, u8 *) = AT(s, 0x4, u8 *);
+        AT(e, 0x8, u8) = AT(s, 0x10, u8);
+        AT(e, 0x6FC, void *) = s;
+        AT(e, 0x700, u8) = 0;
+        while (*AT(e, 0x4, u8 *) != 0xFF) {
+            if (*AT(e, 0x4, u8 *) >= 0xF0) {
+                func_00121730(e);
+            } else {
+                func_00201B90(ev);
+            }
+            if (AT(e, 0x700, u8) != 0) {
+                break;
+            }
+        }
+        if (AT(e, 0x6FC, void *) == NULL) {
+            AT(s, 0x0, u8 *) = NULL;
+            continue;
+        }
+        AT(s, 0x4, u8 *) = AT(e, 0x4, u8 *);
+        AT(s, 0x10, u8) = AT(e, 0x8, u8);
+    }
+    if (AT(e, 0x718, u8) != 0) {
+        Task_Update((Task *)(e + 0x708));
+    }
+}

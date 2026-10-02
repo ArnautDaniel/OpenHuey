@@ -1487,3 +1487,24 @@ void func_002EC940(u8 *o) {
         func_002EBED0(o);
     }
 }
+
+/* the lights +0x34 (each frame): clear +0x940 */
+void func_001FA0D0(u8 *o) {
+    AT(o, 0x940, s32) = 0;
+}
+
+/* clear a character request: { u8 kind, s32 a = -1, s32 b = -1, u16 c = 0xFFFF } */
+void func_002A84A0(u8 *r) {
+    AT(r, 0x0, u8) = 0;
+    AT(r, 0x4, s32) = -1;
+    AT(r, 0x8, s32) = -1;
+    AT(r, 0xC, u16) = 0xFFFF;
+}
+
+/* clear a character's own request: { u8 kind, u16, s16, f32 } */
+void func_002A84E0(u8 *r) {
+    AT(r, 0x0, u8) = 0;
+    AT(r, 0x2, u16) = 0;
+    AT(r, 0x4, u16) = 0;
+    AT(r, 0x8, s32) = 0;
+}

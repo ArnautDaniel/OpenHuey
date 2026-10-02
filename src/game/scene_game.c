@@ -816,3 +816,339 @@ void func_003A0060(Scene *g) {
         ptmf_scall(g, sub);
     }
 }
+
+extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
+extern const PTMF D_0044C800, D_0044C810, D_0044C820, D_0044C830;   /* sub-states: menus */
+extern void *D_0044E558, *D_0044E960;
+extern void *D_0044E958;        /* the movie playing */
+extern s8 D_0047E360;           /* the pad: 0 = not connected */
+extern VObject *D_00456DF0;
+extern void func_002E26C0(void *o, s32 room);
+extern void func_0011FF30(void *rooms, s32 slot);
+extern void func_002E2740(void *o);
+extern void func_00224C20(void *o);
+extern void func_00224C60(void *o);
+extern void func_00224EE0(void *o);
+extern void func_001776F0(Progress *p);
+extern void func_00173670(Progress *p);
+extern void func_00173B60(Progress *p);
+extern void func_001739A0(Progress *p);
+extern void func_00174920(Progress *p);
+extern void func_00174270(Progress *p);
+extern void func_00209210(void *ev);
+extern s32 func_00179170(Progress *p, s32 c);
+extern void func_0031E0D0(void *o);
+extern void func_0031DE10(void *o);
+extern void func_00176440(Progress *p);
+extern void func_001762B0(Progress *p);
+extern void func_00176160(Progress *p);
+extern void func_002E2A60(void *o);
+extern void func_002E29A0(void *o);
+extern void func_0011FEB0(void *rooms);
+extern void func_0011FB20(void *rooms, s32 slot);
+extern void func_00260EC0(void *o);
+extern void func_002A7630(void *o);
+extern void func_002D75C0(void *o);
+extern void func_002D74E0(void *o);
+extern void func_002671F0(void *o);
+extern void func_00267160(void *o);
+extern void func_002D6280(void *o);
+extern void func_002D61E0(void *o);
+extern void func_001269C0(void *c);
+extern void func_0039C880(Scene *g);
+extern void func_0039BB60(Scene *g);
+extern void func_002EF480(void *o, f32);
+extern void func_002F0340(void *o, s32);
+extern void func_002F02F0(void *o);
+extern void func_002F60B0(void *o, s32);
+extern void func_002B6340(void *o);
+
+#define SG_EVENT 0xF6AFB0
+#define SG_CAMDIR 0xF6CBB0
+#define SG_FRAMEFLAGS 0xF6CD24   /* bit 0: room changed, bits 0..3: busy, bits 4..9: event lock */
+
+/* the camera director's +0x6C (its vtable sits at +0x64): an event camera is running */
+static s32 camdir_busy(Scene *g) {
+    u8 *d = (u8 *)g + SG_CAMDIR;
+
+    return ((s32 (*)(u8 *))AT(AT(d, 0x64, u8 *), 0x6C, void *))(d);
+}
+
+static void clamp01(f32 *v) {
+    if (*v < 0.0f) {
+        *v = 0.0f;
+    }
+    if (!(*v <= 1.0f)) {
+        *v = 1.0f;
+    }
+}
+
+/* the gameplay sub-state, each frame. +0x44: 0 play, 1 leaving the room (event phase 4), 2
+ * waiting for the next room: once loaded the characters leave and enter, the camera restarts
+ * (event phases 5, 3). In play: event phases 1 .. 3, the camera, the characters' control;
+ * then the world update (rooms, effects, characters), the fade (+0x1158 += +0x1160), drawing,
+ * and the menus (+0xC sub screen, +6 pause, +4 map) */
+void func_0039EAB0(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    VObject *ev = (VObject *)((u8 *)g + SG_EVENT);
+    u8 *cam = (u8 *)g + SG_CAMDIR;
+    u32 *flags = &AT(g, SG_FRAMEFLAGS, u32);
+    void *rooms = (u8 *)g + 0x73EE80;
+    VObject *loader;
+    s32 menu;
+    s32 i;
+
+    if (AT(g, 0x44, s32) == 0) {
+        func_00120660(rooms, AT(g, 0xF6C1B0, s32) == 0);
+        if ((D_0047E37C >> 3) & 1 || D_0047E360 == 0) {
+            Progress_SetFlag(prog, 6);
+        }
+        *flags &= ~1;
+        func_001776F0(prog);
+        func_00224EE0(cam);
+        VCALL(g, 0xDC, void (*)(Scene *))(g);
+        func_00209390(ev, 1);
+        func_00173670(prog);
+        func_00173B60(prog);
+        func_001739A0(prog);
+        func_00175430(prog);
+        func_00209390(ev, 2);
+        if (!(u8)Progress_TestFlag(prog, 0x12)) {
+            if (AT(g, SG_CONTROL, u8) == 0) {
+                func_00174920(prog);
+            } else {
+                func_00174270(prog);
+            }
+        }
+        if (!((*flags >> 3) & 1)) {
+            func_00209210(ev);
+        }
+        AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
+        if (AT(g, 0x1170, u8) != 0xFF) {
+            u8 *c = gCharacters[AT(g, 0x1170, u8)];
+
+            ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(
+                cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
+        }
+        func_00224C60(cam);
+        func_00209390(ev, 3);
+        if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
+            *flags = (*flags & ~0x3F0) | 0x3F0;
+        } else {
+            *flags &= ~0x3F0;
+        }
+        if ((D_0047E37C & 1) && !(u8)Progress_TestFlag(prog, 5) && AT(gCharPlayer, 0xE0, u8) == 0 &&
+            AT(gCharPlayer, 0x14E8, s32) != 5 && AT(g, 0x7F8, u8) < 4 &&
+            AT(gCharPlayer, 0xF8, s32) == 0 && !Progress_TestFlag(prog, 8) &&
+            !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev)) {
+            AT(g, 0xF87244, u8) = 0;
+            Progress_SetFlag(prog, 4);
+        }
+    } else {
+        if (AT(g, 0x44, s32) == 1) {
+            func_00209390(ev, 4);
+            AT(g, 0x44, s32) = 2;
+        }
+        if (func_00120660(rooms, AT(g, 0xF6C1B0, s32) == 0) ||
+            (u8)VCALL(gFileLoader, 0x38, s32 (*)(VObject *))(gFileLoader) ||
+            VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) == 2) {
+            func_00209390(ev, 3);
+            *flags |= 1;
+        } else {
+            AT(g, 0x44, s32) = 0;
+            func_00209390(ev, 5);
+            for (i = 0; i < 6; i++) {
+                if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
+                    VCALL(gCharacters[i], 0x34, void (*)(void *, s32))(gCharacters[i],
+                                                                      AT(g, 0xF6CD20, u8));
+                    AT(gCharacters[i], 0xEC, s32) = -1;
+                    AT(gCharacters[i], 0xE8, s32) = -1;
+                }
+            }
+            func_002E26C0((u8 *)g + 0x706480, AT(g, 0xF6CD20, u8));
+            AT(g, 0xF6CD20, u8) = 0xFF;
+            VCALL(D_0044E558, 0x5C, void (*)(void *))(D_0044E558);
+            func_0011FF30(rooms, AT(g, 0xF6C1B0, s32));
+            AT(g, 0xF6C1B0, s32) ^= 1;
+            func_0039D310(g);
+            for (i = 0; i < 6; i++) {
+                if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0 &&
+                    AT(gCharacters[i], 0xE2, u8) == 0) {
+                    VCALL(gCharacters[i], 0x38, void (*)(void *))(gCharacters[i]);
+                }
+            }
+            func_002E2650((u8 *)g + 0x706480);
+            VCALL(g, 0xDC, void (*)(Scene *))(g);
+            func_00175430(prog);
+            func_002252B0(cam, AT(g, 0x74881C, s32));
+            func_001792C0(prog, AT(g, 0x1170, u8));
+            for (i = 0; i < 6; i++) {
+                if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
+                    VCALL(gCharacters[i], 0x40, void (*)(void *))(gCharacters[i]);
+                }
+            }
+            func_002E2740((u8 *)g + 0x706480);
+            func_00209390(ev, 3);
+            func_00224C20(cam);
+            *flags |= 1;
+        }
+    }
+
+    /* saving: the scenes get their save callback, the loader is told, and the game waits */
+    if (Progress_TestFlag(prog, 8) && Progress_TestFlag(prog, 0x1C)) {
+        loader = gFileLoader;
+        if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
+            u8 *scenes = D_0044E960;
+
+            for (i = 0; i < 4; i++) {
+                u8 *s = AT(scenes, 4 + i * 4, u8 *);
+
+                if (s != NULL) {
+                    ptmf_set(&AT(s, 4, PTMF), &D_0044C598);
+                    s = AT(scenes, 4 + i * 4, u8 *);
+                    VCALL(s, 0x14, void (*)(void *))(s);
+                }
+            }
+            VCALL(loader, 0x1C, void (*)(VObject *))(loader);
+            AT(D_0044E978, 0x4, s32) = 2;
+            AT(D_0044E978, 0x10, s32) = 1;
+        }
+        return;
+    }
+
+    func_0031E0D0((u8 *)g + 0x1053480);
+    if ((*flags & 0xF) == 0) {
+        func_00224C20(cam);
+    }
+    if ((*flags & 0xF) == 0) {
+        if (((*flags >> 4) & 0x3F) == 0) {
+            func_00176440(prog);
+            func_001762B0(prog);
+        }
+        if (!Progress_TestFlag(prog, 0x17) && !camdir_busy(g)) {
+            func_002E2A60((u8 *)g + 0x706480);
+        }
+        func_0011FEB0(rooms);
+        if (!Progress_TestFlag(prog, 0x17)) {
+            func_00260EC0((u8 *)g + 0xF87248);
+        }
+        func_002A7630((u8 *)g + 0x1004);
+        func_002D75C0((u8 *)g + 0x6FC380);
+        func_002671F0((u8 *)g + 0xF6CD30);
+        func_002D6280((u8 *)g + 0xF6E200);
+        for (i = 0; i < 6; i++) {
+            if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
+                func_001269C0(gCharacters[i]);
+            }
+        }
+    }
+
+    /* the screen fade */
+    AT(g, 0x1158, f32) += AT(g, 0x1160, f32);
+    if (!(AT(g, 0x1158, f32) < 1.0f)) {
+        AT(g, 0x1158, f32) = 1.0f;
+        AT(g, 0x1160, f32) = 0.0f;
+    }
+    if (AT(g, 0x1158, f32) <= 0.0f) {
+        AT(g, 0x1158, f32) = 0.0f;
+        AT(g, 0x1160, f32) = 0.0f;
+    }
+    if (AT(g, 0x1158, f32) != AT(g, 0x115C, f32)) {
+        AT(g, 0x115C, f32) = AT(g, 0x1158, f32);
+        AT(D_0044E980, 0x118, f32) = AT(g, 0x1158, f32);
+        clamp01(&AT(D_0044E980, 0x118, f32));
+        func_002D1FD0(D_0044E980);
+    }
+
+    if (!(u8)Progress_TestFlag(prog, 8)) {
+        func_0011FB20(rooms, AT(g, 0xF6C1B0, s32));
+        if (!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)) {
+            func_00176160(prog);
+        }
+        if ((!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)) && !camdir_busy(g)) {
+            func_002E29A0((u8 *)g + 0x706480);
+        }
+        func_002D74E0((u8 *)g + 0x6FC380);
+        func_0039C880(g);
+        func_00267160((u8 *)g + 0xF6CD30);
+        func_002D61E0((u8 *)g + 0xF6E200);
+        if (!(u8)Progress_TestFlag(prog, 0xF) && !camdir_busy(g)) {
+            if (!(u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0)) {
+                func_002EF480((u8 *)g + 0x7F8, 1.0f);
+            }
+            func_002F0340((u8 *)g + 0x7F8, 0);
+        }
+        if (AT(g, 0xF6C1A3, u8) != 0) {
+            VCALL(ev, 0xB8, void (*)(VObject *, s32))(ev, AT(g, 0xF6C1A1, u8) == 6 ? 0x30 : 0x31);
+        }
+        Task_Draw((Task *)((u8 *)g + 0xF6B6B8));
+        VCALL((u8 *)g + 0xF87240, 0x24, void (*)(void *))((u8 *)g + 0xF87240);
+        func_0031DE10((u8 *)g + 0x1053480);
+    } else if (Progress_TestFlag(prog, 0x28)) {
+        u8 rng[0x80] __attribute__((aligned(16)));
+
+        AT(g, 0x1065040, s32)++;
+        if ((u16)D_0047E37C != 0) {
+            AT(g, 0x1065040, s32)++;
+        }
+        AT(rng, 0x0, void **) = D_00476F40;
+        AT(rng, 0x4, s32) = -1;
+        func_0033E2A0(rng, AT(g, 0x1065040, s32));
+        AT(rng, 0x0, void **) = D_00469D00;
+    }
+
+    /* the menus */
+    menu = 0;
+    if (Progress_TestFlag(prog, 0xC)) {
+        VObject *snd;
+
+        VCALL(D_0044E7A8, 0x10, void (*)(VObject *))(D_0044E7A8);
+        VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
+        ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C800);
+        menu = 1;
+        snd = D_0044E560;
+        VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
+        AT(D_0044E980, 0x120, f32) = 1.0f;
+        clamp01(&AT(D_0044E980, 0x120, f32));
+        func_002D1FD0(D_0044E980);
+        if (D_00456DF0 != NULL) {
+            VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, 1.0f);
+        }
+        if (D_0044E958 != NULL) {
+            AT(D_0044E958, 0x1D4, f32) = 1.0f;
+            clamp01(&AT(D_0044E958, 0x1D4, f32));
+            func_002B6340(D_0044E958);
+        }
+        VCALL(snd, 0x9C, void (*)(VObject *))(snd);
+        VCALL(D_0044E970, 0x8, void (*)(void *, f32, s32, s32, s32))(D_0044E970, 1.0f, 0xFF, 0, 0);
+    }
+    if (!(u8)Progress_TestFlag(prog, 8) && Progress_TestFlag(prog, 6) && !menu) {
+        if (camdir_busy(g) && !(u8)Progress_TestFlag(prog, 0x19)) {
+            if ((*flags & 0xF) == 0 && AT(g, 0x44, s32) == 0 &&
+                !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && D_0044E958 != NULL) {
+                VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+                func_002F60B0((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
+                func_002F02F0((u8 *)g + 0x7F8);
+                menu = 1;
+                ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C810);
+            }
+        } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && D_0044E958 == NULL &&
+                   !(u8)Progress_TestFlag(prog, 0x19)) {
+            VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+            func_002F60B0((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
+            func_002F02F0((u8 *)g + 0x7F8);
+            menu = 1;
+            ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C820);
+        }
+    }
+    if (Progress_TestFlag(prog, 4) && !menu) {
+        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+        ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C830);
+    }
+    Progress_ClearFlag(prog, 0xC);
+    Progress_ClearFlag(prog, 6);
+    Progress_ClearFlag(prog, 4);
+    if (!camdir_busy(g)) {
+        func_0039BB60(g);
+    }
+}

@@ -1582,10 +1582,15 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
 PRE_BYTES: list[tuple[int, int, bytes]] = []   # (arg reg or 0 for absolute, offset, bytes)
 REL_BASE = -(1 << 40)   # lo = REL_BASE - register: the value is that argument + hi
 PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
+SAVED_PRE: list[tuple[int, int]] = []   # (callee-saved reg, value): the caller's leftover value
 
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    sv = re.fullmatch(r"s([0-7])=(-?\w+)", spec)
+    if sv:  # the caller's value of a callee-saved register (an original that reads one it never set)
+        SAVED_PRE.append((16 + int(sv.group(1)), int(sv.group(2), 0) & M64))
+        return None
     b = re.fullmatch(r"(?:a([0-7])\+|@)(0x[0-9A-Fa-f]+|\d+)=bytes:((?:[0-9A-Fa-f]{2}|\?\?)+)", spec)
     if b:  # exact bytes (e.g. a script for a byte-code interpreter): a0+0x100=bytes:41421700
         # "??": a random byte (per run)
@@ -1643,6 +1648,8 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
     for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:
         if r not in (28, 29, 31):
             c.s(r, random.Random(seed * 31 + r).getrandbits(64))
+    for r, v in SAVED_PRE:
+        c.s(r, v)
     c.s(28, 0x004828F0)       # gp
     c.s(29, STACK_TOP)        # sp
     c.s(31, RET_MAGIC)        # ra
@@ -1781,6 +1788,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     ret_kind = return_kind(src, func) if opts.ret == "auto" else opts.ret
     runs = opts.runs if opts.runs is not None else DEFAULT_RUNS
     PRE_BYTES.clear()
+    SAVED_PRE.clear()
     PRECONDITIONS[:] = [x for x in (parse_pre(p) for p in opts.pre) if x is not None]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob

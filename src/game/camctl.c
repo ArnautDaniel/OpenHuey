@@ -325,3 +325,110 @@ void func_00219CD0(u8 *d, f32 *out, f32 t) {
     out[2] = func_0025F580(d + 8, 2, u);
     out[3] = 1.0f;
 }
+
+extern f32 func_00219530(u8 *d, f32 t, f32 u);
+
+/* each frame (not while an event drives it, +0xF4 / +0x69): the view angle +0x80 eases in over
+ * 60 frames (+0x90) and back out after a cut (+0x8C counts down; 0x80: settled); the camera
+ * follows the current setup (+0x70) along its path (+0xB0: from the player's nearest point),
+ * else a setup is chosen */
+void func_00224EE0(u8 *d) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 fovDeg, limDeg, deg;
+    u8 cut = AT(d, 0x8C, u8);
+
+    if (AT(d, 0xF4, u8) == 1 || AT(d, 0x69, u8) != 0) {
+        return;
+    }
+    if (!(cut & 0x80)) {
+        if (cut != 0) {
+            AT(d, 0x8C, u8) = cut - 1;
+            limDeg = 180.0f * AT(d, 0x88, f32) / kPi.f;
+            fovDeg = 180.0f * AT(d, 0x84, f32) / kPi.f;
+            deg = fovDeg - (1.0f + func_0031C058(0.0f)) * limDeg;
+        } else if (AT(d, 0x90, u32) < 60) {
+            AT(d, 0x90, u32)++;
+            limDeg = 180.0f * AT(d, 0x88, f32) / kPi.f;
+            fovDeg = 180.0f * AT(d, 0x84, f32) / kPi.f;
+            deg = fovDeg - (1.0f + func_0031C058(kPi.f * (f32)AT(d, 0x90, u32) / 60.0f)) * limDeg;
+        } else {
+            AT(d, 0x8C, u8) = 0x80;
+            deg = 180.0f * AT(d, 0x84, f32) / kPi.f;
+        }
+        AT(d, 0x80, f32) = kPi.f * deg / 180.0f;
+    }
+    if (AT(d, 0x70, s32) == -1) {
+        func_002243D0(d, 10);
+    } else {
+        VObject *cam;
+        f32 v[3];
+
+        if (AT(d, 0xB0, s32) != 0) {
+            func_0025F6A0(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+        }
+        func_00219D70(d, v, 0.0f);
+        cam = D_0044E4B8;
+        VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+        func_00219CD0(d, v, 0.0f);
+        VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+    }
+}
+
+
+/* move along the camera path from time `from` (below 1: the current time +0x8) towards `to`,
+ * by the distance the look-at point (components 3..5) covers between them, measured in steps
+ * of +0x0 and scaled by +0x50 / +0x24; clamped to `to` and the path's range +0x14..+0x18 */
+f32 func_00219530(u8 *d, f32 to, f32 from) {
+    f32 pts[2][4];
+    f32 dir, t, end, len = 0.0f, res;
+    s32 cur = 1;
+
+    if (from < 1.0f) {
+        from = AT(d, 0x8, f32);
+    }
+    res = from;
+    if (!(from <= to)) {
+        dir = -1.0f;
+        end = from;
+        t = to;
+    } else {
+        dir = 1.0f;
+        t = from;
+        end = to;
+    }
+    pts[0][0] = func_0025F580(d + 8, 3, t);
+    pts[0][1] = func_0025F580(d + 8, 4, t);
+    pts[0][2] = func_0025F580(d + 8, 5, t);
+    t += AT(d, 0x0, f32);
+    while (t < end) {
+        f32 *p = pts[cur & 1];
+        f32 dx, dy, dz;
+
+        p[0] = func_0025F580(d + 8, 3, t);
+        p[1] = func_0025F580(d + 8, 4, t);
+        p[2] = func_0025F580(d + 8, 5, t);
+        cur ^= 1;
+        dy = pts[0][1] - pts[1][1];
+        dx = pts[0][0] - pts[1][0];
+        dz = pts[0][2] - pts[1][2];
+        t += AT(d, 0x0, f32);
+        len += __builtin_sqrtf(dy * dy + dx * dx + dz * dz);
+    }
+    if (dir != 0.0f) {
+        res = res + AT(d, 0x50, f32) * (dir * (len / AT(d, 0x24, f32)));
+        if (dir <= 0.0f) {
+            if (res < to) {
+                res = to;
+            }
+        } else if (!(res <= to)) {
+            res = to;
+        }
+    }
+    if (res <= (f32)AT(d, 0x14, s32)) {
+        res = (f32)AT(d, 0x14, s32);
+    }
+    if (!(res < (f32)AT(d, 0x18, s32))) {
+        res = (f32)AT(d, 0x18, s32);
+    }
+    return res;
+}
