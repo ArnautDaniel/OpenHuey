@@ -1179,7 +1179,6 @@ src/leaf/b6_0034DC60.c func_0034E960
 src/leaf/b6_0034DC60.c func_00350750
 src/leaf/b6_0034DC60.c func_00350770
 src/leaf/b6_0034DC60.c func_00350790
-src/leaf/b6_0034DC60.c func_00350910
 src/leaf/b6_0034DC60.c func_00350C40
 src/leaf/b6_0034DC60.c func_00350ED0
 src/leaf/b6_0034DC60.c func_00350EE0
@@ -2461,3 +2460,10 @@ src/game/props.c func_00322430 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0
 src/game/scene_game_members.c func_002D6090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..0x402 --pre=a0+0x18034=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --runs=40
 src/game/props.c func_00321D20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --pre=a0+0x8F4=0..1 --stub-fret=0.5 --stub-fret=0.25
 src/game/props.c func_003219A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --pre=a0+0x8F4=0..1 --pre=a1=0..15 --pre=a0+0x650=0x40000000..0x43000000 --pre=a0+0x654=0x40000000..0x43000000 --pre=a0+0x658=0x40000000..0x43000000 --stub-fret=0.5 --stub-fret=0.25 --stub-fret=0.9
+src/game/room_handlers.c func_002B11D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E578=0x0B000000..0x0B000000 --pre=@0x0B010000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0x0B300000 --pre=@0x0B300000=0x0046BF20..0x0046BF20 --runs=30
+src/game/props.c func_00350A10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-fret=0.5 --stub-fret=0.1 --stub-fret=0.9
+src/game/props.c func_003507B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a0+4=0x3F000000..0x40800000 --pre=a0+8=0x3F000000..0x40800000 --pre=a0+0xC=0xBF000000..0xC0800000
+src/game/props.c func_00350910 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a0+4=0x3F000000..0x40800000 --pre=a0+8=0x3F000000..0x40800000 --pre=a0+0xC=0xBF000000..0xC0800000
+src/game/props.c func_00350810 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a0+4=0x3F000000..0x40800000 --pre=a0+8=0x3F000000..0x40800000 --pre=a0+0xC=0xBF000000..0xC0800000
+src/game/props.c func_00350860 --pre=a0=0x0B000000..0x0B000000
+src/game/props.c func_00350660 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x44E4F0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AC50..0x0046AC50

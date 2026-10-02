@@ -38,3 +38,18 @@ s32 func_002B12D0(VObject *room) {
     func_002D6090(mgr, slot, pos);
     return 1;
 }
+
+extern void *D_00478BC0[];
+
+static void obj_478BC0_init(void **obj) {
+    obj[0] = D_00478BC0;
+}
+
+/* room 0x2A callback: spawn a D_00478BC0 object with the command's string */
+s32 func_002B11D0(VObject *room, u8 *c, const u8 *cmd) {
+    u8 *mgr = D_0044E578;
+    s32 slot = Effect_New(mgr, 0x14, obj_478BC0_init);
+
+    func_002D6090(mgr, slot, (void *)(cmd + 3));
+    return 1;
+}
