@@ -1332,3 +1332,100 @@ s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
     sceVu0SubVector(diff, (f32 *)pos, (f32 *)(e + 0x20));
     return !(sceVu0InnerProduct(dir, diff) < 0.0f);
 }
+
+extern VObject *D_00456DF0;
+extern u8 *D_0044E958;
+extern u8 *D_0044E980;   /* the BGM player */
+extern VObject *D_0044E560;   /* the sound driver */
+extern void func_002EF9E0(void *o);
+extern void func_002D1FD0(void);
+extern void func_002B6340(void);
+
+static f32 clamp01(f32 v) {
+    if (v < 0.0f) {
+        v = 0.0f;
+    }
+    return v <= 1.0f ? v : 1.0f;
+}
+
+/* SceneGame +0xA20 per frame: a timed heal (+0x0 for +0x4 frames), a timed reset of +0x8, the
+ * volume fade (+0x10: in / out over 30 frames of +0x18, +0x14 left) passed to the sound, the
+ * menus and the movie player, a timed heart-rate setting (+0x1C for +0x20 frames) and two more
+ * timers */
+void func_002A7720(u8 *o) {
+    f32 old;
+
+    if (AT(o, 0x4, s32) > 0) {
+        AT(o, 0x4, s32)--;
+        if (!(AT(o, 0x0, f32) < 0.0f)) {
+            func_002EF9E0((u8 *)gProgress + 0x7B8);
+        } else {
+            f32 x = AT(o, 0x0, f32);
+
+            if (x <= 0.0f) {
+                x = -x;
+            }
+            if (!(x < 0.0f)) {
+                AT(gProgress, 0x7E4, f32) = AT(gProgress, 0x7E4, f32) + x;
+            }
+        }
+    }
+    if (AT(o, 0xC, s32) > 0) {
+        AT(o, 0xC, s32)--;
+        if (AT(o, 0xC, s32) <= 0) {
+            AT(o, 0x8, f32) = 1.0f;
+        }
+    }
+    old = AT(o, 0x10, f32);
+    if (AT(o, 0x14, s32) != 0) {
+        s32 left = AT(o, 0x14, s32);
+        s32 total = AT(o, 0x18, s32);
+
+        AT(o, 0x10, f32) = 0.0f;
+        if (!(left < total - 30)) {
+            AT(o, 0x10, f32) = 1.0f - (f32)(total - left) / 30.0f;
+        } else if (left < 31) {
+            AT(o, 0x10, f32) = 1.0f - (f32)left / 30.0f;
+        }
+        AT(o, 0x10, f32) = clamp01(AT(o, 0x10, f32));
+        AT(o, 0x14, s32)--;
+    } else {
+        AT(o, 0x10, f32) = 1.0f;   /* no fade: full volume */
+    }
+    if (old != AT(o, 0x10, f32)) {
+        VCALL(D_0044E560, 0xAC, void (*)(VObject *, f32))(D_0044E560, AT(o, 0x10, f32));
+        AT(D_0044E980, 0x120, f32) = clamp01(AT(o, 0x10, f32));
+        func_002D1FD0();
+        if (D_00456DF0 != NULL) {
+            VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, AT(o, 0x10, f32));
+        }
+        if (D_0044E958 != NULL) {
+            AT(D_0044E958, 0x1D4, f32) = clamp01(AT(o, 0x10, f32));
+            func_002B6340();
+        }
+    }
+    if (AT(o, 0x20, s32) != 0) {
+        AT(o, 0x20, s32)--;
+        if (gCharPlayer != NULL) {
+            f32 v = AT(o, 0x1C, f32);   /* her heart rate */
+
+            if (v < 0.0f) {
+                v = 0.0f;
+            } else if (!(v <= 100.0f)) {
+                v = 100.0f;
+            }
+            AT(gCharPlayer, 0x1AD5F4, f32) = v;
+        }
+    }
+    if (AT(o, 0x28, s32) != 0) {
+        AT(o, 0x28, s32)--;
+    } else {
+        AT(o, 0x24, f32) = 1.0f;
+    }
+    if (AT(o, 0x2C, s32) != 0) {
+        AT(o, 0x2C, s32)--;
+    }
+    if (AT(o, 0x30, s32) != 0) {
+        AT(o, 0x30, s32)--;
+    }
+}
