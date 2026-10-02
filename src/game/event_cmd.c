@@ -35,7 +35,7 @@ extern VObject *D_0044E4F0;   /* the renderer */
 extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
 extern s32 func_001F4770(u8 *model, s32, s32, s32);
 extern void func_001267F0(u8 *c, s32 n);
-extern void func_00266C70(u8 *fx, s32 n, void *arg);
+extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);

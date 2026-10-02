@@ -1215,3 +1215,59 @@ s32 func_00221DA0(VObject *doors, u8 exit) {
     }
     return AT(tbl, exit * 4, s32) != 0;
 }
+
+/* the doors +0x84: set or clear bit (a + 1 + b) in each present door's bits (+0x120) */
+void func_00221FD0(VObject *doors, s32 set, u8 a, s32 b) {
+    u32 bit = (u32)(a + 1) + b;
+    u32 mask = 1 << (bit & 0x1F);
+    u8 *base = (u8 *)doors + (bit >> 5) * 4;
+    u8 i;
+
+    for (i = 0; i < 8; i++) {
+        u8 *tbl = AT(doors, 0x4, u8 *);
+
+        if (tbl == NULL || AT(tbl, i * 4, s32) == 0) {
+            continue;
+        }
+        if (set) {
+            AT(base + i * 0x210, 0x120, u32) |= mask;
+        } else {
+            AT(base + i * 0x210, 0x120, u32) &= ~mask;
+        }
+    }
+}
+
+/* SceneGame +0xF6CD30: pass `arg` to effect slot n (+0x1438[n], its +0x18); 0: none */
+s32 func_00266C70(u8 *o, s32 n, void *arg) {
+    VObject *e;
+
+    if (n >= 0x20) {
+        return 0;
+    }
+    e = AT(o, 0x1438 + n * 4, VObject *);
+    if (e == NULL) {
+        return 0;
+    }
+    VCALL(e, 0x18, void (*)(VObject *, void *))(e, arg);
+    return 1;
+}
+
+/* placement new (the effect manager's copy) */
+void *func_002D63C0(u32 size, void *place) {
+    return place;
+}
+
+/* the effect manager: start the object in slot `slot` with `params` (its +0x18); 0: no object */
+s32 func_002D6090(u8 *mgr, s32 slot, void *params) {
+    VObject *o;
+
+    if (slot < 0 || (u32)slot >= 0x400) {
+        return 0;
+    }
+    o = AT(mgr, 0x18034 + slot * 4, VObject *);
+    if (o == NULL) {
+        return 0;
+    }
+    VCALL(o, 0x18, void (*)(VObject *, void *))(o, params);
+    return 1;
+}

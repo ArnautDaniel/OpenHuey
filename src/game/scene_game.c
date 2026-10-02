@@ -724,3 +724,15 @@ void func_0039D310(Scene *g) {
 s32 func_0039D2E0(Scene *g) {
     return AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32);
 }
+
+/* (Progress +0x68) set or clear bit (a + 1 + b) of the bits at +0x73EEEC */
+void func_0039BAE0(Scene *g, s32 set, u8 a, s32 b) {
+    u32 bit = (u32)(a + 1) + b;
+    u32 *w = &AT(g, 0x73EEEC + (bit >> 5) * 4, u32);
+
+    if (set) {
+        *w |= 1 << (bit & 0x1F);
+    } else {
+        *w &= ~(1 << (bit & 0x1F));
+    }
+}

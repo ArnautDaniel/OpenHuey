@@ -1506,17 +1506,11 @@ void func_00127660(Character *c) {
     c->heardSlot = 0xFF;
 }
 
-/* Effect manager (D_0044E578): a heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
- * effect slots at +0x18034; func_002D6090 starts the effect in a slot with its parameters. */
-extern u8 *D_0044E578;
-extern void *func_002D63C0(u32 size, void *mem);            /* placement new */
-extern void func_002D6090(u8 *mgr, s32 slot, void *params);
+#include "effectmgr.h"
+
 extern void *D_00479AE0[];   /* ripple effect vtable */
 extern void *D_00479AA0[];   /* splash particle effect vtable */
 
-#define EFFECT_HEAP(mgr) ((VObject *)((mgr) + 0x10000))
-#define EFFECT_SLOTS(mgr) ((void ***)((mgr) + 0x18034))
-#define EFFECT_NUM_SLOTS 0x400
 
 typedef struct RippleParams {
     f32 pos[4] __attribute__((aligned(16)));
@@ -1530,30 +1524,6 @@ typedef struct SplashParams {
     s32 count;
     f32 v[10];
 } SplashParams;
-
-/* Construct an effect of `size` bytes in a free slot (`init` sets its vtables); -1 if the heap
- * or the slot table is full. */
-static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
-    void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), size);
-    s32 i;
-
-    if (mem == NULL) {
-        return -1;
-    }
-    for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
-        if (EFFECT_SLOTS(mgr)[i] == NULL) {
-            void **obj = func_002D63C0(size, mem);
-
-            if (obj != NULL) {
-                init(obj);
-            }
-            EFFECT_SLOTS(mgr)[i] = obj;
-            VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
-            return i;
-        }
-    }
-    return -1;
-}
 
 static inline void Ripple_Init(void **obj) {
     obj[0] = D_00479AE0;

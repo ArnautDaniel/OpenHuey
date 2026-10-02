@@ -4,7 +4,9 @@
 #   tools/native_next.sh               FRAMES=n (default 1500), ROOM=hex, DUMP=dir, ASM=lines
 cd "$(dirname "$0")/.."
 cmake --build build/native/cmake -j4 2>&1 | grep -E "error|warning: [^m]" | head
-out=$(HG_NOPARTNER=1 HG_ROOM=${ROOM:-2A} HG_HEADLESS=1 HG_MAXFRAMES=${FRAMES:-1500} HG_DUMP=${DUMP:-} \
+# ROOM=menu: through the title menu (New Game, Cross pressed every 2 s) instead of HG_ROOM
+if [ "${ROOM:-2A}" = menu ]; then export HG_AUTOCROSS=1; else export HG_ROOM=${ROOM:-2A}; fi
+out=$(HG_NOPARTNER=1 HG_HEADLESS=1 HG_MAXFRAMES=${FRAMES:-1500} HG_DUMP=${DUMP:-} \
       timeout 300 build/native/cmake/hg 2>&1 | grep -v "crifs\|iop:")
 echo "$out" | grep "^event:" | head -20
 echo "$out" | grep -A5 "undecompiled\|Segmentation\|runaway\|vu1:" | head -8
