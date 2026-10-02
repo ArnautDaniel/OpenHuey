@@ -1618,3 +1618,22 @@ void func_0011FEB0(u8 *rm) {
     VCALL(rm + 0x6740, 0x28, void (*)(void *))(rm + 0x6740);
     AT(rm, 0x8B, u8) = VCALL(gProgress, 0x54, s32 (*)(void *))(gProgress);
 }
+
+
+extern void func_00221300(u8 *door);
+
+/* the doors, each frame: each of the 8 with a definition (+0x4 table) updates */
+void func_00223A90(u8 *doors) {
+    u32 k;
+
+    if (AT(doors, 0x4, void **) == NULL) {
+        return;
+    }
+    for (k = 0; k < 8; k++) {
+        void **tbl = AT(doors, 0x4, void **);
+
+        if (tbl != NULL && tbl[k] != NULL) {
+            func_00221300(doors + 0x10 + k * 0x210);
+        }
+    }
+}
