@@ -220,3 +220,72 @@ void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
     d->p.rgba = p->rgba;
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, ModelDraw *, s32, s32))(D_0044E4F0, d, 0x19, 0);
 }
+
+
+extern VObject *D_0044E550;   /* random numbers: +0x10 an integer */
+
+/* +0x10 each frame (returns 0 once every particle has left): 16 particles, double-buffered
+ * (+0x10, 0x300 per buffer, 0x30 each), drift by their velocity (+0x820) plus a wind
+ * (+0x8E0..) whose phase (+0x8F0) changes at random; they spin (+0x660 by +0x760 degrees),
+ * count frames up to +0x643, and respawn once past x = 300 */
+s32 func_00321FE0(u8 *o) {
+    static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
+        kTwoPi = {0x40C90FDB};
+    s32 i, k;
+
+    if (AT(o, 0x8F8, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x8F8, u8) = 1;
+    AT(o, 0x8F4, s32) ^= 1;
+    if (--AT(o, 0x8EC, s32) == 0) {
+        AT(o, 0x8EC, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0x3F;
+        AT(o, 0x8F0, s32) = (AT(o, 0x8F0, s32) + 1) & 3;
+    }
+    if (AT(o, 0x8F0, s32) == 1) {
+        AT(o, 0x8E0, f32) = AT(o, 0x8E0, f32) - k0005.f;
+        if (AT(o, 0x8E0, f32) < -k005.f) {
+            AT(o, 0x8E0, f32) = -k005.f;
+        }
+        AT(o, 0x8E4, f32) = 0.0f;
+    } else if (AT(o, 0x8F0, s32) == 3) {
+        AT(o, 0x8E0, f32) = AT(o, 0x8E0, f32) + k0005.f;
+        if (!(AT(o, 0x8E0, f32) <= k005.f)) {
+            AT(o, 0x8E0, f32) = k005.f;
+        }
+        AT(o, 0x8E4, u32) = 0xBCF5C28F;   /* -0.03f */
+    }
+    for (i = 0; i < 16; i++) {
+        u32 buf = AT(o, 0x8F4, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x300 + i * 0x30, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0x300 + i * 0x30, u32);
+        u8 *p;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = o + 0x10 + AT(o, 0x8F4, s32) * 0x300 + i * 0x30;
+        AT(p, 0x10, f32) = AT(p, 0x10, f32) + (AT(o, 0x820 + i * 0xC, f32) + AT(o, 0x8E0, f32));
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + (AT(o, 0x824 + i * 0xC, f32) + AT(o, 0x8E4, f32));
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + (AT(o, 0x828 + i * 0xC, f32) + AT(o, 0x8E8, f32));
+        if (!(AT(p, 0x10, f32) < 300.0f)) {
+            func_003219A0(o, i);
+            continue;
+        }
+        AT(o, 0x8F8, u8) = 0;
+        for (k = 0; k < 3; k++) {
+            f32 *a = &AT(o, 0x660 + i * 0x10 + k * 4, f32);
+
+            *a = *a + kPi.f * AT(o, 0x760 + i * 0xC + k * 4, f32) / 180.0f;
+            if (!(*a <= kPi.f)) {
+                *a = *a - kTwoPi.f;
+            } else if (*a < -kPi.f) {
+                *a = *a + kTwoPi.f;
+            }
+        }
+        if (++AT(p, 0x2C, s32) >= AT(o, 0x643, s8)) {
+            AT(p, 0x2C, s32) = 0;
+        }
+    }
+    return 1;
+}
