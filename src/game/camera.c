@@ -358,3 +358,67 @@ void func_001225F0(Camera *c, f32 (*out)[4]) {
     sceVu0ApplyMatrix(c->unk80, rot, s);
     sceVu0CameraMatrix(out, c->unk60, c->unk70, c->unk80);
 }
+
+/* The room's camera presets (PAC section 5): 0x20-byte entries {eye x, y, z, view angle in
+ * degrees (0: 60), target x, y, z, w}; the list ends with x = -1 as an int. */
+static const union { u32 u; f32 f; } sFov60 = {0x3F860A92};   /* 60 degrees */
+
+/* +0x84 preset `n` into `out` and note it as the current one (+0x2A0); `out` keeps the
+ * defaults if there is no such preset */
+void func_00121D90(Camera *c, u32 n, CameraSet *out) {
+    static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB};
+    s32 *e;
+    u32 i;
+
+    if (out == NULL) {
+        return;
+    }
+    out->eye[0] = 0.0f;
+    out->eye[1] = 30.0f;
+    out->eye[2] = 150.0f;
+    out->eye[3] = 1.0f;
+    out->fov = sFov60.f;
+    out->target[0] = 0.0f;
+    out->target[1] = 0.0f;
+    out->target[2] = 0.0f;
+    out->target[3] = 1.0f;
+    if (n >= VCALL(c, 0x80, u32 (*)(Camera *))(c)) {
+        return;
+    }
+    e = c->path;
+    if (e == NULL) {
+        return;
+    }
+    for (i = 0; e[0] != -1; i++, e += 8) {
+        f32 *f = (f32 *)e;
+
+        if (i != n) {
+            continue;
+        }
+        out->unk24 = n;
+        out->eye[0] = f[0];
+        out->eye[1] = f[1];
+        out->eye[2] = f[2];
+        if (f[3] == 0.0f) {
+            out->fov = sFov60.f;
+        } else {
+            out->fov = k2Pi.f * f[3] / 360.0f;
+        }
+        out->target[0] = f[4];
+        out->target[1] = f[5];
+        out->target[2] = f[6];
+        out->target[3] = f[7];
+        AT(c, 0x2A0, f32) = out->eye[0];
+        AT(c, 0x2A4, f32) = out->eye[1];
+        AT(c, 0x2A8, f32) = out->eye[2];
+        AT(c, 0x2AC, f32) = out->eye[3];
+        AT(c, 0x2B0, f32) = out->target[0];
+        AT(c, 0x2B4, f32) = out->target[1];
+        AT(c, 0x2B8, f32) = out->target[2];
+        AT(c, 0x2BC, f32) = out->target[3];
+        AT(c, 0x2C0, f32) = out->fov;
+        AT(c, 0x2C4, s32) = out->unk24;
+        return;
+    }
+}
+
