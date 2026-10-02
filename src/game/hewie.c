@@ -351,3 +351,51 @@ void func_0015FC60(Hewie *h) {
         }
     }
 }
+
+/* His state in the save data (gProgress +0x800..0x838). */
+#define PSAVE(p, off, type) (*(type *)((u8 *)(p) + (off)))
+#define HEWIE_SAVE_FIELDS(X)                                                         \
+    X(0x81C, 0xF35BC, s16) X(0x81E, 0xF3674, s16) X(0x820, 0xF3676, s16)             \
+    X(0x824, 0xF367A, s16) X(0x822, 0xF3678, s16) X(0x826, 0xF367C, s16)             \
+    X(0x828, 0xF367E, s16) X(0x82C, 0xF3682, s16) X(0x82A, 0xF3680, s16)             \
+    X(0x82E, 0xF3583, u8) X(0x830, 0xF35BE, s16)                                     \
+    X(0x832, 0xF3690, s8) X(0x833, 0xF3691, s8) X(0x834, 0xF3692, s8)                \
+    X(0x835, 0xF3693, s8) X(0x836, 0xF3694, s8) X(0x837, 0xF3695, s8)
+
+/* vtable +0x70: restore his state from the save data. */
+void func_001656C0(Hewie *h) {
+    Progress *p = gProgress;
+    f32 yaw;
+
+    h->c.a.room = PSAVE(p, 0x800, s32);
+    HEWIE_SIDE(h) = PSAVE(p, 0x804, s32);
+    h->c.a.navTri = PSAVE(p, 0x808, s32);
+    h->c.a.unkC4 = PSAVE(p, 0x80C, s32);
+    HEWIE_HP(h) = PSAVE(p, 0x814, s32);
+    HW(h, 0xF35C0, s32) = PSAVE(p, 0x818, s32);
+#define RESTORE(po, ho, type) HW(h, ho, type) = PSAVE(p, po, type);
+    HEWIE_SAVE_FIELDS(RESTORE)
+#undef RESTORE
+    h->c.door = PSAVE(p, 0x838, u8);
+    yaw = PSAVE(p, 0x810, f32);
+    h->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix(h->c.a.rot);
+    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
+}
+
+/* vtable +0x6C: store his state in the save data. */
+void func_00165890(Hewie *h) {
+    Progress *p = gProgress;
+
+    PSAVE(p, 0x800, s32) = h->c.a.room;
+    PSAVE(p, 0x804, s32) = HEWIE_SIDE(h);
+    PSAVE(p, 0x808, s32) = h->c.a.navTri;
+    PSAVE(p, 0x80C, s32) = h->c.a.unkC4;
+    PSAVE(p, 0x810, f32) = h->c.a.angle[1];
+    PSAVE(p, 0x814, s32) = HEWIE_HP(h);
+    PSAVE(p, 0x818, s32) = HW(h, 0xF35C0, s32);
+#define SAVE(po, ho, type) PSAVE(p, po, type) = HW(h, ho, type);
+    HEWIE_SAVE_FIELDS(SAVE)
+#undef SAVE
+    PSAVE(p, 0x838, u8) = h->c.door;
+}
