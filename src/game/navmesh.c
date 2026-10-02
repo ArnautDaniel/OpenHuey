@@ -310,3 +310,81 @@ s32 func_0017AE80(NavTri *t, f32 *from, f32 *to) {
     }
     return inside == tested ? 3 : 4;
 }
+
+
+extern s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to);
+
+/* vtable +0x24: as +0x20 (the edge of triangle `i` the step from -> to leaves by), also
+ * giving where it crosses (`hit`); 4 for no such triangle */
+s32 func_0017C6F0(NavMesh *nm, u32 i, f32 *hit, f32 *from, f32 *to) {
+    if (i < nm->numTris && nm->tris != NULL) {
+        return func_0017ABB0(&nm->tris[i], hit, from, to);
+    }
+    return 4;
+}
+
+/* as func_0017AE80 (the edge of triangle `t` the step from -> to leaves by; 3 inside, 4
+ * outside crossing nothing), also giving the crossing point `hit` with its height on the
+ * triangle's plane */
+s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to) {
+    f32 x2 = to[0], z2 = to[2];
+    u32 inside = 0, tested = 0;
+    u32 e;
+
+    for (e = 0; e < 3; e++) {
+        f32 *a = t->v[e];
+        f32 *b = t->v[e < 2 ? e + 1 : 0];
+        f32 ax = a[0], az = a[2];
+        f32 ez = b[2] - az;
+        f32 ex = b[0] - ax;
+        f32 x1, z1, p, q, dx, dz, den, s, u;
+
+        tested |= 1 << e;
+        if (!((x2 - ax) * ez - (z2 - az) * ex < 0.0f)) {
+            inside |= 1 << e;
+            continue;
+        }
+        x1 = from[0];
+        z1 = from[2];
+        q = (z1 - az) * ex;
+        p = (x1 - ax) * ez;
+        if (p - q < 0.0f) {
+            continue;
+        }
+        dx = x2 - x1;
+        dz = z2 - z1;
+        den = dx * ez - dz * ex;
+        if (den == 0.0f) {
+            continue;
+        }
+        s = (q - p) / den;
+        if (s < 0.0f || !(s <= 1.0f)) {
+            continue;
+        }
+        if ((ex <= 0.0f ? -ex : ex) <= (ez <= 0.0f ? -ez : ez)) {
+            u = (z1 + s * dz - az) / ez;
+        } else {
+            u = (x1 + s * dx - ax) / ex;
+        }
+        if (u < 0.0f || !(u <= 1.0f)) {
+            continue;
+        }
+        sceVu0SubVector(hit, to, from);
+        func_0010E640(hit, hit, s);
+        sceVu0AddVector(hit, from, hit);
+        {
+            f32 *v0 = t->v[0], *v1 = t->v[1], *v2 = t->v[2];
+            f32 e2x = v2[0] - v0[0], e2y = v2[1] - v0[1], e1y = v1[1] - v0[1], e1x = v1[0] - v0[0];
+            f32 e1z = v1[2] - v0[2], hx = hit[0] - v0[0], e2z = v2[2] - v0[2], hz = hit[2] - v0[2];
+            f32 nx = e1y * e2z - e2y * e1z;
+            f32 nz = e1x * e2y - e2x * e1y;
+            f32 dot = hz * nz + hx * nx;
+            f32 ny = e1z * e2x - e2z * e1x;
+
+            hit[1] = v0[1] - dot / ny;
+            AT(hit, 0xC, u32) = 0x3F800000;   /* 1.0 */
+        }
+        return e;
+    }
+    return inside == tested ? 3 : 4;
+}
