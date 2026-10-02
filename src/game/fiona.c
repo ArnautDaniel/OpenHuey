@@ -2028,3 +2028,143 @@ void func_0019F8A0(Fiona *f) {
     }
     f->c.unkF4 = 0;
 }
+
+extern void func_002A8440(void *events, s32 level, s32 room, u32 tri, s32 exitId);   /* make a noise */
+extern void func_001F6E10(void *motion);
+
+#define THREAT_LEVEL(p) (*((u8 *)(p) + 0x7B8))     /* 0..4 */
+#define FIONA_FEAR(f) FI(f, 0x1AD5F4, f32)        /* 0..100 */
+
+static inline void Fiona_FearDown(Fiona *f, Progress *p) {
+    func_00181010(f, (func_00177620(p) & 0xFF) == 2 ? -0x1.99999ap-4f /* -0.1 */ : -0x1.333334p-3f /* -0.15 */);
+}
+
+/* Full panic (threat 4): long panic, a scream (noise event 0x6F at her position). */
+static inline void Fiona_FullPanic(Fiona *f, Progress *p) {
+    FI(f, 0x1AD584, s32) |= 2;
+    FI(f, 0x1AD5E8, s32) = (s32)(3.0f * RNG01()) * 30 + 120;
+    FI(f, 0x1AD5EC, s32) = 30;
+    func_002A8440((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+}
+
+/* Panic system: threat level -> panic state and duration, the fear meter, timers, and the
+ * area fade / pursuer grab (as in func_001A1CA0). */
+void func_001A1FD0(Fiona *f) {
+    Progress *p = gProgress;
+    s32 flags;
+    u8 threat;
+
+    f->c.a.unkC4 = 0;
+    flags = FI(f, 0x1AD584, s32);
+    threat = THREAT_LEVEL(p);
+    if (!(flags & 1)) {
+        if (threat >= 2) {
+            FI(f, 0x1AD584, s32) |= 1;
+            if (threat == 4) {
+                Fiona_FullPanic(f, p);
+            } else if (threat == 3) {
+                FI(f, 0x1AD5E8, s32) = (s32)(4.0f * RNG01()) * 30 + 150;
+            } else if (threat == 2) {
+                FI(f, 0x1AD5E8, s32) = (s32)(5.0f * RNG01()) * 30 + 240;
+            }
+        }
+    } else if (threat < 4) {
+        if (threat < 2) {
+            FI(f, 0x1AD5CC, f32) = 1.0f;
+            FI(f, 0x1AD584, s32) &= ~3;
+        } else {
+            FI(f, 0x1AD584, s32) &= ~2;
+        }
+    } else if (threat == 4 && !(flags & 2)) {
+        Fiona_FullPanic(f, p);
+    }
+    if (f->c.moveMode == 0 && !(FI(f, 0x1AD584, s32) & 2) && FI(f, 0x1AD5F8, s32) > 0) {
+        FI(f, 0x1AD5F8, s32) -= 1;
+    }
+
+    /* fear meter */
+    if (FIONA_FEAR(f) < 100.0f) {
+        s32 mode = f->c.moveMode;
+
+        if (mode == 0 && f->unk1AD580 != 0xE) {
+            s32 g = Fiona_AnimGroup(MOTION_ANIM(f->c.motion));
+
+            if (g == 3) {
+                /* nothing */
+            } else if (g == 2) {
+                /* running */
+                if (D_0044E988 == NULL || VCALL(D_0044E988, 0x10, s32 (*)(VObject *))(D_0044E988) != 0x8C) {
+                    func_00181010(f, (func_00177620(p) & 0xFF) == 2 ? 0x1.111112p-4f /* 1/15 */
+                                                                     : 0x1.7e4b18p-5f /* 0x3D3F258C */);
+                }
+            } else if (g == 1) {
+                Fiona_FearDown(f, p);
+            } else if (!(FI(f, 0x1AD584, s32) & 2)) {
+                Fiona_FearDown(f, p);
+            }
+        } else if (mode == 3) {
+            Fiona_AnimGroup(MOTION_ANIM(f->c.motion));
+            Fiona_FearDown(f, p);
+        }
+    }
+
+    /* timers */
+    if (f->c.unk14D0 > 0) {
+        f->c.unk14D0 -= 1;
+        if (f->c.unk14D0 <= 0) {
+            func_001F6E10(f->c.motion);
+        }
+    }
+    if (FI(f, 0x1AD5F0, s32) != 0) {
+        FI(f, 0x1AD5F0, s32) -= 1;
+    }
+    if (FI(f, 0x1AD5C8, s32) != 0) {
+        FI(f, 0x1AD5C8, s32) -= 1;
+    }
+    if (f->c.moveMode != 0) {
+        FI(f, 0x1AD5C4, s32) = 0;
+    }
+
+    /* area fade */
+    if (f->unk1AD630 == 0 && f->c.unkE4 == 0) {
+        FIONA_FADE(f) += 8;
+        if (FIONA_FADE(f) >= 0x80) {
+            f->c.unkE4 = 1;
+            FIONA_FADE_T(f) = 0;
+        }
+    } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_SPECIAL
+               && f->c.moveMode == 0 && f->c.moveSub == 0) {
+        if (f->unk1AD630 == 0) {
+            if (f->c.unkE4 == 1 && ++FIONA_FADE_T(f) == 60) {
+                f->c.unkE4 = 0;
+                f->unk1AD630 = 1;
+                FIONA_FADE(f) = 0x80;
+            }
+        } else {
+            FIONA_FADE(f) -= 8;
+            if ((s16)FIONA_FADE(f) < 0) {
+                FIONA_FADE(f) = 0;
+            }
+        }
+    } else {
+        f->unk1AD630 = 0;
+        FIONA_FADE_T(f) = 0;
+    }
+    if (f->unk1AD630 == 1 && FIONA_FADE(f) == 0 && FI(f, 0x1AD5D7, u8) == 1
+        && gCharPursuer->a.unkC4 != 2 && gCharPursuer->unkE0 == 0
+        && (func_001241F0(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
+        && !(func_00125D80(&f->c) & 0xFF)) {
+        if (f->c.state[0] != 7) {
+            f->c.state[0] = 4;
+            f->c.state[1] = 6;
+            f->c.state[2] = 2;
+            f->c.state[3] = 0;
+            f->c.state[4] = 3;
+            *(f32 *)&f->c.state[5] = 0.0f;
+            f->c.state[6] = 0;
+            f->c.state[7] = 0;
+        }
+        f->unk1AD630 = 0;
+        FIONA_FADE_T(f) = 0;
+    }
+}
