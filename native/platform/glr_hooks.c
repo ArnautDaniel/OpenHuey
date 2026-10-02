@@ -45,3 +45,13 @@ int func_0034E9E0(uint8_t *d) {
     glr_todo("ripple grid (func_0034E9E0)");
     return 0;
 }
+
+/* func_0021C840: the screen overlay's frame-buffer pass (overlay, strength, offset): copies the
+ * frame through strips shifted by `offset` and tinted by `strength` (a heat-haze / blur).
+ * Will be a full-screen shader pass. */
+void func_0021C840(void *ov, int strength, int offset) {
+    (void)ov;
+    (void)strength;
+    (void)offset;
+    glr_todo("frame-buffer distortion (func_0021C840)");
+}
