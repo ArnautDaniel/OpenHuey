@@ -88,6 +88,25 @@ def read_model(d: bytes):
                 nrm=[v * UNIT for v in nrm],
                 joints=joints, weights=weights, flag=fl))
         parts.append(dict(tex=tex, flags=flags, verts=verts))
+
+    # rigid parts, each on one bone (the eyeballs, ...): u32 count at resource 0 + header[2],
+    # 0x20-byte records at +0x10: vertex count, positions, UVs, normals, strip flags (offsets
+    # from the record), texture, ?, bone
+    rt = r0 + struct.unpack_from("<I", d, r0 + 8)[0]
+    for i in range(struct.unpack_from("<I", d, rt)[0]):
+        b = rt + 0x10 + i * 0x20
+        n, o_pos, o_uv, o_nrm, o_fl, tex, _, bone = struct.unpack_from("<8i", d, b)
+        p = list(struct.unpack_from("<3i", d, b + o_pos))
+        verts = []
+        for k in range(n):
+            dp = struct.unpack_from("<3h", d, b + o_pos + 0x10 + k * 6)
+            p = [p[j] + dp[j] for j in range(3)]
+            uv = struct.unpack_from("<2H", d, b + o_uv + k * 4)
+            nrm = struct.unpack_from("<3h", d, b + o_nrm + k * 6)
+            verts.append(dict(pos=[v * POS_SCALE for v in p], uv=[uv[0] * UNIT, uv[1] * UNIT],
+                              nrm=[v * UNIT for v in nrm], joints=[bone], weights=[1.0],
+                              flag=d[b + o_fl + k]))
+        parts.append(dict(tex=tex, flags=0, verts=verts))
     return bones, parts
 
 

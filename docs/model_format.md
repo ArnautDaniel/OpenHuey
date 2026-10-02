@@ -31,7 +31,7 @@ load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 
 ### Resource 0: skeleton
 
-`u32 bones, u32 meshTable, u32 ?, u32 boneByteTable` (offsets from resource 0), then
+`u32 bones, u32 meshTable, u32 rigidTable, u32 boneByteTable` (offsets from resource 0), then
 `bones` records of 0x70 bytes at +0x10 (`func_001F7C40` links them into the skeleton at
 model +0x810):
 
@@ -75,6 +75,13 @@ Each part is sent to VU1 in batches of up to 48 vertices, one unpack per stream:
 Triangle strips run on across batches (the GS keeps its vertex queue). Positions are in model
 space; the matrix for a palette bone is bone world x the record's +0x30 inverse bind matrix
 (`func_001BD830`).
+
+### Resource 0: rigid parts (eyeballs etc.)
+
+At resource 0 + `rigidTable`: `u32 count`, then 0x20-byte records at +0x10 (offsets from the
+record): vertex count, positions (same header + deltas), UVs, normals, strip flags, texture id,
+?, bone. Each is attached to one bone (Hewie: both eyeballs on the head bone, and a small part of
+the tongue). The head mesh has holes where the eyes go, so without these the eyes are missing.
 
 ## .TEX
 
