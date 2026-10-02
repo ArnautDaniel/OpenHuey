@@ -4119,3 +4119,42 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
     }
     return 0;
 }
+
+
+/* the head's look, each frame: while looking at a character (FLOOK_ON / FLOOK_WHO, that one
+ * active and not hidden) at its head (its motion +0x60 into FLOOK_POINT), the head angles
+ * aimed there (pitch -18..45 degrees, yaw -126..126) - else straight ahead - eased 10% of the
+ * way (the motion's +0x854 / +0x858) */
+void func_00185FC0(Fiona *f) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, kUp = {0x3F490FDB}, kDown = {0xBEA0D97C},
+        kSide = {0x400CBE4C}, kNegSide = {0xC00CBE4C};
+    u8 *who;
+    f32 pitch, yaw;
+
+    if (FI(f, FLOOK_ON, u8) == 1 && (who = FI(f, FLOOK_WHO, u8 *)) != NULL) {
+        if (AT(who, 0x28, u8) == 1 && AT(who, 0x29, u8) == 0) {
+            VCALL(AT(who, 0xF0, u8 *), 0x60, void (*)(u8 *, f32 *))(AT(who, 0xF0, u8 *), (f32 *)((u8 *)f + FLOOK_POINT));
+        } else {
+            FI(f, FLOOK_ON, u8) = 0;
+        }
+    }
+    yaw = 0.0f;
+    pitch = 0.0f;
+    if (FI(f, FLOOK_ON, u8) == 1) {
+        func_002DD110(f->c.motion, (f32 *)((u8 *)f + FLOOK_POINT), &pitch, &yaw);
+        if (!(pitch <= kUp.f)) {
+            pitch = kUp.f;
+        }
+        if (pitch < kDown.f) {
+            pitch = kDown.f;
+        }
+        if (!(yaw <= kSide.f)) {
+            yaw = kSide.f;
+        }
+        if (yaw < kNegSide.f) {
+            yaw = kNegSide.f;
+        }
+    }
+    AT(f->c.motion, 0x854, f32) = AT(f->c.motion, 0x854, f32) + k01.f * (pitch - AT(f->c.motion, 0x854, f32));
+    AT(f->c.motion, 0x858, f32) = AT(f->c.motion, 0x858, f32) + k01.f * (yaw - AT(f->c.motion, 0x858, f32));
+}

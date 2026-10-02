@@ -2745,3 +2745,4 @@ src/game/model.c func_002DDAC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B0000
 src/game/model.c func_001F6870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0A..0x1C --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/effects.c func_002241C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x164=bytes:??000000 --pre=@0x44E4C0=0x0B100000..0x0B100000 --pre=@0x0B101400=0x0046BF20..0x0046BF20 --pre=@0x0B1014A8=0..1 --stub-ret=0 --stub-ret=0x0B200000 --stub-ret-prob=1
 src/game/model.c func_002E3190 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
+src/game/fiona.c func_00185FC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B100000..0x0B100000 --pre=a0+0x1AD5FC=0..1 --pre=a0+0x1AD600=0x0B200000..0x0B200000 --pre=@0x0B200028=0..0x101 --pre=@0x0B2000F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046F9E0..0x0046F9E0 --pre=@0x0B100854=0x3E000000..0x3F800000 --pre=@0x0B100858=0x3E000000..0x3F800000 --outparam=4 --runs=60
