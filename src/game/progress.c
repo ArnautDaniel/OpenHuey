@@ -1170,3 +1170,22 @@ void func_00176160(Progress *p) {
         }
     }
 }
+
+
+/* set condition bit `n` (0..6) of +0x14 */
+void func_00177630(Progress *p, s32 n) {
+    n &= 0xFF;
+    if (n < 7) {
+        AT(p, 0x14, u32) |= 1u << n;
+    }
+}
+
+
+/* condition bit `n` (0..6) of +0x14 */
+s32 func_00177670(Progress *p, s32 n) {
+    n &= 0xFF;
+    if (n < 7) {
+        return (AT(p, 0x14, u32) & (1u << n)) != 0;
+    }
+    return 0;
+}

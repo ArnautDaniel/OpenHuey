@@ -1301,3 +1301,133 @@ void func_0039C880(Scene *g) {
     AT(last, 0x1D, u8) = AT(cur, 0x1D, u8);
     AT(last, 0x1E, u16) = AT(cur, 0x1E, u16);
 }
+
+
+extern void func_00177630(Progress *p, s32 n);   /* set condition bit n */
+extern s32 func_00177670(Progress *p, s32 n);    /* condition bit n */
+extern u8 *gCharPursuer;
+
+#define CHASE_STATE(g) AT(g, 0x50, u8)   /* 0 calm, 1 tense, 2 chased */
+#define CHASE_PREV(g)  AT(g, 0x51, u8)   /* the state before the last change */
+#define CHASE_LAST(g)  AT(g, 0x52, u8)   /* the state last frame */
+#define CHASE_TIMER(g) AT(g, 0x58, u32)  /* frames before the state may change again */
+
+/* the danger state (the chase music), each frame: Progress flags force it (0x1B calm, 0x1F
+ * chased, 7 tense); the stalker in Fiona's room makes it chased; otherwise it moves between
+ * calm, tense and chased by the conditions (bit 2 stalker present, 6 hunted, flag 0x22), the
+ * stalker's alert (+0x64: 3 / 4) and whether a creature (+0x3C) is in her room, each change
+ * holding for a while (+0x58). Also keeps conditions 2 / 3 for an active / chasing stalker
+ * and sets 6 when calm while condition 1 */
+void func_0039BB60(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    u8 alert = (u8)VCALL(prog, 0x64, s32 (*)(Progress *))(prog);
+    s32 stalker = 0, chasing = 0, creature = 0, near = 0;
+    s32 room, sroom = -1, i;
+
+    if (D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0) {
+        stalker = 1;
+        chasing = AT(D_0044F808, 0xC4, s32) == 2;
+    }
+    if (alert == 0xFF && !stalker) {
+        func_00177630(prog, 2);
+    }
+    if (chasing) {
+        func_00177630(prog, 3);
+    }
+    CHASE_LAST(g) = CHASE_STATE(g);
+    if (Progress_TestFlag(prog, 0x1B)) {
+        CHASE_STATE(g) = 0;
+        CHASE_TIMER(g) = 0;
+    } else if (Progress_TestFlag(prog, 0x1F)) {
+        CHASE_STATE(g) = 2;
+        CHASE_TIMER(g) = 0;
+    } else if (Progress_TestFlag(prog, 7)) {
+        CHASE_STATE(g) = 1;
+        CHASE_TIMER(g) = 0;
+    } else {
+        room = AT(gCharPlayer, 0x30, s32);
+        if (stalker) {
+            sroom = AT(gCharPursuer, 0x30, s32);
+            if (sroom != room) {
+                VObject *rooms = D_0044E568;
+
+                /* (as the original: any exit not leading to the stalker's room counts) */
+                for (i = 0; i < 8; i++) {
+                    if (VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, room, i) != sroom) {
+                        near = 1;
+                        break;
+                    }
+                }
+            }
+        }
+        for (i = 0; i < 10; i++) {
+            VObject *c = AT(D_0044F258, i * 4, VObject *);
+
+            if (c != NULL && (u8)VCALL(c, 0x3C, s32 (*)(VObject *, u32))(c, (u8)i) == 1 &&
+                AT(c, 0x30, s32) == room) {
+                creature = 1;
+                break;
+            }
+        }
+        if (stalker && room == sroom) {
+            CHASE_STATE(g) = 2;
+            CHASE_TIMER(g) = 0x1E;
+        } else {
+            switch (CHASE_STATE(g)) {
+            case 0:
+                if (Progress_TestFlag(prog, 0x22)) {
+                    CHASE_STATE(g) = 1;
+                    CHASE_TIMER(g) = 0x1C2;
+                } else if (CHASE_TIMER(g) == 0) {
+                    if (!func_00177670(prog, 2) || creature == 1 || func_00177670(prog, 6)) {
+                        CHASE_STATE(g) = 1;
+                        CHASE_TIMER(g) = 0x1C2;
+                    }
+                }
+                break;
+            case 1:
+                if (func_00177670(prog, 6) || Progress_TestFlag(prog, 0x22)) {
+                    CHASE_TIMER(g) += 0x96;
+                    if (CHASE_TIMER(g) > 0x1C2) {
+                        CHASE_TIMER(g) = 0x1C2;
+                    }
+                }
+                if (func_00177670(prog, 2) && !creature) {
+                    if (CHASE_TIMER(g) == 0) {
+                        CHASE_STATE(g) = 0;
+                        CHASE_TIMER(g) = 0x1E;
+                    }
+                } else if (CHASE_PREV(g) == 0) {
+                    CHASE_TIMER(g) = 0x1C2;
+                } else if (CHASE_PREV(g) == 2) {
+                    CHASE_TIMER(g) = 0x96;
+                }
+                break;
+            case 2:
+                if (func_00177670(prog, 2)) {
+                    CHASE_STATE(g) = Progress_TestFlag(prog, 0x22) || creature ? 1 : 0;
+                    CHASE_TIMER(g) = 0x1E;
+                } else if ((u32)(alert - 3) < 2 && near) {
+                    if (CHASE_TIMER(g) == 0) {
+                        CHASE_STATE(g) = 1;
+                        CHASE_TIMER(g) = 0x1E;
+                    }
+                } else {
+                    CHASE_TIMER(g) = 0x96;
+                }
+                break;
+            }
+            if (CHASE_TIMER(g) != 0) {
+                CHASE_TIMER(g)--;
+            }
+        }
+    }
+    if (CHASE_LAST(g) != CHASE_STATE(g)) {
+        CHASE_PREV(g) = CHASE_LAST(g);
+    }
+    i = (u8)func_00177670(prog, 1);
+    AT(g, 0x54, s32) = 0;
+    if (i && CHASE_STATE(g) == 0) {
+        func_00177630(prog, 6);
+    }
+}
