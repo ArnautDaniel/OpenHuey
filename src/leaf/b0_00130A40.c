@@ -73,14 +73,6 @@ void func_001691C0(B0_Heap *h) {
 }
 
 /* Store the parameters, then tail-call virtual +0xC (Reset) with them. */
-void func_00169260(B0_Heap *h, s32 a1, s32 a2, s32 a3, s32 a4) {
-    FLD(h, 0x4, s32) = a1;
-    FLD(h, 0x8, s32) = a2;
-    FLD(h, 0xC, s32) = a3;
-    FLD(h, 0x10, s32) = a4;
-    VCALL(h, 0xC, void (*)(void *, s32, s32, s32, s32))(h, a1, a2, a3, a4);
-}
-
 /* LZSS decompression: +0x18 source (4-byte header), +0x1C destination.
  * Flag bit 1 = literal byte, 0 = 16-bit back-reference (len = low 4 bits + 2,
  * distance = high 12 bits); a zero reference ends the stream. */

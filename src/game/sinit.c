@@ -1728,12 +1728,12 @@ extern const PTMF D_003D8920;    /* Game's first state */
 extern void Game_dtor(void *, s32);
 extern void func_0020E7F0(Game *game);           /* base class constructor */
 extern void func_0020E340(void *obj);            /* Game.unk69AC0 */
-extern void func_001A48C0(void *obj, s32 seed);  /* Game +0x400000 */
-extern void func_0020E280(void *obj);            /* scene table (+0x400A00) */
-extern void func_0020E260(void *obj);            /* +0x14D9B00 */
-extern void func_0020E1A0(void *obj);            /* object pool (+0x14D9DD0) */
-extern void func_0020E110(void *obj);            /* object pool (+0x14DC530) */
-extern void func_001F4600(void *obj);            /* Game.unk14E8C90 */
+extern VObject *func_001A48C0(VObject *rng, s32 seed);  /* random number generator (Game +0x400000) */
+extern void *func_0020E280(u8 *t);               /* scene table (+0x400A00) */
+extern void *func_0020E260(VObject *o);          /* +0x14D9B00 */
+extern void *func_0020E1A0(u8 *p);               /* object pool (+0x14D9DD0) */
+extern void *func_0020E110(u8 *p);               /* object pool (+0x14DC530) */
+extern void *func_001F4600(u8 *o);               /* Game.unk14E8C90 */
 extern void Game_SetState(Game *game, const PTMF *state);
 
 /* gGame's constructor. */
@@ -1744,9 +1744,9 @@ void func_00464A70(void) {
     func_0020E7F0(&gGame);
     gGame.vtbl = Game_vtable;
     func_0020E340(&gGame.unk69AC0);
-    func_001A48C0(g + 0x400000, 0x1571);
+    func_001A48C0((VObject *)(g + 0x400000), 0x1571);
     func_0020E280(g + 0x400A00);
-    func_0020E260(g + 0x14D9B00);
+    func_0020E260((VObject *)(g + 0x14D9B00));
     func_0020E1A0(g + 0x14D9DD0);
     func_0020E110(g + 0x14DC530);
     func_001F4600(gGame.unk14E8C90);

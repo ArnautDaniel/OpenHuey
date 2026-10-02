@@ -43,7 +43,7 @@ void *func_0020E7B0(void *e) {
 extern void *D_0044F7F8;    /* the system object */
 extern void *D_0044FEB0;    /* +0x40 */
 extern void *D_0044FF00;    /* +0x390 */
-extern void *D_0044E4F0;    /* +0x460 */
+extern VObject *D_0044E4F0; /* +0x460: the renderer */
 extern void *D_0044E980;    /* +0x305280 */
 extern void *D_0044FEF8;    /* +0x305280 +0x7C44 */
 extern void *D_0044E9A0;    /* +0x30CF40 */
@@ -87,7 +87,7 @@ void *func_0020E340(u8 *s) {
     D_0044FF00 = s + 0x390;
     AT(s, 0x390, void **) = D_0046AE90;
     AT(s, 0x39C, void **) = D_0046AEB4;
-    D_0044E4F0 = s + 0x460;
+    D_0044E4F0 = (VObject *)(s + 0x460);
     AT(s, 0x3A4, PTMF) = sGameStateNull;
     AT(s, 0x460, void **) = D_0046AC50;
     func_001B80C0(s + 0x460);
@@ -163,4 +163,122 @@ void func_001B80C0(u8 *r) {
     AT(r, 0x304BE4, s32) = -1;
     AT(r, 0x304D58, s32) = 0;
     AT(r, 0x304DDC, s32) = 0;
+}
+
+/* Heap (vtable 0x46A1C0) setup: memory, size, block table, block count; then its init (+0xC). */
+void func_00169260(VObject *h, void *base, u32 size, void *blocks, s32 count) {
+    AT(h, 0x4, void *) = base;
+    AT(h, 0x8, u32) = size;
+    AT(h, 0xC, void *) = blocks;
+    AT(h, 0x10, s32) = count;
+    VCALL(h, 0xC, void (*)(VObject *, void *, u32, void *, s32))(h, base, size, blocks, count);
+}
+
+extern void *D_0046BF08[], *D_004699E0[], *D_0046A1C0[];
+extern void *D_0044E960;   /* the scene table */
+
+/* Game +0x400A00: the scene table (4 scene pointers) and the scene heap after it (Game.sceneHeap,
+ * 0x10D9000 bytes from +0x40). */
+void *func_0020E280(u8 *t) {
+    VObject *heap = (VObject *)(t + 0x10D9040);
+    s32 i;
+
+    D_0044E960 = t;
+    AT(t, 0x0, void **) = D_0046BF08;
+    heap->vtbl = D_004699E0;
+    AT(heap, 0x4, s32) = 0;
+    AT(heap, 0x8, s32) = 0;
+    heap->vtbl = D_0046A1C0;
+    AT(heap, 0xC, s32) = 0;
+    AT(heap, 0x10, s32) = 0;
+    for (i = 0; i < 4; i++) {
+        AT(t, 0x4 + i * 4, void *) = NULL;
+    }
+    func_00169260(heap, t + 0x40, 0x10D9000, t + 0x10D9054, 10);
+    return t;
+}
+
+extern void *D_00469A60[];
+extern void *D_0044E4B8;   /* Game +0x14D9B00 */
+
+void *func_0020E260(VObject *o) {
+    D_0044E4B8 = o;
+    o->vtbl = D_00469A60;
+    return o;
+}
+
+/* Object pool element constructors. */
+void *func_0020E240(void *e) {
+    AT(e, 0x0, s32) = 0;
+    AT(e, 0x4, s32) = 0;
+    AT(e, 0x8, s32) = 0;
+    return e;
+}
+
+void *func_0020E210(void *e) {
+    AT(e, 0xC, s32) = 0;
+    AT(e, 0x4, s32) = 0;
+    AT(e, 0x8, s32) = 0;
+    AT(e, 0x10, s32) = 0;
+    return e;
+}
+
+void *func_0020E190(void *e) {
+    AT(e, 0x0, s32) = 0;
+    AT(e, 0x4, s32) = 0;
+    return e;
+}
+
+void *func_0020E180(void *e) {
+    AT(e, 0x44, s32) = 0;
+    AT(e, 0x48, s32) = 0;
+    return e;
+}
+
+extern void *D_004562B0, *D_004562A8;   /* the two pools */
+extern void func_0020D970(void *, s32), func_0020D9C0(void *, s32);
+extern void func_0020D8D0(void *, s32), func_0020D920(void *, s32);
+
+/* Game +0x14D9DD0: pool of 64 x 0xC and 462 x 0x14 entries. */
+void *func_0020E1A0(u8 *p) {
+    D_004562B0 = p;
+    func_00100340(p, func_0020E240, func_0020D970, 0xC, 0x40);
+    func_00100340(p + 0x300, func_0020E210, func_0020D9C0, 0x14, 0x1CE);
+    return p;
+}
+
+/* Game +0x14DC530: pool of 32 x 0xC and 632 x 0x50 entries. */
+void *func_0020E110(u8 *p) {
+    D_004562A8 = p;
+    func_00100340(p, func_0020E190, func_0020D8D0, 0xC, 0x20);
+    func_00100340(p + 0x180, func_0020E180, func_0020D920, 0x50, 0x278);
+    return p;
+}
+
+extern void *D_0046B1D0[];
+extern void *D_0044E4E8;      /* Game +0x14E8C90 */
+
+/* Game +0x14E8C90 (shut down by func_001F4100): 64 slots, and the ids of the renderer's 10
+ * layers (renderer +0x3C). */
+void *func_001F4600(u8 *o) {
+    s32 i;
+
+    AT(o, 0x0, void **) = D_0046B1D0;
+    D_0044E4E8 = o;
+    for (i = 0; i < 64; i++) {
+        u8 *e = o + 4 + i * 0xC;
+
+        AT(e, 0x0, s32) = 0;
+        AT(e, 0x4, s16) = -1;
+        AT(e, 0x6, s16) = -1;
+        AT(e, 0x9, s8) = -1;
+        AT(e, 0x8, s8) = -1;
+    }
+    for (i = 0; i < 10; i++) {
+        AT(o, 0x304 + i * 4, s32) = -1;
+    }
+    for (i = 0; i < 10; i++) {
+        AT(o, 0x304 + i * 4, s32) = VCALL(D_0044E4F0, 0x3C, s32 (*)(VObject *, s32))(D_0044E4F0, i);
+    }
+    return o;
 }

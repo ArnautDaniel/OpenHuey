@@ -82,7 +82,6 @@ src/leaf/b0_00120530.c func_0012BFB0
 src/leaf/b0_00120530.c func_0012BFF0
 src/leaf/b0_00130A40.c func_00130A40
 src/leaf/b0_00130A40.c func_001691C0
-src/leaf/b0_00130A40.c func_00169260
 src/leaf/b0_00130A40.c func_001695D0
 src/leaf/b0_00130A40.c func_0016B420
 src/leaf/b0_00130A40.c func_0016B470
@@ -1781,3 +1780,26 @@ src/game/fader.c func_002D4070 --runs=200 --pre=a1=0x0A000000..0x0A000000 --pre=
 src/game/fader.c func_002D3FA0 --pre=a0+0x80=0..1 --pre=a0+0x84=0..1
 src/game/fader.c func_002D4020 --pre=a1=0..1
 src/game/fader.c func_002D3FC0 --pre=a1=0..2
+src/game/renderer.c func_001BBB20
+src/game/renderer.c func_001BBB40 --runs=100 --pre=a1=0..0x100000 --pre=a0+0x304BB5=0..1
+src/game/renderer.c func_001BBBB0 --runs=100 --pre=a1=0..0x100000 --pre=a0+0x304BB4=0..1
+src/game/random.c func_001A48C0
+src/game/renderer.c func_001BB950 --pre=a1=0..12
+src/game/system.c func_00169260
+src/game/system.c func_0020E280
+src/game/system.c func_0020E260
+src/game/system.c func_0020E240
+src/game/system.c func_0020E210
+src/game/system.c func_0020E190
+src/game/system.c func_0020E180
+src/game/system.c func_0020E1A0
+src/game/system.c func_0020E110
+src/game/system.c func_001F4600
+src/game/random.c func_001A4630 --runs=5
+src/game/random.c func_001A46D0 --runs=10 --pre=a0+0x9C8=1..2
+src/game/random.c func_001A45A0 --runs=10 --pre=a0+0x9C8=1..3
+src/game/random.c func_001A4570
+src/game/random.c func_001A4510
+src/game/random.c func_001A44C0
+src/game/random.c func_001A4460
+src/game/random.c func_001A4850 --pre=a1=-1..2
