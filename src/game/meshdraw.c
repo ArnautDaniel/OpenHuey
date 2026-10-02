@@ -8,7 +8,7 @@ extern VObject *D_0044E4B8;   /* the camera */
 
 #ifdef HG_NATIVE
 /* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
-extern void glr_strip(const f32 mvp[16], s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, u64 tex0,
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, u64 tex0,
                       u32 prim);
 static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static u64 sGlTex0;

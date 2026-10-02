@@ -1794,3 +1794,14 @@ void func_002D6280(u8 *mgr) {
         AT(mgr, 0x18034 + i * 4, VObject *) = NULL;
     }
 }
+
+
+/* the effect in slot k (of 32 at +0x1438), NULL past the end */
+void *func_00266C40(void *effects, s32 k) {
+    u8 *o = effects;
+
+    if (k >= 32) {
+        return NULL;
+    }
+    return AT(o, 0x1438 + k * 4, void *);
+}
