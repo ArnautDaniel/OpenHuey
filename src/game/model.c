@@ -3132,6 +3132,37 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
     }
 }
 
+/* PC stand-in for the shadow volumes (resource 2, cast from the room's lights - TODO): a soft
+ * dark disc on the floor under the root bone, at the character's floor point (+0x800) */
+static void gl_blob_shadow(u8 *m, const f32 *mvp) {
+    enum { SEG = 16 };
+    static f32 xyzw[SEG * 3 * 4], st[SEG * 3 * 2];
+    static u8 rgba[SEG * 3 * 4];
+    const f32 *root = func_0017CE80(AT(m, 0x810, void *), 0) + 12;
+    f32 r = 3.0f, y = AT(m, 0x800 + 4, f32) + 1.2f;   /* above the floor point (world y up; the floor mesh is a little above the walk mesh) */
+    s32 i, k;
+
+
+    for (i = 0; i < SEG; i++) {
+        f32 a0 = (f32)i * (6.2831853f / SEG), a1 = (f32)(i + 1) * (6.2831853f / SEG);
+        f32 px[3] = {root[0], root[0] + r * __builtin_cosf(a0), root[0] + r * __builtin_cosf(a1)};
+        f32 pz[3] = {root[2], root[2] + r * __builtin_sinf(a0), root[2] + r * __builtin_sinf(a1)};
+
+        for (k = 0; k < 3; k++) {
+            s32 v = i * 3 + k;
+
+            xyzw[v * 4] = px[k];
+            xyzw[v * 4 + 1] = y;
+            xyzw[v * 4 + 2] = pz[k];
+            AT(&xyzw[v * 4 + 3], 0, u32) = k < 2 ? 0x8000 : 0;   /* one triangle per three */
+            st[v * 2] = 0.0f;
+            st[v * 2 + 1] = 0.0f;
+            AT(rgba, v * 4, u32) = k == 0 ? 0x60000000u : 0x00000000u;   /* centre dark, edge clear */
+        }
+    }
+    glr_strip(mvp, SEG * 3, xyzw, st, rgba, NULL, 0, 0x4C);
+}
+
 static void gl_draw_model(u8 *m) {
     f32 clip[4][4] __attribute__((aligned(16)));
 
@@ -3164,7 +3195,10 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
 #ifdef HG_NATIVE
     gl_draw_model(m);
     if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
-        glr_todo("character shadows (func_001F3530)");
+        f32 clip[4][4] __attribute__((aligned(16)));
+
+        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+        gl_blob_shadow(m, &clip[0][0]);
     }
     return;
 #endif
