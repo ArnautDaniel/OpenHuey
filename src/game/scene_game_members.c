@@ -2034,3 +2034,86 @@ void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
         AT(n, 0xC, u16) = 0xFFFF;
     }
 }
+
+
+extern VObject *D_0044E550;    /* random numbers: +0x18 -> 0..1 */
+extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
+extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
+extern s32 func_001788F0(void *p, u32 door);   /* a door is open (u8) */
+extern void func_00177630(Progress *p, s32 n);
+extern s32 func_00177620(Progress *p);
+
+/* a frame's loudest noise `n` (func_002A8440) against the summoner `o` (+0xC frames waited,
+ * +0x11 its kind): in the current room only. Its level 0..3 by loudness (one less away from
+ * doors with every door of the room shut). With the pursuer waiting offstage (+0xD0 / +0xD1,
+ * not active), Progress flag 0 without flag 2, at least 3 s and its kind's wait gone, the
+ * level's chance (percent) summons it (o +0 = 0x80000000); otherwise the level's second
+ * chance - on the rest - sets condition 6 (hunted), as does mode 1 with any chance */
+void func_002EC4F0(u8 *o, u8 *n) {
+    Progress *p;
+    VObject *rooms;
+    u8 *pu;
+    u8 *t;
+    u32 i, d;
+    s32 open = 0, lvl, call = 0, roll;
+
+    if (n == NULL) {
+        return;
+    }
+    p = gProgress;
+    if (AT(n, 0x4, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    rooms = D_0044E568;
+    for (i = 0; i < 8; i++) {
+        d = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(n, 0x4, s32), i & 0xFF);
+        if (d < 0x190 && (u8)func_001788F0(p, d) == 1) {
+            open = 1;
+            break;
+        }
+    }
+    lvl = AT(n, 0x0, u8) >= 0x80 ? 4 : AT(n, 0x0, u8) >= 0x60 ? 3 : AT(n, 0x0, u8) >= 0x40 ? 2
+        : AT(n, 0x0, u8) >= 0x20 ? 1 : 0;
+    if (AT(n, 0xC, u16) == 0xFFFF && !open && (s8)lvl < 4) {
+        lvl = (s8)(lvl - 1);
+    }
+    if ((s8)lvl >= 4) {
+        lvl = 3;
+    }
+    if ((s8)lvl < 0) {
+        lvl = 0;
+    }
+    t = D_0047AC90 + (s8)lvl * 2;
+    pu = (u8 *)gCharPursuer;
+    if (pu != NULL && (AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {
+        if (AT(pu, 0x28, u8) != 0) {
+            return;
+        }
+        roll = 0;
+        if (t[0] != 0) {
+            if (t[0] == 100 || 100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) <= (f32)t[0]) {
+                roll = 1;
+            }
+        }
+        call = roll && Progress_TestFlag(p, 0) && !Progress_TestFlag(p, 2);
+        if (call) {
+            u32 secs = (u16)(AT(o, 0xC, u32) / 30);
+
+            if (secs < 3 || secs < D_00419DC0[AT(o, 0x11, u8)]) {
+                call = 0;
+            }
+        }
+    }
+    if (call) {
+        AT(o, 0x0, u32) = 0x80000000;
+        return;
+    }
+    if (t[1] != 0 &&
+        (100.0f - (f32)t[0]) * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) <= (f32)t[1]) {
+        func_00177630(p, 6);
+        return;
+    }
+    if ((u8)func_00177620(p) == 1 && t[0] + t[1] != 0) {
+        func_00177630(p, 6);
+    }
+}
