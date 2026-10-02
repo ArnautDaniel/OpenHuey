@@ -258,8 +258,8 @@ extern void *D_003D6A40[];        /* the fades' steps by kind */
 extern s32 func_002D2120(u8 *o);
 extern void func_002D20A0(u8 *o);
 extern void func_002CF6F0(u8 *fade);
-extern void func_001FBE00(VObject *ev, s32 prio, void *step);   /* run a step (the fade's) */
 extern void func_001771A0(Progress *p, s32 who);
+void func_001FBE00(VObject *ev, s32 prio, void *step);
 extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
 extern void func_0029F040(void *c, s32 slot);
 
@@ -1292,4 +1292,27 @@ void func_001FFC70(VObject *ev) {
         VCALL(gProgress, 0x4C, void (*)(Progress *))(gProgress);
         break;
     }
+}
+
+
+/* start a step `step` (with `prio`) in the event's step slot for `prio` (func_001FBF70) (+0x564, 0x18 each:
+ * +0 -1, +4 the step, +0x13 its priority, the rest cleared); nothing for NULL */
+void func_001FBE00(VObject *ev, s32 prio, void *step) {
+    u8 *t;
+
+    if (step == NULL) {
+        return;
+    }
+    t = (u8 *)ev + 0x564 + (u8)func_001FBF70(ev, prio) * 0x18;
+    AT(t, 0x0, s32) = -1;
+    AT(t, 0x4, s32) = 0;
+    AT(t, 0x10, u8) = 0;
+    AT(t, 0x8, s32) = 0;
+    AT(t, 0x11, u8) = 0;
+    AT(t, 0xC, s32) = 0;
+    AT(t, 0x12, u8) = 0;
+    AT(t, 0x13, u8) = 0xFF;
+    AT(t, 0x14, u16) = 0;
+    AT(t, 0x13, u8) = prio;
+    AT(t, 0x4, void *) = step;
 }
