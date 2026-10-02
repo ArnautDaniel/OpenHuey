@@ -260,6 +260,8 @@ extern void func_002D20A0(u8 *o);
 extern void func_002CF6F0(u8 *fade);
 extern void func_001FBE00(VObject *ev, s32 prio, void *step);   /* run a step (the fade's) */
 extern void func_001771A0(Progress *p, s32 who);
+extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
+extern void func_0029F040(void *c, s32 slot);
 
 void func_002029B0(VObject *ev) {
     Progress *p;
@@ -551,6 +553,42 @@ void func_002029B0(VObject *ev) {
         break;
     case 0x15:   /* the progress' character pc[1] (+ func_001771A0) */
         func_001771A0(p, (u8)func_001770D0(p, pc[1]));
+        break;
+    case 0x23:   /* mark the loop point (just after this) in the script (+0x6FC: +0x8, its +0x11 = +0x8) */
+        AT(AT(ev, 0x6FC, u8 *), 0x8, u8 *) = (u8 *)pc + 1;
+        AT(AT(ev, 0x6FC, u8 *), 0x11, u8) = AT(ev, 0x8, u8);
+        break;
+    case 0x24:   /* back to the loop point */
+        PC(ev) = AT(AT(ev, 0x6FC, u8 *), 0x8, u8 *);
+        AT(ev, 0x8, u8) = AT(AT(ev, 0x6FC, u8 *), 0x11, u8);
+        EV_JUMPED(ev) = 1;
+        break;
+    case 0x9D: {   /* character pc[1] plays animation be16 pc[2..3] (blend pc[4], speed pc[5]), held */
+        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+
+        AT(c, 0xE0, u8) = 1;
+        AT(c, 0xE2, u8) = 1;
+        AT(c, 0xE3, u8) = 1;
+        AT(c, 0x29, u8) = 0;
+        func_002DE030(AT(c, 0xF0, void *), (u16)be16(PC(ev) + 2), PC(ev)[4], -1, (f32)PC(ev)[5]);
+        break;
+    }
+    case 0x9E: {   /* wait for character pc[1]'s animation to come round (track flag 0x20) */
+        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+
+        if ((AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    }
+    case 0xBA:   /* hand the character in slot pc[1] to slot pc[2] (wait while that is taken) */
+        if (gCharacters[pc[1]] != NULL) {
+            if ((u8)func_00177260(p, pc[2])) {
+                EV_WAIT(ev) = 1;
+            } else {
+                func_0029F040(gCharacters[PC(ev)[1]], PC(ev)[2]);
+            }
+        }
         break;
     case 0x7C:   /* zone pc[1] (32): on, kind pc[18]; centre (3 x be32 / 1000), radius, height */
         if (pc[1] < 0x20) {
