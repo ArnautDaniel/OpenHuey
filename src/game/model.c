@@ -2036,3 +2036,8 @@ void func_002117C0(u8 *m, s32 i, f32 (*b)[4], void *local) {
         sceVu0MulMatrix(b, r, b);
     }
 }
+
+
+/* (does nothing) */
+void func_001F1ED0(void) {
+}
