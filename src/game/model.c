@@ -2778,3 +2778,31 @@ void func_00315E00(u8 *p, u8 *s) {
     sceVu0Normalize(a + 8, a + 8);
     sceVu0CopyVector(a + 12, anchor);
 }
+
+
+/* +0x14 of a chained point: its bone (+0x24) is aimed at it - X from the anchor (the bone's own
+ * position, or the point it hangs from, +0x2C) to the point, keeping the Y axis of the anchor's
+ * bone, made square, at the anchor */
+void func_002EE710(u8 *p, u8 *s) {
+    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 x[4] __attribute__((aligned(16)));
+    f32 up[4] __attribute__((aligned(16)));
+
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, a + 12);
+        sceVu0SubVector(x, (f32 *)p, anchor);
+        sceVu0CopyVector(up, a + 4);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+        sceVu0SubVector(x, (f32 *)p, anchor);
+        sceVu0CopyVector(up, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 4);
+    }
+    sceVu0CopyVector(a, x);
+    sceVu0OuterProduct(a + 8, a, up);
+    sceVu0OuterProduct(a + 4, a + 8, a);
+    sceVu0Normalize(a, a);
+    sceVu0Normalize(a + 4, a + 4);
+    sceVu0Normalize(a + 8, a + 8);
+    sceVu0CopyVector(a + 12, anchor);
+}
