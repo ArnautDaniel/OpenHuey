@@ -251,6 +251,15 @@ extern void func_002ECB50(u8 *p);
 extern void func_0029EF80(void *c, s32 room);
 extern s32 func_0016D6D0(Progress *p, u32 id, u32 slot);
 extern void func_001FFC70(VObject *ev);
+extern u8 *D_0044E980;            /* the running light / sound source */
+extern VObject *D_0044E970;       /* light / sound sources */
+extern VObject *D_00456DF0;       /* the music */
+extern void *D_003D6A40[];        /* the fades' steps by kind */
+extern s32 func_002D2120(u8 *o);
+extern void func_002D20A0(u8 *o);
+extern void func_002CF6F0(u8 *fade);
+extern void func_001FBE00(VObject *ev, s32 prio, void *step);   /* run a step (the fade's) */
+extern void func_001771A0(Progress *p, s32 who);
 
 void func_002029B0(VObject *ev) {
     Progress *p;
@@ -461,6 +470,87 @@ void func_002029B0(VObject *ev) {
     }
     case 0x6A: case 0x6B: case 0x6C:
         func_001FFC70(ev);
+        break;
+    case 0x57:   /* the event's +0xF8 with pc[1] */
+        VCALL(ev, 0xF8, void (*)(VObject *, s32))(ev, pc[1]);
+        break;
+    case 0x7E:   /* a light / sound source pc[1] on (pc[6]) at be32 pc[2..5] / 1000; pc[6] 0xFF: stop the
+                  * running one (D_0044E980) */
+        if (pc[6] == 0xFF) {
+            u8 *o = D_0044E980;
+
+            if (o != NULL && func_002D2120(o)) {
+                func_002D20A0(o);
+            }
+        } else {
+            VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, pc[1], pc[6] != 0, 0,
+                                                                          (f32)be32(pc + 2) / 1000.0f);
+        }
+        break;
+    case 0x5C: {   /* a screen fade (+0x20): pc[1] frames, kind pc[2] & 0xF (1 in, 4 out); bits 0xC0 the
+                    * music / sound fade with it (+0x38), bits 0x30 the volume ramp (Progress +0x1120) */
+        u8 *fade = (u8 *)ev + 0x20;
+        VObject *snd;
+        u8 kind;
+
+        func_002CF6F0(fade);
+        AT(ev, 0x11F0, u8) = PC(ev)[1];
+        AT(ev, 0x11F1, u8) = PC(ev)[2] & 0xF;
+        AT(ev, 0x11F2, u8) = 1;
+        AT(fade, 0x18, f32) = (f32)(0x80 / AT(ev, 0x11F0, u8));
+        func_001FBE00(ev, 0xFA, D_003D6A40[AT(ev, 0x11F1, u8)]);
+        kind = AT(ev, 0x11F1, u8);
+        snd = D_00456DF0;
+        switch (PC(ev)[2] & 0xC0) {
+        case 0x80:
+            if (snd != NULL) {
+                if (kind == 4) {
+                    VCALL(snd, 0x38, void (*)(VObject *, s32, s32))(snd, 1, 0);
+                } else if (kind == 1) {
+                    VCALL(snd, 0x38, void (*)(VObject *, s32, s32))(snd, 1, 0xFF);
+                }
+            }
+            break;
+        case 0x40:
+            if (snd != NULL) {
+                if (kind == 4) {
+                    VCALL(snd, 0x38, void (*)(VObject *, s32, s32))(snd, 0x5A, 0);
+                } else if (kind == 1) {
+                    VCALL(snd, 0x38, void (*)(VObject *, s32, s32))(snd, 0x5A, 0xFF);
+                }
+            }
+            break;
+        }
+        kind = AT(ev, 0x11F1, u8);
+        switch (PC(ev)[2] & 0x30) {
+        case 0x20:
+            if (D_00456DF0 != NULL) {
+                if (kind == 4) {
+                    AT(p, 0x1120, f32) = -1.0f;
+                } else if (kind == 1) {
+                    AT(p, 0x1120, f32) = 1.0f;
+                }
+            }
+            break;
+        case 0x10:
+            if (D_00456DF0 != NULL) {
+                if (kind == 4) {
+                    AT(p, 0x1120, f32) = -1.0f * (1.0f / (f32)AT(ev, 0x11F0, u8));
+                } else if (kind == 1) {
+                    AT(p, 0x1120, f32) = 1.0f / (f32)AT(ev, 0x11F0, u8);
+                }
+            }
+            break;
+        }
+        break;
+    }
+    case 0x5F:   /* wait for the fade */
+        if (AT(ev, 0x11F2, u8) != 0) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x15:   /* the progress' character pc[1] (+ func_001771A0) */
+        func_001771A0(p, (u8)func_001770D0(p, pc[1]));
         break;
     case 0x7C:   /* zone pc[1] (32): on, kind pc[18]; centre (3 x be32 / 1000), radius, height */
         if (pc[1] < 0x20) {
