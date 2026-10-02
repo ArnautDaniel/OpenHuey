@@ -2874,12 +2874,16 @@ static void bone_skin(u8 *m, s32 b, f32 (*out)[4]) {
                     (f32 (*)[4])(AT(m, 0x4C0, u8 *) + 0x10 + b * 0x70 + 0x30));
 }
 
-/* the part's texture (.TEX entry) through the character's texture set */
+/* the part's texture (.TEX entry): from the character's texture set (gBootMessage slot +0x24;
+ * 0x24-byte slots from +0x4: the .TEX file at +0x8, its count at +0xC - the original only
+ * needs the VRAM entry the upload went to, the PC decodes the entry itself) */
 static void *model_tex(u8 *m, s32 tex) {
-    if (tex < 0) {
+    u8 *slot = (u8 *)gBootMessage + 4 + AT(m, 0x24, u8) * 0x24;
+
+    if (tex < 0 || AT(slot, 0x0, u8) == 0 || AT(slot, 0x8, u8 *) == NULL || (u32)tex >= AT(slot, 0xC, u32)) {
         return NULL;
     }
-    return VCALL(gBootMessage, 0x28, void *(*)(VObject *, s32, s32))(gBootMessage, AT(m, 0x24, u8), tex);
+    return AT(slot, 0x8, u8 *) + 0x10 + tex * 0x10;
 }
 
 static void model_emit(u8 *m, const f32 *mvp, s32 n, s32 tex, s32 flags) {
