@@ -2704,3 +2704,4 @@ src/game/effects.c func_002E5660 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B00
 src/game/scene_game_members.c func_002EF480 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c func_002F0340 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=3..5 --pre=a0+0x34=0x3F7FFFFF..0x3F800001 --pre=a0+0x38=0x0..0x90 --pre=a1=0..2
 src/game/subscreen.c func_00384CE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8DDC=0x0200..0x04FF
+src/game/unsorted.c func_0031DE10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11040=0..0x8
