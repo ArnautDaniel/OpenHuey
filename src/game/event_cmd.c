@@ -258,6 +258,7 @@ extern void *D_003D6A40[];        /* the fades' steps by kind */
 extern s32 func_002D2120(u8 *o);
 extern void func_002D20A0(u8 *o);
 extern void func_002CF6F0(u8 *fade);
+extern void func_002CF3A0(u8 *fade, s32 kind);   /* jump a fade to its end */
 extern void func_001771A0(Progress *p, s32 who);
 void func_001FBE00(VObject *ev, s32 prio, void *step);
 extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
@@ -546,6 +547,15 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0x5D:   /* finish the fade now (if one runs) */
+        if (AT(ev, 0x11F2, u8) != 0) {
+            func_002CF3A0((u8 *)ev + 0x20, AT(ev, 0x11F1, u8));
+        }
+        AT(ev, 0x11F3, u8) = 1;
+        break;
+    case 0x5E:   /* the fade is over */
+        AT(ev, 0x11F2, u8) = 0;
+        break;
     case 0x5F:   /* wait for the fade */
         if (AT(ev, 0x11F2, u8) != 0) {
             EV_WAIT(ev) = 1;
