@@ -566,6 +566,11 @@ void func_002029B0(VObject *ev) {
     case 0x9D: {   /* character pc[1] plays animation be16 pc[2..3] (blend pc[4], speed pc[5]), held */
         u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
 
+#ifdef HG_NATIVE
+        if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
+            break;   /* (a character the PC build doesn't load yet) */
+        }
+#endif
         AT(c, 0xE0, u8) = 1;
         AT(c, 0xE2, u8) = 1;
         AT(c, 0xE3, u8) = 1;
@@ -576,6 +581,11 @@ void func_002029B0(VObject *ev) {
     case 0x9E: {   /* wait for character pc[1]'s animation to come round (track flag 0x20) */
         u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
 
+#ifdef HG_NATIVE
+        if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
+            break;
+        }
+#endif
         if ((AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
             EV_WAIT(ev) = 1;
         }
