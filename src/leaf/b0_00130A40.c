@@ -57,21 +57,6 @@ typedef struct B0_Heap {
     u32 count;
 } B0_Heap;
 
-void func_001691C0(B0_Heap *h) {
-    u32 i;
-
-    h->blocks[0].used = 0;
-    h->blocks[0].index = 0;
-    h->blocks[0].addr = h->base;
-    h->blocks[0].size = h->size;
-    for (i = 1; i < h->count; i++) {
-        h->blocks[i].used = 0;
-        h->blocks[i].index = i;
-        h->blocks[i].addr = h->base + h->size;
-        h->blocks[i].size = 0;
-    }
-}
-
 /* Store the parameters, then tail-call virtual +0xC (Reset) with them. */
 /* LZSS decompression: +0x18 source (4-byte header), +0x1C destination.
  * Flag bit 1 = literal byte, 0 = 16-bit back-reference (len = low 4 bits + 2,

@@ -319,3 +319,99 @@ void func_001BB990(u8 *r, s32 v) { AT(r, 0x304BF8, s32) = v; }
 
 /* +0x38 the renderer's own VRAM entry */
 s32 func_001BB980(u8 *r) { return AT(r, 0x304BE4, s32); }
+
+extern void func_0010D200(void *db, s32 field);   /* sceGsSwapDBuff */
+extern void sceGsSyncPath(s32 mode, s32 timeout);
+extern u64 D_0047D300[];   /* the frame's final packet: draw buffer -> display buffer */
+
+#define REND_VIF1_CHAN(r) AT(r, 0x304BB0, u32 *)
+
+/* wait for the previous frame's chain (VIF1 DMA) */
+void func_001B87D0(u8 *r) {
+    func_0010D988(REND_VIF1_CHAN(r), 0, 0);
+}
+
+/* show buffer 1's environment and send the final copy packet */
+void func_001B8750(u8 *r) {
+    FlushCache(0);
+    func_0010D200(r + 0x3006D0, 1);
+    FlushCache(0);
+    *_fbss &= ~0x40;
+    func_0010D6E8(_fbss, D_0047D300);
+}
+
+/* after the GIF finished: clear colour (+0x304BF8), clear on (XYZ2) or off (XYZ3, +0x304C04),
+ * then buffer 0's environment */
+void func_001B86A0(u8 *r) {
+    func_0010D988(_fbss, 0, 0);
+    sceGsSyncPath(0, 0);
+    AT(r, 0x300850, s32) = AT(r, 0x304BF8, s32);
+    AT(r, 0x300878, u64) = AT(r, 0x304C04, u8) == 0 ? GS_XYZ2 : 0xD;
+    FlushCache(0);
+    func_0010D200(r + 0x3006D0, 0);
+}
+
+extern void func_001B75E0(u8 *r);
+
+/* send this frame's layer chain over VIF1, set up the next frame's final packet, flip */
+void func_001B85B0(u8 *r) {
+    FlushCache(0);
+    *REND_VIF1_CHAN(r) = (*REND_VIF1_CHAN(r) & ~0x40) | 0x40;   /* CHCR.TTE: VIF codes in the tags */
+    func_0010D6E8(REND_VIF1_CHAN(r), REND_CHAIN(r, REND_BUF(r)));
+    AT(r, 0x3009C0, s32) = AT(r, 0x304BF8, s32);
+    AT(r, 0x3009E8, u64) = AT(r, 0x304C05, u8) == 1 ? 0xD : GS_XYZ2;
+    func_001B75E0(r);
+    func_001B7370(r);
+}
+
+/* The final packet: copy the draw buffer (32-bit, +0x304BEC) onto the display buffer as one
+ * sprite at the screen offset, blended with the previous frame by FIX alpha +0x304C06 when
+ * +0x304C05 is set (ABE). */
+void func_001B75E0(u8 *r) {
+    u64 *p = D_0047D300;
+    s32 dw = AT(r, 0x304C00, s16), dh = AT(r, 0x304C02, s16);
+    s32 w = AT(r, 0x304BFC, s16), h = AT(r, 0x304BFE, s16);
+    s32 base = AT(r, 0x304BEC, s32);
+    s32 ox = AT(r, 0x304C07, s8), oy = AT(r, 0x304C08, s8);
+    s32 u = 0, v = 0;
+
+    p[0] = DMA_TAG(DMA_CNT, 11, 0);
+    ((u32 *)p)[2] = VIF_NOP;
+    ((u32 *)p)[3] = VIF_DIRECT(11);
+    p[2] = GIF_TAG(5, 1, GIF_PACKED, 1);
+    p[3] = GIF_REG_AD;
+    p[4] = 0x310000A0 | (u64)1 << 32;   /* ZBUF: no Z writes */
+    p[5] = GS_ZBUF_1;
+    p[6] = 0x30000;                     /* TEST: Z always */
+    p[7] = GS_TEST_1;
+    p[8] = 0;
+    p[9] = GS_TEXFLUSH;
+    p[10] = 0x60;
+    p[11] = GS_TEX1_1;
+    p[12] = (u64)AT(r, 0x304C06, u8) << 32 | 0x64;   /* ALPHA: (Cs - Cd) * FIX + Cd */
+    p[13] = GS_ALPHA_1;
+    p[14] = GIF_TAG(1, 1, GIF_REGLIST, 8);
+    p[15] = GIF_REGS(GIF_CLAMP_1, GIF_TEX0_1, GIF_PRIM, GIF_RGBAQ, GIF_UV, GIF_XYZ2, GIF_UV, GIF_XYZ2);
+    p[16] = (u64)(s64)(dw - 1) << 14 | 0xA | (u64)(s64)(dh - 1) << 34;   /* region clamp */
+    if (base == 0x50000) {
+        p[17] = (u64)(s64)(base >> 6) | 0xA8040000 | (u64)6 << 32;
+    } else if ((u32)dw <= 0x200 && (u32)dh <= 0x1C0) {
+        p[17] = (u64)(s64)(base >> 6) | (u64)(s64)(dw >> 6) << 14 | 0x64000000 | (u64)6 << 32;
+    } else {
+        p[17] = (u64)(s64)(base >> 6) | (u64)(s64)(dw >> 6) << 14 | 0xA9300000 | (u64)0x2007E006 << 32;
+    }
+    p[18] = (u64)AT(r, 0x304C05, u8) << 6 | 0x116;   /* PRIM: sprite, textured, UV */
+    p[19] = AT(r, 0x304BF4, u32);
+    if (w < dw) {
+        u = (dw - w) * 8;
+    }
+    if (h < dh) {
+        v = (dh - h) * 8;
+    }
+    p[20] = (u64)(s64)(u + 8) | (u64)(s64)(v + 8) << 16;
+    p[21] = (u64)(((0x800 - (w >> 1)) + ox) * 16) | (u64)(((0x800 - (h >> 1)) + oy) * 16) << 16;
+    p[22] = (u64)(s64)(dw * 16 - u + 8) | (u64)(s64)(dh * 16 - v + 8) << 16;
+    p[24] = DMA_TAG(DMA_END, 0, 0);
+    p[25] = 0;
+    p[23] = (u64)(((w >> 1) + 0x800 + ox) * 16) | (u64)(((h >> 1) + 0x800 + oy) * 16) << 16;
+}

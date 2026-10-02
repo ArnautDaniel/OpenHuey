@@ -68,6 +68,7 @@ FRAME = 0x10000              # writes within this much below sp are the function
 RET_MAGIC = 0x0DEAD000       # return address sentinel
 DEFAULT_RUNS = 20
 MAX_STEPS = 50_000           # per run; --max-steps to change
+IRQ_FLAGS: list[int] = []    # --irq: bytes set to 1 every 64 steps (flags interrupt handlers set)
 OUTPARAM = 4                 # bytes a stub writes through a stack pointer argument
 # Runtime helpers that are executed instead of stubbed: they are part of how the
 # original code expresses something C code writes inline (e.g. PTMF calls).
@@ -538,6 +539,10 @@ class CPU:
             self.steps += 1
             if self.steps > self.max_steps:
                 raise TimeoutError
+            if IRQ_FLAGS and self.steps % 64 == 0:
+                for a in IRQ_FLAGS:   # an "interrupt": not one of the function's own writes
+                    self.m.write(a, 1, 1)
+                    self.m.written.pop(Memory.norm(a), None)
             self.visited.add(pc)
             d = self.decoded.get(pc)
             if d is None:
@@ -1684,6 +1689,8 @@ def option_parser() -> argparse.ArgumentParser:
                     help="a float value stubbed calls return half the time, repeatable")
     ap.add_argument("--outparam", type=int, default=OUTPARAM,
                     help="bytes stubs write through stack pointer arguments (16: a whole vector)")
+    ap.add_argument("--irq", action="append", default=[], type=lambda x: int(x, 0),
+                    help="byte address an interrupt sets to 1 every 64 steps (a polled flag)")
     ap.add_argument("--stub-ret-prob", type=float, default=0.5,
                     help="how often stubs return a --stub-ret value (1.0: only those)")
     return ap
@@ -1712,6 +1719,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob
+    IRQ_FLAGS[:] = opts.irq
     OUTPARAM_BYTES[0] = opts.outparam
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)

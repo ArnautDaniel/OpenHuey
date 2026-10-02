@@ -24,6 +24,17 @@
 #define GIF_REGLIST 1
 #define GIF_IMAGE 2
 #define GIF_REG_AD 0xE   /* register list entry: address + data */
+/* register list entries (REGLIST / PACKED descriptors) */
+#define GIF_PRIM 0x0
+#define GIF_RGBAQ 0x1
+#define GIF_UV 0x3
+#define GIF_XYZ2 0x5
+#define GIF_TEX0_1 0x6
+#define GIF_CLAMP_1 0x8
+#define GIF_REGS(...) GIF_REGS_(__VA_ARGS__)
+#define GIF_REGS_(a, b, c, d, e, f, g, h) \
+    ((u64)(a) | (u64)(b) << 4 | (u64)(c) << 8 | (u64)(d) << 12 | (u64)(e) << 16 | (u64)(f) << 20 | \
+     (u64)(g) << 24 | (u64)(h) << 28)
 
 /* GS registers (A+D addresses) */
 #define GS_PRIM 0x00
@@ -36,6 +47,7 @@
 #define GS_SCISSOR_1 0x40
 #define GS_ALPHA_1 0x42
 #define GS_PABE 0x49
+#define GS_TEXFLUSH 0x3F
 #define GS_FBA_1 0x4A
 #define GS_FRAME_1 0x4C
 #define GS_ZBUF_1 0x4E

@@ -55,3 +55,7 @@ int func_0020E8D0(void) { return 0; }
 int func_0020FEA0(void) { return 0; }
 int func_0020E9F0(void) { return 0; }
 int func_0020E870(void) { return 0; }
+
+/* per-frame ticks of the ADX sound system and the memory card: nothing to do yet */
+void func_001AACC0(void *snd) { (void)snd; }
+void func_00226510(void *mc) { (void)mc; }

@@ -109,3 +109,19 @@ s32 func_0010C7B0(u64 *c, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32 r, s32 g, s
     c[10] = (s16)ztest != 0 ? (u64)(((s16)ztest & 3) << 17) | 0x10000 : 0x30000;
     return 6;
 }
+
+extern void func_0010C440(void *disp);   /* sceGsPutDispEnv */
+extern void sceGsPutDrawEnv(void *giftag);
+
+/* sceGsSwapDBuff(db, field): show display environment `field`, send that buffer's drawing
+ * environment (the sceGsDBuff layout: two display environments, then two GIF packets). */
+void func_0010D200(u8 *db, s32 field) {
+    s32 f = field & 1;
+
+    func_0010C440(db + f * 0x28);
+    if (f != 0) {
+        sceGsPutDrawEnv(db + 0x1C0);
+        return;
+    }
+    sceGsPutDrawEnv(db + 0x50);
+}

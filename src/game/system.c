@@ -345,3 +345,43 @@ void func_001BF080(u8 *s) {
     func_0016C530(s + 0x319900);
     func_00169680(s + 0x319900);
 }
+
+extern void func_001B87D0(void *renderer);
+extern void func_001B8750(void *renderer);
+extern void func_001B86A0(void *renderer);
+extern void func_001B85B0(void *renderer);
+extern void func_00210230(void *drv);     /* sound driver tick */
+extern void func_001AACC0(void *snd);     /* ADX sound system tick */
+extern void func_0016BFB0(void *loader);  /* file loader tick */
+extern void func_002D42A0(void *fader);   /* fader tick */
+extern void func_001BE4B0(void *pads);    /* pad tick */
+extern void func_00226510(void *mc);      /* memory card tick */
+
+/* +0x10 end of frame: finish the renderer's frame, wait for the vblank (at least two since the
+ * last frame: the game runs at 30 fps), restart the timers, send the frame, then tick the parts. */
+void func_001BEEF0(u8 *s) {
+    s32 n;
+
+    func_001B87D0(s + 0x460);
+    VSYNC_WAIT(D_0047B204);
+    n = D_0047B20C - AT(s, 0x1C, s32);
+    if (n < 0) {
+        n = -n;
+    }
+    if (n < 2) {
+        VSYNC_WAIT(D_0047B204);
+    }
+    AT(s, 0x1C, s32) = D_0047B20C;
+    HW_WRITE32(0x10000800, 0);   /* timer 1 count */
+    func_001B8750(s + 0x460);
+    func_001B86A0(s + 0x460);
+    VSYNC_WAIT(D_0047B208);
+    HW_WRITE32(0x10000000, 0);   /* timer 0 count */
+    func_001B85B0(s + 0x460);
+    func_00210230(s + 0x395D40);
+    func_001AACC0(s + 0x305280);
+    func_0016BFB0(s + 0x319900);
+    func_002D42A0(s + 0x300);
+    func_001BE4B0(s + 0x40);
+    func_00226510(s + 0x390);
+}

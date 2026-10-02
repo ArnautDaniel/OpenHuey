@@ -58,28 +58,40 @@ void hg_hw_write32(unsigned addr, unsigned value) {
     (void)value;
 }
 
-/* The game's "wait for vsync" (system +0x1C, PS2 0x001BED00) spins until the vblank interrupts
- * set their flags. On PC this is the frame boundary: pace to 60 Hz, run the vblank handlers. */
+/* The PC vblank clock: one tick = one PS2 field (59.94 Hz): present the frame and pump input
+ * (video.c), wait for the tick's time, then run the game's vblank handlers (start + end). */
 #include <time.h>
 
-extern void hg_frame(void);   /* video.c: present, input */
+extern void hg_frame(void);   /* video.c */
 
-void func_001BED00(void) {
+static void hg_vblank_tick(void) {
     static struct timespec next;
     struct timespec now;
 
-    D_0047B204 = 0;
-    D_0047B208 = 0;
     hg_frame();
     clock_gettime(CLOCK_MONOTONIC, &now);
     if (next.tv_sec == 0 || now.tv_sec > next.tv_sec + 1) {
         next = now;
     }
-    next.tv_nsec += 16683333;   /* 59.94 Hz */
+    next.tv_nsec += 16683333;
     if (next.tv_nsec >= 1000000000) {
         next.tv_nsec -= 1000000000;
         next.tv_sec++;
     }
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
     hg_vblank();
+}
+
+/* VSYNC_WAIT (include/ps2hw.h): clear the flag, tick until a vblank handler sets it */
+void hg_wait_flag(volatile unsigned char *flag) {
+    *flag = 0;
+    while (!*flag) {
+        hg_vblank_tick();
+    }
+}
+
+/* The game's "wait for vsync" (system +0x1C, PS2 0x001BED00): vblank start, then end. */
+void func_001BED00(void) {
+    hg_wait_flag(&D_0047B204);
+    hg_wait_flag(&D_0047B208);
 }
