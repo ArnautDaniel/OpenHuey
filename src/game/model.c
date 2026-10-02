@@ -1757,3 +1757,74 @@ void func_001F4D70(u8 *m) {
         AT(m, 0x568, f32) = anim_frames(AT(m, 0x588, u8 *)) * (AT(m, 0x564, f32) / anim_frames(AT(m, 0x584, u8 *)));
     }
 }
+
+extern void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w);   /* pose a chain from an animation */
+
+/* apply the animations to their bone chains: the layers' (3 x 2 at +0x6CC, 0x1C apart) and
+ * the two slots' two animations (+0x584) */
+void func_001F5850(u8 *m) {
+    s32 i, j;
+
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *s = m + i * 0x60 + j * 0x1C + 0x6CC;
+
+            if (AT(s, 0x10, void *) != NULL) {
+                func_001F5930(m, AT(s, 0x14, void *), AT(s, 0x10, void *), AT(s, 0x0, f32), AT(s, 0x18, f32));
+            }
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *s = m + i * 0xA0 + 0x564 + j * 4;
+
+            if (AT(s, 0x20, void *) != NULL) {
+                func_001F5930(m, AT(s, 0x28, void *), AT(s, 0x20, void *), AT(s, 0x0, f32), AT(s, 0x98, f32));
+            }
+        }
+    }
+}
+
+extern void func_0025C440(void *tmp, u8 *out, u8 *a, u8 *b, f32 t);   /* blend two bones */
+
+/* blend two bone lists { +0x4 first bone (next +0x48, id +0x40), +0x8 count }: the longer
+ * one (by t, or the other by 1 - t) takes in each of its bones the other's bone with the same
+ * id; returns the blended list (one missing: the other) */
+void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
+    u8 *a = listA, *b = listB;
+    f32 tmp[4] __attribute__((aligned(16)));
+    u8 *big, *small, *n;
+    s32 i;
+
+    tmp[3] = tmp[2] = tmp[1] = tmp[0] = 0.0f;
+    if (a == NULL && b == NULL) {
+        return NULL;
+    }
+    if (b == NULL) {
+        return a;
+    }
+    if (a == NULL) {
+        return b;
+    }
+    if (AT(a, 0x8, s32) < AT(b, 0x8, s32)) {
+        big = b;
+        small = a;
+        t = 1.0f - t;
+    } else {
+        big = a;
+        small = b;
+    }
+    n = AT(big, 0x4, u8 *);
+    for (i = 0; i < AT(big, 0x8, s32); i++, n = AT(n, 0x48, u8 *)) {
+        u8 *o = AT(small, 0x4, u8 *);
+        s32 k;
+
+        for (k = 0; k < AT(small, 0x8, s32); k++, o = AT(o, 0x48, u8 *)) {
+            if (AT(n, 0x40, s32) == AT(o, 0x40, s32)) {
+                func_0025C440(tmp, n, n, o, t);
+                break;
+            }
+        }
+    }
+    return big;
+}
