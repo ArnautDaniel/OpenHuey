@@ -30,15 +30,15 @@ enum {
 };
 
 typedef struct SubScreen {
-    /* 0x00000 */ void **vtbl;          /* +0x28 take over (func_00384C30), +0x34 controller layout */
+    /* 0x00000 */ void **vtbl;          /* +0x28 take over (SubScreen_TakeOver), +0x34 controller layout */
     /* 0x00004 */ u8 mode;              /* SUB_MODE_* */
     /* 0x00005 */ u8 pad5[3];
-    /* 0x00008 */ u8 pool[0x15F0];      /* the entries' pool (func_00264900) */
+    /* 0x00008 */ u8 pool[0x15F0];      /* the entries' pool (SubPool_Reset) */
     /* 0x015F8 */ u16 unk15F8[0x80];
     /* 0x016F8 */ u8 showBehind;        /* the owner keeps drawing its own screen (false once
                                            the fade to black is done) */
     /* 0x016F9 */ u8 pad16F9[3];
-    /* 0x016FC */ PTMF draw;            /* the fades and the running screen (func_003999C0) */
+    /* 0x016FC */ PTMF draw;            /* the fades and the running screen (SubScreen_Update) */
     /* 0x01708 */ PTMF state;           /* the page / editor running */
     /* 0x01714 */ PTMF resume;          /* the in-game menu page to reopen on */
     /* 0x01720 */ u8 pad1720[0x20];
@@ -50,7 +50,7 @@ typedef struct SubScreen {
     /* 0x97764 */ Task ask;             /* questions (restore defaults?) */
     /* 0x97868 */ Task text;            /* the screen's text */
     /* 0x9796C */ u8 pad9796C[0x14];
-    /* 0x97980 */ u8 textObj[0x11140];  /* a text object (func_002D03A0) */
+    /* 0x97980 */ u8 textObj[0x11140];  /* a text object (TextObj_ctor) */
     /* 0xA8AC0 */ BootCard card;        /* the load / save screens */
     /* 0xA8C44 */ s8 opt[7];            /* the options being edited (system data +0x30): 0 sound
                                            output, 2 / 3 screen x / y, 4 vibration, 6 layout */
@@ -91,6 +91,6 @@ _Static_assert(__builtin_offsetof(SubScreen, open) == 0xA8DE5, "open");
 /* the page's work, by offset (its layout depends on the page) */
 #define SUB_PAGE(s, off, type) AT((s)->page, off, type)
 
-s32 func_003999C0(SubScreen *s);   /* per frame; returns showBehind */
+s32 SubScreen_Update(SubScreen *s);   /* per frame; returns showBehind */
 
 #endif /* SUBSCREEN_H */

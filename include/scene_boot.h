@@ -26,7 +26,7 @@ typedef struct BootCard {
     /* 0x014 */ s32 timer;
     /* 0x018 */ Task task;
     /* 0x11C */ SysData *sys;
-    /* 0x120 */ void *buf0;     /* (func_002BFB00) */
+    /* 0x120 */ void *buf0;     /* (SaveScreen_Init) */
     /* 0x124 */ void *buf1;
     /* 0x128 */ u8 slots[12];   /* per save: 0 used, 1 empty, 2 broken */
     /* 0x134 */ SysData saved;  /* restored when reading fails */

@@ -473,13 +473,13 @@ u32 func_0037F7D0(SceneBoot *boot) {
     return 1;
 }
 
-extern void func_002BFB00(BootCard *card, s32, s32);
-extern void func_002BF2F0(BootCard *card);
+extern void SaveScreen_Init(BootCard *card, s32, s32);
+extern void BootCard_Check(BootCard *card);
 
 /* Boot step: run the object at +0xC7440 until it reports done (+0xC7444 < 0). */
 u32 func_0037FE50(SceneBoot *boot) {
     if (boot->stepTimer == 0) {
-        func_002BFB00(&boot->card, 0, 0);
+        SaveScreen_Init(&boot->card, 0, 0);
         boot->card.state = 0;
         boot->card.hidden = 0;
         boot->stepTimer = 1;
@@ -487,7 +487,7 @@ u32 func_0037FE50(SceneBoot *boot) {
     if (boot->card.state < 0) {
         return 0;
     }
-    func_002BF2F0(&boot->card);
+    BootCard_Check(&boot->card);
     return 1;
 }
 
@@ -495,7 +495,7 @@ u32 func_0037FE50(SceneBoot *boot) {
 /* Boot step (last): the caution screen, shown with tasks[0] until frame 0x3F. */
 u32 func_0037F980(SceneBoot *boot) {
     if (boot->stepTimer == 0x3F) {
-        func_003844E0(&boot->tasks[0]);
+        Task_Close(&boot->tasks[0]);
         return 0;
     }
     if (boot->stepTimer == 0) {
@@ -507,9 +507,9 @@ u32 func_0037F980(SceneBoot *boot) {
     boot->stepTimer++;
     if (boot->stepTimer != 0) {
         func_0037F2E0(boot);
-        func_00384A90(&boot->tasks[0], 1);
+        Task_Open(&boot->tasks[0], 1);
     }
-    func_00384BC0(&boot->tasks[0]);
+    Task_Run(&boot->tasks[0]);
     return 1;
 }
 
@@ -546,8 +546,8 @@ u32 func_00380050(SceneBoot *boot) {
         break;
     case 1:
         /* ask: switch to progressive? */
-        func_00384A90(ask, 9);
-        func_00384BA0(ask);
+        Task_Open(ask, 9);
+        Task_Update(ask);
         boot->stepTimer = 2;
         /* fall through */
     case 2:
@@ -564,8 +564,8 @@ u32 func_00380050(SceneBoot *boot) {
         break;
     case 3:
         /* ask: keep this mode? */
-        func_00384A90(ask, 10);
-        func_00384BA0(ask);
+        Task_Open(ask, 10);
+        Task_Update(ask);
         boot->stepTimer = 4;
         /* fall through */
     case 4:
@@ -589,16 +589,16 @@ u32 func_00380050(SceneBoot *boot) {
     }
 
     if (boot->stepFlag == 0) {
-        func_00384BA0(ask);
+        Task_Update(ask);
     }
-    func_00384B60(ask);
+    Task_Draw(ask);
     if (counting) {
         u32 secs = (u8)(boot->countdown / 30);
 
         if ((s32)secs >= 10) {
             secs = 9;
         }
-        func_00384730(&boot->tasks[2], 0xF8, 0xB3, 0, 0x80, 0x30, sCountFmt, secs & 0xFF);
+        Task_PrintfEx(&boot->tasks[2], 0xF8, 0xB3, 0, 0x80, 0x30, sCountFmt, secs & 0xFF);
     }
 
     /* same button wait as the other steps, but drawn through tasks[1] */
@@ -608,7 +608,7 @@ u32 func_00380050(SceneBoot *boot) {
     busy = 0;
     if (boot->stepFlag != 0) {
         if (!(D_0047E37C & PAD_CROSS)) {
-            func_00384590(&boot->tasks[1], 8, 0, 0x80, 0x33);
+            Task_ShowMessage(&boot->tasks[1], 8, 0, 0x80, 0x33);
             busy = 1;
         } else {
             boot->stepFlag = 0;

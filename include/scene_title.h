@@ -43,7 +43,7 @@ typedef struct SceneTitle {
     /* 0x11DA95 */ u8 pad11DA95[0x2B];
     /* 0x11DAC0 */ u8 bgmWork[0x231E4]; /* the music stream's work buffer */
     /* 0x140CA4 */ BgmCtl bgm;
-    /* 0x140CC0 */ PTMF seq;            /* the title's own sequence (func_0012FB50 runs it) */
+    /* 0x140CC0 */ PTMF seq;            /* the title's own sequence (SceneTitle_StateTitle runs it) */
     /* 0x140CCC */ f32 movieVolume;
     /* 0x140CD0 */ u8 demo;             /* the next attract movie (D_003B0050) */
     /* 0x140CD1 */ u8 pad140CD1[0xF];

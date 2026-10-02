@@ -30,21 +30,21 @@ extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vs
 extern f32 func_0031C058(f32 x);      /* cosf */
 extern f32 func_0031C248(f32 x);      /* sinf */
 
-void func_00382D30(Task *t);
-void func_00383450(Task *t);
-void func_00383550(Task *t);
-void func_003838F0(Task *t);
-void func_00383A20(Task *t);
-void func_00383AB0(Task *t);
-void func_00383BF0(Task *t);
-void func_00383CA0(Task *t);
-void func_00383D20(Task *t);
-u16 func_00382730(Task *t, TextCursor *src);
-void func_003829E0(Task *t);
-void func_00382410(Task *t);
-void func_00381BB0(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g);
-void func_00382000(Task *t);
-s32 func_003821F0(Task *t, TextCursor *c);
+void Task_DrawPage(Task *t);
+void Task_StateChild(Task *t);
+void Task_StateChoice(Task *t);
+void Task_StateWaitButton(Task *t);
+void Task_StateWaitFrames(Task *t);
+void Task_StateNextPage(Task *t);
+void Task_StateGlyphDelay(Task *t);
+void Task_StatePause(Task *t);
+void Task_StateType(Task *t);
+u16 Task_LineWidth(Task *t, TextCursor *src);
+void Task_Layout(Task *t);
+void Task_CollectChoices(Task *t);
+void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g);
+void Task_BeginDraw(Task *t);
+s32 TextCursor_Step(Task *t, TextCursor *c);
 
 #define RENDERER_ALLOC(n, layer) \
     VCALL(D_0044E4F0, 0x10, u64 *(*)(void *, s32, s32))(D_0044E4F0, n, layer)
@@ -149,14 +149,14 @@ Task *Task_dtor(Task *t, s32 flags) {
 }
 
 /* line height */
-s32 func_0037E400(Task *t) {
+s32 Task_LineHeight(Task *t) {
     return 25;
 }
 
-void func_00380C00(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
+void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
 
 /* the box frame, a little larger than the text */
-void func_0037E410(Task *t) {
+void Task_BoxSize(Task *t) {
     s32 w, h;
 
     if (t->flags & 4) {
@@ -168,12 +168,12 @@ void func_0037E410(Task *t) {
         if (h >= 0x11) {
             h -= 0x10;
         }
-        func_00380C00(t, t->x, t->y + 6, w, h, 0x60, t->layer);
+        Task_DrawBox(t, t->x, t->y + 6, w, h, 0x60, t->layer);
     }
 }
 
 /* copy message `id` to name `slot` (code 0x13; up to 7 bytes) */
-void func_00380990(void *self, s32 slot, s32 id) {
+void Msg_SetName(void *self, s32 slot, s32 id) {
     u8 *src = msg_text(id & 0xFFFF);
     char *dst = D_01991F50[slot & 0xFF];
     s32 i = 0;
@@ -198,7 +198,7 @@ void func_00380990(void *self, s32 slot, s32 id) {
 }
 
 /* copy system message `id` (0x100 + id of the language 0 table) to parameter string `slot` */
-void func_00380A80(void *self, s32 slot, s32 id) {
+void Msg_SetParamSystem(void *self, s32 slot, s32 id) {
     u8 *src = msg_text((u16)((id & 0xFFFF) + 0x8100));
     char *dst = D_01991ED0[slot & 0xFF];
     s32 i = 0;
@@ -223,7 +223,7 @@ void func_00380A80(void *self, s32 slot, s32 id) {
 }
 
 /* printf to parameter string `slot` */
-void func_00380B80(void *self, s32 slot, const char *fmt, ...) {
+void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
@@ -233,7 +233,7 @@ void func_00380B80(void *self, s32 slot, const char *fmt, ...) {
 
 /* The box: a dark rectangle (centre x, y; w x h) whose edges and rounded corners fade out over
  * 32 pixels: a sprite, four gradient strips and four triangle fans in one packet. */
-void func_00380C00(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer) {
+void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer) {
     static const f32 angles[5] = {0.0f, 0x1.921fb6p-2f, 0x1.921fb6p-1f, 0x1.2d97c8p+0f, 0x1.921fb6p+0f};
     u64 *p = RENDERER_ALLOC(0x47, layer);
     u64 rgba, *f;
@@ -340,7 +340,7 @@ void func_00380C00(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer) {
 /* Draw glyph `g` as a w x h sprite at x, y. color: low 6 bits the CLUT, 0x40 / 0x80 blend
  * modes. Big-font glyphs (0x1A..0x1C) come from the language's font texture, uploaded when its
  * VRAM slot was reassigned. */
-void func_00381BB0(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
+void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
     u8 *font, *tex;
     s32 slot, u, v;
     u64 *p;
@@ -427,7 +427,7 @@ void func_00381BB0(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
 
 /* Start drawing: make sure the small font is in VRAM (else nothing is drawn: fontSlot -1),
  * draw the frame, then the text state (blending, font TEX0, bilinear, sprites). */
-void func_00382000(Task *t) {
+void Task_BeginDraw(Task *t) {
     u8 *font;
     u64 *p;
 
@@ -443,7 +443,7 @@ void func_00382000(Task *t) {
             return;
         }
     }
-    func_0037E410(t);
+    Task_BoxSize(t);
     p = RENDERER_ALLOC(7, t->layer);
     if (p == NULL) {
         return;
@@ -468,7 +468,7 @@ void func_00382000(Task *t) {
 
 /* Step over control code / nested string handling at c->p: 0 handled (moved on), 1 a glyph,
  * 2 a big-font glyph (2 bytes); the caller moves past glyphs. */
-s32 func_003821F0(Task *t, TextCursor *c) {
+s32 TextCursor_Step(Task *t, TextCursor *c) {
     u8 *p = c->p;
 
     switch (*p) {
@@ -513,7 +513,7 @@ s32 func_003821F0(Task *t, TextCursor *c) {
 }
 
 /* Collect the options of a choice (code 0x0F) on the page: where each is drawn, what it leads to. */
-void func_00382410(Task *t) {
+void Task_CollectChoices(Task *t) {
     TextCursor c;
     s32 hidden = 0, done = 0, x, y, n, i;
 
@@ -540,11 +540,11 @@ void func_00382410(Task *t) {
         case 0x14:
             c.p = p + 1;
             x = t->x + (t->w >> 1);
-            x -= (u16)func_00382730(t, &c);
+            x -= (u16)Task_LineWidth(t, &c);
             break;
         case 0x12:
             c.p = p + 1;
-            x = t->x - ((u16)func_00382730(t, &c) >> 1);
+            x = t->x - ((u16)Task_LineWidth(t, &c) >> 1);
             break;
         case 0x0F:
             t->optX[t->nOptions] = x - t->glyphW;
@@ -555,7 +555,7 @@ void func_00382410(Task *t) {
             break;
         case 0x01:
             x = t->x - (t->w >> 1);
-            y += (u8)func_0037E400(t);
+            y += (u8)Task_LineHeight(t);
             c.p += 1;
             break;
         case 0x00:
@@ -567,7 +567,7 @@ void func_00382410(Task *t) {
             }
             break;
         default:
-            n = (u8)func_003821F0(t, &c);
+            n = (u8)TextCursor_Step(t, &c);
             if (n != 0) {
                 if (!hidden) {
                     x += glyph_w(t, c.p);
@@ -580,7 +580,7 @@ void func_00382410(Task *t) {
 }
 
 /* Width of the line at `src` (to its end, a new line, a page break or a choice). */
-u16 func_00382730(Task *t, TextCursor *src) {
+u16 Task_LineWidth(Task *t, TextCursor *src) {
     TextCursor c = *src;
     s32 hidden = 0, done = 0, n;
     u16 w = 0;
@@ -609,7 +609,7 @@ u16 func_00382730(Task *t, TextCursor *src) {
             }
             break;
         default:
-            n = (u8)func_003821F0(t, &c);
+            n = (u8)TextCursor_Step(t, &c);
             if (n != 0) {
                 if (!hidden) {
                     w += glyph_w(t, c.p);
@@ -623,27 +623,27 @@ u16 func_00382730(Task *t, TextCursor *src) {
 }
 
 /* width of a line of `text` at glyph width `glyphW` */
-u16 func_00382940(Task *t, u8 *text, s32 glyphW) {
+u16 Text_LineWidth(Task *t, u8 *text, s32 glyphW) {
     TextCursor c;
 
     t->glyphW = glyphW;
     c.p = text;
     c.depth = 0;
-    return func_00382730(t, &c);
+    return Task_LineWidth(t, &c);
 }
 
 /* width of the first line of message `id` at glyph width `glyphW` */
-u16 func_00382970(Task *t, s32 id, s32 glyphW) {
+u16 Task_MessageWidth(Task *t, s32 id, s32 glyphW) {
     TextCursor c;
 
     c.p = msg_text(id & 0xFFFF);
     t->glyphW = glyphW;
     c.depth = 0;
-    return func_00382730(t, &c);
+    return Task_LineWidth(t, &c);
 }
 
 /* Lay out the page at the typing position: the text's size (widest line, line heights). */
-void func_003829E0(Task *t) {
+void Task_Layout(Task *t) {
     TextCursor c;
     s32 hidden = 0, done = 0, lineW = 0, w = 0, linesH = 0, h = 0, n;
 
@@ -673,12 +673,12 @@ void func_003829E0(Task *t) {
                 w = lineW;
             }
             lineW = 0;
-            linesH += (u8)func_0037E400(t);
+            linesH += (u8)Task_LineHeight(t);
             c.p += 1;
             break;
         case 0x0B:
             w = p[1] * t->glyphW;
-            h = c.p[2] * (u8)func_0037E400(t);
+            h = c.p[2] * (u8)Task_LineHeight(t);
             done = 1;
             break;
         case 0x00:
@@ -693,7 +693,7 @@ void func_003829E0(Task *t) {
                 if (w < lineW) {
                     w = lineW;
                 }
-                linesH += (u8)func_0037E400(t);
+                linesH += (u8)Task_LineHeight(t);
             }
             if (h < linesH) {
                 h = linesH;
@@ -701,7 +701,7 @@ void func_003829E0(Task *t) {
             done = 1;
             break;
         default:
-            n = (u8)func_003821F0(t, &c);
+            n = (u8)TextCursor_Step(t, &c);
             if (n != 0) {
                 if (!hidden) {
                     lineW += glyph_w(t, c.p);
@@ -717,7 +717,7 @@ void func_003829E0(Task *t) {
 
 /* Draw the page: the first `shown` steps of it, with the page arrow and the choice cursor.
  * Furigana (0x16 base 0x18 reading 0x17) is drawn small, centred above its base text. */
-void func_00382D30(Task *t) {
+void Task_DrawPage(Task *t) {
     TextCursor c, r;
     s32 x, y, saveX = 0, saveY = 0, ruby = 0, baseW = 0, rubyW, n;
     u8 color;
@@ -729,7 +729,7 @@ void func_00382D30(Task *t) {
     x = t->x - (t->w >> 1);
     color = t->color;
     y += 4;
-    func_00382000(t);
+    Task_BeginDraw(t);
     if (t->shown != 0) {
         i = 0;
         do {
@@ -743,7 +743,7 @@ void func_00382D30(Task *t) {
                 saveY = y;
                 rubyW = 0;
                 while (*r.p != 0x17) {
-                    n = (u8)func_003821F0(t, &r);
+                    n = (u8)TextCursor_Step(t, &r);
                     if (n != 0) {
                         rubyW += glyph_w(t, r.p) * 5 / 8;
                         r.p += n;
@@ -765,12 +765,12 @@ void func_00382D30(Task *t) {
                 break;
             case 0x12:
                 c.p += 1;
-                x = t->x - ((u16)func_00382730(t, &c) >> 1);
+                x = t->x - ((u16)Task_LineWidth(t, &c) >> 1);
                 break;
             case 0x14:
                 c.p += 1;
                 x = t->x + (t->w >> 1);
-                x -= (u16)func_00382730(t, &c);
+                x -= (u16)Task_LineWidth(t, &c);
                 break;
             case 0x04:
                 color = t->baseColor & 0x80;
@@ -785,7 +785,7 @@ void func_00382D30(Task *t) {
                     s32 b = 32 - (t->frames & 0x3F);
 
                     b = b > 0 ? b * 2 : -b * 2;
-                    func_00381BB0(t, x, y + (b + 32) / 6, t->glyphW, t->glyphH, 8, D_0047B148);
+                    Task_DrawGlyph(t, x, y + (b + 32) / 6, t->glyphW, t->glyphH, 8, D_0047B148);
                 }
                 c.p += 1;
                 break;
@@ -793,11 +793,11 @@ void func_00382D30(Task *t) {
                 c.p = p + 1;
                 if (p[1] != 2) {
                     x = t->x - (t->w >> 1);
-                    y += (u8)func_0037E400(t);
+                    y += (u8)Task_LineHeight(t);
                 }
                 break;
             default:
-                n = (u8)func_003821F0(t, &c);
+                n = (u8)TextCursor_Step(t, &c);
                 if (n == 0) {
                     break;
                 }
@@ -812,10 +812,10 @@ void func_00382D30(Task *t) {
 
                         dy = (D_0044AD00[idx] & 0xF) * t->glyphW / 16;
                     }
-                    func_00381BB0(t, x, y + dy, t->glyphW, t->glyphH, color, g);
+                    Task_DrawGlyph(t, x, y + dy, t->glyphW, t->glyphH, color, g);
                     x += glyph_w(t, c.p);
                 } else {
-                    func_00381BB0(t, x, y, 10, 12, color, c.p);
+                    Task_DrawGlyph(t, x, y, 10, 12, color, c.p);
                     x += glyph_w(t, c.p) * 5 / 8;
                 }
                 baseW = (u16)(baseW + glyph_w(t, c.p));
@@ -826,7 +826,7 @@ void func_00382D30(Task *t) {
         } while (i != t->shown);
     }
     if (t->mode == 2) {
-        func_00381BB0(t, t->optX[t->answer] - 4, t->optY[t->answer] + 4, t->glyphW, t->glyphH, 9, D_0047B144);
+        Task_DrawGlyph(t, t->optX[t->answer] - 4, t->optY[t->answer] + 4, t->glyphW, t->glyphH, 9, D_0047B144);
     }
 }
 
@@ -835,13 +835,13 @@ void Task_StateIdle(Task *t) {
 }
 
 /* state: run the child task until it's done, then close */
-void func_00383450(Task *t) {
+void Task_StateChild(Task *t) {
     Task *c = t->child;
 
     c->frames++;
     ptmf_scall(c, &c->state);
     if (c->mode != 0 && c->mode != 4) {
-        func_00382D30(c);
+        Task_DrawPage(c);
     }
     if (t->child->mode != 0) {
         return;
@@ -863,7 +863,7 @@ void func_00383450(Task *t) {
 /* state: choose an option. Confirm opens the message it leads to (or closes the box); cancel,
  * when allowed, picks the last option; up / down go through the options, left / right through
  * the ones on the same line. */
-void func_00383550(Task *t) {
+void Task_StateChoice(Task *t) {
     u32 b = D_0047E36C;
     u8 old;
 
@@ -878,7 +878,7 @@ void func_00383550(Task *t) {
             s16 x = t->x, y = t->y;
 
             t->id = id;
-            func_003843A0(t);
+            Task_OpenDefault(t);
             t->x = x;
             t->y = y;
         }
@@ -949,7 +949,7 @@ void func_00383550(Task *t) {
 #define ANY_BUTTON 0xFC01   /* the buttons that close a message */
 
 /* state: close when a button is pressed */
-void func_003838F0(Task *t) {
+void Task_StateWaitButton(Task *t) {
     if (D_0047E37C & ANY_BUTTON) {
         t->mode = 0;
         t->flags = 0;
@@ -958,7 +958,7 @@ void func_003838F0(Task *t) {
 }
 
 /* state: close after `wait` frames */
-void func_00383A20(Task *t) {
+void Task_StateWaitFrames(Task *t) {
     if (--t->wait == 0) {
         t->mode = 0;
         t->flags = 0;
@@ -967,36 +967,36 @@ void func_00383A20(Task *t) {
 }
 
 /* state: next page when a button is pressed */
-void func_00383AB0(Task *t) {
+void Task_StateNextPage(Task *t) {
     if (D_0047E37C & ANY_BUTTON) {
         t->page = t->cur.p;
         t->shown = 0;
         t->color = t->baseColor;
-        func_003829E0(t);
-        Task_SetState(t, func_00383D20);
+        Task_Layout(t);
+        Task_SetState(t, Task_StateType);
     }
 }
 
 /* state: the delay after a glyph (cancel skips it) */
-void func_00383BF0(Task *t) {
+void Task_StateGlyphDelay(Task *t) {
     if (D_0047E36C & MENU_CANCEL) {
         t->wait = 0;
-        func_00383D20(t);
+        Task_StateType(t);
     } else if (--t->wait == 0) {
-        Task_SetState(t, func_00383D20);
+        Task_SetState(t, Task_StateType);
     }
 }
 
 /* state: a pause (code 0x09) */
-void func_00383CA0(Task *t) {
+void Task_StatePause(Task *t) {
     if (--t->wait == 0) {
-        Task_SetState(t, func_00383D20);
+        Task_SetState(t, Task_StateType);
     }
 }
 
 /* state: type the text out until a delay, a pause, a page break or the end (holding cancel
  * types everything at once). */
-void func_00383D20(Task *t) {
+void Task_StateType(Task *t) {
     s32 stop = 0, hidden = 0, n;
 
     if (t->mode == 4) {
@@ -1013,11 +1013,11 @@ void func_00383D20(Task *t) {
                 break;
             }
             if (t->mode == 2) {
-                Task_SetState(t, func_00383550);
+                Task_SetState(t, Task_StateChoice);
             } else if (t->mode == 3) {
                 Task_SetState(t, Task_StateIdle);
             } else {
-                Task_SetState(t, func_003838F0);
+                Task_SetState(t, Task_StateWaitButton);
             }
             stop = 1;
             break;
@@ -1026,7 +1026,7 @@ void func_00383D20(Task *t) {
             if (t->mode == 3) {
                 Task_SetState(t, Task_StateIdle);
             } else {
-                Task_SetState(t, func_00383AB0);
+                Task_SetState(t, Task_StateNextPage);
             }
             stop = 1;
             break;
@@ -1041,7 +1041,7 @@ void func_00383D20(Task *t) {
         case 0x09:
             t->wait = p[1];
             t->cur.p += 2;
-            Task_SetState(t, func_00383CA0);
+            Task_SetState(t, Task_StatePause);
             stop = 1;
             break;
         case 0x0A:
@@ -1057,7 +1057,7 @@ void func_00383D20(Task *t) {
             t->cur.p += 1;
             break;
         case 0x0E:
-            func_00382410(t);
+            Task_CollectChoices(t);
             t->mode = 2;
             t->flags |= (u8)((t->cur.p[1] & 3) ^ 1);
             t->speed = 0;
@@ -1071,7 +1071,7 @@ void func_00383D20(Task *t) {
         case 0x10:
             t->wait = p[1];
             if (t->wait != 0) {
-                Task_SetState(t, func_00383A20);
+                Task_SetState(t, Task_StateWaitFrames);
             } else {
                 Task_SetState(t, Task_StateIdle);
             }
@@ -1086,18 +1086,18 @@ void func_00383D20(Task *t) {
             t->cur.p += 1;
             break;
         case 0x19:
-            Task_SetState(t, func_00383450);
+            Task_SetState(t, Task_StateChild);
             t->cur.p += 3;
             stop = 1;
             break;
         default:
-            n = (u8)func_003821F0(t, &t->cur);
+            n = (u8)TextCursor_Step(t, &t->cur);
             if (n != 0) {
                 t->cur.p += n;
                 if (!(D_0047E36C & MENU_CANCEL) && !hidden) {
                     t->wait = D_0047B140[t->speed];
                     if (t->wait != 0) {
-                        Task_SetState(t, func_00383BF0);
+                        Task_SetState(t, Task_StateGlyphDelay);
                         stop = 1;
                     }
                 }
@@ -1109,7 +1109,7 @@ void func_00383D20(Task *t) {
 }
 
 /* Open message `id` (0xFFFF: the next page at the typing position) in the default box. */
-void func_003843A0(Task *t) {
+void Task_OpenDefault(Task *t) {
     t->mode = 4;
     if (t->id == 0xFFFF) {
         t->page = t->cur.p;
@@ -1125,7 +1125,7 @@ void func_003843A0(Task *t) {
     t->x = 0x100;
     t->y = 0x172;
     t->flags = 4;
-    func_003829E0(t);
+    Task_Layout(t);
     t->shown = 0;
     t->wait = 0;
     t->baseColor = 0;
@@ -1133,11 +1133,11 @@ void func_003843A0(Task *t) {
     t->alpha = 0x80;
     t->layer = 0x30;
     t->speed = 0;
-    Task_SetState(t, func_00383D20);
+    Task_SetState(t, Task_StateType);
 }
 
 /* close */
-void func_003844E0(Task *t) {
+void Task_Close(Task *t) {
     delete_child(t);
     t->mode = 0;
     t->flags = 0;
@@ -1145,7 +1145,7 @@ void func_003844E0(Task *t) {
 }
 
 /* Show message `id` at once (0x4000 / 0x2000: in language 2 / 1). */
-void func_00384590(Task *t, s32 id, s32 color, s32 alpha, s32 layer) {
+void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer) {
     u8 lang = D_0047B350;
 
     if (id & 0x4000) {
@@ -1153,25 +1153,25 @@ void func_00384590(Task *t, s32 id, s32 color, s32 alpha, s32 layer) {
     } else if (id & 0x2000) {
         D_0047B350 = 1;
     }
-    func_00384A90(t, id & 0x1FFF);
+    Task_Open(t, id & 0x1FFF);
     t->baseColor = color;
     t->color = color;
     t->alpha = alpha;
     t->layer = layer;
-    func_00383D20(t);
-    func_00382D30(t);
+    Task_StateType(t);
+    Task_DrawPage(t);
     D_0047B350 = lang;
 }
 
 /* Show `text` at once with its top left at x, y (no frame). */
-void func_00384650(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH) {
+void Task_ShowText(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH) {
     t->mode = 1;
     t->cur.p = text;
     t->page = text;
     t->cur.depth = 0;
     t->glyphW = glyphW;
     t->glyphH = glyphH;
-    func_003829E0(t);
+    Task_Layout(t);
     t->x = x + (t->w >> 1);
     t->y = y + (t->h >> 1) - 4;
     t->shown = 0;
@@ -1182,48 +1182,48 @@ void func_00384650(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 la
     t->alpha = alpha;
     t->layer = layer;
     t->speed = 0;
-    func_00383D20(t);
-    func_00382D30(t);
+    Task_StateType(t);
+    Task_DrawPage(t);
 }
 
 /* printf at x, y */
-void func_00384730(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...) {
+void Task_PrintfEx(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
     func_0026ED98(t->text, 0x80, fmt, ap);
     va_end(ap);
-    func_00384650(t, x, y, color, (u8 *)t->text, alpha, layer, 0x10, 0x15);
+    Task_ShowText(t, x, y, color, (u8 *)t->text, alpha, layer, 0x10, 0x15);
 }
 
 /* printf at x, y (layer 0x30) */
-void func_00384800(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...) {
+void Task_Printf(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
     func_0026ED98(t->text, 0x80, fmt, ap);
     va_end(ap);
-    func_00384650(t, x, y, color, (u8 *)t->text, 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(t, x, y, color, (u8 *)t->text, 0x80, 0x30, 0x10, 0x15);
 }
 
-/* show a message prepared with func_00384920, all at once */
-void func_003848C0(Task *t) {
+/* show a message prepared with Task_Prepare, all at once */
+void Task_ShowPrepared(Task *t) {
     if (t->flags & 0x80) {
         t->page = t->cur.p;
         t->shown = 0;
         t->color = t->baseColor;
-        func_003829E0(t);
+        Task_Layout(t);
         t->mode = 3;
-        func_00383D20(t);
+        Task_StateType(t);
     }
 }
 
 /* prepare message `id` without showing it (0xFFFF: close) */
-void func_00384920(Task *t, s32 id) {
+void Task_Prepare(Task *t, s32 id) {
     u8 *text;
 
     if ((id & 0xFFFF) == 0xFFFF) {
-        func_003844E0(t);
+        Task_Close(t);
         return;
     }
     t->id = id;
@@ -1246,47 +1246,47 @@ void func_00384920(Task *t, s32 id) {
 }
 
 /* open message `id` at position preset `pos` */
-void func_00384A00(Task *t, s32 id, s32 pos) {
-    func_00384A90(t, id);
+void Task_OpenAt(Task *t, s32 id, s32 pos) {
+    Task_Open(t, id);
     set_position(t, pos);
 }
 
 /* open message `id` */
-void func_00384A90(Task *t, s32 id) {
+void Task_Open(Task *t, s32 id) {
     t->id = id;
     delete_child(t);
-    func_003843A0(t);
+    Task_OpenDefault(t);
 }
 
 /* the text of message `id` */
-u8 *func_00384B00(void *self, s32 id) {
+u8 *Task_MessageText(void *self, s32 id) {
     return msg_text(id & 0xFFFF);
 }
 
 /* draw (nothing while closed or opening) */
-void func_00384B60(Task *t) {
+void Task_Draw(Task *t) {
     if (t->mode != 0 && t->mode != 4) {
-        func_00382D30(t);
+        Task_DrawPage(t);
     }
 }
 
 /* update: count the frame, run the state */
-void func_00384BA0(Task *t) {
+void Task_Update(Task *t) {
     t->frames++;
     ptmf_scall(t, &t->state);
 }
 
 /* update and draw */
-void func_00384BC0(Task *t) {
+void Task_Run(Task *t) {
     t->frames++;
     ptmf_scall(t, &t->state);
     if (t->mode != 0 && t->mode != 4) {
-        func_00382D30(t);
+        Task_DrawPage(t);
     }
 }
 
 /* constructor */
-Task *func_002D0440(Task *t) {
+Task *Task_ctor(Task *t) {
     t->id = 0xFFFF;
     t->child = NULL;
     t->mode = 0;

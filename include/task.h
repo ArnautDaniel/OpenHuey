@@ -31,7 +31,7 @@ typedef struct Task {
     /* 0x04 */ PTMF state;        /* initially Task_StateIdle */
     /* 0x10 */ u8 mode;           /* 0 off, 1 typing, 2 choice, 3 shown at once, 4 opening */
     /* 0x11 */ u8 flags;          /* 1 cancel picks the last option, 2 last option first,
-                                     4 frame, 0x80 prepared (func_00384920) */
+                                     4 frame, 0x80 prepared (Task_Prepare) */
     /* 0x12 */ u16 id;            /* message, 0xFFFF none */
     /* 0x14 */ u8 color;          /* colour at the page start */
     /* 0x15 */ u8 baseColor;
@@ -59,7 +59,7 @@ typedef struct Task {
     /* 0x7A */ u8 pad7A[2];
     /* 0x7C */ struct Task *child; /* owned, deleted with the task */
     /* 0x80 */ s32 frames;
-    /* 0x84 */ char text[0x80];   /* formatted text (func_00384730 / func_00384800) */
+    /* 0x84 */ char text[0x80];   /* formatted text (Task_PrintfEx / Task_Printf) */
 } Task;
 
 _Static_assert(__builtin_offsetof(Task, cur) == 0x30, "Task.cur");
@@ -68,7 +68,7 @@ _Static_assert(sizeof(Task) == 0x104, "Task size");
 
 extern const PTMF sTaskIdleState;   /* { 0, -1, Task_StateIdle } */
 
-/* the constructor (func_002D0440), as the original inlines it into the owners' */
+/* the constructor (Task_ctor), as the original inlines it into the owners' */
 static inline void Task_Construct(Task *t) {
     PTMF s = sTaskIdleState;
 
@@ -83,23 +83,23 @@ static inline void Task_Construct(Task *t) {
 
 Task *Task_dtor(Task *t, s32 flags);
 void Task_StateIdle(Task *t);
-Task *func_002D0440(Task *t);   /* constructor */
-void func_003843A0(Task *t);
-void func_003844E0(Task *t);
-void func_00384590(Task *t, s32 id, s32 color, s32 alpha, s32 layer);
-void func_00384650(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH);
-void func_00384730(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...);
-void func_00384800(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...);
-void func_003848C0(Task *t);
-void func_00384920(Task *t, s32 id);
-void func_00384A00(Task *t, s32 id, s32 pos);
-void func_00384A90(Task *t, s32 id);
-u8 *func_00384B00(void *self, s32 id);
-void func_00384B60(Task *t);
-void func_00384BA0(Task *t);
-void func_00384BC0(Task *t);
-void func_00380990(void *self, s32 slot, s32 id);
-void func_00380A80(void *self, s32 slot, s32 id);
-void func_00380B80(void *self, s32 slot, const char *fmt, ...);
+Task *Task_ctor(Task *t);   /* constructor */
+void Task_OpenDefault(Task *t);
+void Task_Close(Task *t);
+void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer);
+void Task_ShowText(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH);
+void Task_PrintfEx(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...);
+void Task_Printf(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...);
+void Task_ShowPrepared(Task *t);
+void Task_Prepare(Task *t, s32 id);
+void Task_OpenAt(Task *t, s32 id, s32 pos);
+void Task_Open(Task *t, s32 id);
+u8 *Task_MessageText(void *self, s32 id);
+void Task_Draw(Task *t);
+void Task_Update(Task *t);
+void Task_Run(Task *t);
+void Msg_SetName(void *self, s32 slot, s32 id);
+void Msg_SetParamSystem(void *self, s32 slot, s32 id);
+void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...);
 
 #endif /* TASK_H */
