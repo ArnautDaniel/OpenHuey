@@ -1,0 +1,465 @@
+/* VRAM / texture manager (system +0x30CF40, vtable 0x46B050, global D_0044E9A0): hands out
+ * areas of the PS2's 4 MB of video memory (the renderer's layers, textures, CLUTs). */
+#include "common.h"
+#include "game.h"
+
+#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
+
+/* an area: page (0xFF = none) and a position */
+typedef struct VramPos {
+    s16 page;
+    s16 x;
+    s16 y;
+} VramPos;
+
+/* allocation entry (0x12 bytes, 64 at +0x98) */
+typedef struct VramEntry {
+    /* 0x00 */ u8 used;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ s16 unk2;
+    /* 0x04 */ s16 unk4;
+    /* 0x06 */ VramPos a;
+    /* 0x0C */ VramPos b;
+} VramEntry;
+
+/* +0xC init: 8 free regions, 64 empty entries */
+void func_001C2970(u8 *v) {
+    VramEntry *e = (VramEntry *)(v + 0x98);
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        AT(v, 4 + i * 8, s16) = 0xFF;
+        AT(v, 6 + i * 8, s16) = 0;
+        AT(v, 8 + i * 8, s16) = 0;
+        AT(v, 10 + i * 8, s16) = 0;
+    }
+    AT(v, 0x44, s32) = 0;
+    AT(v, 0x48, s32) = 0;
+    AT(v, 0x4C, s32) = 0;
+    AT(v, 0x50, s32) = 0;
+    for (i = 0; i < 64; i++, e++) {
+        e->used = 0;
+        e->unk1 = 0;
+        e->unk2 = 0;
+        e->unk4 = 0;
+        e->a.page = 0xFF;
+        e->a.x = 0;
+        e->a.y = 0;
+        e->b.page = 0xFF;
+        e->b.x = 0;
+        e->b.y = 0;
+    }
+    AT(v, 0x518, s32) = 0;
+}
+
+/* CLUT region (8 at +4): CLUT format (0xFF: free), which slots are taken, how many, of how many
+ * (16 for 16-bit CLUTs, 8 for 32-bit) */
+typedef struct VramClutRegion {
+    u16 psm;
+    u16 mask;
+    u16 count;
+    u16 capacity;
+} VramClutRegion;
+
+#define VRAM_CLUT_REGION(v, i) ((VramClutRegion *)((v) + 4) + (i))
+#define VRAM_PAGEMAP(v) ((u32 *)((v) + 0x44))     /* 1 bit per page */
+#define VRAM_PAGEMAP_HI(v) ((u32 *)((v) + 0x54))  /* 2 bits per page: 8 / 4-bit formats in the
+                                                   * unused upper bits of 24-bit pages */
+#define PSM_NONE 0xFF
+#define PSMT8H 0x1B
+#define PSMT4HL 0x24
+#define PSMT4HH 0x2C
+
+extern s32 func_001C0AD0(u8 *v, s32 psm, s32 w, s32 h);        /* allocate pages (s16, -1) */
+extern s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h);       /* ... in 24-bit pages' upper bits */
+extern s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h);   /* ... at a given address */
+extern s32 func_001C0D40(u8 *v, s32 clutpsm);                  /* allocate a CLUT slot (s16, -1) */
+extern u32 func_001C04B0(u8 *v, s32 psm, u32 w, u32 h);        /* size in pages */
+
+/* +0x18 allocate a w x h texture of format psm (0xFF: CLUT only) at `addr` (< 0: anywhere), with
+ * a CLUT of format clutpsm (0xFF: none; 0 / 2 for indexed formats). Returns the entry, -1 if
+ * it doesn't fit (whatever was taken is given back). */
+s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
+    u16 psm = psm_;
+    u16 clutpsm = clutpsm_;
+    VramEntry *e;
+    s32 i, pos, clut;
+    u32 p, end;
+
+    switch (psm) {
+    case 0x00: case 0x01: case 0x02:   /* 32 / 24 / 16-bit: no CLUT */
+        if (clutpsm != PSM_NONE) {
+            return -1;
+        }
+        break;
+    case PSM_NONE: case PSMT8H: case PSMT4HH: case PSMT4HL: case 0x13: case 0x14:
+        if (clutpsm != 2 && clutpsm != 0) {
+            return -1;
+        }
+        break;
+    default:
+        return -1;
+    }
+    e = (VramEntry *)(v + 0x98);
+    for (i = 0; i < 64; i++, e++) {
+        if (e->used) {
+            continue;
+        }
+        pos = -1;   /* (the PS2 code leaves this unset for CLUT-only allocations) */
+        if (addr >= 0) {
+            pos = (s16)func_001BF8F0(v, addr, &psm, w, h);
+        } else if (psm == PSMT4HL || psm == PSMT4HH || psm == PSMT8H) {
+            pos = (s16)func_001C08B0(v, &psm, w, h);
+        } else if (psm != PSM_NONE) {
+            pos = (s16)func_001C0AD0(v, psm, w, h);
+        }
+        clut = (s16)func_001C0D40(v, clutpsm);
+        if ((psm == PSM_NONE || pos >= 0) && (clutpsm == PSM_NONE || clut >= 0)) {
+            e->used = 1;
+            e->a.page = psm;
+            e->a.x = pos;
+            e->unk2 = w;
+            e->unk4 = h;
+            e->a.y = func_001C04B0(v, psm, w, h);
+            e->b.page = clutpsm_;
+            e->b.x = clut >> 4;
+            e->b.y = clut & 0xF;
+            return i;
+        }
+        /* give back what was taken */
+        if (clut != -1) {
+            VramClutRegion *rg = VRAM_CLUT_REGION(v, clut >> 4);
+
+            rg->mask &= ~(1 << (clut & 0xF));
+            if (--rg->count == 0) {
+                rg->psm = 0xFF;
+                rg->mask = 0;
+                rg->count = 0;
+                rg->capacity = 0;
+            }
+        }
+        if (pos != -1) {
+            end = pos + (u16)e->a.y;
+            switch (psm) {
+            case PSMT8H:
+                for (p = pos; p < end; p++) {
+                    VRAM_PAGEMAP_HI(v)[p * 2 >> 5] &= ~(3 << (p * 2 & 0x1F));
+                }
+                break;
+            case PSMT4HL:
+                for (p = pos; p < end; p++) {
+                    VRAM_PAGEMAP_HI(v)[p * 2 >> 5] &= ~(1 << (p * 2 & 0x1F));
+                }
+                break;
+            case PSMT4HH:
+                for (p = pos; p < end; p++) {
+                    VRAM_PAGEMAP_HI(v)[p * 2 >> 5] &= ~(2 << (p * 2 & 0x1F));
+                }
+                break;
+            default:
+                for (p = pos; p < end; p++) {
+                    VRAM_PAGEMAP(v)[p >> 5] &= ~(1 << (p & 0x1F));
+                }
+                break;
+            }
+        }
+        return -1;
+    }
+    return -1;
+}
+
+/* +0x14 allocate anywhere */
+s32 func_001C2930(VObject *v, s32 psm, s32 w, s32 h, s32 clutpsm) {
+    return VCALL(v, 0x18, s32 (*)(VObject *, s32, s32, s32, s32, s32))(v, -1, psm, w, h, clutpsm);
+}
+
+/* +0x10 reset (init again) */
+void func_001C2960(VObject *v) {
+    VCALL(v, 0xC, void (*)(VObject *))(v);
+}
+
+/* +0x24 keep entry `id` resident (not freed by +0x20) */
+void func_001C1460(u8 *v, s32 id) {
+    VramEntry *e = (VramEntry *)(v + 0x98) + id;
+
+    if (e->used) {
+        e->unk1 = 1;
+    }
+}
+
+/* +0x20 free every entry that isn't kept resident (+0x1C) */
+void func_001C14A0(VObject *v) {
+    VramEntry *e = (VramEntry *)((u8 *)v + 0x98);
+    u32 i;
+
+    for (i = 0; i < 64; i++, e++) {
+        if (e->used && !e->unk1) {
+            VCALL(v, 0x1C, void (*)(VObject *, u32))(v, i);
+        }
+    }
+}
+
+/* Allocate a CLUT slot of format clutpsm (0 / 2): region * 16 + slot, or -1. */
+s32 func_001C0D40(u8 *v, s32 clutpsm_) {
+    u16 clutpsm = clutpsm_;
+    VramClutRegion *rg;
+    u32 i, j;
+
+    if (clutpsm != 2 && clutpsm != 0) {
+        return -1;
+    }
+    for (i = 0, rg = VRAM_CLUT_REGION(v, 0); i < 8; i++, rg++) {
+        if (rg->psm != 0xFF && rg->count < rg->capacity && clutpsm == rg->psm) {
+            for (j = 0; j < rg->capacity; j++) {
+                if (!(rg->mask & (1 << j))) {
+                    rg->mask |= 1 << j;
+                    rg->count++;
+                    return (s16)(i * 16 + j);
+                }
+            }
+        }
+    }
+    for (i = 0, rg = VRAM_CLUT_REGION(v, 0); i < 8; i++, rg++) {
+        if (rg->psm == 0xFF) {
+            rg->psm = clutpsm_;
+            rg->mask = 1;
+            rg->count = 1;
+            rg->capacity = clutpsm == 2 ? 16 : 8;
+            return (s16)(i * 16);
+        }
+    }
+    return -1;
+}
+
+/* Size of a w x h texture of format psm in pages (a page is 8 KB: 64x32 at 32 bits, 64x64 at 16,
+ * 128x64 at 8, 128x128 at 4); 0 for other formats. */
+u32 func_001C04B0(u8 *v, s32 psm, u32 w, u32 h) {
+    u32 pw, ph;
+
+    switch ((u16)psm) {
+    case 0x00: case 0x01: case PSMT8H: case PSMT4HH: case PSMT4HL:
+        pw = 64;
+        ph = 32;
+        break;
+    case 0x02:
+        pw = 64;
+        ph = 64;
+        break;
+    case 0x13:
+        pw = 128;
+        ph = 64;
+        break;
+    case 0x14:
+        pw = 128;
+        ph = 128;
+        break;
+    default:
+        return 0;
+    }
+    return (w + pw - 1) / pw * ((h + ph - 1) / ph);
+}
+
+#define VRAM_HI_PAGES 0x110   /* pages below 0x88000 (the 24-bit frame buffers' upper bits) */
+#define VRAM_PAGES 0x78       /* texture pages from 0xC0000 */
+#define HI_FREE(v, p, m) (!(VRAM_PAGEMAP_HI(v)[(u32)(p) * 2 >> 5] & ((m) << ((u32)(p) * 2 & 0x1F))))
+#define HI_TAKE(v, p, m) (VRAM_PAGEMAP_HI(v)[(u32)(p) * 2 >> 5] |= (m) << ((u32)(p) * 2 & 0x1F))
+
+/* First fit of n texture pages; marks them. */
+s32 func_001C0AD0(u8 *v, s32 psm, s32 w, s32 h) {
+    s32 n = func_001C04B0(v, psm, w, h);
+    s32 start = -1, left = 0;
+    u32 p, end;
+
+    if (n == 0) {
+        return -1;
+    }
+    for (p = 0; p < VRAM_PAGES; p++) {
+        if (VRAM_PAGEMAP(v)[p >> 5] & (1 << (p & 0x1F))) {
+            start = -1;
+            continue;
+        }
+        if (start < 0) {
+            left = n;
+            start = p;
+        }
+        if (--left == 0) {
+            end = start + n;
+            for (p = (u16)start; p < end; p++) {
+                VRAM_PAGEMAP(v)[p >> 5] |= 1 << (p & 0x1F);
+            }
+            return (s16)start;
+        }
+    }
+    return -1;
+}
+
+/* First fit of n upper-bit pages with bits `m` free (not marked). */
+s32 func_001C0570(u8 *v, s32 n, s32 m) {
+    s32 start = -1, left = 0;
+    u32 p;
+
+    if (n == 0) {
+        return -1;
+    }
+    for (p = 0; p < VRAM_HI_PAGES; p++) {
+        if (!HI_FREE(v, p, m)) {
+            start = -1;
+            continue;
+        }
+        if (start < 0) {
+            left = (u16)n;
+            start = p;
+        }
+        if (--left == 0) {
+            return (s16)start;
+        }
+    }
+    return -1;
+}
+
+/* First fit of n upper-bit pages with both halves free (8-bit); marks them. */
+s32 func_001C0610(u8 *v, s32 n) {
+    s32 start = -1, left = 0;
+    u32 p, end;
+
+    if (n == 0) {
+        return -1;
+    }
+    for (p = 0; p < VRAM_HI_PAGES; p++) {
+        if (!HI_FREE(v, p, 2) || !HI_FREE(v, p, 1)) {
+            start = -1;
+            continue;
+        }
+        if (start < 0) {
+            left = (u16)n;
+            start = p;
+        }
+        if (--left == 0) {
+            end = start + (u16)n;
+            for (p = start; p < end; p++) {
+                HI_TAKE(v, p, 3);
+            }
+            return (s16)start;
+        }
+    }
+    return -1;
+}
+
+/* Upper-bit pages for a 4 / 8-bit texture: 8-bit takes both halves (PSMT8H); 4-bit takes the
+ * lower half (PSMT4HL) or the upper (PSMT4HH), whichever fits first. *psm is set to the choice. */
+s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h) {
+    u32 n = func_001C04B0(v, *psm, w, h) & 0xFFFF;
+    s32 lo, hi, p;
+
+    if (n == 0) {
+        return -1;
+    }
+    switch (*psm) {
+    case PSMT8H:
+        return func_001C0610(v, n);
+    case PSMT4HL:
+    case PSMT4HH:
+        lo = (s16)func_001C0570(v, n, 1);
+        hi = (s16)func_001C0570(v, n, 2);
+        if (lo != -1 && (hi == -1 || hi >= lo)) {
+            *psm = PSMT4HL;
+            for (p = lo; (u32)p < lo + n; p++) {
+                HI_TAKE(v, p, 1);
+            }
+            return lo;
+        }
+        if (hi != -1) {
+            *psm = PSMT4HH;
+            for (p = hi; (u32)p < hi + n; p++) {
+                HI_TAKE(v, p, 2);
+            }
+            return hi;
+        }
+        return -1;
+    }
+    return -1;
+}
+
+/* Pages at VRAM byte address `addr`: below 0x88000 upper-bit pages (4-bit: lower half if free,
+ * else upper; 8-bit: both), 0xC0000..0xFC000 texture pages. -1 if taken or elsewhere. */
+s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
+    s32 n, start, okLo, okHi;
+    u32 p, end;
+
+    if (addr < 0x88000) {
+        switch (*psm) {
+        case PSMT4HL: case PSMT4HH: case 0x14:
+            *psm = PSMT4HH;
+            n = func_001C04B0(v, *psm, w, h);
+            start = (s16)(addr >> 11);
+            end = start + n;
+            okLo = 1;
+            for (p = start; p < end; p++) {
+                if (!HI_FREE(v, p, 1) || p >= VRAM_HI_PAGES) {
+                    okLo = 0;
+                    break;
+                }
+            }
+            okHi = 1;
+            for (p = start; p < end; p++) {
+                if (!HI_FREE(v, p, 2) || p >= VRAM_HI_PAGES) {
+                    okHi = 0;
+                    break;
+                }
+            }
+            if (okLo) {
+                *psm = PSMT4HL;
+                if (start != -1) {
+                    for (p = start; p < (u32)(start + n); p++) {
+                        HI_TAKE(v, p, 1);
+                    }
+                }
+                return start;
+            }
+            if (okHi) {
+                *psm = PSMT4HH;
+                if (start != -1) {
+                    for (p = start; p < (u32)(start + n); p++) {
+                        HI_TAKE(v, p, 2);
+                    }
+                }
+                return start;
+            }
+            return -1;
+        case 0x13: case PSMT8H:
+            *psm = PSMT8H;
+            n = func_001C04B0(v, *psm, w, h);
+            start = (s16)(addr >> 11);
+            end = start + n;
+            for (p = start; p < end; p++) {
+                if (!HI_FREE(v, p, 3) || p >= VRAM_HI_PAGES) {
+                    return -1;
+                }
+            }
+            if (start != -1) {
+                for (p = start; p < (u32)(start + n); p++) {
+                    HI_TAKE(v, p, 3);
+                }
+            }
+            return start;
+        }
+        return -1;
+    }
+    if (addr >= 0xC0000 && addr < 0xFC000) {
+        n = func_001C04B0(v, *psm, w, h);
+        start = (s16)((addr - 0xC0000) >> 11);
+        end = start + n;
+        for (p = start; p < end; p++) {
+            if ((VRAM_PAGEMAP(v)[p >> 5] & (1 << (p & 0x1F))) || p >= VRAM_PAGES) {
+                return -1;
+            }
+        }
+        if (start != -1) {
+            for (p = start; p < (u32)(start + n); p++) {
+                VRAM_PAGEMAP(v)[p >> 5] |= 1 << (p & 0x1F);
+            }
+        }
+        return start;
+    }
+    return -1;
+}

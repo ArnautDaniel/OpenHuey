@@ -1817,3 +1817,23 @@ src/game/renderer.c func_001B79F0 --runs=50 --pre=a0+0x304C09=0x4F..0x50
 src/game/renderer.c func_001B71E0 --runs=50
 src/game/renderer.c func_001B7370 --runs=30 --pre=a0+0x304DE0=0..1
 src/game/renderer.c func_001BBC20 --runs=100 --pre=a1=-1..4 --pre=a2=0..54 --stub-ret=0 --stub-ret=1
+src/game/vram.c func_001BF8F0 --runs=300 --pre=a1=0..0x88000 --pre=a2=0x0A000000..0x0A000000 --pre=@0x0A000000=0x13..0x2C --pre=a3=1..256 --pre=a4=1..256 --pre=a0+0x54=0..0xFFFF --pre=a0+0x58=0..0xF0F0F0F0
+src/game/vram.c func_001BF8F0 --runs=300 --pre=a1=0xBF000..0xFD000 --pre=a2=0x0A000000..0x0A000000 --pre=@0x0A000000=0..2 --pre=a3=1..256 --pre=a4=1..256 --pre=a0+0x44=0..0xFFFF --pre=a0+0x48=0..0xF0F0F0F0
+src/game/vram.c func_001C04B0 --runs=200 --pre=a1=0..0x30 --pre=a2=1..1024 --pre=a3=1..1024
+src/game/vram.c func_001C0570 --runs=300 --pre=a1=0..8 --pre=a2=1..2 --pre=a0+0x54=0..0xFFFF --pre=a0+0x58=0..0xF0F0F0F0
+src/game/vram.c func_001C0610 --runs=300 --pre=a1=0..8 --pre=a0+0x54=0..0xFFFF --pre=a0+0x58=0..0xF0F0F0F0
+src/game/vram.c func_001C08B0 --runs=100 --pre=a1=0x0A000000..0x0A000000 --pre=@0x0A000000=0x1B..0x1B --pre=a2=1..256 --pre=a3=1..256
+src/game/vram.c func_001C08B0 --runs=300 --pre=a1=0x0A000000..0x0A000000 --pre=@0x0A000000=0x24..0x2C --pre=a2=1..256 --pre=a3=1..256 --stub-ret=-1 --stub-ret=0 --stub-ret=3 --stub-ret=7
+src/game/vram.c func_001C0AD0 --runs=300 --pre=a1=0..2 --pre=a2=1..256 --pre=a3=1..256 --pre=a0+0x44=0..0xFFFF --pre=a0+0x48=0..0xF0F0F0F0
+src/game/vram.c func_001C0D40 --runs=300 --pre=a1=0..3 --pre=a0+0x4=0..2 --pre=a0+0xC=0..2 --pre=a0+0x14=0xFF..0xFF --pre=a0+0x8=0..16 --pre=a0+0xA=8..16
+src/game/vram.c func_001C1460 --pre=a1=0..63
+src/game/vram.c func_001C14A0
+src/game/vram.c func_001C1E00 --runs=100 --pre=a1=-1..0x20 --pre=a2=0x10..0x40
+src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0..2 --pre=a5=0xFF..0xFF --stub-ret=-1 --stub-ret=0 --stub-ret=5 --stub-ret=0x23 --stub-ret-prob=1 --pre=a0+0x98=0..0 --pre=a0+0xA2=0..0x40
+src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0x13..0x14 --pre=a5=0..2 --stub-ret=-1 --stub-ret=0 --stub-ret=5 --stub-ret=0x23 --stub-ret-prob=1 --pre=a0+0x98=0..0 --pre=a0+0xA2=0..0x40
+src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0x1B..0x1B --pre=a5=0..0 --stub-ret=-1 --stub-ret=0 --stub-ret=5 --stub-ret=0x23 --stub-ret-prob=1 --pre=a0+0x98=0..0 --pre=a0+0xA2=0..0x40
+src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0x24..0x24 --pre=a5=0..0 --stub-ret=-1 --stub-ret=0 --stub-ret=5 --stub-ret=0x23 --stub-ret-prob=1 --pre=a0+0x98=0..0 --pre=a0+0xA2=0..0x40
+src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0x2C..0x2C --pre=a5=0..0 --stub-ret=-1 --stub-ret=0 --stub-ret=5 --stub-ret=0x23 --stub-ret-prob=1 --pre=a0+0x98=0..0 --pre=a0+0xA2=0..0x40
+src/game/vram.c func_001C2930
+src/game/vram.c func_001C2960
+src/game/vram.c func_001C2970
