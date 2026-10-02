@@ -104,6 +104,12 @@ Testing:
   checks the frame at 20 s; `tools/ramdiff.py` compares EE RAM from two save states
 - `tools/bisect_shift.py` lists clean split points for bisecting a broken data range
 
+## Models and motions
+
+`tools/hg_export_all.py <extracted DATA.CVM folder>` converts all character models (skeleton,
+skin, faces, textures, motions) to glTF; `tools/viewer/hgview.c` (raylib) browses and plays them.
+See `docs/model_format.md`. Where the decompilation stands: `docs/progress.md`.
+
 ## Notes
 
 - Register names use the **n32** convention (`$a4`–`$a7` = o32 `$t0`–`$t3`) because the

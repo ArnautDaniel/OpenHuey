@@ -125,6 +125,33 @@ def read_model(d: bytes):
                               nrm=[v * UNIT for v in nrm], joints=[bone], weights=[1.0],
                               flag=d[b + o_fl + k]))
         parts.append(dict(tex=tex, flags=0, verts=verts))
+
+    # morphing parts (resource 1: faces, hands): u32 count, 0x40-byte records at +0x10 (offsets
+    # from the record): shapes, vertex count, UVs (2 x u16), strip flags (u32, bit 15 = no
+    # triangle), shape table (8-byte entries: positions, normals; offsets from the entry), bone,
+    # texture, kind (1: face, blends 4 shapes; 0: blends 2), flags, base point (3 x s32) at +0x30.
+    # Shape 0 is the rest shape; the others become morph targets.
+    if len(res) > 1 and res[1]:
+        r1 = res[1]
+        for i in range(struct.unpack_from("<I", d, r1)[0]):
+            b = r1 + 0x10 + i * 0x40
+            nshape, n, o_uv, o_fl, o_shapes, bone, tex, kind, flags = struct.unpack_from("<9i", d, b)
+            base = struct.unpack_from("<3i", d, b + 0x30)
+            shapes = []
+            for k in range(nshape):
+                e = b + o_shapes + 8 * k
+                po, no = struct.unpack_from("<2i", d, e)
+                pos = [[(base[j] + v[j]) * POS_SCALE for j in range(3)]
+                       for v in struct.iter_unpack("<3h", d[e + po:e + po + 6 * n])]
+                nrm = [[c * UNIT for c in v] for v in struct.iter_unpack("<3h", d[e + no:e + no + 6 * n])]
+                shapes.append((pos, nrm))
+            verts = []
+            for k in range(n):
+                uv = struct.unpack_from("<2H", d, b + o_uv + k * 4)
+                fl = 1 if struct.unpack_from("<I", d, b + o_fl + k * 4)[0] & 0x8000 else 0
+                verts.append(dict(pos=shapes[0][0][k], uv=[uv[0] * UNIT, uv[1] * UNIT], nrm=shapes[0][1][k],
+                                  joints=[bone], weights=[1.0], flag=fl))
+            parts.append(dict(tex=tex, flags=flags, verts=verts, shapes=shapes[1:], name=f"morph_{i}"))
     return bones, parts
 
 
@@ -216,7 +243,11 @@ def read_textures(d: bytes):
             cr, cg, cb, ca = clut[s * 4:s * 4 + 4]
             pal.append(bytes((cr, cg, cb, min(255, ca * 2))))
         rows = b"".join(b"\0" + b"".join(pal[x] for x in px[y * w:(y + 1) * w]) for y in range(h))
-        out.append(png(w, h, rows))
+        solid = [c[:3] + b"\xff" for c in pal]
+        rows_solid = b"".join(b"\0" + b"".join(solid[x] for x in px[y * w:(y + 1) * w]) for y in range(h))
+        # (with alpha, for the second-pass cut-out parts; without, for the normal parts, whose
+        # texture alpha is not transparency)
+        out.append((png(w, h, rows), png(w, h, rows_solid)))
     return out
 
 
@@ -283,19 +314,24 @@ def build(bones, parts, images, name, motions=()):
     g.j["skins"].append({"inverseBindMatrices": ibm, "joints": list(range(len(bones))), "skeleton": roots[0]})
 
     g.j["samplers"].append({"magFilter": 9729, "minFilter": 9729, "wrapS": 10497, "wrapT": 10497})
-    for i, img in enumerate(images):
-        g.j["images"].append({"bufferView": g.view(img), "mimeType": "image/png", "name": f"tex_{i}"})
-        g.j["textures"].append({"source": i, "sampler": 0})
+    for i, (rgba, solid) in enumerate(images):
+        for kind, img in (("alpha", rgba), ("solid", solid)):
+            g.j["images"].append({"bufferView": g.view(img), "mimeType": "image/png", "name": f"tex_{i}_{kind}"})
+            g.j["textures"].append({"source": len(g.j["images"]) - 1, "sampler": 0})
+    # materials: texture t, normal parts -> 2t (opaque), second-pass parts (flags bit 0) -> 2t + 1
     ntex = max([p["tex"] for p in parts] + [-1]) + 1
     for t in range(ntex):
-        m = {"name": f"mat_{t}", "doubleSided": True,
-             "pbrMetallicRoughness": {"metallicFactor": 0.0, "roughnessFactor": 1.0}}
-        if t < len(images):
-            m["pbrMetallicRoughness"]["baseColorTexture"] = {"index": t}
-            m["alphaMode"] = "MASK"
-        g.j["materials"].append(m)
+        for cut in (False, True):
+            m = {"name": f"mat_{t}" + ("_cutout" if cut else ""), "doubleSided": True,
+                 "pbrMetallicRoughness": {"metallicFactor": 0.0, "roughnessFactor": 1.0}}
+            if t < len(images):
+                m["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 2 * t + (0 if cut else 1)}
+                if cut:
+                    m["alphaMode"] = "MASK"
+            g.j["materials"].append(m)
 
     prims = []
+    morph_meshes = []
     for p in parts:
         v = p["verts"]
         tris = strip_triangles(v)
@@ -312,15 +348,33 @@ def build(bones, parts, images, name, motions=()):
             "WEIGHTS_0": g.accessor("4f", FLOAT, "VEC4", w4, 34962),
         }
         idx = g.accessor("H", USHORT, "SCALAR", [(i,) for t in tris for i in t], 34963)
-        prims.append({"attributes": attrs, "indices": idx, "material": p["tex"], "mode": 4})
+        prim = {"attributes": attrs, "indices": idx, "material": 2 * p["tex"] + (p["flags"] & 1), "mode": 4}
+        if p.get("shapes"):
+            # morph targets: position / normal deltas from the rest shape (own mesh: glTF wants
+            # the same targets on every primitive of a mesh)
+            prim["targets"] = [{
+                "POSITION": g.accessor("3f", FLOAT, "VEC3", [tuple(a - b for a, b in zip(sp, x["pos"]))
+                                                            for sp, x in zip(pos, v)], minmax=True),
+                "NORMAL": g.accessor("3f", FLOAT, "VEC3", [tuple(a - b for a, b in zip(sn, x["nrm"]))
+                                                          for sn, x in zip(nrm, v)]),
+            } for pos, nrm in p["shapes"]]
+            morph_meshes.append({"name": p["name"], "primitives": [prim], "weights": [0.0] * len(p["shapes"]),
+                                 "extras": {"targetNames": [f"shape_{k + 1}" for k in range(len(p["shapes"]))]}})
+        else:
+            prims.append(prim)
     g.j["meshes"].append({"name": name, "primitives": prims})
     mesh_node = len(g.j["nodes"])
     g.j["nodes"].append({"name": name, "mesh": 0, "skin": 0})
+    extra_nodes = []
+    for mm in morph_meshes:
+        g.j["meshes"].append(mm)
+        extra_nodes.append(len(g.j["nodes"]))
+        g.j["nodes"].append({"name": mm["name"], "mesh": len(g.j["meshes"]) - 1, "skin": 0})
     # an armature node above the skeleton (as exporters write it; raylib's loader needs the
     # first joint to have a parent)
     arm = len(g.j["nodes"])
     g.j["nodes"].append({"name": "Armature", "children": roots})
-    g.j["scenes"].append({"nodes": [arm, mesh_node]})
+    g.j["scenes"].append({"nodes": [arm, mesh_node] + extra_nodes})
     g.j["scene"] = 0
 
     # motions: one key per frame; bones without a track keep their rest pose
@@ -349,7 +403,7 @@ def build(bones, parts, images, name, motions=()):
     return g.glb()
 
 
-def main():
+def main(argv=None):
     global FPS
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pck", type=Path)
@@ -358,7 +412,7 @@ def main():
     ap.add_argument("--no-motions", action="store_true", help="leave out the model's own motion bank")
     ap.add_argument("--fps", type=float, default=30.0, help="motion frames per second (default 30)")
     ap.add_argument("-o", "--out", type=Path)
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     FPS = a.fps
     d = a.pck.read_bytes()
     bones, parts = read_model(d)
@@ -370,7 +424,10 @@ def main():
     if not a.no_motions and len(res) > 3 and res[3]:
         motions += read_motions(d, res[3], bone_table)
     for f in a.mtn:
-        motions += read_motions(f.read_bytes(), 0, bone_table, prefix=f.stem + "_")
+        try:
+            motions += read_motions(f.read_bytes(), 0, bone_table, prefix=f.stem + "_")
+        except struct.error:
+            print(f"warning: {f.name}: not a motion bank, skipped")
     out = a.out or a.pck.with_suffix(".glb")
     out.write_bytes(build(bones, parts, images, a.pck.stem, motions))
     nv = sum(len(p["verts"]) for p in parts)
