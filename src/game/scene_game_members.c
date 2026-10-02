@@ -1805,3 +1805,23 @@ void *func_00266C40(void *effects, s32 k) {
     }
     return AT(o, 0x1438 + k * 4, void *);
 }
+
+
+extern void func_00220E80(u8 *door);
+
+/* the doors, drawn each frame: each of the 8 with a definition (+0x4 table) */
+void func_002239C0(void *d) {
+    u8 *doors = d;
+    u32 k;
+
+    if (AT(doors, 0x4, void **) == NULL) {
+        return;
+    }
+    for (k = 0; k < 8; k++) {
+        void **tbl = AT(doors, 0x4, void **);
+
+        if (tbl != NULL && tbl[k] != NULL) {
+            func_00220E80(doors + 0x10 + k * 0x210);
+        }
+    }
+}
