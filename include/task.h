@@ -98,6 +98,7 @@ u8 *func_00384B00(void *self, s32 id);
 void func_00384B60(Task *t);
 void func_00384BA0(Task *t);
 void func_00384BC0(Task *t);
+void func_00380990(void *self, s32 slot, s32 id);
 void func_00380A80(void *self, s32 slot, s32 id);
 void func_00380B80(void *self, s32 slot, const char *fmt, ...);
 

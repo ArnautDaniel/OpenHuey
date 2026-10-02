@@ -72,3 +72,11 @@ void ADXT_SetLpFlg(void *adxt, int on) { (void)adxt; (void)on; }
 void ADXT_SetWaitPlayStart(void *adxt, int on) { (void)adxt; (void)on; }
 /* ADX: mono / stereo output (PS2 0x001D4750) */
 void func_001D4750(int mono) { (void)mono; }
+void ADXT_Stop(void *adxt) { (void)adxt; }
+void ADXT_Pause(void *adxt, int on) { (void)adxt; (void)on; }
+int ADXT_GetStat(void *adxt) { (void)adxt; return 0; }
+int ADXT_IsReadyPlayStart(void *adxt) { (void)adxt; return 1; }
+/* ADX: still playing (PS2 0x001D3E20) */
+int func_001D3E20(void *adxt) { (void)adxt; return 0; }
+/* ADXT_StartFname (PS2 0x001D4A20) */
+void func_001D4A20(void *adxt, char *name) { (void)adxt; (void)name; }

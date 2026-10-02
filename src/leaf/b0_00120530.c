@@ -38,54 +38,7 @@ void *func_00120D60(B0_Pool *p, u32 i) {
 }
 
 /* Free an element by address. */
-void func_00120DB0(B0_Pool *p, u8 *elem) {
-    u32 n = p->count;
-    u8 *used = p->used;
-    u8 *cur = p->base;
-    u32 i;
-
-    for (i = 0; i < n; i++) {
-        if (cur == elem) {
-            if (*used != 0) {
-                *used = 0;
-            }
-            return;
-        }
-        cur += p->elemSize;
-        used++;
-    }
-}
-
 /* Allocate an element of the given size. */
-void *func_00120E10(B0_Pool *p, u32 size) {
-    u32 i;
-    u32 n;
-    u8 *used;
-
-    if (size != p->elemSize) {
-        return NULL;
-    }
-    n = p->count;
-    used = p->used;
-    for (i = 0; i < n; i++) {
-        if (*used == 0) {
-            *used = 1;
-            return p->base + i * size;
-        }
-        used++;
-    }
-    return NULL;
-}
-
-void func_00120E80(B0_Pool *p) {
-    u8 *used = p->used;
-    u32 i;
-
-    for (i = 0; i < p->count; i++) {
-        *used++ = 0;
-    }
-}
-
 /* Constructor: base vtable, then derived vtable. */
 void *func_00120F40(void *p) {
     if (p != NULL) {

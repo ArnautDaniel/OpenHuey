@@ -183,6 +183,31 @@ void func_0037E410(Task *t) {
     }
 }
 
+/* copy message `id` to name `slot` (code 0x13; up to 7 bytes) */
+void func_00380990(void *self, s32 slot, s32 id) {
+    u8 *src = msg_text(id & 0xFFFF);
+    char *dst = D_01991F50[slot & 0xFF];
+    s32 i = 0;
+
+    for (;;) {
+        u8 c = src[i];
+
+        if (c == 0 || c == 1) {
+            break;
+        }
+        if ((c >= 0x1A && c < 0x1E) || c == 3) {
+            dst[i] = c;
+            i++;
+        }
+        dst[i] = src[i];
+        i++;
+        if (i >= 8) {
+            break;
+        }
+    }
+    dst[i] = 0;
+}
+
 /* copy system message `id` (0x100 + id of the language 0 table) to parameter string `slot` */
 void func_00380A80(void *self, s32 slot, s32 id) {
     u8 *src = msg_text((u16)((id & 0xFFFF) + 0x8100));

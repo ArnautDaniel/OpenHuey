@@ -31,9 +31,6 @@ src/game/collision.c func_0017CA80
 # leaf functions (round 1, 2026-10-01)
 src/leaf/b0_00120530.c func_00120530
 src/leaf/b0_00120530.c func_00120D60
-src/leaf/b0_00120530.c func_00120DB0
-src/leaf/b0_00120530.c func_00120E10
-src/leaf/b0_00120530.c func_00120E80
 src/leaf/b0_00120530.c func_00120F40
 src/leaf/b0_00120530.c func_00121890
 src/leaf/b0_00120530.c func_00121B40
@@ -2065,3 +2062,40 @@ src/game/scene_title.c SceneTitle_ctor --pre=a0=0x0B000000..0x0B000000
 src/game/bootcard.c func_002D0300 --pre=a0=0x0B000000..0x0B000000
 src/game/task.c func_002D0440 --pre=a0=0x0B000000..0x0B000000
 src/game/bgm.c func_002D2370 --pre=a0=0x0B000000..0x0B000000 --runs=60 --pre=@0x0044E560=0..1
+src/game/heap.c func_00120D00 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200
+src/game/heap.c func_00120E80 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200
+src/game/heap.c func_00120E10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200
+src/game/heap.c func_00120DB0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200
+src/game/heap.c func_00120EC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200
+src/game/heap.c func_00120E10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200 --pre=a0+0xC=0x18..0x18 --pre=a1=0x18..0x18 --pre=a0+0x100=bytes:010101000100
+src/game/heap.c func_00120DB0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..12 --pre=a0+0x14=a0+0x100 --pre=a0+0x4=a0+0x200 --pre=a0+0xC=0x18..0x18 --pre=a1=0x0B000230..0x0B000230
+src/game/bgm.c func_002D1FD0 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_0025FF00 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_00264900 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_00399A10 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_003921A0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_00130810 --pre=a0=0x0B000000..0x0B000000
+src/game/task.c func_00380990 --pre=a0=0x0B000000..0x0B000000
+src/game/subscreen.c func_003913B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..3
+src/game/bgm.c func_002D1F90 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D20A0 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D20D0 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D2120 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D21B0 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D2330 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D1FD0 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D2370 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D21B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:42474d5c5449544c452e41445800
+src/game/bgm.c func_002D21B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:5449544c452e41445800
+src/game/bgm.c func_002D2120 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0x41..0x41 --stub-ret=6 --stub-ret=0
+src/game/bgm.c func_002E3200 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E980=0x0B100000..0x0B100000 --runs=100 --pre=a0+0x4=0x0000..0x0303 --stub-ret=0 --stub-ret=1 --pre=a0+0x8=0x3D000000..0x3F800000 --pre=a0+0x10=0x3D000000..0x3F800000
+src/game/bgm.c func_002E3200 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E980=0x0B100000..0x0B100000 --runs=100 --pre=a0+0x4=0xFFFF..0xFFFF --stub-ret=0 --stub-ret=1 --pre=a0+0x8=0x3D000000..0x3F800000 --pre=a0+0x10=0x3D000000..0x3F800000
+src/game/bgm.c func_002E3200 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E980=0x0B100000..0x0B100000 --runs=100 --pre=a0+0x4=0x0102..0x0102 --stub-ret=0 --stub-ret=1 --pre=a0+0x8=0x3D000000..0x3F800000 --pre=a0+0x10=0x3D000000..0x3F800000
+src/game/bgm.c func_002E31D0 --pre=@0x0044E980=0..1
+src/game/scene_title.c func_001306E0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0..3
+src/game/scene_title.c func_0012FB50 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_00130520 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --stub-ret=0 --stub-ret=0x0B300000
+src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0..1 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=@0x0047E37C=0..15
+src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=a0+0x140CCC=0x3C000000..0x3F800000
+src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0..0

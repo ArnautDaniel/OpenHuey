@@ -54,3 +54,16 @@ float func_0031C5C0(float y, float x) { return atan2f(y, x); }
 
 /* placement new */
 void *__nw__FUiPv(unsigned size, void *p) { (void)size; return p; }
+
+/* the library answers a domain error with this (not NaN) */
+#define MSL_HUGE 0x1.ff933cp+127f
+
+float func_0031C140(float x) { return fabsf(x); }
+float func_0031C160(float x) { return floorf(x); }
+float func_0031C338(float x) { return tanf(x); }
+float func_0031C3C0(float x) { return x > 1.0f || x < -1.0f ? MSL_HUGE : acosf(x); }
+float func_0031C4C0(float x) { return x > 1.0f || x < -1.0f ? MSL_HUGE : asinf(x); }
+float func_0031C6E8(float x) { return x < 0.0f ? MSL_HUGE : x == 0.0f ? -0x1.fffffep+127f : logf(x); }
+float func_0031C830(float x) { return x < 0.0f ? MSL_HUGE : x == 0.0f ? -0x1.fffffep+127f : log10f(x); }
+float func_0031C980(float x) { return x < 0.0f ? MSL_HUGE : sqrtf(x); }
+float func_0031BDB0(float x) { return atanf(x); }

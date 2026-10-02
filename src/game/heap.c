@@ -2,6 +2,7 @@
  * table of blocks in address order covers the heap's memory; allocations are rounded up to 64
  * bytes; freeing merges with free neighbours. */
 #include "common.h"
+#include "ptmf.h"
 
 typedef struct HeapBlock {
     s32 used;
@@ -175,4 +176,89 @@ void func_00168C80(Heap *h, u8 *addr) {
 
 /* operator delete for objects placed in the scene heap: nothing (the heap is freed as a whole) */
 void func_0011F9A0(void *p) {
+}
+
+/* ---- fixed-size block pool (vtable D_004699C0; base D_004699E0): n blocks of one size,
+ * a used flag each ---- */
+
+typedef struct BlockPool {
+    /* 0x00 */ void **vtbl;
+    /* 0x04 */ u8 *base;
+    /* 0x08 */ u32 total;    /* size * n */
+    /* 0x0C */ u32 size;
+    /* 0x10 */ u32 n;
+    /* 0x14 */ u8 *used;
+} BlockPool;
+
+extern void *D_004699C0[];
+extern void *D_004699E0[];
+extern void func_00100490(void *p);   /* operator delete */
+
+/* +0x8 */
+BlockPool *func_00120D00(BlockPool *p, s32 flags) {
+    if (p != NULL) {
+        p->vtbl = D_004699C0;
+        if (p != NULL) {
+            p->vtbl = D_004699E0;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(p);
+        }
+    }
+    return p;
+}
+
+/* +0xC free everything */
+void func_00120E80(BlockPool *p) {
+    u8 *used = p->used;
+    u32 i;
+
+    for (i = 0; i < p->n; i++) {
+        *used++ = 0;
+    }
+}
+
+/* +0x10 a block of `size` bytes (the pool's size only), NULL if none is free */
+void *func_00120E10(BlockPool *p, u32 size) {
+    u8 *used;
+    u32 i;
+
+    if (size != p->size) {
+        return NULL;
+    }
+    used = p->used;
+    for (i = 0; i < p->n; i++, used++) {
+        if (*used == 0) {
+            *used = 1;
+            return p->base + i * size;
+        }
+    }
+    return NULL;
+}
+
+/* +0x14 free block `b` */
+void func_00120DB0(BlockPool *p, u8 *b) {
+    u8 *a = p->base, *used = p->used;
+    u32 i;
+
+    for (i = 0; i < p->n; i++) {
+        if (a == b) {
+            if (*used) {
+                *used = 0;
+            }
+            return;
+        }
+        used++;
+        a += p->size;
+    }
+}
+
+/* set up over `n` blocks of `size` bytes at `base`, flags at `used`; all free */
+void func_00120EC0(BlockPool *p, u8 *base, u32 size, u32 n, u8 *used) {
+    p->size = size;
+    p->n = n;
+    p->used = used;
+    p->base = base;
+    p->total = p->size * p->n;
+    VCALL(p, 0xC, void (*)(BlockPool *))(p);
 }
