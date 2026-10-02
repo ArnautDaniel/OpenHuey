@@ -80,6 +80,20 @@ static inline s32 ptmf_scall_r(void *self, const PTMF *p) {
     return fn(obj);
 }
 
+/* (self->*p)(a) */
+static inline void ptmf_scall_1(void *self, const PTMF *p, s32 a) {
+    char *obj = (char *)self + p->this_delta;
+    void (*fn)(void *, s32);
+
+    if (p->vtbl_offset < 0) {
+        fn = (void (*)(void *, s32))p->u.func;
+    } else {
+        char *vtbl = *(char **)(obj + p->u.vptr_offset);
+        fn = *(void (**)(void *, s32))(vtbl + p->vtbl_offset);
+    }
+    fn(obj, a);
+}
+
 /* (self->*p)(a, b) returning an int */
 static inline s32 ptmf_scall_r2(void *self, const PTMF *p, s32 a, s32 b) {
     char *obj = (char *)self + p->this_delta;

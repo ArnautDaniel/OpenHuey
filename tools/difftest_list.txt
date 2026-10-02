@@ -2306,3 +2306,27 @@ src/game/items.c func_00260690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=2..2 --p
 src/game/items.c func_00260690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=2..2 --pre=a0+0x15E8=0..0
 src/game/rooms.c func_0021AF90 --pre=a0=0x0B000000..0x0B000000 
 src/game/event.c func_00209850 --pre=a0=0x0B000000..0x0B000000 
+src/game/event.c func_002A8970 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game.c func_0039AD90 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_00120720 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_001AABC0 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_00267250 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_002D6330 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game.c func_003A0390 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game.c func_003A0390 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=3 --runs=40
+src/game/scene_game_members.c func_00120660 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_002E2820 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game.c func_003A0160 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --runs=40
+src/game/camctl.c func_00225550 --pre=a0=0x0B000000..0x0B000000 
+src/game/camctl.c func_00224330 --pre=a0=0x0B000000..0x0B000000 
+src/game/camctl.c func_00224380 --pre=a0=0x0B000000..0x0B000000 
+src/game/renderer.c func_001BA090 --pre=a0=0x0B000000..0x0B000000 
+src/game/progress.c func_001792C0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0xFF --stub-ret=0
+src/game/progress.c func_001792C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F8=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0xFF --stub-ret=0 --stub-ret=1
+src/game/progress.c func_00179170 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a1=0..7 --pre=@0x44E4F8=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0xFF --stub-ret=0 --stub-ret=1
+src/game/progress.c func_001792C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a1=0..7 --pre=@0x44E4F8=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0xFF --stub-ret=0 --stub-ret=1
+src/game/camctl.c func_002246F0 --pre=a0=0x0B000000..0x0B000000 
+src/game/camctl.c func_00223E30 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game.c func_0039D310 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --runs=40
+src/game/scene_game.c func_0039D310 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20 --pre=a0+0x40=0x0046BF20..0x0046BF20 --pre=a0+0xF6CD28=1..1 --pre=@0x44E978=0x0B200000..0x0B200000 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046BF20..0x0046BF20 --pre=@0x44F820=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046BF20..0x0046BF20 --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --pre=@0x44F808=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046BF20..0x0046BF20 --pre=@0x44F258=0x0B700000..0x0B700000 --pre=@0x0B700028=0x0046BF20..0x0046BF20 --pre=@0x44F260=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046BF20..0x0046BF20 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-ret=0x0B900000 --stub-ret=0 --stub-ret=1 --runs=40
+src/game/scene_game_members.c func_0011FFB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0 --pre=a0+0x3E0=0x0046BF20..0x0046BF20 --pre=a0+0x1640=0x0046BF20..0x0046BF20 --pre=a0+0x6740=0x0046BF20..0x0046BF20 --pre=@0x44E4D0=0x0B900000..0x0B900000 --pre=@0x44E4C8=0x0B900000..0x0B900000 --pre=@0x44E4C0=0x0B900000..0x0B900000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x44E4E8=0x0B900000..0x0B900000 --pre=@0x44E4F0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --pre=a0+0x99C0=0..0x40 --pre=a0+0x99CC=0..0x40 --pre=a0+0x99E4=0..0x40 --pre=a0+0x99E8=0..0x40 --pre=a0+0x99EC=0..0x40 --runs=40

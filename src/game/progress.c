@@ -185,3 +185,57 @@ void func_001765D0(Progress *p) {
         }
     }
 }
+
+extern VObject *D_0044E4F8;   /* the camera director's interface */
+
+extern u8 *gCharPlayer;
+
+/* make the camera director follow character `idx`, 10 above its origin, if it is in the
+ * current room (vt+0xC); 0xFF: follow nothing; otherwise follow the player (index 0).
+ * Returns who it follows (0xFF: nobody). */
+u8 func_00179170(Progress *p, u8 idx) {
+    VObject *dir = D_0044E4F8;
+    s32 ok = 1;
+    u8 *c;
+
+    if (dir == NULL) {
+        return 0xFF;
+    }
+    if (idx == 0xFF) {
+        VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, NULL, 0.0f, 0.0f, 0.0f);
+        return 0xFF;
+    }
+    if (idx >= 6 || gCharacters[idx] == NULL) {
+        ok = 0;
+    } else if (idx != 0) {
+        c = (u8 *)gCharacters[idx];
+        if (AT(c, 0x28, u8) == 0 || AT(c, 0xE8, s32) == -1 ||
+            AT(c, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            ok = 0;
+        }
+    }
+    if (ok) {
+        return idx;
+    }
+    VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, gCharPlayer, 0.0f, 10.0f, 0.0f);
+    return 0;
+}
+
+/* point the camera director at character `idx` (+0x1130: the one it settled on) */
+void func_001792C0(Progress *p, u8 idx) {
+    VObject *dir = D_0044E4F8;
+    u8 *c;
+
+    if (dir == NULL) {
+        return;
+    }
+    AT(p, 0x1130, u8) = func_00179170(p, idx);
+    if (AT(p, 0x1130, u8) == 0xFF) {
+        VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, NULL, 0.0f, 0.0f, 0.0f);
+        return;
+    }
+    dir = D_0044E4F8;
+    c = (u8 *)gCharacters[AT(p, 0x1130, u8)];
+    VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, c, 0.0f, 10.0f, 0.0f);
+    VCALL(dir, 0x28, void (*)(VObject *, s32, s32))(dir, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
+}

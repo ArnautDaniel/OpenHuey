@@ -99,3 +99,8 @@ void func_00209850(u8 *ev) {
     AT(ev, 0x704, s32) = 0;
     AT(ev, 0x11F2, u8) = 0;
 }
+
+/* placement new */
+void *func_002A8970(u32 size, void *place) {
+    return place;
+}

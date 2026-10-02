@@ -939,3 +939,48 @@ s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, 
     p[17] = GS_ZBUF_1;
     return 1;
 }
+
+#include "progress.h"
+extern Progress *gProgress;
+
+/* +0x5C clear the 128 x 112 work buffer at frame page 0x1F0 to black (layer 0x29) and set
+ * the drawing environment back; not when progress flag 0x28 is set. 0: no packet space */
+s32 func_001BA090(u8 *r) {
+    static const u64 sRegs[14][2] = {
+        {0x00000001310000A0ULL, GS_ZBUF_1},
+        {0x0000000000030000ULL, GS_TEST_1},
+        {0x00000000000201F0ULL, GS_FRAME_1},      /* page 0x1F0, 128 wide */
+        {0x00007C8000007C00ULL, GS_XYOFFSET_1},
+        {0x006F0000007F0000ULL, GS_SCISSOR_1},    /* 0..127 x 0..111 */
+        {0x3F80000000000000ULL, GS_RGBAQ},        /* black, q 1 */
+        {6, GS_PRIM},                             /* sprite */
+        {0x000000007C807C00ULL, GS_XYZ2},
+        {0x0000000083808400ULL, GS_XYZ2},
+        {0x0000000000080110ULL, GS_FRAME_1},      /* back to the frame buffer */
+        {0x0000720000007000ULL, GS_XYOFFSET_1},
+        {0x01BF000001FF0000ULL, GS_SCISSOR_1},
+        {0x00000000310000A0ULL, GS_ZBUF_1},
+        {0x000000000005000FULL, GS_TEST_1},
+    };
+    u64 *p;
+    s32 i;
+
+    if ((u8)Progress_TestFlag(gProgress, 0x28) == 1) {
+        return 1;
+    }
+    p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x10, 0x29);
+    if (p == NULL) {
+        return 0;
+    }
+    AT(r, 0x304BB6, u8) = 1;
+    p[0] = DMA_TAG(DMA_CNT, 15, 0);
+    ((u32 *)p)[2] = VIF_NOP;
+    ((u32 *)p)[3] = VIF_DIRECT(15);
+    p[2] = GIF_TAG(14, 1, GIF_PACKED, 1);
+    p[3] = GIF_REG_AD;
+    for (i = 0; i < 14; i++) {
+        p[4 + i * 2] = sRegs[i][0];
+        p[5 + i * 2] = sRegs[i][1];
+    }
+    return 1;
+}

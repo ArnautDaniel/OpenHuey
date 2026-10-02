@@ -534,3 +534,210 @@ s32 func_00221E80(u8 *d, s32 i) {
     AT(d, 0x50C8 + i * 4, s32) = AT(AT(d, 0x50C0 + i * 4, u8 *), 0, s32);
     return AT(d, 0x50C8 + i * 4, s32) != 0;
 }
+
+extern VObject *gFileLoader;
+extern char D_0044E4A0[];   /* "ST_%03X\\ST_%03X.PAC" */
+extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
+extern char *func_001183C0(char *d, const char *s);                     /* strcpy */
+
+#define ROOM_SLOT_DONE 0x80000000   /* +0x3C0[slot]: the slot's load has been handled */
+
+/* load room `room` (ST_xxx\ST_xxx.PAC) into slot `slot` (+0x99C0, 0x2A0000 each); a load
+ * still in flight in that slot is first finished (its handler +0x3C8[slot]) or cancelled */
+void func_00120720(u8 *rm, u32 room, s32 slot) {
+    char path[0x100];
+    char name[0x100];
+    u32 *cur;
+    PTMF *done;
+    s32 busy;
+    VObject *loader;
+
+    if (room >= 0x110) {
+        AT(rm, 0x3C8 + slot * 12, PTMF) = sGameStateNull;
+        return;
+    }
+    cur = &AT(rm, 0x3C0 + slot * 4, u32);
+    busy = 0;
+    if (!(*cur & ROOM_SLOT_DONE)) {
+        if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, *cur) == 2) {
+            busy = 1;
+        } else {
+            done = &AT(rm, 0x3C8 + slot * 12, PTMF);
+            if (ptmf_test(done)) {
+                ptmf_scall_1(rm, done, slot);
+                busy = 1;
+            }
+        }
+    }
+    if (busy && !(*cur & ROOM_SLOT_DONE)) {
+        VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, *cur);   /* cancel */
+        *cur |= ROOM_SLOT_DONE;
+        AT(rm, 0x3C8 + slot * 12, PTMF) = sGameStateNull;
+    }
+    *cur = room;
+    func_0026EDD0(name, sizeof(name), D_0044E4A0, room & ~7, room);
+    func_001183C0(path, name);
+    loader = gFileLoader;
+    if (VCALL(loader, 0x30, s32 (*)(VObject *, char *))(loader, path) > 0) {
+        VCALL(loader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
+            loader, path, rm + slot * 0x2A0000 + 0x99C0, room, 0);
+    }
+    AT(rm, 0x3C8 + slot * 12, PTMF) = sGameStateNull;
+}
+
+/* SceneGame +0xF29740 (gSceneGameF29740): reset for a new room */
+void func_001AABC0(u8 *o) {
+    AT(o, 0x4, s32) = 0;
+}
+
+
+/* SceneGame +0xF6CD30: reset its pool of 32 0xA0-byte entries and the 32 slots +0x1438 */
+void func_00267250(u8 *o) {
+    s32 i;
+
+    func_00120EC0(o + 0x1400, o, 0xA0, 0x20, o + 0x1418);
+    for (i = 0; i < 32; i++) {
+        AT(o, 0x1438 + i * 4, s32) = 0;
+    }
+}
+
+extern void func_00169260(void *, void *, u32, void *, s32);   /* heap init */
+
+/* SceneGame +0xF6E200: reset its 64 KB heap (+0x10000, 0x802 blocks) and its 0x400 slots
+ * (+0x18034) */
+void func_002D6330(u8 *o) {
+    u32 i;
+
+    func_00169260(o + 0x10000, o, 0x10000, o + 0x10014, 0x802);
+    for (i = 0; i < 0x400; i++) {
+        AT(o, 0x18034 + i * 4, s32) = 0;
+    }
+    AT(o, 0x19034, u8) = 0;
+}
+
+/* whether room slot `slot` is still loading (its handler +0x3C8[slot] runs once the file is
+ * in) */
+s32 func_00120660(u8 *rm, s32 slot) {
+    u32 tag = AT(rm, 0x3C0 + slot * 4, u32);
+    PTMF *done;
+
+    if (tag & ROOM_SLOT_DONE) {
+        return 0;
+    }
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, tag) == 2) {
+        return 1;
+    }
+    done = &AT(rm, 0x3C8 + slot * 12, PTMF);
+    if (!ptmf_test(done)) {
+        return 0;
+    }
+    ptmf_scall_1(rm, done, slot);
+    return 1;
+}
+
+extern VObject *gBootMessage;
+
+/* SceneGame +0x706480: hook its message data (+0x27680) up to message slot 6 (result at
+ * +0x38681) */
+void func_002E2820(u8 *o) {
+    AT(o, 0x38680, u8) = 6;
+    AT(o, 0x38681, u8) = VCALL(gBootMessage, 0x8, u32 (*)(VObject *, u32, void *))(
+        gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
+}
+
+extern VObject *D_0044E4D0;
+extern VObject *D_0044E4C8;   /* the scene's lights */
+extern VObject *D_0044E4C0;
+extern VObject *D_0044E4B8;   /* the camera */
+extern u8 D_0047B350;
+extern u8 *D_01991EC4;   /* the current room's section 10 */
+extern void func_0017CC00(void *o, void *a, void *b, void *c);
+extern void func_00223B60(void *o, void *sec);
+extern void func_002A88A0(void *o, void *sec);
+extern void func_0025D370(u8 *rm, void *sec);
+extern void func_0025E0D0(u8 *rm);
+extern void func_00266CD0(VObject *o, void *sec);
+extern void func_0021B040(void *o);
+
+/* A room PAC starts with 17 section offsets (0: none); the room manager keeps pointers to
+ * them at +0x9980.. */
+#define ROOM_SEC(rm, at) AT(rm, at, u8 *)
+
+static u8 *room_section(u8 *pac, s32 i) {
+    u32 off = AT(pac, i * 4, u32);
+
+    return off != 0 ? pac + off : NULL;
+}
+
+/* make room slot `slot` the current room: find its sections and hand them to the model
+ * set (+0x3E0), the camera, lights, collision (+0x1640), texture cache, ... */
+void func_0011FFB0(u8 *rm, s32 slot) {
+    u8 *pac = rm + slot * 0x2A0000 + 0x99C0;
+    VObject *o;
+
+    ROOM_SEC(rm, 0x9980) = room_section(pac, 0);
+    if (ROOM_SEC(rm, 0x9980) == NULL) {
+        ROOM_SEC(rm, 0x9994) = NULL;
+    }
+    if (ROOM_SEC(rm, 0x9980) != NULL) {
+        ROOM_SEC(rm, 0x9984) = room_section(pac, 1);
+        ROOM_SEC(rm, 0x99BC) = room_section(pac, 16);
+        if (ROOM_SEC(rm, 0x9984) != NULL) {
+            func_0017CC00(rm + 0x3E0, ROOM_SEC(rm, 0x9980), ROOM_SEC(rm, 0x9984),
+                          ROOM_SEC(rm, 0x99BC));
+        }
+        o = (VObject *)(rm + 0x3E0);
+        VCALL(o, 0x4C, void (*)(VObject *))(o);
+        ROOM_SEC(rm, 0x9988) = room_section(pac, 2);
+        if (D_0044E4D0 != NULL) {
+            VCALL(D_0044E4D0, 0xC, void (*)(VObject *, void *))(D_0044E4D0, ROOM_SEC(rm, 0x9988));
+        }
+        ROOM_SEC(rm, 0x9994) = room_section(pac, 4);
+        ROOM_SEC(rm, 0x99A0) = room_section(pac, 7);
+        func_00223B60(rm + 0x1640, ROOM_SEC(rm, 0x99A0));
+        ROOM_SEC(rm, 0x99A4) = room_section(pac, 8);
+        ROOM_SEC(rm, 0x99B4) = room_section(pac, 14);
+        func_002A88A0(rm + 0x9360, ROOM_SEC(rm, 0x99B4));
+    }
+    ROOM_SEC(rm, 0x9998) = room_section(pac, 5);
+    ROOM_SEC(rm, 0x999C) = room_section(pac, 6);
+    if (AT(pac, 0xC, u32) == 0) {
+        ROOM_SEC(rm, 0x998C) = NULL;
+        ROOM_SEC(rm, 0x9990) = NULL;
+    } else {
+        ROOM_SEC(rm, 0x998C) = pac + AT(pac, 0xC, u32);
+        func_0025D370(rm, ROOM_SEC(rm, 0x998C));
+        if (AT(pac, 0x24, u32) != 0) {
+            ROOM_SEC(rm, 0x9990) = pac + AT(pac, 0x24, u32);
+            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, ROOM_SEC(rm, 0x9990), 0);
+        }
+        func_0025E0D0(rm);
+        AT(rm, 0x35C, u8) = 0;
+    }
+    VCALL(D_0044E4C8, 0xC, void (*)(VObject *, void *))(D_0044E4C8, ROOM_SEC(rm, 0x9994));
+    o = (VObject *)(rm + 0x1640);
+    VCALL(o, 0x24, void (*)(VObject *, void *))(o, ROOM_SEC(rm, 0x99A4));
+    VCALL(D_0044E4B8, 0x78, void (*)(VObject *, void *))(D_0044E4B8, ROOM_SEC(rm, 0x9998));
+    if (AT(pac, 0x28, u32) != 0) {
+        ROOM_SEC(rm, 0x99A8) = pac + AT(pac, 0x28, u32);
+        D_0047B350 = 1;
+    } else {
+        ROOM_SEC(rm, 0x99A8) = NULL;
+    }
+    D_01991EC4 = ROOM_SEC(rm, 0x99A8);
+    if (AT(pac, 0x2C, u32) != 0) {
+        ROOM_SEC(rm, 0x99AC) = pac + AT(pac, 0x2C, u32);
+        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, ROOM_SEC(rm, 0x99AC), 0x15);
+    } else {
+        ROOM_SEC(rm, 0x99AC) = NULL;
+        VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x15);
+    }
+    ROOM_SEC(rm, 0x99B0) = room_section(pac, 12);
+    ROOM_SEC(rm, 0x99B8) = room_section(pac, 15);
+    o = (VObject *)(rm + 0x6740);
+    VCALL(o, 0x10, void (*)(VObject *, void *, void *))(o, ROOM_SEC(rm, 0x99B0), ROOM_SEC(rm, 0x99B8));
+    VCALL(o, 0x14, void (*)(VObject *))(o);
+    func_00266CD0(D_0044E4C0, room_section(pac, 13));
+    func_0021B040(rm + 0x9380);
+    VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+}

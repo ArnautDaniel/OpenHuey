@@ -468,3 +468,254 @@ s32 func_003A04A0(Scene *g) {
     AT(g, 0x1053450, PTMF) = D_0044C7C0;
     return 0;
 }
+
+/* after a room load: on a game loaded from a save (+0xF6CD28 1, ignoring bit 0x80) pick the start variant
+ * (vt+0xF8) from the unlocked bonus flags in the progress (+0x1C/+0x24/+0x2C), then start
+ * +0x106503C (vt+0xC); nothing on mode 0 */
+void func_0039AD90(Scene *g) {
+    u8 *prog = (u8 *)g + SG_PROGRESS;
+    u8 mode = AT(g, 0xF6CD28, u8) & ~0x80;
+    VObject *o;
+
+    if (mode == 1) {
+        if (AT(prog, 0x2C, u32) & 0x100000) {
+            VCALL(g, 0xF8, void (*)(Scene *, s32))(g, 3);
+        } else if (AT(prog, 0x2C, u32) & 0x4) {
+            VCALL(g, 0xF8, void (*)(Scene *, s32))(g, 2);
+        } else if (AT(prog, 0x24, u32) & 0x2) {
+            VCALL(g, 0xF8, void (*)(Scene *, s32))(g, 1);
+        } else if (AT(prog, 0x1C, u32) & 0x1000) {
+            VCALL(g, 0xF8, void (*)(Scene *, s32))(g, 0);
+        }
+    } else if (mode == 0) {
+        return;
+    }
+    o = AT(g, 0x106503C, VObject *);
+    if (o != NULL) {
+        VCALL(o, 0xC, void (*)(VObject *))(o);
+    }
+}
+
+extern VObject *gFileLoader;
+extern s32 func_00120660(void *rooms, s32 slot);   /* room slot still loading */
+extern void func_0031E130(void *o);
+extern void func_002E2820(void *o);
+
+/* room-load state 2: wait for the room (and the loader) to finish; on a loaded game, also
+ * start the save's second room into the other slot; then back to gameplay */
+s32 func_003A0390(Scene *g) {
+    if (func_00120660((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32))) {
+        return 1;
+    }
+    if (VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) != 3) {
+        return 1;
+    }
+    if (AT(g, 0xF6CD28, u8) == 1) {
+        func_00120720((u8 *)g + 0x73EE80, AT(D_0044E978, 0x198, s32),
+                      (u8)(AT(g, 0xF6C1B0, s32) == 0));
+    }
+    func_0031E130((u8 *)g + 0x1053480);
+    func_002E2820((u8 *)g + 0x706480);
+    AT(g, 0x1053450, PTMF) = sGameStateNull;
+    return 0;
+}
+
+extern u8 *gCharPlayer;
+extern const PTMF D_0044C7D0;   /* the scene's gameplay state */
+extern const PTMF D_0044C7E0;   /* its gameplay sub-state (+0x1053440) */
+extern void func_00225550(void *o);
+extern void func_001792C0(Progress *p, s32);
+extern void func_0039D310(Scene *g);
+extern void func_002E2650(void *o);
+extern void func_00175430(Progress *p);
+extern void func_002252B0(void *o, s32);
+extern void func_00124F20(u8 *player, s32);
+extern void func_002A8410(void *o);
+
+/* the room is in: the characters in it enter (+0x38), the room's resources are set up, the
+ * player is reset once per scene (+0xF6CD28 bit 0x80), then on to gameplay */
+void func_003A0160(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    s32 i;
+
+    AT(g, 0x44, s32) = 0;
+    AT(g, 0x73EE40, s32) = 0;
+    func_00225550((u8 *)g + 0xF6CBB0);
+    func_001792C0(prog, 0);
+    func_0039D310(g);
+    if (AT(g, 0xF6CD28, u8) == 1) {
+        VObject *sub = (VObject *)((u8 *)g + 0xF87240);
+
+        VCALL(sub, 0x2C, void (*)(VObject *, s32))(sub, AT(D_0044E978, 0x1A80, s8));
+    }
+    for (i = 0; i < 3; i++) {
+        if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
+            VCALL(gCharacters[i], 0x38, void (*)(void *))(gCharacters[i]);
+        }
+    }
+    func_002E2650((u8 *)g + 0x706480);
+    VCALL(g, 0xDC, void (*)(Scene *))(g);
+    func_00175430(prog);
+    func_002252B0((u8 *)g + 0xF6CBB0, AT(g, 0x74881C, s32));
+    if (!(AT(g, 0xF6CD28, u8) & 0x80)) {
+        func_00124F20(gCharPlayer, 0xFF);
+        AT(g, 0xF6CD28, u8) |= 0x80;
+    }
+    func_002A8410((u8 *)g + 0x16B4);
+    func_002A8410((u8 *)g + 0x16D4);
+    ptmf_set(&g->state, &D_0044C7D0);
+    ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C7E0);
+}
+
+extern u8 *gCharPartner;
+extern VObject *D_0044F260;
+extern u8 *D_0044F258;        /* the creatures: 10 slots (7.. 9 have an extra part) */
+extern u8 *D_0044F808;        /* the stalker currently in play */
+extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
+extern void func_0011FFB0(void *rooms, s32 slot);
+extern void func_002D6100(void *o);
+extern void func_002A7B40(void *o);
+extern void func_00305520(void *o, s32 room);
+extern void func_00209390(void *ev, s32);
+extern void func_001662A0(u8 *partner, void *state);
+extern void func_00165510(u8 *partner, s32);
+extern void func_002EC470(void *o, s32);
+extern void *func_002E2330(u32 size, void *place);   /* placement new */
+extern void *func_0039B280(void *o);   /* creature constructors: slots 0..6 */
+extern void *func_0039B230(void *o);   /* slots 7..9 */
+extern void *func_002DC6E0(u32 size, void *place);
+extern void *func_0038C8D0(void *o);
+
+#define SG_CONTROL 0x1FBF01   /* u8: 0 Fiona is controlled, else Hewie */
+#define SG_ROOMFLAG 0x1FBF00
+
+/* enter the room: sounds, the room slot, (loaded game: the save's character and creature
+ * state), the controlled character's room, per-room resets, the characters' room entry
+ * (Progress +0x34), the event system, and the room flag +0x1FBF00 */
+void func_0039D310(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    VObject *snd;
+    s32 room;
+    s32 i;
+    const s32 *t;
+
+    if (!(u8)Progress_TestFlag(prog, 0x27)) {
+        snd = D_0044E560;
+        VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
+        VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
+        VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
+    }
+    func_0011FFB0((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
+    func_001AABC0((u8 *)g + 0xF29740);
+    if (AT(g, 0xF6CD28, u8) == 1) {
+        u8 *rd = D_0044E978;
+        u8 *save = rd + 0x190;
+        Progress *gp;
+        u8 *cs;
+        u8 *stalker;
+        u8 *cr;
+
+        AT(gCharPlayer, 0xE8, s32) = AT(rd, 0x1A0, s32);
+        AT(gCharPlayer, 0xEC, s32) = AT(rd, 0x1A4, s32);
+        VCALL(gCharPlayer, 0x28, void (*)(void *, s32, void *, void *))(
+            gCharPlayer, AT(rd, 0x19C, s32), save + 0x44, save + 0x30);
+        func_00124F20(gCharPlayer, 0xFF);
+        gp = gProgress;
+        cs = (u8 *)gp + 0x800;
+        if (AT(save, 0x1F, u8)) {
+            func_001662A0(gCharPartner, cs);
+        }
+        VCALL(gCharPartner, 0x70, void (*)(void *))(gCharPartner);
+        func_00165510(gCharPartner, AT(cs, 0xC, s32));
+        if (D_0044F808 != NULL) {
+            if (AT(save, 0x20, u8)) {
+                func_001771A0(prog, 2);
+            }
+            VCALL(D_0044F808, 0x70, void (*)(void *))(D_0044F808);
+            stalker = D_0044F808;
+            if (AT(stalker, 0x28, u8) &&
+                AT(stalker, 0x30, s32) != VCALL(g, 0xA4, s32 (*)(Scene *))(g)) {
+                if (AT(D_0044F808, 0xC4, s32) == 2 ||
+                    (u8)VCALL(prog, 0x64, s32 (*)(Progress *))(prog) == 4) {
+                    func_002EC470((u8 *)g + 0x7A4, 0);
+                }
+            }
+        }
+        cr = D_0044F258;
+        for (i = 0; i < 10; i++) {
+            u8 *e = (u8 *)gp + 0x878 + i * 0x24;
+            u8 *mem;
+            u8 *o;
+            VObject *hm;
+
+            if (!AT(e, 0x12, u8)) {
+                continue;
+            }
+            mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
+            o = func_002E2330(0x1600, mem);
+            if (o != NULL) {
+                o = (i < 7) ? func_0039B280(o) : func_0039B230(o);
+            }
+            AT(cr, i * 4, u8 *) = o;
+            AT(AT(cr, i * 4, u8 *), 0x20, s32) = (u8)i;
+            if ((u8)i >= 7 && (u8)i < 10) {
+                void *part = ((void *(*)(u8 *))AT(AT(cr, 0x28, u8 *), 0xC, void *))(cr);
+
+                part = func_002DC6E0(0x890, part);
+                if (part != NULL) {
+                    part = func_0038C8D0(part);
+                }
+                AT(AT(cr, i * 4, u8 *), 0xF0, void *) = part;
+            }
+            VCALL(mem, 0xC, void (*)(void *))(mem);
+            AT(mem, 0x28, u8) = 1;
+            hm = (VObject *)((u8 *)g + 0x706480);
+            ((void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, f32, s64))AT(
+                AT(hm, 0x28, u8 *), 0x18, void *))(
+                hm, AT(e, 0x0, s32), AT(e, 0x8, s32), AT(e, 0x4, s32), (u8)i, AT(e, 0xE, u8),
+                AT(e, 0xF, u8), i, -1.0f, 0);
+        }
+        if (Progress_TestFlag(prog, 0x16)) {
+            VCALL(gp, 0x78, void (*)(Progress *, s32, s32))(gp, 5, 0);
+        }
+        VCALL(D_0044F260, 0x1C, void (*)(VObject *))(D_0044F260);
+    }
+    VCALL(D_0044F260, 0x20, void (*)(VObject *))(D_0044F260);
+    if (AT(g, SG_CONTROL, u8) == 0) {
+        AT(gCharPlayer, 0x30, s32) = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
+    } else {
+        AT(gCharPartner, 0x30, s32) = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
+    }
+    if (AT(g, 0xF6CD28, u8) & 0x80) {
+        if (AT(g, SG_CONTROL, u8) == 0) {
+            AT(gCharPlayer, 0x34, s32) = -1;
+        } else {
+            AT(gCharPartner, 0x34, s32) = -1;
+        }
+    }
+    snd = D_0044E560;
+    VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 0, 0);
+    VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 1, 0);
+    func_002D6100((u8 *)g + 0xF6E200);
+    func_002A7B40((u8 *)g + 0x1010);
+    func_00305520((u8 *)g + 0x101EBC0, AT(gCharPlayer, 0x30, s32));
+    Progress_ClearFlag(prog, 0x2D);
+    for (i = 0; i < 6; i++) {
+        u8 *c = (u8 *)gCharacters[i];
+
+        if (c != NULL && AT(c, 0x28, u8)) {
+            func_002A8410(c + 0x14E8);
+            func_002A8410(c + 0x1508);
+            VCALL(prog, 0x34, void (*)(Progress *, u8))(prog, i);
+        }
+    }
+    func_00209390((u8 *)g + 0xF6AFB0, 0);
+    AT(g, SG_ROOMFLAG, u8) = 0;
+    room = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
+    for (t = D_0044C6E0; *t != -1; t++) {
+        if (*t == room) {
+            AT(g, SG_ROOMFLAG, u8) = 1;
+            return;
+        }
+    }
+}
