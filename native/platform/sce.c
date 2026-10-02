@@ -17,10 +17,32 @@ static int dma_channel(const void *chan) {
     return -1;
 }
 
-/* sceDmaSend(chan, tag): the packets get interpreted by the PC GS (to do); dropped for now */
+#include "gs_local.h"
+
+/* sceDmaSend(chan, tag): walk the chain now (CHCR bit 6: VIF codes in the tags) */
 void func_0010D6E8(void *chan, void *tag) {
-    (void)dma_channel(chan);
-    (void)tag;
+    int c = dma_channel(chan);
+
+    if (c == 1 || c == 2) {
+        dma_send(c, (unsigned)tag, (((unsigned *)chan)[0] >> 6) & 1);
+    }
+}
+
+/* sceGsPutDispEnv(disp): PMODE, SMODE2, DISPFB2, DISPLAY2, BGCOLOR */
+void func_0010C440(unsigned long long *disp) {
+    gs_set_display(disp[0], disp[1], disp[2], disp[3], disp[4]);
+}
+
+/* sceGsPutDrawEnv(packet): a GIF tag and its A+D data */
+void sceGsPutDrawEnv(unsigned long long *giftag) {
+    gs_gif(giftag, 1 + (unsigned)(giftag[0] & 0x7FFF) * (unsigned)((giftag[0] >> 60) ? (giftag[0] >> 60) : 16));
+}
+
+/* sceGsSyncPath: everything is done immediately on PC */
+int sceGsSyncPath(int mode, int timeout) {
+    (void)mode;
+    (void)timeout;
+    return 0;
 }
 
 /* sceDmaSync(chan, mode, timeout): transfers complete immediately on PC */

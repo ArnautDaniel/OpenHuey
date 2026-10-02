@@ -59,3 +59,6 @@ int func_0020E870(void) { return 0; }
 /* per-frame ticks of the ADX sound system and the memory card: nothing to do yet */
 void func_001AACC0(void *snd) { (void)snd; }
 void func_00226510(void *mc) { (void)mc; }
+
+/* sound driver per-frame tick */
+void func_00210230(void *drv) { (void)drv; }

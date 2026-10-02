@@ -17,6 +17,7 @@ extern char *func_001183C0(char *dst, const char *src);             /* strcpy */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_0044F7F0[];   /* "." (the root) */
 extern VObject *D_0044F7F8;       /* the system object */
+extern VObject *D_0044E560;       /* the sound driver */
 
 /* init: 256 empty request slots, the root's listing, the folder slots' listing buffers */
 void func_0016C530(u8 *l) {
@@ -272,4 +273,161 @@ void *func_0016B1F0(u8 *l, const char *dir) {
         }
     }
     return NULL;
+}
+
+/* ---- asynchronous requests ---- */
+
+/* a request (ring of 256 at +4; read index +0x12804, write index +0x12805) */
+typedef struct LoadReq {
+    /* 0x000 */ u32 unk0;
+    /* 0x004 */ s32 state;      /* 0 free, 1/2 open, 3 read, 4 reading, 5 sound driver busy, 6/7 stop */
+    /* 0x008 */ void *file;
+    /* 0x00C */ void *dir;
+    /* 0x010 */ s32 unk10;
+    /* 0x014 */ s32 unk14;
+    /* 0x018 */ u32 dst;
+    /* 0x01C */ s32 notify;     /* hand the data on when done */
+    /* 0x020 */ char name[0x100];
+    /* 0x120 */ u8 kind;        /* 0: callback (func_001695D0); else a sound bank part (| 0x80) */
+    /* 0x121 */ u8 bank;
+    /* 0x122 */ u8 pad122[2];
+    /* 0x124 */ u32 size;
+} LoadReq;
+
+_Static_assert(sizeof(LoadReq) == 0x128, "LoadReq");
+
+#define LOADER_REQ(l, i) ((LoadReq *)((u8 *)(l) + 4) + (u8)(i))
+#define LOADER_RD(l) AT(l, 0x12804, u8)
+#define LOADER_WR(l) AT(l, 0x12805, u8)
+
+extern void func_001695D0(LoadReq *q);
+extern void ADXF_StopNw(void *f);
+
+static inline void LoadReq_Clear(LoadReq *q) {
+    *(volatile s32 *)&q->state = 0;   /* (also when it already is: the PS2 code stores it) */
+    q->file = NULL;
+    q->dir = NULL;
+    q->unk10 = 0;
+    q->unk14 = 0x10000000;
+    q->notify = 0;
+    q->dst = 0;
+    q->name[0] = 0;
+    q->kind = 0;
+    q->size = 0;
+}
+
+/* finish the request at the read index and move on */
+static inline void Loader_Retire(u8 *l, LoadReq *q) {
+    func_001C9800(q->file);
+    LoadReq_Clear(q);
+    LOADER_RD(l)++;
+}
+
+/* Per-frame tick: advance the request at the read index (open, read, wait, hand sound data to
+ * the sound driver: +0x4C / +0x54 / +0x50 / +0x5C by kind, +0x70 = driver busy). */
+void func_0016BFB0(u8 *l) {
+    VObject *drv = D_0044E560;
+    LoadReq *q;
+    s32 n, st;
+
+    for (;;) {
+        if (LOADER_RD(l) == LOADER_WR(l)) {
+            return;
+        }
+        if (LOADER_REQ(l, LOADER_WR(l) - 1)->state == 0) {   /* the newest request was dropped */
+            LOADER_WR(l)--;
+            continue;
+        }
+        q = LOADER_REQ(l, LOADER_RD(l));
+        switch (q->state) {
+        case 0:
+            LoadReq_Clear(q);
+            LOADER_RD(l)++;
+            continue;
+        case 1:
+            q->state = 2;
+            /* fallthrough */
+        case 2:
+            q->file = func_001C9438(q->name, q->dir);
+            if (q->file != NULL) {
+                q->size = func_001CA0B8(q->file) << 11;
+            }
+            if (q->file == NULL) {
+                return;
+            }
+            q->state = 3;
+            /* fallthrough */
+        case 3:
+            n = 0;
+            if (q->file != NULL && (n = func_001CA0B8(q->file)) != 0) {
+                n = ADXF_ReadNw(q->file, n, q->dst);
+            }
+            if (n == 0) {
+                return;
+            }
+            q->state = 4;
+            return;
+        case 4:
+            ADXF_GetStat(q->file);
+            st = ADXF_GetStat(q->file);
+            if (st == 1) {
+                q->state = 3;
+                continue;
+            }
+            if (st != ADXF_STAT_READEND) {
+                return;
+            }
+            if (q->notify != 0 && q->size != 0) {
+                if (q->kind == 0) {
+                    func_001695D0(q);
+                } else {
+                    if ((VCALL(drv, 0x70, s32 (*)(VObject *, s32))(drv, q->bank) & 0xFF) == 1) {
+                        return;
+                    }
+                    switch (q->kind & ~0x80) {
+                    case 0:
+                        VCALL(drv, 0x4C, void (*)(VObject *, s32, u32, u32))(drv, q->bank, q->dst, q->size);
+                        break;
+                    case 1:
+                        VCALL(drv, 0x54, void (*)(VObject *, s32, u32, u32))(drv, q->bank, q->dst, q->size);
+                        break;
+                    case 2:
+                        VCALL(drv, 0x50, void (*)(VObject *, s32, u32, u32))(drv, q->bank, q->dst, q->size);
+                        break;
+                    case 3:
+                        VCALL(drv, 0x5C, void (*)(VObject *, s32, u32, u32))(drv, q->bank, q->dst, q->size);
+                        q->state = 5;
+                        break;
+                    }
+                }
+            }
+            if (q->state == 5) {
+                return;
+            }
+            Loader_Retire(l, q);
+            continue;
+        case 5:
+            if (VCALL(drv, 0x70, s32 (*)(VObject *, s32))(drv, q->bank) & 0xFF) {
+                return;
+            }
+            Loader_Retire(l, q);
+            continue;
+        case 6:
+            ADXF_StopNw(q->file);
+            q->state = 7;
+            /* fallthrough */
+        case 7:
+            ADXF_GetStat(q->file);
+            st = ADXF_GetStat(q->file);
+            if (st == ADXF_STAT_READEND || st == 1) {
+                Loader_Retire(l, q);
+                continue;
+            }
+            return;
+        default:
+            LoadReq_Clear(q);
+            LOADER_RD(l)++;
+            return;
+        }
+    }
 }

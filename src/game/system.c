@@ -58,7 +58,7 @@ extern const PTMF sGameStateNull;
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
 extern void func_002D4680(void *obj, void *arg);
-extern void *func_002D4630(void *f);   /* Fader constructor (fader.c) */
+extern void *func_002D4630(void *f);   /* rumble constructor (rumble.c) */
 extern void func_001B80C0(u8 *r);
 extern void func_00100340(void *array, void *(*ctor)(void *), void (*dtor)(void *, s32), u32 size, u32 count);   /* __construct_array */
 extern void func_001BEC10(void *, s32), func_001BECA0(void *, s32);   /* the element destructors */

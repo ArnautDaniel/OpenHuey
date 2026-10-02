@@ -12,6 +12,7 @@ extern Ctor D_0046969C[];
 extern char gGame[];
 extern const char *hg_data_dir;   /* crifs.c */
 extern void Game_Run(void *game);
+extern void gs_init(void);
 
 int main(int argc, char **argv) {
     Ctor *c;
@@ -22,6 +23,7 @@ int main(int argc, char **argv) {
     } else if (getenv("HG_DATA") != NULL) {
         hg_data_dir = getenv("HG_DATA");
     }
+    gs_init();
     for (c = D_00469460; c < D_0046969C; c++) {
         if (*c != NULL) {
             (*c)();

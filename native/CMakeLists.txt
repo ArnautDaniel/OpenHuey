@@ -46,4 +46,11 @@ target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURREN
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O1 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
 target_compile_definitions(hg PRIVATE HG_NATIVE)
-target_link_libraries(hg PRIVATE m)
+# SDL3 (32-bit): Gentoo's multilib puts it in /usr/lib (CMake would rewrite that to lib64)
+set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
+set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS TRUE)
+find_library(SDL3_LIBRARY NAMES SDL3 PATHS /usr/lib /usr/lib32 /usr/lib/i386-linux-gnu NO_DEFAULT_PATH)
+if(NOT SDL3_LIBRARY)
+    find_library(SDL3_LIBRARY NAMES SDL3 REQUIRED)
+endif()
+target_link_libraries(hg PRIVATE ${SDL3_LIBRARY} m)

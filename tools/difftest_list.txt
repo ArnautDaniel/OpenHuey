@@ -1768,17 +1768,17 @@ src/game/system.c func_0020E7D0
 src/game/system.c func_0020E7B0
 src/game/system.c func_0020E340 --runs=10
 src/game/system.c func_001B80C0
-src/game/fader.c func_002D4630
-src/game/fader.c func_0020DF90 --pre=a1=-1..2
-src/game/fader.c func_002D45F0
-src/game/fader.c func_002D45A0
-src/game/fader.c func_002D4260 --pre=a1=0..4
-src/game/fader.c func_002D4220 --pre=a1=0..4
-src/game/fader.c func_002D41B0 --runs=100 --pre=a1=0..4 --pre=a4=0..0xFFF
-src/game/fader.c func_002D4070 --runs=200 --pre=a1=0x0A000000..0x0A000000 --pre=a2=0x0A100000..0x0A100000 --pre=@0x0A000002=0..0x0000C000 --pre=@0x0A100002=0..0x0000C000 --pre=@0x0A000006=0..0x00004000 --pre=@0x0A100006=0..0x00004000
-src/game/fader.c func_002D3FA0 --pre=a0+0x80=0..1 --pre=a0+0x84=0..1
-src/game/fader.c func_002D4020 --pre=a1=0..1
-src/game/fader.c func_002D3FC0 --pre=a1=0..2
+src/game/rumble.c func_002D4630
+src/game/rumble.c func_0020DF90 --pre=a1=-1..2
+src/game/rumble.c func_002D45F0
+src/game/rumble.c func_002D45A0
+src/game/rumble.c func_002D4260 --pre=a1=0..4
+src/game/rumble.c func_002D4220 --pre=a1=0..4
+src/game/rumble.c func_002D41B0 --runs=100 --pre=a1=0..4 --pre=a4=0..0xFFF
+src/game/rumble.c func_002D4070 --runs=200 --pre=a1=0x0A000000..0x0A000000 --pre=a2=0x0A100000..0x0A100000 --pre=@0x0A000002=0..0x0000C000 --pre=@0x0A100002=0..0x0000C000 --pre=@0x0A000006=0..0x00004000 --pre=@0x0A100006=0..0x00004000
+src/game/rumble.c func_002D3FA0 --pre=a0+0x80=0..1 --pre=a0+0x84=0..1
+src/game/rumble.c func_002D4020 --pre=a1=0..1
+src/game/rumble.c func_002D3FC0 --pre=a1=0..2
 src/game/renderer.c func_001BBB20
 src/game/renderer.c func_001BBB40 --runs=100 --pre=a1=0..0x100000 --pre=a0+0x304BB5=0..1
 src/game/renderer.c func_001BBBB0 --runs=100 --pre=a1=0..0x100000 --pre=a0+0x304BB4=0..1
@@ -1872,3 +1872,7 @@ src/game/renderer.c func_001B85B0 --pre=a0+0x304C05=0..2
 src/game/renderer.c func_001B75E0 --runs=100 --pre=a0+0x304BEC=0x50000..0x50001 --pre=a0+0x304C00=0x1F0..0x210 --pre=a0+0x304C02=0x1B0..0x1D0 --pre=a0+0x304BFC=0x1F0..0x290 --pre=a0+0x304BFE=0x1B0..0x200
 src/game/renderer.c func_001B75E0 --runs=100 --pre=a0+0x304BEC=0x88000..0x88000 --pre=a0+0x304C00=0x1F0..0x210 --pre=a0+0x304C02=0x1B0..0x1D0
 src/game/system.c func_001BEEF0 --runs=20 --irq=0x0047B204 --irq=0x0047B208
+src/game/loader.c func_0016BFB0 --runs=300 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12804=0..2 --pre=a0+0x12805=0..2 --pre=a0+0x8=0..9 --pre=a0+0x130=0..9 --pre=a0+0x258=0..9 --pre=a0+0x124=0..2 --pre=a0+0x24C=0..0x84 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --stub-ret=4 --stub-ret-prob=0.8
+src/game/rumble.c func_002D42A0 --runs=300 --pre=a0+0x4=0..1 --pre=a0+0x5=0..1 --pre=a0+0x8=0..2 --pre=a0+0x14=0..2 --pre=a0+0x68=0..2 --pre=a0+0x74=0..2 --pre=a0+0x84=0..1 --pre=a0+0x80=0..1 --pre=@0x0044FEB0=0x0A200000..0x0A200000 --pre=@0x0A200000=0x0046ADB0..0x0046ADB0 --pre=a0+0x0=0x0046F4F0..0x0046F4F0
+src/game/pad.c func_001BE1F0 --pre=a1=0..2
+src/game/pad.c func_001BE4B0 --runs=300 --pre=a0+0x88=0..3 --pre=a0+0x8C=0..2 --pre=a0+0x282=0..3 --pre=a0+0x288=0..1 --pre=a0+0x28A=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret-prob=0.8
