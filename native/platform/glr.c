@@ -4,7 +4,7 @@
  * then scaled into the window; frame dumps read the offscreen target.
  *
  *   HG_GLDEBUG=1     once a second: the frame's draw count and its first vertex in clip space
- *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices
+ *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
