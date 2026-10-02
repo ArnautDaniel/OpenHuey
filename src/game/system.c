@@ -58,8 +58,8 @@ extern const PTMF sGameStateNull;
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
 extern void func_002D4680(void *obj, void *arg);
-extern void func_002D4630(void *obj);
-extern void func_001B80C0(void *obj);
+extern void *func_002D4630(void *f);   /* Fader constructor (fader.c) */
+extern void func_001B80C0(u8 *r);
 extern void func_00100340(void *array, void *(*ctor)(void *), void (*dtor)(void *, s32), u32 size, u32 count);   /* __construct_array */
 extern void func_001BEC10(void *, s32), func_001BECA0(void *, s32);   /* the element destructors */
 
@@ -128,4 +128,39 @@ void *func_0020E340(u8 *s) {
     AT(p, 0x7E4, u8 *) = p + 0x5DC;
     AT(p, 0x7E8, u8 *) = p + 0x6DC;
     return s;
+}
+
+extern u32 func_0010D3B8(u32 i);   /* libgraph: parameter / address table entry i (0..9) */
+extern u32 _fbss;                 /* first word of .bss: libgraph table entry 2 */
+
+/* Renderer state (system +0x460) defaults: 640x512 display, draw buffers, colour 0x80808080. */
+void func_001B80C0(u8 *r) {
+    u32 i;
+
+    AT(r, 0x304BE8, s32) = 0;
+    AT(r, 0x304BEC, s32) = 0x88000;
+    AT(r, 0x304BF0, s32) = 0x50000;
+    AT(r, 0x304BF4, u32) = 0x80808080;
+    AT(r, 0x304BF8, s32) = 0;
+    AT(r, 0x304BFC, s16) = 640;
+    AT(r, 0x304BFE, s16) = 512;
+    AT(r, 0x304C00, s16) = 512;
+    AT(r, 0x304C02, s16) = 448;
+    AT(r, 0x304C04, u8) = 0;
+    AT(r, 0x304C05, u8) = 0;
+    AT(r, 0x304C06, u8) = 0x20;
+    AT(r, 0x304C07, u8) = 0;
+    AT(r, 0x304C08, u8) = 0;
+    AT(r, 0x304C09, u8) = 2;
+    AT(r, 0x304BB0, u32) = func_0010D3B8(1);
+    _fbss = func_0010D3B8(2);
+    AT(r, 0x304BB4, u8) = 0;
+    AT(r, 0x304BB5, u8) = 0;
+    ((void (*)(u8 *))(*(void ***)r)[0x1C / 4])(r);
+    for (i = 0; i < 11; i++) {
+        AT(r, 0x304BB8 + i * 4, s32) = -1;
+    }
+    AT(r, 0x304BE4, s32) = -1;
+    AT(r, 0x304D58, s32) = 0;
+    AT(r, 0x304DDC, s32) = 0;
 }

@@ -544,11 +544,6 @@ src/leaf/b4_002D1360.c func_002D25A0
 src/leaf/b4_002D1360.c func_002D25C0
 src/leaf/b4_002D1360.c func_002D3A20
 src/leaf/b4_002D1360.c func_002D3A60
-src/leaf/b4_002D1360.c func_002D3FA0
-src/leaf/b4_002D1360.c func_002D41B0
-src/leaf/b4_002D1360.c func_002D4220
-src/leaf/b4_002D1360.c func_002D4260
-src/leaf/b4_002D1360.c func_002D45A0
 src/leaf/b4_002D1360.c func_002D4680
 src/leaf/b4_002D1360.c func_002D6000
 src/leaf/b4_002D1360.c func_002D6010
@@ -1774,3 +1769,15 @@ src/game/system.c func_0020E7F0
 src/game/system.c func_0020E7D0
 src/game/system.c func_0020E7B0
 src/game/system.c func_0020E340 --runs=10
+src/game/system.c func_001B80C0
+src/game/fader.c func_002D4630
+src/game/fader.c func_0020DF90 --pre=a1=-1..2
+src/game/fader.c func_002D45F0
+src/game/fader.c func_002D45A0
+src/game/fader.c func_002D4260 --pre=a1=0..4
+src/game/fader.c func_002D4220 --pre=a1=0..4
+src/game/fader.c func_002D41B0 --runs=100 --pre=a1=0..4 --pre=a4=0..0xFFF
+src/game/fader.c func_002D4070 --runs=200 --pre=a1=0x0A000000..0x0A000000 --pre=a2=0x0A100000..0x0A100000 --pre=@0x0A000002=0..0x0000C000 --pre=@0x0A100002=0..0x0000C000 --pre=@0x0A000006=0..0x00004000 --pre=@0x0A100006=0..0x00004000
+src/game/fader.c func_002D3FA0 --pre=a0+0x80=0..1 --pre=a0+0x84=0..1
+src/game/fader.c func_002D4020 --pre=a1=0..1
+src/game/fader.c func_002D3FC0 --pre=a1=0..2

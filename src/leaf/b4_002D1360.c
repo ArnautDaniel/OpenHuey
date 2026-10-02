@@ -139,58 +139,7 @@ void func_002D3A60(u8 *p, const u8 *src) {
     }
 }
 
-s32 func_002D3FA0(u8 *p) {
-    return F(p, 0x80, u32) != 0 || F(p, 0x84, u32) != 0;
-}
-
 /* Starts a 16.16 fade of channel i from `from` to `to` over `frames` (12 bits) frames. */
-void func_002D41B0(u8 *p, u32 i, u32 from, u32 to, u32 frames) {
-    u8 *e = p + (u8)i * 24;
-    s32 n = (u16)frames & 0xFFF;
-
-    F(e, 0x14, u16) = n;
-    F(e, 0x1C, s32) = (u8)from << 16;
-    if (frames != 0) {
-        F(e, 0x18, s32) = (s32)(((u8)to << 16) - F(e, 0x1C, s32)) / n;
-    } else {
-        F(e, 0x18, s32) = 0;
-    }
-}
-
-void func_002D4220(u8 *p, u32 i, u32 value, u32 frames) {
-    u8 *e = p + (u8)i * 24;
-
-    F(e, 0x14, u16) = (u16)frames & 0xFFF;
-    F(e, 0x18, s32) = 0;
-    F(e, 0x1C, s32) = (u8)value << 16;
-}
-
-void func_002D4260(u8 *p, u32 i, s32 on, u32 frames) {
-    u8 *e = p + (u8)i * 24;
-
-    F(e, 0x8, u16) = (u16)frames & 0xFFF;
-    F(e, 0xC, s32) = 0;
-    F(e, 0x10, s32) = on ? 0x10000 : 0;
-}
-
-void func_002D45A0(u8 *p) {
-    s32 i;
-
-    for (i = 0; i < 5; i++) {
-        u8 *e = p + i * 24;
-        F(e, 0xC, u32) = 0;
-        F(e, 0x10, u32) = 0;
-        F(e, 0x8, u16) = 0;
-        F(e, 0x18, u32) = 0;
-        F(e, 0x1C, u32) = 0;
-        F(e, 0x14, u16) = 0;
-    }
-    F(p, 0x80, u32) = 0;
-    F(p, 0x84, u32) = 0;
-    F(p, 0x8C, u32) = 0;
-    F(p, 0x88, u32) = 0;
-}
-
 /* The original null-checks the address of each member (inlined constructors). */
 void func_002D4680(void *self, u8 *p) {
     u32 a = (u32)p;
