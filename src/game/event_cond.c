@@ -39,6 +39,8 @@ extern s32 func_00176D80(Progress *p, s32 item);
 extern s32 func_00176DD0(Progress *p, s32 item, s32 n);
 extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
 extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
+extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
+extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -213,6 +215,20 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x2B:     /* +0x11F0 has reached +0x40 */
         r = !(AT(ev, 0x11F0, u8) < AT(ev, 0x40, u8));
+        break;
+    case 0x37:     /* character pc[1] is in zone pc[2] (+0xBF0) */
+        r = (u8)func_002DE1C0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
+        break;
+    case 0x3D:     /* the player can be controlled and the progress state is below 4 */
+        r = (u8)func_0019A2B0(gCharPlayer) == 1 && AT(p, 0x7B8, u8) < 4;
+        break;
+    case 0x3F:     /* the player's action (+0x1AD580) is be32 pc[1..4] */
+        r = AT(gCharPlayer, 0x1AD580, u32) == (u32)(pc[1] << 24 | pc[2] << 16 | pc[3] << 8 | pc[4]);
+        break;
+    case 0x41:     /* character pc[1]'s state (+0xC4) is pc[2] */
+        if (cond_char(p, pc[1]) != NULL) {
+            r = AT(cond_char(p, PC(ev)[1]), 0xC4, s32) == PC(ev)[2];
+        }
         break;
     case 0x08:     /* progress flag be16 pc[1] */
         r = Progress_TestFlag(p, be16(pc + 1)) != 0;
