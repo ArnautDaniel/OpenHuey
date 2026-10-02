@@ -155,7 +155,7 @@ void func_0015FB30(Hewie *h) {
     func_00138AD0(h, 0, -1);
 }
 
-#define HEWIE_HP(h) HW(h, 0x14C8, s32)
+#define HEWIE_HP(h) ((h)->c.hp)
 
 /* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
  * never, he keeps 1). */
@@ -398,4 +398,130 @@ void func_00165890(Hewie *h) {
     HEWIE_SAVE_FIELDS(SAVE)
 #undef SAVE
     PSAVE(p, 0x838, u8) = h->c.door;
+}
+
+extern void func_00127660(Character *c);
+
+/* vtable +0xC: initialise (Character part, then his own state). */
+void func_00168A10(Hewie *h) {
+    func_00127660(&h->c);
+    HEWIE_SIDE(h) = 2;
+    h->c.a.radius = 2.5f;
+    h->c.a.height = 5.0f;
+    h->c.a.navMask = 0x29020008;
+    h->c.pathReq->unk4 = 6;
+    *(s32 *)h->c.pathReq->pad08 = 1;
+    h->c.pathReq->mask = h->c.a.navMask;
+    h->c.hpMax = 100;
+    h->c.hp = h->c.hpMax;
+    h->c.hearThreshold = 0;
+    HW(h, 0xF35BC, s16) = 0;
+    HW(h, 0xF35CC, s16) = 0;
+    HW(h, 0xF3674, s16) = 0;
+    HW(h, 0xF3676, s16) = 0;
+    HW(h, 0xF367A, s16) = 0;
+    HW(h, 0xF3678, s16) = 0;
+    HW(h, 0xF367C, s16) = 0;
+    HW(h, 0xF367E, s16) = 0;
+    HW(h, 0xF3682, s16) = 0;
+    HW(h, 0xF3680, s16) = 0;
+    HW(h, 0xF36F0, s32) = 0;
+    HW(h, 0xF3594, s32) = -1;
+    HW(h, 0xF35BE, s16) = 0;
+    HW(h, 0xF3581, u8) = 0;
+    HW(h, 0xF3690, u8) = 0x10;
+    HW(h, 0xF3691, u8) = 0x10;
+    HW(h, 0xF3692, u8) = 0x10;
+    HW(h, 0xF3693, u8) = 0x10;
+    HW(h, 0xF3694, u8) = 0x10;
+    HW(h, 0xF3695, u8) = 0x10;
+    HW(h, 0xF36A2, u8) = 0;
+    HW(h, 0xF36A4, s32) = 0;
+    HW(h, 0xF36AC, s32) = 0;
+}
+
+extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
+extern void func_002DDE20(void *motion, s32 set, s32 variant);
+extern void func_001F1D60(void *obj);
+
+/* vtable +0x28: place him (as Character) on triangle `tri`; (in play) his default animation;
+ * reset his per-placement state. Returns the placement result. */
+s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = func_00125AD0(&h->c, tri, heading, pos);
+
+    if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
+        func_002DDE20(h->c.motion, HW(h, 0xF36F0, s32), -1);
+        VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
+    }
+    HW(h, 0xF3608, s32) = 0;
+    HW(h, 0xF3600, s32) = 4;
+    HW(h, 0xF361C, s32) = 0;
+    HW(h, 0xF3660, u8) = 1;
+    HW(h, 0xF3661, u8) = 1;
+    HW(h, 0xF3662, u8) = 1;
+    HW(h, 0xF3663, u8) = 1;
+    HW(h, 0xF3568, s32) = HEWIE_ACTION(h);
+    HW(h, 0xF354C, f32) = h->c.a.angle[1];
+    h->c.a.prevNavTri = tri;
+    sceVu0CopyVector(h->c.a.prevPos, h->c.a.pos);
+    HW(h, 0xF35DC, s32) = 0;
+    HW(h, 0xF3550, s32) = 0;
+    HW(h, 0xF3554, s32) = 1;
+    HW(h, 0xF3580, u8) = 0;
+    HW(h, 0xF3664, s32) = 0;
+    HW(h, 0xF3581, u8) = 0;
+    HW(h, 0xF3582, u8) = 1;
+    HW(h, 0xF3584, u8) = 0;
+    HW(h, 0xF358C, s32) = 0;
+    HW(h, 0xF357C, s32) = 0;
+    HW(h, 0xF368C, s32) = 0;
+    HW(h, 0xF3585, u8) = 0;
+    HW(h, 0xF3586, u8) = 0;
+    HW(h, 0xF3587, u8) = 1;
+    HW(h, 0xF35A0, s16) = 0;
+    HW(h, 0xF3548, s32) = 0;
+    HW(h, 0xF3620, u8) = 0;
+    HW(h, 0xF36A4, s32) = 0;
+    HW(h, 0xF36AC, s32) = 0;
+    func_001F1D60((u8 *)h + 0xF3748);
+    HW(h, 0xF3798, s32) = -1;
+    return r;
+}
+
+extern Character *gCharacters[6];
+extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
+extern f32 func_002E2D00(f32 angle);                  /* angle wrapped to -pi..pi */
+extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
+extern VObject *D_0044E558;                           /* doors: +0x40(door) -> usable */
+
+/* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
+ * `door`)? For kinds 1..4, if he stands idle facing roughly towards the caller (within 3pi/8),
+ * he may react himself instead (+0xF3584, answer no). */
+s32 func_00165A40(Hewie *h, u32 kind, s32 slot, u32 door) {
+    u32 k;
+
+    if (h->c.moveMode == 4 && (kind & 0xFF) != 0xB) {
+        return 0;
+    }
+    if (h->c.moveMode == 8 && (u32)(h->c.moveSub - 0x18) < 2) {
+        return 0;
+    }
+    k = kind & 0xFF;
+    if (HEWIE_ACTION(h) == 0x76) {
+        return 0;
+    }
+    if (k != 5 && HEWIE_ACTION(h) == 0x65) {
+        return 0;
+    }
+    if (!(Progress_TestFlag(gProgress, 0x1D) & 0xFF) && h->c.moveMode == 0 && k >= 1 && k <= 4
+        && h->c.a.unkC4 != 2 && HEWIE_ACTION(h) != 0x79
+        && func_002E2D00(func_001244D0(&h->c.a, gCharacters[slot]->a.pos) - h->c.a.angle[1]) < 0x1.2d97c8p+0f /* 3pi/8 */
+        && (func_00138460(h, slot) & 0xFF) == 1) {
+        HW(h, 0xF3584, u8) = 1;
+        return 0;
+    }
+    if (k != 5) {
+        return 1;
+    }
+    return (VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, door & 0xFF) & 0xFF) ? 1 : 0;
 }

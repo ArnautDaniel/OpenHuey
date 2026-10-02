@@ -96,7 +96,8 @@ typedef struct Character {
     /* 0x14C0 */ u16 unk14C0;
     /* 0x14C2 */ u8 pad14C2[2];
     /* 0x14C4 */ s32 unk14C4;         /* (read as f32 for moveSub 0x17) */
-    /* 0x14C8 */ u8 pad14C8[8];
+    /* 0x14C8 */ s32 hp;               /* health (Hewie: 0 = down) */
+    /* 0x14CC */ s32 hpMax;
     /* 0x14D0 */ s32 unk14D0;
     /* 0x14D4 */ u8 door;             /* room exit (0..7) the character heads for, 0xFF = none */
     /* 0x14D5 */ u8 heardSlot;        /* noise event the character reacts to (0..3), 0xFF = none */
