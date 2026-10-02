@@ -328,3 +328,31 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
     }
     return 0;
 }
+
+
+extern s32 func_002DE0F0(u8 *zone, u8 *c);             /* character c in the zone */
+extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 a, f32 b);   /* a point against the zone (bits) */
+
+/* is character `c` in zone `zone` - or, for NULL, any active character in this room (its
+ * point +0x74 fully inside: bits 1 and 2) */
+s32 func_002DE1C0(u8 *zone, u8 *c) {
+    f32 pt[4] __attribute__((aligned(16)));
+    Progress *p;
+    u8 i;
+
+    if (c != NULL) {
+        return func_002DE0F0(zone, c);
+    }
+    p = gProgress;
+    for (i = 0; i < 6; i++) {
+        u8 *k = gCharacters[i];
+
+        if (k != NULL && AT(k, 0x28, u8) != 0 &&
+            AT(k, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
+            (u8)VCALL(k, 0x74, s32 (*)(u8 *, f32 *))(k, pt) &&
+            ((u8)func_002DE2F0(zone, pt, 0.0f, 0.0f) & 3) == 3) {
+            return 1;
+        }
+    }
+    return 0;
+}
