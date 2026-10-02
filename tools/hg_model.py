@@ -242,7 +242,7 @@ def build(bones, parts, images, name):
             "JOINTS_0": g.accessor("4H", USHORT, "VEC4", j4, 34962),
             "WEIGHTS_0": g.accessor("4f", FLOAT, "VEC4", w4, 34962),
         }
-        idx = g.accessor("I", UINT, "SCALAR", [(i,) for t in tris for i in t], 34963)
+        idx = g.accessor("H", USHORT, "SCALAR", [(i,) for t in tris for i in t], 34963)
         prims.append({"attributes": attrs, "indices": idx, "material": p["tex"], "mode": 4})
     g.j["meshes"].append({"name": name, "primitives": prims})
     mesh_node = len(g.j["nodes"])
