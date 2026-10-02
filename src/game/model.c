@@ -2402,3 +2402,34 @@ void func_001F0E50(u8 *ik) {
     }
     func_001F0F40(ik);
 }
+
+
+/* place the middle joint `mid` of a two-bone chain (lengths len1, len2) from `root` towards
+ * `end`, bent to the side of `pole` x direction (scaled by `bend`); 1 when `end` is out of
+ * reach (the chain then points straight at it). (The EE's square root takes |x|.) */
+s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 side[4] __attribute__((aligned(16)));
+    f32 dist, a, h, l1;
+    s32 out = 0;
+
+    sceVu0SubVector(d, end, root);
+    dist = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(d, d)));
+    sceVu0Normalize(d, d);
+    if (!(dist <= len1 + len2)) {
+        dist = len1 + len2;
+        out = 1;
+    }
+    sceVu0OuterProduct(side, pole, d);
+    sceVu0Normalize(side, side);
+    l1 = len1 * len1;
+    side[0] = side[0] * bend;
+    side[1] = side[1] * bend;
+    side[2] = side[2] * bend;
+    a = (l1 - len2 * len2 + dist * dist) / (2.0f * dist);
+    h = __builtin_sqrtf(__builtin_fabsf(l1 - a * a));
+    mid[0] = root[0] + a * d[0] + h * side[0];
+    mid[1] = root[1] + a * d[1] + h * side[1];
+    mid[2] = root[2] + a * d[2] + h * side[2];
+    return out;
+}
