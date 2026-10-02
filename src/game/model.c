@@ -2711,3 +2711,47 @@ void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
     out[1] = 0.0f;
     out[0] = 0.0f;
 }
+
+
+/* +0x10 step of a point sprung to a bone (+0x24) { +0x0 position, +0x10 velocity, +0x40
+ * stiffness } in system `s` (+0x10 damping): pulled to the bone, damped, moved, then flattened
+ * into the bone's X / Y plane and kept within -0.2..0.2 along X and -0.2..0.3 along Y of it */
+void func_002EEDA0(u8 *p, u8 *s) {
+    static const union { u32 u; f32 f; } k03 = {0x3E99999A}, k02 = {0x3E4CCCCD}, kn02 = {0xBE4CCCCD};
+    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 o[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 x, y;
+
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0CopyVector(o, b + 12);
+    sceVu0SubVector(d, o, (f32 *)p);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), d);
+    sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
+    sceVu0SubVector(d, (f32 *)p, b + 12);
+    sceVu0ScaleVector(v, b + 8, sceVu0InnerProduct(d, b + 8));
+    sceVu0SubVector(d, d, v);
+    x = sceVu0InnerProduct(d, b);
+    y = sceVu0InnerProduct(d, b + 4);
+    if (!(y <= k03.f)) {
+        y = k03.f;
+    }
+    if (y < kn02.f) {
+        y = kn02.f;
+    }
+    if (!(x <= k02.f)) {
+        x = k02.f;
+    }
+    if (x < kn02.f) {
+        x = kn02.f;
+    }
+    sceVu0ScaleVector(d, b, x);
+    sceVu0ScaleVector(v, b + 4, y);
+    sceVu0AddVector(d, d, v);
+    sceVu0AddVector((f32 *)p, b + 12, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
+}
