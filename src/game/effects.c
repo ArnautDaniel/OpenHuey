@@ -165,3 +165,8 @@ void func_0026B350(u8 *o) {
         }
     }
 }
+
+
+/* +0x10 for effects that don't change */
+void func_002674E0(u8 *o) {
+}
