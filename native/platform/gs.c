@@ -381,6 +381,8 @@ static uint32_t tex_fetch(uint64_t tex0, uint64_t clamp, int u, int v) {
 
 static inline int clamp255(int v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
 
+unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
+
 static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, int a, int abe, int fge, int fog) {
     GsContext *c = &gs.ctx[ctxi];
     uint32_t fbp = BITS(c->frame, 0, 9) * 32, fbw = BITS(c->frame, 16, 6), fpsm = BITS(c->frame, 24, 6);
@@ -392,6 +394,7 @@ static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, 
     int fbwrite = 1, zwrite = !zmsk, pass;
     uint32_t dst;
 
+    gs_stat_pixels++;
     if (x < (int)sc_x0 || x > (int)sc_x1 || y < (int)sc_y0 || y > (int)sc_y1) {
         return;
     }
@@ -484,6 +487,7 @@ static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, 
         b &= 0xFF;
     }
     a |= (int)BITS(c->fba, 0, 1) << 7;
+    gs_stat_written += fbwrite;
     if (fbwrite) {
         uint32_t px = (uint32_t)r | (uint32_t)g << 8 | (uint32_t)b << 16 | (uint32_t)(a & 0xFF) << 24;
 
@@ -698,6 +702,24 @@ static void draw_line(const GsVertex *a, const GsVertex *b, uint64_t attr) {
 
 static void vertex_kick(int drawing) {
     uint64_t attr = prim_attr();
+
+    if (drawing && getenv("HG_GSDEBUG")) {
+        static uint64_t seen[64][2];
+        static int nseen;
+        uint64_t k0 = gs.prim & 0x7FF, k1 = BITS(gs.prim, 4, 1) ? gs.ctx[0].tex0 : 0;
+        int i;
+
+        for (i = 0; i < nseen && (seen[i][0] != k0 || seen[i][1] != k1); i++) {
+        }
+        if (i == nseen && nseen < 64) {
+            seen[nseen][0] = k0;
+            seen[nseen][1] = k1;
+            nseen++;
+            fprintf(stderr, "new prim %llx tex0 %llx frame %llx (kick %u)\n", (unsigned long long)k0,
+                    (unsigned long long)k1, (unsigned long long)gs.ctx[0].frame, gs_stat_prims);
+        }
+    }
+    gs_stat_prims += drawing;
     int type = (int)(gs.prim & 7);
     GsVertex *v = gs.v;
 
@@ -834,89 +856,98 @@ void gs_write_reg(uint32_t reg, uint64_t v) {
 
 /* ---- GIF ---- */
 
-/* process GIF packets in `qw` (n quadwords); returns the quadwords used */
+/* one PACKED register: descriptor d, the quadword (lo, hi) */
+static void gif_packed(uint32_t d, uint64_t lo, uint64_t hi) {
+    switch (d) {
+    case 0x0: gs_write_reg(0x00, lo); break;
+    case 0x1: {   /* RGBAQ: 32-bit fields; Q from the last ST */
+        uint32_t qb;
+
+        memcpy(&qb, &gs.q, 4);
+        gs_write_reg(0x01, (lo & 0xFF) | ((lo >> 32) & 0xFF) << 8 | (hi & 0xFF) << 16 | ((hi >> 32) & 0xFF) << 24 |
+                               (uint64_t)qb << 32);
+        break;
+    }
+    case 0x2:     /* ST (Q kept for RGBAQ) */
+        memcpy(&gs.q, (const uint8_t *)&hi, 4);
+        gs_write_reg(0x02, lo);
+        break;
+    case 0x3: gs_write_reg(0x03, (lo & 0x3FFF) | ((lo >> 32) & 0x3FFF) << 16); break;
+    case 0x4: case 0x5: {   /* XYZF2 / XYZ2 (ADC: no drawing kick) */
+        uint64_t xy = (lo & 0xFFFF) | ((lo >> 32) & 0xFFFF) << 16;
+        int adc = (int)BITS(hi, 47, 1);
+
+        if (d == 0x4) {
+            xy |= ((hi >> 4) & 0xFFFFFF) << 32 | ((hi >> 36) & 0xFF) << 56;
+            gs_write_reg(adc ? 0x0C : 0x04, xy);
+        } else {
+            xy |= (hi & 0xFFFFFFFF) << 32;
+            gs_write_reg(adc ? 0x0D : 0x05, xy);
+        }
+        break;
+    }
+    case 0xA: gs_write_reg(0x0A, ((hi >> 36) & 0xFF) << 56); break;   /* FOG */
+    case 0xE: gs_write_reg((uint32_t)hi & 0xFF, lo); break;           /* A+D */
+    case 0xF: break;                                                 /* NOP */
+    default: gs_write_reg(d, lo); break;
+    }
+}
+
+/* The GIF: a stream of tags and their data. Packets can be split across transfers (an IMAGE
+ * tag in one VIF1 DIRECT, its data in the next), so the current tag is kept between calls. */
+static struct {
+    int active;
+    uint64_t regs;
+    uint32_t nloop, nreg, reg, flg;
+} gif;
+
 uint32_t gs_gif(const uint64_t *qw, uint32_t n) {
-    uint32_t i = 0;
+    uint32_t i;
 
-    while (i < n) {
-        uint64_t tag = qw[i * 2], regs = qw[i * 2 + 1];
-        uint32_t nloop = BITS(tag, 0, 15), eop = BITS(tag, 15, 1), pre = BITS(tag, 46, 1);
-        uint32_t flg = BITS(tag, 58, 2), nreg = BITS(tag, 60, 4), l, r;
+    for (i = 0; i < n; i++) {
+        uint64_t lo = qw[i * 2], hi = qw[i * 2 + 1];
+        int half;
 
-        i++;
-        if (nreg == 0) {
-            nreg = 16;
+        if (!gif.active) {
+            gif.nloop = BITS(lo, 0, 15);
+            gif.flg = BITS(lo, 58, 2);
+            gif.nreg = BITS(lo, 60, 4) ? BITS(lo, 60, 4) : 16;
+            gif.regs = hi;
+            gif.reg = 0;
+            if (BITS(lo, 46, 1) && gif.flg == 0) {   /* PRE: PRIM from the tag */
+                gs_write_reg(0x00, BITS(lo, 47, 11));
+            }
+            gif.active = gif.nloop != 0;
+            continue;
         }
-        if (pre && flg == 0) {
-            gs_write_reg(0x00, BITS(tag, 47, 11));
-        }
-        switch (flg) {
+        switch (gif.flg) {
         case 0:   /* PACKED */
-            for (l = 0; l < nloop && i < n; l++) {
-                for (r = 0; r < nreg && i < n; r++, i++) {
-                    uint32_t d = (uint32_t)(regs >> (r * 4)) & 0xF;
-                    uint64_t lo = qw[i * 2], hi = qw[i * 2 + 1];
-
-                    switch (d) {
-                    case 0x0: gs_write_reg(0x00, lo); break;
-                    case 0x1:   /* RGBAQ: 32-bit fields, Q from the internal Q */
-                        gs_write_reg(0x01, (lo & 0xFF) | ((lo >> 32) & 0xFF) << 8 | (hi & 0xFF) << 16 |
-                                               ((hi >> 32) & 0xFF) << 24 | (uint64_t)*(uint32_t *)&gs.q << 32);
-                        break;
-                    case 0x2:   /* ST: Q kept for RGBAQ */
-                        memcpy(&gs.q, (const uint8_t *)&hi, 4);
-                        gs_write_reg(0x02, lo);
-                        break;
-                    case 0x3: gs_write_reg(0x03, (lo & 0x3FFF) | ((lo >> 32) & 0x3FFF) << 16); break;
-                    case 0x4: case 0x5: {   /* XYZF2 / XYZ2 (ADC: no kick) */
-                        uint64_t xy = (lo & 0xFFFF) | ((lo >> 32) & 0xFFFF) << 16;
-                        int adc = (int)BITS(hi, 47, 1);
-
-                        if (d == 0x4) {
-                            xy |= ((hi >> 4) & 0xFFFFFF) << 32 | ((hi >> 36) & 0xFF) << 56;
-                            gs_write_reg(adc ? 0x0C : 0x04, xy);
-                        } else {
-                            xy |= (hi & 0xFFFFFFFF) << 32;
-                            gs_write_reg(adc ? 0x0D : 0x05, xy);
-                        }
-                        break;
-                    }
-                    case 0xA: gs_write_reg(0x0A, ((hi >> 36) & 0xFF) << 56); break;   /* FOG */
-                    case 0xE: gs_write_reg((uint32_t)hi & 0xFF, lo); break;           /* A+D */
-                    case 0xF: break;
-                    default: gs_write_reg(d, lo); break;
-                    }
-                }
+            gif_packed((uint32_t)(gif.regs >> (gif.reg * 4)) & 0xF, lo, hi);
+            if (++gif.reg == gif.nreg) {
+                gif.reg = 0;
+                gif.active = --gif.nloop != 0;
             }
             break;
-        case 1: {   /* REGLIST: two registers per quadword */
-            uint32_t total = nloop * nreg, k;
-
-            for (k = 0; k < total && i < n; k++) {
-                uint32_t d = (uint32_t)(regs >> ((k % nreg) * 4)) & 0xF;
-                uint64_t v = qw[i * 2 + (k & 1)];
+        case 1:   /* REGLIST: two registers per quadword */
+            for (half = 0; half < 2 && gif.active; half++) {
+                uint32_t d = (uint32_t)(gif.regs >> (gif.reg * 4)) & 0xF;
 
                 if (d != 0xE && d != 0xF) {
-                    gs_write_reg(d == 0x1 ? 0x01 : d, v);
+                    gs_write_reg(d, half ? hi : lo);
                 }
-                if (k & 1) {
-                    i++;
+                if (++gif.reg == gif.nreg) {
+                    gif.reg = 0;
+                    gif.active = --gif.nloop != 0;
                 }
-            }
-            if (total & 1) {
-                i++;
             }
             break;
-        }
-        default:   /* IMAGE */
-            for (l = 0; l < nloop && i < n; l++, i++) {
-                xfer_qword(&qw[i * 2]);
-            }
+        default:  /* IMAGE */
+            xfer_qword(&qw[i * 2]);
+            gif.active = --gif.nloop != 0;
             break;
         }
-        (void)eop;
     }
-    return i;
+    return n;
 }
 
 /* ---- privileged registers / display ---- */

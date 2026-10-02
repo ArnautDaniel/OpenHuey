@@ -75,6 +75,11 @@ void hg_frame(void) {
         video_init();
     }
     gs_display(sPixels, MAXW, MAXH, &w, &h);
+    if (getenv("HG_GSDEBUG") && sFrame % 60 == 0) {
+        extern unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
+
+        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written\n", sFrame, gs_stat_prims, gs_stat_pixels, gs_stat_written);
+    }
     dump(w, h);
     sFrame++;
     if (sHeadless || w <= 0 || h <= 0) {
