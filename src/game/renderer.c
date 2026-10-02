@@ -393,6 +393,64 @@ s32 func_001BBE60(u8 *r, void *obj, s32 layer, void *arg) {
     return 1;
 }
 
+/* +0x4C upload a 4-bit image (w x h, its 16-colour CLUT right after the pixels) to VRAM block
+ * 0x3400 (CLUT to 0x3F00), in layer `layer`. The transfer is w * h / 16 quadwords (twice the
+ * pixels: the rest is ignored by the GS once the area is full). 0 if there's no room. */
+s32 func_001BB010(u8 *r, u8 *img, s32 w, s32 h, s32 layer) {
+    s32 n = w * h;
+    s32 qwc = n >> 4;
+    u64 *p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x13, layer);
+
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = DMA_TAG(DMA_CNT, 6, 0);
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000006;
+    p[2] = 0x8004 | (1ULL << 60);
+    p[3] = 0xE;
+    p[4] = ((u64)(s64)(w >> 6) << 48) | (0x14003400ULL << 32);   /* PSMT4 at 0x3400 */
+    p[5] = GS_BITBLTBUF;
+    p[6] = 0;
+    p[7] = GS_TRXPOS;
+    p[8] = (u64)(s64)w | ((u64)(s64)h << 32);
+    p[9] = GS_TRXREG;
+    p[10] = 0;
+    p[11] = GS_TRXDIR;
+    p[12] = (u64)(s64)qwc | 0x8000 | (0x08ULL << 56);
+    p[13] = 0;
+    p[14] = (u64)(u32)(qwc | 0x30000000) | ((u64)((u32)img & 0x0FFFFFFF) << 32);
+    AT(p, 0x78, u32) = 0;
+    AT(p, 0x7C, u32) = qwc | 0x50000000;
+    /* the CLUT: 8 x 2 PSMCT32 */
+    p[16] = DMA_TAG(DMA_CNT, 6, 0);
+    AT(p, 0x88, u32) = 0;
+    AT(p, 0x8C, u32) = 0x50000006;
+    p[18] = 0x8004 | (1ULL << 60);
+    p[19] = 0xE;
+    p[20] = 0x13F00ULL << 32;
+    p[21] = GS_BITBLTBUF;
+    p[22] = 0;
+    p[23] = GS_TRXPOS;
+    p[24] = 8 | (2ULL << 32);
+    p[25] = GS_TRXREG;
+    p[26] = 0;
+    p[27] = GS_TRXDIR;
+    p[28] = 0x8004 | (0x08ULL << 56);
+    p[29] = 0;
+    p[30] = 0x30000004 | ((u64)((u32)(img + (n >> 1)) & 0x0FFFFFFF) << 32);
+    AT(p, 0xF8, u32) = 0;
+    AT(p, 0xFC, u32) = 0x50000004;
+    p[32] = DMA_TAG(DMA_CNT, 2, 0);
+    AT(p, 0x108, u32) = 0;
+    AT(p, 0x10C, u32) = 0x50000002;
+    p[34] = 0x8001 | (1ULL << 60);
+    p[35] = 0xE;
+    p[36] = 0;
+    p[37] = GS_TEXFLUSH;
+    return 1;
+}
+
 /* +0x48 upload an 8-bit image (w x h, its 256-colour CLUT right after the pixels) to VRAM at
  * byte address `addr` (CLUT to block 0x3F00), in layer `layer`. 0 if there's no room. */
 s32 func_001BB230(u8 *r, u8 *img, s32 w, s32 h, s32 addr, s32 layer) {

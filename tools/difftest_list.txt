@@ -2099,3 +2099,13 @@ src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x00
 src/game/scene_title.c func_00130460 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=@0x0047E37C=0..15
 src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0x0B100000..0x0B100000 --pre=a0+0x140CCC=0x3C000000..0x3F800000
 src/game/scene_title.c func_00130170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=@0x0044E958=0..0
+src/game/scene_title.c func_0012F720 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E980=0x0B200000..0x0B200000 --pre=a0+0x14=0..1 --pre=a0+0x20=0..0x01000000 --stub-ret=0 --stub-ret=0x0B300000
+src/game/scene_title.c func_0012F500 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..160 --pre=a0+0x74940=0..1
+src/game/scene_title.c func_0012D7F0 --pre=a0=0x0B000000..0x0B000000 --runs=60 --stub-ret=-1 --stub-ret=0x80000002 --stub-ret=1 --stub-ret=0
+src/game/scene_title.c func_0037E950 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA8C=a0+0x200
+src/game/scene_title.c func_0037E6A0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA8C=a0+0x200
+src/game/renderer.c func_001BB010 --runs=40 --stub-ret=0x0B100000 --stub-ret=0 --pre=a2=0..0x400 --pre=a3=0..0x400
+src/game/scene_title.c func_0012D140 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA90=a0+0x200 --pre=a1=0..0x100 --pre=a2=0..0x100 --pre=a3=1..0x100 --pre=a4=1..0x100 --pre=a5=0..0x200 --pre=a6=0..0x200
+src/game/scene_title.c func_0037EB80 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0037EBC0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0012F290 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..360000 --pre=a0+0x18=0x380..0x386 --pre=@0x0047E36C=0..0x10
