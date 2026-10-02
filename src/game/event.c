@@ -246,3 +246,90 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
     }
     VCALL(ev, 0xE4, void (*)(VObject *, s32, u8 *))(ev, slot, script);
 }
+
+extern void *gCharacters[6];
+
+/* +0xE4 give character slot `slot` the script `script` (its context at +0x564 + (slot + 1) *
+ * 0x18: the character, the pc, its id at +0x13); NULL: nothing */
+void func_001FBCF0(VObject *ev, u8 slot, u8 *script) {
+    u8 *c;
+    u8 *ctx;
+
+    if (script == NULL) {
+        return;
+    }
+    c = (u8 *)gCharacters[slot];
+    ctx = (u8 *)ev + 0x564 + (u8)(slot + 1) * 0x18;
+    AT(ctx, 0x0, u8 *) = c;
+    AT(ctx, 0x4, u8 *) = NULL;
+    AT(ctx, 0x10, u8) = 0;
+    AT(ctx, 0x8, s32) = 0;
+    AT(ctx, 0x11, u8) = 0;
+    AT(ctx, 0xC, s32) = 0;
+    AT(ctx, 0x12, u8) = 0;
+    AT(ctx, 0x13, u8) = 0xFF;
+    AT(ctx, 0x14, s16) = 0;
+    AT(ctx, 0x13, u8) = AT(c, 0x153C, u8);
+    AT(ctx, 0x4, u8 *) = script;
+}
+
+extern u8 D_003D6C10[];   /* the script run instead while progress flag 0x26 is set */
+extern void func_00201B90(VObject *ev);   /* a character script command */
+
+/* run the room's script for character `c` entering it (the room handler's +0x30; nothing if it
+ * has none or c isn't in this room), in its own context, then resume the current script */
+void func_00209060(VObject *ev, u8 *c) {
+    Progress *p;
+    u8 *pc;
+    u8 depth;
+    void *saved;
+    VObject *room;
+    struct {
+        u8 *c;
+        s32 b, cc, d;
+        u8 e, f, g, h;
+        s16 i;
+    } ctx;
+
+    if (AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
+        return;
+    }
+    p = gProgress;
+    room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+    if (!Progress_TestFlag(p, 0x26) && VCALL(room, 0x30, u8 *(*)(VObject *))(room) == NULL) {
+        return;
+    }
+    pc = AT(ev, 0x4, u8 *);
+    depth = AT(ev, 0x8, u8);
+    saved = AT(ev, 0x6FC, void *);
+    if (Progress_TestFlag(p, 0x26)) {
+        AT(ev, 0x4, u8 *) = D_003D6C10;
+    } else {
+        room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+        AT(ev, 0x4, u8 *) = VCALL(room, 0x30, u8 *(*)(VObject *))(room);
+    }
+    AT(ev, 0x8, u8) = 0;
+    ctx.c = c;
+    ctx.b = 0;
+    ctx.e = 0;
+    ctx.cc = 0;
+    ctx.d = 0;
+    ctx.f = 0;
+    ctx.g = 0;
+    ctx.h = 0xFF;
+    ctx.i = 0;
+    ctx.h = AT(c, 0x153C, u8);
+    AT(ev, 0x6FC, void *) = &ctx;
+    AT(ev, 0x700, u8) = 0;
+    while (*AT(ev, 0x4, u8 *) != 0xFF) {
+        if (*AT(ev, 0x4, u8 *) >= 0xF0) {
+            func_00121730((u8 *)ev);
+        } else {
+            func_00201B90(ev);
+        }
+    }
+    AT(ev, 0x4, u8 *) = pc;
+    AT(ev, 0x8, u8) = depth;
+    AT(ev, 0x6FC, void *) = saved;
+    AT(ev, 0x701, u8) = 0;
+}

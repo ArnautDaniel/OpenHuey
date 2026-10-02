@@ -5,6 +5,7 @@
 #include "game.h"
 #include "progress.h"
 #include "task.h"
+#include "sce/libvu0.h"
 
 extern void *gCharacters[6];
 extern u8 *gCharPlayer;
@@ -19,6 +20,7 @@ extern void func_001792C0(Progress *p, u8 slot);
 extern void func_002EC470(void *o, s32);
 extern void func_00177200(Progress *p, s32 slot);
 extern void func_002003C0(VObject *ev);
+extern VObject *D_0044E558;   /* the doors */
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index (0xFF) */
@@ -27,6 +29,13 @@ extern s32 func_00178300(Progress *p, s32 room, s32 n, s32 partner);
 extern s32 func_00177620(Progress *p);
 extern s32 func_001FBF70(VObject *ev, s32 id);
 extern void func_001FBE90(VObject *ev, s32 a, s32 b);
+extern VObject *D_0044E570;   /* the nav mesh */
+extern u8 *D_0044E4C0;        /* the room effects */
+extern VObject *D_0044E4F0;   /* the renderer */
+extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
+extern s32 func_001F4770(u8 *model, s32, s32, s32);
+extern void func_001267F0(u8 *c, s32 n);
+extern void func_00266C70(u8 *fx, s32 n, void *arg);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -318,6 +327,39 @@ void func_002029B0(VObject *ev) {
     case 0x59:
         func_002003C0(ev);
         break;
+    case 0x4C: {   /* a door's state, in the progress and on the door */
+        s32 a = pc[1];
+
+        VCALL(p, 0x68, void (*)(Progress *, s32, s32, s32))(p, pc[2], a, pc[3]);
+        VCALL(D_0044E558, 0x84, void (*)(VObject *, s32, s32, s32))(D_0044E558, PC(ev)[2], a, PC(ev)[3]);
+        break;
+    }
+    case 0x33:   /* an effect with a string argument */
+        if (pc[2] != 0) {
+            func_00266C70(D_0044E4C0, pc[1], (void *)(pc + 3));
+        }
+        break;
+    case 0x22: {   /* the room handler's +0x28 with a string: bit 1 wait, bit 0 go on, else jumped */
+        VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+        u8 r = (u8)VCALL(room, 0x28, s32 (*)(VObject *, s32, u8 *, const u8 *))(
+            room, pc[1], *AT(ev, 0x6FC, u8 **), pc);
+
+        if (r & 2) {
+            EV_WAIT(ev) = 1;
+        } else if (!(r & 1)) {
+            EV_JUMPED(ev) = 1;
+        }
+        break;
+    }
+    case 0x8D: {   /* zone pc[1]: an id and a rectangle (x0, z0, x1, z1) in 1/1000 */
+        s32 k;
+
+        AT(ev, 0x894 + pc[1] * 0x14, s32) = pc[2];
+        for (k = 0; k < 4; k++) {
+            AT(ev, 0x898 + PC(ev)[1] * 0x14 + k * 4, f32) = (f32)be32(PC(ev) + 3 + k * 4) / 1000.0f;
+        }
+        break;
+    }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
@@ -384,15 +426,6 @@ void func_001FF9E0(VObject *ev) {
     }
 }
 
-#include "sce/libvu0.h"
-
-extern VObject *D_0044E570;   /* the nav mesh */
-extern u8 *D_0044E4C0;        /* the room effects */
-extern VObject *D_0044E4F0;   /* the renderer */
-extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
-extern s32 func_001F4770(u8 *model, s32, s32, s32);
-extern void func_001267F0(u8 *c, s32 n);
-extern void func_00266C70(u8 *fx, s32 n, void *arg);
 
 /* pi as the original's constant (ee-gcc rounds the literal 3.1415927f down) */
 static const union {

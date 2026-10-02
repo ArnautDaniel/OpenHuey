@@ -4,7 +4,7 @@
 #include "progress.h"
 #include "ptmf.h"
 
-extern void *D_0044E568; /* room manager? vtable +0x10 returns the current room number */
+extern VObject *D_0044E568; /* the rooms (+0x10: the current room) */
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
     if (id >= PROGRESS_NUM_FLAGS) {
@@ -54,7 +54,7 @@ s32 Progress_IsBitClear(Progress *p, s32 id) {
 }
 
 s32 Progress_CurRoomFlag(Progress *p) {
-    u32 room = VCALL(D_0044E568, 0x10, u32 (*)(void *))(D_0044E568) & 0xFFFF; /* returns a u16 */
+    u32 room = VCALL(D_0044E568, 0x10, u32 (*)(VObject *))(D_0044E568) & 0xFFFF; /* returns a u16 */
 
     return (p->roomFlags[room] & 1) != 0;
 }
@@ -320,4 +320,48 @@ s32 func_00177200(Progress *p, u32 slot) {
         return 1;
     }
     return 0;
+}
+
+/* ---- the doors' states (+0x124, a word per door: bit 1, bit 2, bit 3 = unlocked) ---- */
+
+extern VObject *D_0044E558;   /* the doors */
+
+#define DOOR_STATE(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)
+
+/* refresh door `d` if it is in the current room */
+static void door_refresh(Progress *p, u32 d) {
+    s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    u8 k = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, d, room);
+
+    if (k != 0xFF) {
+        VCALL(D_0044E558, 0x80, void (*)(VObject *, s32))(D_0044E558, k);
+    }
+}
+
+/* unlock door d */
+s32 func_00178450(Progress *p, u32 d) {
+    DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~8) | 8;
+    door_refresh(p, d);
+    return 1;
+}
+
+/* lock door d */
+s32 func_00178500(Progress *p, u32 d) {
+    DOOR_STATE(p, d) = DOOR_STATE(p, d) & ~8;
+    door_refresh(p, d);
+    return 1;
+}
+
+void func_00178630(Progress *p, u32 d) {
+    DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~4) | 4;
+}
+
+s32 func_00178A60(Progress *p, u32 d) {
+    DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~2) | 2;
+    return 1;
+}
+
+s32 func_00178A30(Progress *p, u32 d) {
+    DOOR_STATE(p, d) = DOOR_STATE(p, d) & ~2;
+    return 1;
 }

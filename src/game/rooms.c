@@ -108,3 +108,39 @@ void func_0017FC80(u8 *o) {
     AT(o, 0x10, s32) = 0;
     AT(o, 0x50, s32) = 0;
 }
+
+/* +0x3C the exit of room `room` that door `d` is (0xFF: not in that room, or closed off) */
+s32 func_0021BEF0(VObject *r, u32 d, u32 room) {
+    DoorDef *def;
+
+    if ((d & 0xFFFF) >= 400) {
+        return 0xFF;
+    }
+    if (VCALL(r, 0x60, s32 (*)(VObject *, u32))(r, d)) {
+        return 0xFF;
+    }
+    def = &D_003DCFC0[d & 0xFFFF];
+    if (room == def->room) {
+        return def->exit;
+    }
+    if (room == def->room2) {
+        return def->exit2;
+    }
+    return 0xFF;
+}
+
+/* +0x64 close off door d */
+void func_0021B1C0(VObject *r, u16 d) {
+    if (d >= 400) {
+        return;
+    }
+    AT(r, 0x4 + (d >> 5) * 4, u32) |= 1u << (d % 32);
+}
+
+/* +0x68 open door d again */
+void func_0021B210(VObject *r, u16 d) {
+    if (d >= 400) {
+        return;
+    }
+    AT(r, 0x4 + (d >> 5) * 4, u32) &= ~(1u << (d % 32));
+}

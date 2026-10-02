@@ -8,7 +8,9 @@ extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /*
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
 extern VObject *D_0044E4E8;   /* the texture cache */
 extern void *D_0046C320[], *D_0046ECF0[], *D_0046C540[];
-extern void *D_0044FE08, *D_00456DF8, *D_0044E558;
+extern void *D_0044FE08, *D_00456DF8;
+extern VObject *D_0044E558;   /* the doors */
+extern VObject *D_0044E568;   /* the rooms */
 extern void *func_0021A370(void *, s32);
 extern void *func_002D11C0(void *);
 extern void *func_002D0CE0(void *, s32);
@@ -105,7 +107,7 @@ void *func_002D1160(u8 *p) {
 /* the doors: 8 of 0x210 bytes (vtable D_0046C540, global D_0044E558) */
 void *func_002D1200(u8 *p) {
     AT(p, 0x0, void **) = D_0046C540;
-    D_0044E558 = p;
+    D_0044E558 = (VObject *)p;
     func_00100340(p + 0x10, func_002D1260, func_00221920, 0x210, 8);
     AT(p, 0x4, s32) = 0;
     return p;
@@ -1166,4 +1168,50 @@ s32 func_002A8590(u8 *o, u32 g, u32 bits) {
 /* +0x10 clear them */
 s32 func_002A85B0(u8 *o, u32 g, u32 bits) {
     return func_002A8730(o, 1, g, bits);
+}
+
+#include "progress.h"
+
+extern s32 func_00178610(Progress *p, u32 d);
+extern s32 func_00178200(Progress *p, u32 d, s32 side);
+
+/* the doors +0x80: refresh exit `exit`'s door from its state in the progress: locked (+0x40
+ * says it can be) -> flags 0x5000000, else 0x1000000 / 0x4000000 per side closed */
+void func_002220C0(VObject *doors, s32 exit) {
+    Progress *p = gProgress;
+    s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    u32 d;
+    u32 flags = 0;
+
+    if ((u8)VCALL(D_0044E558, 0x40, s32 (*)(VObject *, s32))(D_0044E558, exit) != 1) {
+        return;
+    }
+    d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, room, exit) & 0xFFFF;
+    if (d == 0xFFFF) {
+        return;
+    }
+    VCALL(doors, 0x20, void (*)(VObject *, s32, s32, u32))(doors, exit, 0, 0x5000000);
+    if ((u8)func_00178610(p, d) == 1) {
+        flags = 0x5000000;
+    } else {
+        if (!(u8)func_00178200(p, d, 1)) {
+            flags = 0x1000000;
+        }
+        if (!(u8)func_00178200(p, d, 2)) {
+            flags |= 0x4000000;
+        }
+    }
+    if (flags != 0) {
+        VCALL(doors, 0x1C, void (*)(VObject *, s32, s32, u32))(doors, exit, 0, flags);
+    }
+}
+
+/* the doors +0x40: whether the room has a door at exit `exit` (section 7's entry) */
+s32 func_00221DA0(VObject *doors, u8 exit) {
+    u8 *tbl = AT(doors, 0x4, u8 *);
+
+    if (tbl == NULL || exit >= 8) {
+        return 0;
+    }
+    return AT(tbl, exit * 4, s32) != 0;
 }
