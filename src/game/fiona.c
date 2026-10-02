@@ -1120,3 +1120,59 @@ void func_0019AF20(Fiona *f) {
     }
     }
 }
+
+extern s32 func_00125D80(Character *c);
+
+#define FIONA_FADE(f) FI(f, 0x1AD62C, u16)     /* 0..0x80 */
+#define FIONA_FADE_T(f) FI(f, 0x1AD62E, s16)
+
+/* Fade handling for area 0x89, and the pursuer grabbing her once the fade has cleared. */
+void func_001A1CA0(Fiona *f) {
+    Progress *p = gProgress;
+    s32 flags = FI(f, 0x1AD584, s32);
+
+    if ((flags & 0x1) && (s32)*((u8 *)p + 0x7B8) < 2) {
+        FI(f, 0x1AD584, s32) = flags & ~3;
+    }
+    if (f->unk1AD630 == 0 && f->c.unkE4 == 0) {
+        FIONA_FADE(f) += 8;
+        if (FIONA_FADE(f) >= 0x80) {
+            f->c.unkE4 = 1;
+            FIONA_FADE_T(f) = 0;
+        }
+    } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) != AREA_SPECIAL
+               || (Progress_TestFlag(p, 0xA) & 0xFF) != 1) {
+        f->unk1AD630 = 0;
+        FIONA_FADE_T(f) = 0;
+    } else if (f->unk1AD630 != 0) {
+        FIONA_FADE(f) -= 8;
+        if ((s16)FIONA_FADE(f) < 0) {
+            FIONA_FADE(f) = 0;
+        }
+    } else if (f->c.unkE4 == 1) {
+        if (++FIONA_FADE_T(f) == 60) {
+            f->c.unkE4 = 0;
+            f->unk1AD630 = 1;
+            FIONA_FADE(f) = 0x80;
+        }
+    }
+
+    if (f->unk1AD630 == 1 && FIONA_FADE(f) == 0 && FI(f, 0x1AD5D7, u8) == 1
+        && gCharPursuer->a.unkC4 != 2 && !gCharPursuer->unkE0
+        && (func_001241F0(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
+        && !(func_00125D80(&f->c) & 0xFF)) {
+        if (f->c.state[0] != 7) {
+            /* grabbed (the original copies a local whose last fields are never set) */
+            f->c.state[0] = 4;
+            f->c.state[1] = 6;
+            f->c.state[2] = 2;
+            f->c.state[3] = 0;
+            f->c.state[4] = 3;
+            *(f32 *)&f->c.state[5] = 0.0f;
+            f->c.state[6] = 0;
+            f->c.state[7] = 0;
+        }
+        f->unk1AD630 = 0;
+        FIONA_FADE_T(f) = 0;
+    }
+}

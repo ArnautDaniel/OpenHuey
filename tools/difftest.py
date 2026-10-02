@@ -1488,7 +1488,7 @@ def original_range(func: str) -> tuple[int, int] | None:
 
 
 def return_kind(src: Path, func: str) -> str:
-    m = re.search(rf"^\s*(?:static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", src.read_text(), re.M)
+    m = re.search(rf"^\s*(?:extern\s+|static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", src.read_text(), re.M)
     t = m.group(1).strip() if m else "s32"
     if t == "void":
         return "none"
