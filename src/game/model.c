@@ -2303,3 +2303,56 @@ s32 func_002DCDE0(u8 *m, s32 foot, s32 ofs) {
     }
     return !(c[foot] <= 0.0f);
 }
+
+
+/* set up a two-bone IK solver: chain root / middle / end of `skel`, the two bone lengths, -1 */
+extern void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend);
+
+#define BIND_X(m, bone) AT(AT(m, 0x4C0, u8 *) + 0x10 + (bone) * 0x70, 0x20, f32)
+
+/* one leg's IK (solver `ik`, its end bone's target at ik + 0x20, chain end node ik + 0x54):
+ * the target is the floor point `foot` less the foot's offset from the ankle (`toFoot`), at
+ * the chain end's height + foot height - `height` */
+static void leg_target(u8 *ik, const f32 *foot, const f32 *toFoot, f32 height) {
+    AT(ik, 0x20, f32) = foot[0] - toFoot[0];
+    AT(ik, 0x24, f32) = AT(AT(ik, 0x54, u8 *), 0x34, f32) + foot[1] - height;
+    AT(ik, 0x28, f32) = foot[2] - toFoot[2];
+}
+
+/* bend the legs so the feet reach `right` / `left` with the body `height` lower: two-bone IK
+ * from hip to ankle (right +0x890 / +0x894 / +0x898, left +0x8A0 / +0x8A4 / +0x8A8), then the
+ * ankle and foot (+0x89C / +0x8AC) moved by how far the solved ankle went */
+void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
+    f32 dr[4] __attribute__((aligned(16)));
+    f32 dl[4] __attribute__((aligned(16)));
+    f32 er[4] __attribute__((aligned(16)));
+    f32 el[4] __attribute__((aligned(16)));
+    f32 *a, *b;
+
+    func_001F1250(m + 0x8D0, AT(m, 0x810, void *), AT(m, 0x890, s32), AT(m, 0x894, s32), AT(m, 0x898, s32),
+                  BIND_X(m, AT(m, 0x894, s32)), BIND_X(m, AT(m, 0x898, s32)), -1.0f);
+    func_001F1250(m + 0x930, AT(m, 0x810, void *), AT(m, 0x8A0, s32), AT(m, 0x8A4, s32), AT(m, 0x8A8, s32),
+                  BIND_X(m, AT(m, 0x8A4, s32)), BIND_X(m, AT(m, 0x8A8, s32)), -1.0f);
+    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x898, s32));
+    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x89C, s32));
+    sceVu0SubVector(dr, b + 12, a + 12);
+    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
+    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
+    sceVu0SubVector(dl, b + 12, a + 12);
+    sceVu0CopyVector(er, (f32 *)(AT(m, 0x924, u8 *) + 0x30));
+    sceVu0CopyVector(el, (f32 *)(AT(m, 0x984, u8 *) + 0x30));
+    leg_target(m + 0x8D0, right, dr, height);
+    leg_target(m + 0x930, left, dl, height);
+    VCALL(m + 0x928, 0x8, void (*)(u8 *))(m + 0x8D0);
+    VCALL(m + 0x988, 0x8, void (*)(u8 *))(m + 0x930);
+    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x898, s32));
+    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x89C, s32));
+    sceVu0SubVector(dr, (f32 *)(m + 0x8F0), er);
+    sceVu0AddVector(a + 12, a + 12, dr);
+    sceVu0AddVector(b + 12, b + 12, dr);
+    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
+    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
+    sceVu0SubVector(dl, (f32 *)(m + 0x950), el);
+    sceVu0AddVector(a + 12, a + 12, dl);
+    sceVu0AddVector(b + 12, b + 12, dl);
+}
