@@ -1682,3 +1682,25 @@ void func_0025FA50(u8 *obj) {
         AT(obj, 0x9C, s32) = 0;
     }
 }
+
+
+/* the play time { hours, minutes, seconds, frames (30 a second) }, each frame; it stops at
+ * 99:59:59 */
+void func_002A7630(u8 *t) {
+    if (t[0] == 99 && t[1] == 59 && t[2] == 59) {
+        return;
+    }
+    if (++t[3] < 30) {
+        return;
+    }
+    t[3] = 0;
+    if (++t[2] < 60) {
+        return;
+    }
+    t[2] = 0;
+    if (++t[1] < 60) {
+        return;
+    }
+    t[1] = 0;
+    t[0]++;
+}
