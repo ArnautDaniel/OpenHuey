@@ -1940,3 +1940,20 @@ void func_00267160(u8 *o) {
         }
     }
 }
+
+
+/* the effects, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first): each
+ * live one of the 0x400 slots at +0x18034 draws (+0x14) */
+void func_002D61E0(u8 *mgr) {
+    u32 i;
+
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    for (i = 0; i < 0x400; i++) {
+        VObject *e = AT(mgr, 0x18034 + i * 4, VObject *);
+
+        if (e != NULL) {
+            VCALL(e, 0x14, void (*)(VObject *))(e);
+        }
+    }
+}

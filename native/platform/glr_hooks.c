@@ -12,3 +12,12 @@ int func_002BB3E0(uint8_t *drawer) {
     glr_todo("fog (func_002BB3E0)");
     return 1;
 }
+
+/* func_002685F0: the two-colour screen effect drawer (vtable +0xC of D_0046D790; colour +0x8,
+ * which +0xC, argument +0x10): GS frame-buffer copies in strips over the whole screen. Will be
+ * a full-screen pass; returns 0 = nothing linked into the layer. */
+int func_002685F0(uint8_t *drawer) {
+    (void)drawer;
+    glr_todo("two-colour screen effect (func_002685F0)");
+    return 0;
+}
