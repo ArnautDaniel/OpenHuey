@@ -1189,3 +1189,12 @@ s32 func_00177670(Progress *p, s32 n) {
     }
     return 0;
 }
+
+
+/* +0x64 the stalker's alert (+0x16C8 of the active stalker; 0xFF: no stalker in play) */
+s32 func_001770A0(Progress *p) {
+    if (D_0044F808 == NULL || AT(D_0044F808, 0x28, u8) == 0) {
+        return 0xFF;
+    }
+    return AT(D_0044F808, 0x16C8, u8);
+}
