@@ -526,3 +526,11 @@ void func_002E2890(u8 *o, const void *unused) {
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbPck, o + 0xF680, 0x10000000, 0);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbTex, o + 0x27680, 0x10000000, 0);
 }
+
+/* the doors +0x4C: select door buffer `i` (+0x50C0[i]; its first word to +0x50C8[i]); whether
+ * it holds anything */
+s32 func_00221E80(u8 *d, s32 i) {
+    AT(d, 0x50C0 + i * 4, u8 *) = d + (i << 13) + 0x10C0;
+    AT(d, 0x50C8 + i * 4, s32) = AT(AT(d, 0x50C0 + i * 4, u8 *), 0, s32);
+    return AT(d, 0x50C8 + i * 4, s32) != 0;
+}

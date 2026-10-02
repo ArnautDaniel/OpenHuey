@@ -231,3 +231,396 @@ const char *func_001F8010(void *m, s32 n) {
 const char *func_001F7F00(void) {
     return D_00456400;
 }
+
+extern void func_001F1FE0(u8 *m);
+extern void func_002F80D0(u8 *m);
+
+/* Fiona's model, once loaded: the base setup, the parts' roles (+0x890..: which mesh part is
+ * which), her own setup, and per-part draw settings (4, 0x40) */
+void func_002F8330(u8 *m) {
+    static const u8 sParts[] = {0x98, 0x9A, 0x9C, 0x9E, 0xA0, 0xA2, 0xA6, 0xA8, 0xAA, 0xC0, 0xC2, 0xC4};
+    s32 i;
+
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x32;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x42;
+    AT(m, 0x8B0, s32) = 0x35;
+    AT(m, 0x8B4, s32) = 0x2B;
+    func_002F80D0(m);
+    for (i = 0; i < 12; i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+extern void func_002118D0(u8 *m);
+
+/* character model setup common to Fiona and the partner: base setup, defaults, then the
+ * class's own reset (vt+0xB8) and two slot inits (vt+0xC4, slots 0 and 5) */
+void func_001F1FE0(u8 *m) {
+    func_002118D0(m);
+    AT(m, 0x87C, s32) = 1;
+    AT(m, 0x880, s32) = 1;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 14.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    ((void (*)(u8 *))AT(AT(m, 0, u8 *), 0xB8, void *))(m);
+    ((void (*)(u8 *, s32))AT(AT(m, 0, u8 *), 0xC4, void *))(m, 0);
+    ((void (*)(u8 *, s32))AT(AT(m, 0, u8 *), 0xC4, void *))(m, 5);
+}
+
+extern void func_002DE0A0(u8 *m);
+
+/* base setup, then the class's post-setup hook (vt+0x54) */
+void func_002118D0(u8 *m) {
+    func_002DE0A0(m);
+    ((void (*)(u8 *))AT(AT(m, 0, u8 *), 0x54, void *))(m);
+}
+
+extern void func_001F7C40(u8 *m);
+
+void func_002DE0A0(u8 *m) {
+    func_001F7C40(m);
+    AT(m, 0x87C, s32) = 0;
+    AT(m, 0x880, s32) = 0;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    AT(m, 0x870, s32) = 0;
+    ((void (*)(u8 *))AT(AT(m, 0, u8 *), 0xB4, void *))(m);
+}
+
+extern void *D_004562A8;
+extern u8 *func_0017D000(void *pool, s32 nBones);   /* allocate a skeleton */
+extern f32 *func_0017CE80(void *skeleton, s32 bone); /* bone node */
+extern s32 func_0017CE60(u8 *node, f32 *parent);
+extern void func_001F4910(u8 *m);
+
+/* build the model's skeleton from its bone table (+0x4C0: count, then 0x70-byte bones whose
+ * +0x10 is the parent index, -1 for the root) */
+void func_001F7C40(u8 *m) {
+    u8 *skel;
+    u8 *node;
+    u8 *bone;
+    s32 i;
+
+    AT(m, 0x4C8, s32) = 0;
+    skel = func_0017D000(D_004562A8, AT(AT(m, 0x4C0, u8 *), 0, s32));
+    node = AT(skel, 4, u8 *);
+    bone = AT(m, 0x4C0, u8 *) + 0x10;
+    for (i = 0; i < AT(skel, 8, s32); i++) {
+        AT(node, 0x40, s32) = i;
+        if (AT(bone, 0, s32) >= 0)
+            func_0017CE60(node, func_0017CE80(skel, AT(bone, 0, s32)));
+        node = AT(node, 0x48, u8 *);
+        bone += 0x70;
+    }
+    AT(m, 0x810, u8 *) = skel;
+    AT(m, 0x18, u8 *) = AT(m, 0x810, u8 *);
+    AT(m, 0x1C, u8 *) = AT(m, 0x4C0, u8 *);
+    AT(m, 0x20, u8 *) = AT(m, 0x4D0, u8 *);
+    AT(m, 0x1DC, u8 *) = AT(m, 0x810, u8 *);
+    AT(m, 0x1D8, u8 *) = AT(m, 0x4CC, u8 *);
+    AT(m, 0x4D8, u8) = 0;
+    func_001F4910(m);
+}
+
+extern void *D_004562B0;
+extern void func_0017CED0(void *pool, u8 *skel);   /* free a skeleton */
+extern void func_00179BC0(void *pool, void *p);     /* free into D_004562B0 */
+
+/* reset the model's motion state: the two motion slots (+0x564, 0xA0 each; current +0x540,
+ * next +0x544) and the three blend channels (+0x6B0, 0x60 each), freeing their skeletons and
+ * buffers */
+void func_001F4910(u8 *m) {
+    void *bufs = D_004562B0;
+    void *skels = D_004562A8;
+    u8 *slot;
+    u8 *ch;
+    s32 i, j, k;
+
+    AT(m, 0x540, s32) = 0;
+    AT(m, 0x544, s32) = AT(m, 0x540, s32) ^ 1;
+    for (i = 0; i < 2; i++) {
+        slot = m + 0x564 + i * 0xA0;
+        for (j = 0; j < 2; j++) {
+            u8 *s = slot + j * 4;
+
+            func_0017CED0(skels, AT(s, 0x28, u8 *));
+            AT(s, 0x28, s32) = 0;
+            func_00179BC0(bufs, AT(s, 0x20, void *));
+            func_00179BC0(bufs, AT(s, 0x30, void *));
+            AT(s, 0x20, s32) = 0;
+            AT(s, 0x30, s32) = 0;
+            AT(slot, 0x1C, s32) = 0;
+            AT(m, 0x55C + j * 4, s32) = -1;
+            AT(m, 0x554 + j * 4, s32) = -1;
+        }
+        for (k = 0; k < 24; k++) {
+            AT(slot, 0x38 + k * 4, s32) = 0;
+        }
+    }
+    AT(m, 0x548, s32) = 0;
+    AT(m, 0x54C, s32) = 0;
+    AT(m, 0x550, s32) = 0;
+    for (i = 0; i < 3; i++) {
+        ch = m + 0x6B0 + i * 0x60;
+        AT(ch, 0x0, s32) = 0;
+        AT(ch, 0x4, s32) = AT(ch, 0x0, s32) ^ 1;
+        AT(ch, 0x54, u8 *) = ch + AT(ch, 0x0, s32) * 0x1C + 0x1C;
+        AT(ch, 0x58, u8 *) = ch + AT(ch, 0x4, s32) * 0x1C + 0x1C;
+        AT(ch, 0x18, s32) = -1;
+        AT(ch, 0x14, s32) = -1;
+        AT(ch, 0x8, s32) = 0;
+        AT(ch, 0xC, s32) = 0;
+        AT(ch, 0x10, s32) = 0;
+        for (j = 0; j < 2; j++) {
+            u8 *s = ch + j * 0x1C;
+
+            func_0017CED0(skels, AT(s, 0x30, u8 *));
+            AT(s, 0x30, s32) = 0;
+            func_00179BC0(bufs, AT(s, 0x2C, void *));
+            AT(s, 0x2C, s32) = 0;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        AT(m, 0x4DC + i * 4, s32) = -1;
+        AT(m, 0x4F0 + i * 0x14, u8) = 0;
+    }
+    AT(m, 0x4EC, s32) = -1;
+    AT(m, 0x6A4, u8 *) = m + 0x564 + AT(m, 0x540, s32) * 0xA0;
+    AT(m, 0x6A8, u8 *) = m + 0x564 + AT(m, 0x544, s32) * 0xA0;
+    AT(AT(m, 0x6A4, u8 *), 0x18, s32) = 16;
+    AT(AT(m, 0x6A8, u8 *), 0x18, s32) = 16;
+}
+
+extern u8 D_003D5CC0[];
+
+/* vt+0xB8: the character's table at +0x874 */
+void func_001F1D90(u8 *m) {
+    AT(m, 0x874, u8 *) = D_003D5CC0;
+}
+
+/* vt+0xC4 (the slot is ignored here) */
+void func_00211160(u8 *m, s32 slot) {
+    AT(m, 0x990, u8) = 1;
+    AT(m, 0x8C4, f32) = 1.0f;
+}
+
+extern u8 D_0041A500[];
+
+/* Fiona's vt+0xC4: 16 entries of the table D_0041A500 (+0x840 count, +0x844 table) */
+void func_002F8430(u8 *m, s32 slot) {
+    AT(m, 0x840, s16) = 16;
+    AT(m, 0x844, u8 *) = D_0041A500;
+}
+
+/* empty character hook (vt+0xC4 of the base) */
+void func_001F1F10(u8 *m, s32 slot) {
+}
+
+extern void func_002F7E90(u8 *m);
+extern void func_002EE960(u8 *p);
+extern void func_002F7C50(u8 *m);
+extern void func_002F7B90(u8 *m);
+
+/* Fiona's own setup: append her node (+0x13F0; next +0x28, prev +0x2C) to her list
+ * (+0x1470 head, +0x1474 tail) and set her defaults */
+void func_002F80D0(u8 *m) {
+    u8 *node = m + 0x13F0;
+
+    func_002F7E90(m);
+    func_002EE960(m + 0x1440);
+    if (AT(m, 0x1470, u8 *) != NULL && AT(m, 0x1474, u8 *) != NULL) {
+        AT(AT(m, 0x1474, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(m, 0x1474, u8 *);
+        AT(m, 0x1474, u8 *) = node;
+    } else {
+        AT(m, 0x1474, u8 *) = node;
+        AT(m, 0x1470, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+    AT(m, 0x1440, f32) = 0.0f;
+    AT(m, 0x1444, u32) = 0x3DCCCCCD;   /* 0.1f (ee-gcc rounds the literal down) */
+    AT(m, 0x1448, f32) = 0.0f;
+    AT(m, 0x1450, u32) = 0x3F7D70A4;   /* 0.99f */
+    AT(m, 0x1454, u8 *) = m;
+    AT(m, 0x1460, u8) = 0;
+    AT(m, 0x145C, s32) = 0;
+    AT(m, 0x1430, f32) = 1.0f;
+    AT(m, 0x1414, s32) = 0x3D;
+    AT(m, 0x1410, u8) = 1;
+    func_002F7C50(m);
+    func_002F7B90(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+extern u8 D_0041A510[], D_0041A520[], D_0041A530[], D_0041A540[], D_0041A550[], D_0041A560[];
+
+/* Fiona's 32 secondary-motion nodes (+0x9B0, 0x50 each; on the list +0x13E0/+0x13E4): 8
+ * groups of 4 (the hair and clothes?), each node: +0x20 first of its group, +0x24 bone,
+ * +0x40 weight, +0x44 kind, +0x48 table, +0x4C phase */
+void func_002F7E90(u8 *m) {
+    static u8 *const sTables[8] = {
+        D_0041A560, D_0041A510, D_0041A510, D_0041A540,
+        D_0041A550, D_0041A520, D_0041A520, D_0041A530,
+    };
+    static const s32 sKinds[8] = {2, 2, 6, 6, 2, 2, 6, 6};
+    union { u32 u; f32 f; } twoPi = {0x40C90FDB};
+    s32 i, g;
+
+    func_002EE960(m + 0x13B0);
+    for (i = 0; i < 32; i++) {
+        u8 *node = m + 0x9B0 + i * 0x50;
+
+        if (AT(m, 0x13E0, u8 *) != NULL && AT(m, 0x13E4, u8 *) != NULL) {
+            AT(AT(m, 0x13E4, u8 *), 0x28, u8 *) = node;
+            AT(node, 0x28, u8 *) = NULL;
+            AT(node, 0x2C, u8 *) = AT(m, 0x13E4, u8 *);
+            AT(m, 0x13E4, u8 *) = node;
+        } else {
+            AT(m, 0x13E4, u8 *) = node;
+            AT(m, 0x13E0, u8 *) = node;
+            AT(node, 0x2C, u8 *) = NULL;
+            AT(node, 0x28, u8 *) = NULL;
+        }
+    }
+    AT(m, 0x13B0, f32) = 0.0f;
+    AT(m, 0x13B4, u32) = 0x3ECCCCCD;   /* 0.4f */
+    AT(m, 0x13B8, f32) = 0.0f;
+    AT(m, 0x13C0, u32) = 0x3F19999A;   /* 0.6f */
+    AT(m, 0x13C4, u8 *) = m;
+    AT(m, 0x13D0, u8) = 0;
+    AT(m, 0x13CC, s32) = 0;
+    for (i = 0; i < 4; i++) {
+        f32 phase = twoPi.f * (f32)(i + 1) / 18.0f;
+
+        for (g = 0; g < 8; g++) {
+            u8 *node = m + 0x9B0 + (g * 4 + i) * 0x50;
+
+            AT(node, 0x40, f32) = 1.0f;
+            AT(node, 0x24, s32) = i + 0xB + g * 4;
+            AT(node, 0x44, s32) = sKinds[g];
+            AT(node, 0x48, u8 *) = sTables[g];
+            AT(node, 0x20, u8) = (i == 0);
+            AT(node, 0x4C, f32) = phase;
+        }
+    }
+}
+
+/* clear a secondary-motion set (its node list +0x30/+0x34) */
+void func_002EE960(u8 *set) {
+    AT(set, 0x34, s32) = 0;
+    AT(set, 0x30, s32) = 0;
+    AT(set, 0x18, s32) = 0;
+}
+
+extern void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r);
+
+/* Fiona's second secondary-motion set (+0x1740): 4 nodes (+0x1480) on bones 0x39..0x3C, and
+ * 6 collision spheres (+0x15C0, 0x40 each, chained by +0x2C from +0x1758) */
+void func_002F7C50(u8 *m) {
+    static const s32 sColBones[6] = {0x2E, 0x3E, 0x35, 0x2F, 0x3F, 0x35};
+    s32 i;
+
+    func_002EE960(m + 0x1740);
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0x1480 + i * 0x50;
+
+        if (AT(m, 0x1770, u8 *) != NULL && AT(m, 0x1774, u8 *) != NULL) {
+            AT(AT(m, 0x1774, u8 *), 0x28, u8 *) = node;
+            AT(node, 0x28, u8 *) = NULL;
+            AT(node, 0x2C, u8 *) = AT(m, 0x1774, u8 *);
+            AT(m, 0x1774, u8 *) = node;
+        } else {
+            AT(m, 0x1774, u8 *) = node;
+            AT(m, 0x1770, u8 *) = node;
+            AT(node, 0x2C, u8 *) = NULL;
+            AT(node, 0x28, u8 *) = NULL;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0x15C0 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0x1758, u8 *) == NULL) {
+            AT(m, 0x1758, u8 *) = col;
+        } else {
+            u8 *last = AT(m, 0x1758, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
+            }
+            AT(last, 0x2C, u8 *) = col;
+        }
+    }
+    AT(m, 0x1740, f32) = 0.0f;
+    AT(m, 0x1744, u32) = 0x3DCCCCCD;   /* 0.1f */
+    AT(m, 0x1748, f32) = 0.0f;
+    AT(m, 0x1750, u32) = 0x3F4CCCCD;   /* 0.8f */
+    AT(m, 0x1754, u8 *) = m;
+    AT(m, 0x1760, u8) = 0;
+    AT(m, 0x175C, s32) = 0;
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0x1480 + i * 0x50;
+
+        AT(node, 0x40, u32) = 0x3EE66666;   /* 0.45f */
+        AT(node, 0x24, s32) = 0x39 + i;
+        AT(node, 0x20, u8) = (i == 0);
+    }
+    for (i = 0; i < 5; i++) {
+        func_002EE690(m + 0x15C0 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    func_002EE690(m + 0x1700, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* set a collision sphere: centre (bone-local, w 1), radius and its inverse, bone */
+void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r) {
+    AT(col, 0x10, f32) = x;
+    AT(col, 0x14, f32) = y;
+    AT(col, 0x18, f32) = z;
+    AT(col, 0x1C, f32) = 1.0f;
+    AT(col, 0x20, f32) = r;
+    AT(col, 0x24, f32) = 1.0f / r;
+    AT(col, 0x28, s32) = bone;
+}
+
+/* Fiona's third secondary-motion set (+0x17E0): one node (+0x1780) on bone 0x2D */
+void func_002F7B90(u8 *m) {
+    u8 *node = m + 0x1780;
+
+    func_002EE960(m + 0x17E0);
+    if (AT(m, 0x1810, u8 *) != NULL && AT(m, 0x1814, u8 *) != NULL) {
+        AT(AT(m, 0x1814, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(m, 0x1814, u8 *);
+        AT(m, 0x1814, u8 *) = node;
+    } else {
+        AT(m, 0x1814, u8 *) = node;
+        AT(m, 0x1810, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+    AT(m, 0x17E0, f32) = 0.0f;
+    AT(m, 0x17E4, f32) = 0.0f;
+    AT(m, 0x17E8, f32) = 0.0f;
+    AT(m, 0x17F0, f32) = 0.75f;
+    AT(m, 0x17F4, u8 *) = m;
+    AT(m, 0x1800, u8) = 0;
+    AT(m, 0x17FC, s32) = 0;
+    AT(m, 0x17C0, u32) = 0x3F666666;   /* 0.9f */
+    AT(m, 0x17A4, s32) = 0x2D;
+    AT(m, 0x17A0, u8) = 1;
+    AT(m, 0x17D8, f32) = 1.0f;
+    AT(m, 0x17D4, f32) = 1.0f;
+    AT(m, 0x17D0, f32) = 1.0f;
+}

@@ -90,3 +90,36 @@ void sceGsDefDispEnv(unsigned long long *disp, short psm, short w, short h, shor
     disp[3] = (unsigned long long)(h - 1) << 44 | (unsigned long long)(w - 1) << 32;
     disp[4] = 0;
 }
+
+/* sceGsSetDefLoadImage: the transfer packet (libgraph's sceGsLoadImage, 6 quadwords): a GIF tag,
+ * BITBLTBUF / TRXPOS / TRXREG / TRXDIR, and the IMAGE tag for the data */
+int sceGsSetDefLoadImage(void *lp, short dbp, short dbw, short dpsm, short x, short y, short w, short h) {
+    uint64_t *q = lp;
+    int psm = dpsm & 0x3F;
+    int bits = (psm == 0x00 || psm == 0x30) ? 32 : (psm == 0x01 || psm == 0x31) ? 24
+             : (psm == 0x13 || psm == 0x1B) ? 8 : (psm == 0x14 || psm == 0x24 || psm == 0x2C) ? 4 : 16;
+    uint32_t qwc = (uint32_t)(((long)w * h * bits / 8 + 15) / 16);
+
+    q[0] = 4 | (1ULL << 60);   /* 4 A+D */
+    q[1] = 0xE;
+    q[2] = ((uint64_t)(dbp & 0x3FFF) << 32) | ((uint64_t)(dbw & 0x3F) << 48) | ((uint64_t)psm << 56);
+    q[3] = 0x50;
+    q[4] = ((uint64_t)(x & 0x7FF) << 32) | ((uint64_t)(y & 0x7FF) << 48);
+    q[5] = 0x51;
+    q[6] = (uint64_t)(w & 0xFFF) | ((uint64_t)(h & 0xFFF) << 32);
+    q[7] = 0x52;
+    q[8] = 0;
+    q[9] = 0x53;
+    q[10] = (qwc & 0x7FFF) | (1ULL << 15) | (2ULL << 58);   /* IMAGE, EOP */
+    q[11] = 0;
+    return 0;
+}
+
+/* sceGsExecLoadImage: send the packet, then the image */
+int sceGsExecLoadImage(void *lp, const void *src) {
+    const uint64_t *q = lp;
+
+    gs_gif(q, 6);
+    gs_gif(src, (uint32_t)(q[10] & 0x7FFF));
+    return 0;
+}

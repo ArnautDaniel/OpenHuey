@@ -2217,8 +2217,8 @@ src/game/scene_game_members.c func_0025FC50 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c func_002C9480 --pre=a0=0x0B000000..0x0B000000
 src/game/progress.c func_001779B0 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game.c SceneGame_Update --pre=a0=0x0B000000..0x0B000000
-src/game/progress.c func_00179EA0 --pre=a0=0x0B000000..0x0B000000 
-src/game/progress.c func_0017D220 --pre=a0=0x0B000000..0x0B000000 
+src/game/chainpool.c func_00179EA0 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017D220 --pre=a0=0x0B000000..0x0B000000 
 src/game/model.c func_002DC6E0
 src/game/model.c func_0016F770 --pre=a0=0x0B000000..0x0B000000
 src/game/model.c func_0016F4B0 --pre=a0=0x0B000000..0x0B000000
@@ -2272,3 +2272,37 @@ src/game/progress.c func_001764C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044F
 src/game/unsorted.c func_002F39B0 --pre=a0=0x0B000000..0x0B000000 
 src/game/unsorted.c func_0031E150 --pre=a0=0x0B000000..0x0B000000 
 src/game/progress.c func_001771A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x0044F800=0..0
+src/game/rooms.c func_0021C760 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=@0x0B000000=0x0046C3E0..0x0046C3E0
+src/game/rooms.c func_0021B2B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046C3E0..0x0046C3E0 --stub-ret=0 --stub-ret=1
+src/game/rooms.c func_0021B160 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x1A0 --runs=60
+src/game/progress.c func_001765D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044F800=0..0
+src/game/vram.c func_001C02A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..3 --pre=a2=0..1 --pre=a3=0..1 --pre=a0+0x98=bytes:010000010000000000000000020000000000 --runs=60
+src/game/model.c func_002F8330 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_001F1FE0 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002118D0 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002DE0A0 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_001F7C40 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017D000 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017CE30 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017CE60 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017CE80 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_001F4910 --pre=a0=0x0B000000..0x0B000000 
+src/game/skeleton.c func_0017CED0 --pre=a0=0x0B000000..0x0B000000 
+src/game/chainpool.c func_00179F10 --pre=a0=0x0B000000..0x0B000000 
+src/game/chainpool.c func_00179BC0 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_001F1D90 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_00211160 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002F8430 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_001F1F10 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002F80D0 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002F7E90 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002EE960 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002F7C50 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002EE690 --pre=a0=0x0B000000..0x0B000000 
+src/game/model.c func_002F7B90 --pre=a0=0x0B000000..0x0B000000 
+src/game/scene_game_members.c func_00221E80 --pre=a0=0x0B000000..0x0B000000 
+src/game/fiona.c func_00182FC0 --pre=a0=0x0B000000..0x0B000000
+src/game/items.c func_00260690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=2..2 --pre=a0+0x15E8=0x0B000000..0x0B000000 --pre=a0+0=0x0046BF20..0x0046BF20
+src/game/items.c func_00260690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=2..2 --pre=a0+0x15E8=0..0
+src/game/rooms.c func_0021AF90 --pre=a0=0x0B000000..0x0B000000 
+src/game/event.c func_00209850 --pre=a0=0x0B000000..0x0B000000 

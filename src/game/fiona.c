@@ -3124,3 +3124,25 @@ void func_00184BF0(Fiona *f) {
         DOOR_SET(doors, 0x1C, AT(c, 0x100, u8), 0, 0x60000);
     }
 }
+
+/* show the model parts for what she has equipped (D_0044E988 +0x10: equipment slots 1 and 3;
+ * items 0x86..0x89 -> part variants 1..4, else 0; items 0x8A..0x8D -> 6..9, else 5) */
+void func_00182FC0(Fiona *f) {
+    VObject *equip = D_0044E988;
+    void *m = f->c.motion;
+
+    switch (VCALL(equip, 0x10, s32 (*)(VObject *, s32))(equip, 1)) {
+    case 0x86: VCALL(m, 0xC4, void (*)(void *, s32))(m, 1); break;
+    case 0x87: VCALL(m, 0xC4, void (*)(void *, s32))(m, 2); break;
+    case 0x88: VCALL(m, 0xC4, void (*)(void *, s32))(m, 3); break;
+    case 0x89: VCALL(m, 0xC4, void (*)(void *, s32))(m, 4); break;
+    default:   VCALL(m, 0xC4, void (*)(void *, s32))(m, 0); break;
+    }
+    switch (VCALL(equip, 0x10, s32 (*)(VObject *, s32))(equip, 3)) {
+    case 0x8A: VCALL(m, 0xC4, void (*)(void *, s32))(m, 6); break;
+    case 0x8B: VCALL(m, 0xC4, void (*)(void *, s32))(m, 7); break;
+    case 0x8C: VCALL(m, 0xC4, void (*)(void *, s32))(m, 8); break;
+    case 0x8D: VCALL(m, 0xC4, void (*)(void *, s32))(m, 9); break;
+    default:   VCALL(m, 0xC4, void (*)(void *, s32))(m, 5); break;
+    }
+}

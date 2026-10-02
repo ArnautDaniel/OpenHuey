@@ -603,3 +603,54 @@ u64 func_001C0E80(u8 *v, s32 id, u32 csa) {
 
     return VCALL(v, 0x34, u64 (*)(u8 *, s32, u32, s32, s32))(v, id, csa, (u16)e->psm, (u16)e->cpsm);
 }
+
+extern void sceGsSetDefLoadImage(void *lp, s16 dbp, s16 dbw, s16 dpsm, s16 x, s16 y, s16 w, s16 h);
+extern void sceGsExecLoadImage(void *lp, const void *src);
+extern void sceGsSyncPath(s32 mode, s32 timeout);
+extern void FlushCache(s32 mode);
+extern u8 D_003B3040[][2];   /* where CLUT n goes in a CLUT block, 16-colour CLUTs (x, y) */
+extern u8 D_003B3050[][2];   /* ... 256-colour (psm 2) */
+
+/* upload slot `slot`'s texture `pix` and its CLUT `clut` (either NULL: not sent) at once
+ * (slots of 0x12 bytes at +0x98: used, w, h, psm, page, CLUT psm (0xFF none), CLUT page, index) */
+void func_001C02A0(u8 *v, s32 slot, const void *pix, const void *clut) {
+    u8 li[0x60] __attribute__((aligned(16)));
+    u8 *e;
+    u16 cpsm;
+
+    if (slot < 0) {
+        return;
+    }
+    e = v + 0x98 + slot * 0x12;
+    if (!e[0]) {
+        return;
+    }
+    if (pix != NULL) {
+        u16 psm = AT(e, 0x6, u16);
+        u32 tbp;
+
+        if (psm == 0x1B || psm == 0x24 || psm == 0x2C) {
+            tbp = (u32)(AT(e, 0x8, s16) << 11) >> 6;   /* (in the upper bits of a 24-bit page) */
+        } else {
+            tbp = (u32)((AT(e, 0x8, s16) << 11) + 0xC0000) >> 6;
+        }
+        sceGsSetDefLoadImage(li, (s16)tbp, (s16)((AT(e, 0x2, u16) + 63) / 64), (s16)psm, 0, 0,
+                             (s16)AT(e, 0x2, u16), AT(e, 0x4, s16));
+        FlushCache(0);
+        sceGsExecLoadImage(li, pix);
+        sceGsSyncPath(0, 0);
+    }
+    cpsm = AT(e, 0xC, u16);
+    if (cpsm == 0xFF || clut == NULL) {
+        return;
+    }
+    {
+        u8 *at = cpsm == 2 ? D_003B3050[AT(e, 0x10, u16)] : D_003B3040[AT(e, 0x10, u16)];
+        u32 cbp = (u32)((AT(e, 0xE, s16) << 11) + 0xFC000) >> 6;
+
+        sceGsSetDefLoadImage(li, (s16)cbp, 1, (s16)cpsm, (s16)at[0], (s16)at[1], 0x10, 0x10);
+        FlushCache(0);
+        sceGsExecLoadImage(li, clut);
+        sceGsSyncPath(0, 0);
+    }
+}

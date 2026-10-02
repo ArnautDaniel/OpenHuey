@@ -64,24 +64,6 @@ void func_001779B0(Progress *p, s32 entry) {
     AT(p, 0x6FC214, s32) = entry;
 }
 
-/* clear the 17 words at +0x2718 */
-void func_00179EA0(Progress *p) {
-    s32 i;
-
-    for (i = 0; i < 17; i++) {
-        AT(p, 0x2718 + i * 4, s32) = 0;
-    }
-}
-
-/* clear the 21 words at +0xC700 */
-void func_0017D220(Progress *p) {
-    s32 i;
-
-    for (i = 0; i < 21; i++) {
-        AT(p, 0xC700 + i * 4, s32) = 0;
-    }
-}
-
 extern VObject *D_0044E560;   /* the sound driver */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 static const char sBankHd[] = "D_%01X000.HD";
@@ -191,4 +173,15 @@ s32 func_001771A0(Progress *p, u32 i) {
         return 1;
     }
     return 0;
+}
+
+/* every character: vtable +0x1C (enter the room) */
+void func_001765D0(Progress *p) {
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (i < 6 && gCharacters[i] != NULL) {
+            VCALL(gCharacters[i], 0x1C, void (*)(VObject *))(gCharacters[i]);
+        }
+    }
 }
