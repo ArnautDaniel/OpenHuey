@@ -2457,3 +2457,56 @@ void func_001F0F40(u8 *ik) {
     ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
     ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
 }
+
+
+extern void func_002EE8A0(u8 *springs);   /* begin a step */
+extern void func_002EE900(u8 *springs);   /* one step */
+extern void func_002EE840(u8 *springs);   /* finish */
+
+/* the four spring systems (+0x13B0, +0x1440, +0x1740, +0x17E0), a frame: one step, or after a
+ * reset (+0x850) - the 4 hanging points (+0x1480, 0x50 each) put back under their anchors (a
+ * bone +0x24 when +0x20, else the point +0x2C) by their length (+0x40) along bone 0x35's
+ * Z axis, at rest - 30 steps to settle */
+void func_002F81A0(u8 *o) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 n, i;
+    u8 *p;
+
+    if (AT(o, 0x850, u8) == 0) {
+        n = 1;
+    } else {
+        sceVu0CopyVector(down, func_0017CE80(AT(AT(o, 0x1754, u8 *), 0x810, void *), 0x35) + 8);
+        p = o + 0x1480;
+        for (i = 0; i < 4; i++) {
+            AT(p, 0x18, f32) = 0.0f;
+            AT(p, 0x14, f32) = 0.0f;
+            AT(p, 0x10, f32) = 0.0f;
+            if (AT(p, 0x20, u8) != 0) {
+                sceVu0CopyVector(at, func_0017CE80(AT(AT(o, 0x1754, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+            } else {
+                sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+            }
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+            sceVu0AddVector((f32 *)p, at, d);
+            p += 0x50;
+        }
+        n = 0x1E;
+    }
+    func_002EE8A0(o + 0x13B0);
+    func_002EE8A0(o + 0x1440);
+    func_002EE8A0(o + 0x1740);
+    func_002EE8A0(o + 0x17E0);
+    for (i = 0; i < n; i++) {
+        func_002EE900(o + 0x13B0);
+        func_002EE900(o + 0x1440);
+        func_002EE900(o + 0x1740);
+        func_002EE900(o + 0x17E0);
+    }
+    func_002EE840(o + 0x13B0);
+    func_002EE840(o + 0x1440);
+    func_002EE840(o + 0x1740);
+    func_002EE840(o + 0x17E0);
+    AT(o, 0x850, u8) = 0;
+}
