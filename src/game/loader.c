@@ -284,7 +284,7 @@ typedef struct LoadReq {
     /* 0x008 */ void *file;
     /* 0x00C */ void *dir;
     /* 0x010 */ s32 unk10;
-    /* 0x014 */ s32 unk14;
+    /* 0x014 */ s32 group;      /* the requester (cancelled together: +0x14); 0x10000000 none */
     /* 0x018 */ u32 dst;
     /* 0x01C */ s32 notify;     /* hand the data on when done */
     /* 0x020 */ char name[0x100];
@@ -308,7 +308,7 @@ static inline void LoadReq_Clear(LoadReq *q) {
     q->file = NULL;
     q->dir = NULL;
     q->unk10 = 0;
-    q->unk14 = 0x10000000;
+    q->group = 0x10000000;
     q->notify = 0;
     q->dst = 0;
     q->name[0] = 0;
@@ -446,13 +446,13 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     t->file = NULL;
     t->dir = NULL;
     t->unk10 = 0;
-    t->unk14 = 0x10000000;
+    t->group = 0x10000000;
     t->notify = 0;
     t->dst = 0;
     t->name[0] = 0;
     t->kind = 0;
     t->size = 0;
-    t->unk14 = flags;
+    t->group = flags;
     func_001694D0((u8 *)t, path);
     if (buf != 0) {
         if (dst & 0x80000000) {
@@ -471,7 +471,7 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     if (LOADER_RD(l) != LOADER_WR(l)) {
         for (i = LOADER_WR(l); i != LOADER_RD(l); i = (i - 1) & 0xFF) {
             q = LOADER_REQ(l, i);
-            if (t->unk14 == q->unk14 && t->dir == q->dir && t->dst == q->dst && t->notify == q->notify &&
+            if (t->group == q->group && t->dir == q->dir && t->dst == q->dst && t->notify == q->notify &&
                 t->kind == q->kind && t->bank == q->bank) {
                 func_00100490(t);
                 return q->unk10;
@@ -494,7 +494,7 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     q->file = t->file;
     q->dir = t->dir;
     q->unk10 = t->unk10;
-    q->unk14 = t->unk14;
+    q->group = t->group;
     q->dst = t->dst;
     q->notify = t->notify;
     for (i = 0; i < 0x80; i++) {
@@ -507,4 +507,29 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     id = t->unk10;
     func_00100490(t);
     return id;
+}
+
+/* +0x14 cancel the requests of `group`: the one in progress is stopped (or dropped if it
+ * hasn't started reading), the queued ones dropped */
+void func_0016B8E0(u8 *l, s32 group) {
+    LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
+    u8 i;
+
+    if (q->group == group && (u32)q->state < 6) {
+        if ((u32)q->state < 3) {
+            LoadReq_Clear(q);
+        } else {
+            q->state = 6;
+            ADXF_StopNw(q->file);
+        }
+    }
+    if (LOADER_RD(l) == LOADER_WR(l)) {
+        return;
+    }
+    for (i = LOADER_RD(l) + 1; i != LOADER_WR(l); i++) {
+        q = LOADER_REQ(l, i);
+        if (q->group == group) {
+            LoadReq_Clear(q);
+        }
+    }
 }

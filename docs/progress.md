@@ -9,19 +9,26 @@ Last updated 2026-10-02.
 It boots through the controller check, the memory card check, the Dolby logo (the Capcom movie
 ends at once: no Sofdec yet), the caution screen, the title (fade in, PRESS START) and the main
 menu (New Game / Load Game / Options with their descriptions), at 60 fps with the software GS.
+Options opens, navigates and closes; Load Game lists the saves on the card (place, date, play
+time) and loads one, after which the title hands over to the game scene.
 Screenshots: `docs/img/native_*.png`.
 
 - Keys: arrows (D-pad), X / Space = cross, C / Backspace = circle, Z = square, V = triangle,
   Q / E = L1 / R1, 1 / 3 = L2 / R2, Return = Start, Tab = Select, WASD = left stick; SDL gamepads.
 - Environment: `HG_HEADLESS=1` (no window), `HG_DUMP=dir` (every 30th frame as PPM),
   `HG_MAXFRAMES=n` (exit after n frames), `HG_AUTOCROSS=1` (press cross every 2 s),
-  `HG_INPUT="frame:button,..."` (scripted presses, e.g. `1250:start,1440:down,1520:cross`),
-  `HG_SAVE=dir` (the memory card in slot 1, default `./save`), `HG_GSDEBUG=1`.
+  `HG_INPUT="frame:button,..."` (scripted presses held for 6 video frames, e.g.
+  `1700:start,1900:down,1960:down,2020:cross` opens Options; with a save on the card the menu
+  starts on Load Game), `HG_SAVE=dir` (the memory card in slot 1, default `./save`),
+  `HG_GSDEBUG=1`.
+- Saves: the file `BASLUS-21075HG/BASLUS-21075HG` (0x12D70 bytes: system data, 12 save headers,
+  12 saves) from a PCSX2 folder memory card can be copied into `$HG_SAVE` as is.
 - Silent: ADX / SPU sound and music are shims (the game-side music logic runs). Movies: Sofdec is
   a shim whose player creation fails, which the game treats as "no movie".
-- Where it stops now: choosing a menu entry. New Game goes to `func_0012E450` (leaving the title
-  for the game scene); Load / Options open the sub screen (`src/game/subscreen.c`, code
-  0x384C00..0x3A0000, about 15,000 instructions) - not decompiled yet.
+- Where it stops now: the game scene's constructor (`SceneGame_ctor`, 0x2D05A0), reached by New
+  Game or by loading a save. Inside Options, the entries' editors (`func_00393880` controller
+  layout, `func_00393480`, `func_003930C0`, `func_00392B50`, `func_00392670`, `func_00392360`
+  restore defaults) are not written yet.
 - To check against the real game: the dark boxes behind the menu entries (they come from the
   entries' CLUT 1 background colour); the Dolby logo sits left of centre.
 - Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points
