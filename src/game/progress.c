@@ -1231,3 +1231,38 @@ s32 func_0016D670(Progress *p, u32 id, u32 slot) {
     }
     return ok;
 }
+
+
+/* lock (`on`) or unlock door `door` for kind `kind` (0: bit 1, 1: bit 2, 2..5: bit 4 of the
+ * door's lock bits, +0x124 + door x 4 bits 4..7), then let the door object know (+0x80) when
+ * it's in this room (rooms +0x3C) */
+void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
+    u32 bit, *w;
+    u32 r;
+
+    switch ((u8)kind) {
+    case 0:
+        bit = 1;
+        break;
+    case 1:
+        bit = 2;
+        break;
+    case 2: case 3: case 4: case 5:
+        bit = 4;
+        break;
+    default:
+        bit = 0;
+        break;
+    }
+    w = &AT(p, 0x124 + (door & 0xFFFF) * 4, u32);
+    if (on) {
+        *w = (*w & ~0xF0u) | ((((*w >> 4) & 0xF) | bit) & 0xF) << 4;
+    } else {
+        *w = (*w & ~0xF0u) | ((((*w >> 4) & 0xF) & ~bit) & 0xF) << 4;
+    }
+    r = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, s32, s32))(D_0044E568, door,
+                                                                 VCALL(p, 0xC, s32 (*)(Progress *))(p));
+    if (r != 0xFF) {
+        VCALL(D_0044E558, 0x80, void (*)(VObject *, u32))(D_0044E558, r);
+    }
+}
