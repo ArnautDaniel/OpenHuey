@@ -2859,6 +2859,45 @@ typedef struct {
 
 static ModelBuf sMb;
 
+/* Lighting (the original lights in its VU1 microprograms; recreated here): a key light from
+ * the camera, raised a little, plus ambient. World Y points down. */
+#define LIGHT_AMBIENT 0.55f
+#define LIGHT_KEY 0.5f
+static f32 sLightDir[4];   /* towards the light, unit */
+
+static void light_setup(void) {
+    f32 dir[4] __attribute__((aligned(16)));
+
+    VCALL(D_0044E4B8, 0xA0, void (*)(VObject *, f32 *))(D_0044E4B8, dir);   /* view direction */
+    sLightDir[0] = -dir[0];
+    sLightDir[1] = -dir[1] - 0.6f;
+    sLightDir[2] = -dir[2];
+    sLightDir[3] = 0.0f;
+    sceVu0Normalize(sLightDir, sLightDir);
+}
+
+/* a vertex colour (0x80 = 1.0) for the world normal `n` (not unit) */
+static u32 light_rgba(const f32 *n) {
+    f32 len = __builtin_sqrtf(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+    f32 d = len > 0.0f ? (n[0] * sLightDir[0] + n[1] * sLightDir[1] + n[2] * sLightDir[2]) / len : 0.0f;
+    s32 c = (s32)(128.0f * (LIGHT_AMBIENT + LIGHT_KEY * (d > 0.0f ? d : 0.0f)));
+
+    if (c > 255) {
+        c = 255;
+    }
+    return 0x80000000u | (u32)c << 16 | (u32)c << 8 | (u32)c;
+}
+
+/* a normal (3 x s16 / 32768) turned by a matrix's 3 x 3, scaled by w, added to `acc` */
+static void normal_add(f32 *acc, f32 (*m)[4], const s16 *n, f32 w) {
+    f32 x = n[0] / 32768.0f, y = n[1] / 32768.0f, z = n[2] / 32768.0f;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        acc[k] += w * (m[0][k] * x + m[1][k] * y + m[2][k] * z);
+    }
+}
+
 static void mb_reserve(s32 n) {
     if (n > sMb.cap) {
         sMb.cap = n;
@@ -2913,6 +2952,7 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
         const s32 *start = (const s32 *)(rec + AT(rec, 0x4, s32));
         const s16 *d = (const s16 *)(rec + AT(rec, 0x4, s32) + 0x10);
         const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
+        const s16 *nrm = (const s16 *)(rec + AT(rec, 0xC, s32));
         const u16 *w = (const u16 *)(rec + AT(rec, 0x10, s32));
         const u8 *bi = rec + AT(rec, 0x14, s32);
         const u8 *fl = rec + AT(rec, 0x18, s32);
@@ -2927,7 +2967,7 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
         }
         mb_reserve(n);
         for (k = 0; k < n; k++) {
-            f32 v[4] = {0, 0, 0, 1}, o[3] = {0, 0, 0}, t[4], ws = 0.0f;
+            f32 v[4] = {0, 0, 0, 1}, o[3] = {0, 0, 0}, nn[3] = {0, 0, 0}, t[4], ws = 0.0f;
 
             x += d[k * 3];
             y += d[k * 3 + 1];
@@ -2949,8 +2989,10 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
                 o[0] += t[0] * wt;
                 o[1] += t[1] * wt;
                 o[2] += t[2] * wt;
+                normal_add(nn, pal[s], nrm + k * 3, wt);
             }
             vtx_set(k, o, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
+            AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
         }
         model_emit(m, mvp, n, AT(rec, 0x1C, s32), AT(rec, 0x20, s32));
     }
@@ -2971,6 +3013,7 @@ static void gl_rigid_parts(u8 *m, const f32 *mvp) {
         const s32 *start = (const s32 *)(rec + AT(rec, 0x4, s32));
         const s16 *d = (const s16 *)(rec + AT(rec, 0x4, s32) + 0x10);
         const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
+        const s16 *nrm = (const s16 *)(rec + AT(rec, 0xC, s32));
         const u8 *fl = rec + AT(rec, 0x10, s32);
         s32 x = start[0], y = start[1], z = start[2];
 
@@ -2991,6 +3034,12 @@ static void gl_rigid_parts(u8 *m, const f32 *mvp) {
             v[3] = 1.0f;
             sceVu0ApplyMatrix(t, b, v);
             vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
+            {
+                f32 nn[3] = {0, 0, 0};
+
+                normal_add(nn, b, nrm + k * 3, 1.0f);
+                AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
+            }
         }
         model_emit(m, mvp, n, AT(rec, 0x14, s32), 0);
     }
@@ -3012,6 +3061,7 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
         const u32 *fl = (const u32 *)(rec + AT(rec, 0xC, s32));
         u8 *e = rec + AT(rec, 0x10, s32);
         const s16 *p = (const s16 *)(e + AT(e, 0x0, s32));
+        const s16 *nrm = (const s16 *)(e + AT(e, 0x4, s32));
         const s32 *base = (const s32 *)(rec + 0x30);
 
         if (n <= 0) {
@@ -3028,6 +3078,12 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
             v[3] = 1.0f;
             sceVu0ApplyMatrix(t, b, v);
             vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 0x8000);
+            {
+                f32 nn[3] = {0, 0, 0};
+
+                normal_add(nn, b, nrm + k * 3, 1.0f);
+                AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
+            }
         }
         model_emit(m, mvp, n, AT(rec, 0x18, s32), AT(rec, 0x20, s32));
     }
@@ -3040,6 +3096,7 @@ static void gl_draw_model(u8 *m) {
         return;
     }
     VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    light_setup();
     gl_skinned_parts(m, &clip[0][0]);
     gl_rigid_parts(m, &clip[0][0]);
     gl_morph_parts(m, &clip[0][0]);
