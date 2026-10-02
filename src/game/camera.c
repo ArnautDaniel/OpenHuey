@@ -354,6 +354,11 @@ void func_001225F0(Camera *c, f32 (*out)[4]) {
     q[1] = 0.0f;
     q[0] = 0.0f;
     func_0025C6F0(q, c->unk70, c->roll);
+    /* the translation row is left unset (the original's stack garbage, times w = 0); cleared so
+     * that garbage can't be a NaN / infinity on PC */
+    rot[3][0] = 0.0f;
+    rot[3][1] = 0.0f;
+    rot[3][2] = 0.0f;
     func_0025C770(q, rot);
     sceVu0ApplyMatrix(c->unk80, rot, s);
     sceVu0CameraMatrix(out, c->unk60, c->unk70, c->unk80);

@@ -235,6 +235,9 @@ void func_0025DB10(u8 *o, s32 which) {
     m[0][3] = 0.0f;
     m[1][3] = 0.0f;
     m[2][3] = 0.0f;
+    m[3][0] = 0.0f;   /* unset in the original (garbage times w); no NaN / infinity on PC */
+    m[3][1] = 0.0f;
+    m[3][2] = 0.0f;
     func_0025C770(q, m);
     sceVu0ApplyMatrix(t, m, dir);
     sceVu0ScaleVector(t, t, len);

@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-/* a triangle strip of `n` vertices: positions (x, y, z, w floats, 16-byte stride), texture
+/* a triangle strip of `n` vertices: positions (x, y, z floats and a GS flags word: bit 15 set,
+ * the triangle ending there is skipped; 16-byte stride), texture
  * coordinates (s, t floats) and colours (RGBA bytes, 0x80 = 1.0), drawn with `mvp` (column
  * major, world/local to PS2 clip space); `tex0`: the GS TEX0 register of its texture, 0 for
  * none; `prim`: the GS PRIM bits (ABE for blending) */

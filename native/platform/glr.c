@@ -3,7 +3,8 @@
  * The scene is drawn at the PS2's 640x448 into an offscreen target (glr_present), which is
  * then scaled into the window; frame dumps read the offscreen target.
  *
- *   HG_GLDEBUG=1   once a second: the frame's strip count and its first vertex in clip space */
+ *   HG_GLDEBUG=1     once a second: the frame's draw count and its first vertex in clip space
+ *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,40 +89,59 @@ typedef struct GlrFrame {
 static GlrFrame sFrames[2];
 static int sBuilding;   /* index of the frame being built; the other one is shown */
 
+static void put_vertex(GlrFrame *f, const float *xyzw, const float *st, const uint8_t *rgba, int i) {
+    GlrVertex *v = &f->v[f->nv++];
+
+    v->x = xyzw[i * 4 + 0];
+    v->y = xyzw[i * 4 + 1];
+    v->z = xyzw[i * 4 + 2];
+    v->w = xyzw[i * 4 + 3];
+    v->s = st[i * 2 + 0];
+    v->t = st[i * 2 + 1];
+    memcpy(v->rgba, rgba + i * 4, 4);
+}
+
+/* The strip's w words are GS XYZ2 / XYZ3 flags, not coordinates: bit 15 (ADC) set means the
+ * triangle ending at that vertex isn't drawn, which is how one VU1 batch holds many strips. The
+ * strip becomes a triangle list without those. */
 void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, const uint8_t *rgba,
                uint64_t tex0, uint32_t prim) {
     GlrFrame *f = &sFrames[sBuilding];
     GlrDraw *d;
-    int i;
+    int i, max = (n - 2) * 3;
 
     if (n < 3) {
         return;
     }
-    if (f->nv + n > f->capv) {
-        f->capv = (f->nv + n) * 2 + 4096;
+    if (f->nv + max > f->capv) {
+        f->capv = (f->nv + max) * 2 + 4096;
         f->v = realloc(f->v, f->capv * sizeof(GlrVertex));
     }
     if (f->nd + 1 > f->capd) {
         f->capd = f->capd * 2 + 256;
         f->d = realloc(f->d, f->capd * sizeof(GlrDraw));
     }
-    d = &f->d[f->nd++];
-    memcpy(d->mvp, mvp, sizeof(d->mvp));
+    d = &f->d[f->nd];
     d->first = f->nv;
-    d->n = n;
+    for (i = 2; i < n; i++) {
+        uint32_t flags;
+
+        memcpy(&flags, &xyzw[i * 4 + 3], 4);
+        if (flags & 0x8000) {
+            continue;
+        }
+        put_vertex(f, xyzw, st, rgba, i - 2);
+        put_vertex(f, xyzw, st, rgba, i - 1);
+        put_vertex(f, xyzw, st, rgba, i);
+    }
+    d->n = f->nv - d->first;
+    if (d->n == 0) {
+        return;
+    }
+    memcpy(d->mvp, mvp, sizeof(d->mvp));
     d->tex0 = tex0;
     d->prim = prim;
-    for (i = 0; i < n; i++) {
-        GlrVertex *v = &f->v[f->nv++];
-
-        v->x = xyzw[i * 4 + 0];
-        v->y = xyzw[i * 4 + 1];
-        v->z = xyzw[i * 4 + 2];
-        v->w = xyzw[i * 4 + 3];
-        v->s = st[i * 2 + 0];
-        v->t = st[i * 2 + 1];
-        memcpy(v->rgba, rgba + i * 4, 4);
-    }
+    f->nd++;
 }
 
 /* a draw path that still builds PS2 packets only: reported once, drawn as nothing */
@@ -323,7 +343,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         static unsigned n;
 
         if (n++ % 60 == 0) {
-            fprintf(stderr, "glr: %d strips, %d vertices\n", f->nd, f->nv);
+            fprintf(stderr, "glr: %d draws, %d vertices\n", f->nd, f->nv);
             if (f->nd > 0) {
                 const float *m = f->d[0].mvp;
                 const GlrVertex *v = &f->v[f->d[0].first];
@@ -334,6 +354,18 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                     c[k] = m[k] * v->x + m[4 + k] * v->y + m[8 + k] * v->z + m[12 + k];
                 }
                 fprintf(stderr, "glr: v0 (%g %g %g) -> clip (%g %g %g %g)\n", v->x, v->y, v->z, c[0], c[1], c[2], c[3]);
+                if (getenv("HG_GLDEBUG_W")) {
+                    int s2, j;
+
+                    for (s2 = 0; s2 < 4 && s2 < f->nd; s2++) {
+                        fprintf(stderr, "glr: draw %d n %d w:", s2, f->d[s2].n);
+                        for (j = 0; j < f->d[s2].n && j < 24; j++) {
+                            union { float f; unsigned u; } w = { f->v[f->d[s2].first + j].w };
+                            fprintf(stderr, " %08X", w.u);
+                        }
+                        fprintf(stderr, "\n");
+                    }
+                }
             }
         }
     }
@@ -348,7 +380,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         p_glBindVertexArray(sVao);
         for (i = 0; i < f->nd; i++) {
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, f->d[i].mvp);
-            p_glDrawArrays(GL_TRIANGLE_STRIP, f->d[i].first, f->d[i].n);
+            p_glDrawArrays(GL_TRIANGLES, f->d[i].first, f->d[i].n);
         }
         p_glDisable(GL_DEPTH_TEST);
     }
