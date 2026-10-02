@@ -492,3 +492,12 @@ u8 *func_00209800(VObject *room) {
 s32 func_001FBA10(u8 *ev) {
     return AT(ev, 0x11F3, u8);
 }
+
+
+/* +0x40 (second base): close the message window if it shows message `id` (0xFFFF: any) */
+void func_001FB1F0(u8 *ev, u32 id) {
+    id &= 0xFFFF;
+    if (id == 0xFFFF || id == AT(ev, 0x71A, u16)) {
+        Task_Close((Task *)(ev + 0x708));
+    }
+}
