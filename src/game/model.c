@@ -2818,3 +2818,286 @@ void func_002EED20(u8 *p, u8 *s) {
     sceVu0ScaleVector(b + 8, b + 8, AT(p, 0x58, f32));
     sceVu0CopyVector(b + 12, (f32 *)p);
 }
+
+
+extern void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light);   /* queue the model's drawing */
+
+/* draw the model in `layer` (a, b: the character's draw parameters) with its light (+0x6C) */
+void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b) {
+    f32 light[4] __attribute__((aligned(16)));
+
+    VCALL(m, 0x6C, void (*)(u8 *, f32 *))(m, light);
+    func_001F6870(m, layer, a, b, light);
+}
+
+
+extern VObject *gBootMessage;   /* (also the characters' texture sets: +0x24 slot, +0x28 entry) */
+extern VObject *D_0044E4E8;     /* the texture cache */
+extern VObject *D_0044E4F0;     /* the renderer */
+extern VObject *D_0044E4B8;     /* the camera */
+extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
+
+#ifdef HG_NATIVE
+#include <stdlib.h>
+
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern void glr_todo(const char *what);
+
+/* ---- PC: a character model drawn with OpenGL (what the model drawer's VU1 packets do) ----
+ *
+ * Resource 0 (+0x4C0, docs/model_format.md): bone records (0x70, the inverse bind matrix at
+ * +0x30), the skinned parts (mesh table) and the rigid ones; resource 1 (+0x4D0) the morphing
+ * parts. A vertex is in model space; bone b moves it by (inverse bind b) x (b's world matrix,
+ * the skeleton at +0x810). Skinning is done here on the CPU. */
+
+typedef struct {
+    f32 *xyzw, *st;
+    u8 *rgba;
+    s32 cap;
+} ModelBuf;
+
+static ModelBuf sMb;
+
+static void mb_reserve(s32 n) {
+    if (n > sMb.cap) {
+        sMb.cap = n;
+        sMb.xyzw = realloc(sMb.xyzw, n * 16);
+        sMb.st = realloc(sMb.st, n * 8);
+        sMb.rgba = realloc(sMb.rgba, n * 4);
+    }
+}
+
+/* bone `b`'s skinning matrix */
+static void bone_skin(u8 *m, s32 b, f32 (*out)[4]) {
+    sceVu0MulMatrix(out, (f32 (*)[4])func_0017CE80(AT(m, 0x810, void *), b),
+                    (f32 (*)[4])(AT(m, 0x4C0, u8 *) + 0x10 + b * 0x70 + 0x30));
+}
+
+/* the part's texture (.TEX entry) through the character's texture set */
+static void *model_tex(u8 *m, s32 tex) {
+    if (tex < 0) {
+        return NULL;
+    }
+    return VCALL(gBootMessage, 0x28, void *(*)(VObject *, s32, s32))(gBootMessage, AT(m, 0x24, u8), tex);
+}
+
+static void model_emit(u8 *m, const f32 *mvp, s32 n, s32 tex, s32 flags) {
+    /* second-pass parts (flags bit 0) are cut out by their texture's alpha */
+    glr_strip(mvp, n, sMb.xyzw, sMb.st, sMb.rgba, model_tex(m, tex), flags & 1 ? 1ULL << 34 : 0, 0x1C);
+}
+
+static void vtx_set(s32 i, const f32 *p, u16 u, u16 v, u32 noTri) {
+    sMb.xyzw[i * 4] = p[0];
+    sMb.xyzw[i * 4 + 1] = p[1];
+    sMb.xyzw[i * 4 + 2] = p[2];
+    AT(&sMb.xyzw[i * 4 + 3], 0, u32) = noTri ? 0x8000 : 0;
+    sMb.st[i * 2] = u / 32768.0f;
+    sMb.st[i * 2 + 1] = v / 32768.0f;
+    AT(sMb.rgba, i * 4, u32) = 0x80808080;
+}
+
+static void gl_skinned_parts(u8 *m, const f32 *mvp) {
+    u8 *r0 = AT(m, 0x4C0, u8 *);
+    u8 *mt = r0 + AT(r0, 0x4, s32);
+    f32 pal[32][4][4] __attribute__((aligned(16)));
+    s32 i, k, j;
+
+    for (i = 0; i < AT(mt, 0x0, s32); i++) {
+        u8 *rec = mt + 0x10 + i * 0x30;
+        s32 n = AT(rec, 0x0, s32), npal = AT(rec, 0x24, s32), infl = AT(rec, 0x2C, s32);
+        const s32 *start = (const s32 *)(rec + AT(rec, 0x4, s32));
+        const s16 *d = (const s16 *)(rec + AT(rec, 0x4, s32) + 0x10);
+        const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
+        const u16 *w = (const u16 *)(rec + AT(rec, 0x10, s32));
+        const u8 *bi = rec + AT(rec, 0x14, s32);
+        const u8 *fl = rec + AT(rec, 0x18, s32);
+        const u8 *pb = rec + AT(rec, 0x28, s32);
+        s32 x = start[0], y = start[1], z = start[2];
+
+        if (n <= 0 || npal > 32 || infl < 1 || infl > 4) {
+            continue;
+        }
+        for (j = 0; j < npal; j++) {
+            bone_skin(m, pb[j], pal[j]);
+        }
+        mb_reserve(n);
+        for (k = 0; k < n; k++) {
+            f32 v[4] = {0, 0, 0, 1}, o[3] = {0, 0, 0}, t[4], ws = 0.0f;
+
+            x += d[k * 3];
+            y += d[k * 3 + 1];
+            z += d[k * 3 + 2];
+            v[0] = x / 4096.0f;
+            v[1] = y / 4096.0f;
+            v[2] = z / 4096.0f;
+            for (j = 0; j < infl; j++) {
+                ws += w[k * infl + j];
+            }
+            for (j = 0; j < infl; j++) {
+                f32 wt = ws == 0.0f ? (j == 0 ? 1.0f : 0.0f) : w[k * infl + j] / 32768.0f;
+                s32 s = bi[k * infl + j] / 4;
+
+                if (wt == 0.0f || s >= npal) {
+                    continue;
+                }
+                sceVu0ApplyMatrix(t, pal[s], v);
+                o[0] += t[0] * wt;
+                o[1] += t[1] * wt;
+                o[2] += t[2] * wt;
+            }
+            vtx_set(k, o, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
+        }
+        model_emit(m, mvp, n, AT(rec, 0x1C, s32), AT(rec, 0x20, s32));
+    }
+}
+
+static void gl_rigid_parts(u8 *m, const f32 *mvp) {
+    u8 *r0 = AT(m, 0x4C0, u8 *);
+    u8 *rt = r0 + AT(r0, 0x8, s32);
+    f32 b[4][4] __attribute__((aligned(16)));
+    s32 i, k;
+
+    if (AT(r0, 0x8, s32) == 0) {
+        return;
+    }
+    for (i = 0; i < AT(rt, 0x0, s32); i++) {
+        u8 *rec = rt + 0x10 + i * 0x20;
+        s32 n = AT(rec, 0x0, s32);
+        const s32 *start = (const s32 *)(rec + AT(rec, 0x4, s32));
+        const s16 *d = (const s16 *)(rec + AT(rec, 0x4, s32) + 0x10);
+        const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
+        const u8 *fl = rec + AT(rec, 0x10, s32);
+        s32 x = start[0], y = start[1], z = start[2];
+
+        if (n <= 0) {
+            continue;
+        }
+        bone_skin(m, AT(rec, 0x1C, s32), b);
+        mb_reserve(n);
+        for (k = 0; k < n; k++) {
+            f32 v[4], t[4];
+
+            x += d[k * 3];
+            y += d[k * 3 + 1];
+            z += d[k * 3 + 2];
+            v[0] = x / 4096.0f;
+            v[1] = y / 4096.0f;
+            v[2] = z / 4096.0f;
+            v[3] = 1.0f;
+            sceVu0ApplyMatrix(t, b, v);
+            vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
+        }
+        model_emit(m, mvp, n, AT(rec, 0x14, s32), 0);
+    }
+}
+
+/* morphing parts (faces, hands): the rest shape for now (TODO: blend the shapes) */
+static void gl_morph_parts(u8 *m, const f32 *mvp) {
+    u8 *r1 = AT(m, 0x4D0, u8 *);
+    f32 b[4][4] __attribute__((aligned(16)));
+    s32 i, k;
+
+    if (r1 == NULL) {
+        return;
+    }
+    for (i = 0; i < AT(r1, 0x0, s32); i++) {
+        u8 *rec = r1 + 0x10 + i * 0x40;
+        s32 n = AT(rec, 0x4, s32);
+        const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
+        const u32 *fl = (const u32 *)(rec + AT(rec, 0xC, s32));
+        u8 *e = rec + AT(rec, 0x10, s32);
+        const s16 *p = (const s16 *)(e + AT(e, 0x0, s32));
+        const s32 *base = (const s32 *)(rec + 0x30);
+
+        if (n <= 0) {
+            continue;
+        }
+        bone_skin(m, AT(rec, 0x14, s32), b);
+        mb_reserve(n);
+        for (k = 0; k < n; k++) {
+            f32 v[4], t[4];
+
+            v[0] = (base[0] + p[k * 3]) / 4096.0f;
+            v[1] = (base[1] + p[k * 3 + 1]) / 4096.0f;
+            v[2] = (base[2] + p[k * 3 + 2]) / 4096.0f;
+            v[3] = 1.0f;
+            sceVu0ApplyMatrix(t, b, v);
+            vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 0x8000);
+        }
+        model_emit(m, mvp, n, AT(rec, 0x18, s32), AT(rec, 0x20, s32));
+    }
+}
+
+static void gl_draw_model(u8 *m) {
+    f32 clip[4][4] __attribute__((aligned(16)));
+
+    if (AT(m, 0x4C0, u8 *) == NULL || AT(m, 0x810, u8 *) == NULL) {
+        return;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    gl_skinned_parts(m, &clip[0][0]);
+    gl_rigid_parts(m, &clip[0][0]);
+    gl_morph_parts(m, &clip[0][0]);
+}
+#endif
+
+/* queue the model for drawing in `layer` (a, b: the character's draw parameters, kept at
+ * +0x28 / +0x2C; layer 0x14 none): the model drawer (+0x10) at its root bone; layer 0xB draws
+ * it twice (masks in layers 10 / 11 around it, mode +0x34 4 then 8); then its shadow (+0x1D0)
+ * unless +0x4D9 or in layers 0x14 / 0x17 / 0x1C */
+void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
+    VObject *r;
+    u64 *p;
+
+    if (layer == 0x14) {
+        AT(m, 0x28, s32) = -1;
+        AT(m, 0x2C, s32) = -1;
+    } else {
+        AT(m, 0x28, s32) = a;
+        AT(m, 0x2C, s32) = b;
+    }
+#ifdef HG_NATIVE
+    gl_draw_model(m);
+    if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
+        glr_todo("character shadows (func_001F3530)");
+    }
+    return;
+#endif
+    if ((u16)layer == 0xB) {
+        r = D_0044E4F0;
+        AT(m, 0x34, u32) = (layer & 0xFFFF0000) | 4;
+        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, 0xA,
+                                                              func_0017CE80(AT(m, 0x810, void *), 0) + 12);
+        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 3, 0xB);
+        p[0] = 0x10000002;
+        AT(p, 0x8, u32) = 0;
+        AT(p, 0xC, u32) = 0x50000002;
+        p[2] = 0x8001 | (0x10000000ULL << 32);
+        p[3] = 0xE;
+        p[4] = 0x310000A0 | (1ULL << 32);
+        p[5] = 0x4E;
+        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+        AT(m, 0x34, u32) = 8;
+        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, 0xB, NULL);
+        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 4, 0xB);
+        p[0] = 0x10000003;
+        AT(p, 0x8, u32) = 0;
+        AT(p, 0xC, u32) = 0x50000003;
+        p[2] = 0x8002 | (0x10000000ULL << 32);
+        p[3] = 0xE;
+        p[4] = 0x310000A0;
+        p[5] = 0x4E;
+        p[6] = 0x5000F;
+        p[7] = 0x47;
+        AT(m, 0x34, u32) = 0;
+    } else {
+        r = D_0044E4F0;
+        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, layer,
+                                                              func_0017CE80(AT(m, 0x810, void *), 0) + 12);
+    }
+    if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
+        func_001F3530(m + 0x1D0, a, b, light, layer);
+    }
+}

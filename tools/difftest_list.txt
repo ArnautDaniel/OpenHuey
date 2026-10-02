@@ -2741,3 +2741,5 @@ src/game/model.c func_002EEDA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B0000
 src/game/model.c func_00315E00 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x20=bytes:??000000 --pre=a0+0x2C=0x0B200000..0x0B200000 --pre=a0+0x48=0x0B200100..0x0B200100 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/model.c func_002EE710 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x20=bytes:??000000 --pre=a0+0x2C=0x0B200000..0x0B200000 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/model.c func_002EED20 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B300000 --stub-ret-prob=1
+src/game/model.c func_002DDAC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0046F9E0..0x0046F9E0 --stub-ret=0
+src/game/model.c func_001F6870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0A..0x1C --stub-ret=0x0B300000 --stub-ret-prob=1
