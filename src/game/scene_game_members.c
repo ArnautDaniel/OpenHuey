@@ -1638,3 +1638,18 @@ void func_00223A90(void *d) {
         }
     }
 }
+
+
+extern void func_0025FA50(u8 *obj);
+
+/* +0x28 the placed objects, each frame: every active one (bit set in +0xC, 64 slots of 0xB0
+ * from +0x20) updates */
+void func_002C8DC0(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 64; i++) {
+        if (AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) {
+            func_0025FA50(o + 0x20 + i * 0xB0);
+        }
+    }
+}

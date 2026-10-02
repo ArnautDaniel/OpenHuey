@@ -2662,3 +2662,4 @@ src/game/scene_game_members.c func_002E2A60 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/scene_game_members.c func_0011FEB0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x998C=0..1 --pre=a0+0x6740=0x0046BF20..0x0046BF20 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0047A7E8..0x0047A7E8
 src/game/scene_game_members.c func_00223A90 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..0x0B300000
 src/game/rooms.c func_0021AFD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=bytes:?? --pre=a0+0xC0=bytes:01
+src/game/scene_game_members.c func_002C8DC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC=0..0xFFFFFFFF --pre=a0+0x10=0..0xFFFFFFFF
