@@ -750,9 +750,9 @@ void func_0019A210(Fiona *f, s32 n) {
     }
 }
 
-extern void func_00181010(Fiona *f, f32 angle);
+extern void func_00181010(Fiona *f, f32 d);   /* change the fear by d */
 
-/* Turn by -n/30 (forwarded to func_00181010). */
+/* Calm down by n/30 (the fear, func_00181010). */
 void func_0019A280(Fiona *f, s32 n) {
     func_00181010(f, -(0x1.11105ep-5f /* 0x3D08882F, ~1/30 */ * (f32)n));
 }
@@ -3246,4 +3246,379 @@ void func_001855F0(Fiona *f, s32 blend) {
     }
     AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = fear;
     FI(f, 0x1AD628, f32) = fear;
+}
+
+
+/* change Fiona's fear (+0x1AD5F4, 0..99) by `d`; the worn accessory (sub screen slot 3)
+ * scales it: 0x8A less gain, 0x8B less gain and more loss, 0x8C no gain and double loss,
+ * 0x8D none */
+void func_00181010(Fiona *f, f32 d) {
+    VObject *items = (VObject *)D_0044E988;
+    f32 v;
+
+    if (items != NULL) {
+        switch (VCALL(items, 0x10, s32 (*)(VObject *, s32))(items, 3)) {
+        case 0x8D:
+            break;
+        case 0x8C:
+            if (d <= 0.0f) {
+                d = d * 2.0f;
+            } else {
+                d = 0.0f;
+            }
+            break;
+        case 0x8B:
+            if (d <= 0.0f) {
+                d = d * 1.5f;
+            } else {
+                d = d * 0.75f;
+            }
+            break;
+        case 0x8A:
+            if (!(d <= 0.0f)) {
+                d = d * 0.75f;
+            }
+            break;
+        }
+    }
+    v = AT(f, 0x1AD5F4, f32) + d;
+    AT(f, 0x1AD5F4, f32) = v;
+    if (!(v <= 99.0f)) {
+        AT(f, 0x1AD5F4, f32) = 99.0f;
+    } else if (v < 0.0f) {
+        AT(f, 0x1AD5F4, f32) = 0.0f;
+    }
+}
+
+
+extern f32 D_0047E3A0[4];   /* the left stick as a vector (x, 0, z) */
+extern u32 D_0047E374;      /* pad buttons held */
+extern f32 func_002E2D00(f32 angle);   /* angle wrapped to -pi..pi */
+
+#define FMOVE_DIR     0x1AD550   /* vec: where to move (world, unit or 0) */
+#define FMOVE_STILL   0x1AD58C   /* s32: frames without input (to 6) */
+#define FMOVE_MODE    0x1AD588   /* u8: 0 free, 1 camera-locked, 2 held, 3 reset */
+#define FMOVE_LOCK    0x1AD58A   /* s16: frames the old camera still steers */
+#define FMOVE_STICK   0x1AD590   /* vec: last frame's raw input */
+#define FMOVE_LAST    0x1AD5A0   /* vec: last frame's normalized input */
+#define FMOVE_CAMYAW  0x1AD5B0   /* f32: the camera heading the controls use */
+#define FMOVE_GO      0x1AD5D8   /* u8: wants to move (or run) this frame */
+#define FMOVE_HEADING 0x1AD5E0   /* f32: heading to turn to */
+#define FAUTO_STATE   0x1AD71C   /* s32: auto-walk state (0..10) */
+
+/* |wrap(a)| the way the original computes it (the wrap called again for the result) */
+static f32 wrap_abs(f32 a) {
+    if (!(func_002E2D00(a) <= 0.0f)) {
+        return func_002E2D00(a);
+    }
+    return -func_002E2D00(a);
+}
+
+/* Fiona's movement input, each frame. Normally the left stick (or the d-pad), camera
+ * relative: after a camera cut the old camera keeps steering while the stick is held
+ * (mode 1, then 2 while the direction holds within 15 degrees); 0x4000 runs. While the game
+ * walks her (gProgress +0x1FBEC1): towards the target point (states 2..9; 10 once the
+ * pursuer is within reach), or (10) at the pursuer, grabbing it (action 8) when facing it. */
+void func_00187650(Fiona *f) {
+    static const union { u32 u; f32 f; } k15deg = {0x3E860A92}, k30deg = {0x3F060A92}, k001 = {0x3C23D70A};
+    /* the camera rotation the controls use: while moving in mode 1 the original reuses last
+     * frame's (left on its stack); the PC build keeps it explicitly */
+#ifdef HG_NATIVE
+    static
+#endif
+    sceVu0FMATRIX rot;
+    f32 e[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    s32 moving, cut, how = 0;
+
+    FI(f, FMOVE_GO, u8) = 0;
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        FI(f, FMOVE_STILL, s32) = 6;
+        if (f->c.moveMode == 0 || f->c.moveMode == 10) {
+            goto autowalk;
+        }
+        return;
+    }
+    sceVu0CopyVector(e, D_0047E3A0);
+    e[0] += (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
+    e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    sceVu0Normalize(n, e);
+    cut = FI(f, FMOVE_MODE, u8) == 3;
+    if (!cut && VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8) != -1) {
+        s32 prev = VCALL(D_0044E4B8, 0x90, s32 (*)(VObject *))(D_0044E4B8);
+
+        cut = prev != VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8);
+    }
+    if (cut) {
+        /* a camera cut: face the move direction and lock the controls to the old camera */
+        FI(f, FMOVE_MODE, u8) = 0;
+        if (f->c.moveMode == 0 || f->c.moveMode == 10) {
+            f32 yaw = FI(f, FMOVE_HEADING, f32);
+
+            f->c.a.angle[1] = yaw;
+            sceVu0UnitMatrix(f->c.a.rot);
+            sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
+            FI(f, FMOVE_STILL, s32) = 0;
+            if (!((n[0] <= 0.0f ? -n[0] : n[0]) <= 0.5f) || !((n[2] <= 0.0f ? -n[2] : n[2]) <= 0.5f)) {
+                FI(f, FMOVE_LOCK, s16) = 3;
+                FI(f, FMOVE_MODE, u8) = 1;
+                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+                func_002E2DA0(v, rot, n);
+                func_0010E640(v, v, -1.0f);
+                FI(f, FMOVE_HEADING, f32) = func_0031C5C0(v[0], v[2]);
+            }
+        }
+    }
+    if ((e[0] <= 0.0f ? -e[0] : e[0]) <= 0.5f && (e[2] <= 0.0f ? -e[2] : e[2]) <= 0.5f) {
+        moving = 0;
+        FI(f, FMOVE_STILL, s32)++;
+        if (FI(f, FMOVE_STILL, s32) >= 7) {
+            FI(f, FMOVE_STILL, s32) = 6;
+        }
+    } else {
+        moving = 1;
+        FI(f, FMOVE_STILL, s32) = 0;
+    }
+    switch (FI(f, FMOVE_MODE, u8)) {
+    case 0:
+        if (moving) {
+            how = 0;
+        } else {
+            how = AT(f->c.motion, 0x550, f32) <= 0.0f ? 2 : 1;
+        }
+        break;
+    case 1:
+        if (!moving) {
+            how = 2;
+            if (FI(f, FMOVE_STILL, s32) == 6) {
+                FI(f, FMOVE_MODE, u8) = 0;
+            }
+            break;
+        }
+        how = 3;
+        if (FI(f, FMOVE_LOCK, s16) != 0) {
+            FI(f, FMOVE_LOCK, s16)--;
+            func_002E3190(rot, FI(f, FMOVE_CAMYAW, f32));
+        } else {
+            f32 d[4] __attribute__((aligned(16)));
+
+            sceVu0SubVector(d, e, &FI(f, FMOVE_STICK, f32));
+            if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
+                FI(f, FMOVE_MODE, u8) = 2;
+                FI(f, 0x1AD5B4, u32) = 0x3C0EFA35;   /* 0.5 degrees */
+                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+            }
+        }
+        func_002E2DA0(v, rot, n);
+        func_0010E640(v, v, -1.0f);
+        FI(f, 0x1AD5E4, f32) = func_0031C5C0(v[0], v[2]);
+        break;
+    case 2:
+        if (moving) {
+            f32 a = func_0031C5C0(FI(f, FMOVE_LAST, f32), FI(f, FMOVE_LAST + 8, f32));
+
+            how = 0;
+            if (!(wrap_abs(func_0031C5C0(n[0], n[2]) - a) <= k15deg.f)) {
+                FI(f, FMOVE_MODE, u8) = 0;
+            }
+            break;
+        }
+        how = 2;
+        if (FI(f, FMOVE_STILL, s32) == 6) {
+            FI(f, FMOVE_MODE, u8) = 0;
+        }
+        break;
+    }
+    switch (how) {
+    case 3:
+        func_002E3190(rot, FI(f, FMOVE_CAMYAW, f32));
+        func_002E2DA0(v, rot, n);
+        func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
+        break;
+    case 2:
+        FI(f, FMOVE_DIR, f32) = 0.0f;
+        FI(f, FMOVE_DIR + 4, f32) = 0.0f;
+        FI(f, FMOVE_DIR + 8, f32) = 0.0f;
+        break;
+    case 1:
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 1.0f;
+        sceVu0ApplyMatrix(&FI(f, FMOVE_DIR, f32), f->c.a.rot, v);
+        break;
+    case 0:
+        func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+        func_002E2DA0(v, rot, n);
+        func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
+        break;
+    }
+    sceVu0CopyVector(&FI(f, FMOVE_STICK, f32), e);
+    if (FI(f, FMOVE_MODE, u8) == 0) {
+        FI(f, FMOVE_CAMYAW, f32) = VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8);
+    }
+    if (FI(f, FMOVE_MODE, u8) != 2) {
+        sceVu0CopyVector(&FI(f, FMOVE_LAST, f32), n);
+    }
+    if (D_0047E374 & 0x4000) {
+        FI(f, FMOVE_GO, u8) = 1;
+    }
+    return;
+
+autowalk:
+    if ((u32)(FI(f, 0x1AD580, s32) - 0xE) < 2) {
+        FI(f, FAUTO_STATE, s32) = 0;
+        return;
+    }
+    switch (FI(f, FAUTO_STATE, u32)) {
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9: {
+        f32 pt[4] __attribute__((aligned(16)));
+        f32 d[4] __attribute__((aligned(16)));
+        u32 tri;
+
+        if (!(f->c.unk128 < f->c.unk124)) {
+            return;
+        }
+        FI(f, FMOVE_STILL, s32) = 0;
+        tri = f->c.a.navTri;
+        func_001273D0(&f->c, &tri, pt, 1.5f);
+        if (!(FI(f, 0x1AD584, u32) & 2) && FI(f, 0x1AD5D7, u8) == 1 && gCharPursuer->a.unkC4 != 2) {
+            s32 near = 0;
+            f32 py = f->c.a.pos[1];
+
+            if (py < gCharPursuer->a.pos[1]) {
+                if (gCharPursuer->a.pos[1] - py <= f->c.a.height) {
+                    near = 1;
+                }
+            } else if (py - gCharPursuer->a.pos[1] <= gCharPursuer->a.height) {
+                near = 1;
+            }
+            if (near == 1) {
+                sceVu0SubVector(d, pt, gCharPursuer->a.pos);
+                if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= f->c.a.radius + gCharPursuer->a.radius) {
+                    FI(f, FAUTO_STATE, s32) = 10;
+                }
+            }
+        }
+        sceVu0SubVector(d, pt, f->c.a.pos);
+        d[1] = 0.0f;
+        sceVu0Normalize(&FI(f, FMOVE_DIR, f32), d);
+        FI(f, FMOVE_HEADING, f32) = func_0031C5C0(d[0], d[2]);
+        FI(f, FMOVE_GO, u8) = (u32)(FI(f, FAUTO_STATE, s32) - 5) < 2 ? 0 : 1;
+        return;
+    }
+    case 10: {
+        f32 d[4] __attribute__((aligned(16)));
+        struct {
+            s32 state, a, b, c, d;
+            f32 e;
+            s32 f;
+            u8 g, h;
+            u16 i;
+        } act;
+
+        if ((FI(f, 0x1AD584, u32) & 2) || FI(f, 0x1AD5D7, u8) != 1 || gCharPursuer->a.unkC4 == 2) {
+            return;
+        }
+        sceVu0SubVector(d, gCharPursuer->a.pos, f->c.a.pos);
+        d[1] = 0.0f;
+        sceVu0Normalize(&FI(f, FMOVE_DIR, f32), d);
+        FI(f, FMOVE_HEADING, f32) = func_0031C5C0(d[0], d[2]);
+        FI(f, FMOVE_GO, u8) = 1;
+        if (!(wrap_abs(FI(f, FMOVE_HEADING, f32) - f->c.a.angle[1]) < k30deg.f)) {
+            return;
+        }
+        if (FI(f, 0x14E8, s32) != 0) {
+            return;
+        }
+        act.state = 8;
+        act.a = 0x1A;
+        FI(f, 0x14E8, s32) = act.state;
+        FI(f, 0x14EC, s32) = act.a;
+        FI(f, 0x14F0, s32) = act.b;
+        FI(f, 0x14F4, s32) = act.c;
+        FI(f, 0x14F8, s32) = act.d;
+        FI(f, 0x14FC, f32) = act.e;
+        FI(f, 0x1500, s32) = act.f;
+        FI(f, 0x1504, u8) = act.g;
+        FI(f, 0x1505, u8) = act.h;
+        FI(f, 0x1506, u16) = act.i;
+        return;
+    }
+    }
+}
+
+
+/* the kind of a motion id: 0 standing (0..5 but 1), 1 walk/run starts, 2 turns, 3, 4, 5,
+ * 6 (0x12xx), 7 (0x700..0x707), 8 (0x708/0x709), 9 (0x403), 10 (0xE01), 11 anything else */
+static s32 fiona_motion_kind(s32 id) {
+    switch (id) {
+    case 0xE01:
+        return 10;
+    case 0x403:
+        return 9;
+    case 0x708:
+    case 0x709:
+        return 8;
+    case 0x700:
+    case 0x701:
+    case 0x702:
+    case 0x703:
+    case 0x704:
+    case 0x705:
+    case 0x706:
+    case 0x707:
+        return 7;
+    case 0x1200:
+    case 0x1201:
+    case 0x1202:
+    case 0x1203:
+        return 6;
+    case 0xB01:
+        return 4;
+    case 0x207:
+        return 3;
+    case 0x202:
+    case 0x203:
+    case 0x205:
+    case 0x206:
+        return 2;
+    case 0x200:
+    case 0x201:
+    case 0x204:
+    case 0x208:
+    case 0x400:
+    case 0x401:
+    case 0x402:
+        return 1;
+    case 1:
+        return 5;
+    case 0:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        return 0;
+    }
+    return 11;
+}
+
+/* the idle step: when the current motion has played out (+0x550 <= 0), a standing one sets
+ * +0xE1, any other picks the next idle; then the character's idle update */
+void func_0018B600(Fiona *f) {
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) == 0) {
+            f->c.unkE1 = 1;
+        } else {
+            func_001855F0(f, -1);
+        }
+    }
+    func_00125A10(&f->c);
 }

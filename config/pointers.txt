@@ -38,3 +38,8 @@
 0x003EC368
 0x003EC378
 0x003EC388
+
+## PTMF function words spimdisasm left raw (targets hidden after a tail call, now split)
+0x003E5248 = func_00224770
+0x00447B78 = func_0036F8D0
+0x00447E28 = func_0036FC90

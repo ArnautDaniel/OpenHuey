@@ -987,3 +987,38 @@ s32 func_001FBF70(VObject *ev, s32 id) {
     }
     return x - 0xF1 + 7;
 }
+
+
+extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
+
+/* start action script `script` (0x80..: built in, else the room's, vtable +0x24) for
+ * character id `id`: its slot gets a fresh context (character -1: none needed) */
+void func_001FBE90(VObject *ev, s32 id, s32 script) {
+    u8 *e = (u8 *)ev;
+    u8 *pc;
+    u8 *s;
+
+    script &= 0xFF;
+    if (script & 0x80) {
+        pc = D_003D6760[script];
+    } else {
+        VObject *room = (VObject *)(e + 0x120 + AT(e, 0x560, s32) * 4);
+
+        pc = VCALL(room, 0x24, u8 *(*)(VObject *, s32))(room, script);
+    }
+    if (pc == NULL) {
+        return;
+    }
+    s = e + 0x564 + (u8)func_001FBF70(ev, id) * 0x18;
+    AT(s, 0x0, s32) = -1;
+    AT(s, 0x4, u8 *) = NULL;
+    AT(s, 0x10, u8) = 0;
+    AT(s, 0x8, s32) = 0;
+    AT(s, 0x11, u8) = 0;
+    AT(s, 0xC, s32) = 0;
+    AT(s, 0x12, u8) = 0;
+    AT(s, 0x13, u8) = 0xFF;
+    AT(s, 0x14, u16) = 0;
+    AT(s, 0x13, u8) = id;
+    AT(s, 0x4, u8 *) = pc;
+}

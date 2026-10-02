@@ -1226,3 +1226,22 @@ void Options_StateDefaults(SubScreen *s) {
     }
     ptmf_set_fn(&s->state, Options_StateList);
 }
+
+
+/* add `id` to the list at +0x15F8 (128 u16, 0-terminated): 1 if added, 0 if already there or
+ * the list is full */
+s32 func_00394200(SubScreen *s, u32 id) {
+    u16 *list = &AT(s, 0x15F8, u16);
+    u32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        if (list[i] == (u16)id) {
+            return 0;
+        }
+        if (list[i] == 0) {
+            list[i] = id;
+            return 1;
+        }
+    }
+    return 0;
+}

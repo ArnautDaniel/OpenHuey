@@ -1061,3 +1061,55 @@ void func_00174920(Progress *p) {
         player_take_action(b, 0x11B4);
     }
 }
+
+
+/* every character: vtable +0x24 (the frame's thinking) */
+void func_00176440(Progress *p) {
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (gCharacters[i] != NULL) {
+            VCALL(gCharacters[i], 0x24, void (*)(VObject *))(gCharacters[i]);
+        }
+    }
+}
+
+
+
+/* the characters' frame: one in a special state (+0xE0) runs its handler (+0x44, or +0x48
+ * while +0xE2); otherwise, unless the world is paused (+0x8 bit 0x800000), the first 3 slots
+ * move (+0x30) - only in the current room while +0x8 bit 0x1000000 or the director asks */
+void func_001762B0(Progress *p) {
+    VObject *dir = D_0044E4F8;
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        VObject *c = gCharacters[i];
+
+        if (c == NULL || AT(gCharacters[i], 0x28, u8) == 0) {
+            continue;
+        }
+        if (AT(gCharacters[i], 0xE0, u8) != 0) {
+            if (AT(gCharacters[i], 0xE2, u8) == 0) {
+                VCALL(gCharacters[i], 0x44, void (*)(VObject *))(gCharacters[i]);
+            } else {
+                VCALL(gCharacters[i], 0x48, void (*)(VObject *))(gCharacters[i]);
+            }
+            continue;
+        }
+        if (AT(p, 0x8, u32) & 0x800000) {
+            continue;
+        }
+        if ((AT(p, 0x8, u32) & 0x1000000) &&
+            AT(gCharacters[i], 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            continue;
+        }
+        if (VCALL(dir, 0x38, s32 (*)(VObject *))(dir) &&
+            AT(gCharacters[i], 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            continue;
+        }
+        if (i < 3) {
+            VCALL(gCharacters[i], 0x30, void (*)(VObject *))(gCharacters[i]);
+        }
+    }
+}

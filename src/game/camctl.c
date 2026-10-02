@@ -432,3 +432,171 @@ f32 func_00219530(u8 *d, f32 to, f32 from) {
     }
     return res;
 }
+
+
+/* each frame: when the camera set (+0x6C, last applied +0x78) changes or the target (+0xB0,
+ * last +0xB4) left the view (no setup: the camera's test +0xD4; else its path time differs
+ * from the current one by more than 35 units), the camera takes the set and the view angle
+ * resets; when the setup (+0x70, last +0x7C) changes or on such a jump, the camera path is
+ * set up again and put at the target's nearest point; the renderer is told (+0x5C) */
+void func_00224C60(u8 *d) {
+    VObject *cam;
+    s32 far = 0;
+    s32 changed = 0;
+
+    if (AT(d, 0xF4, u8) == 1) {
+        return;
+    }
+    if (AT(d, 0xB0, u8 *) != NULL && AT(d, 0xB4, u8 *) != AT(d, 0xB0, u8 *)) {
+        if (AT(d, 0x70, s32) == -1) {
+            cam = D_0044E4B8;
+            far = (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, u8 *))(cam, AT(d, 0xB0, u8 *) + 0x10);
+        } else {
+            f32 span = (f32)AT(d, 0x18, s32);
+            f32 cur = AT(d, 0x8, f32);
+            f32 t = func_002197A0(d, 2, 0.0f);
+            f32 diff = cur / span - t / span;
+
+            if (diff <= 0.0f) {
+                diff = -diff;
+            }
+            if (!(AT(d, 0x24, f32) * diff <= 35.0f)) {
+                far = 1;
+            }
+        }
+    }
+    if (AT(d, 0x78, s32) != AT(d, 0x6C, s32) || far) {
+        changed = 1;
+        cam = D_0044E4B8;
+        VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
+        VCALL(cam, 0x2C, void (*)(VObject *, void *))(cam, d + 0xA0);
+        AT(d, 0x80, f32) = AT(d, 0x84, f32) = VCALL(cam, 0x64, f32 (*)(VObject *))(cam);
+        AT(d, 0x8C, u8) = 0x80;
+        AT(d, 0x90, s32) = 0;
+        if (AT(d, 0x70, s32) == -1) {
+            func_002243D0(d, 100);
+        }
+    }
+    if (AT(d, 0x70, s32) != -1 && (AT(d, 0x7C, s32) != AT(d, 0x70, s32) || far)) {
+        changed = 1;
+        func_00219E10(d, AT(d, 0x70, s32), 1.0f);
+        if (AT(d, 0xB0, u8 *) != NULL) {
+            func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
+            func_0025F6A0(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+        } else {
+            func_0025F6A0(d + 8, 1.0f);
+        }
+    }
+    if (changed) {
+        VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+    }
+}
+
+
+/* each frame: the director's mode (+0xE8, a member function), then the camera's update */
+void func_00224C20(u8 *d) {
+    ptmf_scall(d, &AT(d, 0xE8, PTMF));
+    VCALL(D_0044E4B8, 0x14, void (*)(VObject *))(D_0044E4B8);
+}
+
+
+extern f32 D_0047E410, D_0047E418;   /* the right stick, x and y (-1..1) */
+extern void func_00223F70(u8 *o);     /* the event camera's frame */
+
+/* the director's normal mode (+0xE8), each frame. The free camera (+0x68, e.g. debug):
+ * orbits the target (+0xB0) with the right stick (yaw +0xE4 in degrees, distance +0xE0 >= 5).
+ * An event camera (+0x69): started on the target the first frame, then run. Otherwise the
+ * camera follows the current setup's path. The last set / setup / target are kept
+ * (+0x78 / +0x7C / +0xB4) for the switch test; changing mode forces it. */
+void func_00224770(u8 *d) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kFov = {0x3F860A92};
+    VObject *cam;
+    f32 v[4] __attribute__((aligned(16)));
+
+    AT(d, 0x78, s32) = AT(d, 0x6C, s32);
+    AT(d, 0x7C, s32) = AT(d, 0x70, s32);
+    AT(d, 0xB4, u8 *) = AT(d, 0xB0, u8 *);
+    if (AT(d, 0x68, u8) == 0) {
+        if (AT(d, 0x74, u8) != AT(d, 0x68, u8)) {
+            AT(d, 0x7C, s32) = -1;
+            AT(d, 0x78, s32) = -1;
+            func_00224C60(d);
+        }
+        if (AT(d, 0xB0, u8 *) == NULL) {
+            AT(d, 0x69, u8) = 0;
+        }
+        if (AT(d, 0x69, u8) != 0) {
+            if (AT(d, 0x150, u8) != AT(d, 0x69, u8)) {
+                u8 *t = AT(d, 0xB0, u8 *);
+
+                AT(d, 0x108, f32) = 180.0f * AT(t, 0x54, f32) / kPi.f;
+                AT(d, 0x140, u8) = 0;
+                AT(d, 0x10C, s32) = 0;
+                sceVu0CopyVector((f32 *)(d + 0x120), (f32 *)(t + 0x10));
+                sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0xC0), (f32 *)(d + 0x120));
+                sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0x130), (f32 *)(d + 0x120));
+                VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+            }
+            func_00223F70(d + 0x100);
+        } else {
+            if (AT(d, 0x150, u8) != AT(d, 0x69, u8)) {
+                AT(d, 0x7C, s32) = -1;
+                AT(d, 0x78, s32) = -1;
+                func_00224C60(d);
+            }
+            if (AT(d, 0x70, s32) != -1) {
+                func_00219D70(d, v, 0.0f);
+                cam = D_0044E4B8;
+                VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+                func_00219CD0(d, v, 0.0f);
+                VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+            }
+            VCALL(D_0044E4B8, 0x5C, void (*)(VObject *, f32))(D_0044E4B8, AT(d, 0x80, f32));
+        }
+    } else {
+        sceVu0FMATRIX m;
+        f32 w[4] __attribute__((aligned(16)));
+
+        if (AT(d, 0xB0, u8 *) == NULL) {
+            if (AT(d, 0x70, s32) != -1) {
+                func_00219D70(d, v, 0.0f);
+                VCALL(D_0044E4B8, 0x28, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, v[0], v[1], v[2]);
+            }
+        } else {
+            sceVu0CopyVector(v, (f32 *)(AT(d, 0xB0, u8 *) + 0x10));
+            sceVu0AddVector(v, (f32 *)(d + 0xC0), v);
+            if (AT(d, 0x74, u8) != AT(d, 0x68, u8)) {
+                AT(d, 0xE0, f32) = 30.0f;
+                AT(d, 0xE4, f32) = 180.0f + 180.0f * AT(AT(d, 0xB0, u8 *), 0x54, f32) / kPi.f;
+                if (AT(d, 0xE4, f32) < -180.0f) {
+                    AT(d, 0xE4, f32) = AT(d, 0xE4, f32) + 360.0f;
+                }
+                if (!(AT(d, 0xE4, f32) <= 180.0f)) {
+                    AT(d, 0xE4, f32) = AT(d, 0xE4, f32) - 360.0f;
+                }
+            }
+            VCALL(D_0044E4B8, 0x28, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, v[0], v[1], v[2]);
+        }
+        AT(d, 0xE4, f32) = AT(d, 0xE4, f32) + 3.0f * D_0047E410;
+        AT(d, 0xE0, f32) = AT(d, 0xE0, f32) + 3.0f * D_0047E418;
+        if (AT(d, 0xE4, f32) < -180.0f) {
+            AT(d, 0xE4, f32) = AT(d, 0xE4, f32) + 360.0f;
+        }
+        if (!(AT(d, 0xE4, f32) <= 180.0f)) {
+            AT(d, 0xE4, f32) = AT(d, 0xE4, f32) - 360.0f;
+        }
+        if (AT(d, 0xE0, f32) < 5.0f) {
+            AT(d, 0xE0, f32) = 5.0f;
+        }
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrixY(m, m, kPi.f * AT(d, 0xE4, f32) / 180.0f);
+        sceVu0ApplyMatrix(w, m, (f32 *)(d + 0xD0));
+        sceVu0ScaleVector(w, w, AT(d, 0xE0, f32));
+        sceVu0AddVector(w, v, w);
+        cam = D_0044E4B8;
+        VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, w[0], w[1], w[2]);
+        VCALL(cam, 0x5C, void (*)(VObject *, f32))(cam, kFov.f);
+    }
+    AT(d, 0x74, u8) = AT(d, 0x68, u8);
+    AT(d, 0x150, u8) = AT(d, 0x69, u8);
+}

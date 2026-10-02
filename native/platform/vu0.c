@@ -29,6 +29,23 @@ void sceVu0SubVector(Vec d, const Vec a, const Vec b) { int i; for (i = 0; i < 4
 void sceVu0MulVector(Vec d, const Vec a, const Vec b) { int i; for (i = 0; i < 4; i++) d[i] = a[i] * b[i]; }
 void sceVu0ScaleVector(Vec d, const Vec a, float s) { int i; for (i = 0; i < 4; i++) d[i] = a[i] * s; }
 
+/* d = a * t + b * (1 - t) */
+void sceVu0InterVector(Vec d, const Vec a, const Vec b, float t) {
+    float u = 1.0f - t;
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        d[i] = a[i] * t + b[i] * u;
+    }
+}
+
+/* copy x, y, z (PS2 0x0010E5F0) */
+void func_0010E5F0(Vec d, const Vec a) {
+    d[0] = a[0];
+    d[1] = a[1];
+    d[2] = a[2];
+}
+
 /* scale x, y, z; keep w (PS2 0x0010E640) */
 void func_0010E640(Vec d, const Vec a, float s) {
     d[0] = a[0] * s;

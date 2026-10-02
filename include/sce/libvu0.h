@@ -19,6 +19,7 @@ void sceVu0AddVector(f32 *out, const f32 *a, const f32 *b);
 void sceVu0SubVector(f32 *out, const f32 *a, const f32 *b);
 void sceVu0MulVector(f32 *out, const f32 *a, const f32 *b);
 void sceVu0ScaleVector(f32 *out, const f32 *v, f32 s);
+void sceVu0InterVector(f32 *out, const f32 *a, const f32 *b, f32 t);   /* a * t + b * (1 - t) */
 void sceVu0CopyVector(f32 *out, const f32 *v);
 void sceVu0CopyMatrix(sceVu0FMATRIX out, sceVu0FMATRIX m);
 void sceVu0UnitMatrix(sceVu0FMATRIX m);

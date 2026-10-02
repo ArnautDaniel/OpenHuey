@@ -480,3 +480,8 @@ void func_00209210(VObject *ev) {
         Task_Update((Task *)(e + 0x708));
     }
 }
+
+/* room handler default: no script */
+u8 *func_00209800(VObject *room) {
+    return NULL;
+}

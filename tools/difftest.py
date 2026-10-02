@@ -1627,6 +1627,8 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
                 for i, b in enumerate(v.to_bytes(4, "little")):
                     mem._page(a + i)[(a + i) & 0xFFF] = b
             continue
+        if lo > hi:   # e.g. negative floats as bit patterns: 0xBF800000..0xBF000000
+            lo, hi = hi, lo
         # half the time a boundary or one of the function's own constants within the range
         special = sorted({lo, lo + 1, hi, hi - 1} | {d for d in DICTIONARY if lo <= d <= hi})
         special = [x for x in special if lo <= x <= hi]

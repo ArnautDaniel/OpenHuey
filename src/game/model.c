@@ -3,6 +3,7 @@
 #include "common.h"
 #include "game.h"
 #include "progress.h"
+#include "sce/libvu0.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
 extern void *gCharacters[6];
@@ -920,4 +921,301 @@ void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
             }
         }
     }
+}
+
+
+/* the position of the model's reference bone (+0x8B0, in the skeleton +0x810): its matrix's
+ * translation row */
+void func_001F1DE0(u8 *m, f32 *out) {
+    u8 *mtx = (u8 *)func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8B0, s32));
+
+    sceVu0CopyVector(out, (f32 *)(mtx + 0x30));
+}
+
+
+/* motion: clear flag 0x40 of the current track (+0x6A4, flags +0x18) */
+void func_001F6E10(u8 *m) {
+    AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x40;
+}
+
+
+extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (func_001F1AD0, func_001F1A10, ..) */
+extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2(x, z) */
+
+/* a stick gesture, each frame: the recognizers (5, state +0x14/+0x28 each) are fed the
+ * stick's length and direction in turn until one reports a gesture (not -1); the rest are
+ * reset (+0x28). No stick: all reset. Returns the gesture, -1 = none. */
+s32 func_001F1B90(u8 *g, f32 *stick) {
+    f32 len, ang;
+    s32 r = -1;
+    u32 i;
+
+    if (stick == NULL) {
+        for (i = 0; i < 5; i++) {
+            AT(g, 0x28 + i * 4, s32) = 0;
+            AT(g, 0x14 + i * 4, s32) = 0;
+        }
+        return -1;
+    }
+    len = __builtin_sqrtf(sceVu0InnerProduct(stick, stick));
+    ang = func_0031C5C0(stick[0], stick[2]);
+    for (i = 0; i < 5; i++) {
+        if (r == -1) {
+            r = ptmf_scall_rff(g, &D_003D5C68[i].p, len, ang);
+        } else {
+            AT(g, 0x28 + i * 4, s32) = 0;
+        }
+    }
+    return r;
+}
+
+
+extern void func_001F36B0(void *track, f32 *out, f32 t);   /* sample a track: out[4..7] = translation */
+
+/* the root translation of slot `slot`'s animation `k` (0, 1: the layer) at its time + dt
+ * (wrapped into the animation), scaled by the slot's weight; 0 if it has none */
+static void motion_root(u8 *m, s32 slot, s32 k, f32 dt, f32 *out) {
+    u8 *s = m + slot * 0xA0;
+    f32 tmp[8] __attribute__((aligned(16)));
+    void *anim = AT(s, 0x584 + k * 4, void *);
+    s32 *track = AT(s, 0x59C + k * 4, s32 *);
+    f32 t;
+
+    if ((AT(s, 0x57C, u32) & 0x10) || anim == NULL || track == NULL || *track == 0) {
+        return;
+    }
+    t = AT(s, 0x564 + k * 4, f32) + dt;
+    if (t < 0.0f) {
+        do {
+            t += (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+        } while (t < 0.0f);
+    }
+    if (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32))) {
+        do {
+            t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+        } while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32)));
+    }
+    func_001F36B0(track, tmp, t);
+    sceVu0ScaleVector(out, tmp + 4, AT(s, 0x574 + k * 4, f32));
+}
+
+/* the motion's root movement over dt: the current slot (+0x540) and the previous one
+ * (+0x544), each blended with its layer by the track's weight (+0x6A4/+0x6A8 +0x1C), then
+ * cross-faded by +0x550 while a fade runs (+0x54C > 0) */
+void func_001F6370(u8 *m, f32 *out, f32 dt) {
+    f32 cur[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+    f32 prev[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+    f32 layer[4] __attribute__((aligned(16)));
+    s32 *l;
+
+    motion_root(m, AT(m, 0x540, s32), 0, dt, cur);
+    motion_root(m, AT(m, 0x544, s32), 0, dt, prev);
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    out[3] = 0.0f;
+    l = AT(AT(m, 0x6A4, u8 *), 0x3C, s32 *);
+    if (l != NULL && *l != 0) {
+        layer[0] = layer[1] = layer[2] = layer[3] = 0.0f;
+        motion_root(m, AT(m, 0x540, s32), 1, dt, layer);
+        sceVu0InterVector(cur, cur, layer, AT(AT(m, 0x6A4, u8 *), 0x1C, f32));
+    }
+    l = AT(AT(m, 0x6A8, u8 *), 0x3C, s32 *);
+    if (l != NULL && *l != 0) {
+        layer[0] = layer[1] = layer[2] = layer[3] = 0.0f;
+        motion_root(m, AT(m, 0x544, s32), 1, dt, layer);
+        sceVu0InterVector(prev, prev, layer, AT(AT(m, 0x6A8, u8 *), 0x1C, f32));
+    }
+    if (AT(m, 0x54C, f32) <= 0.0f) {
+        out[0] = cur[0];
+        out[1] = cur[1];
+        out[2] = cur[2];
+    } else {
+        sceVu0InterVector(out, prev, cur, AT(m, 0x550, f32));
+    }
+}
+
+
+static const union { u32 u; f32 f; } kTrkRot = {0x38C90FDB},   /* 2 pi / 65536 */
+    kTrkUnit = {0x38000100},                                  /* ~1 / 32767 */
+    kTrkPi = {0x40490FDB}, kTrkTwoPi = {0x40C90FDB};
+
+/* angle n moved by a turn so that it is within pi of cur */
+static f32 track_unwrap(f32 n, f32 cur) {
+    f32 d = n - cur;
+
+    if (!((d <= 0.0f ? -d : d) <= kTrkPi.f)) {
+        if (d <= 0.0f) {
+            n += kTrkTwoPi.f;
+        } else {
+            n -= kTrkTwoPi.f;
+        }
+    }
+    return n;
+}
+
+/* sample an animation track { keys, format (+ 0x10000: constant), key count } at time t:
+ * out[0..2] rotation or position, out[4..6] position (formats 2, 4, 7), out[0..7] a matrix
+ * row pair (6); between keys rotations and positions are interpolated (angles the short way) */
+void func_001F36B0(void *track, f32 *out, f32 t) {
+    u8 *trk = track;
+    u32 flags = AT(trk, 0x4, u32);
+    f32 base = (flags & 0x10000) ? 0.0f : (f32)(s32)t;
+    s32 k = (s32)base;
+    s16 *h;
+    f32 *w;
+    f32 frac;
+    s32 k2;
+
+    switch (flags & 0xFFFF) {
+    case 0:
+        h = AT(trk, 0x0, s16 *) + k * 3;
+        out[0] = kTrkRot.f * (f32)h[0];
+        out[1] = kTrkRot.f * (f32)h[1];
+        out[2] = kTrkRot.f * (f32)h[2];
+        break;
+    case 1:
+        h = AT(trk, 0x0, s16 *) + k * 3;
+        out[0] = 0.00390625f * (f32)h[0];
+        out[1] = 0.00390625f * (f32)h[1];
+        out[2] = 0.00390625f * (f32)h[2];
+        break;
+    case 3:
+        h = AT(trk, 0x0, s16 *) + k * 4;
+        out[0] = kTrkUnit.f * (f32)h[0];
+        out[1] = kTrkUnit.f * (f32)h[1];
+        out[2] = kTrkUnit.f * (f32)h[2];
+        out[3] = kTrkUnit.f * (f32)h[3];
+        break;
+    case 2:
+    case 4:
+        h = AT(trk, 0x0, s16 *) + k * 6;
+        out[0] = kTrkRot.f * (f32)h[0];
+        out[1] = kTrkRot.f * (f32)h[1];
+        out[2] = kTrkRot.f * (f32)h[2];
+        out[4] = 0.00390625f * (f32)h[3];
+        out[5] = 0.00390625f * (f32)h[4];
+        out[6] = 0.00390625f * (f32)h[5];
+        break;
+    case 5: {
+        /* the original stores x and y unconverted (the s16 bits as a float) */
+        union { s32 i; f32 f; } x, y;
+
+        h = AT(trk, 0x0, s16 *) + k * 3;
+        x.i = h[0];
+        y.i = h[1];
+        out[0] = x.f;
+        out[1] = y.f;
+        out[2] = kTrkUnit.f * (f32)h[2];
+        break;
+    }
+    case 6:
+        w = AT(trk, 0x0, f32 *) + k * 8;
+        out[0] = w[0];
+        out[1] = w[1];
+        out[2] = w[2];
+        out[3] = w[3];
+        out[4] = w[4];
+        out[5] = w[5];
+        out[6] = w[6];
+        out[7] = w[7];
+        break;
+    case 7:
+        w = AT(trk, 0x0, f32 *) + k * 6;
+        out[0] = w[0];
+        out[1] = w[1];
+        out[2] = w[2];
+        out[4] = w[3];
+        out[5] = w[4];
+        out[6] = w[5];
+        break;
+    case 8:
+    case 9:
+        w = AT(trk, 0x0, f32 *) + k * 3;
+        out[0] = w[0];
+        out[1] = w[1];
+        out[2] = w[2];
+        break;
+    }
+    if (t == base || (AT(trk, 0x4, u32) & 0x10000)) {
+        return;
+    }
+    frac = t - base;
+    k2 = (s32)base + 1;
+    if (!(k2 < AT(trk, 0x8, s32))) {
+        k2 = 0;
+    }
+    switch (AT(trk, 0x4, u32) & 0xFFFF) {
+    case 0: {
+        f32 n0, n1, n2;
+
+        h = AT(trk, 0x0, s16 *) + k2 * 3;
+        n0 = track_unwrap(kTrkRot.f * (f32)h[0], out[0]);
+        n1 = track_unwrap(kTrkRot.f * (f32)h[1], out[1]);
+        n2 = track_unwrap(kTrkRot.f * (f32)h[2], out[2]);
+        out[0] = out[0] + frac * (n0 - out[0]);
+        out[1] = out[1] + frac * (n1 - out[1]);
+        out[2] = out[2] + frac * (n2 - out[2]);
+        break;
+    }
+    case 1:
+        h = AT(trk, 0x0, s16 *) + k2 * 3;
+        out[0] = out[0] + frac * (0.00390625f * (f32)h[0] - out[0]);
+        out[1] = out[1] + frac * (0.00390625f * (f32)h[1] - out[1]);
+        out[2] = out[2] + frac * (0.00390625f * (f32)h[2] - out[2]);
+        break;
+    case 2:
+    case 4: {
+        f32 n0, n1, n2;
+
+        h = AT(trk, 0x0, s16 *) + k2 * 6;
+        n0 = track_unwrap(kTrkRot.f * (f32)h[0], out[0]);
+        n1 = track_unwrap(kTrkRot.f * (f32)h[1], out[1]);
+        n2 = track_unwrap(kTrkRot.f * (f32)h[2], out[2]);
+        out[0] = out[0] + frac * (n0 - out[0]);
+        out[1] = out[1] + frac * (n1 - out[1]);
+        out[2] = out[2] + frac * (n2 - out[2]);
+        out[4] = out[4] + frac * (0.00390625f * (f32)h[3] - out[4]);
+        out[5] = out[5] + frac * (0.00390625f * (f32)h[4] - out[5]);
+        out[6] = out[6] + frac * (0.00390625f * (f32)h[5] - out[6]);
+        break;
+    }
+    case 7:
+        w = AT(trk, 0x0, f32 *) + k2 * 6;
+        out[0] = out[0] + frac * (w[0] - out[0]);
+        out[1] = out[1] + frac * (w[1] - out[1]);
+        out[2] = out[2] + frac * (w[2] - out[2]);
+        out[4] = out[4] + frac * (w[3] - out[4]);
+        out[5] = out[5] + frac * (w[4] - out[5]);
+        out[6] = out[6] + frac * (w[5] - out[6]);
+        break;
+    }
+}
+
+
+/* the current slot's root rotation (track 0, y) at its time + dt, scaled by its weight;
+ * 0 without an animation */
+f32 func_001F6140(u8 *m, f32 dt) {
+    u8 *s = m + AT(m, 0x540, s32) * 0xA0;
+    f32 tmp[8] __attribute__((aligned(16)));
+    void *anim = AT(s, 0x584, void *);
+    s32 *track = AT(s, 0x59C, s32 *);
+    f32 t;
+
+    if (anim == NULL || track == NULL || *track == 0) {
+        return 0.0f;
+    }
+    t = AT(s, 0x564, f32) + dt;
+    if (t < 0.0f) {
+        do {
+            t += (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+        } while (t < 0.0f);
+    }
+    if (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32))) {
+        do {
+            t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+        } while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32)));
+    }
+    func_001F36B0(track, tmp, t);
+    return AT(s, 0x574, f32) * tmp[1];
 }

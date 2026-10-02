@@ -191,3 +191,59 @@ s32 func_0017B540(NavMesh *nm, s32 d, const f32 *pos) {
     }
     return 0;
 }
+
+
+/* walk from `from` in triangle `tri` towards `to`: crossing edges into the neighbours (vtable
+ * +0x20: the edge left by, 3 still inside, 4 lost - then +0x64 finds the triangle under it);
+ * at a wall (no neighbour, or one blocked by `mask`) the target slides along it (+0x28) and
+ * the walk restarts, at most 4 times, then it is clamped to the wall (+0x24). The end point
+ * (`out`, height fixed by +0x14) and its triangle (-1: off the mesh) */
+s32 func_0017C050(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) {
+    f32 p[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    s32 cur = tri, prev;
+    u32 slides = 0;
+
+    sceVu0CopyVector(p, to);
+    for (;;) {
+        s32 edge = VCALL(nm, 0x20, s32 (*)(NavMesh *, s32, f32 *, f32 *))(nm, cur, from, p);
+        s32 next;
+
+        if (edge == 4) {
+            prev = VCALL(nm, 0x64, s32 (*)(NavMesh *, s32, f32 *, u32))(nm, cur, p, mask);
+            if (prev == -1) {
+                cur = -1;
+                break;
+            }
+            sceVu0CopyVector(out, p);
+            VCALL(nm, 0x14, void (*)(NavMesh *, s32, f32 *))(nm, prev, out);
+            return prev;
+        }
+        if (edge == 3) {
+            sceVu0CopyVector(out, p);
+            break;
+        }
+        prev = cur;
+        next = nm->tris[cur].adj[edge];
+        if (!(next & 0x80000000) && !(mask & nm->tris[next].flags)) {
+            cur = next;
+            continue;
+        }
+        if (slides >= 4) {
+            VCALL(nm, 0x24, void (*)(NavMesh *, s32, f32 *, f32 *, f32 *))(nm, prev, q, from, p);
+            if (VCALL(nm, 0x10, s32 (*)(NavMesh *, s32, f32 *))(nm, prev, q) == 4) {
+                cur = -1;
+            } else {
+                sceVu0CopyVector(out, q);
+                cur = prev;
+            }
+            break;
+        }
+        VCALL(nm, 0x28, void (*)(NavMesh *, s32, f32 *, f32 *, f32 *))(nm, prev, q, from, p);
+        sceVu0CopyVector(p, q);
+        cur = tri;
+        slides++;
+    }
+    VCALL(nm, 0x14, void (*)(NavMesh *, s32, f32 *))(nm, cur, out);
+    return cur;
+}
