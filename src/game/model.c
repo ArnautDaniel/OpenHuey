@@ -2755,3 +2755,26 @@ void func_002EEDA0(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, b + 12, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
+
+
+/* +0x14 of a hanging point: its anchor bone (+0x24) is aimed at it - X from the anchor to the
+ * point, Y the hanging bone's (+0x44) side axis (+0x48), made square, at the anchor */
+void func_00315E00(u8 *p, u8 *s) {
+    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x44, s32));
+    f32 anchor[4] __attribute__((aligned(16)));
+
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, a + 12);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+    }
+    sceVu0SubVector(a, (f32 *)p, anchor);
+    sceVu0ApplyMatrix(a + 4, (f32 (*)[4])b, AT(p, 0x48, f32 *));
+    sceVu0OuterProduct(a + 8, a, a + 4);
+    sceVu0OuterProduct(a + 4, a + 8, a);
+    sceVu0Normalize(a, a);
+    sceVu0Normalize(a + 4, a + 4);
+    sceVu0Normalize(a + 8, a + 8);
+    sceVu0CopyVector(a + 12, anchor);
+}
