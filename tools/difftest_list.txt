@@ -2818,3 +2818,4 @@ src/game/rooms.c func_002B1400 --pre=a0=0x0B000000..0x0B000000 --pre=a2=0x0B0000
 src/game/camctl.c func_002243D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xB0=0..0 --pre=a1=10..100 --pre=@0x44E4B8=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0B110000..0x0B110000 --pre=@0x0B110020=0x001F1ED0..0x001F1ED0 --pre=@0x0B11002C=0x001F1ED0..0x001F1ED0 --pre=@0x0B11003C=0x001F1ED0..0x001F1ED0 --stub-fret=0.0 --stub-fret=0.3 --stub-fret=-0.3 --stub-fret=1.2 --runs=100
 src/game/camera.c func_001221E0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --stub-fret=0.3 --runs=40
 src/game/meshdraw.c func_0025EEC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c func_00221880 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000

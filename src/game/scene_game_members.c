@@ -2117,3 +2117,10 @@ void func_002EC4F0(u8 *o, u8 *n) {
         func_00177630(p, 6);
     }
 }
+
+
+/* reset a door: not opening (+0x5C), no frame (+0x60) */
+void func_00221880(u8 *door) {
+    AT(door, 0x5C, s32) = 0;
+    AT(door, 0x60, s32) = 0;
+}
