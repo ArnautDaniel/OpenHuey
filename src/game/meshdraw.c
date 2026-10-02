@@ -374,3 +374,99 @@ s32 func_002B7500(u8 *a) {
     AT(call, 0xC, u32) = 0x13000000;   /* FLUSHA */
     return 1;
 }
+
+/* a quadword copy done inline (lq / sq), not through libvu0 */
+static inline void vec_set(f32 *d, const f32 *s) {
+    d[0] = s[0];
+    d[1] = s[1];
+    d[2] = s[2];
+    d[3] = s[3];
+}
+
+/* face batch matrix `m` (+0x90, rows x / y / z / translation) towards the eye: z towards it
+ * (upright: in the floor plane, y stays up; else y from the camera's up) */
+static void mesh_face_eye(u8 *o, VObject *cam, s32 upright) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 eye[4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 z[4] __attribute__((aligned(16)));
+    f32 x[4] __attribute__((aligned(16)));
+    f32 y[4] __attribute__((aligned(16)));
+
+    sceVu0UnitMatrix(m);
+    VCALL(cam, 0x24, void (*)(VObject *, f32 *))(cam, eye);
+    if (!upright) {
+        VCALL(cam, 0xA4, void (*)(VObject *, f32 *))(cam, m[1]);
+    }
+    t[0] = AT(o, 0xC0, f32);
+    t[1] = AT(o, 0xC4, f32);
+    t[2] = AT(o, 0xC8, f32);
+    t[3] = AT(o, 0xCC, f32);
+    sceVu0SubVector(v, eye, t);
+    if (upright) {
+        v[1] = 0.0f;
+    }
+    sceVu0Normalize(v, v);
+    vec_set(z, v);
+    sceVu0CopyVector(m[2], z);
+    if (upright) {
+        sceVu0OuterProduct(v, m[1], z);
+    } else {
+        sceVu0OuterProduct(v, z, m[1]);
+    }
+    sceVu0Normalize(v, v);
+    vec_set(x, v);
+    sceVu0CopyVector(m[0], x);
+    sceVu0OuterProduct(v, z, x);
+    sceVu0Normalize(v, v);
+    vec_set(y, v);
+    sceVu0CopyVector(m[1], y);
+    sceVu0CopyVector(m[3], (f32 *)(o + 0xC0));
+    sceVu0CopyMatrix((f32 (*)[4])(o + 0x90), m);
+}
+
+/* a batch's view-dependent placement: parallax (+0x86 = 2 / 4 / 8 / 16: moved sideways by
+ * 0.2 / 0.25 / 0.33 / 0.5 of the camera's offset +0x20) and billboards (+0x88 = 2 upright, 4
+ * facing the eye) */
+void func_0025D560(u8 *o) {
+    static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, k033 = {0x3EA8F5C3};
+    VObject *cam = D_0044E4B8;
+    f32 ofs[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 up[4] __attribute__((aligned(16)));
+    f32 side[4] __attribute__((aligned(16)));
+    f32 k;
+
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, ofs);
+    VCALL(cam, 0xA0, void (*)(VObject *, f32 *))(cam, dir);
+    VCALL(cam, 0xA4, void (*)(VObject *, f32 *))(cam, up);
+    sceVu0OuterProduct(side, dir, up);
+    sceVu0Normalize(side, side);
+    switch (AT(o, 0x86, u16)) {
+    case 2:
+        k = k02.f;
+        break;
+    case 4:
+        k = 0.25f;
+        break;
+    case 8:
+        k = k033.f;
+        break;
+    case 16:
+        k = 0.5f;
+        break;
+    default:
+        k = 0.0f;
+        break;
+    }
+    if (k != 0.0f) {
+        AT(o, 0xC0, f32) = AT(o, 0xC0, f32) + (k * ofs[0]) * side[0];
+        AT(o, 0xC8, f32) = AT(o, 0xC8, f32) + (k * ofs[2]) * side[2];
+    }
+    if (AT(o, 0x88, u16) == 2) {
+        mesh_face_eye(o, cam, 1);
+    } else if (AT(o, 0x88, u16) == 4) {
+        mesh_face_eye(o, D_0044E4B8, 0);
+    }
+}

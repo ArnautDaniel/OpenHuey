@@ -2676,3 +2676,6 @@ src/game/effects.c func_0026B350 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=1
 src/game/effects.c func_002674E0 --pre=a0=0x0B000000..0x0B000000 
 src/game/scene_game_members.c func_002D6280 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x18034=0..0x0B300000 --pre=a0+0x18038=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0 --pre=a0+0x10000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --runs=30
 src/game/props.c func_00321FE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x8F8=bytes:?? --pre=a0+0x8F4=0..1 --pre=a0+0x8EC=0..3 --pre=a0+0x8F0=0..3 --pre=a0+0x8E0=0xBD000000..0x3D000000 --pre=@0x44E550=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AB50..0x0046AB50 --runs=60
+src/game/meshdraw.c func_0025D560 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x86=0x20002..0x20010 --pre=@0x44E4B8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x00469A60..0x00469A60 --outparam=16 --runs=60
+src/game/meshdraw.c func_0025D560 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x86=0x40002..0x40010 --pre=@0x44E4B8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x00469A60..0x00469A60 --outparam=16 --runs=60
+src/game/meshdraw.c func_0025D560 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x86=0..0x10 --pre=@0x44E4B8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x00469A60..0x00469A60 --outparam=16 --runs=60
