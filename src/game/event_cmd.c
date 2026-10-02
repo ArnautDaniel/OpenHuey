@@ -668,3 +668,289 @@ void func_002003C0(VObject *ev) {
         break;
     }
 }
+
+/* ---- character scripts (a character's own script, its context at event +0x6FC): movement and
+ * action commands; any other command runs as a normal one ---- */
+
+extern f32 func_002E2D00(f32 angle);   /* wrap an angle into -pi..pi */
+extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
+extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
+
+/* the character's next action: state +0xF4 (its parameters +0x100.. set before), not done */
+#define CHAR_ACT(c, state) (AT(c, 0xE1, u8) = 0, AT(c, 0xF4, s32) = (state))
+
+static inline u32 opt16(u32 v) {
+    return v == 0xFFFF ? (u32)-1 : v;
+}
+
+void func_00201B90(VObject *ev) {
+    Progress *p = gProgress;
+    u8 *ctx = AT(ev, 0x6FC, u8 *);
+    u8 *c = AT(ctx, 0x0, u8 *);
+    const u8 *pc;
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 tmp[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+
+    EV_JUMPED(ev) = 0;
+    pc = PC(ev);
+    switch (pc[0]) {
+    case 0x06:   /* wait until it is idle; a character id -1 ends this character's script */
+        if (c == (u8 *)-1 || (c != NULL && AT(c, 0xE0, u8))) {
+            if (c != (u8 *)-1) {
+                AT(c, 0xE1, u8) = 0;
+                AT(c, 0xF4, s32) = 1;
+            }
+            if (AT(ev, 0x80C, u8 *) == c) {
+                AT(ev, 0x80C, s32) = 0;
+            }
+            AT(AT(ev, 0x6FC, u8 *), 0x0, s32) = 0;
+        }
+        EV_WAIT(ev) = 1;
+        break;
+    case 0x07:   /* walk to triangle */
+        AT(c, 0x104, u32) = be16(pc + 1);
+        CHAR_ACT(c, 7);
+        break;
+    case 0x81:
+        AT(c, 0x104, u32) = be16(pc + 1);
+        AT(c, 0x108, u32) = be16(PC(ev) + 3);
+        CHAR_ACT(c, 8);
+        break;
+    case 0x08:   /* wait for the action to finish (its motion flag 0x20) */
+        if (AT(c, 0xF4, s32) == 0 &&
+            (AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
+            AT(c, 0xE1, u8) = 1;
+        } else {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x0C: {   /* go to (x, z) on a triangle, then face */
+        static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+        f32 a;
+        u32 t;
+
+        pos[0] = (f32)be32(pc + 3) / 1000.0f;
+        pos[1] = 0.0f;
+        pos[2] = (f32)be32(PC(ev) + 7) / 1000.0f;
+        pos[3] = 1.0f;
+        a = func_002E2D00(kPi.f * (f32)(s16)be16(PC(ev) + 0xB) / 180.0f);
+        AT(c, 0x104, u32) = be16(PC(ev) + 1);
+        t = be16(PC(ev) + 0xD);
+        AT(c, 0x108, u32) = opt16(t);
+        sceVu0CopyVector((f32 *)(c + 0x110), pos);
+        AT(c, 0x10C, f32) = a;
+        CHAR_ACT(c, PC(ev)[0xF]);
+        break;
+    }
+    case 0x0E:
+        AT(c, 0x104, u32) = be16(pc + 1);
+        AT(c, 0x108, u32) = opt16(be16(PC(ev) + 3));
+        CHAR_ACT(c, PC(ev)[5]);
+        break;
+    case 0x10:
+        AT(c, 0x100, u32) = pc[1];
+        CHAR_ACT(c, PC(ev)[2]);
+        break;
+    case 0x0D:   /* wait until done */
+        if (AT(c, 0xE1, u8) != 1) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x0F:
+        CHAR_ACT(c, 2);
+        break;
+    case 0x19:   /* wait for the context counter */
+        if (AT(AT(ev, 0x6FC, u8 *), 0x14, u16) != be16(pc + 1)) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x1A:
+        AT(AT(ev, 0x6FC, u8 *), 0x14, u16) = 0;
+        break;
+    case 0x1B:   /* yield a frame */
+        PC(ev) = PC(ev) + 1;
+        EV_WAIT(ev) = 1;
+        break;
+    case 0x1C:
+        if (AT(AT(ev, 0x6FC, u8 *), 0x14, u16) != 0x10) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x1E: {   /* to a room point, facing its direction point */
+        VObject *rooms = D_0044E568;
+        s32 tri = VCALL(rooms, 0x30, s32 (*)(VObject *, s32, f32 *))(rooms, pc[1], pos);
+        f32 a;
+
+        if (tri == -1) {
+            break;
+        }
+        AT(c, 0x30, s32) = AT(ev, 0x560, s32);
+        AT(c, 0x34, s32) = tri;
+        sceVu0CopyVector((f32 *)(c + 0x10), pos);
+        VCALL(rooms, 0x34, void (*)(VObject *, s32, f32 *))(rooms, PC(ev)[1], tmp);
+        sceVu0SubVector(dir, tmp, pos);
+        a = func_0031C5C0(dir[0], dir[2]);
+        AT(c, 0x54, f32) = a;
+        sceVu0UnitMatrix((f32 (*)[4])(c + 0x60));
+        sceVu0RotMatrixY((f32 (*)[4])(c + 0x60), (f32 (*)[4])(c + 0x60), a);
+        AT(c, 0x124, s32) = AT(c, 0x128, s32);
+        break;
+    }
+    case 0x20:
+        AT(c, 0x2B, u8) = pc[1] != 0;
+        break;
+    case 0x21:
+        AT(c, 0x2D, u8) = pc[1] != 0;
+        if (AT(c, 0x153C, u8) == 0 && PC(ev)[1] == 1 && AT(c, 0x14E8, s32) == 4) {
+            /* her script state is replaced by a fresh one (the original copies a local whose
+             * first word is 0, the rest left as it was on the stack) */
+            AT(c, 0x14E8, s32) = 0;
+            AT(c, 0x14EC, s32) = 0;
+            AT(c, 0x14F0, s32) = 0;
+            AT(c, 0x14F4, s32) = 0;
+            AT(c, 0x14F8, s32) = 0;
+            AT(c, 0x14FC, f32) = 0.0f;
+            AT(c, 0x1500, s32) = 0;
+            AT(c, 0x1504, u8) = 0;
+            AT(c, 0x1505, u8) = 0;
+            AT(c, 0x1506, u16) = 0;
+        }
+        break;
+    case 0x2B:   /* follow character pc[1] (0xFF: none) */
+        if (pc[1] == 0xFF) {
+            AT(c, 0x100, s32) = 0xFF;
+            CHAR_ACT(c, 0xC);
+        } else {
+            u8 i = (u8)func_001770D0(p, pc[1]);
+
+            if (i < 6) {
+                AT(c, 0x100, s32) = i;
+                CHAR_ACT(c, 0xC);
+            }
+        }
+        break;
+    case 0xAB:   /* go to (x, y, z) */
+        pos[0] = (f32)be32(pc + 1) / 1000.0f;
+        pos[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
+        pos[3] = 1.0f;
+        pos[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
+        sceVu0CopyVector((f32 *)(c + 0x110), pos);
+        CHAR_ACT(c, 0xD);
+        break;
+    case 0x42: {   /* turn to character pc[1] */
+        u8 i = (u8)func_001770D0(p, pc[1]);
+
+        if (i < 6) {
+            AT(c, 0x100, s32) = i;
+            CHAR_ACT(c, 0xE);
+        }
+        break;
+    }
+    case 0x4B: {   /* turn to an angle */
+        static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+
+        AT(c, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
+        CHAR_ACT(c, 0xF);
+        break;
+    }
+    case 0x8E: {   /* turn to (x, z) */
+        f32 x = (f32)be32(pc + 1) / 1000.0f - AT(c, 0x10, f32);
+        f32 z = (f32)be32(pc + 5) / 1000.0f - AT(c, 0x18, f32);
+
+        AT(c, 0x10C, f32) = func_002E2D00(func_0031C5C0(x, z));
+        CHAR_ACT(c, 0xF);
+        break;
+    }
+    case 0x56: {   /* door pc[1]: knock or try it (who: the player for event ids 0xF0..) */
+        u8 *who = AT(AT(ev, 0x6FC, u8 *), 0x13, u8) >= 0xF0 ? gCharPlayer : c;
+
+        if (VCALL(D_0044E558, 0x34, s32 (*)(VObject *, s32, f32 *))(D_0044E558, pc[1], tmp) != 0) {
+            break;
+        }
+        if (who != NULL) {
+            func_00122C20(who, PC(ev)[2] == 1 ? 0x27 : 0x28, 5, 0, 0, (s32)tmp);
+        }
+        break;
+    }
+    case 0x6F:
+    case 0x70:
+    case 0x9A: {   /* go through an exit (0x9A: by door id); 0x70 the other way */
+        VObject *rooms = D_0044E568;
+        VObject *doors;
+        u8 exit;
+        s32 mode;
+
+        if (pc[0] == 0x9A) {
+            exit = (u8)VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, be16(pc + 1), AT(ev, 0x560, s32));
+        } else {
+            exit = pc[1];
+        }
+        VCALL(rooms, 0x10, u32 (*)(VObject *, s32, s32))(rooms, AT(ev, 0x560, s32), exit);
+        if ((u8)VCALL(rooms, 0x70, s32 (*)(VObject *, s32, s32))(rooms, AT(ev, 0x560, s32), exit) == 0) {
+            VCALL(rooms, 0x34, void (*)(VObject *, s32, f32 *))(rooms, exit, tmp);
+        } else {
+            sceVu0CopyVector(tmp, (f32 *)(AT(AT(ev, 0x6FC, u8 *), 0x0, u8 *) + 0x10));
+        }
+        doors = D_0044E558;
+        if (PC(ev)[0] != 0x70) {
+            mode = VCALL(doors, 0x18, s32 (*)(VObject *, s32, f32 *))(doors, exit, tmp) ? 2 : 0;
+        } else {
+            mode = VCALL(doors, 0x18, s32 (*)(VObject *, s32, f32 *))(doors, exit, tmp) ? 3 : 1;
+        }
+        AT(c, 0x104, s32) = VCALL(doors, 0x14, s32 (*)(VObject *, s32, s32, f32 *, f32 *, s32))(
+            doors, exit, mode, pos, dir, AT(AT(AT(ev, 0x6FC, u8 *), 0x0, u8 *), 0x153C, u8) != 0);
+        AT(c, 0x108, s32) = -1;
+        sceVu0CopyVector((f32 *)(c + 0x110), pos);
+        AT(c, 0x10C, f32) = dir[1];
+        CHAR_ACT(c, 5);
+        break;
+    }
+    case 0xA4:
+        AT(c, 0x104, u32) = be16(pc + 1);
+        AT(c, 0x108, u32) = be16(PC(ev) + 3);
+        CHAR_ACT(c, 9);
+        break;
+    case 0xAA: {
+        static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+
+        AT(c, 0x100, u32) = be16(pc + 1);
+        AT(c, 0x104, u32) = be16(PC(ev) + 3);
+        AT(c, 0x108, s32) = (s16)be16(PC(ev) + 5);
+        pos[1] = 0.0f;
+        pos[0] = (f32)be32(PC(ev) + 7) / 1000.0f;
+        pos[3] = 1.0f;
+        pos[2] = (f32)be32(PC(ev) + 0xB) / 1000.0f;
+        sceVu0CopyVector((f32 *)(c + 0x110), pos);
+        AT(c, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(PC(ev) + 0xF) / 180.0f);
+        CHAR_ACT(c, 0x11);
+        break;
+    }
+    case 0xAC:
+        AT(c, 0xE4, u8) = pc[1] != 0;
+        break;
+    case 0xAD: {   /* turn to zone pc[1]'s point (if the zone is set) */
+        s32 k = VCALL(ev, 0xA0, s32 (*)(VObject *, s32))(ev, pc[1]);
+        u8 *zone = (u8 *)ev + k * 0x30 + 0xBF0;
+
+        if (AT(zone, 0x4, u8)) {
+            func_0010E5F0(tmp, (f32 *)(zone + 0x10));
+            tmp[3] = 1.0f;
+        }
+        AT(c, 0x10C, f32) = func_002E2D00(func_0031C5C0(tmp[0] - AT(c, 0x10, f32), tmp[2] - AT(c, 0x18, f32)));
+        CHAR_ACT(c, 0xF);
+        break;
+    }
+    case 0xC7:
+        AT(c, 0x108, s32) = (s16)be16(pc + 1);
+        CHAR_ACT(c, 0x10);
+        break;
+    default:
+        func_002029B0(ev);
+        EV_JUMPED(ev) = 1;
+        break;
+    }
+    if (!EV_WAIT(ev) && !EV_JUMPED(ev)) {
+        VCALL(ev, 0xC, void (*)(VObject *))(ev);
+    }
+}

@@ -7,6 +7,7 @@
 extern void *gCharacters[6];
 extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
+extern s32 func_001770D0(Progress *p, s32 id);
 extern u8 D_003D72C0[];   /* the conditions' lengths */
 extern u8 *D_0044E978;    /* resident data (+0x24: flags kept across games) */
 
@@ -46,6 +47,36 @@ s32 func_001FC760(VObject *ev) {
         u32 f = be16(pc + 1);
 
         r = (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+        break;
+    }
+    case 0x04:   /* the exit taken (event +0x702) */
+        r = AT(ev, 0x702, u8) == pc[1];
+        break;
+    case 0x17:   /* the script's character is pc[1] (0xFE: the stalker, if active) */
+        if (pc[1] == 0xFE) {
+            u8 i = (u8)func_001770D0(p, 0xFE);
+            u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+            u8 id;
+
+            if (c == NULL || AT(c, 0x28, u8) != 1) {
+                break;
+            }
+            id = AT(*AT(ev, 0x6FC, u8 **), 0x153C, u8);
+            i = (u8)func_001770D0(p, 0xFE);
+            c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+            if (c == NULL || AT(c, 0x28, u8) != 1) {
+                c = NULL;
+            }
+            r = AT(c, 0x153C, u8) == id;
+        } else {
+            r = AT(AT(ev, 0x6FC, u8 *), 0x13, u8) == pc[1];
+        }
+        break;
+    case 0x16: {   /* character pc[1] is active and in this room */
+        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+
+        r = c != NULL && AT(c, 0x28, u8) && AT(c, 0x30, s32) == AT(ev, 0x560, s32);
         break;
     }
     case 0x5D:   /* Hewie is the one controlled */
