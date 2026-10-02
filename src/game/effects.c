@@ -170,3 +170,19 @@ void func_0026B350(u8 *o) {
 /* +0x10 for effects that don't change */
 void func_002674E0(u8 *o) {
 }
+
+
+extern void *D_0046EB60[], *D_00469D00[];
+extern void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b);
+
+/* +0x14 draw (the fog): a temporary drawer object paints its colours (+0x10, +0x14) over the
+ * range +0x50..+0x54 in layer 0x21 (9 while +0x1C) */
+void func_002BB1A0(u8 *o) {
+    u8 drawer[0x20] __attribute__((aligned(16)));
+
+    AT(drawer, 0x0, void **) = D_0046EB60;
+    AT(drawer, 0x4, s32) = -1;
+    func_002BC000(drawer, AT(o, 0x10, u32), AT(o, 0x14, u32), AT(o, 0x1C, s32) != 0 ? 9 : 0x21,
+                  AT(o, 0x50, f32), AT(o, 0x54, f32));
+    AT(drawer, 0x0, void **) = D_00469D00;
+}
