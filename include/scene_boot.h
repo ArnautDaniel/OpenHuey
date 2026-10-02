@@ -3,24 +3,37 @@
 
 #include "common.h"
 #include "game.h"
+#include "task.h"
 
-/*
- * Task: small object with its own state machine, embedded in scenes (0x104 bytes).
- * Only the fields the boot scene touches are known.
- */
-typedef struct Task {
-    /* 0x00 */ u32 unk0;
-    /* 0x04 */ PTMF state;      /* initially sTaskIdleState (an empty function) */
-    /* 0x10 */ u8 unk10;
-    /* 0x11 */ u8 unk11;
-    /* 0x12 */ s16 id;          /* -1 = none */
-    /* 0x14 */ u8 pad14[0x48 - 0x14];
-    /* 0x48 */ u8 unk48;          /* yes/no question: chosen answer (0 = yes) */
-    /* 0x49 */ u8 pad49[0x7C - 0x49];
-    /* 0x7C */ struct Task *child; /* owned, deleted with the task */
-    /* 0x80 */ u8 pad80[0x104 - 0x80];
-} Task;
-_Static_assert(sizeof(Task) == 0x104, "Task size");
+
+/* The system data kept on the memory card (0x50 bytes, the options). */
+typedef struct SysData {
+    /* 0x00 */ u32 sum;        /* of bytes 0x04..0x4F */
+    /* 0x04 */ f32 f[6];
+    /* 0x1C */ s8 b[48];
+    /* 0x4C */ u32 flags;      /* 0x80: not valid */
+} SysData;
+_Static_assert(sizeof(SysData) == 0x50, "SysData size");
+
+/* The boot memory card check (SceneBoot +0xC7440, vtable D_0046A058): reads the system data
+ * from the card in slot 1 or 2, telling the player when there's none. */
+typedef struct BootCard {
+    /* 0x000 */ void **vtbl;
+    /* 0x004 */ s32 state;      /* -1 done */
+    /* 0x008 */ s32 unk8;
+    /* 0x00C */ s32 port;
+    /* 0x010 */ s32 unk10;
+    /* 0x014 */ s32 timer;
+    /* 0x018 */ Task task;
+    /* 0x11C */ SysData *sys;
+    /* 0x120 */ s32 unk120;
+    /* 0x124 */ s32 unk124;
+    /* 0x128 */ u8 pad128[0xC];
+    /* 0x134 */ SysData saved;  /* restored when reading fails */
+    /* 0x184 */ u8 pad184[0xC];
+} BootCard;
+_Static_assert(__builtin_offsetof(BootCard, saved) == 0x134, "BootCard.saved");
+_Static_assert(sizeof(BootCard) == 0x190, "BootCard size");
 
 /* Mode 1 scene: memory card check, pad check, logos (0xC7700 bytes from the scene heap). */
 typedef struct SceneBoot {
@@ -37,12 +50,7 @@ typedef struct SceneBoot {
     /* 0x0043C */ u32 pad43C;
     /* 0x00440 */ u8 errMesTex[0x21440 - 0x440];   /* SYSTEM\ERRMES.TEX */
     /* 0x21440 */ u8 logoCri[0xC7440 - 0x21440];   /* SYSTEM\LOGO_CRI.BIN */
-    /* 0xC7440 */ void **unkC7440Vtbl;
-    /* 0xC7444 */ s32 unkC7444;                    /* -1 */
-    /* 0xC7448 */ s32 unkC7448;
-    /* 0xC744C */ u8 padC744C[0xC];
-    /* 0xC7458 */ Task unkC7458;
-    /* 0xC755C */ u8 padC755C[0xC75D0 - 0xC755C];
+    /* 0xC7440 */ BootCard card;
     /* 0xC75D0 */ void **unkC75D0Vtbl;
     /* 0xC75D4 */ s32 unkC75D4;                    /* -1 */
     /* 0xC75D8 */ u8 padC75D8[8];
@@ -56,7 +64,7 @@ _Static_assert(__builtin_offsetof(SceneBoot, msg) == 0x28, "msg");
 _Static_assert(__builtin_offsetof(SceneBoot, tasks) == 0x130, "tasks");
 _Static_assert(__builtin_offsetof(SceneBoot, errMesTex) == 0x440, "errMesTex");
 _Static_assert(__builtin_offsetof(SceneBoot, logoCri) == 0x21440, "logoCri");
-_Static_assert(__builtin_offsetof(SceneBoot, unkC7458) == 0xC7458, "unkC7458");
+_Static_assert(__builtin_offsetof(SceneBoot, card) == 0xC7440, "card");
 _Static_assert(__builtin_offsetof(SceneBoot, unkC75F4) == 0xC75F4, "unkC75F4");
 _Static_assert(sizeof(SceneBoot) == 0xC7700, "SceneBoot size");
 

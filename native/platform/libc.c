@@ -11,6 +11,11 @@ char *func_001183C0(char *d, const char *s) { return strcpy(d, s); }            
 char *func_00118978(char *d, const char *s, unsigned n) { return strncpy(d, s, n); }   /* strncpy */
 char *func_00117FB8(char *d, const char *s) { return strcat(d, s); }                   /* strcat */
 
+/* vsnprintf */
+int func_0026ED98(char *buf, int size, const char *fmt, va_list ap) {
+    return vsnprintf(buf, size, fmt, ap);
+}
+
 /* snprintf */
 int func_0026EDD0(char *buf, int size, const char *fmt, ...) {
     va_list ap;

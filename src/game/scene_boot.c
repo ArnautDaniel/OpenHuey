@@ -7,7 +7,7 @@ extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
 extern void *D_0046D7D0[];   /* vtable of SceneBoot.msg */
 extern void *D_0046A0D0[];   /* base vtable of SceneBoot.msg */
-extern void *D_0046A058[];   /* vtable of SceneBoot.unkC7440 */
+extern void *D_0046A058[];   /* vtable of SceneBoot.card */
 extern void *D_0046F350[];   /* vtable of SceneBoot.unkC75D0 */
 extern void *D_00469D00[];   /* base vtable of SceneBoot.unkC75D0 */
 
@@ -24,7 +24,6 @@ extern VObject *gBootMessage; /* = &SceneBoot.msg while the boot scene exists */
 extern VObject *D_0044E978;   /* global object, type unknown (+0x1C/+0x20 return resident buffers) */
 extern VObject *D_0044E4E8;   /* global object, type unknown (+0x10 upload(buf, n), +0x18 per frame) */
 
-extern Task *Task_dtor(Task *task, s32 flags);
 extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
 extern void func_0026BCC0(void *msg);
 extern void func_0026BC00(VObject *msg);
@@ -43,8 +42,8 @@ static inline void Scene_SetState(Scene *scene, const PTMF *state) {
 }
 
 static inline void Task_Init(Task *task) {
-    task->unk10 = 0;
-    task->unk11 = 0;
+    task->mode = 0;
+    task->flags = 0;
     task->id = -1;
     task->child = NULL;
     Scene_SetState((Scene *)task, &sTaskIdleState);
@@ -64,9 +63,9 @@ SceneBoot *SceneBoot_ctor(SceneBoot *boot) {
         Task_Init(&boot->tasks[i]);
     }
 
-    boot->unkC7440Vtbl = D_0046A058;
-    Task_Init(&boot->unkC7458);
-    boot->unkC7444 = -1;
+    boot->card.vtbl = D_0046A058;
+    Task_Init(&boot->card.task);
+    boot->card.state = -1;
 
     boot->unkC75D0Vtbl = D_00469D00;
     boot->unkC75D4 = -1;
@@ -86,8 +85,8 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
     boot->base.vtbl = SceneBoot_vtable;
     boot->unkC75D0Vtbl = D_0046F350;
     boot->unkC75D0Vtbl = D_00469D00;
-    boot->unkC7440Vtbl = D_0046A058;
-    Task_dtor(&boot->unkC7458, -1);
+    boot->card.vtbl = D_0046A058;
+    Task_dtor(&boot->card.task, -1);
     for (i = 2; i >= 0; i--) {
         if (boot->tasks[i].child != NULL) {
             Task_dtor(boot->tasks[i].child, 1);
@@ -417,27 +416,24 @@ u32 func_0037FAC0(SceneBoot *boot) {
     return 1;
 }
 
-extern void func_002BFB00(void *obj, s32, s32);
-extern void func_002BF2F0(void *obj);
+extern void func_002BFB00(BootCard *card, s32, s32);
+extern void func_002BF2F0(BootCard *card);
 
 /* Boot step: run the object at +0xC7440 until it reports done (+0xC7444 < 0). */
 u32 func_0037FE50(SceneBoot *boot) {
     if (boot->stepTimer == 0) {
-        func_002BFB00(&boot->unkC7440Vtbl, 0, 0);
-        boot->unkC7444 = 0;
-        boot->unkC7448 = 0;
+        func_002BFB00(&boot->card, 0, 0);
+        boot->card.state = 0;
+        boot->card.unk8 = 0;
         boot->stepTimer = 1;
     }
-    if (boot->unkC7444 < 0) {
+    if (boot->card.state < 0) {
         return 0;
     }
-    func_002BF2F0(&boot->unkC7440Vtbl);
+    func_002BF2F0(&boot->card);
     return 1;
 }
 
-extern void func_003844E0(Task *task);
-extern void func_00384A90(Task *task, s32);
-extern void func_00384BC0(Task *task);
 
 /* Boot step (last): the caution screen, shown with tasks[0] until frame 0x3F. */
 u32 func_0037F980(SceneBoot *boot) {
@@ -465,10 +461,6 @@ u32 func_0037F980(SceneBoot *boot) {
 #define VIDEO_MODE_480P 0x50
 
 extern u32 D_0047E374;   /* pad buttons held */
-extern void func_00384590(Task *task, s32, s32, s32, s32);
-extern void func_00384730(Task *task, s32 x, s32 y, s32, s32, s32, const char *fmt, u32 value);
-extern void func_00384B60(Task *task);
-extern void func_00384BA0(Task *task);
 extern void func_002CF390(void *obj, u32 alpha);
 
 static const char sProgTex[] = "SYSTEM\\PROG.TEX";
@@ -505,10 +497,10 @@ u32 func_00380050(SceneBoot *boot) {
         boot->stepTimer = 2;
         /* fall through */
     case 2:
-        if (busy || ask->unk10) {
+        if (busy || ask->mode) {
             break;
         }
-        if (ask->unk48 != 0) {
+        if (ask->answer != 0) {
             result = 0;   /* answered no */
             break;
         }
@@ -528,11 +520,11 @@ u32 func_00380050(SceneBoot *boot) {
             VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
             boot->stepTimer = 1;
         }
-        if (busy || ask->unk10) {
+        if (busy || ask->mode) {
             counting = 1;
             break;
         }
-        if (ask->unk48 != 0) {
+        if (ask->answer != 0) {
             /* answered no: back to the old mode, ask again */
             VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
             boot->stepTimer = 1;
@@ -570,7 +562,7 @@ u32 func_00380050(SceneBoot *boot) {
     }
     func_002CF390(&boot->unkC75D0Vtbl, (u32)(busy ? 0x5F : 0) << 24);
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, &boot->unkC75D0Vtbl, 0x31, 0);
-    if (boot->stepTimer != 0 && ask->unk10) {
+    if (boot->stepTimer != 0 && ask->mode) {
         func_0037F2E0(boot);
     }
     return busy ? busy : result;

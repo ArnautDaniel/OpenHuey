@@ -7,29 +7,9 @@
  * 2 no game data and not enough space, 3 unformatted, 4 no card. +0x8: 5 if the card was
  * replaced since the last check. Status of a read (+0x18): 0 done, 6 / 9 / 10 failed. */
 #include "common.h"
+#include "memcard.h"
 #include "ptmf.h"
 
-typedef struct MemCard {
-    /* 0x00 */ void **vtbl;
-    /* 0x04 */ s32 status;
-    /* 0x08 */ s32 error;
-    /* 0x0C */ void **subVtbl;
-    /* 0x10 */ s32 step;      /* the state's own progress */
-    /* 0x14 */ PTMF state;
-    /* 0x20 */ s32 port;
-    /* 0x24 */ s32 mcCmd;
-    /* 0x28 */ s32 mcResult;
-    /* 0x2C */ s32 cardType;
-    /* 0x30 */ s32 freeKb;
-    /* 0x34 */ s32 formatted;
-    /* 0x38 */ s32 arg38;
-    /* 0x3C */ void *buf;
-    /* 0x40 */ s32 offset;
-    /* 0x44 */ s32 size;
-    /* 0x48 */ s32 lastResult;
-    /* 0x4C */ s32 repeats;
-    /* 0x50 */ char path[0x80];
-} MemCard;
 
 extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
 extern MemCard *D_0044FF00;

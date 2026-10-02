@@ -74,6 +74,12 @@ OUTPARAM = 4                 # bytes a stub writes through a stack pointer argum
 # original code expresses something C code writes inline (e.g. PTMF calls).
 INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
+# va_list arguments (callee address -> register): a pointer to the saved variadic arguments
+# in the caller's frame, which sits at different alignments in the two versions
+VA_LIST_ARGS = {0x0026ED98: 7}   # vsnprintf(buf, n, fmt, ap)
+# variadic callees (address -> first variadic register): a register there the original didn't
+# set for the call is not an argument (the format takes fewer), whatever it holds
+VARIADIC_FIRST = {0x00380B80: 7, 0x00384730: 11, 0x00384800: 9, 0x0026EDD0: 7}
 CALL_ALIAS: dict[int, int] = {}  # C address -> original address of the file's other game functions
 C_ENTRIES: set[int] = set()      # entry points of the C file's functions
 C_ALL_ENTRIES: set[int] = set()  # ... including static helpers (a computed jump to one is a tail call
@@ -433,6 +439,9 @@ class CPU:
         # all argument values the callee might read, plus which ones this version set for the
         # call (written and not read since: a caller-saved value left for the call)
         args = {r: self.arg_value(self.g(r) & M32) for r in ints}
+        va = VA_LIST_ARGS.get(target)
+        if va in args and str(args[va]).startswith("stack"):
+            args[va] = "stack"
         args["pending"] = frozenset(r for r in ints if r in self.wset)
         args["written"] = frozenset(r for r in ints if r in self.wall)
         fargs = {r: self.f[r] for r in floats}
@@ -519,7 +528,17 @@ class CPU:
 
     def visible_writes(self) -> dict[int, int]:
         sp0 = STACK_TOP
-        return {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0)}
+        w = {a: b for a, b in self.m.written.items() if not (sp0 - FRAME <= a < sp0)}
+        if CALL_ALIAS:
+            # a stored address of another function of the C file (a state, a callback): as the
+            # original's
+            for a in [a for a in w if a % 4 == 0]:
+                if a + 1 in w and a + 2 in w and a + 3 in w:
+                    v = w[a] | w[a + 1] << 8 | w[a + 2] << 16 | w[a + 3] << 24
+                    if v in CALL_ALIAS:
+                        for i, b in enumerate(CALL_ALIAS[v].to_bytes(4, "little")):
+                            w[a + i] = b
+        return w
 
     SAVE_STORES = {"sq": 16, "sd": 8, "sw": 4, "swc1": 4}
     SAVED_REGS = set(range(16, 24)) | {30, 31}
@@ -1539,12 +1558,17 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
     return ints, floats
 
 
+PRE_BYTES: list[tuple[int, int, bytes]] = []   # (arg reg or 0 for absolute, offset, bytes)
 REL_BASE = -(1 << 40)   # lo = REL_BASE - register: the value is that argument + hi
 PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
 
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    b = re.fullmatch(r"(?:a([0-7])\+|@)(0x[0-9A-Fa-f]+|\d+)=bytes:([0-9A-Fa-f]+)", spec)
+    if b:  # exact bytes (e.g. a script for a byte-code interpreter): a0+0x100=bytes:41421700
+        PRE_BYTES.append((4 + int(b.group(1)) if b.group(1) else 0, int(b.group(2), 0), bytes.fromhex(b.group(3))))
+        return None
     r = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=a([0-7])\+(0x[0-9A-Fa-f]+|\d+)", spec)
     if r:  # a pointer into an argument (3 runs in 4): a0+0x304A14=a0+0x60; lo = REL_BASE - register marks it
         return 4 + int(r.group(1)), int(r.group(2), 0), REL_BASE - (4 + int(r.group(3))), int(r.group(4), 0)
@@ -1586,6 +1610,10 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
         a = Memory.norm((c.g(reg) & M32) + off)
         for i, b in enumerate(v.to_bytes(4, "little")):
             mem._page(a + i)[(a + i) & 0xFFF] = b
+    for reg, off, data in PRE_BYTES:
+        a = Memory.norm(((c.g(reg) & M32) if reg else 0) + off)
+        for i, b in enumerate(data):
+            mem._page(a + i)[(a + i) & 0xFFF] = b
     for r, v in zip(FARG_REGS, floats):
         c.f[r] = v
     for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:
@@ -1624,7 +1652,8 @@ def event_equal(a, b) -> bool:
     if ta in FUNC_STARTS:
         # a known callee reads exactly these: one the original passes through untouched
         # (e.g. an argument of its own) must reach the callee unchanged in the C too
-        regs |= {r for r in aa if isinstance(r, int) and r not in aa["written"]}
+        first_va = VARIADIC_FIRST.get(ta, 99)
+        regs |= {r for r in aa if isinstance(r, int) and r not in aa["written"] and r < first_va}
     fregs = fa["pending"] | fb["pending"]
     return all(_arg_eq(aa.get(r), ab.get(r)) for r in regs) and all(fa.get(r) == fb.get(r) for r in fregs)
 
@@ -1727,7 +1756,8 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
             CALL_ALIAS[addr] = o[0]
     ret_kind = return_kind(src, func) if opts.ret == "auto" else opts.ret
     runs = opts.runs if opts.runs is not None else DEFAULT_RUNS
-    PRECONDITIONS[:] = [parse_pre(p) for p in opts.pre]
+    PRE_BYTES.clear()
+    PRECONDITIONS[:] = [x for x in (parse_pre(p) for p in opts.pre) if x is not None]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob
     IRQ_FLAGS[:] = opts.irq
