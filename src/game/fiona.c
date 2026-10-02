@@ -1176,3 +1176,65 @@ void func_001A1CA0(Fiona *f) {
         FIONA_FADE_T(f) = 0;
     }
 }
+
+#define RNG01() VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)
+#define HEWIE_ACTION(c) (*(s32 *)((u8 *)(c) + 0xF3564))
+
+/* Timers: an alternating period (+0x1AD719 flips when +0x1AD724 runs out; random lengths),
+ * sped up / slowed down while Hewie stays close, and three 30-frame counters. */
+void func_001A1860(Fiona *f) {
+    Progress *p = gProgress;
+    s32 room = f->c.a.room;
+
+    if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        if (func_00124490(&f->c.a, gCharPartner->a.pos) < 50.0f) {
+            FI(f, 0x1AD730, s32) = FI(f, 0x1AD730, s32) - 1;
+        } else {
+            FI(f, 0x1AD730, s32) = 30;
+        }
+        if (FI(f, 0x1AD730, s32) == 0) {
+            FI(f, 0x1AD730, s32) = 30;
+            if (FI(f, 0x1AD719, u8) == 0) {
+                FI(f, 0x1AD724, s32) += 15;
+            } else {
+                FI(f, 0x1AD724, s32) -= 15;
+            }
+        }
+        if (FI(f, 0x1AD728, s32) < FI(f, 0x1AD724, s32)) {
+            FI(f, 0x1AD724, s32) = FI(f, 0x1AD728, s32);
+        }
+        if (FI(f, 0x1AD71A, u8) == 0) {
+            if (HEWIE_ACTION(gCharPartner) == 0x84) {
+                FI(f, 0x1AD71A, u8) = 1;
+                if (FI(f, 0x1AD719, u8) == 1 && RNG01() < 0.25f) {
+                    FI(f, 0x1AD724, s32) = 0;
+                }
+            }
+        } else if (HEWIE_ACTION(gCharPartner) != 0x84) {
+            FI(f, 0x1AD71A, u8) = 0;
+        }
+    }
+    if (FI(f, 0x1AD719, u8) == 0 || f->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        FI(f, 0x1AD724, s32) -= 1;
+    }
+    if (FI(f, 0x1AD724, s32) <= 0) {
+        if (FI(f, 0x1AD719, u8) == 0) {
+            FI(f, 0x1AD719, u8) = 1;
+            FI(f, 0x1AD728, s32) = (s32)(30.0f * (16.0f * RNG01())) + 150;
+        } else {
+            FI(f, 0x1AD719, u8) = 0;
+            FI(f, 0x1AD728, s32) = (s32)(30.0f * (11.0f * RNG01())) + 300;
+        }
+        FI(f, 0x1AD724, s32) = FI(f, 0x1AD728, s32);
+    }
+    if (FI(f, 0x1AD734, s32) != 0) {
+        FI(f, 0x1AD734, s32) -= 1;
+    } else {
+        FI(f, 0x1AD734, s32) = (s32)(20.0f * RNG01()) * 30 + 300;
+    }
+    if (FI(f, 0x1AD72C, s32) == 0) {
+        FI(f, 0x1AD72C, s32) = 30;
+    } else {
+        FI(f, 0x1AD72C, s32) -= 1;
+    }
+}
