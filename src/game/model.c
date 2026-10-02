@@ -1828,3 +1828,100 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
     }
     return big;
 }
+
+
+extern void func_002E2E00(void *mat, const f32 *rot, const f32 *trans);   /* bone matrix */
+extern void func_0025C630(f32 *q, f32 *axis, f32 (*m)[4]);   /* rotation matrix to axis + angle */
+extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* quaternion of a rotation */
+extern void func_0025C770(const f32 *q, f32 (*m)[4]);           /* its matrix */
+
+/* sample one track at `t` into the motion's rotation (+0x820) and translation (+0x830): kinds
+ * 0 (rotation only: the bind translation), 2 / 7 (both), others (translation only: the bind
+ * rotation) */
+static void pose_sample(u8 *m, u8 *bones, u8 *trk, f32 t) {
+    switch (AT(trk, 0x8, u16)) {
+    case 7:
+    case 2:
+        func_001F36B0(trk + 4, (f32 *)(m + 0x820), t);
+        break;
+    case 0:
+        func_001F36B0(trk + 4, (f32 *)(m + 0x820), t);
+        sceVu0CopyVector((f32 *)(m + 0x830), (f32 *)(bones + AT(trk, 0x0, s32) * 0x70 + 0x20));
+        break;
+    default:
+        sceVu0CopyVector((f32 *)(m + 0x820), (f32 *)(bones + AT(trk, 0x0, s32) * 0x70 + 0x10));
+        func_001F36B0(trk + 4, (f32 *)(m + 0x830), t);
+        break;
+    }
+}
+
+/* pose a bone chain { +0x4 first bone (next +0x48, id +0x40) } from an animation { +0x4 first
+ * track (bone +0x0, kind +0x8, next +0x10), +0x8 count } at frame `t`. With `w` > 0 each bone
+ * not in the motion's fixed list (+0x844, +0x840 entries) is eased: turned from its pose a
+ * frame earlier towards the new one by `w` (shortest way), its position mixed the same */
+void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    f32 p0[4] __attribute__((aligned(16)));
+    f32 p1[4] __attribute__((aligned(16)));
+    f32 cur[4][4] __attribute__((aligned(16)));
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 prev[4][4] __attribute__((aligned(16)));
+    u8 *bones = AT(m, 0x4C0, u8 *) + 0x10;
+    u8 *b = AT(chain, 0x4, u8 *);
+    u8 *trk = AT(anim, 0x4, u8 *);
+    s32 i, k, ease;
+
+    for (i = 0; i < AT(anim, 0x8, s32); i++) {
+        if (AT(trk, 0x0, s32) >= 0) {
+            pose_sample(m, bones, trk, t);
+            func_002E2E00(b, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
+            ease = 1;
+            for (k = 0; k < AT(m, 0x840, s16); k++) {
+                if (AT(m, 0x844, s8 *)[k] == AT(b, 0x40, s32)) {
+                    ease = 0;
+                }
+            }
+            if (ease && !(w <= 0.0f)) {
+                pose_sample(m, bones, trk, t - 1.0f);
+                func_002E2E00(prev, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
+                q[3] = 0.0f;
+                q[0] = 0.0f;
+                q[2] = 0.0f;
+                q[1] = 0.0f;
+                sceVu0CopyMatrix(r, prev);
+                sceVu0CopyMatrix(cur, (f32 (*)[4])b);
+                sceVu0CopyVector(p0, r[3]);
+                sceVu0CopyVector(p1, cur[3]);
+                r[3][1] = 0.0f;
+                r[3][0] = 0.0f;
+                r[3][2] = 0.0f;
+                cur[3][0] = 0.0f;
+                cur[3][1] = 0.0f;
+                cur[3][2] = 0.0f;
+                sceVu0TransposeMatrix(r, r);
+                sceVu0MulMatrix(r, cur, r);
+                func_0025C630(q, axis, r);
+                axis[3] = axis[3] * w;
+                if (!(axis[3] <= kPi.f)) {
+                    do {
+                        axis[3] = axis[3] - kTwoPi.f;
+                    } while (!(axis[3] <= kPi.f));
+                }
+                if (axis[3] < kNegPi.f) {
+                    do {
+                        axis[3] = axis[3] + kTwoPi.f;
+                    } while (axis[3] < kNegPi.f);
+                }
+                func_0025C6F0(q, axis, axis[3]);
+                func_0025C770(q, r);
+                sceVu0InterVector(p0, p1, p0, w);
+                sceVu0MulMatrix((f32 (*)[4])b, r, (f32 (*)[4])b);
+                sceVu0CopyVector((f32 *)(b + 0x30), p0);
+            }
+        }
+        trk = AT(trk, 0x10, u8 *);
+        b = AT(b, 0x48, u8 *);
+    }
+}
