@@ -485,6 +485,7 @@ class CPU:
 
     def arg_value(self, v: int):
         """How an argument compares: stack pointers as "stack", C strings by content, else the value."""
+        v = CALL_ALIAS.get(v, v)   # the address of another function of the C file: as the original's
         if STACK_TOP - FRAME <= v < STACK_TOP:
             # a local passed by reference: frame layouts differ, so compare what the function
             # stored there (a 16-byte aligned pointer is taken as a vector; unwritten bytes

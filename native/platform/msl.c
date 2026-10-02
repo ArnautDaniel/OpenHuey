@@ -11,3 +11,14 @@ void func_00100AB0(void *obj, void (*dtor)(void), void *link) {
     (void)dtor;
     (void)link;
 }
+
+/* __construct_array(array, ctor, dtor, size, count): construct `count` elements. */
+void func_00100340(void *array, void *(*ctor)(void *), void (*dtor)(void *, int), unsigned size,
+                   unsigned count) {
+    unsigned i;
+
+    (void)dtor;
+    for (i = 0; i < count; i++) {
+        ctor((char *)array + i * size);
+    }
+}

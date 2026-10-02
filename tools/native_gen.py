@@ -43,9 +43,11 @@ def convert(src: Path) -> str:
             continue
         m = SECTION.match(line)
         if m:
-            sec = m.group(1)
-            out.append({".bss": '.section .bss,"aw",@nobits',
-                        ".rodata": '.section .rodata,"a"'}.get(sec, f'.section {sec},"aw"'))
+            # writable: the PS2 "rodata" split also holds .sdata/.sbss variables
+            out.append('.section .bss,"aw",@nobits' if m.group(1) == ".bss" else '.section .data,"aw"')
+            # same position modulo 128 as on the PS2, so offsets within the file keep their alignment
+            start = int(re.search(r"/\* (?:[0-9A-F]+ )?([0-9A-F]{8})(?: [0-9A-F]+)? \*/", src.read_text()).group(1), 16)
+            out.append(f".balign 128\n.space {start % 128}")
             continue
         m = DIRECTIVE.match(line)
         if m:

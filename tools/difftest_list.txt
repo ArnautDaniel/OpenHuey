@@ -1770,3 +1770,7 @@ src/game/sinit.c func_004644D0 --runs=5
 src/game/sinit.c func_00464A70 --runs=5
 src/game/sinit.c func_00466BD0 --runs=5
 src/game/sinit.c func_00469400 --runs=5
+src/game/system.c func_0020E7F0
+src/game/system.c func_0020E7D0
+src/game/system.c func_0020E7B0
+src/game/system.c func_0020E340 --runs=10

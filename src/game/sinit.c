@@ -1708,8 +1708,8 @@ void func_004644D0(void) {
  * of global objects to destroy. */
 extern void func_00102D80(void *obj);                              /* construct an iostream init object */
 extern void func_001032F0(void *obj);                              /* construct another one */
-extern void func_00100AB0(void *obj, void (*dtor)(), void *link);  /* __register_global_object */
-extern void func_001030B0(), func_00103620();                      /* their destructors */
+extern void func_00100AB0(void *obj, void (*dtor)(void *, s32), void *link);  /* __register_global_object */
+extern void func_001030B0(void *, s32), func_00103620(void *, s32);                      /* their destructors */
 
 static inline void Sinit_Iostreams(void *a, void *alink, void *b, void *blink) {
     func_00102D80(a);
@@ -1725,7 +1725,7 @@ extern u8 D_0047B348[], D_0047B34C[], D_01991EA0[], D_01991EB0[];
 extern Game gGame;
 extern void *Game_vtable[];
 extern const PTMF D_003D8920;    /* Game's first state */
-extern void Game_dtor();
+extern void Game_dtor(void *, s32);
 extern void func_0020E7F0(Game *game);           /* base class constructor */
 extern void func_0020E340(void *obj);            /* Game.unk69AC0 */
 extern void func_001A48C0(void *obj, s32 seed);  /* Game +0x400000 */
