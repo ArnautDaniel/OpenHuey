@@ -3828,3 +3828,191 @@ void func_00181F20(Fiona *f) {
         }
     }
 }
+
+
+extern u32 func_002DD420(void *motion, f32 *footOut, s32 left, f32 a, f32 b);   /* foot on the ground (u8) */
+extern u32 func_002DD860(void *motion, s32 left, f32 t);                        /* foot planted while standing (u8) */
+extern u32 func_00123E20(Actor *a, f32 *p);
+extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);
+extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
+extern void func_00125E10(Character *c, f32 *pos, s32 big);
+extern f32 D_003B2478, D_003B247C;   /* the ladder's foot offset (x, z) */
+extern VObject *D_0044E560;         /* the sound system */
+
+#define FSTEP_LEFT  0x1AD5D0   /* u8: left foot down last frame */
+#define FSTEP_RIGHT 0x1AD5D1   /* u8: right foot down last frame */
+#define FSTEP_COUNT 0x1AD5DC   /* s32: steps taken (picks the sound variant) */
+
+/* the nav triangle `i`, NULL out of range */
+static NavTri *step_tri(NavMesh *nm, u32 i) {
+    return (i < nm->numTris && nm->tris != NULL) ? &nm->tris[i] : NULL;
+}
+
+/* Fiona's footsteps, each frame: when a foot touches down (the motion's foot contacts; while
+ * standing, planted feet) the floor under it decides the sound - its nav triangle's material
+ * (0x8000.. bits; wet floors ask the sound system), ladders and their rungs (moves 0x700..),
+ * splashes in rooms 7 / 0xD1 / 0x106 - with a variant per step, loudness from her speed and
+ * a muffled sound when wearing item 0x80; the noise is heard by the pursuer (louder when
+ * running) */
+void func_001869D0(Fiona *f) {
+    static const union { u32 u; f32 f; } k04 = {0x3ECCCCCD}, k07 = {0x3F333334};
+    f32 left[4] __attribute__((aligned(16)));
+    f32 right[4] __attribute__((aligned(16)));
+    f32 foot[4] __attribute__((aligned(16)));
+    f32 tmp[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 speed[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};   /* root motion */
+    Progress *p;
+    NavMesh *nm;
+    NavTri *t;
+    u32 l, r, flags, tri;
+    s32 step = 0, base, sound, bank, noise, room, id;
+    u32 vol;
+    f32 x;
+
+    if (f->c.a.disabled == 1 || f->c.a.navTri == (u32)-1) {
+        return;
+    }
+    if ((u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 1) {
+        return;
+    }
+    p = gProgress;
+    if ((u8)Progress_TestFlag(p, 8) == 1) {
+        return;
+    }
+    l = (u8)func_002DD420(f->c.motion, left, 1, 0.0f, 1.0f);
+    r = (u8)func_002DD420(f->c.motion, right, 0, 0.0f, 1.0f);
+    if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) == 0) {
+        if (AT(f->c.motion, 0x554, s32) != -1 && !(AT(f->c.motion, 0x550, f32) <= 0.0f)) {
+            l = (u8)func_002DD860(f->c.motion, 1, 0.0f);
+            r = (u8)func_002DD860(f->c.motion, 0, 0.0f);
+        } else {
+            l = 1;
+            r = 1;
+        }
+    }
+    if (l == 1 && FI(f, FSTEP_LEFT, u8) == 0) {
+        step = 1;
+    } else if (r == 1 && FI(f, FSTEP_RIGHT, u8) == 0) {
+        step = -1;
+    }
+    FI(f, FSTEP_LEFT, u8) = l;
+    FI(f, FSTEP_RIGHT, u8) = r;
+    if (step == 0) {
+        if (AT(f->c.motion, 0x550, f32) <= 0.0f && fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) == 0) {
+            FI(f, FSTEP_COUNT, s32) = 0;
+        }
+        return;
+    }
+
+    sceVu0CopyMatrix(m, f->c.a.rot);
+    sceVu0CopyVector(m[3], f->c.a.pos);
+    func_002E2DD0(foot, m, step == 1 ? left : right);
+    tri = func_00123E20(&f->c.a, foot);
+    nm = D_0044E570;
+    t = step_tri(nm, tri != (u32)-1 ? tri : f->c.a.navTri);
+    room = f->c.a.room;
+    if (room == 7 || room == 0xD1 || room == 0x106) {
+        func_00125E10(&f->c, foot, f->c.moveMode == 0 && f->c.moveSub == 2);
+    }
+
+    flags = (u32)-1;
+    bank = 4;
+    sound = -1;
+    if (f->c.moveMode == 3) {
+        id = AT(f->c.motion, 0x55C, s32);
+        switch (id - 0x700) {
+        case 0:
+            if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+                sound = 0x14;
+            }
+            break;
+        case 1:
+        case 2:
+        case 5:
+        case 6:
+        case 8:
+        case 9:
+            sound = 0x14;
+            break;
+        case 3:
+        case 4:
+            v[0] = D_003B2478;
+            v[1] = 0.0f;
+            v[2] = D_003B247C;
+            v[3] = 0.0f;
+            tri = func_00123710(f, f->c.unk100, 0, v, tmp);
+            if (func_00124320(&f->c.a, foot, tri, tmp, 0) == (u32)-1) {
+                sound = 0x14;
+            } else if (id == 0x703) {
+                tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, f->c.unk100, 0, tmp);
+                tri = func_00124320(&f->c.a, foot, tri, tmp, 0);
+                if (tri != (u32)-1) {
+                    t = step_tri(nm, tri);
+                    flags = t->flags;
+                }
+            }
+            break;
+        case 7:
+            tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, f->c.unk100, 1, tmp);
+            tri = func_00124320(&f->c.a, foot, tri, tmp, 0);
+            if (tri != (u32)-1) {
+                t = step_tri(nm, tri);
+                flags = t->flags;
+            }
+            break;
+        }
+    }
+    if (sound != -1) {
+        func_00122C20(&f->c.a, sound, 4, 0, 0, NULL);
+        func_002A8440((u8 *)p + 0x778, 4, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        return;
+    }
+
+    if (flags == (u32)-1) {
+        flags = t->flags;
+    }
+    base = AT(gProgress, 0x1FBEC0, u8) != 0 ? 0x15 : 0;
+    switch (flags & 0x2018000) {
+    case 0x2008000:
+        if ((u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, 6) == 1) {
+            base = 0x10;
+            bank = 6;
+        } else {
+            base = 0x15;
+        }
+        break;
+    case 0x2000000:
+        base = 0x10;
+        break;
+    case 0x18000:
+        base = 0xC;
+        break;
+    case 0x10000:
+        base = 8;
+        break;
+    case 0x8000:
+        base = 4;
+        break;
+    }
+    base += FI(f, FSTEP_COUNT, s32) & 3;
+    FI(f, FSTEP_COUNT, s32)++;
+    func_001F6370(f->c.motion, speed, 0.0f);
+    x = (speed[2] - k04.f) / k07.f;
+    if (x < 0.0f) {
+        x = 0.0f;
+    }
+    if (!(x <= 1.0f)) {
+        x = 1.0f;
+    }
+    vol = (u32)(2.0f * x) & 0x7F;
+    if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x80) {
+        func_00122C20(&f->c.a, base, bank, -0x30, (s8)vol, NULL);
+        noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 5 : 1;
+    } else {
+        func_00122C20(&f->c.a, base, bank, 0, (s8)vol, NULL);
+        noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 0x14 : 4;
+    }
+    func_002A8440((u8 *)p + 0x778, noise, f->c.a.room, f->c.a.navTri, 0xFFFF);
+}
