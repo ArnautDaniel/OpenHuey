@@ -1198,3 +1198,21 @@ s32 func_001770A0(Progress *p) {
     }
     return AT(D_0044F808, 0x16C8, u8);
 }
+
+
+/* is `id` one of the three linked entries (+0x10B0, 0xC each: +0 on, +2 the partner's id):
+ * entry `id` is on, or some entry names it */
+s32 func_00177770(Progress *p, s32 id) {
+    s32 i;
+
+    id &= 0xFF;
+    if (AT(p, 0x10B0 + id * 0xC, u8) != 0) {
+        return 1;
+    }
+    for (i = 0; i < 3; i++) {
+        if (AT(p, 0x10B2 + i * 0xC, u8) == id) {
+            return 1;
+        }
+    }
+    return 0;
+}
