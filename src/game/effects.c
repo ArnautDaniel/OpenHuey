@@ -186,3 +186,17 @@ void func_002BB1A0(u8 *o) {
                   AT(o, 0x50, f32), AT(o, 0x54, f32));
     AT(drawer, 0x0, void **) = D_00469D00;
 }
+
+
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* a fog drawer: colours, range, queued with the renderer in `layer` */
+void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
+    u8 *d = drawer;
+
+    AT(d, 0x8, u32) = c0;
+    AT(d, 0xC, u32) = c1;
+    AT(d, 0x10, f32) = a;
+    AT(d, 0x14, f32) = b;
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
+}

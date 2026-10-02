@@ -421,7 +421,6 @@ src/leaf/b3_002B5330.c func_002B5F50
 src/leaf/b3_002B5330.c func_002B6130
 src/leaf/b3_002B5330.c func_002BA220
 src/leaf/b3_002B5330.c func_002BA6E0
-src/leaf/b3_002B5330.c func_002BC000
 src/leaf/b3_002B5330.c func_002BFE40
 src/leaf/b3_002B5330.c func_002C0700
 src/leaf/b3_002B5330.c func_002C0710
@@ -2694,3 +2693,4 @@ src/game/scene_game_members.c func_002D74E0 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/event.c func_001FB1F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xFFFE..0x1FFFF --pre=a0+0x718=0xFFFE0000..0xFFFFFFFF
 src/game/scene_game_members.c func_00267160 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1438=0..0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0 --pre=@0x44E4E8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046BF20..0x0046BF20
 src/game/effects.c func_002BB1A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..1
+src/game/effects.c func_002BC000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50

@@ -130,14 +130,6 @@ u32 func_002BA6E0(u8 *self, u8 *out) {
 extern void *D_0044E4F0;
 
 /* Stores its arguments, then tail-calls D_0044E4F0->vfunc_0xC(self, c, 0). */
-s32 func_002BC000(u8 *self, u32 a, u32 b, u32 c, f32 x, f32 y) {
-    *(u32 *)(self + 0x8) = a;
-    *(u32 *)(self + 0xC) = b;
-    *(f32 *)(self + 0x10) = x;
-    *(f32 *)(self + 0x14) = y;
-    return VCALL(D_0044E4F0, 0xC, s32 (*)(void *, void *, u32, u32))(D_0044E4F0, self, c, 0);
-}
-
 /* Merges two descriptors into the one at self->0x11C: words 4..C are ORed,
  * bytes 0x10..0x16, the word at 0x18 and bytes 0x1C..0x4B are copied from a. */
 extern u8 *D_0044E978;
