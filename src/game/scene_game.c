@@ -791,3 +791,28 @@ void func_0039CDC0(Scene *g) {
         func_0039B2D0(g);
     }
 }
+
+extern const PTMF D_0044C7F0;
+extern void *D_0045D1F0;
+extern s32 func_00100B80(const PTMF *a, const PTMF *b);   /* __ptmf_cmpr */
+extern void func_002C5980(void *o);
+extern void func_002E3200(void *o);
+extern void func_0021C840(void *o, s32, s32);
+
+/* the gameplay state (each frame): the sub-state +0x1053440 */
+void func_003A0060(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    PTMF *sub = &AT(g, 0x1053440, PTMF);
+
+    if (func_00100B80(sub, &D_0044C7F0) && AT(g, 0x106503C, void *) != NULL) {
+        func_002C5980(AT(g, 0x106503C, void *));
+    }
+    func_002E3200((u8 *)g + 0x1053424);
+    if (!(u8)Progress_TestFlag(prog, 8) && !(u8)Progress_TestFlag(prog, 0x2A)) {
+        func_0021C840(D_0045D1F0, 0x32, 0);
+    }
+    VCALL((VObject *)D_0044E4C8, 0x34, void (*)(VObject *))((VObject *)D_0044E4C8);
+    if (ptmf_test(sub)) {
+        ptmf_scall(g, sub);
+    }
+}
