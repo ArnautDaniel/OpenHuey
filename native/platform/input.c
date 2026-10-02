@@ -6,7 +6,8 @@
  * 1 / 3 L2 / R2, Enter start, Tab select, WASD left stick.
  * HG_AUTOCROSS=1 (tests without a window): tap cross every 2 seconds.
  * HG_INPUT="frame:button,..." (tests): press button (up down left right cross circle square
- * triangle start select l1 r1 l2 r2) for 6 video frames from frame `frame`. */
+ * triangle start select l1 r1 l2 r2) for 6 video frames from frame `frame` ("frame+n:button":
+ * n frames). */
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,9 +28,12 @@ static unsigned scripted(unsigned f) {
 
     while (s != NULL && *s) {
         char *end;
-        unsigned at = (unsigned)strtoul(s, &end, 10);
+        unsigned at = (unsigned)strtoul(s, &end, 10), len = 6;
         int i;
 
+        if (*end == '+') {   /* frame+length: held that many frames */
+            len = (unsigned)strtoul(end + 1, &end, 10);
+        }
         if (*end != ':') {
             break;
         }
@@ -38,7 +42,7 @@ static unsigned scripted(unsigned f) {
             size_t n = strlen(names[i]);
 
             if (strncmp(s, names[i], n) == 0 && (s[n] == ',' || s[n] == 0)) {
-                if (f >= at && f < at + 6) {
+                if (f >= at && f < at + len) {
                     held |= 1u << i;
                 }
                 break;
