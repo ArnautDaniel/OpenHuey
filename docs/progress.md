@@ -1,6 +1,37 @@
 # Progress / where we left off
 
-Last updated 2026-10-01.
+Last updated 2026-10-02.
+
+## Native PC build (the "slice to the menu")
+
+`cmake -S native -B build/native/cmake && cmake --build build/native/cmake -j4`, then
+`build/native/cmake/hg [extracted DATA.CVM folder]` (default `../Haunting Ground (USA)/data`).
+It boots through the controller check, the memory card check, the Dolby logo (the Capcom movie
+ends at once: no Sofdec yet), the caution screen, the title (fade in, PRESS START) and the main
+menu (New Game / Load Game / Options with their descriptions), at 60 fps with the software GS.
+Screenshots: `docs/img/native_*.png`.
+
+- Keys: arrows (D-pad), X / Space = cross, C / Backspace = circle, Z = square, V = triangle,
+  Q / E = L1 / R1, 1 / 3 = L2 / R2, Return = Start, Tab = Select, WASD = left stick; SDL gamepads.
+- Environment: `HG_HEADLESS=1` (no window), `HG_DUMP=dir` (every 30th frame as PPM),
+  `HG_MAXFRAMES=n` (exit after n frames), `HG_AUTOCROSS=1` (press cross every 2 s),
+  `HG_SAVE=dir` (the memory card in slot 1, default `./save`), `HG_GSDEBUG=1`.
+- Silent: ADX / SPU sound and music are shims (the game-side music logic runs). Movies: Sofdec is
+  a shim whose player creation fails, which the game treats as "no movie".
+- Where it stops now: choosing a menu entry. New Game goes to `func_0012E450` (leaving the title
+  for the game scene); Load / Options open the sub screen (`src/game/subscreen.c`, code
+  0x384C00..0x3A0000, about 15,000 instructions) - not decompiled yet.
+- To check against the real game: the dark boxes behind the menu entries (they come from the
+  entries' CLUT 1 background colour); the Dolby logo sits left of centre.
+- Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points
+  at 0x00120EF0, inside `func_00120EC0`'s label: needs a symbol before it can be called natively);
+  the movie states `func_002B6710`, `func_002B68B0`, `func_002B69B0`.
+- New this round (all difftested): the message / dialog system (`task.c`), the boot memory card
+  check (`bootcard.c`), the memory card manager (`memcard.c`), movies (`movie.c`), music
+  (`bgm.c`), the camera's small methods (`camera.c`), the title scene (`scene_title.c`), the sub
+  screen setup (`subscreen.c`), renderer image uploads / object drawing / layer setup, VRAM
+  TEX0 / TEX2 builders, the block pool (`heap.c`). Math library natives identified with
+  `tools/mathprobe.py`.
 
 ## Decompilation
 
