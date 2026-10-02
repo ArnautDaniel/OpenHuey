@@ -4368,3 +4368,70 @@ void func_0018B570(Fiona *f) {
     }
     func_00125960(f);
 }
+
+
+/* the run's look, each frame (+0xFC 2 while idle +0xF8), as the walk's (func_00185CF0) with the
+ * run 0x202 and its blends 0x203 / 0x205; tired (+0x1AD584 bit 1): the tired run 0x206 alone */
+void func_00185310(Fiona *f) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
+    s32 cur, next, change;
+    f32 a, b, d;
+
+    if (AT(f, 0xF8, s32) == 0) {
+        AT(f, 0xFC, s32) = 2;
+    }
+    next = AT(f->c.motion, 0x560, s32);
+    cur = AT(f->c.motion, 0x55C, s32);
+    if (FI(f, 0x1AD584, s32) & 2) {
+        if (cur != 0x206) {
+            func_002DDED0(f->c.motion, 0x206, -1);
+            AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
+        }
+        return;
+    }
+    a = (100.0f - FI(f, 0x1AD5F4, f32)) / 60.0f;
+    b = (f32)(0x708 - FI(f, 0x1AD5F8, s32)) / 1800.0f;
+    change = 0;
+    if (b < 0.5f || !(a + 0.25f <= b)) {
+        if (cur == 0x202 && next == 0x205) {
+            d = b - FI(f, FWALK_BLEND, f32);
+            if (d <= 0.0f) {
+                d = -d;
+            }
+            if (!(d <= k01.f)) {
+                change = 1;
+            }
+        } else {
+            change = 1;
+        }
+        if (change == 1) {
+            func_002DDED0(f->c.motion, 0x202, 0x205);
+        }
+        AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = b;
+        FI(f, FWALK_BLEND, f32) = b;
+        return;
+    }
+    if (a < 1.0f) {
+        if (cur == 0x202 && next == 0x203) {
+            d = a - FI(f, FWALK_BLEND, f32);
+            if (d <= 0.0f) {
+                d = -d;
+            }
+            if (!(d <= k01.f)) {
+                change = 1;
+            }
+        } else {
+            change = 1;
+        }
+        if (change == 1) {
+            func_002DDED0(f->c.motion, 0x202, 0x203);
+        }
+        AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = a;
+        FI(f, FWALK_BLEND, f32) = a;
+        return;
+    }
+    if (!(cur == 0x202 && next == -1)) {
+        func_002DDED0(f->c.motion, 0x202, -1);
+    }
+    AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
+}
