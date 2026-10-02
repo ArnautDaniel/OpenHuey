@@ -418,13 +418,66 @@ void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
 }
 
 
-extern u32 func_0017A940(NavTri *t, const f32 *from, const f32 *to, f32 *hit);   /* the edge a step leaves by */
 
-/* +0x20 the edge of triangle `i` the step `from` -> `to` leaves it by (0..2; 3 stays inside;
- * 4 bad triangle) and where (`hit`) */
-u32 func_0017C690(NavMesh *nm, u32 i, const f32 *from, const f32 *to, f32 *hit) {
+u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to);
+
+/* +0x28 slide: for the step `from` -> `to` in triangle `i`, `out` = `to` pulled back inside
+ * over the edge it leaves by (func_0017A940); the edge then (3: inside), 4 for a bad index */
+u32 func_0017C690(NavMesh *nm, u32 i, f32 *out, const f32 *from, const f32 *to) {
     if (i >= nm->numTris || nm->tris == NULL) {
         return 4;
     }
-    return func_0017A940(&nm->tris[i], from, to, hit);
+    return func_0017A940(&nm->tris[i], out, from, to);
+}
+
+
+/* the step `from` -> `to` in triangle `t`: the edge it leaves by (func_0017AE80; 3 inside), and
+ * then `out` - `to` pulled back over that edge along its inward normal (1.1x the overshoot,
+ * 0.05 more each try, up to 8, until it is inside), on the triangle's plane (w 1) - and the edge
+ * test again for `from` -> `out` */
+u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
+    static const union { u32 u; f32 f; } k11 = {0x3F8CCCCD}, k005 = {0x3D4CCCCD};
+    f32 e[4] __attribute__((aligned(16)));
+    f32 c[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    const f32 *a, *b;
+    u32 k;
+    s32 i;
+    f32 over, s, nx, ny, nz;
+
+    k = func_0017AE80(t, (f32 *)from, (f32 *)to);
+    if (k >= 3) {
+        return k;
+    }
+    a = t->v[k];
+    b = t->v[k < 2 ? k + 1 : 0];
+    sceVu0SubVector(e, b, a);
+    sceVu0SubVector(c, to, a);
+    c[3] = 1.0f;
+    e[3] = 1.0f;
+    c[1] = 0.0f;
+    e[1] = 0.0f;
+    sceVu0OuterProduct(c, e, c);
+    sceVu0OuterProduct(n, e, c);
+    sceVu0Normalize(n, n);
+    sceVu0SubVector(e, a, to);
+    e[3] = 1.0f;
+    n[3] = 1.0f;
+    e[1] = 0.0f;
+    over = sceVu0InnerProduct(e, n);
+    s = k11.f;
+    for (i = 0; i < 8; i++) {
+        func_0010E640(e, n, over * s);
+        sceVu0AddVector(out, to, e);
+        if (!((out[0] - a[0]) * (b[2] - a[2]) - (out[2] - a[2]) * (b[0] - a[0]) <= 0.0f)) {
+            break;
+        }
+        s = s + k005.f;
+    }
+    nx = (t->v[1][1] - t->v[0][1]) * (t->v[2][2] - t->v[0][2]) - (t->v[2][1] - t->v[0][1]) * (t->v[1][2] - t->v[0][2]);
+    nz = (t->v[1][0] - t->v[0][0]) * (t->v[2][1] - t->v[0][1]) - (t->v[2][0] - t->v[0][0]) * (t->v[1][1] - t->v[0][1]);
+    ny = (t->v[1][2] - t->v[0][2]) * (t->v[2][0] - t->v[0][0]) - (t->v[2][2] - t->v[0][2]) * (t->v[1][0] - t->v[0][0]);
+    out[1] = t->v[0][1] - ((out[2] - t->v[0][2]) * nz + (out[0] - t->v[0][0]) * nx) / ny;
+    out[3] = 1.0f;
+    return func_0017AE80(t, (f32 *)from, out);
 }
