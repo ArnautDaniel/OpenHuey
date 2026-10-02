@@ -1832,6 +1832,9 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
                     continue
                 i = next(i for i in range(k) if not event_equal(o[0].events[i], n[0].events[i]))
                 print(f"FAIL {func} seed {seed}: endless loop, call #{i} differs:\n  original {fmt_ev(o[0].events[i])}\n  C        {fmt_ev(n[0].events[i])}")
+                if opts.verbose:
+                    print("  original calls:", *[fmt_ev(a, b) for a, b in zip(o[0].events[:i + 1], n[0].events)], sep="\n    ")
+                    print("  C calls:", *[fmt_ev(b, a) for a, b in zip(o[0].events, n[0].events[:i + 1])], sep="\n    ")
                 return 1
             runaway_ok += 1
             ok += 1
