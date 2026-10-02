@@ -1486,7 +1486,7 @@ void func_001531F0(Hewie *h) {
 
 /* `other` is active, not in condition 2, in his room and (in the room being played) on the
  * nav mesh. */
-s32 func_00137650(Hewie *h, Character *other) {
+static inline s32 Hewie_WithChar(Hewie *h, Character *other) {
     u8 ok = (other != NULL && other->a.active == 1) ? 1 : 0;
     s32 room;
 
@@ -1501,6 +1501,10 @@ s32 func_00137650(Hewie *h, Character *other) {
         return 1;
     }
     return other->a.navTri != NAV_NONE;
+}
+
+s32 func_00137650(Hewie *h, Character *other) {
+    return Hewie_WithChar(h, other);
 }
 
 void func_0014EB40(Hewie *h) {
@@ -1840,5 +1844,62 @@ void func_00140050(Hewie *h) {
         Hewie_Start(h, 4);
     } else {
         Hewie_Start(h, 5);
+    }
+}
+
+extern s32 func_001367B0(Hewie *h);   /* u8 */
+
+void func_0014DE70(Hewie *h) {
+    if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    if (MOTION_ANIM(h->c.motion) == 9) {
+        if (*((u8 *)gProgress + 0x1FBEC1) == 1 && (func_001367B0(h) & 0xFF) == 1) {
+            func_00130AF0(h, 0, 0);
+            return;
+        }
+        if (HW(h, 0xF36B4, s32) == 0) {
+            HW(h, 0xF3585, u8) = 1;
+        } else {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+    } else if (func_00140CD0(h, 0) == 0) {
+        func_002DDED0(h->c.motion, 9, -1);
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+/* Helper `kind` done: action `act` -> 2, otherwise 1 (or 5 with his pool in use). */
+static inline void Hewie_AfterHelper(Hewie *h, s32 kind, s32 act) {
+    if (func_00140CD0(h, kind) == 0) {
+        func_00141C00(h, kind);
+        if (HEWIE_ACTION(h) == act) {
+            Hewie_Start(h, 2);
+        } else if (HW(h, 0xF3598, s32) == 0) {
+            Hewie_Start(h, 1);
+        } else {
+            Hewie_Start(h, 5);
+        }
+    }
+}
+
+void func_00155670(Hewie *h) {
+    Hewie_AfterHelper(h, 2, 0x2B);
+}
+
+void func_001557B0(Hewie *h) {
+    Hewie_AfterHelper(h, 1, 0x29);
+}
+
+void func_001558F0(Hewie *h) {
+    Hewie_AfterHelper(h, 0, 0x27);
+}
+
+void func_0015F760(Hewie *h) {
+    if (!(Hewie_WithChar(h, gCharPlayer) & 0xFF)) {
+        Hewie_ToDefault(h);
+    } else {
+        func_00141C00(h, 3);
     }
 }
