@@ -1430,7 +1430,7 @@ void func_0019C210(Fiona *f) {
 }
 
 extern s32 func_001848F0(Fiona *f, s32 cmd, s32 state);
-extern u32 func_00177620(Progress *p);
+extern s32 func_00177620(Progress *p);
 extern void func_00183F10(Fiona *f);
 extern void func_00183780(Fiona *f);
 extern const PTMF D_003B2788;  /* panic: fall */
@@ -3155,4 +3155,95 @@ void func_001F1D60(u8 *o) {
         AT(o, 0x28 + i * 4, s32) = 0;
         AT(o, 0x14 + i * 4, s32) = 0;
     }
+}
+
+extern void func_002DDC60(void *motion, s32 anim, s32 blend, s32 variant);
+
+/* idle animation `anim` with weight variant `variant`: blended over `blend` frames (-1: at
+ * once) */
+static void fiona_idle(Fiona *f, s32 anim, s32 blend, s32 variant) {
+    if (blend == -1) {
+        func_002DDED0(f->c.motion, anim, variant);
+    } else {
+        func_002DDC60(f->c.motion, anim, blend, variant);
+    }
+}
+
+/* whether the idle weight moved more than 0.1 from the last one (+0x1AD628) */
+static s32 idle_weight_changed(Fiona *f, f32 w) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* 0.1f */
+    f32 d = w - FI(f, 0x1AD628, f32);
+
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    return !(d <= k01.f);
+}
+
+/* set the idle animation for her condition: exhausted (+0x1AD584 bit 0: variant 4, weight eased
+ * toward the progress +0x7BC), out of breath (variant 2 by heart rate +0x1AD5F4) or scared
+ * (variant 3 by stamina +0x1AD5F8); anim 5 instead of 0 when the progress mode is 2 */
+void func_001855F0(Fiona *f, s32 blend) {
+    static const union { u32 u; f32 f; } k005 = {0x3D4CCCCD};   /* 0.05f */
+    void *m;
+    s32 variant, anim, idle;
+    f32 heart, fear;
+
+    if (f->c.moveMode == 0) {
+        f->c.moveSub = 0;
+    }
+    m = f->c.motion;
+    variant = AT(m, 0x560, s32);
+    anim = AT(m, 0x55C, s32);
+    if (FI(f, 0x1AD584, u32) & 1) {
+        Progress *p = gProgress;
+        f32 t;
+
+        idle = (u8)func_00177620(p) == 2 ? 5 : 0;
+        if (!(anim == idle && variant == 4)) {
+            fiona_idle(f, idle, blend, 4);
+        }
+        t = (90.0f - AT(p, 0x7BC, f32)) / 15.0f;
+        if (t < 0.0f) {
+            t = 0.0f;
+        }
+        if (FI(f, 0x1AD5CC, f32) < t) {
+            FI(f, 0x1AD5CC, f32) = FI(f, 0x1AD5CC, f32) + k005.f;
+            if (!(FI(f, 0x1AD5CC, f32) <= t)) {
+                FI(f, 0x1AD5CC, f32) = t;
+            }
+        } else {
+            FI(f, 0x1AD5CC, f32) = FI(f, 0x1AD5CC, f32) - k005.f;
+            if (FI(f, 0x1AD5CC, f32) < t) {
+                FI(f, 0x1AD5CC, f32) = t;
+            }
+        }
+        AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = FI(f, 0x1AD5CC, f32);
+        return;
+    }
+    heart = (100.0f - FI(f, 0x1AD5F4, f32)) / 60.0f;
+    fear = (f32)(0x708 - FI(f, 0x1AD5F8, s32)) / 1800.0f;
+    if (!(fear < 0.5f) && fear >= heart + 0.25f) {
+        if (heart < 1.0f) {
+            idle = (u8)func_00177620(gProgress) == 2 ? 5 : 0;
+            if (!(anim == idle && variant == 2) || idle_weight_changed(f, heart)) {
+                fiona_idle(f, idle, blend, 2);
+            }
+            AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = heart;
+            FI(f, 0x1AD628, f32) = heart;
+        } else {
+            idle = (u8)func_00177620(gProgress) == 2 ? 5 : 0;
+            if (!(anim == idle && variant == -1)) {
+                fiona_idle(f, idle, blend, -1);
+            }
+            AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
+        }
+        return;
+    }
+    idle = (u8)func_00177620(gProgress) == 2 ? 5 : 0;
+    if (!(anim == idle && variant == 3) || idle_weight_changed(f, fear)) {
+        fiona_idle(f, idle, blend, 3);
+    }
+    AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = fear;
+    FI(f, 0x1AD628, f32) = fear;
 }

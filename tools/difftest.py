@@ -1574,9 +1574,10 @@ PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi)
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
-    b = re.fullmatch(r"(?:a([0-7])\+|@)(0x[0-9A-Fa-f]+|\d+)=bytes:([0-9A-Fa-f]+)", spec)
+    b = re.fullmatch(r"(?:a([0-7])\+|@)(0x[0-9A-Fa-f]+|\d+)=bytes:((?:[0-9A-Fa-f]{2}|\?\?)+)", spec)
     if b:  # exact bytes (e.g. a script for a byte-code interpreter): a0+0x100=bytes:41421700
-        PRE_BYTES.append((4 + int(b.group(1)) if b.group(1) else 0, int(b.group(2), 0), bytes.fromhex(b.group(3))))
+        # "??": a random byte (per run)
+        PRE_BYTES.append((4 + int(b.group(1)) if b.group(1) else 0, int(b.group(2), 0), b.group(3)))
         return None
     r = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=a([0-7])\+(0x[0-9A-Fa-f]+|\d+)", spec)
     if r:  # a pointer into an argument (3 runs in 4): a0+0x304A14=a0+0x60; lo = REL_BASE - register marks it
@@ -1619,10 +1620,12 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
         a = Memory.norm((c.g(reg) & M32) + off)
         for i, b in enumerate(v.to_bytes(4, "little")):
             mem._page(a + i)[(a + i) & 0xFFF] = b
-    for reg, off, data in PRE_BYTES:
+    for k, (reg, off, hexs) in enumerate(PRE_BYTES):
         a = Memory.norm(((c.g(reg) & M32) if reg else 0) + off)
-        for i, b in enumerate(data):
-            mem._page(a + i)[(a + i) & 0xFFF] = b
+        rnd = random.Random(seed * 7919 + k)
+        for i in range(len(hexs) // 2):
+            h = hexs[i * 2:i * 2 + 2]
+            mem._page(a + i)[(a + i) & 0xFFF] = rnd.getrandbits(8) if h == "??" else int(h, 16)
     for r, v in zip(FARG_REGS, floats):
         c.f[r] = v
     for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:

@@ -48,6 +48,9 @@ s32 func_001FC760(VObject *ev) {
         r = (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
         break;
     }
+    case 0x5D:   /* Hewie is the one controlled */
+        r = AT(p, 0x1FBEC1, u8);
+        break;
     default:
         if (pc[0] < 0x66) {
 #ifdef HG_NATIVE

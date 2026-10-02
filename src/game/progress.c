@@ -281,3 +281,43 @@ s32 func_001770D0(Progress *p, s32 id) {
     }
     return 0xFF;
 }
+
+/* the game mode byte (+0x10; 2: the alternative idle set) */
+s32 func_00177620(Progress *p) {
+    return AT(p, 0x10, u8);
+}
+
+/* the camera setup (a, b) of character slot `slot` (0xFF: the camera director's own; other
+ * characters only in the current room, else none) */
+void func_001793A0(Progress *p, u8 slot, s32 a, s32 b) {
+    VObject *dir = D_0044E4F8;
+    u8 *c;
+
+    if (slot == 0xFF) {
+        if (dir != NULL) {
+            VCALL(dir, 0x28, void (*)(VObject *, s32, s32))(dir, a, b);
+        }
+        AT(p, 0x1130, u8) = 0xFF;
+        return;
+    }
+    if (slot >= 6 || gCharacters[slot] == NULL) {
+        return;
+    }
+    c = (u8 *)gCharacters[slot];
+    if (slot == 0 || AT(c, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        AT(gCharacters[slot], 0xE8, s32) = a;
+        AT(gCharacters[slot], 0xEC, s32) = b;
+    } else {
+        AT(gCharacters[slot], 0xEC, s32) = -1;
+        AT(gCharacters[slot], 0xE8, s32) = -1;
+    }
+}
+
+/* character slot `slot`'s +0x58 (1: done, 0: no such character) */
+s32 func_00177200(Progress *p, u32 slot) {
+    if (slot < 6 && gCharacters[slot] != NULL) {
+        VCALL(gCharacters[slot], 0x58, void (*)(VObject *, u32))(gCharacters[slot], slot);
+        return 1;
+    }
+    return 0;
+}

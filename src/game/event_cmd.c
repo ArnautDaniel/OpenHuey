@@ -10,9 +10,15 @@ extern void *gCharacters[6];
 extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
 extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *D_0044E568;   /* the rooms */
 extern u8 D_0047B350;         /* the message language set */
 extern VObject *D_00456E00;
 extern void func_0016D480(Progress *p, s32 room);
+extern void func_001793A0(Progress *p, s32 slot, s32 a, s32 b);
+extern void func_001792C0(Progress *p, u8 slot);
+extern void func_002EC470(void *o, s32);
+extern void func_00177200(Progress *p, s32 slot);
+extern void func_002003C0(VObject *ev);
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index (0xFF) */
@@ -285,6 +291,33 @@ void func_002029B0(VObject *ev) {
     case 0xA8:
         func_0016D480(p, AT(ev, 0x560, s32));
         break;
+    case 0x36:
+        func_001793A0(p, (u8)func_001770D0(p, pc[1]), (s8)PC(ev)[2], (s8)PC(ev)[3]);
+        break;
+    case 0x28: {   /* camera follows character pc[1] (0xFF: nobody) */
+        u8 i = (u8)func_001770D0(p, pc[1]);
+
+        if (pc[1] == 0xFF || i != 0xFF) {
+            func_001792C0(p, i);
+        }
+        break;
+    }
+    case 0x14:
+        if ((u8)func_001770D0(p, pc[1]) == 2) {
+            func_002EC470((u8 *)p + 0x764, 0);
+        } else {
+            func_00177200(p, (u8)func_001770D0(p, PC(ev)[1]));
+        }
+        break;
+    case 0x41:
+        Progress_IncVar(p, pc[1]);
+        break;
+    case 0xA1:   /* rebuild the rooms' exits */
+        VCALL(D_0044E568, 0x90, void (*)(VObject *))(D_0044E568);
+        break;
+    case 0x59:
+        func_002003C0(ev);
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
@@ -353,7 +386,6 @@ void func_001FF9E0(VObject *ev) {
 
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E568;   /* the rooms */
 extern VObject *D_0044E570;   /* the nav mesh */
 extern u8 *D_0044E4C0;        /* the room effects */
 extern VObject *D_0044E4F0;   /* the renderer */
@@ -503,5 +535,103 @@ void func_002013F0(VObject *ev) {
         func_00266C70(D_0044E4C0, PC(ev)[2], &arg);
         break;
     }
+    }
+}
+
+extern VObject *D_0044E988;   /* the item manager */
+extern VObject *D_0044E560;   /* the sound driver */
+extern u8 *D_0044E978;        /* resident data */
+extern void func_00178450(Progress *p, u32 n);
+extern void func_00178500(Progress *p, u32 n);
+extern void func_00178630(Progress *p, u32 n);
+extern void func_00178A60(Progress *p, u32 n);
+extern void func_00178A30(Progress *p, u32 n);
+extern void func_00260BB0(void *o, u32 n);
+
+static inline void flag_set(u8 *words, s32 n) {
+    AT(words, (n >> 5) * 4, u32) |= 1 << (n & 0x1F);
+}
+
+static inline void flag_clear(u8 *words, s32 n) {
+    AT(words, (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
+}
+
+/* 0x59: flag and counter commands (sub-op pc[1], operand pc[2..3]) */
+void func_002003C0(VObject *ev) {
+    Progress *p = gProgress;
+    const u8 *pc = PC(ev);
+    u32 n;
+
+    if (pc[1] >= 0x13) {
+        return;
+    }
+    n = be16(pc + 2);
+    switch (pc[1]) {
+    case 0x00:
+        flag_set((u8 *)p + 0x1C, n);
+        break;
+    case 0x01:
+        flag_clear((u8 *)p + 0x1C, n);
+        break;
+    case 0x02:
+        Progress_SetFlag(p, n);
+        break;
+    case 0x03:
+        Progress_ClearFlag(p, n);
+        break;
+    case 0x08:
+        VCALL(D_0044E568, 0x64, void (*)(VObject *, u32))(D_0044E568, n);
+        /* fallthrough */
+    case 0x04:
+        func_00178450(p, be16(PC(ev) + 2));
+        break;
+    case 0x07:
+        VCALL(D_0044E568, 0x68, void (*)(VObject *, u32))(D_0044E568, n);
+        /* fallthrough */
+    case 0x05:
+        func_00178500(p, be16(PC(ev) + 2));
+        break;
+    case 0x06:
+        func_00178630(p, n);
+        break;
+    case 0x09:
+        func_00178A60(p, n);
+        break;
+    case 0x0A:
+        func_00178A30(p, n);
+        break;
+    case 0x0B:   /* a message parameter */
+        Msg_SetParamSystem((u8 *)ev + 0x708, 0,
+                           VCALL(ev, 0xD0, u32 (*)(VObject *, u32))(ev, n) & 0xFFFF);
+        break;
+    case 0x0C:
+        func_00260BB0((u8 *)D_0044E988 + 8, n);
+        break;
+    case 0x0D:   /* give / take an item, with the pickup sound */
+        if (AT(p, 0x30, u32) & 0x8000) {
+            if ((n & 0x8000) && VCALL(D_0044E988, 0xC, s32 (*)(VObject *, u32))(D_0044E988, n & 0x7FFF)) {
+                VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+            }
+        } else {
+            if (!(n & 0x8000) && VCALL(D_0044E988, 0xC, s32 (*)(VObject *, u32))(D_0044E988, n)) {
+                VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+            }
+        }
+        break;
+    case 0x0E:
+        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, u32))(D_0044E988, n);
+        break;
+    case 0x0F:   /* the flag in event variable n */
+        flag_set((u8 *)p + 0x1C, AT(ev, 0x810 + n * 4, s32));
+        break;
+    case 0x10:
+        flag_clear((u8 *)p + 0x1C, AT(ev, 0x810 + n * 4, s32));
+        break;
+    case 0x11:
+        VCALL(D_0044E988, 0x38, void (*)(VObject *, u32))(D_0044E988, n);
+        break;
+    case 0x12:   /* a resident flag */
+        flag_set(D_0044E978 + 0x24, n);
+        break;
     }
 }
