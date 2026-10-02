@@ -13,4 +13,12 @@ typedef struct Hewie {
 } Hewie;
 _Static_assert(sizeof(Hewie) == 0xF37C0, "Hewie size");
 
+#define HEWIE_NAV_MASK 0x29020008
+#define HEWIE_ACTION(h) HW(h, 0xF3564, s32)                  /* current action (func_00130AF0) */
+#define HEWIE_SIDE(h) HW(h, 0xF3668, s32)                    /* side of the room (rooms +0x50) */
+#define HEWIE_STATE(h) ((PTMF *)((u8 *)(h) + 0xF35D0))       /* behaviour (pointer to member) */
+#define HEWIE_MSG(h) HW(h, 0xF3540, void *)                  /* his message image */
+#define HEWIE_MRK(h) ((u8 *)(h) + 0xF1540)                   /* his .MRK data */
+#define HEWIE_HP(h) ((h)->c.hp)
+
 #endif

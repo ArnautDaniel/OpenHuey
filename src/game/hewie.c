@@ -56,7 +56,108 @@ void func_00165CD0(Hewie *h) {
 
 extern void func_00125BE0(Character *c);
 extern void func_00130AF0(Hewie *h, s32 action, s32 arg);
-extern s32 func_0013B2C0(Hewie *h, s32 arg);
+
+extern s32 func_001669A0(Hewie *h);
+extern s32 func_001235C0(Actor *a, Actor *b);
+extern u32 func_00177620(Progress *p);          /* u8 */
+extern VObject *D_0044E4F8;
+
+/* Adjust a requested action to his situation: down (no health) -> 0x52 (and progress +0xFB6
+ * counts up, max 10000); while blocked (D_0044E4F8 +0x38) or with progress flags 0x13 / 0x2B
+ * set his attack-type actions become waiting ones; then substitutions by his condition
+ * (+0xC4), mode (+0xF35C0) and flags. In the special mode the action is kept. */
+s32 func_0013B2C0(Hewie *h, s32 act) {
+    Progress *p = gProgress;
+    u8 f;
+
+    if (*((u8 *)p + 0x1FBEC1) == 1) {
+        return act;
+    }
+    if (!h->c.unkE0 && act == 0 && h->c.hp == 0 && h->c.a.unkC4 == 2) {
+        act = 0x52;
+    }
+    if (act == 0x52) {
+        if (!h->c.a.disabled && !(func_001235C0(&h->c.a, &h->c.a) & 0xFF)) {
+            act = 0;
+            h->c.hp = 1;
+            h->c.a.unkC4 = 1;
+        } else if (HEWIE_ACTION(h) != 0x52 && HEWIE_ACTION(h) != 0x74 && func_001669A0(h) != 0xD) {
+            s16 *n = (s16 *)((u8 *)p + 0xFB6);
+
+            *n += 10;
+            if (*n < 0) {
+                *n = 0;
+            } else if (*n > 10000) {
+                *n = 10000;
+            }
+        }
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+        switch (act) {
+        case 0x24: case 0x25:
+            act = 5;
+            break;
+        case 0x61: case 0x62:
+            act = 0xB;
+            break;
+        case 0x1F: case 0x20: case 0x21: case 0x22: case 0x23: case 0x4E: case 0x4F: case 0x50:
+        case 0x59: case 0x5A: case 0x75:
+            act = 0xA;
+            break;
+        }
+    }
+    f = Progress_TestFlag(gProgress, 0x13) & 0xFF;
+    if ((f | (Progress_TestFlag(gProgress, 0x2B) & 0xFF)) != 0) {
+        switch (act) {
+        case 0x1F: case 0x20: case 0x21: case 0x22: case 0x23: case 0x4E: case 0x4F: case 0x50:
+        case 0x59: case 0x5A: case 0x61: case 0x62: case 0x75:
+            act = 0xA;
+            break;
+        }
+    }
+    if (HW(h, 0xF35B0, s16) != 0 && (act == 0x50 || act == 0x4F)) {
+        act = 0xA;
+    }
+    if (h->c.a.unkC4 == 1) {
+        switch (act) {
+        case 0x13: case 0x64:
+            if (HW(h, 0xF3598, s32) == 1) {
+                act = 0x10;
+            }
+            break;
+        case 0x16: case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x26: case 0x28: case 0x2A:
+            act = 0x58;
+            break;
+        }
+    }
+    if (HW(h, 0xF35C0, s32) == 2) {
+        switch (act) {
+        case 0x13: case 0x64:
+            if (HW(h, 0xF3598, s32) == 1) {
+                act = 0x10;
+            }
+            break;
+        case 0xE:
+            if ((func_00177620(p) & 0xFF) == 2) {
+                act = 0xF;
+            }
+            break;
+        case 0xC: case 0x16: case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C:
+            act = 0x2A;
+            break;
+        }
+    }
+    if (HW(h, 0xF35C0, s32) == 1 && act == 0xC) {
+        act = 0x16;
+    }
+    if (HW(h, 0xF3620, u8) == 1 && (act == 5 || act == 4 || act == 1) && !(func_00177620(p) & 0xFF)) {
+        act = 0x81;
+    }
+    if (HW(h, 0xF3588, u8) == 1) {
+        act = 4;
+    }
+    return act;
+}
 
 /* vtable +0x60: forget path/movement state, then his default action. */
 void func_00165D00(Hewie *h) {
@@ -113,7 +214,6 @@ void func_0013D190(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-#define HEWIE_ACTION(h) HW(h, 0xF3564, s32)
 #define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
@@ -156,7 +256,6 @@ void func_0015FB30(Hewie *h) {
     func_00138AD0(h, 0, -1);
 }
 
-#define HEWIE_HP(h) ((h)->c.hp)
 
 /* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
  * never, he keeps 1). */
@@ -209,7 +308,6 @@ extern void func_00124890(Actor *a, s32 side);
 extern VObject *D_0044E568;   /* rooms */
 extern VObject *D_0044E4D0;   /* room objects */
 
-#define HEWIE_SIDE(h) HW(h, 0xF3668, s32)   /* side of the room (rooms +0x50) */
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
  * side if he has no triangle yet); in the special mode: note his side, hand him to the
@@ -239,8 +337,6 @@ void func_00166CE0(Hewie *h) {
 /* Resource table offset (from +0x1540) to pointer, 0 = none. */
 #define HEWIE_RES(h, off) (HW(h, off, s32) != 0 ? (void *)((u8 *)(h) + HW(h, off, s32) + 0x1540) : NULL)
 #define MOTION_PTR(m, off) (*(void **)((u8 *)(m) + (off)))
-#define HEWIE_MSG(h) HW(h, 0xF3540, void *)     /* his message image */
-#define HEWIE_MRK(h) ((u8 *)(h) + 0xF1540)       /* his .MRK data */
 
 /* vtable +0x1C: hook his data up to the animation player and the message display. */
 void func_00168700(Hewie *h) {
@@ -590,8 +686,6 @@ s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
     return r;
 }
 
-#define HEWIE_NAV_MASK 0x29020008
-#define HEWIE_STATE(h) ((PTMF *)((u8 *)(h) + 0xF35D0))   /* current behaviour (pointer to member) */
 
 extern f32 func_00124490(Actor *a, const f32 *p);          /* distance to a point */
 extern s32 func_001F1B90(void *input, void *pad);
