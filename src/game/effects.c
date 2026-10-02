@@ -102,3 +102,29 @@ void func_002C6540(u8 *e, const f32 *d) {
     AT(e, 0x58, f32) = d[2];
     AT(e, 0x5C, f32) = d[3];
 }
+
+
+extern VObject *D_0044FE10;    /* +0x80: the character in slot i (0xFF none) */
+extern void *gCharacters[6];
+extern void func_001267F0(void *c, s32 light);
+extern s32 func_00126800(void *c);
+
+/* +0x10 each frame: the characters this light is on (+0x20 per slot) get its light group
+ * (slot << 16 | 0xB); the others it had go back to the default (0xA) */
+void func_002BB280(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        u32 k = D_0044FE10 != NULL ? (u8)VCALL(D_0044FE10, 0x80, s32 (*)(VObject *, s32))(D_0044FE10, i & 0xFF) : (u8)i;
+        s32 group = (i << 16) | 0xB;
+
+        if (k == 0xFF || gCharacters[k] == NULL) {
+            continue;
+        }
+        if (AT(o, 0x20 + i * 4, s32) != 0) {
+            func_001267F0(gCharacters[k], group);
+        } else if (func_00126800(gCharacters[k]) == group) {
+            func_001267F0(gCharacters[k], 0xA);
+        }
+    }
+}
