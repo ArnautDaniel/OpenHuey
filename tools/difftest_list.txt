@@ -2057,3 +2057,11 @@ src/game/movie.c func_002C8C10 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_boot.c func_0037F7D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=a0+0x1C=0..0 --stub-ret=0 --stub-ret=0x0B300000
 src/game/scene_boot.c func_0037F7D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=a0+0x1C=1..2 --pre=@0x0047E37C=0..15
 src/game/heap.c func_0011F9A0
+src/game/scene_title.c func_002D0570 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_0012C500 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_002D04C0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c func_002D03A0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_title.c SceneTitle_ctor --pre=a0=0x0B000000..0x0B000000
+src/game/bootcard.c func_002D0300 --pre=a0=0x0B000000..0x0B000000
+src/game/task.c func_002D0440 --pre=a0=0x0B000000..0x0B000000
+src/game/bgm.c func_002D2370 --pre=a0=0x0B000000..0x0B000000 --runs=60 --pre=@0x0044E560=0..1

@@ -1270,3 +1270,13 @@ void func_00384BC0(Task *t) {
         func_00382D30(t);
     }
 }
+
+/* constructor */
+Task *func_002D0440(Task *t) {
+    t->id = 0xFFFF;
+    t->child = NULL;
+    t->mode = 0;
+    t->flags = 0;
+    Task_SetState(t, Task_StateIdle);
+    return t;
+}

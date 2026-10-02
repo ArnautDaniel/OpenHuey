@@ -208,3 +208,13 @@ void func_002BF2F0(BootCard *b) {
         func_00384BC0(&b->task);
     }
 }
+
+extern void *D_0046A058[];
+
+/* constructor */
+BootCard *func_002D0300(BootCard *b) {
+    b->vtbl = D_0046A058;
+    Task_Construct(&b->task);
+    b->state = -1;
+    return b;
+}

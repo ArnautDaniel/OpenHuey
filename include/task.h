@@ -66,8 +66,24 @@ _Static_assert(__builtin_offsetof(Task, cur) == 0x30, "Task.cur");
 _Static_assert(__builtin_offsetof(Task, child) == 0x7C, "Task.child");
 _Static_assert(sizeof(Task) == 0x104, "Task size");
 
+extern const PTMF sTaskIdleState;   /* { 0, -1, Task_StateIdle } */
+
+/* the constructor (func_002D0440), as the original inlines it into the owners' */
+static inline void Task_Construct(Task *t) {
+    PTMF s = sTaskIdleState;
+
+    t->id = 0xFFFF;
+    t->child = NULL;
+    t->mode = 0;
+    t->flags = 0;
+    if (ptmf_test(&s)) {
+        t->state = s;
+    }
+}
+
 Task *Task_dtor(Task *t, s32 flags);
 void Task_StateIdle(Task *t);
+Task *func_002D0440(Task *t);   /* constructor */
 void func_003843A0(Task *t);
 void func_003844E0(Task *t);
 void func_00384590(Task *t, s32 id, s32 color, s32 alpha, s32 layer);
