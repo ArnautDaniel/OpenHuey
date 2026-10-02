@@ -1598,3 +1598,88 @@ void func_002DC960(u8 *m) {
     }
     AT(m, 0x870, s32)++;
 }
+
+
+extern void func_001F4F40(u8 *m);
+extern void func_001F4D70(u8 *m);
+extern void func_001F5850(u8 *m);
+extern void *func_001F56F0(u8 *m, void *a, void *b, f32 t);   /* the blend of two poses */
+extern void func_001F5D70(u8 *m, void *skel);
+extern void func_001F5130(u8 *m);
+
+/* the motion player, each frame: start the queued motion (+0x4F0) and the queued layer
+ * motions (+0x504, 3 x 0x14) once their fades are over (a layer waits a frame when the main
+ * motion just started), free the faded-out layers' buffers, advance the tracks, then blend
+ * the pose: each track's two animations, the current with the previous one (+0x550), the three
+ * layers; the skeleton is built from it (+0x810), then vtable +0x18 and func_001F5130 */
+void func_001F6AF0(u8 *m) {
+    void *chains, *skels, *a, *b;
+    s32 started = 0;
+    s32 i;
+
+    AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x80;
+    AT(AT(m, 0x704, u8 *), 0xC, u32) &= ~0x80;
+    AT(AT(m, 0x764, u8 *), 0xC, u32) &= ~0x80;
+    AT(AT(m, 0x7C4, u8 *), 0xC, u32) &= ~0x80;
+    if (AT(m, 0x4F0, u8) != 0 && AT(m, 0x54C, f32) <= 0.0f) {
+        func_001F7890(m, AT(m, 0x4F4, s32), AT(m, 0x4F8, u16), AT(m, 0x500, s32), AT(m, 0x4FC, f32));
+        AT(m, 0x4F0, u8) = 0;
+        started = 1;
+        AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x80;
+    }
+    for (i = 0; i < 3; i++) {
+        u8 *q = m + i * 0x14;
+
+        if (AT(q, 0x504, u8) == 0 || !(AT(m, 0x6BC + i * 0x60, f32) <= 0.0f)) {
+            continue;
+        }
+        if (!started) {
+            func_001F7890(m, AT(q, 0x508, s32), AT(q, 0x50C, u16), AT(q, 0x514, s32), AT(q, 0x510, f32));
+            AT(q, 0x504, u8) = 0;
+            AT(AT(m, 0x704 + i * 0x60, u8 *), 0xC, u32) |= 0x80;
+        } else {
+            AT(q, 0x504, u8) = 0;
+        }
+    }
+    chains = D_004562B0;
+    skels = D_004562A8;
+    for (i = 0; i < 3; i++) {
+        u8 *l = m + i * 0x60;
+        u8 *s;
+
+        if (!(AT(l, 0x6BC, f32) <= 0.0f)) {
+            continue;
+        }
+        s = l + AT(l, 0x6B4, s32) * 0x1C;
+        if (AT(s, 0x6DC, void *) != NULL) {
+            func_00179BC0(chains, AT(s, 0x6DC, void *));
+            AT(s, 0x6DC, void *) = NULL;
+        }
+        if (AT(s, 0x6E0, void *) != NULL) {
+            func_0017CED0(skels, AT(s, 0x6E0, u8 *));
+            AT(s, 0x6E0, void *) = NULL;
+        }
+    }
+    if (AT(m, 0x54C, f32) <= 0.0f) {
+        func_001F5020(m, AT(m, 0x544, s32));
+        if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 8) {
+            AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x10;
+        }
+    }
+    func_001F4F40(m);
+    func_001F4D70(m);
+    func_001F5850(m);
+    a = func_001F56F0(m, AT(AT(m, 0x6A4, u8 *), 0x28, void *), AT(AT(m, 0x6A4, u8 *), 0x2C, void *),
+                      1.0f - AT(AT(m, 0x6A4, u8 *), 0x1C, f32));
+    b = func_001F56F0(m, AT(AT(m, 0x6A8, u8 *), 0x28, void *), AT(AT(m, 0x6A8, u8 *), 0x2C, void *),
+                      1.0f - AT(AT(m, 0x6A8, u8 *), 0x1C, f32));
+    AT(m, 0x6AC, void *) = func_001F56F0(m, a, b, AT(m, 0x550, f32));
+    for (i = 0; i < 3; i++) {
+        AT(m, 0x70C + i * 0x60, void *) = func_001F56F0(m, AT(AT(m, 0x704 + i * 0x60, u8 *), 0x14, void *),
+                                                        AT(AT(m, 0x708 + i * 0x60, u8 *), 0x14, void *),
+                                                        AT(m, 0x6C0 + i * 0x60, f32));
+    }
+    func_001F5D70(m, AT(m, 0x810, void *));
+    VCALL(m, 0x18, void (*)(u8 *))(m);
+    func_001F5130(m);
+}
