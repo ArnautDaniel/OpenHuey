@@ -208,7 +208,7 @@ extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 add);
 /* +0x14 draw (a screen tint): when its colour (+0x10) has alpha, a temporary drawer paints it
  * in layer 0x28 (added for modes 1 and 4, +0x14) */
 void func_0026B2C0(u8 *o) {
-    u8 drawer[0x10] __attribute__((aligned(16)));
+    u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046D7A0;
     AT(drawer, 0x4, s32) = -1;
@@ -225,7 +225,7 @@ extern void func_00269940(void *drawer, u32 rgba, s32 which, s32 arg);
 /* +0x14 draw of a two-colour screen effect: a temporary drawer paints each colour (+0x10 first,
  * then +0x14) that has alpha, both with +0x18 */
 void func_002673E0(u8 *o) {
-    u8 drawer[0x10] __attribute__((aligned(16)));
+    u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046D790;
     AT(drawer, 0x4, s32) = -1;
@@ -236,4 +236,15 @@ void func_002673E0(u8 *o) {
         func_00269940(drawer, AT(o, 0x14, u32), 1, AT(o, 0x18, s32));
     }
     AT(drawer, 0x0, void **) = D_00469D00;
+}
+
+
+
+/* set a screen-colour drawer's colour, layer and argument and hand it to the renderer (+0xC,
+ * priority 0x20) */
+void func_00269940(void *d, u32 rgba, s32 which, s32 arg) {
+    AT(d, 0x8, u32) = rgba;
+    AT(d, 0xC, s32) = which;
+    AT(d, 0x10, s32) = arg;
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, 0x20, 0);
 }
