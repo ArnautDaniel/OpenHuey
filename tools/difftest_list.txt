@@ -2702,3 +2702,4 @@ src/game/props.c func_00321E30 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B0000
 src/game/effects.c func_002E56C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/effects.c func_002E5660 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20=0x16..0x18
 src/game/scene_game_members.c func_002EF480 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c func_002F0340 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=3..5 --pre=a0+0x34=0x3F7FFFFF..0x3F800001 --pre=a0+0x38=0x0..0x90 --pre=a1=0..2

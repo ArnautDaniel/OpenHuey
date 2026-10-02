@@ -1968,3 +1968,51 @@ void func_002EF480(u8 *fade, f32 t) {
     }
     AT(fade, 0x34, f32) = t;
 }
+
+
+extern void *D_0045D1F0;   /* the screen overlay (Scene +0x105344C) */
+extern void func_0021E1B0(void *ov);
+extern void func_0021D290(void *ov);
+extern void func_0021D8F0(void *ov, s32 layer, s32 alpha);
+
+/* the screen fade, each frame (`mode` 2: brighten): while not fully up (+0x34 < 1) the camera
+ * shake stops and the brightness (+0x38) is reset to 0x80; at full level the renderer takes
+ * the brightness (mode 2 raises it by 4 up to 0x80, mode 1 leaves it alone) and a dim one
+ * (<= 0x10) steps the overlay; states 4 / 5 stop the shake too (4 with +0x2 < 0 also ends the
+ * overlay); the overlay is tinted by +0x40 times the level */
+void func_002F0340(u8 *fade, s32 mode) {
+    VObject *cam;
+
+    if (AT(fade, 0x0, u8) == 5 || AT(fade, 0x0, u8) == 4) {
+        if (AT(fade, 0x0, u8) == 4 && AT(fade, 0x2, s16) < 0 && AT(fade, 0x34, f32) == 1.0f) {
+            func_0021E1B0(D_0045D1F0);
+        }
+        if (AT(fade, 0x34, f32) != 1.0f) {
+            cam = D_0044E4B8;
+            VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
+        }
+    }
+    if (AT(fade, 0x38, s32) != 0x80) {
+        if (AT(fade, 0x34, f32) == 1.0f) {
+            if (mode != 1) {
+                if (mode == 2) {
+                    AT(fade, 0x38, s32) += 4;
+                    if (AT(fade, 0x38, s32) > 0x80) {
+                        AT(fade, 0x38, s32) = 0x80;
+                    }
+                }
+                VCALL(D_0044E4F0, 0x60, void (*)(VObject *, u8))(D_0044E4F0, AT(fade, 0x38, u8));
+            }
+            if (AT(fade, 0x38, s32) <= 0x10) {
+                func_0021D290(D_0045D1F0);
+            }
+        } else {
+            cam = D_0044E4B8;
+            VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
+            AT(fade, 0x38, s32) = 0x80;
+        }
+    }
+    if (AT(fade, 0x40, s32) != 0) {
+        func_0021D8F0(D_0045D1F0, 0x30, (s32)((f32)AT(fade, 0x40, s32) * AT(fade, 0x34, f32)));
+    }
+}
