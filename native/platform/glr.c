@@ -124,6 +124,23 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
     }
 }
 
+/* a draw path that still builds PS2 packets only: reported once, drawn as nothing */
+void glr_todo(const char *what) {
+    static const char *seen[64];
+    static int n;
+    int i;
+
+    for (i = 0; i < n; i++) {
+        if (seen[i] == what) {
+            return;
+        }
+    }
+    if (n < 64) {
+        seen[n++] = what;
+    }
+    fprintf(stderr, "glr: %s not drawn with OpenGL yet\n", what);
+}
+
 void glr_end_frame(void) {
     sBuilding ^= 1;
     sFrames[sBuilding].nv = 0;

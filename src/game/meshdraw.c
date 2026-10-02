@@ -470,3 +470,33 @@ void func_0025D560(u8 *o) {
         mesh_face_eye(o, D_0044E4B8, 0);
     }
 }
+
+
+extern void func_00267D60(u8 *o);
+extern void func_00267AB0(u8 *o);
+extern void func_002677C0(u8 *o);
+extern void func_00267560(u8 *o);
+
+/* vtable +0xC of a placed object's model: its packets by its flags (+0x8 bit 0, bit 1) */
+s32 func_00268090(u8 *o) {
+#ifdef HG_NATIVE
+    {
+        extern void glr_todo(const char *what);
+
+        glr_todo("placed object models (func_00268090)");
+        return 1;
+    }
+#endif
+    if (AT(o, 0x8, u32) & 1) {
+        if (AT(o, 0x8, u32) & 2) {
+            func_00267560(o);
+        } else {
+            func_002677C0(o);
+        }
+    } else if (AT(o, 0x8, u32) & 2) {
+        func_00267AB0(o);
+    } else {
+        func_00267D60(o);
+    }
+    return 1;
+}

@@ -2687,3 +2687,4 @@ src/game/scene_game_members.c func_0025FB10 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/scene_game_members.c func_0025FB10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0x0B300000..0x0B300000 --pre=@0x0B300000=bytes:615F --pre=a1=0..0x30 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50 --runs=60
 src/game/scene_game_members.c func_0025FB10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0x0B300000..0x0B300000 --pre=@0x0B300000=bytes:4741 --pre=a1=0..0x30 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50 --runs=60
 src/game/scene_game_members.c func_0025FB10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0x0B300000..0x0B300000 --pre=@0x0B300000=bytes:7A5F --pre=a1=0..0x30 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50 --runs=60
+src/game/meshdraw.c func_00268090 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x8=0..3
