@@ -202,3 +202,94 @@ void func_00167AF0(Hewie *h) {
     sceVu0CopyVector(h->c.a.pos, func_0017CE80(MOTION_SKELETON(h->c.motion), 0) + 12);
     h->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, h->c.a.pos, 0);
 }
+
+extern void func_00143D20(Hewie *h);
+extern void func_00124890(Actor *a, s32 side);
+extern VObject *D_0044E568;   /* rooms */
+extern VObject *D_0044E4D0;   /* room objects */
+
+#define HEWIE_SIDE(h) HW(h, 0xF3668, s32)   /* side of the room (rooms +0x50) */
+
+/* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
+ * side if he has no triangle yet); in the special mode: note his side, hand him to the
+ * animation player and the room objects. */
+void func_00166CE0(Hewie *h) {
+    Progress *p = gProgress;
+
+    if (*((u8 *)p + 0x1FBEC1) != 0) {
+        HEWIE_SIDE(h) = VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, h->c.a.room, h->c.door, 0);
+        VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
+        VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+        return;
+    }
+    func_00143D20(h);
+    if (h->c.a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        h->c.a.disabled = 1;
+        return;
+    }
+    if (h->c.a.navTri != NAV_NONE) {
+        h->c.a.disabled = 0;
+        return;
+    }
+    func_00124890(&h->c.a, HEWIE_SIDE(h));
+    h->c.a.disabled = 0;
+}
+
+/* Resource table offset (from +0x1540) to pointer, 0 = none. */
+#define HEWIE_RES(h, off) (HW(h, off, s32) != 0 ? (void *)((u8 *)(h) + HW(h, off, s32) + 0x1540) : NULL)
+#define MOTION_PTR(m, off) (*(void **)((u8 *)(m) + (off)))
+#define HEWIE_MSG(h) HW(h, 0xF3540, void *)     /* his message image */
+#define HEWIE_MRK(h) ((u8 *)(h) + 0xF1540)       /* his .MRK data */
+
+/* vtable +0x1C: hook his data up to the animation player and the message display. */
+void func_00168700(Hewie *h) {
+    void *m = h->c.motion;
+
+    MOTION_PTR(m, 0x4C0) = HEWIE_RES(h, 0x1544);
+    MOTION_PTR(m, 0x4D0) = HEWIE_RES(h, 0x1548);
+    MOTION_PTR(m, 0x4CC) = HEWIE_RES(h, 0x154C);
+    MOTION_PTR(m, 0x4C4) = HEWIE_RES(h, 0x1550);
+    h->c.msgSlot = 1;
+    if ((VCALL(gBootMessage, 0x8, u32 (*)(VObject *, u32, void *))(gBootMessage, h->c.msgSlot, HEWIE_MSG(h)) & 0xFF) == 1) {
+        h->c.a.unkD0 = 1;
+    }
+    VCALL(h->c.motion, 0xC, void (*)(void *))(h->c.motion);
+    h->c.a.unkD1 = 1;
+    MOTION_U8(h->c.motion, 0x24) = h->c.msgSlot;
+    MOTION_PTR(h->c.motion, 0x4D4) = HEWIE_MRK(h);
+}
+
+extern VObject *gFileLoader;
+extern void *func_001776B0(Progress *p, s32);
+
+/* LoadAsync(name, dest) for his files, tagged with his file id. */
+#define Hewie_Load(h, loader, name, dest) \
+    VCALL(loader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))( \
+        loader, name, dest, (h)->c.a.flags24 | (h)->c.a.slot, 0)
+
+/* vtable +0x14: start loading his files: model (by costume, from the unlocked costume bits in
+ * the progress flags), textures (into his message buffer + 0x80000), .MRK. */
+void func_00168830(Hewie *h) {
+    Progress *p = gProgress;
+    VObject *loader;
+    u32 costume = 0;
+
+    if ((((u32 *)p)[0x24 / 4] & 0x2) != 0) {
+        costume = 1;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x4) != 0) {
+        costume = 2;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x100000) != 0) {
+        costume = 3;
+    }
+    if ((((u32 *)p)[0x2C / 4] & 0x200000) != 0) {
+        costume = 4;
+    }
+    loader = gFileLoader;
+    Hewie_Load(h, loader, VCALL(h->c.motion, 0xA0, void *(*)(void *, u32))(h->c.motion, costume), (u8 *)h + 0x1540);
+    HEWIE_MSG(h) = func_001776B0(p, 0);
+    HEWIE_MSG(h) = (u8 *)HEWIE_MSG(h) + 0x80000;
+    Hewie_Load(h, loader, VCALL(h->c.motion, 0xA8, void *(*)(void *))(h->c.motion), HEWIE_MSG(h));
+    Hewie_Load(h, loader, VCALL(h->c.motion, 0xA4, void *(*)(void *, u32))(h->c.motion, costume), HEWIE_MRK(h));
+}
