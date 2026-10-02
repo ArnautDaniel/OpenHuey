@@ -4357,3 +4357,14 @@ void func_0018A210(Fiona *f) {
     }
     Progress_ClearFlag(gProgress, 0x2B);
 }
+
+
+extern void func_00125960(Fiona *f);   /* a character's step (base) */
+
+/* State step: +0x2B set clears +0x1AD5BC first */
+void func_0018B570(Fiona *f) {
+    if (AT(f, 0x2B, u8) == 1) {
+        FI(f, 0x1AD5BC, u8) = 0;
+    }
+    func_00125960(f);
+}
