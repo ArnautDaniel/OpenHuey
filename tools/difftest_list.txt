@@ -2665,3 +2665,4 @@ src/game/rooms.c func_0021AFD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=byt
 src/game/scene_game_members.c func_002C8DC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC=0..0xFFFFFFFF --pre=a0+0x10=0..0xFFFFFFFF
 src/game/scene_game_members.c func_0025FA50 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x94=0..1 --pre=a0+0x98=0..1 --pre=a0+0x9C=8..9 --pre=a0+0x90=0..10 --pre=a0+0xA0=0..10 --pre=a0+0x1=bytes:?? --runs=60
 src/game/scene_game.c func_0039A7C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF6CC14=0x0046BF20..0x0046BF20 --pre=a0+0xF6AFB0=0x0046B3A0..0x0046B3A0 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=40
+src/game/items.c func_00260EC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12E0=0..0x0B300000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E0=0..0 --pre=a0+0x14E0=0x0B300000..0x0B300000 --pre=a0+0x14E4=0..0 --pre=@0x0B300000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --runs=60
