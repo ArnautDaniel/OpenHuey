@@ -1,0 +1,372 @@
+/* The PC renderer: OpenGL 4.6 core with direct state access (see glr.h).
+ *
+ * The scene is drawn at the PS2's 640x448 into an offscreen target (glr_present), which is
+ * then scaled into the window; frame dumps read the offscreen target.
+ *
+ *   HG_GLDEBUG=1   once a second: the frame's strip count and its first vertex in clip space */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <SDL3/SDL.h>
+#include <GL/glcorearb.h>
+
+#include "glr.h"
+
+/* ---- the GL functions used (loaded through SDL) ---- */
+
+#define GLR_FUNCS(X) \
+    X(PFNGLCREATEBUFFERSPROC, glCreateBuffers) \
+    X(PFNGLNAMEDBUFFERDATAPROC, glNamedBufferData) \
+    X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays) \
+    X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer) \
+    X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib) \
+    X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat) \
+    X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding) \
+    X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) \
+    X(PFNGLCREATESHADERPROC, glCreateShader) \
+    X(PFNGLSHADERSOURCEPROC, glShaderSource) \
+    X(PFNGLCOMPILESHADERPROC, glCompileShader) \
+    X(PFNGLGETSHADERIVPROC, glGetShaderiv) \
+    X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog) \
+    X(PFNGLCREATEPROGRAMPROC, glCreateProgram) \
+    X(PFNGLATTACHSHADERPROC, glAttachShader) \
+    X(PFNGLLINKPROGRAMPROC, glLinkProgram) \
+    X(PFNGLGETPROGRAMIVPROC, glGetProgramiv) \
+    X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog) \
+    X(PFNGLUSEPROGRAMPROC, glUseProgram) \
+    X(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation) \
+    X(PFNGLPROGRAMUNIFORMMATRIX4FVPROC, glProgramUniformMatrix4fv) \
+    X(PFNGLCREATETEXTURESPROC, glCreateTextures) \
+    X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) \
+    X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) \
+    X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) \
+    X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) \
+    X(PFNGLDELETETEXTURESPROC, glDeleteTextures) \
+    X(PFNGLCREATEFRAMEBUFFERSPROC, glCreateFramebuffers) \
+    X(PFNGLNAMEDFRAMEBUFFERTEXTUREPROC, glNamedFramebufferTexture) \
+    X(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer) \
+    X(PFNGLBLITNAMEDFRAMEBUFFERPROC, glBlitNamedFramebuffer) \
+    X(PFNGLCLEARNAMEDFRAMEBUFFERFVPROC, glClearNamedFramebufferfv) \
+    X(PFNGLREADPIXELSPROC, glReadPixels) \
+    X(PFNGLVIEWPORTPROC, glViewport) \
+    X(PFNGLENABLEPROC, glEnable) \
+    X(PFNGLDISABLEPROC, glDisable) \
+    X(PFNGLDEPTHFUNCPROC, glDepthFunc) \
+    X(PFNGLDEPTHMASKPROC, glDepthMask) \
+    X(PFNGLBLENDFUNCPROC, glBlendFunc) \
+    X(PFNGLDRAWARRAYSPROC, glDrawArrays) \
+    X(PFNGLPIXELSTOREIPROC, glPixelStorei) \
+    X(PFNGLGETSTRINGPROC, glGetString) \
+    X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)
+
+#define GLR_DECLARE(type, name) static type p_##name;
+GLR_FUNCS(GLR_DECLARE)
+
+/* ---- the frame's strips ---- */
+
+typedef struct GlrVertex {
+    float x, y, z, w;
+    float s, t;
+    uint8_t rgba[4];
+} GlrVertex;
+
+typedef struct GlrDraw {
+    float mvp[16];
+    int first, n;
+    uint64_t tex0;
+    uint32_t prim;
+} GlrDraw;
+
+typedef struct GlrFrame {
+    GlrVertex *v;
+    int nv, capv;
+    GlrDraw *d;
+    int nd, capd;
+} GlrFrame;
+
+static GlrFrame sFrames[2];
+static int sBuilding;   /* index of the frame being built; the other one is shown */
+
+void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, const uint8_t *rgba,
+               uint64_t tex0, uint32_t prim) {
+    GlrFrame *f = &sFrames[sBuilding];
+    GlrDraw *d;
+    int i;
+
+    if (n < 3) {
+        return;
+    }
+    if (f->nv + n > f->capv) {
+        f->capv = (f->nv + n) * 2 + 4096;
+        f->v = realloc(f->v, f->capv * sizeof(GlrVertex));
+    }
+    if (f->nd + 1 > f->capd) {
+        f->capd = f->capd * 2 + 256;
+        f->d = realloc(f->d, f->capd * sizeof(GlrDraw));
+    }
+    d = &f->d[f->nd++];
+    memcpy(d->mvp, mvp, sizeof(d->mvp));
+    d->first = f->nv;
+    d->n = n;
+    d->tex0 = tex0;
+    d->prim = prim;
+    for (i = 0; i < n; i++) {
+        GlrVertex *v = &f->v[f->nv++];
+
+        v->x = xyzw[i * 4 + 0];
+        v->y = xyzw[i * 4 + 1];
+        v->z = xyzw[i * 4 + 2];
+        v->w = xyzw[i * 4 + 3];
+        v->s = st[i * 2 + 0];
+        v->t = st[i * 2 + 1];
+        memcpy(v->rgba, rgba + i * 4, 4);
+    }
+}
+
+void glr_end_frame(void) {
+    sBuilding ^= 1;
+    sFrames[sBuilding].nv = 0;
+    sFrames[sBuilding].nd = 0;
+}
+
+/* ---- GL objects ---- */
+
+#define GLR_WIDTH 640
+#define GLR_HEIGHT 448
+
+static GLuint sMeshProg, sQuadProg, sVao, sQuadVao, sVbo;
+static GLint sMvpLoc;
+static GLuint sFbo, sColor, sDepth, sGsTex;
+static int sGsW, sGsH;
+
+static const char *kMeshVs =
+    "#version 460 core\n"
+    "layout(location = 0) in vec4 aPos;\n"
+    "layout(location = 1) in vec2 aSt;\n"
+    "layout(location = 2) in vec4 aCol;\n"
+    "uniform mat4 uMvp;\n"
+    "out vec4 vCol;\n"
+    "out vec2 vSt;\n"
+    "void main() {\n"
+    "    vec4 p = uMvp * vec4(aPos.xyz, 1.0);\n"
+    /* PS2 clip space: y grows downwards, larger z is nearer */
+    "    gl_Position = vec4(p.x, -p.y, -p.z, p.w);\n"
+    "    vCol = aCol * (255.0 / 128.0);\n"
+    "    vSt = aSt;\n"
+    "}\n";
+
+static const char *kMeshFs =
+    "#version 460 core\n"
+    "in vec4 vCol;\n"
+    "in vec2 vSt;\n"
+    "out vec4 oColor;\n"
+    "void main() {\n"
+    "    oColor = vec4(clamp(vCol.rgb, 0.0, 1.0), 1.0);\n"
+    "}\n";
+
+/* a full-screen triangle pair from gl_VertexID, showing the software GS frame */
+static const char *kQuadVs =
+    "#version 460 core\n"
+    "out vec2 vUv;\n"
+    "void main() {\n"
+    "    vec2 p = vec2((gl_VertexID & 1) != 0 ? 1.0 : -1.0, (gl_VertexID & 2) != 0 ? 1.0 : -1.0);\n"
+    "    vUv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5);\n"
+    "    gl_Position = vec4(p, 0.0, 1.0);\n"
+    "}\n";
+
+static const char *kQuadFs =
+    "#version 460 core\n"
+    "in vec2 vUv;\n"
+    "uniform sampler2D uTex;\n"
+    "out vec4 oColor;\n"
+    "void main() {\n"
+    "    oColor = vec4(texture(uTex, vUv).rgb, 1.0);\n"
+    "}\n";
+
+static GLuint shader(GLenum type, const char *src) {
+    GLuint s = p_glCreateShader(type);
+    GLint ok;
+    char log[1024];
+
+    p_glShaderSource(s, 1, &src, NULL);
+    p_glCompileShader(s);
+    p_glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        p_glGetShaderInfoLog(s, sizeof(log), NULL, log);
+        fprintf(stderr, "glr: shader: %s\n", log);
+    }
+    return s;
+}
+
+static GLuint program(const char *vs, const char *fs) {
+    GLuint p = p_glCreateProgram();
+    GLint ok;
+    char log[1024];
+
+    p_glAttachShader(p, shader(GL_VERTEX_SHADER, vs));
+    p_glAttachShader(p, shader(GL_FRAGMENT_SHADER, fs));
+    p_glLinkProgram(p);
+    p_glGetProgramiv(p, GL_LINK_STATUS, &ok);
+    if (!ok) {
+        p_glGetProgramInfoLog(p, sizeof(log), NULL, log);
+        fprintf(stderr, "glr: link: %s\n", log);
+    }
+    return p;
+}
+
+static void APIENTRY debug_cb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len,
+                                const GLchar *msg, const void *user) {
+    (void)source; (void)id; (void)len; (void)user;
+    if (type == GL_DEBUG_TYPE_ERROR || severity == GL_DEBUG_SEVERITY_HIGH) {
+        fprintf(stderr, "gl: %s\n", msg);
+    }
+}
+
+int glr_init(void) {
+#define GLR_LOAD(type, name) \
+    if ((p_##name = (type)SDL_GL_GetProcAddress(#name)) == NULL) { \
+        fprintf(stderr, "glr: no %s\n", #name); \
+        return 0; \
+    }
+    GLR_FUNCS(GLR_LOAD)
+#undef GLR_LOAD
+
+    p_glEnable(GL_DEBUG_OUTPUT);
+    p_glDebugMessageCallback(debug_cb, NULL);
+
+    sMeshProg = program(kMeshVs, kMeshFs);
+    sMvpLoc = p_glGetUniformLocation(sMeshProg, "uMvp");
+    sQuadProg = program(kQuadVs, kQuadFs);
+
+    p_glCreateBuffers(1, &sVbo);
+    p_glCreateVertexArrays(1, &sVao);
+    p_glVertexArrayVertexBuffer(sVao, 0, sVbo, 0, sizeof(GlrVertex));
+    p_glEnableVertexArrayAttrib(sVao, 0);
+    p_glVertexArrayAttribFormat(sVao, 0, 4, GL_FLOAT, GL_FALSE, 0);
+    p_glVertexArrayAttribBinding(sVao, 0, 0);
+    p_glEnableVertexArrayAttrib(sVao, 1);
+    p_glVertexArrayAttribFormat(sVao, 1, 2, GL_FLOAT, GL_FALSE, 16);
+    p_glVertexArrayAttribBinding(sVao, 1, 0);
+    p_glEnableVertexArrayAttrib(sVao, 2);
+    p_glVertexArrayAttribFormat(sVao, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 24);
+    p_glVertexArrayAttribBinding(sVao, 2, 0);
+    p_glCreateVertexArrays(1, &sQuadVao);
+
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sColor);
+    p_glTextureStorage2D(sColor, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sDepth);
+    p_glTextureStorage2D(sDepth, 1, GL_DEPTH_COMPONENT24, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sFbo);
+    p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
+    p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+    return 1;
+}
+
+/* the software GS frame as a texture (re-created when its size changes) */
+static void upload_gs(const uint32_t *px, int pitch, int w, int h) {
+    if (w != sGsW || h != sGsH) {
+        if (sGsTex) {
+            p_glDeleteTextures(1, &sGsTex);
+        }
+        p_glCreateTextures(GL_TEXTURE_2D, 1, &sGsTex);
+        p_glTextureStorage2D(sGsTex, 1, GL_RGBA8, w, h);
+        p_glTextureParameteri(sGsTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        p_glTextureParameteri(sGsTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        sGsW = w;
+        sGsH = h;
+    }
+    p_glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
+    p_glTextureSubImage2D(sGsTex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, px);
+    p_glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+}
+
+void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH) {
+    static const float kBlack[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    static const float kFar = 1.0f;
+    const GlrFrame *f = &sFrames[sBuilding ^ 1];
+    int i;
+
+    p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
+    p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 0, kBlack);
+    p_glClearNamedFramebufferfv(sFbo, GL_DEPTH, 0, &kFar);
+
+    /* underneath: what the software GS drew (2D paths not ported yet) */
+    if (w > 0 && h > 0) {
+        upload_gs(gsPixels, pitch, w, h);
+        p_glDisable(GL_DEPTH_TEST);
+        p_glUseProgram(sQuadProg);
+        p_glBindTextureUnit(0, sGsTex);
+        p_glBindVertexArray(sQuadVao);
+        p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+
+    if (getenv("HG_GLDEBUG")) {
+        static unsigned n;
+
+        if (n++ % 60 == 0) {
+            fprintf(stderr, "glr: %d strips, %d vertices\n", f->nd, f->nv);
+            if (f->nd > 0) {
+                const float *m = f->d[0].mvp;
+                const GlrVertex *v = &f->v[f->d[0].first];
+                float c[4];
+                int k;
+
+                for (k = 0; k < 4; k++) {
+                    c[k] = m[k] * v->x + m[4 + k] * v->y + m[8 + k] * v->z + m[12 + k];
+                }
+                fprintf(stderr, "glr: v0 (%g %g %g) -> clip (%g %g %g %g)\n", v->x, v->y, v->z, c[0], c[1], c[2], c[3]);
+            }
+        }
+    }
+
+    /* the 3D strips */
+    if (f->nd > 0) {
+        p_glNamedBufferData(sVbo, (GLsizeiptr)f->nv * sizeof(GlrVertex), f->v, GL_STREAM_DRAW);
+        p_glEnable(GL_DEPTH_TEST);
+        p_glDepthFunc(GL_LESS);
+        p_glDepthMask(GL_TRUE);
+        p_glUseProgram(sMeshProg);
+        p_glBindVertexArray(sVao);
+        for (i = 0; i < f->nd; i++) {
+            p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, f->d[i].mvp);
+            p_glDrawArrays(GL_TRIANGLE_STRIP, f->d[i].first, f->d[i].n);
+        }
+        p_glDisable(GL_DEPTH_TEST);
+    }
+
+    /* into the window, 4:3 letterboxed (nothing when there is no window) */
+    if (outW > 0 && outH > 0) {
+        int vw = outW, vh = outW * 3 / 4, x, y;
+
+        if (vh > outH) {
+            vh = outH;
+            vw = outH * 4 / 3;
+        }
+        x = (outW - vw) / 2;
+        y = (outH - vh) / 2;
+        p_glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        p_glViewport(0, 0, outW, outH);
+        p_glClearNamedFramebufferfv(0, GL_COLOR, 0, kBlack);
+        p_glBlitNamedFramebuffer(sFbo, 0, 0, 0, GLR_WIDTH, GLR_HEIGHT, x, y, x + vw, y + vh, GL_COLOR_BUFFER_BIT,
+                                 GL_LINEAR);
+    }
+}
+
+void glr_read_pixels(uint32_t *out, int w, int h) {
+    int y;
+
+    (void)w;
+    p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    p_glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    p_glReadPixels(0, 0, GLR_WIDTH, GLR_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, out);
+    /* GL rows run bottom-up */
+    for (y = 0; y < h / 2 && y < GLR_HEIGHT / 2; y++) {
+        uint32_t tmp[GLR_WIDTH];
+
+        memcpy(tmp, out + y * GLR_WIDTH, sizeof(tmp));
+        memcpy(out + y * GLR_WIDTH, out + (GLR_HEIGHT - 1 - y) * GLR_WIDTH, sizeof(tmp));
+        memcpy(out + (GLR_HEIGHT - 1 - y) * GLR_WIDTH, tmp, sizeof(tmp));
+    }
+}

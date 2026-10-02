@@ -1,7 +1,9 @@
 /* Reaching a function that is still only in the PS2 disassembly (see tools/native_gen.py).
  *
  *   HG_SKIP_STUBS=1   don't stop: report each such function once and return 0 (a survey of
- *                     what a path still needs; results are unreliable past the first one) */
+ *                     what a path still needs; results are unreliable past the first one:
+ *                     a skipped float-returning function unbalances the x87 stack, so later
+ *                     float maths turns into NaN) */
 #include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>

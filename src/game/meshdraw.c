@@ -6,6 +6,15 @@
 extern VObject *D_0044E4F0;   /* the renderer */
 extern VObject *D_0044E4B8;   /* the camera */
 
+#ifdef HG_NATIVE
+/* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
+extern void glr_strip(const f32 mvp[16], s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, u64 tex0,
+                      u32 prim);
+static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
+static u64 sGlTex0;
+static u32 sGlPrim;
+#endif
+
 extern u32 D_0047A960[];   /* the VU1 microprogram chains, by mode (+0x4) */
 extern void func_0025DB10(u8 *o, s32 which);
 extern u64 func_002B71D0(s32 tex);         /* TEX0 of a texture */
@@ -126,6 +135,16 @@ s32 func_0025E2B0(u8 *o) {
             VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, b);
             sceVu0MulMatrix(b, b, (f32 (*)[4])(o + 0x90));
             sceVu0MulMatrix(a, a, (f32 (*)[4])(o + 0x90));
+#ifdef HG_NATIVE
+            for (i = 0; i < 4; i++) {
+                sGlMvp[i][0] = b[i][0];
+                sGlMvp[i][1] = b[i][1];
+                sGlMvp[i][2] = b[i][2];
+                sGlMvp[i][3] = b[i][3];
+            }
+            sGlTex0 = newTex ? AT(o, 0x10, u64) : 0;
+            sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6;
+#endif
             p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 9);
             p[0] = 0x10000008;
             AT(p, 0x8, u32) = VIF_STCYCL_1_1;
@@ -239,71 +258,75 @@ void func_0025DB10(u8 *o, s32 which) {
 extern s32 func_0025CB50(u8 *o);
 s32 func_002B7500(u8 *batch);   /* send a batch's vertices to VU1 */
 
-/* mode 0 batch writer: the batch's vertex count (+0x7C, format = count & 3) locates its
- * sections after the header; it is sent unless hidden (+0xD0 not 0xFF, or its group +0x8A
- * is off in the mask +0x6C; kind 4 parts first go through func_0025CB50). Returns the next
- * batch. */
+/* mode 0 batch writer: the batch's vertex count (+0x7C; count & 3 gives the padding) locates
+ * its sections - texture coordinates (s, t), colours (RGBA bytes), positions (x, y, z, w) -
+ * and it is sent unless hidden (+0xD0 not 0xFF, or its group +0x8A is off in the mask +0x6C;
+ * kind 4 parts take their texture coordinates from func_0025CB50). Returns the next batch. */
 s32 *func_0025E100(u8 *o, s32 *batch) {
     struct {
         s32 n;
         s32 *batch;
-        u8 *uv;
-        void *src;
-        u8 *data;
+        f32 *xyz;   /* x, y, z, w per vertex */
+        void *st;   /* texture coordinates (s, t floats) */
+        u8 *rgba;   /* colours (0x80 = 1.0) */
     } a;
     s32 n = AT(o, 0x7C, s32);
     u32 fmt = n & 3;
-    u8 *data = (u8 *)batch + n * 8;
-    u8 *uv;
+    u8 *rgba = (u8 *)batch + n * 8;
+    u8 *xyz;
     s32 ok = 1;
     s32 show;
 
     if (fmt == 3 || fmt == 1) {
-        data += 8;
+        rgba += 8;
     }
-    uv = data + n * 4;
+    xyz = rgba + n * 4;
     switch (fmt) {
     case 3:
-        uv += 4;
+        xyz += 4;
         break;
     case 2:
-        uv += 8;
+        xyz += 8;
         break;
     case 1:
-        uv += 0xC;
+        xyz += 0xC;
         break;
     }
     a.n = 0;
-    a.uv = NULL;
-    a.src = NULL;
-    a.data = NULL;
-    a.data = data;
+    a.xyz = NULL;
+    a.st = NULL;
+    a.rgba = NULL;
+    a.rgba = rgba;
     a.n = AT(o, 0x7C, s32);
-    a.uv = uv;
+    a.xyz = (f32 *)xyz;
     a.batch = batch;
     if (AT(o, 0x18, s32) == 4) {
         ok = func_0025CB50(o);
-        a.src = o + 0x240 + (AT(o, 0xD4, s32) - 1) * 32;
+        a.st = o + 0x240 + (AT(o, 0xD4, s32) - 1) * 32;
     } else {
-        a.src = batch;
+        a.st = batch;
     }
     if (AT(o, 0xD0, u8) == 0xFF) {
         u8 g = AT(o, 0x8A, u8);
 
         show = g == 0 || (AT(o, 0x6C + (g >> 5) * 4, u32) & (1u << (g & 0x1F)));
         if (show && ok == 1) {
+#ifdef HG_NATIVE
+            glr_strip(&sGlMvp[0][0], a.n, a.xyz, (f32 *)a.st, a.rgba, sGlTex0, sGlPrim);
+#else
             func_002B7500((u8 *)&a);
+#endif
         }
     }
     AT(o, 0x64, s32) = AT(o, 0x80, s32);
-    return (s32 *)(uv + AT(o, 0x7C, s32) * 16);
+    return (s32 *)(xyz + AT(o, 0x7C, s32) * 16);
 }
 
 #define DMA_REF_QWC(bytes) ((u64)(u32)((((bytes) + 15) >> 4) | 0x30000000))
 #define DMA_ADDR(p) ((u64)((u32)(p) & 0x0FFFFFFF) << 32)
 
-/* send a batch's vertices to VU1 { count, batch, +0x8 16-byte vertex data, +0xC 8-byte
- * positions, +0x10 4-byte normals } (pointers advance): the batch's own data is called first
+/* send a batch's vertices to VU1 { count, batch, +0x8 positions (x, y, z, w floats), +0xC
+ * texture coordinates (s, t floats), +0x10 colours (RGBA bytes) } (pointers advance): the batch's own data is called first
  * (renderer +0x20, which says whether it is ready), then per 48 vertices a GIF tag and three
  * referenced UNPACKs, each started with MSCNT; a return tag with FLUSHA ends it. */
 s32 func_002B7500(u8 *a) {

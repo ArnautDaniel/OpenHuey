@@ -238,6 +238,13 @@ void func_001B71E0(u8 *r) {
 void func_001B7370(u8 *r) {
     s32 i;
 
+#ifdef HG_NATIVE
+    {
+        extern void glr_end_frame(void);   /* native/platform/glr.c */
+
+        glr_end_frame();
+    }
+#endif
     REND_BUF(r) ^= 1;
     for (i = 0; i < 53; i++) {
         u64 *tag = (u64 *)(REND_CHAIN(r, REND_BUF(r)) + i * 16);
