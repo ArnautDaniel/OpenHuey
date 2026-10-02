@@ -293,3 +293,61 @@ void func_00168830(Hewie *h) {
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA8, void *(*)(void *))(h->c.motion), HEWIE_MSG(h));
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA4, void *(*)(void *, u32))(h->c.motion, costume), HEWIE_MRK(h));
 }
+
+extern void func_002DCDD0(void *motion, Hewie *h, f32, f32);
+
+/* vtable +0x40: animation update in the room being played: ground fit (off the nav mesh: plain),
+ * advance; then (still on the mesh) the animation events. */
+void func_00167620(Hewie *h) {
+    Progress *p = gProgress;
+    s32 room = h->c.a.room;
+
+    if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        if (h->c.a.navTri == NAV_NONE) {
+            func_002DCDD0(h->c.motion, h, 0.0f, 0.0f);
+        } else if (HW(h, 0xF3582, u8) == 1) {
+            VCALL(h->c.motion, 0x40, void (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+        } else {
+            VCALL(h->c.motion, 0x40, void (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 0.0f, 0.0f);
+        }
+        func_001F6AF0(h->c.motion);
+    }
+    room = h->c.a.room;
+    if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && h->c.a.navTri != NAV_NONE) {
+        VCALL(h->c.motion, 0x4C, void (*)(void *, s32, Hewie *))(h->c.motion, 1, h);
+    }
+}
+
+extern void func_00126450(Character *c);
+extern Character *gCharPlayer;
+extern Character *gCharPartner;
+extern Character *gCharPursuer;
+
+#define Character_ToIdle(c) VCALL(c, 0x7C, void (*)(Character *))(c)
+
+/* vtable +0x8C: enable (Character part). If he was busy with Fiona (actions 0x48..0x4B, 0x72)
+ * or the pursuer (0x1F..0x22, 0x38, 0x75), that character goes back to idle. */
+void func_0015FC60(Hewie *h) {
+    u8 ok;
+
+    func_00126450(&h->c);
+    h->c.a.unk2A = 1;
+    HW(h, 0xF35E0, u8) = 0;
+
+    ok = (gCharPlayer != NULL && gCharPlayer->a.active == 1) ? 1 : 0;
+    if (ok == 1 && !gCharPlayer->unkE0) {
+        switch (HEWIE_ACTION(h)) {
+        case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x72:
+            Character_ToIdle(gCharPlayer);
+            break;
+        }
+    }
+    ok = (gCharPursuer != NULL && gCharPursuer->a.active == 1) ? 1 : 0;
+    if (ok == 1 && !gCharPursuer->unkE0) {
+        switch (HEWIE_ACTION(h)) {
+        case 0x1F: case 0x20: case 0x21: case 0x22: case 0x38: case 0x75:
+            Character_ToIdle(gCharPursuer);
+            break;
+        }
+    }
+}
