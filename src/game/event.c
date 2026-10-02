@@ -501,3 +501,9 @@ void func_001FB1F0(u8 *ev, u32 id) {
         Task_Close((Task *)(ev + 0x708));
     }
 }
+
+
+/* set event bit `n` (+0x890) */
+void func_001FB190(u8 *ev, s32 n) {
+    AT(ev, 0x890, u32) |= 1u << (n & 0xFF);
+}
