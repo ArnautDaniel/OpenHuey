@@ -50,3 +50,16 @@ void func_0010BE10(int mode, int inter, int omode, int ffmd) {
     (void)omode;
     (void)ffmd;
 }
+
+/* sceGsDefDispEnv(disp, psm, w, h, dx, dy): PMODE, SMODE2, DISPFB, DISPLAY, BGCOLOR. The PS2
+ * version derives DISPLAY from the video timing tables; the PC GS only needs the frame buffer
+ * (DISPFB) and the shown size, so DISPLAY is just (w - 1, h - 1) at 1x. */
+void sceGsDefDispEnv(unsigned long long *disp, short psm, short w, short h, short dx, short dy) {
+    (void)dx;
+    (void)dy;
+    disp[0] = 0x66;
+    disp[1] = 2;   /* SMODE2: interlaced, frame mode */
+    disp[2] = (unsigned long long)(psm & 0xF) << 15 | (unsigned long long)(((w + 63) / 64) & 0x3F) << 9;
+    disp[3] = (unsigned long long)(h - 1) << 44 | (unsigned long long)(w - 1) << 32;
+    disp[4] = 0;
+}

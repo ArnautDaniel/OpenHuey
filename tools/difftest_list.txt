@@ -1808,3 +1808,12 @@ src/game/pad.c func_001BE6A0
 src/game/renderer.c func_001B83D0 --pre=a1=1..2 --stub-fret=0.25 --stub-fret=0.75
 src/game/renderer.c func_001B8250 --pre=a0+0x304BE4=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x304BB8=0xFFFFFFFE..0xFFFFFFFF --pre=a0+0x304BDC=0xFFFFFFFE..0xFFFFFFFF
 src/game/renderer.c func_001B7ED0 --runs=5
+src/sdk/libgraph.c func_0010BFA0
+src/sdk/libgraph.c func_0010C500 --runs=100 --pre=a0=0..3 --pre=a1=1..1024 --pre=a2=1..512 --pre=@0x003ACD40=0..1 --pre=@0x003ACD44=0..1
+src/sdk/libgraph.c func_0010C5C8 --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
+src/sdk/libgraph.c func_0010D020 --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
+src/sdk/libgraph.c func_0010C7B0 --runs=100 --pre=a1=0..3 --pre=a2=0..640 --pre=a3=0..512 --pre=a4=0..640 --pre=a5=0..512
+src/game/renderer.c func_001B79F0 --runs=50 --pre=a0+0x304C09=0x4F..0x50
+src/game/renderer.c func_001B71E0 --runs=50
+src/game/renderer.c func_001B7370 --runs=30 --pre=a0+0x304DE0=0..1
+src/game/renderer.c func_001BBC20 --runs=100 --pre=a1=-1..4 --pre=a2=0..54 --stub-ret=0 --stub-ret=1
