@@ -3169,3 +3169,38 @@ void func_002E3190(f32 (*m)[4], f32 a) {
     sceVu0UnitMatrix(m);
     sceVu0RotMatrixY(m, m, a);
 }
+
+
+
+/* reset the play state before a new animation (as func_002DDE20): +0x85C / +0x85D off, the
+ * speeds +0x38 / +0x3C and +0x48 / +0x4C from the defaults +0x87C / +0x880, +0x40 / +0x50 zero */
+static void motion_reset_play(u8 *m) {
+    AT(m, 0x85C, u8) = 0;
+    AT(m, 0x85D, u8) = 0;
+    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = AT(m, 0x880, s32);
+    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+    AT(m, 0x50, s32) = 0;
+}
+
+/* play animation `anim` (variant `variant`) blending in over the frames the table (+0x874)
+ * gives at +0, with its flags (+4); an animation not in the table cuts in at once */
+void func_002DDED0(u8 *m, s32 anim, s32 variant) {
+    s32 i;
+    f32 blend;
+    u32 flags;
+
+    if (func_001F4710(m, anim) == -1) {
+        motion_reset_play(m);
+        func_001F7890(m, anim, 0, -1, 0.0f);
+        return;
+    }
+    i = func_001F4710(m, anim);
+    blend = (f32)(i != -1 ? AT(AT(m, 0x874, u8 *), i * 6, s16) : 0);
+    i = func_001F4710(m, anim);
+    flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+    motion_reset_play(m);
+    func_001F7890(m, anim, flags & 0xFFFF, variant, blend);
+}
