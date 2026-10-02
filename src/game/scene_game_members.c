@@ -1905,3 +1905,21 @@ void func_002E29A0(u8 *o) {
         }
     }
 }
+
+
+/* the dynamic actors, drawn each frame (texture cache and gBootMessage reset first): each
+ * active one in the current room (+0x2C) */
+void func_002D74E0(u8 *o) {
+    s32 room, i;
+
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    room = VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress);
+    for (i = 0; i < 0x80; i++) {
+        VObject *a = func_00120D60(o + 0xA040, i);
+
+        if (a != NULL && AT(a, 0x28, u8) == 1 && AT(a, 0x30, s32) == room) {
+            VCALL(a, 0x2C, void (*)(VObject *))(a);
+        }
+    }
+}
