@@ -2510,3 +2510,33 @@ void func_002F81A0(u8 *o) {
     func_002EE840(o + 0x17E0);
     AT(o, 0x850, u8) = 0;
 }
+
+/* A spring system: point masses (first +0x18, next +0x2C) and the links between them (first
+ * +0x30, next +0x28), each with its vtable at +0x30 of itself. */
+
+/* begin a frame: each point (+0xC) with the system's +0x14 */
+void func_002EE8A0(u8 *s) {
+    u8 *p;
+
+    for (p = AT(s, 0x18, u8 *); p != NULL; p = AT(p, 0x2C, u8 *)) {
+        VCALL(p + 0x30, 0xC, void (*)(u8 *, void *))(p, AT(s, 0x14, void *));
+    }
+}
+
+/* one step: each link (+0x10) */
+void func_002EE900(u8 *s) {
+    u8 *l;
+
+    for (l = AT(s, 0x30, u8 *); l != NULL; l = AT(l, 0x28, u8 *)) {
+        VCALL(l + 0x30, 0x10, void (*)(u8 *, u8 *))(l, s);
+    }
+}
+
+/* finish the frame: each link (+0x14) */
+void func_002EE840(u8 *s) {
+    u8 *l;
+
+    for (l = AT(s, 0x30, u8 *); l != NULL; l = AT(l, 0x28, u8 *)) {
+        VCALL(l + 0x30, 0x14, void (*)(u8 *, u8 *))(l, s);
+    }
+}
