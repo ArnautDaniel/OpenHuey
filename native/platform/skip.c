@@ -1,5 +1,5 @@
 /* Game functions not decompiled yet that the PC build skips on purpose (each logged once):
- * self-contained drawing effects off the path being worked on. Each definition goes away when
+ * self-contained effects off the path being worked on, and the stalkers. Each definition goes away when
  * the function is decompiled in src/. */
 #include <stdio.h>
 
@@ -32,4 +32,14 @@ int func_001BA260(void *r) {
     (void)r;
     skipped("func_001BA260 frame post-process");
     return 1;
+}
+
+/* load stalker / event character `id` (0x28 kinds) into character slot 2: not yet - 0 ("not
+ * loaded"), so scripts go on as if it can't come. Each kind is a class of its own (the
+ * stalkers' AI); they come later. */
+int func_00171160(void *p, unsigned id) {
+    (void)p;
+    (void)id;
+    skipped("func_00171160 stalker load");
+    return 0;
 }
