@@ -2016,3 +2016,21 @@ void func_002F0340(u8 *fade, s32 mode) {
         func_0021D8F0(D_0045D1F0, 0x30, (s32)((f32)AT(fade, 0x40, s32) * AT(fade, 0x34, f32)));
     }
 }
+
+
+/* a noise for the pursuer to hear (the loudest this frame wins): loudness `loud` (u8), in room
+ * `room`, at triangle `tri` - or at door `door` (0xFFFF: none) */
+void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
+    if (loud == 0 || room == -1 || (u8)loud < AT(n, 0x0, u8)) {
+        return;
+    }
+    AT(n, 0x0, u8) = loud;
+    AT(n, 0x4, s32) = room;
+    if ((u16)door != 0xFFFF) {
+        AT(n, 0x8, s32) = -1;
+        AT(n, 0xC, u16) = door;
+    } else {
+        AT(n, 0x8, s32) = tri;
+        AT(n, 0xC, u16) = 0xFFFF;
+    }
+}
