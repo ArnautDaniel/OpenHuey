@@ -57,3 +57,29 @@ void hg_hw_write32(unsigned addr, unsigned value) {
     (void)addr;
     (void)value;
 }
+
+/* The game's "wait for vsync" (system +0x1C, PS2 0x001BED00) spins until the vblank interrupts
+ * set their flags. On PC this is the frame boundary: pace to 60 Hz, run the vblank handlers. */
+#include <time.h>
+
+extern void hg_frame(void);   /* video.c: present, input */
+
+void func_001BED00(void) {
+    static struct timespec next;
+    struct timespec now;
+
+    D_0047B204 = 0;
+    D_0047B208 = 0;
+    hg_frame();
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    if (next.tv_sec == 0 || now.tv_sec > next.tv_sec + 1) {
+        next = now;
+    }
+    next.tv_nsec += 16683333;   /* 59.94 Hz */
+    if (next.tv_nsec >= 1000000000) {
+        next.tv_nsec -= 1000000000;
+        next.tv_sec++;
+    }
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
+    hg_vblank();
+}

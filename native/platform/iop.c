@@ -14,3 +14,10 @@ int func_001BC0F0(void *iop, const char *name, int a, int b, int c) {
     fprintf(stderr, "iop: module %s (skipped)\n", name);
     return 1;
 }
+
+/* load the IOP module embedded in the executable; *result = its start status (non-zero would
+ * make Game_Init exit) */
+int func_0037E1F0(int *result) {
+    *result = 0;
+    return 0;
+}

@@ -36,3 +36,11 @@ u64bits func_0011F148(u64bits a, u64bits b) { return b_of(d_of(a) + d_of(b)); } 
 u64bits func_0011F208(u64bits a, u64bits b) { return b_of(d_of(a) * d_of(b)); }     /* a * b */
 u64bits func_0011F458(u64bits a, u64bits b) { return b_of(d_of(a) / d_of(b)); }     /* a / b */
 float func_0011F878(u64bits a) { return (float)d_of(a); }                          /* (float)a */
+
+#include <stdlib.h>
+
+/* operator new / delete and the plain allocator they sit on */
+void *func_00100660(unsigned size) { return calloc(1, size ? size : 1); }
+void func_00100490(void *p) { free(p); }
+void *func_00100550(unsigned size) { return calloc(1, size ? size : 1); }
+void func_00100470(void *p) { free(p); }

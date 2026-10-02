@@ -1837,3 +1837,7 @@ src/game/vram.c func_001C1E00 --runs=300 --pre=a1=-1..0x20 --pre=a2=0x2C..0x2C -
 src/game/vram.c func_001C2930
 src/game/vram.c func_001C2960
 src/game/vram.c func_001C2970
+src/game/loader.c func_0016C530 --runs=5 --stub-ret=0 --stub-ret-prob=1
+src/game/loader.c func_0016B2B0 --runs=100 --pre=a1=0..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1
+src/game/loader.c func_00169680 --runs=5 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1
+src/game/loader.c func_0016B2B0 --runs=200 --pre=a1=0x0A000000..0x0A000000 --pre=a0+0x12810=0..1 --pre=a0+0x12914=0..1 --pre=a0+0x12A18=0..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1
