@@ -85,7 +85,7 @@ s32 func_00223E20(u8 *d) {
 extern f32 func_0031C058(f32 x);
 extern void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t);
 extern void func_00219E10(u8 *d, s32 setup, f32 t);
-extern f32 func_002197A0(u8 *d, s32 n, f32 t);
+extern f32 func_002197A0(u8 *d, s32 mode, f32 t);
 extern void func_0025F6A0(void *o, f32 v);
 extern void func_00219D70(u8 *d, f32 *out, f32 t);
 extern void func_00219CD0(u8 *d, f32 *out, f32 t);
@@ -211,4 +211,97 @@ void func_00219E10(u8 *d, s32 setup, f32 t) {
     AT(d, 0x0, f32) = kSpeed.f / (AT(d, 0x24, f32) / 100.0f);
     AT(d, 0x4, f32) = kSpeed.f / (AT(d, 0x28, f32) / 100.0f);
     func_0025F6A0(d + 8, t);
+}
+
+
+/* the point of the target to keep in view: its position (+0x38) + offset (+0x40) */
+
+/* the time along the look-at path (components 3..5) nearest the target point, by horizontal
+ * distance (mode 0), height difference (1) or distance (2): the nearest key, then steps of
+ * +0x0 around it; -1: no path / target */
+f32 func_002197A0(u8 *d, s32 mode, f32 t) {
+    f32 p[4] __attribute__((aligned(16)));
+    f32 bestHd = -1.0f, bestDy = -1.0f, bestD = -1.0f, best = -1.0f;
+    f32 *keys;
+    f32 u, end;
+    s32 n, k, kb = 0, lo, hi;
+    u8 m = (u8)mode;
+
+    if (!(t < 1.0f)) {
+        u = t;
+    } else {
+        u = AT(d, 0x8, f32);
+    }
+    if (AT(d, 0x2C, void *) == NULL || AT(d, 0x38, f32 *) == NULL) {
+        return -1.0f;
+    }
+    sceVu0CopyVector(p, AT(d, 0x38, f32 *));
+    sceVu0AddVector(p, p, (f32 *)(d + 0x40));
+    func_0025F580(d + 8, 3, u);
+    func_0025F580(d + 8, 4, u);
+    func_0025F580(d + 8, 5, u);
+    n = AT(d, 0x10, s32);
+    for (k = 0; k < n; k++) {
+        f32 tk = (f32)(s32)AT(d, 0xC, f32 *)[k * 8];
+        f32 x = func_0025F580(d + 8, 3, tk);
+        f32 y = func_0025F580(d + 8, 4, tk);
+        f32 z = func_0025F580(d + 8, 5, tk);
+        f32 dz = z - p[2], dx = x - p[0], dy = y - p[1];
+        f32 hd = __builtin_sqrtf(dz * dz + dx * dx);
+        f32 dd;
+        s32 take;
+
+        if (dy <= 0.0f) {
+            dy = -dy;
+        }
+        dd = __builtin_sqrtf(dy * dy + hd * hd);
+        if (m == 0) {
+            take = bestHd < 0.0f || !(bestHd <= hd);
+        } else if (m == 1) {
+            take = bestDy < 0.0f || !(bestDy <= dy);
+        } else {
+            take = bestD < 0.0f || !(bestD <= dd);
+        }
+        if (take) {
+            bestHd = hd;
+            kb = k;
+            bestDy = dy;
+            bestD = dd;
+            best = tk;
+        }
+    }
+    keys = AT(d, 0xC, f32 *);
+    lo = kb >= 2 ? kb - 1 : 0;
+    hi = kb < n - 1 ? kb + 1 : n - 1;
+    end = (f32)(s32)keys[kb * 8] + (f32)((s32)keys[hi * 8] - (s32)keys[kb * 8]) / 2.0f;
+    u = (f32)(s32)keys[lo * 8] + (f32)((s32)keys[kb * 8] - (s32)keys[lo * 8]) / 2.0f;
+    while (u < end) {
+        f32 x = func_0025F580(d + 8, 3, u);
+        f32 y = func_0025F580(d + 8, 4, u);
+        f32 z = func_0025F580(d + 8, 5, u);
+        f32 dz = z - p[2], dx = x - p[0], dy = y - p[1];
+        f32 hd = __builtin_sqrtf(dz * dz + dx * dx);
+        f32 dd;
+        s32 take;
+
+        if (dy <= 0.0f) {
+            dy = -dy;
+        }
+        dd = __builtin_sqrtf(dy * dy + hd * hd);
+        if (m == 0) {
+            take = bestHd < 0.0f || !(bestHd <= hd);
+        } else if (m == 1) {
+            take = bestDy < 0.0f || !(bestDy <= dy);
+        } else {
+            take = bestD < 0.0f || !(bestD <= dd);
+        }
+        if (take) {
+            bestHd = hd;
+            bestDy = dy;
+            bestD = dd;
+            best = u;
+        }
+        u = u + AT(d, 0x0, f32);
+    }
+    return best;
 }
