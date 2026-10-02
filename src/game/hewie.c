@@ -1387,3 +1387,57 @@ void func_0014DFB0(Hewie *h) {
         Hewie_ToDefault(h);
     }
 }
+
+/* Start action `act` as adjusted to his situation. */
+static inline void Hewie_Start(Hewie *h, s32 act) {
+    func_00130AF0(h, func_0013B2C0(h, act), 0);
+}
+
+#define HEWIE_NEXT(h) HW(h, 0xF3570, s32)     /* action to continue with */
+
+void func_00149D40(Hewie *h) {
+    if (func_00140CD0(h, 3) == 0) {
+        h->c.unkE1 = 1;
+        func_00141C00(h, 3);
+        Hewie_ToDefault(h);
+    }
+}
+
+void func_0014B860(Hewie *h) {
+    if (func_00140CD0(h, 0) == 0) {
+        h->c.unkE1 = 1;
+        func_00141C00(h, 0);
+        Hewie_ToDefault(h);
+    }
+}
+
+extern u32 func_00177770(Progress *p, s32 n);   /* u8 */
+
+/* Free to take a command: idle, a command queued (+0xF356C > 0), nothing pending. */
+s32 func_00138FD0(Hewie *h) {
+    if (!h->c.unkE0 && h->c.moveMode == 0 && HW(h, 0xF356C, s32) != 0 && !(HW(h, 0xF356C, s32) & 0x80000000)
+        && !(func_00177770(gProgress, 1) & 0xFF) && h->c.state[0] == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+void func_00150610(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        Hewie_Start(h, 0x52);
+    }
+    HW(h, 0xF3558, u8) = 1;
+}
+
+void func_001532B0(Hewie *h) {
+    if (ANIM_DONE(h)) {
+        Hewie_Start(h, HEWIE_NEXT(h));
+    }
+}
+
+void func_001519B0(Hewie *h) {
+    if (--HW(h, 0xF36B4, s32) == 0) {
+        Hewie_Start(h, HEWIE_NEXT(h));
+    }
+    func_00141C00(h, 3);
+}
