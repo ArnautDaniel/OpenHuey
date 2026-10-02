@@ -200,3 +200,20 @@ void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
     AT(d, 0x14, f32) = b;
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
 }
+
+
+extern void *D_0046D7A0[];
+extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 add);
+
+/* +0x14 draw (a screen tint): when its colour (+0x10) has alpha, a temporary drawer paints it
+ * in layer 0x28 (added for modes 1 and 4, +0x14) */
+void func_0026B2C0(u8 *o) {
+    u8 drawer[0x10] __attribute__((aligned(16)));
+
+    AT(drawer, 0x0, void **) = D_0046D7A0;
+    AT(drawer, 0x4, s32) = -1;
+    if (AT(o, 0x10, u32) & 0xFF000000) {
+        func_0026B180(drawer, AT(o, 0x10, u32), 0x28, AT(o, 0x14, s32) == 1 || AT(o, 0x14, s32) == 4);
+    }
+    AT(drawer, 0x0, void **) = D_00469D00;
+}
