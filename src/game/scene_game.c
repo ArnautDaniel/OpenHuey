@@ -1459,3 +1459,21 @@ void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
         }
     }
 }
+
+
+
+/* get the room behind exit `exit` of the current one ready: loaded into the other room slot
+ * (+0x73F240, current slot +0xF6C1B0) unless it is there already */
+void func_0039D070(Scene *g, s32 exit) {
+    s32 room = VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, s32))(
+        D_0044E568, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
+    u8 other;
+
+    if (room & 0x80000000) {
+        return;
+    }
+    other = AT(g, 0xF6C1B0, s32) == 0;
+    if (room != AT(g, 0x73F240 + other * 4, s32)) {
+        func_00120720((u8 *)g + 0x73EE80, room, other);
+    }
+}
