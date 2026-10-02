@@ -431,3 +431,80 @@ void func_0016BFB0(u8 *l) {
         }
     }
 }
+
+#define LOADER_LASTID(l) AT(l, 0x12808, s32)
+
+/* +0xC queue loading `path` into `dst` (flags `flags`): with `buf`, `dst` says what to do with
+ * the data once loaded (bit 31: a sound bank part, kind bits 28-29, bank bits 24-27) and `buf`
+ * is where it goes. Returns the request id (an equal request already queued: its id). */
+s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
+    LoadReq *t = func_00100660(0x128), *q;
+    u32 i;
+    s32 id;
+
+    t->state = 0;
+    t->file = NULL;
+    t->dir = NULL;
+    t->unk10 = 0;
+    t->unk14 = 0x10000000;
+    t->notify = 0;
+    t->dst = 0;
+    t->name[0] = 0;
+    t->kind = 0;
+    t->size = 0;
+    t->unk14 = flags;
+    func_001694D0((u8 *)t, path);
+    if (buf != 0) {
+        if (dst & 0x80000000) {
+            t->notify = -1;
+            t->kind = ((dst >> 28) & 3) | 0x80;
+            t->bank = (dst >> 24) & 0xF;
+        } else {
+            t->notify = dst | 0x20000000;
+        }
+        t->dst = buf | 0x20000000;
+    } else {
+        t->dst = dst | 0x20000000;
+        t->notify = 0;
+    }
+    /* the same request queued already? (from the write index back to the read index) */
+    if (LOADER_RD(l) != LOADER_WR(l)) {
+        for (i = LOADER_WR(l); i != LOADER_RD(l); i = (i - 1) & 0xFF) {
+            q = LOADER_REQ(l, i);
+            if (t->unk14 == q->unk14 && t->dir == q->dir && t->dst == q->dst && t->notify == q->notify &&
+                t->kind == q->kind && t->bank == q->bank) {
+                func_00100490(t);
+                return q->unk10;
+            }
+        }
+    }
+    if (LOADER_WR(l) + 1 == LOADER_RD(l)) {   /* full: work until there is room */
+        do {
+            func_0016BFB0(l);
+        } while (LOADER_WR(l) + 1 == LOADER_RD(l));
+    }
+    while (++LOADER_LASTID(l) == 0) {
+    }
+    t->unk10 = LOADER_LASTID(l);
+    t->unk0 = 3;
+    t->state = 1;
+    q = LOADER_REQ(l, LOADER_WR(l)++);
+    q->unk0 = t->unk0;
+    q->state = t->state;
+    q->file = t->file;
+    q->dir = t->dir;
+    q->unk10 = t->unk10;
+    q->unk14 = t->unk14;
+    q->dst = t->dst;
+    q->notify = t->notify;
+    for (i = 0; i < 0x80; i++) {
+        q->name[i * 2] = t->name[i * 2];
+        q->name[i * 2 + 1] = t->name[i * 2 + 1];
+    }
+    q->kind = t->kind;
+    q->bank = t->bank;
+    q->size = t->size;
+    id = t->unk10;
+    func_00100490(t);
+    return id;
+}
