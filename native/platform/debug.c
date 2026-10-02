@@ -31,6 +31,11 @@ int32_t hg_debug_freeplay(void) {
     return getenv("HG_FREEPLAY") != NULL;
 }
 
+/* HG_NOCHARS: the characters don't update (to look at a room while their code is missing) */
+int32_t hg_debug_nochars(void) {
+    return getenv("HG_NOCHARS") != NULL;
+}
+
 /* an event script command whose C isn't written yet (func_002029B0): logged once, skipped */
 void hg_debug_todo_opcode(int32_t op) {
     static uint8_t seen[256];

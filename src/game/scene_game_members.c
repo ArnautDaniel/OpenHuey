@@ -1579,3 +1579,27 @@ void func_0011FB20(u8 *rm, s32 slot) {
     func_0021AC10(rm + 0x9380);
     VCALL(rm + 0x6740, 0x24, void (*)(void *))(rm + 0x6740);
 }
+
+
+/* the creatures, each frame (10 slots): an active one moves (+0x30) unless the player is in a
+ * special state; an inactive one gets +0x10, then the manager's +0x28 (its vtable at +0x28)
+ * for its slot */
+void func_002E2A60(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c == NULL) {
+            continue;
+        }
+        if (AT(c, 0x28, u8) != 0) {
+            if (AT(gCharPlayer, 0xE2, u8) == 0) {
+                VCALL(c, 0x30, void (*)(VObject *))(c);
+            }
+        } else {
+            VCALL(c, 0x10, void (*)(VObject *))(c);
+            ((void (*)(u8 *, s32))AT(AT(o, 0x28, u8 *), 0x28, void *))(o, i & 0xFF);
+        }
+    }
+}

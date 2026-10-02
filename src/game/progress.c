@@ -1083,6 +1083,16 @@ void func_001762B0(Progress *p) {
     VObject *dir = D_0044E4F8;
     u32 i;
 
+#ifdef HG_NATIVE
+    {
+        extern s32 hg_debug_nochars(void);   /* native/platform/debug.c: HG_NOCHARS */
+
+        if (hg_debug_nochars()) {
+            return;
+        }
+    }
+#endif
+
     for (i = 0; i < 6; i++) {
         VObject *c = gCharacters[i];
 
