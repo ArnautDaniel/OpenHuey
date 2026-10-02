@@ -2806,3 +2806,15 @@ void func_002EE710(u8 *p, u8 *s) {
     sceVu0Normalize(a + 8, a + 8);
     sceVu0CopyVector(a + 12, anchor);
 }
+
+
+/* +0x14 of a sprung point: its bone (+0x24) moves to it, its axes scaled by +0x50 / +0x54 /
+ * +0x58 */
+void func_002EED20(u8 *p, u8 *s) {
+    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+
+    sceVu0ScaleVector(b, b, AT(p, 0x50, f32));
+    sceVu0ScaleVector(b + 4, b + 4, AT(p, 0x54, f32));
+    sceVu0ScaleVector(b + 8, b + 8, AT(p, 0x58, f32));
+    sceVu0CopyVector(b + 12, (f32 *)p);
+}
