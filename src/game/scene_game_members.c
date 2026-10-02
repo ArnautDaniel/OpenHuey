@@ -2124,3 +2124,45 @@ void func_00221880(u8 *door) {
     AT(door, 0x5C, s32) = 0;
     AT(door, 0x60, s32) = 0;
 }
+
+
+extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* that door is open (u8) */
+
+/* +0x7C the room's doors (0x210 each from +0x10) as the room comes in: each present one
+ * (doors +0x40) that leads somewhere (rooms +0x10) stands open (-90 degrees, +0x64, its angle
+ * +0x34 a quarter turn from +0x44) or shut, its two sides' passage set to match (+0x20 /
+ * +0x1C); then each door's +0x80 */
+void func_00222230(VObject *o) {
+    static const union { u32 u; f32 f; } kHalfPi = {0x3FC90FDB}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    Progress *p = gProgress;
+    s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    VObject *doors = D_0044E558;
+    VObject *rooms = D_0044E568;
+    u32 i;
+
+    for (i = 0; i < 8; i++) {
+        u8 *e = (u8 *)o + i * 0x210 + 0x10;
+
+        if ((u8)VCALL(doors, 0x40, s32 (*)(VObject *, u32))(doors, i & 0xFF) == 1 &&
+            (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, room, i & 0xFF) != 0xFFFF) {
+            if ((u8)func_00178980(p, room, i & 0xFF) == 1) {
+                AT(e, 0x64, f32) = -90.0f;
+                AT(e, 0x34, f32) = AT(e, 0x44, f32) + -kHalfPi.f;
+                if (AT(e, 0x34, f32) < -kPi.f) {
+                    AT(e, 0x34, f32) = AT(e, 0x34, f32) + kTwoPi.f;
+                }
+                VCALL(o, 0x20, void (*)(VObject *, u32, s32, s32))(o, i & 0xFF, 0, 0x60000);
+                VCALL(o, 0x1C, void (*)(VObject *, u32, s32, s32))(o, i & 0xFF, 1, 0x60000);
+            } else {
+                AT(e, 0x64, f32) = 0.0f;
+                AT(e, 0x34, f32) = AT(e, 0x44, f32) + 0.0f;
+                if (AT(e, 0x34, f32) < -kPi.f) {
+                    AT(e, 0x34, f32) = AT(e, 0x34, f32) + kTwoPi.f;
+                }
+                VCALL(o, 0x20, void (*)(VObject *, u32, s32, s32))(o, i & 0xFF, 1, 0x60000);
+                VCALL(o, 0x1C, void (*)(VObject *, u32, s32, s32))(o, i & 0xFF, 0, 0x60000);
+            }
+        }
+        VCALL(o, 0x80, void (*)(VObject *, u32))(o, i & 0xFF);
+    }
+}
