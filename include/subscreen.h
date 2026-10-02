@@ -73,7 +73,8 @@ typedef struct SubScreen {
     /* 0xA8C69 */ u8 padA8C69[0x17];
     /* 0xA8C80 */ u8 page[0x15D];       /* the page's own work (a 0x15C object for modes 3 / 4,
                                            the extras list, the galleries' cursors) */
-    /* 0xA8DDD */ u8 unkA8DDD;
+    /* 0xA8DDD */ u8 tab;               /* the in-game tab (parts 0xC / 0xB): 2 sliding in, 3
+                                           shown, 4 sliding out (page[0x15C] the slide) */
     /* 0xA8DDE */ u8 unkA8DDE;
     /* 0xA8DDF */ u8 padA8DDF;
     /* 0xA8DE0 */ s32 frame;            /* frames since it opened (blinking) */

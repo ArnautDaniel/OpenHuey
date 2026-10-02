@@ -669,7 +669,7 @@ void SubScreen_DrawFadeFromBlack(SubScreen *s) {
 
 /* +0x28 the screen takes over */
 void SubScreen_TakeOver(SubScreen *s) {
-    s->unkA8DDD = 0;
+    s->tab = 0;
     s->unkA8DDE = 1;
 }
 
@@ -1244,4 +1244,27 @@ s32 func_00394200(SubScreen *s, u32 id) {
         }
     }
     return 0;
+}
+
+
+/* +0x24 the in-game tab, drawn each gameplay frame: base parts 0xC (at y 0x60) and 0xB (at y
+ * 0x8C) slide in from the left (state 2) as page[0x15C] grows to 0x40, stay (3) and slide out
+ * to the right (4), fading with the slide */
+void func_00384CE0(SubScreen *s) {
+    u8 t = s->page[0x15C];
+
+    switch (s->tab) {
+    case 2:
+        SubScreen_DrawPart(s, (u16)(0xAC - (0x40 - t)), 0x60, 0xC, (u8)(t * 2), 0);
+        SubScreen_DrawPart(s, (u16)(0xC0 - (0x40 - s->page[0x15C])), 0x8C, 0xB, s->page[0x15C], 0);
+        break;
+    case 3:
+        SubScreen_DrawPart(s, 0xAC, 0x60, 0xC, 0x80, 0);
+        SubScreen_DrawPart(s, 0xC0, 0x8C, 0xB, 0x40, 0);
+        break;
+    case 4:
+        SubScreen_DrawPart(s, (u16)(0xEC - t), 0x60, 0xC, (u8)(t * 2), 0);
+        SubScreen_DrawPart(s, (u16)(0x100 - s->page[0x15C]), 0x8C, 0xB, s->page[0x15C], 0);
+        break;
+    }
 }
