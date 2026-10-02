@@ -1216,3 +1216,18 @@ s32 func_00177770(Progress *p, s32 id) {
     }
     return 0;
 }
+
+
+extern s32 func_0016D6D0(Progress *p, u32 id, u32 slot);   /* load event character id into slot */
+extern void func_0016D180(Progress *p, s32 slot);
+
+/* load event character `id` into `slot` and, when it came, set it up (func_0016D180); 1 if
+ * loaded */
+s32 func_0016D670(Progress *p, u32 id, u32 slot) {
+    u32 ok = (u8)func_0016D6D0(p, id, slot);
+
+    if (ok) {
+        func_0016D180(p, (u8)slot);
+    }
+    return ok;
+}

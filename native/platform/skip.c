@@ -43,3 +43,12 @@ int func_00171160(void *p, unsigned id) {
     skipped("func_00171160 stalker load");
     return 0;
 }
+
+/* load event character `id` (0x28 kinds) into slot `slot` (3..5): not yet, 0 as above */
+int func_0016D6D0(void *p, unsigned id, unsigned slot) {
+    (void)p;
+    (void)id;
+    (void)slot;
+    skipped("func_0016D6D0 event character load");
+    return 0;
+}
