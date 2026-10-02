@@ -2353,3 +2353,214 @@ void func_0019C600(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B27C8);
     }
 }
+
+extern void func_001779F0(Progress *p, u32 item, u32 slot);   /* mark item seen by `slot` */
+extern const PTMF D_003B25C8, D_003B25D8, D_003B25E8, D_003B25F8, D_003B2608, D_003B2618;
+extern const PTMF D_003B2628, D_003B2638, D_003B2648, D_003B2658, D_003B2668, D_003B2678;
+extern const PTMF D_003B2688;
+extern VObject *D_0044E568;   /* rooms */
+
+/* +0x1AD71C mood request (9 = asked by Hewie's command), +0x1AD720 its argument;
+ * +0x1AD724 the period counter of the +0x1AD719 alternation. */
+static inline void Fiona_NudgePeriod(Fiona *f, s32 near, s32 far) {
+    if (func_00124490(&f->c.a, gCharPartner->a.pos) < 50.0f) {
+        FI(f, 0x1AD724, s32) += near;
+    } else if (func_00124490(&f->c.a, gCharPartner->a.pos) < 100.0f) {
+        FI(f, 0x1AD724, s32) += far;
+    }
+}
+
+/* vtable +0x84: handle the Character state block (state[0]: 4 grabbed, 5 released, and the
+ * action requests 2/3/9 (go through a door), 8, 0xB, 0xD, 0xE; 0xC with [1] = 6) while she is free to act.
+ * state[0] == 7 is left pending; everything else is consumed. */
+void func_001A0370(Fiona *f) {
+    s32 *st = f->c.state;
+
+    if (st[0] == 5) {
+        VCALL(f, 0x8C, void (*)(Fiona *))(f);
+        f->unk1AD580 = 0;
+        f->c.moveMode = 0;
+        Actor_SetState(&f->c.a, st[1] == 0 ? &D_003B25C8 : &D_003B25D8);
+        if ((u32)((Progress_GetVar(gProgress, 0x26) & 0xFF) - 6) < 2) {
+            VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+        }
+        st[0] = 0;
+        return;
+    }
+    if (st[0] == 4) {
+        if (func_00182340(f, st) == 0) {
+            if ((u32)((Progress_GetVar(gProgress, 0x26) & 0xFF) - 6) < 2) {
+                VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+            }
+            st[0] = 0;
+            return;
+        }
+        st[0] = 0;
+    }
+
+    if (st[0] == 0xC && st[1] == 6) {
+        f->c.moveMode = 0xC;
+        f->unk1AD580 = 0x10;
+        Actor_SetState(&f->c.a, &D_003B25E8);
+        st[0] = 0;
+        return;
+    }
+
+    if (f->c.moveMode == 0 && FIONA_FEAR(f) < 100.0f && f->unk1AD580 != 0xE && f->unk1AD580 != 1
+        && f->unk1AD580 != 0xF) {
+        switch (st[0]) {
+        case 9:
+            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+                st[0] = 0;
+                break;
+            }
+            f->c.unk100 = st[2];
+            f->c.moveSub = (st[1] == 0) ? 0x15 : 0x14;
+            f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+            f->targetParam = 0;
+            Actor_SetState(&f->c.a, &D_003B25F8);
+            f->unk1AD580 = 9;
+            f->c.moveMode = 9;
+            st[0] = 0;
+            break;
+        case 2: {
+            VObject *rooms;
+            sceVu0FVECTOR at;
+
+            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+                st[0] = 0;
+                break;
+            }
+            f->c.unk100 = st[2];
+            f->c.moveSub = (st[1] == 0) ? 0x15 : 0x14;
+            rooms = D_0044E568;
+            if ((VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, f->c.a.room, *(u8 *)&f->c.unk100) & 0xFF) == 1) {
+                VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, *(u8 *)&f->c.unk100, at);
+            } else {
+                sceVu0CopyVector(at, f->c.a.pos);
+            }
+            f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, at);
+            f->c.unk104[1] = 0;
+            f->targetParam = 0;
+            Actor_SetState(&f->c.a, &D_003B2608);
+            f->unk1AD580 = 3;
+            f->c.moveMode = 2;
+            st[0] = 0;
+            break;
+        }
+        case 3:
+            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+                st[0] = 0;
+                break;
+            }
+            func_001779F0(gProgress, (u8)st[2], SLOT_U8(f));
+            f->c.unk100 = st[2];
+            f->c.unk104[0] = st[1];
+            f->c.moveSub = 6;
+            f->targetParam = 0;
+            Actor_SetState(&f->c.a, &D_003B2618);
+            f->unk1AD580 = 2;
+            f->c.moveMode = 3;
+            st[0] = 0;
+            break;
+        case 8:
+            if (!Progress_TestFlag(gProgress, 0x14)) {
+                f->targetParam = 0;
+                if (st[1] == 0x1A) {
+                    s32 g;
+
+                    if (f->unk1AD580 == 0xD) {
+                        f->c.moveMode = 8;
+                        f->unk1AD580 = 6;
+                        f->c.moveSub = 0x1B;
+                        Actor_SetState(&f->c.a, &D_003B2628);
+                    } else if ((g = Fiona_AnimGroup(MOTION_ANIM(f->c.motion))) == 5 || g == 1 || g == 0
+                               || (g == 2 && (FI(f, 0x1AD5F8, s32) != 0 || FI(f, 0x1AD5C4, u32) < 0x3D))) {
+                        f->c.moveSub = st[1];
+                        f->unk1AD580 = 5;
+                        f->c.moveMode = 8;
+                        f->c.moveSub = 0x1A;
+                        Actor_SetState(&f->c.a, &D_003B2648);
+                    } else if (g == 2) {
+                        f->c.moveMode = 8;
+                        f->unk1AD580 = 6;
+                        f->c.moveSub = 0x1B;
+                        Actor_SetState(&f->c.a, &D_003B2638);
+                    }
+                }
+            }
+            st[0] = 0;
+            break;
+        case 0xB:
+            f->targetParam = 0;
+            f->c.moveSub = st[1];
+            switch (f->c.moveSub) {
+            case 0x20:
+                f->target = (st[2] == 0xFF) ? NULL : gCharacters[st[2]];
+                f->c.moveMode = 0xB;
+                f->unk1AD580 = 8;
+                f->c.unk104[0] = 3;
+                Actor_SetState(&f->c.a, &D_003B2658);
+                break;
+            case 0x21: {
+                NavTri *t = NavMesh_Tri(D_0044E570, f->c.a.navTri);
+
+                f->target = (st[2] == 0xFF) ? NULL : gCharacters[st[2]];
+                f->c.moveMode = 0xB;
+                f->unk1AD580 = 8;
+                f->c.unk104[0] = (t->flags & 0x80001) ? 3 : 1;
+                Actor_SetState(&f->c.a, &D_003B2668);
+                break;
+            }
+            case 0x22: {
+                Progress *p = gProgress;
+
+                if (!Progress_TestFlag(p, 0x14) && FI(f, 0x1AD5F8, s32) < 360 && THREAT_LEVEL(p) < 4) {
+                    f->c.a.unk2D = 1;
+                    f->c.moveMode = 0xB;
+                    f->unk1AD580 = 0xD;
+                    Actor_SetState(&f->c.a, &D_003B2678);
+                }
+                break;
+            }
+            }
+            st[0] = 0;
+            break;
+        case 0xE:
+            if (!Progress_TestFlag(gProgress, 0x14)) {
+                f->targetParam = 0;
+                f->c.moveSub = st[1];
+                if (st[2] != -1 && (f->c.moveSub == 0x33 || f->c.moveSub == 0x32 || f->c.moveSub == 0x31)) {
+                    f->c.moveMode = 0xE;
+                    f->unk1AD580 = 7;
+                    FI(f, 0x1AD6C0, s32) = 0;
+                    f->c.unk100 = st[2];
+                    Actor_SetState(&f->c.a, &D_003B2688);
+                }
+            }
+            st[0] = 0;
+            break;
+        case 0xD:
+            if (st[1] == 0) {
+                if (!f->c.a.disabled && FI(f, 0x1AD71C, s32) != 3 && FI(f, 0x1AD71C, s32) != 4
+                    && FI(f, 0x1AD71C, s32) != 9 && FI(f, 0x1AD719, u8) == 0) {
+                    FI(f, 0x1AD71C, s32) = 9;
+                    FI(f, 0x1AD720, u8) = st[2];
+                }
+            } else if (st[1] == 1) {
+                if (!f->c.a.disabled) {
+                    if (FI(f, 0x1AD719, u8) == 0) {
+                        Fiona_NudgePeriod(f, 150, 90);
+                    } else {
+                        Fiona_NudgePeriod(f, -150, -90);
+                    }
+                }
+            }
+            st[0] = 0;
+            break;
+        }
+    }
+    if (st[0] != 7) {
+        st[0] = 0;
+    }
+}
