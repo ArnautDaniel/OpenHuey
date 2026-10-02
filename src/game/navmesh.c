@@ -416,3 +416,15 @@ void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
     sceVu0Normalize(n, n);
     n[3] = 1.0f;
 }
+
+
+extern u32 func_0017A940(NavTri *t, const f32 *from, const f32 *to, f32 *hit);   /* the edge a step leaves by */
+
+/* +0x20 the edge of triangle `i` the step `from` -> `to` leaves it by (0..2; 3 stays inside;
+ * 4 bad triangle) and where (`hit`) */
+u32 func_0017C690(NavMesh *nm, u32 i, const f32 *from, const f32 *to, f32 *hit) {
+    if (i >= nm->numTris || nm->tris == NULL) {
+        return 4;
+    }
+    return func_0017A940(&nm->tris[i], from, to, hit);
+}
