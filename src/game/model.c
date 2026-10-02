@@ -4,6 +4,7 @@
 #include "game.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "navmesh.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
 extern void *gCharacters[6];
@@ -1374,4 +1375,133 @@ void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, 
             sceVu0CopyVector(out + 4, a + 4);
         }
     }
+}
+
+
+extern u32 func_002DD860(void *motion, s32 left, f32 t);   /* foot planted (u8) */
+extern void func_002DC710(u8 *m, f32 *p, u8 *a);          /* drop a point onto the floor */
+
+/* the model's height above the character's floor (+0x804, smoothed 3:1 with last frame's
+ * +0x8C0 unless +0x990 asks for a jump), each frame from the character's matrix and position
+ * (kept at +0x7D0 / +0x800): the lower of the two feet put on the floor (feet in the air keep
+ * the character's height; flag 0x100: planted feet only), or on slopes (track flag 4) two
+ * points `back` / `front` along the step; nothing while both are 0 */
+void func_00210E00(u8 *m, u8 *a, f32 back, f32 front) {
+    f32 l[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+
+    sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), (f32 (*)[4])(a + 0x60));
+    sceVu0CopyVector((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+    AT(m, 0x80C, f32) = 1.0f;
+    if (back == 0.0f && front == 0.0f) {
+        AT(m, 0x8C0, f32) = AT(m, 0x804, f32);
+        return;
+    }
+    if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 4) {
+        f32 n[4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+        f32 ny, k;
+
+        VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), n);
+        ny = n[1];
+        func_001F6370(m, v, 0.0f);
+        k = v[2] * (ny * ny);
+        l[0] = 0.0f;
+        l[1] = 0.0f;
+        l[2] = back * k;
+        l[3] = 1.0f;
+        r[0] = 0.0f;
+        r[1] = 0.0f;
+        r[2] = front * k;
+        r[3] = 1.0f;
+        sceVu0ApplyMatrix(l, (f32 (*)[4])(m + 0x7D0), l);
+        sceVu0ApplyMatrix(r, (f32 (*)[4])(m + 0x7D0), r);
+        func_002DC710(m, l, a);
+        func_002DC710(m, r, a);
+    } else {
+        u32 dl = (u8)func_002DD420(m, l, 1, 0.0f, 1.0f);
+        u32 dr = (u8)func_002DD420(m, r, 0, 0.0f, 1.0f);
+        s32 useL = 1, useR = 1;
+
+        sceVu0ApplyMatrix(l, (f32 (*)[4])(m + 0x7D0), l);
+        sceVu0ApplyMatrix(r, (f32 (*)[4])(m + 0x7D0), r);
+        if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 0x100) {
+            if (dl == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
+                dl = (u8)func_002DD860(m, 1, 0.0f);
+            }
+            if (dl == 0) {
+                useL = 0;
+            }
+            if (dr == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
+                dr = (u8)func_002DD860(m, 0, 0.0f);
+            }
+            if (dr == 0) {
+                useR = 0;
+            }
+        }
+        if (useL == 1) {
+            func_002DC710(m, l, a);
+        } else {
+            l[1] = AT(a, 0x14, f32);
+        }
+        if (useR == 1) {
+            func_002DC710(m, r, a);
+        } else {
+            r[1] = AT(a, 0x14, f32);
+        }
+    }
+    AT(m, 0x804, f32) = l[1] < r[1] ? l[1] : r[1];
+    if (AT(m, 0x990, u8) == 0) {
+        AT(m, 0x804, f32) = 0.25f * AT(m, 0x804, f32) + 0.75f * AT(m, 0x8C0, f32);
+    } else {
+        AT(m, 0x990, u8) = 0;
+    }
+    AT(m, 0x8C0, f32) = AT(m, 0x804, f32);
+}
+
+
+/* put point p on the floor: walk the nav mesh from the character's triangle towards it
+ * (vtable +0x24: the edge crossed, 3 inside, 4 lost); in a triangle the mesh gives its height
+ * (+0x14); at a wall (no neighbour, or a marked one (+0x18 bit 0x80) blocked by the
+ * character's mask +0xC0) its height continues along the line to where it was crossed */
+void func_002DC710(u8 *m, f32 *p, u8 *a) {
+    NavMesh *nm;
+    NavTri *t;
+    u32 tri = AT(a, 0x34, u32);
+    f32 hit[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 len;
+
+    if (tri == (u32)-1) {
+        return;
+    }
+    nm = D_0044E570;
+    t = NavMesh_Tri(nm, tri);
+    for (;;) {
+        s32 e = VCALL(nm, 0x24, s32 (*)(NavMesh *, u32, f32 *, f32 *, f32 *))(nm, tri, hit, (f32 *)(a + 0x10), p);
+        u8 mark;
+
+        if (e == 3) {
+            VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, tri, p);
+            return;
+        }
+        if (e == 4) {
+            VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, AT(a, 0x34, u32), p);
+            return;
+        }
+        tri = t->adj[e];
+        if (tri == (u32)-1) {
+            break;
+        }
+        t = NavMesh_Tri(nm, tri);
+        mark = (AT(nm, 0x18, u8 *) != NULL && tri < nm->numTris && nm->tris != NULL) ? AT(nm, 0x18, u8 *)[tri] : 0;
+        if ((mark & 0x80) && (t->flags & AT(a, 0xC0, u32))) {
+            break;
+        }
+    }
+    sceVu0SubVector(d, p, (f32 *)(a + 0x10));
+    len = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    sceVu0SubVector(d, hit, (f32 *)(a + 0x10));
+    sceVu0Normalize(d, d);
+    p[1] = AT(a, 0x14, f32) + d[1] * len;
 }
