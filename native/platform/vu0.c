@@ -39,6 +39,17 @@ void sceVu0InterVector(Vec d, const Vec a, const Vec b, float t) {
     }
 }
 
+/* d.xyz = a * t + b * (1 - t), d.w = a.w (PS2 0x0010E610) */
+void func_0010E610(Vec d, const Vec a, const Vec b, float t) {
+    float u = 1.0f - t, w = a[3];
+    int i;
+
+    for (i = 0; i < 3; i++) {
+        d[i] = a[i] * t + b[i] * u;
+    }
+    d[3] = w;
+}
+
 /* copy x, y, z (PS2 0x0010E5F0) */
 void func_0010E5F0(Vec d, const Vec a) {
     d[0] = a[0];

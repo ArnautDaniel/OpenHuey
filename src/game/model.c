@@ -1273,3 +1273,105 @@ s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
     }
     return bytes[t];
 }
+
+
+extern void func_001F5F70(u8 *m, f32 *out, void *trkA, void *trkB, f32 ta, f32 tb, f32 w);   /* a bone's position */
+extern void func_0010E610(f32 *out, const f32 *a, const f32 *b, f32 t);   /* xyz lerp, w of a */
+
+/* `base` + dt * `speed`, wrapped into an animation of `anim`'s length (0 without one) */
+static f32 motion_time(u8 *anim, f32 base, f32 dt, f32 speed) {
+    f32 t;
+
+    if (anim == NULL) {
+        return 0.0f;
+    }
+    t = base + dt * speed;
+    if (t < 0.0f) {
+        do {
+            t += (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+        } while (t < 0.0f);
+    }
+    while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32))) {
+        t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+    }
+    return t;
+}
+
+/* a foot (`left` or right) at the motion's time + dt: its position (out; z scaled by
+ * `zscale`, w = 1), cross-faded from the previous track (+0x6A8) by +0x550, and whether it is
+ * on the ground (the current track's contact channel +0x50); 0 without contact data */
+s32 func_002DD420(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
+    u8 *cur = AT(m, 0x6A4, u8 *);
+    u8 *prev;
+    f32 contact[8] __attribute__((aligned(16)));
+    f32 pa[4] __attribute__((aligned(16)));
+    f32 pb[4] __attribute__((aligned(16)));
+    f32 c0, c1, p0, p1, d;
+    s32 k;
+
+    if (AT(cur, 0x50, void *) == NULL) {
+        return 0;
+    }
+    d = (AT(cur, 0x18, u32) & 0x10) ? 0.0f : dt;
+    c0 = motion_time(AT(cur, 0x20, u8 *), AT(cur, 0x0, f32), d, AT(cur, 0x10, f32));
+    c1 = motion_time(AT(cur, 0x24, u8 *), AT(cur, 0x4, f32), d, AT(cur, 0x14, f32));
+    prev = AT(m, 0x6A8, u8 *);
+    if (AT(prev, 0x18, u32) & 0x10) {
+        dt = 0.0f;
+    }
+    p0 = motion_time(AT(prev, 0x20, u8 *), AT(prev, 0x0, f32), dt, AT(prev, 0x10, f32));
+    p1 = motion_time(AT(prev, 0x24, u8 *), AT(prev, 0x4, f32), dt, AT(prev, 0x14, f32));
+    func_001F36B0(AT(cur, 0x50, void *), contact, c0);
+    k = left != 0 ? 2 : 1;
+    cur = AT(m, 0x6A4, u8 *);
+    func_001F5F70(m, pa, AT(cur, 0x38 + k * 8, void *), AT(cur, 0x3C + k * 8, void *), c0, c1,
+                  1.0f - AT(cur, 0x1C, f32));
+    prev = AT(m, 0x6A8, u8 *);
+    if (AT(prev, 0x20, void *) != NULL) {
+        func_001F5F70(m, pb, AT(prev, 0x38 + k * 8, void *), AT(prev, 0x3C + k * 8, void *), p0, p1,
+                      1.0f - AT(prev, 0x1C, f32));
+        func_0010E610(pa, pb, pa, AT(m, 0x550, f32));
+    }
+    out[0] = pa[0];
+    out[1] = pa[1];
+    out[2] = pa[2] * zscale;
+    AT(out, 0xC, u32) = 0x3F800000;   /* 1.0 */
+    return contact[left] > 0.0f;
+}
+
+
+/* a bone's channel blended between two tracks: track A at ta and B at tb, out = B * w +
+ * A * (1 - w) (xyz; format 2 tracks have a second vector at out + 0x10); with only one track,
+ * that one (the original takes the second vector from A even when only B exists) */
+void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, f32 w) {
+    s32 *trkA = trackA, *trkB = trackB;
+    f32 a[8] __attribute__((aligned(16)));
+    f32 b[8] __attribute__((aligned(16)));
+
+    a[0] = a[1] = a[2] = 0.0f;
+    a[4] = a[5] = a[6] = 0.0f;
+    b[0] = b[1] = b[2] = 0.0f;
+    b[4] = b[5] = b[6] = 0.0f;
+    if (trkA != NULL && *trkA != 0) {
+        func_001F36B0(trkA, a, ta);
+    }
+    if (trkB != NULL && *trkB != 0) {
+        func_001F36B0(trkB, b, tb);
+    }
+    if (trkA != NULL && *trkA != 0 && trkB != NULL && *trkB != 0) {
+        func_0010E610(out, b, a, w);
+        if (AT(trkA, 0x4, u16) == 2) {
+            func_0010E610(out + 4, b + 4, a + 4, w);
+        }
+    } else if (trkA != NULL && *trkA != 0) {
+        sceVu0CopyVector(out, a);
+        if (AT(trkA, 0x4, u16) == 2) {
+            sceVu0CopyVector(out + 4, a + 4);
+        }
+    } else {
+        sceVu0CopyVector(out, b);
+        if (AT(trkA, 0x4, u16) == 2) {
+            sceVu0CopyVector(out + 4, a + 4);
+        }
+    }
+}

@@ -485,3 +485,10 @@ void func_00209210(VObject *ev) {
 u8 *func_00209800(VObject *room) {
     return NULL;
 }
+
+
+/* vtable +0x50 (second base): a scene is playing (+0x11F3, cleared each frame by the
+ * character script runner) */
+s32 func_001FBA10(u8 *ev) {
+    return AT(ev, 0x11F3, u8);
+}
