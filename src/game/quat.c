@@ -33,3 +33,49 @@ void func_0025C770(const f32 *q, f32 (*m)[4]) {
     m[2][3] = 0.0f;
     m[3][3] = 1.0f;
 }
+
+
+#include "sce/libvu0.h"
+
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+
+/* blend bone matrix `a` towards `b` by `t` into `out`: the rotation from a to b as an axis and
+ * angle, turned by t of it (the quaternion left in `q`), the positions mixed */
+void func_0025C440(f32 *q, f32 (*out)[4], f32 (*a)[4], f32 (*b)[4], f32 t) {
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 tb[4] __attribute__((aligned(16)));
+    f32 ta[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 at[4][4] __attribute__((aligned(16)));
+    f32 ra[4][4] __attribute__((aligned(16)));
+    f32 h, s;
+
+    sceVu0CopyVector(ta, a[3]);
+    sceVu0CopyVector(tb, b[3]);
+    sceVu0CopyMatrix(ra, a);
+    ra[3][0] = 0.0f;
+    ra[3][1] = 0.0f;
+    ra[3][2] = 0.0f;
+    sceVu0TransposeMatrix(at, ra);
+    sceVu0CopyMatrix(r, b);
+    r[3][0] = 0.0f;
+    r[3][1] = 0.0f;
+    r[3][2] = 0.0f;
+    sceVu0MulMatrix(r, r, at);
+    axis[0] = r[2][1] - r[1][2];
+    axis[1] = r[0][2] - r[2][0];
+    axis[2] = r[1][0] - r[0][1];
+    sceVu0Normalize(axis, axis);
+    axis[3] = 2.0f * func_0031C3C0(0.5f * __builtin_sqrtf(1.0f + (r[2][2] + (r[0][0] + r[1][1]))));
+    h = 0.5f * (axis[3] * t);
+    s = func_0031C248(h);
+    q[0] = axis[0] * s;
+    q[1] = axis[1] * s;
+    q[2] = axis[2] * s;
+    q[3] = func_0031C058(h);
+    func_0025C770(q, r);
+    sceVu0MulMatrix(out, r, ra);
+    sceVu0InterVector(p, tb, ta, t);
+    sceVu0TransMatrix(out, out, p);
+}
