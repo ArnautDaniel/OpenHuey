@@ -1231,3 +1231,74 @@ void func_00143550(Hewie *h, s32 blend) {
         func_002DDED0(h->c.motion, a, -1);
     }
 }
+
+/* ---- small behaviour pieces ---- */
+
+extern s32 func_00141C00(Hewie *h, s32 kind);
+extern void func_0013C300(Hewie *h);
+
+#define MOTION_EVENTS(m) (*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18))
+
+s32 func_001480B0(Hewie *h) {
+    return func_00141C00(h, 2);
+}
+
+s32 func_0015F750(Hewie *h) {
+    return func_00141C00(h, 4);
+}
+
+void func_0014F5A0(Hewie *h) {
+}
+
+void func_00154D40(Hewie *h) {
+}
+
+void func_00154DB0(Hewie *h) {
+}
+
+void func_00154E60(Hewie *h) {
+}
+
+s32 func_001689F0(Hewie *h) {
+    return 0;
+}
+
+/* A loud noise where he is (no triangle). */
+void func_00154E40(Hewie *h) {
+    func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, NAV_NONE, 0xFFFF);
+}
+
+/* Set the animation to play (+0xF35B8) and (if >= 0) +0xF35B4. */
+void func_001654E0(Hewie *h, s32 a, s32 anim) {
+    if (a >= 0) {
+        HW(h, 0xF35B4, s32) = a;
+    }
+    HW(h, 0xF35B8, s32) = anim;
+}
+
+/* Start that animation if it is not playing. */
+void func_0014F5B0(Hewie *h) {
+    if (MOTION_ANIM(h->c.motion) != HW(h, 0xF35B8, s32)) {
+        func_002DDED0(h->c.motion, HW(h, 0xF35B8, s32), -1);
+    }
+}
+
+/* On the animation's event 0x20: (clear +0x2B and) continue. */
+void func_00153AB0(Hewie *h) {
+    if ((MOTION_EVENTS(h->c.motion) & 0x20) != 0) {
+        h->c.a.unk2B = 0;
+        func_0013C300(h);
+    }
+}
+
+/* Pending (+0xF3559): go to action 0x83, unless already in it. */
+void func_001602A0(Hewie *h) {
+    if (HW(h, 0xF3559, u8) == 1 && HEWIE_ACTION(h) != 0x83) {
+        func_00130AF0(h, 0x83, 0);
+    }
+}
+
+/* Back to his default action. */
+void func_00154D50(Hewie *h) {
+    Hewie_ToDefault(h);
+}
