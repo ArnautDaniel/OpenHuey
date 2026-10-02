@@ -1560,3 +1560,160 @@ void func_0019F1E0(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B27B8);
     }
 }
+
+extern void func_001A1860(Fiona *f);
+extern void func_0019D4E0(Fiona *f);
+extern void func_001800E0(Fiona *f);
+extern void func_001A1FD0(Fiona *f);
+extern void func_00188960(Fiona *f);
+extern void func_00186180(Fiona *f);
+
+/* Note whether Hewie / the pursuer are present (+0x1AD5D4/D6) and enabled (+0x1AD5D5/D7). */
+static inline void Fiona_UpdatePresence(Fiona *f) {
+    FI(f, 0x1AD5D4, u8) = 0;
+    FI(f, 0x1AD5D5, u8) = 0;
+    if (gCharPartner != NULL && gCharPartner->a.active == 1) {
+        FI(f, 0x1AD5D4, u8) = 1;
+        if (gCharPartner->a.disabled == 0) {
+            FI(f, 0x1AD5D5, u8) = 1;
+        }
+    }
+    FI(f, 0x1AD5D6, u8) = 0;
+    FI(f, 0x1AD5D7, u8) = 0;
+    if (gCharPursuer != NULL && gCharPursuer->a.active == 1) {
+        FI(f, 0x1AD5D6, u8) = 1;
+        if (gCharPursuer->a.disabled == 0) {
+            FI(f, 0x1AD5D7, u8) = 1;
+        }
+    }
+}
+
+/* Touching: 2 = the pursuer, 1 = Hewie, 0 = neither (Hewie is always tested). */
+static inline s32 Fiona_Touching(Fiona *f) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+        return 2;
+    }
+    return (func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f) & 0xFF) == 1 ? 1 : 0;
+}
+
+/* Should the controller be read this frame? */
+static inline s32 Fiona_ReadsPad(Fiona *f, Progress *p) {
+    s32 mode;
+
+    if ((Progress_TestFlag(p, 0xD) & 0xFF) != 1 || (Progress_TestFlag(p, 0x2B) & 0xFF)
+        || *((u8 *)p + 0x1FBEC1) != 0 || FI(f, 0x1AD5C8, s32) != 0) {
+        return 0;
+    }
+    mode = f->c.moveMode;
+    if (mode == 0xD || mode == 0xA) {
+        return 1;
+    }
+    if (mode == 0) {
+        return f->unk1AD580 != 1 && f->unk1AD580 != 0xE;
+    }
+    if (mode == 4) {
+        return f->c.moveSub == 9 || f->c.moveSub == 0x12;
+    }
+    if (mode == 8) {
+        return f->unk1AD580 == 5 && ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x20);
+    }
+    return 0;
+}
+
+/* vtable +0x30: gameplay update - room, controls, actions, behaviour state, sub-systems. */
+void func_001A3110(Fiona *f) {
+    Progress *p = gProgress;
+    u8 *special = (u8 *)p + 0x1FBEC1;
+    sceVu0FVECTOR head;
+    s32 room;
+    u8 hewie, near, veryNear;
+    f32 h;
+
+    if (*special == 1) {
+        func_001A1860(f);
+    }
+    room = f->c.a.room;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        /* not in the room being played */
+        f->c.a.disabled = 1;
+        f->c.moveSub = 0;
+        Fiona_UpdatePresence(f);
+        f->c.state[0] = 0;
+        func_0019D4E0(f);
+        func_001800E0(f);
+        if (f->c.a.disabled == 1) {
+            VCALL(f, 0x40, void (*)(Fiona *))(f);
+            return;
+        }
+    } else {
+        f->c.a.disabled = 0;
+    }
+    f->c.a.navMask = f->c.a.unk2B ? 0 : FIONA_NAV_MASK;
+    f->c.pathReq->mask = f->c.a.navMask;
+    FI(f, 0x1AD5D2, u8) = 0;
+    FI(f, 0x1AD5FC, u8) = 0;
+    FI(f, 0x1AD5BC, u8) = 1;
+    VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, head);
+    h = head[1] - f->c.a.pos[1];
+    f->c.a.height = h;
+    if (h < 3.0f) {
+        f->c.a.height = 3.0f;
+    }
+    Fiona_UpdatePresence(f);
+    func_001A1FD0(f);
+    if (*special == 1) {
+        func_0019D4E0(f);
+        if (f->c.a.disabled == 1) {
+            f->c.state[0] = 0;
+            return;
+        }
+        if (FI(f, 0x1AD5D7, u8) == 1 && gCharPursuer->a.unkC4 == 2) {
+            f->c.a.unk2A = 1;
+        }
+    }
+    func_00187650(f);
+    FI(f, 0x1AD6BC, s32) = -1;
+    if (f->c.state[0] != 0) {
+        VCALL(f, 0x84, void (*)(Fiona *))(f);
+    } else {
+        func_0019F1E0(f);
+    }
+    FIONA_CMD(f) = func_001F1B90((u8 *)f + 0x1AD668, Fiona_ReadsPad(f, p) ? D_0047E3B0 : NULL);
+
+    hewie = Fiona_Touching(f) == 1;
+    ptmf_scall(f, &f->c.a.state);
+    if (hewie != 1 && f->c.a.unk2A != 1) {
+        func_00188960(f);
+    } else if (f->c.moveMode == 0 && Fiona_Touching(f) == 0) {
+        f->c.a.unk2A = 0;
+    }
+    func_001A12B0(f);
+    func_00186180(f);
+    func_00181F20(f);
+    func_001869D0(f);
+    VCALL(f, 0x40, void (*)(Fiona *))(f);
+    if (f->c.moveMode == 0 && f->unk1AD580 != 1) {
+        s32 sub = f->c.moveSub;
+
+        if (sub != 2 && sub != 1 && sub != 0) {
+            f->c.moveSub = 0;
+        }
+    }
+    near = 0;
+    veryNear = 0;
+    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
+        near = 1;
+        if (func_00124490(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
+            veryNear = 1;
+        }
+    }
+    if (near == 1) {
+        func_00177630(p, 5);
+        if (veryNear == 1) {
+            func_00177630(p, 0);
+        }
+    }
+    if (f->c.state[0] == 7) {
+        f->c.state[0] = 0;
+    }
+}
