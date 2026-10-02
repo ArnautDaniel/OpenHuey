@@ -1830,7 +1830,7 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
 }
 
 
-extern void func_002E2E00(void *mat, const f32 *rot, const f32 *trans);   /* bone matrix */
+extern void func_002E2E00(void *mat, f32 *rot, const f32 *trans);   /* bone matrix */
 extern void func_0025C630(f32 *q, f32 *axis, f32 (*m)[4]);   /* rotation matrix to axis + angle */
 extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* quaternion of a rotation */
 extern void func_0025C770(const f32 *q, f32 (*m)[4]);           /* its matrix */
@@ -1924,4 +1924,34 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
         trk = AT(trk, 0x10, u8 *);
         b = AT(b, 0x48, u8 *);
     }
+}
+
+
+/* wrap an angle into -pi..pi (in place) */
+static void wrap_pi(f32 *a) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
+    f32 v = *a;
+
+    while (!(v <= kPi.f)) {
+        v -= kTwoPi.f;
+    }
+    while (v < kNegPi.f) {
+        v += kTwoPi.f;
+    }
+    *a = v;
+}
+
+/* a bone matrix from Euler angles `rot` (X, then Y, then Z; wrapped into -pi..pi in place) and
+ * the position `trans` */
+void func_002E2E00(void *mat, f32 *rot, const f32 *trans) {
+    f32 (*m)[4] = mat;
+
+    wrap_pi(&rot[0]);
+    wrap_pi(&rot[1]);
+    wrap_pi(&rot[2]);
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixX(m, m, rot[0]);
+    sceVu0RotMatrixY(m, m, rot[1]);
+    sceVu0RotMatrixZ(m, m, rot[2]);
+    sceVu0TransMatrix(m, m, (f32 *)trans);
 }
