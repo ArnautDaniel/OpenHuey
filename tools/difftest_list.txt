@@ -2682,3 +2682,4 @@ src/game/meshdraw.c func_0025D560 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x86=
 src/game/scene_game_members.c func_00266C40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..40
 src/game/scene_game_members.c func_002239C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..0x0B300000
 src/game/rooms.c func_0021AC10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=bytes:01 --pre=a0+0x60=0x0B300000..0x0B300000 --pre=a0+0xC0=bytes:?? --pre=a0+0x110=0x0B300000..0x0B300000
+src/game/scene_game_members.c func_002C8E50 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC=0..0xFFFFFFFF --pre=a0+0x10=0..0xFFFFFFFF --pre=@0x44E4E8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046BF20..0x0046BF20

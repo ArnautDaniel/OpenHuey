@@ -1825,3 +1825,34 @@ void func_002239C0(void *d) {
         }
     }
 }
+
+
+extern void func_0025FB10(u8 *obj, s32 layer);
+
+/* the placed objects, drawn each frame in three passes (layers 1, 0x19, 0x26; the texture
+ * cache +0x18 and gBootMessage +0x20 reset before each): every active one (bit in +0xC) that
+ * isn't hidden (+0x0) */
+void func_002C8E50(u8 *o) {
+    static const s32 kLayers[3] = {1, 0x19, 0x26};
+    VObject *tc = D_0044E4E8;
+    VObject *msg;
+    s32 pass, i;
+
+    for (pass = 0; pass < 3; pass++) {
+        if (pass == 0) {
+            VCALL(tc, 0x18, void (*)(VObject *))(tc);
+            msg = gBootMessage;
+            VCALL(msg, 0x20, void (*)(VObject *))(msg);
+        } else {
+            VCALL(tc, 0x18, void (*)(VObject *))(tc);
+            VCALL(msg, 0x20, void (*)(VObject *))(msg);
+        }
+        for (i = 0; i < 64; i++) {
+            u8 *obj = o + 0x20 + i * 0xB0;
+
+            if ((AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) && AT(obj, 0x0, u8) == 0) {
+                func_0025FB10(obj, kLayers[pass]);
+            }
+        }
+    }
+}
