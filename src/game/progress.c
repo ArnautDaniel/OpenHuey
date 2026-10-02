@@ -1266,3 +1266,19 @@ void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
         VCALL(D_0044E558, 0x80, void (*)(VObject *, u32))(D_0044E558, r);
     }
 }
+
+
+/* is door `door` open: the rooms say so (+0x44 bit 0), or its state bits (+0x124 + door x 4)
+ * have bit 1 without bit 3 */
+s32 func_001788F0(Progress *p, u32 door) {
+    u32 w;
+
+    if ((u8)VCALL(D_0044E568, 0x44, s32 (*)(VObject *, u32))(D_0044E568, door) & 1) {
+        return 1;
+    }
+    w = AT(p, 0x124 + (door & 0xFFFF) * 4, u32);
+    if (w & 8) {
+        return 0;
+    }
+    return (w & 2) != 0;
+}
