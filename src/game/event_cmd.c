@@ -1247,3 +1247,49 @@ void func_001FBE90(VObject *ev, s32 id, s32 script) {
     AT(s, 0x13, u8) = id;
     AT(s, 0x4, u8 *) = pc;
 }
+
+
+/* music commands: 0x6A sub-op pc[1] on the music (D_00456DF0): 0 +0x38 fade (pc[2], pc[3]),
+ * 1 +0x40, 2 +0xC then +0x1C, 3 wait while +0x10 says it isn't ready, 4 +0x18, 5 +0x4C; 0x6B
+ * the progress' +0x48 with pc[1]; 0x6C its +0x4C */
+void func_001FFC70(VObject *ev) {
+    VObject *mus = D_00456DF0;
+    const u8 *pc = PC(ev);
+
+    switch (pc[0]) {
+    case 0x6A:
+        if (mus == NULL) {
+            break;
+        }
+        switch (pc[1]) {
+        case 0:
+            VCALL(mus, 0x38, void (*)(VObject *, s32, s32))(mus, pc[2], pc[3]);
+            break;
+        case 1:
+            VCALL(mus, 0x40, void (*)(VObject *))(mus);
+            break;
+        case 2:
+            VCALL(mus, 0xC, void (*)(VObject *))(mus);
+            VCALL(mus, 0x1C, void (*)(VObject *))(mus);
+            break;
+        case 3:
+            if (!(u8)VCALL(mus, 0x10, s32 (*)(VObject *))(mus)) {
+                EV_WAIT(ev) = 1;
+            }
+            break;
+        case 4:
+            VCALL(mus, 0x18, void (*)(VObject *))(mus);
+            break;
+        case 5:
+            VCALL(mus, 0x4C, void (*)(VObject *))(mus);
+            break;
+        }
+        break;
+    case 0x6B:
+        VCALL(gProgress, 0x48, void (*)(Progress *, s32))(gProgress, pc[1]);
+        break;
+    case 0x6C:
+        VCALL(gProgress, 0x4C, void (*)(Progress *))(gProgress);
+        break;
+    }
+}
