@@ -388,3 +388,31 @@ s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to) {
     }
     return inside == tested ? 3 : 4;
 }
+
+
+/* +0x2C triangle `i`'s unit normal into `n` (w 1), (0, 1, 0) for a bad index */
+void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    NavTri *t;
+
+    if (i >= nm->numTris || nm->tris == NULL) {
+        n[0] = 0.0f;
+        n[1] = 1.0f;
+        n[2] = 0.0f;
+        n[3] = 1.0f;
+        return;
+    }
+    t = &nm->tris[i];
+    n[0] = 0.0f;
+    n[1] = 0.0f;
+    n[2] = 1.0f;
+    n[3] = 1.0f;
+    sceVu0SubVector(a, t->v[1], t->v[0]);
+    sceVu0SubVector(b, t->v[2], t->v[0]);
+    a[3] = 1.0f;
+    b[3] = 1.0f;
+    sceVu0OuterProduct(n, a, b);
+    sceVu0Normalize(n, n);
+    n[3] = 1.0f;
+}
