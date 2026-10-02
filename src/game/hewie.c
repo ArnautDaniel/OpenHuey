@@ -525,3 +525,66 @@ s32 func_00165A40(Hewie *h, u32 kind, s32 slot, u32 door) {
     }
     return (VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, door & 0xFF) & 0xFF) ? 1 : 0;
 }
+
+extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
+extern void func_00124F20(Character *c, u32 door);
+extern void func_002DDED0(void *motion, s32 anim, s32 arg);
+extern s32 func_00122B50(Actor *a, f32 *out);
+extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
+extern void func_00143840(Hewie *h);
+extern void func_00126270(Character *c);
+
+#define Hewie_Place(h, tri) VCALL(h, 0x28, s32 (*)(Hewie *, u32, const f32 *, f32 *))(h, tri, NULL, NULL)
+
+/* Placement with his default action (inlined twice in the original). */
+static inline s32 Hewie_PlaceDefault(Hewie *h, u32 tri) {
+    s32 r;
+
+    MOTION_PTR(h->c.motion, 0x858) = NULL;
+    MOTION_PTR(h->c.motion, 0x854) = NULL;
+    HW(h, 0xF36F0, s32) = 0;
+    r = Hewie_Place(h, tri);
+    func_00124F20(&h->c, 0xFF);
+    Hewie_ToDefault(h);
+    return r;
+}
+
+/* vtable +0x64: put him in room `room` on triangle `tri` (side `side`). In the room being played:
+ * placed, default action, handed to the room objects, nearby state updated; elsewhere he only
+ * keeps the triangle. Returns the placement result (0 elsewhere). */
+s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
+    Progress *p;
+    s32 r;
+
+    func_00125BA0(&h->c, room, tri, side);
+    p = gProgress;
+    HEWIE_SIDE(h) = side;
+    if (*((u8 *)p + 0x1FBEC1) != 0) {
+        return Hewie_PlaceDefault(h, tri);
+    }
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        h->c.a.navTri = tri;
+        func_002DDED0(h->c.motion, 0, -1);
+        Hewie_ToDefault(h);
+        return 0;
+    }
+    r = Hewie_PlaceDefault(h, tri);
+    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+    if (h->c.a.navTri == NAV_NONE) {
+        h->c.a.pos[0] = 0.0f;
+        h->c.a.pos[1] = 0.0f;
+        h->c.a.pos[2] = 0.0f;
+        h->c.a.pos[3] = 0x1.99999ap-4f;   /* 0.1 */
+    }
+    {
+        sceVu0FVECTOR v;
+
+        if (func_00122B50(&h->c.a, v)) {
+            func_001264C0(&h->c, 3, (s32)v, 0, 0, 0);
+        }
+    }
+    func_00143840(h);
+    HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
+    func_00126270(&h->c);
+    return r;
+}
