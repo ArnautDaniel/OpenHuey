@@ -2615,3 +2615,44 @@ void func_00315F00(u8 *l, u8 *s) {
     sceVu0SubVector(d, (f32 *)l, prev);
     sceVu0AddVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), d);
 }
+
+
+/* +0x10 step of a point hanging from a bone (+0x24) { +0x0 position, +0x10 velocity, +0x40
+ * length } in system `s` (+0x0 force, subtracted; +0x10 damping): moved, then kept at its
+ * length from the bone, on the front side of the bone's Y axis and within 30 degrees of its X
+ * axis; its velocity is how far it went */
+void func_002EE970(u8 *p, u8 *s) {
+    static const union { u32 u; f32 f; } kCone = {0x3F060A92};   /* 30 degrees */
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 k, ang, sl, sr, inv;
+
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), (f32 *)s);
+    sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
+    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    sceVu0CopyVector(anchor, m[3]);
+    sceVu0SubVector(d, (f32 *)p, anchor);
+    k = sceVu0InnerProduct(d, m[1]);
+    if (k < 0.0f) {
+        sceVu0ScaleVector(v, m[1], k);
+        sceVu0SubVector(d, d, v);
+    }
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    ang = func_0031C3C0(sceVu0InnerProduct(d, m[0]));
+    if (!(ang <= kCone.f)) {
+        sl = func_0031C248(kCone.f);
+        sr = func_0031C248(ang - kCone.f);
+        inv = 1.0f / func_0031C248(ang);
+        d[0] = inv * (sr * m[0][0] + sl * d[0]);
+        d[1] = inv * (sr * m[0][1] + sl * d[1]);
+        d[2] = inv * (sr * m[0][2] + sl * d[2]);
+    }
+    sceVu0AddVector((f32 *)p, anchor, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
+}
