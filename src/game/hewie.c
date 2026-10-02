@@ -1527,3 +1527,120 @@ void func_0014E040(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1B78);
     }
 }
+
+/* His move sub-mode: following a path (mode 6): 0x16 / 0x17 by +0xF3590; standing (mode 0):
+ * by his animation group. */
+void func_00144A60(Hewie *h) {
+    if (h->c.moveMode == 6) {
+        h->c.moveSub = (HW(h, 0xF3590, u8) == 1) ? 0x16 : 0x17;
+        return;
+    }
+    if (h->c.moveMode != 0) {
+        return;
+    }
+    switch (func_001669A0(h)) {
+    case 0: case 4: case 0xF:
+        h->c.moveSub = 0;
+        break;
+    case 1: case 5:
+        h->c.moveSub = 3;
+        break;
+    case 2: case 3: case 6: case 7: case 0xD:
+        h->c.moveSub = 4;
+        break;
+    case 8:
+        h->c.moveSub = 2;
+        break;
+    case 9: case 0xA: case 0xB: case 0xC:
+        h->c.moveSub = 1;
+        break;
+    }
+}
+
+/* May his current activity be broken off (`once`: only the first time)? 0 yes, -1 no. Marks the
+ * attempt (+0xF358C). */
+s32 func_0013D4A0(Hewie *h, s32 once) {
+    if (once && HW(h, 0xF358C, s32) == 1) {
+        return -1;
+    }
+    if (h->c.unkE0 != 1 && (HW(h, 0xF356C, s32) & 0x80000008) != 8) {
+        return -1;
+    }
+    if ((HW(h, 0xF3598, s32) != 0 && HEWIE_ACTION(h) != 0x7D) || HEWIE_MODE(h) == 3) {
+        HW(h, 0xF358C, s32) = 1;
+        return -1;
+    }
+    HW(h, 0xF358C, s32) = 1;
+    return 0;
+}
+
+#define MOTION_SPEED(m) (*(f32 *)((u8 *)(m) + 0x550))
+
+extern const PTMF D_003B1C50, D_003B1CD0, D_003B1CC0;
+
+void func_0014B780(Hewie *h) {
+    u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
+
+    if ((stopped ^ 1) == 0) {
+        if (func_001669A0(h) != 0) {
+            func_00143550(h, -1);
+        } else {
+            func_002DDED0(h->c.motion, 0x1C03, -1);
+            HW(h, 0xF36B8, s32) = 30;
+            Hewie_SetBehaviour(h, &D_003B1C50);
+        }
+    }
+    HW(h, 0xF3558, u8) = 1;
+}
+
+/* Character slot flags in the progress data (+0x1020 + 0x10 * slot). */
+#define PROGRESS_SLOT_FLAGS(p, slot) (*((u8 *)(p) + 0x1020 + 0x10 * (slot)))
+
+void func_001522F0(Hewie *h) {
+    u8 b = PROGRESS_SLOT_FLAGS(gProgress, SLOT_U8(h));
+
+    if ((b & 5) != 0 || h->c.unk104[0] != 0) {
+        if (b & 4) {
+            HW(h, 0xF3688, s16) = 300;
+        }
+        HW(h, 0xF36B0, s32) = 0xFF;
+        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+    }
+    Hewie_ToDefault(h);
+}
+
+void func_0014B590(Hewie *h) {
+    u8 stopped;
+    s32 g;
+
+    if (h->c.a.unkC4 == 2) {
+        if (func_00140CD0(h, 10) == 0) {
+            h->c.unkE1 = 1;
+        }
+        return;
+    }
+    stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
+    if ((stopped ^ 1) != 0) {
+        return;
+    }
+    g = func_001669A0(h);
+    if (g == 0xA || g == 9 || g == 8) {
+        func_00143550(h, -1);
+    } else if (g == 0) {
+        h->c.unkE1 = 1;
+    } else {
+        func_00141C00(h, 0);
+    }
+}
+
+void func_00149DD0(Hewie *h) {
+    if (!(func_00177620(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
+        if (func_00140CD0(h, 3) == 0) {
+            func_001431F0(h);
+            Hewie_SetBehaviour(h, &D_003B1CD0);
+        }
+    } else if (func_00140CD0(h, 0) == 0) {
+        func_001431F0(h);
+        Hewie_SetBehaviour(h, &D_003B1CC0);
+    }
+}

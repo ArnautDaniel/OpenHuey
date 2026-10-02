@@ -1566,3 +1566,11 @@ src/game/hewie.c func_001531F0 --runs=100 --pre=a0+0xF0=0x0A000000..0x0A000000 -
 src/game/hewie.c func_00137650 --runs=200 --pre=a1=0x0A100000..0x0A100000 --pre=@0x0A100028=0..1 --pre=@0x0A1000C4=1..2 --pre=@0x0A100030=0..1 --pre=a0+0x30=0..1 --pre=@0x0A100034=0xFFFFFFFE..0xFFFFFFFF --stub-ret=0 --stub-ret=1
 src/game/hewie.c func_0014EB40 --runs=60 --pre=a0+0xF36BC=0..2
 src/game/hewie.c func_0014E040 --runs=60 --pre=a0+0xF3604=0..1 --stub-ret=0 --stub-ret=1
+src/game/hewie.c func_00144A60 --runs=300 --pre=a0+0xF8=0..6 --pre=a0+0xF3590=0..1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0..9
+src/game/hewie.c func_00144A60 --runs=300 --pre=a0+0xF8=0..0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x100..0x310
+src/game/hewie.c func_0013D4A0 --runs=300 --pre=a1=0..1 --pre=a0+0xF358C=0..1 --pre=a0+0xE0=0..1 --pre=a0+0xF356C=7..9 --pre=a0+0xF3598=0..1 --pre=a0+0xF3564=0x7C..0x7E --pre=a0+0xF35C0=2..3
+src/game/hewie.c func_0014B780 --runs=100 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..1 --pre=@0x0A00055C=0..1
+src/game/hewie.c func_001522F0 --runs=200 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=a0+0x104=0..1
+src/game/hewie.c func_0014B590 --runs=200 --pre=a0+0xC4=1..2 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..1 --pre=@0x0A00055C=0x200..0x206 --stub-ret=0 --stub-ret=1
+src/game/hewie.c func_0014B590 --runs=100 --pre=a0+0xC4=1..1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..0 --pre=@0x0A00055C=0..1
+src/game/hewie.c func_00149DD0 --runs=100 --pre=a0+0xC4=0..1 --stub-ret=0 --stub-ret=1
