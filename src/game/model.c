@@ -2376,3 +2376,29 @@ void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32
     AT(ik, 0x44, f32) = len2;
     AT(ik, 0x48, f32) = bend;
 }
+
+
+extern s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend);   /* 0: solved */
+extern void func_001F0F40(u8 *ik);   /* turn the chain's bones to the solution */
+
+/* +0x8 solve: from the chain root's position (and its Z axis as the bend direction, +0x30),
+ * place the middle joint for the end target; a target out of reach is pulled in to the
+ * chain's full length along its direction; then the bones follow */
+void func_001F0E50(u8 *ik) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 len;
+
+    sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x30), AT(ik, 0x4C, f32 *) + 8);
+    if (func_001F10C0(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
+                      AT(ik, 0x44, f32), AT(ik, 0x48, f32)) != 0) {
+        sceVu0SubVector(d, (f32 *)(ik + 0x20), (f32 *)ik);
+        sceVu0Normalize(d, d);
+        len = AT(ik, 0x40, f32) + AT(ik, 0x44, f32);
+        AT(ik, 0x20, f32) = AT(ik, 0x0, f32) + d[0] * len;
+        AT(ik, 0x24, f32) = AT(ik, 0x4, f32) + d[1] * len;
+        AT(ik, 0x28, f32) = AT(ik, 0x8, f32) + d[2] * len;
+    }
+    func_001F0F40(ik);
+}
