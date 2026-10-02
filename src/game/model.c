@@ -2239,3 +2239,38 @@ void func_00211190(u8 *m, s32 on, u8 *a) {
     func_00211530(m, r, l, AT(m, 0x804, f32));
     AT(m, 0x8C4, f32) = k;
 }
+
+
+/* +0x44 how much of the feet's height to keep on a slope (track flag 4; else 1): 1 - (1 -
+ * ny^2) x |the actor's facing (+0x60 matrix) along the floor's downhill direction|, where ny
+ * is the up part of the floor normal under it (+0x34) */
+f32 func_002DD980(u8 *m, u8 *a) {
+    f32 rot[4][4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 k = 1.0f, d;
+
+    if (!(AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 4)) {
+        return 1.0f;
+    }
+    VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), n);
+    if (n[1] < 1.0f) {
+        k = n[1] * n[1];
+        n[1] = 0.0f;
+        sceVu0Normalize(n, n);
+        v[2] = 1.0f;
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[3] = 0.0f;   /* unset in the original */
+        sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
+        sceVu0ApplyMatrix(v, rot, v);
+        d = sceVu0InnerProduct(v, n);
+        if (!(d <= 0.0f)) {
+            d = sceVu0InnerProduct(v, n);
+        } else {
+            d = -sceVu0InnerProduct(v, n);
+        }
+        k = 1.0f - (1.0f - k) * d;
+    }
+    return k;
+}
