@@ -485,7 +485,7 @@ u32 func_0037FE50(SceneBoot *boot) {
     if (boot->stepTimer == 0) {
         func_002BFB00(&boot->card, 0, 0);
         boot->card.state = 0;
-        boot->card.unk8 = 0;
+        boot->card.hidden = 0;
         boot->stepTimer = 1;
     }
     if (boot->card.state < 0) {

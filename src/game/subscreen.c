@@ -990,3 +990,22 @@ void func_003974A0(void *self) {
     }
     sub_set_volume(s, vol);
 }
+
+extern void func_002BC460(void *card, s32 arg);
+extern void func_002BCAC0(void *card);
+
+/* state: the save-data screen (the card UI at +0xA8AC0) for loading; when it finishes
+ * (+0xA8AC4 < 0) the screen closes */
+void func_00391250(void *self) {
+    u8 *s = self;
+
+    SUB_KIND(s) = 0x85;
+    if (AT(s, 0xA8AC4, s32) >= 0) {
+        func_002BCAC0(s + 0xA8AC0);
+        return;
+    }
+    if (!SUB_FADING(s)) {
+        SUB_CLOSE(s) = 1;
+    }
+    func_002BC460(s + 0xA8AC0, 1);
+}

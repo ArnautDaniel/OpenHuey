@@ -424,8 +424,6 @@ src/leaf/b3_002B5330.c func_002BA220
 src/leaf/b3_002B5330.c func_002BA6E0
 src/leaf/b3_002B5330.c func_002BB390
 src/leaf/b3_002B5330.c func_002BC000
-src/leaf/b3_002B5330.c func_002BC9C0
-src/leaf/b3_002B5330.c func_002BFB00
 src/leaf/b3_002B5330.c func_002BFE40
 src/leaf/b3_002B5330.c func_002C0700
 src/leaf/b3_002B5330.c func_002C0710
@@ -2163,3 +2161,16 @@ src/game/subscreen.c func_00391450 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044
 src/game/subscreen.c func_00391450 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E4D8=0x0B400000..0x0B400000 --pre=a0+4=0..0 --pre=a0+0xA8C56=0..4 --pre=a0+0xA8C4A=0..3 --pre=a0+0xA8C4C=0x3C000000..0x3F800000 --pre=@0x0B5FBEC1=bytes:01 --runs=40 --stub-ret=0x40 --stub-ret=0x1F0 --stub-ret=0 --stub-ret-prob=1
 src/game/subscreen.c func_003858E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..20 --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
 src/game/subscreen.c func_003854C0 --pre=a0=0x0B000000..0x0B000000 --pre=a3=0..0x1C --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
+src/game/bootcard.c func_002BFB00 --pre=a0=0x0B000000..0x0B000000
+src/game/bootcard.c func_002BC460 --pre=a0=0x0B000000..0x0B000000 --pre=a0+8=0..2 --pre=a0+0xC=0..1
+src/game/bootcard.c func_002BC040 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..6 --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
+src/game/bootcard.c func_002BC9C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B110000..0x0B110000 --pre=a0+0x11C=0x0B120000..0x0B120000
+src/game/bootcard.c func_0037EC70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
+src/game/bootcard.c func_002BC530 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0x128=bytes:000102000102000102000102 --runs=60
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=-1..7 --runs=200
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=100..101 --pre=a0+0x28=0..1 --runs=40
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=150..150 --pre=a0+0x28=0..1 --runs=40
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=200..200 --pre=a0+0x28=0..1 --pre=a0+0x60=0..1 --runs=40
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=300..300 --runs=20
+src/game/bootcard.c func_002BCAC0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044FF00=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..10 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0xC=0..1 --pre=@0x0047E36C=0..0xFF --pre=a0+4=5..5 --pre=@0x0B200000=0x0046AE90..0x0046AE90 --pre=@0x0B200004=-1..0 --pre=a0+0x128=bytes:000102000102000102000102 --runs=100
+src/game/subscreen.c func_00391250 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8AC4=-2..1 --pre=a0+0xA8C61=0..1

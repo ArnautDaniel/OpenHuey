@@ -63,3 +63,8 @@ void func_00225C40(void *mc) {
     }
     finish(mc, ok ? 0 : 9);
 }
+
+/* has the card been swapped since the check (PS2 0x00225770, sceMcGetInfo): never on PC */
+void func_00225770(void *mc) {
+    finish(mc, 0);
+}

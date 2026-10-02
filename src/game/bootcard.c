@@ -9,6 +9,9 @@
 #include "scene_boot.h"
 #include "task.h"
 
+#define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
+#define AT32(p, off) AT(p, off, s32)
+
 extern MemCard *D_0044FF00;
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
@@ -233,4 +236,470 @@ BootCard *func_0012C730(BootCard *b, s32 flags) {
         }
     }
     return b;
+}
+
+/* ---- the save-data screen (the sub screen's load page; mode 6) ---- */
+
+extern u32 D_0047E36C;      /* menu buttons pressed */
+extern VObject *D_0044E560; /* the sound driver */
+extern void *D_0044E978;    /* the system data */
+extern void func_002BC040(BootCard *b, s32 part);
+void func_002BC530(BootCard *b);
+void func_002BC9C0(BootCard *b, SysData *cur, SysData *loaded);
+
+#define SE(id) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, 5)
+#define MEMCARD_POLL(mc, port) VCALL(mc, 0x20, void (*)(MemCard *, s32))(mc, port)
+
+/* the save headers after the system data: 12 x 0x18, then the saves (0x1900 each) */
+#define SAVE_HEADER(sys, i) ((u8 *)(sys) + 0x50 + (i) * 0x18)
+#define SAVE_DATA_OFF 0x170
+#define SAVE_SIZE 0x1900
+
+/* the save screen is set up on the system data, with two work buffers */
+void func_002BFB00(BootCard *b, void *buf0, void *buf1) {
+    b->sys = (SysData *)((u8 *)D_0044E978 + 0x20);
+    b->buf0 = buf0;
+    b->buf1 = buf1;
+}
+
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *D_0044E9A0;   /* the VRAM manager */
+
+/* the save screen's parts (texture group 0x19): texture, CLUT (0x80: blend with the alpha
+ * channel as is), u, v, w, h, x, y, screen w, h */
+extern s16 D_00412770[][10];
+
+#define XYZ2(x, y) ((u64)(u32)((x) << 4) | ((u64)(u32)((y) << 4) << 16) | 0xFFFFFFFF00000000ULL)
+
+/* draw part `part` of the save screen (layer 0x30) */
+void func_002BC040(BootCard *b, s32 part) {
+    s16 *e = D_00412770[(u8)part];
+    VObject *tc = D_0044E4E8;
+    s32 slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, e[0], 0x19);
+    s32 u, v, w, h, x, y, sw, sh;
+    u8 *tex;
+    u64 *p;
+
+    if (slot == -1) {
+        return;
+    }
+    tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, e[0], 0x19);
+    if (slot & 0x80000000) {
+        slot &= 0x7FFFFFFF;
+        if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, tex, 0x30)) {
+            return;
+        }
+    }
+    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, 0x30);
+    if (p == NULL) {
+        return;
+    }
+    p[0] = 0x1000000B;              /* DMA cnt 11 */
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000000B;   /* VIF DIRECT 11 */
+    p[2] = 5 | (1ULL << 60);        /* GIF tag: 5 A+D, EOP */
+    p[3] = 0xE;
+    if (e[1] & 0x80) {
+        p[4] = (0x80ULL << 32) | 0x42;   /* ALPHA_1: (Cs - Cd) * As + Cd, ... */
+    } else {
+        p[4] = (0x80ULL << 32) | 0x44;
+    }
+    p[5] = 0x42;
+    p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
+        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX1_1 */
+    p[7] = 0x6;
+    p[8] = 0x60;
+    p[9] = 0x14;
+    p[10] = (0x80ULL << 32) | 0x8080;  /* TEXA */
+    p[11] = 0x3B;
+    p[12] = 0x156;                  /* PRIM: sprite, textured, blended, UV */
+    p[13] = 0;
+    u = e[2];
+    v = e[3];
+    w = e[4];
+    h = e[5];
+    x = e[6];
+    y = e[7];
+    sw = e[8];
+    sh = e[9];
+    p[14] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
+    p[15] = 0xFFFFFFFFF5353186ULL;
+    p[16] = VCALL(D_0044E9A0, 0x30, u64 (*)(VObject *, s32, s32, s32, s32, s32, s32))(
+        D_0044E9A0, slot, e[1] & 0x7F, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+    p[17] = 0xA | ((u64)(s64)u << 4) | ((u64)(s64)(u + w) << 14) | ((u64)(s64)v << 24)
+            | ((u64)(s64)(v + h) << 34);   /* CLAMP_1: region clamp */
+    p[18] = 0x80808080 | (1ULL << 32);
+    p[19] = (u64)(u32)(u << 4) | ((u64)(u32)(v << 4) << 16);
+    p[20] = XYZ2(x + 0x700, y + 0x720);
+    p[21] = (u64)(u32)((u + w) << 4) | ((u64)(u32)((v + h) << 4) << 16);
+    p[22] = XYZ2(x + sw + 0x700, y + sh + 0x720);
+    p[23] = 0;
+}
+
+/* draw the screen: the frame, the slot tabs (the current one lit), the help line (`flags` 1:
+ * choosing the card, else the saves) and, with `flags` 4, the save list */
+static void savescreen_draw(BootCard *b, u8 flags) {
+    if (b->hidden == 1) {
+        return;
+    }
+    func_002BC040(b, 0);
+    func_002BC040(b, 1);
+    if (b->port == 0) {
+        func_002BC040(b, 2);
+    } else {
+        func_002BC040(b, 3);
+    }
+    if (flags & 1) {
+        func_002BC040(b, 5);
+    } else {
+        func_002BC040(b, 4);
+    }
+    if (flags & 4) {
+        func_002BC530(b);
+    }
+}
+
+void func_002BC460(BootCard *b, s32 flags) {
+    savescreen_draw(b, flags);
+}
+
+static const char sFmtDate[] = "%02X/%02X/20%02X %02X:%02X";
+
+/* the date and time a save was made (BCD: month, day, year, hour, minute) */
+void func_0037EC70(BootCard *b, u8 *h) {
+    Task t;
+
+    Task_Construct(&t);
+    func_00384800(&t, 0xA0, 0x52, 0x80, sFmtDate, h[0x11], h[0x10], h[0x12], h[0xE], h[0xD]);
+    if (t.child != NULL) {
+        Task_dtor(t.child, 1);
+        t.child = NULL;
+    }
+}
+
+/* the system data was read from the card: keep what was unlocked in either, and the options
+ * and controls set now */
+void func_002BC9C0(BootCard *b, SysData *cur, SysData *loaded) {
+    s32 i, j;
+
+    AT32(b->sys, 0x4) = AT32(cur, 0x4) | AT32(loaded, 0x4);
+    AT32(b->sys, 0x8) = AT32(cur, 0x8) | AT32(loaded, 0x8);
+    AT32(b->sys, 0xC) = AT32(cur, 0xC) | AT32(loaded, 0xC);
+    for (i = 0x10; i < 0x17; i++) {
+        AT(b->sys, i, u8) = AT(cur, i, u8);
+    }
+    AT(b->sys, 0x18, f32) = AT(cur, 0x18, f32);
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 12; j++) {
+            AT(b->sys, 0x1C + i * 12 + j, u8) = AT(cur, 0x1C + i * 12 + j, u8);
+        }
+    }
+}
+
+/* where each save was made: room, area -> its name's message (0xFFF ends) */
+extern u16 D_00412800[][3];
+
+static const char sFmtSaveNo[] = "%02d:";
+static const char sFmtTime[] = "%02d:%02d:%02d";
+
+/* one line of save-list text */
+static void list_text(Task *t, s32 x, s32 y, s32 color, s32 id) {
+    func_00384650(t, x, y, color, func_00384B00(t, id), 0x80, 0x30, 0x10, 0x15);
+}
+
+/* the name of the place a save was made in */
+static u16 save_place(u8 *h) {
+    s32 room = AT32(h, 4);
+    s32 area = (s8)h[9];
+    u16 *e;
+
+    for (e = D_00412800[0]; e[0] != 0xFFF; e += 3) {
+        if (room == e[0] && area == e[1]) {
+            return e[2];
+        }
+    }
+    return 0x85;
+}
+
+/* draw the save list: two columns of 6 (number, place / empty / broken), and for the chosen
+ * one its details (place, thumbnail, play time) */
+void func_002BC530(BootCard *b) {
+    Task t;
+    u32 i;
+
+    Task_Construct(&t);
+    for (i = 0; i < 12; i++) {
+        u8 *h = SAVE_HEADER(b->sys, i);
+        s32 color = b->cursor == (s32)i ? 0x82 : 0x80;
+        s32 y = (s32)i % 6 * 24 + 0x99;
+        s32 x = (s32)i / 6 * 0xDA;
+
+        func_00384800(&t, x + 0x30, y, color, sFmtSaveNo, i + 1);
+        if (b->slots[i] == 2) {
+            list_text(&t, x + 0x4E, y, color, 0x2B);
+            if (b->cursor == (s32)i) {
+                list_text(&t, 0xA0, 0x52, 0x80, 0x2C);
+            }
+        } else if (b->slots[i] == 1) {
+            list_text(&t, x + 0x4E, y, color, 0x29);
+            if (b->cursor == (s32)i) {
+                list_text(&t, 0xA0, 0x52, 0x80, 0x2A);
+            }
+        } else {
+            list_text(&t, x + 0x4E, y, color, save_place(h));
+            if (b->cursor == (s32)i) {
+                if (h[0xA] != 0) {
+                    func_002BC040(b, 6);
+                }
+                list_text(&t, 0xA0, 0x3A, 0x80, save_place(h));
+                func_0037EC70(b, h);
+                list_text(&t, 0xA0, 0x6A, 0x80, 0x28);
+                func_00384800(&t, 0xFF, 0x6A, 0x80, sFmtTime, h[0x13], h[0x14], h[0x15]);
+            }
+        }
+    }
+    if (t.child != NULL) {
+        Task_dtor(t.child, 1);
+        t.child = NULL;
+    }
+}
+
+/* a save header is valid: the byte sum of 4..0x17 matches, not flagged */
+static inline s32 header_valid(u8 *h) {
+    u32 sum = 0;
+    s32 i;
+
+    for (i = 4; i < 0x18; i++) {
+        sum += h[i];
+    }
+    return AT32(h, 0) == sum && !(h[8] & 0x80);
+}
+
+/* the save read is valid: the byte sum of 4..0x18FF matches */
+static inline s32 save_valid(u8 *d) {
+    u32 sum = 0;
+    s32 i;
+
+    for (i = 4; i < SAVE_SIZE; i++) {
+        sum += d[i];
+    }
+    return AT32(d, 0) == sum;
+}
+
+/* Load a game: choose the card (left / right), read its system data and save headers, choose a
+ * save (two columns of 6), read and check it.
+ * States: 0 / 1 start (message 0x20); 2 choosing the card; 3 checking it; 4 reading the
+ * system data; 5 choosing the save; 6 / 7 reading it; 100 / 101 a message, then back to 1;
+ * 150 loaded (-2 once its message is closed); 200 a question; 300 cancelled (-1). */
+void func_002BCAC0(BootCard *b) {
+    MemCard *mc = D_0044FF00;
+    u8 flags = 1;
+    s32 st;
+    u32 pad;
+
+    if (b->state < 0) {
+        return;
+    }
+    switch (b->state) {
+    case 0:
+        b->port = 0;
+        b->state++;
+        /* fall through */
+    case 1:
+        func_00384A90(&b->task, 0x20);
+        b->cursor = 0;
+        b->state++;
+        break;
+    case 2:
+        if (D_0047E36C & 0x10) {
+            MEMCARD_CHECK(mc, b->port);
+            func_00380B80(&b->task, 0, sFmtDec, b->port + 1);
+            func_00384A90(&b->task, 0x13);
+            b->state++;
+            SE(0x2B);
+        } else if (D_0047E36C & 0x20) {
+            b->state = 300;
+        } else {
+            pad = D_0047E36C;
+            if ((pad & 8) || (pad & 0x40)) {
+                if (b->port != 0) {
+                    b->port = 0;
+                    SE(0x2A);
+                }
+            } else if ((pad & 2) || (pad & 0x80)) {
+                if (b->port != 1) {
+                    b->port = 1;
+                    SE(0x2A);
+                }
+            }
+        }
+        flags |= 2;
+        break;
+    case 3:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st == MC_NO_CARD) {
+            func_00384A90(&b->task, 0x14);
+            b->state = 101;
+        } else if (st != MC_HAS_DATA) {
+            func_00384A90(&b->task, 0x21);
+            b->state = 101;
+        } else {
+            sys_copy(&b->saved, b->sys);
+            b->saved.flags = b->sys->flags;
+            MEMCARD_READ(mc, b->port, b->sys, 0, SAVE_DATA_OFF);
+            b->state++;
+        }
+        break;
+    case 4: {
+        s32 i;
+
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st != 0 || !sys_valid(b->sys)) {
+            sys_copy(b->sys, &b->saved);
+            b->sys->flags = b->saved.flags;
+        } else {
+            func_002BC9C0(b, &b->saved, b->sys);
+            b->cursor = b->sys->flags;
+        }
+        st = mc->status;
+        if (st != 0) {
+            if (st == 9) {
+                func_00384A90(&b->task, 0x26);
+            } else {
+                func_00384A90(&b->task, 0x25);
+            }
+            SE(0x85);
+            b->state = 101;
+            break;
+        }
+        for (i = 0; i < 12; i++) {
+            u8 *h = SAVE_HEADER(b->sys, i);
+
+            if (!header_valid(h)) {
+                b->slots[i] = 2;
+            } else if (AT32(h, 4) == -1) {
+                b->slots[i] = 1;
+            } else {
+                b->slots[i] = 0;
+            }
+        }
+        func_00384A90(&b->task, 0x22);
+        MEMCARD_POLL(mc, b->port);
+        b->state++;
+        break;
+    }
+    case 5:
+        st = mc->status;
+        if (st == 0) {
+            MEMCARD_POLL(mc, b->port);
+        } else if (st > 0) {
+            func_00384A90(&b->task, 0x15);
+            b->state = 101;
+            break;
+        }
+        pad = D_0047E36C;
+        if (pad & 0x10) {
+            if (b->slots[b->cursor] == 0) {
+                func_00384A90(&b->task, 0x23);
+                b->state++;
+                SE(0x2B);
+            } else {
+                SE(0x85);
+            }
+        } else if (pad & 0x20) {
+            b->state = 1;
+            SE(0x2C);
+        } else {
+            u32 row = (u32)b->cursor % 6;
+            u32 col = (u32)b->cursor / 6 * 6;
+
+            pad = D_0047E36C;
+            if (pad & 1) {
+                b->cursor = (row != 0 ? row - 1 : 5) + col;
+                SE(0x2A);
+            } else if (pad & 4) {
+                b->cursor = (row + 1 < 6 ? row + 1 : 0) + col;
+                SE(0x2A);
+            } else if ((pad & 8) || (pad & 2)) {
+                b->cursor = ((u32)b->cursor + 6) % 12;
+                SE(0x2A);
+            }
+        }
+        flags |= 4;
+        break;
+    case 6:
+        st = mc->status;
+        if (st >= 0) {
+            if (st == 0) {
+                MEMCARD_READ(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, b->cursor * SAVE_SIZE + SAVE_DATA_OFF,
+                             SAVE_SIZE);
+                b->state++;
+            } else {
+                func_00384A90(&b->task, 0x25);
+                SE(0x85);
+                b->state = 100;
+            }
+        }
+        flags |= 4;
+        break;
+    case 7:
+        flags |= 4;
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st == 0) {
+            if (save_valid((u8 *)b->sys + SAVE_DATA_OFF)) {
+                func_00384A90(&b->task, 0x24);
+                SE(0xE);
+                b->state = 150;
+                break;
+            }
+            mc->status = 9;
+        }
+        if (mc->status == 9) {
+            func_00384A90(&b->task, 0x26);
+        } else {
+            func_00384A90(&b->task, 0x25);
+        }
+        SE(0x85);
+        b->state = 100;
+        break;
+    case 100:
+        flags |= 4;
+        /* fall through */
+    case 101:
+        if (!b->task.mode) {
+            b->state = 1;
+        }
+        break;
+    case 150:
+        if (b->task.mode == 0) {
+            func_003844E0(&b->task);
+            b->state = -2;
+        }
+        flags |= 4;
+        break;
+    case 200:
+        if (b->task.mode) {
+            break;
+        }
+        b->state = b->task.answer == 0 ? 300 : 1;
+        break;
+    default:
+        func_003844E0(&b->task);
+        b->state = -1;
+        break;
+    }
+    savescreen_draw(b, flags);
+    if (b->task.mode) {
+        func_00384BC0(&b->task);
+    }
 }

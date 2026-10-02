@@ -20,15 +20,15 @@ _Static_assert(sizeof(SysData) == 0x50, "SysData size");
 typedef struct BootCard {
     /* 0x000 */ void **vtbl;
     /* 0x004 */ s32 state;      /* -1 done */
-    /* 0x008 */ s32 unk8;
-    /* 0x00C */ s32 port;
-    /* 0x010 */ s32 unk10;
+    /* 0x008 */ s32 hidden;     /* 1: the save screen isn't drawn */
+    /* 0x00C */ s32 port;       /* 0 slot 1, 1 slot 2 */
+    /* 0x010 */ s32 cursor;     /* the save chosen (0..11: two columns of 6) */
     /* 0x014 */ s32 timer;
     /* 0x018 */ Task task;
     /* 0x11C */ SysData *sys;
-    /* 0x120 */ s32 unk120;
-    /* 0x124 */ s32 unk124;
-    /* 0x128 */ u8 pad128[0xC];
+    /* 0x120 */ void *buf0;     /* (func_002BFB00) */
+    /* 0x124 */ void *buf1;
+    /* 0x128 */ u8 slots[12];   /* per save: 0 used, 1 empty, 2 broken */
     /* 0x134 */ SysData saved;  /* restored when reading fails */
     /* 0x184 */ u8 pad184[0xC];
 } BootCard;

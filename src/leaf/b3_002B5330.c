@@ -154,44 +154,7 @@ s32 func_002BC000(u8 *self, u32 a, u32 b, u32 c, f32 x, f32 y) {
 
 /* Merges two descriptors into the one at self->0x11C: words 4..C are ORed,
  * bytes 0x10..0x16, the word at 0x18 and bytes 0x1C..0x4B are copied from a. */
-void func_002BC9C0(u8 *self, u8 *a, u8 *b) {
-    s32 i, j;
-
-    *(u32 *)(*(u8 **)(self + 0x11C) + 0x4) = *(u32 *)(a + 0x4) | *(u32 *)(b + 0x4);
-    *(u32 *)(*(u8 **)(self + 0x11C) + 0x8) = *(u32 *)(a + 0x8) | *(u32 *)(b + 0x8);
-    *(u32 *)(*(u8 **)(self + 0x11C) + 0xC) = *(u32 *)(a + 0xC) | *(u32 *)(b + 0xC);
-    {
-        u8 *d = *(u8 **)(self + 0x11C);
-
-        d[0x10] = a[0x10];
-        d[0x11] = a[0x11];
-        d[0x12] = a[0x12];
-        d[0x13] = a[0x13];
-        d[0x14] = a[0x14];
-        d[0x15] = a[0x15];
-        d[0x16] = a[0x16];
-        *(u32 *)(d + 0x18) = *(u32 *)(a + 0x18);
-    }
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 3; j++) {
-            u8 *d = *(u8 **)(self + 0x11C) + i * 12 + j * 4;
-            u8 *s = a + i * 12 + j * 4;
-
-            d[0x1C] = s[0x1C];
-            d[0x1D] = s[0x1D];
-            d[0x1E] = s[0x1E];
-            d[0x1F] = s[0x1F];
-        }
-    }
-}
-
 extern u8 *D_0044E978;
-
-void func_002BFB00(u8 *self, u32 a, u32 b) {
-    *(u8 **)(self + 0x11C) = D_0044E978 + 0x20;
-    *(u32 *)(self + 0x120) = a;
-    *(u32 *)(self + 0x124) = b;
-}
 
 void func_002BFE40(u8 *self) {
     self[0xA38] = 1;
