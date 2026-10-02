@@ -40,6 +40,7 @@ extern s32 func_00176DD0(Progress *p, s32 item, s32 n);
 extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
 extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
+extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
 extern u8 *D_0044F808;                        /* the stalker in play */
 
@@ -217,6 +218,18 @@ s32 func_001FC760(VObject *ev) {
     case 0x2B:     /* +0x11F0 has reached +0x40 */
         r = !(AT(ev, 0x11F0, u8) < AT(ev, 0x40, u8));
         break;
+    case 0x35: {   /* character pc[1] (in this room, its radius / height) against zone pc[2]: all of
+                    * pc[3]'s bits */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
+            u8 bits = (u8)func_002DE2F0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, (f32 *)(c + 0x10), AT(c, 0xC8, f32),
+                                        AT(c, 0xCC, f32));
+
+            r = (PC(ev)[3] & bits) == PC(ev)[3];
+        }
+        break;
+    }
     case 0x37:     /* character pc[1] is in zone pc[2] (+0xBF0) */
         r = (u8)func_002DE1C0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
         break;
@@ -331,7 +344,6 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
 
 
 extern s32 func_002DE0F0(u8 *zone, u8 *c);             /* character c in the zone */
-extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 a, f32 b);   /* a point against the zone (bits) */
 
 /* is character `c` in zone `zone` - or, for NULL, any active character in this room (its
  * point +0x74 fully inside: bits 1 and 2) */
