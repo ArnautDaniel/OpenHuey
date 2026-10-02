@@ -103,3 +103,45 @@ void func_001B8250(u8 *r) {
         }
     }
 }
+
+#include "gs.h"
+
+extern void FlushCache(s32 mode);
+extern u32 *_fbss;   /* GIF DMA channel registers (sceDmaGetChan(2)) */
+extern void func_0010D6E8(u32 *chan, void *tag);           /* libdma: sceDmaSend */
+extern s32 func_0010D988(u32 *chan, s32 mode, s32 timeout);   /* libdma: sceDmaSync */
+
+/* Clear all of VRAM: 16 uploads of a 256x256 32-bit block of zeros (256 KB each). */
+void func_001B7ED0(u8 *r) {
+    s32 i, base, n;
+    u64 *p;
+
+    for (i = 0, base = 0; i < 16; i++, base += 0x10000) {
+        func_001B7370(r);
+        p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x4008, 1);
+        p[0] = DMA_TAG(DMA_CNT, 5, 0);
+        p[1] = 0;
+        p[2] = GIF_TAG(4, 1, GIF_PACKED, 1);
+        p[3] = GIF_REG_AD;
+        p[4] = GS_BITBLT_DST(base / 64, 4, GS_PSMCT32);
+        p[5] = GS_BITBLTBUF;
+        p[6] = 0;
+        p[7] = GS_TRXPOS;
+        p[8] = 256 | (u64)256 << 32;
+        p[9] = GS_TRXREG;
+        p[10] = 0;   /* host -> local */
+        p[11] = GS_TRXDIR;
+        p[12] = DMA_TAG(DMA_CNT, 0x4001, 0);
+        p[13] = 0;
+        p[14] = GIF_TAG(0x4000, 1, GIF_IMAGE, 0);
+        p[15] = 0;
+        for (p += 16, n = 0; n < 0x4000; n += 8, p += 16) {   /* the image: zeros */
+            p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0; p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
+            p[8] = 0; p[9] = 0; p[10] = 0; p[11] = 0; p[12] = 0; p[13] = 0; p[14] = 0; p[15] = 0;
+        }
+        FlushCache(0);
+        *_fbss &= ~0x40;   /* CHCR.TTE: don't send the tags */
+        func_0010D6E8(_fbss, r + AT(r, 0x304BB4, u8) * 0x360 + 0x10);
+        func_0010D988(_fbss, 0, 0);
+    }
+}

@@ -1807,3 +1807,4 @@ src/game/system.c func_001BF080
 src/game/pad.c func_001BE6A0
 src/game/renderer.c func_001B83D0 --pre=a1=1..2 --stub-fret=0.25 --stub-fret=0.75
 src/game/renderer.c func_001B8250 --pre=a0+0x304BE4=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x304BB8=0xFFFFFFFE..0xFFFFFFFF --pre=a0+0x304BDC=0xFFFFFFFE..0xFFFFFFFF
+src/game/renderer.c func_001B7ED0 --runs=5
