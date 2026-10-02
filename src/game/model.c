@@ -2550,3 +2550,68 @@ void func_002EE570(u8 *p, u8 *model) {
     sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(model, 0x810, void *), AT(p, 0x28, s32)));
     sceVu0ApplyMatrix((f32 *)p, m, (f32 *)(p + 0x10));
 }
+
+
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* +0x10 step of a hanging point (hair / cloth) { +0x0 position, +0x10 velocity, +0x20 anchored to
+ * a bone (+0x24) else to the point +0x2C, +0x40 length, +0x44 the bone it hangs along, +0x48
+ * its side axis, +0x4C the cone angle } in system `s` (+0x4 gravity, +0x10 damping): pulled
+ * along the hanging bone's X axis, damped, moved; then kept at its length from the anchor,
+ * within the cone around that axis and off the back of the plane of the axis and the side
+ * axis, its velocity following the corrections */
+void func_00315F00(u8 *l, u8 *s) {
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 x[4] __attribute__((aligned(16)));
+    f32 side[4] __attribute__((aligned(16)));
+    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x24, s32));
+    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x44, s32));
+    f32 ang, sa, sl, sr, inv, k1, k2;
+
+    if (AT(l, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, a + 12);
+    } else {
+        sceVu0CopyVector(anchor, AT(l, 0x2C, f32 *));
+    }
+    sceVu0CopyVector(prev, (f32 *)l);
+    sceVu0ScaleVector(d, b, AT(s, 0x4, f32));
+    sceVu0AddVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), d);
+    sceVu0ScaleVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)l, (f32 *)l, (f32 *)(l + 0x10));
+    sceVu0SubVector(d, (f32 *)l, anchor);
+    sceVu0Normalize(d, d);
+    ang = func_0031C3C0(sceVu0InnerProduct(d, b));
+    if (!(ang <= AT(l, 0x4C, f32))) {
+        sa = func_0031C248(ang);
+        if (!(sa <= 0.0f)) {
+            sl = func_0031C248(AT(l, 0x4C, f32));
+            sr = func_0031C248(ang - AT(l, 0x4C, f32));
+            inv = 1.0f / sa;
+            d[0] = inv * (sr * b[0] + sl * d[0]);
+            d[1] = inv * (sr * b[1] + sl * d[1]);
+            d[2] = inv * (sr * b[2] + sl * d[2]);
+        }
+    }
+    sceVu0ScaleVector(d, d, AT(l, 0x40, f32));
+    sceVu0AddVector((f32 *)l, anchor, d);
+    sceVu0SubVector((f32 *)(l + 0x10), (f32 *)l, prev);
+    sceVu0CopyVector(x, b);
+    sceVu0ApplyMatrix(side, (f32 (*)[4])b, AT(l, 0x48, f32 *));
+    k1 = sceVu0InnerProduct(d, x);
+    k2 = sceVu0InnerProduct(d, side);
+    sceVu0CopyVector(prev, (f32 *)l);
+    if (k2 < 0.0f) {
+        k2 = 0.0f;
+    }
+    sceVu0ScaleVector(x, x, k1);
+    sceVu0ScaleVector(side, side, k2);
+    sceVu0AddVector(d, x, side);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(l, 0x40, f32));
+    sceVu0AddVector((f32 *)l, anchor, d);
+    sceVu0SubVector(d, (f32 *)l, prev);
+    sceVu0AddVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), d);
+}
