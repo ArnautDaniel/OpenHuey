@@ -1856,3 +1856,32 @@ void func_002C8E50(u8 *o) {
         }
     }
 }
+
+
+/* draw a placed object in pass `layer` (layer by its name +0x70: "g_..." 0x26, "a_..." 0x19
+ * (alpha, +0x80 set), others 1): its model (+0x40) takes its position and rotation */
+void func_0025FB10(u8 *obj, s32 layer) {
+    const u8 *name;
+    s32 own;
+
+    sceVu0CopyVector((f32 *)(obj + 0x50), (f32 *)(obj + 0x20));
+    sceVu0CopyVector((f32 *)(obj + 0x60), (f32 *)(obj + 0x10));
+    name = AT(obj, 0x70, const u8 *);
+#ifdef HG_NATIVE
+    if (name == NULL) {
+        name = (const u8 *)"";   /* the PS2 reads its address 0 here */
+    }
+#endif
+    AT(obj, 0x80, u8) = 0;
+    if ((name[0] == 'g' || name[0] == 'G') && name[1] == '_') {
+        own = 0x26;
+    } else if ((name[0] == 'a' || name[0] == 'A') && name[1] == '_') {
+        own = 0x19;
+        AT(obj, 0x80, u8) = 1;
+    } else {
+        own = 1;
+    }
+    if (own == layer) {
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, obj + 0x40, layer, 0);
+    }
+}
