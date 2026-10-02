@@ -479,20 +479,225 @@ void func_0025D560(u8 *o) {
 }
 
 
-extern void func_00267D60(u8 *o);
+extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
+extern void func_002B72D0(s32 flags, s32 mode, s32 tex, u64 tex0);   /* the GS state of a part */
+extern s32 func_002B7780(void *part);   /* send a rigid part's vertices to VU1 */
+extern void *D_003A58A0[];   /* the rigid-part VU1 microprogram */
+
+
+/* a placed object's rigid model (+0x30), the plain case: its matrix (scale 32, turned by +0x20 /
+ * +0x24 / +0x28, at +0x10), the camera's view and clip matrices times it, the turn alone for
+ * the lighting and a fixed light set go to VU1, then the part's streams */
+void func_00267D60(u8 *o) {
+    static const union { u32 u; f32 f; } k0001 = {0x3A83126F};   /* 0.001 */
+    VObject *r = D_0044E4F0;
+    VObject *cam;
+    f32 unit[4][4] __attribute__((aligned(16)));
+    f32 light[4][4] __attribute__((aligned(16)));
+    f32 world[4][4] __attribute__((aligned(16)));
+    f32 turn[4][4] __attribute__((aligned(16)));
+    f32 view[4][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 amb[4] __attribute__((aligned(16)));
+    struct {
+        s32 n;
+        void *start;    /* the positions' s32 start (VIF row) */
+        void *pos;      /* s16 deltas */
+        void *uv;
+        void *normal;
+        void *strip;
+    } a;
+    u64 *p;
+    u64 tex0;
+
+    p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 1);
+    p[0] = 0x50000000 | (u64)((u32)D_003A58A0 & 0x0FFFFFFF) << 32;   /* DMA call */
+    AT(p, 0x8, u32) = 0x01000101;   /* STCYCL 1, 1 */
+    AT(p, 0xC, u32) = 0;
+    sceVu0UnitMatrix(unit);
+    light[0][0] = 64.0f;
+    light[0][1] = 64.0f;
+    light[0][2] = 64.0f;
+    light[1][0] = 0.0f;
+    light[0][3] = 1.0f;
+    light[1][1] = 0.0f;
+    light[1][2] = 0.0f;
+    light[1][3] = 1.0f;
+    light[2][0] = 0.0f;
+    light[2][1] = 0.0f;
+    light[2][2] = 0.0f;
+    light[2][3] = 1.0f;
+    light[3][3] = 1.0f;
+    light[3][0] = 128.0f;
+    light[3][1] = 128.0f;
+    light[3][2] = 128.0f;
+    amb[0] = k0001.f;
+    amb[1] = k0001.f;
+    amb[2] = k0001.f;
+    amb[3] = 0.0f;
+    AT(o, 0x20, f32) = func_002E2D00(AT(o, 0x20, f32));
+    AT(o, 0x24, f32) = func_002E2D00(AT(o, 0x24, f32));
+    AT(o, 0x28, f32) = func_002E2D00(AT(o, 0x28, f32));
+    sceVu0UnitMatrix(world);
+    world[2][2] = 32.0f;
+    world[1][1] = 32.0f;
+    world[0][0] = 32.0f;
+    sceVu0RotMatrixX(world, world, AT(o, 0x20, f32));
+    sceVu0RotMatrixY(world, world, AT(o, 0x24, f32));
+    sceVu0RotMatrixZ(world, world, AT(o, 0x28, f32));
+    sceVu0TransMatrix(world, world, (f32 *)(o + 0x10));
+    cam = D_0044E4B8;
+    VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, view);
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+    sceVu0CopyMatrix(turn, world);
+    turn[3][2] = 0.0f;
+    turn[3][1] = 0.0f;
+    turn[3][0] = 0.0f;
+    sceVu0MulMatrix(turn, unit, turn);
+    sceVu0MulMatrix(view, view, world);
+    sceVu0MulMatrix(clip, clip, world);
+    p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 0x13);
+    p[0] = 0x10000011;              /* DMA cnt 0x11 */
+    AT(p, 0x8, u32) = 0x01000101;   /* STCYCL 1, 1 */
+    AT(p, 0xC, u32) = 0x6C118000;   /* UNPACK V4-32 0x11 to 0 */
+    sceVu0CopyMatrix((f32 (*)[4])(p + 2), view);
+    sceVu0CopyMatrix((f32 (*)[4])(p + 10), clip);
+    sceVu0CopyMatrix((f32 (*)[4])(p + 18), turn);
+    sceVu0CopyMatrix((f32 (*)[4])(p + 26), light);
+    sceVu0CopyVector((f32 *)(p + 34), amb);
+    p[36] = 0x10000000;   /* DMA cnt 0 */
+    p[37] = 0x14000000;   /* MSCAL 0 */
+    a.n = 0;
+    a.start = NULL;
+    a.pos = NULL;
+    a.uv = NULL;
+    a.normal = NULL;
+    a.strip = NULL;
+    tex0 = func_002B71D0(AT(AT(o, 0x30, u8 *), 0x44, s32));
+    func_002B72D0(AT(o, 0x40, u8), 0, AT(AT(o, 0x30, u8 *), 0x44, s32), tex0);
+    a.start = AT(o, 0x30, u8 *) + 0x60;
+    a.n = AT(AT(o, 0x30, u8 *), 0x40, s32);
+    a.pos = AT(o, 0x30, u8 *) + AT(AT(o, 0x30, u8 *), 0x54, s32);
+    a.uv = AT(o, 0x30, u8 *) + AT(AT(o, 0x30, u8 *), 0x4C, s32);
+    a.normal = AT(o, 0x30, u8 *) + AT(AT(o, 0x30, u8 *), 0x50, s32);
+    a.strip = AT(o, 0x30, u8 *) + AT(AT(o, 0x30, u8 *), 0x58, s32);
+    func_002B7780(&a);
+}
+
 extern void func_00267AB0(u8 *o);
 extern void func_002677C0(u8 *o);
 extern void func_00267560(u8 *o);
 
+#ifdef HG_NATIVE
+#include <stdlib.h>
+
+extern void glr_todo(const char *what);
+
+/* ---- PC: placed objects' models with OpenGL (what func_00267560 .. func_00267D60 send) ----
+ *
+ * The model (+0x30) holds one part: +0x40 vertex count, +0x44 texture id (-1 none), streams at
+ * the offsets +0x4C (texture coordinates), +0x50 (normals / colours), +0x54 (positions), +0x58
+ * (strip flags) from the model, +0x60 the positions' start. The object's flags +0x40 bit 0
+ * blend it. Its matrix: scaled, turned by +0x20 / +0x24 / +0x28 (X, Y, Z), at +0x10. */
+
+/* the object's local-to-clip matrix (the camera's clip matrix times its placement) */
+static void obj_mvp(u8 *o, f32 scale, f32 (*mvp)[4]) {
+    f32 world[4][4] __attribute__((aligned(16)));
+
+    sceVu0UnitMatrix(world);
+    world[0][0] = world[1][1] = world[2][2] = scale;
+    sceVu0RotMatrixX(world, world, AT(o, 0x20, f32));
+    sceVu0RotMatrixY(world, world, AT(o, 0x24, f32));
+    sceVu0RotMatrixZ(world, world, AT(o, 0x28, f32));
+    sceVu0TransMatrix(world, world, (f32 *)(o + 0x10));
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, mvp);
+    sceVu0MulMatrix(mvp, mvp, world);
+}
+
+static void obj_strip(u8 *o, f32 (*mvp)[4], s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba) {
+    u8 *model = AT(o, 0x30, u8 *);
+    s32 tex = AT(model, 0x44, s32);
+
+    glr_strip(&mvp[0][0], n, xyzw, st, rgba,
+              tex == -1 ? NULL : VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, tex, 0),
+              tex == -1 ? 0 : func_002B71D0(tex), 0xC | (tex != -1 ? 0x10 : 0) | (AT(o, 0x40, u8) & 1 ? 0x40 : 0));
+}
+
+/* a rigid part (func_00267D60): compressed streams, model scale 32 - s16 position deltas from
+ * the s32 start, / 4096; u16 texture coordinates / 32768; u8 strip flags (1: no triangle).
+ * The original lights it on VU1 (ambient 128); drawn unlit at 1.0 for now. */
+static void gl_rigid(u8 *o) {
+    static f32 *xyzw, *st;
+    static u8 *rgba;
+    static s32 cap;
+    f32 mvp[4][4] __attribute__((aligned(16)));
+    u8 *model = AT(o, 0x30, u8 *);
+    s32 n = AT(model, 0x40, s32), i;
+    const s32 *start = (const s32 *)(model + 0x60);
+    const s16 *d = (const s16 *)(model + AT(model, 0x54, s32));
+    const u16 *uv = (const u16 *)(model + AT(model, 0x4C, s32));
+    const u8 *strip = model + AT(model, 0x58, s32);
+    s32 x = start[0], y = start[1], z = start[2];
+
+    if (n <= 0) {
+        return;
+    }
+    if (n > cap) {
+        cap = n;
+        xyzw = realloc(xyzw, cap * 16);
+        st = realloc(st, cap * 8);
+        rgba = realloc(rgba, cap * 4);
+    }
+    for (i = 0; i < n; i++) {
+        x += d[i * 3];
+        y += d[i * 3 + 1];
+        z += d[i * 3 + 2];
+        xyzw[i * 4] = x / 4096.0f;
+        xyzw[i * 4 + 1] = y / 4096.0f;
+        xyzw[i * 4 + 2] = z / 4096.0f;
+        AT(&xyzw[i * 4 + 3], 0, u32) = strip[i] & 1 ? 0x8000 : 0;
+        st[i * 2] = uv[i * 2] / 32768.0f;
+        st[i * 2 + 1] = uv[i * 2 + 1] / 32768.0f;
+        AT(rgba, i * 4, u32) = 0x80808080;
+    }
+    obj_mvp(o, 32.0f, mvp);
+    obj_strip(o, mvp, n, xyzw, st, rgba);
+}
+
+/* a part in the room's batch layout (func_00267AB0): float positions with GS flags words,
+ * float texture coordinates, RGBA colours; model scale 1 */
+static void gl_batch(u8 *o) {
+    f32 mvp[4][4] __attribute__((aligned(16)));
+    u8 *model = AT(o, 0x30, u8 *);
+
+    obj_mvp(o, 1.0f, mvp);
+    obj_strip(o, mvp, AT(model, 0x40, s32), (const f32 *)(model + AT(model, 0x54, s32)),
+              (const f32 *)(model + AT(model, 0x4C, s32)), model + AT(model, 0x50, s32));
+}
+
+static void gl_placed_object(u8 *o) {
+    AT(o, 0x20, f32) = func_002E2D00(AT(o, 0x20, f32));
+    AT(o, 0x24, f32) = func_002E2D00(AT(o, 0x24, f32));
+    AT(o, 0x28, f32) = func_002E2D00(AT(o, 0x28, f32));
+    switch (AT(o, 0x8, u32) & 3) {
+    case 0:
+        gl_rigid(o);
+        break;
+    case 2:
+        gl_batch(o);
+        break;
+    default:
+        glr_todo("placed object, morphing model (func_002677C0 / func_00267560)");
+        break;
+    }
+}
+#endif
+
 /* vtable +0xC of a placed object's model: its packets by its flags (+0x8 bit 0, bit 1) */
 s32 func_00268090(u8 *o) {
 #ifdef HG_NATIVE
-    {
-        extern void glr_todo(const char *what);
-
-        glr_todo("placed object models (func_00268090)");
-        return 1;
-    }
+    gl_placed_object(o);
+    return 1;
 #endif
     if (AT(o, 0x8, u32) & 1) {
         if (AT(o, 0x8, u32) & 2) {
