@@ -1957,3 +1957,14 @@ void func_002D61E0(u8 *mgr) {
         }
     }
 }
+
+
+/* the screen fade's level (+0x34), clamped to 0..1 */
+void func_002EF480(u8 *fade, f32 t) {
+    if (t < 0.0f) {
+        t = 0.0f;
+    } else if (!(t <= 1.0f)) {
+        t = 1.0f;
+    }
+    AT(fade, 0x34, f32) = t;
+}
