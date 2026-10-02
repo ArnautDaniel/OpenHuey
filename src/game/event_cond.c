@@ -37,6 +37,8 @@ extern s32 func_00177620(Progress *p);           /* the game mode */
 extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
 extern s32 func_00176D80(Progress *p, s32 item);
 extern s32 func_00176DD0(Progress *p, s32 item, s32 n);
+extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
+extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -170,6 +172,47 @@ s32 func_001FC760(VObject *ev) {
         } else {
             r = (u8)func_00176DD0(p, pc[1], pc[2]);
         }
+        break;
+    case 0x1C: {   /* a pc[1] percent chance */
+        f32 pct = (f32)pc[1];
+
+        if (!(pct < 100.0f)) {
+            r = 1;
+        } else if (!(pct <= 0.0f)) {
+            r = 100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) < pct;
+        }
+        break;
+    }
+    case 0x1D:     /* the progress state (+0x7B8) is pc[1] (0xFF: 4 or 5) */
+        if (pc[1] == 0xFF) {
+            r = (u8)(AT(p, 0x7B8, u8) - 4) < 2;
+        } else {
+            r = AT(p, 0x7B8, u8) == pc[1];
+        }
+        break;
+    case 0x1F: {   /* character pc[1] near pc[2] (margins pc[3], pc[4]) and facing it, within pc[5] degrees */
+        u8 *a = cond_char(p, pc[1]);
+        u8 *b = cond_char(p, PC(ev)[2]);
+
+        if (a != NULL && b != NULL &&
+            (u8)func_001241F0(a, b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
+            f32 ang = func_0031C5C0(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
+            f32 d;
+
+            if (!(cond_deg(func_002E2D00(ang - AT(a, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(func_002E2D00(ang - AT(a, 0x54, f32)));
+            } else {
+                d = -cond_deg(func_002E2D00(ang - AT(a, 0x54, f32)));
+            }
+            r = d <= (f32)PC(ev)[5];
+        }
+        break;
+    }
+    case 0x29:     /* event bit pc[1] (+0x890) */
+        r = (AT(ev, 0x890, u32) & (1u << pc[1])) != 0;
+        break;
+    case 0x2B:     /* +0x11F0 has reached +0x40 */
+        r = !(AT(ev, 0x11F0, u8) < AT(ev, 0x40, u8));
         break;
     case 0x08:     /* progress flag be16 pc[1] */
         r = Progress_TestFlag(p, be16(pc + 1)) != 0;
