@@ -30,6 +30,25 @@ void func_001FC700(VObject *ev) {
     }
 }
 
+extern f32 func_002E2D00(f32 angle);          /* wrapped into -pi..pi */
+extern f32 func_0031C5C0(f32 x, f32 z);       /* heading of (x, z) */
+s32 func_001FC390(VObject *ev, u8 *c, s32 area);
+
+/* the character with script id `id` if it is active (+0x28), else NULL */
+static u8 *cond_char(Progress *p, s32 id) {
+    u8 i = (u8)func_001770D0(p, id);
+    u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+
+    return c != NULL && AT(c, 0x28, u8) == 1 ? c : NULL;
+}
+
+/* radians to degrees */
+static f32 cond_deg(f32 a) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+
+    return 180.0f * a / kPi.f;
+}
+
 /* +0x10: evaluate the condition at the pc (and step over it) */
 s32 func_001FC760(VObject *ev) {
     Progress *p = gProgress;
@@ -81,6 +100,59 @@ s32 func_001FC760(VObject *ev) {
         r = c != NULL && AT(c, 0x28, u8) && AT(c, 0x30, s32) == AT(ev, 0x560, s32);
         break;
     }
+    case 0x01: {   /* character pc[1] is in this room, inside area pc[2] */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
+            (u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, s32, s32))(ev, (f32 *)(c + 0x10), PC(ev)[2], -1) == 1) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x02:     /* character pc[1] (in this room) entered area pc[2] */
+    case 0x03:     /* ... left it */
+        if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x30, s32) == AT(ev, 0x560, s32)) {
+            s32 x = (s8)func_001FC390(ev, cond_char(p, PC(ev)[1]), PC(ev)[2]);
+
+            r = x == (pc[0] == 0x02 ? 1 : -1);
+        }
+        break;
+    case 0x05:     /* character pc[1] faces pc[2] x 2 degrees, within pc[3] */
+        if (cond_char(p, pc[1]) != NULL) {
+            f32 d = cond_deg(AT(cond_char(p, PC(ev)[1]), 0x54, f32)) - (f32)((s8)PC(ev)[2] * 2);
+
+            if (d <= 0.0f) {
+                d = -d;
+            }
+            if (!(d <= 180.0f)) {
+                d = 360.0f - d;
+            }
+            r = d <= (f32)PC(ev)[3];
+        }
+        break;
+    case 0x06: {   /* character pc[1] is inside area pc[2] and faces its middle, within pc[3] degrees */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL &&
+            (u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, s32, s32))(ev, (f32 *)(c + 0x10), PC(ev)[2], -1) == 1) {
+            u32 *tbl = AT(ev, 0x10, u32 *);
+            u8 *e = (u8 *)(tbl + tbl[PC(ev)[2]]);
+            f32 ang = func_0031C5C0((AT(e, 0x10, f32) + AT(e, 0x30, f32)) / 2.0f - AT(c, 0x10, f32),
+                                    (AT(e, 0x18, f32) + AT(e, 0x38, f32)) / 2.0f - AT(c, 0x18, f32));
+            f32 d;
+
+            if (!(cond_deg(func_002E2D00(ang - AT(c, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            } else {
+                d = -cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            }
+            r = d <= (f32)PC(ev)[3];
+        }
+        break;
+    }
+    case 0x08:     /* progress flag be16 pc[1] */
+        r = Progress_TestFlag(p, be16(pc + 1)) != 0;
+        break;
     case 0x5D:   /* Hewie is the one controlled */
         r = AT(p, 0x1FBEC1, u8);
         break;
