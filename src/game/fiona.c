@@ -1844,3 +1844,187 @@ void func_0019B4F0(Fiona *f, s32 door) {
         }
     }
 }
+
+extern s32 func_00182340(Fiona *f, s32 *state);
+extern void func_00124F20(Character *c, u32 door);
+extern void func_002DDC60(void *motion, s32 anim, s32 arg, s32);
+extern void func_002DDBA0(void *motion, s32 anim, s32 arg);
+extern s32 func_001270F0(Character *c);
+extern f32 func_001244D0(Actor *a, const f32 *p);
+extern const PTMF D_003B2698, D_003B26A8, D_003B26B8, D_003B26C8, D_003B26D8, D_003B26E8, D_003B26F8;
+extern const PTMF D_003B2708, D_003B2718, D_003B2728, D_003B2738, D_003B2748, D_003B2758, D_003B2768;
+extern const PTMF D_003B2778;
+extern VObject *gSceneGameF29740;   /* path planner */
+
+/* Characters in usable shape: present, active and enabled. */
+static inline Character *Fiona_Other(u32 slot) {
+    Character *o = gCharacters[slot];
+
+    return (o != NULL && o->a.active == 1 && o->a.disabled == 0) ? o : NULL;
+}
+
+/* vtable +0x88: handle requests from outside - the Character state block (state[0]: 4 grabbed,
+ * 5 released) and the pending command (+0xF4: scripted moves, animations, look-at targets). */
+void func_0019F8A0(Fiona *f) {
+    switch (f->c.state[0]) {
+    case 0:
+        break;
+    case 4: {
+        u32 tri = f->c.a.navTri;
+
+        if (tri != NAV_NONE
+            && (f->c.state[1] == 5 || !(NavMesh_Tri(D_0044E570, tri)->flags & FIONA_NAV_MASK))
+            && func_00182340(f, f->c.state) == 0) {
+            VCALL(f, 0x90, void (*)(Fiona *))(f);
+            func_00124F20(&f->c, 0xFF);
+            return;
+        }
+        f->c.state[0] = 0;
+        break;
+    }
+    case 5:
+        VCALL(f, 0x8C, void (*)(Fiona *))(f);
+        f->unk1AD580 = 0;
+        f->c.moveMode = 0;
+        Actor_SetState(&f->c.a, f->c.state[1] == 0 ? &D_003B2698 : &D_003B26A8);
+        f->c.state[0] = 0;
+        break;
+    default:
+        f->c.state[0] = 0;
+        break;
+    }
+
+    switch (f->c.unkF4) {
+    case 1:
+        VCALL(f, 0x90, void (*)(Fiona *))(f);
+        func_00124F20(&f->c, 0xFF);
+        Fiona_ToIdle(f);
+        f->c.unkF4 = 0;
+        return;
+    case 2:
+        Actor_SetState(&f->c.a, &D_003B26B8);
+        break;
+    case 3:
+    case 4:
+        f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+        f->c.unk104[1] = 0;
+        f->unk1AD580 = 3;
+        f->c.moveMode = 2;
+        if (f->c.unkF4 == 3) {
+            f->c.moveSub = 0x14;
+            Actor_SetState(&f->c.a, &D_003B26C8);
+        } else {
+            f->c.moveSub = 0x15;
+            Actor_SetState(&f->c.a, &D_003B26D8);
+        }
+        break;
+    case 5:
+        f->unk1AD580 = 0x12;
+        Actor_SetState(&f->c.a, f->c.unk104[1] == -1 ? &D_003B26E8 : &D_003B26F8);
+        break;
+    case 10:
+        f->unk1AD580 = 0x13;
+        Actor_SetState(&f->c.a, &D_003B26F8);
+        break;
+    case 6:
+    case 11:
+        f->unk1AD580 = (f->c.unkF4 == 6) ? 0x14 : 0x15;
+        Actor_SetState(&f->c.a, &D_003B2708);
+        break;
+    case 7:
+        f->unk1AD580 = 0x11;
+        func_002DDED0(f->c.motion, f->c.unk104[0], -1);
+        f->c.unkE1 = 1;
+        Actor_SetState(&f->c.a, &D_003B2718);
+        break;
+    case 8:
+        f->unk1AD580 = 0x11;
+        func_002DDC60(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
+        f->c.unkE1 = 1;
+        Actor_SetState(&f->c.a, &D_003B2728);
+        break;
+    case 9:
+        f->unk1AD580 = 0x11;
+        func_002DDBA0(f->c.motion, f->c.unk104[0], f->c.unk104[1]);
+        f->c.unkE1 = 1;
+        Actor_SetState(&f->c.a, &D_003B2738);
+        break;
+    case 16:
+        f->unk1AD580 = 0x11;
+        func_001855F0(f, f->c.unk104[1]);
+        f->c.unkE1 = 1;
+        Actor_SetState(&f->c.a, &D_003B2748);
+        break;
+    case 12:
+        /* look at character unk100 (0xFF: stop) */
+        if (f->c.unk100 != 0xFF) {
+            Character *o = Fiona_Other(f->c.unk100);
+
+            if (o != NULL) {
+                FI(f, 0x1AD5FC, u8) = 1;
+                f->target = o;
+            }
+        } else {
+            FI(f, 0x1AD5FC, u8) = 0;
+        }
+        f->c.unkE1 = 1;
+        break;
+    case 13:
+        /* look at point unk110 */
+        FI(f, 0x1AD5FC, u8) = 1;
+        f->target = NULL;
+        sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD610), f->c.unk110);
+        f->c.unkE1 = 1;
+        break;
+    case 14: {
+        /* turn to character unk100 */
+        Character *o = Fiona_Other(f->c.unk100);
+
+        if (o != NULL) {
+            f->unk1AD580 = 0x16;
+            FI(f, 0x1AD5FC, u8) = 0;
+            f->savedYaw = func_001244D0(&f->c.a, o->a.pos);
+            Actor_SetState(&f->c.a, &D_003B2758);
+        } else {
+            f->c.unkE1 = 1;
+        }
+        break;
+    }
+    case 15:
+        /* turn to heading unk10C */
+        f->unk1AD580 = 0x17;
+        FI(f, 0x1AD5FC, u8) = 0;
+        f->savedYaw = *(f32 *)&f->c.unk104[2];
+        Actor_SetState(&f->c.a, &D_003B2768);
+        break;
+    case 17: {
+        /* scripted walk to point unk110 with animation unk104/unk108 */
+        s32 n = func_00127140(&f->c, 0, f->c.unk100, f->c.unk110);
+        s32 frames;
+        f32 d, w;
+
+        if (n > 0) {
+            n = func_001270F0(&f->c);
+        }
+        if (n <= 0) {
+            f->c.unkE1 = 1;
+            break;
+        }
+        func_002DDC60(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
+        frames = *(s32 *)((u8 *)(*(void **)((u8 *)(*(void **)((u8 *)MOTION_PTR(f->c.motion, 0x6A4) + 0x20)) + 4)) + 0xC);
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
+        FI(f, 0x1AD6D0, f32) = 0x1.99999ap-4f /* 0.1 */ + d / (f32)frames;
+        if (!(func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]) <= 0.0f)) {
+            w = func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
+        } else {
+            w = -func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
+        }
+        FI(f, 0x1AD6D4, f32) = 0x1.c98712p-10f /* 0.1 deg */ + w / (f32)frames;
+        f->unk1AD580 = 0x18;
+        Actor_SetState(&f->c.a, &D_003B2778);
+        break;
+    }
+    }
+    f->c.unkF4 = 0;
+}
