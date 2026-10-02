@@ -1623,7 +1623,8 @@ void func_0011FEB0(u8 *rm) {
 extern void func_00221300(u8 *door);
 
 /* the doors, each frame: each of the 8 with a definition (+0x4 table) updates */
-void func_00223A90(u8 *doors) {
+void func_00223A90(void *d) {
+    u8 *doors = d;
     u32 k;
 
     if (AT(doors, 0x4, void **) == NULL) {
