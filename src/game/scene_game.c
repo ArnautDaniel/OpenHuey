@@ -1158,3 +1158,15 @@ void func_0039EAB0(Scene *g) {
         func_0039BB60(g);
     }
 }
+
+
+/* Progress +0x54: an event camera is running and the event does not hide the room's alpha
+ * parts (event +0xC0) */
+s32 func_0039A7C0(Scene *g) {
+    VObject *ev = (VObject *)((u8 *)g + SG_EVENT);
+
+    if (!camdir_busy(g)) {
+        return 0;
+    }
+    return (u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev) == 0;
+}
