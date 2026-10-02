@@ -1129,3 +1129,44 @@ void func_001762B0(Progress *p) {
 s32 func_00177870(Progress *p, u32 k) {
     return AT(p, 0x10B0 + (k & 0xFF) * 0xC, u8) != 0;
 }
+
+
+extern VObject *D_0044E4E8;   /* the texture cache */
+
+/* the characters, drawn each frame (texture cache +0x18 and +0x6FC218 (+0x20) reset first):
+ * each active and visible one draws (+0x2C); while the world is stopped (+0x8 bit 0x800000)
+ * only with +0xC bit 0x10, and only those in the current room while +0x8 bit 0x1000000 -
+ * except characters in a special state (+0xE0) */
+void func_00176160(Progress *p) {
+    u32 i;
+
+#ifdef HG_NATIVE
+    {
+        extern s32 hg_debug_nochars(void);   /* native/platform/debug.c: HG_NOCHARS */
+
+        if (hg_debug_nochars()) {
+            return;
+        }
+    }
+#endif
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL((u8 *)p + 0x6FC218, 0x20, void (*)(void *))((u8 *)p + 0x6FC218);
+    for (i = 0; i < 6; i++) {
+        if (gCharacters[i] == NULL) {
+            continue;
+        }
+        if (AT(gCharacters[i], 0xE0, u8) == 0) {
+            u32 f = AT(p, 0x8, u32);
+
+            if ((f & 0x800000) && !(AT(p, 0xC, u32) & 0x10)) {
+                continue;
+            }
+            if ((f & 0x1000000) && AT(gCharacters[i], 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+                continue;
+            }
+        }
+        if (AT(gCharacters[i], 0x28, u8) != 0 && AT(gCharacters[i], 0x29, u8) == 0) {
+            VCALL(gCharacters[i], 0x2C, void (*)(VObject *))(gCharacters[i]);
+        }
+    }
+}
