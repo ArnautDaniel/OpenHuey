@@ -455,9 +455,11 @@ class CPU:
         # Out-parameters: a pointer into the stack frame gets a deterministic
         # value written through it (frame layouts differ between compilers, so
         # leftover stack bytes would otherwise differ between the versions).
+        seen = set()
         for k, r in enumerate(ints):
             p = self.g(r) & M32
-            if STACK_TOP - FRAME <= p < STACK_TOP:
+            if STACK_TOP - FRAME <= p < STACK_TOP and p not in seen:
+                seen.add(p)   # (a stale copy of the same pointer in a later register isn't a second output)
                 n = OUTPARAM_BYTES[0]
                 v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * n)
                 self.m.write(p, n, v)

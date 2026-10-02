@@ -1717,3 +1717,130 @@ void func_001A3110(Fiona *f) {
         f->c.state[0] = 0;
     }
 }
+
+extern VObject *D_0044E4B8;   /* camera: +0x68 heading */
+extern void func_002E3190(sceVu0FMATRIX out, f32 angle);
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
+extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
+
+/* vtable +0x34: going through door `door`. In play, turn to face through it (if the stick
+ * points that way, relative to the camera); in the special mode, plan the walk into the next
+ * room (with Hewie if he is closer to the door). */
+void func_0019B4F0(Fiona *f, s32 door) {
+    Progress *p = gProgress;
+    VObject *rooms;
+
+    if (*((u8 *)p + 0x1FBEC1) == 0) {
+        f32 ax, az;
+
+        if (f->c.unkE0 == 1) {
+            VCALL(f, 0x90, void (*)(Fiona *))(f);
+            Fiona_ToIdle(f);
+        }
+        f->c.door = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door);
+        FI(f, 0x1AD5F0, s32) = 150;
+        f->unk1AD588 = 0;
+        f->savedYaw = f->c.a.angle[1];
+        ax = FI(f, 0x1AD5A0, f32);
+        ax = (ax <= 0.0f) ? -ax : ax;
+        az = FI(f, 0x1AD5A8, f32);
+        az = (az <= 0.0f) ? -az : az;
+        if (!(ax <= 0.5f) || !(az <= 0.5f)) {
+            sceVu0FMATRIX m;
+            sceVu0FVECTOR v;
+            f32 h;
+
+            func_002E3190(m, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+            func_002E2DA0(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
+            func_0010E640(v, v, -1.0f);
+            h = func_0031C5C0(v[0], v[2]);
+            if (func_002E2D00(h - f->savedYaw) < 0x1.921fb6p+0f /* pi/2 */) {
+                f->unk1AD588 = 3;
+                f->c.a.angle[1] = h;
+                sceVu0UnitMatrix(f->c.a.rot);
+                sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, h);
+                f->savedYaw = f->c.a.angle[1];
+            }
+        }
+        return;
+    }
+
+    /* special mode */
+    f->c.a.unk2B = 0;
+    f->c.a.navMask = FIONA_NAV_MASK;
+    f->c.pathReq->mask = f->c.a.navMask;
+    if (f->c.unkE0 == 1) {
+        VCALL(f, 0x90, void (*)(Fiona *))(f);
+        Fiona_ToIdle(f);
+    }
+    FI(f, 0x1AD718, u8) = 0;
+    {
+        s32 room = f->c.a.room;
+        u32 i;
+
+        if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            return;
+        }
+        for (i = 0; i < 13; i++) {
+            f->c.unk148C[i] = 0;
+        }
+    }
+    if (f->c.moveMode == 0) {
+        if (f->unk1AD580 == 0xE) {
+            Fiona_ToIdle(f);
+        }
+    } else {
+        func_00184BF0(f);
+        Fiona_ToIdle(f);
+    }
+    if (FI(f, 0x1AD71C, s32) == 0 || FI(f, 0x1AD71C, s32) == 2) {
+        sceVu0FVECTOR pos;
+        u32 d = door & 0xFF;
+        s32 target = 0;
+        u8 through = 0;
+
+        FI(f, 0x1AD71C, s32) = 2;
+        f->c.unk124 = f->c.unk128;
+        *(f32 *)&f->c.unk14C4 = -1.0f;
+        if (d != 0xFF) {
+            rooms = D_0044E568;
+            target = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, f->c.a.room, door);
+            if (func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1) == 0) {
+                through = 1;
+            }
+        }
+        if (!through && d != 0xFF) {
+            s32 side, tgt2;
+
+            rooms = D_0044E568;
+            tgt2 = VCALL(rooms, 0x58, s32 (*)(VObject *, s32, s32, s32))(rooms, f->c.a.room, door, 0);
+            side = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, f->c.door, 0);
+            if (func_00126F80(&f->c, target, tgt2, side, -1) != -1
+                && (Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room) & 0xFF) != 0xFF) {
+                func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1);
+            }
+        }
+        if (through == 1) {
+            FIONA_ROUTE0(f) = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door);
+            if ((func_00123C60(&f->c.a, door, gCharPartner->a.pos) & 0xFF) == 1) {
+                FI(f, 0x1AD718, u8) = 1;
+                FI(f, 0x1AD6C0, s32) = 0;
+            } else {
+                sceVu0FVECTOR a, b, da, db;
+                f32 la;
+
+                rooms = D_0044E568;
+                Room_ExitPosOut(rooms, door, a);
+                Room_ExitPosIn(rooms, door, b);
+                sceVu0SubVector(da, f->c.a.pos, a);
+                sceVu0SubVector(db, b, a);
+                la = sceVu0InnerProduct(da, da);
+                if (la <= sceVu0InnerProduct(db, db) && func_00124480(&f->c.a, a, NAV_NONE) != NAV_NONE) {
+                    FI(f, 0x1AD718, u8) = 1;
+                    FI(f, 0x1AD6C0, s32) = 1;
+                }
+            }
+        }
+    }
+}
