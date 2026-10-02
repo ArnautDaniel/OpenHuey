@@ -2,6 +2,7 @@
  * the classes they belong to are identified (then they move to their subsystem's file). */
 #include "common.h"
 #include "game.h"
+#include "navmesh.h"
 #include "sce/libvu0.h"
 
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
@@ -1127,7 +1128,6 @@ void func_00305520(u8 *m, s32 room) {
 /* ---- room manager +0x9360 (D_00456E00): the room's triangle groups (PAC section 14: count,
  * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
 
-extern u8 *D_0044E570;   /* the nav mesh (room manager +0x3E0): +0x4 triangles, +0x8 count */
 
 /* set (`clear` 0) or clear (1) flag bits `bits` on the triangles of group `g` (-1: no group) */
 s32 func_002A8730(u8 *o, s32 clear, u32 g, u32 bits) {
@@ -2165,4 +2165,62 @@ void func_00222230(VObject *o) {
         }
         VCALL(o, 0x80, void (*)(VObject *, u32))(o, i & 0xFF);
     }
+}
+
+/* a door's side `side` (0 / 1) passage: its walk-mesh triangles (the door's section entry +0x28:
+ * a count and the triangles for side 0, then side 1's) get `flags` set (mode 0, shut) or
+ * cleared (mode 1, open); -1 for no such door or side */
+s32 func_00223630(VObject *o, s32 mode, u32 door, s32 side, u32 flags) {
+    u8 *tbl = AT(o, 0x4, u8 *);
+    s32 off = 0, n, k;
+    u32 *tri;
+    NavMesh *nm;
+
+    if (tbl != NULL && (u8)door < 8) {
+        off = AT(tbl, (u8)door * 4, s32);
+    }
+    if (off == 0 || side < 0 || side >= 2) {
+        return -1;
+    }
+    n = AT(tbl + off, 0x28, s32);
+    tri = (u32 *)(tbl + off + 0x2C);
+    if (side != 0) {
+        tri += n;
+        n = *tri++;
+    }
+    nm = D_0044E570;
+    if (mode == 1) {
+        for (k = 0; k < n; k++) {
+            NavTri *t = NavMesh_Tri(nm, *tri++);
+
+#ifdef HG_NATIVE
+            if (t == NULL) {
+                continue;
+            }
+#endif
+            t->flags &= ~flags;
+        }
+    } else if (mode == 0) {
+        for (k = 0; k < n; k++) {
+            NavTri *t = NavMesh_Tri(nm, *tri++);
+
+#ifdef HG_NATIVE
+            if (t == NULL) {
+                continue;
+            }
+#endif
+            t->flags |= flags;
+        }
+    }
+    return 0;
+}
+
+/* +0x1C shut door `door`'s side `side` (passage flags set) */
+s32 func_00221B40(VObject *o, u32 door, s32 side, u32 flags) {
+    return func_00223630(o, 0, door, side, flags);
+}
+
+/* +0x20 open it (cleared) */
+s32 func_00221B60(VObject *o, u32 door, s32 side, u32 flags) {
+    return func_00223630(o, 1, door, side, flags);
 }
