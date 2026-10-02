@@ -52,3 +52,11 @@ int func_0016D6D0(void *p, unsigned id, unsigned slot) {
     skipped("func_0016D6D0 event character load");
     return 0;
 }
+
+/* Progress +0x48: start the music player of kind `mode` (0..3; at Scene +0x106503C and
+ * D_00456DF0): not yet - no player, so the music commands do nothing */
+void func_0039A8E0(void *g, unsigned mode) {
+    (void)g;
+    (void)mode;
+    skipped("func_0039A8E0 music player");
+}
