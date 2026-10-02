@@ -190,8 +190,10 @@ static const char *kMeshVs =
     "out vec2 vSt;\n"
     "void main() {\n"
     "    vec4 p = uMvp * vec4(aPos.xyz, 1.0);\n"
-    /* PS2 clip space: y grows downwards, larger z is nearer */
-    "    gl_Position = vec4(p.x, -p.y, -p.z, p.w);\n"
+    /* PS2 clip space spans the GS's whole 4096 x 4096 drawing space (-1..1 = 2048 -+ 2047),
+     * of which the 640 x 448 around the centre is the screen; y grows downwards, larger z is
+     * nearer */
+    "    gl_Position = vec4(p.x * (2047.0 / 320.0), -p.y * (2047.0 / 224.0), -p.z, p.w);\n"
     "    vCol = aCol * (255.0 / 128.0);\n"
     "    vSt = aSt;\n"
     "}\n";
