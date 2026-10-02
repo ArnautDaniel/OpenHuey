@@ -4318,3 +4318,42 @@ void func_0018A5D0(Fiona *f) {
     }
     Actor_SetState(&f->c.a, &D_003B2DC8);
 }
+
+
+
+/* State: turning while standing, to +0x1AD5E0 (10 degrees a frame), between animations: in a
+ * move she goes idle once within 90 degrees; turned all the way, her action is cleared and she
+ * stands (or, held +0xE0, is held), Progress flag 0x2B off */
+void func_0018A210(Fiona *f) {
+    static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3}, kHalfPi = {0x3FC90FDB};
+    f32 left = func_00124530(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
+
+    if (!(AT(f->c.motion, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) != 0) {
+        if (left < kHalfPi.f) {
+            func_001855F0(f, -1);
+        }
+        return;
+    }
+    if (left != 0.0f) {
+        return;
+    }
+    AT(f, 0xE1, u8) = 0;
+    FI(f, 0x1AD580, s32) = 0;
+    AT(f, 0xF8, s32) = 0;
+    FI(f, 0x1AD5E0, f32) = AT(f, 0x54, f32);
+    FI(f, 0x1AD5C0, s32) = 0;
+    FI(f, 0x1AD588, u8) = 0;
+    if (AT(f, 0xE0, u8) == 0) {
+        AT(f, 0x2D, u8) = 0;
+        if (AT(f->c.motion, 0x4C4, void *) != NULL) {
+            func_001855F0(f, -1);
+        }
+        Actor_SetState(&f->c.a, &D_003B25A8);
+    } else {
+        Actor_SetState(&f->c.a, &D_003B25B8);
+    }
+    Progress_ClearFlag(gProgress, 0x2B);
+}
