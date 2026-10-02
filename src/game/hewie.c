@@ -1134,3 +1134,100 @@ void func_0013A430(Hewie *h, s32 snd) {
     HEWIE_LAST_SOUND(h) = snd;
     HEWIE_SOUND_T(h) = 0;
 }
+
+extern f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist);
+
+#define F_PI 0x1.921fb6p+1f   /* 0x40490FDB */
+
+/* Best heading near `yaw` for walking `dist`: tries yaw +- `from`..`to` degrees in steps of `step`
+ * (left and right, starting on a random side), stops early at a full-length result. */
+f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
+    f32 best = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, yaw, dist);
+    f32 result = yaw;
+    f32 sign;
+    s32 deg;
+
+    if (best == dist) {
+        return result;
+    }
+    sign = (RNG01() < 0.5f) ? 1.0f : -1.0f;
+    if (from < to) {
+        for (deg = from; !(to < deg); deg += step) {
+            f32 ang = (F_PI * (f32)deg) / 180.0f;
+            s32 i;
+
+            for (i = 0; i < 2; i++) {
+                f32 a = func_002E2D00(yaw + sign * ang);
+                f32 r = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
+
+                if (best < r) {
+                    result = a;
+                    best = r;
+                    if (r == dist) {
+                        deg = to;
+                        break;
+                    }
+                }
+                sign *= -1.0f;
+            }
+        }
+    } else {
+        for (deg = from; !(deg < to); deg -= step) {
+            f32 ang = (F_PI * (f32)deg) / 180.0f;
+            s32 i;
+
+            for (i = 0; i < 2; i++) {
+                f32 a = func_002E2D00(yaw + sign * ang);
+                f32 r = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
+
+                if (best < r) {
+                    result = a;
+                    best = r;
+                    if (r == dist) {
+                        deg = to;
+                        break;
+                    }
+                }
+                sign *= -1.0f;
+            }
+        }
+    }
+    return result;
+}
+
+extern s32 func_00177670(Progress *p, s32 n);
+extern void func_002DDC60(void *motion, s32 anim, s32 blend, s32);
+
+/* Start his standing animation (0 normal, 3 / 4 / 5 by progress state and mode, 6 in condition
+ * 1, 4 during actions 8 / 0xA) unless it is already playing; `blend` -1: cut. */
+void func_00143550(Hewie *h, s32 blend) {
+    Progress *p;
+    s32 cur, a;
+
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    p = gProgress;
+    cur = MOTION_ANIM(h->c.motion);
+    if ((func_00177620(p) & 0xFF) == 2 && HEWIE_MODE(h) == 3) {
+        a = 4;
+    } else if (h->c.a.unkC4 == 1) {
+        a = 6;
+    } else if ((func_00177620(p) & 0xFF) == 2 && HEWIE_MODE(h) == 2) {
+        a = 5;
+    } else if ((func_00177620(p) & 0xFF) && func_00177670(p, 4)) {
+        a = 4;
+    } else if (func_00177620(p) & 0xFF) {
+        a = 3;
+    } else if (HEWIE_ACTION(h) == 8 || HEWIE_ACTION(h) == 0xA) {
+        a = 4;
+    } else {
+        a = 0;
+    }
+    if (cur == a) {
+        return;
+    }
+    if (blend != -1) {
+        func_002DDC60(h->c.motion, a, blend, -1);
+    } else {
+        func_002DDED0(h->c.motion, a, -1);
+    }
+}

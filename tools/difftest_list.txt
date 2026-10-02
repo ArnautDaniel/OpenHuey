@@ -1528,3 +1528,5 @@ src/game/hewie.c func_001669A0 --runs=300 --pre=a0+0xF0=0x0A000000..0x0A000000 -
 src/game/hewie.c func_001669A0 --runs=300 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x1000..0x1E06
 src/game/hewie.c func_001669A0 --runs=100 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x2210..0x2214
 src/game/hewie.c func_0013A430 --runs=400 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=a1=0x56..0x72 --pre=a0+0xF35A4=0x56..0x72 --pre=a0+0xF35A8=0..70
+src/game/hewie.c func_00137720 --runs=300 --pre=a1=0..90 --pre=a2=0..90 --pre=a3=10..30 --stub-fret=5.0 --stub-fret=1.0 --stub-fret=3.0 --stub-fret=0.3
+src/game/hewie.c func_00143550 --runs=400 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=a0+0xF0=0x0A100000..0x0A100000 --pre=@0x0A10055C=0..6 --pre=a0+0xF35C0=0..3 --pre=a0+0xC4=0..1 --pre=a0+0xF3564=7..0xA --pre=a1=0xFFFFFFFE..0xFFFFFFFF --stub-ret=0 --stub-ret=1 --stub-ret=2
