@@ -22,7 +22,9 @@ void hg_debug_next_scene(int32_t *mode, int32_t *param) {
 
 /* HG_NOPARTNER=1: no partner (Hewie) in the game scene (his class isn't fully decompiled) */
 int32_t hg_debug_no_partner(void) {
-    return getenv("HG_NOPARTNER") != NULL;
+    const char *v = getenv("HG_NOPARTNER");
+
+    return v != NULL && v[0] != 0 && v[0] != '0';
 }
 
 /* HG_FREEPLAY: gameplay runs the world even while the opening keeps it stopped (Progress
