@@ -368,3 +368,37 @@ s32 func_002DE1C0(u8 *zone, u8 *c) {
     }
     return 0;
 }
+
+
+/* a zone (on +0x4; a cylinder: centre +0x10, radius +0x20, height +0x24, either way up) against
+ * a point `p` with radius `r` and height `h`: bit 1 they overlap in height, 4 it is within it in
+ * height, 2 they overlap across, 8 its centre is inside across */
+s32 func_002DE2F0(u8 *z, f32 *p, f32 r, f32 h) {
+    f32 hz = AT(z, 0x24, f32);
+    f32 dy, ah, az, d2;
+    s32 bits = 0;
+
+    if (AT(z, 0x4, u8) == 0) {
+        return 0;
+    }
+    dy = (p[1] + h / 2.0f) - (AT(z, 0x14, f32) + hz / 2.0f);
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    ah = h <= 0.0f ? -h : h;
+    az = hz <= 0.0f ? -hz : hz;
+    if (dy <= (az + ah) / 2.0f) {
+        bits |= 1;
+    }
+    if (dy <= (az - ah) / 2.0f) {
+        bits |= 4;
+    }
+    d2 = (AT(z, 0x18, f32) - p[2]) * (AT(z, 0x18, f32) - p[2]) + (AT(z, 0x10, f32) - p[0]) * (AT(z, 0x10, f32) - p[0]);
+    if (d2 <= (AT(z, 0x20, f32) + r) * (AT(z, 0x20, f32) + r)) {
+        bits |= 2;
+    }
+    if (d2 <= AT(z, 0x20, f32) * AT(z, 0x20, f32)) {
+        bits |= 8;
+    }
+    return bits;
+}
