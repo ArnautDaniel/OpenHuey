@@ -127,4 +127,13 @@ _Static_assert(__builtin_offsetof(Character, unk152C) == 0x152C, "unk152C");
 _Static_assert(__builtin_offsetof(Character, heard) == 0x14D8, "heard");
 _Static_assert(__builtin_offsetof(Character, hearThreshold) == 0x152A, "hearThreshold");
 
+/* Set an actor's behaviour state (pointer to member function), if it is a valid one. */
+static inline void Actor_SetState(Actor *a, const PTMF *state) {
+    PTMF s = *state;
+
+    if (ptmf_test(&s)) {
+        a->state = s;
+    }
+}
+
 #endif

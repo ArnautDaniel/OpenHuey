@@ -672,3 +672,82 @@ void func_00167760(Hewie *h) {
     VCALL(h, 0x40, void (*)(Hewie *))(h);
     func_00145080(h);
 }
+
+extern void func_00125CC0(Character *c);
+extern void func_0013D1F0(Hewie *h, s32 arg);
+extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
+extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
+extern const PTMF D_003B02B0;    /* idle state */
+extern const PTMF D_003B0280;    /* special-mode state */
+
+/* vtable +0x5C: activate (Character part), then reset his own state; in play idle with action 0,
+ * in the special mode the special state with action 0x83. */
+void func_00165D40(Hewie *h) {
+    Progress *p;
+
+    func_00125CC0(&h->c);
+    func_00138AD0(h, 0, -1);
+    func_0013D1F0(h, 0);
+    p = gProgress;
+    HW(h, 0xF3598, s32) = 0;
+    if ((Progress_GetVar(p, 0x27) & 0xFF) == 1) {
+        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+    } else {
+        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+    }
+    HW(h, 0xF3586, u8) = 0;
+    HW(h, 0xF3559, u8) = 1;
+    HW(h, 0xF3590, u8) = 0;
+    h->c.hp = h->c.hpMax;
+    HW(h, 0xF35AC, s32) = 300;
+    HW(h, 0xF3640, s32) = 0;
+    HW(h, 0xF3648, s32) = 0;
+    HW(h, 0xF3650, s32) = 1;
+    HW(h, 0xF364C, s32) = 0;
+    HW(h, 0xF3654, s32) = 4;
+    HW(h, 0xF3658, s32) = 0;
+    HW(h, 0xF365C, s32) = 0;
+    HW(h, 0xF35C4, s32) = 0;
+    HW(h, 0xF35C8, s32) = 0;
+    HW(h, 0xF3610, s32) = 0xFF;
+    HEWIE_SIDE(h) = 2;
+    HW(h, 0xF368A, u8) = 0;
+    HW(h, 0xF35B4, s32) = -1;
+    HW(h, 0xF3583, u8) = 0;
+    HW(h, 0xF3589, u8) = 0;
+    HW(h, 0xF3594, s32) = -1;
+    HW(h, 0xF35A4, s32) = -1;
+    HW(h, 0xF35A8, s16) = 0;
+    HW(h, 0xF35BE, s16) = 0;
+    HW(h, 0xF3684, s16) = 0;
+    HW(h, 0xF3686, s16) = 0;
+    HW(h, 0xF355C, s32) = 0;
+    HW(h, 0xF36B0, s32) = 0xFF;
+    HW(h, 0xF35E0, u8) = 0;
+    HW(h, 0xF3588, u8) = 0;
+    HW(h, 0xF3688, s16) = 0;
+    HW(h, 0xF35B0, s16) = 0;
+    HW(h, 0xF358C, s32) = 0;
+    HW(h, 0xF3744, u8) = 0;
+    HW(h, 0xF35DC, s32) = 0;
+    if (*((u8 *)p + 0x1FBEC1) == 0) {
+        HW(h, 0xF35C4, s32) = 0;
+        HW(h, 0xF36AC, s32) = 0;
+        HW(h, 0xF36A4, s32) = 0;
+        HW(h, 0xF366D, u8) = 0;
+        Actor_SetState(&h->c.a, &D_003B02B0);
+        func_00130AF0(h, 0, 0);
+        return;
+    }
+    HW(h, 0xF3710, u8) = 0;
+    HW(h, 0xF3718, s32) = 6;
+    HW(h, 0xF3730, s32) = 0;
+    HW(h, 0xF3734, s32) = 0;
+    HW(h, 0xF3738, s32) = 0;
+    HW(h, 0xF373C, s32) = 0;
+    HW(h, 0xF3712, s16) = 0;
+    Actor_SetState(&h->c.a, &D_003B0280);
+    func_002DDE20(h->c.motion, 0, -1);
+    VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
+    func_00130AF0(h, 0x83, 0);
+}

@@ -16,13 +16,6 @@ extern void func_00126910(Character *c);
 extern const PTMF D_003B25A8;      /* idle state */
 extern const PTMF D_003B25B8;      /* idle state (while unkE0 is set) */
 
-static inline void Actor_SetState(Actor *a, const PTMF *state) {
-    PTMF s = *state;
-
-    if (ptmf_test(&s)) {
-        a->state = s;
-    }
-}
 
 /* Motion player byte +0x4D8 (1 = paused?) */
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
