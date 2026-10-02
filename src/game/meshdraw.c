@@ -181,3 +181,173 @@ s32 func_0025E2B0(u8 *o) {
     }
     return 1;
 }
+
+extern void func_0025C6F0(f32 *q, f32 *axis, f32 angle);   /* rotation about an axis */
+extern void func_0025C770(f32 *q, f32 (*m)[4]);            /* its matrix */
+
+/* the view's side edge `which` (0 left, 1 right): the camera's direction (+0xA0) turned about
+ * its up axis (+0xA4) by fov / 1.3, at the look-at distance from the eye -> +0x20 + 16 * which;
+ * then that point swung back about y -> +0x40 + 16 * which (the edge planes for culling) */
+void func_0025DB10(u8 *o, s32 which) {
+    static const union { u32 u; f32 f; } k13 = {0x3FA66666};
+    VObject *cam = D_0044E4B8;
+    f32 eye[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 up[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 e[4] __attribute__((aligned(16)));
+    f32 len, ang;
+
+    q[3] = q[2] = q[1] = q[0] = 0.0f;
+    VCALL(cam, 0x24, void (*)(VObject *, f32 *))(cam, eye);
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, at);
+    VCALL(cam, 0xA0, void (*)(VObject *, f32 *))(cam, dir);
+    VCALL(cam, 0xA4, void (*)(VObject *, f32 *))(cam, up);
+    sceVu0SubVector(t, at, eye);
+    len = __builtin_sqrtf(sceVu0InnerProduct(t, t));
+    ang = VCALL(cam, 0x64, f32 (*)(VObject *))(cam) / k13.f;
+    func_0025C6F0(q, up, which == 0 ? ang : -ang);
+    m[3][3] = 1.0f;
+    m[0][3] = 0.0f;
+    m[1][3] = 0.0f;
+    m[2][3] = 0.0f;
+    func_0025C770(q, m);
+    sceVu0ApplyMatrix(t, m, dir);
+    sceVu0ScaleVector(t, t, len);
+    sceVu0AddVector(p, eye, t);
+    AT(o, 0x20 + (which & 0xFF) * 16, f32) = p[0];
+    AT(o, 0x24 + (which & 0xFF) * 16, f32) = p[1];
+    AT(o, 0x28 + (which & 0xFF) * 16, f32) = p[2];
+    AT(o, 0x2C + (which & 0xFF) * 16, f32) = p[3];
+    sceVu0UnitMatrix(r);
+    sceVu0SubVector(t, eye, p);
+    sceVu0InnerProduct(t, t);
+    sceVu0RotMatrixY(r, r, which == 0 ? -ang : ang);
+    sceVu0ApplyMatrix(t, r, t);
+    sceVu0AddVector(e, p, t);
+    AT(o, 0x40 + (which & 0xFF) * 16, f32) = e[0];
+    AT(o, 0x44 + (which & 0xFF) * 16, f32) = e[1];
+    AT(o, 0x48 + (which & 0xFF) * 16, f32) = e[2];
+    AT(o, 0x4C + (which & 0xFF) * 16, f32) = e[3];
+}
+
+extern s32 func_0025CB50(u8 *o);
+s32 func_002B7500(u8 *batch);   /* send a batch's vertices to VU1 */
+
+/* mode 0 batch writer: the batch's vertex count (+0x7C, format = count & 3) locates its
+ * sections after the header; it is sent unless hidden (+0xD0 not 0xFF, or its group +0x8A
+ * is off in the mask +0x6C; kind 4 parts first go through func_0025CB50). Returns the next
+ * batch. */
+s32 *func_0025E100(u8 *o, s32 *batch) {
+    struct {
+        s32 n;
+        s32 *batch;
+        u8 *uv;
+        void *src;
+        u8 *data;
+    } a;
+    s32 n = AT(o, 0x7C, s32);
+    u32 fmt = n & 3;
+    u8 *data = (u8 *)batch + n * 8;
+    u8 *uv;
+    s32 ok = 1;
+    s32 show;
+
+    if (fmt == 3 || fmt == 1) {
+        data += 8;
+    }
+    uv = data + n * 4;
+    switch (fmt) {
+    case 3:
+        uv += 4;
+        break;
+    case 2:
+        uv += 8;
+        break;
+    case 1:
+        uv += 0xC;
+        break;
+    }
+    a.n = 0;
+    a.uv = NULL;
+    a.src = NULL;
+    a.data = NULL;
+    a.data = data;
+    a.n = AT(o, 0x7C, s32);
+    a.uv = uv;
+    a.batch = batch;
+    if (AT(o, 0x18, s32) == 4) {
+        ok = func_0025CB50(o);
+        a.src = o + 0x240 + (AT(o, 0xD4, s32) - 1) * 32;
+    } else {
+        a.src = batch;
+    }
+    if (AT(o, 0xD0, u8) == 0xFF) {
+        u8 g = AT(o, 0x8A, u8);
+
+        show = g == 0 || (AT(o, 0x6C + (g >> 5) * 4, u32) & (1u << (g & 0x1F)));
+        if (show && ok == 1) {
+            func_002B7500((u8 *)&a);
+        }
+    }
+    AT(o, 0x64, s32) = AT(o, 0x80, s32);
+    return (s32 *)(uv + AT(o, 0x7C, s32) * 16);
+}
+
+#define DMA_REF_QWC(bytes) ((u64)(u32)((((bytes) + 15) >> 4) | 0x30000000))
+#define DMA_ADDR(p) ((u64)((u32)(p) & 0x0FFFFFFF) << 32)
+
+/* send a batch's vertices to VU1 { count, batch, +0x8 16-byte vertex data, +0xC 8-byte
+ * positions, +0x10 4-byte normals } (pointers advance): the batch's own data is called first
+ * (renderer +0x20, which says whether it is ready), then per 48 vertices a GIF tag and three
+ * referenced UNPACKs, each started with MSCNT; a return tag with FLUSHA ends it. */
+s32 func_002B7500(u8 *a) {
+    VObject *r = D_0044E4F0;
+    u64 *call = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 1);
+    u8 ready;
+    void *dst = VCALL(r, 0x20, void *(*)(VObject *, void *, u8 *))(r, AT(a, 0x8, void *), &ready);
+    s32 n;
+
+    call[0] = 0x50000000 | DMA_ADDR(dst);
+    AT(call, 0x8, u32) = 0;
+    AT(call, 0xC, u32) = 0;
+    if (ready == 0) {
+        return 1;
+    }
+    for (n = AT(a, 0x0, s32); n > 0; n -= 48) {
+        s32 k = n < 48 ? n : 48;
+        u64 *p = VCALL(r, 0x18, u64 *(*)(VObject *, s32))(r, 5);
+
+        p[0] = 0x10000001;
+        AT(p, 0x8, u32) = 0x01000101;
+        AT(p, 0xC, u32) = 0x6C018000;
+        p[2] = (u64)(s64)k | 0x8000 | 0x3000000000000000ull;   /* GIF tag: k x (ST, RGBAQ, XYZF2) */
+        p[3] = 0x512;
+        p[4] = DMA_REF_QWC(k * 8) | DMA_ADDR(AT(a, 0xC, u8 *));
+        AT(p, 0x28, u32) = 0x01000103;
+        AT(p, 0x2C, u32) = (k << 16) | 0x74008001;
+        AT(a, 0xC, u8 *) += k * 8;
+        p[6] = DMA_REF_QWC(k * 4) | DMA_ADDR(AT(a, 0x10, u8 *));
+        AT(p, 0x38, u32) = 0;
+        AT(p, 0x3C, u32) = (k << 16) | 0x6E00C002;
+        AT(a, 0x10, u8 *) += k * 4;
+        p[8] = DMA_REF_QWC(k * 16) | DMA_ADDR(AT(a, 0x8, u8 *));
+        AT(p, 0x48, u32) = 0;
+        AT(p, 0x4C, u32) = (k << 16) | 0x6C008003;
+        AT(a, 0x8, u8 *) += k * 16;
+        p = VCALL(r, 0x18, u64 *(*)(VObject *, s32))(r, 1);
+        p[0] = 0x10000000;
+        AT(p, 0x8, u32) = 0x17000000;   /* MSCNT */
+        AT(p, 0xC, u32) = 0;
+    }
+    call = VCALL(r, 0x18, u64 *(*)(VObject *, s32))(r, 1);
+    call[0] = 0x60000000;   /* DMA ret */
+    AT(call, 0x8, u32) = 0;
+    AT(call, 0xC, u32) = 0x13000000;   /* FLUSHA */
+    return 1;
+}

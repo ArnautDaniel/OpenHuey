@@ -984,3 +984,27 @@ s32 func_001BA090(u8 *r) {
     }
     return 1;
 }
+
+
+/* +0x20 the packet for vertex data `key` this frame: open addressing over 2048 slots
+ * (+0x300A00, {key, packet}); found: *built = 0 and its packet; new: the slot takes the arena 2
+ * cursor (+0x304BAC) and *built = 1 (the caller writes the packet there) */
+void *func_001BBAA0(u8 *r, void *key, u8 *built) {
+    u32 i = ((u32)key >> 4) & 0x7FF;
+    u8 *slot;
+
+    for (;;) {
+        slot = r + 0x300A00 + i * 8;
+        if (AT(slot, 0x0, void *) == NULL) {
+            AT(slot, 0x0, void *) = key;
+            AT(slot, 0x4, void *) = AT(r, 0x304BAC, void *);
+            *built = 1;
+            return AT(slot, 0x4, void *);
+        }
+        if (AT(slot, 0x0, void *) == key) {
+            *built = 0;
+            return AT(slot, 0x4, void *);
+        }
+        i = (i + 1) & 0x7FF;
+    }
+}
