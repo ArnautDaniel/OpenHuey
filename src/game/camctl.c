@@ -87,8 +87,8 @@ extern void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t);
 extern void func_00219E10(u8 *d, s32 setup, f32 t);
 extern f32 func_002197A0(u8 *d, s32 mode, f32 t);
 extern void func_0025F6A0(void *o, f32 v);
-extern void func_00219D70(u8 *d, f32 *out, f32 t);
-extern void func_00219CD0(u8 *d, f32 *out, f32 t);
+extern void func_00219D70(u8 *d, f32 *out, f32 t);   /* the look-at point at t */
+extern void func_00219CD0(u8 *d, f32 *out, f32 t);   /* the eye at t */
 extern void func_002243D0(u8 *d, s32 n);
 
 /* the room's camera at the start of play: the camera's range, its view angle (+0x84) and the
@@ -122,7 +122,7 @@ void func_002252B0(u8 *d, s32 target) {
         AT(d, 0x48, f32) = AT(d, 0xC8, f32);
         AT(d, 0x4C, f32) = 1.0f;
         if (AT(d, 0x70, s32) != -1) {
-            f32 v[3];
+            f32 v[4];
 
             func_00219E10(d, AT(d, 0x70, s32), 1.0f);
             func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
@@ -304,4 +304,24 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
         u = u + AT(d, 0x0, f32);
     }
     return best;
+}
+
+/* the camera path's look-at point (components 3..5) at time t (below 1: the current time) */
+void func_00219D70(u8 *d, f32 *out, f32 t) {
+    f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
+
+    out[0] = func_0025F580(d + 8, 3, u);
+    out[1] = func_0025F580(d + 8, 4, u);
+    out[2] = func_0025F580(d + 8, 5, u);
+    out[3] = 1.0f;
+}
+
+/* the camera path's eye (components 0..2) at time t (below 1: the current time) */
+void func_00219CD0(u8 *d, f32 *out, f32 t) {
+    f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
+
+    out[0] = func_0025F580(d + 8, 0, u);
+    out[1] = func_0025F580(d + 8, 1, u);
+    out[2] = func_0025F580(d + 8, 2, u);
+    out[3] = 1.0f;
 }
