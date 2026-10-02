@@ -602,3 +602,23 @@ void func_0021AFD0(void *list) {
         }
     }
 }
+
+
+/* the obstacles' models follow them, each frame: each active one's position (+0x40) moved by
+ * its offset (+0x4 x, +0x8 z) goes to its model (+0x50, at +0x20) */
+void func_0021AC10(void *list) {
+    u8 *o = (u8 *)list + 0x10;
+    s32 i;
+
+    for (i = 0; i < 5; i++, o += 0xB0) {
+        f32 p[4] __attribute__((aligned(16)));
+
+        if (AT(o, 0x0, u8) != 1) {
+            continue;
+        }
+        sceVu0CopyVector(p, (f32 *)(o + 0x40));
+        p[0] = p[0] + AT(o, 0x4, f32);
+        p[2] = p[2] + AT(o, 0x8, f32);
+        sceVu0CopyVector((f32 *)(AT(o, 0x50, u8 *) + 0x20), p);
+    }
+}
