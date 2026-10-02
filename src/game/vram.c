@@ -521,3 +521,52 @@ s32 func_001BFEC0(VObject *v, TexHeader *t, s32 upper) {
     }
     return id;
 }
+
+/* log2 of a texture size, rounded up (at most 10) */
+static inline u64 Vram_Log2(u32 n) {
+    u32 p = 1;
+    u64 l = 0;
+
+    while (p < n) {
+        l++;
+        p *= 2;
+        if (l >= 11) {
+            break;
+        }
+    }
+    return l;
+}
+
+/* GS TEX0 for entry `id` (format psm, w x h, CLUT format cpsm): TCC on; `high` the bits from 55 */
+static inline u64 Vram_Tex0(u8 *v, s32 id, u32 psm, u32 w, u32 h, u32 cpsm, u64 high) {
+    VramEntry *e = VRAM_ENTRY(v, id);
+    u32 slots = (u16)e->cpsm == 2 ? 16 : 8;
+    u64 th = Vram_Log2(h), tw;
+    u32 tbp;
+
+    if ((u16)e->psm != PSMT8H && (u16)e->psm != PSMT4HL && (u16)e->psm != PSMT4HH) {
+        tbp = (e->page << 11) + 0xC0000;
+    } else {
+        tbp = e->page << 11;
+    }
+    tw = Vram_Log2(w);
+    return high | (u64)(cpsm & 0xFFFF) << 51 |
+           (u64)(s64)(s32)(((e->cregion << 11) + 0xFC000 + (u32)((u16)e->cslot << 11) / slots) >> 6) << 37 |
+           th << 30 | (u64)(psm & 0xFFFF) << 20 | (u64)(s64)(s32)((w + 63) >> 6) << 14 |
+           (u64)(s64)(s32)(tbp >> 6) | tw << 26 | (u64)4 << 32;
+}
+
+/* +0x28 TEX0 for entry `id` as a psm w x h texture, loading its CLUT (CLD 1) */
+u64 func_001C12E0(u8 *v, s32 id, s32 psm, u32 w, u32 h, s32 cpsm) {
+    return Vram_Tex0(v, id, psm, w, h, cpsm, (u64)0x20000000 << 32);
+}
+
+/* +0x2C ... as an 8-bit indexed texture */
+u64 func_001C1160(u8 *v, s32 id, u32 w, u32 h, s32 cpsm) {
+    return Vram_Tex0(v, id, 0x13, w, h, cpsm, (u64)0x20000000 << 32);
+}
+
+/* +0x30 ... with CLUT offset `csa` and no CLUT load */
+u64 func_001C0FE0(u8 *v, s32 id, u32 csa, s32 psm, u32 w, u32 h, s32 cpsm) {
+    return Vram_Tex0(v, id, psm, w, h, cpsm, (u64)csa << 56);
+}
