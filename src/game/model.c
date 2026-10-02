@@ -1505,3 +1505,75 @@ void func_002DC710(u8 *m, f32 *p, u8 *a) {
     sceVu0Normalize(d, d);
     p[1] = AT(a, 0x14, f32) + d[1] * len;
 }
+
+
+extern s32 D_004157A0[];   /* hand poses: per pose 5 key frames { s32, s32, f32 } */
+
+/* the hands, when the motion moves on: the motion's hand pose (+0x874 table, byte 2: left pose
+ * << 4 | right pose) is blended in over the next 5 frames as their events (bit 4 left, 8
+ * right) say, forwards or backwards by the hand's state (+0x85C / +0x85D), into +0x38 / +0x48
+ * (poses 0..6 as they are, others fall back to the defaults +0x87C / +0x880); a restarted
+ * motion resets them */
+void func_002DCB40(u8 *m) {
+    u8 ev[5];
+    s32 hand, i, k, idx, bit;
+    u32 pose, on;
+    u8 *t = AT(m, 0x6A4, u8 *);
+
+    if (AT(t, 0x0, f32) == AT(t, 0x8, f32)) {
+        return;
+    }
+    if (AT(t, 0x0, f32) == 0.0f) {
+        AT(m, 0x85C, u8) = 0;
+        AT(m, 0x85D, u8) = 0;
+        AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+        AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+        AT(m, 0x40, f32) = 0.0f;
+        AT(m, 0x48, s32) = AT(m, 0x880, s32);
+        AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+        AT(m, 0x50, f32) = 0.0f;
+    }
+    if (AT(m, 0x874, u8 *) == NULL) {
+        return;
+    }
+    k = func_001F4710(m, AT(m, 0x55C, s32));
+    if (k == -1) {
+        return;
+    }
+    pose = AT(m, 0x874, u8 *)[k * 6 + 2];
+    if (pose == 0) {
+        return;
+    }
+    for (i = 0; i < 5; i++) {
+        ev[i] = func_001F4770(m, 0, i, -2);
+    }
+    for (hand = 0; hand < 2; hand++) {
+        s32 *tbl;
+        s32 *dst = &AT(m, 0x38 + hand * 16, s32);
+
+        if (hand == 0) {
+            on = AT(m, 0x85C, u8);
+            bit = 4;
+            idx = (pose >> 4) & 0xF;
+        } else {
+            on = AT(m, 0x85D, u8);
+            bit = 8;
+            idx = pose & 0xF;
+        }
+        tbl = D_004157A0 + idx * 15;
+        for (i = 0; i < 5; i++) {
+            s32 *e = on ? tbl + i * 3 : tbl + (4 - i) * 3;
+
+            if (!(ev[i] & bit)) {
+                continue;
+            }
+            dst[0] = (idx < 7 || e[0] != 0) ? e[0] : AT(m, 0x87C + hand * 4, s32);
+            dst[1] = (idx < 7 || e[1] != 0) ? e[1] : AT(m, 0x87C + hand * 4, s32);
+            AT(dst, 0x8, f32) = AT(e, 0x8, f32);
+            if (i == 0) {
+                on = (on ^ 1) != 0;
+            }
+        }
+        AT(m, 0x85C + hand, u8) = on;
+    }
+}
