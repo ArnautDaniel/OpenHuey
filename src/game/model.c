@@ -1955,3 +1955,60 @@ void func_002E2E00(void *mat, f32 *rot, const f32 *trans) {
     sceVu0RotMatrixZ(m, m, rot[2]);
     sceVu0TransMatrix(m, m, (f32 *)trans);
 }
+
+
+/* the bone with id `id` in a bone list { +0x4 first (next +0x48, id +0x40), +0x8 count } */
+static u8 *bone_find(u8 *list, s32 id) {
+    u8 *b;
+    s32 i;
+
+    if (list == NULL) {
+        return NULL;
+    }
+    b = AT(list, 0x4, u8 *);
+    for (i = 0; i < AT(list, 0x8, s32); i++) {
+        if (id == AT(b, 0x40, s32)) {
+            return b;
+        }
+        b = AT(b, 0x48, u8 *);
+    }
+    return NULL;
+}
+
+/* the skeleton's world pose: each bone of `skel` (in parent-first order; parent matrix +0x44) is
+ * its parent's matrix (the first: the model's, +0x7D0) times its local pose - from the blended
+ * animation (+0x6AC), else the first layer that animates it (+0x70C, 3 x 0x60), else the bind
+ * pose (the skeleton's record +0x10 / +0x20) - and, unless +0x4D8, reported to +0x14 */
+void func_001F5D70(u8 *m, void *skel) {
+    f32 bind[4][4] __attribute__((aligned(16)));
+    u8 *rec = AT(m, 0x4C0, u8 *) + 0x10;
+    u8 *b = AT(skel, 0x4, u8 *);
+    u8 *local;
+    s32 i, k;
+
+    for (i = 0; i < AT(skel, 0x8, s32); i++) {
+        local = bone_find(AT(m, 0x6AC, u8 *), AT(b, 0x40, s32));
+        for (k = 0; local == NULL && k < 3; k++) {
+            local = bone_find(AT(m, 0x70C + k * 0x60, u8 *), AT(b, 0x40, s32));
+        }
+        if (local != NULL) {
+            if (i == 0) {
+                sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])(m + 0x7D0), (f32 (*)[4])local);
+            } else {
+                sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])AT(b, 0x44, u8 *), (f32 (*)[4])local);
+            }
+        } else {
+            func_002E2E00(bind, (f32 *)(rec + 0x10), (f32 *)(rec + 0x20));
+            if (i == 0) {
+                sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])(m + 0x7D0), bind);
+            } else {
+                sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])AT(b, 0x44, u8 *), bind);
+            }
+        }
+        if (AT(m, 0x4D8, u8) == 0) {
+            VCALL(m, 0x14, void (*)(u8 *, s32, u8 *, u8 *))(m, i, b, local);
+        }
+        b = AT(b, 0x48, u8 *);
+        rec += 0x70;
+    }
+}
