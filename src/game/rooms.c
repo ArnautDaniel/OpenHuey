@@ -587,3 +587,18 @@ VObject *func_0021C7E0(VObject *r, s32 flags) {
     }
     return r;
 }
+
+
+extern void func_0017FA60(u8 *o);
+
+/* the obstacles, each frame: each of the 5 (0xB0 apart) that is active moves */
+void func_0021AFD0(void *list) {
+    u8 *o = (u8 *)list + 0x10;
+    s32 i;
+
+    for (i = 0; i < 5; i++, o += 0xB0) {
+        if (AT(o, 0x0, u8) == 1) {
+            func_0017FA60(o);
+        }
+    }
+}
