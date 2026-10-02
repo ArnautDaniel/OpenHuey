@@ -2668,3 +2668,4 @@ src/game/scene_game.c func_0039A7C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF
 src/game/items.c func_00260EC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12E0=0..0x0B300000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E0=0..0 --pre=a0+0x14E0=0x0B300000..0x0B300000 --pre=a0+0x14E4=0..0 --pre=@0x0B300000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --runs=60
 src/game/scene_game_members.c func_002A7630 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=bytes:???????? --runs=200
 src/game/scene_game_members.c func_002D75C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA040=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0 --pre=@0x0B300028=bytes:?? --runs=40
+src/game/scene_game_members.c func_002671F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1438=0..0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0

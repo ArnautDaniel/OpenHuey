@@ -1729,3 +1729,17 @@ void func_002D75C0(u8 *o) {
         }
     }
 }
+
+
+/* the effects, each frame: each of the 32 at +0x1438 updates (+0x10) */
+void func_002671F0(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 32; i++) {
+        VObject *e = AT(o, 0x1438 + i * 4, VObject *);
+
+        if (e != NULL) {
+            VCALL(e, 0x10, void (*)(VObject *))(e);
+        }
+    }
+}
