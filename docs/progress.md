@@ -26,9 +26,8 @@ Screenshots: `docs/img/native_*.png`.
 - Silent: ADX / SPU sound and music are shims (the game-side music logic runs). Movies: Sofdec is
   a shim whose player creation fails, which the game treats as "no movie".
 - Where it stops now: the game scene's constructor (`SceneGame_ctor`, 0x2D05A0), reached by New
-  Game or by loading a save. Inside Options, the entries' editors (`func_00393880` controller
-  layout, `func_00393480`, `func_003930C0`, `func_00392B50`, `func_00392670`, `func_00392360`
-  restore defaults) are not written yet.
+  Game or by loading a save. The Options screen is complete (list, the five editors, restore
+  defaults).
 - To check against the real game: the dark boxes behind the menu entries (they come from the
   entries' CLUT 1 background colour); the Dolby logo sits left of centre.
 - Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points

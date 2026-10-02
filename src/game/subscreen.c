@@ -98,24 +98,9 @@ void func_00399A10(u8 *s) {
     set_state(&AT(s, 0x16FC, PTMF), func_00399920);
 }
 
-/* apply the options: controller layout, vibration, sound output, volume, screen position */
-void func_003921A0(VObject *s) {
-    u8 *opt = D_0044E978 + 0x30;
-    VObject *o;
-    f32 vol;
-
-    VCALL(s, 0x34, void (*)(VObject *, s32))(s, (s8)opt[6]);
-    o = D_0044E7A8;
-    VCALL(o, 0x10, void (*)(VObject *))(o);
-    if ((s8)opt[4] == 1) {
-        VCALL(o, 0x28, void (*)(VObject *, s32))(o, 1);
-    } else {
-        VCALL(o, 0x28, void (*)(VObject *, s32))(o, 0);
-    }
-    o = D_0044E560;
-    VCALL(o, 0x68, void (*)(VObject *, s32))(o, (s8)opt[0]);
-    vol = *(f32 *)(opt + 8);
-    VCALL(o, 0xA8, void (*)(VObject *, f32))(o, vol);
+/* the master volume (0..1): sound effects, voices (D_00456DF0), the movie, the music */
+static void opt_apply_volume(VObject *snd, f32 vol) {
+    VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, vol);
     if (D_00456DF0 != NULL) {
         VCALL(D_00456DF0, 0x20, void (*)(VObject *, f32))(D_00456DF0, vol);
     }
@@ -143,6 +128,26 @@ void func_003921A0(VObject *s) {
         }
         func_002D1FD0(D_0044E980);
     }
+}
+
+/* apply the options: controller layout, vibration, sound output, volume, screen position */
+void func_003921A0(VObject *s) {
+    u8 *opt = D_0044E978 + 0x30;
+    VObject *o;
+    f32 vol;
+
+    VCALL(s, 0x34, void (*)(VObject *, s32))(s, (s8)opt[6]);
+    o = D_0044E7A8;
+    VCALL(o, 0x10, void (*)(VObject *))(o);
+    if ((s8)opt[4] == 1) {
+        VCALL(o, 0x28, void (*)(VObject *, s32))(o, 1);
+    } else {
+        VCALL(o, 0x28, void (*)(VObject *, s32))(o, 0);
+    }
+    o = D_0044E560;
+    VCALL(o, 0x68, void (*)(VObject *, s32))(o, (s8)opt[0]);
+    vol = *(f32 *)(opt + 8);
+    opt_apply_volume(o, vol);
     VCALL(D_0044E4F0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4F0, (s8)opt[2], (s8)opt[3]);
 }
 
@@ -1008,4 +1013,284 @@ void func_00391250(void *self) {
         SUB_CLOSE(s) = 1;
     }
     func_002BC460(s + 0xA8AC0, 1);
+}
+
+#define MENU_LEFT  0x8
+#define MENU_RIGHT 0x2
+
+/* the blinking of the editors' arrows: |0x80 - (frame * 4 & 0xFF)| */
+static u8 opt_blink(u8 *s) {
+    s32 a = 0x80 - (u8)(AT(s, 0xA8DE0, s32) << 2);
+
+    return a > 0 ? (u8)a : (u8)-a;
+}
+
+/* an editor's frame: the options with the entry lit, blinking arrows either side of the value,
+ * the help line */
+static void opt_editor_draw(u8 *s, s32 xl, s32 xr, s32 y) {
+    u8 a;
+
+    func_00391450(s, 1);
+    a = opt_blink(s);
+    func_003854C0(s, xl, y, 0x1A, a, 0);
+    func_003854C0(s, xr, y, 0x1B, a, 0);
+    opt_text(s, 0x46, 0x186, 0x80, 0x83);
+}
+
+/* in-game menu button: closes the editor like cancel */
+static s32 opt_cancelled(void) {
+    return (D_0047E36C & MENU_CANCEL) || (gProgress != NULL && Progress_TestFlag(gProgress, 4));
+}
+
+/* leave an editor: back to the list */
+static void opt_back(u8 *s, s32 se) {
+    set_state(&SUB_STATE(s), func_00393BD0);
+    SE(se);
+}
+
+/* editing the controller layout (4 types): left / right choose, confirm applies it, cancel
+ * (or the in-game menu button) restores it */
+void func_00393880(void *self) {
+    u8 *s = self;
+    s8 *opt = (s8 *)D_0044E978 + 0x30;
+
+    if (!SUB_FADING(s)) {
+        if (D_0047E36C & MENU_LEFT) {
+            if (OPT(s, 6) != 0) {
+                OPT(s, 6)--;
+            } else {
+                OPT(s, 6) = 3;
+            }
+            SE(0x2A);
+        } else if (D_0047E36C & MENU_RIGHT) {
+            OPT(s, 6)++;
+            if (OPT(s, 6) >= 4) {
+                OPT(s, 6) = 0;
+            }
+            SE(0x2A);
+        }
+        if (D_0047E36C & MENU_CONFIRM) {
+            opt[6] = OPT(s, 6);
+            VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, OPT(s, 6));
+            opt_back(s, 0x2B);
+        } else if (opt_cancelled()) {
+            OPT(s, 6) = opt[6];
+            opt_back(s, 0x2C);
+        }
+    }
+    opt_editor_draw(s, 0x120, 0x180, 0x54);
+}
+
+/* the vibration's on / off: the actuator's +0x28 */
+#define VIB_ENABLE(o, on) VCALL(o, 0x28, void (*)(VObject *, s32))(o, on)
+
+
+/* editing the vibration: left / right toggle it (turning it on buzzes the pad) */
+void func_00393480(void *self) {
+    u8 *s = self;
+    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    VObject *o;
+
+    if (!SUB_FADING(s)) {
+        if ((D_0047E36C & MENU_LEFT) || (D_0047E36C & MENU_RIGHT)) {
+            o = D_0044E7A8;
+            if (OPT(s, 4) == 1) {
+                OPT(s, 4) = 0;
+                VCALL(o, 0x10, void (*)(VObject *))(o);
+                VIB_ENABLE(o, 0);
+            } else {
+                OPT(s, 4) = 1;
+                VCALL(o, 0x10, void (*)(VObject *))(o);
+                VIB_ENABLE(o, 1);
+                VCALL(o, 0x14, void (*)(VObject *, s32, s32, s32))(o, 0, 1, 4);
+                VCALL(o, 0x18, void (*)(VObject *, s32, s32, s32))(o, 0, 0x80, 4);
+            }
+            SE(0x2A);
+        }
+        if (D_0047E36C & MENU_CONFIRM) {
+            o = D_0044E7A8;
+            opt[4] = OPT(s, 4);
+            VCALL(o, 0x10, void (*)(VObject *))(o);
+            VIB_ENABLE(o, opt[4] == 1);
+            opt_back(s, 0x2B);
+        } else if (opt_cancelled()) {
+            o = D_0044E7A8;
+            OPT(s, 4) = opt[4];
+            VCALL(o, 0x10, void (*)(VObject *))(o);
+            VIB_ENABLE(o, opt[4] == 1);
+            opt_back(s, 0x2C);
+        }
+    }
+    opt_editor_draw(s, 0xE0, 0x1C0, 0xF4);
+}
+
+/* the sound driver's output mode (0 mono, 1 stereo, 2 surround) */
+#define SND_OUTPUT(o, mode) VCALL(o, 0x68, void (*)(VObject *, s32))(o, mode)
+
+/* editing the sound output: left / right cycle it (heard at once) */
+void func_003930C0(void *self) {
+    u8 *s = self;
+    s8 *opt = (s8 *)D_0044E978 + 0x30;
+
+    if (!SUB_FADING(s)) {
+        if (D_0047E36C & MENU_LEFT) {
+            OPT(s, 0) = OPT(s, 0) == 0 ? 2 : OPT(s, 0) == 1 ? 0 : 1;
+            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            SE(0x2A);
+        } else if (D_0047E36C & MENU_RIGHT) {
+            OPT(s, 0) = OPT(s, 0) == 0 ? 1 : OPT(s, 0) == 1 ? 2 : 0;
+            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            SE(0x2A);
+        }
+        if (D_0047E36C & MENU_CONFIRM) {
+            opt[0] = OPT(s, 0);
+            opt_back(s, 0x2B);
+        } else if (opt_cancelled()) {
+            OPT(s, 0) = opt[0];
+            SND_OUTPUT(D_0044E560, OPT(s, 0));
+            opt_back(s, 0x2C);
+        }
+    }
+    opt_editor_draw(s, 0xE0, 0x1C0, 0x114);
+}
+
+/* editing the volume: left / right in steps of 1/64 (heard at once) */
+void func_00392B50(void *self) {
+    u8 *s = self;
+    u8 *opt = (u8 *)D_0044E978 + 0x30;
+    VObject *snd;
+    f32 v;
+
+    if (!SUB_FADING(s)) {
+        if (D_0047E36C & MENU_LEFT) {
+            if (!(OPT_VOLUME(s) < 0.0f)) {
+                OPT_VOLUME(s) = v = OPT_VOLUME(s) - 0.015625f;
+                if (v < 0.0f) {
+                    OPT_VOLUME(s) = 0.0f;
+                }
+                snd = D_0044E560;
+                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, OPT_VOLUME(s));
+                VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0x2A, 5);
+            }
+        } else if (D_0047E36C & MENU_RIGHT) {
+            if (OPT_VOLUME(s) < 1.0f) {
+                OPT_VOLUME(s) = v = OPT_VOLUME(s) + 0.015625f;
+                if (!(v < 1.0f)) {
+                    OPT_VOLUME(s) = 1.0f;
+                }
+                snd = D_0044E560;
+                VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, OPT_VOLUME(s));
+                VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0x2A, 5);
+            }
+        }
+        if (D_0047E36C & MENU_CONFIRM) {
+            snd = D_0044E560;
+            v = OPT_VOLUME(s);
+            AT(opt, 8, f32) = v;
+            opt_apply_volume(snd, v);
+            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0x2B, 5);
+            set_state(&SUB_STATE(s), func_00393BD0);
+        } else if (opt_cancelled()) {
+            snd = D_0044E560;
+            OPT_VOLUME(s) = AT(opt, 8, f32);
+            opt_apply_volume(snd, AT(opt, 8, f32));
+            VCALL(snd, 0x14, void (*)(VObject *, s32, s32))(snd, 0x2C, 5);
+            set_state(&SUB_STATE(s), func_00393BD0);
+        }
+    }
+    opt_editor_draw(s, 0xE0, 0x1C0, 0x134);
+}
+
+#define SCREEN_POS(x, y) VCALL(D_0044E4F0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4F0, x, y)
+
+/* editing the screen position: the D-pad moves it (-32..32 each way, seen at once) */
+void func_00392670(void *self) {
+    u8 *s = self;
+    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    s32 a;
+
+    if (!SUB_FADING(s)) {
+        u32 pad = D_0047E36C;
+
+        if (pad & MENU_UP) {
+            if (OPT(s, 3) >= -0x1F) {
+                OPT(s, 3)--;
+                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+                SE(0x2A);
+            }
+        } else if (pad & MENU_DOWN) {
+            if (OPT(s, 3) < 0x20) {
+                OPT(s, 3)++;
+                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+                SE(0x2A);
+            }
+        }
+        pad = D_0047E36C;
+        if (pad & MENU_LEFT) {
+            if (OPT(s, 2) >= -0x1F) {
+                OPT(s, 2)--;
+                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+                SE(0x2A);
+            }
+        } else if (pad & MENU_RIGHT) {
+            if (OPT(s, 2) < 0x20) {
+                OPT(s, 2)++;
+                SCREEN_POS(OPT(s, 2), OPT(s, 3));
+                SE(0x2A);
+            }
+        }
+        if (D_0047E36C & MENU_CONFIRM) {
+            opt[2] = OPT(s, 2);
+            opt[3] = OPT(s, 3);
+            opt_back(s, 0x2B);
+        } else if (opt_cancelled()) {
+            OPT(s, 2) = opt[2];
+            OPT(s, 3) = opt[3];
+            SCREEN_POS(opt[2], opt[3]);
+            opt_back(s, 0x2C);
+        }
+    }
+    func_00391450(s, 1);
+    /* the corner marks pulse */
+    a = 0x40 - ((AT(s, 0xA8DE0, s32) << 1) & 0x7F);
+    a = (a > 0 ? a : -a) + 0x20;
+    func_003854C0(s, 0x10, 0x10, 0x15, (u8)a, 0);
+    func_003854C0(s, 0x1D2, 0x10, 0x16, (u8)a, 0);
+    func_003854C0(s, 0x10, 0x190, 0x17, (u8)a, 0);
+    func_003854C0(s, 0x1D2, 0x190, 0x18, (u8)a, 0);
+    opt_text(s, 0x46, 0x186, 0x80, 0x83);
+}
+
+/* the "restore the defaults?" question (message 0x84): on yes the options go back to mono,
+ * vibration on, full volume, centred, layout A, and are applied */
+void func_00392360(void *self) {
+    u8 *s = self;
+    Task *t = (Task *)(s + 0x97764);
+
+    func_00391450(s, 0);
+    if (t->mode) {
+        func_00384BC0(t);
+        return;
+    }
+    if (t->answer == 0) {
+        s8 *sys = D_0044E978;
+        VObject *o;
+
+        sys[0x36] = 0;
+        sys[0x34] = 1;
+        sys[0x30] = 1;
+        AT(sys, 0x38, f32) = 1.0f;
+        sys[0x32] = 0;
+        sys[0x33] = 0;
+        sub_copy_options(s);
+        VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, sys[0x36]);
+        o = D_0044E7A8;
+        VCALL(o, 0x10, void (*)(VObject *))(o);
+        VIB_ENABLE(o, sys[0x34] == 1);
+        o = D_0044E560;
+        SND_OUTPUT(o, sys[0x30]);
+        opt_apply_volume(o, AT(sys, 0x38, f32));
+        SCREEN_POS(sys[0x32], sys[0x33]);
+    }
+    set_state(&SUB_STATE(s), func_00393BD0);
 }
