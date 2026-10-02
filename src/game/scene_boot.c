@@ -416,6 +416,67 @@ u32 func_0037FAC0(SceneBoot *boot) {
     return 1;
 }
 
+extern void *D_0044E960;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *D_0044E958;          /* the movie playing (Movie, src/game/movie.c) */
+extern void *D_0046ECC0[];        /* SceneMovie */
+extern void *__nw__FUiPv(u32 size, void *p);   /* placement new */
+extern void *func_002B70D0(void *movie);       /* Movie constructor */
+extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
+
+static const char sCapcomSfd[] = "CAPCOM.SFD";
+static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
+
+#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
+
+/* Boot step: the Capcom logo movie, as scene 1, until it's over (Start skips it). */
+u32 func_0037F7D0(SceneBoot *boot) {
+    Scene *movie;
+    void *mem;
+    s32 ok;
+
+    if (boot->stepTimer != 0) {
+        if (D_0044E958 != NULL && !(D_0047E37C & 8)) {
+            return 1;
+        }
+        movie = SCENE_TABLE_SCENE(1);
+        if (movie != NULL) {
+            Scene_SetState(movie, &sSceneFinish);
+            VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
+        }
+        return 0;
+    }
+    {
+        VObject *heap = (VObject *)((u8 *)D_0044E960 + 0x10D9040);
+
+        mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x600200);
+    }
+    if (mem != NULL) {
+        movie = __nw__FUiPv(0x600200, mem);
+        if (movie != NULL) {
+            func_002B70D0(movie);
+            movie->vtbl = D_0046ECC0;
+        }
+        SCENE_TABLE_SCENE(1) = movie;
+        SCENE_TABLE_SCENE(1)->slot = 1;
+        movie = SCENE_TABLE_SCENE(1);
+        if (movie != NULL) {
+            movie->request = SCENE_REQ_RUN;
+            movie->status = 0;
+            movie->waitFrames = 0;
+            ok = 1;
+        } else {
+            ok = 0;
+        }
+    } else {
+        ok = 0;
+    }
+    if (ok) {
+        func_002B6D10(D_0044E958, sCapcomSfd, 1, 0);
+    }
+    boot->stepTimer++;
+    return 1;
+}
+
 extern void func_002BFB00(BootCard *card, s32, s32);
 extern void func_002BF2F0(BootCard *card);
 

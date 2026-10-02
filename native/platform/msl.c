@@ -51,3 +51,6 @@ void func_00100470(void *p) { free(p); }
 float func_0031C058(float x) { return cosf(x); }
 float func_0031C248(float x) { return sinf(x); }
 float func_0031C5C0(float y, float x) { return atan2f(y, x); }
+
+/* placement new */
+void *__nw__FUiPv(unsigned size, void *p) { (void)size; return p; }

@@ -172,3 +172,7 @@ void func_00168C80(Heap *h, u8 *addr) {
         break;
     }
 }
+
+/* operator delete for objects placed in the scene heap: nothing (the heap is freed as a whole) */
+void func_0011F9A0(void *p) {
+}

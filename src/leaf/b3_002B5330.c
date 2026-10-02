@@ -100,33 +100,9 @@ void func_002B6130(u8 *self, u8 *src) {
 
 extern u8 *D_0045D1F0;
 
-void func_002B6310(u8 *self) {
-    *D_0045D1F0 = 0;
-    *(u32 *)(self + 0x10) = 0;
-}
-
 extern void *D_0044E4F0; /* global manager object (virtual calls) */
 
 /* Tail call: D_0044E4F0->vfunc_0x40(self->0x18, 0x88000, self->0x20, self->0x24, 3) */
-s32 func_002B64B0(u8 *self) {
-    return VCALL(D_0044E4F0, 0x40, s32 (*)(void *, u32, u32, u32, u32, u32))(
-        D_0044E4F0, *(u32 *)(self + 0x18), 0x88000, *(u32 *)(self + 0x20), *(u32 *)(self + 0x24), 3);
-}
-
-s32 func_002B64F0(u8 *self) {
-    if (self[0x1B4] == 0) {
-        return -1;
-    }
-    return *(s32 *)(self + 0x1C0);
-}
-
-void func_002B6E50(u8 *self) {
-    *(u32 *)(self + 0x1A8) = 0;
-    self[0xA8] = 0;
-    *(s32 *)(self + 0x1C0) = -1;
-    self[0x11] = 1;
-}
-
 /* If active (+0x1C4), fills a small descriptor; returns the active flag. */
 u32 func_002BA220(u8 *self, u8 *out) {
     if (self[0x1C4] != 0) {
