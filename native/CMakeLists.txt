@@ -12,8 +12,13 @@ project(haunting_ground_native C ASM)
 set(ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(GEN ${CMAKE_CURRENT_BINARY_DIR}/gen)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
+
 set(CMAKE_C_STANDARD 11)
-add_compile_options(-m32)
+# the game C type-puns through raw offsets and relies on wrapping arithmetic, like the PS2 build
+add_compile_options(-m32 -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks)
 add_link_options(-m32 -no-pie -rdynamic)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
@@ -44,7 +49,7 @@ file(GLOB PLATFORM_C CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/platform/*.c)
 add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S ${GAME_C} ${PLATFORM_C})
 target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURRENT_SOURCE_DIR}/platform)
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
-target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O1 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
+target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O2 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
 target_compile_definitions(hg PRIVATE HG_NATIVE)
 # SDL3 (32-bit): Gentoo's multilib puts it in /usr/lib (CMake would rewrite that to lib64)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)

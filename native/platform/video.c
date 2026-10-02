@@ -1,7 +1,8 @@
 /* Window and presentation: SDL3 shows the GS's displayed frame buffer every vblank.
  *
  *   HG_HEADLESS=1   no window (tests)
- *   HG_DUMP=dir     write every 30th displayed frame as dir/frame_NNNNN.ppm */
+ *   HG_DUMP=dir     write every 30th displayed frame as dir/frame_NNNNN.ppm
+ *   HG_MAXFRAMES=n  exit after n frames (profiling, tests) */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -82,6 +83,18 @@ void hg_frame(void) {
     }
     dump(w, h);
     sFrame++;
+    {
+        static long maxFrames = -1;
+
+        if (maxFrames < 0) {
+            const char *m = getenv("HG_MAXFRAMES");
+
+            maxFrames = m ? atol(m) : 0;
+        }
+        if (maxFrames > 0 && sFrame >= (unsigned)maxFrames) {
+            exit(0);
+        }
+    }
     if (sHeadless || w <= 0 || h <= 0) {
         return;
     }

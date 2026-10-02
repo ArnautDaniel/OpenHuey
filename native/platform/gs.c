@@ -69,22 +69,22 @@ static inline uint32_t col16(uint32_t x, uint32_t y) {   /* 16x8 block of halfwo
 }
 
 /* word / halfword / byte / nibble index of pixel (x, y) of a buffer at block bp, width bw (in 64s) */
-static inline uint32_t addr32(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, const uint8_t bt[4][8]) {
+static inline __attribute__((always_inline)) uint32_t addr32(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, const uint8_t bt[4][8]) {
     uint32_t page = (y >> 5) * bw + (x >> 6);
     return ((bp + page * 32 + bt[(y >> 3) & 3][(x >> 3) & 7]) * 64 + col32(x & 7, y & 7)) & 0xFFFFF;
 }
 
-static inline uint32_t addr16(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, const uint8_t bt[8][4]) {
+static inline __attribute__((always_inline)) uint32_t addr16(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, const uint8_t bt[8][4]) {
     uint32_t page = (y >> 6) * bw + (x >> 6);
     return ((bp + page * 32 + bt[(y >> 3) & 7][(x >> 4) & 3]) * 128 + col16(x & 15, y & 7)) & 0x1FFFFF;
 }
 
-static inline uint32_t addr8(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
+static inline __attribute__((always_inline)) uint32_t addr8(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
     uint32_t page = (y >> 6) * ((bw + 1) >> 1) + (x >> 7);
     return ((bp + page * 32 + blockTable8[(y >> 4) & 3][(x >> 4) & 7]) * 256 + columnTable8[y & 15][x & 15]) & 0x3FFFFF;
 }
 
-static inline uint32_t addr4(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
+static inline __attribute__((always_inline)) uint32_t addr4(uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
     uint32_t page = (y >> 7) * ((bw + 1) >> 1) + (x >> 7);
     return ((bp + page * 32 + blockTable4[(y >> 4) & 7][(x >> 5) & 3]) * 512 + columnTable4[y & 15][x & 31]) & 0x7FFFFF;
 }
@@ -110,7 +110,7 @@ static void gs_init_tables(void) {
 }
 
 /* pixel access by format */
-static inline uint32_t vram_read(uint32_t psm, uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
+static inline __attribute__((always_inline)) uint32_t vram_read(uint32_t psm, uint32_t bp, uint32_t bw, uint32_t x, uint32_t y) {
     uint32_t a;
 
     switch (psm) {
@@ -133,7 +133,7 @@ static inline uint32_t vram_read(uint32_t psm, uint32_t bp, uint32_t bw, uint32_
     return 0;
 }
 
-static inline void vram_write(uint32_t psm, uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, uint32_t v) {
+static inline __attribute__((always_inline)) void vram_write(uint32_t psm, uint32_t bp, uint32_t bw, uint32_t x, uint32_t y, uint32_t v) {
     uint32_t a;
 
     switch (psm) {
@@ -334,91 +334,192 @@ static void clut_load(uint64_t tex0) {
     }
 }
 
-/* texel (RGBA8) at integer (u, v) */
-static uint32_t tex_fetch(uint64_t tex0, uint64_t clamp, int u, int v) {
-    uint32_t tbp = BITS(tex0, 0, 14), tbw = BITS(tex0, 14, 6), psm = BITS(tex0, 20, 6);
-    uint32_t tw = 1u << BITS(tex0, 26, 4), th = 1u << BITS(tex0, 30, 4), tcc = BITS(tex0, 34, 1);
-    uint32_t wms = BITS(clamp, 0, 2), wmt = BITS(clamp, 2, 2), c;
-    uint32_t minu = BITS(clamp, 4, 10), maxu = BITS(clamp, 14, 10), minv = BITS(clamp, 24, 10), maxv = BITS(clamp, 34, 10);
+/* ---- per-primitive state: the registers a primitive's pixels need, decoded once ---- */
 
-    switch (wms) {
-    case 0: u &= tw - 1; break;
-    case 1: u = u < 0 ? 0 : u >= (int)tw ? (int)tw - 1 : u; break;
-    case 2: u = u < (int)minu ? (int)minu : u > (int)maxu ? (int)maxu : u; break;
-    case 3: u = (int)((u & minu) | maxu); break;
+typedef struct TexState {
+    uint32_t tbp, tbw, psm, tw, th, tcc, tfx, wms, wmt, minu, maxu, minv, maxv, csa16;
+} TexState;
+
+static void tex_setup(TexState *t, uint64_t tex0, uint64_t clamp) {
+    t->tbp = BITS(tex0, 0, 14);
+    t->tbw = BITS(tex0, 14, 6);
+    t->psm = BITS(tex0, 20, 6);
+    t->tw = 1u << BITS(tex0, 26, 4);
+    t->th = 1u << BITS(tex0, 30, 4);
+    t->tcc = BITS(tex0, 34, 1);
+    t->tfx = BITS(tex0, 35, 2);
+    t->csa16 = BITS(tex0, 56, 5) * 16;
+    t->wms = BITS(clamp, 0, 2);
+    t->wmt = BITS(clamp, 2, 2);
+    t->minu = BITS(clamp, 4, 10);
+    t->maxu = BITS(clamp, 14, 10);
+    t->minv = BITS(clamp, 24, 10);
+    t->maxv = BITS(clamp, 34, 10);
+}
+
+/* texel (RGBA8) at integer (u, v) */
+static inline __attribute__((always_inline)) uint32_t tex_fetch(const TexState *t, int u, int v) {
+    switch (t->wms) {
+    case 0: u &= (int)t->tw - 1; break;
+    case 1: u = u < 0 ? 0 : u >= (int)t->tw ? (int)t->tw - 1 : u; break;
+    case 2: u = u < (int)t->minu ? (int)t->minu : u > (int)t->maxu ? (int)t->maxu : u; break;
+    case 3: u = (int)((u & t->minu) | t->maxu); break;
     }
-    switch (wmt) {
-    case 0: v &= th - 1; break;
-    case 1: v = v < 0 ? 0 : v >= (int)th ? (int)th - 1 : v; break;
-    case 2: v = v < (int)minv ? (int)minv : v > (int)maxv ? (int)maxv : v; break;
-    case 3: v = (int)((v & minv) | maxv); break;
+    switch (t->wmt) {
+    case 0: v &= (int)t->th - 1; break;
+    case 1: v = v < 0 ? 0 : v >= (int)t->th ? (int)t->th - 1 : v; break;
+    case 2: v = v < (int)t->minv ? (int)t->minv : v > (int)t->maxv ? (int)t->maxv : v; break;
+    case 3: v = (int)((v & t->minv) | t->maxv); break;
     }
-    switch (psm) {
+    switch (t->psm) {
     case PSMCT32:
-        c = vram_read(psm, tbp, tbw, (uint32_t)u, (uint32_t)v);
-        break;
-    case PSMCT24:
-        c = vram_read(psm, tbp, tbw, (uint32_t)u, (uint32_t)v);
-        c |= (uint32_t)(((c & 0xFFFFFF) == 0 && BITS(gs.texa, 15, 1)) ? 0 : BITS(gs.texa, 0, 8)) << 24;
-        break;
+        return vram_read(t->psm, t->tbp, t->tbw, (uint32_t)u, (uint32_t)v);
+    case PSMCT24: {
+        uint32_t c = vram_read(t->psm, t->tbp, t->tbw, (uint32_t)u, (uint32_t)v);
+
+        return c | (uint32_t)(((c & 0xFFFFFF) == 0 && BITS(gs.texa, 15, 1)) ? 0 : BITS(gs.texa, 0, 8)) << 24;
+    }
     case PSMCT16: case PSMCT16S:
-        c = expand16(vram_read(psm, tbp, tbw, (uint32_t)u, (uint32_t)v), gs.texa, tcc);
-        break;
+        return expand16(vram_read(t->psm, t->tbp, t->tbw, (uint32_t)u, (uint32_t)v), gs.texa, t->tcc);
     case PSMT8: case PSMT8H:
-        c = gs.clut[vram_read(psm, tbp, tbw, (uint32_t)u, (uint32_t)v) & 0xFF];
-        break;
+        return gs.clut[vram_read(t->psm, t->tbp, t->tbw, (uint32_t)u, (uint32_t)v) & 0xFF];
     case PSMT4: case PSMT4HL: case PSMT4HH:
-        c = gs.clut[BITS(tex0, 56, 5) * 16 + (vram_read(psm, tbp, tbw, (uint32_t)u, (uint32_t)v) & 0xF)];
+        return gs.clut[t->csa16 + (vram_read(t->psm, t->tbp, t->tbw, (uint32_t)u, (uint32_t)v) & 0xF)];
+    }
+    return 0xFF00FFFF;
+}
+
+/* floor without a libm call */
+static inline int ifloor(float f) {
+    int i = (int)f;
+
+    return i - (f < (float)i);
+}
+
+static inline int clamp255(int v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+
+/* the texture function: modulate / decal / highlight / highlight2 */
+static inline __attribute__((always_inline)) void shade(const TexState *t, int *r, int *g, int *b, int *a, uint32_t tx) {
+    int tr = (int)(tx & 0xFF), tg = (int)((tx >> 8) & 0xFF), tb = (int)((tx >> 16) & 0xFF), ta = (int)(tx >> 24);
+
+    switch (t->tfx) {
+    case 0:   /* MODULATE */
+        *r = clamp255(tr * *r >> 7);
+        *g = clamp255(tg * *g >> 7);
+        *b = clamp255(tb * *b >> 7);
+        if (t->tcc) {
+            *a = clamp255(ta * *a >> 7);
+        }
         break;
-    default:
-        c = 0xFF00FFFF;
+    case 1:   /* DECAL */
+        *r = tr;
+        *g = tg;
+        *b = tb;
+        if (t->tcc) {
+            *a = ta;
+        }
+        break;
+    case 2:   /* HIGHLIGHT */
+        *r = clamp255((tr * *r >> 7) + *a);
+        *g = clamp255((tg * *g >> 7) + *a);
+        *b = clamp255((tb * *b >> 7) + *a);
+        *a = t->tcc ? clamp255(ta + *a) : *a;
+        break;
+    case 3:   /* HIGHLIGHT2 */
+        *r = clamp255((tr * *r >> 7) + *a);
+        *g = clamp255((tg * *g >> 7) + *a);
+        *b = clamp255((tb * *b >> 7) + *a);
+        if (t->tcc) {
+            *a = ta;
+        }
         break;
     }
-    return c;
 }
 
 /* ---- pixel pipeline ---- */
 
-static inline int clamp255(int v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
-
 unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
 
-static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, int a, int abe, int fge, int fog) {
+typedef struct PixState {
+    uint32_t fbp, fbw, fpsm, fbmsk, zbp, zpsm;
+    int fb16, fb24;
+    int sx0, sx1, sy0, sy1;           /* scissor (inclusive) */
+    int ate, atst, aref, afail;       /* alpha test */
+    int zte, ztst;                    /* depth test */
+    int zwrite;
+    int date, datm;                   /* destination alpha test */
+    int abe, sa, sb, sc, sd, fix, pabe;
+    int colclamp, fba;
+    int fge, fogr, fogg, fogb;
+} PixState;
+
+static void pix_setup(PixState *p, int ctxi, int abe, int fge) {
     GsContext *c = &gs.ctx[ctxi];
-    uint32_t fbp = BITS(c->frame, 0, 9) * 32, fbw = BITS(c->frame, 16, 6), fpsm = BITS(c->frame, 24, 6);
-    uint32_t fbmsk = BITS(c->frame, 32, 32);
-    uint32_t zbp = BITS(c->zbuf, 0, 9) * 32, zpsm = BITS(c->zbuf, 24, 4) | 0x30, zmsk = BITS(c->zbuf, 32, 1);
-    uint64_t test = c->test;
-    uint32_t sc_x0 = BITS(c->scissor, 0, 11), sc_x1 = BITS(c->scissor, 16, 11);
-    uint32_t sc_y0 = BITS(c->scissor, 32, 11), sc_y1 = BITS(c->scissor, 48, 11);
-    int fbwrite = 1, zwrite = !zmsk, pass;
-    uint32_t dst;
+    uint64_t test = c->test, al = c->alpha;
+
+    p->fbp = BITS(c->frame, 0, 9) * 32;
+    p->fbw = BITS(c->frame, 16, 6);
+    p->fpsm = BITS(c->frame, 24, 6);
+    p->fbmsk = BITS(c->frame, 32, 32);
+    p->fb16 = p->fpsm == PSMCT16 || p->fpsm == PSMCT16S;
+    p->fb24 = p->fpsm == PSMCT24;
+    p->zbp = BITS(c->zbuf, 0, 9) * 32;
+    p->zpsm = BITS(c->zbuf, 24, 4) | 0x30;
+    p->zwrite = !BITS(c->zbuf, 32, 1);
+    p->sx0 = (int)BITS(c->scissor, 0, 11);
+    p->sx1 = (int)BITS(c->scissor, 16, 11);
+    p->sy0 = (int)BITS(c->scissor, 32, 11);
+    p->sy1 = (int)BITS(c->scissor, 48, 11);
+    p->ate = (int)BITS(test, 0, 1);
+    p->atst = (int)BITS(test, 1, 3);
+    p->aref = (int)BITS(test, 4, 8);
+    p->afail = (int)BITS(test, 12, 2);
+    p->date = (int)BITS(test, 14, 1);
+    p->datm = (int)BITS(test, 15, 1);
+    p->zte = (int)BITS(test, 16, 1);
+    p->ztst = (int)BITS(test, 17, 2);
+    p->abe = abe;
+    p->sa = (int)BITS(al, 0, 2);
+    p->sb = (int)BITS(al, 2, 2);
+    p->sc = (int)BITS(al, 4, 2);
+    p->sd = (int)BITS(al, 6, 2);
+    p->fix = (int)BITS(al, 32, 8);
+    p->pabe = (int)BITS(gs.pabe, 0, 1);
+    p->colclamp = (int)BITS(gs.colclamp, 0, 1);
+    p->fba = (int)BITS(c->fba, 0, 1);
+    p->fge = fge;
+    p->fogr = (int)BITS(gs.fogcol, 0, 8);
+    p->fogg = (int)BITS(gs.fogcol, 8, 8);
+    p->fogb = (int)BITS(gs.fogcol, 16, 8);
+}
+
+static inline __attribute__((always_inline)) void draw_pixel(const PixState *p, int x, int y, uint32_t z, int r, int g, int b, int a, int fog) {
+    int fbwrite = 1, zwrite = p->zwrite, pass;
+    uint32_t dst, fbmsk = p->fbmsk;
 
     gs_stat_pixels++;
-    if (x < (int)sc_x0 || x > (int)sc_x1 || y < (int)sc_y0 || y > (int)sc_y1) {
+    if (x < p->sx0 || x > p->sx1 || y < p->sy0 || y > p->sy1) {
         return;
     }
-    if (fge) {
-        r = (r * fog + (int)BITS(gs.fogcol, 0, 8) * (255 - fog)) >> 8;
-        g = (g * fog + (int)BITS(gs.fogcol, 8, 8) * (255 - fog)) >> 8;
-        b = (b * fog + (int)BITS(gs.fogcol, 16, 8) * (255 - fog)) >> 8;
+    if (p->fge) {
+        r = (r * fog + p->fogr * (255 - fog)) >> 8;
+        g = (g * fog + p->fogg * (255 - fog)) >> 8;
+        b = (b * fog + p->fogb * (255 - fog)) >> 8;
     }
     /* alpha test */
-    if (BITS(test, 0, 1)) {
-        int aref = (int)BITS(test, 4, 8);
-
-        switch (BITS(test, 1, 3)) {
+    if (p->ate) {
+        switch (p->atst) {
         case 0: pass = 0; break;
         case 1: pass = 1; break;
-        case 2: pass = a < aref; break;
-        case 3: pass = a <= aref; break;
-        case 4: pass = a == aref; break;
-        case 5: pass = a >= aref; break;
-        case 6: pass = a > aref; break;
-        default: pass = a != aref; break;
+        case 2: pass = a < p->aref; break;
+        case 3: pass = a <= p->aref; break;
+        case 4: pass = a == p->aref; break;
+        case 5: pass = a >= p->aref; break;
+        case 6: pass = a > p->aref; break;
+        default: pass = a != p->aref; break;
         }
         if (!pass) {
-            switch (BITS(test, 12, 2)) {
+            switch (p->afail) {
             case 0: return;                  /* KEEP */
             case 1: zwrite = 0; break;       /* FB_ONLY */
             case 2: fbwrite = 0; break;      /* ZB_ONLY */
@@ -427,49 +528,42 @@ static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, 
         }
     }
     /* Z test */
-    if (BITS(test, 16, 1)) {
-        uint32_t zb = vram_read(zpsm, zbp, fbw, (uint32_t)x, (uint32_t)y);
+    if (p->zte) {
+        uint32_t zb = vram_read(p->zpsm, p->zbp, p->fbw, (uint32_t)x, (uint32_t)y);
 
-        if (zpsm == PSMZ24) {
+        if (p->zpsm == PSMZ24) {
             z = z > 0xFFFFFF ? 0xFFFFFF : z;
-        } else if (zpsm == PSMZ16 || zpsm == PSMZ16S) {
+        } else if (p->zpsm == PSMZ16 || p->zpsm == PSMZ16S) {
             z = z > 0xFFFF ? 0xFFFF : z;
         }
-        switch (BITS(test, 17, 2)) {
+        switch (p->ztst) {
         case 0: return;
         case 1: break;
         case 2: if (z < zb) return; break;
         case 3: if (z <= zb) return; break;
         }
     }
-    dst = vram_read(fpsm == PSMCT16S ? PSMCT16S : fpsm == PSMCT16 ? PSMCT16 : PSMCT32, fbp, fbw, (uint32_t)x, (uint32_t)y);
-    if (fpsm == PSMCT16 || fpsm == PSMCT16S) {
+    dst = vram_read(p->fpsm == PSMCT16S ? PSMCT16S : p->fb16 ? PSMCT16 : PSMCT32, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y);
+    if (p->fb16) {
         dst = expand16(dst, 0x8000ULL << 32 | 0, 1);
         dst = (dst & 0xFFFFFF) | ((dst >> 31) ? 0x80000000u : 0);
-    } else if (fpsm == PSMCT24) {
+    } else if (p->fb24) {
         dst = (dst & 0xFFFFFF) | 0x80000000u;
     }
     /* destination alpha test */
-    if (BITS(test, 14, 1)) {
-        int da = (int)(dst >> 31);
-
-        if (da != (int)BITS(test, 15, 1)) {
-            return;
-        }
+    if (p->date && (int)(dst >> 31) != p->datm) {
+        return;
     }
     /* alpha blending: ((A - B) * C >> 7) + D */
-    if (abe && !(BITS(gs.pabe, 0, 1) && a < 0x80)) {
-        uint64_t al = c->alpha;
+    if (p->abe && !(p->pabe && a < 0x80)) {
         int cs[3] = {r, g, b}, cd[3] = {(int)(dst & 0xFF), (int)((dst >> 8) & 0xFF), (int)((dst >> 16) & 0xFF)};
-        int as = a, ad = (int)(dst >> 24), fix = (int)BITS(al, 32, 8);
-        int sa = (int)BITS(al, 0, 2), sb = (int)BITS(al, 2, 2), sc = (int)BITS(al, 4, 2), sd = (int)BITS(al, 6, 2);
-        int ca = sc == 0 ? as : sc == 1 ? ad : fix, i;
+        int ca = p->sc == 0 ? a : p->sc == 1 ? (int)(dst >> 24) : p->fix, i;
         int out[3];
 
         for (i = 0; i < 3; i++) {
-            int va = sa == 0 ? cs[i] : sa == 1 ? cd[i] : 0;
-            int vb = sb == 0 ? cs[i] : sb == 1 ? cd[i] : 0;
-            int vd = sd == 0 ? cs[i] : sd == 1 ? cd[i] : 0;
+            int va = p->sa == 0 ? cs[i] : p->sa == 1 ? cd[i] : 0;
+            int vb = p->sb == 0 ? cs[i] : p->sb == 1 ? cd[i] : 0;
+            int vd = p->sd == 0 ? cs[i] : p->sd == 1 ? cd[i] : 0;
 
             out[i] = (((va - vb) * ca) >> 7) + vd;
         }
@@ -477,7 +571,7 @@ static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, 
         g = out[1];
         b = out[2];
     }
-    if (BITS(gs.colclamp, 0, 1)) {
+    if (p->colclamp) {
         r = clamp255(r);
         g = clamp255(g);
         b = clamp255(b);
@@ -486,70 +580,33 @@ static void draw_pixel(int ctxi, int x, int y, uint32_t z, int r, int g, int b, 
         g &= 0xFF;
         b &= 0xFF;
     }
-    a |= (int)BITS(c->fba, 0, 1) << 7;
+    a |= p->fba << 7;
     gs_stat_written += fbwrite;
     if (fbwrite) {
         uint32_t px = (uint32_t)r | (uint32_t)g << 8 | (uint32_t)b << 16 | (uint32_t)(a & 0xFF) << 24;
 
-        if (fpsm == PSMCT16 || fpsm == PSMCT16S) {
+        if (p->fb16) {
             uint32_t p16 = (px >> 3 & 0x1F) | (px >> 11 & 0x1F) << 5 | (px >> 19 & 0x1F) << 10 | (px >> 31) << 15;
             uint32_t m16 = (fbmsk >> 3 & 0x1F) | (fbmsk >> 11 & 0x1F) << 5 | (fbmsk >> 19 & 0x1F) << 10 | (fbmsk >> 31) << 15;
-            uint32_t old = vram_read(fpsm, fbp, fbw, (uint32_t)x, (uint32_t)y);
+            uint32_t old = vram_read(p->fpsm, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y);
 
-            vram_write(fpsm, fbp, fbw, (uint32_t)x, (uint32_t)y, (old & m16) | (p16 & ~m16));
+            vram_write(p->fpsm, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y, (old & m16) | (p16 & ~m16));
         } else {
-            uint32_t old = vram_read(PSMCT32, fbp, fbw, (uint32_t)x, (uint32_t)y);
+            uint32_t old;
 
-            if (fpsm == PSMCT24) {
+            if (p->fb24) {
                 fbmsk |= 0xFF000000;
             }
-            vram_write(PSMCT32, fbp, fbw, (uint32_t)x, (uint32_t)y, (old & fbmsk) | (px & ~fbmsk));
+            if (fbmsk == 0) {
+                vram_write(PSMCT32, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y, px);
+            } else {
+                old = vram_read(PSMCT32, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y);
+                vram_write(PSMCT32, p->fbp, p->fbw, (uint32_t)x, (uint32_t)y, (old & fbmsk) | (px & ~fbmsk));
+            }
         }
     }
-    if (zwrite && BITS(test, 16, 1)) {
-        vram_write(zpsm, zbp, fbw, (uint32_t)x, (uint32_t)y, z);
-    }
-}
-
-/* the texture function: modulate / decal / highlight / highlight2 */
-static void shade(uint64_t tex0, int tme, int *r, int *g, int *b, int *a, uint32_t t) {
-    int tr = (int)(t & 0xFF), tg = (int)((t >> 8) & 0xFF), tb = (int)((t >> 16) & 0xFF), ta = (int)(t >> 24);
-    int tcc = (int)BITS(tex0, 34, 1);
-
-    if (!tme) {
-        return;
-    }
-    switch (BITS(tex0, 35, 2)) {
-    case 0:   /* MODULATE */
-        *r = clamp255(tr * *r >> 7);
-        *g = clamp255(tg * *g >> 7);
-        *b = clamp255(tb * *b >> 7);
-        if (tcc) {
-            *a = clamp255(ta * *a >> 7);
-        }
-        break;
-    case 1:   /* DECAL */
-        *r = tr;
-        *g = tg;
-        *b = tb;
-        if (tcc) {
-            *a = ta;
-        }
-        break;
-    case 2:   /* HIGHLIGHT */
-        *r = clamp255((tr * *r >> 7) + *a);
-        *g = clamp255((tg * *g >> 7) + *a);
-        *b = clamp255((tb * *b >> 7) + *a);
-        *a = tcc ? clamp255(ta + *a) : *a;
-        break;
-    case 3:   /* HIGHLIGHT2 */
-        *r = clamp255((tr * *r >> 7) + *a);
-        *g = clamp255((tg * *g >> 7) + *a);
-        *b = clamp255((tb * *b >> 7) + *a);
-        if (tcc) {
-            *a = ta;
-        }
-        break;
+    if (zwrite && p->zte) {
+        vram_write(p->zpsm, p->zbp, p->fbw, (uint32_t)x, (uint32_t)y, z);
     }
 }
 
@@ -578,9 +635,11 @@ static void draw_sprite(const GsVertex *a, const GsVertex *b, uint64_t attr) {
     GsContext *c = &gs.ctx[ctxi];
     int ox = (int)BITS(c->xyoffset, 0, 16), oy = (int)BITS(c->xyoffset, 32, 16);
     int tme = (int)BITS(attr, 4, 1), abe = (int)BITS(attr, 6, 1), fst = (int)BITS(attr, 8, 1), fge = (int)BITS(attr, 5, 1);
-    int x0 = (a->x - ox), y0 = (a->y - oy), x1 = (b->x - ox), y1 = (b->y - oy), x, y;
-    float u0, v0, u1, v1;
+    int x0 = (a->x - ox), y0 = (a->y - oy), x1 = (b->x - ox), y1 = (b->y - oy), x, y, xs, xe, ys, ye;
+    float u0, v0, u1, v1, du, dv;
     const GsVertex *col = b;   /* sprites take the second vertex's colour */
+    PixState ps;
+    TexState ts;
 
     vertex_uv(a, c->tex0, fst, &u0, &v0);
     vertex_uv(b, c->tex0, fst, &u1, &v1);
@@ -592,22 +651,67 @@ static void draw_sprite(const GsVertex *a, const GsVertex *b, uint64_t attr) {
         int t = y0; y0 = y1; y1 = t;
         float f = v0; v0 = v1; v1 = f;
     }
+    pix_setup(&ps, ctxi, abe, fge);
     if (tme) {
         clut_load(c->tex0);
+        tex_setup(&ts, c->tex0, c->clamp);
     }
-    /* pixel centres: covered if x0 <= px*16 + 8 < x1 (top-left rule) */
-    for (y = (y0 + 15) >> 4; (y << 4) < y1; y++) {
-        float fv = y1 != y0 ? v0 + (v1 - v0) * (float)((y << 4) - y0) / (float)(y1 - y0) : v0;
+    /* pixel centres: covered if x0 <= px*16 + 8 < x1 (top-left rule); only the scissored ones */
+    xs = (x0 + 15) >> 4;
+    xe = (x1 + 15) >> 4;   /* exclusive: the first x with x*16 >= x1 */
+    ys = (y0 + 15) >> 4;
+    ye = (y1 + 15) >> 4;
+    if (xs < ps.sx0) xs = ps.sx0;
+    if (xe > ps.sx1 + 1) xe = ps.sx1 + 1;
+    if (ys < ps.sy0) ys = ps.sy0;
+    if (ye > ps.sy1 + 1) ye = ps.sy1 + 1;
+    if (!tme && !abe && !fge && !ps.ate && !ps.date && ps.fbmsk == 0 && !ps.fb16 && !ps.fb24
+        && (!ps.zte || ps.ztst == 1)) {
+        /* a plain fill (e.g. a clear): colour (and Z) straight in */
+        uint32_t px = (uint32_t)(int)col->r | (uint32_t)(int)col->g << 8 | (uint32_t)(int)col->b << 16
+                      | (uint32_t)(((int)col->a | ps.fba << 7) & 0xFF) << 24;
+        uint32_t z = b->z;
+        int zw = ps.zte && ps.zwrite;
 
-        for (x = (x0 + 15) >> 4; (x << 4) < x1; x++) {
-            int r = (int)col->r, g = (int)col->g, bb = (int)col->b, al = (int)col->a;
-
-            if (tme) {
-                float fu = x1 != x0 ? u0 + (u1 - u0) * (float)((x << 4) - x0) / (float)(x1 - x0) : u0;
-
-                shade(c->tex0, 1, &r, &g, &bb, &al, tex_fetch(c->tex0, c->clamp, (int)floorf(fu), (int)floorf(fv)));
+        if (zw && ps.zpsm == PSMZ24) {
+            z = z > 0xFFFFFF ? 0xFFFFFF : z;
+        } else if (zw && (ps.zpsm == PSMZ16 || ps.zpsm == PSMZ16S)) {
+            z = z > 0xFFFF ? 0xFFFF : z;
+        }
+        if (!ps.colclamp) {
+            px = (px & 0xFF000000) | (px & 0xFFFFFF);
+        }
+        for (y = ys; y < ye; y++) {
+            for (x = xs; x < xe; x++) {
+                vram_write(PSMCT32, ps.fbp, ps.fbw, (uint32_t)x, (uint32_t)y, px);
+                if (zw) {
+                    vram_write(ps.zpsm, ps.zbp, ps.fbw, (uint32_t)x, (uint32_t)y, z);
+                }
             }
-            draw_pixel(ctxi, x, y, b->z, r, g, bb, al, abe, fge, (int)b->fog);
+        }
+        gs_stat_pixels += (unsigned)((xe > xs ? xe - xs : 0) * (ye > ys ? ye - ys : 0));
+        return;
+    }
+    du = x1 != x0 ? (u1 - u0) / (float)(x1 - x0) : 0.0f;
+    dv = y1 != y0 ? (v1 - v0) / (float)(y1 - y0) : 0.0f;
+    {
+        /* u in 16.16 fixed point, stepped across the row */
+        int ustart = (int)floor((double)(u0 + du * (float)((xs << 4) - x0)) * 65536.0);
+        int ustep = (int)((double)du * 16.0 * 65536.0);
+        int cr = (int)col->r, cg = (int)col->g, cb = (int)col->b, ca = (int)col->a, fog = (int)b->fog;
+
+        for (y = ys; y < ye; y++) {
+            int tv = ifloor(v0 + dv * (float)((y << 4) - y0));
+            int uf = ustart;
+
+            for (x = xs; x < xe; x++, uf += ustep) {
+                int r = cr, g = cg, bb = cb, al = ca;
+
+                if (tme) {
+                    shade(&ts, &r, &g, &bb, &al, tex_fetch(&ts, uf >> 16, tv));
+                }
+                draw_pixel(&ps, x, y, b->z, r, g, bb, al, fog);
+            }
         }
     }
 }
@@ -619,10 +723,12 @@ static void draw_triangle(const GsVertex *v0, const GsVertex *v1, const GsVertex
     int iip = (int)BITS(attr, 3, 1), tme = (int)BITS(attr, 4, 1), fge = (int)BITS(attr, 5, 1);
     int abe = (int)BITS(attr, 6, 1), fst = (int)BITS(attr, 8, 1);
     const GsVertex *vs[3] = {v0, v1, v2};
-    float px[3], py[3], area, minx, maxx, miny, maxy;
+    float px[3], py[3], area, inv, minx, maxx, miny, maxy;
     float su[3], sv[3], sq[3];
-    int i, x, y;
+    int i, x, y, xs, xe, ys, ye;
     uint32_t tw = 1u << BITS(c->tex0, 26, 4), th = 1u << BITS(c->tex0, 30, 4);
+    PixState ps;
+    TexState ts;
 
     for (i = 0; i < 3; i++) {
         px[i] = ((float)vs[i]->x - ox) / 16.0f;
@@ -641,8 +747,11 @@ static void draw_triangle(const GsVertex *v0, const GsVertex *v1, const GsVertex
     if (area == 0.0f) {
         return;
     }
+    inv = 1.0f / area;
+    pix_setup(&ps, ctxi, abe, fge);
     if (tme) {
         clut_load(c->tex0);
+        tex_setup(&ts, c->tex0, c->clamp);
     }
     minx = fminf(px[0], fminf(px[1], px[2]));
     maxx = fmaxf(px[0], fmaxf(px[1], px[2]));
@@ -652,10 +761,18 @@ static void draw_triangle(const GsVertex *v0, const GsVertex *v1, const GsVertex
     if (miny < 0) miny = 0;
     if (maxx > 2047) maxx = 2047;
     if (maxy > 2047) maxy = 2047;
-    for (y = (int)ceilf(miny); (float)y < maxy; y++) {
-        for (x = (int)ceilf(minx); (float)x < maxx; x++) {
-            float w0 = ((px[1] - (float)x) * (py[2] - (float)y) - (px[2] - (float)x) * (py[1] - (float)y)) / area;
-            float w1 = ((px[2] - (float)x) * (py[0] - (float)y) - (px[0] - (float)x) * (py[2] - (float)y)) / area;
+    xs = (int)ceilf(minx);
+    ys = (int)ceilf(miny);
+    xe = (int)ceilf(maxx);   /* exclusive: x < maxx */
+    ye = (int)ceilf(maxy);
+    if (xs < ps.sx0) xs = ps.sx0;
+    if (xe > ps.sx1 + 1) xe = ps.sx1 + 1;
+    if (ys < ps.sy0) ys = ps.sy0;
+    if (ye > ps.sy1 + 1) ye = ps.sy1 + 1;
+    for (y = ys; y < ye; y++) {
+        for (x = xs; x < xe; x++) {
+            float w0 = ((px[1] - (float)x) * (py[2] - (float)y) - (px[2] - (float)x) * (py[1] - (float)y)) * inv;
+            float w1 = ((px[2] - (float)x) * (py[0] - (float)y) - (px[0] - (float)x) * (py[2] - (float)y)) * inv;
             float w2 = 1.0f - w0 - w1;
             int r, g, b, a, fog;
             uint32_t z;
@@ -678,9 +795,9 @@ static void draw_triangle(const GsVertex *v0, const GsVertex *v1, const GsVertex
                 float u = (w0 * su[0] + w1 * su[1] + w2 * su[2]) / (q != 0 ? q : 1);
                 float v = (w0 * sv[0] + w1 * sv[1] + w2 * sv[2]) / (q != 0 ? q : 1);
 
-                shade(c->tex0, 1, &r, &g, &b, &a, tex_fetch(c->tex0, c->clamp, (int)floorf(u), (int)floorf(v)));
+                shade(&ts, &r, &g, &b, &a, tex_fetch(&ts, ifloor(u), ifloor(v)));
             }
-            draw_pixel(ctxi, x, y, z, r, g, b, a, abe, fge, fog);
+            draw_pixel(&ps, x, y, z, r, g, b, a, fog);
         }
     }
 }
@@ -691,19 +808,26 @@ static void draw_line(const GsVertex *a, const GsVertex *b, uint64_t attr) {
     int ox = (int)BITS(c->xyoffset, 0, 16), oy = (int)BITS(c->xyoffset, 32, 16);
     int x0 = (a->x - ox) >> 4, y0 = (a->y - oy) >> 4, x1 = (b->x - ox) >> 4, y1 = (b->y - oy) >> 4;
     int n = abs_i(x1 - x0) > abs_i(y1 - y0) ? abs_i(x1 - x0) : abs_i(y1 - y0), i;
+    PixState ps;
 
+    pix_setup(&ps, ctxi, (int)BITS(attr, 6, 1), 0);
     for (i = 0; i <= n; i++) {
         float t = n ? (float)i / (float)n : 0.0f;
 
-        draw_pixel(ctxi, x0 + (int)((x1 - x0) * t), y0 + (int)((y1 - y0) * t), b->z, (int)b->r, (int)b->g, (int)b->b,
-                   (int)b->a, (int)BITS(attr, 6, 1), 0, 255);
+        draw_pixel(&ps, x0 + (int)((x1 - x0) * t), y0 + (int)((y1 - y0) * t), b->z, (int)b->r, (int)b->g, (int)b->b,
+                   (int)b->a, 255);
     }
 }
 
 static void vertex_kick(int drawing) {
     uint64_t attr = prim_attr();
 
-    if (drawing && getenv("HG_GSDEBUG")) {
+    static int debug = -1;
+
+    if (debug < 0) {
+        debug = getenv("HG_GSDEBUG") != NULL;
+    }
+    if (drawing && debug) {
         static uint64_t seen[64][2];
         static int nseen;
         uint64_t k0 = gs.prim & 0x7FF, k1 = BITS(gs.prim, 4, 1) ? gs.ctx[0].tex0 : 0;
