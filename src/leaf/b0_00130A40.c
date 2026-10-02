@@ -41,48 +41,6 @@ void func_00130A40(u8 *p, u32 id, u32 b, s32 flag, f32 f) {
     p[0x18] = (u8)b;
 }
 
-void func_00138E60(u8 *p, s32 n) {
-    if (FLD(p, 0xF3598, s32) == 1) {
-        FLD(p, 0xF359C, s32) -= n;
-        p[0xF3587] = 0;
-    }
-}
-
-s32 func_0013D4A0(u8 *p, s32 check) {
-    if (check != 0 && FLD(p, 0xF358C, s32) == 1) {
-        return -1;
-    }
-    if (p[0xE0] == 1 || (FLD(p, 0xF356C, u32) & 0x80000008) == 8) {
-        if ((FLD(p, 0xF3598, s32) == 0 || FLD(p, 0xF3564, s32) == 0x7D) &&
-            FLD(p, 0xF35C0, s32) != 3) {
-            FLD(p, 0xF358C, s32) = 1;
-            return 0;
-        }
-        FLD(p, 0xF358C, s32) = 1;
-    }
-    return -1;
-}
-
-void func_0014E200(u8 *p) {
-    u8 *a = FLD(FLD(p, 0xF0, u8 *), 0x6A4, u8 *);
-
-    if (FLD(a, 0x18, u32) & 0x20) {
-        f32 *v = (f32 *)(p + 0xF35D0);
-
-        FLD(p, 0xF36BC, s32) = 90;
-        v[0] = D_003B1B48;
-        v[1] = D_003B1B4C;
-        v[2] = D_003B1B50;
-    }
-}
-
-void func_001654E0(u8 *p, s32 a, s32 b) {
-    if (a >= 0) {
-        FLD(p, 0xF35B4, s32) = a;
-    }
-    FLD(p, 0xF35B8, s32) = b;
-}
-
 /* Memory block list: +0x4 base, +0x8 size, +0xC block table (16 bytes each), +0x10 count. */
 typedef struct B0_Block {
     s32 used;

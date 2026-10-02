@@ -1424,7 +1424,8 @@ def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str
     flags = cflags().split() + (["-fno-exceptions", "-fno-rtti"] if cxx else [])
     # a function the C file calls must stay a call, to compare with the original's call
     flags += ["-fno-inline-small-functions", "-fno-inline-functions", "-fno-inline-functions-called-once",
-              "-fno-ipa-cp", "-fno-ipa-sra", "-fno-ipa-icf", "-fno-ipa-pure-const", "-fno-ipa-modref", "-fno-ipa-ra"]
+              "-fno-ipa-cp", "-fno-ipa-sra", "-fno-ipa-icf", "-fno-ipa-pure-const", "-fno-ipa-modref", "-fno-ipa-ra",
+              "-fno-ipa-vrp", "-fno-ipa-bit-cp"]
     subprocess.run([sys.executable, str(ROOT / "tools/eecc.py"), comp, "-c", *flags, "-I", str(ROOT / "include"),
                     "-I", str(ROOT / "src"), "-o", str(obj), str(src)], check=True, cwd=ROOT)
     defined = set(subprocess.run([f"{TC}nm", "--defined-only", "-j", str(obj)], capture_output=True,
