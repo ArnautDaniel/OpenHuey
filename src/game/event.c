@@ -376,3 +376,55 @@ s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
     }
     return 1;
 }
+
+/* +0x14 whether character c is inside area `area` by at least its radius (+0xC8; none: the
+ * plain position test +0xD8) */
+s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 r = AT(c, 0xC8, f32);
+    const f32 *pos = (f32 *)(c + 0x10);
+    u8 *data;
+    u8 *a;
+    s32 inside = 0;
+    s32 k;
+    f32 y;
+
+    if (r <= 0.0f) {
+        return VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, s32, s32))(ev, (f32 *)(c + 0x10), area, AT(c, 0x34, s32));
+    }
+    data = AT(ev, 0x10, u8 *);
+    a = data + AT(data, area * 4, u32) * 4;
+    if (AT(a, 0, s32) != 1) {
+        return 0;
+    }
+    for (k = 0; k < 4; k++) {
+        const f32 *p0 = (f32 *)(a + 0x10 + k * 0x10);
+        const f32 *p1 = (f32 *)(a + 0x10 + ((k + 1) & 3) * 0x10);
+        f32 ex = p1[0] - p0[0];
+        f32 ez = p1[2] - p0[2];
+        f32 cr = (pos[0] - p0[0]) * ez - (pos[2] - p0[2]) * ex;
+
+        if (cr <= 0.0f) {
+            f32 len = __builtin_sqrtf(ex * ex + ez * ez);
+
+            if (cr <= 0.0f) {
+                cr = -cr;
+            }
+            if (!(cr < r * len)) {
+                inside++;
+            }
+        }
+    }
+    sceVu0CopyVector(at, (f32 *)(c + 0x10));
+    if (VCALL(D_0044E570, 0x10, s32 (*)(VObject *, s32, f32 *))(D_0044E570, AT(c, 0x34, s32), at) == 3) {
+        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, AT(c, 0x34, s32), at);
+    }
+    if (inside != 4) {
+        return 0;
+    }
+    y = 1.0f + at[1];
+    if (y < AT(a, 0x24, f32) || !(y <= AT(a, 0x8, f32))) {
+        return 0;
+    }
+    return 1;
+}

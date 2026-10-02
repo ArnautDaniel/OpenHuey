@@ -1429,3 +1429,61 @@ void func_002A7720(u8 *o) {
         AT(o, 0x30, s32)--;
     }
 }
+
+extern VObject *D_0044E4F8;   /* the camera director (interface) */
+extern s32 func_0029A8C0(u8 *pu, s32);
+extern u32 func_0029CE50(u8 *pu);
+extern s32 func_002EC170(u8 *o);
+extern void func_002EBED0(u8 *o);
+extern s32 func_00177200(Progress *p, u32 slot);
+
+/* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
+ * +0x28 says the room allows it; then by the stage, +0x64 4) or is placed elsewhere */
+void func_002EC940(u8 *o) {
+    u8 *pu = gCharPursuer;
+    Progress *p, *q;
+
+    if (pu == NULL || !(AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {
+        return;
+    }
+    p = gProgress;
+    if (Progress_TestFlag(p, 0x17)) {
+        return;
+    }
+    if (Progress_TestFlag(p, 0x18) && AT(pu, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    if (AT(p, 0x1FBEC1, u8) != 0) {
+        return;
+    }
+    q = gProgress;
+    if (VCALL(q, 0x28, s32 (*)(Progress *, s32, s32))(q, VCALL(q, 0xC, s32 (*)(Progress *))(q), 2)) {
+        if (AT(gCharPlayer, 0x30, s32) == AT(pu, 0x30, s32)) {
+            return;
+        }
+        if ((u8)VCALL(p, 0x64, s32 (*)(Progress *))(p) != 4) {
+            return;
+        }
+        if (!func_0029A8C0(pu, -1)) {
+            return;
+        }
+        pu = gCharPursuer;
+        if (pu == NULL) {
+            return;
+        }
+        if (AT(pu, 0x28, u8)) {
+            AT(o, 0x8, s32) = AT(pu, 0x30, s32);
+            AT(o, 0x0, u32) = func_0029CE50(pu) & 0x7FFFFFFF;
+            AT(o, 0xC, s32) = 0;
+            AT(o, 0x11, u8) = 1;
+        }
+        func_00177200(p, AT(pu, 0x20, u32));
+        return;
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+        return;
+    }
+    if (!(u8)func_002EC170(o)) {
+        func_002EBED0(o);
+    }
+}
