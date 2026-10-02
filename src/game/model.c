@@ -2540,3 +2540,13 @@ void func_002EE840(u8 *s) {
         VCALL(l + 0x30, 0x14, void (*)(u8 *, u8 *))(l, s);
     }
 }
+
+
+/* +0xC of a point fixed to a bone: its position (+0x0) is the bone (+0x28) of the model's
+ * skeleton applied to its offset (+0x10) */
+void func_002EE570(u8 *p, u8 *model) {
+    f32 m[4][4] __attribute__((aligned(16)));
+
+    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(model, 0x810, void *), AT(p, 0x28, s32)));
+    sceVu0ApplyMatrix((f32 *)p, m, (f32 *)(p + 0x10));
+}
