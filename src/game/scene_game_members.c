@@ -1885,3 +1885,23 @@ void func_0025FB10(u8 *obj, s32 layer) {
         VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, obj + 0x40, layer, 0);
     }
 }
+
+
+/* the creatures, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first):
+ * each active, visible one (+0x2C), unless the player is in a special state */
+void func_002E29A0(u8 *o) {
+    s32 i;
+
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c == NULL || AT(gCharPlayer, 0xE2, u8) != 0) {
+            continue;
+        }
+        if (AT(c, 0x28, u8) == 1 && AT(c, 0x29, u8) == 0) {
+            VCALL(c, 0x2C, void (*)(VObject *))(c);
+        }
+    }
+}
