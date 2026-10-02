@@ -4016,3 +4016,106 @@ void func_001869D0(Fiona *f) {
     }
     func_002A8440((u8 *)p + 0x778, noise, f->c.a.room, f->c.a.navTri, 0xFFFF);
 }
+
+/* a point `side` across and `reach` ahead of Fiona (in her frame, +0x60, from +0x40) */
+static void push_probe_point(Fiona *f, f32 side, f32 reach, f32 *out) {
+    f32 v[4] __attribute__((aligned(16)));
+
+    v[0] = side;
+    v[1] = 0.0f;
+    v[2] = reach;
+#ifdef HG_NATIVE
+    v[3] = 0.0f;   /* unset in the original (its frame has no translation, so it doesn't matter) */
+#endif
+    sceVu0ApplyMatrix(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+    sceVu0AddVector(out, (f32 *)((u8 *)f + 0x40), v);
+}
+
+/* Looking for something to push `reach` ahead (only while walking, running or pushing): the
+ * walk from her triangle towards that point must end at a wall - an edge without a neighbour,
+ * or into a triangle blocked for her (+0xC0) - and the floor 2 to each side ahead must be
+ * pushable (NAV_PUSHABLE). Then she faces square to the wall (the push direction +0x1AD570,
+ * the side of the wall she is on) and, with `pick`, takes the lowest object both sides share
+ * (D_0044FE08 +0x24: the objects on a triangle, as bits) as +0x1AD560 (else -1). 0, or -1 when
+ * there is nothing to push. */
+s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
+    static const union { u32 u; f32 f; } kHalfPi = {0x3FC90FDB}, kPi = {0x40490FDB};
+    VObject *objs = D_0044FE08;
+    NavMesh *nm;
+    NavTri *t;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    u32 tri, from, e, a, b, both, k;
+    s32 kind;
+    f32 ang, diff;
+
+    if (objs == NULL || AT(f, 0xF8, s32) != 0) {
+        return -1;
+    }
+    kind = fiona_motion_kind(AT(AT(f, 0xF0, u8 *), 0x55C, s32));
+    if (kind != 1 && kind != 2 && kind != 6) {
+        return -1;
+    }
+    push_probe_point(f, 0.0f, reach, at);
+    nm = D_0044E570;
+    tri = AT(f, 0x34, u32);
+    for (;;) {
+        from = tri;
+        e = VCALL(nm, 0x20, u32 (*)(NavMesh *, u32, f32 *, f32 *))(nm, tri, (f32 *)((u8 *)f + 0x10), at);
+        if (e == 3) {
+            return -1;   /* reached it: no wall */
+        }
+        if (e == 4) {
+            return -1;
+        }
+        tri = NavMesh_Tri(nm, tri)->adj[e];
+        if (tri == NAV_NONE) {
+            break;
+        }
+        if (NavMesh_TriFlags(nm, tri) & AT(f, 0xC0, u32)) {
+            break;
+        }
+    }
+    push_probe_point(f, -2.0f, reach, at);
+    tri = func_00124480(&f->c.a, at, 0);
+    if (tri == NAV_NONE || !(NavMesh_TriFlags(nm, tri) & NAV_PUSHABLE)) {
+        return -1;
+    }
+    a = VCALL(objs, 0x24, u32 (*)(VObject *, u32))(objs, tri);
+    push_probe_point(f, 2.0f, reach, at);
+    tri = func_00124480(&f->c.a, at, 0);
+    if (tri == NAV_NONE || !(NavMesh_TriFlags(nm, tri) & NAV_PUSHABLE)) {
+        return -1;
+    }
+    b = VCALL(objs, 0x24, u32 (*)(VObject *, u32))(objs, tri);
+
+    /* the wall edge's direction, turned a quarter: into the wall, from the side she is on */
+    t = NavMesh_Tri(nm, from);
+    sceVu0SubVector(d, t->v[e + 1 < 3 ? e + 1 : 0], t->v[e]);
+    ang = func_002E2D00(kHalfPi.f + func_0031C5C0(d[0], d[2]));
+    if (!(func_002E2D00(ang - AT(f, 0x54, f32)) <= 0.0f)) {
+        diff = func_002E2D00(ang - AT(f, 0x54, f32));
+    } else {
+        diff = -func_002E2D00(ang - AT(f, 0x54, f32));
+    }
+    if (!(diff <= kHalfPi.f)) {
+        ang = func_002E2D00(kPi.f + ang);
+    }
+    d[0] = 0.0f;
+    d[1] = 0.0f;
+    d[2] = 1.0f;
+    func_002E3190(m, ang);
+    func_002E2DA0(FIONA_STICK(f), m, d);
+    FI(f, 0x1AD574, f32) = 0.0f;
+    FIONA_PUSH_OBJ(f) = -1;
+    if (pick != 0) {
+        both = a & b;
+        if (both != 0) {
+            for (k = 0; !(both & (1u << k)); k++) {
+            }
+            FIONA_PUSH_OBJ(f) = k;
+        }
+    }
+    return 0;
+}
