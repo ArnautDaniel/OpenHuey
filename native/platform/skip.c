@@ -60,3 +60,15 @@ void func_0039A8E0(void *g, unsigned mode) {
     (void)mode;
     skipped("func_0039A8E0 music player");
 }
+
+/* play sound effect `id` (bank, volume, pitch) at a position through the sound system: not
+ * yet - the sound engine comes with the PC audio */
+void func_002FF650(void *snd, int id, int bank, const float *pos, int vol, int pitch) {
+    (void)snd;
+    (void)id;
+    (void)bank;
+    (void)pos;
+    (void)vol;
+    (void)pitch;
+    skipped("func_002FF650 3D sound effect");
+}
