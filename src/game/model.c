@@ -3208,9 +3208,9 @@ void func_002DDED0(u8 *m, s32 anim, s32 variant) {
 
 /* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
  * previous slot's animation (+0x6A8; the time wrapped into it) */
-s32 func_002DD860(u8 *m, s32 foot, f32 ofs) {
+u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
     f32 c[4] __attribute__((aligned(16)));
-    u8 *slot = AT(m, 0x6A8, u8 *);
+    u8 *slot = AT(motion, 0x6A8, u8 *);
     f32 t, len;
 
     c[3] = 0.0f;
