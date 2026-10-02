@@ -1683,3 +1683,77 @@ void func_001F6AF0(u8 *m) {
     VCALL(m, 0x18, void (*)(u8 *))(m);
     func_001F5130(m);
 }
+
+
+/* the current track's extra channels at its time: four (+0x68, 8 bytes apart) into +0x58..,
+ * two (+0x88) into the hand poses +0x38 / +0x48 */
+void func_001F4F40(u8 *m) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        s32 *trk = AT(AT(m, 0x6A4, u8 *), 0x68 + i * 8, s32 *);
+
+        if (trk != NULL && *trk != 0) {
+            func_001F36B0(trk, (f32 *)(m + 0x58 + i * 4), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        s32 *trk = AT(AT(m, 0x6A4, u8 *), 0x88 + i * 8, s32 *);
+
+        if (trk != NULL && *trk != 0) {
+            func_001F36B0(trk, (f32 *)(m + 0x38 + i * 16), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
+        }
+    }
+}
+
+
+/* the length of an animation, in frames */
+static f32 anim_frames(u8 *anim) {
+    return (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
+}
+
+/* keep blended animations in step, each frame: in each of the two slots (0xA0 apart) the
+ * second animation (+0x588) follows the first's phase and their speeds (+0x574 / +0x578)
+ * meet by the blend +0x580; while the motion fades (+0x54C) between two step-synced tracks
+ * (flag 2), the tracks' speeds (+0x10) meet the same way by +0x550 instead */
+void func_001F4D70(u8 *m) {
+    s32 i;
+
+    if (AT(m, 0x54C, f32) != 0.0f) {
+        u8 *prev = AT(m, 0x6A8, u8 *);
+        u8 *cur = AT(m, 0x6A4, u8 *);
+
+        if (AT(cur, 0x18, u32) & AT(prev, 0x18, u32) & 2) {
+            f32 t = AT(m, 0x550, f32);
+            f32 u = 1.0f - t;
+            f32 lp = anim_frames(AT(prev, 0x20, u8 *));
+            f32 lc = anim_frames(AT(cur, 0x20, u8 *));
+
+            AT(cur, 0x10, f32) = u + (lc / lp) * t;
+            AT(AT(m, 0x6A8, u8 *), 0x10, f32) = t + (lp / lc) * u;
+            for (i = 0; i < 2; i++, m += 0xA0) {
+                if (AT(m, 0x588, u8 *) == NULL) {
+                    AT(m, 0x574, f32) = 1.0f;
+                    continue;
+                }
+                AT(m, 0x568, f32) = anim_frames(AT(m, 0x588, u8 *)) * (AT(m, 0x564, f32) / anim_frames(AT(m, 0x584, u8 *)));
+                AT(m, 0x578, f32) = AT(m, 0x574, f32) * anim_frames(AT(m, 0x588, u8 *)) / anim_frames(AT(m, 0x584, u8 *));
+            }
+            return;
+        }
+    }
+    for (i = 0; i < 2; i++, m += 0xA0) {
+        f32 b, l0, l1;
+
+        if (AT(m, 0x588, u8 *) == NULL) {
+            AT(m, 0x574, f32) = 1.0f;
+            continue;
+        }
+        b = AT(m, 0x580, f32);
+        l1 = anim_frames(AT(m, 0x588, u8 *));
+        l0 = anim_frames(AT(m, 0x584, u8 *));
+        AT(m, 0x574, f32) = b + (l0 / l1) * (1.0f - b);
+        AT(m, 0x578, f32) = (1.0f - b) + (l1 / l0) * b;
+        AT(m, 0x568, f32) = anim_frames(AT(m, 0x588, u8 *)) * (AT(m, 0x564, f32) / anim_frames(AT(m, 0x584, u8 *)));
+    }
+}
