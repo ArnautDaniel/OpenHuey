@@ -622,3 +622,34 @@ void func_0021AC10(void *list) {
         sceVu0CopyVector((f32 *)(AT(o, 0x50, u8 *) + 0x20), p);
     }
 }
+
+
+extern s32 D_0047B24C;   /* frames left of the move below */
+extern void *gCharacters[6];
+extern s32 func_001770D0(Progress *p, s32 id);
+
+/* a room 0x2A handler step (the script's command 0x22, arguments `arg`): arg[3] 0 starts it
+ * (90 frames); then each frame event character 0xF rises 0.5 and moves 2 along z, the script
+ * waiting (2) until the frames are up (1) */
+s32 func_002B1400(void *room, s32 n, const u8 *arg) {
+    u8 *c;
+    u8 i;
+
+    if (arg[3] == 0) {
+        D_0047B24C = 0x5A;
+        return 1;
+    }
+    if (--D_0047B24C == 0) {
+        return 1;
+    }
+    i = (u8)func_001770D0(gProgress, 0xF);
+#ifdef HG_NATIVE
+    if (i >= 6 || gCharacters[i] == NULL) {
+        return 2;   /* (not loaded on the PC build yet) */
+    }
+#endif
+    c = gCharacters[i];
+    AT(c, 0x14, f32) = AT(c, 0x14, f32) + 0.5f;
+    AT(c, 0x18, f32) = AT(c, 0x18, f32) + 2.0f;
+    return 2;
+}
