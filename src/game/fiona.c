@@ -4294,3 +4294,27 @@ void func_00185CF0(Fiona *f) {
     }
     AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
 }
+
+
+extern const PTMF D_003B2DC8;   /* Fiona's state: turning on the spot */
+
+/* State: turning on the spot to +0x1AD5E0 (10 degrees a frame): once there, back to idle;
+ * meanwhile the turn left / right animation (0x400 / 0x401) - each only between animations
+ * (no blend running) */
+void func_0018A5D0(Fiona *f) {
+    static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3};
+    f32 left = func_00124530(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
+
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        if (left == 0.0f) {
+            func_001855F0(f, -1);
+        } else if (func_002E2D00(FI(f, 0x1AD5E0, f32) - AT(f, 0x54, f32)) < 0.0f) {
+            if (AT(f->c.motion, 0x55C, s32) != 0x400) {
+                func_002DDED0(f->c.motion, 0x400, -1);
+            }
+        } else if (AT(f->c.motion, 0x55C, s32) != 0x401) {
+            func_002DDED0(f->c.motion, 0x401, -1);
+        }
+    }
+    Actor_SetState(&f->c.a, &D_003B2DC8);
+}
