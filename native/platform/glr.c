@@ -40,6 +40,7 @@
     X(PFNGLPROGRAMUNIFORMMATRIX4FVPROC, glProgramUniformMatrix4fv) \
     X(PFNGLPROGRAMUNIFORM1IPROC, glProgramUniform1i) \
     X(PFNGLPROGRAMUNIFORM4FPROC, glProgramUniform4f) \
+    X(PFNGLPROGRAMUNIFORM1FPROC, glProgramUniform1f) \
     X(PFNGLCREATETEXTURESPROC, glCreateTextures) \
     X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) \
@@ -83,6 +84,8 @@ typedef struct GlrDraw {
 } GlrDraw;
 
 typedef struct GlrFrame {
+    uint32_t fog0, fog1;   /* fog colours at its near / far depth (RGBA, alpha 0x80 = full); 0: none */
+    float fogNear, fogFar;
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
     GlrVertex *v;
     int nv, capv;
@@ -171,6 +174,16 @@ void glr_end_frame(void) {
     sFrames[sBuilding].nv = 0;
     sFrames[sBuilding].nd = 0;
     sFrames[sBuilding].overlay = 0;
+    sFrames[sBuilding].fog0 = sFrames[sBuilding].fog1 = 0;
+}
+
+void glr_fog(uint32_t c0, uint32_t c1, float nearZ, float farZ) {
+    GlrFrame *f = &sFrames[sBuilding];
+
+    f->fog0 = c0;
+    f->fog1 = c1;
+    f->fogNear = nearZ;
+    f->fogFar = farZ;
 }
 
 void glr_overlay(uint32_t rgba) {
@@ -184,7 +197,7 @@ void glr_overlay(uint32_t rgba) {
 
 static GLuint sMeshProg, sQuadProg, sFillProg, sVao, sQuadVao, sVbo;
 static GLint sFillLoc;
-static GLint sMvpLoc, sTexModeLoc, sTccLoc;
+static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFog0Loc, sFog1Loc, sFogNearLoc, sFogFarLoc;
 static GLuint sFbo, sColor, sDepth, sGsTex;
 static int sGsW, sGsH;
 
@@ -196,8 +209,10 @@ static const char *kMeshVs =
     "uniform mat4 uMvp;\n"
     "out vec4 vCol;\n"
     "out vec2 vSt;\n"
+    "out float vDepth;\n"
     "void main() {\n"
     "    vec4 p = uMvp * vec4(aPos.xyz, 1.0);\n"
+    "    vDepth = p.w;\n"
     /* PS2 clip space spans the GS's whole 4096 x 4096 drawing space (-1..1 = 2048 -+ 2047),
      * of which the 640 x 448 around the centre is the screen; y grows downwards, larger z is
      * nearer */
@@ -216,6 +231,9 @@ static const char *kMeshFs =
     "uniform sampler2D uTex;\n"
     "uniform int uTexMode;\n"   /* 0 none, 1 modulate, 2 decal */
     "uniform int uTcc;\n"
+    "uniform vec4 uFog0, uFog1;\n"   /* colours (alpha 1.0 = full fog) at near / far */
+    "uniform float uFogNear, uFogFar;\n"
+    "in float vDepth;\n"
     "out vec4 oColor;\n"
     "void main() {\n"
     "    vec4 c = vCol;\n"
@@ -229,6 +247,11 @@ static const char *kMeshFs =
     "        if (c.a < 1.0 / 255.0) {\n"
     "            discard;\n"
     "        }\n"
+    "    }\n"
+    "    if (uFogFar > uFogNear && vDepth > uFogNear) {\n"
+    "        float f = clamp((vDepth - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0);\n"
+    "        vec4 fc = mix(uFog0, uFog1, f);\n"
+    "        c.rgb = mix(c.rgb, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"
     "    oColor = clamp(c, 0.0, 1.0);\n"
     "}\n";
@@ -465,6 +488,10 @@ int glr_init(void) {
     sMvpLoc = p_glGetUniformLocation(sMeshProg, "uMvp");
     sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
     sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
+    sFog0Loc = p_glGetUniformLocation(sMeshProg, "uFog0");
+    sFog1Loc = p_glGetUniformLocation(sMeshProg, "uFog1");
+    sFogNearLoc = p_glGetUniformLocation(sMeshProg, "uFogNear");
+    sFogFarLoc = p_glGetUniformLocation(sMeshProg, "uFogFar");
     sQuadProg = program(kQuadVs, kQuadFs);
     sFillProg = program(kQuadVs, kFillFs);
     sFillLoc = p_glGetUniformLocation(sFillProg, "uColor");
@@ -572,6 +599,17 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         p_glUseProgram(sMeshProg);
         p_glBindVertexArray(sVao);
         p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        {
+            /* fog (alpha 0x80 = full) */
+            float a0 = (float)(f->fog0 >> 24) / 128.0f, a1 = (float)(f->fog1 >> 24) / 128.0f;
+
+            p_glProgramUniform4f(sMeshProg, sFog0Loc, (float)(f->fog0 & 0xFF) / 255.0f,
+                                 (float)((f->fog0 >> 8) & 0xFF) / 255.0f, (float)((f->fog0 >> 16) & 0xFF) / 255.0f, a0);
+            p_glProgramUniform4f(sMeshProg, sFog1Loc, (float)(f->fog1 & 0xFF) / 255.0f,
+                                 (float)((f->fog1 >> 8) & 0xFF) / 255.0f, (float)((f->fog1 >> 16) & 0xFF) / 255.0f, a1);
+            p_glProgramUniform1f(sMeshProg, sFogNearLoc, f->fogNear);
+            p_glProgramUniform1f(sMeshProg, sFogFarLoc, (f->fog0 | f->fog1) ? f->fogFar : 0.0f);
+        }
         for (i = 0; i < f->nd; i++) {
             const GlrDraw *d = &f->d[i];
             int mode = 0;

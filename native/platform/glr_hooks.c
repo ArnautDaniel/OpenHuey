@@ -2,15 +2,20 @@
  * OpenGL version here instead of a decompiled one (the PS2 build keeps the original asm). Each
  * is named after the function it replaces. */
 #include <stdint.h>
+#include <string.h>
 
 #include "glr.h"
 
-/* func_002BB3E0: the fog drawer (vtable +0xC of D_0046EB60; colours +0x8 / +0xC, range +0x10 ..
- * +0x14). Fog will be a shader parameter. */
+/* func_002BB3E0: the fog drawer (vtable +0xC of D_0046EB60; colours +0x8 / +0xC, view depths
+ * +0x10 .. +0x14). The original paints the Z buffer through a palette ramp from c0 to c1
+ * between the two depths; on PC the mesh shader fogs by view depth. */
 int func_002BB3E0(uint8_t *drawer) {
-    (void)drawer;
-    glr_todo("fog (func_002BB3E0)");
-    return 1;
+    float n, f;
+
+    memcpy(&n, drawer + 0x10, 4);
+    memcpy(&f, drawer + 0x14, 4);
+    glr_fog(*(uint32_t *)(drawer + 0x8), *(uint32_t *)(drawer + 0xC), n, f);
+    return 0;
 }
 
 /* func_002685F0: the two-colour screen effect drawer (vtable +0xC of D_0046D790; colour +0x8,

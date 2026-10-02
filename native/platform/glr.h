@@ -17,6 +17,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* a draw path not ported to OpenGL yet: reported once (nothing is drawn) */
 void glr_todo(const char *what);
 
+/* this frame's fog: from view depth `nearZ` (colour c0) to `farZ` (c1); RGBA, alpha 0x80 = full */
+void glr_fog(uint32_t c0, uint32_t c1, float nearZ, float farZ);
+
 /* a full-screen tint over this frame (RGBA, alpha 0x80 = opaque): the screen fades */
 void glr_overlay(uint32_t rgba);
 
