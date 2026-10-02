@@ -2041,3 +2041,125 @@ void func_002117C0(u8 *m, s32 i, f32 (*b)[4], void *local) {
 /* (does nothing) */
 void func_001F1ED0(void) {
 }
+
+
+/* frames in an animation */
+static s32 anim_len(void *anim) {
+    return AT(AT(anim, 0x4, u8 *), 0xC, s32);
+}
+
+/* advance a play time { +0x0 time, prev (`prev`), speed (`speed`) } of animation `anim` by
+ * its speed: looping (`flags` bit 0) wraps it into 0..frames (`wrapped` when it went past the
+ * end), else it is clamped to 0..frames - 1 (`wrapped` at the end), the overshoot carried to
+ * `carry` with `carryFlags` bit 9 while the motion fades (`fading`), else `carry` cleared */
+static s32 anim_step(f32 *t, f32 *prev, f32 speed, u32 flags, void *anim, f32 *carry, u32 carryFlags, f32 fading) {
+    s32 len = anim_len(anim), wrapped = 0;
+    f32 v, v0, last;
+
+    *prev = *t;
+    *t = *t + speed;
+    if (flags & 1) {
+        v = *t;
+        while (v < 0.0f) {
+            v = v + (f32)len;
+        }
+        while (!(v < (f32)len)) {
+            v = v - (f32)len;
+            wrapped = 1;
+        }
+        *t = v;
+        *carry = 0.0f;
+        return wrapped;
+    }
+    v0 = *t;
+    v = v0 < 0.0f ? 0.0f : v0;
+    last = (f32)len - 1.0f;
+    if (!(v <= last)) {
+        v = last;
+        wrapped = 1;
+    }
+    *t = v;
+    if ((carryFlags & 0x200) && wrapped && fading != 0.0f) {
+        *carry = *carry + (v0 - *t);
+    } else {
+        *carry = 0.0f;
+    }
+    return wrapped;
+}
+
+/* a fade's weight: smoothstep of the frames left / its length */
+static f32 fade_weight(f32 left, f32 len) {
+    f32 x, xx;
+
+    if (len == 0.0f) {
+        return 0.0f;
+    }
+    x = left / len;
+    xx = x * x;
+    return 3.0f * xx * (1.0f - x) + xx * x;
+}
+
+/* advance the motion a frame (unless the current slot's flags +0x18 have 0x40): both
+ * animations of the current slot (+0x6A4) and, while fading (+0x54C), the previous one (+0x6A8)
+ * - each pair { time, -, prev, -, speed, ... anim +0x20, carry +0x98 }; the first animation sets
+ * the slot's flags 0x20 (wrapped) and 0x400 (at its end) - then the fade (+0x54C counts down,
+ * weight +0x550), and the 3 layers' two animations (+0x6CC, 0x1C each) and fades (+0x6B8) */
+void func_001F5130(u8 *m) {
+    u8 *slot = NULL, *a;
+    s32 k, j, i, w;
+
+    if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 0x40) {
+        return;
+    }
+    for (k = 0; k < 2; k++) {
+        if (k != 0 && AT(m, 0x54C, f32) == 0.0f) {
+            break;
+        }
+        slot = k == 0 ? AT(m, 0x6A4, u8 *) : AT(m, 0x6A8, u8 *);
+        for (j = 0; j < 2; j++) {
+            a = slot + j * 4;
+            if (AT(a, 0x20, void *) == NULL || (AT(slot, 0x18, u32) & 0x10)) {
+                continue;
+            }
+            w = anim_step(&AT(a, 0x0, f32), &AT(a, 0x8, f32), AT(a, 0x10, f32), AT(slot, 0x18, u32), AT(a, 0x20, void *),
+                          &AT(a, 0x98, f32), AT(slot, 0x18, u32), AT(m, 0x54C, f32));
+            if (j == 0) {
+                if (w) {
+                    AT(slot, 0x18, u32) |= 0x20;
+                } else {
+                    AT(slot, 0x18, u32) &= ~0x20;
+                }
+                if (!(AT(a, 0x0, f32) < (f32)(anim_len(AT(a, 0x20, void *)) - 1))) {
+                    AT(slot, 0x18, u32) |= 0x400;
+                } else {
+                    AT(slot, 0x18, u32) &= ~0x400;
+                }
+            }
+        }
+    }
+    if (!(AT(m, 0x54C, f32) <= 0.0f)) {
+        AT(m, 0x54C, f32) = AT(m, 0x54C, f32) - 1.0f;
+    }
+    AT(m, 0x550, f32) = fade_weight(AT(m, 0x54C, f32), AT(m, 0x548, f32));
+    for (i = 0; i < 3; i++) {
+        u8 *l = m + i * 0x60;
+
+        for (j = 0; j < 2; j++) {
+            a = l + j * 0x1C + 0x6CC;
+            if (AT(a, 0x10, void *) == NULL) {
+                continue;
+            }
+            /* (the carry tests the motion slot's flags, as the original) */
+            if (anim_step(&AT(a, 0x0, f32), &AT(a, 0x4, f32), AT(a, 0x8, f32), AT(a, 0xC, u32), AT(a, 0x10, void *),
+                          &AT(a, 0x18, f32), AT(slot, 0x18, u32), AT(m, 0x54C, f32))) {
+                AT(a, 0xC, u32) |= 0x20;
+            } else {
+                AT(a, 0xC, u32) &= ~0x20;
+            }
+        }
+        if (!(AT(l, 0x6BC, f32) <= 0.0f)) {
+            AT(l, 0x6BC, f32) = AT(l, 0x6BC, f32) - 1.0f;
+        }
+        AT(l, 0x6C0, f32) = fade_weight(AT(l, 0x6BC, f32), AT(l, 0x6B8, f32));
+    }
+}
