@@ -248,3 +248,15 @@ void func_00269940(void *d, u32 rgba, s32 which, s32 arg) {
     AT(d, 0x10, s32) = arg;
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, 0x20, 0);
 }
+
+
+/* hand a drawer to the renderer (+0xC) in its layer (+0x20); one flagged +0x32 bit 7 then
+ * also has the renderer run +0x58 */
+void func_002E56C0(u8 *d) {
+    VObject *r = D_0044E4F0;
+
+    VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, d, AT(d, 0x20, s32), 0);
+    if (AT(d, 0x32, u8) & 0x80) {
+        VCALL(r, 0x58, void (*)(VObject *))(r);
+    }
+}
