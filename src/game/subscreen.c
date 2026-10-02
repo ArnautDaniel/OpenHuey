@@ -24,6 +24,7 @@ extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);
 
 void func_00396900(void *s);
 void func_00399920(void *s);
+void func_00398850(void *s);
 
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
@@ -242,7 +243,8 @@ static void sub_new_slots(u8 *s, void **vtbl) {
 
 /* open the sub screen in mode +4: 0 the in-game menu, 5 options, 6 load (title), the rest
  * save screens and the galleries */
-void func_00398850(u8 *s) {
+void func_00398850(void *self) {
+    u8 *s = self;
     u8 *sys;
     u8 n;
 
@@ -449,4 +451,542 @@ void func_00399920(void *self) {
     VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x1740, 0x18);
     VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s + 0x11F40, 0x19);
     func_00398850(s);
+}
+
+extern s8 D_0044C120[][4];       /* per screen kind: up to 4 panels to draw while fading */
+extern u8 D_0047B350;
+extern void *D_0046F350[];       /* overlay vtable */
+extern void *D_00469D00[];       /* its base */
+extern void func_002CF390(void *ov, u32 rgba);
+void func_00397F00(void *s);
+
+#define SUB_FADE(s)     AT(s, 0xA8C62, s16)   /* 0 .. 0x80 */
+#define SUB_FADESTEP(s) AT(s, 0xA8C64, s16)
+
+extern VObject *D_0044E9A0;   /* the VRAM manager */
+
+/* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
+extern u16 D_0044C160[][7];
+/* a movable part (SUBBASE.TEX, group 0x18): u, v, w, h, screen w, h, CLUT, texture, blending
+ * (0 normal, 1..3 fixed alpha variants) */
+extern u16 D_0044C280[][9];
+
+/* the VRAM slot of a cached texture, uploading it into `layer` if it is not resident; -1 none */
+static s32 sub_texture(u16 id, s32 group, s32 layer, u8 **tex) {
+    VObject *tc = D_0044E4E8;
+    s32 slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, id, group);
+
+    if (slot == -1) {
+        return -1;
+    }
+    *tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, id, group);
+    if (slot & 0x80000000) {
+        slot &= 0x7FFFFFFF;
+        if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, *tex, layer)) {
+            return -1;
+        }
+    }
+    return slot;
+}
+
+#define XYZ2(x, y) ((u64)(u32)((x) << 4) | ((u64)(u32)((y) << 4) << 16) | 0xFFFFFFFF00000000ULL)
+
+/* draw panel `id` (D_0044C160) with fixed alpha `alpha` in renderer layer `layer` */
+void func_003858E0(void *s, s32 id, s32 alpha, s32 layer) {
+    u16 *e = D_0044C160[(u8)id];
+    u8 *tex;
+    s32 slot = sub_texture(e[0], 0x19, (u8)layer, &tex);
+    u64 *p;
+
+    if (slot == -1) {
+        return;
+    }
+    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xB, (u8)layer);
+    if (p == NULL) {
+        return;
+    }
+    p[0] = 0x1000000A;              /* DMA cnt 10 */
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000000A;   /* VIF DIRECT 10 */
+    p[2] = 4 | (1ULL << 60);        /* GIF tag: 4 A+D, EOP */
+    p[3] = 0xE;
+    p[4] = ((u64)(u8)alpha << 32) | 0x64;   /* ALPHA_1: (Cs - Cd) * FIX + Cd */
+    p[5] = 0x42;
+    p[6] = 0x60;                    /* TEX1_1: bilinear */
+    p[7] = 0x14;
+    p[8] = (0x80ULL << 32) | 0x8080; /* TEXA */
+    p[9] = 0x3B;
+    p[10] = 0x156;                  /* PRIM: sprite, textured, blended, UV */
+    p[11] = 0;
+    p[12] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
+    p[13] = 0xFFFFFFFFF5353186ULL;   /* (lui sign-extends) */
+    p[14] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, s32, s32, s32, s32, s32))(
+        D_0044E9A0, slot, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+    p[15] = 0xA | ((u64)e[1] << 4) | ((u64)(s32)(e[1] + e[3]) << 14) | ((u64)e[2] << 24)
+            | ((u64)(s32)(e[2] + e[4]) << 34);   /* CLAMP_1: region clamp */
+    p[16] = 0x80808080 | (1ULL << 32);
+    p[17] = (u64)(u32)(e[1] << 4) | ((u64)(u32)(e[2] << 4) << 16);
+    p[18] = XYZ2(e[5] + 0x700, e[6] + 0x720);
+    p[19] = (u64)(u32)((e[1] + e[3]) << 4) | ((u64)(u32)((e[2] + e[4]) << 4) << 16);
+    p[20] = XYZ2(e[5] + 0x700 + e[3], e[6] + 0x720 + e[4]);
+    p[21] = 0;
+}
+
+/* draw part `part` (D_0044C280) at x, y with alpha `alpha`, in layer 0x30 (0x33 with `top`) */
+void func_003854C0(void *s, s32 x, s32 y, s32 part, s32 alpha, s32 top) {
+    u16 *e = D_0044C280[(u8)part];
+    s32 layer = top ? 0x33 : 0x30;
+    u8 *tex;
+    s32 slot = sub_texture(e[7], 0x18, layer, &tex);
+    u64 *p;
+    u32 sx, sy;
+
+    if (slot == -1) {
+        return;
+    }
+    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, layer);
+    if (p == NULL) {
+        return;
+    }
+    p[0] = 0x1000000B;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000000B;
+    p[2] = 5 | (1ULL << 60);        /* GIF tag: 5 A+D, EOP */
+    p[3] = 0xE;
+    switch (e[8]) {
+    case 0:
+        p[4] = 0x44;                /* (Cs - Cd) * As + Cd */
+        break;
+    case 1:
+        p[4] = ((u64)(u8)alpha << 32) | 0x62;
+        break;
+    case 2:
+        p[4] = ((u64)(u8)alpha << 32) | 0x64;
+        break;
+    case 3:
+        p[4] = ((u64)(u8)alpha << 32) | 0x68;
+        break;
+    }
+    p[5] = 0x42;
+    p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
+        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX1_1 */
+    p[7] = 0x6;
+    p[8] = 0x60;
+    p[9] = 0x14;
+    p[10] = (0x80ULL << 32) | 0x8080;
+    p[11] = 0x3B;
+    p[12] = 0x156;
+    p[13] = 0;
+    p[14] = 0x8001 | (0x84ULL << 56);
+    p[15] = 0xFFFFFFFFF5353186ULL;
+    p[16] = VCALL(D_0044E9A0, 0x30, u64 (*)(VObject *, s32, s32, s32, s32, s32, s32))(
+        D_0044E9A0, slot, e[6], tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+    sx = (u16)x + 0x700;
+    sy = (u16)y + 0x720;
+    p[17] = 0xA | ((u64)e[0] << 4) | ((u64)(s32)(e[0] + e[2]) << 14) | ((u64)e[1] << 24)
+            | ((u64)(s32)(e[1] + e[3]) << 34);
+    p[18] = 0x80808080;
+    p[19] = (u64)(u32)(e[0] << 4) | ((u64)(u32)(e[1] << 4) << 16);
+    p[20] = XYZ2(sx, sy);
+    p[21] = (u64)(u32)((e[0] + e[2]) << 4) | ((u64)(u32)((e[1] + e[3]) << 4) << 16);
+    p[22] = XYZ2(sx + e[4], sy + e[5]);
+    p[23] = 0;
+}
+
+/* the fade: a black overlay over the menu for screens 0x80.., else the screen's panels
+ * (D_0044C120) drawn at the fade's alpha */
+static void sub_draw_fade(u8 *s) {
+    u8 kind;
+
+    kind = SUB_KIND(s);
+    if (kind & 0x80) {
+        /* a full-screen black overlay */
+        u8 ov[0x100] __attribute__((aligned(16)));
+
+        AT(ov, 0x24, s32) = 0;
+        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x4, s32) = -1;
+        AT(ov, 0x10, s32) = -1;
+        AT(ov, 0x14, u8) = 0;
+        func_002CF390(ov, (u32)SUB_FADE(s) << 24);
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        AT(ov, 0x0, void **) = D_00469D00;
+    } else {
+        u8 alpha = SUB_FADE(s);
+
+        if (alpha != 0 && kind != 0xFF) {
+            s8 *panel = D_0044C120[kind & 0x7F];
+            s32 i;
+
+            for (i = 0; i < 4; i++, panel++) {
+                if (*panel < 0) {
+                    break;
+                }
+                func_003858E0(s, (u8)*panel, alpha, 0x31);
+            }
+        }
+    }
+}
+
+/* the sound and music volume follow the fade (`vol` = 1 - fade / 255) */
+static void sub_set_volume(u8 *s, f32 vol) {
+    u8 *bgm;
+
+    VCALL(D_0044E560, 0x94, void (*)(VObject *, s32))(D_0044E560, (u8)(0xFF - SUB_FADE(s)));
+    bgm = D_0044E980;
+    AT(bgm, 0x114, f32) = vol;
+    if (vol < 0.0f) {
+        AT(bgm, 0x114, f32) = 0.0f;
+    }
+    if (!(AT(bgm, 0x114, f32) <= 1.0f)) {
+        AT(bgm, 0x114, f32) = 1.0f;
+    }
+    func_002D1FD0(bgm);
+    if (D_00456DF0 != NULL) {
+        VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, vol);
+    }
+}
+
+/* draw state: fade the screen in (the music and sound down with it); at full the screen takes
+ * over (virtual +0x28, its texture uploaded) and the fade turns round (func_00397F00) */
+void func_003984D0(void *self) {
+    u8 *s = self;
+    f32 vol;
+
+    SUB_FADE(s) += SUB_FADESTEP(s);
+    if (SUB_FADE(s) >= 0x80) {
+        AT(s, 0x16F8, u8) = 0;
+        SUB_FADE(s) = 0x80;
+        if (AT(s, 0x4, u8) == 0
+            || VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
+            VCALL((VObject *)s, 0x28, void (*)(VObject *))((VObject *)s);
+            if (AT(s, 0x4, u8) != 0) {
+                VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s + 0x11F40, 0x19);
+            }
+            D_0047B350 = 2;
+            SUB_FADESTEP(s) = -0x20;
+            set_state(&SUB_DRAW(s), func_00397F00);
+        }
+    }
+
+    vol = 100.0f * (f32)(0xFF - SUB_FADE(s)) / 255.0f / 100.0f;
+    sub_set_volume(s, vol);
+
+    sub_draw_fade(s);
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+}
+
+void func_00397D60(void *s);
+
+/* draw state: run the screen (+0x1708) while fading back from black; at 0 the fade is done
+ * (func_00397D60) */
+void func_00397F00(void *self) {
+    u8 *s = self;
+
+    SUB_FADE(s) += SUB_FADESTEP(s);
+    if (SUB_FADE(s) < 0) {
+        AT(s, 0xA8C61, u8) = 0;
+        SUB_FADE(s) = 0;
+        AT(s, 0xA8C68, u8) = 0;
+        AT(s, 0xA8DE4, u8) = 0;
+        set_state(&SUB_DRAW(s), func_00397D60);
+    }
+    ptmf_scall(s, &SUB_STATE(s));
+    sub_draw_fade(s);
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+}
+
+/* +0x28 the screen takes over */
+void func_00384C30(u8 *s) {
+    AT(s, 0xA8DDD, u8) = 0;
+    AT(s, 0xA8DDE, u8) = 1;
+}
+
+/* the menu buttons (pressed this frame) */
+extern u32 D_0047E36C;
+#define MENU_UP      0x1
+#define MENU_DOWN    0x4
+#define MENU_CONFIRM 0x10
+#define MENU_CANCEL  0x20
+#define MENU_PREV    0x40    /* the in-game menu's page switches */
+#define MENU_NEXT    0x80
+#define MENU_DEFAULT 0x200   /* restore the defaults */
+
+#define SUB_FADING(s)  AT(s, 0xA8C61, u8)
+#define SUB_CLOSE(s)   AT(s, 0xA8DE4, u8)   /* leave the screen */
+#define OPT_CURSOR(s)  AT(s, 0xA8C56, u8)
+
+void func_00393880(void *s);
+void func_00393480(void *s);
+void func_003930C0(void *s);
+void func_00392B50(void *s);
+void func_00392670(void *s);
+void func_00392360(void *s);
+void func_00394260(void *s);
+void func_00391450(u8 *s, s32 editing);
+
+#define SE(id) VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, 5)
+
+/* in-game, not in a special scene (gProgress +0x1FBEC1) */
+static s32 sub_ingame_menu(u8 *s) {
+    return gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 0 && AT(s, 0x4, u8) == 0;
+}
+
+/* state: the options list (controller, vibration, sound, brightness / position, ...): up / down
+ * choose of 5, confirm opens the entry's editor, the default button asks to restore the
+ * defaults; in game the page buttons switch to the other menu pages */
+void func_00393BD0(void *self) {
+    static void (*const sEditors[5])(void *) = {
+        func_00393880, func_00393480, func_003930C0, func_00392B50, func_00392670,
+    };
+    u8 *s = self;
+
+    if (!SUB_FADING(s)) {
+        if (D_0047E36C & MENU_CONFIRM) {
+            if (OPT_CURSOR(s) < 5) {
+                set_state(&SUB_STATE(s), sEditors[OPT_CURSOR(s)]);
+            }
+            SE(0x2B);
+        } else if (D_0047E36C & MENU_UP) {
+            if (OPT_CURSOR(s) != 0) {
+                OPT_CURSOR(s)--;
+            } else {
+                OPT_CURSOR(s) = 4;
+            }
+            SE(0x2A);
+        } else if (D_0047E36C & MENU_DOWN) {
+            OPT_CURSOR(s)++;
+            if (OPT_CURSOR(s) >= 5) {
+                OPT_CURSOR(s) = 0;
+            }
+            SE(0x2A);
+        } else if (D_0047E36C & MENU_DEFAULT) {
+            func_00384A90((Task *)(s + 0x97764), 0x84);
+            set_state(&SUB_STATE(s), func_00392360);
+            SE(0x2B);
+        } else if ((D_0047E36C & MENU_NEXT) && sub_ingame_menu(s)) {
+            AT(s, 0xA8C50, u8) = 0;
+            set_state(&SUB_STATE(s), func_00396900);
+            set_state(&AT(s, 0x1714, PTMF), func_00396900);
+            SE(0x87);
+        } else if ((D_0047E36C & MENU_PREV) && sub_ingame_menu(s)) {
+            set_state(&SUB_STATE(s), func_00394260);
+            set_state(&AT(s, 0x1714, PTMF), func_00394260);
+            SE(0x87);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            SUB_CLOSE(s) = 1;
+        }
+    }
+    func_00391450(s, 0);
+    func_00384650((Task *)(s + 0x97868), 0x46, 0x186, 0x80, func_00384B00(s + 0x97868, 0x82), 0x80, 0x30, 0x10, 0x15);
+}
+
+extern u16 D_0044B570[2][4][7];   /* [special scene][controller layout]: the action names */
+extern u16 D_0044B558[5];         /* the options' rows (y) */
+extern u16 func_00382970(Task *t, s32 id, s32 glyphW);
+
+static const char sPosX[] = "X : %d";
+static const char sPosY[] = "Y : %d";
+
+#define OPT(s, i)      AT(s, 0xA8C44 + (i), s8)   /* the options being edited (system data +0x30) */
+#define OPT_VOLUME(s)  AT(s, 0xA8C4C, f32)
+
+/* one line of text in the options' text task */
+static void opt_text(u8 *s, s32 x, s32 y, s32 color, s32 id) {
+    Task *t = (Task *)(s + 0x97868);
+
+    func_00384650(t, x, y, color, func_00384B00(t, id), 0x80, 0x30, 0x10, 0x15);
+}
+
+/* a line centred on x = 0x160 */
+static void opt_text_centred(u8 *s, s32 y, s32 id) {
+    s32 x = 0x160 - (func_00382970((Task *)(s + 0x97868), id, 0x10) >> 1);
+
+    opt_text(s, x, y, 0x80, id);
+}
+
+/* draw the options: the panels, the controller layout's action names, vibration, sound output,
+ * volume bar, screen position, and the cursor bar; `editing` highlights the current entry */
+void func_00391450(u8 *s, s32 editing) {
+    u8 special = 0;
+    u8 kind;
+    u16 (*names)[7];
+    s32 i, w;
+    u16 bar;
+
+    if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
+        special = 1;
+    }
+    if (AT(s, 0x4, u8) != 0) {
+        SUB_KIND(s) = 0x8A;
+    } else if (gProgress != NULL && AT(gProgress, 0x1FBEC1, u8) == 1) {
+        SUB_KIND(s) = 0xA;
+    } else {
+        SUB_KIND(s) = 3;
+    }
+    kind = SUB_KIND(s);
+    if (kind != 0xFF) {
+        s8 *panel = D_0044C120[kind & 0x7F];
+
+        for (i = 0; i < 4; i++, panel++) {
+            if (*panel < 0) {
+                break;
+            }
+            func_003858E0(s, (u8)*panel, 0x80, 0x30);
+        }
+    }
+
+    /* controller layout */
+    func_003854C0(s, 0x20, 0x54, 0x10, 0x80, 0);
+    opt_text(s, 0x48, 0x5A, OPT_CURSOR(s) == 0 && editing ? 0x82 : 0x80, 0x60);
+    names = D_0044B570[special];
+    w = 0x160 - (func_00382970((Task *)(s + 0x97868), 0x61, 0x10) >> 1);
+    opt_text(s, w, 0x5A, 0x80, names[OPT(s, 6)][0]);
+    opt_text(s, 0x40, 0x74, 0x80, 0x65);
+    opt_text(s, 0x60, 0x74, 0x80, names[OPT(s, 6)][1]);
+    opt_text(s, 0x40, 0x94, 0x80, 0x66);
+    opt_text(s, 0x60, 0x94, 0x80, names[OPT(s, 6)][2]);
+    opt_text(s, 0x40, 0xB4, 0x80, 0x67);
+    opt_text(s, 0x60, 0xB4, 0x80, names[OPT(s, 6)][3]);
+    opt_text(s, 0x40, 0xD4, 0x80, 0x68);
+    opt_text(s, 0x60, 0xD4, 0x80, names[OPT(s, 6)][4]);
+    opt_text(s, 0x110, 0x74, 0x80, 0x69);
+    opt_text(s, 0x130, 0x74, 0x80, 0x73);
+    opt_text(s, 0x110, 0x94, 0x80, 0x6A);
+    opt_text(s, 0x130, 0x94, 0x80, 0x74);
+    opt_text(s, 0x110, 0xB4, 0x80, 0x6B);
+    opt_text(s, 0x130, 0xB4, 0x80, names[OPT(s, 6)][5]);
+    opt_text(s, 0x110, 0xD4, 0x80, 0x6C);
+    opt_text(s, 0x130, 0xD4, 0x80, names[OPT(s, 6)][6]);
+
+    /* vibration */
+    func_003854C0(s, 0x20, 0xF4, 0x11, 0x80, 0);
+    opt_text(s, 0x48, 0xFA, OPT_CURSOR(s) == 1 && editing ? 0x82 : 0x80, 0x77);
+    opt_text_centred(s, 0xFA, OPT(s, 4) == 1 ? 0x78 : 0x79);
+
+    /* sound output */
+    func_003854C0(s, 0x20, 0x114, 0x12, 0x80, 0);
+    opt_text(s, 0x48, 0x11A, OPT_CURSOR(s) == 2 && editing ? 0x82 : 0x80, 0x7A);
+    opt_text_centred(s, 0x11A, OPT(s, 0) == 0 ? 0x7B : OPT(s, 0) == 1 ? 0x7C : 0x7D);
+
+    /* volume: a bar from 0x118 to 0x198 */
+    func_003854C0(s, 0x20, 0x134, 0x13, 0x80, 0);
+    opt_text(s, 0x48, 0x13A, OPT_CURSOR(s) == 3 && editing ? 0x82 : 0x80, 0x7E);
+    w = 0x118 - func_00382970((Task *)(s + 0x97868), 0x7F, 0x10);
+    opt_text(s, w, 0x13A, 0x80, 0x7F);
+    opt_text(s, 0x1A8, 0x13A, 0x80, 0x80);
+    bar = (u32)(128.0f * OPT_VOLUME(s));
+    func_003854C0(s, (u16)(bar + 0x118), 0x134, 0x19, 0x80, 0);
+
+    /* screen position */
+    func_003854C0(s, 0x20, 0x154, 0x14, 0x80, 0);
+    opt_text(s, 0x48, 0x15A, OPT_CURSOR(s) == 4 && editing ? 0x82 : 0x80, 0x81);
+    func_00384800((Task *)(s + 0x97868), 0x11C, 0x15A, 0x80, sPosX, OPT(s, 2));
+    func_00384800((Task *)(s + 0x97868), 0x170, 0x15A, 0x80, sPosY, OPT(s, 3));
+
+    /* the cursor bar */
+    func_003854C0(s, 0x20, D_0044B558[OPT_CURSOR(s)], 0x1C, 0x80, 0);
+}
+
+void func_003977D0(void *s);
+
+/* draw state: the screen is up; run it until it asks to close (+0xA8DE4, or in game the
+ * menu button: Progress flag 4), then fade out (func_003977D0) */
+void func_00397D60(void *self) {
+    u8 *s = self;
+    Progress *p = gProgress;
+
+    if (p != NULL && AT(s, 0x4, u8) != 0) {
+        Progress_ClearFlag(p, 4);
+    }
+    ptmf_scall(s, &SUB_STATE(s));
+    if (SUB_CLOSE(s) != 1 && (p == NULL || !Progress_TestFlag(p, 4))) {
+        return;
+    }
+    if (p != NULL && AT(p, 0x1FBEC1, u8) == 0 && AT(s, 0x4, u8) == 0) {
+        AT(s, 0xA8C67, u8) = SUB_KIND(s);   /* reopen on this page */
+    }
+    SUB_FADING(s) = 1;
+    SUB_FADE(s) = 0;
+    SUB_FADESTEP(s) = 0x20;
+    set_state(&SUB_DRAW(s), func_003977D0);
+    if (p != NULL) {
+        Progress_ClearFlag(p, 4);
+    }
+    if (AT(s, 0xA8C68, u8) == 0) {
+        SE(0x95);
+    }
+}
+
+extern VObject *D_0044E4F8;
+void func_003974A0(void *s);
+
+/* draw state: fade back to black over the screen; at black restore the menu's background
+ * texture (the screens that replaced it) and fade the game back in (func_003974A0) */
+void func_003977D0(void *self) {
+    u8 *s = self;
+    u8 mode;
+
+    SUB_FADE(s) += SUB_FADESTEP(s);
+    if (SUB_FADE(s) < 0x80) {
+        ptmf_scall(s, &SUB_STATE(s));
+    } else {
+        mode = AT(s, 0x4, u8);
+        if (mode != 0 && mode != 5) {
+            sub_free_vram();
+            sub_load(s, sSubBack, s + 0x11F40);
+        }
+        D_0047B350 = 1;
+        AT(s, 0x16F8, u8) = 1;
+        SUB_FADE(s) = 0x80;
+        SUB_FADESTEP(s) = -0x10;
+        mode = AT(s, 0x4, u8);
+        if (mode == 0xB || mode == 8 || (u32)(mode - 0xD) < 3) {
+            VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
+        }
+        if (AT(s, 0x4, u8) == 8) {
+            SUB_FADE(s) = 0;
+            Progress_SetFlag(gProgress, 8);
+        }
+        set_state(&SUB_DRAW(s), func_003974A0);
+    }
+    sub_draw_fade(s);
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+}
+
+
+/* draw state: fade the menu back in (once the background texture is loaded); at the end the
+ * screen is closed (in game: Progress flag 4) and the next update opens it again
+ * (func_00398850) */
+void func_003974A0(void *self) {
+    u8 *s = self;
+    f32 vol;
+
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
+        SUB_FADE(s) += SUB_FADESTEP(s);
+    }
+    if (SUB_FADE(s) < 0) {
+        SUB_FADE(s) = 0;
+        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s + 0x11F40, 0x19);
+        set_state(&SUB_DRAW(s), func_00398850);
+        if (gProgress != NULL) {
+            Progress_SetFlag(gProgress, 4);
+        } else {
+            AT(s, 0xA8DE5, u8) = 0;
+        }
+        vol = 1.0f;
+    } else {
+        sub_draw_fade(s);
+        if (gProgress != NULL) {
+            Progress_ClearFlag(gProgress, 4);
+        }
+        vol = 100.0f * (f32)(0xFF - SUB_FADE(s)) / 255.0f / 100.0f;
+    }
+    sub_set_volume(s, vol);
 }
