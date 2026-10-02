@@ -33,6 +33,10 @@ void func_001FC700(VObject *ev) {
 extern f32 func_002E2D00(f32 angle);          /* wrapped into -pi..pi */
 extern f32 func_0031C5C0(f32 x, f32 z);       /* heading of (x, z) */
 s32 func_001FC390(VObject *ev, u8 *c, s32 area);
+extern s32 func_00177620(Progress *p);           /* the game mode */
+extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
+extern s32 func_00176D80(Progress *p, s32 item);
+extern s32 func_00176DD0(Progress *p, s32 item, s32 n);
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -150,6 +154,23 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     }
+    case 0x0D:     /* the game mode is pc[1] */
+        r = pc[1] == (u8)func_00177620(p);
+        break;
+    case 0x0E:     /* 0xF0..0xFA: that step slot runs; else character pc[1] is held (+0xE0) */
+        if (pc[1] >= 0xF0 && pc[1] < 0xFB) {
+            r = AT(ev, 0x564 + (u8)func_001FBF70(ev, pc[1]) * 0x18, s32) != 0;
+        } else if (cond_char(p, pc[1]) != NULL) {
+            r = AT(cond_char(p, PC(ev)[1]), 0xE0, u8) != 0;
+        }
+        break;
+    case 0x15:     /* an item: pc[1] bit 7 its own test, else counted against pc[2] */
+        if (pc[1] & 0x80) {
+            r = (u8)func_00176D80(p, pc[1]);
+        } else {
+            r = (u8)func_00176DD0(p, pc[1], pc[2]);
+        }
+        break;
     case 0x08:     /* progress flag be16 pc[1] */
         r = Progress_TestFlag(p, be16(pc + 1)) != 0;
         break;
