@@ -2584,3 +2584,382 @@ void func_00151B10(Hewie *h) {
     HW(h, 0xF36B4, s32) = 30;
     Hewie_SetBehaviour(h, &D_003B1988);
 }
+
+extern void func_002DD110(void *motion, const f32 *target, f32 *a, f32 *turn);
+extern const PTMF D_003B1AB8, D_003B1AC8, D_003B1AD8;
+
+/* Behaviour: follow the moving character +0xF368C (gone: D_003B1AB8; elsewhere on the mesh:
+ * D_003B1AD8; slower than 0.5: D_003B1AC8); else steer towards it (+0xF3614 / +0xF3618). */
+void func_0014EC10(Hewie *h) {
+    Character *c = HW(h, 0xF368C, Character *);
+    f32 v[4] __attribute__((aligned(16)));
+    f32 a, turn, yaw;
+    u32 tri;
+
+    if (c == NULL || !c->a.active) {
+        HW(h, 0xF36BC, s32) = 90;
+        Hewie_SetBehaviour(h, &D_003B1AB8);
+        return;
+    }
+    tri = c->a.navTri;
+    if (func_00124480(&h->c.a, c->a.pos, 0) != tri) {
+        HW(h, 0xF36BC, s32) = 90;
+        Hewie_SetBehaviour(h, &D_003B1AD8);
+        return;
+    }
+    sceVu0CopyVector(v, HW(h, 0xF368C, Character *)->a.unkB0);
+    if (__builtin_sqrtf(sceVu0InnerProduct(v, v)) < 0.5f) {
+        HW(h, 0xF36BC, s32) = 90;
+        Hewie_SetBehaviour(h, &D_003B1AC8);
+        return;
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    func_002DD110(h->c.motion, HW(h, 0xF368C, Character *)->a.pos, &a, &turn);
+    yaw = func_002E2D00(h->c.a.angle[1] + turn);
+    HW(h, 0xF3614, f32) = a;
+    HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+}
+
+/* Behaviour: (Fiona here and not busy) play the animation to its end, then default. */
+void func_00150720(Hewie *h) {
+    if (!Hewie_CharHere(h, gCharPlayer) || gCharPlayer->unkE0 == 1) {
+        Hewie_ToDefault(h);
+        return;
+    }
+    if (ANIM_DONE(h)) {
+        Hewie_ToDefault(h);
+    }
+    HW(h, 0xF3558, u8) = 1;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+extern void func_001F6240(void *motion, f32 *out, f32 t);   /* root motion (variant) */
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+extern const PTMF D_003B1C40;
+
+/* Behaviour: turn to heading unk10C (10 degrees a frame; against the animation's turn
+ * direction +0x858: rotate directly) while moving along +0xF36E0 by the root motion; at the
+ * animation's end stand (D_003B1C40). */
+void func_0014B8F0(Hewie *h) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 target = *(f32 *)&h->c.unk104[2];
+    f32 d = func_002E2D00(target - h->c.a.angle[1]);
+    f32 ad, yaw;
+
+    ad = d;
+    if (d <= 0.0f) {
+        ad = -d;
+    }
+    if (ad < 0x1.0c1524p-1f /* 30 deg */) {
+        func_00124530(&h->c.a, target, 0x1.657186p-3f /* 10 deg */);
+    } else if (!(*(f32 *)((u8 *)h->c.motion + 0x858) * d < 0.0f)) {
+        func_00124530(&h->c.a, target, 0x1.657186p-3f);
+    } else {
+        if (d < 0.0f) {
+            yaw = func_002E2D00(h->c.a.angle[1] + 0x1.657186p-3f);
+        } else {
+            yaw = func_002E2D00(h->c.a.angle[1] - 0x1.657186p-3f);
+        }
+        h->c.a.angle[1] = yaw;
+        sceVu0UnitMatrix(h->c.a.rot);
+        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
+        func_002E2D00(target - h->c.a.angle[1]);
+    }
+    if (ANIM_DONE(h)) {
+        if (HW(h, 0xF36B8, s32) == 0) {
+            h->c.a.unk2D = 0;
+        }
+        func_00143550(h, -1);
+        Hewie_SetBehaviour(h, &D_003B1C40);
+        VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    }
+    func_001F6240(h->c.motion, root, 0.0f);
+    func_0010E640(v, HEWIE_SPOT(h), root[2]);
+    func_001247E0(&h->c.a, v);
+    HW(h, 0xF3558, u8) = 1;
+}
+
+extern void func_002E3190(f32 (*out)[4], f32 angle);
+extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
+extern const PTMF D_003B1928;
+
+/* Behaviour: move +0xF36C8 along heading +0xF36C4 (+0xF36CC a frame). Done: unless in action
+ * 0x6C, D_003B1928; in 0x6C he leaves through exit +0xF36B4 (clearing unk148C), gets up if
+ * down, default action. */
+void func_00153B00(Hewie *h) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    VObject *rooms;
+
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = HW(h, 0xF36C8, f32);
+    func_002E3190(m, HW(h, 0xF36C4, f32));
+    func_002E2DA0(v, m, v);
+    func_001247E0(&h->c.a, v);
+    HW(h, 0xF3558, u8) = 1;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    HW(h, 0xF36C8, f32) = HW(h, 0xF36C8, f32) - HW(h, 0xF36CC, f32);
+    if (!(HW(h, 0xF36C8, f32) <= 0.0f)) {
+        return;
+    }
+    if (HEWIE_ACTION(h) != 0x6C) {
+        Hewie_SetBehaviour(h, &D_003B1928);
+        return;
+    }
+    h->c.a.unk2B = 0;
+    h->c.a.unk2D = 0;
+    rooms = D_0044E568;
+    if (!(VCALL(rooms, 0x70, u32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) & 0xFF)
+        && VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) != -1
+        && func_0013AAE0(h, HW(h, 0xF36B4, u8)) == 0) {
+        u32 i;
+
+        for (i = 0; i < 13; i++) {
+            h->c.unk148C[i] = 0;
+        }
+    }
+    if (h->c.hp == 0) {
+        h->c.hp = 1;
+        h->c.a.unkC4 = 1;
+    }
+    Hewie_ToDefault(h);
+}
+
+
+/* His idle overlay (ear / tail?) animation by +0xF3648: 2 always 0x2001, 1 0x2000 (hurt 0x2002);
+ * 0: (hurt 0x2002) alternate 0x2000 / 0x2001 after a random wait (+0xF364C, 300..2100 frames). */
+void func_0013FA40(Hewie *h) {
+    s32 r;
+
+    switch (HW(h, 0xF3648, s32)) {
+    case 0:
+        if (h->c.a.unkC4 == 1) {
+            func_002DDB30(h->c.motion, 0x2002);
+            break;
+        }
+        HW(h, 0xF364C, s32) -= 1;
+        if (HW(h, 0xF364C, s32) >= 0) {
+            break;
+        }
+        if (HW(h, 0xF3650, s32) == 0) {
+            func_002DDB30(h->c.motion, 0x2000);
+            HW(h, 0xF3650, s32) = 1;
+        } else {
+            func_002DDB30(h->c.motion, 0x2001);
+            HW(h, 0xF3650, s32) = 0;
+        }
+        r = (s32)(2.0f * RNG01());
+        switch (r) {
+        case 0:
+            HW(h, 0xF364C, s32) = 300;
+            break;
+        case 1:
+            HW(h, 0xF364C, s32) = 900;
+            break;
+        case 2:
+            HW(h, 0xF364C, s32) = 1800;
+            break;
+        }
+        HW(h, 0xF364C, s32) += (s32)(10.0f * RNG01()) * 30;
+        break;
+    case 1:
+        if (h->c.a.unkC4 == 1) {
+            func_002DDB30(h->c.motion, 0x2002);
+        } else {
+            func_002DDB30(h->c.motion, 0x2000);
+        }
+        break;
+    case 2:
+        func_002DDB30(h->c.motion, 0x2001);
+        break;
+    }
+}
+
+/* Roll his reaction: record kind 0 (+0xF3696[n]) and whether a 0..31 roll is below +0xF3690
+ * (+0xF369C); then kind 2 vs +0xF3692 (+0xF369E) if it was, else kind 1 vs +0xF3691
+ * (+0xF369D). +0xF36A2 counts the records. */
+void func_00139840(Hewie *h) {
+    u8 r;
+    s32 c;
+
+    r = (u32)(32.0f * RNG01());
+    c = r < HW(h, 0xF3690, s8);
+    HW(h, 0xF3696 + HW(h, 0xF36A2, u8), u8) = 0;
+    HW(h, 0xF369C, u8) = c;
+    HW(h, 0xF36A2, u8) += 1;
+    if (c) {
+        r = (u32)(32.0f * RNG01());
+        c = r < HW(h, 0xF3692, s8);
+        HW(h, 0xF3696 + HW(h, 0xF36A2, u8), u8) = 2;
+        HW(h, 0xF369E, u8) = c;
+    } else {
+        r = (u32)(32.0f * RNG01());
+        c = r < HW(h, 0xF3691, s8);
+        HW(h, 0xF3696 + HW(h, 0xF36A2, u8), u8) = 1;
+        HW(h, 0xF369D, u8) = c;
+    }
+    HW(h, 0xF36A2, u8) += 1;
+}
+
+/* Behaviour: while Fiona is in move mode 0xD, turn (6 degrees a frame) to heading unk10C,
+ * walking (kind 1) until +0xF36B4 runs low, else the 0x1300 turning animation. */
+void func_00149370(Hewie *h) {
+    if (!Hewie_CharHere(h, gCharPlayer)) {
+        Hewie_ToDefault(h);
+        return;
+    }
+    if (gCharPlayer->moveMode != 0xD) {
+        Hewie_ToDefault(h);
+    } else {
+        func_00124530(&h->c.a, *(f32 *)&h->c.unk104[2], 0x1.aceeap-4f /* 6 deg */);
+        HW(h, 0xF36B4, s32) -= 1;
+        if (HW(h, 0xF36B8, s32) != 0 && HW(h, 0xF36B4, s32) < 16) {
+            func_00141C00(h, 1);
+        } else {
+            HW(h, 0xF36B8, s32) = 1;
+            if (MOTION_ANIM(h->c.motion) != 0x1300) {
+                func_002DDED0(h->c.motion, 0x1300, -1);
+            }
+        }
+    }
+    HW(h, 0xF3558, u8) = 1;
+}
+
+extern s32 func_0013EFB0(Hewie *h, f32 *out);
+
+/* Behaviour: steer towards a point (from func_0013EFB0 when he has a target, else the saved
+ * point +0xF3630 if +0xF3620), running (kind 8); without one, stand (kind 4). */
+void func_0015F0A0(Hewie *h) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 a, turn, yaw;
+    u8 have;
+
+    if (HW(h, 0xF366C, u8) == 0 && HW(h, 0xF366D, u8) != 0) {
+        Hewie_ToDefault(h);
+    }
+    have = 1;
+    if (HEWIE_TARGET(h) == NULL && HW(h, 0xF366D, u8) == 0) {
+        have = 0;
+    } else if (func_0013EFB0(h, v) == -1) {
+        have = 0;
+    }
+    if (!have && HW(h, 0xF3620, u8) == 1) {
+        have = 1;
+        sceVu0CopyVector(v, (f32 *)((u8 *)h + 0xF3630));
+    }
+    if (have == 1) {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        func_002DD110(h->c.motion, v, &a, &turn);
+        if (HW(h, 0xF3620, u8) == 0) {
+            a = 0.0f;
+        }
+        yaw = func_002E2D00(h->c.a.angle[1] + turn);
+        HW(h, 0xF3614, f32) = a;
+        HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+    } else if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    if (!func_00140CD0(h, 0) && MOTION_ANIM(h->c.motion) != 3) {
+        func_002DDED0(h->c.motion, 3, -1);
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+extern u32 func_00123D20(Actor *a, const f32 *p);
+extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
+extern const f32 D_003B12A0[][2];   /* offsets (x, z) from him, by kind */
+
+/* Find a spot at offset `kind` around him, turning 0, +-10, ... +-180 degrees: on the walkable
+ * mesh (not flags 0x80001) and reachable from Fiona. Writes the heading and point; -1: none. */
+s32 func_00138890(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
+    f32 off[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    NavMesh *nm;
+    s32 deg, side;
+    f32 ang, yaw;
+    u32 tri;
+
+    off[0] = D_003B12A0[kind][0];
+    off[1] = 0.0f;
+    off[2] = D_003B12A0[kind][1];
+    off[3] = 1.0f;
+    nm = D_0044E570;
+    for (deg = 0; deg <= 180; deg += 10) {
+        ang = F_PI * (f32)deg;
+        for (side = 0;; side++) {
+            if (side != 0) {
+                yaw = func_002E2D00(h->c.a.angle[1] + ang / 180.0f);
+            } else {
+                yaw = func_002E2D00(h->c.a.angle[1] - ang / 180.0f);
+            }
+            func_002E3130(m, h->c.a.pos, yaw);
+            func_002E2DD0(p, m, off);
+            tri = func_00123D20(&h->c.a, p);
+            if (tri != NAV_NONE) {
+                NavTri *t = (tri < nm->numTris && nm->tris != NULL) ? &nm->tris[tri] : NULL;
+
+                if (!(t->flags & 0x80001)
+                    && func_00124320(&h->c.a, p, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0x280A0019) == tri) {
+                    *yawOut = yaw;
+                    sceVu0CopyVector(posOut, p);
+                    return tri;
+                }
+            }
+            if (deg == 0 || deg == 180 || side + 1 >= 2) {
+                break;
+            }
+        }
+    }
+    return -1;
+}
+
+extern const PTMF D_003B18A8, D_003B18B8;
+
+/* Behaviour: jump arc. Move by +0xF36E0, rise by +0xF36C8 (less 0.5 a frame); on landing the
+ * landing animation (D_003B18A8); at the top (actions 0x1F / 0x20) the falling animation. */
+void func_00157770(Hewie *h) {
+    f32 y;
+
+    func_001247E0(&h->c.a, HEWIE_SPOT(h));
+    y = HW(h, 0xF36C4, f32) + HW(h, 0xF36C8, f32);
+    HW(h, 0xF3558, u8) = 1;
+    if (y < h->c.a.pos[1]) {
+        if (HW(h, 0xF36B4, s32) == 0) {
+            func_002DDED0(h->c.motion, 0x2212, -1);
+        } else {
+            func_002DDED0(h->c.motion, 0x2213, -1);
+        }
+        Hewie_SetBehaviour(h, &D_003B18A8);
+    } else {
+        h->c.a.pos[1] = y;
+        HW(h, 0xF36C4, f32) = y;
+        HW(h, 0xF36C8, f32) = HW(h, 0xF36C8, f32) - 0.5f;
+        if (HW(h, 0xF36C8, f32) <= 0.0f) {
+            s32 act = HEWIE_ACTION(h);
+
+            if (act == 0x20 || act == 0x1F) {
+                switch (h->c.unk104[0]) {
+                case 1:
+                    func_002DDED0(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x2205 : 0x2208, -1);
+                    break;
+                case 2:
+                    func_002DDED0(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x220E : 0x2211, -1);
+                    break;
+                }
+            }
+            Hewie_SetBehaviour(h, &D_003B18B8);
+        }
+    }
+    HW(h, 0xF3582, u8) = 0;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
