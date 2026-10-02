@@ -324,3 +324,58 @@ void func_002241C0(u8 *o, s32 on) {
         func_002670F0(fx, 0x1C);
     }
 }
+
+
+#include "progress.h"
+
+extern void func_002EF480(u8 *fade, f32 level);   /* the screen fade's level, 0..1 */
+
+/* a screen fade's frame (`kind`: 0 / 2 / 4 in, 1 / 3 / 5 out, 6 / 7 half way in / out): its
+ * alpha from the rate (+0x18) times the frames so far (+0x20) - up to 128 (64 for 6 / 7) -
+ * also setting the screen fade's level for 0..5; the colour (+0xF8) black with that alpha,
+ * white for 2 / 3; then a frame more */
+void func_002CF3A0(u8 *f, s32 kind) {
+    static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A};
+    u8 k = kind;
+    f32 a = 0.0f;
+    u32 c = 0;
+
+    switch (k) {
+    case 0: case 2: case 4:
+        a = AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (!(a < 128.0f)) {
+            a = 128.0f;
+        }
+        func_002EF480((u8 *)gProgress + 0x7B8, 0.5f - k0005.f * (a - 16.0f));
+        break;
+    case 1: case 3: case 5:
+        a = 128.0f - AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (a <= 0.0f) {
+            a = 0.0f;
+        }
+        func_002EF480((u8 *)gProgress + 0x7B8, 1.0f - k0005.f * (a - 16.0f));
+        break;
+    case 6:
+        a = AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (!(a < 64.0f)) {
+            a = 64.0f;
+        }
+        break;
+    case 7:
+        a = 64.0f - AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (a <= 0.0f) {
+            a = 0.0f;
+        }
+        break;
+    }
+    switch (k) {
+    case 2: case 3:
+        c = (u32)(u8)(s32)a << 24 | 0xFFFFFF;
+        break;
+    case 0: case 1: case 4: case 5: case 6: case 7:
+        c = (u32)(u8)(s32)a << 24;
+        break;
+    }
+    AT(f, 0xF8, u32) = c;
+    AT(f, 0x20, u8)++;
+}
