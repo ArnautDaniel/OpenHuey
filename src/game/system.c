@@ -282,3 +282,57 @@ void *func_001F4600(u8 *o) {
     }
     return o;
 }
+
+/* ---- system init (vtable +0xC, from Game_Init) ---- */
+
+#include "ps2hw.h"
+
+extern const char D_0044FEB8[], D_0044FEC8[], D_0044FED8[], D_0044FEE8[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
+extern void func_001BC220(void *iop);                        /* IOP: reset, set up module loading */
+extern s32 func_001BC0F0(void *iop, const char *module, s32, s32, s32);   /* IOP: load a module */
+extern void func_0010D3E0(s32 mode);                          /* libgraph: reset */
+extern void func_001EE798(void);                              /* libdbc: init */
+extern void func_001AACD0(void *obj);
+extern void func_002102E0(void *obj);
+extern void func_001BE6A0(void *pads);
+extern void func_00226570(void *obj);
+extern void func_001B83D0(void *renderer, s32 n);
+extern void func_001B8250(void *renderer);
+extern s32 func_0026BE80(s32 cause, s32 (*handler)(s32), s32 next);   /* AddIntcHandler */
+extern s32 func_0026CCE8(s32 cause);                                   /* EnableIntc */
+extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank start / end handlers */
+extern void func_0016C530(void *loader);
+extern void func_00169680(void *loader);
+extern u8 D_0047B204, D_0047B208;   /* vblank start / end seen */
+extern u32 D_0047B20C;              /* vblank count */
+
+void func_001BF080(u8 *s) {
+    func_001BC220(s + 0x20);
+    func_0010D3E0(1);
+    AT(s, 0x4, s32) = func_001BC0F0(s + 0x20, D_0044FEB8, 0, 0, 0);
+    AT(s, 0x8, s32) = func_001BC0F0(s + 0x20, D_0044FEC8, 0, 0, 0);
+    AT(s, 0xC, s32) = func_001BC0F0(s + 0x20, D_0044FED8, 0, 0, 0);
+    func_001EE798();
+    AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, D_0044FEE8, 0, 0, 0);
+    func_001AACD0(s + 0x305280);
+    func_002102E0(s + 0x395D40);
+    func_001BE6A0(s + 0x40);
+    func_00226570(s + 0x390);
+    func_001B83D0(s + 0x460, 2);
+    VCALL(s + 0x30CF40, 0xC, void (*)(void *))(s + 0x30CF40);
+    func_001B8250(s + 0x460);
+    /* timer 0 and 1: count on the horizontal blank */
+    HW_WRITE32(0x10000010, 0x82);
+    HW_WRITE32(0x10000000, 0);
+    HW_WRITE32(0x10000810, 0x82);
+    D_0047B20C = 0;
+    D_0047B204 = 0;
+    AT(s, 0x14, s32) = func_0026BE80(2, func_001BEDA0, 0);
+    func_0026CCE8(2);
+    D_0047B208 = 0;
+    AT(s, 0x18, s32) = func_0026BE80(3, func_001BED80, 0);
+    func_0026CCE8(3);
+    AT(s, 0x1C, s32) = D_0047B20C;
+    func_0016C530(s + 0x319900);
+    func_00169680(s + 0x319900);
+}

@@ -45,4 +45,5 @@ add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GAME_C} ${PLATFORM_C})
 target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURRENT_SOURCE_DIR}/platform)
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O1 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
+target_compile_definitions(hg PRIVATE HG_NATIVE)
 target_link_libraries(hg PRIVATE m)
