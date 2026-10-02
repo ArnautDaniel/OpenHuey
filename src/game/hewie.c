@@ -2,6 +2,8 @@
 #include "common.h"
 #include "hewie.h"
 #include "progress.h"
+#include "navmesh.h"
+#include "sce/libvu0.h"
 
 extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
@@ -98,4 +100,105 @@ void func_00165C50(Hewie *h) {
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
     func_00130AF0(h, func_0013B2C0(h, 0), 0);
+}
+
+/* Back to his default action (inlined in several places in the original). */
+static inline void Hewie_ToDefault(Hewie *h) {
+    func_00130AF0(h, func_0013B2C0(h, 0), 0);
+}
+
+/* vtable +0x7C: back to his default action. */
+void func_0013D190(Hewie *h) {
+    Hewie_ToDefault(h);
+}
+
+#define HEWIE_ACTION(h) HW(h, 0xF3564, s32)
+#define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
+#define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
+
+extern f32 *func_0017CE80(void *skeleton, s32 bone);        /* bone matrix */
+
+/* vtable +0x74: during action 0x23 with animation 0x1E01, his head bone's position (returns 1). */
+s32 func_0013D420(Hewie *h, f32 *out) {
+    if (HEWIE_ACTION(h) != 0x23) {
+        return 0;
+    }
+    if (MOTION_ANIM(h->c.motion) != 0x1E01) {
+        return 0;
+    }
+    sceVu0CopyVector(out, func_0017CE80(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
+    return 1;
+}
+
+extern void func_00126360(Character *c);
+
+/* vtable +0x90: reset (Character part), clear his action state. */
+void func_0015FBE0(Hewie *h) {
+    func_00126360(&h->c);
+    HW(h, 0xF358C, s32) = 0;
+    HW(h, 0xF35C4, s32) = 0;
+    HW(h, 0xF3610, s32) = 0xFF;
+    HW(h, 0xF3584, u8) = 0;
+    HW(h, 0xF35E0, u8) = 0;
+    Progress_ClearFlag(gProgress, 0xB);
+}
+
+extern void func_00138AD0(Hewie *h, s32 a, s32 b);
+
+/* vtable +0x78: left the room being played during action 0x38 -> default action. */
+void func_0015FB30(Hewie *h) {
+    s32 room = h->c.a.room;
+
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && HEWIE_ACTION(h) == 0x38) {
+        Hewie_ToDefault(h);
+    }
+    func_00138AD0(h, 0, -1);
+}
+
+#define HEWIE_HP(h) HW(h, 0x14C8, s32)
+
+/* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
+ * never, he keeps 1). */
+s32 func_0015FA20(Hewie *h, s32 damage) {
+    Progress *p = gProgress;
+
+    if (*((u8 *)p + 0x1FBEC1) == 1 && (Progress_GetVar(p, 0x27) & 0xFF) == 1) {
+        damage = (s32)(1.5f * (f32)damage);
+    }
+    if (damage <= 0) {
+        damage = -damage;
+    }
+    HEWIE_HP(h) -= damage;
+    if (HEWIE_HP(h) <= 0) {
+        HEWIE_HP(h) = 0;
+    }
+    if (HEWIE_HP(h) != 0) {
+        return 0;
+    }
+    if ((Progress_GetVar(p, 0x27) & 0xFF) == 2) {
+        HEWIE_HP(h) = 1;
+        return 0;
+    }
+    return 1;
+}
+
+extern void func_001F6AF0(void *motion);
+extern NavMesh *D_0044E570;
+
+/* vtable +0x48: apply the animation to the model; while enabled, take his position from the
+ * root bone (and find his room and nav-mesh triangle). */
+void func_00167AF0(Hewie *h) {
+    sceVu0FMATRIX m;
+
+    sceVu0UnitMatrix(m);
+    VCALL(h->c.motion, 0x28, void (*)(void *, sceVu0FMATRIX))(h->c.motion, m);
+    if (h->c.a.disabled) {
+        return;
+    }
+    MOTION_U8(h->c.motion, 0x4D8) = 1;
+    func_001F6AF0(h->c.motion);
+    MOTION_U8(h->c.motion, 0x4D8) = 0;
+    h->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    sceVu0CopyVector(h->c.a.pos, func_0017CE80(MOTION_SKELETON(h->c.motion), 0) + 12);
+    h->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, h->c.a.pos, 0);
 }
