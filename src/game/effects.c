@@ -422,8 +422,9 @@ void func_002E7C10(u8 *e, f32 *arg) {
     AT(e, 0x74, s32) = sprite_rest(e, D_0044E550);
 }
 
-/* +0x14 draw: a quad drawer (D_0046FC30) from the settings, unless resting */
-void func_002E7D10(u8 *e) {
+/* hand a quad drawer (D_0046FC30) made from an effect's settings (+0x40..+0x6E) to the
+ * renderer */
+static void fx_quad_submit(u8 *e) {
     struct {
         void **vtbl;
         s32 a;
@@ -436,9 +437,6 @@ void func_002E7D10(u8 *e) {
         s8 k[5];
     } q __attribute__((aligned(8)));
 
-    if (AT(e, 0x74, s32) != 0) {
-        return;
-    }
     q.a = -1;
     q.vtbl = D_0046FC30;
     q.tex = AT(e, 0x40, u64);
@@ -461,6 +459,13 @@ void func_002E7D10(u8 *e) {
     q.k[4] = AT(e, 0x6E, s8);
     func_002E56C0((u8 *)&q);
     q.vtbl = D_00469D00;
+}
+
+/* +0x14 draw, unless resting */
+void func_002E7D10(u8 *e) {
+    if (AT(e, 0x74, s32) == 0) {
+        fx_quad_submit(e);
+    }
 }
 
 /* +0x10 update: rest, else step the frame each frame; after the last one start over at a new
@@ -523,4 +528,210 @@ void func_002E7F60(u8 *e) {
     AT(e, 0x6E, s8) = -1;
     AT(e, 0x70, s8) = 1;
     AT(e, 0x74, s32) = 0;
+}
+
+
+/* ---- room effect D_0046FF40 (event command 0x86): a flame; kind (+0x78) 0 a candle (32
+ * frames: a loop, then a flare / snuff played on command), others a 16-frame fire (kind 4 is
+ * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (D_00479320)
+ * above it; commanded (+0x74 1 / 2) the fire throws two / four sparks and the candle plays its
+ * second half (2: shrinking away) ----
+ * the record and drawer settings as D_0046FF00's */
+
+extern void *D_0046FF40[], *D_00479320[];
+#include "effectmgr.h"
+
+/* +0x8 destructor */
+u8 *func_002E90F0(u8 *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x0, void **) = D_0046FF40;
+        AT(e, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(e);
+        }
+    }
+    return e;
+}
+
+/* a spark: its quad drawer embedded at +0x190 */
+static void spark_init(void **obj) {
+    obj[0] = D_00479320;
+    obj[0x190 / 4] = D_00469D00;
+    ((s32 *)obj)[0x194 / 4] = -1;
+    obj[0x190 / 4] = D_0046FC30;
+}
+
+/* +0x18 start (arg { position, +0x10 the command, +0x14 the kind }) */
+void func_002E9150(u8 *e, u8 *arg) {
+    u8 *mgr;
+    s32 slot;
+
+    if (arg == NULL) {
+        return;
+    }
+    AT(e, 0x74, s32) = AT(arg, 0x10, s32);
+    if (AT(e, 0x74, s32) != 0) {
+        struct {
+            f32 pos[4];
+            s32 kind;
+        } p __attribute__((aligned(16)));
+
+        if (AT(e, 0x78, s32) == 0) {
+            AT(e, 0x3C, s32) = 15;
+            return;
+        }
+        if (AT(e, 0x78, s32) != 1) {
+            return;
+        }
+        p.pos[0] = AT(e, 0x20, f32);
+        p.pos[1] = 1.5f + AT(e, 0x24, f32);
+        p.pos[2] = AT(e, 0x28, f32);
+        p.pos[3] = 1.0f;
+        p.kind = 1;
+        mgr = D_0044E578;
+        slot = Effect_New(mgr, 0x220, spark_init);
+        func_002D6090(mgr, slot, &p);
+        slot = Effect_New(mgr, 0x220, spark_init);
+        func_002D6090(mgr, slot, &p);
+        if (AT(e, 0x74, s32) != 2) {
+            return;
+        }
+        slot = Effect_New(mgr, 0x220, spark_init);
+        func_002D6090(mgr, slot, &p);
+        slot = Effect_New(mgr, 0x220, spark_init);
+        func_002D6090(mgr, slot, &p);
+        return;
+    }
+    AT(e, 0x20, f32) = AT(arg, 0x0, f32);
+    AT(e, 0x24, f32) = AT(arg, 0x4, f32);
+    AT(e, 0x28, f32) = AT(arg, 0x8, f32);
+    AT(e, 0x2C, f32) = 1.0f;
+    AT(e, 0x78, s32) = AT(arg, 0x14, s32);
+    AT(e, 0x10, s32) = 0x80;
+    AT(e, 0x14, s32) = 0x80;
+    AT(e, 0x18, s32) = 0x80;
+    AT(e, 0x1C, s32) = 0x80;
+    AT(e, 0x20, f32) = AT(arg, 0x0, f32);
+    AT(e, 0x24, f32) = AT(arg, 0x4, f32);
+    AT(e, 0x28, f32) = AT(arg, 0x8, f32);
+    AT(e, 0x2C, f32) = 1.0f;
+    if (AT(e, 0x78, s32) != 0) {
+        struct {
+            f32 pos[4];
+            s32 flags;
+        } p __attribute__((aligned(16)));
+
+        AT(e, 0x30, f32) = 1.0f;
+        AT(e, 0x34, f32) = 2.0f;
+        AT(e, 0x38, f32) = 0.0f;
+        AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+        AT(e, 0x40, s64) = -1;
+        AT(e, 0x48, u8 *) = e + 0x10;
+        AT(e, 0x4C, s32) = 0;
+        AT(e, 0x50, s32) = 0;
+        AT(e, 0x54, f32) = -1.0f;
+        AT(e, 0x58, s32) = 0x19;
+        AT(e, 0x5C, s16) = 1;
+        AT(e, 0x5E, s16) = 0;
+        AT(e, 0x60, s16) = 0x80;
+        AT(e, 0x62, s16) = 0x10;
+        AT(e, 0x64, s16) = 0x20;
+        AT(e, 0x66, s16) = 0x200;
+        AT(e, 0x68, s16) = 0x100;
+        if (AT(e, 0x78, s32) == 4) {
+            AT(e, 0x6A, s8) = -0x7B;
+            AT(e, 0x78, s32) = 1;
+        } else {
+            AT(e, 0x6A, s8) = -0x7F;
+        }
+        AT(e, 0x6B, s8) = 0x10;
+        AT(e, 0x6C, s8) = 1;
+        AT(e, 0x6D, s8) = 0x10;
+        AT(e, 0x6E, s8) = (AT(e, 0x78, s32) == 3) + 4;
+        if (AT(e, 0x78, s32) != 1) {
+            return;
+        }
+        mgr = D_0044E578;
+        slot = Effect_New(mgr, 0x220, spark_init);
+        p.pos[0] = AT(e, 0x20, f32);
+        p.pos[1] = 2.0f + AT(e, 0x24, f32);
+        p.pos[2] = AT(e, 0x28, f32);
+        p.pos[3] = 1.0f;
+        p.flags = 0x8000;
+        func_002D6090(mgr, slot, &p);
+        return;
+    }
+    AT(e, 0x30, f32) = 0.25f;
+    AT(e, 0x34, f32) = 1.0f;
+    AT(e, 0x38, f32) = 0.0f;
+    AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(e, 0x40, s64) = -1;
+    AT(e, 0x48, u8 *) = e + 0x10;
+    AT(e, 0x4C, s32) = 0;
+    AT(e, 0x50, s32) = 0;
+    AT(e, 0x54, f32) = -1.0f;
+    AT(e, 0x58, s32) = 0x19;
+    AT(e, 0x5C, s16) = 1;
+    AT(e, 0x5E, s16) = 0;
+    AT(e, 0x60, s16) = 0x20;
+    AT(e, 0x62, s16) = 0x10;
+    AT(e, 0x64, s16) = 0x20;
+    AT(e, 0x66, s16) = 0x200;
+    AT(e, 0x68, s16) = 0x100;
+    AT(e, 0x6A, s8) = -0x7F;
+    AT(e, 0x6B, s8) = 0x20;
+    AT(e, 0x6C, s8) = 1;
+    AT(e, 0x6D, s8) = 0x10;
+    AT(e, 0x6E, s8) = 1;
+}
+
+/* +0x14 draw */
+void func_002E98E0(u8 *e) {
+    fx_quad_submit(e);
+}
+
+/* +0x10 update: kinds other than 0 loop their 16 frames; kind 0 (a candle) loops the first
+ * half of its 32 frames, and once started (+0x74 1 / 2) plays the second half at half speed
+ * and goes back to looping, +0x74 2 shrinking it as it goes (height 1/8 per 4 frames past 12) */
+void func_002E99B0(u8 *e) {
+    if (AT(e, 0x78, s32) != 0) {
+        AT(e, 0x70, s8) -= 1;
+        if (AT(e, 0x70, s8) != 0) {
+            return;
+        }
+        AT(e, 0x70, s8) = 1;
+        AT(e, 0x3C, s32) += 1;
+        if (!(AT(e, 0x3C, s32) < 0x10)) {
+            AT(e, 0x3C, s32) = 0;
+        }
+        return;
+    }
+    AT(e, 0x70, s8) -= 1;
+    if (AT(e, 0x70, s8) == 0) {
+        AT(e, 0x70, s8) = 1;
+        AT(e, 0x3C, s32) += 1;
+        if (AT(e, 0x74, s32) == 0) {
+            if (!(AT(e, 0x3C, s32) < AT(e, 0x6B, s8) - 0x10)) {
+                AT(e, 0x3C, s32) = 0;
+            }
+        } else {
+            AT(e, 0x70, s8) = 2;
+            if (!(AT(e, 0x3C, s32) < AT(e, 0x6B, s8))) {
+                AT(e, 0x3C, s32) = 0;
+                AT(e, 0x70, s8) = 1;
+                AT(e, 0x74, s32) = 0;
+            }
+        }
+    }
+    if (AT(e, 0x74, s32) == 2) {
+        AT(e, 0x34, f32) = 0.125f * (f32)(((AT(e, 0x3C, s32) - 12) >> 2) + AT(e, 0x70, s8));
+    } else {
+        AT(e, 0x34, f32) = 1.0f;
+    }
+}
+
+/* +0xC set up: frame timer 1, no slot (+0x7C) */
+void func_002E9AE0(u8 *e) {
+    AT(e, 0x70, s8) = 1;
+    AT(e, 0x7C, s32) = -1;
 }
