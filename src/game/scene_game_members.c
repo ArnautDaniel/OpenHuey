@@ -2141,6 +2141,132 @@ void func_002EC4F0(u8 *o, u8 *n) {
 }
 
 
+extern void func_00220D10(u8 *door, s32 sound, s32 arg);   /* a door sound */
+extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);   /* door is open */
+extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);   /* door is shut */
+
+/* the door's angle +0x34: its rest angle +0x44 turned by +0x64 degrees, kept above -pi */
+static void door_turn(u8 *door) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
+    f32 a = AT(door, 0x64, f32);
+
+    AT(door, 0x64, f32) = a;
+    AT(door, 0x34, f32) = AT(door, 0x44, f32) + kPi.f * a / 180.0f;
+    if (AT(door, 0x34, f32) < kMinusPi.f) {
+        AT(door, 0x34, f32) = AT(door, 0x34, f32) + kTwoPi.f;
+    }
+}
+
+/* the door's swing ended open (`open`) or shut: it stops (+0x60) and the progress learns of it
+ * when the door (+0x4) leads somewhere from the current room */
+static void door_settle(u8 *door, s32 open) {
+    Progress *p;
+    s32 room;
+
+    AT(door, 0x60, s32) = 0;
+    p = gProgress;
+    room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    if ((VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, AT(door, 0x4, u8)) & 0xFFFF) ==
+        0xFFFF) {
+        return;
+    }
+    p = gProgress;
+    room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    if (open) {
+        func_00178C10(p, room, AT(door, 0x4, u8), 0xFF);
+    } else {
+        func_00178A90(p, room, AT(door, 0x4, u8), 0xFF);
+    }
+}
+
+/* a door's swing, each frame (+0x60: 1 along a list of angles +0x5C (+0x54 of +0x58 done),
+ * 2 by 5 degrees a frame, 3 slammed by 15; +0x68 0 opening to -90 degrees (+0x64), else
+ * closing to 0), while it is shown (+0x70); the creak / latch sounds once (+0x71) */
+void func_00221300(u8 *door) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
+    f32 step;
+
+    switch (AT(door, 0x60, s32)) {
+    case 1: {
+        f32 *key;
+
+        if (AT(door, 0x70, u8) != 1 || (key = AT(door, 0x5C, f32 *)) == NULL) {
+            return;
+        }
+        AT(door, 0x64, f32) = *key;
+        AT(door, 0x34, f32) = AT(door, 0x44, f32) + kPi.f * *key / 180.0f;
+        if (AT(door, 0x34, f32) < kMinusPi.f) {
+            AT(door, 0x34, f32) = AT(door, 0x34, f32) + kTwoPi.f;
+        }
+        AT(door, 0x54, s32) += 1;
+        if (AT(door, 0x54, s32) == AT(door, 0x58, s32)) {
+            AT(door, 0x5C, s32) = 0;
+            AT(door, 0x60, s32) = 0;
+        } else {
+            AT(door, 0x5C, s32) += 4;
+        }
+        if (AT(door, 0x71, u8) != 0) {
+            return;
+        }
+        if (AT(door, 0x68, s32) == 1) {
+            if (!(AT(door, 0x64, f32) <= -6.0f)) {
+                AT(door, 0x71, u8) = 1;
+                func_00220D10(door, 0x28, 2);
+            }
+        } else if (AT(door, 0x64, f32) < 0.0f) {
+            AT(door, 0x71, u8) = 1;
+            func_00220D10(door, 0x27, 1);
+        }
+        return;
+    }
+    case 2:
+        if (AT(door, 0x70, u8) != 1) {
+            return;
+        }
+        if (AT(door, 0x68, s32) == 0) {
+            AT(door, 0x64, f32) = AT(door, 0x64, f32) - 5.0f;
+            if (AT(door, 0x64, f32) < -90.0f) {
+                AT(door, 0x64, f32) = -90.0f;
+                door_settle(door, 1);
+            }
+        } else {
+            AT(door, 0x64, f32) = AT(door, 0x64, f32) + 5.0f;
+            if (AT(door, 0x71, u8) == 0 && !(AT(door, 0x64, f32) <= -6.0f)) {
+                AT(door, 0x71, u8) = 1;
+                func_00220D10(door, 0x28, 0);
+            }
+            if (!(AT(door, 0x64, f32) <= 0.0f)) {
+                AT(door, 0x64, f32) = 0.0f;
+                door_settle(door, 0);
+            }
+        }
+        door_turn(door);
+        return;
+    case 3:
+        if (AT(door, 0x70, u8) != 1) {
+            return;
+        }
+        step = 15.0f;
+        if (AT(door, 0x68, s32) == 0) {
+            AT(door, 0x64, f32) = AT(door, 0x64, f32) - step;
+            if (AT(door, 0x64, f32) < -90.0f) {
+                AT(door, 0x64, f32) = -90.0f;
+                door_settle(door, 1);
+            }
+        } else {
+            AT(door, 0x64, f32) = AT(door, 0x64, f32) + step;
+            if (!(AT(door, 0x64, f32) <= 0.0f)) {
+                AT(door, 0x71, u8) = 1;
+                func_00220D10(door, 0x28, 4);
+                AT(door, 0x64, f32) = 0.0f;
+                door_settle(door, 0);
+            }
+        }
+        door_turn(door);
+        return;
+    }
+}
+
 /* reset a door: not opening (+0x5C), no frame (+0x60) */
 void func_00221880(u8 *door) {
     AT(door, 0x5C, s32) = 0;
