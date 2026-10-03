@@ -1015,3 +1015,8 @@ void *func_001BBAA0(u8 *r, void *key, u8 *built) {
         i = (i + 1) & 0x7FF;
     }
 }
+
+/* +0x8C the floor effect's value (+0x304DDC) */
+void func_001B9250(u8 *r, s32 v) {
+    AT(r, 0x304DDC, s32) = v;
+}
