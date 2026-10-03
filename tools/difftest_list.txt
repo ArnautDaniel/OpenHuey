@@ -2830,3 +2830,8 @@ src/game/progress.c func_001785B0 --pre=a1=0..0x40 --pre=a2=0..5
 src/leaf/getters_gen.c func_002ABF60 --pre=a1=0..3
 src/leaf/getters_gen.c func_002ABFB0 --pre=a1=0..3
 src/leaf/getters_gen.c func_002B2420 --pre=a1=0..3
+src/game/progress.c func_00178300 --pre=a1=0..0x40 --pre=a2=0..5 --pre=a3=0..6 --stub-ret=3 --stub-ret=7 --stub-ret=12 --stub-ret-prob=1
+src/game/progress.c func_00178200 --pre=a1=0..0x40 --pre=a2=0..6
+src/game/progress.c func_00176DD0 --pre=a1=0..8 --pre=a2=0..3 --pre=@0x47E374=0..0xFFFF --pre=@0x47E37C=0..0xFFFF
+src/game/event_cmd.c func_002029B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046B3A0..0x0046B3A0 --pre=a0+4=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:00???????????????????????????????? --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B400000..0x0B400000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0xFF --runs=30 --pre=@0x456E00=0x0B900000..0x0B900000 --pre=@0x44E568=0x0B900000..0x0B900000 
+src/game/room_handlers.c func_002B2450 --pre=a0=0x0B000000..0x0B000000 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0..0x01FFFFFF --pre=@0x456DF8=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0B300000..0x0B300000 --pre=@0x0B300018=0x001F1ED0..0x001F1ED0 --stub-ret=0x0B400000 --stub-ret=0 --stub-ret-prob=1

@@ -1,5 +1,6 @@
 /* Game progress: story flags, byte variables and per-room flags (include/progress.h). */
 #include "common.h"
+#include "input.h"
 #include "game.h"
 #include "progress.h"
 #include "ptmf.h"
@@ -270,6 +271,25 @@ extern u8 *D_0044F808;   /* the stalker in play */
 
 /* the gCharacters index of the character with script id `id` (0xFE: the stalker, slot 2;
  * 0xFF / not found: 0xFF) */
+/* event condition: the pad button `which` (0 circle, 1 square, 2 L1, 3 triangle, 4 R1, 5 cross,
+ * 6 start) is held (`how` bit 0) or was pressed this frame (bit 1) */
+s32 func_00176DD0(Progress *p, u32 which, u32 how) {
+    static const u16 buttons[7] = {PAD_CIRCLE, PAD_SQUARE, PAD_L1, PAD_TRIANGLE, PAD_R1, PAD_CROSS, PAD_START};
+    u32 b;
+
+    if ((which & 0xFF) >= 7) {
+        return 0;
+    }
+    b = buttons[which & 0xFF];
+    if ((how & 1) && (D_0047E374 & b)) {
+        return 1;
+    }
+    if ((how & 2) && (D_0047E37C & b)) {
+        return 1;
+    }
+    return 0;
+}
+
 s32 func_001770D0(Progress *p, s32 id) {
     s32 i;
 
@@ -360,7 +380,7 @@ s32 func_00178500(Progress *p, u32 d) {
 
 /* can door d be passed from side `side` (its lock bits, state bits 4..7: bit 4 side 0, bit 5
  * side 1, bit 6 sides 2..5); side 0xFF always, others never */
-s32 func_00178200(Progress *p, u32 d, u32 side) {
+static s32 door_passable(Progress *p, u32 d, u32 side) {
     u32 lock = (DOOR_STATE(p, d) >> 4) & 0xF;
 
     switch (side & 0xFF) {
@@ -377,6 +397,17 @@ s32 func_00178200(Progress *p, u32 d, u32 side) {
         return !(lock & 1);
     }
     return 0;
+}
+
+s32 func_00178200(Progress *p, u32 d, u32 side) {
+    return door_passable(p, d, side);
+}
+
+/* can the door at exit `exit` of room `room` be passed from side `side` (func_00178200) */
+s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side) {
+    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit);
+
+    return door_passable(p, d, side);
 }
 
 /* is the door at exit `exit` of room `room` unlocked */

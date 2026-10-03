@@ -36,7 +36,7 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area);
 extern s32 func_00177620(Progress *p);           /* the game mode */
 extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
 extern s32 func_00176D80(Progress *p, s32 item);
-extern s32 func_00176DD0(Progress *p, s32 item, s32 n);
+extern s32 func_00176DD0(Progress *p, u32 button, u32 how);   /* pad button held / pressed */
 extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
 extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
