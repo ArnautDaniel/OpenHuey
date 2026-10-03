@@ -1484,3 +1484,34 @@ void func_0039D070(Scene *g, s32 exit) {
         func_00120720((u8 *)g + 0x73EE80, room, other);
     }
 }
+
+extern void func_001205A0(void *rooms, u8 slot);
+
+/* leave the current room through exit `exit`: unless a room change keeps the sound going
+ * (progress flag 0x27) the sounds stop; when the other room slot doesn't already hold the room
+ * behind the exit (func_0039D070) it is dropped and the room is loaded (+0xAC); then the change
+ * starts (+0x44 = 1, the rooms told +0x14, the exit kept in +0xF6CD20 for the arrival) */
+void func_0039D120(Scene *g, u8 exit) {
+    VObject *rooms = D_0044E568;
+    u8 other = AT(g, 0xF6C1B0, s32) == 0;
+    s32 next = AT(g, 0x73F240 + other * 4, s32);
+    s32 room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(
+        rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
+
+    if (!(u8)Progress_TestFlag((Progress *)((u8 *)g + SG_PROGRESS), 0x27)) {
+        VObject *snd = D_0044E560;
+
+        VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
+        VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
+        VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
+    }
+    if (next != room) {
+        if (next != -1) {
+            func_001205A0((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32) == 0);
+        }
+        VCALL(g, 0xAC, void (*)(Scene *, u32))(g, exit);
+    }
+    AT(g, 0x44, s32) = 1;
+    VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
+    AT(g, 0xF6CD20, u8) = exit;
+}

@@ -472,3 +472,27 @@ void func_001221E0(Camera *c, f32 pitch, f32 yaw) {
     c->target[1] = v[1] + c->eye[1];
     c->target[2] = v[2] + c->eye[2];
 }
+
+/* is point p (its w set to 1) outside the view volume: through the world-to-clip matrix
+ * (+0x250), any of |x|, |y|, |z| beyond |w| */
+s32 func_00121A00(Camera *c, f32 *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w;
+
+    p[3] = 1.0f;
+    sceVu0ApplyMatrix(v, (void *)((u8 *)c + 0x250), p);
+    if (v[3] <= 0.0f) {
+        v[3] = -v[3];
+    }
+    w = v[3];
+    if (!(v[0] <= w) || v[0] < -w) {
+        return 1;
+    }
+    if (!(v[1] <= w) || v[1] < -w) {
+        return 1;
+    }
+    if (!(v[2] <= w) || v[2] < -w) {
+        return 1;
+    }
+    return 0;
+}

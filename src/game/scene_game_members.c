@@ -924,6 +924,28 @@ void func_00222F60(VObject *d, u8 *sec) {
     VCALL(d, 0x7C, void (*)(VObject *))(d);
 }
 
+extern s32 func_00118278(const char *a, const char *b);   /* strcmp */
+
+/* room manager +0x6740 +0x18: the placed object named `name` (its +0x70), or NULL */
+u8 *func_002C91D0(u8 *o, const char *name) {
+    s32 i;
+
+    for (i = 0; i < 0x40; i++) {
+        u8 *obj = o + 0x20 + i * 0xB0;
+
+#ifdef HG_NATIVE
+        if (AT(obj, 0x70, const char *) == NULL) {   /* unnamed (the PS2 compares with RAM at 0) */
+            continue;
+        }
+#endif
+        if ((AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) &&
+            func_00118278(AT(obj, 0x70, const char *), name) == 0) {
+            return obj;
+        }
+    }
+    return NULL;
+}
+
 extern void func_0025FC50(u8 *o);
 extern void func_0025F970(u8 *o, u8 *def);
 extern void func_0025F910(u8 *o, u8 *def);
