@@ -963,3 +963,142 @@ u8 *func_00358210(u8 *e, s32 flags) {
     return e;
 }
 
+
+
+/* ---- D_0046F5A0 (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
+ * sprite instances (+0x10 + 0xC00 x the current one +0x1C50: RGBA, position, size, turn,
+ * frame - 0x30 each), their velocities at +0x1850 (16 each), drawn by the quad drawer at
+ * +0x1810 ---- */
+
+extern void *D_0046F5A0[];
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002D63F0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0046F5A0;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* particle i (anew: `again`, faded in a random 0..11 steps) at the source (56.5, 13 + the
+ * steps, -1.4, spread 1.1), dim purple, size 0.4, drifting up 0.07..0.17 a frame */
+void func_002D6480(u8 *o, s32 i, s32 again) {
+    static const union { u32 u; f32 f; } k11 = {0x3F8CCCCD}, kZ = {0xBFB33333}, k04 = {0x3ECCCCCD},
+        kSpread = {0x3CF5C28F}, kRise = {0x3D8F5C29}, kRiseVar = {0x3DCCCCCD};
+    VObject *rnd = D_0044E550;
+    u8 *r = o + AT(o, 0x1C50, s32) * 0xC00 + i * 0x30 + 0x10;
+    u8 *v;
+    s32 k = 0;
+
+    AT(r, 0x0, s32) = 0x50;
+    AT(r, 0x4, s32) = 0x40;
+    AT(r, 0x8, s32) = 0x50;
+    AT(r, 0xC, s32) = 0x50;
+    AT(r, 0x10, f32) = 56.5f + k11.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    if (!again) {
+        k = (s32)(12.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - (s32)(10.0f * (f32)k);
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+    }
+    AT(r, 0x14, f32) = 13.0f + (f32)k;
+    rnd = D_0044E550;
+    AT(r, 0x18, f32) = kZ.f + k11.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(r, 0x1C, f32) = 1.0f;
+    AT(r, 0x20, f32) = k04.f;
+    AT(r, 0x24, f32) = k04.f;
+    AT(r, 0x28, f32) = 0.0f;
+    AT(r, 0x2C, s32) = 0;
+    v = o + i * 16;
+    AT(v, 0x1850, f32) = kSpread.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(v, 0x1854, f32) = kRise.f + kRiseVar.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(v, 0x1858, f32) = kSpread.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+}
+
+/* +0x14 draw: the current buffer through the quad drawer */
+void func_002D6700(u8 *o) {
+    AT(o, 0x1820, u8 *) = o + AT(o, 0x1C50, s32) * 0xC00 + 0x10;
+    func_002E56C0(o + 0x1810);
+}
+
+/* +0x10 update: into the other buffer, each particle grown (0.05), turned (3 degrees) and
+ * moved; anew above height 25 or once faded */
+s32 func_002D6730(u8 *o) {
+    static const union { u32 u; f32 f; } kGrow = {0x3D4CCCCD}, kTurn = {0x3D567750}, kPi = {0x40490FDB},
+        kTwoPi = {0x40C90FDB};
+    s32 i, k;
+
+    AT(o, 0x1C50, s32) ^= 1;
+    for (i = 0; i < 0x40; i++) {
+        u8 *r = o + AT(o, 0x1C50, s32) * 0xC00 + i * 0x30 + 0x10;
+        u8 *from = o + (AT(o, 0x1C50, s32) ^ 1) * 0xC00 + i * 0x30 + 0x10;
+        u8 *v = o + i * 16;
+
+        for (k = 0; k < 12; k++) {
+            AT(r, k * 4, u32) = AT(from, k * 4, u32);
+        }
+        r = o + AT(o, 0x1C50, s32) * 0xC00 + i * 0x30 + 0x10;
+        AT(r, 0x20, f32) = AT(r, 0x20, f32) + kGrow.f;
+        AT(r, 0x24, f32) = AT(r, 0x24, f32) + kGrow.f;
+        AT(r, 0x28, f32) = AT(r, 0x28, f32) + kTurn.f;
+        if (!(AT(r, 0x28, f32) <= kPi.f)) {
+            AT(r, 0x28, f32) = AT(r, 0x28, f32) - kTwoPi.f;
+        }
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + AT(v, 0x1850, f32);
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(v, 0x1854, f32);
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(v, 0x1858, f32);
+        if (!(AT(r, 0x14, f32) < 25.0f)) {
+            func_002D6480(o, i, 1);
+        }
+        if (AT(r, 0xC, s32) > 0) {
+            AT(r, 0xC, s32) -= 1;
+        } else {
+            func_002D6480(o, i, 1);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the quad drawer's settings (64 instances of one 32 x 32 cell at (0, 64) of
+ * texture 1 / 0x10, layer 0x19), buffer 0, every particle placed */
+void func_002D6920(u8 *o) {
+    s32 i;
+
+    AT(o, 0x1C50, s32) = 0;
+    AT(o, 0x1818, s64) = -1;
+    AT(o, 0x1828, s32) = 0;
+    AT(o, 0x182C, s32) = 0;
+    AT(o, 0x1830, s32) = 0x19;
+    AT(o, 0x1834, s16) = 0x40;
+    AT(o, 0x1836, s16) = 0;
+    AT(o, 0x1838, s16) = 0x40;
+    AT(o, 0x183A, s16) = 0x20;
+    AT(o, 0x183C, s16) = 0x20;
+    AT(o, 0x183E, s16) = 0x200;
+    AT(o, 0x1840, s16) = 0x100;
+    AT(o, 0x1842, s8) = 0;
+    AT(o, 0x1843, s8) = 1;
+    AT(o, 0x1844, s8) = 1;
+    AT(o, 0x1845, s8) = 0x10;
+    AT(o, 0x1846, s8) = -1;
+    for (i = 0; i < 0x40; i++) {
+        func_002D6480(o, i, 0);
+    }
+}
+
+/* the effect manager's objects' +0x18 for those that take nothing */
+void func_002D63E0(void) {
+}
+
+/* ... and +0x1C: -1 */
+s32 func_002D63D0(void) {
+    return -1;
+}

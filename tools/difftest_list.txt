@@ -2930,3 +2930,10 @@ src/game/navmesh.c func_0017C410 --pre=a0=0x0B000000..0x0B000000 --pre=a0+4=0x0B
 src/game/event.c func_00209810 
 src/game/model.c func_002DDC60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x0B300000..0x0B300000 --pre=a2=0..20 --stub-ret=-1 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1
 src/game/room_handlers.c func_002AF4E0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0..0x03000000 --pre=@0x44E4C0=0x0BA00000..0x0BA00000 --pre=@0x0BA01400=0x0B300000..0x0B300000 --pre=@0x0B300010=0x00100000..0x00100000 --pre=@0x0B300014=0x00100000..0x00100000 --stub-ret=0x0BC00000 --stub-ret=0 --runs=40
+src/game/effects.c func_002D63F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..1
+src/game/effects.c func_002D6480 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..63 --pre=a2=0..1 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B910018=0x00100000..0x00100000 --stub-fret=0.25 --stub-fret=0.9 --stub-ret-prob=1
+src/game/effects.c func_002D6700 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1
+src/game/effects.c func_002D6730 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B910018=0x00100000..0x00100000 --stub-fret=0.25 --stub-fret=0.9 --stub-ret-prob=1 --pre=a0+0x14=0x41500000..0x41F00000 --pre=a0+0x1C=0..2
+src/game/effects.c func_002D6920 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1
+src/game/effects.c func_002D63E0 
+src/game/effects.c func_002D63D0 
