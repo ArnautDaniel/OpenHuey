@@ -43,6 +43,9 @@ extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
 extern u8 *D_0044F808;                        /* the stalker in play */
+extern VObject *D_0044E568;                   /* the rooms */
+extern VObject *D_0044E560;                   /* the sound driver */
+extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -218,6 +221,80 @@ s32 func_001FC760(VObject *ev) {
     case 0x2B:     /* +0x11F0 has reached +0x40 */
         r = !(AT(ev, 0x11F0, u8) < AT(ev, 0x40, u8));
         break;
+    case 0x07:     /* the controlled character may take exit pc[1]: free (Fiona idle or state 10,
+                    * Hewie idle), in the exit's area, its door open and the exit not marked */
+        if (AT(p, 0x1FBEC1, u8) == 0) {
+            u8 *c = (u8 *)gCharPlayer;
+            u32 area;
+
+            if (AT(c, 0xE0, u8) != 0 || (AT(c, 0xF8, s32) != 0 && AT(c, 0xF8, s32) != 0xA)) {
+                break;
+            }
+            area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(D_0044E568, AT(ev, 0x560, s32), pc[1]);
+            if ((u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)((u8 *)gCharPlayer + 0x10),
+                                                                          area & 0xFFFF, -1) != 1) {
+                break;
+            }
+        } else {
+            u8 *c = (u8 *)gCharPartner;
+            s32 tri;
+            u32 area;
+
+            if (AT(c, 0xE0, u8) != 0 || AT(c, 0xF8, s32) != 0) {
+                break;
+            }
+            tri = AT(c, 0x34, s32);
+            area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(D_0044E568, AT(ev, 0x560, s32), pc[1]);
+            if ((u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)((u8 *)gCharPartner + 0x10),
+                                                                          area & 0xFFFF, tri) != 1) {
+                break;
+            }
+        }
+        if ((u8)func_00178980(p, AT(ev, 0x560, s32), PC(ev)[1]) != 1) {
+            break;
+        }
+        r = (u8)Progress_CurRoomFlag(p, AT(ev, 0x560, s32), PC(ev)[1]) != 1;
+        break;
+    case 0x10:     /* the progress' +0x64 is pc[1] */
+        r = pc[1] == (u8)VCALL(p, 0x64, s32 (*)(Progress *))(p);
+        break;
+    case 0x2D:     /* sound pc[1] (+0xA4) */
+        r = (u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, pc[1]);
+        break;
+    case 0x27: {   /* character pc[1] (in this room) faces point (s16 x, s16 z), within pc[6] degrees */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
+            f32 ang = func_0031C5C0((f32)(s16)be16(PC(ev) + 2) - AT(c, 0x10, f32),
+                                    (f32)(s16)be16(PC(ev) + 4) - AT(c, 0x18, f32));
+            f32 d;
+
+            if (!(cond_deg(func_002E2D00(ang - AT(c, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            } else {
+                d = -cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            }
+            r = d <= (f32)PC(ev)[6];
+        }
+        break;
+    }
+    case 0x3C:     /* the stalker (in play, in this room) has +0x153C pc[1] */
+        r = D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(D_0044F808, 0x30, s32) &&
+            pc[1] == AT(D_0044F808, 0x153C, u8);
+        break;
+    case 0x36: {   /* as 0x35 with where the character was (+0x40) */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
+            f32 v[4] __attribute__((aligned(16)));
+            u8 bits;
+
+            sceVu0CopyVector(v, (f32 *)(c + 0x40));
+            bits = (u8)func_002DE2F0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, v, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+            r = (PC(ev)[3] & bits) == PC(ev)[3];
+        }
+        break;
+    }
     case 0x35: {   /* character pc[1] (in this room, its radius / height) against zone pc[2]: all of
                     * pc[3]'s bits */
         u8 *c = cond_char(p, pc[1]);

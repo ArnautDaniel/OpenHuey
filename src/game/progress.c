@@ -54,10 +54,11 @@ s32 Progress_IsBitClear(Progress *p, s32 id) {
     return (p->bits[(u32)id >> 5] & (1 << (id & 31))) == 0;
 }
 
-s32 Progress_CurRoomFlag(Progress *p) {
-    u32 room = VCALL(D_0044E568, 0x10, u32 (*)(VObject *))(D_0044E568) & 0xFFFF; /* returns a u16 */
+/* the door at exit `exit` of room `room` (rooms +0x10) has state bit 0 */
+s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit) {
+    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit) & 0xFFFF;
 
-    return (p->roomFlags[room] & 1) != 0;
+    return (p->roomFlags[d] & 1) != 0;
 }
 
 /* how the game scene starts: the room (bits 0x40000000: the extra mode) */

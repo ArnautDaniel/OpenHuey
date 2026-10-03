@@ -18,7 +18,7 @@ typedef struct Progress {
     /* 0x010 */ u8 pad10[0x9C - 0x10];
     /* 0x09C */ u8 vars[0x100 - 0x9C]; /* byte variables, indexed by u8 id */
     /* 0x100 */ u32 bits[9];        /* second bit set, see Progress_IsBitClear */
-    /* 0x124 */ u32 roomFlags[1];   /* per room, bit 0 tested by Progress_CurRoomFlag; length unknown */
+    /* 0x124 */ u32 roomFlags[1];   /* the doors' states, a word per door (bit 0 Progress_CurRoomFlag, bit 3 unlocked, 4..7 lock sides) */
 } Progress;
 _Static_assert(__builtin_offsetof(Progress, vars) == 0x9C, "vars");
 _Static_assert(__builtin_offsetof(Progress, bits) == 0x100, "bits");
@@ -33,6 +33,6 @@ u32 Progress_GetVar(Progress *p, u32 id);              /* id and result are u8 *
 void Progress_SetVar(Progress *p, u32 id, u32 value);   /* u8 id, u8 value */
 void Progress_IncVar(Progress *p, u32 id);
 s32 Progress_IsBitClear(Progress *p, s32 id);
-s32 Progress_CurRoomFlag(Progress *p);
+s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);   /* door at that exit: state bit 0 */
 
 #endif /* PROGRESS_H */
