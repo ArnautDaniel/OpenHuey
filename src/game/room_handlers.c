@@ -5,6 +5,7 @@
 #include "game.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "sce/libvu0.h"
 
 extern PTMF D_01990BD0[];   /* the room callbacks (set up by the static initialisers) */
 
@@ -382,5 +383,43 @@ s32 func_002A94C0(VObject *room, u8 *c, const u8 *cmd) {
         AT(o, 0x24, f32) = AT(o, 0x24, f32) - 0.25f;
         break;
     }
+    return 1;
+}
+
+extern f32 D_0047B280;   /* room 0x62's falling object's speed */
+extern u8 *func_00266C40(void *fx, s32 k);   /* room effect slot k */
+
+/* room 0x62 callback: room effect 0 dropped - cmd[3] 0 held (speed 0), 1 moved on 0.5 in z,
+ * others falling (+0x74 0): forward 0.16 a step, speed down by 0.5, bouncing at height 0.7
+ * (speed x -0.3, a sound) until slower than 0.2 (+0x74 1, go on: 1; else wait: 2) */
+s32 func_00308C20(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kStep = {0x3E23D70A}, kBounce = {0xBE99999A}, kRest = {0x3E4CCCCD},
+        kFloor = {0x3F333333};
+    u8 *e = func_00266C40(D_0044E4C0, 0);
+    f32 pos[4] __attribute__((aligned(16)));
+
+    switch (cmd[3]) {
+    case 0:
+        D_0047B280 = 0.0f;
+        return 1;
+    case 1:
+        AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0.5f;
+        return 1;
+    }
+    AT(e, 0x74, s32) = 0;
+    AT(e, 0x28, f32) = AT(e, 0x28, f32) + kStep.f;
+    D_0047B280 = D_0047B280 - 0.5f;
+    AT(e, 0x24, f32) = AT(e, 0x24, f32) + D_0047B280;
+    if (!(AT(e, 0x24, f32) < kFloor.f)) {
+        return 2;
+    }
+    AT(e, 0x24, f32) = kFloor.f;
+    D_0047B280 = D_0047B280 * kBounce.f;
+    sceVu0CopyVector(pos, (f32 *)(e + 0x20));
+    func_002FF650(D_0044E560, 0, 6, pos, 0, 0);
+    if (!(D_0047B280 < kRest.f)) {
+        return 2;
+    }
+    AT(e, 0x74, s32) = 1;
     return 1;
 }

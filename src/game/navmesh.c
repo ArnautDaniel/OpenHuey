@@ -546,3 +546,35 @@ u32 func_0017B160(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
     }
     return NAV_NONE;
 }
+
+/* +0xC the triangle under (or over) point p: of those (not blocked by `mask`) holding it
+ * horizontally (+0x10 == 3), the one whose height (+0x38) is nearest - at once if within
+ * 0.001; -1 if none */
+u32 func_0017C2A0(NavMesh *nm, const f32 *p, u32 mask) {
+    static const union { u32 u; f32 f; } kEps = {0x3A83126F};
+    f32 (*height)(NavMesh *, u32, const f32 *) = (f32 (*)(NavMesh *, u32, const f32 *))nm->vtbl[0x38 / 4];
+    u32 best = NAV_NONE, t;
+    f32 bestD = 0.0f, d;
+
+    for (t = 0; t < nm->numTris; t++) {
+        if (nm->tris[t].flags & mask) {
+            continue;
+        }
+        if (VCALL(nm, 0x10, s32 (*)(NavMesh *, u32, const f32 *))(nm, t, p) != 3) {
+            continue;
+        }
+        if (!(height(nm, t, p) <= 0.0f)) {
+            d = height(nm, t, p);
+        } else {
+            d = -height(nm, t, p);
+        }
+        if (d < kEps.f) {
+            return t;
+        }
+        if (best == NAV_NONE || !(bestD <= d)) {
+            bestD = d;
+            best = t;
+        }
+    }
+    return best;
+}
