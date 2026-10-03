@@ -24,7 +24,7 @@ extern VObject *D_0044E558;   /* the doors */
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index (0xFF) */
-extern s32 func_001785B0(Progress *p, s32 room);
+extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
 extern s32 func_00178300(Progress *p, s32 room, s32 n, s32 partner);
 extern s32 func_00177620(Progress *p);
 extern s32 func_001FBF70(VObject *ev, s32 id);
@@ -73,7 +73,7 @@ static void cmd_exit(VObject *ev, Progress *p, const u8 *pc) {
     }
     if (AT(p, SG_CONTROL, u8) == 0) {
         state = AT(gCharPlayer, 0xF8, s32);
-        if ((u8)func_001785B0(p, AT(ev, 0x560, s32)) == 1) {
+        if ((u8)func_001785B0(p, AT(ev, 0x560, s32), pc[1]) == 1) {
             return;
         }
         if ((u8)func_00178300(p, AT(ev, 0x560, s32), PC(ev)[1], 0) == 0) {
@@ -84,7 +84,7 @@ static void cmd_exit(VObject *ev, Progress *p, const u8 *pc) {
         }
     } else {
         state = AT(gCharPartner, 0xF8, s32);
-        if ((u8)func_001785B0(p, AT(ev, 0x560, s32)) == 1) {
+        if ((u8)func_001785B0(p, AT(ev, 0x560, s32), pc[1]) == 1) {
             return;
         }
         if ((u8)func_00178300(p, AT(ev, 0x560, s32), PC(ev)[1], 1) == 0) {

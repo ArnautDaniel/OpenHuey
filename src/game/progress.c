@@ -379,6 +379,13 @@ s32 func_00178200(Progress *p, u32 d, u32 side) {
     return 0;
 }
 
+/* is the door at exit `exit` of room `room` unlocked */
+s32 func_001785B0(Progress *p, s32 room, u32 exit) {
+    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit);
+
+    return (DOOR_STATE(p, d) >> 3) & 1;
+}
+
 /* is door d unlocked */
 s32 func_00178610(Progress *p, u32 d) {
     return (DOOR_STATE(p, d) >> 3) & 1;
