@@ -558,6 +558,38 @@ void func_001FA5E0(u8 *o, const f32 *light, s32 i) {
     }
 }
 
+/* +0x1C light i (12 floats) into `out` (the light is returned by value: the caller's buffer
+ * comes first) */
+void func_001FA680(f32 *out, u8 *o, s32 i) {
+    const f32 *l = (const f32 *)(o + 0x20 + i * 0x30);
+    s32 k;
+
+    for (k = 0; k < 12; k++) {
+        out[k] = l[k];
+    }
+}
+
+/* +0x18 VRAM area i's TEX0 (+0x328) */
+u64 func_001FA6B0(u8 *o, s32 i) {
+    return AT(o, 0x328 + i * 8, u64);
+}
+
+/* +0x24 light i back to the room's own (its table +0x9E0, if any) */
+void func_001FA530(u8 *o, s32 i) {
+    f32 l[12] __attribute__((aligned(16)));
+    const f32 *src;
+    s32 k;
+
+    if (AT(o, 0x9E0, u8 *) == NULL) {
+        return;
+    }
+    src = (const f32 *)(AT(o, 0x9E0, u8 *) + 0x10 + i * 0x30);
+    for (k = 0; k < 12; k++) {
+        l[k] = src[k];
+    }
+    VCALL((VObject *)o, 0x20, void (*)(VObject *, f32 *, s32))((VObject *)o, l, i);
+}
+
 extern VObject *gFileLoader;
 static const char sHmbPck[] = "O_HMB\\HMB_000.PCK";
 static const char sHmbTex[] = "O_HMB\\HMB_000.TEX";

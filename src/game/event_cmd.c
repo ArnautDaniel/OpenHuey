@@ -2,6 +2,10 @@
  * A command reads its operands at the script pc (event +0x4); afterwards the pc advances (vt
  * +0xC) unless the command waits (+0x700) or jumped (+0x701). Operands are big-endian. */
 #include "common.h"
+#ifdef HG_NATIVE
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 #include "game.h"
 #include "progress.h"
 #include "task.h"
@@ -788,6 +792,30 @@ void func_002029B0(VObject *ev) {
     case 0x58:
         VCALL(ev, 0xFC, void (*)(VObject *, s32))(ev, pc[1]);
         break;
+    case 0x90:   /* light pc[2]: 0 back to the room's own; 1 / 2 its value 7 / 11 scaled by be32 /
+                  * 1000 (others: set as it is) */
+        if (pc[1] == 0) {
+            VCALL(D_0044E4C8, 0x24, void (*)(VObject *, s32))(D_0044E4C8, pc[2]);
+        } else {
+            VObject *lights = D_0044E4C8;
+            f32 got[12] __attribute__((aligned(16)));
+            f32 l[12] __attribute__((aligned(16)));
+            s32 k;
+
+            /* +0x1C returns the light by value: its buffer first, then the object */
+            VCALL(lights, 0x1C, void (*)(f32 *, VObject *, s32))(got, lights, pc[2]);
+            for (k = 0; k < 12; k++) {
+                l[k] = got[k];
+            }
+            pc = PC(ev);
+            if (pc[1] == 2) {
+                l[11] = l[11] * ((f32)be32(pc + 3) / 1000.0f);
+            } else if (pc[1] == 1) {
+                l[7] = l[7] * ((f32)be32(pc + 3) / 1000.0f);
+            }
+            VCALL(lights, 0x20, void (*)(VObject *, f32 *, s32))(lights, l, PC(ev)[2]);
+        }
+        break;
     case 0x32:   /* sound channel pc[1]'s volume (+0x7C) */
         VCALL(D_0044E560, 0x7C, void (*)(VObject *, s32, s32))(D_0044E560, pc[1], be16(pc + 2) & 0xFFFF);
         break;
@@ -905,6 +933,20 @@ void func_001FF9E0(VObject *ev) {
     u8 *pc = PC(ev);
 
     if (pc[0] >= 0xDB) {
+#ifdef HG_NATIVE
+        if (getenv("HG_EVSTUCK")) {
+            fprintf(stderr, "event skip stuck at %p: %02X %02X %02X %02X %02X %02X\n", (void *)pc, pc[0], pc[1], pc[2],
+                    pc[3], pc[4], pc[5]);
+            {
+                s32 k;
+
+                for (k = -160; k < 0; k++) {
+                    fprintf(stderr, "%02X%s", pc[k], (k & 15) == 15 ? "\n" : " ");
+                }
+            }
+            exit(4);
+        }
+#endif
         return;
     }
     if (sCmdLength[pc[0]] == 0) {

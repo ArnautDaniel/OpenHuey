@@ -3,7 +3,10 @@
  *   HG_ROOM=<room>   go into the game at room <room> (hex, e.g. 2A: where New Game starts)
  *                    instead of the title (the boot scene still runs: it loads the system
  *                    files)
- *   HG_NOPARTNER=1   no partner (Hewie) in the game scene */
+ *   HG_NOPARTNER=1   no partner (Hewie) in the game scene
+ *   HG_WATCHDOG=<s>  after <s> seconds print a backtrace and stop (endless loops)
+ *   HG_EVSTUCK=1     stop with the script bytes when an event script steps onto a byte that
+ *                    isn't a command (src/game/event_cmd.c func_001FF9E0) */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,5 +88,30 @@ void hg_debug_flaglog(int32_t flag, int32_t on) {
     if (init && last[flag & 63] != on) {
         fprintf(stderr, "flag %d -> %d (gameplay frame %d)\n", (int)flag, (int)on, (int)frame);
         last[flag & 63] = on;
+    }
+}
+
+/* HG_WATCHDOG=<seconds>: after that long print where the game is (a backtrace) and stop - for
+ * finding endless loops */
+#include <execinfo.h>
+#include <signal.h>
+#include <unistd.h>
+
+static void watchdog_fire(int sig) {
+    void *frames[32];
+    int n = backtrace(frames, 32);
+
+    (void)sig;
+    fprintf(stderr, "\nwatchdog: still running, at:\n");
+    backtrace_symbols_fd(frames, n, 2);
+    _exit(3);
+}
+
+__attribute__((constructor)) static void watchdog_init(void) {
+    const char *s = getenv("HG_WATCHDOG");
+
+    if (s != NULL && atoi(s) > 0) {
+        signal(SIGALRM, watchdog_fire);
+        alarm((unsigned)atoi(s));
     }
 }
