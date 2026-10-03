@@ -351,3 +351,36 @@ s32 func_002B4970(VObject *room) {
     }
     return 1;
 }
+
+extern const char *D_003F0404[];   /* room 0x02's lift */
+
+/* room 0x02 callback: the lift (its height +0x24) - cmd[3] 0 set at the top (37.978, with
+ * progress flag 0x12) or bottom (11), 1 raised a step (0.25; at the top the event's +0x5C 2),
+ * 2 raised a step, others lowered one */
+s32 func_002A94C0(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kTop = {0x4217E979};
+    u8 *o = room_prop(D_003F0404[0]);
+
+    if (o == NULL) {
+        return 1;
+    }
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x24, f32) = (AT(gProgress, 0x1C, u32) & 0x40000) ? kTop.f : 11.0f;
+        break;
+    case 1:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
+        if (!(AT(o, 0x24, f32) < kTop.f)) {
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 2);
+            AT(o, 0x24, f32) = kTop.f;
+        }
+        break;
+    case 2:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
+        break;
+    default:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) - 0.25f;
+        break;
+    }
+    return 1;
+}

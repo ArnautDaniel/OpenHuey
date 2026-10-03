@@ -420,7 +420,24 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
 }
 
 
-extern s32 func_002DE0F0(u8 *zone, u8 *c);             /* character c in the zone */
+/* is character `c` (active, in the current room) in zone `zone`: its point (+0x74) fully
+ * inside (bits 1 and 2) */
+s32 func_002DE0F0(u8 *zone, u8 *c) {
+    f32 pt[4] __attribute__((aligned(16)));
+    s32 room;
+
+    if (c == NULL || AT(c, 0x28, u8) == 0) {
+        return 0;
+    }
+    room = AT(c, 0x30, s32);
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return 0;
+    }
+    if (!(u8)VCALL((VObject *)c, 0x74, s32 (*)(VObject *, f32 *))((VObject *)c, pt)) {
+        return 0;
+    }
+    return ((u8)func_002DE2F0(zone, pt, 0.0f, 0.0f) & 3) == 3;
+}
 
 /* is character `c` in zone `zone` - or, for NULL, any active character in this room (its
  * point +0x74 fully inside: bits 1 and 2) */
