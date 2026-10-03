@@ -877,3 +877,7 @@ void func_002E9AE0(u8 *e) {
     AT(e, 0x70, s8) = 1;
     AT(e, 0x7C, s32) = -1;
 }
+
+/* D_0046EC60 +0x10: nothing */
+void func_002C6620(void) {
+}

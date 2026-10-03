@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern PTMF D_01990BD0[];   /* the room callbacks (set up by the static initialisers) */
 
@@ -91,6 +92,165 @@ s32 func_002B2450(VObject *room, u8 *c, const u8 *cmd) {
     }
     if ((o = room_prop(D_004070C0[2])) != NULL) {
         prop_place(o, cmd[3] == 0 ? 0.0f : 0x1.becde60000000p-2f /* 0.43633232 */, 0x1.27a29c0000000p+2f /* 4.6193 */, 0x1.49999a0000000p+4f /* 20.6 */, 0x1.114fe00000000p+4f /* 17.082 */);
+    }
+    return 1;
+}
+
+extern void *gCharacters[6];
+extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index */
+extern void func_0032D3E0(void *c, s32 how, f32 x, f32 z);
+extern s32 func_0032D2C0(void *c);
+
+/* room 0x2B callback: character 0x1A (cmd[3] 0) sent off towards (-290, 42), or (else) asked
+ * whether it has arrived - 1 go on, 2 wait */
+s32 func_002B1700(VObject *room, u8 *c, const u8 *cmd) {
+    void *ch = gCharacters[(u8)func_001770D0(gProgress, 0x1A)];
+
+    if (cmd[3] == 0) {
+        func_0032D3E0(ch, 2, -290.0f, 42.0f);
+        return 1;
+    }
+    return func_0032D2C0(ch) == 0 ? 2 : 1;
+}
+
+extern VObject *D_0044E988;   /* the item manager (+0xC: an item is held) */
+extern VObject *D_0044E560;   /* the sound driver */
+
+/* room 0x50 callback: unless progress flag 0xAF, with flag 0x649 and item 0x238 held, sound
+ * 0xC (+0x14, 5) */
+s32 func_002B47C0(VObject *room) {
+    Progress *p = gProgress;
+
+    if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & 0x20000) &&
+        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238)) {
+        VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+    }
+    return 1;
+}
+
+extern const char *D_003FF110[];   /* names of room 0x20's swinging props */
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
+
+/* room 0x20 callback: the pendulum named cmd[3] - cmd[4] 0 stopped (phase +0x30 0), 1 swung on
+ * a step (phase +2 degrees; a tick at (-85, 30, 90) each turn): turned (+0x14) by 15 degrees
+ * x sin(phase) */
+s32 func_002AED60(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    u8 *o = room_prop(D_003FF110[cmd[3]]);
+    f32 a;
+
+    switch (cmd[4]) {
+    case 0:
+        AT(o, 0x30, f32) = 0.0f;
+        return 1;
+    case 1:
+        AT(o, 0x30, f32) = AT(o, 0x30, f32) + 2.0f;
+        if (!(AT(o, 0x30, f32) < 360.0f)) {
+            f32 pos[4] __attribute__((aligned(16)));
+
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
+            pos[0] = -85.0f;
+            pos[1] = 30.0f;
+            pos[2] = 90.0f;
+            func_002FF650(D_0044E560, 0x40000001, 6, pos, 0, 0);
+        }
+        a = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+        AT(o, 0x14, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x14, f32) = a - kTwoPi.f;
+        }
+        return 1;
+    }
+    return 1;
+}
+
+extern VObject *D_0044E4D0;   /* the event system (+0x30 / +0x34 its object slots) */
+extern u8 *D_0044E4C0;        /* the room effects */
+extern void *D_00472F60[], *D_004795A0[];
+extern void *func_002672F0(u32 size, void *place);   /* placement new */
+extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
+extern void func_002670F0(void *fx, s32 k);           /* remove room effect k */
+extern void func_002D6170(u8 *mgr, s32 slot);         /* end a spawned effect */
+
+static void obj_4795A0_init(void **obj) {
+    obj[0] = D_004795A0;
+}
+
+/* room 0x60 callback: cmd[3] 0 a new D_00472F60 room effect (+0x14A4) and a D_004795A0 object
+ * (kept as the event's object 1), then (also for cmd[3] 2..) room effect 0x1B: a 20 x 20 floor
+ * quad at y -0.2 whose strength follows the event's value 0 (0, 30, 60, 90, 128), handed to
+ * that object too when not 0; cmd[3] 1 both removed */
+s32 func_003106E0(VObject *room, u8 *c, const u8 *cmd) {
+    struct {
+        f32 q[4][4];
+        s32 a;
+        s32 level_f;
+        f32 one;
+        s32 level;
+    } arg __attribute__((aligned(16)));
+    VObject *ev;
+    s32 v;
+
+    if (cmd[3] == 1) {
+        func_002670F0(D_0044E4C0, 0x1B);
+        func_002D6170(D_0044E578,
+                      VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1));
+        return 1;
+    }
+    if (cmd[3] == 0) {
+        u8 *fx = D_0044E4C0;
+        void **slot = (void **)(fx + 0x14A4);
+        void *mem;
+        s32 obj;
+
+        if (*slot != NULL) {
+            VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
+            *slot = NULL;
+        }
+        mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+        if (mem != NULL) {
+            void **e = func_002672F0(0xA0, mem);
+
+            if (e != NULL) {
+                e[0] = D_00472F60;
+            }
+            *slot = e;
+            VCALL(*slot, 0xC, void (*)(void *))(*slot);
+        }
+        obj = Effect_New(D_0044E578, 0x10, obj_4795A0_init);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, obj);
+    }
+    arg.q[0][0] = 10.0f;  arg.q[0][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[0][2] = -10.0f; arg.q[0][3] = 1.0f;
+    arg.q[1][0] = -10.0f; arg.q[1][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[1][2] = -10.0f; arg.q[1][3] = 1.0f;
+    arg.q[2][0] = 10.0f;  arg.q[2][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[2][2] = 10.0f;  arg.q[2][3] = 1.0f;
+    arg.q[3][0] = -10.0f; arg.q[3][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[3][2] = 10.0f;  arg.q[3][3] = 1.0f;
+    arg.a = 0;
+    arg.level = 0;
+    ev = D_0044E4D0;
+    switch (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0)) {
+    case 0:
+        arg.level = 0;
+        break;
+    case 1:
+        arg.level = 30;
+        break;
+    case 2:
+        arg.level = 60;
+        break;
+    case 3:
+        arg.level = 90;
+        break;
+    case 4:
+        arg.level = 0x80;
+        break;
+    }
+    arg.one = 1.0f;
+    arg.level_f = arg.level;   /* (the word copied as is) */
+    func_00266C70(D_0044E4C0, 0x1B, &arg);
+    if (arg.level != 0) {
+        v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1);
+        func_002D6090(D_0044E578, v, &arg.level);
     }
     return 1;
 }
