@@ -275,8 +275,8 @@ s32 func_002AC600(VObject *room, u8 *c, const u8 *cmd) {
 
 extern void *D_0046EA40[];
 
-/* room 0x21 callback: room effect +0x143C made anew (a D_0046EA40) */
-s32 func_002AF730(VObject *room) {
+/* room effect +0x143C made anew (a D_0046EA40) */
+static void room_fx_143C_new(void) {
     u8 *fx = D_0044E4C0;
     void **slot = (void **)(fx + 0x143C);
     void *mem;
@@ -295,6 +295,48 @@ s32 func_002AF730(VObject *room) {
         *slot = e;
         VCALL(*slot, 0xC, void (*)(void *))(*slot);
     }
+}
+
+/* room 0x21 callback: room_fx_143C_new */
+s32 func_002AF730(VObject *room) {
+    room_fx_143C_new();
+    return 1;
+}
+
+/* room 0x31 callback: the same */
+s32 func_0031E510(VObject *room) {
+    room_fx_143C_new();
+    return 1;
+}
+
+/* room 0x32 callback: the same */
+s32 func_00321590(VObject *room) {
+    room_fx_143C_new();
+    return 1;
+}
+
+extern void *D_0046F5A0[], *D_00476BF0[];
+
+static void obj_46F5A0_init(void **obj) {
+    obj[0] = D_0046F5A0;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+static void obj_476BF0_init(void **obj) {
+    obj[0] = D_00476BF0;
+}
+
+/* room 0x24 callback: a D_0046F5A0 object (0x1C60 bytes, its quad drawer at +0x1810) */
+s32 func_002AFE90(VObject *room) {
+    Effect_New(D_0044E578, 0x1C60, obj_46F5A0_init);
+    return 1;
+}
+
+/* room 0x52 callback: a D_00476BF0 object (0x6E0 bytes) */
+s32 func_002B4BE0(VObject *room) {
+    Effect_New(D_0044E578, 0x6E0, obj_476BF0_init);
     return 1;
 }
 
