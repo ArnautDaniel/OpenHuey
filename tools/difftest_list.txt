@@ -2896,3 +2896,7 @@ src/game/meshdraw.c func_0025CB50 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xD4=
 src/game/effects.c func_00317C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100001 --pre=@0x0B100040=0x3F000000..0x42000000 --pre=@0x44E4F0=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0B910000..0x0B910000 --pre=@0x0B91008C=0x00100000..0x00100000
 src/game/effects.c func_00319B00
 src/game/renderer.c func_001B9250 --pre=a0=0x0B000000..0x0B000000
+src/game/effects.c func_00358210 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1
+src/game/effects.c func_00358270 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100001 --pre=@0x0B100000=0x7F..0x81 --pre=a0+4=0x7F..0x80
+src/game/effects.c func_00358B30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+4=0..0x100 --pre=a0+8=0..0x60 --pre=a0+0xC=0..3
+src/game/effects.c func_00358C10 --pre=a0=0x0B000000..0x0B000000

@@ -43,6 +43,13 @@ void func_00317D40(uint8_t *e) {
     glr_todo("floor quad effect (func_00317D40)");
 }
 
+/* func_003582D0: D_004795A0's draw (+0x14; level +0x4, strength +0x8): a glow of world
+ * geometry (535 instructions of GS packets). GL TODO. */
+void func_003582D0(uint8_t *e) {
+    (void)e;
+    glr_todo("glow effect (func_003582D0)");
+}
+
 /* func_0034E9E0: a rippling surface grid (texture +0x20, position +0x10, size +0x24, phase
  * +0x28, turn +0x2C): a sine-displaced grid of textured quads. GL TODO; 0 = nothing linked. */
 int func_0034E9E0(uint8_t *d) {

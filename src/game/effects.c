@@ -942,3 +942,70 @@ void func_00317C70(u8 *e, u8 *arg) {
     AT(e, 0x18, s32) = AT(arg, 0x48, s32);
     VCALL(D_0044E4F0, 0x8C, void (*)(VObject *, s32))(D_0044E4F0, AT(e, 0x18, s32));
 }
+
+/* ---- D_004795A0 (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
+ * follows a level (+0x4): up to the level and back down to 30 (+0xC 0 / 1), or for level 0x80
+ * slowly up to 0x38 (2); 0xFF done. Its draw (+0x14, func_003582D0) is a GL TODO ---- */
+
+extern void *D_004795A0[], *D_0046F580[];
+extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
+
+/* +0x8 destructor */
+u8 *func_00358210(u8 *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x0, void **) = D_004795A0;
+        AT(e, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(e);
+        }
+    }
+    return e;
+}
+
+/* +0x18 start at level *arg (a new level restarts the rise); NULL: level 0 */
+void func_00358270(u8 *e, s32 *arg) {
+    if (arg == NULL) {
+        AT(e, 0x4, s32) = 0;
+        return;
+    }
+    if (*arg == AT(e, 0x4, s32)) {
+        return;
+    }
+    AT(e, 0x4, s32) = *arg;
+    AT(e, 0xC, s32) = AT(e, 0x4, s32) == 0x80 ? 2 : 0;
+}
+
+/* +0x10 update */
+s32 func_00358B30(u8 *e) {
+    switch (AT(e, 0xC, s32)) {
+    case 0:
+        AT(e, 0x8, s32) += AT(e, 0x4, s32) >> 4;
+        if (AT(e, 0x4, s32) < AT(e, 0x8, s32)) {
+            AT(e, 0x8, s32) = AT(e, 0x4, s32);
+            AT(e, 0xC, s32) = 1;
+        }
+        break;
+    case 1:
+        AT(e, 0x8, s32) -= AT(e, 0x4, s32) >> 4;
+        if (AT(e, 0x8, s32) < 0x1E) {
+            AT(e, 0x8, s32) = 0x1E;
+            AT(e, 0xC, s32) = 0xFF;
+        }
+        break;
+    case 2:
+        AT(e, 0x8, s32) += AT(e, 0x4, s32) >> 5;
+        if (!(AT(e, 0x8, s32) < 0x38)) {
+            AT(e, 0x8, s32) = 0x38;
+            AT(e, 0xC, s32) = 0xFF;
+        }
+        break;
+    }
+    return 1;
+}
+
+/* +0xC set up: level, strength and state 0 */
+void func_00358C10(u8 *e) {
+    AT(e, 0x4, s32) = 0;
+    AT(e, 0x8, s32) = 0;
+    AT(e, 0xC, s32) = 0;
+}
