@@ -916,3 +916,29 @@ void func_002C6570(u8 *e) {
 /* D_00472F60 +0xC set up: nothing */
 void func_00319B10(void) {
 }
+
+/* ---- room effect D_00472F60 (room 0x60's floor effect 0x1B): a floor quad of some strength
+ * (+0x14; 0 off); its draw (+0x14, func_00317D40) is a GL TODO ---- */
+
+/* +0x10 update: nothing */
+void func_00319B00(void) {
+}
+
+/* +0x18 start: the quad's four corners (+0x50), then from the argument: +0x40 (a float, as a
+ * whole number) -> +0x10, the strength byte +0x44 -> +0x14 (its top bits -> +0x1C), +0x48 ->
+ * +0x18, which the renderer is told (+0x8C) */
+void func_00317C70(u8 *e, u8 *arg) {
+    s32 k;
+
+    if (arg == NULL) {
+        return;
+    }
+    for (k = 0; k < 16; k++) {
+        AT(e, 0x50 + k * 4, f32) = AT(arg, k * 4, f32);
+    }
+    AT(e, 0x10, s32) = (s32)AT(arg, 0x40, f32);
+    AT(e, 0x14, s32) = AT(arg, 0x44, u8);
+    AT(e, 0x1C, u32) = AT(arg, 0x44, u32) & 0xF0000000;
+    AT(e, 0x18, s32) = AT(arg, 0x48, s32);
+    VCALL(D_0044E4F0, 0x8C, void (*)(VObject *, s32))(D_0044E4F0, AT(e, 0x18, s32));
+}
