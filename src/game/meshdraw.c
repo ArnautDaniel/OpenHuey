@@ -265,7 +265,7 @@ void func_0025DB10(u8 *o, s32 which) {
     AT(o, 0x4C + (which & 0xFF) * 16, f32) = e[3];
 }
 
-extern s32 func_0025CB50(u8 *o);
+s32 func_0025CB50(u8 *o, const f32 *st);   /* a kind-4 batch's animated texture coordinates */
 s32 func_002B7500(u8 *batch);   /* send a batch's vertices to VU1 */
 
 /* mode 0 batch writer: the batch's vertex count (+0x7C; count & 3 gives the padding) locates
@@ -311,7 +311,7 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
     a.xyz = (f32 *)xyz;
     a.batch = batch;
     if (AT(o, 0x18, s32) == 4) {
-        ok = func_0025CB50(o);
+        ok = func_0025CB50(o, (const f32 *)batch);
         a.st = o + 0x240 + (AT(o, 0xD4, s32) - 1) * 32;
     } else {
         a.st = batch;
@@ -790,6 +790,84 @@ s32 func_00268090(u8 *o) {
     return 1;
 }
 
+
+/* a kind-4 batch's texture coordinates, a flip book: its entry (+0xD8 + 7 x +0xD4: frames,
+ * frame time, type (2: stop on the last frame), frame, timer, u step, v step in 1/256) steps a
+ * frame when its timer runs out (unless +0x8B holds it; the coordinates in use, +0x240 + 32 x
+ * index, are last frame's +0x140 ones), each frame moving the batch's own u (st) on by the u
+ * step; past 1 they wrap back by whole units (and down to 0 at least) and v moves on by that
+ * many v steps. Hidden batches (group +0x8A off in the mask +0x6C) are just passed. Moves on
+ * to the next batch (+0xD4); 1 */
+s32 func_0025CB50(u8 *o, const f32 *st) {
+    static const union { u32 u; f32 f; } k256th = {0x3B800000}, k16th = {0x3C800000};
+    u8 *ent = o + 0xD8 + AT(o, 0xD4, s32) * 7;
+    u8 g = AT(o, 0x8A, u8);
+    f32 *uv;
+    f32 m, fw;
+    s32 k, whole;
+
+    if (g != 0 && !(AT(o, 0x6C + (g >> 5) * 4, u32) & (1u << (g & 0x1F)))) {
+        AT(o, 0xD4, s32) += 1;
+        return 1;
+    }
+    if (AT(o, 0x8B, u8) == 0) {
+        ent[4] -= 1;
+        for (k = 0; k < 8; k++) {
+            AT(o, 0x240 + AT(o, 0xD4, s32) * 32 + k * 4, f32) = AT(o, 0x140 + AT(o, 0xD4, s32) * 32 + k * 4, f32);
+        }
+    }
+    if (ent[4] != 0) {
+        AT(o, 0xD4, s32) += 1;
+        return 1;
+    }
+    ent[3] += 1;
+    if (!(ent[3] < ent[0])) {
+        ent[3] = ent[2] == 2 ? ent[0] - 1 : 0;
+    }
+    ent[4] = ent[1];
+    for (k = 0; k < 4; k++) {
+        uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+        uv[k * 2] = st[k * 2] + (f32)ent[3] * ((f32)ent[5] * k256th.f);
+        uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+        uv[k * 2 + 1] = st[k * 2 + 1];
+    }
+    uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+    if (uv[0] <= 1.0f && uv[2] <= 1.0f && uv[4] <= 1.0f && uv[6] <= 1.0f) {
+        AT(o, 0xD4, s32) += 1;
+        return 1;
+    }
+    m = uv[0];
+    for (k = 1; k < 4; k++) {
+        if (m < uv[k * 2]) {
+            m = uv[k * 2];
+        }
+    }
+    whole = (s32)(m - k16th.f);
+    fw = (f32)whole;
+    for (k = 0; k < 4; k++) {
+        uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+        uv[k * 2] = uv[k * 2] - fw;
+    }
+    uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+    if (uv[0] < 0.0f || uv[2] < 0.0f || uv[4] < 0.0f || uv[6] < 0.0f) {
+        m = uv[0];
+        for (k = 1; k < 4; k++) {
+            if (!(m <= uv[k * 2])) {
+                m = uv[k * 2];
+            }
+        }
+        for (k = 0; k < 4; k++) {
+            uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+            uv[k * 2] = uv[k * 2] - m;
+        }
+    }
+    for (k = 0; k < 4; k++) {
+        uv = (f32 *)(o + 0x140 + AT(o, 0xD4, s32) * 32);
+        uv[k * 2 + 1] = uv[k * 2 + 1] + (f32)whole * ((f32)ent[6] * k256th.f);
+    }
+    AT(o, 0xD4, s32) += 1;
+    return 1;
+}
 
 /* a kind-4 room part's batch (its entry +0xD8 + 7 x +0xD4, type at +2): types 1 / 3 / 4 / 6
  * face the camera (1 and 6 staying upright) - the batch matrix (+0x90) turned to the view about

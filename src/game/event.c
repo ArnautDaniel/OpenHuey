@@ -503,6 +503,11 @@ void func_001FB1F0(u8 *ev, u32 id) {
 }
 
 
+/* +0x34 script variable n (+0x810) */
+s32 func_00209020(u8 *ev, s32 n) {
+    return AT(ev, 0x810 + (n & 0xFF) * 4, s32);
+}
+
 /* +0x30 set script variable n (+0x810) */
 void func_00209040(u8 *ev, s32 n, s32 v) {
     AT(ev, 0x810 + (n & 0xFF) * 4, s32) = v;
