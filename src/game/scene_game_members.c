@@ -445,6 +445,46 @@ void *func_00221E70(u8 *d, s32 i) {
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 extern VObject *D_0044E4F0;   /* the renderer */
 
+extern VObject *D_0044E4B8;   /* the camera */
+
+/* clip-space point c inside the view volume (|x|, |y|, |z| within w) */
+static s32 clip_inside(const f32 *c) {
+    return c[0] <= c[3] && !(c[0] < -c[3]) && c[1] <= c[3] && !(c[1] < -c[3]) && c[2] <= c[3] && !(c[2] < -c[3]);
+}
+
+/* a doorway quad (its first four points) is wholly on screen */
+s32 func_001F9790(u8 *o, f32 (*q)[4]) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 c[4][4] __attribute__((aligned(16)));
+    s32 out = 0;
+
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, m);
+    sceVu0ApplyMatrix(c[0], m, q[0]);
+    sceVu0ApplyMatrix(c[1], m, q[1]);
+    sceVu0ApplyMatrix(c[2], m, q[2]);
+    sceVu0ApplyMatrix(c[3], m, q[3]);
+    if (!clip_inside(c[0]) || !clip_inside(c[1]) || !clip_inside(c[2]) || !clip_inside(c[3])) {
+        out = 1;
+    }
+    return !out;
+}
+
+/* +0x38 add a lit doorway for this frame (six vectors: four corners, its facing, its top
+ * middle) when it is wholly on screen and there is room (+0x340, 16 of them, +0x940 vectors
+ * used) */
+s32 func_001F9FC0(u8 *o, f32 (*q)[4]) {
+    s32 i;
+
+    if (!(u8)func_001F9790(o, q) || AT(o, 0x940, s32) >= 0x60) {
+        return 0;
+    }
+    for (i = 0; i < 6; i++) {
+        sceVu0CopyVector((f32 *)(o + 0x340 + (AT(o, 0x940, s32) + i) * 16), q[i]);
+    }
+    AT(o, 0x940, s32) += 6;
+    return 1;
+}
+
 /* reset: ambient (0, 128, 128, 128), the 16 lights to "none" */
 void func_001F9C80(u8 *o) {
     f32 light[12] __attribute__((aligned(16)));   /* (read with lq) */
