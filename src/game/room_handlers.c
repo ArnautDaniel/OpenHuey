@@ -6,6 +6,7 @@
 #include "ptmf.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "input.h"
 
 extern PTMF D_01990BD0[];   /* the room callbacks (set up by the static initialisers) */
 
@@ -520,6 +521,71 @@ s32 func_002A9740(VObject *room, u8 *c, const u8 *cmd) {
         arg.r = 0x80;
         arg.a = 0;
         func_002D6090(D_0044E578, slot, &arg);
+    }
+    return 1;
+}
+
+extern const char *D_003F17B8[], *D_003F17C8[];   /* room 0x04's two dials */
+extern u32 D_0047E364;   /* menu buttons, repeating (MENU_*) */
+
+/* room 0x04 callback, a dial (cmd[3] 0 the first, else the second; its value progress variable
+ * 0 / 1, 0..6, shown at 30 x value - 90 degrees about y): cmd[4] 0 shown at its value, 1 the
+ * player turns it with left / right (the event's +0x60 1 when changed, 0 on confirm / cancel),
+ * 2 it turns a degree a frame to its value (+0x5C 1 when there), 3 wait */
+s32 func_002A9F30(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDeg = {0x3C8EFA35};
+    u8 which = cmd[3] != 0;
+    u8 *o = room_prop(cmd[3] == 0 ? D_003F17B8[0] : D_003F17C8[0]);
+    Progress *p;
+    u8 v;
+
+    if (o == NULL) {
+        return 1;
+    }
+    switch (cmd[4]) {
+    case 0:
+        AT(o, 0x0, u8) = 0;
+        v = Progress_GetVar(gProgress, which);
+        AT(o, 0x14, f32) = kPi.f * (f32)(v * 30 - 90) / 180.0f;
+        break;
+    case 1:
+        if (D_0047E36C & (MENU_CONFIRM | MENU_CANCEL)) {
+            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 0);
+            break;
+        }
+        p = gProgress;
+        v = Progress_GetVar(p, which);
+        if (D_0047E364 & MENU_LEFT) {
+            if (v != 0) {
+                v = v - 1;
+            }
+        } else if (D_0047E364 & MENU_RIGHT) {
+            if (v < 6) {
+                v = v + 1;
+            }
+        }
+        if (v == (u8)Progress_GetVar(p, which)) {
+            break;
+        }
+        AT(p, 0x9C + which, u8) = v;
+        VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        break;
+    case 2: {
+        f32 d = 180.0f * AT(o, 0x14, f32) / kPi.f;
+
+        v = Progress_GetVar(gProgress, which);
+        d = d - (f32)(v * 30 - 90);
+        if (!(d <= 1.0f)) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - kDeg.f;
+        } else if (d < -1.0f) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) + kDeg.f;
+        } else {
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        }
+        break;
+    }
+    case 3:
+        return 2;
     }
     return 1;
 }
