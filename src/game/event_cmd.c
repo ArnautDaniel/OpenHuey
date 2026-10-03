@@ -31,6 +31,12 @@ extern s32 func_001FBF70(VObject *ev, s32 id);
 extern void func_001FBE90(VObject *ev, s32 a, s32 b);
 extern VObject *D_0044E570;   /* the nav mesh */
 extern u8 *D_0044E4C0;        /* the room effects */
+extern u8 *func_00266C40(void *fx, s32 k);   /* effect slot k (NULL: none) */
+extern void *func_002672F0(u32 size, void *place);   /* placement new */
+extern u8 *func_00208ED0(u8 *e);                   /* a D_0046FF40 effect */
+extern u8 *func_00208EF0(u8 *e);                   /* a D_0046FF00 effect */
+extern VObject *D_0044E4C8;   /* the scene's lights */
+extern VObject *D_0044E560;   /* the sound driver */
 extern VObject *D_0044E4F0;   /* the renderer */
 extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
 extern s32 func_001F4770(u8 *model, s32, s32, s32);
@@ -263,6 +269,90 @@ extern void func_001771A0(Progress *p, s32 who);
 void func_001FBE00(VObject *ev, s32 prio, void *step);
 extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
 extern void func_0029F040(void *c, s32 slot);
+
+/* room effect slot pc[1] (32, D_0044E4C0 +0x1438) made anew from the effects' pool (+0x1400)
+ * with constructor `ctor`, then set going (func_00266C70) at (3 x be32 / 1000; with `kind`
+ * pc[14]) */
+static void room_effect_new(VObject *ev, u8 *(*ctor)(u8 *), s32 kind) {
+    u8 *fx = D_0044E4C0;
+    const u8 *pc = PC(ev);
+    struct {
+        f32 pos[4];
+        s32 a, kind;
+    } arg __attribute__((aligned(16)));
+
+    if (pc[1] < 0x20) {
+        u8 **slot = (u8 **)(fx + 0x1438) + pc[1];
+        void *mem;
+
+        if (*slot != NULL) {
+            VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
+            *slot = NULL;
+        }
+        mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+        if (mem != NULL) {
+            u8 *e = func_002672F0(0xA0, mem);
+
+            if (e != NULL) {
+                e = ctor(e);
+            }
+            *slot = e;
+            VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
+        }
+    }
+    arg.pos[0] = (f32)be32(PC(ev) + 2) / 1000.0f;
+    arg.pos[1] = (f32)be32(PC(ev) + 6) / 1000.0f;
+    arg.pos[2] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
+    arg.pos[3] = 1.0f;
+    arg.a = 0;
+    if (kind) {
+        arg.kind = PC(ev)[0xE];
+    }
+    func_00266C70(D_0044E4C0, PC(ev)[1], &arg);
+}
+
+extern VObject *D_00456DF8;   /* the room's placed objects (+0x18 by name) */
+extern void func_0025F9D0(u8 *o, s32 anim);
+extern void func_0025F810(u8 *o);
+
+/* event command 0x50: the room's placed object named by the room handler (+0x34 of pc[2]):
+ * pc[1] 0 shown (pc[3]), 1 / 2 animation pc[3] once / looped, 3 animation reset, 4 hidden and
+ * stopped */
+void func_001FFB70(VObject *ev) {
+    VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+    const char *name = VCALL(room, 0x34, const char *(*)(VObject *, s32))(room, PC(ev)[2]);
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    const u8 *pc = PC(ev);
+
+#ifdef HG_NATIVE
+    if (o == NULL) {   /* (the PS2 writes to low memory) */
+        return;
+    }
+#endif
+    switch (pc[1]) {
+    case 0:
+        AT(o, 0x0, u8) = pc[3] != 0;
+        break;
+    case 1:
+        func_0025F9D0(o, pc[3]);
+        AT(o, 0x1, u8) = 0;
+        break;
+    case 2:
+        func_0025F9D0(o, pc[3]);
+        AT(o, 0x1, u8) = 1;
+        break;
+    case 3:
+        AT(o, 0x94, s32) = 0;
+        AT(o, 0xA0, s32) = 0;
+        AT(o, 0x98, s32) = 0;
+        AT(o, 0x9C, s32) = 0;
+        break;
+    case 4:
+        AT(o, 0x0, u8) = 0;
+        func_0025F810(o);
+        break;
+    }
+}
 
 void func_002029B0(VObject *ev) {
     Progress *p;
@@ -623,6 +713,69 @@ void func_002029B0(VObject *ev) {
             AT(z, 0xC0C, f32) = 1.0f;
             AT(z, 0xC10, f32) = (f32)(u16)be16(pc + 0xE);
             AT(z, 0xC14, f32) = (f32)(s16)be16(pc + 0x10);
+        }
+        break;
+    case 0x58:
+        VCALL(ev, 0xFC, void (*)(VObject *, s32))(ev, pc[1]);
+        break;
+    case 0x32:   /* sound channel pc[1]'s volume (+0x7C) */
+        VCALL(D_0044E560, 0x7C, void (*)(VObject *, s32, s32))(D_0044E560, pc[1], be16(pc + 2) & 0xFFFF);
+        break;
+    case 0x86:   /* room effect pc[1] (32) made anew (a D_0046FF40 effect) at (3 x be32 / 1000),
+                  * kind pc[14] */
+        room_effect_new(ev, func_00208ED0, 1);
+        break;
+    case 0x7F:   /* the same with a D_0046FF00 effect, no kind */
+        room_effect_new(ev, func_00208EF0, 0);
+        break;
+    case 0x26:   /* script variable pc[1] (+0x810) = be32 */
+        AT((u8 *)ev + pc[1] * 4, 0x810, s32) = be32(pc + 2);
+        break;
+    case 0x50:
+        func_001FFB70(ev);
+        break;
+    case 0x66: {   /* a lit doorway for the lights (+0x38): four corners (be32 / 1000), its facing
+                    * from the first three, its middle */
+        f32 q[6][4] __attribute__((aligned(16)));
+        f32 a[4] __attribute__((aligned(16)));
+        f32 b[4] __attribute__((aligned(16)));
+        s32 i;
+
+        for (i = 0; i < 4; i++) {
+            q[i][0] = (f32)be32(PC(ev) + 1 + i * 12) / 1000.0f;
+            q[i][1] = (f32)be32(PC(ev) + 5 + i * 12) / 1000.0f;
+            q[i][2] = (f32)be32(PC(ev) + 9 + i * 12) / 1000.0f;
+            q[i][3] = 1.0f;
+        }
+        sceVu0SubVector(a, q[1], q[0]);
+        sceVu0SubVector(b, q[2], q[0]);
+        sceVu0OuterProduct(q[4], a, b);
+        sceVu0Normalize(q[4], q[4]);
+        q[5][0] = q[3][0] + 0.5f * (q[0][0] - q[3][0]);
+        q[5][1] = q[2][1] + 0.5f * (q[1][1] - q[2][1]);
+        q[5][2] = q[3][2] + 0.5f * (q[0][2] - q[3][2]);
+        q[5][3] = 1.0f;
+        VCALL(D_0044E4C8, 0x38, void (*)(VObject *, f32 *))(D_0044E4C8, q[0]);
+        break;
+    }
+    case 0x7D:   /* zone pc[1] (32) around room effect pc[2]: kind pc[7], radius, height */
+        if (pc[1] < 0x20) {
+            u8 *e = func_00266C40(D_0044E4C0, pc[2]);
+
+            if (e != NULL) {
+                u8 *z;
+
+                pc = PC(ev);
+                z = (u8 *)ev + pc[1] * 0x30;
+                AT(z, 0xBF4, u8) = 1;
+                AT(z, 0xBF5, u8) = pc[7];
+                AT(z, 0xC00, f32) = AT(e, 0x20, f32);
+                AT(z, 0xC04, f32) = AT(e, 0x24, f32);
+                AT(z, 0xC08, f32) = AT(e, 0x28, f32);
+                AT(z, 0xC0C, f32) = 1.0f;
+                AT(z, 0xC10, f32) = (f32)(u16)be16(pc + 3);
+                AT(z, 0xC14, f32) = (f32)(s16)be16(pc + 5);
+            }
         }
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:

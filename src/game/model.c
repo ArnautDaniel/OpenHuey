@@ -135,6 +135,20 @@ void *func_00208E90(void *p) {
     return e;
 }
 
+extern void *D_0046FF40[], *D_0046FF00[];
+
+/* a room effect of the event command 0x7F (0xA0 bytes): its vtable */
+void *func_00208EF0(void *p) {
+    AT(p, 0x0, void **) = D_0046FF00;
+    return p;
+}
+
+/* a room effect of the event command 0x86 (0xA0 bytes): its vtable */
+void *func_00208ED0(void *p) {
+    AT(p, 0x0, void **) = D_0046FF40;
+    return p;
+}
+
 /* the player's (Fiona's) model (0x1820 bytes), put at character `slot` +0xF0 */
 void func_003A1860(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
