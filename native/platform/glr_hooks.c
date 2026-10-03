@@ -27,22 +27,6 @@ int func_002685F0(uint8_t *drawer) {
     return 0;
 }
 
-/* func_002E4760 / func_002E3500: the quad (sprite) drawer's packets (instances +0x10, corners
- * +0x14, layer +0x20, atlas cells +0x24..+0x30, flags +0x32: 2 own corners, 1/4 billboard
- * variants; texture id/group +0x34/+0x35, CLUT +0x36): camera-facing textured quads. Will be
- * GL quads once textures are in; 0 = nothing linked. */
-int func_002E4760(uint8_t *d) {
-    (void)d;
-    glr_todo("sprite quads (func_002E4760)");
-    return 0;
-}
-
-int func_002E3500(uint8_t *d) {
-    (void)d;
-    glr_todo("sprite quads, flagged (func_002E3500)");
-    return 0;
-}
-
 /* func_0034E9E0: a rippling surface grid (texture +0x20, position +0x10, size +0x24, phase
  * +0x28, turn +0x2C): a sine-displaced grid of textured quads. GL TODO; 0 = nothing linked. */
 int func_0034E9E0(uint8_t *d) {

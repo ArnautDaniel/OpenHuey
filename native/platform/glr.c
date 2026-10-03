@@ -293,15 +293,17 @@ static uint32_t ct16(uint16_t c) {   /* alpha bit set: 0x80 */
            (c & 0x8000 ? 0x80000000u : 0);
 }
 
-static uint32_t clut_entry(const TexEntry *t, const uint8_t *clut, int i, int n) {
+/* palette entry i of n (16-colour palettes: palette `csa` of those in the 16-wide CLUT image,
+ * each an 8 x 2 block) */
+static uint32_t clut_entry(const TexEntry *t, const uint8_t *clut, int i, int n, int csa) {
     int x, y, k;
 
     if (n == 256) {   /* CSM1: entries 8..15 and 16..23 of each 32 swapped */
         x = i % 8 + ((i / 16) % 2) * 8;
         y = (i / 32) * 2 + (i / 8) % 2;
     } else {
-        x = i & 7;
-        y = i >> 3;
+        x = (i & 7) + (csa & 1) * 8;
+        y = (i >> 3) + (csa >> 1) * 2;
     }
     k = y * 16 + x;
     if (t->cpsm == PSMCT16) {
@@ -315,7 +317,7 @@ static uint32_t clut_entry(const TexEntry *t, const uint8_t *clut, int i, int n)
 }
 
 /* RGBA8 texels (alpha as the GS keeps it, 0x80 = 1.0); 0 for a format not handled */
-static int tex_decode(const TexEntry *t, uint32_t *out) {
+static int tex_decode(const TexEntry *t, uint32_t *out, int csa) {
     const uint8_t *img = (const uint8_t *)t + t->data, *clut = img + t->imageQwc * 16;
     uint32_t pal[256];
     int w = t->w, h = t->h, i, n;
@@ -325,7 +327,7 @@ static int tex_decode(const TexEntry *t, uint32_t *out) {
     case PSMT4:
         n = t->psm == PSMT8 ? 256 : 16;
         for (i = 0; i < n; i++) {
-            pal[i] = clut_entry(t, clut, i, n);
+            pal[i] = clut_entry(t, clut, i, n, csa);
         }
         for (i = 0; i < w * h; i++) {
             out[i] = t->psm == PSMT8 ? pal[img[i]] : pal[(img[i >> 1] >> ((i & 1) * 4)) & 0xF];
@@ -351,6 +353,7 @@ static int tex_decode(const TexEntry *t, uint32_t *out) {
 typedef struct GlrTex {
     const TexEntry *entry;   /* NULL: free */
     uint32_t check;          /* the entry's contents when decoded (a room's file reloads in place) */
+    int csa;                 /* its palette (16-colour textures) */
     GLuint tex;
 } GlrTex;
 
@@ -371,17 +374,17 @@ static uint32_t tex_check(const TexEntry *t) {
     return c;
 }
 
-static GLuint texture_for(const TexEntry *t) {
-    uint32_t h = (uint32_t)(uintptr_t)t * 2654435761u >> 22, check = tex_check(t), i;
+static GLuint texture_for(const TexEntry *t, int csa) {
+    uint32_t h = ((uint32_t)(uintptr_t)t + (uint32_t)csa * 0x9E37u) * 2654435761u >> 22, check = tex_check(t), i;
     GlrTex *e = NULL;
 
     for (i = 0; i < 1024; i++) {
         e = &sTex[(h + i) & 1023];
-        if (e->entry == t || e->entry == NULL) {
+        if ((e->entry == t && e->csa == csa) || e->entry == NULL) {
             break;
         }
     }
-    if (e->entry == t && e->check == check) {
+    if (e->entry == t && e->csa == csa && e->check == check) {
         return e->tex;
     }
     if (e->tex != 0) {   /* changed, or the table is full: the slot is reused */
@@ -389,6 +392,7 @@ static GLuint texture_for(const TexEntry *t) {
         e->tex = 0;
     }
     e->entry = t;
+    e->csa = csa;
     e->check = check;
     if (t->w == 0 || t->h == 0 || t->w > 1024 || t->h > 1024) {
         return 0;
@@ -396,7 +400,7 @@ static GLuint texture_for(const TexEntry *t) {
     if (sTexels == NULL) {
         sTexels = malloc(1024 * 1024 * sizeof(uint32_t));
     }
-    if (!tex_decode(t, sTexels)) {
+    if (!tex_decode(t, sTexels, csa)) {
         fprintf(stderr, "glr: texture format 0x%02X not handled\n", t->psm);
         return 0;
     }
@@ -615,7 +619,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             int mode = 0;
 
             if ((d->prim & 0x10) && d->tex != NULL) {   /* TME */
-                GLuint t = texture_for((const TexEntry *)d->tex);
+                GLuint t = texture_for((const TexEntry *)d->tex, (int)(d->tex0 >> 56) & 0x1F);   /* CSA */
                 uint32_t tfx = (uint32_t)(d->tex0 >> 35) & 3;
 
                 mode = t == 0 ? 0 : tfx == 1 ? 2 : 1;
@@ -625,13 +629,16 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             p_glProgramUniform1i(sMeshProg, sTexModeLoc, mode);
             if (d->prim & 0x40) {   /* ABE */
                 p_glEnable(GL_BLEND);
+                p_glBlendFunc(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
             } else {
                 p_glDisable(GL_BLEND);
             }
+            p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
             p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
         }
         p_glDisable(GL_BLEND);
+        p_glDepthMask(GL_TRUE);
         p_glDisable(GL_DEPTH_TEST);
     }
 

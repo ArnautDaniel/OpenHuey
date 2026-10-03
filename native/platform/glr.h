@@ -14,6 +14,11 @@
 void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, const uint8_t *rgba,
                const void *tex, uint64_t tex0, uint32_t prim);
 
+/* PC-only bits in glr_strip's prim: additive blending (the GS ALPHA (Cs - 0) * As + Cd), and
+ * no depth writes (translucent sprites) */
+#define GLR_PRIM_ADD 0x10000u
+#define GLR_PRIM_NOZW 0x20000u
+
 /* a draw path not ported to OpenGL yet: reported once (nothing is drawn) */
 void glr_todo(const char *what);
 

@@ -263,8 +263,150 @@ void func_002E56C0(u8 *d) {
 }
 
 
+#ifdef HG_NATIVE
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *D_0044E4B8;   /* the camera */
+
+#define GLR_PRIM_ADD 0x10000u
+#define GLR_PRIM_NOZW 0x20000u
+
+/* ---- PC: the quad (sprite) drawer with OpenGL - what func_002E4760 / func_002E3500 send ----
+ *
+ * The drawer: +0x10 the instances (0x30 each: RGBA as 4 x s32 (0x80 = 1.0), position, size x /
+ * y, turn about the view axis, frame), +0x14 its own corners (flag 2), +0x18 / +0x1C the
+ * corners' offset, +0x24 the instance count, the texture's frame cells +0x26 / +0x28 first
+ * cell, +0x2A / +0x2C cell size, +0x2E / +0x30 texture size, +0x33 frames, flags +0x32 (1 stay
+ * upright, 2 own corners, 4 turned a quarter about y, 0x40 additive, 0x80 also a glow pass -
+ * func_002E3500, not done), texture id / group +0x34 / +0x35, palette +0x36 (-1: the first;
+ * passed to the renderer as TEX0's CSA).
+ * Billboards face the camera: x from its up x direction, y the direction x that. */
+static s32 gl_sprites(u8 *d) {
+    VObject *cam = D_0044E4B8;
+    const void *tex = VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(d, 0x34, s8),
+                                                                              AT(d, 0x35, s8));
+    s16 cells[64][2];
+    f32 corner[4][4] __attribute__((aligned(16)));
+    f32 basis[4][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    s32 frames = AT(d, 0x33, s8), n = 0, count = AT(d, 0x24, s16), i, k;
+    s16 cw = AT(d, 0x2A, s16), ch = AT(d, 0x2C, s16), tw = AT(d, 0x2E, s16), th = AT(d, 0x30, s16);
+    u8 flags = AT(d, 0x32, u8);
+    u8 *rec = AT(d, 0x10, u8 *);
+
+    if (tex == NULL || rec == NULL || tw <= 0 || th <= 0) {
+        return 0;
+    }
+    /* the frame cells: along rows from the first cell, wrapping at the texture's width */
+    if (frames == 1) {
+        cells[0][0] = AT(d, 0x26, s16);
+        cells[0][1] = AT(d, 0x28, s16);
+        n = 1;
+    } else {
+        s32 row;
+
+        for (row = 0; n < frames && n < 64 && AT(d, 0x28, s16) + (row + 1) * ch <= th; row++) {
+            s32 x = row == 0 ? AT(d, 0x26, s16) : 0;
+
+            for (; n < frames && n < 64 && x + cw <= tw; x += cw) {
+                cells[n][0] = x;
+                cells[n][1] = AT(d, 0x28, s16) + row * ch;
+                n++;
+            }
+        }
+    }
+    if (n == 0) {
+        return 0;
+    }
+    if (flags & 2) {
+        for (k = 0; k < 4; k++) {
+            sceVu0CopyVector(corner[k], AT(d, 0x14, f32 *) + k * 4);
+        }
+    } else {
+        f32 cx = AT(d, 0x18, f32), cy = AT(d, 0x1C, f32);
+
+        for (k = 0; k < 4; k++) {
+            corner[k][0] = (k & 1 ? 1.0f : -1.0f) + cx;
+            corner[k][1] = (k & 2 ? 1.0f : -1.0f) + cy;
+            corner[k][2] = 0.0f;
+            corner[k][3] = 1.0f;
+        }
+    }
+    sceVu0UnitMatrix(basis);
+    if (!(flags & 2)) {
+        VCALL(cam, 0xA0, void (*)(VObject *, f32 *))(cam, basis[2]);
+        if (flags & 1) {
+            basis[2][1] = 0.0f;
+            sceVu0Normalize(basis[2], basis[2]);
+        }
+        VCALL(cam, 0xA4, void (*)(VObject *, f32 *))(cam, basis[0]);
+        sceVu0OuterProduct(basis[0], basis[0], basis[2]);
+        sceVu0Normalize(basis[0], basis[0]);
+        sceVu0OuterProduct(basis[1], basis[2], basis[0]);
+        sceVu0Normalize(basis[1], basis[1]);
+        basis[0][3] = basis[1][3] = basis[2][3] = 0.0f;
+        if (flags & 4) {
+            f32 r[4][4] __attribute__((aligned(16)));
+
+            sceVu0UnitMatrix(r);
+            sceVu0RotMatrixY(r, r, 0x1.921fb60000000p+0f /* 1.5707964 */);
+            sceVu0MulMatrix(basis, r, basis);
+        }
+    }
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+    for (i = 0; i < count; i++, rec += 0x30) {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 xyzw[4][4] __attribute__((aligned(16)));
+        f32 st[4][2];
+        u8 rgba[4][4];
+        s32 f = AT(rec, 0x2C, s32);
+        f32 u0, v0, u1, v1;
+
+        if (f < 0 || f >= n) {
+            f = 0;
+        }
+        sceVu0UnitMatrix(m);
+        m[0][0] = AT(rec, 0x20, f32);
+        m[1][1] = AT(rec, 0x24, f32);
+        sceVu0RotMatrixZ(m, m, AT(rec, 0x28, f32));
+        sceVu0MulMatrix(m, basis, m);
+        sceVu0TransMatrix(m, m, (f32 *)(rec + 0x10));
+        u0 = (f32)cells[f][0] / tw;
+        v0 = (f32)cells[f][1] / th;
+        u1 = (f32)(cells[f][0] + cw) / tw;
+        v1 = (f32)(cells[f][1] + ch) / th;
+        for (k = 0; k < 4; k++) {
+            s32 c;
+
+            sceVu0ApplyMatrix(xyzw[k], m, corner[k]);
+            AT(&xyzw[k][3], 0, u32) = 0;
+            st[k][0] = k & 1 ? u1 : u0;
+            st[k][1] = k & 2 ? v1 : v0;
+            for (c = 0; c < 4; c++) {
+                s32 v = AT(rec, c * 4, s32);
+
+                rgba[k][c] = v < 0 ? 0 : v > 0xFF ? 0xFF : v;
+            }
+        }
+        glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], tex,
+                  1ull << 34 | (u64)(AT(d, 0x36, s8) == -1 ? 0 : AT(d, 0x36, s8) & 0x1F) << 56,
+                  0x10 | 0x40 | GLR_PRIM_NOZW | (flags & 0x40 ? GLR_PRIM_ADD : 0));
+    }
+    return 1;
+}
+
+s32 func_002E4760(u8 *d) {
+    return gl_sprites(d);
+}
+
+s32 func_002E3500(u8 *d) {
+    return gl_sprites(d);
+}
+#else
 extern s32 func_002E3500(u8 *d);
 extern s32 func_002E4760(u8 *d);
+#endif
 
 /* +0xC draw of the quad drawer: flagged ones (+0x32 bit 7) outside layer 0x17 by
  * func_002E3500, the rest by func_002E4760 */
