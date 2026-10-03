@@ -461,3 +461,65 @@ s32 func_003114C0(VObject *room, u8 *c, const u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_003F0DC4[];   /* room 0x03's swinging prop */
+extern void *D_0046FF20[];
+
+static void obj_46FF20_init(void **obj) {
+    obj[0] = D_0046FF20;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* room 0x03 callback: the prop's turn about z (+0x18) between 0 and -10 degrees - cmd[3] 0 back
+ * 2 degrees, 1 to -10 with a D_0046FF20 object (0x720 bytes, its quad drawer at +0x610)
+ * started at the prop (grey 0x80) */
+s32 func_002A9740(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    u8 *o = room_prop(D_003F0DC4[0]);
+    f32 deg;
+    u8 spawn = 0;
+
+    if (o == NULL) {
+        return 1;
+    }
+    deg = 180.0f * AT(o, 0x18, f32) / kPi.f;
+    switch (cmd[3]) {
+    case 0:
+        deg = deg + 2.0f;
+        break;
+    case 1: {
+        static volatile f32 kStop = -10.0f;   /* (computed with at run time, as the PS2 rounds) */
+
+        spawn = 1;
+        deg = kStop;
+        break;
+    }
+    }
+    if (!(deg <= 0.0f)) {
+        deg = 0.0f;
+    }
+    if (deg < -10.0f) {
+        deg = -10.0f;
+    }
+    AT(o, 0x18, f32) = kPi.f * deg / 180.0f;
+    if (spawn) {
+        struct {
+            f32 pos[4];
+            s32 a, r, g, b;
+        } arg __attribute__((aligned(16)));
+        s32 slot = Effect_New(D_0044E578, 0x720, obj_46FF20_init);
+
+        arg.pos[0] = AT(o, 0x20, f32);
+        arg.pos[1] = AT(o, 0x24, f32);
+        arg.pos[2] = AT(o, 0x28, f32);
+        arg.pos[3] = 1.0f;
+        arg.b = 0x80;
+        arg.g = 0x80;
+        arg.r = 0x80;
+        arg.a = 0;
+        func_002D6090(D_0044E578, slot, &arg);
+    }
+    return 1;
+}
