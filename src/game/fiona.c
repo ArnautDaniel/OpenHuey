@@ -2760,13 +2760,13 @@ void func_0019D4E0(Fiona *f) {
         if (t > 80) {
             flee = 1;
         } else if (t > 60) {
-            if (RNG01() < 0.2f) flee = 1;
+            if (RNG01() < 0x1.99999a0000000p-3f /* 0.2 */) flee = 1;
         } else if (t > 40) {
-            if (RNG01() < 0.15f) flee = 1;
+            if (RNG01() < 0x1.3333340000000p-3f /* 0.15 */) flee = 1;
         } else if (t > 20) {
-            if (RNG01() < 0.1f) flee = 1;
+            if (RNG01() < 0x1.99999a0000000p-4f /* 0.1 */) flee = 1;
         } else if (t > 10) {
-            if (RNG01() < 0.05f) flee = 1;
+            if (RNG01() < 0x1.99999a0000000p-5f /* 0.05 */) flee = 1;
         }
         if (flee == 1) {
             FIONA_MOOD(f) = 3;
@@ -3084,6 +3084,116 @@ extern void func_001779C0(Progress *p, s32 door, s32 slot);
 #define DOOR_KIND(d, door) VCALL(d, 0x30, s32 (*)(VObject *, s32))(d, door)
 #define DOOR_SET(d, slot, door, side, v) VCALL(d, slot, void (*)(VObject *, s32, s32, s32))(d, door, side, v)
 #define ROOM_DOOR_LINK(r, room, door) VCALL(r, 0x10, s32 (*)(VObject *, s32, s32))(r, room, door)
+
+extern u8 *D_0044F258;   /* the creatures: 10 slots */
+
+#define FI_HEWIE_NEAR(f) FI(f, 0x1AD5D5, u8)   /* 1: Hewie is with Fiona */
+
+/* |the heading from Fiona to p, relative to hers| (the original wraps it once per use) */
+static f32 fiona_turn_to(Fiona *f, f32 a) {
+    if (func_002E2D00(a - f->c.a.angle[1]) <= 0.0f) {
+        return -func_002E2D00(a - f->c.a.angle[1]);
+    }
+    return func_002E2D00(a - f->c.a.angle[1]);
+}
+
+/* the call command's action: 0x2D to a creature within 10 ahead (Fiona in control state 1, the
+ * creature in her room and reachable, within 45 degrees), with Hewie controlled (2) 0x2E when he
+ * is with her and in state 8, else 0x2D; otherwise 0x23 */
+s32 func_00184700(Fiona *f) {
+    u8 who = func_00177620(gProgress);
+    s32 i;
+
+    if (who == 2) {
+        if (FI_HEWIE_NEAR(f) == 1 && AT(gCharPartner, 0xF8, s32) == 8) {
+            return 0x2E;
+        }
+        return 0x2D;
+    }
+    if (who == 1) {
+        for (i = 0; i < 10; i++) {
+            Actor *c = AT(D_0044F258, i * 4, Actor *);
+            f32 d[4] __attribute__((aligned(16)));
+            u32 tri;
+
+            if (c == NULL || c->active != 1 || f->c.a.room != c->room) {
+                continue;
+            }
+            sceVu0SubVector(d, c->pos, f->c.a.pos);
+            if (!(__builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(d, d))) < 10.0f)) {
+                continue;
+            }
+            tri = c->navTri;
+            if (func_00124480(&f->c.a, c->pos, NAV_NONE) != tri) {
+                continue;
+            }
+            if (fiona_turn_to(f, func_0031C5C0(d[0], d[2])) < 0x1.921fb60000000p-1f /* 0.7853982 */) {
+                return 0x2D;
+            }
+        }
+    }
+    return 0x23;
+}
+
+/* the action code for Hewie command `cmd` from the controls: 0 call (func_00184700), 1 0x2C,
+ * 2 (stay / come) 0x24 / 0x25 when he is with her within 12 (by his state), 0x27 from further
+ * or when not in control, 3 0x2A / 0x28 within 15 (0x2A: his +0xC4 state 2 and facing within 60
+ * degrees), else 0x29, 4 0x2B within 15 else 0x2F */
+s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
+    u8 *h;
+    u8 who;
+    f32 d;
+    s32 v;
+
+    switch (cmd) {
+    case 0:
+        return func_00184700(f);
+    case 1:
+        return 0x2C;
+    case 2:
+        if ((u8)func_00177620(gProgress) != 0 || FI_HEWIE_NEAR(f) != 1) {
+            return 0x27;
+        }
+        d = func_00124490(&f->c.a, (f32 *)((u8 *)gCharPartner + 0x10));
+        if (!(d < 30.0f)) {
+            return 0x27;
+        }
+        if (!(d < 12.0f)) {
+            return 0x25;
+        }
+        v = AT(gCharPartner, 0xF3564, s32);
+        if (v == 0x4B || (AT(gCharPartner, 0xFC, s32) == 3 && v == 2)) {
+            return 0x24;
+        }
+        return 0x25;
+    case 3:
+        who = func_00177620(gProgress);
+        if (FI_HEWIE_NEAR(f) != 1) {
+            return 0x29;
+        }
+        h = (u8 *)gCharPartner;
+        if (!(func_00124490(&f->c.a, (f32 *)(h + 0x10)) < 15.0f)) {
+            return 0x29;
+        }
+        if (AT(h, 0xC4, s32) == 2) {
+            return fiona_turn_to(f, func_001244D0(&f->c.a, (f32 *)(h + 0x10))) < 0x1.0c15240000000p+0f /* 1.0471976 */ ? 0x2A : 0x29;
+        }
+        if (who != 0 || AT(h, 0xF35C0, s32) == 3) {
+            return 0x29;
+        }
+        return 0x28;
+    case 4:
+        if ((u8)func_00177620(gProgress) != 0 || FI_HEWIE_NEAR(f) != 1) {
+            return 0x2F;
+        }
+        h = (u8 *)gCharPartner;
+        if (!(func_00124490(&f->c.a, (f32 *)(h + 0x10)) < 15.0f) || AT(h, 0xF35C0, s32) == 3) {
+            return 0x2F;
+        }
+        return 0x2B;
+    }
+    return -1;
+}
 
 /* at the start in a door (+0xF8: 2 passing through, 3 standing in it): set the door's state
  * (open sides) and the progress records for it */
