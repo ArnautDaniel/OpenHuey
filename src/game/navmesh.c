@@ -578,3 +578,27 @@ u32 func_0017C2A0(NavMesh *nm, const f32 *p, u32 mask) {
     }
     return best;
 }
+
+/* +0x38 point p's height over triangle t's plane (along its unit normal, v1 - v0 x v2 - v0);
+ * 4 for no such triangle */
+f32 func_0017C410(NavMesh *nm, u32 t, const f32 *p) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    NavTri *tri;
+
+    if (t >= nm->numTris || nm->tris == NULL) {
+        return 4.0f;
+    }
+    tri = &nm->tris[t];
+    sceVu0SubVector(a, tri->v[1], tri->v[0]);
+    sceVu0SubVector(b, tri->v[2], tri->v[0]);
+    a[3] = 1.0f;
+    b[3] = 1.0f;
+    sceVu0OuterProduct(n, a, b);
+    n[3] = 1.0f;
+    sceVu0Normalize(n, n);
+    sceVu0SubVector(a, tri->v[0], p);
+    a[3] = 1.0f;
+    return sceVu0InnerProduct(a, n);
+}

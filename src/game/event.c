@@ -537,3 +537,8 @@ void func_001FBA20(u8 *ev, s32 layer) {
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, void *))(D_0044E4F0, ev + 0x20, layer, NULL);
 #endif
 }
+
+/* a room handler's +0x14 phase script (rooms 0x100 / 0x101): none */
+s32 func_00209810(void) {
+    return 0;
+}

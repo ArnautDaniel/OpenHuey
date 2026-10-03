@@ -661,6 +661,22 @@ void func_002DDE20(u8 *m, s32 anim, s32 variant) {
     func_001F7890(m, anim, flags & 0xFFFF, variant, 0.0f);
 }
 
+/* func_002DDE20 blended in over `blend` frames */
+void func_002DDC60(u8 *m, s32 anim, s32 blend, s32 variant) {
+    s32 i = func_001F4710(m, anim);
+    u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+
+    AT(m, 0x85C, u8) = 0;
+    AT(m, 0x85D, u8) = 0;
+    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = AT(m, 0x880, s32);
+    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+    AT(m, 0x50, s32) = 0;
+    func_001F7890(m, anim, flags & 0xFFFF, variant, (f32)blend);
+}
+
 /* the index of animation `anim` in the motion file (+0x4C4: at its +0xC a table: count, then
  * 8-byte entries from +0x10 starting with the id); -1: not there */
 s32 func_001F4710(u8 *m, s32 anim) {
