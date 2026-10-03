@@ -260,3 +260,52 @@ s32 func_003106E0(VObject *room, u8 *c, const u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_003F99B8[];   /* room 0x13's prop */
+
+/* room 0x13 callback: its prop turned a quarter (-90 degrees about y) for cmd[3], else back */
+s32 func_002AC600(VObject *room, u8 *c, const u8 *cmd) {
+    u8 *o = room_prop(D_003F99B8[0]);
+
+    if (o != NULL) {
+        AT(o, 0x14, f32) = cmd[3] != 0 ? -0x1.921fb60000000p+0f /* 1.5707964 */ : 0.0f;
+    }
+    return 1;
+}
+
+extern void *D_0046EA40[];
+
+/* room 0x21 callback: room effect +0x143C made anew (a D_0046EA40) */
+s32 func_002AF730(VObject *room) {
+    u8 *fx = D_0044E4C0;
+    void **slot = (void **)(fx + 0x143C);
+    void *mem;
+
+    if (*slot != NULL) {
+        VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
+        *slot = NULL;
+    }
+    mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+    if (mem != NULL) {
+        void **e = func_002672F0(0xA0, mem);
+
+        if (e != NULL) {
+            e[0] = D_0046EA40;
+        }
+        *slot = e;
+        VCALL(*slot, 0xC, void (*)(void *))(*slot);
+    }
+    return 1;
+}
+
+/* room 0x51 callback: unless progress flag 0xAF, with flag 0x648 and item 0x238 held, sound
+ * 0xC (+0x14, 5) */
+s32 func_002B4970(VObject *room) {
+    Progress *p = gProgress;
+
+    if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & 0x10000) &&
+        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238)) {
+        VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+    }
+    return 1;
+}

@@ -3431,3 +3431,9 @@ void *func_0037E3F0(void) {
     return D_00463A50;
 }
 
+
+extern u8 D_0047ACB4[];
+
+void *func_002FEF10(void) {
+    return D_0047ACB4;
+}

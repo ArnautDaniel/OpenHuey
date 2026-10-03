@@ -2897,3 +2897,7 @@ src/game/effects.c func_00317C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B10
 src/game/effects.c func_00319B00
 src/game/renderer.c func_001B9250 --pre=a0=0x0B000000..0x0B000000
 src/game/effects.c func_00358210 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1
+src/game/room_handlers.c func_002AC600 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0..0x01000000 --pre=@0x456DF8=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0B300000..0x0B300000 --pre=@0x0B300018=0x00100000..0x00100000 --stub-ret=0x0B400000 --stub-ret=0 --stub-ret-prob=1
+src/game/room_handlers.c func_002AF730 --pre=@0x44E4C0=0x0BA00000..0x0BA00000 --pre=@0x0BA01400=0x0B300000..0x0B300000 --pre=@0x0B300010=0x00100000..0x00100000 --pre=@0x0B300014=0x00100000..0x00100000 --stub-ret=0x0BC00000 --stub-ret=0
+src/game/room_handlers.c func_002B4970 --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500030=0..0xFFFF --pre=@0x0B5000E4=0x8000..0x18000 --pre=@0x44E988=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0B700000..0x0B700000 --pre=@0x0B70000C=0x00100000..0x00100000 --pre=@0x44E560=0x0B600000..0x0B600000 --pre=@0x0B700014=0x00100000..0x00100000 --stub-ret=0 --stub-ret=1
+src/leaf/getters_gen.c func_002FEF10 
