@@ -881,3 +881,38 @@ void func_002E9AE0(u8 *e) {
 /* D_0046EC60 +0x10: nothing */
 void func_002C6620(void) {
 }
+
+extern void *D_0046EC80[];
+
+/* hand a depth-band drawer (`d`: +0x8 .. +0x14 a, from, to, b) to the renderer (layer 0x21)
+ * unless the band covers all of the camera's depth range (+0xCC near, +0xD0 far) */
+void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b) {
+    VObject *cam = D_0044E4B8;
+
+    if (from <= VCALL(cam, 0xCC, f32 (*)(VObject *))(cam) && !(to < VCALL(cam, 0xD0, f32 (*)(VObject *))(cam))) {
+        return;
+    }
+    AT(d, 0x8, f32) = a;
+    AT(d, 0xC, f32) = from;
+    AT(d, 0x10, f32) = to;
+    AT(d, 0x14, f32) = b;
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, u8 *, s32, s32))(D_0044E4F0, d, 0x21, 0);
+}
+
+/* D_0046EC60 +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
+void func_002C6570(u8 *e) {
+    struct {
+        void **vtbl;
+        s32 a;
+        f32 v[4];
+    } d;
+
+    d.a = -1;
+    d.vtbl = D_0046EC80;
+    func_002C86F0((u8 *)&d, AT(e, 0x50, f32), AT(e, 0x54, f32), AT(e, 0x58, f32), AT(e, 0x5C, f32));
+    d.vtbl = D_00469D00;
+}
+
+/* D_00472F60 +0xC set up: nothing */
+void func_00319B10(void) {
+}

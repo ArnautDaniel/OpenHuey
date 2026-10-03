@@ -104,8 +104,14 @@ extern s32 func_0032D2C0(void *c);
 /* room 0x2B callback: character 0x1A (cmd[3] 0) sent off towards (-290, 42), or (else) asked
  * whether it has arrived - 1 go on, 2 wait */
 s32 func_002B1700(VObject *room, u8 *c, const u8 *cmd) {
-    void *ch = gCharacters[(u8)func_001770D0(gProgress, 0x1A)];
+    u8 i = func_001770D0(gProgress, 0x1A);
+    void *ch = gCharacters[i];
 
+#ifdef HG_NATIVE
+    if (i >= 6 || ch == NULL) {   /* (event characters aren't loaded on PC yet) */
+        return 1;
+    }
+#endif
     if (cmd[3] == 0) {
         func_0032D3E0(ch, 2, -290.0f, 42.0f);
         return 1;

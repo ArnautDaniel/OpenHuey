@@ -27,6 +27,15 @@ int func_002685F0(uint8_t *drawer) {
     return 0;
 }
 
+/* func_002C6650: the depth-band drawer (vtable +0xC of D_0046EC80; +0x8 .. +0x14 its values,
+ * +0xC / +0x10 the band's near / far depth): a frame-buffer pass over the band (2085
+ * instructions of GS packets). GL TODO; 0 = nothing linked. */
+int func_002C6650(uint8_t *d) {
+    (void)d;
+    glr_todo("depth band effect (func_002C6650)");
+    return 0;
+}
+
 /* func_0034E9E0: a rippling surface grid (texture +0x20, position +0x10, size +0x24, phase
  * +0x28, turn +0x2C): a sine-displaced grid of textured quads. GL TODO; 0 = nothing linked. */
 int func_0034E9E0(uint8_t *d) {
