@@ -185,6 +185,28 @@ static void obj_4795A0_init(void **obj) {
     obj[0] = D_004795A0;
 }
 
+/* the floor effect (room effect +0x14A4) made anew (a D_00472F60) */
+static void floor_fx_new(void) {
+    u8 *fx = D_0044E4C0;
+    void **slot = (void **)(fx + 0x14A4);
+    void *mem;
+
+    if (*slot != NULL) {
+        VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
+        *slot = NULL;
+    }
+    mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+    if (mem != NULL) {
+        void **e = func_002672F0(0xA0, mem);
+
+        if (e != NULL) {
+            e[0] = D_00472F60;
+        }
+        *slot = e;
+        VCALL(*slot, 0xC, void (*)(void *))(*slot);
+    }
+}
+
 /* room 0x60 callback: cmd[3] 0 a new D_00472F60 room effect (+0x14A4) and a D_004795A0 object
  * (kept as the event's object 1), then (also for cmd[3] 2..) room effect 0x1B: a 20 x 20 floor
  * quad at y -0.2 whose strength follows the event's value 0 (0, 30, 60, 90, 128), handed to
@@ -207,25 +229,9 @@ s32 func_003106E0(VObject *room, u8 *c, const u8 *cmd) {
         return 1;
     }
     if (cmd[3] == 0) {
-        u8 *fx = D_0044E4C0;
-        void **slot = (void **)(fx + 0x14A4);
-        void *mem;
         s32 obj;
 
-        if (*slot != NULL) {
-            VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
-            *slot = NULL;
-        }
-        mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
-        if (mem != NULL) {
-            void **e = func_002672F0(0xA0, mem);
-
-            if (e != NULL) {
-                e[0] = D_00472F60;
-            }
-            *slot = e;
-            VCALL(*slot, 0xC, void (*)(void *))(*slot);
-        }
+        floor_fx_new();
         obj = Effect_New(D_0044E578, 0x10, obj_4795A0_init);
         VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, obj);
     }
@@ -660,5 +666,35 @@ s32 func_002B1A00(VObject *room, u8 *c, const u8 *cmd) {
             break;
         }
     }
+    return 1;
+}
+
+/* room 0x21 callback: cmd[3] 1 the floor effect (0x1B) removed; else made anew over the quad
+ * x 0.49..9.5, z 69.5..60.5 from height 22 down to 0, strength 0x40, mode 1 for cmd[3] 2 */
+s32 func_002AF4E0(VObject *room, u8 *c, const u8 *cmd) {
+    static const union { u32 u; f32 f; } kX0 = {0x3EFB2FEC}, kZ0 = {0x428B0113}, kX1 = {0x4118089A},
+        kZ1 = {0x4271F660};
+    struct {
+        f32 q[4][4];
+        f32 mode;
+        s32 level_f;
+        s32 c;
+        s32 level;
+    } arg __attribute__((aligned(16)));
+
+    if (cmd[3] == 1) {
+        func_002670F0(D_0044E4C0, 0x1B);
+        return 1;
+    }
+    floor_fx_new();
+    arg.mode = cmd[3] == 2 ? 1.0f : 0.0f;
+    arg.q[0][0] = kX0.f; arg.q[0][1] = 22.0f; arg.q[0][2] = kZ0.f; arg.q[0][3] = 1.0f;
+    arg.q[1][0] = kX1.f; arg.q[1][1] = 22.0f; arg.q[1][2] = kZ1.f; arg.q[1][3] = 1.0f;
+    arg.q[2][0] = kX0.f; arg.q[2][1] = 0.0f;  arg.q[2][2] = kZ0.f; arg.q[2][3] = 1.0f;
+    arg.q[3][0] = kX1.f; arg.q[3][1] = 0.0f;  arg.q[3][2] = kZ1.f; arg.q[3][3] = 1.0f;
+    arg.level = 0x10000040;
+    arg.level_f = arg.level;   /* (the word copied as is) */
+    arg.c = 0;
+    func_00266C70(D_0044E4C0, 0x1B, &arg);
     return 1;
 }
