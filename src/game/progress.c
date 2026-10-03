@@ -358,6 +358,32 @@ s32 func_00178500(Progress *p, u32 d) {
     return 1;
 }
 
+/* can door d be passed from side `side` (its lock bits, state bits 4..7: bit 4 side 0, bit 5
+ * side 1, bit 6 sides 2..5); side 0xFF always, others never */
+s32 func_00178200(Progress *p, u32 d, u32 side) {
+    u32 lock = (DOOR_STATE(p, d) >> 4) & 0xF;
+
+    switch (side & 0xFF) {
+    case 0xFF:
+        return 1;
+    case 5:
+    case 4:
+    case 3:
+    case 2:
+        return !(lock & 4);
+    case 1:
+        return !(lock & 2);
+    case 0:
+        return !(lock & 1);
+    }
+    return 0;
+}
+
+/* is door d unlocked */
+s32 func_00178610(Progress *p, u32 d) {
+    return (DOOR_STATE(p, d) >> 3) & 1;
+}
+
 void func_00178630(Progress *p, u32 d) {
     DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~4) | 4;
 }
@@ -1305,3 +1331,5 @@ s32 func_00178980(Progress *p, s32 room, s32 exit) {
     }
     return (w & 2) != 0;
 }
+
+

@@ -124,6 +124,13 @@ void SceneGame_StateEntry(Scene *game) {
                 AT(game, 0xF6B6B2, u8) = 0;
             }
             break;
+#ifdef HG_NATIVE
+        default:   /* HG_ROOM debug start in any other room: Fiona as in a new game */
+            SetupCharacter(prog, fiona, func_003A1860);
+            Progress_SetVar(p, 0x26, 1);
+            AT(game, 0xF6CD28, u8) = 0;
+            break;
+#endif
         }
         if (flag) {
             AT(game, 0x70, s32) |= 0x8000;
