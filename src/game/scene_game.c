@@ -1,6 +1,7 @@
 /* Mode 3 scene: gameplay. See docs/structure.md for the member layout. */
 #include "common.h"
 #include "game.h"
+#include "navmesh.h"
 #include "progress.h"
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
@@ -66,6 +67,10 @@ extern s32 hg_debug_no_partner(void);
 extern s32 hg_debug_freeplay(void);
 #endif
 
+#ifdef HG_NATIVE
+static u8 sDebugPlace;   /* HG_ROOM start in a room no event places Fiona in */
+#endif
+
 static inline void SetupCharacter(Progress *prog, void *chr, void (*setup)(Progress *, u32)) {
     u32 index = AT(chr, 0x20, u32);
 
@@ -125,7 +130,9 @@ void SceneGame_StateEntry(Scene *game) {
             }
             break;
 #ifdef HG_NATIVE
-        default:   /* HG_ROOM debug start in any other room: Fiona as in a new game */
+        default:   /* HG_ROOM debug start in any other room: Fiona as in a new game, placed
+                    * once the room is in (func_0039D310) */
+            sDebugPlace = 1;
             SetupCharacter(prog, fiona, func_003A1860);
             Progress_SetVar(p, 0x26, 1);
             AT(game, 0xF6CD28, u8) = 0;
@@ -615,6 +622,24 @@ void func_0039D310(Scene *g) {
     }
     func_0011FFB0((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
     func_001AABC0((u8 *)g + 0xF29740);
+#ifdef HG_NATIVE
+    if (sDebugPlace) {   /* debug start: Fiona on the middle of walk mesh triangle 0 */
+        NavMesh *nm = D_0044E570;
+        f32 pos[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 1.0f};
+        f32 dir[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+        s32 k;
+
+        sDebugPlace = 0;
+        if (nm != NULL && nm->tris != NULL && nm->numTris > 0) {
+            for (k = 0; k < 3; k++) {
+                pos[0] += nm->tris[0].v[k][0] / 3.0f;
+                pos[1] += nm->tris[0].v[k][1] / 3.0f;
+                pos[2] += nm->tris[0].v[k][2] / 3.0f;
+            }
+            VCALL(gCharPlayer, 0x28, void (*)(void *, s32, void *, void *))(gCharPlayer, 0, dir, pos);
+        }
+    }
+#endif
     if (AT(g, 0xF6CD28, u8) == 1) {
         u8 *rd = D_0044E978;
         u8 *save = rd + 0x190;
