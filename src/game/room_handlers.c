@@ -698,3 +698,37 @@ s32 func_002AF4E0(VObject *room, u8 *c, const u8 *cmd) {
     func_00266C70(D_0044E4C0, 0x1B, &arg);
     return 1;
 }
+
+extern void *D_00470A70[];
+
+static void obj_470A70_init(void **obj) {
+    obj[0] = D_00470A70;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+/* room 0x02 callback: a D_00470A70 object (0xE60 bytes, its quad drawer at +0xC10) - cmd[3] 0
+ * made and kept as the event's object 0, 1 that one told 0, others a new one started with 1 */
+s32 func_002A91F0(VObject *room, u8 *c, const u8 *cmd) {
+    s32 arg;
+    s32 slot;
+
+    switch (cmd[3]) {
+    case 0:
+        slot = Effect_New(D_0044E578, 0xE60, obj_470A70_init);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        break;
+    case 1:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        arg = 0;
+        func_002D6090(D_0044E578, slot, &arg);
+        break;
+    default:
+        slot = Effect_New(D_0044E578, 0xE60, obj_470A70_init);
+        arg = 1;
+        func_002D6090(D_0044E578, slot, &arg);
+        break;
+    }
+    return 1;
+}

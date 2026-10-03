@@ -738,6 +738,11 @@ static u8 *motion_entry(u8 *m, s32 anim) {
 void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     s32 k;
 
+#ifdef HG_NATIVE
+    if (motion_entry(m, anim) == NULL) {   /* not loaded (event motions aren't on PC yet) */
+        return;
+    }
+#endif
     AT(m, 0x4E0, s32) = AT(m, 0x4DC, s32);
     AT(m, 0x4DC, s32) = anim;
     if (AT(motion_entry(m, anim), 0x4, s32) != 0) {

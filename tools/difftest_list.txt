@@ -2937,3 +2937,4 @@ src/game/effects.c func_002D6730 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50
 src/game/effects.c func_002D6920 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1
 src/game/effects.c func_002D63E0 
 src/game/effects.c func_002D63D0 
+src/game/room_handlers.c func_002A91F0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0..0x02000000 --pre=@0x44E578=0x0BB00000..0x0BB00000 --pre=@0x0BB10000=0x0B300000..0x0B300000 --pre=@0x0B300010=0x00100000..0x00100000 --pre=@0x44E4D0=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0B300000..0x0B300000 --pre=@0x0B300030=0x00100000..0x00100000 --pre=@0x0B300034=0x00100000..0x00100000 --stub-ret=0x0BC00000 --stub-ret=0 --stub-ret=5 --runs=40
