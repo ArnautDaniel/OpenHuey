@@ -2145,6 +2145,64 @@ extern void func_00220D10(u8 *door, s32 sound, s32 arg);   /* a door sound */
 extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);   /* door is open */
 extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);   /* door is shut */
 
+extern s32 func_0025EEE0(u8 *obj);   /* the drawn object was on screen */
+extern void func_00278D60(u8 *fx, void *model, f32 *pos, f32 *rot);
+
+/* the doorway (12 x 22, at depth z) through the door's matrix m, as the lights take it (+0x38):
+ * its corners (top far, top near, bottom far, bottom near along x by `x0` -> `x1`), its facing
+ * (z sign, normalised) and its top middle */
+static void door_portal(sceVu0FMATRIX m, f32 x0, f32 x1, f32 z) {
+    f32 q[6][4] __attribute__((aligned(16)));
+    s32 i;
+
+    q[0][0] = x0; q[0][1] = 22.0f; q[0][2] = z; q[0][3] = 1.0f;
+    q[1][0] = x1; q[1][1] = 22.0f; q[1][2] = z; q[1][3] = 1.0f;
+    q[2][0] = x0; q[2][1] = 0.0f; q[2][2] = z; q[2][3] = 1.0f;
+    q[3][0] = x1; q[3][1] = 0.0f; q[3][2] = z; q[3][3] = 1.0f;
+    for (i = 0; i < 4; i++) {
+        sceVu0ApplyMatrix(q[i], m, q[i]);
+    }
+    q[4][0] = 0.0f; q[4][1] = 0.0f; q[4][2] = z == 0.0f ? 1.0f : -1.0f; q[4][3] = 0.0f;
+    sceVu0ApplyMatrix(q[4], m, q[4]);
+    sceVu0Normalize(q[4], q[4]);
+    q[5][0] = 6.0f; q[5][1] = 22.0f; q[5][2] = z; q[5][3] = 1.0f;
+    sceVu0ApplyMatrix(q[5], m, q[5]);
+    VCALL(D_0044E4C8, 0x38, void (*)(VObject *, f32 *))(D_0044E4C8, q[0]);
+}
+
+/* draw a shown door (+0x70) that has a model (+0x0): its draw object (+0x80) placed from the
+ * door's position / rotation; when it is on screen and open, its effect (+0x190, when +0x72)
+ * and, open past 78.75 degrees, the doorway on both sides for the lights */
+void func_00220E80(u8 *door) {
+    u8 *obj = door + 0x80;
+    sceVu0FMATRIX m;
+
+    if (AT(door, 0x70, u8) != 1 || AT(door, 0x0, void *) == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(obj + 0x70), (f32 *)(door + 0x10));
+    sceVu0CopyVector((f32 *)(obj + 0x80), (f32 *)(door + 0x30));
+    AT(obj, 0x64, s32) = -1;
+    AT(obj, 0x68, s32) = 0;
+    AT(obj, 0x8, void *) = AT(door, 0x0, void *);
+    AT(obj, 0x18, s32) = 0;
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, u8 *, s32, s32))(D_0044E4F0, obj, 1, 0);
+    if (!func_0025EEE0(obj) || !(AT(door, 0x64, f32) < 0.0f)) {
+        return;
+    }
+    if (AT(door, 0x72, u8) == 1) {
+        func_00278D60(door + 0x190, AT(door, 0x8, void *), (f32 *)(door + 0x10), (f32 *)(door + 0x30));
+    }
+    if (!(AT(door, 0x64, f32) <= -78.75f)) {
+        return;
+    }
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrix(m, m, (f32 *)(door + 0x30));
+    sceVu0TransMatrix(m, m, (f32 *)(door + 0x10));
+    door_portal(m, 12.0f, 0.0f, 0.0f);
+    door_portal(m, 0.0f, 12.0f, -1.0f);
+}
+
 /* the door's angle +0x34: its rest angle +0x44 turned by +0x64 degrees, kept above -pi */
 static void door_turn(u8 *door) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};

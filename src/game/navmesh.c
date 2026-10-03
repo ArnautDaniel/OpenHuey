@@ -482,6 +482,27 @@ u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
     return func_0017AE80(t, (f32 *)from, out);
 }
 
+/* +0x68: the neighbour of triangle t holding point p (not blocked by `mask`; +0x10 == 3:
+ * inside), or -1 */
+u32 func_0017B060(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        u32 n = nm->tris[t].adj[k];
+
+        if (n & 0x80000000) {
+            continue;
+        }
+        if (nm->tris[n].flags & mask) {
+            continue;
+        }
+        if (VCALL(nm, 0x10, s32 (*)(NavMesh *, u32, const f32 *))(nm, n, p) == 3) {
+            return n;
+        }
+    }
+    return NAV_NONE;
+}
+
 /* the triangle holding point p (horizontally), searched from triangle t: t itself when it is
  * not blocked by `mask` (+0x10 == 3: inside), then +0x68 around t, around each neighbour of t
  * and around each of their neighbours; -1 if none */
