@@ -270,6 +270,76 @@ void func_001FBE00(VObject *ev, s32 prio, void *step);
 extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
 extern void func_0029F040(void *c, s32 slot);
 
+extern void func_00177200(Progress *p, s32 slot);
+extern void func_00218C20(void *c, u32 v);
+extern void func_0029B190(void *c);
+extern void func_0029AF20(void *c);
+extern void func_0029AC50(void *c);
+extern void func_0029A940(void *c);
+
+/* event commands on a pursuer-type character (pc[1]; slots 2..5): 0x2A its +0x1660 = be32,
+ * 0x2E be16 (0xFFFF: one step on in +0x1620, below +0x1621) to func_00218C20, 0x2F action
+ * pc[2] (0, 2, 3), 0x30 another, 0x3E put into room be16 (0xFFFF: its own) at be16 how pc[6]
+ * (at most 2), 0x31 its +0x31C with pc[2] != 0 */
+void func_00200870(VObject *ev) {
+    Progress *p = gProgress;
+    u8 i = func_001770D0(p, PC(ev)[1]);
+    u8 *c = i >= 2 && i < 6 ? (u8 *)gCharacters[i] : NULL;
+    const u8 *pc;
+
+    if (c == NULL) {
+        return;
+    }
+    pc = PC(ev);
+    switch (pc[0]) {
+    case 0x2A:
+        AT(c, 0x1660, s32) = be32(pc + 2);
+        break;
+    case 0x2E: {
+        u32 v = be16(pc + 2) & 0xFFFF;
+
+        if (v != 0xFFFF) {
+            func_00218C20(c, v);
+        } else if (AT(c, 0x1620, u8) + 1 < AT(c, 0x1621, u8)) {
+            AT(c, 0x1620, u8) = AT(c, 0x1620, u8) + 1;
+        }
+        break;
+    }
+    case 0x2F:
+        switch (pc[2]) {
+        case 0:
+            func_0029B190(c);
+            break;
+        case 2:
+            func_0029AF20(c);
+            break;
+        case 3:
+            func_0029AC50(c);
+            break;
+        }
+        break;
+    case 0x30:
+        func_0029A940(c);
+        break;
+    case 0x3E: {
+        s32 room;
+
+        func_00177200(p, i);
+        pc = PC(ev);
+        room = be16(pc + 2) & 0xFFFF;
+        if (room == 0xFFFF) {
+            room = AT(c, 0x30, s32);
+        }
+        VCALL((VObject *)c, 0x64, void (*)(VObject *, s32, s32, s32))((VObject *)c, room, (s16)be16(pc + 4),
+                                                                      pc[6] < 2 ? pc[6] : 2);
+        break;
+    }
+    case 0x31:
+        VCALL((VObject *)c, 0x31C, void (*)(VObject *, s32))((VObject *)c, pc[2] != 0);
+        break;
+    }
+}
+
 /* room effect slot pc[1] (32, D_0044E4C0 +0x1438) made anew from the effects' pool (+0x1400)
  * with constructor `ctor`, then set going (func_00266C70) at (3 x be32 / 1000; with `kind`
  * pc[14]) */
