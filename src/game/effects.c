@@ -4,6 +4,7 @@
  * Vtable: +0xC reset, +0x18 set from the room data (unaligned little-endian words). */
 #include "common.h"
 #include "game.h"
+#include "sce/libvu0.h"
 
 extern VObject *D_0044E4B8;   /* the camera */
 
@@ -378,4 +379,148 @@ void func_002CF3A0(u8 *f, s32 kind) {
     }
     AT(f, 0xF8, u32) = c;
     AT(f, 0x20, u8)++;
+}
+
+
+/* ---- room effect D_0046FF00 (event command 0x7F): a flickering animated sprite ----
+ * +0x10 its quad record { RGBA (4 x s32), position (+0x20), size +0x30 / +0x34, rotation +0x38,
+ * frame +0x3C }, +0x40 the quad drawer's settings (texture, layer +0x58, frame strip +0x5C..,
+ * frame count +0x6B), +0x70 frame timer, +0x74 rest before the next run, +0x78 slow (long
+ * rests) */
+
+extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
+extern VObject *D_0044E550;   /* random numbers: +0x10 an integer, +0x18 0..1 */
+extern void func_002672E0(void *p);   /* delete (effects' heap) */
+
+/* +0x8 destructor */
+u8 *func_002E7BB0(u8 *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x0, void **) = D_0046FF00;
+        AT(e, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(e);
+        }
+    }
+    return e;
+}
+
+/* a rest of 0.5 .. 1.2 s (slow: 2.5 .. 4 s) */
+static s32 sprite_rest(u8 *e, VObject *rnd) {
+    if (AT(e, 0x78, s32) == 0) {
+        return (s32)(30.0f * (0.5f + 0x1.6666660000000p-1f /* 0.7 */ * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)));
+    }
+    return (s32)(30.0f * (2.5f + 1.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)));
+}
+
+/* +0x18 start at arg's position (its +0x10: slow); NULL: just keep going */
+void func_002E7C10(u8 *e, f32 *arg) {
+    if (arg == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(e + 0x20), arg);
+    AT(e, 0x78, s32) = AT(arg, 0x10, s32);
+    AT(e, 0x74, s32) = sprite_rest(e, D_0044E550);
+}
+
+/* +0x14 draw: a quad drawer (D_0046FC30) from the settings, unless resting */
+void func_002E7D10(u8 *e) {
+    struct {
+        void **vtbl;
+        s32 a;
+        u64 tex;
+        u8 *rec;
+        s32 b;
+        f32 c, d;
+        s32 layer;
+        s16 s[7];
+        s8 k[5];
+    } q __attribute__((aligned(8)));
+
+    if (AT(e, 0x74, s32) != 0) {
+        return;
+    }
+    q.a = -1;
+    q.vtbl = D_0046FC30;
+    q.tex = AT(e, 0x40, u64);
+    q.rec = AT(e, 0x48, u8 *);
+    q.b = AT(e, 0x4C, s32);
+    q.c = AT(e, 0x50, f32);
+    q.d = AT(e, 0x54, f32);
+    q.layer = AT(e, 0x58, s32);
+    q.s[0] = AT(e, 0x5C, s16);
+    q.s[1] = AT(e, 0x5E, s16);
+    q.s[2] = AT(e, 0x60, s16);
+    q.s[3] = AT(e, 0x62, s16);
+    q.s[4] = AT(e, 0x64, s16);
+    q.s[5] = AT(e, 0x66, s16);
+    q.s[6] = AT(e, 0x68, s16);
+    q.k[0] = AT(e, 0x6A, s8);
+    q.k[1] = AT(e, 0x6B, s8);
+    q.k[2] = AT(e, 0x6C, s8);
+    q.k[3] = AT(e, 0x6D, s8);
+    q.k[4] = AT(e, 0x6E, s8);
+    func_002E56C0((u8 *)&q);
+    q.vtbl = D_00469D00;
+}
+
+/* +0x10 update: rest, else step the frame each frame; after the last one start over at a new
+ * random rotation and rest */
+void func_002E7DF0(u8 *e) {
+    static const union { u32 u; f32 f; } kTwoPi = {0x40C90FDB};
+    VObject *rnd;
+
+    if (AT(e, 0x74, s32) != 0) {
+        AT(e, 0x74, s32) -= 1;
+        return;
+    }
+    AT(e, 0x70, s8) -= 1;
+    if (AT(e, 0x70, s8) != 0) {
+        return;
+    }
+    AT(e, 0x70, s8) = 1;
+    AT(e, 0x3C, s32) += 1;
+    if (AT(e, 0x3C, s32) < AT(e, 0x6B, s8)) {
+        return;
+    }
+    AT(e, 0x3C, s32) = 0;
+    rnd = D_0044E550;
+    AT(e, 0x38, f32) = kTwoPi.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(e, 0x74, s32) = sprite_rest(e, rnd);
+}
+
+/* +0xC set up: grey half-transparent, size 1.6, a random first frame, the 16-frame strip of
+ * 32 x 32 cells in layer 0x19 */
+void func_002E7F60(u8 *e) {
+    AT(e, 0x10, s32) = 0x80;
+    AT(e, 0x14, s32) = 0x80;
+    AT(e, 0x18, s32) = 0x80;
+    AT(e, 0x1C, s32) = 0x40;
+    AT(e, 0x20, f32) = 0.0f;
+    AT(e, 0x24, f32) = 0.0f;
+    AT(e, 0x28, f32) = 0.0f;
+    AT(e, 0x2C, f32) = 1.0f;
+    AT(e, 0x30, f32) = 0x1.99999a0000000p+0f /* 1.6 */;
+    AT(e, 0x34, f32) = 0x1.99999a0000000p+0f /* 1.6 */;
+    AT(e, 0x38, f32) = 0.0f;
+    AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(e, 0x40, s64) = -1;
+    AT(e, 0x48, u8 *) = e + 0x10;
+    AT(e, 0x4C, s32) = 0;
+    AT(e, 0x50, s32) = 0;
+    AT(e, 0x54, s32) = 0;
+    AT(e, 0x58, s32) = 0x19;
+    AT(e, 0x5C, s16) = 1;
+    AT(e, 0x5E, s16) = 0;
+    AT(e, 0x60, s16) = 0;
+    AT(e, 0x62, s16) = 0x20;
+    AT(e, 0x64, s16) = 0x20;
+    AT(e, 0x66, s16) = 0x200;
+    AT(e, 0x68, s16) = 0x100;
+    AT(e, 0x6A, s8) = 0;
+    AT(e, 0x6B, s8) = 0x10;
+    AT(e, 0x6C, s8) = 1;
+    AT(e, 0x6D, s8) = 0x10;
+    AT(e, 0x6E, s8) = -1;
+    AT(e, 0x70, s8) = 1;
+    AT(e, 0x74, s32) = 0;
 }
