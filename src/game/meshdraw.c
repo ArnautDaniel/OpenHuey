@@ -15,14 +15,17 @@ static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;
 static u32 sGlPrim;
+static u32 sGlKindPrim;    /* the kind-4 part's blending (func_0025C8C0): GLR_PRIM_ADD | NOZW */
+#define GLR_PRIM_ADD 0x10000u
+#define GLR_PRIM_NOZW 0x20000u
 #endif
 
+void func_0025C8C0(u8 *o);                 /* a kind-4 part's batch */
 extern u32 D_0047A960[];   /* the VU1 microprogram chains, by mode (+0x4) */
 extern void func_0025DB10(u8 *o, s32 which);
 extern u64 func_002B71D0(s32 tex);         /* TEX0 of a texture */
 extern void func_0025D970(u8 *o);
 extern void func_0025D560(u8 *o);
-extern void func_0025C8C0(u8 *o);
 extern s32 *func_0025DD80(u8 *o, s32 *batch);   /* write a batch's vertices: the next batch */
 extern s32 *func_0025E100(u8 *o, s32 *batch);
 
@@ -147,7 +150,7 @@ s32 func_0025E2B0(u8 *o) {
             sGlTex0 = newTex ? AT(o, 0x10, u64) : 0;
             sGlTex = newTex ? VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(o, 0x80, s32), 0)
                             : NULL;
-            sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6;
+            sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6 | (AT(o, 0x18, s32) == 4 ? sGlKindPrim : 0);
 #endif
             p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 9);
             p[0] = 0x10000008;
@@ -787,6 +790,72 @@ s32 func_00268090(u8 *o) {
     return 1;
 }
 
+
+/* a kind-4 room part's batch (its entry +0xD8 + 7 x +0xD4, type at +2): types 1 / 3 / 4 / 6
+ * face the camera (1 and 6 staying upright) - the batch matrix (+0x90) turned to the view about
+ * its own place; then its blending: types 4..6 additive (+0x84 on) without
+ * depth writes, the others normal with depth writes */
+void func_0025C8C0(u8 *o) {
+    u8 *ent = o + 0xD8 + AT(o, 0xD4, s32) * 7;
+    u8 type = ent[2];
+    VObject *r;
+    u64 *p;
+
+    if (type == 1 || type == 3 || type == 4 || type == 6) {
+        VObject *cam = D_0044E4B8;
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 b[4][4] __attribute__((aligned(16)));
+
+        sceVu0CopyMatrix(m, (f32 (*)[4])(o + 0x90));
+        m[3][0] = 0.0f;   /* turned about its own place */
+        m[3][1] = 0.0f;
+        m[3][2] = 0.0f;
+        sceVu0UnitMatrix(b);
+        VCALL(cam, 0xA0, void (*)(VObject *, f32 *))(cam, b[2]);
+        if (ent[2] == 1 || ent[2] == 6) {
+            b[2][1] = 0.0f;
+            sceVu0Normalize(b[2], b[2]);
+        }
+        VCALL(cam, 0xA4, void (*)(VObject *, f32 *))(cam, b[1]);
+        sceVu0OuterProduct(b[0], b[1], b[2]);
+        sceVu0Normalize(b[0], b[0]);
+        sceVu0OuterProduct(b[1], b[0], b[2]);
+        sceVu0Normalize(b[1], b[1]);
+        sceVu0MulMatrix(m, b, m);
+        sceVu0TransMatrix((f32 (*)[4])(o + 0x90), m, (f32 *)(o + 0xC0));
+    }
+    r = D_0044E4F0;
+    if ((u8)(ent[2] - 4) < 3) {
+        AT(o, 0x84, u8) = 1;
+        p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 4);
+        p[0] = 0x10000003;
+        AT(p, 0x8, u32) = 0;
+        AT(p, 0xC, u32) = 0x50000003;
+        p[2] = 0x1000000000008002ull;
+        p[3] = 0xE;
+        p[4] = 0x1310000A0ull;   /* ZBUF_1: no depth writes */
+        p[5] = GS_REG_ZBUF_1;
+        p[6] = 0x48;             /* ALPHA_1: additive */
+        p[7] = GS_REG_ALPHA_1;
+#ifdef HG_NATIVE
+        sGlKindPrim = GLR_PRIM_ADD | GLR_PRIM_NOZW;
+#endif
+    } else {
+        p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 4);
+        p[0] = 0x10000003;
+        AT(p, 0x8, u32) = 0;
+        AT(p, 0xC, u32) = 0x50000003;
+        p[2] = 0x1000000000008002ull;
+        p[3] = 0xE;
+        p[4] = 0x310000A0;   /* ZBUF_1 */
+        p[5] = GS_REG_ZBUF_1;
+        p[6] = 0x44;         /* ALPHA_1: normal */
+        p[7] = GS_REG_ALPHA_1;
+#ifdef HG_NATIVE
+        sGlKindPrim = 0;
+#endif
+    }
+}
 
 /* reset a room mesh drawer: no matrix row (+0x90), no mesh (+0x4), parallax off (+0x60, +0x68) */
 void func_0025EEC0(u8 *o) {

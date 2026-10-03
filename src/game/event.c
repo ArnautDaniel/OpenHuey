@@ -503,9 +503,14 @@ void func_001FB1F0(u8 *ev, u32 id) {
 }
 
 
+/* +0x30 set script variable n (+0x810) */
+void func_00209040(u8 *ev, s32 n, s32 v) {
+    AT(ev, 0x810 + (n & 0xFF) * 4, s32) = v;
+}
+
 /* clear event bit n (+0x890) */
-void func_001FB170(u8 *ev, u8 n) {
-    AT(ev, 0x890, u32) &= ~(1u << n);
+void func_001FB170(u8 *ev, s32 n) {
+    AT(ev, 0x890, u32) &= ~(1u << (n & 0x1F));   /* (sllv: the low 5 bits) */
 }
 
 /* set event bit `n` (+0x890) */
