@@ -693,6 +693,80 @@ static void gl_placed_object(u8 *o) {
 }
 #endif
 
+#ifdef HG_NATIVE
+/* ---- PC: a positioned room mesh (doors and the like; the original func_0025F0A0 builds VU1
+ * packets with func_0025EF40 / func_0025EB70 per batch) drawn with OpenGL ----
+ *
+ * The mesh (+0x8) is the room's batch list: per batch a header { vertex count, texture id (-1
+ * none), flags (bits 0..7 the GS PRIM ABE etc., 24..31 a group shown by the mask +0x90) }, a
+ * 4 x 4 matrix (columns), then the vertices in the room's mode 0 layout (func_0025E100); -1
+ * ends it. The object stands at +0x70 turned by +0x80. Mode +0x68 1 (the lit layout) isn't
+ * read yet. */
+s32 func_0025F0A0(u8 *o) {
+    VObject *cam = D_0044E4B8;
+    f32 t[4][4] __attribute__((aligned(16)));
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 w[4][4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 mvp[4][4] __attribute__((aligned(16)));
+    s32 *mesh = AT(o, 0x8, s32 *);
+    s32 i;
+
+    AT(o, 0x4, s32) = AT(o, 0x68, s32);
+    if (mesh == NULL) {
+        return 0;
+    }
+    if (AT(o, 0x4, s32) != 0) {
+        glr_todo("positioned room mesh, lit layout (func_0025EB70)");
+        return 1;
+    }
+    sceVu0UnitMatrix(t);
+    sceVu0TransMatrix(t, t, (f32 *)(o + 0x70));
+    sceVu0UnitMatrix(r);
+    sceVu0RotMatrix(r, r, (f32 *)(o + 0x80));
+    sceVu0MulMatrix(w, t, r);
+    while (mesh[0] != -1) {
+        s32 n = mesh[0], tex = mesh[1];
+        u32 flags = (u32)mesh[2];
+        u8 g = flags >> 24;
+        u8 *st, *rgba, *xyz;
+
+        AT(o, 0xA0, s32) = n;
+        AT(o, 0xA4, s32) = tex;
+        AT(o, 0xA8, s32) = flags & 0xFF;
+        AT(o, 0xAC, u8) = g;
+        for (i = 0; i < 4; i++) {
+            m[0][i] = AT(mesh, 0x10 + i * 16, f32);
+            m[1][i] = AT(mesh, 0x14 + i * 16, f32);
+            m[2][i] = AT(mesh, 0x18 + i * 16, f32);
+            m[3][i] = AT(mesh, 0x1C + i * 16, f32);
+        }
+        mesh += 0x50 / 4;
+        sceVu0MulMatrix(m, w, m);
+        VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, mvp);
+        sceVu0MulMatrix(mvp, mvp, m);
+        st = (u8 *)mesh;
+        rgba = st + n * 8 + ((n & 3) == 3 || (n & 3) == 1 ? 8 : 0);
+        xyz = rgba + n * 4 + ((n & 3) == 3 ? 4 : (n & 3) == 2 ? 8 : (n & 3) == 1 ? 0xC : 0);
+        if (g == 0 || (AT(o, 0x90 + (g >> 5) * 4, u32) & (1u << (g & 0x1F)))) {
+            glr_strip(&mvp[0][0], n, (const f32 *)xyz, (const f32 *)st, rgba,
+                      tex == -1 ? NULL : VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, tex, 0),
+                      tex == -1 ? 0 : func_002B71D0(tex), (tex != -1 ? 0x10 : 0) | 0xC | (flags & 0xFF) << 6);
+        }
+        mesh = (s32 *)(xyz + n * 16);
+    }
+    return 1;
+}
+#endif
+
+/* a positioned room mesh's last batch is shown: its group (+0xAC) is 0 or on in the mask
+ * (+0x90) */
+s32 func_0025EEE0(u8 *o) {
+    u8 g = AT(o, 0xAC, u8);
+
+    return g == 0 || (AT(o, 0x90 + (g >> 5) * 4, u32) & (1u << (g & 0x1F))) != 0;
+}
+
 /* vtable +0xC of a placed object's model: its packets by its flags (+0x8 bit 0, bit 1) */
 s32 func_00268090(u8 *o) {
 #ifdef HG_NATIVE
