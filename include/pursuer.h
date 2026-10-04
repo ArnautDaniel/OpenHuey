@@ -155,6 +155,7 @@ extern u8 *func_003495B0(Pursuer *p);
 extern u8 *func_0034D980(Pursuer *p);
 extern u8 *func_00365D10(Pursuer *p);
 extern void sceVu0ApplyMatrix(f32 *out, f32 (*m)[4], const f32 *v);
+extern s32 func_00125D80(Character *c);
 /* ---- end engine ---- */
 
 /* ---- generated from the definitions (tools: protos.py) ---- */
@@ -419,6 +420,7 @@ void func_0029A2A0(Pursuer *p);
 void func_0029A3D0(Pursuer *p);
 void func_0029A520(Pursuer *p);
 void func_0029A6D0(Pursuer *p);
+s32 func_0029A710(Pursuer *p);
 s32 func_0029A850(Pursuer *p);
 s32 func_0029A870(Pursuer *p);
 s32 func_0029A8C0(Pursuer *p, s32 room);

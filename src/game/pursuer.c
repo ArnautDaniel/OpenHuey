@@ -5519,3 +5519,35 @@ void func_00290DF0(Pursuer *p) {
         PU(p, 0x1628, s32) = 0;
     }
 }
+
+/* vtable +0x...: grab Hewie from behind (kind 0xF) if there is a spot: Hewie told where to be
+ * held, the state block set to {0xC, 30} (the rest of the original's stack copy was never
+ * written) */
+s32 func_0029A710(Pursuer *p) {
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 h;
+    s32 tri;
+
+    if (func_00125D80(&p->c) & 0xFF) {
+        return 0;
+    }
+    tri = func_00285DE0(p, 0xF, &h, pos);
+    if (tri != -1 && (func_00123470(p, tri, pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+        sceVu0CopyVector(gCharPartner->unk110, pos);
+        AT(gCharPartner, 0x10C, f32) = h;
+        gCharPartner->unk104[1] = tri;
+        AT(p, 0x10C, f32) = h;
+        if (p->c.state[0] != 7) {
+            p->c.state[0] = 0xC;
+            p->c.state[1] = 30;
+            p->c.state[2] = 0;
+            p->c.state[3] = 0;
+            p->c.state[4] = 0;
+            p->c.state[5] = 0;
+            p->c.state[6] = 0;
+            p->c.state[7] = 0;
+        }
+        return 1;
+    }
+    return 0;
+}
