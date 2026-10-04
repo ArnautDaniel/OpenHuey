@@ -2244,3 +2244,85 @@ u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
     sceVu0CopyVector(out, pos);
     return tri;
 }
+
+/* ---- batch 13 ---- */
+
+/* can the pursuer see character `c`? in its view (+0x1580 range, +0x1584 angle, heading
+ * +0x1574) and in sight of her middle, or else of one of 9 points around the far side of her
+ * body (her radius out, 22.5 degrees apart); sight is blocked by triangle flags 0x40080
+ * (0x40088 with progress flag 9 or 0xA) */
+s32 func_00218430(Pursuer *p, Character *c) {
+    Progress *pr = gProgress;
+    u32 ctri = c->a.navTri;
+    u32 mask;
+    void *nm;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 me[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 half, range, heading, dist, dx, dz, a;
+    s32 in = 0;
+
+    if ((Progress_TestFlag(pr, 9) & 0xFF) == 1 || (Progress_TestFlag(pr, 0xA) & 0xFF) == 1) {
+        mask = 0x40088;
+    } else {
+        mask = 0x40080;
+    }
+    nm = D_0044E570;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, ctri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, ctri, at);
+    } else {
+        sceVu0CopyVector(at, c->a.pos);
+    }
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, p->c.a.navTri, p->c.a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, p->c.a.navTri, me);
+    } else {
+        sceVu0CopyVector(me, p->c.a.pos);
+    }
+    half = PU(p, 0x1584, f32);
+    range = PU(p, 0x1580, f32);
+    heading = PU(p, 0x1574, f32);
+    sceVu0SubVector(d, p->c.a.pos, c->a.pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = c->a.pos[0] - p->c.a.pos[0];
+    dz = c->a.pos[2] - p->c.a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        a = func_0031C5C0(dx, dz);
+        if (dist <= range) {
+            a = a - heading;
+            if ((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half) {
+                in = 1;
+            }
+        }
+    }
+    if (!(in & 0xFF)) {
+        return 0;
+    }
+    if ((func_00122C90(&p->c.a, p->c.a.navTri, ctri, me, at, mask) & 0xFF) == 1) {
+        return 1;
+    }
+    {
+        f32 dir[4] __attribute__((aligned(16)));
+        f32 off[4] __attribute__((aligned(16)));
+        f32 pt[4] __attribute__((aligned(16)));
+        u32 i;
+
+        sceVu0SubVector(dir, at, p->c.a.pos);
+        sceVu0Normalize(dir, dir);
+        func_002E2CA0(off, dir, 0x1.921fb60000000p+0f /* 1.5707964 */);
+        sceVu0Normalize(off, off);
+        sceVu0ScaleVector(off, off, c->a.radius);
+        for (i = 0; i < 9; i = (i + 1) & 0xFF) {
+            u32 t;
+
+            sceVu0AddVector(pt, at, off);
+            t = func_00124480(&p->c.a, pt, 0);
+            if (t != (u32)-1 && func_00123080(&p->c.a, ctri, t, at, pt, mask) == -1 &&
+                (func_00122C90(&p->c.a, p->c.a.navTri, t, me, pt, mask) & 0xFF) == 1) {
+                return 1;
+            }
+            func_002E2CA0(off, off, 0x1.921fb60000000p-2f /* 0.3926991 */);
+        }
+    }
+    return 0;
+}
