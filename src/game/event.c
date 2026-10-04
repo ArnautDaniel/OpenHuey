@@ -538,6 +538,13 @@ void func_001FBA20(u8 *ev, s32 layer) {
 #endif
 }
 
+extern void func_002CF390(void *ov, u32 rgba);
+
+/* set the event's screen fade (+0x20) colour (a second entry point inside func_001FBA20's block) */
+void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
+    func_002CF390(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
+}
+
 /* a room handler's +0x14 phase script (rooms 0x100 / 0x101): none */
 s32 func_00209810(void) {
     return 0;

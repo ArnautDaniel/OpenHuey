@@ -117,11 +117,29 @@ def decomp_sources() -> list[str]:
     return sorted(str(p.relative_to(ROOT)) for ext in ("*.c", "*.cpp") for p in (ROOT / "src").rglob(ext))
 
 
+def without_native_only(text: str) -> str:
+    """Drop the lines only the PC build compiles (#ifdef HG_NATIVE branches, #ifndef's #else):
+    a PC-only replacement of a function doesn't replace its asm in the PS2 build."""
+    out, stack = [], []   # stack: per open #if, whether its current branch is PC-only
+    for line in text.splitlines():
+        d = line.strip()
+        if d.startswith("#if"):
+            native = re.match(r"#\s*(ifdef\s+HG_NATIVE|if\s+defined\s*\(?\s*HG_NATIVE\b)", d)
+            stack.append("native" if native else ("pc_else" if re.match(r"#\s*ifndef\s+HG_NATIVE", d) else None))
+        elif d.startswith("#else") and stack:
+            stack[-1] = {"native": "ps2", "pc_else": "native"}.get(stack[-1], stack[-1])
+        elif d.startswith("#endif") and stack:
+            stack.pop()
+        elif "native" not in stack:
+            out.append(line)
+    return "\n".join(out)
+
+
 def decompiled_funcs(sources: list[str]) -> dict[str, list[str]]:
     """asm file -> functions defined in C that replace asm there."""
     defined = set()
     for src in sources:
-        defined.update(FUNC_DEF_RE.findall((ROOT / src).read_text()))
+        defined.update(FUNC_DEF_RE.findall(without_native_only((ROOT / src).read_text())))
     out: dict[str, list[str]] = {}
     for asm in CODE_ASM:
         names = set(re.findall(r"^\s*(?:glabel|alabel) (\S+)", (ROOT / asm).read_text(), re.M))
