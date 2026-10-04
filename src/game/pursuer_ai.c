@@ -376,7 +376,7 @@ extern u32 func_00216E00(Pursuer *p, f32 *pos);
 extern s32 func_001270F0(Character *c);
 extern f32 func_00124490(Actor *a, const f32 *pos);         /* distance to a point */
 extern s32 func_00218430(Pursuer *p, Character *c);
-extern void func_00297B40(Pursuer *p, s32 anim, s32 a2);
+extern s32 func_00297B40(Pursuer *p, s32 anim, s32 blend);
 extern void func_002E3190(f32 (*m)[4], f32 angle);           /* Y rotation matrix */
 
 /* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */
@@ -784,4 +784,243 @@ void func_00218D80(Pursuer *p, u32 exit) {
     } else {
         func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     }
+}
+
+/* ---- batch 4 ---- */
+
+extern u32 func_00178300(Progress *pr, s32 room, s32 a2, u32 slot);
+extern void func_00178750(Progress *pr, s32 room, s32 a2);
+extern u32 func_00211E00(Pursuer *p, s32 a1);
+extern f32 func_002E2BC0(f32 *v);                 /* heading of a vector */
+extern f32 func_0031C5C0(f32 x, f32 z);           /* atan2 */
+
+/* door / exit `exit`: what to do with it (vtable +0xF0 to go through); 2 / 1 / 0 */
+s32 func_00211CF0(Pursuer *p, s32 exit) {
+    Progress *pr;
+
+    switch (func_00211E00(p, exit) & 0xFF) {
+    case 2:
+        return 2;
+    case 6:
+        pr = gProgress;
+        func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        func_00178750(pr, p->c.a.room, exit);
+        /* fallthrough */
+    case 4:
+        if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, s32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
+            return 1;
+        }
+        /* fallthrough */
+    case 5:
+        VCALL(p, 0xF0, void (*)(Pursuer *, s32))(p, exit);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+/* path length between the room nodes of `a` and `b` (rooms +0x10 / +0x38), -1 none */
+f32 func_00212060(Pursuer *p, s32 room, s32 a, s32 b) {
+    VObject *rm = D_0044E568;
+    u32 na = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, a) & 0xFFFF;
+    u32 nb = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, b) & 0xFFFF;
+    s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, nb, room);
+    f32 d;
+
+    if (n == -1) {
+        return -1.0f;
+    }
+    d = n;
+    if ((na & 0xFFFF) != (nb & 0xFFFF)) {
+        n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, na, room);
+        if (n == -1) {
+            return -1.0f;
+        }
+        d += n;
+    }
+    return d;
+}
+
+/* coming into room `room`: is Fiona at the spawn point there (+0x1624)? */
+void func_00212240(Pursuer *p, s32 room) {
+    VObject *rm = D_0044E568;
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+
+    PU(p, 0x1624, s32) = 0;
+    VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, room, a);
+    VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, room, b);
+    if ((func_00123C60(&p->c.a, room, b) & 0xFF) == 1) {
+        if (func_00124480(&p->c.a, a, -1) != (u32)-1) {
+            p->c.unk124 = p->c.unk128;
+        }
+        if (!(func_00178300(gProgress, p->c.a.room, room, *(u8 *)&p->c.a.slot) & 0xFF)) {
+            return;
+        }
+        if ((func_00123C60(&p->c.a, room, gCharPlayer->a.pos) & 0xFF) == 1) {
+            PU(p, 0x1624, s32) = 1;
+        }
+    }
+}
+
+/* heading through exit `exit` (from its inner to its outer point) */
+f32 func_00212730(Pursuer *p, s32 exit) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+
+    if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, s32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
+        VObject *rm = D_0044E568;
+        void *nm = D_0044E570;
+
+        VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x24, s32 (*)(VObject *, s32))(rm, exit), a);
+        VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x28, s32 (*)(VObject *, s32))(rm, exit), b);
+    } else {
+        VObject *rm = D_0044E568;
+
+        VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, exit, a);
+        VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, exit, b);
+    }
+    sceVu0SubVector(d, a, b);
+    return func_002E2BC0(d);
+}
+
+/* turn to the root motion's direction (rotated to the walk mesh slope through triangle +0x34) */
+void func_00213B60(Pursuer *p, u32 mask) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    u8 *m;
+    u32 tri;
+    f32 h;
+
+    if (mask == (u32)-1) {
+        mask = p->c.a.navMask;
+    }
+    m = p->c.motion;
+    VCALL(m, 0x60, void (*)(void *, f32 *))(m, a);
+    tri = func_00124480(&p->c.a, a, 0);
+    h = func_001244D0(&p->c.a, a);
+    if (tri != (u32)-1) {
+        f32 r;
+
+        VCALL(D_0044E570, 0x40, void (*)(void *, u32, f32 *, f32 *, f32 *, u32))(D_0044E570, p->c.a.navTri, b, p->c.a.pos, a, mask);
+        r = func_002E2D00(p->c.a.angle[1] + func_002E2D00(func_001244D0(&p->c.a, b) - h));
+        p->c.a.angle[1] = r;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
+    }
+}
+
+/* which way to turn to face point `pos` (see func_00213EC0) */
+u32 func_00213FA0(Pursuer *p, const f32 *pos, f32 a, f32 b) {
+    f32 heading = func_001244D0(&p->c.a, pos);
+    f32 d;
+    u32 r;
+
+    if (a <= 0.0f) {
+        a = -a;
+    }
+    if (b <= 0.0f) {
+        b = -b;
+    }
+    d = func_002E2D00(heading - p->c.a.angle[1]);
+    if (d <= a) {
+        if (!(d < -a)) {
+            return 0xFF;
+        }
+        r = 0;
+    } else {
+        r = 1;
+    }
+    if (!(b < a)) {
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        if (!(d <= b)) {
+            r = (r | 2) & 0xFF;
+        }
+    }
+    return r & 0xFF;
+}
+
+/* can an eye at `from` facing `heading` see `to`: within `range` and `half` an angle either side */
+s32 func_002181D0(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 range, f32 half) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+
+    sceVu0SubVector(d, from, to);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = to[0] - from[0];
+    dz = to[2] - from[2];
+    if (dx == 0.0f && dz == 0.0f) {
+        return 0;
+    }
+    a = func_0031C5C0(dx, dz);
+    if (!(dist <= range)) {
+        return 0;
+    }
+    a = a - heading;
+    if (!((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half)) {
+        return 0;
+    }
+    return 1;
+}
+
+/* the same between two actors */
+s32 func_00218300(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f32 half) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+
+    sceVu0SubVector(d, from->pos, to->pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = to->pos[0] - from->pos[0];
+    dz = to->pos[2] - from->pos[2];
+    if (dx == 0.0f && dz == 0.0f) {
+        return 0;
+    }
+    a = func_0031C5C0(dx, dz);
+    if (!(dist <= range)) {
+        return 0;
+    }
+    a = a - heading;
+    if (!((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half)) {
+        return 0;
+    }
+    return 1;
+}
+
+/* is Fiona within reach to be caught (20 units, 10 in the dark: progress flag 0xA; never with
+ * flag 9 or while she's protected, +0x1AD630)? */
+s32 func_00218A30(Pursuer *p) {
+    Character *f = gCharPlayer;
+    Progress *pr;
+    f32 reach, d;
+    s32 near;
+
+    if (AT(f, 0x1AD630, u8) != 0) {
+        return 0;
+    }
+    if (func_00218430(p, f) != 0) {
+        return 1;
+    }
+    pr = gProgress;
+    if (Progress_TestFlag(pr, 9) != 0) {
+        return 0;
+    }
+    reach = Progress_TestFlag(pr, 0xA) != 0 ? 10.0f : 20.0f;
+    d = PU(p, 0x1588, f32);
+    near = 0;
+    if (d < reach && !(d <= 0.0f)) {
+        near = 1;
+    }
+    if ((p->c.a.unk2B == 0) & 0xFF & (near & 0xFF)) {
+        u32 tri = f->a.navTri;
+
+        if (func_00124480(&p->c.a, f->a.pos, 0x40080) == tri) {
+            return 1;
+        }
+    }
+    return 0;
 }

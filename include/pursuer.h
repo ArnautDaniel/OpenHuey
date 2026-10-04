@@ -1,10 +1,13 @@
 /* Pursuer: the shared base of the stalkers (Debilitas, Daniella, Riccardo, Lorenzo) and the
  * story characters loaded into character slot 2 by func_00171160 (0x28 kinds).
  *
- * There is no vtable of its own: each kind's vtable (204 entries, e.g. Debilitas 0x469D10,
- * Daniella 0x46BBB0, Riccardo 0x46F6B0, Lorenzo 0x470720) repeats the shared methods
- * (code 0x278490..0x29FF10, helpers 0x211C80..0x219460, defaults 0x179600..0x179970) and
- * overrides a few (+0x8 dtor, +0x30 update, +0xF4 / +0xF8 model load, ...).
+ * Classes: Actor (vtable 0x469C20) -> Character (0x469C60) -> NPC (0x46C220, 64 entries:
+ * navigation / doors / vision, code 0x211C80..0x219530, src/game/pursuer_ai.c) -> Pursuer
+ * (0x46D810, 204 entries, dtor 0x172810, code 0x278490..0x29FF10, src/game/pursuer.c) -> each
+ * kind (e.g. Debilitas 0x469D10, Daniella 0x46BBB0, Riccardo 0x46F6B0, Lorenzo 0x470720),
+ * which overrides a few entries (+0x8 dtor, +0x30 update, +0xF4 / +0xF8 model load, ...).
+ * The kinds' constructors only store Actor, Character and their own vtable; the middle ones
+ * appear in the destructors. Shared defaults of the kinds: 0x179600..0x179970.
  * Objects are 0x1800 bytes (0x1840 for Riccardo and a few others). */
 #ifndef PURSUER_H
 #define PURSUER_H
