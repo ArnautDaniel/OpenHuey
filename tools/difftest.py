@@ -1918,8 +1918,13 @@ def _test_captured(item) -> tuple[int, str]:
     func, opts = item
     rom, build, src = _WORK
     buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        r = test_function(rom, build, src, func, opts)
+    with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        try:
+            r = test_function(rom, build, src, func, opts)
+        except SystemExit as e:
+            # a bad option exits from the parser; in a pool worker that would hang the pool
+            print(f"ERROR {func}: options rejected")
+            r = e.code if isinstance(e.code, int) and e.code else 2
     return r, buf.getvalue()
 
 
