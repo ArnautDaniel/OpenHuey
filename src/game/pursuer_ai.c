@@ -991,8 +991,8 @@ s32 func_00218300(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f3
     return 1;
 }
 
-/* is Fiona within reach to be caught (20 units, 10 in the dark: progress flag 0xA; never with
- * flag 9 or while she's protected, +0x1AD630)? */
+/* is Fiona within reach to be caught (seen, or 20 units on a walkable line; 10 with progress
+ * flag 0xA; never with flag 9 or while her +0x1AD630 is set)? */
 s32 func_00218A30(Pursuer *p) {
     Character *f = gCharPlayer;
     Progress *pr;

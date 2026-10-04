@@ -43,3 +43,17 @@ story flags (`0x29E9D0`): which room they're in, the floor triangle they stand o
 way they face, their health, where they were heading and which exit they meant to take,
 and their running timers. Loading a save puts the hunt back the way it was rather than
 starting it fresh.
+
+## Closeness is frightening
+
+Fiona's panic is fed by a shared "threat" meter, and a stalker raises it simply by being
+near her (`0x2982A0`). Within 10 units the stalker adds its full amount; every further 10
+units cuts that to three quarters (100%, 75%, about 56%, about 42%), and beyond 40 units it
+adds nothing at all. Keeping your distance is literally keeping your nerve.
+
+## How close is "caught"
+
+A stalker can grab Fiona if it can see her, or if she is within 20 units and the floor
+between them is walkable in a straight line (`0x218A30`). One story flag halves that reach
+to 10 units, another switches catching off entirely, and there's a per-Fiona switch that
+makes her uncatchable (used by scripted moments).
