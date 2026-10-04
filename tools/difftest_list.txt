@@ -3182,3 +3182,21 @@ src/game/pursuer.c func_0028E0C0
 src/game/pursuer_ai.c func_00216960
 src/game/pursuer_ai.c func_00212550 --pre=a1=5..12 --pre=@0x44F818=0x0A100000..0x0A100000 --pre=@0x0A1000F8=1..2 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=-1 --runs=60
 src/game/pursuer_ai.c func_00219100 --pre=@0x44F818=0x0A100000..0x0A100000 --pre=a0+0x30=0..1 --pre=@0x0A100030=0..1 --pre=a0+0x14D4=0..9 --pre=@0x0A1014D4=0..9 --pre=@0x0A1000F8=0..1 --pre=a0+0x1594=0..1 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --runs=60
+src/game/pursuer.c func_002856A0
+src/game/pursuer.c func_0028FA00
+src/game/pursuer.c func_0027FC70 --pre=a0+0x34=-1..0 --pre=a0+0x17AC=0..5 --pre=a0+0x14D4=0..0x1FF --pre=a0+0x14C4=0x42000000..0x42C00000 --pre=a0+0x17B0=0..0x1FF --stub-ret=-1 --stub-ret=0 --runs=60
+src/game/pursuer.c func_0029F690 --pre=a0+0x20=1..2 --pre=a0+0x153C=0..40 --runs=100
+src/game/pursuer.c func_00289050
+src/game/pursuer.c func_0027CEF0
+src/game/pursuer.c func_00291EE0
+src/game/pursuer.c func_0027D5B0 --pre=a0+0x1664=0..0 --pre=a0+0x17B4=0..0 --pre=a0+0x16C8=0..5 --pre=a0+0x30=0..1 --pre=a0+0x128=0..2 --pre=a0+0x124=0..2 --stub-ret=0 --stub-ret=1 --stub-ret=5 --stub-ret=-1 --runs=80
+src/game/pursuer.c func_002895B0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..0x3F800000 --pre=@0x0A00055C=0x403..0x404 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x0A000874=0x0A200000..0x0A200000 --stub-ret=-1 --stub-ret=0 --stub-fret=0.1 --runs=60
+src/game/pursuer.c func_0027D8D0
+src/game/pursuer.c func_00291C80 --pre=a0+0x104=-1..1 --pre=a0+0x1720=0x0A300000..0x0A300000 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..0x3F800000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --stub-ret=-1 --stub-ret=0 --runs=60
+src/game/pursuer_ai.c func_00212A80 --stub-fret=0.0 --stub-fret=0.5 --stub-fret=0.99 --stub-ret=1 --stub-ret=0 --stub-ret-prob=1 --runs=60
+src/game/pursuer_ai.c func_00212850 --stub-ret=0 --stub-ret=1 --stub-ret=0xFFFF --stub-ret=4 --stub-ret=8 --stub-ret=0x14 --runs=80
+src/game/pursuer_ai.c func_00218ED0 --pre=a1=0..0x0A000000 --pre=a0+0x1540=0x0A000000..0x0A000000 --pre=a0+0x30=0..1 --pre=@0x0A000030=0..1 --pre=a0+0x14D4=0..9 --pre=@0x0A0014D4=0..9 --pre=@0x0A0000F8=0..1 --pre=a0+0x1594=0..1 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --runs=80
+src/game/pursuer_ai.c func_00214190
+src/game/pursuer_ai.c func_002143D0 --stub-fret=0.0 --stub-fret=0.5 --stub-fret=2.0 --stub-fret=20.0 --stub-ret=-1 --stub-ret=0 --runs=80
+src/game/pursuer_ai.c func_00214C70 --pre=a0+0x30=0..1 --pre=@0x44F818=0x0A000000..0x0A000000 --pre=@0x44F820=0x0A100000..0x0A100000 --pre=@0x0A000030=0..1 --pre=@0x0A100030=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=4 --runs=80
+src/game/pursuer_ai.c func_00214ED0 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A3FBEC0=0..0x100 --pre=a0+0x30=0..1 --pre=@0x44F818=0x0A000000..0x0A000000 --pre=@0x44F820=0x0A100000..0x0A100000 --pre=@0x0A000030=0..1 --pre=@0x0A100030=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=4 --runs=80

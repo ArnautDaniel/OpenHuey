@@ -1700,3 +1700,259 @@ void func_00219100(Pursuer *p) {
         func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     }
 }
+
+/* ---- batch 8 ---- */
+
+extern u8 D_0047A930[8];   /* 0..7 */
+
+/* a random exit of the pursuer's side of the room it can use (not `skip`); `skip` if none */
+u32 func_00212A80(Pursuer *p, u32 skip) {
+    u8 list[8];
+    VObject *rm;
+    u32 n = 0, i;
+
+    for (i = 0; i < 8; i++) {
+        list[i] = D_0047A930[i];
+    }
+    rm = D_0044E568;
+    for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+        if ((i & 0xFF) == (skip & 0xFF)) {
+            continue;
+        }
+        if (p->c.door < 8) {
+            s32 mine = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+            if (VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, i, 1) != mine) {
+                continue;
+            }
+        }
+        if (VCALL(rm, 0x74, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) != 0 &&
+            (s8)VCALL(p, 0xEC, s32 (*)(Pursuer *, u32))(p, i) != 0) {
+            list[n & 0xFF] = i;
+            n = (n + 1) & 0xFF;
+        }
+    }
+    if ((n & 0xFF) != 0) {
+        if ((n & 0xFF) == 1) {
+            return list[0];
+        }
+        return list[(u32)((f32)n * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))];
+    }
+    return skip;
+}
+
+/* a door of the played room the pursuer must deal with on its way (0xFF none) */
+u32 func_00212850(Pursuer *p) {
+    VObject *rm = D_0044E568;
+    VObject *d = D_0044E558;
+    Progress *pr = gProgress;
+    u32 i;
+
+    for (i = 0; i < 8; i++) {
+        u32 st;
+
+        if ((VCALL(rm, 0x10, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) & 0xFFFF) == 0xFFFF) {
+            continue;
+        }
+        if ((VCALL(d, 0x40, s32 (*)(VObject *, u32))(d, i & 0xFF) & 0xFF) != 1 ||
+            (Progress_CurRoomFlag(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), i & 0xFF) & 0xFF) != 1) {
+            continue;
+        }
+        st = func_00177BF0(pr, i & 0xFF, *(u8 *)&p->c.a.slot) & 0xFF;
+        if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) != 0) {
+            st &= 0xFF;
+            if ((st & 4) && ((st ^ (func_00177BF0(pr, i & 0xFF, 0) & 0xFF)) & 0x10)) {
+                return i & 0xFF;
+            }
+            if (st & 8) {
+                u32 tri = p->c.a.navTri, flags;
+
+                if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
+                    flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+                } else {
+                    flags = 0;
+                }
+                if (p->c.a.navMask & flags) {
+                    return i & 0xFF;
+                }
+            }
+            continue;
+        }
+        if ((st & 0xFF & 1) || VCALL(d, 0x10, s32 (*)(VObject *, u32, s32, s32))(d, i & 0xFF, 0, p->c.a.slot) != 0) {
+            return i & 0xFF;
+        }
+    }
+    return 0xFF;
+}
+
+/* vtable +0xB4: head for character `c` (null: the target) */
+void func_00218ED0(Pursuer *p, Character *c) {
+    s32 side = PU(p, 0x1598, s32);
+    s32 other = 0;
+
+    if (c == NULL) {
+        c = p->target;
+    }
+    if (p->c.a.room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
+        VObject *rm = D_0044E568;
+        s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+        if (a != -1) {
+            s32 b = -1;
+
+            if (c != NULL) {
+                b = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, c->a.room, c->door, 1);
+            }
+            if (b != -1 && b != a) {
+                other = 1;
+            }
+        }
+    }
+    if (other != 0) {
+        side = c != NULL ? VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, c->a.room, c->door, 1) : -1;
+    } else {
+        s32 room = c->a.room;
+
+        if (p->c.a.room == room || PU(p, 0x1594, s32) != room) {
+            side = -1;
+        }
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            if (c->moveMode == 0) {
+                sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), c->a.pos);
+            } else {
+                VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, c->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+            }
+            PU(p, 0x15A4, s32) = c->a.navTri;
+        }
+    }
+    if (func_00126F80(&p->c, c->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = c->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* turn towards `pos` by `step` (the shorter way, or the animation's turn if past 120 degrees);
+ * the angle left */
+f32 func_00214190(Pursuer *p, const f32 *pos, f32 step) {
+    f32 h = func_001244D0(&p->c.a, pos);
+    f32 d = h - p->c.a.angle[1];
+    f32 r;
+
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    if (!(d < step)) {
+        f32 h2 = func_001244D0(&p->c.a, pos);
+        f32 a = func_002E2D00(h2 - p->c.a.angle[1]) <= 0.0f ? -func_002E2D00(h2 - p->c.a.angle[1])
+                                                            : func_002E2D00(h2 - p->c.a.angle[1]);
+        f32 b = func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32))) <= 0.0f
+                    ? -func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)))
+                    : func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)));
+        s32 dir;
+
+        if (a <= 0x1.0c15240000000p+1f /* 2.0943952 */ || a <= b) {
+            dir = func_002E2D00(h2 - p->c.a.angle[1]) <= 0.0f ? -1 : 1;
+        } else {
+            dir = MOTION_AT(p, 0x858, f32) <= 0.0f ? -1 : 1;
+        }
+        r = func_002E2D00(p->c.a.angle[1] + (f32)dir * step);
+        p->c.a.angle[1] = r;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
+    } else {
+        p->c.a.angle[1] = h;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
+    }
+    return func_002E2D00(h - p->c.a.angle[1]);
+}
+
+/* step towards `pos`: turn, then walk by the animation's stride (straight if within it) */
+s32 func_002143D0(Pursuer *p, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    u8 *mo;
+    f32 d, ad;
+
+    func_001F6370(p->c.motion, v, 0.0f);
+    mo = p->c.motion;
+    v[2] *= VCALL(mo, 0x44, f32 (*)(void *, Pursuer *))(mo, p);
+    d = func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+    ad = d <= 0.0f ? -d : d;
+    if (!(ad < 0x1.921fb60000000p-1f /* 0.7853982 */)) {
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        if (d < 0x1.921fb60000000p+0f /* 1.5707964 */ && !(func_00124490(&p->c.a, pos) <= 10.0f)) {
+            func_00214190(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+            return func_00124490(&p->c.a, pos) < 1.0f;
+        }
+        func_00214190(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        return 0;
+    }
+    func_00214190(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    if (func_00124490(&p->c.a, pos) <= v[2] && func_00124480(&p->c.a, pos, -1) != (u32)-1) {
+        sceVu0SubVector(v, pos, p->c.a.pos);
+    } else {
+        func_002E3190(m, func_001244D0(&p->c.a, pos));
+        func_002E2DA0(v, m, v);
+    }
+    func_001247E0(&p->c.a, v);
+    return func_00124490(&p->c.a, pos) < 1.0f;
+}
+
+/* how far Fiona (+0x1588) and Hewie (+0x158C) are on foot, in the played room (-1 elsewhere) */
+static f32 Npc_DistanceTo(Pursuer *p, Character *c, f32 *v) {
+    void *nm;
+    u32 tri;
+
+    if (p->c.a.room != c->a.room) {
+        return -1.0f;
+    }
+    nm = D_0044E570;
+    tri = c->a.navTri;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, tri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, v);
+        if (tri == func_00124480(&p->c.a, v, p->c.a.navMask)) {
+            return func_00124490(&p->c.a, c->a.pos);
+        }
+    }
+    return VCALL(p, 0xD4, f32 (*)(Pursuer *, u32, f32 *))(p, tri, c->a.pos);
+}
+
+void func_00214C70(Pursuer *p) {
+    s32 room = p->c.a.room;
+
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        f32 a[4] __attribute__((aligned(16)));
+        f32 b[4] __attribute__((aligned(16)));
+
+        PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, a) : -1.0f;
+        PU(p, 0x158C, f32) = p->c.a.room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, b) : -1.0f;
+    } else {
+        PU(p, 0x158C, f32) = -1.0f;
+        PU(p, 0x1588, f32) = -1.0f;
+    }
+}
+
+/* the same, unless the progress byte +0x1FBEC1 is set (then func_00214C70) */
+void func_00214ED0(Pursuer *p) {
+    if (AT(gProgress, 0x1FBEC1, u8) == 0) {
+        s32 room = p->c.a.room;
+
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            f32 a[4] __attribute__((aligned(16)));
+            f32 b[4] __attribute__((aligned(16)));
+
+            PU(p, 0x1588, f32) = Npc_DistanceTo(p, gCharPlayer, a);
+            PU(p, 0x158C, f32) = p->c.a.room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, b) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = -1.0f;
+            PU(p, 0x1588, f32) = -1.0f;
+        }
+        return;
+    }
+    func_00214C70(p);
+}
