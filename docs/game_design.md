@@ -34,8 +34,7 @@ worked out). Fear has a real number behind it; it isn't only a screen effect.
 Before each stalker applies its own tweaks, the shared setup (`0x29FB20`) gives every
 pursuer the same baseline: 100 hit points, a body 5 units wide and 20 tall, eyesight that
 reaches 150 units within a 60 degree angle, and an ear that ignores any noise of loudness 12
-or less. (For scale, Fiona and the stalkers walk on a floor measured in the same units, and
-a typical door is about 10 units from its frame to the room.)
+or less.
 
 ## Stalkers are part of your save
 
