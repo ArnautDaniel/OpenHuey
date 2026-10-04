@@ -1495,13 +1495,22 @@ def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str
         e = ELFFile(f)
         overlays = [(s["sh_addr"], s.data()) for s in e.iter_sections()
                     if s["sh_flags"] & 2 and s["sh_type"] == "SHT_PROGBITS" and s["sh_size"]]
-        funcs = {s.name: s["st_value"] for s in e.get_section_by_name(".symtab").iter_symbols()
-                 if s["st_info"]["type"] == "STT_FUNC" and s["st_info"]["bind"] == "STB_GLOBAL"}
-        C_ALL_ENTRIES.clear()
-        C_ALL_ENTRIES.update(s["st_value"] for s in e.get_section_by_name(".symtab").iter_symbols()
-                             if s["st_info"]["type"] == "STT_FUNC")
-        C_ALL_ENTRIES.update(INLINE_ADDRS)
         text = e.get_section_by_name(".text")
+    # the C's own functions (the game's ~120k symbols are absolute in this ELF: walking them with
+    # pyelftools took seconds per call, so let nm list only the defined .text ones)
+    funcs = {}
+    C_ALL_ENTRIES.clear()
+    nm = subprocess.run([f"{TC}nm", "--defined-only", str(elf)], capture_output=True, text=True, check=True).stdout
+    for line in nm.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and parts[1] in ("T", "t"):
+            addr = int(parts[0], 16)
+            C_ALL_ENTRIES.add(addr)
+            if parts[1] == "T":
+                funcs[parts[2]] = addr
+    C_ALL_ENTRIES.update(INLINE_ADDRS)
+    with open(elf, "rb") as f:
+        text = ELFFile(f).get_section_by_name(".text")
         # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
         trange = (text["sh_addr"], text["sh_addr"] + text["sh_size"])
     return overlays, dict(sorted(funcs.items(), key=lambda kv: kv[1])), trange
@@ -1773,6 +1782,58 @@ def option_parser() -> argparse.ArgumentParser:
     return ap
 
 
+RUN_JOBS = [1]    # seeds tested in parallel for a single function (set by main)
+_RUN_CTX = None   # (rom, overlays, orig_range, c_entry, c_range, ret_kind, func, opts) of the function
+
+
+def _run_seed(i: int):
+    """One run of the function under test: (kind, original's covered addresses, message)."""
+    rom, overlays, orig_range, c_entry, c_range, ret_kind, func, opts = _RUN_CTX
+    seed = opts.seed * 100003 + i
+    try:
+        o = run_one(rom, overlays, orig_range[0], orig_range, seed, opts.max_steps)  # same world: C mapped in both
+    except Trap:
+        return "skip", None, ""
+    except Unsupported as e:
+        return "error", None, f"ERROR {func}: original uses an unsupported instruction {e}"
+    try:
+        n = run_one(rom, overlays, c_entry, c_range, seed, opts.max_steps)
+    except Trap as t:
+        return "fail", None, f"FAIL {func} seed {seed}: C version trapped ({t})"
+    except Unsupported as e:
+        return "error", None, f"ERROR {func}: C version uses an unsupported instruction {e}"
+    cov = {a for a in o[0].visited if orig_range[0] <= a < orig_range[1]}
+    if o[0].timed_out or n[0].timed_out:
+        if not (o[0].timed_out and n[0].timed_out):
+            who = "C version" if n[0].timed_out else "original"
+            return "fail", cov, f"FAIL {func} seed {seed}: only the {who} ran away"
+        # both loop forever (e.g. a main loop with stubbed callees): compare the calls made
+        k = min(len(o[0].events), len(n[0].events))
+        if k < 3 or not events_equal(o[0].events[:k], n[0].events[:k]):
+            if k < 3:
+                return "skip", cov, ""
+            j = next(j for j in range(k) if not event_equal(o[0].events[j], n[0].events[j]))
+            out = [f"FAIL {func} seed {seed}: endless loop, call #{j} differs:\n  original {fmt_ev(o[0].events[j])}\n  C        {fmt_ev(n[0].events[j])}"]
+            if opts.verbose:
+                out.append("\n".join(["  original calls:"] + ["    " + fmt_ev(a, b) for a, b in zip(o[0].events[:j + 1], n[0].events)]))
+                out.append("\n".join(["  C calls:"] + ["    " + fmt_ev(b, a) for a, b in zip(o[0].events, n[0].events[:j + 1])]))
+            return "fail", cov, "\n".join(out)
+        return "runaway", cov, ""
+    diffs = compare(seed, o, n, ret_kind)
+    if diffs:
+        out = [f"FAIL {func} seed {seed} (run {i}):"] + ["  " + d for d in diffs]
+        if opts.verbose:
+            k = max(len(o[0].events), len(n[0].events))
+            oe = o[0].events + [None] * (k - len(o[0].events))
+            ne = n[0].events + [None] * (k - len(n[0].events))
+            out.append("\n".join(["  original calls:"] + ["    " + (fmt_ev(a, b) if a else "-") for a, b in zip(oe, ne)]))
+            out.append("\n".join(["  C calls:"] + ["    " + (fmt_ev(b, a) if b else "-") for a, b in zip(oe, ne)]))
+        return "fail", cov, "\n".join(out)
+    if opts.verbose and i < 3:
+        return "verbose", cov, f"seed {seed}: {o[0].steps} steps, {len(o[0].events)} calls, {len(o[0].visible_writes())} bytes written"
+    return "ok", cov, ""
+
+
 def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     """0 = pass, 1 = fail, 2 = could not test."""
     overlays, funcs, c_range = build
@@ -1802,62 +1863,34 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     OUTPARAM_BYTES[0] = opts.outparam
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
+    global _RUN_CTX
+    _RUN_CTX = (rom, overlays, orig_range, c_entry, c_range, ret_kind, func, opts)
     ok = skipped = runaway_ok = 0
     covered: set[int] = set()
-    for i in range(runs):
-        seed = opts.seed * 100003 + i
-        try:
-            o = run_one(rom, overlays, orig_range[0], orig_range, seed, opts.max_steps)  # same world: C mapped in both
-        except Trap:
+    if RUN_JOBS[0] > 1 and runs > 1:
+        # one function, many runs: spread the seeds over worker processes (results in seed order,
+        # so the report is the same as a serial run's)
+        import multiprocessing as mp
+        with mp.get_context("fork").Pool(min(RUN_JOBS[0], runs)) as pool:
+            results = pool.map(_run_seed, range(runs), chunksize=max(1, runs // (4 * RUN_JOBS[0])))
+    else:
+        results = map(_run_seed, range(runs))
+    for kind, cov, msg in results:
+        if cov:
+            covered |= cov
+        if kind == "skip":
             skipped += 1
-            continue
-        except Unsupported as e:
-            print(f"ERROR {func}: original uses an unsupported instruction {e}")
-            return 2
-        try:
-            n = run_one(rom, overlays, c_entry, c_range, seed, opts.max_steps)
-        except Trap as t:
-            print(f"FAIL {func} seed {seed}: C version trapped ({t})")
-            return 1
-        except Unsupported as e:
-            print(f"ERROR {func}: C version uses an unsupported instruction {e}")
-            return 2
-        covered |= {a for a in o[0].visited if orig_range[0] <= a < orig_range[1]}
-        if o[0].timed_out or n[0].timed_out:
-            if not (o[0].timed_out and n[0].timed_out):
-                who = "C version" if n[0].timed_out else "original"
-                print(f"FAIL {func} seed {seed}: only the {who} ran away")
-                return 1
-            # both loop forever (e.g. a main loop with stubbed callees): compare the calls made
-            k = min(len(o[0].events), len(n[0].events))
-            if k < 3 or not events_equal(o[0].events[:k], n[0].events[:k]):
-                if k < 3:
-                    skipped += 1
-                    continue
-                i = next(i for i in range(k) if not event_equal(o[0].events[i], n[0].events[i]))
-                print(f"FAIL {func} seed {seed}: endless loop, call #{i} differs:\n  original {fmt_ev(o[0].events[i])}\n  C        {fmt_ev(n[0].events[i])}")
-                if opts.verbose:
-                    print("  original calls:", *[fmt_ev(a, b) for a, b in zip(o[0].events[:i + 1], n[0].events)], sep="\n    ")
-                    print("  C calls:", *[fmt_ev(b, a) for a, b in zip(o[0].events, n[0].events[:i + 1])], sep="\n    ")
-                return 1
-            runaway_ok += 1
+        elif kind == "ok":
             ok += 1
-            continue
-        diffs = compare(seed, o, n, ret_kind)
-        if diffs:
-            print(f"FAIL {func} seed {seed} (run {i}):")
-            for d in diffs:
-                print("  " + d)
-            if opts.verbose:
-                k = max(len(o[0].events), len(n[0].events))
-                oe = o[0].events + [None] * (k - len(o[0].events))
-                ne = n[0].events + [None] * (k - len(n[0].events))
-                print("  original calls:", *[fmt_ev(a, b) if a else "-" for a, b in zip(oe, ne)], sep="\n    ")
-                print("  C calls:", *[fmt_ev(b, a) if b else "-" for a, b in zip(oe, ne)], sep="\n    ")
-            return 1
-        ok += 1
-        if opts.verbose and i < 3:
-            print(f"seed {seed}: {o[0].steps} steps, {len(o[0].events)} calls, {len(o[0].visible_writes())} bytes written")
+        elif kind == "runaway":
+            ok += 1
+            runaway_ok += 1
+        elif kind == "verbose":
+            ok += 1
+            print(msg)
+        else:   # "fail" / "error"
+            print(msg)
+            return 1 if kind == "fail" else 2
     addrs = list(range(orig_range[0], orig_range[1], 4))
     # trailing alignment padding (zero words never executed) doesn't count
     while addrs and addrs[-1] not in covered and struct.unpack_from("<I", rom, addrs[-1] - IMAGE_LO + 0x80)[0] == 0:
@@ -1931,6 +1964,7 @@ def main() -> None:
             items = [(f, items[0][1]) for f in build[1]]
         global _WORK
         _WORK = (rom, build, src)
+        RUN_JOBS[0] = args.jobs if len(items) == 1 else 1
         if args.jobs > 1 and len(items) > 1:
             import multiprocessing as mp
             with mp.get_context("fork").Pool(min(args.jobs, len(items))) as pool:
