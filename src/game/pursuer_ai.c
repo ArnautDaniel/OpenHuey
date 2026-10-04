@@ -2171,3 +2171,76 @@ s32 func_002138F0(Pursuer *p, s32 tri) {
     }
     return 0;
 }
+
+/* ---- batch 11 ---- */
+
+/* the walkable point nearest to triangle `tri` / `pos` for the pursuer: from a door it may
+ * block, through the walk mesh to the first free triangle (a bit inside it) */
+u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
+    void *nm = D_0044E570;
+    u32 flags;
+
+    if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+        flags = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (p->c.a.navMask & flags) {
+        VObject *rm = D_0044E568;
+        VObject *d = D_0044E558;
+        u32 t = tri, i;
+
+        for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+            if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) & 0xFF) {
+                continue;
+            }
+            if (VCALL(d, 0x6C, s32 (*)(VObject *, s32, u32, const f32 *))(d, 0, i, pos) != 0) {
+                t = VCALL(rm, 0x28, u32 (*)(VObject *, u32))(rm, i);
+                break;
+            }
+        }
+        if (t == tri) {
+            t = func_00211B00(p, t);
+        }
+        if (t != (u32)-1 && t < AT(nm, 0x8, u32)) {
+            f32 c[4] __attribute__((aligned(16)));
+            f32 e[4] __attribute__((aligned(16)));
+            f32 d2[4] __attribute__((aligned(16)));
+            f32 v[4] __attribute__((aligned(16)));
+
+            for (;;) {
+                s32 r;
+                u8 *te;
+                u32 next, nflags;
+
+                VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, t, c);
+                r = VCALL(nm, 0x24, s32 (*)(void *, u32, f32 *, f32 *, const f32 *))(nm, t, e, c, pos);
+                if (r == 4) {
+                    return -1;
+                }
+                if (r == 3) {
+                    sceVu0CopyVector(e, pos);
+                    break;
+                }
+                te = t < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL ? AT(nm, 0x4, u8 *) + t * 0x50 : NULL;
+                next = AT(te + r * 4, 0x30, u32);
+                if (next < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+                    nflags = AT(AT(nm, 0x4, u8 *) + next * 0x50, 0x3C, u32);
+                } else {
+                    nflags = 0;
+                }
+                if (p->c.a.navMask & nflags) {
+                    break;
+                }
+                t = next;
+            }
+            sceVu0SubVector(d2, c, pos);
+            func_002E2C10(v, func_002E2BC0(d2));
+            sceVu0ScaleVector(v, v, 0x1.99999a0000000p-4f /* 0.1 */);
+            sceVu0AddVector(out, e, v);
+            return t;
+        }
+    }
+    sceVu0CopyVector(out, pos);
+    return tri;
+}

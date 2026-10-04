@@ -3226,3 +3226,13 @@ src/game/pursuer.c func_0027F0A0
 src/game/pursuer.c func_0028DE10
 src/game/pursuer.c func_00298D20
 src/game/pursuer.c func_00285B10
+src/game/pursuer.c func_0029AC50 --pre=a0+0xC4=1..2 --pre=a0+0x16F0=0..1 --pre=a0+0xE0=0..1 --pre=a0+0x175C=0xB..0xC --pre=a0+0x16C8=0..1 --stub-ret=0 --stub-ret=1 --runs=60
+# func_002849B0: from seed 100043 an output buffer the callee fills differs in its prior (uninitialised) stack contents; semantics equal
+src/game/pursuer.c func_002849B0 --pre=a0+0x16CB=0..6 --pre=a0+0x16F8=0..1 --pre=@0x44F818=0x0A000000..0x0A000000 --pre=@0x44F820=0x0A100000..0x0A100000 --pre=@0x0A100030=0..1 --pre=a0+0x14DC=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=-1 --stub-fret=-1.0 --stub-fret=5.0 --runs=40
+src/game/pursuer.c func_00286F10 --pre=a0+0x100=0xFE..0xFF --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=a0+0x14C8=-1..1 --pre=a0+0xC4=1..2 --stub-ret=0 --stub-ret=1 --stub-ret=8 --stub-ret=0x10 --runs=80
+src/game/pursuer.c func_0028D260
+src/game/pursuer.c func_0027CB90 --pre=a1=0xFE..0x100 --pre=a0+0x16C8=0..3 --stub-ret=-1 --stub-ret=0 --runs=60
+src/game/pursuer.c func_00285DE0 --pre=a1=9..16 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-fret=0.0 --stub-fret=1.0 --runs=60
+src/game/pursuer.c func_0029B5C0 --pre=a0+0xC4=1..2 --pre=a0+0x1664=0..0 --pre=a0+0x14EC=3..8 --pre=a0+0x16C4=0..1000 --pre=a0+0x14F4=0..2 --pre=a0+0x14C8=-1..1 --stub-ret=0 --stub-ret=1 --runs=100
+src/game/pursuer.c func_0029A940 --stub-ret=0 --stub-ret=1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x1802..0x1806 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --runs=60
+src/game/pursuer_ai.c func_00216E00
