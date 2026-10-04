@@ -57,3 +57,14 @@ A stalker can grab Fiona if it can see her, or if she is within 20 units and the
 between them is walkable in a straight line (`0x218A30`). One story flag halves that reach
 to 10 units, another switches catching off entirely, and there's a per-Fiona switch that
 makes her uncatchable while it is set.
+
+## The search goes on while you can't see it
+
+When a stalker loses Fiona it plans a search route of up to eight stops. For each stop it
+rolls: 60% of the time it picks the room's next hand-placed "point of interest" (they're
+visited in order, wrapping around), otherwise a random walkable spot (`0x27E5D0`).
+
+The route doesn't pause when the stalker is off in another room. The game simply keeps time:
+every 150 frames (2.5 seconds) away counts as one stop walked. When the stalker comes back
+into the room you're in, it skips ahead along its route by that many stops, or tops the
+route up with new ones (`0x27EEA0`). So hiding for longer really does let it wander further.

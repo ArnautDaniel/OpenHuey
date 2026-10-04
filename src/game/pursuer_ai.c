@@ -1572,3 +1572,131 @@ s32 func_00212FE0(Pursuer *p, s32 side) {
     }
     return 0;
 }
+
+/* ---- batch 7 ---- */
+
+/* path length to character `c` (null: the target): +0x1590, and +0x1588 (Fiona) / +0x158C
+ * (Hewie) */
+s32 func_00216960(Pursuer *p, Character *c) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    void *nm;
+    u32 tri;
+    f32 len;
+
+    if (c == NULL) {
+        c = p->target;
+    }
+    nm = D_0044E570;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, c->a.navTri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, c->a.navTri, v);
+    } else {
+        sceVu0CopyVector(v, c->a.pos);
+    }
+    tri = func_00216E00(p, c->a.navTri, v, v);
+    sceVu0CopyVector(w, v);
+    if (func_00127140(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (func_001270F0(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        func_00127060(&p->c);
+    } else {
+        func_00127060(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (c == gCharPlayer) {
+        PU(p, 0x1588, f32) = PU(p, 0x1590, f32);
+    } else if (c == gCharPartner) {
+        PU(p, 0x158C, f32) = PU(p, 0x1590, f32);
+    }
+    if (PU(p, 0x1590, f32) < 0.0f) {
+        return 0;
+    }
+    return 1;
+}
+
+/* the facing of door / exit `exit` seen from Fiona (10 if none): while Fiona hides, the first
+ * door she can be behind */
+f32 func_00212550(Pursuer *p, u32 exit) {
+    VObject *d;
+    s8 side;
+    f32 a;
+
+    if ((exit & 0xFF) >= 8) {
+        u32 i, found = 0xFF;
+
+        if (gCharPlayer->moveMode == 2) {
+            VObject *dd = D_0044E558;
+            Progress *pr = gProgress;
+
+            for (i = 0; i < 8; i++) {
+                if (VCALL(dd, 0x40, s32 (*)(VObject *, u32))(dd, i & 0xFF) != 0 &&
+                    Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) != 0 && (func_00177BF0(pr, i & 0xFF, 0) & 0xFF & 4)) {
+                    found = i & 0xFF;
+                    break;
+                }
+            }
+        }
+        exit = found & 0xFF;
+        if (exit >= 8) {
+            return 10.0f;
+        }
+    }
+    if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
+        return 10.0f;
+    }
+    d = D_0044E558;
+    side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, exit, gCharPlayer->a.pos);
+    if (side == -1) {
+        return 10.0f;
+    }
+    a = VCALL(d, 0x3C, f32 (*)(VObject *, u32))(d, exit);
+    if (side == 1) {
+        a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+    }
+    return a;
+}
+
+/* vtable +0xB0: head for Fiona (her room's side; her triangle if she's in a room the pursuer
+ * can reach) */
+void func_00219100(Pursuer *p) {
+    Character *f = gCharPlayer;
+    s32 side = PU(p, 0x1598, s32);
+    s32 other = 0;
+
+    if (p->c.a.room == f->a.room && p->c.door < 8 && (f->door & 0xFF) < 8) {
+        VObject *rm = D_0044E568;
+        s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+        if (a != -1) {
+            s32 b = -1;
+
+            if (f != NULL) {
+                b = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, f->a.room, f->door, 1);
+            }
+            if (b != -1 && b != a) {
+                other = 1;
+            }
+        }
+    }
+    if (other != 0) {
+        side = f != NULL ? VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, f->a.room, f->door, 1) : -1;
+    } else {
+        if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
+            side = -1;
+        }
+        if (f->moveMode == 0) {
+            sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), f->a.pos);
+        } else {
+            VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, f->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+        }
+        PU(p, 0x15A4, s32) = f->a.navTri;
+    }
+    if (func_00126F80(&p->c, f->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = f->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}

@@ -44,6 +44,7 @@ set them.
 """
 import argparse
 import hashlib
+import os
 import pickle
 import random
 import re
@@ -1549,8 +1550,11 @@ def original_range(func: str) -> tuple[int, int] | None:
 
 
 def return_kind(src: Path, func: str) -> str:
-    m = re.search(rf"^\s*(?:extern\s+|static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", src.read_text(), re.M)
-    t = m.group(1).strip() if m else "s32"
+    text = src.read_text()
+    # the definition first (a call at the start of a line would otherwise read as an untyped one)
+    m = re.search(rf"^(?:static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\([^;{{}}]*\)\s*\{{", text, re.M) or \
+        re.search(rf"^\s*(?:extern\s+|static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", text, re.M)
+    t = m.group(1).strip() if m and m.group(1).strip() else "s32"
     if t == "void":
         return "none"
     if t in ("f32", "float"):
@@ -1890,7 +1894,8 @@ def main() -> None:
     ap.add_argument("src", type=Path, nargs="?")
     ap.add_argument("funcs", nargs="*", help="functions to test (default: all non-static ones in src)")
     ap.add_argument("--list", type=Path, help="file of 'source function [options]' lines")
-    ap.add_argument("-j", "--jobs", type=int, default=4, help="functions tested in parallel")
+    ap.add_argument("-j", "--jobs", type=int, default=int(os.environ.get("DIFFTEST_JOBS", 4)),
+                    help="functions tested in parallel (default $DIFFTEST_JOBS or 4)")
     args = ap.parse_args()
 
     # (source, function, options) jobs, grouped by source so each file is compiled once
