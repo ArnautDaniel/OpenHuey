@@ -147,18 +147,6 @@ extern VObject *D_0044E4D0;       /* room objects */
 extern void *D_0044E570;          /* nav mesh */
 extern VObject *gSceneGameF29740; /* path planner */
 
-extern void func_00178DB0(Progress *pr, s32 room, s32 a2, u32 slot);
-extern void func_00178C10(Progress *pr, s32 room, s32 a2, u32 slot);
-extern void func_00178A90(Progress *pr, s32 room, s32 door, s32 a3);
-extern void func_002E2C10(f32 *out, f32 angle);   /* unit vector of a heading */
-extern u32 func_00124480(Actor *a, const f32 *target, u32 mask);
-extern s32 func_00123470(void *self, u32 tri, f32 *pos);
-extern f32 *func_0017CE80(u8 *skel, s32 bone);
-extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
-extern s32 func_001270A0(Character *c);
-extern void func_00127060(Character *c);
-extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
-extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);
 
 /* `a2` for the pursuer in its room (progress) */
 void func_00211C80(Pursuer *p, s32 a2) {
@@ -362,20 +350,6 @@ void func_00218E70(Pursuer *p) {
 extern Character *gCharacters[6];
 extern Character *gCharPartner;   /* Hewie */
 
-extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);
-extern void func_001F6370(void *motion, f32 *out, f32 t);   /* animation root motion this frame */
-extern f32 func_001244D0(Actor *a, const f32 *pos);         /* heading towards a point */
-extern f32 func_002E2D00(f32 angle);                        /* wrap an angle into -pi..pi */
-extern s32 func_00217D30(Pursuer *p, f32 heading, f32 dist);
-extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
-extern u32 func_00177A20(Progress *pr, u32 i, u32 slot);
-extern s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin);
-extern f32 func_001257B0(Character *c, u32 goalTri, const f32 *goal, u32 mask);
-extern u32 func_00216E00(Pursuer *p, f32 *pos);
-extern s32 func_001270F0(Character *c);
-extern f32 func_00124490(Actor *a, const f32 *pos);         /* distance to a point */
-extern s32 func_00218430(Pursuer *p, Character *c);
-extern void func_002E3190(f32 (*m)[4], f32 angle);           /* Y rotation matrix */
 
 /* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */
 void func_00179780(Pursuer *p, s32 side, f32 *out) {
@@ -489,7 +463,7 @@ f32 func_00213C60(Pursuer *p, u32 tri, const f32 *pos) {
         flags = 0;
     }
     if (p->c.a.navMask & flags) {
-        tri = func_00216E00(p, v);
+        tri = func_00216E00(p, tri, pos, v);
     } else {
         sceVu0CopyVector(v, pos);
     }
@@ -786,11 +760,6 @@ void func_00218D80(Pursuer *p, u32 exit) {
 
 /* ---- batch 4 ---- */
 
-extern u32 func_00178300(Progress *pr, s32 room, s32 a2, u32 slot);
-extern void func_00178750(Progress *pr, s32 room, s32 a2);
-extern u32 func_00211E00(Pursuer *p, s32 a1);
-extern f32 func_002E2BC0(f32 *v);                 /* heading of a vector */
-extern f32 func_0031C5C0(f32 x, f32 z);           /* atan2 */
 
 /* door / exit `exit`: what to do with it (vtable +0xF0 to go through); 2 / 1 / 0 */
 s32 func_00211CF0(Pursuer *p, s32 exit) {
@@ -1026,10 +995,6 @@ s32 func_00218A30(Pursuer *p) {
 /* ---- batch 5 ---- */
 
 extern void *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern void func_00124E40(Actor *a);
-extern void func_00127660(Character *c);
-extern s32 func_00122C90(Actor *a, u32 fromTri, u32 toTri, const f32 *from, const f32 *to, s32 a5);
-extern u32 func_00212850(Pursuer *p);
 
 /* vtable +0x8: NPC destructor (-> Character) */
 Pursuer *func_001710D0(Pursuer *p, s32 flags) {
@@ -1312,4 +1277,298 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
             return 0;
         }
     }
+}
+
+/* ---- batch 6 ---- */
+
+
+/* path length to the nearest walkable point of triangle +0x15C4 / point +0x15D0 (+0x1590) */
+s32 func_00216B20(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 tri = func_00216E00(p, PU(p, 0x15C4, u32), (f32 *)((u8 *)p + 0x15D0), v);
+    f32 len;
+
+    if (tri == (u32)-1) {
+        PU(p, 0x1590, f32) = -1.0f;
+        return 0;
+    }
+    sceVu0CopyVector(w, v);
+    if (func_00127140(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (func_001270F0(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        func_00127060(&p->c);
+    } else {
+        func_00127060(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (len < 0.0f) {
+        return 0;
+    }
+    sceVu0SubVector(d, v, (f32 *)((u8 *)p + 0x15D0));
+    d[3] = 0.0f;
+    PU(p, 0x1590, f32) += __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    return 1;
+}
+
+/* the same for the goal triangle +0x15A4 / point +0x15B0 */
+s32 func_00216C90(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 tri = func_00216E00(p, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0), v);
+    f32 len;
+
+    if (tri == (u32)-1) {
+        PU(p, 0x1590, f32) = -1.0f;
+        return 0;
+    }
+    sceVu0CopyVector(w, v);
+    if (func_00127140(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (func_001270F0(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        func_00127060(&p->c);
+    } else {
+        func_00127060(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (len < 0.0f) {
+        return 0;
+    }
+    sceVu0SubVector(d, v, (f32 *)((u8 *)p + 0x15B0));
+    d[3] = 0.0f;
+    PU(p, 0x1590, f32) += __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    return 1;
+}
+
+/* can the pursuer see point `pos` (on triangle `tri`): in its view (+0x1580 range, +0x1584
+ * angle, heading +0x1574) and nothing in the way? */
+s32 func_002187D0(Pursuer *p, u32 tri, const f32 *pos) {
+    f32 half = PU(p, 0x1584, f32);
+    f32 range = PU(p, 0x1580, f32);
+    f32 heading = PU(p, 0x1574, f32);
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+    s32 in = 0;
+
+    sceVu0SubVector(d, p->c.a.pos, pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = pos[0] - p->c.a.pos[0];
+    dz = pos[2] - p->c.a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        a = func_0031C5C0(dx, dz);
+        if (dist <= range) {
+            a = a - heading;
+            if ((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half) {
+                in = 1;
+            }
+        }
+    }
+    if (!(in & 0xFF)) {
+        return 0;
+    }
+    return func_00122C90(&p->c.a, p->c.a.navTri, tri, p->c.a.pos, pos, 0);
+}
+
+/* what is exit `exit` like for the pursuer: 2 its own way in, 3 closed to it, 4 open, 5 / 6
+ * it must open it (6: from the other side) */
+u32 func_00211E00(Pursuer *p, s32 exit) {
+    Progress *pr = gProgress;
+    VObject *rm;
+
+    if ((Progress_CurRoomFlag(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 2;
+    }
+    if (!(func_00178300(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot) & 0xFF)) {
+        return 3;
+    }
+    if ((func_001785B0(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 3;
+    }
+    rm = D_0044E568;
+    if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF)) {
+        return 4;
+    }
+    if ((func_00178980(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 4;
+    }
+    if ((func_00178840(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return (VCALL(rm, 0x4C, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF) == 1 ? 6 : 3;
+    }
+    return 5;
+}
+
+/* the triangle `dist` away in direction `heading`: -1 none, -2 blocked, -3 flag 1, -4 at a
+ * door, -5 at a room point */
+u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    void *nm;
+    u32 tri, flags, i;
+
+    func_002E2C10(v, func_002E2D00(heading));
+    sceVu0ScaleVector(v, v, dist);
+    sceVu0AddVector(w, p->c.a.pos, v);
+    tri = func_00124480(&p->c.a, w, 0);
+    if (tri == (u32)-1) {
+        return -1;
+    }
+    nm = D_0044E570;
+    if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+        flags = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (flags & p->c.a.navMask) {
+        return -2;
+    }
+    if (flags & 1) {
+        return -3;
+    }
+    for (i = 0; i < 8; i++) {
+        if (((VCALL(D_0044E558, 0x2C, s32 (*)(VObject *, u32, f32 *))(D_0044E558, i & 0xFF, w) != 0) ^ 1) == 0) {
+            return -4;
+        }
+    }
+    for (i = 0; i < 5; i++) {
+        if (VCALL(nm, 0x50, s32 (*)(void *, u32, f32 *))(nm, i, w) != 0) {
+            return -5;
+        }
+    }
+    return tri;
+}
+
+/* who of the characters can the pursuer reach / see by the progress tables (+0x30 / +0x2C) and is
+ * in front of it (within 90 degrees): a bit per slot */
+s32 func_002179F0(Pursuer *p, s32 a1, f32 f) {
+    Progress *pr = gProgress;
+    s32 bits = 0;
+    u32 i;
+
+    for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+        u32 s = i & 0xFF;
+        Character **c = &gCharacters[s];
+
+        if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
+            (VCALL(pr, 0x30, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
+            f32 d = func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos))
+                        : func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos));
+
+            if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
+            }
+        }
+    }
+    return bits;
+}
+
+s32 func_00217B90(Pursuer *p, s32 a1, f32 f) {
+    Progress *pr = gProgress;
+    s32 bits = 0;
+    u32 i;
+
+    for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+        u32 s = i & 0xFF;
+        Character **c = &gCharacters[s];
+
+        if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
+            (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
+            f32 d = func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos))
+                        : func_002E2D00(p->c.a.angle[1] - func_001244D0(&p->c.a, (*c)->a.pos));
+
+            if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
+            }
+        }
+    }
+    return bits;
+}
+
+/* plan a path from triangle `tri` / `pos` (-1: where the pursuer is) to door `door`, side 0 then
+ * 2; the door's triangle (+0x104 side, +0x1568 heading, +0x110 point), -1 none */
+s32 func_002134E0(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
+    f32 from[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    VObject *d, *pl;
+    s8 side;
+
+    if (tri != -1) {
+        sceVu0CopyVector(from, pos);
+    } else {
+        tri = p->c.a.navTri;
+        sceVu0CopyVector(from, p->c.a.pos);
+    }
+    d = D_0044E558;
+    pl = gSceneGameF29740;
+    side = 0;
+    p->c.pathReq->unk0 = 0;
+    for (;;) {
+        s32 t = VCALL(d, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(d, door, side, at, dir, 1);
+
+        p->c.pathReq->startTri = tri;
+        sceVu0CopyVector(p->c.pathReq->startPos, from);
+        p->c.pathReq->goalTri = t;
+        sceVu0CopyVector(p->c.pathReq->goalPos, at);
+        p->c.pathId = VCALL(pl, 0xC, s32 (*)(VObject *, PathRequest *, s32))(pl, p->c.pathReq, 0);
+        if (p->c.pathId != -1 && VCALL(pl, 0x14, s32 (*)(VObject *))(pl) > 0) {
+            p->c.unk104[0] = side;
+            PU(p, 0x1568, f32) = dir[1];
+            sceVu0CopyVector(p->c.unk110, at);
+            return t;
+        }
+        func_00127060(&p->c);
+        side = side != 2 ? 2 : 0;
+        if (side == 0) {
+            return -1;
+        }
+    }
+}
+
+/* find a door (0..4) to go through, from side `side` (0 / 1, other values: either); door to
+ * +0x100, side to +0x104 */
+s32 func_00212FE0(Pursuer *p, s32 side) {
+    s8 s = side;
+    u32 either = (s != 1 && s != 0) ? 1 : 0;
+    u32 i;
+
+    if ((either & 0xFF) == 1) {
+        s = 0;
+    }
+    for (i = 0; i < 5; i++) {
+        u32 retry = either & 0xFF;
+        s32 valid = (s32)i >= 0 && i < AT(D_0044E570, 0x14, u32);
+
+        if ((valid & 0xFF) != 1) {
+            continue;
+        }
+        for (;;) {
+            f32 ofs[4] __attribute__((aligned(16)));
+            u32 sd = s != 0;
+            s32 ok;
+
+            VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, sd, ofs);
+            PU(p, 0x15C4, s32) = func_00123710(p, i & 0xFF, sd & 0xFF, ofs, (f32 *)((u8 *)p + 0x15D0));
+            ok = PU(p, 0x15C4, s32) != -1 && (VCALL(p, 0xDC, s32 (*)(Pursuer *))(p) & 0xFF) == 1;
+            if ((ok & 0xFF) == 1) {
+                p->c.unk100 = i;
+                p->c.unk104[0] = s;
+                return 1;
+            }
+            if ((retry & 0xFF) != 1) {
+                break;
+            }
+            retry = 0;
+            s ^= 1;
+        }
+    }
+    return 0;
 }
