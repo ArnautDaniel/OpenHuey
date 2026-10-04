@@ -21,4 +21,14 @@ typedef struct Pursuer {
 } Pursuer;
 _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 
+/* the animation player at Character +0xF0 */
+#define MOTION_AT(p, off, type) (*(type *)((u8 *)(p)->c.motion + (off)))
+#define MOTION_ANIM(p) MOTION_AT(p, 0x55C, s32)                         /* current animation id */
+#define MOTION_KEYS(p) (*(u32 *)(MOTION_AT(p, 0x6A4, u8 *) + 0x18))     /* key flags of the frame */
+#define MOTION_KEY_END 0x20                                             /* the animation ended */
+
+/* the current behaviour step is over (+0x16EE) / start the next (+0x16F0) */
+#define PURSUER_STEP_DONE(p) PU(p, 0x16EE, u8)
+#define PURSUER_STEP_NEXT(p) PU(p, 0x16F0, u8)
+
 #endif
