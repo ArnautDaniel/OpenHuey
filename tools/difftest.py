@@ -515,8 +515,9 @@ class CPU:
             # don't count) rather than the address
             if v % 16 == 0:
                 w = self.m.written
-                # (unwritten stack reads as 0, so "never set" and "set to 0" compare equal)
-                content = tuple(None if v + i in self.save_addrs else w.get(v + i, self.m.read(v + i, 1))
+                # (unwritten stack reads as 0, so "never set" and "set to 0" compare equal; so do
+                # saved-register slots, which only sit next to a local by frame-layout accident)
+                content = tuple(0 if v + i in self.save_addrs else w.get(v + i, self.m.read(v + i, 1))
                                 for i in range(16))
                 if any(b is not None for b in content):
                     words = []
