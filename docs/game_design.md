@@ -36,6 +36,12 @@ pursuer the same baseline: 100 hit points, a body 5 units wide and 20 tall, eyes
 reaches 150 units within a 60 degree angle, and an ear that ignores any noise of loudness 12
 or less.
 
+Hiding your middle isn't enough. When a stalker checks whether it can see Fiona
+(`0x218430`), it first looks for a clear line to her centre; if that's blocked, it tries nine
+more points spread around the far side of her body, one body-width out from her centre, and
+if any of those is in plain view it has seen her. Some story moments switch to a stricter
+set of obstacles that block its view.
+
 ## Stalkers are part of your save
 
 When you save, the game writes the stalker's situation into the save data alongside the
