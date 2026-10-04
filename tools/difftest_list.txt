@@ -3236,3 +3236,11 @@ src/game/pursuer.c func_00285DE0 --pre=a1=9..16 --stub-ret=-1 --stub-ret=0 --stu
 src/game/pursuer.c func_0029B5C0 --pre=a0+0xC4=1..2 --pre=a0+0x1664=0..0 --pre=a0+0x14EC=3..8 --pre=a0+0x16C4=0..1000 --pre=a0+0x14F4=0..2 --pre=a0+0x14C8=-1..1 --stub-ret=0 --stub-ret=1 --runs=100
 src/game/pursuer.c func_0029A940 --stub-ret=0 --stub-ret=1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x1802..0x1806 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --runs=60
 src/game/pursuer_ai.c func_00216E00
+src/game/pursuer.c func_0029B190 --pre=a0+0xC4=1..2 --pre=a0+0x16F0=0..1 --pre=a0+0xE0=0..1 --pre=a0+0x175C=0xB..0xC --pre=a0+0x1544=0..1 --pre=a0+0x17AC=0..1 --stub-ret=0 --stub-ret=1 --runs=80
+src/game/pursuer.c func_00299F80 --pre=a0+0x2B=0..1 --pre=a0+0xE0=0..1 --pre=a0+0xF8=3..4 --pre=a0+0x16F9=0..1 --pre=a0+0x100=0..2 --stub-fret=0.01 --stub-fret=0.5 --runs=80
+src/game/pursuer.c func_00287620 --pre=a0+0x1788=0x1800..0x1801 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x1004..0x1005 --pre=@0x0A000550=0..0x3F800000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=a0+0x14C8=-1..1 --stub-fret=5.0 --stub-fret=20.0 --stub-ret=0 --stub-ret=1 --stub-ret=9 --runs=80
+src/game/pursuer.c func_0029D4C0 --pre=a0+0x16AC=0x0A000000..0x0A000000 --pre=a1=0x1709..0x1709 --pre=@0x0A000000=0x00120011..0x00120012 --pre=@0x44E570=0x0A100000..0x0A100000 --pre=@0x0A100008=4..4 --pre=@0x0A100004=0x0A200000..0x0A200000 --pre=a0+0x34=0..3 --pre=a0+0x30=6..7 --stub-ret=0 --stub-ret=1 --stub-ret=0x10 --stub-ret=0x11 --runs=80
+src/game/pursuer.c func_002902E0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..0x3F800000 --pre=@0x0A000858=0..0 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=a0+0x1788=0..1 --stub-ret=0 --stub-ret=1 --runs=60
+src/game/pursuer.c func_0029FBD0
+src/game/pursuer.c func_0027D260 --pre=a0+0x1664=0..0 --pre=a0+0x17B4=0..0 --pre=a0+0x16C8=0..4 --pre=a0+0x14C4=0x00000000..0x3F800000 --pre=a0+0x1388=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=5 --stub-ret=9 --stub-fret=0.5 --runs=100
+src/game/pursuer.c func_00284C80 --pre=a0+0x1544=0..1 --pre=a0+0x1545=0..1 --pre=a0+0x14D5=0..3 --pre=a0+0x16C9=0..2 --pre=a0+0x16CA=0..7 --pre=a0+0x16C8=0..4 --pre=a0+0xF8=7..8 --stub-ret=0 --stub-ret=1 --stub-ret=-1 --runs=100
