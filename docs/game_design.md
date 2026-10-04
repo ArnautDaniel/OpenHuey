@@ -78,3 +78,21 @@ footstep, alternating left and right feet. Moving away from you makes no sound t
 footsteps in the next room always mean it's coming nearer. The code was evidently meant to
 make each step louder the more ground had been closed (from 10 up to 15 units), but a
 slip in the comparison means every footstep plays at full loudness.
+
+## What a stalker pays attention to
+
+Every frame the stalker ranks what it has noticed and only switches to something more urgent
+than what it's already doing (`0x284C80`). On its scale, seeing Fiona tops the list (level
+7), hearing Fiona comes next (6), then other noises (5), seeing Hewie (2) and hearing Hewie
+(1). So a dog barking won't pull a stalker off a chase, but Fiona making a noise while it's
+only after Hewie will.
+
+## Chasing off-screen is quicker than it should be
+
+While a stalker moves between rooms you aren't in, the game doesn't animate it; it just
+counts down the length of the path to the next doorway (`0x27D260`). Searching, it covers
+0.6 units a frame; walking somewhere on purpose, 1.0. When it is going after Fiona, the
+code subtracts a random 1.0 to 1.2 and then also the 0.6 of the searching pace, because
+that case runs straight into the next one in the original program, a forgotten "break".
+The result: an unseen stalker heading for you moves at 1.6 to 1.8 units a frame. (One
+story flag sets every stalker to 2.0.)
