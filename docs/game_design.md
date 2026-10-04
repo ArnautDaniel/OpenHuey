@@ -56,4 +56,4 @@ adds nothing at all. Keeping your distance is literally keeping your nerve.
 A stalker can grab Fiona if it can see her, or if she is within 20 units and the floor
 between them is walkable in a straight line (`0x218A30`). One story flag halves that reach
 to 10 units, another switches catching off entirely, and there's a per-Fiona switch that
-makes her uncatchable (used by scripted moments).
+makes her uncatchable while it is set.
