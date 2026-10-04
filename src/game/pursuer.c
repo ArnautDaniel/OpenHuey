@@ -3241,3 +3241,402 @@ void func_00291C80(Pursuer *p) {
         func_00125A10(&p->c);
     }
 }
+
+/* ---- batch 9 ---- */
+
+extern const PTMF D_003ED020, D_003ECE90, D_003ECA00, D_003ECA10, D_003ECA20, D_003ED560, D_003ED570,
+    D_003ECC30, D_003ECDE0, D_003ECDD0, D_003ED140;
+extern PTMF D_0045B358;   /* followed by the wait move: +0xC kind, +0x10 move mode, +0x14 sub */
+
+/* vtable +0x70: placed into room `room` (triangle `tri`, -1: by its exit / way in), on side
+ * `side` (0 / 1; else any usable exit) */
+s32 func_0029D180(Pursuer *p, s32 room, s32 tri, u32 side) {
+    VObject *rm;
+    u32 i;
+
+    func_00125BA0(&p->c);
+    p->c.a.room = room;
+    rm = D_0044E568;
+    if (side < 2) {
+        for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+            if (VCALL(rm, 0x74, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) != 0 && (func_00211E00(p, i) & 0xFF) != 3 &&
+                side == (u32)VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, i, 1)) {
+                p->c.door = i;
+                break;
+            }
+        }
+        if ((i & 0xFF) >= 8) {
+            p->c.door = 0;
+        }
+    } else {
+        s32 more;
+
+        i = 0;
+        do {
+            if (VCALL(rm, 0x74, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) != 0 && (func_00211E00(p, i) & 0xFF) != 3) {
+                p->c.door = i;
+            }
+            i = (i + 1) & 0xFF;
+            more = i < 8;
+        } while (more != 0);
+        if (more == 0) {
+            p->c.door = 0;
+        }
+    }
+    if (PU(p, 0x16C8, u8) == 4) {
+        PU(p, 0x16C8, u8) = 3;
+        VCALL(p, 0x2C4, void (*)(Pursuer *))(p);
+    }
+    VCALL(p, 0x7C, void (*)(Pursuer *))(p);
+    if (func_00217510(p) != 0) {
+        if (tri != -1) {
+            VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, s32))(p, tri, NULL, 0);
+        } else {
+            func_00124890(&p->c.a, func_00217340(p));
+        }
+        func_002DDE20(p->c.motion, 0, -1);
+        p->c.a.unk2A = 0;
+    } else {
+        p->c.a.disabled = 1;
+        p->c.a.unk2A = 1;
+        p->c.a.unk2B = 0;
+        p->c.a.unk2D = 0;
+        PU(p, 0x1544, u8) = 0;
+        PU(p, 0x1545, u8) = 0;
+        p->c.a.navTri = tri;
+    }
+    p->c.unk1530 = 0;
+    p->c.unk1538 = 0;
+    p->c.unk1534 = 0;
+    func_0027EAF0(p);
+    return 0;
+}
+
+extern u8 D_00419DF0[], D_00423B50[], D_00429750[], D_004297E0[], D_00429C70[], D_00429D00[],
+    D_00429D90[], D_0042A110[], D_0042C920[], D_0042C890[], D_0042C3A0[], D_0042C6C0[], D_0042C9B0[],
+    D_0042F490[], D_00430840[], D_004308D0[], D_00430960[], D_00430A30[], D_0043B5D0[], D_004434F0[];
+
+/* vtable +0xF8: the model files of character id +0x153C (slot 2: vtable +0xF8) */
+u8 *func_0029F8C0(Pursuer *p) {
+    if (p->c.a.slot != 2) {
+        switch (p->c.unk153C) {
+        case 2: return func_0012BFB0(p);
+        case 3: return func_0020D620(p);
+        case 4: return func_002DC460(p);
+        case 6: return func_002FC8F0(p);
+        case 7: return func_002CF140(p);
+        case 8: return D_00419DF0;
+        case 9: return func_00309410(p);
+        case 10: return func_0030C1B0(p);
+        case 11: return func_002F9000(p);
+        case 12: return D_00423B50;
+        case 13: return D_00429750;
+        case 14: case 15: return D_004297E0;
+        case 16: return D_00429C70;
+        case 17: return D_00429D00;
+        case 18: return D_00429D90;
+        case 19: return D_0042A110;
+        case 20: return D_0042C920;
+        case 21: case 22: return D_0042C890;
+        case 23: return func_00320150(p);
+        case 24: return D_0042C3A0;
+        case 25: return D_0042C6C0;
+        case 26: return D_0042C9B0;
+        case 27: return func_00331200(p);
+        case 28: return D_0042F490;
+        case 29: return D_00430840;
+        case 30: return D_004308D0;
+        case 31: return D_00430960;
+        case 32: return D_00430A30;
+        case 33: return D_0043B5D0;
+        case 34: return func_00347290(p);
+        case 35: return func_00348620(p);
+        case 36: return func_003495B0(p);
+        case 37: return func_0034D980(p);
+        case 38: return D_004434F0;
+        case 39: return func_00365D10(p);
+        default: return NULL;
+        }
+    }
+    return VCALL(p, 0xF8, u8 *(*)(Pursuer *))(p);
+}
+
+/* the attack's active frames: everyone in its reach (entry +0xC) is hit (+0x1760 bits, the
+ * hit reported with the entry's kind +0x10, sound +0x12, +0x4 and strength +0x14); after it
+ * the next attack step */
+void func_0028B0D0(Pursuer *p) {
+    u8 *e = PU(p, 0x171C, u8 *) + PU(p, 0x1724, s8 *)[PU(p, 0x1728, s32) * 4 + PU(p, 0x172C, s8)] * 0x24;
+
+    if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
+        Progress *pr = gProgress;
+
+        if (!(Progress_TestFlag(pr, 0xE) & 0xFF)) {
+            u32 i;
+
+            for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+                u32 s = i & 0xFF;
+                Character *c = gCharacters[s];
+
+                if (c != NULL && s != (u32)p->c.a.slot && c->a.active != 0 && func_00124490(&p->c.a, c->a.pos) < AT(e, 0xC, f32)) {
+                    PU(p, 0x1760, u8) |= (1 << s) & 0xFF;
+                }
+            }
+            if (PU(p, 0x1760, u8) != 0) {
+                func_00178070(pr, (u8)p->c.a.slot, PU(p, 0x1760, u8), AT(e, 0x10, u8), AT(e, 0x12, u16), AT(e, 0x4, s16), AT(e, 0x14, f32));
+            }
+        }
+    }
+    if (((MOTION_KEYS(p) & MOTION_KEY_END) != 0) == 1) {
+        if (PU(p, 0x1760, u8) != 0) {
+            s32 *t = PU(p, 0x1748, s32 *);
+
+            PU(p, 0x178C, s32) = t != NULL ? t[2] : 30;
+        }
+        PU(p, 0x172C, s8)++;
+        Actor_SetState(&p->c.a, &D_003ED020);
+        return;
+    }
+    if (AT(e, 0x1C, u8) != 0) {
+        f32 h = func_001244D0(&p->c.a, p->target->a.pos);
+
+        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    }
+    func_00125A10(&p->c);
+}
+
+/* vtable +0x1C0: pushing at the door +0x100 (held shut from Fiona's side: noise) */
+void func_0028ED50(Pursuer *p) {
+    VObject *d;
+    u32 tri = p->c.a.navTri;
+    u8 *e;
+    s32 side;
+
+    e = tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL ? AT(D_0044E570, 0x4, u8 *) + tri * 0x50 : NULL;
+    p->c.a.unk2A = (AT(e, 0x3C, u32) & 0x20000) ? 1 : 0;
+    d = D_0044E558;
+    side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, gCharPlayer->a.pos);
+    if (VCALL(d, 0x30, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) & 0xFF) {
+        if (p->c.moveSub == 0x15) {
+            func_00212CA0(p, (u8)p->c.unk100);
+        } else {
+            func_00212D30(p, (u8)p->c.unk100);
+        }
+        p->c.moveMode = 0;
+        Actor_SetState(&p->c.a, &D_003ECE90);
+        VCALL(p, 0x1C4, void (*)(Pursuer *))(p);
+        return;
+    }
+    if (side == 1 && (p->c.unk104[0] == 2 || p->c.unk104[0] == 0)) {
+        f32 a = VCALL(d, 0x64, f32 (*)(VObject *, u32))(d, (u8)p->c.unk100);
+
+        if (a > -80.0f && a < -10.0f &&
+            ((VCALL(d, 0x6C, s32 (*)(VObject *, s32, u32, f32 *))(d, 2, (u8)p->c.unk100, gCharPlayer->a.pos) & 0xFF) == 1 ||
+             (func_00177BF0(gProgress, (u8)p->c.unk100, 0) & 0xFF & 8))) {
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, 5, 0, *(s16 *)&p->c.unk100, 20.0f);
+        }
+    }
+    func_00125A10(&p->c);
+}
+
+/* vtable +0x2BC: chase Fiona in the played room (behaviour 0xC), or the wait move elsewhere */
+void func_0029AF20(Pursuer *p) {
+    if (p->c.a.unkC4 == 2) {
+        p->c.a.unkC4 = 0;
+        PU(p, 0x1664, s32) = 0;
+    }
+    if (func_00217510(p) != 0) {
+        if (PURSUER_STEP_NEXT(p) == 1 && p->c.unkE0 == 0) {
+            if (PU(p, 0x175C, s32) == 0xC) {
+                ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA00);
+                PU(p, 0x1758, s32) = -1;
+                VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0xC);
+            } else {
+                ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA10);
+                PU(p, 0x1758, s32) = -1;
+            }
+        }
+        PU(p, 0x16C8, u8) = 2;
+        VCALL(p, 0x2C0, void (*)(Pursuer *))(p);
+        PU(p, 0x1594, s32) = p->c.a.room;
+        func_0027E790(p);
+    } else {
+        p->c.unk1388 = p->c.unk1384;
+        ptmf_set((PTMF *)((u8 *)p + 0x17A0), &D_0045B358);
+        PU(p, 0x17AC, s32) = AT(&D_0045B358, 0xC, s32);
+        p->c.moveMode = AT(&D_0045B358, 0x10, s32);
+        p->c.moveSub = AT(&D_0045B358, 0x14, s32);
+        p->c.unk1530 = 0;
+        p->c.unk1538 = 0;
+        p->c.unk1534 = 0;
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA20);
+        PU(p, 0x1758, s32) = -1;
+        PU(p, 0x16C8, u8) = 1;
+        VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+    PU(p, 0x16C9, u8) = 0;
+    PU(p, 0x16CB, u8) = 0;
+    PU(p, 0x16CA, u8) = 0;
+    PU(p, 0x16CC, u8) = 0;
+    PU(p, 0x179C, s32) = -1;
+    PU(p, 0x16F1, u8) = 0;
+    PU(p, 0x16F3, u8) = 0;
+    PU(p, 0x16F2, u8) = 0;
+    PU(p, 0x16F4, u8) = 0;
+}
+
+/* vtable +0x168: plan the way on (Fiona's room / the search), path length to the next exit */
+void func_0027DB30(Pursuer *p) {
+    VObject *rm;
+    u32 node;
+
+    PURSUER_STEP_NEXT(p) = 1;
+    p->c.unk124 = p->c.unk128;
+    if (p->c.unk1388 >= p->c.unk1384 && PU(p, 0x16C8, u8) == 2) {
+        u8 k;
+
+        PU(p, 0x1598, s32) = -1;
+        k = PU(p, 0x16C9, u8);
+        if (k == 2 || k == 4 || k == 1 || k == 5) {
+            PU(p, 0x16C9, u8) = 0;
+            PU(p, 0x16CB, u8) = 0;
+            PU(p, 0x16CA, u8) = 0;
+            PU(p, 0x16CC, u8) = 0;
+            PU(p, 0x179C, s32) = -1;
+            PU(p, 0x16F1, u8) = 0;
+            PU(p, 0x16F3, u8) = 0;
+            PU(p, 0x16F2, u8) = 0;
+            PU(p, 0x16F4, u8) = 0;
+        }
+    }
+    rm = D_0044E568;
+    node = VCALL(rm, 0x10, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, p->c.door) & 0xFFFF;
+    if ((func_0027CA00(p) & 0xFF) != 1) {
+        u32 i;
+
+        for (i = 0; i < 13; i++) {
+            p->c.unk148C[i] = 0;
+        }
+        if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
+            PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C, u16), p->c.a.room);
+            func_0029AC50(p);
+            return;
+        }
+        *(f32 *)&p->c.unk14C4 = func_00211F70(p, p->c.a.room, node, PU(p, 0x138C, u16));
+        PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C, u16), p->c.a.room);
+        ptmf_set((PTMF *)((u8 *)p + 0x17A0), &D_003ED570);
+    } else {
+        *(f32 *)&p->c.unk14C4 = func_00211F70(p, p->c.a.room, node, PU(p, 0x138C, u16));
+        PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C, u16), p->c.a.room);
+        ptmf_set((PTMF *)((u8 *)p + 0x17A0), &D_003ED560);
+    }
+    p->c.unk1530 = 0;
+    p->c.unk1538 = 0;
+    p->c.unk1534 = 0;
+    p->c.unk14C0 = PU(p, 0x138C, u16);
+    PU(p, 0x1784, s32) = 0;
+}
+
+/* vtable +0x270: go for Hewie (behaviour 1 attack / 3 turn first / 7 approach; 30 s limit) */
+void func_002953F0(Pursuer *p) {
+    s32 prev;
+
+    p->target = gCharPartner;
+    PU(p, 0x158C, f32) = func_00213D40(p, gCharPartner);
+    PU(p, 0x16C9, u8) = PU(p, 0x16C9, u8) > 0 ? PU(p, 0x16C9, u8) : 1;
+    PU(p, 0x16CA, u8) = PU(p, 0x16CA, u8) >= 2 ? PU(p, 0x16CA, u8) : 2;
+    prev = PU(p, 0x1758, s32);
+    if (prev != -1) {
+        if (prev != -2) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, prev);
+        }
+    } else if (p->c.a.room == p->target->a.room) {
+        if (PU(p, 0x158C, f32) < 0.0f) {
+            if (!(func_00284440(p) & 0xFF)) {
+                VCALL(p, 0x13C, void (*)(Pursuer *))(p);
+                return;
+            }
+        } else if (PU(p, 0x158C, f32) <= VCALL(p, 0x2F0, f32 (*)(Pursuer *))(p) && (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF)) {
+            u32 t = func_00213FA0(p, p->target->a.pos, 0x1.0c15240000000p+0f /* 1.0471976 */, 0x1.4f1a6ep+1f) & 0xFF;
+
+            if (t == 0xFF) {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            } else {
+                p->c.unk104[0] = t;
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 3);
+            }
+        } else {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 7);
+        }
+    } else {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 7);
+    }
+    PU(p, 0x16F6, u8) = 1;
+    PU(p, 0x16ED, u8) = 0;
+    PURSUER_STEP_DONE(p) = 0;
+    PU(p, 0x16EF, u8) = 0;
+    PU(p, 0x1758, s32) = -1;
+    PU(p, 0x1780, s32) = 0;
+    PU(p, 0x162C, s32) = 0;
+    PU(p, 0x1630, s32) = PU(p, 0x16D8, s32);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECC30);
+    PU(p, 0x1758, s32) = -1;
+    VCALL(p, 0x274, void (*)(Pursuer *))(p);
+}
+
+/* vtable +0x1A4 / +0x1A0: closing in on the target (stance animation +0x328 / +0x324) */
+static void Pursuer_CloseIn(Pursuer *p, s32 skip, u32 slotAnim, const PTMF *next) {
+    if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
+        return;
+    }
+    VCALL(p, 0xE0, void (*)(Pursuer *, Character *))(p, NULL);
+    if (!(PU(p, 0x1590, f32) < 0.0f)) {
+        if (PU(p, 0x1788, s32) != skip) {
+            Pursuer_PlayAnim(p, VCALL(p, slotAnim, s32 (*)(Pursuer *))(p));
+        }
+        PU(p, 0x1784, s32) = 0;
+        Actor_SetState(&p->c.a, next);
+        VCALL(p, 0x1A8, void (*)(Pursuer *))(p);
+        return;
+    }
+    VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, p->target);
+    if (!(func_00284440(p) & 0xFF)) {
+        PU(p, 0x16EF, u8) = 1;
+    }
+}
+
+void func_002908F0(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 1;
+    Pursuer_CloseIn(p, 0x201, 0x328, &D_003ECDE0);
+}
+
+void func_00290B70(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 1;
+    PURSUER_STEP_NEXT(p) = 1;
+    Pursuer_CloseIn(p, 0x200, 0x324, &D_003ECDD0);
+}
+
+/* vtable +0x...: sidestep around the target if there's room (8 units) */
+void func_00289280(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 1;
+    if (func_00217FC0(p, 8.0f) & 0xFF) {
+        Character *t;
+
+        if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
+            return;
+        }
+        t = p->target;
+        p->c.unk104[0] = func_002E2D00(func_002E2D00(func_001244D0(&t->a, p->c.a.pos) - t->a.angle[1])) <= 0.0f ? -1 : 1;
+        PU(p, 0x1634, s32) = 0;
+        if (PU(p, 0x1788, s32) != 0x200) {
+            Pursuer_PlayAnim(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p));
+        }
+        PU(p, 0x1784, s32) = 0;
+        Actor_SetState(&p->c.a, &D_003ED140);
+        func_00289050(p);
+        return;
+    }
+    PURSUER_STEP_DONE(p) = 1;
+}
