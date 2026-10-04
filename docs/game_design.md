@@ -26,5 +26,21 @@ event versions.
 ## Fiona's panic, as the stalkers see it
 
 The stalkers' code treats Fiona as panicking when her fear is above 90 (out of 100), or when
-she is in one particular state (number 14 of her state machine; its meaning is still being worked out). Fear has a real number behind it; it isn't only
-a screen effect.
+she is in one particular state (number 14 of her state machine; its meaning is still being
+worked out). Fear has a real number behind it; it isn't only a screen effect.
+
+## What every stalker starts with
+
+Before each stalker applies its own tweaks, the shared setup (`0x29FB20`) gives every
+pursuer the same baseline: 100 hit points, a body 5 units wide and 20 tall, eyesight that
+reaches 150 units within a 60 degree angle, and an ear that ignores any noise of loudness 12
+or less. (For scale, Fiona and the stalkers walk on a floor measured in the same units, and
+a typical door is about 10 units from its frame to the room.)
+
+## Stalkers are part of your save
+
+When you save, the game writes the stalker's situation into the save data alongside the
+story flags (`0x29E9D0`): which room they're in, the floor triangle they stand on and which
+way they face, their health, where they were heading and which exit they meant to take,
+and their running timers. Loading a save puts the hunt back the way it was rather than
+starting it fresh.
