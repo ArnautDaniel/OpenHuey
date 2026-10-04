@@ -68,3 +68,13 @@ The route doesn't pause when the stalker is off in another room. The game simply
 every 150 frames (2.5 seconds) away counts as one stop walked. When the stalker comes back
 into the room you're in, it skips ahead along its route by that many stops, or tops the
 route up with new ones (`0x27EEA0`). So hiding for longer really does let it wander further.
+
+## Footsteps through the walls
+
+When a stalker is in a different room from you but within 80 units of you by walking path,
+the game plays its footsteps at its own position (`0x29D7F0`). It tracks how much closer
+the stalker has come since the last step; each time that passes 10 units it plays one
+footstep, alternating left and right feet. Moving away from you makes no sound this way, so
+footsteps in the next room always mean it's coming nearer. The code was evidently meant to
+make each step louder the more ground had been closed (from 10 up to 15 units), but a
+slip in the comparison means every footstep plays at full loudness.
