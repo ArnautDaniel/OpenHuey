@@ -2303,3 +2303,91 @@ void func_0039A860(u8 *g) {
         AT(g, 0x106503C, void *) = NULL;
     }
 }
+
+extern void func_002E27B0(void *o);
+extern void func_00176720(void *p);
+extern void func_00120980(void *rooms);
+extern void func_001F9D20(void *o);
+extern void func_001766D0(void *p);
+extern void func_002E31D0(void *bgmctl);
+extern void func_002D2330(void *bgm);
+extern void func_0031E0B0(void *o);
+extern void func_00267140(void *o);
+extern void func_0017D1B0(void *o);
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* clear the 17 words at +0x2718 */
+void func_00179E60(u8 *o) {
+    s32 i;
+
+    AT(o, 0x2718, s32) = 0;
+    AT(o, 0x271C, s32) = 0;
+    for (i = 0; i < 15; i++) {
+        AT(o, 0x2720 + i * 4, s32) = 0;
+    }
+}
+
+/* (vtable) a soft reset: once the other room file is in and the loader is idle (3), the sounds
+ * stopped (every channel but 5), the room state, path data, VRAM and progress reset, the
+ * current scene called back (D_0044C598), the renderer, BGM and effects reset, the volume back
+ * to full, and the scene flagged (+0x11) to start over */
+void SceneGame_OnSoftReset(u8 *g) {
+    VObject *snd;
+    u8 *bgm;
+    u8 *sc;
+
+    if (func_00120540(g + 0x73EE80, AT(g, 0xF6C1B0, s32) ^ 1) != 0) {
+        return;
+    }
+    if (VCALL(gFileLoader, 0x24, s32 (*)(void *))(gFileLoader) != 3) {
+        return;
+    }
+    VCALL(D_0044E7A8, 0x10, void (*)(VObject *))(D_0044E7A8);
+    snd = D_0044E560;
+    VCALL(snd, 0x8C, void (*)(VObject *))(snd);
+    VCALL(snd, 0xC, void (*)(VObject *))(snd);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 4);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 3);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 2);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 1);
+    VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 0);
+    func_002E27B0(g + 0x706480);
+    func_00176720(g + 0x40);
+    func_00120980(g + 0x73EE80);
+    func_001F9D20(g + 0xF6C1C0);
+    func_001766D0(g + 0x40);
+    sc = AT(D_0044E960, 4, u8 *);
+    if (sc != NULL) {
+        ptmf_set(&AT(sc, 4, PTMF), &D_0044C598);
+        sc = AT(D_0044E960, 4, u8 *);
+        VCALL(sc, 0x14, void (*)(void *))(sc);
+    }
+    AT(VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0), 0x1C, u8) = 0;
+    func_002E31D0(g + 0x1053424);
+    bgm = (u8 *)D_0044E980;
+    func_002D2330(bgm);
+    VCALL((VObject *)(g + 0x6FC380), 0x24, void (*)(VObject *))((VObject *)(g + 0x6FC380));
+    func_00267140(g + 0xF6CD30);
+    func_0031E0B0(g + 0x1053480);
+    VCALL(g, 0xFC, void (*)(void *))(g);
+    snd = D_0044E560;
+    VCALL(snd, 0x94, void (*)(VObject *, s32))(snd, 0xFF);
+    VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
+    {
+        volatile f32 *vol = &AT(bgm, 0x120, f32);
+
+        *vol = 1.0f;
+        if (*vol < 0.0f) {
+            *vol = 0.0f;
+        }
+        if (!(*vol <= 1.0f)) {
+            *vol = 1.0f;
+        }
+    }
+    func_002D1FD0(bgm);
+    func_00179E60(D_004562B0);
+    func_0017D1B0(D_004562A8);
+    g[0x11] = 1;
+}
