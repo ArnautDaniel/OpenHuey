@@ -576,7 +576,7 @@ void func_00167AF0(Hewie *h) {
     h->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, h->c.a.pos, 0);
 }
 
-extern void func_00143D20(Hewie *h);
+extern s32 func_00143D20(Hewie *h);
 extern void func_00124890(Actor *a, s32 side);
 extern VObject *D_0044E568;   /* rooms */
 extern VObject *D_0044E4D0;   /* room objects */
@@ -4985,4 +4985,192 @@ void func_00143840(Hewie *h) {
     } else if (HW(h, 0xF366D, u8) == 2 || away == 1) {
         HW(h, 0xF366D, u8) = 0;
     }
+}
+
+/* ---- arriving in the room being played ---- */
+
+#define Hewie_PlaceAt(h, tri, ang, at) VCALL(h, 0x28, s32 (*)(Hewie *, u32, const f32 *, f32 *))(h, tri, ang, at)
+
+/* the animation he arrives in, when none: by how he moves (down 0x1002, 1: 6, else standing) */
+static void arrive_anim(Hewie *h) {
+    switch (h->c.a.unkC4) {
+    case 2:
+        HW(h, 0xF36F0, s32) = 0x1002;
+        break;
+    case 1:
+        HW(h, 0xF36F0, s32) = 6;
+        break;
+    default:
+        HW(h, 0xF36F0, s32) = 0;
+        break;
+    }
+}
+
+/* placed in the room: handed to the room objects, at the origin if off the mesh, the sound of
+ * his spot, what he is alert to */
+static void arrived(Hewie *h) {
+    sceVu0FVECTOR v;
+
+    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+    if (h->c.a.navTri == NAV_NONE) {
+        h->c.a.pos[0] = 0.0f;
+        h->c.a.pos[1] = 0.0f;
+        h->c.a.pos[2] = 0.0f;
+        h->c.a.pos[3] = 0x1.99999ap-4f;   /* 0.1 */
+    }
+    if (func_00122B50(&h->c.a, v)) {
+        func_001264C0(&h->c, 3, (s32)v, 0, 0, 0);
+    }
+    func_00143840(h);
+    HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
+    func_00126270(&h->c);
+}
+
+static inline void blend_in(Hewie *h) {
+    if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+}
+
+/* he arrives in the room being played: by his action, 0x88 (coming through exit +0xF36B4) put
+ * at the exit; the resting / waiting ones (0, 0x2C..0x39, 0x52, 0x77) kept where he is with
+ * the animation they had (else anywhere on the room's mesh, or at exit +0x14D4 facing at
+ * random), then a fitting action. -1 for any other action, or (but 0x88) another room */
+s32 func_00143D20(Hewie *h) {
+    VObject *rooms;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 ang;
+    s32 placed, held;
+    u32 tri;
+
+    switch (HEWIE_ACTION(h)) {
+    case 0x88:
+        blend_in(h);
+        HW(h, 0xF366D, u8) = 0;
+        MOTION_PTR(h->c.motion, 0x858) = NULL;
+        MOTION_PTR(h->c.motion, 0x854) = NULL;
+        h->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+        rooms = D_0044E568;
+        HEWIE_SIDE(h) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, h->c.a.room,
+                                                                              HW(h, 0xF36B4, u8), 0);
+        h->c.door = HW(h, 0xF36B4, u8);
+        HW(h, 0xF368A, u8) = 0;
+        arrive_anim(h);
+        tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, HW(h, 0xF36B4, u8), at);
+        Hewie_PlaceAt(h, tri, NULL, at);
+        if (h->c.a.unkC4 == 2) {
+            hewie_want(h, 0x52, 0);
+        } else {
+            hewie_want(h, HW(h, 0xF35C8, s32) == 0 ? 0 : 0x24, 0);
+        }
+        arrived(h);
+        return 0;
+    case 0x00:
+    case 0x2C: case 0x2D: case 0x2E: case 0x2F: case 0x30: case 0x31: case 0x32: case 0x33:
+    case 0x34: case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
+    case 0x52:
+    case 0x77:
+        break;
+    default:
+        return -1;
+    }
+    if (h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return -1;
+    }
+    HW(h, 0xF366D, u8) = 0;
+    held = 0;
+    blend_in(h);
+    MOTION_PTR(h->c.motion, 0x858) = NULL;
+    MOTION_PTR(h->c.motion, 0x854) = NULL;
+    HW(h, 0xF36F0, s32) = -1;
+    placed = 0;
+    switch (HEWIE_ACTION(h)) {
+    case 0x39:
+    case 0x2D:
+    case 0x2C:
+        if (HW(h, 0xF3590, u8) == 1) {
+            HW(h, 0xF36F0, s32) = HEWIE_ACTION(h) == 0x39 ? 0x202 : h->c.a.unkC4 == 1 ? 0x206 : 0x201;
+            if (h->c.a.navTri != NAV_NONE) {
+                /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+                if (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & h->c.a.navMask) {
+                    func_00124890(&h->c.a, HEWIE_SIDE(h));
+                } else {
+                    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+                    Hewie_PlaceAt(h, h->c.a.navTri, &h->c.a.angle[1], h->c.a.pos);
+                }
+                placed = 1;
+            }
+        }
+        break;
+    case 0x2F:
+        HW(h, 0xF355C, s32) -= 150;
+        if (HW(h, 0xF355C, s32) > 0) {
+            if (HW(h, 0xF36B8, s32) == 1) {
+                HW(h, 0xF36F0, s32) = h->c.a.unkC4 == 1 ? 7 : 1;
+            } else if (HW(h, 0xF36B8, s32) == 2) {
+                HW(h, 0xF36F0, s32) = h->c.a.unkC4 == 1 ? 7 : 2;
+            }
+        } else {
+            HW(h, 0xF355C, s32) = 0;
+        }
+        break;
+    case 0x38:
+        if (HW(h, 0xF36B8, s32) == 0x20 || HW(h, 0xF36B8, s32) == 0x1F) {
+            switch (HW(h, 0xF36BC, s32)) {
+            case 1:
+                held = 1;
+                HW(h, 0xF36F0, s32) = 0x2202;
+                break;
+            case 2:
+                HW(h, 0xF36F0, s32) = 0x220B;
+                held = 1;
+                break;
+            case 0:
+                HW(h, 0xF36F0, s32) = 0x2216;
+                held = 1;
+                break;
+            }
+        }
+        break;
+    case 0x77:
+        HW(h, 0xF36F0, s32) = HW(h, 0xF35B8, s32);
+        break;
+    }
+    if (!placed) {
+        if (HW(h, 0xF36F0, s32) == -1) {
+            arrive_anim(h);
+        }
+        if (h->c.a.navTri != NAV_NONE) {
+            if (HEWIE_ACTION(h) == 0x38 && Hewie_PlaceAt(h, h->c.a.navTri, &h->c.a.angle[1], h->c.a.pos) != -1) {
+                placed = 1;
+            }
+            if (!placed && (Hewie_PlaceAt(h, h->c.a.navTri, &h->c.a.angle[1], h->c.a.pos) != -1 ||
+                            Hewie_PlaceAt(h, h->c.a.navTri, NULL, NULL) != -1)) {
+                placed = 1;
+            }
+        }
+        if (!placed) {
+            tri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, h->c.door, at);
+            ang = 2.0f * (0x1.921fb6p+1f /* pi */ * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)) -
+                  0x1.921fb6p+1f;
+            if (tri == NAV_NONE || Hewie_PlaceAt(h, tri, &ang, at) == -1) {
+                func_00124890(&h->c.a, HEWIE_SIDE(h));
+            }
+        }
+    }
+    if (h->c.a.unkC4 == 2) {
+        hewie_want(h, 0x52, 0);
+    } else if (held == 1) {
+        hewie_want(h, 0x73, 0);
+    } else if (HEWIE_ACTION(h) == 0x77) {
+        hewie_want(h, 0x76, 0);
+    } else if (HEWIE_ACTION(h) == 0x2F && HW(h, 0xF36B4, s32) > 0) {
+        HW(h, 0xF3560, s32) = HW(h, 0xF355C, s32);
+        hewie_want(h, 3, 0);
+    } else {
+        hewie_want(h, HW(h, 0xF35C8, s32) == 0 ? 0 : 0x24, 0);
+    }
+    arrived(h);
+    return 0;
 }
