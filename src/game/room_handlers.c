@@ -2740,3 +2740,65 @@ s32 func_00308C20(void *self, void *a1, u8 *cmd) {
     }
     return 2;
 }
+
+extern const char *const D_00438D00;   /* room 0x6A's object */
+
+/* room 0x6A (D_00438CF0): its object's animation (+0x74 forward, +0x78 back) at a point +0x7C
+ * (0..1) by byte 3 - 0 / 1 from event variable 0 (12..30 over 18, 12..28 over 16), 2 / 3 at the
+ * start / end */
+s32 func_00344180(void *self, void *a1, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00438D00);
+    u32 n;
+
+    if (o == NULL) {
+        return 1;
+    }
+    n = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    switch (cmd[3]) {
+    case 0:
+        if (n < 0xC) {
+            n = 0xC;
+        }
+        if (!(n < 0x1F)) {
+            n = 0x1E;
+        }
+        AT(o, 0x74, s32) = 1;
+        AT(o, 0x78, s32) = 0;
+        AT(o, 0x7C, f32) = (f32)(n - 0xC) / 18.0f;
+        break;
+    case 1:
+        if (n < 0xC) {
+            n = 0xC;
+        }
+        if (!(n < 0x1D)) {
+            n = 0x1C;
+        }
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(n - 0xC) / 16.0f;
+        break;
+    case 2:
+    case 3:
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(cmd[3] - 2);
+        break;
+    }
+    if (!(AT(o, 0x7C, f32) <= 1.0f)) {
+        AT(o, 0x7C, f32) = 1.0f;
+    }
+    if (AT(o, 0x7C, f32) < 0.0f) {
+        AT(o, 0x7C, f32) = 0.0f;
+    }
+    return 1;
+}
+
+/* room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21 */
+s32 func_00344390(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0x42F00000, 0x41A80000, 0x423C0000, 0x3F800000, 0x42F00000, 0x41A80000, 0x421C0000, 0x3F800000,
+        0x42F00000, 0x40800000, 0x423C0000, 0x3F800000, 0x42F00000, 0x40800000, 0x421C0000, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x80);
+}
