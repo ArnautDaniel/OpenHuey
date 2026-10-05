@@ -8055,3 +8055,128 @@ void func_00155D00(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1908);
     }
 }
+
+/* ---- the tackle ---- */
+
+extern const PTMF D_003B18E8, D_003B18F8;
+
+/* |wrap(c's heading - his)| as the original takes it (the wrap twice, 0 becomes -0) */
+static f32 heading_gap(Hewie *h, Character *c) {
+    if (!(func_002E2D00(c->a.angle[1] - h->c.a.angle[1]) <= 0.0f)) {
+        return func_002E2D00(c->a.angle[1] - h->c.a.angle[1]);
+    }
+    return -func_002E2D00(c->a.angle[1] - h->c.a.angle[1]);
+}
+
+/* a leaping tackle: its hits so far collected (his progress hit bits into +0xF36BC, and the
+ * landed-bite effects); turning toward +0xF36D0 by 10 degrees, forward +0xF36C4 a frame, height
+ * eased (sine) from +0xF36C8 to +0xF36E4 over +0xF36B8 frames (then behaviour D_003B18E8).
+ * Unless progress flags 0x13 / 0x2B: the pursuer, else Fiona, not yet hit and in reach (progress
+ * +0x2C, bone 0x1F, 3) takes it: 5 / 8 (from behind / not), 10 / 16 when charged (+0xF3585),
+ * doubled on difficulty 1, +half with progress +0xA10; on the pursuer hard by func_001386D0
+ * (6..9 by charge and side; else the frame count is left unset, taken as 0). The bite also tested
+ * on the creatures. Below the ground: landed (0x1E03), behaviour D_003B18F8 */
+void func_00155FF0(Hewie *h) {
+    Progress *p = gProgress;
+    f32 v[4] __attribute__((aligned(16)));
+    f32 g[4] __attribute__((aligned(16)));
+    u8 hit = AT(p, 0x1020 + AT(h, 0x20, u8) * 0x10, u8);
+    s32 mask, front, kind, frames, type;
+    u16 dmg, base;
+
+    if ((hit & 5) || h->c.unk104[0] != 0) {
+        if (hit & 4) {
+            if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
+                func_00166150(h, gCharPursuer, 1);
+            }
+            HW(h, 0xF3688, s16) = 300;
+        }
+        HW(h, 0xF36BC, s32) |= hit;
+        if (HW(h, 0xF35C4, s32) != 0) {
+            HW(h, 0xF35C4, s32) -= 1;
+            HW(h, 0xF35C8, s32) = 300;
+        }
+        h->c.unk104[1] |= h->c.unk104[0];
+        HW(h, 0xF36B0, s32) = 0xFF;
+        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+    }
+    turn_toward(h, HW(h, 0xF36D0, f32), 0x1.6571860000000p-3f /* 0.17453294 */);
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = HW(h, 0xF36C4, f32);
+    v[3] = 0.0f;
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    func_001247E0(&h->c.a, v);
+    if (HW(h, 0xF36B4, s32) == HW(h, 0xF36B8, s32)) {
+        h->c.a.pos[1] = HW(h, 0xF36E4, f32);
+        HW(h, 0xF36C8, f32) = 0.0f;
+        HW(h, 0xF36CC, f32) = h->c.a.pos[1];
+        HW(h, 0xF36C0, s32) = 0;
+        Hewie_SetBehaviour(h, &D_003B18E8);
+    } else {
+        f32 y0 = HW(h, 0xF36C8, f32);
+
+        h->c.a.pos[1] = y0 + (HW(h, 0xF36E4, f32) - y0) *
+                                 func_0031C248(0.5f * (0x1.921fb60000000p+1f /* 3.1415927 */ * ((f32)HW(h, 0xF36B4, s32) / (f32)HW(h, 0xF36B8, s32))));
+        HW(h, 0xF36B4, s32) += 1;
+    }
+    {
+        Progress *q = gProgress;
+
+        HW(h, 0xF3558, u8) = 1;
+        if (((u8)Progress_TestFlag(q, 0x13) | (u8)Progress_TestFlag(q, 0x2B)) == 0) {
+            mask = 0;
+            front = 1;
+            frames = 0;
+            if (in_his_room(h, gCharPursuer) && !(HW(h, 0xF36BC, s32) & 4) &&
+                (u8)VCALL(p, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(p, AT(h, 0x20, u8), 0x1F, 2, 3.0f) == 1) {
+                mask = 4;
+                if (heading_gap(h, gCharPursuer) < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                    front = 0;
+                    kind = HW(h, 0xF3585, u8) == 0 ? 7 : 9;
+                } else {
+                    kind = HW(h, 0xF3585, u8) == 0 ? 6 : 8;
+                }
+                if ((u8)func_001386D0(h, kind) == 1) {
+                    frames = -0x8000;
+                }
+            }
+            if (mask == 0 && in_his_room(h, gCharPlayer) && !(HW(h, 0xF36BC, s32) & 1) &&
+                (u8)VCALL(p, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(p, AT(h, 0x20, u8), 0x1F, 0, 3.0f) == 1) {
+                mask = (mask | 1) & 0xFF;
+                if (heading_gap(h, gCharPlayer) < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                    front = 0;
+                }
+            }
+            if (mask != 0) {
+                if (HW(h, 0xF3585, u8) == 0) {
+                    type = 1;
+                    base = (u8)front == 1 ? 5 : 8;
+                } else {
+                    type = 2;
+                    base = (u8)front == 1 ? 10 : 16;
+                }
+                dmg = base;
+                if ((u8)Progress_GetVar(p, 0x27) == 1) {
+                    dmg += base;
+                }
+                if (AT(p, 0xA10, s32) != 0) {
+                    dmg += dmg >> 1;
+                }
+                func_00178070(p, AT(h, 0x20, u8), mask, type, dmg, frames, 20.0f);
+            }
+            h->c.unk104[0] = func_00137FE0(h, h->c.unk104[1], HW(h, 0xF3585, u8) != 0 ? 10 : 5, 0x1F, 10.0f);
+        }
+    }
+    sceVu0CopyVector(g, h->c.a.pos);
+    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, g);
+    if (h->c.a.pos[1] < g[1]) {
+        h->c.a.pos[1] = g[1];
+        if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+            func_002DDED0(h->c.motion, 0x1E03, -1);
+        }
+        HW(h, 0xF356C, u32) &= 0x7FFFFFFF;
+        HW(h, 0xF36C0, s32) = 0;
+        Hewie_SetBehaviour(h, &D_003B18F8);
+    }
+}
