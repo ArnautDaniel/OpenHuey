@@ -1004,3 +1004,75 @@ void func_002E2030(Character *c) {
     AT(k, 0x9C, u8) = 0;
     VCALL(c, 0x5C, void (*)(Character *))(c);
 }
+
+extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
+
+/* it can head for exit `e` of its room: on its side (or it is on both, 2) with a path to the
+ * exit's spot (left in `at`) */
+static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at) {
+    s32 side = AT(CR(c), 0xC, s32);
+
+    if (side != VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, c->a.room, e, 0) && side != 2) {
+        return 0;
+    }
+    return func_002DF860(c, VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, e, at), at, 1) == 0;
+}
+
+/* +0x34 Fiona left by exit `exit` (+0xA its door): in the room being played it follows - by
+ * that exit if it can (+0xB), else by another (+0x87 0 once one is found) - and, when going by
+ * hers and she isn't just beyond it (func_00123C60), skips its path to the door if already
+ * nearer the door than the exit's spot; if she is, it stays out (+0x10 0) */
+void func_002E0FE0(Character *c, u32 exit) {
+    u8 *k = CR(c);
+    VObject *rooms = D_0044E568;
+    f32 at[4] __attribute__((aligned(16)));
+    s32 room, i;
+    u32 x, e;
+
+    AT(k, 0xA, s8) = VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+    room = c->a.room;
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    for (i = 0; i < 13; i++) {
+        c->unk148C[i] = 0;
+    }
+    AT(k, 0xB, u8) = 0;
+    AT(k, 0x87, u8) = 1;
+    x = exit & 0xFF;
+    if (x != 0xFF && creature_exit_reachable(c, rooms, exit, at)) {
+        AT(k, 0x87, u8) = 0;
+        AT(k, 0xB, u8) = 1;
+    }
+    if (AT(k, 0x87, u8) == 1) {
+        for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+            if (e != x && (VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, e) & 0xFF) == 1 &&
+                creature_exit_reachable(c, rooms, e, at)) {
+                AT(k, 0x87, u8) = 0;
+                break;
+            }
+        }
+    }
+    if (AT(k, 0x87, u8) == 1 || AT(k, 0xB, u8) != 1) {
+        return;
+    }
+    if ((func_00123C60(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+        VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+        AT(k, 0x10, s32) = 0;
+        return;
+    }
+    if (AT(k, 0xB, u8) == 1) {
+        f32 door[4] __attribute__((aligned(16)));
+        f32 d0[4] __attribute__((aligned(16)));
+        f32 d1[4] __attribute__((aligned(16)));
+
+        rooms = D_0044E568;
+        c->unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+        VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exit, door);
+        sceVu0SubVector(d0, c->a.pos, door);
+        sceVu0SubVector(d1, at, door);
+        if (sceVu0InnerProduct(d0, d0) <= sceVu0InnerProduct(d1, d1) && func_00124480(&c->a, door, NAV_NONE) != NAV_NONE) {
+            c->unk124 = c->unk128;
+        }
+    }
+}
