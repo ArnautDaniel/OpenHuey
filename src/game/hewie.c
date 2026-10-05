@@ -7348,3 +7348,68 @@ void func_00150C10(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     Hewie_SetBehaviour(h, &D_003B19D8);
 }
+
+/* ---- heeling behind Fiona ---- */
+
+extern const PTMF D_003B19B8;
+
+/* keep to the place behind Fiona (D_003B12A0[0] in her frame by heading +0x10C; her own spot
+ * when that is off the mesh or blocked by flags 0x29020008), her in his room and not out of
+ * reach (else the default action). Within 10 of it and facing away from her (within 90 degrees):
+ * hold still, and when the game takes it (func_00177890 2 6) behaviour D_003B19B8. Else walk
+ * there (run, 0x202, when the stride says so; else 0x201) */
+void func_00151190(Hewie *h) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    u32 tri;
+    s32 anim;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (gCharPlayer->unkE0 == 1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    v[1] = 0.0f;
+    v[3] = 0.0f;
+    v[0] = D_003B12A0[0][0];
+    v[2] = D_003B12A0[0][1];
+    func_002E3130(m, gCharPlayer->a.pos, HW(h, 0x10C, f32));
+    func_002E2DD0(at, m, v);
+    tri = func_00123D20(&gCharPlayer->a, at);
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    if (tri == NAV_NONE || (NavMesh_TriFlags(D_0044E570, tri) & 0x29020008)) {
+        tri = gCharPlayer->a.navTri;
+        sceVu0CopyVector(at, gCharPlayer->a.pos);
+    }
+    if (func_00124490(&h->c.a, at) < 10.0f) {
+        f32 d;
+
+        if (!(func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
+            d = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        } else {
+            d = -func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        }
+        if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 0;
+            if ((func_00177890(gProgress, 2, 6, AT(h, 0x20, u8), 0, 0, 0.0f) & 0xFF) == 1) {
+                Hewie_SetBehaviour(h, &D_003B19B8);
+            }
+            return;
+        }
+    }
+    if (h->c.unk128 < h->c.unk124 || func_0013EE40(h, tri, at, 0, 0) == 0) {
+        anim = MOTION_ANIM(h->c.motion);
+        if ((u8)func_00139DE0(h) == 1) {
+            if (anim != 0x202) {
+                func_002DDED0(h->c.motion, 0x202, -1);
+            }
+        } else if (anim != 0x201) {
+            func_002DDED0(h->c.motion, 0x201, -1);
+        }
+    }
+}
