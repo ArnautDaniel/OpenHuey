@@ -302,3 +302,94 @@ s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
     AT(k, 0x2B, u8) = 0;
     return -1;
 }
+
+extern u32 func_00124480(Actor *a, const f32 *p, u32 mask);
+extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+extern void func_001247E0(Actor *a, const f32 *delta);
+
+/* on the way to `tri`: while not there (its target +0xB0 not on it) the path ahead is looked
+ * at (12 steps and 1; unused); a door on the way (+0x88 bit 0) with an exit +0x100 is gone
+ * through */
+void func_002DF470(Character *c, u32 tri) {
+    u8 *k = CR(c);
+
+    if (tri != func_00124480(&c->a, c->a.unkB0, NAV_NONE)) {
+        u32 t;
+        f32 far[4] __attribute__((aligned(16)));
+        f32 near[4] __attribute__((aligned(16)));
+        f32 dir[4] __attribute__((aligned(16)));
+        f32 fwd[4] __attribute__((aligned(16)));
+
+        func_001273D0(c, &t, far, 12.0f * AT(k, 0x0, f32));
+        func_001273D0(c, &t, near, AT(k, 0x0, f32));
+        sceVu0SubVector(dir, near, c->a.pos);
+        *(s32 *)&dir[1] = 0;
+        sceVu0Normalize(dir, dir);
+        fwd[2] = 1.0f;
+        *(s32 *)&fwd[0] = 0;
+        *(s32 *)&fwd[1] = 0;
+        sceVu0ApplyMatrix(fwd, c->a.rot, fwd);
+    }
+    if (!(AT(k, 0x88, u16) & 1)) {
+        return;
+    }
+    if ((VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
+        AT(k, 0x84, u8) = 0;
+        func_002DF760(c, (u8)c->unk100);
+    }
+}
+
+/* step straight at Fiona (at its speed +0x0) unless she's held (her mode 4) right next to it
+ * (+0x24 within 1) */
+static s32 creature_close_in(Character *c, u32 t) {
+    u8 *k = CR(c);
+
+    if (!(AT(k, 0x24, f32) <= 1.0f) || gCharPlayer->moveMode != 4) {
+        f32 dir[4] __attribute__((aligned(16)));
+
+        sceVu0SubVector(dir, gCharPlayer->a.pos, c->a.pos);
+        *(s32 *)&dir[1] = 0;
+        sceVu0Normalize(dir, dir);
+        func_0010E640(dir, dir, AT(k, 0x0, f32));
+        func_001247E0(&c->a, dir);
+    }
+    return t;
+}
+
+/* when it can walk straight at Fiona (her triangle reachable; +0x8 set: only from hers), it
+ * drops its path and does; on another level (height) it gives up after +0x30 tries while
+ * close (+0x24 under 2) unless on her triangle (+0x2F). Her triangle, -1 if not. */
+s32 func_002DFF70(Character *c) {
+    u8 *k = CR(c);
+    u32 t;
+
+    AT(c, 0x15DB, u8) = 0;
+    t = func_00124480(&c->a, gCharPlayer->a.pos, c->pathReq->mask);
+    if (AT(k, 0x8, u8) != 0) {
+        if (t != gCharPlayer->a.navTri) {
+            return -1;
+        }
+        func_00127060(c);
+        AT(k, 0x2B, u8) = 0;
+        c->unk124 = c->unk128;
+        return creature_close_in(c, t);
+    }
+    if (t == NAV_NONE) {
+        return -1;
+    }
+    func_00127060(c);
+    AT(k, 0x2B, u8) = 0;
+    c->unk124 = c->unk128;
+    if (gCharPlayer->a.pos[1] != c->a.pos[1]) {
+        if (AT(k, 0x24, f32) < 2.0f) {
+            AT(k, 0x22, s16) += 1;
+        }
+        if (AT(k, 0x22, s16) >= AT(k, 0x30, u8) && c->a.navTri != gCharPlayer->a.navTri) {
+            AT(k, 0x22, s16) = 0;
+            AT(k, 0x2F, u8) = 1;
+            return -1;
+        }
+    }
+    return creature_close_in(c, t);
+}
