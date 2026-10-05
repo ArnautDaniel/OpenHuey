@@ -6152,3 +6152,32 @@ void func_00192800(Fiona *f) {
     }
     func_00125A10(&f->c);
 }
+
+extern const PTMF D_003B2A78, D_003B2A88;
+
+/* dragged off (D_003B2A68): at the end of 0x1404 (its event 0x20) - unless progress flag 0x2C -
+ * the game-over flag 0xC (and gProgress +0x73EB00 set); her leader gone or not leading, she
+ * pulls free (0xF02) */
+void func_001924F0(Fiona *f) {
+    Character *c;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = gCharacters[f->c.unk100];
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        Actor_SetState(&f->c.a, &D_003B2A78);
+        return;
+    }
+    if (c->moveMode != 8) {
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        Actor_SetState(&f->c.a, &D_003B2A88);
+    } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0 && AT(f->c.motion, 0x55C, s32) == 0x1404 &&
+               !(Progress_TestFlag(gProgress, 0x2C) & 0xFF)) {
+        Progress *p = gProgress;
+
+        AT(p, 0x73EB00, u8) = 1;
+        Progress_SetFlag(p, 0xC);
+    }
+    func_00125A10(&f->c);
+}
