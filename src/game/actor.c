@@ -1810,3 +1810,11 @@ void func_00125D40(Character *c) {
     c->a.active = 0;
     c->a.navTri = NAV_NONE;
 }
+
+/* the actor pool's placement new and delete (the pool frees blocks itself) */
+void *func_00121370(u32 size, void *place) {
+    return place;
+}
+
+void func_00121360(void *p) {
+}
