@@ -348,3 +348,98 @@ void *func_002D0DF0(u8 *o, s32 flags) {
     }
     return o;
 }
+
+/* ---- the game's destructor (2026-10-05) ---- */
+
+extern void *D_0046ADB0[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
+extern void *D_0044FEB0;
+
+/* Game +0x69B00's destructor: its vtables (and its +0x18 member's), D_0044FEB0 cleared */
+void *func_001BE150(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0046ADB0;
+    AT(o, 0x18, void **) = D_0046ADC4;
+    AT(o, 0x18, void **) = D_0046AD88;
+    AT(o, 0x0, void **) = D_0046ADD0;
+    D_0044FEB0 = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
+
+extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
+extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
+extern void *D_0044E978, *D_0044E960, *D_0044E4B8, *D_004562A8, *D_004562B0;
+extern void *func_001F4590(u8 *, s32), *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
+extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
+extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);
+extern void *func_001BF880(u8 *, s32), *func_001BF6C0(void *, s32), *func_001AAE10(u8 *, s32);
+extern void *func_001BF550(void *, s32), *func_0020DF90(void *, s32), *func_001BC320(u8 *, s32);
+extern void *func_001BF220(u8 *, s32);
+
+/* the members torn down in reverse: the +0x14E8C90 table, the two pools, the camera, the scene
+ * table (+0x400A00, its scenes returned to the heap at +0x14D9A40), the rng, then the +0x69AC0
+ * block and its members */
+void *Game_dtor(u8 *g, s32 flags) {
+    s32 i;
+
+    if (g == NULL) {
+        return g;
+    }
+    AT(g, 0x0, void **) = Game_vtable;
+    func_001F4590(g + 0x14E8C90, -1);
+
+    func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))func_0020D920, 0x50, 0x278);
+    func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))func_0020D8D0, 0xC, 0x20);
+    D_004562A8 = NULL;
+
+    func_001002C0(g + 0x14DA0D0, (void *(*)(void *, s32))func_0020D9C0, 0x14, 0x1CE);
+    func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))func_0020D970, 0xC, 0x40);
+    D_004562B0 = NULL;
+
+    AT(g, 0x14D9B00, void **) = D_00469A60;
+    AT(g, 0x14D9B00, void **) = D_00469B40;
+    D_0044E4B8 = NULL;
+
+    AT(g, 0x400A00, void **) = D_0046BF08;
+    for (i = 0; i < 4; i++) {
+        void **slot = (void **)(g + 0x400A04) + i;
+
+        if (*slot != NULL) {
+            VObject *heap = (VObject *)(g + 0x14D9A40);
+
+            VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, *slot);
+            if (*slot != NULL) {
+                VCALL(*slot, 0x8, void (*)(void *, s32))(*slot, 1);
+            }
+            *slot = NULL;
+        }
+    }
+    AT(g, 0x14D9A40, void **) = D_0046A1C0;
+    AT(g, 0x14D9A40, void **) = D_004699E0;
+    D_0044E960 = NULL;
+
+    func_001A4850(g + 0x400000, -1);
+
+    AT(g, 0x69AC0, void **) = D_0046ADF0;
+    func_0020E000(g + 0x3FF800, -1);
+    func_00169280(g + 0x3833C0, -1);
+    func_001BF880(g + 0x376A00, -1);
+    func_001BF6C0(g + 0x36ED40, -1);
+    func_001AAE10(g + 0x69F20, -1);
+    func_001BF550(g + 0x69E50, -1);
+    func_0020DF90(g + 0x69DC0, -1);
+    func_001BE150(g + 0x69B00, -1);
+    func_001BC320(g + 0x69AE0, -1);
+    func_001BF220(g + 0x69AC0, 0);
+
+    AT(g, 0x0, void **) = D_0046BEE0;
+    D_0044E978 = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(g);
+    }
+    return g;
+}

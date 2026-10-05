@@ -3531,3 +3531,37 @@ s32 func_002D6020(u8 *o, s32 slot) {
     }
     return VCALL(e, 0x1C, s32 (*)(void *))(e);
 }
+
+extern void *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
+extern void *D_0044E960;   /* the scene table */
+
+/* the scene table's destructor (D_0046BF08): its four scenes handed back to the scene heap
+ * (+0x10D9040, +0x14) and destroyed, the heap's vtables, D_0044E960 cleared */
+void *func_0020DA10(u8 *t, s32 flags) {
+    s32 i;
+
+    if (t == NULL) {
+        return t;
+    }
+    AT(t, 0x0, void **) = D_0046BF08;
+    for (i = 0; i < 4; i++) {
+        void **slot = (void **)(t + 4) + i;
+
+        if (*slot != NULL) {
+            VObject *heap = (VObject *)(t + 0x10D9040);
+
+            VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, *slot);
+            if (*slot != NULL) {
+                VCALL(*slot, 0x8, void (*)(void *, s32))(*slot, 1);
+            }
+            *slot = NULL;
+        }
+    }
+    AT(t, 0x10D9040, void **) = D_0046A1C0;
+    AT(t, 0x10D9040, void **) = D_004699E0;
+    D_0044E960 = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(t);
+    }
+    return t;
+}

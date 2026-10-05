@@ -1725,7 +1725,7 @@ extern u8 D_0047B348[], D_0047B34C[], D_01991EA0[], D_01991EB0[];
 extern Game gGame;
 extern void *Game_vtable[];
 extern const PTMF D_003D8920;    /* Game's first state */
-extern void Game_dtor(void *, s32);
+extern void *Game_dtor(u8 *, s32);
 extern void func_0020E7F0(Game *game);           /* base class constructor */
 extern void func_0020E340(void *obj);            /* Game.unk69AC0 */
 extern VObject *func_001A48C0(VObject *rng, s32 seed);  /* random number generator (Game +0x400000) */
@@ -1751,7 +1751,7 @@ void func_00464A70(void) {
     func_0020E110(g + 0x14DC530);
     func_001F4600(gGame.unk14E8C90);
     Game_SetState(&gGame, &D_003D8920);
-    func_00100AB0(&gGame, Game_dtor, D_004879E8);
+    func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
 }
 
 void func_00466BD0(void) {

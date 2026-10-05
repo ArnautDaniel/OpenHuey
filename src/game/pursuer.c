@@ -10574,3 +10574,37 @@ s32 func_00312FC0(Pursuer *p) {
     }
     return -1;
 }
+
+/* ---- two more pursuer-kind destructors and two empty methods (2026-10-05) ---- */
+
+extern void *D_00474560[], *D_004723B0[];
+
+/* vtable +0x8 of D_00474560 (kind 0x15's second class): its vtable, then the base's */
+Pursuer *func_00172CD0(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = D_00474560;
+        Pursuer_DestroyBase(p);
+        if ((s16)flags > 0) {
+            func_00124E40(&p->c.a);
+        }
+    }
+    return p;
+}
+
+/* vtable +0x8 of D_004723B0 (kind 14) */
+Pursuer *func_00173000(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = D_004723B0;
+        Pursuer_DestroyBase(p);
+        if ((s16)flags > 0) {
+            func_00124E40(&p->c.a);
+        }
+    }
+    return p;
+}
+
+void func_00173650(void) {
+}
+
+void func_00173660(void) {
+}
