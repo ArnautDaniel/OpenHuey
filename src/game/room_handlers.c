@@ -3672,3 +3672,73 @@ s32 func_00343A00(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* Fiona's model +0xD0 (0, 1.5, -2.5) and +0xCC(1) when byte 3 is 0, else (0, 1.5, -1.5) and
+ * +0xCC(0) */
+s32 func_002A8AF0(void *self, void *a1, u8 *cmd) {
+    void *m = gCharPlayer->motion;
+
+    if (cmd[3] == 0) {
+        VCALL(m, 0xD0, void (*)(void *, f32, f32, f32))(m, 0.0f, 1.5f, -2.5f);
+        VCALL(m, 0xCC, void (*)(void *, s32))(m, 1);
+    } else {
+        VCALL(m, 0xD0, void (*)(void *, f32, f32, f32))(m, 0.0f, 1.5f, -1.5f);
+        VCALL(m, 0xCC, void (*)(void *, s32))(m, 0);
+    }
+    return 1;
+}
+
+extern void *D_004737D0[];
+
+static void glow4_init(void **obj) {
+    obj[0] = D_004737D0;
+    obj[0x40 / 4] = D_00469D00;
+    ((s32 *)obj)[0x44 / 4] = -1;
+    obj[0x40 / 4] = D_0046FC30;
+}
+
+/* byte 4 0: the effect D_004737D0 (grey, 0x18, size 30) at one of four spots by byte 3 (-332 /
+ * -368, 100.8, -12 / 55 / 165 / 165), its slot in event var byte 3; else that effect removed */
+s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kY = {0x42C9999A};   /* 100.8 */
+    u8 k = cmd[3];
+
+    if (cmd[4] == 0) {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0x80, glow4_init);
+        s32 p[8] __attribute__((aligned(16)));
+
+        p[0] = 0x80;
+        p[1] = 0x80;
+        p[2] = 0x80;
+        p[3] = 0x18;
+        switch (k) {
+        case 0:
+            AT(&p[4], 0, f32) = -332.0f;
+            AT(&p[5], 0, f32) = kY.f;
+            AT(&p[6], 0, f32) = -12.0f;
+            break;
+        case 1:
+            AT(&p[4], 0, f32) = -368.0f;
+            AT(&p[5], 0, f32) = kY.f;
+            AT(&p[6], 0, f32) = 55.0f;
+            break;
+        case 2:
+            AT(&p[4], 0, f32) = -368.0f;
+            AT(&p[5], 0, f32) = kY.f;
+            AT(&p[6], 0, f32) = 165.0f;
+            break;
+        case 3:
+            AT(&p[4], 0, f32) = -332.0f;
+            AT(&p[5], 0, f32) = kY.f;
+            AT(&p[6], 0, f32) = 165.0f;
+            break;
+        }
+        AT(&p[7], 0, f32) = 30.0f;
+        func_002D6090(mgr, slot, p);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, k, slot);
+    } else {
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, k));
+    }
+    return 1;
+}

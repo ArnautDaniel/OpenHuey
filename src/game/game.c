@@ -272,3 +272,77 @@ u8 *func_0037E2F0(Game *game) { return (u8 *)game + 0xB2C0; }    /* +0x14: MSG_S
 u8 *func_002CF9E0(Game *game) { return (u8 *)game + 0x102C0; }   /* +0x18 */
 u8 *func_002CF9F0(Game *game) { return (u8 *)game + 0x312C0; }   /* +0x1C: GAME_FIX.GFM */
 u8 *func_002CFA00(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: GAME_FIX.TEX */
+
+/* ---- destructors left (2026-10-05) ---- */
+
+extern void *Task_dtor(void *t, s32 flags);
+extern void func_00100490(void *p);   /* operator delete */
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *D_00469D00[], *D_0046ECF0[], *D_0046F390[];
+extern void *D_0046FC00[], *D_004699C0[], *D_004699E0[], *D_0046A980[];
+extern void *D_00456DE8, *D_00456DF8, *D_0044F258;
+
+/* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
+ * D_00456DE8) */
+void *func_002D0B60(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00473440;
+        if (AT(o, 0x110C4, void *) != NULL) {
+            Task_dtor(AT(o, 0x110C4, void *), 1);
+            AT(o, 0x110C4, void *) = NULL;
+        }
+        AT(o, 0x0, void **) = D_0046F3D0;
+        D_00456DE8 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor of an entry holding a quad drawer at +0x40 */
+void *func_002D0CE0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x40, void **) = D_0046D770;
+        AT(o, 0x40, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* destructor (D_0046ECF0): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
+ * clearing D_00456DF8) */
+void *func_002D0D60(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046ECF0;
+        func_001002C0(o + 0x20, (void *(*)(void *, s32))func_002D0CE0, 0xB0, 0x40);
+        AT(o, 0x0, void **) = D_0046F390;
+        D_00456DF8 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* destructor (vtable at +0x28, D_0046FC00): members at +0xF630 / +0xDC40, then the base
+ * (D_0046A980, clearing D_0044F258) */
+void *func_002D0DF0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x28, void **) = D_0046FC00;
+        AT(o, 0xF630, void **) = D_004699C0;
+        AT(o, 0xF630, void **) = D_004699E0;
+        AT(o, 0xDC40, void **) = D_004699C0;
+        AT(o, 0xDC40, void **) = D_004699E0;
+        AT(o, 0x28, void **) = D_0046A980;
+        D_0044F258 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}

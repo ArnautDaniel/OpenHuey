@@ -5880,3 +5880,9 @@ src/game/scene_game_members.c func_001205A0 --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/scene_game_members.c func_0017D1B0 --pre=a0=0x0B000000..0x0B000000 --runs=10
 src/game/scene_game_members.c func_001AAC60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7C44=0x0046AED0..0x0046AED0 --runs=20
 src/game/scene_game_members.c func_001BF6C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=60
+src/game/game.c func_002D0B60 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --pre=a0+0x110C4=0..0x0B100000 --runs=60
+src/game/game.c func_002D0CE0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_002D0D60 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_002D0DF0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/room_handlers.c func_002A8AF0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..1 --pre=@0x44F818=0x0B200000..0x0B200000 --pre=@0x0B2000F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046AC50..0x0046AC50 --runs=40
+src/game/room_handlers.c func_002A8BA0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..4 --pre=@0x0B100004:u8=0..1 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --pre=@0x44E4D0=0x0B800100..0x0B800100 --pre=@0x0B800100=0x0046B3B8..0x0046B3B8 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B600000 --stub-ret-prob=0.9 --runs=300
