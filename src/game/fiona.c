@@ -6895,6 +6895,103 @@ void func_00196A90(Fiona *f) {
 
 extern s32 func_001270A0(Character *c);
 
+/* ---- panic and voice helpers ---- */
+
+extern void func_00125E10(Character *c, f32 *pos, s32 big);
+
+/* add `amount` to her panic (FI 0x1AD5F4, kept to 0..100), scaled by the accessory she wears
+ * (items +0x10(3)): 0x8A gains x0.75, 0x8B gains x0.75 / recovery x1.5, 0x8C gains x0.5 /
+ * recovery x2 */
+void func_00180E90(Fiona *f, f32 amount) {
+    f32 v;
+
+    if (D_0044E988 != NULL) {
+        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3)) {
+        case 0x8D:
+            break;
+        case 0x8C:
+            if (!(amount <= 0.0f)) {
+                amount = amount * 0.5f;
+            } else {
+                amount = amount * 2.0f;
+            }
+            break;
+        case 0x8B:
+            if (!(amount <= 0.0f)) {
+                amount = amount * 0.75f;
+            } else {
+                amount = amount * 1.5f;
+            }
+            break;
+        case 0x8A:
+            if (!(amount <= 0.0f)) {
+                amount = amount * 0.75f;
+            }
+            break;
+        }
+    }
+    v = FI(f, 0x1AD5F4, f32) + amount;
+    FI(f, 0x1AD5F4, f32) = v;
+    if (!(v <= 100.0f)) {
+        FI(f, 0x1AD5F4, f32) = 100.0f;
+    } else if (v < 0.0f) {
+        FI(f, 0x1AD5F4, f32) = 0.0f;
+    }
+}
+
+/* the flags of nav triangle i (the original reads a NULL record - address 0x3C - out of
+ * range; 0 here) */
+static inline u32 fiona_tri_flags(u8 *nm, u32 i) {
+    if (i < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+        return AT(AT(nm, 0x4, u8 *) + i * 0x50, 0x3C, u32);
+    }
+    return 0;
+}
+
+/* her voice `id` - unless, while the game runs in her room, the line from her feet to her
+ * mouth (motion +0x60) crosses a muffling triangle (flags 0x2008000): then a muffled sound
+ * (0x1C), which in rooms 7 and 0x106 is heard (a big noise) */
+void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
+    f32 mouth[4] __attribute__((aligned(16)));
+    Progress *p = gProgress;
+
+    if ((VCALL(p, 0x50, s32 (*)(Progress *))(p) & 0xFF) == 1 &&
+        f->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && f->c.a.navTri != (u32)-1) {
+        u8 *nm;
+        u32 tri;
+
+        VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, mouth);
+        tri = f->c.a.navTri;
+        nm = (u8 *)D_0044E570;
+        do {
+            s32 side;
+            u8 *rec;
+
+            if ((fiona_tri_flags(nm, tri) & 0x2008000) == 0x2008000) {
+                func_00122C20(&f->c.a, 0x1C, 6, 0, 0, NULL);
+                if (f->c.a.room == 7 || f->c.a.room == 0x106) {
+                    func_00125E10(&f->c, f->c.a.pos, 1);
+                }
+                return;
+            }
+            side = VCALL(nm, 0x20, s32 (*)(void *, u32, f32 *, f32 *))(nm, tri, f->c.a.pos, mouth);
+            if (side == 3 || side == 4) {
+                break;
+            }
+            rec = NULL;
+            if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+                rec = AT(nm, 0x4, u8 *) + tri * 0x50;
+            }
+            if (rec == NULL) {
+                break;   /* (the original reads low memory here) */
+            }
+            tri = AT(rec + side * 4, 0x30, u32);   /* the neighbour across that side */
+        } while (tri != (u32)-1);
+    }
+    func_00122C20(&f->c.a, id, a2, a3, a4, NULL);
+}
+
+
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
  * func_001270A0 */
