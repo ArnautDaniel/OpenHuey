@@ -5590,14 +5590,24 @@ void func_0018B9D0(Fiona *f) {
     func_00125A10(&f->c);
 }
 
-/* after being knocked down (D_003B2B18): at the motion's event 0x20 she stands (+0x1AD5EC 30) */
-void func_00190A00(Fiona *f) {
+/* at the motion's event 0x20 she stands (+0x1AD5EC 30) */
+static inline __attribute__((always_inline)) void stand_up(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         FI(f, 0x1AD5EC, s32) = 0x1E;
         f->c.a.unk2D = 0;
         Fiona_ToIdle(f);
     }
     func_00125A10(&f->c);
+}
+
+/* after being knocked down (D_003B2B18) */
+void func_00190A00(Fiona *f) {
+    stand_up(f);
+}
+
+/* after the 0x13 fall, on the ground (D_003B2D58) */
+void func_0018B880(Fiona *f) {
+    stand_up(f);
 }
 
 /* after being caught (D_003B2998): at the motion's event 0x20 she stands; until then, caught
@@ -5834,4 +5844,72 @@ void func_001913F0(Fiona *f) {
         }
     }
     func_00183400(f);
+}
+
+extern const PTMF D_003B29D8;
+
+/* after a crawl-catch fall (D_003B29C8): once the motion has played out, 0x70C on to
+ * D_003B29D8 */
+void func_00193BB0(Fiona *f) {
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        func_002DDED0(f->c.motion, 0x70C, -1);
+        Actor_SetState(&f->c.a, &D_003B29D8);
+    }
+}
+
+/* getting up after a throw (D_003B2AC8, D_003B2AE8): standing at the motion's event 0x20; her
+ * update with nav flag 1 not blocking */
+void func_00191280(Fiona *f) {
+    f->c.a.unk2A = 0;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        f->c.a.unk2D = 0;
+        Fiona_ToIdle(f);
+    }
+    f->c.a.navMask |= 1;
+    func_00125A10(&f->c);
+    f->c.a.navMask &= ~1;
+}
+
+extern const PTMF D_003B29E8;
+
+/* after the crawl-catch short pull (D_003B29B8): at the motion's event 0x20 she stands, out
+ * of the door region she is in (func_001779C0), first func_00182E80 after a fall */
+void func_00193900(Fiona *f) {
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        u32 n = D_0044E570->numDoors;
+        u32 i = 0;
+
+        if (n != 0) {
+            Progress *p = gProgress;
+
+            for (i = 0; i < n; i++) {
+                if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 1) {
+                    break;
+                }
+            }
+        }
+        if (i != n) {
+            func_001779C0(gProgress, i & 0xFF, (u8)f->c.a.slot);
+        }
+        f->c.a.unk2D = 0;
+        if (FI(f, 0x1AD6C4, s32) != 0) {
+            func_00182E80(f);
+        }
+        Fiona_ToIdle(f);
+    }
+    func_00125A10(&f->c);
+}
+
+/* after the crawl-catch fall, down (D_003B29D8): at the motion's event 0x20 she gets up
+ * (0x100D) */
+void func_00193B10(Fiona *f) {
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        func_002DDE20(f->c.motion, 0x100D, -1);
+        Actor_SetState(&f->c.a, &D_003B29E8);
+    }
+    func_00125A10(&f->c);
 }
