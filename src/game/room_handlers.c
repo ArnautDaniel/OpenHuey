@@ -1015,6 +1015,11 @@ s32 func_002B0C90(void) {
 s32 func_002B1700(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
 
+#ifdef HG_NATIVE
+    if ((func_001770D0(gProgress, 0x1A) & 0xFF) >= 6 || c == NULL) {   /* (the PS2 writes through junk) */
+        return 1;
+    }
+#endif
     if (cmd[3] != 0) {
         return func_0032D2C0(c) == 0 ? 2 : 1;
     }
