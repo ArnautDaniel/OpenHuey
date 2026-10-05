@@ -3762,6 +3762,7 @@ extern VObject *D_0044E4B8;     /* the camera */
 extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
 
 #ifdef HG_NATIVE
+#include <stdio.h>
 #include <stdlib.h>
 
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
@@ -3783,33 +3784,68 @@ typedef struct {
 
 static ModelBuf sMb;
 
-/* Lighting (the original lights in its VU1 microprograms; recreated here): a key light from
- * the camera, raised a little, plus ambient. World Y points down. */
-#define LIGHT_AMBIENT 0.55f
-#define LIGHT_KEY 0.5f
-static f32 sLightDir[4];   /* towards the light, unit */
+/* Lighting, as the character microprograms do it (tools/vudis.py, e.g. the chain D_003A38C0):
+ * the model's light set comes from the scene's lights (+0x10, func_001FAA00, as the drawer
+ * func_001BDF80 asks for it: at its root bone +0x2C, on nav triangle +0x28) - per light a
+ * direction (columns of the transposed matrix, the 4th row -dir.L), a colour, a falloff; the
+ * 4th colour row is the ambient. A vertex at world P with normal N gets
+ *   min(ambient + sum_i colour_i * max(dir_i.N^, 0) * max(1 + falloff_i * (dir_i.P - dir_i.L_i), 0), 128)
+ * (0x80 = 1.0 against the texture), alpha 127. */
+extern VObject *D_0044E4C8;   /* the scene's lights */
+static f32 sLDir[4][4] __attribute__((aligned(16)));
+static f32 sLCol[4][4] __attribute__((aligned(16)));
+static f32 sLFall[4];
 
-static void light_setup(void) {
-    f32 dir[4] __attribute__((aligned(16)));
+static void light_setup(u8 *m) {
+    f32 *root = func_0017CE80(AT(m, 0x18, void *), AT(m, 0x2C, s32));
 
-    VCALL(D_0044E4B8, 0xA0, void (*)(VObject *, f32 *))(D_0044E4B8, dir);   /* view direction */
-    sLightDir[0] = -dir[0];
-    sLightDir[1] = -dir[1] - 0.6f;
-    sLightDir[2] = -dir[2];
-    sLightDir[3] = 0.0f;
-    sceVu0Normalize(sLightDir, sLightDir);
+    VCALL(D_0044E4C8, 0x10, void (*)(VObject *, f32 *, s32, f32 (*)[4], f32 (*)[4], f32 *, f32 (*)[4]))(
+        D_0044E4C8, root != NULL ? root + 12 : NULL, AT(m, 0x28, s32), sLDir, sLCol, sLFall, NULL);
+    {
+        static s32 sDbg = -1, sN;
+
+        if (sDbg < 0) {
+            sDbg = getenv("HG_LIGHTDEBUG") != NULL;
+        }
+        if (sDbg && (sN++ % 120) == 0) {
+            fprintf(stderr, "light: model %p tri %d bone %d lights %d amb %.1f %.1f %.1f\n", (void *)m, AT(m, 0x28, s32),
+                    AT(m, 0x2C, s32), AT(D_0044E4C8, 0x10, s32), sLCol[3][0], sLCol[3][1], sLCol[3][2]);
+            fprintf(stderr, "  col0 %.1f %.1f %.1f col1 %.1f %.1f %.1f col2 %.1f %.1f %.1f fall %.4f %.4f %.4f\n",
+                    sLCol[0][0], sLCol[0][1], sLCol[0][2], sLCol[1][0], sLCol[1][1], sLCol[1][2], sLCol[2][0],
+                    sLCol[2][1], sLCol[2][2], sLFall[0], sLFall[1], sLFall[2]);
+        }
+    }
 }
 
-/* a vertex colour (0x80 = 1.0) for the world normal `n` (not unit) */
-static u32 light_rgba(const f32 *n) {
-    f32 len = __builtin_sqrtf(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-    f32 d = len > 0.0f ? (n[0] * sLightDir[0] + n[1] * sLightDir[1] + n[2] * sLightDir[2]) / len : 0.0f;
-    s32 c = (s32)(128.0f * (LIGHT_AMBIENT + LIGHT_KEY * (d > 0.0f ? d : 0.0f)));
+/* a vertex colour for world position `p` and normal `n` (not unit) */
+static u32 light_rgba(const f32 *n, const f32 *p) {
+    f32 len2 = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+    f32 r = len2 > 0.0f ? 1.0f / __builtin_sqrtf(len2) : 0.0f;
+    f32 c[3];
+    s32 i, k;
+    u32 out = 0x7F000000u;
 
-    if (c > 255) {
-        c = 255;
+    for (k = 0; k < 3; k++) {
+        c[k] = sLCol[3][k];
     }
-    return 0x80000000u | (u32)c << 16 | (u32)c << 8 | (u32)c;
+    for (i = 0; i < 3; i++) {
+        f32 d = (sLDir[0][i] * n[0] + sLDir[1][i] * n[1] + sLDir[2][i] * n[2]) * r;
+        f32 f = 1.0f + sLFall[i] * (sLDir[0][i] * p[0] + sLDir[1][i] * p[1] + sLDir[2][i] * p[2] + sLDir[3][i]);
+        f32 l = (d > 0.0f ? d : 0.0f) * (f > 0.0f ? f : 0.0f);
+
+        for (k = 0; k < 3; k++) {
+            c[k] += sLCol[i][k] * l;
+        }
+    }
+    for (k = 0; k < 3; k++) {
+        s32 v = (s32)(c[k] < 128.0f ? c[k] : 128.0f);
+
+        if (v < 0) {
+            v = 0;
+        }
+        out |= (u32)v << (k * 8);
+    }
+    return out;
 }
 
 /* a normal (3 x s16 / 32768) turned by a matrix's 3 x 3, scaled by w, added to `acc` */
@@ -3916,7 +3952,7 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
                 normal_add(nn, pal[s], nrm + k * 3, wt);
             }
             vtx_set(k, o, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
-            AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
+            AT(sMb.rgba, k * 4, u32) = light_rgba(nn, o);
         }
         model_emit(m, mvp, n, AT(rec, 0x1C, s32), AT(rec, 0x20, s32));
     }
@@ -3962,7 +3998,7 @@ static void gl_rigid_parts(u8 *m, const f32 *mvp) {
                 f32 nn[3] = {0, 0, 0};
 
                 normal_add(nn, b, nrm + k * 3, 1.0f);
-                AT(sMb.rgba, k * 4, u32) = light_rgba(nn);
+                AT(sMb.rgba, k * 4, u32) = light_rgba(nn, t);
             }
         }
         model_emit(m, mvp, n, AT(rec, 0x14, s32), 0);
@@ -4050,7 +4086,7 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
             for (j = 0; j < 3; j++) {
                 wn[j] = b[0][j] * nn[0] + b[1][j] * nn[1] + b[2][j] * nn[2];
             }
-            AT(sMb.rgba, k * 4, u32) = light_rgba(wn);
+            AT(sMb.rgba, k * 4, u32) = light_rgba(wn, t);
         }
         model_emit(m, mvp, n, AT(rec, 0x18, s32), AT(rec, 0x20, s32));
     }
@@ -4094,7 +4130,7 @@ static void gl_draw_model(u8 *m) {
         return;
     }
     VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
-    light_setup();
+    light_setup(m);
     gl_skinned_parts(m, &clip[0][0]);
     gl_rigid_parts(m, &clip[0][0]);
     gl_morph_parts(m, &clip[0][0]);
