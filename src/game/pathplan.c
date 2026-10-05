@@ -640,19 +640,19 @@ s32 func_001A6D70(void *pl, u8 *s) {
 /* put node `n` at place `i` of the open list (its +2 too) */
 #define OPEN_PUT(s, i, n) (OPEN(s, i) = (n), AT(OPEN(s, i), 0x2, s16) = (i))
 
-/* an open node `nb` reached cheaper (its cost +0xC lowered): moved up the list to its place */
-static inline __attribute__((always_inline)) void open_raise(u8 *s, u8 *nb) {
+/* an open node `nb` reached cheaper (its key at `key` lowered): moved up the list to its place */
+static inline __attribute__((always_inline)) void open_raise(u8 *s, u8 *nb, s32 key) {
     s32 pos = AT(nb, 0x2, s16);
 
     if (pos == 1) {
         return;
     }
-    if (AT(nb, 0xC, f32) < AT(OPEN(s, 1), 0xC, f32)) {
+    if (AT(nb, key, f32) < AT(OPEN(s, 1), key, f32)) {
         for (; pos >= 2; pos--) {
             OPEN_PUT(s, pos, OPEN(s, pos - 1));
         }
     } else {
-        while (AT(nb, 0xC, f32) < AT(OPEN(s, pos - 1), 0xC, f32)) {
+        while (AT(nb, key, f32) < AT(OPEN(s, pos - 1), key, f32)) {
             OPEN_PUT(s, pos, OPEN(s, pos - 1));
             pos--;
         }
@@ -660,10 +660,10 @@ static inline __attribute__((always_inline)) void open_raise(u8 *s, u8 *nb) {
     OPEN_PUT(s, pos, nb);
 }
 
-/* the open list (`n`, its head just expanded) after the `k` new nodes, sorted by the cost +0xC,
- * merged in (places kept at +2): none - the head goes; else the best replaces the head, found
- * with the goal node as a sentinel past the end (its cost set above it) */
-static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s32 k, s32 n) {
+/* the open list (`n`, its head just expanded) after the `k` new nodes, sorted by `sort`, are
+ * merged in by `key` (places kept at +2): none - the head goes; else the best replaces the
+ * head, found with the goal node as a sentinel past the end (its key set above it) */
+static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s32 k, s32 n, s32 sort, s32 key) {
     s32 i, j;
 
     if (k == 0) {
@@ -674,7 +674,7 @@ static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s3
     }
     for (i = 1; i < k; i++) {
         for (j = 0; j < k - i; j++) {
-            if (!(AT(nbs[j], 0xC, f32) <= AT(nbs[j + 1], 0xC, f32))) {
+            if (!(AT(nbs[j], sort, f32) <= AT(nbs[j + 1], sort, f32))) {
                 u8 *x = nbs[j];
 
                 nbs[j] = nbs[j + 1];
@@ -693,12 +693,12 @@ static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s3
         for (i = k - 1; i > 0; i--) {   /* the rest, merged in from the end */
             u8 *x = nbs[i];
 
-            if (AT(x, 0xC, f32) < AT(OPEN(s, 1), 0xC, f32)) {
+            if (AT(x, key, f32) < AT(OPEN(s, 1), key, f32)) {
                 for (; at > 0; at--) {
                     OPEN_PUT(s, at + i, OPEN(s, at));
                 }
             } else {
-                while (AT(x, 0xC, f32) < AT(OPEN(s, at), 0xC, f32)) {
+                while (AT(x, key, f32) < AT(OPEN(s, at), key, f32)) {
                     OPEN_PUT(s, at + i, OPEN(s, at));
                     at--;
                 }
@@ -707,8 +707,8 @@ static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s3
         }
         g = NODE(s, AT(s, 0x8, s32));
         OPEN(s, n + k - 1) = g;
-        AT(g, 0xC, f32) = 1.0f + AT(nbs[0], 0xC, f32);
-        for (i = 0; !(AT(nbs[0], 0xC, f32) <= AT(OPEN(s, i + 1), 0xC, f32)); i++) {
+        AT(g, key, f32) = 1.0f + AT(nbs[0], key, f32);
+        for (i = 0; !(AT(nbs[0], key, f32) <= AT(OPEN(s, i + 1), key, f32)); i++) {
             OPEN_PUT(s, i, OPEN(s, i + 1));
         }
         OPEN_PUT(s, i, nbs[0]);
@@ -756,7 +756,7 @@ s32 func_001A4CC0(void *pl, u8 *s) {
             }
             AT(nb, 0x4, u8 *) = cur;
             AT(nb, 0xC, f32) = g;
-            open_raise(s, nb);
+            open_raise(s, nb, 0xC);
             continue;
         }
         if (!(tri_flags(nm, t) & AT(s, 0xC, u32))) {
@@ -792,7 +792,7 @@ s32 func_001A4CC0(void *pl, u8 *s) {
     AT(cur, 0x0, u16) ^= 3;
     AT(s, 0xE044 + AT(s, 0x42, s16) * 4, u8 *) = cur;
     AT(s, 0x42, s16)++;
-    open_merge(s, nbs, k, n);
+    open_merge(s, nbs, k, n, 0xC, 0xC);
     AT(s, 0x40, s16) = n + k - 1;
     if (n + k != 0) {
         return 0;
@@ -851,7 +851,7 @@ s32 func_001A7320(void *pl, u8 *s) {
             }
             AT(nb, 0x4, u8 *) = cur;
             AT(nb, 0xC, f32) = g;
-            open_raise(s, nb);
+            open_raise(s, nb, 0xC);
             continue;
         }
         if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
@@ -869,8 +869,102 @@ s32 func_001A7320(void *pl, u8 *s) {
     AT(cur, 0x0, u16) ^= 3;
     AT(s, 0xE044 + AT(s, 0x42, s16) * 4, u8 *) = cur;
     AT(s, 0x42, s16)++;
-    open_merge(s, nbs, k, n);
+    open_merge(s, nbs, k, n, 0xC, 0xC);
     AT(s, 0x40, s16) = n + k - 1;
+    if (n + k != 0) {
+        return 0;
+    }
+    return -AT(s, 0x0, s32);
+}
+
+/* step for kind 4, A*: by f = g + h (+0x14) on the sorted list, places kept at +2 in the open
+ * list and in the closed list (+0xE044, +0x42); a closed node reached cheaper is opened again */
+s32 func_001A6260(void *pl, u8 *s) {
+    u8 *nbs[3];
+    NavMesh *nm;
+    u8 *cur;
+    NavTri *tri;
+    s32 n, c, k = 0, e, i;
+
+    AT(s, 0x0, s32)++;
+    cur = OPEN(s, 0);
+    n = AT(s, 0x40, s16);
+    c = AT(s, 0x42, s16);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    if (tri == NULL) {
+        return -1;
+    }
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+        u32 f;
+        f32 g;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        f = tri_flags(nm, t);
+        if (f & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if (AT(nb, 0x0, u16) & 8) {
+            continue;
+        }
+        if (AT(nb, 0x0, u16) & 3) {
+            if (AT(nb, 0x0, u16) & 1) {
+                g = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+                if (!(g < AT(nb, 0xC, f32))) {
+                    continue;
+                }
+                AT(nb, 0x4, u8 *) = cur;
+                AT(nb, 0xC, f32) = g;
+                AT(nb, 0x14, f32) = AT(nb, 0x10, f32) + g;
+                open_raise(s, nb, 0x14);
+            } else if (AT(nb, 0x0, u16) & 2) {
+                s32 pos;
+
+                g = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+                if (!(g < AT(nb, 0xC, f32))) {
+                    continue;
+                }
+                c--;
+                nbs[k] = nb;
+                AT(nb, 0x0, u16) ^= 3;
+                AT(nb, 0x4, u8 *) = cur;
+                AT(nb, 0xC, f32) = g;
+                AT(nb, 0x14, f32) = AT(nb, 0x10, f32) + g;
+                pos = AT(nb, 0x2, s16);
+                k++;
+                for (i = pos; i < c; i++) {
+                    AT(s, 0xE044 + i * 4, u8 *) = AT(s, 0xE044 + (i + 1) * 4, u8 *);
+                    AT(AT(s, 0xE044 + i * 4, u8 *), 0x2, s16) = i;
+                }
+            }
+            continue;
+        }
+        if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            AT(nb, 0xC, f32) = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+            AT(nb, 0x14, f32) = AT(nb, 0x10, f32) + AT(nb, 0xC, f32);
+            AT(s, 0x40, s16) = n;
+            AT(s, 0x42, s16) = c;
+            return AT(s, 0x0, s32);
+        }
+        nbs[k++] = nb;
+        AT(nb, 0x0, u16) |= 1;
+        AT(nb, 0x4, u8 *) = cur;
+        AT(nb, 0xC, f32) = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+        AT(nb, 0x14, f32) = AT(nb, 0x10, f32) + AT(nb, 0xC, f32);
+    }
+    AT(cur, 0x0, u16) ^= 3;
+    AT(s, 0xE044 + c * 4, u8 *) = cur;
+    AT(AT(s, 0xE044 + c * 4, u8 *), 0x2, s16) = c;
+    open_merge(s, nbs, k, n, 0xC, 0x14);
+    AT(s, 0x40, s16) = n + k - 1;
+    AT(s, 0x42, s16) = c + 1;
     if (n + k != 0) {
         return 0;
     }
