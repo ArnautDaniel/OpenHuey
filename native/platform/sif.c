@@ -3,6 +3,7 @@
  * snddrv.c), DMA copies into the emulated IOP memory, and the IOP heap is a simple allocator in
  * it. The game's EE threads for RPC servers are not run: the IOP side calls their handler. */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "iop_mem.h"
@@ -89,6 +90,11 @@ unsigned sceSifSetDma(SifDma *d, int n) {
     int i;
 
     for (i = 0; i < n; i++) {
+        if (getenv("HG_SNDLOG")) {
+            const unsigned char *q = ee_ptr(d[i].src);
+
+            fprintf(stderr, "sif: dma %08X -> IOP %X (%X bytes) %02X %02X\n", d[i].src, d[i].dest, d[i].size, q[0], q[0x20]);
+        }
         iop_write(d[i].dest, ee_ptr(d[i].src), (unsigned)d[i].size);
     }
     return 1;

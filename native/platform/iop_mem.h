@@ -18,4 +18,14 @@ unsigned iop_alloc(unsigned size);
 void *snddrv_rpc(unsigned fno, void *args, int size);
 void *snddrv_rpc2(unsigned fno, void *args, int size);
 
+/* libsd (spu2.c) */
+void sceSdSetParam(unsigned short entry, unsigned short value);
+unsigned short sceSdGetParam(unsigned short entry);
+void sceSdSetSwitch(unsigned short entry, unsigned value);
+unsigned sceSdGetSwitch(unsigned short entry);
+void sceSdSetAddr(unsigned short entry, unsigned value);
+unsigned sceSdGetAddr(unsigned short entry);
+unsigned short sceSdNote2Pitch(unsigned short cnote, unsigned short cfine, unsigned short note, short fine);
+void spu_reset(void);
+
 #endif

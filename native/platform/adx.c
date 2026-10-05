@@ -175,7 +175,12 @@ void adx_render(float *out, int frames) {
     Adxt *a;
     int i;
 
-    for (a = sAll; a != NULL; a = a->next) {
+    static int mute = -1;
+
+    if (mute < 0) {
+        mute = getenv("HG_NOMUSIC") != NULL;
+    }
+    for (a = sAll; a != NULL && !mute; a = a->next) {
         double step;
         float g, gl, gr;
 

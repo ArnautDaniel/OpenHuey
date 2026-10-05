@@ -121,7 +121,13 @@ int func_001CA0B8(HostFile *h) { return (int)((h->size + SECTOR - 1) / SECTOR); 
 int ADXF_GetFsizeSct(HostFile *h) { return func_001CA0B8(h); }
 
 /* PS2 buffer addresses may carry the uncached / accelerated segment bits */
-static void *host_ptr(unsigned addr) { return (void *)(addr & 0x0FFFFFFFu); }
+static void *host_ptr(unsigned addr) {
+    /* (only those: a PC pointer may be anywhere, e.g. a big block high up) */
+    if ((addr >> 28) == 2 || (addr >> 28) == 3) {
+        addr &= 0x0FFFFFFFu;
+    }
+    return (void *)addr;
+}
 
 /* ADXF_ReadNw(h, sectors, buffer): reads complete immediately */
 int ADXF_ReadNw(HostFile *h, int nsct, unsigned buf) {

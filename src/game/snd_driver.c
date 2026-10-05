@@ -206,13 +206,14 @@ void func_0020EE60(u8 *d, u32 k) {
     AT(XFER(d, k & 0xFF), 0x10, u8) = 0;
 }
 
-/* load file `file` as part `part` (0..3) of bank `k` (`go` 0: not) */
-s32 func_0020EED0(u8 *d, void *file, u32 k, u32 part, s32 go) {
-    if ((part & 0xFF) >= 4 || go == 0) {
+/* load file `file` into `buf` as part `part` (0 header, 2 table, 3 samples; 1 a sequence) of
+   bank `k`: the loader's request id, 0 if not queued */
+s32 func_0020EED0(u8 *d, const char *file, u32 k, u32 part, void *buf) {
+    if ((part & 0xFF) >= 4 || buf == NULL) {
         return 0;
     }
-    return VCALL(gFileLoader, 0xC, s32 (*)(VObject *, void *, u32, u32))(
-        gFileLoader, file, ((part & 0xFF) << 28) | 0x80000000 | ((k & 0xFF) << 24), (k & 0xFF) | 0x05000000);
+    return VCALL(gFileLoader, 0xC, s32 (*)(VObject *, const char *, u32, u32, void *))(
+        gFileLoader, file, ((part & 0xFF) << 28) | 0x80000000 | ((k & 0xFF) << 24), (k & 0xFF) | 0x05000000, buf);
 }
 
 /* volume `ch` (0, 1) to `v` (14 bits) */
@@ -867,7 +868,7 @@ THUNK(func_00210740, u8, func_0020E8A0, (u8 *s, u32 k), (s - 4, k))
 THUNK(func_00210730, s32, func_0020F000, (u8 *s, u32 k), (s - 4, k))
 THUNK(func_00210720, u16, func_0020EFD0, (u8 *s, u32 ch), (s - 4, ch))
 THUNKV(func_00210710, func_0020EF50, (u8 *s, u32 ch, u32 v), (s - 4, ch, v))
-THUNK(func_00210700, s32, func_0020EED0, (u8 *s, void *f, u32 k, u32 p, s32 go), (s - 4, f, k, p, go))
+THUNK(func_00210700, s32, func_0020EED0, (u8 *s, const char *f, u32 k, u32 p, void *buf), (s - 4, f, k, p, buf))
 THUNKV(func_002106E0, func_0020EE60, (u8 *s, u32 k), (s - 4, k))
 THUNKV(func_002106D0, func_0020EDF0, (u8 *s, u32 k), (s - 4, k))
 THUNKV(func_002106F0, func_0020ED30, (u8 *s), (s - 4))

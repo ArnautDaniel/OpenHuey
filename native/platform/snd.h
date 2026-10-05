@@ -2,6 +2,8 @@
 #ifndef HG_SND_H
 #define HG_SND_H
 
+#include <stdio.h>
+
 #define SND_RATE 48000
 
 int snd_init(void);

@@ -23,9 +23,3 @@ void func_002FF600(void *snd, int id, int a2, int a3, int a4, int a5) {
     (void)a5;
     hg_skipped("func_002FF600 positioned sound");
 }
-
-/* the sound driver's voices (snddrv.c to come): nothing yet */
-void spu_render(float *out, int frames) {
-    (void)out;
-    (void)frames;
-}
