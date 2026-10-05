@@ -90,6 +90,7 @@ extern void func_002DDE20(void *motion, s32 set, s32 variant);
 extern void func_002ED260(void *model, s32 n);
 extern u8 *D_0044F258;
 extern u8 *func_002083B0(u8 *e);
+extern u8 *func_00208340(u8 *e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -496,7 +497,7 @@ static u8 *script_by_id(VObject *ev, u32 id) {
 }
 
 /* room effect slot `k` made anew from the effects' pool (+0x1400): `which` 0 a func_00208F30
- * (`arg`), 1 a func_00208F10, 2 a func_002083B0, 3 a func_00208EF0 */
+ * (`arg`), 1 a func_00208F10, 2 a func_002083B0, 3 a func_00208EF0, 4 a func_00208340 */
 static void room_effect_slot(s32 k, s32 which, s32 arg) {
     u8 *fx = D_0044E4C0;
     u8 **slot = (u8 **)(fx + 0x1438) + k;
@@ -511,8 +512,11 @@ static void room_effect_slot(s32 k, s32 which, s32 arg) {
         u8 *e = func_002672F0(0xA0, mem);
 
         if (e != NULL) {
-            e = which == 3 ? func_00208EF0(e) : which == 2 ? func_002083B0(e) : which ? func_00208F10(e)
-                                                                                  : func_00208F30(e, arg);
+            e = which == 4   ? func_00208340(e)
+                : which == 3 ? func_00208EF0(e)
+                : which == 2 ? func_002083B0(e)
+                : which      ? func_00208F10(e)
+                             : func_00208F30(e, arg);
         }
         *slot = e;
         VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
@@ -1694,6 +1698,35 @@ void func_002029B0(VObject *ev) {
         }
         VCALL((VObject *)gCharPartner, 0x14, void (*)(VObject *))((VObject *)gCharPartner);
         AT(gCharPartner, 0x28, u8) = 0;
+        break;
+    case 0x9C:   /* room effect 0x1D: pc[17] 0 gone, else made anew and set going (2 raw le32
+                  * floats pc[1..8], 2 x be32 pc[9..16] / 1000) */
+        if (pc[0x11] == 0) {
+            func_002670F0(D_0044E4C0, 0x1D);
+        } else {
+            struct {
+                f32 v[4];
+                s32 a, b, c;
+            } arg __attribute__((aligned(16)));
+            union {
+                u32 u;
+                f32 f;
+            } w;
+
+            room_effect_slot(0x1D, 4, 0);
+            pc = PC(ev);
+            w.u = pc[1] | pc[2] << 8 | pc[3] << 16 | pc[4] << 24;
+            arg.v[0] = w.f;
+            pc = PC(ev);
+            w.u = pc[5] | pc[6] << 8 | pc[7] << 16 | pc[8] << 24;
+            arg.v[1] = w.f;
+            arg.v[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
+            arg.a = 0;
+            arg.b = 0;
+            arg.c = 0;
+            arg.v[3] = (f32)be32(PC(ev) + 0xD) / 1000.0f;
+            func_00266C70(D_0044E4C0, 0x1D, &arg);
+        }
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
