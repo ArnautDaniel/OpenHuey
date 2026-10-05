@@ -248,6 +248,32 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
     VCALL(ev, 0xE4, void (*)(VObject *, s32, u8 *))(ev, slot, script);
 }
 
+extern VObject *D_0044E568;   /* the rooms: +0x48 (room, entry) the event area of an entry */
+
+/* +0xE8 the middle of the event area room entry `k` leads to (the room table +0x48 of the
+ * current room; its line +0x10 -> +0x30 halved, the height +0x14), w 1, into `out`. 0: no
+ * areas, or the entry has none */
+s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
+    u32 *tbl = AT(ev, 0x10, u32 *);
+    u32 area;
+    u8 *e;
+
+    if (tbl == NULL) {
+        return 0;
+    }
+    area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(
+               D_0044E568, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), k) & 0xFFFF;
+    if (area == 0xFFFF) {
+        return 0;
+    }
+    e = (u8 *)(tbl + tbl[area]);
+    out[0] = (AT(e, 0x10, f32) + AT(e, 0x30, f32)) / 2.0f;
+    out[1] = AT(e, 0x14, f32);
+    out[2] = (AT(e, 0x18, f32) + AT(e, 0x38, f32)) / 2.0f;
+    out[3] = 1.0f;
+    return 1;
+}
+
 extern void *gCharacters[6];
 
 /* +0xE4 give character slot `slot` the script `script` (its context at +0x564 + (slot + 1) *
