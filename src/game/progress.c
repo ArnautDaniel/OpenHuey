@@ -1470,6 +1470,7 @@ s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
 }
 
 /* remove all the characters (the slow way) */
+/* (possibly dead code: nothing in the game references it) */
 void func_001766D0(Progress *p) {
     u32 i;
 
@@ -1566,6 +1567,7 @@ extern void func_0026BC00(void *o);
 extern void func_002E2920(void *o);
 
 /* the parts at +0x6FC218 (func_0026BC00), +0x6FC340 (vtable +0x24) and +0x706440 */
+/* (possibly dead code: nothing in the game references it) */
 void func_00176720(Progress *p) {
     VObject *o = (VObject *)((u8 *)p + 0x6FC340);
 

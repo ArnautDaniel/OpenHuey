@@ -3352,3 +3352,100 @@ s32 func_00221B40(VObject *o, u32 door, s32 side, u32 flags) {
 s32 func_00221B60(VObject *o, u32 door, s32 side, u32 flags) {
     return func_00223630(o, 1, door, side, flags);
 }
+
+/* ---- small leftovers (2026-10-05) ---- */
+
+#ifdef HG_NATIVE
+#define CORE_SYNC_EI()
+#else
+#define CORE_SYNC_EI() __asm__ volatile("sync\n\tei")
+#endif
+
+extern void func_001CC5B0(s32 a);
+
+/* an empty method returning 0 */
+s32 func_0011FF20(void) {
+    return 0;
+}
+
+/* an empty method */
+void func_00120F70(void) {
+}
+
+/* an empty method */
+void func_00267300(void) {
+}
+
+/* is the loader's request for file slot k (+0x3C0, -1 none) done (its state 2)? */
+s32 func_00120540(u8 *o, s32 k) {
+    s32 req = AT(o, 0x3C0 + k * 4, s32);
+
+    if (req == -1) {
+        return 0;
+    }
+    return VCALL(gFileLoader, 0x28, s32 (*)(void *, u32))(gFileLoader, (u32)req & 0x7FFFFFFF) == 2 ? 1 : 0;
+}
+
+/* func_001CC5B0(0), then interrupts back on; 0 */
+s32 func_001AAC30(void) {
+    func_001CC5B0(0);
+    CORE_SYNC_EI();
+    return 0;
+}
+
+/* reset 64 entries of 12 (+0x4 0, +0x8 / +0xA -1, +0xC / +0xD 0xFF) and ten words at +0x304
+ * to -1 */
+void func_001F4100(u8 *o) {
+    u8 *e = o;
+    u32 i;
+
+    for (i = 0; i < 0x40; i++, e += 0xC) {
+        AT(e, 0x4, s32) = 0;
+        AT(e, 0x8, s16) = -1;
+        AT(e, 0xA, s16) = -1;
+        AT(e, 0xD, s8) = -1;
+        AT(e, 0xC, s8) = -1;
+    }
+    for (i = 0; i < 10; i++) {
+        AT(o, 0x304 + i * 4, s32) = -1;
+    }
+}
+
+/* release its two VRAM slots (+0x320 / +0x324, the VRAM manager +0x1C) and mark them -1 */
+/* (possibly dead code: nothing in the game references it) */
+void func_001F9D20(u8 *o) {
+    VObject *vram = D_0044E9A0;
+
+    VCALL(vram, 0x1C, void (*)(VObject *, s32))(vram, AT(o, 0x320, s32));
+    AT(o, 0x320, s32) = -1;
+    VCALL(vram, 0x1C, void (*)(VObject *, s32))(vram, AT(o, 0x324, s32));
+    AT(o, 0x324, s32) = -1;
+}
+
+void func_001F9F70(u8 *o, s32 v) {
+    AT(o, 0x944, s32) = v;
+}
+
+u8 *func_001FA520(u8 *o) {
+    return o + 0x14;
+}
+
+/* the current entry's block (+0x120 + +0x560 * 4) */
+u8 *func_001FB150(u8 *o) {
+    return o + AT(o, 0x560, s32) * 4 + 0x120;
+}
+
+/* destructor of a class with no vtable of its own */
+/* (possibly dead code: nothing in the game references it) */
+void *func_0020E820(void *o, s32 flags) {
+    if (o != NULL && (s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
+
+/* the renderer's +0x5C */
+/* (possibly dead code: nothing in the game references it) */
+void func_00267140(void) {
+    VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+}

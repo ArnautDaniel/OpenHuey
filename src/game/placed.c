@@ -44,6 +44,7 @@ static u8 *placed_active(u8 *m, s32 i) {
 }
 
 /* destructor (the pool +0xA040 with it) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_002D0EE0(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046F5C0;

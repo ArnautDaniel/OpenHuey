@@ -99,6 +99,7 @@ void func_0031DDF0(u8 *self, u32 id) {
     S32(self, 0x11044) = 30;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 s32 func_0031E0B0(void *self) {
     return VCALL(D_0044E4E8, 0x14, s32 (*)(void *, s32))(D_0044E4E8, 0x2D);
 }

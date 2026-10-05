@@ -5864,3 +5864,15 @@ src/leaf/dtors_gen.c func_00377FF0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=
 src/leaf/dtors_gen.c func_00378310 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_003784F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_0037B9A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game_members.c func_0011FF20 --runs=5
+src/game/scene_game_members.c func_00120F70 --runs=5
+src/game/scene_game_members.c func_00267300 --runs=5
+src/game/scene_game_members.c func_00120540 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..3 --pre=a0+0x3C0=-1..1 --pre=a0+0x3C4=-1..1 --pre=@0x44E6C0=0x0B100000..0x0B100000 --stub-ret=1 --stub-ret=2 --stub-ret-prob=1 --runs=100
+src/game/scene_game_members.c func_001AAC30 --runs=10
+src/game/scene_game_members.c func_001F4100 --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/scene_game_members.c func_001F9D20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E9A0=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046B050..0x0046B050 --runs=50
+src/game/scene_game_members.c func_001F9F70 --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/scene_game_members.c func_001FA520 --runs=20
+src/game/scene_game_members.c func_001FB150 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x560=0..8 --runs=20
+src/game/scene_game_members.c func_0020E820 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game_members.c func_00267140 --pre=@0x44E4F0=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046AC50..0x0046AC50 --runs=10

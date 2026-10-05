@@ -1595,6 +1595,7 @@ void func_002E2740(u8 *m) {
 extern VObject *gBootMessage;
 
 /* a pending message (+0x38681 set, its id +0x38680) shown */
+/* (possibly dead code: nothing in the game references it) */
 void func_002E27B0(u8 *m) {
     if (AT(m, 0x38681, u8) != 0) {
         VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, AT(m, 0x38680, u8));

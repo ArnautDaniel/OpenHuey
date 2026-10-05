@@ -687,6 +687,7 @@ void *func_00179AA0(void) {
     return D_0042C8B0;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_001CEC50(void) {
     return D_00451318;
 }
@@ -695,14 +696,17 @@ void *func_001D6E40(void) {
     return D_0047E878;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_001DC580(void) {
     return D_003C5D90;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_001DE030(void) {
     return D_003C6348;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_001DE0A8(void) {
     return D_003C6450;
 }
@@ -1151,14 +1155,17 @@ void *func_00230B48(void) {
     return D_004574B8;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_00233720(void) {
     return D_00457558;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_00236B70(void) {
     return D_004575C0;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_0023AA68(void) {
     return D_00457ED0;
 }
@@ -1171,22 +1178,27 @@ void *func_0023FFA0(void) {
     return D_003E9F18;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_00246A80(void) {
     return D_00459930;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_002577D8(void) {
     return D_00459F60;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_00259EE8(void) {
     return D_0045A4D8;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_0025B828(void) {
     return D_0045A6E0;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 void *func_0026EFF0(void) {
     return D_01989558;
 }

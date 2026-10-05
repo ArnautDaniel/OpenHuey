@@ -301,6 +301,7 @@ void *func_001BF880(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046B1D0) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_001F4590(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B1D0;
@@ -559,6 +560,7 @@ void *func_002C65C0(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046D7D0) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_002D00A0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D7D0;
@@ -584,6 +586,7 @@ void *func_002D0C10(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046ED30) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_002D0C70(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ED30;
