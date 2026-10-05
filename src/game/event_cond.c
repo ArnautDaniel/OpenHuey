@@ -68,6 +68,11 @@ extern VObject *D_0044E558;   /* the doors */
 extern NavMesh *D_0044E570;   /* the nav mesh */
 extern u8 *D_0044F258;        /* the placed characters */
 extern s32 func_001235C0(u8 *a, u8 *c);
+extern void *D_0044E980;
+extern s32 func_002D2120(void *o);
+extern s32 func_002D20D0(void *o);
+extern VObject *gFileLoader;
+extern s32 func_00177260(Progress *p, s32 slot);
 extern u8 *gCharPursuer;
 extern void *D_0044E958;      /* the movie playing */
 
@@ -763,6 +768,39 @@ s32 func_001FC760(VObject *ev) {
                     break;
                 }
             }
+        }
+        break;
+    }
+    case 0x5C:   /* D_0044E980: pc[1] 0 func_002D2120, else func_002D20D0 (none: 1) */
+        if (pc[1] == 0) {
+            r = D_0044E980 != NULL ? func_002D2120(D_0044E980) : 1;
+        } else {
+            r = D_0044E980 != NULL ? func_002D20D0(D_0044E980) : 1;
+        }
+        break;
+    case 0x5E:   /* the item manager's +0x3C (be16 pc[1..2]) */
+        r = VCALL(D_0044E988, 0x3C, s32 (*)(VObject *, u32))(D_0044E988, be16(pc + 1));
+        break;
+    case 0x5F: {   /* progress variables pc[1] and pc[2] are equal */
+        Progress *g = gProgress;
+        u8 a = (u8)Progress_GetVar(g, PC(ev)[1]);
+
+        r = a == (u8)Progress_GetVar(g, pc[2]);
+        break;
+    }
+    case 0x61:   /* Hewie's +0xF35CC is pc[1] */
+        if (pc[1] == AT(gCharPartner, 0xF35CC, s16)) {
+            r = 1;
+        }
+        break;
+    case 0x62:   /* the file loader's +0x38 */
+        r = VCALL(gFileLoader, 0x38, s32 (*)(VObject *))(gFileLoader);
+        break;
+    case 0x63: {   /* character pc[2] is slot pc[1], there, and func_00177260 says yes */
+        u32 i = (u8)func_001770D0(p, pc[2]);
+
+        if (i != 0xFF && i == PC(ev)[1] && gCharacters[i] != NULL && func_00177260(p, i) == 0) {
+            r = 1;
         }
         break;
     }
