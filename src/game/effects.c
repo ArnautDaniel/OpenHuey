@@ -1923,3 +1923,184 @@ void func_002F9750(u8 *e) {
         func_002F92A0(e, i, 0);
     }
 }
+
+
+/* ---- D_00470A70 (0xE58 bytes): 32 orange sparks drifting up from around (276.5, 6, -145.9),
+ * in two buffers of quad records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50
+ * (16 each), the quad drawer (additive) at +0xC10; a spark is renewed when it fades, falls back
+ * or reaches height 50 - unless the burst is ending (+0xE54), when it just goes out ---- */
+
+extern void *D_00470A70[];
+
+#define SPARK_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
+#define SPARK_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002F9810(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470A70;
+    AT(o, 0xC10, void **) = D_0046FC30;
+    AT(o, 0xC10, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* spark i anew: at the bottom (again), or at first somewhere up, fainter and slower the
+ * higher */
+void func_002F98A0(u8 *e, s32 i, s32 again) {
+    VObject *rnd = D_0044E550;
+    f32 *v = SPARK_VEL(e, i);
+    QuadRec *r;
+    s32 up = 0;
+
+    v[0] = 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f);
+    v[1] = 0x1.99999a0000000p-5f /* 0.05 */ + 0.5f * burst_rnd(rnd);
+    v[2] = 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f);
+    r = SPARK_REC(e, AT(e, 0xE50, s32), i);
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x58;
+    r->rgba[2] = 0x10;
+    r->rgba[3] = 0x80;
+    r->pos[0] = 276.5f + 4.0f * (burst_rnd(rnd) - 0.5f);
+    if (!again) {
+        up = (s32)(10.0f * burst_rnd(rnd));
+        r->rgba[3] = r->rgba[3] - (up << 4);
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        v[1] = v[1] + -0x1.47ae140000000p-7f /* 0.01 */ * (f32)up;
+        if (v[1] < 0.0f) {
+            v[1] = 0x1.99999a0000000p-4f /* 0.1 */;
+        }
+    }
+    r->pos[1] = 6.0f + (f32)up;
+    r->pos[2] = -0x1.23cccc0000000p+7f /* 145.9 */ + 4.0f * (burst_rnd(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->w = 1.0f;
+    r->h = 1.0f;
+    r->turn = 0.0f;
+    r->frame = 0;
+}
+
+/* +0x18 a gust (arg: ending): blown back (x -0.2, z -0.3 at least) and up, or flung away as
+ * it ends */
+void func_002F9B40(u8 *e, s32 *arg) {
+    s32 i;
+
+    AT(e, 0xE54, s32) = *arg;
+    if (AT(e, 0xE54, s32) == 0) {
+        for (i = 0; i < 32; i++) {
+            f32 *v = SPARK_VEL(e, i);
+
+            v[0] = v[0] - 0x1.99999a0000000p-3f /* 0.2 */;
+            if (v[0] < -0x1.99999a0000000p-3f /* 0.2 */) {
+                v[0] = -0x1.99999a0000000p-3f /* 0.2 */;
+            }
+            v[1] = v[1] - -0x1.47ae140000000p-7f /* 0.01 */;
+            if (v[1] < 0x1.99999a0000000p-4f /* 0.1 */) {
+                v[1] = 0x1.99999a0000000p-4f /* 0.1 */;
+            }
+            v[2] = v[2] - 0x1.3333340000000p-2f /* 0.3 */;
+            if (v[2] < -0x1.3333340000000p-2f /* 0.3 */) {
+                v[2] = -0x1.3333340000000p-2f /* 0.3 */;
+            }
+        }
+    } else {
+        for (i = 0; i < 32; i++) {
+            f32 *v = SPARK_VEL(e, i);
+
+            v[0] = v[0] * 2.0f;
+            v[1] = v[1] - -0x1.47ae140000000p-7f /* 0.01 */;
+            v[2] = v[2] * 3.0f;
+        }
+    }
+}
+
+/* +0x14 draw the current buffer */
+void func_002F9D80(u8 *e) {
+    AT(e, 0xC20, QuadRec *) = SPARK_REC(e, AT(e, 0xE50, s32), 0);
+    func_002E56C0(e + 0xC10);
+}
+
+/* spark i spent: out when ending, else renewed */
+static s32 spark_spent(u8 *e, QuadRec *r, s32 i) {
+    if (AT(e, 0xE54, s32) != 0) {
+        r->rgba[3] = 0;
+        return 0;
+    }
+    func_002F98A0(e, i, 1);
+    return 1;
+}
+
+/* +0x10 update: flip the buffers, each spark carried over, drifting (x / z +0.01, y -0.01 a
+ * frame) and fading; 0 when all are out */
+s32 func_002F9DB0(u8 *e) {
+    s32 done = 1;
+    s32 i, k;
+
+    AT(e, 0xE50, s32) ^= 1;
+    for (i = 0; i < 32; i++) {
+        u32 *src = (u32 *)SPARK_REC(e, AT(e, 0xE50, s32) ^ 1, i);
+        u32 *dst = (u32 *)SPARK_REC(e, AT(e, 0xE50, s32), i);
+        f32 *v = SPARK_VEL(e, i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        v[0] = v[0] + 0x1.47ae140000000p-7f /* 0.01 */;
+        r = SPARK_REC(e, AT(e, 0xE50, s32), i);
+        v[1] = v[1] + -0x1.47ae140000000p-7f /* 0.01 */;
+        if (v[1] < 0.0f && spark_spent(e, r, i)) {
+            done = 0;
+        }
+        v[2] = v[2] + 0x1.47ae140000000p-7f /* 0.01 */;
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (!(r->pos[1] < 50.0f) && spark_spent(e, r, i)) {
+            done = 0;
+        }
+        if (r->rgba[3] > 0) {
+            done = 0;
+            r->rgba[3] -= 4;
+        } else if (spark_spent(e, r, i)) {
+            done = 0;
+        }
+    }
+    return !done;
+}
+
+/* +0xC set up: the drawer's settings (additive; a 16-frame strip of 32 x 32 cells at (96, 64),
+ * layer 0x19), every spark placed */
+void func_002F9FF0(u8 *e) {
+    s32 i;
+
+    AT(e, 0xE50, s32) = 0;
+    AT(e, 0xE54, s32) = 0;
+    AT(e, 0xC18, s64) = -1;
+    AT(e, 0xC24, s32) = 0;
+    AT(e, 0xC28, s32) = 0;
+    AT(e, 0xC2C, s32) = 0;
+    AT(e, 0xC30, s32) = 0x19;
+    AT(e, 0xC34, s16) = 0x20;
+    AT(e, 0xC36, s16) = 0x60;
+    AT(e, 0xC38, s16) = 0x40;
+    AT(e, 0xC3A, s16) = 0x20;
+    AT(e, 0xC3C, s16) = 0x20;
+    AT(e, 0xC3E, s16) = 0x200;
+    AT(e, 0xC40, s16) = 0x100;
+    AT(e, 0xC42, s8) = 0x40;
+    AT(e, 0xC43, s8) = 1;
+    AT(e, 0xC44, s8) = 1;
+    AT(e, 0xC45, s8) = 0x10;
+    AT(e, 0xC46, s8) = -1;
+    for (i = 0; i < 32; i++) {
+        func_002F98A0(e, i, 0);
+    }
+}
