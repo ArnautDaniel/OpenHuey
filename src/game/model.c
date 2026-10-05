@@ -980,6 +980,186 @@ void func_002F7920(u8 *m) {
     }
 }
 
+/* ---- Fiona's costume 6 (vtable D_00478490, built by func_002084D0): three spring sets -
+ * +0xA00 one node (+0x9B0), +0xD00 four hanging nodes (+0xA40) with six collision spheres
+ * (+0xB80), +0xDA0 one node (+0xD40) ---- */
+
+extern void *D_00478490[], *D_0046B0E0[];
+extern void *func_0016FBB0(void *e, s32 flags);
+extern void func_002DC6D0(void *p);
+
+/* +0x8 destructor */
+void *func_003497E0(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00478490;
+        AT(m, 0xD70, void **) = D_00470440;
+        AT(m, 0xD70, void **) = D_004703B0;
+        func_001002C0(m + 0xA40, func_0016FBB0, 0x50, 4);
+        AT(m, 0x9E0, void **) = D_004703D0;
+        AT(m, 0x9E0, void **) = D_004703B0;
+        AT(m, 0x0, void **) = D_0046B0E0;
+        func_0016F9E0(m, 0);
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* the one-node set +0xDA0: node +0xD40 on bone 0xC */
+void func_00349AB0(u8 *m) {
+    u8 *node = m + 0xD40;
+
+    func_002EE960(m + 0xDA0);
+    spring_link(m + 0xDA0, node);
+    AT(m, 0xDA0, f32) = 0.0f;
+    AT(m, 0xDA4, f32) = 0.0f;
+    AT(m, 0xDA8, f32) = 0.0f;
+    AT(m, 0xDB0, f32) = 0.75f;
+    AT(m, 0xDB4, u8 *) = m;
+    AT(m, 0xDC0, u8) = 0;
+    AT(m, 0xDBC, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0xC;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+/* the set +0xD00: 4 nodes (+0xA40) on bones 0x18..0x1B and 6 collision spheres (+0xB80,
+ * chained by +0x2C from +0xD18) */
+void func_00349B70(u8 *m) {
+    static const s32 sColBones[6] = {0xD, 0x1D, 0x14, 0xE, 0x1E, 0x14};
+    u8 *set = m + 0xD00;
+    s32 i;
+
+    func_002EE960(set);
+    for (i = 0; i < 4; i++) {
+        spring_link(set, m + 0xA40 + i * 0x50);
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0xB80 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0xD18, u8 *) == NULL) {
+            AT(m, 0xD18, u8 *) = col;
+        } else {
+            u8 *last = AT(m, 0xD18, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
+            }
+            AT(last, 0x2C, u8 *) = col;
+        }
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0xA40 + i * 0x50;
+
+        AT(node, 0x40, u32) = 0x3EE66666;   /* 0.45f */
+        AT(node, 0x24, s32) = 0x18 + i;
+        AT(node, 0x20, u8) = (i == 0);
+    }
+    for (i = 0; i < 5; i++) {
+        func_002EE690(m + 0xB80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    func_002EE690(m + 0xCC0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* her setup: the three spring sets (the +0xA00 node on bone 0x1C), then a reset (+0x850) */
+void func_00349DB0(u8 *m) {
+    u8 *node = m + 0x9B0;
+
+    func_002EE960(m + 0xA00);
+    spring_link(m + 0xA00, node);
+    spring_set(m + 0xA00, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
+    AT(node, 0x40, f32) = 1.0f;
+    AT(node, 0x24, s32) = 0x1C;
+    AT(node, 0x20, u8) = 1;
+    func_00349B70(m);
+    func_00349AB0(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C: the three spring sets a frame: one step, or after a reset (+0x850) the 4 hanging
+ * nodes (+0xA40) put back under their anchors along bone 0x14's Z axis, 30 steps to settle
+ * (as func_002F7780) */
+void func_00349E80(u8 *o) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 n, i;
+    u8 *p;
+
+    if (AT(o, 0x850, u8) == 0) {
+        n = 1;
+    } else {
+        sceVu0CopyVector(down, func_0017CE80(AT(AT(o, 0xD14, u8 *), 0x810, void *), 0x14) + 8);
+        p = o + 0xA40;
+        for (i = 0; i < 4; i++) {
+            AT(p, 0x18, f32) = 0.0f;
+            AT(p, 0x14, f32) = 0.0f;
+            AT(p, 0x10, f32) = 0.0f;
+            if (AT(p, 0x20, u8) != 0) {
+                sceVu0CopyVector(at, func_0017CE80(AT(AT(o, 0xD14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+            } else {
+                sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+            }
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+            sceVu0AddVector((f32 *)p, at, d);
+            p += 0x50;
+        }
+        n = 0x1E;
+    }
+    func_002EE8A0(o + 0xA00);
+    func_002EE8A0(o + 0xD00);
+    func_002EE8A0(o + 0xDA0);
+    for (i = 0; i < n; i++) {
+        func_002EE900(o + 0xA00);
+        func_002EE900(o + 0xD00);
+        func_002EE900(o + 0xDA0);
+    }
+    func_002EE840(o + 0xA00);
+    func_002EE840(o + 0xD00);
+    func_002EE840(o + 0xDA0);
+    AT(o, 0x850, u8) = 0;
+}
+
+/* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings, then
+ * +0x2C */
+void func_00349FF0(u8 *m) {
+    static const u8 sLoose[] = {0x98, 0x9A, 0x9C, 0xAE, 0xB0, 0xCC};
+    static const u8 sStiff[] = {0x9E, 0xA0, 0xA2, 0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xC8, 0xCE, 0xD0};
+    u32 i;
+
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x11;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x21;
+    AT(m, 0x8B0, s32) = 0x14;
+    AT(m, 0x8B4, s32) = 0xA;
+    func_00349DB0(m);
+    for (i = 0; i < sizeof(sLoose); i++) {
+        AT(m, sLoose[i], u8) = 4;
+        AT(m, sLoose[i] + 1, u8) = 0x40;
+    }
+    for (i = 0; i < sizeof(sStiff); i++) {
+        AT(m, sStiff[i], u8) = 4;
+        AT(m, sStiff[i] + 1, u8) = 0x80;
+    }
+    VCALL(m, 0x2C, void (*)(u8 *))(m);
+}
+
 extern void func_001F7AC0(u8 *m);
 
 /* Fiona's sheet model (D_00470620): +0x10 */

@@ -193,18 +193,18 @@ void func_0020C7C0(Pursuer *p) {
 extern const f32 D_003D8900[4];
 
 /* vtable +0x138: the hit points of an attack entry (`e`: +0 animation, +4 / +8 bones). Her
-   strikes 0xE00, 0xE02..0xE08 reach along her hand (bone 0x2D, offset D_003D8900) from bone
+   strikes 0xE00, 0xE02..0xE08 reach along her hand (bone 0x2D, offset `reach`) from bone
    +4, and back to the hand; others the two bones (the first twice when +8 is none) */
-void func_0020CAE0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+static inline void Daniella_HitPoints(Pursuer *p, s32 *e, f32 *a, f32 *b, const f32 *reach) {
     if ((u32)(e[0] - 0xE00) < 9 && e[0] != 0xE01) {
         f32 off[4] __attribute__((aligned(16)));
         f32 m[4][4] __attribute__((aligned(16)));
         f32 t[4] __attribute__((aligned(16)));
 
-        off[0] = D_003D8900[0];
-        off[1] = D_003D8900[1];
-        off[2] = D_003D8900[2];
-        off[3] = D_003D8900[3];
+        off[0] = reach[0];
+        off[1] = reach[1];
+        off[2] = reach[2];
+        off[3] = reach[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(a, m, off);
         sceVu0CopyVector(t, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
@@ -218,6 +218,10 @@ void func_0020CAE0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     } else {
         sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     }
+}
+
+void func_0020CAE0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+    Daniella_HitPoints(p, e, a, b, D_003D8900);
 }
 
 extern u8 D_003D77B0[], D_003D7810[], D_003D7880[], D_003D78B0[], D_003D78E0[], D_003D7940[],
@@ -730,4 +734,315 @@ void func_00348B10(Pursuer *p) {
     hp.pos[2] = pos[2];
     hp.pos[3] = pos[3];
     HitEffect_Spawn(&hp);
+}
+
+/* ---- her other classes (vtables near 0x477B00 / 0x477E50 / 0x478180, code 0x346000..0x349630):
+   her own methods with their own tables and stats ---- */
+
+extern const f32 D_0043CD20[4], D_0043DBB0[4], D_0043EA60[4];
+
+/* the first: vtable +0xF0: the door `exit` used, then damaged: in mode 2, in the ending
+   (gProgress+0x1FBEC1) or with gProgress+0x30 bit 0x8000 by func_00178C10, otherwise
+   func_00178A90 */
+void func_00346270(Pursuer *p, s32 exit) {
+    Progress *pr = gProgress;
+
+    func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+    if (PU(p, 0x16B8, s32) == 2 || AT(pr, 0x1FBEC1, u8) != 0 || (AT(pr, 0x30, u32) & 0x8000)) {
+        func_00178C10(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+    } else {
+        func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+    }
+}
+
+/* vtable +0x138 of the three */
+void func_00346640(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+    Daniella_HitPoints(p, e, a, b, D_0043CD20);
+}
+
+void func_00347E90(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+    Daniella_HitPoints(p, e, a, b, D_0043DBB0);
+}
+
+void func_00348E20(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+    Daniella_HitPoints(p, e, a, b, D_0043EA60);
+}
+
+extern u8 D_0043BAC0[], D_0043BB30[], D_0043BBA0[], D_0043BC00[], D_0043BC30[], D_0043BC90[],
+    D_0043BCD0[], D_0043BD30[], D_0043BD90[], D_0043BDC0[], D_0043BDF0[], D_0043BE40[],
+    D_0043BE60[], D_0043BE90[], D_0043BEC0[], D_0043BEF0[], D_0043BF00[], D_0043BF10[],
+    D_0043BF50[], D_0043BF90[], D_0043BFC0[], D_0043BFF0[], D_0043C030[], D_0043C070[],
+    D_0043C0B0[], D_0043C0F0[], D_0043C110[], D_0043C130[], D_0043C158[], D_0043C170[],
+    D_0043C1A0[], D_0043C1C0[], D_0043C1F0[], D_0043C200[], D_0043C360[], D_0043C3D0[],
+    D_0043C440[], D_0043C4A0[], D_0043C4D0[], D_0043C530[], D_0043C560[], D_0043C5D0[],
+    D_0043C630[], D_0043C660[], D_0043C690[], D_0043C6E0[], D_0043C710[], D_0043C740[],
+    D_0043C770[], D_0043C7A0[], D_0043C7B0[], D_0043C7D0[], D_0043C830[], D_0043C890[],
+    D_0043C8F0[], D_0043C920[], D_0043C980[], D_0043C9D0[], D_0043CA30[], D_0043CA90[],
+    D_0043CAC0[], D_0043CAE0[], D_0043CB10[], D_0043CB40[], D_0043CB68[], D_0043CB80[],
+    D_0043CBB0[], D_0043CBC0[];
+
+/* the first's attack tables: [gProgress+0x30 bit 0x8000][mode 2 (+0x16B8)] */
+static u8 *const sAttackTables1[2][2][17] = {
+    {
+        { D_0043BAC0, D_0043BBA0, D_0043BB30, D_0043BC00, D_0043BC30, D_0043BC90, D_0043BCD0,
+          D_0043BD30, D_0043BD90, D_0043BDC0, D_0043BDF0, D_0043BE40, D_0043BE60, D_0043BE90,
+          D_0043BEF0, D_0043BF00, D_0043BEC0 },
+        { D_0043BF10, D_0043BF90, D_0043BF50, D_0043BFC0, D_0043BFF0, D_0043C030, D_0043C070,
+          D_0043C0B0, D_0043C0F0, D_0043C110, D_0043C130, D_0043C158, D_0043C170, D_0043C1A0,
+          D_0043C1F0, D_0043C200, D_0043C1C0 },
+    },
+    {
+        { D_0043C360, D_0043C440, D_0043C3D0, D_0043C4A0, D_0043C4D0, D_0043C530, D_0043C560,
+          D_0043C5D0, D_0043C630, D_0043C660, D_0043C690, D_0043C6E0, D_0043C710, D_0043C740,
+          D_0043C7A0, D_0043C7B0, D_0043C770 },
+        { D_0043C7D0, D_0043C890, D_0043C830, D_0043C8F0, D_0043C920, D_0043C980, D_0043C9D0,
+          D_0043CA30, D_0043CA90, D_0043CAC0, D_0043CAE0, D_0043CB10, D_0043CB40, D_0043CB68,
+          D_0043CBB0, D_0043CBC0, D_0043CB80 },
+    },
+};
+
+/* the first: vtable +0x130: the attack table for a situation; in the ending situations 15 and
+   14 have their own */
+void func_003467D0(Pursuer *p, s8 situation) {
+    s32 alt, mode2;
+
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        if (situation == 15) {
+            PU(p, 0x1718, u8 *) = D_0043C200;
+            return;
+        }
+        if (situation == 14) {
+            PU(p, 0x1718, u8 *) = D_0043C1F0;
+            return;
+        }
+    }
+    alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+    mode2 = PU(p, 0x16B8, s32) == 2;
+    PU(p, 0x1718, u8 *) = sAttackTables1[alt][mode2][(u32)situation < 17 ? situation : 0];
+}
+
+/* the first: vtable +0x200: done at the door in the ending or with gProgress+0x30 bit 0x8000,
+   else the Pursuer's */
+void func_00346DB0(Pursuer *p) {
+    Progress *pr = gProgress;
+
+    if (AT(pr, 0x1FBEC1, u8) != 0 || (AT(pr, 0x30, u32) & 0x8000)) {
+        PURSUER_STEP_DONE(p) = 1;
+        return;
+    }
+    func_0028D6E0(p);
+}
+
+/* the first: vtable +0x5C: the Pursuer's reset; in the ending the Hewie bite tolerance is 80 */
+void func_00347240(Pursuer *p) {
+    func_0029E520(p);
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        PU(p, 0x16DC, s32) = 80;
+    }
+}
+
+extern u8 D_0043B700[], D_0043B840[], D_0043B860[], D_0043BA40[], D_0043BA70[], D_0043C210[],
+    D_0043C2B0[], D_0043C2F0[], D_0043C338[], D_0043CBD0[], D_0043CC70[], D_0043CCB0[],
+    D_0043CCF8[], D_0047AED8[];
+
+/* the first: vtable +0xF4: setup over the Pursuer's (func_0029FB20) */
+void func_00347310(Pursuer *p) {
+    void *m;
+
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 200;
+        PU(p, 0x171C, u8 *) = D_0043B860;
+        PU(p, 0x1730, u8 *) = D_0043CBD0;
+        PU(p, 0x1740, u8 *) = D_0043CC70;
+        PU(p, 0x173C, u8 *) = D_0043CCB0;
+        PU(p, 0x1748, u8 *) = D_0043CCF8;
+        PU(p, 0x16DC, s32) = 65;              /* Hewie bite tolerance */
+        PU(p, 0x16E8, f32) = 50.0f;
+        PU(p, 0x16D4, s32) = 360;
+        PU(p, 0x16D8, s32) = 6000;
+        PU(p, 0x16D0, s32) = 1350;
+        PU(p, 0x16E0, s32) = 6000;
+        PU(p, 0x16E4, s32) = 160;
+    } else {
+        p->c.hpMax = 120;
+        PU(p, 0x171C, u8 *) = D_0043B860;
+        PU(p, 0x1730, u8 *) = D_0043C210;
+        PU(p, 0x1740, u8 *) = D_0043C2B0;
+        PU(p, 0x173C, u8 *) = D_0043C2F0;
+        PU(p, 0x1748, u8 *) = D_0043C338;
+        PU(p, 0x16DC, s32) = 200;
+        PU(p, 0x16E8, f32) = 25.0f;
+        PU(p, 0x16D4, s32) = 300;
+        PU(p, 0x16D8, s32) = 6000;
+        PU(p, 0x16D0, s32) = 900;
+        PU(p, 0x16E0, s32) = 4500;
+        PU(p, 0x16E4, s32) = 180;
+    }
+    p->c.a.radius = 3.0f;
+    p->c.a.height = 17.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x171C, u8 *) = D_0043B860;
+    PU(p, 0x1720, u8 *) = D_0043BA40;
+    PU(p, 0x1724, u8 *) = D_0043BA70;
+    PU(p, 0x16AC, u8 *) = D_0043B700;
+    PU(p, 0x16B0, u8 *) = D_0043B840;
+    PU(p, 0x1734, u8 *) = D_0047AED8;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 12.0f;
+    PU(p, 0x16A0, f32) = 1.5f;
+    m = p->c.motion;
+    VCALL(m, 0x34, void (*)(void *, s32))(m, 1);
+}
+
+extern u8 D_0043D180[], D_0043D200[], D_0043D270[], D_0043D2D0[], D_0043D310[], D_0043D370[],
+    D_0043D3C0[], D_0043D420[], D_0043D480[], D_0043D4B0[], D_0043D4D0[], D_0043D510[],
+    D_0043D530[], D_0043D560[], D_0043D590[], D_0043D5C0[], D_0043D5D0[], D_0043D6B0[],
+    D_0043D710[], D_0043D770[], D_0043D7E0[], D_0043D820[], D_0043D880[], D_0043D8D0[],
+    D_0043D930[], D_0043D990[], D_0043D9C0[], D_0043D9E0[], D_0043DA10[], D_0043DA30[],
+    D_0043DA60[], D_0043DA90[], D_0043DAC0[], D_0043DAD0[];
+
+/* the second's attack tables; the second set when gProgress+0x30 bit 0x8000 */
+static u8 *const sAttackTables2[2][17] = {
+    { D_0043D180, D_0043D270, D_0043D200, D_0043D2D0, D_0043D310, D_0043D370, D_0043D3C0,
+      D_0043D420, D_0043D480, D_0043D4B0, D_0043D4D0, D_0043D510, D_0043D530, D_0043D560,
+      D_0043D5C0, D_0043D5D0, D_0043D590 },
+    { D_0043D6B0, D_0043D770, D_0043D710, D_0043D7E0, D_0043D820, D_0043D880, D_0043D8D0,
+      D_0043D930, D_0043D990, D_0043D9C0, D_0043D9E0, D_0043DA10, D_0043DA30, D_0043DA60,
+      D_0043DAC0, D_0043DAD0, D_0043DA90 },
+};
+
+/* the second: vtable +0x130 */
+void func_00348020(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+
+    PU(p, 0x1718, u8 *) = sAttackTables2[alt][(u32)situation < 17 ? situation : 0];
+}
+
+extern u8 D_0043CDE0[], D_0043CF20[], D_0043D100[], D_0043D130[], D_0043D5E0[], D_0043D630[],
+    D_0043D650[], D_0043D698[], D_0043DAE0[], D_0043DB30[], D_0043DB50[], D_0043DB98[],
+    D_0047AEE0[];
+
+/* the second: vtable +0xF4: setup over the Pursuer's */
+void func_003486A0(Pursuer *p) {
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 80;
+        PU(p, 0x171C, u8 *) = D_0043CF20;
+        PU(p, 0x1730, u8 *) = D_0043DAE0;
+        PU(p, 0x1740, u8 *) = D_0043DB30;
+        PU(p, 0x173C, u8 *) = D_0043DB50;
+        PU(p, 0x1748, u8 *) = D_0043DB98;
+        PU(p, 0x16DC, s32) = 75;              /* Hewie bite tolerance */
+        PU(p, 0x16E8, f32) = 10.0f;
+        PU(p, 0x16D4, s32) = 600;
+        PU(p, 0x16D8, s32) = 600;
+        PU(p, 0x16D0, s32) = 360;
+        PU(p, 0x16E0, s32) = 6000;
+        PU(p, 0x16E4, s32) = 100;
+    } else {
+        p->c.hpMax = 65;
+        PU(p, 0x171C, u8 *) = D_0043CF20;
+        PU(p, 0x1730, u8 *) = D_0043D5E0;
+        PU(p, 0x1740, u8 *) = D_0043D630;
+        PU(p, 0x173C, u8 *) = D_0043D650;
+        PU(p, 0x1748, u8 *) = D_0043D698;
+        PU(p, 0x16DC, s32) = 120;
+        PU(p, 0x16E8, f32) = 15.0f;
+        PU(p, 0x16D4, s32) = 600;
+        PU(p, 0x16D8, s32) = 3000;
+        PU(p, 0x16D0, s32) = 450;
+        PU(p, 0x16E0, s32) = 3600;
+        PU(p, 0x16E4, s32) = 140;
+    }
+    p->c.a.radius = 3.0f;
+    p->c.a.height = 17.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x171C, u8 *) = D_0043CF20;
+    PU(p, 0x1720, u8 *) = D_0043D100;
+    PU(p, 0x1724, u8 *) = D_0043D130;
+    PU(p, 0x16AC, u8 *) = D_0043CDE0;
+    PU(p, 0x1734, u8 *) = D_0047AEE0;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 12.0f;
+    PU(p, 0x16A0, f32) = 1.5f;
+}
+
+extern u8 D_0043E010[], D_0043E090[], D_0043E100[], D_0043E160[], D_0043E1A0[], D_0043E200[],
+    D_0043E250[], D_0043E2B0[], D_0043E310[], D_0043E340[], D_0043E360[], D_0043E3A0[],
+    D_0043E3C0[], D_0043E3F0[], D_0043E420[], D_0043E450[], D_0043E460[], D_0043E540[],
+    D_0043E5C0[], D_0043E630[], D_0043E690[], D_0043E6D0[], D_0043E730[], D_0043E770[],
+    D_0043E7D0[], D_0043E830[], D_0043E860[], D_0043E880[], D_0043E8B0[], D_0043E8E0[],
+    D_0043E910[], D_0043E940[], D_0043E970[], D_0043E980[];
+
+/* the third's attack tables */
+static u8 *const sAttackTables3[2][17] = {
+    { D_0043E010, D_0043E100, D_0043E090, D_0043E160, D_0043E1A0, D_0043E200, D_0043E250,
+      D_0043E2B0, D_0043E310, D_0043E340, D_0043E360, D_0043E3A0, D_0043E3C0, D_0043E3F0,
+      D_0043E450, D_0043E460, D_0043E420 },
+    { D_0043E540, D_0043E630, D_0043E5C0, D_0043E690, D_0043E6D0, D_0043E730, D_0043E770,
+      D_0043E7D0, D_0043E830, D_0043E860, D_0043E880, D_0043E8B0, D_0043E8E0, D_0043E910,
+      D_0043E970, D_0043E980, D_0043E940 },
+};
+
+/* the third: vtable +0x130 */
+void func_00348FB0(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+
+    PU(p, 0x1718, u8 *) = sAttackTables3[alt][(u32)situation < 17 ? situation : 0];
+}
+
+extern u8 D_0043DC70[], D_0043DDB0[], D_0043DF90[], D_0043DFC0[], D_0043E470[], D_0043E4C0[],
+    D_0043E4E0[], D_0043E528[], D_0043E990[], D_0043E9E0[], D_0043EA00[], D_0043EA48[],
+    D_0047AEE8[];
+
+/* the third: vtable +0xF4: setup over the Pursuer's */
+void func_00349630(Pursuer *p) {
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 80;
+        PU(p, 0x171C, u8 *) = D_0043DDB0;
+        PU(p, 0x1730, u8 *) = D_0043E990;
+        PU(p, 0x1740, u8 *) = D_0043E9E0;
+        PU(p, 0x173C, u8 *) = D_0043EA00;
+        PU(p, 0x1748, u8 *) = D_0043EA48;
+        PU(p, 0x16DC, s32) = 65;              /* Hewie bite tolerance */
+        PU(p, 0x16E8, f32) = 10.0f;
+        PU(p, 0x16D4, s32) = 600;
+        PU(p, 0x16D8, s32) = 600;
+        PU(p, 0x16D0, s32) = 360;
+        PU(p, 0x16E0, s32) = 6000;
+        PU(p, 0x16E4, s32) = 160;
+    } else {
+        p->c.hpMax = 65;
+        PU(p, 0x171C, u8 *) = D_0043DDB0;
+        PU(p, 0x1730, u8 *) = D_0043E470;
+        PU(p, 0x1740, u8 *) = D_0043E4C0;
+        PU(p, 0x173C, u8 *) = D_0043E4E0;
+        PU(p, 0x1748, u8 *) = D_0043E528;
+        PU(p, 0x16DC, s32) = 120;
+        PU(p, 0x16E8, f32) = 25.0f;
+        PU(p, 0x16D4, s32) = 300;
+        PU(p, 0x16D8, s32) = 3000;
+        PU(p, 0x16D0, s32) = 900;
+        PU(p, 0x16E0, s32) = 4500;
+        PU(p, 0x16E4, s32) = 180;
+    }
+    p->c.a.radius = 3.0f;
+    p->c.a.height = 17.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x171C, u8 *) = D_0043DDB0;
+    PU(p, 0x1720, u8 *) = D_0043DF90;
+    PU(p, 0x1724, u8 *) = D_0043DFC0;
+    PU(p, 0x16AC, u8 *) = D_0043DC70;
+    PU(p, 0x1734, u8 *) = D_0047AEE8;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 12.0f;
+    PU(p, 0x16A0, f32) = 1.5f;
 }
