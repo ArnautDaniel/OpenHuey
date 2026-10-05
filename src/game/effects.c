@@ -1649,7 +1649,7 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
 void func_003582D0(u8 *e) {
     f32 p[26][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
-    f32 r = 20.0f * func_0031C248(0.7853982f);
+    f32 r = 20.0f * func_0031C248(0x1.921fb60000000p-1f /* 0.7853982 */);
     u32 centre = (u32)AT(e, 0x8, s32) << 24 | 0xFFFFFF;
     s32 i;
 
@@ -1661,7 +1661,7 @@ void func_003582D0(u8 *e) {
 
         for (i = 0; i < 9; i++) {   /* (+-1 stand for +-r, the diagonals) */
             p[i][0] = kPool[i][0] == 1 ? r : kPool[i][0] == -1 ? -r : kPool[i][0];
-            p[i][1] = 0.3f;
+            p[i][1] = 0x1.3333340000000p-2f /* 0.3 */;
             p[i][2] = kPool[i][1] == 1 ? r : kPool[i][1] == -1 ? -r : kPool[i][1];
             p[i][3] = 1.0f;
         }
@@ -1671,7 +1671,7 @@ void func_003582D0(u8 *e) {
     p[9][2] = 0.0f;
     p[9][3] = 1.0f;
     for (i = 0; i < 16; i++) {
-        f32 a = (3.1415927f * (22.5f * (f32)i)) / 180.0f;
+        f32 a = (0x1.921fb60000000p+1f /* 3.1415927 */ * (22.5f * (f32)i)) / 180.0f;
 
         p[10 + i][0] = 20.0f * func_0031C248(a);
         AT(&p[10 + i][1], 0, u32) = 0x41A1999A;   /* 20.2 */
@@ -3580,8 +3580,8 @@ s32 func_003059C0(u8 *o) {
                 AT(o, 0x40, s32) = 0;
                 AT(o, 0x44, s32) = 0;
             }
-            AT(o, 0x48, f32) = 0.1f * (AT(o, 0x40, f32) - AT(o, 0x38, f32));
-            AT(o, 0x4C, f32) = 0.1f * (AT(o, 0x44, f32) - AT(o, 0x3C, f32));
+            AT(o, 0x48, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(o, 0x40, f32) - AT(o, 0x38, f32));
+            AT(o, 0x4C, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(o, 0x44, f32) - AT(o, 0x3C, f32));
         } else {
             VObject *r = D_0044E550;
 
@@ -3773,9 +3773,9 @@ void func_00361340(u8 *o) {
         return;
     }
     for (i = 0; i < 16; i++) {
-        f32 a = (3.1415927f * (22.5f * (f32)i)) / 180.0f;
+        f32 a = (0x1.921fb60000000p+1f /* 3.1415927 */ * (22.5f * (f32)i)) / 180.0f;
         f32 s = func_0031C248(a), c = func_0031C058(a);
-        f32 r = AT(o, 0x28, f32), r2 = r - 0.2f;
+        f32 r = AT(o, 0x28, f32), r2 = r - 0x1.99999a0000000p-3f /* 0.2 */;
 
         p[i * 2][0] = AT(o, 0x10, f32) + r * s;
         p[i * 2][1] = AT(o, 0x14, f32);
@@ -4103,7 +4103,7 @@ void func_0035CA60(u8 *o) {
         }
         glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], NULL, 0, 0x40 | GLR_PRIM_NOZW);
         for (i = 0; i < 4; i++) {
-            p[i][0] -= 0.1f;
+            p[i][0] -= 0x1.99999a0000000p-4f /* 0.1 */;
         }
     }
     glr_layer(-1);
@@ -4306,4 +4306,233 @@ s32 func_003166B0(u8 *e) {
         sceVu0ApplyMatrix((f32 *)(e + 0x120), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0x120));
     }
     return 1;
+}
+
+/* ---- the marker effect D_00470F90 (Lorenzo's, room 0x66's): a flickering glow with sparks.
+ *   +0x4 what it follows (a model)   +0x8 its size (1.5 and over: a fixed glow colour)
+ *   +0xC a slot to look for room from   +0x10 its state (1 on, 2 ending, 3 ended, 4 resized)
+ *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
+
+extern void *D_00479E50[];
+extern u8 *D_0044F810;   /* character slot 0 */
+extern u8 *D_0044F808;   /* character slot 2 (the stalker) */
+extern VObject *D_0044E4F8;   /* the camera director */
+extern f32 func_002E2D00(f32 angle);
+
+static void marker_spark_init(void **obj) {
+    obj[0] = D_00479E50;
+    obj[0xD0 / 4] = D_00469D00;
+    ((s32 *)obj)[0xD4 / 4] = -1;
+    obj[0xD0 / 4] = D_0046FC30;
+    obj[0x108 / 4] = D_00469D00;
+    ((s32 *)obj)[0x10C / 4] = -1;
+    obj[0x108 / 4] = D_0046FC30;
+}
+
+/* a spark (D_00479E50, 0x170 bytes) in the first free slot from `from` (-1: from 0); -1 if none */
+static s32 spark_new(u8 *mgr, s32 from) {
+    void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), 0x170);
+    s32 i;
+
+    if (mem == NULL) {
+        return -1;
+    }
+    for (i = from == -1 ? 0 : from; i < EFFECT_NUM_SLOTS; i++) {
+        if (EFFECT_SLOTS(mgr)[i] == NULL) {
+            void **obj = func_002D63C0(0x170, mem);
+
+            if (obj != NULL) {
+                marker_spark_init(obj);
+            }
+            EFFECT_SLOTS(mgr)[i] = obj;
+            VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
+            return i;
+        }
+    }
+    return -1;
+}
+
+typedef struct SparkPrm {
+    f32 size;     /* the marker's +0x8 */
+    u32 follow;   /* +0x4 (or Fiona's model) */
+    s32 kind;
+    f32 scale;
+    u32 from;     /* +0xC */
+    f32 flag;
+    f32 second;   /* +0x1E */
+} SparkPrm;
+
+static s32 rnd_int(void) {
+    return VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550);
+}
+
+/* the marker's sparks: one of 27 kinds and two more of some kinds (the second kind: other
+ * kinds, and now and then one on Fiona) */
+void func_003012B0(u8 *o, s32 flag) {
+    u8 *mgr;
+    SparkPrm prm;
+    s32 slot, k;
+
+    prm.follow = AT(o, 0x4, u32);
+    prm.from = AT(o, 0xC, u32);
+    prm.flag = (f32)flag;
+    prm.second = (f32)AT(o, 0x1E, u8);
+    mgr = D_0044E578;
+    if (AT(o, 0x1E, u8) == 0) {
+        slot = spark_new(mgr, AT(o, 0xC, s32));
+        k = (u32)rnd_int() % 27;
+        prm.size = AT(o, 0x8, f32);
+        prm.scale = 1.0f;
+        prm.kind = k;
+        func_002D6090(mgr, slot, &prm);
+        if ((rnd_int() & 1) == 0) {
+            slot = spark_new(mgr, AT(o, 0xC, s32));
+            k = rnd_int() & 3;
+            if (k < 2) {
+                k += 6;
+            }
+            prm.scale = 1.5f;
+            prm.size = AT(o, 0x8, f32);
+            prm.kind = k;
+            func_002D6090(mgr, slot, &prm);
+        } else {
+            slot = spark_new(mgr, AT(o, 0xC, s32));
+            k = (rnd_int() & 3) + 3;
+            k = k == 6 ? 5 : k * k;
+            prm.size = AT(o, 0x8, f32);
+            prm.kind = k;
+            prm.scale = k < 11 ? 1.5f : 1.0f;
+            func_002D6090(mgr, slot, &prm);
+        }
+        return;
+    }
+    slot = spark_new(mgr, AT(o, 0xC, s32));
+    k = (rnd_int() & 3) + 3;
+    k = k == 6 ? 5 : k == 4 ? 0x14 : k * k;
+    prm.size = AT(o, 0x8, f32);
+    prm.scale = 1.0f;
+    prm.kind = k;
+    func_002D6090(mgr, slot, &prm);
+    slot = spark_new(mgr, AT(o, 0xC, s32));
+    k = rnd_int() & 3;
+    if (k < 2) {
+        k += 6;
+    }
+    prm.size = AT(o, 0x8, f32);
+    prm.scale = 1.0f;
+    prm.kind = k;
+    func_002D6090(mgr, slot, &prm);
+    if (rnd_int() & 1) {
+        slot = spark_new(mgr, AT(o, 0xC, s32));
+        k = (rnd_int() & 3) + 2;
+        prm.size = AT(o, 0x8, f32);
+        prm.follow = AT(D_0044F810, 0xF0, u32);
+        prm.scale = 1.0f;
+        prm.kind = k;
+        func_002D6090(mgr, slot, &prm);
+        return;
+    }
+    k = (u32)rnd_int() % 27;
+    if (k >= 13 && k < 17) {
+        return;
+    }
+    slot = spark_new(mgr, AT(o, 0xC, s32));
+    prm.scale = 1.0f;
+    prm.size = AT(o, 0x8, f32);
+    prm.kind = k;
+    func_002D6090(mgr, slot, &prm);
+}
+
+/* +0x1C its state */
+s32 func_00301D30(u8 *o) {
+    return AT(o, 0x10, s32);
+}
+
+/* +0x18 set: NULL done; else { state, ... } - 5 / 6 on (the first / second kind), 1 on with
+ * { 1, what it follows (0: the stalker's model, in the game), size, from slot } and twenty
+ * rounds of sparks, 4 resized { 4, size } */
+void func_00301D40(u8 *o, s32 *prm) {
+    s32 k;
+
+    if (prm == NULL) {
+        AT(o, 0x1C, u8) = 1;
+        return;
+    }
+    AT(o, 0x10, s32) = prm[0];
+    k = AT(o, 0x10, s32);
+    if ((u32)(k - 5) < 2) {
+        AT(o, 0x1E, u8) = k == 5 ? 0 : 1;
+        AT(o, 0x1D, u8) = 0;
+        AT(o, 0x10, s32) = 1;
+    } else if (k == 1) {
+        AT(o, 0x1D, u8) = 1;
+    }
+    k = AT(o, 0x10, s32);
+    if (k == 1) {
+        u32 f = prm[1];
+        s32 i;
+
+        if (f == 0 && gProgress != NULL) {
+            f = AT(D_0044F808, 0xF0, u32);
+        }
+        AT(o, 0x4, u32) = f;
+        AT(o, 0x8, s32) = prm[2];
+        AT(o, 0xC, s32) = prm[3];
+        for (i = 0; i < 20; i++) {
+            func_003012B0(o, 1);
+        }
+    } else if (k == 4) {
+        AT(o, 0x8, s32) = prm[1];
+    }
+}
+
+/* +0x10 each frame (unless the camera director is busy with nobody in slot 2): unless done, the
+ * glow flickers (renderer +0x78: 0.4 x (1 + sin a) x size, a turning by up to 10 degrees at
+ * random; size 1.5 and over a fixed colour), b turns by up to 45 degrees, sparks while on; an
+ * ending marker is done. 0 when not run */
+s32 func_003039A0(u8 *o) {
+    VObject *rnd;
+    f32 r, v;
+    u32 a, c;
+
+    if (D_0044F808 == NULL && (u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
+        return 0;
+    }
+    if (AT(o, 0x1C, u8) == 1) {
+        return 0;
+    }
+    rnd = D_0044E550;
+    r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.921fb6p+1f /* pi */ * (10.0f * r) / 180.0f;
+    AT(o, 0x14, f32) = func_002E2D00(AT(o, 0x14, f32));
+    v = 0x1.99999a0000000p-2f /* 0.4 */ * (1.0f + func_0031C248(AT(o, 0x14, f32)));
+    if (AT(o, 0x8, f32) < 1.0f) {
+        v *= AT(o, 0x8, f32);
+    }
+    a = (u32)(128.0f * v);
+    c = a | (a << 24 | (a >> 1) << 8);
+    if (!(AT(o, 0x8, f32) <= 1.5f)) {
+        c = 0x80004080;
+    }
+    VCALL(D_0044E4F0, 0x78, void (*)(VObject *, u32))(D_0044E4F0, c);
+    r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(o, 0x18, f32) = AT(o, 0x18, f32) + 0x1.921fb6p+1f /* pi */ * (45.0f * r) / 180.0f;
+    AT(o, 0x18, f32) = func_002E2D00(AT(o, 0x18, f32));
+    if (AT(o, 0x10, s32) != 2 && AT(o, 0x10, s32) != 3 && !(AT(o, 0x8, f32) <= 0.0f)) {
+        func_003012B0(o, 0);
+    }
+    if (AT(o, 0x10, s32) == 2) {
+        AT(o, 0x1C, u8) = 1;
+        AT(o, 0x10, s32) = 3;
+    }
+    return 1;
+}
+
+/* +0xC init */
+void func_00303C10(u8 *o) {
+    AT(o, 0x18, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x1C, u8) = 0;
+    AT(o, 0x1D, u8) = 1;
+    AT(o, 0x1E, u8) = 0;
 }
