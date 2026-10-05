@@ -155,23 +155,30 @@ u8 *func_003507B0(u8 *o, s32 flags) {
 }
 
 /* +0x10 update: turn */
-s32 func_00350910(u8 *o) {
-    static const F32Bits kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, k2Pi = {0x40C90FDB},
-                         kStepX = {0x3C0EFA35}, kStepYZ = {0x3AE4C389};
+/* the three angles turn (+0x4 by stepX, +0x8 by stepYZ, +0xC back by stepYZ; wrapped) */
+static inline __attribute__((always_inline)) s32 spin_step(u8 *o, u32 stepX, u32 stepYZ) {
+    static const F32Bits kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, k2Pi = {0x40C90FDB};
+    F32Bits sx, syz;
 
-    AT(o, 0x4, f32) = AT(o, 0x4, f32) + kStepX.f;
+    sx.u = stepX;
+    syz.u = stepYZ;
+    AT(o, 0x4, f32) = AT(o, 0x4, f32) + sx.f;
     if (!(AT(o, 0x4, f32) <= kPi.f)) {
         AT(o, 0x4, f32) = AT(o, 0x4, f32) - k2Pi.f;
     }
-    AT(o, 0x8, f32) = AT(o, 0x8, f32) + kStepYZ.f;
+    AT(o, 0x8, f32) = AT(o, 0x8, f32) + syz.f;
     if (!(AT(o, 0x8, f32) <= kPi.f)) {
         AT(o, 0x8, f32) = AT(o, 0x8, f32) - k2Pi.f;
     }
-    AT(o, 0xC, f32) = AT(o, 0xC, f32) - kStepYZ.f;
+    AT(o, 0xC, f32) = AT(o, 0xC, f32) - syz.f;
     if (AT(o, 0xC, f32) < kMinusPi.f) {
         AT(o, 0xC, f32) = AT(o, 0xC, f32) + k2Pi.f;
     }
     return 1;
+}
+
+s32 func_00350910(u8 *o) {
+    return spin_step(o, 0x3C0EFA35, 0x3AE4C389);
 }
 
 /* a model to draw this frame: position, ..., angles, model, colour. Drawn by D_00478B70's
@@ -2180,4 +2187,13 @@ u8 *func_0032E890(u8 *o, s32 flags) {
 
 u8 *func_0035F5B0(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_00479A60, 0x550);
+}
+
+/* (as func_00350910, slower) */
+s32 func_003780F0(u8 *o) {
+    return spin_step(o, 0x3A64C389, 0x393702D4);
+}
+
+s32 func_00378650(u8 *o) {
+    return spin_step(o, 0x3AE4C389, 0x3A64C389);
 }

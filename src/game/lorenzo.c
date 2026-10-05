@@ -1489,3 +1489,28 @@ void func_003655F0(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_00445A58);
     Lorenzo2_SinkBehindAs(p, &D_00445A68, func_003652F0);
 }
+
+extern const PTMF D_00445AD8;
+extern void func_00363FA0(Pursuer *p);
+
+/* (as func_0030A4D0) the other class's start of the grab */
+void func_00364260(Pursuer *p) {
+    if (!(func_00283870(p) & 0xFF)) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0xE01, 0);
+    p->c.unk104[0] = 0;
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        PU(p, 0x16F7, u8) = 1;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00445AD8);
+    func_00363FA0(p);
+}

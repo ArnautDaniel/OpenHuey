@@ -5192,3 +5192,30 @@ s32 func_00378EC0(void) {
     fan_turn(*(const char *const *)D_0047B0C0);   /* (the first of its names) */
     return 1;
 }
+
+/* ---- two more room effects (as func_002E7020 / func_002E6E20) ---- */
+
+extern void *D_0047A410[], *D_00479A60[];
+
+static void effect_47a410_init(void **obj) {
+    obj[0] = D_0047A410;
+}
+
+static void effect_479a60_init(void **obj) {
+    obj[0] = D_00479A60;
+    obj[0x550 / 4] = D_00469D00;
+    ((s32 *)obj)[0x554 / 4] = -1;
+    obj[0x550 / 4] = D_0046FC30;
+}
+
+/* an effect D_0047A410 (8 bytes), not started */
+s32 func_0034B6E0(void) {
+    Effect_New(D_0044E578, 0x8, effect_47a410_init);
+    return 1;
+}
+
+/* an effect D_00479A60 (0x640 bytes, its quad drawer at +0x550), not started */
+s32 func_0032DF20(void) {
+    Effect_New(D_0044E578, 0x640, effect_479a60_init);
+    return 1;
+}

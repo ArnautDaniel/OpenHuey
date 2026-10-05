@@ -370,7 +370,7 @@ void func_002D5130(u8 *b) {
 
 /* the ball bounced at `at` (off the surface with normal n): its velocity mirrored and slowed
  * to 0.7; `to` = what is left of the step from `at` on (0: nothing left) */
-s32 func_002D5290(u8 *b, f32 *to, f32 *at, f32 *n) {
+static inline __attribute__((always_inline)) s32 ball_bounce(u8 *b, f32 *to, f32 *at, f32 *n, f32 keep) {
     f32 *v = BALL_VEL(b);
     f32 d[4] __attribute__((aligned(16)));
     f32 speed, all, left, k;
@@ -382,7 +382,7 @@ s32 func_002D5290(u8 *b, f32 *to, f32 *at, f32 *n) {
     AT(b, 0xBC, f32) = 1.0f;
     sceVu0ScaleVector(d, n, 2.0f * sceVu0InnerProduct(n, v));
     sceVu0SubVector(v, d, v);
-    sceVu0ScaleVector(v, v, 0x1.666666p-1f /* 0.7 */ * -speed);
+    sceVu0ScaleVector(v, v, keep * -speed);
     AT(b, 0xBC, f32) = 1.0f;
     sceVu0SubVector(d, BALL_POS(b), to);
     all = ball_sqrt(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
@@ -398,6 +398,10 @@ s32 func_002D5290(u8 *b, f32 *to, f32 *at, f32 *n) {
     sceVu0ScaleVector(d, v, k);
     sceVu0AddVector(to, at, d);
     return 1;
+}
+
+s32 func_002D5290(u8 *b, f32 *to, f32 *at, f32 *n) {
+    return ball_bounce(b, to, at, n, 0x1.666666p-1f /* 0.7 */);
 }
 
 /* the dropping state: falling through for 31 frames, then gone */
@@ -1730,4 +1734,19 @@ void func_00336790(u8 *o) {
             AT(o, 0x28, u8) = 0;
         }
     }
+}
+
+/* (as func_002D5290) */
+s32 func_003336B0(u8 *b, f32 *to, f32 *at, f32 *n) {
+    return ball_bounce(b, to, at, n, 0x1.99999ap-3f /* 0.2 */);
+}
+
+/* (as func_002D5290) */
+s32 func_00367F80(u8 *b, f32 *to, f32 *at, f32 *n) {
+    return ball_bounce(b, to, at, n, 0x1.99999ap-3f /* 0.2 */);
+}
+
+/* (as func_002D5290) */
+s32 func_003672A0(u8 *b, f32 *to, f32 *at, f32 *n) {
+    return ball_bounce(b, to, at, n, 0x1.99999ap-2f /* 0.4 */);
 }
