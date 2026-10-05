@@ -1068,3 +1068,85 @@ void func_001B9250(u8 *r, s32 v) {
     }
 #endif
 }
+
+/* ---- small renderer methods (2026-10-05) ---- */
+
+static inline u32 grey_rgba(u32 c, u32 a) {
+    return c | c << 8 | c << 16 | a;
+}
+
+/* palette entry i of the layer-0x11 alpha table: 0x80 - clamp(((255-a)>>7) x ((255-a)&127) +
+ * 256 - i - a, 0, 128), a = *alpha; the same in all four channels */
+u32 func_001B87F0(void *r, s32 i, s32 *alpha) {
+    s32 t = 0xFF - *alpha;
+    s32 v = (t >> 7) * (t & 0x7F) + 0x100 - (i + *alpha);
+
+    if (v < 0) {
+        v = 0;
+    } else if (!(v < 0x81)) {
+        v = 0x80;
+    }
+    v = 0x80 - v;
+    return (u32)v << 24 | grey_rgba(v, 0);
+}
+
+/* palette entry i: black below *limit, else grey 0xC0 (alpha 0x80) */
+u32 func_001B8860(void *r, u32 i, u32 *limit) {
+    if (i < *limit) {
+        return 0x80000000;
+    }
+    return 0x80C0C0C0;
+}
+
+/* palette entry i: the grey ((2i + 5)(i + 1)) & 0xFF */
+u32 func_001B8890(void *r, s32 i) {
+    return grey_rgba(((i * 2 + 5) * (i + 1)) & 0xFF, 0x80000000);
+}
+
+/* palette entry: a random grey */
+u32 func_001B88C0(void) {
+    return grey_rgba(VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF, 0x80000000);
+}
+
+/* +0x64 (and others): the layer-0x11 / special colours */
+void func_001B9D20(u8 *r, u32 c) {
+    AT(r, 0x304D58, u32) = c;
+}
+
+u32 func_001B9D30(u8 *r) {
+    return AT(r, 0x304D54, u32);
+}
+
+void func_001B9D40(u8 *r, u32 c) {
+    AT(r, 0x304D54, u32) = c;
+}
+
+u32 func_001BA000(u8 *r) {
+    return AT(r, 0x304D4C, u32);
+}
+
+extern u8 *D_0044F808;   /* the characters' slot 2 */
+
+/* the layer-0x11 tint (+0x304D4C) and its model (+0x304D50; none given: the slot-2 character's,
+ * once the game runs) */
+void func_001BA010(u8 *r, u32 c, void *model) {
+    AT(r, 0x304D4C, u32) = c;
+    if (model == NULL && gProgress != NULL) {
+        AT(r, 0x304D50, void *) = AT(D_0044F808, 0xF0, void *);
+        return;
+    }
+    AT(r, 0x304D50, void *) = model;
+}
+
+/* sprites additive (+0x304C05) with the given mode (+0x304C06) */
+void func_001BA070(u8 *r, u8 mode) {
+    AT(r, 0x304C05, u8) = 1;
+    AT(r, 0x304C06, u8) = mode;
+}
+
+/* the 17-word argument block handed on to +0x84 */
+void func_001B9260(VObject *r, s32 *a) {
+    VCALL(r, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32,
+                            s32, s32, s32))(r, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
+                                            a[11], a[12], a[13], a[14], a[15], a[16]);
+}
