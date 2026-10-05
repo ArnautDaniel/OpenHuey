@@ -4644,3 +4644,5 @@ src/game/creature.c func_002E2740 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0
 src/game/creature.c func_002E27B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38680=bytes:??00 --runs=50
 src/game/creature.c func_002E27B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38680=bytes:??01 --runs=50
 src/game/creature.c func_002E2920 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0B100000..0x0B100000 --pre=a0+0x4=0..0 --pre=a0+0x8=0x0B120000..0x0B120000 --pre=a0+0x1C=0x0B170000..0x0B170000 --pre=a0+0x20=0..0 --pre=a0+0x24=0x0B190000..0x0B190000 --pre=@0x0B100028:u8=0..1 --pre=@0x0B120028:u8=0..1 --pre=@0x0B170028:u8=0..1 --pre=@0x0B190028:u8=0..1 --pre=@0x0B1700F0=0..1 --runs=50
+src/leaf/b4_002DCA70.c func_002E2DA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
+src/leaf/b4_002DCA70.c func_002E2DD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200

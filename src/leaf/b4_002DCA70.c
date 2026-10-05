@@ -228,3 +228,26 @@ void *func_002E6020(void) { return D_00417850; }
 void *func_002E6030(void) { return D_00417960; }
 
 void *func_002E6040(void) { return D_00417A20; }
+
+/* out.xyz = m's 3x3 part x v. (VU0 macro code: its w is whatever the VU register last held;
+   0 here - the callers only use x, y, z) */
+void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v) {
+    f32 x = v[0], y = v[1], z = v[2];
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        out[i] = m[0][i] * x + m[1][i] * y + m[2][i] * z;
+    }
+    *(s32 *)&out[3] = 0;
+}
+
+/* out.xyz = m x v (v as a point: plus m's translation row; w 0 as above) */
+void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
+    f32 x = v[0], y = v[1], z = v[2];
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        out[i] = m[0][i] * x + m[1][i] * y + m[2][i] * z + m[3][i];
+    }
+    *(s32 *)&out[3] = 0;
+}

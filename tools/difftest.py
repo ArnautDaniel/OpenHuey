@@ -636,6 +636,7 @@ class CPU:
             h = HANDLERS.get(name)
             if h is None:
                 raise Unsupported(f"{name} at 0x{pc:08X}")
+            HANDLER_NAME[0] = name
             self.in_func = self.func_lo <= pc < self.func_hi
             if self.in_func:
                 self.note_save(name, w)
@@ -1361,6 +1362,169 @@ def _mulas(c, w, pc): c.acc = f2b(c.ff(_fs(w)) * c.ff(_ft(w)))
 
 # multiply-accumulate: like hardware (and PCSX2), the product is rounded to single first
 def _prod(c, w): return b2f(f2b(c.ff(_fs(w)) * c.ff(_ft(w))))
+
+
+# ---------------------------------------------------------------- VU0 macro mode (COP2)
+# vector registers as f32 bit patterns; vf0 is (0, 0, 0, 1). Arithmetic rounds each product
+# and each sum to single like the FPU ops above (madd: the product first).
+
+def _vu(c):
+    if not hasattr(c, "vf"):
+        c.vf = [[0, 0, 0, 0] for _ in range(32)]
+        c.vacc = [0, 0, 0, 0]
+        c.vq = 0
+        c.vi_i = 0
+    c.vf[0] = [0, 0, 0, f2b(1.0)]
+    return c
+
+
+def _vdest(w): return [(w >> (24 - i)) & 1 for i in range(4)]   # x, y, z, w
+
+
+def _vset(c, r, vals, w):
+    if r == 0:
+        return
+    for i, on in enumerate(_vdest(w)):
+        if on:
+            c.vf[r][i] = vals[i]
+
+
+@H("lqc2")
+def _lqc2(c, w, pc):
+    _vu(c)
+    a = _addr(c, w) & ~0xF
+    if _rt(w):
+        c.vf[_rt(w)] = [c.m.read(a + 4 * i, 4) & M32 for i in range(4)]
+
+
+@H("sqc2")
+def _sqc2(c, w, pc):
+    _vu(c)
+    a = _addr(c, w) & ~0xF
+    for i in range(4):
+        c.m.write(a + 4 * i, 4, c.vf[_rt(w)][i])
+
+
+@H("qmtc2")
+def _qmtc2(c, w, pc):
+    _vu(c)
+    v = c.r[_rt(w)] & ((1 << 128) - 1)
+    if (w >> 11) & 31:
+        c.vf[(w >> 11) & 31] = [(v >> (32 * i)) & M32 for i in range(4)]
+
+
+@H("qmfc2")
+def _qmfc2(c, w, pc):
+    _vu(c)
+    if _rt(w):
+        c.r[_rt(w)] = sum(c.vf[(w >> 11) & 31][i] << (32 * i) for i in range(4))
+
+
+@H("vnop", "vwaitq")
+def _vnop(c, w, pc): return None
+
+
+@H("vmove")
+def _vmove(c, w, pc):
+    _vu(c)
+    _vset(c, (w >> 16) & 31, list(c.vf[(w >> 11) & 31]), w)
+
+
+@H("vmr32")
+def _vmr32(c, w, pc):
+    _vu(c)
+    s = c.vf[(w >> 11) & 31]
+    _vset(c, (w >> 16) & 31, [s[1], s[2], s[3], s[0]], w)
+
+
+def _vbin(op):
+    def h(c, w, pc):
+        _vu(c)
+        name = HANDLER_NAME[0]
+        m = re.fullmatch(r"v(add|sub|mul|madd|msub)(a?)([xyzwqi]?)", name)
+        to_acc = m.group(2) == "a"
+        sel = m.group(3)
+        fs, ft, fd = (w >> 11) & 31, (w >> 16) & 31, (w >> 6) & 31
+        s = [b2f(x) for x in c.vf[fs]]
+        if sel in "xyzw" and sel:
+            t = [b2f(c.vf[ft]["xyzw".index(sel)])] * 4
+        elif sel == "q":
+            t = [b2f(c.vq)] * 4
+        elif sel == "i":
+            t = [b2f(c.vi_i)] * 4
+        else:
+            t = [b2f(x) for x in c.vf[ft]]
+        acc = [b2f(x) for x in c.vacc]
+        out = []
+        for i in range(4):
+            if op == "add":
+                r = s[i] + t[i]
+            elif op == "sub":
+                r = s[i] - t[i]
+            elif op == "mul":
+                r = s[i] * t[i]
+            else:
+                p = b2f(f2b(s[i] * t[i]))
+                r = acc[i] + p if op == "madd" else acc[i] - p
+            out.append(f2b(r))
+        if to_acc:
+            for i, on in enumerate(_vdest(w)):
+                if on:
+                    c.vacc[i] = out[i]
+        else:
+            _vset(c, fd, out, w)
+    return h
+
+
+HANDLER_NAME = [""]
+for _op in ("add", "sub", "mul", "madd", "msub"):
+    for _a in ("", "a"):
+        for _s in ("", "x", "y", "z", "w", "q", "i"):
+            HANDLERS["v" + _op + _a + _s] = _vbin(_op)
+
+
+def _vconv(scale, to_int):
+    def h(c, w, pc):
+        _vu(c)
+        s = c.vf[(w >> 11) & 31]
+        out = []
+        for x in s:
+            if to_int:
+                f = b2f(x) * scale
+                n = 0 if f != f else max(-0x80000000, min(0x7FFFFFFF, int(f)))
+                out.append(n & M32)
+            else:
+                out.append(f2b(sx32(x) / scale))
+        _vset(c, (w >> 16) & 31, out, w)
+    return h
+
+
+for _n, _k in (("0", 1.0), ("4", 16.0), ("12", 4096.0), ("15", 32768.0)):
+    HANDLERS["vftoi" + _n] = _vconv(_k, True)
+    HANDLERS["vitof" + _n] = _vconv(_k, False)
+
+
+@H("vabs")
+def _vabs(c, w, pc):
+    _vu(c)
+    _vset(c, (w >> 16) & 31, [x & 0x7FFFFFFF for x in c.vf[(w >> 11) & 31]], w)
+
+
+@H("vdiv", "vsqrt", "vrsqrt")
+def _vdiv(c, w, pc):
+    _vu(c)
+    fsf, ftf = (w >> 21) & 3, (w >> 23) & 3
+    s = b2f(c.vf[(w >> 11) & 31][fsf])
+    t = b2f(c.vf[(w >> 16) & 31][ftf])
+    name = HANDLER_NAME[0]
+    if name == "vdiv":
+        q = s / t if t else (3.4028235e38 if s >= 0 else -3.4028235e38)
+    elif name == "vsqrt":
+        q = math.sqrt(abs(t))
+    else:
+        r = math.sqrt(abs(t))
+        q = s / r if r else 3.4028235e38
+    c.vq = f2b(q)
 
 
 @H("madda.s")
