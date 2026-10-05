@@ -10,6 +10,7 @@ typedef f32 sceVu0FMATRIX[4][4] __attribute__((aligned(16)));
 
 void sceVu0ApplyMatrix(f32 *out, sceVu0FMATRIX m, const f32 *v);
 void sceVu0MulMatrix(sceVu0FMATRIX out, sceVu0FMATRIX a, sceVu0FMATRIX b);
+void sceVu0InversMatrix(sceVu0FMATRIX out, sceVu0FMATRIX m);
 void sceVu0TransposeMatrix(sceVu0FMATRIX m0, sceVu0FMATRIX m1);
 void sceVu0ViewScreenMatrix(sceVu0FMATRIX m, f32 scrz, f32 ax, f32 ay, f32 cx, f32 cy, f32 zmin, f32 zmax, f32 nearz, f32 farz);
 void sceVu0OuterProduct(f32 *out, const f32 *a, const f32 *b);

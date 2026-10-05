@@ -304,6 +304,13 @@ def vu0_hle(c, name: str) -> bool:
         _wv(c, a0, _apply(_rm(c, a1), _rv(c, a2)))
     elif name == "sceVu0MulMatrix":
         _wm(c, a0, _mulm(_rm(c, a1), _rm(c, a2)))
+    elif name == "func_0010E5F0":   # libvu0's copy of x, y, z
+        c.m.write(a0, 8, c.m.read(a1, 8)); c.m.write(a0 + 8, 4, c.m.read(a1 + 8, 4))
+    elif name == "sceVu0InversMatrix":   # a rotation + translation inverted, w kept
+        m = _rm(c, a1)
+        r = [[m[k][i] for k in range(3)] + [0.0] for i in range(3)]
+        r.append([-(m[k][0] * m[3][0] + m[k][1] * m[3][1] + m[k][2] * m[3][2]) for k in range(3)] + [m[3][3]])
+        _wm(c, a0, r)
     elif name == "sceVu0TransposeMatrix":
         m = _rm(c, a1)
         _wm(c, a0, [[m[i][k] for i in range(4)] for k in range(4)])
@@ -1551,7 +1558,7 @@ def load_helpers() -> None:
     if FUNC_STARTS:
         return
     for name, value, size, _, typ in game_symbols():
-        if name.startswith("sceVu0") and "." not in name:
+        if (name.startswith("sceVu0") and "." not in name) or name == "func_0010E5F0":
             VU0_ADDRS[value] = name
         if typ == "STT_FUNC" and CODE_LO <= value < CODE_HI:
             FUNC_STARTS.add(value)

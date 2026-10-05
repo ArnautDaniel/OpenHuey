@@ -114,6 +114,25 @@ void sceVu0MulMatrix(Mat d, const Mat a, const Mat b) {
     sceVu0CopyMatrix(d, r);
 }
 
+/* the inverse of a rotation + translation: the rotation transposed, the translation
+   -R^T t, w kept */
+void sceVu0InversMatrix(Mat d, const Mat m) {
+    Mat r;
+    int i, k;
+
+    for (i = 0; i < 3; i++) {
+        for (k = 0; k < 3; k++) {
+            r[i][k] = m[k][i];
+        }
+        r[i][3] = 0.0f;
+    }
+    for (k = 0; k < 3; k++) {
+        r[3][k] = -(m[k][0] * m[3][0] + m[k][1] * m[3][1] + m[k][2] * m[3][2]);
+    }
+    r[3][3] = m[3][3];
+    sceVu0CopyMatrix(d, r);
+}
+
 void sceVu0TransposeMatrix(Mat d, const Mat m) {
     Mat r;
     int i, k;

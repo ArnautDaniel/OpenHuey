@@ -3618,3 +3618,20 @@ src/game/stalker_models.c func_0030DC70 --pre=a0=0x0B000000..0x0B000000 --pre=@0
 src/game/stalker_models.c func_0030E060 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000850:u8=0..1 --runs=20
 src/game/stalker_models.c func_0030E0E0 --pre=a0=0x0B000000..0x0B000000
 src/game/stalker_models.c func_0030E0F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/stalker_models.c func_001F93E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=@0x0B100010=0xBF800000..0x3F800000 --runs=40
+src/game/stalker_models.c func_0030E1F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/stalker_models.c func_0030E2F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
+src/game/stalker_models.c func_0030E330
+src/game/stalker_models.c func_0030E380
+src/game/stalker_models.c func_0030E390
+src/game/stalker_models.c func_0030E3A0
+src/game/stalker_models.c func_0030E3B0
+src/game/stalker_models.c func_0030E3C0 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_0030E340 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B600000
+src/game/stalker_models.c func_0030E3D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x44E570=0x0B700000..0x0B700000 --pre=@0x0B000CB0=0..0x3F800000 --pre=@0x0B000CB4=0..0x3F800000 --pre=@0x0B100014=0xBF800000..0x3F800000 --stub-ret=0 --runs=150
+src/game/stalker_models.c func_0030E580 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x14 --pre=a2=0x0B100000..0x0B100000 --pre=a3=0x0B200000..0x0B200000 --stub-ret=0x0B600000 --runs=150
+src/game/stalker_models.c func_0030E7F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x44E570=0x0B700000..0x0B700000 --pre=@0x0B100014=0xBF800000..0x3F800000 --stub-ret=0 --runs=150
+src/game/stalker_models.c func_0030EAB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000CF0=0..1 --pre=@0x0B000CF4=0..0x0B000100 --pre=@0x0B000CD8=0..0x0B000200 --runs=30
+src/game/stalker_models.c func_0030ED60 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000850:u8=0..1 --runs=20
+src/game/stalker_models.c func_0030EDE0 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_0030EDF0 --pre=a0=0x0B000000..0x0B000000 --runs=5

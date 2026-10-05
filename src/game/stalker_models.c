@@ -1418,3 +1418,359 @@ void func_0030E0F0(u8 *m) {
         }
     }
 }
+
+/* ---- matrices of the model base used by Lorenzo's ---- */
+
+extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* axis-angle quaternion */
+extern void func_0025C770(const f32 *q, f32 (*m)[4]);             /* quaternion matrix */
+extern void func_0010E5F0(f32 *out, const f32 *v);                /* copy x, y, z */
+
+/* a frame from bone matrix `b` keeping its Z axis (flipped to face `up`'s side) with Y = `up` */
+void func_001F93E0(f32 (*out)[4], f32 (*b)[4], const f32 *up) {
+    sceVu0CopyVector(out[2], b[2]);
+    out[2][1] = 0.0f;
+    if (sceVu0InnerProduct(b[1], up) < 0.0f) {
+        sceVu0ScaleVector(out[2], out[2], -1.0f);
+    }
+    sceVu0CopyVector(out[1], up);
+    sceVu0OuterProduct(out[0], out[1], out[2]);
+    sceVu0OuterProduct(out[2], out[0], out[1]);
+    sceVu0Normalize(out[0], out[0]);
+    sceVu0Normalize(out[1], out[1]);
+    sceVu0Normalize(out[2], out[2]);
+}
+
+/* `out` turned `a` about axes[0] then `b` about axes[1] (its translation cleared) */
+void func_001F94B0(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
+    f32 q[4] __attribute__((aligned(16)));
+    f32 ra[4][4] __attribute__((aligned(16)));
+    f32 rb[4][4] __attribute__((aligned(16)));
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+
+    q[3] = 0.0f;
+    q[2] = 0.0f;
+    q[1] = 0.0f;
+    q[0] = 0.0f;
+    func_0025C6F0(q, axes[0], a);
+    func_0025C770(q, ra);
+    func_0025C6F0(q, axes[1], b);
+    func_0025C770(q, rb);
+    sceVu0MulMatrix(r, rb, ra);
+    sceVu0CopyVector(t, out[3]);   /* (kept by the original, unused) */
+    out[3][0] = 0.0f;
+    out[3][1] = 0.0f;
+    out[3][2] = 0.0f;
+    sceVu0MulMatrix(out, r, out);
+}
+
+/* ---- Lorenzo's model (vtable D_00471DA0, 0xD00 bytes: kind 11; the plain model base). It
+   sits on two frames fitted to the floor - +0x7D0 from a point behind him to him, +0xC70 from
+   him to a point ahead - as a two-axle chair would (probably his wheelchair); six points
+   (+0x890) on the set +0xCC0 with eight spheres (+0xA70) ---- */
+
+extern void *D_00471DA0[];
+
+/* +0x8: destructor */
+void *func_0030E1F0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00471DA0;
+        func_001002C0(m + 0x890, func_0016FBB0, 0x50, 6);
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* +0x28: the model matrix (and the front frame) = `mtx` */
+void func_0030E2F0(u8 *m, f32 (*mtx)[4]) {
+    sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
+    sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), mtx);
+}
+
+/* +0x80 / +0x84 .. +0x90: his mesh parts */
+s32 func_0030E330(u8 *m) {
+    return 0x13;
+}
+
+s32 func_0030E380(u8 *m) {
+    return 3;
+}
+
+s32 func_0030E390(u8 *m) {
+    return 7;
+}
+
+s32 func_0030E3A0(u8 *m) {
+    return 0xE;
+}
+
+s32 func_0030E3B0(u8 *m) {
+    return 0x1F;
+}
+
+/* +0x58: the scale +0x804 */
+f32 func_0030E3C0(u8 *m) {
+    return AT(m, 0x804, f32);
+}
+
+/* +0x60: bone 0x13's position */
+void func_0030E340(u8 *m, f32 *out) {
+    sceVu0CopyVector(out, func_0017CE80(AT(m, 0x810, u8 *), 0x13) + 12);
+}
+
+extern void func_002DC710(u8 *m, f32 *p, u8 *a);   /* drop a point onto the floor */
+extern void *D_0044E570;
+
+/* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
+static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {
+    f32 dy = AT(a, 0x14, f32) - floor[1];
+
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    return dy <= 0x1.a36e2ep-14f || AT(a, 0x14, f32) <= floor[1];
+}
+
+/* +0x44: how much of the feet's height to keep on a slope: on the floor with axles set
+   (+0xCB0 / +0xCB4), the level part of the line between the floor 8 ahead and 8 behind;
+   else 1 */
+f32 func_0030E3D0(u8 *m, u8 *a) {
+    f32 floor[4] __attribute__((aligned(16)));
+    f32 rot[4][4] __attribute__((aligned(16)));
+    f32 fr[4] __attribute__((aligned(16)));
+    f32 bk[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 level;
+
+    sceVu0CopyVector(floor, (f32 *)(a + 0x10));
+    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
+    sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
+    AT(m, 0x80C, f32) = 1.0f;
+    if (AT(m, 0xCB0, f32) == 0.0f && AT(m, 0xCB4, f32) == 0.0f) {
+        level = 0;
+    } else {
+        level = Chair_OnFloor(a, floor);
+    }
+    if (!level) {
+        return 1.0f;
+    }
+    fr[2] = 8.0f;
+    fr[3] = 1.0f;
+    fr[0] = 0.0f;
+    fr[1] = 0.0f;
+    sceVu0ApplyMatrix(fr, rot, fr);
+    func_002DC710(m, fr, a);
+    bk[2] = -8.0f;
+    bk[3] = 1.0f;
+    bk[0] = 0.0f;
+    bk[1] = 0.0f;
+    sceVu0ApplyMatrix(bk, rot, bk);
+    func_002DC710(m, bk, a);
+    sceVu0SubVector(d, fr, bk);
+    sceVu0Normalize(d, d);
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+}
+
+/* +0x14: the attach frame of part `kind` into `out` (from `ref`): 0 the body (the model's
+   rotation applied to `ref`, at `out`'s position), 0xA the front frame (+0xC70) relative to the
+   body, 0xB / 0x12 / 0x13 parts turned by the tilt (+0x854 / +0x858) */
+void func_0030E580(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 u[4][4] __attribute__((aligned(16)));
+    f32 frame[4][4] __attribute__((aligned(16)));
+    f32 zero[4] __attribute__((aligned(16)));
+
+    zero[3] = 0.0f;
+    zero[2] = 0.0f;
+    zero[1] = 0.0f;
+    zero[0] = 0.0f;
+    switch (kind) {
+    case 0:
+        sceVu0CopyMatrix(r, (f32 (*)[4])(m + 0x7D0));
+        r[3][0] = 0.0f;
+        r[3][1] = 0.0f;
+        r[3][2] = 0.0f;
+        sceVu0MulMatrix(r, r, ref);
+        r[3][0] = 0.0f;
+        r[3][1] = 0.0f;
+        r[3][2] = 0.0f;
+        sceVu0UnitMatrix(u);
+        sceVu0CopyVector(u[3], out[3]);
+        u[3][3] = 1.0f;
+        sceVu0MulMatrix(out, u, r);
+        break;
+    case 0xB:
+        func_001F94B0(out, (f32 (*)[4])(m + 0xC70), 0.0f, 0x1.333334p-2f * -AT(m, 0x858, f32));
+        break;
+    case 0x12:
+        func_001F93E0(frame, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
+        func_001F94B0(out, frame, 0x1.99999ap-2f * AT(m, 0x854, f32), 0x1.333334p-2f * -AT(m, 0x858, f32));
+        break;
+    case 0x13:
+        func_001F93E0(frame, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
+        func_001F94B0(out, frame, 0x1.99999ap-3f * AT(m, 0x854, f32), 0x1.99999ap-2f * -AT(m, 0x858, f32));
+        break;
+    case 0xA: {
+        f32 inv[4][4] __attribute__((aligned(16)));
+        f32 o[4][4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+
+        sceVu0CopyMatrix(inv, (f32 (*)[4])(m + 0x7D0));
+        inv[3][0] = 0.0f;
+        inv[3][1] = 0.0f;
+        inv[3][2] = 0.0f;
+        sceVu0InversMatrix(inv, inv);
+        sceVu0CopyMatrix(o, out);
+        sceVu0CopyVector(at, o[3]);
+        o[3][0] = 0.0f;
+        o[3][1] = 0.0f;
+        o[3][2] = 0.0f;
+        sceVu0MulMatrix(r, inv, o);
+        sceVu0MulMatrix(out, (f32 (*)[4])(m + 0xC70), r);
+        sceVu0CopyVector(out[3], at);
+        break;
+    }
+    }
+    (void)zero;
+}
+
+/* the floor frame from the line `d` (normalized): X across it, Z along it, Y up from them */
+static inline void Chair_Frame(f32 (*f)[4], const f32 *d) {
+    f32 x[4];
+
+    sceVu0UnitMatrix(f);
+    x[0] = d[2];
+    x[1] = 0.0f;
+    x[2] = -d[0];
+    sceVu0Normalize(f[0], x);
+    func_0010E5F0(f[2], d);
+    sceVu0OuterProduct(f[1], (f32 *)d, f[0]);
+}
+
+/* +0x40: fit the model to the floor: off it (or with no axles) the actor's rotation; on it the
+   front frame (+0xC70) along him to the floor `front` ahead, the model's (+0x7D0) along the
+   floor `back` behind to him, at his position */
+void func_0030E7F0(u8 *m, u8 *a, f32 front, f32 back) {
+    f32 floor[4] __attribute__((aligned(16)));
+    f32 rot[4][4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    s32 level;
+
+    sceVu0CopyVector(floor, (f32 *)(a + 0x10));
+    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
+    sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
+    AT(m, 0x80C, f32) = 1.0f;
+    if (front == 0.0f && back == 0.0f) {
+        level = 0;
+    } else {
+        level = Chair_OnFloor(a, floor);
+    }
+    if (!level) {
+        sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), rot);
+        func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+        AT(m, 0x80C, f32) = 1.0f;
+        sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), rot);
+        return;
+    }
+    p[3] = 1.0f;
+    p[0] = 0.0f;
+    p[2] = front;
+    p[1] = 0.0f;
+    sceVu0ApplyMatrix(p, rot, p);
+    func_002DC710(m, p, a);
+    sceVu0SubVector(p, p, (f32 *)(a + 0x10));
+    sceVu0Normalize(p, p);
+    Chair_Frame((f32 (*)[4])(m + 0xC70), p);
+    p[3] = 1.0f;
+    p[1] = 0.0f;
+    p[2] = back;
+    p[0] = 0.0f;
+    sceVu0ApplyMatrix(p, rot, p);
+    func_002DC710(m, p, a);
+    sceVu0SubVector(p, (f32 *)(a + 0x10), p);
+    sceVu0Normalize(p, p);
+    Chair_Frame((f32 (*)[4])(m + 0x7D0), p);
+    func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+}
+
+/* his six points (bones 0x17..0x1C, two of three) on +0xCC0, its eight spheres */
+void func_0030EAB0(u8 *m) {
+    static const struct { u8 bone; f32 y, z; } sSpheres[8] = {
+        {0xC, 0.0f, 0.0f}, {0x1D, 0.0f, 0.0f}, {0xD, 0.0f, 0.0f}, {0x1E, 0.0f, 0.0f},
+        {0x13, 0.0f, 0.0f}, {0x13, 1.0f, 0.0f}, {0x13, 0.0f, 0x1.99999ap-2f}, {0x13, 1.0f, 0x1.99999ap-2f},
+    };
+    s32 i;
+
+    func_002EE960(m + 0xCC0);
+    for (i = 0; i < 6; i++) {
+        Set_AddLink(m + 0xCC0, m + 0x890 + i * 0x50);
+    }
+    for (i = 0; i < 8; i++) {
+        Set_AddCollider(m + 0xCC0, m + 0xA70 + i * 0x40);
+    }
+    Set_Init(m + 0xCC0, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 6; i++) {
+        u8 *n = m + 0x890 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.1bc01ap-1f;   /* 0.5542 */
+        AT(n, 0x24, s32) = 0x17 + i;
+        AT(n, 0x20, u8) = i % 3 == 0;
+    }
+    for (i = 0; i < 8; i++) {
+        func_002EE690(m + 0xA70 + i * 0x40, sSpheres[i].bone, 0.0f, sSpheres[i].y, sSpheres[i].z, 1.0f);
+    }
+}
+
+/* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
+void func_0030ED60(u8 *m) {
+    s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
+    s32 i;
+
+    func_002EE8A0(m + 0xCC0);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + 0xCC0);
+    }
+    func_002EE840(m + 0xCC0);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+void func_0030EDE0(u8 *m) {
+    func_001F7AC0(m);
+}
+
+extern void func_002DE0A0(u8 *m);
+
+/* +0xC: once loaded: the plain model's setup, his points, per-part draw settings */
+void func_0030EDF0(u8 *m) {
+    func_002DE0A0(m);
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 3.5f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    func_0030EAB0(m);
+    AT(m, 0x850, u8) = 1;
+    {
+        static const u8 sParts[][2] = {
+            {0x98, 0x40}, {0x9A, 0x40}, {0x9C, 0x40}, {0xC8, 0x40}, {0xCA, 0x40}, {0xCC, 0x40},
+            {0x9E, 0xC0}, {0xC4, 0xC0},
+        };
+        u32 i;
+
+        for (i = 0; i < sizeof(sParts) / sizeof(sParts[0]); i++) {
+            AT(m, sParts[i][0], u8) = 4;
+            AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
+        }
+    }
+}
