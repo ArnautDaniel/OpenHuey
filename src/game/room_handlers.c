@@ -799,11 +799,12 @@ s32 func_002FF310(void) {
     return 1;
 }
 
-/* a lit quad (effect 0x1B: four corners at x -15.96, z -2 .. 6, height 111 / 91), byte 3: 1
- * removed, 2 on, else off */
-s32 func_002FF320(void *self, void *a1, u8 *cmd) {
+/* a lit quad (effect 0x1B) with corners q[0..15] and colour value `c`, by byte 3: 1 removed,
+ * 2 on, else off */
+static s32 lit_quad(u8 *cmd, const u32 *corners, u32 c) {
     u8 *fx;
     u32 q[20] __attribute__((aligned(16)));
+    s32 i;
 
     if (cmd[3] == 1) {
         func_002670F0(D_0044E4C0, 0x1B);
@@ -811,28 +812,25 @@ s32 func_002FF320(void *self, void *a1, u8 *cmd) {
     }
     fx = D_0044E4C0;
     room_effect_new(fx, 0x1B, D_00472F60);
+    for (i = 0; i < 16; i++) {
+        q[i] = corners[i];
+    }
     q[0x10] = cmd[3] == 2 ? 0x3F800000 : 0;
-    q[1] = 0x42DE0000;
-    q[5] = 0x42DE0000;
-    q[2] = 0xC00001A3;
-    q[10] = 0xC00001A3;
-    q[0] = 0xC17F5810;
-    q[3] = 0x3F800000;
-    q[6] = 0x40BFFF2E;
-    q[0x13] = 0x80;
-    q[0xE] = 0x40BFFF2E;
-    q[4] = 0xC17F5810;
-    q[7] = 0x3F800000;
-    q[8] = 0xC17F5810;
-    q[0xC] = 0xC17F5810;
-    q[9] = 0x42B60000;
-    q[0xD] = 0x42B60000;
-    q[0x11] = q[0x13];
-    q[0xB] = 0x3F800000;
-    q[0xF] = 0x3F800000;
+    q[0x11] = c;
     q[0x12] = 0;
+    q[0x13] = c;
     func_00266C70(fx, 0x1B, q);
     return 1;
+}
+
+/* a lit quad at x -15.96, z -2 .. 6, height 111 / 91 */
+s32 func_002FF320(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0xC17F5810, 0x42DE0000, 0xC00001A3, 0x3F800000, 0xC17F5810, 0x42DE0000, 0x40BFFF2E, 0x3F800000,
+        0xC17F5810, 0x42B60000, 0xC00001A3, 0x3F800000, 0xC17F5810, 0x42B60000, 0x40BFFF2E, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x80);
 }
 
 #include "effectmgr.h"
@@ -1146,4 +1144,36 @@ s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
         break;
     }
     return 1;
+}
+
+/* the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
+ * the far two on by 1 a frame up to 80 / 140 */
+s32 func_002B2BF0(void) {
+    u8 *fx = D_0044E4C0;
+    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 1156);
+    f32 r[4] __attribute__((aligned(16)));
+
+    room_effect_new(fx, 0x1C, D_0046EC60);
+    r[0] = 1.0f;
+    r[1] = 1.0f;
+    r[2] = 40.0f + t;
+    if (!(r[2] <= 80.0f)) {
+        r[2] = 80.0f;
+    }
+    r[3] = 100.0f + t;
+    if (!(r[3] <= 140.0f)) {
+        r[3] = 140.0f;
+    }
+    func_00266C70(fx, 0x1C, r);
+    return 1;
+}
+
+/* a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05 */
+s32 func_002B2D50(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0xC22C0000, 0x41F06D5D, 0xC171FD22, 0x3F800000, 0xC22C0000, 0x41F06D5D, 0x40A228F6, 0x3F800000,
+        0xC22C0000, 0x4120DABA, 0xC171FD22, 0x3F800000, 0xC22C0000, 0x4120DABA, 0x40A228F6, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x40);
 }
