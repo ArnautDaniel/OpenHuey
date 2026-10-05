@@ -3675,3 +3675,18 @@ src/game/model.c func_001F6E50 --pre=a0=0x0B000000..0x0B000000 --pre=a4=0x0B2000
 src/game/model.c func_001F7460 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B300000 --stub-ret=0 --stub-ret-prob=1 --pre=@0x0B300000=0..1 --pre=@0x0B300004=0..1 --pre=@0x0B300008=0..1 --pre=@0x0B30000C=0..1 --pre=@0x0B300010=0..1 --pre=a0+0x55C=0..2 --pre=a1=0..2 --pre=a3=0..1 --pre=a0+0x560=0..1 --pre=a0+0x54C=0..1 --pre=a0+0x6BC=0..1 --pre=a0+0x71C=0..1 --pre=a0+0x77C=0..1 --pre=a0+0x6C8=0..2 --pre=a0+0x4F0:u8=0..1 --pre=a0+0x504:u8=0..1 --pre=a0+0x518:u8=0..1 --pre=a0+0x52C:u8=0..1 --runs=300
 src/game/stalker_progress.c func_00177BF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=a2=0..7 --runs=100
 src/game/stalker_progress.c func_00177A20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x3F --pre=a2=0..7 --runs=100
+src/game/snd_lib.c func_0021EAC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/snd_lib.c func_0021EB10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x50=0x0041D820..0x0041D820 --pre=a0+0x54:u8=0..3 --pre=a0+0x55:u8=0..1 --pre=a0+0x58=0..2 --pre=a0+0x4=0x3F800000..0x42C80000 --pre=@0x47A958=0..2 --stub-fret=0.5 --stub-fret=-2.0 --stub-fret=3.0 --runs=200
+src/game/snd_lib.c func_0021F5C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x0:u8=0..3 --runs=100
+src/game/snd_lib.c func_0021F3D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x80 --runs=100
+src/game/snd_lib.c func_0021F4A0 --pre=a0=0..3 --pre=a1=0x0B000000..0x0B000000 --pre=a2=0..0x80 --pre=a3=0x0B100000..0x0B100000 --runs=100
+src/game/snd_lib.c func_0021F840 --pre=a2=0..0x100000 --pre=a4=0..2 --stub-ret=1 --stub-ret=-1 --stub-ret=0 --runs=100
+src/game/snd_lib.c func_0021F2D0 --pre=a0=0x110000..0x120000 --pre=a1=1..1 --runs=60
+src/game/snd_lib.c func_0021F9F0 --pre=a0=0x100000..0x130000 --pre=a1=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret-prob=1 --runs=100
+src/game/snd_lib.c func_0021FB70 --pre=a0=0..0x380003 --pre=a1=0x0B000000..0x0B000000 --pre=a1+0x18=0..0x0B100000 --pre=@0x0B100050=0x0041D820..0x0041D820 --pre=a1+0x8=0x28000000..0x2C000000 --pre=@0x47A958=0..3 --stub-ret=0 --stub-ret-prob=1 --runs=300
+src/game/snd_lib.c func_0021F0E0 --pre=a0=0..0x60000 --pre=a1=0x0B000000..0x0B000000 --pre=@0x47B228:u8=0..1 --stub-ret=0 --runs=100
+src/game/snd_lib.c func_0021F210 --runs=5
+src/game/snd_lib.c func_00220150 --stub-ret=-1 --stub-ret=3 --runs=20
+src/game/snd_lib.c func_00220210 --stub-ret=0x0B000000 --runs=20
+src/game/snd_lib.c func_00220340 --runs=5
+src/game/snd_lib.c func_00220440 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=20

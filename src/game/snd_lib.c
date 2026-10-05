@@ -1,0 +1,599 @@
+/* Capcom's EE sound library (PS2 0x0021EAC0..0x00220680, include/sndlib.h): calls into the IOP
+ * sound driver SNDDRV.IRX by SIF RPC (server 0x77777777, a second one 0x77777778 for the bank
+ * transfers), the EE -> IOP DMA, the RPC server the driver calls back (0x77777779), and the 3D
+ * placement of a sound (its volume left/right from where it is and how far). */
+#include "common.h"
+#include "sndlib.h"
+
+extern void func_00115D20(void *p, s32 c, u32 n);         /* memset */
+
+/* the RPC clients and the argument / result blocks */
+extern SifClient D_019756C0;   /* 0x77777777 */
+extern SifClient D_01976F00;   /* 0x77777778 */
+extern u32 D_01973EC0[0x26];   /* results */
+extern u16 *D_01971500[0x20];  /* per bank: each sound's 3D distance curve (the bank's table) */
+extern SifDma D_01971580;
+extern u8 D_019715C0[0x80];    /* the driver's state, written by the IOP (uncached) */
+extern u32 D_01971640[4];      /* bit 0 / 1: a transfer (0x11 / 0x12) running (uncached) */
+extern u32 D_01975700[8];
+extern u32 D_0047B218;         /* the last DMA's id */
+extern u32 D_0047B21C;         /* the IOP's copy of D_019715C0 */
+extern void (*D_0047B22C)(void *);
+extern u32 D_0047A958;         /* the output: 0 stereo, 1 / 2 the surround modes */
+extern f32 D_003DF580[0x400], D_003E0580[0x400];   /* stereo pan: right / left by angle */
+extern s32 D_003E3580[0x168];                      /* by degree: the surround tables' index */
+extern f32 D_003E3B20[], D_003E40C0[], D_003E4660[], D_003E4C00[];
+
+/* ---- the 3D placement ---- */
+
+/* |a - b| */
+f32 func_0021EAC0(f32 *a, f32 *b) {
+    f32 x = a[0] - b[0];
+    f32 y = a[1] - b[1];
+    f32 z = a[2] - b[2];
+
+    return __builtin_sqrtf(x * x + y * y + z * z);
+}
+
+extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2f */
+
+/* The sound's place: the block (driver +0x10, set by func_002FF4B0) holds its volume (+0x0,
+ * 0..127), the distance scale (+0x4), the sound's position (+0x10), the listener's (+0x20),
+ * the listener's facing (+0x30 from +0x40), the distance curves (+0x50: 10 (volume %,
+ * distance) pairs each, 0x50 bytes), the sound's curve (+0x54, +8 with +0x55 == 1, +4 from
+ * behind) and how its sides combine (+0x58: 0 both the average, 1 both positive, else as
+ * placed). The result: left volume << 16 | right (0x2000 full, by the output's pan tables). */
+u32 func_0021EB10(u8 *b, u32 word) {
+    f32 vol = AT(b, 0x0, u8) / 127.0f;
+    s16 l = 0, r = 0;
+    s32 at, facing, rel, deg, k, i, v = 0;
+    f32 dist;
+    s32 *curve;
+
+    if (b + 0x10 == NULL) {
+        return 0;
+    }
+    at = (s32)(0x1.45f306p+9f /* 4096 / 2pi */ * func_0031C5C0(AT(b, 0x10, f32) - AT(b, 0x20, f32),
+                                                                  AT(b, 0x18, f32) - AT(b, 0x28, f32))) & 0xFFF;
+    dist = func_0021EAC0((f32 *)(b + 0x20), (f32 *)(b + 0x10));
+    facing = (s32)(0x1.45f306p+9f * func_0031C5C0(AT(b, 0x30, f32) - AT(b, 0x40, f32),
+                                                  AT(b, 0x38, f32) - AT(b, 0x48, f32))) & 0xFFF;
+    rel = (((facing - at + 0x1000) & 0xFFF) / 2 + 0x200) & 0x7FF;
+    k = AT(b, 0x54, u8);
+    if (AT(b, 0x55, u8) == 1) {
+        k = (u8)(k + 8);
+    }
+    if (rel > 0x400) {
+        k = (u8)(k + 4);
+    }
+    curve = (s32 *)(AT(b, 0x50, u8 *) + k * 0x50);
+    for (i = 1; i < 16; i++) {
+        f32 d;
+
+        if (curve[i * 2 + 1] == 0) {
+            v = 0;
+            break;
+        }
+        d = AT(b, 0x4, f32) * (f32)curve[i * 2 + 1] / 100.0f;
+        if (dist < d) {
+            f32 d0 = AT(b, 0x4, f32) * (f32)curve[i * 2 - 1] / 100.0f;
+
+            v = (s32)((f32)curve[i * 2 - 2] + (f32)(curve[i * 2] - curve[i * 2 - 2]) * (dist - d0) / (d - d0));
+            break;
+        }
+    }
+    v = (s16)((v << 13) / 100);
+    if (D_0047A958 == 0) {
+        if (rel > 0x400) {
+            l = (s32)(vol * ((f32)v * -D_003E0580[0x800 - rel]));
+            r = (s32)(vol * ((f32)v * D_003DF580[0x800 - rel]));
+        } else {
+            l = (s32)(vol * ((f32)v * D_003E0580[rel]));
+            r = (s32)(vol * ((f32)v * D_003DF580[rel]));
+        }
+    } else {
+        deg = rel * 360 / 2048;
+        if (D_0047A958 == 1) {
+            l = (s32)(vol * ((f32)v * D_003E40C0[D_003E3580[deg]]));
+            r = (s32)(vol * ((f32)v * D_003E3B20[D_003E3580[deg]]));
+        } else if (D_0047A958 == 2) {
+            l = (s32)(vol * ((f32)v * D_003E4C00[D_003E3580[deg]]));
+            r = (s32)(vol * ((f32)v * D_003E4660[D_003E3580[deg]]));
+        }
+    }
+    switch (AT(b, 0x58, s32)) {
+    case 0:
+        l = r = ((l < 0 ? -l : l) + (r < 0 ? -r : r)) / 2;
+        break;
+    case 1:
+        l = l < 0 ? -l : l;
+        r = r < 0 ? -r : r;
+        break;
+    }
+    (void)word;
+    return ((u32)(s32)l << 16) | (u32)(s32)r;
+}
+
+/* ---- the driver's sound tables (the SDT files: 16 bytes an entry, an entry with flag 4 goes on
+   the sound before it) ---- */
+
+/* entry `e` of a sound table, unpacked (type 1: the 11-byte layout, type 2: 12 bytes with a
+   16-bit number) */
+void func_0021F5C0(u8 *e, u8 *out) {
+    func_00115D20(out, 0, 0x14);
+    switch (e[0]) {
+    case 1:
+        out[4] = e[1];
+        AT(out, 0x0, s32) |= (e[2] >> 7) & 1;
+        out[8] = e[2] & 0x7F;
+        AT(out, 0x0, s32) |= (e[3] >> 5) & 4;
+        AT(out, 0x0, s32) |= (e[3] >> 3) & 8;
+        AT(out, 0x0, s32) |= e[0] != 0 ? 0 : 0x20;
+        out[7] = e[3] & 0x3F;
+        AT(out, 0x0, s32) |= (e[4] >> 6) & 2;
+        out[9] = e[4] & 0x7F;
+        out[0xA] = e[5];
+        out[0xB] = e[6];
+        out[0xC] = (e[7] >> 4) & 0xF;
+        out[0xD] = e[7] & 7;
+        AT(out, 0x0, s32) |= (e[7] * 2) & 0x10;
+        out[5] = e[8] & 0x7F;
+        out[6] = e[9] & 0x7F;
+        out[0xE] = e[0xA];
+        break;
+    case 2:
+        AT(out, 0x4, s32) = (e[1] << 8) | e[2];
+        AT(out, 0x0, s32) |= (e[3] >> 7) & 1;
+        out[0xB] = e[3] & 0x7F;
+        AT(out, 0x0, s32) |= (e[4] >> 5) & 4;
+        AT(out, 0x0, s32) |= (e[4] >> 3) & 8;
+        AT(out, 0x0, s32) |= e[0] != 0 ? 0 : 0x20;
+        out[0xA] = e[4] & 0x3F;
+        AT(out, 0x0, s32) |= (e[5] >> 6) & 2;
+        out[0xC] = e[5] & 0x7F;
+        out[0xD] = e[6];
+        out[0xE] = e[7];
+        out[0xF] = (e[8] >> 4) & 0xF;
+        out[0x10] = e[8] & 7;
+        AT(out, 0x0, s32) |= (e[8] * 2) & 0x10;
+        out[8] = e[9] & 0x7F;
+        out[9] = e[0xA] & 0x7F;
+        out[0x11] = e[0xB];
+        break;
+    }
+}
+
+/* the number of sounds in table `t` (`size` bytes; -1 for less than an entry) */
+s32 func_0021F3D0(u8 *t, s32 size) {
+    u8 e[0x14] __attribute__((aligned(16)));
+    s32 n, i, k;
+
+    if (size < 0x10) {
+        return -1;
+    }
+    for (n = 0;; n++) {
+        /* (the n-th sound's first entry, counted from the start each time) */
+        for (k = 0, i = 0; k < n; i++) {
+            func_0021F5C0(t + i * 0x10, e);
+            if (!(AT(e, 0x0, s32) & 4)) {
+                k++;
+            }
+        }
+        if (i * 0x10 >= size) {
+            return n;
+        }
+    }
+}
+
+/* bank `bank`'s 3D curves: each sound's (+0xE of its first entry) into `out`, kept for the
+   bank (D_01971500) */
+void func_0021F4A0(s32 bank, u8 *t, s32 size, u16 *out) {
+    u8 e[0x14] __attribute__((aligned(16)));
+    u8 f[0x14] __attribute__((aligned(16)));
+    u16 *o = out;
+    s32 n, i, k;
+
+    if (size < 0x10) {
+        return;
+    }
+    for (n = 0;; n++) {
+        for (k = 0, i = 0; k < n; i++) {
+            func_0021F5C0(t + i * 0x10, e);
+            if (!(AT(e, 0x0, s32) & 4)) {
+                k++;
+            }
+        }
+        if (i * 0x10 >= size) {
+            break;
+        }
+        func_0021F5C0(t + i * 0x10, f);
+        *o++ = f[0xE];
+    }
+    D_01971500[bank] = out;
+}
+
+/* ---- SIF transfers and calls ---- */
+
+/* copy `size` bytes of EE memory at `src` to IOP memory at `dest` and wait for it (inIrq: from
+   an interrupt handler): 0, or -1 too big, -2 bad mode, -3 not queued, -4 */
+s32 func_0021F840(u32 src, u32 dest, u32 size, s32 attr, s32 inIrq) {
+    s32 r = 0;
+
+    if (size >= 0xFFFF1) {
+        return -1;
+    }
+    if (inIrq == 1) {
+        do {
+            D_01971580.src = src;
+            D_01971580.dest = dest;
+            D_01971580.size = size;
+            D_01971580.attr = attr;
+            func_0026CB18(src, src + size);
+            D_0047B218 = isceSifSetDma(&D_01971580, 1);
+        } while (D_0047B218 == 0);
+    } else if (inIrq == 0) {
+        do {
+            D_01971580.src = src;
+            D_01971580.dest = dest;
+            D_01971580.size = size;
+            D_01971580.attr = attr;
+            func_0026CA98(src, src + size);
+            D_0047B218 = sceSifSetDma(&D_01971580, 1);
+        } while (D_0047B218 == 0);
+    } else {
+        return -2;
+    }
+    if (D_0047B218 == 0) {
+        return -3;
+    }
+    for (;;) {
+        if (inIrq == 1) {
+            if (isceSifDmaStat(D_0047B218) < 0) {
+                break;
+            }
+        } else if (inIrq == 0) {
+            if (sceSifDmaStat(D_0047B218) < 0) {
+                break;
+            }
+        } else {
+            return -4;
+        }
+    }
+    return r;
+}
+
+/* the end of a nowait call (the SIF interrupt): interrupts back on */
+void func_0021F280(void *p) {
+    EE_SYNC_EI();
+}
+
+/* the end of a transfer 0x12 / 0x11: its running bit off */
+void func_0021F290(u32 *flags) {
+    *flags &= ~2;
+    EE_SYNC_EI();
+}
+
+void func_0021F2B0(u32 *flags) {
+    *flags &= ~1;
+    EE_SYNC_EI();
+}
+
+/* transfer 0x110000 / 0x120000 still running (poll 0: wait for it) */
+s32 func_0021F2D0(u32 cmd, s32 poll) {
+    volatile u32 *flags = UNCACHED(D_01971640);
+    u32 bit;
+
+    if (cmd == 0x120000) {
+        bit = 2;
+    } else if (cmd == 0x110000) {
+        bit = 1;
+    } else {
+        return -1;
+    }
+    if (poll == 0) {
+        while (*flags & bit) {
+        }
+        return 0;
+    }
+    return (*flags & bit) != 0;
+}
+
+/* wait out the client's call in progress */
+static inline void sif_delay(void) {
+    volatile s32 n;
+
+    for (n = 0x2710 - 1; n > 0; n--) {
+    }
+}
+
+static inline void sif_wait(SifClient *cd) {
+    while (func_002702E8(cd) == 1) {
+        sif_delay();
+    }
+}
+
+/* the transfer commands (0x110000 / 0x120000) on the second server, not waited for */
+void *func_0021F9F0(u32 cmd, void *args) {
+    u32 *flags = UNCACHED(D_01971640);
+
+    sif_wait(&D_01976F00);
+    switch (cmd & 0xFFFF0000) {
+    case 0x110000:
+    case 0x120000:
+        if ((cmd & 0xFFFF0000) == 0x110000) {
+            D_0047B22C = (void (*)(void *))func_0021F2B0;
+            *flags |= 1;
+        } else {
+            D_0047B22C = (void (*)(void *))func_0021F290;
+            *flags |= 2;
+        }
+        while (func_002700E8(&D_01976F00, cmd, 1, args, 0x20, D_01975700, 4, D_0047B22C, flags) != 0) {
+        }
+        break;
+    }
+    return D_01975700;
+}
+
+/* call the driver: command `cmd` (high 16 bits; low bits its argument) with the 0x20-byte block
+   `args`; the result block. The sound commands (0x26, 0x27 a list of 0x20-byte ones) with a 3D
+   block (+0x18) get their volumes placed (+0x14) first. 0x36 / 0x37 set / read the output mode
+   here. */
+u32 *func_0021FB70(u32 cmd, void *args) {
+    u32 n, i;
+    u8 *a;
+
+    sif_wait(&D_019756C0);
+    switch (cmd & 0xFFFF0000) {
+    case 0x370000:
+        D_01973EC0[0] = D_0047A958;
+        break;
+    case 0x360000:
+        if (D_0047A958 < 3) {
+            D_0047A958 = cmd & 0xFF;
+        } else {
+            D_0047A958 = 0;
+        }
+        break;
+    case 0x270000:
+        n = cmd & 0xFF;
+        if (n == 0) {
+            break;
+        }
+        for (i = 0, a = args; i < n; i++, a += 0x20) {
+            u32 w = AT(a, 0x8, u32);
+
+            if ((w & 0x20000000) == 0x20000000 && (w & 0x08000000) == 0x08000000 && AT(a, 0x18, u8 *) != NULL) {
+                u16 *curves = D_01971500[AT(a, 0x0, u16)];
+
+                if (curves != NULL) {
+                    AT(AT(a, 0x18, u8 *), 0x54, u8) = curves[w & 0xFFFF];
+                }
+                AT(a, 0x14, u32) = func_0021EB10(AT(a, 0x18, u8 *), w);
+            }
+        }
+        while (func_002700E8(&D_019756C0, cmd, 0, args, n << 5, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x260000: {
+        u32 w = AT(args, 0x8, u32);
+
+        if ((w & 0x20000000) == 0x20000000 && (w & 0x08000000) == 0x08000000 && AT(args, 0x18, u8 *) != NULL) {
+            u16 *curves = D_01971500[AT(args, 0x0, u16)];
+
+            if (curves != NULL) {
+                AT(AT(args, 0x18, u8 *), 0x54, u8) = curves[w & 0xFFFF];
+            }
+            AT(args, 0x14, u32) = func_0021EB10(AT(args, 0x18, u8 *), w);
+        }
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x20, D_01973EC0, 8, func_0021F280, NULL) != 0) {
+        }
+        break;
+    }
+    case 0x320000:
+    case 0x300000:
+    case 0x2E0000:
+    case 0x2D0000:
+    case 0x2C0000:
+    case 0x0:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x2B0000:
+        while (func_002700E8(&D_019756C0, cmd, 1, args, 0x88, D_01973EC0, 4, func_0021F280, NULL) != 0) {
+        }
+        break;
+    case 0x310000:
+    case 0x2A0000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x88, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    case 0xA0000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0xB4, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x60000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 8, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x20000:
+    case 0x10000:
+    case 0x130000:
+    case 0x2F0000:
+    case 0xB0000:
+    case 0x90000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x140000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 0x1C, NULL, NULL) != 0) {
+        }
+        break;
+    case 0x50000:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 0x98, NULL, NULL) != 0) {
+        }
+        break;
+    default:
+        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x20, D_01973EC0, 4, NULL, NULL) != 0) {
+        }
+        break;
+    }
+    return D_01973EC0;
+}
+
+/* ---- the EE's own RPC server (0x77777779), which the driver calls ---- */
+
+extern u16 D_0047B228;     /* the driver's argument 10 (1: it reads EE memory itself) */
+extern u32 D_0047B230;     /* the server's reply */
+
+/* the driver asks: 1 copy EE memory to it (or, with argument 10 set, just the address), 2..5
+   its state words into D_019715C0 (+0x30, +0x20, +0x40, +0x50) */
+void *func_0021F0E0(u32 fno, void *buf) {
+    u8 *st = UNCACHED(D_019715C0);
+
+    switch (fno & 0xFFFF0000) {
+    case 0x50000:
+        AT(st, 0x50, u32) = AT(buf, 0x8, u32);
+        D_0047B230 = 0;
+        return &D_0047B230;
+    case 0x40000:
+        AT(st, 0x40, u32) = AT(buf, 0x8, u32);
+        D_0047B230 = 0;
+        return &D_0047B230;
+    case 0x30000:
+        AT(st, 0x20, u32) = AT(buf, 0x8, u32);
+        D_0047B230 = 0;
+        return &D_0047B230;
+    case 0x20000:
+        AT(st, 0x30, u32) = AT(buf, 0x8, u32);
+        D_0047B230 = 0;
+        return &D_0047B230;
+    case 0x10000:
+        if (D_0047B228 == 1) {
+            return AT(buf, 0x8, void *);
+        }
+        D_0047B230 = func_0021F840(AT(buf, 0x8, u32), AT(buf, 0xC, u32), AT(buf, 0x10, u32), AT(buf, 0x14, s32),
+                                   AT(buf, 0x18, s32));
+        return &D_0047B230;
+    }
+    return NULL;
+}
+
+extern u8 D_01976F30[];   /* the server's queue */
+extern u8 D_01976F50[];   /* its serve data */
+extern u8 D_019726C0[];   /* its receive buffer */
+extern s32 D_0047B220;    /* the server thread */
+
+/* the server thread */
+void func_0021F210(void) {
+    func_00270328(D_01976F30, D_0047B220);
+    func_002703C0(D_01976F50, 0x77777779, func_0021F0E0, D_019726C0, NULL, NULL, D_01976F30);
+    func_002707D8(D_01976F30);
+}
+
+typedef struct EeThread {
+    s32 status;
+    void *func;
+    void *stack;
+    s32 stackSize;
+    void *gp;
+    s32 prio;
+    s32 pad[3];
+} EeThread;
+
+extern s32 CreateSema(void *s);
+extern s32 CreateThread(void *t);
+extern s32 func_0026D2E0(s32 thread, void *arg);   /* StartThread */
+extern s32 D_0047B224;
+extern s32 D_01972680[3];      /* the semaphore's parameters */
+extern EeThread D_01971650;
+extern u8 D_01971680[];        /* the server thread's stack */
+extern u8 _gp[];
+
+/* start the EE server (thread priority `prio`, stack `stack` bytes) */
+void func_00220150(s32 prio, s32 stack) {
+    D_01972680[2] = 0;
+    D_01972680[1] = 1;
+    D_0047B224 = CreateSema(D_01972680);
+    D_01971650.func = func_0021F210;
+    D_01971650.stack = D_01971680;
+    D_01971650.stackSize = stack;
+    D_01971650.prio = prio;
+    D_01971650.gp = _gp;
+    D_01971650.pad[2] = 0;
+    D_0047B220 = CreateThread(&D_01971650);
+    if (D_0047B220 >= 0) {
+        func_0026D2E0(D_0047B220, NULL);
+    }
+}
+
+extern u32 D_01970D40[8];   /* the call arguments */
+
+/* give the driver the EE state block: it answers where its copy is, which gets the block */
+void func_00220210(void) {
+    D_01970D40[2] = (u32)UNCACHED(D_019715C0);
+    D_0047B21C = *func_0021FB70(0x40000, D_01970D40);
+    func_0021F840(D_01970D40[2], D_0047B21C, 0x80, 0, 0);
+}
+
+extern u8 D_019756E4[], D_01976F24[];   /* the clients' server pointers (bound when set) */
+
+/* bind the driver's two servers (retrying until they are up) */
+void func_00220270(void) {
+    do {
+        func_0026FF08(&D_019756C0, 0x77777777, 0);
+        sif_delay();
+    } while (AT(D_019756E4, 0, u32) == 0);
+    do {
+        func_0026FF08(&D_01976F00, 0x77777778, 0);
+        sif_delay();
+    } while (AT(D_01976F24, 0, u32) == 0);
+}
+
+extern u8 D_01970C80[0xB4], D_01970D80[0x600], D_01971380[0x10], D_019713C0[0x88], D_01971480[0x60];
+
+/* clear the library's blocks */
+void func_00220340(void) {
+    func_00115D20(D_01970C80, 0, 0xB4);
+    func_00115D20(D_01970D40, 0, 0x20);
+    func_00115D20(D_01970D80, 0, 0x600);
+    func_00115D20(D_01971380, 0, 0x10);
+    func_00115D20(D_019713C0, 0, 0x88);
+    func_00115D20(D_01971480, 0, 0x60);
+    func_00115D20(D_01971500, 0, 0x80);
+    func_00115D20(&D_01971580, 0, 0x10);
+    D_0047B218 = 0;
+    func_00115D20(UNCACHED(D_019715C0), 0, 0x80);
+    D_0047B21C = 0;
+    func_00115D20(UNCACHED(D_01971640), 0, 0x10);
+}
+
+extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
+extern char *func_001183C0(char *d, const char *s);   /* strcpy */
+extern char *func_001180E8(const char *s, s32 c);     /* strchr */
+extern const char D_004572B0[];   /* "%x" (as the driver reads them) */
+extern const char D_004572B8[];   /* "%d" */
+
+/* the driver's start arguments into `out` ("a\0b\0..."; three addresses, then numbers - the
+   last (+0x1A) kept: 1 the driver reads EE memory itself); their length, 0 past 250 */
+s8 func_00220440(char *out, u8 *p) {
+    char s[10][0x10];
+    char *e = out;
+    s32 i, n;
+
+    func_0026EDD0(s[0], 0x10, D_004572B0, AT(p, 0x0, u32));
+    func_0026EDD0(s[1], 0x10, D_004572B0, AT(p, 0x4, u32));
+    func_0026EDD0(s[2], 0x10, D_004572B0, AT(p, 0x8, u32));
+    func_0026EDD0(s[3], 0x10, D_004572B8, AT(p, 0xC, u32));
+    for (i = 0; i < 6; i++) {
+        func_0026EDD0(s[4 + i], 0x10, D_004572B8, AT(p, 0x10 + i * 2, u16));
+    }
+    D_0047B228 = AT(p, 0x1A, u16);
+    for (i = 0; i < 10; i++) {
+        e = func_001180E8(func_001183C0(e, s[i]), 0) + 1;
+    }
+    n = (e - out) & 0xFF;
+    if (n >= 0xFB) {
+        n = 0;
+    }
+    return n;
+}
