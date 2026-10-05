@@ -4728,3 +4728,300 @@ void func_0018F870(Fiona *f) {
     }
     func_00125A10(&f->c);
 }
+
+/* ---- Fiona taking a hit or being caught (state block [0] 4) ---- */
+
+extern u32 func_00177BF0(Progress *p, u32 exit, u32 slot);   /* exit bits for a character */
+extern u32 func_00177A20(Progress *p, u32 door, u32 slot);   /* door-region bits for a character */
+extern void func_002EFA50(u8 *panic, f32 amount);           /* panic up by amount */
+extern const PTMF D_003B2DD8, D_003B2DE8, D_003B2DF8, D_003B2E08, D_003B2E18, D_003B2E28, D_003B2E38;
+extern const PTMF D_003B2E48, D_003B2E58, D_003B2E68, D_003B2E78, D_003B2E88;
+
+#define AREA_HOLY 0x88   /* the current area (D_0044E988 +0x10 (1)) where she cannot be caught */
+
+/* the reaction for request `req` (the state block's [1]), -1: none. While an event runs or
+ * progress flag 8 is set, none; a request about character [2] needs it present. 0xD falls
+ * 0x13; 1 / 2 / 4 knocked down 0xE / 0xF / 0xA (on a slope, stairs or at a door: 0xC / 0xD;
+ * crawling (3/7): 8); 3 grabbed 0x10 (already: a shake); 5 carried by door [4] 0xB; 6 caught
+ * 0x20; 0xA 9; 0xC 0x12 - none while already reacting (4) or down (3 / 0xA) */
+s32 func_00184E00(Fiona *f, s32 req) {
+    Progress *p;
+    s32 m;
+    u32 i;
+    s32 n;
+
+    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) != 0) {
+        return -1;
+    }
+    p = gProgress;
+    if ((Progress_TestFlag(p, 8) & 0xFF) == 1) {
+        return -1;
+    }
+    if (req == 5) {
+        if (!(VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, (u8)f->c.state[4]) & 0xFF)) {
+            return -1;
+        }
+    } else if (f->c.state[2] != 0xFF) {
+        Character *c = gCharacters[f->c.state[2]];
+
+        if (c == NULL || (c->a.active == 0 && c->a.disabled == 1)) {
+            return -1;
+        }
+    }
+    m = f->c.moveMode;
+    switch (req) {
+    case 0xD:
+        if (m == 4 || m == 0xA || m == 3) {
+            return -1;
+        }
+        return 0x13;
+    case 1:
+    case 2:
+    case 4:
+        if (m == 4 || m == 0xA) {
+            return -1;
+        }
+        if (m == 3 && f->c.moveSub == 7) {
+            return 8;
+        }
+        if (NavMesh_TriFlags(D_0044E570, f->c.a.navTri) & 0x80003) {   /* (off the mesh: address 0x3C) */
+            return req == 1 ? 0xC : 0xD;
+        }
+        for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+            if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
+                return req == 1 ? 0xC : 0xD;
+            }
+        }
+        n = D_0044E570->numDoors;
+        for (i = 0; (s32)i < n; i++) {
+            if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
+                return req == 1 ? 0xC : 0xD;
+            }
+        }
+        if (req == 1) {
+            return 0xE;
+        }
+        if (req == 2) {
+            return 0xF;
+        }
+        if (req == 4) {
+            return 0xA;
+        }
+        return -1;
+    case 3:
+        if (m == 4 && f->c.moveSub == 0x10) {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xFF, 0x10);
+            return -1;
+        }
+        return 0x10;
+    case 5:
+        if (m == 4 && f->c.moveSub == 0xB && f->c.unk104[0] == f->c.state[4]) {
+            return -1;
+        }
+        return 0xB;
+    case 6:
+        if (m == 4 || m == 0xA || (m == 0 && f->unk1AD580 == 0xF)) {
+            return -1;
+        }
+        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+            return 0x20;
+        }
+        if (m == 3 && f->c.moveSub == 7) {
+            return 8;
+        }
+        return 0x20;
+    case 0xA:
+        if (m == 4 || m == 3 || m == 0xA) {
+            return -1;
+        }
+        return 9;
+    case 0xC:
+        if (m == 4) {
+            if (f->c.moveSub != 0x12) {
+                return -1;
+            }
+        } else if (m == 3 || m == 0xA) {
+            return -1;
+        }
+        return 0x12;
+    }
+    return -1;
+}
+
+/* react to the state block `st` ([1] the request, [2] by whom, [4] its detail, [5] the panic it
+ * adds): action 4 with the reaction func_00184E00 picked (-1: none), the rumble, and its state */
+s32 func_00182340(Fiona *f, s32 *st) {
+    s32 kind = func_00184E00(f, st[1]);
+    Progress *p;
+
+    if (kind == -1) {
+        return -1;
+    }
+    p = gProgress;
+    func_002EFA50((u8 *)p + 0x7B8, *(f32 *)&st[5]);
+    if (kind == 0x20 && D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+        return -1;
+    }
+    f->targetParam = 0;
+    f->c.unk14D0 = 0;
+    func_001F6E10(f->c.motion);
+    f->c.a.unk2D = 1;
+    func_00184BF0(f);
+    f->c.unk100 = st[2];
+    f->unk1AD580 = 0xA;
+    f->c.moveMode = 4;
+    f->c.moveSub = kind;
+    VCALL(D_0044E560, 0x10, void (*)(VObject *, s32, s32, s32))(D_0044E560, 0, 0x800000, 4);
+    switch (kind) {
+    case 0x13: {
+        NavMesh *nav;
+        u32 i;
+        s32 n;
+
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xA0, 8);
+        nav = D_0044E570;
+        f->c.a.unk2A = 0;
+        FI(f, 0x1AD6C0, s32) = 1;
+        if (NavMesh_TriFlags(nav, f->c.a.navTri) & 0x80003) {
+            FI(f, 0x1AD6C0, s32) = 0;
+        }
+        if (FI(f, 0x1AD6C0, s32) != 0) {
+            for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+                if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
+                    FI(f, 0x1AD6C0, s32) = 0;
+                    break;
+                }
+            }
+        }
+        if (FI(f, 0x1AD6C0, s32) != 0) {
+            n = nav->numDoors;
+            for (i = 0; (s32)i < n; i++) {
+                if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
+                    FI(f, 0x1AD6C0, s32) = 0;
+                    break;
+                }
+            }
+        }
+        Actor_SetState(&f->c.a, &D_003B2E88);
+        break;
+    }
+    case 0x12:
+        f->c.a.unk2D = 0;
+        f->c.a.unk2A = 1;
+        FI(f, 0x1AD710, u8) = 1;
+        FI(f, 0x1AD714, s32) = 0;
+        FI(f, 0x1AD6C0, s32) = 0xB4;
+        FI(f, 0x1AD6C4, s32) = 0x3C;
+        Actor_SetState(&f->c.a, &D_003B2E78);
+        break;
+    case 0xC:
+    case 0xD:
+    case 0xE:
+    case 0xF:
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, kind != 0xE && kind != 0xC ? 0xA0 : 0x80, 8);
+        if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
+            func_00177630(p, 1);
+        }
+        if (st[4] & 0x8000) {
+            func_00182E80(f);
+        }
+        f->c.a.unk2A = 0;
+        Actor_SetState(&f->c.a, &D_003B2E68);
+        break;
+    case 0xB:
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+        func_00177630(p, 1);
+        f->c.a.unk2A = 1;
+        f->c.unk104[0] = st[4];
+        Actor_SetState(&f->c.a, &D_003B2E58);
+        break;
+    case 0xA:
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+        if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
+            func_00177630(p, 1);
+        }
+        if (st[4] & 0x8000) {
+            func_00182E80(f);
+        }
+        f->c.a.unk2A = 1;
+        Actor_SetState(&f->c.a, &D_003B2E48);
+        break;
+    case 9:
+        func_00177630(p, 1);
+        f->c.a.unk2A = 1;
+        FI(f, 0x1AD710, u8) = 1;
+        FI(f, 0x1AD714, s32) = 0;
+        f->c.unk104[0] = FI(f, 0x1AD6F0, s32);
+        FI(f, 0x10C, f32) = FI(f, 0x1AD6F4, f32);
+        sceVu0CopyVector(f->c.unk110, (f32 *)((u8 *)f + 0x1AD700));
+        f->c.unk104[1] = st[4];
+        FI(f, 0x1AD6C8, s32) = 0;
+        func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
+        Actor_SetState(&f->c.a, f->c.unk104[1] == 6 ? &D_003B2E28 : &D_003B2E38);
+        break;
+    case 8:
+        func_00177630(p, 1);
+        f->c.a.unk2A = 1;
+        Actor_SetState(&f->c.a, &D_003B2E18);
+        break;
+    case 0x10:
+        f->c.a.unk2D = 0;
+        Progress_SetFlag(p, 0x2B);
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xFF, 0x10);
+        f->c.a.unk2A = 0;
+        FI(f, 0x1AD6CC, s32) = 0;
+        Actor_SetState(&f->c.a, &D_003B2E08);
+        break;
+    case 0x20:
+        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+            return -1;
+        }
+        if (st[4] != 5) {
+            f->c.a.unk2D = 0;
+            f->unk1AD580 = 8;
+            f->c.moveMode = 0xB;
+            switch (st[4]) {
+            case 3:
+                f->c.unk104[0] = 3;
+                f->target = gCharPursuer;
+                break;
+            case 1:
+                if (NavMesh_TriFlags(D_0044E570, f->c.a.navTri) & 0x80001) {
+                    f->c.unk104[0] = 3;
+                } else {
+                    f32 h = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+                    f32 d;
+
+                    if (!(func_002E2D00(h - f->c.a.angle[1]) <= 0.0f)) {
+                        d = func_002E2D00(h - f->c.a.angle[1]);
+                    } else {
+                        d = -func_002E2D00(h - f->c.a.angle[1]);
+                    }
+                    f->c.unk104[0] = d < 0x1.921fb6p+0f /* pi/2 */ ? 1 : 3;
+                }
+                f->target = gCharPursuer;
+                break;
+            case 2:
+                f->c.unk104[0] = 2;
+                break;
+            case 4:
+                f->c.unk104[0] = 4;
+                break;
+            }
+            Actor_SetState(&f->c.a, &D_003B2DF8);
+        } else if ((func_001235C0(f, &f->c.a) & 0xFF) == 1) {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+            f->c.unk100 = 0xFF;
+            f->c.a.unk2A = 1;
+            Actor_SetState(&f->c.a, &D_003B2DD8);
+        } else {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x80, 8);
+            f->c.unk100 = 2;
+            f->c.a.unk2A = 0;
+            f->c.moveSub = 0xC;
+            Actor_SetState(&f->c.a, &D_003B2DE8);
+        }
+        break;
+    }
+    return 0;
+}
