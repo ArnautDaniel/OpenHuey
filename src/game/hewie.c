@@ -7814,3 +7814,53 @@ void func_001545A0(Hewie *h) {
     }
     hewie_want(h, 0, 0);
 }
+
+/* ---- squeezing through ---- */
+
+/* squeeze through the gap of exit +0xF36B4 (mesh flag 0x20000) toward +0xF36E0: walking (pose 7)
+ * straight at it by his root motion, turning to it, head held level. In the gap he is marked
+ * (+0x2B) and blocked only by flag 8. Out of it (+0x2B cleared): done when +0xF36B8 runs out or
+ * the rooms say the exit is passed (+0x70); and whenever the door no longer gives the way (state
+ * bit 0x20): the default action */
+void func_00154860(Hewie *h) {
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 a, step;
+    NavMesh *nm;
+
+    a = func_001244D0(&h->c.a, &HW(h, 0xF36E0, f32));
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    func_00141C00(h, 7);
+    step = run_turn(h);
+    turn_toward(h, a, step);
+    nm = D_0044E570;
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    if (NavMesh_TriFlags(nm, h->c.a.navTri) & 0x20000) {
+        h->c.a.unk2B = 1;
+        h->c.a.navMask = 8;
+    }
+    sceVu0SubVector(dir, &HW(h, 0xF36E0, f32), h->c.a.pos);
+    sceVu0Normalize(dir, dir);
+    sceVu0ScaleVector(dir, dir, root_ahead(h, root));
+    func_001247E0(&h->c.a, dir);
+    HW(h, 0xF3558, u8) = 1;
+    if (HW(h, 0xF36B8, s32) != 0) {
+        HW(h, 0xF36B8, s32) -= 1;
+    }
+    if (!(NavMesh_TriFlags(nm, h->c.a.navTri) & 0x20000)) {
+        h->c.a.unk2B = 0;
+        if (HW(h, 0xF36B8, s32) == 0 ||
+            (u8)VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, HW(h, 0xF36B4, u8)) == 1) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+    }
+    if (!(func_00177BF0(gProgress, HW(h, 0xF36B4, u8), (u8)h->c.a.slot) & 0xFF & 0x20)) {
+        hewie_want(h, 0, 0);
+    }
+}
