@@ -496,3 +496,202 @@ void func_002238F0(VObject *d) {
     }
     AT(d, 0x4, u8 *) = NULL;
 }
+
+
+/* ---- a door sound and the noise it makes ---- */
+
+extern VObject *D_0044E560;   /* the sound driver */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
+
+/* door `e` (its own +0x0) plays sound `id` and is heard as a noise by its opener's slot (+0x6C:
+ * 0..2, else 3): `how` 1 / 2 quiet (15), 3 / 4 loud (95), else silent */
+void func_00220D10(u8 *e, s32 id, s32 how) {
+    Progress *p;
+    s32 slot, loud = 0, room;
+    u32 door;
+
+    func_002FF650(D_0044E560, id & 0xFFFF, 5, (f32 *)(e + 0x10), 0, 0);
+    switch (AT(e, 0x6C, s32)) {
+    case 2: slot = 2; break;
+    case 1: slot = 1; break;
+    case 0: slot = 0; break;
+    default: slot = 3; break;
+    }
+    switch (how & 0xFF) {
+    case 1:
+    case 2:
+        loud = 0xF;
+        break;
+    case 3:
+    case 4:
+        loud = 0x5F;
+        break;
+    }
+    p = gProgress;
+    door = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(e, 0x4, u8)) & 0xFFFF;
+    room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    func_002A8440((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
+}
+
+
+/* ---- the route planner (D_0044E580, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first
+ * search from room to room through the doors (D_0044E568's links), up to 128 steps:
+ *   +0x4 from, +0x8 to, +0xC the door wanted at the end (-1: any), +0x10 the side the doors
+ *   must open from, +0x14 rooms to avoid (bits, NULL none), +0x18 where the route goes (door
+ *   ids, u16; NULL none), +0x1C / +0x1E the queue's head / tail, +0x20 the most steps (-1 no
+ *   limit), +0x24 the door being looked at, +0x28 the walker's kind, +0x2C the steps (0xC
+ *   each: door, room, door on the far side, depth, from), +0x62C the step looked at, +0x630
+ *   rooms seen (bits) ---- */
+
+extern void *D_0046C520[], *D_0046C530[];
+extern VObject *D_0044E580;
+extern s32 func_00178610(Progress *p, u32 d);   /* the door is locked (u8) */
+extern s32 func_00178200(Progress *p, u32 d, s32 side);   /* it opens from that side (u8) */
+
+typedef struct RouteStep {
+    u16 door, room, far, depth;
+    struct RouteStep *from;
+} RouteStep;
+
+/* the doors out of `room` queued as steps (those not yet seen, not to avoid, unlocked and
+ * openable from the right side; with +0x24 0 / 1, only through the door matching it); -1 when
+ * the queue is full */
+s32 func_002206F0(u8 *rp, s32 room) {
+    VObject *rooms = D_0044E568;
+    Progress *p = gProgress;
+    u32 i;
+
+    for (i = 0; i < 8; i++) {
+        u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, room, i & 0xFF) & 0xFFFF;
+        u32 m, *seen;
+
+        if (d == 0xFFFF) {
+            continue;
+        }
+        if ((AT(rp, 0x24, s32) == 0 || AT(rp, 0x24, s32) == 1) &&
+            AT(rp, 0x24, s32) != VCALL(rooms, 0x54, s32 (*)(VObject *, u32, s32, u32))(rooms, d, room, AT(rp, 0x28, u8))) {
+            continue;
+        }
+        m = 1u << (d & 0x1F);
+        seen = &AT(rp, 0x630 + (d >> 5) * 4, u32);
+        if (*seen & m) {
+            continue;
+        }
+        if (!(AT(rp, 0x14, u32 *) != NULL && (m & AT(rp, 0x14, u32 *)[d >> 5])) && !(func_00178610(p, d) & 0xFF) &&
+            (func_00178200(p, d, AT(rp, 0x10, u8)) & 0xFF) == 1) {
+            s16 n = AT(rp, 0x1E, s16)++;
+            RouteStep *s = (RouteStep *)(rp + 0x2C) + n;
+
+            if (!(AT(rp, 0x1E, s16) < 0x80)) {
+                return -1;
+            }
+            s->door = d;
+            s->room = VCALL(rooms, 0x1C, u16 (*)(VObject *, u32, s32))(rooms, d, room);
+            s->far = VCALL(rooms, 0x5C, u16 (*)(VObject *, u32, s32, u32))(rooms, d, room, AT(rp, 0x28, u8));
+            s->from = AT(rp, 0x62C, RouteStep *);
+            s->depth = s->from != NULL ? s->from->depth + 1 : 0;
+        }
+        *seen |= m;
+    }
+    return 0;
+}
+
+/* search on: the steps in turn until one reaches the goal room (through the wanted door) - its
+ * route written backwards from +0x18 (which ends before its start) - and the number of doors;
+ * -1 when none is left or the limit is reached */
+s32 func_00220930(u8 *rp) {
+    for (;;) {
+        RouteStep *s;
+        s16 lim;
+
+        if (AT(rp, 0x1C, s16) == AT(rp, 0x1E, s16)) {
+            return -1;
+        }
+        s = (RouteStep *)(rp + 0x2C) + AT(rp, 0x1C, s16);
+        AT(rp, 0x62C, RouteStep *) = s;
+        AT(rp, 0x1C, s16)++;
+        lim = AT(rp, 0x20, s16);
+        if (lim >= 0 && !((s16)AT(rp, 0x62C, RouteStep *)->depth < lim)) {
+            return -1;
+        }
+        s = AT(rp, 0x62C, RouteStep *);
+        AT(rp, 0x24, s32) = s->far;
+        if (s->room == AT(rp, 0x8, u32) && (AT(rp, 0xC, s32) == -1 || AT(rp, 0x24, s32) == AT(rp, 0xC, s32))) {
+            RouteStep *t;
+            s32 n = 0, k;
+
+            for (t = s; t != NULL; t = t->from) {
+                n++;
+            }
+            if (AT(rp, 0x18, u16 *) != NULL) {
+                AT(rp, 0x18, u16 *) += n - 1;
+                for (k = 0; k < n; k++) {
+                    *AT(rp, 0x18, u16 *) = s->door;
+                    AT(rp, 0x18, u16 *) -= 1;
+                    s = s->from;
+                }
+            }
+            return n;
+        }
+        if (func_002206F0(rp, s->room) == -1) {
+            return -1;
+        }
+    }
+}
+
+/* +0xC a route from room `from` to room `to` (doors openable from `side`, avoiding `avoid`,
+ * into `out`) for a walker of `kind`, starting from door `door`, ending at door `want` (-1:
+ * any), in at most `max` doors: its length, 0 already there, -1 none */
+s32 func_00220BC0(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *out, s32 kind, s32 door, s32 want, s16 max) {
+    s32 i;
+
+    if (from >= 0x110 || to >= 0x110) {
+        return -1;
+    }
+    AT(rp, 0x24, s32) = door;
+    if (from == to && (want == -1 || AT(rp, 0x24, s32) == -1 || AT(rp, 0x24, s32) == want)) {
+        return 0;
+    }
+    AT(rp, 0x28, u8) = kind;
+    AT(rp, 0x4, u32) = from;
+    AT(rp, 0x8, u32) = to;
+    AT(rp, 0xC, s32) = want;
+    AT(rp, 0x10, s32) = side;
+    AT(rp, 0x20, s16) = max;
+    AT(rp, 0x14, u32 *) = avoid;
+    AT(rp, 0x62C, void *) = NULL;
+    AT(rp, 0x18, u16 *) = out;
+    AT(rp, 0x1E, s16) = 0;
+    AT(rp, 0x1C, s16) = 0;
+    for (i = 0; i < 13; i++) {
+        AT(rp, 0x630 + i * 4, u32) = 0;
+    }
+    func_002206F0(rp, from);
+    return func_00220930(rp);
+}
+
+/* +0x8 destructor */
+void *func_00220680(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046C520;
+        AT(o, 0x0, void **) = D_0046C530;
+        D_0044E580 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the base's destructor */
+void *func_00220CB0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046C530;
+        D_0044E580 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
