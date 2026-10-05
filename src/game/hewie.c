@@ -1345,7 +1345,7 @@ static inline void Hewie_SetBehaviour(Hewie *h, const PTMF *s) {
 
 #define ANIM_DONE(h) ((MOTION_EVENTS((h)->c.motion) & 0x20) != 0)   /* animation event 0x20 */
 
-extern s32 func_00140CD0(Hewie *h, s32 kind);
+extern s32 func_00140CD0(Hewie *h, u32 kind);
 extern s32 func_001367B0(Hewie *h);   /* u8 */
 extern void func_001431F0(Hewie *h);
 extern const PTMF D_003B1B58, D_003B1B48, D_003B1B38, D_003B19A8, D_003B1778, D_003B1B68;
@@ -4613,4 +4613,158 @@ void func_001407C0(Hewie *h) {
         hewie_want(h, 0x26, 0);
         break;
     }
+}
+
+/* ---- getting into a pose ---- */
+
+extern void func_00143400(Hewie *h);
+
+static inline void pose_play(Hewie *h, s32 anim) {
+    func_002DDED0(h->c.motion, anim, -1);
+}
+
+/* the transition out of animation group g shared by most poses */
+static void pose_leave(Hewie *h, s32 g) {
+    switch (g) {
+    case 3:
+        pose_play(h, 0x107);
+        break;
+    case 7:
+        if (ANIM_DONE(h)) {
+            pose_play(h, 0x107);
+        }
+        break;
+    case 8:
+        if (h->c.a.unkC4 == 1) {
+            if (MOTION_ANIM(h->c.motion) != 0x206) {
+                pose_play(h, 0x206);
+            }
+        } else if (MOTION_ANIM(h->c.motion) != 0x201) {
+            pose_play(h, 0x201);
+        }
+        break;
+    case 9:
+        func_00143400(h);
+        break;
+    case 10:
+    case 15:
+        func_00143550(h, -1);
+        break;
+    case 11:
+        pose_play(h, 0x301);
+        break;
+    case 12:
+        if (ANIM_DONE(h)) {
+            pose_play(h, 0x301);
+        }
+        break;
+    case 13:
+        pose_play(h, 0x1003);
+        break;
+    case 14:
+        if (ANIM_DONE(h)) {
+            pose_play(h, 0x1003);
+        }
+        break;
+    }
+}
+
+/* the transitions of the basic poses for groups 0..2 and 4..6 (the settled group and its
+ * entering one): the animation into pose `to` from each, 0 = already there */
+static s32 pose_basic(Hewie *h, s32 g, s32 from0, s32 from1, s32 from2) {
+    s32 anim = g == 0 || g == 4 ? from0 : g == 1 || g == 5 ? from1 : from2;
+
+    if (g >= 4 && !ANIM_DONE(h)) {
+        return -1;
+    }
+    if (anim == 0) {
+        return 0;
+    }
+    pose_play(h, anim);
+    return -1;
+}
+
+/* step him toward pose `kind` from his animation group: 0 stand, 1 sit, 2 lie, 3 / 4 the low
+ * groups (0..3) ok, 5 most anything still, 6 group 11 (else lie, then 0x300), 7..9 as 5, 10
+ * group 13. 0 once there, else -1 (also while blending) */
+s32 func_00140CD0(Hewie *h, u32 kind) {
+    s32 g;
+
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
+        return -1;
+    }
+    g = func_001669A0(h);
+    if (kind >= 11) {
+        return -1;
+    }
+    if (kind >= 7 && kind <= 9) {
+        return func_00140CD0(h, 5) == 0 ? 0 : -1;
+    }
+    if ((u32)g >= 16) {
+        return -1;
+    }
+    switch (kind) {
+    case 0:
+        if (g <= 2 || (g >= 4 && g <= 6)) {
+            return pose_basic(h, g, 0, 0x101, 0x103);
+        }
+        break;
+    case 1:
+        if (g <= 2 || (g >= 4 && g <= 6)) {
+            return pose_basic(h, g, 0x100, 0, 0x105);
+        }
+        break;
+    case 2:
+        if (g <= 2 || (g >= 4 && g <= 6)) {
+            return pose_basic(h, g, 0x102, 0x104, 0);
+        }
+        break;
+    case 3:
+    case 4:
+        if (g <= 2 || (kind == 4 && g == 3)) {
+            return 0;
+        }
+        if (g >= 4 && g <= 6) {
+            return ANIM_DONE(h) ? 0 : -1;
+        }
+        if (kind == 4 && g == 7) {
+            if (ANIM_DONE(h)) {
+                pose_play(h, 8);
+            }
+            return -1;
+        }
+        break;
+    case 5:
+        if (g <= 2 || (g >= 8 && g <= 11)) {
+            return 0;
+        }
+        if (g >= 4 && g <= 6) {
+            return ANIM_DONE(h) ? 0 : -1;
+        }
+        break;
+    case 6:
+        if (g == 11) {
+            return 0;
+        }
+        if (g == 12) {
+            return ANIM_DONE(h) ? 0 : -1;
+        }
+        if (func_00140CD0(h, 2) == 0) {
+            pose_play(h, 0x300);
+        }
+        return -1;
+    case 10:
+        if (g == 13) {
+            return 0;
+        }
+        if (g == 14) {
+            return ANIM_DONE(h) ? 0 : -1;
+        }
+        if (g <= 2 || (g >= 4 && g <= 6)) {
+            return pose_basic(h, g, 0x1001, 0x101, 0x103);
+        }
+        break;
+    }
+    pose_leave(h, g);
+    return -1;
 }
