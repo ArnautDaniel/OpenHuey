@@ -6212,3 +6212,36 @@ void func_001495B0(Hewie *h) {
     turn_toward(h, HW(h, 0xF36C4, f32), step);
     func_00141C00(h, 7);
 }
+
+/* ---- going to a spot ---- */
+
+extern const PTMF D_003B1CE0;
+
+/* head for the spot +0x110 (pose 7, head on it): within 10, keep his heading and behaviour
+ * D_003B1CE0; facing within 60 degrees of it, stand and flag +0xE1 */
+void func_001499F0(Hewie *h) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 a, step, left;
+
+    sceVu0SubVector(d, h->c.unk110, h->c.a.pos);
+    if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 10.0f) {
+        HW(h, 0xF36B4, s32) = 0;
+        HW(h, 0xF36B8, s32) = 0;
+        HW(h, 0xF36C4, f32) = h->c.a.angle[1];
+        Hewie_SetBehaviour(h, &D_003B1CE0);
+        return;
+    }
+    a = func_001244D0(&h->c.a, h->c.unk110);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    func_002DD110(h->c.motion, h->c.unk110, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
+    HW(h, 0xF3604, s32) = 8;
+    HW(h, 0xF3608, s32) = 0;
+    if (left <= 0x1.0c15240000000p+0f /* 1.0471976 */) {
+        if (func_00140CD0(h, 0) == 0) {
+            h->c.unkE1 = 1;
+        }
+    } else {
+        func_00141C00(h, 7);
+    }
+}
