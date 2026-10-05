@@ -1013,3 +1013,137 @@ void func_003154B0(u8 *o) {
     AT(o, 0x110, f32) = 1.0f;
     AT(o, 0x120, u16) = 0;
 }
+
+
+/* ---- kind 2 (D_00472840, over the shared thing class D_00479500): set down at a random turn;
+ * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
+
+extern void *D_00472840[], *D_00479500[], *D_00474FB0[], *D_00476B50[];
+extern VObject *D_0044E550;
+extern void func_00355940(u8 *o);   /* D_00479500 +0x30 */
+extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
+extern void func_003546B0(u8 *o);
+extern s32 func_00354910(u8 *o);
+extern void func_00354C90(u8 *o);
+extern s32 func_003544C0(u8 *o);
+extern s32 func_00354D50(u8 *o);
+extern void func_00354AF0(u8 *o);
+extern void func_0033BCB0(void *drawer, f32 *pos, f32 *rot, s32 a, s32 b, s32 c);
+
+/* +0x8 destructor */
+void *func_00315540(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00472840;
+        AT(o, 0x0, void **) = D_00479500;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* +0x2C draw: its model (a D_00476B50 drawer) turned by +0x132 / 256 of a full turn - 180 */
+void func_003155C0(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    struct {
+        void **vtbl;
+        s32 a;
+        u8 rest[0x38];
+    } d __attribute__((aligned(16)));
+    f32 rot[4] __attribute__((aligned(16)));
+
+    rot[0] = 0.0f;
+    rot[1] = kPi.f * (360.0f * ((f32)(u32)AT(o, 0x132, u16) / 256.0f) - 180.0f) / 180.0f;
+    rot[2] = 0.0f;
+    d.vtbl = D_00476B50;
+    d.a = -1;
+    func_0033BCB0(&d, BALL_POS(o), rot, 1, 0, 1);
+    d.vtbl = D_00469D00;
+}
+
+static void burst_init(void **obj) {
+    obj[0] = D_00474FB0;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC48 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC4C / 4] = -1;
+    obj[0xC48 / 4] = D_0046FC30;
+}
+
+static inline __attribute__((always_inline)) void kind2_burst(u8 *o) {
+    u8 *mgr;
+
+    func_00122C20(o, 0x8E, 5, 0, 0, NULL);
+    mgr = D_0044E578;
+    func_002D6090(mgr, Effect_New(mgr, 0xFD0, burst_init), o + 0x10);
+}
+
+/* +0x30 each frame, while the game runs: the shared checks (func_00354910: 1 / 2 set off -
+ * the burst only in the current room; else func_003544C0 / func_00354D50 set it off, or it
+ * waits, func_00354AF0) */
+void func_00315700(u8 *o) {
+    Progress *p;
+    s32 r, a, b;
+
+    func_00355940(o);
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+        return;
+    }
+    if ((VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 1) {
+        return;
+    }
+    p = gProgress;
+    if ((Progress_TestFlag(p, 8) & 0xFF) == 1) {
+        return;
+    }
+    func_003546B0(o);
+    r = func_00354910(o);
+    if (r == 1 || r == 2) {
+        if (r == 2 && Progress_TestFlag(p, 0x20) == 0) {
+            func_00354C90(o);
+        }
+        if (AT(o, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            kind2_burst(o);
+        }
+        AT(o, 0x28, u8) = 0;
+        return;
+    }
+    if (Progress_TestFlag(p, 0x20) != 0) {
+        return;
+    }
+    a = func_003544C0(o) & 0xFF;
+    b = func_00354D50(o) & 0xFF;
+    if (a == 0 && b == 0) {
+        func_00354AF0(o);
+        return;
+    }
+    func_00122C20(o, 0x8E, 5, 0, 0, NULL);
+    if (b != 0) {
+        func_00354C90(o);
+    }
+    {
+        u8 *mgr = D_0044E578;
+
+        func_002D6090(mgr, Effect_New(mgr, 0xFD0, burst_init), o + 0x10);
+    }
+    AT(o, 0x28, u8) = 0;
+}
+
+/* +0xC set up: the shared class's, its settings, a random turn */
+void func_00315AB0(u8 *o) {
+    func_00355960(o);
+    AT(o, 0x122, s16) = 100;
+    AT(o, 0x124, s16) = 20;
+    AT(o, 0x126, s16) = 15;
+    AT(o, 0x128, s16) = 900;
+    AT(o, 0x12A, s16) = 10;
+    AT(o, 0x12C, s16) = 10;
+    AT(o, 0x12E, s16) = 2;
+    AT(o, 0x132, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
+}
