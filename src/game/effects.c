@@ -1789,3 +1789,137 @@ void func_002EA660(u8 *e) {
     }
     (void)tex0;
 }
+
+
+/* ---- D_00470A50 (0x3858 bytes): 128 motes rising from around (0, 70, 35), in two buffers of
+ * quad records (+0x10 + 0x1800 x the current one +0x3850), their velocities at +0x3050 (16
+ * each), drawn by the quad drawer at +0x3010; a mote is renewed past height 130 or, counted on
+ * the even frames, when it has faded out ---- */
+
+extern void *D_00470A50[];
+
+#define MOTE_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1800) + (i))
+#define MOTE_VEL(e, i) ((f32 *)((e) + 0x3050 + (i) * 0x10))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002F9210(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470A50;
+    AT(o, 0x3010, void **) = D_0046FC30;
+    AT(o, 0x3010, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* mote i anew: at the bottom (again), or at first somewhere up the column, bigger and fainter
+ * the higher */
+void func_002F92A0(u8 *e, s32 i, s32 again) {
+    VObject *rnd = D_0044E550;
+    QuadRec *r = MOTE_REC(e, AT(e, 0x3850, s32), i);
+    f32 *v = MOTE_VEL(e, i);
+    s32 up = 0;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x38;
+    r->pos[0] = 4.0f * (burst_rnd(rnd) - 0.5f);
+    r->w = 1.0f;
+    r->h = 1.0f;
+    if (!again) {
+        up = (s32)(60.0f * burst_rnd(rnd));
+        r->rgba[3] = r->rgba[3] - (up >> 1);
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        r->w = 1.0f + 0x1.47ae140000000p-5f /* 0.04 */ * (f32)up;
+        r->h = r->w;
+    }
+    rnd = D_0044E550;
+    r->pos[1] = 70.0f + (f32)up;
+    r->pos[2] = 35.0f + 4.0f * (burst_rnd(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->turn = 0.0f;
+    r->frame = 0;
+    v[0] = 0x1.eb851e0000000p-6f /* 0.03 */ * (burst_rnd(rnd) - 0.5f);
+    v[1] = 0x1.1eb8520000000p-4f /* 0.07 */ + 0x1.99999a0000000p-2f /* 0.4 */ * burst_rnd(rnd);
+    v[2] = 0x1.eb851e0000000p-6f /* 0.03 */ * (burst_rnd(rnd) - 0.5f);
+}
+
+/* +0x14 draw the current buffer */
+void func_002F9520(u8 *e) {
+    AT(e, 0x3020, QuadRec *) = MOTE_REC(e, AT(e, 0x3850, s32), 0);
+    func_002E56C0(e + 0x3010);
+}
+
+/* +0x10 update: flip the buffers, each mote carried over, growing, turning (3 degrees) and
+ * moving */
+s32 func_002F9550(u8 *e) {
+    s32 i, k;
+
+    AT(e, 0x3850, s32) ^= 1;
+    for (i = 0; i < 128; i++) {
+        u32 *src = (u32 *)MOTE_REC(e, AT(e, 0x3850, s32) ^ 1, i);
+        u32 *dst = (u32 *)MOTE_REC(e, AT(e, 0x3850, s32), i);
+        QuadRec *r;
+        f32 *v = MOTE_VEL(e, i);
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = MOTE_REC(e, AT(e, 0x3850, s32), i);
+        r->w = r->w + 0x1.47ae140000000p-5f /* 0.04 */;
+        r->h = r->h + 0x1.47ae140000000p-5f /* 0.04 */;
+        r->turn = r->turn + 0x1.aceeap-5f /* 3 degrees */;
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (!(r->pos[1] < 130.0f)) {
+            func_002F92A0(e, i, 1);
+        }
+        if (AT(e, 0x3850, s32) == 0) {
+            if (r->rgba[3] > 0) {
+                r->rgba[3] -= 1;
+            } else {
+                func_002F92A0(e, i, 1);
+            }
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells, row 64, layer 0x19),
+ * every mote placed */
+void func_002F9750(u8 *e) {
+    s32 i;
+
+    AT(e, 0x3850, s32) = 0;
+    AT(e, 0x3018, s64) = -1;
+    AT(e, 0x3024, s32) = 0;
+    AT(e, 0x3028, s32) = 0;
+    AT(e, 0x302C, s32) = 0;
+    AT(e, 0x3030, s32) = 0x19;
+    AT(e, 0x3034, s16) = 0x80;
+    AT(e, 0x3036, s16) = 0;
+    AT(e, 0x3038, s16) = 0x40;
+    AT(e, 0x303A, s16) = 0x20;
+    AT(e, 0x303C, s16) = 0x20;
+    AT(e, 0x303E, s16) = 0x200;
+    AT(e, 0x3040, s16) = 0x100;
+    AT(e, 0x3042, s8) = 0;
+    AT(e, 0x3043, s8) = 1;
+    AT(e, 0x3044, s8) = 1;
+    AT(e, 0x3045, s8) = 0x10;
+    AT(e, 0x3046, s8) = -1;
+    for (i = 0; i < 128; i++) {
+        func_002F92A0(e, i, 0);
+    }
+}
