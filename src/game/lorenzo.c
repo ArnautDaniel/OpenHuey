@@ -656,3 +656,118 @@ void func_0030AE00(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_00423A78);
     func_0030AB80(p);
 }
+
+/* the burst of his grab (0xFC0 bytes, vtable 0x47A010, four parts at +0xB50 / +0xB88 / +0xBC0 /
+   +0xBF8) */
+extern void *D_0047A010[];
+
+static inline void Burst_Init(void **obj) {
+    s32 k;
+
+    obj[0] = D_0047A010;
+    for (k = 0; k < 4; k++) {
+        obj[(0xB50 + k * 0x38) / 4] = D_00469D00;
+        ((s32 *)obj)[(0xB54 + k * 0x38) / 4] = -1;
+        obj[(0xB50 + k * 0x38) / 4] = D_0046FC30;
+    }
+}
+
+/* state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
+   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
+   point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
+   the point (also to +0x1770). Its end ends the step */
+void func_0030A210(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
+        sceVu0CopyVector(p->c.unk110, p->target->a.pos);
+    } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+        u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
+        u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
+        u8 *mgr;
+
+        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            PU(p, 0x1764, s32) = 12;
+        }
+        sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
+        mgr = D_0044E578;
+        func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        AT(p->c.unk110, 0x0, s32) = 0;
+        AT(p->c.unk110, 0x4, s32) = 0;
+        AT(p->c.unk110, 0x8, s32) = 0;
+        AT(p->c.unk110, 0xC, s32) = 0;
+        if (AT(gProgress, 0x30, u32) & 0x8000) {
+            PU(p, 0x16F7, u8) = 0;
+        }
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+extern const PTMF D_00423A98;
+
+/* state: under the floor after sinking (+0x1624 frames): he travels through the mesh toward his
+   goal (func_00211B00), out of contact where it fails. Then he rises at the goal (+0x104 /
+   +0x110, 5 short of his target when that close), facing his target, in the sweep 0xE02
+   (func_0030A650) with the rising effect */
+void func_0030A850(Pursuer *p) {
+    if (PU(p, 0x1624, s32) > 0) {
+        if (func_00214A90(p, p->c.a.navTri) != 0) {
+            p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
+            if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
+                VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, p->c.a.navTri, p->c.a.pos);
+            } else {
+                func_00124890(&p->c.a, -1);
+                p->c.a.disabled = 1;
+                p->c.a.unk2D = 1;
+            }
+        }
+        PU(p, 0x1624, s32)--;
+        return;
+    }
+    {
+        f32 goal[4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+        struct {
+            f32 pos[4];
+            s32 kind;
+        } sk __attribute__((aligned(16)));
+        u8 *mgr;
+        u32 tri;
+        f32 d, h;
+        s32 slot;
+
+        tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
+        d = func_00214B90(p, tri, goal);
+        sceVu0SubVector(v, p->target->a.pos, goal);
+        v[3] = 0.0f;
+        if (__builtin_sqrtf(sceVu0InnerProduct(v, v)) < 5.0f) {
+            d -= 5.0f;
+        }
+        if (!(d <= 0.0f)) {
+            func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+        }
+        h = func_001244D0(&p->c.a, p->target->a.pos);
+        p->c.a.angle[1] = h;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
+        func_00297B40(p, 0xE02, 1);
+        p->c.a.disabled = 0;
+        p->c.a.unk2D = 0;
+        p->c.moveMode = 8;
+        p->c.moveSub = 0x1C;
+        mgr = D_0044E578;
+        p->c.unkE8 = p->target->unkE8;
+        p->c.unkEC = p->target->unkEC;
+        slot = Effect_New(mgr, 0x700, Sink_Init);
+        sceVu0CopyVector(sk.pos, p->c.a.pos);
+        sk.kind = 1;
+        func_002D6090(mgr, slot, &sk);
+        Actor_SetState(&p->c.a, &D_00423A98);
+        func_0030A650(p);
+    }
+}
