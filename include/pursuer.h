@@ -295,6 +295,7 @@ void func_00279350(Pursuer *p);
 void func_0027A1E0(Pursuer *p);
 void func_0027A6A0(Pursuer *p);
 void func_0027AD80(Pursuer *p, u32 door);
+void func_0027B810(Pursuer *p, u32 door);
 s32 func_0027CA00(Pursuer *p);
 void func_0027CB90(Pursuer *p, u32 exit);
 void func_0027CE80(Pursuer *p);
