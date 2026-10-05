@@ -176,6 +176,12 @@ extern void func_00166150(Character *hewie, Pursuer *p, s32 kind);   /* tell Hew
 /* ---- end engine ---- */
 
 /* ---- generated from the definitions (tools: protos.py) ---- */
+void func_00127A40(Pursuer *p, u32 kind);
+void func_00127B80(Pursuer *p);
+s32 func_00127BB0(Pursuer *p);
+s32 func_00127BC0(Pursuer *p);
+s32 func_00127C00(Pursuer *p);
+s32 func_00127C40(Pursuer *p, s32 exit);
 Pursuer *func_001710D0(Pursuer *p, s32 flags);
 Pursuer *func_00172810(Pursuer *p, s32 flags);
 void func_00179600(Pursuer *p);

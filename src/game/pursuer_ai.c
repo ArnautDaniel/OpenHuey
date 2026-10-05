@@ -2495,3 +2495,17 @@ s32 func_00215D80(Pursuer *p) {
     }
     return Npc_Senses(p, 0);
 }
+
+/* vtable +0xEC: can the pursuer go through exit `exit`: 1 if func_00211E00 says 4, 5 or 6,
+   2 if it says 2 (passed on as is), else 0 */
+s32 func_00127C40(Pursuer *p, s32 exit) {
+    switch (func_00211E00(p, exit) & 0xFF) {
+    case 2:
+        return 2;
+    case 4:
+    case 5:
+    case 6:
+        return 1;
+    }
+    return 0;
+}

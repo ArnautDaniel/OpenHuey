@@ -10529,3 +10529,44 @@ void func_00282010(Pursuer *p, u32 door) {
     }
     Pursuer_HeadForExit(p, rooms, door);
 }
+
+/* ---- the base functions placed with the stalkers' code (0x127A40..) ---- */
+
+extern u8 D_003EC3E0[];   /* the action table: 0x1C bytes each */
+
+/* vtable +0x114: start action `kind` (0x1000 set: from the pursuer's own table +0x1714): its
+   state, action id +0x175C, move mode and sub, sense mode +0x15C0 and look mode +0x1710 */
+void func_00127A40(Pursuer *p, u32 kind) {
+    u8 *e;
+
+    if (kind & 0x1000) {
+        e = PU(p, 0x1714, u8 *) + (kind & ~0x1000) * 0x1C;
+    } else {
+        e = D_003EC3E0 + kind * 0x1C;
+    }
+    Actor_SetState(&p->c.a, (const PTMF *)e);
+    PU(p, 0x175C, s32) = AT(e, 0xC, s32);
+    p->c.moveMode = AT(e, 0x10, s32);
+    p->c.moveSub = AT(e, 0x14, s32);
+    PU(p, 0x15C0, u8) = AT(e, 0x18, u8);
+    PU(p, 0x1710, u8) = AT(e, 0x19, u8);
+    PU(p, 0x15A0, u8) = 1;
+}
+
+/* vtable +0x190: nothing */
+void func_00127B80(Pursuer *p) {
+}
+
+/* vtable +0x2D0 / +0x2D4 */
+s32 func_00127BB0(Pursuer *p) {
+    return PU(p, 0x16E0, s32);
+}
+
+s32 func_00127BC0(Pursuer *p) {
+    return PU(p, 0x16E4, s32);
+}
+
+/* vtable +0x318 */
+s32 func_00127C00(Pursuer *p) {
+    return 0;
+}
