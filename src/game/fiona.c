@@ -7128,6 +7128,46 @@ void func_0018C080(Fiona *f) {
 
 extern s32 func_001270A0(Character *c);
 
+#include "effectmgr.h"
+
+/* the effect on a character her shove met: 0 a burst at it, 1 a hit spark at one of four of its
+ * bones (motion +0x84 / +0x88 / +0x8C / +0x90, at random) */
+void func_0017FD50(Fiona *f, s32 kind, Character *c) {
+    u8 *mgr;
+
+    if (kind == 1) {
+        HitEffectParams hp;
+        f32 at[4] __attribute__((aligned(16)));
+        s32 bone;
+
+        switch ((s32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) {
+        case 0:
+            bone = VCALL(c->motion, 0x84, s32 (*)(void *))(c->motion);
+            break;
+        case 1:
+            bone = VCALL(c->motion, 0x88, s32 (*)(void *))(c->motion);
+            break;
+        case 2:
+            bone = VCALL(c->motion, 0x8C, s32 (*)(void *))(c->motion);
+            break;
+        default:
+            bone = VCALL(c->motion, 0x90, s32 (*)(void *))(c->motion);
+            break;
+        }
+        sceVu0CopyVector(at, func_0017CE80(AT(c->motion, 0x810, void *), bone) + 12);
+        hp.pos[0] = at[0];
+        hp.pos[1] = at[1];
+        hp.pos[2] = at[2];
+        hp.pos[3] = at[3];
+        hp.kind = c->a.navTri << 8;
+        hp.big = 0.0f;
+        HitEffect_Spawn(&hp);
+    } else if (kind == 0) {
+        mgr = D_0044E578;
+        func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), c->a.pos);
+    }
+}
+
 /* ---- moving between rooms out of sight (FI 0x1AD71C: 0xB following Hewie, 0xC staying,
  * 0xD wandering, 0xE fleeing the pursuer); the link (door pair) she is on in +0x138C, the time
  * left to its end in +0x14C4 (< 0: choose the next one), the time spent FI 0x1AD73C ---- */
@@ -8685,6 +8725,83 @@ void func_001949D0(Fiona *f) {
     FI(f, 0x1AD6CC, s32) = 0;
     func_002DDD20(f->c.motion, 0xE01, -1);
     Actor_SetState(&f->c.a, &D_003B2988);
+}
+
+extern void func_0017FD50(Fiona *f, s32 kind, Character *c);
+
+/* the effect `kind` on everyone her shove met: Hewie (2), the pursuer (4), the creatures in
+ * FI 0x1AD6C8 */
+static inline __attribute__((always_inline)) void shove_effects(Fiona *f, u8 hit, s32 kind) {
+    Character **list;
+    s32 i;
+
+    if (hit & 2) {
+        func_0017FD50(f, kind, (Character *)gCharPartner);
+    }
+    if (hit & 4) {
+        func_0017FD50(f, kind, gCharPursuer);
+    }
+    list = (Character **)D_0044F258;
+    for (i = 0; i < 10; i++, list++) {
+        if (FI(f, 0x1AD6C8, s32) & (1 << i)) {
+            func_0017FD50(f, kind, *list);
+        }
+    }
+}
+
+/* D_003B2978: the shove (0xE00). When it meets someone (gProgress +0x1020 + 16 x her slot, or
+ * the creatures FI 0x1AD6C8): Hewie (2) counts in the kick count +0xFB6 (+3, to 10000) and
+ * spares him the reaction later (FI 0x1AD6C4); her voice by the progress var 0x26 (6: 0x22,
+ * 7: none, else 0x8F) - with var 7 the sparks on them, while she faces back (FI 0x1AD6D0 < 0)
+ * the bursts; recoil. Once the animation is done: from 0xE00 its end (0x101); after it Hewie's
+ * reaction 10, idle (vars 6 / 7: motion +0x2C) */
+void func_00194AD0(Fiona *f) {
+    Progress *p = gProgress;
+    u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
+
+    if (hit != 0 || FI(f, 0x1AD6C8, s32) != 0) {
+        u8 v;
+
+        if (hit & 2) {
+            FI(f, 0x1AD6C4, s32) = 1;
+            AT(p, 0xFB6, s16) = AT(p, 0xFB6, s16) + 3;
+            if (AT(p, 0xFB6, s16) < 0) {
+                AT(p, 0xFB6, s16) = 0;
+            } else if (!(AT(p, 0xFB6, s16) < 0x2711)) {
+                AT(p, 0xFB6, s16) = 0x2710;
+            }
+        }
+        v = Progress_GetVar(p, 0x26);
+        if (v == 6) {
+            func_00122C20(&f->c.a, 0x22, 5, 0, 0, NULL);
+        } else if (v != 7) {
+            func_00122C20(&f->c.a, 0x8F, 5, 0, 0, NULL);
+        }
+        if (v == 7) {
+            shove_effects(f, hit, 1);
+        }
+        if (FI(f, 0x1AD6D0, f32) < 0.0f) {
+            shove_effects(f, hit, 0);
+        }
+        f->c.unk14D0 = 5;
+        func_001F6E30(f->c.motion);
+        FI(f, 0x1AD6C8, s32) = 0;
+    }
+    if (door_anim_done(f)) {
+        if (AT(f->c.motion, 0x55C, s32) == 0xE00) {
+            func_002DE030(f->c.motion, 0, 0x101, -1, 10.0f);
+        } else {
+            if (FI(f, 0x1AD6C4, s32) == 0) {
+                hewie_react(f, 10);
+            }
+            p = gProgress;
+            door_give_up(f, p);
+            if ((u32)((Progress_GetVar(p, 0x26) & 0xFF) - 6) < 2) {
+                VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+            }
+        }
+    }
+    func_00125A10(&f->c);
 }
 
 

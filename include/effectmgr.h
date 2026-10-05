@@ -75,6 +75,20 @@ static inline void DropSplash_Init(void **obj) {
     obj[0xC10 / 4] = D_0046FC30;
 }
 
+/* ---- the burst (0xFD0 bytes, vtable D_00474FB0; two quad drawers) a kind-2 thing or a shoved
+   character gives off, spawned with the position ---- */
+extern void *D_00474FB0[];
+
+static inline void ShoveBurst_Init(void **obj) {
+    obj[0] = D_00474FB0;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC48 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC4C / 4] = -1;
+    obj[0xC48 / 4] = D_0046FC30;
+}
+
 /* a quad (sprite) drawer (vtable D_0046FC30) handed to the renderer for one frame by
    func_002E56C0; see gl_sprites in effects.c for its fields */
 typedef struct QuadDrawer {

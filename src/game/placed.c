@@ -1018,7 +1018,7 @@ void func_003154B0(u8 *o) {
 /* ---- kind 2 (D_00472840, over the shared thing class D_00479500): set down at a random turn;
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
-extern void *D_00472840[], *D_00479500[], *D_00474FB0[], *D_00476B50[];
+extern void *D_00472840[], *D_00479500[], *D_00476B50[];
 extern VObject *D_0044E550;
 extern void func_00355940(u8 *o);   /* D_00479500 +0x30 */
 extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
@@ -1063,22 +1063,12 @@ void func_003155C0(u8 *o) {
     d.vtbl = D_00469D00;
 }
 
-static void burst_init(void **obj) {
-    obj[0] = D_00474FB0;
-    obj[0xC10 / 4] = D_00469D00;
-    ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
-    obj[0xC48 / 4] = D_00469D00;
-    ((s32 *)obj)[0xC4C / 4] = -1;
-    obj[0xC48 / 4] = D_0046FC30;
-}
-
 static inline __attribute__((always_inline)) void kind2_burst(u8 *o) {
     u8 *mgr;
 
     func_00122C20(o, 0x8E, 5, 0, 0, NULL);
     mgr = D_0044E578;
-    func_002D6090(mgr, Effect_New(mgr, 0xFD0, burst_init), o + 0x10);
+    func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), o + 0x10);
 }
 
 /* +0x30 each frame, while the game runs: the shared checks (func_00354910: 1 / 2 set off -
@@ -1130,7 +1120,7 @@ void func_00315700(u8 *o) {
     {
         u8 *mgr = D_0044E578;
 
-        func_002D6090(mgr, Effect_New(mgr, 0xFD0, burst_init), o + 0x10);
+        func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), o + 0x10);
     }
     AT(o, 0x28, u8) = 0;
 }
