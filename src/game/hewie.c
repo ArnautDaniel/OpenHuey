@@ -7656,3 +7656,25 @@ void func_00152D60(Hewie *h) {
         aim_run(h, HW(h, 0xF3544, Character *)->a.pos);
     }
 }
+
+/* ---- walking off ---- */
+
+/* walk (pose 7) along heading +0xF36C4 for +0xF36B4 frames, head held level toward it (the
+ * default action taken when they run out, the walk still finishing this frame) */
+void func_00153440(Hewie *h) {
+    f32 step;
+
+    HW(h, 0xF36B4, s32) -= 1;
+    if (HW(h, 0xF36B4, s32) == 0) {
+        hewie_want(h, 0, 0);
+    }
+    func_00141C00(h, 7);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    turn_toward(h, HW(h, 0xF36C4, f32), step);
+}
