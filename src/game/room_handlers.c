@@ -2696,3 +2696,47 @@ s32 func_0036A400(void) {
     fan_turn(D_0047B02C);
     return 1;
 }
+
+extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
+
+/* room 0x62 (D_00422318): the room's effect 0 dropped by byte 3 - 0 at rest (speed 0), 1 raised
+ * by 0.5; else it falls (gravity 0.5 a frame, turning 0.16) and bounces off 0.7 losing 70%
+ * (a sound each bounce) until slower than 0.2 (+0x74 set: landed; 1), else still going (2) */
+s32 func_00308C20(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kBounce = {0xBE99999A};   /* -0.3 */
+    u8 *e = func_00266C40(D_0044E4C0, 0);
+    f32 v, y;
+
+    switch (cmd[3]) {
+    case 0:
+        D_0047B280 = 0.0f;
+        return 1;
+    case 1:
+        AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0.5f;
+        return 1;
+    case 2:
+        AT(e, 0x74, s32) = 0;
+        break;
+    default:
+        AT(e, 0x74, s32) = 0;
+        break;
+    }
+    AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0x1.47ae14p-3f /* 0.16 */;
+    v = D_0047B280 - 0.5f;
+    D_0047B280 = v;
+    y = AT(e, 0x24, f32) + v;
+    AT(e, 0x24, f32) = y;
+    if (y < 0x1.666666p-1f /* 0.7 */) {
+        f32 at[4] __attribute__((aligned(16)));
+
+        AT(e, 0x24, f32) = 0x1.666666p-1f;
+        D_0047B280 = v * kBounce.f;
+        sceVu0CopyVector(at, (f32 *)(e + 0x20));
+        func_002FF650(D_0044E560, 0, 6, at, 0, 0);
+        if (D_0047B280 < 0x1.99999ap-3f /* 0.2 */) {
+            AT(e, 0x74, s32) = 1;
+            return 1;
+        }
+    }
+    return 2;
+}

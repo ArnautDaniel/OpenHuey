@@ -1607,3 +1607,181 @@ void func_002B9010(u8 *o) {
         }
     }
 }
+
+/* ---- class D_00476BD0 (room 0x4F, 0x36C0 bytes): orange smoke spiralling up from about
+ * (38.4, 0, -10) - 128 puffs, double-buffered (+0x10 + buffer +0x36B0 * 0x1800), drawn by the
+ * quad drawer at +0x3040 (texture group 0x10, cell (0xC0, 0x40), additive), and a flickering
+ * glow (record +0x3010, drawer +0x3078); per puff its rise (+0x30B0 + i * 4), spiral angle
+ * (+0x32B0) and radius (+0x34B0) ---- */
+
+extern void *D_00476BD0[];
+
+#define SMOKE2_PUFF(o, i) ((o) + AT(o, 0x36B0, s32) * 0x1800 + (i) * 0x30 + 0x10)
+
+/* +0x8 destructor (the quad drawers at +0x3078 and +0x3040 inlined) */
+u8 *func_0033C480(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00476BD0;
+    AT(o, 0x3078, void **) = D_0046FC30;
+    AT(o, 0x3078, void **) = D_00469D00;
+    AT(o, 0x3040, void **) = D_0046FC30;
+    AT(o, 0x3040, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* puff i anew (`again` 0: the first time, part way up and faded already): orange, 2..3 across
+ * (more the higher), turned at random, rising 0.5..1.5 a frame */
+void func_0033C540(u8 *o, s32 i, s32 again) {
+    static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *rng = D_0044E550;
+    u8 *p = SMOKE2_PUFF(o, i);
+    f32 up = 0.0f;
+
+    AT(p, 0x0, s32) = 0xC0;
+    AT(p, 0x4, s32) = 0x60;
+    AT(p, 0x8, s32) = 0x40;
+    AT(p, 0xC, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 7) + 0x24;
+    AT(p, 0x20, f32) = 2.0f + VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+    if (again == 0) {
+        f32 k;
+
+        up = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+        k = 1.0f - up;
+        AT(p, 0x0, s32) = (s32)((f32)AT(p, 0x0, s32) * k);
+        AT(p, 0x4, s32) = (s32)((f32)AT(p, 0x4, s32) * k);
+        AT(p, 0x8, s32) = (s32)((f32)AT(p, 0x8, s32) * k);
+        AT(p, 0xC, s32) = (s32)((f32)AT(p, 0xC, s32) * k);
+        AT(p, 0x20, f32) = AT(p, 0x20, f32) + 2.5f * up;
+    }
+    AT(p, 0x10, u32) = 0x421A0000;   /* 38.5 */
+    rng = D_0044E550;
+    AT(p, 0x14, f32) = 50.0f * up;
+    AT(p, 0x18, f32) = -10.0f;
+    AT(p, 0x1C, f32) = 1.0f;
+    AT(p, 0x24, f32) = AT(p, 0x20, f32);
+    AT(p, 0x28, f32) = kPi.f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) / 180.0f;
+    AT(p, 0x2C, s32) = 0;
+    AT(o, 0x30B0 + i * 4, f32) = 0.5f + VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+    AT(o, 0x32B0 + i * 4, f32) = k2Pi.f * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0.5f);
+    AT(o, 0x34B0 + i * 4, f32) = up + VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+}
+
+/* +0x14 draw: the puffs, then the glow */
+void func_0033C7D0(u8 *o) {
+    AT(o, 0x3050, u8 *) = SMOKE2_PUFF(o, 0);
+    func_002E56C0(o + 0x3040);
+    AT(o, 0x3088, u8 *) = o + 0x3010;
+    func_002E56C0(o + 0x3078);
+}
+
+/* +0x10 update: swap buffers; each puff grows, turns, spirals out (by up to 10 degrees a frame,
+ * 0.05 wider) and rises, its colour dimming a step a frame and (every other frame) its alpha
+ * too, starting again once faded; the glow flickers (alpha 0x38 / 0x40) */
+s32 func_0033C830(u8 *o) {
+    static const F32Bits k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kX = {0x42193333};
+    VObject *rng = D_0044E550;
+    s32 i, k;
+
+    AT(o, 0x36B0, s32) ^= 1;
+    for (i = 0; i < 128; i++) {
+        u32 buf = AT(o, 0x36B0, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0x1800 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x1800 + i * 0x30, u32);
+        f32 *ph = &AT(o, 0x32B0 + i * 4, f32);
+        f32 *rad = &AT(o, 0x34B0 + i * 4, f32);
+        u8 *p;
+        f32 a;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = SMOKE2_PUFF(o, i);
+        AT(p, 0x20, f32) = AT(p, 0x24, f32) = AT(p, 0x20, f32) + k005.f;
+        AT(p, 0x28, f32) = AT(p, 0x28, f32) + 0.5f * (kPi.f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) / 180.0f);
+        a = *ph + kPi.f * (10.0f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng)) / 180.0f;
+        *ph = a;
+        if (!(a <= kPi.f)) {
+            *ph = a - k2Pi.f;
+        }
+        *rad = *rad + k005.f;
+        AT(p, 0x10, f32) = kX.f + *rad * func_0031C248(*ph);
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x30B0 + i * 4, f32);
+        AT(p, 0x18, f32) = -10.0f + *rad * func_0031C058(*ph);
+        if (AT(o, 0x36B0, s32) == 0) {
+            AT(p, 0xC, s32)--;
+            if (AT(p, 0xC, s32) < 0) {
+                func_0033C540(o, i, 1);
+            }
+        }
+        for (k = 0; k < 3; k++) {
+            AT(p, k * 4, s32)--;
+            if (AT(p, k * 4, s32) < 0) {
+                AT(p, k * 4, s32) = 0;
+            }
+        }
+    }
+    AT(o, 0x301C, s32) = AT(o, 0x301C, s32) == 0x38 ? 0x40 : 0x38;
+    return 1;
+}
+
+/* +0xC set up: the drawers (puffs: 128, additive, palette 2; glow: one, additive), 128 puffs
+ * and the glow (pinkish, 32 across at (38, 15, -11)) */
+void func_0033CB40(u8 *o) {
+    s32 i;
+
+    AT(o, 0x36B0, s32) = 0;
+    AT(o, 0x3048, s64) = -1;
+    AT(o, 0x3054, s32) = 0;
+    AT(o, 0x3058, s32) = 0;
+    AT(o, 0x305C, s32) = 0;
+    AT(o, 0x3060, s32) = 0x19;
+    AT(o, 0x3064, s16) = 0x80;
+    AT(o, 0x3066, s16) = 0xC0;
+    AT(o, 0x3068, s16) = 0x40;
+    AT(o, 0x306A, s16) = 0x20;
+    AT(o, 0x306C, s16) = 0x20;
+    AT(o, 0x306E, s16) = 0x200;
+    AT(o, 0x3070, s16) = 0x100;
+    AT(o, 0x3072, u8) = 0x40;
+    AT(o, 0x3073, u8) = 1;
+    AT(o, 0x3074, u8) = 1;
+    AT(o, 0x3075, u8) = 0x10;
+    AT(o, 0x3076, u8) = 2;
+    for (i = 0; i < 128; i++) {
+        func_0033C540(o, i, 0);
+    }
+    AT(o, 0x3080, s64) = -1;
+    AT(o, 0x3090, s32) = 0;
+    AT(o, 0x3094, s32) = 0;
+    AT(o, 0x3098, s32) = 0x19;
+    AT(o, 0x309C, s16) = 1;
+    AT(o, 0x309E, s16) = 0xA0;
+    AT(o, 0x30A0, s16) = 0x40;
+    AT(o, 0x30A2, s16) = 0x20;
+    AT(o, 0x30A4, s16) = 0x20;
+    AT(o, 0x30A6, s16) = 0x200;
+    AT(o, 0x30A8, s16) = 0x100;
+    AT(o, 0x30AA, u8) = 0x40;
+    AT(o, 0x30AB, u8) = 1;
+    AT(o, 0x30AC, u8) = 1;
+    AT(o, 0x30AD, u8) = 0x10;
+    AT(o, 0x30AE, u8) = 0xFF;
+    AT(o, 0x3010, s32) = 0x80;
+    AT(o, 0x3014, s32) = 0x70;
+    AT(o, 0x3018, s32) = 0x70;
+    AT(o, 0x301C, s32) = 0x38;
+    AT(o, 0x3020, f32) = 38.0f;
+    AT(o, 0x3024, f32) = 15.0f;
+    AT(o, 0x3028, f32) = -11.0f;
+    AT(o, 0x302C, f32) = 1.0f;
+    AT(o, 0x3030, f32) = 32.0f;
+    AT(o, 0x3034, f32) = AT(o, 0x3030, f32);
+    AT(o, 0x3038, s32) = 0;
+    AT(o, 0x303C, s32) = 0;
+}
