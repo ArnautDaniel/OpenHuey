@@ -94,6 +94,7 @@ extern u8 *func_002083B0(u8 *e);
 extern u8 *func_00208340(u8 *e);
 extern void **func_00208070(void **e);
 extern void **func_00208090(void **e);
+extern void **func_00208EB0(void **e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -1799,6 +1800,36 @@ void func_002029B0(VObject *ev) {
             arg.r = 0x50;
         }
         arg.size = 0x10;
+        func_002D6090(mgr, slot, &arg);
+        break;
+    }
+    case 0x8C: {   /* a scene effect (func_00208EB0, 0xE40 bytes) at (3 x be32 / 1000) with this script's
+                    * vector pc[13] (+0x894, 0x14 each), be32 pc[14..], pc[18], be32 pc[19..] / 1000 */
+        u8 *mgr = D_0044E578;
+        s32 slot = scene_effect_new(mgr, 0xE40, func_00208EB0);
+        struct {
+            f32 pos[4];
+            f32 v[4];
+            s32 n;
+            s16 a, b;
+            f32 t;
+        } arg __attribute__((aligned(16)));
+
+        if (slot == -1) {
+            break;
+        }
+        arg.pos[0] = (f32)be32(PC(ev) + 1) / 1000.0f;
+        arg.pos[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
+        arg.pos[3] = 1.0f;
+        arg.pos[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
+        arg.v[0] = AT(ev, 0x898 + PC(ev)[0xD] * 0x14, f32);
+        arg.v[1] = AT(ev, 0x89C + PC(ev)[0xD] * 0x14, f32);
+        arg.v[2] = AT(ev, 0x8A0 + PC(ev)[0xD] * 0x14, f32);
+        arg.v[3] = AT(ev, 0x8A4 + PC(ev)[0xD] * 0x14, f32);
+        arg.n = be32(PC(ev) + 0xE);
+        arg.a = AT(ev, 0x894 + PC(ev)[0xD] * 0x14, s32);
+        arg.b = PC(ev)[0x12];
+        arg.t = (f32)be32(PC(ev) + 0x13) / 1000.0f;
         func_002D6090(mgr, slot, &arg);
         break;
     }
