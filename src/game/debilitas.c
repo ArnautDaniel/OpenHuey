@@ -212,8 +212,8 @@ void func_00128FC0(Pursuer *p) {
 
 extern const PTMF D_003AFFD0;
 
-/* state: turning to Fiona; when the animation ends, the next part (func_00128A20) */
-void func_00128CA0(Pursuer *p) {
+/* turning to Fiona; when the animation ends, the next part (func_00128A20) */
+static inline void Debilitas_TurnToFiona(Pursuer *p) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         func_00297B40(p, 0x205, 0);
         p->c.moveSub = 0x1C;
@@ -228,6 +228,28 @@ void func_00128CA0(Pursuer *p) {
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
+}
+
+/* state: turning to Fiona (see Debilitas_TurnToFiona) */
+void func_00128CA0(Pursuer *p) {
+    Debilitas_TurnToFiona(p);
+}
+
+extern const PTMF D_003AFFC0;
+
+/* start of the turn to Fiona: finish the current walk, then animation 0x1304 in state
+   func_00128CA0 */
+void func_00128DB0(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0x1304, 0);
+    PU(p, 0x16F7, u8) = 1;
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_003AFFC0);
+    Debilitas_TurnToFiona(p);
 }
 
 extern const PTMF D_003AFEF0;
@@ -351,10 +373,10 @@ void func_00129090(Pursuer *p) {
     func_00128FC0(p);
 }
 
-/* state: a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress
-   vtable +0x2C), it lands (func_00178070 kind 1); over when the animation ends, she's out of
-   sight, or 60 units away */
-void func_00128390(Pursuer *p) {
+/* a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress vtable
+   +0x2C), it lands (func_00178070 kind 1); over when the animation ends, she's out of sight, or
+   60 units away */
+static inline void Debilitas_Grab(Pursuer *p) {
     func_00125A10(&p->c);
     if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
         Progress *pr = gProgress;
@@ -369,6 +391,26 @@ void func_00128390(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     }
+}
+
+/* state: the grab (see Debilitas_Grab) */
+void func_00128390(Pursuer *p) {
+    Debilitas_Grab(p);
+}
+
+extern const PTMF D_003B0020;
+
+/* start of the grab: finish the current walk, then animation 0xE06 in state func_00128390 */
+void func_001284C0(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0xE06, 0);
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_003B0020);
+    Debilitas_Grab(p);
 }
 
 extern const PTMF D_003AFF60;
@@ -489,4 +531,93 @@ s32 func_00128090(Pursuer *p) {
     PU(p, 0x1598, s32) = -1;
     func_00126F80(&p->c, bestRoom, PU(p, 0x1598, s32), -1, -1);
     return 1;
+}
+
+extern PTMF D_003AF2D0;
+extern u8 D_003AF340[], D_003AF4A0[], D_003AF4D0[], D_003AF6F0[], D_003AF730[], D_003AFA90[],
+    D_003AFAF0[], D_003AFB10[], D_003AFB58[], D_003AFB70[], D_0047A900[];
+
+/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables, and his stats, which
+   are different when gProgress+0x30 bit 0x8000 is set */
+void func_0012C030(Pursuer *p) {
+    s32 alt;
+
+    func_0029FB20(p);
+    alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+    p->c.hpMax = alt ? 110 : 70;
+    PU(p, 0x171C, u8 *) = D_003AF4D0;
+    PU(p, 0x1730, u8 *) = D_003AFA90;
+    PU(p, 0x1740, u8 *) = D_003AFAF0;
+    PU(p, 0x173C, u8 *) = D_003AFB10;
+    PU(p, 0x1748, u8 *) = D_003AFB58;
+    PU(p, 0x17F0, u8 *) = D_003AFB70;
+    PU(p, 0x16DC, s32) = 20;              /* Hewie bite tolerance */
+    PU(p, 0x16E8, f32) = 10.0f;
+    PU(p, 0x16D4, s32) = alt ? 540 : 300; /* frames */
+    PU(p, 0x16D8, s32) = 1800;
+    PU(p, 0x16D0, s32) = alt ? 1350 : 1800;
+    PU(p, 0x16E0, s32) = 4500;
+    PU(p, 0x16E4, s32) = 90;
+    PU(p, 0x17E4, f32) = alt ? 40.0f : 50.0f;
+    PU(p, 0x17E8, f32) = 80.0f;           /* slow walk when the path to Fiona is shorter */
+    p->c.a.radius = 5.0f;
+    p->c.a.height = 20.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 0;
+    PU(p, 0x16B4, u8) = 0;
+    PU(p, 0x1714, PTMF *) = &D_003AF2D0;
+    PU(p, 0x1720, u8 *) = D_003AF6F0;
+    PU(p, 0x1724, u8 *) = D_003AF730;
+    PU(p, 0x16AC, u8 *) = D_003AF340;
+    PU(p, 0x16B0, u8 *) = D_003AF4A0;
+    PU(p, 0x1734, u8 *) = D_0047A900;
+    PU(p, 0x17EC, s32) = 0;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 12.0f;
+    PU(p, 0x16A0, f32) = 1.5f;
+}
+
+extern const PTMF D_003AFF90;
+extern PTMF D_0045B340;
+
+/* vtable +0x2B8: carry on with his behaviour. Out of route (and not just changing rooms,
+   func_0029A8C0): head for one of his rooms (vtable +0xE8), forgetting the searched rooms once if
+   none is left; then the move step, and when chasing, back to his first behaviour with the idle
+   move */
+void func_00129B30(Pursuer *p) {
+    PTMF *st;
+
+    if (!(func_0029A8C0(p, -1) & 0xFF) && !(p->c.unk1388 < p->c.unk1384)) {
+        s32 retried = 0;
+
+        for (;;) {
+            if ((VCALL(p, 0xE8, s32 (*)(Pursuer *))(p) & 0xFF) == 1) {
+                PU(p, 0x17B0, u8) = VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room);
+                break;
+            }
+            if (retried) {
+                PU(p, 0x1660, s32) = 0;
+                break;
+            }
+            {
+                u32 k;
+
+                for (k = 0; k < 13; k++) {
+                    p->c.unk148C[k] = 0;
+                }
+            }
+            retried = 1;
+        }
+    }
+    st = (PTMF *)((u8 *)p + 0x17A0);
+    if (ptmf_test(st)) {
+        ptmf_scall(p, st);
+    }
+    if (PU(p, 0x16C8, u8) == 0) {
+        PU(p, 0x16F6, u8) = 1;
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF90);
+        PU(p, 0x1758, s32) = -1;
+        Pursuer_SetMove(p, &D_0045B340);
+    }
 }
