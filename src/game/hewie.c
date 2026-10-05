@@ -9570,3 +9570,107 @@ void func_0015E880(Hewie *h) {
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- facing where his target is ---- */
+
+/* the stance: once standing, animation 5 in mood 2, else 4 */
+static void stance(Hewie *h) {
+    if (func_00140CD0(h, 0) == 0) {
+        s32 anim = MOTION_ANIM(h->c.motion);
+
+        if (HW(h, 0xF35C0, s32) == 2) {
+            if (anim != 5) {
+                func_002DDED0(h->c.motion, 5, -1);
+            }
+        } else if (anim != 4) {
+            func_002DDED0(h->c.motion, 4, -1);
+        }
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+/* turn to where his target is (func_0013EFB0; none: head ahead) and stand facing it (within 60
+ * degrees) in the stance; within 10 of it: remember it (+0xF36E0), action 0x57 (8) */
+void func_0015ECC0(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 a, step, left;
+
+    if (func_0013EFB0(h, at) == -1) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        stance(h);
+        return;
+    }
+    if (func_00124490(&h->c.a, at) < 10.0f) {
+        sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
+        hewie_want(h, 0x57, 8);
+        return;
+    }
+    a = func_001244D0(&h->c.a, at);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+        func_00141C00(h, 7);
+        return;
+    }
+    stance(h);
+}
+
+/* ---- sniffing toward it ---- */
+
+/* face where his target is (func_0013EFB0; or the scent +0xF3630 while +0xF3620; nothing: head
+ * ahead) and stand alert (animation 3), head on it (level without the scent); turning to it
+ * first (beyond 60 degrees walking, pose 7); within 10: remember it (+0xF36E0), action 0x57 (6) */
+void func_0015F2E0(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 pitch, yaw, a, step, left;
+    s32 have = 1;
+
+    if ((HW(h, 0xF3544, Character *) == NULL && HW(h, 0xF366D, u8) == 0) || func_0013EFB0(h, at) == -1) {
+        have = 0;
+    }
+    if (!have && HW(h, 0xF3620, u8) == 1) {
+        have = 1;
+        sceVu0CopyVector(at, &HW(h, 0xF3630, f32));
+    }
+    if (have != 1) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+    } else if (!(func_00124490(&h->c.a, at) < 10.0f)) {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        func_002DD110(h->c.motion, at, &pitch, &yaw);
+        if (HW(h, 0xF3620, u8) == 0) {
+            pitch = 0.0f;
+        }
+        a = func_002E2D00(h->c.a.angle[1] + yaw);
+        HW(h, 0xF3614, f32) = pitch;
+        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        step = run_turn(h);
+        left = turn_toward(h, a, step);
+        if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+            func_00141C00(h, 7);
+            return;
+        }
+    } else {
+        sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
+        hewie_want(h, 0x57, 6);
+        return;
+    }
+    if (func_00140CD0(h, 0) == 0 && MOTION_ANIM(h->c.motion) != 3) {
+        func_002DDED0(h->c.motion, 3, -1);
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
