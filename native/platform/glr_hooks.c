@@ -8,7 +8,8 @@
 
 /* func_002BB3E0: the fog drawer (vtable +0xC of D_0046EB60; colours +0x8 / +0xC, view depths
  * +0x10 .. +0x14). The original paints the Z buffer through a palette ramp from c0 to c1
- * between the two depths; on PC the mesh shader fogs by view depth. */
+ * between the two depths, blended over the frame in the drawer's layer; on PC glr's fog pass
+ * does it from each pixel's view depth, in the same place among the layers. */
 int func_002BB3E0(uint8_t *drawer) {
     float n, f;
 
@@ -19,11 +20,16 @@ int func_002BB3E0(uint8_t *drawer) {
 }
 
 /* func_002685F0: the two-colour screen effect drawer (vtable +0xC of D_0046D790; colour +0x8,
- * which +0xC, argument +0x10): GS frame-buffer copies in strips over the whole screen. Will be
- * a full-screen pass; returns 0 = nothing linked into the layer. */
+ * which +0xC, argument +0x10): the screen halved, brightened (+0x10 0: blurred), stretched
+ * back and tinted by the colour at alpha / 2: the first colour adds it, the second pushes the
+ * screen away from it (GS ALPHA (Cd - Cs) * FIX + Cd). The original's GS frame-buffer copies
+ * become glr passes; returns 0 = nothing linked into the layer. */
 int func_002685F0(uint8_t *drawer) {
-    (void)drawer;
-    glr_todo("two-colour screen effect (func_002685F0)");
+    int32_t which, arg;
+
+    memcpy(&which, drawer + 0xC, 4);
+    memcpy(&arg, drawer + 0x10, 4);
+    glr_screen2(*(uint32_t *)(drawer + 0x8), which != 0, arg == 0);
     return 0;
 }
 

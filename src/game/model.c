@@ -4153,12 +4153,18 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
         AT(m, 0x2C, s32) = b;
     }
 #ifdef HG_NATIVE
-    gl_draw_model(m);
-    if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
-        f32 clip[4][4] __attribute__((aligned(16)));
+    {
+        extern void glr_layer(s32 layer);   /* native/platform/glr.c */
 
-        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
-        gl_blob_shadow(m, &clip[0][0]);
+        glr_layer((u16)layer);
+        gl_draw_model(m);
+        if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
+            f32 clip[4][4] __attribute__((aligned(16)));
+
+            VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+            gl_blob_shadow(m, &clip[0][0]);
+        }
+        glr_layer(-1);
     }
     return;
 #endif

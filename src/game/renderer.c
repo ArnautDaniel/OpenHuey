@@ -373,10 +373,25 @@ s32 func_001BBE60(u8 *r, void *obj, s32 layer, void *arg) {
         return 0;
     }
     start = AT(r, 0x304BA8, u64 *);
+#ifdef HG_NATIVE
+    {
+        extern void glr_layer(s32 layer);   /* native/platform/glr.c: what glr is sent is in `layer` */
+        s32 ok;
+
+        glr_layer(layer);
+        ok = (u8)VCALL(obj, 0xC, s32 (*)(void *))(obj);
+        glr_layer(-1);
+        if (!ok) {
+            AT(r, 0x304BA8, u64 *) = start;
+            return 0;
+        }
+    }
+#else
     if (!(u8)VCALL(obj, 0xC, s32 (*)(void *))(obj)) {
         AT(r, 0x304BA8, u64 *) = start;
         return 0;
     }
+#endif
     if (layer == 10 && arg != NULL) {
         func_001B6CD0(r, start, arg);
     } else {

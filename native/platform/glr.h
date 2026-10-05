@@ -22,10 +22,14 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
  * against the scene's depth at that size) */
 #define GLR_PRIM_GLOW 0x40000u
 
+/* the renderer layer (0..52, drawn in order) what follows is sent in; -1: none */
+void glr_layer(int layer);
+
 /* a draw path not ported to OpenGL yet: reported once (nothing is drawn) */
 void glr_todo(const char *what);
 
-/* this frame's fog: from view depth `nearZ` (colour c0) to `farZ` (c1); RGBA, alpha 0x80 = full */
+/* the fog, in the current layer: from view depth `nearZ` (colour c0) to `farZ` (c1), blended
+ * over what is drawn by then; RGBA, alpha 0x80 = full */
 void glr_fog(uint32_t c0, uint32_t c1, float nearZ, float farZ);
 
 /* a full-screen tint over this frame (RGBA, alpha 0x80 = opaque): the screen fades */
@@ -42,6 +46,11 @@ void glr_glow_clear(void);
  * the glow buffer and over the screen, tinted by `rgba` (0x80 = 1.0) at alpha / 2; added, or
  * subtracted when `subtract` */
 void glr_bloom(uint32_t rgba, int subtract);
+
+/* func_002685F0 this frame: the screen halved and brightened (`blur`: 8 offset copies at 1/4
+ * added, else 8 in place), stretched and tinted by `rgba` at alpha / 2 - added, or with
+ * `contrast` the screen pushed away from it (D + (D - it)) */
+void glr_screen2(uint32_t rgba, int contrast, int blur);
 
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
