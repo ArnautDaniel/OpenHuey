@@ -15,6 +15,7 @@
 #include "actor.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "effectmgr.h"
 
 /* Pursuer fields not understood yet, by offset. */
 #define PU(p, off, type) (*(type *)((u8 *)(p) + (off)))
@@ -613,12 +614,15 @@ Pursuer *func_002D7A70(Pursuer *p, s32 flags);
 void func_002D7CE0(Pursuer *p);
 void func_002D7D20(Pursuer *p, s32 exit);
 void func_002D7E10(Pursuer *p, s32 exit);
+void func_002D7E20(Pursuer *p, Character *who);
 void func_002D8120(Pursuer *p, s32 *e, f32 *a, f32 *b);
 void func_002D8210(Pursuer *p, s8 situation);
 void func_002D85D0(Pursuer *p);
 void func_002D8690(Pursuer *p);
+s32 func_002D8840(Pursuer *p, Character *who);
 void func_002D8AC0(Pursuer *p);
 void func_002D8CB0(Pursuer *p);
+void func_002DA120(Pursuer *p);
 void func_002DA4C0(Pursuer *p);
 void func_002DB7F0(Pursuer *p);
 void func_002DB900(Pursuer *p, s32 on);
@@ -798,6 +802,30 @@ static inline void Stalker_ThinkEnd(Pursuer *p) {
     }
     VCALL(p, 0x40, void (*)(Pursuer *))(p);
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
+}
+
+
+/* ---- the hit effect (0xE60 bytes, vtable 0x470F30, its part at +0xC10) the stalkers leave
+   where a blow lands ---- */
+extern void *D_00470F30[], *D_00469D00[], *D_0046FC30[];
+
+typedef struct {
+    f32 pos[4];
+    u32 kind;      /* Daniella 0xFE; Riccardo 1 on Hewie, else 0 */
+    f32 big;       /* 1.0 or 0 */
+} HitEffectParams;
+
+static inline void HitEffect_Init(void **obj) {
+    obj[0] = D_00470F30;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+static inline void HitEffect_Spawn(HitEffectParams *hp) {
+    u8 *mgr = D_0044E578;
+
+    func_002D6090(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
 }
 
 #endif

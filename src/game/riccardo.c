@@ -355,10 +355,10 @@ void func_002D8AC0(Pursuer *p) {
 
 extern const PTMF D_00415758;
 
-/* state: a blow: at its hit key, if he may go for his target and it's within the reach of the
-   blow (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (func_00178070 kind 1 with the
+/* a blow: at its hit key, if he may go for his target and it's within the reach of the blow
+   (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (func_00178070 kind 1 with the
    entry's damage); at the animation's end, on to the next (func_002D8AC0) */
-void func_002D8CB0(Pursuer *p) {
+static inline void Riccardo_Blow(Pursuer *p) {
     if ((func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
 
@@ -373,6 +373,11 @@ void func_002D8CB0(Pursuer *p) {
         func_002D8AC0(p);
     }
     func_00125A10(&p->c);
+}
+
+/* state: a blow (see Riccardo_Blow) */
+void func_002D8CB0(Pursuer *p) {
+    Riccardo_Blow(p);
 }
 
 extern const f32 D_004156C0[6], D_004156E0[6];
@@ -408,4 +413,161 @@ void func_002DA4C0(Pursuer *p) {
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_004156F8);
     func_002DA120(p);
+}
+
+/* a cry from `who` (Fiona or Hewie): a hit effect on them. In his grab (0x1000, unless its entry
+   is kind 6) at a random one of four of their bones (motion vtable +0x84..+0x90); in his blows
+   0xE05 / 0x1A01 a large one at their bone of motion vtable +0x94 */
+void func_002D7E20(Pursuer *p, Character *who) {
+    HitEffectParams hp;
+    u8 *wm;
+    s32 bone;
+
+    if (PU(p, 0x175C, s32) == 0x1000) {
+        if (AT(PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24, 0x10, u8) == 6) {
+            return;
+        }
+        hp.kind = who == gCharPlayer ? 0 : 1;
+        wm = who->motion;
+        switch ((u32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) {
+        case 0:
+            bone = VCALL(wm, 0x84, s32 (*)(void *))(wm);
+            break;
+        case 1:
+            bone = VCALL(wm, 0x88, s32 (*)(void *))(wm);
+            break;
+        case 2:
+            bone = VCALL(wm, 0x8C, s32 (*)(void *))(wm);
+            break;
+        default:
+            bone = VCALL(wm, 0x90, s32 (*)(void *))(wm);
+            break;
+        }
+        hp.big = 0.0f;
+    } else {
+        hp.kind = 0;
+        if (MOTION_ANIM(p) != 0xE05 && MOTION_ANIM(p) != 0x1A01) {
+            return;
+        }
+        wm = who->motion;
+        bone = VCALL(wm, 0x94, s32 (*)(void *))(wm);
+        hp.big = 1.0f;
+    }
+    {
+        f32 pos[4] __attribute__((aligned(16)));
+
+        sceVu0CopyVector(pos, func_0017CE80(AT(who->motion, 0x810, u8 *), bone) + 0xC);
+        hp.pos[0] = pos[0];
+        hp.pos[1] = pos[1];
+        hp.pos[2] = pos[2];
+        hp.pos[3] = pos[3];
+    }
+    HitEffect_Spawn(&hp);
+}
+
+/* his attack for the distance to `who` (NULL: his target): a 0..100 roll under the distance's
+   chance (100 within 10, 50 within 30, 25 within 60, 15 within 90, 10 within 150, never further)
+   attacks; on Hewie action 4; on Fiona a second roll picks 6, 4 or 3 by the chances for the
+   distance (6 only below threat level 4). 0xFF: none */
+s32 func_002D8840(Pursuer *p, Character *who) {
+    f32 d, any, c3 = 0.0f, c4 = 0.0f, c6 = 0.0f;
+    f32 roll;
+    VObject *rnd;
+
+    if (who == NULL) {
+        who = p->target;
+    }
+    d = func_00124490(&p->c.a, who->a.pos);
+    any = 10.0f;
+    if (d < 10.0f) {
+        any = 100.0f;
+        c3 = 100.0f;
+    } else if (d < 30.0f) {
+        any = 50.0f;
+        if (AT(gProgress, 0x7B8, u8) < 4) {
+            c6 = 50.0f;
+        }
+        c4 = 100.0f;
+    } else if (d < 60.0f) {
+        any = 25.0f;
+        if (AT(gProgress, 0x7B8, u8) < 4) {
+            c6 = 75.0f;
+        }
+        c4 = 100.0f;
+    } else if (d < 90.0f) {
+        any = 15.0f;
+        if (AT(gProgress, 0x7B8, u8) < 4) {
+            c6 = 75.0f;
+        }
+        c4 = 100.0f;
+    } else if (d < 150.0f) {
+        if (AT(gProgress, 0x7B8, u8) < 4) {
+            c6 = 100.0f;
+        } else {
+            c4 = 100.0f;
+        }
+    } else {
+        any = 0.0f;
+    }
+    rnd = D_0044E550;
+    if (!(100.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) < any)) {
+        return 0xFF;
+    }
+    if (who != gCharPlayer) {
+        return 4;
+    }
+    roll = 100.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    if (roll <= c6) {
+        return 6;
+    }
+    if (roll <= c4) {
+        return 4;
+    }
+    if (roll <= c3) {
+        return 3;
+    }
+    return 0xFF;
+}
+
+extern const PTMF D_00415708, D_00415718, D_00415728;
+void func_002D8DF0(Pursuer *p);
+void func_002D9500(Pursuer *p);
+
+/* a blow of the flurry: on Fiona, in front of her (func_002175B0) entry 0 or 3, else from behind
+   8 or 9 (one blow only); on Hewie entry 1 if he's in front, else give up (action 0x13). A blow
+   of kind 6 is struck at once (Riccardo_Blow); others first close in: on Hewie func_002D8DF0, on
+   Fiona func_002D9500 */
+void func_002DA120(Pursuer *p) {
+    u8 *e;
+
+    if (p->target != gCharPartner) {
+        if (!(func_002175B0(&p->c.a, &p->target->a) & 0xFF)) {
+            p->c.unk104[0] = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= 50.0f ? 9 : 8;
+            PU(p, 0x1624, s32) = 1;
+        } else {
+            p->c.unk104[0] = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= 50.0f ? 0 : 3;
+        }
+    } else if (func_002175B0(&p->c.a, &p->target->a) & 0xFF) {
+        p->c.unk104[0] = 1;
+    } else {
+        PU(p, 0x1624, s32) = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x13);
+        PU(p, 0x1728, s32) = 2;
+        PU(p, 0x172C, u8) = 0;
+        func_00125A10(&p->c);
+        return;
+    }
+    e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
+    func_00297B40(p, AT(e, 0x0, s32), 0);
+    p->c.unk100 = -1;
+    if (AT(e, 0x10, u8) == 6) {
+        Actor_SetState(&p->c.a, &D_00415708);
+        Riccardo_Blow(p);
+    } else if (p->target == gCharPartner) {
+        Actor_SetState(&p->c.a, &D_00415718);
+        func_002D8DF0(p);
+    } else {
+        Actor_SetState(&p->c.a, &D_00415728);
+        func_002D9500(p);
+    }
 }

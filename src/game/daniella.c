@@ -5,7 +5,6 @@
 #include "common.h"
 #include "pursuer.h"
 #include "progress.h"
-#include "effectmgr.h"
 #include "sce/libvu0.h"
 
 extern void *D_0046BBB0[];
@@ -124,33 +123,16 @@ void func_0020C730(Pursuer *p, s32 exit) {
     }
 }
 
-/* the effect she leaves at a hit (0xE60 bytes; vtable 0x470F30, its part at +0xC10) */
-extern void *D_00470F30[], *D_00469D00[], *D_0046FC30[];
-
-static inline void DaniellaHit_Init(void **obj) {
-    obj[0] = D_00470F30;
-    obj[0xC10 / 4] = D_00469D00;
-    ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
-}
-
-typedef struct {
-    f32 pos[4];
-    u32 kind;      /* 0xFE */
-    f32 big;       /* 1.0 or 0 */
-} DaniellaHitParams;
-
 extern const f32 D_003D8910[4];
 
 /* the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
    strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
    larger for 0xE04 / 0xE05 and the grabs */
 void func_0020C7C0(Pursuer *p) {
-    DaniellaHitParams hp;
+    HitEffectParams hp;
     f32 pos[4] __attribute__((aligned(16)));
     f32 reach = 1.5f;
     s32 atHand = 1;
-    u8 *mgr;
 
     switch (MOTION_ANIM(p)) {
     case 0x1904:
@@ -205,8 +187,7 @@ void func_0020C7C0(Pursuer *p) {
     hp.pos[1] = pos[1];
     hp.pos[2] = pos[2];
     hp.pos[3] = pos[3];
-    mgr = D_0044E578;
-    func_002D6090(mgr, Effect_New(mgr, 0xE60, DaniellaHit_Init), &hp);
+    HitEffect_Spawn(&hp);
 }
 
 extern const f32 D_003D8900[4];
