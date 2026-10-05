@@ -5776,3 +5776,87 @@ void func_001470C0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1D40);
     }
 }
+
+/* ---- jumping ---- */
+
+extern const PTMF D_003B1D20;
+
+/* run up to a jump toward heading +0xF36D0: in his run (0x202, after pose 5), head held level
+ * toward it, turning by how fast he runs and how far his head is turned. Once running and not
+ * blending, on ground that allows it (mesh flag 1 stops him: default action), take off: aim 5
+ * up and 20 ahead (+0xF36E0), +0xF36B4..+0xF36CC the flight (8 frames, speed 2.8 from his
+ * height), facing within 30 degrees of the heading (snapping by 30 when his head turns the
+ * other way), animation 0x1E01, sound 0x68, then behaviour D_003B1D20 */
+void func_001476C0(Hewie *h) {
+    s32 anim = MOTION_ANIM(h->c.motion);
+    f32 root[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 speed, turn, yaw, d, a;
+
+    if (func_00140CD0(h, 5) == 0 && anim != 0x202) {
+        func_002DDED0(h->c.motion, 0x202, -1);
+    }
+    HW(h, 0xF3604, s32) = 8;
+    HW(h, 0xF3608, s32) = 0;
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36D0, f32) - h->c.a.angle[1]);
+    func_001F6370(h->c.motion, root, 0.0f);
+    root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    speed = root[2];
+    turn = 0.0f;
+    if (!(speed < 0.0f)) {
+        yaw = AT(h->c.motion, 0x858, f32);
+        if (yaw <= 0.0f) {
+            yaw = -yaw;
+        }
+        turn = speed * (12.0f * (0.5f * yaw));
+    }
+    func_00124530(&h->c.a, HW(h, 0xF36D0, f32), 0x1.921fb60000000p+1f /* 3.1415927 */ * turn / 180.0f);
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f) || anim != 0x202) {
+        return;
+    }
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    if (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    v[0] = 0.0f;
+    v[1] = 5.0f;
+    v[2] = 20.0f;
+    v[3] = 0.0f;
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    sceVu0CopyVector(&HW(h, 0xF36E0, f32), h->c.a.pos);
+    sceVu0AddVector(&HW(h, 0xF36E0, f32), &HW(h, 0xF36E0, f32), v);
+    HW(h, 0xF36B4, s32) = 1;
+    HW(h, 0xF36B8, s32) = (s32)0x1.c924920000000p+2f /* 7.142857 */ + 1;
+    HW(h, 0xF36BC, s32) = 0;
+    HW(h, 0xF36C4, f32) = 0x1.6666660000000p+1f /* 2.8 */;
+    HW(h, 0xF36C8, f32) = h->c.a.pos[1];
+    HW(h, 0xF36CC, s32) = 0;
+    a = HW(h, 0xF36D0, f32);
+    d = func_002E2D00(a - h->c.a.angle[1]);
+    if ((d <= 0.0f ? -d : d) < 0x1.0c15240000000p-1f /* 0.5235988 */) {
+        func_00124530(&h->c.a, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
+    } else if (AT(h->c.motion, 0x858, f32) * d < 0.0f) {
+        f32 ang = d < 0.0f ? func_002E2D00(h->c.a.angle[1] + 0x1.0c15240000000p-1f /* 0.5235988 */)
+                           : func_002E2D00(h->c.a.angle[1] - 0x1.0c15240000000p-1f /* 0.5235988 */);
+
+        h->c.a.angle[1] = ang;
+        sceVu0UnitMatrix(h->c.a.rot);
+        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, ang);
+        func_002E2D00(a - h->c.a.angle[1]);
+    } else {
+        func_00124530(&h->c.a, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
+    }
+    func_002DDED0(h->c.motion, 0x1E01, -1);
+    HW(h, 0xF356C, u32) |= 0x80000000;
+    h->c.a.unk2D = 1;
+    func_0013A430(h, 0x68);
+    h->c.unk104[0] = 0;
+    h->c.unk104[1] = 0;
+    Hewie_SetBehaviour(h, &D_003B1D20);
+}
