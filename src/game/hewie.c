@@ -5268,3 +5268,89 @@ s32 func_00144B30(Hewie *h) {
     }
     return -1;
 }
+
+/* ---- footsteps ---- */
+
+extern VObject *D_0044E560;   /* the sound driver */
+
+/* his feet: each foot (motion +0x64, feet 0..3) that touches down this frame leaves a print in
+ * rooms 7, 0xD1 and 0x106 (at its bone, deep when walking group 8) and makes a step sound by the
+ * floor (+0x14C8 flags: 0x10 plain, 0x14 / 0x18 / 0x1C, 0x78; 0x18 type 6 when the driver says
+ * so), louder the harder he steps. Only in the room being played, on the mesh, not while the
+ * room objects hold him (+0x50) nor with progress flag 8 */
+void func_00145080(Hewie *h) {
+    static const s32 bones[4] = { 0xB, 0xF, 0x17, 0x1C };
+    Progress *p = gProgress;
+    u8 down[4];
+    s32 steps = 0, i, deep, snd, type, n;
+    f32 root[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 f;
+
+    if (h->c.a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p) || h->c.a.navTri == NAV_NONE) {
+        return;
+    }
+    if ((u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 1) {
+        return;
+    }
+    if ((u8)Progress_TestFlag(p, 8) == 1) {
+        return;
+    }
+    for (i = 0; i < 4; i++) {
+        down[i] = VCALL(h->c.motion, 0x64, s32 (*)(void *, s32, s32))(h->c.motion, i, -1);
+    }
+    for (i = 0; i < 4; i++) {
+        if (down[i] == 1 && HW(h, 0xF3660 + i, u8) == 0) {
+            steps |= 1 << i;
+        }
+    }
+    if (steps != 0 && (h->c.a.room == 7 || h->c.a.room == 0xD1 || h->c.a.room == 0x106)) {
+        deep = func_001669A0(h) == 8;
+        for (i = 0; i < 4; i++) {
+            if (steps & (1 << i)) {
+                sceVu0CopyVector(at, func_0017CE80(MOTION_SKELETON(h->c.motion), bones[i]) + 12);
+                func_00125E10(&h->c, at, deep);
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        HW(h, 0xF3660 + i, u8) = down[i];
+    }
+    if (steps == 0) {
+        return;
+    }
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    snd = 0x10;
+    type = 5;
+    switch (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x02018000) {
+    case 0x8000:
+        snd = 0x14;
+        break;
+    case 0x10000:
+        snd = 0x18;
+        break;
+    case 0x18000:
+        snd = 0x1C;
+        break;
+    case 0x2000000:
+        snd = 0x78;
+        break;
+    case 0x2008000:
+        if ((u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, 6) == 1) {
+            snd = 0x18;
+            type = 6;
+        }
+        break;
+    }
+    n = HW(h, 0xF3664, s32)++;
+    func_001F6370(h->c.motion, root, 0.0f);
+    root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    f = (root[2] - 0x1.1eb852p-2f /* 0.28 */) / 0x1.0f5c2ap+1f /* 2.12 */;
+    if (f < 0.0f) {
+        f = 0.0f;
+    }
+    if (!(f <= 1.0f)) {
+        f = 1.0f;
+    }
+    func_00122C20(&h->c.a, snd + (n & 3), type, 0, (s32)((u32)(2.0f * f) & 0x7F), NULL);
+}
