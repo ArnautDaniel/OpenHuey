@@ -6441,3 +6441,10 @@ src/game/lorenzo.c func_00364CD0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0
 src/game/lorenzo.c func_00365570 --runs=20
 src/game/lorenzo.c func_003655F0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x0A000550=0..0x3F800000 --pre=a0+0x15C0:u8=0xFE..0xFF --pre=a0+0x124=0..3 --pre=a0+0x128=0..3 --pre=a0+0x1540=0x0A500000..0x0A500000 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF --stub-fret=-1.0 --stub-fret=10.0 --stub-fret=50.0 --runs=250
 src/game/riccardo.c func_0034BFF0 --pre=a0+0x1824=0x0A100000..0x0A100000 --pre=@0x0A100014=0x41A00000..0x42C80000 --pre=@0x44F818=0x0A200000..0x0A200000 --pre=a0+0x1540=0x0A200000..0x0A200000 --pre=@0x0A2000F8=0..3 --pre=a0+0xF0=0x0A300000..0x0A300000 --pre=@0x0A300550=0..0x3F800000 --pre=@0x44E4D8=0x0A400000..0x0A400000 --pre=@0x0A4007B8:u8=4..5 --pre=a0+0x1720=0x0A500000..0x0A500000 --pre=a0+0x104=0..2 --pre=a0+0x1588=0xBF800000..0x42F00000 --pre=a0+0x17C0=0x41A00000..0x42700000 --pre=a0+0x162C=-1..2 --pre=a0+0x1630=-1..2 --pre=a0+0x1780=58..60 --pre=a0+0x16EE:u8=0..1 --pre=a0+0x16EF:u8=0..1 --pre=a0+0x16F0:u8=0..1 --pre=a0+0x1544:u8=0..1 --pre=a0+0xFC=5..6 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF --stub-ret=-1 --stub-ret=50 --stub-fret=0.3 --stub-fret=0.7 --stub-fret=50.0 --runs=250 --pre=a0+0x175C=1..6
+src/game/props.c func_00365F40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/props.c func_003710C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/props.c func_00374420 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=100
+src/game/props.c func_00359220 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/props.c func_0033BE00 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=100
+src/game/props.c func_0032E890 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/props.c func_0035F5B0 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=100

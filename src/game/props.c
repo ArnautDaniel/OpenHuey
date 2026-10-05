@@ -2119,3 +2119,65 @@ u8 *func_0037D0A0(u8 *o, s32 flags) {
     }
     return o;
 }
+
+/* ---- destructors of the same shape in other effect classes (one or two quad drawers inlined; generated from func_00321910 / func_003453D0) ---- */
+
+extern void *D_00474FB0[], *D_00476BB0[], *D_004795E0[], *D_00479A60[], *D_00479E50[], *D_0047A310[], *D_0047A350[];
+
+static inline __attribute__((always_inline)) u8 *fx_dtor1(u8 *o, s32 flags, void **vt, u32 d0) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = vt;
+    AT(o, d0, void **) = D_0046FC30;
+    AT(o, d0, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+static inline __attribute__((always_inline)) u8 *fx_dtor2(u8 *o, s32 flags, void **vt, u32 d0, u32 d1) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = vt;
+    AT(o, d1, void **) = D_0046FC30;
+    AT(o, d1, void **) = D_00469D00;
+    AT(o, d0, void **) = D_0046FC30;
+    AT(o, d0, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+u8 *func_00365F40(u8 *o, s32 flags) {
+    return fx_dtor2(o, flags, D_00479E50, 0xD0, 0x108);
+}
+
+u8 *func_003710C0(u8 *o, s32 flags) {
+    return fx_dtor2(o, flags, D_0047A310, 0xF10, 0xF48);
+}
+
+u8 *func_00374420(u8 *o, s32 flags) {
+    return fx_dtor1(o, flags, D_0047A350, 0xD0);
+}
+
+u8 *func_00359220(u8 *o, s32 flags) {
+    return fx_dtor2(o, flags, D_004795E0, 0x2410, 0x2448);
+}
+
+u8 *func_0033BE00(u8 *o, s32 flags) {
+    return fx_dtor1(o, flags, D_00476BB0, 0x6010);
+}
+
+u8 *func_0032E890(u8 *o, s32 flags) {
+    return fx_dtor2(o, flags, D_00474FB0, 0xC10, 0xC48);
+}
+
+u8 *func_0035F5B0(u8 *o, s32 flags) {
+    return fx_dtor1(o, flags, D_00479A60, 0x550);
+}
