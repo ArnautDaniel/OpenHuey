@@ -62,6 +62,7 @@
     X(PFNGLDEPTHFUNCPROC, glDepthFunc) \
     X(PFNGLDEPTHMASKPROC, glDepthMask) \
     X(PFNGLBLENDFUNCPROC, glBlendFunc) \
+    X(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate) \
     X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
     X(PFNGLDISABLEIPROC, glDisablei) \
     X(PFNGLCOLORMASKIPROC, glColorMaski) \
@@ -255,7 +256,7 @@ void glr_screen2(uint32_t rgba, int contrast, int blur) {
 
 static GLuint sMeshProg, sQuadProg, sFillProg, sVao, sQuadVao, sVbo;
 static GLint sFillLoc;
-static GLint sMvpLoc, sTexModeLoc, sTccLoc;
+static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFbaLoc;
 static GLuint sFbo, sColor, sDepth, sViewDepth, sGsTex;   /* sViewDepth: each pixel's view depth */
 /* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
  * scratch buffer its fade goes through (A) */
@@ -298,6 +299,7 @@ static const char *kMeshFs =
     "uniform sampler2D uTex;\n"
     "uniform int uTexMode;\n"   /* 0 none, 1 modulate, 2 decal */
     "uniform int uTcc;\n"
+    "uniform int uFba;\n"   /* the frame's alpha written with bit 7 set (GS FBA) */
     "in float vDepth;\n"
     "layout(location = 0) out vec4 oColor;\n"
     "layout(location = 1) out float oDepth;\n"   /* the view depth, for the fog pass */
@@ -315,6 +317,7 @@ static const char *kMeshFs =
     "        }\n"
     "    }\n"
     "    oColor = clamp(c, 0.0, 1.0);\n"
+    "    if (uFba != 0) oColor.a = 1.0;\n"
     "    oDepth = vDepth;\n"
     "}\n";
 
@@ -334,7 +337,7 @@ static const char *kQuadFs =
     "uniform sampler2D uTex;\n"
     "out vec4 oColor;\n"
     "void main() {\n"
-    "    oColor = vec4(texture(uTex, vUv).rgb, 1.0);\n"
+    "    oColor = vec4(texture(uTex, vUv).rgb, 0.0);\n"
     "}\n";
 
 /* The post passes, in the GS's 8-bit arithmetic (colours 0..255, sprites modulated by their
@@ -345,7 +348,8 @@ static const char *kQuadFs =
  *   0  B fades, through A: A = B * 0x40 >> 7, then B + ((A - B) * 0x40 >> 7)
  *   1  over the screen: B * 0x40 >> 7 added, B stretched with bilinear filtering
  * The screen bloom (func_002699D0):
- *   2  H = the screen at every other pixel
+ *   2  H = the screen at every other pixel (uFix < 0: only where the frame's alpha isn't 0,
+ *      the bloom's alpha test)
  *   3  H2 = the sum of H * 0x40 >> 7 at 8 offsets: (+-1, +-1), (+-2, 0), (0, +-2)
  *   4  H += the sum of H2 * 0x10 >> 7 at 8 offsets: (+-3, 0), (0, +-3), (+-2, +-2)
  *   5  B += (H * 0x40 >> 7) * 0x20 >> 7, H at every other pixel
@@ -397,6 +401,7 @@ static const char *kPostFs =
     "        c = uMode == 1 ? floor(h * 0.5) : floor(floor(h * uColor / 128.0) * uFix / 128.0);\n"
     "    } else if (uMode == 2) {\n"   /* the screen is 640 wide here, the game's 512 */
     "        c = at(uTex, ivec2(int(float(p.x * 2) * 1.25), p.y * 2 + 1));\n"
+    "        if (uFix < 0.0 && c.a == 0.0) c = vec4(0.0);\n"   /* the bloom's alpha test: frame alpha != 0 */
     "    } else if (uMode == 3) {\n"
     "        c = vec4(0.0);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.5); c += floor(at(uTex, p + ivec2(1, -1)) * 0.5);\n"
@@ -663,6 +668,7 @@ int glr_init(void) {
     sMvpLoc = p_glGetUniformLocation(sMeshProg, "uMvp");
     sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
     sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
+    sFbaLoc = p_glGetUniformLocation(sMeshProg, "uFba");
     sQuadProg = program(kQuadVs, kQuadFs);
     sFillProg = program(kQuadVs, kFillFs);
     sFillLoc = p_glGetUniformLocation(sFillProg, "uColor");
@@ -773,6 +779,8 @@ static int cmp_order(const void *a, const void *b) {
 /* the 3D strips' state */
 static void mesh_state(void) {
     p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    p_glProgramUniform1i(sMeshProg, sFbaLoc, 0);
     p_glColorMaski(1, GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
     p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
     p_glEnable(GL_DEPTH_TEST);
@@ -813,6 +821,7 @@ static void run_post(const GlrDraw *d) {
     p_glDisable(GL_DEPTH_TEST);
     p_glDisable(GL_BLEND);
     p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, d->post == POST_FOG);
     p_glUseProgram(sPostProg);
     p_glBindVertexArray(sQuadVao);
     switch (d->post) {
@@ -832,11 +841,12 @@ static void run_post(const GlrDraw *d) {
                              (float)((rgba >> 16) & 0xFF), (float)(rgba >> 24));
         p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
         p_glEnable(GL_BLEND);
-        p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        p_glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);   /* alpha: the fog's */
         post(10, sFbo, GLR_WIDTH, GLR_HEIGHT, sViewDepth, 0);
         break;
     }
     case POST_BLOOM:   /* func_002699D0: H blurred, into the glow buffer and over the screen */
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, -1.0f);   /* mode 2 with the alpha test */
         post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
         post(3, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);
         post(4, sHalfFbo[2], GLR_HALF_W, GLR_HALF_H, sHalf[0], sHalf[1]);
@@ -857,6 +867,7 @@ static void run_post(const GlrDraw *d) {
         post(1, sFbo, GLR_WIDTH, GLR_HEIGHT, sGlowB, 0);
         break;
     case POST_SCREEN2:   /* func_002685F0: H brightened (blurred: args bit 1), added or contrasted */
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, 0.0f);   /* mode 2 without the alpha test */
         post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
         post(d->prim & 2 ? 7 : 8, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);
         post_color(rgba);
@@ -875,11 +886,12 @@ static void run_post(const GlrDraw *d) {
 }
 
 void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH) {
-    static const float kBlack[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    static const float kBlack[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     static const float kFar = 1.0f;
     static const float kFarView[4] = {1e30f, 0.0f, 0.0f, 0.0f};   /* nothing drawn: beyond the fog */
     const GlrFrame *f = &sFrames[sBuilding ^ 1];
     int i, depthDirty = 1;   /* the scene's depth changed since the glow buffer's copy */
+    int bloomMask = 0, maskCleared = 0;   /* layer 0x26 used this frame; its alpha cleared */
 
     if (sGlowClear) {
         p_glClearNamedFramebufferfv(sGlowFbo, GL_COLOR, 0, kBlack);
@@ -979,6 +991,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             order[i] = (long long)(f->d[i].layer < 0 ? 1 : f->d[i].layer) << 32 | i;
         }
         qsort(order, f->nd, sizeof(*order), cmp_order);
+        for (i = 0; i < f->nd; i++) {
+            bloomMask |= f->d[i].layer == 0x26 && !f->d[i].post;
+        }
         p_glNamedBufferData(sVbo, (GLsizeiptr)f->nv * sizeof(GlrVertex), f->v, GL_STREAM_DRAW);
         mesh_state();
         for (i = 0; i < f->nd; i++) {
@@ -1002,9 +1017,26 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             if (d->prim & 0x40) {   /* ABE */
                 p_glEnable(GL_BLEND);
                 p_glDisablei(GL_BLEND, 1);
-                p_glBlendFunc(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
+                /* the frame keeps the source alpha, as the GS writes it */
+                p_glBlendFuncSeparate(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
+                                      GL_ZERO);
             } else {
                 p_glDisable(GL_BLEND);
+            }
+            {
+                /* layers 0x25 / 0x26 once layer 0x26 is used: the bloom's mask - only the frame's
+                 * alpha is written, with bit 7 set (func_001B1E50 clears it first) */
+                int mask = bloomMask && (d->layer == 0x25 || d->layer == 0x26);
+
+                if (mask && !maskCleared) {
+                    static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+                    p_glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+                    p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 0, kNone);
+                    maskCleared = 1;
+                }
+                p_glColorMaski(0, !mask, !mask, !mask, GL_TRUE);
+                p_glProgramUniform1i(sMeshProg, sFbaLoc, mask);
             }
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glColorMaski(1, d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1030,6 +1062,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         p_glDisable(GL_BLEND);
         p_glDepthMask(GL_TRUE);
         p_glDisable(GL_DEPTH_TEST);
+        p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
 
     /* the overlay (screen fades) */
