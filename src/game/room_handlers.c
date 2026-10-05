@@ -1456,6 +1456,286 @@ s32 func_003114C0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
+/* ---- room 0x61's wanderers: characters 0x14 / 0x15 / 0x16 each follow a path (0x40 bytes:
+ * +0x0 / +0xC the box it stays in, +0x18 points, +0x1C frames between two, +0x20 the frame,
+ * +0x24 the point it left, +0x28 the points (s16 x 3 in 1/16), +0x30 where it was) - points one
+ * to a cell of a grid of 10-unit cells, at random in the cell, shuffled; a cubic curve from
+ * each to the next ---- */
+
+extern u8 D_01991210[], D_01991250[], D_01991290[];   /* the three paths */
+extern s16 D_019912D0[], D_019913D0[], D_01991490[];   /* their points */
+extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2 */
+
+#define PATH_PT(st, i) (AT(st, 0x28, s16 *) + (i) * 3)
+
+/* point i's way on: 20 along the line from the point before to the one after */
+void func_00310B20(u8 *st, s32 i, f32 *out) {
+    f32 b[4] __attribute__((aligned(16)));
+    s32 prev = i - 1, next;
+
+    if (prev < 0) {
+        prev = AT(st, 0x18, s32) - 1;
+    }
+    next = i + 1;
+    if (AT(st, 0x18, s32) - 1 < next) {
+        next = 0;
+    }
+    out[0] = 0.0625f * (f32)PATH_PT(st, next)[0];
+    out[1] = 0.0625f * (f32)PATH_PT(st, next)[1];
+    out[2] = 0.0625f * (f32)PATH_PT(st, next)[2];
+    out[3] = 1.0f;
+    b[0] = 0.0625f * (f32)PATH_PT(st, prev)[0];
+    b[1] = 0.0625f * (f32)PATH_PT(st, prev)[1];
+    b[2] = 0.0625f * (f32)PATH_PT(st, prev)[2];
+    b[3] = 1.0f;
+    sceVu0SubVector(out, out, b);
+    sceVu0Normalize(out, out);
+    sceVu0ScaleVector(out, out, 20.0f);
+}
+
+static void path_point(f32 *out, u8 *st, s32 i) {
+    out[0] = 0.0625f * (f32)PATH_PT(st, i)[0];
+    out[1] = 0.0625f * (f32)PATH_PT(st, i)[1];
+    out[2] = 0.0625f * (f32)PATH_PT(st, i)[2];
+    out[3] = 1.0f;
+}
+
+/* one frame along the path: `at` moved on the curve (kept in the box); returns the heading
+ * `yaw` turned towards the way it moved, by at most 3.6 degrees */
+f32 func_00310C90(u8 *st, f32 *at, f32 yaw) {
+    static const union { u32 u; f32 f; } kTurn = {0x3D80ADFD}, kTurnN = {0xBD80ADFD};
+    f32 c[4][4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 w[4];
+    f32 t, u, k3, a;
+    s32 next = AT(st, 0x24, s32) + 1, i;
+
+    if (!(next < AT(st, 0x18, s32))) {
+        next = 0;
+    }
+    t = (f32)AT(st, 0x20, s32) / (f32)AT(st, 0x1C, s32);
+    u = 1.0f - t;
+    k3 = 3.0f * u;
+    w[0] = u * (u * u);
+    w[1] = t * (k3 * u);
+    w[2] = t * (k3 * t);
+    w[3] = t * (t * t);
+    sceVu0CopyVector((f32 *)(st + 0x30), at);
+    path_point(c[0], st, AT(st, 0x24, s32));
+    path_point(c[1], st, AT(st, 0x24, s32));
+    func_00310B20(st, AT(st, 0x24, s32), d);
+    sceVu0AddVector(c[1], c[1], d);
+    path_point(c[2], st, next);
+    func_00310B20(st, next, d);
+    sceVu0SubVector(c[2], c[2], d);
+    path_point(c[3], st, next);
+    for (i = 0; i < 3; i++) {
+        at[i] = 0.0f;
+        at[i] = 0.0f + at[i] + w[0] * c[0][i];
+        at[i] = 0.0f + at[i] + w[1] * c[1][i];
+        at[i] = 0.0f + at[i] + w[2] * c[2][i];
+        at[i] = 0.0f + at[i] + w[3] * c[3][i];
+    }
+    for (i = 0; i < 3; i++) {
+        f32 v = at[i], hi = AT(st, 0xC + i * 4, f32), m = v <= hi ? v : hi;
+
+        at[i] = m < AT(st, i * 4, f32) ? AT(st, i * 4, f32) : m;
+    }
+    AT(st, 0x20, s32) += 1;
+    if (!(AT(st, 0x20, s32) < AT(st, 0x1C, s32))) {
+        AT(st, 0x20, s32) = 0;
+        AT(st, 0x24, s32) += 1;
+        if (!(AT(st, 0x24, s32) < AT(st, 0x18, s32))) {
+            AT(st, 0x24, s32) = 0;
+        }
+    }
+    sceVu0SubVector(d, at, (f32 *)(st + 0x30));
+    a = func_002E2D00(func_0031C5C0(d[0], d[2]) - yaw);
+    if (a < kTurnN.f) {
+        a = kTurnN.f;
+    }
+    if (!(a <= kTurn.f)) {
+        a = kTurn.f;
+    }
+    return func_002E2D00(yaw + a);
+}
+
+/* set path `st` up: a point at random in each cell of an nx x ny x nz grid of 10-unit cells
+ * from (ox, oy, oz) into `pts`, then shuffled (30 random swaps among the first 30 per point),
+ * `frames` between two */
+void func_00311140(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox, f32 oy, f32 oz) {
+    VObject *rnd;
+    s16 *p = pts;
+    s32 x, y, z, n;
+
+    rnd = D_0044E550;
+    for (x = 0; x < nx; x++) {
+        for (y = 0; y < ny; y++) {
+            for (z = 0; z < nz; z++) {
+                p[0] = (s16)(s32)(16.0f * (0.0f + ox + 10.0f * ((f32)x + VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd))));
+                p[1] = (s16)(s32)(16.0f * (0.0f + oy + 10.0f * ((f32)y + VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd))));
+                p[2] = (s16)(s32)(16.0f * (0.0f + oz + 10.0f * ((f32)z + VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd))));
+                p += 3;
+            }
+        }
+    }
+    AT(st, 0x18, s32) = nz * (nx * ny);
+    AT(st, 0x28, s16 *) = pts;
+    if (AT(st, 0x18, s32) > 0) {
+        rnd = D_0044E550;
+        for (n = 0; n < AT(st, 0x18, s32); n++) {
+            s32 i = (s32)(30.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd));
+            s16 *a = pts + i * 3, *b, t;
+
+            b = pts + (s32)(30.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd)) * 3;
+            t = a[0], a[0] = b[0], b[0] = t;
+            t = a[1], a[1] = b[1], b[1] = t;
+            t = a[2], a[2] = b[2], b[2] = t;
+        }
+    }
+    AT(st, 0x20, s32) = 0;
+    AT(st, 0x24, s32) = 0;
+    AT(st, 0x1C, s32) = frames;
+    AT(st, 0x0, f32) = ox;
+    AT(st, 0x4, f32) = oy;
+    AT(st, 0x8, f32) = oz;
+    AT(st, 0xC, f32) = 0.0f + ox + 10.0f * (f32)nx;
+    AT(st, 0x10, f32) = 0.0f + oy + 10.0f * (f32)ny;
+    AT(st, 0x14, f32) = 0.0f + oz + 10.0f * (f32)nz;
+}
+
+/* character `kind` one frame along path `st`, turned to its heading */
+static void swim_step(s32 kind, u8 *st) {
+    u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, kind) & 0xFF];
+    f32 yaw;
+
+#ifdef HG_NATIVE
+    if (c == NULL) {   /* absent (the PS2 reads through junk) */
+        return;
+    }
+#endif
+    yaw = func_00310C90(st, (f32 *)(c + 0x10), AT(c, 0x54, f32));
+    AT(c, 0x54, f32) = yaw;
+    sceVu0UnitMatrix((f32 (*)[4])(c + 0x60));
+    sceVu0RotMatrixY((f32 (*)[4])(c + 0x60), (f32 (*)[4])(c + 0x60), yaw);
+}
+
+extern void *D_0047A3B0[];
+
+static void glint_init(void **obj) {
+    obj[0] = D_0047A3B0;
+}
+
+/* room 0x61 (byte 3): 0 / 2 / 4 set up the paths of characters 0x14 (2 x 3 x 7 cells from (25,
+ * 0, 40), 480 frames a stretch; with the glint D_0047A3B0) / 0x15 (2 x 3 x 5 from (30, 0, 50),
+ * 240) / 0x16 (the same box, 280); 1 / 3 / 5 move them a frame (returning 2: again next frame) */
+s32 func_003116B0(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0:
+        func_00311140(D_01991210, 2, 3, 7, 0x1E0, D_019912D0, 25.0f, 0.0f, 40.0f);
+        Effect_New(D_0044E578, 4, glint_init);
+        return 1;
+    case 1:
+        swim_step(0x14, D_01991210);
+        return 2;
+    case 2:
+        func_00311140(D_01991250, 2, 3, 5, 0xF0, D_019913D0, 30.0f, 0.0f, 50.0f);
+        return 1;
+    case 3:
+        swim_step(0x15, D_01991250);
+        return 2;
+    case 4:
+        func_00311140(D_01991290, 2, 3, 5, 0x118, D_01991490, 30.0f, 0.0f, 50.0f);
+        return 1;
+    case 5:
+        swim_step(0x16, D_01991290);
+        return 2;
+    }
+    return 1;
+}
+
+/* ---- class D_0047A3B0 (4 bytes): a glint on character 0x14 (its bone 6) ---- */
+
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
+
+/* +0x8 destructor */
+void **func_00377B10(void **o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    o[0] = D_0047A3B0;
+    o[0] = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0x14 draw: unless the effects are paused, a white 1 x 1 sprite (group 0x10 cell (0x40,
+ * 0x20) 32 x 32 of 512 x 256) at the bone, in layer 0x26 */
+void func_00377B70(void) {
+    struct {
+        void **vtbl;
+        s32 a;
+        u64 tex;
+        u8 *rec;
+        s32 b, c, d;
+        s32 layer;
+        s16 s[7];
+        s8 k[5];
+    } q __attribute__((aligned(8)));
+    s32 rec[12] __attribute__((aligned(16)));
+    u8 *ch;
+
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    ch = (u8 *)gCharacters[func_001770D0(gProgress, 0x14) & 0xFF];
+#ifdef HG_NATIVE
+    if (ch == NULL) {   /* absent (the PS2 reads through junk) */
+        return;
+    }
+#endif
+    rec[0] = rec[1] = rec[2] = rec[3] = 0x80;
+    sceVu0CopyVector((f32 *)&rec[4], func_0017CE80(AT(AT(ch, 0xF0, u8 *), 0x810, u8 *), 6) + 12);
+    AT(&rec[8], 0, f32) = 1.0f;
+    AT(&rec[9], 0, f32) = 1.0f;
+    q.a = -1;
+    q.vtbl = D_0046FC30;
+    q.k[4] = -1;
+    q.tex = -1;
+    q.c = 0;
+    q.rec = (u8 *)rec;
+    q.d = 0;
+    q.layer = 0x26;
+    q.b = 0;
+    q.s[2] = 0x40;
+    q.s[0] = 1;
+    q.s[5] = 0x200;
+    q.s[1] = 0x20;
+    q.s[6] = 0x100;
+    q.s[3] = 0x20;
+    q.k[3] = 0x10;
+    q.s[4] = 0x20;
+    q.k[0] = 0;
+    q.k[1] = 1;
+    q.k[2] = 1;
+    rec[10] = 0;
+    rec[11] = 0;
+    func_002E56C0((u8 *)&q);
+    q.vtbl = D_00469D00;
+}
+
+/* +0x10 update */
+s32 func_00377CA0(void) {
+    return 1;
+}
+
+/* +0xC set up */
+void func_00377CB0(void) {
+}
+
 /* the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
  * the far two on by 1 a frame up to 80 / 140 */
 s32 func_002B2BF0(void) {
