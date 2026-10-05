@@ -539,3 +539,126 @@ s32 func_002E5C60(VObject *self, void *a1, u8 *cmd) { return swing_three(self, c
 s32 func_002E60D0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
 s32 func_002E6540(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
 s32 func_002E69B0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
+
+/* ---- more hooks: effects spawned into the effect manager, Fiona nudged, a partner's line ---- */
+
+#include "effectmgr.h"
+
+extern void *D_00479A80[], *D_0047A3D0[], *D_0047A730[];
+extern s32 D_0047B274, D_0047B278, D_0047B27C;   /* the nudge countdowns */
+extern const char *D_004193A8, *D_004193AC;
+extern VObject *gBootMessage;
+extern Character *gCharPartner;
+extern void func_0016CEC0(Progress *p, const char *name);
+extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
+extern void func_0016CD30(Progress *p);
+extern s32 func_0032D150(Character *c);
+extern void func_0032D270(Character *c, s32 a, f32 x, f32 y);
+extern void func_002D6170(u8 *mgr, s32 slot);
+
+static void effect_C0_init(void **obj) {
+    obj[0] = D_00479A80;
+    obj[0x70 / 4] = D_00469D00;
+    ((s32 *)obj)[0x74 / 4] = -1;
+    obj[0x70 / 4] = D_0046FC30;
+}
+
+static void effect_10_init(void **obj) {
+    obj[0] = D_0047A3D0;
+}
+
+static void effect_4480_init(void **obj) {
+    obj[0] = D_0047A730;
+    obj[0x3010 / 4] = D_00469D00;
+    ((s32 *)obj)[0x3014 / 4] = -1;
+    obj[0x3010 / 4] = D_0046FC30;
+}
+
+s32 func_002E6E20(void) {
+    Effect_New(D_0044E578, 0xC0, effect_C0_init);
+    return 1;
+}
+
+s32 func_002E7020(void) {
+    Effect_New(D_0044E578, 0x10, effect_10_init);
+    return 1;
+}
+
+/* byte 3 0: a 90-frame countdown starts; else while it runs the character kind 0xE moves by
+ * (dx, 3) on +0x14 / +0x18 (2) */
+static s32 nudge(s32 *count, u8 *cmd, f32 dx) {
+    Character *c;
+
+    if (cmd[3] == 0) {
+        *count = 90;
+        return 1;
+    }
+    if (--*count == 0) {
+        return 1;
+    }
+    c = gCharacters[func_001770D0(gProgress, 0xE) & 0xFF];
+    AT(c, 0x14, f32) = AT(c, 0x14, f32) + dx;
+    AT(c, 0x18, f32) = AT(c, 0x18, f32) + 3.0f;
+    return 2;
+}
+
+s32 func_002E70F0(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B274, cmd, 2.0f); }
+s32 func_002E7560(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B278, cmd, 1.0f); }
+s32 func_002E77B0(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B27C, cmd, 1.0f); }
+
+/* byte 3: 0 / 1 a named progress call; 2 waits (2) for func_0016CD60(1, 0), then the partner's
+ * message slot shows progress +0x73EDC0; else func_0016CD30 and the slot is closed */
+s32 func_002E7350(void *self, void *a1, u8 *cmd) {
+    Progress *p;
+
+    switch (cmd[3]) {
+    case 0:
+        func_0016CEC0(gProgress, D_004193A8);
+        break;
+    case 1:
+        func_0016CEC0(gProgress, D_004193AC);
+        break;
+    case 2:
+        p = gProgress;
+        if (func_0016CD60(p, 1, 0) == 0) {
+            return 2;
+        }
+        VCALL(gBootMessage, 0x10, void (*)(VObject *, u32, s32, s32))(gBootMessage, gCharPartner->msgSlot,
+                                                                       AT(p, 0x73EDC0, s32), 1);
+        break;
+    default:
+        func_0016CD30(gProgress);
+        VCALL(gBootMessage, 0x14, void (*)(VObject *, u32))(gBootMessage, gCharPartner->msgSlot);
+        break;
+    }
+    return 1;
+}
+
+/* character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
+ * func_0032D150 says done */
+s32 func_002E7600(void *self, void *a1, u8 *cmd) {
+    Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
+
+    if (cmd[3] == 0) {
+        func_0032D270(c, 2, -6.0f, 257.0f);
+        return 1;
+    }
+    return func_0032D150(c) == 0 ? 2 : 1;
+}
+
+s32 func_002E7A00(void) {
+    return AT(gProgress, 0xFB6, s16) >= 100;
+}
+
+/* byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's
+ * effect is removed */
+s32 func_002E7A50(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0x4480, effect_4480_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+    } else {
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+    }
+    return 1;
+}
