@@ -4536,3 +4536,173 @@ void func_00303C10(u8 *o) {
     AT(o, 0x1D, u8) = 1;
     AT(o, 0x1E, u8) = 0;
 }
+
+/* ---- D_00471060 (0x840 bytes, room 0x0F): 64 drifting flecks, each a quad, in parallel arrays
+ * (4 bytes apart): +0x38 x, +0x138 z, +0x238 / +0x338 their drift, +0x438.. colour bytes (r, g,
+ * b; +0x4F8 alpha), +0x538 / +0x638 size, +0x738 frames to the next nudge. The area: +0x30
+ * half width, +0x34 depth; placed at +0x10, turned by +0x20 ---- */
+
+#define FL(o, a, i) AT(o, (a) + (i) * 4, f32)
+
+extern f32 func_0031BDB0(f32 x);   /* atanf */
+extern void func_002E56C0(u8 *quad);
+
+/* +0xC: each fleck at x -2..2 drifting out (by up to 0.05 x), forward 0.1..0.3, white, size
+ * 0.4..0.8 by 0.4..0.8 */
+void func_003069B0(u8 *o) {
+    VObject *rnd = D_0044E550;
+    s32 i;
+
+    for (i = 0; i < 64; i++) {
+        f32 r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+
+        FL(o, 0x38, i) = 4.0f * (r - 0.5f);
+        FL(o, 0x138, i) = 0.0f;
+        r = VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+        FL(o, 0x238, i) = 0x1.99999a0000000p-5f /* 0.05 */ * FL(o, 0x38, i) * r;
+        r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        FL(o, 0x338, i) = 0x1.99999a0000000p-4f /* 0.1 */ + 0x1.99999a0000000p-3f /* 0.2 */ * r;
+        AT(o, 0x438 + i, u8) = 0x80;
+        AT(o, 0x478 + i, u8) = 0x80;
+        AT(o, 0x4B8 + i, u8) = 0x80;
+        AT(o, 0x4F8 + i, u8) = 0x80;
+        r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        FL(o, 0x538, i) = 0x1.99999a0000000p-2f /* 0.4 */ + 0x1.99999a0000000p-2f /* 0.4 */ * r;
+        r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        FL(o, 0x638, i) = 0x1.99999a0000000p-2f /* 0.4 */ + 0x1.99999a0000000p-2f /* 0.4 */ * r;
+        AT(o, 0x738 + i * 4, s32) = 8;
+    }
+}
+
+/* +0x10: each fleck drifts (nudged now and then by up to 0.05 each way); out of the area it
+ * fades 0x30 a frame. 0 once all are gone */
+s32 func_003067B0(u8 *o) {
+    VObject *rnd = D_0044E550;
+    s32 any = 0;
+    s32 i;
+
+    for (i = 0; i < 64; i++) {
+        f32 x;
+
+        if (AT(o, 0x738 + i * 4, s32) != 0) {
+            AT(o, 0x738 + i * 4, s32)--;
+        } else {
+            if ((VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 3) == 0) {
+                AT(o, 0x738 + i * 4, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) + 4) & 0xF;
+            }
+            FL(o, 0x238, i) = FL(o, 0x238, i) + 0x1.99999a0000000p-4f /* 0.1 */ * (VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd) - 0.5f);
+            FL(o, 0x338, i) = FL(o, 0x338, i) + 0x1.99999a0000000p-4f /* 0.1 */ * (VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd) - 0.5f);
+        }
+        FL(o, 0x38, i) = FL(o, 0x38, i) + FL(o, 0x238, i);
+        FL(o, 0x138, i) = FL(o, 0x138, i) + FL(o, 0x338, i);
+        x = FL(o, 0x38, i);
+        if (x < AT(o, 0x30, f32) && !(x <= -AT(o, 0x30, f32)) && FL(o, 0x138, i) < AT(o, 0x34, f32)
+            && !(FL(o, 0x138, i) < 0.0f)) {
+            any = 1;
+        } else if (AT(o, 0x4F8 + i, u8) != 0) {
+            AT(o, 0x4F8 + i, u8) -= 0x30;
+            if (AT(o, 0x4F8 + i, s8) > 0) {
+                any = 1;
+            } else {
+                AT(o, 0x4F8 + i, u8) = 0;
+            }
+        }
+    }
+    return any;
+}
+
+/* +0x14: each fleck a unit quad scaled by its size, turned along its drift, at its place in
+ * the area, drawn by a quad drawer (D_0046FC30) */
+void func_003063A0(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 64; i++) {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+        f32 t[4] __attribute__((aligned(16)));
+        f32 c[4][4] __attribute__((aligned(16)));
+        struct {
+            s32 col[4];
+            f32 uv[8];
+        } rec __attribute__((aligned(16)));
+        u8 q[0x40] __attribute__((aligned(16)));
+
+        sceVu0UnitMatrix(m);
+        m[0][0] = FL(o, 0x538, i);
+        m[2][2] = FL(o, 0x638, i);
+        v[0] = FL(o, 0x238, i);
+        v[1] = 0.0f;
+        v[2] = FL(o, 0x338, i);
+        v[3] = 0.0f;
+        sceVu0Normalize(v, v);
+        if (v[2] != 0.0f) {
+            if (!(v[2] <= 0.0f)) {
+                sceVu0RotMatrixY(m, m, func_0031BDB0(v[0] / v[2]) - 0x1.921fb6p+0f /* pi / 2 */);
+            } else {
+                sceVu0RotMatrixY(m, m, 0x1.921fb6p+1f /* pi */ + (func_0031BDB0(v[0] / v[2]) - 0x1.921fb6p+0f));
+            }
+        }
+        t[1] = 0.0f;
+        t[0] = FL(o, 0x38, i);
+        t[3] = 1.0f;
+        t[2] = FL(o, 0x138, i);
+        sceVu0TransMatrix(m, m, t);
+        sceVu0RotMatrix(m, m, (f32 *)(o + 0x20));
+        sceVu0TransMatrix(m, m, (f32 *)(o + 0x10));
+        rec.col[0] = AT(o, 0x438 + i, u8);
+        rec.col[1] = AT(o, 0x478 + i, u8);
+        rec.col[2] = AT(o, 0x4B8 + i, u8);
+        rec.col[3] = AT(o, 0x4F8 + i, u8);
+        c[0][0] = 1.0f;
+        c[0][2] = -1.0f;
+        rec.uv[0] = 0.0f;
+        rec.uv[1] = 0.0f;
+        rec.uv[2] = 0.0f;
+        rec.uv[3] = 1.0f;
+        rec.uv[4] = 1.0f;
+        rec.uv[5] = 1.0f;
+        rec.uv[6] = 0.0f;
+        rec.uv[7] = 0.0f;
+        c[0][3] = 1.0f;
+        c[0][1] = 0.0f;
+        sceVu0ApplyMatrix(c[0], m, c[0]);
+        c[1][1] = 0.0f;
+        c[1][0] = 1.0f;
+        c[1][2] = 1.0f;
+        c[1][3] = 1.0f;
+        sceVu0ApplyMatrix(c[1], m, c[1]);
+        c[2][1] = 0.0f;
+        c[2][0] = -1.0f;
+        c[2][2] = -1.0f;
+        c[2][3] = 1.0f;
+        sceVu0ApplyMatrix(c[2], m, c[2]);
+        c[3][1] = 0.0f;
+        c[3][0] = -1.0f;
+        c[3][2] = 1.0f;
+        c[3][3] = 1.0f;
+        sceVu0ApplyMatrix(c[3], m, c[3]);
+        AT(q, 0x18, s32) = 0;
+        AT(q, 0x4, s32) = -1;
+        AT(q, 0x8, s32) = -1;
+        AT(q, 0xC, s32) = -1;
+        AT(q, 0x0, void **) = D_0046FC30;
+        AT(q, 0x10, void *) = &rec;
+        AT(q, 0x14, void *) = c;
+        AT(q, 0x20, s32) = 0x19;
+        AT(q, 0x1C, s32) = 0;
+        AT(q, 0x26, u16) = 0x80;
+        AT(q, 0x24, u16) = 1;
+        AT(q, 0x2E, u16) = 0x200;
+        AT(q, 0x30, u16) = 0x100;
+        AT(q, 0x33, u8) = 1;
+        AT(q, 0x35, u8) = 0x10;
+        AT(q, 0x28, u16) = 0;
+        AT(q, 0x2A, u16) = 0x40;
+        AT(q, 0x2C, u16) = 0x40;
+        AT(q, 0x32, u8) = 2;
+        AT(q, 0x36, u8) = 2;
+        AT(q, 0x34, u8) = 0;
+        func_002E56C0(q);
+        AT(q, 0x0, void **) = D_00469D00;
+    }
+}
