@@ -3769,3 +3769,93 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
     }
     return 0;
 }
+
+extern const s16 D_003B1290[][2];   /* the scuffle's outcomes: {outcome, percent} */
+extern void func_00178070(Progress *p, u32 slot, s32 a, s32 b, u32 damage, s32 frames, f32 f);
+extern s32 func_00122B50(Actor *a, f32 *out);   /* a point to sound from (u8) */
+
+/* a scuffle with the pursuer while it hunts in his room (its mode 1..3, not caught +0xE0, once
+ * per meeting +0xF368A, not within 900 frames +0xF35B0, him not down): an outcome by chance
+ * (D_003B1290) - 0 / 1 he is hurt (a tenth of his health, never below 1; maybe a grudge), 2 /
+ * 0 yelp or 1 / 3 bark heard next door, 3 nothing - the pursuer told how long it is held
+ * (30..180 frames) and hurt (a tenth of its health, more on hard and with +0xA10; none for 1
+ * or with progress flags 0x13 / 0x2B, then maybe his grudge), and he goes for it (action
+ * 0x30). -1 if no scuffle */
+s32 func_0013BA50(Hewie *h) {
+    Progress *p;
+    const s16 *o;
+    s32 outcome, frames, roll, sum, cur, e, next = 0;
+    VObject *rng;
+
+    if (gCharPursuer != NULL && gCharPursuer->a.active == 1 && !in_his_room(h, gCharPursuer)) {
+        HW(h, 0xF368A, u8) = 0;
+    }
+    if ((u32)(h->c.a.unkC4 - 1) < 2 || HW(h, 0xF35B0, s16) != 0) {
+        return -1;
+    }
+    if (!(gCharPursuer != NULL && gCharPursuer->a.active == 1 && !gCharPursuer->unkE0 && in_his_room(h, gCharPursuer) &&
+          HW(h, 0xF368A, u8) == 0 && (u32)(AT(gCharPursuer, 0x16C8, u8) - 1) < 3)) {
+        return -1;
+    }
+    HW(h, 0xF368A, u8) = 1;
+    HW(h, 0xF35B0, s16) = 900;
+    rng = D_0044E550;
+    roll = (s16)(s32)(100.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng));
+    for (o = D_003B1290[0], sum = 0;; o += 2) {
+        sum = (s16)(sum + o[1]);
+        if (roll < sum) {
+            break;
+        }
+    }
+    outcome = o[0];
+    if (outcome == 3) {
+        return 0;
+    }
+    frames = (s16)((s16)(s32)(6.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)) * 30 + 30);
+    if ((u32)outcome < 2) {
+        VCALL(&h->c.a, 0x94, void (*)(Hewie *, s32))(h, (s32)(0x1.99999a0000000p-4f /* 0.1 */ * (f32)h->c.hpMax));
+        if (h->c.hp == 0) {
+            h->c.hp = 1;
+        }
+        if (VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) < 0.25f) {
+            func_00166150(h, gCharPursuer, -1);
+        }
+    }
+    p = gProgress;
+    cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    for (e = 0; e < 8; e++) {
+        if (VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, cur, e) == h->c.a.room) {
+            next = 1;
+            break;
+        }
+    }
+    if (next) {
+        f32 at[4] __attribute__((aligned(16)));
+
+        if ((u8)func_00122B50(&h->c.a, at) == 1) {
+            sceVu0SubVector(at, at, h->c.a.pos);
+            func_00122C20(&h->c.a, outcome == 2 ? 0x69 : 0x66, 5, 0, 0, at);
+        }
+    }
+    h->c.unk1388 = h->c.unk1384;
+    if (outcome == 1 || ((u8)Progress_TestFlag(gProgress, 0x13) | (u8)Progress_TestFlag(gProgress, 0x2B)) != 0) {
+        Progress_GetVar(p, 0x27);
+        func_00178070(p, AT(h, 0x20, u8), 4, 8, 0, frames, 0.0f);
+    } else {
+        u32 dmg = (u16)(u32)(0x1.99999a0000000p-4f /* 0.1 */ * (f32)gCharPursuer->hpMax);
+
+        if ((Progress_GetVar(p, 0x27) & 0xFF) == 1) {
+            dmg = (u16)(dmg * 2);
+        }
+        if (AT(p, 0xA10, s32) != 0) {
+            dmg = (u16)(dmg + (dmg >> 1));
+        }
+        func_00178070(p, AT(h, 0x20, u8), 4, 8, dmg, frames, 0.0f);
+        if (VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) < 0x1.5554760000000p-2f /* 0.33333 */) {
+            func_00166150(h, gCharPursuer, 1);
+        }
+    }
+    HW(h, 0xF3560, s32) = (s16)frames;
+    hewie_want(h, 0x30, 0);
+    return 0;
+}
