@@ -3572,3 +3572,99 @@ s32 func_00139DE0(Hewie *h) {
     h->c.unk124 = h->c.unk128;
     return 0;
 }
+
+#include "effectmgr.h"   /* HitEffect_Spawn */
+
+/* a bite's hit effect at his mouth (bone 0x25): a big and a small one when `hard`, else small */
+void func_0013A1C0(Hewie *h, s32 hard) {
+    HitEffectParams hp;
+
+    sceVu0CopyVector(hp.pos, func_0017CE80(AT(h->c.motion, 0x810, void *), 0x25) + 12);
+    hp.kind = 1;
+    switch (hard) {
+    case 1:
+        hp.big = 1.0f;
+        HitEffect_Spawn(&hp);
+        /* fall through */
+    case 0:
+        hp.big = 0.0f;
+        HitEffect_Spawn(&hp);
+        break;
+    }
+}
+
+extern s32 func_001F4770(void *model, s32 a, s32 b, s32 c);   /* the animation's event bits this frame (u8) */
+extern void func_00125E10(Character *c, const f32 *pos, s32 n);
+
+/* his sounds by his animation (+0x55C): the yelps and whimpers (4 0x6F, 9 0x70 when +0xF3585,
+ * 5 0x58, 6 / 7 / 0x206 0x59) at once; the others on the animation's sound event (bit 0):
+ * barks and growls (barking during actions 0xA / 0xB / 0x7B also makes a noise others hear),
+ * a howl (0x1000) heard far; on bit 4, his splash (0x1001) in the room's water (triangle flags
+ * 0x02008000) - and in rooms 7 / 0x106 the ripple */
+void func_0013A650(Hewie *h) {
+    s32 anim = AT(h->c.motion, 0x55C, s32);
+    s32 loud = 0;   /* (the original leaves the caller's register for the other actions) */
+
+    switch (anim) {
+    case 4:
+        func_0013A430(h, 0x6F);
+        return;
+    case 9:
+        if (HW(h, 0xF3585, u8) == 1) {
+            func_0013A430(h, 0x70);
+            return;
+        }
+        break;
+    case 5:
+        func_0013A430(h, 0x58);
+        return;
+    case 6: case 7: case 0x206:
+        func_0013A430(h, 0x59);
+        return;
+    }
+    if ((u8)func_001F4770(h->c.motion, 0, 0, 1) & 1) {
+        switch (anim) {
+        case 0x1C01:
+            func_0013A430(h, 0x60);
+            break;
+        case 0x1B00: case 0x1B01: case 0x1B02:
+            func_0013A430(h, 0x5A);
+            break;
+        case 0x1B03:
+            func_0013A430(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5D);
+            break;
+        case 0x1B04:
+            func_0013A430(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5E);
+            break;
+        case 0x1B05:
+            func_0013A430(h, 0x5F);
+            break;
+        case 0x1C04:
+            func_0013A430(h, 0x5C);
+            break;
+        case 0x1001: case 0x220C: case 0x2203:
+            func_0013A430(h, 0x66);
+            break;
+        }
+        switch (anim) {
+        case 0x1B00: case 0x1B01: case 0x1B02: case 0x1B03: case 0x1B04: case 0x1B05:
+            if (HEWIE_ACTION(h) == 0x7B || HEWIE_ACTION(h) == 0xB || HEWIE_ACTION(h) == 0xA) {
+                loud = 0x1B;
+            }
+            func_002A8440((u8 *)gProgress + 0x788, loud, h->c.a.room, h->c.a.navTri, 0xFFFF);
+            break;
+        case 0x1000:
+            func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
+            break;
+        }
+    }
+    if (((u8)func_001F4770(h->c.motion, 0, 0, 1) & 0x10) && anim == 0x1001 &&
+        (u8)VCALL(gProgress, 0x50, s32 (*)(Progress *))(gProgress) == 1 &&
+        h->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) &&
+        (NavMesh_Tri(D_0044E570, h->c.a.navTri)->flags & 0x02008000) == 0x02008000) {
+        func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
+        if (h->c.a.room == 7 || h->c.a.room == 0x106) {
+            func_00125E10(&h->c, h->c.a.pos, 1);
+        }
+    }
+}

@@ -40,4 +40,27 @@ static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
     return -1;
 }
 
+/* ---- the hit effect (0xE60 bytes, vtable 0x470F30, its part at +0xC10) the stalkers and Hewie
+   leave where a blow lands ---- */
+extern void *D_00470F30[], *D_00469D00[], *D_0046FC30[];
+
+typedef struct {
+    f32 pos[4];
+    u32 kind;      /* Daniella 0xFE; Riccardo 1 on Hewie, else 0 */
+    f32 big;       /* 1.0 or 0 */
+} HitEffectParams;
+
+static inline void HitEffect_Init(void **obj) {
+    obj[0] = D_00470F30;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+static inline void HitEffect_Spawn(HitEffectParams *hp) {
+    u8 *mgr = D_0044E578;
+
+    func_002D6090(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
+}
+
 #endif
