@@ -6016,3 +6016,70 @@ void func_001480C0(Hewie *h) {
         break;
     }
 }
+
+/* ---- knocked down ---- */
+
+extern const PTMF D_003B1D10;
+
+/* knocked down (pose 10): out of time (+0xF355C) he is left at 1 health, moving 1. Hidden
+ * (+0x29): following his path, back to the default action unless down. Else, once down, in a
+ * progress state that allows it (+0x1FBEC1, or bit 0x8000 of +0x30) and with no cutscene
+ * (D_0044E4F8 +0x38) nor room objects holding him (+0x50) nor progress flag 0x2C, request
+ * +0x73EB00 (1, or 3 outside +0x1FBEC1) and set flag 0xC; otherwise left at 1 health. Slides
+ * with the root motion (navigation mask 0x80001 lifted); while he has health, behaviour
+ * D_003B1D10 */
+void func_001489D0(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 k;
+
+    if (HW(h, 0xF355C, s32) == 0) {
+        h->c.hp = 1;
+        h->c.a.unkC4 = 1;
+    }
+    if (h->c.a.disabled) {
+        h->c.moveMode = 6;
+        h->c.unk1388 = h->c.unk1384;
+        if (h->c.hp != 0 && h->c.a.unkC4 != 2) {
+            hewie_want(h, 0, 0);
+        }
+        return;
+    }
+    h->c.moveMode = 0;
+    if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    if (func_00140CD0(h, 10) == 0) {
+        Progress *p = gProgress;
+
+        if (*((u8 *)p + 0x1FBEC1) == 1 || (AT(p, 0x30, u32) & 0x8000) != 0) {
+            if (!(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) &&
+                !(u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) && !(u8)Progress_TestFlag(p, 0x2C)) {
+                AT(p, 0x73EB00, u8) = *((u8 *)p + 0x1FBEC1) == 1 ? 1 : 3;
+                Progress_SetFlag(p, 0xC);
+            } else {
+                h->c.hp = 1;
+                h->c.a.unkC4 = 1;
+            }
+        }
+        if (MOTION_ANIM(h->c.motion) == 0x1002) {
+            h->c.a.unk2D = 0;
+        } else {
+            func_00141C00(h, 10);
+        }
+    }
+    h->c.a.navMask |= 0x80001;
+    func_001F6370(h->c.motion, root, 0.0f);
+    k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    root[1] = 0.0f;
+    root[2] *= k;
+    sceVu0ApplyMatrix(root, h->c.a.rot, root);
+    func_001247E0(&h->c.a, root);
+    HW(h, 0xF3558, u8) = 1;
+    h->c.a.navMask &= 0xFFF7FFFE;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    if (h->c.hp != 0) {
+        h->c.a.unk2D = 1;
+        Hewie_SetBehaviour(h, &D_003B1D10);
+    }
+}
