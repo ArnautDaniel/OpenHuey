@@ -6830,3 +6830,60 @@ void func_0014D490(Hewie *h) {
         run_straight(h, h->c.unk110);
     }
 }
+
+/* ---- cutting the pursuer off ---- */
+
+extern const PTMF D_003B1B88, D_003B1B98, D_003B1BA8;
+
+/* while the pursuer hunts in his room (else the default action): plan the pursuer's way to the
+ * point +0xF36E0 (triangle +0xF36B4) and take the spot 80 along it (+0x110, triangle +0x104).
+ * Short of its end: behaviour D_003B1BA8; at it, D_003B1B88 the first time and D_003B1B98 after
+ * (+0xF36BC). No way: the default action */
+void func_0014DA50(Hewie *h) {
+    Progress *p;
+    VObject *planner;
+    PathRequest *req;
+    s32 r;
+    u32 tri;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if (!(u8)Progress_TestFlag(p, 9) && !(u8)Progress_TestFlag(p, 0xA)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    req = h->c.pathReq;
+    req->unk0 = 0;
+    h->c.pathReq->startTri = gCharPursuer->a.navTri;
+    sceVu0CopyVector(h->c.pathReq->startPos, gCharPursuer->a.pos);
+    h->c.pathReq->goalTri = HW(h, 0xF36B4, u32);
+    sceVu0CopyVector(h->c.pathReq->goalPos, &HW(h, 0xF36E0, f32));
+    planner = gSceneGameF29740;
+    h->c.pathId = VCALL(planner, 0xC, s32 (*)(VObject *, PathRequest *, s32))(planner, h->c.pathReq, 0);
+    if (h->c.pathId == -1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    r = VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+    if (r > 0) {
+        r = func_001270F0(&h->c);
+    }
+    if (r < 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    tri = gCharPursuer->a.navTri;
+    sceVu0CopyVector(h->c.unk110, gCharPursuer->a.pos);
+    r = VCALL(planner, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
+        planner, &tri, h->c.unk110, 0, h->c.unk124, h->c.unk12C, 80.0f);
+    h->c.unk104[0] = tri;
+    if (r == h->c.unk124) {
+        Hewie_SetBehaviour(h, HW(h, 0xF36BC, s32) == 0 ? &D_003B1B88 : &D_003B1B98);
+    } else {
+        Hewie_SetBehaviour(h, &D_003B1BA8);
+    }
+    HW(h, 0xF36BC, s32) = 1;
+}
