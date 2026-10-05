@@ -2566,3 +2566,64 @@ s32 func_002AF680(void) {
     fan_turn(D_00400C38);
     return 1;
 }
+
+extern const char *const D_003F03FC;   /* "doramukan" (the drum can) */
+
+/* room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its
+ * height), 2 struck (+0x34 strength 1), 1 each frame: the strength fades by 0.2 while it bobs
+ * 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height */
+s32 func_002A9080(void *self, void *a1, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F03FC);
+    f32 t;
+
+#ifdef HG_NATIVE
+    if (o == NULL) {   /* (the PS2 writes through junk) */
+        return 1;
+    }
+#endif
+    switch (cmd[3]) {
+    case 2:
+        AT(o, 0x30, s32) = 0;
+        AT(o, 0x34, f32) = 1.0f;
+        break;
+    case 1:
+        t = AT(o, 0x34, f32) - 0x1.99999ap-3f /* 0.2 */;
+        AT(o, 0x34, f32) = t;
+        if (t <= 0.0f) {
+            AT(o, 0x34, f32) = 0.0f;
+            AT(o, 0x30, f32) = 0.0f;
+            AT(o, 0x24, f32) = AT(o, 0x38, f32);
+            break;
+        }
+        t = AT(o, 0x30, f32) + 90.0f;
+        AT(o, 0x30, f32) = t;
+        if (!(t < 360.0f)) {
+            AT(o, 0x30, f32) = t - 360.0f;
+        }
+        AT(o, 0x24, f32) = AT(o, 0x38, f32) + 0x1.99999ap-3f /* 0.2 */ *
+            (AT(o, 0x34, f32) * func_0031C248(0x1.921fb6p+1f /* pi */ * AT(o, 0x30, f32) / 180.0f));
+        break;
+    case 0:
+        AT(o, 0x34, s32) = 0;
+        AT(o, 0x30, s32) = 0;
+        AT(o, 0x38, f32) = AT(o, 0x24, f32);
+        break;
+    default:
+        return 1;
+    }
+    return 1;
+}
+
+extern void *func_00266C40(u8 *fx, s32 n);   /* the room's effect n */
+
+/* room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1 */
+s32 func_002ADB10(void) {
+    u8 *e = func_00266C40(D_0044E4C0, 1);
+    f32 at[4] __attribute__((aligned(16)));
+
+    at[0] = AT(e, 0x20, f32);
+    at[1] = AT(e, 0x24, f32);
+    at[2] = AT(e, 0x28, f32);
+    func_002FF650(D_0044E560, 0xC0000000, 6, at, 0, 0);
+    return 1;
+}
