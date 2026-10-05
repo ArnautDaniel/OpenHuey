@@ -2627,3 +2627,11 @@ s32 func_002ADB10(void) {
     func_002FF650(D_0044E560, 0xC0000000, 6, at, 0, 0);
     return 1;
 }
+
+/* room 0x02 (D_003F03C0): the player is about and down at floor level (y <= 0) */
+s32 func_002A8FF0(void) {
+    if (gCharPlayer != NULL && gCharPlayer->a.active != 0 && gCharPlayer->a.pos[1] <= 0.0f) {
+        return 1;
+    }
+    return 0;
+}
