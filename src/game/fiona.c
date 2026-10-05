@@ -6339,3 +6339,21 @@ void func_00197640(Fiona *f) {
         door_walk(f, tri, at, dir[1], &D_003B28D8);
     }
 }
+
+extern s32 func_001270A0(Character *c);
+
+/* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
+ * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
+ * func_001270A0 */
+s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32 run) {
+    s32 r;
+
+    if (NavMesh_AcrossDivider(D_0044E570, tri, f->c.a.navTri)) {
+        return -1;
+    }
+    r = func_00127140(&f->c, 0, tri, pos);
+    if (r > 0) {
+        r = run == 0 ? func_001270F0(&f->c) : func_001270A0(&f->c);
+    }
+    return -(r < 0);
+}
