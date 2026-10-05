@@ -1483,7 +1483,7 @@ void func_001519B0(Hewie *h) {
 }
 
 extern const PTMF D_003B1998, D_003B1B78;
-extern void func_001391E0(Hewie *h, s32 a, s32 b);
+extern s32 func_001391E0(Hewie *h, s32 a, s32 b);   /* u8 */
 
 void func_00151A60(Hewie *h) {
     if (--HW(h, 0xF36B4, s32) == 0) {
@@ -2988,4 +2988,332 @@ void func_00157770(Hewie *h) {
     }
     HW(h, 0xF3582, u8) = 0;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
+
+/* ---- Hewie under the player's control (gProgress +0x1FBEC1): his movement input, as
+ * Fiona's (fiona.c func_00187650) ---- */
+
+extern VObject *D_0044E4B8;   /* the camera */
+extern void func_002E3190(sceVu0FMATRIX m, f32 yaw);
+extern void func_002E2DA0(f32 *out, sceVu0FMATRIX m, const f32 *v);
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
+
+#define HMOVE_DIR    0xF3700   /* vec: where to move (world, unit or 0) */
+#define HMOVE_MODE   0xF3710   /* u8: 0 free, 1 camera-locked, 2 held, 3 reset */
+#define HMOVE_LOCK   0xF3712   /* s16: frames the old camera still steers */
+#define HMOVE_STILL  0xF3718   /* s32: frames without input (to 6) */
+#define HMOVE_STICK  0xF3720   /* vec: last frame's raw input */
+#define HMOVE_LAST   0xF3730   /* vec: last frame's normalized input */
+#define HMOVE_CAMYAW 0xF3740   /* f32: the camera heading the controls use */
+#define HMOVE_GO     0xF3744   /* u8: the action button (0x4000) */
+
+static f32 hwrap_abs(f32 a) {
+    if (!(func_002E2D00(a) <= 0.0f)) {
+        return func_002E2D00(a);
+    }
+    return -func_002E2D00(a);
+}
+
+/* the left stick (or the d-pad), camera relative: after a camera cut the old camera keeps
+   steering while the stick is held (mode 1, then 2 while the direction holds within 15
+   degrees) */
+void func_00136900(Hewie *h) {
+    static const union { u32 u; f32 f; } k15deg = {0x3E860A92}, k001 = {0x3C23D70A};
+    /* the camera rotation the controls use: while moving in mode 1 the original reuses last
+     * frame's (left on its stack); the PC build keeps it explicitly */
+#ifdef HG_NATIVE
+    static
+#endif
+    sceVu0FMATRIX rot;
+    f32 e[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    s32 moving, cut, how = 0;
+
+    HW(h, HMOVE_GO, u8) = 0;
+    sceVu0CopyVector(e, D_0047E3A0);
+    e[0] += (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
+    e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    sceVu0Normalize(n, e);
+    cut = HW(h, HMOVE_MODE, u8) == 3;
+    if (!cut && VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8) != -1) {
+        s32 prev = VCALL(D_0044E4B8, 0x90, s32 (*)(VObject *))(D_0044E4B8);
+
+        cut = prev != VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8);
+    }
+    if (cut) {
+        HW(h, HMOVE_MODE, u8) = 0;
+        HW(h, HMOVE_STILL, s32) = 0;
+        if (!((n[0] <= 0.0f ? -n[0] : n[0]) <= 0.5f) || !((n[2] <= 0.0f ? -n[2] : n[2]) <= 0.5f)) {
+            HW(h, HMOVE_LOCK, s16) = 3;
+            HW(h, HMOVE_MODE, u8) = 1;
+        }
+    }
+    if ((e[0] <= 0.0f ? -e[0] : e[0]) <= 0.5f && (e[2] <= 0.0f ? -e[2] : e[2]) <= 0.5f) {
+        moving = 0;
+        HW(h, HMOVE_STILL, s32)++;
+        if (HW(h, HMOVE_STILL, s32) >= 7) {
+            HW(h, HMOVE_STILL, s32) = 6;
+        }
+    } else {
+        moving = 1;
+        HW(h, HMOVE_STILL, s32) = 0;
+    }
+    switch (HW(h, HMOVE_MODE, u8)) {
+    case 0:
+        if (moving) {
+            how = 0;
+        } else {
+            how = AT(h->c.motion, 0x550, f32) <= 0.0f ? 2 : 1;
+        }
+        break;
+    case 1:
+        if (!moving) {
+            how = 2;
+            if (HW(h, HMOVE_STILL, s32) == 6) {
+                HW(h, HMOVE_MODE, u8) = 0;
+            }
+            break;
+        }
+        how = 3;
+        if (HW(h, HMOVE_LOCK, s16) != 0) {
+            HW(h, HMOVE_LOCK, s16)--;
+            func_002E3190(rot, HW(h, HMOVE_CAMYAW, f32));
+        } else {
+            f32 d[4] __attribute__((aligned(16)));
+
+            sceVu0SubVector(d, e, &HW(h, HMOVE_STICK, f32));
+            if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
+                HW(h, HMOVE_MODE, u8) = 2;
+                HW(h, 0xF379C, u32) = 0x3C0EFA35;   /* 0.5 degrees */
+                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+            }
+        }
+        func_002E2DA0(v, rot, n);
+        func_0010E640(v, v, -1.0f);
+        HW(h, 0xF37A0, f32) = func_0031C5C0(v[0], v[2]);
+        break;
+    case 2:
+        if (moving) {
+            f32 a = func_0031C5C0(HW(h, HMOVE_LAST, f32), HW(h, HMOVE_LAST + 8, f32));
+
+            how = 0;
+            if (!(hwrap_abs(func_0031C5C0(n[0], n[2]) - a) <= k15deg.f)) {
+                HW(h, HMOVE_MODE, u8) = 0;
+            }
+            break;
+        }
+        how = 2;
+        if (HW(h, HMOVE_STILL, s32) == 6) {
+            HW(h, HMOVE_MODE, u8) = 0;
+        }
+        break;
+    }
+    switch (how) {
+    case 3:
+        func_002E3190(rot, HW(h, HMOVE_CAMYAW, f32));
+        func_002E2DA0(v, rot, n);
+        func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
+        break;
+    case 2:
+        HW(h, HMOVE_DIR, f32) = 0.0f;
+        HW(h, HMOVE_DIR + 4, f32) = 0.0f;
+        HW(h, HMOVE_DIR + 8, f32) = 0.0f;
+        break;
+    case 1:
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 1.0f;
+        sceVu0ApplyMatrix(&HW(h, HMOVE_DIR, f32), h->c.a.rot, v);
+        break;
+    case 0:
+        func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+        func_002E2DA0(v, rot, n);
+        func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
+        break;
+    }
+    sceVu0CopyVector(&HW(h, HMOVE_STICK, f32), e);
+    if (HW(h, HMOVE_MODE, u8) == 0) {
+        HW(h, HMOVE_CAMYAW, f32) = VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8);
+    }
+    if (HW(h, HMOVE_MODE, u8) != 2) {
+        sceVu0CopyVector(&HW(h, HMOVE_LAST, f32), n);
+    }
+    if (D_0047E374 & 0x4000) {
+        HW(h, HMOVE_GO, u8) = 1;
+    }
+}
+
+/* ---- Fiona's commands ---- */
+
+extern s32 func_0013E2D0(Hewie *h, s32 cmd);   /* the action for a command (-1 none, -2..-5 special) */
+extern s32 func_0013D580(Hewie *h, s32 act);
+extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
+extern s32 func_00139460(Hewie *h);
+
+/* action `act` with argument `arg` unless his situation turns it into another (then that one,
+   argument 0) */
+static inline void hewie_want(Hewie *h, s32 act, s32 arg) {
+    s32 a = func_0013B2C0(h, act);
+
+    func_00130AF0(h, a, a != act ? 0 : arg);
+}
+
+/* how long he keeps obeying (+0xF359C) by his trust level, the harder table on difficulty 1 */
+static inline void obey_time(Hewie *h) {
+    if ((Progress_GetVar(gProgress, 0x27) & 0xFF) != 1) {
+        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+    } else {
+        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+    }
+}
+
+/* a command from Fiona (her +0x14EC, kept at +0xF3578): 1 if he acts on it. Hidden, only the
+ * plain ones. Ending a wait (action 0x7D) other than by 0x30 resets his obedience; 0x23 can
+ * make him find something to do near her (func_00139460: action 0x1D); 0x29 / 0x2F first try
+ * func_001391E0 (actions 0x1D / 0x71); otherwise the command's action (func_0013E2D0): -2
+ * action 0x1E, -3 0x6F (back to the current one after), -4 / -5 0x1D / 0x71 with his mood
+ * set, else func_0013D580 */
+s32 func_00137020(Hewie *h) {
+    s32 cmd, act;
+
+    HW(h, 0xF3578, s32) = h->c.state[1];
+    if (h->c.a.disabled) {
+        act = func_0013E2D0(h, HW(h, 0xF3578, s32));
+        if (act == -5 || act == -4 || act == -3 || act == -2 || act == -1) {
+            return 0;
+        }
+        HW(h, 0xF3574, s32) = act;
+        func_0013D580(h, act);
+        return 1;
+    }
+    if (h->c.unkE0 == 0 && HW(h, 0xF358C, s32) == 1) {
+        return 0;
+    }
+    if (HEWIE_ACTION(h) == 0x7D && HW(h, 0xF3578, s32) != 0x30) {
+        HW(h, 0xF3598, s32) = 0;
+        obey_time(h);
+        HW(h, 0xF3586, u8) = 0;
+    }
+    cmd = HW(h, 0xF3578, s32);
+    if (cmd != 0x2B && cmd != 0x2F) {
+        HW(h, 0xF3686, s16) = 0;
+        HW(h, 0xF3684, s16) = 0;
+    }
+    if (HW(h, 0xF3578, s32) == 0x23 && HW(h, 0xF3598, s32) == 0 && HW(h, 0xF358C, s32) != 1 &&
+        !(u8)func_00177620(gProgress) && HW(h, 0xF368C, s32) == 0 &&
+        (u8)func_00122C90(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
+        HW(h, 0xF368C, s32) = func_00139460(h);
+        if (HW(h, 0xF368C, s32) != 0) {
+            hewie_want(h, 0x1D, 0x78);
+            h->c.state[0] = 0;
+            return 1;
+        }
+    }
+    if (HW(h, 0xF3578, s32) == 0x29) {
+        HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
+        if ((u8)func_001391E0(h, 1, 3) == 1) {
+            HW(h, 0xF35DC, s32) = 0x3C;
+            hewie_want(h, 0x1D, 0);
+            h->c.state[0] = 0;
+            return 1;
+        }
+    }
+    if (HW(h, 0xF3578, s32) == 0x2F) {
+        HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
+        if ((u8)func_001391E0(h, 0, 3) == 1) {
+            HW(h, 0xF35DC, s32) = 0x3C;
+            hewie_want(h, 0x71, 0);
+            h->c.state[0] = 0;
+            return 1;
+        }
+    }
+    act = func_0013E2D0(h, HW(h, 0xF3578, s32));
+    if (act == -1) {
+        return 0;
+    }
+    HW(h, 0xF35DC, s32) = 0x3C;
+    switch (act) {
+    case -2:
+        hewie_want(h, 0x1E, 0);
+        return 1;
+    case -3: {
+        s32 was = HEWIE_ACTION(h);
+
+        hewie_want(h, 0x6F, was);
+        return 1;
+    }
+    case -4:
+        func_00138AD0(h, 1, -1);
+        hewie_want(h, 0x1D, 0);
+        return 1;
+    case -5:
+        func_00138AD0(h, 0, -1);
+        HW(h, 0xF35C4, s32) = 0;
+        HW(h, 0xF35C8, s32) = 0;
+        hewie_want(h, 0x71, 0);
+        return 1;
+    }
+    HW(h, 0xF3574, s32) = act;
+    return func_0013D580(h, act);
+}
+
+/* ---- whom to go for ---- */
+
+extern Character **D_0044F258;   /* the creatures (10 slots) */
+
+
+/* character c active, not down, in his room (in the room being played only on the mesh) */
+static s32 in_his_room(Hewie *h, Character *c) {
+    if (c == NULL || c->a.active != 1 || c->a.unkC4 == 2) {
+        return 0;
+    }
+    return h->c.a.room == c->a.room &&
+           (h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) || c->a.navTri != (u32)-1);
+}
+
+/* the one he goes for: the pursuer when it holds Fiona (her mode 4, sub 9) and he can reach
+ * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
+ * if he can reach it (not while it moves 3); else the nearest hostile creature (+0x3C) he can
+ * reach, not down or holding; NULL */
+Character *func_001379C0(Hewie *h) {
+    Character *best = NULL;
+    f32 bestd = 0.0f;
+    s32 chase = 0, i;
+
+    if (in_his_room(h, gCharPursuer) && gCharPursuer->moveMode != 3 &&
+        (u8)func_0013C1E0(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) == 1) {
+        chase = 1;
+    }
+    if (chase && in_his_room(h, gCharPlayer) && gCharPlayer->moveMode == 4 && gCharPlayer->moveSub == 9) {
+        return gCharPursuer;
+    }
+    if (in_his_room(h, gCharPlayer) && gCharPlayer->moveMode == 4 && gCharPlayer->moveSub == 0x12) {
+        for (i = 7; i < 10; i++) {
+            Character *c = D_0044F258[i];
+
+            if (in_his_room(h, c) && c->moveMode == 8 && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
+                return c;
+            }
+        }
+    }
+    if (chase) {
+        return gCharPursuer;
+    }
+    for (i = 0; i < 10; i++) {
+        Character *c = D_0044F258[i];
+        f32 d;
+
+        if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 || c->a.unkC4 == 2 ||
+            c->moveMode == 4) {
+            continue;
+        }
+        d = func_00124490(&h->c.a, c->a.pos);
+        if ((best == NULL || d < bestd) && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
+            best = c;
+            bestd = d;
+        }
+    }
+    return best;
 }
