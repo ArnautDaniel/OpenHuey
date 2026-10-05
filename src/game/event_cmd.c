@@ -10,6 +10,7 @@
 #include "progress.h"
 #include "task.h"
 #include "hewie.h"
+#include "effectmgr.h"
 #include "sce/libvu0.h"
 
 extern void *gCharacters[6];
@@ -91,6 +92,7 @@ extern void func_002ED260(void *model, s32 n);
 extern u8 *D_0044F258;
 extern u8 *func_002083B0(u8 *e);
 extern u8 *func_00208340(u8 *e);
+extern void **func_00208070(void **e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -1728,6 +1730,40 @@ void func_002029B0(VObject *ev) {
             func_00266C70(D_0044E4C0, 0x1D, &arg);
         }
         break;
+    case 0xD9: {   /* a scene effect (func_00208070, 0x50 bytes) at (3 x be32 / 1000), size be32 pc[13..] / 1000 */
+        u8 *mgr = D_0044E578;
+        void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), 0x50);
+        s32 slot = -1;
+        struct {
+            f32 pos[4];
+            f32 size;
+        } arg __attribute__((aligned(16)));
+
+        if (mem != NULL) {
+            s32 i;
+
+            for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
+                if (EFFECT_SLOTS(mgr)[i] == NULL) {
+                    void **obj = func_002D63C0(0x50, mem);
+
+                    if (obj != NULL) {
+                        obj = func_00208070(obj);
+                    }
+                    EFFECT_SLOTS(mgr)[i] = obj;
+                    VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
+                    slot = i;
+                    break;
+                }
+            }
+        }
+        arg.pos[0] = (f32)be32(PC(ev) + 1) / 1000.0f;
+        arg.pos[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
+        arg.pos[3] = 1.0f;
+        arg.pos[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
+        arg.size = (f32)be32(PC(ev) + 0xD) / 1000.0f;
+        func_002D6090(mgr, slot, &arg);
+        break;
+    }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
