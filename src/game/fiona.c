@@ -8346,6 +8346,83 @@ void func_0018DC30(Fiona *f) {
     func_00125A10(&f->c);
 }
 
+extern s32 func_00177890(Progress *p, s32 a, s32 b, u8 from, u8 to, s32 c, f32 d);   /* u8 */
+extern const PTMF D_003B2C78, D_003B2C88, D_003B2C98, D_003B2CA8, D_003B2CB8;
+
+/* D_003B2C78 / D_003B2C88 / D_003B2C98: the held command's gesture (0x2B 0xC0D, 0x28 0xC07,
+ * 0x24 0xC06; D_003B2CB8) - Hewie gone: idle; a request 7 for her: cleared, the wait
+ * (D_003B2CA8) */
+void func_0018E2B0(Fiona *f) {
+    if (f->c.state[0] == 7) {
+        f->c.state[0] = 0;
+        Actor_SetState(&f->c.a, &D_003B2CA8);
+        return;
+    }
+    if (FI(f, 0x1AD5D5, u8) == 0) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    switch (f->c.moveSub) {
+    case 0x2B:
+        func_002DDED0(f->c.motion, 0xC0D, -1);
+        break;
+    case 0x28:
+        func_002DDED0(f->c.motion, 0xC07, -1);
+        break;
+    case 0x24:
+        func_002DDED0(f->c.motion, 0xC06, -1);
+        break;
+    }
+    Actor_SetState(&f->c.a, &D_003B2CB8);
+}
+
+/* D_003B2C68 / D_003B2CA8: waiting for Hewie to be ready for a held command (his action 0x48,
+ * func_001669A0 1, the animation done); then the command registered with the progress
+ * (func_00177890 2, 0x2B: 1 / 0x28: 3 / 0x24: 5) and its gesture; Hewie gone, busy otherwise,
+ * or the command refused: idle */
+void func_0018E510(Fiona *f) {
+    s32 b;
+    const PTMF *next;
+
+    if (FI(f, 0x1AD5D5, u8) == 0 || AT(gCharPartner, 0xF3564, s32) != 0x48) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (!door_anim_done(f)) {
+        func_00125A10(&f->c);
+        return;
+    }
+    if (func_001669A0((Character *)gCharPartner) != 1 || !door_anim_done(f)) {
+        return;
+    }
+    switch (f->c.moveSub) {
+    case 0x2B:
+        b = 1;
+        next = &D_003B2C78;
+        break;
+    case 0x28:
+        b = 3;
+        next = &D_003B2C88;
+        break;
+    case 0x24:
+        b = 5;
+        next = &D_003B2C98;
+        break;
+    default:
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    if ((func_00177890(gProgress, 2, b, *(u8 *)&f->c.a.slot, 1, 0, 0.0f) & 0xFF) == 1) {
+        Actor_SetState(&f->c.a, next);
+        return;
+    }
+    func_00125A10(&f->c);
+    door_give_up(f, gProgress);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
