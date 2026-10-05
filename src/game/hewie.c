@@ -3859,3 +3859,104 @@ s32 func_0013BA50(Hewie *h) {
     hewie_want(h, 0x30, 0);
     return 0;
 }
+
+/* after a yelp: down - a grudge against who did it (not Fiona), the times he was knocked out
+ * counted (progress +0xFBA, to 9999; not after the game's end, +0x30 bit 15), and he lies
+ * there (action 0x52); else +0x2D off and, struck by Fiona with her in his room (her control,
+ * not his), he cowers (action 9 the first time, 0xB after); else back to normal */
+void func_0013C300(Hewie *h) {
+    if (h->c.a.unkC4 == 2) {
+        if (h->c.unk100 != 0xFF && h->c.unk100 != 0) {
+            func_00166150(h, (Character *)gCharacters[h->c.unk100], -3);
+        }
+        if (!(AT(gProgress, 0x30, u32) & 0x8000)) {
+            s16 *n = &AT(gProgress, 0xFBA, s16);
+
+            if (++*n >= 10000) {
+                *n = 9999;
+            }
+        }
+        hewie_want(h, 0x52, 0);
+        return;
+    }
+    AT(h, 0x2D, u8) = 0;
+    if (AT(gProgress, 0x1FBEC1, u8) == 0 && h->c.unk100 == 0 && in_his_room(h, gCharPlayer) &&
+        HW(h, 0xF35C4, s32) > 0) {
+        hewie_want(h, HW(h, 0xF35C4, s32) == 1 ? 9 : 0xB, 0);
+        return;
+    }
+    hewie_want(h, 0, 0);
+}
+
+extern s32 func_0013E920(Hewie *h, u32 kind);   /* which of a table's lists fits him */
+extern const s8 D_003B1240[];   /* by trust: the chance (percent) he growls at the pursuer */
+/* his action lists, per situation, by func_0013E920: {action, weight per trust level 0..7} */
+extern u8 *const D_003B02C0[], *const D_003B05F0[], *const D_003B0850[], *const D_003B0480[], *const D_003B06F0[],
+    *const D_003B0A90[], *const D_003B0E20[];
+
+/* what to do next: with the pursuer in his room (not caught 3 / 4) and progress flag 9 or
+ * 0xA, by chance (by trust) he growls at it (action 0x7B); else an action drawn from the list
+ * for the situation - a hostile creature in the room, else the chase state (0 calm, 1 being
+ * followed, 2 the chase), lists for obeying (+0xF3598) and for hard (Progress var 0x27) -
+ * weighted by his trust level */
+void func_0013C7D0(Hewie *h) {
+    Progress *p;
+    u8 *const *lists;
+    u8 *e;
+    s32 hostile = 0, mode, i, sum, roll;
+
+    if (in_his_room(h, gCharPursuer) && gCharPursuer->moveMode != 3 && gCharPursuer->moveMode != 4 &&
+        ((u8)Progress_TestFlag(gProgress, 9) == 1 || (u8)Progress_TestFlag(gProgress, 0xA) == 1)) {
+        s32 chance = D_003B1240[HW(h, 0xF35CC, s16)];
+        s8 r = (s8)(s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+
+        if (chance < 0) {
+            chance = 0;
+        } else if (chance >= 101) {
+            chance = 100;
+        }
+        if (r < (s8)chance) {
+            hewie_want(h, 0x7B, 0);
+            return;
+        }
+    }
+    p = gProgress;
+    for (i = 0; i < 10; i++) {
+        Character *c = D_0044F258[i];
+
+        if (in_his_room(h, c) && (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) == 1) {
+            hostile = 1;
+            break;
+        }
+    }
+    mode = (u8)func_00177620(p);
+    if (HW(h, 0xF3598, s32) == 0) {
+        if (hostile) {
+            e = D_003B0850[func_0013E920(h, 2)];
+        } else {
+            i = func_0013E920(h, 0xFF);
+            lists = mode == 0 ? D_003B02C0 : mode == 1 ? D_003B05F0 : D_003B0850;
+            e = lists[i];
+        }
+    } else if (hostile) {
+        i = func_0013E920(h, 2);
+        e = ((Progress_GetVar(p, 0x27) & 0xFF) != 1 ? D_003B0A90 : D_003B0E20)[i];
+    } else {
+        i = func_0013E920(h, 0xFF);
+        if (mode == 0) {
+            e = D_003B0480[i];
+        } else if (mode == 1) {
+            e = D_003B06F0[i];
+        } else {
+            e = ((Progress_GetVar(p, 0x27) & 0xFF) != 1 ? D_003B0A90 : D_003B0E20)[i];
+        }
+    }
+    roll = (s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    for (sum = 0;; e += 0xC) {
+        sum += e[4 + HW(h, 0xF35CC, s16)];
+        if (roll < sum) {
+            break;
+        }
+    }
+    hewie_want(h, *(s32 *)e, 0);
+}
