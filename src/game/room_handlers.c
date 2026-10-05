@@ -2802,3 +2802,74 @@ s32 func_00344390(void *self, void *a1, u8 *cmd) {
 
     return lit_quad(cmd, sQuad, 0x80);
 }
+
+/* room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
+ * 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
+ * step, +0x3C) past 1 makes them swing for 20 frames (the first also creaks: sounds 4 / 5 by
+ * turns, event bit 0x11); the tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 */
+s32 func_0030F4E0(VObject *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *objs = D_00456DF8;
+    VObject *ev = D_0044E4D0;
+    s32 i;
+
+    for (i = 0; i < 2; i++) {
+        const char *name = VCALL(self, 0x34, const char *(*)(VObject *, s32))(self, i + 2);
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, name);
+        f32 t, a;
+
+        if (o == NULL) {
+            continue;
+        }
+        if (cmd[3] == 0) {
+            AT(o, 0x30, s32) = 0;
+            AT(o, 0x34, f32) = 60.0f * (f32)i;
+            AT(o, 0x38, s32) = 0;
+            AT(o, 0x3C, s32) = 0;
+            continue;
+        }
+        if (cmd[3] != 1) {
+            continue;
+        }
+        if (gCharPartner != NULL && AT(o, 0x38, f32) < 5.0f) {
+            f32 d[4] __attribute__((aligned(16)));
+
+            sceVu0CopyVector(d, (f32 *)((u8 *)gCharPartner + 0x40));
+            sceVu0SubVector(d, d, (f32 *)((u8 *)gCharPartner + 0x10));
+            t = AT(o, 0x3C, f32) + (d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+            AT(o, 0x3C, f32) = t;
+            if (!(t <= 1.0f)) {
+                AT(o, 0x38, f32) = 20.0f;
+                AT(o, 0x3C, f32) = 0.0f;
+                if (i == 0) {
+                    if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 0x11) == 1) {
+                        VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0x11);
+                        func_00122C20(&gCharPlayer->a, 4, 6, 0, 0, NULL);
+                    } else {
+                        VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0x11);
+                        func_00122C20(&gCharPlayer->a, 5, 6, 0, 0, NULL);
+                    }
+                }
+            }
+        }
+        t = AT(o, 0x38, f32);
+        if (t <= 0.0f) {
+            continue;
+        }
+        AT(o, 0x38, f32) = t - 1.0f;
+        if (t - 1.0f < 0.0f) {
+            AT(o, 0x38, f32) = 0.0f;
+        }
+        a = AT(o, 0x30, f32) + 36.0f;
+        AT(o, 0x30, f32) = a;
+        if (!(a + AT(o, 0x34, f32) < 360.0f)) {
+            AT(o, 0x30, f32) = a - 360.0f;
+        }
+        a = kPi.f * (1.0f + func_0031C248(kPi.f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
+        AT(o, 0x10, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x10, f32) = a - k2Pi.f;
+        }
+    }
+    return 1;
+}
