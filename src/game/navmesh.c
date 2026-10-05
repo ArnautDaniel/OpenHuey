@@ -998,3 +998,75 @@ s32 func_0017B9B0(NavMesh *nm, f32 *p, f32 *q) {
     func_00114FD0(cand);
     return best;
 }
+
+/* +0x44 follow the segment from -> to over the mesh from triangle tri, edge by edge (+0x20),
+ * not into triangles with any of `mask`'s flags or off the mesh:
+ *   it meets a triangle's surface (+0x34): the point into out, that triangle's normal (+0x2C)
+ *     into normal; the triangle | 0x80000000
+ *   it ends inside a triangle: out = to, its normal; the triangle
+ *   it leaves the mesh: +0x64 (tri, to, mask) - if that finds one, out = to and its result;
+ *     else -1
+ *   it hits a wall (a blocked edge): where on the edge's wall (the edge and 100 below it) into
+ *     out, the wall's normal; the last triangle | 0x40000000 */
+s32 func_0017BD60(NavMesh *nm, u32 tri, f32 *out, f32 *from, f32 *to, f32 *normal, u32 mask) {
+    f32 end[4] __attribute__((aligned(16)));
+    f32 hit[4] __attribute__((aligned(16)));
+
+    sceVu0CopyVector(end, to);
+    for (;;) {
+        s32 e;
+        u32 prev, next;
+
+        if (VCALL(nm, 0x34, s32 (*)(NavMesh *, u32, f32 *, f32 *, f32 *))(nm, tri, hit, from, end) == 3) {
+            sceVu0CopyVector(out, hit);
+            VCALL(nm, 0x2C, void (*)(NavMesh *, u32, f32 *))(nm, tri, normal);
+            return tri | 0x80000000;
+        }
+        e = VCALL(nm, 0x20, s32 (*)(NavMesh *, u32, f32 *, f32 *))(nm, tri, from, end);
+        if (e == 4) {
+            s32 r = VCALL(nm, 0x64, s32 (*)(NavMesh *, u32, f32 *, u32))(nm, tri, end, mask);
+
+            if (r == -1) {
+                return -1;
+            }
+            sceVu0CopyVector(out, end);
+            return r;
+        }
+        if (e == 3) {
+            sceVu0CopyVector(out, end);
+            VCALL(nm, 0x2C, void (*)(NavMesh *, u32, f32 *))(nm, tri, normal);
+            return tri;
+        }
+        prev = tri;
+        next = nm->tris[tri].adj[e];
+        tri = next;
+        if (!(next & 0x80000000) && !(mask & nm->tris[next].flags)) {
+            continue;
+        }
+        {
+            NavTri wall;
+            NavTri *t = prev < nm->numTris && nm->tris != NULL ? &nm->tris[prev] : NULL;
+            u32 k = e + 1 < 3 ? e + 1 : 0;
+            f32 a[4] __attribute__((aligned(16)));
+            f32 b[4] __attribute__((aligned(16)));
+
+            sceVu0CopyVector(wall.v[0], t->v[e]);
+            sceVu0CopyVector(wall.v[1], t->v[k]);
+            sceVu0CopyVector(wall.v[2], t->v[k]);
+            wall.v[2][1] = wall.v[2][1] - 100.0f;
+            func_0017A1D0(&wall, out, from, end);
+            normal[0] = 0.0f;
+            normal[1] = 0.0f;
+            normal[2] = 1.0f;
+            normal[3] = 1.0f;
+            sceVu0SubVector(a, wall.v[1], wall.v[0]);
+            sceVu0SubVector(b, wall.v[2], wall.v[0]);
+            a[3] = 1.0f;
+            b[3] = 1.0f;
+            sceVu0OuterProduct(normal, a, b);
+            sceVu0Normalize(normal, normal);
+            normal[3] = 1.0f;
+            return prev | 0x40000000;
+        }
+    }
+}
