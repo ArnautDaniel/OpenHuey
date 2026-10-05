@@ -9164,3 +9164,50 @@ void func_0015B660(Hewie *h) {
         func_00141C00(h, 9);
     }
 }
+
+/* ---- scrambling about ---- */
+
+extern const PTMF D_003B1768;
+
+/* scramble about (animation 0x204) for +0xF355C frames, then head ahead and behaviour
+ * D_003B1768: every 10..30 frames, or when the way ahead is under +0xF36C8, a new heading
+ * (func_00137720 from his heading, 25, 150 down to 30 degrees), held 30 frames; range 15 after */
+void func_0015BD90(Hewie *h) {
+    f32 step;
+
+    if (HW(h, 0xF355C, s32) == 0) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        Hewie_SetBehaviour(h, &D_003B1768);
+        return;
+    }
+    if (HW(h, 0xF36B8, s32) == 0) {
+        f32 room;
+
+        if (HW(h, 0xF36B4, s32) != 0) {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+        room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+        if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
+            HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 10 + 10;
+            HW(h, 0xF36B8, s32) = 30;
+            HW(h, 0xF36C8, f32) = 15.0f;
+            HW(h, 0xF36C4, f32) = func_00137720(h, h->c.a.angle[1], 10.0f + 15.0f, 150, 30, 30);
+        }
+    } else {
+        HW(h, 0xF36B8, s32) -= 1;
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    turn_toward(h, HW(h, 0xF36C4, f32), step);
+    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x204) {
+        func_002DDED0(h->c.motion, 0x204, -1);
+    }
+}
