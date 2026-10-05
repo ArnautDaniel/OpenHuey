@@ -1108,3 +1108,249 @@ void func_00129DB0(Pursuer *p) {
         PU(p, 0x1758, s32) = -1;
     }
 }
+
+/* does Fiona (the target) face him: within 90 degrees of her heading and his sight range */
+static inline s32 Debilitas_Seen(Pursuer *p) {
+    Character *t = p->target;
+
+    return func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF;
+}
+
+/* back off (action 5) or hold off (6) by his table +0x17F0 entry `i` (0 unseen and far, 1 unseen
+   and close, 2 seen): chance in percent at +0x24 + 4i, waits at +8i / +8i+4 */
+static void Debilitas_BackOrHold(Pursuer *p, f32 roll, s32 i) {
+    if (roll <= AT(PU(p, 0x17F0, u8 *), 0x24 + i * 4, f32)) {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+        PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), i * 8, s32);
+    } else {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+        PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), i * 8 + 4, s32);
+    }
+}
+
+extern f32 D_003AF4B0[];
+
+/* a waited-out back-off or hold-off: strike by the chance for the threat level (func_00297290 of
+   D_003AF4B0), else back or hold off again. 1 when he strikes */
+static s32 Debilitas_StrikeOrWait(Pursuer *p) {
+    u32 chance = func_00297290(p, D_003AF4B0, 3);
+    f32 roll;
+
+    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < (f32)chance) {
+        VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
+        func_00283C50(p);
+        return 1;
+    }
+    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    if (!Debilitas_Seen(p)) {
+        Debilitas_BackOrHold(p, roll, PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32) ? 1 : 0);
+    } else {
+        Debilitas_BackOrHold(p, roll, 2);
+    }
+    return 0;
+}
+
+extern const PTMF D_003AFF30, D_003AFF40, D_003AFF50;
+
+/* his chase (from func_0012B490): as the Pursuer's func_00295670 he stalks Fiona, closing in
+   (1), backing off (5) or holding off (6) for the waits from his table +0x17F0, and now and then
+   lunging (attack table 0xA) by the threat-level chance. Seen by her while close, he comes
+   straight on (1) a limited number of times (+0x1630). Right up against her with no room
+   around, he steps in (0x1D); close and with her standing still, grabs (0x1000) */
+void func_0012A4C0(Pursuer *p) {
+    f32 near;
+
+    if (ptmf_test(&p->c.a.state)) {
+        ptmf_scall(p, &p->c.a.state);
+    }
+    switch (PU(p, 0x175C, s32)) {
+    case 0x1A:
+    case 0x19:
+        if ((PU(p, 0x175C, s32) == 0x1A || AT(PU(p, 0x1720, u8 *) + p->c.unk104[0] * 8, 0x4, u8) != 0) &&
+            !(PU(p, 0x1588, f32) <= 100.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+            PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x1C, s32);
+            PURSUER_STEP_DONE(p) = 0;
+            PU(p, 0x16EF, u8) = 0;
+        }
+        if (PURSUER_STEP_DONE(p) == 1 || PU(p, 0x16EF, u8) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PURSUER_STEP_DONE(p) = 0;
+            PU(p, 0x16EF, u8) = 0;
+        }
+        break;
+    case 0x10:
+    case 0x12:
+    case 0xB:
+    case 3:
+    case 0x1C:
+        if (PU(p, 0x16EF, u8) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+        } else if (PURSUER_STEP_DONE(p) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0x1000:
+        PU(p, 0x1544, u8) = 0;
+        if (PU(p, 0x16EF, u8) == 1) {
+            ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF30);
+            PU(p, 0x1758, s32) = -1;
+            PU(p, 0x16EF, u8) = 0;
+        } else if (PURSUER_STEP_DONE(p) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0x1D:
+        if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32)) ||
+            (func_00217ED0(p, 0x1.921fb6p+1f /* 180 degrees */, 2.0f) == 0 &&
+             func_00217ED0(p, 0x1.eb7c16p+0f /* 110 degrees */, 2.0f) == 0 &&
+             func_00217ED0(p, -0x1.eb7c16p+0f, 2.0f) == 0)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+        }
+        if (PU(p, 0x1588, f32) < 10.0f && !(PU(p, 0x1588, f32) <= 0.0f) && gCharPlayer->moveMode == 0 &&
+            gCharPlayer->moveSub != 0 && (func_00177AB0(gProgress, 4, 0) & 0xFF) == 0xFF) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1000);
+            PU(p, 0x162C, s32) = 0;
+        }
+        break;
+    case 1: {
+        f32 roll;
+
+        /* every 90 frames, a lunge by the threat-level chance */
+        if ((PU(p, 0x1780, u32) + 1) % 90 == 0) {
+            u32 chance = func_00297290(p, D_003AF4B0, 3);
+
+            if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= (f32)chance) {
+                VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
+                func_00283C50(p);
+                return;
+            }
+        }
+        if (!((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF))) {
+            u32 dir = func_00213FA0(p, gCharPlayer->a.pos, 0x1.0c1524p+0f /* 60 degrees */, 0x1.4f1a6ep+1f /* 150 degrees */) & 0xFF;
+
+            if (dir != 0xFF) {
+                p->c.unk104[0] = dir;
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 3);
+            }
+        }
+        roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        if (PU(p, 0x1588, f32) < 0.0f) {
+            if (func_00284440(p) & 0xFF) {
+                break;
+            }
+            func_0029AF20(p);
+            return;
+        }
+        if (!Debilitas_Seen(p)) {
+            Debilitas_BackOrHold(p, roll, 1);
+        } else if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32) + 20.0f)) {
+            Debilitas_BackOrHold(p, roll, 2);
+        } else if (PU(p, 0x1630, s32) > 0) {
+            PU(p, 0x1630, s32)--;
+        } else {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+            PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x18, s32);
+        }
+        break;
+    }
+    case 6:
+        if (PU(p, 0x16EF, u8) != 0) {
+            PU(p, 0x16EF, u8) = 0;
+        }
+        if (PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32) && Debilitas_Seen(p) == 1) {
+            if (PU(p, 0x1630, s32) > 0) {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+                PU(p, 0x1630, s32) = AT(PU(p, 0x17F0, u8 *), 0x20, s32);
+                PU(p, 0x162C, s32) = 0;
+            } else {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x18, s32);
+            }
+            break;
+        }
+        if (PU(p, 0x162C, s32) > 0 || !(PU(p, 0x1588, f32) < 100.0f)) {
+            PU(p, 0x162C, s32)--;
+            break;
+        }
+        if (Debilitas_StrikeOrWait(p)) {
+            return;
+        }
+        break;
+    case 5:
+        if (PU(p, 0x16EF, u8) != 0) {
+            PU(p, 0x16EF, u8) = 0;
+        }
+        if (PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32) && Debilitas_Seen(p) == 1 && PU(p, 0x1630, s32) > 0) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PU(p, 0x1630, s32) = AT(PU(p, 0x17F0, u8 *), 0x20, s32);
+            PU(p, 0x162C, s32) = 0;
+            break;
+        }
+        if (PU(p, 0x162C, s32) > 0) {
+            if (PU(p, 0x1588, f32) <= 100.0f) {
+                PU(p, 0x162C, s32)--;
+            } else {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x1C, s32);
+            }
+            break;
+        }
+        if (Debilitas_StrikeOrWait(p)) {
+            return;
+        }
+        break;
+    }
+    if (PURSUER_STEP_NEXT(p) == 1 && PU(p, 0x175C, s32) != 0x12) {
+        s32 d = func_002131A0();
+
+        if (d != -1) {
+            /* Fiona is hiding: go to the door */
+            p->c.unk100 = d;
+            p->c.unk104[0] = -1;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x12);
+        }
+    }
+    if (p->c.moveSub == 6 && gCharPlayer->moveMode != 3 && !(PU(p, 0x1588, f32) <= 0.0f)) {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    if (PURSUER_STEP_NEXT(p) != 1) {
+        return;
+    }
+    if (PU(p, 0x1544, u8) == 0) {
+        VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF40);
+        PU(p, 0x1758, s32) = -1;
+        PU(p, 0x162C, s32) = 0;
+        return;
+    }
+    if (AT(gProgress, 0x7B8, u8) == 5) {
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF50);
+        PU(p, 0x1758, s32) = -1;
+        PU(p, 0x162C, s32) = 0;
+        return;
+    }
+    near = p->target->moveMode == 3 ? func_00124490(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
+    if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
+        return;
+    }
+    if (near < func_002838E0(p) || near < 10.0f) {
+        f32 a;
+
+        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        } else {
+            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        }
+        if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
+            func_002175B0(&p->c.a, &p->target->a) != 0) {
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)func_00283EF0(p));
+            func_00283C50(p);
+            PU(p, 0x162C, s32) = 0;
+        }
+    }
+}
