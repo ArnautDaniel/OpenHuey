@@ -1201,3 +1201,45 @@ s32 func_00308400(void *o) {
 
     return place_item(o, t);
 }
+
+/* the three statues' pedestals (room 0x54, spots 0xD / 0x11 / 0x14): a pedestal takes the
+ * statue while neither of its two Progress +0x28 bits is set; else on the altar */
+typedef struct ItemPedestal {
+    u32 taken;   /* +0x28 bits that block it */
+    u8 spot, ev;
+} ItemPedestal;
+
+static s32 place_statue(void *o, const ItemPedestal *t) {
+    Progress *p = gProgress;
+    s32 i;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x54) {
+        for (i = 0; i < 3; i++, t++) {
+            if (!(AT(p, 0x28, u32) & t->taken) && item_at_spot(D_0044E4D0, gCharPlayer, t->spot)) {
+                return item_event_flag(p, t->ev);
+            }
+        }
+    }
+    return item_offer(p, o);
+}
+
+/* D_00475CC0 */
+s32 func_00338FA0(void *o) {
+    static const ItemPedestal t[3] = {{0x180, 0xD, 0}, {0xC00, 0x11, 3}, {0x6000, 0x14, 6}};
+
+    return place_statue(o, t);
+}
+
+/* D_00475D10 */
+s32 func_00339350(void *o) {
+    static const ItemPedestal t[3] = {{0xA00, 0x11, 4}, {0x140, 0xD, 1}, {0x5000, 0x14, 7}};
+
+    return place_statue(o, t);
+}
+
+/* D_00475D60 */
+s32 func_00339700(void *o) {
+    static const ItemPedestal t[3] = {{0x3000, 0x14, 8}, {0xC0, 0xD, 2}, {0x600, 0x11, 5}};
+
+    return place_statue(o, t);
+}
