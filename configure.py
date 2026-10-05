@@ -145,6 +145,7 @@ def decompiled_funcs(sources: list[str]) -> dict[str, list[str]]:
         for inc in re.findall(r'^#include "([^"]+\.inc)"', text, re.M):
             text += "\n" + without_native_only(((ROOT / src).parent / inc).read_text())
         names = set(FUNC_DEF_RE.findall(text))
+        names.update(re.findall(r"^THUNKV?\(\s*(\w+)", text, re.M))   # snd_driver.c's interface thunks
         for a, b in re.findall(r"^#define\s+(\w+)\s+(\w+)\s*$", text, re.M):
             if a in names:
                 names.add(b)
