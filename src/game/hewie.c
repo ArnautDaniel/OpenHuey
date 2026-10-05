@@ -9116,3 +9116,51 @@ void func_0015B130(Hewie *h) {
     }
     func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
 }
+
+/* ---- roaming ---- */
+
+/* roam: along heading +0xF36C4 while the way ahead (func_00123A70) is at least +0xF36C8; every
+ * 90..240 frames, or when it is shorter, a new heading (the freest near where his head points,
+ * func_00137720 30..150 degrees for 10 more), held 30 frames before rechecking. Facing it (within
+ * 5 degrees) at a walk he looks about (+0xF3604 2), else ahead. Gait +0xF36BC (walk / trot /
+ * run), slower where the way ahead is short (under 10 / 20) */
+void func_0015B660(Hewie *h) {
+    f32 room, step, left;
+
+    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    if (HW(h, 0xF36B8, s32) != 0) {
+        HW(h, 0xF36B8, s32) -= 1;
+    } else {
+        if (HW(h, 0xF36B4, s32) != 0) {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+        if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
+            HW(h, 0xF36B4, s32) = (s32)(6.0f * RNG01()) * 30 + 90;
+            HW(h, 0xF36B8, s32) = 30;
+            HW(h, 0xF36C4, f32) = func_00137720(h, func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)),
+                                                10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
+        }
+    }
+    step = run_turn(h);
+    left = turn_toward(h, HW(h, 0xF36C4, f32), step);
+    if (left < 0x1.6571860000000p-4f /* 0.08726647 */ && HW(h, 0xF36BC, s32) == 0) {
+        if (HW(h, 0xF3604, s32) != 2) {
+            HW(h, 0xF3604, s32) = 2;
+            HW(h, 0xF3608, s32) = 10;
+        }
+    } else {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    }
+    if (HW(h, 0xF36BC, s32) == 0 || room < 10.0f) {
+        func_00141C00(h, 7);
+    } else if (HW(h, 0xF36BC, s32) == 1 || room < 20.0f) {
+        func_00141C00(h, 8);
+    } else {
+        func_00141C00(h, 9);
+    }
+}
