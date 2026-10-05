@@ -838,3 +838,147 @@ void func_002EE120(u8 *m) {
     AT(m, 0x1574, s32) = 50;
     func_002EDF30(m);
 }
+
+/* ---- the capsule collider (vtable D_00470390, +0x30 in a 0x70 part): ends +0 / +0x40 in the
+   world, +0x10 / +0x50 in their bones' (+0x28 / +0x60) space, radius +0x20 (1 / it +0x24) ---- */
+
+/* +0x8: the push on point `pt` (into `out`), `k` times its depth: off the segment when it's
+   alongside, else off the nearer end (not normalized there, as the original) */
+void func_002EE220(u8 *cap, f32 *out, const f32 *pt, f32 k) {
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 d1[4] __attribute__((aligned(16)));
+    f32 t0, t1, lo, hi, tp, l2;
+
+    sceVu0SubVector(d, (f32 *)(cap + 0x40), (f32 *)cap);
+    sceVu0Normalize(axis, d);
+    t0 = sceVu0InnerProduct(axis, (f32 *)cap);
+    t1 = sceVu0InnerProduct(axis, (f32 *)(cap + 0x40));
+    if (t0 <= t1) {
+        lo = t0;
+        hi = t1;
+    } else {
+        lo = t1;
+        hi = t0;
+    }
+    tp = sceVu0InnerProduct(axis, (f32 *)pt);
+    if (!(tp < lo) && tp <= hi) {
+        f32 s;
+
+        sceVu0SubVector(d, (f32 *)pt, (f32 *)cap);
+        s = sceVu0InnerProduct(axis, d);
+        d[0] = d[0] - s * axis[0];
+        d[1] = d[1] - s * axis[1];
+        d[2] = d[2] - s * axis[2];
+        l2 = sceVu0InnerProduct(d, d);
+        if (l2 < AT(cap, 0x20, f32) * AT(cap, 0x20, f32) && !(l2 <= 0.0f)) {
+            sceVu0Normalize(d, d);
+            sceVu0ScaleVector(out, d, (1.0f - __builtin_sqrtf(l2) * AT(cap, 0x24, f32)) * k);
+            return;
+        }
+    }
+    sceVu0SubVector(d, (f32 *)pt, (f32 *)cap);
+    l2 = sceVu0InnerProduct(d, d);
+    sceVu0SubVector(d1, (f32 *)pt, (f32 *)(cap + 0x40));
+    {
+        f32 l1 = sceVu0InnerProduct(d1, d1);
+
+        if (!(l2 <= l1)) {
+            l2 = l1;
+            sceVu0CopyVector(d, d1);
+        }
+    }
+    if (l2 < AT(cap, 0x20, f32) * AT(cap, 0x20, f32) && !(l2 <= 0.0f)) {
+        sceVu0ScaleVector(out, d, (1.0f - __builtin_sqrtf(l2) * AT(cap, 0x24, f32)) * k);
+        return;
+    }
+    AT(out, 0x0, s32) = 0;
+    AT(out, 0x4, s32) = 0;
+    AT(out, 0x8, s32) = 0;
+    AT(out, 0xC, s32) = 0;
+}
+
+/* ---- Daniella's hair point (vtable D_00470460, +0x30 in a 0x70 part): the position +0, its
+   velocity +0x10, anchored (+0x20) to bone +0x24 or the point +0x2C, its length +0x40, the
+   partner point in the other strand +0x44 (side +0x48), the anchor last frame +0x50, its
+   stiffness +0x60 ---- */
+
+extern void sceVu0OuterProduct(f32 *out, const f32 *a, const f32 *b);
+
+/* +0x14: its bone's matrix from the point: X toward the point, Y toward the partner, at the
+   anchor */
+void func_002EEF90(u8 *pt, u8 *set) {
+    f32 *mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 side[4] __attribute__((aligned(16)));
+
+    if (AT(pt, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, mtx + 12);
+    } else {
+        sceVu0CopyVector(at, AT(pt, 0x2C, f32 *));
+    }
+    sceVu0SubVector(side, AT(pt, 0x44, f32 *), (f32 *)pt);
+    sceVu0ScaleVector(side, side, AT(pt, 0x48, f32));
+    sceVu0Normalize(side, side);
+    sceVu0SubVector(mtx, (f32 *)pt, at);
+    sceVu0CopyVector(mtx + 4, side);
+    sceVu0OuterProduct(mtx + 8, mtx, mtx + 4);
+    sceVu0OuterProduct(mtx + 4, mtx + 8, mtx);
+    sceVu0Normalize(mtx, mtx);
+    sceVu0Normalize(mtx + 4, mtx + 4);
+    sceVu0Normalize(mtx + 8, mtx + 8);
+    sceVu0CopyVector(mtx + 12, at);
+}
+
+/* +0x10: a step: follow the anchor by the stiffness, the set's force, pushed off the colliders
+   (3 times their depth), kept about 0.438 from its partner, damped, held at its length from
+   the anchor */
+void func_002EF0A0(u8 *pt, u8 *set) {
+    f32 *mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 *vel = (f32 *)(pt + 0x10);
+    u8 *c;
+    f32 len;
+
+    if (AT(pt, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, mtx + 12);
+    } else {
+        sceVu0CopyVector(at, AT(pt, 0x2C, f32 *));
+    }
+    sceVu0CopyVector(prev, (f32 *)pt);
+    sceVu0SubVector(d, at, (f32 *)(pt + 0x50));
+    sceVu0ScaleVector(d, d, AT(pt, 0x60, f32));
+    sceVu0AddVector((f32 *)pt, (f32 *)pt, d);
+    sceVu0SubVector(vel, vel, (f32 *)set);
+    for (c = AT(set, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        (*(void (**)(u8 *, f32 *, u8 *, f32))(AT(c, 0x30, u8 *) + 8))(c, d, pt, 3.0f);
+        sceVu0AddVector(vel, vel, d);
+    }
+    sceVu0SubVector(d, (f32 *)pt, AT(pt, 0x44, f32 *));
+    len = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, 0x1.99999ap-1f * -(len - 0x1.c068dcp-2f));   /* 0.8, 0.4379 */
+    sceVu0AddVector(vel, vel, d);
+    sceVu0ScaleVector(vel, vel, AT(set, 0x10, f32));
+    sceVu0AddVector((f32 *)pt, (f32 *)pt, vel);
+    sceVu0SubVector(d, (f32 *)pt, at);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(pt, 0x40, f32));
+    sceVu0AddVector((f32 *)pt, at, d);
+    sceVu0SubVector(vel, (f32 *)pt, prev);
+    sceVu0CopyVector((f32 *)(pt + 0x50), at);
+}
+
+extern void sceVu0ApplyMatrix(f32 *out, f32 (*m)[4], const f32 *v);
+
+/* the capsule's +0xC: its ends from their bones */
+void func_002EE4B0(u8 *cap, u8 *m) {
+    f32 mtx[4][4] __attribute__((aligned(16)));
+
+    sceVu0CopyMatrix(mtx, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), AT(cap, 0x28, s32)));
+    sceVu0ApplyMatrix((f32 *)cap, mtx, (f32 *)(cap + 0x10));
+    sceVu0CopyMatrix(mtx, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), AT(cap, 0x60, s32)));
+    sceVu0ApplyMatrix((f32 *)(cap + 0x40), mtx, (f32 *)(cap + 0x50));
+}
