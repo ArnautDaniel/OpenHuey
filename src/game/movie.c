@@ -125,9 +125,9 @@ typedef struct Movie {
     /* 0x1AD */ u8 pad1AD[3];
     /* 0x1B0 */ s32 time;
     /* 0x1B4 */ u8 hasFrame;
-    /* 0x1B5 */ u8 unk1B5;
+    /* 0x1B5 */ u8 frameBuf;        /* class 0: the frame written next (0 / 1) */
     /* 0x1B6 */ u8 pad1B6[2];
-    /* 0x1B8 */ void *unk1B8;
+    /* 0x1B8 */ void *frames;        /* class 0: two 256 x 224 frames the movie is decoded into */
     /* 0x1BC */ u8 mode;
     /* 0x1BD */ u8 pad1BD[3];
     /* 0x1C0 */ s32 shownFrame;      /* -1 none */
@@ -293,7 +293,7 @@ s32 func_002B6640(Movie *m) {
     }
     VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
     m->hasFrame = 0;
-    m->unk1B5 = 0;
+    m->frameBuf = 0;
     return 0;
 }
 
@@ -308,7 +308,7 @@ void func_002B6BB0(Movie *m) {
     func_0023CA88(m->ply, 2);
     VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
     m->hasFrame = 0;
-    m->unk1B5 = 0;
+    m->frameBuf = 0;
     m->volume[4] = 0.0f;
     {
         s32 db = movie_level(m);
@@ -405,9 +405,9 @@ Movie *func_002B6FC0(Movie *m, s32 flags) {
         }
         m->name[0] = 0;
         m->hasFrame = 0;
-        if (m->unk1B8 != NULL) {
-            func_00114FD0(m->unk1B8);
-            m->unk1B8 = NULL;
+        if (m->frames != NULL) {
+            func_00114FD0(m->frames);
+            m->frames = NULL;
         }
         if (&m->ply != NULL) {
             D_0044E958 = NULL;
@@ -434,7 +434,7 @@ Movie *func_002B70D0(Movie *m) {
     m->keepRenderer = 0;
     m->time = 0;
     m->shownFrame = -1;
-    m->unk1B8 = NULL;
+    m->frames = NULL;
     m->volume[2] = *(f32 *)(D_0044E978 + 0x38);
     if (gProgress != NULL) {
         m->volume[3] = *(f32 *)(gProgress + 0x9F0);
@@ -478,4 +478,64 @@ void func_002C8C70(Movie *m) {
         return;
     }
     Movie_SetStateFn(m, func_002B6BB0);
+}
+
+/* ---- movie class 0 (D_00470E80): a movie shown on something in the game - decoded at 256 x
+ * 224 into two frames in progress memory (+0xCA6C0, 0x38000 each), drawn by the game itself ---- */
+
+extern void *D_00470E80[];
+extern const PTMF D_0041CA80;   /* func_002B6BB0 */
+extern void func_0023E878(VObject *ply, u32 a, u32 b, s32 c);   /* Sofdec */
+extern void func_002410B0(VObject *ply, u8 **frame, void *dst);   /* the frame copied out */
+extern void FlushCache(s32 mode);
+
+/* +0x8 (the frames aren't its own) */
+Movie *func_002FEC50(Movie *m, s32 flags) {
+    if (m != NULL) {
+        m->base.vtbl = D_00470E80;
+        m->frames = NULL;
+        func_002B6FC0(m, 0);
+        if ((s16)flags > 0) {
+            func_0011F9A0(m);
+        }
+    }
+    return m;
+}
+
+/* +0x24 */
+void func_002FECC0(Movie *m) {
+}
+
+/* +0x20 the frame into the next of the two */
+void func_002FECD0(Movie *m) {
+    func_002410B0(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * 0x38000);
+    FlushCache(0);
+    m->frameBuf ^= 1;
+}
+
+/* +0x10 entry: a 256 x 224 player with its own work buffer, then start */
+void func_002FED30(Movie *m) {
+    MovieLib *lib = D_0044FEF8;
+    s32 size;
+
+    VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, 0x100, 0xE0, 0x31, 1);
+    size = VCALL(lib, 0x20, s32 (*)(MovieLib *))(lib);
+    if (size == 0) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+        return;
+    }
+    m->work = func_00114DA8(0x40, size);
+    if (m->work == NULL) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+        return;
+    }
+    lib = D_0044FEF8;
+    VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, m->work);
+    m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
+    if (m->ply == NULL) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+    }
+    m->frames = gProgress + 0xCA6C0;
+    func_0023E878(m->ply, 0x10, 0x20, 0);
+    Movie_SetState(m, &D_0041CA80);
 }

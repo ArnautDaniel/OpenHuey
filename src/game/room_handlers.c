@@ -713,3 +713,124 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern u8 *D_0044E4C0;        /* the room's effects */
+extern VObject *D_0044FE10;   /* the cutscene director: +0x34 its frame */
+extern void *D_0046EC60[], *D_00472F60[];   /* a depth range, a lit quad */
+extern void *func_002672F0(u32 size, void *place);
+extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
+extern void func_002670F0(u8 *fx, s32 n);   /* effect slot n gone */
+
+/* the room's effect n made anew as class vtbl (any old one dropped) */
+static void room_effect_new(u8 *fx, s32 n, void **vtbl) {
+    VObject *pool = (VObject *)(fx + 0x1400);
+    VObject **slot = &AT(fx, 0x1438 + n * 4, VObject *);
+    void *mem;
+
+    if (*slot != NULL) {
+        VCALL(pool, 0x14, void (*)(VObject *, void *))(pool, *slot);
+        *slot = NULL;
+    }
+    mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
+    if (mem != NULL) {
+        VObject *e = func_002672F0(0xA0, mem);
+
+        if (e != NULL) {
+            e->vtbl = vtbl;
+        }
+        *slot = e;
+        VCALL(*slot, 0xC, void (*)(VObject *))(*slot);
+    }
+}
+
+/* the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05 */
+s32 func_002FF0A0(void *self, void *a1, u8 *cmd) {
+    u8 *m = AT(gCharacters[func_001770D0(gProgress, 0xFE) & 0xFF], 0xF0, u8 *);
+
+    switch (cmd[3]) {
+    case 0:
+        AT(m, 0x9E8, f32) = 0x1.333334p-3f /* 0.15 */;
+        break;
+    case 1:
+        AT(m, 0x9E8, s32) = 0;
+        break;
+    default:
+        AT(m, 0x9E8, f32) = 0x1.99999ap-5f /* 0.05 */;
+        break;
+    }
+    return 1;
+}
+
+/* the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40
+ * / 80 on by 0.4 a frame, up to 41 / 61 / 80 / 120 */
+s32 func_002FF130(void) {
+    u8 *fx = D_0044E4C0;
+    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 1260);
+    f32 r[4] __attribute__((aligned(16)));
+    f32 d;
+
+    room_effect_new(fx, 0x1C, D_0046EC60);
+    d = 0x1.999998p-2f /* 0.4 */ * t;
+    r[0] = 1.0f + d;
+    if (!(r[0] <= 41.0f)) {
+        r[0] = 41.0f;
+    }
+    r[1] = 21.0f + d;
+    if (!(r[1] <= 61.0f)) {
+        r[1] = 61.0f;
+    }
+    r[2] = 40.0f + d;
+    if (!(r[2] <= 80.0f)) {
+        r[2] = 80.0f;
+    }
+    r[3] = 80.0f + d;
+    if (!(r[3] <= 120.0f)) {
+        r[3] = 120.0f;
+    }
+    func_00266C70(fx, 0x1C, r);
+    return 1;
+}
+
+s32 func_002FF300(void) {
+    return 1;
+}
+
+s32 func_002FF310(void) {
+    return 1;
+}
+
+/* a lit quad (effect 0x1B: four corners at x -15.96, z -2 .. 6, height 111 / 91), byte 3: 1
+ * removed, 2 on, else off */
+s32 func_002FF320(void *self, void *a1, u8 *cmd) {
+    u8 *fx;
+    u32 q[20] __attribute__((aligned(16)));
+
+    if (cmd[3] == 1) {
+        func_002670F0(D_0044E4C0, 0x1B);
+        return 1;
+    }
+    fx = D_0044E4C0;
+    room_effect_new(fx, 0x1B, D_00472F60);
+    q[0x10] = cmd[3] == 2 ? 0x3F800000 : 0;
+    q[1] = 0x42DE0000;
+    q[5] = 0x42DE0000;
+    q[2] = 0xC00001A3;
+    q[10] = 0xC00001A3;
+    q[0] = 0xC17F5810;
+    q[3] = 0x3F800000;
+    q[6] = 0x40BFFF2E;
+    q[0x13] = 0x80;
+    q[0xE] = 0x40BFFF2E;
+    q[4] = 0xC17F5810;
+    q[7] = 0x3F800000;
+    q[8] = 0xC17F5810;
+    q[0xC] = 0xC17F5810;
+    q[9] = 0x42B60000;
+    q[0xD] = 0x42B60000;
+    q[0x11] = q[0x13];
+    q[0xB] = 0x3F800000;
+    q[0xF] = 0x3F800000;
+    q[0x12] = 0;
+    func_00266C70(fx, 0x1B, q);
+    return 1;
+}

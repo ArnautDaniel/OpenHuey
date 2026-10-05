@@ -537,6 +537,13 @@ void func_002F7920(u8 *m) {
     }
 }
 
+extern void func_001F7AC0(u8 *m);
+
+/* Fiona's sheet model (D_00470620): +0x10 */
+void func_002F8320(u8 *m) {
+    func_001F7AC0(m);
+}
+
 /* Fiona's sheet model (D_00470620): +0x8 destructor */
 void *func_002F7A30(void *p, s32 flags) {
     u8 *m = p;
