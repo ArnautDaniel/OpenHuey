@@ -6681,3 +6681,51 @@ void func_0014C480(Hewie *h) {
         }
     }
 }
+
+/* ---- holding the pursuer off ---- */
+
+extern f32 func_001257B0(Character *c, u32 tri, const f32 *pos, u32 mask);   /* walking distance */
+extern const PTMF D_003B1BE8;
+
+/* standing guard while the pursuer hunts in his room (flags 9 / 0xA; else the default action):
+ * barking at it (with noise, as func_001470C0) while it is 60..100 away by foot, looking at it;
+ * nearer or farther, behaviour D_003B1BE8; unreachable, the default action */
+void func_0014CBD0(Hewie *h) {
+    Progress *p;
+    f32 d;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if (!(u8)Progress_TestFlag(p, 9) && !(u8)Progress_TestFlag(p, 0xA)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00140CD0(h, 0) == 0) {
+        d = func_001257B0(&h->c, gCharPursuer->a.navTri, gCharPursuer->a.pos, NAV_NONE);
+        if (d < 0.0f) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        if (d < 60.0f || !(d <= 100.0f)) {
+            Hewie_SetBehaviour(h, &D_003B1BE8);
+            return;
+        }
+        func_001431F0(h);
+        {
+            Progress *q = gProgress;
+
+            if (((u8)Progress_TestFlag(q, 0x13) | (u8)Progress_TestFlag(q, 0x2B)) == 0) {
+                Progress_GetVar(p, 0x27);
+                func_00178070(p, AT(h, 0x20, u8), 4, 6, 0, 0, 0.0f);
+            }
+        }
+    }
+    if (HW(h, 0xF3604, s32) != 0) {
+        HW(h, 0xF3604, s32) = 0;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3544, Character *) = gCharPursuer;
+}
