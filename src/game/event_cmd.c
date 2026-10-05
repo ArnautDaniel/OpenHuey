@@ -9,6 +9,7 @@
 #include "game.h"
 #include "progress.h"
 #include "task.h"
+#include "hewie.h"
 #include "sce/libvu0.h"
 
 extern void *gCharacters[6];
@@ -49,8 +50,8 @@ extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
-extern void func_00200B00(VObject *ev);
 extern void func_00200870(VObject *ev);
+extern void func_00200B00(VObject *ev);
 
 #define PC(ev) AT(ev, 0x4, u8 *)
 #define EV_WAIT(ev) AT(ev, 0x700, u8)
@@ -1579,6 +1580,304 @@ void func_001FFC70(VObject *ev) {
         break;
     }
 }
+
+
+/* ---- Hewie (opcodes 0x39 0x3F 0x63 0x77 0x78 0x7A 0x85 0xAF 0xB0 0xBB 0xBD 0xC3..0xC6 0xD0) ---- */
+
+extern void func_00130AF0(u8 *h, s32 act, s32 arg);           /* his action */
+extern void func_0013D1F0(u8 *h, s32 add);                    /* his trust */
+extern void func_00138AD0(u8 *h, s32 anim, s32 loop);
+extern void func_001654E0(u8 *h, s32 a, u32 b);
+
+/* a position in thousandths (3 x be32) */
+static void be32_pos(f32 *v, const u8 *p) {
+    v[0] = (f32)be32(p) / 1000.0f;
+    v[1] = (f32)be32(p + 4) / 1000.0f;
+    v[2] = (f32)be32(p + 8) / 1000.0f;
+    v[3] = 1.0f;
+}
+
+/* zone pc[1]'s point into v, if the zone is set */
+static void zone_point(VObject *ev, u32 id, f32 *v) {
+    s32 k = VCALL(ev, 0xA0, s32 (*)(VObject *, s32))(ev, id);
+    u8 *zone = (u8 *)ev + k * 0x30 + 0xBF0;
+
+    if (AT(zone, 0x4, u8)) {
+        func_0010E5F0(v, (f32 *)(zone + 0x10));
+        v[3] = 1.0f;
+    }
+}
+
+/* Hewie's commands (nothing without him; most need him active):
+ *   0x39 action be32 pc+1, its argument be32 pc+5      0x3F his +0x64 (be16 pc+1, be16 pc+4, pc[3])
+ *   0x63 turn to angle pc+1 (degrees), action 0x72     0x77 func_001654E0 (be16 pc+1, be16 pc+3)
+ *   0x78 action 0x12 (a character action, +0xF4)        0x7A to a position (x, z, y), be16 pc+1 / pc+0xF
+ *   0x85 trust + be16 pc+1                              0xAF to a position (action 0x14)
+ *   0xB0 to zone pc[1]'s point (pc[2] 0: action 0x14, 1: 0xD)
+ *   0xBB in his room, waiting (+0xF355C 5) with +0xF3588 = pc[1] != 0
+ *   0xBD +0xF3688 = 300   0xC3 action 0x15 with be16 pc+1 / pc+3   0xC4 animation be32 pc+1
+ *   0xC5 / 0xC6 a point to go to (+0xF3630, once: +0xF3620) - zone pc[1]'s / character pc[1]'s
+ *     position, raised by be32 pc+2 thousandths
+ *   0xD0 his side of the room be16 pc+1 (0..2, else -1) */
+void func_00200B00(VObject *ev) {
+    u8 *h = gCharPartner;
+    const u8 *pc;
+    f32 v[4] __attribute__((aligned(16))) = {0};   /* (a zone not set leaves it as it was) */
+
+    if (h == NULL) {
+        return;
+    }
+    pc = PC(ev);
+    if (pc[0] != 0x3F && pc[0] != 0x85 && AT(h, 0x28, u8) == 0) {
+        return;
+    }
+    switch (pc[0]) {
+    case 0x39:
+        func_00130AF0(h, be32(pc + 1), be32(pc + 5));
+        break;
+    case 0x3F:
+        VCALL((VObject *)h, 0x64, void (*)(void *, u32, s32, s8))(h, be16(pc + 1), (s16)be16(pc + 4), pc[3]);
+        break;
+    case 0x63: {
+        static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+
+        AT(h, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
+        func_00130AF0(h, 0x72, 0);
+        break;
+    }
+    case 0x77:
+        func_001654E0(h, (s16)be16(pc + 1), be16(pc + 3));
+        break;
+    case 0x78:
+        CHAR_ACT(h, 0x12);
+        break;
+    case 0x7A:
+        AT(h, 0x104, s32) = be16(pc + 1);
+        pc = PC(ev);
+        v[0] = (f32)be32(pc + 3) / 1000.0f;   /* (stored x, z, y) */
+        v[1] = (f32)be32(pc + 0xB) / 1000.0f;
+        v[2] = (f32)be32(pc + 7) / 1000.0f;
+        v[3] = 1.0f;
+        sceVu0CopyVector((f32 *)(h + 0x110), v);
+        AT(h, 0x108, s32) = (s16)be16(PC(ev) + 0xF);
+        CHAR_ACT(h, 0x13);
+        break;
+    case 0x85:
+        func_0013D1F0(h, (s16)be16(pc + 1));
+        break;
+    case 0xAF:
+        be32_pos(v, pc + 1);
+        sceVu0CopyVector((f32 *)(h + 0x110), v);
+        CHAR_ACT(h, 0x14);
+        break;
+    case 0xB0:
+        zone_point(ev, pc[1], v);
+        v[3] = 1.0f;
+        switch (PC(ev)[2]) {
+        case 0:
+            sceVu0CopyVector((f32 *)(h + 0x110), v);
+            CHAR_ACT(h, 0x14);
+            break;
+        case 1:
+            sceVu0CopyVector((f32 *)(h + 0x110), v);
+            CHAR_ACT(h, 0xD);
+            break;
+        }
+        break;
+    case 0xBB:
+        if (AT(ev, 0x560, s32) == AT(h, 0x30, s32)) {
+            HW(h, 0xF355C, s32) = 5;
+            HW(h, 0xF3588, u8) = pc[1] != 0;
+        }
+        break;
+    case 0xBD:
+        HW(h, 0xF3688, s16) = 300;
+        break;
+    case 0xC3:
+        AT(h, 0x104, s32) = be16(pc + 1);
+        AT(h, 0x108, s32) = be16(PC(ev) + 3);
+        CHAR_ACT(h, 0x15);
+        break;
+    case 0xC4:
+        func_00138AD0(h, be32(pc + 1), -1);
+        break;
+    case 0xC5:
+        zone_point(ev, pc[1], v);
+        pc = PC(ev);
+        v[3] = 1.0f;
+        v[1] += (f32)be32(pc + 2) / 1000.0f;
+        if (HW(h, 0xF3620, u8) == 0) {
+            HW(h, 0xF3620, u8) = 1;
+            sceVu0CopyVector((f32 *)(h + 0xF3630), v);
+        }
+        break;
+    case 0xC6: {
+        u32 k = (u8)func_001770D0(gProgress, pc[1]);
+        u8 *c = k != 0xFF ? (u8 *)gCharacters[k] : NULL;
+
+        if (c == NULL || AT(c, 0x28, u8) == 0 || AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
+            break;
+        }
+        sceVu0CopyVector(v, (f32 *)(c + 0x10));
+        v[1] += (f32)be32(PC(ev) + 2) / 1000.0f;
+        if (HW(h, 0xF3620, u8) == 0) {
+            HW(h, 0xF3620, u8) = 1;
+            sceVu0CopyVector((f32 *)(h + 0xF3630), v);
+        }
+        break;
+    }
+    case 0xD0: {
+        u32 side = be16(pc + 1);
+
+        HEWIE_SIDE(h) = side < 3 ? side : (u32)-1;
+        break;
+    }
+    }
+}
+
+/* ---- movies and the cutscene director (opcodes 0x60 / 0x61 / 0x62 / 0x6E / 0x89) ---- */
+
+extern VObject *D_0044FE10;   /* the cutscene director */
+extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern void *D_0044E958;      /* the movie playing */
+extern s32 func_001768B0(Progress *p, const char *path, u32 kind);
+extern s32 func_002B6410(void *movie);   /* 2 playing, 0 done, -1 none */
+extern s32 func_002B64F0(void *movie);
+extern s32 func_002B6640(void *movie);   /* restarted: 2 / 0 / -1 as func_002B6410 */
+extern void func_0023E878(void *sfd, u32 a, u32 b, s32 c);   /* Sofdec */
+
+#define EV_RESULT(ev) AT(ev, 0x934, s32)
+#define EV_CUE(ev) AT(ev, 0xBE4, s32)
+#define EV_CUE_PREV(ev) AT(ev, 0xBE8, s32)
+
+typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
+
+/* the room handler's string pc[1] (+0x34) */
+static const char *room_string(VObject *ev, u32 i) {
+    VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+
+    return VCALL(room, 0x34, const char *(*)(VObject *, u32))(room, i);
+}
+
+/* 0x60 play the movie named by the room (pc[1]) as class pc[2]; 0x61 every active character
+ * +0x78, then the cutscene director restarts (+0x8) on the room's script pc[1] (+0x38); 0x6E
+ * the movie's Sofdec setting (pc[1], pc[2]); 0x89 prepare message pc[1..2]; 0x62 by pc[1]:
+ *   0 movie state -> +0x934     1 stop the movie (+0x14)    2 restart the movie: done waits
+ *   3 director +0x10            4 director +0x10, then +0x14 unless mode 5 or +0x44 is 0
+ *   5 the director's cue before and after +0x60 (+0xBE8 / +0xBE4)   6 cues off, +0x40, +0x10
+ *   7 next cue from the movie, to the director (+0x30); its button 11 toggles flag 0x29
+ *   8 camera director +0x10, director +0x48, flag 0x29 off    9 / 10 pause / resume the movie
+ *   11 a half-black screen    12 show the prepared message as often as the director says */
+void func_001FFE00(VObject *ev) {
+    const u8 *pc = PC(ev);
+    VObject *d = D_0044FE10;
+    VObject *mv = D_0044E958;
+    s32 i, n, r;
+
+    switch (pc[0]) {
+    case 0x60:
+        EV_RESULT(ev) = 0;
+        pc = PC(ev);
+        func_001768B0(gProgress, room_string(ev, pc[1]), pc[2]);
+        return;
+    case 0x61:
+        for (i = 0; i < 6; i++) {
+            if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
+                VCALL(gCharacters[i], 0x78, void (*)(VObject *))(gCharacters[i]);
+            }
+        }
+        VCALL(d, 0x8, void (*)(VObject *))(d);
+        VCALL(d, 0x38, void (*)(VObject *, const char *))(d, room_string(ev, PC(ev)[1]));
+        return;
+    case 0x6E:
+        func_0023E878(AT(mv, 0x14, void *), pc[1], pc[2], 0);
+        return;
+    case 0x89:
+        Task_Prepare((Task *)((u8 *)ev + 0x708), (pc[1] << 8 | pc[2]) & 0xFFFF);
+        return;
+    }
+    switch (pc[1]) {
+    case 0:
+        EV_RESULT(ev) = mv != NULL ? func_002B6410(mv) : -1;
+        break;
+    case 1:
+        if (mv != NULL) {
+            VCALL((VObject *)mv, 0x14, void (*)(VObject *))(mv);
+        }
+        EV_RESULT(ev) = 0;
+        break;
+    case 2:
+        r = mv != NULL ? func_002B6640(mv) : -1;
+        if (r == 0) {
+            EV_WAIT(ev) = 1;
+        } else if (r > 0) {
+            EV_RESULT(ev) = 1;
+        } else {
+            EV_RESULT(ev) = -1;
+        }
+        break;
+    case 3:
+        VCALL(d, 0x10, void (*)(VObject *))(d);
+        break;
+    case 4:
+        VCALL(d, 0x10, void (*)(VObject *))(d);
+        if (VCALL(d, 0x2C, s32 (*)(VObject *))(d) != 5 && VCALL(d, 0x44, s32 (*)(VObject *))(d) != 0) {
+            VCALL(d, 0x14, void (*)(VObject *))(d);
+        }
+        break;
+    case 5:
+        EV_CUE_PREV(ev) = VCALL(d, 0x34, s32 (*)(VObject *))(d);
+        VCALL(d, 0x60, void (*)(VObject *))(d);
+        EV_CUE(ev) = VCALL(d, 0x34, s32 (*)(VObject *))(d);
+        break;
+    case 6:
+        EV_CUE_PREV(ev) = -1;
+        EV_CUE(ev) = -1;
+        VCALL(d, 0x40, void (*)(VObject *))(d);
+        VCALL(d, 0x10, void (*)(VObject *))(d);
+        break;
+    case 7:
+        EV_CUE_PREV(ev) = EV_CUE(ev);
+        if (mv != NULL) {
+            EV_CUE(ev) = func_002B64F0(mv);
+        }
+        VCALL(d, 0x30, void (*)(VObject *, s32))(d, EV_CUE(ev));
+        if (VCALL(d, 0x54, s32 (*)(VObject *, s32, s32))(d, 0xB, 0) & 1) {
+            if (Progress_TestFlag(gProgress, 0x29)) {
+                Progress_ClearFlag(gProgress, 0x29);
+            } else {
+                Progress_SetFlag(gProgress, 0x29);
+            }
+        }
+        break;
+    case 8:
+        VCALL(D_0044E4F8, 0x10, void (*)(VObject *))(D_0044E4F8);
+        VCALL(d, 0x48, void (*)(VObject *))(d);
+        Progress_ClearFlag(gProgress, 0x29);
+        break;
+    case 9:
+    case 10:
+        if (mv != NULL && (func_002B6410(mv) == 2) == (pc[1] == 10)) {
+            VObject *sfd = AT(mv, 0x14, VObject *);
+
+            VCALL(sfd, 0x28, void (*)(VObject *, s32))(sfd, pc[1] == 9);
+        }
+        break;
+    case 11:
+        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x1C0, 0, 0, 0, 0, 0x80000000, -1, 0, 0x33, -1);
+        break;
+    case 12: {
+        u8 out[2];
+
+        n = VCALL(d, 0x54, s32 (*)(VObject *, u32, u8 *))(d, (u8)VCALL(d, 0x84, s32 (*)(VObject *))(d), out);
+        for (i = 0; i < n; i++) {
+            Task_ShowPrepared((Task *)((u8 *)ev + 0x708));
+        }
+        break;
+    }
+    }
+}
+
 
 
 /* start a step `step` (with `prio`) in the event's step slot for `prio` (func_001FBF70) (+0x564, 0x18 each:
