@@ -82,6 +82,12 @@ extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's st
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern u8 D_003D6A60[];   /* stalker kind -> gift table row */
 extern u8 D_003D6A90[];   /* gift tables: 8 x (only if missing, item) */
+extern VObject *D_0044F260;   /* the placed things */
+extern VObject *D_0044FE10;   /* the director */
+extern void func_002EF4D0(void *panic, s32 n);
+extern void func_001FB5F0(VObject *ev);
+extern void func_002DDE20(void *motion, s32 set, s32 variant);
+extern void func_002ED260(void *model, s32 n);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -1356,6 +1362,73 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0xC9:   /* the panic's level reached pc[1]: func_002EF4D0 */
+        if (AT(p, 0x7BC, f32) <= (f32)(u32)pc[1]) {
+            func_002EF4D0((u8 *)p + 0x7B8, pc[1]);
+        }
+        break;
+    case 0xCA:
+        AT(p, 0x1118, f32) = (f32)be32(pc + 1) / 1000.0f;
+        break;
+    case 0xCC:   /* pc[1] 3: the director's +0x78 (pc[2]); else character pc[2] (slots 2..5)'s
+                  * model: 0 +0x2C, 1 +0x30, 2 +0x34 (pc[3]), 4 func_002ED260 (pc[3]) */
+        if (pc[1] != 3) {
+            u8 *c = NULL;
+            u32 i = (u8)func_001770D0(p, pc[2]);
+
+            if (i >= 2 && i < 6) {
+                c = gCharacters[i];
+            }
+            pc = PC(ev);
+#ifdef HG_NATIVE
+            if (c == NULL) {
+                break;
+            }
+#endif
+            switch (pc[1]) {
+            case 0:
+                VCALL(AT(c, 0xF0, VObject *), 0x2C, void (*)(VObject *))(AT(c, 0xF0, VObject *));
+                break;
+            case 1:
+                VCALL(AT(c, 0xF0, VObject *), 0x30, void (*)(VObject *))(AT(c, 0xF0, VObject *));
+                break;
+            case 2:
+                VCALL(AT(c, 0xF0, VObject *), 0x34, void (*)(VObject *, s32))(AT(c, 0xF0, VObject *), pc[3]);
+                break;
+            case 4:
+                func_002ED260(AT(c, 0xF0, void *), pc[3]);
+                break;
+            }
+        } else {
+            VCALL(D_0044FE10, 0x78, void (*)(VObject *, s32))(D_0044FE10, pc[2]);
+        }
+        break;
+    case 0xCD:
+        VCALL(D_0044E4F0, 0x60, void (*)(VObject *, s32))(D_0044E4F0, pc[1]);
+        break;
+    case 0xCE:
+        func_001FB5F0(ev);
+        break;
+    case 0xD1:
+        VCALL(D_0044E988, 0x2C, void (*)(VObject *, s32))(D_0044E988, (s8)pc[1]);
+        break;
+    case 0xD2:
+        VCALL(D_0044F260, 0x24, void (*)(VObject *))(D_0044F260);
+        break;
+    case 0xD4:
+        AT(ev, 0x704, s32) = be32(pc + 1);
+        break;
+    case 0xD5:
+        Progress_SetVar(p, pc[1], pc[2]);
+        break;
+    case 0xD6:
+        if (Progress_TestFlag(p, 8)) {
+            VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+        }
+        break;
+    case 0xD7:   /* Hewie's motion set be16 pc[1..2] */
+        func_002DDE20(AT(gCharPartner, 0xF0, void *), be16(pc + 1), -1);
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
