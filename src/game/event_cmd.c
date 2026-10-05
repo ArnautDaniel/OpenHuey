@@ -88,6 +88,9 @@ extern void func_002EF4D0(void *panic, s32 n);
 extern void func_001FB5F0(VObject *ev);
 extern void func_002DDE20(void *motion, s32 set, s32 variant);
 extern void func_002ED260(void *model, s32 n);
+extern u8 *D_0044F258;
+extern u8 *func_002083B0(u8 *e);
+extern void func_002B6340(void *movie);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -481,7 +484,8 @@ static u8 *script_by_id(VObject *ev, u32 id) {
     }
 }
 
-/* room effect slot `k` made anew from the effects' pool (+0x1400) with `ctor`/`arg` */
+/* room effect slot `k` made anew from the effects' pool (+0x1400): `which` 0 a func_00208F30
+ * (`arg`), 1 a func_00208F10, 2 a func_002083B0 */
 static void room_effect_slot(s32 k, s32 which, s32 arg) {
     u8 *fx = D_0044E4C0;
     u8 **slot = (u8 **)(fx + 0x1438) + k;
@@ -496,7 +500,7 @@ static void room_effect_slot(s32 k, s32 which, s32 arg) {
         u8 *e = func_002672F0(0xA0, mem);
 
         if (e != NULL) {
-            e = which ? func_00208F10(e) : func_00208F30(e, arg);
+            e = which == 2 ? func_002083B0(e) : which ? func_00208F10(e) : func_00208F30(e, arg);
         }
         *slot = e;
         VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
@@ -1428,6 +1432,143 @@ void func_002029B0(VObject *ev) {
         break;
     case 0xD7:   /* Hewie's motion set be16 pc[1..2] */
         func_002DDE20(AT(gCharPartner, 0xF0, void *), be16(pc + 1), -1);
+        break;
+    case 0x9B:   /* room effect 0x1E: pc[6] 0 gone, else made anew and set going (le32 pc[1..4], pc[5]) */
+        if (pc[6] == 0) {
+            func_002670F0(D_0044E4C0, 0x1E);
+        } else {
+            struct {
+                u32 a, b;
+            } arg __attribute__((aligned(16)));
+
+            room_effect_slot(0x1E, 2, 0);
+            pc = PC(ev);
+            arg.a = pc[1] | pc[2] << 8 | pc[3] << 16 | pc[4] << 24;
+            arg.b = PC(ev)[5];
+            func_00266C70(D_0044E4C0, 0x1E, &arg);
+        }
+        break;
+    case 0xA6: {   /* load the room's file pc[2] into character pc[1]'s model buffer */
+        u8 *buf;
+
+        switch ((u8)func_001770D0(p, pc[1])) {
+        case 0:
+            buf = (u8 *)p + 0x16C0;
+            break;
+        case 1:
+            buf = (u8 *)p + 0x416C0;
+            break;
+        case 2:
+            buf = (u8 *)p + 0x816C0;
+            break;
+        case 3:
+            buf = (u8 *)p + 0xC16C0;
+            break;
+        default:
+            buf = NULL;
+            break;
+        }
+        if (buf != NULL) {
+            VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+            const char *name = VCALL(room, 0x34, const char *(*)(VObject *, s32))(room, PC(ev)[2]);
+
+            if (name != NULL) {
+                VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
+                    gFileLoader, name, buf, 0x10000000, 0);
+            }
+        }
+        break;
+    }
+    case 0xC0: {   /* the progress' +0x7DC grows by pc[1] (0..100) */
+        f32 v = (f32)(u32)pc[1];
+
+        if (v < 0.0f) {
+            v = 0.0f;
+        }
+        if (!(v <= 100.0f)) {
+            v = 100.0f;
+        }
+        if (!(v < 0.0f)) {
+            AT(p, 0x7DC, f32) = AT(p, 0x7DC, f32) + v;
+        }
+        break;
+    }
+    case 0xCB: {   /* the placed things' groups (pc[1] 0 all, 1 0..6, 2 7..9) +0x10 and gone */
+        s32 i, n;
+        u8 *pl;
+
+        if (pc[1] == 0) {
+            i = 0;
+            n = 10;
+        } else if (pc[1] == 1) {
+            i = 0;
+            n = 7;
+        } else if (pc[1] == 2) {
+            i = 7;
+            n = 10;
+        } else {
+            break;
+        }
+        pl = D_0044F258;
+        for (; i < n; i++) {
+            VObject *o = ((VObject **)pl)[i];
+
+            if (o != NULL) {
+                VCALL(o, 0x10, void (*)(VObject *))(o);
+                VCALL_AT(pl, 0x28, 0x28, void (*)(u8 *, s32))(pl, i & 0xFF);
+            }
+        }
+        break;
+    }
+    case 0xCF: {   /* the movie's +0x1C8 = be32 pc[1..4] / 1000 (0..1); its func_002B6340, +0x1BC set */
+        u8 *mv = D_0044E958;
+
+        if (mv != NULL) {
+            f32 v = (f32)be32(pc + 1) / 1000.0f;
+
+            AT(mv, 0x1C8, f32) = v;
+            if (v < 0.0f) {
+                AT(mv, 0x1C8, f32) = 0.0f;
+            }
+            if (!(AT(mv, 0x1C8, f32) <= 1.0f)) {
+                AT(mv, 0x1C8, f32) = 1.0f;
+            }
+            mv = D_0044E958;
+            func_002B6340(mv);
+            AT(mv, 0x1BC, u8) = 1;
+        }
+        break;
+    }
+    case 0xD3:   /* the camera's +0x6C (be32 pc[1..4] / 1000) */
+        VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, (f32)be32(pc + 1) / 1000.0f);
+        break;
+    case 0xD8: {   /* by the progress' +0xFB6 count (from 20): if the item manager has 0x270..0x273, a sound */
+        s32 n = AT(p, 0xFB6, s16);
+        s32 id;
+
+        if (n < 0x14) {
+            break;
+        }
+        if (n < 0x28) {
+            id = 0x270;
+        } else if (n < 0x3C) {
+            id = 0x271;
+        } else if (n < 0x50) {
+            id = 0x272;
+        } else {
+            id = 0x273;
+        }
+        if (VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, id) != 0) {
+            VCALL(D_0044E560, 0x14, void (*)(VObject *, u32, u32))(D_0044E560, 0xC, 5);
+        }
+        break;
+    }
+    case 0xDA:   /* D_00456E00 +0x18 (pc[1] 1) / +0x1C with be16 pc[2..3], be32 pc[4..7] */
+        if (pc[1] == 1) {
+            VCALL(D_00456E00, 0x18, void (*)(VObject *, u32, s32))(D_00456E00, be16(pc + 2), be32(pc + 4));
+        } else {
+            VCALL(D_00456E00, 0x1C, void (*)(VObject *, u32, s32))(D_00456E00, be16(pc + 2), be32(pc + 4));
+        }
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
