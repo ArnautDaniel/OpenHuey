@@ -9016,6 +9016,206 @@ void func_00198C50(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2848);
 }
 
+extern u32 func_00177A20(Progress *p, u32 door, u32 slot);
+extern f32 D_0047E3A8;   /* the stick's vertical */
+extern const PTMF D_003B2868, D_003B2878, D_003B2888, D_003B2898, D_003B28A8;
+
+/* the ladder's foot (0) or top (1) end point (nav +0x5C) */
+static inline __attribute__((always_inline)) void ladder_end(Fiona *f, s32 top, f32 *out) {
+    VCALL((VObject *)D_0044E570, 0x5C, void (*)(VObject *, s32, s32, f32 *))((VObject *)D_0044E570, f->c.unk100, top, out);
+}
+
+/* D_003B2858: on the ladder (moves 0x700..0x709: 0x701 / 0x705 rungs down / up, 0x702 / 0x706
+ * their ends, 0x703 / 0x707 off at the bottom / top, 0x708 / 0x709 holding). Knocked (FI
+ * 0x1AD584 bit 2): she falls off (D_003B2868). When a move ends (its event 0x20, or holding) the
+ * stick (pad up / down plus the analog) picks the next: down - near the foot (18) off (0x703,
+ * D_003B2878) unless the pursuer is below (door bit 4: hold); up - near the top (3) off (0x707,
+ * D_003B2898 / from 0x700 D_003B28A8) - not while the pursuer is above her (door bit 2, within
+ * his height): then as if released; released - hold. After a new move her nav triangle is set
+ * at the end she's nearest. Moved by the root motion */
+void func_00198240(Fiona *f) {
+    s32 anim;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (!door_anim_done(f)) {
+        return;
+    }
+    if (FI(f, 0x1AD584, s32) & 2) {
+        func_00184BF0(f);
+        f->unk1AD580 = 0xA;
+        f->c.moveMode = 4;
+        f->c.a.unk2A = 1;
+        f->c.a.unk2D = 1;
+        f->c.moveSub = 8;
+        Actor_SetState(&f->c.a, &D_003B2868);
+        return;
+    }
+    anim = AT(f->c.motion, 0x55C, s32);
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0 || (u32)(anim - 0x708) < 2) {
+        f32 end[4] __attribute__((aligned(16)));
+        f32 stick, a;
+        u8 idle = 1, moved = 0;
+
+        stick = D_0047E3A8 + (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+        if (!(stick <= 0.0f)) {
+            a = stick;
+        } else {
+            a = -stick;
+        }
+        if (!(a <= 0.5f)) {
+            if (stick < 0.0f) {
+                /* down */
+                idle = 0;
+                switch (anim - 0x700) {
+                case 0: case 2: case 6: case 8:
+                    ladder_end(f, 0, end);
+                    if (end[1] - f->c.a.pos[1] < 18.0f) {
+                        u8 blocked = FI(f, 0x1AD5D7, u8) == 1 &&
+                                     ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4);
+
+                        if (blocked) {
+                            if (anim != 0x708) {
+                                moved = 1;
+                                func_002DDD20(f->c.motion, 0x708, -1);
+                            }
+                        } else {
+                            if (anim == 0x700 || anim == 0x702) {
+                                func_002DDE20(f->c.motion, 0x703, -1);
+                            } else {
+                                func_002DDD20(f->c.motion, 0x703, -1);
+                            }
+                            moved = 1;
+                            Actor_SetState(&f->c.a, &D_003B2878);
+                        }
+                    } else {
+                        if (anim == 0x700 || anim == 0x702) {
+                            func_002DDE20(f->c.motion, 0x701, -1);
+                        } else {
+                            func_002DDD20(f->c.motion, 0x701, -1);
+                        }
+                        moved = 1;
+                    }
+                    break;
+                case 1:
+                    moved = 1;
+                    func_002DDE20(f->c.motion, 0x702, -1);
+                    break;
+                case 4:
+                    if (FI(f, 0x1AD5D7, u8) == 1 &&
+                        ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4)) {
+                        func_002DDD20(f->c.motion, 0x708, -1);
+                    } else {
+                        func_002DDD20(f->c.motion, 0x703, -1);
+                        Actor_SetState(&f->c.a, &D_003B2888);
+                    }
+                    moved = 1;
+                    break;
+                case 5:
+                case 9:
+                    moved = 1;
+                    func_002DDD20(f->c.motion, 0x702, -1);
+                    break;
+                }
+            } else {
+                /* up */
+                idle = 0;
+                if (FI(f, 0x1AD5D7, u8) == 1 &&
+                    ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 2) &&
+                    f->c.a.pos[1] - gCharPursuer->a.pos[1] < AT(gCharPursuer, 0xCC, f32)) {
+                    idle = 1;
+                }
+                if (idle == 0) {
+                    switch (anim - 0x700) {
+                    case 0:
+                        moved = 1;
+                        func_002DDD20(f->c.motion, 0x707, -1);
+                        Actor_SetState(&f->c.a, &D_003B28A8);
+                        break;
+                    case 1:
+                    case 9:
+                        moved = 1;
+                        func_002DDD20(f->c.motion, 0x706, -1);
+                        break;
+                    case 2: case 4: case 6: case 8:
+                        ladder_end(f, 1, end);
+                        if (f->c.a.pos[1] - end[1] < 3.0f) {
+                            if (anim == 0x704 || anim == 0x706) {
+                                func_002DDE20(f->c.motion, 0x707, -1);
+                            } else {
+                                func_002DDD20(f->c.motion, 0x707, -1);
+                            }
+                            Actor_SetState(&f->c.a, &D_003B2898);
+                        } else if (anim == 0x704 || anim == 0x706) {
+                            func_002DDE20(f->c.motion, 0x705, -1);
+                        } else {
+                            func_002DDD20(f->c.motion, 0x705, -1);
+                        }
+                        moved = 1;
+                        break;
+                    case 5:
+                        moved = 1;
+                        func_002DDE20(f->c.motion, 0x706, -1);
+                        break;
+                    }
+                }
+            }
+        }
+        if (idle == 1) {
+            switch (anim - 0x700) {
+            case 0: case 2: case 4: case 6:
+                func_002DDD20(f->c.motion, 0x708, -1);
+                break;
+            case 1: case 5:
+                func_002DDD20(f->c.motion, 0x709, -1);
+                break;
+            }
+            moved = 1;
+        }
+        if (moved == 1) {
+            f32 v[4] __attribute__((aligned(16)));
+            f32 at[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};   /* (an out-parameter) */
+            s32 now = AT(f->c.motion, 0x55C, s32);
+
+            if (now == 0x703 || now == 0x704) {
+                v[0] = D_003B2478;
+                v[1] = 0.0f;
+                v[2] = D_003B247C;
+                v[3] = 0.0f;
+                f->c.a.navTri = func_00123710(f, f->c.unk100, 0, v, at);
+            } else {
+                v[0] = D_003B2460[3].x;
+                v[1] = 0.0f;
+                v[2] = D_003B2460[3].z;
+                v[3] = 0.0f;
+                f->c.a.navTri = func_00123710(f, f->c.unk100, 1, v, at);
+            }
+        }
+    }
+    {
+        f32 d[4] __attribute__((aligned(16)));
+
+        func_001F6370(f->c.motion, d, 0.0f);
+        func_00125900(&f->c);
+        sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
+        sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
+        f->c.a.pos[3] = 1.0f;
+    }
+}
+
+/* D_003B2808 / D_003B2828 / D_003B2838 (letting go of a pushed object): idle when blocked
+ * (knocked, or the pursuer has her) or at the animation's event 0x20 */
+void func_00198F00(Fiona *f) {
+    if (Fiona_PushBlocked(f)) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    func_00125A10(&f->c);
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        door_give_up(f, gProgress);
+    }
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
