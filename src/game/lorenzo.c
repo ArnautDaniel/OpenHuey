@@ -506,10 +506,14 @@ extern const PTMF D_00423A38;
 void func_0030B540(Pursuer *p);
 
 /* animation 0x1303 in state func_0030B540 */
-void func_0030B7C0(Pursuer *p) {
+static inline void Lorenzo2_SinkBehind(Pursuer *p) {
     func_00297B40(p, 0x1303, 0);
     Actor_SetState(&p->c.a, &D_00423A38);
     func_0030B540(p);
+}
+
+void func_0030B7C0(Pursuer *p) {
+    Lorenzo2_SinkBehind(p);
 }
 
 /* is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
@@ -592,26 +596,21 @@ static inline void Sink_Init(void **obj) {
 extern const PTMF D_00423A88;
 void func_0030A850(Pursuer *p);
 
-/* state: sinking away (animation 0x1304). At its end: out of contact (+0x29 / +0x2D), the sink
-   effect where he stood, moved to the exit of func_00177AB0 kind 9 if any, then (15 frames,
-   +0x1624) toward his target: a point along the path (func_00214890) or where he is when it's
-   out of reach; state D_00423A88 (func_0030A850) */
-void func_0030AB80(Pursuer *p) {
+/* state: sinking away (animation 0x1304). At its end (Lorenzo2_Sink) he heads under the floor
+   toward his target: a point along the path (func_00214890), or where he is when it's out of
+   reach; state D_00423A88 (func_0030A850) */
+/* the end of a sinking: out of contact (+0x29 / +0x2D), the sink effect where he stood, moved
+   to the exit of func_00177AB0 kind 9 if any, 15 frames underground (+0x1624); returns the
+   distance (func_00214B90) to his target's point `t` on the mesh */
+static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     struct {
         f32 pos[4];
         s32 kind;
     } sk __attribute__((aligned(16)));
-    f32 t[4] __attribute__((aligned(16)));
-    u8 *mgr;
+    u8 *mgr = D_0044E578;
     s32 slot;
     u32 k, tri;
-    f32 d;
 
-    func_00125A10(&p->c);
-    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
-        return;
-    }
-    mgr = D_0044E578;
     p->c.a.disabled = 1;
     p->c.a.unk2D = 1;
     slot = Effect_New(mgr, 0x700, Sink_Init);
@@ -625,7 +624,18 @@ void func_0030AB80(Pursuer *p) {
     PU(p, 0x1624, s32) = 15;
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    d = func_00214B90(p, tri, t);
+    return func_00214B90(p, tri, t);
+}
+
+void func_0030AB80(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    f32 d;
+
+    func_00125A10(&p->c);
+    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
+        return;
+    }
+    d = Lorenzo2_Sink(p, t);
     if (d < 0.0f) {
         sceVu0CopyVector(p->c.unk110, p->c.a.pos);
         p->c.unk104[0] = p->c.a.navTri;
@@ -860,4 +870,65 @@ void func_0030B240(Pursuer *p) {
     func_002D6090(mgr, slot, &sk);
     Actor_SetState(&p->c.a, &D_00423A58);
     Lorenzo2_PlayOut(p);
+}
+
+extern const PTMF D_00423A48;
+
+/* state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
+   the floor for a point 10 short of his target along the path, or where he is when it's nearer
+   than 20; state D_00423A48 (func_0030B240) */
+void func_0030B540(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    f32 d;
+
+    func_00125A10(&p->c);
+    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
+        return;
+    }
+    d = Lorenzo2_Sink(p, t);
+    if (d < 20.0f) {
+        sceVu0CopyVector(p->c.unk110, p->c.a.pos);
+        p->c.unk104[0] = p->c.a.navTri;
+    } else {
+        u32 out;
+
+        func_00214890(p, &out, p->c.unk110, d - 10.0f);
+        p->c.unk104[0] = out;
+    }
+    Actor_SetState(&p->c.a, &D_00423A48);
+    func_0030B240(p);
+}
+
+extern const PTMF D_00423A28;
+
+/* start of sinking to come up by his target: when it's 30 or more away by the mesh and there's
+   no exit for him (func_00177AB0 kind 9), finish the walk and sink (Lorenzo2_SinkBehind).
+   Otherwise: out of reach or when he may not go, action 0x17; else his grab (0x13, attack 1) */
+void func_0030B840(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    u32 tri;
+    f32 d;
+
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    d = func_001257B0(&p->c, tri, t, -1);
+    if (d < 30.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+        if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
+            p->c.unk104[0] = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        } else {
+            PU(p, 0x1728, s32) = 1;
+            PU(p, 0x172C, u8) = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x13);
+        }
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00423A28);
+    Lorenzo2_SinkBehind(p);
 }
