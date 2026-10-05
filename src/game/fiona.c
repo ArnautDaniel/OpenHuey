@@ -6950,6 +6950,111 @@ void func_0018A860(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2DB8);
 }
 
+extern const PTMF D_003B2DA8;   /* walking the scripted path */
+extern const PTMF D_003B2D98;   /* the animation run out, then done */
+
+/* the scripted animation (unk104[1], -1: walk / run by FI 0x1AD580) restarted whenever the
+ * current one has run out */
+static inline __attribute__((always_inline)) void script_anim_keep(Fiona *f, s32 run) {
+    if (door_anim_done(f)) {
+        s32 a = f->c.unk104[1];
+
+        if (a == -1) {
+            if (run) {
+                if (f->unk1AD580 == 0x14) {
+                    func_00185CF0(f);
+                } else {
+                    func_00185310(f);
+                }
+            }
+        } else if (AT(f->c.motion, 0x55C, s32) != a) {
+            func_002DDED0(f->c.motion, a, -1);
+        }
+    }
+}
+
+/* D_003B2DA8: walking the planned path, turning toward it (10 degrees a frame) and stepping by
+ * the root motion (less the sharper the turn); at its end the rest of the step taken, the
+ * command done and idle */
+void func_0018A950(Fiona *f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTenDeg = {0x3E32B8C3};
+    f32 root[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d, step, turn;
+    u32 tri;
+    s32 n;
+
+    script_anim_keep(f, 1);
+    d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
+    func_001F6370(f->c.motion, root, 0.0f);
+    func_001273D0(&f->c, &tri, at, 3.0f);
+    turn = func_00124530(&f->c.a, func_001244D0(&f->c.a, at), kTenDeg.f);
+    if (root[2] < 0.0f) {
+        step = 0.0f;
+    } else {
+        step = root[2] * ((kPi.f - turn) / kPi.f);
+    }
+    n = func_001273D0(&f->c, &tri, at, step);
+    f->c.a.navTri = tri;
+    sceVu0CopyVector(f->c.a.pos, at);
+    f->c.unk128 = n;
+    if (f->c.unk128 < f->c.unk124) {
+        return;
+    }
+    func_001F6370(f->c.motion, root, 0.0f);
+    if (d < root[2]) {
+        root[0] = 0.0f;
+        root[1] = 0.0f;
+        root[2] = root[2] - d;
+        sceVu0ApplyMatrix(root, (f32 (*)[4])((u8 *)f + 0x60), root);
+        func_001247E0(&f->c.a, root);
+    }
+    f->c.unkE1 = 1;
+    door_give_up(f, gProgress);
+}
+
+/* D_003B2708 (commands 6 / 11): a path to the scripted spot (unk110, tri unk104[0]) walked
+ * (D_003B2DA8); none: idle */
+void func_0018AC60(Fiona *f) {
+    s32 n;
+
+    VCALL(D_0044E570, 0xC, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.unk104[0], f->c.unk110);
+    n = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
+    if (n > 0) {
+        n = func_001270F0(&f->c);
+    }
+    if (n > 0) {
+        Actor_SetState(&f->c.a, &D_003B2DA8);
+        return;
+    }
+    door_give_up(f, gProgress);
+}
+
+/* D_003B2D78 / D_003B2D98: once the animation has run out the command is done - unless it was
+ * the default one and she is still moving, then she is stopped first */
+void func_0018AE20(Fiona *f) {
+    if (!door_anim_done(f)) {
+        return;
+    }
+    if (f->c.unk104[1] == -1 && Fiona_AnimGroup(AT(f->c.motion, 0x55C, s32)) != 0) {
+        func_001855F0(f, -1);
+        return;
+    }
+    f->c.unkE1 = 1;
+}
+
+/* D_003B2D88: turning to unk104[2] (20 degrees a frame) with the scripted animation; then the
+ * wait for it to run out (D_003B2D98) */
+void func_0018B0A0(Fiona *f) {
+    static const union { u32 u; f32 f; } kTwentyDeg = {0x3EB2B8C3};
+
+    script_anim_keep(f, 0);
+    if (func_00124530(&f->c.a, *(f32 *)&f->c.unk104[2], kTwentyDeg.f) == 0.0f) {
+        Actor_SetState(&f->c.a, &D_003B2D98);
+    }
+}
+
 extern s32 func_001270A0(Character *c);
 
 /* ---- moving between rooms out of sight (FI 0x1AD71C: 0xB following Hewie, 0xC staying,
