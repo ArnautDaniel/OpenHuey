@@ -139,3 +139,15 @@ int func_001AAE80(uint8_t *r) {
     (void)r;
     return 1;
 }
+
+/* renderer +0x40 (func_001BB780): send an RGBA image (w x h) to VRAM at word address `addr` in
+ * renderer layer `layer` (in 16-pixel columns). glr keeps it for showing (glr_vram_draw);
+ * 1: done */
+int func_001BB780(uint8_t *r, const void *src, uint32_t addr, int w, int h, int layer) {
+    (void)r;
+    glr_vram_upload(addr, src, w, h);
+    if (addr == 0x88000) {   /* into the frame itself (a movie's frame): shown in its layer */
+        glr_vram_blit(layer);
+    }
+    return 1;
+}

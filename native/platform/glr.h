@@ -99,6 +99,12 @@ void glr_shadow_cancel(void);
  * turns towards the tint's colour (above) */
 void glr_tint_layer(int layer, uint32_t tint);
 
+/* an image the game sends to VRAM at word address `addr` (renderer +0x40; RGBA, alpha 0x80 =
+ * 1; copied), and its being shown over the whole screen by its alpha in renderer layer `layer` */
+void glr_vram_upload(uint32_t addr, const void *rgba, int w, int h);
+void glr_vram_draw(uint32_t addr, int layer);
+void glr_vram_blit(int layer);   /* the last one sent straight into the screen (0x88000) */
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 

@@ -104,7 +104,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -343,6 +343,37 @@ void glr_shadow_fill(float x0, float y0, float x1, float y1, uint32_t rgba) {
     d->mvp[2] = x1;
     d->mvp[3] = y1;
     sShadowMark = -1;
+}
+
+/* images the game sent to VRAM (renderer +0x40) that it then shows whole: the last one */
+static uint32_t sImgAddr = 0xFFFFFFFF;
+static uint8_t *sImgPixels;
+static int sImgW, sImgH, sImgDirty;
+static GLuint sImgTex;
+
+void glr_vram_upload(uint32_t addr, const void *rgba, int w, int h) {
+    if (w <= 0 || h <= 0 || w > 1024 || h > 1024) {
+        return;
+    }
+    if (sImgPixels == NULL) {
+        sImgPixels = malloc(1024 * 1024 * 4);
+    }
+    memcpy(sImgPixels, rgba, (size_t)w * h * 4);
+    sImgAddr = addr;
+    sImgW = w;
+    sImgH = h;
+    sImgDirty = 1;
+}
+
+void glr_vram_draw(uint32_t addr, int layer) {
+    if (addr == sImgAddr) {
+        put_post(POST_IMAGE, layer, 0, 0);
+    }
+}
+
+/* an image sent straight into the frame (address 0x88000, the screen): it replaces it */
+void glr_vram_blit(int layer) {
+    put_post(POST_IMAGE, layer, 0, 1);
 }
 
 void glr_caustic_begin(void) {
@@ -666,6 +697,11 @@ static const char *kPostFs =
     "            c = vec4(d.rgb + floor((bg.rgb - d.rgb) * (128.0 - a) / 128.0), d.a);\n"
     "        }\n"
     "        oColor = clamp(c / 255.0, 0.0, 1.0);\n"
+    "        return;\n"
+    "    } else if (uMode == 26) {\n"   /* an uploaded image over the whole screen, by its alpha (0x80 = 1) */
+    "        vec2 t = gl_FragCoord.xy / (vec2(640.0, 448.0) * uS);\n"
+    "        vec4 c4 = texture(uTex, vec2(t.x, 1.0 - t.y));\n"
+    "        oColor = vec4(c4.rgb, clamp(c4.a * 255.0 / 128.0, 0.0, 1.0));\n"
     "        return;\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
@@ -1316,7 +1352,7 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl", "shadowbegin", "shadowfill"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl", "shadowbegin", "shadowfill", "image"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
@@ -1441,6 +1477,29 @@ static void run_post(const GlrDraw *d) {
         post(17, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[z], 0);
         break;
     }
+    case POST_IMAGE:   /* an uploaded image (glr_vram_draw) over the screen, by its alpha */
+        if (sImgDirty) {
+            if (sImgTex != 0) {
+                p_glDeleteTextures(1, &sImgTex);
+            }
+            p_glCreateTextures(GL_TEXTURE_2D, 1, &sImgTex);
+            p_glTextureStorage2D(sImgTex, 1, GL_RGBA8, sImgW, sImgH);
+            p_glTextureParameteri(sImgTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            p_glTextureParameteri(sImgTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            p_glTextureParameteri(sImgTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            p_glTextureParameteri(sImgTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            p_glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+            p_glTextureSubImage2D(sImgTex, 0, 0, 0, sImgW, sImgH, GL_RGBA, GL_UNSIGNED_BYTE, sImgPixels);
+            sImgDirty = 0;
+        }
+        if (sImgTex != 0) {
+            if (!(d->prim & 1)) {   /* shown by its alpha; else written as it is */
+                p_glEnable(GL_BLEND);
+                p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            post(26, sFbo, GLR_WIDTH, GLR_HEIGHT, sImgTex, 0);
+        }
+        break;
     case POST_SHADOW_BEGIN: {   /* the count back to 0x7F */
         static const GLint kStart = 0x7F;
 

@@ -98,9 +98,9 @@ void func_002F0940(GameOver *o, s16 *shot) {
         p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x10, 0x2C);
         if (p != NULL) {
 #ifdef HG_NATIVE
-            extern void glr_todo(const char *what);
+            extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
 
-            glr_todo("game over movie frame (func_002F0940)");
+            glr_vram_draw(0xC0000, 0x2C);   /* the frame just sent, over the screen by its alpha */
             p[0] = 0x1000000F;
             AT(p, 0x8, u32) = 0;
             AT(p, 0xC, u32) = 0x50000000;
