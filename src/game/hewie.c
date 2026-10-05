@@ -8299,3 +8299,64 @@ void func_001569C0(Hewie *h) {
         func_00141C00(h, 8);
     }
 }
+
+/* ---- dropping down ---- */
+
+extern const PTMF D_003B18C8;
+
+/* falling (+0xF36E0 a frame across, +0xF36C8 down from height +0xF36C4, faster by 0.5 a
+ * frame); in actions 0x1F / 0x20 with the fall animation done, the hanging pose by +0x104 (1:
+ * 0x2206, 2: 0x220F). Reaching the ground: landing animation (0x2212, or 0x2213 from a high
+ * drop, +0xF36B4: in the room being played, on a splashing floor (mesh flags 0x02008000) the
+ * splash sound and, in rooms 7 / 0x106, a print), behaviour D_003B18C8 */
+void func_00157480(Hewie *h) {
+    f32 y;
+
+    if (HW(h, 0xF36B4, s32) == 0 && ANIM_DONE(h)) {
+        s32 anim = MOTION_ANIM(h->c.motion);
+
+        if (HEWIE_ACTION(h) == 0x20 || HEWIE_ACTION(h) == 0x1F) {
+            switch (h->c.unk104[0]) {
+            case 1:
+                if (anim != 0x2206) {
+                    func_002DDE20(h->c.motion, 0x2206, -1);
+                }
+                break;
+            case 2:
+                /* (the original tests for 0x2211 but starts 0x220F) */
+                if (anim != 0x2211) {
+                    func_002DDE20(h->c.motion, 0x220F, -1);
+                }
+                break;
+            }
+        }
+    }
+    func_001247E0(&h->c.a, &HW(h, 0xF36E0, f32));
+    y = HW(h, 0xF36C4, f32) + HW(h, 0xF36C8, f32);
+    HW(h, 0xF3558, u8) = 1;
+    if (y < h->c.a.pos[1]) {
+        if (HW(h, 0xF36B4, s32) == 0) {
+            func_002DDED0(h->c.motion, 0x2212, -1);
+        } else {
+            Progress *p = gProgress;
+
+            func_002DDED0(h->c.motion, 0x2213, -1);
+            if ((u8)VCALL(p, 0x50, s32 (*)(Progress *))(p) == 1 &&
+                h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
+                /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+                (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x02008000) == 0x02008000) {
+                func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
+                if (h->c.a.room == 7 || h->c.a.room == 0x106) {
+                    func_00125E10(&h->c, h->c.a.pos, 1);
+                }
+            }
+        }
+        Hewie_SetBehaviour(h, &D_003B18C8);
+    } else {
+        h->c.a.pos[1] = y;
+        HW(h, 0xF36C4, f32) = y;
+        HW(h, 0xF36C8, f32) -= 0.5f;
+    }
+    HW(h, 0xF3582, u8) = 0;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
