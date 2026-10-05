@@ -821,8 +821,123 @@ void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     }
 }
 
-extern void func_001F5020(u8 *m, s32 slot);
 extern void func_001F4C10(u8 *m, u8 **motion, u8 **skel, s32 anim, s32 part);
+
+/* start animation `anim` on part channel `ch` (0x60 bytes at +0x6B0: its two slots of 0x1C at
+ * +0x1C, current +0x54 / previous +0x58, the animation +0x18), the old one blending out over
+ * `blend` frames; the slot's old motion and skeleton are freed first */
+void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
+    u8 *cur;
+
+    AT(ch, 0x8, f32) = blend;
+    AT(ch, 0xC, f32) = blend;
+    AT(ch, 0x10, f32) = 1.0f;
+    AT(ch, 0x4, s32) = AT(ch, 0x0, s32);
+    AT(ch, 0x0, s32) ^= 1;
+    AT(ch, 0x54, u8 *) = ch + 0x1C + AT(ch, 0x0, s32) * 0x1C;
+    AT(ch, 0x58, u8 *) = ch + 0x1C + AT(ch, 0x4, s32) * 0x1C;
+    AT(ch, 0x14, s32) = AT(ch, 0x18, s32);
+    AT(ch, 0x18, s32) = anim;
+    AT(AT(ch, 0x54, u8 *), 0xC, u32) = flags & 0xFFFF;
+    if (AT(AT(ch, 0x54, u8 *), 0xC, u32) & 8) {
+        AT(AT(ch, 0x54, u8 *), 0xC, u32) |= 0x10;
+        if (AT(ch, 0x58, u8 *) != NULL) {
+            AT(AT(ch, 0x58, u8 *), 0xC, u32) |= 0x10;
+        }
+    }
+    cur = AT(ch, 0x54, u8 *);
+    if (AT(cur, 0x10, void *) != NULL) {
+        func_00179BC0(D_004562B0, AT(cur, 0x10, void *));
+        AT(AT(ch, 0x54, u8 *), 0x10, void *) = NULL;
+    }
+    cur = AT(ch, 0x54, u8 *);
+    if (AT(cur, 0x14, u8 *) != NULL) {
+        func_0017CED0(D_004562A8, AT(cur, 0x14, u8 *));
+        AT(AT(ch, 0x54, u8 *), 0x14, u8 *) = NULL;
+    }
+    cur = AT(ch, 0x54, u8 *);
+    func_001F4C10(m, (u8 **)(cur + 0x10), (u8 **)(cur + 0x14), anim, part);
+    AT(AT(ch, 0x54, u8 *), 0x0, f32) = 0.0f;
+    AT(AT(ch, 0x54, u8 *), 0x8, f32) = 1.0f;
+    AT(AT(ch, 0x54, u8 *), 0x18, s32) = 0;
+}
+
+/* what an animation's entry covers: bit 0 its +0, bit 1 the body (+4), bits 2..4 the 3 parts */
+static inline u32 motion_covers(const u8 *e) {
+    u32 c = AT(e, 0x0, s32) != 0;
+
+    c |= AT(e, 0x4, s32) != 0 ? 2 : 0;
+    c |= AT(e, 0x8, s32) != 0 ? 4 : 0;
+    c |= AT(e, 0xC, s32) != 0 ? 8 : 0;
+    c |= AT(e, 0x10, s32) != 0 ? 0x10 : 0;
+    return c;
+}
+
+/* the parts' animations queued while their channel was blending (+0x504.., 0x14 each) are
+ * dropped: each part just keeps the queued one as its own (+0x4E4) */
+static inline void motion_drop_queued_parts(u8 *m) {
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        if (AT(m, 0x504 + k * 0x14, u8)) {
+            AT(m, 0x504 + k * 0x14, u8) = 0;
+            AT(m, 0x4E4 + k * 4, s32) = AT(m, 0x508 + k * 0x14, s32);
+        }
+    }
+}
+
+/* play animation `anim` when the model is free for it: one covering the whole body replaces the
+ * body's (unless already playing), or waits (+0x4F0..) while the body still blends; one covering
+ * only parts goes to each such part, waiting (+0x504..) while that part's channel blends - a part
+ * under a whole-body animation (playing or queued) just remembers it (+0x4E4) */
+void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+    u32 c = motion_covers(motion_entry(m, anim));
+    s32 k;
+
+    if (c == 0x1F || (c & 2) == 2) {
+        if (AT(m, 0x55C, s32) == anim && AT(m, 0x560, s32) == variant) {
+            return;
+        }
+        if (AT(m, 0x54C, f32) != 0.0f) {
+            AT(m, 0x4F0, u8) = 1;
+            AT(m, 0x4F4, s32) = anim;
+            AT(m, 0x4F8, s16) = flags;
+            AT(m, 0x4FC, f32) = blend;
+            AT(m, 0x500, s32) = variant;
+        } else {
+            func_001F7890(m, anim, flags, variant, blend);
+        }
+        if (c == 0x1F) {
+            motion_drop_queued_parts(m);
+        }
+        return;
+    }
+    for (k = 0; k < 3; k++) {
+        if (AT(motion_entry(m, anim), 0x8 + k * 4, s32) == 0) {
+            continue;
+        }
+        if (motion_covers(motion_entry(m, AT(m, 0x55C, s32))) == 0x1F
+            || (AT(m, 0x4F0, u8) && motion_covers(motion_entry(m, AT(m, 0x4F4, s32))) == 0x1F)) {
+            AT(m, 0x4E4 + k * 4, s32) = anim;
+            continue;
+        }
+        if (AT(m, 0x6C8 + k * 0x60, s32) == anim) {
+            continue;
+        }
+        if (AT(m, 0x6BC + k * 0x60, f32) == 0.0f) {
+            func_001F7890(m, anim, flags, variant, blend);
+            continue;
+        }
+        AT(m, 0x504 + k * 0x14, u8) = 1;
+        AT(m, 0x508 + k * 0x14, s32) = anim;
+        AT(m, 0x50C + k * 0x14, s16) = flags;
+        AT(m, 0x510 + k * 0x14, f32) = blend;
+        AT(m, 0x514 + k * 0x14, s32) = variant;
+        AT(m, 0x4E4 + k * 4, s32) = anim;
+    }
+}
+
+extern void func_001F5020(u8 *m, s32 slot);
 extern void func_001F6FD0(u8 *m, s32 anim, s32 variant);
 
 #define MOTION_SLOT(m, i) ((m) + 0x564 + (i) * 0xA0)
