@@ -4,6 +4,7 @@
 #include "game.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "navmesh.h"
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
 void func_0021C760(VObject *rooms, const s32 *saved) {
@@ -224,7 +225,6 @@ s32 func_0021BEB0(VObject *r, s32 room, s32 exit) {
  * and the room table (D_003D8BC0: per room 8 exits {3 triangles, camera area}, 0x40 bytes) ---- */
 
 extern VObject *D_0044E558;   /* the doors */
-extern VObject *D_0044E570;   /* the nav mesh */
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
 extern f32 func_002E2D00(f32 angle);
@@ -316,7 +316,7 @@ static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
     }
     t = ROOM_EXIT(VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), exit, which * 2);
     if (pos != NULL) {
-        VCALL(D_0044E570, 0xC, void (*)(VObject *, s32, f32 *))(D_0044E570, t, pos);
+        VCALL((VObject *)D_0044E570, 0xC, void (*)(VObject *, s32, f32 *))((VObject *)D_0044E570, t, pos);
     }
     return t;
 }
@@ -668,6 +668,183 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
 }
 
 
+/* ---- an obstacle (0xB0 bytes, in the obstacles' list below): it covers pairs of nav
+ * triangles (a "square"), +0x64 parts (up to 3, from +0x68, 0x18 each: the square's two
+ * triangles, then steps along x / z from the reference square and its size in squares x, z);
+ * +0x40 its centre (w +0x4C), +0x50 the model, +0x54 / +0x58 the reference square ---- */
+
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
+extern void func_0017EA30(u8 *o, const f32 *dir);
+s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir);
+
+/* a part: `dx` / `dz` squares from the reference square, `w` x `d` squares in size; -1 when
+ * full (3) */
+s32 func_0017E060(u8 *o, s32 dx, s32 dz, s32 w, s32 d) {
+    u8 *part;
+
+    if (AT(o, 0x64, s32) >= 3) {
+        return -1;
+    }
+    part = o + 0x68 + AT(o, 0x64, s32) * 0x18;
+    AT(part, 0x8, s32) = dx;
+    AT(part, 0xC, s32) = dz;
+    AT(part, 0x10, s32) = w;
+    AT(part, 0x14, s32) = d;
+    AT(o, 0x64, s32)++;
+    return 0;
+}
+
+/* each part's square: stepped from the reference square |dx| times along +-x, |dz| along +-z */
+void func_0017E0B0(u8 *o) {
+    s32 i, k, n;
+    u8 *part = o + 0x68;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        f32 sx[4] __attribute__((aligned(16)));
+        f32 sz[4] __attribute__((aligned(16)));
+        u32 a, b;
+
+        sx[0] = AT(part, 0x8, s32) >= 0 ? 1.0f : -1.0f;
+        sx[1] = 0.0f;
+        sx[2] = 0.0f;
+        sz[0] = 0.0f;
+        sz[1] = 0.0f;
+        sz[2] = AT(part, 0xC, s32) >= 0 ? 1.0f : -1.0f;
+        a = AT(o, 0x54, u32);
+        b = AT(o, 0x58, u32);
+        n = AT(part, 0x8, s32);
+        if (n <= 0) {
+            n = -n;
+        }
+        for (k = 0; k < n; k++) {
+            func_0017F660(o, &a, &b, sx);
+        }
+        n = AT(part, 0xC, s32);
+        if (n <= 0) {
+            n = -n;
+        }
+        for (k = 0; k < n; k++) {
+            func_0017F660(o, &a, &b, sz);
+        }
+        AT(part, 0x0, u32) = a;
+        AT(part, 0x4, u32) = b;
+    }
+}
+
+/* the centre of triangle pair (a, b) */
+static void square_centre(NavMesh *nm, u32 a, u32 b, f32 *out) {
+    static const union { u32 u; f32 f; } kSixth = {0x3E2AAAAD};   /* ~1/6 */
+    NavTri *t = NavMesh_Tri(nm, a);
+
+    sceVu0CopyVector(out, t->v[0]);
+    sceVu0AddVector(out, out, t->v[1]);
+    sceVu0AddVector(out, out, t->v[2]);
+    t = NavMesh_Tri(nm, b);
+    sceVu0AddVector(out, out, t->v[0]);
+    sceVu0AddVector(out, out, t->v[1]);
+    sceVu0AddVector(out, out, t->v[2]);
+    func_0010E640(out, out, kSixth.f);
+}
+
+/* move the square (*a, *b) one square along `dir`: from its centre 5 units along dir through
+ * the mesh until two new triangles are crossed; -1 (unchanged) at an edge of the mesh */
+s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
+    NavMesh *nm = D_0044E570;
+    u32 ta = *a, tb = *b, cur;
+    f32 from[4] __attribute__((aligned(16)));
+    f32 to[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 n = 0;
+
+#ifdef HG_NATIVE
+    if (NavMesh_Tri(nm, ta) == NULL || NavMesh_Tri(nm, tb) == NULL) {
+        return -1;
+    }
+#endif
+    square_centre(nm, ta, tb, from);
+    from[3] = 1.0f;
+    sceVu0Normalize(d, dir);
+    func_0010E640(d, d, 5.0f);
+    sceVu0AddVector(to, from, d);
+    if (VCALL(nm, 0x10, s32 (*)(NavMesh *, u32, f32 *))(nm, *a, from) == 3) {
+        cur = *a;
+    } else {
+        cur = *b;
+    }
+    for (;;) {
+        s32 e = VCALL(nm, 0x20, s32 (*)(NavMesh *, u32, f32 *, f32 *))(nm, cur, from, to);
+
+        if (e == 3 || e == 4) {
+            return -1;
+        }
+#ifdef HG_NATIVE
+        if (NavMesh_Tri(nm, cur) == NULL) {
+            return -1;
+        }
+#endif
+        cur = NavMesh_Tri(nm, cur)->adj[e];
+        if (cur == NAV_NONE) {
+            return -1;
+        }
+        if (cur != ta && cur != tb) {
+            tb = ta;
+            ta = cur;
+            if (++n == 2) {
+                *a = ta;
+                *b = tb;
+                return 0;
+            }
+        }
+    }
+}
+
+/* block the triangles under each part (flags |= 0x20400000), the square first stepped twice
+ * along `dir` (if any) */
+void func_0017F430(u8 *o, const f32 *dir) {
+    NavMesh *nm = D_0044E570;
+    u8 *part = o + 0x68;
+    s32 i, x, z;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        f32 sx[4] __attribute__((aligned(16)));
+        f32 sz[4] __attribute__((aligned(16)));
+        u32 a, b;
+
+        sx[1] = 0.0f;
+        sx[0] = 1.0f;
+        sz[2] = 1.0f;
+        sz[0] = 0.0f;
+        sx[2] = 0.0f;
+        sz[1] = 0.0f;
+        a = AT(part, 0x0, u32);
+        b = AT(part, 0x4, u32);
+        if (dir != NULL) {
+            func_0017F660(o, &a, &b, dir);
+            func_0017F660(o, &a, &b, dir);
+        }
+        for (z = 0; z < AT(part, 0x14, s32); z++) {
+            for (x = 0; x < AT(part, 0x10, s32); x++) {
+                NavMesh_Tri(nm, a)->flags |= 0x20400000;
+                NavMesh_Tri(nm, b)->flags |= 0x20400000;
+                func_0017F660(o, &a, &b, sx);
+            }
+            func_0017F660(o, &a, &b, sz);
+        }
+    }
+}
+
+/* placed: the centre of the reference square, then the parts' squares, blocked (no move) and
+ * settled (func_0017EA30) */
+void func_0017F8F0(u8 *o) {
+    NavMesh *nm = D_0044E570;
+
+    square_centre(nm, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
+    AT(o, 0x4C, f32) = 1.0f;
+    func_0017E0B0(o);
+    func_0017F430(o, NULL);
+    func_0017EA30(o, NULL);
+}
+
 /* ---- the obstacles (D_0044FE08, room manager +0x9380, vtable D_0046C320): 5 things in the
  * room that can be pushed about (+0x10, 0xB0 each; the room object "oshi0n" is each one's
  * model, +0x50), their moves (OBSTACLE.MTN at +0x380: count, then offsets), the 5 saved
@@ -678,13 +855,9 @@ extern VObject *D_0044FE08;
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
-extern void func_0017E060(u8 *o, s32 a, s32 b, s32 c, s32 d);
-extern void func_0017F8F0(u8 *o);
 extern s32 func_0017DD60(u8 *o, s32 a, s32 b);
-extern void func_0017EA30(u8 *o, s32 a);
-extern void func_0017F430(u8 *o, s32 a);
-extern void func_0017F1F0(u8 *o, s32 a);
-extern void func_0017E260(u8 *o, s32 a);
+extern void func_0017F1F0(u8 *o, const f32 *dir);
+extern void func_0017E260(u8 *o, const f32 *dir);
 extern void func_0017D290(u8 *o, s32 a);
 extern s32 func_0017D300(u8 *o, s32 a);
 extern void func_0017D370(u8 *o);
@@ -787,7 +960,7 @@ void func_0021ACD0(u8 *l, s32 i, u32 n, s32 kind) {
 
 /* +0x18 / +0x1C obstacle i pushed (func_0017F430 + func_0017EA30) / pulled (func_0017F1F0 +
  * func_0017E260) by `a`; -1 for none */
-s32 func_0021AB30(u8 *l, s32 i, s32 a) {
+s32 func_0021AB30(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
@@ -798,7 +971,7 @@ s32 func_0021AB30(u8 *l, s32 i, s32 a) {
     return 0;
 }
 
-s32 func_0021AAA0(u8 *l, s32 i, s32 a) {
+s32 func_0021AAA0(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
@@ -810,12 +983,12 @@ s32 func_0021AAA0(u8 *l, s32 i, s32 a) {
 }
 
 /* +0x20 the other active obstacles settle (func_0017EA30(0)); obstacle i pushed by `a` */
-void func_0021A9D0(u8 *l, s32 i, s32 a) {
+void func_0021A9D0(u8 *l, s32 i, const f32 *a) {
     s32 k;
 
     for (k = 0; k < 5; k++) {
         if (AT(OBST(l, k), 0x0, u8) == 1 && k != i) {
-            func_0017EA30(OBST(l, k), 0);
+            func_0017EA30(OBST(l, k), NULL);
         }
     }
     if (AT(OBST(l, i), 0x0, u8) == 1) {
