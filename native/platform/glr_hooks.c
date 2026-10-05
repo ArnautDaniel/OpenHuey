@@ -64,12 +64,13 @@ int func_0034E9E0(uint8_t *d) {
     return 0;
 }
 
-/* func_0021C840: the screen overlay's frame-buffer pass (overlay, strength, offset): copies the
- * frame through strips shifted by `offset` and tinted by `strength` (a heat-haze / blur).
- * Will be a full-screen shader pass. */
+/* func_0021C840: the vignette, every gameplay frame (strength 50, offset 0). The original
+ * draws four gouraud triangles - white at alpha `strength` in each screen corner, clear at the
+ * middles of its edges (moved by `offset`) - into a work buffer, copies the screen's colours
+ * in under that alpha, and takes colour x alpha back off the screen (ALPHA (0 - Cs) * As + Cd)
+ * in layer 0x2A. (Its 16-bit channel shuffle in between only touches alpha bits 6-7, which
+ * stay 0 below strength 64.) glr does it as one pass. */
 void func_0021C840(void *ov, int strength, int offset) {
     (void)ov;
-    (void)strength;
-    (void)offset;
-    glr_todo("frame-buffer distortion (func_0021C840)");
+    glr_vignette(strength, offset);
 }

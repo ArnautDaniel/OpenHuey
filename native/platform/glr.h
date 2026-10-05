@@ -52,6 +52,10 @@ void glr_bloom(uint32_t rgba, int subtract);
  * `contrast` the screen pushed away from it (D + (D - it)) */
 void glr_screen2(uint32_t rgba, int contrast, int blur);
 
+/* func_0021C840 this frame (renderer layer 0x2A): the screen's corners darkened, by up to
+ * strength / 128, fading to nothing at the middles of the edges (moved by `offset` pixels) */
+void glr_vignette(int strength, int offset);
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 

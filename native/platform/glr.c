@@ -91,7 +91,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -237,6 +237,10 @@ void glr_bloom(uint32_t rgba, int subtract) {
     put_post(POST_BLOOM, sLayer, rgba, subtract != 0);
 }
 
+void glr_vignette(int strength, int offset) {
+    put_post(POST_VIGNETTE, 0x2A, (uint32_t)strength, (uint32_t)offset);   /* its packet's layer */
+}
+
 void glr_screen2(uint32_t rgba, int contrast, int blur) {
     put_post(POST_SCREEN2, sLayer, rgba, (contrast != 0) | (blur != 0) << 1);
 }
@@ -352,7 +356,11 @@ static const char *kQuadFs =
  *   9  the screen (a copy) D + ((D - (H2 * colour >> 7)) * fix >> 7), H2 stretched as in 6
  *      (mode 6 does its other way, added)
  * The fog (func_002BB3E0; the game maps its Z buffer through a colour ramp):
- *   10 the fog colour and alpha at each pixel's view depth, blended over it */
+ *   10 the fog colour and alpha at each pixel's view depth, blended over it
+ * The vignette (func_0021C840), uFix its strength, uRange.x its offset:
+ *   11 the screen (a copy) D + (-D * a >> 7), a = strength x the corner's weight in one of
+ *      four gouraud triangles, each from a screen corner to the middles of its two edges
+ *      (moved by the offset) */
 static const char *kPostFs =
     "#version 460 core\n"
     "uniform sampler2D uTex;\n"
@@ -367,6 +375,12 @@ static const char *kPostFs =
     "    ivec2 sz = textureSize(t, 0);\n"
     "    if (p.x < 0 || p.y < 0 || p.x >= sz.x || p.y >= sz.y) return vec4(0.0);\n"
     "    return round(texelFetch(t, p, 0) * 255.0);\n"
+    "}\n"
+    "float corner(vec2 q, vec2 c, vec2 a, vec2 b) {\n"   /* c's barycentric weight; 0 outside */
+    "    float det = (a.y - b.y) * (c.x - b.x) + (b.x - a.x) * (c.y - b.y);\n"
+    "    float wc = ((a.y - b.y) * (q.x - b.x) + (b.x - a.x) * (q.y - b.y)) / det;\n"
+    "    float wa = ((b.y - c.y) * (q.x - b.x) + (c.x - b.x) * (q.y - b.y)) / det;\n"
+    "    return wc >= 0.0 && wa >= 0.0 && wc + wa <= 1.0 ? wc : 0.0;\n"
     "}\n"
     "void main() {\n"
     "    ivec2 p = ivec2(gl_FragCoord.xy);\n"
@@ -402,6 +416,15 @@ static const char *kPostFs =
     "        vec4 fc = mix(uColor, uColor2, clamp((d - uRange.x) / (uRange.y - uRange.x), 0.0, 1.0));\n"
     "        oColor = vec4(fc.rgb / 255.0, clamp(fc.a / 128.0, 0.0, 1.0));\n"
     "        return;\n"
+    "    } else if (uMode == 11) {\n"
+    "        vec2 q = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 - gl_FragCoord.y);\n"   /* the game's pixels */
+    "        float o = uRange.x, w = 0.0;\n"
+    "        w = max(w, corner(q, vec2(0.0, 0.0), vec2(256.0 + o, 0.0), vec2(0.0, 224.0 - o)));\n"
+    "        w = max(w, corner(q, vec2(512.0, 0.0), vec2(256.0 + o, 0.0), vec2(512.0, 224.0 + o)));\n"
+    "        w = max(w, corner(q, vec2(0.0, 448.0), vec2(256.0 - o, 448.0), vec2(0.0, 224.0 - o)));\n"
+    "        w = max(w, corner(q, vec2(512.0, 448.0), vec2(256.0 - o, 448.0), vec2(512.0, 224.0 + o)));\n"
+    "        vec4 d = at(uTex, p);\n"
+    "        c = d + floor(-d * floor(uFix * w) / 128.0);\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -780,6 +803,13 @@ static void run_post(const GlrDraw *d) {
     p_glUseProgram(sPostProg);
     p_glBindVertexArray(sQuadVao);
     switch (d->post) {
+    case POST_VIGNETTE:
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)(int32_t)rgba);
+        p_glProgramUniform2f(sPostProg, sPostRangeLoc, (float)(int32_t)d->prim, 0.0f);
+        post(11, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
     case POST_FOG: {   /* func_002BB3E0: (fog - screen) * fog alpha + screen, by view depth */
         uint32_t c1 = (uint32_t)(d->tex0 >> 32);
 
