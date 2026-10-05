@@ -1027,7 +1027,7 @@ s32 func_0017D300(u8 *o, u32 t) {
 }
 
 /* a move done: the target square becomes the reference, the parts and centre follow */
-void func_0017D370(u8 *o) {
+static inline __attribute__((always_inline)) void obstacle_moved(u8 *o) {
     if (AT(o, 0x5C, u32) == NAV_NONE) {
         return;
     }
@@ -1039,6 +1039,39 @@ void func_0017D370(u8 *o) {
     square_centre(D_0044E570, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
     AT(o, 0x4C, f32) = 1.0f;
     AT(o, 0x10, s32) = AT(o, 0x14, s32);
+}
+
+void func_0017D370(u8 *o) {
+    obstacle_moved(o);
+}
+
+extern VObject *D_0044E560;   /* the sound driver */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
+
+/* a frame of a move: at step 6 its scraping sound and a noise (0x1F) at its square; each step
+ * moves the centre by the direction (+0x20) times the move's step (+0x30 table); at the last
+ * step the move is done */
+void func_0017FA60(u8 *o) {
+    if (AT(o, 0x10, s32) == AT(o, 0x14, s32)) {
+        return;
+    }
+    if (AT(o, 0x10, s32) == 6) {
+        Progress *p;
+
+        func_002FF650(D_0044E560, 0, 6, (f32 *)(o + 0x40), 0, 0);
+        p = gProgress;
+        func_002A8440((u8 *)p + 0x778, 0x1F, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(o, 0x54, s32), 0xFFFF);
+    }
+    AT(o, 0x10, s32)++;
+    if (AT(o, 0x10, s32) == AT(o, 0x14, s32)) {
+        obstacle_moved(o);
+    } else {
+        f32 v[4] __attribute__((aligned(16)));
+
+        func_0010E640(v, (f32 *)(o + 0x20), AT(o, 0x30, f32 *)[AT(o, 0x10, s32) - 1]);
+        sceVu0AddVector((f32 *)(o + 0x40), (f32 *)(o + 0x40), v);
+    }
 }
 
 /* placed: the centre of the reference square, then the parts' squares, blocked (no move) and
