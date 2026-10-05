@@ -732,6 +732,21 @@ typedef struct {
     f32 pos[3];
 } DebrisParams;
 
+/* a debris cloud where a blow hits the floor */
+static void Riccardo_Debris(const f32 *at) {
+    u8 *mgr = D_0044E578;
+    s32 slot = Effect_New(mgr, 0xF70, Debris_Init);
+    DebrisParams dp;
+
+    dp.rgb[0] = 0x80;
+    dp.rgb[1] = 0x50;
+    dp.rgb[2] = 0x40;
+    dp.pos[0] = at[0];
+    dp.pos[1] = at[1];
+    dp.pos[2] = at[2];
+    func_002D6090(mgr, slot, &dp);
+}
+
 /* at the impact key of his animation (0x20): a jolt (the 0x80 effect, kind 2) and a noise of
    0x40 where he stands (gProgress+0x798); a debris cloud where his slam or swing hits the floor
    (func_002DBA90), or for his grab 0x1A01 a hit effect on Fiona */
@@ -750,24 +765,106 @@ void func_002DBD70(Pursuer *p) {
     case 0x2301:
     case 0x1602: {
         f32 at[4] __attribute__((aligned(16)));
-        DebrisParams dp;
-        s32 slot;
 
-        if (!(func_002DBA90(p, at) & 0xFF)) {
-            break;
+        if (func_002DBA90(p, at) & 0xFF) {
+            Riccardo_Debris(at);
         }
-        slot = Effect_New(mgr, 0xF70, Debris_Init);
-        dp.rgb[0] = 0x80;
-        dp.rgb[1] = 0x50;
-        dp.rgb[2] = 0x40;
-        dp.pos[0] = at[0];
-        dp.pos[1] = at[1];
-        dp.pos[2] = at[2];
-        func_002D6090(mgr, slot, &dp);
         break;
     }
     case 0x1A01:
         func_002D7E20(p, gCharPlayer);
         break;
     }
+}
+
+extern f32 func_00211910(const f32 *from, const f32 *to, const f32 *pt);   /* pt's distance from the line */
+extern const PTMF D_00415748;
+
+/* state: his blow at Hewie. At the hit key, if he may go for him, hears him within 30, and Hewie
+   is in front within 30 degrees: unless Fiona stands in the way (within 4 of the line to Hewie,
+   and no further), it's Hewie's blow (func_002D8840: on a hit func_00178070 kind 2 with the entry,
+   else debris where it lands); in her way it's hers (6: the heavy entry 8 with its stun and
+   debris, 4: a stun three times in four, 3; none: debris only). Until the hit he turns to
+   Hewie; at the animation's end, on (func_002D8AC0); now and then a grunt (sound 0x15) */
+void func_002D8DF0(Pursuer *p) {
+    f32 fiona[4] __attribute__((aligned(16)));
+    f32 hewie[4] __attribute__((aligned(16)));
+
+    sceVu0CopyVector(fiona, gCharPlayer->a.pos);
+    sceVu0CopyVector(hewie, gCharPartner->a.pos);
+    if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
+        f32 a;
+
+        if (func_00283870(p) == 0 || PU(p, 0x1545, u8) != 1 ||
+            (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) != 1) {
+            goto done;
+        }
+        if (!(func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]);
+        } else {
+            a = -func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]);
+        }
+        if (!(a < 0x1.0c1524p-1f /* 30 degrees */) || !(PU(p, 0x158C, f32) < 30.0f)) {
+            goto done;
+        }
+        {
+            u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
+            f32 at[4] __attribute__((aligned(16)));
+            u32 k;
+
+            if (!(func_00211910(p->c.a.pos, hewie, fiona) <= 4.0f) ||
+                func_00124490(&p->c.a, hewie) < func_00124490(&p->c.a, fiona)) {
+                /* Hewie */
+                if ((func_002D8840(p, gCharPartner) & 0xFF) != 0xFF) {
+                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
+                } else if (func_002DBA90(p, at) & 0xFF) {
+                    Riccardo_Debris(at);
+                }
+            } else {
+                /* Fiona in the way */
+                s32 stun = 0;
+
+                k = func_002D8840(p, gCharPlayer) & 0xFF;
+                switch (k) {
+                case 6:
+                    p->c.unk104[0] = 8;
+                    e = PU(p, 0x171C, u8 *) + 0x120;
+                    stun = AT(e, 0x4, s16);
+                    /* fallthrough */
+                case 0xFF:
+                    if (func_002DBA90(p, at) & 0xFF) {
+                        Riccardo_Debris(at);
+                    }
+                    break;
+                case 4:
+                    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 75.0f) {
+                        stun = -0x8000;
+                    }
+                    break;
+                }
+                if (k != 0xFF) {
+                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+                }
+            }
+        }
+    done:
+        p->c.unk100 = 0;
+    }
+    if (p->c.unk100 == -1) {
+        Character *t = gCharPartner != NULL ? gCharPartner : p->target;
+        f32 h = func_001244D0(&p->c.a, t->a.pos);
+
+        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PU(p, 0x178C, s32) = 0;
+        p->c.unk100 = 0;
+        Actor_SetState(&p->c.a, &D_00415748);
+        func_002D8AC0(p);
+    }
+    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
+        100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 50.0f) {
+        func_0029D410(p, 0x15, 7, 0, 0, NULL);
+    }
+    func_00125A10(&p->c);
 }
