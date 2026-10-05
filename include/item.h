@@ -54,6 +54,20 @@ static inline s32 item_door_open(Progress *p, u32 door) {
     return func_00177BF0(p, door, 0) & 0xFF & 4;
 }
 
+extern u32 func_00178610(Progress *p, u32 route);
+
+/* door `door` open and route `route` taken */
+static inline s32 item_door_route(Progress *p, u32 door, u32 route) {
+    return item_door_open(p, door) && func_00178610(p, route) != 0;
+}
+
+/* Fiona's event `ev`, then flag 0x18; 4 */
+static inline s32 item_event_flag(Progress *p, s32 ev) {
+    item_event(D_0044E4D0, 0, ev, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
 /* gCharPlayer +0x1AD5F4: f32 clamped to 0..100; +0x1AD5F8: s32 clamped to 0..1800 */
 static inline void item_composure(f32 df) {
     u8 *g = gCharPlayer;

@@ -1032,8 +1032,6 @@ s32 func_002EEC00(void *o) {
     return use_sound_only(1, 0x232);
 }
 
-extern u32 func_00178610(Progress *p, u32 route);
-
 /* at spot 0x11 of room 0xF once route 8 is open (func_00178610): event 0x16; else on the altar */
 static s32 use_route8_or_offer(void *o) {
     Progress *p = gProgress;
@@ -1087,4 +1085,44 @@ s32 func_00351390(void *o) {
 /* D_00478DC0 */
 s32 func_00351550(void *o) {
     return use_room_c7();
+}
+
+/* D_00478EB0: at room 0x82's open door 0 with route 0xE2: event 2; at room 0x8C's with route
+   0xE6: event 8 */
+s32 func_00351920(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x82) {
+        return item_door_route(p, 0, 0xE2) ? item_event_flag(p, 2) : 0;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x8C && item_door_route(p, 0, 0xE6)) {
+        return item_event_flag(p, 8);
+    }
+    return 0;
+}
+
+/* D_00478FA0: at spot 5 of room 0: event 0xF; else on the altar */
+s32 func_00351D80(void *o) {
+    Progress *p = gProgress;
+
+    if (item_room_spot(p, 0, 5)) {
+        return item_event_flag(p, 0xF);
+    }
+    return item_offer(p, o);
+}
+
+/* D_00472F80: in room 0x4B, at open door 2 with route 0x51: event 1; door 3 with route 0x52:
+   event 3; else on the altar */
+s32 func_0031CB40(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x4B) {
+        if (item_door_route(p, 2, 0x51)) {
+            return item_event_flag(p, 1);
+        }
+        if (item_door_route(p, 3, 0x52)) {
+            return item_event_flag(p, 3);
+        }
+    }
+    return item_offer(p, o);
 }
