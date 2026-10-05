@@ -1668,3 +1668,94 @@ s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_0047AAB8[], *D_00409940;   /* room object names */
+
+/* two wheels (D_0047AAB8) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees a step
+ * (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn */
+s32 func_002AE1B0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    VObject *objs = D_00456DF8, *snd = D_0044E560;
+    f32 at[4] __attribute__((aligned(16)));
+    s32 i;
+
+    at[0] = -366.0f;
+    at[1] = 30.0f;
+    at[2] = -25.0f;
+    for (i = 0; i < 2; i++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0047AAB8[i]);
+
+        if (o == NULL) {
+            continue;
+        }
+        switch (cmd[3]) {
+        case 0:
+            AT(o, 0x30, f32) = 0.0f;
+            AT(o, 0x18, f32) = 0.0f;
+            if (i == 0) {
+                func_002FF650(snd, 0, 6, at, 0, 0);
+            }
+            break;
+        case 1:
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) + 6.0f;
+            if (!(AT(o, 0x30, f32) < 360.0f)) {
+                if (i == 0) {
+                    func_002FF650(snd, 0, 6, at, 0, 0);
+                }
+                AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
+            }
+            AT(o, 0x18, f32) = kPi.f * (4.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+            break;
+        }
+    }
+    return 1;
+}
+
+/* the room object D_00409940's animation by event var 0 (12..): byte 3 0 forward (+0x74) to
+ * frame (var - 12) / 18, 1 back (+0x78) to (var - 12) / 16, 2 / 3 back at 0 / 1; +0x7C kept 0..1 */
+s32 func_002B31A0(void *self, void *a1, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00409940);
+    u32 v;
+
+    if (o == NULL) {
+        return 1;
+    }
+    v = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    switch (cmd[3]) {
+    case 0:
+        if (v < 0xC) {
+            v = 0xC;
+        }
+        if (v >= 0x1F) {
+            v = 0x1E;
+        }
+        AT(o, 0x74, s32) = 1;
+        AT(o, 0x78, s32) = 0;
+        AT(o, 0x7C, f32) = (f32)(v - 0xC) / 18.0f;
+        break;
+    case 1:
+        if (v < 0xC) {
+            v = 0xC;
+        }
+        if (v >= 0x1D) {
+            v = 0x1C;
+        }
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(v - 0xC) / 16.0f;
+        break;
+    case 2:
+    case 3:
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(cmd[3] - 2);
+        break;
+    }
+    if (!(AT(o, 0x7C, f32) <= 1.0f)) {
+        AT(o, 0x7C, f32) = 1.0f;
+    }
+    if (AT(o, 0x7C, f32) < 0.0f) {
+        AT(o, 0x7C, f32) = 0.0f;
+    }
+    return 1;
+}
