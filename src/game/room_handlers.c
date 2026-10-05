@@ -1577,3 +1577,94 @@ s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
     Effect_New(D_0044E578, 0x1C60, smoke_init);
     return 1;
 }
+
+extern void *D_00476BD0[];
+extern const char *D_003FF110[], *D_0040AC10[];   /* room object names */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+
+static inline void effect476bd0_init(void **o) {
+    o[0] = D_00476BD0;
+    o[0x3040 / 4] = D_00469D00;
+    ((s32 *)o)[0x3044 / 4] = -1;
+    o[0x3040 / 4] = D_0046FC30;
+    o[0x3078 / 4] = D_00469D00;
+    ((s32 *)o)[0x307C / 4] = -1;
+    o[0x3078 / 4] = D_0046FC30;
+}
+
+/* byte 3 0: a D_00476BD0 effect (0x36C0 bytes) spawned, its slot kept in event var 0; else that
+ * slot's effect removed */
+s32 func_002B4310(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0x36C0, effect476bd0_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+    } else {
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+    }
+    return 1;
+}
+
+/* a pendulum (room object D_003FF110[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
+ * degrees (a tick sound at (-85, 30, 90) each turn), swinging 15 degrees (+0x14) */
+s32 func_002AED60(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    u32 mode = cmd[4];
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FF110[cmd[3]]);
+
+    if (mode == 0) {
+        AT(o, 0x30, f32) = 0.0f;
+    } else if (mode == 1) {
+        AT(o, 0x30, f32) = AT(o, 0x30, f32) + 2.0f;
+        if (!(AT(o, 0x30, f32) < 360.0f)) {
+            f32 at[4] __attribute__((aligned(16)));
+
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
+            at[0] = -85.0f;
+            at[1] = 30.0f;
+            at[2] = 90.0f;
+            func_002FF650(D_0044E560, 0x40000001, 6, at, 0, 0);
+        }
+        AT(o, 0x14, f32) = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+        if (!(AT(o, 0x14, f32) <= kPi.f)) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - kTwoPi.f;
+        }
+    }
+    return 1;
+}
+
+/* four room objects (D_0040AC10) pressed in (+0x24 down 0.2 to -0.7, a sound as each starts) while
+ * event flag i is set, else back up 0.2 to 0; byte 3 0 all reset */
+s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD}, kLow = {0xBF333333};
+    VObject *objs = D_00456DF8, *ev = D_0044E4D0, *snd = D_0044E560;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040AC10[i]);
+
+        if (o == NULL) {
+            continue;
+        }
+        if (cmd[3] == 0) {
+            AT(o, 0x24, f32) = 0.0f;
+        } else if (VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, i & 0xFF) != 0) {
+            if (AT(o, 0x24, f32) == 0.0f) {
+                f32 at[4] __attribute__((aligned(16)));
+
+                sceVu0CopyVector(at, (f32 *)(o + 0x20));
+                func_002FF650(snd, 6, 6, at, 0, 0);
+            }
+            AT(o, 0x24, f32) = AT(o, 0x24, f32) - kStep.f;
+            if (AT(o, 0x24, f32) < kLow.f) {
+                AT(o, 0x24, f32) = kLow.f;
+            }
+        } else {
+            AT(o, 0x24, f32) = AT(o, 0x24, f32) + kStep.f;
+            if (!(AT(o, 0x24, f32) <= 0.0f)) {
+                AT(o, 0x24, f32) = 0.0f;
+            }
+        }
+    }
+    return 1;
+}
