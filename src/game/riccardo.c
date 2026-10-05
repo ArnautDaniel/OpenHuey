@@ -868,3 +868,154 @@ void func_002D8DF0(Pursuer *p) {
     }
     func_00125A10(&p->c);
 }
+
+extern const PTMF D_00415738;
+
+/* is `pt` clear of the swing at `at` (not within 4 of the line to it, or no nearer than it) */
+static inline s32 Riccardo_OutOfLine(Pursuer *p, const f32 *at, const f32 *pt) {
+    return !(func_00211910(p->c.a.pos, at, pt) <= 4.0f) || func_00124490(&p->c.a, at) < func_00124490(&p->c.a, pt);
+}
+
+/* state: his blow at Fiona. At the hit key he aims (+0x100 bits) if he may go for her, sees her
+   in front within 30 degrees: 4 at her, 1 at a room object within 50 of her (D_0044E4D0 vtable
+   +0x68) further than 20 from him, 2 at Hewie likewise. At the key the object takes the blow
+   (its point to +0x1770) unless she or Hewie is in the way; Hewie takes it if he's in the way
+   (func_002D8840: a hit of kind 2, else debris); then her: if she's lower than his waist the
+   hammer passes over (debris), else func_002D8840 picks the hit (6: the heavy entry with its stun
+   and debris, 4: a stun three times in four, 3; none: debris only). Until the key he turns to
+   her; at the animation's end, on (func_002D8AC0); now and then a grunt (0x22 / 0x23) */
+void func_002D9500(Pursuer *p) {
+    f32 fiona[4] __attribute__((aligned(16)));
+    f32 hewie[4] __attribute__((aligned(16)));
+    f32 obj[4] __attribute__((aligned(16)));
+    u32 aim;
+
+    sceVu0CopyVector(fiona, gCharPlayer->a.pos);
+    sceVu0CopyVector(hewie, gCharPartner->a.pos);
+    if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
+        f32 a;
+
+        if (!(func_00283870(p) & 0xFF) || PU(p, 0x1544, u8) == 0 ||
+            !(func_002175B0(&p->c.a, &gCharPlayer->a) & 0xFF)) {
+            p->c.unk100 = 0;
+        } else {
+            if (!(func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]);
+            } else {
+                a = -func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]);
+            }
+            if (!(a <= 0x1.0c1524p-1f /* 30 degrees */)) {
+                p->c.unk100 = 0;
+            } else {
+                f32 d[4] __attribute__((aligned(16)));
+
+                p->c.unk100 = 4;
+                if (VCALL(D_0044E4D0, 0x68, s32 (*)(VObject *, f32 *, f32 *))(D_0044E4D0, fiona, obj) != 0) {
+                    sceVu0SubVector(d, fiona, obj);
+                    d[3] = 0.0f;
+                    if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(func_00124490(&p->c.a, obj) <= 20.0f)) {
+                        p->c.unk100 |= 1;
+                    }
+                }
+                sceVu0SubVector(d, fiona, hewie);
+                d[3] = 0.0f;
+                if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(func_00124490(&p->c.a, hewie) <= 20.0f)) {
+                    p->c.unk100 |= 2;
+                }
+            }
+        }
+    }
+    aim = p->c.unk100;
+    if (aim == 0) {
+        PU(p, 0x1770, s32) = 0;
+        PU(p, 0x1774, s32) = 0;
+        PU(p, 0x1778, s32) = 0;
+    } else if (aim == (u32)-1) {
+        Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
+        f32 h = func_001244D0(&p->c.a, t->a.pos);
+
+        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    } else {
+        u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
+        f32 at[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        if (aim & 1) {
+            u32 tri = func_00124320(&p->c.a, obj, gCharPlayer->a.navTri, fiona, 0);
+
+            if (tri == (u32)-1) {
+                tri = func_00124480(&p->c.a, obj, 0);
+            }
+            if (tri != (u32)-1 && func_002187D0(p, tri, obj) != 0 &&
+                p->c.a.pos[1] - obj[1] < 10.0f && !(p->c.a.pos[1] - obj[1] <= -15.0f) &&
+                Riccardo_OutOfLine(p, obj, fiona) &&
+                (!(func_00211910(p->c.a.pos, obj, hewie) <= 4.0f) ||
+                 func_00124490(&p->c.a, obj) < func_00124490(&p->c.a, hewie) || PU(p, 0x1545, u8) == 0)) {
+                sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), obj);
+                p->c.unk100 = 0;
+                goto end;
+            }
+        }
+        if ((p->c.unk100 & 2) && PU(p, 0x1545, u8) == 1 &&
+            (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) == 1 && Riccardo_OutOfLine(p, hewie, fiona)) {
+            if ((func_002D8840(p, gCharPartner) & 0xFF) != 0xFF) {
+                func_00178070(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
+            } else if (func_002DBA90(p, at) & 0xFF) {
+                Riccardo_Debris(at);
+            }
+            p->c.unk100 = 0;
+        } else if (p->c.unk100 & 4) {
+            if (func_00124490(&p->c.a, fiona) < 20.0f && fiona[1] + gCharPlayer->a.height < p->c.a.pos[1] + 5.0f) {
+                /* she's below the swing */
+                if (func_002DBA90(p, at) & 0xFF) {
+                    Riccardo_Debris(at);
+                }
+            } else {
+                u32 k = func_002D8840(p, gCharPlayer) & 0xFF;
+                s32 stun = 0;
+
+                switch (k) {
+                case 6:
+                    if (p->c.unk104[0] == 0) {
+                        p->c.unk104[0] = 6;
+                    } else if (p->c.unk104[0] == 3) {
+                        p->c.unk104[0] = 7;
+                    }
+                    e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
+                    stun = AT(e, 0x4, s16);
+                    /* fallthrough */
+                case 0xFF:
+                    if (func_002DBA90(p, at) & 0xFF) {
+                        Riccardo_Debris(at);
+                    }
+                    break;
+                case 4:
+                    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 75.0f) {
+                        stun = -0x8000;
+                    }
+                    break;
+                }
+                if (k != 0xFF) {
+                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+                }
+            }
+            p->c.unk100 = 0;
+        }
+    }
+end:
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PU(p, 0x178C, s32) = 0;
+        p->c.unk100 = 0;
+        p->c.unk104[0] = 0;
+        Actor_SetState(&p->c.a, &D_00415738);
+        func_002D8AC0(p);
+    }
+    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
+        100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 50.0f) {
+        if (p->c.unk104[0] == 0) {
+            func_0029D410(p, 0x22, 7, 0, 0, NULL);
+        } else if (p->c.unk104[0] == 3) {
+            func_0029D410(p, 0x23, 7, 0, 0, NULL);
+        }
+    }
+    func_00125A10(&p->c);
+}

@@ -622,6 +622,8 @@ void func_002D8690(Pursuer *p);
 s32 func_002D8840(Pursuer *p, Character *who);
 void func_002D8AC0(Pursuer *p);
 void func_002D8CB0(Pursuer *p);
+void func_002D8DF0(Pursuer *p);
+void func_002D9500(Pursuer *p);
 void func_002DA120(Pursuer *p);
 void func_002DA4C0(Pursuer *p);
 void func_002DB480(Pursuer *p);
