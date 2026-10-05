@@ -268,7 +268,7 @@ extern void *D_0046FC30[], *D_00469D00[];
 extern void func_002E56C0(u8 *drawer);
 extern void func_00121300(u8 *a);   /* Actor +0xC */
 extern void func_00121220(u8 *a);   /* Actor +0x30 */
-extern u32 func_00121000(u8 *a);    /* Actor +0x44 */
+s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
 extern void func_001247E0(u8 *a, const f32 *delta);   /* moved on the nav mesh */
 extern void func_00122C20(u8 *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);   /* a sound */
 
@@ -575,8 +575,8 @@ void func_002D5A50(u8 *b) {
 }
 
 /* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_002D5C10(u8 *b) {
-    u32 r = func_00121000(b) & 0xFF;
+u32 func_002D5C10(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    u32 r = func_00121000(b, tri, pos, rot, rr, h) & 0xFF;
 
     if (r == 1 && D_0044E988 != NULL) {
         VCALL(D_0044E988, 0x1C, void (*)(VObject *))(D_0044E988);
@@ -652,4 +652,113 @@ void func_002D5D10(u8 *b) {
     AT(b, 0x14, f32) = AT(b, 0x14, f32) + 0x1.99999a0000000p-4f /* 0.1 */;
     AT(b, 0xE0, u8) = 0;
     AT(b, 0xE1, u8) = 1;
+}
+
+/* ---- the things' base class (D_00469A00, over the actor): +0x10 position, +0x34 nav tri,
+ * +0x50 turn (angles), +0xB0 a point in front, +0xEC / +0xF0 its two sizes, +0xE4 its age
+ * (frames; -1 kept) ---- */
+
+#include "ptmf.h"
+
+extern void func_00124DB0(void *a);   /* the actor's set-up */
+extern VObject *D_0044E4F8, *D_0044E4D0;
+extern const PTMF D_003AF1B8;   /* a thing's resting state */
+extern void sceVu0RotMatrix(f32 (*out)[4], f32 (*m)[4], const f32 *rot);
+
+/* (possibly unused by the vtables) place it: nav tri, position, turn, front point */
+void func_00120F90(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front) {
+    AT(o, 0x34, u32) = tri;
+    sceVu0CopyVector((f32 *)(o + 0x10), pos);
+    sceVu0CopyVector((f32 *)(o + 0x50), rot);
+    sceVu0CopyVector((f32 *)(o + 0xB0), front);
+}
+
+/* +0x48 where it lands on the mesh: none (-1) */
+s32 func_00120FF0(void) {
+    return -1;
+}
+
+static inline __attribute__((always_inline)) void thing_set_front(u8 *o, f32 y, f32 r) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrix(m, m, (f32 *)(o + 0x50));
+    v[3] = 1.0f;
+    v[0] = 0.0f;
+    v[2] = r;
+    v[1] = y;
+    sceVu0ApplyMatrix((f32 *)(o + 0xB0), m, v);
+}
+
+/* +0x44 put it down at pos (turned rot, sizes r / h) where the mesh takes it (+0x48): its spot
+ * and front point (r ahead); 0 if the mesh doesn't take it */
+s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h) {
+    f32 at[4] __attribute__((aligned(16)));
+    s32 t;
+
+    sceVu0CopyVector(at, pos);
+    t = VCALL(o, 0x48, s32 (*)(void *, u32, f32 *, f32 *, f32, f32))(o, tri, at, rot, r, h);
+    if (t == -1) {
+        return 0;
+    }
+    sceVu0CopyVector((f32 *)(o + 0x10), at);
+    sceVu0CopyVector((f32 *)(o + 0x50), rot);
+    AT(o, 0xEC, f32) = r;
+    AT(o, 0xF0, f32) = h;
+    thing_set_front(o, 0.0f, r);
+    AT(o, 0x34, s32) = t;
+    return 1;
+}
+
+/* +0x40 put it at pos (off the mesh): its front point r ahead and 3 up */
+void func_00121100(u8 *o, f32 *pos, f32 *rot, f32 r, f32 h) {
+    sceVu0CopyVector((f32 *)(o + 0x10), pos);
+    sceVu0CopyVector((f32 *)(o + 0x50), rot);
+    AT(o, 0xEC, f32) = r;
+    AT(o, 0xF0, f32) = h;
+    thing_set_front(o, 3.0f, r);
+    AT(o, 0x34, s32) = -1;
+}
+
+/* +0x4C to rest (state D_003AF1B8) */
+void func_001211B0(u8 *o) {
+    ptmf_set(&AT(o, 0xA0, PTMF), &D_003AF1B8);
+}
+
+/* +0x30 a frame: older by one while the game runs (not in a cutscene +0x38, not paused by the
+ * events +0x50, not progress flag 8; -1 stays), then +0x4C and its state */
+void func_00121220(u8 *o) {
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0
+        && (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 0
+        && (Progress_TestFlag(gProgress, 8) & 0xFF) == 0) {
+        s32 age = AT(o, 0xE4, s32) + 1;
+
+        if (age != 0) {
+            AT(o, 0xE4, s32) = age;
+        }
+    }
+    VCALL(o, 0x4C, void (*)(void *))(o);
+    if (ptmf_test(&AT(o, 0xA0, PTMF))) {
+        ptmf_scall(o, &AT(o, 0xA0, PTMF));
+    }
+}
+
+/* +0x2C nothing */
+void func_001212F0(void) {
+}
+
+/* +0xC set up: the actor's, then sizes 0, its bounce (0, -0.2, 0, 1) at +0x100, not held */
+void func_00121300(u8 *o) {
+    func_00124DB0(o);
+    AT(o, 0xF0, s32) = 0;
+    AT(o, 0xEC, s32) = 0;
+    AT(o, 0x100, s32) = 0;
+    AT(o, 0x104, u32) = 0xBE4CCCCD;
+    AT(o, 0x108, s32) = 0;
+    AT(o, 0x10C, f32) = 1.0f;
+    AT(o, 0xC0, s32) = 0;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0xE4, s32) = 0;
+    AT(o, 0xE1, u8) = 0;
 }
