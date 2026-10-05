@@ -9993,3 +9993,89 @@ s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
     }
     return r;
 }
+
+/* ---- joint actions with Fiona ---- */
+
+extern u32 func_00177850(Progress *p, u32 slot);   /* its partner's slot (u8) */
+extern u32 func_00177830(Progress *p, u32 slot);   /* its kind (u8) */
+extern u32 func_00177810(Progress *p, u32 slot);   /* its event type (u8) */
+extern void func_001777F0(Progress *p, u32 slot);  /* accepted */
+extern void func_001777D0(Progress *p, u32 slot);  /* cancelled */
+
+/* his second state block set to (kind, a) (the original copies a local whose last fields are
+ * never set) */
+static void post_state2(Character *c, s32 kind, s32 a) {
+    c->state2[0] = kind;
+    c->state2[1] = a;
+    c->state2[2] = 0;
+    c->state2[3] = 0;
+    c->state2[4] = 0;
+    *(f32 *)&c->state2[5] = 0.0f;
+    c->state2[6] = 0;
+    c->state2[7] = 0;
+}
+
+/* take up the joint action the game has queued for him (func_00177870), with Fiona: 0 if
+ * accepted (his second state block (0xC, its type)), -1 if none or cancelled. Out of her reach
+ * (+0xE0): cancelled. Only kind 2. Types 0 / 2 / 4 (her starting it): calm, standing or already
+ * in it (moves 0 / 0xC), listening (+0xF356C bit 3), on open ground, her within 30 in his room
+ * and straight reachable: the meeting point by the type (func_00138890 1 / 2 / 3) given to
+ * her (+0x104 / +0x10C / +0x110) and his heading. Types 1 / 3 / 5 (the second part): in move
+ * 0xC, settled sitting (group 1) facing the agreed way, her in his room */
+s32 func_00164830(Hewie *h) {
+    Progress *p = gProgress;
+    Progress *q;
+    u32 kind, type;
+
+    if ((u8)func_00177870(p, AT(h, 0x20, u8)) != 1) {
+        return -1;
+    }
+    if (h->c.unkE0 == 1) {
+        func_001777D0(p, AT(h, 0x20, u8));
+        return -1;
+    }
+    q = gProgress;
+    func_00177850(q, AT(h, 0x20, u8));
+    kind = func_00177830(q, AT(h, 0x20, u8)) & 0xFF;
+    type = func_00177810(q, AT(h, 0x20, u8)) & 0xFF;
+    if (kind == 2) {
+        switch (type) {
+        case 0:
+        case 2:
+        case 4:
+            if (!(u8)func_00177620(p) && (h->c.moveMode == 0 || h->c.moveMode == 0xC) &&
+                (HW(h, 0xF356C, u32) & 0x80000008) == 8 &&
+                /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+                !(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x80001) && in_his_room(h, gCharPlayer) &&
+                func_00124490(&h->c.a, gCharPlayer->a.pos) < 30.0f &&
+                func_00124480(&h->c.a, gCharPlayer->a.pos, 0x60088) == gCharPlayer->a.navTri) {
+                f32 yaw;
+                f32 at[4] __attribute__((aligned(16)));
+                s32 r = func_00138890(h, type == 4 ? 3 : type == 0 ? 1 : 2, &yaw, at);
+
+                if (r != -1) {
+                    *(f32 *)&gCharPlayer->unk104[2] = yaw;
+                    gCharPlayer->unk104[0] = r;
+                    sceVu0CopyVector(gCharPlayer->unk110, at);
+                    HW(h, 0x10C, f32) = yaw;
+                    func_001777F0(p, AT(h, 0x20, u8));
+                    post_state2(&h->c, 0xC, type);
+                    return 0;
+                }
+            }
+            break;
+        case 1:
+        case 3:
+        case 5:
+            if (h->c.moveMode == 0xC && AT(h->c.motion, 0x550, f32) <= 0.0f && func_001669A0(h) == 1 &&
+                HW(h, 0x10C, f32) == h->c.a.angle[1] && in_his_room(h, gCharPlayer)) {
+                func_001777F0(p, AT(h, 0x20, u8));
+                post_state2(&h->c, 0xC, type);
+                return 0;
+            }
+            break;
+        }
+    }
+    func_001777D0(p, AT(h, 0x20, u8));
+    return -1;
+}
