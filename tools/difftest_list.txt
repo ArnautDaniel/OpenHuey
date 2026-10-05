@@ -5940,3 +5940,8 @@ src/game/camctl.c func_00224190 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-5.0..
 src/game/camctl.c func_00224680 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=-1..1 --runs=40
 src/game/camctl.c func_002246B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=-1..1 --pre=f12=0.0..1.0 --runs=40
 src/game/camctl.c func_00224740 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44FE10=0x0B100000..0x0B100000 --runs=20
+src/game/creature.c func_00312B50 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/creature.c func_00312BE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=0..1 --pre=a1=0..0x0B100000 --runs=40
+src/game/creature.c func_00312C30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=0..1 --runs=20
+src/game/creature.c func_00312C60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=0..1 --pre=a0+0xB0:u8=0..1 --pre=a0+0xAC=0..2 --pre=a0+0x3C=0..4 --pre=a0+0x6C=0..4 --pre=a0+0xA3:u8=3..4 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-ret-prob=1 --runs=200
+src/game/creature.c func_00312D90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-ret-prob=1 --runs=20

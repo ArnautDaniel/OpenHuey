@@ -1894,3 +1894,108 @@ s32 func_002B4030(void) {
     }
     return 0;
 }
+
+/* ---- class D_00472390: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
+ * 0x30, drawn by the quad drawer at +0x70; 4 frames of 32 x 32 at (0x40, 0) in 512 x 256,
+ * layer 0x19), each loop at a new random turn; +0xAC frames per frame, +0xB0 stopped ---- */
+
+extern void *D_00472390[];
+
+#define LOOP_REC(o) ((o) + AT(o, 0xA8, s32) * 0x30 + 0x10)
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00312B50(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00472390;
+    AT(o, 0x70, void **) = D_0046FC30;
+    AT(o, 0x70, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0x18 start: at the position given; NULL stops it */
+void func_00312BE0(u8 *o, f32 *at) {
+    if (at == NULL) {
+        AT(o, 0xB0, u8) = 1;
+        return;
+    }
+    sceVu0CopyVector((f32 *)(LOOP_REC(o) + 0x10), at);
+}
+
+/* +0x14 draw */
+void func_00312C30(u8 *o) {
+    AT(o, 0x80, u8 *) = LOOP_REC(o);
+    func_002E56C0(o + 0x70);
+}
+
+/* +0x10 update: the buffers swapped (the record copied over); every +0xAC frames the next
+ * frame, after the last (+0xA3) the first again at a new turn. 0 once stopped */
+s32 func_00312C60(u8 *o) {
+    static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB};
+    u32 *dst, *src;
+    u32 i;
+
+    if (AT(o, 0xB0, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0xA8, s32) ^= 1;
+    dst = (u32 *)LOOP_REC(o);
+    src = (u32 *)(o + (AT(o, 0xA8, s32) ^ 1) * 0x30 + 0x10);
+    for (i = 0; i < 12; i++) {
+        *dst++ = *src++;
+    }
+    *(volatile s32 *)(o + 0xAC) -= 1;   /* (stored, then read back) */
+    if (AT(o, 0xAC, s32) == 0) {
+        u8 *r;
+
+        AT(o, 0xAC, s32) = 1;
+        r = LOOP_REC(o);
+        AT(r, 0x2C, s32) += 1;
+        if (!(AT(r, 0x2C, s32) < AT(o, 0xA3, s8))) {
+            AT(r, 0x2C, s32) = 0;
+            AT(r, 0x28, f32) = k2Pi.f * (VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) - 0.5f);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: grey, half-transparent, 1.6 across, a random turn; the drawer's settings */
+void func_00312D90(u8 *o) {
+    static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB}, kSize = {0x3FCCCCCD};
+    u8 *r;
+
+    AT(o, 0xA8, s32) = 0;
+    AT(o, 0xAC, s32) = 1;
+    AT(o, 0xB0, u8) = 0;
+    AT(o, 0x78, s64) = -1;
+    AT(o, 0x84, s32) = 0;
+    AT(o, 0x88, s32) = 0;
+    AT(o, 0x8C, s32) = 0;
+    AT(o, 0x90, s32) = 0x19;
+    AT(o, 0x94, s16) = 1;
+    AT(o, 0x96, s16) = 0x40;
+    AT(o, 0x98, s16) = 0;
+    AT(o, 0x9A, s16) = 0x20;
+    AT(o, 0x9C, s16) = 0x20;
+    AT(o, 0x9E, s16) = 0x200;
+    AT(o, 0xA0, s16) = 0x100;
+    AT(o, 0xA2, s8) = 0;
+    AT(o, 0xA3, s8) = 4;
+    AT(o, 0xA4, s8) = 1;
+    AT(o, 0xA5, s8) = 0x10;
+    AT(o, 0xA6, s8) = -1;
+    r = LOOP_REC(o);
+    AT(r, 0x0, s32) = 0x80;
+    AT(r, 0x4, s32) = 0x80;
+    AT(r, 0x8, s32) = 0x80;
+    AT(r, 0xC, s32) = 0x40;
+    AT(r, 0x20, f32) = kSize.f;
+    AT(r, 0x24, f32) = AT(r, 0x20, f32);
+    AT(r, 0x28, f32) = k2Pi.f * (VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) - 0.5f);
+    AT(r, 0x2C, s32) = 0;
+}
