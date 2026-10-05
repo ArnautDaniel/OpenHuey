@@ -420,6 +420,10 @@ void func_002EE6C0(u8 *e) {
 void func_002EE830(u8 *e) {
 }
 
+/* the stalker models' delete: nothing (their memory belongs to the character slot) */
+void func_002DC6D0(void *p) {
+}
+
 /* +0x68: the drawing state cleared (+0x38.., the 16 words at +0x58), then +0x30 */
 void func_002DCA70(u8 *m) {
     s32 i;
@@ -494,6 +498,28 @@ void func_002EE530(u8 *cap, s32 b1, s32 b2, f32 x1, f32 y1, f32 z1, f32 r, f32 x
     AT(cap, 0x58, f32) = z2;
     AT(cap, 0x5C, f32) = 1.0f;
     AT(cap, 0x60, s32) = b2;
+}
+
+/* ---- shared by the hanging parts ---- */
+
+/* a part's anchor: its bone's position when anchored (+0x20), else the point it hangs from */
+static inline void Part_Anchor(u8 *p, u8 *set, f32 *at) {
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+    } else {
+        sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+    }
+}
+
+/* a part kept at its length from its anchor; its velocity is how far it went */
+static inline void Part_Hold(u8 *p, const f32 *at, const f32 *prev) {
+    f32 d[4] __attribute__((aligned(16)));
+
+    sceVu0SubVector(d, (f32 *)p, (f32 *)at);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)at, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, (f32 *)prev);
 }
 
 /* ---- Daniella's model (vtable D_004702D0, 0x1580 bytes: kinds 3 / 34..36). Her hair: two
@@ -971,6 +997,35 @@ void func_002EF0A0(u8 *pt, u8 *set) {
     sceVu0CopyVector((f32 *)(pt + 0x50), at);
 }
 
+/* +0x10 of her six hanging parts (+0xAA0, vtable D_00472C10): pulled along bone 0x1F's Z (by
+   +0x44), the set's force, pushed off the colliders, kept above the set's floor (+0x1C, when
+   +0x20), damped, held at its length from the anchor */
+void func_003168F0(u8 *p, u8 *set) {
+    f32 g[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 *vel = (f32 *)(p + 0x10);
+    u8 *c;
+
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0CopyVector(g, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), 0x1F) + 8);
+    sceVu0ScaleVector(g, g, AT(p, 0x44, f32));
+    sceVu0AddVector(vel, vel, g);
+    sceVu0SubVector(vel, vel, (f32 *)set);
+    for (c = AT(set, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        (*(void (**)(u8 *, f32 *, u8 *, f32))(AT(c, 0x30, u8 *) + 8))(c, d, p, 1.0f);
+        sceVu0AddVector(vel, vel, d);
+    }
+    if (AT(set, 0x20, u8) != 0 && AT(p, 0x4, f32) < AT(set, 0x1C, f32)) {
+        vel[1] += AT(set, 0x1C, f32) - AT(p, 0x4, f32);
+    }
+    sceVu0ScaleVector(vel, vel, AT(set, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, vel);
+    Part_Anchor(p, set, at);
+    Part_Hold(p, at, prev);
+}
+
 extern void sceVu0ApplyMatrix(f32 *out, f32 (*m)[4], const f32 *v);
 
 /* the capsule's +0xC: its ends from their bones */
@@ -1222,26 +1277,6 @@ void func_002F6CE0(u8 *m) {
 
 /* ---- Riccardo's parts ---- */
 
-/* a part's anchor: its bone's position when anchored (+0x20), else the point it hangs from */
-static inline void Part_Anchor(u8 *p, u8 *set, f32 *at) {
-    if (AT(p, 0x20, u8) != 0) {
-        sceVu0CopyVector(at, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
-    } else {
-        sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
-    }
-}
-
-/* a part kept at its length from its anchor; its velocity is how far it went */
-static inline void Part_Hold(u8 *p, const f32 *at, const f32 *prev) {
-    f32 d[4] __attribute__((aligned(16)));
-
-    sceVu0SubVector(d, (f32 *)p, (f32 *)at);
-    sceVu0Normalize(d, d);
-    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
-    sceVu0AddVector((f32 *)p, (f32 *)at, d);
-    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, (f32 *)prev);
-}
-
 /* +0x10 of his 0x60 parts (vtable D_00473810): follow the anchor (0.6), the set's force, the
    colliders (strength 1), held about 1.9 from the part it's tied to (+0x48, by +0x44), damped,
    at its length */
@@ -1417,6 +1452,109 @@ void func_0030E0F0(u8 *m) {
             AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
         }
     }
+}
+
+/* ---- his swaying points (0x50 each, vtable D_00472350; Fiona's D_00470700 has the same
+   code): +0x24 the bone it moves, +0x44 the bone it hangs from, +0x48 that bone's local
+   "outward" axis, +0x40 its length, +0x4C how far (radians) it may swing off that bone's X ---- */
+
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+static inline void SwayPoint_Step(u8 *p, u8 *set) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 *vel = (f32 *)(p + 0x10);
+    f32 *own = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    f32 *from = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
+    f32 ang, dot;
+
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, own + 12);
+    } else {
+        sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+    }
+    sceVu0CopyVector(prev, (f32 *)p);
+    /* the set's force works along the bone it hangs from */
+    sceVu0ScaleVector(d, from, AT(set, 0x4, f32));
+    sceVu0AddVector(vel, vel, d);
+    sceVu0ScaleVector(vel, vel, AT(set, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, vel);
+    sceVu0SubVector(d, (f32 *)p, at);
+    sceVu0Normalize(d, d);
+    /* swung too far off the bone's X: turn it back onto the cone's edge */
+    ang = func_0031C3C0(sceVu0InnerProduct(d, from));
+    if (!(ang <= AT(p, 0x4C, f32))) {
+        f32 s = func_0031C248(ang);
+
+        if (!(s <= 0.0f)) {
+            f32 near = func_0031C248(AT(p, 0x4C, f32));
+            f32 far = func_0031C248(ang - AT(p, 0x4C, f32));
+            f32 inv = 1.0f / s;
+
+            d[0] = inv * (far * from[0] + near * d[0]);
+            d[1] = inv * (far * from[1] + near * d[1]);
+            d[2] = inv * (far * from[2] + near * d[2]);
+        }
+    }
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, at, d);
+    sceVu0SubVector(vel, (f32 *)p, prev);
+    /* never behind the bone's outward side: pushed back out, at its length */
+    sceVu0ApplyMatrix(out, (f32 (*)[4])from, AT(p, 0x48, f32 *));
+    dot = sceVu0InnerProduct(d, out);
+    if (dot < 0.0f) {
+        sceVu0CopyVector(prev, (f32 *)p);
+        sceVu0ScaleVector(d, out, -dot);
+        sceVu0AddVector((f32 *)p, (f32 *)p, d);
+        sceVu0SubVector(d, (f32 *)p, at);
+        sceVu0Normalize(d, d);
+        sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+        sceVu0AddVector((f32 *)p, at, d);
+        sceVu0SubVector(d, (f32 *)p, prev);
+        sceVu0AddVector(vel, vel, d);
+    }
+}
+
+/* its bone: X from the anchor to the point, Y the hanging bone's outward axis, at the anchor */
+static inline void SwayPoint_Pose(u8 *p, u8 *set) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 (*own)[4] = (f32 (*)[4])func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    f32 *from = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
+
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, own[3]);
+    } else {
+        sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+    }
+    sceVu0SubVector(own[0], (f32 *)p, at);
+    sceVu0ApplyMatrix(own[1], (f32 (*)[4])from, AT(p, 0x48, f32 *));
+    sceVu0OuterProduct(own[2], own[0], own[1]);
+    sceVu0OuterProduct(own[1], own[2], own[0]);
+    sceVu0Normalize(own[0], own[0]);
+    sceVu0Normalize(own[1], own[1]);
+    sceVu0Normalize(own[2], own[2]);
+    sceVu0CopyVector(own[3], at);
+}
+
+/* +0x10: step */
+void func_00311D70(u8 *p, u8 *set) {
+    SwayPoint_Step(p, set);
+}
+
+void func_002F8550(u8 *p, u8 *set) {
+    SwayPoint_Step(p, set);
+}
+
+/* +0x14: pose its bone */
+void func_00311C70(u8 *p, u8 *set) {
+    SwayPoint_Pose(p, set);
+}
+
+void func_002F8450(u8 *p, u8 *set) {
+    SwayPoint_Pose(p, set);
 }
 
 /* ---- matrices of the model base used by Lorenzo's ---- */

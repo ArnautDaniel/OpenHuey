@@ -2441,9 +2441,9 @@ void func_001F0E50(u8 *ik) {
         sceVu0SubVector(d, (f32 *)(ik + 0x20), (f32 *)ik);
         sceVu0Normalize(d, d);
         len = AT(ik, 0x40, f32) + AT(ik, 0x44, f32);
-        AT(ik, 0x20, f32) = AT(ik, 0x0, f32) + d[0] * len;
-        AT(ik, 0x24, f32) = AT(ik, 0x4, f32) + d[1] * len;
-        AT(ik, 0x28, f32) = AT(ik, 0x8, f32) + d[2] * len;
+        AT(ik, 0x20, f32) = 0.0f + AT(ik, 0x0, f32) + d[0] * len;
+        AT(ik, 0x24, f32) = 0.0f + AT(ik, 0x4, f32) + d[1] * len;
+        AT(ik, 0x28, f32) = 0.0f + AT(ik, 0x8, f32) + d[2] * len;
     }
     func_001F0F40(ik);
 }
@@ -2501,6 +2501,61 @@ static void ik_aim(f32 (*m)[4], const f32 *from, const f32 *to, const f32 *pole)
 void func_001F0F40(u8 *ik) {
     ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
     ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
+}
+
+/* turn bone `m` so its X runs `from` -> `to`, keeping its Z side, at `from` */
+static inline void ik_turn(f32 (*m)[4], const f32 *from, const f32 *to) {
+    m[0][0] = to[0] - from[0];
+    m[0][1] = to[1] - from[1];
+    m[0][2] = to[2] - from[2];
+    sceVu0OuterProduct(m[1], m[2], m[0]);
+    sceVu0OuterProduct(m[2], m[0], m[1]);
+    sceVu0Normalize(m[0], m[0]);
+    sceVu0Normalize(m[1], m[1]);
+    sceVu0Normalize(m[2], m[2]);
+    m[0][3] = 0.0f;
+    m[1][3] = 0.0f;
+    m[2][3] = 0.0f;
+    m[3][0] = 0.0f;
+    m[3][1] = 0.0f;
+    m[3][2] = 0.0f;
+    m[3][3] = 1.0f;
+    sceVu0TransMatrix(m, m, (f32 *)from);
+}
+
+/* +0xC solve keeping the bend: the bend direction (+0x30) square to the root -> target line
+ * in the plane of the root's Z, the knee kept on the side it is bent to now; a target out of
+ * reach is pulled in; then the root and middle bones turn to the joints and the end bone is
+ * moved onto the target */
+void func_001F0AF0(u8 *ik) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 z[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 a[4] __attribute__((aligned(16)));
+    f32 len;
+
+    sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
+    sceVu0CopyVector(z, AT(ik, 0x4C, f32 *) + 8);
+    sceVu0SubVector(a, (f32 *)(ik + 0x20), AT(ik, 0x4C, f32 *) + 12);
+    sceVu0OuterProduct(b, z, a);
+    sceVu0OuterProduct((f32 *)(ik + 0x30), a, b);
+    sceVu0Normalize((f32 *)(ik + 0x30), (f32 *)(ik + 0x30));
+    sceVu0SubVector(a, AT(ik, 0x50, f32 *) + 12, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0SubVector(b, AT(ik, 0x54, f32 *) + 12, AT(ik, 0x50, f32 *) + 12);
+    sceVu0OuterProduct(z, a, b);
+    if (func_001F10C0(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
+                      AT(ik, 0x44, f32), sceVu0InnerProduct(AT(ik, 0x4C, f32 *) + 8, z) <= 0.0f ? 1.0f : -1.0f) != 0) {
+        sceVu0SubVector(d, (f32 *)(ik + 0x20), (f32 *)ik);
+        sceVu0Normalize(d, d);
+        len = AT(ik, 0x40, f32) + AT(ik, 0x44, f32);
+        AT(ik, 0x20, f32) = 0.0f + AT(ik, 0x0, f32) + d[0] * len;
+        AT(ik, 0x24, f32) = 0.0f + AT(ik, 0x4, f32) + d[1] * len;
+        AT(ik, 0x28, f32) = 0.0f + AT(ik, 0x8, f32) + d[2] * len;
+    }
+    ik_turn((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10));
+    ik_turn((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20));
+    sceVu0CopyVector(AT(ik, 0x54, f32 *) + 12, (f32 *)(ik + 0x20));
 }
 
 
