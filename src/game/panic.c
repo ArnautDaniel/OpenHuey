@@ -370,3 +370,107 @@ void func_002EFBE0(u8 *o) {
         fear_add(o, D_0041A0F0[kind * 6 + band]);
     }
 }
+
+/* the level set to `n` (0..100): its stage +0x0 (0 below 60, then 1 / 2 / 3 at 60 / 75 / 90;
+   at 100 the panic's length +0x2 = 450 frames), the fear inputs cleared */
+void func_002EF4D0(u8 *o, s16 n) {
+    AT(o, 0x4, f32) = (f32)n;
+    AT(o, 0x1C, f32) = (f32)n;
+    if (n >= 100) {
+        AT(o, 0x2, s16) = 450;
+    } else if (n >= 90) {
+        AT(o, 0x0, u8) = 3;
+    } else if (n >= 75) {
+        AT(o, 0x0, u8) = 2;
+    } else if (n >= 60) {
+        AT(o, 0x0, u8) = 1;
+    } else {
+        AT(o, 0x0, u8) = 0;
+    }
+    AT(o, 0x1, u8) = 0;
+    AT(o, 0xC, s32) = 0;
+    AT(o, 0x20, s32) = 0;
+    AT(o, 0x24, s32) = 0;
+    AT(o, 0x28, s32) = 0;
+    AT(o, 0x2C, s32) = 0;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x18, s32) = 0;
+}
+
+/* the level for stage `stage` (0..5) */
+void func_002F0260(u8 *o, u32 stage) {
+    static const s16 sLevel[6] = { 0, 60, 75, 90, 100, 100 };
+
+    stage &= 0xFF;
+    if (stage < 6) {
+        func_002EF4D0(o, sLevel[stage]);
+    }
+}
+
+/* on pausing: the camera's shake off, +0x38 = 0x80 */
+void func_002F02F0(u8 *o) {
+    VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.0f);
+    AT(o, 0x38, s32) = 0x80;
+}
+
+/* a fright of `amount`: lasting (+0x20); a big one (10 or more) also holds the level for 30
+   frames and counts half toward the passing part +0x10 */
+static inline void fright(u8 *o, f32 amount) {
+    if (amount < 0.0f) {
+        return;
+    }
+    if (amount < 10.0f) {
+        AT(o, 0x20, f32) += amount;
+    } else {
+        f32 h = 0.5f * amount;
+
+        AT(o, 0x8, s16) = 30;
+        AT(o, 0x20, f32) += h;
+        AT(o, 0x10, f32) += h;
+    }
+}
+
+/* a fright, less with a charm on (item manager +0x10 slot 1: 0x87 three quarters, 0x88 half) */
+void func_002EFA50(u8 *o, f32 amount) {
+    if (amount < 0.0f) {
+        return;
+    }
+    if (D_0044E988 != NULL) {
+        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1)) {
+        case 0x87:
+            amount *= 0.75f;
+            break;
+        case 0x88:
+            amount *= 0.5f;
+            break;
+        }
+    }
+    fright(o, amount);
+}
+
+void func_002EFB70(u8 *o, f32 amount) {
+    fright(o, amount);
+}
+
+extern VObject *D_0044E7A8;   /* the screen fades */
+extern const u8 D_0041A040[], D_0041A050[], D_0041A060[], D_0041A070[], D_0041A080[], D_0041A090[];
+
+/* while the screen's effect is full (+0x34 1): Fiona's breath (sound 0x29, pitched by the
+   stage) and the screen's tint for the stage (stage 5 also a second one) */
+void func_002EF2B0(u8 *o) {
+    static const s32 sPitch[5] = { -0x38, -0x28, -0x10, 0, 0 };
+    static const u8 *const sTint[5] = { D_0041A040, D_0041A050, D_0041A060, D_0041A070, D_0041A080 };
+    u8 stage;
+
+    if (AT(o, 0x34, f32) != 1.0f) {
+        return;
+    }
+    stage = AT(o, 0x0, u8);
+    if (stage < 1 || stage > 5) {
+        return;
+    }
+    func_00122C20(gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
+    VCALL(D_0044E7A8, 0x20, void (*)(VObject *, const u8 *, const u8 *))(D_0044E7A8, stage == 5 ? D_0041A090 : NULL,
+                                                                          sTint[stage - 1]);
+}
