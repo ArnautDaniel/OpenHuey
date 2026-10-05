@@ -117,6 +117,8 @@ extern void func_00178A30(Progress *p, u32 n);
 extern s32 func_00178610(Progress *p, u32 d);
 extern void func_00178450(Progress *p, u32 n);
 extern void func_00178500(Progress *p, u32 n);
+extern void func_001FBAE0(VObject *ev, u8 *slot, s32 n);
+extern void func_001773A0(Progress *p, s32 a, s32 b);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -1968,6 +1970,13 @@ void func_002029B0(VObject *ev) {
         func_002D6090(mgr, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
         break;
     }
+    case 0x40:   /* character slot pc[1]'s step context cleared; func_001773A0 (pc[1], pc[2]) */
+        func_001FBAE0(ev, (u8 *)ev + 0x564 + (pc[1] + 1) * 0x18, 0);
+        func_001773A0(p, PC(ev)[1], PC(ev)[2]);
+        break;
+    case 0x80:   /* room effect pc[1] gone */
+        func_002670F0(D_0044E4C0, pc[1]);
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
