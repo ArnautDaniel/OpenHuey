@@ -6967,3 +6967,40 @@ void func_0014E300(Hewie *h) {
         h->c.unk124 = h->c.unk128;
     }
 }
+
+/* ---- setting off after Fiona ---- */
+
+extern const PTMF D_003B1AE8, D_003B1AF8, D_003B1B08;
+
+/* from lying low (pose 3): slide with the root motion and plan the way to where her command
+ * puts him (no way: the default action). Within 12 already: behaviour D_003B1AE8 (D_003B1AF8
+ * with +0xF36B8); else pick the gait by the distance (walk under 20 or when moving 1, trot under
+ * 44, else run) and follow her (D_003B1B08) */
+void func_0014E8A0(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d;
+
+    if (func_00140CD0(h, 3) != 0) {
+        return;
+    }
+    func_00141C00(h, 3);
+    slide_root(h);
+    if (func_0013EE40(h, func_00145610(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    if (d < 12.0f) {
+        h->c.unk124 = h->c.unk128;
+        Hewie_SetBehaviour(h, HW(h, 0xF36B8, s32) == 0 ? &D_003B1AE8 : &D_003B1AF8);
+        return;
+    }
+    HW(h, 0xF36B4, s32) = 2;
+    if (h->c.a.unkC4 == 1 || d < 20.0f) {
+        HW(h, 0xF36B4, s32) = 0;
+    } else if (d < 44.0f) {
+        HW(h, 0xF36B4, s32) = 1;
+    }
+    Hewie_SetBehaviour(h, &D_003B1B08);
+}
