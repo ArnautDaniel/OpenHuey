@@ -1503,3 +1503,77 @@ s32 func_002B4BE0(void) {   /* a scene effect (D_00476BF0, 0x6E0 bytes) */
     Effect_New(D_0044E578, 0x6E0, effect476bf0_init);
     return 1;
 }
+
+extern const char *D_003F0404, *D_003F6F64;   /* room object names */
+extern void *D_0046F5A0[], *D_00469D00[], *D_0046FC30[];
+
+/* the room object D_003F0404's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else
+ * 11), 1 up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25 */
+s32 func_002A94C0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kTop = {0x4217E979};   /* 37.978 */
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0404);
+
+    if (o == NULL) {
+        return 1;
+    }
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x24, f32) = (AT(gProgress, 0x1C, u32) & 0x40000) ? kTop.f : 11.0f;
+        break;
+    case 1:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
+        if (!(AT(o, 0x24, f32) < kTop.f)) {
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 2);
+            AT(o, 0x24, f32) = kTop.f;
+        }
+        break;
+    case 2:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
+        break;
+    default:
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) - 0.25f;
+        break;
+    }
+    return 1;
+}
+
+/* the room object D_003F6F64's +0x24 toward 1 (event variable 0 unset) or 0 (set): byte 3 0 at
+ * once, else by 0.2 a step */
+s32 func_002ABDD0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD};   /* 0.2 */
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F6F64);
+
+    if (o == NULL) {
+        return 1;
+    }
+    if (cmd[3] == 0) {
+        if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) == 0) {
+            AT(o, 0x24, f32) = 1.0f;
+        } else {
+            AT(o, 0x24, f32) = 0.0f;
+        }
+    } else if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) == 0) {
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + kStep.f;
+        if (!(AT(o, 0x24, f32) <= 1.0f)) {
+            AT(o, 0x24, f32) = 1.0f;
+        }
+    } else {
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) - kStep.f;
+        if (AT(o, 0x24, f32) < 0.0f) {
+            AT(o, 0x24, f32) = 0.0f;
+        }
+    }
+    return 1;
+}
+
+static inline void smoke_init(void **o) {
+    o[0] = D_0046F5A0;
+    o[0x1810 / 4] = D_00469D00;
+    ((s32 *)o)[0x1814 / 4] = -1;
+    o[0x1810 / 4] = D_0046FC30;
+}
+
+s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
+    Effect_New(D_0044E578, 0x1C60, smoke_init);
+    return 1;
+}

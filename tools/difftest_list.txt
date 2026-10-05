@@ -5460,3 +5460,10 @@ src/game/room_handlers.c func_002B4970 --pre=@0x44E8E0=0x0B000000..0x0B000000 --
 src/game/room_handlers.c func_002AD550 --pre=@0x44E4C0=0x0B000000..0x0B000000
 src/game/room_handlers.c func_002AF730 --pre=@0x44E4C0=0x0B000000..0x0B000000
 src/game/room_handlers.c func_002B4BE0 --pre=@0x44E578=0x0B000000..0x0B000000
+src/game/room_handlers.c func_002A94C0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003=bytes:00 --stub-ret=0x0B200000 --stub-ret=0 --pre=@0x0B200024=0x41E00000..0x42200000
+src/game/room_handlers.c func_002A94C0 --pre=a2=0x0B100000..0x0B100000 --stub-ret=0x0B200000 --stub-ret=0 --pre=@0x0B200024=0x41E00000..0x42200000
+src/game/room_handlers.c func_002ABDD0 --pre=a2=0x0B100000..0x0B100000 --stub-ret=0x0B200000 --stub-ret=0 --stub-ret=1 --pre=@0x0B200024=0xBF000000..0x3FC00000
+src/game/room_handlers.c func_002AFE90 --pre=@0x44E578=0x0B000000..0x0B000000
+src/game/room_handlers.c func_002A94C0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:00000000 --stub-ret=0x0B200000 --pre=@0x0B200024=0x41E00000..0x42200000 --pre=@0x44E4D8=0x0B300000..0x0B300000 --pre=@0x0B30001C=0x30000..0x50000
+src/game/room_handlers.c func_002A94C0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:00000001 --stub-ret=0x0B200000 --pre=@0x0B200024=0x41E00000..0x42200000 --pre=@0x44E4D8=0x0B300000..0x0B300000 --pre=@0x0B30001C=0x30000..0x50000
+src/game/room_handlers.c func_002A94C0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:00000002 --stub-ret=0x0B200000 --pre=@0x0B200024=0x41E00000..0x42200000 --pre=@0x44E4D8=0x0B300000..0x0B300000 --pre=@0x0B30001C=0x30000..0x50000
