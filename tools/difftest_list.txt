@@ -5573,3 +5573,10 @@ src/game/room_handlers.c func_002B3660 --pre=a2=0x0B100000..0x0B100000 --pre=@0x
 src/game/movie.c func_002B60D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
 src/game/movie.c func_002B62D0 --pre=@0x44E4D8=0x0B100000..0x0B100000 --pre=@0x45D1F0=0x0B200000..0x0B200000
 src/game/movie.c func_002B6140 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..1 --pre=@0x45D1F0=0x0B200000..0x0B200000 --stub-ret=-1 --stub-ret=0x1234 --runs=60
+src/game/movie.c func_002D76B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/movie.c func_002D78B0 --pre=@0x44E4D8=0x0B100000..0x0B100000 --pre=@0x45D1F0=0x0B200000..0x0B200000
+src/game/movie.c func_002D7720 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..1 --pre=@0x45D1F0=0x0B200000..0x0B200000 --stub-ret=-1 --stub-ret=0x1234 --runs=60
+src/game/movie.c func_002B6140 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..1 --pre=@0x45D1F0=0x0B200000..0x0B200000 --stub-ret=-1 --stub-ret=0x1234 --runs=60
+src/game/room_handlers.c func_0031E460 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B600000 --pre=@0x0B600014=0x40000000..0x40490FDB --runs=60
+src/game/room_handlers.c func_002AD600 --stub-ret=0 --stub-ret=0x0B600000 --pre=@0x0B600014=0x40000000..0x40490FDB
+src/game/event.c func_001FB1B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..40

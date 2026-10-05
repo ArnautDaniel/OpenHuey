@@ -242,9 +242,10 @@ void func_002B62D0(void) {
     *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
-/* +0x14 draw: the screen (corners (-2.61, 4.39, 5.79) / (-0.12, 4.39, 7.53) at the top, 2.06
- * below), 256 x 224 of the frame at half brightness, in layer 2 */
-void func_002B6140(u8 *o) {
+/* a TV's +0x14 draw: its screen (corners (x0, top, z0) (x1, top, z1) (x0, bottom, z0) (x1,
+ * bottom, z1)), 256 x 224 of the movie frame at half brightness, in layer 2 */
+static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1, u32 top, u32 bottom, u32 z0,
+                                                          u32 z1) {
     if (AT(o, 0x10, s32) != 0) {
         u64 tex = func_0021E410(D_0045D1F0, 2);
         struct {
@@ -273,12 +274,12 @@ void func_002B6140(u8 *o) {
         r.rgba[0] = 0x40;
         r.rgba[1] = 0x40;
         r.rgba[2] = 0x40;
-        c[0] = 0xC0274A23;
-        c[8] = 0xC0274A23;
-        c[1] = 0x408C872B;
-        c[5] = 0x408C872B;
-        c[2] = 0x40B93A93;
-        c[10] = 0x40B93A93;
+        c[0] = x0;
+        c[8] = x0;
+        c[1] = top;
+        c[5] = top;
+        c[2] = z0;
+        c[10] = z0;
         r.pos[3] = 1.0f;
         r.w = 1.0f;
         q.vtbl = D_0046FC30;
@@ -287,13 +288,13 @@ void func_002B6140(u8 *o) {
         c[3] = 0x3F800000;
         q.corners = (s32)c;
         q.cellH = 0xE0;
-        c[4] = 0xBDF93DD9;
-        c[12] = 0xBDF93DD9;
-        c[6] = 0x40F0D014;
-        c[14] = 0x40F0D014;
+        c[4] = x1;
+        c[12] = x1;
+        c[6] = z1;
+        c[14] = z1;
         c[7] = 0x3F800000;
-        c[9] = 0x400401A3;
-        c[13] = 0x400401A3;
+        c[9] = bottom;
+        c[13] = bottom;
         c[11] = 0x3F800000;
         c[15] = 0x3F800000;
         q.a = -1;
@@ -321,6 +322,39 @@ void func_002B6140(u8 *o) {
         q.vtbl = D_00469D00;
     }
     *D_0045D1F0 = 1;
+}
+
+/* +0x14 draw: the screen at x -2.61 .. -0.12, z 5.79 .. 7.53, y 2.06 .. 4.39 */
+void func_002B6140(u8 *o) {
+    tv_draw(o, 0xC0274A23, 0xBDF93DD9, 0x408C872B, 0x400401A3, 0x40B93A93, 0x40F0D014);
+}
+
+/* ---- D_0046F5F0: another TV (as D_0046EA40; its +0xC func_002D78F0, +0x18 func_002D7710) ---- */
+
+extern void *D_0046F5F0[];
+
+/* +0x8 destructor */
+void *func_002D76B0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046F5F0;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046D730;
+        }
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+/* +0x10 update */
+void func_002D78B0(void) {
+    *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
+}
+
+/* +0x14 draw: the screen at x 20.8 .. 22.96, z 7.73 .. 9.80, y 9.80 .. 12.05 */
+void func_002D7720(u8 *o) {
+    tv_draw(o, 0x41A66AE8, 0x41B7AE14, 0x4140B924, 0x411CDB23, 0x40F7573F, 0x411CDD2F);
 }
 
 /* clear the flag */

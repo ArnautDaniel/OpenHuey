@@ -2289,12 +2289,12 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *const D_003FC680;   /* "fan" */
+extern const char *const D_003FC680, *const D_0042A0E8;   /* "fan" (rooms 0x1A / 0x31) */
 
-/* room 0x1A (D_003FC660): the fan turns 1.15 degrees a frame */
-s32 func_002AD600(void) {
+/* the room's object `name` turns 1.15 degrees a frame */
+static inline __attribute__((always_inline)) void fan_turn(const char *name) {
     static const union { u32 u; f32 f; } kStep = {0x3CA46C8A}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FC680);
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
 
     if (o != NULL) {
         f32 a = AT(o, 0x14, f32) + kStep.f;
@@ -2304,6 +2304,20 @@ s32 func_002AD600(void) {
             AT(o, 0x14, f32) = a - k2Pi.f;
         }
     }
+}
+
+/* room 0x1A (D_003FC660): the fan turns */
+s32 func_002AD600(void) {
+    fan_turn(D_003FC680);
+    return 1;
+}
+
+/* room 0x31 (D_0042A0C8): the fan turns, except while a movie plays (gProgress +0x54) */
+s32 func_0031E460(void) {
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    fan_turn(D_0042A0E8);
     return 1;
 }
 
@@ -2325,6 +2339,11 @@ s32 func_00321590(void) {
 s32 func_002B3660(void *self, void *a1, u8 *cmd) {
     u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, 0x11) & 0xFF];
 
+#ifdef HG_NATIVE
+    if (c == NULL) {   /* character 0x11 absent (the PS2 writes through junk) */
+        return 1;
+    }
+#endif
     if (cmd[3] == 0) {
         AT(AT(c, 0xF0, u8 *), 0xA2, u8) |= 2;
         AT(AT(c, 0xF0, u8 *), 0xA4, u8) |= 2;

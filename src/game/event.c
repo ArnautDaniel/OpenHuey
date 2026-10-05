@@ -549,6 +549,11 @@ void func_001FB190(u8 *ev, s32 n) {
     AT(ev, 0x890, u32) |= 1u << (n & 0xFF);
 }
 
+/* event bit `n` (+0x890) set */
+s32 func_001FB1B0(u8 *ev, s32 n) {
+    return (AT(ev, 0x890, u32) & (1u << (n & 0xFF))) != 0;
+}
+
 
 extern VObject *D_0044E4F0;   /* the renderer */
 
