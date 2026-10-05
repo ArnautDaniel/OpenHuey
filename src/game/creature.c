@@ -1999,3 +1999,351 @@ void func_00312D90(u8 *o) {
     AT(r, 0x28, f32) = k2Pi.f * (VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) - 0.5f);
     AT(r, 0x2C, s32) = 0;
 }
+
+/* ---- class D_004726E0 (0x220 bytes): a strand hanging from the stalker in slot 2 (drool /
+ * blood): up to 4 segments (0x50 each from +0x80: a matrix, alpha +0xC0, cells +0xC4..+0xCA)
+ * grown one from the other down a chain of its bones (+0x214: pairs per stalker kind, +0x210
+ * the pair), each drawn as two crossed quads +0x20C long with the quad drawer at +0x40 (record
+ * +0x10: the colour); +0x218 the kind of strand, +0x21C stopped ---- */
+
+extern void *D_004726E0[], *D_004727C0[];
+extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
+extern u8 *D_0044F808;   /* the character in slot 2 (the stalker) */
+extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+#define STRAND_SEG(o, k) ((o) + (k) * 0x50)
+#define STRAND_BONE(o, i) (func_0017CE80(AT(AT(D_0044F808, 0xF0, u8 *), 0x810, void *), (i)) + 12)
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00313030(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_004726E0;
+    AT(o, 0x40, void **) = D_0046FC30;
+    AT(o, 0x40, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0xC set up */
+void func_00313FC0(u8 *o) {
+    AT(o, 0x21C, u8) = 0;
+}
+
+static inline __attribute__((always_inline)) void strand_cells(u8 *s, VObject *rnd) {
+    AT(s, 0xC4, s16) = ((VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 3) << 5) + 0x120;
+    AT(s, 0xC6, s16) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1) * 0x10 + 0x40;
+    AT(s, 0xC8, s16) = ((VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 3) << 5) + 0x120;
+    AT(s, 0xCA, s16) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1) * 0x10 + 0x40;
+}
+
+/* +0x18 start: arg { the stalker's kind, the strand's kind (1 orange, 2 white, else purple) };
+ * the bone chain by kind (none: stopped), a random length and first pair, the first segment
+ * from that bone a little off at random, turned 45 degrees (give or take 5) each segment */
+void func_003130C0(u8 *o, s32 *arg) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 d[4] __attribute__((aligned(16)));
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    u8 *r = o + 0x10;
+    VObject *rnd;
+
+    if (arg == NULL) {
+        AT(o, 0x21C, u8) = 1;
+        return;
+    }
+    switch (arg[0]) {
+    case 2: case 6: case 7: case 0x1B:
+        AT(o, 0x214, u32 *) = D_00429850;
+        break;
+    case 3: case 0x22: case 0x23: case 0x24:
+        AT(o, 0x214, u32 *) = D_004298F0;
+        break;
+    case 4:
+        AT(o, 0x214, u32 *) = D_00429990;
+        break;
+    case 0x17: case 0x25:
+        AT(o, 0x214, u32 *) = D_00429A30;
+        break;
+    case 0xB:
+        AT(o, 0x214, u32 *) = D_00429AD0;
+        break;
+    case 0xA: case 0x27:
+        AT(o, 0x214, u32 *) = D_00429B70;
+        break;
+    default:
+        AT(o, 0x214, u32 *) = NULL;
+        break;
+    }
+    if (AT(o, 0x214, u32 *) == NULL) {
+        AT(o, 0x21C, u8) = 1;
+        return;
+    }
+    AT(o, 0x218, s32) = arg[1];
+    if (AT(o, 0x218, s32) == 2) {
+        rnd = D_0044E550;
+        AT(r, 0x0, s32) = 0x80;
+        AT(r, 0x4, s32) = 0x80;
+        AT(r, 0x8, s32) = 0x80;
+        AT(o, 0x20C, f32) = 0.0f + 1.0f + 3.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    } else if (AT(o, 0x218, s32) == 1) {
+        AT(r, 0x0, s32) = 0x80;
+        AT(r, 0x4, s32) = 0x64;
+        rnd = D_0044E550;
+        AT(r, 0x8, s32) = 0;
+        AT(o, 0x20C, f32) = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    } else {
+        AT(r, 0x0, s32) = 0x40;
+        AT(r, 0x4, s32) = 0x20;
+        AT(r, 0x8, s32) = 0x80;
+        rnd = D_0044E550;
+        AT(o, 0x20C, f32) = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    AT(o, 0x210, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 7) * 5;
+    rnd = D_0044E550;
+    AT(o, 0xC0, s32) = 0;
+    AT(o, 0x110, s32) = 0;
+    AT(o, 0x160, s32) = 0;
+    AT(o, 0x1B0, s32) = 0;
+    d[0] = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    d[1] = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    d[2] = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    d[3] = 0.0f;
+    sceVu0CopyVector(a, STRAND_BONE(o, AT(o, 0x214, u32 *)[AT(o, 0x210, s32)]));
+    a[3] = 1.0f;
+    sceVu0AddVector(at, a, d);
+    sceVu0Normalize(d, d);
+    AT(o, 0x48, s64) = -1;
+    AT(o, 0x50, u8 *) = o + 0x10;
+    AT(o, 0x58, s32) = 0;
+    AT(o, 0x5C, s32) = 0;
+    AT(o, 0x60, s32) = 0x19;
+    AT(o, 0x64, s16) = 1;
+    AT(o, 0x6A, s16) = 0x20;
+    AT(o, 0x6C, s16) = 0x10;
+    AT(o, 0x6E, s16) = 0x200;
+    AT(o, 0x70, s16) = 0x100;
+    AT(o, 0x72, s8) = 0x42;
+    AT(o, 0x73, s8) = 1;
+    AT(o, 0x74, s8) = 1;
+    AT(o, 0x75, s8) = 0x10;
+    AT(o, 0x76, s8) = -1;
+    AT(r, 0x10, s32) = 0;
+    AT(r, 0x14, s32) = 0;
+    AT(r, 0x18, s32) = 0;
+    AT(r, 0x1C, f32) = 1.0f;
+    AT(r, 0x20, f32) = 1.0f;
+    AT(r, 0x24, f32) = 1.0f;
+    AT(r, 0x28, s32) = 0;
+    AT(r, 0x2C, s32) = 0;
+    AT(o, 0x204, s32) = 0;
+    AT(o, 0x208, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 3) + 1;
+    AT(o, 0x200, s32) = 0;
+    sceVu0UnitMatrix((f32 (*)[4])(o + 0x1C0));
+    sceVu0RotMatrixZ((f32 (*)[4])(o + 0x1C0), (f32 (*)[4])(o + 0x1C0),
+                     kPi.f * (0.0f + -45.0f + 10.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f);
+    sceVu0UnitMatrix((f32 (*)[4])(o + 0x80));
+    sceVu0CopyVector((f32 *)(o + 0x80), d);
+    sceVu0CopyVector(b, STRAND_BONE(o, AT(o, 0x214, u32 *)[AT(o, 0x210, s32) + 1]));
+    b[3] = 1.0f;
+    sceVu0SubVector((f32 *)(o + 0xA0), b, a);
+    sceVu0Normalize((f32 *)(o + 0xA0), (f32 *)(o + 0xA0));
+    sceVu0OuterProduct((f32 *)(o + 0xA0), (f32 *)(o + 0xA0), (f32 *)(o + 0x80));
+    sceVu0Normalize((f32 *)(o + 0xA0), (f32 *)(o + 0xA0));
+    sceVu0OuterProduct((f32 *)(o + 0x90), (f32 *)(o + 0xA0), (f32 *)(o + 0x80));
+    sceVu0TransMatrix((f32 (*)[4])(o + 0x80), (f32 (*)[4])(o + 0x80), at);
+    AT(o, 0xC0, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0xF) + 0x50;
+    strand_cells(o, rnd);
+}
+
+/* +0x14 draw (unless the effects are paused or it stopped): each live segment as two crossed
+ * quads in its frame (x along, the second turned a quarter) */
+void func_003136C0(u8 *o) {
+    f32 c[4][4] __attribute__((aligned(16)));
+    f32 h, len;
+    s32 k;
+
+    if (func_002D6010(D_0044E578) != 0 || AT(o, 0x21C, u8) == 1) {
+        return;
+    }
+    len = AT(o, 0x20C, f32);
+    h = 0.5f * len;
+    AT(o, 0x54, f32 *) = c[0];
+    for (k = 0; k < 4; k++) {
+        u8 *s = STRAND_SEG(o, k);
+        f32 (*m)[4] = (f32 (*)[4])(s + 0x80);
+
+        if (AT(s, 0xC0, s32) == 0) {
+            continue;
+        }
+        AT(o, 0x1C, s32) = AT(s, 0xC0, s32);
+        AT(o, 0x66, s16) = AT(s, 0xC4, s16);
+        AT(o, 0x68, s16) = AT(s, 0xC6, s16);
+        c[0][0] = 0.0f;
+        c[0][3] = 1.0f;
+        c[0][1] = 0.0f;
+        c[0][2] = h;
+        sceVu0ApplyMatrix(c[0], m, c[0]);
+        c[1][3] = 1.0f;
+        c[1][0] = AT(o, 0x20C, f32);
+        c[1][1] = 0.0f;
+        c[1][2] = h;
+        sceVu0ApplyMatrix(c[1], m, c[1]);
+        c[2][2] = -h;
+        c[2][1] = 0.0f;
+        c[2][0] = 0.0f;
+        c[2][3] = 1.0f;
+        sceVu0ApplyMatrix(c[2], m, c[2]);
+        c[3][3] = 1.0f;
+        c[3][0] = AT(o, 0x20C, f32);
+        c[3][1] = 0.0f;
+        c[3][2] = -h;
+        sceVu0ApplyMatrix(c[3], m, c[3]);
+        func_002E56C0(o + 0x40);
+        AT(o, 0x66, s16) = AT(s, 0xC8, s16);
+        AT(o, 0x68, s16) = AT(s, 0xCA, s16);
+        c[0][0] = 0.0f;
+        c[0][3] = 1.0f;
+        c[0][1] = h;
+        c[0][2] = 0.0f;
+        sceVu0ApplyMatrix(c[0], m, c[0]);
+        c[1][3] = 1.0f;
+        c[1][0] = AT(o, 0x20C, f32);
+        c[1][1] = h;
+        c[1][2] = 0.0f;
+        sceVu0ApplyMatrix(c[1], m, c[1]);
+        c[2][1] = -h;
+        c[2][2] = 0.0f;
+        c[2][0] = 0.0f;
+        c[2][3] = 1.0f;
+        sceVu0ApplyMatrix(c[2], m, c[2]);
+        c[3][3] = 1.0f;
+        c[3][0] = AT(o, 0x20C, f32);
+        c[3][1] = -h;
+        c[3][2] = 0.0f;
+        sceVu0ApplyMatrix(c[3], m, c[3]);
+        func_002E56C0(o + 0x40);
+    }
+}
+
+static void strand_drop_init(void **obj) {
+    obj[0] = D_004727C0;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+/* +0x10 update: the next segment grown from the current one (its frame turned by +0x1C0, moved
+ * on by the length) once it has shown a frame, every 4 the bone pair moved on (the end of the
+ * chain: no new segment; else the segment aimed down the bones); every live segment fades by
+ * 8..15 (gone under 17) with new cells; for a kind of strand, after +0x208 frames a drop
+ * (D_004727C0) from the newest segment, in its colour by the fade. 0 once it stopped */
+s32 func_00313980(u8 *o) {
+    VObject *rnd;
+    u8 *s;
+    s32 cur, k;
+
+    if (AT(o, 0x21C, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x21C, u8) = 1;
+    cur = AT(o, 0x200, s32);
+    if (AT(STRAND_SEG(o, cur), 0xC0, s32) > 0) {
+        if (AT(o, 0x204, s32) == 0) {
+            AT(o, 0x204, s32) += 1;
+        } else {
+            f32 v[4] __attribute__((aligned(16)));
+            f32 (*prev)[4] = (f32 (*)[4])(STRAND_SEG(o, cur) + 0x80);
+
+            AT(o, 0x200, s32) = cur + 1;
+            if (!(AT(o, 0x200, s32) < 4)) {
+                AT(o, 0x200, s32) = 0;
+            }
+            sceVu0MulMatrix((f32 (*)[4])(STRAND_SEG(o, AT(o, 0x200, s32)) + 0x80), prev,
+                            (f32 (*)[4])(o + 0x1C0));
+            sceVu0ScaleVector(v, prev[0], AT(o, 0x20C, f32));
+            sceVu0TransMatrix((f32 (*)[4])(STRAND_SEG(o, AT(o, 0x200, s32)) + 0x80),
+                              (f32 (*)[4])(STRAND_SEG(o, AT(o, 0x200, s32)) + 0x80), v);
+            k = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF) + 0x70;
+            AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xC0, s32) = k;
+            AT(o, 0x204, s32) += 1;
+            if (!(AT(o, 0x204, s32) < 4)) {
+                u32 *pair;
+
+                AT(o, 0x204, s32) = 0;
+                AT(o, 0x210, s32) += 1;
+                pair = AT(o, 0x214, u32 *) + AT(o, 0x210, s32);
+                if (pair[1] == (u32)-1) {
+                    AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xC0, s32) = 0;
+                } else {
+                    f32 a[4] __attribute__((aligned(16)));
+                    f32 b[4] __attribute__((aligned(16)));
+
+                    sceVu0CopyVector(a, STRAND_BONE(o, pair[0]));
+                    sceVu0CopyVector(b, STRAND_BONE(o, AT(o, 0x214, u32 *)[AT(o, 0x210, s32) + 1]));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0SubVector((f32 *)(s + 0x80), b, (f32 *)(s + 0xB0));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0Normalize((f32 *)(s + 0x80), (f32 *)(s + 0x80));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0SubVector((f32 *)(s + 0xA0), b, a);
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0Normalize((f32 *)(s + 0xA0), (f32 *)(s + 0xA0));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0OuterProduct((f32 *)(s + 0xA0), (f32 *)(s + 0xA0), (f32 *)(s + 0x80));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0OuterProduct((f32 *)(s + 0x90), (f32 *)(s + 0xA0), (f32 *)(s + 0x80));
+                    s = STRAND_SEG(o, AT(o, 0x200, s32));
+                    sceVu0Normalize((f32 *)(s + 0x90), (f32 *)(s + 0x90));
+                }
+            }
+        }
+    }
+    rnd = D_0044E550;
+    for (k = 0; k < 4; k++) {
+        s = STRAND_SEG(o, k);
+        if (AT(s, 0xC0, s32) <= 0) {
+            continue;
+        }
+        AT(o, 0x21C, u8) = 0;
+        AT(s, 0xC0, s32) -= (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 7) + 8;
+        if (AT(s, 0xC0, s32) < 0x11) {
+            AT(s, 0xC0, s32) = 0;
+        }
+        strand_cells(s, rnd);
+    }
+    if (AT(o, 0x218, s32) != 0) {
+        AT(o, 0x208, s32) -= 1;
+        if (AT(o, 0x208, s32) == 0) {
+            s32 idx = AT(o, 0x200, s32) - 1;
+            s32 alpha;
+
+            if (idx < 0) {
+                idx = 4;   /* (sic: one past the last) */
+            }
+            alpha = AT(STRAND_SEG(o, idx), 0xC0, s32);
+            if (alpha >= 0x21) {
+                u8 *mgr = D_0044E578;
+                s32 slot = Effect_New(mgr, 0xF70, strand_drop_init);
+                s32 p[8] __attribute__((aligned(16)));
+                f32 f = (f32)alpha / 128.0f;
+
+                p[0] = (s32)((f32)AT(o, 0x10, s32) * f);
+                p[1] = (s32)((f32)AT(o, 0x14, s32) * f);
+                p[2] = (s32)((f32)AT(o, 0x18, s32) * f);
+                AT(&p[3], 0, f32) = AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xB0, f32);
+                AT(&p[4], 0, f32) = AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xB4, f32);
+                AT(&p[5], 0, f32) = AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xB8, f32);
+                AT(&p[6], 0, f32) = AT(o, 0x218, s32) == 1 ? 1.0f : 2.0f;
+                func_002D6090(mgr, slot, p);
+            }
+        }
+    }
+    return 1;
+}
