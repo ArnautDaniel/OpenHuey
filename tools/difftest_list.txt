@@ -2996,7 +2996,7 @@ src/game/pursuer.c func_002919B0
 src/game/pursuer.c func_0027D130 --pre=a0+0x17B4=0..1 --pre=a0+0x1664=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF
 src/game/pursuer.c func_0028D040
 src/game/pursuer.c func_0029A8C0
-src/game/pursuer.c func_0029ED80
+src/game/pursuer.c func_0029ED80 --pre=a1=0..50 --pre=a2=0x0B700000..0x0B700000 --pre=a3=0x0B700010..0x0B700010
 src/game/pursuer.c func_002994B0
 src/game/pursuer.c func_0029ED00
 src/game/pursuer.c func_00298FF0 --pre=a0+0x175C=0x22..0x23 --pre=a0+0x30=0..1 --stub-ret=0 --stub-ret=1

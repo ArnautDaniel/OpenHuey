@@ -375,8 +375,8 @@ s32 func_0029A8C0(Pursuer *p, s32 room) {
 }
 
 /* vtable +0x28: placement, turned to the animation's heading */
-s32 func_0029ED80(Pursuer *p) {
-    s32 r = func_00125AD0(&p->c);
+s32 func_0029ED80(Pursuer *p, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = func_00125AD0(&p->c, tri, heading, pos);
     u8 *m;
 
     MOTION_AT(p, 0x854, s32) = 0;
