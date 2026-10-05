@@ -5390,3 +5390,7 @@ src/game/rooms.c func_0017D580 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x54=0..
 src/game/rooms.c func_0017FA60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=4..8 --pre=a0+0x14=6..8 --pre=a0+0x5C=0xFFFFFFFF..3 --pre=a0+0x60=0..3 --pre=a0+0x54=0..3 --pre=a0+0x58=0..3 --pre=a0+0x30=0x0B200000..0x0B200000 --pre=a0+0x64=0..1 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=4..4 --pre=@0x44E560=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046BF2C..0x0046BF2C
 src/game/event_cmd.c func_001FBAE0 --pre=a1=0x0B000000..0x0B000000
 src/game/event_cmd.c func_002029B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046B3A0..0x0046B3A0 --pre=a0+4=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:40???????????????????????????????? --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B400000..0x0B400000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0xFF --runs=30 
+src/game/scene_game.c func_00399BF0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1
+src/game/scene_game.c func_00399C30 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game.c func_00399C50 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game.c func_00399C80 --pre=a0=0x0B000000..0x0B000000

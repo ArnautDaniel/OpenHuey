@@ -945,6 +945,29 @@ static inline void scenes_to_save(void) {
     }
 }
 
+extern const PTMF D_0044C588;   /* the gameplay sub-state "in play" (func_0039EAB0) */
+extern s32 func_00100B80(const PTMF *a, const PTMF *b);   /* __ptmf_cmpr: nonzero if they differ */
+
+/* the gameplay sub-state is "in play" */
+s32 func_00399BF0(Scene *g) {
+    return func_00100B80(&AT(g, 0x1053440, PTMF), &D_0044C588) == 0;
+}
+
+void func_00399C30(Scene *g, u8 a, u8 b) {
+    AT(g, 0x105344D, u8) = a;
+    AT(g, 0x105344E, u8) = b;
+}
+
+/* +0xF6CD24 bit 3 */
+void func_00399C50(Scene *g, u32 on) {
+    AT(g, 0xF6CD24, u32) = (AT(g, 0xF6CD24, u32) & ~8u) | (on & 1) << 3;
+}
+
+/* +0xF6CD24 bits 4..9 */
+u32 func_00399C80(Scene *g) {
+    return (AT(g, 0xF6CD24, u32) >> 4) & 0x3F;
+}
+
 /* the gameplay sub-state, each frame. +0x44: 0 play, 1 leaving the room (event phase 4), 2
  * waiting for the next room: once loaded the characters leave and enter, the camera restarts
  * (event phases 5, 3). In play: event phases 1 .. 3, the camera, the characters' control;
