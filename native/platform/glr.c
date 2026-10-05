@@ -1,7 +1,8 @@
 /* The PC renderer: OpenGL 4.6 core with direct state access (see glr.h).
  *
- * The scene is drawn at the PS2's 640x448 into an offscreen target (glr_present), which is
- * then scaled into the window; frame dumps read the offscreen target.
+ * The scene is drawn at the PS2's 640x448 times a render scale (glr_set_scale; HG_SCALE, the
+ * options menu) into an offscreen target (glr_present), which is then scaled into the window;
+ * the effects' work images stay at the PS2's sizes. Frame dumps read the scene at 640x448.
  *
  *   HG_GLDEBUG=1     once a second: the frame's draw count and its first vertex in clip space
  *                    (and, on glow frames, the glow buffer's brightest value and the bloom colour)
@@ -51,6 +52,7 @@
     X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) \
     X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) \
     X(PFNGLDELETETEXTURESPROC, glDeleteTextures) \
+    X(PFNGLDELETEFRAMEBUFFERSPROC, glDeleteFramebuffers) \
     X(PFNGLCREATEFRAMEBUFFERSPROC, glCreateFramebuffers) \
     X(PFNGLNAMEDFRAMEBUFFERTEXTUREPROC, glNamedFramebufferTexture) \
     X(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer) \
@@ -340,8 +342,11 @@ void glr_screen2(uint32_t rgba, int contrast, int blur) {
 
 /* ---- GL objects ---- */
 
-#define GLR_WIDTH 640
-#define GLR_HEIGHT 448
+/* the scene's targets: the PS2's 640 x 448 times the render scale (glr_set_scale); the effects'
+ * half-size images stay at the PS2's sizes */
+static int sScale = 1, sWantScale = 1;
+#define GLR_WIDTH (640 * sScale)
+#define GLR_HEIGHT (448 * sScale)
 #define GLR_GLOW_W 128   /* the renderer's work buffer (frame page 0x1F0) */
 #define GLR_GLOW_H 112
 
@@ -352,6 +357,7 @@ static GLuint sFbo, sColor, sDepth, sViewDepth, sGsTex;   /* sViewDepth: each pi
 /* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
  * scratch buffer its fade goes through (A) */
 static GLuint sGlowFbo, sGlowB, sGlowDepth, sGlowAFbo, sGlowA, sPostProg;
+static GLint sPostScaleLoc;
 static GLint sPostModeLoc, sPostColorLoc, sPostColor2Loc, sPostRangeLoc, sPostFixLoc, sPostBandLoc, sPostOffLoc;
 /* the bloom's half-size images: H, H2 and the next H */
 #define GLR_HALF_W 256
@@ -364,6 +370,7 @@ static GLuint sRefl, sReflDepth, sReflFbo, sReflPrep, sReflPrepFbo, sMask, sMask
 /* layer 6 (shadows): its colour and depth-stencil, the scene's depth at half size in the middle
  * (where the camera's half-size matrices draw) */
 static GLuint sShadowCol, sShadowDS, sShadowFbo;
+static GLuint sDump, sDumpFbo;
 static int sGsW, sGsH;
 
 static const char *kMeshVs =
@@ -490,6 +497,7 @@ static const char *kPostFs =
     "uniform vec4 uColor;\n"   /* 0..255 */
     "uniform vec4 uColor2;\n"
     "uniform vec2 uRange;\n"
+    "uniform float uS;\n"   /* the render scale */
     "uniform vec4 uBand;\n"   /* the depth of field: a, from, to, b */
     "uniform ivec2 uOff;\n"   /* a pass's offset (GL pixels) */
     "uniform sampler2D uTex2;\n"
@@ -501,7 +509,7 @@ static const char *kPostFs =
     "    return round(texelFetch(t, p, 0) * 255.0);\n"
     "}\n"
     "vec4 refl(ivec2 q) {\n"   /* the reflection's middle at half size (0..255 x 0..223) */
-    "    return round(texelFetch(uTex, ivec2(160 + int(float(q.x) * 1.25), 112 + q.y), 0) * 255.0);\n"
+    "    return round(texelFetch(uTex, ivec2(int((160.0 + float(q.x) * 1.25) * uS), int(float(112 + q.y) * uS)), 0) * 255.0);\n"
     "}\n"
     "float corner(vec2 q, vec2 c, vec2 a, vec2 b) {\n"   /* c's barycentric weight; 0 outside */
     "    float det = (a.y - b.y) * (c.x - b.x) + (b.x - a.x) * (c.y - b.y);\n"
@@ -518,11 +526,11 @@ static const char *kPostFs =
     "        c = b + floor((a - b) * 0.5);\n"
     "    } else if (uMode == 1 || uMode == 6) {\n"
     "        vec2 sz = vec2(textureSize(uTex, 0));\n"
-    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
+    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / (vec2(640.0, 448.0) * uS) + 0.5;\n"
     "        vec4 h = round(texture(uTex, t / sz) * 255.0);\n"
     "        c = uMode == 1 ? floor(h * 0.5) : floor(floor(h * uColor / 128.0) * uFix / 128.0);\n"
     "    } else if (uMode == 2) {\n"   /* the screen is 640 wide here, the game's 512 */
-    "        c = at(uTex, ivec2(int(float(p.x * 2) * 1.25), p.y * 2 + 1));\n"
+    "        c = at(uTex, ivec2(int(float(p.x * 2) * 1.25 * uS), int(float(p.y * 2 + 1) * uS)));\n"
     "        if (uFix < 0.0 && c.a == 0.0) c = vec4(0.0);\n"   /* the bloom's alpha test: frame alpha != 0 */
     "    } else if (uMode == 3) {\n"
     "        c = vec4(0.0);\n"
@@ -545,7 +553,7 @@ static const char *kPostFs =
     "        oColor = vec4(fc.rgb / 255.0, clamp(fc.a / 128.0, 0.0, 1.0));\n"
     "        return;\n"
     "    } else if (uMode == 11) {\n"
-    "        vec2 q = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 - gl_FragCoord.y);\n"   /* the game's pixels */
+    "        vec2 q = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"   /* the game's pixels */
     "        float o = uRange.x, w = 0.0;\n"
     "        w = max(w, corner(q, vec2(0.0, 0.0), vec2(256.0 + o, 0.0), vec2(0.0, 224.0 - o)));\n"
     "        w = max(w, corner(q, vec2(512.0, 0.0), vec2(256.0 + o, 0.0), vec2(512.0, 224.0 + o)));\n"
@@ -566,7 +574,7 @@ static const char *kPostFs =
     "        ivec2 sz = textureSize(uTex1, 0);\n"
     "        if (q.x >= 0 && q.y >= 0 && q.x < sz.x && q.y < sz.y) c += floor((at(uTex1, q) - c) * 0.5);\n"
     "    } else if (uMode == 16) {\n"   /* the blur's colour with the depth band's alpha (0x80 = 128) */
-    "        float d = texelFetch(uTex2, ivec2(int(float(p.x * 2) * 1.25), p.y * 2 + 1), 0).r;\n"
+    "        float d = texelFetch(uTex2, ivec2(int(float(p.x * 2) * 1.25 * uS), int(float(p.y * 2 + 1) * uS)), 0).r;\n"
     "        float a = 128.0;\n"
     "        for (int k = 0; k < 8; k++) {\n"
     "            float z = k < 4 ? uBand.x + float(k + 1) * 0.25 * (uBand.y - uBand.x)\n"
@@ -576,7 +584,7 @@ static const char *kPostFs =
     "        c = vec4(at(uTex, p).rgb, a);\n"
     "    } else if (uMode == 17) {\n"   /* over the screen by its alpha: (Cs - Cd) * As + Cd */
     "        vec2 sz = vec2(textureSize(uTex, 0));\n"
-    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
+    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / (vec2(640.0, 448.0) * uS) + 0.5;\n"
     "        vec4 h = texture(uTex, t / sz) * 255.0;\n"
     "        oColor = vec4(h.rgb / 255.0, clamp(h.a / 128.0, 0.0, 1.0));\n"
     "        return;\n"
@@ -595,7 +603,7 @@ static const char *kPostFs =
     "        oColor = clamp(c / 255.0, 0.0, 1.0);\n"
     "        return;\n"
     "    } else if (uMode == 21) {\n"   /* the prepared reflection stretched over the screen */
-    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 - gl_FragCoord.y);\n"   /* the game's pixels */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"   /* the game's pixels */
     "        vec2 uv = uOff.x != 0 ? vec2(g.x * 0.5, (448.0 - g.y) * 0.5)\n"
     "                              : vec2((512.0 + uRange.x - g.x) * 0.5, g.y * 0.5);\n"
     "        if (uv.x < 0.0 || uv.x >= 256.0) discard;\n"
@@ -605,9 +613,9 @@ static const char *kPostFs =
     "        oColor = vec4(h.rgb, 1.0);\n"
     "        return;\n"
     "    } else if (uMode == 22) {\n"   /* the screen mirrored into the reflection's middle (half size) */
-    "        vec2 q = gl_FragCoord.xy - vec2(160.0, 112.0);\n"   /* 0 .. 320 x 0 .. 224 */
+    "        vec2 q = gl_FragCoord.xy - vec2(160.0, 112.0) * uS;\n"   /* 0 .. 320 x 0 .. 224, scaled */
     "        vec2 s = vec2(q.x * 2.0, q.y * 2.0);\n"
-    "        if (uOff.x != 0) s.y = 447.0 - s.y; else s.x = 639.0 - s.x;\n"
+    "        if (uOff.x != 0) s.y = 448.0 * uS - 1.0 - s.y; else s.x = 640.0 * uS - 1.0 - s.x;\n"
     "        oColor = vec4(texelFetch(uTex, ivec2(s), 0).rgb, 0.0);\n"
     "        return;\n"
     "    } else if (uMode == 23) {\n"   /* a flat colour (uColor 0..255, alpha 0..128) */
@@ -631,7 +639,7 @@ static const char *kPostFs =
     "        c = at(uTex, p) + 8.0 * floor(at(uTex, p) * 0.25);\n"
     "    } else {\n"
     "        vec2 sz = vec2(textureSize(uTex, 0));\n"
-    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
+    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / (vec2(640.0, 448.0) * uS) + 0.5;\n"
     "        vec4 cs = floor(round(texture(uTex, t / sz) * 255.0) * uColor / 128.0);\n"
     "        vec4 d = at(uTex1, p);\n"
     "        c = d + floor((d - cs) * uFix / 128.0);\n"
@@ -840,6 +848,66 @@ static void APIENTRY debug_cb(GLenum source, GLenum type, GLuint id, GLenum seve
     }
 }
 
+/* the scene-size targets, made for the render scale (and made again when it changes) */
+static void targets_make(void) {
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sColor);
+    p_glTextureStorage2D(sColor, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sDepth);
+    p_glTextureStorage2D(sDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sFbo);
+    p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
+    p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sViewDepth);
+    p_glTextureStorage2D(sViewDepth, 1, GL_R32F, GLR_WIDTH, GLR_HEIGHT);
+    p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT1, sViewDepth, 0);
+    {
+        static const GLenum kBufs[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+
+        p_glNamedFramebufferDrawBuffers(sFbo, 2, kBufs);
+    }
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sRefl);
+    p_glTextureStorage2D(sRefl, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflDepth);
+    p_glTextureStorage2D(sReflDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sReflFbo);
+    p_glNamedFramebufferTexture(sReflFbo, GL_COLOR_ATTACHMENT0, sRefl, 0);
+    p_glNamedFramebufferTexture(sReflFbo, GL_DEPTH_ATTACHMENT, sReflDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sMask);
+    p_glTextureStorage2D(sMask, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sMaskFbo);
+    p_glNamedFramebufferTexture(sMaskFbo, GL_COLOR_ATTACHMENT0, sMask, 0);
+    p_glNamedFramebufferTexture(sMaskFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowCol);
+    p_glTextureStorage2D(sShadowCol, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowDS);
+    p_glTextureStorage2D(sShadowDS, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sShadowFbo);
+    p_glNamedFramebufferTexture(sShadowFbo, GL_COLOR_ATTACHMENT0, sShadowCol, 0);
+    p_glNamedFramebufferTexture(sShadowFbo, GL_DEPTH_STENCIL_ATTACHMENT, sShadowDS, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sCopy);
+    p_glTextureStorage2D(sCopy, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sCopyFbo);
+    p_glNamedFramebufferTexture(sCopyFbo, GL_COLOR_ATTACHMENT0, sCopy, 0);
+}
+
+static void targets_free(void) {
+    GLuint tex[] = {sColor, sDepth, sViewDepth, sRefl, sReflDepth, sMask, sShadowCol, sShadowDS, sCopy};
+    GLuint fbo[] = {sFbo, sReflFbo, sMaskFbo, sShadowFbo, sCopyFbo};
+
+    p_glDeleteTextures((GLsizei)(sizeof(tex) / sizeof(tex[0])), tex);
+    p_glDeleteFramebuffers((GLsizei)(sizeof(fbo) / sizeof(fbo[0])), fbo);
+}
+
+/* the render scale: the scene drawn at 640 x 448 times `scale` (1 the PS2's; 0 to fit the
+ * window), from the next frame */
+void glr_set_scale(int scale) {
+    sWantScale = scale;
+}
+
+int glr_scale(void) {
+    return sWantScale;
+}
+
 int glr_init(void) {
     int i;
 
@@ -877,21 +945,6 @@ int glr_init(void) {
     p_glVertexArrayAttribBinding(sVao, 2, 0);
     p_glCreateVertexArrays(1, &sQuadVao);
 
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sColor);
-    p_glTextureStorage2D(sColor, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sDepth);
-    p_glTextureStorage2D(sDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateFramebuffers(1, &sFbo);
-    p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
-    p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sViewDepth);
-    p_glTextureStorage2D(sViewDepth, 1, GL_R32F, GLR_WIDTH, GLR_HEIGHT);
-    p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT1, sViewDepth, 0);
-    {
-        static const GLenum kBufs[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-
-        p_glNamedFramebufferDrawBuffers(sFbo, 2, kBufs);
-    }
 
     sPostProg = program(kQuadVs, kPostFs);
     sPostModeLoc = p_glGetUniformLocation(sPostProg, "uMode");
@@ -901,6 +954,8 @@ int glr_init(void) {
     sPostRangeLoc = p_glGetUniformLocation(sPostProg, "uRange");
     sPostBandLoc = p_glGetUniformLocation(sPostProg, "uBand");
     sPostOffLoc = p_glGetUniformLocation(sPostProg, "uOff");
+    sPostScaleLoc = p_glGetUniformLocation(sPostProg, "uS");
+    p_glProgramUniform1f(sPostProg, sPostScaleLoc, 1.0f);
     p_glProgramUniform1i(sPostProg, p_glGetUniformLocation(sPostProg, "uTex2"), 2);
     p_glProgramUniform1i(sPostProg, p_glGetUniformLocation(sPostProg, "uTex1"), 1);
     for (i = 0; i < 3; i++) {
@@ -913,13 +968,6 @@ int glr_init(void) {
         p_glCreateFramebuffers(1, &sHalfFbo[i]);
         p_glNamedFramebufferTexture(sHalfFbo[i], GL_COLOR_ATTACHMENT0, sHalf[i], 0);
     }
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sRefl);
-    p_glTextureStorage2D(sRefl, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflDepth);
-    p_glTextureStorage2D(sReflDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateFramebuffers(1, &sReflFbo);
-    p_glNamedFramebufferTexture(sReflFbo, GL_COLOR_ATTACHMENT0, sRefl, 0);
-    p_glNamedFramebufferTexture(sReflFbo, GL_DEPTH_ATTACHMENT, sReflDepth, 0);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflPrep);
     p_glTextureStorage2D(sReflPrep, 1, GL_RGBA8, GLR_HALF_W, GLR_HALF_H);
     p_glTextureParameteri(sReflPrep, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -928,22 +976,13 @@ int glr_init(void) {
     p_glTextureParameteri(sReflPrep, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     p_glCreateFramebuffers(1, &sReflPrepFbo);
     p_glNamedFramebufferTexture(sReflPrepFbo, GL_COLOR_ATTACHMENT0, sReflPrep, 0);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sMask);
-    p_glTextureStorage2D(sMask, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateFramebuffers(1, &sMaskFbo);
-    p_glNamedFramebufferTexture(sMaskFbo, GL_COLOR_ATTACHMENT0, sMask, 0);
-    p_glNamedFramebufferTexture(sMaskFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowCol);
-    p_glTextureStorage2D(sShadowCol, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowDS);
-    p_glTextureStorage2D(sShadowDS, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateFramebuffers(1, &sShadowFbo);
-    p_glNamedFramebufferTexture(sShadowFbo, GL_COLOR_ATTACHMENT0, sShadowCol, 0);
-    p_glNamedFramebufferTexture(sShadowFbo, GL_DEPTH_STENCIL_ATTACHMENT, sShadowDS, 0);
-    p_glCreateTextures(GL_TEXTURE_2D, 1, &sCopy);
-    p_glTextureStorage2D(sCopy, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
-    p_glCreateFramebuffers(1, &sCopyFbo);
-    p_glNamedFramebufferTexture(sCopyFbo, GL_COLOR_ATTACHMENT0, sCopy, 0);
+    targets_make();
+    {   /* frame dumps: the scene brought to 640 x 448 */
+        p_glCreateTextures(GL_TEXTURE_2D, 1, &sDump);
+        p_glTextureStorage2D(sDump, 1, GL_RGBA8, 640, 448);
+        p_glCreateFramebuffers(1, &sDumpFbo);
+        p_glNamedFramebufferTexture(sDumpFbo, GL_COLOR_ATTACHMENT0, sDump, 0);
+    }
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sGlowB);
     p_glTextureStorage2D(sGlowB, 1, GL_RGBA8, GLR_GLOW_W, GLR_GLOW_H);
     p_glTextureParameteri(sGlowB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1125,13 +1164,13 @@ static void run_post(const GlrDraw *d) {
         break;
     }
     case POST_SHADOW_FILL: {   /* the colour where the count is above 0x7F, within the box */
-        int x0 = (int)(d->mvp[0] - 1728.0f), x1 = (int)(d->mvp[2] - 1728.0f);
-        int y0 = (int)(2272.0f - d->mvp[3]), y1 = (int)(2272.0f - d->mvp[1]);
+        int x0 = (int)((d->mvp[0] - 1728.0f) * sScale), x1 = (int)((d->mvp[2] - 1728.0f) * sScale);
+        int y0 = (int)((2272.0f - d->mvp[3]) * sScale), y1 = (int)((2272.0f - d->mvp[1]) * sScale);
 
         p_glBindFramebuffer(GL_FRAMEBUFFER, sShadowFbo);
         p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
         p_glEnable(GL_SCISSOR_TEST);
-        p_glScissor(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+        p_glScissor(x0, y0, x1 - x0 + sScale, y1 - y0 + sScale);
         p_glEnable(GL_STENCIL_TEST);
         p_glStencilFunc(GL_LESS, 0x7F, 0xFF);
         p_glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -1235,6 +1274,17 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     int reflStarted = 0;                  /* layer 0x17's reflection begun this frame */
     int inShadow = 0;                     /* within layer 6 */
 
+    {   /* the render scale: as set, or (0) the window's height in 448s, at most 4 */
+        int want = sWantScale > 0 ? sWantScale : outH > 0 ? (outH + 447) / 448 : 1;
+
+        want = want < 1 ? 1 : want > 4 ? 4 : want;
+        if (want != sScale) {
+            targets_free();
+            sScale = want;
+            targets_make();
+            p_glProgramUniform1f(sPostProg, sPostScaleLoc, (float)sScale);
+        }
+    }
     if (sGlowClear) {
         p_glClearNamedFramebufferfv(sGlowFbo, GL_COLOR, 0, kBlack);
         sGlowClear = 0;
@@ -1349,7 +1399,8 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
 
                 p_glClearNamedFramebufferfv(sShadowFbo, GL_COLOR, 0, kNone);
                 p_glClearNamedFramebufferfv(sShadowFbo, GL_DEPTH, 0, &kFar1);
-                p_glBlitNamedFramebuffer(sFbo, sShadowFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 160, 112, 480, 336,
+                p_glBlitNamedFramebuffer(sFbo, sShadowFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 160 * sScale, 112 * sScale,
+                                         480 * sScale, 336 * sScale,
                                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
                 inShadow = 1;
             } else if (d->layer != 6 && inShadow) {
@@ -1446,7 +1497,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                     p_glUseProgram(sPostProg);
                     p_glBindVertexArray(sQuadVao);
                     p_glBindFramebuffer(GL_FRAMEBUFFER, sReflFbo);
-                    p_glViewport(160, 112, 320, 224);
+                    p_glViewport(160 * sScale, 112 * sScale, 320 * sScale, 224 * sScale);
                     p_glProgramUniform1i(sPostProg, sPostModeLoc, 22);
                     p_glProgramUniform2i(sPostProg, sPostOffLoc, sReflFlip, 0);
                     p_glBindTextureUnit(0, sCopy);
@@ -1544,15 +1595,18 @@ void glr_read_pixels(uint32_t *out, int w, int h) {
     int y;
 
     (void)w;
-    p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    /* the scene at 640 x 448 whatever the render scale */
+    p_glBlitNamedFramebuffer(sFbo, sDumpFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, 640, 448, GL_COLOR_BUFFER_BIT,
+                             GL_LINEAR);
+    p_glBindFramebuffer(GL_FRAMEBUFFER, sDumpFbo);
     p_glPixelStorei(GL_PACK_ALIGNMENT, 4);
-    p_glReadPixels(0, 0, GLR_WIDTH, GLR_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, out);
+    p_glReadPixels(0, 0, 640, 448, GL_RGBA, GL_UNSIGNED_BYTE, out);
     /* GL rows run bottom-up */
-    for (y = 0; y < h / 2 && y < GLR_HEIGHT / 2; y++) {
-        uint32_t tmp[GLR_WIDTH];
+    for (y = 0; y < h / 2 && y < 448 / 2; y++) {
+        uint32_t tmp[640];
 
-        memcpy(tmp, out + y * GLR_WIDTH, sizeof(tmp));
-        memcpy(out + y * GLR_WIDTH, out + (GLR_HEIGHT - 1 - y) * GLR_WIDTH, sizeof(tmp));
-        memcpy(out + (GLR_HEIGHT - 1 - y) * GLR_WIDTH, tmp, sizeof(tmp));
+        memcpy(tmp, out + y * 640, sizeof(tmp));
+        memcpy(out + y * 640, out + (447 - y) * 640, sizeof(tmp));
+        memcpy(out + (447 - y) * 640, tmp, sizeof(tmp));
     }
 }

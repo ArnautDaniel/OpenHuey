@@ -97,6 +97,10 @@ void glr_shadow_cancel(void);
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 
+/* the render scale: the scene drawn at 640 x 448 times `scale` (1..4; 0 fits the window) */
+void glr_set_scale(int scale);
+int glr_scale(void);
+
 /* platform side (video.c) */
 int glr_init(void);                                    /* after the GL context exists */
 void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH);

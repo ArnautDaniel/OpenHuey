@@ -4,7 +4,8 @@
  *
  *   HG_HEADLESS=1   a hidden window (tests): nothing shown, frames can still be dumped
  *   HG_DUMP=dir     write every 30th frame as dir/frame_NNNNN.ppm
- *   HG_MAXFRAMES=n  exit after n frames (profiling, tests) */
+ *   HG_MAXFRAMES=n  exit after n frames (profiling, tests)
+ *   HG_SCALE=n      render scale (1..4: 640 x 448 times n; 0 fits the window, the default) */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -46,6 +47,11 @@ static void video_init(void) {
     }
     SDL_GL_SetSwapInterval(0);
     sGl = glr_init();
+    if (sGl) {
+        const char *sc = getenv("HG_SCALE");
+
+        glr_set_scale(sc != NULL ? atoi(sc) : 0);
+    }
 }
 
 static void dump(void) {
