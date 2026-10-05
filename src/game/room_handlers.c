@@ -3758,3 +3758,332 @@ s32 func_002B4280(void) {
     }
     return 1;
 }
+
+/* ---- rooms 0x20 / 0x21 / 0x23 ---- */
+
+extern void *D_00469C20[];   /* Actor base vtable */
+extern const char *const D_003FF124;     /* room 0x20's falling object */
+extern const char *const D_0040187C;
+extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
+extern void func_001247E0(Actor *a, const f32 *delta);   /* moved on the nav mesh */
+extern u32 func_00208F80(VObject *ev, s32 id);           /* (events +0x38) a character's script value */
+
+static inline u8 *room_obj(const char *name) {
+    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+}
+
+/* nav triangle `i`'s record, or NULL */
+static inline u8 *nav_tri(u32 i) {
+    u8 *nm = (u8 *)D_0044E570;
+
+    return (i < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) ? AT(nm, 0x4, u8 *) + i * 0x50 : NULL;
+}
+
+/* room 0x20 (D_003FF0F8): object byte 3 becomes event point byte 4 (radii 5) */
+s32 func_002AE4E0(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_003FF110[cmd[3]]);
+
+    if (o == NULL) {
+        return 0;
+    }
+    VCALL(D_0044E4D0, 0x6C, void (*)(VObject *, u8, f32 *, f32, f32))(D_0044E4D0, cmd[4], (f32 *)(o + 0x20), 5.0f,
+                                                                       5.0f);
+    return 1;
+}
+
+/* room 0x20 (D_003FF0E8): the character's script value is at least be32 bytes 3..6 */
+s32 func_002AE570(void *self, u8 *chr, u8 *cmd) {
+    u32 v = VCALL(D_0044E4D0, 0x38, u32 (*)(VObject *, s32))(D_0044E4D0, chr[0x153C]) & 0xFFFF;
+
+    return !(v < ((u32)cmd[3] << 24 | (u32)cmd[4] << 16 | (u32)cmd[5] << 8 | cmd[6]));
+}
+
+/* room 0x20 (D_003FF0D8): the player, free and within 5 of the falling object, knocks it - it
+ * gets a push (0, 1, 1) turned by her facing, and its nav triangle */
+s32 func_002AE5E0(void) {
+    u8 *o = room_obj(D_003FF124);
+    Character *p;
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+
+    if (o == NULL) {
+        return 0;
+    }
+    p = gCharPlayer;
+    if (p == NULL || p->a.active != 1 || AT(p, 0x29, u8) != 0) {
+        return 0;
+    }
+    if (VCALL((VObject *)p, 0x74, s32 (*)(VObject *, f32 *))((VObject *)p, v) == 0) {
+        return 0;
+    }
+    sceVu0SubVector(v, v, (f32 *)(o + 0x20));
+    if (25.0f < v[1] * v[1] + v[0] * v[0] + v[2] * v[2]) {
+        return 0;
+    }
+    sceVu0CopyVector(v, (f32 *)((u8 *)p + 0x50));
+    v[3] = 1.0f;
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrix(m, m, v);
+    v[2] = 1.0f;
+    v[3] = 1.0f;
+    v[0] = 0.0f;
+    v[1] = 1.0f;
+    sceVu0ApplyMatrix((f32 *)(o + 0x30), m, v);
+    AT(o, 0x3C, s32) = VCALL((VObject *)D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(
+        (VObject *)D_0044E570, (f32 *)(o + 0x20), 0);
+    return 1;
+}
+
+/* room 0x20 (D_003FF0C8): the character turns to face object byte 3 */
+s32 func_002AE790(void *self, u8 *chr, u8 *cmd) {
+    u8 *o = room_obj(D_003FF110[cmd[3]]);
+
+    if (o != NULL) {
+        AT(chr, 0x10C, f32) = func_002E2D00(func_0031C5C0(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
+                                                          AT(o, 0x28, f32) - AT(chr, 0x18, f32)));
+        chr[0xE1] = 0;
+        AT(chr, 0xF4, s32) = 0xF;
+    }
+    return 1;
+}
+
+static void dust_cloud_init(void **obj) {
+    obj[0] = D_0046FF20;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* room 0x20 (D_003FF0B8): a dust cloud where the falling object is */
+s32 func_002AE830(void) {
+    u8 *o = room_obj(D_003FF124);
+    s32 slot;
+    struct {
+        f32 pos[4];
+        s32 kind, a, b, c, d;
+    } prm __attribute__((aligned(16)));
+
+    if (o == NULL) {
+        return 1;
+    }
+    slot = Effect_New(D_0044E578, 0x720, dust_cloud_init);
+    prm.pos[0] = AT(o, 0x20, f32);
+    prm.pos[1] = AT(o, 0x24, f32);
+    prm.pos[2] = AT(o, 0x28, f32);
+    prm.pos[3] = 1.0f;
+    prm.d = 0x10;
+    prm.kind = 2;
+    prm.c = 0x50;
+    prm.b = 0x50;
+    prm.a = 0x50;
+    func_002D6090(D_0044E578, slot, &prm);
+    return 1;
+}
+
+/* room 0x20 (D_003FF0A8): the falling object falls (gravity 0.2 a frame on its velocity +0x30,
+ * spinning 1 degree a frame) along the nav mesh, events bit 1 set while it lies on open floor;
+ * landing on floor that isn't 0x10000 raises dust */
+s32 func_002AE9C0(void *self) {
+    u8 *o = room_obj(D_003FF124);
+    u8 *nm, *t;
+    s32 tri;
+    f32 y;
+    f32 g[4] __attribute__((aligned(16)));
+    Actor a;
+
+    if (o == NULL) {
+        return 1;
+    }
+    tri = AT(o, 0x3C, s32);
+    if (tri == -1) {
+        return 1;
+    }
+    if (tri & 0x80000000) {   /* landed */
+        t = nav_tri(tri & 0x7FFFFFFF);
+        if (t == NULL || (AT(t, 0x3C, u32) & 0x20020008)) {
+            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        }
+        return 1;
+    }
+    g[1] = -0x1.99999a0000000p-3f /* 0.2 */;
+    g[0] = 0.0f;
+    g[3] = 1.0f;
+    g[2] = 0.0f;
+    sceVu0AddVector((f32 *)(o + 0x30), g, (f32 *)(o + 0x30));
+    VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+    a.vtbl = D_00469C20;
+    a.slot = 0x0FFFFFFF;
+    a.flags24 = 0x1000000;
+    y = AT(o, 0x24, f32);
+    a.navMask = 0x20020008;
+    a.navTri = tri;
+    sceVu0CopyVector(a.pos, (f32 *)(o + 0x20));
+    func_001247E0(&a, (f32 *)(o + 0x30));
+    nm = (u8 *)D_0044E570;
+    VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, a.navTri, a.pos);
+    y += AT(o, 0x34, f32);
+    sceVu0CopyVector((f32 *)(o + 0x20), a.pos);
+    AT(o, 0x3C, u32) = a.navTri;
+    if (a.navTri == (u32)-1) {
+        a.vtbl = D_00469C20;
+        return 1;
+    }
+    if (!(y <= a.pos[1])) {
+        f32 r;
+
+        AT(o, 0x24, f32) = y;
+        r = AT(o, 0x14, f32) + 0x1.1df46ap-6f /* 1 degree */;
+        AT(o, 0x14, f32) = r;
+        if (!(r <= 0x1.921fb6p+1f /* pi */)) {
+            AT(o, 0x14, f32) = r - 0x1.921fb6p+2f /* 2 pi */;
+        }
+    } else {
+        VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 7);
+        AT(o, 0x38, f32) = 0.0f;
+        AT(o, 0x34, f32) = 0.0f;
+        AT(o, 0x30, f32) = 0.0f;
+        t = (a.navTri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) ? AT(nm, 0x4, u8 *) + a.navTri * 0x50 : NULL;
+        if (t == NULL || (AT(t, 0x3C, u32) & 0x20020008)) {
+            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        }
+        if (t != NULL && (AT(t, 0x3C, u32) & 0x2018000) != 0x10000) {
+            func_002AE830();
+        }
+        AT(o, 0x3C, u32) |= 0x80000000;
+        VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
+    }
+    a.vtbl = D_00469C20;
+    return 1;
+}
+
+/* room 0x20 (D_003FF088): the falling object back up in place */
+s32 func_002AEEE0(void) {
+    u8 *o = room_obj(D_003FF124);
+
+#ifdef HG_NATIVE
+    if (o == NULL) {   /* (the PS2 writes through junk) */
+        return 1;
+    }
+#endif
+    o[0] = 0;
+    AT(o, 0x20, u32) = 0x411A8F5C;   /* 9.66 */
+    AT(o, 0x24, u32) = 0x3F028F5C;   /* 0.51 */
+    AT(o, 0x28, u32) = 0x42BACCCD;   /* 93.4 */
+    AT(o, 0x10, u32) = 0x3FC8F5C3;   /* 1.57 */
+    AT(o, 0x14, u32) = 0x3F4A3D71;   /* 0.79 */
+    AT(o, 0x18, u32) = 0xC048F5C3;   /* -3.14 */
+    return 1;
+}
+
+/* room 0x20 (D_003FF078): the player's action byte 3 (7) at (-30, 0, 90) */
+s32 func_002AEF60(void *self, void *a1, u8 *cmd) {
+    f32 at[4] __attribute__((aligned(16)));
+
+    at[0] = -30.0f;
+    at[2] = 90.0f;
+    at[1] = 0.0f;
+    at[3] = 1.0f;
+    func_00122C20(&gCharPlayer->a, cmd[3], 7, 0, 0, at);
+    return 1;
+}
+
+/* room 0x21 (D_00400BF0): the pursuer, about and not in state 2, is in its mode 2 but in
+ * another room than the current one (the player about too) */
+s32 func_002AF0F0(void) {
+    Character *s = gCharPursuer, *p = gCharPlayer;
+
+    if (s == NULL || s->a.active == 0 || p == NULL || p->a.active == 0) {
+        return 0;
+    }
+    if (AT(s, 0xC4, s32) == 2 || AT(s, 0x153C, u8) != 2) {
+        return 0;
+    }
+    return AT(s, 0x30, s32) != VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress);
+}
+
+/* room 0x21 (D_00400BE0): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */
+s32 func_002AF1D0(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 3)]->motion;
+
+    switch (cmd[3]) {
+    case 1:
+        AT(m, 0x1574, s32) = cmd[4];
+        break;
+    case 0:
+        AT(m, 0x1570, s32) = cmd[4];
+        break;
+    }
+    return 1;
+}
+
+/* room 0x21 (D_00400BD0): the player's model +0xC8 vector by byte 3 */
+s32 func_002AF250(void *self, void *a1, u8 *cmd) {
+    VObject *m = gCharPlayer->motion;
+    f32 v[4] __attribute__((aligned(16)));
+
+    if (cmd[3] == 0) {
+        v[0] = 0.0f;
+        v[1] = 0x1.99999a0000000p-4f /* 0.1 */;
+        v[2] = -0x1.47ae140000000p-7f /* 0.01 */;
+    } else if (cmd[3] == 1) {
+        v[2] = 0.0f;
+        v[0] = 0x1.47ae140000000p-6f /* 0.02 */;
+        v[1] = 0x1.99999a0000000p-4f /* 0.1 */;
+    } else {
+        v[0] = 0.0f;
+        v[2] = 0.0f;
+        v[1] = 0x1.99999a0000000p-4f /* 0.1 */;
+    }
+    VCALL(m, 0xC8, void (*)(VObject *, f32 *))(m, v);
+    return 1;
+}
+
+/* room 0x23 (D_00401848): byte 3 0 a progress name, 1 wait for character 3 (2 while not), else
+ * done */
+s32 func_002AFA00(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0:
+        func_0016CEC0(gProgress, D_0040187C);
+        return 1;
+    case 1:
+        return func_0016CD60(gProgress, 3, 0) == 0 ? 2 : 1;
+    }
+    func_0016CD30(gProgress);
+    return 1;
+}
+
+/* room 0x23 (D_00401838): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2 */
+s32 func_002AFAA0(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 3)]->motion;
+
+    if (cmd[3] == 1) {
+        AT(m, 0x9A0, f32) = 0.0f;
+        AT(m, 0x9A8, f32) = 0.0f;
+    } else {
+        AT(m, 0x9A0, u32) = 0x3DF5C28F;   /* 0.12 */
+        AT(m, 0x9A8, u32) = 0x3E4CCCCD;   /* 0.2 */
+    }
+    return 1;
+}
+
+/* room 0x23 (D_00401828): none of the six slots' func_00177BF0 bits 0..3, and the stalker is
+ * about but not active, in mode 2, 6 or 7 */
+s32 func_002AFB50(void) {
+    u32 acc = 0;
+    s32 i;
+    u8 *c;
+    u8 k;
+
+    for (i = 0; i < 6; i++) {
+        acc |= (u8)func_00177BF0(gProgress, 0, i & 0xFF);
+    }
+    if (acc & 0xF) {
+        return 0;
+    }
+    c = D_0044F808;
+    if (c == NULL || AT(c, 0x28, u8) == 1) {
+        return 0;
+    }
+    k = AT(c, 0x153C, u8);
+    return k == 2 || k == 6 || k == 7;
+}
