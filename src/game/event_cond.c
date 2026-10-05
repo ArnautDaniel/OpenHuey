@@ -65,6 +65,9 @@ extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern VObject *D_0044E4B8;   /* the camera */
 extern VObject *D_0044E558;   /* the doors */
+extern NavMesh *D_0044E570;   /* the nav mesh */
+extern u8 *D_0044F258;        /* the placed characters */
+extern s32 func_001235C0(u8 *a, u8 *c);
 extern u8 *gCharPursuer;
 extern void *D_0044E958;      /* the movie playing */
 
@@ -710,6 +713,55 @@ s32 func_001FC760(VObject *ev) {
             if (k != 0xFF &&
                 VCALL(D_0044E558, 0x18, s32 (*)(VObject *, s32, f32 *))(D_0044E558, k, (f32 *)(c + 0x10)) == 0) {
                 r = 1;
+            }
+        }
+        break;
+    }
+    case 0x44: {   /* character pc[1] (in the scene, this room) stands on a triangle with flags be32 pc[2..5] */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(c, 0x28, u8) == 1) {
+            s32 room = AT(c, 0x30, s32);
+
+            if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room && AT(c, 0x34, s32) != -1 &&
+                (NavMesh_TriFlags(D_0044E570, AT(c, 0x34, u32)) & be32(PC(ev) + 2))) {
+                r = 1;
+            }
+        }
+        break;
+    }
+    case 0x4F: {   /* the point (3 x signed be16 pc[1..6]) is on the camera (+0xD4) */
+        f32 v[4] __attribute__((aligned(16)));
+
+        v[0] = (f32)(s16)be16(pc + 1);
+        v[1] = (f32)(s16)be16(PC(ev) + 3);
+        v[3] = 1.0f;
+        v[2] = (f32)(s16)be16(PC(ev) + 5);
+        r = VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, v);
+        break;
+    }
+    case 0x50: {   /* character pc[1] (in the scene, this room): func_001235C0 */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) && (u8)func_001235C0(c, c) == 1) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x53: {   /* one of the 10 placed characters (in the scene, this room) is in state pc[1] */
+        u8 *pl = D_0044F258;
+        s32 i;
+
+        for (i = 0; i < 10; i++) {
+            u8 *o = VCALL_AT(pl, 0x28, 0x10, u8 *(*)(u8 *, s32))(pl, i & 0xFF);
+
+            if (o != NULL && AT(o, 0x28, u8) != 0) {
+                s32 room = AT(o, 0x30, s32);
+
+                if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && PC(ev)[1] == AT(o, 0xF8, u32)) {
+                    r = 1;
+                    break;
+                }
             }
         }
         break;
