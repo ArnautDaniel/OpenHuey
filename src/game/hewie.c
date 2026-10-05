@@ -8845,3 +8845,78 @@ void func_00159770(Hewie *h) {
     func_0013A430(h, 0x68);
     Hewie_SetBehaviour(h, &D_003B1808);
 }
+
+/* ---- going for the pursuer ---- */
+
+extern const PTMF D_003B17E8;
+
+/* he goes for the pursuer (in his room, unless progress flags 0x13 / 0x2B: else the default
+ * action): with no grip yet (+0x104 -1) the side he comes from (func_00139A70) picks it (head
+ * on: grip 0 for 0x1F / 0x20; the flanks 1 / 2, action 0x1F (0x1F / 0x21) or 0x20 (0x20 / 0x22));
+ * then the noise of the attack for the game by action and grip (frames 15 for 0x21 / 0x22; grip 1
+ * 10 / 11 charged, grip 2 12 / 13, grip 0 14), behaviour D_003B17E8 */
+void func_00159F90(Hewie *h) {
+    Progress *p;
+    s32 frames = -1;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if ((((u8)Progress_TestFlag(p, 0x13) | (u8)Progress_TestFlag(p, 0x2B)) != 0) == 1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (h->c.unk104[0] == -1) {
+        s32 side = func_00139A70(h);
+
+        switch (side) {
+        case 0:
+            if (HEWIE_ACTION(h) == 0x20 || HEWIE_ACTION(h) == 0x1F) {
+                h->c.unk104[0] = 0;
+            }
+            break;
+        case 1:
+        case 2:
+            switch (HEWIE_ACTION(h)) {
+            case 0x1F:
+            case 0x21:
+                HEWIE_ACTION(h) = 0x1F;
+                break;
+            case 0x20:
+            case 0x22:
+                HEWIE_ACTION(h) = 0x20;
+                break;
+            }
+            h->c.unk104[0] = side;
+            break;
+        }
+    }
+    switch (HEWIE_ACTION(h)) {
+    case 0x22:
+    case 0x21:
+        frames = 15;
+        break;
+    case 0x20:
+    case 0x1F:
+        switch (h->c.unk104[0]) {
+        case 1:
+            frames = HW(h, 0xF3585, u8) == 1 ? 11 : 10;
+            break;
+        case 2:
+            frames = HW(h, 0xF3585, u8) == 1 ? 13 : 12;
+            break;
+        case 0:
+            frames = 14;
+            break;
+        }
+        break;
+    }
+    if (frames >= 0) {
+        Progress_GetVar(p, 0x27);
+        func_00178070(p, AT(h, 0x20, u8), 4, 9, 0, frames, 0.0f);
+    }
+    HW(h, 0xF3558, u8) = 1;
+    Hewie_SetBehaviour(h, &D_003B17E8);
+}
