@@ -4557,7 +4557,47 @@ static inline s32 fiona_in_sight(Fiona *f, Character *c) {
 }
 
 extern const PTMF D_003B2C18;
-extern void func_00184570(Fiona *f);
+
+/* back to an idle animation after action moveSub 0x23..0x2F (progress flag 0x25: at random
+ * 1 or 0xC02) */
+void func_00184570(Fiona *f) {
+    if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
+        if (VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.5f) {
+            func_002DDED0(f->c.motion, 1, -1);
+        } else {
+            func_002DDED0(f->c.motion, 0xC02, -1);
+        }
+        return;
+    }
+    switch (f->c.moveSub) {
+    case 0x29:
+    case 0x2F:
+        func_002DDED0(f->c.motion, 0xC02, -1);
+        break;
+    case 0x2E:
+        func_002DDED0(f->c.motion, 0xC0E, -1);
+        break;
+    case 0x23:
+        func_002DDED0(f->c.motion, 0xC04, -1);
+        break;
+    case 0x24:
+        func_002DDED0(f->c.motion, 0xC06, -1);
+        break;
+    case 0x2C:
+        func_002DDED0(f->c.motion, 0xC02, -1);
+        break;
+    case 0x2A:
+        func_002DDED0(f->c.motion, 0xC0A, -1);
+        break;
+    case 0x25:
+    case 0x27:
+        func_002DDED0(f->c.motion, 0xC03, -1);
+        break;
+    case 0x2D:
+        func_002DDED0(f->c.motion, 0xC00, -1);
+        break;
+    }
+}
 
 /* the end of a looking action: (unless progress flag 0x25, which forgets it) the one looked at
  * (+0x1AD664) stays the one to face (+0x1AD5FC set, +0x1AD600); once the animation is over
