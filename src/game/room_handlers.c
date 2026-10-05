@@ -859,3 +859,91 @@ s32 func_002B12D0(void) {
     func_002D6090(mgr, slot, at);
     return 1;
 }
+
+extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
+extern VObject *D_0044F260;   /* the placed things */
+extern u8 *D_0044F808;        /* the stalker in play */
+extern s32 func_0029A710(void *p);
+extern s32 func_00177620(Progress *p);
+extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
+
+/* the pursuer's func_0029A710 */
+s32 func_002B0E20(void) {
+    return func_0029A710(gCharPursuer);
+}
+
+/* no thing of kind 3 lies about */
+s32 func_002B0F60(void) {
+    return VCALL(D_0044F260, 0x10, void *(*)(VObject *, s32, s32))(D_0044F260, 3, 0) == NULL;
+}
+
+/* the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2:
+ * in this room, whether the camera sees it; elsewhere 1 */
+s32 func_002B0FA0(void) {
+    u8 *s = D_0044F808;
+    Progress *p;
+    u8 k;
+
+    if (s == NULL || AT(s, 0x28, u8) == 0 || AT(s, 0xC4, s32) == 2) {
+        return 0;
+    }
+    k = AT(s, 0x153C, u8);
+    if (k != 2 && k != 6 && k != 7) {
+        return 0;
+    }
+    p = gProgress;
+    if ((func_00177620(p) & 0xFF) != 2) {
+        return 0;
+    }
+    if (AT(s, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, (f32 *)(s + 0x10));
+    }
+    return 1;
+}
+
+static void effect_14_init(void **obj) {
+    obj[0] = D_00478BC0;
+}
+
+/* the 0x14-byte effect (D_00478BC0) started with the command's parameters (from byte 3) */
+s32 func_002B11D0(void *self, void *a1, u8 *cmd) {
+    u8 *mgr = D_0044E578;
+
+    func_002D6090(mgr, Effect_New(mgr, 0x14, effect_14_init), cmd + 3);
+    return 1;
+}
+
+/* the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle)
+ * 1 back 1.5 degrees, 2 on 0.5, 3 back 0.5 */
+s32 func_002B14A0(void *self, void *a1, u8 *cmd) {
+    VObject *objs = D_00456DF8;
+    u8 *o;
+
+    switch (cmd[3]) {
+    case 0:
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00405618);
+        if (o != NULL) {
+            AT(o, 0x28, f32) = AT(o, 0x28, f32) + 0x1.99999ap-2f /* 0.4 */;
+        }
+        break;
+    case 1:
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        if (o != NULL) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - 0x1.aceeap-6f /* 1.5 degrees */;
+        }
+        break;
+    case 2:
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        if (o != NULL) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.1df46ap-7f /* 0.5 degrees */;
+        }
+        break;
+    case 3:
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        if (o != NULL) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - 0x1.1df46ap-7f;
+        }
+        break;
+    }
+    return 1;
+}
