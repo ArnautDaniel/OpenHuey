@@ -3657,3 +3657,15 @@ src/game/stalker_progress.c func_00178840 --pre=a0=0x0B000000..0x0B000000 --pre=
 src/game/stalker_progress.c func_00178A90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
 src/game/stalker_progress.c func_00178C10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
 src/game/stalker_progress.c func_00178DB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
+src/game/stalker_math.c func_002E2C10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/stalker_math.c func_002E2CA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/stalker_math.c func_002E3130 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/stalker_math.c func_00211A30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/stalker_math.c func_00211A90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=40
+src/game/stalker_math.c func_002E2BC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0..1 --pre=a0+0x8=0..1 --runs=60
+src/game/stalker_math.c func_002E2BC0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0..0 --pre=a0+0x8=0..0x3F800000 --runs=30
+src/game/model.c func_002DDBA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x0B300000..0x0B300000 --pre=a2=0..20 --stub-ret=-1 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1 --runs=60
+src/game/model.c func_002DDD20 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x0B300000..0x0B300000 --stub-ret=-1 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1 --runs=60
+src/game/model.c func_001F6E30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6A4=0x0B300000..0x0B300000 --runs=20
+src/game/stalker_progress.c func_002EC410 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..100 --runs=100
+src/game/stalker_progress.c func_002EF9E0 --pre=a0=0x0B000000..0x0B000000 --runs=100

@@ -687,6 +687,46 @@ void func_002DDC60(u8 *m, s32 anim, s32 blend, s32 variant) {
     func_001F7890(m, anim, flags & 0xFFFF, variant, (f32)blend);
 }
 
+/* func_002DDC60 with flag 8 added to the animation's, the default variant */
+void func_002DDBA0(u8 *m, s32 anim, s32 blend) {
+    s32 i = func_001F4710(m, anim);
+    u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+
+    AT(m, 0x85C, u8) = 0;
+    AT(m, 0x85D, u8) = 0;
+    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = AT(m, 0x880, s32);
+    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+    AT(m, 0x50, s32) = 0;
+    func_001F7890(m, anim, (flags | 8) & 0xFFFF, -1, (f32)blend);
+}
+
+/* the same blended over the animation's own frames (the table's first s16) */
+void func_002DDD20(u8 *m, s32 anim, s32 variant) {
+    s32 i = func_001F4710(m, anim);
+    f32 blend = (f32)(i != -1 ? AT(AT(m, 0x874, u8 *), i * 6, s16) : 0);
+    u32 flags;
+
+    i = func_001F4710(m, anim);
+    flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+    AT(m, 0x85C, u8) = 0;
+    AT(m, 0x85D, u8) = 0;
+    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = AT(m, 0x880, s32);
+    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
+    AT(m, 0x50, s32) = 0;
+    func_001F7890(m, anim, (flags | 8) & 0xFFFF, variant, blend);
+}
+
+/* the model's +0x6A4 object gets flag 0x40 */
+void func_001F6E30(u8 *m) {
+    AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x40;
+}
+
 /* the index of animation `anim` in the motion file (+0x4C4: at its +0xC a table: count, then
  * 8-byte entries from +0x10 starting with the id); -1: not there */
 s32 func_001F4710(u8 *m, s32 anim) {

@@ -273,3 +273,30 @@ u32 func_00178DB0(Progress *p, s32 room, s32 exit, u32 side) {
     DOOR(p, d) |= 1;
     return 0;
 }
+
+/* a countdown (+0x4, frames) in seconds, at least 1 while it runs (gProgress +0x764) */
+s32 func_002EC410(u8 *t) {
+    u32 n = AT(t, 0x4, u32);
+
+    if (n / 30 == 0 && n != 0) {
+        return 1;
+    }
+    return n / 30;
+}
+
+/* the threat meter (gProgress +0x7B8) raised by `amount`: a big one (10 or more) also holds it
+   for 30 frames and counts half toward +0x14 */
+void func_002EF9E0(u8 *o, f32 amount) {
+    if (amount < 0.0f) {
+        return;
+    }
+    if (amount < 10.0f) {
+        AT(o, 0x24, f32) += amount;
+    } else {
+        f32 h = 0.5f * amount;
+
+        AT(o, 0x8, s16) = 30;
+        AT(o, 0x24, f32) += h;
+        AT(o, 0x14, f32) += h;
+    }
+}
