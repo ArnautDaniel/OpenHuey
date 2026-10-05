@@ -2355,3 +2355,177 @@ s32 func_002B3660(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* "jimen", "kama", "sumi" */
+extern f32 func_0031C058(f32 x);   /* cosf */
+
+/* room 0x24 (D_004022C8): the kiln's ground, kiln and charcoal glow - byte 3 0 sets them up
+ * (+0x74 0, +0x78 1, glow +0x7C 0, phase +0x30 -pi), else the glow pulses (0.5 + cos(phase) /
+ * 2, the phase on by 12 degrees) */
+s32 func_002AFF80(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kMinusPi = {0xC0490FDB}, kStep = {0x3E567750}, kPi = {0x40490FDB},
+        k2Pi = {0x40C90FDB};
+    const char *names[3];
+    s32 i;
+
+    names[0] = D_004022B0;
+    names[1] = D_004022B4;
+    names[2] = D_004022B8;
+    if (cmd[3] == 0) {
+        VObject *objs = D_00456DF8;
+
+        for (i = 0; i < 3; i++) {
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, names[i]);
+
+            if (o != NULL) {
+                AT(o, 0x74, s32) = 0;
+                AT(o, 0x78, s32) = 1;
+                AT(o, 0x7C, s32) = 0;
+                AT(o, 0x30, f32) = kMinusPi.f;
+            }
+        }
+    } else {
+        VObject *objs = D_00456DF8;
+
+        for (i = 0; i < 3; i++) {
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, names[i]);
+            f32 a;
+
+            if (o == NULL) {
+                continue;
+            }
+            AT(o, 0x7C, f32) = 0.5f + 0.5f * func_0031C058(AT(o, 0x30, f32));
+            a = AT(o, 0x30, f32) + kStep.f;
+            AT(o, 0x30, f32) = a;
+            if (!(a <= kPi.f)) {
+                AT(o, 0x30, f32) = a - k2Pi.f;
+            }
+        }
+    }
+    return 1;
+}
+
+/* room 0x21 (D_00400BA8): a lit quad at x 0.49 .. 9.5, z 69.5 .. 60.5, from the floor to 22 */
+s32 func_002AF4E0(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0x3EFB2FEC, 0x41B00000, 0x428B0113, 0x3F800000, 0x4118089A, 0x41B00000, 0x4271F660, 0x3F800000,
+        0x3EFB2FEC, 0x00000000, 0x428B0113, 0x3F800000, 0x4118089A, 0x00000000, 0x4271F660, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x10000040);
+}
+
+/* room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21 */
+s32 func_002B33B0(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0xC27E999A, 0x41A80000, 0x42D10000, 0x3F800000, 0xC25E999A, 0x41A80000, 0x42D10000, 0x3F800000,
+        0xC27E999A, 0x40800000, 0x42D10000, 0x3F800000, 0xC25E999A, 0x40800000, 0x42D10000, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x80);
+}
+
+/* room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71 */
+s32 func_002B3D80(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0xC2300000, 0x428E0000, 0x42700000, 0x3F800000, 0xC2100000, 0x428E0000, 0x42700000, 0x3F800000,
+        0xC2300000, 0x42580000, 0x42700000, 0x3F800000, 0xC2100000, 0x42580000, 0x42700000, 0x3F800000,
+    };
+
+    return lit_quad(cmd, sQuad, 0x80);
+}
+
+extern void *D_00470A70[];
+
+static void effect_70A70_init(void **obj) {
+    obj[0] = D_00470A70;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+/* room 0x02 (D_003F03A0): the 0xE60-byte effect D_00470A70 by byte 3 - 0 made (its slot kept
+ * in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1 */
+s32 func_002A91F0(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0xE60, effect_70A70_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+    } else if (cmd[3] == 1) {
+        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        s32 arg = 0;
+
+        func_002D6090(D_0044E578, slot, &arg);
+    } else {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0xE60, effect_70A70_init);
+        s32 arg = 1;
+
+        func_002D6090(mgr, slot, &arg);
+    }
+    return 1;
+}
+
+/* room 0x08 (D_003F31D8): the hanging object named by the handler's string 0xA - byte 3 0 sets
+ * it still (+0x30 / +0x38 0, travel +0x3C 0.9); 1: the player's travel (+0x3C, its last move's
+ * length) past 5 makes it creak (sounds 4 / 5 by turns, event bit 7) and swing for 20 frames:
+ * its tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 a frame */
+s32 func_002AA600(VObject *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k09 = {0x3F666666}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    const char *name = VCALL(self, 0x34, const char *(*)(VObject *, s32))(self, 0xA);
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    f32 t, a;
+
+    if (o == NULL) {
+        return 1;
+    }
+    if (cmd[3] == 0) {
+        AT(o, 0x30, s32) = 0;
+        AT(o, 0x38, s32) = 0;
+        AT(o, 0x3C, f32) = k09.f;
+        return 1;
+    }
+    if (cmd[3] != 1) {
+        return 1;
+    }
+    if (gCharPlayer != NULL) {
+        f32 d[4] __attribute__((aligned(16)));
+
+        sceVu0CopyVector(d, (f32 *)((u8 *)gCharPlayer + 0x40));
+        sceVu0SubVector(d, (f32 *)((u8 *)gCharPlayer + 0x10), d);
+        t = AT(o, 0x3C, f32) + __builtin_sqrtf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+        AT(o, 0x3C, f32) = t;
+        if (!(t <= 5.0f)) {
+            VObject *ev = D_0044E4D0;
+
+            AT(o, 0x38, f32) = 20.0f;
+            AT(o, 0x3C, f32) = 0.0f;
+            if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 7) == 1) {
+                VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 7);
+                func_00122C20(&gCharPlayer->a, 4, 6, 0, 0, NULL);
+            } else {
+                VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 7);
+                func_00122C20(&gCharPlayer->a, 5, 6, 0, 0, NULL);
+            }
+        }
+    }
+    t = AT(o, 0x38, f32);
+    if (t <= 0.0f) {
+        return 1;
+    }
+    AT(o, 0x38, f32) = t - 1.0f;
+    if (t - 1.0f < 0.0f) {
+        AT(o, 0x38, f32) = 0.0f;
+    }
+    a = AT(o, 0x30, f32) + 36.0f;
+    AT(o, 0x30, f32) = a;
+    if (!(a < 360.0f)) {
+        AT(o, 0x30, f32) = a - 360.0f;
+    }
+    a = kPi.f * (1.0f + func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+    AT(o, 0x10, f32) = a;
+    if (!(a <= kPi.f)) {
+        AT(o, 0x10, f32) = a - k2Pi.f;
+    }
+    return 1;
+}
