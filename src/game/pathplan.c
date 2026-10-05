@@ -9,8 +9,9 @@
  *   +0x20     start point, +0x30 goal point
  *   +0x40     open list length (s16), +0x42 closed list length (s16)
  *   +0x44     a node per triangle (0x18 bytes): +0 flags (1 open, 2 closed, 4 at the goal, 8),
- *             +2 its place in the open list, +4 the node it was reached from, +8, +0xC the cost
- *             so far, +0x10 the estimate to the goal, +0x14
+ *             +2 its place in the open list, +4 the node it was reached from, +8 the next in a
+ *             list, +0xC the cost so far, +0x10 the estimate to the goal, +0x14
+ * A triangle's +0x40 holds the cost of crossing each of its edges.
  *   +0xC044   the open list (node pointers, sorted by cost), +0xE044 the closed list
  *   +0x10044  the node being expanded, +0x10048 the path's end node
  *   +0x1004C  the step function (PTMF; it returns nonzero when the search is over)
@@ -270,6 +271,104 @@ s32 func_001A7C30(void *pl, u8 *s) {
         return 0;
     }
     return -AT(s, 0x0, s32);
+}
+
+/* step for kind 6, greedy best first: the node +0x10044 expanded; its new neighbours get the
+ * estimate (heights x 10, +5 on triangles flagged 0x40) and go into the list (by +8) sorted by
+ * it; a seen neighbour cheaper to come from becomes the node's parent */
+s32 func_001A5750(void *pl, u8 *s) {
+    u8 *nbs[3];
+    NavMesh *nm;
+    u8 *cur, *head;
+    NavTri *tri;
+    s32 k = 0, e, i;
+
+    AT(s, 0x0, s32)++;
+    cur = AT(s, 0x10044, u8 *);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    if (tri == NULL) {
+        return -1;
+    }
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+        u32 f;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        if (AT(nb, 0x0, u16) & 0xB) {
+            if (!(AT(cur, 0xC, f32) <= AT(nb, 0xC, f32) + AT(tri, 0x40 + e * 4, f32))) {
+                AT(cur, 0x4, u8 *) = nb;
+            }
+            continue;
+        }
+        f = tri_flags(nm, t);
+        if (f & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            return AT(s, 0x0, s32);
+        }
+        {
+            f32 d[4] __attribute__((aligned(16)));
+            u32 k2 = NODE_INDEX(s, nb);
+
+            tri_centre(nm, k2, d);
+            sceVu0SubVector(d, d, (f32 *)(s + 0x30));
+            d[1] *= 10.0f;
+            AT(nb, 0x10, f32) = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+            if (tri_flags(nm, k2) & 0x40) {
+                AT(nb, 0x10, f32) = AT(nb, 0x10, f32) + 5.0f;
+            }
+        }
+        nbs[k++] = nb;
+        AT(nb, 0xC, f32) = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+        AT(nb, 0x4, u8 *) = cur;
+        AT(nb, 0x0, u16) |= 1;
+    }
+    AT(cur, 0x0, u16) ^= 3;
+    head = AT(AT(s, 0x10044, u8 *), 0x8, u8 *);
+    if (k != 0) {
+        if (head == NULL) {
+            head = nbs[--k];
+            AT(head, 0x8, u8 *) = NULL;
+        }
+        for (i = 0; i < k; i++) {
+            u8 *n = nbs[i];
+            u8 *at = head, *prev = NULL;
+            f32 h = AT(n, 0x10, f32);
+
+            while (!(h <= AT(at, 0x10, f32)) && AT(at, 0x8, u8 *) != NULL) {
+                prev = at;
+                at = AT(at, 0x8, u8 *);
+            }
+            if (h <= AT(at, 0x10, f32)) {   /* before `at` */
+                if (prev == NULL) {
+                    AT(n, 0x8, u8 *) = at;
+                    head = n;
+                } else {
+                    AT(n, 0x8, u8 *) = at;
+                    AT(prev, 0x8, u8 *) = n;
+                }
+            } else if (prev == NULL || AT(at, 0x8, u8 *) == NULL) {   /* after the last */
+                AT(at, 0x8, u8 *) = n;
+                AT(n, 0x8, u8 *) = NULL;
+            } else {
+                AT(n, 0x8, u8 *) = at;
+                AT(prev, 0x8, u8 *) = n;
+            }
+        }
+    }
+    if (head == NULL) {
+        return -AT(s, 0x0, s32);
+    }
+    AT(s, 0x10044, u8 *) = head;
+    return 0;
 }
 
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
