@@ -6729,3 +6729,52 @@ void func_0014CBD0(Hewie *h) {
     }
     HW(h, 0xF3544, Character *) = gCharPursuer;
 }
+
+/* ---- squaring up to the pursuer ---- */
+
+extern const PTMF D_003B1BC8, D_003B1BD8;
+
+/* while the pursuer hunts in his room (else the default action): within 50, behaviour
+ * D_003B1BC8; else turn to face it (pose 7, head on it) and, within 60 degrees, take the
+ * stance (animation 4, then behaviour D_003B1BD8) */
+void func_0014CF40(Hewie *h) {
+    Progress *p;
+    f32 d[4] __attribute__((aligned(16)));
+    f32 a, step, left;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if (!(u8)Progress_TestFlag(p, 9) && !(u8)Progress_TestFlag(p, 0xA)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    sceVu0SubVector(d, gCharPursuer->a.pos, h->c.a.pos);
+    if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 50.0f) {
+        Hewie_SetBehaviour(h, &D_003B1BC8);
+        return;
+    }
+    a = func_001244D0(&h->c.a, gCharPursuer->a.pos);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    func_002DD110(h->c.motion, gCharPursuer->a.pos, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
+    HW(h, 0xF3604, s32) = 8;
+    HW(h, 0xF3608, s32) = 0;
+    if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+        func_00141C00(h, 7);
+        return;
+    }
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    if (MOTION_ANIM(h->c.motion) == 4) {
+        Hewie_SetBehaviour(h, &D_003B1BD8);
+    } else {
+        if (func_00140CD0(h, 0) == 0) {
+            func_002DDED0(h->c.motion, 4, -1);
+        }
+        VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    }
+}
