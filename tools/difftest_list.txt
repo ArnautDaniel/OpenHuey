@@ -5394,3 +5394,4 @@ src/game/scene_game.c func_00399BF0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0
 src/game/scene_game.c func_00399C30 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game.c func_00399C50 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game.c func_00399C80 --pre=a0=0x0B000000..0x0B000000
+src/game/camctl.c func_002251C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0xFFFFFFFF..0 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50

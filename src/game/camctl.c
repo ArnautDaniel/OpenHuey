@@ -147,6 +147,26 @@ void func_002252B0(u8 *d, s32 target) {
 }
 
 
+/* the camera director restarted (renderer +0x5C; +0x8C 0x80, +0x90 60, the field of view back
+ * to +0x84): with no setup (+0x70) the free camera on its target, else setup's position at
+ * t 0 */
+void func_002251C0(u8 *d) {
+    VCALL(D_0044E4F0, 0x5C, s32 (*)(VObject *))(D_0044E4F0);
+    AT(d, 0x90, s32) = 0x3C;
+    AT(d, 0x8C, u8) = 0x80;
+    AT(d, 0x80, f32) = AT(d, 0x84, f32);
+    if (AT(d, 0x70, s32) == -1) {
+        VObject *cam = D_0044E4B8;
+
+        VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
+        VCALL(cam, 0x2C, void (*)(VObject *, void *))(cam, d + 0xA0);
+        func_002243D0(d, 100);
+        return;
+    }
+    VCALL(D_0044E4B8, 0x70, void (*)(VObject *, f32))(D_0044E4B8, 0.0f);
+    func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
+}
+
 /* take the room's camera data (count first; none or empty: no data), then setup `setup` at t */
 void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t) {
     AT(d, 0x2C, s32 *) = data;
