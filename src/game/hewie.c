@@ -7510,3 +7510,112 @@ void func_00151D10(Hewie *h) {
         }
     }
 }
+
+/* ---- biting ---- */
+
+extern const PTMF D_003B1978;
+
+/* turn toward `at` as he runs, head held level toward it */
+static void aim_run(Hewie *h, const f32 *at) {
+    f32 a = func_001244D0(&h->c.a, at);
+    f32 step = run_turn(h);
+
+    turn_toward(h, a, step);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+}
+
+/* rush his target (+0xF3544, in his room; else the default action) to bite it, for +0xF36B4
+ * frames. When it was hit (his progress hit bits 1 / 4, or a bite landed, +0x104): maybe
+ * (a third of the time, hitting the pursuer) a grudge, +0xF3688 300 frames, his mood easing
+ * (+0xF35C4), sound 0x6C, the bitten collected (+0x108). Running (0x202) at it along the path
+ * (pose 8 when the stride fails), aiming straight once on its triangle. Unless progress flags
+ * 0x13 / 0x2B: Fiona (1) or the pursuer (4) in bite reach (progress +0x2C, bone 0x1F, 3) are
+ * bitten (sound 0x68; 5, +5 on difficulty 1, +half with progress +0xA10; hard by func_001386D0
+ * 10; then behaviour D_003B1978), and the bite tested on the creatures (func_00137FE0) */
+void func_001523D0(Hewie *h) {
+    Progress *p;
+    Character *t;
+    u8 hit;
+    s32 there, mask;
+    u16 dmg;
+
+    if (!in_his_room(h, HW(h, 0xF3544, Character *))) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    hit = AT(p, 0x1020 + AT(h, 0x20, u8) * 0x10, u8);
+    if ((hit & 5) || h->c.unk104[0] != 0) {
+        if (hit & 4) {
+            if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
+                func_00166150(h, gCharPursuer, 1);
+            }
+            HW(h, 0xF3688, s16) = 300;
+        }
+        if (HW(h, 0xF35C4, s32) != 0) {
+            HW(h, 0xF35C4, s32) -= 1;
+            HW(h, 0xF35C8, s32) = 300;
+        }
+        HW(h, 0xF36B0, s32) = 0xFF;
+        h->c.unk104[1] |= h->c.unk104[0];
+        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+    }
+    HW(h, 0xF36B4, s32) -= 1;
+    if (HW(h, 0xF36B4, s32) == 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    t = HW(h, 0xF3544, Character *);
+    there = t->a.navTri == func_00124480(&h->c.a, t->a.pos, NAV_NONE);
+    if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+        func_002DDED0(h->c.motion, 0x202, -1);
+    }
+    if (!there) {
+        if (!(u8)func_00139DE0(h)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        aim_run(h, HW(h, 0xF3544, Character *)->a.pos);
+    }
+    {
+        Progress *q = gProgress;
+
+        if (((u8)Progress_TestFlag(q, 0x13) | (u8)Progress_TestFlag(q, 0x2B)) != 0) {
+            return;
+        }
+    }
+    mask = 0;
+    if (in_his_room(h, gCharPlayer) &&
+        (u8)VCALL(p, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(p, AT(h, 0x20, u8), 0x1F, 0, 3.0f) == 1) {
+        mask = 1;
+    }
+    if (in_his_room(h, gCharPursuer) &&
+        (u8)VCALL(p, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(p, AT(h, 0x20, u8), 0x1F, 2, 3.0f) == 1) {
+        mask = (mask | 4) & 0xFF;
+    }
+    if (mask != 0) {
+        s32 hard;
+
+        func_0013A430(h, 0x68);
+        hard = (u8)func_001386D0(h, 10) == 1;
+        dmg = 5;
+        if ((u8)Progress_GetVar(p, 0x27) == 1) {
+            dmg += 5;
+        }
+        if (AT(p, 0xA10, s32) != 0) {
+            dmg += dmg >> 1;
+        }
+        func_00178070(p, AT(h, 0x20, u8), mask, 1, dmg, hard ? -0x8000 : 0, 20.0f);
+        Hewie_SetBehaviour(h, &D_003B1978);
+    }
+    h->c.unk104[0] = func_00137FE0(h, h->c.unk104[1], 5, 0x1F, 10.0f);
+}
