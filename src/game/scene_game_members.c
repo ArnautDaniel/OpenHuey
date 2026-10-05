@@ -1601,6 +1601,22 @@ void func_002D6100(u8 *o) {
     AT(o, 0x19034, u8) = 0;
 }
 
+/* remove effect `slot` (0..0x3FF): its heap +0x14 (destroy) and the slot emptied */
+void func_002D6170(u8 *o, s32 slot) {
+    void **p;
+
+    if (slot < 0 || (u32)slot >= 0x400) {
+        return;
+    }
+    p = (void **)(o + 0x18034) + slot;
+    if (*p != NULL) {
+        VObject *heap = (VObject *)(o + 0x10000);
+
+        VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, *p);
+        *p = NULL;
+    }
+}
+
 extern u8 *D_00420B20[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
 extern void **D_0041F950[];  /* per map: its pages (by the entry's +0x4) */
 

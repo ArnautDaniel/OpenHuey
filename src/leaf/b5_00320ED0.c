@@ -393,7 +393,7 @@ s32 func_0032D430(u8 *self) {
 
 /* a frame of it (func_0032D430) moved by its animation's root motion, a footstep sound
  * (+0x1630, unless -1) as either foot comes down; 1 once it has run off */
-s32 func_0032D2C0(u8 *self) {
+static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     f32 d[4] __attribute__((aligned(16)));
     void *m;
     u8 done = func_0032D430(self) & 0xFF;
@@ -413,6 +413,15 @@ s32 func_0032D2C0(u8 *self) {
     self[0x16A8] = l;
     self[0x16A9] = r;
     return done;
+}
+
+/* the two animals' copies (started by func_0032D270 / func_0032D3E0) */
+s32 func_0032D150(u8 *self) {
+    return animal_step(self);
+}
+
+s32 func_0032D2C0(u8 *self) {
+    return animal_step(self);
 }
 
 void *func_0032DC50(void) {
