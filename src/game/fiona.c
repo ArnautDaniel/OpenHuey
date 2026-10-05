@@ -8139,6 +8139,77 @@ void func_0018C660(Fiona *f) {
     func_00125A10(&f->c);
 }
 
+extern const PTMF D_003B2D18, D_003B2CF8, D_003B2D08;
+extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
+
+/* D_003B2688 (moveSub 0x31..0x33, an item to let go): once the animation is done, her
+ * facing kept (FI 0x1AD6D0) and the animation for it (0xD00 / 0xD01 / 0xD02) - for 0x32 aimed
+ * at the pursuer instead (FI 0x1AD6E0, FI 0x1AD6C0 set) when she's being chased and he is within
+ * 80 and 60 degrees of her facing; then D_003B2D18 */
+void func_0018CCA0(Fiona *f) {
+    static const union { u32 u; f32 f; } kSixtyDeg = {0x3F860A92};
+
+    if (door_anim_done(f)) {
+        switch (f->c.moveSub) {
+        case 0x31:
+            FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+            func_002DDED0(f->c.motion, 0xD00, -1);
+            break;
+        case 0x32:
+            FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+            if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) < 80.0f) {
+                f32 yaw = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+
+                if (fiona_abs_wrap(yaw - f->c.a.angle[1]) < kSixtyDeg.f) {
+                    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD6E0), gCharPursuer->a.pos);
+                    FI(f, 0x1AD6C0, s32) = 1;
+                    FI(f, 0x1AD6D0, f32) = yaw;
+                }
+            }
+            func_002DDED0(f->c.motion, 0xD01, -1);
+            break;
+        case 0x33:
+            FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+            func_002DDED0(f->c.motion, 0xD02, -1);
+            break;
+        }
+        Actor_SetState(&f->c.a, &D_003B2D18);
+    }
+    func_00125A10(&f->c);
+}
+
+/* D_003B2D08: idle at the animation's event 0x20 */
+void func_0018CED0(Fiona *f) {
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        door_give_up(f, gProgress);
+    }
+}
+
+/* D_003B2CF8: turning to FI 0x1AD6D0 (FI 0x1AD6D4 a frame) until the animation is done, then
+ * set to it (D_003B2D08) */
+void func_0018D010(Fiona *f) {
+    f32 yaw;
+
+    if (!door_anim_done(f)) {
+        func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), FI(f, 0x1AD6D4, f32));
+        return;
+    }
+    yaw = FI(f, 0x1AD6D0, f32);
+    f->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
+    sceVu0RotMatrixY((f32 (*)[4])((u8 *)f + 0x60), (f32 (*)[4])((u8 *)f + 0x60), yaw);
+    Actor_SetState(&f->c.a, &D_003B2D08);
+}
+
+/* D_003B25E8 (request 0xC / 6): animation 0x8000 (8, speed 10) while she turns to unk104[2]
+ * (a tenth of the way a frame; D_003B2CF8) */
+void func_0018D100(Fiona *f) {
+    func_002DE030(f->c.motion, 0x8000, 8, -1, 10.0f);
+    Actor_SetState(&f->c.a, &D_003B2CF8);
+    FI(f, 0x1AD6D0, f32) = *(f32 *)&f->c.unk104[2];
+    FI(f, 0x1AD6D4, f32) = 0x1.99999ap-4f /* 0.1 */ * fiona_abs_wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
