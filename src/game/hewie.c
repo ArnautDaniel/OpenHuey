@@ -9674,3 +9674,111 @@ void func_0015F2E0(Hewie *h) {
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- obedience over time ---- */
+
+extern void func_001817C0(Character *c, s32 n);
+extern const s32 D_003B1390[8], D_003B13B0[8];   /* waiting time by trust (normal / difficulty 1) */
+
+/* his obedience timer (+0xF359C) runs down; waiting (+0xF3598) close to Fiona (within 30, in his
+ * room) three times as fast, and unless already in 0x7D / 0x7E every 91 frames (+0xF35A0) he
+ * nudges her (func_001817C0 0x10). Out of time: the first time (+0xF3587) only marked; then
+ * obeying turns to waiting (not in mood 1; wait by trust, D_003B1390 / D_003B13B0; bit 1 of
+ * +0xF356C flags +0xF3559), waiting back to obeying (obey_time; bit 0 flags +0xF3559 or, hidden,
+ * action 0x34). Not waiting: +0xF3586 cleared */
+void func_0015FE30(Hewie *h) {
+    HW(h, 0xF359C, s32) -= 1;
+    if (HW(h, 0xF3598, s32) == 1 && in_his_room(h, gCharPlayer)) {
+        if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 30.0f) {
+            HW(h, 0xF359C, s32) -= 2;
+            if (HEWIE_ACTION(h) != 0x7D && HEWIE_ACTION(h) != 0x7E) {
+                HW(h, 0xF35A0, s16) += 1;
+                if ((u32)HW(h, 0xF35A0, s16) >= 91) {
+                    HW(h, 0xF35A0, s16) = 0;
+                    func_001817C0(gCharPlayer, 0x10);
+                }
+            } else {
+                HW(h, 0xF35A0, s16) = 0;
+            }
+        } else {
+            HW(h, 0xF35A0, s16) = 0;
+        }
+    }
+    if (HW(h, 0xF359C, s32) <= 0) {
+        if (HW(h, 0xF3587, u8) == 1) {
+            HW(h, 0xF359C, s32) = 0;
+            if (HW(h, 0xF3598, s32) == 0) {
+                if (HW(h, 0xF35C0, s32) != 1) {
+                    HW(h, 0xF3598, s32) = 1;
+                    if ((Progress_GetVar(gProgress, 0x27) & 0xFF) != 1) {
+                        HW(h, 0xF359C, s32) = D_003B1390[HW(h, 0xF35CC, s16)];
+                    } else {
+                        HW(h, 0xF359C, s32) = D_003B13B0[HW(h, 0xF35CC, s16)];
+                    }
+                    if ((HW(h, 0xF356C, u32) & 0x80000002) == 2) {
+                        HW(h, 0xF3559, u8) = 1;
+                    }
+                }
+            } else {
+                HW(h, 0xF3598, s32) = 0;
+                obey_time(h);
+                if ((HW(h, 0xF356C, u32) & 0x80000001) == 1) {
+                    if (!h->c.a.disabled) {
+                        HW(h, 0xF3559, u8) = 1;
+                    } else {
+                        hewie_want(h, 0x34, 0);
+                    }
+                }
+                HW(h, 0xF3586, u8) = 0;
+            }
+        } else {
+            HW(h, 0xF3587, u8) = 1;
+        }
+    }
+    if (HW(h, 0xF3598, s32) == 0) {
+        HW(h, 0xF3586, u8) = 0;
+    }
+}
+
+/* ---- the mode's behaviour ---- */
+
+extern const PTMF D_003B02A0, D_003B02B0;
+
+/* his behaviour by the game mode (not when down): tense (2) his idle choice when flagged
+ * (+0xF3559; hidden, func_0013E680 instead); calm (0) / wary (1) the mode's behaviour
+ * (D_003B02B0 / D_003B02A0) with his mood, +0xF36A4 / +0xF36AC cleared (calm: not alert), and bit 2
+ * of +0xF356C flagging +0xF3559 */
+void func_001602F0(Hewie *h) {
+    u32 mode;
+
+    if (h->c.a.unkC4 == 2) {
+        return;
+    }
+    mode = (u8)func_00177620(gProgress);
+    switch (mode) {
+    case 2:
+        if (HW(h, 0xF3559, u8) == 1) {
+            if (!h->c.a.disabled) {
+                func_0013C7D0(h);
+                HW(h, 0xF3559, u8) = 0;
+            } else {
+                HW(h, 0xF3559, u8) = 0;
+                func_0013E680(h);
+            }
+        }
+        break;
+    case 0:
+    case 1:
+        HW(h, 0xF35C4, s32) = 0;
+        HW(h, 0xF36AC, s32) = 0;
+        HW(h, 0xF36A4, s32) = 0;
+        if (mode == 0) {
+            HW(h, 0xF366D, u8) = 0;
+        }
+        Actor_SetState(&h->c.a, mode == 0 ? &D_003B02B0 : &D_003B02A0);
+        if ((HW(h, 0xF356C, u32) & 0x80000004) == 4) {
+            HW(h, 0xF3559, u8) = 1;
+        }
+        break;
+    }
+}
