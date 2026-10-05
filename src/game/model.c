@@ -478,6 +478,54 @@ void func_002F8430(u8 *m, s32 slot) {
 void func_001F1F10(u8 *m, s32 slot) {
 }
 
+/* ---- the human characters' model base (vtable D_0046B0E0): its own methods ---- */
+
+extern void func_002118C0(u8 *m);
+extern void func_002DCA70(u8 *m);
+extern const char D_00456150[], D_00456170[], D_00456190[], D_004561B0[], D_004561D0[],
+    D_004561F0[], D_00456210[];   /* "O_FIN\FIN_00n.MRK" */
+
+/* +0x10 */
+void func_001F1FD0(u8 *m) {
+    func_002118C0(m);
+}
+
+/* +0x68: func_002DCA70, then +0x2C */
+void func_001F1DA0(u8 *m) {
+    func_002DCA70(m);
+    VCALL(m, 0x2C, void (*)(u8 *))(m);
+}
+
+/* +0xA4 the marker file of kind `n` (0..6) */
+const char *func_001F1F30(void *m, s32 n) {
+    switch (n) {
+    case 0: return D_00456150;
+    case 1: return D_00456170;
+    case 2: return D_00456190;
+    case 3: return D_004561B0;
+    case 4: return D_004561D0;
+    case 5: return D_004561F0;
+    case 6: return D_00456210;
+    }
+    return NULL;
+}
+
+/* empty hooks: +0xBC, +0xC0, +0xC8, +0xCC, +0xD0 */
+void func_001F1FC0(u8 *m) {
+}
+
+void func_001F1F20(u8 *m) {
+}
+
+void func_001F1F00(u8 *m) {
+}
+
+void func_001F1EF0(u8 *m) {
+}
+
+void func_001F1EE0(u8 *m) {
+}
+
 extern void func_002F7E90(u8 *m);
 extern void func_002EE960(u8 *p);
 extern void func_002F7C50(u8 *m);

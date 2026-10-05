@@ -4250,3 +4250,11 @@ src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=0..
 src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=1..1 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
 src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=2..2 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
 src/game/model.c func_001F19C0 --pre=f12=0.0..1.0 --pre=@0x47E37C=0..15 --runs=300
+src/game/model.c func_001F1FD0 --runs=50
+src/game/model.c func_001F1DA0 --pre=a0=0x0B000000..0x0B000000 --runs=50
+src/game/model.c func_001F1F30 --pre=a1=-1..8 --runs=200
+src/game/model.c func_001F1FC0 --runs=20
+src/game/model.c func_001F1F20 --runs=20
+src/game/model.c func_001F1F00 --runs=20
+src/game/model.c func_001F1EF0 --runs=20
+src/game/model.c func_001F1EE0 --runs=20
