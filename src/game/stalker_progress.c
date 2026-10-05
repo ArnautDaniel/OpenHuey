@@ -83,28 +83,50 @@ void func_001779F0(Progress *p, u32 room, u32 slot) {
     AT(p, 0x1000 + (room & 0xFF) * 4, u8) |= (u8)(1 << (slot & 0xFF));
 }
 
-/* the first of the 8 pursuer groups (+0xFD0, 6 slot masks each) with slot `slot` in one of the
-   fields `kind` asks for (bit 0 field 1, bit 1 field 2, bit 2 field 0, bits 3..5 fields 3..5);
-   0xFF if none */
+/* the fields of pursuer group `g` (+0xFD0, 6 slot masks) that have slot bit `bit`, as flags:
+   bit 0 field 1, bit 1 field 2, bit 2 field 0, bits 3..5 fields 3..5 */
+static inline u8 group_fields(const u8 *g, u8 bit) {
+    u8 has = 0;
+
+    has |= (g[1] & bit) != 0;
+    has |= (g[2] & bit) ? 2 : 0;
+    has |= (g[0] & bit) ? 4 : 0;
+    has |= (g[3] & bit) ? 8 : 0;
+    has |= (g[4] & bit) ? 0x10 : 0;
+    has |= (g[5] & bit) ? 0x20 : 0;
+    return has;
+}
+
+/* the first of the 8 pursuer groups with slot `slot` in one of the fields `kind` asks for; 0xFF
+   if none */
 s32 func_00177AB0(void *p, s32 kind, u8 slot) {
     u8 bit = 1 << slot;
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        u8 *g = (u8 *)p + 0xFD0 + i * 6;
-        u8 has = 0;
-
-        has |= (g[1] & bit) != 0;
-        has |= (g[2] & bit) ? 2 : 0;
-        has |= (g[0] & bit) ? 4 : 0;
-        has |= (g[3] & bit) ? 8 : 0;
-        has |= (g[4] & bit) ? 0x10 : 0;
-        has |= (g[5] & bit) ? 0x20 : 0;
-        if ((u8)kind & has) {
+        if ((u8)kind & group_fields((u8 *)p + 0xFD0 + i * 6, bit)) {
             return i;
         }
     }
     return 0xFF;
+}
+
+/* the fields of group `i` that have slot `slot` */
+u32 func_00177BF0(Progress *p, u32 i, u32 slot) {
+    return group_fields((u8 *)p + 0xFD0 + (i & 0xFF) * 6, 1 << (slot & 0xFF));
+}
+
+/* which of room `room`'s 4 slot-bit bytes (+0x1000) have slot `slot` (bit n: byte n) */
+s32 func_00177A20(Progress *p, s32 room, s32 slot) {
+    u8 *r = (u8 *)p + 0x1000 + (room & 0xFF) * 4;
+    u8 bit = 1 << (slot & 0xFF);
+    u8 has = 0;
+
+    has |= (r[0] & bit) != 0;
+    has |= (r[1] & bit) ? 2 : 0;
+    has |= (r[2] & bit) ? 4 : 0;
+    has |= (r[3] & bit) ? 8 : 0;
+    return has;
 }
 
 /* slot `slot`'s relation request: hit/kind, sub, u16, s16, f32 (on +0x1014) */
