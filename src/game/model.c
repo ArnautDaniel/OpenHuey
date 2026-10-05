@@ -117,6 +117,31 @@ void func_003A10B0(Progress *p, u32 slot) {
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
+extern void *D_0046B9B0[];
+extern void *func_0016FCD0(u8 *m);
+
+/* the dog model's constructor (the plain base by func_0016FCD0), kind `kind` (+0x890) */
+void *func_00208210(u8 *m, u8 kind) {
+    func_0016FCD0(m);
+    AT(m, 0x0, void **) = D_0046B240;
+    AT(m, 0x890, u8) = kind;
+    func_00100340(m + 0x960, func_00208160, func_001F7E40, 0x90, 2);
+    func_00100340(m + 0xA80, func_001706F0, func_0016FC80, 0x60, 2);
+    return m;
+}
+
+/* the second dog model (D_0046B9B0, 0xB90 bytes) for character `slot` */
+void func_003A0F90(Progress *p, u32 slot) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    u8 *m = func_002DC6E0(0xB90, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0xB90));
+
+    if (m != NULL) {
+        func_00208210(m, 2);
+        AT(m, 0x0, void **) = D_0046B9B0;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
 extern void *D_0046C160[], *D_0046B0E0[], *D_00470620[], *D_00472BD0[];
 extern void *func_00208E30(void *, s32);
 extern void *func_0016FB80(void *);

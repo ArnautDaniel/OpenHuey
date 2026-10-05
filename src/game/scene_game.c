@@ -399,10 +399,8 @@ extern void *D_00476F40[], *D_00469D00[];
 extern void func_0033E2A0(u8 *loading, s32 frame);
 extern void func_003A0160(Scene *g);
 
-/* state, every frame: count the frame (twice while a button is pressed: it feeds the random
- * numbers, seeded here), then the sub-state (+0x1053450: the room load) if any, else the
- * gameplay tick */
-void func_003A06E0(Scene *g) {
+/* the frame counted (twice while a button is held): it feeds the random numbers, seeded here */
+static inline void rng_tick(Scene *g) {
     u8 rng[0x80] __attribute__((aligned(16)));
 
     AT(g, 0x1065040, s32)++;
@@ -413,6 +411,13 @@ void func_003A06E0(Scene *g) {
     AT(rng, 0x4, s32) = -1;
     func_0033E2A0(rng, AT(g, 0x1065040, s32));
     AT(rng, 0x0, void **) = D_00469D00;
+}
+
+/* state, every frame: count the frame (twice while a button is pressed: it feeds the random
+ * numbers, seeded here), then the sub-state (+0x1053450: the room load) if any, else the
+ * gameplay tick */
+void func_003A06E0(Scene *g) {
+    rng_tick(g);
     if (ptmf_test(&AT(g, 0x1053450, PTMF))) {
         ptmf_scall(g, &AT(g, 0x1053450, PTMF));
         return;
@@ -924,6 +929,22 @@ static void clamp01(f32 *v) {
     }
 }
 
+/* every scene gets the save callback (+0x4) and is told (+0x14) */
+static inline void scenes_to_save(void) {
+    u8 *scenes = D_0044E960;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        u8 *sc = AT(scenes, 4 + i * 4, u8 *);
+
+        if (sc != NULL) {
+            ptmf_set(&AT(sc, 4, PTMF), &D_0044C598);
+            sc = AT(scenes, 4 + i * 4, u8 *);
+            VCALL(sc, 0x14, void (*)(void *))(sc);
+        }
+    }
+}
+
 /* the gameplay sub-state, each frame. +0x44: 0 play, 1 leaving the room (event phase 4), 2
  * waiting for the next room: once loaded the characters leave and enter, the camera restarts
  * (event phases 5, 3). In play: event phases 1 .. 3, the camera, the characters' control;
@@ -1050,17 +1071,7 @@ void func_0039EAB0(Scene *g) {
     if (Progress_TestFlag(prog, 8) && Progress_TestFlag(prog, 0x1C)) {
         loader = gFileLoader;
         if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
-            u8 *scenes = D_0044E960;
-
-            for (i = 0; i < 4; i++) {
-                u8 *s = AT(scenes, 4 + i * 4, u8 *);
-
-                if (s != NULL) {
-                    ptmf_set(&AT(s, 4, PTMF), &D_0044C598);
-                    s = AT(scenes, 4 + i * 4, u8 *);
-                    VCALL(s, 0x14, void (*)(void *))(s);
-                }
-            }
+            scenes_to_save();
             VCALL(loader, 0x1C, void (*)(VObject *))(loader);
             AT(D_0044E978, 0x4, s32) = 2;
             AT(D_0044E978, 0x10, s32) = 1;
@@ -1137,16 +1148,7 @@ void func_0039EAB0(Scene *g) {
         VCALL((u8 *)g + 0xF87240, 0x24, void (*)(void *))((u8 *)g + 0xF87240);
         func_0031DE10((u8 *)g + 0x1053480);
     } else if (Progress_TestFlag(prog, 0x28)) {
-        u8 rng[0x80] __attribute__((aligned(16)));
-
-        AT(g, 0x1065040, s32)++;
-        if ((u16)D_0047E37C != 0) {
-            AT(g, 0x1065040, s32)++;
-        }
-        AT(rng, 0x0, void **) = D_00476F40;
-        AT(rng, 0x4, s32) = -1;
-        func_0033E2A0(rng, AT(g, 0x1065040, s32));
-        AT(rng, 0x0, void **) = D_00469D00;
+        rng_tick(g);
     }
 
     /* the menus */
@@ -1849,4 +1851,243 @@ void func_0039B800(Scene *g, u32 slot) {
     }
     AT(s, 0x18F0, u8) = VCALL(sub, 0x30, u8 (*)(VObject *))(sub);
     func_003851B0(sub, s);
+}
+
+
+/* ---- the menu sub-states (+0x1053440): each draws the world as it stands (frozen) under its
+ * screen and goes back to play (func_0039EAB0) when done ---- */
+
+extern const PTMF D_0044C840, D_0044C850, D_0044C860, D_0044C870;   /* back to play */
+extern void func_002F6050(void *pause);
+extern void func_002F3910(void *fader);
+extern void func_002F0260(void *panic, u32 stage);
+extern s32 func_00178A30(Progress *p, u32 d);
+extern s32 func_001773A0(Progress *p, u32 slot, u8 quick);
+extern VObject *D_0044E4E8;   /* the texture cache */
+
+/* the frozen world drawn (rooms, progress - `chars`: 0 unless flag 0x17, 1 with the placed
+ * things unless 0x17 without 0x24, 2 both always - effects, panic, the event's message, the
+ * task, the sub screen's +0x24 when `sub`) */
+static void frozen_draw(Scene *g, s32 chars, s32 sub) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    VObject *ev = (VObject *)((u8 *)g + SG_EVENT);
+
+    func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
+    if (chars == 2 || (chars == 1 && (!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)))) {
+        func_00176160(prog);
+        func_002E29A0((u8 *)g + 0x706480);
+    } else if (chars == 0 && !Progress_TestFlag(prog, 0x17)) {
+        func_00176160(prog);
+    }
+    func_002D74E0((u8 *)g + 0x6FC380);
+    func_0039C880(g);
+    func_00267160((u8 *)g + 0xF6CD30);
+    func_002D61E0((u8 *)g + 0xF6E200);
+    if (!(u8)Progress_TestFlag(prog, 0xF) && !camdir_busy(g)) {
+        func_002F0340((u8 *)g + 0x7F8, 1);
+    }
+    if (AT(g, 0xF6C1A3, u8) != 0) {
+        VCALL(ev, 0xB8, void (*)(VObject *, s32))(ev, AT(g, 0xF6C1A1, u8) == 6 ? 0x30 : 0x31);
+    }
+    Task_Draw((Task *)((u8 *)g + 0xF6B6B8));
+    if (sub) {
+        VCALL((u8 *)g + 0xF87240, 0x24, void (*)(void *))((u8 *)g + 0xF87240);
+    }
+}
+
+/* +0x1053440 back to play */
+static inline void to_play(Scene *g, const PTMF *back) {
+    ptmf_set(&AT(g, 0x1053440, PTMF), back);
+}
+
+/* paused: the pause screen; closed: quitting (flag 0x1C) - once the loader is idle, every
+ * scene saves and the game goes to the title (resident +0x4 = 2) - or back to play */
+void func_0039DF10(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+
+    func_00209390((u8 *)g + SG_EVENT, 3);
+    if (!(u8)Progress_TestFlag(prog, 8)) {
+        frozen_draw(g, 1, 1);
+        func_0031DE10((u8 *)g + 0x1053480);
+    } else if (Progress_TestFlag(prog, 0x28)) {
+        rng_tick(g);
+    }
+    func_002F6050((u8 *)g + 0x73EBA0);
+    if (Progress_TestFlag(prog, 6)) {
+        if (Progress_TestFlag(prog, 0x1C)) {
+            VObject *loader = gFileLoader;
+
+            if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
+                scenes_to_save();
+                VCALL(loader, 0x1C, void (*)(VObject *))(loader);
+                AT(D_0044E978, 0x4, s32) = 2;
+                AT(D_0044E978, 0x10, s32) = 1;
+            }
+            return;
+        }
+        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        to_play(g, &D_0044C860);
+    }
+    Progress_ClearFlag(prog, 6);
+}
+
+/* a movie paused over play: the world goes on (as in play, without the control), the pause
+ * screen; closed: back to play */
+void func_0039D990(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    VObject *ev = (VObject *)((u8 *)g + SG_EVENT);
+    u8 *cam = (u8 *)g + SG_CAMDIR;
+    u32 *flags = &AT(g, SG_FRAMEFLAGS, u32);
+    s32 i;
+
+    func_001776F0(prog);
+    func_00224EE0(cam);
+    VCALL(g, 0xDC, void (*)(Scene *))(g);
+    func_00209390(ev, 1);
+    func_00173670(prog);
+    func_00173B60(prog);
+    func_001739A0(prog);
+    func_00175430(prog);
+    func_00209390(ev, 2);
+    func_00209210(ev);
+    AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
+    if (AT(g, 0x1170, u8) != 0xFF) {
+        u8 *c = gCharacters[AT(g, 0x1170, u8)];
+
+        ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
+    }
+    func_00224C60(cam);
+    func_00209390(ev, 3);
+    if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
+        *flags = (*flags & ~0x3F0) | 0x3F0;
+    } else {
+        *flags &= ~0x3F0;
+    }
+    func_00224C20(cam);
+    if (((*flags >> 4) & 0x3F) == 0) {
+        func_00176440(prog);
+        func_001762B0(prog);
+    }
+    func_0011FEB0((u8 *)g + 0x73EE80);
+    if (((*flags >> 4) & 0x3F) == 0) {
+        func_00260EC0((u8 *)g + 0xF87248);
+        func_002A7630((u8 *)g + 0x1004);
+        func_002D75C0((u8 *)g + 0x6FC380);
+        func_002671F0((u8 *)g + 0xF6CD30);
+        func_002D6280((u8 *)g + 0xF6E200);
+        for (i = 0; i < 6; i++) {
+            if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
+                func_001269C0(gCharacters[i]);
+            }
+        }
+    }
+    if (!(u8)Progress_TestFlag(prog, 8)) {
+        frozen_draw(g, 0, 0);
+        func_0031DE10((u8 *)g + 0x1053480);
+    } else if (Progress_TestFlag(prog, 0x28)) {
+        rng_tick(g);
+    }
+    func_002F6050((u8 *)g + 0x73EBA0);
+    if (Progress_TestFlag(prog, 6)) {
+        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        func_0039BB60(g);
+        to_play(g, &D_0044C870);
+    }
+    Progress_ClearFlag(prog, 6);
+}
+
+/* the sub screen (items, files...): Select closes it (flag 4); drawn over the frozen world
+   (when +0xF88938 asks for it) or alone; closed: back to play */
+void func_0039E7D0(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    u8 *cam = (u8 *)g + SG_CAMDIR;
+
+    if (D_0047E37C & 1) {
+        Progress_SetFlag(prog, 4);
+    }
+    func_00224EE0(cam);
+    func_00224C60(cam);
+    func_00224C20(cam);
+    func_00209390((u8 *)g + SG_EVENT, 3);
+    if (AT(g, 0xF88938, u8) != 0 && !(u8)Progress_TestFlag(prog, 8)) {
+        frozen_draw(g, 2, 1);
+    } else {
+        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        VCALL((u8 *)g + 0x6FC258, 0x20, void (*)(void *))((u8 *)g + 0x6FC258);
+    }
+    SubScreen_Update((SubScreen *)((u8 *)g + 0xF87240));
+    func_002A7630((u8 *)g + 0x1004);
+    if (Progress_TestFlag(prog, 4)) {
+        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        to_play(g, &D_0044C840);
+    }
+    Progress_ClearFlag(prog, 4);
+}
+
+/* the transition screen (+0x73EB40: game over / continue) running: the world drawn behind it
+ * while +0x73EB41; done (flag 0xC): with +0x1FBF01 clear - its mode 2 (game over) keeps
+ * Hewie's trust and two values for the continue (+0xFF4 / +0xFFE / +0x1000) - every scene
+ * saves and the game goes on (resident +0x4: 5 continue, else 2 title); else the game restarts
+ * in place: flag 8, the camera director released, the panic reset, door 0x10C locked, the room
+ * re-entered, Hewie's action 0x37 and the stalker removed, then back to play */
+void func_0039E380(Scene *g) {
+    Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
+    u8 *cam = (u8 *)g + SG_CAMDIR;
+
+    func_002F3910((u8 *)g + 0x73EB40);
+    if (AT(g, 0x73EB41, u8) != 0 && !Progress_TestFlag(prog, 8)) {
+        func_00224EE0(cam);
+        func_00224C60(cam);
+        func_00224C20(cam);
+        func_00209390((u8 *)g + SG_EVENT, 3);
+        func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
+        func_00267160((u8 *)g + 0xF6CD30);
+        func_002D61E0((u8 *)g + 0xF6E200);
+        func_00176160(prog);
+        func_002E29A0((u8 *)g + 0x706480);
+        func_002F0340((u8 *)g + 0x7F8, 0);
+    }
+    if (!Progress_TestFlag(prog, 0xC)) {
+        return;
+    }
+    Progress_ClearFlag(prog, 0xC);
+    if (AT(g, 0x1FBF01, u8) == 0) {
+        if (AT(g, 0x73EB40, u8) == 2) {
+            AT(g, 0xFF4, s16) = AT(gCharPartner, 0xF35CC, s16);
+            AT(g, 0xFFE, s16) = VCALL(g, 0x104, s16 (*)(Scene *))(g);
+            AT(g, 0x1000, s16) = VCALL(g, 0x108, s16 (*)(Scene *))(g);
+            VCALL(g, 0xBC, void (*)(Scene *, s32))(g, 0);
+        }
+        scenes_to_save();
+        VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
+        AT(D_0044E978, 0x4, s32) = AT(g, 0x73EB40, u8) == 2 ? 5 : 2;
+        AT(D_0044E978, 0x10, s32) = 0;
+        return;
+    }
+    VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
+    Progress_SetFlag(prog, 8);
+    AT(g, 0x1FBF01, u8) = 0;
+    VCALL((VObject *)D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, -1.0f);
+    func_002F0260((u8 *)g + 0x7F8, 0);
+    func_00178A30(prog, 0x10C);
+    VCALL(g, 0xE8, void (*)(Scene *, s32, s32, s32))(g, VCALL(g, 0xA4, s32 (*)(Scene *))(g), 1, 0);
+    VCALL((VObject *)gCharPartner, 0x64, void (*)(void *, s32, s32, s32))(gCharPartner, 0x37, -1, 0);
+    func_001773A0(prog, 2, 0);
+    VCALL(g, 0xB0, void (*)(Scene *, s32))(g, 0x37);
+    AT(g, 0x44, s32) = 1;
+    AT(g, 0xF6B6B2, u8) = 0x81;
+    to_play(g, &D_0044C850);
+}
+
+/* room `room` (>= 0) loaded into the spare room slot unless it is already there */
+void func_0039D000(Scene *g, s32 room) {
+    u32 spare;
+
+    if (room & 0x80000000) {
+        return;
+    }
+    spare = AT(g, 0xF6C1B0, s32) == 0;
+    if (room != AT(g, 0x73F240 + spare * 4, s32)) {
+        func_00120720((u8 *)g + 0x73EE80, room, spare);
+    }
 }
