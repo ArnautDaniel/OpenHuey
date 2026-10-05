@@ -505,12 +505,13 @@ void func_0030B1E0(Pursuer *p) {
 extern const PTMF D_00423A38;
 void func_0030B540(Pursuer *p);
 
-/* animation 0x1303 in state func_0030B540 */
-static inline void Lorenzo2_SinkBehind(Pursuer *p) {
+/* animation 0x1303 in state `st` (D_00423A38: func_0030B540), run at once */
+static inline __attribute__((always_inline)) void Lorenzo2_SinkBehindAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     func_00297B40(p, 0x1303, 0);
-    Actor_SetState(&p->c.a, &D_00423A38);
-    func_0030B540(p);
+    Actor_SetState(&p->c.a, st);
+    fn(p);
 }
+#define Lorenzo2_SinkBehind(p) Lorenzo2_SinkBehindAs(p, &D_00423A38, func_0030B540)
 
 void func_0030B7C0(Pursuer *p) {
     Lorenzo2_SinkBehind(p);
@@ -653,7 +654,7 @@ extern const PTMF D_00423A78;
 
 /* closing on his target: when it's out of reach by the mesh (func_001257B0 < 0), back to the
    walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
-static inline void Lorenzo2_Approach(Pursuer *p) {
+static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -668,9 +669,10 @@ static inline void Lorenzo2_Approach(Pursuer *p) {
         return;
     }
     func_00297B40(p, 0x1304, 0);
-    Actor_SetState(&p->c.a, &D_00423A78);
-    func_0030AB80(p);
+    Actor_SetState(&p->c.a, st);
+    fn(p);
 }
+#define Lorenzo2_Approach(p) Lorenzo2_ApproachAs(p, &D_00423A78, func_0030AB80)
 
 /* state: closing on his target (see Lorenzo2_Approach) */
 void func_0030AE00(Pursuer *p) {
@@ -1413,4 +1415,77 @@ void func_003652F0(Pursuer *p) {
     }
     Actor_SetState(&p->c.a, &D_00445A78);
     func_00364FF0(p);
+}
+
+/* ---- the same states in the other class (its states D_00445Axx), sharing Lorenzo's helpers ---- */
+
+extern const PTMF D_00445A58, D_00445A68, D_00445A98, D_00445AA8;
+extern void func_00364930(Pursuer *p);
+extern void func_003652F0(Pursuer *p);
+
+/* (as func_0030AE00) */
+void func_00364BB0(Pursuer *p) {
+    Lorenzo2_ApproachAs(p, &D_00445AA8, func_00364930);
+}
+
+/* (as func_0030B7C0) */
+void func_00365570(Pursuer *p) {
+    Lorenzo2_SinkBehindAs(p, &D_00445A68, func_003652F0);
+}
+
+/* (as func_0030AF20) */
+void func_00364CD0(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    if (!(func_00283870(p) & 0xFF)) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00445A98);
+    Lorenzo2_ApproachAs(p, &D_00445AA8, func_00364930);
+}
+
+/* (as func_0030B840) */
+void func_003655F0(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    u32 tri;
+    f32 d;
+
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    d = func_001257B0(&p->c, tri, t, -1);
+    if (d < 30.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+        if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
+            p->c.unk104[0] = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        } else {
+            PU(p, 0x1728, s32) = 1;
+            PU(p, 0x172C, u8) = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x13);
+        }
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00445A58);
+    Lorenzo2_SinkBehindAs(p, &D_00445A68, func_003652F0);
 }
