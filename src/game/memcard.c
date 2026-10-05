@@ -95,3 +95,10 @@ void func_00226510(MemCard *mc) {
         ptmf_scall(mc, &mc->state);
     }
 }
+
+extern s32 func_00110B60(void);   /* sceMcEnd */
+
+/* shut the memory card library down (the mc argument is unused) */
+s32 func_00226560(MemCard *mc) {
+    return func_00110B60();
+}

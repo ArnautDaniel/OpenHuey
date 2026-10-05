@@ -366,3 +366,11 @@ void func_001E7430(int a, const void *list) {
     (void)a;
     sFolder = list;
 }
+
+/* 0x0023C310 -> CRI 0x001CC710: run the middleware's server once by hand (the PC mixer thread
+ * runs ADX on its own) */
+void func_0023C310(void) {
+}
+
+/* 0x001EEA38: the libpad/dbc shutdown hook the system calls on exit; nothing to do on the PC */
+int func_001EEA38(void) { return 0; }

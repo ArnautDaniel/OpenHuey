@@ -60,7 +60,8 @@ extern void func_002D4680(void *obj, void *arg);
 extern void *func_002D4630(void *f);   /* rumble constructor (rumble.c) */
 extern void func_001B80C0(u8 *r);
 extern void func_00100340(void *array, void *(*ctor)(void *), void (*dtor)(void *, s32), u32 size, u32 count);   /* __construct_array */
-extern void func_001BEC10(void *, s32), func_001BECA0(void *, s32);   /* the element destructors */
+extern void func_001BECA0(void *, s32);   /* the element destructors */
+void *func_001BEC10(u8 *, s32);
 
 /* System object constructor. */
 void *func_0020E340(u8 *s) {
@@ -114,7 +115,7 @@ void *func_0020E340(u8 *s) {
     D_0044E560 = p + 4;
     AT(p, 0x0, void **) = D_0046BF20;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_00100340(p + 0x84, func_0020E7D0, func_001BEC10, 0x10, 8);
+    func_00100340(p + 0x84, func_0020E7D0, (void (*)(void *, s32))func_001BEC10, 0x10, 8);
     func_00100340(p + 0x108, func_0020E7B0, func_001BECA0, 0x18, 8);
     AT(p, 0x80, s32) = 0;
     AT(p, 0x104, s8) = -1;
@@ -383,4 +384,151 @@ void func_001BEEF0(u8 *s) {
     func_002D42A0(s + 0x300);
     func_001BE4B0(s + 0x40);
     func_00226510(s + 0x390);
+}
+
+/* ---- the rest of the system object (2026-10-05) ---- */
+
+extern void func_001EFB40(s32 socket);   /* scePad2DeleteSocket */
+extern void func_001EF9D0(void);         /* scePad2End */
+
+/* the pads (+0x40): close the socket, end the library */
+void func_001BE480(u8 *pads) {
+    func_001EFB40(AT(pads, 0x40, s32));
+    func_001EF9D0();
+}
+
+extern void func_00274640(u32 addr);   /* free IOP memory */
+extern void func_00100490(void *p);   /* operator delete */
+
+/* +0x395D40 +0x84 element (8 x 0x10): two IOP buffers */
+void *func_001BEC10(u8 *e, s32 flags) {
+    if (e == NULL) {
+        return e;
+    }
+    if (AT(e, 0x0, u32) != 0) {
+        func_00274640(AT(e, 0x0, u32));
+        AT(e, 0x0, u32) = 0;
+    }
+    if (AT(e, 0x4, u32) != 0) {
+        func_00274640(AT(e, 0x4, u32));
+        AT(e, 0x4, u32) = 0;
+    }
+    AT(e, 0x8, s32) = 0;
+    AT(e, 0xC, u8) = 0;
+    AT(e, 0xD, u8) = 0;
+    if ((s16)flags > 0) {
+        func_00100490(e);
+    }
+    return e;
+}
+
+extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046ACF0[];
+extern void *D_0046AEC0[], *D_0046AED0[], *D_0046AE60[], *D_0046F4F0[], *D_0046AE30[];
+extern void *D_0044E7A8;
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+
+/* destructor (vtable +0x8): the members in reverse, each with its vtable chain and global cleared */
+void *func_001BE7A0(u8 *s, s32 flags) {
+    u8 *p;
+
+    if (s == NULL) {
+        return s;
+    }
+    AT(s, 0x0, void **) = D_0046ADF0;
+
+    p = s + 0x395D40;   /* sound driver */
+    AT(p, 0x0, void **) = D_0046BF20;
+    AT(p, 0x4, void **) = D_0046BF2C;
+    func_001002C0(p + 0x108, (void *(*)(void *, s32))func_001BECA0, 0x18, 8);
+    func_001002C0(p + 0x84, (void *(*)(void *, s32))func_001BEC10, 0x10, 8);
+    AT(p, 0x4, void **) = D_0046AF90;
+    D_0044E560 = NULL;
+    AT(p, 0x0, void **) = D_0046AD88;
+
+    AT(s, 0x319900, void **) = D_0046A1E0;   /* file loader */
+    AT(s, 0x319900, void **) = D_0046A220;
+    gFileLoader = NULL;
+
+    AT(s, 0x30CF40, void **) = D_0046B050;
+    AT(s, 0x30CF40, void **) = D_0046AF20;
+    D_0044E9A0 = NULL;
+
+    p = s + 0x305280;   /* ADX sound system */
+    AT(p, 0x0, void **) = D_0046AF00;
+    AT(p, 0x124, void **) = D_0046AF0C;
+    AT(p, 0x7C44, void **) = D_0046C740;
+    AT(p, 0x7C44, void **) = D_0046AED0;
+    AT(p, 0x7C48, u8) = 0;
+    D_0044FEF8 = NULL;
+    AT(p, 0x124, void **) = D_0046AD88;
+    AT(p, 0x0, void **) = D_0046AEC0;
+    AT(p, 0x4, s32) = 0;
+    AT(p, 0x8, s32) = 0;
+    AT(p, 0xC, s32) = 0;
+    D_0044E980 = NULL;
+
+    AT(s, 0x460, void **) = D_0046AC50;   /* renderer */
+    AT(s, 0x460, void **) = D_0046ACF0;
+    D_0044E4F0 = NULL;
+
+    AT(s, 0x390, void **) = D_0046AE90;   /* memory card */
+    AT(s, 0x39C, void **) = D_0046AEB4;
+    AT(s, 0x39C, void **) = D_0046AD88;
+    AT(s, 0x390, void **) = D_0046AE60;
+    D_0044FF00 = NULL;
+
+    AT(s, 0x300, void **) = D_0046F4F0;   /* rumble */
+    AT(s, 0x300, void **) = D_0046AE30;
+    D_0044E7A8 = NULL;
+
+    AT(s, 0x40, void **) = D_0046ADB0;    /* pads */
+    AT(s, 0x58, void **) = D_0046ADC4;
+    AT(s, 0x58, void **) = D_0046AD88;
+    AT(s, 0x40, void **) = D_0046ADD0;
+    D_0044FEB0 = NULL;
+
+    AT(s, 0x20, void **) = D_0046AD88;
+    AT(s, 0x0, void **) = D_0046AE10;
+    D_0044F7F8 = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(s);
+    }
+    return s;
+}
+
+extern void func_0026CC80(s32 cause);                 /* DisableIntc */
+extern s32 RemoveIntcHandler(s32 cause, s32 id);
+extern s32 func_00226560(void *mc);                   /* memory card: sceMcEnd */
+extern s32 func_001EEA38(void);
+extern void func_0016BF50(void *loader);
+extern void func_00210180(void *drv);
+extern void func_001AAC60(void *snd);
+
+/* +0x18 shutdown: the vblank handlers off, then each part's shutdown, then reset the GS */
+void func_001BEDD0(u8 *s) {
+    func_0026CC80(2);
+    func_0026CC80(3);
+    RemoveIntcHandler(3, AT(s, 0x18, s32));
+    RemoveIntcHandler(2, AT(s, 0x14, s32));
+    func_001BE480(s + 0x40);
+    func_00226560(s + 0x390);
+    func_001EEA38();
+    func_0016BF50(s + 0x319900);
+    func_00210180(s + 0x395D40);
+    func_001AAC60(s + 0x305280);
+    func_0010D3E0(0);
+}
+
+extern void func_0023C310(void);   /* CRI middleware server */
+
+/* +0x14 frame without the vblank wait: finish and send the renderer's frame, tick the parts */
+void func_001BEE70(u8 *s) {
+    func_001B87D0(s + 0x460);
+    func_0023C310();
+    func_001B85B0(s + 0x460);
+    func_00210230(s + 0x395D40);
+    func_001AACC0(s + 0x305280);
+    func_0016BFB0(s + 0x319900);
+    func_002D42A0(s + 0x300);
+    func_001BE4B0(s + 0x40);
 }

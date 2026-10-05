@@ -95,3 +95,20 @@ void func_001BED00(void) {
     hg_wait_flag(&D_0047B204);
     hg_wait_flag(&D_0047B208);
 }
+
+/* DisableIntc(cause) */
+int func_0026CC80(int cause) {
+    if (cause >= 0 && cause < 16) {
+        sEnabled[cause] = 0;
+    }
+    return 1;
+}
+
+/* RemoveIntcHandler(cause, id) */
+int RemoveIntcHandler(int cause, int id) {
+    (void)id;
+    if (cause >= 0 && cause < 16) {
+        sHandlers[cause] = 0;
+    }
+    return 0;
+}

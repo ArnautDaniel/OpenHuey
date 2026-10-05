@@ -5986,3 +5986,11 @@ src/game/scene_game_members.c func_0020DA10 --pre=a0=0..0 --runs=5
 src/game/game.c func_001BE150 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20
 src/game/game.c func_001BE150 --pre=a0=0..0 --runs=3
 src/game/game.c Game_dtor --pre=a0=0x00800000..0x00800000 --pre=@0x00C00A04=0..1 --pre=@0x00C00A0C=0..1 --pre=@0x01CD9A40=0x0046A1C0..0x0046A1C0 --pre=a1=-1..1 --runs=40
+src/game/system.c func_001BE480 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x40=0..3 --runs=10
+src/game/system.c func_001BEC10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0..1 --pre=a0+4=0..1 --pre=a0+8=0..0xFFFF --pre=a1=-1..1 --runs=40
+src/game/system.c func_001BEC10 --pre=a0=0..0 --runs=3
+src/game/system.c func_001BE7A0 --pre=a0=0x00800000..0x00800000 --pre=a1=-1..1 --runs=20
+src/game/system.c func_001BE7A0 --pre=a0=0..0 --runs=3
+src/game/system.c func_001BEDD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0..9 --pre=a0+0x18=0..9 --runs=10
+src/game/system.c func_001BEE70 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/memcard.c func_00226560 --runs=5

@@ -130,3 +130,6 @@ void func_00225860(void *mc) {
     save_dir();
     finish(mc, 0);
 }
+
+/* sceMcEnd: nothing to release on the PC */
+int func_00110B60(void) { return 1; }

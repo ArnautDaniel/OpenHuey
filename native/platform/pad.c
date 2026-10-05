@@ -37,3 +37,7 @@ void func_002D2658(int socket, int count, void *mask, int bytes, void *data) {
     (void)socket; (void)count; (void)mask; (void)bytes; (void)data;
 }
 
+
+/* scePad2DeleteSocket / scePad2End: nothing to release on the PC */
+int func_001EFB40(int socket) { (void)socket; return 1; }
+int func_001EF9D0(void) { return 1; }
