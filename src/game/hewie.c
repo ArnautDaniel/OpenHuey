@@ -3668,3 +3668,104 @@ void func_0013A650(Hewie *h) {
         }
     }
 }
+
+extern VObject *D_0044E558;   /* the doors */
+extern const s16 D_003B127E[];   /* by how often Fiona hit him (+0xF35C4): the 1-in-16 he sulks */
+
+extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* u8 flags */
+extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
+extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
+
+/* a blow `hit` (a character's state block: +0x4 how, +0x8 by whom, +0xC damage, +0x10 the
+ * door): down (+0xC4 2) he only goes limp (action 0x74) unless it is 6; held (+0xF8 4) only
+ * 0xB counts; nor while he is 8 / 0x18..0x19; else the damage (vtable +0x94, double from
+ * Fiona), a door's only when it moves (+0x40). Then by `how`: 1..4 he yelps (action 0x69) -
+ * from Fiona (by 0) he learns from it and may sulk (action 3 mode), from another sometimes
+ * holds a grudge; 3 also knocks him down - 5 a door: pushed aside (0x6B) or back (0x6C) by
+ * which side of it he is; 6 / 0xB: -1 (not taken) */
+s32 func_0013AC20(Hewie *h, s32 *hit) {
+    Progress *p;
+    f32 yaw;
+
+    if (h->c.a.unkC4 == 2 && hit[1] != 6) {
+        if (HEWIE_ACTION(h) != 0x74) {
+            hewie_want(h, 0x74, 0);
+        }
+        return 0;
+    }
+    if (h->c.moveMode == 4 && hit[1] != 0xB) {
+        return -1;
+    }
+    if (hit[1] != 0xB && h->c.moveMode == 8 && (u32)(h->c.moveSub - 0x18) < 2) {
+        return -1;
+    }
+    if (hit[1] != 5) {
+        if (HEWIE_MODE(h) == 3) {
+            HW(h, 0xF36B0, s32) = hit[2];
+        }
+        VCALL(&h->c.a, 0x94, void (*)(Hewie *, s32))(h, hit[2] == 0 ? hit[3] * 2 : hit[3]);
+    } else {
+        if (!(u8)VCALL(D_0044E558, 0x40, s32 (*)(VObject *, u8))(D_0044E558, ((u8 *)hit)[0x10])) {
+            return 0;
+        }
+        VCALL(&h->c.a, 0x94, void (*)(Hewie *, s32))(h, hit[3]);
+    }
+    if (HW(h, 0xF35AC, s32) <= 0) {
+        HW(h, 0xF35AC, s32) = 300;
+    }
+    AT(h, 0x2B, u8) = 0;
+    switch (hit[1]) {
+    case 3:
+        h->c.a.unkC4 = 2;
+        /* fall through */
+    case 1: case 2: case 4:
+        h->c.unk104[0] = hit[1];
+        h->c.unk100 = hit[2];
+        if (h->c.unk100 != 0xFF) {
+            if (h->c.unk100 != 0) {
+                if (VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+                    func_00166150(h, (Character *)gCharacters[h->c.unk100], -1);
+                }
+                HW(h, 0xF35C4, s32) = 0;
+            } else {
+                HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
+                func_001391E0(h, 0, 3);
+                HW(h, 0xF35C4, s32)++;
+                if (HW(h, 0xF35C4, s32) >= 7) {
+                    HW(h, 0xF35C4, s32) = 6;
+                }
+                HW(h, 0xF35C8, s32) = 300;
+                if ((s16)(s32)(16.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) <
+                    D_003B127E[HW(h, 0xF35C4, s32)]) {
+                    HW(h, 0xF36B0, s32) = 0xFF;
+                    func_00138AD0(h, 3, -1);
+                }
+            }
+        }
+        hewie_want(h, 0x69, 0);
+        return 0;
+    case 5:
+        h->c.unk104[0] = h->c.state[1];
+        h->c.unk100 = h->c.state[2];
+        HW(h, 0xF36B4, s32) = h->c.state[4];
+        p = gProgress;
+        yaw = VCALL(D_0044E558, 0x3C, f32 (*)(VObject *, u8))(D_0044E558, HW(h, 0xF36B4, u8));
+        if (!((u8)func_00177BF0(p, HW(h, 0xF36B4, u8), (u8)h->c.unk100) & 0x10)) {
+            AT(h, 0x2B, u8) = 1;
+            hewie_want(h, 0x6B, 0);
+        } else if (((u8)func_00177BF0(p, HW(h, 0xF36B4, u8), AT(h, 0x20, u8)) & 8) &&
+                   (u8)func_001785B0(p, h->c.a.room, HW(h, 0xF36B4, u8)) != 1 &&
+                   (u8)func_00178300(p, h->c.a.room, HW(h, 0xF36B4, u8), AT(h, 0x20, u8))) {
+            yaw += F_PI;
+            hewie_want(h, 0x6C, 0);
+        } else if (!(NavMesh_Tri(D_0044E570, h->c.a.navTri)->flags & 0x20000)) {
+            yaw += F_PI_2;
+            hewie_want(h, 0x6B, 0);
+        }
+        HW(h, 0xF36C4, f32) = func_002E2D00(yaw);
+        return 0;
+    case 6: case 0xB:
+        return -1;
+    }
+    return 0;
+}
