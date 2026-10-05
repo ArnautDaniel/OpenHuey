@@ -7511,6 +7511,30 @@ void func_00151D10(Hewie *h) {
     }
 }
 
+/* when his bite landed (his progress hit bits 1 / 4, or a creature, +0x104): on the pursuer a
+ * third of the time a grudge and +0xF3688 300 frames; his mood easing (+0xF35C4), sound 0x6C,
+ * the bitten collected (+0x108) */
+static void bite_landed(Hewie *h, Progress *p) {
+    u8 hit = AT(p, 0x1020 + AT(h, 0x20, u8) * 0x10, u8);
+
+    if (!(hit & 5) && h->c.unk104[0] == 0) {
+        return;
+    }
+    if (hit & 4) {
+        if (RNG01() < 0x1.555476p-2f /* 0.33333 */) {
+            func_00166150(h, gCharPursuer, 1);
+        }
+        HW(h, 0xF3688, s16) = 300;
+    }
+    if (HW(h, 0xF35C4, s32) != 0) {
+        HW(h, 0xF35C4, s32) -= 1;
+        HW(h, 0xF35C8, s32) = 300;
+    }
+    HW(h, 0xF36B0, s32) = 0xFF;
+    h->c.unk104[1] |= h->c.unk104[0];
+    func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+}
+
 /* ---- biting ---- */
 
 extern const PTMF D_003B1978;
@@ -7540,7 +7564,6 @@ static void aim_run(Hewie *h, const f32 *at) {
 void func_001523D0(Hewie *h) {
     Progress *p;
     Character *t;
-    u8 hit;
     s32 there, mask;
     u16 dmg;
 
@@ -7549,22 +7572,7 @@ void func_001523D0(Hewie *h) {
         return;
     }
     p = gProgress;
-    hit = AT(p, 0x1020 + AT(h, 0x20, u8) * 0x10, u8);
-    if ((hit & 5) || h->c.unk104[0] != 0) {
-        if (hit & 4) {
-            if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
-                func_00166150(h, gCharPursuer, 1);
-            }
-            HW(h, 0xF3688, s16) = 300;
-        }
-        if (HW(h, 0xF35C4, s32) != 0) {
-            HW(h, 0xF35C4, s32) -= 1;
-            HW(h, 0xF35C8, s32) = 300;
-        }
-        HW(h, 0xF36B0, s32) = 0xFF;
-        h->c.unk104[1] |= h->c.unk104[0];
-        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
-    }
+    bite_landed(h, p);
     HW(h, 0xF36B4, s32) -= 1;
     if (HW(h, 0xF36B4, s32) == 0) {
         hewie_want(h, 0, 0);
@@ -7960,5 +7968,90 @@ void func_00155000(Hewie *h) {
         hewie_want(h, 0x35, 0);
     } else {
         func_0013E680(h);
+    }
+}
+
+/* ---- landing ---- */
+
+/* landing from a leap: unless already crouched (group 9), the landing animation 0x1E03 (once not
+ * blending), its feet touching (+0x64, feet 2 / 3) letting the root motion carry him (+0xF36C0;
+ * till then +0xF36C4 a frame); its end, the walk (0x201). In group 9 at the end: the default
+ * action. Turning with his head all the while */
+void func_00155A30(Hewie *h) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 a;
+
+    if (func_001669A0(h) != 9) {
+        if (MOTION_ANIM(h->c.motion) != 0x1E03) {
+            if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+                h->c.a.unk2D = 0;
+                func_002DDED0(h->c.motion, 0x1E03, -1);
+            }
+        } else {
+            if (HW(h, 0xF36C0, s32) == 0) {
+                u8 l = VCALL(h->c.motion, 0x64, s32 (*)(void *, s32, s32))(h->c.motion, 2, -1);
+                u8 r = VCALL(h->c.motion, 0x64, s32 (*)(void *, s32, s32))(h->c.motion, 3, -1);
+
+                if (l == 1 || r == 1) {
+                    HW(h, 0xF36C0, s32) = 1;
+                }
+            }
+            if (ANIM_DONE(h)) {
+                h->c.a.unk2D = 0;
+                func_002DDE20(h->c.motion, 0x201, -1);
+            }
+        }
+    } else if (ANIM_DONE(h)) {
+        hewie_want(h, 0, 0);
+    }
+    a = func_002E2D00(h->c.a.angle[1] + 0x1.921fb6p+1f /* pi */ * (2.0f * (0.5f * AT(h->c.motion, 0x858, f32))) / 180.0f);
+    h->c.a.angle[1] = a;
+    sceVu0UnitMatrix(h->c.a.rot);
+    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, a);
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[3] = 0.0f;
+    v[2] = HW(h, 0xF36C0, s32) == 0 ? HW(h, 0xF36C4, f32) : root_ahead(h, root);
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    func_001247E0(&h->c.a, v);
+    HW(h, 0xF3558, u8) = 1;
+}
+
+/* ---- biting in the air ---- */
+
+extern const PTMF D_003B1908;
+
+/* the leaping bite in flight: his bite's effects (bite_landed), forward +0xF36C4 a frame, rising
+ * +0xF36C8 (less 0.5 a frame) from height +0xF36CC; below the ground (mesh +0x14): land
+ * (0x1E03 unless blending, head ahead), +0xF356C top bit cleared, behaviour D_003B1908 */
+void func_00155D00(Hewie *h) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 g[4] __attribute__((aligned(16)));
+
+    bite_landed(h, gProgress);
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = HW(h, 0xF36C4, f32);
+    v[3] = 0.0f;
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    func_001247E0(&h->c.a, v);
+    HW(h, 0xF3558, u8) = 1;
+    HW(h, 0xF36CC, f32) += HW(h, 0xF36C8, f32);
+    HW(h, 0xF36C8, f32) -= 0.5f;
+    h->c.a.pos[1] = HW(h, 0xF36CC, f32);
+    sceVu0CopyVector(g, h->c.a.pos);
+    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, g);
+    if (h->c.a.pos[1] < g[1]) {
+        if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+            func_002DDED0(h->c.motion, 0x1E03, -1);
+        }
+        if (HW(h, 0xF3604, s32) != 0) {
+            HW(h, 0xF3604, s32) = 0;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        h->c.a.pos[1] = g[1];
+        HW(h, 0xF356C, u32) &= 0x7FFFFFFF;
+        Hewie_SetBehaviour(h, &D_003B1908);
     }
 }
