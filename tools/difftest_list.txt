@@ -4646,3 +4646,291 @@ src/game/creature.c func_002E27B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x386
 src/game/creature.c func_002E2920 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0B100000..0x0B100000 --pre=a0+0x4=0..0 --pre=a0+0x8=0x0B120000..0x0B120000 --pre=a0+0x1C=0x0B170000..0x0B170000 --pre=a0+0x20=0..0 --pre=a0+0x24=0x0B190000..0x0B190000 --pre=@0x0B100028:u8=0..1 --pre=@0x0B120028:u8=0..1 --pre=@0x0B170028:u8=0..1 --pre=@0x0B190028:u8=0..1 --pre=@0x0B1700F0=0..1 --runs=50
 src/leaf/b4_002DCA70.c func_002E2DA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
 src/leaf/b4_002DCA70.c func_002E2DD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
+src/game/room_handlers.c func_00209200 --runs=10
+src/game/room_handlers.c func_002097E0 --runs=10
+src/game/room_handlers.c func_002097F0 --runs=10
+src/game/room_handlers.c func_00209820 --runs=10
+src/game/room_handlers.c func_00209830 --runs=10
+src/game/room_handlers.c func_0020BCE0 --runs=10
+src/game/room_handlers.c func_002A8930 --runs=10
+src/game/room_handlers.c func_002A8940 --runs=10
+src/game/room_handlers.c func_002A8950 --runs=10
+src/game/room_handlers.c func_002A8960 --runs=10
+src/game/room_handlers.c func_001FB3B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/room_handlers.c func_001FB3B0 --pre=a0=0..0 --runs=10
+src/game/room_handlers.c func_0020B090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B130 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B1D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B2A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B380 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B4C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B5A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B670 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B710 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B7B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B8A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020B970 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020BA60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020BB40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020BC10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0020BCF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002A8980 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002A8E00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002A9600 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002A9A50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AA250 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AA440 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AA920 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AAB00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB030 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB1F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB820 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB8F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB9F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002ABF00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AC0A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AC190 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AC4D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AC670 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002ACB60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AD020 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AD1C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AD420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AD690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AD9F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002ADD10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002ADF90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AE090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AE390 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AEFC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AF7E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AF8E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AFC30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B00F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B03C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B0CF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B0E30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B10A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B1600 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B1790 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B2330 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B25E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B2820 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B2960 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B2EF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B2FF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B3540 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B3970 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B3F10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4840 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4A70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4CD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4EF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B4FF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B50F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B5280 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B58B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002B5E80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002CC950 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002CCA90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002D2500 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E5740 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E5B40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E5FB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E6420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E6890 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E6D00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E6F10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E7220 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E7460 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E76A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002E78E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002FCB40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002FEEB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002FEF80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_003001B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00305E90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00308990 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00308AF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0030EE90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0030EF80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0030F070 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0030F850 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0030F940 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00310170 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00310A30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0031E1C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00320E50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0032C690 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0032DBF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00339CE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033EF80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F190 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F340 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F4F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F680 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F840 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0033F930 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00340060 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_003409C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00340D60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00341580 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00341B10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00343730 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_003438C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344050 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344970 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344B90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344D80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00344E80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00345000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034A140 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034A360 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034A4C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034A9B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034B000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034B0E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034B4C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034B5C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0034DBF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_003506E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00350E60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00350FF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00352AF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00352C90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00352E20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0035AEB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0035D1A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0035D330 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0035D4C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0035D650 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036A300 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036DA30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036DF30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036E2D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036E550 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036E800 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036EA80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036EE70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036F4A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036F930 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0036FCF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00378870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00378FE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00379290 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00379540 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00379820 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_00379C20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0037A2D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0037A5F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0037A8D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_0037AB80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/room_handlers.c func_002AB880 --runs=5
+src/game/room_handlers.c func_002AD0D0 --runs=5
+src/game/room_handlers.c func_002ADDE0 --runs=5
+src/game/room_handlers.c func_002AFCD0 --runs=5
+src/game/room_handlers.c func_002B2680 --runs=5
+src/game/room_handlers.c func_002B28A0 --runs=5
+src/game/room_handlers.c func_002B28C0 --runs=5
+src/game/room_handlers.c func_002B28F0 --runs=5
+src/game/room_handlers.c func_002B48E0 --runs=5
+src/game/room_handlers.c func_002B4F90 --runs=5
+src/game/room_handlers.c func_002B5080 --runs=5
+src/game/room_handlers.c func_002B52E0 --runs=5
+src/game/room_handlers.c func_002D2590 --runs=5
+src/game/room_handlers.c func_002E57F0 --runs=5
+src/game/room_handlers.c func_002E6480 --runs=5
+src/game/room_handlers.c func_002E64E0 --runs=5
+src/game/room_handlers.c func_002E6FB0 --runs=5
+src/game/room_handlers.c func_002E7740 --runs=5
+src/game/room_handlers.c func_002FCBB0 --runs=5
+src/game/room_handlers.c func_002FF010 --runs=5
+src/game/room_handlers.c func_00300250 --runs=5
+src/game/room_handlers.c func_00339DC0 --runs=5
+src/game/room_handlers.c func_0033F220 --runs=5
+src/game/room_handlers.c func_0033F400 --runs=5
+src/game/room_handlers.c func_0033F590 --runs=5
+src/game/room_handlers.c func_0033F9D0 --runs=5
+src/game/room_handlers.c func_003437C0 --runs=5
+src/game/room_handlers.c func_00343960 --runs=5
+src/game/room_handlers.c func_00344910 --runs=5
+src/game/room_handlers.c func_00344A10 --runs=5
+src/game/room_handlers.c func_00344F20 --runs=5
+src/game/room_handlers.c func_0034A590 --runs=5
+src/game/room_handlers.c func_0034AA80 --runs=5
+src/game/room_handlers.c func_0034B060 --runs=5
+src/game/room_handlers.c func_0034B0B0 --runs=5
+src/game/room_handlers.c func_0034B180 --runs=5
+src/game/room_handlers.c func_0034B1B0 --runs=5
+src/game/room_handlers.c func_0034B560 --runs=5
+src/game/room_handlers.c func_0034B680 --runs=5
+src/game/room_handlers.c func_0034DC50 --runs=5
+src/game/room_handlers.c func_0034DC70 --runs=5
+src/game/room_handlers.c func_00350740 --runs=5
+src/game/room_handlers.c func_00350760 --runs=5
+src/game/room_handlers.c func_00350EC0 --runs=5
+src/game/room_handlers.c func_00350EF0 --runs=5
+src/game/room_handlers.c func_00351050 --runs=5
+src/game/room_handlers.c func_00352B50 --runs=5
+src/game/room_handlers.c func_00352B80 --runs=5
+src/game/room_handlers.c func_00352CF0 --runs=5
+src/game/room_handlers.c func_00352D20 --runs=5
+src/game/room_handlers.c func_0035AF10 --runs=5
+src/game/room_handlers.c func_0035D240 --runs=5
+src/game/room_handlers.c func_0035D3D0 --runs=5
+src/game/room_handlers.c func_0035D560 --runs=5
+src/game/room_handlers.c func_0035D6F0 --runs=5
+src/game/room_handlers.c func_0036DAC0 --runs=5
+src/game/room_handlers.c func_0036DFC0 --runs=5
+src/game/room_handlers.c func_0036E330 --runs=5
+src/game/room_handlers.c func_0036E5B0 --runs=5
+src/game/room_handlers.c func_0036E5E0 --runs=5
+src/game/room_handlers.c func_0036E860 --runs=5
+src/game/room_handlers.c func_0036EED0 --runs=5
+src/game/room_handlers.c func_0036EF00 --runs=5
+src/game/room_handlers.c func_0036F530 --runs=5
+src/game/room_handlers.c func_0036F550 --runs=5
+src/game/room_handlers.c func_0036F9C0 --runs=5
+src/game/room_handlers.c func_0036F9E0 --runs=5
+src/game/room_handlers.c func_00378900 --runs=5
+src/game/room_handlers.c func_00379070 --runs=5
+src/game/room_handlers.c func_00379320 --runs=5
+src/game/room_handlers.c func_003795D0 --runs=5
+src/game/room_handlers.c func_003798B0 --runs=5
+src/game/room_handlers.c func_00379CB0 --runs=5
+src/game/room_handlers.c func_0037A390 --runs=5
+src/game/room_handlers.c func_0037A680 --runs=5
+src/game/room_handlers.c func_0037A930 --runs=5
+src/game/room_handlers.c func_0037A960 --runs=5
+src/game/room_handlers.c func_0037AC10 --runs=5
+src/game/room_handlers.c func_002AB0E0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002AB8B0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002AB8D0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002AB9D0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002ABFF0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002AC170 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002FEF40 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_002FEF60 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00300290 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0035AF50 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036A4B0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036DAE0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036DFE0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036E600 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036F560 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036F9F0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0036FD90 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00378960 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00379090 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00379340 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00379630 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_003798D0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_00379D10 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0037A370 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0037A3B0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0037A6E0 --pre=a1=0..7 --runs=30
+src/game/room_handlers.c func_0037A980 --pre=a1=0..7 --runs=30

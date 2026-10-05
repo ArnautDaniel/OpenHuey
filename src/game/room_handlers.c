@@ -1,734 +1,402 @@
-/* The rooms' event handler classes (event system +0x120, one 4-byte object per room; vtable
- * +0xC.. +0x20 the scripts for each phase, +0x24 a character action script, +0x28 a script
- * callback, +0x30 a character's entering script). */
+/* The rooms' event handler classes (the 4-byte objects of the events object, +0x120: one per
+ * room, see sRooms in event.c; base D_0046DB80): their destructors and small table getters.
+ * Each room's class gives the event system the room's data tables (by slot, see the vtables). */
 #include "common.h"
-#include "game.h"
-#include "ptmf.h"
-#include "progress.h"
-#include "sce/libvu0.h"
-#include "input.h"
 
-extern PTMF D_01990BD0[];   /* the room callbacks (set up by the static initialisers) */
+extern void func_00100490(void *p);   /* operator delete */
 
-/* +0x28 callback `n` (from the event command 0x22) for character c, with the command's
- * string `cmd`: bit 1 wait, bit 0 go on */
-s32 func_002B11A0(VObject *room, u8 n, u8 *c, const u8 *cmd) {
-    return ptmf_scall_r2(room, &D_01990BD0[n], (s32)c, (s32)cmd);
-}
+extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
+extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
+extern void *D_0046B7B0[], *D_0046B7F0[], *D_0046B830[], *D_0046B870[], *D_0046B8B0[], *D_0046DB80[];
+extern void *D_0046DBC0[], *D_0046DC00[], *D_0046DC40[], *D_0046DC80[], *D_0046DCC0[], *D_0046DD00[];
+extern void *D_0046DD40[], *D_0046DD80[], *D_0046DDC0[], *D_0046DE00[], *D_0046DE40[], *D_0046DE80[];
+extern void *D_0046DEC0[], *D_0046DF00[], *D_0046DF40[], *D_0046DF80[], *D_0046DFC0[], *D_0046E000[];
+extern void *D_0046E040[], *D_0046E080[], *D_0046E0C0[], *D_0046E100[], *D_0046E140[], *D_0046E180[];
+extern void *D_0046E1C0[], *D_0046E200[], *D_0046E240[], *D_0046E280[], *D_0046E2C0[], *D_0046E300[];
+extern void *D_0046E340[], *D_0046E380[], *D_0046E3C0[], *D_0046E400[], *D_0046E440[], *D_0046E480[];
+extern void *D_0046E4C0[], *D_0046E500[], *D_0046E540[], *D_0046E580[], *D_0046E5C0[], *D_0046E600[];
+extern void *D_0046E640[], *D_0046E680[], *D_0046E6C0[], *D_0046E700[], *D_0046E740[], *D_0046E780[];
+extern void *D_0046E7C0[], *D_0046E800[], *D_0046E840[], *D_0046E880[], *D_0046E8C0[], *D_0046E900[];
+extern void *D_0046E940[], *D_0046E980[], *D_0046E9C0[], *D_0046EA00[], *D_0046EDC0[], *D_0046EE00[];
+extern void *D_0046F3F0[], *D_0046FC40[], *D_0046FC80[], *D_0046FCC0[], *D_0046FD00[], *D_0046FD40[];
+extern void *D_0046FD80[], *D_0046FDC0[], *D_0046FE00[], *D_0046FE40[], *D_0046FE80[], *D_0046FEC0[];
+extern void *D_00470DC0[], *D_00470EB0[], *D_00470EF0[], *D_00470F50[], *D_00471020[], *D_00471210[];
+extern void *D_00471250[], *D_00471E60[], *D_00471EA0[], *D_00471EE0[], *D_00471F20[], *D_00471F60[];
+extern void *D_00471FA0[], *D_00471FE0[], *D_00473460[], *D_00473C90[], *D_00474520[], *D_00474F40[];
+extern void *D_004760E0[], *D_004771C0[], *D_00477200[], *D_00477240[], *D_00477280[], *D_004772C0[];
+extern void *D_00477300[], *D_00477340[], *D_00477380[], *D_004773C0[], *D_00477400[], *D_00477440[];
+extern void *D_00477480[], *D_004774C0[], *D_00477500[], *D_00477540[], *D_00477580[], *D_00477610[];
+extern void *D_00477650[], *D_00477690[], *D_004776D0[], *D_00477710[], *D_00477750[], *D_00478570[];
+extern void *D_004785B0[], *D_004785F0[], *D_00478630[], *D_00478670[], *D_004786B0[], *D_004786F0[];
+extern void *D_00478730[], *D_00478AA0[], *D_00478B80[], *D_00478C00[], *D_00478C40[], *D_00479340[];
+extern void *D_00479380[], *D_004793C0[], *D_00479620[], *D_004798D0[], *D_00479910[], *D_00479950[];
+extern void *D_00479990[], *D_00479FB0[], *D_0047A070[], *D_0047A0B0[], *D_0047A0F0[], *D_0047A130[];
+extern void *D_0047A170[], *D_0047A1B0[], *D_0047A1F0[], *D_0047A230[], *D_0047A270[], *D_0047A2B0[];
+extern void *D_0047A450[], *D_0047A490[], *D_0047A4D0[], *D_0047A510[], *D_0047A550[], *D_0047A590[];
+extern void *D_0047A5D0[], *D_0047A610[], *D_0047A650[], *D_0047A690[];
+extern u8 D_0047A9C8[], D_0047A9D0[], D_0047A9DC[], D_0047A9E0[], D_0047A9E8[], D_0047A9F0[];
+extern u8 D_0047A9F8[], D_0047AA40[], D_0047AA80[], D_0047AB10[], D_0047AB3C[], D_0047AB50[];
+extern u8 D_0047AB58[], D_0047AB70[], D_0047AB98[], D_0047ABC0[], D_0047ABD0[], D_0047ABE0[];
+extern u8 D_0047AC10[], D_0047AC40[], D_0047AC60[], D_0047AC68[], D_0047AC78[], D_0047AC80[];
+extern u8 D_0047ACB0[], D_0047ACB8[], D_0047ACC0[], D_0047ACC4[], D_0047ACC8[], D_0047ACE0[];
+extern u8 D_0047ADF8[], D_0047AE18[], D_0047AE30[], D_0047AE38[], D_0047AE50[], D_0047AE74[];
+extern u8 D_0047AE7C[], D_0047AE84[], D_0047AE98[], D_0047AEBC[], D_0047AF04[], D_0047AF08[];
+extern u8 D_0047AF0C[], D_0047AF1C[], D_0047AF20[], D_0047AF28[], D_0047AF30[], D_0047AF40[];
+extern u8 D_0047AF58[], D_0047AF5C[], D_0047AF70[], D_0047AF78[], D_0047AF88[], D_0047AF90[];
+extern u8 D_0047AF98[], D_0047AFA0[], D_0047AFA8[], D_0047AFB0[], D_0047AFB8[], D_0047AFC0[];
+extern u8 D_0047AFD0[], D_0047AFD8[], D_0047AFE0[], D_0047AFE8[], D_0047AFF0[], D_0047B028[];
+extern u8 D_0047B030[], D_0047B040[], D_0047B048[], D_0047B050[], D_0047B054[], D_0047B058[];
+extern u8 D_0047B060[], D_0047B068[], D_0047B06C[], D_0047B070[], D_0047B078[], D_0047B07C[];
+extern u8 D_0047B080[], D_0047B088[], D_0047B090[], D_0047B098[], D_0047B0A0[], D_0047B0A8[];
+extern u8 D_0047B0B0[], D_0047B0C0[], D_0047B0C8[], D_0047B0D0[], D_0047B0D4[], D_0047B0DC[];
+extern u8 D_0047B0E0[], D_0047B0E4[], D_0047B0E8[], D_0047B0F0[], D_0047B0F4[], D_0047B0F8[];
+extern u8 D_0047B100[], D_0047B108[], D_0047B110[], D_0047B118[], D_0047B11C[], D_0047B120[];
+extern u8 D_0047B128[], D_0047B130[], D_0047B134[];
 
-#include "effectmgr.h"
-
-extern void *D_00474000[];
-extern void *D_00469D00[], *D_0046FC30[];
-
-static void prop_init(void **obj) {
-    obj[0] = D_00474000;
-    obj[0x610 / 4] = D_00469D00;
-    ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
-}
-
-/* room 0x2A callback: spawn the D_00474000 object at (220, 0, -100) */
-s32 func_002B12D0(VObject *room) {
-    u8 *mgr = D_0044E578;
-    f32 pos[4] __attribute__((aligned(16)));
-    s32 slot = Effect_New(mgr, 0x900, prop_init);
-
-    pos[0] = 220.0f;
-    pos[2] = -100.0f;
-    pos[1] = 0.0f;
-    pos[3] = 1.0f;
-    func_002D6090(mgr, slot, pos);
-    return 1;
-}
-
-extern void *D_00478BC0[];
-
-static void obj_478BC0_init(void **obj) {
-    obj[0] = D_00478BC0;
-}
-
-/* room 0x2A callback: spawn a D_00478BC0 object with the command's string */
-s32 func_002B11D0(VObject *room, u8 *c, const u8 *cmd) {
-    u8 *mgr = D_0044E578;
-    s32 slot = Effect_New(mgr, 0x14, obj_478BC0_init);
-
-    func_002D6090(mgr, slot, (void *)(cmd + 3));
-    return 1;
-}
-
-extern VObject *D_00456DF8;          /* the room's named props */
-extern const char *D_004070C0[3];    /* "sara_l", "sara_r", "tenbin" */
-
-static u8 *room_prop(const char *name) {
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
-}
-
-static void prop_place(u8 *o, f32 rz, f32 x, f32 y, f32 z) {
-    AT(o, 0x10, f32) = 0.0f;
-    AT(o, 0x14, f32) = 0.0f;
-    AT(o, 0x18, f32) = rz;
-    AT(o, 0x20, f32) = x;
-    AT(o, 0x24, f32) = y;
-    AT(o, 0x28, f32) = z;
-}
-
-/* room 0x40 callback: the balance scale, level (cmd[3] 0) or tipped 25 degrees (else): its
- * beam ("tenbin") and the two pans hanging from its ends */
-s32 func_002B2450(VObject *room, u8 *c, const u8 *cmd) {
-    u8 *o;
-
-    if ((o = room_prop(D_004070C0[0])) != NULL) {
-        if (cmd[3] == 0) {
-            prop_place(o, 0.0f, 0x1.8cd35a0000000p+2f /* 6.2004 */, 0x1.3ccccc0000000p+4f /* 19.8 */, 0x1.11999a0000000p+4f /* 17.1 */);
-        } else {
-            prop_place(o, 0.0f, 0x1.966cf40000000p+2f /* 6.3504 */, 0x1.49999a0000000p+4f /* 20.6 */, 0x1.11999a0000000p+4f /* 17.1 */);
-        }
-    }
-    if ((o = room_prop(D_004070C0[1])) != NULL) {
-        if (cmd[3] == 0) {
-            prop_place(o, 0.0f, 0x1.8645a20000000p+1f /* 3.049 */, 0x1.3ccccc0000000p+4f /* 19.8 */, 0x1.11999a0000000p+4f /* 17.1 */);
-        } else {
-            prop_place(o, 0.0f, 0x1.cc08320000000p+1f /* 3.594 */, 19.25f, 0x1.11999a0000000p+4f /* 17.1 */);
-        }
-    }
-    if ((o = room_prop(D_004070C0[2])) != NULL) {
-        prop_place(o, cmd[3] == 0 ? 0.0f : 0x1.becde60000000p-2f /* 0.43633232 */, 0x1.27a29c0000000p+2f /* 4.6193 */, 0x1.49999a0000000p+4f /* 20.6 */, 0x1.114fe00000000p+4f /* 17.082 */);
-    }
-    return 1;
-}
-
-extern void *gCharacters[6];
-extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index */
-extern void func_0032D3E0(void *c, s32 how, f32 x, f32 z);
-extern s32 func_0032D2C0(void *c);
-
-/* room 0x2B callback: character 0x1A (cmd[3] 0) sent off towards (-290, 42), or (else) asked
- * whether it has arrived - 1 go on, 2 wait */
-s32 func_002B1700(VObject *room, u8 *c, const u8 *cmd) {
-    u8 i = func_001770D0(gProgress, 0x1A);
-    void *ch = gCharacters[i];
-
-#ifdef HG_NATIVE
-    if (i >= 6 || ch == NULL) {   /* (event characters aren't loaded on PC yet) */
-        return 1;
-    }
-#endif
-    if (cmd[3] == 0) {
-        func_0032D3E0(ch, 2, -290.0f, 42.0f);
-        return 1;
-    }
-    return func_0032D2C0(ch) == 0 ? 2 : 1;
-}
-
-extern VObject *D_0044E988;   /* the item manager (+0xC: an item is held) */
-extern VObject *D_0044E560;   /* the sound driver */
-
-/* room 0x50 callback: unless progress flag 0xAF, with flag 0x649 and item 0x238 held, sound
- * 0xC (+0x14, 5) */
-s32 func_002B47C0(VObject *room) {
-    Progress *p = gProgress;
-
-    if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & 0x20000) &&
-        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238)) {
-        VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
-    }
-    return 1;
-}
-
-extern const char *D_003FF110[];   /* names of room 0x20's swinging props */
-extern f32 func_0031C248(f32 x);   /* sinf */
-extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
-
-/* room 0x20 callback: the pendulum named cmd[3] - cmd[4] 0 stopped (phase +0x30 0), 1 swung on
- * a step (phase +2 degrees; a tick at (-85, 30, 90) each turn): turned (+0x14) by 15 degrees
- * x sin(phase) */
-s32 func_002AED60(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
-    u8 *o = room_prop(D_003FF110[cmd[3]]);
-    f32 a;
-
-    switch (cmd[4]) {
-    case 0:
-        AT(o, 0x30, f32) = 0.0f;
-        return 1;
-    case 1:
-        AT(o, 0x30, f32) = AT(o, 0x30, f32) + 2.0f;
-        if (!(AT(o, 0x30, f32) < 360.0f)) {
-            f32 pos[4] __attribute__((aligned(16)));
-
-            AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
-            pos[0] = -85.0f;
-            pos[1] = 30.0f;
-            pos[2] = 90.0f;
-            func_002FF650(D_0044E560, 0x40000001, 6, pos, 0, 0);
-        }
-        a = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
-        AT(o, 0x14, f32) = a;
-        if (!(a <= kPi.f)) {
-            AT(o, 0x14, f32) = a - kTwoPi.f;
-        }
-        return 1;
-    }
-    return 1;
-}
-
-extern VObject *D_0044E4D0;   /* the event system (+0x30 / +0x34 its object slots) */
-extern u8 *D_0044E4C0;        /* the room effects */
-extern void *D_00472F60[], *D_004795A0[];
-extern void *func_002672F0(u32 size, void *place);   /* placement new */
-extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
-extern void func_002670F0(void *fx, s32 k);           /* remove room effect k */
-extern void func_002D6170(u8 *mgr, s32 slot);         /* end a spawned effect */
-
-static void obj_4795A0_init(void **obj) {
-    obj[0] = D_004795A0;
-}
-
-/* the floor effect (room effect +0x14A4) made anew (a D_00472F60) */
-static void floor_fx_new(void) {
-    u8 *fx = D_0044E4C0;
-    void **slot = (void **)(fx + 0x14A4);
-    void *mem;
-
-    if (*slot != NULL) {
-        VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
-        *slot = NULL;
-    }
-    mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
-    if (mem != NULL) {
-        void **e = func_002672F0(0xA0, mem);
-
-        if (e != NULL) {
-            e[0] = D_00472F60;
-        }
-        *slot = e;
-        VCALL(*slot, 0xC, void (*)(void *))(*slot);
-    }
-}
-
-/* room 0x60 callback: cmd[3] 0 a new D_00472F60 room effect (+0x14A4) and a D_004795A0 object
- * (kept as the event's object 1), then (also for cmd[3] 2..) room effect 0x1B: a 20 x 20 floor
- * quad at y -0.2 whose strength follows the event's value 0 (0, 30, 60, 90, 128), handed to
- * that object too when not 0; cmd[3] 1 both removed */
-s32 func_003106E0(VObject *room, u8 *c, const u8 *cmd) {
-    struct {
-        f32 q[4][4];
-        s32 a;
-        s32 level_f;
-        f32 one;
-        s32 level;
-    } arg __attribute__((aligned(16)));
-    VObject *ev;
-    s32 v;
-
-    if (cmd[3] == 1) {
-        func_002670F0(D_0044E4C0, 0x1B);
-        func_002D6170(D_0044E578,
-                      VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1));
-        return 1;
-    }
-    if (cmd[3] == 0) {
-        s32 obj;
-
-        floor_fx_new();
-        obj = Effect_New(D_0044E578, 0x10, obj_4795A0_init);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, obj);
-    }
-    arg.q[0][0] = 10.0f;  arg.q[0][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[0][2] = -10.0f; arg.q[0][3] = 1.0f;
-    arg.q[1][0] = -10.0f; arg.q[1][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[1][2] = -10.0f; arg.q[1][3] = 1.0f;
-    arg.q[2][0] = 10.0f;  arg.q[2][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[2][2] = 10.0f;  arg.q[2][3] = 1.0f;
-    arg.q[3][0] = -10.0f; arg.q[3][1] = -0x1.99999a0000000p-3f /* 0.2 */; arg.q[3][2] = 10.0f;  arg.q[3][3] = 1.0f;
-    arg.a = 0;
-    arg.level = 0;
-    ev = D_0044E4D0;
-    switch (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0)) {
-    case 0:
-        arg.level = 0;
-        break;
-    case 1:
-        arg.level = 30;
-        break;
-    case 2:
-        arg.level = 60;
-        break;
-    case 3:
-        arg.level = 90;
-        break;
-    case 4:
-        arg.level = 0x80;
-        break;
-    }
-    arg.one = 1.0f;
-    arg.level_f = arg.level;   /* (the word copied as is) */
-    func_00266C70(D_0044E4C0, 0x1B, &arg);
-    if (arg.level != 0) {
-        v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1);
-        func_002D6090(D_0044E578, v, &arg.level);
-    }
-    return 1;
-}
-
-extern const char *D_003F99B8[];   /* room 0x13's prop */
-
-/* room 0x13 callback: its prop turned a quarter (-90 degrees about y) for cmd[3], else back */
-s32 func_002AC600(VObject *room, u8 *c, const u8 *cmd) {
-    u8 *o = room_prop(D_003F99B8[0]);
-
+/* the base (D_0046DB80): destructor */
+void *func_001FB3B0(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x14, f32) = cmd[3] != 0 ? -0x1.921fb60000000p+0f /* 1.5707964 */ : 0.0f;
-    }
-    return 1;
-}
-
-extern void *D_0046EA40[];
-
-/* room effect +0x143C made anew (a D_0046EA40) */
-static void room_fx_143C_new(void) {
-    u8 *fx = D_0044E4C0;
-    void **slot = (void **)(fx + 0x143C);
-    void *mem;
-
-    if (*slot != NULL) {
-        VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
-        *slot = NULL;
-    }
-    mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
-    if (mem != NULL) {
-        void **e = func_002672F0(0xA0, mem);
-
-        if (e != NULL) {
-            e[0] = D_0046EA40;
-        }
-        *slot = e;
-        VCALL(*slot, 0xC, void (*)(void *))(*slot);
-    }
-}
-
-/* room 0x21 callback: room_fx_143C_new */
-s32 func_002AF730(VObject *room) {
-    room_fx_143C_new();
-    return 1;
-}
-
-/* room 0x31 callback: the same */
-s32 func_0031E510(VObject *room) {
-    room_fx_143C_new();
-    return 1;
-}
-
-/* room 0x32 callback: the same */
-s32 func_00321590(VObject *room) {
-    room_fx_143C_new();
-    return 1;
-}
-
-extern void *D_0046F5A0[], *D_00476BF0[];
-
-static void obj_46F5A0_init(void **obj) {
-    obj[0] = D_0046F5A0;
-    obj[0x1810 / 4] = D_00469D00;
-    ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
-}
-
-static void obj_476BF0_init(void **obj) {
-    obj[0] = D_00476BF0;
-}
-
-/* room 0x24 callback: a D_0046F5A0 object (0x1C60 bytes, its quad drawer at +0x1810) */
-s32 func_002AFE90(VObject *room) {
-    Effect_New(D_0044E578, 0x1C60, obj_46F5A0_init);
-    return 1;
-}
-
-/* room 0x52 callback: a D_00476BF0 object (0x6E0 bytes) */
-s32 func_002B4BE0(VObject *room) {
-    Effect_New(D_0044E578, 0x6E0, obj_476BF0_init);
-    return 1;
-}
-
-/* room 0x51 callback: unless progress flag 0xAF, with flag 0x648 and item 0x238 held, sound
- * 0xC (+0x14, 5) */
-s32 func_002B4970(VObject *room) {
-    Progress *p = gProgress;
-
-    if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & 0x10000) &&
-        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238)) {
-        VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
-    }
-    return 1;
-}
-
-extern const char *D_003F0404[];   /* room 0x02's lift */
-
-/* room 0x02 callback: the lift (its height +0x24) - cmd[3] 0 set at the top (37.978, with
- * progress flag 0x12) or bottom (11), 1 raised a step (0.25; at the top the event's +0x5C 2),
- * 2 raised a step, others lowered one */
-s32 func_002A94C0(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kTop = {0x4217E979};
-    u8 *o = room_prop(D_003F0404[0]);
-
-    if (o == NULL) {
-        return 1;
-    }
-    switch (cmd[3]) {
-    case 0:
-        AT(o, 0x24, f32) = (AT(gProgress, 0x1C, u32) & 0x40000) ? kTop.f : 11.0f;
-        break;
-    case 1:
-        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
-        if (!(AT(o, 0x24, f32) < kTop.f)) {
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 2);
-            AT(o, 0x24, f32) = kTop.f;
-        }
-        break;
-    case 2:
-        AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
-        break;
-    default:
-        AT(o, 0x24, f32) = AT(o, 0x24, f32) - 0.25f;
-        break;
-    }
-    return 1;
-}
-
-extern f32 D_0047B280;   /* room 0x62's falling object's speed */
-extern u8 *func_00266C40(void *fx, s32 k);   /* room effect slot k */
-
-/* room 0x62 callback: room effect 0 dropped - cmd[3] 0 held (speed 0), 1 moved on 0.5 in z,
- * others falling (+0x74 0): forward 0.16 a step, speed down by 0.5, bouncing at height 0.7
- * (speed x -0.3, a sound) until slower than 0.2 (+0x74 1, go on: 1; else wait: 2) */
-s32 func_00308C20(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kStep = {0x3E23D70A}, kBounce = {0xBE99999A}, kRest = {0x3E4CCCCD},
-        kFloor = {0x3F333333};
-    u8 *e = func_00266C40(D_0044E4C0, 0);
-    f32 pos[4] __attribute__((aligned(16)));
-
-    switch (cmd[3]) {
-    case 0:
-        D_0047B280 = 0.0f;
-        return 1;
-    case 1:
-        AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0.5f;
-        return 1;
-    }
-    AT(e, 0x74, s32) = 0;
-    AT(e, 0x28, f32) = AT(e, 0x28, f32) + kStep.f;
-    D_0047B280 = D_0047B280 - 0.5f;
-    AT(e, 0x24, f32) = AT(e, 0x24, f32) + D_0047B280;
-    if (!(AT(e, 0x24, f32) < kFloor.f)) {
-        return 2;
-    }
-    AT(e, 0x24, f32) = kFloor.f;
-    D_0047B280 = D_0047B280 * kBounce.f;
-    sceVu0CopyVector(pos, (f32 *)(e + 0x20));
-    func_002FF650(D_0044E560, 0, 6, pos, 0, 0);
-    if (!(D_0047B280 < kRest.f)) {
-        return 2;
-    }
-    AT(e, 0x74, s32) = 1;
-    return 1;
-}
-
-extern void *D_0047A370[];
-
-static void obj_47A370_init(void **obj) {
-    obj[0] = D_0047A370;
-    obj[0x610 / 4] = D_00469D00;
-    ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
-}
-
-/* room 0x61 callback: cmd[3] 0 a D_0047A370 object (0x700 bytes, its quad drawer at +0x610)
- * started at (30, 0, 70) and kept as the event's object 3; 1 / 2 that object told 1 / 2 */
-s32 func_003114C0(VObject *room, u8 *c, const u8 *cmd) {
-    struct {
-        f32 pos[4];
-        s32 how;
-    } arg __attribute__((aligned(16)));
-    s32 slot;
-
-    switch (cmd[3]) {
-    case 0:
-        slot = Effect_New(D_0044E578, 0x700, obj_47A370_init);
-        arg.pos[0] = 30.0f;
-        arg.pos[2] = 70.0f;
-        arg.pos[1] = 0.0f;
-        arg.pos[3] = 1.0f;
-        arg.how = 0;
-        func_002D6090(D_0044E578, slot, &arg);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 3, slot);
-        break;
-    case 1:
-    case 2:
-        arg.how = cmd[3];
-        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 3), &arg);
-        break;
-    }
-    return 1;
-}
-
-extern const char *D_003F0DC4[];   /* room 0x03's swinging prop */
-extern void *D_0046FF20[];
-
-static void obj_46FF20_init(void **obj) {
-    obj[0] = D_0046FF20;
-    obj[0x610 / 4] = D_00469D00;
-    ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
-}
-
-/* room 0x03 callback: the prop's turn about z (+0x18) between 0 and -10 degrees - cmd[3] 0 back
- * 2 degrees, 1 to -10 with a D_0046FF20 object (0x720 bytes, its quad drawer at +0x610)
- * started at the prop (grey 0x80) */
-s32 func_002A9740(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    u8 *o = room_prop(D_003F0DC4[0]);
-    f32 deg;
-    u8 spawn = 0;
-
-    if (o == NULL) {
-        return 1;
-    }
-    deg = 180.0f * AT(o, 0x18, f32) / kPi.f;
-    switch (cmd[3]) {
-    case 0:
-        deg = deg + 2.0f;
-        break;
-    case 1: {
-        static volatile f32 kStop = -10.0f;   /* (computed with at run time, as the PS2 rounds) */
-
-        spawn = 1;
-        deg = kStop;
-        break;
-    }
-    }
-    if (!(deg <= 0.0f)) {
-        deg = 0.0f;
-    }
-    if (deg < -10.0f) {
-        deg = -10.0f;
-    }
-    AT(o, 0x18, f32) = kPi.f * deg / 180.0f;
-    if (spawn) {
-        struct {
-            f32 pos[4];
-            s32 a, r, g, b;
-        } arg __attribute__((aligned(16)));
-        s32 slot = Effect_New(D_0044E578, 0x720, obj_46FF20_init);
-
-        arg.pos[0] = AT(o, 0x20, f32);
-        arg.pos[1] = AT(o, 0x24, f32);
-        arg.pos[2] = AT(o, 0x28, f32);
-        arg.pos[3] = 1.0f;
-        arg.b = 0x80;
-        arg.g = 0x80;
-        arg.r = 0x80;
-        arg.a = 0;
-        func_002D6090(D_0044E578, slot, &arg);
-    }
-    return 1;
-}
-
-extern const char *D_003F17B8[], *D_003F17C8[];   /* room 0x04's two dials */
-extern u32 D_0047E364;   /* menu buttons, repeating (MENU_*) */
-
-/* room 0x04 callback, a dial (cmd[3] 0 the first, else the second; its value progress variable
- * 0 / 1, 0..6, shown at 30 x value - 90 degrees about y): cmd[4] 0 shown at its value, 1 the
- * player turns it with left / right (the event's +0x60 1 when changed, 0 on confirm / cancel),
- * 2 it turns a degree a frame to its value (+0x5C 1 when there), 3 wait */
-s32 func_002A9F30(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDeg = {0x3C8EFA35};
-    u8 which = cmd[3] != 0;
-    u8 *o = room_prop(cmd[3] == 0 ? D_003F17B8[0] : D_003F17C8[0]);
-    Progress *p;
-    u8 v;
-
-    if (o == NULL) {
-        return 1;
-    }
-    switch (cmd[4]) {
-    case 0:
-        AT(o, 0x0, u8) = 0;
-        v = Progress_GetVar(gProgress, which);
-        AT(o, 0x14, f32) = kPi.f * (f32)(v * 30 - 90) / 180.0f;
-        break;
-    case 1:
-        if (D_0047E36C & (MENU_CONFIRM | MENU_CANCEL)) {
-            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 0);
-            break;
-        }
-        p = gProgress;
-        v = Progress_GetVar(p, which);
-        if (D_0047E364 & MENU_LEFT) {
-            if (v != 0) {
-                v = v - 1;
-            }
-        } else if (D_0047E364 & MENU_RIGHT) {
-            if (v < 6) {
-                v = v + 1;
-            }
-        }
-        if (v == (u8)Progress_GetVar(p, which)) {
-            break;
-        }
-        AT(p, 0x9C + which, u8) = v;
-        VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
-        break;
-    case 2: {
-        f32 d = 180.0f * AT(o, 0x14, f32) / kPi.f;
-
-        v = Progress_GetVar(gProgress, which);
-        d = d - (f32)(v * 30 - 90);
-        if (!(d <= 1.0f)) {
-            AT(o, 0x14, f32) = AT(o, 0x14, f32) - kDeg.f;
-        } else if (d < -1.0f) {
-            AT(o, 0x14, f32) = AT(o, 0x14, f32) + kDeg.f;
-        } else {
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
-        }
-        break;
-    }
-    case 3:
-        return 2;
-    }
-    return 1;
-}
-
-extern void *gCharPlayer;
-extern void func_00122C20(void *c, s32 level, s32 kind, s32 a, s32 b, void *d);   /* a noise */
-
-/* room 0x2D callback: two chimes (the room's names 4 and 5; phase +0x30 + offset +0x34, energy
- * +0x38, walked distance +0x3C) - cmd[3] 0 at rest (offsets 0 / 60 degrees); 1 each frame: the
- * distance Fiona walks adds up and every 5 rings them (energy 20; the first one also makes a
- * noise, level 1 or 2 by the event's switch 3, which it flips); while they have energy (one
- * less a frame) they swing on 36 degrees a frame, tilted (+0x10) 1 + sin(phase) degrees */
-s32 func_002B1A00(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
-    VObject *props = D_00456DF8;
-    VObject *ev = D_0044E4D0;
-    s32 i;
-
-    for (i = 0; i < 2; i++) {
-        const char *name = VCALL(room, 0x34, const char *(*)(VObject *, s32))(room, i + 4);
-        u8 *o = VCALL(props, 0x18, u8 *(*)(VObject *, const char *))(props, name);
-        f32 e, a;
-
-        if (o == NULL) {
-            continue;
-        }
-        switch (cmd[3]) {
-        case 0:
-            AT(o, 0x30, f32) = 0.0f;
-            AT(o, 0x34, f32) = 60.0f * (f32)i;
-            AT(o, 0x38, f32) = 0.0f;
-            AT(o, 0x3C, f32) = 0.0f;
-            break;
-        case 1:
-            if (gCharPlayer != NULL) {
-                f32 d[4] __attribute__((aligned(16)));
-
-                sceVu0CopyVector(d, (f32 *)((u8 *)gCharPlayer + 0x40));
-                sceVu0SubVector(d, (f32 *)((u8 *)gCharPlayer + 0x10), d);
-                AT(o, 0x3C, f32) = AT(o, 0x3C, f32) + __builtin_sqrtf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
-                if (!(AT(o, 0x3C, f32) <= 5.0f)) {
-                    AT(o, 0x38, f32) = 20.0f;
-                    AT(o, 0x3C, f32) = 0.0f;
-                    if (i == 0) {
-                        if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 3) == 1) {
-                            VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(gCharPlayer, 1, 6, 0, 0, NULL);
-                        } else {
-                            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(gCharPlayer, 2, 6, 0, 0, NULL);
-                        }
-                    }
-                }
-            }
-            if (AT(o, 0x38, f32) <= 0.0f) {
-                break;
-            }
-            e = AT(o, 0x38, f32) - 1.0f;
-            AT(o, 0x38, f32) = e;
-            if (e < 0.0f) {
-                AT(o, 0x38, f32) = 0.0f;
-            }
-            AT(o, 0x30, f32) = AT(o, 0x30, f32) + 36.0f;
-            if (!(AT(o, 0x30, f32) + AT(o, 0x34, f32) < 360.0f)) {
-                AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
-            }
-            a = kPi.f * (1.0f + func_0031C248(kPi.f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
-            AT(o, 0x10, f32) = a;
-            if (!(a <= kPi.f)) {
-                AT(o, 0x10, f32) = a - kTwoPi.f;
-            }
-            break;
+        AT(o, 0x0, void **) = D_0046DB80;
+        if ((s16)flags > 0) {
+            func_00100490(o);
         }
     }
-    return 1;
+    return o;
 }
 
-/* room 0x21 callback: cmd[3] 1 the floor effect (0x1B) removed; else made anew over the quad
- * x 0.49..9.5, z 69.5..60.5 from height 22 down to 0, strength 0x40, mode 1 for cmd[3] 2 */
-s32 func_002AF4E0(VObject *room, u8 *c, const u8 *cmd) {
-    static const union { u32 u; f32 f; } kX0 = {0x3EFB2FEC}, kZ0 = {0x428B0113}, kX1 = {0x4118089A},
-        kZ1 = {0x4271F660};
-    struct {
-        f32 q[4][4];
-        f32 mode;
-        s32 level_f;
-        s32 c;
-        s32 level;
-    } arg __attribute__((aligned(16)));
-
-    if (cmd[3] == 1) {
-        func_002670F0(D_0044E4C0, 0x1B);
-        return 1;
+/* a room's class: its vtable, then the base's */
+static inline void *room_dtor(void *o, s32 flags, void **own, void **base) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = own;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = base;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
     }
-    floor_fx_new();
-    arg.mode = cmd[3] == 2 ? 1.0f : 0.0f;
-    arg.q[0][0] = kX0.f; arg.q[0][1] = 22.0f; arg.q[0][2] = kZ0.f; arg.q[0][3] = 1.0f;
-    arg.q[1][0] = kX1.f; arg.q[1][1] = 22.0f; arg.q[1][2] = kZ1.f; arg.q[1][3] = 1.0f;
-    arg.q[2][0] = kX0.f; arg.q[2][1] = 0.0f;  arg.q[2][2] = kZ0.f; arg.q[2][3] = 1.0f;
-    arg.q[3][0] = kX1.f; arg.q[3][1] = 0.0f;  arg.q[3][2] = kZ1.f; arg.q[3][3] = 1.0f;
-    arg.level = 0x10000040;
-    arg.level_f = arg.level;   /* (the word copied as is) */
-    arg.c = 0;
-    func_00266C70(D_0044E4C0, 0x1B, &arg);
-    return 1;
+    return o;
 }
 
-extern void *D_00470A70[];
-
-static void obj_470A70_init(void **obj) {
-    obj[0] = D_00470A70;
-    obj[0xC10 / 4] = D_00469D00;
-    ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+/* the base's defaults: nothing (0) */
+s32 func_00209200(void *o) {   /* +0x30 */
+    return 0;
 }
 
-/* room 0x02 callback: a D_00470A70 object (0xE60 bytes, its quad drawer at +0xC10) - cmd[3] 0
- * made and kept as the event's object 0, 1 that one told 0, others a new one started with 1 */
-s32 func_002A91F0(VObject *room, u8 *c, const u8 *cmd) {
-    s32 arg;
-    s32 slot;
-
-    switch (cmd[3]) {
-    case 0:
-        slot = Effect_New(D_0044E578, 0xE60, obj_470A70_init);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
-        break;
-    case 1:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
-        arg = 0;
-        func_002D6090(D_0044E578, slot, &arg);
-        break;
-    default:
-        slot = Effect_New(D_0044E578, 0xE60, obj_470A70_init);
-        arg = 1;
-        func_002D6090(D_0044E578, slot, &arg);
-        break;
-    }
-    return 1;
+s32 func_002097E0(void *o) {   /* +0x20 */
+    return 0;
 }
+
+s32 func_002097F0(void *o) {   /* +0x1C */
+    return 0;
+}
+
+s32 func_00209820(void *o) {   /* +0x10 */
+    return 0;
+}
+
+s32 func_00209830(void *o) {   /* +0xC */
+    return 0;
+}
+
+s32 func_0020BCE0(void *o) {   /* +0x38 */
+    return 0;
+}
+
+s32 func_002A8930(void *o) {   /* +0x34 */
+    return 0;
+}
+
+s32 func_002A8940(void *o) {   /* +0x2C */
+    return 0;
+}
+
+s32 func_002A8950(void *o) {   /* +0x28 */
+    return 0;
+}
+
+s32 func_002A8960(void *o) {   /* +0x24 */
+    return 0;
+}
+
+/* destructors */
+void *func_0020B090(void *o, s32 flags) { return room_dtor(o, flags, D_0046B4B0, D_0046DB80); }
+void *func_0020B130(void *o, s32 flags) { return room_dtor(o, flags, D_0046B4F0, D_0046DB80); }
+void *func_0020B1D0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B530, D_0046DB80); }
+void *func_0020B2A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B570, D_0046DB80); }
+void *func_0020B380(void *o, s32 flags) { return room_dtor(o, flags, D_0046B5B0, D_0046DB80); }
+void *func_0020B420(void *o, s32 flags) { return room_dtor(o, flags, D_0046B5F0, D_0046DB80); }
+void *func_0020B4C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B630, D_0046DB80); }
+void *func_0020B5A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B670, D_0046DB80); }
+void *func_0020B670(void *o, s32 flags) { return room_dtor(o, flags, D_0046B6B0, D_0046DB80); }
+void *func_0020B710(void *o, s32 flags) { return room_dtor(o, flags, D_0046B6F0, D_0046DB80); }
+void *func_0020B7B0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B730, D_0046DB80); }
+void *func_0020B8A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B770, D_0046DB80); }
+void *func_0020B970(void *o, s32 flags) { return room_dtor(o, flags, D_0046B7B0, D_0046DB80); }
+void *func_0020BA60(void *o, s32 flags) { return room_dtor(o, flags, D_0046B7F0, D_0046DB80); }
+void *func_0020BB40(void *o, s32 flags) { return room_dtor(o, flags, D_0046B830, D_0046DB80); }
+void *func_0020BC10(void *o, s32 flags) { return room_dtor(o, flags, D_0046B870, D_0046DB80); }
+void *func_0020BCF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B8B0, D_0046DB80); }
+void *func_002A8980(void *o, s32 flags) { return room_dtor(o, flags, D_0046DBC0, D_0046DB80); }
+void *func_002A8E00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC00, D_0046DB80); }
+void *func_002A9600(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC40, D_0046DB80); }
+void *func_002A9A50(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC80, D_0046DB80); }
+void *func_002AA250(void *o, s32 flags) { return room_dtor(o, flags, D_0046DCC0, D_0046DB80); }
+void *func_002AA440(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD00, D_0046DB80); }
+void *func_002AA920(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD40, D_0046DB80); }
+void *func_002AAB00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD80, D_0046DB80); }
+void *func_002AB030(void *o, s32 flags) { return room_dtor(o, flags, D_0046DDC0, D_0046DB80); }
+void *func_002AB1F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DE00, D_0046DB80); }
+void *func_002AB820(void *o, s32 flags) { return room_dtor(o, flags, D_0046DE40, D_0046DB80); }
+void *func_002AB8F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DE80, D_0046DB80); }
+void *func_002AB9F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DEC0, D_0046DB80); }
+void *func_002ABF00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF00, D_0046DB80); }
+void *func_002AC0A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF40, D_0046DB80); }
+void *func_002AC190(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF80, D_0046DB80); }
+void *func_002AC4D0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DFC0, D_0046DB80); }
+void *func_002AC670(void *o, s32 flags) { return room_dtor(o, flags, D_0046E000, D_0046DB80); }
+void *func_002ACB60(void *o, s32 flags) { return room_dtor(o, flags, D_0046E040, D_0046DB80); }
+void *func_002AD020(void *o, s32 flags) { return room_dtor(o, flags, D_0046E080, D_0046DB80); }
+void *func_002AD1C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E0C0, D_0046DB80); }
+void *func_002AD420(void *o, s32 flags) { return room_dtor(o, flags, D_0046E100, D_0046DB80); }
+void *func_002AD690(void *o, s32 flags) { return room_dtor(o, flags, D_0046E140, D_0046DB80); }
+void *func_002AD9F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E180, D_0046DB80); }
+void *func_002ADD10(void *o, s32 flags) { return room_dtor(o, flags, D_0046E1C0, D_0046DB80); }
+void *func_002ADF90(void *o, s32 flags) { return room_dtor(o, flags, D_0046E200, D_0046DB80); }
+void *func_002AE090(void *o, s32 flags) { return room_dtor(o, flags, D_0046E240, D_0046DB80); }
+void *func_002AE390(void *o, s32 flags) { return room_dtor(o, flags, D_0046E280, D_0046DB80); }
+void *func_002AEFC0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E2C0, D_0046DB80); }
+void *func_002AF7E0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E300, D_0046DB80); }
+void *func_002AF8E0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E340, D_0046DB80); }
+void *func_002AFC30(void *o, s32 flags) { return room_dtor(o, flags, D_0046E380, D_0046DB80); }
+void *func_002B00F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E3C0, D_0046DB80); }
+void *func_002B03C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E400, D_0046DB80); }
+void *func_002B0CF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E440, D_0046DB80); }
+void *func_002B0E30(void *o, s32 flags) { return room_dtor(o, flags, D_0046E480, D_0046DB80); }
+void *func_002B10A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E4C0, D_0046DB80); }
+void *func_002B1600(void *o, s32 flags) { return room_dtor(o, flags, D_0046E500, D_0046DB80); }
+void *func_002B1790(void *o, s32 flags) { return room_dtor(o, flags, D_0046E540, D_0046DB80); }
+void *func_002B2330(void *o, s32 flags) { return room_dtor(o, flags, D_0046E580, D_0046DB80); }
+void *func_002B25E0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E5C0, D_0046DB80); }
+void *func_002B2820(void *o, s32 flags) { return room_dtor(o, flags, D_0046E600, D_0046DB80); }
+void *func_002B2960(void *o, s32 flags) { return room_dtor(o, flags, D_0046E640, D_0046DB80); }
+void *func_002B2EF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E680, D_0046DB80); }
+void *func_002B2FF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E6C0, D_0046DB80); }
+void *func_002B3540(void *o, s32 flags) { return room_dtor(o, flags, D_0046E700, D_0046DB80); }
+void *func_002B3970(void *o, s32 flags) { return room_dtor(o, flags, D_0046E740, D_0046DB80); }
+void *func_002B3F10(void *o, s32 flags) { return room_dtor(o, flags, D_0046E780, D_0046DB80); }
+void *func_002B4690(void *o, s32 flags) { return room_dtor(o, flags, D_0046E7C0, D_0046DB80); }
+void *func_002B4840(void *o, s32 flags) { return room_dtor(o, flags, D_0046E800, D_0046DB80); }
+void *func_002B4A70(void *o, s32 flags) { return room_dtor(o, flags, D_0046E840, D_0046DB80); }
+void *func_002B4CD0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E880, D_0046DB80); }
+void *func_002B4EF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E8C0, D_0046DB80); }
+void *func_002B4FF0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E900, D_0046DB80); }
+void *func_002B50F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E940, D_0046DB80); }
+void *func_002B5280(void *o, s32 flags) { return room_dtor(o, flags, D_0046E980, D_0046DB80); }
+void *func_002B58B0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E9C0, D_0046DB80); }
+void *func_002B5E80(void *o, s32 flags) { return room_dtor(o, flags, D_0046EA00, D_0046DB80); }
+void *func_002CC950(void *o, s32 flags) { return room_dtor(o, flags, D_0046EDC0, D_0046DB80); }
+void *func_002CCA90(void *o, s32 flags) { return room_dtor(o, flags, D_0046EE00, D_0046DB80); }
+void *func_002D2500(void *o, s32 flags) { return room_dtor(o, flags, D_0046F3F0, D_0046DB80); }
+void *func_002E5740(void *o, s32 flags) { return room_dtor(o, flags, D_0046FC40, D_0046DB80); }
+void *func_002E5B40(void *o, s32 flags) { return room_dtor(o, flags, D_0046FC80, D_0046DB80); }
+void *func_002E5FB0(void *o, s32 flags) { return room_dtor(o, flags, D_0046FCC0, D_0046DB80); }
+void *func_002E6420(void *o, s32 flags) { return room_dtor(o, flags, D_0046FD00, D_0046DB80); }
+void *func_002E6890(void *o, s32 flags) { return room_dtor(o, flags, D_0046FD40, D_0046DB80); }
+void *func_002E6D00(void *o, s32 flags) { return room_dtor(o, flags, D_0046FD80, D_0046DB80); }
+void *func_002E6F10(void *o, s32 flags) { return room_dtor(o, flags, D_0046FDC0, D_0046DB80); }
+void *func_002E7220(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE00, D_0046DB80); }
+void *func_002E7460(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE40, D_0046DB80); }
+void *func_002E76A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE80, D_0046DB80); }
+void *func_002E78E0(void *o, s32 flags) { return room_dtor(o, flags, D_0046FEC0, D_0046DB80); }
+void *func_002FCB40(void *o, s32 flags) { return room_dtor(o, flags, D_00470DC0, D_0046DB80); }
+void *func_002FEEB0(void *o, s32 flags) { return room_dtor(o, flags, D_00470EB0, D_0046DB80); }
+void *func_002FEF80(void *o, s32 flags) { return room_dtor(o, flags, D_00470EF0, D_0046DB80); }
+void *func_003001B0(void *o, s32 flags) { return room_dtor(o, flags, D_00470F50, D_0046DB80); }
+void *func_00305E90(void *o, s32 flags) { return room_dtor(o, flags, D_00471020, D_0046DB80); }
+void *func_00308990(void *o, s32 flags) { return room_dtor(o, flags, D_00471210, D_0046DB80); }
+void *func_00308AF0(void *o, s32 flags) { return room_dtor(o, flags, D_00471250, D_0046DB80); }
+void *func_0030EE90(void *o, s32 flags) { return room_dtor(o, flags, D_00471E60, D_0046DB80); }
+void *func_0030EF80(void *o, s32 flags) { return room_dtor(o, flags, D_00471EA0, D_0046DB80); }
+void *func_0030F070(void *o, s32 flags) { return room_dtor(o, flags, D_00471EE0, D_0046DB80); }
+void *func_0030F850(void *o, s32 flags) { return room_dtor(o, flags, D_00471F20, D_0046DB80); }
+void *func_0030F940(void *o, s32 flags) { return room_dtor(o, flags, D_00471F60, D_0046DB80); }
+void *func_00310170(void *o, s32 flags) { return room_dtor(o, flags, D_00471FA0, D_0046DB80); }
+void *func_00310A30(void *o, s32 flags) { return room_dtor(o, flags, D_00471FE0, D_0046DB80); }
+void *func_0031E1C0(void *o, s32 flags) { return room_dtor(o, flags, D_00473460, D_0046DB80); }
+void *func_00320E50(void *o, s32 flags) { return room_dtor(o, flags, D_00473C90, D_0046DB80); }
+void *func_0032C690(void *o, s32 flags) { return room_dtor(o, flags, D_00474520, D_0046DB80); }
+void *func_0032DBF0(void *o, s32 flags) { return room_dtor(o, flags, D_00474F40, D_0046DB80); }
+void *func_00339CE0(void *o, s32 flags) { return room_dtor(o, flags, D_004760E0, D_0046DB80); }
+void *func_0033EF80(void *o, s32 flags) { return room_dtor(o, flags, D_004771C0, D_0046DB80); }
+void *func_0033F090(void *o, s32 flags) { return room_dtor(o, flags, D_00477200, D_0046DB80); }
+void *func_0033F190(void *o, s32 flags) { return room_dtor(o, flags, D_00477240, D_0046DB80); }
+void *func_0033F340(void *o, s32 flags) { return room_dtor(o, flags, D_00477280, D_0046DB80); }
+void *func_0033F4F0(void *o, s32 flags) { return room_dtor(o, flags, D_004772C0, D_0046DB80); }
+void *func_0033F680(void *o, s32 flags) { return room_dtor(o, flags, D_00477300, D_0046DB80); }
+void *func_0033F840(void *o, s32 flags) { return room_dtor(o, flags, D_00477340, D_0046DB80); }
+void *func_0033F930(void *o, s32 flags) { return room_dtor(o, flags, D_00477380, D_0046DB80); }
+void *func_00340060(void *o, s32 flags) { return room_dtor(o, flags, D_004773C0, D_0046DB80); }
+void *func_003409C0(void *o, s32 flags) { return room_dtor(o, flags, D_00477400, D_0046DB80); }
+void *func_00340D60(void *o, s32 flags) { return room_dtor(o, flags, D_00477440, D_0046DB80); }
+void *func_00341580(void *o, s32 flags) { return room_dtor(o, flags, D_00477480, D_0046DB80); }
+void *func_00341B10(void *o, s32 flags) { return room_dtor(o, flags, D_004774C0, D_0046DB80); }
+void *func_00343730(void *o, s32 flags) { return room_dtor(o, flags, D_00477500, D_0046DB80); }
+void *func_003438C0(void *o, s32 flags) { return room_dtor(o, flags, D_00477540, D_0046DB80); }
+void *func_00344050(void *o, s32 flags) { return room_dtor(o, flags, D_00477580, D_0046DB80); }
+void *func_00344870(void *o, s32 flags) { return room_dtor(o, flags, D_00477610, D_0046DB80); }
+void *func_00344970(void *o, s32 flags) { return room_dtor(o, flags, D_00477650, D_0046DB80); }
+void *func_00344B90(void *o, s32 flags) { return room_dtor(o, flags, D_00477690, D_0046DB80); }
+void *func_00344D80(void *o, s32 flags) { return room_dtor(o, flags, D_004776D0, D_0046DB80); }
+void *func_00344E80(void *o, s32 flags) { return room_dtor(o, flags, D_00477710, D_0046DB80); }
+void *func_00345000(void *o, s32 flags) { return room_dtor(o, flags, D_00477750, D_0046DB80); }
+void *func_0034A140(void *o, s32 flags) { return room_dtor(o, flags, D_00478570, D_0046DB80); }
+void *func_0034A360(void *o, s32 flags) { return room_dtor(o, flags, D_004785B0, D_0046DB80); }
+void *func_0034A4C0(void *o, s32 flags) { return room_dtor(o, flags, D_004785F0, D_0046DB80); }
+void *func_0034A9B0(void *o, s32 flags) { return room_dtor(o, flags, D_00478630, D_0046DB80); }
+void *func_0034B000(void *o, s32 flags) { return room_dtor(o, flags, D_00478670, D_0046DB80); }
+void *func_0034B0E0(void *o, s32 flags) { return room_dtor(o, flags, D_004786B0, D_0046DB80); }
+void *func_0034B4C0(void *o, s32 flags) { return room_dtor(o, flags, D_004786F0, D_0046DB80); }
+void *func_0034B5C0(void *o, s32 flags) { return room_dtor(o, flags, D_00478730, D_0046DB80); }
+void *func_0034DBF0(void *o, s32 flags) { return room_dtor(o, flags, D_00478AA0, D_0046DB80); }
+void *func_003506E0(void *o, s32 flags) { return room_dtor(o, flags, D_00478B80, D_0046DB80); }
+void *func_00350E60(void *o, s32 flags) { return room_dtor(o, flags, D_00478C00, D_0046DB80); }
+void *func_00350FF0(void *o, s32 flags) { return room_dtor(o, flags, D_00478C40, D_0046DB80); }
+void *func_00352AF0(void *o, s32 flags) { return room_dtor(o, flags, D_00479340, D_0046DB80); }
+void *func_00352C90(void *o, s32 flags) { return room_dtor(o, flags, D_00479380, D_0046DB80); }
+void *func_00352E20(void *o, s32 flags) { return room_dtor(o, flags, D_004793C0, D_0046DB80); }
+void *func_0035AEB0(void *o, s32 flags) { return room_dtor(o, flags, D_00479620, D_0046DB80); }
+void *func_0035D1A0(void *o, s32 flags) { return room_dtor(o, flags, D_004798D0, D_0046DB80); }
+void *func_0035D330(void *o, s32 flags) { return room_dtor(o, flags, D_00479910, D_0046DB80); }
+void *func_0035D4C0(void *o, s32 flags) { return room_dtor(o, flags, D_00479950, D_0046DB80); }
+void *func_0035D650(void *o, s32 flags) { return room_dtor(o, flags, D_00479990, D_0046DB80); }
+void *func_0036A300(void *o, s32 flags) { return room_dtor(o, flags, D_00479FB0, D_0046DB80); }
+void *func_0036DA30(void *o, s32 flags) { return room_dtor(o, flags, D_0047A070, D_0046DB80); }
+void *func_0036DF30(void *o, s32 flags) { return room_dtor(o, flags, D_0047A0B0, D_0046DB80); }
+void *func_0036E2D0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A0F0, D_0046DB80); }
+void *func_0036E550(void *o, s32 flags) { return room_dtor(o, flags, D_0047A130, D_0046DB80); }
+void *func_0036E800(void *o, s32 flags) { return room_dtor(o, flags, D_0047A170, D_0046DB80); }
+void *func_0036EA80(void *o, s32 flags) { return room_dtor(o, flags, D_0047A1B0, D_0046DB80); }
+void *func_0036EE70(void *o, s32 flags) { return room_dtor(o, flags, D_0047A1F0, D_0046DB80); }
+void *func_0036F4A0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A230, D_0046DB80); }
+void *func_0036F930(void *o, s32 flags) { return room_dtor(o, flags, D_0047A270, D_0046DB80); }
+void *func_0036FCF0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A2B0, D_0046DB80); }
+void *func_00378870(void *o, s32 flags) { return room_dtor(o, flags, D_0047A450, D_0046DB80); }
+void *func_00378FE0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A490, D_0046DB80); }
+void *func_00379290(void *o, s32 flags) { return room_dtor(o, flags, D_0047A4D0, D_0046DB80); }
+void *func_00379540(void *o, s32 flags) { return room_dtor(o, flags, D_0047A510, D_0046DB80); }
+void *func_00379820(void *o, s32 flags) { return room_dtor(o, flags, D_0047A550, D_0046DB80); }
+void *func_00379C20(void *o, s32 flags) { return room_dtor(o, flags, D_0047A590, D_0046DB80); }
+void *func_0037A2D0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A5D0, D_0046DB80); }
+void *func_0037A5F0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A610, D_0046DB80); }
+void *func_0037A8D0(void *o, s32 flags) { return room_dtor(o, flags, D_0047A650, D_0046DB80); }
+void *func_0037AB80(void *o, s32 flags) { return room_dtor(o, flags, D_0047A690, D_0046DB80); }
+
+/* a table of the room's (by vtable slot) */
+void *func_002AB880(void *o) { return D_0047A9D0; }   /* D_0046DE40 +0xC */
+void *func_002AD0D0(void *o) { return D_0047AA40; }   /* D_0046E080 +0x20 */
+void *func_002ADDE0(void *o) { return D_0047AA80; }   /* D_0046E1C0 +0x20 */
+void *func_002AFCD0(void *o) { return D_0047AB10; }   /* D_0046E380 +0x20 */
+void *func_002B2680(void *o) { return D_0047AB3C; }   /* D_0046E5C0 +0x20 */
+void *func_002B28A0(void *o) { return D_0047AB50; }   /* D_0046E600 +0x10 */
+void *func_002B28C0(void *o) { return D_0047AB58; }   /* D_0046E600 +0x20 */
+void *func_002B28F0(void *o) { return D_0047AB70; }   /* D_0046E600 +0x38 */
+void *func_002B48E0(void *o) { return D_0047AB98; }   /* D_0046E800 +0x20 */
+void *func_002B4F90(void *o) { return D_0047ABC0; }   /* D_0046E8C0 +0x20 */
+void *func_002B5080(void *o) { return D_0047ABD0; }   /* D_0046E900 +0x20 */
+void *func_002B52E0(void *o) { return D_0047ABE0; }   /* D_0046E980 +0xC */
+void *func_002D2590(void *o) { return D_0047AC10; }   /* D_0046F3F0 +0x14 */
+void *func_002E57F0(void *o) { return D_0047AC40; }   /* D_0046FC40 +0x20 */
+void *func_002E6480(void *o) { return D_0047AC60; }   /* D_0046FD00 +0xC */
+void *func_002E64E0(void *o) { return D_0047AC68; }   /* D_0046FD00 +0x38 */
+void *func_002E6FB0(void *o) { return D_0047AC78; }   /* D_0046FDC0 +0x20 */
+void *func_002E7740(void *o) { return D_0047AC80; }   /* D_0046FE80 +0x20 */
+void *func_002FCBB0(void *o) { return D_0047ACB0; }   /* D_00470DC0 +0x30 */
+void *func_002FF010(void *o) { return D_0047ACC4; }   /* D_00470EF0 +0x14 */
+void *func_00300250(void *o) { return D_0047ACC8; }   /* D_00470F50 +0x20 */
+void *func_00339DC0(void *o) { return D_0047ADF8; }   /* D_004760E0 +0x38 */
+void *func_0033F220(void *o) { return D_0047AE18; }   /* D_00477240 +0x14 */
+void *func_0033F400(void *o) { return D_0047AE30; }   /* D_00477280 +0x38 */
+void *func_0033F590(void *o) { return D_0047AE38; }   /* D_004772C0 +0x20 */
+void *func_0033F9D0(void *o) { return D_0047AE50; }   /* D_00477380 +0x20 */
+void *func_003437C0(void *o) { return D_0047AE74; }   /* D_00477500 +0x14 */
+void *func_00343960(void *o) { return D_0047AE7C; }   /* D_00477540 +0x20 */
+void *func_00344910(void *o) { return D_0047AE84; }   /* D_00477610 +0x20 */
+void *func_00344A10(void *o) { return D_0047AE98; }   /* D_00477650 +0x20 */
+void *func_00344F20(void *o) { return D_0047AEBC; }   /* D_00477710 +0x20 */
+void *func_0034A590(void *o) { return D_0047AF04; }   /* D_004785F0 +0x38 */
+void *func_0034AA80(void *o) { return D_0047AF08; }   /* D_00478630 +0x38 */
+void *func_0034B060(void *o) { return D_0047AF0C; }   /* D_00478670 +0xC */
+void *func_0034B0B0(void *o) { return D_0047AF1C; }   /* D_00478670 +0x38 */
+void *func_0034B180(void *o) { return D_0047AF20; }   /* D_004786B0 +0x20 */
+void *func_0034B1B0(void *o) { return D_0047AF28; }   /* D_004786B0 +0x38 */
+void *func_0034B560(void *o) { return D_0047AF30; }   /* D_004786F0 +0x20 */
+void *func_0034B680(void *o) { return D_0047AF40; }   /* D_00478730 +0x38 */
+void *func_0034DC50(void *o) { return D_0047AF58; }   /* D_00478AA0 +0xC */
+void *func_0034DC70(void *o) { return D_0047AF5C; }   /* D_00478AA0 +0x10 */
+void *func_00350740(void *o) { return D_0047AF70; }   /* D_00478B80 +0xC */
+void *func_00350760(void *o) { return D_0047AF78; }   /* D_00478B80 +0x10 */
+void *func_00350EC0(void *o) { return D_0047AF88; }   /* D_00478C00 +0xC */
+void *func_00350EF0(void *o) { return D_0047AF90; }   /* D_00478C00 +0x14 */
+void *func_00351050(void *o) { return D_0047AF98; }   /* D_00478C40 +0xC */
+void *func_00352B50(void *o) { return D_0047AFA0; }   /* D_00479340 +0xC */
+void *func_00352B80(void *o) { return D_0047AFA8; }   /* D_00479340 +0x14 */
+void *func_00352CF0(void *o) { return D_0047AFB0; }   /* D_00479380 +0xC */
+void *func_00352D20(void *o) { return D_0047AFB8; }   /* D_00479380 +0x14 */
+void *func_0035AF10(void *o) { return D_0047AFC0; }   /* D_00479620 +0xC */
+void *func_0035D240(void *o) { return D_0047AFD8; }   /* D_004798D0 +0x20 */
+void *func_0035D3D0(void *o) { return D_0047AFE0; }   /* D_00479910 +0x20 */
+void *func_0035D560(void *o) { return D_0047AFE8; }   /* D_00479950 +0x20 */
+void *func_0035D6F0(void *o) { return D_0047AFF0; }   /* D_00479990 +0x20 */
+void *func_0036DAC0(void *o) { return D_0047B030; }   /* D_0047A070 +0x14 */
+void *func_0036DFC0(void *o) { return D_0047B048; }   /* D_0047A0B0 +0x14 */
+void *func_0036E330(void *o) { return D_0047B054; }   /* D_0047A0F0 +0xC */
+void *func_0036E5B0(void *o) { return D_0047B058; }   /* D_0047A130 +0xC */
+void *func_0036E5E0(void *o) { return D_0047B060; }   /* D_0047A130 +0x14 */
+void *func_0036E860(void *o) { return D_0047B06C; }   /* D_0047A170 +0xC */
+void *func_0036EED0(void *o) { return D_0047B070; }   /* D_0047A1F0 +0xC */
+void *func_0036EF00(void *o) { return D_0047B078; }   /* D_0047A1F0 +0x14 */
+void *func_0036F530(void *o) { return D_0047B07C; }   /* D_0047A230 +0x14 */
+void *func_0036F550(void *o) { return D_0047B080; }   /* D_0047A230 +0x20 */
+void *func_0036F9C0(void *o) { return D_0047B090; }   /* D_0047A270 +0x14 */
+void *func_0036F9E0(void *o) { return D_0047B098; }   /* D_0047A270 +0x20 */
+void *func_00378900(void *o) { return D_0047B0B0; }   /* D_0047A450 +0x14 */
+void *func_00379070(void *o) { return D_0047B0C8; }   /* D_0047A490 +0x14 */
+void *func_00379320(void *o) { return D_0047B0D4; }   /* D_0047A4D0 +0x14 */
+void *func_003795D0(void *o) { return D_0047B0E0; }   /* D_0047A510 +0x14 */
+void *func_003798B0(void *o) { return D_0047B0E8; }   /* D_0047A550 +0x14 */
+void *func_00379CB0(void *o) { return D_0047B0F4; }   /* D_0047A590 +0x14 */
+void *func_0037A390(void *o) { return D_0047B100; }   /* D_0047A5D0 +0x14 */
+void *func_0037A680(void *o) { return D_0047B118; }   /* D_0047A610 +0x14 */
+void *func_0037A930(void *o) { return D_0047B120; }   /* D_0047A650 +0xC */
+void *func_0037A960(void *o) { return D_0047B128; }   /* D_0047A650 +0x14 */
+void *func_0037AC10(void *o) { return D_0047B134; }   /* D_0047A690 +0x14 */
+
+/* entry `i` of a table of the room's */
+u32 func_002AB0E0(void *o, s32 i) { return ((u32 *)D_0047A9C8)[i]; }   /* D_0046DDC0 +0x34 */
+u32 func_002AB8B0(void *o, s32 i) { return ((u32 *)D_0047A9DC)[i]; }   /* D_0046DE40 +0x24 */
+u32 func_002AB8D0(void *o, s32 i) { return ((u32 *)D_0047A9E0)[i]; }   /* D_0046DE40 +0x34 */
+u32 func_002AB9D0(void *o, s32 i) { return ((u32 *)D_0047A9E8)[i]; }   /* D_0046DE80 +0x34 */
+u32 func_002ABFF0(void *o, s32 i) { return ((u32 *)D_0047A9F0)[i]; }   /* D_0046DF00 +0x34 */
+u32 func_002AC170(void *o, s32 i) { return ((u32 *)D_0047A9F8)[i]; }   /* D_0046DF40 +0x34 */
+u32 func_002FEF40(void *o, s32 i) { return ((u32 *)D_0047ACB8)[i]; }   /* D_00470EB0 +0x24 */
+u32 func_002FEF60(void *o, s32 i) { return ((u32 *)D_0047ACC0)[i]; }   /* D_00470EB0 +0x34 */
+u32 func_00300290(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* D_00470F50 +0x34 */
+u32 func_0035AF50(void *o, s32 i) { return ((u32 *)D_0047AFD0)[i]; }   /* D_00479620 +0x34 */
+u32 func_0036A4B0(void *o, s32 i) { return ((u32 *)D_0047B028)[i]; }   /* D_00479FB0 +0x34 */
+u32 func_0036DAE0(void *o, s32 i) { return ((u32 *)D_0047B040)[i]; }   /* D_0047A070 +0x24 */
+u32 func_0036DFE0(void *o, s32 i) { return ((u32 *)D_0047B050)[i]; }   /* D_0047A0B0 +0x24 */
+u32 func_0036E600(void *o, s32 i) { return ((u32 *)D_0047B068)[i]; }   /* D_0047A130 +0x24 */
+u32 func_0036F560(void *o, s32 i) { return ((u32 *)D_0047B088)[i]; }   /* D_0047A230 +0x24 */
+u32 func_0036F9F0(void *o, s32 i) { return ((u32 *)D_0047B0A0)[i]; }   /* D_0047A270 +0x24 */
+u32 func_0036FD90(void *o, s32 i) { return ((u32 *)D_0047B0A8)[i]; }   /* D_0047A2B0 +0x24 */
+u32 func_00378960(void *o, s32 i) { return ((u32 *)D_0047B0C0)[i]; }   /* D_0047A450 +0x34 */
+u32 func_00379090(void *o, s32 i) { return ((u32 *)D_0047B0D0)[i]; }   /* D_0047A490 +0x24 */
+u32 func_00379340(void *o, s32 i) { return ((u32 *)D_0047B0DC)[i]; }   /* D_0047A4D0 +0x24 */
+u32 func_00379630(void *o, s32 i) { return ((u32 *)D_0047B0E4)[i]; }   /* D_0047A510 +0x34 */
+u32 func_003798D0(void *o, s32 i) { return ((u32 *)D_0047B0F0)[i]; }   /* D_0047A550 +0x24 */
+u32 func_00379D10(void *o, s32 i) { return ((u32 *)D_0047B0F8)[i]; }   /* D_0047A590 +0x34 */
+u32 func_0037A370(void *o, s32 i) { return ((u32 *)D_0047B108)[i]; }   /* D_0047A5D0 +0x24 */
+u32 func_0037A3B0(void *o, s32 i) { return ((u32 *)D_0047B110)[i]; }   /* D_0047A5D0 +0x34 */
+u32 func_0037A6E0(void *o, s32 i) { return ((u32 *)D_0047B11C)[i]; }   /* D_0047A610 +0x34 */
+u32 func_0037A980(void *o, s32 i) { return ((u32 *)D_0047B130)[i]; }   /* D_0047A650 +0x24 */
