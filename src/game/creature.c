@@ -1076,3 +1076,80 @@ void func_002E0FE0(Character *c, u32 exit) {
         }
     }
 }
+
+extern u32 func_00123D20(Actor *a, const f32 *p);
+extern const f32 D_004167A0[17];   /* turns: 0, then +-0.39 .. +-3.14 */
+
+/* state: hanging about Fiona while she can't be reached (D_00416700). First its path is
+ * dropped (+0x9B 1). Then (on arriving) a spot by her: 10..25 to her front or back, turned by
+ * a random step of the last try, on a triangle of the mesh other than its own that isn't
+ * blocked (0x04020028) - up to 17 tries (a blocked one sets +0x9B back to 1) - and it walks
+ * there; no spot, or the path or the walk ends: +0x9B 1 again */
+void func_002DEC30(Character *c) {
+    u8 *k = CR(c);
+    f32 goal[4] __attribute__((aligned(16)));
+    f32 turn = 0.0f;
+
+    if (AT(c, 0x15DB, s8) == 0) {
+        AT(k, 0x9B, s8) += 1;
+        func_00127060(c);
+        AT(k, 0x2B, u8) = 0;
+        c->unk124 = c->unk128;
+    }
+    if (AT(k, 0x9B, s8) == 1) {
+        AT(k, 0x9B, s8) += 1;
+        if (c->unk128 >= c->unk124) {
+            VObject *rnd = D_0044E550;
+            NavMesh *nm = D_0044E570;
+            s32 i;
+
+            for (i = 0; i < 17; i++) {
+                f32 m[4][4] __attribute__((aligned(16)));
+                f32 off[4] __attribute__((aligned(16)));
+                f32 v[4] __attribute__((aligned(16)));
+                f32 w[4] __attribute__((aligned(16)));
+                s32 sign;
+                u32 tri;
+
+                *(s32 *)&v[1] = 0;
+                *(s32 *)&v[3] = 0;
+                *(s32 *)&v[2] = 0;
+                *(s32 *)&v[0] = 0;
+                sceVu0CopyVector(w, v);
+                sceVu0CopyVector(goal, v);
+                sign = i % 2 == 0 ? 1 : -1;
+                sceVu0UnitMatrix(m);
+                *(s32 *)&off[0] = 0;
+                *(s32 *)&off[3] = 0;
+                *(s32 *)&off[1] = 0;
+                off[2] = (f32)sign * (10.0f + (f32)(u32)(VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0xF));
+                sceVu0ApplyMatrix(v, m, off);
+                sceVu0AddVector(v, gCharPlayer->a.pos, v);
+                sceVu0RotMatrixY(m, m, turn);
+                sceVu0ApplyMatrix(w, m, off);
+                sceVu0AddVector(goal, gCharPlayer->a.pos, w);
+                turn = D_004167A0[VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0xF];
+                AT(k, 0x44, u32) = func_00123D20(&gCharPlayer->a, goal);
+                tri = AT(k, 0x44, u32);
+                if (tri == NAV_NONE || c->a.navTri == tri) {
+                    continue;
+                }
+                if (!(NavMesh_TriFlags(nm, tri) & 0x04020028)) {
+                    break;
+                }
+                AT(k, 0x9B, s8) = 1;
+            }
+        }
+    }
+    if (AT(k, 0x44, u32) == NAV_NONE) {
+        AT(k, 0x9B, s8) = 1;
+        return;
+    }
+    if (c->unk128 >= c->unk124 && func_002DF860(c, AT(k, 0x44, u32), goal, 0) != 0) {
+        AT(k, 0x9B, s8) = 1;
+        return;
+    }
+    if (func_001274E0(c, AT(k, 0x0, f32)) == 0) {
+        AT(k, 0x9B, s8) = 1;
+    }
+}
