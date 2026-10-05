@@ -64,6 +64,7 @@ extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flag
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *D_0044E558;   /* the doors */
 extern u8 *gCharPursuer;
 extern void *D_0044E958;      /* the movie playing */
 
@@ -679,6 +680,36 @@ s32 func_001FC760(VObject *ev) {
             if (c != NULL && AT(c, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
                 AT(c, 0x2A, u8) == 0) {
                 r = func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+            }
+        }
+        break;
+    }
+    case 0x19:   /* character pc[1] (in the scene) is in this room at triangle be16 pc[2..3] */
+        if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x30, s32) == AT(ev, 0x560, s32) &&
+            be16(PC(ev) + 2) == AT(cond_char(p, PC(ev)[1]), 0x34, u32)) {
+            r = 1;
+        }
+        break;
+    case 0x1E:   /* character pc[1] (in the scene) has no health left */
+        if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x14C8, s32) == 0) {
+            r = 1;
+        }
+        break;
+    case 0x32:   /* character pc[1] (in the scene) is in room be16 pc[2..3] */
+        if (cond_char(p, pc[1]) != NULL && be16(PC(ev) + 2) == AT(cond_char(p, PC(ev)[1]), 0x30, u32)) {
+            r = 1;
+        }
+        break;
+    case 0x3E: {   /* character pc[1] (in the scene, this room) is not at door be16 pc[2..3] (doors +0x18) */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
+            u32 k = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, be16(PC(ev) + 2),
+                                                                             AT(ev, 0x560, s32));
+
+            if (k != 0xFF &&
+                VCALL(D_0044E558, 0x18, s32 (*)(VObject *, s32, f32 *))(D_0044E558, k, (f32 *)(c + 0x10)) == 0) {
+                r = 1;
             }
         }
         break;
