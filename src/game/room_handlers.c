@@ -1438,3 +1438,14 @@ s32 func_002B2050(VObject *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
+extern const char *const D_003F99B8[];   /* { "kousi" } */
+s32 func_002AC600(void *a0, void *a1, u8 *arg) {
+    u8 *kousi = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F99B8[0]);
+
+    if (kousi != NULL) {
+        AT(kousi, 0x14, f32) = arg[3] == 0 ? 0.0f : -0x1.921fb6p+0f;
+    }
+    return 1;
+}
