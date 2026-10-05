@@ -110,6 +110,8 @@ typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
     uint32_t tint[3];   /* the fading layers' (0x0F, 0x1A, 0x23) tint when drawn this frame */
     int soft;           /* layer 0x1C was set up this frame */
+    int shine;          /* layer 0x14 was, with this colour */
+    uint32_t shineColor;
     int tinted[3];
     GlrVertex *v;
     int nv, capv;
@@ -207,6 +209,7 @@ void glr_end_frame(void) {
     sFrames[sBuilding].overlay = 0;
     sFrames[sBuilding].tinted[0] = sFrames[sBuilding].tinted[1] = sFrames[sBuilding].tinted[2] = 0;
     sFrames[sBuilding].soft = 0;
+    sFrames[sBuilding].shine = 0;
 }
 
 
@@ -222,6 +225,11 @@ void glr_tint_layer(int layer, uint32_t tint) {
         sFrames[sBuilding].tint[k] = tint;
         sFrames[sBuilding].tinted[k] = 1;
     }
+}
+
+void glr_shine_layer(uint32_t rgba) {
+    sFrames[sBuilding].shine = 1;
+    sFrames[sBuilding].shineColor = rgba;
 }
 
 void glr_soft_layer(void) {
@@ -543,6 +551,11 @@ static const char *kQuadFs =
  * start, their draws marking alpha (FBA), then on the marked pixels (a copy of the screen):
  *   25 the tint's alpha a above 0x80: towards the tint by ((a + 0x81) & 0xFF) / 128; else
  *      towards the halved background times the tint by (0x80 - a) / 128
+ * Layer 0x14 (func_001AF3B0): its draws mark the frame's alpha (cleared at its start), then
+ *   29 the screen halved where that alpha is >= 0x80 and green >= 0x40 (the PS2 moves green's
+ *      top bits into alpha - renderer +0x54 - and tests alpha >= 0x10)
+ *   30 that + 8 neighbours at 1/2, then 6 at the renderer's colour (+0x304D58) and FIX 0x40,
+ *      added - its bright parts glow
  * Layer 0x1C (func_001AB960): its draws mark the frame's alpha (cleared at its start), then
  *   27 the screen at 256 x 256 (every other column, 7 rows in 4) where that alpha isn't 0
  *   28 that stretched back over the screen by its alpha (bilinear) - its draws softened
@@ -724,6 +737,15 @@ static const char *kPostFs =
     "        vec4 h = texture(uTex, vec2(uv.x, 256.0 - uv.y) / 256.0);\n"
     "        oColor = vec4(h.rgb, clamp(h.a * 255.0 / 128.0, 0.0, 1.0));\n"
     "        return;\n"
+    "    } else if (uMode == 29) {\n"   /* layer 0x14: its bright pixels halved (alpha >= 0x80, green >= 0x40) */
+    "        vec4 d = at(uTex, ivec2(int(float(p.x * 2) * 1.25 * uS), int(float(p.y * 2 + 1) * uS)));\n"
+    "        c = d.a >= 128.0 && d.g >= 64.0 ? d : vec4(0.0);\n"
+    "    } else if (uMode == 30) {\n"   /* H + the sum of H * 0x40 >> 7 at 8 neighbours */
+    "        c = at(uTex, p);\n"
+    "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.5); c += floor(at(uTex, p + ivec2(1, -1)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(-1, 1)) * 0.5);  c += floor(at(uTex, p + ivec2(1, 1)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(-2, 0)) * 0.5);  c += floor(at(uTex, p + ivec2(2, 0)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(0, -2)) * 0.5);  c += floor(at(uTex, p + ivec2(0, 2)) * 0.5);\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -1387,6 +1409,25 @@ static int post_off(int kind) {
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
 }
 
+/* layer 0x14's end: the bright parts of what it drew, blurred and added in colour `col` */
+static void shine_end(uint32_t col) {
+    p_glDisable(GL_DEPTH_TEST);
+    p_glDisable(GL_BLEND);
+    p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+    post(29, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
+    post(30, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    p_glProgramUniform4f(sPostProg, sPostColorLoc, (float)(col & 0xFF), (float)((col >> 8) & 0xFF),
+                         (float)((col >> 16) & 0xFF), 0.0f);
+    p_glProgramUniform1f(sPostProg, sPostFixLoc, 64.0f);
+    p_glEnable(GL_BLEND);
+    p_glBlendFunc(GL_ONE, GL_ONE);
+    post(6, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[1], 0);
+    p_glDisable(GL_BLEND);
+}
+
 /* layer 0x1C's start (func_001AB960): the frame's alpha cleared, so its draws mark it */
 static void soft_begin(void) {
     static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -1672,6 +1713,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     int inShadow = 0;                     /* within layer 6 or 0x0D (the layer, else 0) */
     int tintLayer = -1;                   /* within this fading layer */
     int inSoft = 0;                       /* within layer 0x1C */
+    int inShine = 0;                      /* within layer 0x14 */
 
     {   /* the render scale: as set, or (0) the window's height in 448s, at most 4 */
         int want = sWantScale > 0 ? sWantScale : outH > 0 ? (outH + 447) / 448 : 1;
@@ -1792,6 +1834,15 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             const GlrDraw *d = &f->d[order[i] & 0xFFFFFFFF];
             int mode = 0;
 
+            if (inShine && d->layer != 0x14) {
+                shine_end(f->shineColor);
+                mesh_state();
+                inShine = 0;
+            }
+            if (!inShine && d->layer == 0x14 && f->shine) {
+                soft_begin();   /* (the same start: the frame's alpha cleared) */
+                inShine = 1;
+            }
             if (inSoft && d->layer != 0x1C) {
                 soft_end();
                 mesh_state();
@@ -1976,6 +2027,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         }
         if (inSoft) {
             soft_end();
+        }
+        if (inShine) {
+            shine_end(f->shineColor);
         }
         p_glDisable(GL_BLEND);
         p_glDepthMask(GL_TRUE);

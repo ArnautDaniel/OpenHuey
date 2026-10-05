@@ -82,10 +82,13 @@ int func_001B4330(uint8_t *r) {
     return 1;
 }
 
-/* layer 0x14: drawn over the frame's alpha, then a half-size pass on it. GL TODO */
+/* layer 0x14: the bright parts of what it draws (green over 0x40) blurred and added in the
+ * renderer's colour +0x304D58 at its end - glr */
 int func_001AF3B0(uint8_t *r) {
-    (void)r;
-    glr_todo("layer 0x14 pass (func_001AF3B0)");
+    uint32_t col;
+
+    memcpy(&col, r + 0x304D58, 4);
+    glr_shine_layer(col);
     return 1;
 }
 
