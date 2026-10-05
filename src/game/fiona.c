@@ -4733,17 +4733,18 @@ void func_0018F870(Fiona *f) {
 
 extern u32 func_00177BF0(Progress *p, u32 exit, u32 slot);   /* exit bits for a character */
 extern u32 func_00177A20(Progress *p, u32 door, u32 slot);   /* door-region bits for a character */
-extern void func_002EFA50(u8 *panic, f32 amount);           /* panic up by amount */
+extern void func_002EFA50(u8 *panic, f32 amount);           /* a fright (less with a charm on) */
 extern const PTMF D_003B2DD8, D_003B2DE8, D_003B2DF8, D_003B2E08, D_003B2E18, D_003B2E28, D_003B2E38;
 extern const PTMF D_003B2E48, D_003B2E58, D_003B2E68, D_003B2E78, D_003B2E88;
 
-#define AREA_HOLY 0x88   /* the current area (D_0044E988 +0x10 (1)) where she cannot be caught */
+#define CHARM_ITEM 0x88   /* worn (the item manager D_0044E988 +0x10, slot 1), she cannot be caught */
 
 /* the reaction for request `req` (the state block's [1]), -1: none. While an event runs or
  * progress flag 8 is set, none; a request about character [2] needs it present. 0xD falls
  * 0x13; 1 / 2 / 4 knocked down 0xE / 0xF / 0xA (on a slope, stairs or at a door: 0xC / 0xD;
  * crawling (3/7): 8); 3 grabbed 0x10 (already: a shake); 5 carried by door [4] 0xB; 6 caught
- * 0x20; 0xA 9; 0xC 0x12 - none while already reacting (4) or down (3 / 0xA) */
+ * 0x20 (with the charm on, always); 0xA 9; 0xC 0x12 - none while already reacting (4) or down
+ * (3 / 0xA) */
 s32 func_00184E00(Fiona *f, s32 req) {
     Progress *p;
     s32 m;
@@ -4823,7 +4824,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         if (m == 4 || m == 0xA || (m == 0 && f->unk1AD580 == 0xF)) {
             return -1;
         }
-        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
             return 0x20;
         }
         if (m == 3 && f->c.moveSub == 7) {
@@ -4859,7 +4860,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     }
     p = gProgress;
     func_002EFA50((u8 *)p + 0x7B8, *(f32 *)&st[5]);
-    if (kind == 0x20 && D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+    if (kind == 0x20 && D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
         return -1;
     }
     f->targetParam = 0;
@@ -4973,7 +4974,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         Actor_SetState(&f->c.a, &D_003B2E08);
         break;
     case 0x20:
-        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_HOLY) {
+        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
             return -1;
         }
         if (st[4] != 5) {
@@ -5240,6 +5241,29 @@ void func_00183400(Fiona *f) {
     sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
 }
 
+/* pulling back from a grab: moved by the motion turned to her heading +0x1AD6D0 (unless
+ * +0x1AD6C4 is -1: the plain update) and turned toward it 20 degrees a frame (+0x1AD6C4 set
+ * once there), along any wall */
+static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
+    if (FI(f, 0x1AD6C4, s32) == -1) {
+        func_00125A10(&f->c);
+    } else {
+        f32 d[4] __attribute__((aligned(16)));
+        f32 r[4][4] __attribute__((aligned(16)));
+
+        func_001F6370(f->c.motion, d, 0.0f);
+        sceVu0UnitMatrix(r);
+        sceVu0RotMatrixY(r, r, FI(f, 0x1AD6D0, f32));
+        sceVu0ApplyMatrix(d, r, d);
+        func_001247E0(&f->c.a, d);
+        if (FI(f, 0x1AD6C4, s32) == 0 &&
+            func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), 0x1.657186p-2f /* 20 deg */) == 0.0f) {
+            FI(f, 0x1AD6C4, s32) = 1;
+        }
+    }
+    func_00183400(f);
+}
+
 /* 0x10 grabbed (D_003B2E08): out of a fall (0x100A / 0xB01 / 0xB02) she gets up (0xB03), out
  * of 0x100D (0x1503) - once that motion lets her (flag 2); else she pulls free: back 0x1101
  * when there is room 17 behind her (+0x1AD6C0 / +0x1AD6C4 -1, her heading kept in +0x1AD6D0),
@@ -5287,23 +5311,7 @@ void func_00190380(Fiona *f) {
         }
     }
     if (back == 1) {
-        if (FI(f, 0x1AD6C4, s32) == -1) {
-            func_00125A10(&f->c);
-        } else {
-            f32 d[4] __attribute__((aligned(16)));
-            f32 r[4][4] __attribute__((aligned(16)));
-
-            func_001F6370(f->c.motion, d, 0.0f);
-            sceVu0UnitMatrix(r);
-            sceVu0RotMatrixY(r, r, FI(f, 0x1AD6D0, f32));
-            sceVu0ApplyMatrix(d, r, d);
-            func_001247E0(&f->c.a, d);
-            if (FI(f, 0x1AD6C4, s32) == 0 &&
-                func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), 0x1.657186p-2f /* 20 deg */) == 0.0f) {
-                FI(f, 0x1AD6C4, s32) = 1;
-            }
-        }
-        func_00183400(f);
+        pull_back(f);
     } else {
         func_00125A10(&f->c);
     }
@@ -5561,4 +5569,99 @@ void func_00191FF0(Fiona *f) {
 /* 9 led away by the hand ([4] 6; D_003B2E28) */
 void func_00193400(Fiona *f) {
     led_away(f, 0x1400, &D_003B29F8);
+}
+
+/* ---- what follows the reactions ---- */
+
+extern const PTMF D_003B2D58;
+extern void func_002EF9E0(u8 *panic, f32 amount);   /* the threat meter raised */
+
+/* after the 0x13 fall (D_003B2D48): at the motion's event 0x400 the threat meter rises by 75, on to
+ * D_003B2D58 */
+void func_0018B9D0(Fiona *f) {
+    if ((MOTION_EVENTS(f->c.motion) & 0x400) != 0) {
+        func_002EF9E0((u8 *)gProgress + 0x7B8, 75.0f);
+        Actor_SetState(&f->c.a, &D_003B2D58);
+    }
+    func_00125A10(&f->c);
+}
+
+/* after being knocked down (D_003B2B18): at the motion's event 0x20 she stands (+0x1AD5EC 30) */
+void func_00190A00(Fiona *f) {
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        FI(f, 0x1AD5EC, s32) = 0x1E;
+        f->c.a.unk2D = 0;
+        Fiona_ToIdle(f);
+    }
+    func_00125A10(&f->c);
+}
+
+/* after being caught (D_003B2998): at the motion's event 0x20 she stands; until then, caught
+ * from in front or behind (+0x104 1 / 3) by someone, +0x1AD5FC stays set */
+void func_001940A0(Fiona *f) {
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        Fiona_ToIdle(f);
+    } else if ((f->c.unk104[0] == 3 || f->c.unk104[0] == 1) && f->target != NULL) {
+        FI(f, 0x1AD5FC, u8) = 1;
+    }
+    func_00125A10(&f->c);
+}
+
+extern const PTMF D_003B29B8, D_003B29C8;
+
+/* held after a grab (D_003B2B48): a cry (0x41) the first time (+0x1AD6CC); at the motion's
+ * event 0x20 (once, +0x1AD6C8) - unless progress flag 0x2C - the game-over flag 0xC (and
+ * gProgress +0x73EB00 set); pulling back (0x1101) as she was, else the plain update */
+void func_00190190(Fiona *f) {
+    if (FI(f, 0x1AD6CC, s32) == 0) {
+        FI(f, 0x1AD6CC, s32) = 1;
+        func_00122C20(&f->c.a, 0x41, 5, 0, 0, NULL);
+    }
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (FI(f, 0x1AD6C8, s32) == 0 && (MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        FI(f, 0x1AD6C8, s32) = 1;
+        if (!(Progress_TestFlag(gProgress, 0x2C) & 0xFF)) {
+            Progress *p = gProgress;
+
+            AT(p, 0x73EB00, u8) = 1;
+            Progress_SetFlag(p, 0xC);
+        }
+    }
+    if (AT(f->c.motion, 0x55C, s32) == 0x1101) {
+        pull_back(f);
+    } else {
+        func_00125A10(&f->c);
+    }
+}
+
+/* the drop after a crawl-catch (D_003B29A8): +0x1AD6C0 frames down by the step (+0x1AD6D0,
+ * falling 0.5 a frame faster; a long fall turns to 0x70B at the motion's event 0x20); then
+ * on the spot (+0x1AD6E0, triangle +0x1AD6C8) with the rumble and a cry - 0x7D (a short pull)
+ * or 0x81 (a fall) */
+void func_00193C60(Fiona *f) {
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - 1;
+    if (FI(f, 0x1AD6C0, s32) != 0) {
+        if (FI(f, 0x1AD6C4, s32) != 0 && AT(f->c.motion, 0x55C, s32) != 0x70B &&
+            (MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+            func_002DDED0(f->c.motion, 0x70B, -1);
+        }
+        f->c.a.pos[0] = f->c.a.pos[0] - FI(f, 0x1AD6D0, f32);
+        f->c.a.pos[1] = f->c.a.pos[1] - FI(f, 0x1AD6D4, f32);
+        f->c.a.pos[2] = f->c.a.pos[2] - FI(f, 0x1AD6D8, f32);
+        FI(f, 0x1AD6D4, f32) = FI(f, 0x1AD6D4, f32) + 0.5f;
+        return;
+    }
+    f->c.a.unk2A = 0;
+    f->c.a.navTri = FI(f, 0x1AD6C8, u32);
+    sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
+    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+    if (FI(f, 0x1AD6C4, s32) == 0) {
+        func_00181180(f, 0x7D, 5, 0, 0);
+        Actor_SetState(&f->c.a, &D_003B29B8);
+    } else {
+        func_00181180(f, 0x81, 5, 0, 0);
+        Actor_SetState(&f->c.a, &D_003B29C8);
+    }
 }
