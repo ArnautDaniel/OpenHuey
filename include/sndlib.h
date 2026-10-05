@@ -14,7 +14,7 @@
 #define UNCACHED(p) ((void *)(p))
 #else
 #define EE_SYNC_EI() __asm__ volatile("sync\n\tei")
-#define UNCACHED(p) ((void *)((u32)(p) | 0x20000000))
+#define UNCACHED(p) ((void *)((u32)(p) | UNCACHED_BIT))
 #endif
 
 /* sceSifClientData / sceSifServeData / sceSifQueueData: only passed around */

@@ -9,6 +9,7 @@ void *func_00115D20(void *p, int c, unsigned n) { return memset(p, c, n); }
 int func_00118278(const char *a, const char *b) { return strcmp(a, b); }               /* strcmp */
 char *func_001183C0(char *d, const char *s) { return strcpy(d, s); }                   /* strcpy */
 char *func_00118978(char *d, const char *s, unsigned n) { return strncpy(d, s, n); }   /* strncpy */
+char *func_001180E8(const char *s, int c) { return strchr(s, c); }                      /* strchr */
 char *func_00117FB8(char *d, const char *s) { return strcat(d, s); }                   /* strcat */
 
 /* vsnprintf */

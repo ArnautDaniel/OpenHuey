@@ -245,7 +245,7 @@ u32 func_001692F0(VObject *l, const char *path, u32 dst) {
     }
     size = func_001CA0B8(f);
     ADXF_Seek(f, 0, 0);
-    dst |= 0x20000000;   /* uncached */
+    dst |= UNCACHED_BIT;   /* uncached */
     ADXF_ReadNw(f, size, dst);
     do {
         st = ADXF_GetStat(f);
@@ -459,11 +459,11 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
             t->kind = ((dst >> 28) & 3) | 0x80;
             t->bank = (dst >> 24) & 0xF;
         } else {
-            t->notify = dst | 0x20000000;
+            t->notify = dst | UNCACHED_BIT;
         }
-        t->dst = buf | 0x20000000;
+        t->dst = buf | UNCACHED_BIT;
     } else {
-        t->dst = dst | 0x20000000;
+        t->dst = dst | UNCACHED_BIT;
         t->notify = 0;
     }
     /* the same request queued already? (from the write index back to the read index) */

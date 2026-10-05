@@ -17,6 +17,13 @@ typedef double f64;
 /* a field at a byte offset, for structures not (fully) declared yet */
 #define AT(p, off, type) (*(type *)((u8 *)(p) + (off)))
 
+/* the EE's uncached view of RAM (address | 0x20000000); on PC a buffer is just itself */
+#ifdef HG_NATIVE
+#define UNCACHED_BIT 0
+#else
+#define UNCACHED_BIT 0x20000000
+#endif
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
