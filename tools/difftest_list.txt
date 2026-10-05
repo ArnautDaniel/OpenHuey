@@ -3669,3 +3669,5 @@ src/game/model.c func_002DDD20 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x
 src/game/model.c func_001F6E30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6A4=0x0B300000..0x0B300000 --runs=20
 src/game/stalker_progress.c func_002EC410 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..100 --runs=100
 src/game/stalker_progress.c func_002EF9E0 --pre=a0=0x0B000000..0x0B000000 --runs=100
+src/game/pursuer_ai.c func_00211B00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E570=0x0B700000..0x0B700000 --pre=@0x0B700008=0x40..0x40 --pre=@0x0B700004=0x0B800000..0x0B800000 --pre=a1=0..0x3F --stub-ret=0 --stub-ret=-1 --stub-ret=0x10 --runs=150
+src/game/stalker_math.c func_0025C630 --pre=a1=0x0B000000..0x0B000000 --pre=a2=0x0B100000..0x0B100000 --runs=60

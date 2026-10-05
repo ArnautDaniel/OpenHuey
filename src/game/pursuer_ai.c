@@ -148,6 +148,41 @@ extern void *D_0044E570;          /* nav mesh */
 extern VObject *gSceneGameF29740; /* path planner */
 
 
+/* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
+   triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
+u32 func_00211B00(Pursuer *p, u32 tri) {
+    VObject *nav = D_0044E570;
+    VObject *planner;
+    PathRequest q = { 0 };
+    u8 *t = NULL;
+    u32 found, mask;
+
+    if (tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL) {
+        t = AT(nav, 0x4, u8 *) + tri * 0x50;
+    }
+    mask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    if (!((t != NULL ? AT(t, 0x3C, u32) : 0 /* (the original reads address 0x3C) */) & mask)) {
+        return tri;
+    }
+    q.unk0 = 0;
+    q.startTri = tri;
+    VCALL(nav, 0xC, void (*)(VObject *, u32, f32 *))(nav, tri, q.startPos);
+    q.goalTri = tri;
+    sceVu0CopyVector(q.goalPos, q.startPos);
+    q.unk4 = 7;
+    q.mask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    p->c.pathId = VCALL(gSceneGameF29740, 0xC, s32 (*)(VObject *, PathRequest *, s32))(gSceneGameF29740, &q, 0);
+    if (p->c.pathId == -1) {
+        return -1;
+    }
+    planner = gSceneGameF29740;
+    VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+    found = VCALL(planner, 0x38, u32 (*)(VObject *, s32))(planner, p->c.pathId);
+    VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, p->c.pathId);
+    p->c.pathId = -1;
+    return found;
+}
+
 /* `a2` for the pursuer in its room (progress) */
 void func_00211C80(Pursuer *p, s32 a2) {
     Progress *pr = gProgress;

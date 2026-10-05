@@ -62,3 +62,14 @@ void func_00211A90(u8 *a, f32 dist, f32 *out) {
     sceVu0ScaleVector(d, d, dist);
     sceVu0AddVector(out, (f32 *)(a + 0x10), d);
 }
+
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+
+/* rotation matrix `m` as axis + angle (q: x, y, z the axis, w the angle) */
+void func_0025C630(f32 *unused, f32 *q, f32 (*m)[4]) {
+    q[0] = m[2][1] - m[1][2];
+    q[1] = m[0][2] - m[2][0];
+    q[2] = m[1][0] - m[0][1];
+    sceVu0Normalize(q, q);
+    q[3] = 2.0f * func_0031C3C0(0.5f * __builtin_sqrtf(1.0f + (m[2][2] + (m[0][0] + m[1][1]))));
+}
