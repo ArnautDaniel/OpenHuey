@@ -82,10 +82,10 @@ int func_001B0D40(uint8_t *r) {
     return 1;
 }
 
-/* layer 0x0D: as layer 6 (half size, blurred), composited at its end. GL TODO */
+/* layer 0x0D: as layer 6 (half size against the depth halved, blurred, taken off the screen
+ * at its end) - glr */
 int func_001B4330(uint8_t *r) {
     (void)r;
-    glr_todo("layer 0x0D half-size pass (func_001B4330)");
     return 1;
 }
 

@@ -1556,7 +1556,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     int i, depthDirty = 1;   /* the scene's depth changed since the glow buffer's copy */
     int bloomMask = 0, maskCleared = 0;   /* layer 0x26 used this frame; its alpha cleared */
     int reflStarted = 0;                  /* layer 0x17's reflection begun this frame */
-    int inShadow = 0;                     /* within layer 6 */
+    int inShadow = 0;                     /* within layer 6 or 0x0D (the layer, else 0) */
     int tintLayer = -1;                   /* within this fading layer */
 
     {   /* the render scale: as set, or (0) the window's height in 448s, at most 4 */
@@ -1688,7 +1688,12 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 mesh_state();
                 tintLayer = d->layer;
             }
-            if (d->layer == 6 && !inShadow) {   /* layer 6's start (func_001B4F30) */
+            if (inShadow && d->layer != inShadow) {
+                shadow_end();
+                mesh_state();
+                inShadow = 0;
+            }
+            if ((d->layer == 6 || d->layer == 0x0D) && !inShadow) {   /* their start (func_001B4F30 / _4330) */
                 static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
                 static const float kFar1 = 1.0f;
 
@@ -1697,11 +1702,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 p_glBlitNamedFramebuffer(sFbo, sShadowFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 160 * sScale, 112 * sScale,
                                          480 * sScale, 336 * sScale,
                                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-                inShadow = 1;
-            } else if (d->layer != 6 && inShadow) {
-                shadow_end();
-                mesh_state();
-                inShadow = 0;
+                inShadow = d->layer;
             }
             if (d->post) {
                 run_post(d);
@@ -1769,7 +1770,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glColorMaski(1, d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
-            if (d->layer == 6) {   /* layer 6's other draws: into its buffer, tested, no depth */
+            if (d->layer == 6 || d->layer == 0x0D) {   /* their other draws: into the buffer, tested, no depth */
                 p_glBindFramebuffer(GL_FRAMEBUFFER, sShadowFbo);
                 p_glDepthMask(GL_FALSE);
                 p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
