@@ -3384,8 +3384,8 @@ void *func_0016FC30(u8 *m) {
     return m;
 }
 
-/* its destructor: back down the vtables, then (flags > 0) delete */
-void *func_0016F9E0(u8 *m, s32 flags) {
+/* the human model base's destruction: back down its vtables, then (flags > 0) delete */
+static inline void *HumanModel_Destroy(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046C160;
         AT(m, 0x988, void **) = D_0046B0D0;
@@ -3401,6 +3401,11 @@ void *func_0016F9E0(u8 *m, s32 flags) {
         }
     }
     return m;
+}
+
+/* its destructor */
+void *func_0016F9E0(u8 *m, s32 flags) {
+    return HumanModel_Destroy(m, flags);
 }
 
 /* destructors of the model's parts and array elements: the element's vtable (at +0 or +0x30)
@@ -3478,4 +3483,337 @@ void *func_00170EB0(void *e, s32 flags) {
 
 void *func_00170F30(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00472C10, D_004703B0, flags);
+}
+
+/* the base model's destructor (vtable D_0046B210 down to its parts) */
+void *func_0016F5D0(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(m);
+        }
+    }
+    return m;
+}
+
+/* the human-with-kind model's destructor (vtable D_0046B0E0, then the human base) */
+void *func_00170350(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_0046B0E0;
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+extern void *D_00470540[], *D_004703A0[];
+extern void *func_00170460(void *);
+extern void *func_00170080(void *, s32);
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+
+/* a human event character's model (vtable D_00470540, 0x1270 bytes) of `kind`: twelve 0x50
+   parts at +0x9B0, four at +0xE40, six 0x40 parts at +0xF80 and the single parts between */
+void *func_001700E0(u8 *m, s32 kind) {
+    u8 *e;
+
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = D_00470540;
+    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
+    AT(m, 0xDA4, s32) = 0;
+    AT(m, 0xDA0, s32) = 0;
+    AT(m, 0xDE0, void **) = D_004703D0;
+    AT(m, 0xE34, s32) = 0;
+    AT(m, 0xE30, s32) = 0;
+    func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+    for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
+        AT(e, 0x30, void **) = D_004703A0;
+    }
+    AT(m, 0x1134, s32) = 0;
+    AT(m, 0x1130, s32) = 0;
+    AT(m, 0x1170, void **) = D_00470440;
+    AT(m, 0x11D4, s32) = 0;
+    AT(m, 0x11D0, s32) = 0;
+    AT(m, 0x1210, void **) = D_004703D0;
+    AT(m, 0x1264, s32) = 0;
+    AT(m, 0x1260, s32) = 0;
+    return m;
+}
+
+/* its destructor */
+void *func_0016FF50(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00470540;
+        AT(m, 0x1210, void **) = D_004703D0;
+        AT(m, 0x1210, void **) = D_004703B0;
+        AT(m, 0x1170, void **) = D_00470440;
+        AT(m, 0x1170, void **) = D_004703B0;
+        func_001002C0(m + 0xE40, func_0016FBB0, 0x50, 4);
+        AT(m, 0xDE0, void **) = D_004703D0;
+        AT(m, 0xDE0, void **) = D_004703B0;
+        func_001002C0(m + 0x9B0, func_00170080, 0x50, 0xC);
+        AT(m, 0x0, void **) = D_0046B0E0;
+        func_0016F9E0(m, 0);
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* ---- the model loaders: a model of the kind's size from the scene heap (+0x6FBF00), built,
+   and put at character `slot` +0xF0 (NULL when the heap is full) ---- */
+
+static inline u8 *Model_New(Progress *p, u32 size) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+
+    return func_002DC6E0(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
+}
+
+extern void *D_00474460[], *D_00473BD0[], *D_00476F50[], *D_0046F9E0[], *D_00479740[],
+    *D_00472700[], *D_00471CE0[], *D_00471DA0[], *D_00471C20[], *D_00470480[], *D_004702D0[],
+    *D_0046C0A0[];
+extern void *func_0016FB60(void *);
+extern void *func_0016FAE0(void *);
+extern void *func_00170A30(void *);
+extern void *func_00170D10(void *);
+extern void *func_00170F90(void *);
+extern void *func_00170F10(void *);
+
+/* kind 33 */
+void func_0016F420(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x890);
+
+    if (m != NULL) {
+        func_0016F4B0(m);
+        AT(m, 0x0, void **) = D_00474460;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kinds 23 / 37 */
+void func_0016F860(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1310);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_00473BD0;
+        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+        for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0xBE0);
+        func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
+        func_0016FB80(m + 0x10A0);
+        for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
+            func_0016FAE0(e);
+        }
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 18 */
+void func_0016FEC0(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1270);
+
+    if (m != NULL) {
+        func_001700E0(m, 5);
+        AT(m, 0x0, void **) = D_00476F50;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kinds 14 / 15 */
+void func_00170480(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x890);
+
+    if (m != NULL) {
+        func_0016F4B0(m);
+        AT(m, 0x0, void **) = D_00472700;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 13 */
+void func_00170510(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1270);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_00170690(m, 0);
+        AT(m, 0x0, void **) = D_00470540;
+        func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
+        func_0016FB80(m + 0xD70);
+        func_00170670(m + 0xDB0);
+        func_0016FB80(m + 0xE00);
+        func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0x1100);
+        func_00170650(m + 0x1140);
+        func_0016FB80(m + 0x11A0);
+        func_00170670(m + 0x11E0);
+        func_0016FB80(m + 0x1230);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* the plain model (vtable D_0046F9E0): most event characters */
+void func_00170710(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x890);
+
+    if (m != NULL) {
+        func_0016FCD0(m);
+        AT(m, 0x0, void **) = D_0046F9E0;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 12 */
+void func_001707A0(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x9A0);
+
+    if (m != NULL) {
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_00479740;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 11 (Lorenzo) */
+void func_00170830(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0xD00);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016F4B0(m);
+        AT(m, 0x0, void **) = D_00471DA0;
+        func_00100340(m + 0x890, func_0016FC10, func_0016FBB0, 0x50, 6);
+        for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0xCC0);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kinds 10 / 39 (the second Lorenzo) */
+void func_00170910(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1160);
+
+    if (m != NULL) {
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_00471CE0;
+        func_00100340(m + 0x9A0, func_00170A30, func_001709D0, 0x50, 0x18);
+        func_0016FB80(m + 0x1120);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 9 */
+void func_00170A50(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1500);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_00471C20;
+        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 6);
+        for (e = m + 0xB80; e < m + 0xD00; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0xD00);
+        func_00100340(m + 0xD40, func_00170A30, func_001709D0, 0x50, 0x18);
+        func_0016FB80(m + 0x14C0);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kind 4 (Riccardo) */
+void func_00170B60(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1490);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_00470480;
+        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+        for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0xBE0);
+        func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
+        func_0016FB80(m + 0x10A0);
+        for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
+            func_0016FAE0(e);
+        }
+        func_00100340(m + 0x1310, func_00170D10, func_00170CB0, 0x50, 4);
+        func_0016FB80(m + 0x1450);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kinds 3 / 34..36 (Daniella) */
+void func_00170D30(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0x1580);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_004702D0;
+        func_0016FB80(m + 0x9A0);
+        func_0016FB80(m + 0x9E0);
+        func_0016FB80(m + 0xA20);
+        func_0016FB80(m + 0xA60);
+        func_00100340(m + 0xAA0, func_00170F90, func_00170F30, 0x50, 6);
+        for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
+            func_0016FAE0(e);
+        }
+        for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_00100340(m + 0xDE0, func_00170F10, func_00170EB0, 0x70, 0xA);
+        for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
+            func_0016FAE0(e);
+        }
+        func_00170650(m + 0x1470);
+        func_00100340(m + 0x14D0, func_00170670, func_001702F0, 0x50, 2);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* kinds 2 / 6 / 7 / 27 (the Debilitas kind) */
+void func_00170FB0(Progress *p, u32 slot) {
+    u8 *m = Model_New(p, 0xBA0);
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_0016FC30(m);
+        AT(m, 0x0, void **) = D_0046C0A0;
+        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_0016FB80(m + 0xAE0);
+        for (e = m + 0xB20; e < m + 0xBA0; e += 0x40) {
+            func_0016FB90(e);
+        }
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
 }

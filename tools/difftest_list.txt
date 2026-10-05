@@ -3491,3 +3491,20 @@ src/game/model.c func_00170F30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --
 src/game/model.c func_0016F9E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
 src/game/model.c func_0016FCD0 --pre=a0=0x0B000000..0x0B000000 --runs=10
 src/game/model.c func_0016FC30 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/model.c func_0016F420 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_0016F860 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_0016FEC0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170480 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170510 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170710 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_001707A0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170830 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170910 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170A50 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170B60 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170D30 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_00170FB0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..2 --pre=@0x44F808=0x0A400000..0x0A400000 --stub-ret=0x0B000000 --stub-ret=0 --runs=30
+src/game/model.c func_0016F5D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170350 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016FF50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_001700E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..6 --runs=10
