@@ -4236,3 +4236,45 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
     sceVu0CopyVector(out, at);
     return tri;
 }
+
+/* ---- how far by path ---- */
+
+extern void *func_00114FA8(u32 size);   /* malloc */
+extern void func_00114FD0(void *p);     /* free */
+
+/* the walking distance from him to c: planned over the mesh (blocked by flags 0x29020008), -1
+ * if c isn't in his room, the room isn't the one played on the mesh, or no path */
+f32 func_0013F220(Hewie *h, Character *c) {
+    PathRequest req;
+    VObject *planner;
+    void *pts;
+    s32 n;
+    f32 len;
+
+    if (!in_his_room(h, c) || h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return -1.0f;
+    }
+    req.unk0 = 0;
+    req.startTri = h->c.a.navTri;
+    sceVu0CopyVector(req.startPos, h->c.a.pos);
+    req.goalTri = c->a.navTri;
+    sceVu0CopyVector(req.goalPos, c->a.pos);
+    req.unk4 = 2;
+    req.mask = 0x29020008;
+    planner = gSceneGameF29740;
+    h->c.pathId = VCALL(planner, 0xC, s32 (*)(VObject *, PathRequest *, s32))(planner, &req, 0);
+    if (h->c.pathId == -1) {
+        return -1.0f;
+    }
+    if (VCALL(planner, 0x14, s32 (*)(VObject *))(planner) < 0) {
+        VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, h->c.pathId);
+        return -1.0f;
+    }
+    pts = func_00114FA8(0x1200);
+    planner = gSceneGameF29740;
+    n = VCALL(planner, 0x18, s32 (*)(VObject *, s32, void *))(planner, h->c.pathId, pts);
+    VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, h->c.pathId);
+    len = VCALL(planner, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(planner, h->c.a.pos, 0, n, pts);
+    func_00114FD0(pts);
+    return len;
+}
