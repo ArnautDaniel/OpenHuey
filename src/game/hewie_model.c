@@ -88,6 +88,33 @@ void *func_0020BF80(u8 *m, s32 flags) {
     return m;
 }
 
+extern u8 D_00456ED0[], D_00456EF0[], D_00456F10[], D_00456F30[], D_00456F50[];
+extern u8 D_00456E10[], D_00456E30[], D_00456E50[], D_00456E70[], D_00456E90[];
+
+/* (vtable D_0046B8F0 +0xA0) its table for kind k (0..4), NULL for others */
+u8 *func_0020BEF0(u8 *m, s32 k) {
+    switch (k) {
+    case 0: return D_00456F50;
+    case 1: return D_00456F30;
+    case 2: return D_00456F10;
+    case 3: return D_00456EF0;
+    case 4: return D_00456ED0;
+    }
+    return NULL;
+}
+
+/* (vtable D_0046B9B0's) the same for the other model */
+u8 *func_0020C090(u8 *m, s32 k) {
+    switch (k) {
+    case 0: return D_00456E90;
+    case 1: return D_00456E70;
+    case 2: return D_00456E50;
+    case 3: return D_00456E30;
+    case 4: return D_00456E10;
+    }
+    return NULL;
+}
+
 /* ---- small methods ---- */
 
 /* +0xC: once loaded: the plain model's setup, then his own state cleared */

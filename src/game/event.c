@@ -593,3 +593,30 @@ s32 func_001FB520(void *ev, s32 room) {
     }
     return room;
 }
+
+extern void func_00100490(void *p);   /* operator delete */
+extern void *D_0046BA80[], *D_0046BAA0[];
+extern VObject *D_0044E4D0;   /* the events */
+
+/* destructor of class D_0046BA80 */
+void *func_0020C120(void **o, s32 flags) {
+    if (o != NULL) {
+        o[0] = D_0046BA80;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the events' base destructor (D_0046BAA0): the global events pointer cleared */
+void *func_0020C170(void **o, s32 flags) {
+    if (o != NULL) {
+        o[0] = D_0046BAA0;
+        D_0044E4D0 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}

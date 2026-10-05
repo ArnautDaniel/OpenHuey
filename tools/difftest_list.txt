@@ -5799,3 +5799,7 @@ src/leaf/item_ctors.c func_002645A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/leaf/item_ctors.c func_00264060 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/items.c func_00261090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x3E --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600
 src/game/items.c func_00261090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x40..0xB0 --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600
+src/game/hewie_model.c func_0020BEF0 --pre=a1=-1..6 --runs=60
+src/game/hewie_model.c func_0020C090 --pre=a1=-1..6 --runs=60
+src/game/event.c func_0020C120 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=60
+src/game/event.c func_0020C170 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=60
