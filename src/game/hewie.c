@@ -7619,3 +7619,40 @@ void func_001523D0(Hewie *h) {
     }
     h->c.unk104[0] = func_00137FE0(h, h->c.unk104[1], 5, 0x1F, 10.0f);
 }
+
+/* ---- closing in to bite ---- */
+
+extern const PTMF D_003B1968;
+
+/* close in on his target (+0xF3544, in his room and reachable; else the default action): once
+ * standing and in his run (0x202), behaviour D_003B1968; running at it along the path (pose 8
+ * when the stride fails), aiming straight once on its triangle */
+void func_00152D60(Hewie *h) {
+    Character *t;
+    s32 there;
+
+    if (!in_his_room(h, HW(h, 0xF3544, Character *))) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    t = HW(h, 0xF3544, Character *);
+    there = t->a.navTri == func_00124480(&h->c.a, t->a.pos, NAV_NONE);
+    if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00140CD0(h, 5) == 0) {
+        if (MOTION_ANIM(h->c.motion) == 0x202) {
+            Hewie_SetBehaviour(h, &D_003B1968);
+        } else {
+            func_002DDED0(h->c.motion, 0x202, -1);
+        }
+    }
+    if (!there) {
+        if (!(u8)func_00139DE0(h)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        aim_run(h, HW(h, 0xF3544, Character *)->a.pos);
+    }
+}
