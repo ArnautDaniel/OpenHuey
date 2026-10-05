@@ -4538,3 +4538,79 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
     }
     return took;
 }
+
+/* ---- after an action: going for someone ---- */
+
+/* whom to go for after an action (into +0xF3548): 0 if none in reach; 2 the pursuer (while not
+ * +0xF3580), for the caller; else 1, a creature (slots 7..9) becoming his target (0x6D) and
+ * anyone else 0x5A */
+static s32 go_for(Hewie *h) {
+    Character *c;
+
+    HW(h, 0xF3548, Character *) = func_001379C0(h);
+    if (!in_his_room(h, HW(h, 0xF3548, Character *))) {
+        return 0;
+    }
+    if (HW(h, 0xF3580, u8) == 0 && HW(h, 0xF3548, Character *) == gCharPursuer) {
+        return 2;
+    }
+    c = HW(h, 0xF3548, Character *);
+    if (c != gCharPlayer && c != gCharPursuer && (u32)c->a.slot >= 7 && (u32)c->a.slot < 10) {
+        HW(h, 0xF3544, Character *) = c;
+        hewie_want(h, 0x6D, 0);
+        return 1;
+    }
+    hewie_want(h, 0x5A, 0);
+    return 1;
+}
+
+/* after coming out (0x4E): go for someone (the pursuer: 0x21 when +0xF3585 and he can go at
+ * it head on, else 0x1F), else 6 (0x87 with progress +0x1FBEC1) */
+void func_00140190(Hewie *h) {
+    switch (go_for(h)) {
+    case 0:
+        hewie_want(h, *((u8 *)gProgress + 0x1FBEC1) == 0 ? 6 : 0x87, 0);
+        break;
+    case 2:
+        hewie_want(h, HW(h, 0xF3585, u8) == 1 && func_00139A70(h) == 0 ? 0x21 : 0x1F, 0);
+        break;
+    }
+}
+
+/* after answering a call (0x4F / 0x50): go for someone (the pursuer: 0x1F after 0x4F, else
+ * 0x20), else 6 */
+void func_001404E0(Hewie *h) {
+    switch (go_for(h)) {
+    case 0:
+        hewie_want(h, 6, 0);
+        break;
+    case 2:
+        hewie_want(h, HW(h, 0xF3564, s32) == 0x4F ? 0x1F : 0x20, 0);
+        break;
+    }
+}
+
+/* after 0x4D: by his animation group, a coin toss between 0x28 / 0x26 and 0x2A (moving 1: 0x2A
+ * for groups 0 / 4, 0x26 for 2 / 6) */
+void func_001407C0(Hewie *h) {
+    s32 g = func_001669A0(h);
+    f32 r = RNG01();
+
+    switch (g) {
+    case 0:
+    case 4:
+        hewie_want(h, h->c.a.unkC4 != 1 && r < 0.5f ? 0x28 : 0x2A, 0);
+        break;
+    case 1:
+    case 5:
+        hewie_want(h, r < 0.5f ? 0x26 : 0x2A, 0);
+        break;
+    case 2:
+    case 6:
+        hewie_want(h, h->c.a.unkC4 == 1 || r < 0.5f ? 0x26 : 0x2A, 0);
+        break;
+    default:
+        hewie_want(h, 0x26, 0);
+        break;
+    }
+}
