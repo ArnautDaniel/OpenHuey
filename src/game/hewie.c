@@ -3150,7 +3150,7 @@ void func_00136900(Hewie *h) {
 extern s32 func_0013E2D0(Hewie *h, s32 cmd);   /* the action for a command (-1 none, -2..-5 special) */
 extern s32 func_0013D580(Hewie *h, s32 act);
 extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
-extern s32 func_00139460(Hewie *h);
+extern u8 *func_00139460(Hewie *h);
 
 /* action `act` with argument `arg` unless his situation turns it into another (then that one,
    argument 0) */
@@ -3204,7 +3204,7 @@ s32 func_00137020(Hewie *h) {
     if (HW(h, 0xF3578, s32) == 0x23 && HW(h, 0xF3598, s32) == 0 && HW(h, 0xF358C, s32) != 1 &&
         !(u8)func_00177620(gProgress) && HW(h, 0xF368C, s32) == 0 &&
         (u8)func_00122C90(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
-        HW(h, 0xF368C, s32) = func_00139460(h);
+        HW(h, 0xF368C, u8 *) = func_00139460(h);
         if (HW(h, 0xF368C, s32) != 0) {
             hewie_want(h, 0x1D, 0x78);
             h->c.state[0] = 0;
@@ -3433,4 +3433,142 @@ s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
     HW(h, 0xF36AC, s32) = 0;
     HW(h, 0xF36A4, s32) = 0;
     return 1;
+}
+
+extern VObject *D_0044F260;   /* the placed things (+0xC: entry i of 128) */
+#define F_PI_2 0x1.921fb6p+0f   /* 0x3FC90FDB */
+
+/* Fiona's angle to a point, |wrapped| (from her heading) */
+static f32 off_her_heading(const f32 *pos) {
+    return hwrap_abs(func_001244D0(&gCharPlayer->a, pos) - gCharPlayer->a.angle[1]);
+}
+
+/* the nearest placed thing of kind 0 (+0x20) in front of Fiona (within 90 degrees) that he can
+   reach (the triangle at it is its own, +0x34); NULL */
+u8 *func_00139460(Hewie *h) {
+    u8 *best = NULL;
+    f32 bestd = 0.0f;
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        u8 *t = VCALL(D_0044F260, 0xC, u8 *(*)(VObject *, s32))(D_0044F260, i);
+
+        if (t == NULL || AT(t, 0x20, s32) != 0) {
+            continue;
+        }
+        if (best != NULL) {
+            f32 d = func_00124490(&gCharPlayer->a, (f32 *)(t + 0x10));
+
+            if (d < bestd && off_her_heading((f32 *)(t + 0x10)) < F_PI_2 &&
+                func_00124480(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
+                best = t;
+                bestd = d;
+            }
+        } else if (off_her_heading((f32 *)(t + 0x10)) < F_PI_2 &&
+                   func_00124480(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
+            best = t;
+            bestd = func_00124490(&gCharPlayer->a, (f32 *)(t + 0x10));
+        }
+    }
+    return best;
+}
+
+/* the side to go at the pursuer from: 0 head on (they face each other within 90 degrees,
+   not with progress flag 0x11); else 1 / 2 by its kind and whether he is on its left */
+s32 func_00139A70(Hewie *h) {
+    Character *pu = gCharPursuer;
+    f32 a = func_001244D0(&h->c.a, pu->a.pos);   /* (from him) */
+    f32 its = hwrap_abs(a - pu->a.angle[1]);
+    u8 kind;
+
+    if (!(u8)Progress_TestFlag(gProgress, 0x11) && its < F_PI_2 && hwrap_abs(a - h->c.a.angle[1]) < F_PI_2) {
+        return 0;
+    }
+    kind = gCharPursuer->unk153C;
+    if (func_002E2D00(func_002E2D00(F_PI + a) - gCharPursuer->a.angle[1]) < 0.0f) {
+        return kind == 3 || kind == 34 || kind == 35 || kind == 36 ? 1 : 2;
+    }
+    return kind == 3 || kind == 34 || kind == 35 || kind == 36 || kind == 11 ? 2 : 1;
+}
+
+extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path (its next point) */
+
+extern void func_001247E0(Actor *a, const f32 *move);
+
+/* the animation's stride this frame (its root motion's z by the model's speed (+0x48)), at
+   least 0 */
+static f32 stride(Hewie *h, f32 *v) {
+    func_001F6370(h->c.motion, v, 0.0f);
+    v[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    return v[2];
+}
+
+/* one stride along his path: he turns towards a point 12 strides ahead (by the stride x 6 x
+ * the slope +0x858, degrees; over 30 degrees off within the turn), the motion's blend +0xF3604
+ * 8 frames; facing within ~41 degrees the stride's point he steps there (+0x128 its index;
+ * 1), else he takes the stride straight ahead (the path back to +0x128; 0) */
+s32 func_00139DE0(Hewie *h) {
+    static const union { u32 u; f32 f; } k30deg = {0x3F060A92};
+    f32 v[4] __attribute__((aligned(16)));    /* (its w, from the root motion, stays) */
+    f32 v2[4] __attribute__((aligned(16)));
+    f32 v3[4] __attribute__((aligned(16)));
+    f32 ahead[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 s, rate, slope, yaw, off;
+    u32 tri;
+    s32 next;
+
+    s = stride(h, v);
+    if (s < 0.0f) {
+        s = 0.0f;
+    }
+    func_001273D0(&h->c, &tri, ahead, 12.0f * s);
+    yaw = func_001244D0(&h->c.a, ahead);
+    next = func_001273D0(&h->c, &tri, at, s);
+    s = stride(h, v2);
+    rate = 0.0f;
+    if (!(s < 0.0f)) {
+        slope = AT(h->c.motion, 0x858, f32);
+        if (slope <= 0.0f) {
+            slope = -slope;
+        }
+        rate = s * (12.0f * (0.5f * slope));
+    }
+    rate = F_PI * rate / 180.0f;
+    off = func_002E2D00(yaw - h->c.a.angle[1]);
+    if (!((off <= 0.0f ? -off : off) < k30deg.f) && AT(h->c.motion, 0x858, f32) * off < 0.0f) {
+        /* turning against the slope: straight round by the rate */
+        h->c.a.angle[1] = func_002E2D00(off < 0.0f ? h->c.a.angle[1] + rate : h->c.a.angle[1] - rate);
+        sceVu0UnitMatrix(h->c.a.rot);
+        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, h->c.a.angle[1]);
+        func_002E2D00(yaw - h->c.a.angle[1]);
+    } else {
+        func_00124530(&h->c.a, yaw, rate);
+    }
+    HW(h, 0xF3604, s32) = 8;
+    HW(h, 0xF3608, s32) = 0;
+    HW(h, 0xF3614, s32) = 0;
+    HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+    sceVu0SubVector(d, at, h->c.a.pos);
+    d[1] = 0.0f;
+    sceVu0Normalize(d, d);
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = 1.0f;
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    if (!(sceVu0InnerProduct(v, d) <= 0.75f)) {
+        h->c.a.navTri = tri;
+        sceVu0CopyVector(h->c.a.pos, at);
+        h->c.unk128 = next;
+        HW(h, 0xF3558, u8) = 1;
+        return 1;
+    }
+    stride(h, v3);
+    v3[1] = 0.0f;
+    sceVu0ApplyMatrix(v3, h->c.a.rot, v3);
+    func_001247E0(&h->c.a, v3);
+    HW(h, 0xF3558, u8) = 1;
+    h->c.unk124 = h->c.unk128;
+    return 0;
 }

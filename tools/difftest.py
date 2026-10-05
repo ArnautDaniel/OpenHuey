@@ -81,7 +81,8 @@ INLINE_EXTRA: set[int] = set()   # --inline: pure game functions run in place (t
 # in the caller's frame, which sits at different alignments in the two versions
 VA_LIST_ARGS = {0x0026ED98: 7}   # vsnprintf(buf, n, fmt, ap)
 # output-only buffers (callee address -> register): what they held before the call is no input
-OUT_BUFFER_ARGS = {0x0026EDD0: 4, 0x0026ED98: 4}   # snprintf / vsnprintf (buf, ...)
+OUT_BUFFER_ARGS = {0x0026EDD0: 4, 0x0026ED98: 4,   # snprintf / vsnprintf (buf, ...)
+                   0x001F6370: 5}                  # a motion's root motion (motion, out, t)
 # variadic callees (address -> first variadic register): a register there the original didn't
 # set for the call is not an argument (the format takes fewer), whatever it holds
 VARIADIC_FIRST = {0x00380B80: 7, 0x00384730: 11, 0x00384800: 9, 0x0026EDD0: 7}
