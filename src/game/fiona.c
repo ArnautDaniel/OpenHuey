@@ -8423,6 +8423,48 @@ void func_0018E510(Fiona *f) {
     door_give_up(f, gProgress);
 }
 
+extern const PTMF D_003B2C58, D_003B2C68;
+
+/* Hewie gone or no longer waiting for a held command (his action 0x48) */
+static inline __attribute__((always_inline)) s32 held_off(Fiona *f) {
+    return FI(f, 0x1AD5D5, u8) == 0 || AT(gCharPartner, 0xF3564, s32) != 0x48;
+}
+
+/* D_003B2C58: the animation run out, the wait for Hewie (D_003B2C68); idle if he's off */
+void func_0018EAC0(Fiona *f) {
+    if (held_off(f)) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (door_anim_done(f)) {
+        Actor_SetState(&f->c.a, &D_003B2C68);
+    }
+}
+
+/* D_003B2C48: walking to the spot for a held command; there, stopped (D_003B2C58); idle if
+ * Hewie is off or she can't get there */
+void func_0018EDA0(Fiona *f) {
+    s32 r;
+
+    if (held_off(f)) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    r = func_00188C10(f);
+    if (r < 0) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    func_001855F0(f, -1);
+    Actor_SetState(&f->c.a, &D_003B2C58);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
