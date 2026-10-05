@@ -1399,6 +1399,192 @@ s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
     }
 }
 
+/* +0x18 search `id`'s path as a smooth curve of points (0xC each: triangle, x, z) in `out`:
+ * from each point through the smoothed triangles' centres (a doubled one: the middle of the edge
+ * on) by cubic Hermite pieces of 8 steps, their tangents halved until every step stays on the
+ * walkable mesh (else, after 10 tries, a straight step); the count (-1: no path) */
+s32 func_001A8DC0(u8 *pl, s32 id, u8 *out) {
+    f32 a[4] __attribute__((aligned(16)));   /* the piece's start */
+    f32 b[4] __attribute__((aligned(16)));   /* its end */
+    f32 c[4] __attribute__((aligned(16)));   /* the next centre */
+    f32 a0[4] __attribute__((aligned(16)));  /* the last start */
+    f32 d1[4] __attribute__((aligned(16)));
+    f32 d2[4] __attribute__((aligned(16)));
+    f32 d3[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+    u8 *s = SEARCH(pl, id);
+    NavMesh *nm;
+    u16 *p;
+    s32 m, i = 0, k = 0;
+
+    if (func_001A95F0(pl, s) != 0) {
+        return -1;
+    }
+    m = AT(pl, 0x40194, s32);
+    if (m == 2) {
+        AT(out, 0x0, u32) = AT(s, 0x4, u32);
+        AT(out, 0x4, f32) = AT(s, 0x20, f32);
+        AT(out, 0x8, f32) = AT(s, 0x28, f32);
+        AT(out, 0xC, u32) = AT(s, 0x8, u32);
+        AT(out, 0x10, f32) = AT(s, 0x30, f32);
+        AT(out, 0x14, f32) = AT(s, 0x38, f32);
+        return 2;
+    }
+    p = &AT(pl, 0x41198, u16);
+    sceVu0CopyVector(a, (f32 *)(s + 0x20));
+    nm = D_0044E570;
+    tri_centre(nm, p[1], b);
+    tri_centre(nm, p[2], c);
+    sceVu0SubVector(d1, b, a);
+    sceVu0SubVector(d2, c, a);
+    AT(out, 0x4, f32) = a[0];
+    AT(out, 0x8, f32) = a[2];
+    while (i < m - 1) {
+        u32 to = p[1], t;
+        f32 l1, l2, l3;
+        s32 tries, n;
+        u8 *start, *pt;
+
+        if (p[0] == p[1]) {   /* a doubled triangle: the middle of its edge on */
+            if (i < m - 2) {
+                u32 nxt = p[2];
+                NavTri *tri = NavMesh_Tri(nm, p[0]);
+                s32 e;
+
+                for (e = 0; e < 3; e++) {
+                    if (tri->adj[e] == nxt) {
+                        s32 e2 = e < 2 ? e + 1 : 0;
+
+                        b[0] = 0.5f * (tri->v[e][0] + tri->v[e2][0]);
+                        b[2] = 0.5f * (tri->v[e][2] + tri->v[e2][2]);
+                        if (VCALL((VObject *)nm, 0x10, s32 (*)(VObject *, u32, f32 *))((VObject *)nm, p[0], b) != 3) {
+                            to = nxt;
+                        }
+                        break;
+                    }
+                }
+            }
+            sceVu0SubVector(d1, b, a);
+        }
+        sceVu0SubVector(d3, b, a);
+        l1 = sceVu0InnerProduct(d1, d1);
+        l2 = sceVu0InnerProduct(d2, d2);
+        l3 = sceVu0InnerProduct(d3, d3);
+        l3 = l3 + l3;
+        if (l1 < l3) {
+            if (l1 < l2) {
+                sceVu0Normalize(d2, d2);
+                func_0010E640(d2, d2, __builtin_sqrtf(l1));
+            } else {
+                sceVu0Normalize(d1, d1);
+                func_0010E640(d1, d1, __builtin_sqrtf(l2));
+            }
+        } else if (l2 < l3) {
+            sceVu0Normalize(d1, d1);
+            func_0010E640(d1, d1, __builtin_sqrtf(l2));
+        } else {
+            sceVu0Normalize(d1, d1);
+            func_0010E640(d1, d1, __builtin_sqrtf(l3));
+            sceVu0Normalize(d2, d2);
+            func_0010E640(d2, d2, __builtin_sqrtf(l3));
+        }
+        tries = 10;
+        start = out + k * 0xC;
+        for (;;) {
+            s32 j, steps;
+
+            pt = start + 0xC;
+            if (tries <= 0) {   /* straight on */
+                if (i == m - 2) {
+                    AT(pt, 0x4, f32) = AT(s, 0x30, f32);
+                    AT(pt, 0x8, f32) = AT(s, 0x38, f32);
+                } else {
+                    AT(pt, 0x4, f32) = b[0];
+                    AT(pt, 0x8, f32) = b[2];
+                }
+                t = to;
+                n = 1;
+                break;
+            }
+            tries--;
+            func_0010E640(d1, d1, 0.5f);
+            func_0010E640(d2, d2, 0.5f);
+            for (j = 1; j < 8; j++, pt += 0xC) {
+                f32 u = (f32)j / 8.0f;
+                f32 u2 = u * u;
+                f32 u3 = u * u2;
+                f32 t3 = 3.0f * u2;
+                f32 h00 = 1.0f + (2.0f * u3 - t3);
+                f32 h01 = t3 + -2.0f * u3;
+                f32 h10 = u + (u3 - 2.0f * u2);
+                f32 h11 = u3 - u2;
+
+                AT(pt, 0x4, f32) = h01 * b[0] + h00 * a[0] + h10 * d1[0] + h11 * d2[0];
+                AT(pt, 0x8, f32) = h01 * b[2] + h00 * a[2] + h10 * d1[2] + h11 * d2[2];
+            }
+            AT(pt, 0x4, f32) = b[0];
+            AT(pt, 0x8, f32) = b[2];
+            t = p[0];   /* each step walked through the mesh */
+            sceVu0CopyVector(q, a);
+            pt = start;
+            r[0] = AT(start, 0x4, f32);
+            r[2] = AT(start, 0x8, f32);
+            for (steps = 0;;) {
+                s32 e = VCALL((VObject *)nm, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nm, t, q, r);
+
+                if (e == 3) {
+                    if (steps < 8) {
+                        AT(pt, 0x0, u32) = t;
+                        sceVu0CopyVector(q, r);
+                        pt += 0xC;
+                        r[0] = AT(pt, 0x4, f32);
+                        r[2] = AT(pt, 0x8, f32);
+                    }
+                } else if (e == 4) {
+                    t = NAV_NONE;
+                } else {
+                    t = NavMesh_Tri(nm, t)->adj[e];
+                    if (t == NAV_NONE) {
+                        break;
+                    }
+                    if (!(tri_flags(nm, t) & AT(s, 0xC, u32))) {
+                        continue;
+                    }
+                    t = NAV_NONE;
+                }
+                if (t == NAV_NONE || ++steps >= 9) {
+                    break;
+                }
+            }
+            if (steps == 9) {
+                n = 8;
+                break;
+            }
+        }
+        AT(pt, 0x0, u32) = t;
+        p++;
+        k += n;
+        sceVu0CopyVector(a0, a);
+        sceVu0CopyVector(a, b);
+        i++;
+        if (!(i < m - 1)) {
+            break;
+        }
+        if (i == m - 2) {
+            sceVu0CopyVector(b, (f32 *)(s + 0x30));
+            sceVu0SubVector(d1, b, a0);
+            sceVu0SubVector(d2, b, a);
+        } else {
+            sceVu0CopyVector(b, c);
+            sceVu0SubVector(d1, b, a0);
+            tri_centre(nm, p[2], c);
+            sceVu0SubVector(d2, c, a);
+        }
+    }
+    return k + 1;
+}
+
 /* +0x14 run search 0 to its end */
 void func_001A9F90(u8 *pl) {
     u8 *s = SEARCH(pl, 0);
