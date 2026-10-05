@@ -7986,6 +7986,61 @@ void func_00183F10(Fiona *f) {
     }
 }
 
+extern const PTMF D_003B2D28;   /* the flee turn */
+
+/* D_003B2D28: the flee turn (anim 0x403) - turning to savedYaw (12 degrees a frame) and moving
+ * by the root motion; at its mark 2 (unless the progress var 0x26 is 8) her panic +10, at mark
+ * 0x20 a door slammed behind her (her radius back); at its event 0x20 Hewie's reaction 9 and
+ * idle */
+void func_0018C240(Fiona *f) {
+    static const union { u32 u; f32 f; } kTwelveDeg = {0x3E567750};
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 to[4] __attribute__((aligned(16)));
+
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        hewie_react(f, 9);
+        door_give_up(f, gProgress);
+        return;
+    }
+    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
+        f->c.moveMode = 0;
+        f->c.a.unk2D = 0;
+        if ((Progress_GetVar(gProgress, 0x26) & 0xFF) != 8) {
+            func_00180E90(f, 10.0f);
+        }
+    }
+    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x20) {
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = -AT(f, 0xC8, f32);
+        v[3] = 0.0f;   /* (unset in the original) */
+        func_002E2DA0(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+        sceVu0AddVector(to, f->c.a.pos, v);
+        func_00181880(f, to, 0);
+    }
+    func_00124530(&f->c.a, f->savedYaw, kTwelveDeg.f);
+    func_001F6370(f->c.motion, v, 0.0f);
+    func_002E3190(m, f->savedYaw);
+    func_002E2DA0(v, m, v);
+    func_001247E0(&f->c.a, v);
+}
+
+/* D_003B2678: once the animation has run out the flee turn (D_003B2D28) - away from the
+ * pursuer when she's being chased and he is within 30, else the way she faces */
+void func_0018C540(Fiona *f) {
+    func_00125A10(&f->c);
+    if (!door_anim_done(f)) {
+        return;
+    }
+    f->savedYaw = f->c.a.angle[1];
+    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) < 30.0f) {
+        f->savedYaw = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+    }
+    func_002DDED0(f->c.motion, 0x403, -1);
+    Actor_SetState(&f->c.a, &D_003B2D28);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
