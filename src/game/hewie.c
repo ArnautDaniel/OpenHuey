@@ -6892,11 +6892,11 @@ void func_0014DA50(Hewie *h) {
 
 extern const PTMF D_003B1B18, D_003B1B28;
 
-/* go where her command (his action) puts him by her (func_00145610), along the planned path
+/* one step of going where her command puts him by her (func_00145610): along the planned path
  * (straight once on its triangle), by gait +0xF36B4 with hysteresis on the distance left: walk
- * (0; over 30 trot), trot (1; under 20 walk, over 54 run), run (2; under 44 trot). Walking and
- * within 12: there, behaviour D_003B1B18 (D_003B1B28 with +0xF36B8). No path: default action */
-void func_0014E300(Hewie *h) {
+ * (0; over 30 trot), trot (1; under 20 walk, over `up` run), run (2; under `down` trot). -1 with
+ * no path (the default action taken); 1 when walking within 12 (there; the path ended) */
+static s32 follow_step(Hewie *h, f32 up, f32 down) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d, a, step;
     s32 there;
@@ -6906,7 +6906,7 @@ void func_0014E300(Hewie *h) {
     there = tri == func_00124480(&h->c.a, at, NAV_NONE);
     if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, tri, at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
-        return;
+        return -1;
     }
     if (!there) {
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
@@ -6918,8 +6918,7 @@ void func_0014E300(Hewie *h) {
     case 0:
         if (d < 12.0f) {
             h->c.unk124 = h->c.unk128;
-            Hewie_SetBehaviour(h, HW(h, 0xF36B8, s32) == 0 ? &D_003B1B18 : &D_003B1B28);
-            return;
+            return 1;
         }
         if (d <= 30.0f) {
             func_00141C00(h, 7);
@@ -6932,7 +6931,7 @@ void func_0014E300(Hewie *h) {
         if (d < 20.0f) {
             HW(h, 0xF36B4, s32) = 0;
             func_00141C00(h, 7);
-        } else if (d <= 54.0f) {
+        } else if (d <= up) {
             func_00141C00(h, 8);
         } else {
             HW(h, 0xF36B4, s32) = 2;
@@ -6940,7 +6939,7 @@ void func_0014E300(Hewie *h) {
         }
         break;
     case 2:
-        if (d < 44.0f) {
+        if (d < down) {
             HW(h, 0xF36B4, s32) = 1;
             func_00141C00(h, 8);
         } else {
@@ -6952,7 +6951,7 @@ void func_0014E300(Hewie *h) {
         if (!(u8)func_00139DE0(h) && HW(h, 0xF36B4, s32) == 2) {
             func_00141C00(h, 8);
         }
-        return;
+        return 0;
     }
     a = func_001244D0(&h->c.a, at);
     step = run_turn(h);
@@ -6965,6 +6964,15 @@ void func_0014E300(Hewie *h) {
     HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
     if (HW(h, 0xF3558, u8) == 0) {
         h->c.unk124 = h->c.unk128;
+    }
+    return 0;
+}
+
+/* follow her command's place (follow_step); there: behaviour D_003B1B18 (D_003B1B28 with
+ * +0xF36B8) */
+void func_0014E300(Hewie *h) {
+    if (follow_step(h, 54.0f, 44.0f) == 1) {
+        Hewie_SetBehaviour(h, HW(h, 0xF36B8, s32) == 0 ? &D_003B1B18 : &D_003B1B28);
     }
 }
 
@@ -9374,5 +9382,27 @@ void func_0015CCA0(Hewie *h) {
         func_00141C00(h, 8);
     } else {
         func_00141C00(h, 9);
+    }
+}
+
+/* ---- bringing it to Fiona ---- */
+
+extern const PTMF D_003B1758;
+
+/* come to her (in his room; else the default action) as follow_step (running over 40, back to
+ * a trot under 30); there: action +0xF3570, or
+ * with none behaviour D_003B1758 for 60 frames */
+void func_0015D490(Hewie *h) {
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (follow_step(h, 40.0f, 30.0f) == 1) {
+        if (HW(h, 0xF3570, s32) == 0) {
+            HW(h, 0xF36B8, s32) = 60;
+            Hewie_SetBehaviour(h, &D_003B1758);
+        } else {
+            hewie_want(h, HW(h, 0xF3570, s32), 0);
+        }
     }
 }
