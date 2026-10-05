@@ -1813,32 +1813,31 @@ s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *D_003F43A0, *D_003FA760;   /* room object names */
+extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC4;   /* room object names */
 extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 D_0047E364;   /* menu buttons, repeating */
 extern VObject *D_0044E4F8;   /* the camera director's interface */
 extern VObject *D_0044E550;   /* random numbers */
 
-/* the dial (D_003F43A0) on progress var 3 (0..6, 30 degrees each): byte 3 0 set to it, 1 turned
- * by left / right (event +0x60 1 when changed, 0 when confirmed / cancelled), 2 turning to it
- * a degree a step (event +0x5C 1 there), 3 wait */
-s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
+/* a dial `o` on progress var `var` (0..6, 30 degrees each, from `off`): byte 3 of `step` 0 set
+ * to it (`hide` also clears its +0), 1 turned by left / right (event +0x60 1 when changed, 0 when
+ * confirmed / cancelled), 2 turning to it a degree a step (event +0x5C 1 there), 3 wait (2) */
+static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 var, s32 off, s32 hide) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDeg = {0x3C8EFA35};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F43A0);
 
-    if (o == NULL) {
-        return 1;
-    }
-    switch (cmd[3]) {
+    switch (step) {
     case 0:
-        AT(o, 0x14, f32) = kPi.f * (f32)((Progress_GetVar(gProgress, 3) & 0xFF) * 30) / 180.0f;
+        if (hide) {
+            AT(o, 0x0, u8) = 0;
+        }
+        AT(o, 0x14, f32) = kPi.f * (f32)((s32)(Progress_GetVar(gProgress, var) & 0xFF) * 30 + off) / 180.0f;
         break;
     case 1:
         if (((D_0047E36C >> 4) & 1) | ((D_0047E36C >> 5) & 1)) {
             VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 0);
         } else {
             Progress *p = gProgress;
-            u8 v = Progress_GetVar(p, 3);
+            u8 v = Progress_GetVar(p, var);
 
             if ((D_0047E364 >> 3) & 1) {
                 if (v != 0) {
@@ -1847,15 +1846,15 @@ s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
             } else if (((D_0047E364 >> 1) & 1) && v < 6) {
                 v = v + 1;
             }
-            if (v != (u8)Progress_GetVar(p, 3)) {
-                AT(p, 0x9F, u8) = v;
+            if (v != (u8)Progress_GetVar(p, var)) {
+                AT(p, 0x9C + var, u8) = v;
                 VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
             }
         }
         break;
     case 2: {
         f32 deg = 180.0f * AT(o, 0x14, f32) / kPi.f;
-        f32 d = deg - (f32)((Progress_GetVar(gProgress, 3) & 0xFF) * 30);
+        f32 d = deg - (f32)((s32)(Progress_GetVar(gProgress, var) & 0xFF) * 30 + off);
 
         if (!(d <= 1.0f)) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - kDeg.f;
@@ -1868,10 +1867,36 @@ s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
     }
     case 3:
         return 2;
-    default:
-        return 1;
     }
     return 1;
+}
+
+/* the dial D_003F43A0 on progress var 3 */
+s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F43A0);
+
+    if (o == NULL) {
+        return 1;
+    }
+    return dial_step(cmd[3], o, 3, 0, 0);
+}
+
+/* two dials (byte 3: D_003F17B8 on var 0, D_003F17C8 on var 1, from -90 degrees), byte 4 the step */
+s32 func_002A9F30(void *self, void *a1, u8 *cmd) {
+    u8 *o;
+    u32 var;
+
+    if (cmd[3] == 0) {
+        o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F17B8);
+        var = 0;
+    } else {
+        o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F17C8);
+        var = 1;
+    }
+    if (o == NULL) {
+        return 1;
+    }
+    return dial_step(cmd[4], o, var & 0xFF, -90, 1);
 }
 
 /* a lid (D_003FA760, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
@@ -1957,6 +1982,65 @@ s32 func_002ADE30(void) {
     p = gProgress;
     if (Progress_CurRoomFlag(p, 0x1D, 0) != 0 || func_00178980(p, 0x1D, 0) != 0) {
         return 0;
+    }
+    return 1;
+}
+
+extern void *D_0046FF20[];
+
+static inline void dust_init(void **o) {
+    o[0] = D_0046FF20;
+    o[0x610 / 4] = D_00469D00;
+    ((s32 *)o)[0x614 / 4] = -1;
+    o[0x610 / 4] = D_0046FC30;
+}
+
+/* a lever (D_003F0DC4, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
+ * (-10) with a puff of grey dust at it */
+s32 func_002A9740(void *self, void *a1, u8 *cmd) {
+    /* (volatile: a compile-time fold of the pulled case would round as IEEE, not as the EE) */
+    static const volatile union { u32 u; f32 f; } kPi = {0x40490FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0DC4);
+    s32 dust = 0;
+    f32 deg;
+
+    if (o == NULL) {
+        return 1;
+    }
+    deg = 180.0f * AT(o, 0x18, f32) / kPi.f;
+    switch (cmd[3]) {
+    case 0:
+        deg += 2.0f;
+        break;
+    case 1:
+        dust = 1;
+        deg = -10.0f;
+        break;
+    }
+    if (!(deg <= 0.0f)) {
+        deg = 0.0f;
+    }
+    if (deg < -10.0f) {
+        deg = -10.0f;
+    }
+    AT(o, 0x18, f32) = kPi.f * deg / 180.0f;
+    if (dust != 0) {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0x720, dust_init);
+        struct {
+            f32 pos[4];
+            s32 kind, r, g, b, size;
+        } dp __attribute__((aligned(16)));
+
+        dp.pos[0] = AT(o, 0x20, f32);
+        dp.pos[1] = AT(o, 0x24, f32);
+        dp.pos[2] = AT(o, 0x28, f32);
+        dp.pos[3] = 1.0f;
+        dp.b = 0x80;
+        dp.g = 0x80;
+        dp.r = 0x80;
+        dp.kind = 0;
+        func_002D6090(mgr, slot, &dp);
     }
     return 1;
 }
