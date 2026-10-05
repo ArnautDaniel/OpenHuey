@@ -3696,3 +3696,283 @@ void func_00305700(u8 *o) {
     func_002E56C0((u8 *)&q);
     q.vtbl = D_00469D00;
 }
+
+/* ---- D_00479AE0 (0x40 bytes): a splash ring on water - a flat ring at +0x10 (16 sides, 0.2
+ * wide) growing from radius 0.2 by +0x2C a frame, its colour +0x20 (RGB, and the alpha it
+ * fades in to), fading in by 16 a frame (while +0x30) then out by 4 (alpha now +0x24); +0x31
+ * set once it is gone ---- */
+
+extern void *D_00479AE0[];
+
+/* +0x8 destructor */
+void *func_00361260(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479AE0;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046F580;
+        }
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC set up */
+void func_00361930(u8 *o) {
+    AT(o, 0x31, u8) = 0;
+}
+
+/* +0x10 update (0 once it has faded out) */
+s32 func_003618B0(u8 *o) {
+    if (AT(o, 0x30, u8) == 1) {
+        AT(o, 0x24, u16) += 0x10;
+        if (AT(o, 0x23, u8) < AT(o, 0x24, u16)) {
+            AT(o, 0x24, u16) = AT(o, 0x23, u8);
+            AT(o, 0x30, u8) = 0;
+        }
+    } else {
+        if (AT(o, 0x24, u16) < 4) {
+            AT(o, 0x31, u8) = 1;
+            return 0;
+        }
+        AT(o, 0x24, u16) -= 4;
+    }
+    AT(o, 0x28, f32) = AT(o, 0x28, f32) + AT(o, 0x2C, f32);
+    return 1;
+}
+
+/* +0x18 start: at params' position (+0x0) with its colour (+0x10) and growth (+0x14) */
+void func_003612C0(u8 *o, const u8 *params) {
+    if (params == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(o + 0x10), (f32 *)params);
+    AT(o, 0x20, u8) = params[0x10];
+    AT(o, 0x21, u8) = params[0x11];
+    AT(o, 0x22, u8) = params[0x12];
+    AT(o, 0x23, u8) = params[0x13];
+    AT(o, 0x2C, f32) = AT(params, 0x14, f32);
+    AT(o, 0x24, u16) = 0;
+    AT(o, 0x28, u32) = 0x3E4CCCCD;   /* 0.2 */
+    AT(o, 0x30, u8) = 1;
+}
+
+#ifdef HG_NATIVE
+/* +0x14 draw: the ring as a closed strip (outer and inner point by turns, 22.5 degrees apart),
+ * flat in its colour at alpha +0x24, added without depth writes (layer 0x19); only when all of
+ * it is in view */
+void func_00361340(u8 *o) {
+    f32 p[34][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    u8 rgba[34][4];
+    f32 st[34][2] = {{0}};
+    s32 i;
+
+    if (AT(o, 0x31, u8) == 1) {
+        return;
+    }
+    for (i = 0; i < 16; i++) {
+        f32 a = (3.1415927f * (22.5f * (f32)i)) / 180.0f;
+        f32 s = func_0031C248(a), c = func_0031C058(a);
+        f32 r = AT(o, 0x28, f32), r2 = r - 0.2f;
+
+        p[i * 2][0] = AT(o, 0x10, f32) + r * s;
+        p[i * 2][1] = AT(o, 0x14, f32);
+        p[i * 2][2] = AT(o, 0x18, f32) - r * c;
+        p[i * 2][3] = 1.0f;
+        p[i * 2 + 1][0] = AT(o, 0x10, f32) + r2 * s;
+        p[i * 2 + 1][1] = AT(o, 0x14, f32);
+        p[i * 2 + 1][2] = AT(o, 0x18, f32) - r2 * c;
+        p[i * 2 + 1][3] = 1.0f;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (i = 0; i < 32; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0ApplyMatrix(v, clip, p[i]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return;
+        }
+    }
+    sceVu0CopyVector(p[32], p[0]);
+    sceVu0CopyVector(p[33], p[1]);
+    for (i = 0; i < 34; i++) {
+        AT(&p[i][3], 0, u32) = 0;
+        rgba[i][0] = AT(o, 0x20, u8);
+        rgba[i][1] = AT(o, 0x21, u8);
+        rgba[i][2] = AT(o, 0x22, u8);
+        rgba[i][3] = (u8)AT(o, 0x24, u16);
+    }
+    glr_layer(0x19);
+    glr_strip(&clip[0][0], 34, &p[0][0], &st[0][0], &rgba[0][0], NULL, 0, 0x40 | GLR_PRIM_ADD | GLR_PRIM_NOZW);
+    glr_layer(-1);
+}
+#endif
+
+/* ---- D_00479AA0 (0x720 bytes): a spray of up to 16 droplets (+0x710 of them), double-
+ * buffered (+0x10 + buffer +0x648 * 0x300, a quad record of 0x30 each) and drawn by the quad
+ * drawer at +0x610 (texture group 0x10, cell (0x6C, 0x4C) 8 x 8, additive with glow); per
+ * droplet its rise speed (+0x64C + i * 4, less +0x70C gravity a frame), heading (+0x68C) and
+ * outward speed (+0x6CC). It ends (+0x714) once a droplet has faded out or falls faster than
+ * 10 ---- */
+
+extern void *D_00479AA0[];
+extern f32 func_002E2D00(f32 angle);                       /* wrapped into -pi..pi */
+extern void func_002E3190(f32 (*m)[4], f32 angle);        /* turn about y */
+extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
+extern void func_002E56C0(u8 *quad);
+
+/* its start parameters: where, colour, how many; sizes, distances out, rise and outward
+ * speeds as base + random * spread; the height above `pos` they start at and the gravity */
+typedef struct SprayParams {
+    f32 pos[4];
+    u8 rgba[4];
+    s32 n;
+    f32 size, sizeRnd;
+    f32 dist, distRnd;
+    f32 rise, riseRnd;
+    f32 speed, speedRnd;
+    f32 lift;
+    f32 gravity;
+} SprayParams;
+
+#define SPRAY_DROP(o, i) ((o) + AT(o, 0x648, s32) * 0x300 + (i) * 0x30 + 0x10)
+
+/* +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_003604E0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479AA0;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0xC set up: the quad drawer's settings */
+void func_00360AE0(u8 *o) {
+    AT(o, 0x648, s32) = 0;
+    AT(o, 0x714, u8) = 0;
+    AT(o, 0x618, s64) = -1;
+    AT(o, 0x624, s32) = 0;
+    AT(o, 0x628, s32) = 0;
+    AT(o, 0x62C, s32) = 0;
+    AT(o, 0x630, s32) = 0x19;
+    AT(o, 0x634, s16) = 0x10;
+    AT(o, 0x636, s16) = 0x6C;
+    AT(o, 0x638, s16) = 0x4C;
+    AT(o, 0x63A, s16) = 8;
+    AT(o, 0x63C, s16) = 8;
+    AT(o, 0x63E, s16) = 0x200;
+    AT(o, 0x640, s16) = 0x100;
+    AT(o, 0x642, u8) = 0xC0;
+    AT(o, 0x643, u8) = 1;
+    AT(o, 0x644, u8) = 1;
+    AT(o, 0x645, u8) = 0x10;
+    AT(o, 0x646, u8) = 0xFF;
+}
+
+/* +0x18 start: n droplets fanned evenly round (each heading jittered by up to 30% of the
+ * share), out from pos at their distance and `lift` above it, turned at random */
+void func_00360570(u8 *o, const SprayParams *sp) {
+    static const union { u32 u; f32 f; } k03 = {0x3E99999A}, kPi = {0x40490FDB};
+    VObject *rng;
+    f32 share, jitter;
+    s32 i;
+
+    if (sp == NULL) {
+        return;
+    }
+    AT(o, 0x710, s32) = sp->n;
+    AT(o, 0x634, s16) = AT(o, 0x710, s32);
+    AT(o, 0x70C, f32) = sp->gravity;
+    share = 360.0f / (f32)AT(o, 0x710, s32);
+    if (AT(o, 0x710, s32) <= 0) {
+        return;
+    }
+    rng = D_0044E550;
+    jitter = k03.f * share;
+    for (i = 0; i < AT(o, 0x710, s32); i++) {
+        u8 *p = SPRAY_DROP(o, i);
+        f32 off[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 a;
+
+        AT(p, 0x0, s32) = sp->rgba[0];
+        AT(p, 0x4, s32) = sp->rgba[1];
+        AT(p, 0x8, s32) = sp->rgba[2];
+        AT(p, 0xC, s32) = sp->rgba[3];
+#define RND() VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)
+        off[0] = 0.0f;
+        off[1] = 0.0f;
+        off[3] = 0.0f;
+        off[2] = sp->dist + sp->distRnd * RND();
+        a = func_002E2D00(kPi.f * (jitter - 2.0f * (k03.f * (share * RND())) + (f32)i * share) / 180.0f);
+        func_002E3190(m, a);
+        func_002E2DA0(off, m, off);
+        sceVu0AddVector((f32 *)(p + 0x10), (f32 *)sp->pos, off);
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + sp->lift;
+        AT(p, 0x1C, f32) = 1.0f;
+        AT(p, 0x20, f32) = AT(p, 0x24, f32) = sp->size + sp->sizeRnd * RND();
+        AT(p, 0x28, f32) = kPi.f * (360.0f * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0.5f)) / 180.0f;
+        AT(p, 0x2C, s32) = 0;
+        AT(o, 0x64C + i * 4, f32) = sp->rise + sp->riseRnd * RND();
+        AT(o, 0x6CC + i * 4, f32) = sp->speed + sp->speedRnd * RND();
+#undef RND
+        AT(o, 0x68C + i * 4, f32) = a;
+    }
+}
+
+/* +0x10 update (0 once it has ended): swap buffers, carry each droplet over and move it, its
+ * alpha down by one */
+s32 func_003608F0(u8 *o) {
+    s32 i, k;
+
+    if (AT(o, 0x714, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x714, u8) = 0;
+    AT(o, 0x648, s32) ^= 1;
+    for (i = 0; i < AT(o, 0x710, s32); i++) {
+        u32 buf = AT(o, 0x648, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0x300 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x300 + i * 0x30, u32);
+        f32 v[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        u8 *p;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        p = SPRAY_DROP(o, i);
+        v[2] = AT(o, 0x6CC + i * 4, f32);
+        v[3] = 0.0f;
+        func_002E3190(m, AT(o, 0x68C + i * 4, f32));
+        func_002E2DA0(v, m, v);
+        AT(o, 0x64C + i * 4, f32) = AT(o, 0x64C + i * 4, f32) - AT(o, 0x70C, f32);
+        AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[0];
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x64C + i * 4, f32);
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + v[2];
+        AT(p, 0xC, s32)--;
+        if (AT(p, 0xC, s32) == 0 || AT(o, 0x64C + i * 4, f32) < -10.0f) {
+            AT(o, 0x714, u8) = 1;
+        }
+    }
+    return 1;
+}
+
+/* +0x14 draw (until it has ended) */
+void func_003608A0(u8 *o) {
+    if (AT(o, 0x714, u8) != 0) {
+        return;
+    }
+    AT(o, 0x620, u8 *) = SPRAY_DROP(o, 0);
+    func_002E56C0(o + 0x610);
+}

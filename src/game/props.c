@@ -242,6 +242,77 @@ void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, ModelDraw *, s32, s32))(D_0044E4F0, d, 0x19, 0);
 }
 
+/* ---- class D_00477E10 (room 0x55, 0x18 bytes): a light caustic like D_00478BC0's, over the
+ * whole room (texture 3, 160 across) at height +0x14; +0x4/+0x8/+0xC its turns (updated by
+ * func_003476A0), +0x10 the glow threshold ---- */
+
+extern void *D_00477E10[];
+
+/* +0x8 destructor */
+u8 *func_003474E0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00477E10;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC reset: three random angles in -pi..pi */
+void func_003477A0(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        f32 r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+
+        AT(o, 0x4 + k * 4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    }
+}
+
+/* +0x14 draw */
+void func_003475A0(u8 *o) {
+    ModelDraw d __attribute__((aligned(16)));
+    ModelDrawParams p __attribute__((aligned(16)));
+
+    p.pos[0] = 0.0f;
+    p.pos[1] = AT(o, 0x14, f32);
+    p.pos[2] = 0.0f;
+    p.pos[3] = 1.0f;
+    p.n = 3;
+    p.radius = 160.0f;
+    p.angle[0] = AT(o, 0x4, f32);
+    p.angle[1] = AT(o, 0x8, f32);
+    p.angle[2] = AT(o, 0xC, f32);
+    p.model = AT(o, 0x10, s32);
+    p.rgba = 0x80808080;
+    d.slot = -1;
+    d.vtbl = D_00478B70;
+    func_00350660(&d, &p);
+    d.vtbl = D_00469D00;
+}
+
+/* +0x18 start: params[0] 0 at height 45.1 (threshold 0x60), else -5.9 (0x58); then a first
+ * update */
+void func_00347540(VObject *o, const s32 *params) {
+    static const F32Bits kHigh = {0x42346666}, kLow = {0xC0BCCCCD};
+
+    if (params == NULL) {
+        return;
+    }
+    if (params[0] == 0) {
+        AT(o, 0x14, f32) = kHigh.f;
+        AT(o, 0x10, s32) = 0x60;
+    } else {
+        AT(o, 0x14, f32) = kLow.f;
+        AT(o, 0x10, s32) = 0x58;
+    }
+    VCALL(o, 0x10, s32 (*)(VObject *))(o);
+}
+
 
 extern VObject *D_0044E550;   /* random numbers: +0x10 an integer */
 
@@ -414,3 +485,222 @@ s32 func_0034E9E0(u8 *d) {
     return 0;
 }
 #endif
+
+/* ---- class D_00479400 (room 0x55, 0x6D0 bytes): 16 drops falling from up to 150 over an
+ * 80 x 80 square, double-buffered (+0x10 + buffer +0x688 * 0x300, a quad record of 0x30 each)
+ * and drawn by the quad drawer at +0x610 (texture group 0x10, cell (0x6C, 0x4C) 8 x 8,
+ * additive with glow); +0x648 + i * 4 their fall speed, +0x690 + i * 4 the nav triangle under
+ * each (-1 none), +0x68C the next splash sound (0..2). Where a drop lands it splashes (and
+ * starts again): on the floor a spray, off the mesh below -6 a splash ring and a spray ---- */
+
+#include "effectmgr.h"
+
+extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
+extern VObject *D_0044E560;   /* the sound driver */
+extern void *D_0044E570;      /* the nav mesh: +0x3C the triangle under a point, +0x14 the floor height in one */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+
+/* +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_003532A0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479400;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+#define DROP(o, i) ((o) + AT(o, 0x688, s32) * 0x300 + (i) * 0x30 + 0x10)
+
+/* drop i anew: faint grey (alpha 0x70), half size, somewhere in the square up to 150 high,
+ * turned at random, falling 1.5..2.5 a frame */
+void func_00353330(u8 *o, s32 i) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    u8 *p = DROP(o, i);
+    VObject *nav;
+
+    AT(p, 0x0, s32) = 0x20;
+    AT(p, 0x4, s32) = 0x20;
+    AT(p, 0x8, s32) = 0x20;
+    AT(p, 0xC, s32) = 0x70;
+#define RND() VCALL(rng, 0x18, f32 (*)(VObject *))(rng)
+    AT(p, 0x10, f32) = 80.0f * (RND() - 0.5f);
+    AT(p, 0x14, f32) = 150.0f * RND();
+    AT(p, 0x18, f32) = 80.0f * (RND() - 0.5f);
+    AT(p, 0x1C, f32) = 1.0f;
+    AT(p, 0x20, f32) = 0.5f;
+    AT(p, 0x24, f32) = 0.5f;
+    AT(p, 0x28, f32) = kPi.f * (360.0f * (RND() - 0.5f)) / 180.0f;
+    AT(p, 0x2C, s32) = 0;
+    AT(o, 0x648 + i * 4, f32) = 1.5f + RND();
+#undef RND
+    nav = (VObject *)D_0044E570;
+    AT(o, 0x690 + i * 4, s32) = VCALL(nav, 0x3C, s32 (*)(VObject *, f32 *, s32))(nav, (f32 *)(p + 0x10), 0);
+}
+
+/* +0x14 draw: the current buffer's 16 records */
+void func_003534F0(u8 *o) {
+    AT(o, 0x620, u8 *) = DROP(o, 0);
+    func_002E56C0(o + 0x610);
+}
+
+/* a splash's parameters (D_00479AE0: pos, colour, size) and a spray's (D_00479AA0) */
+typedef struct {
+    f32 pos[4];
+    u8 rgba[4];
+    f32 size;
+} SplashParams;
+
+typedef struct {
+    f32 pos[4];
+    u8 rgba[4];
+    s32 n;
+    f32 v[10];
+} SprayParams;
+
+static void splash_init(void **obj) {
+    obj[0] = D_00479AE0;
+}
+
+static void spray_init(void **obj) {
+    obj[0] = D_00479AA0;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* +0x10 update: swap buffers, carry each drop over and drop it; a landed one splashes (the
+ * first drop also with sound 2..4 of bank 6) and starts again */
+s32 func_00353520(u8 *o) {
+    VObject *rng = D_0044E550;
+    u8 *mgr = D_0044E578;
+    VObject *nav;
+    VObject *snd;
+    s32 i, k;
+
+    AT(o, 0x688, s32) ^= 1;
+    nav = (VObject *)D_0044E570;
+    snd = D_0044E560;
+    for (i = 0; i < 16; i++) {
+        u32 buf = AT(o, 0x688, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0x300 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x300 + i * 0x30, u32);
+        u8 *p;
+        f32 at[4] __attribute__((aligned(16)));
+        u8 landed = 0;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = DROP(o, i);
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) - AT(o, 0x648 + i * 4, f32);
+        if (AT(o, 0x690 + i * 4, s32) == -1) {
+            if (AT(p, 0x14, f32) < -6.0f) {
+                static const F32Bits kWater = {0xC0BCCCCD}, k01 = {0x3DCCCCCD}, k015 = {0x3E19999A},
+                                     k02 = {0x3E4CCCCD}, k03 = {0x3E99999A};
+                SplashParams s __attribute__((aligned(16)));
+                SprayParams r __attribute__((aligned(16)));
+
+                landed = 1;
+                sceVu0CopyVector(at, (f32 *)(p + 0x10));
+                at[1] = kWater.f;
+                sceVu0CopyVector(s.pos, at);
+                s.rgba[3] = 0x20;
+                s.rgba[0] = 0x40;
+                s.rgba[1] = 0x40;
+                s.rgba[2] = 0x40;
+                s.size = k015.f + k01.f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng);
+                func_002D6090(mgr, Effect_New(mgr, 0x40, splash_init), &s);
+                sceVu0CopyVector(r.pos, at);
+                r.v[2] = 0.0f;
+                r.rgba[0] = 0x20;
+                r.rgba[3] = 0x30;
+                r.n = 1;
+                r.rgba[1] = 0x20;
+                r.rgba[2] = 0x20;
+                r.v[0] = 0.5f;
+                r.v[8] = 0.5f;
+                r.v[4] = k03.f;
+                r.v[1] = k02.f;
+                r.v[5] = k02.f;
+                r.v[9] = k01.f;
+                r.v[3] = 0.0f;
+                r.v[6] = 0.0f;
+                r.v[7] = 0.0f;
+                func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &r);
+            }
+        } else {
+            sceVu0CopyVector(at, (f32 *)(p + 0x10));
+            VCALL(nav, 0x14, void (*)(VObject *, s32, f32 *))(nav, AT(o, 0x690 + i * 4, s32), at);
+            if (AT(p, 0x14, f32) < at[1]) {
+                static const F32Bits k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k04 = {0x3ECCCCCD};
+                SprayParams r __attribute__((aligned(16)));
+
+                landed = 1;
+                sceVu0CopyVector(r.pos, at);
+                r.rgba[0] = 0x20;
+                r.rgba[1] = 0x20;
+                r.rgba[2] = 0x20;
+                r.rgba[3] = 0x10;
+                r.n = 0x10;
+                r.v[0] = k04.f;
+                r.v[1] = k04.f;
+                r.v[8] = 0.5f;
+                r.v[2] = k01.f;
+                r.v[3] = k02.f;
+                r.v[4] = k01.f;
+                r.v[5] = k02.f;
+                r.v[7] = k02.f;
+                r.v[6] = k01.f;
+                r.v[9] = k01.f;
+                func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &r);
+            }
+        }
+        if (landed == 1) {
+            if (i == 0) {
+                func_002FF650(snd, AT(o, 0x68C, s32) + 2, 6, (f32 *)(p + 0x10), 0, 0);
+                if (AT(o, 0x68C, s32) >= 2) {
+                    AT(o, 0x68C, s32) = 0;
+                } else {
+                    AT(o, 0x68C, s32)++;
+                }
+            }
+            func_00353330(o, i);
+        }
+    }
+    return 1;
+}
+
+/* +0xC reset: the quad drawer's settings and 16 new drops */
+void func_00353BD0(u8 *o) {
+    s32 i;
+
+    AT(o, 0x688, s32) = 0;
+    AT(o, 0x68C, s32) = 0;
+    AT(o, 0x618, s64) = -1;
+    AT(o, 0x624, s32) = 0;
+    AT(o, 0x628, s32) = 0;
+    AT(o, 0x62C, s32) = 0;
+    AT(o, 0x630, s32) = 0x19;
+    AT(o, 0x634, s16) = 0x10;
+    AT(o, 0x636, s16) = 0x6C;
+    AT(o, 0x638, s16) = 0x4C;
+    AT(o, 0x63A, s16) = 8;
+    AT(o, 0x63C, s16) = 8;
+    AT(o, 0x63E, s16) = 0x200;
+    AT(o, 0x640, s16) = 0x100;
+    AT(o, 0x642, u8) = 0xC0;
+    AT(o, 0x643, u8) = 1;
+    AT(o, 0x644, u8) = 1;
+    AT(o, 0x645, u8) = 0x10;
+    AT(o, 0x646, u8) = 0xFF;
+    for (i = 0; i < 16; i++) {
+        func_00353330(o, i);
+    }
+}

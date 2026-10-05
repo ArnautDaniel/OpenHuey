@@ -2202,3 +2202,59 @@ s32 func_0030FA60(void) {
     VCALL(nav, 0x4C, void (*)(VObject *))(nav);
     return 1;
 }
+
+extern void *D_00477E10[], *D_00479400[];
+
+static void effect_77E10_init(void **obj) {
+    obj[0] = D_00477E10;
+}
+
+static void effect_79400_init(void **obj) {
+    obj[0] = D_00479400;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* room 55 (D_004210F8): the 0x18-byte effect D_00477E10 started with 0 or 1 by byte 3; 0 also
+ * lays a floor quad (effect 0x1B: 60 x 60 at height 45), else the 0x6D0-byte effect D_00479400
+ * is made too */
+s32 func_00305FB0(void *self, void *a1, u8 *cmd) {
+    u8 *mgr = D_0044E578;
+    s32 slot = Effect_New(mgr, 0x18, effect_77E10_init);
+    s32 on;
+
+    if (cmd[3] == 0) {
+        u8 *fx;
+        u32 q[20] __attribute__((aligned(16)));
+
+        on = 0;
+        fx = D_0044E4C0;
+        room_effect_new(fx, 0x1B, D_00472F60);
+        q[0] = 0x41F00000;   /* (30, 45, -30) */
+        q[1] = 0x42340000;
+        q[2] = 0xC1F00000;
+        q[3] = 0x3F800000;
+        q[4] = 0xC1F00000;   /* (-30, 45, -30) */
+        q[5] = 0x42340000;
+        q[6] = 0xC1F00000;
+        q[7] = 0x3F800000;
+        q[8] = 0x41F00000;   /* (30, 45, 30) */
+        q[9] = 0x42340000;
+        q[10] = 0x41F00000;
+        q[11] = 0x3F800000;
+        q[12] = 0xC1F00000;  /* (-30, 45, 30) */
+        q[13] = 0x42340000;
+        q[14] = 0x41F00000;
+        q[15] = 0x3F800000;
+        q[16] = 0;
+        q[17] = 0x80;
+        q[18] = 0x3F800000;
+        func_00266C70(fx, 0x1B, q);
+    } else {
+        on = 1;
+        Effect_New(mgr, 0x6D0, effect_79400_init);
+    }
+    func_002D6090(mgr, slot, &on);
+    return 1;
+}
