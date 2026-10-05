@@ -268,6 +268,11 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
     if (AT(d, 0x2C, void *) == NULL || AT(d, 0x38, f32 *) == NULL) {
         return -1.0f;
     }
+#ifdef HG_NATIVE
+    if ((u32)AT(d, 0x38, f32 *) < 0x1000) {   /* following an absent character (the PS2 reads low memory) */
+        return -1.0f;
+    }
+#endif
     sceVu0CopyVector(p, AT(d, 0x38, f32 *));
     sceVu0AddVector(p, p, (f32 *)(d + 0x40));
     func_0025F580(d + 8, 3, u);

@@ -2685,3 +2685,14 @@ s32 func_003214E0(void) {
     fan_turn(D_0042C354);
     return 1;
 }
+
+extern const char *D_0047B02C;   /* "fan" (room 0x37) */
+
+/* room 0x37 (D_004469A0): the fan turns, except while a movie plays */
+s32 func_0036A400(void) {
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    fan_turn(D_0047B02C);
+    return 1;
+}

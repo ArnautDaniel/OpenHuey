@@ -5657,3 +5657,4 @@ src/game/room_handlers.c func_00320FF0 --pre=@0x44E4C0=0x0B400000..0x0B400000 --
 src/game/effects.c func_003559D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
 src/game/effects.c func_00355A30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
 src/game/room_handlers.c func_003214E0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B600000 --pre=@0x0B600014=0x40000000..0x40490FDB --runs=60
+src/game/room_handlers.c func_0036A400 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B600000 --pre=@0x0B600014=0x40000000..0x40490FDB --runs=60
