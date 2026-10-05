@@ -5731,3 +5731,48 @@ void func_00146C50(Hewie *h) {
     }
     hewie_want(h, 0, 0);
 }
+
+/* ---- barking at the pursuer ---- */
+
+extern const PTMF D_003B1D40, D_003B1D50;
+
+/* the pursuer in his room makes noise for the game unless progress flags 0x13 / 0x2B (the
+ * original reads the difficulty and leaves the frame count unset) */
+static void bark_noise(Hewie *h, Progress *p) {
+    if (in_his_room(h, gCharPursuer)) {
+        Progress *q = gProgress;
+
+        if (((u8)Progress_TestFlag(q, 0x13) | (u8)Progress_TestFlag(q, 0x2B)) == 0) {
+            Progress_GetVar(p, 0x27);
+            func_00178070(p, AT(h, 0x20, u8), 4, 6, 0, 0, 0.0f);
+        }
+    }
+}
+
+/* bark: look at his target (else ahead); calm and not moving 1, lying down low (pose 3) first,
+ * then behaviour D_003B1D50; else standing (pose 0), then D_003B1D40 */
+void func_001470C0(Hewie *h) {
+    Progress *p;
+
+    if (HW(h, 0xF3544, Character *) == NULL) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+    } else if (HW(h, 0xF3604, s32) != 0) {
+        HW(h, 0xF3604, s32) = 0;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    p = gProgress;
+    if (!(u8)func_00177620(p) && h->c.a.unkC4 != 1) {
+        if (func_00140CD0(h, 3) == 0) {
+            bark_noise(h, p);
+            func_001431F0(h);
+            Hewie_SetBehaviour(h, &D_003B1D50);
+        }
+    } else if (func_00140CD0(h, 0) == 0) {
+        bark_noise(h, p);
+        func_001431F0(h);
+        Hewie_SetBehaviour(h, &D_003B1D40);
+    }
+}
