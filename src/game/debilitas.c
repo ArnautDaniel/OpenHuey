@@ -621,3 +621,120 @@ void func_00129B30(Pursuer *p) {
         Pursuer_SetMove(p, &D_0045B340);
     }
 }
+
+extern u8 D_003AF780[], D_003AF7C0[], D_003AF800[], D_003AF840[], D_003AF880[], D_003AF8A0[],
+    D_003AF8C0[], D_003AF900[], D_003AF930[], D_003AF978[], D_003AF990[], D_003AF9D0[],
+    D_003AF9E0[], D_003AFA10[], D_003AFA40[], D_003AFA70[], D_003AFA80[];
+extern u8 D_003AFBA0[], D_003AFBF0[], D_003AFC40[], D_003AFC80[], D_003AFCB0[], D_003AFCF0[],
+    D_003AFD10[], D_003AFD50[], D_003AFD80[], D_003AFDC0[], D_003AFDD0[], D_003AFE00[],
+    D_003AFE10[], D_003AFE50[], D_003AFEA0[], D_003AFED0[], D_003AFEE0[];
+
+/* his attack tables ({kind, value, chance}, see func_00283C50) for each situation 0..16; the
+   second set when gProgress+0x30 bit 0x8000 is set */
+static u8 *const sAttackTables[2][17] = {
+    { D_003AF780, D_003AF800, D_003AF7C0, D_003AF840, D_003AF880, D_003AF8A0, D_003AF8C0,
+      D_003AF900, D_003AF930, D_003AF978, D_003AF990, D_003AF9D0, D_003AF9E0, D_003AFA10,
+      D_003AFA70, D_003AFA80, D_003AFA40 },
+    { D_003AFBA0, D_003AFC40, D_003AFBF0, D_003AFC80, D_003AFCB0, D_003AFCF0, D_003AFD10,
+      D_003AFD50, D_003AFD80, D_003AFDC0, D_003AFDD0, D_003AFE00, D_003AFE10, D_003AFE50,
+      D_003AFED0, D_003AFEE0, D_003AFEA0 },
+};
+
+/* vtable +0x130: the attack table for a situation (the Pursuer has none) */
+void func_00127D00(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+
+    PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables[alt][situation] : sAttackTables[alt][0];
+}
+
+extern const f32 D_003B0030[4];
+
+/* vtable +0x1A8: the chase towards the target (func_00290810), but on the path he cuts straight
+   for the target once he's no more than 10 units further from it than the path's end is */
+void func_00129570(Pursuer *p) {
+    Character *t;
+
+    if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
+        VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, p->target);
+        if (p->c.a.room == p->target->a.room || !(func_00284440(p) & 0xFF)) {
+            PU(p, 0x16EF, u8) = 1;
+        }
+        return;
+    }
+    if ((p->c.unk128 < p->c.unk124) != 1) {
+        return;
+    }
+    t = p->target;
+    if (func_00214A90(p, t->a.navTri) == 0) {
+        u32 tri = p->target->a.navTri;
+
+        if (func_00124480(&p->c.a, p->target->a.pos, -1) == tri) {
+            func_002143D0(p, p->target->a.pos);
+            return;
+        }
+    } else {
+        s32 n = p->c.unk124;
+        f32 end[4] __attribute__((aligned(16)));
+        f32 d[4] __attribute__((aligned(16)));
+        u32 tri;
+        f32 left;
+
+        end[0] = D_003B0030[0];
+        end[1] = D_003B0030[1];
+        end[2] = D_003B0030[2];
+        end[3] = D_003B0030[3];
+        end[0] = AT(p, 0x124 + n * 0xC, f32);
+        end[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
+        tri = func_00124480(&p->c.a, end, p->c.a.navMask);
+        if (tri == AT(p, 0x120 + p->c.unk124 * 0xC, u32)) {
+            VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, end);
+            sceVu0SubVector(d, p->target->a.pos, end);
+            d[3] = 0.0f;
+            left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+            if (func_00124490(&p->c.a, p->target->a.pos) - left <= 10.0f) {
+                func_002143D0(p, p->target->a.pos);
+                return;
+            }
+        }
+    }
+    func_00214620(p, p->c.unk128);
+}
+
+extern const PTMF D_003AFFE0, D_003AFFF0;
+
+/* state: his blow, after the turn to Fiona. The hit point is the bone of the attack entry
+   (+0x171C, +0x94); off the nav mesh it misses (flinch, state D_003AFFE0). Otherwise when it
+   reaches Fiona or Hewie it lands: func_00178070 with the entry's kind and damage, stunning
+   (0x8000) when a 0..100 roll is under its stun chance; then the flinch and state D_003AFFF0 */
+void func_00128A20(Pursuer *p) {
+    u8 *e = PU(p, 0x171C, u8 *) + 0x90;
+    f32 pos[4] __attribute__((aligned(16)));
+    u32 hit;
+
+    sceVu0CopyVector(pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
+    if (func_00124480(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
+        func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
+        p->c.moveSub = 0;
+        Actor_SetState(&p->c.a, &D_003AFFE0);
+        return;
+    }
+    sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), pos);
+    hit = func_00217B90(p, AT(e, 0x4, s32), AT(e, 0xC, f32)) & 0xFF & ~PU(p, 0x1760, u8);
+    hit = (hit | (func_00217920(p) & 0xFF & ~PU(p, 0x1760, u8) & 0xFF)) & 0xFF;
+    if (hit == 0) {
+        func_00125A10(&p->c);
+        return;
+    }
+    {
+        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
+
+        func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+    }
+    PU(p, 0x1764, s32) = 12;
+    if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {
+        func_00297B40(p, 0x1004, 0);
+    }
+    p->c.moveSub = 0;
+    Actor_SetState(&p->c.a, &D_003AFFF0);
+}
