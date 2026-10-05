@@ -7086,6 +7086,152 @@ extern void func_00138E60(void *h, s32 amount);
 extern void func_00138DE0(void *h, s32 n);
 extern s32 D_003B2520[][2];   /* Hewie's reactions: { cost, 1 in n chance (when within 30) } */
 
+extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
+extern void func_001F6E30(void *motion);
+extern u32 func_00126EC0(Character *c);
+extern f32 func_00126E40(Character *c);
+extern void func_00178070(Progress *p, u32 slot, s32 a, s32 b, u32 c, s32 d, f32 e);
+
+/* |the wrapped angle t| (the original wraps it twice) */
+static inline __attribute__((always_inline)) f32 fiona_abs_wrap(f32 t) {
+    if (!(func_002E2D00(t) <= 0.0f)) {
+        return func_002E2D00(t);
+    }
+    return -func_002E2D00(t);
+}
+
+/* slamming a door (doors +0x68, closing = 0 pushed / 1 pulled) shut as she runs through
+ * toward `to`: the rumble and the door state; then who it shuts out - Hewie (2) when he's
+ * with her and the door is between them, the pursuer (4) when she's being chased and he is
+ * right behind it */
+static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *doors, u32 i, s32 pulled) {
+    f->c.unk14D0 = 5;
+    func_001F6E30(f->c.motion);
+    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x90, 8);
+    VCALL(doors, 0x68, void (*)(VObject *, u32, s32))(doors, i, pulled);
+}
+
+/* run through (and slam) a door she faces (within 45 degrees; `ahead`: facing her way, else
+ * looking back) on her way toward `to`, standing at its side 4 (push: an open door she may go
+ * through) or 1 (pull: a closed one, sound 0x91); the progress is told who was shut out
+ * (func_00178070). 1 if anyone was */
+s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB},
+                                         kQuarterPi = {0x3F490FDB};
+    VObject *doors = D_0044E558;
+    Progress *p = gProgress;
+    u8 *nm = (u8 *)D_0044E570;
+    u8 who = 0;
+    u8 i;
+
+    for (i = 0; i < 8; i++) {
+        f32 facing, a;
+        u32 tri;
+
+        if ((VCALL(doors, 0x40, s32 (*)(VObject *, u32))(doors, i) & 0xFF) != 1) {
+            continue;
+        }
+        if ((VCALL(doors, 0x30, s32 (*)(VObject *, u32))(doors, i) & 0xFF) != 1) {
+            continue;
+        }
+        if ((VCALL(doors, 0x6C, s32 (*)(VObject *, s32, u32, f32 *))(doors, 4, i, f->c.a.pos) & 0xFF) == 1 &&
+            (func_00178980(p, f->c.a.room, i) & 0xFF) == 0) {
+            facing = VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, i);
+            if (ahead == 1) {
+                a = f->c.a.angle[1];
+            } else {
+                a = func_002E2D00(kPi.f + f->c.a.angle[1]);
+            }
+            facing = facing - a;
+            if (fiona_abs_wrap(facing) < kQuarterPi.f && (func_001785B0(p, f->c.a.room, i) & 0xFF) == 0 &&
+                (func_00178840(p, f->c.a.room, i) & 0xFF) == 0 &&
+                (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 && (fiona_tri_flags(nm, tri) & 0x20000) &&
+                (func_00178DB0(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
+                u16 region;
+
+                door_slam(f, doors, i, 0);
+                region = VCALL(D_0044E568, 0x10, s32 (*)(VObject *, s32, u32))(D_0044E568, f->c.a.room, i);
+                who = 0;
+                if (FI(f, 0x1AD5D5, u8) == 1 && (func_00177BF0(p, i, 1) & 0x14) == 0x14) {
+                    who |= 2;
+                }
+                if (FI(f, 0x1AD5D6, u8) == 1) {
+                    if (FI(f, 0x1AD5D7, u8) == 1) {
+                        if ((func_00177BF0(p, i, 2) & 0x14) == 0x14) {
+                            who |= 4;
+                        }
+                    } else if ((func_00126EC0(gCharPursuer) & 0xFFFF) == region &&
+                               func_00126E40(gCharPursuer) < 15.0f) {
+                        who |= 4;
+                    }
+                }
+                break;
+            }
+        }
+        if ((VCALL(doors, 0x6C, s32 (*)(VObject *, s32, u32, f32 *))(doors, 1, i, f->c.a.pos) & 0xFF) == 1 &&
+            (func_00178980(p, f->c.a.room, i) & 0xFF) == 1) {
+            facing = func_002E2D00(VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, i) + kHalfPi.f);
+            if (ahead == 1) {
+                a = f->c.a.angle[1];
+            } else {
+                a = func_002E2D00(kPi.f + f->c.a.angle[1]);
+            }
+            facing = facing - a;
+            if (fiona_abs_wrap(facing) < kQuarterPi.f && (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 &&
+                (fiona_tri_flags(nm, tri) & 0x20000) &&
+                (func_00178DB0(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
+                u32 s;
+
+                func_00122C20(&f->c.a, 0x91, 5, 0, 0, NULL);
+                door_slam(f, doors, i, 1);
+                who = 0;
+                if (FI(f, 0x1AD5D5, u8) == 1) {
+                    s = func_00177BF0(p, i, 1) & 0xFF;
+                    if ((s & 4) && (s & 0x18)) {
+                        who |= 2;
+                    }
+                }
+                if (FI(f, 0x1AD5D7, u8) == 1) {
+                    s = func_00177BF0(p, i, 2) & 0xFF;
+                    if ((s & 4) && (s & 0x18)) {
+                        who |= 4;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    if (who == 0) {
+        return 0;
+    }
+    func_00178070(p, *(u8 *)&f->c.a.slot, who, 5, 3, i, 0.0f);
+    return 1;
+}
+
+/* her panic's recovery delay (FI 0x1AD5F8) back to 1800 frames - with accessory 0x8C never,
+ * 0x8B half the time, 0x8A three times in four */
+void func_00182E80(Fiona *f) {
+    if (D_0044E988 != NULL) {
+        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3)) {
+        case 0x8D:
+            break;
+        case 0x8C:
+            return;
+        case 0x8B:
+            if (!(VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.5f)) {
+                return;
+            }
+            break;
+        case 0x8A:
+            if (!(VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.75f)) {
+                return;
+            }
+            break;
+        }
+    }
+    FI(f, 0x1AD5F8, s32) = 0x708;
+}
+
 /* Hewie, when he's with her (FI 0x1AD5D5), reacts to what she did (n) */
 void func_001817C0(Fiona *f, s32 n) {
     Character *h;
