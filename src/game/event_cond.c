@@ -55,6 +55,10 @@ extern s32 func_001667C0(u8 *h);
 extern u32 func_00260540(void *items);
 extern VObject *D_0044E4F8;   /* the camera director's interface */
 extern VObject *D_0044E988;   /* the item manager */
+extern VObject *D_0044FE08;   /* the obstacles */
+extern VObject *D_0044FE10;   /* the cutscene director */
+extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
+extern s32 func_0013D4A0(u8 *h, s32 n);
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -395,6 +399,80 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x2F:   /* the item manager's func_00260540 under 10 */
         r = func_00260540((u8 *)D_0044E988 + 0x8) < 10;
+        break;
+    case 0x11: {   /* the room's +0x2C test pc[1] (with the context's character and the pc) */
+        VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+
+        r = VCALL(room, 0x2C, s32 (*)(VObject *, s32, void *, const u8 *))(room, pc[1], *AT(ev, 0x6FC, void **), pc);
+        break;
+    }
+    case 0x14:   /* variable pc[1] is be32 pc[2..5] */
+        if (AT(ev, 0x810 + pc[1] * 4, s32) == be32(pc + 2)) {
+            r = 1;
+        }
+        break;
+    case 0x18: {   /* character pc[1]: func_00177BF0 (pc[2]) has bit 4 */
+        u8 i = (u8)func_001770D0(p, pc[1]);
+
+        if (i != 0xFF && ((u8)func_00177BF0(p, PC(ev)[2], i) & 4)) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x1A:
+        if (AT(ev, 0x934, s32) == be32(pc + 1)) {
+            r = 1;
+        }
+        break;
+    case 0x1B: {   /* progress variable pc[1] is pc[2] */
+        u8 v = PC(ev)[2];
+
+        if (v == (u8)Progress_GetVar(p, pc[1])) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x20: {   /* the cutscene director's +0x2C is pc[1] */
+        s32 v = PC(ev)[1];
+
+        if (v == VCALL(D_0044FE10, 0x2C, s32 (*)(VObject *))(D_0044FE10)) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x22:
+        if (AT(ev, 0x718, u8) == 0 && pc[1] == AT(ev, 0x750, u8)) {
+            r = 1;
+        }
+        break;
+    case 0x25: {   /* the camera director's +0x24 is (signed) pc[1] */
+        s32 v = (s8)PC(ev)[1];
+
+        if (v == VCALL(D_0044E4F8, 0x24, s32 (*)(VObject *))(D_0044E4F8)) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x26:   /* Fiona's +0x1AD6BC is be32 pc[1..4] */
+        if (AT(gCharPlayer, 0x1AD6BC, s32) == be32(pc + 1)) {
+            r = 1;
+        }
+        break;
+    case 0x28:   /* obstacle pc[1]: +0x34 (be16 pc[2..3]) */
+        if ((u8)VCALL(D_0044FE08, 0x34, s32 (*)(VObject *, s32, u32))(D_0044FE08, pc[1], be16(pc + 2)) == 1) {
+            r = 1;
+        }
+        break;
+    case 0x31:   /* Hewie (in the scene): not func_0013D4A0 */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0(gCharPartner, 0) == 0) {
+            r = 1;
+        }
+        break;
+    case 0x33:   /* Hewie (in the scene)'s +0xF3668 is (signed) pc[1] */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 &&
+            (s8)pc[1] == AT(gCharPartner, 0xF3668, s32)) {
+            r = 1;
+        }
         break;
     default:
         if (pc[0] < 0x66) {
