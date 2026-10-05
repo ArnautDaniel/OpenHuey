@@ -411,3 +411,274 @@ s32 func_001F2B80(u8 *s) {
     return 1;
 }
 #endif
+
+/* ---- a door's shadow (doors +0x190, class D_0046D800): the light through a doorway, as the
+ * door's lit face swept away from the light into a box, its four sides drawn in layer 6's
+ * buffer shading from the door's colour (+0x54: 0x808080 and the strength) to nothing at the
+ * far end. +0x10 the door's matrix, +0x50 its lit face (0 or 6: four corners from +0x50 in
+ * D_003EC080, its normal at +4), +0x60 the light (5 above it), +0x70 how far the box goes ---- */
+
+extern f32 D_003EC080[][4], D_003EC0C0[4], D_003EC0D0[4], D_003EC130[4];
+extern VObject *D_0044E4F0;   /* the renderer */
+
+/* the shadow from light `l`: 1 if there is one (not out of the light's reach), with its
+ * strength (the light's, its falloff at the doorway, the angle it meets the door, the scene's
+ * brightness) */
+s32 func_002786D0(u8 *o, s32 l) {
+    VObject *lights = D_0044E4C8;
+    f32 rec[12] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 power, reach, range, len, fall = 1.0f, c, k, *amb;
+    s32 a;
+
+    VCALL(lights, 0x1C, void (*)(f32 *, VObject *, s32))(rec, lights, l);
+    power = rec[7];
+    reach = rec[9];
+    range = rec[10];
+    len = rec[11];
+    AT(o, 0x60, f32) = rec[0];
+    AT(o, 0x64, f32) = 5.0f + rec[1];
+    AT(o, 0x68, f32) = rec[2];
+    AT(o, 0x6C, f32) = rec[3];
+    sceVu0ApplyMatrix(d, (f32 (*)[4])(o + 0x10), D_003EC0D0);
+    sceVu0SubVector(d, (f32 *)(o + 0x60), d);
+    sceVu0ApplyMatrix(n, (f32 (*)[4])(o + 0x10), D_003EC0C0);
+    if (sceVu0InnerProduct(d, n) < 0.0f) {
+        AT(o, 0x50, s32) = 0;
+    } else {
+        AT(o, 0x50, s32) = 6;
+        sceVu0ApplyMatrix(d, (f32 (*)[4])(o + 0x10), D_003EC130);
+        sceVu0SubVector(d, (f32 *)(o + 0x60), d);
+    }
+    if (range != 0.0f) {
+        f32 d2 = 0.0f + (0.0f + d[1] * d[1] + d[0] * d[0]) + d[2] * d[2];
+        f32 r = range - d2;
+
+        if (r < 0.0f) {
+            return 0;
+        }
+        r = r * reach;
+        r = reach * r;
+        r = r * r;
+        fall = r * r;
+    }
+    sceVu0Normalize(d, d);
+    sceVu0ApplyMatrix(n, (f32 (*)[4])(o + 0x10), D_003EC080[AT(o, 0x50, s32) + 4]);
+    sceVu0Normalize(n, n);
+    c = -sceVu0InnerProduct(d, n);
+    k = 4.0f * (c * c);
+    amb = VCALL(lights, 0x28, f32 *(*)(VObject *))(lights);
+    a = (s32)(k * (fall * power) * (64.0f + (amb[2] + (amb[0] + amb[1])) / 3.0f));
+    AT(o, 0x54, s32) = a;
+    if (AT(o, 0x54, s32) <= 0) {
+        return 0;
+    }
+    if (AT(o, 0x54, s32) >= 0x81) {
+        AT(o, 0x54, s32) = 0x80;
+    }
+    AT(o, 0x54, u32) = (u32)AT(o, 0x54, s32) << 24 | 0x808080;
+    AT(o, 0x70, f32) = 0.75f * len;
+    return 1;
+}
+
+/* the door's shadow from each of the (up to 3) lights reaching `pos` (lights +0x2C on, +0x14
+ * the lights of the spot), queued in renderer layer 6 when func_002786D0 finds one */
+void func_00278D60(u8 *o, void *model, f32 *pos, f32 *rot) {
+    VObject *lights = D_0044E4C8;
+    s32 l[3];
+    s32 i;
+
+    if ((VCALL(lights, 0x2C, s32 (*)(VObject *))(lights) & 0xFF) != 1) {
+        return;
+    }
+    VCALL(lights, 0x14, void (*)(VObject *, f32 *, void *, s32 *))(lights, pos, model, l);
+    for (i = 0; i < 3; i++) {
+        VObject *r = D_0044E4F0;
+
+        if (l[i] < 0) {
+            continue;
+        }
+        sceVu0UnitMatrix((f32 (*)[4])(o + 0x10));
+        sceVu0RotMatrix((f32 (*)[4])(o + 0x10), (f32 (*)[4])(o + 0x10), rot);
+        sceVu0TransMatrix((f32 (*)[4])(o + 0x10), (f32 (*)[4])(o + 0x10), pos);
+        if ((func_002786D0(o, l[i]) & 0xFF) == 1) {
+            VCALL(r, 0xC, void (*)(VObject *, u8 *, s32, s32))(r, o, 6, 0);
+        }
+    }
+}
+
+/* the eight corners: the lit face, then each swept away from the light by +0x70; 0 if one is
+ * out of view */
+static inline __attribute__((always_inline)) s32 door_shadow_corners(u8 *o, VObject *cam, f32 (*p)[4]) {
+    f32 clip[4][4] __attribute__((aligned(16)));
+    s32 i;
+
+    VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+    for (i = 0; i < 8; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        if (i < 4) {
+            sceVu0ApplyMatrix(p[i], (f32 (*)[4])(o + 0x10), D_003EC080[AT(o, 0x50, s32) + i]);
+        } else {
+            sceVu0SubVector(p[i], (f32 *)(o + 0x60), p[i - 4]);
+            sceVu0Normalize(p[i], p[i]);
+            func_0010E640(p[i], p[i], AT(o, 0x70, f32));
+            sceVu0SubVector(p[i], p[i - 4], p[i]);
+        }
+        sceVu0ApplyMatrix(v, clip, p[i]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* the corners on the half-size screen (1/16 pixels, Z) */
+static inline __attribute__((always_inline)) void door_shadow_project(VObject *cam, f32 (*p)[4], s32 (*s)[4]) {
+    f32 m[4][4] __attribute__((aligned(16))) = {{0}};   /* (an out buffer; cleared so it starts as the original's) */
+    s32 i;
+
+    VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    for (i = 0; i < 8; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+        f32 q;
+
+        sceVu0ApplyMatrix(v, m, p[i]);
+        q = 1.0f / v[3];
+        v[0] = v[0] * q;
+        v[1] = v[1] * q;
+        v[3] = q;
+        v[2] = v[2] * q;
+        sceVu0FTOI4Vector(s[i], v);
+        s[i][2] = s[i][2] / 16;
+    }
+}
+
+#ifndef HG_NATIVE
+/* one side of the box (a strip p0 p1 at the door, p2 p3 at the far end), if it faces the
+ * screen: shaded from the colour to 0. 0 if the packet didn't fit */
+s32 func_002784F0(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
+    u64 *g;
+
+    if ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]) >= 0) {
+        return 1;
+    }
+    g = VCALL(D_0044E4F0, 0x14, u64 *(*)(VObject *, s32))(D_0044E4F0, 0xB);
+    if (g == NULL) {
+        return 0;
+    }
+    g[0] = 0x1000000A;
+    AT(g, 0x8, s32) = 0;
+    AT(g, 0xC, s32) = 0x5000000A;
+    g[2] = 0x8009 | (u64)0x10000000 << 32;
+    g[3] = 0xE;
+    g[4] = 0x4C;   /* PRIM: strip, gouraud, blended */
+    g[5] = 0;
+    AT(g, 0x30, u32) = AT(o, 0x54, u32);
+    AT(g, 0x34, f32) = 1.0f;
+    g[7] = 1;
+    g[8] = (u64)((s64)p0[0] | (s64)p0[1] << 16 | (s64)p0[2] << 32);
+    g[9] = 0xD;
+    AT(g, 0x50, u32) = AT(o, 0x54, u32);
+    AT(g, 0x54, f32) = 1.0f;
+    g[11] = 1;
+    g[12] = (u64)((s64)p1[0] | (s64)p1[1] << 16 | (s64)p1[2] << 32);
+    g[13] = 0xD;
+    AT(g, 0x70, u32) = 0;
+    AT(g, 0x74, f32) = 1.0f;
+    g[15] = 1;
+    g[16] = (u64)((s64)p2[0] | (s64)p2[1] << 16 | (s64)p2[2] << 32);
+    g[17] = 5;
+    AT(g, 0x90, u32) = 0;
+    AT(g, 0x94, f32) = 1.0f;
+    g[19] = 1;
+    g[20] = (u64)((s64)p3[0] | (s64)p3[1] << 16 | (s64)p3[2] << 32);
+    g[21] = 5;
+    return 1;
+}
+
+/* +0xC draw (layer 6): the box's sides into the shadow buffer (page 0x180, 256 x 224); 0 if it
+ * is partly out of view or a packet didn't fit */
+s32 func_002789B0(u8 *o) {
+    VObject *cam = D_0044E4B8;
+    f32 p[8][4] __attribute__((aligned(16)));
+    s32 s[8][4] __attribute__((aligned(16)));
+    u64 *g;
+
+    if (!door_shadow_corners(o, cam, p)) {
+        return 0;
+    }
+    door_shadow_project(cam, p, s);
+    g = VCALL(D_0044E4F0, 0x14, u64 *(*)(VObject *, s32))(D_0044E4F0, 5);
+    if (g == NULL) {
+        return 0;
+    }
+    g[0] = 0x10000004;
+    AT(g, 0x8, s32) = 0;
+    AT(g, 0xC, s32) = 0x50000004;
+    g[2] = 0x8003 | (u64)0x10000000 << 32;
+    g[3] = 0xE;
+    g[4] = 0x5000F;   /* TEST */
+    g[5] = 0x47;
+    g[6] = 0x40180;   /* FRAME: the shadow buffer */
+    g[7] = 0x4C;
+    g[8] = 0xFF0000 | (u64)0xDF0000 << 32;   /* SCISSOR 0..255 x 0..223 */
+    g[9] = 0x40;
+    if (!(func_002784F0(o, s[0], s[1], s[4], s[5]) & 0xFF)) {
+        return 0;
+    }
+    if (!(func_002784F0(o, s[1], s[3], s[5], s[7]) & 0xFF)) {
+        return 0;
+    }
+    if (!(func_002784F0(o, s[3], s[2], s[7], s[6]) & 0xFF)) {
+        return 0;
+    }
+    return (func_002784F0(o, s[2], s[0], s[6], s[4]) & 0xFF) != 0;
+}
+#else
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+
+/* PC: one side of the box, as the PS2 draws it, a gouraud strip into layer 6's buffer */
+static void door_shadow_side(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
+    static const f32 kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    s32 *p[4] = {p0, p1, p2, p3};
+    f32 xyzw[4][4], st[4][2] = {{0}};
+    u8 rgba[4][4];
+    s32 k;
+
+    if ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]) >= 0) {
+        return;
+    }
+    for (k = 0; k < 4; k++) {
+        u32 c = k < 2 ? AT(o, 0x54, u32) : 0;
+        u32 flags = k < 2 ? 0x8000 : 0;
+
+        shadow_ndc(p[k], xyzw[k]);
+        AT(&xyzw[k][3], 0, u32) = flags;
+        rgba[k][0] = (u8)c;
+        rgba[k][1] = (u8)(c >> 8);
+        rgba[k][2] = (u8)(c >> 16);
+        rgba[k][3] = (u8)(c >> 24);
+    }
+    glr_strip(kIdentity, 4, &xyzw[0][0], &st[0][0], &rgba[0][0], NULL, 0, 0x8 | 0x40);
+}
+
+/* +0xC draw (PC): the box's sides into layer 6's buffer */
+s32 func_002789B0(u8 *o) {
+    VObject *cam = D_0044E4B8;
+    f32 p[8][4] __attribute__((aligned(16)));
+    s32 s[8][4] __attribute__((aligned(16)));
+
+    if (!door_shadow_corners(o, cam, p)) {
+        return 0;
+    }
+    door_shadow_project(cam, p, s);
+    door_shadow_side(o, s[0], s[1], s[4], s[5]);
+    door_shadow_side(o, s[1], s[3], s[5], s[7]);
+    door_shadow_side(o, s[3], s[2], s[7], s[6]);
+    door_shadow_side(o, s[2], s[0], s[6], s[4]);
+    return 1;
+}
+#endif
