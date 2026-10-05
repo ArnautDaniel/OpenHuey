@@ -117,8 +117,8 @@ extern void func_00178A30(Progress *p, u32 n);
 extern s32 func_00178610(Progress *p, u32 d);
 extern void func_00178450(Progress *p, u32 n);
 extern void func_00178500(Progress *p, u32 n);
-extern void func_001FBAE0(VObject *ev, u8 *slot, s32 n);
 extern void func_001773A0(Progress *p, s32 a, s32 b);
+void func_001FBAE0(VObject *ev, u8 *s, s32 c);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -2600,6 +2600,19 @@ s32 func_001FBF70(VObject *ev, s32 id) {
 }
 
 
+
+/* a step context reset: its character `c`, no script, counters and marks cleared, id 0xFF */
+void func_001FBAE0(VObject *ev, u8 *s, s32 c) {
+    AT(s, 0x0, s32) = c;
+    AT(s, 0x4, u8 *) = NULL;
+    AT(s, 0x10, u8) = 0;
+    AT(s, 0x8, s32) = 0;
+    AT(s, 0x11, u8) = 0;
+    AT(s, 0xC, s32) = 0;
+    AT(s, 0x12, u8) = 0;
+    AT(s, 0x13, u8) = 0xFF;
+    AT(s, 0x14, u16) = 0;
+}
 
 /* start action script `script` (0x80..: built in, else the room's, vtable +0x24) for
  * character id `id`: its slot gets a fresh context (character -1: none needed) */
