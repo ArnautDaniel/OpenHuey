@@ -883,3 +883,66 @@ s32 func_0025FF10(void *o) {
     }
     return 0;
 }
+
+/* ---- +0x3C: using an item ----
+ * Returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
+ * started (Fiona's state 5). */
+
+#include "progress.h"
+
+extern VObject *D_0044E4D0;   /* the events */
+extern u8 *gCharPlayer;
+
+/* used at event spot `spot` of room `room` while Fiona stands in it: her state 5 (0, `ev`) and
+   the event `ev` starts */
+static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
+    VObject *ev_mgr;
+
+    if (VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) != room) {
+        return 0;
+    }
+    ev_mgr = D_0044E4D0;
+    if (VCALL(ev_mgr, 0x10, s32 (*)(VObject *, u8 *, s32, s32))(ev_mgr, gCharPlayer + 0x10, spot, -1) == 0) {
+        return 0;
+    }
+    AT(gCharPlayer, 0x14E8, s32) = 5;
+    AT(gCharPlayer, 0x14EC, s32) = 0;
+    AT(gCharPlayer, 0x14F0, s32) = ev;
+    VCALL(ev_mgr, 0x18, void (*)(VObject *, s32, s32, u8 *))(ev_mgr, 0, ev, gCharPlayer);
+    return 4;
+}
+
+/* D_0046EE40: at spot 0xA of room 0xF, event 0x1 */
+s32 func_002CCC70(void *o) {
+    return use_at_spot(0xF, 0xA, 0x1);
+}
+
+/* D_00477030: at spot 0x17 of room 0x48, event 0x0 */
+s32 func_0033E900(void *o) {
+    return use_at_spot(0x48, 0x17, 0x0);
+}
+
+/* D_00477080: at spot 0x17 of room 0x48, event 0x17 */
+s32 func_0033EA70(void *o) {
+    return use_at_spot(0x48, 0x17, 0x17);
+}
+
+/* D_004770D0: at spot 0x17 of room 0x48, event 0x18 */
+s32 func_0033EBE0(void *o) {
+    return use_at_spot(0x48, 0x17, 0x18);
+}
+
+/* D_00477120: at spot 0x17 of room 0x48, event 0x19 */
+s32 func_0033ED50(void *o) {
+    return use_at_spot(0x48, 0x17, 0x19);
+}
+
+/* D_00477170: at spot 0x17 of room 0x48, event 0x1A */
+s32 func_0033EEC0(void *o) {
+    return use_at_spot(0x48, 0x17, 0x1A);
+}
+
+/* D_00478E10: at spot 0xB of room 0xC7, event 0x4 */
+s32 func_00351710(void *o) {
+    return use_at_spot(0xC7, 0xB, 0x4);
+}

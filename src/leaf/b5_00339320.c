@@ -115,6 +115,26 @@ void *func_0033B310(void) {
     return D_00430980;
 }
 
+extern s32 func_0025FF10(void *o);
+extern f32 func_00124490(void *a, const f32 *p);
+extern u32 func_00124480(void *a, const f32 *p, u32 mask);
+extern u8 *gCharPartner, *gCharPlayer;
+
+/* +0x40: Hewie is at hand - he can be reached (func_0025FF10), within 20 and his triangle is
+   the one Fiona finds his position on */
+s32 func_0033B4C0(void *o) {
+    u32 tri;
+
+    if ((func_0025FF10(o) & 0xFF) != 1) {
+        return 0;
+    }
+    if (!(func_00124490(gCharPlayer, (f32 *)(gCharPartner + 0x10)) < 20.0f)) {
+        return 0;
+    }
+    tri = *(u32 *)(gCharPartner + 0x34);
+    return func_00124480(gCharPlayer, (f32 *)(gCharPartner + 0x10), 0x20008) == tri;
+}
+
 s32 func_0033BDC0(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461660, dest);
 }
