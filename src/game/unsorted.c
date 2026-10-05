@@ -16,14 +16,6 @@ s32 func_0017FD40(void *p) {
     return 1;
 }
 
-#include "ptmf.h"
-
-extern const PTMF D_0041A150;
-
-/* (SceneGame +0x73EB40) its state at +0x50 back to D_0041A150 */
-void func_002F39B0(u8 *o) {
-    AT(o, 0x50, PTMF) = D_0041A150;
-}
 
 extern VObject *gFileLoader;
 static const char sAvoidTex[] = "SYSTEM\\AVOID.TEX";
