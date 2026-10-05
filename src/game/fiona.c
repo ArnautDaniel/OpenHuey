@@ -5858,10 +5858,9 @@ void func_00193BB0(Fiona *f) {
     }
 }
 
-/* getting up after a throw (D_003B2AC8, D_003B2AE8): standing at the motion's event 0x20; her
- * update with nav flag 1 not blocking */
-void func_00191280(Fiona *f) {
-    f->c.a.unk2A = 0;
+/* getting up: standing at the motion's event 0x20; her update with nav flag 1 not blocking */
+static inline __attribute__((always_inline)) void getting_up(Fiona *f, u8 busy) {
+    f->c.a.unk2A = busy;
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         f->c.a.unk2D = 0;
@@ -5870,6 +5869,11 @@ void func_00191280(Fiona *f) {
     f->c.a.navMask |= 1;
     func_00125A10(&f->c);
     f->c.a.navMask &= ~1;
+}
+
+/* getting up after a throw (D_003B2AC8, D_003B2AE8) */
+void func_00191280(Fiona *f) {
+    getting_up(f, 0);
 }
 
 extern const PTMF D_003B29E8;
@@ -6057,6 +6061,94 @@ void func_00192CE0(Fiona *f) {
     }
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
         VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+    }
+    func_00125A10(&f->c);
+}
+
+/* pulled free of the hand that led her (D_003B2A18) */
+void func_00192690(Fiona *f) {
+    getting_up(f, 1);
+}
+
+extern const PTMF D_003B2A38, D_003B2A48, D_003B2A58, D_003B2A68;
+extern s8 D_0047A910[];   /* shakes needed to break free, by the threat meter's level */
+
+/* dragged by the hand (D_003B2A28): she struggles - shakes (func_00183190) add to +0x1AD6C8,
+ * capped at 10 per pull so far (+0x1AD6CC); enough for the threat level (D_0047A910, or when
+ * the game drives her, as many pulls as the level) and she breaks free (+0x1AD6C8 -1,
+ * +0x1AD6C0 set, the leader told to stop: state 7). Each pull (0x1401, at the motion's event
+ * 0x20) may draw a cry when the game drives her; free, she slips out (0x1403); the sixth pull
+ * drags her off (0x1404). Her leader gone or not leading, she pulls free (0xF02) */
+void func_00192800(Fiona *f) {
+    Character *c;
+
+    f->c.a.unk2A = 1;
+    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+    }
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = gCharacters[f->c.unk100];
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        Actor_SetState(&f->c.a, &D_003B2A38);
+        return;
+    }
+    if (FI(f, 0x1AD6C8, s32) != -1) {
+        s32 lim;
+
+        FI(f, 0x1AD6C8, s32) = FI(f, 0x1AD6C8, s32) + func_00183190(f);
+        lim = (FI(f, 0x1AD6CC, s32) + 1) * 10;
+        if (lim < FI(f, 0x1AD6C8, s32)) {
+            FI(f, 0x1AD6C8, s32) = lim;
+        }
+    }
+    if (c->moveMode != 8) {
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        Actor_SetState(&f->c.a, &D_003B2A48);
+    } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        if (FI(f, 0x1AD6C0, s32) != 0) {
+            func_002DDE20(f->c.motion, 0x1403, -1);
+            Actor_SetState(&f->c.a, &D_003B2A58);
+        } else {
+            FI(f, 0x1AD6CC, s32) = FI(f, 0x1AD6CC, s32) + 1;
+            if (FI(f, 0x1AD6CC, s32) == 6) {
+                if (AT(gProgress, 0x1FBEC1, u8) == 0) {
+                    Progress_SetFlag(gProgress, 0x2B);
+                }
+                func_002DDE20(f->c.motion, 0x1404, -1);
+                Actor_SetState(&f->c.a, &D_003B2A68);
+            } else {
+                func_002DDE20(f->c.motion, 0x1401, -1);
+                if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
+                    VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+                    func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+                }
+            }
+        }
+    } else if (FI(f, 0x1AD6C8, s32) != -1) {
+        Progress *p = gProgress;
+
+        if (AT(p, 0x1FBEC1, u8) == 0) {
+            if (!(FI(f, 0x1AD6C8, s32) < D_0047A910[AT(p, 0x7B8, u8)])) {
+                FI(f, 0x1AD6C8, s32) = -1;
+            }
+        } else if (FI(f, 0x1AD6CC, s32) == AT(p, 0x7B8, u8)) {
+            FI(f, 0x1AD6C8, s32) = -1;
+        }
+        if (FI(f, 0x1AD6C8, s32) == -1 && FI(f, 0x1AD6C0, s32) == 0) {
+            FI(f, 0x1AD6C0, s32) = 1;
+            if (c->state[0] != 7) {
+                /* (the original copies a local whose other fields are never set) */
+                c->state[0] = 7;
+                c->state[1] = 0;
+                c->state[2] = 0;
+                c->state[3] = 0;
+                c->state[4] = 0;
+                c->state[5] = 0;
+                c->state[6] = 0;
+                c->state[7] = 0;
+            }
+        }
     }
     func_00125A10(&f->c);
 }
