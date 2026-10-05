@@ -4669,12 +4669,12 @@ void func_002DD040(u8 *m, s32 anim) {
 
 extern VObject *D_0044FE10;   /* the cutscene director */
 
-/* the motion's time (+0x6A4 +0) = the director's frame (+0x20), shared by the three blend
-   channels' time pointers (+0x704, 0x60 apart) */
-void func_002DD090(u8 *m) {
+/* the motion's time (+0x6A4 +0) = how far cutscene frame `frame` is into its shot (director
+   +0x20), shared by the three blend channels' time pointers (+0x704, 0x60 apart) */
+void func_002DD090(u8 *m, s32 frame) {
     s32 i;
 
-    *AT(m, 0x6A4, f32 *) = (f32)VCALL(D_0044FE10, 0x20, s32 (*)(VObject *))(D_0044FE10);
+    *AT(m, 0x6A4, f32 *) = (f32)VCALL(D_0044FE10, 0x20, s32 (*)(VObject *, s32))(D_0044FE10, frame);
     for (i = 0; i < 3; i++) {
         f32 *t = AT(m, 0x704 + i * 0x60, f32 *);
 

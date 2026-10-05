@@ -54,7 +54,7 @@ extern s32 func_002CC5A0(u8 *d, s32 actor);        /* actor -> character kind */
 extern void func_002CBFF0(u8 *d, s32 rec);         /* reset the slots of a record */
 extern void func_001F4910(u8 *m);                  /* a model's motion reset */
 extern void func_002DD040(u8 *m, s32 anim);
-extern void func_002DD090(u8 *m);
+extern void func_002DD090(u8 *m, s32 frame);   /* its motion at the frame */
 extern void *func_00266C40(u8 *fx, s32 n);         /* effect slot n */
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void *func_002672F0(u32 size, void *place);
@@ -463,7 +463,7 @@ void func_002CA8C0(u8 *d) {
         u8 *s = SLOT(d, i);
 
         if (s[0] != 0 && s[1] != 0) {
-            func_002DD090(AT(SLOT_CHAR(s), 0xF0, u8 *));
+            func_002DD090(AT(SLOT_CHAR(s), 0xF0, u8 *), FRAME(d));
         }
     }
     func_002CA130(d);
