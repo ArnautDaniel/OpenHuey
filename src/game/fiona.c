@@ -6005,3 +6005,58 @@ void func_00192F70(Fiona *f) {
         led_step(f);
     }
 }
+
+extern const PTMF D_003B2A18, D_003B2A28;
+
+/* her leader [2] still there: in usable shape, else she stands */
+static inline __attribute__((always_inline)) Character *led_by(Fiona *f) {
+    Character *c = gCharacters[f->c.unk100];
+
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        Fiona_ToIdle(f);
+        return NULL;
+    }
+    return c;
+}
+
+/* led away, at the spot (D_003B2AA8): at the motion's event 0x20 - unless progress flag 0x2C -
+ * the game-over flag 0xC (and gProgress +0x73EB00 set) */
+void func_00191B40(Fiona *f) {
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (led_by(f) == NULL) {
+        return;
+    }
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0 && !(Progress_TestFlag(gProgress, 0x2C) & 0xFF)) {
+        Progress *p = gProgress;
+
+        AT(p, 0x73EB00, u8) = 1;
+        Progress_SetFlag(p, 0xC);
+    }
+    func_00125A10(&f->c);
+}
+
+/* led by the hand, at the spot (D_003B2A08): her leader no longer leading, she pulls free
+ * (0xF02, D_003B2A18); still led, at the motion's event 0x20 0x1401 (D_003B2A28); the pull
+ * rumbles (motion flag 2) */
+void func_00192CE0(Fiona *f) {
+    Character *c;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = led_by(f);
+    if (c == NULL) {
+        return;
+    }
+    if (c->moveMode != 8) {
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        Actor_SetState(&f->c.a, &D_003B2A18);
+    } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        func_002DDE20(f->c.motion, 0x1401, -1);
+        Actor_SetState(&f->c.a, &D_003B2A28);
+    }
+    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+    }
+    func_00125A10(&f->c);
+}
