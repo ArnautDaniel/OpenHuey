@@ -64,6 +64,24 @@ static FILE *open_ci(const char *dir, const char *name) {
     return f;
 }
 
+/* for the sound streams (snd.h): a listing's folder, and opening a file in one */
+const char *crifs_folder(const void *list) {
+    const HostDir *d = list;
+
+    return d != NULL && d->magic == DIR_MAGIC ? d->name : "";
+}
+
+FILE *crifs_open(const char *folder, const char *name) {
+    char dir[1024];
+
+    if (folder != NULL && folder[0] != 0) {
+        snprintf(dir, sizeof(dir), "%s/%s", hg_data_dir, folder);
+    } else {
+        snprintf(dir, sizeof(dir), "%s", hg_data_dir);
+    }
+    return open_ci(dir, name);
+}
+
 /* ADXF open of `name` in the folder whose listing is `list` (NULL handle if missing) */
 void *func_001C9438(const char *name, void *list) {
     const HostDir *d = list;

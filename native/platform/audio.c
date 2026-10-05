@@ -62,24 +62,7 @@ void func_001AACC0(void *snd) { (void)snd; }
 /* sound driver per-frame tick */
 void func_00210230(void *drv) { (void)drv; }
 
-/* CRI ADX streams (ADXT): silent. Creating one fails; the rest accept a NULL handle. */
-void *ADXT_Create(int maxch, void *work, int size) { (void)maxch; (void)work; (void)size; return 0; }
-void ADXT_Destroy(void *adxt) { (void)adxt; }
-void ADXT_SetReloadSct(void *adxt, int n) { (void)adxt; (void)n; }
-void ADXT_SetOutVol(void *adxt, int vol) { (void)adxt; (void)vol; }
-void ADXT_SetOutPan(void *adxt, int ch, int pan) { (void)adxt; (void)ch; (void)pan; }
-void ADXT_SetLpFlg(void *adxt, int on) { (void)adxt; (void)on; }
-void ADXT_SetWaitPlayStart(void *adxt, int on) { (void)adxt; (void)on; }
-/* ADX: mono / stereo output (PS2 0x001D4750) */
-void func_001D4750(int mono) { (void)mono; }
-void ADXT_Stop(void *adxt) { (void)adxt; }
-void ADXT_Pause(void *adxt, int on) { (void)adxt; (void)on; }
-int ADXT_GetStat(void *adxt) { (void)adxt; return 0; }
-int ADXT_IsReadyPlayStart(void *adxt) { (void)adxt; return 1; }
-/* ADX: still playing (PS2 0x001D3E20) */
-int func_001D3E20(void *adxt) { (void)adxt; return 0; }
-/* ADXT_StartFname (PS2 0x001D4A20) */
-void func_001D4A20(void *adxt, char *name) { (void)adxt; (void)name; }
+/* CRI ADX streams (ADXT): adx.c */
 
 extern void hg_skipped(const char *what);   /* skip.c */
 
@@ -93,4 +76,10 @@ void func_002FF600(void *snd, int id, int a2, int a3, int a4, int a5) {
     (void)a4;
     (void)a5;
     hg_skipped("func_002FF600 positioned sound");
+}
+
+/* the sound driver's voices (snddrv.c to come): nothing yet */
+void spu_render(float *out, int frames) {
+    (void)out;
+    (void)frames;
 }
