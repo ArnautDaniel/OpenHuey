@@ -8904,6 +8904,118 @@ void func_00196350(Fiona *f) {
     door_walk(f, tri, at, dir[1], &D_003B2948);
 }
 
+/* ---- the ladder (unk100 its door, unk104[0] 1 from the bottom / 0 from the top) ---- */
+
+extern void func_001779C0(Progress *p, s32 door, s32 slot);   /* the ladder let go */
+extern void func_00125900(Character *c);
+extern const PTMF D_003B2848, D_003B2858;
+
+/* D_003B2878.. (climbing): at the animation's event 0x20 off the ladder - at the top (0x707)
+ * or the bottom (0x703) placed by it (func_00123710) - the ladder let go, idle; until then moved
+ * by the root motion */
+void func_00197FF0(Fiona *f) {
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        f32 v[4] __attribute__((aligned(16)));
+        Progress *p;
+
+        switch (AT(f->c.motion, 0x55C, s32)) {
+        case 0x707:
+            v[0] = D_003B2460[3].x;
+            v[1] = 0.0f;
+            v[2] = D_003B2460[3].z;
+            v[3] = 0.0f;
+            f->c.a.navTri = func_00123710(f, f->c.unk100, 1, v, f->c.a.pos);
+            break;
+        case 0x703:
+            v[0] = D_003B2478;
+            v[1] = 0.0f;
+            v[2] = D_003B247C;
+            v[3] = 0.0f;
+            f->c.a.navTri = func_00123710(f, f->c.unk100, 0, v, f->c.a.pos);
+            break;
+        }
+        p = gProgress;
+        f->unk1AD588 = 0;
+        f->c.a.unk2A = 0;
+        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        door_give_up(f, p);
+    } else {
+        f32 d[4] __attribute__((aligned(16)));
+
+        func_001F6370(f->c.motion, d, 0.0f);
+        func_00125900(&f->c);
+        sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
+        sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
+        f->c.a.pos[3] = 1.0f;
+    }
+}
+
+/* D_003B2848: walking to the ladder; there, onto it (moveSub 7; from the bottom 0x700, from the
+ * top 0x704; D_003B2858); can't: the ladder let go, idle */
+void func_00198A70(Fiona *f) {
+    s32 r = func_00188C10(f);
+
+    if (r < 0) {
+        Progress *p = gProgress;
+
+        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        door_give_up(f, p);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    f->c.a.unk2A = 1;
+    f->c.moveSub = 7;
+    if (f->c.unk104[0] != 0) {
+        func_002DDD20(f->c.motion, 0x700, -1);
+    } else {
+        func_002DDD20(f->c.motion, 0x704, -1);
+    }
+    Actor_SetState(&f->c.a, &D_003B2858);
+}
+
+/* D_003B2618: the ladder's foot (or top) point and facing (nav +0x58) walked to (D_003B2848);
+ * none: the ladder let go, idle */
+void func_00198C50(Fiona *f) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    VObject *nm;
+    f32 yaw;
+    s32 tri;
+
+    if (f->c.unk104[0] != 0) {
+        v[0] = D_003B2460[0].x;
+        v[1] = 0.0f;
+        v[2] = D_003B2460[0].z;
+        v[3] = 0.0f;
+    } else {
+        v[0] = D_003B2460[1].x;
+        v[1] = 0.0f;
+        v[2] = D_003B2460[1].z;
+        v[3] = 0.0f;
+    }
+    FI(f, 0x1AD6C0, s32) = func_00123710(f, f->c.unk100, f->c.unk104[0], v, at);
+    if (FI(f, 0x1AD6C0, s32) == -1) {
+        Progress *p = gProgress;
+
+        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        door_give_up(f, p);
+        return;
+    }
+    nm = (VObject *)D_0044E570;
+    yaw = VCALL(nm, 0x58, f32 (*)(VObject *, s32, s32))(nm, f->c.unk100, f->c.unk104[0]);
+    tri = FI(f, 0x1AD6C0, s32);
+    f->c.unk124 = f->c.unk128;
+    FI(f, 0x1AD650, s32) = 0;
+    FI(f, 0x1AD634, s32) = tri;
+    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), at);
+    VCALL(nm, 0x14, void (*)(VObject *, s32, f32 *))(nm, tri, (f32 *)((u8 *)f + 0x1AD640));
+    f->savedYaw = yaw;
+    Actor_SetState(&f->c.a, &D_003B2848);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
