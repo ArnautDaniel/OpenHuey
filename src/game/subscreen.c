@@ -1309,3 +1309,10 @@ void func_0037E580(u8 *s) {
 u8 func_0037E650(void) {
     return (u8)((func_003941C0() - 1) / 2);
 }
+
+extern void func_00260A60(void *items, s32 k);
+
+/* its items (+0x8) func_00260A60 with 2 */
+void func_00384C20(u8 *o) {
+    func_00260A60(o + 0x8, 2);
+}

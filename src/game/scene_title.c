@@ -1285,3 +1285,69 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
         t->timer = 0;
     }
 }
+
+/* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
+
+extern void *D_0047A330[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *D_004699C0[], *D_004699E0[];
+extern void *D_0044E980;
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+
+static inline void task_end_child(Task *t) {
+    if (t != NULL && t->child != NULL) {
+        Task_dtor(t->child, 1);
+        t->child = NULL;
+    }
+}
+
+/* the sub screen (D_0047A790): its load / save screens, text object and two text tasks, then
+ * the base (D_0046A090): the pool's entries, the globals D_0044E990 / D_0044E988 cleared */
+void *func_002D0110(SubScreen *w, s32 flags) {
+    if (w != NULL) {
+        u8 *o = (u8 *)w;
+
+        w->vtbl = D_0047A790;
+        AT(o, 0xA8AC0, void **) = D_0046A058;
+        Task_dtor((Task *)(o + 0xA8AD8), -1);
+        AT(o, 0x97980, void **) = D_0046A068;
+        TextObj_Release(o + 0x97980);
+        Task_dtor((Task *)(o + 0x97984), -1);
+        task_end_child(&w->text);
+        task_end_child(&w->ask);
+        w->vtbl = D_0046A090;
+        AT(o, 0x8, void **) = D_0046A078;
+        AT(o, 0x1210, void **) = D_004699C0;
+        AT(o, 0x1210, void **) = D_004699E0;
+        func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
+        D_0044E990 = NULL;
+        D_0044E988 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return w;
+}
+
+/* scene mode 5 (0x117540 bytes; vtable D_0047A330): the title's sub screen (+0x180) - load /
+ * save - on its own, with the message object (+0xA9180), the BGM (+0x1174E4) and a task (+0x48) */
+void *Scene5_ctor(u8 *s) {
+    SubScreen *w = (SubScreen *)(s + 0x180);
+
+    AT(s, 0x0, void **) = Scene_vtable;
+    ptmf_set((PTMF *)(s + 0x4), &sSceneEntryState);
+    AT(s, 0x0, void **) = D_0047A330;
+    Task_Construct((Task *)(s + 0x48));
+    SubScreenBase_ctor(w);
+    w->vtbl = D_0047A790;
+    Task_ctor(&w->ask);
+    Task_ctor(&w->text);
+    TextObj_ctor(w->textObj);
+    BootCard_ctor(&w->card);
+    gBootMessage = s + 0xA9180;
+    AT(s, 0xA9180, void **) = D_0046D7D0;
+    D_0044E970 = s + 0x1174E4;
+    AT(s, 0x1174E4, void **) = D_0046A110;
+    AT(s, 0x117500, PTMF) = sGameStateNull;
+    func_002D2370(D_0044E980, s + 0xF4300);
+    func_002E34D0(s + 0x1174E4);
+    return s;
+}
