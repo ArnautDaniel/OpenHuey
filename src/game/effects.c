@@ -1102,3 +1102,349 @@ void func_002D63E0(void) {
 s32 func_002D63D0(void) {
     return -1;
 }
+
+/* ---- room effect D_0046FF60: shards - 16 small random boxes thrown up from a point (+0xE10)
+ * that tumble, fall and bounce on its height until they settle; kind (+0xE38) 0 / 3 a gentle
+ * spray, 2 / 3 bigger, slower turning pieces thrown higher, 4 thrown down ---- */
+
+extern void *D_0046FF60[], *D_0046F580[];
+extern void func_002D63B0(void *p);
+
+typedef struct Shard {
+    /* 0x00 */ f32 corner[8][4];   /* a random box: the signs of x, y, z by corner */
+    /* 0x80 */ f32 scale[4];
+    /* 0x90 */ f32 rot[3];         /* radians */
+    /* 0x9C */ u8 pad9C[4];
+    /* 0xA0 */ f32 pos[4];
+    /* 0xB0 */ f32 vel[4];
+    /* 0xC0 */ f32 spin[3];        /* degrees per frame */
+    /* 0xCC */ u8 padCC[4];
+    /* 0xD0 */ s32 alive;
+    /* 0xD4 */ u8 padD4[0xC];
+} Shard;
+
+_Static_assert(sizeof(Shard) == 0xE0, "Shard");
+
+#define SHARD(e, i) ((Shard *)((u8 *)(e) + 0x10) + (i))
+#define SHARD_RND() VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)
+
+/* +0x8 destructor */
+u8 *func_002E9B00(u8 *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x0, void **) = D_0046FF60;
+        if (e != NULL) {
+            AT(e, 0x0, void **) = D_0046F580;
+        }
+        if ((s16)flags > 0) {
+            func_002D63B0(e);
+        }
+    }
+    return e;
+}
+
+/* +0xC set up: nothing */
+void func_002EB380(u8 *e) {
+}
+
+/* throw shard `i`: a random box (each corner's coordinates 0..1 with its signs), size, turn,
+ * position about the origin, velocity and spin by the kind */
+void func_002E9B60(u8 *e, s32 i) {
+    static const s8 sx[8] = {1, -1, 1, -1, 1, -1, 1, -1};
+    static const s8 sy[8] = {1, 1, -1, -1, 1, 1, -1, -1};
+    static const s8 sz[8] = {1, 1, 1, 1, -1, -1, -1, -1};
+    VObject *rnd = D_0044E550;
+    Shard *s = SHARD(e, i);
+    s16 kind;
+    f32 dot;
+    s32 k;
+
+    for (k = 0; k < 8; k++) {
+        f32 v;
+
+        v = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][0] = sx[k] < 0 ? -v : v;
+        v = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][1] = sy[k] < 0 ? -v : v;
+        v = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][2] = sz[k] < 0 ? -v : v;
+        s->corner[k][3] = 1.0f;
+    }
+    for (k = 0; k < 3; k++) {
+        s->scale[k] = 0x1.99999ap-4f /* 0.1 */ + 0x1.ccccccp-1f /* 0.9 */ * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    for (k = 0; k < 3; k++) {
+        s->rot[k] = 6.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    }
+    s->pos[0] = AT(e, 0xE10, f32) + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    s->pos[1] = AT(e, 0xE14, f32) + 8.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    s->pos[2] = AT(e, 0xE18, f32) + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    s->pos[3] = 1.0f;
+    for (k = 0; k < 3; k++) {
+        s->spin[k] = 22.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    s->alive = 1;
+    if ((u32)(AT(e, 0xE38, s16) - 2) < 2) {
+        rnd = D_0044E550;
+        for (k = 0; k < 3; k++) {
+            s->scale[k] = 0.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        }
+        s->pos[1] = AT(e, 0xE14, f32) + 15.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        for (k = 0; k < 3; k++) {
+            s->spin[k] = 10.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        }
+    }
+
+    /* the box's lopsidedness against its size sets how hard it is thrown up */
+    kind = AT(e, 0xE38, s16);
+    rnd = D_0044E550;
+    s->vel[0] = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+    if (kind == 0 || kind == 3) {
+        s->vel[0] = 0x1.99999ap-2f /* 0.4 */ * s->vel[0];
+    }
+    {
+        Shard *c = s;
+        f32 zs = c->corner[0][2] + c->corner[1][2] + c->corner[2][2] + c->corner[3][2] - c->corner[4][2] -
+                 c->corner[5][2] - c->corner[6][2] - c->corner[7][2];
+        f32 xs = c->corner[0][0] - c->corner[1][0] + c->corner[2][0] - c->corner[3][0] + c->corner[4][0] -
+                 c->corner[5][0] + c->corner[6][0] - c->corner[7][0];
+        f32 ys = c->corner[1][1] + c->corner[0][1] - c->corner[2][1] - c->corner[3][1] + c->corner[4][1] +
+                 c->corner[5][1] - c->corner[6][1] - c->corner[7][1];
+
+        dot = (c->scale[1] * ys + c->scale[0] * xs) + c->scale[2] * zs;
+    }
+    if (kind == 4) {
+        s->vel[1] = -0x1.47ae14p-6f /* -0.02 */ * (21.0f - dot);
+        s->vel[2] = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+    } else if (kind == 0 || kind == 3) {
+        s->vel[1] = 0x1.99999ap-4f /* 0.1 */ + 0x1.99999ap-5f /* 0.05 */ * (21.0f - dot);
+        s->vel[2] = 0x1.99999ap-2f /* 0.4 */ * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    } else {
+        s->vel[1] = 0x1.99999ap-4f /* 0.1 */ + 0x1.47ae14p-7f /* 0.01 */ * (21.0f - dot);
+        s->vel[2] = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+    }
+}
+
+/* +0x18 start (arg { origin, +0x10.. its colour etc., +0x24 u16, +0x26 the kind, +0x28 the
+ * floor below the origin }) */
+void func_002EA5B0(u8 *e, u8 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(e + 0xE10), (f32 *)arg);
+    AT(e, 0xE20, f32) = AT(arg, 0x10, f32);
+    AT(e, 0xE24, f32) = AT(arg, 0x14, f32);
+    AT(e, 0xE28, f32) = AT(arg, 0x18, f32);
+    AT(e, 0xE2C, f32) = AT(arg, 0x1C, f32);
+    AT(e, 0xE30, s32) = AT(arg, 0x20, s32);
+    AT(e, 0xE34, s32) = AT(arg, 0x24, u16);
+    AT(e, 0xE38, s16) = AT(arg, 0x26, s16);
+    for (i = 0; i < 16; i++) {
+        func_002E9B60(e, i);
+    }
+    AT(e, 0xE14, f32) += AT(arg, 0x28, f32);
+}
+
+/* +0x10 update: the shards tumble and fall; under the origin's height (+0xE14) one still
+ * falling fast bounces (at half its sideways speed, 0.3 of its fall), else it settles. 1 while
+ * any moves. */
+s32 func_002EB1C0(u8 *e) {
+    s32 any = 0, i, k;
+
+    for (i = 0; i < 16; i++) {
+        Shard *s = SHARD(e, i);
+
+        if (s->alive == 0) {
+            continue;
+        }
+        any = 1;
+        for (k = 0; k < 3; k++) {
+            s->rot[k] += 0x1.921fb6p+1f /* pi */ * s->spin[k] / 180.0f;
+            if (!(s->rot[k] <= 0x1.921fb6p+1f)) {
+                s->rot[k] -= 0x1.921fb6p+2f /* 2pi */;
+            }
+        }
+        s->pos[0] += s->vel[0];
+        s->pos[1] += s->vel[1];
+        s->pos[2] += s->vel[2];
+        s->vel[1] += -0x1.99999ap-4f /* -0.1 */;
+        if (s->pos[1] < AT(e, 0xE14, f32)) {
+            if (s->vel[1] < -0.5f) {
+                s->pos[1] = AT(e, 0xE14, f32);
+                s->vel[0] *= 0.5f;
+                s->vel[1] = 0x1.333334p-2f /* 0.3 */ * -s->vel[1];
+                s->vel[2] *= 0.5f;
+            } else {
+                s->alive = 0;
+            }
+        }
+    }
+    return any != 0;
+}
+
+/* the faces of a shard's box (corner indices, in strip order) */
+static const u8 kShardFace[6][4] = {
+    {0, 1, 2, 3}, {1, 5, 3, 7}, {5, 4, 7, 6}, {4, 0, 6, 2}, {0, 1, 4, 5}, {6, 7, 2, 3},
+};
+
+#ifndef HG_NATIVE
+extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
+#else
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+#endif
+extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *D_0044E4E8;   /* the texture cache */
+
+/* +0x14 draw: the shards as textured boxes (texture +0xE34, its cell +0xE20 / +0xE24, size
+ * +0xE28 / +0xE2C, colour +0xE30); a shard with a corner off screen is skipped */
+void func_002EA660(u8 *e) {
+    VObject *tc = D_0044E4E8, *r, *cam;
+    u8 *tex;
+    u32 slot;
+    u64 tex0;
+    f32 screen[4][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    s32 i, k;
+
+    slot = VCALL(tc, 0x8, u32 (*)(VObject *, s32, s32))(tc, AT(e, 0xE34, s32), 0);
+    if (slot == (u32)-1) {
+        return;
+    }
+    tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, AT(e, 0xE34, s32), 0);
+    if (slot & 0x80000000) {
+        slot &= 0x7FFFFFFF;
+        if (!(VCALL(D_0044E4F0, 0x44, u32 (*)(VObject *, u32, u8 *, s32))(D_0044E4F0, slot, tex, 1) & 0xFF)) {
+            return;
+        }
+    }
+    r = D_0044E4F0;
+#ifndef HG_NATIVE
+    {
+        u64 *p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 5, 1);
+
+        if (p == NULL) {
+            return;
+        }
+        p[0] = 0x10000004;
+        ((u32 *)p)[2] = 0;
+        ((u32 *)p)[3] = 0x50000004;
+        p[2] = 0x8003 | (u64)0x10000000 << 32;
+        p[3] = 0xE;
+        p[4] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
+                                                                                  AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+        p[5] = 6;          /* TEX0_1 */
+        p[6] = 0x14;       /* PRIM: textured triangle strip */
+        p[7] = 0;
+        ((u32 *)p)[16] = AT(e, 0xE30, u32);
+        ((f32 *)p)[17] = 1.0f;
+        p[9] = 1;          /* RGBAQ */
+        tex0 = 0;
+    }
+#else
+    tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
+                                                                              AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
+#endif
+    cam = D_0044E4B8;
+    VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, screen);
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+    for (i = 0; i < 16; i++) {
+        Shard *s = SHARD(e, i);
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 world[8][4] __attribute__((aligned(16)));
+        s32 off = 0;
+
+        if (s->alive == 0) {
+            continue;
+        }
+        sceVu0UnitMatrix(m);
+        m[0][0] = s->scale[0];
+        m[1][1] = s->scale[1];
+        m[2][2] = s->scale[2];
+        sceVu0RotMatrix(m, m, s->rot);
+        sceVu0TransMatrix(m, m, s->pos);
+        for (k = 0; k < 8; k++) {
+            sceVu0ApplyMatrix(world[k], m, s->corner[k]);
+        }
+        for (k = 0; k < 8; k++) {
+            f32 c[4] __attribute__((aligned(16)));
+            f32 w;
+
+            sceVu0ApplyMatrix(c, clip, world[k]);
+            w = c[3];
+            if (!(c[0] <= w) || c[0] < -w || !(c[1] <= w) || c[1] < -w || !(c[2] <= w) || c[2] < -w) {
+                off = 1;
+                break;
+            }
+        }
+        if (off) {
+            continue;
+        }
+#ifndef HG_NATIVE
+        {
+            s32 xyz[8][4] __attribute__((aligned(16)));
+            u64 *p;
+            s32 f;
+
+            for (k = 0; k < 8; k++) {
+                f32 v[4] __attribute__((aligned(16)));
+                f32 q;
+
+                sceVu0ApplyMatrix(v, screen, world[k]);
+                q = 1.0f / v[3];
+                v[0] *= q;
+                v[1] *= q;
+                v[3] = q;
+                v[2] *= q;
+                sceVu0FTOI4Vector(xyz[k], v);
+                xyz[k][2] /= 16;
+            }
+            p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x32, 1);
+            if (p == NULL) {
+                return;
+            }
+            p[0] = 0x10000031;
+            ((u32 *)p)[2] = 0;
+            ((u32 *)p)[3] = 0x50000031;
+            p[2] = 0x8030 | (u64)0x10000000 << 32;   /* 48 registers: ST, XYZ per vertex */
+            p[3] = 0xE;
+            p += 4;
+            for (f = 0; f < 6; f++) {
+                for (k = 0; k < 4; k++) {
+                    s32 *v = xyz[kShardFace[f][k]];
+
+                    ((f32 *)p)[0] = k & 1 ? AT(e, 0xE20, f32) + AT(e, 0xE28, f32) : AT(e, 0xE20, f32);
+                    ((f32 *)p)[1] = k & 2 ? AT(e, 0xE24, f32) + AT(e, 0xE2C, f32) : AT(e, 0xE24, f32);
+                    p[1] = 2;   /* ST */
+                    p[2] = (s64)v[0] | (s64)v[1] << 16 | (s64)v[2] << 32;
+                    p[3] = k < 2 ? 0xD : 5;   /* XYZ3 for the first two, then XYZ2 (draws) */
+                    p += 4;
+                }
+            }
+        }
+#else
+        {
+            u8 rgba[4][4];
+            s32 f;
+
+            for (k = 0; k < 4; k++) {
+                AT(rgba[k], 0, u32) = AT(e, 0xE30, u32);
+            }
+            for (f = 0; f < 6; f++) {
+                f32 xyzw[4][4] __attribute__((aligned(16)));
+                f32 st[4][2];
+
+                for (k = 0; k < 4; k++) {
+                    sceVu0CopyVector(xyzw[k], world[kShardFace[f][k]]);
+                    AT(&xyzw[k][3], 0, u32) = 0;
+                    st[k][0] = k & 1 ? AT(e, 0xE20, f32) + AT(e, 0xE28, f32) : AT(e, 0xE20, f32);
+                    st[k][1] = k & 2 ? AT(e, 0xE24, f32) + AT(e, 0xE2C, f32) : AT(e, 0xE24, f32);
+                }
+                glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, tex0, 0x10);
+            }
+        }
+#endif
+    }
+    (void)tex0;
+}

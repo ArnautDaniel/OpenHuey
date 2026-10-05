@@ -4264,3 +4264,13 @@ src/game/pursuer.c func_002ECCB0 --pre=a0=0x0B000000..0x0B000000 --runs=30
 src/game/pursuer.c func_002ECCC0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=100
 src/game/pursuer.c func_002ECD10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14E8=4..6 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
 src/game/pursuer.c func_002ECDE0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-ret-prob=1 --runs=100
+src/game/effects.c func_002E9B00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=100
+src/game/effects.c func_002E9B00 --pre=a0=0..0 --runs=20
+src/game/effects.c func_002EB380 --runs=20
+src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=0..1 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=2..3 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=4..5 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c func_002EA5B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=100
+src/game/effects.c func_002EA5B0 --pre=a1=0..0 --runs=20
+src/game/effects.c func_002EB1C0 --pre=a0=0x0B000000..0x0B000000  --pre=a0+0xE0=0..1 --pre=a0+0x1C0=0..1 --pre=a0+0x2A0=0..1 --pre=a0+0x380=0..1 --pre=a0+0xE00=0..1 --runs=500
+src/game/effects.c func_002EA660 --pre=a0=0x0B000000..0x0B000000  --pre=a0+0xE0=0..1 --pre=a0+0x1C0=0..1 --pre=a0+0x2A0=0..1 --pre=a0+0x380=0..1 --pre=a0+0xE00=0..1 --pre=@0x44E4E8=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0046B1D0..0x0046B1D0 --pre=@0x44E4F0=0x0BA10000..0x0BA10000 --pre=@0x0BA10000=0x0046AC50..0x0046AC50 --pre=@0x44E4B8=0x0BA20000..0x0BA20000 --pre=@0x0BA20000=0x00469A60..0x00469A60 --pre=@0x44E9A0=0x0BA30000..0x0BA30000 --pre=@0x0BA30000=0x0046B050..0x0046B050 --stub-ret=0xFFFFFFFF --stub-ret=0x80000010 --stub-ret=0x10 --stub-ret=0 --stub-ret=0x0B800000 --stub-ret-prob=1 --outparam=64 --runs=500

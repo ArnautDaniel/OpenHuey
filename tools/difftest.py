@@ -329,6 +329,11 @@ def vu0_hle(c, name: str) -> bool:
         m, v = _rm(c, a1), _rv(c, a2)
         m[3] = [m[3][0] + v[0], m[3][1] + v[1], m[3][2] + v[2], m[3][3]]
         _wm(c, a0, m)
+    elif name in ("sceVu0FTOI4Vector", "sceVu0FTOI0Vector"):   # to fixed point (x16 / x1), saturating
+        k = 16.0 if name == "sceVu0FTOI4Vector" else 1.0
+        for i, x in enumerate(_rv(c, a1)):
+            n = 0 if x != x else max(-0x80000000, min(0x7FFFFFFF, int(x * k)))
+            c.m.write(a0 + 4 * i, 4, n & M32)
     else:
         return False
     return True
@@ -1790,6 +1795,8 @@ def compare(seed, orig, new, ret_kind):
         k = bad[0]
         diffs.append(f"memory: {len(bad)} byte(s) differ, first at 0x{k:08X}: "
                      f"original {wo.get(k, 'unwritten')} vs C {wn.get(k, 'unwritten')}")
+        if TRACE_RECENT[0]:   # -v: all of them (address: original / C)
+            diffs.append("  " + " ".join(f"{a:X}:{wo.get(a, '-')}/{wn.get(a, '-')}" for a in bad[:64]))
     if ret_kind == "v0" and (co.g(2) & M32) != (cn.g(2) & M32):
         diffs.append(f"return v0: original 0x{co.g(2) & M32:08X}, C 0x{cn.g(2) & M32:08X}")
     if ret_kind == "v0_64" and co.g(2) != cn.g(2):
