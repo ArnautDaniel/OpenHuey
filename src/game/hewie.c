@@ -8920,3 +8920,39 @@ void func_00159F90(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     Hewie_SetBehaviour(h, &D_003B17E8);
 }
+
+/* ---- running at the pursuer ---- */
+
+extern const PTMF D_003B17D8;
+
+/* run at the pursuer (in his room and reachable; else the default action), trotting or running
+ * by the stride; within 23 of it: head level (+0xF3604 4), marked (+0x2D, +0xF356C top bit),
+ * behaviour D_003B17D8 */
+void func_0015A460(Hewie *h) {
+    s32 anim;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00124490(&h->c.a, gCharPursuer->a.pos) < 23.0f) {
+        h->c.a.unk2D = 1;
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 0;
+        HW(h, 0xF356C, u32) |= 0x80000000;
+        Hewie_SetBehaviour(h, &D_003B17D8);
+        return;
+    }
+    if (h->c.unk128 >= h->c.unk124 && func_0013EE40(h, gCharPursuer->a.navTri, gCharPursuer->a.pos, 0, 0) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    anim = MOTION_ANIM(h->c.motion);
+    if ((u8)func_00139DE0(h) == 1) {
+        if (anim != 0x202) {
+            func_002DDED0(h->c.motion, 0x202, -1);
+        }
+    } else if (anim != 0x201) {
+        func_002DDED0(h->c.motion, 0x201, -1);
+    }
+}
