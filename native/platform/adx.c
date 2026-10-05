@@ -367,6 +367,11 @@ void func_001E7430(int a, const void *list) {
     sFolder = list;
 }
 
+/* the folder set by func_001E7430 (the movie player opens its files there too, sofdec.c) */
+const void *adx_current_folder(void) {
+    return sFolder;
+}
+
 /* 0x0023C310 -> CRI 0x001CC710: run the middleware's server once by hand (the PC mixer thread
  * runs ADX on its own) */
 void func_0023C310(void) {

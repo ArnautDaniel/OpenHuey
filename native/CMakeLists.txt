@@ -62,4 +62,4 @@ find_library(SDL3_LIBRARY NAMES SDL3 PATHS /usr/lib /usr/lib32 /usr/lib/i386-lin
 if(NOT SDL3_LIBRARY)
     find_library(SDL3_LIBRARY NAMES SDL3 REQUIRED)
 endif()
-target_link_libraries(hg PRIVATE ${SDL3_LIBRARY} m)
+target_link_libraries(hg PRIVATE ${SDL3_LIBRARY} m ${CMAKE_DL_LIBS})

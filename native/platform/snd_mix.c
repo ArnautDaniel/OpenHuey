@@ -33,6 +33,7 @@ static void SDLCALL mix_cb(void *ud, SDL_AudioStream *s, int additional, int tot
         memset(buf, 0, sizeof(float) * 2 * frames);
         SDL_LockMutex(sLock);
         adx_render(buf, frames);
+        sfd_render(buf, frames);
         seq_tick((double)frames / SND_RATE);
         spu_render(buf, frames);
         SDL_UnlockMutex(sLock);

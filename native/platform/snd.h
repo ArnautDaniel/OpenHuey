@@ -14,6 +14,7 @@ float snd_db10(int db10);
 /* sources: add `frames` stereo float frames into `out` (called with the lock held) */
 void adx_render(float *out, int frames);
 void spu_render(float *out, int frames);
+void sfd_render(float *out, int frames);   /* a movie's sound (sofdec.c) */
 
 /* the folder (under the data folder) of a CRI directory listing (crifs.c), "" for the root */
 const char *crifs_folder(const void *list);
