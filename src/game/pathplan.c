@@ -5,7 +5,7 @@
  * taken when none is asked for). A search:
  *   +0x0      steps taken
  *   +0x4      start triangle, +0x8 goal triangle, +0xC the triangle flags that stop it
- *   +0x10     how it ends (0, 4)
+ *   +0x10     the triangle flags that end it (0, 4: as the goal)
  *   +0x20     start point, +0x30 goal point
  *   +0x40     open list length (s16), +0x42 closed list length (s16)
  *   +0x44     a node per triangle (0x18 bytes): +0 flags (1 open, 2 closed, 4 at the goal, 8),
@@ -140,6 +140,136 @@ s32 func_001A4C60(u8 *pl, u8 *s) {
     AT(s, 0x10048, u8 *) = NODE(s, AT(s, 0x4, s32));
     AT(AT(s, 0x10048, u8 *), 0x4, void *) = NULL;
     return 2;
+}
+
+/* triangle `t`'s flags as the original reads them (a bad index reads through NULL) */
+static inline u32 tri_flags(NavMesh *nm, u32 t) {
+    return NavMesh_TriFlags(nm, t);
+}
+
+/* step for kind 0, breadth first: the queue's head (+0xC044) expanded, its new neighbours (not
+ * stopped by +0xC) queued; one at the goal (flag 4, or triangle flags of +0x10) ends it. 0 to
+ * go on, the steps when found, -1 / -steps when it can't be reached */
+s32 func_001A8040(void *pl, u8 *s) {
+    NavMesh *nm;
+    u8 *cur;
+    NavTri *tri;
+    s32 n, e, i;
+
+    AT(s, 0x0, s32)++;
+    cur = AT(s, 0xC044, u8 *);
+    n = AT(s, 0x40, s16);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    if (tri == NULL) {
+        return -1;
+    }
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+        u32 f;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        if (AT(nb, 0x0, u16) & 0xB) {
+            continue;
+        }
+        f = tri_flags(nm, t);
+        if (f & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            AT(s, 0x40, s16) = n;
+            return AT(s, 0x0, s32);
+        }
+        AT(s, 0xC044 + n * 4, u8 *) = nb;
+        n++;
+        AT(nb, 0x0, u16) |= 1;
+        AT(nb, 0x4, u8 *) = cur;
+    }
+    AT(cur, 0x0, u16) ^= 3;
+    AT(s, 0xE044 + AT(s, 0x42, s16) * 4, u8 *) = cur;
+    AT(s, 0x42, s16)++;
+    for (i = 0; i < n - 1; i++) {
+        AT(s, 0xC044 + i * 4, u8 *) = AT(s, 0xC044 + (i + 1) * 4, u8 *);
+    }
+    AT(s, 0x40, s16) = n - 1;
+    if (n - 1 != 0) {
+        return 0;
+    }
+    return -AT(s, 0x0, s32);
+}
+
+/* step for kind 1, depth first: as kind 0, but the head's new neighbours take its place at
+ * the front of the list */
+s32 func_001A7C30(void *pl, u8 *s) {
+    u8 *nbs[3];
+    NavMesh *nm;
+    u8 *cur;
+    NavTri *tri;
+    s32 n, k = 0, e, i;
+
+    AT(s, 0x0, s32)++;
+    cur = AT(s, 0xC044, u8 *);
+    n = AT(s, 0x40, s16);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    if (tri == NULL) {
+        return -1;
+    }
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+        u32 f;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        if (AT(nb, 0x0, u16) & 0xB) {
+            continue;
+        }
+        f = tri_flags(nm, t);
+        if (f & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            AT(s, 0x40, s16) = n;
+            return AT(s, 0x0, s32);
+        }
+        nbs[k++] = nb;
+        AT(nb, 0x0, u16) |= 1;
+        AT(nb, 0x4, u8 *) = cur;
+    }
+    AT(cur, 0x0, u16) ^= 3;
+    AT(s, 0xE044 + AT(s, 0x42, s16) * 4, u8 *) = cur;
+    AT(s, 0x42, s16)++;
+    if (k == 1) {
+        AT(s, 0xC044, u8 *) = nbs[0];
+    } else if (k == 0) {
+        for (i = 0; i < n - 1; i++) {
+            AT(s, 0xC044 + i * 4, u8 *) = AT(s, 0xC044 + (i + 1) * 4, u8 *);
+        }
+    } else {
+        for (i = n - 1; i > 0; i--) {
+            AT(s, 0xC044 + (i + k - 1) * 4, u8 *) = AT(s, 0xC044 + i * 4, u8 *);
+        }
+        for (i = 0; i < k; i++) {
+            AT(s, 0xC044 + i * 4, u8 *) = nbs[i];
+        }
+    }
+    n = n + k - 1;
+    AT(s, 0x40, s16) = n;
+    if (n != 0) {
+        return 0;
+    }
+    return -AT(s, 0x0, s32);
 }
 
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
