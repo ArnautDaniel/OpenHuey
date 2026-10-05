@@ -1912,3 +1912,57 @@ void func_0030EDF0(u8 *m) {
         }
     }
 }
+
+/* ---- kinds 14 / 15's model (vtable D_00472700, 0x890 bytes: the plain model base). Its
+   animations 0x9000 / 0x9001 (+0x4DC) show the second form: parts 0x9E / 0xA0 instead of 0xA2
+   and flags 4 / 0x40 / 0x200 / 0x400 / 0x10000 / 0x80000 of +0x4B0 ---- */
+
+extern void *D_00472700[];
+extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b);
+
+/* +0x8: destructor */
+void *func_00313FD0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00472700;
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* +0xC / +0x10: the base's */
+void func_00314250(u8 *m) {
+    func_002DE0A0(m);
+}
+
+void func_00314240(u8 *m) {
+    func_001F7AC0(m);
+}
+
+/* +0x38 draw: the form by the animation, the texture cache's layers forgotten */
+void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
+    static const u32 kForm = 4 | 0x40 | 0x200 | 0x400 | 0x10000 | 0x80000;
+
+    if (AT(m, 0x4DC, s32) == 0x9001 || AT(m, 0x4DC, s32) == 0x9000) {
+        AT(m, 0x9E, u8) |= 2;
+        AT(m, 0xA0, u8) |= 2;
+        AT(m, 0xA2, u8) &= ~2;
+        AT(m, 0x4B0, u32) |= kForm;
+    } else {
+        AT(m, 0x9E, u8) &= ~2;
+        AT(m, 0xA0, u8) &= ~2;
+        AT(m, 0xA2, u8) |= 2;
+        AT(m, 0x4B0, u32) &= ~kForm;
+    }
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    func_002DDAC0(m, layer, a, b);
+}
