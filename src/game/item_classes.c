@@ -1126,3 +1126,78 @@ s32 func_0031CB40(void *o) {
     }
     return item_offer(p, o);
 }
+
+/* where one of the five medallions (D_00471080 ..) is placed: room, spot, the events' +0x30
+ * mode (-1: not called) and Fiona's event; room 0x40's only without Progress +0x2C bit 0x20 */
+typedef struct ItemSlot {
+    u8 room, spot;
+    s8 mode;
+    u8 ev;
+} ItemSlot;
+
+static s32 place_item(void *o, const ItemSlot *t) {
+    Progress *p = gProgress;
+    s32 i;
+
+    for (i = 0; i < 7; i++, t++) {
+        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != t->room) {
+            continue;
+        }
+        if (t->room == 0x40 && (AT(p, 0x2C, u32) & 0x20)) {
+            continue;
+        }
+        if (!item_at_spot(D_0044E4D0, gCharPlayer, t->spot)) {
+            continue;
+        }
+        if (t->mode >= 0) {
+            VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, t->mode, AT(o, 0x4, s32));
+        }
+        return item_event_flag(p, t->ev);
+    }
+    return 0;
+}
+
+s32 func_00306BC0(void *o) {
+    static const ItemSlot t[7] = {
+        {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1}, {0x56, 4, 0, 0xA}, {0x57, 0xD, 1, 3},
+        {0x69, 0xB, 1, 4},  {0x47, 8, -1, 1}, {0xC0, 0x1B, 1, 0x14},
+    };
+
+    return place_item(o, t);
+}
+
+s32 func_003071D0(void *o) {
+    static const ItemSlot t[7] = {
+        {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1},   {0x47, 8, 0, 2}, {0x56, 4, 0, 0xA},
+        {0x69, 0xB, 1, 4},  {0x57, 0xD, -1, 0}, {0xC0, 0x1B, 1, 0x14},
+    };
+
+    return place_item(o, t);
+}
+
+s32 func_003077E0(void *o) {
+    static const ItemSlot t[7] = {
+        {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1},   {0x47, 8, 0, 2}, {0x56, 4, 0, 0xA},
+        {0x57, 0xD, 1, 3},  {0x69, 0xB, -1, 0}, {0xC0, 0x1B, 1, 0x14},
+    };
+
+    return place_item(o, t);
+}
+
+s32 func_00307DF0(void *o) {
+    static const ItemSlot t[7] = {
+        {0x47, 8, 0, 2},    {0x56, 4, 0, 0xA}, {0x57, 0xD, 1, 3}, {0x69, 0xB, 1, 4},
+        {0x40, 0x11, 0, 0}, {0x42, 5, -1, 0},  {0xC0, 0x1B, 1, 0x14},
+    };
+
+    return place_item(o, t);
+}
+
+s32 func_00308400(void *o) {
+    static const ItemSlot t[7] = {
+        {0x42, 5, 1, 1},   {0x47, 8, 0, 2},   {0x56, 4, 0, 0xA},    {0x57, 0xD, 1, 3},
+        {0x69, 0xB, 1, 4}, {0x40, 0x11, 0, 0}, {0xC0, 0x1B, 1, 0x14},
+    };
+
+    return place_item(o, t);
+}
