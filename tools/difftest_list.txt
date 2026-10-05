@@ -6635,3 +6635,13 @@ src/leaf/small_hand.c func_00348980 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF
 src/leaf/small_hand.c func_003659B0 --runs=3
 src/leaf/small_hand.c func_003659C0 --runs=3
 src/leaf/small_hand.c func_00365CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/stalker_k23.c func_0031F3E0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --pre=a0+0x175C=0xB..0x2A --pre=@0x44E568=0x0B300000..0x0B300000 --pre=@0x0B300000=0x46C3E0..0x46C3E0 --stub-ret=0 --stub-ret=1 --runs=150
+src/game/stalker_k23.c func_0031F4E0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --runs=30
+src/game/stalker_k23.c func_0031F560 --pre=a0=0x09000000..0x09000000 --pre=a0+0x17D0:u8=0..4 --pre=a0+0x17C8:u8=0..1 --pre=@0x44E4F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x46AC50..0x46AC50 --runs=150
+src/game/stalker_k23.c func_0031F6E0 --pre=a0=0x09000000..0x09000000 --pre=a0+0x17C4=0..2 --pre=a0+0x17D0:u8=0..3 --pre=a0+0x17C8:u8=0..1 --pre=a0+0xC4=0..3 --pre=a0+0xFC=8..0x11 --pre=@0x44E4F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x46AC50..0x46AC50 --stub-ret=0 --stub-ret=1 --runs=300
+src/game/stalker_k23.c func_0031F880 --pre=a1=-2..18 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --pre=@0x0A000030=0x7F00..0x8100 --runs=150
+src/game/stalker_k23.c func_0031FB80 --pre=a0+0x104=0..1 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --runs=30
+src/game/stalker_k23.c func_0031FCE0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --pre=a0+0x1380=0x0B100000..0x0B100000 --pre=a0+0x2B:u8=0..1 --pre=a0+0x16F6:u8=0..1 --pre=@0x44F818=0x0B200000..0x0B200000 --pre=a0+0x174C=0..0 --pre=a0+0x1750=0..0 --pre=a0+0x1754=0..0 --pre=a0+0x14D0=-1..6 --pre=a0+0x1784=-1..1 --pre=a0+0x1780=-1..1 --pre=a0+0x1664=0..1 --pre=a0+0x17B4=0..2 --pre=a0+0x1790=0..2 --pre=a0+0x178C=0..2 --pre=a0+0x1794=0..2 --pre=a0+0x17C4=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=3 --stub-ret-prob=1 --runs=300
+src/game/stalker_k23.c func_0031FFA0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --runs=30
+src/game/stalker_k23.c func_00320000 --pre=a0=0x09000000..0x09000000 --pre=a0+0x29:u8=0..1 --pre=a0+0x17C8:u8=0..1 --pre=a0+0xE4:u8=0..1 --pre=a0+0x152C=0x10..0x12 --pre=@0x44E4B8=0x0B300000..0x0B300000 --pre=@0x0B300000=0x469A60..0x469A60 --pre=@0x44E4E8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x46B1D0..0x46B1D0 --runs=150
+src/game/stalker_k23.c func_003201D0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A000030=0x7F00..0x8100 --runs=30

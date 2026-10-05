@@ -826,8 +826,8 @@ static inline void Stalker_ThinkStart(Pursuer *p) {
 
 /* the end: frames in state/behaviour (+0x1784, +0x1780), the room wait +0x1664 / the route rest
    +0x17B4, the stand-down +0x1790, the cry hold +0x178C, the stun, the route growing back
-   +0x1794; then the model (+0x40) and the stance (+0x100) */
-static inline void Stalker_ThinkEnd(Pursuer *p) {
+   +0x1794 (Stalker_ThinkTimers); then the model (+0x40) and the stance (+0x100) */
+static inline void Stalker_ThinkTimers(Pursuer *p) {
     if (PU(p, 0x1784, s32) != -1) {
         PU(p, 0x1784, s32)++;
     }
@@ -862,6 +862,10 @@ static inline void Stalker_ThinkEnd(Pursuer *p) {
             PU(p, 0x1621, u8) = PU(p, 0x1620, u8) + 1;
         }
     }
+}
+
+static inline void Stalker_ThinkEnd(Pursuer *p) {
+    Stalker_ThinkTimers(p);
     VCALL(p, 0x40, void (*)(Pursuer *))(p);
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
