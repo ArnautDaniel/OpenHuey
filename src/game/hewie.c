@@ -6245,3 +6245,71 @@ void func_001499F0(Hewie *h) {
         func_00141C00(h, 7);
     }
 }
+
+/* ---- following a path ---- */
+
+/* his root motion forward this frame (scaled to the ground, motion +0x48), into `root` */
+static f32 root_ahead(Hewie *h, f32 *root) {
+    func_001F6370(h->c.motion, root, 0.0f);
+    root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    return root[2];
+}
+
+/* walk his planned path to the spot +0x110 (animation +0x108, else pose 7 for action 0x41 and 9
+ * otherwise; not while blending): heading for the spot when he is on its triangle (+0x104),
+ * else 10 (action 0x3F) or 20 along the path; stepping along it as far as his root motion
+ * goes, less the sharper he turns. At the end, the rest of the step straight on, flag +0xE1
+ * and the default action */
+void func_0014A340(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 rest, a, left, mv, s;
+    u32 tri;
+
+    if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+        if (h->c.unk104[1] != -1) {
+            if (MOTION_ANIM(h->c.motion) != h->c.unk104[1]) {
+                func_002DDED0(h->c.motion, h->c.unk104[1], -1);
+            }
+        } else {
+            func_00141C00(h, HEWIE_ACTION(h) == 0x41 ? 7 : 9);
+        }
+    }
+    rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    if ((h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE)) != 1) {
+        func_001273D0(&h->c, &tri, at, HEWIE_ACTION(h) == 0x3F ? 10.0f : 20.0f);
+        a = func_001244D0(&h->c.a, at);
+    } else {
+        a = func_001244D0(&h->c.a, h->c.unk110);
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    left = func_00124530(&h->c.a, a, run_turn(h));
+    s = root_ahead(h, root);
+    mv = 0.0f;
+    if (!(s < 0.0f)) {
+        mv = s * ((0x1.921fb60000000p+1f /* 3.1415927 */ - left) / 0x1.921fb60000000p+1f /* 3.1415927 */);
+    }
+    h->c.unk128 = func_001273D0(&h->c, &tri, p, mv);
+    h->c.a.navTri = tri;
+    sceVu0CopyVector(h->c.a.pos, p);
+    HW(h, 0xF3558, u8) = 1;
+    if (h->c.unk128 >= h->c.unk124) {
+        s = root_ahead(h, root);
+        if (rest < s) {
+            root[0] = 0.0f;
+            root[1] = 0.0f;
+            root[2] = s - rest;
+            sceVu0ApplyMatrix(root, h->c.a.rot, root);
+            func_001247E0(&h->c.a, root);
+        }
+        h->c.unkE1 = 1;
+        hewie_want(h, 0, 0);
+    }
+}
