@@ -1454,3 +1454,31 @@ s32 func_002AC600(void *a0, void *a1, u8 *arg) {
     }
     return 1;
 }
+
+extern VObject *D_0044E988;   /* the item manager */
+extern VObject *D_0044E560;   /* the sound driver */
+extern s32 func_001788F0(Progress *p, u32 door);
+
+/* door be16 cmd[3..4]: func_001788F0 */
+s32 func_002AA5B0(void *self, void *a1, u8 *cmd) {
+    return func_001788F0(gProgress, (cmd[3] << 8 | cmd[4]) & 0xFFFF);
+}
+
+/* (not with progress flag 0xAF) with flag `flag` set and item 0x238 held, a sound (0xC, 5) */
+static inline s32 item238_sound(u32 bit) {
+    Progress *p = gProgress;
+
+    if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & bit) &&
+        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238) != 0) {
+        VCALL(D_0044E560, 0x14, void (*)(VObject *, u32, u32))(D_0044E560, 0xC, 5);
+    }
+    return 1;
+}
+
+s32 func_002B47C0(void) {   /* progress flag 0x651 */
+    return item238_sound(0x20000);
+}
+
+s32 func_002B4970(void) {   /* progress flag 0x650 */
+    return item238_sound(0x10000);
+}
