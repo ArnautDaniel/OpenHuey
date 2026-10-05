@@ -74,15 +74,6 @@ void *func_002CCB70(void *self, s32 i) { return D_0047AC00[i]; }
 
 s32 func_002CCC40(void *self, s32 a) { return LOAD(D_0045D4A0, a); }
 s32 func_002CCDB0(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
-extern u8 *gCharPlayer;
-
-/* Fiona at event spot `spot` of room `room` */
-static inline s32 b4_at_spot(Progress *p, s32 room, s32 spot) {
-    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != room) {
-        return 0;
-    }
-    return item_at_spot(D_0044E4D0, gCharPlayer, spot);
-}
 
 /* use: unless Progress +0x1C bit 0x80, at spot 9 of room 0x1C: event 0, flag 0x18 */
 s32 func_002CCDE0(void) {
@@ -92,7 +83,7 @@ s32 func_002CCDE0(void) {
     if (AT(p, 0x1C, u32) & 0x80) {
         return 0;
     }
-    if (!b4_at_spot(p, 0x1C, 9)) {
+    if (!item_room_spot(p, 0x1C, 9)) {
         return 0;
     }
     ev_mgr = D_0044E4D0;
@@ -124,7 +115,7 @@ s32 func_002CD030(void *o) {
     Progress *p = gProgress;
     VObject *ev_mgr;
 
-    if (!b4_at_spot(p, 0xC0, 0x1B)) {
+    if (!item_room_spot(p, 0xC0, 0x1B)) {
         return 0;
     }
     ev_mgr = D_0044E4D0;
@@ -139,7 +130,7 @@ s32 func_002CD1A0(void *self, s32 a) { return LOAD(D_0045D500, a); }
 s32 func_002CD1D0(void) {
     Progress *p = gProgress;
 
-    if (!b4_at_spot(p, 0x22, 5)) {
+    if (!item_room_spot(p, 0x22, 5)) {
         return 0;
     }
     Progress_SetFlag(p, 0x18);
@@ -152,7 +143,7 @@ s32 func_002CD310(void *self, s32 a) { return LOAD(D_0045D520, a); }
 s32 func_002CD340(void) {
     Progress *p = gProgress;
 
-    if (!b4_at_spot(p, 4, 0xC)) {
+    if (!item_room_spot(p, 4, 0xC)) {
         return 0;
     }
     item_event(D_0044E4D0, 0, 4, gCharPlayer);

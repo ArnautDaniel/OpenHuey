@@ -4,6 +4,7 @@
  * down the chain and free the entry. */
 #include "common.h"
 #include "game.h"
+#include "item.h"
 
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */
@@ -874,7 +875,6 @@ s32 func_0025FE70(void *o) {
 }
 
 extern s32 func_00138EC0(void *partner);
-extern void *gCharPartner;
 
 /* +0x40 the partner's func_00138EC0 (0 without one) */
 s32 func_0025FF10(void *o) {
@@ -888,9 +888,6 @@ s32 func_0025FF10(void *o) {
  * Returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
  * started (Fiona's state 5). */
 
-#include "item.h"
-
-extern u8 *gCharPlayer;
 
 /* used at event spot `spot` of room `room` while Fiona stands in it: event `ev` */
 static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
@@ -940,4 +937,97 @@ s32 func_0033EEC0(void *o) {
 /* D_00478E10: at spot 0xB of room 0xC7, event 0x4 */
 s32 func_00351710(void *o) {
     return use_at_spot(0xC7, 0xB, 0x4);
+}
+
+/* use: composure -100, stamina -1800 */
+s32 func_00266A80(void *o) {
+    item_meters(-100.0f, -1800);
+    return 1;
+}
+
+/* use: Progress +0x9E0 -0.2666 for 300 frames (+0x9E4) */
+s32 func_00266C10(void *o) {
+    AT(gProgress, 0x9E0, u32) = 0xBE888889;   /* -0.26666668 */
+    AT(gProgress, 0x9E4, s32) = 300;
+    return 1;
+}
+
+/* used at open door `door` of room `room`: event `ev`, flag 0x18 */
+static s32 use_at_door(s32 room, u32 door, s32 ev) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != room || !item_door_open(p, door)) {
+        return 0;
+    }
+    item_event(D_0044E4D0, 0, ev, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
+/* D_00473020: at door 0 of room 0x4F, event 1 */
+s32 func_0031D050(void *o) {
+    return use_at_door(0x4F, 0, 1);
+}
+
+/* D_004730C0: at door 4 of room 0x55, event 2 */
+s32 func_0031D630(void *o) {
+    return use_at_door(0x55, 4, 2);
+}
+
+/* D_00474BC0: at door 1 of room 0x25 unless Progress +0x20 bit 0x800000, event 4 */
+s32 func_0032CD30(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != 0x25 || (AT(p, 0x20, u32) & 0x800000) || !item_door_open(p, 1)) {
+        return 0;
+    }
+    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
+/* D_00478F00: at spot 3 of room 0x92: flag 0x18, event 4 */
+s32 func_00351B40(void *o) {
+    Progress *p = gProgress;
+
+    if (!item_room_spot(p, 0x92, 3)) {
+        return 0;
+    }
+    Progress_SetFlag(p, 0x18);
+    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    return 4;
+}
+
+extern VObject *D_0044E988;   /* the items */
+extern VObject *D_0044E560;   /* the sound driver */
+
+/* no use here: unless Progress +0x30 bit 0x8000, while item `id` is held, a sound (bank 0xC,
+   5); else nothing */
+static s32 use_sound_only(s32 need_24_4, s32 id) {
+    Progress *p = gProgress;
+
+    if ((AT(p, 0x30, u32) & 0x8000) || (need_24_4 && !(AT(p, 0x24, u32) & 4)) ||
+        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, id) == 0) {
+        return 0;
+    }
+    VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+    return 8;
+}
+
+/* D_0046D370 */
+s32 func_00266370(void *o) {
+    return use_sound_only(0, 0x24B);
+}
+
+/* D_004703F0: at door 0 of room 6: event 1, flag 0x18; else (with Progress +0x24 bit 4) the
+   sound while item 0x232 is held */
+s32 func_002EEC00(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 6 && item_door_open(p, 0)) {
+        item_event(D_0044E4D0, 0, 1, gCharPlayer);
+        Progress_SetFlag(p, 0x18);
+        return 4;
+    }
+    return use_sound_only(1, 0x232);
 }
