@@ -8,6 +8,10 @@
 
 extern void *D_00469D10[];
 
+/* his functions defined further down */
+void func_00128A20(Pursuer *p);
+void func_0012B490(Pursuer *p);
+
 /* vtable +0x8: destructor */
 Pursuer *func_001276F0(Pursuer *p, s32 flags) {
     if (p != NULL) {
@@ -161,5 +165,101 @@ void func_001286F0(Pursuer *p) {
         Actor_SetState(&p->c.a, &D_003B0010);
         p->c.moveMode = 8;
         func_0028B970(p);
+    }
+}
+
+/* state: walking his path while looking out (+0x1624 counts down while the walk goes on) */
+void func_00128FC0(Pursuer *p) {
+    s32 arrived = 0;
+
+    func_002837C0(p, 0xFF);
+    if (PU(p, 0x1590, f32) < 0.0f) {
+        PU(p, 0x16EF, u8) = 1;
+    }
+    if ((p->c.unk128 < p->c.unk124) == 1) {
+        arrived = func_00214620(p, p->c.unk128) & 0xFF;
+    } else if (PU(p, 0x1590, f32) == 0.0f) {
+        arrived = 1;
+    } else {
+        PU(p, 0x16EF, u8) = 1;
+    }
+    if (arrived != 1 && PU(p, 0x1624, s32) > 0) {
+        PU(p, 0x1624, s32)--;
+        return;
+    }
+    PURSUER_STEP_DONE(p) = 1;
+}
+
+extern const PTMF D_003AFFD0;
+
+/* state: turning to Fiona; when the animation ends, the next part (func_00128A20) */
+void func_00128CA0(Pursuer *p) {
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        func_00297B40(p, 0x205, 0);
+        p->c.moveSub = 0x1C;
+        Actor_SetState(&p->c.a, &D_003AFFD0);
+        func_00128A20(p);
+        return;
+    }
+    func_00125A10(&p->c);
+    {
+        Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
+        f32 h = func_001244D0(&p->c.a, t->a.pos);
+
+        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    }
+}
+
+extern const PTMF D_003AFEF0;
+
+/* vtable +0x264: the next behaviour; his own (func_0012B490) unless +0x16B4 is set or at threat
+   level 5, then the Pursuer's */
+void func_0012B990(Pursuer *p) {
+    s32 next;
+
+    if (PU(p, 0x16B4, u8) != 0 || AT(gProgress, 0x7B8, u8) == 5) {
+        func_002961D0(p);
+        return;
+    }
+    next = PU(p, 0x1758, s32);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFEF0);
+    PU(p, 0x1758, s32) = -1;
+    if (next == -2) {
+        PU(p, 0x16F3, u8) = 0;
+        PU(p, 0x1758, s32) = -2;
+    } else if (PU(p, 0x16F3, u8) == 1) {
+        PU(p, 0x16F3, u8) = 0;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1C);
+    } else if (next != -1) {
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, next);
+    }
+    func_0012B490(p);
+}
+
+/* vtable +0xB0: head for Fiona (the Pursuer's func_00219100 without the door test); resting,
+   func_0029B190 instead */
+void func_0012BBF0(Pursuer *p) {
+    Character *f;
+    s32 side;
+
+    if (p->c.unkE0 == 0 && PU(p, 0x16C8, u8) == 4) {
+        func_0029B190(p);
+        return;
+    }
+    side = PU(p, 0x1598, s32);
+    f = gCharPlayer;
+    if (func_00217370(p, f) != 0) {
+        side = func_002172F0(p, f);
+    } else {
+        if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
+            side = -1;
+        }
+        PU(p, 0x15A4, s32) = func_00216E00(p, f->a.navTri, f->a.pos, (f32 *)((u8 *)p + 0x15B0));
+    }
+    if (func_00126F80(&p->c, f->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = f->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     }
 }

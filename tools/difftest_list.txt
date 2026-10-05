@@ -3319,3 +3319,7 @@ src/game/debilitas.c func_0012BE70 --runs=10
 src/game/debilitas.c func_00128970 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=a0+0x1788=0xFFF..0x1000 --pre=a0+0x14D0=-1..1 --runs=60
 src/game/debilitas.c func_00129D10 --runs=30
 src/game/debilitas.c func_001286F0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A2007B8:u8=4..5 --runs=40
+src/game/debilitas.c func_00128FC0 --pre=a0+0x1590=0xBF800000..0x3F800000 --pre=a0+0x128=0..2 --pre=a0+0x124=0..2 --pre=a0+0x1624=-1..2 --stub-ret=0 --stub-ret=1 --runs=100
+src/game/debilitas.c func_00128CA0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x44F818=0..0x0A400000 --stub-fret=1.0 --runs=60
+src/game/debilitas.c func_0012B990 --pre=a0+0x16B4:u8=0..1 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A2007B8:u8=4..5 --pre=a0+0x1758=-2..3 --pre=a0+0x16F3:u8=0..1 --runs=100
+src/game/debilitas.c func_0012BBF0 --pre=a0+0xE0:u8=0..1 --pre=a0+0x16C8:u8=3..4 --pre=@0x44F818=0x0A400000..0x0A400000 --pre=@0x0A400030=0..1 --pre=a0+0x30=0..1 --pre=a0+0x1594=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=-1 --runs=100

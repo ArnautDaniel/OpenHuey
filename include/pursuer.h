@@ -36,6 +36,16 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 #define PURSUER_STEP_DONE(p) PU(p, 0x16EE, u8)
 #define PURSUER_STEP_NEXT(p) PU(p, 0x16F0, u8)
 
+/* the game's characters and managers the pursuer code uses */
+extern Character *gCharPlayer;    /* Fiona */
+extern Character *gCharPartner;   /* Hewie */
+extern VObject *D_0044E550;       /* random numbers */
+extern VObject *D_0044E558;       /* doors */
+extern VObject *D_0044E568;       /* rooms */
+extern VObject *D_0044E4D0;       /* room objects */
+extern VObject *D_0044E7A8;       /* controller vibration */
+extern void *D_0044E570;          /* nav mesh */
+
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 
 /* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
@@ -218,10 +228,14 @@ s32 func_00127FC0(Pursuer *p);
 s32 func_00128080(Pursuer *p);
 void func_001286F0(Pursuer *p);
 void func_00128970(Pursuer *p);
+void func_00128CA0(Pursuer *p);
+void func_00128FC0(Pursuer *p);
 void func_00129550(Pursuer *p);
 void func_00129560(Pursuer *p);
 void func_00129AF0(Pursuer *p);
 void func_00129D10(Pursuer *p);
+void func_0012B990(Pursuer *p);
+void func_0012BBF0(Pursuer *p);
 s32 func_0012BE60(Pursuer *p);
 s32 func_0012BE70(Pursuer *p);
 Pursuer *func_001710D0(Pursuer *p, s32 flags);
