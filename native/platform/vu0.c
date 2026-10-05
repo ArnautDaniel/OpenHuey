@@ -28,6 +28,16 @@ void sceVu0AddVector(Vec d, const Vec a, const Vec b) { int i; for (i = 0; i < 4
 void sceVu0SubVector(Vec d, const Vec a, const Vec b) { int i; for (i = 0; i < 4; i++) d[i] = a[i] - b[i]; }
 void sceVu0MulVector(Vec d, const Vec a, const Vec b) { int i; for (i = 0; i < 4; i++) d[i] = a[i] * b[i]; }
 void sceVu0ScaleVector(Vec d, const Vec a, float s) { int i; for (i = 0; i < 4; i++) d[i] = a[i] * s; }
+/* the VU's FTOI4: x 16, truncated toward zero, saturated */
+void sceVu0FTOI4Vector(int *d, const Vec a) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        float v = a[i] * 16.0f;
+
+        d[i] = v >= 2147483647.0f ? 0x7FFFFFFF : v <= -2147483648.0f ? (int)0x80000000 : (int)v;
+    }
+}
 
 /* d = a * t + b * (1 - t) */
 void sceVu0InterVector(Vec d, const Vec a, const Vec b, float t) {

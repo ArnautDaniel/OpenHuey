@@ -617,6 +617,58 @@ u64 func_001FA6B0(u8 *o, s32 i) {
     return AT(o, 0x328 + i * 8, u64);
 }
 
+/* +0x2C a shadow may fall at `pos` on nav triangle `tri`: none of the triangle's lights (+0x4C
+ * bits) is switched off for shadows (+0x944), and `pos` lies in front of the nav mesh's plane
+ * (+0x2C, by the triangle) as seen from the camera */
+s32 func_001FA430(u8 *o, u32 tri, f32 *pos) {
+    f32 n[4] __attribute__((aligned(16)));
+    f32 eye[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 bits = 0;
+    u8 *tris;
+
+    if (tri == (u32)-1) {
+        return 0;
+    }
+    if (tri < AT(D_0044E570, 0x8, u32) && (tris = AT(D_0044E570, 0x4, u8 *)) != NULL) {
+        bits = AT(tris + tri * 0x50, 0x4C, u32);
+    }
+    if (bits & AT(o, 0x944, u32)) {
+        return 0;
+    }
+    VCALL((VObject *)D_0044E570, 0x2C, void (*)(VObject *, u32, f32 *))((VObject *)D_0044E570, tri, n);
+    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    sceVu0SubVector(d, pos, eye);
+    return !(sceVu0InnerProduct(n, d) < 0.0f) ^ 1;
+}
+
+void func_001F99B0(VObject *l, s32 *out, u32 tri, const f32 *pos);
+
+/* +0x14 the up to 3 lights casting shadows at `pos` on nav triangle `tri` into out[0..2]
+ * (none: count 0, the rest -1) */
+void func_001FA6C0(u8 *o, const f32 *pos, s32 tri, s32 *out) {
+    if (AT(o, 0x10, s32) > 0 && tri != -1) {
+        func_001F99B0((VObject *)o, out, tri, pos);
+    } else {
+        out[0] = 0;
+        out[1] = -1;
+        out[2] = -1;
+    }
+}
+
+/* +0x3C the blocker quads (6 vectors each) */
+u8 *func_001F9FB0(u8 *o) {
+    return o + 0x340;
+}
+
+/* +0x40 the blocker quads' vector count (over 0x60: reset) */
+s32 func_001F9F80(u8 *o) {
+    if (AT(o, 0x940, s32) >= 0x61) {
+        AT(o, 0x940, s32) = 0;
+    }
+    return AT(o, 0x940, s32);
+}
+
 /* ---- the lights for a model: the light set the character microprograms use ----
  * A light is 3 vectors: its position, its colour (w the intensity) and (range, falloff, ..).
  * For a model the 3 brightest lights reaching its nav triangle are picked, and given to VU1

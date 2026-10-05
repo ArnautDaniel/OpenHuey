@@ -67,6 +67,12 @@
     X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
     X(PFNGLBLENDCOLORPROC, glBlendColor) \
     X(PFNGLPOLYGONOFFSETPROC, glPolygonOffset) \
+    X(PFNGLSTENCILFUNCPROC, glStencilFunc) \
+    X(PFNGLSTENCILOPPROC, glStencilOp) \
+    X(PFNGLSTENCILMASKPROC, glStencilMask) \
+    X(PFNGLCOLORMASKPROC, glColorMask) \
+    X(PFNGLSCISSORPROC, glScissor) \
+    X(PFNGLCLEARNAMEDFRAMEBUFFERIVPROC, glClearNamedFramebufferiv) \
     X(PFNGLDISABLEIPROC, glDisablei) \
     X(PFNGLCOLORMASKIPROC, glColorMaski) \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC, glNamedFramebufferDrawBuffers) \
@@ -96,7 +102,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -271,6 +277,55 @@ void glr_refl(int prep, int fix, int flip, int masked, float dx) {
     d->mvp[0] = dx;
 }
 
+static int sShadowMark = -1, sShadowMarkV;   /* where this shadow's entries began (glr_shadow_cancel) */
+
+void glr_shadow_begin(void) {
+    GlrFrame *f = &sFrames[sBuilding];
+
+    sShadowMark = f->nd;
+    sShadowMarkV = f->nv;
+    put_post(POST_SHADOW_BEGIN, sLayer, 0, 0);
+}
+
+void glr_shadow_cancel(void) {
+    GlrFrame *f = &sFrames[sBuilding];
+
+    if (sShadowMark >= 0 && sShadowMark <= f->nd) {
+        f->nd = sShadowMark;
+        f->nv = sShadowMarkV;
+    }
+    sShadowMark = -1;
+}
+
+/* a shadow volume quad (4 points in clip space, strip order), counting +1 (`inc`) or -1 */
+void glr_shadow_quad(const float *xyz, int inc) {
+    static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    float xyzw[4][4], st[4][2] = {{0}};
+    uint8_t rgba[4][4] = {{0}};
+    int k;
+
+    for (k = 0; k < 4; k++) {
+        uint32_t flags = k < 2 ? 0x8000 : 0;
+
+        xyzw[k][0] = xyz[k * 3];
+        xyzw[k][1] = xyz[k * 3 + 1];
+        xyzw[k][2] = xyz[k * 3 + 2];
+        memcpy(&xyzw[k][3], &flags, 4);
+    }
+    glr_strip(kIdentity, 4, &xyzw[0][0], &st[0][0], &rgba[0][0], NULL, 0,
+              GLR_PRIM_STENCIL | (inc ? GLR_PRIM_STENCIL_INC : 0));
+}
+
+void glr_shadow_fill(float x0, float y0, float x1, float y1, uint32_t rgba) {
+    GlrDraw *d = put_post(POST_SHADOW_FILL, sLayer, rgba, 0);
+
+    d->mvp[0] = x0;
+    d->mvp[1] = y0;
+    d->mvp[2] = x1;
+    d->mvp[3] = y1;
+    sShadowMark = -1;
+}
+
 void glr_caustic_begin(void) {
     put_post(POST_ALPHA_CLEAR, sLayer, 0, 0);
 }
@@ -306,6 +361,9 @@ static GLuint sCopy, sCopyFbo;   /* a copy of the screen (passes that read it wh
 /* the reflection (layer 0x17's draws, from the mirrored camera's half-size matrices), its
  * prepared half-size image, and the mask its quads mark (depth tested against the scene) */
 static GLuint sRefl, sReflDepth, sReflFbo, sReflPrep, sReflPrepFbo, sMask, sMaskFbo;
+/* layer 6 (shadows): its colour and depth-stencil, the scene's depth at half size in the middle
+ * (where the camera's half-size matrices draw) */
+static GLuint sShadowCol, sShadowDS, sShadowFbo;
 static int sGsW, sGsH;
 
 static const char *kMeshVs =
@@ -417,6 +475,10 @@ static const char *kQuadFs =
  *      pixels) or top / bottom, only where its alpha isn't 0 and (uOff.y) the mask is marked;
  *      blended by FIX (constant colour)
  *   22 the screen halved and mirrored into the reflection's middle (its background, alpha 0)
+ * Layer 6 (shadows), S its buffer's middle at half size:
+ *   23 a flat colour (the shadow's colour where its volumes count)
+ *   24 S + the sum of S * 0x10 >> 7 at 8 neighbours; then 6 at colour 0x80, FIX 0x40,
+ *      subtracted from the screen
  *   11 the screen (a copy) D + (-D * a >> 7), a = strength x the corner's weight in one of
  *      four gouraud triangles, each from a screen corner to the middles of its two edges
  *      (moved by the offset) */
@@ -548,6 +610,17 @@ static const char *kPostFs =
     "        if (uOff.x != 0) s.y = 447.0 - s.y; else s.x = 639.0 - s.x;\n"
     "        oColor = vec4(texelFetch(uTex, ivec2(s), 0).rgb, 0.0);\n"
     "        return;\n"
+    "    } else if (uMode == 23) {\n"   /* a flat colour (uColor 0..255, alpha 0..128) */
+    "        oColor = vec4(uColor.rgb / 255.0, clamp(uColor.a / 128.0, 0.0, 1.0));\n"
+    "        return;\n"
+    "    } else if (uMode == 24) {\n"   /* layer 6's buffer blurred: S + the sum of S >> 3 at 8 neighbours */
+    "        c = refl(p);\n"
+    "        const ivec2 taps[8] = ivec2[8](ivec2(-1, -1), ivec2(1, -1), ivec2(-1, 1), ivec2(1, 1),\n"
+    "                                       ivec2(-2, 0), ivec2(2, 0), ivec2(0, -2), ivec2(0, 2));\n"
+    "        for (int k = 0; k < 8; k++) {\n"
+    "            ivec2 q = p + taps[k];\n"
+    "            if (q.x >= 0 && q.y >= 0 && q.x < 256 && q.y < 224) c += floor(refl(q) / 8.0);\n"
+    "        }\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -807,7 +880,7 @@ int glr_init(void) {
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sColor);
     p_glTextureStorage2D(sColor, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sDepth);
-    p_glTextureStorage2D(sDepth, 1, GL_DEPTH_COMPONENT24, GLR_WIDTH, GLR_HEIGHT);
+    p_glTextureStorage2D(sDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateFramebuffers(1, &sFbo);
     p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
     p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
@@ -843,7 +916,7 @@ int glr_init(void) {
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sRefl);
     p_glTextureStorage2D(sRefl, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflDepth);
-    p_glTextureStorage2D(sReflDepth, 1, GL_DEPTH_COMPONENT24, GLR_WIDTH, GLR_HEIGHT);
+    p_glTextureStorage2D(sReflDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateFramebuffers(1, &sReflFbo);
     p_glNamedFramebufferTexture(sReflFbo, GL_COLOR_ATTACHMENT0, sRefl, 0);
     p_glNamedFramebufferTexture(sReflFbo, GL_DEPTH_ATTACHMENT, sReflDepth, 0);
@@ -860,6 +933,13 @@ int glr_init(void) {
     p_glCreateFramebuffers(1, &sMaskFbo);
     p_glNamedFramebufferTexture(sMaskFbo, GL_COLOR_ATTACHMENT0, sMask, 0);
     p_glNamedFramebufferTexture(sMaskFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowCol);
+    p_glTextureStorage2D(sShadowCol, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sShadowDS);
+    p_glTextureStorage2D(sShadowDS, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sShadowFbo);
+    p_glNamedFramebufferTexture(sShadowFbo, GL_COLOR_ATTACHMENT0, sShadowCol, 0);
+    p_glNamedFramebufferTexture(sShadowFbo, GL_DEPTH_STENCIL_ATTACHMENT, sShadowDS, 0);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sCopy);
     p_glTextureStorage2D(sCopy, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateFramebuffers(1, &sCopyFbo);
@@ -871,7 +951,7 @@ int glr_init(void) {
     p_glTextureParameteri(sGlowB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     p_glTextureParameteri(sGlowB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sGlowDepth);
-    p_glTextureStorage2D(sGlowDepth, 1, GL_DEPTH_COMPONENT24, GLR_GLOW_W, GLR_GLOW_H);
+    p_glTextureStorage2D(sGlowDepth, 1, GL_DEPTH24_STENCIL8, GLR_GLOW_W, GLR_GLOW_H);
     p_glCreateFramebuffers(1, &sGlowFbo);
     p_glNamedFramebufferTexture(sGlowFbo, GL_COLOR_ATTACHMENT0, sGlowB, 0);
     p_glNamedFramebufferTexture(sGlowFbo, GL_DEPTH_ATTACHMENT, sGlowDepth, 0);
@@ -944,10 +1024,33 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl", "shadowbegin", "shadowfill"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
+}
+
+/* layer 6's end (func_001B4F30's second packet): its buffer blurred and taken off the screen
+ * at half (ALPHA (0 - Cs) * FIX + Cd, FIX 0x40) */
+static void shadow_end(void) {
+    if (post_off(POST_SHADOW_FILL)) {
+        return;
+    }
+    p_glDisable(GL_DEPTH_TEST);
+    p_glDisable(GL_BLEND);
+    p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+    post(24, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sShadowCol, 0);
+    p_glProgramUniform4f(sPostProg, sPostColorLoc, 128.0f, 128.0f, 128.0f, 0.0f);
+    p_glProgramUniform1f(sPostProg, sPostFixLoc, 64.0f);
+    p_glEnable(GL_BLEND);
+    p_glBlendFunc(GL_ONE, GL_ONE);
+    p_glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+    post(6, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[0], 0);
+    p_glBlendEquation(GL_FUNC_ADD);
+    p_glDisable(GL_BLEND);
 }
 
 /* a pass over the frame (the shader's modes, kPostFs) */
@@ -1013,6 +1116,33 @@ static void run_post(const GlrDraw *d) {
         p_glEnable(GL_BLEND);
         p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         post(17, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[z], 0);
+        break;
+    }
+    case POST_SHADOW_BEGIN: {   /* the count back to 0x7F */
+        static const GLint kStart = 0x7F;
+
+        p_glClearNamedFramebufferiv(sShadowFbo, GL_STENCIL, 0, &kStart);
+        break;
+    }
+    case POST_SHADOW_FILL: {   /* the colour where the count is above 0x7F, within the box */
+        int x0 = (int)(d->mvp[0] - 1728.0f), x1 = (int)(d->mvp[2] - 1728.0f);
+        int y0 = (int)(2272.0f - d->mvp[3]), y1 = (int)(2272.0f - d->mvp[1]);
+
+        p_glBindFramebuffer(GL_FRAMEBUFFER, sShadowFbo);
+        p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
+        p_glEnable(GL_SCISSOR_TEST);
+        p_glScissor(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+        p_glEnable(GL_STENCIL_TEST);
+        p_glStencilFunc(GL_LESS, 0x7F, 0xFF);
+        p_glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        p_glProgramUniform4f(sPostProg, sPostColorLoc, (float)(rgba & 0xFF), (float)((rgba >> 8) & 0xFF),
+                             (float)((rgba >> 16) & 0xFF), (float)(rgba >> 24));
+        p_glProgramUniform1i(sPostProg, sPostModeLoc, 23);
+        p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        p_glDisable(GL_STENCIL_TEST);
+        p_glDisable(GL_SCISSOR_TEST);
         break;
     }
     case POST_MASK_CLEAR: {
@@ -1103,6 +1233,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     int i, depthDirty = 1;   /* the scene's depth changed since the glow buffer's copy */
     int bloomMask = 0, maskCleared = 0;   /* layer 0x26 used this frame; its alpha cleared */
     int reflStarted = 0;                  /* layer 0x17's reflection begun this frame */
+    int inShadow = 0;                     /* within layer 6 */
 
     if (sGlowClear) {
         p_glClearNamedFramebufferfv(sGlowFbo, GL_COLOR, 0, kBlack);
@@ -1212,9 +1343,41 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             const GlrDraw *d = &f->d[order[i] & 0xFFFFFFFF];
             int mode = 0;
 
+            if (d->layer == 6 && !inShadow) {   /* layer 6's start (func_001B4F30) */
+                static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+                static const float kFar1 = 1.0f;
+
+                p_glClearNamedFramebufferfv(sShadowFbo, GL_COLOR, 0, kNone);
+                p_glClearNamedFramebufferfv(sShadowFbo, GL_DEPTH, 0, &kFar1);
+                p_glBlitNamedFramebuffer(sFbo, sShadowFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 160, 112, 480, 336,
+                                         GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+                inShadow = 1;
+            } else if (d->layer != 6 && inShadow) {
+                shadow_end();
+                mesh_state();
+                inShadow = 0;
+            }
             if (d->post) {
                 run_post(d);
                 mesh_state();
+                continue;
+            }
+            if (d->prim & GLR_PRIM_STENCIL) {   /* a shadow volume quad: counted where in front */
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sShadowFbo);
+                p_glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+                p_glDepthMask(GL_FALSE);
+                p_glDepthFunc(GL_LEQUAL);
+                p_glDisable(GL_BLEND);
+                p_glEnable(GL_STENCIL_TEST);
+                p_glStencilFunc(GL_ALWAYS, 0, 0xFF);
+                p_glStencilOp(GL_KEEP, GL_KEEP, d->prim & GLR_PRIM_STENCIL_INC ? GL_INCR : GL_DECR);
+                p_glProgramUniform1i(sMeshProg, sTexModeLoc, 0);
+                p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
+                p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+                p_glDisable(GL_STENCIL_TEST);
+                p_glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                p_glDepthFunc(GL_LESS);
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
                 continue;
             }
             if ((d->prim & 0x10) && d->tex != NULL) {   /* TME */
@@ -1260,6 +1423,13 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glColorMaski(1, d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
+            if (d->layer == 6) {   /* layer 6's other draws: into its buffer, tested, no depth */
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sShadowFbo);
+                p_glDepthMask(GL_FALSE);
+                p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+                continue;
+            }
             if (d->layer == 0x17 || (d->prim & GLR_PRIM_MASK)) {
                 if (d->layer == 0x17 && !reflStarted) {
                     /* layer 0x17's start (func_001B0D40): the reflection cleared, the screen
@@ -1327,6 +1497,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             } else if (!(d->prim & GLR_PRIM_NOZW)) {
                 depthDirty = 1;
             }
+        }
+        if (inShadow) {
+            shadow_end();
         }
         p_glDisable(GL_BLEND);
         p_glDepthMask(GL_TRUE);

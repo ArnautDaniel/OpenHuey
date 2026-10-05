@@ -5192,3 +5192,11 @@ src/game/effects.c func_00317920 --pre=a1=0..2 --pre=a0+0x10:u32=0..1 --pre=a0+0
 src/game/effects.c func_003175B0 --pre=a1=0..0 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
 src/game/effects.c func_003175B0 --pre=a1=7..7 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
 src/game/camctl.c func_00224300 --pre=a0+0xF4:u8=0..2
+src/game/shadow.c func_001F3530 --pre=@0x44E4C8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046B300..0x0046B300 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4F0=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046AC50..0x0046AC50 --stub-ret=1 --outparam=16
+src/game/shadow.c func_001F2900 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=@0x0B200004=6..6 --pre=@0x0B200008=0x100..0x100 --pre=@0x0B20000C=0x300..0x300 --pre=@0x0B200010=0x400..0x400 --pre=@0x0B100100=bytes:000000000100000002000000030000000000000001000000020000000300000000000000000000000000000000000000 --runs=40
+src/game/shadow.c func_001F2560 --runs=40
+src/game/scene_game_members.c func_001FA430 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4B8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x00469A60..0x00469A60 --pre=a1=0..3 --pre=@0x0B500008=0..8 --outparam=16
+src/game/scene_game_members.c func_001FA430 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4B8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x00469A60..0x00469A60 --pre=a1=0xFFFFFFFF..0xFFFFFFFF
+src/game/scene_game_members.c func_001FA6C0 --pre=a2=0xFFFFFFFF..1 --pre=a0+0x10:u32=0..1
+src/game/scene_game_members.c func_001F9FB0
+src/game/scene_game_members.c func_001F9F80 --pre=a0+0x940:u32=0x5F..0x63

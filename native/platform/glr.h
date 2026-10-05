@@ -26,6 +26,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 #define GLR_PRIM_FIX(f) (GLR_PRIM_FIXB | (uint32_t)(f) << 24)
 /* PC-only bit: a quad marking the reflection's mask where it is in front of the scene */
 #define GLR_PRIM_MASK 0x100000u
+/* PC-only bits: a shadow volume quad counting in layer 6's stencil, +1 with _INC else -1 */
+#define GLR_PRIM_STENCIL 0x200000u
+#define GLR_PRIM_STENCIL_INC 0x400000u
 
 /* the renderer layer (0..52, drawn in order) what follows is sent in; -1: none */
 void glr_layer(int layer);
@@ -79,6 +82,17 @@ void glr_dof(float a, float from, float to, float b);
 void glr_refl_flip(int flip);
 void glr_mask_clear(void);
 void glr_refl(int prep, int fix, int flip, int masked, float dx);
+
+/* the shadows (layer 6; src/game/shadow.c): glr_shadow_begin restarts the count (0x7F),
+ * glr_shadow_quad counts a volume quad (clip space, strip order), glr_shadow_fill writes the
+ * colour (RGBA, alpha 0x80 = 1) where the count ended above 0x7F within the box (GS pixels
+ * around 2048, half size); glr_shadow_cancel drops this shadow's entries (its draw failed).
+ * Layer 6 is drawn at half size from the camera's half matrices, then blurred and taken off the
+ * screen. */
+void glr_shadow_begin(void);
+void glr_shadow_quad(const float *xyz, int inc);
+void glr_shadow_fill(float x0, float y0, float x1, float y1, uint32_t rgba);
+void glr_shadow_cancel(void);
 
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);

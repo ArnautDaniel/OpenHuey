@@ -64,3 +64,78 @@ void func_0021C840(void *ov, int strength, int offset) {
     (void)ov;
     glr_vignette(strength, offset);
 }
+
+/* ---- the renderer's special layers (func_001B5EC0): each one's setup, run on the layer's first
+ * draw of a frame, fills the layer before it (and after it) with GS state. On PC glr does what
+ * they set up for the layers it knows; 1 = the layer can be drawn ---- */
+
+/* layer 6 (shadows): half-size drawing against the scene's depth halved, blurred and taken off
+ * the screen at its end - glr's layer 6 */
+int func_001B4F30(uint8_t *r) {
+    (void)r;
+    return 1;
+}
+
+/* layer 0x17 (the reflection): drawn into the reflection buffer over the screen mirrored - glr */
+int func_001B0D40(uint8_t *r) {
+    (void)r;
+    return 1;
+}
+
+/* layer 0x0D: as layer 6 (half size, blurred), composited at its end. GL TODO */
+int func_001B4330(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x0D half-size pass (func_001B4330)");
+    return 1;
+}
+
+/* layer 0x14: drawn over the frame's alpha, then a half-size pass on it. GL TODO */
+int func_001AF3B0(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x14 pass (func_001AF3B0)");
+    return 1;
+}
+
+/* layer 0x11: a light / flare pass. GL TODO */
+int func_001B2160(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x11 pass (func_001B2160)");
+    return 1;
+}
+
+/* layer 0x1C: a distortion of the screen copy. GL TODO */
+int func_001AB960(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x1C pass (func_001AB960)");
+    return 1;
+}
+
+/* layers 0x23 / 0x0F / 0x1A: the renderer's tint (+0x304D54) kept off what they draw (the
+ * frame's alpha), with their end steps (func_001B1370 / func_001AAE80). GL TODO */
+int func_001AC0D0(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x23 tint pass (func_001AC0D0)");
+    return 1;
+}
+
+int func_001B18E0(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x0F tint pass (func_001B18E0)");
+    return 1;
+}
+
+int func_001AB3F0(uint8_t *r) {
+    (void)r;
+    glr_todo("layer 0x1A tint pass (func_001AB3F0)");
+    return 1;
+}
+
+int func_001B1370(uint8_t *r) {
+    (void)r;
+    return 1;
+}
+
+int func_001AAE80(uint8_t *r) {
+    (void)r;
+    return 1;
+}
