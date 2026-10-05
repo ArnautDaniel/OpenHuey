@@ -8465,6 +8465,118 @@ void func_0018EDA0(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2C58);
 }
 
+extern const PTMF D_003B2C28, D_003B2C38, D_003B2C48;
+
+/* D_003B2BB8 / D_003B2BC8 / D_003B2BE8 (a held command, Hewie at unk110 / tri unk104[0]
+ * facing unk104[2]): a request 7 for her switches it (0x2B: 0x2F, D_003B2C28; 0x28: 0x29,
+ * D_003B2C38; 0x24: idle); Hewie gone: idle; else walk to his spot facing him (D_003B2C48) */
+void func_0018F180(Fiona *f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 yaw;
+    s32 tri;
+
+    if (f->c.state[0] == 7) {
+        f->c.state[0] = 0;
+        func_00125A10(&f->c);
+        switch (f->c.moveSub) {
+        case 0x2B:
+            f->c.moveSub = 0x2F;
+            Actor_SetState(&f->c.a, &D_003B2C28);
+            break;
+        case 0x28:
+            f->c.moveSub = 0x29;
+            Actor_SetState(&f->c.a, &D_003B2C38);
+            break;
+        case 0x24:
+            door_give_up(f, gProgress);
+            break;
+        }
+        return;
+    }
+    if (FI(f, 0x1AD5D5, u8) == 0) {
+        func_00125A10(&f->c);
+        door_give_up(f, gProgress);
+        return;
+    }
+    yaw = func_002E2D00(kPi.f + *(f32 *)&f->c.unk104[2]);
+    tri = f->c.unk104[0];
+    f->c.unk124 = f->c.unk128;
+    FI(f, 0x1AD650, s32) = 0;
+    FI(f, 0x1AD634, s32) = tri;
+    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), f->c.unk110);
+    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    f->savedYaw = yaw;
+    Actor_SetState(&f->c.a, &D_003B2C48);
+}
+
+extern const PTMF D_003B2B28, D_003B2B38;
+extern void func_00183400(Fiona *f);
+
+/* D_003B2B28 (fallen): sliding on by the root motion turned to FI 0x1AD6D0 (and turning to
+ * it, 20 degrees a frame, until there: FI 0x1AD6C4 1) - not while FI 0x1AD6C4 is -1; at the
+ * animation's event 0x20 getting up (0xB01, D_003B2B38). Blocked by nothing for the check
+ * (+0xC0 bit 0); when no exit is closed to her (bit 0 of every door's state) func_00183400 */
+void func_001906A0(Fiona *f) {
+    static const union { u32 u; f32 f; } kTwentyDeg = {0x3EB2B8C3};
+    Progress *p;
+    u8 i;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        f->c.a.unk2D = 0;
+        FI(f, 0x1AD6C0, s32) = 0;
+        func_002DDED0(f->c.motion, 0xB01, -1);
+        f->c.moveMode = 0xA;
+        f->unk1AD580 = 0xB;
+        FI(f, 0x1AD710, u8) = 1;
+        FI(f, 0x1AD714, s32) = 0;
+        Actor_SetState(&f->c.a, &D_003B2B38);
+    }
+    AT(f, 0xC0, u32) |= 1;
+    if (FI(f, 0x1AD6C4, s32) == -1) {
+        func_00125A10(&f->c);
+    } else {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+
+        func_001F6370(f->c.motion, v, 0.0f);
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrixY(m, m, FI(f, 0x1AD6D0, f32));
+        sceVu0ApplyMatrix(v, m, v);
+        func_001247E0(&f->c.a, v);
+        if (FI(f, 0x1AD6C4, s32) == 0 &&
+            func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), kTwentyDeg.f) == 0.0f) {
+            FI(f, 0x1AD6C4, s32) = 1;
+        }
+    }
+    p = gProgress;
+    AT(f, 0xC0, u32) &= ~1;
+    for (i = 0; i < 8; i++) {
+        if ((func_00177BF0(p, i, *(u8 *)&f->c.a.slot) & 0xFF) & 1) {
+            return;
+        }
+    }
+    func_00183400(f);
+}
+
+/* D_003B2788 (panic: fall): once the animation is done the fall itself (0xB00, her cry 0x40, a
+ * loud noise 0x5F; D_003B2B28) facing on */
+void func_001908E0(Fiona *f) {
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (door_anim_done(f)) {
+        FI(f, 0x1AD6C0, s32) = -1;
+        FI(f, 0x1AD6C4, s32) = -1;
+        FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+        func_002DDED0(f->c.motion, 0xB00, -1);
+        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+        func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Actor_SetState(&f->c.a, &D_003B2B28);
+    }
+    func_00125A10(&f->c);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
