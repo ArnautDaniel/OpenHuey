@@ -91,6 +91,17 @@ extern void func_002ED260(void *model, s32 n);
 extern u8 *D_0044F258;
 extern u8 *func_002083B0(u8 *e);
 extern void func_002B6340(void *movie);
+extern void func_0016D2F0(Progress *p, s32 i);
+extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
+extern void *func_00208210(u8 *m, u8 kind);
+extern void *func_00208180(u8 *m, u8 kind);
+extern void *func_002080D0(u8 *m, u8 kind);
+extern s32 func_001788F0(Progress *p, u32 door);
+extern void func_00178A60(Progress *p, u32 n);
+extern void func_00178A30(Progress *p, u32 n);
+extern s32 func_00178610(Progress *p, u32 d);
+extern void func_00178450(Progress *p, u32 n);
+extern void func_00178500(Progress *p, u32 n);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -589,6 +600,17 @@ static u8 *char_present(Progress *p, s32 id) {
         return NULL;
     }
     return c;
+}
+
+/* (0xB7) Hewie's model swapped for kind `k` (0..2) from the progress' pool +0x6FBF00 */
+static void *partner_model(Progress *p, s32 k) {
+    VObject *pool = (VObject *)((u8 *)p + 0x6FBF00);
+    u8 *m = func_002DC6E0(0xB90, VCALL(pool, 0x10, void *(*)(VObject *, s32))(pool, 0xB90));
+
+    if (m == NULL) {
+        return m;
+    }
+    return k == 0 ? func_00208210(m, 0) : k == 1 ? func_00208180(m, 1) : func_002080D0(m, 2);
 }
 
 void func_002029B0(VObject *ev) {
@@ -1632,6 +1654,47 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
+    case 0x4D: {   /* door be16 pc[1..2] takes on door be16 pc[3..4]'s states */
+        VObject *rooms = D_0044E568;
+        u32 k = (u8)VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, be16(pc + 3), AT(ev, 0x560, s32));
+
+        if (k != 0xFF) {
+            VCALL(D_0044E558, 0x60, void (*)(VObject *, s32, s32))(D_0044E558, AT(ev, 0x560, s32), k);
+        }
+        if (func_001788F0(p, be16(PC(ev) + 3))) {
+            func_00178A60(p, be16(PC(ev) + 1));
+        } else {
+            func_00178A30(p, be16(PC(ev) + 1));
+        }
+        if (func_00178610(p, be16(PC(ev) + 3))) {
+            func_00178450(p, be16(PC(ev) + 1));
+        } else {
+            func_00178500(p, be16(PC(ev) + 1));
+        }
+        if (VCALL(rooms, 0x60, s32 (*)(VObject *, u32))(rooms, be16(PC(ev) + 3))) {
+            VCALL(rooms, 0x64, void (*)(VObject *, u32))(rooms, be16(PC(ev) + 1));
+        } else {
+            VCALL(rooms, 0x68, void (*)(VObject *, u32))(rooms, be16(PC(ev) + 1));
+        }
+        break;
+    }
+    case 0xB7:   /* Hewie out, his model swapped for kind pc[1] (0..2), back in but not in the scene */
+        VCALL((VObject *)gCharPartner, 0x20, void (*)(VObject *))((VObject *)gCharPartner);
+        func_0016D2F0(p, 1);
+        switch (PC(ev)[1]) {
+        case 0:
+            AT(gCharacters[1], 0xF0, void *) = partner_model(p, 0);
+            break;
+        case 1:
+            AT(gCharacters[1], 0xF0, void *) = partner_model(p, 1);
+            break;
+        case 2:
+            AT(gCharacters[1], 0xF0, void *) = partner_model(p, 2);
+            break;
+        }
+        VCALL((VObject *)gCharPartner, 0x14, void (*)(VObject *))((VObject *)gCharPartner);
+        AT(gCharPartner, 0x28, u8) = 0;
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
