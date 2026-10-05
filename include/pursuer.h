@@ -638,6 +638,18 @@ s32 func_002DBA90(Pursuer *p, f32 *out);
 void func_002DBD70(Pursuer *p);
 void func_002DC070(Pursuer *p);
 void func_002DC4E0(Pursuer *p);
+Pursuer *func_002F8820(Pursuer *p, s32 flags);
+f32 func_002F8940(Pursuer *p);
+void func_002F8960(Pursuer *p, s32 kind, f32 *out);
+void func_002F8A10(Pursuer *p);
+void func_002F8A20(Pursuer *p, s8 situation);
+f32 func_002F8CE0(Pursuer *p);
+f32 func_002F8CF0(Pursuer *p);
+void func_002F8D00(Pursuer *p);
+void func_002F8D50(Pursuer *p);
+u8 *func_002F9000(Pursuer *p);
+u8 *func_002F9040(Pursuer *p);
+void func_002F9080(Pursuer *p);
 /* ---- end generated ---- */
 
 /* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
