@@ -4476,3 +4476,447 @@ s32 func_002AC370(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* ---- rooms 0x15 .. 0x66 (second batch) ---- */
+
+extern const char *const D_003FB370[];   /* room 0x18's objects */
+extern const char *const D_0040C140[];   /* room 0x4F's objects */
+extern const char *const D_0047ABEC;     /* room 0x5C's dial */
+extern const char *const D_004123E8;     /* room 0x5D's lever */
+extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
+extern s32 D_0047B250;                   /* room 0x4C: what the player has done so far */
+extern void *D_00476BB0[], *D_00472370[];
+extern u8 *D_0044F258;                   /* the creatures: 7 pointers; +0x28 vtable */
+extern VObject *D_00456E00;
+extern VObject *D_0044E558;              /* the doors */
+extern VObject *D_0044E550;              /* random numbers */
+extern void func_0025F810(u8 *o);
+extern f32 func_00124490(void *a, f32 *p);
+extern s32 func_00183190(void *f);
+
+/* room effect 0x1F's colour pulsing with script variable `var` (0..0x60 round): three channels
+ * a third of the way apart, each 8 x (distance from the middle - 16), then the rest */
+static inline __attribute__((always_inline)) void colour_pulse(s32 var, u8 c3, u8 c4, u8 c5, u8 c6, u8 c7) {
+    VObject *ev = D_0044E4D0;
+    s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, var);
+    u8 c[9];
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        s32 d = 0x30 - (v + k * 0x20) % 0x60;
+
+        if (d <= 0) {
+            d = -d;
+        }
+        d = d < 0x11 ? 0 : d - 0x10;
+        d <<= 3;
+        c[k] = d < 0x100 ? d : 0xFF;
+    }
+    c[3] = c3;
+    c[7] = c7;
+    c[4] = c4;
+    c[5] = c5;
+    c[6] = c6;
+    c[8] = 0;
+    func_00266C70(D_0044E4C0, 0x1F, c);
+    v++;
+    if ((u32)v > 0x60) {
+        v = 0;
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, var, v);
+}
+
+/* room 0x15 (D_003FA738): Hewie is about in room 0xF in state 0x2F or 0x52 */
+s32 func_002ACC90(void) {
+    Character *c = gCharacters[(u8)func_001770D0(gProgress, 1)];
+    s32 s;
+
+    if (c == NULL || c->a.active == 0 || AT(c, 0x30, s32) != 0xF) {
+        return 0;
+    }
+    s = AT(c, 0xF3564, s32);
+    return s == 0x2F || s == 0x52;
+}
+
+/* room 0x18 (D_003FB358): object byte 3's func_0025F810 */
+s32 func_002AD160(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_003FB370[cmd[3]]);
+
+    if (o != NULL) {
+        func_0025F810(o);
+    }
+    return 1;
+}
+
+/* room 0x19 (D_003FC010): the pursuer (about, not in state 2, in mode 2, 6 or 7) while Hewie is
+ * controlled: in another room, or 30 or more from the player */
+s32 func_002AD2F0(void) {
+    Character *s = gCharPursuer, *p = gCharPlayer;
+    Progress *g;
+    u8 k;
+
+    if (s == NULL || s->a.active == 0 || p == NULL || p->a.active == 0 || AT(s, 0xC4, s32) == 2) {
+        return 0;
+    }
+    k = AT(s, 0x153C, u8);
+    if (k != 2 && k != 6 && k != 7) {
+        return 0;
+    }
+    g = gProgress;
+    if ((u8)func_00177620(g) != 2) {
+        return 0;
+    }
+    if (AT(s, 0x30, s32) != VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g)) {
+        return 1;
+    }
+    return !(func_00124490(&s->a, p->a.pos) < 30.0f);
+}
+
+/* room 0x1C (D_003FD338): room effect 0x1C (a depth range) with the cutscene from frame 0x14A:
+ * near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230) */
+s32 func_002ADB70(void) {
+    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x14A);
+    f32 r[4];
+    f32 v;
+
+    room_effect_new(D_0044E4C0, 0x1C, D_0046EC60);
+    r[0] = 1.0f;
+    v = 1.0f + 0x1.6666660000000p+0f /* 1.4 */ * t;
+    r[1] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;
+    r[2] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;
+    v = 0x1.84cccc0000000p+5f /* 48.6 */ + 4.0f * t;
+    r[3] = v <= 230.0f ? v : 230.0f;
+    func_00266C70(D_0044E4C0, 0x1C, r);
+    return 1;
+}
+
+/* room 0x1D (D_003FD990): door 0's +0x74 (0, or -0.08 by byte 3) */
+s32 func_002ADEE0(void *self, void *a1, u8 *cmd) {
+    VCALL(D_0044E558, 0x74, void (*)(VObject *, s32, f32))(D_0044E558, 0, cmd[3] == 0 ? 0.0f : -0x1.47ae140000000p-4f /* 0.08 */);
+    return 1;
+}
+
+/* room 0x1D (D_003FD980): script variable 0 = 2 .. 5 at random */
+s32 func_002ADF40(void) {
+    s32 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3;
+
+    VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, r + 2);
+    return 1;
+}
+
+/* (D_004022E0's table) room effect 0x1F's colour pulsing by script variable 0 */
+s32 func_002AFD60(void) {
+    colour_pulse(0, 0x50, 0x24, 0x2A, 0x2A, 0x46);
+    return 1;
+}
+
+/* room 0x4C (D_0040ABF0): byte 3 0 starts counting what the player does (her +0x1AD710 on), 1
+ * adds this frame's (func_00183190); at 35 events bit 0x13 */
+s32 func_002B3720(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0:
+        D_0047B250 = 0;
+        AT(gCharPlayer, 0x1AD710, u8) = 1;
+        AT(gCharPlayer, 0x1AD714, s32) = 0;
+        break;
+    case 1:
+        D_0047B250 += func_00183190(gCharPlayer);
+        if (D_0047B250 >= 0x23) {
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 0x13);
+        }
+        break;
+    }
+    return 1;
+}
+
+static void effect_476bb0_init(void **obj) {
+    obj[0] = D_00476BB0;
+    obj[0x6010 / 4] = D_00469D00;
+    ((s32 *)obj)[0x6014 / 4] = -1;
+    obj[0x6010 / 4] = D_0046FC30;
+}
+
+/* room 0x4F (D_0040C0F8): an effect (D_00476BB0, 0x7460 bytes), not started */
+s32 func_002B4480(void) {
+    Effect_New(D_0044E578, 0x7460, effect_476bb0_init);
+    return 1;
+}
+
+/* room 0x4F (D_0040C0E8): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2 lowered a
+ * step (0.02, not during a movie); once down, events bit 3 */
+s32 func_002B4570(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_0040C140[cmd[3]]);
+    f32 a;
+
+    switch (cmd[4]) {
+    case 0:
+        AT(o, 0x10, f32) = 0.0f;
+        break;
+    case 1:
+        AT(o, 0x10, u32) = 0xBF266666;
+        break;
+    case 2:
+        if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+            return 1;
+        }
+        a = AT(o, 0x10, f32) - 0x1.47ae140000000p-6f /* 0.02 */;
+        AT(o, 0x10, f32) = a;
+        if (a <= -0x1.4ccccc0000000p-1f /* 0.65 */) {
+            AT(o, 0x10, f32) = -0x1.4ccccc0000000p-1f /* 0.65 */;
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 3);
+        }
+        break;
+    }
+    return 1;
+}
+
+/* room 0x51 (D_0040E340): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves */
+s32 func_002B49F0(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] != 0) {
+        return VCALL(D_0044E558, 0x30, s32 (*)(VObject *, s32))(D_0044E558, 0) != 0 ? 1 : 2;
+    }
+    VCALL(D_0044E558, 0xC, void (*)(VObject *, s32, s32, s32, s32))(D_0044E558, 0, 1, 0, 0);
+    return 1;
+}
+
+/* room 0x56 (D_0040F468): creatures 7..9 in the current room on a live triangle D_00456E00
+ * says yes to: +0x10, then the creature list's +0x28 */
+s32 func_002B4DE0(void) {
+    u8 *list = D_0044F258;
+    Progress *g = gProgress;
+    VObject *chk = D_00456E00;
+    s32 k;
+
+    for (k = 7; k < 10; k++) {
+        VObject *c = AT(list, 0x1C + (k - 7) * 4, VObject *);
+
+        if (c == NULL || AT(c, 0x30, s32) != VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g)
+            || AT(c, 0x34, s32) == -1
+            || (u8)VCALL(chk, 0x14, s32 (*)(VObject *, s32, s32))(chk, AT(c, 0x34, s32), 0) != 1) {
+            continue;
+        }
+        VCALL(c, 0x10, void (*)(VObject *))(c);
+        VCALL_AT(list, 0x28, 0x28, void (*)(u8 *, s32))(list, k & 0xFF);
+    }
+    return 1;
+}
+
+/* room 0x59 (D_00410B80): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0 */
+s32 func_002B5210(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+
+    if (cmd[3] == 0) {
+        AT(m, 0x9E0, f32) = 0x1.99999a0000000p-4f /* 0.1 */;
+    } else {
+        AT(m, 0x9E0, f32) = 0.0f;
+    }
+    return 1;
+}
+
+static void effect_472370_init(void **obj) {
+    obj[0] = D_00472370;
+    obj[0x370 / 4] = D_00469D00;
+    ((s32 *)obj)[0x374 / 4] = -1;
+    obj[0x370 / 4] = D_0046FC30;
+}
+
+/* room 0x5C (D_00411B50): the first creature within 3 of (59.1, 1.43) is put away with an
+ * effect (D_00472370) above it - blue (+0x1571 below 0x12) or red - and its action 0x8B */
+s32 func_002B59E0(void) {
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        Character *c = AT(D_0044F258, i * 4, Character *);
+        f32 dz, dx;
+
+        if (c == NULL) {
+            continue;
+        }
+        dz = c->a.pos[2] - 0x1.6e147a0000000p+0f /* 1.43 */;
+        dx = c->a.pos[0] - 0x1.d8cccc0000000p+5f /* 59.1 */;
+        if (dz * dz + dx * dx < 9.0f) {
+            struct {
+                f32 pos[4];
+                u8 col[4];
+            } prm __attribute__((aligned(16)));
+            s32 slot;
+
+            c->a.active = 0;
+            {
+                /* (Effect_New, with the heap's +0x10 handed the loop index in a2 as the
+                   original leaves it there - unused) */
+                u8 *mgr = D_0044E578;
+                void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32, s32))(EFFECT_HEAP(mgr), 0x4A0, i);
+                s32 j;
+
+                slot = -1;
+                if (mem != NULL) {
+                    for (j = 0; j < EFFECT_NUM_SLOTS; j++) {
+                        if (EFFECT_SLOTS(mgr)[j] == NULL) {
+                            void **obj = func_002D63C0(0x4A0, mem);
+
+                            if (obj != NULL) {
+                                effect_472370_init(obj);
+                            }
+                            EFFECT_SLOTS(mgr)[j] = obj;
+                            VCALL(EFFECT_SLOTS(mgr)[j], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[j]);
+                            slot = j;
+                            break;
+                        }
+                    }
+                }
+            }
+            sceVu0CopyVector(prm.pos, c->a.pos);
+            prm.pos[1] = 12.0f + c->a.pos[1] + AT(c, 0x1554, f32);
+            if (AT(c, 0x1571, u8) < 0x12) {
+                prm.col[2] = 0x80;
+                prm.col[0] = 0x30;
+                prm.col[3] = 0x60;
+                prm.col[1] = 0x30;
+            } else {
+                prm.col[0] = 0x80;
+                prm.col[1] = 0x30;
+                prm.col[3] = 0x60;
+                prm.col[2] = 0x30;
+            }
+            func_002D6090(D_0044E578, slot, &prm);
+            func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* room 0x5C (D_00411B40): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0 0x2B..0x38
+ * (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0) */
+s32 func_002B5C30(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_0047ABEC);
+    u32 v;
+
+    if (o == NULL) {
+        return 1;
+    }
+    v = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    switch (cmd[3]) {
+    case 0:
+        v = v < 0x2B ? 0x2B : v;
+        v = v < 0x39 ? v : 0x38;
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(v - 0x2B) / 13.0f;
+        break;
+    case 1:
+        v = v < 0xC ? 0xC : v;
+        v = v < 0x21 ? v : 0x20;
+        AT(o, 0x74, s32) = 1;
+        AT(o, 0x78, s32) = 0;
+        AT(o, 0x7C, f32) = (f32)(v - 0xC) / 20.0f;
+        break;
+    case 2:
+        v = v < 7 ? 7 : v;
+        v = v < 0x13 ? v : 0x12;
+        AT(o, 0x74, s32) = 1;
+        AT(o, 0x78, s32) = 0;
+        AT(o, 0x7C, f32) = (f32)(v - 7) / 11.0f;
+        break;
+    }
+    if (!(AT(o, 0x7C, f32) <= 1.0f)) {
+        AT(o, 0x7C, f32) = 1.0f;
+    }
+    if (AT(o, 0x7C, f32) < 0.0f) {
+        AT(o, 0x7C, f32) = 0.0f;
+    }
+    return 1;
+}
+
+/* room 0x5D (D_004123C0): the lever at -60 / 0 / 60 degrees by byte 3 */
+s32 func_002B5FA0(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_004123E8);
+
+    if (o != NULL) {
+        switch (cmd[3]) {
+        case 0:
+            AT(o, 0x14, u32) = 0xBF860A92;
+            break;
+        case 2:
+            AT(o, 0x14, u32) = 0x3F860A92;
+            break;
+        default:
+            AT(o, 0x14, s32) = 0;
+            break;
+        }
+    }
+    return 1;
+}
+
+/* room 0x5D (D_004123B0): four objects 60 to the left */
+s32 func_002B6040(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        u8 *o = room_obj(D_004123D0[i + 2]);
+
+        if (o != NULL) {
+            AT(o, 0x20, f32) = AT(o, 0x20, f32) - 60.0f;
+        }
+    }
+    return 1;
+}
+
+/* room 0x2F (D_00412E80): the pursuer's func_0029A710 */
+s32 func_002CCA80(void) {
+    return func_0029A710(gCharPursuer);
+}
+
+/* room 0x30 (D_004134B0): the pursuer's func_0029A710 */
+s32 func_002CCBC0(void) {
+    return func_0029A710(gCharPursuer);
+}
+
+/* room 0x66 (D_0041F5B0): the character's x (byte 3 0) or z is at least be32 bytes 4..7 / 1000 */
+s32 func_003002E0(void *self, u8 *chr, u8 *cmd) {
+    f32 v = (f32)(s32)((u32)cmd[4] << 24 | (u32)cmd[5] << 16 | (u32)cmd[6] << 8 | cmd[7]) / 1000.0f;
+
+    if (cmd[3] == 0) {
+        return !(AT(chr, 0x10, f32) < v);
+    }
+    return !(AT(chr, 0x18, f32) < v);
+}
+
+/* room 0x66 (D_0041F5A0): in the eight letters of script variables 0 and 1, from the place in
+ * variable 2: the next 'L' / 'R' - matched by byte 3 (0 'L', else 'R') is stepped over (1) */
+s32 func_003003C0(void *self, void *a1, u8 *cmd) {
+    VObject *ev = D_0044E4D0;
+    s32 w[2];
+    u8 *b = (u8 *)w;
+    u32 i;
+    s32 r = 0;
+
+    w[0] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
+    w[1] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1);
+    i = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2);
+    for (; i < 8; i++) {
+        if (b[i] == 'L' || b[i] == 'R') {
+            break;
+        }
+    }
+    if (i < 8) {
+        if (cmd[3] == 0) {
+            if (b[i] == 'L') {
+                i++;
+                r = 1;
+            }
+        } else if (b[i] == 'R') {
+            i++;
+            r = 1;
+        }
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 2, i);
+    return r;
+}
+
+/* room 0x66 (D_0041F590): room effect 0x1F's colour pulsing by script variable 9 */
+s32 func_00300520(void) {
+    colour_pulse(9, 0x5A, 0x44, 0x46, 0x52, 0x4B);
+    return 1;
+}
