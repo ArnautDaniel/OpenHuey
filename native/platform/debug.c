@@ -82,7 +82,7 @@ void hg_debug_evlog(const void *ev, const uint8_t *pc) {
         on = getenv("HG_EVLOG") != NULL;
     }
     if (on) {
-        fprintf(stderr, "ev %p: %02X %02X %02X %02X %02X\n", ev, pc[0], pc[1], pc[2], pc[3], pc[4]);
+        fprintf(stderr, "ev %p pc %p: %02X %02X %02X %02X %02X\n", ev, (const void *)pc, pc[0], pc[1], pc[2], pc[3], pc[4]);
     }
 }
 

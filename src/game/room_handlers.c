@@ -2193,3 +2193,12 @@ s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_0044E570;   /* nav mesh */
+/* room 54 step (D_00428040): find the nav mesh's door regions again */
+s32 func_0030FA60(void) {
+    VObject *nav = (VObject *)D_0044E570;
+
+    VCALL(nav, 0x4C, void (*)(VObject *))(nav);
+    return 1;
+}
