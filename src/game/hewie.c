@@ -7,7 +7,7 @@
 
 extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
-extern Character *gCharacters[6];
+extern Character *gCharacters[];   /* (the game reads up to slot 6, gCharPlayer, through it) */
 extern Character *gCharPlayer;    /* Fiona */
 extern Character *gCharPartner;   /* Hewie */
 extern Character *gCharPursuer;
@@ -9832,4 +9832,126 @@ void func_00160690(Hewie *h) {
 /* the calm behaviour's mode check */
 void func_00160B60(Hewie *h) {
     mode_behaviour(h, 0);
+}
+
+/* ---- hidden: what to do ---- */
+
+extern const s8 D_003B1238[8];   /* by trust: chance (percent) he comes out at panic 4 / 5 */
+extern const s8 D_003B11E8[8];   /* by trust: chance he goes to a noise */
+
+/* each frame while hidden (+0x29): down, action 0x52. Fiona's panic rising to 4, then 5 (each
+ * once, +0xF3589; reset below 4) may bring him out (action 0x39, by his trust's chance, unless
+ * already moving 0x39). Out of time (+0xF35B4 counting): stay hidden (0x2C, +0xF3583 cleared),
+ * or with time left come out (0x77). Then by +0xF356C: bit 6 with progress test 1 flags
+ * +0xF3559; bit 4 with a new noise heard (in a room other than +0xF3594) may send him to it
+ * (action 0x33, by his trust's chance) */
+void func_00161070(Hewie *h) {
+    Progress *p;
+
+    if (h->c.a.unkC4 == 2) {
+        if (HEWIE_ACTION(h) != 0x52) {
+            hewie_want(h, 0x52, 0);
+        }
+        return;
+    }
+    if (!(HW(h, 0xF3589, u8) & 2)) {
+        s32 rise = 0;
+
+        if (AT(gProgress, 0x7B8, u8) == 5) {
+            HW(h, 0xF3589, u8) |= 2;
+            rise = 1;
+        } else if (!(HW(h, 0xF3589, u8) & 1) && AT(gProgress, 0x7B8, u8) == 4) {
+            HW(h, 0xF3589, u8) |= 1;
+            rise = 1;
+        }
+        if ((u8)rise == 1 && by_chance(h, D_003B1238) && h->c.moveMode != 0x39) {
+            hewie_want(h, 0x39, 0);
+            return;
+        }
+    }
+    p = gProgress;
+    if ((s32)AT(p, 0x7B8, u8) < 4) {
+        HW(h, 0xF3589, u8) = 0;
+    }
+    if (HW(h, 0xF35B4, s32) != 0) {
+        if (HW(h, 0xF35B4, s32) > 0 && HEWIE_ACTION(h) != 0x77) {
+            hewie_want(h, 0x77, 0);
+            return;
+        }
+    } else {
+        HW(h, 0xF35B4, s32) = -1;
+        HW(h, 0xF3583, u8) = 0;
+        hewie_want(h, 0x2C, 0);
+    }
+    if ((HW(h, 0xF356C, u32) & 0x80000040) == 0x40 && func_00177670(p, 1) != 0) {
+        HW(h, 0xF3559, u8) = 1;
+        return;
+    }
+    if ((HW(h, 0xF356C, u32) & 0x80000010) == 0x10 && h->c.heardSlot != 0xFF &&
+        h->c.heard.room != HW(h, 0xF3594, s32) && by_chance(h, D_003B11E8)) {
+        HW(h, 0xF3594, s32) = h->c.heard.room;
+        hewie_want(h, 0x33, 0);
+    }
+}
+
+/* ---- on his feet: what catches his eye ---- */
+
+/* each frame standing about (not hidden, not moving): down, action 0x52 (unless already 0x52 /
+ * 0x74). Standing or sitting on a slope (mesh flag 1) facing much along it (within 60 degrees):
+ * action 0x6E. Another character (but himself) within 5 in his room on the mesh: his target,
+ * action 0x82 */
+void func_00161500(Hewie *h) {
+    f32 n[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 fwd[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 g;
+    u32 i;
+
+    if (h->c.a.disabled == 1 || h->c.moveMode != 0) {
+        return;
+    }
+    if (h->c.a.unkC4 == 2) {
+        if (HEWIE_ACTION(h) != 0x52 && HEWIE_ACTION(h) != 0x74) {
+            hewie_want(h, 0x52, 0);
+        }
+        return;
+    }
+    g = func_001669A0(h);
+    if ((g == 3 || g == 2 || g == 1 || g == 0) && HEWIE_ACTION(h) != 0x6E &&
+        /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+        (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
+        VCALL(D_0044E570, 0x2C, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+        if (n[1] != 1.0f) {
+            n[1] = 0.0f;
+            sceVu0Normalize(dir, n);
+            fwd[2] = 1.0f;
+            fwd[0] = 0.0f;
+            fwd[1] = 0.0f;
+            fwd[3] = 0.0f;
+            sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
+            if (!(sceVu0InnerProduct(fwd, dir) <= 0.5f)) {
+                hewie_want(h, 0x6E, 0);
+                return;
+            }
+        }
+    }
+    if (HEWIE_ACTION(h) == 0x82) {
+        return;
+    }
+    for (i = 0; i < 7; i++) {
+        Character *c = gCharacters[i];
+
+        if (i == 1) {
+            continue;
+        }
+        if (c != NULL && c->a.active == 1 && h->c.a.room == c->a.room && c->a.navTri != NAV_NONE) {
+            sceVu0SubVector(d, c->a.pos, h->c.a.pos);
+            if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 5.0f) {
+                HW(h, 0xF3544, Character *) = c;
+                hewie_want(h, 0x82, 0);
+                return;
+            }
+        }
+    }
 }
