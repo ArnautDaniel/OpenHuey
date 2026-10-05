@@ -1064,6 +1064,52 @@ void func_002C4600(u8 *d) {
     VCALL(d, 0x40, void (*)(u8 *))(d);
 }
 
+/* each frame of play (scene +0x106503C): the start steps (+0x15) - 0 wait for the banks (+0x10),
+ * 1 wait for flag +0xA38 to clear, 2 start each track's sequence once (driver +0x1C; track
+ * +0x10D), 3 the four tracks on (driver +0x24), the director started (+0x3C), the global
+ * volume faded in over 90 frames to the one asked for meanwhile (+0x31) - then 4: the frame
+ * update */
+void func_002C5980(u8 *d) {
+    VObject *drv;
+    u32 k;
+
+    switch (AT(d, 0x15, u8)) {
+    case 0:
+        if (!(u8)VCALL(d, 0x10, s32 (*)(u8 *))(d)) {
+            AT(d, 0x15, u8) = 1;
+        }
+        break;
+    case 1:
+        if (AT(d, 0xA38, u8) != 0) {
+            break;
+        }
+        AT(d, 0x15, u8) = 2;
+        /* fall through */
+    case 2:
+        for (k = 0; k < 4; k++) {
+            if (AT(TRACK(d, k), 0x10D, u8) != 1) {
+                VCALL(D_0044E560, 0x1C, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, 0, 0);
+                AT(TRACK(d, k), 0x10D, u8) = 1;
+            }
+        }
+        AT(d, 0x15, u8) = 3;
+        break;
+    case 3:
+        drv = D_0044E560;
+        for (k = 0; k < 4; k++) {
+            VCALL(drv, 0x24, void (*)(VObject *, u32, u32))(drv, k, 1);
+        }
+        VCALL(d, 0x3C, void (*)(u8 *))(d);
+        VCALL(d, 0x38, s32 (*)(u8 *, s32, u8))(d, 90, AT(d, 0x31, u8));
+        AT(d, 0x31, u8) = 0xFF;
+        AT(d, 0x15, u8) = 4;
+        break;
+    case 4:
+        func_002C34C0(d);
+        break;
+    }
+}
+
 /* +0x14 reset: the banks' files dropped (still loading) or the banks unloaded; the cues and
    the tracks back to their defaults */
 void func_002C5BD0(u8 *d) {
