@@ -4556,6 +4556,25 @@ static inline s32 fiona_in_sight(Fiona *f, Character *c) {
     return (u8)func_00122C90(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
 }
 
+extern const PTMF D_003B2C18;
+extern void func_00184570(Fiona *f);
+
+/* the end of a looking action: (unless progress flag 0x25, which forgets it) the one looked at
+ * (+0x1AD664) stays the one to face (+0x1AD5FC set, +0x1AD600); once the animation is over
+ * func_00184570 and the next state D_003B2C18 */
+void func_0018F760(Fiona *f) {
+    if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
+        FI(f, 0x1AD664, Character *) = NULL;
+    } else if (FI(f, 0x1AD664, Character *) != NULL) {
+        FI(f, 0x1AD5FC, u8) = 1;
+        FI(f, 0x1AD600, Character *) = FI(f, 0x1AD664, Character *);
+    }
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        func_00184570(f);
+        Actor_SetState(&f->c.a, &D_003B2C18);
+    }
+}
+
 /* an action's state once its animation (motion +0x550) is over, by the action (moveSub +0xFC; 0x23 ..
  * 0x2F): she may glance at Hewie (+0x1AD5D5 he can act) or the pursuer (+0x1AD5D7) when in
  * sight (+0x1AD664 the one looked at, cleared first). 0x24 (progress test 2/4 for her slot)
