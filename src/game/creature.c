@@ -1477,3 +1477,141 @@ void func_002E19F0(Character *c) {
         q.vtbl = D_00469D00;
     }
 }
+
+/* ---- the creature manager (D_0044F258; vtable D_0046FC00 at +0x28): a list of 10 at +0x0,
+ * its models at +0xF630, its objects' heap at +0xDC40 ---- */
+
+#define CREATURES(m) ((Character **)(m))
+
+/* +0x2C creature `i` (if up): its +0xA8 (a2, with 1) */
+void func_002E2360(u8 *m, s32 i, s32 a2) {
+    Character *c = CREATURES(m)[i & 0xFF];
+
+    if (c->a.active == 1) {
+        VCALL(c, 0xA8, void (*)(Character *, s32, s32, s32))(c, i, a2, c->a.active);
+    }
+}
+
+/* +0x28 remove creature `i`: its model back (slots 7..9; +0xF630 +0x14, then deleted), it
+ * back to the heap (+0xDC40 +0x14) and deleted */
+void func_002E23B0(u8 *m, s32 i) {
+    u32 n = i & 0xFF;
+    Character *c = CREATURES(m)[n];
+
+    if (c == NULL) {
+        return;
+    }
+    if (n >= 7 && n < 10) {
+        void **model;
+
+        VCALL(m + 0xF630, 0x14, void (*)(void *, void *))(m + 0xF630, c->motion);
+        model = c->motion;
+        if (model != NULL) {
+            VCALL(model, 0x8, void (*)(void *, s32))(model, 1);
+        }
+        c->motion = NULL;
+    }
+    VCALL(m + 0xDC40, 0x14, void (*)(void *, Character *))(m + 0xDC40, c);
+    if (c != NULL) {
+        VCALL(c, 0x8, void (*)(Character *, s32))(c, 1);
+    }
+    CREATURES(m)[n] = NULL;
+}
+
+/* +0x1C keep them: each one saves itself in its Progress slot (+0xA4: slot, up); an empty slot
+ * is cleared */
+void func_002E2480(u8 *m) {
+    u8 *e = (u8 *)gProgress;
+    s32 i;
+
+    for (i = 0; i < 10; i++, e += 36) {
+        Character *c = CREATURES(m)[i];
+
+        if (c != NULL) {
+            VCALL(c, 0xA4, void (*)(Character *, s32, s32))(c, i, c->a.active == 1);
+        } else {
+            AT(e, 0x878, s32) = 0;
+            AT(e, 0x87C, s32) = 0;
+            AT(e, 0x880, s32) = 0;
+            AT(e, 0x884, s16) = 0;
+            AT(e, 0x886, u8) = 0;
+            AT(e, 0x887, u8) = 0;
+            AT(e, 0x888, u8) = 0;
+            AT(e, 0x889, u8) = 0;
+            AT(e, 0x88A, u8) = 0;
+            AT(e, 0x88B, u8) = 0;
+            AT(e, 0x88C, u8) = 0;
+            AT(e, 0x890, s32) = 0;
+            AT(e, 0x894, s32) = 0;
+            AT(e, 0x898, s32) = 0;
+        }
+    }
+}
+
+/* +0x18 set up creature `i` (if up): its +0xA0 (a1, a2, mode, kind, strength, save slot, x) */
+void func_002E2540(u8 *m, s32 a1, s32 a2, s32 mode, s32 i, s32 kind, s32 str, s32 slot, u16 x) {
+    Character *c = CREATURES(m)[i & 0xFF];
+
+    if (c != NULL && c->a.active == 1) {
+        VCALL(c, 0xA0, void (*)(Character *, s32, s32, s32, s32, s32, s32, u16))(c, a1, a2, mode, kind, str, slot, x);
+    }
+}
+
+/* +0x14 send creature `i` (if up) after Fiona: its +0x9C (a1, a2, a4) */
+void func_002E25A0(u8 *m, s32 a1, s32 a2, s32 i, s32 a4) {
+    Character *c = CREATURES(m)[i & 0xFF];
+
+    if (c != NULL && c->a.active == 1) {
+        VCALL(c, 0x9C, void (*)(Character *, s32, s32, s32))(c, a1, a2, a4);
+    }
+}
+
+/* Fiona left by exit `exit`: every creature up hears it (+0x34) */
+void func_002E26C0(u8 *m, s32 exit) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        Character *c = CREATURES(m)[i];
+
+        if (c != NULL && c->a.active == 1) {
+            VCALL(c, 0x34, void (*)(Character *, s32))(c, exit);
+        }
+    }
+}
+
+/* every creature up: its +0x40 (1) */
+void func_002E2740(u8 *m) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        Character *c = CREATURES(m)[i];
+
+        if (c != NULL && c->a.active == 1) {
+            VCALL(c, 0x40, void (*)(Character *, s32))(c, c->a.active);
+        }
+    }
+}
+
+extern VObject *gBootMessage;
+
+/* a pending message (+0x38681 set, its id +0x38680) shown */
+void func_002E27B0(u8 *m) {
+    if (AT(m, 0x38681, u8) != 0) {
+        VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, AT(m, 0x38680, u8));
+    }
+    AT(m, 0x38681, u8) = 0;
+}
+
+/* all of them removed (each one's +0x10 first; the manager's +0x28) */
+void func_002E2920(u8 *m) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        Character *c = CREATURES(m)[i];
+
+        if (c != NULL) {
+            VCALL(c, 0x10, void (*)(Character *))(c);
+            VCALL_AT(m, 0x28, 0x28, void (*)(u8 *, u32))(m, i & 0xFF);
+        }
+    }
+}
