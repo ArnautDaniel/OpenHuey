@@ -97,6 +97,7 @@ extern void **func_00208090(void **e);
 extern void **func_00208EB0(void **e);
 extern void **func_00208300(void **e);
 extern void **func_002082C0(void **e);
+extern void **func_002082A0(void **e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -1948,6 +1949,23 @@ void func_002029B0(VObject *ev) {
         arg.d[2] = PC(ev)[0x12];
         arg.d[3] = PC(ev)[0x13];
         func_002D6090(mgr, slot, &arg);
+        break;
+    }
+    case 0xA9: {   /* a scene effect (func_002082A0, 0x60 bytes), its slot kept in variable pc[1]: pc[2],
+                    * then 8 x be32 pc[3..] / 1000 */
+        u8 *mgr = D_0044E578;
+        s32 slot = scene_effect_new(mgr, 0x60, func_002082A0);
+        struct {
+            f32 a, v[8];
+        } arg __attribute__((aligned(16)));
+        s32 i;
+
+        AT(ev, 0x810 + PC(ev)[1] * 4, s32) = slot;
+        arg.a = (f32)(u32)PC(ev)[2];
+        for (i = 0; i < 8; i++) {
+            arg.v[i] = (f32)be32(PC(ev) + 3 + i * 4) / 1000.0f;
+        }
+        func_002D6090(mgr, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
         break;
     }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
