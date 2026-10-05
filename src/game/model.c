@@ -6,6 +6,7 @@
 #include "sce/libvu0.h"
 #include "navmesh.h"
 #include "model.h"
+#include "input.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
 extern void *gCharacters[6];
@@ -1155,6 +1156,57 @@ void func_001F6E10(u8 *m) {
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x40;
 }
 
+
+/* ---- stick gestures: each recognizer arms once the stick is centred (under 0.4) and fires
+   when it is then pushed fully (over 0.99) in its direction (the angle from func_0031C5C0:
+   0 forward, +-pi back) ---- */
+
+static s32 gesture_step(s32 *state, f32 len, s32 aimed, s32 gesture) {
+    if (*state == 0) {
+        if (len < 0x1.99999ap-2f /* 0.4 */) {
+            *state += 1;
+        }
+        return -1;
+    }
+    if (*state != 1 || len <= 0x1.fae148p-1f /* 0.99 */ || !aimed) {
+        return -1;
+    }
+    *state = 0;
+    return gesture;
+}
+
+/* 0: back (more than pi - 0.6 off forward) */
+s32 func_001F1AD0(u8 *g, f32 len, f32 ang) {
+    if (ang <= 0.0f) {
+        ang = -ang;
+    }
+    return gesture_step(&AT(g, 0x28, s32), len, !(ang <= 0x1.4552e8p+1f /* pi - 0.6 */), 0);
+}
+
+/* 1: forward (within 0.6) */
+s32 func_001F1A10(u8 *g, f32 len, f32 ang) {
+    if (ang <= 0.0f) {
+        ang = -ang;
+    }
+    return gesture_step(&AT(g, 0x2C, s32), len, ang < 0x1.333334p-1f /* 0.6 */, 1);
+}
+
+/* 2: R3 pressed with the stick centred */
+s32 func_001F19C0(u8 *g, f32 len, f32 ang) {
+    return len < 0x1.99999ap-2f /* 0.4 */ && (D_0047E37C & PAD_R3) ? 2 : -1;
+}
+
+/* 3: right (within 0.6 of +pi/2) */
+s32 func_001F1900(u8 *g, f32 len, f32 ang) {
+    return gesture_step(&AT(g, 0x34, s32), len,
+                        !(ang <= 0x1.f10c38p-1f /* pi/2 - 0.6 */) && ang < 0x1.15dca8p+1f /* pi/2 + 0.6 */, 3);
+}
+
+/* 4: left (within 0.6 of -pi/2) */
+s32 func_001F1840(u8 *g, f32 len, f32 ang) {
+    return gesture_step(&AT(g, 0x38, s32), len,
+                        !(ang <= -0x1.15dca8p+1f /* -pi/2 - 0.6 */) && ang < -0x1.f10c38p-1f /* -pi/2 + 0.6 */, 4);
+}
 
 extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (func_001F1AD0, func_001F1A10, ..) */
 extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2(x, z) */

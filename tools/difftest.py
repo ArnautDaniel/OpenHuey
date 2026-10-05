@@ -1641,11 +1641,16 @@ PRE_BYTES: list[tuple[int, int, bytes]] = []   # (arg reg or 0 for absolute, off
 REL_BASE = -(1 << 40)   # lo = REL_BASE - register: the value is that argument + hi
 PRECONDITIONS: list[tuple[int, int, int, int, int]] = []  # (arg reg, offset, lo, hi, size): *(u32 *)(arg + off) in lo..hi
 SAVED_PRE: list[tuple[int, int]] = []   # (callee-saved reg, value): the caller's leftover value
+FPRE: list[tuple[int, float, float]] = []   # (float arg reg, lo, hi): f12=0.0..1.2
 
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
     """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None);
     a0+0x18:u8=0..1 (or :u16, also for @addr): only that many bytes, leaving the neighbours alone."""
+    fv = re.fullmatch(r"f(1[2-9])=(-?\d+(?:\.\d*)?)\.\.(-?\d+(?:\.\d*)?)", spec)
+    if fv:  # a float argument in lo..hi (half the time an end of the range)
+        FPRE.append((int(fv.group(1)), float(fv.group(2)), float(fv.group(3))))
+        return None
     sv = re.fullmatch(r"s([0-7])=(-?\w+)", spec)
     if sv:  # the caller's value of a callee-saved register (an original that reads one it never set)
         SAVED_PRE.append((16 + int(sv.group(1)), int(sv.group(2), 0) & M64))
@@ -1707,6 +1712,9 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
             mem._page(a + i)[(a + i) & 0xFFF] = rnd.getrandbits(8) if h == "??" else int(h, 16)
     for r, v in zip(FARG_REGS, floats):
         c.f[r] = v
+    for r, lo, hi in FPRE:
+        rnd = random.Random(seed * 13 + r)
+        c.f[r] = f2b(rnd.choice([lo, hi]) if rnd.random() < 0.25 else rnd.uniform(lo, hi))
     for r in CALLEE_SAVED + [1, 2, 3, 12, 13, 14, 15, 24, 25]:
         if r not in (28, 29, 31):
             c.s(r, random.Random(seed * 31 + r).getrandbits(64))
@@ -1814,7 +1822,7 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--ret", choices=["auto", "none", "v0", "v0_64", "f0"], default="auto")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--pre", action="append", default=[],
-                    help="input precondition: a0+0x18=0..8 (u32 at arg0+0x18), a1=0..3 (argument), @0x44E568=lo..hi (global), a0+0x10=a0+0x60 (a pointer into an argument, 3 runs in 4)")
+                    help="input precondition: a0+0x18=0..8 (u32 at arg0+0x18), a1=0..3 (argument), @0x44E568=lo..hi (global), f12=0.0..1.5 (float argument), a0+0x10=a0+0x60 (a pointer into an argument, 3 runs in 4)")
     ap.add_argument("--max-steps", type=int, default=MAX_STEPS)
     ap.add_argument("--stub-ret", action="append", default=[], type=lambda x: int(x, 0),
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
@@ -1919,6 +1927,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     runs = opts.runs if opts.runs is not None else DEFAULT_RUNS
     PRE_BYTES.clear()
     SAVED_PRE.clear()
+    FPRE.clear()
     PRECONDITIONS[:] = [x for x in (parse_pre(p) for p in opts.pre) if x is not None]
     STUB_RETURNS[:] = opts.stub_ret
     STUB_RET_PROB[0] = opts.stub_ret_prob

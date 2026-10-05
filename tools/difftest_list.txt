@@ -4237,3 +4237,16 @@ src/game/progress.c func_0016CD60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x1FD
 src/game/progress.c func_0016D2F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0 --pre=@0x44F800=0x0B900000..0x0B900000 --pre=@0x44F804=0..0 --pre=@0x44F808=0x0B910000..0x0B910000 --pre=@0x44F80C=0..0 --pre=@0x44F810=0x0B920000..0x0B920000 --pre=@0x44F814=0x0B930000..0x0B930000 --pre=@0x44FBFC=0x0B940000..0x0B940000 --pre=@0x0B90153C:u8=0..1 --pre=@0x0B91153C:u8=1..2 --pre=@0x0B92153C:u8=2..3 --pre=@0x0B93153C:u8=3..4 --runs=50
 src/game/progress.c func_0016D2F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=2..2 --pre=@0x44F800=0x0B900000..0x0B900000 --pre=@0x44F804=0..0 --pre=@0x44F808=0x0B910000..0x0B910000 --pre=@0x44F80C=0..0 --pre=@0x44F810=0x0B920000..0x0B920000 --pre=@0x44F814=0x0B930000..0x0B930000 --pre=@0x44FBFC=0x0B940000..0x0B940000 --pre=@0x0B90153C:u8=0..1 --pre=@0x0B91153C:u8=1..2 --pre=@0x0B92153C:u8=2..3 --pre=@0x0B93153C:u8=3..4 --runs=50
 src/game/loader.c func_0016BF50 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC=0..1 --pre=a0+0x134=0..1 --pre=a0+0x12784=0..1 --runs=200
+src/game/model.c func_001F1AD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28=0..0 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1AD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28=1..1 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1AD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28=2..2 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1A10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x2C=0..0 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1A10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x2C=1..1 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1A10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x2C=2..2 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1900 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x34=0..0 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1900 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x34=1..1 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1900 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x34=2..2 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=0..0 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=1..1 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F1840 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38=2..2 --pre=f12=0.0..1.2 --pre=f13=-3.2..3.2 --runs=600
+src/game/model.c func_001F19C0 --pre=f12=0.0..1.0 --pre=@0x47E37C=0..15 --runs=300
