@@ -400,3 +400,66 @@ u32 func_0037A370(void *o, s32 i) { return ((u32 *)D_0047B108)[i]; }   /* D_0047
 u32 func_0037A3B0(void *o, s32 i) { return ((u32 *)D_0047B110)[i]; }   /* D_0047A5D0 +0x34 */
 u32 func_0037A6E0(void *o, s32 i) { return ((u32 *)D_0047B11C)[i]; }   /* D_0047A610 +0x34 */
 u32 func_0037A980(void *o, s32 i) { return ((u32 *)D_0047B130)[i]; }   /* D_0047A650 +0x24 */
+
+/* ---- the rooms' script hooks (pointers to members the event commands call) ---- */
+
+#include "game.h"
+#include "actor.h"
+#include "progress.h"
+#include "sce/libvu0.h"
+
+extern Character *gCharacters[];
+extern Character *gCharPursuer;
+extern VObject *D_0044E4B8;   /* the camera: +0xD4 (pos) on screen */
+extern VObject *D_0044E4D0;   /* the events: +0x30 (var, value), +0x34 (var), +0x5C (n) */
+extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
+extern void func_00125960(Character *c);
+extern f32 func_002E2D00(f32 a);
+
+/* the pursuer is about and up to something (+0xE8 0 / 1) or out of sight */
+s32 func_002E5880(void) {
+    Character *p = gCharPursuer;
+
+    if (p != NULL && p->a.active != 0 &&
+        (p->unkE8 == 0 || p->unkE8 == 1 || !(VCALL(D_0044E4B8, 0xD4, u32 (*)(VObject *, f32 *))(D_0044E4B8, p->a.pos) & 0xFF))) {
+        return 1;
+    }
+    return 0;
+}
+
+/* a character `c` hook by the command's byte 3: 0 its +0xE1 / +0xF4 cleared, 1 it turns
+ * (pi - 0.1 x event var 2, at least 1.57; at the limit event +0x5C(3)) and var 2 goes up by 2,
+ * 2 func_00125960; then while character kind 0x21 is right of x -84, event var 1 = 1 */
+s32 func_002E5950(void *self, Character *c, u8 *cmd) {
+    Character *who = gCharacters[func_001770D0(gProgress, 0x21) & 0xFF];
+    VObject *ev;
+    f32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        c->unkE1 = 0;
+        c->unkF4 = 0;
+        break;
+    case 1:
+        ev = D_0044E4D0;
+        a = 0x1.921fb6p+1f /* pi */ - 0x1.99999ap-4f /* 0.1 */ * (f32)(u32)VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2);
+        if (a <= 0x1.91eb86p+0f /* 1.57 */) {
+            a = 0x1.91eb86p+0f;
+            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
+        }
+        a = func_002E2D00(a);
+        c->a.angle[1] = a;
+        sceVu0UnitMatrix(c->a.rot);
+        sceVu0RotMatrixY(c->a.rot, c->a.rot, a);
+        ev = D_0044E4D0;
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 2, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2) + 2);
+        break;
+    case 2:
+        func_00125960(c);
+        break;
+    }
+    if (!(who->a.pos[0] <= -84.0f)) {
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, 1);
+    }
+    return 1;
+}
