@@ -1138,6 +1138,32 @@ void func_0025F850(u8 *o, u8 *def) {
     placed_init(o, 3, def);
 }
 
+/* back to the definition's two vectors */
+void func_0025F810(u8 *o) {
+    u8 *def = AT(o, 0x70, u8 *);
+
+    AT(o, 0x10, f32) = AT(def, 0x10, f32);
+    AT(o, 0x14, f32) = AT(def, 0x14, f32);
+    AT(o, 0x18, f32) = AT(def, 0x18, f32);
+    AT(o, 0x20, f32) = AT(def, 0x20, f32);
+    AT(o, 0x24, f32) = AT(def, 0x24, f32);
+    AT(o, 0x28, f32) = AT(def, 0x28, f32);
+}
+
+
+/* start animation `id` of the object (+0x94 its data from the placed objects' +0x1C, played
+   by +0x98 from the start) */
+void func_0025F9D0(u8 *o, s32 id) {
+    u8 *a;
+
+    AT(o, 0x94, u8 *) = VCALL((VObject *)D_00456DF8, 0x1C, u8 *(*)(void *, u8 *, s32))(D_00456DF8, AT(o, 0x70, u8 *), id);
+    a = AT(o, 0x94, u8 *);
+    if (a != NULL) {
+        func_001F40F0(o + 0x98, AT(a, 0x4, s32), (s32)(a + AT(a, 0x8, s32)), AT(a, 0x0, s32));
+        AT(o, 0x90, s32) = 0;
+    }
+}
+
 extern void *D_0046D750[], *D_0046D7B0[], *D_0046EB40[], *D_0046EC60[];   /* the 4 effect classes */
 extern void *func_002672F0(u32 size, void *place);   /* placement new */
 
@@ -1573,6 +1599,27 @@ extern s32 func_002EC170(u8 *o);
 extern void func_002EBED0(u8 *o);
 extern s32 func_00177200(Progress *p, u32 slot);
 
+/* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
+   kind `kind`, waited 0); then progress slot refresh (func_00177200) */
+static inline void summoner_take(u8 *o, u8 kind) {
+    u8 *pu = gCharPursuer;
+
+    if (pu == NULL) {
+        return;
+    }
+    if (AT(pu, 0x28, u8)) {
+        AT(o, 0x8, s32) = AT(pu, 0x30, s32);
+        AT(o, 0x0, u32) = func_0029CE50(pu) & 0x7FFFFFFF;
+        AT(o, 0xC, s32) = 0;
+        AT(o, 0x11, u8) = kind;
+    }
+    func_00177200(gProgress, AT(pu, 0x20, u32));
+}
+
+void func_002EC470(u8 *o, u8 kind) {
+    summoner_take(o, kind);
+}
+
 /* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
  * +0x28 says the room allows it; then by the stage, +0x64 4) or is placed elsewhere */
 void func_002EC940(u8 *o) {
@@ -1603,17 +1650,7 @@ void func_002EC940(u8 *o) {
         if (!func_0029A8C0(pu, -1)) {
             return;
         }
-        pu = gCharPursuer;
-        if (pu == NULL) {
-            return;
-        }
-        if (AT(pu, 0x28, u8)) {
-            AT(o, 0x8, s32) = AT(pu, 0x30, s32);
-            AT(o, 0x0, u32) = func_0029CE50(pu) & 0x7FFFFFFF;
-            AT(o, 0xC, s32) = 0;
-            AT(o, 0x11, u8) = 1;
-        }
-        func_00177200(p, AT(pu, 0x20, u32));
+        summoner_take(o, 1);
         return;
     }
     if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {

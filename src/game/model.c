@@ -654,12 +654,9 @@ void func_002F7B90(u8 *m) {
 extern s32 func_001F4710(u8 *m, s32 anim);   /* the animation's index in the table +0x874 (-1) */
 extern void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
 
-/* play animation `anim` (its flags from the table +0x874, 6 bytes per entry) from the start,
- * at the default speeds +0x87C / +0x880 */
-void func_002DDE20(u8 *m, s32 anim, s32 variant) {
-    s32 i = func_001F4710(m, anim);
-    u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
-
+/* the motion back to the default speeds (+0x87C / +0x880) from the start, its flags +0x85C /
+   +0x85D cleared */
+static inline void motion_defaults(u8 *m) {
     AT(m, 0x85C, u8) = 0;
     AT(m, 0x85D, u8) = 0;
     AT(m, 0x38, s32) = AT(m, 0x87C, s32);
@@ -668,6 +665,21 @@ void func_002DDE20(u8 *m, s32 anim, s32 variant) {
     AT(m, 0x48, s32) = AT(m, 0x880, s32);
     AT(m, 0x4C, s32) = AT(m, 0x880, s32);
     AT(m, 0x50, s32) = 0;
+}
+
+/* play animation `anim` with these flags, variant and blend at the default speeds */
+void func_002DE030(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+    motion_defaults(m);
+    func_001F7890(m, anim, flags, variant, blend);
+}
+
+/* play animation `anim` (its flags from the table +0x874, 6 bytes per entry) from the start,
+ * at the default speeds +0x87C / +0x880 */
+void func_002DDE20(u8 *m, s32 anim, s32 variant) {
+    s32 i = func_001F4710(m, anim);
+    u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
+
+    motion_defaults(m);
     func_001F7890(m, anim, flags & 0xFFFF, variant, 0.0f);
 }
 
@@ -676,14 +688,7 @@ void func_002DDC60(u8 *m, s32 anim, s32 blend, s32 variant) {
     s32 i = func_001F4710(m, anim);
     u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
 
-    AT(m, 0x85C, u8) = 0;
-    AT(m, 0x85D, u8) = 0;
-    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x40, s32) = 0;
-    AT(m, 0x48, s32) = AT(m, 0x880, s32);
-    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
-    AT(m, 0x50, s32) = 0;
+    motion_defaults(m);
     func_001F7890(m, anim, flags & 0xFFFF, variant, (f32)blend);
 }
 
@@ -692,14 +697,7 @@ void func_002DDBA0(u8 *m, s32 anim, s32 blend) {
     s32 i = func_001F4710(m, anim);
     u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
 
-    AT(m, 0x85C, u8) = 0;
-    AT(m, 0x85D, u8) = 0;
-    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x40, s32) = 0;
-    AT(m, 0x48, s32) = AT(m, 0x880, s32);
-    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
-    AT(m, 0x50, s32) = 0;
+    motion_defaults(m);
     func_001F7890(m, anim, (flags | 8) & 0xFFFF, -1, (f32)blend);
 }
 
@@ -711,14 +709,7 @@ void func_002DDD20(u8 *m, s32 anim, s32 variant) {
 
     i = func_001F4710(m, anim);
     flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
-    AT(m, 0x85C, u8) = 0;
-    AT(m, 0x85D, u8) = 0;
-    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x40, s32) = 0;
-    AT(m, 0x48, s32) = AT(m, 0x880, s32);
-    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
-    AT(m, 0x50, s32) = 0;
+    motion_defaults(m);
     func_001F7890(m, anim, (flags | 8) & 0xFFFF, variant, blend);
 }
 
@@ -3705,14 +3696,7 @@ void func_002E3190(f32 (*m)[4], f32 a) {
 /* reset the play state before a new animation (as func_002DDE20): +0x85C / +0x85D off, the
  * speeds +0x38 / +0x3C and +0x48 / +0x4C from the defaults +0x87C / +0x880, +0x40 / +0x50 zero */
 static void motion_reset_play(u8 *m) {
-    AT(m, 0x85C, u8) = 0;
-    AT(m, 0x85D, u8) = 0;
-    AT(m, 0x38, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x3C, s32) = AT(m, 0x87C, s32);
-    AT(m, 0x40, s32) = 0;
-    AT(m, 0x48, s32) = AT(m, 0x880, s32);
-    AT(m, 0x4C, s32) = AT(m, 0x880, s32);
-    AT(m, 0x50, s32) = 0;
+    motion_defaults(m);
 }
 
 /* play animation `anim` (variant `variant`) blending in over the frames the table (+0x874)

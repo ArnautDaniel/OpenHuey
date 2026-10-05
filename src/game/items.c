@@ -46,9 +46,23 @@ void func_002D69E0(u8 *mgr) {
 
 extern void func_002608D0(u8 *o, VObject *it);   /* remove an entry */
 
+/* entry `i` of list `l`: one tick (+0x30) while it is set (+0x18) and has 2 or more left
+   (+0x34), otherwise it is removed */
+static void item_use(u8 *o, u32 l, u32 i) {
+    VObject *it = AT(o, 0x12E0 + (l & 0xFF) * 0x100 + (i & 0xFF) * 4, VObject *);
+
+    if (it == NULL) {
+        return;
+    }
+    if ((u8)VCALL(it, 0x18, s32 (*)(VObject *))(it) == 1 && !(VCALL(it, 0x34, u32 (*)(VObject *))(it) < 2)) {
+        VCALL(it, 0x30, void (*)(VObject *))(it);
+    } else {
+        func_002608D0(o, it);
+    }
+}
+
 /* each frame: the 3 lists of up to 64 entries (+0x12E0, 0x100 apart, ending at the first
- * empty slot): an entry in use (+0x38 bits 0..1) ticks (+0x30) while it is set (+0x18) and
- * has 2 or more left (+0x34), otherwise it is removed */
+ * empty slot): each one in use (+0x38 bits 0..1) is used (item_use) */
 void func_00260EC0(u8 *o) {
     u32 l, i;
 
@@ -62,16 +76,27 @@ void func_00260EC0(u8 *o) {
             if (!((u8)VCALL(it, 0x38, s32 (*)(VObject *))(it) & 3)) {
                 continue;
             }
-            it = AT(o, 0x12E0 + (l & 0xFF) * 0x100 + (i & 0xFF) * 4, VObject *);
+            item_use(o, l, i);
+        }
+    }
+}
+
+/* use item `id` (+0xC) wherever it is in the lists: 1 if it was there */
+s32 func_00260BB0(u8 *o, s32 id) {
+    u32 l, i;
+
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 64; i++) {
+            VObject *it = AT(o, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
             if (it == NULL) {
-                continue;
+                break;
             }
-            if ((u8)VCALL(it, 0x18, s32 (*)(VObject *))(it) == 1 &&
-                !(VCALL(it, 0x34, u32 (*)(VObject *))(it) < 2)) {
-                VCALL(it, 0x30, void (*)(VObject *))(it);
-            } else {
-                func_002608D0(o, it);
+            if (id == VCALL(it, 0xC, s32 (*)(VObject *))(it)) {
+                item_use(o, l, i);
+                return 1;
             }
         }
     }
+    return 0;
 }
