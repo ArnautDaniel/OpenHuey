@@ -8295,6 +8295,57 @@ void func_0018DA00(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2CC8);
 }
 
+/* D_003B2CB8: a held command (moveSub 0x28: 0xC07 then 0xC08 repeated FI 0x1AD6C0 times -
+ * 3 while Hewie answers it (his moveMode 0xC, normal mode), cut to 2 if he does once it plays -
+ * then 0xC09; 0x2B / 0x24 one gesture): at each animation's event 0x20 the next; at the end
+ * Hewie's reaction (6 / 5 / 7) and idle */
+void func_0018DC30(Fiona *f) {
+    Progress *p = gProgress;
+
+    if ((func_00177620(p) & 0xFF) == 0 && f->c.moveSub == 0x28 && FI(f, 0x1AD6B8, s32) == 3 &&
+        FI(f, 0x1AD5D5, u8) == 1 && ((Character *)gCharPartner)->moveMode == 0xC &&
+        AT(f->c.motion, 0x55C, s32) == 0xC08) {
+        FI(f, 0x1AD6C0, s32) = 2;
+    }
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        switch (f->c.moveSub) {
+        case 0x28:
+            switch (AT(f->c.motion, 0x55C, s32)) {
+            case 0xC07:
+                FI(f, 0x1AD6C0, s32) = 1;
+                if ((func_00177620(p) & 0xFF) == 0 && FI(f, 0x1AD5D5, u8) == 1 &&
+                    ((Character *)gCharPartner)->moveMode == 0xC) {
+                    FI(f, 0x1AD6C0, s32) = 3;
+                }
+                func_002DDE20(f->c.motion, 0xC08, -1);
+                break;
+            case 0xC08:
+                FI(f, 0x1AD6C0, s32) -= 1;
+                if (FI(f, 0x1AD6C0, s32) == 0) {
+                    func_002DDE20(f->c.motion, 0xC09, -1);
+                } else {
+                    func_002DDE20(f->c.motion, 0xC08, -1);
+                }
+                break;
+            case 0xC09:
+                hewie_react(f, 6);
+                door_give_up(f, p);
+                break;
+            }
+            break;
+        case 0x2B:
+            hewie_react(f, 5);
+            door_give_up(f, p);
+            break;
+        case 0x24:
+            hewie_react(f, 7);
+            door_give_up(f, p);
+            break;
+        }
+    }
+    func_00125A10(&f->c);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
