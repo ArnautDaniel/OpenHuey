@@ -1144,6 +1144,51 @@ void func_001BA070(u8 *r, u8 mode) {
     AT(r, 0x304C06, u8) = mode;
 }
 
+/* +0x90 the whole screen in colour `rgba` (blended by its alpha) in layer 0x22, drawn as eight
+ * 64-pixel columns (each scissored), Z writes off around it; 1 if drawn */
+s32 func_001B9000(VObject *r, u32 rgba) {
+    u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x22, 0x31);
+    u64 ys = (u64)0x01BF0000 << 32;   /* SCISSOR_1 rows 0..447 */
+    s32 i;
+
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = 0x10000021;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000021;   /* DIRECT */
+    p[2] = 0x8020 | (0x10000000ULL << 32);
+    p[3] = 0xE;
+    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: no Z writes */
+    p[5] = 0x4E;
+    p[6] = 0x30000;                     /* TEST_1: Z always */
+    p[7] = 0x47;
+    p[8] = 0x44;                        /* ALPHA_1: (Cs - Cd) * As + Cd */
+    p[9] = 0x42;
+    AT(p, 0x50, u32) = rgba;            /* RGBAQ */
+    AT(p, 0x54, u32) = 0x3F800000;
+    p[11] = 1;
+    p[12] = 0x46;                       /* PRIM: sprite, blended */
+    p[13] = 0;
+    for (i = 0; i < 8; i++) {
+        u64 *q = p + 14 + i * 6;
+
+        q[0] = ((u64)(i * 64) | (u64)(i * 64 + 63) << 16) | ys;   /* SCISSOR_1: a 64-pixel column */
+        q[1] = 0x40;
+        q[2] = 0x72007000;              /* XYZ3 */
+        q[3] = 0xD;
+        q[4] = 0x8E009000;              /* XYZ2 */
+        q[5] = 5;
+    }
+    p[62] = 0x310000A0;                 /* ZBUF_1: Z writes on */
+    p[63] = 0x4E;
+    p[64] = 0x5000F;                    /* TEST_1 */
+    p[65] = 0x47;
+    p[66] = 0x01FF0000 | ys;            /* SCISSOR_1: the whole screen */
+    p[67] = 0x40;
+    return 1;
+}
+
 /* the 17-word argument block handed on to +0x84 */
 void func_001B9260(VObject *r, s32 *a) {
     VCALL(r, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32,

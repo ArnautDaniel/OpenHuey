@@ -4087,3 +4087,392 @@ s32 func_002AFB50(void) {
     k = AT(c, 0x153C, u8);
     return k == 2 || k == 6 || k == 7;
 }
+
+/* ---- rooms 0x02 .. 0x12 ---- */
+
+extern const char *const D_003F0DBC, *const D_003F0DC0;   /* room 0x03 (and D_003F0DC4) */
+extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8) */
+extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
+extern const f32 D_003F2180[4][4];   /* room 0x06: where its four objects go */
+extern const char D_0047A9A0[7];     /* room 0x06: the first object's name (its 6th letter counts on) */
+extern const char *const D_003F5440[];                  /* room 0x0C (+13: the three pairs) */
+extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
+extern void *D_00479AC0[], *D_00471060[], *D_00470E20[];
+extern void func_002EFB70(u8 *panic, f32 amount);
+extern s32 func_001B9000(VObject *r, u32 rgba);
+
+/* an object's angle field `off` set, if it is there */
+static inline void obj_angle(const char *name, u32 off, u32 bits) {
+    u8 *o = room_obj(name);
+
+    if (o != NULL) {
+        AT(o, off, u32) = bits;
+    }
+}
+
+static void effect_479ac0_init(void **obj) {
+    obj[0] = D_00479AC0;
+}
+
+/* an effect of class D_00479AC0 (0x10 bytes) on object `o` with value `f` */
+static inline void obj_effect(u8 *o, u32 f) {
+    struct {
+        u8 *o;
+        u32 f;
+    } prm;
+    s32 slot = Effect_New(D_0044E578, 0x10, effect_479ac0_init);
+
+    prm.f = f;
+    prm.o = o;
+    func_002D6090(D_0044E578, slot, &prm);
+}
+
+/* room 0x02 (D_003F03C8): the pursuer is about, in a mode other than 0, 1 or 5, and progress
+ * +0x1130 isn't 0xFE */
+s32 func_002A8F50(void) {
+    Character *s = gCharPursuer;
+
+    if (s == NULL || s->a.active == 0 || AT(s, 0xE8, s32) == 0 || AT(s, 0xE8, s32) == 1 || AT(s, 0xE8, s32) == 5) {
+        return 0;
+    }
+    if (AT(gProgress, 0x1130, u8) == 0xFE) {
+        return 0;
+    }
+    return 1;
+}
+
+/* room 0x02 (D_003F0388): the panic (progress +0x7B8) raised to 80 */
+s32 func_002A9460(void) {
+    u8 *p = (u8 *)gProgress;
+    f32 t = 80.0f - AT(p, 0x7BC, f32);
+
+    if (!(t < 0.0f)) {
+        func_002EFB70(p + 0x7B8, t);
+    }
+    return 1;
+}
+
+/* room 0x03 (D_003F0D90): three objects turned (-60, -60 degrees about x; -90 about z) */
+s32 func_002A99A0(void) {
+    obj_angle(D_003F0DBC, 0x10, 0xBF860A92);
+    obj_angle(D_003F0DC0, 0x10, 0xBF860A92);
+    obj_angle(D_003F0DC4, 0x18, 0xBFC90FDB);
+    return 1;
+}
+
+/* room 0x04 (D_003F17A0): an effect on one object (byte 3 0: at 90 degrees) or the other (0) */
+s32 func_002A9B70(void *self, void *a1, u8 *cmd) {
+    u8 *o;
+    u32 f;
+
+    if (cmd[3] == 0) {
+        o = room_obj(D_003F17B8);
+        f = 0x3FC90FDB;
+    } else {
+        o = room_obj(D_003F17C8);
+        f = 0;
+    }
+    obj_effect(o, f);
+    return 1;
+}
+
+/* room 0x04 (D_003F1790): byte 3 0: room effect 0x1B (D_00479560) on its object, a box (640,
+ * -560, 1000, 0, 0x60); else the effect gone */
+s32 func_002A9CE0(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        u8 *o = room_obj(D_003F17B4);
+
+        if (o != NULL) {
+            struct {
+                f32 x, y, z;
+                u8 *o;
+                s32 a, b;
+            } prm;
+
+            prm.a = 0;
+            prm.x = 640.0f;
+            prm.y = -560.0f;
+            prm.z = 1000.0f;
+            prm.b = 0x60;
+            prm.o = o;
+            room_effect_new(D_0044E4C0, 0x1B, D_00479560);
+            func_00266C70(D_0044E4C0, 0x1B, &prm);
+        }
+    } else {
+        func_002670F0(D_0044E4C0, 0x1B);
+    }
+    return 1;
+}
+
+/* room 0x04 (D_003F1780): five objects turned -75 / 75 degrees in turn */
+s32 func_002A9E20(void) {
+    obj_angle(D_003F17CC, 0x14, 0xBFA78D37);
+    obj_angle(D_003F17D0, 0x14, 0x3FA78D37);
+    obj_angle(D_003F17D4, 0x14, 0xBFA78D37);
+    obj_angle(D_003F17D8, 0x14, 0x3FA78D37);
+    obj_angle(D_003F17DC, 0x14, 0xBFA78D37);
+    return 1;
+}
+
+/* room 0x06 (D_003F21C0): its four objects (the name's 6th letter counting) to their places */
+s32 func_002AA380(void) {
+    char name[7];
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        name[i] = D_0047A9A0[i];
+    }
+    for (i = 0; i < 4; i++) {
+        u8 *o = room_obj(name);
+
+#ifdef HG_NATIVE
+        if (o != NULL)   /* (the PS2 writes through junk) */
+#endif
+        sceVu0CopyVector((f32 *)(o + 0x20), (f32 *)D_003F2180[i]);
+        name[5]++;
+    }
+    return 1;
+}
+
+/* room 0x08 (D_003F31F0): the stalker is there but not about */
+s32 func_002AA580(void) {
+    u8 *c = D_0044F808;
+
+    return c != NULL && AT(c, 0x28, u8) == 0;
+}
+
+/* room 0x08 (D_003F31C0): the cutscene director's +0x6C 3 (byte 3 0) or 2 */
+s32 func_002AA8C0(void *self, void *a1, u8 *cmd) {
+    VCALL(D_0044FE10, 0x6C, void (*)(VObject *, s32))(D_0044FE10, cmd[3] == 0 ? 3 : 2);
+    return 1;
+}
+
+/* room 0x09 (D_003F3C50): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in another
+ * room than 9 (the player about too) */
+s32 func_002AAA60(void) {
+    Character *s = gCharPursuer, *p = gCharPlayer;
+    u8 k;
+
+    if (s == NULL || s->a.active == 0 || p == NULL || p->a.active == 0 || AT(s, 0xC4, s32) == 2) {
+        return 0;
+    }
+    k = AT(s, 0x153C, u8);
+    if (k != 2 && k != 6 && k != 7) {
+        return 0;
+    }
+    return AT(s, 0x30, s32) != 9;
+}
+
+/* room 0x0A (D_003F4388): an effect on its object at -2.88 */
+s32 func_002AAC30(void) {
+    obj_effect(room_obj(D_003F43A0), 0xC0384E89);
+    return 1;
+}
+
+/* room 0x0B (D_003F4640): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6 */
+s32 func_002AB130(void *self, void *a1, u8 *cmd) {
+    f32 dx = (f32)(s16)(cmd[3] << 8 | cmd[4]) - gCharPlayer->a.pos[0];
+    f32 dz = (f32)(s16)(cmd[5] << 8 | cmd[6]) - gCharPlayer->a.pos[2];
+    f32 d = ee_sqrtf(dz * dz + dx * dx);
+
+    return !(d < 20.0f) && d <= 120.0f;
+}
+
+/* room 0x0C (D_003F5428): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30, phase
+ * +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the swing
+ * down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any swings */
+s32 func_002AB300(void *self, void *a1, u8 *cmd) {
+    s32 moving = 0;
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        u8 *o = room_obj(D_003F5440[cmd[4] + i * 2 + 13]);
+        f32 a;
+
+        switch (cmd[3]) {
+        case 0:
+            sceVu0CopyVector((f32 *)(o + 0x30), (f32 *)(o + 0x20));
+            AT(o, 0x34, f32) = 0.5f * (f32)i;
+            AT(o, 0x3C, f32) = 0.5f + 0.25f * (f32)(u32)(i != 2);
+            break;
+        case 1:
+            a = AT(o, 0x34, f32) + 0x1.0c1524p+0f /* 60 degrees */;
+            AT(o, 0x34, f32) = a;
+            if (!(a <= 0x1.921fb6p+1f /* pi */)) {
+                AT(o, 0x34, f32) = a - 0x1.921fb6p+2f /* 2 pi */;
+            }
+            AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - 0x1.99999ap-4f /* 0.1 */;
+            AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+            if (!(AT(o, 0x3C, f32) <= 0.0f)) {
+                moving = 1;
+                break;
+            }
+            AT(o, 0x20, f32) = 10.0f;
+            break;
+        case 2:
+            AT(o, 0x20, f32) = 10.0f;
+            break;
+        }
+    }
+    return moving ? 2 : 1;
+}
+
+/* room 0x0C (D_003F5418): the screen darkened as the cutscene runs past frame 0x4AE (32 a
+ * frame, up to 0x80) */
+s32 func_002AB510(void) {
+    u32 a = (u32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x4AE) << 5;
+
+    if (a > 0x80) {
+        a = 0x80;
+    }
+    func_001B9000(D_0044E4F0, a << 24);
+    return 1;
+}
+
+/* room 0x0C (D_003F5408): script variable byte 3 down by the player's hit (byte 4: 1 from the
+ * weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0 */
+s32 func_002AB580(void *self, void *a1, u8 *cmd) {
+    VObject *ev = D_0044E4D0;
+    s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[3]);
+    s32 k;
+
+    if (cmd[4] != 0) {
+        k = AT(gCharPlayer, 0xFC, s32) == 0x1A ? 1 : 5;
+    } else {
+        k = VCALL((VObject *)gCharPursuer, 0x108, s32 (*)(VObject *))((VObject *)gCharPursuer);
+    }
+    if (k > 0) {
+        v -= k;
+        if (v < 0) {
+            v = 0;
+        }
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[3], v);
+    }
+    return 1;
+}
+
+/* room 0x0C (D_003F53F8): room effect 0x1C (a depth range) widening with the cutscene from frame
+ * 0x2D0: near 1 + 1.5 t (at most 46), far 64.4 + 1.7 t (at most 116.5) */
+s32 func_002AB660(void) {
+    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x2D0);
+    f32 r[4];
+    f32 v;
+
+    room_effect_new(D_0044E4C0, 0x1C, D_0046EC60);
+    v = 1.0f + 1.5f * t;
+    r[0] = v <= 46.0f ? v : 46.0f;
+    r[1] = v <= 46.0f ? v : 46.0f;
+    v = 0x1.019999ap+6f /* 64.4 */ + 0x1.b33334p+0f /* 1.7 */ * t;
+    r[2] = v <= 116.5f ? v : 116.5f;
+    r[3] = v <= 116.5f ? v : 116.5f;
+    func_00266C70(D_0044E4C0, 0x1C, r);
+    return 1;
+}
+
+/* room 0x0F (D_003F6F28): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and +0xCC */
+s32 func_002ABB10(void *self, void *a1, u8 *cmd) {
+    VObject *m = gCharPlayer->motion;
+
+    if (cmd[3] == 0) {
+        VCALL(m, 0xD0, void (*)(VObject *, f32, f32, f32))(m, 0.0f, 1.5f, -2.0f);
+        VCALL(m, 0xCC, void (*)(VObject *, s32))(m, 1);
+    } else {
+        VCALL(m, 0xD0, void (*)(VObject *, f32, f32, f32))(m, 0.0f, 1.5f, -1.5f);
+        VCALL(m, 0xCC, void (*)(VObject *, s32))(m, 0);
+    }
+    return 1;
+}
+
+/* room 0x0F (D_003F6F18): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3 */
+s32 func_002ABBC0(void *self, void *a1, u8 *cmd) {
+    VObject *m = gCharPlayer->motion;
+
+    if (cmd[3] == 0) {
+        VCALL(m, 0xBC, void (*)(VObject *, s32, f32))(m, 1, 0.25f);
+    } else {
+        VCALL(m, 0xBC, void (*)(VObject *, s32, f32))(m, 0, 0.0f);
+    }
+    return 1;
+}
+
+static void effect_471060_init(void **obj) {
+    obj[0] = D_00471060;
+}
+
+/* room 0x0F (D_003F6F08): an effect (D_00471060, 0x840 bytes) with its box */
+s32 func_002ABC20(void) {
+    s32 slot = Effect_New(D_0044E578, 0x840, effect_471060_init);
+    f32 prm[9];
+
+    prm[1] = 140.0f;
+    prm[2] = -9.5f;
+    prm[0] = 0.0f;
+    prm[3] = 90.0f;
+    prm[6] = 0.0f;
+    prm[4] = 18.0f;
+    prm[8] = 0.0f;
+    prm[5] = 110.0f;
+    prm[7] = -90.0f;
+    func_002D6090(D_0044E578, slot, prm);
+    return 1;
+}
+
+/* an object's +0x14 back to 0 (the PS2 writes through junk when it isn't there) */
+static inline void obj_unturn(const char *name) {
+    u8 *o = room_obj(name);
+
+#ifdef HG_NATIVE
+    if (o == NULL) {
+        return;
+    }
+#endif
+    AT(o, 0x14, s32) = 0;
+}
+
+/* room 0x0F (D_003F6EF8): three objects' +0x14 back to 0 */
+s32 func_002ABD50(void) {
+    obj_unturn(D_003F6F48);
+    obj_unturn(D_003F6F4C);
+    obj_unturn(D_003F6F50);
+    return 1;
+}
+
+/* room 0x10 (D_003F78F8): the stalker is there, not about, in mode 2, 6 or 7 */
+s32 func_002AC040(void) {
+    u8 *c = D_0044F808;
+    u8 k;
+
+    if (c == NULL || AT(c, 0x28, u8) != 0) {
+        return 0;
+    }
+    k = AT(c, 0x153C, u8);
+    return k == 2 || k == 6 || k == 7;
+}
+
+/* room 0x12 (D_003F9160): the pursuer is about, in a mode other than 0 and 3 */
+s32 func_002AC2D0(void) {
+    Character *s = gCharPursuer;
+
+    return s != NULL && s->a.active != 0 && AT(s, 0xE8, s32) != 3 && AT(s, 0xE8, s32) != 0;
+}
+
+static void smoke_puffs_init(void **obj) {
+    obj[0] = D_00470E20;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+/* room 0x12 (D_003F9150): byte 3 0: the smoke puffs (D_00470E20), their slot in script
+ * variable 0; else that slot started */
+s32 func_002AC370(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0x1C60, smoke_puffs_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+    } else {
+        func_002D6090(D_0044E578,
+                      VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0), NULL);
+    }
+    return 1;
+}
