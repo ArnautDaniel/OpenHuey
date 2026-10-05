@@ -1399,6 +1399,20 @@ void func_00221FD0(VObject *doors, s32 set, u8 a, s32 b) {
     }
 }
 
+/* SceneGame +0xF6CD30: effect slot n (+0x1438[n]) back to the pool (+0x1400) */
+void func_002670F0(u8 *fx, s32 n) {
+    VObject **slot;
+
+    if (n >= 0x20) {
+        return;
+    }
+    slot = &AT(fx, 0x1438 + n * 4, VObject *);
+    if (*slot != NULL) {
+        VCALL((VObject *)(fx + 0x1400), 0x14, void (*)(VObject *, void *))((VObject *)(fx + 0x1400), *slot);
+        *slot = NULL;
+    }
+}
+
 /* SceneGame +0xF6CD30: pass `arg` to effect slot n (+0x1438[n], its +0x18); 0: none */
 s32 func_00266C70(u8 *o, s32 n, void *arg) {
     VObject *e;

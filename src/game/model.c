@@ -3719,6 +3719,30 @@ void func_002DDED0(u8 *m, s32 anim, s32 variant) {
     func_001F7890(m, anim, flags & 0xFFFF, variant, blend);
 }
 
+/* play animation `anim` driven from outside: both motion layers' flag 0x10 (no own time) */
+void func_002DD040(u8 *m, s32 anim) {
+    func_002DDED0(m, anim, 0);
+    AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x10;
+    AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
+}
+
+extern VObject *D_0044FE10;   /* the cutscene director */
+
+/* the motion's time (+0x6A4 +0) = the director's frame (+0x20), shared by the three blend
+   channels' time pointers (+0x704, 0x60 apart) */
+void func_002DD090(u8 *m) {
+    s32 i;
+
+    *AT(m, 0x6A4, f32 *) = (f32)VCALL(D_0044FE10, 0x20, s32 (*)(VObject *))(D_0044FE10);
+    for (i = 0; i < 3; i++) {
+        f32 *t = AT(m, 0x704 + i * 0x60, f32 *);
+
+        if (t != NULL) {
+            *t = *AT(m, 0x6A4, f32 *);
+        }
+    }
+}
+
 
 /* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
  * previous slot's animation (+0x6A8; the time wrapped into it) */

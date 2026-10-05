@@ -1653,3 +1653,42 @@ s32 func_001779A0(Progress *p) {
 s32 func_001780A0(Progress *p) {
     return 0;
 }
+
+/* ---- a character's cutscene motion buffer: Fiona's (+0x1AD540) as big as her model says
+ * (+0xAC whether, +0xB0 how big), the others' (+0x1688) their data size +0x1C (vtable +0xFC);
+ * Hewie none ---- */
+
+void func_0016D050(Progress *p, s32 slot) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    u8 *c = (u8 *)gCharacters[slot];
+
+    if (slot == 0) {
+        VObject *m = AT(c, 0xF0, VObject *);
+
+        if (VCALL(m, 0xAC, s32 (*)(VObject *))(m) == 0) {
+            AT(c, 0x1AD540, void *) = NULL;
+        } else {
+            AT(c, 0x1AD540, void *) = VCALL(heap, 0x10, void *(*)(VObject *, u32))(
+                heap, VCALL(AT(c, 0xF0, VObject *), 0xB0, u32 (*)(VObject *))(AT(c, 0xF0, VObject *)));
+        }
+    } else if (slot != 1) {
+        u32 n = AT(VCALL((VObject *)c, 0xFC, u8 *(*)(VObject *))((VObject *)c), 0x1C, u32);
+
+        AT(c, 0x1688, void *) = n == 0 ? NULL : VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, n);
+    }
+}
+
+void func_0016CF50(Progress *p, s32 slot) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    u8 *c = (u8 *)gCharacters[slot];
+
+    if (slot == 0) {
+        VObject *m = AT(c, 0xF0, VObject *);
+
+        if (VCALL(m, 0xAC, s32 (*)(VObject *))(m) != 0) {
+            VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0x1AD540, void *));
+        }
+    } else if (slot != 1 && AT(VCALL((VObject *)c, 0xFC, u8 *(*)(VObject *))((VObject *)c), 0x1C, u32) != 0) {
+        VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0x1688, void *));
+    }
+}

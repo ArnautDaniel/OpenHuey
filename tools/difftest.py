@@ -75,9 +75,12 @@ OUTPARAM = 4                 # bytes a stub writes through a stack pointer argum
 # original code expresses something C code writes inline (e.g. PTMF calls).
 INLINE_HELPERS = ("__ptmf_scall", "__ptmf_test", "__nw__FUiPv")
 INLINE_ADDRS: set[int] = set()
+INLINE_EXTRA: set[int] = set()   # --inline: pure game functions run in place (the C may call them less)
 # va_list arguments (callee address -> register): a pointer to the saved variadic arguments
 # in the caller's frame, which sits at different alignments in the two versions
 VA_LIST_ARGS = {0x0026ED98: 7}   # vsnprintf(buf, n, fmt, ap)
+# output-only buffers (callee address -> register): what they held before the call is no input
+OUT_BUFFER_ARGS = {0x0026EDD0: 4, 0x0026ED98: 4}   # snprintf / vsnprintf (buf, ...)
 # variadic callees (address -> first variadic register): a register there the original didn't
 # set for the call is not an argument (the format takes fewer), whatever it holds
 VARIADIC_FIRST = {0x00380B80: 7, 0x00384730: 11, 0x00384800: 9, 0x0026EDD0: 7}
@@ -466,6 +469,9 @@ class CPU:
         va = VA_LIST_ARGS.get(target)
         if va in args and str(args[va]).startswith("stack"):
             args[va] = "stack"
+        ob = OUT_BUFFER_ARGS.get(target)
+        if ob in args and str(args[ob]).startswith("stack"):
+            args[ob] = "stack"
         args["pending"] = frozenset(r for r in ints if r in self.wset)
         args["written"] = frozenset(r for r in ints if r in self.wall)
         fargs = {r: self.f[r] for r in floats}
@@ -678,7 +684,8 @@ class CPU:
                     pc, npc = pc + 8, pc + 12
                 else:
                     pc, npc = self.g(31) & M32, (self.g(31) & M32) + 4
-            elif kind == "call" and (target in INLINE_ADDRS or self.func_lo <= target < self.func_hi):
+            elif kind == "call" and (target in INLINE_ADDRS or target in INLINE_EXTRA
+                                     or self.func_lo <= target < self.func_hi):
                 # direct call to a runtime helper, our own static helper, or recursion: run it
                 pc, npc = target, target + 4
             elif kind in ("call", "vcall"):  # indirect calls (vtables, function pointers) are always stubbed
@@ -1811,6 +1818,9 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--outparam-at", action="append", default=[],
                     help="CALLEE:ARG:BYTES - that stub writes BYTES through stack argument ARG (0 = a0), "
                          "e.g. 0x25C770:1:64 for a matrix out-parameter; repeatable")
+    ap.add_argument("--inline", action="append", default=[],
+                    help="a pure (leaf) game function run in place rather than stubbed: the C may "
+                         "call it fewer times (a getter whose result the original drops); repeatable")
     ap.add_argument("--strict-vu0", action="store_true",
                     help="emulated libvu0 calls must line up as calls too (default: only their results compare)")
     ap.add_argument("--outparam", type=int, default=OUTPARAM,
@@ -1907,6 +1917,9 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
         OUTPARAM_AT[(addr, arg)] = n
     STACK_ARG_BYTES[0] = max(1, min(16, opts.stack_arg_bytes))
     STRICT_VU0[0] = opts.strict_vu0
+    INLINE_EXTRA.clear()
+    for name in opts.inline:
+        INLINE_EXTRA.update(v for n, v, _, _, _ in game_symbols() if n == name)
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
     global _RUN_CTX
