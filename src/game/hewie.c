@@ -1483,7 +1483,7 @@ void func_001519B0(Hewie *h) {
 }
 
 extern const PTMF D_003B1998, D_003B1B78;
-extern s32 func_001391E0(Hewie *h, s32 a, s32 b);   /* u8 */
+extern s32 func_001391E0(Hewie *h, s32 praise, s8 by);   /* u8 */
 
 void func_00151A60(Hewie *h) {
     if (--HW(h, 0xF36B4, s32) == 0) {
@@ -3316,4 +3316,121 @@ Character *func_001379C0(Hewie *h) {
         }
     }
     return best;
+}
+
+/* his bite at bone `bone` of his model (within `margin`): each creature in slots 7..9 in his
+ * room, hostile (+0x3C), not yet bitten (`done`: a bit per slot +0x20) and not protected
+ * (+0x2D), whose body the point is in (its height +0x14 .. +0xCC, its radius +0xC8, plus the
+ * margin) is hit for `damage` (state 4, unless already 7); the slots hit */
+u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 hit = 0;
+    s32 i;
+
+    if (bone != -1) {
+        sceVu0CopyVector(at, func_0017CE80(AT(h->c.motion, 0x810, void *), bone) + 12);
+    }
+    for (i = 0; i < 10; i++) {
+        Character *c = D_0044F258[i];
+
+        if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 ||
+            (done & (1 << c->a.slot))) {
+            continue;
+        }
+        if (i < 7 || AT(c, 0x2D, u8) != 0) {
+            continue;
+        }
+        if (at[1] <= c->a.pos[1] - margin || !(at[1] < margin + (c->a.pos[1] + AT(c, 0xCC, f32)))) {
+            continue;
+        }
+        sceVu0SubVector(d, c->a.pos, at);
+        if (!(__builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0])) < margin + AT(c, 0xC8, f32))) {
+            continue;
+        }
+        if (c->state[0] != 7) {
+            /* (the original copies a local whose last fields are never set) */
+            c->state[0] = 4;
+            c->state[1] = 1;
+            c->state[2] = 1;
+            c->state[3] = damage;
+            c->state[4] = 0;
+            *(f32 *)&c->state[5] = 0.0f;
+            c->state[6] = 0;
+            c->state[7] = 0;
+        }
+        hit |= 1 << c->a.slot;
+    }
+    return hit;
+}
+
+extern VObject *D_0044E550;   /* random numbers: +0x1C 0..1 */
+
+/* whether he dares go for the character in `slot`: from trust level 2, a 1-in-16 roll under
+   his level + 1 + his feeling for its kind (+0xF367C.. / 5, at most 8) */
+u32 func_00138460(Hewie *h, s32 slot) {
+    Character *c = (Character *)gCharacters[slot];
+    s32 n = 0;
+
+    if (HW(h, 0xF35CC, s16) < 2 || c == NULL || c->a.active != 1) {
+        return 0;
+    }
+    switch (c->unk153C) {
+    case 2: case 6: case 7: case 27:   /* Debilitas */
+        n = HW(h, 0xF367C, s16) / 5;
+        break;
+    case 3: case 34: case 35: case 36:   /* Daniella */
+        n = HW(h, 0xF367E, s16) / 5;
+        break;
+    case 4: case 23: case 37:   /* Riccardo */
+        n = HW(h, 0xF3682, s16) / 5;
+        break;
+    case 10: case 11: case 12: case 39:   /* Lorenzo */
+        n = HW(h, 0xF3680, s16) / 5;
+        break;
+    }
+    if (n >= 9) {
+        n = 8;
+    }
+    return (s32)(16.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < n + HW(h, 0xF35CC, s16) + 1;
+}
+
+/* praised (`praise` 1) or scolded for what he just did (+0xF36A4, when it is still +0xF36A8):
+   after action 0x78 his skills involved (+0xF36A2 of them, indices +0xF3696) move by `by`
+   (0..31) - up for good ones (+0xF369C), down for bad ones; scolding the other way. 1 if it
+   counted */
+s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
+    s32 i;
+
+    if (HW(h, 0xF36A4, s32) == 0 || HW(h, 0xF36A4, s32) != HW(h, 0xF36A8, s32)) {
+        return 0;
+    }
+    if (HW(h, 0xF36A8, s32) == 0x78) {
+        for (i = 0; i < HW(h, 0xF36A2, u8); i++) {
+            u8 k = HW(h, 0xF3696 + i, u8);
+            s8 *v = &HW(h, 0xF3690 + k, s8);
+            s32 up = HW(h, 0xF369C + k, u8) != 0;
+
+            if (praise != 1) {
+                up = !up;
+            }
+            if (up) {
+                *v += by;
+                v = &HW(h, 0xF3690 + HW(h, 0xF3696 + i, u8), s8);
+                if (*v >= 0x20) {
+                    *v = 0x1F;
+                }
+            } else {
+                *v -= by;
+                v = &HW(h, 0xF3690 + HW(h, 0xF3696 + i, u8), s8);
+                if (*v < 0) {
+                    *v = 0;
+                }
+            }
+        }
+    }
+    HW(h, 0xF368C, s32) = 0;
+    HW(h, 0xF36AC, s32) = 0;
+    HW(h, 0xF36A4, s32) = 0;
+    return 1;
 }
