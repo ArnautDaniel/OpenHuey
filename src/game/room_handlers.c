@@ -4920,3 +4920,134 @@ s32 func_00300520(void) {
     colour_pulse(9, 0x5A, 0x44, 0x46, 0x52, 0x4B);
     return 1;
 }
+
+/* ---- room 0x66's fires, room 0x62's swinging object, a room creature class ---- */
+
+extern void *D_00478B50[];
+extern const char *const D_0047AD08[];   /* room 0x62's objects */
+extern const PTMF D_00422348;            /* a creature state */
+extern void *D_00471290[], *D_0046D810[], *D_0046C220[], *D_00469C60[];
+extern void func_00124E40(Actor *a);
+
+static void fire_init(void **obj) {
+    obj[0] = D_00478B50;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+/* room 0x66 (D_0041F580): byte 4 0 lights a fire (D_00478B50, kind byte 3), its slot in script
+ * variable 8; else that fire put out (-1) */
+s32 func_00300650(void *self, void *a1, u8 *cmd) {
+    if (cmd[4] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0x1C60, fire_init);
+        s32 prm[4] = {0, 0, 0, 0};   /* (zeroed past the two words, as the original's stack) */
+
+        prm[0] = cmd[3];
+        prm[1] = 1;
+        func_002D6090(D_0044E578, slot, prm);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 8, slot);
+    } else {
+        s32 off[4] = {-1, 0, 0, 0};
+
+        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 8), off);
+    }
+    return 1;
+}
+
+/* room 0x66 (D_0041F570): character 8 sinks 0.1 a frame: a fire (kind byte 3) as it starts
+ * (slot in variable 7), put out below -24; done (1) below -25, else wait (2) */
+s32 func_003007E0(void *self, void *a1, u8 *cmd) {
+    Character *c = gCharacters[(u8)func_001770D0(gProgress, 8)];
+    f32 y = c->a.pos[1] - 0x1.99999a0000000p-4f /* 0.1 */;
+
+    c->a.pos[1] = y;
+    if (y <= -0x1.99999a0000000p-3f /* 0.2 */) {
+        if (y < -24.0f) {
+            VObject *ev = D_0044E4D0;
+            s32 s = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
+
+            if (s >= 0) {
+                s32 off[4] = {-1, 0, 0, 0};
+
+                func_002D6090(D_0044E578, s, off);
+                VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, -1);
+            }
+        }
+    } else {
+        s32 slot = Effect_New(D_0044E578, 0x1C60, fire_init);
+        s32 prm[4] = {0, 0, 0, 0};   /* (zeroed past the two words, as the original's stack) */
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 7, slot);
+        prm[0] = cmd[3];
+        prm[1] = 0;
+        func_002D6090(D_0044E578, slot, prm);
+    }
+    return c->a.pos[1] < -25.0f ? 1 : 2;
+}
+
+/* room 0x62 (D_00422300): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size +0x34
+ * 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60 degrees,
+ * the size down 0.001); 2 until it is still */
+s32 func_00308D70(void *self, void *a1, u8 *cmd) {
+    u8 *o = room_obj(D_0047AD08[cmd[4]]);
+
+    if (cmd[3] == 0) {
+        AT(o, 0x30, f32) = 0.0f;
+        AT(o, 0x34, u32) = 0x3C23D70A;   /* 0.01 */
+        if (cmd[4] == 0) {
+            func_002FF650(D_0044E560, 7, 6, (f32 *)(o + 0x20), 0, 0);
+        }
+        return 1;
+    }
+    AT(o, 0x10, f32) = AT(o, 0x34, f32) * func_0031C248(0x1.921fb6p+2f /* 2 pi */ * AT(o, 0x30, f32) / 360.0f);
+    AT(o, 0x30, f32) = AT(o, 0x30, f32) + 60.0f;
+    AT(o, 0x34, f32) = AT(o, 0x34, f32) - 0x1.0624de0000000p-10f /* 0.001 */;
+    return AT(o, 0x34, f32) <= 0.0f ? 1 : 2;
+}
+
+/* ---- creature class D_00471290 (a pursuer-like character) ---- */
+
+/* +0x8 destructor (0x471290 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model freed
+ * for slots 3..5 */
+Character *func_00308EC0(Character *c, s32 flags) {
+    if (c != NULL) {
+        c->a.vtbl = D_00471290;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+/* a state: +0x114 5, the state D_00422348 at +0x174C, +0x1758 -1, then +0x260 */
+void func_00308FF0(Character *c) {
+    VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
+    ptmf_set(&AT(c, 0x174C, PTMF), &D_00422348);
+    AT(c, 0x1758, s32) = -1;
+    VCALL(c, 0x260, void (*)(Character *))(c);
+}
+
+/* each frame: its state (+0xA0), then back to +0x114 5 unless already (+0x175C) */
+void func_00309080(Character *c) {
+    if (ptmf_test(&AT(c, 0xA0, PTMF))) {
+        ptmf_scall(c, &AT(c, 0xA0, PTMF));
+    }
+    if (AT(c, 0x175C, s32) != 5) {
+        VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
+    }
+}
