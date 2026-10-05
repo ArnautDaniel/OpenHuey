@@ -5174,3 +5174,97 @@ s32 func_00143D20(Hewie *h) {
     arrived(h);
     return 0;
 }
+
+/* ---- a door to use ---- */
+
+extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
+extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
+extern s32 func_00178980(Progress *p, s32 room, s32 exit);
+
+/* the first door of the room he can use (into +0xF36B4): 1 one he can pass that is open (for a
+ * plain door) and not locked. Else, stopping at the first door with special access (state bits
+ * 4 / 8 / 0x10): 0 when he is at its level (within 5) and within 5 in front of it (kind 0,
+ * spot +0xF36E0 from func_00144940), or within 16 of its far point (kind 1, bits 0x10 and 8
+ * or doors +0x6C) and that brings him farther from it; -1 none */
+s32 func_00144B30(Hewie *h) {
+    VObject *doors = D_0044E558;
+    Progress *p = gProgress;
+    s32 kind = -1;
+    u32 e;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 d2[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+
+    for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+        u32 k;
+
+        if ((u8)VCALL(doors, 0x40, s32 (*)(VObject *, u32))(doors, e) != 1) {
+            continue;
+        }
+        k = (u8)func_00177BF0(p, e, (u8)h->c.a.slot);
+        if (!(u8)VCALL(doors, 0x30, s32 (*)(VObject *, u32))(doors, e)) {
+            if ((k & 1) &&
+                (u8)func_00178300(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
+                !(u8)func_001785B0(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
+                HW(h, 0xF36B4, s32) = e & 0xFF;
+                return 1;
+            }
+            if (k & 0x10) {
+                if ((k & 8) || (u8)VCALL(doors, 0x6C, s32 (*)(VObject *, s32, u32, f32 *))(doors, 3, e, h->c.a.pos) == 1) {
+                    kind = 1;
+                    break;
+                }
+            } else if (k & 0xC) {
+                kind = 0;
+                break;
+            }
+        } else {
+            if ((k & 1) &&
+                (u8)func_00178300(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
+                !(u8)func_001785B0(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e) &&
+                !(u8)func_00178980(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
+                HW(h, 0xF36B4, s32) = e & 0xFF;
+                return 1;
+            }
+            /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+            if ((k & 8) && (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x20000)) {
+                kind = (k & 0x10) ? 1 : 0;
+                break;
+            }
+        }
+    }
+    switch (kind) {
+    case 0:
+        VCALL(doors, 0x34, void (*)(VObject *, u32, f32 *))(doors, e, at);
+        sceVu0SubVector(d, at, h->c.a.pos);
+        if (__builtin_fabsf(d[1]) < 5.0f) {
+            f32 m[4][4] __attribute__((aligned(16)));
+            f32 dir[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 1.0f, 0.0f };
+
+            func_002E3190(m, VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, e));
+            func_002E2DA0(dir, m, dir);
+            if (sceVu0InnerProduct(d, dir) < 5.0f) {
+                HW(h, 0xF36B4, s32) = e & 0xFF;
+                func_00144940(h, e, &HW(h, 0xF36E0, f32));
+                return 0;
+            }
+        }
+        break;
+    case 1:
+        VCALL(doors, 0x38, void (*)(VObject *, u32, f32 *))(doors, e, at);
+        sceVu0SubVector(d, at, h->c.a.pos);
+        if (__builtin_fabsf(d[1]) < 5.0f && __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 16.0f) {
+            func_00144940(h, e, q);
+            sceVu0SubVector(d, q, at);
+            sceVu0SubVector(d2, h->c.a.pos, at);
+            if (!(d[2] * d[2] + d[0] * d[0] <= d2[2] * d2[2] + d2[0] * d2[0])) {
+                HW(h, 0xF36B4, s32) = e & 0xFF;
+                sceVu0CopyVector(&HW(h, 0xF36E0, f32), q);
+                return 0;
+            }
+        }
+        break;
+    }
+    return -1;
+}
