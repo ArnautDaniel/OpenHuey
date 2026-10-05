@@ -371,6 +371,168 @@ s32 func_001A5750(void *pl, u8 *s) {
     return 0;
 }
 
+/* step for kind 5, a memory-bounded best first search: the node +0x10044 expanded (flag 1);
+ * its new neighbours (flag 0x10, depth +2, f = g + h at +0x14) sorted by f; the best is next
+ * and the rest pushed on the stack (+0xC044, +0x40) - or, when even the best is no better than
+ * the bound (+0x10048), all of them, and the search backs up: the bound becomes the node,
+ * the stack keeps only the nodes better than the bound (the rest go to the deferred list
+ * +0xE044, +0x42) and is popped; with it empty, the deepest deferred node's best unexpanded
+ * ancestor (by f) comes back */
+s32 func_001A5BB0(void *pl, u8 *s) {
+#ifdef HG_NATIVE
+    static u8 *sNew0;   /* (the original reads its new[0] stale from the last step's frame) */
+#endif
+    u8 *nbs[3];
+    NavMesh *nm;
+    u8 *cur, *next = NULL;
+    NavTri *tri;
+    s32 open, deferred, k = 0, e, i, j, depth;
+
+    AT(s, 0x0, s32)++;
+    cur = AT(s, 0x10044, u8 *);
+    open = AT(s, 0x40, s16);
+    deferred = AT(s, 0x42, s16);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    AT(cur, 0x0, u16) |= 1;
+    depth = AT(cur, 0x2, s16) + 1;
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        if (tri_flags(nm, t) & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if (AT(nb, 0x0, u16) & 8) {
+            continue;
+        }
+        if (AT(nb, 0x0, u16) & 0x11) {
+            continue;
+        }
+        AT(nb, 0x0, u16) |= 0x10;
+        AT(nb, 0x4, u8 *) = cur;
+        AT(nb, 0x2, s16) = depth;
+        if ((AT(nb, 0x0, u16) & 4) || (tri_flags(nm, t) & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            AT(s, 0x40, s16) = open;
+            return AT(s, 0x0, s32);
+        }
+        nbs[k++] = nb;
+        AT(nb, 0xC, f32) = AT(cur, 0xC, f32) + AT(tri, 0x40 + e * 4, f32);
+        AT(nb, 0x14, f32) = AT(nb, 0x10, f32) + AT(nb, 0xC, f32);
+    }
+    for (i = 1; i < k; i++) {
+        for (j = i; j < k; j++) {
+            if (AT(nbs[j], 0x14, f32) < AT(nbs[j - 1], 0x14, f32)) {
+                u8 *x = nbs[j - 1];
+
+                nbs[j - 1] = nbs[j];
+                nbs[j] = x;
+            }
+        }
+    }
+    if (k != 0) {
+        u8 *bound = AT(s, 0x10048, u8 *);
+
+#ifdef HG_NATIVE
+        sNew0 = nbs[0];
+#endif
+        if (bound == NULL || AT(nbs[0], 0x14, f32) < AT(bound, 0x14, f32)) {
+            next = nbs[0];
+            for (i = k - 1; i > 0; i--) {
+                AT(s, 0xC044 + open * 4, u8 *) = nbs[i];
+                open++;
+            }
+        } else {
+            for (i = k - 1; i >= 0; i--) {
+                AT(s, 0xC044 + open * 4, u8 *) = nbs[i];
+                open++;
+            }
+        }
+    }
+    if (next == NULL) {
+        u8 *bound = AT(s, 0x10048, u8 *);
+        s32 kept = 0;
+        f32 fb;
+
+#ifdef HG_NATIVE
+        if (k == 0) {
+            nbs[0] = sNew0;
+        }
+#endif
+        if (bound == NULL || AT(nbs[0], 0x14, f32) < AT(bound, 0x14, f32)) {
+            AT(s, 0x10048, u8 *) = cur;
+        }
+        fb = AT(AT(s, 0x10048, u8 *), 0x14, f32);
+        for (i = 0; i < open; i++) {
+            u8 *n = AT(s, 0xC044 + i * 4, u8 *);
+
+            if (AT(n, 0x14, f32) < fb) {
+                AT(s, 0xC044 + kept * 4, u8 *) = n;
+                kept++;
+            } else {
+                AT(s, 0xE044 + deferred * 4, u8 *) = n;
+                deferred++;
+            }
+        }
+        open = kept;
+        if (open != 0) {
+            next = AT(s, 0xC044 + (open - 1) * 4, u8 *);
+            open--;
+        }
+    }
+    if (next == NULL && open == 0) {
+        s32 best = 0;
+        f32 f;
+        u8 *a;
+
+        if (deferred == 0) {
+            return -AT(s, 0x0, s32);
+        }
+        next = AT(s, 0xE044, u8 *);
+        for (i = 0; i < deferred; i++) {
+            u8 *n = AT(s, 0xE044 + i * 4, u8 *);
+
+            if (best < AT(n, 0x2, s16)) {
+                next = n;
+                best = AT(n, 0x2, s16);
+            }
+        }
+        while (next != NULL && (AT(next, 0x0, u16) & 1)) {
+            next = AT(next, 0x4, u8 *);
+        }
+        if (next == NULL) {
+            return -AT(s, 0x0, s32);
+        }
+        f = AT(next, 0x14, f32);
+        for (a = AT(next, 0x4, u8 *); a != NULL; a = AT(a, 0x4, u8 *)) {
+            if (!(AT(a, 0x0, u16) & 1) && !(f <= AT(a, 0x14, f32))) {
+                f = AT(a, 0x14, f32);
+                next = a;
+            }
+        }
+        j = 0;
+        for (i = 0; i < deferred; i++) {
+            u8 *n = AT(s, 0xE044 + i * 4, u8 *);
+
+            if (n != next) {
+                AT(s, 0xE044 + j * 4, u8 *) = n;
+                j++;
+            }
+        }
+        deferred = j;
+    }
+    AT(s, 0x40, s16) = open;
+    AT(s, 0x42, s16) = deferred;
+    AT(s, 0x10044, u8 *) = next;
+    return 0;
+}
+
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
 f32 func_001A8300(VObject *pl, s32 id) {
     extern s32 func_001A95F0(VObject *pl, u8 *s);
