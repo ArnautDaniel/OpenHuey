@@ -1150,3 +1150,85 @@ void func_001B9260(VObject *r, s32 *a) {
                             s32, s32, s32))(r, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
                                             a[11], a[12], a[13], a[14], a[15], a[16]);
 }
+
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* +0x6C: the layer-0x11 flares (16 x { x0, y0, x1, y1, phase } at +0x304C0C) drift - each
+ * phase turns by up to 2 degrees at random, its sine and cosine (halved) nudge the corners,
+ * kept to x0 -56..24, y0 -150..0, x1 / y1 32..64 */
+void func_001B9D50(u8 *r) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    VObject *rnd = D_0044E550;
+    f32 *e = (f32 *)(r + 0x304C0C);
+    u32 i;
+
+    for (i = 0; i < 16; i++, e += 5) {
+        f32 c, s;
+
+        e[4] = e[4] + kPi.f * (2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
+        if (!(e[4] <= kPi.f)) {
+            e[4] = e[4] - kTwoPi.f;
+        }
+        c = 0.5f * func_0031C058(e[4]);
+        s = 0.5f * func_0031C248(e[4]);
+        if (i < 8) {
+            e[0] = e[0] + c;
+        } else {
+            e[0] = e[0] + s;
+        }
+        if (e[0] < -56.0f) {
+            e[0] = -56.0f;
+        } else if (!(e[0] <= 24.0f)) {
+            e[0] = 24.0f;
+        }
+        if (i & 1) {
+            e[1] = e[1] + s;
+        } else {
+            e[1] = e[1] + c;
+        }
+        if (e[1] < -150.0f) {
+            e[1] = -150.0f;
+        } else if (!(e[1] <= 0.0f)) {
+            e[1] = 0.0f;
+        }
+        if (i & 1) {
+            e[2] = e[2] - c;
+        } else {
+            e[2] = e[2] - s;
+        }
+        if (e[2] < 32.0f) {
+            e[2] = 32.0f;
+        } else if (!(e[2] <= 64.0f)) {
+            e[2] = 64.0f;
+        }
+        if (i < 8) {
+            e[3] = e[3] - s;
+        } else {
+            e[3] = e[3] - c;
+        }
+        if (e[3] < 32.0f) {
+            e[3] = 32.0f;
+        } else if (!(e[3] <= 64.0f)) {
+            e[3] = 64.0f;
+        }
+    }
+}
+
+/* +0x14: the video mode (2 NTSC, 3 PAL; 0x50 progressive 480p): the GS reset for it, the
+ * frame height (+0x304BFE: 448 / 512), the mode kept (+0x304C09), the display set up again */
+void func_001BB9E0(u8 *r, u8 mode) {
+    if (mode == 0x50) {
+        func_0010BE10(0, 0, 0x50, 0);
+        AT(r, 0x304BFE, s16) = 0x1C0;
+    } else {
+        func_0010BE10(0, 1, mode, 0);
+        if (mode == 2) {
+            AT(r, 0x304BFE, s16) = 0x1C0;
+        } else {
+            AT(r, 0x304BFE, s16) = 0x200;
+        }
+    }
+    AT(r, 0x304C09, u8) = mode;
+    func_001B79F0(r);
+}
