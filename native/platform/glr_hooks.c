@@ -47,13 +47,6 @@ int func_002C6650(uint8_t *d) {
     return 0;
 }
 
-/* func_003582D0: D_004795A0's draw (+0x14; level +0x4, strength +0x8): a glow of world
- * geometry (535 instructions of GS packets). GL TODO. */
-void func_003582D0(uint8_t *e) {
-    (void)e;
-    glr_todo("glow effect (func_003582D0)");
-}
-
 /* func_0021C840: the vignette, every gameplay frame (strength 50, offset 0). The original
  * draws four gouraud triangles - white at alpha `strength` in each screen corner, clear at the
  * middles of its edges (moved by `offset`) - into a work buffer, copies the screen's colours

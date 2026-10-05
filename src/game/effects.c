@@ -1613,7 +1613,7 @@ void func_00317C70(u8 *e, u8 *arg) {
 /* ---- D_004795A0 (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
  * follows a level (+0x4): up to the level and back down to 30 (+0xC 0 / 1), or for level 0x80
  * slowly up to 0x38 (2); 0xFF done (its +0xC / +0x10 / +0x18 in src/leaf/b7_00351D50.c). Its
- * draw (+0x14, func_003582D0) is a GL TODO ---- */
+ * draw (+0x14, func_003582D0) is the light's glow ---- */
 
 extern void *D_004795A0[], *D_0046F580[];
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
@@ -1631,6 +1631,83 @@ u8 *func_00358210(u8 *e, s32 flags) {
 }
 
 
+
+#ifdef HG_NATIVE
+extern void glr_layer(s32 layer);
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+#define GLR_PRIM_ADD 0x10000u
+#define GLR_PRIM_NOZW 0x20000u
+
+/* +0x14 draw (when +0x4 and +0x8 are set): the light's glow at the room's middle, added at
+ * strength +0x8 fading to nothing at the rims, depth tested without writes (layer 0x19): a
+ * pool on the floor (radius 20, 8 sides, y 0.3) and a cone from 16 below up to a ring of 16
+ * at y 20.2; only when all of it is in view */
+void func_003582D0(u8 *e) {
+    f32 p[26][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 r = 20.0f * func_0031C248(0.7853982f);
+    u32 centre = (u32)AT(e, 0x8, s32) << 24 | 0xFFFFFF;
+    s32 i;
+
+    if (AT(e, 0x4, s32) == 0 || AT(e, 0x8, s32) == 0) {
+        return;
+    }
+    {
+        static const f32 kPool[9][2] = {{0, 0}, {20, 0}, {1, 1}, {0, 20}, {-1, 1}, {-20, 0}, {-1, -1}, {0, -20}, {1, -1}};
+
+        for (i = 0; i < 9; i++) {   /* (+-1 stand for +-r, the diagonals) */
+            p[i][0] = kPool[i][0] == 1 ? r : kPool[i][0] == -1 ? -r : kPool[i][0];
+            p[i][1] = 0.3f;
+            p[i][2] = kPool[i][1] == 1 ? r : kPool[i][1] == -1 ? -r : kPool[i][1];
+            p[i][3] = 1.0f;
+        }
+    }
+    p[9][0] = 0.0f;
+    p[9][1] = -16.0f;
+    p[9][2] = 0.0f;
+    p[9][3] = 1.0f;
+    for (i = 0; i < 16; i++) {
+        f32 a = (3.1415927f * (22.5f * (f32)i)) / 180.0f;
+
+        p[10 + i][0] = 20.0f * func_0031C248(a);
+        AT(&p[10 + i][1], 0, u32) = 0x41A1999A;   /* 20.2 */
+        p[10 + i][2] = 20.0f * func_0031C058(a);
+        p[10 + i][3] = 1.0f;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (i = 0; i < 26; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0ApplyMatrix(v, clip, p[i]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return;
+        }
+    }
+    glr_layer(0x19);
+    for (i = 0; i < 24; i++) {   /* the two fans as triangles: centre, rim i, rim i + 1 */
+        s32 fan = i >= 8, k = fan ? i - 8 : i, n = fan ? 16 : 8;
+        s32 c = fan ? 9 : 0, a = (fan ? 10 : 1) + k, b = (fan ? 10 : 1) + (k + 1) % n;
+        f32 xyzw[3][4] __attribute__((aligned(16)));
+        f32 st[3][2] = {{0}};
+        u32 rgba[3];
+
+        sceVu0CopyVector(xyzw[0], p[c]);
+        sceVu0CopyVector(xyzw[1], p[a]);
+        sceVu0CopyVector(xyzw[2], p[b]);
+        AT(&xyzw[0][3], 0, u32) = 0x8000;
+        AT(&xyzw[1][3], 0, u32) = 0x8000;
+        AT(&xyzw[2][3], 0, u32) = 0;
+        rgba[0] = centre;
+        rgba[1] = rgba[2] = fan ? 0x000000 : 0x808080;   /* the rims' alpha 0 */
+        glr_strip(&clip[0][0], 3, &xyzw[0][0], &st[0][0], (const u8 *)rgba, NULL, 0,
+                  0x40 | GLR_PRIM_ADD | GLR_PRIM_NOZW);
+    }
+    glr_layer(-1);
+}
+#endif
 
 /* ---- D_0046F5A0 (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
  * sprite instances (+0x10 + 0xC00 x the current one +0x1C50: RGBA, position, size, turn,
