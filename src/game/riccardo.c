@@ -272,3 +272,140 @@ void func_002DC4E0(Pursuer *p) {
     m = p->c.motion;
     VCALL(m, 0x30, void (*)(void *))(m);
 }
+
+extern const PTMF D_00415788;
+
+/* the end of his lunge animation: at threat level 5 it leads straight into attack 5;
+   otherwise it ends the step */
+static inline void Riccardo_LungeEnd(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        if (AT(gProgress, 0x7B8, u8) != 5) {
+            PURSUER_STEP_DONE(p) = 1;
+            PURSUER_STEP_NEXT(p) = 1;
+            return;
+        }
+        PU(p, 0x1728, s32) = 5;
+        Actor_SetState(&p->c.a, &D_00415788);
+        p->c.moveMode = 8;
+        func_0028B970(p);
+    }
+}
+
+/* state: the lunge (see Riccardo_LungeEnd) */
+void func_002D85D0(Pursuer *p) {
+    Riccardo_LungeEnd(p);
+}
+
+extern const PTMF D_00415778;
+
+/* start of the lunge: finish the current walk, then animation 0x1300 in state func_002D85D0 */
+void func_002D8690(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0x1300, 0);
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00415778);
+    Riccardo_LungeEnd(p);
+}
+
+extern const PTMF D_00415768;
+
+/* state: after a blow: his blows left (+0x1624) count down; another while he may go for his
+   target and it's in reach and in front (within 90 degrees): Fiona seen within 100 (not at
+   threat level 5), Hewie heard within 30. Otherwise the step ends */
+void func_002D8AC0(Pursuer *p) {
+    Character *t;
+    f32 a;
+
+    PU(p, 0x1624, s32)--;
+    if (PU(p, 0x1624, s32) <= 0 || !(func_00283870(p) & 0xFF)) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+        return;
+    }
+    t = p->target;
+    if (t != gCharPlayer) {
+        if (PU(p, 0x1545, u8) == 0 || !(PU(p, 0x158C, f32) <= 30.0f)) {
+            PURSUER_STEP_DONE(p) = 1;
+            PURSUER_STEP_NEXT(p) = 1;
+            return;
+        }
+    } else if (PU(p, 0x1544, u8) == 0 || !(PU(p, 0x1588, f32) <= 100.0f) || AT(gProgress, 0x7B8, u8) == 5) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+        return;
+    }
+    if (!(func_002E2D00(func_001244D0(&p->c.a, t->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+        a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+    } else {
+        a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+    }
+    if (!(a <= 0x1.921fb6p+0f /* 90 degrees */)) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+        return;
+    }
+    PU(p, 0x1760, u8) = 0;
+    Actor_SetState(&p->c.a, &D_00415768);
+}
+
+extern const PTMF D_00415758;
+
+/* state: a blow: at its hit key, if he may go for his target and it's within the reach of the
+   blow (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (func_00178070 kind 1 with the
+   entry's damage); at the animation's end, on to the next (func_002D8AC0) */
+void func_002D8CB0(Pursuer *p) {
+    if ((func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
+        u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
+
+        if (func_00124490(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, AT(e, 0x10, u8), AT(e, 0x12, u16), AT(e, 0x4, s16), AT(e, 0x14, f32));
+        }
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PU(p, 0x178C, s32) = 0;
+        p->c.unk100 = 0;
+        Actor_SetState(&p->c.a, &D_00415758);
+        func_002D8AC0(p);
+    }
+    func_00125A10(&p->c);
+}
+
+extern const f32 D_004156C0[6], D_004156E0[6];
+extern const PTMF D_004156F8;
+void func_002DA120(Pursuer *p);
+
+/* start of a flurry: how many blows (+0x1624, 1..7) by a roll against his cumulative chances
+   (D_004156C0, or D_004156E0 when gProgress+0x30 bit 0x8000); then func_002DA120. When he may
+   not go for his target: action 0x17 instead */
+void func_002DA4C0(Pursuer *p) {
+    const f32 *chance;
+    f32 roll;
+
+    if (!(func_00283870(p) & 0xFF)) {
+        PU(p, 0x1624, s32) = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        p->c.unk104[0] = 0;
+        func_00125A10(&p->c);
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    chance = (AT(gProgress, 0x30, u32) & 0x8000) ? D_004156E0 : D_004156C0;
+    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    PU(p, 0x1624, s32) = 0;
+    while (PU(p, 0x1624, s32) < 6 && !(roll <= chance[PU(p, 0x1624, s32)])) {
+        PU(p, 0x1624, s32)++;
+    }
+    PU(p, 0x1624, s32)++;
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_004156F8);
+    func_002DA120(p);
+}
