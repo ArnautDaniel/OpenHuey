@@ -8739,3 +8739,109 @@ void func_00159040(Hewie *h) {
     h->c.a.pos[1] = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- leaping to bite ---- */
+
+extern const char D_0044F1A0[];   /* "Dog Bite Enemy -> No Route" */
+extern const s16 D_003B1310[8], D_003B1320[8], D_003B1330[8], D_003B1340[8];   /* bites, by trust */
+extern const PTMF D_003B1808;
+
+/* leap to bite the pursuer at the grip spot +0x110 (triangle +0x108; no way: a debug message and
+ * the default action; the pursuer gone: the default action; his state block at 7: action 0x5A).
+ * The bites he gets (+0xF36B8) by his action, grip and trust (0x1F: grip 0 D_003B1330, else
+ * D_003B1310 / D_003B1320 charged; 0x21: D_003B1340; 0x20 / 0x22: 1); his mood easing, sub-move
+ * 0x19, a third of the time a grudge, the pursuer told (func_0013B860). The leap animation (0x2217;
+ * grip 1: 0x2200 turned about unless it is kind 0xB, grip 2: 0x2209 turned about, grip 0:
+ * 0x2214) toward +0x10C, covering the path and the turn in 12 frames (0x21 / 0x22) or 8; sound
+ * 0x68, behaviour D_003B1808 */
+void func_00159770(Hewie *h) {
+    f32 a, rest, d;
+
+    if (h->c.state[0] == 7) {
+        h->c.state[0] = 0;
+        hewie_want(h, 0x5A, 0);
+        return;
+    }
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_0013EE40(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
+        func_0026EE88(D_0044F1A0);
+        hewie_want(h, 0, 0);
+        return;
+    }
+    switch (HEWIE_ACTION(h)) {
+    case 0x1F:
+        if (h->c.unk104[0] != 0) {
+            HW(h, 0xF36B8, s32) = (HW(h, 0xF3585, u8) == 1 ? D_003B1320 : D_003B1310)[HW(h, 0xF35CC, s16)];
+        } else {
+            HW(h, 0xF36B8, s32) = D_003B1330[HW(h, 0xF35CC, s16)];
+        }
+        break;
+    case 0x21:
+        HW(h, 0xF36B8, s32) = D_003B1340[HW(h, 0xF35CC, s16)];
+        break;
+    case 0x22:
+    case 0x20:
+        HW(h, 0xF36B8, s32) = 1;
+        break;
+    }
+    HW(h, 0xF36B0, s32) = 0xFF;
+    if (HW(h, 0xF35C4, s32) != 0) {
+        HW(h, 0xF35C4, s32) -= 1;
+        HW(h, 0xF35C8, s32) = 300;
+    }
+    h->c.moveSub = 0x19;
+    if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
+        func_00166150(h, gCharPursuer, 1);
+    }
+    func_0013B860(h, gCharPursuer);
+    a = HW(h, 0x10C, f32);
+    switch (HEWIE_ACTION(h)) {
+    case 0x22:
+    case 0x21:
+        func_002DDED0(h->c.motion, 0x2217, -1);
+        break;
+    case 0x20:
+    case 0x1F:
+        switch (h->c.unk104[0]) {
+        case 1:
+            if (gCharPursuer->unk153C != 0xB) {
+                a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+            }
+            func_002DDED0(h->c.motion, 0x2200, -1);
+            break;
+        case 2:
+            a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+            func_002DDED0(h->c.motion, 0x2209, -1);
+            break;
+        case 0:
+            func_002DDED0(h->c.motion, 0x2214, -1);
+            break;
+        }
+        break;
+    }
+    rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    d = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF36CC, f32) = a;
+    if ((u32)(HEWIE_ACTION(h) - 0x21) < 2) {
+        HW(h, 0xF36C4, f32) = 0x1.5551d60000000p-4f /* 0.08333 */ * rest;
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        HW(h, 0xF36D0, f32) = 0x1.5551d60000000p-4f /* 0.08333 */ * d;
+    } else {
+        HW(h, 0xF36C4, f32) = 0.125f * rest;
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        HW(h, 0xF36D0, f32) = 0.125f * d;
+    }
+    HW(h, 0xF3558, u8) = 1;
+    h->c.a.unk2D = 0;
+    HW(h, 0xF3581, u8) = 1;
+    func_0013A430(h, 0x68);
+    Hewie_SetBehaviour(h, &D_003B1808);
+}
