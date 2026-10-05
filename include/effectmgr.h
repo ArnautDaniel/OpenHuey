@@ -64,6 +64,17 @@ static inline void HitEffect_Spawn(HitEffectParams *hp) {
 }
 
 
+/* ---- the drop splash (0xF70 bytes, vtable D_004727C0; creature.c): spawned by the dripping
+   strand and by the kind-1 thing (placed.c) with { s32 colour 0..127 x3; f32 pos[3]; f32 size } ---- */
+extern void *D_004727C0[];
+
+static inline void DropSplash_Init(void **obj) {
+    obj[0] = D_004727C0;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
 /* a quad (sprite) drawer (vtable D_0046FC30) handed to the renderer for one frame by
    func_002E56C0; see gl_sprites in effects.c for its fields */
 typedef struct QuadDrawer {

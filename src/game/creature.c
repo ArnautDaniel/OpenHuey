@@ -2006,7 +2006,7 @@ void func_00312D90(u8 *o) {
  * the pair), each drawn as two crossed quads +0x20C long with the quad drawer at +0x40 (record
  * +0x10: the colour); +0x218 the kind of strand, +0x21C stopped ---- */
 
-extern void *D_004726E0[], *D_004727C0[];
+extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
 extern u8 *D_0044F808;   /* the character in slot 2 (the stalker) */
 extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
@@ -2232,13 +2232,6 @@ void func_003136C0(u8 *o) {
     }
 }
 
-static void strand_drop_init(void **obj) {
-    obj[0] = D_004727C0;
-    obj[0xC10 / 4] = D_00469D00;
-    ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
-}
-
 /* +0x10 update: the next segment grown from the current one (its frame turned by +0x1C0, moved
  * on by the length) once it has shown a frame, every 4 the bone pair moved on (the end of the
  * chain: no new segment; else the segment aimed down the bones); every live segment fades by
@@ -2330,7 +2323,7 @@ s32 func_00313980(u8 *o) {
             alpha = AT(STRAND_SEG(o, idx), 0xC0, s32);
             if (alpha >= 0x21) {
                 u8 *mgr = D_0044E578;
-                s32 slot = Effect_New(mgr, 0xF70, strand_drop_init);
+                s32 slot = Effect_New(mgr, 0xF70, DropSplash_Init);
                 s32 p[8] __attribute__((aligned(16)));
                 f32 f = (f32)alpha / 128.0f;
 
@@ -2344,6 +2337,178 @@ s32 func_00313980(u8 *o) {
                 func_002D6090(mgr, slot, p);
             }
         }
+    }
+    return 1;
+}
+
+
+/* ---- D_004727C0 (0xF68 bytes): the strand's drop splash, 32 droplets in two buffers of quad
+ * records (+0x10 + 0x600 x the current one +0xF60), each with a velocity (+0xC60) and a pull
+ * against it (+0xDE0, 12 bytes each); the quad drawer at +0xC10, the splash point at +0xC50
+ * (w 1.0 until a one-frame flash has been drawn there) ---- */
+
+#define DROP_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x600) + (i))
+#define DROP_VEL(o, i) ((f32 *)((o) + 0xC60 + (i) * 0xC))
+#define DROP_PULL(o, i) ((f32 *)((o) + 0xDE0 + (i) * 0xC))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00314260(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_004727C0;
+    AT(o, 0xC10, void **) = D_0046FC30;
+    AT(o, 0xC10, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+static s32 clamp_colour(s32 c) {
+    c <<= 1;
+    if (!(c < 0x100)) {
+        c = 0xFF;
+    }
+    return c;
+}
+
+/* +0x18 start (arg: colour 0..127 x3, position, size): every droplet at the point in the
+ * colour, a random alpha and size, flung out at random (slower the bigger) and pulled back by
+ * 10..30% of its speed */
+void func_003142F0(u8 *o, s32 *arg) {
+    static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD},
+                                         kThreeTenths = {0x3E99999A};
+    VObject *rnd;
+    s32 r, g, b, i;
+    f32 small, big;
+
+    if (arg == NULL) {
+        return;
+    }
+    r = clamp_colour(arg[0]);
+    g = clamp_colour(arg[1]);
+    b = clamp_colour(arg[2]);
+    rnd = D_0044E550;
+    AT(o, 0xC50, f32) = ((f32 *)arg)[3];
+    AT(o, 0xC54, f32) = ((f32 *)arg)[4];
+    AT(o, 0xC58, f32) = ((f32 *)arg)[5];
+    AT(o, 0xC5C, f32) = 1.0f;
+    small = kTenth.f * ((f32 *)arg)[6];
+    big = 4.0f * ((f32 *)arg)[6];
+    for (i = 0; i < 32; i++) {
+        QuadRec *q = DROP_REC(o, AT(o, 0xF60, s32), i);
+        f32 *v = DROP_VEL(o, i);
+        f32 *p = DROP_PULL(o, i);
+        f32 speed, k;
+
+        q->rgba[0] = r;
+        q->rgba[1] = g;
+        q->rgba[2] = b;
+        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x1F) + 0x60;
+        sceVu0CopyVector(q->pos, (f32 *)(o + 0xC50));
+        q->w = 0.0f + small + kThreeTenths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        q->h = q->w;
+        q->turn = 0.0f;
+        q->frame = 0;
+        speed = 0.0f + big - 10.0f * q->w;
+        v[0] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        v[1] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        v[2] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        k = 0.0f + kTenth.f + kFifth.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        p[0] = -(v[0] * k);
+        p[1] = -(v[1] * k);
+        p[2] = -(v[2] * k);
+    }
+}
+
+/* +0x14 draw (unless the effects are paused): the droplets, and on the first frame a white
+ * flash (2 x 2) at the point */
+void func_003145A0(u8 *o) {
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    AT(o, 0xC20, QuadRec *) = DROP_REC(o, AT(o, 0xF60, s32), 0);
+    func_002E56C0(o + 0xC10);
+    if (AT(o, 0xC5C, f32) == 1.0f) {
+        QuadDrawer q __attribute__((aligned(16)));
+        QuadRec r __attribute__((aligned(16)));
+
+        r.rgba[0] = 0xC0;
+        r.rgba[1] = 0xC0;
+        r.rgba[2] = 0xC0;
+        r.rgba[3] = 0x80;
+        sceVu0CopyVector(r.pos, (f32 *)(o + 0xC50));
+        r.w = 2.0f;
+        r.h = 2.0f;
+        r.turn = 0.0f;
+        r.frame = 0;
+        q.vtbl = D_0046FC30;
+        q.a = -1;
+        q.tex = -1;
+        q.rec = &r;
+        q.corners = 0;
+        q.cx = 0.0f;
+        q.cy = 0.0f;
+        q.layer = 0x19;
+        q.count = 1;
+        q.cellX = 0x40;
+        q.cellY = 0x40;
+        q.cellW = 0x20;
+        q.cellH = 0x20;
+        q.texW = 0x200;
+        q.texH = 0x100;
+        q.flags = 0;
+        q.frames = 1;
+        q.texId = 1;
+        q.texGroup = 0x10;
+        q.palette = -1;
+        func_002E56C0(&q);
+        AT(o, 0xC5C, f32) = 0.0f;
+        q.vtbl = D_00469D00;
+    }
+}
+
+/* +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
+ * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
+ * falling. 0 once none was left last time */
+s32 func_00314700(u8 *o) {
+    static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
+    VObject *rnd;
+    s32 i;
+
+    if (AT(o, 0xF64, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0xF64, u8) = 1;
+    rnd = D_0044E550;
+    AT(o, 0xF60, s32) ^= 1;
+    for (i = 0; i < 32; i++) {
+        QuadRec *q;
+        f32 *v = DROP_VEL(o, i);
+        f32 *p = DROP_PULL(o, i);
+
+        *DROP_REC(o, AT(o, 0xF60, s32), i) = *DROP_REC(o, AT(o, 0xF60, s32) ^ 1, i);
+        q = DROP_REC(o, AT(o, 0xF60, s32), i);
+        if (q->rgba[3] <= 0) {
+            continue;
+        }
+        AT(o, 0xF64, u8) = 0;
+        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x7F) + 1;
+        v[0] = v[0] + p[0];
+        v[1] = v[1] + p[1];
+        if (!(p[1] <= 0.0f)) {
+            if (!(v[1] <= kMinusHundredth.f)) {
+                q->rgba[3] = 0;
+            }
+        } else if (v[1] < kHundredth.f) {
+            q->rgba[3] = 0;
+        }
+        v[2] = v[2] + p[2];
+        q->pos[0] = q->pos[0] + v[0];
+        q->pos[1] = q->pos[1] + v[1];
+        q->pos[2] = q->pos[2] + v[2];
     }
     return 1;
 }

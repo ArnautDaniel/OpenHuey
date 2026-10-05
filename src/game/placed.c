@@ -574,8 +574,7 @@ void func_002D5A50(u8 *b) {
     }
 }
 
-/* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_002D5C10(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+static inline __attribute__((always_inline)) u32 thing_put(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     u32 r = func_00121000(b, tri, pos, rot, rr, h) & 0xFF;
 
     if (r == 1 && D_0044E988 != NULL) {
@@ -584,9 +583,12 @@ u32 func_002D5C10(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return r;
 }
 
-/* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
- * the step is stopped */
-s32 func_002D5C70(u8 *b, u8 *a, f32 *to) {
+/* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+u32 func_002D5C10(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    return thing_put(b, tri, pos, rot, rr, h);
+}
+
+static inline __attribute__((always_inline)) s32 thing_step_tri(u8 *b, u8 *a, f32 *to) {
     f32 from[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
@@ -605,24 +607,19 @@ s32 func_002D5C70(u8 *b, u8 *a, f32 *to) {
     return r;
 }
 
-/* +0x30 each frame: gone after 3 minutes; in Fiona's room, when she touches it (+0x74, within
- * 5) it is kicked the way she faces (2 ahead, 2 up), once per touch */
-void func_002D5D10(u8 *b) {
+/* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+ * the step is stopped */
+s32 func_002D5C70(u8 *b, u8 *a, f32 *to) {
+    return thing_step_tri(b, a, to);
+}
+
+/* when Fiona touches it (+0x74, within 5) it is kicked the way she faces (2 ahead, 2 up),
+ * once per touch */
+static inline __attribute__((always_inline)) void thing_kick(u8 *b) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 f[4] __attribute__((aligned(16)));
     VObject *fiona;
 
-    func_00121220(b);
-    if (AT(b, 0x28, u8) == 0) {
-        return;
-    }
-    if (AT(b, 0xE4, u32) >= 5400) {
-        AT(b, 0x28, u8) = 0;
-        return;
-    }
-    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-        return;
-    }
     fiona = gCharPlayer;
     if (fiona == NULL || AT(fiona, 0x28, u8) != 1 || AT(fiona, 0x29, u8) != 0) {
         return;
@@ -652,6 +649,23 @@ void func_002D5D10(u8 *b) {
     AT(b, 0x14, f32) = AT(b, 0x14, f32) + 0x1.99999a0000000p-4f /* 0.1 */;
     AT(b, 0xE0, u8) = 0;
     AT(b, 0xE1, u8) = 1;
+}
+
+/* +0x30 each frame: gone after 3 minutes; in Fiona's room, when she touches it (+0x74, within
+ * 5) it is kicked the way she faces (2 ahead, 2 up), once per touch */
+void func_002D5D10(u8 *b) {
+    func_00121220(b);
+    if (AT(b, 0x28, u8) == 0) {
+        return;
+    }
+    if (AT(b, 0xE4, u32) >= 5400) {
+        AT(b, 0x28, u8) = 0;
+        return;
+    }
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    thing_kick(b);
 }
 
 /* ---- the things' base class (D_00469A00, over the actor): +0x10 position, +0x34 nav tri,
@@ -761,4 +775,241 @@ void func_00121300(u8 *o) {
     AT(o, 0xE0, u8) = 0;
     AT(o, 0xE4, s32) = 0;
     AT(o, 0xE1, u8) = 0;
+}
+
+
+/* ---- kind 1 (D_004727E0): like the ball (kind 0) it flies, falls and is kicked, but it can't
+ * bounce - whatever it hits, or a pursuer walking into it, bursts it in a purple splash ---- */
+
+extern void *D_004727E0[];
+extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), func_00314CE0 */
+extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
+extern VObject *gCharPursuer;
+
+/* +0x8 destructor */
+void *func_00314990(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_004727E0;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* burst at `at`: a purple drop splash (size 1) and its sound */
+void func_00314A00(u8 *o, f32 *at) {
+    u8 *mgr = D_0044E578;
+    struct {
+        s32 rgb[3];
+        f32 pos[3];
+        f32 size;
+    } sp;
+    s32 slot = Effect_New(mgr, 0xF70, DropSplash_Init);
+
+    sp.rgb[0] = 0x40;
+    sp.rgb[1] = 0x20;
+    sp.rgb[2] = 0x80;
+    sp.pos[0] = at[0];
+    sp.pos[1] = at[1];
+    sp.pos[2] = at[2];
+    sp.size = 1.0f;
+    func_002D6090(mgr, slot, &sp);
+    func_00122C20(o, 0x8D, 5, 0, 0, NULL);
+}
+
+/* +0x2C draw: a half-size sprite (cell (128, 64)) in its colour */
+void func_00314B90(u8 *o) {
+    QuadRec r __attribute__((aligned(16)));
+    QuadDrawer q __attribute__((aligned(16)));
+
+    r.rgba[0] = (s32)(64.0f * AT(o, 0x110, f32));
+    r.rgba[1] = (s32)(32.0f * AT(o, 0x114, f32));
+    r.rgba[2] = (s32)(128.0f * AT(o, 0x118, f32));
+    r.rgba[3] = (s32)(128.0f * AT(o, 0x11C, f32));
+    sceVu0CopyVector(r.pos, BALL_POS(o));
+    r.w = 0.5f;
+    r.h = 0.5f;
+    r.turn = 0.0f;
+    r.frame = 0;
+    q.vtbl = D_0046FC30;
+    q.a = -1;
+    q.tex = (u64)-1;
+    q.rec = &r;
+    q.corners = 0;
+    q.cx = 0.0f;
+    q.cy = 0.0f;
+    q.layer = 0x19;
+    q.count = 1;
+    q.cellX = 0x80;
+    q.cellY = 0x40;
+    q.cellW = 0x20;
+    q.cellH = 0x20;
+    q.texW = 0x200;
+    q.texH = 0x100;
+    q.flags = 0;
+    q.frames = 1;
+    q.texId = 1;
+    q.texGroup = 0x10;
+    q.palette = -1;
+    func_002E56C0((u8 *)&q);
+    q.vtbl = D_00469D00;
+}
+
+/* the dropping state (D_00429C38): falling through for 31 frames, then gone */
+void func_00314CE0(u8 *o) {
+    sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
+    sceVu0AddVector(BALL_POS(o), BALL_VEL(o), BALL_POS(o));
+    if (++AT(o, 0xE8, u32) >= 31) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
+ * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
+ * anything else bursts it */
+void func_00314D40(u8 *o) {
+    static const union { u32 u; f32 f; } kDrag = {0x3F733333};
+    f32 *v = BALL_VEL(o);
+    f32 to[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 fl[4] __attribute__((aligned(16)));
+    VObject *nm;
+    u32 tri, hit;
+
+    sceVu0AddVector(v, (f32 *)(o + 0x100), v);
+    v[0] = v[0] * kDrag.f;
+    v[2] = v[2] * kDrag.f;
+    sceVu0AddVector(to, v, BALL_POS(o));
+    nm = D_0044E570;
+    tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
+        nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
+    if (tri == (u32)-1) {
+        AT(o, 0x28, u8) = 0;
+        func_00314A00(o, out);
+        return;
+    }
+    hit = tri & 0xF0000000;
+    if (hit == 0) {
+        sceVu0CopyVector(fl, out);
+        VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, tri, fl);
+        if (out[1] < fl[1]) {
+            AT(o, 0x28, u8) = 0;
+            func_00314A00(o, fl);
+            return;
+        }
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        return;
+    }
+    if (hit == 0x80000000 && (ball_tri_flags(nm, tri & 0xFFFF) & TRI_HOLE)) {
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        ball_drop(o);
+        return;
+    }
+    AT(o, 0x28, u8) = 0;
+    func_00314A00(o, out);
+}
+
+/* +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00314F20(u8 *o) {
+    if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(o, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(o, 0x38, u32) = AT(o, 0x34, u32);
+    sceVu0CopyVector((f32 *)(o + 0x40), BALL_POS(o));
+    switch (AT(o, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_00429C28);
+        break;
+    default:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_00429C38);
+        break;
+    }
+    if (AT(o, 0x120, u16) != 0) {
+        AT(o, 0x11C, f32) = AT(o, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(o, 0x11C, f32) <= 0.0f) {
+            AT(o, 0x11C, f32) = 0.0f;
+            AT(o, 0x28, u8) = 0;
+        }
+    }
+}
+
+/* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+u32 func_003150A0(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    return thing_put(o, tri, pos, rot, rr, h);
+}
+
+/* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+ * the step is stopped */
+s32 func_00315100(u8 *o, u8 *a, f32 *to) {
+    return thing_step_tri(o, a, to);
+}
+
+/* +0x30 each frame, while the game runs (not in a cutscene, not paused by the events, not
+ * progress flags 8 / 0x20) and it is in the current room: a pursuer standing over it (within
+ * his radius + 1, his height span +-1) bursts it (an alert to the progress); then Fiona's kick */
+void func_003151A0(u8 *o) {
+    Progress *p;
+    u8 *c;
+    f32 d[4] __attribute__((aligned(16)));
+
+    func_00121220(o);
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+        return;
+    }
+    if ((VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 1) {
+        return;
+    }
+    p = gProgress;
+    if ((Progress_TestFlag(p, 8) & 0xFF) == 1) {
+        return;
+    }
+    if (Progress_TestFlag(p, 0x20) != 0) {
+        return;
+    }
+    if (AT(o, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    c = (u8 *)gCharPursuer;
+    if (c != NULL && AT(c, 0x28, u8) == 1 && AT(c, 0x29, u8) == 0) {
+        f32 y = AT(c, 0x14, f32);
+        f32 top = 1.0f + (y + AT(c, 0xCC, f32));
+
+        if (!(AT(o, 0x14, f32) <= y - 1.0f) && AT(o, 0x14, f32) < top) {
+            sceVu0SubVector(d, (f32 *)(c + 0x10), BALL_POS(o));
+            if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 1.0f + AT(c, 0xC8, f32)) {
+                func_00177FA0(p, BALL_POS(o), 4, 7, 5, 4, 0.0f);
+                func_00314A00(o, BALL_POS(o));
+                AT(o, 0x28, u8) = 0;
+            }
+        }
+    }
+    thing_kick(o);
+}
+
+/* +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
+void func_003154B0(u8 *o) {
+    func_00121300(o);
+    AT(o, 0x100, s32) = 0;
+    AT(o, 0x104, u32) = 0xBDCCCCCD;
+    AT(o, 0x108, s32) = 0;
+    AT(o, 0x10C, f32) = 1.0f;
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
 }
