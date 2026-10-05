@@ -6887,3 +6887,83 @@ void func_0014DA50(Hewie *h) {
     }
     HW(h, 0xF36BC, s32) = 1;
 }
+
+/* ---- following Fiona ---- */
+
+extern const PTMF D_003B1B18, D_003B1B28;
+
+/* go where her command (his action) puts him by her (func_00145610), along the planned path
+ * (straight once on its triangle), by gait +0xF36B4 with hysteresis on the distance left: walk
+ * (0; over 30 trot), trot (1; under 20 walk, over 54 run), run (2; under 44 trot). Walking and
+ * within 12: there, behaviour D_003B1B18 (D_003B1B28 with +0xF36B8). No path: default action */
+void func_0014E300(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d, a, step;
+    s32 there;
+    u32 tri;
+
+    tri = func_00145610(h, HEWIE_ACTION(h), at);
+    there = tri == func_00124480(&h->c.a, at, NAV_NONE);
+    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, tri, at, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (!there) {
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    } else {
+        d = func_00124490(&h->c.a, at);
+    }
+    switch (HW(h, 0xF36B4, s32)) {
+    case 0:
+        if (d < 12.0f) {
+            h->c.unk124 = h->c.unk128;
+            Hewie_SetBehaviour(h, HW(h, 0xF36B8, s32) == 0 ? &D_003B1B18 : &D_003B1B28);
+            return;
+        }
+        if (d <= 30.0f) {
+            func_00141C00(h, 7);
+        } else {
+            HW(h, 0xF36B4, s32) = 1;
+            func_00141C00(h, 8);
+        }
+        break;
+    case 1:
+        if (d < 20.0f) {
+            HW(h, 0xF36B4, s32) = 0;
+            func_00141C00(h, 7);
+        } else if (d <= 54.0f) {
+            func_00141C00(h, 8);
+        } else {
+            HW(h, 0xF36B4, s32) = 2;
+            func_00141C00(h, 9);
+        }
+        break;
+    case 2:
+        if (d < 44.0f) {
+            HW(h, 0xF36B4, s32) = 1;
+            func_00141C00(h, 8);
+        } else {
+            func_00141C00(h, 9);
+        }
+        break;
+    }
+    if (!there) {
+        if (!(u8)func_00139DE0(h) && HW(h, 0xF36B4, s32) == 2) {
+            func_00141C00(h, 8);
+        }
+        return;
+    }
+    a = func_001244D0(&h->c.a, at);
+    step = run_turn(h);
+    turn_toward(h, a, step);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    if (HW(h, 0xF3558, u8) == 0) {
+        h->c.unk124 = h->c.unk128;
+    }
+}
