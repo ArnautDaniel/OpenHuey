@@ -35,6 +35,14 @@ if a.sizes:
         print('%02X %s %d' % (op, t, n - i))
     sys.exit()
 for o in a.ops:
+    if o.startswith('.L'):   # an out-of-line tail: up to its first `b .L002073F4` / jr
+        i = labels[o]
+        print('==== ' + o)
+        for l in body[i:]:
+            print(re.sub(r'^\s*/\* [0-9A-F]+ ([0-9A-F]+) [0-9A-F]+ \*/', r'\1', l))
+            if re.search(r'\bb\s+\.L002073F4|\bjr\s+\$ra', l):
+                print(body[body.index(l) + 1].strip()); break
+        continue
     op = int(o, 16)
     t = tbl[op]
     same = [ '%02X' % k for k, x in enumerate(tbl) if x == t]

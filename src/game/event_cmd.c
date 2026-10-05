@@ -61,6 +61,15 @@ extern void func_00182E80(u8 *f);
 extern void func_0019A280(u8 *f, s32 n);
 extern void func_0019A210(u8 *f, s32 n);
 extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
+extern VObject *D_0044E7A8;   /* the screen fades */
+extern u8 *func_00208F30(u8 *e, s32 n);
+extern u8 *func_00208F10(u8 *e);
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
+extern void func_00261090(u8 *items, s32 id, s32 n);
+extern void func_0019A420(u8 *f, s32 who, s32 n);
+extern s32 func_00177260(Progress *p, s32 slot);
+extern void func_00177300(Progress *p, s32 slot);
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -451,6 +460,53 @@ static u8 *script_by_id(VObject *ev, u32 id) {
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
 
         return VCALL(room, 0x24, u8 *(*)(VObject *, s32))(room, id);
+    }
+}
+
+/* room effect slot `k` made anew from the effects' pool (+0x1400) with `ctor`/`arg` */
+static void room_effect_slot(s32 k, s32 which, s32 arg) {
+    u8 *fx = D_0044E4C0;
+    u8 **slot = (u8 **)(fx + 0x1438) + k;
+    void *mem;
+
+    if (*slot != NULL) {
+        VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, *slot);
+        *slot = NULL;
+    }
+    mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+    if (mem != NULL) {
+        u8 *e = func_002672F0(0xA0, mem);
+
+        if (e != NULL) {
+            e = which ? func_00208F10(e) : func_00208F30(e, arg);
+        }
+        *slot = e;
+        VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
+    }
+}
+
+/* (0x68) sound be32 pc[1..4], bank pc[5] & 0x3F: kind pc[5] >> 6 0 at a point (3 x be32 / 1000;
+ * only when the progress' +0x7C allows), 2 plain, else at the camera; volume / pitch pc[18..19] */
+static void cmd_sound(VObject *ev, Progress *p, const u8 *pc) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 cam[4] __attribute__((aligned(16)));
+    u32 k = pc[5] & 0xC0;
+
+    if (k == 0) {
+        if (VCALL(p, 0x7C, s32 (*)(Progress *))(p) == 0) {
+            return;
+        }
+        at[0] = (f32)be32(PC(ev) + 6) / 1000.0f;
+        at[1] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
+        at[2] = (f32)be32(PC(ev) + 0xE) / 1000.0f;
+        pc = PC(ev);
+        func_002FF650(D_0044E560, be32(pc + 1), pc[5] & 0x3F, at, (s8)pc[0x12], (s8)pc[0x13]);
+    } else if (k == 0x80) {
+        VCALL(D_0044E560, 0x14, void (*)(VObject *, u32, u32))(D_0044E560, be32(pc + 1), pc[5] & 0x3F);
+    } else {
+        VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, cam);
+        pc = PC(ev);
+        func_002FF650(D_0044E560, be32(pc + 1), pc[5] & 0x3F, cam, (s8)pc[0x12], (s8)pc[0x13]);
     }
 }
 
@@ -1055,6 +1111,103 @@ void func_002029B0(VObject *ev) {
         break;
     case 0x95:
         func_0019A210(gCharPlayer, pc[1]);
+        break;
+    case 0x35:   /* room effect pc[1] made anew (a D_0046FF?? kind 8) and set going with pc[2..] */
+        if (pc[1] < 0x20) {
+            room_effect_slot(pc[1], 0, 8);
+        }
+        func_00266C70(D_0044E4C0, PC(ev)[1], (void *)(PC(ev) + 2));
+        break;
+    case 0x65: {   /* room effect 0x1C made anew, set going at (4 x be32 / 1000) */
+        f32 at[4] __attribute__((aligned(16)));
+
+        room_effect_slot(0x1C, 1, 0);
+        at[0] = (f32)be32(PC(ev) + 1) / 1000.0f;
+        at[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
+        at[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
+        at[3] = (f32)be32(PC(ev) + 0xD) / 1000.0f;
+        func_00266C70(D_0044E4C0, 0x1C, at);
+        break;
+    }
+    case 0x68:
+        cmd_sound(ev, p, pc);
+        break;
+    case 0x71:   /* screen fade: pc[1] 0 out (1, 1), else pc[2]; over be16 pc[3..4] */
+        if (pc[1] == 0) {
+            VCALL(D_0044E7A8, 0x14, void (*)(VObject *, s32, s32, u32))(D_0044E7A8, 1, 1, be16(pc + 3));
+        } else {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, u32))(D_0044E7A8, 1, pc[2], be16(pc + 3));
+        }
+        break;
+    case 0x83: {   /* item: the progress' +0xFBE counts; this script's +0xD0 of be16 pc[1..2], pc[3] */
+        s32 n, id;
+
+        AT(p, 0xFBE, s16)++;
+        pc = PC(ev);
+        n = pc[3];
+        id = VCALL(ev, 0xD0, s32 (*)(VObject *, u32))(ev, be16(pc + 1));
+        func_00261090((u8 *)D_0044E988 + 0x8, id, n);
+        break;
+    }
+    case 0x88: {   /* a noise of loudness pc[1] in this room at triangle be16 pc[2..3] */
+        s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+
+        func_002A8440((u8 *)p + 0x7A8, PC(ev)[1], room, be16(pc + 2), 0xFFFF);
+        break;
+    }
+    case 0x8A:
+        VCALL(p, 0x74, void (*)(Progress *, u32, s32, s32, s32, s32, s32, u32, f32))(
+            p, be16(pc + 1), (s16)be16(pc + 4), (s8)pc[3], pc[6], (s8)pc[7], (s8)pc[8], be16(pc + 9),
+            (f32)be32(pc + 0xB) / 1000.0f);
+        break;
+    case 0x93:   /* the progress' +0x7E0 (pc[1] & 0x80) or +0x7E4 (pc[1] / 30) grows */
+        if (pc[1] & 0x80) {
+            f32 v = (f32)(s32)(pc[1] & 0x80);
+
+            if (!(v < 0.0f)) {
+                AT(p, 0x7E0, f32) = AT(p, 0x7E0, f32) + v;
+            }
+        } else {
+            f32 v = (f32)(s32)pc[1];
+            static const union { u32 u; f32 f; } k30 = {0x3D08882F};
+
+            if (!(v < 0.0f)) {
+                AT(p, 0x7E4, f32) = AT(p, 0x7E4, f32) + k30.f * v;
+            }
+        }
+        break;
+    case 0x96: {   /* Fiona's func_0019A420 for character pc[1], be32 pc[2..5] (not > 0: 30) */
+        u8 *f = gCharPlayer;
+        s32 i = (u8)func_001770D0(p, pc[1]);
+        s32 n;
+
+        pc = PC(ev);
+        n = be32(pc + 2);
+        if (i == 0xFF) {
+            break;
+        }
+        if (n > 0) {
+            func_0019A420(f, i, n);
+        } else {
+            func_0019A420(f, i, 0x1E);
+        }
+        break;
+    }
+    case 0x98: {   /* character slot pc[1] in (wait while func_00177260 says no) */
+        s32 i = pc[1];
+
+        if ((u8)func_00177260(p, i) != 0) {
+            EV_WAIT(ev) = 1;
+        } else {
+            AT(gCharacters[i], 0x28, u8) = 1;
+            AT(gCharPlayer, 0x28, u8) = 1;
+            func_00177300(p, i);
+        }
+        break;
+    }
+    case 0x99:
+        Progress_SetFlag(p, 0x16);
+        VCALL(p, 0x78, void (*)(Progress *, s32, s32))(p, PC(ev)[1], PC(ev)[2]);
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
