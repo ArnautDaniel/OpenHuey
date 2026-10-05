@@ -1177,3 +1177,88 @@ s32 func_002B2D50(void *self, void *a1, u8 *cmd) {
 
     return lit_quad(cmd, sQuad, 0x40);
 }
+
+extern const char *const D_00403964;   /* "movechair_3" */
+extern VObject *D_0044E560;   /* the sound driver */
+extern f32 func_0031C4C0(f32 x);   /* asinf */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+
+/* the creak of the chairs, at (2.09, 0.3, -2.09) */
+static void chair_creak(VObject *snd, u32 id, f32 *pos, s32 vol) {
+    AT(pos, 0x0, u32) = 0x40058ADB;
+    AT(pos, 0x4, u32) = 0x3E99999A;
+    AT(pos, 0x8, u32) = 0xC00582AA;
+    func_002FF650(snd, id, 6, pos, vol, 0);
+}
+
+/* the three rocking chairs ("movechair_1..3"; +0x30 the rock's phase in degrees, +0x34 its
+ * size, +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking
+ * step (6 degrees; each swing smaller, the first chair creaking at a volume by its size);
+ * 2 / 3 set rocking at full size from their tilt now (swinging forward / back), with a creak */
+s32 func_002B0640(void *self, void *a1, u8 *cmd) {
+    VObject *objs = D_00456DF8;
+    u8 *chairs[3];
+    f32 pos[4] __attribute__((aligned(16)));
+    VObject *snd;
+    s32 i;
+
+    chairs[0] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040395C);
+    chairs[1] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403960);
+    chairs[2] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403964);
+    switch (cmd[3]) {
+    case 0:
+        for (i = 0; i < 3; i++) {
+            if (chairs[i] != NULL) {
+                AT(chairs[i], 0x3C, s32) = 0;
+                AT(chairs[i], 0x38, s32) = 0;
+                AT(chairs[i], 0x34, s32) = 0;
+                AT(chairs[i], 0x30, s32) = 0;
+            }
+        }
+        break;
+    case 1:
+        snd = D_0044E560;
+        for (i = 0; i < 3; i++) {
+            u8 *c = chairs[i];
+
+            if (c == NULL || AT(c, 0x34, f32) <= 0.0f) {
+                continue;
+            }
+            AT(c, 0x30, f32) = AT(c, 0x30, f32) + 6.0f;
+            if (!(AT(c, 0x30, f32) < 360.0f)) {
+                AT(c, 0x30, f32) = AT(c, 0x30, f32) - 360.0f;
+                AT(c, 0x34, f32) = AT(c, 0x34, f32) - AT(c, 0x38, f32);
+                if (AT(c, 0x34, f32) < 0.0f) {
+                    AT(c, 0x34, f32) = 0.0f;
+                }
+                if (i == 0) {
+                    chair_creak(snd, 2, pos, (s8)(s32)(-100.0f * (1.0f - AT(c, 0x34, f32))));
+                }
+            }
+            AT(c, 0x10, f32) = 0x1.921fb6p+1f * (10.0f * AT(c, 0x34, f32) * func_0031C248(0x1.921fb6p+1f * AT(c, 0x30, f32) / 180.0f)) / 180.0f;
+            if (!(AT(c, 0x10, f32) <= 0x1.921fb6p+1f)) {
+                AT(c, 0x10, f32) = AT(c, 0x10, f32) - 0x1.921fb6p+2f;
+            }
+        }
+        break;
+    case 2:
+    case 3:
+        snd = D_0044E560;
+        for (i = 0; i < 3; i++) {
+            u8 *c = chairs[i];
+            f32 a;
+
+            if (c == NULL) {
+                continue;
+            }
+            a = 180.0f * func_0031C4C0(180.0f * AT(c, 0x10, f32) / 0x1.921fb6p+1f / 10.0f) / 0x1.921fb6p+1f;
+            AT(c, 0x30, f32) = cmd[3] == 2 ? a : 180.0f - a;
+            AT(c, 0x34, f32) = 1.0f;
+            AT(c, 0x38, u32) = 0x3D4CCCCD;   /* 0.05 */
+            AT(c, 0x3C, s32) = 0;
+            chair_creak(snd, 5, pos, 0);
+        }
+        break;
+    }
+    return 1;
+}
