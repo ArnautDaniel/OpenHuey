@@ -5665,3 +5665,107 @@ void func_00193C60(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B29C8);
     }
 }
+
+extern u32 D_0047E37C;   /* pad buttons pressed this frame */
+
+/* struggling: how many shakes this frame - the stick (and d-pad) swung through more than 120
+ * degrees from the last direction (+0x1AD714), or out from rest (+0x1AD710: back under 0.2),
+ * and each of the buttons bits 10..15 pressed; none while the game drives her */
+s32 func_00183190(Fiona *f) {
+    static const union { u32 u; f32 f; } k08 = {0x3F4CCCCD}, k02 = {0x3E4CCCCD}, k120 = {0x40060A92};
+    f32 e[4] __attribute__((aligned(16)));
+    s32 n = 0;
+    f32 len;
+
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        return 0;
+    }
+    sceVu0CopyVector(e, D_0047E3A0);
+    e[0] = e[0] + (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
+    e[2] = e[2] + (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    len = __builtin_sqrtf(e[2] * e[2] + e[0] * e[0]);
+    if (len <= k08.f) {
+        if (len < k02.f) {
+            FI(f, 0x1AD710, u8) = 1;
+            FI(f, 0x1AD714, f32) = 0.0f;
+        }
+    } else {
+        f32 a = func_0031C5C0(e[0], e[2]);
+
+        if (FI(f, 0x1AD710, u8) != 0) {
+            n++;
+            FI(f, 0x1AD710, u8) = 0;
+            FI(f, 0x1AD714, f32) = a;
+        } else {
+            f32 d;
+
+            if (!(func_002E2D00(FI(f, 0x1AD714, f32) - a) <= 0.0f)) {
+                d = func_002E2D00(FI(f, 0x1AD714, f32) - a);
+            } else {
+                d = -func_002E2D00(FI(f, 0x1AD714, f32) - a);
+            }
+            if (!(d <= k120.f)) {
+                n++;
+                FI(f, 0x1AD714, f32) = a;
+            }
+        }
+    }
+    if ((D_0047E37C >> 14) & 1 || (D_0047E37C >> 13) & 1 || (D_0047E37C >> 12) & 1 || (D_0047E37C >> 15) & 1 ||
+        (D_0047E37C >> 10) & 1 || (D_0047E37C >> 11) & 1) {
+        n++;
+    }
+    return n;
+}
+
+/* held (D_003B2D38): she struggles - each shake takes a frame off both +0x1AD6C0 (the hold)
+ * and +0x1AD6C4 (beyond one a frame); the hold (0x1405, then 0x1406 at the motion's event 0x20)
+ * lasts until +0x1AD6C0 runs out or no carrier (creatures 7..9 in her room, action 8) is
+ * left, then she gets up (0x1407; standing at its event 0x20) */
+void func_0018BCC0(Fiona *f) {
+    void *m;
+
+    FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - 1;
+    if (FI(f, 0x1AD6C0, s32) > 0 && FI(f, 0x1AD6C4, s32) > 0) {
+        s32 k = func_00183190(f);
+
+        FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - k;
+        FI(f, 0x1AD6C4, s32) = FI(f, 0x1AD6C4, s32) - k;
+    }
+    m = f->c.motion;
+    switch (AT(m, 0x55C, s32)) {
+    case 0x1407:
+        if ((MOTION_EVENTS(m) & 0x20) != 0) {
+            f->c.a.unk2D = 0;
+            Fiona_ToIdle(f);
+        }
+        break;
+    case 0x1406:
+        if (AT(m, 0x550, f32) <= 0.0f) {
+            u8 held = 0;
+
+            if (FI(f, 0x1AD6C0, s32) > 0) {
+                s32 i;
+
+                for (i = 7; i < 10; i++) {
+                    Character *c = AT(D_0044F258, i * 4, Character *);
+
+                    if (c != NULL && c->a.active == 1 && f->c.a.room == c->a.room && c->moveMode == 8) {
+                        held = 1;
+                        break;
+                    }
+                }
+            }
+            if (held == 0) {
+                f->c.a.unk2D = 1;
+                f->c.moveMode = 0;
+                func_002DDE20(f->c.motion, 0x1407, -1);
+            }
+        }
+        break;
+    case 0x1405:
+        if ((MOTION_EVENTS(m) & 0x20) != 0) {
+            func_002DDE20(m, 0x1406, -1);
+        }
+        break;
+    }
+}
