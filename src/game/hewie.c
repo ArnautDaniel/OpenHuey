@@ -3960,3 +3960,80 @@ void func_0013C7D0(Hewie *h) {
     }
     hewie_want(h, *(s32 *)e, 0);
 }
+
+/* ---- where to run ---- */
+
+extern s32 func_001788F0(Progress *p, u32 door);
+extern s32 func_00178610(Progress *p, u32 d);
+extern s32 func_00178200(Progress *p, u32 d, u32 side);
+
+/* the exit of his room to flee from `from` by: exits whose door is open and passable from his
+ * side (and from `from`'s too if `both`), nearest first, those within 20 of `from` last; the
+ * first he can plan a path to. 0xFF if none, or `from` isn't in his room */
+u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
+    VObject *rooms, *doors, *planner;
+    Progress *p;
+    f32 dist[8];
+    u8 exits[8];
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 goal[4] __attribute__((aligned(16)));
+    s32 n = 0, i;
+    u32 e;
+
+    if (!in_his_room(h, from)) {
+        return 0xFF;
+    }
+    rooms = D_0044E568;
+    p = gProgress;
+    doors = D_0044E558;
+    for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+        u32 door;
+        s32 near = 0;
+        f32 len;
+
+        if ((u8)VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) != 1) {
+            continue;
+        }
+        door = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) & 0xFFFF;
+        if ((u8)func_001788F0(p, door) != 1 || (u8)func_00178610(p, door) ||
+            (u8)func_00178200(p, door, (u8)h->c.a.slot) != 1 ||
+            ((u8)both && (u8)func_00178200(p, door, (u8)from->a.slot) != 1)) {
+            continue;
+        }
+        VCALL(doors, 0x34, void (*)(VObject *, u32, f32 *))(doors, e, at);
+        if (from != NULL) {
+            sceVu0SubVector(d, at, from->a.pos);
+            if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 20.0f) {
+                near = 1;
+                exits[n] = e;
+                dist[n++] = 100000.0f;
+            }
+        }
+        if (near) {
+            continue;
+        }
+        sceVu0SubVector(d, at, h->c.a.pos);
+        len = __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+        for (i = n; i > 0 && len <= dist[i - 1]; i--) {
+            dist[i] = dist[i - 1];
+            exits[i] = exits[i - 1];
+        }
+        exits[i] = e;
+        n++;
+        dist[i] = len;
+    }
+    planner = gSceneGameF29740;
+    for (i = 0; i < n; i++) {
+        u32 tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exits[i], goal);
+        s32 r = func_00127140(&h->c, 0, tri, goal);
+
+        if (r > 0) {
+            r = VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+        }
+        if (r > 0) {
+            return exits[i];
+        }
+    }
+    return 0xFF;
+}

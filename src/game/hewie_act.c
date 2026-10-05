@@ -23,7 +23,7 @@ extern s32 func_0013B2C0(Hewie *h, s32 act);
 extern s32 func_00137650(Hewie *h, void *other);
 extern void *func_001379C0(Hewie *h);
 extern s32 func_001382F0(Hewie *h);
-extern u8 func_0013CDC0(Hewie *h, void *who, s32 mode);
+extern u8 func_0013CDC0(Hewie *h, Character *from, s32 both);
 extern s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep);
 extern void func_0013E680(Hewie *h);
 extern void func_0013A430(Hewie *h, s32 snd);
@@ -577,7 +577,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         if (sees(h, gCharPlayer)) {
             place = func_0013CDC0(h, gCharPlayer, 0);
         } else {
-            place = func_0013CDC0(h, h, 0);
+            place = func_0013CDC0(h, &h->c, 0);
         }
         if (place == 0xFF) {
             instead(h, 0, 0);
@@ -588,7 +588,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         break;
     }
     case 0x25: {
-        u8 place = func_0013CDC0(h, h, 0);
+        u8 place = func_0013CDC0(h, &h->c, 0);
 
         if (place == 0xFF) {
             instead(h, 0x10, 0);
