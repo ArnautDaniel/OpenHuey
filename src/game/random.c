@@ -125,3 +125,21 @@ VObject *func_001A4850(VObject *r, s32 flags) {
     }
     return r;
 }
+
+extern void *D_0046AB80[];
+extern VObject *D_0044E550;
+extern void func_00100490(void *p);   /* operator delete */
+
+/* +0x8 destructor (the global goes) */
+void *func_001A4910(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AB80;
+        if (o != NULL) {
+            D_0044E550 = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}

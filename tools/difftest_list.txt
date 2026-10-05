@@ -5423,3 +5423,16 @@ src/game/model.c func_00208C90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
 src/game/model.c func_00208650 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
 src/game/model.c func_00208180 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
 src/game/model.c func_00208420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/random.c func_001A4910 --pre=a0=0..0x0A000000 --pre=a1=0..2
+src/game/pathplan.c func_001A4970 --pre=a0=0..0x0A000000 --pre=a1=0..2
+src/game/pathplan.c func_001A49E0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0A100000..0x0A100000 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100004=2..6 --pre=@0x0B100008=0..3 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=1..6
+src/game/pathplan.c func_001A9FF0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..1 --pre=a0+0x1005C=0..0 --pre=a0+0x10060=0xFFFFFFFF..0xFFFFFFFF
+src/game/pathplan.c func_001A4C60 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0A100000..0x0A100000 --pre=a1+4=0..3
+src/game/pathplan.c func_001AA720 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..1 --pre=a0+0x10058=0..0x0A000100
+src/game/pathplan.c func_001A8380 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0..2 --pre=a3=0..6 --pre=a4=0x0B200000..0x0B200000
+src/game/pathplan.c func_001A8400 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100010..0x0B100010 --pre=a3=0..2 --pre=a4=1..5 --pre=a5=0x0B200000..0x0B200000 --pre=f12=0.5..30.0
+src/game/pathplan.c func_001AA910 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..0 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=1..6 --pre=a0+0x40194=0..5
+src/game/pathplan.c func_001A8300 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..1 --pre=@0x0A000000=0x0046ABB0..0x0046ABB0 --stub-ret=0 --stub-ret=1
+src/game/pathplan.c func_001AA790 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..0 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=1..6 --pre=a0+0x10058=0x0A000044..0x0A0000A4 --pre=a2=0..0xFF --pre=@0x3C=0..0
+src/game/pathplan.c func_001AAAE0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0xFFFFFFFF..0 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=1..6 --pre=a0+0x10058=0x0A000044..0x0A0000A4
+src/game/pathplan.c func_001AA040 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0xFFFFFFFF..3 --pre=@0x0B100000=0..2 --pre=@0x0B100004=0..8 --pre=@0x0B100008=0..2 --pre=@0x0B10000C=0xFFFFFFFF..3 --pre=@0x0B100020=0xFFFFFFFF..3 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x0B500004=0x0B600000..0x0B600000 --pre=@0x0B500008=1..6 --stub-ret=0 --stub-ret=3 --stub-ret=4 --pre=a0+4=0..15
