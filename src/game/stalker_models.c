@@ -1219,3 +1219,85 @@ void func_002F6CE0(u8 *m) {
     AT(m, 0xBA, u8) = 4;
     AT(m, 0xBB, u8) = 0xC0;
 }
+
+/* ---- Riccardo's parts ---- */
+
+/* a part's anchor: its bone's position when anchored (+0x20), else the point it hangs from */
+static inline void Part_Anchor(u8 *p, u8 *set, f32 *at) {
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(at, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+    } else {
+        sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+    }
+}
+
+/* a part kept at its length from its anchor; its velocity is how far it went */
+static inline void Part_Hold(u8 *p, const f32 *at, const f32 *prev) {
+    f32 d[4] __attribute__((aligned(16)));
+
+    sceVu0SubVector(d, (f32 *)p, (f32 *)at);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)at, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, (f32 *)prev);
+}
+
+/* +0x10 of his 0x60 parts (vtable D_00473810): follow the anchor (0.6), the set's force, the
+   colliders (strength 1), held about 1.9 from the part it's tied to (+0x48, by +0x44), damped,
+   at its length */
+void func_0031EB70(u8 *p, u8 *set) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 *vel = (f32 *)(p + 0x10);
+    u8 *c;
+
+    Part_Anchor(p, set, at);
+    sceVu0SubVector(d, at, (f32 *)(p + 0x50));
+    sceVu0ScaleVector(d, d, 0x1.333334p-1f);   /* 0.6 */
+    sceVu0AddVector((f32 *)p, (f32 *)p, d);
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0SubVector(vel, vel, (f32 *)set);
+    for (c = AT(set, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        (*(void (**)(u8 *, f32 *, u8 *, f32))(AT(c, 0x30, u8 *) + 8))(c, d, p, 1.0f);
+        sceVu0AddVector(vel, vel, d);
+    }
+    if (AT(p, 0x48, f32 *) != NULL) {
+        f32 len;
+
+        sceVu0SubVector(d, AT(p, 0x48, f32 *), (f32 *)p);
+        len = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+        sceVu0ScaleVector(d, d, AT(p, 0x44, f32) * (len - 0x1.e66666p+0f /* 1.9 */) / len);
+        sceVu0AddVector(vel, vel, d);
+    }
+    sceVu0ScaleVector(vel, vel, AT(set, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, vel);
+    Part_Hold(p, at, prev);
+    sceVu0CopyVector((f32 *)(p + 0x50), at);
+}
+
+/* +0x10 of his 0x50 parts (vtable D_004737F0): drawn toward where its bone points (its length
+   out along the bone's X axis, by +0x44), the set's force, damped, at its length */
+void func_0031EA10(u8 *p, u8 *set) {
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 *vel = (f32 *)(p + 0x10);
+    f32 *mtx;
+
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0SubVector(vel, vel, (f32 *)set);
+    mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    t[0] = AT(p, 0x40, f32);
+    t[3] = 1.0f;
+    t[1] = 0.0f;
+    t[2] = 0.0f;
+    sceVu0ApplyMatrix(t, (f32 (*)[4])mtx, t);
+    sceVu0SubVector(t, t, (f32 *)p);
+    sceVu0ScaleVector(t, t, AT(p, 0x44, f32));
+    sceVu0AddVector(vel, vel, t);
+    sceVu0ScaleVector(vel, vel, AT(set, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, vel);
+    Part_Anchor(p, set, at);
+    Part_Hold(p, at, prev);
+}
