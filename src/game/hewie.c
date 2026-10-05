@@ -9743,20 +9743,25 @@ void func_0015FE30(Hewie *h) {
 /* ---- the mode's behaviour ---- */
 
 extern const PTMF D_003B02A0, D_003B02B0;
+extern const PTMF D_003B0290;   /* tense behaviour */
 
-/* his behaviour by the game mode (not when down): tense (2) his idle choice when flagged
- * (+0xF3559; hidden, func_0013E680 instead); calm (0) / wary (1) the mode's behaviour
- * (D_003B02B0 / D_003B02A0) with his mood, +0xF36A4 / +0xF36AC cleared (calm: not alert), and bit 2
- * of +0xF356C flagging +0xF3559 */
-void func_001602F0(Hewie *h) {
+/* keep his behaviour in step with the game mode (not when down), from the behaviour of mode
+ * `own`: in it, his idle choice when flagged (+0xF3559; hidden, func_0013E680 instead).
+ * Otherwise to the mode's behaviour, mood and counters (+0xF35C4 / +0xF36A4 / +0xF36AC)
+ * cleared: calm (0, D_003B02B0) not alert; wary (1, D_003B02A0) from calm his feelings tested
+ * (func_0013C5D0, when alert) and bit 9 of +0xF356C starting action 0x14; tense (2, D_003B0290)
+ * alert to the pursuer in his room and his feelings tested. Bit 2 of +0xF356C flags +0xF3559
+ * (not on that calm-to-wary step) */
+static void mode_behaviour(Hewie *h, u32 own) {
+    Progress *p;
     u32 mode;
 
     if (h->c.a.unkC4 == 2) {
         return;
     }
-    mode = (u8)func_00177620(gProgress);
-    switch (mode) {
-    case 2:
+    p = gProgress;
+    mode = (u8)func_00177620(p);
+    if (mode == own) {
         if (HW(h, 0xF3559, u8) == 1) {
             if (!h->c.a.disabled) {
                 func_0013C7D0(h);
@@ -9766,19 +9771,65 @@ void func_001602F0(Hewie *h) {
                 func_0013E680(h);
             }
         }
-        break;
+        return;
+    }
+    switch (mode) {
     case 0:
+        HW(h, 0xF35C4, s32) = 0;
+        HW(h, 0xF36AC, s32) = 0;
+        HW(h, 0xF36A4, s32) = 0;
+        HW(h, 0xF366D, u8) = 0;
+        Actor_SetState(&h->c.a, &D_003B02B0);
+        break;
     case 1:
         HW(h, 0xF35C4, s32) = 0;
         HW(h, 0xF36AC, s32) = 0;
         HW(h, 0xF36A4, s32) = 0;
-        if (mode == 0) {
-            HW(h, 0xF366D, u8) = 0;
-        }
-        Actor_SetState(&h->c.a, mode == 0 ? &D_003B02B0 : &D_003B02A0);
-        if ((HW(h, 0xF356C, u32) & 0x80000004) == 4) {
-            HW(h, 0xF3559, u8) = 1;
+        Actor_SetState(&h->c.a, &D_003B02A0);
+        if (own == 0 && !h->c.a.disabled) {
+            if (HW(h, 0xF366D, u8) != 0) {
+                func_0013C5D0(h);
+            }
+            if ((HW(h, 0xF356C, u32) & 0x80000200) == 0x200) {
+                hewie_want(h, 0x14, 0);
+            }
+            return;
         }
         break;
+    case 2:
+        HW(h, 0xF35C4, s32) = 0;
+        HW(h, 0xF36AC, s32) = 0;
+        HW(h, 0xF36A4, s32) = 0;
+        Actor_SetState(&h->c.a, &D_003B0290);
+        if (!h->c.a.disabled) {
+            if (in_his_room(h, gCharPursuer)) {
+                HW(h, 0xF366D, u8) = 3;
+                HW(h, 0xF3670, s32) = gCharPursuer->a.slot;
+            }
+            if (HW(h, 0xF366D, u8) == 3 || HW(h, 0xF366D, u8) == 1) {
+                func_0013C5D0(h);
+            }
+        }
+        break;
+    default:
+        return;
     }
+    if ((HW(h, 0xF356C, u32) & 0x80000004) == 4) {
+        HW(h, 0xF3559, u8) = 1;
+    }
+}
+
+/* the tense behaviour's mode check (mode_behaviour 2) */
+void func_001602F0(Hewie *h) {
+    mode_behaviour(h, 2);
+}
+
+/* the wary behaviour's mode check */
+void func_00160690(Hewie *h) {
+    mode_behaviour(h, 1);
+}
+
+/* the calm behaviour's mode check */
+void func_00160B60(Hewie *h) {
+    mode_behaviour(h, 0);
 }
