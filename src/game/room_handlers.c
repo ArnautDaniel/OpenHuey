@@ -834,3 +834,28 @@ s32 func_002FF320(void *self, void *a1, u8 *cmd) {
     func_00266C70(fx, 0x1B, q);
     return 1;
 }
+
+#include "effectmgr.h"
+
+extern void *D_00474000[];   /* the room 0x2A effect (props.c) */
+
+static void room2a_effect_init(void **obj) {
+    obj[0] = D_00474000;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* room 0x2A: its effect (D_00474000) started at (220, 0, -100) */
+s32 func_002B12D0(void) {
+    u8 *mgr = D_0044E578;
+    s32 slot = Effect_New(mgr, 0x900, room2a_effect_init);
+    f32 at[4] __attribute__((aligned(16)));
+
+    at[0] = 220.0f;
+    at[2] = -100.0f;
+    at[1] = 0.0f;
+    at[3] = 1.0f;
+    func_002D6090(mgr, slot, at);
+    return 1;
+}

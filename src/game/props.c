@@ -5,6 +5,24 @@
 
 extern VObject *D_0044E550;   /* the random number generator */
 
+extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
+extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
+
+/* (class D_00474000, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_00321910(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00474000;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
 /* (class D_00474000, room 0x2A) +0xC reset: a random delay (0x5A..0x79) and its settings */
 void func_00322430(u8 *o) {
     AT(o, 0x8EC, s32) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 0x1F) + 0x5A;
