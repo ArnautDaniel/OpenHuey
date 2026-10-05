@@ -7004,3 +7004,89 @@ void func_0014E8A0(Hewie *h) {
     }
     Hewie_SetBehaviour(h, &D_003B1B08);
 }
+
+/* ---- fetching ---- */
+
+extern const PTMF D_003B1A48, D_003B1A58, D_003B1A68, D_003B1A78, D_003B1A88, D_003B1A98, D_003B1AA8;
+
+/* fetch the thrown thing +0xF368C (an actor; its velocity +0xB0). Gone (inactive, or +0x2A 1):
+ * a roll (kind 5 against +0xF3695): won, behaviour D_003B1A48 (+0xF36B4 2), else D_003B1A58 for
+ * 90 frames; likewise D_003B1A68 / D_003B1A78 when it has settled (speed under 0.5) somewhere he
+ * can't reach. Else run for it (eager +0xF369E: by the path left, walk / trot / run; else walk),
+ * head on it once on its triangle; settled within 6 and him nearly stopped: func_001396B0's
+ * rolls decide: pick it up (it goes inactive; D_003B1A88), bring it to Fiona (D_003B1A98), or
+ * leave it (D_003B1AA8, 90 frames) */
+void func_0014EE20(Hewie *h) {
+    Actor *o = HW(h, 0xF368C, Actor *);
+    f32 v[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 speed, s, rest, pitch, yaw, a;
+
+    if (o == NULL || o->active == 0 || o->unk2A == 1) {
+        HW(h, 0xF36B8, s32) = 0;
+        if (Hewie_Roll(h, D_0044E550, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
+            HW(h, 0xF36B4, s32) = 2;
+            Hewie_SetBehaviour(h, &D_003B1A48);
+        } else {
+            HW(h, 0xF36BC, s32) = 90;
+            Hewie_SetBehaviour(h, &D_003B1A58);
+        }
+        return;
+    }
+    sceVu0CopyVector(v, o->unkB0);
+    speed = __builtin_sqrtf(sceVu0InnerProduct(v, v));
+    if (speed < 0.5f && func_0013EE40(h, o->navTri, o->pos, 0, 1) != 0) {
+        HW(h, 0xF36B8, s32) = 0;
+        if (Hewie_Roll(h, D_0044E550, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
+            HW(h, 0xF36B4, s32) = 2;
+            Hewie_SetBehaviour(h, &D_003B1A68);
+        } else {
+            HW(h, 0xF36BC, s32) = 90;
+            Hewie_SetBehaviour(h, &D_003B1A78);
+        }
+        return;
+    }
+    s = root_ahead(h, root);
+    rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    if (speed < 1.0f) {
+        if (speed < 0.5f && (s <= 0.0f ? -s : s) < 0.8f && rest < 6.0f) {
+            HW(h, 0xF36B8, s32) = 1;
+            func_001396B0(h);
+            if (HW(h, 0xF369F, u8) != 0) {
+                o = HW(h, 0xF368C, Actor *);
+                if (o->active != 0) {
+                    o->active = 0;
+                }
+                HW(h, 0xF36B4, s32) = 2;
+                Hewie_SetBehaviour(h, &D_003B1A88);
+            } else if (HW(h, 0xF36A0, u8) != 0) {
+                if (HW(h, 0xF3604, s32) != 0) {
+                    HW(h, 0xF3604, s32) = 0;
+                    HW(h, 0xF3608, s32) = 10;
+                }
+                HW(h, 0xF3544, Character *) = gCharPlayer;
+                Hewie_SetBehaviour(h, &D_003B1A98);
+            } else {
+                HW(h, 0xF36BC, s32) = 90;
+                Hewie_SetBehaviour(h, &D_003B1AA8);
+            }
+            return;
+        }
+        func_00141C00(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? (rest < 20.0f ? 7 : 8) : 9);
+    } else {
+        func_00141C00(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? 8 : 9);
+    }
+    func_00139DE0(h);
+    o = HW(h, 0xF368C, Actor *);
+    if (func_00124480(&h->c.a, o->pos, NAV_NONE) == o->navTri) {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        func_002DD110(h->c.motion, HW(h, 0xF368C, Actor *)->pos, &pitch, &yaw);
+        a = func_002E2D00(h->c.a.angle[1] + yaw);
+        HW(h, 0xF3614, f32) = pitch;
+        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    }
+}
