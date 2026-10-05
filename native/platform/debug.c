@@ -3,6 +3,8 @@
  *   HG_ROOM=<room>   go into the game at room <room> (hex, e.g. 2A: where New Game starts)
  *                    instead of the title (the boot scene still runs: it loads the system
  *                    files)
+ *   HG_FASTBOOT=1    the boot scene skips its logos, the Capcom movie and the caution screen
+ *                    (its loading steps still run)
  *   HG_NOPARTNER=1   no partner (Hewie) in the game scene
  *   HG_WATCHDOG=<s>  after <s> seconds print a backtrace and stop (endless loops)
  *   HG_EVSTUCK=1     stop with the script bytes when an event script steps onto a byte that
@@ -21,6 +23,17 @@ void hg_debug_next_scene(int32_t *mode, int32_t *param) {
     done = 1;
     *mode = 3;
     *param = (int32_t)strtol(room, NULL, 16);
+}
+
+/* HG_FASTBOOT=1: boot step `fn` (a logo, the Capcom movie or the caution screen) is skipped */
+int32_t hg_debug_skip_boot_step(const void *fn) {
+    extern char func_0037FC60[], func_0037FAC0[], func_0037F7D0[], func_0037F980[];
+    const char *v = getenv("HG_FASTBOOT");
+
+    if (v == NULL || v[0] == 0 || v[0] == '0') {
+        return 0;
+    }
+    return fn == func_0037FC60 || fn == func_0037FAC0 || fn == func_0037F7D0 || fn == func_0037F980;
 }
 
 /* HG_NOPARTNER=1: no partner (Hewie) in the game scene (his class isn't fully decompiled) */

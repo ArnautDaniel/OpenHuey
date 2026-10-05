@@ -138,6 +138,15 @@ void SceneBoot_StateSequence(SceneBoot *boot) {
     }
     steps[8] = sGameStateNull;
 
+#ifdef HG_NATIVE
+    {
+        extern s32 hg_debug_skip_boot_step(const void *fn);   /* native/platform/debug.c */
+
+        while (steps[boot->step].vtbl_offset == -1 && hg_debug_skip_boot_step(steps[boot->step].u.func)) {
+            boot->step++;
+        }
+    }
+#endif
     if (ptmf_test(&steps[boot->step]) && (u8)ptmf_scall_r(boot, &steps[boot->step]) == 0) {
         boot->stepFlag = 0;
         boot->stepTimer = 0;
