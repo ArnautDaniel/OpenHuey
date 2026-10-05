@@ -128,3 +128,24 @@ __attribute__((constructor)) static void watchdog_init(void) {
         alarm((unsigned)atoi(s));
     }
 }
+
+/* HG_ROOMLOG=1: room changes and character placements (include/common.h ROOMLOG) */
+#include <stdarg.h>
+int hg_roomlog_on(void) {
+    static int on = -1;
+
+    if (on < 0) {
+        on = getenv("HG_ROOMLOG") != NULL;
+    }
+    return on;
+}
+
+void hg_roomlog(const char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    fputs("roomlog: ", stderr);
+    vfprintf(stderr, fmt, ap);
+    fputc('\n', stderr);
+    va_end(ap);
+}

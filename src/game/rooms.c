@@ -311,6 +311,8 @@ static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
     if ((u8)VCALL(doors, 0x40, s32 (*)(VObject *, u32))(doors, exit) == 1) {
         t = VCALL(doors, 0x50 + which * 4, s32 (*)(VObject *, u32, f32 *))(doors, exit, pos != NULL ? pos : tmp);
         if (t != -1) {
+            ROOMLOG("exit point %d (%d): a real door -> tri %d (%.1f %.1f %.1f)", exit, which, t,
+                    (pos != NULL ? pos : tmp)[0], (pos != NULL ? pos : tmp)[1], (pos != NULL ? pos : tmp)[2]);
             return t;
         }
     }
@@ -318,6 +320,9 @@ static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
     if (pos != NULL) {
         VCALL((VObject *)D_0044E570, 0xC, void (*)(VObject *, s32, f32 *))((VObject *)D_0044E570, t, pos);
     }
+    ROOMLOG("exit point %d (%d) of room %d: room table -> tri %d (%.1f %.1f %.1f)", exit, which,
+            VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), t, pos ? pos[0] : 0.0, pos ? pos[1] : 0.0,
+            pos ? pos[2] : 0.0);
     return t;
 }
 

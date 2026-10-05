@@ -1548,8 +1548,10 @@ extern void func_001205A0(void *rooms, u8 slot);
 /* leave the current room through exit `exit`: unless a room change keeps the sound going
  * (progress flag 0x27) the sounds stop; when the other room slot doesn't already hold the room
  * behind the exit (func_0039D070) it is dropped and the room is loaded (+0xAC); then the change
- * starts (+0x44 = 1, the rooms told +0x14, the exit kept in +0xF6CD20 for the arrival) */
-void func_0039D120(Scene *g, u8 exit) {
+ * starts (+0x44 = 1, the exit kept in +0xF6CD20 for the arrival). Returns the exit on the
+ * other side (rooms +0x14): the event script's "exit taken" (event +0x702), which the next
+ * room's entry script uses to place her */
+u8 func_0039D120(Scene *g, u8 exit) {
     VObject *rooms = D_0044E568;
     u8 other = AT(g, 0xF6C1B0, s32) == 0;
     s32 next = AT(g, 0x73F240 + other * 4, s32);
@@ -1569,9 +1571,12 @@ void func_0039D120(Scene *g, u8 exit) {
         }
         VCALL(g, 0xAC, void (*)(Scene *, u32))(g, exit);
     }
+    u8 in;
+
     AT(g, 0x44, s32) = 1;
-    VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
+    in = VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
     AT(g, 0xF6CD20, u8) = exit;
+    return in;
 }
 
 

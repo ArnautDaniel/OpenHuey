@@ -2071,6 +2071,9 @@ static const union {
 static void char_place(VObject *ev, u8 *c, s32 tri, f32 *angle, f32 *pos) {
     u8 keep = AT(c, 0x2D, u8);
 
+    ROOMLOG("place char %p (id %d) room %d on tri %d pos %s (%.1f %.1f %.1f)", (void *)c, AT(c, 0x153C, u8),
+            AT(ev, 0x560, s32), tri, pos ? "given" : "tri centre", pos ? pos[0] : 0.0, pos ? pos[1] : 0.0,
+            pos ? pos[2] : 0.0);
     VCALL(c, 0x28, void (*)(u8 *, s32, f32 *, f32 *))(c, tri, angle, pos);
     AT(c, 0x2D, u8) = keep;
     AT(c, 0x30, s32) = AT(ev, 0x560, s32);

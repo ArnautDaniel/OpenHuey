@@ -1732,6 +1732,10 @@ void func_0019B4F0(Fiona *f, s32 door) {
             Fiona_ToIdle(f);
         }
         f->c.door = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door);
+        ROOMLOG("fiona leaves room %d by exit %d (door %d) -> room %d exit %d, at (%.1f %.1f %.1f)", f->c.a.room,
+                door, VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door) & 0xFFFF,
+                VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door), f->c.door,
+                f->c.a.pos[0], f->c.a.pos[1], f->c.a.pos[2]);
         FI(f, 0x1AD5F0, s32) = 150;
         f->unk1AD588 = 0;
         f->savedYaw = f->c.a.angle[1];

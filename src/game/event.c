@@ -321,6 +321,9 @@ void func_00209060(VObject *ev, u8 *c) {
     if (AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
         return;
     }
+    ROOMLOG("entry script: char %p (id %d) entering room %d at (%.1f %.1f %.1f) tri %d door %d",
+            (void *)c, AT(c, 0x153C, u8), AT(ev, 0x560, s32), AT(c, 0x10, f32), AT(c, 0x14, f32),
+            AT(c, 0x18, f32), AT(c, 0x34, s32), AT(c, 0x14D4, u8));
     p = gProgress;
     room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
     if (!Progress_TestFlag(p, 0x26) && VCALL(room, 0x30, u8 *(*)(VObject *))(room) == NULL) {

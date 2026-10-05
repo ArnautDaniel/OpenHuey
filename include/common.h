@@ -28,6 +28,15 @@ typedef double f64;
 #define NULL ((void *)0)
 #endif
 
+/* HG_ROOMLOG=1 (PC only): room changes and placements traced to stderr */
+#ifdef HG_NATIVE
+int hg_roomlog_on(void);
+void hg_roomlog(const char *fmt, ...);
+#define ROOMLOG(...) do { if (hg_roomlog_on()) hg_roomlog(__VA_ARGS__); } while (0)
+#else
+#define ROOMLOG(...) do { } while (0)
+#endif
+
 /* the EE's sqrt.s: the root of |x|, always the instruction (GCC may otherwise call sqrtf in a
  * block it thinks cold) */
 static inline float ee_sqrtf(float x) {
