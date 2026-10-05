@@ -94,6 +94,19 @@ void func_0021B040(u8 *rooms) {
     }
 }
 
+/* an obstacle released (nothing to do) */
+void func_0017FA50(u8 *o) {
+}
+
+/* the 5 obstacles released */
+void func_0021ABC0(u8 *list) {
+    s32 i;
+
+    for (i = 0; i < 5; i++) {
+        func_0017FA50(list + 0x10 + i * 0xB0);
+    }
+}
+
 /* reset an obstacle */
 void func_0017FC80(u8 *o) {
     AT(o, 0x0, u8) = 0;

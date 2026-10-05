@@ -5156,3 +5156,7 @@ src/game/doors.c func_00220930 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C:u16
 src/game/doors.c func_00220BC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x112 --pre=a2=0..0x112 --pre=a4=0..0 --pre=a5=0..0 --pre=a7=-1..1 --pre=@0x01FEFFE0=-1..1 --pre=@0x44E568=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046C3E0..0x0046C3E0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --stub-ret=0 --stub-ret=0xFFFF --runs=300
 src/game/doors.c func_00220680 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=50
 src/game/doors.c func_00220CB0 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=50
+src/game/scene_game_members.c func_0011FF30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6740=0x0046C3E0..0x0046C3E0 --pre=@0x44E4C0=0x0B400000..0x0B400000 --pre=@0x44E4E8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046B1D0..0x0046B1D0 --runs=50
+src/game/scene_game_members.c func_00267080 --pre=a0=0x0B400000..0x0B400000 --pre=a0+0x1438=0..1 --pre=a0+0x143C=0..1 --pre=a0+0x14B4=0..1 --runs=100
+src/game/rooms.c func_0021ABC0 --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/rooms.c func_0017FA50 --runs=10

@@ -1545,6 +1545,20 @@ void func_00221FD0(VObject *doors, s32 set, u8 a, s32 b) {
     }
 }
 
+/* SceneGame +0xF6CD30: all 32 effect slots back to the pool (+0x1400) */
+void func_00267080(u8 *fx) {
+    s32 n;
+
+    for (n = 0; n < 0x20; n++) {
+        VObject **slot = &AT(fx, 0x1438 + n * 4, VObject *);
+
+        if (*slot != NULL) {
+            VCALL((VObject *)(fx + 0x1400), 0x14, void (*)(VObject *, void *))((VObject *)(fx + 0x1400), *slot);
+            *slot = NULL;
+        }
+    }
+}
+
 /* SceneGame +0xF6CD30: effect slot n (+0x1438[n]) back to the pool (+0x1400) */
 void func_002670F0(u8 *fx, s32 n) {
     VObject **slot;
@@ -2157,6 +2171,24 @@ void func_002E2A60(u8 *o) {
 
 extern void func_00223A90(void *doors);
 extern void func_0021AFD0(void *o);
+
+extern void func_002238F0(VObject *doors);   /* the doors released */
+extern void func_0021ABC0(u8 *obstacles);   /* the obstacles released */
+extern void func_00267080(u8 *fx);           /* all the room's effects back to the pool */
+
+/* the room left: its doors, obstacles, placed objects (+0x6740 +0x20) and effects released,
+ * and the texture cache's room groups (0, 0x15) dropped */
+void func_0011FF30(u8 *rm) {
+    VObject *tc;
+
+    func_002238F0((VObject *)(rm + 0x1640));
+    func_0021ABC0(rm + 0x9380);
+    VCALL((VObject *)(rm + 0x6740), 0x20, void (*)(VObject *))((VObject *)(rm + 0x6740));
+    func_00267080((u8 *)D_0044E4C0);
+    tc = D_0044E4E8;
+    VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0);
+    VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x15);
+}
 
 /* the room, each frame: the doors (with a room loaded), +0x9380, +0x6740 (+0x28), and
  * whether Progress +0x54 lets the alpha parts show (+0x8B) */
