@@ -6893,6 +6893,63 @@ void func_00196A90(Fiona *f) {
     f->c.unk104[0] = FI(f, 0x1AD6CC, s32);
 }
 
+/* ---- scripted moves (the commands of func_0019F8A0) ---- */
+
+extern const PTMF D_003B2DB8;   /* walking to the scripted spot */
+
+/* D_003B2778 (command 17): the walk's animation playing - turning (to unk104[2] at FI 0x1AD6D4
+ * a frame) and stepping (FI 0x1AD6D0) on the path; at its event 0x20 put on the spot (unk110,
+ * tri unk100) facing unk104[2], the command done */
+void func_0018A120(Fiona *f) {
+    f32 at[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        f32 yaw;
+
+        f->c.a.navTri = f->c.unk100;
+        sceVu0CopyVector(f->c.a.pos, f->c.unk110);
+        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.a.navTri, f->c.a.pos);
+        yaw = *(f32 *)&f->c.unk104[2];
+        f->c.a.angle[1] = yaw;
+        sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
+        sceVu0RotMatrixY((f32 (*)[4])((u8 *)f + 0x60), (f32 (*)[4])((u8 *)f + 0x60), yaw);
+        f->c.unkE1 = 1;
+        return;
+    }
+    func_00124530(&f->c.a, *(f32 *)&f->c.unk104[2], FI(f, 0x1AD6D4, f32));
+    tri = f->c.a.navTri;
+    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.a.navTri = tri;
+    sceVu0CopyVector(f->c.a.pos, at);
+}
+
+/* D_003B2DB8: walking to the scripted spot; there the command is done, unable: idle */
+void func_0018A720(Fiona *f) {
+    s32 r = func_00188C10(f);
+
+    if (r == 0) {
+        f->c.unkE1 = 1;
+    } else if (r < 0) {
+        door_give_up(f, gProgress);
+    }
+}
+
+/* D_003B26E8 (command 5 with no animation): walk to the spot unk110 (tri unk104[0]) and face
+ * unk104[2] there (D_003B2DB8) */
+void func_0018A860(Fiona *f) {
+    f32 yaw = *(f32 *)&f->c.unk104[2];
+    s32 tri = f->c.unk104[0];
+
+    f->c.unk124 = f->c.unk128;
+    FI(f, 0x1AD650, s32) = 0;
+    FI(f, 0x1AD634, s32) = tri;
+    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), f->c.unk110);
+    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    f->savedYaw = yaw;
+    Actor_SetState(&f->c.a, &D_003B2DB8);
+}
+
 extern s32 func_001270A0(Character *c);
 
 /* ---- moving between rooms out of sight (FI 0x1AD71C: 0xB following Hewie, 0xC staying,
