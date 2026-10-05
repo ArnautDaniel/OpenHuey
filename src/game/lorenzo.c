@@ -1514,3 +1514,52 @@ void func_00364260(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_00445AD8);
     func_00363FA0(p);
 }
+
+extern u8 D_00444ED0[], D_00445990[], D_004459E0[], D_00445A00[], D_00445A48[], D_00444D40[], D_004454E0[],
+    D_00445530[], D_00445550[], D_00445598[], D_00444CE0[], D_00445060[], D_00445090[], D_00444B50[],
+    D_00444CA0[], D_0047B010[];
+
+/* (as func_0030C230) the other class's setup: its tables, and its own stats */
+void func_00365D90(Pursuer *p) {
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 300;
+        PU(p, 0x171C, u8 *) = D_00444ED0;
+        PU(p, 0x1730, u8 *) = D_00445990;
+        PU(p, 0x1740, u8 *) = D_004459E0;
+        PU(p, 0x173C, u8 *) = D_00445A00;
+        PU(p, 0x1748, u8 *) = D_00445A48;
+        PU(p, 0x16DC, s32) = 75;
+        PU(p, 0x16E8, f32) = 65.0f;
+        PU(p, 0x16D4, s32) = 900;
+        PU(p, 0x16D8, s32) = 360;
+    } else {
+        p->c.hpMax = 250;
+        PU(p, 0x171C, u8 *) = D_00444D40;
+        PU(p, 0x1730, u8 *) = D_004454E0;
+        PU(p, 0x1740, u8 *) = D_00445530;
+        PU(p, 0x173C, u8 *) = D_00445550;
+        PU(p, 0x1748, u8 *) = D_00445598;
+        PU(p, 0x16DC, s32) = 40;
+        PU(p, 0x16E8, f32) = 30.0f;
+        PU(p, 0x16D4, s32) = 900;
+        PU(p, 0x16D8, s32) = 300;
+    }
+    PU(p, 0x16D0, s32) = 0;
+    PU(p, 0x16E0, s32) = 9000;
+    PU(p, 0x16E4, s32) = 150;
+    p->c.a.radius = 4.0f;
+    p->c.a.height = 18.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x1714, u8 *) = D_00444CE0;
+    PU(p, 0x1720, u8 *) = D_00445060;
+    PU(p, 0x1724, u8 *) = D_00445090;
+    PU(p, 0x16AC, u8 *) = D_00444B50;
+    PU(p, 0x16B0, u8 *) = D_00444CA0;
+    PU(p, 0x1734, u8 *) = D_0047B010;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = -8.0f;
+    PU(p, 0x1698, f32) = 8.0f;
+    PU(p, 0x16A0, f32) = -8.0f;
+}

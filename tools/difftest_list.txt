@@ -6461,3 +6461,5 @@ src/game/creature.c func_00329360 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x138
 src/game/creature.c func_0032A8D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x30=0..1 --pre=a0+0x29:u8=0..1 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44E568=0x0BA10000..0x0BA10000 --pre=@0x0BA10000=0x0046C3E0..0x0046C3E0 --pre=@0x44E4D0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046B3B8..0x0046B3B8 --stub-ret=0 --stub-ret=1 --stub-ret=0xFFFF --runs=300
 src/game/room_handlers.c func_0032DDF0 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B400000 --runs=30
 src/game/room_handlers.c func_00310640 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --pre=@0x0B100004:u8=0..3 --stub-ret=0 --stub-ret=1 --runs=40
+src/game/lorenzo.c func_00365D90 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=30
+src/game/stalker_models.c func_003203B0 --pre=a0=0..0x09000000 --pre=a1=-1..2 --runs=40

@@ -2272,3 +2272,29 @@ void func_00320A60(u8 *m) {
     func_002EE690(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
     func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
 }
+
+extern void *D_00473BD0[];
+extern void *func_0016FB00(void *e, s32 flags);
+
+/* (as func_0030D150) another model's destructor: twelve 0x60 nodes at +0xC20, four 0x50 at
+ * +0x9A0 */
+void *func_003203B0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00473BD0;
+        func_001002C0(m + 0xC20, func_0016FB00, 0x60, 0xC);
+        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
+        AT(m, 0x0, void **) = D_0046C160;
+        AT(m, 0x988, void **) = D_0046B0D0;
+        AT(m, 0x928, void **) = D_0046B0D0;
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
