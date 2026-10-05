@@ -389,3 +389,128 @@ void func_0030C230(Pursuer *p) {
     PU(p, 0x1698, f32) = 8.0f;
     PU(p, 0x16A0, f32) = -8.0f;
 }
+
+/* a dust cloud (0x720 bytes, vtable 0x46FF20, its quad drawer at +0x610; as room 0x03's prop) */
+extern void *D_0046FF20[];
+
+static inline void Dust_Init(void **obj) {
+    obj[0] = D_0046FF20;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
+   hand (bone 0x32) */
+void func_00309680(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        s32 kind, r, g, b, size;
+    } dp __attribute__((aligned(16)));
+    u8 *mgr;
+    VObject *rnd;
+    u8 i;
+
+    if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
+        return;
+    }
+    sceVu0CopyVector(dp.pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
+    dp.pos[3] = 1.0f;
+    dp.kind = 2;
+    dp.b = 0x50;
+    dp.g = 0x50;
+    dp.r = 0x50;
+    mgr = D_0044E578;
+    rnd = D_0044E550;
+    for (i = 0; i < 8; i++) {
+        s32 slot = Effect_New(mgr, 0x720, Dust_Init);
+
+        dp.size = (s32)(320.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 320;
+        func_002D6090(mgr, slot, &dp);
+    }
+}
+
+/* a spark (0x130 bytes, vtable 0x47A350, its part at +0xD0) */
+extern void *D_0047A350[];
+
+static inline void Spark_Init(void **obj) {
+    obj[0] = D_0047A350;
+    obj[0xD0 / 4] = D_00469D00;
+    ((s32 *)obj)[0xD4 / 4] = -1;
+    obj[0xD0 / 4] = D_0046FC30;
+}
+
+extern const f32 D_00423AC0[7][4];
+
+/* his blows 0x1904 / 0xE00 / 0xE04 / 0xE05 (hand, bone 0x32) and 0xE06 (bone 0x28): at the
+   key (0x20), seven sparks around the bone (offsets D_00423AC0) of random scale, speed and life */
+void func_00309890(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        f32 one, scale, speed;
+        s32 life;
+    } sp __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    u8 *mgr;
+    s32 bone;
+    u8 i;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x1904:
+    case 0xE05:
+    case 0xE04:
+    case 0xE00:
+        bone = 0x32;
+        break;
+    case 0xE06:
+        bone = 0x28;
+        break;
+    default:
+        return;
+    }
+    if (!(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
+        return;
+    }
+    sp.one = 1.0f;
+    sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    rnd = D_0044E550;
+    mgr = D_0044E578;
+    for (i = 0; i < 7; i++) {
+        s32 slot;
+
+        sp.scale = 0.0f + 0.5f + 0.5f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+        sp.speed = 0.0f + 0x1.19999ap+0f + 0x1.99999ap-5f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);   /* 1.1 + 0.05 */
+        sp.life = (s32)(6.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 12;
+        slot = Effect_New(mgr, 0x130, Spark_Init);
+        sceVu0AddVector(sp.pos, at, D_00423AC0[i]);
+        func_002D6090(mgr, slot, &sp);
+    }
+}
+
+/* state: an animation; its end ends the step */
+void func_0030B1E0(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+extern const PTMF D_00423A38;
+void func_0030B540(Pursuer *p);
+
+/* animation 0x1303 in state func_0030B540 */
+void func_0030B7C0(Pursuer *p) {
+    func_00297B40(p, 0x1303, 0);
+    Actor_SetState(&p->c.a, &D_00423A38);
+    func_0030B540(p);
+}
+
+/* is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
+s32 func_0030BB70(Pursuer *p) {
+    if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
+        return 0;
+    }
+    return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
+}
