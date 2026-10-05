@@ -7679,7 +7679,7 @@ void func_0029DA80(Pursuer *p) {
                         VCALL(D_0044E570, 0x5C, s32 (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 0, end), end, 0);
                     if (tri != (u32)-1) {
                         t = Pursuer_NavTri(tri);
-                        flags = t != NULL ? AT(t, 0x3C, s32) : 0;
+                        flags = t != NULL ? AT(t, 0x3C, s32) : (s32)NAV_BAD_TRI_FLAGS;
                     }
                 }
                 break;
@@ -7688,7 +7688,7 @@ void func_0029DA80(Pursuer *p) {
                     VCALL(D_0044E570, 0x5C, s32 (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 1, end), end, 0);
                 if (tri != (u32)-1) {
                     t = Pursuer_NavTri(tri);
-                    flags = t != NULL ? AT(t, 0x3C, s32) : 0;
+                    flags = t != NULL ? AT(t, 0x3C, s32) : (s32)NAV_BAD_TRI_FLAGS;
                 }
                 break;
             }
@@ -7696,7 +7696,7 @@ void func_0029DA80(Pursuer *p) {
         level = 7;
         if (snd == -1) {
             if (flags == -1) {
-                flags = t != NULL ? AT(t, 0x3C, s32) : 0;
+                flags = t != NULL ? AT(t, 0x3C, s32) : (s32)NAV_BAD_TRI_FLAGS;
             }
             if (flags & 0x2000000) {
                 if (flags & 0x8000) {

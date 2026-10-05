@@ -2326,3 +2326,172 @@ s32 func_00218430(Pursuer *p, Character *c) {
     }
     return 0;
 }
+
+/* ---- batch 22 ---- */
+
+/* the path length still to walk (along the waypoints +0x12C, up to +0x124) */
+static f32 Npc_PathLeft(Pursuer *p) {
+    return VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(gSceneGameF29740,
+        p->c.a.pos, p->c.unk128, p->c.unk124, (u8 *)p + 0x12C);
+}
+
+/* can the pursuer go `dist` further along its path: the point reached (unless it's the last
+   waypoint itself) is on a triangle its nav mask allows */
+static s32 Npc_PathClear(Pursuer *p, f32 dist) {
+    f32 v[4] __attribute__((aligned(16)));
+    u32 tri = p->c.a.navTri;
+    s32 n;
+    u32 flags;
+
+    sceVu0CopyVector(v, p->c.a.pos);
+    n = VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(gSceneGameF29740,
+            &tri, v, p->c.unk128, p->c.unk124, (u8 *)p + 0x12C, dist);
+    if (n == p->c.unk124) {
+        f32 dx, dz;
+
+        dx = v[0] - AT(p, 0x124 + n * 12, f32);
+        if (dx <= 0.0f) {
+            dx = -dx;
+        }
+        if (!(dx <= 0x1.99999ap-4f /* 0.1 */)) {
+            return 0;
+        }
+        dz = v[2] - AT(p, 0x128 + n * 12, f32);
+        if (dz <= 0.0f) {
+            dz = -dz;
+        }
+        if (!(dz <= 0x1.99999ap-4f)) {
+            return 0;
+        }
+    }
+    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
+        flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = NAV_BAD_TRI_FLAGS;
+    }
+    return !(flags & p->c.a.navMask);
+}
+
+/* the senses, a frame on Fiona and a frame on Hewie in turn (+0x15A0), by the sense mode +0x15C0:
+   0 watching Fiona (sight test vtable +0xE0; Hewie and the path left measured on the other
+   frame), 1 the same with Hewie, 2/3 on the move (path blocked: vtable +0xD8/+0xDC);
+   1 if the target is in view / reachable. `fionaRoom`: mode 0 only while Fiona is in the room */
+static s32 Npc_Senses(Pursuer *p, s32 fionaRoom) {
+    f32 v[4] __attribute__((aligned(16)));
+    s32 room = p->c.a.room;
+    s32 r = 0;
+
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        PU(p, 0x1590, f32) = -1.0f;
+        PU(p, 0x158C, f32) = -1.0f;
+        PU(p, 0x1588, f32) = -1.0f;
+        return 0;
+    }
+    switch (PU(p, 0x15C0, u8)) {
+    case 0:
+        if (PU(p, 0x15A0, u8) != 0) {
+            if (!fionaRoom || room == gCharPlayer->a.room) {
+                r = VCALL(p, 0xE0, s32 (*)(Pursuer *, Character *))(p, gCharPlayer) & 0xFF;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x1588, f32) = -1.0f;
+            }
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+            if (!fionaRoom || p->c.a.room == gCharPlayer->a.room) {
+                f32 d = Npc_PathLeft(p);
+
+                PU(p, 0x1590, f32) = d;
+                PU(p, 0x1588, f32) = d;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x1588, f32) = -1.0f;
+            }
+            r = !(PU(p, 0x158C, f32) <= 0.0f);
+        }
+        break;
+    case 1:
+        if (PU(p, 0x15A0, u8) != 0) {
+            if (room == gCharPartner->a.room) {
+                r = VCALL(p, 0xE0, s32 (*)(Pursuer *, Character *))(p, gCharPartner) & 0xFF;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x158C, f32) = -1.0f;
+            }
+        } else {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+            if (p->c.a.room == gCharPartner->a.room) {
+                f32 d = Npc_PathLeft(p);
+
+                PU(p, 0x1590, f32) = d;
+                PU(p, 0x158C, f32) = d;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x158C, f32) = -1.0f;
+            }
+            r = !(PU(p, 0x1588, f32) <= 0.0f);
+        }
+        break;
+    case 2:
+    case 3: {
+        f32 vel[4] __attribute__((aligned(16)));
+        s32 ok;
+
+        if (PU(p, 0x15A0, u8) != 0) {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+        }
+        func_001F6370(p->c.motion, vel, 0.0f);
+        vel[2] *= VCALL((VObject *)p->c.motion, 0x44, f32 (*)(void *, Pursuer *))(p->c.motion, p);
+        if ((p->c.unk128 < p->c.unk124) == 1) {
+            /* still walking: is the way ahead (30 units, then this frame's step) clear? */
+            ok = Npc_PathClear(p, 30.0f);
+            if (ok) {
+                f32 step = __builtin_sqrtf(sceVu0InnerProduct(vel, vel));
+
+                ok = step < 0.0f ? 0 : Npc_PathClear(p, step);
+            }
+            if (!ok) {
+                if (PU(p, 0x15C0, u8) == 3) {
+                    r = VCALL(p, 0xD8, s32 (*)(Pursuer *))(p) & 0xFF;
+                } else if (PU(p, 0x15C4, s32) != -1) {
+                    r = VCALL(p, 0xDC, s32 (*)(Pursuer *))(p) & 0xFF;
+                } else {
+                    r = 0;
+                }
+                break;
+            }
+        }
+        {
+            f32 d = Npc_PathLeft(p);
+
+            PU(p, 0x1590, f32) = d;
+            r = !(d < 0.0f);
+        }
+        break;
+    }
+    default:
+        if (PU(p, 0x15A0, u8) != 0) {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+        }
+        PU(p, 0x1590, f32) = p->target == gCharPlayer ? PU(p, 0x1588, f32) : PU(p, 0x158C, f32);
+        break;
+    }
+    PU(p, 0x15A0, u8) = !(PU(p, 0x15A0, u8) != 0);
+    return r;
+}
+
+s32 func_00215130(Pursuer *p) {
+    return Npc_Senses(p, 1);
+}
+
+/* the same, Fiona watched wherever she is; func_00215130 while the progress byte +0x1FBEC1 is set */
+s32 func_00215D80(Pursuer *p) {
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        return func_00215130(p);
+    }
+    return Npc_Senses(p, 0);
+}

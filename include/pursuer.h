@@ -36,6 +36,15 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 #define PURSUER_STEP_DONE(p) PU(p, 0x16EE, u8)
 #define PURSUER_STEP_NEXT(p) PU(p, 0x16F0, u8)
 
+/* The flags of an out-of-range nav triangle: the original takes the record pointer as NULL and
+ * reads +0x3C anyway, i.e. a word of low kernel memory on the PS2. Kept for the difftest build;
+ * natively an invalid triangle has no flags. */
+#ifdef HG_NATIVE
+#define NAV_BAD_TRI_FLAGS 0u
+#else
+#define NAV_BAD_TRI_FLAGS (*(volatile u32 *)0x3C)
+#endif
+
 /* ---- engine functions used (tools/pursuer/externs.py) ---- */
 extern void func_00100490(void *obj);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);
@@ -113,7 +122,6 @@ extern void func_001F6E10(void *motion);
 extern void func_001F6E30(void *motion);
 extern u8 *func_0020D620(Pursuer *p);
 extern u32 func_00211B00(Pursuer *p, u32 tri);
-extern void func_00215D80(Pursuer *p);
 extern void func_002815E0(Pursuer *p, u32 door);
 extern void func_00288150(Pursuer *p);
 extern s32 func_00297300(Pursuer *p, u32 dir);
@@ -238,6 +246,8 @@ s32 func_00214AF0(Pursuer *p);
 f32 func_00214B90(Pursuer *p, u32 tri, const f32 *pos);
 void func_00214C70(Pursuer *p);
 void func_00214ED0(Pursuer *p);
+s32 func_00215130(Pursuer *p);
+s32 func_00215D80(Pursuer *p);
 s32 func_00216960(Pursuer *p, Character *c);
 s32 func_00216B20(Pursuer *p);
 s32 func_00216C90(Pursuer *p);
