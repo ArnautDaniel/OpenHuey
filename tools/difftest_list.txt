@@ -3589,3 +3589,21 @@ src/game/stalker_models.c func_002EE220 --pre=a0=0x0B000000..0x0B000000 --pre=a1
 src/game/stalker_models.c func_002EEF90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100014=0x0B300000..0x0B300000 --pre=a0+0x20:u8=0..1 --pre=a0+0x2C=0x0B400000..0x0B400000 --pre=a0+0x44=0x0B500000..0x0B500000 --stub-ret=0x0B600000 --runs=60
 src/game/stalker_models.c func_002EF0A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100014=0x0B300000..0x0B300000 --pre=@0x0B100018=0..0x0B700000 --pre=@0x0B70002C=0..0 --pre=@0x0B700030=0x0B800000..0x0B800000 --pre=a0+0x20:u8=0..1 --pre=a0+0x2C=0x0B400000..0x0B400000 --pre=a0+0x44=0x0B500000..0x0B500000 --stub-ret=0x0B600000 --stub-fret=0.7 --runs=100
 src/game/stalker_models.c func_002EE4B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B600000 --runs=30
+src/game/stalker_models.c func_002F61E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/stalker_models.c func_002F6340 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_002F6350 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_002F6360 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_002F6370
+src/game/stalker_models.c func_002F6380
+src/game/stalker_models.c func_002F6390
+src/game/stalker_models.c func_002F63A0
+src/game/stalker_models.c func_002F63B0
+src/game/stalker_models.c func_002F63C0
+src/game/stalker_models.c func_002F63D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B001480=0..1 --pre=@0x0B001484=0..0x0B000100 --runs=20
+src/game/stalker_models.c func_002F64F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B0010B4=0x0B000000..0x0B000000 --pre=@0x0B000810=0x0B800000..0x0B800000 --pre=@0x0B000C40:u8=0..1 --pre=@0x0B000CA0:u8=0..1 --pre=@0x0B000C4C=0x0B700000..0x0B700000 --pre=@0x0B000CAC=0x0B700000..0x0B700000 --stub-ret=0x0B900000 --runs=20
+src/game/stalker_models.c func_002F6600 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B0010D0=0..1 --pre=@0x0B0010D4=0..0x0B000100 --pre=@0x0B0010B8=0..0x0B000200 --runs=30
+src/game/stalker_models.c func_002F69C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000C10=0..1 --pre=@0x0B000C14=0..0x0B000100 --pre=@0x0B000BF8=0..0x0B000200 --runs=30
+src/game/stalker_models.c func_002F6BD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/stalker_models.c func_002F6C10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000850:u8=0..1 --runs=20
+src/game/stalker_models.c func_002F6CD0 --pre=a0=0x0B000000..0x0B000000
+src/game/stalker_models.c func_002F6CE0 --pre=a0=0x0B000000..0x0B000000 --runs=5

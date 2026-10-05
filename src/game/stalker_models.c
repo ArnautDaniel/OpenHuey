@@ -982,3 +982,240 @@ void func_002EE4B0(u8 *cap, u8 *m) {
     sceVu0CopyMatrix(mtx, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), AT(cap, 0x60, s32)));
     sceVu0ApplyMatrix((f32 *)(cap + 0x40), mtx, (f32 *)(cap + 0x50));
 }
+
+/* ---- Riccardo's model (vtable D_00470480, 0x1490 bytes: kind 4): twelve 0x60 parts
+   (+0xC20, pairs: the second and third pair of each six hang off the first) on the set
+   +0x10A0 with five capsules (+0x10E0); four parts (+0x9A0) on +0xBE0 with four spheres
+   (+0xAE0); four (+0x1310) on +0x1450 ---- */
+
+extern void *D_00470480[];
+extern void *func_00170CB0(void *e, s32 flags);
+extern void *func_0016FB00(void *e, s32 flags);
+
+/* +0x8: destructor */
+void *func_002F61E0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00470480;
+        func_001002C0(m + 0x1310, func_00170CB0, 0x50, 4);
+        func_001002C0(m + 0xC20, func_0016FB00, 0x60, 0xC);
+        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* +0x2C / +0x30: part +0xBA's draw flag 2 on / off */
+void func_002F6340(u8 *m) {
+    AT(m, 0xBA, u8) |= 2;
+}
+
+void func_002F6350(u8 *m) {
+    AT(m, 0xBA, u8) &= 0xFD;
+}
+
+extern u8 D_0041A2C0[];
+
+/* +0xB4: his secondary-motion table */
+void func_002F6360(u8 *m) {
+    AT(m, 0x874, u8 *) = D_0041A2C0;
+}
+
+/* +0x98 / +0x9C, +0x84 .. +0x90: his mesh parts */
+s32 func_002F6370(u8 *m) {
+    return 0x31;
+}
+
+s32 func_002F6380(u8 *m) {
+    return 0x30;
+}
+
+s32 func_002F6390(u8 *m) {
+    return 3;
+}
+
+s32 func_002F63A0(u8 *m) {
+    return 7;
+}
+
+s32 func_002F63B0(u8 *m) {
+    return 0x1E;
+}
+
+s32 func_002F63C0(u8 *m) {
+    return 0x2C;
+}
+
+/* the four parts on +0x1450 (bones 0x26..0x29, two of two) */
+void func_002F63D0(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0x1450);
+    for (i = 0; i < 4; i++) {
+        Set_AddLink(m + 0x1450, m + 0x1310 + i * 0x50);
+    }
+    Set_Init(m + 0x1450, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 4; i++) {
+        u8 *n = m + 0x1310 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.570a3ep-1f;   /* 0.67 */
+        AT(n, 0x24, s32) = 0x26 + i;
+        AT(n, 0x20, u8) = i % 2 == 0;
+        AT(n, 0x44, f32) = 0x1.99999ap-2f;   /* 0.4 */
+    }
+}
+
+/* the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
+   way) from their anchors */
+void func_002F64F0(u8 *m) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u8 *p = m + 0xC20;
+    s32 i;
+
+    sceVu0CopyVector(down, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
+    for (i = 0; i < 12; i++, p += 0x60) {
+        AT(p, 0x18, f32) = 0.0f;
+        AT(p, 0x14, f32) = 0.0f;
+        AT(p, 0x10, f32) = 0.0f;
+        if (AT(p, 0x20, u8) != 0) {
+            sceVu0CopyVector(at, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+        }
+        if (i < 6) {
+            sceVu0ScaleVector(d, down, AT(p, 0x40, f32));
+        } else {
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+        }
+        sceVu0AddVector((f32 *)p, at, d);
+        sceVu0CopyVector((f32 *)(p + 0x50), at);
+    }
+}
+
+/* the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
+void func_002F6600(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0x10A0);
+    for (i = 0; i < 12; i++) {
+        Set_AddLink(m + 0x10A0, m + 0xC20 + i * 0x60);
+    }
+    for (i = 0; i < 5; i++) {
+        Set_AddCollider(m + 0x10A0, m + 0x10E0 + i * 0x70);
+    }
+    Set_Init(m + 0x10A0, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 12; i++) {
+        u8 *n = m + 0xC20 + i * 0x60;
+        s32 j = i % 6;
+
+        AT(n, 0x20, u8) = i % 2 == 0;
+        AT(n, 0x24, s32) = 0xA + i;
+        AT(n, 0x40, f32) = 0x1.19999ap+0f;   /* 1.1 */
+        if (j < 2) {
+            AT(n, 0x44, f32) = 0.0f;
+            AT(n, 0x48, u8 *) = NULL;
+        } else {
+            AT(n, 0x44, f32) = 0.5f;
+            AT(n, 0x48, u8 *) = m + 0xC20 + (i - j + j % 2) * 0x60;
+        }
+    }
+    func_002EE530(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
+}
+
+/* the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
+void func_002F69C0(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0xBE0);
+    for (i = 0; i < 4; i++) {
+        Set_AddLink(m + 0xBE0, m + 0x9A0 + i * 0x50);
+    }
+    for (i = 0; i < 4; i++) {
+        Set_AddCollider(m + 0xBE0, m + 0xAE0 + i * 0x40);
+    }
+    Set_Init(m + 0xBE0, m, 0.0f, 0.5f, 0.0f, 0x1.99999ap-2f /* 0.4 */);
+    for (i = 0; i < 4; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.028f5cp+0f;   /* 1.01 */
+        AT(n, 0x24, s32) = 0x16 + i;
+        AT(n, 0x20, u8) = i % 2 == 0;
+    }
+    func_002EE690(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
+}
+
+/* all his springs */
+void func_002F6BD0(u8 *m) {
+    AT(m, 0x850, u8) = 1;
+    func_002F69C0(m);
+    func_002F6600(m);
+    func_002F63D0(m);
+}
+
+/* +0x3C: his springs a frame: one step, or after a reset (+0x850) at rest and 30 to settle */
+void func_002F6C10(u8 *m) {
+    s32 n = 1;
+    s32 i;
+
+    if (AT(m, 0x850, u8) != 0) {
+        func_002F64F0(m);
+        n = 30;
+    }
+    func_002EE8A0(m + 0xBE0);
+    func_002EE8A0(m + 0x10A0);
+    func_002EE8A0(m + 0x1450);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + 0xBE0);
+        func_002EE900(m + 0x10A0);
+        func_002EE900(m + 0x1450);
+    }
+    func_002EE840(m + 0xBE0);
+    func_002EE840(m + 0x10A0);
+    func_002EE840(m + 0x1450);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+void func_002F6CD0(u8 *m) {
+    func_001F7AC0(m);
+}
+
+/* +0xC: once loaded: the base setup, the part roles, his springs, per-part draw settings */
+void func_002F6CE0(u8 *m) {
+    func_002118D0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x20;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x2E;
+    AT(m, 0x8B0, s32) = 0x23;
+    AT(m, 0x8B4, s32) = 0x1A;
+    AT(m, 0x880, s32) = 8;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    func_002F6BD0(m);
+    AT(m, 0xC8, u8) = 4;
+    AT(m, 0xC9, u8) = 0x40;
+    AT(m, 0xCA, u8) = 4;
+    AT(m, 0xCB, u8) = 0x40;
+    AT(m, 0xCC, u8) = 4;
+    AT(m, 0xCD, u8) = 0x40;
+    AT(m, 0xBA, u8) = 4;
+    AT(m, 0xBB, u8) = 0xC0;
+}
