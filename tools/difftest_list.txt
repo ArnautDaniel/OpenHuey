@@ -6250,3 +6250,12 @@ src/game/effects.c func_00303C10 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/effects.c func_003069B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --runs=10
 src/game/effects.c func_003067B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=a0+0x30=0x40000000..0x40000000 --pre=a0+0x34=0x41000000..0x41000000 --pre=a0+0x38=0xC0400000..0x40400000 --pre=a0+0x138=0xBF000000..0x41100000 --pre=a0+0x238=0xBF000000..0x3F000000 --pre=a0+0x338=0xBF000000..0x3F000000 --pre=a0+0x4F8:u8=0..0x80 --pre=a0+0x738=0..2 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-fret=0.25 --stub-fret=0.75 --runs=200
 src/game/effects.c func_003063A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x238=0xBF000000..0x3F000000 --pre=a0+0x338=0xBF000000..0x3F000000 --pre=a0+0x38=0xC0000000..0x40000000 --pre=a0+0x538=0x3F000000..0x3F400000 --runs=60
+src/game/progress.c func_00179140 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c func_00179150 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c func_00179160 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c func_001794B0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/pursuer.c func_001794C0 --pre=a0=0..0x0B000000 --pre=@0x0B000000=0x0046A2F0..0x0046A2F0 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=60
+src/game/rooms.c func_0017FCD0 --pre=a0=0..0x0B000000 --pre=a1=-1..1 --runs=20
+src/game/event.c func_001FB250 --pre=a0=0..0x0B000000 --pre=a1=-1..1 --pre=a0+0x784=0..0x0B400000 --runs=40
+src/game/event.c func_001FB5F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..0x0B200000 --pre=@0x0B200000=0x0046D730..0x0046D730 --pre=@0x0B200028:u8=0..1 --pre=@0x0B200030=0xFF..0x106 --pre=@0x44E568=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C3E0..0x0046C3E0 --stub-ret=0 --stub-ret=3 --stub-ret=0x109 --stub-ret=0x150 --runs=200
+src/game/doors.c func_00223DE0 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-2..2 --runs=20

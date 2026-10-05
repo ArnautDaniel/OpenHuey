@@ -695,3 +695,12 @@ void *func_00220CB0(void *o, s32 flags) {
     }
     return o;
 }
+
+/* (D_0046C668) +0x50 = v, 6 if below 0 */
+void func_00223DE0(u8 *o, f32 v) {
+    if (v < 0.0f) {
+        AT(o, 0x50, f32) = 6.0f;
+        return;
+    }
+    AT(o, 0x50, f32) = v;
+}

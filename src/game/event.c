@@ -753,3 +753,80 @@ void *func_0020C170(void **o, s32 flags) {
     }
     return o;
 }
+
+extern u8 *D_0044F808;        /* character slot 2 (the stalker) */
+extern VObject *D_0044E550;   /* random numbers */
+extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
+extern VObject *D_0044FE10;   /* the cutscene director */
+extern void *func_001FB3B0(void *, s32);
+extern void *func_001FB400(void *, s32);
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+
+/* +0x8 the events' destructor: its 32 points, the cutscene director (+0x938), the message
+ * window (+0x708), the rooms' handlers (+0x120), the fade (+0x20), then its bases */
+u8 *func_001FB250(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0046B3A0;
+    AT(o, 0xC, void **) = D_0046B3B8;
+    func_001002C0(o + 0xBF0, func_001FB400, 0x30, 0x20);
+    AT(o, 0x938, void **) = D_0046ED30;
+    AT(o, 0x938, void **) = D_0046BB20;
+    D_0044FE10 = NULL;
+    if (AT(o, 0x784, void *) != NULL) {
+        Task_dtor(AT(o, 0x784, void *), 1);
+        AT(o, 0x784, void *) = NULL;
+    }
+    func_001002C0(o + 0x120, func_001FB3B0, 4, 0x110);
+    AT(o, 0x20, void **) = D_0046F350;
+    AT(o, 0x20, void **) = D_00469D00;
+    AT(o, 0xC, void **) = D_0046BAA0;
+    D_0044E4D0 = NULL;
+    AT(o, 0x0, void **) = D_0046BA80;
+    if ((s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
+
+/* a new deal of the six rooms' (0x100..0x105) things while progress variable 0x1F is below 4:
+ * progress +0xBB counted up, +0xBC a row of D_003D6B20 at random (of 79); the stalker in one
+ * of those rooms is sent on (+0x64: room 0x10A from 0x109, else 0x109); then in rooms 0..5 the
+ * twelve doors / objects 0x95 + 12 x room are shown (+0x68) where the row puts that room,
+ * else hidden (+0x64), and the rooms' +0x90 */
+void func_001FB5F0(void) {
+    Progress *g = gProgress;
+    u8 *p;
+    u8 *c;
+    u8 k;
+    s32 r, i, j, n;
+    VObject *rooms;
+
+    if ((u8)Progress_GetVar(g, 0x1F) >= 4) {
+        return;
+    }
+    p = (u8 *)gProgress;
+    AT(p, 0xBB, u8)++;
+    AT(p, 0xBC, u8) = (u32)VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) % 0x4F;
+    k = AT(p, 0xBC, u8);
+    c = D_0044F808;
+    if (c != NULL && AT(c, 0x28, u8) != 0 && AT(c, 0x30, u32) >= 0x100 && AT(c, 0x30, u32) < 0x106) {
+        r = VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g);
+        VCALL((VObject *)c, 0x64, void (*)(VObject *, s32, s32, s32))((VObject *)c, r == 0x109 ? 0x10A : 0x109, -1, 2);
+    }
+    rooms = D_0044E568;
+    for (r = 0; r < 6; r++) {
+        for (i = 0; i < 3; i++) {
+            for (j = 0; j < 4; j++) {
+                n = 0x95 + r * 0xC + i * 4 + j;
+                if (r == D_003D6B20[k][i]) {
+                    VCALL(rooms, 0x68, void (*)(VObject *, u32))(rooms, n & 0xFFFF);
+                } else {
+                    VCALL(rooms, 0x64, void (*)(VObject *, u32))(rooms, n & 0xFFFF);
+                }
+            }
+        }
+    }
+    VCALL(rooms, 0x90, void (*)(VObject *))(rooms);
+}

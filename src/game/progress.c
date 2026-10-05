@@ -1621,6 +1621,22 @@ s32 func_001768B0(Progress *p, const char *path, u32 kind) {
 
 /* ---- vtable methods that do nothing ---- */
 
+/* the Progress base (Progress_vtable +0x14 / +0x18) */
+void func_00179150(Progress *p) {
+}
+
+void func_00179140(Progress *p) {
+}
+
+/* the Progress base (+0xC / +0x10): 0 */
+s32 func_001794B0(Progress *p) {
+    return 0;
+}
+
+s32 func_00179160(Progress *p) {
+    return 0;
+}
+
 void func_00176880(Progress *p) {
 }
 

@@ -10691,6 +10691,21 @@ Pursuer *func_00172CD0(Pursuer *p, s32 flags) {
     return p;
 }
 
+extern void *D_0046A2F0[];
+
+/* vtable +0x8 of D_0046A2F0 (derived from kind 14) */
+Pursuer *func_001794C0(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = D_0046A2F0;
+        p->c.a.vtbl = D_004723B0;
+        Pursuer_DestroyBase(p);
+        if ((s16)flags > 0) {
+            func_00124E40(&p->c.a);
+        }
+    }
+    return p;
+}
+
 /* vtable +0x8 of D_004723B0 (kind 14) */
 Pursuer *func_00173000(Pursuer *p, s32 flags) {
     if (p != NULL) {

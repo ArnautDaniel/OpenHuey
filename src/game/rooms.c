@@ -1363,3 +1363,19 @@ void func_0021A3C0(u8 *l, s32 i, f32 *out) {
         out[2] = out[2] + AT(o, 0x8, f32);
     }
 }
+
+extern void *Fiona_vtable[], *D_00469C60[], *D_00469C20[];
+extern void func_00124E40(void *a);
+
+/* Fiona's class destructor (Fiona -> 0x469C60 -> Actor) */
+void *func_0017FCD0(void **o, s32 flags) {
+    if (o != NULL) {
+        o[0] = Fiona_vtable;
+        o[0] = D_00469C60;
+        o[0] = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(o);
+        }
+    }
+    return o;
+}
