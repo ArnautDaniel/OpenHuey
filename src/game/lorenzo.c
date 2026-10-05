@@ -1320,3 +1320,97 @@ u8 *func_00365D10(Pursuer *p) {
 u8 *func_00365D50(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AD0 : D_00444A90;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern const PTMF D_00445AB8;
+extern void func_00364510(Pursuer *p);
+extern const PTMF D_00445A88;
+extern const PTMF D_00445A78;
+extern void func_00364FF0(Pursuer *p);
+
+/* as func_0030AB80 */
+void func_00364930(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    f32 d;
+
+    func_00125A10(&p->c);
+    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
+        return;
+    }
+    d = Lorenzo2_Sink(p, t);
+    if (d < 0.0f) {
+        sceVu0CopyVector(p->c.unk110, p->c.a.pos);
+        p->c.unk104[0] = p->c.a.navTri;
+    } else {
+        u32 out;
+
+        func_00214890(p, &out, p->c.unk110, d);
+        p->c.unk104[0] = out;
+    }
+    Actor_SetState(&p->c.a, &D_00445AB8);
+    func_00364510(p);
+}
+
+/* (as func_0030B240)  state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
+   target, with the rising effect; its end ends the step (as func_0030B1E0) */
+void func_00364FF0(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        s32 kind;
+    } sk __attribute__((aligned(16)));
+    f32 goal[4] __attribute__((aligned(16)));
+    u8 *mgr;
+    u32 tri;
+    f32 d, h;
+    s32 slot;
+
+    if (Lorenzo2_Underground(p)) {
+        return;
+    }
+    tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
+    d = func_00214B90(p, tri, goal);
+    if (!(d <= 0.0f)) {
+        func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+    }
+    h = func_001244D0(&p->c.a, p->target->a.pos);
+    p->c.a.angle[1] = h;
+    sceVu0UnitMatrix(p->c.a.rot);
+    sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
+    func_00297B40(p, 0x1305, 1);
+    mgr = D_0044E578;
+    p->c.a.disabled = 0;
+    p->c.a.unk2D = 0;
+    p->c.unkE8 = p->target->unkE8;
+    p->c.unkEC = p->target->unkEC;
+    slot = Effect_New(mgr, 0x700, Sink_Init);
+    sceVu0CopyVector(sk.pos, p->c.a.pos);
+    sk.kind = 1;
+    func_002D6090(mgr, slot, &sk);
+    Actor_SetState(&p->c.a, &D_00445A88);
+    Lorenzo2_PlayOut(p);
+}
+
+/* (as func_0030B540)  state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
+   the floor for a point 10 short of his target along the path, or where he is when it's nearer
+   than 20; state D_00445A78 (func_00364FF0) */
+void func_003652F0(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    f32 d;
+
+    func_00125A10(&p->c);
+    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
+        return;
+    }
+    d = Lorenzo2_Sink(p, t);
+    if (d < 20.0f) {
+        sceVu0CopyVector(p->c.unk110, p->c.a.pos);
+        p->c.unk104[0] = p->c.a.navTri;
+    } else {
+        u32 out;
+
+        func_00214890(p, &out, p->c.unk110, d - 10.0f);
+        p->c.unk104[0] = out;
+    }
+    Actor_SetState(&p->c.a, &D_00445A78);
+    func_00364FF0(p);
+}

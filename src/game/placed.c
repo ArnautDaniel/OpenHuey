@@ -1582,3 +1582,152 @@ void func_00336D20(u8 *o) {
     AT(o, 0x110, f32) = 1.0f;
     AT(o, 0x120, u16) = 0;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern const PTMF D_00443E30;
+extern const PTMF D_00443E40;
+extern const PTMF D_00443E50;
+extern const PTMF D_00445B60;
+extern const PTMF D_00445B70;
+extern const PTMF D_00445B80;
+extern const PTMF D_00445B90;
+extern const PTMF D_00445BA0;
+extern const PTMF D_00445BB0;
+extern const PTMF D_0042F230;
+extern const PTMF D_0042F240;
+extern const PTMF D_0042F250;
+extern const PTMF D_0042F260;
+
+/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00355780(u8 *b) {
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(b, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(b, 0x38, u32) = AT(b, 0x34, u32);
+    sceVu0CopyVector((f32 *)(b + 0x40), BALL_POS(b));
+    switch (AT(b, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E30);
+        break;
+    case 1:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E40);
+        break;
+    default:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E50);
+        break;
+    }
+    if (AT(b, 0x120, u16) != 0) {
+        AT(b, 0x11C, f32) = AT(b, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(b, 0x11C, f32) <= 0.0f) {
+            AT(b, 0x11C, f32) = 0.0f;
+            AT(b, 0x28, u8) = 0;
+        }
+    }
+}
+
+/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00367A00(u8 *b) {
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(b, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(b, 0x38, u32) = AT(b, 0x34, u32);
+    sceVu0CopyVector((f32 *)(b + 0x40), BALL_POS(b));
+    switch (AT(b, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B60);
+        break;
+    case 1:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B70);
+        break;
+    default:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B80);
+        break;
+    }
+    if (AT(b, 0x120, u16) != 0) {
+        AT(b, 0x11C, f32) = AT(b, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(b, 0x11C, f32) <= 0.0f) {
+            AT(b, 0x11C, f32) = 0.0f;
+            AT(b, 0x28, u8) = 0;
+        }
+    }
+}
+
+/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00368710(u8 *b) {
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(b, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(b, 0x38, u32) = AT(b, 0x34, u32);
+    sceVu0CopyVector((f32 *)(b + 0x40), BALL_POS(b));
+    switch (AT(b, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B90);
+        break;
+    case 1:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445BA0);
+        break;
+    default:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445BB0);
+        break;
+    }
+    if (AT(b, 0x120, u16) != 0) {
+        AT(b, 0x11C, f32) = AT(b, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(b, 0x11C, f32) <= 0.0f) {
+            AT(b, 0x11C, f32) = 0.0f;
+            AT(b, 0x28, u8) = 0;
+        }
+    }
+}
+
+/* (as func_00314F20)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00334AE0(u8 *o) {
+    if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(o, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(o, 0x38, u32) = AT(o, 0x34, u32);
+    sceVu0CopyVector((f32 *)(o + 0x40), BALL_POS(o));
+    switch (AT(o, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F230);
+        break;
+    default:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F240);
+        break;
+    }
+    if (AT(o, 0x120, u16) != 0) {
+        AT(o, 0x11C, f32) = AT(o, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(o, 0x11C, f32) <= 0.0f) {
+            AT(o, 0x11C, f32) = 0.0f;
+            AT(o, 0x28, u8) = 0;
+        }
+    }
+}
+
+/* (as func_00314F20)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+void func_00336790(u8 *o) {
+    if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(o, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(o, 0x38, u32) = AT(o, 0x34, u32);
+    sceVu0CopyVector((f32 *)(o + 0x40), BALL_POS(o));
+    switch (AT(o, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F250);
+        break;
+    default:
+        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F260);
+        break;
+    }
+    if (AT(o, 0x120, u16) != 0) {
+        AT(o, 0x11C, f32) = AT(o, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(o, 0x11C, f32) <= 0.0f) {
+            AT(o, 0x11C, f32) = 0.0f;
+            AT(o, 0x28, u8) = 0;
+        }
+    }
+}

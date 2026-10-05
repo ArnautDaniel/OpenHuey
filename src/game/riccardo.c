@@ -1249,3 +1249,31 @@ void func_0034BA20(Pursuer *p) {
     }
     func_0028D6E0(p);
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern const PTMF D_004428F8;
+extern void func_0034CDC0(Pursuer *p);
+
+/* (as func_002DB7F0)  vtable +0x264: the next behaviour; his own (func_0034CDC0) unless at threat level 5, then the
+   Pursuer's */
+void func_0034D120(Pursuer *p) {
+    s32 next;
+
+    if (AT(gProgress, 0x7B8, u8) == 5) {
+        func_002961D0(p);
+        return;
+    }
+    next = PU(p, 0x1758, s32);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_004428F8);
+    PU(p, 0x1758, s32) = -1;
+    if (next == -2) {
+        PU(p, 0x16F3, u8) = 0;
+        PU(p, 0x1758, s32) = -2;
+    } else if (PU(p, 0x16F3, u8) == 1) {
+        PU(p, 0x16F3, u8) = 0;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1C);
+    } else if (next != -1) {
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, next);
+    }
+    func_0034CDC0(p);
+}

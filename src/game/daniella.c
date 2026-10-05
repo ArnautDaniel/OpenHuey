@@ -531,3 +531,203 @@ void func_003492C0(Pursuer *p) {
     }
     Stalker_ThinkEnd(p);
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern const f32 D_0043CD30[4];
+extern const f32 D_0043DBC0[4];
+extern const f32 D_0043EA70[4];
+
+/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+   strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
+   larger for 0xE04 / 0xE05 and the grabs */
+void func_00346330(Pursuer *p) {
+    HitEffectParams hp;
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 reach = 1.5f;
+    s32 atHand = 1;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x1904:
+        atHand = 0;
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        hp.big = 1.0f;
+        break;
+    case 0x1A01: {
+        u8 *fm = gCharPlayer->motion;
+        s32 bone;
+
+        atHand = 0;
+        bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        hp.big = 1.0f;
+        break;
+    }
+    case 0xE05:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE04:
+        hp.big = 1.0f;
+        break;
+    case 0xE03:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE07:
+    case 0xE06:
+    case 0xE02:
+    case 0xE00:
+        hp.big = 0.0f;
+        break;
+    default:
+        return;
+    }
+    if (atHand) {
+        f32 off[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 hand[4] __attribute__((aligned(16)));
+
+        off[0] = D_0043CD30[0];
+        off[1] = D_0043CD30[1];
+        off[2] = reach;
+        off[3] = D_0043CD30[3];
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        func_002E2DA0(pos, m, off);
+        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0AddVector(pos, pos, hand);
+    }
+    hp.kind = 0xFE;
+    hp.pos[0] = pos[0];
+    hp.pos[1] = pos[1];
+    hp.pos[2] = pos[2];
+    hp.pos[3] = pos[3];
+    HitEffect_Spawn(&hp);
+}
+
+/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+   strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
+   larger for 0xE04 / 0xE05 and the grabs */
+void func_00347B80(Pursuer *p) {
+    HitEffectParams hp;
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 reach = 1.5f;
+    s32 atHand = 1;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x1904:
+        atHand = 0;
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        hp.big = 1.0f;
+        break;
+    case 0x1A01: {
+        u8 *fm = gCharPlayer->motion;
+        s32 bone;
+
+        atHand = 0;
+        bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        hp.big = 1.0f;
+        break;
+    }
+    case 0xE05:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE04:
+        hp.big = 1.0f;
+        break;
+    case 0xE03:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE07:
+    case 0xE06:
+    case 0xE02:
+    case 0xE00:
+        hp.big = 0.0f;
+        break;
+    default:
+        return;
+    }
+    if (atHand) {
+        f32 off[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 hand[4] __attribute__((aligned(16)));
+
+        off[0] = D_0043DBC0[0];
+        off[1] = D_0043DBC0[1];
+        off[2] = reach;
+        off[3] = D_0043DBC0[3];
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        func_002E2DA0(pos, m, off);
+        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0AddVector(pos, pos, hand);
+    }
+    hp.kind = 0xFE;
+    hp.pos[0] = pos[0];
+    hp.pos[1] = pos[1];
+    hp.pos[2] = pos[2];
+    hp.pos[3] = pos[3];
+    HitEffect_Spawn(&hp);
+}
+
+/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+   strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
+   larger for 0xE04 / 0xE05 and the grabs */
+void func_00348B10(Pursuer *p) {
+    HitEffectParams hp;
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 reach = 1.5f;
+    s32 atHand = 1;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x1904:
+        atHand = 0;
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        hp.big = 1.0f;
+        break;
+    case 0x1A01: {
+        u8 *fm = gCharPlayer->motion;
+        s32 bone;
+
+        atHand = 0;
+        bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
+        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        hp.big = 1.0f;
+        break;
+    }
+    case 0xE05:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE04:
+        hp.big = 1.0f;
+        break;
+    case 0xE03:
+        reach = 3.5f;
+        /* fallthrough */
+    case 0xE07:
+    case 0xE06:
+    case 0xE02:
+    case 0xE00:
+        hp.big = 0.0f;
+        break;
+    default:
+        return;
+    }
+    if (atHand) {
+        f32 off[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 hand[4] __attribute__((aligned(16)));
+
+        off[0] = D_0043EA70[0];
+        off[1] = D_0043EA70[1];
+        off[2] = reach;
+        off[3] = D_0043EA70[3];
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        func_002E2DA0(pos, m, off);
+        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0AddVector(pos, pos, hand);
+    }
+    hp.kind = 0xFE;
+    hp.pos[0] = pos[0];
+    hp.pos[1] = pos[1];
+    hp.pos[2] = pos[2];
+    hp.pos[3] = pos[3];
+    HitEffect_Spawn(&hp);
+}
