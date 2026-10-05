@@ -94,6 +94,11 @@ void glr_shadow_quad(const float *xyz, int inc);
 void glr_shadow_fill(float x0, float y0, float x1, float y1, uint32_t rgba);
 void glr_shadow_cancel(void);
 
+/* a fading layer (0x0F, 0x1A or 0x23) is drawn this frame with the renderer's tint `tint`
+ * (+0x304D54): what it draws fades back to the screen behind it (alpha up to 0x80 = shown) or
+ * turns towards the tint's colour (above) */
+void glr_tint_layer(int layer, uint32_t tint);
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 

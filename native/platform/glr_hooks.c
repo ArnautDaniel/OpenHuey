@@ -110,23 +110,30 @@ int func_001AB960(uint8_t *r) {
     return 1;
 }
 
-/* layers 0x23 / 0x0F / 0x1A: the renderer's tint (+0x304D54) kept off what they draw (the
- * frame's alpha), with their end steps (func_001B1370 / func_001AAE80). GL TODO */
-int func_001AC0D0(uint8_t *r) {
-    (void)r;
-    glr_todo("layer 0x23 tint pass (func_001AC0D0)");
-    return 1;
+/* layers 0x0F / 0x1A / 0x23: fading layers - what they draw fades back to the screen behind
+ * it, or turns towards the colour, by the renderer's tint (+0x304D54); glr does the start and
+ * the end (func_001B1370 / func_001AAE80). Layer 0x23 also runs the two-colour effect on what
+ * it draws (GL TODO). */
+static uint32_t renderer_tint(const uint8_t *r) {
+    uint32_t t;
+
+    memcpy(&t, r + 0x304D54, 4);
+    return t;
 }
 
 int func_001B18E0(uint8_t *r) {
-    (void)r;
-    glr_todo("layer 0x0F tint pass (func_001B18E0)");
+    glr_tint_layer(0x0F, renderer_tint(r));
     return 1;
 }
 
 int func_001AB3F0(uint8_t *r) {
-    (void)r;
-    glr_todo("layer 0x1A tint pass (func_001AB3F0)");
+    glr_tint_layer(0x1A, renderer_tint(r));
+    return 1;
+}
+
+int func_001AC0D0(uint8_t *r) {
+    glr_tint_layer(0x23, renderer_tint(r));
+    glr_todo("layer 0x23 two-colour pass on its draws (func_001AC0D0)");
     return 1;
 }
 
