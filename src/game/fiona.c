@@ -9216,6 +9216,205 @@ void func_00198F00(Fiona *f) {
     }
 }
 
+extern void *D_00479600[];
+extern const PTMF D_003B2978;
+
+static void strike_mark_init(void **obj) {
+    obj[0] = D_00479600;
+}
+
+/* a chance out of 1 */
+static inline __attribute__((always_inline)) s32 fiona_chance(f32 c) {
+    return VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < c;
+}
+
+/* D_003B2968: her strike (the progress var 0x26: 6 / 7 the two special forms). Hits taken back
+ * as for the shove, gathered (FI 0x1AD6C0 / 0x1AD6CC). At its event 0x20 idle (6 / 7: motion
+ * +0x2C). At its strike mark (motion flags bit 2): with form 7 once a mark (D_00479600); the
+ * hand's point (form 6 / 7 bone +0x78, else +0x74) - a door there slammed; normally a point off
+ * the mesh ends the swing (0x101) - then whom it reaches (the progress +0x30: Hewie 2 / the
+ * pursuer 4, once each) from the striking point (form 7: 10 to the side, reach 10; form 6: 6
+ * ahead, reach 3; else the hand, reach 2): the blow (form 6 kind 1 damage 5, form 7 kind 2 10,
+ * else kind 1 1; the weapon 0x83 one in ten 50 / 100 (FI 0x1AD6D0 -1), 0x82 kind 2 5, 0x81 2;
+ * a chance of -0x8000) x gProgress +0xA04, and to the creatures there */
+void func_00194FC0(Fiona *f) {
+    Progress *p = gProgress;
+    u8 v = Progress_GetVar(p, 0x26);
+    u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
+    f32 at[4] __attribute__((aligned(16)));
+    f32 reach;
+    u8 who;
+    s32 kind, extra;
+    u32 dmg;
+    u16 d;
+
+    if (hit != 0 || FI(f, 0x1AD6C8, s32) != 0) {
+        if (hit & 2) {
+            FI(f, 0x1AD6C4, s32) = 1;
+            AT(p, 0xFB6, s16) = AT(p, 0xFB6, s16) + 3;
+            if (AT(p, 0xFB6, s16) < 0) {
+                AT(p, 0xFB6, s16) = 0;
+            } else if (!(AT(p, 0xFB6, s16) < 0x2711)) {
+                AT(p, 0xFB6, s16) = 0x2710;
+            }
+        }
+        if (v == 6) {
+            func_00122C20(&f->c.a, 0x22, 5, 0, 0, NULL);
+        } else if (v != 7) {
+            func_00122C20(&f->c.a, 0x8F, 5, 0, 0, NULL);
+        }
+        if (v == 7) {
+            shove_effects(f, hit, 1);
+        }
+        if (FI(f, 0x1AD6D0, f32) < 0.0f) {
+            shove_effects(f, hit, 0);
+        }
+        f->c.unk14D0 = 5;
+        func_001F6E30(f->c.motion);
+        FI(f, 0x1AD6C0, s32) |= hit;
+        FI(f, 0x1AD6CC, s32) |= FI(f, 0x1AD6C8, s32);
+        FI(f, 0x1AD6C8, s32) = 0;
+    }
+    func_00125A10(&f->c);
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        door_give_up(f, p);
+        if ((u32)(v - 6) < 2) {
+            VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
+        }
+        return;
+    }
+    if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+        return;
+    }
+    if (v == 7 && !(FI(f, 0x1AD6D4, f32) <= 0.0f)) {
+        u8 *mgr = D_0044E578;
+        s32 none = 0;
+
+        FI(f, 0x1AD6D4, f32) = -1.0f;
+        func_002D6090(mgr, Effect_New(mgr, 0x80, strike_mark_init), &none);
+    }
+    {
+        s32 bone;
+
+        if ((u32)(v - 6) < 2) {
+            bone = VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion);
+        } else {
+            bone = VCALL(f->c.motion, 0x74, s32 (*)(void *))(f->c.motion);
+        }
+        sceVu0CopyVector(at, func_0017CE80(AT(f->c.motion, 0x810, void *), bone) + 12);
+    }
+    who = func_00181880(f, at, 1);
+    if (v != 7 && v != 6 && func_00124480(&f->c.a, at, 0x20018) == (u32)-1) {
+        if (door_anim_done(f)) {
+            func_002DE030(f->c.motion, 0, 0x101, -1, 10.0f);
+        }
+        Actor_SetState(&f->c.a, &D_003B2978);
+        return;
+    }
+    if (who != 0) {
+        return;
+    }
+    {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 o[4] __attribute__((aligned(16)));
+        f32 pt[4] __attribute__((aligned(16)));
+
+        if (v == 7) {
+            sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(f->c.motion, 0x810, void *),
+                                                          VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion)));
+            o[0] = -10.0f;
+            o[1] = 0.0f;
+            o[2] = 0.0f;
+            o[3] = 1.0f;
+            sceVu0ApplyMatrix(pt, m, o);
+            reach = 10.0f;
+        } else if (v == 6) {
+            sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(f->c.motion, 0x810, void *),
+                                                          VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion)));
+            o[0] = 0.0f;
+            o[1] = 0.0f;
+            o[2] = 6.0f;
+            o[3] = 1.0f;
+            sceVu0ApplyMatrix(pt, m, o);
+            reach = 3.0f;
+        } else {
+            sceVu0CopyVector(pt, func_0017CE80(AT(f->c.motion, 0x810, void *),
+                                               VCALL(f->c.motion, 0x74, s32 (*)(void *))(f->c.motion)) + 12);
+            reach = 2.0f;
+        }
+        who = 0;
+        if (FI(f, 0x1AD5D5, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 2) &&
+            (VCALL(p, 0x30, s32 (*)(Progress *, u32, f32 *, s32, f32))(p, *(u8 *)&f->c.a.slot, pt, 1, reach) & 0xFF) == 1) {
+            who |= 2;
+        }
+        if (FI(f, 0x1AD5D7, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 4) &&
+            (VCALL(p, 0x30, s32 (*)(Progress *, u32, f32 *, s32, f32))(p, *(u8 *)&f->c.a.slot, pt, 2, reach) & 0xFF) == 1) {
+            who |= 4;
+        }
+        FI(f, 0x1AD6D0, f32) = 1.0f;
+        extra = 0;
+        if (v == 7) {
+            dmg = 0xA;
+            kind = 2;
+            if (D_0044E988 != NULL) {
+                if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x83 &&
+                    fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
+                    dmg = 0x64;
+                    FI(f, 0x1AD6D0, f32) = -1.0f;
+                }
+                if (fiona_chance(0x1.99999ap-3f /* 0.2 */)) {
+                    extra = -0x8000;
+                }
+            }
+        } else if (v == 6) {
+            dmg = 5;
+            kind = 1;
+            if (D_0044E988 != NULL) {
+                if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x83 &&
+                    fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
+                    dmg = 0x32;
+                    FI(f, 0x1AD6D0, f32) = -1.0f;
+                }
+                if (fiona_chance(0x1.99999ap-3f /* 0.2 */)) {
+                    extra = -0x8000;
+                }
+            }
+        } else {
+            dmg = 1;
+            kind = 1;
+            if (D_0044E988 != NULL) {
+                switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0)) {
+                case 0x83:
+                    if (fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
+                        kind = 2;
+                        dmg = 0x32;
+                        FI(f, 0x1AD6D0, f32) = -1.0f;
+                    }
+                    break;
+                case 0x82:
+                    if (fiona_chance(0x1.99999ap-3f /* 0.2 */)) {
+                        extra = -0x8000;
+                    }
+                    kind = 2;
+                    dmg = 5;
+                    break;
+                case 0x81:
+                    if (fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
+                        extra = -0x8000;
+                    }
+                    dmg = 2;
+                    break;
+                }
+            }
+        }
+        d = (u16)(u32)((f32)dmg * AT(p, 0xA04, f32));
+        if (who != 0) {
+            func_00178070(p, *(u8 *)&f->c.a.slot, who, kind, d, extra, 0.0f);
+        }
+        FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), d, pt, reach);
+    }
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
