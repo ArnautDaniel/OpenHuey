@@ -10076,13 +10076,8 @@ static s32 Pursuer_PlanOn(Pursuer *p) {
     return func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0 || (func_0027CA00(p) & 0xFF);
 }
 
-/* leave the screen through door `door` (vtable +0xF4?): finish a door or stair move in progress,
-   reset the per-room state, and set off-screen moving (or, still in Fiona's room, walking) to the
-   next exit of its plan */
-void func_0027B810(Pursuer *p, u32 door) {
-    Character *h;
-    VObject *rooms;
-
+/* a door or stair move still in progress when the pursuer leaves the screen: finish it */
+static void Pursuer_FinishCrossing(Pursuer *p) {
     if (p->c.moveMode == 2) {
         Progress *pr = gProgress;
 
@@ -10133,6 +10128,144 @@ void func_0027B810(Pursuer *p, u32 door) {
     if (p->c.unkE0 == 1) {
         VCALL(p, 0x90, void (*)(Pursuer *))(p);
     }
+}
+
+/* forget the room's action, attack and stagger state */
+static void Pursuer_ResetForRoom(Pursuer *p) {
+    s32 i;
+
+    if (PU(p, 0x16F4, u8) != 0) {
+        PU(p, 0x16C8, u8) = 3;
+        VCALL(p, 0x2C4, void (*)(Pursuer *))(p);
+        PU(p, 0x16F4, u8) = 0;
+    }
+    for (i = 0; i < 8; i++) {
+        PU(p, 0x1624 + i * 4, s32) = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        PU(p, 0x1650 + i * 4, s32) = 0;
+    }
+    p->c.unk104[0] = -1;
+    PU(p, 0x1761, u8) = 0;
+    PU(p, 0x1760, u8) = 0;
+    PU(p, 0x178C, s32) = 0;
+    PU(p, 0x1764, s32) = -1;
+    p->c.unk14D0 = 0;
+    func_001F6E10(p->c.motion);
+    PU(p, 0x16F5, u8) = 0;
+    PU(p, 0x16F8, u8) = 0;
+    PU(p, 0x16F7, u8) = 0;
+    PU(p, 0x1794, s32) = 0;
+    PU(p, 0x1798, s32) = 0;
+    PU(p, 0x16F3, u8) = 0;
+}
+
+/* off screen and the next room isn't the one it's in: carry on with the plan */
+static void Pursuer_LeaveOffScreen(Pursuer *p, s32 next, u32 door) {
+    if (next == p->c.a.room) {
+        p->c.unk1530 = 0;
+        p->c.unk1538 = 0;
+        p->c.unk1534 = 0;
+        AT(p, 0x2A, u8) = 0;
+    } else if (PU(p, 0x16C8, u8) == 3) {
+        if (p->c.unk1388 >= p->c.unk1384 && PU(p, 0x17B4, s32) == 0) {
+            Pursuer_SetMove(p, &D_0045B358);
+        }
+    } else if (PU(p, 0x16C8, u8) == 0) {
+        VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
+        if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
+            func_0029AC50(p);
+        }
+    }
+}
+
+/* walk to the exit +0x17B0 of the plan (or along the stairs) */
+static void Pursuer_HeadForExit(Pursuer *p, VObject *rooms, u32 door) {
+    if (p->c.moveMode == 3) {
+        Pursuer_SetMove(p, &D_0045B388);
+    } else {
+        PU(p, 0x15A4, s32) = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
+        p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+        AT(p->c.pathReq, 0x40, u32) = p->c.a.navMask;
+        if ((func_00212360(p) & 0xFF) != 1) {
+            Pursuer_SetMove(p, &D_0045B388);
+        } else {
+            if (p->c.moveMode != 4 && PU(p, 0x16C8, u8) == 0) {
+                func_00212240(p, door);
+            }
+            Pursuer_SetMove(p, &D_0045B370);
+        }
+    }
+    p->c.unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, PU(p, 0x17B0, u8));
+}
+
+/* the exit for the plan's next room +0x138C */
+static void Pursuer_NextExit(Pursuer *p, VObject *rooms) {
+    PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
+}
+
+/* the shared mode cases (1..4) of picking the next exit; 0 when it stays put instead */
+static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
+    switch (PU(p, 0x16C8, u8)) {
+    case 2:
+        if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
+            Pursuer_SetMove(p, &D_0045B3A0);
+            return 0;
+        }
+        if (!(PU(p, 0x1621, u8) < 8)) {
+            Pursuer_ClearRoute(p);
+            func_0027EAF0(p);
+            Pursuer_SetMove(p, &D_0045B3A0);
+            return 0;
+        }
+        break;
+    case 1:
+        if (!(func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
+            PU(p, 0x16F4, u8) = 1;
+            if (!(func_0027CA00(p) & 0xFF)) {
+                Pursuer_SetMove(p, &D_0045B3A0);
+                return 0;
+            }
+        }
+        Pursuer_NextExit(p, rooms);
+        break;
+    case 3:
+        if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8) || !Pursuer_PlanOn(p)) {
+            Pursuer_SetMove(p, &D_0045B3A0);
+            return 0;
+        }
+        Pursuer_NextExit(p, rooms);
+        break;
+    case 4: {
+        s32 room = p->c.a.room;
+        s32 *e;
+
+        for (e = VCALL(p, 0x314, s32 *(*)(Pursuer *))(p); *e != -1; e += 2) {
+            if (room == *e) {
+                Pursuer_SetMove(p, &D_0045B3A0);
+                return 0;
+            }
+        }
+        if (!Pursuer_PlanOn(p)) {
+            Pursuer_SetMove(p, &D_0045B3A0);
+            PU(p, 0x16F4, u8) = 1;
+            return 0;
+        }
+        Pursuer_NextExit(p, rooms);
+        break;
+    }
+    }
+    return 1;
+}
+
+/* leave the screen through door `door` while the progress byte +0x1FBEC1 is set (see
+   func_00282010): finish a door or stair move in progress, reset the per-room state, and set
+   off-screen moving (or, still in view, walking) to the next exit of its plan */
+void func_0027B810(Pursuer *p, u32 door) {
+    Character *h;
+    VObject *rooms;
+
+    Pursuer_FinishCrossing(p);
     h = gCharPartner;
     if (AT(h, 0xF3581, u8) != 0) {
         if (p->c.hp > 0) {
@@ -10163,54 +10296,11 @@ void func_0027B810(Pursuer *p, u32 door) {
         PU(p, 0x1664, s32) = p->c.unk104[0] * 60;
         p->c.unk104[0] = -1;
     }
-    if (PU(p, 0x16F4, u8) != 0) {
-        PU(p, 0x16C8, u8) = 3;
-        VCALL(p, 0x2C4, void (*)(Pursuer *))(p);
-        PU(p, 0x16F4, u8) = 0;
-    }
-    {
-        s32 i;
-
-        for (i = 0; i < 8; i++) {
-            PU(p, 0x1624 + i * 4, s32) = 0;
-        }
-        for (i = 0; i < 4; i++) {
-            PU(p, 0x1650 + i * 4, s32) = 0;
-        }
-    }
-    p->c.unk104[0] = -1;
-    PU(p, 0x1761, u8) = 0;
-    PU(p, 0x1760, u8) = 0;
-    PU(p, 0x178C, s32) = 0;
-    PU(p, 0x1764, s32) = -1;
-    p->c.unk14D0 = 0;
-    func_001F6E10(p->c.motion);
-    PU(p, 0x16F5, u8) = 0;
-    PU(p, 0x16F8, u8) = 0;
-    PU(p, 0x16F7, u8) = 0;
-    PU(p, 0x1794, s32) = 0;
-    PU(p, 0x1798, s32) = 0;
-    PU(p, 0x16F3, u8) = 0;
+    Pursuer_ResetForRoom(p);
     rooms = D_0044E568;
     if (func_00217510(p) == 0) {
-        s32 next = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms,
-            VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), door);
-
-        if (next == p->c.a.room) {
-            p->c.unk1530 = 0;
-            p->c.unk1538 = 0;
-            p->c.unk1534 = 0;
-            AT(p, 0x2A, u8) = 0;
-        } else if (PU(p, 0x16C8, u8) == 3) {
-            if (p->c.unk1388 >= p->c.unk1384 && PU(p, 0x17B4, s32) == 0) {
-                Pursuer_SetMove(p, &D_0045B358);
-            }
-        } else if (PU(p, 0x16C8, u8) == 0) {
-            VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
-            if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
-                func_0029AC50(p);
-            }
-        }
+        Pursuer_LeaveOffScreen(p, VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms,
+            VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), door), door);
         return;
     }
     p->c.unk1530 = 0;
@@ -10255,8 +10345,7 @@ void func_0027B810(Pursuer *p, u32 door) {
         }
     }
     p->c.unk124 = p->c.unk128;
-    switch (PU(p, 0x16C8, u8)) {
-    case 0:
+    if (PU(p, 0x16C8, u8) == 0) {
         if ((door & 0xFF) == 0xFF) {
             PU(p, 0x17B4, s32) = 150;
             Pursuer_SetMove(p, &D_0045B3A0);
@@ -10271,70 +10360,172 @@ void func_0027B810(Pursuer *p, u32 door) {
             }
             return;
         }
-        PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
-        break;
-    case 2:
-        if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
-            Pursuer_SetMove(p, &D_0045B3A0);
-            return;
-        }
-        if (!(PU(p, 0x1621, u8) < 8)) {
-            Pursuer_ClearRoute(p);
-            func_0027EAF0(p);
-            Pursuer_SetMove(p, &D_0045B3A0);
-            return;
-        }
-        break;
-    case 1:
-        if (!(func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
-            PU(p, 0x16F4, u8) = 1;
-            if (!(func_0027CA00(p) & 0xFF)) {
-                Pursuer_SetMove(p, &D_0045B3A0);
-                return;
-            }
-        }
-        PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
-        break;
-    case 3:
-        if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8) || !Pursuer_PlanOn(p)) {
-            Pursuer_SetMove(p, &D_0045B3A0);
-            return;
-        }
-        PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
-        break;
-    case 4: {
-        s32 room = p->c.a.room;
-        s32 *e;
+        Pursuer_NextExit(p, rooms);
+    } else if (!Pursuer_PickExit(p, rooms)) {
+        return;
+    }
+    Pursuer_HeadForExit(p, rooms, door);
+}
 
-        for (e = VCALL(p, 0x314, s32 *(*)(Pursuer *))(p); *e != -1; e += 2) {
-            if (room == *e) {
-                Pursuer_SetMove(p, &D_0045B3A0);
-                return;
-            }
+/* how long to wait on arriving (+0x1744: {frames, cumulative percent} pairs, ascending) */
+static s32 Pursuer_RandomWait(Pursuer *p) {
+    u8 *t = PU(p, 0x1744, u8 *);
+    f32 r;
+    u32 i;
+
+    if (t == NULL) {
+        return 0;
+    }
+    r = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    for (i = 0;; i = (i + 1) & 0xFF) {
+        u8 *e = t + (i & 0xFF) * 8;
+
+        if (!(AT(e, 0x4, f32) <= 100.0f) || AT(e, 0x4, f32) < 0.0f) {
+            return 0;
         }
-        if (!Pursuer_PlanOn(p)) {
+        if (!(AT(e, 0x4, f32) < r)) {
+            return AT(e, 0x0, s32);
+        }
+    }
+}
+
+/* leave the screen through door `door` (func_0027B810 while the progress byte +0x1FBEC1 is set):
+   finish a crossing, react to Hewie still hanging on, reset the per-room state, and set off for
+   the next exit of the plan, after a random wait when it was chasing */
+void func_00282010(Pursuer *p, u32 door) {
+    Character *h;
+    VObject *rooms;
+
+    if ((u32)p->c.a.slot >= 3) {
+        VCALL(p, 0x14C, void (*)(Pursuer *))(p);
+        return;
+    }
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        VCALL(p, 0x144, void (*)(Pursuer *))(p);
+        return;
+    }
+    Pursuer_FinishCrossing(p);
+    h = gCharPartner;
+    if (AT(h, 0xF3581, u8) != 0) {
+        if (p->c.hp > 0) {
+            /* Hewie still has it: stay in the bitten pose a while */
+            switch (p->c.unk104[0]) {
+            case 10:
+            case 11:
+                PU(p, 0x1664, s32) = Pursuer_HewieDelay(h, 30);
+                Pursuer_PlayAnimBlend(p, 0x1700);
+                break;
+            case 12:
+            case 13:
+                PU(p, 0x1664, s32) = Pursuer_HewieDelay(h, 30);
+                Pursuer_PlayAnimBlend(p, 0x1703);
+                break;
+            case 14:
+                PU(p, 0x1664, s32) = Pursuer_HewieDelay(h, 60);
+                Pursuer_PlayAnimBlend(p, 0x1706);
+                break;
+            case 15:
+                PU(p, 0x1664, s32) = Pursuer_HewieDelay(h, 60);
+                Pursuer_PlayAnimBlend(p, 0x1708);
+                break;
+            default:
+                if (PU(p, 0x175C, s32) != 0x1F) {
+                    PU(p, 0x1664, s32) = Pursuer_HewieDelay(h, 30);
+                }
+                break;
+            }
+            func_00297C60(p);
+        } else if (p->c.a.unkC4 != 2) {
+            VCALL(p, 0x2CC, void (*)(Pursuer *))(p);
+            PU(p, 0x1790, s32) = 0;
+            PU(p, 0x17B4, s32) = Pursuer_HewieDelay(h, 60);
+            p->c.a.unkC4 = 2;
+        }
+    } else if (p->c.moveSub == 0x11) {
+        PU(p, 0x1664, s32) = PU(p, 0x1624, s32) * 30;
+        p->c.unk104[0] = -1;
+    }
+    Pursuer_ResetForRoom(p);
+    rooms = D_0044E568;
+    if (func_00217510(p) == 0) {
+        Pursuer_LeaveOffScreen(p, VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, gCharPlayer->a.room, door), door);
+        return;
+    }
+    p->c.unk1530 = 0;
+    p->c.unk1538 = 0;
+    p->c.unk1534 = 0;
+    VCALL(p, 0xE4, void (*)(Pursuer *, u32))(p, p->c.door);
+    VCALL(p, 0x154, void (*)(Pursuer *))(p);
+    AT(p, 0x29, u8) = 1;
+    AT(p, 0x2A, u8) = 1;
+    AT(p, 0x2B, u8) = 0;
+    p->c.a.unk2D = 0;
+    PU(p, 0x1544, u8) = 0;
+    PU(p, 0x1545, u8) = 0;
+    if (PU(p, 0x16C8, u8) != 0) {
+        switch (PU(p, 0x16C9, u8)) {
+        case 3:
+            PU(p, 0x16C9, u8) = 2;
+            PU(p, 0x16CA, u8) = 3;
+            break;
+        case 5:
+            if (func_00217260(p) != 0 || PU(p, 0x1594, s32) == -1) {
+                PU(p, 0x16C9, u8) = 2;
+                PU(p, 0x16CA, u8) = 3;
+                PU(p, 0x16C8, u8) = 1;
+                VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
+                Pursuer_ClearRoute(p);
+                PU(p, 0x17B4, s32) = Pursuer_RandomWait(p);
+            }
+            break;
+        case 1:
+        case 4:
+            if (func_00217260(p) != 0 || PU(p, 0x1594, s32) == -1) {
+                PU(p, 0x16C9, u8) = 2;
+                PU(p, 0x16CA, u8) = 3;
+            }
+            break;
+        }
+    }
+    p->c.unk124 = p->c.unk128;
+    if (PU(p, 0x16C8, u8) == 0) {
+        u32 link;
+
+        if ((door & 0xFF) == 0xFF) {
+            PU(p, 0x17B4, s32) = 150;
             Pursuer_SetMove(p, &D_0045B3A0);
             PU(p, 0x16F4, u8) = 1;
             return;
         }
-        PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
-        break;
-    }
-    }
-    if (p->c.moveMode == 3) {
-        Pursuer_SetMove(p, &D_0045B388);
-    } else {
-        PU(p, 0x15A4, s32) = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
-        p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
-        AT(p->c.pathReq, 0x40, u32) = p->c.a.navMask;
-        if ((func_00212360(p) & 0xFF) != 1) {
-            Pursuer_SetMove(p, &D_0045B388);
-        } else {
-            if (p->c.moveMode != 4 && PU(p, 0x16C8, u8) == 0) {
-                func_00212240(p, door);
-            }
-            Pursuer_SetMove(p, &D_0045B370);
+        /* chasing: through this door, whatever the plan said about it */
+        PU(p, 0x17B0, u8) = door;
+        link = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, door) & 0xFFFF;
+        p->c.unk148C[link >> 5] &= ~(1 << (link & 0x1F));
+        VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
+        if (!(func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
+            PU(p, 0x17B4, s32) = 150;
+            Pursuer_SetMove(p, &D_0045B3A0);
+            PU(p, 0x16F4, u8) = 1;
+            return;
         }
+        if (link != PU(p, 0x138C, u16)) {
+            if ((VCALL(p, 0xEC, s32 (*)(Pursuer *, u32))(p, door) & 0xFF) == 1) {
+                s32 a = VCALL(rooms, 0x1C, s32 (*)(VObject *, u32, s32))(rooms, link, p->c.a.room);
+
+                if (a != VCALL(rooms, 0x1C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room)) {
+                    PU(p, 0x17B4, s32) = 150;
+                    Pursuer_SetMove(p, &D_0045B3A0);
+                    PU(p, 0x16F4, u8) = 1;
+                    return;
+                }
+                PU(p, 0x138C, u16) = link;
+            } else {
+                Pursuer_NextExit(p, rooms);
+            }
+        }
+        PU(p, 0x17B4, s32) = Pursuer_RandomWait(p);
+    } else if (!Pursuer_PickExit(p, rooms)) {
+        return;
     }
-    p->c.unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, PU(p, 0x17B0, u8));
+    Pursuer_HeadForExit(p, rooms, door);
 }

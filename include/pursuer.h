@@ -328,6 +328,7 @@ void func_00280210(Pursuer *p, s32 exit);
 void func_002804B0(Pursuer *p);
 void func_002809E0(Pursuer *p);
 void func_002815E0(Pursuer *p, u32 door);
+void func_00282010(Pursuer *p, u32 door);
 void func_002837C0(Pursuer *p, u32 mask);
 s32 func_00283870(Pursuer *p);
 f32 func_002838E0(Pursuer *p);
