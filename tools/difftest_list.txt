@@ -3508,3 +3508,5 @@ src/game/model.c func_0016F5D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --
 src/game/model.c func_00170350 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
 src/game/model.c func_0016FF50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
 src/game/model.c func_001700E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..6 --runs=10
+src/game/char_load.c func_00171160 --pre=a0=0x0A000000..0x0A000000 --pre=a1=2..4 --pre=@0x44F808=0..1 --stub-ret=0x0B000000 --stub-ret=0 --runs=100
+src/game/char_load.c func_00171160 --pre=a0=0x0A000000..0x0A000000 --pre=a1=6..39 --pre=@0x44F808=0..1 --stub-ret=0x0B000000 --stub-ret=0 --runs=300

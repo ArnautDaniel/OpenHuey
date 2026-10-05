@@ -19,6 +19,11 @@ static void skipped(const char *name) {
     fprintf(stderr, "skip: %s (not decompiled yet)\n", name);
 }
 
+/* for game code that holds back natively until something it needs is in C */
+void hg_skipped(const char *name) {
+    skipped(name);
+}
+
 /* the full-screen blur / dim effect (0x5A0 qwords of offset sprites; D_0046D7A0's draw) */
 int func_002699D0(void *o) {
     (void)o;
@@ -32,16 +37,6 @@ int func_001BA260(void *r) {
     (void)r;
     skipped("func_001BA260 frame post-process");
     return 1;
-}
-
-/* load stalker / event character `id` (0x28 kinds) into character slot 2: not yet - 0 ("not
- * loaded"), so scripts go on as if it can't come. Each kind is a class of its own (the
- * stalkers' AI); they come later. */
-int func_00171160(void *p, unsigned id) {
-    (void)p;
-    (void)id;
-    skipped("func_00171160 stalker load");
-    return 0;
 }
 
 /* load event character `id` (0x28 kinds) into slot `slot` (3..5): not yet, 0 as above */

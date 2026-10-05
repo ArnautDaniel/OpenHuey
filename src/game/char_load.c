@@ -1,0 +1,157 @@
+/* Loading the character of slot 2 (the stalker in play, or an event character) by kind: its
+ * object (0x1800 bytes, 0x1840 for kinds 4 / 12 / 23 / 37) from the scene heap, constructed and
+ * registered, then its model (model.c). Kinds 0, 1 and 5 have no character. */
+#include "common.h"
+#include "game.h"
+#include "progress.h"
+
+extern void *gCharacters[6];
+extern void *func_00124E50(u32 size, void *mem);   /* placement new */
+extern s32 Characters_Register(void *self, u32 slot, void *obj);
+extern void func_0016D180(Progress *p, s32 slot);
+
+/* the kinds' constructors (b0_001727C0.c) and model loaders (model.c) */
+extern void *func_001727C0(void *obj, s32 slot);
+extern void *func_00172910(void *obj, s32 slot);
+extern void *func_00172960(void *obj, s32 slot);
+extern void *func_001729B0(void *obj, s32 slot);
+extern void *func_00172A00(void *obj, s32 slot);
+extern void *func_00172A50(void *obj, s32 slot);
+extern void *func_00172AA0(void *obj, s32 slot);
+extern void *func_00172AF0(void *obj, s32 slot);
+extern void *func_00172B40(void *obj, s32 slot);
+extern void *func_00172B90(void *obj, s32 slot);
+extern void *func_00172BE0(void *obj, s32 slot);
+extern void *func_00172C30(void *obj, s32 slot);
+extern void *func_00172C80(void *obj, s32 slot);
+extern void *func_00172DE0(void *obj, s32 slot);
+extern void *func_00172E20(void *obj, s32 slot);
+extern void *func_00172E70(void *obj, s32 slot);
+extern void *func_00172EC0(void *obj, s32 slot);
+extern void *func_00172F10(void *obj, s32 slot);
+extern void *func_00172F60(void *obj, s32 slot);
+extern void *func_00172FB0(void *obj, s32 slot);
+extern void *func_00173110(void *obj, s32 slot);
+extern void *func_00173150(void *obj, s32 slot);
+extern void *func_001731A0(void *obj, s32 slot);
+extern void *func_001731F0(void *obj, s32 slot);
+extern void *func_00173240(void *obj, s32 slot);
+extern void *func_00173290(void *obj, s32 slot);
+extern void *func_001732E0(void *obj, s32 slot);
+extern void *func_00173330(void *obj, s32 slot);
+extern void *func_00173380(void *obj, s32 slot);
+extern void *func_001733D0(void *obj, s32 slot);
+extern void *func_00173420(void *obj, s32 slot);
+extern void *func_00173470(void *obj, s32 slot);
+extern void *func_001734C0(void *obj, s32 slot);
+extern void *func_00173510(void *obj, s32 slot);
+extern void *func_00173560(void *obj, s32 slot);
+extern void *func_001735B0(void *obj, s32 slot);
+extern void *func_00173600(void *obj, s32 slot);
+extern void func_0016F420(Progress *p, u32 slot);
+extern void func_0016F860(Progress *p, u32 slot);
+extern void func_0016FEC0(Progress *p, u32 slot);
+extern void func_00170480(Progress *p, u32 slot);
+extern void func_00170510(Progress *p, u32 slot);
+extern void func_00170710(Progress *p, u32 slot);
+extern void func_001707A0(Progress *p, u32 slot);
+extern void func_00170830(Progress *p, u32 slot);
+extern void func_00170910(Progress *p, u32 slot);
+extern void func_00170A50(Progress *p, u32 slot);
+extern void func_00170B60(Progress *p, u32 slot);
+extern void func_00170D30(Progress *p, u32 slot);
+extern void func_00170FB0(Progress *p, u32 slot);
+
+typedef struct {
+    u32 size;
+    void *(*ctor)(void *obj, s32 slot);
+    void (*model)(Progress *p, u32 slot);
+    u8 withKind;   /* a class shared by several kinds: its constructor also takes the kind */
+} CharKind;
+
+static const CharKind sKinds[0x28] = {
+    [2] = { 0x1800, func_00173600, func_00170FB0 },   /* Debilitas */
+    [3] = { 0x1800, func_001734C0, func_00170D30 },   /* Daniella */
+    [4] = { 0x1840, func_00173380, func_00170B60 },   /* Riccardo */
+    [6] = { 0x1800, func_001735B0, func_00170FB0 },   /* the second Debilitas class */
+    [7] = { 0x1800, func_00173560, func_00170FB0 },
+    [8] = { 0x1800, func_001731A0, func_00170710 },
+    [9] = { 0x1800, func_00173330, func_00170A50 },
+    [10] = { 0x1800, func_001732E0, func_00170910 },   /* the second Lorenzo class */
+    [11] = { 0x1800, func_00173240, func_00170830 },   /* Lorenzo */
+    [12] = { 0x1840, func_001731F0, func_001707A0 },
+    [13] = { 0x1800, func_00173150, func_00170510 },
+    [14] = { 0x1800, func_00173110, func_00170480, 1 },
+    [15] = { 0x1800, func_00172FB0, func_00170480, 1 },
+    [16] = { 0x1800, func_00172F60, func_00170710 },
+    [17] = { 0x1800, func_00172F10, func_00170710 },
+    [18] = { 0x1800, func_00172EC0, func_0016FEC0 },
+    [19] = { 0x1800, func_00172E70, func_00170710 },
+    [20] = { 0x1800, func_00172E20, func_00170710 },
+    [21] = { 0x1800, func_00172DE0, func_00170710, 1 },
+    [22] = { 0x1800, func_00172C80, func_00170710, 1 },
+    [23] = { 0x1840, func_00172C30, func_0016F860 },
+    [24] = { 0x1800, func_00172B90, func_00170710 },
+    [25] = { 0x1800, func_00172B40, func_00170710 },
+    [26] = { 0x1800, func_00172AF0, func_00170710 },
+    [27] = { 0x1800, func_00173510, func_00170FB0 },
+    [28] = { 0x1800, func_00172AA0, func_00170710 },
+    [29] = { 0x1800, func_00172A50, func_00170710 },
+    [30] = { 0x1800, func_00172A00, func_00170710 },
+    [31] = { 0x1800, func_001729B0, func_00170710 },
+    [32] = { 0x1800, func_00172960, func_00170710 },
+    [33] = { 0x1800, func_00172910, func_0016F420 },
+    [34] = { 0x1800, func_00173470, func_00170D30 },
+    [35] = { 0x1800, func_00173420, func_00170D30 },
+    [36] = { 0x1800, func_001733D0, func_00170D30 },
+    [37] = { 0x1840, func_00172BE0, func_0016F860 },
+    [38] = { 0x1800, func_001727C0, func_00170710 },
+    [39] = { 0x1800, func_00173290, func_00170910 },
+};
+
+#ifdef HG_NATIVE
+/* natively, the kinds whose classes are all in C (the rest stay "not loaded") */
+static const u8 sReady[0x28] = { 0 };
+extern void hg_skipped(const char *what);   /* native/platform/skip.c */
+#endif
+
+/* load character kind `id` into slot 2: 1 when it's there; 0 when slot 2 is taken, the kind has
+   no character or the heap is full */
+u8 func_00171160(Progress *p, u32 id) {
+    const CharKind *k;
+    VObject *heap;
+    void *mem;
+    void *obj;
+
+    id &= 0xFF;
+    if (id >= 0x28 || sKinds[id].ctor == NULL) {
+        return 0;
+    }
+#ifdef HG_NATIVE
+    if (!sReady[id]) {
+        hg_skipped("func_00171160: a character kind whose class is not in C yet");
+        return 0;
+    }
+#endif
+    k = &sKinds[id];
+    if (gCharacters[2] != NULL) {
+        return 0;
+    }
+    heap = (VObject *)((u8 *)p + 0x6FBF00);
+    mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, k->size);
+    if (mem == NULL) {
+        return 0;
+    }
+    obj = func_00124E50(k->size, mem);
+    if (obj != NULL) {
+        if (k->withKind) {
+            obj = ((void *(*)(void *, s32, s32))k->ctor)(obj, 2, id);
+        } else {
+            obj = k->ctor(obj, 2);
+        }
+    }
+    Characters_Register(p, 2, obj);
+    k->model(p, 2);
+    func_0016D180(p, 2);
+    return 1;
+}

@@ -139,7 +139,16 @@ def decompiled_funcs(sources: list[str]) -> dict[str, list[str]]:
     """asm file -> functions defined in C that replace asm there."""
     defined = set()
     for src in sources:
-        defined.update(FUNC_DEF_RE.findall(without_native_only((ROOT / src).read_text())))
+        text = without_native_only((ROOT / src).read_text())
+        # a body shared by two classes: a local .inc included here, built under the names this
+        # file #defines onto the included definitions
+        for inc in re.findall(r'^#include "([^"]+\.inc)"', text, re.M):
+            text += "\n" + without_native_only(((ROOT / src).parent / inc).read_text())
+        names = set(FUNC_DEF_RE.findall(text))
+        for a, b in re.findall(r"^#define\s+(\w+)\s+(\w+)\s*$", text, re.M):
+            if a in names:
+                names.add(b)
+        defined.update(names)
     out: dict[str, list[str]] = {}
     for asm in CODE_ASM:
         names = set(re.findall(r"^\s*(?:glabel|alabel) (\S+)", (ROOT / asm).read_text(), re.M))
