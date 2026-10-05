@@ -6492,3 +6492,96 @@ void func_0014B190(Hewie *h) {
     }
     hewie_want(h, 0, 0);
 }
+
+/* ---- leaping to a spot ---- */
+
+extern const PTMF D_003B1C20, D_003B1C30;
+
+/* in a leap (along +0xF36E0, height +0xF36C8, rise +0xF36C4): turning to heading +0x10C by 10
+ * degrees; in the rising animation 0x1E04 by its root motion (its rise scaled by +0xF36C4 while
+ * event bit 2 is on), then (0x1E05 once it ends) 3 a frame forward falling ever faster (+0xF36CC
+ * from 1.2889, +0.5 a frame up to 3). Below the ground: landed (0x1E06), behaviour
+ * D_003B1C30 */
+void func_0014BB10(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 ground, y;
+
+    turn_toward(h, HW(h, 0x10C, f32), 0x1.6571860000000p-3f /* 0.17453294 */);
+    if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) != 0x1E05) {
+        func_002DDE20(h->c.motion, 0x1E05, -1);
+        HW(h, 0xF36CC, f32) = 0x1.49f55a0000000p+0f /* 1.2889 */;
+    }
+    if (MOTION_ANIM(h->c.motion) == 0x1E04) {
+        func_001F6240(h->c.motion, root, 0.0f);
+        func_0010E640(v, &HW(h, 0xF36E0, f32), root[2]);
+        func_001247E0(&h->c.a, v);
+        HW(h, 0xF3558, u8) = 1;
+        ground = h->c.a.pos[1];
+        if (!((u8)func_001F4770(h->c.motion, 0, 0, 1) & 2)) {
+            y = HW(h, 0xF36C8, f32) + root[1];
+        } else {
+            y = HW(h, 0xF36C8, f32) + root[1] * HW(h, 0xF36C4, f32);
+        }
+    } else {
+        func_0010E640(v, &HW(h, 0xF36E0, f32), 3.0f);
+        func_001247E0(&h->c.a, v);
+        HW(h, 0xF3558, u8) = 1;
+        ground = h->c.a.pos[1];
+        HW(h, 0xF36CC, f32) += 0.5f;
+        if (!(HW(h, 0xF36CC, f32) <= 3.0f)) {
+            HW(h, 0xF36CC, f32) = 3.0f;
+        }
+        y = HW(h, 0xF36C8, f32) - HW(h, 0xF36CC, f32);
+    }
+    h->c.a.pos[1] = y;
+    HW(h, 0xF36C8, f32) = h->c.a.pos[1];
+    if (!(ground <= h->c.a.pos[1])) {
+        h->c.a.pos[1] = ground;
+        func_002DDE20(h->c.motion, 0x1E06, -1);
+        Hewie_SetBehaviour(h, &D_003B1C30);
+    }
+}
+
+/* run for the spot +0x110 (planned, keeping the request): once within +0x108 of the end of
+ * the path and not blending, leap (level toward the spot, turning to it by 20 degrees, rising
+ * by animation 0x1E04, behaviour D_003B1C20); meanwhile running (0x202) with the stride
+ * (func_00139DE0, else pose 8). No path: the default action */
+void func_0014BE80(Hewie *h) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 a, y;
+
+    if (func_0013EE40(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (AT(h->c.motion, 0x550, f32) <= 0.0f &&
+        VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C) < (f32)h->c.unk104[1]) {
+        sceVu0SubVector(d, h->c.unk110, h->c.a.pos);
+        d[1] = 0.0f;
+        sceVu0Normalize(&HW(h, 0xF36E0, f32), d);
+        HW(h, 0xF36C8, f32) = h->c.a.pos[1];
+        a = func_001244D0(&h->c.a, h->c.unk110);
+        HW(h, 0x10C, f32) = a;
+        turn_toward(h, a, 0x1.6571860000000p-2f /* 0.34906587 */);
+        func_001F6240(h->c.motion, d, 0.0f);
+        func_0010E640(v, &HW(h, 0xF36E0, f32), d[2]);
+        func_001247E0(&h->c.a, v);
+        HW(h, 0xF3558, u8) = 1;
+        y = HW(h, 0xF36C8, f32) + d[1] * HW(h, 0xF36C4, f32);
+        h->c.a.pos[1] = y;
+        HW(h, 0xF36C8, f32) = y;
+        func_002DDED0(h->c.motion, 0x1E04, -1);
+        h->c.a.unk2D = 1;
+        Hewie_SetBehaviour(h, &D_003B1C20);
+        return;
+    }
+    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+        func_002DDED0(h->c.motion, 0x202, -1);
+    }
+    if (!(u8)func_00139DE0(h)) {
+        func_00141C00(h, 8);
+    }
+}
