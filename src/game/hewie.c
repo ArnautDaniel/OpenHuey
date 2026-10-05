@@ -7298,3 +7298,53 @@ void func_00150930(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- going behind Fiona ---- */
+
+extern const PTMF D_003B19D8;
+
+/* head for the place behind Fiona (her in his room and not out of reach; else, or with his
+ * state block at 7, the default action): animation 0x8000, the point D_003B12A0 in her frame
+ * facing heading +0x10C (D_003B12A0[0]; +0xF36E0, planned; no way: the default action), a tenth of
+ * the way and of the turn to face away (+0xF36CC) each frame; behaviour D_003B19D8 */
+void func_00150C10(Hewie *h) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 a, back, rest, d;
+
+    if (h->c.state[0] == 7) {
+        h->c.state[0] = 0;
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (!in_his_room(h, gCharPlayer) || gCharPlayer->unkE0 == 1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    a = HW(h, 0x10C, f32);
+    back = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+    func_002DE030(h->c.motion, 0x8000, 8, -1, 10.0f);
+    v[1] = 0.0f;
+    v[3] = 0.0f;
+    v[0] = D_003B12A0[0][0];
+    v[2] = D_003B12A0[0][1];
+    func_002E3130(m, gCharPlayer->a.pos, a);
+    func_002E2DD0(at, m, v);
+    if (func_0013EE40(h, h->c.unk104[0], at, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
+    HW(h, 0xF36C4, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * rest;
+    d = func_002E2D00(back - h->c.a.angle[1]);
+    HW(h, 0xF36CC, f32) = back;
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    HW(h, 0xF36D0, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * d;
+    HW(h, 0xF3558, u8) = 1;
+    Hewie_SetBehaviour(h, &D_003B19D8);
+}
