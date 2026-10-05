@@ -9406,3 +9406,76 @@ void func_0015D490(Hewie *h) {
         }
     }
 }
+
+/* ---- getting up to bring it ---- */
+
+extern const PTMF D_003B1738, D_003B1748;
+
+/* from lying low (pose 3), Fiona in his room (else the default action): slide with the root
+ * motion and plan the way to her command's place (no way: the default action). Within 12: there
+ * (action +0xF3570, or with none behaviour D_003B1738 for 60 frames); else pick the gait (walk
+ * under 20 or when moving 1, trot under 30, else run) and come (D_003B1748) */
+void func_0015DB60(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00140CD0(h, 3) != 0) {
+        return;
+    }
+    func_00141C00(h, 3);
+    slide_root(h);
+    if (func_0013EE40(h, func_00145610(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    if (d < 12.0f) {
+        h->c.unk124 = h->c.unk128;
+        if (HW(h, 0xF3570, s32) == 0) {
+            HW(h, 0xF36B8, s32) = 60;
+            Hewie_SetBehaviour(h, &D_003B1738);
+        } else {
+            hewie_want(h, HW(h, 0xF3570, s32), 0);
+        }
+        return;
+    }
+    HW(h, 0xF36B4, s32) = h->c.a.unkC4 == 1 || d < 20.0f ? 0 : d < 30.0f ? 1 : 2;
+    Hewie_SetBehaviour(h, &D_003B1748);
+}
+
+/* ---- barking for Fiona ---- */
+
+/* turn to Fiona (in his room; else the default action) and, facing her within 60 degrees and
+ * standing, bark (func_001431F0) +0xF36B4 times, then the default action; within 10 of her:
+ * action 0x55 (0xB) */
+void func_0015DF40(Hewie *h) {
+    f32 a, step, left;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
+        hewie_want(h, 0x55, 0xB);
+        return;
+    }
+    a = func_001244D0(&h->c.a, gCharPlayer->a.pos);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+        func_00141C00(h, 7);
+        return;
+    }
+    if (func_00140CD0(h, 0) == 0) {
+        func_001431F0(h);
+        HW(h, 0xF36B4, s32) -= 1;
+        if (HW(h, 0xF36B4, s32) == 0) {
+            hewie_want(h, 0, 0);
+        }
+    }
+}
