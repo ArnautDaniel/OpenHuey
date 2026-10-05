@@ -28,4 +28,17 @@ typedef double f64;
 #define NULL ((void *)0)
 #endif
 
+/* the EE's sqrt.s: the root of |x|, always the instruction (GCC may otherwise call sqrtf in a
+ * block it thinks cold) */
+static inline float ee_sqrtf(float x) {
+#ifdef HG_NATIVE
+    return __builtin_sqrtf(__builtin_fabsf(x));
+#else
+    float r;
+
+    __asm__("sqrt.s %0, %1" : "=f"(r) : "f"(x));
+    return r;
+#endif
+}
+
 #endif /* COMMON_H */

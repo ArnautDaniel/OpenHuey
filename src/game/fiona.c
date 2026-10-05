@@ -6991,6 +6991,115 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
     func_00122C20(&f->c.a, id, a2, a3, a4, NULL);
 }
 
+/* a blow (request 4, `arg`) to the creatures in slots 7..9 within reach of `pos` in her room
+ * and not in `skip` (by slot): with reach < 0, those touching her (func_001241F0); else those
+ * whose height span (+-reach) holds pos.y and whose radius + reach holds it. Each one not
+ * already in request 7 takes it; the slots hit */
+u32 func_001813D0(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
+    Character **list = (Character **)D_0044F258;
+    u32 mask = 0;
+    s32 i;
+
+    for (i = 0; i < 10; i++, list++) {
+        Character *c = *list;
+        f32 d[4] __attribute__((aligned(16)));
+        u8 hit;
+
+        if (c == NULL || c->a.active != 1 || c->a.unk2D != 0 || f->c.a.room != c->a.room ||
+            (skip & (1 << c->a.slot))) {
+            continue;
+        }
+        switch (i) {
+        case 7:
+        case 8:
+        case 9:
+            hit = 0;
+            if (reach < 0.0f) {
+                if ((func_001241F0(&f->c.a, &c->a, 0.0f, 0.0f) & 0xFF) == 1) {
+                    hit = 1;
+                }
+            } else {
+                f32 y = c->a.pos[1];
+                f32 top = reach + (y + AT(c, 0xCC, f32));
+
+                if (!(pos[1] <= y - reach) && pos[1] < top) {
+                    sceVu0SubVector(d, c->a.pos, pos);
+                    if (ee_sqrtf(d[2] * d[2] + d[0] * d[0]) < reach + AT(c, 0xC8, f32)) {
+                        hit = 1;
+                    }
+                }
+            }
+            if (hit == 1) {
+                /* (the original copies a request local whose last fields are never set) */
+                if (c->state[0] != 7) {
+                    c->state[0] = 4;
+                    c->state[1] = 1;
+                    c->state[2] = 0;
+                    c->state[3] = arg;
+                    c->state[4] = 0;
+                    AT(c, 0x14FC, f32) = 0.0f;
+                    c->state[6] = 0;
+                    AT(c, 0x1504, u8) = 0;
+                    AT(c, 0x1505, u8) = 0;
+                    AT(c, 0x1506, u16) = 0;
+                }
+                mask |= 1 << c->a.slot;
+            }
+            break;
+        }
+    }
+    return mask;
+}
+
+extern s8 D_0047A908[6];   /* chances (%) by the pursuer's health ratio */
+
+/* when she is being chased (FI 0x1AD5D6), a roll against the chance for how worn the pursuer
+ * is (+0x14C8 / +0x14CC: over 0.8, 0.6, 0.4, 0.2, 0.1, under) */
+s32 func_00181650(Fiona *f) {
+    s32 k;
+    f32 r;
+
+    if (FI(f, 0x1AD5D6, u8) != 1) {
+        return 0;
+    }
+    r = (f32)AT(gCharPursuer, 0x14C8, s32) / (f32)AT(gCharPursuer, 0x14CC, s32);
+    if (!(r <= 0x1.99999ap-1f /* 0.8 */)) {
+        k = 0;
+    } else if (!(r <= 0x1.333334p-1f /* 0.6 */)) {
+        k = 1;
+    } else if (!(r <= 0x1.99999ap-2f /* 0.4 */)) {
+        k = 2;
+    } else if (!(r <= 0x1.99999ap-3f /* 0.2 */)) {
+        k = 3;
+    } else if (!(r <= 0x1.99999ap-4f /* 0.1 */)) {
+        k = 4;
+    } else {
+        k = 5;
+    }
+    if ((s8)(s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < D_0047A908[k]) {
+        return 1;
+    }
+    return 0;
+}
+
+extern void func_00138E60(void *h, s32 amount);
+extern void func_00138DE0(void *h, s32 n);
+extern s32 D_003B2520[][2];   /* Hewie's reactions: { cost, 1 in n chance (when within 30) } */
+
+/* Hewie, when he's with her (FI 0x1AD5D5), reacts to what she did (n) */
+void func_001817C0(Fiona *f, s32 n) {
+    Character *h;
+
+    if (FI(f, 0x1AD5D5, u8) != 1) {
+        return;
+    }
+    h = (Character *)gCharPartner;
+    func_00138E60(h, D_003B2520[n][0]);
+    if (D_003B2520[n][1] > 0 && func_00124490(&f->c.a, h->a.pos) < 30.0f) {
+        func_00138DE0(h, D_003B2520[n][1]);
+    }
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
