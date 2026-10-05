@@ -8577,6 +8577,116 @@ void func_001908E0(Fiona *f) {
     func_00125A10(&f->c);
 }
 
+extern const PTMF D_003B2988;   /* the kick */
+
+/* D_003B2988: the kick (0xE01). A hit taken back (gProgress +0x1020 + 16 x her slot: 4 / the
+ * creatures hit last frame FI 0x1AD6C8 rumble; 2 the kick count +0xFB6 +3, to 10000) - her cry
+ * 0x90, recoil; the hits so far gathered (FI 0x1AD6C0 who, FI 0x1AD6CC creatures). While no
+ * recoil she steps forward until the animation is done. In its hit window (motion flags bit 2
+ * clear): a door ahead slammed, else a blow (2, damage 5 x gProgress +0xA04, the pursuer worn
+ * down func_00181650 -0x8000) to Hewie (2, once) and the pursuer (4, once) when touching, and to
+ * the creatures (FI 0x1AD6C8). At its event 0x20 Hewie's reaction 11 (if he wasn't kicked),
+ * panic +10, idle */
+void func_001943D0(Fiona *f) {
+    static const union { u32 u; f32 f; } kStep = {0x3F89B08A};
+    Progress *p = gProgress;
+    u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
+    f32 v[4] __attribute__((aligned(16)));
+
+    if (hit != 0 || FI(f, 0x1AD6C8, s32) != 0) {
+        if ((hit & 4) || FI(f, 0x1AD6C8, s32) != 0) {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xC0, 0xC);
+        }
+        if (hit & 2) {
+            AT(p, 0xFB6, s16) = AT(p, 0xFB6, s16) + 3;
+            if (AT(p, 0xFB6, s16) < 0) {
+                AT(p, 0xFB6, s16) = 0;
+            } else if (!(AT(p, 0xFB6, s16) < 0x2711)) {
+                AT(p, 0xFB6, s16) = 0x2710;
+            }
+        }
+        func_00122C20(&f->c.a, 0x90, 5, 0, 0, NULL);
+        f->c.unk14D0 = 5;
+        func_001F6E30(f->c.motion);
+        FI(f, 0x1AD6C0, s32) |= hit;
+        FI(f, 0x1AD6CC, s32) |= FI(f, 0x1AD6C8, s32);
+        FI(f, 0x1AD6C8, s32) = 0;
+    }
+    if (f->c.unk14D0 == 0) {
+        if (!door_anim_done(f)) {
+            v[0] = 0.0f;
+            v[1] = 0.0f;
+            v[2] = kStep.f;
+            v[3] = 0.0f;   /* (unset in the original) */
+            sceVu0ApplyMatrix(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+            func_001247E0(&f->c.a, v);
+        } else {
+            func_00125A10(&f->c);
+        }
+    }
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        if (FI(f, 0x1AD6C4, s32) == 0) {
+            hewie_react(f, 11);
+        }
+        func_00180E90(f, 10.0f);
+        FI(f, 0x1AD5C4, s32) = 0;
+        door_give_up(f, p);
+        return;
+    }
+    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
+        return;
+    }
+    {
+        f32 to[4] __attribute__((aligned(16)));
+        u8 who = 0;
+
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = AT(f, 0xC8, f32);
+        v[3] = 0.0f;   /* (unset in the original) */
+        func_002E2DA0(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+        sceVu0AddVector(to, f->c.a.pos, v);
+        if (func_00181880(f, to, 1) & 0xFF) {
+            return;
+        }
+        if (FI(f, 0x1AD5D5, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 2) &&
+            (func_001241F0(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
+            who |= 2;
+            FI(f, 0x1AD6C4, s32) = 1;
+        }
+        if (FI(f, 0x1AD5D7, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 4) &&
+            (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+            who |= 4;
+        }
+        if (who != 0) {
+            u16 dmg = (u16)(u32)(5.0f * AT(p, 0xA04, f32));
+
+            if ((func_00181650(f) & 0xFF) == 1) {
+                func_00178070(p, *(u8 *)&f->c.a.slot, who, 2, dmg, -0x8000, 0.0f);
+            } else {
+                func_00178070(p, *(u8 *)&f->c.a.slot, who, 2, dmg, 0, 0.0f);
+            }
+        }
+        FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), 5, NULL, -1.0f);
+    }
+}
+
+/* D_003B2628 / D_003B2638: once the animation is done the kick (her cry 0x3D, 0xE01,
+ * D_003B2988) */
+void func_001949D0(Fiona *f) {
+    func_00125A10(&f->c);
+    if (!door_anim_done(f)) {
+        return;
+    }
+    func_00122C20(&f->c.a, 0x3D, 5, 0, 0, NULL);
+    FI(f, 0x1AD6C0, s32) = 0;
+    FI(f, 0x1AD6C4, s32) = 0;
+    FI(f, 0x1AD6C8, s32) = 0;
+    FI(f, 0x1AD6CC, s32) = 0;
+    func_002DDD20(f->c.motion, 0xE01, -1);
+    Actor_SetState(&f->c.a, &D_003B2988);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
