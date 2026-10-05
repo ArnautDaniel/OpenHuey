@@ -3805,3 +3805,35 @@ src/game/music.c func_002C4600 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E560=0
 src/game/music.c func_002C0720 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E560=0x0B300000..0x0B300000 --pre=@0x44E4D8=0x0B400000..0x0B400000 --stack-arg-bytes=3 --pre=a0+0x134=0..0x437F0000 --pre=a0+0x244=0..0x437F0000 --pre=a0+0x354=0..0x437F0000 --pre=a0+0x464=0..0x437F0000 --pre=a0+0x12=0..0xFF --pre=a0+0x4=0..0x3F800000 --pre=a0+0x8=0..0x3F800000 --pre=a0+0xC=0..0x3F800000 --pre=a0+0x138=0..0x437F0000 --pre=a0+0x248=0..0x437F0000 --pre=a0+0x358=0..0x437F0000 --pre=a0+0x468=0..0x437F0000 --pre=a1=0..1 --pre=a0+0x18=0x0B700000..0x0B700000 --pre=@0x44F828=0..0x0B500000 --pre=@0x0B5016C8:u8=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF --stub-ret-prob=1 --runs=60
 src/game/music.c func_0039A8E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..4 --stub-ret=0x0B100000 --stub-ret=0 --runs=40
 src/game/hewie_act.c func_00130AF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x88 --pre=a2=0..0x23 --pre=@0x44E550=0x0B300000..0x0B300000 --pre=@0x44E4D8=0x0B400000..0x0B400000 --pre=@0x44F818=0x0B500000..0x0B500000 --pre=@0x44F828=0x0B600000..0x0B600000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800008=0x1000..0x1000 --pre=@0x0B800004=0x0BA00000..0x0BA00000 --pre=a0+0x34=0..0xFFF --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=a0+0xF35CC=0..7 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF --stub-fret=0.5 --runs=600
+src/game/hewie.c func_0013D1F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF35BC=0..0x2800 --pre=a1=-12000..12000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=400
+src/game/model.c func_001F17F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --runs=60
+src/game/model.c func_001F1430 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --pre=a4=0x0B100300..0x0B100300 --runs=60
+src/game/model.c func_001F1330 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --runs=60
+src/game/model.c func_001F14A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --pre=a4=0x0B100300..0x0B100300 --runs=150
+src/game/model.c func_001F0600 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --pre=a4=0x0B100300..0x0B100300 --pre=a5=0x0B100400..0x0B100400 --runs=150
+src/game/model.c func_001F08C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4C=0x0B100000..0x0B100000 --pre=a0+0x50=0x0B100100..0x0B100100 --pre=a0+0x78=0x0B100200..0x0B100200 --runs=60
+src/game/model.c func_001F04B0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=40
+src/game/model.c func_001F0450 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4C=0x0B100000..0x0B100000 --pre=a0+0x50=0x0B100100..0x0B100100 --pre=a0+0x78=0x0B100200..0x0B100200 --runs=100
+src/game/model.c func_001F0250 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4C=0x0B100000..0x0B100000 --pre=a0+0x50=0x0B100100..0x0B100100 --pre=a0+0x78=0x0B100200..0x0B100200 --pre=a0+0x54=0x0B100300..0x0B100300 --runs=150
+src/game/model.c func_001F7E40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..0 --runs=20
+src/game/hewie_model.c func_001F7D40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20
+src/game/hewie_model.c func_0020BDE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20
+src/game/hewie_model.c func_0020BF80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20
+src/game/hewie_model.c func_001F9570 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/hewie_model.c func_001F9560 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/hewie_model.c func_001F7EA0 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/hewie_model.c func_001F7EC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=10
+src/game/hewie_model.c func_001F7F10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=10
+src/game/hewie_model.c func_001F8110 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=30
+src/game/hewie_model.c func_001F8B50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..3 --pre=a2=-40..40 --pre=a0+0x540=0..1 --pre=a0+0x5BC=0x0B100000..0x0B100000 --pre=a0+0x5C4=0..0 --pre=a0+0x65C=0x0B100000..0x0B100000 --pre=a0+0x664=0x0B100000..0x0B100000 --pre=@0x0B100000=0..1 --pre=a0+0x584=0x0B200000..0x0B200000 --pre=a0+0x624=0x0B200000..0x0B200000 --pre=@0x0B200004=0x0B200100..0x0B200100 --pre=@0x0B20010C=1..60 --pre=a0+0x564=0..0x42700000 --pre=a0+0x604=0..0x42700000 --stub-fret=0.0 --stub-fret=1.0 --outparam=16 --runs=200
+src/game/hewie_model.c func_001F7FA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046B240..0x0046B240 --stub-ret=0 --stub-ret=1 --runs=30
+src/game/hewie_model.c func_001F8190 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/hewie_model.c func_001F81B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046B240..0x0046B240 --runs=10
+src/game/hewie_model.c func_001F8450 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4C0=0x0B200000..0x0B200000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B100100..0x0B100100 --pre=a3=0x0B100200..0x0B100200 --pre=a4=0x0B100300..0x0B100300 --pre=a0+0x9B8=0x0B500000..0x0B500000 --pre=a0+0xA48=0x0B500000..0x0B500000 --pre=a0+0xAD8=0x0B500000..0x0B500000 --pre=a0+0xB38=0x0B500000..0x0B500000 --pre=@0x0B50000C=0x001F1ED0..0x001F1ED0 --runs=40
+src/game/hewie_model.c func_001F81D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x950=0..1 --pre=a0+0x940=0..4 --pre=a0+0x944=0..4 --pre=a0+0x948=0..4 --pre=a0+0x94C=0..4 --pre=a0+0x930=5..5 --pre=a0+0x934=5..5 --pre=a0+0x938=5..5 --pre=a0+0x93C=5..5 --pre=a0+0x8E0=bytes:???? --pre=a0+0xB80=bytes:???????? --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=200
+src/game/hewie_model.c func_001F8650 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --stub-fret=0.0 --runs=150
+src/game/hewie_model.c func_001F8910 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --stub-fret=0.0 --runs=150
+src/game/hewie_model.c func_001F8D40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x20 --pre=a2=0x0B100000..0x0B100000 --pre=a3=0x0B100100..0x0B100100 --pre=a0+0x6A4=0x0B300000..0x0B300000 --pre=@0x0B300018=0..0x800 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=400 --outparam-at=0x25C770:1:64
+src/game/scene_game_members.c func_001F96B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a2=0x0B100000..0x0B100000 --runs=20
+src/game/scene_game_members.c func_001F9710 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a2=0..1 --pre=a3=0x0B100000..0x0B100000 --runs=20
+src/game/scene_game_members.c func_001F9640 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20

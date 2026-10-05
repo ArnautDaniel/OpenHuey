@@ -902,7 +902,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         } else {
             d = -func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
         }
-        steps = (s32)(d / 0.10471976f);
+        steps = (s32)(d / 0x1.aceea00000000p-4f /* 0.10471976 */);
         HW(h, 0xF36B4, s32) = steps;
         HW(h, 0xF36B8, s32) = steps < 6 ? 1 : 0;
         MODE(h) = 0xC;

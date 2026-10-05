@@ -548,6 +548,49 @@ void func_001F9D90(u8 *o) {
     AT(o, 0x9D4, s32) = 0;
 }
 
+/* +0x40 the extra light (+0x950) on or off: on, its vector (+0x960) and strength (+0x970);
+   off also turns off the two below */
+void func_001F96B0(u8 *o, u8 on, const f32 *v, f32 k) {
+    AT(o, 0x950, u8) = on;
+    if (on == 0) {
+        AT(o, 0x980, u8) = 0;
+        AT(o, 0x9B0, u8) = 0;
+    } else {
+        sceVu0CopyVector((f32 *)(o + 0x960), (f32 *)v);
+        AT(o, 0x970, f32) = k;
+    }
+}
+
+/* +0x44 extra light `i` (of 2, 0x30 apart from +0x980) on or off: on, its position (+0x990)
+   and two parameters (+0x9A0 / +0x9A4) */
+void func_001F9710(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
+    u8 *l = o + i * 0x30;
+
+    AT(l, 0x980, u8) = on;
+    if (on != 0) {
+        sceVu0CopyVector((f32 *)(l + 0x990), (f32 *)pos);
+        AT(l, 0x9A0, f32) = a;
+        AT(l, 0x9A4, f32) = b;
+    }
+}
+
+extern void *D_0046B300[], *D_0046B350[];
+extern VObject *D_0044E4C8;   /* the scene's lights */
+extern void func_00100490(void *p);   /* operator delete */
+
+/* +0x8: destructor (the global goes) */
+void *func_001F9640(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046B300;
+        AT(o, 0x0, void **) = D_0046B350;
+        D_0044E4C8 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 /* +0x20 set light `i` (3 vectors) */
 void func_001FA5E0(u8 *o, const f32 *light, s32 i) {
     f32 *d = (f32 *)(o + 0x20 + i * 0x30);
@@ -722,7 +765,6 @@ void func_002E2820(u8 *o) {
 }
 
 extern VObject *D_0044E4D0;
-extern VObject *D_0044E4C8;   /* the scene's lights */
 extern VObject *D_0044E4C0;
 extern VObject *D_0044E4B8;   /* the camera */
 extern u8 D_0047B350;

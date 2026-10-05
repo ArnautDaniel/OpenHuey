@@ -462,6 +462,33 @@ void func_0013D190(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
+/* Add to his trust in Fiona (0..10000) and recompute its level 0..7. From level 2 progress flag
+   0x11 is cleared, from level 3 flag 0x1D. */
+void func_0013D1F0(Hewie *h, s32 add) {
+    static const s16 bounds[] = { 100, 280, 450, 600, 750, 900, 1000 };
+    Progress *p;
+    s16 t, level;
+
+    HW(h, 0xF35BC, s16) += add;
+    if (HW(h, 0xF35BC, s16) < 0) {
+        HW(h, 0xF35BC, s16) = 0;
+    } else if (HW(h, 0xF35BC, s16) > 10000) {
+        HW(h, 0xF35BC, s16) = 10000;
+    }
+    t = HW(h, 0xF35BC, s16);
+    for (level = 0; level < 7 && t >= bounds[level]; level++) {
+    }
+    HW(h, 0xF35CC, s16) = level;
+
+    p = gProgress;
+    if ((Progress_TestFlag(p, 0x11) & 0xFF) == 1 && HW(h, 0xF35CC, s16) >= 2) {
+        Progress_ClearFlag(p, 0x11);
+    }
+    if ((Progress_TestFlag(p, 0x1D) & 0xFF) == 1 && HW(h, 0xF35CC, s16) >= 3) {
+        Progress_ClearFlag(p, 0x1D);
+    }
+}
+
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
 extern f32 *func_0017CE80(void *skeleton, s32 bone);        /* bone matrix */
@@ -1010,7 +1037,6 @@ void func_00167760(Hewie *h) {
 }
 
 extern void func_00125CC0(Character *c);
-extern void func_0013D1F0(Hewie *h, s32 arg);
 extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
 extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
 extern const PTMF D_003B02B0;    /* idle state */

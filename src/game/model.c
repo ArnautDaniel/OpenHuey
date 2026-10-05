@@ -2714,6 +2714,204 @@ void func_001F0AF0(u8 *ik) {
 }
 
 
+/* ---- the three-bone IK solver (vtable D_0046B0C0, derived from the two-bone one; 0x90 bytes):
+ * a dog's leg - root +0x0, knee +0x10, hock +0x60, foot +0x20 (the target), the bend
+ * direction +0x30; lengths +0x40 / +0x44 / +0x70, the two bends +0x48 / +0x74, how far round
+ * from the knee's to the hock's direction the lower leg points +0x7C, the leg's full reach
+ * +0x80; bones +0x4C / +0x50 / +0x78 / +0x54 ---- */
+
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* out = a + b * s */
+static void ik_madd(f32 *out, const f32 *a, const f32 *b, f32 s) {
+    out[0] = 0.0f + a[0] + b[0] * s;
+    out[1] = 0.0f + a[1] + b[1] * s;
+    out[2] = 0.0f + a[2] + b[2] * s;
+}
+
+/* out = a + b * s (a method of the solver) */
+void func_001F17F0(u8 *ik, f32 *out, const f32 *a, const f32 *b, f32 s) {
+    ik_madd(out, a, b, s);
+}
+
+/* v's component along unit `axis` (*along) and its distance from it (*off) */
+void func_001F1430(u8 *ik, const f32 *axis, const f32 *v, f32 *off, f32 *along) {
+    *along = sceVu0InnerProduct((f32 *)axis, (f32 *)v);
+    *off = __builtin_sqrtf(__builtin_fabsf(0.0f + sceVu0InnerProduct((f32 *)v, (f32 *)v) - *along * *along));
+}
+
+/* how far round from b to c (by the angles they make with a) a lies: ang(a,b) / (ang(a,b) + ang(a,c)) */
+f32 func_001F1330(u8 *ik, f32 *a, f32 *b, f32 *c) {
+    f32 la = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(a, a)));
+    f32 lb = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(b, b)));
+    f32 lc = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(c, c)));
+    f32 ab = func_0031C3C0(sceVu0InnerProduct(a, b) / (la * lb));
+    f32 ac = func_0031C3C0(sceVu0InnerProduct(a, c) / (la * lc));
+
+    return ab / (ab + ac);
+}
+
+/* the unit vector `t` of the way along the arc from unit `p` to unit `q`, `w` apart */
+static void slerp(f32 *out, const f32 *p, const f32 *q, f32 w, f32 t) {
+    f32 s = func_0031C248(w);
+    f32 inv, sp, sq;
+
+    if (s == 0.0f) {
+        out[0] = p[0];
+        out[1] = p[1];
+        out[2] = p[2];
+        return;
+    }
+    inv = 1.0f / s;
+    sp = func_0031C248(w * (1.0f - t));
+    sq = func_0031C248(w * t);
+    out[0] = inv * (q[0] * sq + p[0] * sp);
+    out[1] = inv * (q[1] * sq + p[1] * sp);
+    out[2] = inv * (q[2] * sq + p[2] * sp);
+}
+
+/* the unit vector `t` of the way round from `a` to `b`, through `mid` when a and b lie on its
+   either side (the arc then goes round by way of it) */
+void func_001F14A0(u8 *ik, f32 *out, f32 *a, f32 *mid, f32 *b, f32 t) {
+    f32 ca[4] __attribute__((aligned(16)));
+    f32 cb[4] __attribute__((aligned(16)));
+    f32 w1, w2, sum;
+
+    sceVu0OuterProduct(ca, mid, a);
+    sceVu0OuterProduct(cb, mid, b);
+    if (!(sceVu0InnerProduct(ca, cb) < 0.0f)) {
+        slerp(out, a, b, func_0031C3C0(sceVu0InnerProduct(a, b)), t);
+        return;
+    }
+    w1 = func_0031C3C0(sceVu0InnerProduct(a, mid));
+    w2 = func_0031C3C0(sceVu0InnerProduct(mid, b));
+    sum = w1 + w2;
+    if (t < w1 / sum) {
+        slerp(out, a, mid, w1, t * sum / w1);
+    } else {
+        slerp(out, mid, b, w2, (t * sum - w1) / w2);
+    }
+}
+
+/* place the knee `knee` and the hock `hock` of a leg from `root` to `foot`: the lower leg's
+ * direction is `t` of the way round from where the knee (as a two-bone chain root / knee+hock)
+ * to where the hock (as root+knee / hock) would put it, by way of the line to the root; a foot
+ * out of reach (+0x80) is pulled in first (returns 1) */
+s32 func_001F0600(u8 *ik, f32 *root, f32 *knee, f32 *hock, f32 *foot, f32 *pole, f32 len1, f32 len2,
+                  f32 len3, f32 bend1, f32 bend2, f32 t) {
+    f32 up[4] __attribute__((aligned(16)));
+    f32 dk[4] __attribute__((aligned(16)));
+    f32 dh[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 dist;
+    s32 r1, r2, out = 0;
+
+    sceVu0SubVector(dk, foot, root);
+    up[0] = -dk[0];
+    up[1] = -dk[1];
+    up[2] = -dk[2];
+    up[3] = 0.0f;
+    r1 = func_001F10C0(ik, root, knee, foot, pole, len1, len2 + len3, bend1);
+    sceVu0SubVector(dk, knee, foot);
+    sceVu0Normalize(dk, dk);
+    r2 = func_001F10C0(ik, root, hock, foot, pole, len1 + len2, len3, bend2);
+    sceVu0SubVector(dh, hock, foot);
+    sceVu0Normalize(dh, dh);
+    dist = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(up, up)));
+    sceVu0Normalize(up, up);
+    if (r1 == 0 && r2 == 0) {
+        func_001F14A0(ik, dir, dk, up, dh, t);
+    } else {
+        sceVu0CopyVector(dir, dk);
+    }
+    if (!(dist <= AT(ik, 0x80, f32))) {
+        out = 1;
+        ik_madd(foot, root, up, -AT(ik, 0x80, f32));
+    }
+    ik_madd(hock, foot, dir, len3);
+    func_001F10C0(ik, root, knee, hock, pole, len1, len2, bend1);
+    return out;
+}
+
+/* turn the bones to the solved joints: root -> knee, knee -> hock, hock -> foot */
+void func_001F08C0(u8 *ik) {
+    ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
+    ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x30));
+    ik_aim((f32 (*)[4])AT(ik, 0x78, u8 *), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
+}
+
+/* set up: from the bones root / knee / hock / foot of `skel`, the lengths, the bends, the reach */
+void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f32 len1, f32 len2, f32 len3,
+                   f32 bend1, f32 bend2, f32 reach) {
+    f32 *r = func_0017CE80(skel, root);
+    f32 *k = func_0017CE80(skel, knee);
+    f32 *h = func_0017CE80(skel, hock);
+    f32 *f = func_0017CE80(skel, foot);
+
+    AT(ik, 0x4C, f32 *) = r;
+    AT(ik, 0x50, f32 *) = k;
+    AT(ik, 0x78, f32 *) = h;
+    AT(ik, 0x54, f32 *) = f;
+    sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x60), AT(ik, 0x78, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x20), AT(ik, 0x54, f32 *) + 12);
+    AT(ik, 0x40, f32) = len1;
+    AT(ik, 0x44, f32) = len2;
+    AT(ik, 0x70, f32) = len3;
+    AT(ik, 0x48, f32) = bend1;
+    AT(ik, 0x74, f32) = bend2;
+    AT(ik, 0x7C, f32) = 0.5f;
+    AT(ik, 0x80, f32) = reach;
+}
+
+/* +0x8 solve with the current lower-leg blend */
+void func_001F0450(u8 *ik) {
+    func_001F0600(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30),
+                  AT(ik, 0x40, f32), AT(ik, 0x44, f32), AT(ik, 0x70, f32), AT(ik, 0x48, f32), AT(ik, 0x74, f32),
+                  AT(ik, 0x7C, f32));
+    func_001F08C0(ik);
+}
+
+/* +0xC solve keeping the leg's pose: the bend direction is the root's Z; the blend +0x7C is
+ * taken from the current pose (where the hock lies between the knee's and the hock's
+ * two-bone solutions, seen from the foot); the target is solved in the plane through the
+ * root square to the bend direction, with the hock-to-foot distance from that axis as the
+ * lower leg, and moved back out along it; then the bones follow and the foot bone goes onto
+ * the target */
+void func_001F0250(u8 *ik) {
+    f32 kneeAt[4] __attribute__((aligned(16)));
+    f32 hockAt[4] __attribute__((aligned(16)));
+    f32 flat[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 *pole = (f32 *)(ik + 0x30);
+    f32 *footAt = AT(ik, 0x54, f32 *) + 12;
+    f32 off, along;
+
+    sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
+    sceVu0CopyVector((f32 *)(ik + 0x60), AT(ik, 0x78, f32 *) + 12);
+    sceVu0CopyVector(pole, AT(ik, 0x4C, f32 *) + 8);
+    sceVu0SubVector(v, footAt, AT(ik, 0x78, f32 *) + 12);
+    func_001F1430(ik, pole, v, &off, &along);
+    func_001F17F0(ik, flat, (f32 *)(ik + 0x20), pole, -along);
+    func_001F10C0(ik, (f32 *)ik, kneeAt, footAt, pole, AT(ik, 0x40, f32), AT(ik, 0x44, f32) + AT(ik, 0x70, f32),
+                  AT(ik, 0x48, f32));
+    func_001F10C0(ik, (f32 *)ik, hockAt, footAt, pole, AT(ik, 0x40, f32) + AT(ik, 0x44, f32), AT(ik, 0x70, f32),
+                  AT(ik, 0x74, f32));
+    sceVu0SubVector(v, AT(ik, 0x78, f32 *) + 12, footAt);
+    sceVu0SubVector(kneeAt, kneeAt, footAt);
+    sceVu0SubVector(hockAt, hockAt, footAt);
+    AT(ik, 0x7C, f32) = func_001F1330(ik, v, kneeAt, hockAt);
+    func_001F0600(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), flat, pole, AT(ik, 0x40, f32),
+                  AT(ik, 0x44, f32), off, AT(ik, 0x48, f32), AT(ik, 0x74, f32), AT(ik, 0x7C, f32));
+    func_001F17F0(ik, (f32 *)(ik + 0x20), flat, pole, along);
+    func_001F08C0(ik);
+    sceVu0CopyVector(footAt, (f32 *)(ik + 0x20));
+}
+
+
 extern void func_002EE8A0(u8 *springs);   /* begin a step */
 extern void func_002EE900(u8 *springs);   /* one step */
 extern void func_002EE840(u8 *springs);   /* finish */
@@ -3630,6 +3828,18 @@ void *func_0016F990(void *e, s32 flags) {
 
 void *func_0016FC80(void *e, s32 flags) {
     if (e != NULL) {
+        AT(e, 0x58, void **) = D_0046B0D0;
+        if ((s16)flags > 0) {
+            func_00100490(e);
+        }
+    }
+    return e;
+}
+
+/* the three-bone IK solver's destructor */
+void *func_001F7E40(void *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x58, void **) = D_0046B0C0;
         AT(e, 0x58, void **) = D_0046B0D0;
         if ((s16)flags > 0) {
             func_00100490(e);

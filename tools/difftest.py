@@ -151,7 +151,9 @@ def b2f(b: int) -> float:
 STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
 STUB_RET_PROB = [0.5]         # --stub-ret-prob
 OUTPARAM_BYTES = [OUTPARAM]   # --outparam
+OUTPARAM_AT: dict[tuple[int, int], int] = {}   # --outparam-at: (callee, argument index) -> bytes
 STACK_ARG_BYTES = [16]        # --stack-arg-bytes: how much of a local passed by reference compares
+STRICT_VU0 = [False]          # --strict-vu0: emulated libvu0 calls also compare as calls
 STUB_FRETURNS: list[float] = []  # --stub-fret: float values calls return (f0)
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
@@ -476,6 +478,11 @@ class CPU:
         if target in VU0_ADDRS:
             f0 = self.f[0]
             if vu0_hle(self, VU0_ADDRS[target]):
+                if not STRICT_VU0[0]:
+                    # pure vector math, run here: what it computes reaches memory, the return
+                    # value or a later call's arguments, which compare; the calls themselves
+                    # don't need to line up (C may copy less, or inline the arithmetic)
+                    self.events.pop()
                 keep_f0 = VU0_ADDRS[target] == "sceVu0InnerProduct"
                 res_f0 = self.f[0]
                 self.call_n += 1
@@ -494,7 +501,7 @@ class CPU:
             p = self.g(r) & M32
             if STACK_TOP - FRAME <= p < STACK_TOP and p not in seen:
                 seen.add(p)   # (a stale copy of the same pointer in a later register isn't a second output)
-                n = OUTPARAM_BYTES[0]
+                n = OUTPARAM_AT.get((target, k), OUTPARAM_BYTES[0])
                 v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * n)
                 self.m.write(p, n, v)
                 for i in range(n):  # not the function's own store (see arg_value)
@@ -1801,6 +1808,11 @@ def option_parser() -> argparse.ArgumentParser:
                     help="a float value stubbed calls return half the time, repeatable")
     ap.add_argument("--stack-arg-bytes", type=int, default=16,
                     help="bytes of a local passed by reference (16-byte aligned) that compare (4: a word)")
+    ap.add_argument("--outparam-at", action="append", default=[],
+                    help="CALLEE:ARG:BYTES - that stub writes BYTES through stack argument ARG (0 = a0), "
+                         "e.g. 0x25C770:1:64 for a matrix out-parameter; repeatable")
+    ap.add_argument("--strict-vu0", action="store_true",
+                    help="emulated libvu0 calls must line up as calls too (default: only their results compare)")
     ap.add_argument("--outparam", type=int, default=OUTPARAM,
                     help="bytes stubs write through stack pointer arguments (16: a whole vector)")
     ap.add_argument("--irq", action="append", default=[], type=lambda x: int(x, 0),
@@ -1889,7 +1901,12 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     STUB_RET_PROB[0] = opts.stub_ret_prob
     IRQ_FLAGS[:] = opts.irq
     OUTPARAM_BYTES[0] = opts.outparam
+    OUTPARAM_AT.clear()
+    for spec in opts.outparam_at:
+        addr, arg, n = (int(x, 0) for x in spec.split(":"))
+        OUTPARAM_AT[(addr, arg)] = n
     STACK_ARG_BYTES[0] = max(1, min(16, opts.stack_arg_bytes))
+    STRICT_VU0[0] = opts.strict_vu0
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
     global _RUN_CTX
