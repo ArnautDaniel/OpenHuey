@@ -6611,3 +6611,73 @@ void func_0014C210(Hewie *h) {
     }
     func_00141C00(h, 0);
 }
+
+/* ---- running from the pursuer ---- */
+
+extern const s32 D_003B1C00[8];   /* wait after fleeing, by trust */
+
+/* flee the pursuer (in his room, while it hunts: progress flags 9 / 0xA) to the point
+ * +0xF36E0 (triangle +0xF36B4): running (pose 9) along the planned path (pose 8 when the stride
+ * fails in tense mode), straight at it once on its triangle. When the exit +0x100 he flees by
+ * is open to him and the point is nearer the door than he is: through it (func_0013AAE0) and
+ * wait (action 0x31) for his trust's time; a dead end, or no pursuer: the default action */
+void func_0014C480(Hewie *h) {
+    Progress *p;
+    VObject *rooms;
+    f32 door[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 c[4] __attribute__((aligned(16)));
+    f32 a, step;
+    s32 there;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if (!(u8)Progress_TestFlag(p, 9) && !(u8)Progress_TestFlag(p, 0xA)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    there = HW(h, 0xF36B4, s32) == (s32)func_00124480(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
+    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    func_00141C00(h, 9);
+    if (!there) {
+        if (!(u8)func_00139DE0(h) && (u8)func_00177620(p)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        a = func_001244D0(&h->c.a, &HW(h, 0xF36E0, f32));
+        step = run_turn(h);
+        turn_toward(h, a, step);
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        if (HW(h, 0xF3558, u8) == 0) {
+            slide_root(h);
+            h->c.unk124 = h->c.unk128;
+        }
+    }
+    if (!(func_00177BF0(p, (u8)h->c.unk100, (u8)h->c.a.slot) & 0xFF & 1)) {
+        return;
+    }
+    rooms = D_0044E568;
+    VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, (u8)h->c.unk100, door);
+    sceVu0SubVector(c, &HW(h, 0xF36E0, f32), door);
+    sceVu0SubVector(b, h->c.a.pos, door);
+    if (sceVu0InnerProduct(c, c) < sceVu0InnerProduct(b, b)) {
+        if ((VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, (u8)h->c.unk100) & 0xFFFF) == 0xFFFF) {
+            hewie_want(h, 0, 0);
+        } else {
+            func_0013AAE0(h, (u8)h->c.unk100);
+            HW(h, 0xF3560, s32) = D_003B1C00[HW(h, 0xF35CC, s16)];
+            hewie_want(h, 0x31, 0);
+        }
+    }
+}
