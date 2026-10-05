@@ -7207,3 +7207,56 @@ void func_0014FC70(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     HW(h, 0xF3582, u8) = 0;
 }
+
+/* ---- launching the leap at the pursuer ---- */
+
+extern s32 func_0026EE88(const char *fmt, ...);   /* printf */
+extern const char D_0044F180[];                   /* "Dog New Hide Attack -> No Route" */
+extern const PTMF D_003B1A18;
+
+/* launch the leap at the pursuer (in his room; else, or when his state block holds 7, the
+ * default action) to the spot +0x110 (triangle +0x108), heading +0x10C: frames (+0xF36B4) a
+ * third of the planned distance, at least 19; the speed, the rise (to land at the spot's height
+ * under 0.3 a frame of gravity) and the turn a frame from them; animation 0x1E01, sound 0x68,
+ * behaviour D_003B1A18. No way there: a debug message and the default action */
+void func_0014FF10(Hewie *h) {
+    f32 a, d, rest, fn;
+    s32 n;
+
+    if (h->c.state[0] == 7) {
+        h->c.state[0] = 0;
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    a = HW(h, 0x10C, f32);
+    if (func_0013EE40(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
+        func_0026EE88(D_0044F180);
+        hewie_want(h, 0, 0);
+        return;
+    }
+    rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    n = (s32)(rest / 3.0f);
+    if (n < 19) {
+        n = 19;
+    }
+    fn = (f32)n;
+    HW(h, 0xF36EC, f32) = h->c.a.pos[1];
+    HW(h, 0xF36B4, s32) = n;
+    HW(h, 0xF36C4, f32) = rest / fn;
+    HW(h, 0xF36C8, f32) = (h->c.unk110[1] - h->c.a.pos[1]) / fn + 0.5f * (0x1.3333340000000p-2f /* 0.3 */ * fn);
+    d = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF36CC, f32) = a;
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    HW(h, 0xF36D0, f32) = d / fn;
+    func_002DDED0(h->c.motion, 0x1E01, -1);
+    HW(h, 0xF3558, u8) = 1;
+    func_0013A430(h, 0x68);
+    Hewie_SetBehaviour(h, &D_003B1A18);
+}
