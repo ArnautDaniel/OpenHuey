@@ -70,6 +70,18 @@ extern void func_00261090(u8 *items, s32 id, s32 n);
 extern void func_0019A420(u8 *f, s32 who, s32 n);
 extern s32 func_00177260(Progress *p, s32 slot);
 extern void func_00177300(Progress *p, s32 slot);
+extern void *D_0044F80C;      /* the character in slot 3 */
+extern VObject *gFileLoader;
+extern VObject *D_0044E550;   /* random numbers */
+extern VObject *D_00456DE8;
+extern void func_002F0260(void *panic, u32 stage);
+extern void func_0019A0D0(u8 *f, s32 who, s32 on);
+extern void func_001817C0(u8 *c, s32 n);
+extern void func_0016D350(Progress *p, s32 n);
+extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's state */
+extern u32 func_00260CF0(void *list, s32 item);   /* how many */
+extern u8 D_003D6A60[];   /* stalker kind -> gift table row */
+extern u8 D_003D6A90[];   /* gift tables: 8 x (only if missing, item) */
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -507,6 +519,53 @@ static void cmd_sound(VObject *ev, Progress *p, const u8 *pc) {
         VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, cam);
         pc = PC(ev);
         func_002FF650(D_0044E560, be32(pc + 1), pc[5] & 0x3F, cam, (s8)pc[0x12], (s8)pc[0x13]);
+    }
+}
+
+/* (0xB6) a gift from the stalker's table (D_003D6A90 row by its kind +0x153C): after the first
+ * only 1 in 10 times (else the stalker's +0x1664 cleared); the next entry Fiona has fewer than
+ * 99 of (an "only if missing" one she has becomes item 0x75) given with message 0x8011, or none
+ * left: message 0x801A */
+static void cmd_gift(VObject *ev, Progress *p) {
+    u8 *items = (u8 *)D_0044E988 + 0x8;
+    s32 item;
+
+    if (AT(p, 0x874, u8) != 0) {
+        if (!(100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) < 10.0f)) {
+            if (D_0044F808 != NULL) {
+                AT(D_0044F808, 0x1664, s32) = 0;
+            }
+            return;
+        }
+    }
+    while (AT(p, 0x875, u8) < 8) {
+        u8 *t = D_003D6A90 + D_003D6A60[AT(D_0044F808, 0x153C, u8)] * 16;
+
+        item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, t[AT(p, 0x875, u8) * 2 + 1]);
+        if (t[AT(p, 0x875, u8) * 2] != 0 && func_00260CF0(items, item) != 0) {
+            item = 0x75;
+        }
+        if ((u8)func_00260CF0(items, item) < 0x63) {
+            break;
+        }
+        AT(p, 0x875, u8)++;
+    }
+    if (AT(p, 0x875, u8) < 8) {
+        VObject *im;
+
+        Msg_SetParamSystem((u8 *)ev + 0x708, 0, item & 0xFFFF);
+        im = D_0044E988;
+        func_00261090((u8 *)im + 0x8, item, 1);
+        VCALL(im, 0x20, void (*)(VObject *, s32, s32))(im, 0, item);
+        AT(ev, 0x703, u8) = 1;
+        AT(p, 0x875, u8)++;
+        Task_Open((Task *)((u8 *)ev + 0x708), 0x8011);
+    } else {
+        Task_Open((Task *)((u8 *)ev + 0x708), 0x801A);
+    }
+    AT(ev, 0x80C, s32) = *AT(ev, 0x6FC, s32 *);
+    if (AT(p, 0x874, u8) < 8) {
+        AT(p, 0x874, u8)++;
     }
 }
 
@@ -1209,6 +1268,94 @@ void func_002029B0(VObject *ev) {
         Progress_SetFlag(p, 0x16);
         VCALL(p, 0x78, void (*)(Progress *, s32, s32))(p, PC(ev)[1], PC(ev)[2]);
         break;
+    case 0xA2:
+        VCALL(D_0044E558, 0x88, void (*)(VObject *, s32, s32))(D_0044E558, pc[1], pc[2] != 0);
+        break;
+    case 0xA3:   /* the panic's stage */
+        func_002F0260((u8 *)p + 0x7B8, pc[1]);
+        break;
+    case 0xA5:   /* (unless flag 0x12, or Fiona is busy +0xE0) the progress' +0x1134 request 5 with be16 pc[1..2] */
+        if ((u8)Progress_TestFlag(p, 0x12) == 0 && gCharPlayer != NULL && AT(gCharPlayer, 0xE0, u8) == 0) {
+            AT(p, 0x1134, u32) = 0x80000005;
+            AT(p, 0x113C, s32) = 0;
+            AT(p, 0x1138, s32) = 0;
+            AT(p, 0x1151, u8) = 0;
+            AT(p, 0x1152, u16) = be16(PC(ev) + 1);
+        }
+        break;
+    case 0xA7:   /* (wait while the loader is busy) character pc[1]'s model +0x4C8 = its slot's buffer */
+        if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x10000000) == 2) {
+            EV_WAIT(ev) = 1;
+            break;
+        }
+        switch ((u8)func_001770D0(p, PC(ev)[1])) {
+        case 0:
+            if (gCharPlayer != NULL) {
+                AT(AT(gCharPlayer, 0xF0, u8 *), 0x4C8, u8 *) = (u8 *)p + 0x16C0;
+            }
+            break;
+        case 1:
+            if (gCharPartner != NULL) {
+                AT(AT(gCharPartner, 0xF0, u8 *), 0x4C8, u8 *) = (u8 *)p + 0x416C0;
+            }
+            break;
+        case 2:
+            if (gCharPursuer != NULL) {
+                AT(AT(gCharPursuer, 0xF0, u8 *), 0x4C8, u8 *) = (u8 *)p + 0x816C0;
+            }
+            break;
+        case 3:
+            if (D_0044F80C != NULL) {
+                AT(AT(D_0044F80C, 0xF0, u8 *), 0x4C8, u8 *) = (u8 *)p + 0xC16C0;
+            }
+            break;
+        }
+        break;
+    case 0xB2: {
+        u8 *f = gCharPlayer;
+
+        func_0019A0D0(f, func_001770D0(p, pc[1]), pc[2] != 0);
+        break;
+    }
+    case 0xB4:
+        VCALL(D_00456DE8, 0xC, void (*)(VObject *, s32))(D_00456DE8, pc[1]);
+        break;
+    case 0xB6:
+        cmd_gift(ev, p);
+        break;
+    case 0xBC:
+        func_001817C0(gCharPlayer, 8);
+        break;
+    case 0xBE: {   /* wait on the item manager's +0x20 (pc[1], this script's item pc[2]) */
+        s32 item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[2]);
+
+        EV_WAIT(ev) = VCALL(D_0044E988, 0x20, u8 (*)(VObject *, s32, s32))(D_0044E988, PC(ev)[1], item);
+        break;
+    }
+    case 0xBF: {   /* Fiona's +0x1AD5F4 = be32 pc[1..4] / 1000 (0..100) */
+        u8 *f = gCharPlayer;
+        f32 v = (f32)be32(pc + 1) / 1000.0f;
+
+        AT(f, 0x1AD5F4, f32) = v;
+        if (v < 0.0f) {
+            AT(f, 0x1AD5F4, f32) = 0.0f;
+        } else if (!(v <= 100.0f)) {
+            AT(f, 0x1AD5F4, f32) = 100.0f;
+        }
+        break;
+    }
+    case 0xC1:
+        func_0016D350(p, pc[1]);
+        break;
+    case 0xC2: {   /* door be16 pc[2..3]'s state for character pc[1]: pc[4] */
+        s32 i = (u8)func_001770D0(p, pc[1]);
+
+        if (i != 0xFF) {
+            pc = PC(ev);
+            func_001780C0(p, be16(pc + 2), i, pc[4]);
+        }
+        break;
+    }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
