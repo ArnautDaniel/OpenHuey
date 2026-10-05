@@ -6168,3 +6168,47 @@ void func_00148D00(Hewie *h) {
         break;
     }
 }
+
+/* ---- milling about a spot ---- */
+
+extern const PTMF D_003B1CF0;
+
+/* wander within 15 of the spot +0x110 (pose 7, head toward the way): every 30..90 frames, or
+ * when the way ahead is under 20, a new heading (outward from the spot, the freest within
+ * 30..150 degrees for 30), rechecked after 30 frames. Farther off: behaviour D_003B1CF0 */
+void func_001495B0(Hewie *h) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 step;
+
+    sceVu0SubVector(d, h->c.unk110, h->c.a.pos);
+    if (!(__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= 15.0f)) {
+        Hewie_SetBehaviour(h, &D_003B1CF0);
+        return;
+    }
+    if (HW(h, 0xF36B8, s32) != 0) {
+        HW(h, 0xF36B8, s32) -= 1;
+    } else {
+        f32 room;
+
+        if (HW(h, 0xF36B4, s32) != 0) {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+        room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), 20.0f);
+        if (HW(h, 0xF36B4, s32) == 0 || room < 20.0f) {
+            HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 30 + 30;
+            HW(h, 0xF36B8, s32) = 30;
+            sceVu0SubVector(d, h->c.a.pos, h->c.unk110);
+            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 30.0f, 30, 150, 30);
+        }
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    turn_toward(h, HW(h, 0xF36C4, f32), step);
+    func_00141C00(h, 7);
+}
