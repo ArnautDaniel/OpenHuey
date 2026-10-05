@@ -5665,3 +5665,8 @@ src/game/props.c func_0033C7D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x36B0=0
 src/game/props.c func_0033C830 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x36B0=0..1 --stub-ret-prob=1 --runs=30
 src/game/props.c func_0033CB40 --pre=a0=0x0B000000..0x0B000000
 src/game/creature.c func_002B4030 --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400000=0..1 --pre=@0x0B400004=0x0B500000..0x0B500000 --pre=@0x0B500010=0xC20E0000..0xC20F0000 --pre=@0x0B500018=0xC0E00000..0xC1000000 --pre=@0x0B501571:u8=0x10..0x14 --pre=@0x44E578=0x0B600000..0x0B600000 --pre=@0x0B610000=0x0046BF20..0x0046BF20 --pre=@0x0B618034=0..1 --pre=@0x0B618038=0..0 --stub-ret=0 --stub-ret=0x0B700000 --runs=100
+src/game/props.c func_0033CCC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-2..2
+src/game/props.c func_0033CD20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a1=0..4 --pre=a0+0x1C0=0..4 --pre=a0+0x1C4=0..4 --pre=a0+0x200=0..4 --pre=a0+0x240=0..4 --stub-ret-prob=1 --runs=60
+src/game/props.c func_0033CFD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C0=0..2 --pre=a0+0x1C4=0..2 --pre=a0+0x240=0..2
+src/game/props.c func_0033D2C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=@0x44E560=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046BF2C..0x0046BF2C --pre=a0+0x18=1..2 --pre=a0+0x1C=1..2 --pre=a0+0x4=0..1 --pre=a0+0x8=0..1 --pre=a0+0x6C0=-1..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.9 --runs=60
+src/game/props.c func_0033D4B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --stub-ret-prob=1 --runs=10

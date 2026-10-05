@@ -1785,3 +1785,223 @@ void func_0033CB40(u8 *o) {
     AT(o, 0x3038, s32) = 0;
     AT(o, 0x303C, s32) = 0;
 }
+
+/* ---- class D_00476BF0 (room 0x52, 0x6E0 bytes): five drips (spots +0x30 + k * 0x10, from
+ * D_004309D0) that run by turns - +0x4 + k * 4 on, +0x18 + k * 4 frames to the next switch
+ * (90, or 90..345 off), +0x6C0 + k * 4 its sound (-1 none; +0x6D4 the next of four). Each sends
+ * up ripples, 16 per spot (+0x80.. height, +0x1C0.. life (its alpha), +0x300.. size, +0x440..
+ * turn, +0x580.. rise; 0x40 per spot), flat additive quads (texture group 0x10, cell (0xE0,
+ * 0x60) 32 x 32) ---- */
+
+extern void *D_00476BF0[];
+extern f32 D_004309D0[];   /* the five spots (x, y, z) */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+
+#define DRIP_P(o, k, j, off) AT((o) + (k) * 0x40 + (j) * 4, (off), f32)
+#define DRIP_LIFE(o, k, j) AT((o) + (k) * 0x40 + (j) * 4, 0x1C0, s32)
+
+/* +0x8 destructor */
+u8 *func_0033CCC0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00476BF0;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* a ripple of spot k anew: at the spot, size 0.1, turned at random, rising 0.5..0.6 */
+static inline __attribute__((always_inline)) void ripple_reset(u8 *o, s32 k, s32 j, VObject *rng) {
+    static const F32Bits kPi = {0x40490FDB}, k01 = {0x3DCCCCCD};
+
+    DRIP_P(o, k, j, 0x80) = AT(o, 0x34 + k * 0x10, f32);
+    DRIP_LIFE(o, k, j) = 0;
+    AT(o + k * 0x40 + j * 4, 0x300, u32) = k01.u;
+    DRIP_P(o, k, j, 0x440) = kPi.f * (360.0f * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0.5f)) / 180.0f;
+    DRIP_P(o, k, j, 0x580) = 0.5f + k01.f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+}
+
+/* spot k's ripples: each live one (life down 2 a frame) spreads (size + 1), turns, and bobs on
+ * its rise (falling 0.05 a frame); out of life or 4 below the spot it is reset */
+void func_0033CD20(u8 *o, s32 k) {
+    static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k005 = {0x3D4CCCCD};
+    f32 *spot = &AT(o, 0x34 + k * 0x10, f32);
+    VObject *rng = D_0044E550;
+    s32 j;
+
+    for (j = 0; j < 16; j++) {
+        f32 a, v;
+
+        if (DRIP_LIFE(o, k, j) == 0) {
+            continue;
+        }
+        DRIP_LIFE(o, k, j) -= 2;
+        if (DRIP_LIFE(o, k, j) <= 0) {
+            ripple_reset(o, k, j, rng);
+            continue;
+        }
+        DRIP_P(o, k, j, 0x300) = DRIP_P(o, k, j, 0x300) + 1.0f;
+        a = DRIP_P(o, k, j, 0x440) + kPi.f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) / 180.0f;
+        DRIP_P(o, k, j, 0x440) = a;
+        if (!(a <= kPi.f)) {
+            DRIP_P(o, k, j, 0x440) = a - k2Pi.f;
+        }
+        v = DRIP_P(o, k, j, 0x580) - k005.f;
+        DRIP_P(o, k, j, 0x580) = v;
+        DRIP_P(o, k, j, 0x80) = DRIP_P(o, k, j, 0x80) + v;
+        if (DRIP_P(o, k, j, 0x80) < *spot - 4.0f) {
+            ripple_reset(o, k, j, rng);
+        }
+    }
+}
+
+/* +0x14 draw: every live ripple, a flat quad of its size and turn at the spot and its height,
+ * blue-grey at alpha its life */
+void func_0033CFD0(u8 *o) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 c[4][4] __attribute__((aligned(16)));
+    QuadRec r __attribute__((aligned(16)));
+    QuadDrawer q __attribute__((aligned(16)));
+    s32 k, j;
+
+    r.rgba[2] = 0x30;
+    r.w = 1.0f;
+    r.h = 1.0f;
+    r.pos[3] = 1.0f;
+    q.vtbl = D_0046FC30;
+    r.pos[0] = 0.0f;
+    q.tex = (u64)-1;
+    r.pos[1] = 0.0f;
+    q.corners = (s32)c;
+    r.pos[2] = 0.0f;
+    q.layer = 0x19;
+    r.rgba[0] = 0x20;
+    q.cellX = 0xE0;
+    r.rgba[1] = 0x20;
+    q.cellY = 0x60;
+    r.turn = 0.0f;
+    q.texW = 0x200;
+    q.texH = 0x100;
+    q.flags = 0x42;
+    r.frame = 0;
+    q.texGroup = 0x10;
+    q.a = -1;
+    q.palette = -1;
+    q.rec = &r;
+    q.cx = 0.0f;
+    q.cy = 0.0f;
+    q.count = 1;
+    q.cellW = 0x20;
+    q.cellH = 0x20;
+    q.frames = 1;
+    q.texId = 1;
+    for (k = 0; k < 5; k++) {
+        for (j = 0; j < 16; j++) {
+            if (DRIP_LIFE(o, k, j) == 0) {
+                continue;
+            }
+            sceVu0UnitMatrix(m);
+            m[0][0] = DRIP_P(o, k, j, 0x300);
+            m[1][1] = DRIP_P(o, k, j, 0x300);
+            m[2][2] = DRIP_P(o, k, j, 0x300);
+            sceVu0RotMatrixY(m, m, DRIP_P(o, k, j, 0x440));
+            sceVu0CopyVector(at, (f32 *)(o + 0x30 + k * 0x10));
+            at[1] = DRIP_P(o, k, j, 0x80);
+            sceVu0TransMatrix(m, m, at);
+            c[0][1] = 0.0f;
+            c[0][2] = -1.0f;
+            c[0][0] = 1.0f;
+            c[0][3] = 1.0f;
+            sceVu0ApplyMatrix(c[0], m, c[0]);
+            c[1][1] = 0.0f;
+            c[1][0] = 1.0f;
+            c[1][2] = 1.0f;
+            c[1][3] = 1.0f;
+            sceVu0ApplyMatrix(c[1], m, c[1]);
+            c[2][1] = 0.0f;
+            c[2][0] = -1.0f;
+            c[2][2] = -1.0f;
+            c[2][3] = 1.0f;
+            sceVu0ApplyMatrix(c[2], m, c[2]);
+            c[3][1] = 0.0f;
+            c[3][0] = -1.0f;
+            c[3][2] = 1.0f;
+            c[3][3] = 1.0f;
+            sceVu0ApplyMatrix(c[3], m, c[3]);
+            r.rgba[3] = DRIP_LIFE(o, k, j);
+            func_002E56C0((u8 *)&q);
+        }
+    }
+    q.vtbl = D_00469D00;
+}
+
+/* +0x10 update: each spot's switch counts down - turning on (90 frames) starts its sound (the
+ * next of four, if the bank is loaded), off (90..345); while on, the sound is kept going and a
+ * new ripple starts; then its ripples move */
+s32 func_0033D2C0(u8 *o) {
+    VObject *snd = D_0044E560;
+    VObject *rng = D_0044E550;
+    s32 k, j;
+
+    for (k = 0; k < 5; k++) {
+        AT(o, 0x18 + k * 4, s32)--;
+        if (AT(o, 0x18 + k * 4, s32) == 0) {
+            AT(o, 0x4 + k * 4, s32) ^= 1;
+            if (AT(o, 0x4 + k * 4, s32) != 0) {
+                AT(o, 0x18 + k * 4, s32) = 0x5A;
+                if ((u8)VCALL(snd, 0xA4, s32 (*)(VObject *, s32))(snd, 6) == 1) {
+                    AT(o, 0x6C0 + k * 4, s32) = AT(o, 0x6D4, s32);
+                    func_002FF650(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0x40000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
+                    AT(o, 0x6D4, s32)++;
+                    AT(o, 0x6D4, s32) &= 3;
+                }
+            } else {
+                AT(o, 0x18 + k * 4, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0xFF) + 0x5A;
+            }
+        }
+        if (AT(o, 0x4 + k * 4, s32) != 0) {
+            if (AT(o, 0x6C0 + k * 4, s32) != -1) {
+                func_002FF650(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0xC0000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
+            }
+            for (j = 0; j < 16; j++) {
+                if (DRIP_LIFE(o, k, j) == 0) {
+                    DRIP_LIFE(o, k, j) = 0x20;
+                    break;
+                }
+            }
+        }
+        func_0033CD20(o, k);
+    }
+    return 1;
+}
+
+/* +0xC set up: the five spots on or off at random, their ripples reset; a running one is run
+ * on 64 frames */
+void func_0033D4B0(u8 *o) {
+    VObject *rng = D_0044E550;
+    s32 k, j, n;
+
+    AT(o, 0x6D4, s32) = 0;
+    for (k = 0; k < 5; k++) {
+        AT(o, 0x4 + k * 4, s32) = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 1;
+        AT(o, 0x30 + k * 0x10, f32) = D_004309D0[k * 3 + 0];
+        AT(o, 0x34 + k * 0x10, f32) = D_004309D0[k * 3 + 1];
+        AT(o, 0x38 + k * 0x10, f32) = D_004309D0[k * 3 + 2];
+        AT(o, 0x3C + k * 0x10, f32) = 1.0f;
+        AT(o, 0x6C0 + k * 4, s32) = -1;
+        for (j = 0; j < 16; j++) {
+            ripple_reset(o, k, j, rng);
+        }
+        if (AT(o, 0x4 + k * 4, s32) != 0) {
+            AT(o, 0x18 + k * 4, s32) = 0x5A;
+            for (n = 0; n < 64; n++) {
+                func_0033CD20(o, k);
+            }
+        } else {
+            AT(o, 0x18 + k * 4, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0xFF) + 0x5A;
+        }
+    }
+}
