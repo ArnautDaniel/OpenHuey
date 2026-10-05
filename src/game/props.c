@@ -907,3 +907,333 @@ void func_003458A0(u8 *o, const s8 *params) {
     AT(o, 0x1838, s32) = 0;
     AT(o, 0x183C, s32) = 0;
 }
+
+/* ---- class D_00479580 (room 0x43, 0x6CF0 bytes): a fire - 128 smoke puffs rising from about
+ * (-145.6, 35, 7.3) (+0x10, drawer +0x6040; velocity +0x60E8 + i * 12), 32 flame tongues
+ * licking about (-135, 9.5, 11) (+0x3010, drawer +0x6078; per tongue its outward drift
+ * +0x66E8, rise +0x68E8 and heading +0x6AE8) and a flickering glow (record +0x6010, drawer
+ * +0x60B0); the records double-buffered by +0x6CE8 (0x1800 apart). +0x6CEC set (its start
+ * parameter) the fire is out: no smoke or glow, and the flames die away ---- */
+
+extern void *D_00479580[];
+
+#define FIRE_REC(o, base, i) ((o) + AT(o, 0x6CE8, s32) * 0x1800 + (i) * 0x30 + (base))
+
+/* +0x8 destructor (the quad drawers at +0x60B0, +0x6078 and +0x6040 inlined) */
+u8 *func_003570C0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479580;
+    AT(o, 0x60B0, void **) = D_0046FC30;
+    AT(o, 0x60B0, void **) = D_00469D00;
+    AT(o, 0x6078, void **) = D_0046FC30;
+    AT(o, 0x6078, void **) = D_00469D00;
+    AT(o, 0x6040, void **) = D_0046FC30;
+    AT(o, 0x6040, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0xC set up */
+void func_00358200(u8 *o) {
+    AT(o, 0x6CE8, s32) = 0;
+}
+
+/* smoke puff i anew (`again` 0: the first time, part way up already) */
+void func_00357630(u8 *o, s32 i, s32 again) {
+    static const F32Bits k004 = {0x3D23D70A}, kX = {0xC311999A}, kZ = {0x40E9999A}, k003 = {0x3CF5C28F},
+                         k007 = {0x3D8F5C29}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    u8 *p = FIRE_REC(o, 0x10, i);
+    s32 age = 0;
+
+    AT(p, 0x0, s32) = 0x80;
+    AT(p, 0x4, s32) = 0x80;
+    AT(p, 0x8, s32) = 0x80;
+    AT(p, 0xC, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F) + 0x20;
+    AT(p, 0x20, f32) = 1.5f;
+    AT(p, 0x24, f32) = 1.5f;
+    if (again == 0) {
+        age = (s32)(65.0f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng));
+        AT(p, 0xC, s32) = AT(p, 0xC, s32) - (age >> 1);
+        if (AT(p, 0xC, s32) < 0) {
+            AT(p, 0xC, s32) = 0;
+        }
+        AT(p, 0x20, f32) = AT(p, 0x24, f32) = 1.5f + k004.f * (f32)age;
+    }
+    rng = D_0044E550;
+#define RND() VCALL(rng, 0x18, f32 (*)(VObject *))(rng)
+    AT(p, 0x10, f32) = kX.f + 4.0f * (RND() - 0.5f);
+    AT(p, 0x14, f32) = 35.0f + (f32)age;
+    AT(p, 0x18, f32) = kZ.f + 4.0f * (RND() - 0.5f);
+    AT(p, 0x1C, f32) = 1.0f;
+    AT(p, 0x28, f32) = kPi.f * (360.0f * (RND() - 0.5f)) / 180.0f;
+    AT(p, 0x2C, s32) = 0;
+    AT(o, 0x60E8 + i * 12, f32) = k003.f * (RND() - 0.5f);
+    AT(o, 0x60EC + i * 12, f32) = k007.f + k01.f * RND();
+    AT(o, 0x60F0 + i * 12, f32) = k003.f * (RND() - 0.5f);
+#undef RND
+}
+
+/* flame tongue i anew: orange-red, its drift 0.7..0.8, rise 0.1..0.3, heading at random,
+ * placed about the fire by its heading */
+void func_003571B0(u8 *o, s32 i, s32 again) {
+    static const F32Bits k07 = {0x3F333333}, k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k001 = {0x3C23D70A},
+                         kM0025 = {0xBCCCCCCD}, k005 = {0x3D4CCCCD}, k03 = {0x3E99999A}, kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    f32 *drift = &AT(o, 0x66E8 + i * 4, f32);
+    f32 *rise = &AT(o, 0x68E8 + i * 4, f32);
+    f32 *head;
+    u8 *p;
+    s32 age = 0;
+    f32 c, s;
+
+#define RND() VCALL(rng, 0x18, f32 (*)(VObject *))(rng)
+    *drift = k07.f + k01.f * RND();
+    *rise = k01.f + k02.f * RND();
+    AT(o, 0x6AE8 + i * 4, f32) = kPi.f * (360.0f * (RND() - 0.5f)) / 180.0f;
+    p = FIRE_REC(o, 0x3010, i);
+    AT(p, 0x0, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F) + 0x80;
+    AT(p, 0x4, s32) = 0x40;
+    AT(p, 0x8, s32) = 0x10;
+    AT(p, 0xC, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x3F) + 0x40;
+    if (again == 0) {
+        age = (s32)RND();
+        AT(p, 0xC, s32) = AT(p, 0xC, s32) - (s32)(128.0f * (f32)age);
+        if (AT(p, 0xC, s32) < 0) {
+            AT(p, 0xC, s32) = 0;
+        }
+        *drift = *drift + -1.5f * (f32)age;
+        if (*drift < k001.f) {
+            *drift = k001.f;
+        }
+        *rise = *rise + kM0025.f * (f32)age;
+        if (*rise < k005.f) {
+            *rise = k005.f;
+        }
+    }
+    head = &AT(o, 0x6AE8 + i * 4, f32);
+    rng = D_0044E550;
+    c = func_0031C058(*head);
+    AT(p, 0x10, f32) = (-135.0f + (f32)age) + 4.0f * (RND() - 0.5f) + k01.f * c;
+    AT(p, 0x14, f32) = (9.5f + (f32)age) + 2.0f * (RND() - 0.5f);
+    s = func_0031C248(*head);
+    AT(p, 0x18, f32) = 11.0f + 4.0f * (RND() - 0.5f) + k01.f * s;
+    AT(p, 0x1C, f32) = 1.0f;
+    AT(p, 0x20, f32) = AT(p, 0x24, f32) = k03.f + k02.f * RND();
+    AT(p, 0x28, f32) = kPi.f * (360.0f * (RND() - 0.5f)) / 180.0f;
+    AT(p, 0x2C, s32) = 0;
+#undef RND
+}
+
+/* +0x10 update (0 once the fire is out and no flame shows): swap buffers; the smoke grows,
+ * turns, drifts and fades (every other frame), starting again above 100 or once faded; the
+ * glow flickers (alpha 0x30 / 0x38); each flame fades (and reddens less), wanders (its heading
+ * by up to 15 degrees a frame, 5 once out), drifts out by its drift less 0.1 plus |cos| / 10,
+ * rises ever slower, and starts again once faded */
+s32 func_00357BF0(u8 *o) {
+    static const F32Bits k004 = {0x3D23D70A}, kTurn = {0x3D567750}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
+                         kM0015 = {0xBC75C28F}, kM0005 = {0xBBA3D70A}, kMinusPi = {0xC0490FDB},
+                         kM01 = {0xBDCCCCCD}, k001 = {0x3C23D70A}, k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD};
+    VObject *rng;
+    u8 alive;
+    s32 i, k;
+
+    AT(o, 0x6CE8, s32) ^= 1;
+    alive = AT(o, 0x6CEC, s32) != 0;
+    if (AT(o, 0x6CEC, s32) == 0) {
+        rng = D_0044E550;
+        for (i = 0; i < 128; i++) {
+            u32 buf = AT(o, 0x6CE8, u32);
+            u32 *dst = &AT(o, 0x10 + buf * 0x1800 + i * 0x30, u32);
+            u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x1800 + i * 0x30, u32);
+            u8 *p;
+            f32 t;
+
+            for (k = 0; k < 12; k++) {
+                dst[k] = src[k];
+            }
+            p = FIRE_REC(o, 0x10, i);
+            AT(p, 0x20, f32) = AT(p, 0x24, f32) = AT(p, 0x20, f32) + k004.f;
+            t = AT(p, 0x28, f32) + kTurn.f;
+            AT(p, 0x28, f32) = t;
+            if (!(t <= kPi.f)) {
+                AT(p, 0x28, f32) = t - k2Pi.f;
+            }
+            AT(p, 0x10, f32) = AT(p, 0x10, f32) + AT(o, 0x60E8 + i * 12, f32);
+            AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x60EC + i * 12, f32);
+            AT(p, 0x18, f32) = AT(p, 0x18, f32) + AT(o, 0x60F0 + i * 12, f32);
+            if (!(AT(p, 0x14, f32) <= 100.0f)) {
+                func_00357630(o, i, 1);
+            }
+            if (AT(o, 0x6CE8, s32) == 0) {
+                AT(p, 0xC, s32) = AT(p, 0xC, s32) - (s32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3);
+            }
+            if (AT(p, 0xC, s32) <= 0) {
+                func_00357630(o, i, 1);
+            }
+        }
+        AT(o, 0x601C, s32) = AT(o, 0x601C, s32) == 0x30 ? 0x38 : 0x30;
+    }
+    rng = D_0044E550;
+    for (i = 0; i < 32; i++) {
+        u32 buf = AT(o, 0x6CE8, u32);
+        u32 *dst = &AT(o, 0x3010 + buf * 0x1800 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x3010 + (buf ^ 1) * 0x1800 + i * 0x30, u32);
+        f32 *drift = &AT(o, 0x66E8 + i * 4, f32);
+        f32 *rise = &AT(o, 0x68E8 + i * 4, f32);
+        f32 *head = &AT(o, 0x6AE8 + i * 4, f32);
+        u8 *p;
+        f32 a, d;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = FIRE_REC(o, 0x3010, i);
+        if (AT(p, 0xC, s32) > 0) {
+            AT(p, 0xC, s32) = AT(p, 0xC, s32) - (s32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 2);
+            AT(p, 0x0, s32) = AT(p, 0x0, s32) - (s32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 1);
+            if (AT(p, 0x0, s32) < 0) {
+                AT(p, 0x0, s32) = 0;
+            }
+        }
+        if (AT(p, 0xC, s32) <= 0) {
+            if (AT(o, 0x6CEC, s32) != 0) {
+                AT(p, 0xC, s32) = 0;
+            } else {
+                func_003571B0(o, i, 1);
+                alive = 0;
+            }
+            continue;
+        }
+        alive = 0;
+        if (AT(o, 0x6CEC, s32) == 0) {
+            *rise = *rise + kM0015.f;
+            *head = *head + kPi.f * (30.0f * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0.5f)) / 180.0f;
+        } else {
+            *rise = *rise + kM0005.f;
+            *head = *head + kPi.f * (10.0f * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0.5f)) / 180.0f;
+        }
+        a = *head;
+        if (a < kMinusPi.f) {
+            *head = a + k2Pi.f;
+        } else if (!(a <= kPi.f)) {
+            *head = *head - k2Pi.f;
+        }
+        *drift = *drift + kM01.f;
+        if (*drift < k001.f) {
+            *drift = k001.f;
+        }
+        if (!(k01.f * func_0031C058(*head) <= 0.0f)) {
+            d = k01.f * func_0031C058(*head);
+        } else {
+            d = -(k01.f * func_0031C058(*head));
+        }
+        AT(p, 0x10, f32) = AT(p, 0x10, f32) + (*drift + d);
+        if (*rise < k005.f) {
+            *rise = k005.f;
+        }
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + *rise;
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * func_0031C248(*head);
+    }
+    return alive != 1;
+}
+
+/* +0x14 draw: (while it burns) the smoke and the glow, then the flames */
+void func_00357B60(u8 *o) {
+    if (AT(o, 0x6CEC, s32) == 0) {
+        AT(o, 0x6050, u8 *) = FIRE_REC(o, 0x10, 0);
+        func_002E56C0(o + 0x6040);
+        AT(o, 0x60C0, u8 *) = o + 0x6010;
+        func_002E56C0(o + 0x60B0);
+    }
+    AT(o, 0x6088, u8 *) = FIRE_REC(o, 0x3010, 0);
+    func_002E56C0(o + 0x6078);
+}
+
+/* +0x18 start: params[0] is the out flag; lit, the three drawers (texture group 0x10: smoke
+ * cell (0x80, 0) 64 x 32 x 0x20, flames (0x6C, 0x4C) 8 x 8 additive, glow (0xA0, 0x40) 32 x 32
+ * additive), 128 puffs, 32 tongues, and the glow (orange, 5 across at (-128, 5, 14)) */
+void func_00357940(u8 *o, const s32 *params) {
+    s32 i;
+
+    if (params == NULL) {
+        return;
+    }
+    AT(o, 0x6CEC, s32) = params[0];
+    if (AT(o, 0x6CEC, s32) != 0) {
+        return;
+    }
+    AT(o, 0x6048, s64) = -1;
+    AT(o, 0x6054, s32) = 0;
+    AT(o, 0x6058, s32) = 0;
+    AT(o, 0x605C, s32) = 0;
+    AT(o, 0x6060, s32) = 0x19;
+    AT(o, 0x6064, s16) = 0x80;
+    AT(o, 0x6066, s16) = 0;
+    AT(o, 0x6068, s16) = 0x40;
+    AT(o, 0x606A, s16) = 0x20;
+    AT(o, 0x606C, s16) = 0x20;
+    AT(o, 0x606E, s16) = 0x200;
+    AT(o, 0x6070, s16) = 0x100;
+    AT(o, 0x6072, u8) = 0;
+    AT(o, 0x6073, u8) = 1;
+    AT(o, 0x6074, u8) = 1;
+    AT(o, 0x6075, u8) = 0x10;
+    AT(o, 0x6076, u8) = 0xFF;
+    for (i = 0; i < 128; i++) {
+        func_00357630(o, i, 0);
+    }
+    AT(o, 0x6080, s64) = -1;
+    AT(o, 0x608C, s32) = 0;
+    AT(o, 0x6090, s32) = 0;
+    AT(o, 0x6094, s32) = 0;
+    AT(o, 0x6098, s32) = 0x19;
+    AT(o, 0x609C, s16) = 0x20;
+    AT(o, 0x609E, s16) = 0x6C;
+    AT(o, 0x60A0, s16) = 0x4C;
+    AT(o, 0x60A2, s16) = 8;
+    AT(o, 0x60A4, s16) = 8;
+    AT(o, 0x60A6, s16) = 0x200;
+    AT(o, 0x60A8, s16) = 0x100;
+    AT(o, 0x60AA, u8) = 0x40;
+    AT(o, 0x60AB, u8) = 1;
+    AT(o, 0x60AC, u8) = 1;
+    AT(o, 0x60AD, u8) = 0x10;
+    AT(o, 0x60AE, u8) = 0xFF;
+    for (i = 0; i < 32; i++) {
+        func_003571B0(o, i, 0);
+    }
+    AT(o, 0x60B8, s64) = -1;
+    AT(o, 0x60C8, s32) = 0;
+    AT(o, 0x60CC, s32) = 0;
+    AT(o, 0x60D0, s32) = 0x19;
+    AT(o, 0x60D4, s16) = 1;
+    AT(o, 0x60D6, s16) = 0xA0;
+    AT(o, 0x60D8, s16) = 0x40;
+    AT(o, 0x60DA, s16) = 0x20;
+    AT(o, 0x60DC, s16) = 0x20;
+    AT(o, 0x60DE, s16) = 0x200;
+    AT(o, 0x60E0, s16) = 0x100;
+    AT(o, 0x60E2, u8) = 0x40;
+    AT(o, 0x60E3, u8) = 1;
+    AT(o, 0x60E4, u8) = 1;
+    AT(o, 0x60E5, u8) = 0x10;
+    AT(o, 0x60E6, u8) = 0xFF;
+    AT(o, 0x6010, s32) = 0x70;
+    AT(o, 0x6014, s32) = 0x40;
+    AT(o, 0x6018, s32) = 0x40;
+    AT(o, 0x601C, s32) = 0x30;
+    AT(o, 0x6020, f32) = -128.0f;
+    AT(o, 0x6024, f32) = 5.0f;
+    AT(o, 0x6028, f32) = 14.0f;
+    AT(o, 0x602C, f32) = 1.0f;
+    AT(o, 0x6030, f32) = 5.0f;
+    AT(o, 0x6034, f32) = 5.0f;
+    AT(o, 0x6038, s32) = 0;
+    AT(o, 0x603C, s32) = 0;
+}
