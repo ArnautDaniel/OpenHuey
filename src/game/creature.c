@@ -902,6 +902,20 @@ s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
     return r;
 }
 
+/* back on its triangle in the room being played (or, on one it may not stand on, a random place
+   on its level), its doors noted */
+static void creature_back_on_mesh(Character *c) {
+    u32 tri = c->a.navTri;
+
+    if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
+        func_002DE540(c, AT(CR(c), 0xC, s32));
+    } else {
+        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
+        VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
+    }
+    creature_at_doors(c);
+}
+
 /* +0x38 the room is entered: if it was out (+0x10) and is in the room being played, back on
  * its triangle (or, on one it may not stand on, a random place on its level) with its doors
  * noted; in the room being played it is in play (somewhere random if off the mesh), else not */
@@ -913,15 +927,7 @@ void func_002E0DB0(Character *c) {
     if (AT(k, 0x10, s32) != 0) {
         room = c->a.room;
         if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
-            u32 tri = c->a.navTri;
-
-            if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
-                func_002DE540(c, AT(k, 0xC, s32));
-            } else {
-                VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
-                VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
-            }
-            creature_at_doors(c);
+            creature_back_on_mesh(c);
         }
     }
     room = c->a.room;
@@ -1244,4 +1250,87 @@ void func_002E06E0(Character *c) {
         ptmf_set(&c->a.state, &D_00416750);
         break;
     }
+}
+
+extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
+extern VObject *D_0044E988;                            /* the items */
+extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
+
+/* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
+ * its doors noted, +0x9C whether Fiona holds item 0x8D (equipment slot 3); thinking
+ * (func_002E06E0), bobbing unless seen (+0x37), being seen (outside events, or in her room
+ * unless she is busy); then by its state: not come - idle (holding 0x8D: out of play or in
+ * place); in play - once its time is up gone with a sound (0x8C, +0x29), else waiting; out of
+ * play - when its time is up gone, travelling (out, +0x10 0) or, back in the room being
+ * played, back on the mesh. Its behaviour, then +0x40. */
+void func_002E1380(Character *c) {
+    u8 *k = CR(c);
+    Progress *p;
+    s32 trail = (AT(k, 0x20, s16) + AT(k, 0x28, s8)) % 3;
+
+    switch (trail) {
+    case 2:
+        func_0010E5F0((f32 *)(k + 0x70), c->a.pos);
+        AT(k, 0x74, f32) += 12.0f + AT(k, 0x14, f32);
+        break;
+    case 0:
+        func_0010E5F0((f32 *)(k + 0x50), c->a.pos);
+        AT(k, 0x54, f32) += 12.0f + AT(k, 0x14, f32);
+        break;
+    case 1:
+        func_0010E5F0((f32 *)(k + 0x60), c->a.pos);
+        AT(k, 0x64, f32) += 12.0f + AT(k, 0x14, f32);
+        break;
+    }
+    p = gProgress;
+    creature_at_doors(c);
+    AT(k, 0x9C, s8) = VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3) == 0x8D;
+    func_002E06E0(c);
+    if (AT(k, 0x37, s8) == 0) {
+        func_002DEFA0(c);
+    }
+    if (Progress_TestFlag(p, 0x18) == 0) {
+        func_002DF180(c);
+    } else {
+        s32 room = c->a.room;
+
+        if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && gCharPlayer->unkE0 == 0) {
+            func_002DF180(c);
+        }
+    }
+    if (AT(k, 0x2E, u8) == 0) {
+        if (AT(k, 0x9C, s8) != 0) {
+            ptmf_set(&c->a.state, AT(k, 0x29, u8) != 0 ? &D_004166D0 : &D_004166E0);
+        } else {
+            ptmf_set(&c->a.state, &D_004166F0);
+        }
+    } else if (c->a.disabled == 0) {
+        if (AT(k, 0x29, u8) != 0) {
+            ptmf_set(&c->a.state, &D_004166C0);
+        } else if (AT(k, 0x20, s16) >= AT(k, 0x6, s16)) {
+            AT(k, 0x29, u8) = 1;
+            func_00122C20(&c->a, 0x8C, 5, 0, 0, NULL);
+            ptmf_set(&c->a.state, &D_004166B0);
+        }
+    } else {
+        u8 travel = 1;
+
+        if (AT(k, 0x20, s16) >= AT(k, 0x6, s16)) {
+            c->a.active = 0;
+            func_00127060(c);
+        }
+        if (AT(k, 0x10, s32) != 0) {
+            s32 room = c->a.room;
+
+            if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+                creature_back_on_mesh(c);
+            }
+            travel = 0;
+        }
+        if (travel) {
+            func_002DFA50(c);
+        }
+    }
+    ptmf_scall(c, &c->a.state);
+    VCALL(c, 0x40, void (*)(Character *))(c);
 }
