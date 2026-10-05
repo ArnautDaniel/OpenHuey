@@ -59,6 +59,12 @@ extern VObject *D_0044FE08;   /* the obstacles */
 extern VObject *D_0044FE10;   /* the cutscene director */
 extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
 extern s32 func_0013D4A0(u8 *h, s32 n);
+extern s32 func_00139060(u8 *h);
+extern s32 func_001364F0(u8 *h);
+extern u32 func_00260CF0(void *list, s32 item);   /* how many */
+extern VObject *D_0044E4B8;   /* the camera */
+extern u8 *gCharPursuer;
+extern void *D_0044E958;      /* the movie playing */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -471,6 +477,139 @@ s32 func_001FC760(VObject *ev) {
     case 0x33:   /* Hewie (in the scene)'s +0xF3668 is (signed) pc[1] */
         if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 &&
             (s8)pc[1] == AT(gCharPartner, 0xF3668, s32)) {
+            r = 1;
+        }
+        break;
+    case 0x38: {   /* the cutscene director's +0x34 reached be16 pc[1..2] */
+        s32 v = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+
+        if (!(v < (s32)be16(pc + 1))) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x39: {   /* at least pc[2] of this script's item pc[1] */
+        s32 id = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[1]);
+        u32 n = (u8)func_00260CF0((u8 *)D_0044E988 + 0x8, id);
+
+        if (!((s32)n < (s32)PC(ev)[2])) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x3A:
+        if (VCALL(D_0044FE10, 0x54, s32 (*)(VObject *, s32, s32))(D_0044FE10, pc[1], 0) > 0) {
+            r = 1;
+        }
+        break;
+    case 0x4A: {   /* the cutscene director's +0x1C of its +0x34 is pc[1] */
+        VObject *d = D_0044FE10;
+        s32 v = PC(ev)[1];
+        s32 k = VCALL(d, 0x34, s32 (*)(VObject *))(d);
+
+        if (v == VCALL(d, 0x1C, s32 (*)(VObject *, s32))(d, k)) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x40:
+        r = VCALL(D_0044FE10, 0x68, s32 (*)(VObject *))(D_0044FE10);
+        break;
+    case 0x42:   /* Hewie (in the scene)'s +0xF3598 is 1 */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && AT(gCharPartner, 0xF3598, s32) == 1) {
+            r = 1;
+        }
+        break;
+    case 0x45: {   /* character pc[1] is out of sight: absent, not in the scene or this room, or off the camera (+0xD4) */
+        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 *c;
+
+        if (i == 0xFF) {
+            r = 1;
+            break;
+        }
+        c = gCharacters[i];
+        if (c == NULL || AT(c, 0x28, u8) == 0) {
+            r = 1;
+            break;
+        }
+        if (AT(c, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            r = 1;
+            break;
+        }
+        r = VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, (f32 *)(c + 0x10));
+        break;
+    }
+    case 0x46: {   /* progress flag (variable pc[1]) set */
+        s32 f = AT(ev, 0x810 + pc[1] * 4, s32);
+
+        if (AT(p, 0x1C + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x48: {   /* the context's character, not busy (+0xF4), at a motion event: marked (+0xE1) */
+        u8 *c = *AT(ev, 0x6FC, u8 **);
+
+        if (c != NULL && AT(c, 0xF4, s32) == 0 &&
+            (AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, s32) & 0x20) != 0) {
+            AT(c, 0xE1, u8) = 1;
+            r = 1;
+        }
+        break;
+    }
+    case 0x4C:   /* Hewie (in the scene): func_00139060 */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060(gCharPartner) == 1) {
+            r = 1;
+        }
+        break;
+    case 0x4D: {   /* the context's character's mark (+0xE1) */
+        u8 *c = *AT(ev, 0x6FC, u8 **);
+
+        if (c != NULL) {
+            r = AT(c, 0xE1, u8);
+        }
+        break;
+    }
+    case 0x4E:
+        if (AT(ev, 0x718, u8) == 0) {
+            r = 1;
+        }
+        break;
+    case 0x51:   /* the panic level (+0x7BC) at 98 or more */
+        r = !(AT(p, 0x7BC, f32) < 98.0f);
+        break;
+    case 0x54:   /* the stalker is kind pc[1] */
+        if (gCharPursuer != NULL && pc[1] == AT(gCharPursuer, 0x153C, u8)) {
+            r = 1;
+        }
+        break;
+    case 0x55:   /* the stalker is in the scene */
+        if (gCharPursuer != NULL) {
+            r = AT(gCharPursuer, 0x28, u8);
+        }
+        break;
+    case 0x56: {   /* character pc[1] is at a motion event */
+        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+
+        r = (AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, s32) & 0x20) != 0;
+        break;
+    }
+    case 0x57:   /* a movie is playing */
+        r = D_0044E958 != NULL;
+        break;
+    case 0x59:   /* Fiona's +0x1AD630 */
+        r = AT(gCharPlayer, 0x1AD630, u8);
+        break;
+    case 0x5A:   /* Hewie's func_001364F0 (no Hewie: 1) */
+        if (gCharPartner != NULL) {
+            r = func_001364F0(gCharPartner);
+        } else {
+            r = 1;
+        }
+        break;
+    case 0x5B:   /* the script's +0x704 reached be32 pc[1..4] (unsigned) */
+        if (!(AT(ev, 0x704, u32) < (u32)be32(pc + 1))) {
             r = 1;
         }
         break;
