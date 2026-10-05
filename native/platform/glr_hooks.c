@@ -96,10 +96,11 @@ int func_001B2160(uint8_t *r) {
     return 1;
 }
 
-/* layer 0x1C: a distortion of the screen copy. GL TODO */
+/* layer 0x1C: what it draws, softened (brought down to 256 x 256 and blended back by its
+ * alpha at its end) - glr */
 int func_001AB960(uint8_t *r) {
     (void)r;
-    glr_todo("layer 0x1C pass (func_001AB960)");
+    glr_soft_layer();
     return 1;
 }
 

@@ -109,6 +109,7 @@ enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_AL
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
     uint32_t tint[3];   /* the fading layers' (0x0F, 0x1A, 0x23) tint when drawn this frame */
+    int soft;           /* layer 0x1C was set up this frame */
     int tinted[3];
     GlrVertex *v;
     int nv, capv;
@@ -205,6 +206,7 @@ void glr_end_frame(void) {
     sFrames[sBuilding].nd = 0;
     sFrames[sBuilding].overlay = 0;
     sFrames[sBuilding].tinted[0] = sFrames[sBuilding].tinted[1] = sFrames[sBuilding].tinted[2] = 0;
+    sFrames[sBuilding].soft = 0;
 }
 
 
@@ -220,6 +222,10 @@ void glr_tint_layer(int layer, uint32_t tint) {
         sFrames[sBuilding].tint[k] = tint;
         sFrames[sBuilding].tinted[k] = 1;
     }
+}
+
+void glr_soft_layer(void) {
+    sFrames[sBuilding].soft = 1;
 }
 
 void glr_overlay(uint32_t rgba) {
@@ -419,7 +425,8 @@ static GLuint sRefl, sReflDepth, sReflFbo, sReflPrep, sReflPrepFbo, sMask, sMask
  * (where the camera's half-size matrices draw) */
 static GLuint sShadowCol, sShadowDS, sShadowFbo;
 static GLuint sDump, sDumpFbo;
-static GLuint sTintHalf, sTintHalfFbo;   /* a fading layer's background: the screen halved before it */
+static GLuint sTintHalf, sTintHalfFbo;
+static GLuint sSoft, sSoftFbo;   /* layer 0x1C: its draws at 256 x 256 */   /* a fading layer's background: the screen halved before it */
 static int sGsW, sGsH;
 
 static const char *kMeshVs =
@@ -536,6 +543,9 @@ static const char *kQuadFs =
  * start, their draws marking alpha (FBA), then on the marked pixels (a copy of the screen):
  *   25 the tint's alpha a above 0x80: towards the tint by ((a + 0x81) & 0xFF) / 128; else
  *      towards the halved background times the tint by (0x80 - a) / 128
+ * Layer 0x1C (func_001AB960): its draws mark the frame's alpha (cleared at its start), then
+ *   27 the screen at 256 x 256 (every other column, 7 rows in 4) where that alpha isn't 0
+ *   28 that stretched back over the screen by its alpha (bilinear) - its draws softened
  * Layer 6 (shadows), S its buffer's middle at half size:
  *   23 a flat colour (the shadow's colour where its volumes count)
  *   24 S + the sum of S * 0x10 >> 7 at 8 neighbours; then 6 at colour 0x80, FIX 0x40,
@@ -702,6 +712,17 @@ static const char *kPostFs =
     "        vec2 t = gl_FragCoord.xy / (vec2(640.0, 448.0) * uS);\n"
     "        vec4 c4 = texture(uTex, vec2(t.x, 1.0 - t.y));\n"
     "        oColor = vec4(c4.rgb, clamp(c4.a * 255.0 / 128.0, 0.0, 1.0));\n"
+    "        return;\n"
+    "    } else if (uMode == 27) {\n"   /* layer 0x1C: the screen at 256 x 256 where its alpha isn't 0 */
+    "        float v = 255.0 - float(p.y);\n"   /* rows from the top */
+    "        vec4 d = at(uTex, ivec2(int(float(p.x * 2) * 1.25 * uS), int((447.0 - 1.75 * v) * uS)));\n"
+    "        oColor = d.a == 0.0 ? vec4(0.0) : d / 255.0;\n"
+    "        return;\n"
+    "    } else if (uMode == 28) {\n"   /* that stretched back over the screen (from 1 pixel left / up) */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"
+    "        vec2 uv = vec2((g.x + 1.0) * 256.0 / 513.0, (g.y + 1.0) * 256.0 / 449.0);\n"
+    "        vec4 h = texture(uTex, vec2(uv.x, 256.0 - uv.y) / 256.0);\n"
+    "        oColor = vec4(h.rgb, clamp(h.a * 255.0 / 128.0, 0.0, 1.0));\n"
     "        return;\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
@@ -1265,6 +1286,14 @@ int glr_init(void) {
     p_glTextureParameteri(sTintHalf, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     p_glTextureParameteri(sTintHalf, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     p_glCreateFramebuffers(1, &sTintHalfFbo);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sSoft);
+    p_glTextureStorage2D(sSoft, 1, GL_RGBA8, 256, 256);
+    p_glTextureParameteri(sSoft, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sSoft, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sSoft, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    p_glTextureParameteri(sSoft, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    p_glCreateFramebuffers(1, &sSoftFbo);
+    p_glNamedFramebufferTexture(sSoftFbo, GL_COLOR_ATTACHMENT0, sSoft, 0);
     p_glNamedFramebufferTexture(sTintHalfFbo, GL_COLOR_ATTACHMENT0, sTintHalf, 0);
     {   /* frame dumps: the scene brought to 640 x 448 */
         p_glCreateTextures(GL_TEXTURE_2D, 1, &sDump);
@@ -1356,6 +1385,31 @@ static int post_off(int kind) {
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
+}
+
+/* layer 0x1C's start (func_001AB960): the frame's alpha cleared, so its draws mark it */
+static void soft_begin(void) {
+    static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    p_glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+    p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 0, kNone);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
+/* its end: what it drew, brought down to 256 x 256 and blended back over the screen by its
+ * alpha - softened */
+static void soft_end(void) {
+    p_glDisable(GL_DEPTH_TEST);
+    p_glDisable(GL_BLEND);
+    p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+    post(27, sSoftFbo, 256, 256, sColor, 0);
+    p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    p_glEnable(GL_BLEND);
+    p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    post(28, sFbo, GLR_WIDTH, GLR_HEIGHT, sSoft, 0);
+    p_glDisable(GL_BLEND);
 }
 
 /* a fading layer's start: the frame's alpha cleared, the screen halved for its background */
@@ -1617,6 +1671,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     int reflStarted = 0;                  /* layer 0x17's reflection begun this frame */
     int inShadow = 0;                     /* within layer 6 or 0x0D (the layer, else 0) */
     int tintLayer = -1;                   /* within this fading layer */
+    int inSoft = 0;                       /* within layer 0x1C */
 
     {   /* the render scale: as set, or (0) the window's height in 448s, at most 4 */
         int want = sWantScale > 0 ? sWantScale : outH > 0 ? (outH + 447) / 448 : 1;
@@ -1737,6 +1792,15 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             const GlrDraw *d = &f->d[order[i] & 0xFFFFFFFF];
             int mode = 0;
 
+            if (inSoft && d->layer != 0x1C) {
+                soft_end();
+                mesh_state();
+                inSoft = 0;
+            }
+            if (!inSoft && d->layer == 0x1C && f->soft) {
+                soft_begin();
+                inSoft = 1;
+            }
             if (tintLayer >= 0 && d->layer != tintLayer) {   /* a fading layer's end */
                 tint_end(f->tint[tint_index(tintLayer)]);
                 mesh_state();
@@ -1909,6 +1973,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         }
         if (tintLayer >= 0) {
             tint_end(f->tint[tint_index(tintLayer)]);
+        }
+        if (inSoft) {
+            soft_end();
         }
         p_glDisable(GL_BLEND);
         p_glDepthMask(GL_TRUE);

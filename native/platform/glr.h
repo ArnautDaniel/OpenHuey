@@ -105,6 +105,9 @@ void glr_vram_upload(uint32_t addr, const void *rgba, int w, int h);
 void glr_vram_draw(uint32_t addr, int layer);
 void glr_vram_blit(int layer);   /* the last one sent straight into the screen (0x88000) */
 
+/* layer 0x1C is drawn this frame: what it draws is softened (blended back at 256 x 256) */
+void glr_soft_layer(void);
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 
