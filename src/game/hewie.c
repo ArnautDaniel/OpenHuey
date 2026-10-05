@@ -8956,3 +8956,63 @@ void func_0015A460(Hewie *h) {
         func_002DDED0(h->c.motion, 0x201, -1);
     }
 }
+
+/* ---- leaving by a door ---- */
+
+/* go to the point +0xF36E0 (triangle +0xF36B4) by the exit +0x100 (pose by +0xF36BC: walk,
+ * trot, run; along the path, pose 8 when the stride fails; straight once on its triangle; no
+ * way: the default action). When the exit's door is open to him and he is past the point:
+ * through it (unless there is no door), remembering the door (+0x148C) when Fiona is in his
+ * room but out of his reach; then the default action */
+void func_0015A720(Hewie *h) {
+    Progress *p;
+    VObject *rooms;
+    f32 door[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 c[4] __attribute__((aligned(16)));
+    s32 there;
+    u32 d;
+
+    there = HW(h, 0xF36B4, s32) == (s32)func_00124480(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
+    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    switch (HW(h, 0xF36BC, s32)) {
+    case 0:
+        func_00141C00(h, 7);
+        break;
+    case 1:
+        func_00141C00(h, 8);
+        break;
+    case 2:
+        func_00141C00(h, 9);
+        break;
+    }
+    if (!there) {
+        if (!(u8)func_00139DE0(h)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        run_straight(h, &HW(h, 0xF36E0, f32));
+    }
+    p = gProgress;
+    if (!(func_00177BF0(p, (u8)h->c.unk100, (u8)h->c.a.slot) & 0xFF & 1)) {
+        return;
+    }
+    rooms = D_0044E568;
+    VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, (u8)h->c.unk100, door);
+    sceVu0SubVector(c, &HW(h, 0xF36E0, f32), door);
+    sceVu0SubVector(b, h->c.a.pos, door);
+    if (!(sceVu0InnerProduct(c, c) < sceVu0InnerProduct(b, b))) {
+        return;
+    }
+    d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, (u8)h->c.unk100) & 0xFFFF;
+    if (d != 0xFFFF) {
+        if (in_his_room(h, gCharPlayer) && !(u8)func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos)) {
+            h->c.unk148C[d >> 5] |= 1 << (d & 0x1F);
+        }
+        func_0013AAE0(h, (u8)h->c.unk100);
+    }
+    hewie_want(h, 0, 0);
+}
