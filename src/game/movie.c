@@ -460,6 +460,88 @@ s32 func_002B6640(Movie *m) {
     return 0;
 }
 
+/* restart the file after an error */
+static inline void movie_retry(Movie *m) {
+    if (m->dir != 0) {
+        func_001E7430(0, m->dir);
+    }
+    VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
+}
+
+/* the renderer told the screen is the movie's (unless it keeps its own) */
+static inline void movie_take_screen(Movie *m) {
+    if (!m->keepRenderer) {
+        AT(VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0), 0x1C, u8) = 1;
+    }
+}
+
+/* the sound up to the volume */
+static inline void movie_sound_on(Movie *m) {
+    s32 db;
+
+    m->volume[4] = 1.0f;
+    db = movie_level(m);
+    if (m->ply != NULL) {
+        VCALL(m->ply, 0x2C, void (*)(VObject *, s32))(m->ply, db);
+    }
+}
+
+extern const PTMF D_004126C8;   /* virtual +0x1C: playing */
+extern const PTMF D_004126D8;   /* func_002B68B0 */
+extern const PTMF D_004126E8;   /* func_002B6710 */
+extern const PTMF D_004126F8;   /* virtual +0x1C */
+
+/* state: paused on the first frame until the event says go (mode 1, event command 0xCF) - then
+ * it is shown, the movie resumed with its sound, and played */
+void func_002B6710(Movie *m) {
+    if (m->mode != 1) {
+        return;
+    }
+    movie_take_screen(m);
+    VCALL(m, 0x20, void (*)(Movie *))(m);
+    m->hasFrame = 1;
+    func_0023A180(m->ply);
+    VCALL(m, 0x24, void (*)(Movie *))(m);
+    VCALL(m->ply, 0x28, void (*)(VObject *, s32))(m->ply, 0);
+    movie_sound_on(m);
+    Movie_SetState(m, &D_004126F8);
+}
+
+/* state: wait for the first frame, then pause on it */
+void func_002B68B0(Movie *m) {
+    m->stat = VCALL(m->ply, 0x20, s32 (*)(VObject *))(m->ply);
+    if (m->stat == 4) {
+        movie_retry(m);
+        return;
+    }
+    func_00239828(m->ply, &m->frame);
+    if (m->frame == NULL) {
+        return;
+    }
+    m->shownFrame = m->frameNo;
+    VCALL(m->ply, 0x28, void (*)(VObject *, s32))(m->ply, 1);
+    Movie_SetState(m, &D_004126E8);
+}
+
+/* state: the file opening; then played at once (mode 1) or held on its first frame */
+void func_002B69B0(Movie *m) {
+    m->stat = VCALL(m->ply, 0x20, s32 (*)(VObject *))(m->ply);
+    if (m->stat == 4) {
+        movie_retry(m);
+        return;
+    }
+    if (m->stat == 1) {
+        return;
+    }
+    if (m->mode != 1) {
+        Movie_SetState(m, &D_004126D8);
+        return;
+    }
+    movie_take_screen(m);
+    movie_sound_on(m);
+    Movie_SetState(m, &D_004126C8);
+}
+
 /* state: start the file */
 void func_002B6BB0(Movie *m) {
     if (m->name[0] == 0) {

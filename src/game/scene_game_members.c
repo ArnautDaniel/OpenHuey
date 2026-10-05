@@ -2036,8 +2036,8 @@ extern u8 *D_0044E958;
 extern u8 *D_0044E980;   /* the BGM player */
 extern VObject *D_0044E560;   /* the sound driver */
 extern void func_002EF9E0(void *o);
-extern void func_002D1FD0(void);
-extern void func_002B6340(void);
+extern void func_002D1FD0(void *bgm);
+extern void func_002B6340(void *movie);
 
 static f32 clamp01(f32 v) {
     if (v < 0.0f) {
@@ -2093,13 +2093,13 @@ void func_002A7720(u8 *o) {
     if (old != AT(o, 0x10, f32)) {
         VCALL(D_0044E560, 0xAC, void (*)(VObject *, f32))(D_0044E560, AT(o, 0x10, f32));
         AT(D_0044E980, 0x120, f32) = clamp01(AT(o, 0x10, f32));
-        func_002D1FD0();
+        func_002D1FD0(D_0044E980);   /* the music player, passed through a0 */
         if (D_00456DF0 != NULL) {
             VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, AT(o, 0x10, f32));
         }
         if (D_0044E958 != NULL) {
             AT(D_0044E958, 0x1D4, f32) = clamp01(AT(o, 0x10, f32));
-            func_002B6340();
+            func_002B6340(D_0044E958);   /* the movie, passed through a0 */
         }
     }
     if (AT(o, 0x20, s32) != 0) {
