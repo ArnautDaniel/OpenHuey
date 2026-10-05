@@ -626,6 +626,7 @@ void func_002D8DF0(Pursuer *p);
 void func_002D9500(Pursuer *p);
 void func_002DA120(Pursuer *p);
 void func_002DA4C0(Pursuer *p);
+void func_002DA6B0(Pursuer *p);
 void func_002DB480(Pursuer *p);
 void func_002DB7F0(Pursuer *p);
 void func_002DB900(Pursuer *p, s32 on);
