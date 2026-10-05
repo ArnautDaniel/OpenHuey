@@ -947,3 +947,83 @@ s32 func_002B14A0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_00470A50[];   /* the rising motes */
+extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
+extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "movechair_2" */
+extern s32 func_0032D2C0(Character *c);
+extern void func_0032D3E0(Character *c, s32 a, f32 x, f32 y);
+
+static void motes_init(void **obj) {
+    obj[0] = D_00470A50;
+    obj[0x3010 / 4] = D_00469D00;
+    ((s32 *)obj)[0x3014 / 4] = -1;
+    obj[0x3010 / 4] = D_0046FC30;
+}
+
+/* the rising motes started */
+s32 func_002B02D0(void) {
+    Effect_New(D_0044E578, 0x3860, motes_init);
+    return 1;
+}
+
+/* the partner's target (+0xF35E0 on, +0xF35F0) 3 above the rocking chair (movechair_2): its
+ * seat 6 ahead, tipped by its rock (90 x +0x34 x sin +0x30 degrees) and turned with it */
+s32 func_002B04E0(void) {
+    u8 *chair = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00403960);
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+
+    v[0] = 0.0f;
+    v[1] = 6.0f;
+    v[2] = 0.0f;
+    v[3] = 0.0f;
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixX(m, m, 0x1.921fb6p+1f * (90.0f * AT(chair, 0x34, f32) * func_0031C248(0x1.921fb6p+1f * AT(chair, 0x30, f32) / 180.0f)) / 180.0f);
+    sceVu0RotMatrixY(m, m, AT(chair, 0x14, f32));
+    sceVu0ApplyMatrix(v, m, v);
+    sceVu0AddVector(at, (f32 *)(chair + 0x20), v);
+    at[1] = at[1] + 3.0f;
+    AT(gCharPartner, 0xF35E0, u8) = 1;
+    sceVu0CopyVector((f32 *)((u8 *)gCharPartner + 0xF35F0), at);
+    return 1;
+}
+
+/* the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075) */
+s32 func_002B0B60(void *self, void *a1, u8 *cmd) {
+    VObject *objs = D_00456DF8;
+    u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403948);
+
+    if (o != NULL) {
+        AT(o, 0x14, f32) = AT(o, 0x14, f32) - (cmd[3] == 0 ? 2.25f : 0x1.333334p-4f /* 0.075 */);
+    }
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040394C);
+    if (o != NULL) {
+        AT(o, 0x14, f32) = AT(o, 0x14, f32) + (cmd[3] == 0 ? 2.25f : 0x1.333334p-4f);
+    }
+    return 1;
+}
+
+/* the first rocking chair still rocking (+0x34 over 0.3) */
+s32 func_002B0C90(void) {
+    u8 *chair = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0040395C);
+
+    return !(AT(chair, 0x34, f32) <= 0x1.333334p-2f /* 0.3 */);
+}
+
+/* character kind 0x1A: byte 3 0 starts func_0032D3E0(2, -290, 42); else waits (2) until
+ * func_0032D2C0 says done */
+s32 func_002B1700(void *self, void *a1, u8 *cmd) {
+    Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
+
+    if (cmd[3] != 0) {
+        return func_0032D2C0(c) == 0 ? 2 : 1;
+    }
+    func_0032D3E0(c, 2, -290.0f, 42.0f);
+    return 1;
+}
+
+s32 func_002B2950(void) {
+    return 1;
+}
