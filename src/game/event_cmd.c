@@ -93,6 +93,7 @@ extern u8 *D_0044F258;
 extern u8 *func_002083B0(u8 *e);
 extern u8 *func_00208340(u8 *e);
 extern void **func_00208070(void **e);
+extern void **func_00208090(void **e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -617,6 +618,30 @@ static void *partner_model(Progress *p, s32 k) {
         return m;
     }
     return k == 0 ? func_00208210(m, 0) : k == 1 ? func_00208180(m, 1) : func_002080D0(m, 2);
+}
+
+/* (0xC8 / 0xD9) a scene effect of `size` bytes made by `ctor` in a free slot of the effect
+ * manager (-1: none) */
+static s32 scene_effect_new(u8 *mgr, u32 size, void **(*ctor)(void **)) {
+    void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), size);
+    s32 i;
+
+    if (mem == NULL) {
+        return -1;
+    }
+    for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
+        if (EFFECT_SLOTS(mgr)[i] == NULL) {
+            void **obj = func_002D63C0(size, mem);
+
+            if (obj != NULL) {
+                obj = ctor(obj);
+            }
+            EFFECT_SLOTS(mgr)[i] = obj;
+            VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
+            return i;
+        }
+    }
+    return -1;
 }
 
 void func_002029B0(VObject *ev) {
@@ -1732,35 +1757,48 @@ void func_002029B0(VObject *ev) {
         break;
     case 0xD9: {   /* a scene effect (func_00208070, 0x50 bytes) at (3 x be32 / 1000), size be32 pc[13..] / 1000 */
         u8 *mgr = D_0044E578;
-        void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), 0x50);
-        s32 slot = -1;
+        s32 slot = scene_effect_new(mgr, 0x50, func_00208070);
         struct {
             f32 pos[4];
             f32 size;
         } arg __attribute__((aligned(16)));
 
-        if (mem != NULL) {
-            s32 i;
-
-            for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
-                if (EFFECT_SLOTS(mgr)[i] == NULL) {
-                    void **obj = func_002D63C0(0x50, mem);
-
-                    if (obj != NULL) {
-                        obj = func_00208070(obj);
-                    }
-                    EFFECT_SLOTS(mgr)[i] = obj;
-                    VCALL(EFFECT_SLOTS(mgr)[i], 0xC, void (*)(void **))(EFFECT_SLOTS(mgr)[i]);
-                    slot = i;
-                    break;
-                }
-            }
-        }
         arg.pos[0] = (f32)be32(PC(ev) + 1) / 1000.0f;
         arg.pos[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
         arg.pos[3] = 1.0f;
         arg.pos[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
         arg.size = (f32)be32(PC(ev) + 0xD) / 1000.0f;
+        func_002D6090(mgr, slot, &arg);
+        break;
+    }
+    case 0xC8: {   /* dust (func_00208090, 0x720 bytes) of kind pc[1] at (3 x be32 pc[2..] / 1000):
+                    * colour pc[14..16] if pc[17], else grey 0x80 (kind 0) / 0x50; size 16 */
+        u8 *mgr = D_0044E578;
+        s32 slot = scene_effect_new(mgr, 0x720, func_00208090);
+        struct {
+            f32 pos[4];
+            s32 kind, r, g, b, size;
+        } arg __attribute__((aligned(16)));
+
+        arg.pos[0] = (f32)be32(PC(ev) + 2) / 1000.0f;
+        arg.pos[1] = (f32)be32(PC(ev) + 6) / 1000.0f;
+        arg.pos[3] = 1.0f;
+        arg.pos[2] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
+        arg.kind = PC(ev)[1];
+        if (PC(ev)[0x11] != 0) {
+            arg.r = PC(ev)[0xE];
+            arg.g = PC(ev)[0xF];
+            arg.b = PC(ev)[0x10];
+        } else if (arg.kind == 0) {
+            arg.b = 0x80;
+            arg.g = 0x80;
+            arg.r = 0x80;
+        } else {
+            arg.b = 0x50;
+            arg.g = 0x50;
+            arg.r = 0x50;
+        }
+        arg.size = 0x10;
         func_002D6090(mgr, slot, &arg);
         break;
     }
