@@ -4386,3 +4386,155 @@ void func_0013F470(Hewie *h) {
         break;
     }
 }
+
+/* ---- carrying out a command ---- */
+
+extern const s8 D_003B1220[];   /* by trust: chance (percent) he answers 0x30 while she is held */
+extern const s8 D_003B1228[];   /* ... at panic 4 */
+extern const s8 D_003B1230[];   /* ... at panic 5 */
+
+/* he heard her: stop waiting and obey for a while */
+static inline void obeys(Hewie *h) {
+    HW(h, 0xF3598, s32) = 0;
+    obey_time(h);
+    HW(h, 0xF3586, u8) = 0;
+}
+
+/* a roll against tbl[trust] percent */
+static s32 by_chance(Hewie *h, const s8 *tbl) {
+    s32 chance = tbl[HW(h, 0xF35CC, s16)];
+    s8 r = (s8)(s32)(100.0f * RNG01());
+
+    if (chance < 0) {
+        chance = 0;
+    } else if (chance >= 101) {
+        chance = 100;
+    }
+    return r < (s8)chance;
+}
+
+/* act on Fiona's command `cmd` (from func_0013E2D0); 1 if he took up an action. Hidden (+0x29)
+ * he only answers 0x2C (come out: 0x2D, or flag +0xF3559 while +0xF35B4 counts) and 0x30
+ * (0x39); 0x2A heals him to 10 */
+s32 func_0013D580(Hewie *h, s32 cmd) {
+    Progress *p;
+    s32 took = 0;
+
+    switch (cmd) {
+    case 0x25:
+        if (!h->c.a.disabled) {
+            took = 1;
+            hewie_want(h, 0x1D, 0x29);
+            obeys(h);
+        }
+        break;
+    case 0x26:
+        if (!h->c.a.disabled) {
+            p = gProgress;
+            if (!(u8)func_00177620(p)) {
+                took = 1;
+                hewie_want(h, 0x1D, 0x2B);
+            }
+            obeys(h);
+        }
+        break;
+    case 0x27:
+        if (!h->c.a.disabled) {
+            p = gProgress;
+            took = 1;
+            if (!(u8)func_00177620(p)) {
+                s32 a = HW(h, 0xF3564, s32);
+
+                hewie_want(h, 0x1D, a == 3 || a == 2 || a == 1 || a == 5 || a == 4 ? 0x29 : 0x27);
+            } else if ((u8)func_00177620(p) == 2) {
+                hewie_want(h, 0x1D, 0x7A);
+            } else {
+                hewie_want(h, 0x1D, 7);
+            }
+            obeys(h);
+        }
+        break;
+    case 0x2C:
+        if (h->c.a.disabled) {
+            if (HW(h, 0xF35B4, s32) > 0) {
+                HW(h, 0xF35B4, s32) = -1;
+                HW(h, 0xF3559, u8) = 1;
+                return 0;
+            }
+            if (HW(h, 0xF3564, s32) != 0x2D) {
+                took = 1;
+                hewie_want(h, 0x2D, 0);
+            }
+            break;
+        }
+        p = gProgress;
+        took = 1;
+        hewie_want(h, 0x1D, !(u8)func_00177620(p) ? 0xD : 0xE);
+        obeys(h);
+        break;
+    case 0x2D:
+        if (!h->c.a.disabled) {
+            took = 1;
+            hewie_want(h, 0x4E, 0);
+            obeys(h);
+        }
+        break;
+    case 0x2A:
+        h->c.hp = 10;
+        break;
+    case 0x23:
+        if (!h->c.a.disabled) {
+            p = gProgress;
+            if (!(u8)func_00177620(p) && HW(h, 0xF368C, s32) == 0) {
+                HW(h, 0xF368C, u8 *) = func_00139460(h);
+                if (HW(h, 0xF368C, s32) != 0) {
+                    hewie_want(h, 0x1D, 0x78);
+                    return 1;
+                }
+            }
+            /* the spot she points at: state [4] / [5], x / z in 1e-5 units */
+            h->c.unk104[0] = h->c.state[4];
+            HW(h, 0x10C, s32) = h->c.state[5];
+            h->c.unk110[0] = 0x1.4f8b58p-17f /* 1e-5 */ * (f32)h->c.state[2];
+            HW(h, 0x114, s32) = 0;
+            h->c.unk110[2] = 0x1.4f8b58p-17f /* 1e-5 */ * (f32)h->c.state[3];
+            h->c.unk110[3] = 1.0f;
+            took = 1;
+            if (!(u8)func_00177620(p)) {
+                hewie_want(h, 0x1D, 0x63);
+            } else {
+                hewie_want(h, 0x63, 0);
+            }
+            obeys(h);
+        }
+        break;
+    case 0x2E:
+        if (!h->c.a.disabled) {
+            obeys(h);
+        }
+        break;
+    case 0x30:
+        if (h->c.a.disabled) {
+            HW(h, 0xF35B4, s32) = -1;
+            took = 1;
+            hewie_want(h, 0x39, 0);
+        } else if (AT(gProgress, 0x7B8, u8) == 5) {
+            if (by_chance(h, D_003B1230)) {
+                took = 1;
+                hewie_want(h, 0x4F, 0);
+            }
+        } else if (AT(gProgress, 0x7B8, u8) == 4) {
+            if (by_chance(h, D_003B1228)) {
+                took = 1;
+                hewie_want(h, 0x4F, 0);
+            }
+        } else if (gCharPlayer->moveMode == 4 && (gCharPlayer->moveSub == 9 || gCharPlayer->moveSub == 0x12)) {
+            if (by_chance(h, D_003B1220)) {
+                took = 1;
+                hewie_want(h, 0x4F, 0);
+            }
+        }
+        break;
+    }
+    return took;
+}
