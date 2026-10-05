@@ -9016,3 +9016,64 @@ void func_0015A720(Hewie *h) {
     }
     hewie_want(h, 0, 0);
 }
+
+/* ---- tricks ---- */
+
+extern const PTMF D_003B1788, D_003B1798, D_003B17A8, D_003B17B8, D_003B17C8;
+
+/* the tricks: once in the pose they need, their animation and behaviour. 0x18 sitting (0x1C06,
+ * D_003B1788; from lying with +0xF36B4: 0x1C07, D_003B1798); 0x19 sitting (0x1C00, D_003B17A8);
+ * 0x1A / 0x1B standing (0x1C08 / 0x1C09, D_003B17B8 / D_003B17C8); 0x1C: sit (0x106), then lie
+ * down (8) and stay for +0xF355C, then the default action */
+void func_0015AE10(Hewie *h) {
+    switch (HEWIE_ACTION(h)) {
+    case 0x18:
+        if (HW(h, 0xF36B4, s32) == 0) {
+            if (func_00140CD0(h, 1) == 0) {
+                func_002DDED0(h->c.motion, 0x1C06, -1);
+                Hewie_SetBehaviour(h, &D_003B1788);
+            }
+        } else if (func_00140CD0(h, 2) == 0) {
+            func_002DDED0(h->c.motion, 0x1C07, -1);
+            Hewie_SetBehaviour(h, &D_003B1798);
+        }
+        break;
+    case 0x19:
+        if (func_00140CD0(h, 1) == 0) {
+            func_002DDED0(h->c.motion, 0x1C00, -1);
+            Hewie_SetBehaviour(h, &D_003B17A8);
+        }
+        break;
+    case 0x1C:
+        switch (MOTION_ANIM(h->c.motion)) {
+        case 0x106:
+            if (ANIM_DONE(h)) {
+                func_002DDED0(h->c.motion, 8, -1);
+            }
+            break;
+        case 8:
+            if (HW(h, 0xF355C, s32) == 0 && ANIM_DONE(h)) {
+                hewie_want(h, 0, 0);
+            }
+            break;
+        default:
+            if (func_00140CD0(h, 1) == 0) {
+                func_002DDED0(h->c.motion, 0x106, -1);
+            }
+            break;
+        }
+        break;
+    case 0x1A:
+        if (func_00140CD0(h, 0) == 0) {
+            func_002DDED0(h->c.motion, 0x1C08, -1);
+            Hewie_SetBehaviour(h, &D_003B17B8);
+        }
+        break;
+    case 0x1B:
+        if (func_00140CD0(h, 0) == 0) {
+            func_002DDED0(h->c.motion, 0x1C09, -1);
+            Hewie_SetBehaviour(h, &D_003B17C8);
+        }
+        break;
+    }
+}
