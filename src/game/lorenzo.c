@@ -932,3 +932,234 @@ void func_0030B840(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_00423A28);
     Lorenzo2_SinkBehind(p);
 }
+
+/* ---- character kind 12 (vtable D_004718F0): a pursuer with his own tables and update ---- */
+
+extern void *D_004718F0[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[], *D_00470F90[];
+extern u8 D_00423D90[], D_00423DB0[], D_00423DE0[], D_00423DF8[], D_00423E10[], D_00423E38[],
+    D_00423E50[], D_00423E70[], D_00423E88[], D_00423E98[], D_00423EB0[], D_00423EC8[],
+    D_00423EE0[], D_00423F00[], D_00423F20[], D_00423F38[], D_00423F48[];
+extern u8 D_00423FE0[], D_00424010[], D_00424040[], D_00424060[], D_00424080[], D_004240B0[],
+    D_004240C0[], D_004240F0[], D_00424108[], D_00424118[], D_00424130[], D_00424158[],
+    D_00424170[], D_00424190[], D_004241B0[], D_004241C8[], D_004241D8[];
+extern u8 D_004241F0[], D_00423FB0[], D_019910F0[], D_00424238[], D_00423F60[], D_00423FD0[];
+extern void func_001267F0(Character *c, s32 n);
+extern u8 D_00423CF0[], D_00423D60[], D_00423D80[], D_00423BB0[], D_00423CE0[], D_0047AD18[];
+
+/* vtable +0x8: destructor (0x4718F0 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the
+ * model freed for slots 3..5 */
+Pursuer *func_0030C3E0(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = D_004718F0;
+        p->c.a.vtbl = D_0046D810;
+        VCALL(p, 0x10, void (*)(Pursuer *))(p);
+        if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
+            void **m = p->c.motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                p->c.motion = NULL;
+            }
+        }
+        p->c.a.vtbl = D_0046C220;
+        VCALL(p, 0x10, void (*)(Pursuer *))(p);
+        p->c.a.vtbl = D_00469C60;
+        p->c.a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&p->c.a);
+        }
+    }
+    return p;
+}
+
+static void k12_mark_init(void **obj) {
+    obj[0] = D_00470F90;
+}
+
+/* the marker effect D_00470F90 over him ({1, 0, 1, its slot}) */
+static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
+    u8 *mgr;
+    s32 slot, arg[4] __attribute__((aligned(16)));
+
+    PU(p, 0x17C0, u8) = 1;
+    mgr = D_0044E578;
+    slot = Effect_New(mgr, 0x20, k12_mark_init);
+    arg[0] = 1;
+    arg[1] = 0;
+    AT(&arg[2], 0, f32) = 1.0f;
+    arg[3] = slot;
+    func_002D6090(mgr, slot, arg);
+}
+
+/* vtable +0x38: func_002809E0, then (when func_00217510 allows) the marker */
+void func_0030C520(Pursuer *p) {
+    func_002809E0(p);
+    if (func_00217510(p) != 0) {
+        k12_mark(p);
+    } else {
+        PU(p, 0x17C0, u8) = 0;
+    }
+}
+
+/* vtable +0x148: the same over func_002804B0 */
+void func_0030C670(Pursuer *p) {
+    func_002804B0(p);
+    if (func_00217510(p) != 0) {
+        k12_mark(p);
+    } else {
+        PU(p, 0x17C0, u8) = 0;
+    }
+}
+
+/* his attack tables for situations 0..16; the first set when gProgress+0x30 bit 0x8000 */
+static u8 *const sK12Tables[2][17] = {
+    { D_00423D90, D_00423DE0, D_00423DB0, D_00423DF8, D_00423E10, D_00423E38, D_00423E50,
+      D_00423E70, D_00423E88, D_00423E98, D_00423EB0, D_00423EC8, D_00423EE0, D_00423F00,
+      D_00423F38, D_00423F48, D_00423F20 },
+    { D_00423FE0, D_00424040, D_00424010, D_00424060, D_00424080, D_004240B0, D_004240C0,
+      D_004240F0, D_00424108, D_00424118, D_00424130, D_00424158, D_00424170, D_00424190,
+      D_004241C8, D_004241D8, D_004241B0 },
+};
+
+/* vtable +0x130: the attack table for a situation (out of range: the first of the plain set) */
+void func_0030C7C0(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+
+    PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sK12Tables[alt][situation] : D_00423D90;
+}
+
+/* vtable +0x84: a request of kind 4 seen (+0x14E8, not yet handled +0x14F0) raises the threat,
+ * except in game modes 6 / 7; then func_0029C8C0 and back to full health */
+void func_0030CA80(Pursuer *p) {
+    if (PU(p, 0x14E8, s32) == 4 && PU(p, 0x14F0, s32) == 0 && func_00283870(p) != 0) {
+        Progress *pr = gProgress;
+        u8 mode = Progress_GetVar(pr, 0x26) & 0xFF;
+
+        if (mode != 7 && mode != 6) {
+            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
+        }
+    }
+    func_0029C8C0(p);
+    p->c.hp = p->c.hpMax;
+}
+
+/* vtable +0x110: let his progress slot go if he holds one; -1 */
+s32 func_0030CB40(Pursuer *p) {
+    Progress *pr = gProgress;
+
+    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+        func_001777D0(pr, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+/* vtable +0x58: the marker off, then the Pursuer's */
+void func_0030CBD0(Pursuer *p) {
+    PU(p, 0x17C0, u8) = 0;
+    func_0029E600(p);
+}
+
+/* vtable +0x30: his frame update - the stalkers', with the senses kept on him while the
+ * behaviour is fresh outside cutscenes, and the threat raised when he hits */
+void func_0030CBE0(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+    Progress *pr;
+
+    VCALL(p, 0x84, void (*)(Pursuer *))(p);
+    p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    p->c.pathReq->mask = p->c.a.navMask;
+    func_00215D80(p);
+    if (PU(p, 0x16F6, u8) == 1) {
+        if (AT(gProgress, 0x1FBEC1, u8) == 0) {
+            PU(p, 0x1544, u8) = p->c.a.room == gCharPlayer->a.room;
+            PU(p, 0x1545, u8) = 0;
+            PU(p, 0x1546, u8) = 0;
+            PU(p, 0x16C9, u8) = 5;
+            PU(p, 0x16CA, u8) = 7;
+        } else {
+            func_002177D0(p);
+        }
+    } else {
+        PU(p, 0x1544, u8) = 0;
+        PU(p, 0x1545, u8) = 0;
+        PU(p, 0x1546, u8) = 0;
+        PU(p, 0x16CB, u8) = 0;
+        PU(p, 0x16CC, u8) = 0;
+    }
+    VCALL(p, 0x120, void (*)(Pursuer *))(p);
+    func_00297C60(p);
+    pr = gProgress;
+    if (AT(pr, 0x1FBEC1, u8) == 0) {
+        if (PU(p, 0x16C8, u8) != 0) {
+            func_0029B190(p);
+        }
+        VCALL(p, 0x2BC, void (*)(Pursuer *))(p);
+    }
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        func_0029B4B0(p);
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        if (func_00283870(p) != 0 && ((func_00217920(p) & 0xFF) & 1)) {
+            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    Stalker_ThinkEnd(p);
+}
+
+/* vtable +0xF4: his setup over the Pursuer's: tables (two sets by gProgress+0x30 bit 0x8000),
+ * 9999 health, his stats */
+void func_0030CFA0(Pursuer *p) {
+    static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD};
+
+    func_0029FB20(p);
+    p->c.hpMax = 9999;
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        PU(p, 0x1730, u8 *) = D_004241F0;
+        PU(p, 0x1740, u8 *) = D_00423FB0;
+        PU(p, 0x173C, u8 *) = D_019910F0;
+        PU(p, 0x1748, u8 *) = D_00424238;
+    } else {
+        PU(p, 0x1730, u8 *) = D_00423F60;
+        PU(p, 0x1740, u8 *) = D_00423FB0;
+        PU(p, 0x173C, u8 *) = D_019910F0;
+        PU(p, 0x1748, u8 *) = D_00423FD0;
+    }
+    PU(p, 0x16DC, s32) = 100;
+    PU(p, 0x16E8, s32) = 0;
+    PU(p, 0x16D4, s32) = 0x7512;
+    PU(p, 0x16D8, s32) = 0;
+    PU(p, 0x16D0, s32) = 0;
+    PU(p, 0x16E0, s32) = 3000;
+    PU(p, 0x16E4, s32) = 999;
+    p->c.a.radius = 3.5f;
+    p->c.a.height = 18.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x171C, u8 *) = D_00423CF0;
+    PU(p, 0x1720, u8 *) = D_00423D60;
+    PU(p, 0x1724, u8 *) = D_00423D80;
+    PU(p, 0x16AC, u8 *) = D_00423BB0;
+    PU(p, 0x16B0, u8 *) = D_00423CE0;
+    PU(p, 0x1734, u8 *) = D_0047AD18;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = -8.0f;
+    PU(p, 0x1698, f32) = 8.0f;
+    PU(p, 0x16A0, f32) = -8.0f;
+    PU(p, 0x17C0, u8) = 1;
+    PU(p, 0x17C4, f32) = k02.f;
+    p->c.unkE4 = 0;
+    func_001267F0(&p->c, 0x14);
+}
