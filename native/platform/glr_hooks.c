@@ -33,12 +33,17 @@ int func_002685F0(uint8_t *drawer) {
     return 0;
 }
 
-/* func_002C6650: the depth-band drawer (vtable +0xC of D_0046EC80; +0x8 .. +0x14 its values,
- * +0xC / +0x10 the band's near / far depth): a frame-buffer pass over the band (2085
- * instructions of GS packets). GL TODO; 0 = nothing linked. */
+/* func_002C6650: the depth of field (vtable +0xC of D_0046EC80; +0x8 .. +0x14 the view depths
+ * a, from, to, b; layer 0x21). The original copies its Z buffer down to half size and marks
+ * the frame's alpha with depth-tested sprites at eight depths (0x60 .. 0 over a .. from, 0x20
+ * .. 0x80 over to .. b, 0x80 elsewhere), blurs the halved screen with eight 50/50 shifted
+ * copies, and blends it back by that alpha. glr does it from each pixel's view depth; 0 =
+ * nothing linked. */
 int func_002C6650(uint8_t *d) {
-    (void)d;
-    glr_todo("depth band effect (func_002C6650)");
+    float v[4];
+
+    memcpy(v, d + 0x8, sizeof(v));
+    glr_dof(v[0], v[1], v[2], v[3]);
     return 0;
 }
 

@@ -64,6 +64,10 @@ void glr_vignette(int strength, int offset);
 void glr_caustic_begin(void);
 void glr_caustic_glow(int aref);
 
+/* func_002C6650 (the depth of field): the screen blurred where its view depth is outside
+ * from .. to, fully beyond a / b, in steps of a quarter between */
+void glr_dof(float a, float from, float to, float b);
+
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);
 

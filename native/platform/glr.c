@@ -44,6 +44,7 @@
     X(PFNGLPROGRAMUNIFORM4FPROC, glProgramUniform4f) \
     X(PFNGLPROGRAMUNIFORM1FPROC, glProgramUniform1f) \
     X(PFNGLPROGRAMUNIFORM2FPROC, glProgramUniform2f) \
+    X(PFNGLPROGRAMUNIFORM2IPROC, glProgramUniform2i) \
     X(PFNGLCREATETEXTURESPROC, glCreateTextures) \
     X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) \
@@ -94,7 +95,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -244,6 +245,15 @@ void glr_vignette(int strength, int offset) {
     put_post(POST_VIGNETTE, 0x2A, (uint32_t)strength, (uint32_t)offset);   /* its packet's layer */
 }
 
+void glr_dof(float a, float from, float to, float b) {
+    GlrDraw *d = put_post(POST_DOF, sLayer, 0, 0);
+
+    d->mvp[0] = a;
+    d->mvp[1] = from;
+    d->mvp[2] = to;
+    d->mvp[3] = b;
+}
+
 void glr_caustic_begin(void) {
     put_post(POST_ALPHA_CLEAR, sLayer, 0, 0);
 }
@@ -270,7 +280,7 @@ static GLuint sFbo, sColor, sDepth, sViewDepth, sGsTex;   /* sViewDepth: each pi
 /* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
  * scratch buffer its fade goes through (A) */
 static GLuint sGlowFbo, sGlowB, sGlowDepth, sGlowAFbo, sGlowA, sPostProg;
-static GLint sPostModeLoc, sPostColorLoc, sPostColor2Loc, sPostRangeLoc, sPostFixLoc;
+static GLint sPostModeLoc, sPostColorLoc, sPostColor2Loc, sPostRangeLoc, sPostFixLoc, sPostBandLoc, sPostOffLoc;
 /* the bloom's half-size images: H, H2 and the next H */
 #define GLR_HALF_W 256
 #define GLR_HALF_H 224
@@ -375,6 +385,11 @@ static const char *kQuadFs =
  *   12 H where its alpha (the frame's) >= uFix, else nothing
  *   13 H + the sum of H * 0x40 >> 7 at the 4 diagonal neighbours
  *      (the caustic, func_0034E9E0: 2, 12, 13, then 6 at colour 0x80 and FIX 0x40, added)
+ *   15 D + ((S at p - offset) - D) * 0x40 >> 7 (D the target's own image, S the other)
+ *   16 the colour with the depth of field's alpha: 0x80, stepping 0x60 .. 0 over a .. from,
+ *      0x20 .. 0x80 over to .. b (view depth, from the depth image; last band passed wins)
+ *   17 over the screen by its alpha, stretched
+ *      (the depth of field, func_002C6650: 2, eight 15s ping-ponging, 16, 17)
  *   11 the screen (a copy) D + (-D * a >> 7), a = strength x the corner's weight in one of
  *      four gouraud triangles, each from a screen corner to the middles of its two edges
  *      (moved by the offset) */
@@ -386,6 +401,9 @@ static const char *kPostFs =
     "uniform vec4 uColor;\n"   /* 0..255 */
     "uniform vec4 uColor2;\n"
     "uniform vec2 uRange;\n"
+    "uniform vec4 uBand;\n"   /* the depth of field: a, from, to, b */
+    "uniform ivec2 uOff;\n"   /* a pass's offset (GL pixels) */
+    "uniform sampler2D uTex2;\n"
     "uniform float uFix;\n"
     "out vec4 oColor;\n"
     "vec4 at(sampler2D t, ivec2 p) {\n"   /* 0..255; outside the image: nothing */
@@ -450,6 +468,26 @@ static const char *kPostFs =
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.5); c += floor(at(uTex, p + ivec2(-1, 1)) * 0.5);\n"
     "        c += floor(at(uTex, p + ivec2(1, -1)) * 0.5);  c += floor(at(uTex, p + ivec2(1, 1)) * 0.5);\n"
+    "    } else if (uMode == 15) {\n"   /* dst + ((src at p - off) - dst) * 0x40 >> 7 where covered */
+    "        c = at(uTex, p);\n"
+    "        ivec2 q = p - uOff;\n"
+    "        ivec2 sz = textureSize(uTex1, 0);\n"
+    "        if (q.x >= 0 && q.y >= 0 && q.x < sz.x && q.y < sz.y) c += floor((at(uTex1, q) - c) * 0.5);\n"
+    "    } else if (uMode == 16) {\n"   /* the blur's colour with the depth band's alpha (0x80 = 128) */
+    "        float d = texelFetch(uTex2, ivec2(int(float(p.x * 2) * 1.25), p.y * 2 + 1), 0).r;\n"
+    "        float a = 128.0;\n"
+    "        for (int k = 0; k < 8; k++) {\n"
+    "            float z = k < 4 ? uBand.x + float(k + 1) * 0.25 * (uBand.y - uBand.x)\n"
+    "                            : uBand.z + float(k - 3) * 0.25 * (uBand.w - uBand.z);\n"
+    "            if (d >= z) a = k < 4 ? float(96 - k * 32) : float((k - 3) * 32);\n"
+    "        }\n"
+    "        c = vec4(at(uTex, p).rgb, a);\n"
+    "    } else if (uMode == 17) {\n"   /* over the screen by its alpha: (Cs - Cd) * As + Cd */
+    "        vec2 sz = vec2(textureSize(uTex, 0));\n"
+    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
+    "        vec4 h = texture(uTex, t / sz) * 255.0;\n"
+    "        oColor = vec4(h.rgb / 255.0, clamp(h.a / 128.0, 0.0, 1.0));\n"
+    "        return;\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -465,7 +503,7 @@ static const char *kPostFs =
     "        vec4 d = at(uTex1, p);\n"
     "        c = d + floor((d - cs) * uFix / 128.0);\n"
     "    }\n"
-    "    oColor = vec4(clamp(c.rgb, 0.0, 255.0) / 255.0, 1.0);\n"
+    "    oColor = vec4(clamp(c.rgb, 0.0, 255.0) / 255.0, uMode == 16 ? c.a / 255.0 : 1.0);\n"
     "}\n";
 
 /* ---- textures: decoded from the game's .TEX entries in memory ---- */
@@ -728,6 +766,9 @@ int glr_init(void) {
     sPostFixLoc = p_glGetUniformLocation(sPostProg, "uFix");
     sPostColor2Loc = p_glGetUniformLocation(sPostProg, "uColor2");
     sPostRangeLoc = p_glGetUniformLocation(sPostProg, "uRange");
+    sPostBandLoc = p_glGetUniformLocation(sPostProg, "uBand");
+    sPostOffLoc = p_glGetUniformLocation(sPostProg, "uOff");
+    p_glProgramUniform1i(sPostProg, p_glGetUniformLocation(sPostProg, "uTex2"), 2);
     p_glProgramUniform1i(sPostProg, p_glGetUniformLocation(sPostProg, "uTex1"), 1);
     for (i = 0; i < 3; i++) {
         p_glCreateTextures(GL_TEXTURE_2D, 1, &sHalf[i]);
@@ -823,7 +864,7 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
@@ -864,6 +905,36 @@ static void run_post(const GlrDraw *d) {
         p_glBlendFunc(GL_ONE, GL_ONE);
         post(6, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[2], 0);
         break;
+    case POST_DOF: {   /* func_002C6650: the halved screen blurred, over it by the depth band's alpha */
+        /* (+-1, +-1), then (-+1, 0), (0, -+1): the game's pixel offsets, y down */
+        static const int kOff[8][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int x = 0, y = 1, z = 2, k, t;   /* x: the "0x1B8" image, y: "0x1D4", z spare */
+
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, 0.0f);
+        post(2, sHalfFbo[x], GLR_HALF_W, GLR_HALF_H, sColor, 0);
+        p_glBlitNamedFramebuffer(sHalfFbo[x], sHalfFbo[y], 0, 0, GLR_HALF_W, GLR_HALF_H, 0, 0, GLR_HALF_W,
+                                 GLR_HALF_H, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        for (k = 0; k < 8; k++) {   /* into x from y, then into y from x, ... */
+            int dst = k & 1 ? y : x, src = k & 1 ? x : y;
+
+            p_glProgramUniform2i(sPostProg, sPostOffLoc, kOff[k][0], -kOff[k][1]);
+            post(15, sHalfFbo[z], GLR_HALF_W, GLR_HALF_H, sHalf[dst], sHalf[src]);
+            t = z;
+            z = dst;
+            if (k & 1) {
+                y = t;
+            } else {
+                x = t;
+            }
+        }
+        p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[0], d->mvp[1], d->mvp[2], d->mvp[3]);
+        p_glBindTextureUnit(2, sViewDepth);
+        post(16, sHalfFbo[z], GLR_HALF_W, GLR_HALF_H, sHalf[y], 0);
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        post(17, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[z], 0);
+        break;
+    }
     case POST_VIGNETTE:
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -979,8 +1050,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
 
                 for (k = 0; k < f->nd; k++) {
                     if (f->d[k].post) {
-                        fprintf(stderr, "glr: pass %d in layer %d, colour %08X, args %u\n", f->d[k].post,
-                                f->d[k].layer, (uint32_t)f->d[k].tex0, f->d[k].prim);
+                        fprintf(stderr, "glr: pass %d in layer %d, colour %08X, args %u (%g %g %g %g)\n", f->d[k].post,
+                                f->d[k].layer, (uint32_t)f->d[k].tex0, f->d[k].prim, f->d[k].mvp[0], f->d[k].mvp[1],
+                                f->d[k].mvp[2], f->d[k].mvp[3]);
                     }
                 }
                 p_glBindFramebuffer(GL_FRAMEBUFFER, sGlowFbo);
