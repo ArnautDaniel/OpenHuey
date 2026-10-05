@@ -7413,3 +7413,100 @@ void func_00151190(Hewie *h) {
         }
     }
 }
+
+/* ---- on a slope ---- */
+
+/* on sloped ground (mesh flag 1; leaving it: the default action), trotting (pose 8): with a door
+ * he may use (state bit 1) through it once +0xF36B4 drops to 0 (it starts at 1 with one, 0
+ * without). Heading along the slope: the way he faces down or up it at first; going the other
+ * way (+0xF36B8, set when the way ahead runs off the mesh) unless already facing within 60
+ * degrees of it, then the default action. Turning at least 1.5 degrees a frame; once facing it,
+ * testing the step ahead */
+void func_00151D10(Hewie *h) {
+    Progress *p = gProgress;
+    f32 n[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 fwd[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 pt[4] __attribute__((aligned(16)));
+    f32 a, step;
+    u32 e;
+
+    for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+        if (func_00177BF0(p, e, (u8)h->c.a.slot) & 0xFF & 1) {
+            break;
+        }
+    }
+    if (HW(h, 0xF36B4, s32) != -1) {
+        if ((u8)e != 8) {
+            if (HW(h, 0xF36B4, s32) == 0) {
+                func_0013AAE0(h, e);
+                hewie_want(h, 0, 0);
+                return;
+            }
+        } else {
+            HW(h, 0xF36B4, s32) = 0;
+        }
+    } else {
+        HW(h, 0xF36B4, s32) = (u8)e == 8 ? 0 : 1;
+    }
+    func_00141C00(h, 8);
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    if (!(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    VCALL(D_0044E570, 0x2C, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+    if (n[1] == 1.0f) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    n[1] = 0.0f;
+    sceVu0Normalize(dir, n);
+    fwd[2] = 1.0f;
+    fwd[0] = 0.0f;
+    fwd[1] = 0.0f;
+    fwd[3] = 0.0f;
+    sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
+    if (HW(h, 0xF36B8, s32) == 0) {
+        a = func_0031C5C0(n[0], n[2]);
+        if (sceVu0InnerProduct(fwd, dir) < 0.0f) {
+            a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+        }
+    } else {
+        a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_0031C5C0(n[0], n[2]));
+        func_002E3190(m, a);
+        v[2] = 1.0f;
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[3] = 0.0f;
+        func_002E2DA0(fwd, m, v);
+        func_002E2DA0(v, h->c.a.rot, v);
+        if (!(sceVu0InnerProduct(fwd, v) <= 0.5f)) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+    }
+    HW(h, 0xF36C4, f32) = a;
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    if (step < 0x1.aceea00000000p-6f /* 0.02617994 */) {
+        step = 0x1.aceea00000000p-6f /* 0.02617994 */;
+    }
+    if (func_00124530(&h->c.a, HW(h, 0xF36C4, f32), step) == 0.0f) {
+        if (root_ahead(h, fwd) < 0.0f) {
+            fwd[2] = 0.0f;
+        }
+        sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
+        sceVu0AddVector(pt, h->c.a.pos, fwd);
+        if (func_00124480(&h->c.a, pt, NAV_NONE) == NAV_NONE) {
+            HW(h, 0xF36B8, s32) = 1;
+        }
+    }
+}
