@@ -3976,3 +3976,56 @@ void func_003608A0(u8 *o) {
     AT(o, 0x620, u8 *) = SPRAY_DROP(o, 0);
     func_002E56C0(o + 0x610);
 }
+
+/* ---- D_00479560 (room effect 0x1A of room 0x32): the mirror fragment's reflection - the
+ * placed object +0x10 ("a_fragment0"), its kind +0x14 and alpha +0x18, size / drop / strength
+ * +0x50.. ---- */
+
+extern void *D_00479560[];
+extern void func_002672E0(void *p);   /* delete (the room effects' pool) */
+
+/* +0x8 destructor */
+void *func_003559D0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479560;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046D730;
+        }
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC set up, +0x10 update: nothing */
+void func_003570B0(void) {
+}
+
+void func_003570A0(void) {
+}
+
+/* +0x18 start: the parameters; the renderer's reflection pass on (+0x8C (0)) */
+void func_00355A30(u8 *o, const u8 *params) {
+    if (params == NULL) {
+        return;
+    }
+    AT(o, 0x50, f32) = AT(params, 0x0, f32);
+    AT(o, 0x54, f32) = AT(params, 0x4, f32);
+    AT(o, 0x58, f32) = AT(params, 0x8, f32);
+    AT(o, 0x5C, s32) = 0;
+    AT(o, 0x10, s32) = AT(params, 0xC, s32);
+    AT(o, 0x14, s32) = AT(params, 0x10, s32);
+    AT(o, 0x18, s32) = AT(params, 0x14, s32);
+    VCALL(D_0044E4F0, 0x8C, void (*)(VObject *, s32))(D_0044E4F0, 0);
+}
+
+#ifdef HG_NATIVE
+extern void glr_todo(const char *what);
+
+/* +0x14 draw: the fragment's reflection pass (renderer +0x20.. / camera; not ported yet) */
+void func_00355AA0(u8 *o) {
+    (void)o;
+    glr_todo("mirror fragment reflection (func_00355AA0)");
+}
+#endif

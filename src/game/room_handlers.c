@@ -2553,15 +2553,16 @@ s32 func_002B3AA0(void) {
     return 1;
 }
 
-/* room 0x21 (D_00400BC8): a lit quad (room effect 0x1A) at x 40.5 .. 49.5, z -10.5 .. -19.5,
- * from 1.5 to 30 */
-s32 func_002AF300(void *self, void *a1, u8 *cmd) {
-    static const u32 sQuad[16] = {
-        0x4221F660, 0x41F00000, 0xC127F766, 0x3F800000, 0x42460227, 0x41F00000, 0xC19C1340, 0x3F800000,
-        0x4221F660, 0x3FC00000, 0xC127F766, 0x3F800000, 0x42460227, 0x3FC00000, 0xC19C1340, 0x3F800000,
-    };
+/* a lit quad (room effect 0x1A) at x 40.5 .. 49.5, z -10.5 .. -19.5, from 1.5 to 30 (rooms 0x21
+ * and 0x32) */
+static const u32 sQuadDoor[16] = {
+    0x4221F660, 0x41F00000, 0xC127F766, 0x3F800000, 0x42460227, 0x41F00000, 0xC19C1340, 0x3F800000,
+    0x4221F660, 0x3FC00000, 0xC127F766, 0x3F800000, 0x42460227, 0x3FC00000, 0xC19C1340, 0x3F800000,
+};
 
-    return lit_quad_in(0x1A, cmd, sQuad, 0x20000040);
+/* room 0x21 (D_00400BC8) */
+s32 func_002AF300(void *self, void *a1, u8 *cmd) {
+    return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
 }
 
 /* room 0x21 (D_00400B98): the fan turns, except while a movie plays */
@@ -2640,4 +2641,38 @@ s32 func_002A8FF0(void) {
         return 1;
     }
     return 0;
+}
+
+extern const char *const D_0042C328;   /* "a_fragment0" */
+extern void *D_00479560[];
+
+/* room 0x32 (D_0042C2D8): byte 3 0..3 the lit quad (room effect 0x1A) as room 0x21's; 4 and up
+ * the mirror fragment's reflection (room effect 0x1A, D_00479560) on the object "a_fragment0":
+ * 1.8 across, -0.1 down, strength 1, kind 2, alpha 0xFF */
+s32 func_00320FF0(void *self, void *a1, u8 *cmd) {
+    u8 *o;
+
+    if (cmd[3] < 4) {
+        return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
+    }
+    o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0042C328);
+    if (o != NULL) {
+        u8 *fx;
+        struct {
+            f32 size, drop, strength;
+            void *obj;
+            s32 kind, alpha;
+        } arg __attribute__((aligned(16)));
+
+        AT(&arg.drop, 0, u32) = 0xBDCCCCCD;   /* -0.1 */
+        AT(&arg.size, 0, u32) = 0x3FE66666;   /* 1.8 */
+        arg.strength = 1.0f;
+        fx = D_0044E4C0;
+        arg.obj = o;
+        arg.kind = 2;
+        arg.alpha = 0xFF;
+        room_effect_new(fx, 0x1A, D_00479560);
+        func_00266C70(fx, 0x1A, &arg);
+    }
+    return 1;
 }
