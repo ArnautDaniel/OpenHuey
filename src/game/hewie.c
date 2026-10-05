@@ -6432,3 +6432,63 @@ void func_0014A920(Hewie *h) {
         }
     }
 }
+
+/* ---- setting off for a spot ---- */
+
+extern s32 func_001270F0(Character *c);
+extern const PTMF D_003B1C60, D_003B1C70;
+
+/* move by his root motion this frame (level, scaled to the ground) */
+static void slide_root(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 k;
+
+    func_001F6370(h->c.motion, root, 0.0f);
+    k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    root[1] = 0.0f;
+    root[2] *= k;
+    sceVu0ApplyMatrix(root, h->c.a.rot, root);
+    func_001247E0(&h->c.a, root);
+    HW(h, 0xF3558, u8) = 1;
+}
+
+/* plan his path to the spot +0x110 (triangle +0x104): > 0 if there is one */
+static s32 plan_to_spot(Hewie *h) {
+    s32 r = func_00127140(&h->c, 0, h->c.unk104[0], h->c.unk110);
+
+    if (r > 0) {
+        r = func_001270F0(&h->c);
+    }
+    return r;
+}
+
+/* set off for the spot +0x110: with no animation of his own (+0x108), once standing plan the
+ * way and walk it (by the distance with +0xF36B8 2, func_0014A920) in behaviour D_003B1C60;
+ * else in that animation, behaviour D_003B1C70. No way there: the default action */
+void func_0014B190(Hewie *h) {
+    slide_root(h);
+    if (h->c.unk104[1] == -1) {
+        if (func_00140CD0(h, 0) != 0) {
+            return;
+        }
+        if (plan_to_spot(h) > 0) {
+            if (HW(h, 0xF36B8, s32) == 2) {
+                f32 rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+                    gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+
+                func_00141C00(h, !(rest < 10.0f) ? (rest < 34.0f ? 8 : 9) : 7);
+            } else {
+                func_00141C00(h, 7);
+            }
+            Hewie_SetBehaviour(h, &D_003B1C60);
+            return;
+        }
+    } else {
+        slide_root(h);
+        if (plan_to_spot(h) > 0) {
+            Hewie_SetBehaviour(h, &D_003B1C70);
+            return;
+        }
+    }
+    hewie_want(h, 0, 0);
+}
