@@ -4082,3 +4082,51 @@ s32 func_0013E920(Hewie *h, u32 kind) {
     }
     return 4 + player_band(h);
 }
+
+/* ---- idling ---- */
+
+extern const s32 D_003B13D0[8];   /* wait by trust */
+extern const u8 D_003B11B0[];     /* idle actions {s32 action, u8 weight[8]} */
+
+/* what he does when idle: action 0x36 while +0xF3583 is set; when moving 1, a quarter of the
+ * time action 0x2F with the wait for his trust; else a weighted pick from D_003B11B0, the
+ * action that suits the game mode weighted 20 more (0x2C calm-only or mode 2; 0x32 mode 0, 0x2E
+ * mode 1) */
+void func_0013E680(Hewie *h) {
+    const u8 *e;
+    Progress *p;
+    s32 sum, roll;
+
+    if (HW(h, 0xF3583, u8) == 1) {
+        hewie_want(h, 0x36, 0);
+        return;
+    }
+    if (h->c.a.unkC4 == 1 && VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+        HW(h, 0xF3560, s32) = D_003B13D0[HW(h, 0xF35CC, s16)];
+        hewie_want(h, 0x2F, 0);
+        return;
+    }
+    roll = (s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    p = gProgress;
+    for (sum = 0, e = D_003B11B0;; e += 0xC) {
+        s32 act = *(const s32 *)e;
+        s32 favoured = 0x2C;
+
+        sum += e[4 + HW(h, 0xF35CC, s16)];
+        if (HW(h, 0xF3598, s32) != 0) {
+            switch ((u8)func_00177620(p)) {
+            case 0: favoured = 0x32; break;
+            case 1: favoured = 0x2E; break;
+            case 2: break;
+            default: favoured = -1; break;
+            }
+        }
+        if (act == favoured) {
+            sum += 0x14;
+        }
+        if (roll < sum) {
+            break;
+        }
+    }
+    hewie_want(h, *(const s32 *)e, 0);
+}
