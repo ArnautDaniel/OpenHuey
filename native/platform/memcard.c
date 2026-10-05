@@ -68,3 +68,65 @@ void func_00225C40(void *mc) {
 void func_00225770(void *mc) {
     finish(mc, 0);
 }
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define MC_NAME(mc) AT(mc, 0x38, const char *)
+
+/* the save's directory (slot 1), made if it isn't there yet */
+static const char *save_dir(void) {
+    static char path[1024];
+    const char *dir = getenv("HG_SAVE");
+
+    snprintf(path, sizeof(path), "%s", dir ? dir : "save");
+    mkdir(path, 0777);
+    snprintf(path, sizeof(path), "%s/BASLUS-21075HG", dir ? dir : "save");
+    mkdir(path, 0777);
+    return path;
+}
+
+/* write part of the game data file (PS2 0x00225950: open, seek, write, close) */
+void func_00225950(void *mc) {
+    FILE *f = NULL;
+    int ok = 0;
+
+    if (MC_PORT(mc) == 0) {
+        save_dir();
+        f = fopen(save_path(), "r+b");
+        if (f == NULL) {
+            f = fopen(save_path(), "w+b");
+        }
+    }
+    if (f != NULL) {
+        ok = fseek(f, MC_OFFSET(mc), SEEK_SET) == 0
+             && fwrite(MC_BUF(mc), 1, (size_t)MC_SIZE(mc), f) == (size_t)MC_SIZE(mc);
+        ok = fclose(f) == 0 && ok;
+    }
+    finish(mc, ok ? 0 : 9);
+}
+
+/* make a file of the save (PS2 0x00225F30: the directory, then /BASLUS-21075HG/<+0x38> written
+ * whole from the buffer) */
+void func_00225F30(void *mc) {
+    char path[1200];
+    FILE *f = NULL;
+    int ok = 0;
+
+    if (MC_PORT(mc) == 0 && MC_NAME(mc) != NULL) {
+        snprintf(path, sizeof(path), "%s/%s", save_dir(), MC_NAME(mc));
+        f = fopen(path, "wb");
+    }
+    if (f != NULL) {
+        ok = fwrite(MC_BUF(mc), 1, (size_t)MC_SIZE(mc), f) == (size_t)MC_SIZE(mc);
+        ok = fclose(f) == 0 && ok;
+    }
+    finish(mc, ok ? 0 : 6);
+}
+
+/* format the card (PS2 0x00225860, sceMcFormat): the host folder needs none, and saves are
+ * never wiped - done */
+void func_00225860(void *mc) {
+    save_dir();
+    finish(mc, 0);
+}
