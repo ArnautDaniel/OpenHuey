@@ -854,7 +854,7 @@ void func_00124F20(Character *c, u32 door) {
     if (room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress) || c->a.navTri == NAV_NONE) {
         return;
     }
-    area = NavMesh_Tri(D_0044E570, c->a.navTri)->flags & 0x300000;
+    area = NavMesh_TriFlags(D_0044E570, c->a.navTri) & 0x300000;   /* (off the mesh: the PS2 reads address 0x3C) */
     side = -1;
     if (area == 0 || area == 0x200000) {
         side = 0;

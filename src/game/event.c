@@ -419,6 +419,11 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
         return VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, s32, s32))(ev, (f32 *)(c + 0x10), area, AT(c, 0x34, s32));
     }
     data = AT(ev, 0x10, u8 *);
+#ifdef HG_NATIVE
+    if (data == NULL) {   /* a room without areas (the PS2 reads low memory: zeros) */
+        return 0;
+    }
+#endif
     a = data + AT(data, area * 4, u32) * 4;
     if (AT(a, 0, s32) != 1) {
         return 0;
