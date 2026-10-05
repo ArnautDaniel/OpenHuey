@@ -8637,3 +8637,105 @@ void func_001580F0(Hewie *h) {
     h->c.a.pos[1] = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- sinking his teeth in ---- */
+
+extern const PTMF D_003B1818;
+
+/* the leap lands on the pursuer (the pursuer gone: the default action): airborne meanwhile
+ * (turning toward +0xF36CC by +0xF36D0, +0xF36C4 along the way). At the animation's end the
+ * first bite: by his action and grip the hard-bite test and damage (0x21 / 0x22: 5, 30; grip 1:
+ * 2 / 3 charged, 5 / 10; grip 2: 0 / 1, 5 / 10; grip 0: 4, 10), its effect, sound 0x6B; put at the grip spot +0x110 (triangle
+ * +0x108) facing +0xF36CC, the bite animation (0x2218 / 0x2201 / 0x220A / 0x2215), biting
+ * (+0xF36B4 1) with the hold chance 5 x (10 + his feeling about it), behaviour D_003B1818. At
+ * the pursuer's grip height throughout */
+void func_00159040(Hewie *h) {
+    f32 p[4] __attribute__((aligned(16)));
+    s32 kind = 0;   /* (kind and base unset in the original for other actions or grips) */
+    u16 base = 0;
+    u32 tri;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (ANIM_DONE(h)) {
+        f32 a;
+        s16 f = 0;
+
+        switch (HEWIE_ACTION(h)) {
+        case 0x22:
+        case 0x21:
+            base = 30;
+            kind = 5;
+            break;
+        case 0x20:
+        case 0x1F:
+            switch (h->c.unk104[0]) {
+            case 1:
+                base = HW(h, 0xF3585, u8) == 1 ? 10 : 5;
+                kind = HW(h, 0xF3585, u8) == 1 ? 3 : 2;
+                break;
+            case 2:
+                base = HW(h, 0xF3585, u8) == 1 ? 10 : 5;
+                kind = HW(h, 0xF3585, u8) == 1 ? 1 : 0;
+                break;
+            case 0:
+                base = 10;
+                kind = 4;
+                break;
+            }
+            break;
+        }
+        bite_pursuer(h, kind, base);
+        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+        func_00122C20(&h->c.a, 0x6B, 5, 0, 0, NULL);
+        h->c.a.navTri = h->c.unk104[1];
+        sceVu0CopyVector(h->c.a.pos, h->c.unk110);
+        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+        a = HW(h, 0xF36CC, f32);
+        h->c.a.angle[1] = a;
+        sceVu0UnitMatrix(h->c.a.rot);
+        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, a);
+        switch (HEWIE_ACTION(h)) {
+        case 0x22:
+        case 0x21:
+            func_002DDE20(h->c.motion, 0x2218, -1);
+            break;
+        case 0x20:
+        case 0x1F:
+            switch (h->c.unk104[0]) {
+            case 1:
+                func_002DDE20(h->c.motion, 0x2201, -1);
+                break;
+            case 2:
+                func_002DDE20(h->c.motion, 0x220A, -1);
+                break;
+            case 0:
+                func_002DDE20(h->c.motion, 0x2215, -1);
+                break;
+            }
+            break;
+        }
+        HW(h, 0xF36B4, s32) = 1;
+        if (gCharPursuer != NULL && gCharPursuer->a.active == 1) {
+            s16 *v = Hewie_Feeling(h, gCharPursuer->unk153C);
+
+            f = v != NULL ? *v : 0;
+        }
+        HW(h, 0xF36BC, s32) = (f + 10) * 5;
+        HW(h, 0xF3714, s16) = 0;
+        Hewie_SetBehaviour(h, &D_003B1818);
+    } else {
+        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+        tri = h->c.a.navTri;
+        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+        h->c.a.navTri = tri;
+        sceVu0CopyVector(h->c.a.pos, p);
+    }
+    HW(h, 0xF3558, u8) = 1;
+    HW(h, 0xF3581, u8) = 1;
+    HW(h, 0xF3582, u8) = 0;
+    h->c.a.pos[1] = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
