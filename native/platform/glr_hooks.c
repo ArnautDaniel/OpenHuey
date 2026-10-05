@@ -56,14 +56,6 @@ void func_003582D0(uint8_t *e) {
     glr_todo("glow effect (func_003582D0)");
 }
 
-/* func_0034E9E0: a rippling surface grid (texture +0x20, position +0x10, size +0x24, phase
- * +0x28, turn +0x2C): a sine-displaced grid of textured quads. GL TODO; 0 = nothing linked. */
-int func_0034E9E0(uint8_t *d) {
-    (void)d;
-    glr_todo("ripple grid (func_0034E9E0)");
-    return 0;
-}
-
 /* func_0021C840: the vignette, every gameplay frame (strength 50, offset 0). The original
  * draws four gouraud triangles - white at alpha `strength` in each screen corner, clear at the
  * middles of its edges (moved by `offset`) - into a work buffer, copies the screen's colours

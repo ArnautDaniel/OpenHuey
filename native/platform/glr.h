@@ -21,6 +21,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* PC-only bit: also drawn into the glow buffer (the renderer's 128 x 112 work buffer, tested
  * against the scene's depth at that size) */
 #define GLR_PRIM_GLOW 0x40000u
+/* PC-only bits: blended Cs * FIX / 128 + Cd, FIX in bits 24..31 (GS ALPHA (Cs - 0) * FIX + Cd) */
+#define GLR_PRIM_FIXB 0x80000u
+#define GLR_PRIM_FIX(f) (GLR_PRIM_FIXB | (uint32_t)(f) << 24)
 
 /* the renderer layer (0..52, drawn in order) what follows is sent in; -1: none */
 void glr_layer(int layer);
@@ -55,6 +58,11 @@ void glr_screen2(uint32_t rgba, int contrast, int blur);
 /* func_0021C840 this frame (renderer layer 0x2A): the screen's corners darkened, by up to
  * strength / 128, fading to nothing at the middles of the edges (moved by `offset` pixels) */
 void glr_vignette(int strength, int offset);
+
+/* func_0034E9E0 (the light caustic): the frame's alpha cleared before its grids, then the
+ * halved screen where they left alpha >= `aref` blurred and added back at 1/2 */
+void glr_caustic_begin(void);
+void glr_caustic_glow(int aref);
 
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);

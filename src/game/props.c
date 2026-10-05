@@ -169,7 +169,10 @@ s32 func_00350910(u8 *o) {
     return 1;
 }
 
-/* a model to draw this frame: position, ..., angles, model, colour */
+/* a model to draw this frame: position, ..., angles, model, colour. Drawn by D_00478B70's
+ * func_0034E9E0 these are a light caustic: n the texture, radius the patch's size, angle[0]
+ * the ripple phase, angle[1] / angle[2] its two layers' turns, model the alpha threshold of
+ * its glow */
 typedef struct ModelDrawParams {
     f32 pos[4];
     s32 n;
@@ -334,3 +337,80 @@ void func_00321E30(u8 *o) {
         func_002E56C0(o + 0x610);
     }
 }
+
+
+#ifdef HG_NATIVE
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern void glr_caustic_begin(void);
+extern void glr_caustic_glow(s32 aref);
+extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern f32 func_002E2D00(f32 angle);   /* wrap an angle into -pi..pi */
+extern f32 func_0031C058(f32 x);       /* cosf */
+extern f32 func_0031C248(f32 x);       /* sinf */
+
+#define GLR_PRIM_NOZW 0x20000u
+#define GLR_PRIM_FIX(f) (0x80000u | (u32)(f) << 24)   /* blend Cs * f / 128 + Cd */
+
+/* func_0034E9E0, the caustic (vtable D_00478B70 +0xC; the draw object of func_00350660): the
+ * frame's alpha cleared, then two 8 x 8 grids of the texture (+0x20) - a square of side +0x24
+ * at +0x10 lying flat, turned +0x2C / +0x30 about y - added at 1/8 in colour +0x38, depth
+ * tested without depth writes. Their texture coordinates wobble by 0.05 with the phase +0x28
+ * (cos along one axis, sin along the other, a quarter turn per cell; the second grid -0.4 of a
+ * half turn per cell). Where they leave the frame's alpha at least +0x34, the halved screen is
+ * blurred (4 diagonal taps at 1/2) and added back at 1/2 - the caustic's glow. On PC glr does
+ * the passes; 0 = nothing linked into the layer. */
+s32 func_0034E9E0(u8 *d) {
+    VObject *cam = D_0044E4B8;
+    const void *tex = VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(d, 0x20, s32), 0);
+    f32 size = AT(d, 0x24, f32), half = 0.5f * size, cell = 0.125f * size, phase = AT(d, 0x28, f32);
+    s32 g;
+
+    if (tex == NULL) {
+        return 0;
+    }
+    glr_caustic_begin();
+    for (g = 0; g < 2; g++) {
+        f32 clip[4][4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        s32 i, j, k;
+
+        VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrixY(m, m, AT(d, g == 0 ? 0x2C : 0x30, f32));
+        sceVu0TransMatrix(m, m, (f32 *)(d + 0x10));
+        sceVu0MulMatrix(clip, clip, m);
+        for (i = 0; i < 8; i++) {   /* a strip along each row band */
+            f32 xyzw[18][4] __attribute__((aligned(16)));
+            f32 st[18][2];
+            u8 rgba[18][4];
+
+            for (j = 0; j < 9; j++) {
+                for (k = 0; k < 2; k++) {
+                    s32 v = j * 2 + k, r = i + k;
+
+                    xyzw[v][0] = (f32)r * cell - half;
+                    xyzw[v][1] = 0.0f;
+                    xyzw[v][2] = (f32)j * cell - half;
+                    AT(&xyzw[v][3], 0, u32) = j == 0 ? 0x8000 : 0;   /* the first column starts the strip */
+                    if (g == 0) {
+                        st[v][0] = 0.1f + 0.1f * (f32)r
+                                   + 0.05f * func_0031C058(func_002E2D00(phase + 0.5f * (3.1415927f * (f32)r)));
+                        st[v][1] = 0.1f * (f32)j + 0.05f * func_0031C248(func_002E2D00(phase + 0.5f * (3.1415927f * (f32)j)));
+                    } else {
+                        st[v][0] = 0.1f * (f32)j + 0.05f * func_0031C058(func_002E2D00(phase + -0.4f * (3.1415927f * (f32)r)));
+                        st[v][1] = 0.1f + 0.1f * (f32)r
+                                   + 0.05f * func_0031C248(func_002E2D00(phase + -0.4f * (3.1415927f * (f32)j)));
+                    }
+                    AT(rgba[v], 0, u32) = AT(d, 0x38, u32);
+                }
+            }
+            glr_strip(&clip[0][0], 18, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, 1ULL << 34,
+                      0x10 | 0x40 | GLR_PRIM_NOZW | GLR_PRIM_FIX(0x10));
+        }
+    }
+    glr_caustic_glow(AT(d, 0x34, s32));
+    return 0;
+}
+#endif

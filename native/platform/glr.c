@@ -64,6 +64,7 @@
     X(PFNGLBLENDFUNCPROC, glBlendFunc) \
     X(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate) \
     X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
+    X(PFNGLBLENDCOLORPROC, glBlendColor) \
     X(PFNGLDISABLEIPROC, glDisablei) \
     X(PFNGLCOLORMASKIPROC, glColorMaski) \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC, glNamedFramebufferDrawBuffers) \
@@ -93,7 +94,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -243,6 +244,14 @@ void glr_vignette(int strength, int offset) {
     put_post(POST_VIGNETTE, 0x2A, (uint32_t)strength, (uint32_t)offset);   /* its packet's layer */
 }
 
+void glr_caustic_begin(void) {
+    put_post(POST_ALPHA_CLEAR, sLayer, 0, 0);
+}
+
+void glr_caustic_glow(int aref) {
+    put_post(POST_CAUSTIC, sLayer, 0, (uint32_t)aref);
+}
+
 void glr_screen2(uint32_t rgba, int contrast, int blur) {
     put_post(POST_SCREEN2, sLayer, rgba, (contrast != 0) | (blur != 0) << 1);
 }
@@ -363,6 +372,9 @@ static const char *kQuadFs =
  * The fog (func_002BB3E0; the game maps its Z buffer through a colour ramp):
  *   10 the fog colour and alpha at each pixel's view depth, blended over it
  * The vignette (func_0021C840), uFix its strength, uRange.x its offset:
+ *   12 H where its alpha (the frame's) >= uFix, else nothing
+ *   13 H + the sum of H * 0x40 >> 7 at the 4 diagonal neighbours
+ *      (the caustic, func_0034E9E0: 2, 12, 13, then 6 at colour 0x80 and FIX 0x40, added)
  *   11 the screen (a copy) D + (-D * a >> 7), a = strength x the corner's weight in one of
  *      four gouraud triangles, each from a screen corner to the middles of its two edges
  *      (moved by the offset) */
@@ -431,6 +443,13 @@ static const char *kPostFs =
     "        w = max(w, corner(q, vec2(512.0, 448.0), vec2(256.0 - o, 448.0), vec2(512.0, 224.0 + o)));\n"
     "        vec4 d = at(uTex, p);\n"
     "        c = d + floor(-d * floor(uFix * w) / 128.0);\n"
+    "    } else if (uMode == 12) {\n"   /* where the frame's alpha (0x80 = 255 here) >= uFix */
+    "        c = at(uTex, p);\n"
+    "        if (round(c.a * 128.0 / 255.0) < uFix) c = vec4(0.0);\n"
+    "    } else if (uMode == 13) {\n"
+    "        c = at(uTex, p);\n"
+    "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.5); c += floor(at(uTex, p + ivec2(-1, 1)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(1, -1)) * 0.5);  c += floor(at(uTex, p + ivec2(1, 1)) * 0.5);\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -804,7 +823,7 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
@@ -825,6 +844,26 @@ static void run_post(const GlrDraw *d) {
     p_glUseProgram(sPostProg);
     p_glBindVertexArray(sQuadVao);
     switch (d->post) {
+    case POST_ALPHA_CLEAR: {   /* the frame's alpha to 0 (a sprite writing only alpha) */
+        static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+        p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+        p_glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+        p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 0, kNone);
+        break;
+    }
+    case POST_CAUSTIC:   /* func_0034E9E0: the halved screen where alpha >= args, blurred, added at 1/2 */
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, 0.0f);
+        post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)d->prim);
+        post(12, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);
+        post(13, sHalfFbo[2], GLR_HALF_W, GLR_HALF_H, sHalf[1], 0);
+        p_glProgramUniform4f(sPostProg, sPostColorLoc, 128.0f, 128.0f, 128.0f, 0.0f);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, 64.0f);
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_ONE, GL_ONE);
+        post(6, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[2], 0);
+        break;
     case POST_VIGNETTE:
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -1018,8 +1057,15 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 p_glEnable(GL_BLEND);
                 p_glDisablei(GL_BLEND, 1);
                 /* the frame keeps the source alpha, as the GS writes it */
-                p_glBlendFuncSeparate(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
-                                      GL_ZERO);
+                if (d->prim & GLR_PRIM_FIXB) {   /* Cs * FIX / 128 + Cd */
+                    float fix = (float)(d->prim >> 24) / 128.0f;
+
+                    p_glBlendColor(fix, fix, fix, fix);
+                    p_glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_ONE, GL_ONE, GL_ZERO);
+                } else {
+                    p_glBlendFuncSeparate(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA,
+                                          GL_ONE, GL_ZERO);
+                }
             } else {
                 p_glDisable(GL_BLEND);
             }
