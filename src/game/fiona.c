@@ -5310,3 +5310,255 @@ void func_00190380(Fiona *f) {
     FI(f, 0x1AD6C8, s32) = 0;
     Actor_SetState(&f->c.a, &D_003B2B48);
 }
+
+extern const PTMF D_003B2AB8;
+
+/* 0xA / 0x20 thrown (D_003B2E48, D_003B2DD8): once the motion has played out she falls away
+ * from whoever did it ([2] +0x100; 0xFF: straight on, +0x1AD6C4 -1): forward (0x1008) or
+ * backward (0x100B, or 0xB04 facing back for a hard fall, +0x1AD584 bit 2, with a scream 0x42,
+ * noise 0x6F and the panic at 1000), else a cry (0x40) and noise 0x5F; +0x1AD6C8 which way.
+ * Her update runs with nav flag 1 not blocking */
+void func_00191800(Fiona *f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        f32 aa;
+
+        if (f->c.unk100 == 0xFF) {
+            FI(f, 0x1AD6C4, s32) = -1;
+            FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+        } else {
+            f32 d[4] __attribute__((aligned(16)));
+
+            FI(f, 0x1AD6C4, s32) = 0;
+            sceVu0SubVector(d, f->c.a.pos, ((Character *)gCharacters[f->c.unk100])->a.pos);
+            FI(f, 0x1AD6D0, f32) = func_0031C5C0(d[0], d[2]);
+        }
+        if (!(func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]) <= 0.0f)) {
+            aa = func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
+        } else {
+            aa = -func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
+        }
+        if (aa < kHalfPi.f) {
+            FI(f, 0x1AD6C8, s32) = 0;
+            func_002DDED0(f->c.motion, 0x1008, -1);
+        } else {
+            FI(f, 0x1AD6C8, s32) = 1;
+            FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + FI(f, 0x1AD6D0, f32));
+            if (FI(f, 0x1AD584, s32) & 2) {
+                FI(f, 0x1AD6C4, s32) = -1;
+                f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
+                func_002DDED0(f->c.motion, 0xB04, -1);
+            } else {
+                func_002DDED0(f->c.motion, 0x100B, -1);
+            }
+        }
+        if (FI(f, 0x1AD584, s32) & 2) {
+            Progress *p = gProgress;
+
+            AT(p, 0x7D8, f32) = 1000.0f;
+            func_00122C20(&f->c.a, 0x42, 5, 0, 0, NULL);
+            func_002A8440((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        } else {
+            func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        }
+        FI(f, 0x1AD6C0, s32) = -1;
+        Actor_SetState(&f->c.a, &D_003B2AB8);
+    }
+    f->c.a.navMask |= 1;
+    func_00125A10(&f->c);
+    f->c.a.navMask &= ~1;
+}
+
+extern const PTMF D_003B2B08;
+extern void func_002DDE20(void *motion, s32 anim, s32 arg);
+
+/* 0xB hit by door [4] (+0x104; D_003B2E58): thrown along the door's swing (its angle, turned
+ * round from her side of it) - forward (0x1008) or backward (0x100B; 0xB04 facing back for a
+ * hard fall, +0x1AD584 bit 2, with a scream 0x42, noise 0x6F and the panic at 1000), else a cry
+ * 0x40 and noise 0x5F; +0x1AD6C8 which way, +0x1AD6D0 the direction */
+void func_00190FA0(Fiona *f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
+    Progress *p;
+    f32 a, aa;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    a = VCALL(D_0044E558, 0x3C, f32 (*)(VObject *, u32))(D_0044E558, (u8)f->c.unk104[0]);
+    p = gProgress;
+    if (!(func_00177BF0(p, (u8)f->c.unk104[0], (u8)f->c.a.slot) & 0xFF & 0x10)) {
+        a = func_002E2D00(kPi.f + a);
+    }
+    FI(f, 0x1AD6C4, s32) = 0;
+    if (!(func_002E2D00(a - f->c.a.angle[1]) <= 0.0f)) {
+        aa = func_002E2D00(a - f->c.a.angle[1]);
+    } else {
+        aa = -func_002E2D00(a - f->c.a.angle[1]);
+    }
+    if (aa < kHalfPi.f) {
+        FI(f, 0x1AD6C8, s32) = 0;
+        FI(f, 0x1AD6D0, f32) = a;
+        func_002DDE20(f->c.motion, 0x1008, -1);
+    } else {
+        FI(f, 0x1AD6C8, s32) = 1;
+        FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + a);
+        if (FI(f, 0x1AD584, s32) & 2) {
+            FI(f, 0x1AD6C4, s32) = -1;
+            f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
+            func_002DDE20(f->c.motion, 0xB04, -1);
+        } else {
+            func_002DDE20(f->c.motion, 0x100B, -1);
+        }
+    }
+    FI(f, 0x1AD6C0, s32) = -1;
+    f->c.a.navMask |= 1;
+    func_00125A10(&f->c);
+    f->c.a.navMask &= ~1;
+    if (FI(f, 0x1AD584, s32) & 2) {
+        Progress *q = gProgress;
+
+        AT(q, 0x7D8, f32) = 1000.0f;
+        func_00122C20(&f->c.a, 0x42, 5, 0, 0, NULL);
+        func_002A8440((u8 *)q + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+    } else {
+        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+        func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+    }
+    Actor_SetState(&f->c.a, &D_003B2B08);
+}
+
+extern const PTMF D_003B2B18;
+
+/* the fall by the side the hit came from (`aa` its size, `a` signed): ahead `front`, behind
+ * `front` + 1, left / right `front` + 3 / + 2 */
+static inline __attribute__((always_inline)) void fall_by_side(Fiona *f, f32 aa, f32 a, s32 front) {
+    if (aa < 0x1.0c1524p+0f /* 60 deg */) {
+        func_002DDED0(f->c.motion, front, -1);
+    } else if (!(aa <= 0x1.0c1524p+1f /* 120 deg */)) {
+        func_002DDED0(f->c.motion, front + 1, -1);
+    } else if (a < 0.0f) {
+        func_002DDED0(f->c.motion, front + 3, -1);
+    } else {
+        func_002DDED0(f->c.motion, front + 2, -1);
+    }
+}
+
+/* 0xC..0xF knocked down (D_003B2E68, D_003B2DE8): once the motion has played out, from the side
+ * of whoever did it ([2] +0x100, 0xFF: her slot's noise point gProgress +0x1060) - 0xC /
+ * 0xE a stumble (cry 0x3E; 0xC on the spot 0x100E, 0xE by side 0x1000..), 0xD / 0xF a fall
+ * (cry 0x3F; 0xD 0x100F, 0xF by side 0x1004..), each with noise 0x5F */
+void func_00190B50(Fiona *f) {
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        f32 d[4] __attribute__((aligned(16)));
+        u8 have = 0;
+        f32 a, aa;
+
+        if (f->c.unk100 == 0xFF) {
+            have = 1;
+            sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)gProgress + 0x1060 + f->c.a.slot * 0x20));
+        } else {
+            Character *c = gCharacters[f->c.unk100];
+
+            if (c != NULL && c->a.active == 1 && c->a.disabled == 0) {
+                have = 1;
+                sceVu0SubVector(d, f->c.a.pos, c->a.pos);
+            }
+        }
+        if (have == 1) {
+            a = func_002E2D00(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+            aa = a <= 0.0f ? -a : a;
+        } else {
+            a = f->c.a.angle[1];
+            aa = 0.0f;
+        }
+        switch (f->c.moveSub) {
+        case 0xC:
+            func_00122C20(&f->c.a, 0x3E, 5, 0, 0, NULL);
+            func_002DDED0(f->c.motion, 0x100E, -1);
+            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            break;
+        case 0xE:
+            func_00122C20(&f->c.a, 0x3E, 5, 0, 0, NULL);
+            fall_by_side(f, aa, a, 0x1000);
+            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            break;
+        case 0xD:
+            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            func_002DDED0(f->c.motion, 0x100F, -1);
+            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            break;
+        case 0xF:
+            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            fall_by_side(f, aa, a, 0x1004);
+            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            break;
+        }
+        Actor_SetState(&f->c.a, &D_003B2B18);
+    }
+    func_00125A10(&f->c);
+}
+
+extern const PTMF D_003B2A98, D_003B29F8;
+
+/* 9 led away: by whoever leads her ([2] +0x100); gone, or no longer leading (action 8), she
+ * stands (and a leader not held tells it so: state 7); else a path to the spot +0x104 / +0x110,
+ * walked (`anim`) at a fifth of its length a frame, turning to +0x10C at a fifth of the
+ * difference, in state `next` */
+static inline __attribute__((always_inline)) void led_away(Fiona *f, s32 anim, const PTMF *next) {
+    Character *c;
+    s32 r;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = gCharacters[f->c.unk100];
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    if (c->moveMode != 8) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    r = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
+    if (r > 0) {
+        r = func_001270F0(&f->c);
+    }
+    if (r > 0) {
+        f32 a;
+
+        FI(f, 0x1AD6D0, f32) = 0x1.99999ap-3f /* 0.2 */ *
+            VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+                gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
+        func_002DDD20(f->c.motion, anim, -1);
+        FI(f, 0x1AD6D8, f32) = FI(f, 0x10C, f32);
+        a = func_002E2D00(FI(f, 0x10C, f32) - f->c.a.angle[1]);
+        FI(f, 0x1AD6DC, f32) = 0x1.99999ap-3f /* 0.2 */ * (a <= 0.0f ? -a : a);
+        Actor_SetState(&f->c.a, next);
+        return;
+    }
+    if (c->state[0] != 7) {
+        /* (the original copies a local whose other fields are never set) */
+        c->state[0] = 7;
+        c->state[1] = 0;
+        c->state[2] = 0;
+        c->state[3] = 0;
+        c->state[4] = 0;
+        c->state[5] = 0;
+        c->state[6] = 0;
+        c->state[7] = 0;
+    }
+    Fiona_ToIdle(f);
+}
+
+/* 9 led away walking (D_003B2E38) */
+void func_00191FF0(Fiona *f) {
+    led_away(f, 0x1500, &D_003B2A98);
+}
+
+/* 9 led away by the hand ([4] 6; D_003B2E28) */
+void func_00193400(Fiona *f) {
+    led_away(f, 0x1400, &D_003B29F8);
+}
