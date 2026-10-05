@@ -7864,3 +7864,101 @@ void func_00154860(Hewie *h) {
         hewie_want(h, 0, 0);
     }
 }
+
+/* ---- travelling between rooms ---- */
+
+extern s32 func_001272B0(Character *c, f32 speed);
+extern const PTMF D_003B1918;
+
+/* on his way to door +0x14C0 (actions 0x35 / 0x39 and the like): along his path when it is
+ * shown (+0xF3590), else by the distance left (+0x14C4), at 0.38 a frame hurt, 1.6 walking, 10
+ * running (0x39). Arrived: the door's exit in his room (+0x14D4; none: action 0x35, or his idle
+ * choice in 0x35). A door that isn't open, or locked or closed to him, is remembered (+0x148C)
+ * and he stops likewise; an exit flagged in the room's progress is left alone. Else through it:
+ * into the room being played, placed at the exit facing in, running in (0x201) and either
+ * barking (0x4F, by his trust's chance in 0x39) or carrying on (0x70), settled in as
+ * func_00143D20; into another room, off the mesh toward its next door (behaviour D_003B1918) */
+void func_00155000(Hewie *h) {
+    Progress *p;
+    VObject *rooms;
+    f32 p0[4] __attribute__((aligned(16)));
+    f32 p1[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 ang;
+    s32 arrived_ = 0;
+    u32 exit, tri;
+
+    if (HW(h, 0xF3590, u8) == 1) {
+        func_001272B0(&h->c, HEWIE_ACTION(h) == 0x39 ? 10.0f : h->c.a.unkC4 == 1 ? 0x1.851eb80000000p-2f /* 0.38 */ : 0x1.99999a0000000p+0f /* 1.6 */);
+        if (h->c.unk128 >= h->c.unk124) {
+            arrived_ = 1;
+        }
+    } else {
+        f32 *left = (f32 *)&h->c.unk14C4;
+
+        if (HEWIE_ACTION(h) == 0x39) {
+            *left = *left - 10.0f;
+        } else if (h->c.a.unkC4 == 1) {
+            *left = *left - 0x1.851eb80000000p-2f /* 0.38 */;
+        } else {
+            *left = *left - 0x1.99999a0000000p+0f /* 1.6 */;
+        }
+        if (*left < 0.0f) {
+            *left = 0.0f;
+            arrived_ = 1;
+        }
+    }
+    if ((u8)arrived_ != 1) {
+        return;
+    }
+    rooms = D_0044E568;
+    h->c.door = VCALL(rooms, 0x3C, u8 (*)(VObject *, u32, s32))(rooms, h->c.unk14C0, h->c.a.room);
+    exit = h->c.door;
+    if (exit == 0xFF) {
+        HW(h, 0xF3590, u8) = 0;
+        h->c.a.navTri = NAV_NONE;
+        if (HEWIE_ACTION(h) == 0x35) {
+            hewie_want(h, 0x35, 0);
+        } else {
+            func_0013E680(h);
+        }
+        return;
+    }
+    p = gProgress;
+    if ((u8)Progress_CurRoomFlag(p, h->c.a.room, exit) == 1) {
+        return;
+    }
+    if ((u8)func_00178980(p, h->c.a.room, exit) && (u8)func_001785B0(p, h->c.a.room, exit) != 1 &&
+        (u8)func_00178300(p, h->c.a.room, exit, AT(h, 0x20, u8))) {
+        HW(h, 0xF3590, u8) = 0;
+        func_0013AAE0(h, exit);
+        if (h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            rooms = D_0044E568;
+            tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, h->c.door, p0);
+            VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, h->c.door, p1);
+            sceVu0SubVector(d, p1, p0);
+            ang = func_0031C5C0(d[0], d[2]);
+            {
+                s32 bark = HEWIE_ACTION(h) == 0x39 && by_chance(h, D_003B1230);
+
+                HW(h, 0xF36F0, s32) = 0x201;
+                Hewie_PlaceAt(h, tri, &ang, p0);
+                hewie_want(h, bark ? 0x4F : 0x70, 0);
+            }
+            arrived(h);
+        } else {
+            h->c.a.navTri = NAV_NONE;
+            *(f32 *)&h->c.unk14C4 = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, h->c.unk14C0, h->c.a.room);
+            Hewie_SetBehaviour(h, &D_003B1918);
+        }
+        return;
+    }
+    h->c.unk148C[h->c.unk14C0 >> 5] |= 1 << (h->c.unk14C0 & 0x1F);
+    HW(h, 0xF3590, u8) = 0;
+    h->c.a.navTri = NAV_NONE;
+    if (HEWIE_ACTION(h) == 0x35) {
+        hewie_want(h, 0x35, 0);
+    } else {
+        func_0013E680(h);
+    }
+}
