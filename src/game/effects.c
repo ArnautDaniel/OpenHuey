@@ -4029,3 +4029,83 @@ void func_00355AA0(u8 *o) {
     glr_todo("mirror fragment reflection (func_00355AA0)");
 }
 #endif
+
+/* ---- D_00479890 (8 bytes, room 0x48): a soft shadow on the wall at x 127 (z -114 .. -130,
+ * y 1 .. 26) - eight black quads stepping 0.1 off the wall, alpha 0x80 down to 0x10; +0x4 set
+ * (its start) it is gone ---- */
+
+extern void *D_00479890[];
+
+/* +0x8 destructor */
+void *func_0035C9F0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479890;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046F580;
+        }
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC set up */
+void func_0035CE30(u8 *o) {
+    AT(o, 0x4, u8) = 0;
+}
+
+/* +0x10 update: 0 once gone */
+s32 func_0035CE20(u8 *o) {
+    return (AT(o, 0x4, u8) ^ 1) != 0;
+}
+
+/* +0x18 start: gone */
+void func_0035CA50(u8 *o) {
+    AT(o, 0x4, u8) = 1;
+}
+
+#ifdef HG_NATIVE
+/* +0x14 draw (until gone, and only when all of it is in view): the eight quads, layer 0x1E */
+void func_0035CA60(u8 *o) {
+    f32 p[4][4] __attribute__((aligned(16))) = {
+        {127.0f, 26.0f, -114.0f, 1.0f}, {127.0f, 26.0f, -130.0f, 1.0f},
+        {127.0f, 1.0f, -114.0f, 1.0f}, {127.0f, 1.0f, -130.0f, 1.0f},
+    };
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 st[4][2] = {{0}};
+    u8 rgba[4][4];
+    s32 i, k;
+
+    if (AT(o, 0x4, u8) == 1) {
+        return;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (i = 0; i < 4; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0ApplyMatrix(v, clip, p[i]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return;
+        }
+    }
+    glr_layer(0x1E);
+    for (k = 0; k < 8; k++) {
+        f32 xyzw[4][4] __attribute__((aligned(16)));
+
+        for (i = 0; i < 4; i++) {
+            sceVu0CopyVector(xyzw[i], p[i]);
+            AT(&xyzw[i][3], 0, u32) = 0;
+            rgba[i][0] = 0;
+            rgba[i][1] = 0;
+            rgba[i][2] = 0;
+            rgba[i][3] = (u8)((8 - k) << 4);
+        }
+        glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], NULL, 0, 0x40 | GLR_PRIM_NOZW);
+        for (i = 0; i < 4; i++) {
+            p[i][0] -= 0.1f;
+        }
+    }
+    glr_layer(-1);
+}
+#endif

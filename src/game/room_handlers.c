@@ -2873,3 +2873,22 @@ s32 func_0030F4E0(VObject *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_00479890[];
+
+static void effect_79890_init(void **obj) {
+    obj[0] = D_00479890;
+}
+
+/* room 0x48 (D_00426818): byte 3 0 starts the wall shadow (D_00479890, its slot in event
+ * variable 2); else that one is ended */
+s32 func_0030F350(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 8, effect_79890_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 2, slot);
+    } else {
+        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 2), NULL);
+    }
+    return 1;
+}
