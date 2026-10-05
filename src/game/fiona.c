@@ -8217,6 +8217,14 @@ static inline __attribute__((always_inline)) s32 fiona_caught(Fiona *f) {
     return FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1;
 }
 
+/* looking at the command's target (FI 0x1AD664), if any */
+static inline __attribute__((always_inline)) void gesture_look(Fiona *f) {
+    if (FI(f, 0x1AD664, s32) != 0) {
+        FI(f, 0x1AD5FC, u8) = 1;
+        FI(f, 0x1AD600, s32) = FI(f, 0x1AD664, s32);
+    }
+}
+
 /* D_003B2798 / D_003B2928 / D_003B2938: idle at the animation's event 0x20 */
 void func_0018D200(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
@@ -8246,16 +8254,45 @@ void func_0018D5C0(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    if (FI(f, 0x1AD664, s32) != 0) {
-        FI(f, 0x1AD5FC, u8) = 1;
-        FI(f, 0x1AD600, s32) = FI(f, 0x1AD664, s32);
-    }
+    gesture_look(f);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         func_00183F10(f);
         func_002DDE20(f->c.motion, 0xC0C, -1);
         Actor_SetState(&f->c.a, &D_003B2CE8);
     }
     func_00125A10(&f->c);
+}
+
+extern const PTMF D_003B2CC8, D_003B2CD8;
+
+/* D_003B2CC8: the gesture's lead-in - at its event 0x20 the gesture (0xC0B, D_003B2CD8) */
+void func_0018D7E0(Fiona *f) {
+    if (fiona_caught(f)) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    gesture_look(f);
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        func_002DDE20(f->c.motion, 0xC0B, -1);
+        Actor_SetState(&f->c.a, &D_003B2CD8);
+    }
+    func_00125A10(&f->c);
+}
+
+/* D_003B2B78: walking on until the animation is done, then the gesture's lead-in (0xC0A,
+ * D_003B2CC8) */
+void func_0018DA00(Fiona *f) {
+    if (fiona_caught(f)) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    gesture_look(f);
+    if (!door_anim_done(f)) {
+        func_00185CF0(f);
+        return;
+    }
+    func_002DDED0(f->c.motion, 0xC0A, -1);
+    Actor_SetState(&f->c.a, &D_003B2CC8);
 }
 
 
