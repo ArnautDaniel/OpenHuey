@@ -393,3 +393,109 @@ s32 func_002DFF70(Character *c) {
     }
     return creature_close_in(c, t);
 }
+
+extern VObject *D_0044E4D0;   /* the events: +0x10 (pos, spot, -1) a position at event spot */
+extern VObject *D_0044E558;   /* the doors */
+
+/* placed at a random triangle of its room (only in the room being played) on its level
+ * `level` (0 / 1: flag 0x100000 / 0x200000 free; -1 / 2: not both; flag 8 never), away from
+ * the room's doors' event spots */
+void func_002DE540(Character *c, s32 level) {
+    u32 mask, tri;
+    s32 room = c->a.room;
+    VObject *rnd, *rooms, *ev_mgr;
+    NavMesh *nm;
+    u32 n;
+    u8 ok;
+
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    switch (level) {
+    case 0:
+        mask = 0x100000;
+        break;
+    case 1:
+        mask = 0x200000;
+        break;
+    default:
+        mask = 0x300000;
+        break;
+    }
+    rnd = D_0044E550;
+    nm = D_0044E570;
+    rooms = D_0044E568;
+    n = nm->numTris;
+    ev_mgr = D_0044E4D0;
+    for (;;) {
+        f32 pos[4] __attribute__((aligned(16)));
+        u32 flags, d;
+
+        tri = (u32)((f32)n * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
+        flags = NavMesh_TriFlags(nm, tri);
+        if (flags & 8) {
+            continue;
+        }
+        if (level != -1 && level != 2) {
+            if (flags & mask) {
+                continue;
+            }
+        } else if (mask == (mask & flags)) {
+            continue;
+        }
+        ok = 1;
+        VCALL(nm, 0xC, void (*)(NavMesh *, u32, f32 *))(nm, tri, pos);
+        for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+            u32 door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, d) & 0xFFFF;
+
+            if (door != 0xFFFF &&
+                (VCALL(ev_mgr, 0x10, u32 (*)(VObject *, f32 *, u32, s32))(ev_mgr, pos, door, -1) & 0xFF) == 1) {
+                ok = 0;
+                break;
+            }
+        }
+        if (ok == 1) {
+            break;
+        }
+    }
+    VCALL(c, 0x28, void (*)(Character *, u32, s32, s32))(c, tri, 0, 0);
+}
+
+/* the first door of the room (doors +0x40) it may use (+0x15CA[door] bit of its slot), that
+ * isn't locked (+0x30 (1, 0)): headed for (+0x85 the door, +0x88 1), its path planned to the
+ * door's spot; if it was ahead of the plan it snaps onto the next step (+0x84 1) */
+void func_002DF5B0(Character *c) {
+    u8 *k = CR(c);
+    VObject *doors = D_0044E558, *rooms = D_0044E568;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    u32 d, t;
+
+    for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+        u16 may;
+
+        if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, d) & 0xFF) != 1) {
+            continue;
+        }
+        may = (AT(c, 0x15CA + (d & 0xFF) * 2, u16) & ((1 << *(u8 *)&c->a.slot) & 0xFFFF)) != 0;
+        if (VCALL(doors, 0x30, u32 (*)(VObject *, u32, s32, s32))(doors, d, 1, 0) & 0xFF) {
+            continue;
+        }
+        if (may & 1) {
+            AT(k, 0x85, u8) = d;
+            AT(k, 0x88, u16) = may;
+            c->a.unk2B = 1;
+            if (func_002DF860(c, VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x85, u8), at), at, 0) != 0) {
+                c->unk124 = c->unk128;
+            }
+            if (c->unk128 < c->unk124) {
+                s32 next = func_001273D0(c, &t, p, AT(k, 0x0, f32));
+
+                c->a.navTri = t;
+                sceVu0CopyVector(c->a.pos, p);
+                c->unk128 = next;
+            }
+            AT(k, 0x84, u8) = 1;
+        }
+    }
+}
