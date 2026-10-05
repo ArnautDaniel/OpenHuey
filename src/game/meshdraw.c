@@ -678,6 +678,50 @@ static void gl_batch(u8 *o) {
               (const f32 *)(model + AT(model, 0x4C, s32)), model + AT(model, 0x50, s32));
 }
 
+/* a morphing part (func_00267560 / func_002677C0): two key frames, +0x34 and +0x38, blended by
+ * +0x3C (frame table at the model's +0x70 per frame, 8 bytes each: +0x4 its s16 positions /
+ * 4096, +0x0 its RGBA colours, or for the lit kind s16 normals / 32768), u16 texture
+ * coordinates / 32768 (+0x4C), u8 strip flags (+0x50); model scale 32. The lit kind's light is
+ * fixed (axis directions, colour 64, ambient 128) and so always comes out at 0x80. */
+static void gl_morph(u8 *o, s32 lit) {
+    static f32 *xyzw, *st;
+    static u8 *rgba;
+    static s32 cap;
+    f32 mvp[4][4] __attribute__((aligned(16)));
+    u8 *model = AT(o, 0x30, u8 *);
+    s32 n = AT(model, 0x40, s32), i, c;
+    f32 t = AT(o, 0x3C, f32), w = 1.0f - t;
+    const s16 *pa = (const s16 *)(model + AT(model, AT(o, 0x34, s32) * 8 + 0x74, s32));
+    const s16 *pb = (const s16 *)(model + AT(model, AT(o, 0x38, s32) * 8 + 0x74, s32));
+    const u8 *ca = model + AT(model, AT(o, 0x34, s32) * 8 + 0x70, s32);
+    const u8 *cb = model + AT(model, AT(o, 0x38, s32) * 8 + 0x70, s32);
+    const u16 *uv = (const u16 *)(model + AT(model, 0x4C, s32));
+    const u8 *strip = model + AT(model, 0x50, s32);
+
+    if (n <= 0) {
+        return;
+    }
+    if (n > cap) {
+        cap = n;
+        xyzw = realloc(xyzw, cap * 16);
+        st = realloc(st, cap * 8);
+        rgba = realloc(rgba, cap * 4);
+    }
+    for (i = 0; i < n; i++) {
+        for (c = 0; c < 3; c++) {
+            xyzw[i * 4 + c] = pa[i * 3 + c] / 4096.0f * w + pb[i * 3 + c] / 4096.0f * t;
+        }
+        AT(&xyzw[i * 4 + 3], 0, u32) = strip[i] & 1 ? 0x8000 : 0;
+        st[i * 2] = uv[i * 2] / 32768.0f;
+        st[i * 2 + 1] = uv[i * 2 + 1] / 32768.0f;
+        for (c = 0; c < 4; c++) {
+            rgba[i * 4 + c] = lit ? (c < 3 ? 0x80 : 0x7F) : (u8)(s32)((f32)ca[i * 4 + c] * w + (f32)cb[i * 4 + c] * t);
+        }
+    }
+    obj_mvp(o, 32.0f, mvp);
+    obj_strip(o, mvp, n, xyzw, st, rgba);
+}
+
 static void gl_placed_object(u8 *o) {
     AT(o, 0x20, f32) = func_002E2D00(AT(o, 0x20, f32));
     AT(o, 0x24, f32) = func_002E2D00(AT(o, 0x24, f32));
@@ -689,8 +733,11 @@ static void gl_placed_object(u8 *o) {
     case 2:
         gl_batch(o);
         break;
+    case 1:
+        gl_morph(o, 1);
+        break;
     default:
-        glr_todo("placed object, morphing model (func_002677C0 / func_00267560)");
+        gl_morph(o, 0);
         break;
     }
 }
