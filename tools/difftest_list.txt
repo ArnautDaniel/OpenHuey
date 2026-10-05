@@ -6573,3 +6573,27 @@ src/leaf/tiny_gen.c func_0034D230 --runs=3
 src/leaf/tiny_gen.c func_0034D240 --runs=3
 src/leaf/tiny_gen.c func_003658D0 --runs=3
 src/leaf/tiny_gen.c func_003658E0 --runs=3
+src/leaf/small_hand.c func_0032DD10 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
+src/leaf/small_hand.c func_0034A490 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
+src/leaf/small_hand.c func_0034A5F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
+src/leaf/small_hand.c func_0034AAE0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
+src/leaf/small_hand.c func_00341AD0 --pre=@0x44E558=0x0BC00000..0x0BC00000 --pre=@0x0BC00000=0x0046C540..0x0046C540 --runs=5
+src/leaf/small_hand.c func_0035B000 --runs=3
+src/leaf/small_hand.c func_00330D10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x175C=0x1000..0x1001 --stub-ret=7 --runs=20
+src/leaf/small_hand.c func_00346010 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=5
+src/leaf/small_hand.c func_0033C110 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7450=0..1 --runs=10
+src/leaf/small_hand.c func_0035F9B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x5C0=0..1 --runs=10
+src/leaf/small_hand.c func_003600D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xAC=0..1 --runs=10
+src/leaf/small_hand.c func_00368E80 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE58=0..1 --runs=10
+src/leaf/small_hand.c func_00369AE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20D8=0..1 --runs=10
+src/leaf/small_hand.c func_0035CEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
+src/leaf/small_hand.c func_0035D180 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4:u8=0..2 --runs=10
+src/leaf/small_hand.c func_0035D190 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00360BC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
+src/leaf/small_hand.c func_00361220 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=3..6 --runs=20
+src/leaf/small_hand.c func_00361250 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_003636C0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00371E00 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00378550 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
+src/leaf/small_hand.c func_0037BE70 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00260130 --pre=@0x44E4E0=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AF00..0x0046AF00 --stub-ret=1 --stub-ret=2 --runs=10
