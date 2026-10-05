@@ -8041,6 +8041,104 @@ void func_0018C540(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2D28);
 }
 
+extern VObject *D_0044F260;   /* the placed things */
+
+/* her hand: where the thing leaves it (motion +0x78 the bone) */
+static inline __attribute__((always_inline)) void fiona_hand(Fiona *f, f32 *out) {
+    s32 bone = VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion);
+
+    sceVu0CopyVector(out, func_0017CE80(AT(f->c.motion, 0x810, void *), bone) + 12);
+}
+
+/* D_003B2D18: letting go of an item (moveSub 0x31 throw, 0x32 drop, 0x33 set down) while
+ * turning to FI 0x1AD6D0: idle at the animation's event 0x20; at its mark 2 the thing (kind
+ * unk100) made at her hand and sent off (+0x44: thrown 4, dropped 6 - toward FI 0x1AD6E0 when
+ * aimed (FI 0x1AD6C0), else her facing; set down: straight down). A thrown ball (kind 0) Hewie
+ * may fetch (+0xF368C), after his reaction 12 */
+void func_0018C660(Fiona *f) {
+    static const union { u32 u; f32 f; } kFiveDeg = {0x3DB2B8C3};
+    VObject *things;
+    u8 *t;
+    f32 hand[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+
+    func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), kFiveDeg.f);
+    switch (f->c.moveSub) {
+    case 0x31:
+    case 0x32:
+        if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+            door_give_up(f, gProgress);
+        }
+        if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+            break;
+        }
+        things = D_0044F260;
+        if (things == NULL) {
+            break;
+        }
+        if (f->c.moveSub == 0x31) {
+            VCALL(things, 0x14, void (*)(VObject *, s32))(things, f->c.unk100);
+        }
+        t = VCALL(things, 0x8, u8 *(*)(VObject *, s32))(things, f->c.unk100);
+        if (t == NULL) {
+            break;
+        }
+        VCALL((VObject *)t, 0xC, void (*)(u8 *))(t);
+        fiona_hand(f, hand);
+        if (FI(f, 0x1AD6C0, s32) == 0) {
+            sceVu0CopyVector(dir, (f32 *)((u8 *)f + 0x50));
+        } else {
+            f32 d[4] __attribute__((aligned(16)));
+
+            sceVu0SubVector(d, (f32 *)((u8 *)f + 0x1AD6E0), hand);
+            d[1] = 0.0f;
+            dir[0] = 0.0f;
+            dir[1] = func_0031C5C0(d[0], d[2]);
+            dir[2] = 0.0f;
+            dir[3] = 1.0f;
+        }
+        AT(t, 0x28, u8) = VCALL((VObject *)t, 0x44, s32 (*)(u8 *, Fiona *, f32 *, f32 *, f32, f32))(
+            t, f, hand, dir, f->c.moveSub == 0x31 ? 4.0f : 6.0f, 0.0f);
+        if (f->c.moveSub == 0x31) {
+            Character *h;
+
+            hewie_react(f, 12);
+            if (AT(t, 0x28, u8) == 1 && AT(t, 0x20, s32) == 0 && (func_00177620(gProgress) & 0xFF) == 0 &&
+                (h = (Character *)gCharPartner) != NULL && h->a.active == 1 && h->a.disabled == 0 &&
+                AT(h, 0xF3564, s32) != 0x78) {
+                AT(h, 0xF368C, u8 *) = t;
+            }
+        }
+        break;
+    case 0x33:
+        if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+            door_give_up(f, gProgress);
+        }
+        if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+            break;
+        }
+        things = D_0044F260;
+        if (things == NULL) {
+            break;
+        }
+        VCALL(things, 0x14, void (*)(VObject *, s32))(things, f->c.unk100);
+        t = VCALL(things, 0x8, u8 *(*)(VObject *, s32))(things, f->c.unk100);
+        if (t == NULL) {
+            break;
+        }
+        VCALL((VObject *)t, 0xC, void (*)(u8 *))(t);
+        dir[0] = 0.0f;
+        dir[1] = -1.0f;
+        dir[2] = 0.0f;
+        dir[3] = 1.0f;
+        fiona_hand(f, hand);
+        AT(t, 0x28, u8) = VCALL((VObject *)t, 0x44, s32 (*)(u8 *, Fiona *, f32 *, f32 *, f32, f32))(
+            t, f, hand, dir, 0.0f, 0.0f);
+        break;
+    }
+    func_00125A10(&f->c);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
