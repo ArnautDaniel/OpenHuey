@@ -702,3 +702,329 @@ void func_002FED30(Movie *m) {
     func_0023E878(m->ply, 0x10, 0x20, 0);
     Movie_SetState(m, &D_0041CA80);
 }
+
+/* ---- movie classes 1..6 (func_001768B0's `kind`): movies the game draws itself, decoded into
+ * two frames (+0x1B8, `frameBuf` the one written next). Each frame drawn is sent to VRAM 0xC0000
+ * and most put it on the screen as a sprite. Their +0x18 fills in a frame description for
+ * whoever shows the movie (the game over screen, func_002F0940): w, h, the frames, the frame
+ * written next, plain - and returns `loop`. ---- */
+
+extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
+extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
+extern VObject *D_0044E4E8;   /* the texture cache */
+extern void *func_00115B68(void *d, const void *s, u32 n);   /* memcpy */
+extern s32 Progress_TestFlag(void *p, u32 id);
+#ifdef HG_NATIVE
+extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
+extern void glr_vram_blit(s32 layer);
+#define MOVIE_UNCACHED(p) ((void *)(p))
+#else
+#define MOVIE_UNCACHED(p) ((void *)((u32)(p) | 0x30000000))   /* uncached accelerated */
+#endif
+
+static inline __attribute__((always_inline)) Movie *movie_dtor(Movie *m, s32 flags, void **vtbl) {
+    if (m != NULL) {
+        m->base.vtbl = vtbl;
+        m->frames = NULL;
+        func_002B6FC0(m, 0);
+        if ((s16)flags > 0) {
+            func_0011F9A0(m);
+        }
+    }
+    return m;
+}
+
+/* +0x10 entry: a w x h player of kind `k` with its own work buffer, the frames at gProgress
+ * + `at`, then start */
+static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s32 h, s32 k, s32 f, u32 at,
+                                                              s32 setting, const PTMF *start) {
+    MovieLib *lib = D_0044FEF8;
+    s32 size;
+
+    VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, w, h, k, f);
+    size = VCALL(lib, 0x20, s32 (*)(MovieLib *))(lib);
+    if (size == 0) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+        return;
+    }
+    m->work = func_00114DA8(0x40, size);
+    if (m->work == NULL) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+        return;
+    }
+    lib = D_0044FEF8;
+    VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, m->work);
+    m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
+    if (m->ply == NULL) {
+        VCALL(m, 0x14, void (*)(Movie *))(m);
+    }
+    m->frames = gProgress + at;
+    if (setting) {
+        func_0023E878(m->ply, 0x10, 0x20, 0);
+    }
+    Movie_SetState(m, start);
+}
+
+/* +0x18 the frame description (when looping), `loop` back */
+static inline __attribute__((always_inline)) u8 movie_shot(Movie *m, u8 *shot, u8 plain) {
+    if (m->loop) {
+        AT(shot, 0x0, s16) = m->frameW;
+        AT(shot, 0x2, s16) = m->frameH;
+        AT(shot, 0x4, void *) = m->frames;
+        AT(shot, 0x8, u8) = m->frameBuf;
+        AT(shot, 0x9, u8) = plain;
+    }
+    return m->loop;
+}
+
+/* +0x20 the decoded frame copied into the next of the two (`size` bytes each) */
+static inline __attribute__((always_inline)) void movie_take(Movie *m, u32 size, s32 flush, s32 mark) {
+    func_002410B0(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * size);
+    if (flush) {
+        FlushCache(0);
+    }
+    m->frameBuf ^= 1;
+    if (mark && !m->hasFrame) {
+        m->hasFrame = 1;
+    }
+}
+
+/* the last frame written into VRAM 0xC0000, h rows, on layer `layer` */
+static inline __attribute__((always_inline)) void movie_send(Movie *m, u32 size, s32 h, s32 layer) {
+    VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
+        D_0044E4F0, (u8 *)m->frames + (m->frameBuf ^ 1) * size, 0xC0000, m->frameW, h, layer);
+}
+
+/* the sprite drawing VRAM 0xC0000 (tbw pages wide, uv its corner) at the screen rectangle
+ * xy0 .. xy1 on `layer`, Z writes off, blended by `alpha` when the prim says so */
+static inline __attribute__((always_inline)) void movie_sprite(s32 layer, s32 tbw, u64 alpha, u64 prim, u32 xy0,
+                                                               u32 xy1, u32 uv) {
+    u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x10, layer);
+
+    if (p == NULL) {
+        return;
+    }
+#ifdef HG_NATIVE
+    if (xy0 != 0x72007000) {
+        glr_todo("movie: a sprite not over the whole screen");
+    } else if (prim & 0x40) {
+        glr_vram_draw(0xC0000, layer);   /* over the screen by its alpha */
+    } else {
+        glr_vram_blit(layer);
+    }
+    p[0] = 0x1000000F;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x50000000;
+    (void)tbw; (void)alpha; (void)xy1; (void)uv;
+#else
+    p[0] = 0x1000000F;
+    AT(p, 0x8, u32) = 0;
+    AT(p, 0xC, u32) = 0x5000000F;
+    p[2] = 0x800E | (0x10000000ULL << 32);
+    p[3] = 0xE;
+    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: no Z writes */
+    p[5] = 0x4E;
+    p[6] = 0x30000;                     /* TEST_1: Z always */
+    p[7] = 0x47;
+    p[8] = 0;                           /* TEXFLUSH */
+    p[9] = 0x3F;
+    p[10] = ((s64)tbw << 14) | 0x64003000 | (6ULL << 32);   /* TEX0_1 */
+    p[11] = 6;
+    p[12] = alpha;                      /* ALPHA_1 */
+    p[13] = 0x42;
+    AT(p, 0x70, u32) = 0x80808080;      /* RGBAQ */
+    AT(p, 0x74, u32) = 0x3F800000;
+    p[15] = 1;
+    p[16] = prim;                       /* PRIM: sprite, textured, UV */
+    p[17] = 0;
+    p[18] = 0;                          /* UV */
+    p[19] = 3;
+    p[20] = xy0;                        /* XYZ2 */
+    p[21] = 5;
+    p[22] = uv;
+    p[23] = 3;
+    p[24] = xy1;
+    p[25] = 5;
+    p[26] = 0x310000A0;
+    p[27] = 0x4E;
+    p[28] = 0x5000F;
+    p[29] = 0x47;
+    p[30] = 0x44;
+    p[31] = 0x42;
+#endif
+}
+
+static inline void texcache_done(void) {
+    if (D_0044E4E8 != NULL) {
+        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    }
+}
+
+#define MOVIE_UV(w, h) ((u32)(((w) << 4) | (((h) << 4) << 16)))
+
+/* ---- class 1 (D_0046EAB0): 256 x 224, over the screen by its alpha ---- */
+
+/* +0x8 */
+Movie *func_002BA1B0(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_0046EAB0);
+}
+
+/* +0x10 */
+void func_002BA4F0(Movie *m) {
+    movie_entry(m, 0x100, 0xE0, 0x31, 1, 0xCA6C0, 1, &D_00412730);
+}
+
+/* +0x18 */
+u8 func_002BA220(Movie *m, u8 *shot) {
+    return movie_shot(m, shot, 0);
+}
+
+/* +0x20 */
+void func_002BA490(Movie *m) {
+    movie_take(m, 0x38000, 1, 0);
+}
+
+/* +0x24 */
+void func_002BA270(Movie *m) {
+    movie_send(m, 0x38000, m->frameH, 0x2B);
+    movie_sprite(0x2C, m->frameW / 64, 0x44, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH));
+    texcache_done();
+}
+
+/* ---- class 2 (D_0046EAE0): 512 x 224 frames; put over the screen, opaque, only while
+ * progress flag 0x29 ---- */
+
+/* +0x8 */
+Movie *func_002BA670(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_0046EAE0);
+}
+
+/* +0x10 */
+void func_002BA9F0(Movie *m) {
+    movie_entry(m, 0x200, 0xE0, 0x11, 1, 0xCA6C0, 0, &D_00412740);
+}
+
+/* +0x18 */
+u8 func_002BA6E0(Movie *m, u8 *shot) {
+    return movie_shot(m, shot, 0);
+}
+
+/* +0x20 */
+void func_002BA980(Movie *m) {
+    movie_take(m, 0x70000, 0, 1);
+}
+
+/* +0x24 */
+void func_002BA730(Movie *m) {
+    movie_send(m, 0x70000, m->frameH, 0x2B);
+    if ((Progress_TestFlag(gProgress, 0x29) & 0xFF) == 0) {
+        return;
+    }
+    movie_sprite(0x2C, m->frameW / 64, 0xA8 | (0x80ULL << 32), 0x116, 0x72007000, 0x8E009000,
+                 MOVIE_UV(m->frameW, m->frameH));
+    texcache_done();
+}
+
+/* ---- class 3 (D_0046EB10): 256 x 448 decoded, half of it shown (layer 3), over the screen
+ * by its alpha (layer 4) ---- */
+
+/* +0x8 */
+Movie *func_002BAB50(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_0046EB10);
+}
+
+/* +0x10 */
+void func_002BAE70(Movie *m) {
+    movie_entry(m, 0x100, 0x1C0, 0x21, 1, 0xCA6C0, 0, &D_00412750);
+}
+
+/* +0x20 */
+void func_002BAE10(Movie *m) {
+    movie_take(m, 0x38000, 1, 0);
+}
+
+/* +0x24 */
+void func_002BABC0(Movie *m) {
+    movie_send(m, 0x38000, m->frameH / 2, 3);
+    movie_sprite(4, m->frameW / 64, 0x44, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH / 2));
+    texcache_done();
+}
+
+/* ---- class 4 (D_0046EC30): 256 x 224, plain (layer 6) ---- */
+
+/* +0x8 */
+Movie *func_002C61E0(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_0046EC30);
+}
+
+/* +0x10 */
+void func_002C6380(Movie *m) {
+    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0xCA6C0, 0, &D_004128D0);
+}
+
+/* +0x18 */
+u8 func_002C6250(Movie *m, u8 *shot) {
+    return movie_shot(m, shot, 1);
+}
+
+/* +0x20 the frame copied */
+void func_002C6320(Movie *m) {
+    func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
+    m->frameBuf ^= 1;
+}
+
+/* +0x24 */
+void func_002C62A0(Movie *m) {
+    movie_send(m, 0x38000, m->frameH, 6);
+    texcache_done();
+}
+
+/* ---- class 5 (D_0046EC90): as class 4 but over the screen with ALPHA 0x2A ---- */
+
+/* +0x8 */
+Movie *func_002C87C0(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_0046EC90);
+}
+
+/* +0x10 */
+void func_002C8AB0(Movie *m) {
+    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0x16C0, 0, &D_004128E0);
+}
+
+/* +0x20 the frame copied */
+void func_002C8A50(Movie *m) {
+    func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
+    m->frameBuf ^= 1;
+}
+
+/* +0x24 */
+void func_002C8830(Movie *m) {
+    movie_send(m, 0x38000, m->frameH, 0x2B);
+    movie_sprite(0x2C, m->frameW / 64, 0x2A, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH));
+    texcache_done();
+}
+
+/* ---- class 6 (D_00474F80): a 256 x 64 strip at screen (128, 176) .. (512, 272) (layers 0x2D /
+ * 0x2E) ---- */
+
+/* +0x8 */
+Movie *func_0032E430(Movie *m, s32 flags) {
+    return movie_dtor(m, flags, D_00474F80);
+}
+
+/* +0x10 */
+void func_0032E730(Movie *m) {
+    movie_entry(m, 0x100, 0x40, 0x41, 1, 0x1AA6C0, 0, &D_0042E428);
+}
+
+/* +0x20 */
+void func_0032E6C0(Movie *m) {
+    movie_take(m, 0x10000, 1, 1);
+}
+
+/* +0x24 */
+void func_0032E4A0(Movie *m) {
+    movie_send(m, 0x10000, m->frameH, 0x2D);
+    movie_sprite(0x2E, (m->frameW + 0x3F) / 64, 0x44, 0x156, 0x7D007400, 0x83008C00, MOVIE_UV(m->frameW, m->frameH));
+    texcache_done();
+}

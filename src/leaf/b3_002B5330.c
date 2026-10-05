@@ -102,31 +102,6 @@ extern u8 *D_0045D1F0;
 
 extern void *D_0044E4F0; /* global manager object (virtual calls) */
 
-/* Tail call: D_0044E4F0->vfunc_0x40(self->0x18, 0x88000, self->0x20, self->0x24, 3) */
-/* If active (+0x1C4), fills a small descriptor; returns the active flag. */
-u32 func_002BA220(u8 *self, u8 *out) {
-    if (self[0x1C4] != 0) {
-        *(u16 *)(out + 0x0) = *(u32 *)(self + 0x20);
-        *(u16 *)(out + 0x2) = *(u32 *)(self + 0x24);
-        *(u32 *)(out + 0x4) = *(u32 *)(self + 0x1B8);
-        out[0x8] = self[0x1B5];
-        out[0x9] = 0;
-    }
-    return self[0x1C4];
-}
-
-/* If active (+0x1C4), fills a small descriptor; returns the active flag. */
-u32 func_002BA6E0(u8 *self, u8 *out) {
-    if (self[0x1C4] != 0) {
-        *(u16 *)(out + 0x0) = *(u32 *)(self + 0x20);
-        *(u16 *)(out + 0x2) = *(u32 *)(self + 0x24);
-        *(u32 *)(out + 0x4) = *(u32 *)(self + 0x1B8);
-        out[0x8] = self[0x1B5];
-        out[0x9] = 0;
-    }
-    return self[0x1C4];
-}
-
 extern void *D_0044E4F0;
 
 /* Stores its arguments, then tail-calls D_0044E4F0->vfunc_0xC(self, c, 0). */
@@ -144,18 +119,6 @@ void func_002C0700(u8 *self) {
 
 void func_002C0710(u8 *self) {
     self[0x30] = 5;
-}
-
-/* If active (+0x1C4), fills a small descriptor; returns the active flag. */
-u32 func_002C6250(u8 *self, u8 *out) {
-    if (self[0x1C4] != 0) {
-        *(u16 *)(out + 0x0) = *(u32 *)(self + 0x20);
-        *(u16 *)(out + 0x2) = *(u32 *)(self + 0x24);
-        *(u32 *)(out + 0x4) = *(u32 *)(self + 0x1B8);
-        out[0x8] = self[0x1B5];
-        out[0x9] = 1;
-    }
-    return self[0x1C4];
 }
 
 s32 func_002C8D90(u8 *self) {

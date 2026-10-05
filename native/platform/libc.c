@@ -2,6 +2,7 @@
 #include <string.h>
 
 void *func_00115D20(void *p, int c, unsigned n) { return memset(p, c, n); }
+void *func_00115B68(void *d, const void *s, unsigned n) { return memcpy(d, s, n); }   /* memcpy */
 
 #include <stdarg.h>
 #include <stdio.h>
