@@ -7091,6 +7091,24 @@ void func_0014EE20(Hewie *h) {
     }
 }
 
+/* airborne in a leap: turn toward +0xF36CC by +0xF36D0, move +0xF36C4 along the way and fall
+ * (+0xF36C8 less 0.3 a frame onto height +0xF36EC), never below the ground */
+static void leap_fly(Hewie *h) {
+    f32 p[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+    tri = h->c.a.navTri;
+    func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+    h->c.a.navTri = tri;
+    sceVu0CopyVector(h->c.a.pos, p);
+    HW(h, 0xF36C8, f32) -= 0x1.333334p-2f /* 0.3 */;
+    HW(h, 0xF36EC, f32) += HW(h, 0xF36C8, f32);
+    if (!(HW(h, 0xF36EC, f32) <= h->c.a.pos[1])) {
+        h->c.a.pos[1] = HW(h, 0xF36EC, f32);
+    }
+}
+
 /* ---- the leap at the pursuer ---- */
 
 extern const PTMF D_003B1A38;
@@ -7103,9 +7121,7 @@ extern const PTMF D_003B1A38;
  * hit on it (30, +30 on difficulty 1, +half with progress +0xA10; hard when func_001386D0 5) and
  * its effect, then behaviour D_003B1A38 */
 void func_0014F600(Hewie *h) {
-    f32 p[4] __attribute__((aligned(16)));
     Progress *pr;
-    u32 tri;
     u16 dmg;
 
     if (h->c.state[0] == 7) {
@@ -7126,16 +7142,7 @@ void func_0014F600(Hewie *h) {
                 func_00178070(pr, AT(h, 0x20, u8), 4, 9, 0, 15, 0.0f);
             }
         }
-        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
-        tri = h->c.a.navTri;
-        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
-        h->c.a.navTri = tri;
-        sceVu0CopyVector(h->c.a.pos, p);
-        HW(h, 0xF36C8, f32) -= 0x1.3333340000000p-2f /* 0.3 */;
-        HW(h, 0xF36EC, f32) += HW(h, 0xF36C8, f32);
-        if (!(HW(h, 0xF36EC, f32) <= h->c.a.pos[1])) {
-            h->c.a.pos[1] = HW(h, 0xF36EC, f32);
-        }
+        leap_fly(h);
     } else {
         h->c.a.navTri = h->c.unk104[1];
         sceVu0CopyVector(h->c.a.pos, h->c.unk110);
@@ -7174,6 +7181,29 @@ void func_0014F600(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1A38);
     }
     HW(h, 0xF3581, u8) = 1;
+    HW(h, 0xF3558, u8) = 1;
+    HW(h, 0xF3582, u8) = 0;
+}
+
+/* ---- taking off at the pursuer ---- */
+
+extern const PTMF D_003B1A28;
+extern void func_002DE030(void *m, s32 anim, u32 flags, s32 variant, f32 blend);
+
+/* the take-off of the leap at the pursuer (in his room; else the default action): once not
+ * blending, the leap animation 0x2218 blended over the frames left (+0xF36B4) and behaviour
+ * D_003B1A28; airborne meanwhile */
+void func_0014FC70(Hewie *h) {
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+        func_002DE030(h->c.motion, 0x2218, 9, -1, (f32)HW(h, 0xF36B4, s32));
+        Hewie_SetBehaviour(h, &D_003B1A28);
+    }
+    leap_fly(h);
+    HW(h, 0xF36B4, s32) -= 1;
     HW(h, 0xF3558, u8) = 1;
     HW(h, 0xF3582, u8) = 0;
 }
