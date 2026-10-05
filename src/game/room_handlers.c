@@ -2258,3 +2258,33 @@ s32 func_00305FB0(void *self, void *a1, u8 *cmd) {
     func_002D6090(mgr, slot, &on);
     return 1;
 }
+
+extern void *D_00477AC0[];
+
+static void effect_77AC0_init(void **obj) {
+    obj[0] = D_00477AC0;
+    obj[0x1840 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1844 / 4] = -1;
+    obj[0x1840 / 4] = D_0046FC30;
+    obj[0x1878 / 4] = D_00469D00;
+    ((s32 *)obj)[0x187C / 4] = -1;
+    obj[0x1878 / 4] = D_0046FC30;
+}
+
+/* room 66 (D_0041F568): byte 4 0 starts the 0x1BC0-byte effect D_00477AC0 (parameters from
+ * byte 3), its slot kept in event variable byte 3 + 3; else that effect is sent 0xFF (stop) */
+s32 func_00300A20(void *self, void *a1, u8 *cmd) {
+    if (cmd[4] == 0) {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0x1BC0, effect_77AC0_init);
+
+        func_002D6090(mgr, slot, cmd + 3);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, (cmd[3] + 3) & 0xFF, slot);
+    } else {
+        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, (cmd[3] + 3) & 0xFF);
+        u8 stop = 0xFF;
+
+        func_002D6090(D_0044E578, slot, &stop);
+    }
+    return 1;
+}

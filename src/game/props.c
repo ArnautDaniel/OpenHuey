@@ -704,3 +704,206 @@ void func_00353BD0(u8 *o) {
         func_00353330(o, i);
     }
 }
+
+/* ---- class D_00477AC0 (room 0x66, 0x1BC0 bytes): smoke rising at spot +0x1BB8 / 2 of the
+ * table D_0043B640 (x, z pairs) - 64 puffs, double-buffered (+0x10 + buffer +0x1BB0 * 0xC00, a
+ * quad record of 0x30 each) and drawn by the quad drawer at +0x1840, with a glow sprite (record
+ * +0x1810, drawer +0x1878) whose alpha follows how many puffs show. Per puff its rise speed
+ * (+0x18B0 + i * 4), sway phase (+0x19B0) and strength (+0x1AB0, 1 at first); +0x1BBC set
+ * (start parameter < 0) it dies down: strengths fall by 0.2 a respawn, the glow (+0x1BB4) by
+ * 0.003 ---- */
+
+extern void *D_00477AC0[];
+extern f32 D_0043B640[], D_0043B644[];   /* the spots: x, z (read as pairs) */
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+#define SMOKE_PUFF(o, i) ((o) + AT(o, 0x1BB0, s32) * 0xC00 + (i) * 0x30 + 0x10)
+
+/* +0x8 destructor (the quad drawers at +0x1840 and +0x1878 inlined) */
+u8 *func_003453D0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00477AC0;
+    AT(o, 0x1878, void **) = D_0046FC30;
+    AT(o, 0x1878, void **) = D_00469D00;
+    AT(o, 0x1840, void **) = D_0046FC30;
+    AT(o, 0x1840, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* puff i anew (`again` 0: the first time, part way up already): white, alpha about 0x40
+ * (+-0x20 by strength), size 0.5..8, scattered about the spot (wider across x at spot 4,
+ * else along z), rising 0.65 +- 0.15 x strength; dying down, its strength falls and once the
+ * glow is out it just stays hidden */
+void func_00345490(u8 *o, s32 i, s32 again) {
+    static const F32Bits k02 = {0x3E4CCCCD}, k0003 = {0x3B449BA6}, k03 = {0x3E99999A}, k065 = {0x3F266666},
+                         kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *rng;
+    u8 *p;
+    f32 up = 0.0f, f;
+    s32 k;
+
+    if (AT(o, 0x1BBC, u8) == 1) {
+        f32 *s = &AT(o, 0x1AB0 + i * 4, f32);
+
+        *s = *s - k02.f;
+        if (*s < 0.0f) {
+            *s = 0.0f;
+        }
+        AT(o, 0x1BB4, f32) = AT(o, 0x1BB4, f32) - k0003.f;
+        if (AT(o, 0x1BB4, f32) < 0.0f) {
+            AT(o, 0x1BB4, f32) = 0.0f;
+            AT(SMOKE_PUFF(o, i), 0xC, s32) = 0;
+            return;
+        }
+    }
+    rng = D_0044E550;
+    p = SMOKE_PUFF(o, i);
+    AT(p, 0x0, s32) = 0x80;
+    AT(p, 0x4, s32) = 0x80;
+    AT(p, 0x8, s32) = 0x80;
+    AT(p, 0xC, s32) = (s32)(AT(o, 0x1AB0 + i * 4, f32) *
+                            (f32)(s32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x3F) - 0x20)) + 0x40;
+    AT(p, 0x20, f32) = 0.5f + 7.5f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+    if (again == 0) {
+        up = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+        AT(p, 0xC, s32) = (s32)((f32)AT(p, 0xC, s32) * (1.0f - up));
+        AT(p, 0x20, f32) = AT(p, 0x20, f32) + 1.5f * up;
+    }
+    rng = D_0044E550;
+#define RND(o) VCALL(rng, o, f32 (*)(VObject *))(rng)
+    k = AT(o, 0x1BB8, s32);
+    f = AT(o, 0x1AB0 + i * 4, f32) * (1.0f + (f32)((k == 4) * 5));
+    AT(p, 0x10, f32) = D_0043B640[k] + f * (RND(0x18) - 0.5f);
+    AT(p, 0x14, f32) = 30.0f * up - 4.0f;
+    k = AT(o, 0x1BB8, s32);
+    f = AT(o, 0x1AB0 + i * 4, f32) * (1.0f + (f32)((k != 4) << 4));
+    AT(p, 0x18, f32) = D_0043B644[k] + f * (RND(0x18) - 0.5f);
+    AT(p, 0x1C, f32) = 1.0f;
+    AT(p, 0x24, f32) = AT(p, 0x20, f32);
+    AT(p, 0x28, f32) = kPi.f * RND(0x1C) / 180.0f;
+    AT(p, 0x2C, s32) = 0;
+    AT(o, 0x18B0 + i * 4, f32) = k065.f + (k03.f * AT(o, 0x1AB0 + i * 4, f32)) * (RND(0x18) - 0.5f);
+    AT(o, 0x19B0 + i * 4, f32) = k2Pi.f * (RND(0x18) - 0.5f);
+#undef RND
+}
+
+/* +0x14 draw: the puffs, then the glow */
+void func_00345A00(u8 *o) {
+    AT(o, 0x1850, u8 *) = SMOKE_PUFF(o, 0);
+    func_002E56C0(o + 0x1840);
+    AT(o, 0x1888, u8 *) = o + 0x1810;
+    func_002E56C0(o + 0x1878);
+}
+
+/* +0x10 update (0 once it has died down and no puff shows): swap buffers; each puff grows,
+ * turns, sways and rises, and starts again above 50 or (every other frame, fading faster the
+ * weaker it is) once faded out; the glow's alpha is the number showing (+0..7) times +0x1BB4 */
+s32 func_00345A60(u8 *o) {
+    static const F32Bits k001 = {0x3C23D70A}, k02 = {0x3E4CCCCD}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB},
+                         k2Pi = {0x40C90FDB};
+    VObject *rng = D_0044E550;
+    s32 i, k, n;
+
+    AT(o, 0x1BB0, s32) ^= 1;
+    for (i = 0; i < 64; i++) {
+        u32 buf = AT(o, 0x1BB0, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0xC00 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0xC00 + i * 0x30, u32);
+        f32 *ph = &AT(o, 0x19B0 + i * 4, f32);
+        u8 *p;
+        f32 a;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = SMOKE_PUFF(o, i);
+        AT(p, 0x20, f32) = AT(p, 0x24, f32) =
+            AT(p, 0x20, f32) + (k001.f + k02.f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng));
+        AT(p, 0x28, f32) = AT(p, 0x28, f32) + 0.5f * (kPi.f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) / 180.0f);
+        a = *ph + kPi.f * (10.0f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng)) / 180.0f;
+        *ph = a;
+        if (!(a <= kPi.f)) {
+            *ph = a - k2Pi.f;
+        }
+        AT(p, 0x10, f32) = AT(p, 0x10, f32) + k01.f * func_0031C248(*ph);
+        AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x18B0 + i * 4, f32);
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * func_0031C058(*ph);
+        if (!(AT(p, 0x14, f32) <= 50.0f)) {
+            func_00345490(o, i, 1);
+        }
+        if (AT(o, 0x1BB0, s32) == 0) {
+            f32 w = 1.0f - AT(o, 0x1AB0 + i * 4, f32);
+            u32 r = VCALL(rng, 0x10, u32 (*)(VObject *))(rng);
+
+            AT(p, 0xC, s32) = AT(p, 0xC, s32) - ((s32)(20.0f * w * w) + (s32)(r & 3));
+            if (AT(p, 0xC, s32) <= 0) {
+                func_00345490(o, i, 1);
+            }
+        }
+    }
+    n = 0;
+    for (i = 0; i < 64; i++) {
+        if (AT(SMOKE_PUFF(o, i), 0xC, s32) != 0) {
+            n++;
+        }
+    }
+    if (AT(o, 0x1BBC, u8) == 1 && n == 0) {
+        return 0;
+    }
+    AT(o, 0x181C, s32) = n + (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 7);
+    AT(o, 0x181C, s32) = (s32)((f32)AT(o, 0x181C, s32) * AT(o, 0x1BB4, f32));
+    return 1;
+}
+
+/* +0x18 start: a byte < 0 makes it die down; else spot (byte & 0xF) * 2: 64 puffs and the glow
+ * (pinkish white, 20 across, 12 up at the spot; texture group 0x10, cell (0xA0, 0x40)) */
+void func_003458A0(u8 *o, const s8 *params) {
+    s32 i;
+
+    if (params == NULL) {
+        return;
+    }
+    if (params[0] < 0) {
+        AT(o, 0x1BBC, u8) = 1;
+        return;
+    }
+    AT(o, 0x1BB8, s32) = (params[0] & 0xF) * 2;
+    for (i = 0; i < 64; i++) {
+        func_00345490(o, i, 0);
+    }
+    AT(o, 0x1880, s64) = -1;
+    AT(o, 0x1890, s32) = 0;
+    AT(o, 0x1894, s32) = 0;
+    AT(o, 0x1898, s32) = 0x19;
+    AT(o, 0x189C, s16) = 1;
+    AT(o, 0x189E, s16) = 0xA0;
+    AT(o, 0x18A0, s16) = 0x40;
+    AT(o, 0x18A2, s16) = 0x20;
+    AT(o, 0x18A4, s16) = 0x20;
+    AT(o, 0x18A6, s16) = 0x200;
+    AT(o, 0x18A8, s16) = 0x100;
+    AT(o, 0x18AA, u8) = 0x40;
+    AT(o, 0x18AB, u8) = 1;
+    AT(o, 0x18AC, u8) = 1;
+    AT(o, 0x18AD, u8) = 0x10;
+    AT(o, 0x18AE, u8) = 0xFF;
+    AT(o, 0x1810, s32) = 0x80;
+    AT(o, 0x1814, s32) = 0x70;
+    AT(o, 0x1818, s32) = 0x70;
+    AT(o, 0x181C, s32) = 0x40;
+    AT(o, 0x1820, f32) = D_0043B640[AT(o, 0x1BB8, s32)];
+    AT(o, 0x1824, f32) = 12.0f;
+    AT(o, 0x1828, f32) = D_0043B644[AT(o, 0x1BB8, s32)];
+    AT(o, 0x182C, f32) = 1.0f;
+    AT(o, 0x1830, f32) = 20.0f;
+    AT(o, 0x1834, f32) = AT(o, 0x1830, f32);
+    AT(o, 0x1838, s32) = 0;
+    AT(o, 0x183C, s32) = 0;
+}
