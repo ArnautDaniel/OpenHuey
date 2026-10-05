@@ -1326,10 +1326,11 @@ f32 func_00126E40(Character *c) {
 
 extern VObject *D_0044E580;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
 
-/* Forward to D_0044E580 +0xC with the character's buffers at +0x148C and +0x138C. */
-s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
-    return VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
-        D_0044E580, a1, a2, a3, c->unk148C, c->unk138C, a4, a5);
+/* Forward to D_0044E580 +0xC (the route planner) with the character's buffers at +0x148C and
+   +0x138C after the first three arguments. */
+s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
+    return VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32, s32, s32))(
+        D_0044E580, a1, a2, a3, c->unk148C, c->unk138C, a4, a5, a6, a7);
 }
 
 /* Route request to D_0044E580 +0xC toward `target`; side -1: the side of the current exit

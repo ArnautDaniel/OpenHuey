@@ -1596,7 +1596,7 @@ extern VObject *D_0044E4F8;   /* the camera director (interface) */
 extern s32 func_0029A8C0(u8 *pu, s32);
 extern u32 func_0029CE50(u8 *pu);
 extern s32 func_002EC170(u8 *o);
-extern void func_002EBED0(u8 *o);
+extern s32 func_002EBED0(u8 *o);
 extern s32 func_00177200(Progress *p, u32 slot);
 
 /* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
@@ -1618,6 +1618,223 @@ static inline void summoner_take(u8 *o, u8 kind) {
 
 void func_002EC470(u8 *o, u8 kind) {
     summoner_take(o, kind);
+}
+
+/* the summoner's cooldown (+0x4) to `sec` seconds / less by `sec` (not below 0) */
+void func_002EC450(u8 *o, s32 sec) {
+    AT(o, 0x4, u32) = sec * 30;
+}
+
+void func_002EC3C0(u8 *o, s32 sec) {
+    u32 d = sec * 30;
+
+    AT(o, 0x4, u32) = AT(o, 0x4, u32) >= AT(o, 0x4, u32) - d ? AT(o, 0x4, u32) - d : 0;
+}
+
+extern VObject *D_0044E550;    /* random numbers: +0x18 / +0x1C -> 0..1 */
+extern void *func_00114FA8(u32 size);   /* malloc */
+extern void func_00114FD0(void *p);     /* free */
+extern s32 func_00126F30(void *c, s32 from, s32 to, s32 a3, s32 a4, s32 fromPt, s32 toPt, s32 mode);   /* a route (>= 0) */
+extern void func_0029CEE0(void *pu, s32 room, u32 found, s32 plan, s32 side);   /* the pursuer comes into a room */
+
+/* bring the pursuer in for the summoner `o`: a random room out of the progress's list for the
+ * current one (+0x3C) - `near` 0: one not next to it; else one next to it (once per exit
+ * leading there) that the rooms allow (+0x88); either way not the current room and with its
+ * progress bit clear - then the first of its exits (rooms +0x74) with a route from Fiona's
+ * exit point to the exit's point (func_00126F30; next-door: route mode 1, the point not 0 / 1;
+ * else mode 2); it comes in there with plan `plan` (and +0's summoned bit). 1 if it came */
+static s32 summon_via(u8 *o, s32 near, s32 plan) {
+    Progress *p = gProgress;
+    VObject *rooms = D_0044E568;
+    s32 cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    s32 *list = func_00114FA8(0x104);
+    u32 n, m = 0, i, e;
+    u8 *pu, *pl;
+    s32 from, to = -1, ok = 0;
+
+    if (list == NULL) {
+        return 0;
+    }
+    n = VCALL(p, 0x3C, u32 (*)(Progress *, s32 *, s32))(p, list, cur);
+    if (n == 0) {
+        func_00114FD0(list);
+        return 0;
+    }
+    for (i = 0; i < n; i++) {
+        s32 c = list[i];
+
+        if (c == -1 || c == cur) {
+            continue;
+        }
+        if (!near) {
+            for (e = 0; e < 8; e++) {
+                if (list[i] == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, cur, e & 0xFF)) {
+                    break;
+                }
+            }
+            if (e == 8 && (u8)Progress_IsBitClear(p, list[i])) {
+                list[m++] = list[i];
+            }
+        } else if ((u8)Progress_IsBitClear(p, c) && (u8)VCALL(rooms, 0x88, s32 (*)(VObject *, s32, s32))(rooms, list[i], cur)) {
+            for (e = 0; e < 8; e++) {
+                if (list[i] == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, cur, e & 0xFF)) {
+                    list[m++] = list[i];
+                }
+            }
+        }
+    }
+    if (m == 0) {
+        func_00114FD0(list);
+        return 0;
+    }
+    i = (u8)(u32)((f32)m * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    pu = gCharPursuer;
+    pl = gCharPlayer;
+    from = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, AT(pl, 0x30, s32), AT(pl, 0x14D4, u8), 1);
+    for (e = 0; e < 8; e++) {
+        if (VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, list[i], e & 0xFF) == 0) {
+            continue;
+        }
+        to = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, list[i], e & 0xFF, 1);
+        if (func_00126F30(pu, AT(pl, 0x30, s32), list[i], AT(pu, 0x20, s32), 1, from, to, near ? 1 : 2) >= 0 &&
+            (!near || (to != 0 && to != 1))) {
+            ok = 1;
+            break;
+        }
+    }
+    if (ok) {
+        func_0029CEE0(pu, list[i], (AT(o, 0x0, u32) & 0x80000000) != 0, plan, to);
+    }
+    func_00114FD0(list);
+    return ok;
+}
+
+s32 func_002EB390(u8 *o) {
+    return summon_via(o, 0, 0);
+}
+
+s32 func_002EB730(u8 *o) {
+    return summon_via(o, 1, 0);
+}
+
+s32 func_002EBB00(u8 *o) {
+    return summon_via(o, 1, 1);
+}
+
+/* each frame with the pursuer offstage (Progress flag 0: this stage has one): the first time
+ * (flag 1) +0 its time away; while flag 2 is clear and that runs, counting down (+0xC counting
+ * up); then it tries to come in, by one of the three ways from a random first one onwards
+ * (func_002EBB00 / func_002EB730 / func_002EB390); having come, the wait restarts, +0x10 its
+ * mode, flag 2 off and the cooldown +0x4 its +0x2D4 seconds. 1 if it came */
+s32 func_002EC170(u8 *o) {
+    u8 *pu = gCharPursuer;
+    Progress *p = gProgress;
+    u32 k;
+    s32 ok = 0;
+
+    if (!Progress_TestFlag(p, 0)) {
+        return 0;
+    }
+    if (!Progress_TestFlag(p, 1)) {
+        AT(o, 0x0, u32) = func_0029CE50(pu);
+        AT(o, 0xC, u32) = 0;
+        Progress_SetFlag(p, 1);
+    }
+    if (AT(pu, 0x28, u8) != 0) {
+        return 0;
+    }
+    if (!Progress_TestFlag(p, 2) && (AT(o, 0x0, u32) & 0x7FFFFFFF) != 0) {
+        AT(o, 0x0, u32)--;
+        if (AT(o, 0xC, u32) + 1 != 0) {
+            AT(o, 0xC, u32)++;
+        }
+        return 0;
+    }
+    k = (u8)(u32)(3.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550));
+    do {
+        switch (k++) {
+        case 0:
+            ok = (u8)func_002EBB00(o);
+            break;
+        case 1:
+            ok = (u8)func_002EB730(o);
+            break;
+        case 2:
+            ok = (u8)func_002EB390(o);
+            break;
+        }
+    } while ((k & 0xFF) < 3 && !ok);
+    if (ok == 1) {
+        AT(o, 0xC, u32) = 0;
+        AT(o, 0x10, u8) = AT(pu, 0x16C8, u8);
+        Progress_ClearFlag(p, 2);
+        AT(o, 0x4, u32) = VCALL((VObject *)pu, 0x2D4, s32 (*)(void *))(pu) * 30;
+    }
+    return ok;
+}
+
+/* each frame with the pursuer in play: the cooldown runs down; its mode (+0x16C8) changed: the
+ * wait restarts; Fiona in its room, or next door where it isn't hunting her (progress +0x64
+ * not 4 or func_0029A8C0): likewise; else the wait counts up, and after 5 s hunting (+0xC4 2:
+ * kind 2) or in mode 4 (kind 1), or with the cooldown over 3 s in mode 3 (kind 0), the
+ * summoner takes it back. 1 if it did */
+s32 func_002EBED0(u8 *o) {
+    u8 *pu = gCharPursuer;
+    u8 *pl;
+    u8 mode;
+    s32 go = 0, kind = 0;
+
+    if (pu == NULL || AT(pu, 0x28, u8) == 0) {
+        return 0;
+    }
+    if (AT(o, 0x4, u32) != 0) {
+        AT(o, 0x4, u32)--;
+    }
+    mode = AT(pu, 0x16C8, u8);
+    if (mode != AT(o, 0x10, u8)) {
+        AT(o, 0x10, u8) = mode;
+        AT(o, 0xC, u32) = 0;
+        return 0;
+    }
+    pl = gCharPlayer;
+    if (pl != NULL && AT(pl, 0x28, u8) != 0 && AT(pl, 0x30, s32) != -1) {
+        s32 pr = AT(pl, 0x30, s32), ur = AT(pu, 0x30, s32);
+        u32 e;
+
+        if (pr == ur) {
+            AT(o, 0xC, u32) = 0;
+            return 0;
+        }
+        for (e = 0; e < 8; e++) {
+            if (ur == VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, pr, e & 0xFF) &&
+                ((u8)VCALL(gProgress, 0x64, s32 (*)(Progress *))(gProgress) != 4 || !func_0029A8C0(pu, -1))) {
+                AT(o, 0xC, u32) = 0;
+                return 0;
+            }
+        }
+    }
+    if (AT(o, 0xC, u32) + 1 != 0) {
+        AT(o, 0xC, u32)++;
+    }
+    if (AT(pu, 0xC4, s32) == 2 && AT(o, 0xC, u32) >= 151) {
+        go = 1;
+        kind = 2;
+    }
+    if (!go && mode == 4 && AT(o, 0xC, u32) >= 151) {
+        go = 1;
+        kind = 1;
+    }
+    if (!go && AT(o, 0x4, u32) != 0) {
+        return 0;
+    }
+    if (!go && mode == 3 && AT(o, 0xC, u32) >= 91) {
+        go = 1;
+        kind = 0;
+    }
+    if (go) {
+        summoner_take(o, kind);
+    }
+    return go;
 }
 
 /* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
