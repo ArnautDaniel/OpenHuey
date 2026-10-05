@@ -5677,3 +5677,57 @@ void func_00146130(Hewie *h) {
     }
     func_002DD310(h->c.motion, pitch, yaw, 0x1.3333340000000p-3f /* 0.15 */ * dp, ys);
 }
+
+/* ---- telling Fiona ---- */
+
+/* post event (kind, a, b) into c's state block unless it holds 7 (the original copies a local
+ * whose last fields are never set) */
+static void post_state(Character *c, s32 kind, s32 a, s32 b) {
+    if (c->state[0] != 7) {
+        c->state[0] = kind;
+        c->state[1] = a;
+        c->state[2] = b;
+        c->state[3] = 0;
+        c->state[4] = 0;
+        *(f32 *)&c->state[5] = 0.0f;
+        c->state[6] = 0;
+        c->state[7] = 0;
+    }
+}
+
+/* look at his target (or ahead without one); once he is down low (pose 3): when Fiona is within
+ * 100 in his room, tell her (event 0xD, 0, exit) of each exit whose door he may use (state bit
+ * 4) and that isn't open; else tell her where he is (0xD, 1, triangle). Then the default
+ * action */
+void func_00146C50(Hewie *h) {
+    s32 told = 0;
+    u32 e;
+
+    if (HW(h, 0xF3544, Character *) == NULL) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+    } else if (HW(h, 0xF3604, s32) != 0) {
+        HW(h, 0xF3604, s32) = 0;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    if (func_00140CD0(h, 3) != 0) {
+        return;
+    }
+    func_00141C00(h, 3);
+    if (in_his_room(h, gCharPlayer) && func_00124490(&h->c.a, gCharPlayer->a.pos) < 100.0f) {
+        Progress *p = gProgress;
+
+        for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+            if ((func_00177BF0(p, e, (u8)h->c.a.slot) & 0xFF & 4) && !(u8)func_00178980(p, h->c.a.room, e)) {
+                told = 1;
+                post_state(gCharPlayer, 0xD, 0, e & 0xFF);
+            }
+        }
+    }
+    if (!told) {
+        post_state(gCharPlayer, 0xD, 1, h->c.a.navTri);
+    }
+    hewie_want(h, 0, 0);
+}
