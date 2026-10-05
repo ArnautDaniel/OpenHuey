@@ -5025,3 +5025,288 @@ s32 func_00182340(Fiona *f, s32 *st) {
     }
     return 0;
 }
+
+/* ---- the reaction states (action 4) ---- */
+
+extern const PTMF D_003B2D38, D_003B2D48;
+
+/* 0x12 (D_003B2E78): once the motion has played out, the hold (0x1405, or 0x1406 already) */
+void func_0018BFC0(Fiona *f) {
+    void *m = f->c.motion;
+
+    if (!(AT(m, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    if (AT(m, 0x55C, s32) != 0x1405 && AT(m, 0x55C, s32) != 0x1406) {
+        func_002DDED0(m, 0x1405, -1);
+    }
+    Actor_SetState(&f->c.a, &D_003B2D38);
+}
+
+/* 0x13 (D_003B2E88): once the motion has played out, a cry (0x3F) and a fall (noise 0x5F) -
+ * where she may (+0x1AD6C0) by the side her character slot's noise point (gProgress +0x1060)
+ * is on: ahead 0x1004, behind 0x1005, left / right 0x1007 / 0x1006; else straight down
+ * (0x100F) */
+void func_0018BA70(Fiona *f) {
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        Progress *p = gProgress;
+        f32 d[4] __attribute__((aligned(16)));
+        f32 a, aa;
+
+        sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)p + 0x1060 + f->c.a.slot * 0x20));
+        a = func_002E2D00(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+        aa = a <= 0.0f ? -a : a;
+        if (FI(f, 0x1AD6C0, s32) == 0) {
+            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            func_002DDED0(f->c.motion, 0x100F, -1);
+        } else {
+            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            if (aa < 0x1.0c1524p+0f /* 60 deg */) {
+                func_002DDED0(f->c.motion, 0x1004, -1);
+            } else if (!(aa <= 0x1.0c1524p+1f /* 120 deg */)) {
+                func_002DDED0(f->c.motion, 0x1005, -1);
+            } else if (a < 0.0f) {
+                func_002DDED0(f->c.motion, 0x1007, -1);
+            } else {
+                func_002DDED0(f->c.motion, 0x1006, -1);
+            }
+        }
+        func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Actor_SetState(&f->c.a, &D_003B2D48);
+    }
+    func_00125A10(&f->c);
+}
+
+extern const PTMF D_003B2998, D_003B29A8;
+extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);   /* a point by a door */
+
+/* 0x20 caught (D_003B2DF8): once the motion has played out, the rumble, a cry (0x43) and the
+ * caught motion by how (+0x104): 1 0xF02, 2 0xF04, 3 0xF03, 4 0xF05 (1, and 3 with someone
+ * holding her, set +0x1AD5FC) */
+void func_00194230(Fiona *f) {
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x80, 8);
+        func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
+        switch (f->c.unk104[0]) {
+        case 4:
+            func_002DDED0(f->c.motion, 0xF05, -1);
+            break;
+        case 1:
+            FI(f, 0x1AD5FC, u8) = 1;
+            func_002DDED0(f->c.motion, 0xF02, -1);
+            break;
+        case 2:
+            func_002DDED0(f->c.motion, 0xF04, -1);
+            break;
+        case 3:
+            if (f->target != NULL) {
+                FI(f, 0x1AD5FC, u8) = 1;
+            }
+            func_002DDED0(f->c.motion, 0xF03, -1);
+            break;
+        }
+        Actor_SetState(&f->c.a, &D_003B2998);
+    }
+    func_00125A10(&f->c);
+}
+
+/* 8 (D_003B2E18), caught while crawling: dragged to door +0x104's side 1, 15 out
+ * (+0x1AD6E0, +0x1AD6C8 its triangle); a drop under 20 a short pull (0xF02, cry 0x3F, action
+ * 0xB), else a fall (0x70A, cry 0x40, +0x1AD6C4); the frames to get there (+0x1AD6C0) falling
+ * 0, 0.5, 1, ... a frame, the step across (+0x1AD6D0) */
+void func_00193E90(Fiona *f) {
+    f32 ofs[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 y, step;
+    s32 n;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    ofs[0] = 0.0f;
+    ofs[2] = 10.0f;
+    ofs[1] = 0.0f;
+    FI(f, 0x1AD6C8, s32) = func_00123710(f, f->c.unk104[0], 1, ofs, (f32 *)((u8 *)f + 0x1AD6E0));
+    sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
+    if (d[1] < 20.0f) {
+        FI(f, 0x1AD6C4, s32) = 0;
+        f->c.moveMode = 0xB;
+        func_002DDED0(f->c.motion, 0xF02, -1);
+        func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+    } else {
+        FI(f, 0x1AD6C4, s32) = 1;
+        func_002DDED0(f->c.motion, 0x70A, -1);
+        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+    }
+    y = d[1];
+    step = 0.0f;
+    n = 1;
+    for (;;) {
+        y = y - step;
+        if (y < 0.0f) {
+            break;
+        }
+        step = step + 0.5f;
+        n++;
+    }
+    d[1] = y;
+    FI(f, 0x1AD6C0, s32) = n;
+    FI(f, 0x1AD6D0, f32) = d[0] / (f32)n;
+    FI(f, 0x1AD6D4, s32) = 0;
+    FI(f, 0x1AD6D8, f32) = d[2] / (f32)n;
+    Actor_SetState(&f->c.a, &D_003B29A8);
+}
+
+extern const PTMF D_003B2B48;
+
+/* turn her along the wall her motion this frame (motion +0x60) runs into: follow the mesh
+ * from her triangle (nav +0x20 the edge crossed; 3 / 4 none) to the first blocking edge, take
+ * its direction (+0x1AD5E0, flipped to within 90 degrees of her heading) and turn toward it by
+ * a quarter of the difference (at least half a degree), the way +0x1AD6C0 chose (-1: by the
+ * side it is on) */
+void func_00183400(Fiona *f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB}, kMin = {0x3C0EFA35};
+    f32 mv[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    NavMesh *nav;
+    NavTri *t;
+    u32 tri, wall;
+    s32 e, e1;
+    f32 a, aa, step, yaw;
+
+    VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, mv);
+    nav = D_0044E570;
+    tri = f->c.a.navTri;
+    for (;;) {
+        wall = tri;
+        e = VCALL((VObject *)nav, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nav, tri, f->c.a.pos, mv);
+        if (e == 3 || e == 4) {
+            return;
+        }
+        t = NavMesh_Tri(nav, tri);
+#ifdef HG_NATIVE
+        if (t == NULL) {
+            return;
+        }
+#endif
+        tri = t->adj[e];
+        if (tri == NAV_NONE) {
+            break;
+        }
+        t = NavMesh_Tri(nav, tri);
+#ifdef HG_NATIVE
+        if (t == NULL) {
+            break;
+        }
+#endif
+        if (t->flags & f->c.a.navMask) {
+            break;
+        }
+    }
+    e1 = e + 1;
+    if ((u32)e1 >= 3) {
+        e1 = 0;
+    }
+    t = NavMesh_Tri(nav, wall);
+#ifdef HG_NATIVE
+    if (t == NULL) {
+        return;
+    }
+#endif
+    sceVu0SubVector(d, t->v[e1], t->v[e]);
+    f->savedYaw = func_0031C5C0(d[0], d[2]);
+    if (!(func_002E2D00(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
+        aa = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    } else {
+        aa = -func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    }
+    if (!(aa <= kHalfPi.f)) {
+        f->savedYaw = func_002E2D00(kPi.f + f->savedYaw);
+    }
+    a = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    step = 0.25f * (a <= 0.0f ? -a : a);
+    if (step < kMin.f) {
+        step = kMin.f;
+    }
+    if (FI(f, 0x1AD6C0, s32) == -1) {
+        FI(f, 0x1AD6C0, s32) = a < 0.0f ? 0 : 1;
+    }
+    if (FI(f, 0x1AD6C0, s32) != 0) {
+        yaw = func_002E2D00(f->c.a.angle[1] + step);
+    } else {
+        yaw = func_002E2D00(f->c.a.angle[1] - step);
+    }
+    f->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix(f->c.a.rot);
+    sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
+}
+
+/* 0x10 grabbed (D_003B2E08): out of a fall (0x100A / 0xB01 / 0xB02) she gets up (0xB03), out
+ * of 0x100D (0x1503) - once that motion lets her (flag 2); else she pulls free: back 0x1101
+ * when there is room 17 behind her (+0x1AD6C0 / +0x1AD6C4 -1, her heading kept in +0x1AD6D0),
+ * else 0x1100. Pulling back she is moved by the motion turned to that heading (once +0x1AD6C4
+ * is set) and turned toward it 20 degrees a frame */
+void func_00190380(Fiona *f) {
+    void *m;
+    s32 cur;
+    u8 done = 0, back = 0;
+
+    FI(f, 0x1AD5BC, u8) = 0;
+    m = f->c.motion;
+    cur = AT(m, 0x55C, s32);
+    if (cur == 0x100D) {
+        if (!(func_001F4770(m, 0, 0, 1) & 0xFF & 2)) {
+            done = 1;
+            func_002DDED0(f->c.motion, 0x1503, -1);
+        }
+    } else if (cur == 0x100A || cur == 0xB02 || cur == 0xB01) {
+        if (!(func_001F4770(m, 0, 0, 1) & 0xFF & 2)) {
+            done = 1;
+            func_002DDED0(f->c.motion, 0xB03, -1);
+        }
+    }
+    if (done == 0) {
+        FI(f, 0x1AD6C0, s32) = -1;
+        FI(f, 0x1AD6C4, s32) = -1;
+        FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
+        if (!(func_001235C0(f, &f->c.a) & 0xFF)) {
+            func_002DDED0(f->c.motion, 0x1100, -1);
+        } else {
+            f32 v[4] __attribute__((aligned(16)));
+
+            v[2] = 17.0f;
+            v[0] = 0.0f;
+            v[1] = 0.0f;
+            func_002E2DA0(v, f->c.a.rot, v);
+            sceVu0AddVector(v, v, f->c.a.pos);
+            if (func_00124480(&f->c.a, v, 0x80001) == (u32)-1) {
+                func_002DDED0(f->c.motion, 0x1100, -1);
+            } else {
+                back = 1;
+                func_002DDED0(f->c.motion, 0x1101, -1);
+            }
+        }
+    }
+    if (back == 1) {
+        if (FI(f, 0x1AD6C4, s32) == -1) {
+            func_00125A10(&f->c);
+        } else {
+            f32 d[4] __attribute__((aligned(16)));
+            f32 r[4][4] __attribute__((aligned(16)));
+
+            func_001F6370(f->c.motion, d, 0.0f);
+            sceVu0UnitMatrix(r);
+            sceVu0RotMatrixY(r, r, FI(f, 0x1AD6D0, f32));
+            sceVu0ApplyMatrix(d, r, d);
+            func_001247E0(&f->c.a, d);
+            if (FI(f, 0x1AD6C4, s32) == 0 &&
+                func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), 0x1.657186p-2f /* 20 deg */) == 0.0f) {
+                FI(f, 0x1AD6C4, s32) = 1;
+            }
+        }
+        func_00183400(f);
+    } else {
+        func_00125A10(&f->c);
+    }
+    FI(f, 0x1AD6C8, s32) = 0;
+    Actor_SetState(&f->c.a, &D_003B2B48);
+}
