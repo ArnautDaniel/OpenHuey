@@ -738,3 +738,155 @@ void func_00128A20(Pursuer *p) {
     p->c.moveSub = 0;
     Actor_SetState(&p->c.a, &D_003AFFF0);
 }
+
+/* vtable +0x30: his frame update. Blocking flags, senses (func_00215D80; while his behaviour is
+   fresh, +0x16F6, they are recomputed, else forgotten), then on screen the full think: hits,
+   reactions to cries, the behaviour step, a growl (sound 0x2A) every 90 frames while idle, the
+   stance logic (+0x110) and his voice; off screen the behaviour step and the off-screen move.
+   Then the timers: frames in state/behaviour (+0x1784, +0x1780), the room wait +0x1664 / the
+   route rest +0x17B4, the stand-down +0x1790, the cry hold +0x178C, the stun, and the route
+   growing back +0x1794 */
+void func_001297C0(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+
+    VCALL(p, 0x84, void (*)(Pursuer *))(p);
+    p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    p->c.pathReq->mask = p->c.a.navMask;
+    func_00215D80(p);
+    if (PU(p, 0x16F6, u8) == 1) {
+        func_002177D0(p);
+    } else {
+        PU(p, 0x1544, u8) = 0;
+        PU(p, 0x1545, u8) = 0;
+        PU(p, 0x1546, u8) = 0;
+        PU(p, 0x16CB, u8) = 0;
+        PU(p, 0x16CC, u8) = 0;
+    }
+    VCALL(p, 0x120, void (*)(Pursuer *))(p);
+    func_00297C60(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        func_00218110(p);
+        func_0029B4B0(p);
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        PU(p, 0x17EC, u32)++;
+        if (PU(p, 0x17EC, u32) >= 90) {
+            PU(p, 0x17EC, u32) = 0;
+            if (p->c.moveMode == 0 && PU(p, 0x1788, s32) != 0x1300 && PU(p, 0x1788, s32) != 0x1600) {
+                func_0029D410(p, 0x2A, 7, 0, 0, NULL);
+            }
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    if (PU(p, 0x1784, s32) != -1) {
+        PU(p, 0x1784, s32)++;
+    }
+    if (PU(p, 0x1780, s32) != -1) {
+        PU(p, 0x1780, s32)++;
+    }
+    if (PU(p, 0x1664, s32) != 0) {
+        PU(p, 0x1664, s32)--;
+    } else if (PU(p, 0x17B4, s32) != 0) {
+        PU(p, 0x17B4, s32)--;
+        if (PU(p, 0x17B4, s32) == 0) {
+            PU(p, 0x1620, u8) = PU(p, 0x1621, u8);
+        }
+    }
+    if (PU(p, 0x1790, s32) != 0 && p->c.moveSub != 9) {
+        PU(p, 0x1790, s32)--;
+        if (PU(p, 0x1790, s32) == 0) {
+            p->c.a.unkC4 = 0;
+            PU(p, 0x16F5, u8) = 0;
+        }
+    }
+    if (PU(p, 0x178C, s32) != 0) {
+        PU(p, 0x178C, s32)--;
+        if (PU(p, 0x178C, s32) == 0) {
+            PU(p, 0x1760, u8) = 0;
+        }
+    }
+    func_00129AF0(p);
+    if (PU(p, 0x1794, s32) != 0) {
+        PU(p, 0x1794, s32)--;
+        if (PU(p, 0x1794, s32) == 0 && PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
+            PU(p, 0x1621, u8) = PU(p, 0x1620, u8) + 1;
+        }
+    }
+    VCALL(p, 0x40, void (*)(Pursuer *))(p);
+    VCALL(p, 0x100, void (*)(Pursuer *))(p);
+}
+
+/* a nav triangle's flags (+0x3C), 0 for none */
+static inline u32 Debilitas_TriFlags(u32 tri) {
+    u8 *tris = AT(D_0044E570, 0x4, u8 *);
+
+    return tri < AT(D_0044E570, 0x8, u32) && tris != NULL ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
+}
+
+extern const PTMF D_003AFFA0;
+
+/* start of a wander: try as many random nav triangles as there are for one he may walk on, on
+   the same floor level as his (flags 0x300000; not both), at least 20 units away; then walk
+   there (state func_00128FC0, at most 60 frames). None: give up (+0x16EF) */
+void func_001291C0(Pursuer *p) {
+    void *nav = D_0044E570;
+    u32 n;
+    u32 i;
+
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    n = AT(nav, 0x8, u32);
+    for (i = 0; i < n; i++) {
+        f32 pos[4] __attribute__((aligned(16)));
+        u32 tri = 0;
+        u32 flags;
+
+        if ((s32)(n - 1) > 0) {
+            tri = (s32)((f32)(s32)n * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+        }
+        flags = Debilitas_TriFlags(tri);
+        if ((flags & p->c.a.navMask) != 0) {
+            continue;
+        }
+        if ((Debilitas_TriFlags(p->c.a.navTri) & 0x300000) != (flags & 0x300000)) {
+            continue;
+        }
+        if ((flags & 0x100000) && (flags & 0x200000)) {
+            continue;
+        }
+        VCALL(nav, 0xC, void (*)(void *, u32, f32 *))(nav, tri, pos);
+        if (func_00214B90(p, tri, pos) < 20.0f) {
+            continue;
+        }
+        PU(p, 0x15A4, u32) = tri;
+        VCALL(nav, 0xC, void (*)(void *, u32, f32 *))(nav, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0));
+        VCALL(p, 0xD8, s32 (*)(Pursuer *))(p);
+        break;
+    }
+    if (i >= n) {
+        PU(p, 0x16EF, u8) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+        return;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_003AFFA0);
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    PU(p, 0x1624, s32) = 60;
+    Actor_SetState(&p->c.a, &D_003AFFB0);
+    func_00128FC0(p);
+}
