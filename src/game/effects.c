@@ -4109,3 +4109,201 @@ void func_0035CA60(u8 *o) {
     glr_layer(-1);
 }
 #endif
+
+
+/* ---- D_00472BF0 (0x140 bytes): a splat on the floor - one quad (two buffers of a record at
+ * +0x10 + 0x30 x the current one +0x134) drawn as four corners (+0xF0..+0x120, the drawer at
+ * +0x70 takes them) in the floor's frame (+0xB0: side, normal, along), growing (+0x130) while
+ * it fades; +0x138 gone, +0x139 its kind (0 a blood splat, else a dark stain) ---- */
+
+#define SPLAT_REC(e) ((QuadRec *)((e) + 0x10) + AT(e, 0x134, s32))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_003161F0(u8 *e, s32 flags) {
+    if (e == NULL) {
+        return e;
+    }
+    AT(e, 0x0, void **) = D_00472BF0;
+    AT(e, 0x70, void **) = D_0046FC30;
+    AT(e, 0x70, void **) = D_00469D00;
+    AT(e, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(e);
+    }
+    return e;
+}
+
+/* the quad drawer for a splat of the kind: its corners, layer 0x19, one 8 x 8 cell at (108, 76)
+ * (blood, mode 2) or 32 x 32 at (320, 128) (stain, mode 0x42) */
+static inline __attribute__((always_inline)) void splat_drawer(u8 *e, s32 stain) {
+    QuadDrawer *q = (QuadDrawer *)(e + 0x70);
+
+    q->tex = -1;
+    AT(e, 0x84, u8 *) = e + 0xF0;
+    q->cx = 0.0f;
+    q->cy = 0.0f;
+    q->layer = 0x19;
+    q->count = 1;
+    if (!stain) {
+        q->cellX = 0x6C;
+        q->cellY = 0x4C;
+        q->cellW = 8;
+        q->cellH = 8;
+    } else {
+        q->cellX = 0x140;
+        q->cellY = 0x80;
+        q->cellW = 0x20;
+        q->cellH = 0x20;
+    }
+    q->texW = 0x200;
+    q->texH = 0x100;
+    q->flags = stain ? 0x42 : 2;
+    q->frames = 1;
+    q->texId = 1;
+    q->texGroup = 0x10;
+    q->palette = -1;
+}
+
+static inline void splat_corner(u8 *e, s32 off, f32 x, f32 z) {
+    AT(e, off, f32) = x;
+    AT(e, off + 4, f32) = 0.0f;
+    AT(e, off + 8, f32) = z;
+    AT(e, off + 12, f32) = 1.0f;
+}
+
+/* +0x18 start (arg: position, nav tri +0x10, kind +0x14): blood dark red with some alpha, a
+ * stain brown; dropped onto the floor below (nav +0x40, from the point to the record) - none
+ * or a hole: gone - lifted half the floor normal (+0x2C) along it, its frame built round the
+ * normal unless that is straight up */
+void func_00316280(u8 *e, u8 *arg) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    QuadRec *r;
+    u32 tri, t;
+    u8 *nm;
+
+    sceVu0CopyVector(at, (f32 *)arg);
+    tri = AT(arg, 0x10, u32);
+    AT(e, 0x139, u8) = AT(arg, 0x14, u8);
+    if (arg == NULL) {
+        return;
+    }
+    splat_drawer(e, AT(e, 0x139, u8) != 0);
+    if (tri == (u32)-1) {
+        AT(e, 0x138, u8) = 1;
+        return;
+    }
+    r = SPLAT_REC(e);
+    if (AT(e, 0x139, u8) != 0) {
+        r->rgba[0] = 0x40;
+        r->rgba[1] = 0x10;
+        r->rgba[2] = 8;
+        r->rgba[3] = 0x20;
+    } else {
+        r->rgba[0] = 0x20;
+        r->rgba[1] = 0;
+        r->rgba[2] = 0;
+        r->rgba[3] = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0x1F) + 0x20;
+    }
+    r->pos[0] = at[0];
+    r->pos[1] = at[1];
+    r->pos[2] = at[2];
+    AT(&r->pos[3], 0, f32) = 1.0f;
+    r->w = 1.0f;
+    r->h = 1.0f;
+    r->turn = 0.0f;
+    r->frame = 0;
+    AT(e, 0x130, f32) = 2.0f;
+    splat_corner(e, 0xF0, -2.0f, -2.0f);
+    splat_corner(e, 0x100, 2.0f, -2.0f);
+    splat_corner(e, 0x110, -2.0f, 2.0f);
+    splat_corner(e, 0x120, 2.0f, 2.0f);
+    nm = (u8 *)D_0044E570;
+    t = VCALL((VObject *)nm, 0x40, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, s32))(
+        (VObject *)nm, tri, out, at, r->pos, 0);
+    if (t == (u32)-1) {
+        AT(e, 0x138, u8) = 1;
+        return;
+    }
+    {
+        u32 fl = 0;   /* (the original reads a NULL record for a triangle out of range) */
+
+        if (t < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+            fl = AT(AT(nm, 0x4, u8 *) + t * 0x50, 0x3C, u32);
+        }
+        if (fl & 0x10000000) {
+            AT(e, 0x138, u8) = 1;
+            return;
+        }
+    }
+    sceVu0UnitMatrix((f32 (*)[4])(e + 0xB0));
+    sceVu0CopyVector(r->pos, out);
+    nm = (u8 *)D_0044E570;
+    VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, t, r->pos);
+    VCALL((VObject *)nm, 0x2C, void (*)(VObject *, u32, f32 *))((VObject *)nm, t, (f32 *)(e + 0xC0));
+    sceVu0CopyVector(out, (f32 *)(e + 0xC0));
+    sceVu0ScaleVector(out, out, 0.5f);
+    sceVu0AddVector(r->pos, out, r->pos);
+    sceVu0Normalize((f32 *)(e + 0xC0), (f32 *)(e + 0xC0));
+    if (AT(e, 0xC4, f32) == 1.0f) {
+        return;
+    }
+    AT(e, 0xB0, f32) = 0.0f;
+    AT(e, 0xB4, f32) = -1.0f;
+    AT(e, 0xB8, f32) = 0.0f;
+    AT(e, 0xBC, f32) = 0.0f;
+    sceVu0OuterProduct((f32 *)(e + 0xB0), (f32 *)(e + 0xC0), (f32 *)(e + 0xB0));
+    sceVu0Normalize((f32 *)(e + 0xB0), (f32 *)(e + 0xB0));
+    sceVu0OuterProduct((f32 *)(e + 0xD0), (f32 *)(e + 0xC0), (f32 *)(e + 0xB0));
+    sceVu0Normalize((f32 *)(e + 0xD0), (f32 *)(e + 0xD0));
+}
+
+/* +0x14 draw, until gone */
+void func_00316660(u8 *e) {
+    if (AT(e, 0x138, u8) != 0) {
+        return;
+    }
+    AT(e, 0x80, QuadRec *) = SPLAT_REC(e);
+    func_002E56C0(e + 0x70);
+}
+
+/* +0x10 update (0 once gone): flip the buffers (the new one copied from the old); while seen
+ * it fades (blood by 0..3 a frame, a stain one in four frames) and grows by 0.1, its corners
+ * laid out again in the floor's frame */
+s32 func_003166B0(u8 *e) {
+    QuadRec *r;
+
+    if (AT(e, 0x138, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0x138, u8) = 1;
+    AT(e, 0x134, s32) ^= 1;
+    *SPLAT_REC(e) = ((QuadRec *)(e + 0x10))[AT(e, 0x134, s32) ^ 1];
+    r = SPLAT_REC(e);
+    if (r->rgba[3] > 0) {
+        f32 s;
+
+        AT(e, 0x138, u8) = 0;
+        if (AT(e, 0x139, u8) != 0) {
+            if ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) == 1) {
+                r->rgba[3] -= 1;
+            }
+        } else {
+            r->rgba[3] -= VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3;
+        }
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        AT(e, 0x130, f32) = AT(e, 0x130, f32) + 0x1.99999ap-4f /* 0.1 */;
+        s = AT(e, 0x130, f32);
+        splat_corner(e, 0xF0, -s, -s);
+        splat_corner(e, 0x100, s, -s);
+        splat_corner(e, 0x110, -s, s);
+        splat_corner(e, 0x120, s, s);
+        sceVu0ApplyMatrix((f32 *)(e + 0xF0), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0xF0));
+        sceVu0ApplyMatrix((f32 *)(e + 0x100), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0x100));
+        sceVu0ApplyMatrix((f32 *)(e + 0x110), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0x110));
+        sceVu0ApplyMatrix((f32 *)(e + 0x120), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0x120));
+    }
+    return 1;
+}
