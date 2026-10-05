@@ -485,7 +485,7 @@ static u8 *script_by_id(VObject *ev, u32 id) {
 }
 
 /* room effect slot `k` made anew from the effects' pool (+0x1400): `which` 0 a func_00208F30
- * (`arg`), 1 a func_00208F10, 2 a func_002083B0 */
+ * (`arg`), 1 a func_00208F10, 2 a func_002083B0, 3 a func_00208EF0 */
 static void room_effect_slot(s32 k, s32 which, s32 arg) {
     u8 *fx = D_0044E4C0;
     u8 **slot = (u8 **)(fx + 0x1438) + k;
@@ -500,7 +500,8 @@ static void room_effect_slot(s32 k, s32 which, s32 arg) {
         u8 *e = func_002672F0(0xA0, mem);
 
         if (e != NULL) {
-            e = which == 2 ? func_002083B0(e) : which ? func_00208F10(e) : func_00208F30(e, arg);
+            e = which == 3 ? func_00208EF0(e) : which == 2 ? func_002083B0(e) : which ? func_00208F10(e)
+                                                                                  : func_00208F30(e, arg);
         }
         *slot = e;
         VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
@@ -577,6 +578,17 @@ static void cmd_gift(VObject *ev, Progress *p) {
     if (AT(p, 0x874, u8) < 8) {
         AT(p, 0x874, u8)++;
     }
+}
+
+/* (0xB8) the character with script id `id` while it is in the scene (+0x28 1), else NULL */
+static u8 *char_present(Progress *p, s32 id) {
+    u8 i = (u8)func_001770D0(p, id);
+    u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+
+    if (c == NULL || AT(c, 0x28, u8) != 1) {
+        return NULL;
+    }
+    return c;
 }
 
 void func_002029B0(VObject *ev) {
@@ -1570,6 +1582,56 @@ void func_002029B0(VObject *ev) {
             VCALL(D_00456E00, 0x1C, void (*)(VObject *, u32, s32))(D_00456E00, be16(pc + 2), be32(pc + 4));
         }
         break;
+    case 0x82:   /* the director's +0x34 (4 x be32 pc[2..] / 1000) when pc[1]; its +0x30 (pc[1]) */
+        if (pc[1] != 0) {
+            VCALL(D_0044E4F8, 0x34, void (*)(VObject *, f32, f32, f32, f32))(
+                D_0044E4F8, (f32)be32(pc + 2) / 1000.0f, (f32)be32(pc + 6) / 1000.0f,
+                (f32)be32(pc + 0xA) / 1000.0f, (f32)be32(pc + 0xE) / 1000.0f);
+        }
+        VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, PC(ev)[1] != 0);
+        break;
+    case 0xB1: {   /* room effect (variable pc[1]) made anew, set going at variables pc[2..4] / 1000 */
+        struct {
+            f32 pos[4];
+            s32 a;
+        } arg __attribute__((aligned(16)));
+        s32 k = AT(ev, 0x810 + pc[1] * 4, s32);
+
+        if (k < 0x20) {
+            room_effect_slot(k, 3, 0);
+        }
+        arg.pos[0] = (f32)AT(ev, 0x810 + PC(ev)[2] * 4, s32) / 1000.0f;
+        arg.pos[1] = (f32)AT(ev, 0x810 + PC(ev)[3] * 4, s32) / 1000.0f;
+        arg.pos[3] = 1.0f;
+        arg.a = 0;
+        arg.pos[2] = (f32)AT(ev, 0x810 + PC(ev)[4] * 4, s32) / 1000.0f;
+        func_00266C70(D_0044E4C0, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
+        break;
+    }
+    case 0xB8: {   /* character pc[1] (in the scene) heals by |be32 pc[2..5]| up to its +0x14CC */
+        u8 *c = char_present(p, pc[1]);
+        s32 n;
+
+        if (c == NULL) {
+            break;
+        }
+        pc = PC(ev);
+        n = be32(pc + 2);
+        c = char_present(p, pc[1]);
+        if (n <= 0) {
+            n = -n;
+        }
+#ifdef HG_NATIVE
+        if (c == NULL) {
+            break;
+        }
+#endif
+        AT(c, 0x14C8, s32) += n;
+        if (!(AT(c, 0x14C8, s32) < AT(c, 0x14CC, s32))) {
+            AT(c, 0x14C8, s32) = AT(c, 0x14CC, s32);
+        }
+        break;
+    }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
