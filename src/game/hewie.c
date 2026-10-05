@@ -7678,3 +7678,47 @@ void func_00153440(Hewie *h) {
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
 }
+
+/* ---- finding his feet ---- */
+
+extern const PTMF D_003B1938;
+
+/* off the mesh: walk (pose 7) along +0xF36C4, picking the freest way near where his head points
+ * every 30 frames (func_00137720, 20, 30..150 degrees). Once his head (bone 0x1F) and the point 5
+ * ahead of him are both on the mesh: 16 frames, behaviour D_003B1938 */
+void func_00153700(Hewie *h) {
+    f32 head[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 step;
+
+    func_00141C00(h, 7);
+    if (HW(h, 0xF36B4, s32) != 0) {
+        HW(h, 0xF36B4, s32) -= 1;
+    } else {
+        HW(h, 0xF36B4, s32) = 30;
+        HW(h, 0xF36C4, f32) = func_00137720(h, func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)), 20.0f,
+                                            30, 150, 30);
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    turn_toward(h, HW(h, 0xF36C4, f32), step);
+    sceVu0CopyVector(head, func_0017CE80(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
+    if (func_00124480(&h->c.a, head, NAV_NONE) == NAV_NONE) {
+        return;
+    }
+    v[2] = 5.0f;
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[3] = 0.0f;
+    sceVu0ApplyMatrix(v, h->c.a.rot, v);
+    sceVu0AddVector(head, h->c.a.pos, v);
+    if (func_00124480(&h->c.a, head, NAV_NONE) != NAV_NONE) {
+        HW(h, 0xF36B4, s32) = 16;
+        Hewie_SetBehaviour(h, &D_003B1938);
+    }
+}
