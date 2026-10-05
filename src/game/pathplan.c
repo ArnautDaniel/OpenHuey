@@ -1294,6 +1294,111 @@ s32 func_001A85E0(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32
     }
 }
 
+/* the edge crossing walking the line `from` -> `to` out of triangle `t` (nav mesh +0x24: the
+ * edge, its point in `cross`; 3 when `to` is inside, 4 off the mesh) */
+static inline s32 edge_cross(NavMesh *nm, u32 t, f32 *cross, f32 *from, f32 *to) {
+    return VCALL((VObject *)nm, 0x24, s32 (*)(VObject *, u32, f32 *, f32 *, f32 *))((VObject *)nm, t, cross, from, to);
+}
+
+/* +0x1C search `id`'s path as points (0xC each: triangle, x, z) in `out`: the start, then the
+ * edge crossings on the way to each smoothed triangle's centre (a doubled one: the middle of
+ * the edge on to the next, and its centre), and the goal; their count (-1: no path) */
+s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
+    f32 cross[4] __attribute__((aligned(16)));
+    f32 from[4] __attribute__((aligned(16)));
+    f32 to[4] __attribute__((aligned(16)));
+    f32 last[4] __attribute__((aligned(16)));
+    u8 *s = SEARCH(pl, id);
+    NavMesh *nm;
+    u16 *p;
+    u32 t;
+    s32 i = 1, at = 1, count = 1, r;
+
+    if (func_001A95F0(pl, s) != 0) {
+        return -1;
+    }
+    t = AT(s, 0x4, u32);
+    p = &AT(pl, 0x4119A, u16);
+    AT(out, 0x0, u32) = t;
+    from[0] = last[0] = AT(out, 0x4, f32) = AT(s, 0x20, f32);
+    from[2] = last[2] = AT(out, 0x8, f32) = AT(s, 0x28, f32);
+    if (AT(pl, 0x40194, s32) == 2) {
+        to[0] = AT(s, 0x30, f32);
+        to[2] = AT(s, 0x38, f32);
+    } else {
+        tri_centre(D_0044E570, p[0], to);
+    }
+    nm = D_0044E570;
+    r = edge_cross(nm, t, cross, from, to);
+    for (;;) {
+        if (i != at) {   /* on to the next target */
+            if (i == AT(pl, 0x40194, s32) - 1) {
+                to[0] = AT(s, 0x30, f32);
+                to[2] = AT(s, 0x38, f32);
+            } else if (p[0] == p[1]) {   /* a doubled triangle */
+                NavTri *tri = NavMesh_Tri(nm, p[1]);
+                u32 next;
+
+                p += 2;
+                next = p[0];
+                for (r = 0; r < 3; r++) {
+                    if (tri->adj[r] == next) {
+                        s32 e2 = r + 1 < 3 ? r + 1 : 0;
+
+                        AT(out, 0xC, u32) = next;
+                        AT(out, 0x10, f32) = 0.5f * (tri->v[r][0] + tri->v[e2][0]);
+                        AT(out, 0x14, f32) = 0.5f * (tri->v[r][2] + tri->v[e2][2]);
+                        tri_centre(nm, p[0], from);
+                        out += 0x18;
+                        count += 2;
+                        AT(out, 0x0, u32) = p[0];
+                        AT(out, 0x4, f32) = from[0];
+                        AT(out, 0x8, f32) = from[2];
+                        break;
+                    }
+                }
+                t = p[0];
+                i += 2;
+                continue;
+            } else {
+                p++;
+                tri_centre(nm, p[0], to);
+            }
+            r = edge_cross(nm, t, cross, from, to);
+            if (r == 4) {
+                return count;
+            }
+            at = i;
+        }
+        if (r == 3) {   /* the target's triangle reached */
+            if (i == AT(pl, 0x40194, s32) - 1) {
+                AT(out, 0xC, u32) = AT(s, 0x8, u32);
+                count++;
+                AT(out, 0x10, f32) = to[0];
+                AT(out, 0x14, f32) = to[2];
+                return count;
+            }
+            sceVu0CopyVector(last, to);
+            sceVu0CopyVector(from, to);
+            i++;
+        } else {   /* over edge r into the next triangle */
+            t = NavMesh_Tri(nm, t)->adj[r];
+            sceVu0CopyVector(last, cross);
+            r = edge_cross(nm, t, cross, from, to);
+            if (r == 4) {
+                return count;
+            }
+        }
+        if (i == at) {
+            out += 0xC;
+            AT(out, 0x0, u32) = t;
+            count++;
+            AT(out, 0x4, f32) = last[0];
+            AT(out, 0x8, f32) = last[2];
+        }
+    }
+}
+
 /* +0x14 run search 0 to its end */
 void func_001A9F90(u8 *pl) {
     u8 *s = SEARCH(pl, 0);
