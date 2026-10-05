@@ -1966,3 +1966,201 @@ void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
     VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
     func_002DDAC0(m, layer, a, b);
 }
+
+/* ---- character kind 9's model (vtable D_00471C20): six hanging points (+0x9A0, bones
+ * 0x2F..0x34) on the spring set +0xD00 with six collision spheres (+0xB80), and six strands of
+ * four (+0xD40, 0x50 each) on the spring set +0x14C0 ---- */
+
+extern void *D_00471C20[], *D_0046C160[], *D_0046B0D0[];
+extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
+extern void *func_001709D0(void *e, s32 flags);
+extern void *func_0016FBB0(void *e, s32 flags);
+
+/* +0x8 destructor */
+void *func_0030D150(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00471C20;
+        func_001002C0(m + 0xD40, func_001709D0, 0x50, 0x18);
+        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 6);
+        AT(m, 0x0, void **) = D_0046C160;
+        AT(m, 0x988, void **) = D_0046B0D0;
+        AT(m, 0x928, void **) = D_0046B0D0;
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* +0x84 .. +0x90: his mesh parts */
+s32 func_0030D2B0(u8 *m) {
+    return 3;
+}
+
+s32 func_0030D2C0(u8 *m) {
+    return 0x13;
+}
+
+s32 func_0030D2D0(u8 *m) {
+    return 0x26;
+}
+
+s32 func_0030D2E0(u8 *m) {
+    return 0x37;
+}
+
+/* node into the spring set's list (+0x30 head / +0x34 tail of the set at `set`) */
+static inline __attribute__((always_inline)) void spring_link(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+/* his six strands of four (bones from 6 / 0x16 / 0xA / 0x1A / 0xE / 0x1E on), each node 20
+ * degrees freer than the one above, on the spring set +0x14C0 */
+void func_0030D2F0(u8 *m) {
+    static const s32 kBone[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
+    static u8 *const kTable[6] = {D_00424450, D_00424450, D_00424460, D_00424460, D_00424470, D_00424480};
+    static const u32 kAngle[4] = {0x3EB2B8C3, 0x3F32B8C3, 0x3F860A92, 0x3FB2B8C3};   /* 20 .. 80 deg */
+    s32 i, s, j;
+
+    func_002EE960(m + 0x14C0);
+    for (i = 0; i < 0x18; i++) {
+        spring_link(m + 0x14C0, m + 0xD40 + i * 0x50);
+    }
+    AT(m, 0x14C0, f32) = 0.0f;
+    AT(m, 0x14C4, u32) = 0x3E4CCCCD;   /* 0.2 */
+    AT(m, 0x14C8, f32) = 0.0f;
+    AT(m, 0x14D0, u32) = 0x3F666666;   /* 0.9 */
+    AT(m, 0x14D4, u8 *) = m;
+    AT(m, 0x14E0, u8) = 0;
+    AT(m, 0x14DC, s32) = 0;
+    for (s = 0; s < 6; s++) {
+        for (j = 0; j < 4; j++) {
+            u8 *n = m + 0xD40 + (s * 4 + j) * 0x50;
+
+            AT(n, 0x40, f32) = 2.125f;
+            AT(n, 0x24, s32) = kBone[s] + j;
+            AT(n, 0x44, s32) = (s & 1 ? 0x12 : 2) + (j >= 2);
+            AT(n, 0x48, u8 *) = kTable[s];
+            AT(n, 0x20, u8) = j == 0;
+            AT(n, 0x4C, u32) = kAngle[j];
+        }
+    }
+}
+
+/* his six hanging points (bones 0x2F..0x34, the first and fourth fixed) on the spring set +0xD00,
+ * with its six collision spheres (+0xB80: bones 0x24, 0x35, 0x25, 0x36 and two on 0x2B) */
+void func_0030D6E0(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0xD00);
+    for (i = 0; i < 6; i++) {
+        spring_link(m + 0xD00, m + 0x9A0 + i * 0x50);
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0xB80 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0xD18, u8 *) == NULL) {
+            AT(m, 0xD18, u8 *) = col;
+        } else {
+            u8 *c = AT(m, 0xD18, u8 *);
+
+            while (AT(c, 0x2C, u8 *) != NULL) {
+                c = AT(c, 0x2C, u8 *);
+            }
+            AT(c, 0x2C, u8 *) = col;
+        }
+    }
+    AT(m, 0xD00, f32) = 0.0f;
+    AT(m, 0xD04, u32) = 0x3DCCCCCD;   /* 0.1 */
+    AT(m, 0xD08, f32) = 0.0f;
+    AT(m, 0xD10, u32) = 0x3F4CCCCD;   /* 0.8 */
+    AT(m, 0xD14, u8 *) = m;
+    AT(m, 0xD20, u8) = 0;
+    AT(m, 0xD1C, s32) = 0;
+    for (i = 0; i < 6; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+
+        AT(n, 0x40, u32) = 0x3F0DE00D;
+        AT(n, 0x24, s32) = 0x2F + i;
+        AT(n, 0x20, u8) = i == 0 || i == 3;
+    }
+    func_002EE690(m + 0xB80, 0x24, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xBC0, 0x35, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xC00, 0x25, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xC40, 0x36, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xC80, 0x2B, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xCC0, 0x2B, 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* +0x3C settle his springs: 30 steps the first time (+0x850), else one */
+void func_0030D940(u8 *m) {
+    s32 n = AT(m, 0x850, u8) ? 30 : 1, i;
+
+    func_002EE8A0(m + 0xD00);
+    func_002EE8A0(m + 0x14C0);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + 0xD00);
+        func_002EE900(m + 0x14C0);
+    }
+    func_002EE840(m + 0xD00);
+    func_002EE840(m + 0x14C0);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0xC: once loaded: the base setup, the part roles, the springs, per-part draw settings */
+void func_0030D9F0(u8 *m) {
+    func_002118D0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x28;
+    AT(m, 0x8A0, s32) = 0x12;
+    AT(m, 0x8A4, s32) = 0x13;
+    AT(m, 0x8A8, s32) = 0x14;
+    AT(m, 0x8AC, s32) = 0x15;
+    AT(m, 0x8BC, s32) = 0x39;
+    AT(m, 0x8B0, s32) = 0x2B;
+    AT(m, 0x8B4, s32) = 0x22;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, f32) = 0.0f;
+    AT(m, 0x858, f32) = 0.0f;
+    func_0030D6E0(m);
+    func_0030D2F0(m);
+    AT(m, 0x850, u8) = 1;
+    AT(m, 0x9C, u8) = 4;
+    AT(m, 0x9D, u8) = 0x40;
+    AT(m, 0x9E, u8) = 4;
+    AT(m, 0x9F, u8) = 0x40;
+    AT(m, 0xA0, u8) = 4;
+    AT(m, 0xA1, u8) = 0x40;
+    AT(m, 0xCA, u8) = 4;
+    AT(m, 0xCB, u8) = 0x40;
+    AT(m, 0xCC, u8) = 4;
+    AT(m, 0xCD, u8) = 0x40;
+    AT(m, 0xCE, u8) = 4;
+    AT(m, 0xCF, u8) = 0x40;
+    AT(m, 0xA2, u8) = 4;
+    AT(m, 0xA3, u8) = 0xC0;
+    AT(m, 0xC4, u8) = 4;
+    AT(m, 0xC5, u8) = 0xC0;
+}
