@@ -101,6 +101,9 @@ void glr_end_frame(void);
 void glr_set_scale(int scale);
 int glr_scale(void);
 
+/* the PC options menu this frame: `n` lines, line `sel` picked (drawn over the window) */
+void glr_menu(const char *const *lines, int n, int sel);
+
 /* platform side (video.c) */
 int glr_init(void);                                    /* after the GL context exists */
 void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH);

@@ -5,7 +5,8 @@
  *   HG_HEADLESS=1   a hidden window (tests): nothing shown, frames can still be dumped
  *   HG_DUMP=dir     write every 30th frame as dir/frame_NNNNN.ppm
  *   HG_MAXFRAMES=n  exit after n frames (profiling, tests)
- *   HG_SCALE=n      render scale (1..4: 640 x 448 times n; 0 fits the window, the default) */
+ *   HG_SCALE=n      render scale (1..4: 640 x 448 times n; 0 fits the window, the default);
+ *                   also in the options menu (` in game, options.c) */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -48,9 +49,9 @@ static void video_init(void) {
     SDL_GL_SetSwapInterval(0);
     sGl = glr_init();
     if (sGl) {
-        const char *sc = getenv("HG_SCALE");
+        extern void hg_options_load(SDL_Window *w);   /* options.c: the saved settings, HG_SCALE */
 
-        glr_set_scale(sc != NULL ? atoi(sc) : 0);
+        hg_options_load(sHeadless ? NULL : sWindow);
     }
 }
 
@@ -99,6 +100,11 @@ void hg_frame(void) {
         if (!sHeadless) {
             SDL_GetWindowSizeInPixels(sWindow, &ww, &wh);
         }
+        {
+            extern void hg_options_draw(void);   /* options.c */
+
+            hg_options_draw();
+        }
         glr_present(sPixels, MAXW, w, h, ww, wh);
         dump();
         if (!sHeadless) {
@@ -121,6 +127,11 @@ void hg_frame(void) {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT) {
             exit(0);
+        }
+        if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
+            extern int hg_options_key(SDL_Window *w, SDL_Scancode k);   /* options.c: ` opens it */
+
+            hg_options_key(sWindow, e.key.scancode);
         }
     }
 }

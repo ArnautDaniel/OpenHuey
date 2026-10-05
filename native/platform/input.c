@@ -136,6 +136,14 @@ void hg_input_read(unsigned char *data) {
             ry = (SDL_GetGamepadAxis(sPad, SDL_GAMEPAD_AXIS_RIGHTY) + 32768) >> 8;
         }
     }
+    {
+        extern int hg_options_open(void);   /* options.c: the menu takes the keys while open */
+
+        if (hg_options_open()) {
+            b = 0;
+            lx = ly = rx = ry = 0x80;
+        }
+    }
     data[0] = (unsigned char)~(b & 0xFF);
     data[1] = (unsigned char)~(b >> 8);
     data[2] = (unsigned char)rx;

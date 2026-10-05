@@ -799,6 +799,212 @@ static GLuint texture_for(const TexEntry *t, int csa) {
     return e->tex;
 }
 
+static const uint8_t kFont[65][5] = {   /* 5 x 7 glyphs for ASCII 32..96, columns low bit at top */
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x1C, 0x22, 0x41, 0x00},
+    {0x00, 0x41, 0x22, 0x1C, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x08, 0x08, 0x08, 0x08, 0x08},
+    {0x00, 0x60, 0x60, 0x00, 0x00},
+    {0x20, 0x10, 0x08, 0x04, 0x02},
+    {0x3E, 0x51, 0x49, 0x45, 0x3E},
+    {0x00, 0x42, 0x7F, 0x40, 0x00},
+    {0x42, 0x61, 0x51, 0x49, 0x46},
+    {0x21, 0x41, 0x45, 0x4B, 0x31},
+    {0x18, 0x14, 0x12, 0x7F, 0x10},
+    {0x27, 0x45, 0x45, 0x45, 0x39},
+    {0x3C, 0x4A, 0x49, 0x49, 0x30},
+    {0x01, 0x71, 0x09, 0x05, 0x03},
+    {0x36, 0x49, 0x49, 0x49, 0x36},
+    {0x06, 0x49, 0x49, 0x29, 0x1E},
+    {0x00, 0x36, 0x36, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x08, 0x14, 0x22, 0x41, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x41, 0x22, 0x14, 0x08},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x7E, 0x11, 0x11, 0x11, 0x7E},
+    {0x7F, 0x49, 0x49, 0x49, 0x36},
+    {0x3E, 0x41, 0x41, 0x41, 0x22},
+    {0x7F, 0x41, 0x41, 0x22, 0x1C},
+    {0x7F, 0x49, 0x49, 0x49, 0x41},
+    {0x7F, 0x09, 0x09, 0x09, 0x01},
+    {0x3E, 0x41, 0x49, 0x49, 0x7A},
+    {0x7F, 0x08, 0x08, 0x08, 0x7F},
+    {0x00, 0x41, 0x7F, 0x41, 0x00},
+    {0x20, 0x40, 0x41, 0x3F, 0x01},
+    {0x7F, 0x08, 0x14, 0x22, 0x41},
+    {0x7F, 0x40, 0x40, 0x40, 0x40},
+    {0x7F, 0x02, 0x0C, 0x02, 0x7F},
+    {0x7F, 0x04, 0x08, 0x10, 0x7F},
+    {0x3E, 0x41, 0x41, 0x41, 0x3E},
+    {0x7F, 0x09, 0x09, 0x09, 0x06},
+    {0x3E, 0x41, 0x51, 0x21, 0x5E},
+    {0x7F, 0x09, 0x19, 0x29, 0x46},
+    {0x46, 0x49, 0x49, 0x49, 0x31},
+    {0x01, 0x01, 0x7F, 0x01, 0x01},
+    {0x3F, 0x40, 0x40, 0x40, 0x3F},
+    {0x1F, 0x20, 0x40, 0x20, 0x1F},
+    {0x3F, 0x40, 0x38, 0x40, 0x3F},
+    {0x63, 0x14, 0x08, 0x14, 0x63},
+    {0x07, 0x08, 0x70, 0x08, 0x07},
+    {0x61, 0x51, 0x49, 0x45, 0x43},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x01, 0x02, 0x04, 0x00}
+};
+
+/* the PC options menu (options.c): lines of text in a panel over the window, `sel` lit */
+static const char *const *sMenu;
+static int sMenuN, sMenuSel;
+static GLuint sFontTex, sTextProg, sTextVao, sTextVbo;
+static GLint sTextColorLoc;
+
+void glr_menu(const char *const *lines, int n, int sel) {
+    sMenu = lines;
+    sMenuN = n;
+    sMenuSel = sel;
+}
+
+static const char *kTextVs =
+    "#version 460 core\n"
+    "layout(location = 0) in vec2 aPos;\n"
+    "layout(location = 1) in vec2 aUv;\n"
+    "out vec2 vUv;\n"
+    "void main() {\n"
+    "    vUv = aUv;\n"
+    "    gl_Position = vec4(aPos, 0.0, 1.0);\n"
+    "}\n";
+
+static const char *kTextFs =
+    "#version 460 core\n"
+    "in vec2 vUv;\n"
+    "uniform sampler2D uTex;\n"
+    "uniform vec4 uColor;\n"
+    "out vec4 oColor;\n"
+    "void main() {\n"
+    "    oColor = vec4(uColor.rgb, uColor.a * texture(uTex, vUv).r);\n"
+    "}\n";
+
+static GLuint program(const char *vs, const char *fs);
+
+static void font_make(void) {
+    static uint8_t px[8][65 * 6];
+    int c, x, y;
+
+    for (c = 0; c < 65; c++) {
+        for (x = 0; x < 5; x++) {
+            for (y = 0; y < 7; y++) {
+                px[y][c * 6 + x] = (kFont[c][x] >> y) & 1 ? 255 : 0;
+            }
+        }
+    }
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sFontTex);
+    p_glTextureStorage2D(sFontTex, 1, GL_R8, 65 * 6, 8);
+    p_glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    p_glTextureSubImage2D(sFontTex, 0, 0, 0, 65 * 6, 8, GL_RED, GL_UNSIGNED_BYTE, px);
+    p_glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    p_glTextureParameteri(sFontTex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    p_glTextureParameteri(sFontTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    sTextProg = program(kTextVs, kTextFs);
+    sTextColorLoc = p_glGetUniformLocation(sTextProg, "uColor");
+    p_glCreateBuffers(1, &sTextVbo);
+    p_glCreateVertexArrays(1, &sTextVao);
+    p_glVertexArrayVertexBuffer(sTextVao, 0, sTextVbo, 0, 4 * sizeof(float));
+    p_glEnableVertexArrayAttrib(sTextVao, 0);
+    p_glVertexArrayAttribFormat(sTextVao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    p_glVertexArrayAttribBinding(sTextVao, 0, 0);
+    p_glEnableVertexArrayAttrib(sTextVao, 1);
+    p_glVertexArrayAttribFormat(sTextVao, 1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float));
+    p_glVertexArrayAttribBinding(sTextVao, 1, 0);
+}
+
+/* the menu over the window (w x h pixels): a dark panel, its lines (the picked one yellow) */
+static void menu_draw(int w, int h) {
+    static float v[64 * 64 * 6 * 4];
+    int k = h / 200 > 1 ? h / 200 : 1;   /* glyph pixels per font pixel */
+    int cw = 6 * k, ch = 10 * k, maxLen = 0, i, n, line;
+    int pw, ph, px0, py0;
+
+    for (i = 0; i < sMenuN; i++) {
+        n = (int)strlen(sMenu[i]);
+        maxLen = n > maxLen ? n : maxLen;
+    }
+    pw = maxLen * cw + 4 * cw;
+    ph = sMenuN * ch + 3 * ch;
+    px0 = (w - pw) / 2;
+    py0 = (h - ph) / 2;
+    p_glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    p_glViewport(0, 0, w, h);
+    p_glDisable(GL_DEPTH_TEST);
+    p_glEnable(GL_BLEND);
+    p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    p_glEnable(GL_SCISSOR_TEST);
+    p_glScissor(px0, py0, pw, ph);
+    p_glUseProgram(sFillProg);
+    p_glProgramUniform4f(sFillProg, sFillLoc, 0.0f, 0.0f, 0.0f, 0.8f);
+    p_glBindVertexArray(sQuadVao);
+    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    p_glDisable(GL_SCISSOR_TEST);
+    p_glUseProgram(sTextProg);
+    p_glBindVertexArray(sTextVao);
+    p_glBindTextureUnit(0, sFontTex);
+    for (line = 0; line < sMenuN; line++) {
+        const char *t = sMenu[line];
+        int x = px0 + 2 * cw, y = py0 + ph - (line + 2) * ch;   /* GL rows from the bottom */
+
+        for (i = n = 0; t[i] != 0 && n < 64 * 64; i++) {
+            int c = (unsigned char)t[i];
+            float x0, x1, y0, y1, u0, u1;
+            float q[6][4];
+            int j;
+
+            c = c >= 'a' && c <= 'z' ? c - 32 : c;
+            c = c < 32 || c > 96 ? 32 : c;
+            x0 = (float)(x + i * cw) / w * 2.0f - 1.0f;
+            x1 = (float)(x + i * cw + 6 * k) / w * 2.0f - 1.0f;
+            y0 = (float)y / h * 2.0f - 1.0f;
+            y1 = (float)(y + 8 * k) / h * 2.0f - 1.0f;
+            u0 = (float)((c - 32) * 6) / (65 * 6);
+            u1 = (float)((c - 32) * 6 + 6) / (65 * 6);
+            {
+                float tmp[6][4] = {{x0, y0, u0, 1}, {x1, y0, u1, 1}, {x0, y1, u0, 0},
+                                   {x1, y0, u1, 1}, {x1, y1, u1, 0}, {x0, y1, u0, 0}};
+
+                memcpy(q, tmp, sizeof(q));
+            }
+            for (j = 0; j < 6; j++) {
+                memcpy(&v[(n * 6 + j) * 4], q[j], sizeof(q[j]));
+            }
+            n++;
+        }
+        if (n == 0) {
+            continue;
+        }
+        p_glNamedBufferData(sTextVbo, (GLsizeiptr)n * 6 * 4 * sizeof(float), v, GL_STREAM_DRAW);
+        if (line == sMenuSel) {
+            p_glProgramUniform4f(sTextProg, sTextColorLoc, 1.0f, 0.85f, 0.3f, 1.0f);
+        } else {
+            p_glProgramUniform4f(sTextProg, sTextColorLoc, 0.85f, 0.85f, 0.85f, 1.0f);
+        }
+        p_glDrawArrays(GL_TRIANGLES, 0, n * 6);
+    }
+    p_glDisable(GL_BLEND);
+}
+
 /* a full-screen fill in one colour (the overlay) */
 static const char *kFillFs =
     "#version 460 core\n"
@@ -977,6 +1183,7 @@ int glr_init(void) {
     p_glCreateFramebuffers(1, &sReflPrepFbo);
     p_glNamedFramebufferTexture(sReflPrepFbo, GL_COLOR_ATTACHMENT0, sReflPrep, 0);
     targets_make();
+    font_make();
     {   /* frame dumps: the scene brought to 640 x 448 */
         p_glCreateTextures(GL_TEXTURE_2D, 1, &sDump);
         p_glTextureStorage2D(sDump, 1, GL_RGBA8, 640, 448);
@@ -1588,7 +1795,11 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         p_glClearNamedFramebufferfv(0, GL_COLOR, 0, kBlack);
         p_glBlitNamedFramebuffer(sFbo, 0, 0, 0, GLR_WIDTH, GLR_HEIGHT, x, y, x + vw, y + vh, GL_COLOR_BUFFER_BIT,
                                  GL_LINEAR);
+        if (sMenu != NULL) {
+            menu_draw(outW, outH);
+        }
     }
+    sMenu = NULL;   /* the options menu gives itself again each frame it is open */
 }
 
 void glr_read_pixels(uint32_t *out, int w, int h) {
