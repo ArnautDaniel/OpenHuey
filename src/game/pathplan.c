@@ -1202,6 +1202,98 @@ s32 func_001A8400(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32
     return i - 1;
 }
 
+/* the height of `pos` on triangle `t` (nav mesh +0x14), w 1 */
+static inline void set_on(NavMesh *nm, u32 t, f32 *pos) {
+    VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, t, pos);
+    pos[3] = 1.0f;
+}
+
+/* +0x20 as +0x24, following the nav mesh: the triangle reached is found by walking the line
+ * (or, off it, from the last point's triangle on), and the point is put on it */
+s32 func_001A85E0(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32 dist) {
+    f32 p[4] __attribute__((aligned(16)));
+    f32 next[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    const u8 *e;
+    NavMesh *nm;
+    u32 cur, t;
+
+    if (dist < 0.0f) {
+        return i;
+    }
+    cur = *tri;
+    p[0] = pos[0];
+    p[2] = pos[2];
+    e = pts + i * 0xC + 0xC;
+    for (;;) {
+        f32 len;
+
+        next[0] = AT(e, 0x4, f32);
+        i++;
+        next[2] = AT(e, 0x8, f32);
+        sceVu0SubVector(d, next, p);
+        d[1] = 0.0f;
+        len = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+        if (!(len <= dist)) {
+            break;
+        }
+        if (i == n - 1) {
+            nm = D_0044E570;
+            *tri = AT(e, 0x0, u32);
+            pos[0] = AT(e, 0x4, f32);
+            pos[2] = AT(e, 0x8, f32);
+            set_on(nm, AT(e, 0x0, u32), pos);
+            return n;
+        }
+        cur = AT(e, 0x0, u32);
+        dist -= len;
+        sceVu0CopyVector(p, next);
+        e += 0xC;
+    }
+    sceVu0Normalize(d, d);
+    func_0010E640(d, d, dist);
+    sceVu0AddVector(q, p, d);
+    nm = D_0044E570;
+    for (t = cur;;) {
+        s32 r = VCALL((VObject *)nm, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nm, t, p, q);
+
+        if (r == 3) {
+            *tri = t;
+            pos[0] = q[0];
+            pos[2] = q[2];
+            set_on(nm, t, pos);
+            return i - 1;
+        }
+        if (r == 4) {
+            break;
+        }
+        t = NavMesh_Tri(nm, t)->adj[r];
+        if (t == NAV_NONE) {
+            break;
+        }
+    }
+    for (t = cur;;) {
+        s32 r;
+
+        if (VCALL((VObject *)nm, 0x10, s32 (*)(VObject *, u32, f32 *))((VObject *)nm, t, q) == 3) {
+            *tri = t;
+            pos[0] = q[0];
+            pos[2] = q[2];
+            set_on(nm, t, pos);
+            return i - 1;
+        }
+        r = VCALL((VObject *)nm, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nm, t, p, next);
+        if ((u32)(r - 3) < 2) {
+            return n;
+        }
+        t = NavMesh_Tri(nm, t)->adj[r];
+        if (t == NAV_NONE) {
+            return n;
+        }
+    }
+}
+
 /* +0x14 run search 0 to its end */
 void func_001A9F90(u8 *pl) {
     u8 *s = SEARCH(pl, 0);
