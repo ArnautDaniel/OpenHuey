@@ -662,3 +662,54 @@ s32 func_002E7A50(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern VObject *D_0044E988;   /* the items: +0x8 the list */
+extern u32 func_00260CF0(void *list, s32 item);   /* how many */
+extern void func_00261090(void *list, s32 item, s32 n);   /* given */
+
+/* an empty hook */
+void func_002FCB30(void) {
+}
+
+/* the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
+ * (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
+ * +0x5C(0) / (1) */
+s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
+    VObject *ev;
+    u32 got;
+
+    switch (cmd[3]) {
+    case 0: {
+        u8 *items = (u8 *)D_0044E988 + 8;
+        s32 a = 1 - (func_00260CF0(items, 0x91) & 0xFF);
+        s32 b;
+
+        if (a < 0) {
+            a = 0;
+        }
+        b = 1 - (func_00260CF0(items, 0x92) & 0xFF);
+        if (b < 0) {
+            b = 0;
+        }
+        if ((a | b) != 0) {
+            ev = D_0044E4D0;
+            VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, (b << 8) | a);
+            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
+        }
+        break;
+    }
+    case 1:
+        ev = D_0044E4D0;
+        got = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 0);
+        if (got & 0xFF) {
+            func_00261090((u8 *)D_0044E988 + 8, 0x91, got & 0xFF);
+            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
+        }
+        if (got & 0xFF00) {
+            func_00261090((u8 *)D_0044E988 + 8, 0x92, (got >> 8) & 0xFF);
+            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 1);
+        }
+        break;
+    }
+    return 1;
+}

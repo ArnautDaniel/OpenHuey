@@ -2104,3 +2104,124 @@ void func_002F9FF0(u8 *e) {
         func_002F98A0(e, i, 0);
     }
 }
+
+
+/* ---- D_00470E00 (0xC0 bytes): one sprite (+0x10 + 0x30 x the current one +0xB8), slowly
+ * growing and sinking, with its velocity at +0xA8 and the quad drawer at +0x70; each update
+ * (only every other call, +0xBC) fades it a little ---- */
+
+extern void *D_00470E00[];
+
+#define ONE_REC(e, buf) ((QuadRec *)((e) + 0x10) + (buf))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002FCDC0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470E00;
+    AT(o, 0x70, void **) = D_0046FC30;
+    AT(o, 0x70, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0x18 start: arg { RGBA (4 x s32), position, velocity }, size 0.2 .. 0.4 */
+void func_002FCE50(u8 *e, u8 *arg) {
+    QuadRec *r;
+    f32 s;
+
+    if (arg == NULL) {
+        return;
+    }
+    r = ONE_REC(e, AT(e, 0xB8, s32));
+    r->rgba[0] = AT(arg, 0x0, s32);
+    r->rgba[1] = AT(arg, 0x4, s32);
+    r->rgba[2] = AT(arg, 0x8, s32);
+    r->rgba[3] = AT(arg, 0xC, s32);
+    r->pos[0] = AT(arg, 0x10, f32);
+    r->pos[1] = AT(arg, 0x14, f32);
+    r->pos[2] = AT(arg, 0x18, f32);
+    r->pos[3] = 1.0f;
+    s = 0x1.99999a0000000p-3f /* 0.2 */ + 0x1.99999a0000000p-3f /* 0.2 */ * burst_rnd(D_0044E550);
+    r->w = s;
+    r->h = s;
+    r->turn = 0.0f;
+    r->frame = 0;
+    AT(e, 0xA8, f32) = AT(arg, 0x1C, f32);
+    AT(e, 0xAC, f32) = AT(arg, 0x20, f32);
+    AT(e, 0xB0, f32) = AT(arg, 0x24, f32);
+}
+
+/* +0x14 draw the current buffer */
+void func_002FCF40(u8 *e) {
+    AT(e, 0x80, QuadRec *) = ONE_REC(e, AT(e, 0xB8, s32));
+    func_002E56C0(e + 0x70);
+}
+
+/* +0x10 update: every other call 0 (gone); else carried over and, while visible, faded by
+ * 0..3, falling faster (to about -0.05 a frame), moved and grown */
+s32 func_002FCF70(u8 *e) {
+    u32 *src, *dst;
+    QuadRec *r;
+    s32 k;
+
+    if (AT(e, 0xBC, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0xBC, u8) = 1;
+    AT(e, 0xB8, s32) ^= 1;
+    src = (u32 *)ONE_REC(e, AT(e, 0xB8, s32) ^ 1);
+    dst = (u32 *)ONE_REC(e, AT(e, 0xB8, s32));
+    for (k = 0; k < 12; k++) {
+        dst[k] = src[k];
+    }
+    r = ONE_REC(e, AT(e, 0xB8, s32));
+    if (r->rgba[3] > 0) {
+        VObject *rnd;
+
+        AT(e, 0xBC, u8) = 0;
+        rnd = D_0044E550;
+        r->rgba[3] -= burst_int(rnd) & 3;
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        AT(e, 0xAC, f32) = AT(e, 0xAC, f32) - 0x1.99999a0000000p-6f /* 0.025 */;
+        if (AT(e, 0xAC, f32) < -0x1.99999a0000000p-5f /* 0.05 */) {
+            AT(e, 0xAC, f32) = -0x1.99999a0000000p-5f /* 0.05 */ + 0x1.47ae140000000p-6f /* 0.02 */ * (burst_rnd(rnd) - 0.5f);
+        }
+        r->pos[0] = r->pos[0] + AT(e, 0xA8, f32);
+        r->pos[1] = r->pos[1] + AT(e, 0xAC, f32);
+        r->pos[2] = r->pos[2] + AT(e, 0xB0, f32);
+        r->w = r->w + 0x1.0624de0000000p-10f /* 0.001 */;
+        r->h = r->w;
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (one 32 x 32 cell at (64, 64), blended 0x20, layer
+ * 0x19) */
+void func_002FD150(u8 *e) {
+    AT(e, 0xB8, s32) = 0;
+    AT(e, 0xBC, u8) = 0;
+    AT(e, 0x78, s64) = -1;
+    AT(e, 0x84, s32) = 0;
+    AT(e, 0x88, s32) = 0;
+    AT(e, 0x8C, s32) = 0;
+    AT(e, 0x90, s32) = 0x19;
+    AT(e, 0x94, s16) = 1;
+    AT(e, 0x96, s16) = 0x40;
+    AT(e, 0x98, s16) = 0x40;
+    AT(e, 0x9A, s16) = 0x20;
+    AT(e, 0x9C, s16) = 0x20;
+    AT(e, 0x9E, s16) = 0x200;
+    AT(e, 0xA0, s16) = 0x100;
+    AT(e, 0xA2, s8) = 0x20;
+    AT(e, 0xA3, s8) = 1;
+    AT(e, 0xA4, s8) = 1;
+    AT(e, 0xA5, s8) = 0x10;
+    AT(e, 0xA6, s8) = -1;
+}
