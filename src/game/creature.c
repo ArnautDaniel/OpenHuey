@@ -753,3 +753,123 @@ void func_002DFA50(Character *c) {
         c->unk1388 = c->unk1384;
     }
 }
+
+extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
+
+/* state: vanishing (D_00416790). Not seen (+0x37 0): once its time (+0x20) reaches the kind's
+ * (+0x6) a fade (+0x2C, 8 a frame) and it is gone. Seen: it sinks (+0x1C, 0.1 faster each
+ * frame) to 12 below, fades, then leaves a noise (red ones: noise 3 here; others a level
+ * 0x80 noise at its place) and is gone (inactive, its path dropped) */
+void func_002DFE10(Character *c) {
+    u8 *k = CR(c);
+
+    if (AT(c, 0x1577, s8) == 0) {
+        if (AT(k, 0x20, s16) < AT(k, 0x6, s16)) {
+            return;
+        }
+        if (AT(k, 0x2C, s16) > 0) {
+            AT(k, 0x2C, s16) -= 8;
+            return;
+        }
+        c->a.active = 0;
+        func_00127060(c);
+        return;
+    }
+    if (!(AT(k, 0x14, f32) <= -12.0f)) {
+        AT(k, 0x1C, f32) -= 0x1.99999ap-4f /* 0.1 */;
+        AT(k, 0x14, f32) += AT(k, 0x1C, f32);
+        return;
+    }
+    AT(k, 0x14, f32) = -12.0f;
+    if (AT(k, 0x2C, s16) > 0) {
+        AT(k, 0x2C, s16) -= 8;
+        return;
+    }
+    if (AT(k, 0x31, u8) >= 0x12 && AT(k, 0x31, u8) != 0x24) {
+        func_00177FA0(gProgress, c->a.pos, 1, 3, 0, 0, 0.0f);
+    } else {
+        func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
+    }
+    c->a.active = 0;
+    func_00127060(c);
+}
+
+extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
+
+/* state: to the door it chose (+0x85): its spot asked of the planner; on the way there
+ * (func_002DF470) with the door as its exit (+0x100) and its spot as the target (+0xB0) */
+void func_002E01C0(Character *c) {
+    u8 *k = CR(c);
+    VObject *rooms = D_0044E568;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 spot[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(c, 0x15C5, u8), at);
+    if (func_00127140(c, 0, tri, at) > 0) {
+        VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
+    }
+    if (AT(k, 0x85, u8) == 0xFF) {
+        return;
+    }
+    c->unk100 = AT(k, 0x85, u8);
+    tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x85, u8), spot);
+    sceVu0CopyVector(c->a.unkB0, spot);
+    c->unk124 = c->unk128;
+    func_002DF470(c, tri);
+}
+
+/* state: travelling: at the end of its doors (+0x1388) and not at a door, a new trip to the
+ * room being played (func_00126F80): its first door (+0x14C0) and that leg's distance
+ * (+0x14C4); none: the closed ways it noted (+0x148C) are forgotten */
+void func_002E02B0(Character *c) {
+    u8 *k = CR(c);
+    s32 i;
+
+    if (c->unk1388 < c->unk1384 || AT(k, 0xB, u8) != 0) {
+        return;
+    }
+    if (func_00126F80(c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, AT(k, 0xC, s32), -1) <= 0) {
+        for (i = 0; i < 13; i++) {
+            c->unk148C[i] = 0;
+        }
+        return;
+    }
+    c->unk14C0 = AT(c->unk138C, 0, u16);
+    AT(&c->unk14C4, 0, f32) = (f32)VCALL(D_0044E568, 0x38, s32 (*)(VObject *, u32, s32))(D_0044E568, AT(c->unk138C, 0, u16), c->a.room);
+}
+
+extern s32 func_001274E0(Character *c, f32 speed);
+
+/* state: after Fiona (unless she is in mode 3): in her room, unless given up (+0x2F), straight
+ * at her when it can (func_002DFF70) - not on a 0x20000 triangle, where it gives up at once
+ * (its time +0x20 to the kind's +0x6); otherwise along a path to her triangle */
+void func_002E0390(Character *c) {
+    u8 *k = CR(c);
+    s32 t = -1;
+    s32 room;
+
+    AT(c, 0x15C6, u8) = 0;
+    if (gCharPlayer->moveMode == 3) {
+        return;
+    }
+    room = c->a.room;
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && AT(k, 0x2F, u8) == 0) {
+        t = func_002DFF70(c);
+        if (t == -1 && (NavMesh_TriFlags(D_0044E570, c->a.navTri) & 0x20000)) {
+            AT(k, 0x20, s16) = AT(k, 0x6, s16);
+        }
+    }
+    if (t >= 0) {
+        return;
+    }
+    if (c->unk128 >= c->unk124) {
+        if (gCharPlayer->a.navTri == NAV_NONE) {
+            return;
+        }
+        if (func_002DF860(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
+            return;
+        }
+    }
+    func_001274E0(c, AT(k, 0x0, f32));
+}
