@@ -8210,6 +8210,54 @@ void func_0018D100(Fiona *f) {
     FI(f, 0x1AD6D4, f32) = 0x1.99999ap-4f /* 0.1 */ * fiona_abs_wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
 }
 
+extern const PTMF D_003B2CE8;
+
+/* she is touching the pursuer while being chased */
+static inline __attribute__((always_inline)) s32 fiona_caught(Fiona *f) {
+    return FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1;
+}
+
+/* D_003B2798 / D_003B2928 / D_003B2938: idle at the animation's event 0x20 */
+void func_0018D200(Fiona *f) {
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        door_give_up(f, gProgress);
+    }
+    func_00125A10(&f->c);
+}
+
+/* D_003B2CE8: the end of a command gesture - idle at its event 0x20, or at once if the pursuer
+ * has her */
+void func_0018D340(Fiona *f) {
+    if (fiona_caught(f)) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        door_give_up(f, gProgress);
+    }
+    func_00125A10(&f->c);
+}
+
+/* D_003B2CD8: a command gesture - looking at its target (FI 0x1AD664) if any; at its event 0x20
+ * the command given (func_00183F10) and the gesture's end (0xC0C, D_003B2CE8); idle if the
+ * pursuer has her */
+void func_0018D5C0(Fiona *f) {
+    if (fiona_caught(f)) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (FI(f, 0x1AD664, s32) != 0) {
+        FI(f, 0x1AD5FC, u8) = 1;
+        FI(f, 0x1AD600, s32) = FI(f, 0x1AD664, s32);
+    }
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        func_00183F10(f);
+        func_002DDE20(f->c.motion, 0xC0C, -1);
+        Actor_SetState(&f->c.a, &D_003B2CE8);
+    }
+    func_00125A10(&f->c);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
