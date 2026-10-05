@@ -1041,8 +1041,8 @@ static void Riccardo_BackOrHold(Pursuer *p, f32 roll) {
 extern u8 D_0047AC38[];
 
 /* the threat-level chance of a lunge (attack table 0xA); 1 when he lunges */
-static inline s32 Riccardo_Lunge(Pursuer *p) {
-    u32 chance = func_00297290(p, (f32 *)D_0047AC38, 1);
+static inline s32 Riccardo_Lunge(Pursuer *p, u8 *tbl) {
+    u32 chance = func_00297290(p, (f32 *)tbl, 1);
     f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
 
     if (roll < (f32)chance) {
@@ -1055,10 +1055,10 @@ static inline s32 Riccardo_Lunge(Pursuer *p) {
 
 /* a waited-out back-off or hold-off: a lunge by the threat-level chance, else back or hold off
    again. 1 when he lunges */
-static s32 Riccardo_StrikeOrWait(Pursuer *p) {
+static s32 Riccardo_StrikeOrWait(Pursuer *p, u8 *tbl) {
     f32 roll;
 
-    if (Riccardo_Lunge(p)) {
+    if (Riccardo_Lunge(p, tbl)) {
         return 1;
     }
     roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
@@ -1074,7 +1074,8 @@ extern const PTMF D_004156A0, D_004156B0;
    threat-level chance (every 60 frames while closing in, and when a wait runs out within 100).
    Seen by her while within +0x17C0 he comes straight on (1) a limited number of times
    (+0x1630, refilled from +0x1824 +0x10) */
-void func_002DA6B0(Pursuer *p) {
+static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 *tbl, const PTMF *closeIn,
+                                                                  const PTMF *backOff) {
     f32 near;
 
     if (ptmf_test(&p->c.a.state)) {
@@ -1113,7 +1114,7 @@ void func_002DA6B0(Pursuer *p) {
     case 1: {
         f32 roll;
 
-        if ((PU(p, 0x1780, u32) + 1) % 60 == 0 && Riccardo_Lunge(p)) {
+        if ((PU(p, 0x1780, u32) + 1) % 60 == 0 && Riccardo_Lunge(p, tbl)) {
             return;
         }
         if (!((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF))) {
@@ -1161,7 +1162,7 @@ void func_002DA6B0(Pursuer *p) {
             PU(p, 0x162C, s32)--;
             break;
         }
-        if (Riccardo_StrikeOrWait(p)) {
+        if (Riccardo_StrikeOrWait(p, tbl)) {
             return;
         }
         break;
@@ -1184,7 +1185,7 @@ void func_002DA6B0(Pursuer *p) {
             }
             break;
         }
-        if (Riccardo_StrikeOrWait(p)) {
+        if (Riccardo_StrikeOrWait(p, tbl)) {
             return;
         }
         break;
@@ -1207,13 +1208,13 @@ void func_002DA6B0(Pursuer *p) {
     }
     if (PU(p, 0x1544, u8) == 0) {
         VCALL(p, 0xB0, void (*)(Pursuer *))(p);
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_004156A0);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), closeIn);
         PU(p, 0x1758, s32) = -1;
         PU(p, 0x162C, s32) = 0;
         return;
     }
     if (AT(gProgress, 0x7B8, u8) == 5) {
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_004156B0);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), backOff);
         PU(p, 0x1758, s32) = -1;
         PU(p, 0x162C, s32) = 0;
         return;
@@ -1237,6 +1238,18 @@ void func_002DA6B0(Pursuer *p) {
             PU(p, 0x162C, s32) = 0;
         }
     }
+}
+
+void func_002DA6B0(Pursuer *p) {
+    Riccardo_Chase(p, D_0047AC38, &D_004156A0, &D_004156B0);
+}
+
+extern u8 D_0047AF50[];
+extern const PTMF D_00442928, D_00442938;
+
+/* (as func_002DA6B0) the same chase in the other class, with its lunge table and states */
+void func_0034BFF0(Pursuer *p) {
+    Riccardo_Chase(p, D_0047AF50, &D_00442928, &D_00442938);
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
