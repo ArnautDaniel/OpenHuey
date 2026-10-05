@@ -2391,3 +2391,202 @@ void SceneGame_OnSoftReset(u8 *g) {
     func_0017D1B0(D_004562A8);
     g[0x11] = 1;
 }
+
+/* ---- SceneGame's destructor and the member destructors it needs (2026-10-05) ---- */
+
+extern void func_00100490(void *p);   /* operator delete */
+extern void func_0011F9A0(void *p);   /* operator delete (the scene heap) */
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+extern void *D_0046A9D0[], *D_0046AA40[], *D_0046A9C0[], *D_0046F350[], *D_00469D00[], *D_0046A9B0[];
+extern void *D_00473440[], *D_0046A110[], *D_0046A100[], *D_0047A790[], *D_0046A1C0[], *D_004699E0[];
+extern void *D_004699C0[], *D_0046C660[], *D_0046C668[], *D_0046C6F0[], *D_0046B300[], *D_0046B350[];
+extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046C520[], *D_0046C530[], *D_0046ABB0[], *D_0046AC00[];
+extern void *D_0046A120[], *D_00469C60[], *D_00469C20[];
+extern void *func_002D0C10(void *o, s32 flags);
+extern void *BootCard_dtor(void *card, s32 flags);
+extern void *TextObj_dtor(void *o, s32 flags);
+extern void *SubScreenBase_dtor(void *w, s32 flags);
+extern void *func_001FB400(void *o, s32 flags);
+extern void *func_001FB3B0(void *o, s32 flags);
+extern void *func_002D0C70(void *o, s32 flags);
+extern void *func_0016CC40(void *o, s32 flags);
+extern void *func_0020C170(void *o, s32 flags);
+extern void *func_0020C120(void *o, s32 flags);
+extern void *func_0021A2E0(void *o, s32 flags);
+extern void *func_002A8520(void *o, s32 flags);
+extern void *func_002D0D60(void *o, s32 flags);
+extern void *func_00221890(void *o, s32 flags);
+extern void *func_0021B0F0(void *o, s32 flags);
+extern void *func_00268110(void *o, s32 flags);
+extern void *func_0025C850(void *o, s32 flags);
+extern void *func_002D0DF0(void *o, s32 flags);
+extern void *func_002D0EE0(void *o, s32 flags);
+extern void *func_002D00A0(void *o, s32 flags);
+extern void *func_00168C20(void *o, s32 flags);
+extern void *func_0020E820(void *o, s32 flags);
+
+/* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
+ * base (D_0046AA40, clearing D_0044E570) */
+void *func_00179F60(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046A9D0;
+        if (AT(o, 0x4, void *) != NULL) {
+            AT(o, 0x4, void *) = NULL;
+            AT(o, 0x8, s32) = 0;
+        }
+        if (AT(o, 0xC, void *) != NULL) {
+            AT(o, 0xC, void *) = NULL;
+            AT(o, 0x10, s32) = 0;
+        }
+        AT(o, 0x0, void **) = D_0046AA40;
+        D_0044E570 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* (D_0046A9C0): its quad drawer (+0x120) and its task's child (+0x88) */
+void *func_00179B10(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046A9C0;
+        AT(o, 0x120, void **) = D_0046F350;
+        AT(o, 0x120, void **) = D_00469D00;
+        if (AT(o, 0x88, void *) != NULL) {
+            Task_dtor(AT(o, 0x88, Task *), 1);
+            AT(o, 0x88, void *) = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* (vtable at +0x4C, D_0046A9B0) */
+void *func_00179AC0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x4C, void **) = D_0046A9B0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the progress object: gProgress cleared */
+void *func_002D0F90(void *o, s32 flags) {
+    if (o != NULL) {
+        gProgress = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor: the members torn down in reverse (task manager +0x1053480, BGM +0x1053424, the sub
+ * screen +0xF87240, effects +0xF6E200, room effects +0xF6CD30, +0xF6CBB0, +0xF6C1C0, the events
+ * +0xF6AFB0, +0xF6A940, the path planner +0xF29740, +0xE35F80, Fiona +0xC88840, the rooms
+ * +0x73EE80, the progress +0x40 with the characters in slots 2..5), then the scene base */
+void *SceneGame_dtor(u8 *g, s32 flags) {
+    void **slot;
+    s32 i;
+
+    if (g == NULL) {
+        return g;
+    }
+    AT(g, 0x0, void **) = SceneGame_vtable;
+    AT(g, 0x40, void **) = D_0047A7E8;
+    AT(g, 0x1053480, void **) = D_00473440;
+    Task_dtor((Task *)(g + 0x10644C8), -1);
+    func_002D0C10(g + 0x1053480, 0);
+    D_0045D1F0 = NULL;
+    AT(g, 0x1053424, void **) = D_0046A110;
+    AT(g, 0x1053424, void **) = D_0046A100;
+    D_0044E970 = NULL;
+    AT(g, 0xF87240, void **) = D_0047A790;
+    BootCard_dtor(g + 0x102FD00, -1);
+    TextObj_dtor(g + 0x101EBC0, -1);
+    Task_dtor((Task *)(g + 0x101EAA8), -1);
+    Task_dtor((Task *)(g + 0x101E9A4), -1);
+    SubScreenBase_dtor(g + 0xF87240, 0);
+    AT(g, 0xF7E200, void **) = D_0046A1C0;
+    AT(g, 0xF7E200, void **) = D_004699E0;
+    D_0044E578 = NULL;
+    AT(g, 0xF6E130, void **) = D_004699C0;
+    AT(g, 0xF6E130, void **) = D_004699E0;
+    D_0044E4C0 = NULL;
+    AT(g, 0xF6CC14, void **) = D_0046C660;
+    AT(g, 0xF6CC10, void **) = D_0046C668;
+    AT(g, 0xF6CC10, void **) = D_0046C6F0;
+    D_0044E4F8 = NULL;
+    AT(g, 0xF6CBDC, s32) = 0;
+    AT(g, 0xF6CBE8, s32) = 0;
+    AT(g, 0xF6CC00, f32) = 6.0f;
+    for (i = 0; i < 7; i++) {
+        AT(g, 0xF6CBB8 + i * 4, s32) = 0;
+    }
+    AT(g, 0xF6C1C0, void **) = D_0046B300;
+    AT(g, 0xF6C1C0, void **) = D_0046B350;
+    D_0044E4C8 = NULL;
+    AT(g, 0xF6AFB0, void **) = D_0046B3A0;
+    AT(g, 0xF6AFBC, void **) = D_0046B3B8;
+    func_001002C0(g + 0xF6BBA0, func_001FB400, 0x30, 0x20);
+    func_002D0C70(g + 0xF6B8E8, -1);
+    Task_dtor((Task *)(g + 0xF6B6B8), -1);
+    func_001002C0(g + 0xF6B0D0, func_001FB3B0, 4, 0x110);
+    func_0016CC40(g + 0xF6AFD0, -1);
+    func_0020C170(g + 0xF6AFBC, 0);
+    func_0020C120(g + 0xF6AFB0, 0);
+    AT(g, 0xF6A940, void **) = D_0046C520;
+    AT(g, 0xF6A940, void **) = D_0046C530;
+    D_0044E580 = NULL;
+    AT(g, 0xF29740, void **) = D_0046ABB0;
+    AT(g, 0xF29740, void **) = D_0046AC00;
+    gSceneGameF29740 = NULL;
+    AT(g, 0xE35F80, void **) = D_0046A120;
+    AT(g, 0xE35F80, void **) = D_00469C60;
+    AT(g, 0xE35F80, void **) = D_00469C20;
+    AT(g, 0xC88840, void **) = Fiona_vtable;
+    AT(g, 0xC88840, void **) = D_00469C60;
+    AT(g, 0xC88840, void **) = D_00469C20;
+    func_00120980(g + 0x73EE80);
+    func_0021A2E0(g + 0x748200, -1);
+    func_002A8520(g + 0x7481E0, -1);
+    func_002D0D60(g + 0x7455C0, -1);
+    func_00221890(g + 0x7404C0, -1);
+    func_0021B0F0(g + 0x73F370, -1);
+    func_00179F60(g + 0x73F260, -1);
+    func_00268110(g + 0x73F1C0, -1);
+    func_0025C850(g + 0x73EE80, -1);
+    AT(g, 0x40, void **) = Progress_vtable;
+    func_00176780((Progress *)(g + 0x40));
+    for (i = 2, slot = &gCharacters[2]; i < 6; i++, slot++) {
+        if (*slot != NULL) {
+            VObject *objs = (VObject *)(g + 0x6FBF40);
+            void *c;
+
+            VCALL(objs, 0x14, void (*)(VObject *, void *))(objs, *slot);
+            c = *slot;
+            if (c != NULL) {
+                VCALL(c, 0x8, void (*)(void *, s32))(c, 1);
+            }
+            *slot = NULL;
+        }
+    }
+    func_00179B10(g + 0x73EBA0, -1);
+    func_00179AC0(g + 0x73EB40, -1);
+    func_002D0DF0(g + 0x706480, -1);
+    func_002D0EE0(g + 0x6FC380, -1);
+    func_002D00A0(g + 0x6FC258, -1);
+    func_00168C20(g + 0x6FBF40, -1);
+    func_0020E820(g + 0x48, -1);
+    func_002D0F90(g + 0x40, 0);
+    AT(g, 0x0, void **) = Scene_vtable;
+    if ((s16)flags > 0) {
+        func_0011F9A0(g);
+    }
+    return g;
+}
