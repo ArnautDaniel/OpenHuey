@@ -5651,3 +5651,5 @@ src/game/props.c func_002B9010 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0
 src/game/room_handlers.c func_002A9080 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --stub-ret=0x0B600000 --pre=@0x0B600034=0x3E000000..0x3F800000 --pre=@0x0B600030=0x43000000..0x43B00000 --stub-fret=0.5 --runs=100
 src/game/room_handlers.c func_002ADB10 --pre=@0x44E4C0=0x0B400000..0x0B400000 --stub-ret=0x0B600000
 src/game/room_handlers.c func_002A8FF0 --pre=@0x44F818=0..0x0B200000 --pre=@0x0B200028:u8=0..1 --pre=@0x0B200014=0xBF800000..0x3F800000 --runs=60
+src/game/room_handlers.c func_00321340 --pre=@0x44E4C0=0x0B400000..0x0B400000 --pre=@0x0B4014A4=0..1 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --stub-ret=0 --stub-ret=0x0B600000 --runs=200
+src/game/model.c func_003A1720 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=@0x44F800=0x0B200000..0x0B200000 --pre=@0x44F804=0x0B200000..0x0B200000 --pre=@0x44F808=0x0B200000..0x0B200000 --stub-ret=0 --stub-ret=0x0B600000

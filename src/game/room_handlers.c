@@ -2410,14 +2410,20 @@ s32 func_002AFF80(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x21 (D_00400BA8): a lit quad at x 0.49 .. 9.5, z 69.5 .. 60.5, from the floor to 22 */
-s32 func_002AF4E0(void *self, void *a1, u8 *cmd) {
-    static const u32 sQuad[16] = {
-        0x3EFB2FEC, 0x41B00000, 0x428B0113, 0x3F800000, 0x4118089A, 0x41B00000, 0x4271F660, 0x3F800000,
-        0x3EFB2FEC, 0x00000000, 0x428B0113, 0x3F800000, 0x4118089A, 0x00000000, 0x4271F660, 0x3F800000,
-    };
+/* a lit quad at x 0.49 .. 9.5, z 69.5 .. 60.5, from the floor to 22 (rooms 0x21 and 0x32) */
+static const u32 sQuadWindow[16] = {
+    0x3EFB2FEC, 0x41B00000, 0x428B0113, 0x3F800000, 0x4118089A, 0x41B00000, 0x4271F660, 0x3F800000,
+    0x3EFB2FEC, 0x00000000, 0x428B0113, 0x3F800000, 0x4118089A, 0x00000000, 0x4271F660, 0x3F800000,
+};
 
-    return lit_quad(cmd, sQuad, 0x10000040);
+/* room 0x21 (D_00400BA8) */
+s32 func_002AF4E0(void *self, void *a1, u8 *cmd) {
+    return lit_quad(cmd, sQuadWindow, 0x10000040);
+}
+
+/* room 0x32 (D_0042C2B8) */
+s32 func_00321340(void *self, void *a1, u8 *cmd) {
+    return lit_quad(cmd, sQuadWindow, 0x10000040);
 }
 
 /* room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21 */

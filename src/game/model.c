@@ -495,6 +495,36 @@ void func_003A1860(Progress *p, u32 slot) {
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
+extern void *D_00470540[];
+
+/* Fiona's model in her clothes (0x1270 bytes, vtable D_00470540), put at character `slot` +0xF0:
+ * twelve 0x50 nodes, single parts, four 0x50 nodes, six parts of 0x40 and more single parts */
+void func_003A1720(Progress *p, u32 slot) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    u8 *m = func_002DC6E0(0x1270, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x1270));
+
+    if (m != NULL) {
+        u8 *e;
+
+        func_00170690(m, 0);
+        AT(m, 0x0, void **) = D_00470540;
+        func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
+        func_0016FB80(m + 0xD70);
+        func_00170670(m + 0xDB0);
+        func_0016FB80(m + 0xE00);
+        func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
+            func_0016FB90(e);
+        }
+        func_0016FB80(m + 0x1100);
+        func_00170650(m + 0x1140);
+        func_0016FB80(m + 0x11A0);
+        func_00170670(m + 0x11E0);
+        func_0016FB80(m + 0x1230);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
 /* ---- Fiona's model in her clothes (vtable D_00470540, O_FIN, costumes 0..6): its own
  * methods. Its secondary motion: five spring sets - +0xD70 the 12 hair / clothes nodes at
  * +0x9B0, +0xE00 one node (+0xDB0), +0x1100 four hanging nodes (+0xE40) with six collision
