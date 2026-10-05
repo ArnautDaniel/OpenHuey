@@ -1595,12 +1595,13 @@ def make_inputs(seed: int) -> tuple[list[int], list[int]]:
 
 PRE_BYTES: list[tuple[int, int, bytes]] = []   # (arg reg or 0 for absolute, offset, bytes)
 REL_BASE = -(1 << 40)   # lo = REL_BASE - register: the value is that argument + hi
-PRECONDITIONS: list[tuple[int, int, int, int]] = []  # (arg reg, offset, lo, hi): *(u32 *)(arg + off) in lo..hi
+PRECONDITIONS: list[tuple[int, int, int, int, int]] = []  # (arg reg, offset, lo, hi, size): *(u32 *)(arg + off) in lo..hi
 SAVED_PRE: list[tuple[int, int]] = []   # (callee-saved reg, value): the caller's leftover value
 
 
 def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
-    """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None)."""
+    """a0+0x18=0..8: u32 at arg0+0x18 in 0..8; a1=0..3: the argument itself (offset None);
+    a0+0x18:u8=0..1 (or :u16, also for @addr): only that many bytes, leaving the neighbours alone."""
     sv = re.fullmatch(r"s([0-7])=(-?\w+)", spec)
     if sv:  # the caller's value of a callee-saved register (an original that reads one it never set)
         SAVED_PRE.append((16 + int(sv.group(1)), int(sv.group(2), 0) & M64))
@@ -1612,15 +1613,16 @@ def parse_pre(spec: str) -> tuple[int, int | None, int, int]:
         return None
     r = re.fullmatch(r"a([0-7])\+(0x[0-9A-Fa-f]+|\d+)=a([0-7])\+(0x[0-9A-Fa-f]+|\d+)", spec)
     if r:  # a pointer into an argument (3 runs in 4): a0+0x304A14=a0+0x60; lo = REL_BASE - register marks it
-        return 4 + int(r.group(1)), int(r.group(2), 0), REL_BASE - (4 + int(r.group(3))), int(r.group(4), 0)
-    g = re.fullmatch(r"@(0x[0-9A-Fa-f]+)=(-?\w+)\.\.(-?\w+)", spec)
+        return 4 + int(r.group(1)), int(r.group(2), 0), REL_BASE - (4 + int(r.group(3))), int(r.group(4), 0), 4
+    sizes = {None: 4, "u8": 1, "u16": 2, "u32": 4}
+    g = re.fullmatch(r"@(0x[0-9A-Fa-f]+)(?::(u8|u16|u32))?=(-?\w+)\.\.(-?\w+)", spec)
     if g:  # a global: u32 at an absolute address (register 0 + address)
-        return 0, int(g.group(1), 16), int(g.group(2), 0), int(g.group(3), 0)
-    m = re.fullmatch(r"a([0-7])(?:\+(0x[0-9A-Fa-f]+|\d+))?=(-?\w+)\.\.(-?\w+)", spec)
+        return 0, int(g.group(1), 16), int(g.group(3), 0), int(g.group(4), 0), sizes[g.group(2)]
+    m = re.fullmatch(r"a([0-7])(?:\+(0x[0-9A-Fa-f]+|\d+))?(?::(u8|u16|u32))?=(-?\w+)\.\.(-?\w+)", spec)
     if not m:
-        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8, a1=0..3 or @0x44E568=lo..hi")
+        sys.exit(f"bad --pre {spec!r}: expected e.g. a0+0x18=0..8, a0+0x18:u8=0..1, a1=0..3 or @0x44E568=lo..hi")
     off = int(m.group(2), 0) if m.group(2) is not None else None
-    return 4 + int(m.group(1)), off, int(m.group(3), 0), int(m.group(4), 0)
+    return 4 + int(m.group(1)), off, int(m.group(4), 0), int(m.group(5), 0), sizes[m.group(3)]
 
 
 def run_one(rom, overlays, entry, frange, seed, max_steps=None):
@@ -1631,7 +1633,7 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
     ints, floats = make_inputs(seed)
     for r, v in zip(ARG_REGS, ints):
         c.s(r, v)
-    for reg, off, lo, hi in PRECONDITIONS:
+    for reg, off, lo, hi, size in PRECONDITIONS:
         # a constrained input: write it without logging it as a function write
         rnd = random.Random(seed * 7 + (off if off is not None else 0x7FFF0000 + reg))
         if lo <= REL_BASE - 4:
@@ -1651,7 +1653,7 @@ def run_one(rom, overlays, entry, frange, seed, max_steps=None):
             c.s32(reg, v)
             continue
         a = Memory.norm((c.g(reg) & M32) + off)
-        for i, b in enumerate(v.to_bytes(4, "little")):
+        for i, b in enumerate((v & ((1 << (8 * size)) - 1)).to_bytes(size, "little")):
             mem._page(a + i)[(a + i) & 0xFFF] = b
     for k, (reg, off, hexs) in enumerate(PRE_BYTES):
         a = Memory.norm(((c.g(reg) & M32) if reg else 0) + off)

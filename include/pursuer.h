@@ -163,7 +163,7 @@ extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
 extern s32 func_002EC410(void *list);
 extern void func_002DDC60(void *motion, s32 anim, s32 anim2, s32 variant);
 extern void func_002DDBA0(void *motion, s32 anim, s32 anim2);
-extern void func_0027AD80(Pursuer *p);
+extern void func_0027AD80(Pursuer *p, u32 door);
 /* ---- end engine ---- */
 
 /* ---- generated from the definitions (tools: protos.py) ---- */
@@ -282,6 +282,7 @@ void **func_00278490(void **obj, s32 flags);
 void func_00278EB0(Pursuer *p);
 void func_0027A1E0(Pursuer *p);
 void func_0027A6A0(Pursuer *p);
+void func_0027AD80(Pursuer *p, u32 door);
 s32 func_0027CA00(Pursuer *p);
 void func_0027CB90(Pursuer *p, u32 exit);
 void func_0027CE80(Pursuer *p);
@@ -429,10 +430,13 @@ void func_00292170(Pursuer *p);
 void func_00292310(Pursuer *p);
 void func_002927D0(Pursuer *p);
 void func_002934C0(Pursuer *p);
+void func_00293620(Pursuer *p);
 void func_00294150(Pursuer *p);
 void func_00294240(Pursuer *p);
 void func_002947F0(Pursuer *p);
+void func_002948E0(Pursuer *p);
 void func_002953F0(Pursuer *p);
+void func_00295670(Pursuer *p);
 void func_002961D0(Pursuer *p);
 void func_00296580(Pursuer *p);
 void func_00296ED0(Pursuer *p);
