@@ -928,3 +928,73 @@ s32 func_0017B380(NavMesh *nm, s32 i, u32 tri, f32 *p) {
     }
     return -1;
 }
+
+extern void *func_00114FA8(u32 size);   /* malloc */
+extern void func_00114FD0(void *p);     /* free */
+
+/* the mesh's outer edges (+0xC, +0x10 of them, 16 bytes each: the triangle, -, its two corners) */
+#define NAV_EDGE(nm, i) ((u32 *)(AT(nm, 0xC, u8 *) + (i) * 0x10))
+
+/* +0x48 the outer edge the step p -> q goes out through (seen from above: p inside it, q
+ * outside, the crossing within both); of several, the one whose triangle's height under the
+ * crossing is closest below p. -1 if none */
+s32 func_0017B9B0(NavMesh *nm, f32 *p, f32 *q) {
+    s32 best = -1;
+    u32 *cand = func_00114FA8(AT(nm, 0x10, u32) * 4);
+    u32 n = 0, i;
+    f32 gap;
+
+    for (i = 0; i < AT(nm, 0x10, u32); i++) {
+        u32 *e = NAV_EDGE(nm, i);
+        NavTri *t = &nm->tris[e[0]];
+        f32 ax = t->v[e[2]][0], az = t->v[e[2]][2];
+        f32 ez = t->v[e[3]][2] - az, ex = t->v[e[3]][0] - ax;
+        f32 m = (p[0] - ax) * ez, l = (p[2] - az) * ex;
+        f32 dx, dz, den, s, u;
+
+        if (m - l < 0.0f) {
+            continue;
+        }
+        if (!(0.0f + (q[0] - ax) * ez - (q[2] - az) * ex < 0.0f)) {
+            continue;
+        }
+        dx = q[0] - p[0];
+        dz = q[2] - p[2];
+        den = 0.0f + dx * ez - dz * ex;
+        if (den == 0.0f) {
+            continue;
+        }
+        s = (l - m) / den;
+        if (s < 0.0f || !(s <= 1.0f)) {
+            continue;
+        }
+        if ((ex <= 0.0f ? -ex : ex) <= (ez <= 0.0f ? -ez : ez)) {
+            u = (0.0f + p[2] + s * dz - az) / ez;
+        } else {
+            u = (0.0f + p[0] + s * dx - ax) / ex;
+        }
+        if (u < 0.0f || !(u <= 1.0f)) {
+            continue;
+        }
+        cand[n++] = i;
+    }
+    gap = -1.0f;
+    for (i = 0; i < n; i++) {
+        f32 hit[4] __attribute__((aligned(16)));
+        NavTri *t = &nm->tris[NAV_EDGE(nm, cand[i])[0]];
+        f32 y;
+
+        func_0017ABB0(t, hit, p, q);
+        y = nav_plane_y(t, hit);
+        hit[1] = y;
+        if (p[1] < y) {
+            continue;
+        }
+        if (gap == -1.0f || !(gap <= p[1] - y)) {
+            best = cand[i];
+            gap = p[1] - y;
+        }
+    }
+    func_00114FD0(cand);
+    return best;
+}
