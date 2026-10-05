@@ -4599,6 +4599,28 @@ void func_00184570(Fiona *f) {
     }
 }
 
+/* the looking-around idle (animation 0xC0E, then 0xC0F): the one looked at stays the one to
+ * face; func_00183F10 on its motion event 2; at its end back to idle */
+void func_0018F580(Fiona *f) {
+    void *m;
+
+    if (FI(f, 0x1AD664, Character *) != NULL) {
+        FI(f, 0x1AD5FC, u8) = 1;
+        FI(f, 0x1AD600, Character *) = FI(f, 0x1AD664, Character *);
+    }
+    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 2) {
+        func_00183F10(f);
+    }
+    m = f->c.motion;
+    if ((MOTION_EVENTS(m) & 0x20) != 0) {
+        if (*(s32 *)((u8 *)m + 0x55C) == 0xC0E) {
+            func_002DDE20(m, 0xC0F, -1);
+            return;
+        }
+        Fiona_ToIdle(f);
+    }
+}
+
 /* the end of a looking action: (unless progress flag 0x25, which forgets it) the one looked at
  * (+0x1AD664) stays the one to face (+0x1AD5FC set, +0x1AD600); once the animation is over
  * func_00184570 and the next state D_003B2C18 */
