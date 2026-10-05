@@ -584,6 +584,136 @@ void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
     func_002CF390(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
 }
 
+/* the screen fade: colour `rgba`, drawn in renderer layer `layer` */
+void func_001FBA80(u8 *ev, u32 rgba, s32 layer) {
+    func_002CF390(ev + 0x20, rgba);
+#ifdef HG_NATIVE
+    {
+        extern void glr_overlay(u32 rgba);
+
+        (void)layer;
+        glr_overlay(AT(ev, 0x20 + 0xF8, u32));
+    }
+#else
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, void *))(D_0044E4F0, ev + 0x20, layer, NULL);
+#endif
+}
+
+/* the cutscene director's cue moved on this frame (+0xBE4 against the one before, +0xBE8) */
+s32 func_001FB1D0(u8 *ev) {
+    return AT(ev, 0xBE8, s32) != AT(ev, 0xBE4, s32);
+}
+
+/* open message `id` in the message window */
+void func_001FB230(u8 *ev, s32 id) {
+    Task_Open((Task *)(ev + 0x708), id);
+}
+
+/* +0x703 */
+u8 func_001FB240(u8 *ev) {
+    return AT(ev, 0x703, u8);
+}
+
+/* text on screen for one frame (not while progress flag 8): the message window shows it and
+ * closes */
+void func_001FB450(u8 *ev, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH) {
+    if ((Progress_TestFlag((Progress *)gProgress, 8) & 0xFF) != 0) {
+        return;
+    }
+    Task_ShowText((Task *)(ev + 0x708), x, y, color, text, alpha, layer, glyphW, glyphH);
+    Task_Close((Task *)(ev + 0x708));
+}
+
+extern u8 D_003D6B20[][3];   /* per progress +0xBC: three ids (0x100 + n) */
+
+/* id 0x100..0x105's place (0..2) in the row progress +0xBC picks, while progress +0xBB; -1 */
+s32 func_001FB560(u8 *ev, u32 id) {
+    s32 i;
+
+    if (id < 0x100 || id >= 0x106 || AT(gProgress, 0xBB, u8) == 0) {
+        return -1;
+    }
+    for (i = 0; i < 3; i++) {
+        if (id == D_003D6B20[AT(gProgress, 0xBC, u8)][i] + 0x100u) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
+
+/* point `i` of the 32 at +0xBF4 (0x30 each: +0 on, +1 flags, +0xC position, w 1, +0x1C / +0x20
+ * two values) set */
+void func_001FB800(u8 *ev, u8 i, const f32 *pos, f32 a, f32 b) {
+    u8 *r = ev + i * 0x30;
+
+    r[0xBF4] = 1;
+    r[0xBF5] = 0;
+    func_0010E5F0((f32 *)(r + 0xC00), pos);
+    AT(r, 0xC0C, f32) = 1.0f;
+    AT(r, 0xC10, f32) = a;
+    AT(r, 0xC14, f32) = b;
+}
+
+/* the nearest point (of those on with flag bit 0) to `pos` into `out`; 0 if none */
+s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
+    f32 p[4] __attribute__((aligned(16)));
+    f32 best = 0.0f, d, dx, dy, dz;
+    s32 i, k = -1;
+
+    for (i = 0; i < 32; i++) {
+        u8 *r = ev + i * 0x30;
+
+        if (r[0xBF4]) {
+            func_0010E5F0(p, (f32 *)(r + 0xC00));
+            p[3] = 1.0f;
+        }
+        if (r[0xBF4] && ((r[0xBF4] ? r[0xBF5] : 0xFF) & 1)) {
+            dy = pos[1] - p[1];
+            dx = pos[0] - p[0];
+            dz = pos[2] - p[2];
+            d = dy * dy + dx * dx + dz * dz;
+            if (k == -1 || !(best <= d)) {
+                best = d;
+                k = i;
+            }
+        }
+    }
+    if (k == -1) {
+        return 0;
+    }
+    if (ev[k * 0x30 + 0xBF4]) {
+        func_0010E5F0(out, (f32 *)(ev + k * 0x30 + 0xC00));
+        out[3] = 1.0f;
+    }
+    return 1;
+}
+
+extern VObject *D_0044E568;   /* the rooms */
+
+/* the room's point `n` (the table +0x10, by the rooms' +0x48 index for the current room):
+ * three vectors (+0x10 / +0x20 / +0x30); 0 if none */
+s32 func_001FBB10(u8 *ev, s32 n, f32 *a, f32 *b, f32 *c) {
+    u32 *tab = AT(ev, 0x10, u32 *);
+    u32 i;
+    u8 *e;
+
+    if (tab == NULL) {
+        return 0;
+    }
+    i = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(
+        D_0044E568, VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress), n) & 0xFFFF;
+    if (i == 0xFFFF) {
+        return 0;
+    }
+    e = (u8 *)AT(ev, 0x10, u32 *) + AT(ev, 0x10, u32 *)[i] * 4;
+    sceVu0CopyVector(a, (f32 *)(e + 0x10));
+    sceVu0CopyVector(b, (f32 *)(e + 0x20));
+    sceVu0CopyVector(c, (f32 *)(e + 0x30));
+    return 1;
+}
+
 /* a room handler's +0x14 phase script (rooms 0x100 / 0x101): none */
 s32 func_00209810(void) {
     return 0;
