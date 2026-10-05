@@ -151,9 +151,9 @@ void func_00129D10(Pursuer *p) {
     VCALL(p, 0x2B8, void (*)(Pursuer *))(p);
 }
 
-/* state: an animation that, at threat level 5 (gProgress+0x7B8), leads straight into attack 8;
-   otherwise its end ends the step */
-void func_001286F0(Pursuer *p) {
+/* the end of his lunge animation: at threat level 5 (gProgress+0x7B8) it leads straight into
+   attack 8; otherwise it ends the step */
+static inline void Debilitas_LungeEnd(Pursuer *p) {
     func_00125A10(&p->c);
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         if (AT(gProgress, 0x7B8, u8) != 5) {
@@ -166,6 +166,26 @@ void func_001286F0(Pursuer *p) {
         p->c.moveMode = 8;
         func_0028B970(p);
     }
+}
+
+/* state: the lunge animation (see Debilitas_LungeEnd) */
+void func_001286F0(Pursuer *p) {
+    Debilitas_LungeEnd(p);
+}
+
+extern const PTMF D_003B0000;
+
+/* start of the lunge: finish the current walk, then animation 0x1306 in state func_001286F0 */
+void func_001287B0(Pursuer *p) {
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0x1306, 0);
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_003B0000);
+    Debilitas_LungeEnd(p);
 }
 
 /* state: walking his path while looking out (+0x1624 counts down while the walk goes on) */
@@ -401,4 +421,72 @@ void func_0012B860(Pursuer *p) {
     } else if (PU(p, 0x1788, s32) != 0x201) {
         func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     }
+}
+
+/* vtable +0x128: the walk for his mode: the slow walk (vtable +0x324) when chasing with the path
+   short enough (+0x17E8) and Fiona not hiding (move mode 3), or searching in sub-states 0/2;
+   the normal walk (vtable +0x328) otherwise */
+void func_00128210(Pursuer *p) {
+    s32 slow;
+
+    switch (PU(p, 0x16C8, u8)) {
+    case 0:
+        slow = PU(p, 0x1590, f32) <= PU(p, 0x17E8, f32) && !(PU(p, 0x1588, f32) < 0.0f)
+            && gCharPlayer->moveMode != 3;
+        break;
+    case 1:
+    case 2:
+    case 4:
+        slow = 0;
+        break;
+    case 3:
+        slow = PU(p, 0x16C9, u8) == 0 || PU(p, 0x16C9, u8) == 2;
+        break;
+    default:
+        return;
+    }
+    if (slow) {
+        func_00297B40(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
+    } else {
+        func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    }
+}
+
+/* the rooms he heads for when he has lost Fiona: {room, nav triangle}, ended by room -1 */
+typedef struct { s32 room; s32 tri; } DebilitasRoomSpot;
+extern DebilitasRoomSpot D_003AFAE0[];
+
+/* vtable +0xE8: pick where to go. Already in one of his rooms: go to its spot (when on screen).
+   Otherwise route to the nearest of them. Returns 0 when none can be reached. */
+s32 func_00128090(Pursuer *p) {
+    u8 i;
+    u32 best = -1;
+    s32 bestRoom = -1;
+
+    for (i = 0; D_003AFAE0[i].room != -1; i++) {
+        DebilitasRoomSpot *e = &D_003AFAE0[i];
+        u32 d;
+
+        if (p->c.a.room == e->room) {
+            if (func_00217510(p) != 0) {
+                f32 pos[4];
+
+                VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, e->tri, pos);
+                VCALL(p, 0xAC, void (*)(Pursuer *, s32, f32 *, s32))(p, e->tri, pos, D_003AFAE0[i].room);
+            }
+            return 1;
+        }
+        d = func_00126F80(&p->c, e->room, PU(p, 0x1598, s32), -1, -1);
+        if (d != 0 && d < best) {
+            bestRoom = e->room;
+            best = d;
+        }
+    }
+    if (bestRoom == -1) {
+        return 0;
+    }
+    PU(p, 0x1594, s32) = bestRoom;
+    PU(p, 0x1598, s32) = -1;
+    func_00126F80(&p->c, bestRoom, PU(p, 0x1598, s32), -1, -1);
+    return 1;
 }
