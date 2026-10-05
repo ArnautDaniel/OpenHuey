@@ -6463,3 +6463,113 @@ src/game/room_handlers.c func_0032DDF0 --pre=@0x44E578=0x0B500000..0x0B500000 --
 src/game/room_handlers.c func_00310640 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --pre=@0x0B100004:u8=0..3 --stub-ret=0 --stub-ret=1 --runs=40
 src/game/lorenzo.c func_00365D90 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=30
 src/game/stalker_models.c func_003203B0 --pre=a0=0..0x09000000 --pre=a1=-1..2 --runs=40
+src/leaf/tiny_gen.c func_00344FB0 --runs=3
+src/leaf/tiny_gen.c func_00344FF0 --runs=3
+src/leaf/tiny_gen.c func_0035B010 --runs=3
+src/leaf/tiny_gen.c func_0035B020 --runs=3
+src/leaf/tiny_gen.c func_0035B030 --runs=3
+src/leaf/tiny_gen.c func_0035B040 --runs=3
+src/leaf/tiny_gen.c func_0035B050 --runs=3
+src/leaf/tiny_gen.c func_0035F0F0 --runs=3
+src/leaf/tiny_gen.c func_0036A580 --runs=3
+src/leaf/tiny_gen.c func_0036DB40 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036E040 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036E3B0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036E660 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036E8E0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036EB90 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036EFB0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036F8B0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036FC70 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0036FDF0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_003789B0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_003790F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_003793A0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_00379680 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_00379950 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_00379D60 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0037A400 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0037A730 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0037A9E0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_0037AC90 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
+src/leaf/tiny_gen.c func_00322560 --runs=3
+src/leaf/tiny_gen.c func_00322A00 --runs=3
+src/leaf/tiny_gen.c func_00322B70 --runs=3
+src/leaf/tiny_gen.c func_003244C0 --runs=3
+src/leaf/tiny_gen.c func_0032F830 --runs=3
+src/leaf/tiny_gen.c func_0032F840 --runs=3
+src/leaf/tiny_gen.c func_0032F850 --runs=3
+src/leaf/tiny_gen.c func_0032F860 --runs=3
+src/leaf/tiny_gen.c func_0032F870 --runs=3
+src/leaf/tiny_gen.c func_003310B0 --runs=3
+src/leaf/tiny_gen.c func_003310C0 --runs=3
+src/leaf/tiny_gen.c func_00331440 --runs=3
+src/leaf/tiny_gen.c func_00345FF0 --runs=3
+src/leaf/tiny_gen.c func_003479D0 --runs=3
+src/leaf/tiny_gen.c func_00353E10 --runs=3
+src/leaf/tiny_gen.c func_00353E20 --runs=3
+src/leaf/tiny_gen.c func_00353E30 --runs=3
+src/leaf/tiny_gen.c func_00353E40 --runs=3
+src/leaf/tiny_gen.c func_00353E50 --runs=3
+src/leaf/tiny_gen.c func_003634E0 --runs=3
+src/leaf/tiny_gen.c func_0037BC90 --runs=3
+src/leaf/tiny_gen.c func_002CD760 --runs=3
+src/leaf/tiny_gen.c func_002CD770 --runs=3
+src/leaf/tiny_gen.c func_002CD780 --runs=3
+src/leaf/tiny_gen.c func_002CD790 --runs=3
+src/leaf/tiny_gen.c func_002CD7A0 --runs=3
+src/leaf/tiny_gen.c func_002CEFA0 --runs=3
+src/leaf/tiny_gen.c func_002CEFB0 --runs=3
+src/leaf/tiny_gen.c func_002CF380 --runs=3
+src/leaf/tiny_gen.c func_0033E730 --runs=3
+src/leaf/tiny_gen.c func_00226808 --runs=3
+src/leaf/tiny_gen.c func_00226868 --runs=3
+src/leaf/tiny_gen.c func_00226870 --runs=3
+src/leaf/tiny_gen.c func_00226878 --runs=3
+src/leaf/tiny_gen.c func_00226880 --runs=3
+src/leaf/tiny_gen.c func_00226888 --runs=3
+src/leaf/tiny_gen.c func_00226890 --runs=3
+src/leaf/tiny_gen.c func_00226898 --runs=3
+src/leaf/tiny_gen.c func_002268A0 --runs=3
+src/leaf/tiny_gen.c func_002268A8 --runs=3
+src/leaf/tiny_gen.c func_002268B0 --runs=3
+src/leaf/tiny_gen.c func_002268B8 --runs=3
+src/leaf/tiny_gen.c func_0031FBF0 --runs=3
+src/leaf/tiny_gen.c func_0031FC00 --runs=3
+src/leaf/tiny_gen.c func_0031E990 --runs=3
+src/leaf/tiny_gen.c func_00325D60 --runs=3
+src/leaf/tiny_gen.c func_0032A0D0 --runs=3
+src/leaf/tiny_gen.c func_00336F80 --runs=3
+src/leaf/tiny_gen.c func_00336F90 --runs=3
+src/leaf/tiny_gen.c func_00336FA0 --runs=3
+src/leaf/tiny_gen.c func_00336FB0 --runs=3
+src/leaf/tiny_gen.c func_00336FC0 --runs=3
+src/leaf/tiny_gen.c func_00355950 --runs=3
+src/leaf/tiny_gen.c func_00367E90 --runs=3
+src/leaf/tiny_gen.c func_00320510 --runs=3
+src/leaf/tiny_gen.c func_00320530 --runs=3
+src/leaf/tiny_gen.c func_00320540 --runs=3
+src/leaf/tiny_gen.c func_00320550 --runs=3
+src/leaf/tiny_gen.c func_00320560 --runs=3
+src/leaf/tiny_gen.c func_00320570 --runs=3
+src/leaf/tiny_gen.c func_00320580 --runs=3
+src/leaf/tiny_gen.c func_0032C5F0 --runs=3
+src/leaf/tiny_gen.c func_0032C600 --runs=3
+src/leaf/tiny_gen.c func_0032C610 --runs=3
+src/leaf/tiny_gen.c func_0032C620 --runs=3
+src/leaf/tiny_gen.c func_00346F00 --runs=3
+src/leaf/tiny_gen.c func_00346F10 --runs=3
+src/leaf/tiny_gen.c func_003482E0 --runs=3
+src/leaf/tiny_gen.c func_003482F0 --runs=3
+src/leaf/tiny_gen.c func_00348960 --runs=3
+src/leaf/tiny_gen.c func_00349270 --runs=3
+src/leaf/tiny_gen.c func_00349280 --runs=3
+src/leaf/tiny_gen.c func_00349940 --runs=3
+src/leaf/tiny_gen.c func_00349950 --runs=3
+src/leaf/tiny_gen.c func_00349960 --runs=3
+src/leaf/tiny_gen.c func_00349970 --runs=3
+src/leaf/tiny_gen.c func_00349980 --runs=3
+src/leaf/tiny_gen.c func_0034D230 --runs=3
+src/leaf/tiny_gen.c func_0034D240 --runs=3
+src/leaf/tiny_gen.c func_003658D0 --runs=3
+src/leaf/tiny_gen.c func_003658E0 --runs=3
