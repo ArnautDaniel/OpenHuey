@@ -623,20 +623,28 @@ void func_0039D310(Scene *g) {
     func_0011FFB0((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
     func_001AABC0((u8 *)g + 0xF29740);
 #ifdef HG_NATIVE
-    if (sDebugPlace) {   /* debug start: Fiona on the middle of walk mesh triangle 0 */
+    if (sDebugPlace) {   /* debug start: Fiona at the first door's way in (rooms +0x34), else on
+                          * the middle of walk-mesh triangle 0 */
         NavMesh *nm = D_0044E570;
         f32 pos[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 1.0f};
         f32 dir[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+        u32 tri = NAV_NONE;
         s32 k;
 
         sDebugPlace = 0;
-        if (nm != NULL && nm->tris != NULL && nm->numTris > 0) {
+        for (k = 0; k < 8 && tri == NAV_NONE; k++) {
+            tri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, k, pos);
+        }
+        if (tri == NAV_NONE && nm != NULL && nm->tris != NULL && nm->numTris > 0) {
+            tri = 0;
             for (k = 0; k < 3; k++) {
                 pos[0] += nm->tris[0].v[k][0] / 3.0f;
                 pos[1] += nm->tris[0].v[k][1] / 3.0f;
                 pos[2] += nm->tris[0].v[k][2] / 3.0f;
             }
-            VCALL(gCharPlayer, 0x28, void (*)(void *, s32, void *, void *))(gCharPlayer, 0, dir, pos);
+        }
+        if (tri != NAV_NONE) {
+            VCALL(gCharPlayer, 0x28, void (*)(void *, s32, void *, void *))(gCharPlayer, tri, dir, pos);
         }
     }
 #endif
