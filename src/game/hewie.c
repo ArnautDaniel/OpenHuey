@@ -5777,6 +5777,42 @@ void func_001470C0(Hewie *h) {
     }
 }
 
+/* ---- turning toward a heading ---- */
+
+/* turn toward heading `a` by `step` (func_00124530, which returns how far is left); more than 30
+ * degrees off with his head turned the other way, his body snaps `step` toward it instead */
+static f32 turn_toward(Hewie *h, f32 a, f32 step) {
+    f32 d = func_002E2D00(a - h->c.a.angle[1]), ang;
+
+    if ((d <= 0.0f ? -d : d) < 0x1.0c1524p-1f /* 30 degrees */ || !(AT(h->c.motion, 0x858, f32) * d < 0.0f)) {
+        return func_00124530(&h->c.a, a, step);
+    }
+    ang = d < 0.0f ? func_002E2D00(h->c.a.angle[1] + step) : func_002E2D00(h->c.a.angle[1] - step);
+    h->c.a.angle[1] = ang;
+    sceVu0UnitMatrix(h->c.a.rot);
+    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, ang);
+    d = func_002E2D00(a - h->c.a.angle[1]);
+    return d <= 0.0f ? -d : d;
+}
+
+/* the speed he turns at while running: by how fast he runs and how far his head is turned */
+static f32 run_turn(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 speed, turn = 0.0f, yaw;
+
+    func_001F6370(h->c.motion, root, 0.0f);
+    root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    speed = root[2];
+    if (!(speed < 0.0f)) {
+        yaw = AT(h->c.motion, 0x858, f32);
+        if (yaw <= 0.0f) {
+            yaw = -yaw;
+        }
+        turn = speed * (12.0f * (0.5f * yaw));
+    }
+    return 0x1.921fb60000000p+1f /* 3.1415927 */ * turn / 180.0f;
+}
+
 /* ---- jumping ---- */
 
 extern const PTMF D_003B1D20;
@@ -5789,9 +5825,7 @@ extern const PTMF D_003B1D20;
  * other way), animation 0x1E01, sound 0x68, then behaviour D_003B1D20 */
 void func_001476C0(Hewie *h) {
     s32 anim = MOTION_ANIM(h->c.motion);
-    f32 root[4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
-    f32 speed, turn, yaw, d, a;
 
     if (func_00140CD0(h, 5) == 0 && anim != 0x202) {
         func_002DDED0(h->c.motion, 0x202, -1);
@@ -5800,18 +5834,7 @@ void func_001476C0(Hewie *h) {
     HW(h, 0xF3608, s32) = 0;
     HW(h, 0xF3614, f32) = 0.0f;
     HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36D0, f32) - h->c.a.angle[1]);
-    func_001F6370(h->c.motion, root, 0.0f);
-    root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
-    speed = root[2];
-    turn = 0.0f;
-    if (!(speed < 0.0f)) {
-        yaw = AT(h->c.motion, 0x858, f32);
-        if (yaw <= 0.0f) {
-            yaw = -yaw;
-        }
-        turn = speed * (12.0f * (0.5f * yaw));
-    }
-    func_00124530(&h->c.a, HW(h, 0xF36D0, f32), 0x1.921fb60000000p+1f /* 3.1415927 */ * turn / 180.0f);
+    func_00124530(&h->c.a, HW(h, 0xF36D0, f32), run_turn(h));
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f) || anim != 0x202) {
         return;
     }
@@ -5837,21 +5860,7 @@ void func_001476C0(Hewie *h) {
     HW(h, 0xF36C4, f32) = 0x1.6666660000000p+1f /* 2.8 */;
     HW(h, 0xF36C8, f32) = h->c.a.pos[1];
     HW(h, 0xF36CC, s32) = 0;
-    a = HW(h, 0xF36D0, f32);
-    d = func_002E2D00(a - h->c.a.angle[1]);
-    if ((d <= 0.0f ? -d : d) < 0x1.0c15240000000p-1f /* 0.5235988 */) {
-        func_00124530(&h->c.a, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
-    } else if (AT(h->c.motion, 0x858, f32) * d < 0.0f) {
-        f32 ang = d < 0.0f ? func_002E2D00(h->c.a.angle[1] + 0x1.0c15240000000p-1f /* 0.5235988 */)
-                           : func_002E2D00(h->c.a.angle[1] - 0x1.0c15240000000p-1f /* 0.5235988 */);
-
-        h->c.a.angle[1] = ang;
-        sceVu0UnitMatrix(h->c.a.rot);
-        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, ang);
-        func_002E2D00(a - h->c.a.angle[1]);
-    } else {
-        func_00124530(&h->c.a, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
-    }
+    turn_toward(h, HW(h, 0xF36D0, f32), 0x1.0c1524p-1f /* 30 degrees */);
     func_002DDED0(h->c.motion, 0x1E01, -1);
     HW(h, 0xF356C, u32) |= 0x80000000;
     h->c.a.unk2D = 1;
@@ -5859,4 +5868,50 @@ void func_001476C0(Hewie *h) {
     h->c.unk104[0] = 0;
     h->c.unk104[1] = 0;
     Hewie_SetBehaviour(h, &D_003B1D20);
+}
+
+/* ---- under her control: running ---- */
+
+/* steered by Fiona (func_00136900): stopped (+0xF3718), stand ahead; else run (fast with
+ * +0xF3744) with his head toward the way: turning on the spot toward +0xF37A0 (mode 2,
+ * speeding up by 0.075 degrees a frame to 3, until done) or along the stick (+0xF3700 /
+ * +0xF3708) */
+void func_00147B90(Hewie *h) {
+    f32 a, step;
+
+    func_00136900(h);
+    if (HW(h, 0xF3718, s32) != 0) {
+        if (HW(h, 0xF3604, s32) != 4) {
+            HW(h, 0xF3604, s32) = 4;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        func_00141C00(h, 4);
+        return;
+    }
+    if (HW(h, 0xF3710, u8) == 2) {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF37A0, f32) - h->c.a.angle[1]);
+        HW(h, 0xF379C, f32) += 0x1.57254e0000000p-10f /* 0.001308997 */;
+        if (!(HW(h, 0xF379C, f32) <= 0x1.aceea00000000p-5f /* 0.05235988 */)) {
+            HW(h, 0xF379C, f32) = 0x1.aceea00000000p-5f /* 0.05235988 */;
+        }
+        if (turn_toward(h, HW(h, 0xF37A0, f32), HW(h, 0xF379C, f32)) < HW(h, 0xF379C, f32)) {
+            HW(h, 0xF3710, u8) = 0;
+        }
+    } else {
+        a = func_0031C5C0(HW(h, 0xF3700, f32), HW(h, 0xF3708, f32));
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        step = run_turn(h);
+        turn_toward(h, a, step);
+    }
+    func_00141C00(h, HW(h, 0xF3744, u8) == 1 ? 9 : 8);
 }
