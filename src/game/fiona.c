@@ -6374,6 +6374,326 @@ static inline s32 door_anim_done(Fiona *f) {
     return done;
 }
 
+/* ---- walking to a spot (FI 0x1AD640, its nav tri FI 0x1AD634) and facing savedYaw there, for
+ * the doors. FI 0x1AD650 its flags: 1 the turn is to the right, 2 a quarter turn first, 4 a
+ * half turn first, 8 close (under 7) - the last part, 0x10 there, 0x20 finishing (stop
+ * animation), 0x40 the turn started, 0x100 the turn animation slowed (FI 0x1AD660 its speed);
+ * FI 0x1AD654 frames of the last straight part, FI 0x1AD658 the step, FI 0x1AD65C the turn a
+ * frame ---- */
+
+#define WALK_FLAGS(f) FI(f, 0x1AD650, u32)
+#define WALK_STEP(f) FI(f, 0x1AD658, f32)
+#define WALK_TURN(f) FI(f, 0x1AD65C, f32)
+#define WALK_ANIM_SPEED(f) FI(f, 0x1AD660, f32)
+
+/* |the turn left to savedYaw| (the original wraps it twice) */
+static inline __attribute__((always_inline)) f32 walk_turn_left(Fiona *f) {
+    f32 t;
+
+    if (!(func_002E2D00(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
+        t = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    } else {
+        t = -func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    }
+    return t;
+}
+
+/* a turn animation, its speed k (by the distance): under 0.5 played at half speed with the
+ * step doubled, under 1 at k, else at full speed (and the step as it is) */
+static inline __attribute__((always_inline)) void walk_turn_anim(Fiona *f, s32 anim, f32 k) {
+    if (k < 1.0f) {
+        if (k < 0.5f) {
+            if (f->c.moveMode == 0) {
+                f->c.moveSub = 1;
+            }
+            if ((func_00177620(gProgress) & 0xFF) == 2) {
+                func_002DDD20(f->c.motion, anim, 5);
+            } else {
+                func_002DDD20(f->c.motion, anim, 0);
+            }
+            AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = 0.5f;
+            WALK_ANIM_SPEED(f) = WALK_ANIM_SPEED(f) * 2.0f;
+            WALK_FLAGS(f) |= 0x100;
+        } else {
+            if (f->c.moveMode == 0) {
+                f->c.moveSub = 1;
+            }
+            if ((func_00177620(gProgress) & 0xFF) == 2) {
+                func_002DDD20(f->c.motion, anim, 5);
+            } else {
+                func_002DDD20(f->c.motion, anim, 0);
+            }
+            AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = k;
+        }
+    } else {
+        if (f->c.moveMode == 0) {
+            f->c.moveSub = 1;
+        }
+        if ((func_00177620(gProgress) & 0xFF) == 2) {
+            func_002DDD20(f->c.motion, anim, 5);
+        } else {
+            func_002DDD20(f->c.motion, anim, 0);
+        }
+        AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = 1.0f;
+        WALK_FLAGS(f) |= 0x100;
+    }
+}
+
+/* there: on the spot, facing savedYaw */
+static inline __attribute__((always_inline)) s32 walk_arrive(Fiona *f) {
+    f32 yaw;
+
+    f->c.a.navTri = FI(f, 0x1AD634, s32);
+    sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD640));
+    yaw = f->savedYaw;
+    f->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
+    sceVu0RotMatrixY((f32 (*)[4])((u8 *)f + 0x60), (f32 (*)[4])((u8 *)f + 0x60), yaw);
+    WALK_FLAGS(f) |= 0x10;
+    return 0;
+}
+
+/* a frame of it: 0 there, 1 on the way, -1 she can't (no path, blocked by a wall or the
+ * pursuer). Far off, she follows the planned path (turning toward its next point, the step by
+ * how well she faces it); within 7 of the spot she settles how to face savedYaw there - a
+ * quarter turn (anims 0x400 / 0x401) or a half turn (0x402) played on the way, else a straight
+ * last part - and steps by the turn's root motion; at the spot she ends with a stop animation */
+s32 func_00188C10(Fiona *f) {
+    static const union { u32 u; f32 f; } kQuarterPi = {0x3F490FDB}, kThreeQuarterPi = {0x4016CBE4},
+        kHalfDeg = {0x3C0EFA35}, kEightDeg = {0x3E0EFA35};
+    f32 out[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    u32 tri;
+    u8 turned = 0;
+    s32 n, near;
+    f32 d, t;
+
+    if (WALK_FLAGS(f) & 0x10) {
+        return 0;
+    }
+    if (!(WALK_FLAGS(f) & 8)) {
+        if (!(f->c.unk128 < f->c.unk124)) {
+            n = func_00127140(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
+            if (n > 0) {
+                n = func_001270F0(&f->c);
+            }
+            if (n < 0) {
+                func_00125A10(&f->c);
+                return -1;
+            }
+        }
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, (u8 *)f + 0x12C);
+        if (d < 7.0f) {
+            if (!door_anim_done(f)) {
+                func_00125A10(&f->c);
+                f->c.unk124 = f->c.unk128;
+                return 1;
+            }
+            WALK_FLAGS(f) |= 8;
+            sceVu0SubVector(v, (f32 *)((u8 *)f + 0x1AD640), f->c.a.pos);
+            d = func_002E2D00(f->savedYaw - func_0031C5C0(v[0], v[2]));
+            if (!(d <= 0.0f)) {
+                t = d;
+            } else {
+                t = -d;
+            }
+            if (!(t <= kQuarterPi.f)) {
+                if (!(d <= 0.0f)) {
+                    t = d;
+                } else {
+                    t = -d;
+                }
+                if (!(t <= kThreeQuarterPi.f)) {
+                    WALK_FLAGS(f) |= 4;
+                } else {
+                    WALK_FLAGS(f) |= 2;
+                    if (d < 0.0f) {
+                        WALK_FLAGS(f) |= 1;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!(WALK_FLAGS(f) & 8)) {
+        /* on the path: the step by how well she faces its next point (max 3 down the root
+         * motion), turning toward it 8 degrees a frame */
+        f32 ahead[4] __attribute__((aligned(16)));
+        u32 aheadTri;
+        f32 yaw, fwd;
+
+        if (door_anim_done(f)) {
+            func_00185CF0(f);
+        }
+        func_001273D0(&f->c, &aheadTri, ahead, 3.0f);
+        yaw = func_001244D0(&f->c.a, ahead);
+        func_001F6370(f->c.motion, v, 0.0f);
+        fwd = v[2];
+        if (fwd < 0.0f) {
+            fwd = 0.0f;
+        }
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrixY(m, m, yaw);
+        r[0] = 0.0f;
+        r[1] = 0.0f;
+        r[2] = 1.0f;
+        r[3] = 0.0f;   /* (unset in the original) */
+        sceVu0ApplyMatrix(v, m, r);
+        sceVu0ApplyMatrix(r, (f32 (*)[4])((u8 *)f + 0x60), r);
+        WALK_STEP(f) = fwd * ((1.0f + sceVu0InnerProduct(v, r)) / 2.0f);
+        func_00124530(&f->c.a, yaw, kEightDeg.f);
+        goto step;
+    }
+
+    if (!(WALK_FLAGS(f) & 0x60)) {
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, (u8 *)f + 0x12C);
+        if (d < 0.5f) {
+            WALK_STEP(f) = 0x1.99999ap-3f /* 0.2 */ * d;
+            WALK_TURN(f) = 0x1.99999ap-3f /* 0.2 */ * walk_turn_left(f);
+            WALK_FLAGS(f) |= 0x20;
+            func_001855F0(f, -1);
+        } else {
+            WALK_FLAGS(f) |= 0x40;
+            if (WALK_FLAGS(f) & 4) {
+                WALK_STEP(f) = 0.0f;
+                WALK_ANIM_SPEED(f) = d / 0x1.933334p+1f /* 3.15 */;
+                WALK_TURN(f) = 2.0f * (0x1.99999ap-5f /* 0.05 */ * walk_turn_left(f));
+                walk_turn_anim(f, 0x402, WALK_ANIM_SPEED(f));
+            } else if (!(WALK_FLAGS(f) & 2)) {
+                FI(f, 0x1AD654, s32) = 10;
+                WALK_STEP(f) = 0x1.26e978p-4f /* 0.072 */ * d;
+                WALK_TURN(f) = 0x1.26e978p-4f /* 0.072 */ * walk_turn_left(f);
+                func_00185CF0(f);
+            } else {
+                if (!(WALK_FLAGS(f) & 1)) {
+                    t = d / 0x1.23d70ap+2f /* 4.56 */;
+                    WALK_ANIM_SPEED(f) = t;
+                    walk_turn_anim(f, 0x400, t);
+                } else {
+                    t = d / 0x1.f851ecp+1f /* 3.94 */;
+                    WALK_ANIM_SPEED(f) = t;
+                    walk_turn_anim(f, 0x401, t);
+                }
+                WALK_STEP(f) = 0.0f;
+                WALK_TURN(f) = 2.0f * (0x1.70a3d8p-5f /* 0.045 */ * walk_turn_left(f));
+            }
+        }
+    }
+
+    if (WALK_FLAGS(f) & 6) {
+        /* turning on the way: the step is the turn's root motion */
+        WALK_STEP(f) = 0.0f;
+        if (door_anim_done(f)) {
+            func_001F6370(f->c.motion, out, 0.0f);
+            if (WALK_FLAGS(f) & 2) {
+                t = out[0];
+            } else {
+                t = out[2];
+            }
+            if (!(t <= 0.0f)) {
+                WALK_STEP(f) = t;
+            } else {
+                WALK_STEP(f) = -t;
+            }
+            if (WALK_FLAGS(f) & 0x100) {
+                WALK_STEP(f) = WALK_STEP(f) * WALK_ANIM_SPEED(f);
+            }
+            if (WALK_STEP(f) < 0x1.99999ap-5f /* 0.05 */) {
+                WALK_STEP(f) = 0x1.99999ap-5f;
+            }
+        }
+    } else if (WALK_STEP(f) < 0x1.99999ap-5f /* 0.05 */) {
+        WALK_STEP(f) = 0x1.99999ap-5f;
+    }
+    if (WALK_TURN(f) < kHalfDeg.f) {
+        WALK_TURN(f) = kHalfDeg.f;
+    }
+    if (func_00124530(&f->c.a, f->savedYaw, WALK_TURN(f)) == 0.0f) {
+        turned = 1;
+    }
+
+step:
+    n = func_001273D0(&f->c, &tri, out, WALK_STEP(f));
+    if (f->c.a.unk2B == 0) {
+        u8 *nm;
+        u32 fl;
+
+        if (tri == (u32)-1) {
+            return -1;
+        }
+        nm = (u8 *)D_0044E570;
+        fl = 0;   /* (the original reads a NULL record for a triangle out of range) */
+        if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+            fl = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+        }
+        if (AT(f, 0xC0, u32) & fl) {
+            return -1;
+        }
+    }
+    f->c.a.navTri = tri;
+    sceVu0CopyVector(f->c.a.pos, out);
+    f->c.unk128 = n;
+
+    near = 0;
+    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+        near = 2;
+    } else if ((func_001241F0(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
+        near = 1;
+    }
+    if (near == 2) {
+        return -1;
+    }
+    if (near == 1) {
+        f->c.a.unk2A = 1;
+    }
+
+    if (!(WALK_FLAGS(f) & 8)) {
+        return 1;
+    }
+    FI(f, 0x1AD654, s32) -= 1;
+    if (!door_anim_done(f)) {
+        return 1;
+    }
+    if (WALK_FLAGS(f) & 6) {
+        if (f->c.unk128 < f->c.unk124) {
+            return 1;
+        }
+        if (turned == 1) {
+            if (WALK_FLAGS(f) & 0x20) {
+                return walk_arrive(f);
+            }
+            WALK_FLAGS(f) |= 0x20;
+        }
+        if (Fiona_AnimGroup(AT(f->c.motion, 0x55C, s32)) != 0) {
+            if ((func_00177620(gProgress) & 0xFF) == 2) {
+                func_002DDC60(f->c.motion, 5, 5, -1);
+            } else {
+                func_002DDC60(f->c.motion, 0, 5, -1);
+            }
+        }
+        return 1;
+    }
+    if (WALK_FLAGS(f) & 0x20) {
+        if (turned != 1) {
+            return 1;
+        }
+        return walk_arrive(f);
+    }
+    if (FI(f, 0x1AD654, s32) > 0) {
+        return 1;
+    }
+    if ((WALK_FLAGS(f) & 0x60) != 0x40) {
+        return 1;
+    }
+    WALK_FLAGS(f) |= 0x20;
+    func_001855F0(f, -1);
+    return 1;
+}
+
 /* D_003B28E8: walking to the spot; there, a door that is barred for her (exit bit 8) or whose
  * state (func_00178980) says it can't be used this way makes her give up; else unless it holds
  * her back (func_00178DB0) it is opened (doors +0x1C) with the door animation (D_003B28F8) */
