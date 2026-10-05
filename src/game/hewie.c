@@ -8410,3 +8410,44 @@ void func_001579C0(Hewie *h) {
     HW(h, 0xF3582, u8) = 0;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- clamped on the pursuer ---- */
+
+/* clamped on the pursuer: its bite effect (hard when charged, +0xF3585) at each event 0x20; at
+ * the animation's end +0xF3688 300 frames and the default action. Moved by the root motion (level),
+ * held at the pursuer's grip height (its motion +0x58): fixed (+0xF36B4 0) until event 2, then
+ * easing off over 5 frames (+0xF36C4 0..1), then free (2) */
+void func_00157E30(Hewie *h) {
+    f32 y0, t, g;
+
+    if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
+        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+    }
+    if (ANIM_DONE(h)) {
+        HW(h, 0xF3688, s16) = 300;
+        hewie_want(h, 0, 0);
+    }
+    slide_root(h);
+    switch (HW(h, 0xF36B4, s32)) {
+    case 0:
+        if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 2) {
+            HW(h, 0xF36B4, s32) = 1;
+        }
+        HW(h, 0xF3582, u8) = 0;
+        h->c.a.pos[1] = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
+        break;
+    case 1:
+        HW(h, 0xF36C4, f32) += 0x1.99999a0000000p-3f /* 0.2 */;
+        if (!(HW(h, 0xF36C4, f32) < 1.0f)) {
+            HW(h, 0xF36C4, f32) = 2.0f;
+        } else {
+            HW(h, 0xF3582, u8) = 0;
+            y0 = h->c.a.pos[1];
+            t = HW(h, 0xF36C4, f32);
+            g = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
+            h->c.a.pos[1] = (1.0f - t) * g + y0 * t;
+        }
+        break;
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
