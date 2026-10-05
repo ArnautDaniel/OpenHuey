@@ -9955,3 +9955,41 @@ void func_00161500(Hewie *h) {
         }
     }
 }
+
+/* ---- put in a room by a placement ---- */
+
+/* A placement: room, side, triangle (... +0x38 the exit he came by). */
+typedef struct HewiePlacement {
+    /* 0x00 */ s32 room;
+    /* 0x04 */ s32 side;
+    /* 0x08 */ u32 tri;
+    /* 0x0C */ u8 pad0C[0x2C];
+    /* 0x38 */ u8 exit;
+} HewiePlacement;
+
+/* put him where `pl` says (as func_00166530): in the room being played (or under direct control,
+ * +0x1FBEC1) placed facing as he was (head straight, standing), his door the placement's exit,
+ * the default action; in the room being played also settled in (arrived). Elsewhere he only
+ * keeps the triangle, standing. Returns the placement result (0 elsewhere) */
+s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
+    s32 r = 0;
+
+    func_00125BA0(&h->c, pl->room, pl->tri, pl->side);
+    HEWIE_SIDE(h) = pl->side;
+    if (*((u8 *)gProgress + 0x1FBEC1) == 0 && pl->room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        h->c.a.navTri = pl->tri;
+        func_002DDED0(h->c.motion, 0, -1);
+        hewie_want(h, 0, 0);
+        return 0;
+    }
+    MOTION_PTR(h->c.motion, 0x858) = NULL;
+    MOTION_PTR(h->c.motion, 0x854) = NULL;
+    HW(h, 0xF36F0, s32) = 0;
+    r = Hewie_Place(h, pl->tri);
+    h->c.door = pl->exit;
+    hewie_want(h, 0, 0);
+    if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
+        arrived(h);
+    }
+    return r;
+}
