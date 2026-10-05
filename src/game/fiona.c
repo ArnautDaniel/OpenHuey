@@ -8804,6 +8804,106 @@ void func_00194AD0(Fiona *f) {
     func_00125A10(&f->c);
 }
 
+extern void func_00178750(Progress *p, s32 room, s32 door);
+extern void func_00178660(Progress *p, s32 room, s32 door);
+extern const PTMF D_003B2948, D_003B2958, D_003B2968;
+
+/* D_003B2648: once the animation is done the shove (0xE00, D_003B2968) - with the progress var
+ * 0x26 6 / 7 at its normal pace (after motion +0x30); else slower the longer she has been
+ * panicking (the recovery delay FI 0x1AD5F8 past 450: 1.5 x (3150 - it) / 1800) and the more
+ * panicked she is (over 40: (160 - panic) / 120), whichever is slower */
+void func_00195C70(Fiona *f) {
+    u8 v = Progress_GetVar(gProgress, 0x26);
+
+    if (door_anim_done(f)) {
+        if (v == 7 || v == 6) {
+            VCALL(f->c.motion, 0x30, void (*)(void *))(f->c.motion);
+            func_002DDED0(f->c.motion, 0xE00, -1);
+        } else {
+            f32 k = 1.0f, j;
+
+            if (!(FI(f, 0x1AD5F8, s32) < 0x1C3)) {
+                k = 1.5f * ((3150.0f - (f32)FI(f, 0x1AD5F8, s32)) / 1800.0f);
+            }
+            j = 1.0f;
+            if (!(FI(f, 0x1AD5F4, f32) <= 40.0f)) {
+                j = (160.0f - FI(f, 0x1AD5F4, f32)) / 120.0f;
+            }
+            if (k < j) {
+                FI(f, 0x1AD6D0, f32) = k;
+            } else {
+                FI(f, 0x1AD6D0, f32) = j;
+            }
+            func_002DDED0(f->c.motion, 0xE00, 2);
+            AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = FI(f, 0x1AD6D0, f32);
+        }
+        FI(f, 0x1AD6C0, s32) = 0;
+        FI(f, 0x1AD6C4, s32) = 0;
+        FI(f, 0x1AD6C8, s32) = 0;
+        FI(f, 0x1AD6CC, s32) = 0;
+        FI(f, 0x1AD6D0, f32) = 1.0f;
+        FI(f, 0x1AD6D4, f32) = 1.0f;
+        Actor_SetState(&f->c.a, &D_003B2968);
+    }
+    func_00125A10(&f->c);
+}
+
+/* D_003B2958: the scripted door opened; at the animation's event 0x20 the progress told (in:
+ * func_00178750, out: func_00178660), idle */
+void func_00195EE0(Fiona *f) {
+    Progress *p;
+
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) == 0) {
+        return;
+    }
+    p = gProgress;
+    if (f->c.moveSub == 0x14) {
+        func_00178750(p, f->c.a.room, *(u8 *)&f->c.unk100);
+    } else {
+        func_00178660(p, f->c.a.room, *(u8 *)&f->c.unk100);
+    }
+    door_give_up(f, p);
+}
+
+/* D_003B2948: walking to the scripted door's spot; there, unless it holds her back
+ * (func_00178DB0), its animation (single 0x600 / double 0x602, D_003B2958); else idle */
+void func_00196070(Fiona *f) {
+    s32 r = func_00188C10(f);
+    Progress *p;
+
+    if (r < 0) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    p = gProgress;
+    if ((func_00178DB0(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
+        door_give_up(f, p);
+        return;
+    }
+    if (f->c.unk104[0] == 0) {
+        func_002DDD20(f->c.motion, 0x600, -1);
+    } else {
+        func_002DDD20(f->c.motion, 0x602, -1);
+    }
+    Actor_SetState(&f->c.a, &D_003B2958);
+}
+
+/* D_003B25F8: a scripted door (unk100, unk104[0] double): its spot (kind 0 / 2) walked to
+ * (D_003B2948) */
+void func_00196350(Fiona *f) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    s32 tri;
+
+    FI(f, 0x1AD6C0, s32) = VCALL(D_0044E558, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
+        D_0044E558, *(u8 *)&f->c.unk100, f->c.unk104[0] == 0 ? 0 : 2, at, dir, 0);
+    tri = FI(f, 0x1AD6C0, s32);
+    door_walk(f, tri, at, dir[1], &D_003B2948);
+}
+
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
