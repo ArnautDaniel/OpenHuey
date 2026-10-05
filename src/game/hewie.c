@@ -4902,3 +4902,87 @@ void func_00141C00(Hewie *h, u32 kind) {
     }
     pose_leave(h, g);
 }
+
+/* ---- barking ---- */
+
+/* play `anim`, or restart it when it is already playing */
+static void play_again(Hewie *h, s32 cur, s32 anim) {
+    if (cur != anim) {
+        func_002DDED0(h->c.motion, anim, -1);
+    } else {
+        func_002DDE20(h->c.motion, anim, -1);
+    }
+}
+
+/* bark (animations 0x1B00..): calm and not in actions 0xA / 0xB, by his pose (standing 0x1B00,
+ * sitting 0x1B01, lying 0x1B02; moving 1 0x1B05); else by his mood (2: 0x1B04, else 0x1B03) */
+void func_001431F0(Hewie *h) {
+    s32 cur = MOTION_ANIM(h->c.motion);
+    s32 g;
+
+    if (!(u8)func_00177620(gProgress) && HEWIE_ACTION(h) != 0xA && HEWIE_ACTION(h) != 0xB) {
+        if (h->c.a.unkC4 == 1) {
+            play_again(h, cur, 0x1B05);
+            return;
+        }
+        g = func_001669A0(h);
+        play_again(h, cur, g == 6 || g == 2 ? 0x1B02 : g == 5 || g == 1 ? 0x1B01 : 0x1B00);
+    } else {
+        play_again(h, cur, HW(h, 0xF35C0, s32) == 2 ? 0x1B04 : 0x1B03);
+    }
+}
+
+/* ---- noticing the pursuer ---- */
+
+extern void func_00177630(Progress *p, s32 n);
+
+/* what he is alert to (+0xF366D, with +0xF3670): 1 the pursuer itself when within 200 in front
+ * of him (125 degrees either side) with nothing between; 2 an exit of his room leading to the
+ * pursuer's room; 3 the noise he heard from slot 2 (the pursuer); else nothing (an exit or the
+ * pursuer gone). Each but the last tells the game (func_00177630 4) */
+void func_00143840(Hewie *h) {
+    s32 away = 0;
+
+    if (gCharPursuer == NULL || gCharPursuer->a.active != 1 || h->c.a.disabled || h->c.a.unkC4 == 2) {
+        HW(h, 0xF366D, u8) = 0;
+        return;
+    }
+    if (in_his_room(h, gCharPursuer) && func_00124490(&h->c.a, gCharPursuer->a.pos) <= 200.0f) {
+        f32 to = func_001244D0(&h->c.a, gCharPursuer->a.pos);
+        f32 d = func_002E2D00(to - func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)));
+
+        if (!(d <= 0.0f)) {
+        } else {
+            d = -d;
+        }
+        if (d <= 0x1.1740bp+1f /* 125 degrees */ &&
+            (u8)func_00122C90(h, h->c.a.navTri, gCharPursuer->a.navTri, h->c.a.pos, gCharPursuer->a.pos, 0) == 1) {
+            HW(h, 0xF366D, u8) = 1;
+            HW(h, 0xF3670, s32) = gCharPursuer->a.slot;
+            func_00177630(gProgress, 4);
+            return;
+        }
+    }
+    if (gCharPursuer != NULL && gCharPursuer->a.active == 1 && !in_his_room(h, gCharPursuer)) {
+        VObject *rooms = D_0044E568;
+        u32 e;
+
+        away = 1;
+        for (e = 0; e < 8; e = (e + 1) & 0xFF) {
+            if ((u8)VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) == 1 &&
+                VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) == gCharPursuer->a.room) {
+                HW(h, 0xF366D, u8) = 2;
+                HW(h, 0xF3670, s32) = e & 0xFF;
+                func_00177630(gProgress, 4);
+                return;
+            }
+        }
+    }
+    if (h->c.heardSlot == 2) {
+        HW(h, 0xF366D, u8) = 3;
+        HW(h, 0xF3670, s32) = 2;
+        func_00177630(gProgress, 4);
+    } else if (HW(h, 0xF366D, u8) == 2 || away == 1) {
+        HW(h, 0xF366D, u8) = 0;
+    }
+}
