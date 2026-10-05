@@ -759,6 +759,20 @@ void *snddrv_rpc(unsigned fno, void *args, int size) {
             sResult[0] = (unsigned)seq_tempo(sBanks[a[0]].mport);
         }
         break;
+    case 0x23: { /* MIDI played into bank a[2]'s synth (message a[3]; channel a[4], 0xFF all) */
+        unsigned m = a[3], c;
+
+        if (a[2] < 0x20) {
+            if (a[4] != 0xFF) {
+                seq_midi_in(sBanks[a[2]].hport, (m & 0xF07F7F) | (a[4] & 0xF) << 16);
+            } else {
+                for (c = 0; c < 16; c++) {
+                    seq_midi_in(sBanks[a[2]].hport, (m & 0xF07F7F) | c << 16);
+                }
+            }
+        }
+        break;
+    }
     default:
         break;
     }

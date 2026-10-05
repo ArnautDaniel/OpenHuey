@@ -16,6 +16,8 @@
 
 typedef struct Chan {
     int prog, vol, expr, pan, bend;
+    int rpn;                    /* (CC 101 << 7 | CC 100), 0x3FFF none */
+    int bendRange;              /* semitones set by RPN 0, -1: the split's */
 } Chan;
 
 typedef struct Port {
@@ -111,8 +113,10 @@ static void voice_volume(int v) {
 
 static void voice_pitch(int v) {
     SVoice *sv = &sVoice[v];
-    int b = sPort[sv->port].ch[sv->ch].bend - 8192;
-    double semis = b >= 0 ? b / 8192.0 * sv->bendHi : b / 8192.0 * sv->bendLo;
+    Chan *c = &sPort[sv->port].ch[sv->ch];
+    int b = c->bend - 8192;
+    int hi = c->bendRange >= 0 ? c->bendRange : sv->bendHi, lo = c->bendRange >= 0 ? c->bendRange : sv->bendLo;
+    double semis = b >= 0 ? b / 8192.0 * hi : b / 8192.0 * lo;
     int fine = sv->fine + (int)lround(semis * 128.0);
     unsigned p = sceSdNote2Pitch((unsigned short)sv->baseNote, 0, (unsigned short)sv->note, (short)fine);
 
@@ -234,8 +238,72 @@ static void port_rewind(Port *p) {
         p->ch[i].expr = 127;
         p->ch[i].pan = 64;
         p->ch[i].bend = 8192;
+        p->ch[i].rpn = 0x3FFF;
+        p->ch[i].bendRange = -1;
     }
     p->wait = p->pos < p->end ? vlq(&p->pos, p->end) : 0;
+}
+
+/* a channel message (from the sequence or played in, command 0x23) */
+static void channel_msg(Port *p, int hi, int ch, int d0, int d1) {
+    switch (hi) {
+    case 0x80:
+        note_off(p, ch, d0);
+        break;
+    case 0x90:
+        note_on(p, ch, d0, d1);
+        break;
+    case 0xB0:
+        switch (d0) {
+        case 7:
+            p->ch[ch].vol = d1;
+            port_voices(p, ch, voice_volume);
+            break;
+        case 10:
+            p->ch[ch].pan = d1;
+            port_voices(p, ch, voice_volume);
+            break;
+        case 11:
+            p->ch[ch].expr = d1;
+            port_voices(p, ch, voice_volume);
+            break;
+        case 101:
+            p->ch[ch].rpn = (p->ch[ch].rpn & 0x7F) | d1 << 7;
+            break;
+        case 100:
+            p->ch[ch].rpn = (p->ch[ch].rpn & ~0x7F) | d1;
+            break;
+        case 99:
+            p->nrpn = d1;
+            p->ch[ch].rpn = 0x3FFF;
+            break;
+        case 6:   /* data entry: RPN 0 the bend range; NRPN 20 loop start (count), 30 loop end */
+            if (p->ch[ch].rpn == 0) {
+                p->ch[ch].bendRange = d1;
+            } else if (p->nrpn == 20) {
+                p->loopPos = p->pos;
+                p->loopCount = d1;
+                p->loopLeft = d1;
+            } else if (p->nrpn == 30 && p->loopPos != NULL) {
+                if (p->loopCount == 0 || --p->loopLeft > 0) {
+                    p->pos = p->loopPos;
+                }
+            }
+            break;
+        case 120:
+        case 123:
+            all_off(p);
+            break;
+        }
+        break;
+    case 0xC0:
+        p->ch[ch].prog = d0;
+        break;
+    case 0xE0:
+        p->ch[ch].bend = d0 | d1 << 7;
+        port_voices(p, ch, voice_pitch);
+        break;
+    }
 }
 
 /* one event; 0 at the end */
@@ -273,55 +341,7 @@ static int port_event(Port *p) {
     } else {
         p->wait += vlq(&p->pos, p->end);
     }
-    switch (hi) {
-    case 0x80:
-        note_off(p, ch, d[0]);
-        break;
-    case 0x90:
-        note_on(p, ch, d[0], d[1]);
-        break;
-    case 0xB0:
-        switch (d[0]) {
-        case 7:
-            p->ch[ch].vol = d[1];
-            port_voices(p, ch, voice_volume);
-            break;
-        case 10:
-            p->ch[ch].pan = d[1];
-            port_voices(p, ch, voice_volume);
-            break;
-        case 11:
-            p->ch[ch].expr = d[1];
-            port_voices(p, ch, voice_volume);
-            break;
-        case 99:
-            p->nrpn = d[1];
-            break;
-        case 6:   /* NRPN data: 20 loop start (count), 30 loop end */
-            if (p->nrpn == 20) {
-                p->loopPos = p->pos;
-                p->loopCount = d[1];
-                p->loopLeft = d[1];
-            } else if (p->nrpn == 30 && p->loopPos != NULL) {
-                if (p->loopCount == 0 || --p->loopLeft > 0) {
-                    p->pos = p->loopPos;
-                }
-            }
-            break;
-        case 120:
-        case 123:
-            all_off(p);
-            break;
-        }
-        break;
-    case 0xC0:
-        p->ch[ch].prog = d[0];
-        break;
-    case 0xE0:
-        p->ch[ch].bend = d[0] | d[1] << 7;
-        port_voices(p, ch, voice_pitch);
-        break;
-    }
+    channel_msg(p, hi, ch, d[0], d[1]);
     return 1;
 }
 
@@ -373,6 +393,14 @@ void seq_reset(void) {
         sPort[k].relTempo = 0x100;
         sPort[k].vol = 127;
         sPort[k].synthVol = 255;
+        for (v = 0; v < 16; v++) {
+            sPort[k].ch[v].vol = 100;
+            sPort[k].ch[v].expr = 127;
+            sPort[k].ch[v].pan = 64;
+            sPort[k].ch[v].bend = 8192;
+            sPort[k].ch[v].rpn = 0x3FFF;
+            sPort[k].ch[v].bendRange = -1;
+        }
     }
 }
 
@@ -438,6 +466,16 @@ void seq_locate(int k, unsigned pos) {
         port_rewind(&sPort[k]);
         (void)pos;
     }
+}
+
+/* a MIDI message played into synth port `k` (status << 16 | d1 << 8 | d2) */
+void seq_midi_in(int k, unsigned msg) {
+    int st = (msg >> 16) & 0xFF;
+
+    if (k < 0 || k >= NPORT || !(st & 0x80) || st >= 0xF0) {
+        return;
+    }
+    channel_msg(&sPort[k], st & 0xF0, st & 0xF, (msg >> 8) & 0x7F, msg & 0x7F);
 }
 
 int seq_playing(int k) { return k >= 0 && k < NPORT && sPort[k].playing; }

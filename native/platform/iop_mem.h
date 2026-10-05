@@ -37,6 +37,7 @@ int seq_load(int k, unsigned addr);
 void seq_play(int k, int on);
 void seq_locate(int k, unsigned pos);
 int seq_playing(int k);
+void seq_midi_in(int k, unsigned msg);
 void seq_set_volume(int k, int v);
 int seq_volume(int k);
 void seq_set_synth_volume(int k, int v);
