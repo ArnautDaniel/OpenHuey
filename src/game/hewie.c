@@ -7775,3 +7775,42 @@ void func_00154150(Hewie *h) {
     }
     back_off(h, &gCharPlayer->a);
 }
+
+/* ---- leaving by an exit ---- */
+
+/* walk (pose 7) his path out by the exit +0xF36B4: stepping by the root motion along it and
+ * turning toward the point reached by 6 degrees. At its end: through the exit (func_0013AAE0;
+ * when that fails his remembered triangles +0x148C clear), +0x2B / +0x2D cleared, picked up if
+ * down, and the default action */
+void func_001545A0(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 s, a;
+    s32 i, n;
+    u32 tri;
+
+    if ((h->c.unk128 < h->c.unk124) == 1) {
+        s = root_ahead(h, root);
+        n = func_001273D0(&h->c, &tri, p, s < 0.0f ? 0.0f : s);
+        func_00141C00(h, 7);
+        a = func_001244D0(&h->c.a, p);
+        turn_toward(h, a, 0x1.aceea00000000p-4f /* 0.10471976 */);
+        h->c.a.navTri = tri;
+        sceVu0CopyVector(h->c.a.pos, p);
+        h->c.unk128 = n;
+        HW(h, 0xF3558, u8) = 1;
+        return;
+    }
+    h->c.a.unk2B = 0;
+    h->c.a.unk2D = 0;
+    if (func_0013AAE0(h, HW(h, 0xF36B4, u8)) == 0) {
+        for (i = 0; i < 13; i++) {
+            h->c.unk148C[i] = 0;
+        }
+    }
+    if (h->c.hp == 0) {
+        h->c.hp = 1;
+        h->c.a.unkC4 = 1;
+    }
+    hewie_want(h, 0, 0);
+}
