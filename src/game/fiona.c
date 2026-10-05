@@ -4545,3 +4545,105 @@ void func_00185310(Fiona *f) {
     }
     AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
 }
+
+
+extern s32 func_00177890(Progress *p, s32 a, s32 b, u8 from, u8 to, s32 c, f32 d);   /* u8 */
+extern const PTMF D_003B2B58, D_003B2B68, D_003B2B78, D_003B2B88, D_003B2B98, D_003B2BA8, D_003B2BB8,
+    D_003B2BC8, D_003B2BD8, D_003B2BE8, D_003B2BF8, D_003B2C08;   /* her states after an action */
+
+/* the character `c` is in sight of her (their nav triangles and positions, no mask) */
+static inline s32 fiona_in_sight(Fiona *f, Character *c) {
+    return (u8)func_00122C90(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
+}
+
+/* an action's state once its animation (motion +0x550) is over, by the action (moveSub +0xFC; 0x23 ..
+ * 0x2F): she may glance at Hewie (+0x1AD5D5 he can act) or the pursuer (+0x1AD5D7) when in
+ * sight (+0x1AD664 the one looked at, cleared first). 0x24 (progress test 2/4 for her slot)
+ * goes back to idle unless it passes; 0x2B and 0x28 change the action to
+ * 0x2F / 0x29 when theirs (2/0, 2/2) fail. Then the character's update (func_00125A10). */
+void func_0018F870(Fiona *f) {
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        f32 tmp[4] __attribute__((aligned(16)));
+
+        FI(f, 0x1AD664, Character *) = NULL;
+        switch (f->c.moveSub) {
+        case 0x23:
+            if (FI(f, 0x1AD5D5, u8) == 1 && fiona_in_sight(f, gCharPartner)) {
+                FI(f, 0x1AD664, Character *) = gCharPartner;
+            }
+            Actor_SetState(&f->c.a, &D_003B2B58);
+            break;
+        case 0x2D:
+            if (FI(f, 0x1AD5D7, u8) == 1 && fiona_in_sight(f, gCharPursuer)) {
+                FI(f, 0x1AD664, Character *) = gCharPursuer;
+            } else if (FI(f, 0x1AD5D5, u8) == 1 && fiona_in_sight(f, gCharPartner)) {
+                FI(f, 0x1AD664, Character *) = gCharPartner;
+            }
+            Actor_SetState(&f->c.a, &D_003B2B68);
+            break;
+        case 0x2A:
+        case 0x2E:
+            if (FI(f, 0x1AD5D5, u8) == 1 && fiona_in_sight(f, gCharPartner)) {
+                FI(f, 0x1AD664, Character *) = gCharPartner;
+            }
+            Actor_SetState(&f->c.a, f->c.moveSub == 0x2A ? &D_003B2B78 : &D_003B2B88);
+            break;
+        case 0x29:
+        case 0x2C:
+        case 0x2F:
+            if (FI(f, 0x1AD5D4, u8) == 1) {
+                if (FI(f, 0x1AD5D5, u8) == 0) {
+                    if (f->c.door != 0xFF && FI(f, 0x1AD5F0, s32) != 0) {
+                        VCALL(D_0044E568, 0x30, void (*)(VObject *, u8, f32 *))(D_0044E568, f->c.door, tmp);
+                    }
+                } else if (fiona_in_sight(f, gCharPartner)) {
+                    FI(f, 0x1AD664, Character *) = gCharPartner;
+                }
+            }
+            Actor_SetState(&f->c.a, &D_003B2B98);
+            break;
+        case 0x27:
+            if (FI(f, 0x1AD5D4, u8) == 1) {
+                if (FI(f, 0x1AD5D5, u8) != 1) {
+                    if (f->c.door != 0xFF && FI(f, 0x1AD5F0, s32) != 0) {
+                        VCALL(D_0044E568, 0x30, void (*)(VObject *, u8, f32 *))(D_0044E568, f->c.door, tmp);
+                    }
+                } else {
+                    FI(f, 0x1AD664, Character *) = gCharPartner;
+                }
+            }
+            Actor_SetState(&f->c.a, &D_003B2BA8);
+            break;
+        case 0x24:
+            if ((u8)func_00177890(gProgress, 2, 4, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+                Fiona_ToIdle(f);
+            } else {
+                Actor_SetState(&f->c.a, &D_003B2BB8);
+            }
+            break;
+        case 0x2B:
+            if ((u8)func_00177890(gProgress, 2, 0, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+                f->c.moveSub = 0x2F;
+                Actor_SetState(&f->c.a, &D_003B2BD8);
+            } else {
+                Actor_SetState(&f->c.a, &D_003B2BC8);
+            }
+            break;
+        case 0x28:
+            if ((u8)func_00177890(gProgress, 2, 2, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+                f->c.moveSub = 0x29;
+                Actor_SetState(&f->c.a, &D_003B2BF8);
+            } else {
+                Actor_SetState(&f->c.a, &D_003B2BE8);
+            }
+            break;
+        case 0x25:
+            if (FI(f, 0x1AD5D4, u8) == 1) {
+                FI(f, 0x1AD664, Character *) = gCharPartner;
+            }
+            Actor_SetState(&f->c.a, &D_003B2C08);
+            break;
+        }
+    }
+    func_00125A10(&f->c);
+}
