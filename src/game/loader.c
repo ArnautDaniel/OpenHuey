@@ -645,3 +645,16 @@ void *func_00169280(VObject *l, s32 flags) {
     }
     return l;
 }
+
+/* close the files of all 256 request slots */
+void func_0016BF50(u8 *l) {
+    s32 i;
+
+    for (i = 0; i < 256; i++) {
+        LoadReq *q = (LoadReq *)(l + 4) + i;
+
+        if (q->file != NULL) {
+            func_001C9800(q->file);
+        }
+    }
+}
