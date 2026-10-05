@@ -888,13 +888,11 @@ s32 func_0025FF10(void *o) {
  * Returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
  * started (Fiona's state 5). */
 
-#include "progress.h"
+#include "item.h"
 
-extern VObject *D_0044E4D0;   /* the events */
 extern u8 *gCharPlayer;
 
-/* used at event spot `spot` of room `room` while Fiona stands in it: her state 5 (0, `ev`) and
-   the event `ev` starts */
+/* used at event spot `spot` of room `room` while Fiona stands in it: event `ev` */
 static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
     VObject *ev_mgr;
 
@@ -902,13 +900,10 @@ static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
         return 0;
     }
     ev_mgr = D_0044E4D0;
-    if (VCALL(ev_mgr, 0x10, s32 (*)(VObject *, u8 *, s32, s32))(ev_mgr, gCharPlayer + 0x10, spot, -1) == 0) {
+    if (!item_at_spot(ev_mgr, gCharPlayer, spot)) {
         return 0;
     }
-    AT(gCharPlayer, 0x14E8, s32) = 5;
-    AT(gCharPlayer, 0x14EC, s32) = 0;
-    AT(gCharPlayer, 0x14F0, s32) = ev;
-    VCALL(ev_mgr, 0x18, void (*)(VObject *, s32, s32, u8 *))(ev_mgr, 0, ev, gCharPlayer);
+    item_event(ev_mgr, 0, ev, gCharPlayer);
     return 4;
 }
 

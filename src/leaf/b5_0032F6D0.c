@@ -2,6 +2,7 @@
 extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
+#include "item.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -232,17 +233,8 @@ s32 func_00331A60(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F80, dest);
 }
 
-extern void *D_0044E4D0;   /* the events */
 extern u8 *gCharPartner;
 extern void func_00138AD0(void *h, s32 mode, s32 time);
-
-/* character `c` (0 Fiona, 1 Hewie) plays event `ev`: its state 5 (0, ev) */
-static inline void b5_play(void *ev_mgr, s32 who, s32 ev, u8 *c) {
-    S32(c, 0x14E8) = 5;
-    S32(c, 0x14EC) = 0;
-    S32(c, 0x14F0) = ev;
-    VCALL(ev_mgr, 0x18, void (*)(void *, s32, s32, u8 *))(ev_mgr, who, ev, c);
-}
 
 /* Hewie's trust (Progress +0xFB6) changed by `d`, kept within 0..10000 */
 static inline void b5_trust(s32 d) {
@@ -267,9 +259,9 @@ static inline s32 b5_hewie_heal(s32 d) {
 }
 
 /* Fiona hands Hewie a treat (event 0x8E) and he takes it (`hewie_ev`); +0x40: he's at hand */
-static inline s32 b5_give_hewie(void *ev_mgr, s32 hewie_ev) {
-    b5_play(ev_mgr, 0, 0x8E, gCharPlayer);
-    b5_play(ev_mgr, 1, hewie_ev, gCharPartner);
+static inline s32 b5_give_hewie(VObject *ev_mgr, s32 hewie_ev) {
+    item_event(ev_mgr, 0, 0x8E, gCharPlayer);
+    item_event(ev_mgr, 1, hewie_ev, gCharPartner);
     return 5;
 }
 
@@ -278,7 +270,7 @@ static inline s32 b5_give_hewie(void *ev_mgr, s32 hewie_ev) {
 /* use: composure +25, she drinks (event 0x8D) */
 s32 func_00331A90(void) {
     b5_composure(25.0f);
-    b5_play(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -293,7 +285,7 @@ s32 func_00331BF0(void *self, void *dest) {
 /* use: composure +100 */
 s32 func_00331C20(void) {
     b5_composure(100.0f);
-    b5_play(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -309,7 +301,7 @@ s32 func_00331D70(void *self, void *dest) {
 s32 func_00331DA0(void) {
     F32(gProgress, 0x9E8) = 2.0f;
     S32(gProgress, 0x9EC) = 1800;
-    b5_play(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -320,7 +312,7 @@ s32 func_00331EE0(void) {
     }
     S32(gProgress, 0x9F8) = 1800;
     S32(gProgress, 0x9F4) = 1800;
-    b5_play(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -328,7 +320,7 @@ s32 func_00331EE0(void) {
 s32 func_00332030(void) {
     b5_composure(-50.0f);
     F32(gProgress, 0x7D8) += 50.0f;
-    b5_play(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
     return 5;
 }
 

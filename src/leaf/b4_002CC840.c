@@ -15,13 +15,13 @@ extern u8 D_004134C0[];
 extern void *D_0047AC00[];
 extern void *gFileLoader;
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
-extern u8 *gProgress;
+#include "item.h"
 extern u8 D_00413550[];
 extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *D_0044FE10, *D_0044E4D0, *D_00456E00, *D_0044E568, *D_0044E570;
+extern void *D_0044FE10, *D_00456E00, *D_0044E568, *D_0044E570;
 
 /* tail call to virtual slot 0x8 */
 s32 func_002CC840(void *self) {
@@ -74,9 +74,92 @@ void *func_002CCB70(void *self, s32 i) { return D_0047AC00[i]; }
 
 s32 func_002CCC40(void *self, s32 a) { return LOAD(D_0045D4A0, a); }
 s32 func_002CCDB0(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
+extern u8 *gCharPlayer;
+
+/* Fiona at event spot `spot` of room `room` */
+static inline s32 b4_at_spot(Progress *p, s32 room, s32 spot) {
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != room) {
+        return 0;
+    }
+    return item_at_spot(D_0044E4D0, gCharPlayer, spot);
+}
+
+/* use: unless Progress +0x1C bit 0x80, at spot 9 of room 0x1C: event 0, flag 0x18 */
+s32 func_002CCDE0(void) {
+    Progress *p = gProgress;
+    VObject *ev_mgr;
+
+    if (AT(p, 0x1C, u32) & 0x80) {
+        return 0;
+    }
+    if (!b4_at_spot(p, 0x1C, 9)) {
+        return 0;
+    }
+    ev_mgr = D_0044E4D0;
+    item_event(ev_mgr, 0, 0, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
+extern void func_00261090(void *list, s32 a, s32 b);
+extern u8 *D_0044E988;   /* the items */
+
+/* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, func_00261090
+   (2, 1)) and Progress +0x84 bit 31 is set */
+s32 func_002CCED0(void *o) {
+    if (AT(o, 0x10, u32) < 9001) {
+        if (AT(o, 0x4, s32) != -1 && (VCALL(o, 0x18, s32 (*)(void *))(o) & 0xFF) == 2 && AT(o, 0x10, u32) != (u32)-1) {
+            AT(o, 0x10, u32) += 1;
+        }
+        return 0;
+    }
+    func_00261090(D_0044E988 + 8, 2, 1);
+    AT(gProgress, 0x84, u32) |= 0x80000000;
+    return 2;
+}
+
 s32 func_002CD000(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
+/* use: at spot 0x1B of room 0xC0: the events' +0x30 (1, this item), event 0x14, flag 0x18 */
+s32 func_002CD030(void *o) {
+    Progress *p = gProgress;
+    VObject *ev_mgr;
+
+    if (!b4_at_spot(p, 0xC0, 0x1B)) {
+        return 0;
+    }
+    ev_mgr = D_0044E4D0;
+    VCALL(ev_mgr, 0x30, void (*)(VObject *, s32, s32))(ev_mgr, 1, AT(o, 0x4, s32));
+    item_event(ev_mgr, 0, 0x14, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
 s32 func_002CD1A0(void *self, s32 a) { return LOAD(D_0045D500, a); }
+/* use: at spot 5 of room 0x22: flag 0x18, event 5 */
+s32 func_002CD1D0(void) {
+    Progress *p = gProgress;
+
+    if (!b4_at_spot(p, 0x22, 5)) {
+        return 0;
+    }
+    Progress_SetFlag(p, 0x18);
+    item_event(D_0044E4D0, 0, 5, gCharPlayer);
+    return 4;
+}
+
 s32 func_002CD310(void *self, s32 a) { return LOAD(D_0045D520, a); }
+/* use: at spot 0xC of room 4: event 4, flag 0x18 */
+s32 func_002CD340(void) {
+    Progress *p = gProgress;
+
+    if (!b4_at_spot(p, 4, 0xC)) {
+        return 0;
+    }
+    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
 s32 func_002CD490(void *self, s32 a) { return LOAD(D_0045D540, a); }
 
 s32 func_002CD4C0(void) {
