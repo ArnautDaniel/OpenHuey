@@ -115,3 +115,15 @@ attack that hits Hewie.
 Bites also change what the stalker does next. Once the damage total passes that tolerance, a
 stalker that sees or hears Hewie may turn and go after him (`0x296580`) instead of carrying on
 with its search for Fiona.
+
+## The game over screen
+
+The game over sequence (`src/game/gameover.c`) is not a single screen. The game freezes in
+place: the camera stops, every character is held mid-motion, and the effects pause. The frozen
+frame wipes away over about a second, and the music starts. The room's two screen tints then
+slide over one second, one to a deep purple and the other to clear, before the game over movie
+plays. Once the movie ends, the purple drifts slowly to blue over a full minute while the music
+plays on. Pressing any face button cuts this short, and the screen fades to black.
+
+The music depends on how far you got. There are five game over tracks, picked from your story
+progress flags, plus one used only by a single special case.
