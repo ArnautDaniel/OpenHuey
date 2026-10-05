@@ -2892,3 +2892,74 @@ s32 func_0030F350(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_004795A0[];
+
+static void effect_795A0_init(void **obj) {
+    obj[0] = D_004795A0;
+}
+
+/* room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
+ * removed with its glow effect (event variable 1); 0 made, with the glow (D_004795A0); then (and
+ * for other values) its strength from event variable 0 (0..4: 0, 30, 60, 90, 128), also sent to
+ * the glow */
+s32 func_003106E0(void *self, void *a1, u8 *cmd) {
+    u32 q[20] __attribute__((aligned(16)));
+    VObject *ev;
+
+    if (cmd[3] == 1) {
+        func_002670F0(D_0044E4C0, 0x1B);
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1));
+        return 1;
+    }
+    if (cmd[3] == 0) {
+        s32 slot;
+
+        room_effect_new(D_0044E4C0, 0x1B, D_00472F60);
+        slot = Effect_New(D_0044E578, 0x10, effect_795A0_init);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, slot);
+    }
+    ev = D_0044E4D0;
+    q[16] = 0;
+    q[0] = 0x41200000;   /* (10, -0.2, -10) */
+    q[8] = 0x41200000;
+    q[1] = 0xBE4CCCCD;
+    q[2] = 0xC1200000;
+    q[3] = 0x3F800000;
+    q[4] = 0xC1200000;   /* (-10, -0.2, -10) */
+    q[5] = 0xBE4CCCCD;
+    q[6] = 0xC1200000;
+    q[12] = 0xC1200000;
+    q[7] = 0x3F800000;
+    q[9] = 0xBE4CCCCD;   /* (10, -0.2, 10) */
+    q[13] = 0xBE4CCCCD;
+    q[10] = 0x41200000;
+    q[14] = 0x41200000;
+    q[11] = 0x3F800000;
+    q[15] = 0x3F800000;
+    q[19] = 0;
+    switch (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0)) {
+    case 0:
+        q[19] = 0;
+        break;
+    case 1:
+        q[19] = 0x1E;
+        break;
+    case 2:
+        q[19] = 0x3C;
+        break;
+    case 3:
+        q[19] = 0x5A;
+        break;
+    case 4:
+        q[19] = 0x80;
+        break;
+    }
+    q[18] = 0x3F800000;
+    q[17] = q[19];
+    func_00266C70(D_0044E4C0, 0x1B, q);
+    if (q[19] != 0) {
+        func_002D6090(D_0044E578, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1), &q[19]);
+    }
+    return 1;
+}
