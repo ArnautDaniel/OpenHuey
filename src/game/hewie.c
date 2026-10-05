@@ -7260,3 +7260,41 @@ void func_0014FF10(Hewie *h) {
     func_0013A430(h, 0x68);
     Hewie_SetBehaviour(h, &D_003B1A18);
 }
+
+/* ---- moving to Fiona's side ---- */
+
+extern const PTMF D_003B19E8;
+
+/* step over to the place by Fiona (her in his room and not out of reach, +0xE0; else the
+ * default action): turning toward +0xF36CC by +0xF36D0 and moving +0xF36C4 a frame while
+ * blending; then put exactly at +0xF36E0 (triangle +0x104, snapped onto it) facing +0xF36CC,
+ * behaviour D_003B19E8 */
+void func_00150930(Hewie *h) {
+    f32 p[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    if (!in_his_room(h, gCharPlayer) || gCharPlayer->unkE0 == 1) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+        f32 a;
+
+        h->c.a.navTri = h->c.unk104[0];
+        sceVu0CopyVector(h->c.a.pos, &HW(h, 0xF36E0, f32));
+        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+        a = HW(h, 0xF36CC, f32);
+        h->c.a.angle[1] = a;
+        sceVu0UnitMatrix(h->c.a.rot);
+        sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, a);
+        Hewie_SetBehaviour(h, &D_003B19E8);
+    } else {
+        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+        tri = h->c.a.navTri;
+        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+        h->c.a.navTri = tri;
+        sceVu0CopyVector(h->c.a.pos, p);
+    }
+    HW(h, 0xF3558, u8) = 1;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
