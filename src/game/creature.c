@@ -270,17 +270,17 @@ s32 func_002DF760(Character *c, s32 exit) {
 /* plan a path to `goal` on `tri` (not across the room's divider; one request at a time,
  * +0x2B), waiting up to 50 polls for the planner, and start it (`direct`: the straight
  * variant). 0 = on its way, -1 = no. */
-s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
+static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32 tri, const f32 *goal, s32 direct, u32 busy) {
     u8 *k = CR(c);
     s32 r, i;
 
     if (NavMesh_AcrossDivider(D_0044E570, tri, c->a.navTri)) {
         return -1;
     }
-    if (AT(k, 0x2B, u8) == 0) {
-        AT(k, 0x2B, u8) += 1;
+    if (AT(k, busy, u8) == 0) {
+        AT(k, busy, u8) += 1;
         if (func_00127200(c, 0, tri, goal, -1) == -1) {
-            AT(k, 0x2B, u8) = 0;
+            AT(k, busy, u8) = 0;
             return -1;
         }
     }
@@ -293,14 +293,18 @@ s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
     if (r > 0) {
         r = direct ? func_001270A0(c) : func_001270F0(c);
         func_00127060(c);
-        AT(k, 0x2B, u8) = 0;
+        AT(k, busy, u8) = 0;
     }
     if (r >= 0) {
         return -(r == 0);
     }
     func_00127060(c);
-    AT(k, 0x2B, u8) = 0;
+    AT(k, busy, u8) = 0;
     return -1;
+}
+
+s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
+    return creature_path(c, tri, goal, direct, 0x2B);
 }
 
 extern u32 func_00124480(Actor *a, const f32 *p, u32 mask);
@@ -663,7 +667,7 @@ extern s32 func_001272B0(Character *c, f32 speed);
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
 /* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
-static void creature_at_doors(Character *c) {
+static void creature_at_doors(Character *c, u32 doors) {
     u8 *k = CR(c);
     VObject *rooms = D_0044E568, *ev_mgr;
     s32 cur = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
@@ -673,11 +677,11 @@ static void creature_at_doors(Character *c) {
     for (i = 0; i < 8; i++) {
         u32 door;
 
-        AT(k, 0x8A + i * 2, u16) = 0;
+        AT(k, doors + i * 2, u16) = 0;
         door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, cur, i & 0xFF) & 0xFFFF;
         if (cur == c->a.room && door != 0xFFFF && c->a.disabled == 0 &&
             VCALL(ev_mgr, 0x10, s32 (*)(VObject *, f32 *, u32, s32))(ev_mgr, c->a.pos, door, -1) != 0) {
-            AT(k, 0x8A + i * 2, u16) |= (1 << *(s32 *)&c->a.slot) & 0xFFFF;
+            AT(k, doors + i * 2, u16) |= (1 << *(s32 *)&c->a.slot) & 0xFFFF;
         }
     }
 }
@@ -753,7 +757,7 @@ void func_002DFA50(Character *c) {
         sceVu0SubVector(d, in, at);
         yaw = func_0031C5C0(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
-        creature_at_doors(c);
+        creature_at_doors(c, 0x8A);
     } else {
         c->a.navTri = NAV_NONE;
         AT(&c->unk14C4, 0, f32) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room);
@@ -829,14 +833,14 @@ void func_002E01C0(Character *c) {
 /* state: travelling: at the end of its doors (+0x1388) and not at a door, a new trip to the
  * room being played (func_00126F80): its first door (+0x14C0) and that leg's distance
  * (+0x14C4); none: the closed ways it noted (+0x148C) are forgotten */
-void func_002E02B0(Character *c) {
+static inline __attribute__((always_inline)) void creature_route(Character *c, u32 flagOff, u32 idOff) {
     u8 *k = CR(c);
     s32 i;
 
-    if (c->unk1388 < c->unk1384 || AT(k, 0xB, u8) != 0) {
+    if (c->unk1388 < c->unk1384 || AT(k, flagOff, u8) != 0) {
         return;
     }
-    if (func_00126F80(c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, AT(k, 0xC, s32), -1) <= 0) {
+    if (func_00126F80(c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, AT(k, idOff, s32), -1) <= 0) {
         for (i = 0; i < 13; i++) {
             c->unk148C[i] = 0;
         }
@@ -844,6 +848,10 @@ void func_002E02B0(Character *c) {
     }
     c->unk14C0 = AT(c->unk138C, 0, u16);
     AT(&c->unk14C4, 0, f32) = (f32)VCALL(D_0044E568, 0x38, s32 (*)(VObject *, u32, s32))(D_0044E568, AT(c->unk138C, 0, u16), c->a.room);
+}
+
+void func_002E02B0(Character *c) {
+    creature_route(c, 0xB, 0xC);
 }
 
 extern s32 func_001274E0(Character *c, f32 speed);
@@ -886,20 +894,25 @@ extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
 /* +0x64 put in room `room` on triangle `tri`, mode `mode` (+0xC): (the Character's +0x64,
  * func_00125BA0) in the room being played placed there (+0x28; its result) and its doors
  * noted, else just its triangle; 0 */
-s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
+static inline __attribute__((always_inline)) s32 creature_place(Character *c, s32 room, u32 tri, s32 mode, u32 modeOff,
+                                                                  u32 doors) {
     Progress *p;
     s32 r = 0;
 
     func_00125BA0(c, room, tri, mode);
-    AT(CR(c), 0xC, s32) = mode;
+    AT(CR(c), modeOff, s32) = mode;
     p = gProgress;
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         c->a.navTri = tri;
         return r;
     }
     r = VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, tri, NULL, NULL);
-    creature_at_doors(c);
+    creature_at_doors(c, doors);
     return r;
+}
+
+s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
+    return creature_place(c, room, tri, mode, 0xC, 0x8A);
 }
 
 /* back on its triangle in the room being played (or, on one it may not stand on, a random place
@@ -913,7 +926,7 @@ static void creature_back_on_mesh(Character *c) {
         VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
         VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
     }
-    creature_at_doors(c);
+    creature_at_doors(c, 0x8A);
 }
 
 /* +0x38 the room is entered: if it was out (+0x10) and is in the room being played, back on
@@ -1283,7 +1296,7 @@ void func_002E1380(Character *c) {
         break;
     }
     p = gProgress;
-    creature_at_doors(c);
+    creature_at_doors(c, 0x8A);
     AT(k, 0x9C, s8) = VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3) == 0x8D;
     func_002E06E0(c);
     if (AT(k, 0x37, s8) == 0) {
@@ -2603,4 +2616,21 @@ s32 func_0032BD40(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     c->a.prevNavTri = tri;
     sceVu0CopyVector(c->a.prevPos, c->a.pos);
     return r;
+}
+
+/* ---- the same in the other creature classes, whose own block is laid out differently ---- */
+
+/* (as func_002DF860; its request flag at +0x64) */
+s32 func_003255C0(Character *c, u32 tri, const f32 *goal, s32 direct) {
+    return creature_path(c, tri, goal, direct, 0x64);
+}
+
+/* (as func_002E02B0; +0x61 / +0x0) */
+void func_00329360(Character *c) {
+    creature_route(c, 0x61, 0x0);
+}
+
+/* (as func_002E0C30; the mode at +0x0, the doors at +0x50) */
+s32 func_0032A8D0(Character *c, s32 room, u32 tri, s32 mode) {
+    return creature_place(c, room, tri, mode, 0x0, 0x50);
 }

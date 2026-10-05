@@ -5219,3 +5219,37 @@ s32 func_0032DF20(void) {
     Effect_New(D_0044E578, 0x640, effect_479a60_init);
     return 1;
 }
+
+/* (as func_002ABC20) an effect D_00471060 with its box */
+s32 func_0032DDF0(void) {
+    s32 slot = Effect_New(D_0044E578, 0x840, effect_471060_init);
+    f32 prm[9];
+
+    prm[1] = -33.0f;
+    prm[2] = 2.0f;
+    prm[0] = 0.0f;
+    prm[3] = -165.0f;
+    prm[6] = 0.0f;
+    prm[4] = 50.0f;
+    prm[8] = 0.0f;
+    prm[5] = 100.0f;
+    prm[7] = -180.0f;
+    func_002D6090(D_0044E578, slot, prm);
+    return 1;
+}
+
+extern const char *const D_00429130;
+
+/* room 0x60 (as func_002AFA00, for character 0xFE): byte 3 0 a progress name, 1 wait for
+ * character 0xFE (2 while not), else done */
+s32 func_00310640(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0:
+        func_0016CEC0(gProgress, D_00429130);
+        return 1;
+    case 1:
+        return func_0016CD60(gProgress, 0xFE, 0) == 0 ? 2 : 1;
+    }
+    func_0016CD30(gProgress);
+    return 1;
+}
