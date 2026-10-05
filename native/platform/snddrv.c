@@ -64,6 +64,13 @@ static Bank sBanks[0x21];
 static unsigned sEeState;      /* the EE's state block (command 4) */
 static unsigned sResult[0x26];
 
+/* a word of the EE's state block (D_019715C0, command 4) as the driver's reports set it */
+void snddrv_report(unsigned off, unsigned value) {
+    if (sEeState != 0) {
+        *(volatile unsigned *)(sEeState + off) = value;
+    }
+}
+
 /* ---- the sound effects (IRX 0x7AA0 and the voice table D_0000D670) ---- */
 
 #define NV 48

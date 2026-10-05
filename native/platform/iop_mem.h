@@ -27,6 +27,7 @@ void sceSdSetAddr(unsigned short entry, unsigned value);
 unsigned sceSdGetAddr(unsigned short entry);
 unsigned short sceSdNote2Pitch(unsigned short cnote, unsigned short cfine, unsigned short note, short fine);
 void spu_reset(void);
+void snddrv_report(unsigned off, unsigned value);   /* the EE's state block */
 
 /* the sequencer (seq.c) */
 void seq_tick(double sec);

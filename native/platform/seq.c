@@ -325,6 +325,19 @@ static int port_event(Port *p) {
     return 1;
 }
 
+/* the EE's state word +0x30: which ports play (the driver's main loop reports it) */
+static void report(void) {
+    unsigned m = 0;
+    int k;
+
+    for (k = 0; k < NPORT; k++) {
+        if (sPort[k].playing) {
+            m |= 1u << k;
+        }
+    }
+    snddrv_report(0x30, m);
+}
+
 /* the sequences on by `sec` seconds (the mixer, before each chunk) */
 void seq_tick(double sec) {
     int k;
@@ -342,6 +355,7 @@ void seq_tick(double sec) {
             if (!port_event(p)) {
                 p->playing = 0;
                 all_off(p);
+                report();
             }
         }
     }
@@ -414,6 +428,7 @@ void seq_play(int k, int on) {
         p->playing = 0;
         all_off(p);
     }
+    report();
 }
 
 /* back to the start (0x18 with 0) */
