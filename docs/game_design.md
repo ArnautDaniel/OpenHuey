@@ -102,3 +102,16 @@ code subtracts a random 1.0 to 1.2 and then also the 0.6 of the searching pace, 
 that case runs straight into the next one in the original program, a forgotten "break".
 The result: an unseen stalker heading for you moves at 1.6 to 1.8 units a frame. (One
 story flag sets every stalker to 2.0.)
+
+## Shaking Hewie off
+
+When Hewie bites a stalker (`0x286170`), each bite adds that body part's damage to a running
+total (up to 1000). At certain moments in the struggle animation the stalker tries to throw him
+off. The chance is 10 percentage points for every bite Hewie has landed so far, plus a quarter
+of the damage as a share of the stalker's tolerance (100 by default). So Hewie gets a good grip
+at first, and the longer he hangs on, the surer he is to be flung away. The throw itself is an
+attack that hits Hewie.
+
+Bites also change what the stalker does next. Once the damage total passes that tolerance, a
+stalker that sees or hears Hewie may turn and go after him (`0x296580`) instead of carrying on
+with its search for Fiona.
