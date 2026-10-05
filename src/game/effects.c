@@ -2554,3 +2554,181 @@ void func_002FE230(u8 *e) {
     AT(e, 0x645, s8) = 0x10;
     AT(e, 0x646, s8) = 2;
 }
+
+
+/* ---- D_00470E60 (0x4E0 bytes): a splash - up to 10 specks (+0x3F4) thrown up and away from
+ * a character (the pursuer, the partner or Fiona), in two buffers of quad records (+0x10 +
+ * 0x1E0 x the current one +0x4D8), velocities at +0x408 (12 each) and their sideways drags at
+ * +0x480 (x, z), the quad drawer at +0x3D0; each speck bounces off the ground (+0x4D0),
+ * fading, until gone; every other call (+0x4DC) is a rest ---- */
+
+extern void *D_00470E60[];
+extern void *gCharPlayer, *gCharPartner, *gCharPursuer;
+
+#define SPLASH_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1E0) + (i))
+#define SPLASH_VEL(e, i) ((f32 *)((e) + 0x408 + (i) * 0xC))
+#define SPLASH_DRAG(e, i) ((f32 *)((e) + 0x480 + (i) * 8))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002FE2B0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470E60;
+    AT(o, 0x3D0, void **) = D_0046FC30;
+    AT(o, 0x3D0, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0x18 start: arg { f32 who (0xFE the pursuer, 1 the partner, else Fiona), f32 count (10 at
+ * most), the point (its height the ground), spread, RGB (each speck up to 15 off, from 8
+ * below), alpha (up to 7, from 4 below) } */
+void func_002FE340(u8 *e, f32 *arg) {
+    f32 dir[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    s32 who, i, r0, g0, b0, a0;
+    f32 x, y, z;
+
+    if (arg == NULL) {
+        return;
+    }
+    AT(e, 0x3F4, s16) = (s32)arg[1];
+    who = (s32)arg[0];
+    if (AT(e, 0x3F4, s16) > 10) {
+        AT(e, 0x3F4, s16) = 10;
+    }
+    x = arg[2];
+    y = arg[3];
+    AT(e, 0x4D0, f32) = y;
+    z = arg[4];
+    AT(e, 0x4D4, f32) = arg[5];
+    r0 = AT(arg, 0x18, s32) - 8;
+    g0 = AT(arg, 0x1C, s32) - 8;
+    b0 = AT(arg, 0x20, s32) - 8;
+    a0 = AT(arg, 0x24, s32) - 4;
+    rnd = D_0044E550;
+    for (i = 0; i < AT(e, 0x3F4, s16); i++) {
+        QuadRec *r = SPLASH_REC(e, AT(e, 0x4D8, s32), i);
+        f32 *v = SPLASH_VEL(e, i), *d = SPLASH_DRAG(e, i);
+        void *c;
+        f32 s;
+
+        r->rgba[0] = r0 + (burst_int(rnd) & 0xF);
+        r->rgba[0] = clamp_byte(r->rgba[0]);
+        r->rgba[1] = g0 + (burst_int(rnd) & 0xF);
+        r->rgba[1] = clamp_byte(r->rgba[1]);
+        r->rgba[2] = b0 + (burst_int(rnd) & 0xF);
+        r->rgba[2] = clamp_byte(r->rgba[2]);
+        r->rgba[3] = a0 + (burst_int(rnd) & 7);
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        } else if (r->rgba[3] > 0x80) {
+            r->rgba[3] = 0x80;
+        }
+        r->pos[0] = x + AT(e, 0x4D4, f32) * (burst_rnd(rnd) - 0.5f);
+        r->pos[1] = y;
+        r->pos[2] = z + AT(e, 0x4D4, f32) * (burst_rnd(rnd) - 0.5f);
+        r->pos[3] = 1.0f;
+        s = 0x1.99999a0000000p-3f /* 0.2 */ + 0x1.47ae140000000p-7f /* 0.01 */ * (AT(e, 0x4D4, f32) * burst_rnd(rnd));
+        r->w = s;
+        r->h = s;
+        r->turn = 0x1.921fb6p+2f * (burst_rnd(rnd) - 0.5f);
+        r->frame = 0;
+        c = who == 0xFE ? gCharPursuer : who == 1 ? gCharPartner : gCharPlayer;
+        if (c != NULL) {
+            sceVu0SubVector(dir, r->pos, (f32 *)((u8 *)c + 0x10));
+        }
+        sceVu0Normalize(dir, dir);
+        v[0] = dir[0] * burst_rnd(rnd);
+        v[1] = 1.0f + 2.0f * burst_rnd(rnd);
+        v[2] = dir[2] * burst_rnd(rnd);
+        d[0] = -0x1.47ae140000000p-7f /* 0.01 */ * v[0];
+        d[1] = -0x1.47ae140000000p-7f /* 0.01 */ * v[2];
+    }
+}
+
+/* +0x14 draw the current buffer */
+void func_002FE800(u8 *e) {
+    AT(e, 0x3E0, QuadRec *) = SPLASH_REC(e, AT(e, 0x4D8, s32), 0);
+    func_002E56C0(e + 0x3D0);
+}
+
+/* +0x10 update: flip the buffers; every other call 0 (and once all are gone); each visible
+ * speck carried over, falling (hard while rising), jittered, moved, and on the ground faded
+ * by 0x20 and thrown up again */
+s32 func_002FE830(u8 *e) {
+    VObject *rnd;
+    s32 i, k;
+
+    AT(e, 0x4D8, s32) ^= 1;
+    if (AT(e, 0x4DC, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0x4DC, u8) = 1;
+    rnd = D_0044E550;
+    for (i = 0; i < AT(e, 0x3F4, s16); i++) {
+        u32 *src = (u32 *)SPLASH_REC(e, AT(e, 0x4D8, s32) ^ 1, i);
+        u32 *dst = (u32 *)SPLASH_REC(e, AT(e, 0x4D8, s32), i);
+        f32 *v = SPLASH_VEL(e, i), *d = SPLASH_DRAG(e, i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = SPLASH_REC(e, AT(e, 0x4D8, s32), i);
+        if (r->rgba[3] <= 0) {
+            continue;
+        }
+        AT(e, 0x4DC, u8) = 0;
+        if (!(v[1] <= 0.0f)) {
+            v[1] = v[1] + 0.5f * (-0.5f - burst_rnd(rnd));
+        } else {
+            v[1] = v[1] + 0x1.47ae140000000p-7f /* 0.01 */ * (burst_rnd(rnd) - 1.0f);
+        }
+        v[0] = v[0] + (d[0] + 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f));
+        v[2] = v[2] + (d[1] + 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f));
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (r->pos[1] < AT(e, 0x4D0, f32)) {
+            r->rgba[3] -= 0x20;
+            if (r->rgba[3] < 0) {
+                r->rgba[3] = 0;
+            } else {
+                v[0] = v[0] + 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f);
+                v[1] = 1.0f + burst_rnd(rnd);
+                v[2] = v[2] + 0x1.99999a0000000p-4f /* 0.1 */ * (burst_rnd(rnd) - 0.5f);
+                d[0] = -0x1.47ae140000000p-7f /* 0.01 */ * v[0];
+                d[1] = -0x1.47ae140000000p-7f /* 0.01 */ * v[2];
+            }
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (a 4 x 4 cell at (238, 78), blended 0x20, palette 2,
+ * layer 0x19) */
+void func_002FEBD0(u8 *e) {
+    AT(e, 0x4D8, s32) = 0;
+    AT(e, 0x4DC, u8) = 0;
+    AT(e, 0x3D8, s64) = -1;
+    AT(e, 0x3E4, s32) = 0;
+    AT(e, 0x3E8, s32) = 0;
+    AT(e, 0x3EC, s32) = 0;
+    AT(e, 0x3F0, s32) = 0x19;
+    AT(e, 0x3F6, s16) = 0xEE;
+    AT(e, 0x3F8, s16) = 0x4E;
+    AT(e, 0x3FA, s16) = 4;
+    AT(e, 0x3FC, s16) = 4;
+    AT(e, 0x3FE, s16) = 0x200;
+    AT(e, 0x400, s16) = 0x100;
+    AT(e, 0x402, s8) = 0x20;
+    AT(e, 0x403, s8) = 1;
+    AT(e, 0x404, s8) = 1;
+    AT(e, 0x405, s8) = 0x10;
+    AT(e, 0x406, s8) = 2;
+}
