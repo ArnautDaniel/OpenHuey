@@ -5051,3 +5051,75 @@ void func_00309080(Character *c) {
         VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
     }
 }
+
+/* ---- rooms 0x48 / 0x60 ---- */
+
+extern void func_00124F20(void *c, s32 a);
+
+/* room 0x48 (D_00426850): door 0 of room 0x48 (Progress_CurRoomFlag) */
+s32 func_0030F1A0(void) {
+    return Progress_CurRoomFlag(gProgress, 0x48, 0);
+}
+
+/* room 0x48 (D_00426840): the creatures (10) in play in the current room: the list's +0x2C */
+s32 func_0030F1F0(void) {
+    u8 *list = D_0044F258;
+    Progress *g = gProgress;
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        u8 *c = AT(list, i * 4, u8 *);
+
+        if (c != NULL && AT(c, 0x28, u8) == 1
+            && AT(c, 0x30, s32) == VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g)) {
+            VCALL_AT(list, 0x28, 0x2C, void (*)(u8 *, s32, s32))(list, i & 0xFF, 0);
+        }
+    }
+    return 1;
+}
+
+/* room 0x48 (D_00426830): the player's func_00124F20(0) */
+s32 func_0030F2B0(void) {
+    func_00124F20(gCharPlayer, 0);
+    return 1;
+}
+
+/* room 0x48 (D_00426820): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0 */
+s32 func_0030F2E0(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+
+    if (cmd[3] == 0) {
+        AT(m, 0x9E8, u32) = 0xBE19999A;
+    } else {
+        AT(m, 0x9E8, f32) = 0.0f;
+    }
+    return 1;
+}
+
+/* room 0x48 (D_00426800): character 0x26's +0xE4 cleared */
+s32 func_0030F490(void) {
+    AT(gCharacters[(u8)func_001770D0(gProgress, 0x26)], 0xE4, u8) = 0;
+    return 1;
+}
+
+/* room 0x60 (D_00429190): the player's model +0xCC 0 (byte 3 0) or 1 */
+s32 func_00310280(void *self, void *a1, u8 *cmd) {
+    VObject *m = gCharPlayer->motion;
+
+    VCALL(m, 0xCC, void (*)(VObject *, s32))(m, cmd[3] == 0 ? 0 : 1);
+    return 1;
+}
+
+/* room 0x60 (D_00429170): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0 */
+s32 func_00310450(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+
+    if (cmd[3] == 0) {
+        AT(m, 0x9FC, f32) = 0x1.99999a0000000p-2f /* 0.4 */;
+        AT(m, 0xA00, u8) = 1;
+    } else {
+        AT(m, 0x9FC, f32) = 0.0f;
+        AT(m, 0xA00, u8) = 0;
+    }
+    return 1;
+}

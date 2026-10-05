@@ -6259,3 +6259,19 @@ src/game/rooms.c func_0017FCD0 --pre=a0=0..0x0B000000 --pre=a1=-1..1 --runs=20
 src/game/event.c func_001FB250 --pre=a0=0..0x0B000000 --pre=a1=-1..1 --pre=a0+0x784=0..0x0B400000 --runs=40
 src/game/event.c func_001FB5F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..0x0B200000 --pre=@0x0B200000=0x0046D730..0x0046D730 --pre=@0x0B200028:u8=0..1 --pre=@0x0B200030=0xFF..0x106 --pre=@0x44E568=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C3E0..0x0046C3E0 --stub-ret=0 --stub-ret=3 --stub-ret=0x109 --stub-ret=0x150 --runs=200
 src/game/doors.c func_00223DE0 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-2..2 --runs=20
+src/game/pursuer.c func_003090F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=5
+src/game/pursuer.c func_00309170 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/pursuer.c func_00309180 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=20
+src/game/pursuer.c func_00309210 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=40
+src/game/pursuer.c func_00311B30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=40
+src/game/pursuer.c func_003092E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=20
+src/game/pursuer.c func_00311C00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=20
+src/game/pursuer.c func_00309350 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x2B:u8=0..1 --pre=a0+0x1380=0x0B300000..0x0B300000 --pre=a0+0x174C=0..1 --pre=a0+0x1750=-1..0 --pre=a0+0x1754=0..0x00300000 --stub-ret=0 --stub-ret=1 --stub-ret=3 --runs=60
+src/game/pursuer.c func_00311AE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/room_handlers.c func_0030F1A0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --runs=5
+src/game/room_handlers.c func_0030F1F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=@0x44F258=0x0BD00000..0x0BD00000 --pre=@0x0BD00000=0..0x0BE00000 --pre=@0x0BD00004=0..0x0BE00000 --pre=@0x0BD00028=0x0046B3B8..0x0046B3B8 --pre=@0x0BE00028:u8=0..1 --pre=@0x0BE00030=0..1 --stub-ret=0 --stub-ret=1 --runs=60
+src/game/room_handlers.c func_0030F2B0 --pre=@0x44F818=0x0B300000..0x0B300000 --runs=5
+src/game/room_handlers.c func_0030F2E0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..1 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x0B3000F0=0x0B400000..0x0B400000 --stub-ret=0 --runs=10
+src/game/room_handlers.c func_0030F490 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=@0x44F810=0x0B300000..0x0B300000 --stub-ret=0 --runs=5
+src/game/room_handlers.c func_00310280 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B3000F0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=10
+src/game/room_handlers.c func_00310450 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..1 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x0B3000F0=0x0B400000..0x0B400000 --stub-ret=0 --runs=10

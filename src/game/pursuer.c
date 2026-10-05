@@ -10723,3 +10723,95 @@ void func_00173650(void) {
 
 void func_00173660(void) {
 }
+
+/* ---- methods of stalker subclasses D_004712xx / D_004714xx / D_004720xx (room creatures) ---- */
+
+extern const PTMF D_00422338, D_00422420, D_00422430, D_004297B0;
+
+/* a state: D_00422338 at +0x174C, +0x1758 -1, then +0x294 */
+void func_003090F0(Pursuer *p) {
+    ptmf_set(&PU(p, 0x174C, PTMF), &D_00422338);
+    PU(p, 0x1758, s32) = -1;
+    VCALL(p, 0x294, void (*)(Pursuer *))(p);
+}
+
+void func_00309170(Pursuer *p) {
+}
+
+/* in play: func_00124890(-1), the state D_00422430 (+0x1758 -1) */
+void func_00309180(Pursuer *p) {
+    if (func_00217510(p) == 0) {
+        return;
+    }
+    func_00124890(&p->c.a, -1);
+    ptmf_set(&PU(p, 0x174C, PTMF), &D_00422430);
+    PU(p, 0x1758, s32) = -1;
+}
+
+/* the action 5 taken (+0x14E8): in play +0x8C, the state `st`, +0x114 1; the action cleared */
+static inline __attribute__((always_inline)) void act5(Pursuer *p, const PTMF *st) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((u8)func_00217510(p) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), st);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+void func_00309210(Pursuer *p) {
+    act5(p, &D_00422420);
+}
+
+void func_00311B30(Pursuer *p) {
+    act5(p, &D_004297B0);
+}
+
+/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+static inline __attribute__((always_inline)) s32 slot_done(Pursuer *p) {
+    Progress *g = gProgress;
+
+    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+        func_001777D0(g, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+s32 func_003092E0(Pursuer *p) {
+    return slot_done(p);
+}
+
+s32 func_00311C00(Pursuer *p) {
+    return slot_done(p);
+}
+
+/* each frame: +0x84; the nav mask +0xC0 (8 when +0x2B is 1, else +0xA8) onto its model
+ * (+0x1380 +0x40); in play func_00297C60, its state (+0x174C) and +0x110; then +0x40 */
+void func_00309350(Pursuer *p) {
+    VCALL(p, 0x84, void (*)(Pursuer *))(p);
+    if (AT(p, 0x2B, u8) == 1) {
+        AT(p, 0xC0, s32) = 8;
+    } else {
+        AT(p, 0xC0, s32) = VCALL(p, 0xA8, s32 (*)(Pursuer *))(p);
+    }
+    AT(PU(p, 0x1380, u8 *), 0x40, s32) = AT(p, 0xC0, s32);
+    if (func_00217510(p) != 0) {
+        func_00297C60(p);
+        if (ptmf_test(&PU(p, 0x174C, PTMF))) {
+            ptmf_scall(p, &PU(p, 0x174C, PTMF));
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+    }
+    VCALL(p, 0x40, void (*)(Pursuer *))(p);
+}
+
+/* in play: func_00124890(-1) */
+void func_00311AE0(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
