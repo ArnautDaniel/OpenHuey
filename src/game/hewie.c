@@ -9312,3 +9312,67 @@ void func_0015C1E0(Hewie *h) {
     }
     func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
 }
+
+/* ---- keeping away from his target ---- */
+
+/* keep away from his target (+0xF3544, in his room and reachable; else the default action):
+ * heading +0xF36C4 renewed every 30..150 frames, or when the way ahead is under +0xF36C8 (away
+ * from it, the freest within 30..150 degrees for 10 more; needing more than a 170-degree turn:
+ * the default action), held 30 frames before rechecking; head level the way he goes; gait
+ * +0xF36BC, slower where the way ahead is short */
+void func_0015CCA0(Hewie *h) {
+    Character *t;
+    f32 d[4] __attribute__((aligned(16)));
+    f32 room, step;
+
+    if (!in_his_room(h, HW(h, 0xF3544, Character *))) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    t = HW(h, 0xF3544, Character *);
+    if (!(u8)func_0013C1E0(h, t->a.navTri, t->a.pos)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    if (HW(h, 0xF36B8, s32) != 0) {
+        HW(h, 0xF36B8, s32) -= 1;
+    } else {
+        if (HW(h, 0xF36B4, s32) != 0) {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+        if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
+            f32 a;
+
+            HW(h, 0xF36B4, s32) = (s32)(5.0f * RNG01()) * 30 + 30;
+            HW(h, 0xF36B8, s32) = 30;
+            sceVu0SubVector(d, h->c.a.pos, HW(h, 0xF3544, Character *)->a.pos);
+            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
+            if (!(func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+            } else {
+                a = -func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+            }
+            if (!(a <= 0x1.7bc89c0000000p+1f /* 2.9670596 */)) {
+                hewie_want(h, 0, 0);
+                return;
+            }
+        }
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    turn_toward(h, HW(h, 0xF36C4, f32), step);
+    if (HW(h, 0xF36BC, s32) == 0 || room < 10.0f) {
+        func_00141C00(h, 7);
+    } else if (HW(h, 0xF36BC, s32) == 1 || room < 20.0f) {
+        func_00141C00(h, 8);
+    } else {
+        func_00141C00(h, 9);
+    }
+}
