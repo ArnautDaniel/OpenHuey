@@ -16,7 +16,8 @@
  *   +0x10044  the node being expanded, +0x10048 the path's end node
  *   +0x1004C  the step function (PTMF; it returns nonzero when the search is over)
  *   +0x10058  the nearest triangle found when the goal can't be reached, +0x1005C its distance
- * +0x40194 the last path's length (triangles), +0x41198 its triangles (u16) */
+ * +0x40190 the found path's length (triangles), +0x40198 its triangles (u16, start first)
+ * +0x40194 the smoothed path's length, +0x41198 its triangles (u16) */
 #include "common.h"
 #include "game.h"
 #include "navmesh.h"
@@ -969,6 +970,29 @@ s32 func_001A6260(void *pl, u8 *s) {
         return 0;
     }
     return -AT(s, 0x0, s32);
+}
+
+/* the found path's triangles (+0x40198, start first, +0x40190 their count) from the end node
+ * back; the goal becomes the end's triangle (its centre) if it isn't */
+void func_001A9D20(u8 *pl, u8 *s) {
+    u8 *n = AT(s, 0x10048, u8 *);
+    s32 count = 0, i;
+    u32 t;
+
+    for (; n != NULL; n = AT(n, 0x4, u8 *)) {
+        count++;
+    }
+    n = AT(s, 0x10048, u8 *);
+    for (i = count - 1; i >= 0; i--) {
+        AT(pl, 0x40198 + i * 2, u16) = NODE_INDEX(s, n);
+        n = AT(n, 0x4, u8 *);
+    }
+    AT(pl, 0x40190, s32) = count;
+    t = NODE_INDEX(s, AT(s, 0x10048, u8 *));
+    if (t != AT(s, 0x8, u32)) {
+        AT(s, 0x8, u32) = t;
+        tri_centre(D_0044E570, t, (f32 *)(s + 0x30));
+    }
 }
 
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
