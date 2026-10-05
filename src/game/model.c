@@ -4547,6 +4547,46 @@ void func_002DD090(u8 *m) {
     }
 }
 
+extern f32 func_0031C3C0(f32 x);   /* acosf */
+
+/* how the model (its frame +0x7D0: up +0x7E0, forward +0x7F0) has to look at `target` from its
+ * eye (+0x860, in model space): the pitch (atan2 of the height over the level distance) and
+ * the turn (the angle from forward on the level, negative to the left) */
+void func_002DD110(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 *up = (f32 *)(m + 0x7E0), *fwd = (f32 *)(m + 0x7F0);
+    f32 h, along, pp, ff, c;
+
+    v[0] = AT(m, 0x860, f32);
+    v[1] = AT(m, 0x864, f32);
+    v[2] = AT(m, 0x868, f32);
+    v[3] = 1.0f;
+    sceVu0ApplyMatrix(v, (f32 (*)[4])(m + 0x7D0), v);
+    sceVu0SubVector(v, (f32 *)target, v);
+    h = sceVu0InnerProduct(v, up);
+    p[0] = 0.0f + v[0] - h * up[0];
+    p[1] = 0.0f + v[1] - h * up[1];
+    p[2] = 0.0f + v[2] - h * up[2];
+    p[3] = __builtin_sqrtf(p[2] * p[2] + p[0] * p[0]);
+    *pitch = func_0031C5C0(h, p[3]);
+    along = sceVu0InnerProduct(p, fwd);
+    pp = sceVu0InnerProduct(p, p);
+    ff = sceVu0InnerProduct(fwd, fwd);
+    c = along / (__builtin_sqrtf(pp) * __builtin_sqrtf(ff));
+    if (c < -1.0f) {
+        c = -1.0f;
+    }
+    if (!(c <= 1.0f)) {
+        c = 1.0f;
+    }
+    *turn = func_0031C3C0(c);
+    sceVu0OuterProduct(p, fwd, v);
+    if (p[1] < 0.0f) {
+        *turn = *turn * -1.0f;
+    }
+}
+
 
 /* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
  * previous slot's animation (+0x6A8; the time wrapped into it) */
