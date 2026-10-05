@@ -47,6 +47,20 @@ extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
 extern s32 func_001F4770(u8 *model, s32, s32, s32);
 extern void func_001267F0(u8 *c, s32 n);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
+extern void *gCharPursuer;
+extern VObject *D_0044F808;   /* the stalker */
+extern VObject *D_0044FE08;   /* the obstacles */
+extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern void *D_0044E958;      /* the movie playing */
+extern VObject *D_0044E988;   /* the item manager */
+extern void func_002EF9E0(void *o, f32 v);
+extern void func_002EC3C0(void *o, u32 id);
+extern void func_002EC450(void *o, u32 id);
+extern void func_002670F0(u8 *fx, s32 n);
+extern void func_00182E80(u8 *f);
+extern void func_0019A280(u8 *f, s32 n);
+extern void func_0019A210(u8 *f, s32 n);
+extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
 /* opcode groups handled elsewhere */
 extern void func_001FFE00(VObject *ev);
 extern void func_002013F0(VObject *ev);
@@ -426,6 +440,17 @@ void func_001FFB70(VObject *ev) {
         AT(o, 0x0, u8) = 0;
         func_0025F810(o);
         break;
+    }
+}
+
+/* (0x25 / 0x2C) the script `id` (0x80..: built in, else the room's, vtable +0x24) */
+static u8 *script_by_id(VObject *ev, u32 id) {
+    if (id & 0x80) {
+        return D_003D6760[id];
+    } else {
+        VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
+
+        return VCALL(room, 0x24, u8 *(*)(VObject *, s32))(room, id);
     }
 }
 
@@ -877,6 +902,160 @@ void func_002029B0(VObject *ev) {
             }
         }
         break;
+    case 0x16:   /* the counter +0x703 = pc[1] */
+        AT(ev, 0x703, u8) = pc[1];
+        break;
+    case 0x17:   /* counter +1 */
+        AT(ev, 0x703, u8)++;
+        break;
+    case 0x18:   /* wait until the counter is pc[1] */
+        if (AT(ev, 0x703, u8) != pc[1]) {
+            EV_WAIT(ev) = 1;
+        }
+        break;
+    case 0x25: {   /* go to script pc[1] (its loop and return points cleared) */
+        u8 *to = script_by_id(ev, pc[1]);
+
+        PC(ev) = to;
+        AT(ev, 0x8, u8) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0x8, s32) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0x11, u8) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0xC, s32) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0x12, u8) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0x14, u16) = 0;
+        EV_JUMPED(ev) = 1;
+        break;
+    }
+    case 0x2C: {   /* call script pc[1] (0x2D returns after this) */
+        u8 *to;
+
+        AT(AT(ev, 0x6FC, u8 *), 0xC, const u8 *) = pc + 2;
+        AT(AT(ev, 0x6FC, u8 *), 0x12, u8) = AT(ev, 0x8, u8);
+        to = script_by_id(ev, PC(ev)[1]);
+        PC(ev) = to;
+        AT(ev, 0x8, u8) = 0;
+        EV_JUMPED(ev) = 1;
+        break;
+    }
+    case 0x2D:   /* return from 0x2C */
+        PC(ev) = AT(AT(ev, 0x6FC, u8 *), 0xC, u8 *);
+        AT(ev, 0x8, u8) = AT(AT(ev, 0x6FC, u8 *), 0x12, u8);
+        AT(AT(ev, 0x6FC, u8 *), 0xC, s32) = 0;
+        AT(AT(ev, 0x6FC, u8 *), 0x12, u8) = 0;
+        EV_JUMPED(ev) = 1;
+        break;
+    case 0x34: {   /* renderer +0x2C's +0x1C (on / off) */
+        u8 *r = VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0);
+
+        AT(r, 0x1C, u8) = PC(ev)[1] != 0;
+        break;
+    }
+    case 0x37:   /* script variable pc[1] +1 */
+        AT(ev, 0x810 + pc[1] * 4, s32)++;
+        break;
+    case 0x38:   /* script variable pc[1] -1 */
+        AT(ev, 0x810 + pc[1] * 4, s32)--;
+        break;
+    case 0x43: {   /* the progress' +0x7B8 level to pc[1] (0..100) */
+        f32 v = (f32)(u32)pc[1];
+
+        if (v < 0.0f) {
+            v = 0.0f;
+        }
+        if (!(v <= 100.0f)) {
+            v = 100.0f;
+        }
+        func_002EF9E0((u8 *)p + 0x7B8, v);
+        break;
+    }
+    case 0x44:
+        VCALL(p, 0x6C, void (*)(Progress *))(p);
+        break;
+    case 0x46:
+        VCALL(D_0044E558, 0x7C, void (*)(VObject *))(D_0044E558);
+        break;
+    case 0x4A:
+        VCALL(D_0044E4F8, 0x18, void (*)(VObject *))(D_0044E4F8);
+        break;
+    case 0x4E:   /* Fiona's +0x1AD5F4 / +0x1AD5F8 cleared */
+        AT(gCharPlayer, 0x1AD5F8, s32) = 0;
+        AT(gCharPlayer, 0x1AD5F4, s32) = 0;
+        break;
+    case 0x4F:
+        func_00182E80(gCharPlayer);
+        break;
+    case 0x51:   /* this script's +0xAC with be16 pc[1..2] */
+        VCALL(ev, 0xAC, void (*)(VObject *, u32))(ev, be16(pc + 1));
+        AT(ev, 0x80C, s32) = 0;
+        break;
+    case 0x52:   /* the movie's +0x1C4 set */
+        if (D_0044E958 != NULL) {
+            AT(D_0044E958, 0x1C4, u8) = 1;
+        }
+        break;
+    case 0x53:   /* obstacle pc[1]: +0x10 (pc[2], pc[3], be16 pc[4], be16 pc[6]) */
+        VCALL(D_0044FE08, 0x10, void (*)(VObject *, s32, s32, s32, u32, u32))(
+            D_0044FE08, pc[1], pc[2], pc[3], be16(pc + 4), be16(pc + 6));
+        break;
+    case 0x54:
+        VCALL(D_0044FE08, 0x38, void (*)(VObject *, s32))(D_0044FE08, pc[1]);
+        break;
+    case 0x55:   /* this script's +0xB0 with be32 pc[1..4], pc[5] */
+        VCALL(ev, 0xB0, void (*)(VObject *, s32, s32))(ev, be32(pc + 1), pc[5]);
+        break;
+    case 0x5A:   /* item be16 pc[1..2] in (pc[3]) / out */
+        if (pc[3] != 0) {
+            func_002EC3C0((u8 *)p + 0x764, be16(pc + 1));
+        } else {
+            func_002EC450((u8 *)p + 0x764, be16(pc + 1));
+        }
+        break;
+    case 0x5B:   /* the stalker's item (+0x2D4) out */
+        if (gCharPursuer != NULL) {
+            func_002EC450((u8 *)p + 0x764, VCALL(D_0044F808, 0x2D4, u32 (*)(VObject *))(D_0044F808));
+        }
+        break;
+    case 0x64:   /* room effect 0x1C gone */
+        func_002670F0(D_0044E4C0, 0x1C);
+        break;
+    case 0x69:   /* sound driver +0x18 (be32 pc[1..4], pc[5]) */
+        VCALL(D_0044E560, 0x18, void (*)(VObject *, s32, s32))(D_0044E560, be32(pc + 1), pc[5]);
+        break;
+    case 0x6D:   /* the item manager's +0x4 = pc[1]; progress flag 4 */
+        AT(D_0044E988, 0x4, u8) = pc[1];
+        Progress_SetFlag(p, 4);
+        break;
+    case 0x72:
+        VCALL(D_0044FE08, 0x14, void (*)(VObject *, s32, s32, s32))(D_0044FE08, pc[1], pc[2], pc[3]);
+        break;
+    case 0x73:
+        VCALL(D_0044FE08, 0x40, void (*)(VObject *, s32, u32, u32))(
+            D_0044FE08, pc[1], be16(pc + 2), be16(pc + 4));
+        break;
+    case 0x74:
+        VCALL(D_0044FE08, 0x44, void (*)(VObject *, s32))(D_0044FE08, pc[1]);
+        break;
+    case 0x75:
+        VCALL(D_0044FE08, 0x48, void (*)(VObject *, s32))(D_0044FE08, pc[1]);
+        break;
+    case 0x76:
+        VCALL(D_0044FE08, 0x4C, void (*)(VObject *, s32, s32))(D_0044FE08, pc[1], pc[2]);
+        break;
+    case 0x84:
+        func_002EC470((u8 *)p + 0x764, pc[1]);
+        break;
+    case 0x8B:
+        AT(p, 0x73EB00, u8) = pc[1];
+        break;
+    case 0x91:   /* the noise level setting */
+        AT(p, 0x1114, u8) = pc[1];
+        break;
+    case 0x94:
+        func_0019A280(gCharPlayer, pc[1]);
+        break;
+    case 0x95:
+        func_0019A210(gCharPlayer, pc[1]);
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
@@ -1102,7 +1281,6 @@ void func_002013F0(VObject *ev) {
     }
 }
 
-extern VObject *D_0044E988;   /* the item manager */
 extern VObject *D_0044E560;   /* the sound driver */
 extern u8 *D_0044E978;        /* resident data */
 extern void func_00178450(Progress *p, u32 n);
@@ -1501,7 +1679,6 @@ s32 func_001FBF70(VObject *ev, s32 id) {
 }
 
 
-extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
 
 /* start action script `script` (0x80..: built in, else the room's, vtable +0x24) for
  * character id `id`: its slot gets a fresh context (character -1: none needed) */
@@ -1738,8 +1915,6 @@ void func_00200B00(VObject *ev) {
 /* ---- movies and the cutscene director (opcodes 0x60 / 0x61 / 0x62 / 0x6E / 0x89) ---- */
 
 extern VObject *D_0044FE10;   /* the cutscene director */
-extern VObject *D_0044E4F8;   /* the camera director's interface */
-extern void *D_0044E958;      /* the movie playing */
 extern s32 func_001768B0(Progress *p, const char *path, u32 kind);
 extern s32 func_002B6410(void *movie);   /* 2 playing, 0 done, -1 none */
 extern s32 func_002B64F0(void *movie);
