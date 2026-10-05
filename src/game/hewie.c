@@ -4329,3 +4329,60 @@ void func_0013FDE0(Hewie *h) {
     func_0013FA40(h);
     func_0013F470(h);
 }
+
+/* ---- tail ---- */
+
+/* one of three tail animations by his animation group: c for groups 2 / 6, b for 1 / 5, else a */
+static void tail_play(Hewie *h, s32 g, s32 a, s32 b, s32 c) {
+    func_002DDB30(h->c.motion, g == 6 || g == 2 ? c : g == 5 || g == 1 ? b : a);
+}
+
+/* a wag: every so often (+0xF3658 counting down) wag (`wag`) for 10..35 frames, then rest
+ * (still, 300 frames) */
+static void tail_wag(Hewie *h, s32 g, s32 sa, s32 sb, s32 sc, s32 wa, s32 wb, s32 wc) {
+    if (--HW(h, 0xF3658, s32) >= 0) {
+        return;
+    }
+    if (HW(h, 0xF365C, s32) != 0) {
+        HW(h, 0xF365C, s32) = 0;
+        HW(h, 0xF3658, s32) = 300;
+        tail_play(h, g, sa, sb, sc);
+    } else {
+        HW(h, 0xF365C, s32) = 1;
+        HW(h, 0xF3658, s32) = (s32)(6.0f * RNG01()) * 5 + 10;
+        tail_play(h, g, wa, wb, wc);
+    }
+}
+
+/* His tail overlay animation by +0xF3654: 0..3 held poses, 5 / 7 steady wags, 4 / 6 wagging now
+ * and then (from pose 2 / 3) */
+void func_0013F470(Hewie *h) {
+    s32 g = func_001669A0(h);
+
+    switch (HW(h, 0xF3654, u32)) {
+    case 0:
+        tail_play(h, g, 0x2107, 0x2108, 0x2109);
+        break;
+    case 1:
+        tail_play(h, g, 0x210A, 0x210B, 0x210C);
+        break;
+    case 2:
+        tail_play(h, g, 0x2100, 0x2103, 0x2106);
+        break;
+    case 3:
+        tail_play(h, g, 0x210D, 0x210E, 0x210F);
+        break;
+    case 4:
+        tail_wag(h, g, 0x2100, 0x2103, 0x2106, 0x2102, 0x2105, 0x2102);
+        break;
+    case 5:
+        tail_play(h, g, 0x2101, 0x2104, 0x2101);
+        break;
+    case 6:
+        tail_wag(h, g, 0x210D, 0x210E, 0x210F, 0x210D, 0x2110, 0x2111);
+        break;
+    case 7:
+        tail_play(h, g, 0x2102, 0x2105, 0x2102);
+        break;
+    }
+}
