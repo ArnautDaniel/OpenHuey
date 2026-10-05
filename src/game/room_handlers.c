@@ -1669,7 +1669,7 @@ s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *D_0047AAB8[], *D_00409940;   /* room object names */
+extern const char *D_0047AAB8[], *D_00409940, *D_0040B508, *D_003FCB00[];   /* room object names */
 
 /* two wheels (D_0047AAB8) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees a step
  * (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn */
@@ -1711,10 +1711,10 @@ s32 func_002AE1B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* the room object D_00409940's animation by event var 0 (12..): byte 3 0 forward (+0x74) to
- * frame (var - 12) / 18, 1 back (+0x78) to (var - 12) / 16, 2 / 3 back at 0 / 1; +0x7C kept 0..1 */
-s32 func_002B31A0(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00409940);
+/* room object `name`'s animation by event var 0 (12..): byte 3 0 forward (+0x74) to frame
+ * (var - 12) / 18, 1 back (+0x78) to (var - 12) / 16, 2 / 3 back at 0 / 1; +0x7C kept 0..1 */
+static inline __attribute__((always_inline)) s32 var0_anim(u8 *cmd, const char *name) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
     u32 v;
 
     if (o == NULL) {
@@ -1756,6 +1756,59 @@ s32 func_002B31A0(void *self, void *a1, u8 *cmd) {
     }
     if (AT(o, 0x7C, f32) < 0.0f) {
         AT(o, 0x7C, f32) = 0.0f;
+    }
+    return 1;
+}
+
+s32 func_002B31A0(void *self, void *a1, u8 *cmd) {
+    return var0_anim(cmd, D_00409940);
+}
+
+s32 func_002B3B70(void *self, void *a1, u8 *cmd) {
+    return var0_anim(cmd, D_0040B508);
+}
+
+/* five pendulums (D_003FCB00[byte 3]) of their own periods and swings: byte 4 0 still at a phase
+ * offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14) */
+s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FCB00[cmd[3]]);
+    f32 period = 360.0f, swing = 15.0f;
+
+    switch (cmd[3]) {
+    case 2:
+        break;
+    case 0:
+        period = 180.0f;
+        swing = 5.0f;
+        break;
+    case 1:
+        period = 210.0f;
+        swing = 5.0f;
+        break;
+    case 3:
+        period = 180.0f;
+        swing = 10.0f;
+        break;
+    case 4:
+        period = 240.0f;
+        break;
+    }
+    switch (cmd[4]) {
+    case 0:
+        AT(o, 0x30, f32) = 0.0f;
+        AT(o, 0x34, f32) = 60.0f * (f32)(u32)cmd[3];
+        break;
+    case 1:
+        AT(o, 0x30, f32) = AT(o, 0x30, f32) + 360.0f / period;
+        if (!(AT(o, 0x30, f32) + AT(o, 0x34, f32) < 360.0f)) {
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
+        }
+        AT(o, 0x14, f32) = kPi.f * (swing * func_0031C248(kPi.f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
+        if (!(AT(o, 0x14, f32) <= kPi.f)) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - kTwoPi.f;
+        }
+        break;
     }
     return 1;
 }
