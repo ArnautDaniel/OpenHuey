@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "snd.h"
+#include "iop_mem.h"
 
 static SDL_AudioStream *sStream;
 static SDL_Mutex *sLock;
@@ -32,6 +33,7 @@ static void SDLCALL mix_cb(void *ud, SDL_AudioStream *s, int additional, int tot
         memset(buf, 0, sizeof(float) * 2 * frames);
         SDL_LockMutex(sLock);
         adx_render(buf, frames);
+        seq_tick((double)frames / SND_RATE);
         spu_render(buf, frames);
         SDL_UnlockMutex(sLock);
         for (i = 0; i < frames * 2; i++) {

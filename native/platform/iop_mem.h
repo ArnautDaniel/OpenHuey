@@ -28,4 +28,18 @@ unsigned sceSdGetAddr(unsigned short entry);
 unsigned short sceSdNote2Pitch(unsigned short cnote, unsigned short cfine, unsigned short note, short fine);
 void spu_reset(void);
 
+/* the sequencer (seq.c) */
+void seq_tick(double sec);
+void seq_reset(void);
+void seq_load_bank(int k, unsigned hd, unsigned spu);
+int seq_load(int k, unsigned addr);
+void seq_play(int k, int on);
+void seq_locate(int k, unsigned pos);
+int seq_playing(int k);
+void seq_set_volume(int k, int v);
+int seq_volume(int k);
+void seq_set_synth_volume(int k, int v);
+void seq_set_tempo(int k, int t);
+int seq_tempo(int k);
+
 #endif

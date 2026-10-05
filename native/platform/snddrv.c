@@ -52,7 +52,12 @@ typedef struct Bank {
     unsigned seq;     /* +0x8C its sequence (IOP memory), or 0 */
     unsigned sdt;     /* +0x90 its sound table (IOP memory), or 0 */
     unsigned pad[5];
-    unsigned owner;   /* +0xB0 -1: by slot */
+    unsigned char hport;   /* +0xA8 its synth port (a sequence bank) */
+    unsigned char hpad;
+    unsigned char mport;   /* +0xAA its sequencer port */
+    unsigned char song;    /* +0xAB */
+    unsigned flags;        /* +0xAC 1 bank loaded, 2 sequence loaded, 0x40 playing */
+    unsigned owner;        /* +0xB0 -1: by slot */
 } Bank;
 
 static Bank sBanks[0x21];
@@ -268,6 +273,7 @@ static void snd_init_once(void) {
     sInited = 1;
     sLog = getenv("HG_SNDLOG") != NULL;
     snd_init();
+    seq_reset();
     for (v = 0; v < NV; v++) {
         sVoices[v].chvol = 0xFF;
         sVoices[v].bank = sVoices[v].entry = -1;
@@ -693,6 +699,57 @@ void *snddrv_rpc(unsigned fno, void *args, int size) {
                 set_volume(v, L, R);
                 break;
             }
+        }
+        break;
+    /* sequences (a bank of type 1: its ports +0xA8 / +0xAA) */
+    case 0x0C:
+        if (a[0] < 0x20) {
+            seq_load_bank(sBanks[a[0]].hport, sBanks[a[0]].hd, sBanks[a[0]].spu);
+        }
+        break;
+    case 0x0D:
+        if (a[0] < 0x20) {
+            sResult[0] = (unsigned)seq_load(sBanks[a[0]].mport, sBanks[a[0]].seq);
+        }
+        break;
+    case 0x18:
+        if (a[0] < 0x20) {
+            seq_locate(sBanks[a[0]].mport, a[2]);
+        }
+        break;
+    case 0x19:
+        if (a[0] < 0x20) {
+            seq_play(sBanks[a[0]].mport, 1);
+        }
+        break;
+    case 0x1A:
+        if (a[0] < 0x20) {
+            seq_play(sBanks[a[0]].mport, 0);
+        }
+        break;
+    case 0x1B:
+        if (a[0] < 0x20) {
+            seq_set_synth_volume(sBanks[a[0]].hport, (int)a[2]);
+        }
+        break;
+    case 0x1E:
+        if (a[0] < 0x20) {
+            seq_set_volume(sBanks[a[0]].mport, (int)a[2]);
+        }
+        break;
+    case 0x1F:
+        if (a[0] < 0x20) {
+            sResult[0] = (unsigned)seq_volume(sBanks[a[0]].mport);
+        }
+        break;
+    case 0x20:
+        if (a[0] < 0x20) {
+            seq_set_tempo(sBanks[a[0]].mport, (int)a[2]);
+        }
+        break;
+    case 0x21:
+        if (a[0] < 0x20) {
+            sResult[0] = (unsigned)seq_tempo(sBanks[a[0]].mport);
         }
         break;
     default:
