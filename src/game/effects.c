@@ -3489,3 +3489,210 @@ void func_00300130(u8 *e) {
     AT(e, 0xC45, s8) = 0x10;
     AT(e, 0xC46, s8) = -1;
 }
+
+/* ---- D_00471000 (0x60 bytes; event command 0xA9): a 2 x 2 quad (texture group 0x10, cell
+ * (64, 0) 64 x 64, palette 1) wandering about its place: +0x10 the place, +0x20 its turn, +0x30
+ * / +0x34 the range (x, z), +0x38 / +0x3C the offset now, +0x40 / +0x44 where it heads, +0x48 /
+ * +0x4C its step (its facing too), +0x50 frames to wait ---- */
+
+extern void *D_00471000[];
+extern f32 func_0031BDB0(f32 x);   /* atanf */
+
+/* +0x8 destructor */
+void *func_003055F0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00471000;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046F580;
+        }
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC set up: at its place, a random step (-0.25..0.25), waiting 1 or 31 frames */
+void func_00305DD0(u8 *o) {
+    VObject *rnd;
+
+    AT(o, 0x38, s32) = 0;
+    AT(o, 0x3C, s32) = 0;
+    AT(o, 0x40, f32) = AT(o, 0x38, f32);
+    AT(o, 0x44, f32) = AT(o, 0x3C, f32);
+    rnd = D_0044E550;
+    AT(o, 0x48, f32) = 0.5f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(o, 0x4C, f32) = 0.5f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(o, 0x50, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1) * 30 + 1;
+}
+
+/* one axis of the walk: on by the step, kept in the range (a side reached becomes the target),
+ * stopping at the target */
+static inline __attribute__((always_inline)) void wander_axis(u8 *o, s32 cur, s32 to, s32 step, s32 range) {
+    f32 x, r, v;
+
+    AT(o, cur, f32) = AT(o, cur, f32) + AT(o, step, f32);
+    r = AT(o, range, f32);
+    x = AT(o, cur, f32);
+    if (!(x < r)) {
+        AT(o, cur, f32) = r;
+        AT(o, to, f32) = r;
+        return;
+    }
+    r = -r;
+    if (x <= r) {
+        AT(o, cur, f32) = r;
+        AT(o, to, f32) = r;
+        return;
+    }
+    v = AT(o, step, f32);
+    if (!(v <= 0.0f)) {
+        if (AT(o, to, f32) - x < 0.0f) {
+            AT(o, cur, f32) = AT(o, to, f32);
+        }
+    } else if (v < 0.0f && !(AT(o, to, f32) - x <= 0.0f)) {
+        AT(o, cur, f32) = AT(o, to, f32);
+    }
+}
+
+/* +0x10 update: waiting, or walking toward the target (then waiting 1..91 frames); there, 1 in
+ * 8 a new target (somewhere in the range, or back home) a tenth of the way a step, else a nudge
+ * and a short wait */
+s32 func_003059C0(u8 *o) {
+    f32 cx, tx;
+
+    if (AT(o, 0x50, s32) != 0) {
+        AT(o, 0x50, s32)--;
+        return 1;
+    }
+    cx = AT(o, 0x38, f32);
+    tx = AT(o, 0x40, f32);
+    if (tx == cx && AT(o, 0x44, f32) == AT(o, 0x3C, f32)) {
+        VObject *r1 = D_0044E550;
+
+        if (!(VCALL(r1, 0x10, s32 (*)(VObject *))(r1) & 7)) {
+            if (AT(o, 0x40, f32) == 0.0f && AT(o, 0x44, f32) == 0.0f) {
+                VObject *r = D_0044E550;
+
+                AT(o, 0x40, f32) = 2.0f * AT(o, 0x30, f32) * (VCALL(r, 0x18, f32 (*)(VObject *))(r) - 0.5f);
+                AT(o, 0x44, f32) = 2.0f * AT(o, 0x34, f32) * (VCALL(r, 0x18, f32 (*)(VObject *))(r) - 0.5f);
+            } else {
+                AT(o, 0x40, s32) = 0;
+                AT(o, 0x44, s32) = 0;
+            }
+            AT(o, 0x48, f32) = 0.1f * (AT(o, 0x40, f32) - AT(o, 0x38, f32));
+            AT(o, 0x4C, f32) = 0.1f * (AT(o, 0x44, f32) - AT(o, 0x3C, f32));
+        } else {
+            VObject *r = D_0044E550;
+
+            AT(o, 0x50, s32) = (VCALL(r, 0x10, s32 (*)(VObject *))(r) & 1) * 30 + 1;
+            if (VCALL(r, 0x10, s32 (*)(VObject *))(r) & 1) {
+                AT(o, 0x48, f32) = AT(o, 0x48, f32) + 1.0f;
+            } else {
+                AT(o, 0x48, f32) = AT(o, 0x48, f32) - 1.0f;
+            }
+            if (VCALL(r1, 0x10, s32 (*)(VObject *))(r1) & 1) {
+                AT(o, 0x4C, f32) = AT(o, 0x4C, f32) + 1.0f;
+            } else {
+                AT(o, 0x4C, f32) = AT(o, 0x4C, f32) - 1.0f;
+            }
+        }
+        return 1;
+    }
+    if (tx != cx) {
+        wander_axis(o, 0x38, 0x40, 0x48, 0x30);
+    }
+    if (AT(o, 0x44, f32) != AT(o, 0x3C, f32)) {
+        wander_axis(o, 0x3C, 0x44, 0x4C, 0x34);
+    }
+    if (AT(o, 0x40, f32) == AT(o, 0x38, f32) && AT(o, 0x44, f32) == AT(o, 0x3C, f32)) {
+        AT(o, 0x50, s32) = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) * 30 + 1;
+    }
+    return 1;
+}
+
+/* +0x14 draw: the quad facing along its step, at the offset, turned and placed */
+void func_00305700(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 c[4][4] __attribute__((aligned(16)));
+    QuadRec r __attribute__((aligned(16)));
+    QuadDrawer q __attribute__((aligned(16)));
+
+    sceVu0UnitMatrix(m);
+    dir[0] = AT(o, 0x48, f32);
+    dir[1] = 0.0f;
+    dir[2] = AT(o, 0x4C, f32);
+    dir[3] = 0.0f;
+    sceVu0Normalize(dir, dir);
+    if (dir[2] != 0.0f) {
+        if (!(dir[2] <= 0.0f)) {
+            sceVu0RotMatrixY(m, m, func_0031BDB0(dir[0] / dir[2]) - kHalfPi.f);
+        } else {
+            sceVu0RotMatrixY(m, m, kPi.f + (func_0031BDB0(dir[0] / dir[2]) - kHalfPi.f));
+        }
+    }
+    at[0] = AT(o, 0x38, f32);
+    at[1] = 0.0f;
+    at[2] = AT(o, 0x3C, f32);
+    at[3] = 1.0f;
+    sceVu0TransMatrix(m, m, at);
+    sceVu0RotMatrix(m, m, (f32 *)(o + 0x20));
+    sceVu0TransMatrix(m, m, (f32 *)(o + 0x10));
+    r.rgba[0] = 0x80;
+    r.rgba[1] = 0x80;
+    r.rgba[2] = 0x80;
+    r.rgba[3] = 0x80;
+    c[0][2] = -1.0f;
+    r.pos[3] = 1.0f;
+    r.w = 1.0f;
+    r.h = 1.0f;
+    c[0][0] = 1.0f;
+    c[0][3] = 1.0f;
+    r.pos[0] = 0.0f;
+    r.pos[1] = 0.0f;
+    r.pos[2] = 0.0f;
+    r.turn = 0.0f;
+    r.frame = 0;
+    c[0][1] = 0.0f;
+    sceVu0ApplyMatrix(c[0], m, c[0]);
+    c[1][0] = 1.0f;
+    c[1][2] = 1.0f;
+    c[1][3] = 1.0f;
+    c[1][1] = 0.0f;
+    sceVu0ApplyMatrix(c[1], m, c[1]);
+    c[2][3] = 1.0f;
+    c[2][0] = -1.0f;
+    c[2][2] = -1.0f;
+    c[2][1] = 0.0f;
+    sceVu0ApplyMatrix(c[2], m, c[2]);
+    c[3][0] = -1.0f;
+    c[3][2] = 1.0f;
+    c[3][3] = 1.0f;
+    c[3][1] = 0.0f;
+    sceVu0ApplyMatrix(c[3], m, c[3]);
+    q.a = -1;
+    q.count = 1;
+    q.tex = (u64)-1;
+    q.cellX = 0x40;
+    q.cellW = 0x40;
+    q.vtbl = D_0046FC30;
+    q.cellH = 0x40;
+    q.rec = &r;
+    q.frames = 1;
+    q.corners = (s32)c;
+    q.palette = 1;
+    q.layer = 0x19;
+    q.texW = 0x200;
+    q.cx = 0.0f;
+    q.texH = 0x100;
+    q.cy = 0.0f;
+    q.cellY = 0;
+    q.flags = 2;
+    q.texId = 0;
+    q.texGroup = 0x10;
+    func_002E56C0((u8 *)&q);
+    q.vtbl = D_00469D00;
+}
