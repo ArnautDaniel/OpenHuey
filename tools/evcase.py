@@ -7,6 +7,7 @@ import re, sys, argparse
 ap = argparse.ArgumentParser()
 ap.add_argument('--func', default='func_002029B0')
 ap.add_argument('--jtbl', default='jtbl_00456A60')
+ap.add_argument('--end', default='.L002073F4', help='the common exit label')
 ap.add_argument('--sizes', action='store_true', help='just list op: label size')
 ap.add_argument('ops', nargs='*')
 a = ap.parse_args()
@@ -35,12 +36,12 @@ if a.sizes:
         print('%02X %s %d' % (op, t, n - i))
     sys.exit()
 for o in a.ops:
-    if o.startswith('.L'):   # an out-of-line tail: up to its first `b .L002073F4` / jr
+    if o.startswith('.L'):   # an out-of-line tail: up to its first `b <end>` / jr
         i = labels[o]
         print('==== ' + o)
         for l in body[i:]:
             print(re.sub(r'^\s*/\* [0-9A-F]+ ([0-9A-F]+) [0-9A-F]+ \*/', r'\1', l))
-            if re.search(r'\bb\s+\.L002073F4|\bjr\s+\$ra', l):
+            if re.search(r'\bb\s+' + re.escape(a.end) + r'|\bjr\s+\$ra', l):
                 print(body[body.index(l) + 1].strip()); break
         continue
     op = int(o, 16)

@@ -19,6 +19,10 @@ static inline u32 be16(const u8 *p) {
     return (p[0] << 8 | p[1]) & 0xFFFF;
 }
 
+static inline s32 be32(const u8 *p) {
+    return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+}
+
 /* +0x14: step over the condition at the pc (0x11 carries a string: 3 + its length) */
 void func_001FC700(VObject *ev) {
     u8 *pc = PC(ev);
@@ -46,6 +50,11 @@ extern u8 *D_0044F808;                        /* the stalker in play */
 extern VObject *D_0044E568;                   /* the rooms */
 extern VObject *D_0044E560;                   /* the sound driver */
 extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
+extern s32 func_00178610(Progress *p, u32 door);
+extern s32 func_001667C0(u8 *h);
+extern u32 func_00260540(void *items);
+extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern VObject *D_0044E988;   /* the item manager */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -340,6 +349,52 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x5D:   /* Hewie is the one controlled */
         r = AT(p, 0x1FBEC1, u8);
+        break;
+    case 0x09:   /* the progress' request (+0x1134) is be32 pc[1..4] */
+        if (AT(p, 0x1134, s32) == be32(pc + 1)) {
+            r = 1;
+        }
+        break;
+    case 0x0A:   /* the door at exit pc[1] of this room is open */
+        if ((u8)func_00178980(p, AT(ev, 0x560, s32), pc[1]) == 1) {
+            r = 1;
+        }
+        break;
+    case 0x0B:   /* door be16 pc[1..2]: func_00178610 */
+        if ((u8)func_00178610(p, be16(pc + 1)) == 1) {
+            r = 1;
+        }
+        break;
+    case 0x0C:   /* door be16 pc[1..2]: not the rooms' +0x60 */
+        if ((u8)VCALL(D_0044E568, 0x60, s32 (*)(VObject *, u32))(D_0044E568, be16(pc + 1)) == 0) {
+            r = 1;
+        }
+        break;
+    case 0x0F:   /* Hewie (in the scene): func_001667C0 */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0) {
+            r = func_001667C0(gCharPartner);
+        }
+        break;
+    case 0x12:   /* the counter (+0x703) is pc[1] */
+        if (AT(ev, 0x703, u8) == pc[1]) {
+            r = 1;
+        }
+        break;
+    case 0x13:   /* the script context's +0x14 is be16 pc[1..2] */
+        if (AT(AT(ev, 0x6FC, u8 *), 0x14, u16) == be16(pc + 1)) {
+            r = 1;
+        }
+        break;
+    case 0x2A:
+        if (AT(ev, 0x11F2, u8) != 0) {
+            r = 1;
+        }
+        break;
+    case 0x2C:   /* the director's +0x2C */
+        r = VCALL(D_0044E4F8, 0x2C, s32 (*)(VObject *))(D_0044E4F8);
+        break;
+    case 0x2F:   /* the item manager's func_00260540 under 10 */
+        r = func_00260540((u8 *)D_0044E988 + 0x8) < 10;
         break;
     default:
         if (pc[0] < 0x66) {
