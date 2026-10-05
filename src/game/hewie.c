@@ -1269,17 +1269,17 @@ void func_00143550(Hewie *h, s32 blend) {
 
 /* ---- small behaviour pieces ---- */
 
-extern s32 func_00141C00(Hewie *h, s32 kind);
+void func_00141C00(Hewie *h, u32 kind);
 extern void func_0013C300(Hewie *h);
 
 #define MOTION_EVENTS(m) (*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18))
 
-s32 func_001480B0(Hewie *h) {
-    return func_00141C00(h, 2);
+void func_001480B0(Hewie *h) {
+    func_00141C00(h, 2);
 }
 
-s32 func_0015F750(Hewie *h) {
-    return func_00141C00(h, 4);
+void func_0015F750(Hewie *h) {
+    func_00141C00(h, 4);
 }
 
 void func_0014F5A0(Hewie *h) {
@@ -4767,4 +4767,138 @@ s32 func_00140CD0(Hewie *h, u32 kind) {
     }
     pose_leave(h, g);
     return -1;
+}
+
+/* ---- holding a pose ---- */
+
+/* his walk: 0x206 when moving 1, else `anim` (0x201 / 0x202), unless already playing */
+static void pose_walk(Hewie *h, s32 anim) {
+    s32 cur = MOTION_ANIM(h->c.motion);
+
+    if (h->c.a.unkC4 == 1) {
+        if (cur != 0x206) {
+            pose_play(h, 0x206);
+        }
+    } else if (cur != anim) {
+        pose_play(h, anim);
+    }
+}
+
+/* the settled animation of basic group `base`: standing (func_00143550), sitting (1), lying (2,
+ * 7 when moving 1), unless already playing */
+static void pose_settle(Hewie *h, s32 base) {
+    s32 a;
+
+    switch (base) {
+    case 0:
+        func_00143550(h, -1);
+        break;
+    case 1:
+        if (MOTION_ANIM(h->c.motion) != 1) {
+            pose_play(h, 1);
+        }
+        break;
+    case 2:
+        a = h->c.a.unkC4 == 1 ? 7 : 2;
+        if (MOTION_ANIM(h->c.motion) != a) {
+            pose_play(h, a);
+        }
+        break;
+    }
+}
+
+/* the animations between the basic poses: [to][from] (0 stand, 1 sit, 2 lie; 3 stand from
+ * pose 10) */
+static const s16 sPoseInto[4][3] = {
+    { 0, 0x101, 0x103 },
+    { 0x100, 0, 0x105 },
+    { 0x102, 0x104, 0 },
+    { 0x1001, 0x101, 0x103 },
+};
+
+/* keep him in pose `kind` (see func_00140CD0): from a basic group (0..2, or its entering 4..6
+ * once done) move toward the pose or play its settled animation (3 / 4 / 5: stay as he is);
+ * else leave his group (pose_leave). Not while blending */
+void func_00141C00(Hewie *h, u32 kind) {
+    s32 g, base;
+
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    g = func_001669A0(h);
+    switch (kind) {
+    case 7:
+        if (g == 10 || func_00140CD0(h, 5) == 0) {
+            func_00143400(h);
+        }
+        return;
+    case 8:
+        if (g == 10 || g == 9 || func_00140CD0(h, 5) == 0) {
+            pose_walk(h, 0x201);
+        }
+        return;
+    case 9:
+        if (g == 10 || g == 8 || func_00140CD0(h, 5) == 0) {
+            pose_walk(h, 0x202);
+        }
+        return;
+    }
+    if (kind >= 11 || (u32)g >= 16) {
+        return;
+    }
+    if (kind == 6) {
+        if (g == 12) {
+            if (ANIM_DONE(h)) {
+                pose_play(h, 0x203);
+            }
+        } else if (g != 11 && func_00140CD0(h, 2) == 0) {
+            pose_play(h, 0x300);
+        }
+        return;
+    }
+    if (g <= 2 || (g >= 4 && g <= 6)) {
+        if (g >= 4 && !ANIM_DONE(h)) {
+            return;
+        }
+        base = g >= 4 ? g - 4 : g;
+        if (kind >= 3 && kind <= 5) {
+            pose_settle(h, base);
+        } else {
+            s32 to = kind == 10 ? 3 : kind;
+
+            if (sPoseInto[to][base] == 0) {
+                pose_settle(h, base);
+            } else {
+                pose_play(h, sPoseInto[to][base]);
+            }
+        }
+        return;
+    }
+    if (kind == 4 && g == 3) {
+        return;
+    }
+    if (kind == 4 && g == 7) {
+        if (ANIM_DONE(h)) {
+            pose_play(h, 8);
+        }
+        return;
+    }
+    if (kind == 5 && g >= 8 && g <= 10) {
+        if (g == 10) {
+            func_00143400(h);
+        } else {
+            pose_walk(h, g == 8 ? 0x202 : 0x201);
+        }
+        return;
+    }
+    if (kind == 10 && g == 13) {
+        return;
+    }
+    if (kind == 10 && g == 14) {
+        if (ANIM_DONE(h)) {
+            pose_play(h, 0x1002);
+        }
+        return;
+    }
+    pose_leave(h, g);
 }
