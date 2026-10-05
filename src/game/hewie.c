@@ -8180,3 +8180,122 @@ void func_00155FF0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B18F8);
     }
 }
+
+/* ---- closing in to pounce ---- */
+
+extern const PTMF D_003B18D8;
+
+/* close on his target (+0xF3544; out of his room, out of time +0xF36B4, or out of reach: the
+ * default action) running (0x202). Not blending and within 30 by the path: under 5, by its slot
+ * the attack (Fiona 0x61, 2..5: 0x59 / 0x5B / 0x5D / 0x5F) while +0xF3560 lasts, else the
+ * default action; else, both on plain ground (mesh flag 1 on either: action 0x6D) and facing it
+ * (within 60 degrees) on its triangle: pounce (as func_001476C0 but aimed 5 above it, frames by
+ * the distance at 2.8, behaviour D_003B18D8). Otherwise along the path (pose 8 when the stride
+ * fails) */
+void func_001569C0(Hewie *h) {
+    Character *t;
+    f32 d[4] __attribute__((aligned(16)));
+    f32 fwd[4] __attribute__((aligned(16)));
+    f32 rest, a;
+    u32 tri;
+
+    if (!in_his_room(h, HW(h, 0xF3544, Character *))) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    HW(h, 0xF36B4, s32) -= 1;
+    if (HW(h, 0xF36B4, s32) == 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    t = HW(h, 0xF3544, Character *);
+    tri = t->a.navTri;
+    if (func_0013EE40(h, tri, t->a.pos, 0, 1) != 0) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+        func_002DDED0(h->c.motion, 0x202, -1);
+    }
+    if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
+        rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+        if (rest < 30.0f) {
+            if (rest < 5.0f) {
+                h->c.unk124 = h->c.unk128;
+                if (HW(h, 0xF3560, s32) != 0) {
+                    HW(h, 0xF3560, s32) -= 1;
+                }
+                if (HW(h, 0xF3560, s32) == 0) {
+                    hewie_want(h, 0, 0);
+                    return;
+                }
+                switch (HW(h, 0xF3544, Character *)->a.slot) {
+                case 0:
+                    hewie_want(h, 0x61, 0);
+                    break;
+                case 2:
+                    hewie_want(h, 0x59, 0);
+                    break;
+                case 3:
+                    hewie_want(h, 0x5B, 0);
+                    break;
+                case 4:
+                    hewie_want(h, 0x5D, 0);
+                    break;
+                case 5:
+                    hewie_want(h, 0x5F, 0);
+                    break;
+                }
+                return;
+            }
+            /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+            if ((NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1) || (NavMesh_TriFlags(D_0044E570, tri) & 1)) {
+                hewie_want(h, 0x6D, 0);
+                return;
+            }
+            sceVu0SubVector(d, HW(h, 0xF3544, Character *)->a.pos, h->c.a.pos);
+            d[1] = 0.0f;
+            sceVu0Normalize(d, d);
+            fwd[2] = 1.0f;
+            fwd[0] = 0.0f;
+            fwd[1] = 0.0f;
+            fwd[3] = 0.0f;
+            sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
+            if (!(sceVu0InnerProduct(fwd, d) <= 0.5f)) {
+                if (HW(h, 0xF3604, s32) != 4) {
+                    HW(h, 0xF3604, s32) = 4;
+                    HW(h, 0xF3608, s32) = 10;
+                }
+                t = HW(h, 0xF3544, Character *);
+                if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) != t->a.navTri) {
+                    h->c.unk124 = h->c.unk128;
+                    hewie_want(h, 0, 0);
+                    return;
+                }
+                sceVu0CopyVector(&HW(h, 0xF36E0, f32), HW(h, 0xF3544, Character *)->a.pos);
+                HW(h, 0xF36E4, f32) = 5.0f + HW(h, 0xF3544, Character *)->a.pos[1];
+                HW(h, 0xF36B4, s32) = 1;
+                HW(h, 0xF36B8, s32) = (s32)(rest / 0x1.6666660000000p+1f /* 2.8 */) + 1;
+                HW(h, 0xF36BC, s32) = 0;
+                HW(h, 0xF36C4, f32) = 0x1.6666660000000p+1f /* 2.8 */;
+                HW(h, 0xF36C8, f32) = h->c.a.pos[1];
+                HW(h, 0xF36CC, s32) = 0;
+                a = func_001244D0(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
+                HW(h, 0xF36D0, f32) = a;
+                turn_toward(h, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
+                func_002DDED0(h->c.motion, 0x1E01, -1);
+                HW(h, 0xF356C, u32) |= 0x80000000;
+                h->c.a.unk2D = 1;
+                func_0013A430(h, 0x68);
+                h->c.unk104[0] = 0;
+                h->c.unk104[1] = 0;
+                Hewie_SetBehaviour(h, &D_003B18D8);
+                return;
+            }
+        }
+    }
+    if (!(u8)func_00139DE0(h)) {
+        func_00141C00(h, 8);
+    }
+}
