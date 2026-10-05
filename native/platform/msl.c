@@ -33,6 +33,7 @@ static double d_of(u64bits b) { double d; memcpy(&d, &b, 8); return d; }
 static u64bits b_of(double d) { u64bits b; memcpy(&b, &d, 8); return b; }
 
 u64bits func_00100230(unsigned x) { return b_of((double)x); }                       /* (double)u32 */
+u64bits func_0011ED78(float x) { return b_of((double)x); }                          /* (double)f32 */
 u64bits func_0011F148(u64bits a, u64bits b) { return b_of(d_of(a) + d_of(b)); }     /* a + b */
 u64bits func_0011F208(u64bits a, u64bits b) { return b_of(d_of(a) * d_of(b)); }     /* a * b */
 u64bits func_0011F458(u64bits a, u64bits b) { return b_of(d_of(a) / d_of(b)); }     /* a / b */

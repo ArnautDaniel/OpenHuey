@@ -1615,3 +1615,231 @@ void func_002E2920(u8 *m) {
         }
     }
 }
+
+/* ---- D_00472370 (0x4A0 bytes): a creature's vanishing - a glow (records +0x10 + buffer
+ * +0x3A8 * 0x30, frames 0..15 of its animation) and 8 sparks (+0x70 + buffer * 0x180) that
+ * burst out, then zig-zag (+0x3BC), slow (+0x430 their drag, doubling) and shrink (+0x450) and
+ * fade (+0x470); +0x3B0.. each spark's velocity, +0x490 the frame, +0x494 bits 1 / 2 / 4 the
+ * glow done / sparks shrunk / faded (all: it ends). Drawn by the quad drawer at +0x370 ---- */
+
+extern void *D_0046F580[];
+extern void func_002D63B0(void *o);   /* free (the effects' heap) */
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+/* soft-float doubles as raw bit patterns */
+extern u64 func_0011ED78(f32 x);             /* (double)x */
+extern u64 func_0011F208(u64 a, u64 b);      /* a * b */
+extern u64 func_0011F148(u64 a, u64 b);      /* a + b */
+extern u64 func_0011F458(u64 a, u64 b);      /* a / b */
+extern f32 func_0011F878(u64 a);             /* (float)a */
+
+#define VANISH_GLOW(o) ((o) + AT(o, 0x3A8, s32) * 0x30 + 0x10)
+#define VANISH_SPARK(o, i) ((o) + AT(o, 0x3A8, s32) * 0x180 + (i) * 0x30 + 0x70)
+
+/* +0x8 destructor (the quad drawer at +0x370 inlined) */
+u8 *func_00312040(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00472370;
+    AT(o, 0x370, void **) = D_0046FC30;
+    AT(o, 0x370, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0xC set up: the drawer (texture group 0x10, additive), the glow 5 across, the sparks 4
+ * across with their drag ((0.005 + 0.025 x random) / 2, in doubles), shrink and fade */
+void func_003128E0(u8 *o) {
+    static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A}, k002 = {0x3CA3D70A};
+    VObject *rng;
+    s32 i;
+
+    AT(o, 0x3A8, s32) = 0;
+    AT(o, 0x378, s64) = -1;
+    AT(o, 0x388, s32) = 0;
+    AT(o, 0x38C, s32) = 0;
+    AT(o, 0x390, s32) = 0x19;
+    AT(o, 0x394, s16) = 1;
+    AT(o, 0x396, s16) = 0;
+    AT(o, 0x398, s16) = 0x60;
+    AT(o, 0x39A, s16) = 0x20;
+    AT(o, 0x39C, s16) = 0x20;
+    AT(o, 0x39E, s16) = 0x200;
+    AT(o, 0x3A0, s16) = 0x100;
+    AT(o, 0x3A2, u8) = 0x40;
+    AT(o, 0x3A3, u8) = 1;
+    AT(o, 0x3A4, u8) = 1;
+    AT(o, 0x3A5, u8) = 0x10;
+    AT(o, 0x3A6, u8) = 0xFF;
+    rng = D_0044E550;
+    AT(VANISH_GLOW(o), 0x20, f32) = 5.0f;
+    AT(VANISH_GLOW(o), 0x24, f32) = AT(VANISH_GLOW(o), 0x20, f32);
+    AT(VANISH_GLOW(o), 0x28, s32) = 0;
+    AT(VANISH_GLOW(o), 0x2C, s32) = 0;
+    for (i = 0; i < 8; i++) {
+        u8 *p = VANISH_SPARK(o, i);
+
+        AT(p, 0x20, f32) = 4.0f;
+        AT(p, 0x24, f32) = AT(p, 0x20, f32);
+        AT(p, 0x28, s32) = 0;
+        AT(p, 0x2C, s32) = 0;
+        AT(o, 0x430 + i * 4, f32) = func_0011F878(func_0011F458(
+            func_0011F148(0x3F747AE140000000ULL /* 0.005f */,
+                          func_0011F208(0x3F9999999999999AULL /* 0.025 */,
+                                        func_0011ED78(VCALL(rng, 0x18, f32 (*)(VObject *))(rng)))),
+            0x4000000000000000ULL /* 2.0 */));
+        AT(o, 0x450 + i * 4, f32) = k0005.f + k002.f * (f32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 7);
+        AT(o, 0x470 + i * 4, f32) = (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
+    }
+    AT(o, 0x490, s32) = 0;
+    AT(o, 0x494, u8) = 0;
+}
+
+/* a random sign */
+static inline __attribute__((always_inline)) s8 vanish_sign(VObject *rng) {
+    return (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 1) ? -1 : 1;
+}
+
+/* +0x18 start: at params' position (+0x0) in its colour (+0x10); each spark a little darker,
+ * flung out at random (up to 0.5 a frame each way, upward only), its zig-zag 0.0125..0.05 */
+void func_003120D0(u8 *o, const u8 *params) {
+    VObject *rng;
+    u8 *g = VANISH_GLOW(o);
+    s32 i;
+
+    AT(g, 0x0, s32) = params[0x10];
+    AT(g, 0x4, s32) = params[0x11];
+    AT(g, 0x8, s32) = params[0x12];
+    AT(g, 0xC, s32) = params[0x13];
+    sceVu0CopyVector((f32 *)(g + 0x10), (f32 *)params);
+    rng = D_0044E550;
+    for (i = 0; i < 8; i++) {
+        u8 *p = VANISH_SPARK(o, i);
+        u32 dark = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F;
+        s8 sign;
+        f32 m;
+
+        AT(p, 0x0, s32) = params[0x10] - dark;
+        AT(p, 0x4, s32) = params[0x11] - dark;
+        AT(p, 0x8, s32) = params[0x12] - dark;
+        AT(p, 0xC, s32) = params[0x13];
+        sign = vanish_sign(rng);
+        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
+        AT(o, 0x3B0 + i * 0x10, f32) = (f32)sign * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f);
+        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
+        AT(o, 0x3B4 + i * 0x10, f32) = VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f;
+        sign = vanish_sign(rng);
+        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
+        AT(o, 0x3B8 + i * 0x10, f32) = (f32)sign * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f);
+        m = (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
+        AT(o, 0x3BC + i * 0x10, f32) = 0x1.99999ap-7f /* 0.0125 */ * (f32)sign * m;
+        sceVu0CopyVector((f32 *)(p + 0x10), (f32 *)params);
+    }
+}
+
+/* +0x14 draw (unless the effects are paused): the glow (cell (0, 0x60), 15 frames), then the
+ * sparks (cell (0x60, 0x40)) */
+void func_00312450(u8 *o) {
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    AT(o, 0x394, s16) = 1;
+    AT(o, 0x396, s16) = 0;
+    AT(o, 0x398, s16) = 0x60;
+    AT(o, 0x3A3, u8) = 0xF;
+    AT(o, 0x380, u8 *) = VANISH_GLOW(o);
+    func_002E56C0(o + 0x370);
+    AT(o, 0x394, s16) = 8;
+    AT(o, 0x396, s16) = 0x60;
+    AT(o, 0x398, s16) = 0x40;
+    AT(o, 0x3A3, u8) = 1;
+    AT(o, 0x380, u8 *) = VANISH_SPARK(o, 0);
+    func_002E56C0(o + 0x370);
+}
+
+/* +0x10 update (0 once all of it is done) */
+s32 func_00312510(u8 *o) {
+    VObject *rng;
+    u8 *g;
+    s32 i, k;
+
+    AT(o, 0x3A8, s32) ^= 1;
+    {
+        u32 buf = AT(o, 0x3A8, u32);
+        u32 *dst = &AT(o, 0x10 + buf * 0x30, u32);
+        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x30, u32);
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+    }
+    g = VANISH_GLOW(o);
+    AT(g, 0x2C, s32)++;
+    if (AT(g, 0x2C, s32) >= 0xF) {
+        AT(g, 0x2C, s32) = 0xF;
+        AT(g, 0xC, s32) = 0;
+        AT(o, 0x494, u8) |= 1;
+    }
+    rng = D_0044E550;
+    for (i = 0; i < 8; i++) {
+        u32 buf = AT(o, 0x3A8, u32);
+        u32 *dst = &AT(o, 0x70 + buf * 0x180 + i * 0x30, u32);
+        u32 *src = &AT(o, 0x70 + (buf ^ 1) * 0x180 + i * 0x30, u32);
+        f32 *v = &AT(o, 0x3B0 + i * 0x10, f32);
+        f32 *drag = &AT(o, 0x430 + i * 4, f32);
+        u8 *p;
+        f32 w;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        p = VANISH_SPARK(o, i);
+        AT(p, 0x2C, s32) = 0;
+        if (AT(o, 0x490, s32) < 9) {
+            AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[0];
+            AT(p, 0x18, f32) = AT(p, 0x18, f32) + v[2];
+        } else {
+            AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[3];
+            AT(p, 0x18, f32) = AT(p, 0x18, f32) + v[3];
+            if (AT(o, 0x490, u32) % ((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 7) == 0) {
+                v[3] = -v[3];
+            }
+        }
+        if (AT(o, 0x490, s32) < 5) {
+            AT(p, 0x14, f32) = AT(p, 0x14, f32) + (v[1] - *drag);
+            *drag = *drag + *drag;
+        } else {
+            if (!(v[1] <= *drag)) {
+                v[1] = *drag;
+                *drag = *drag + *drag;
+            }
+            if (AT(o, 0x490, s32) % 6 == 0) {
+                *drag = *drag + *drag / 12.0f;
+            }
+            AT(p, 0x14, f32) = AT(p, 0x14, f32) + (v[1] - *drag);
+        }
+        if (AT(o, 0x490, s32) % 2 == 0) {
+            w = AT(p, 0x20, f32) - AT(o, 0x450 + i * 4, f32);
+            AT(p, 0x20, f32) = w;
+            AT(p, 0x24, f32) = w;
+        }
+        if (AT(p, 0x20, f32) < 0.0f) {
+            AT(p, 0x20, f32) = 0.0f;
+            AT(p, 0x24, f32) = 0.0f;
+            AT(o, 0x494, u8) |= 2;
+        }
+        AT(p, 0xC, s32) = (s32)((f32)AT(p, 0xC, s32) - AT(o, 0x470 + i * 4, f32));
+        if (AT(p, 0xC, s32) < 0) {
+            AT(p, 0xC, s32) = 0;
+            AT(o, 0x494, u8) |= 4;
+        }
+    }
+    if (AT(o, 0x494, u8) == 7) {
+        return 0;
+    }
+    AT(o, 0x490, s32)++;
+    return 1;
+}

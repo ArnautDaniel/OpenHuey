@@ -2294,7 +2294,7 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *const D_003FC680, *const D_0042A0E8;   /* "fan" (rooms 0x1A / 0x31) */
+extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38;   /* "fan" (rooms 0x1A / 0x31 / 0x21) */
 
 /* the room's object `name` turns 1.15 degrees a frame */
 static inline __attribute__((always_inline)) void fan_turn(const char *name) {
@@ -2556,4 +2556,13 @@ s32 func_002AF300(void *self, void *a1, u8 *cmd) {
     };
 
     return lit_quad_in(0x1A, cmd, sQuad, 0x20000040);
+}
+
+/* room 0x21 (D_00400B98): the fan turns, except while a movie plays */
+s32 func_002AF680(void) {
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    fan_turn(D_00400C38);
+    return 1;
 }
