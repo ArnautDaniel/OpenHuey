@@ -88,3 +88,267 @@ u32 func_00260CF0(u8 *o, s32 id) {
     }
     return 0;
 }
+
+/* ---- giving an item (func_00261090): the inventory's three groups (ids under 0x40, under 0xA0,
+ * the rest) of 64 slots each (+0x12E0 + group * 0x100); objects 0x18 bytes from its pool
+ * (+0x1208) ---- */
+
+typedef void *(*ItemCtor)(void *self);
+extern void *func_00263220(void *self);
+extern void *func_002632B0(void *self);
+extern void *func_002632E0(void *self);
+extern void *func_00263310(void *self);
+extern void *func_00263340(void *self);
+extern void *func_00263370(void *self);
+extern void *func_002633A0(void *self);
+extern void *func_002633D0(void *self);
+extern void *func_00263400(void *self);
+extern void *func_00263430(void *self);
+extern void *func_00263460(void *self);
+extern void *func_00263490(void *self);
+extern void *func_002634C0(void *self);
+extern void *func_002634F0(void *self);
+extern void *func_00263580(void *self);
+extern void *func_002635B0(void *self);
+extern void *func_002635E0(void *self);
+extern void *func_00263610(void *self);
+extern void *func_00263640(void *self);
+extern void *func_00263670(void *self);
+extern void *func_002636A0(void *self);
+extern void *func_002636D0(void *self);
+extern void *func_00263700(void *self);
+extern void *func_00263790(void *self);
+extern void *func_002637C0(void *self);
+extern void *func_002637F0(void *self);
+extern void *func_00263820(void *self);
+extern void *func_002638B0(void *self);
+extern void *func_002638E0(void *self);
+extern void *func_00263910(void *self);
+extern void *func_00263940(void *self);
+extern void *func_002639D0(void *self);
+extern void *func_00263A00(void *self);
+extern void *func_00263A30(void *self);
+extern void *func_00263A60(void *self);
+extern void *func_00263AF0(void *self);
+extern void *func_00263B20(void *self);
+extern void *func_00263B50(void *self);
+extern void *func_00263B80(void *self);
+extern void *func_00263BB0(void *self);
+extern void *func_00263BE0(void *self);
+extern void *func_00263C70(void *self);
+extern void *func_00263CA0(void *self);
+extern void *func_00263CD0(void *self);
+extern void *func_00263D00(void *self);
+extern void *func_00263D30(void *self);
+extern void *func_00263D60(void *self);
+extern void *func_00263D90(void *self);
+extern void *func_00263E20(void *self);
+extern void *func_00263E50(void *self);
+extern void *func_00263E80(void *self);
+extern void *func_00263EB0(void *self);
+extern void *func_00263EE0(void *self);
+extern void *func_00263F10(void *self);
+extern void *func_00263F40(void *self);
+extern void *func_00263F70(void *self);
+extern void *func_00263FA0(void *self);
+extern void *func_00263FD0(void *self);
+extern void *func_00264000(void *self);
+extern void *func_00264030(void *self);
+extern void *func_00264090(void *self);
+extern void *func_00264120(void *self);
+extern void *func_00264150(void *self);
+extern void *func_00264180(void *self);
+extern void *func_002641B0(void *self);
+extern void *func_002641E0(void *self);
+extern void *func_00264210(void *self);
+extern void *func_00264240(void *self);
+extern void *func_00264270(void *self);
+extern void *func_002642A0(void *self);
+extern void *func_002642D0(void *self);
+extern void *func_00264300(void *self);
+extern void *func_00264330(void *self);
+extern void *func_00264360(void *self);
+extern void *func_00264390(void *self);
+extern void *func_002643C0(void *self);
+extern void *func_002643F0(void *self);
+extern void *func_00264420(void *self);
+extern void *func_00264450(void *self);
+extern void *func_00264480(void *self);
+extern void *func_002644B0(void *self);
+extern void *func_002644E0(void *self);
+extern void *func_00264510(void *self);
+extern void *func_00264540(void *self);
+extern void *func_00264570(void *self);
+extern void *func_002645A0(void *self);
+extern void *func_002645D0(void *self);
+extern void *func_00264600(void *self);
+extern void *func_00264630(void *self);
+extern void *func_00264660(void *self);
+extern void *func_00264690(void *self);
+extern void *func_002646C0(void *self);
+extern void *func_002646F0(void *self);
+extern void *func_00264720(void *self);
+extern void *func_00264750(void *self);
+extern void *func_00264780(void *self);
+extern void *func_002647B0(void *self);
+extern void *func_002647E0(void *self);
+extern void *func_00264810(void *self);
+extern void *func_00264840(void *self);
+extern void *func_00264870(void *self);
+extern void *func_002648A0(void *self);
+extern void *func_002648D0(void *self);
+extern void *func_00264060(void *self, s32 id);
+extern void *func_0025FF00(u32 size, void *mem);   /* placement new */
+
+static ItemCtor const kItemCtors[0xAD] = {
+    [0x0] = func_002648D0,
+    [0x1] = func_002648A0,
+    [0x2] = func_00264870,
+    [0x3] = func_00264840,
+    [0x4] = func_00264810,
+    [0x5] = func_002647E0,
+    [0x6] = func_002647B0,
+    [0x7] = func_00264780,
+    [0x8] = func_00264750,
+    [0x9] = func_00264720,
+    [0xA] = func_002646F0,
+    [0xB] = func_002646C0,
+    [0xC] = func_00264690,
+    [0xD] = func_00264660,
+    [0xE] = func_00264630,
+    [0xF] = func_00264600,
+    [0x10] = func_002645D0,
+    [0x11] = func_002645A0,
+    [0x12] = func_00264570,
+    [0x13] = func_00264540,
+    [0x14] = func_00264510,
+    [0x15] = func_002644E0,
+    [0x16] = func_002644B0,
+    [0x17] = func_00264480,
+    [0x18] = func_00264450,
+    [0x19] = func_00264420,
+    [0x1A] = func_002643F0,
+    [0x1B] = func_002643C0,
+    [0x1C] = func_00264390,
+    [0x1D] = func_00264360,
+    [0x1E] = func_00264330,
+    [0x1F] = func_00264300,
+    [0x20] = func_002642D0,
+    [0x21] = func_002642A0,
+    [0x22] = func_00264270,
+    [0x23] = func_00264240,
+    [0x24] = func_00264210,
+    [0x25] = func_002641E0,
+    [0x26] = func_002641B0,
+    [0x27] = func_00264180,
+    [0x28] = func_00264150,
+    [0x29] = func_00264120,
+    [0x3E] = func_00264090,
+    [0x40] = func_00264030,
+    [0x41] = func_00264000,
+    [0x42] = func_00263FD0,
+    [0x43] = func_00263FA0,
+    [0x44] = func_00263F70,
+    [0x45] = func_00263F40,
+    [0x46] = func_00263F10,
+    [0x47] = func_00263EE0,
+    [0x48] = func_00263EB0,
+    [0x49] = func_00263E80,
+    [0x4A] = func_00263E50,
+    [0x4B] = func_00263E20,
+    [0x4C] = func_00263D90,
+    [0x60] = func_00263D60,
+    [0x61] = func_00263D30,
+    [0x62] = func_00263D00,
+    [0x63] = func_00263CD0,
+    [0x64] = func_00263CA0,
+    [0x65] = func_00263C70,
+    [0x66] = func_00263BE0,
+    [0x70] = func_00263BB0,
+    [0x71] = func_00263B80,
+    [0x72] = func_00263B50,
+    [0x73] = func_00263B20,
+    [0x74] = func_00263AF0,
+    [0x75] = func_00263A60,
+    [0x80] = func_00263A30,
+    [0x81] = func_00263A00,
+    [0x82] = func_002639D0,
+    [0x83] = func_00263940,
+    [0x86] = func_00263910,
+    [0x87] = func_002638E0,
+    [0x88] = func_002638B0,
+    [0x89] = func_00263820,
+    [0x8A] = func_002637F0,
+    [0x8B] = func_002637C0,
+    [0x8C] = func_00263790,
+    [0x8D] = func_00263700,
+    [0x90] = func_002636D0,
+    [0x91] = func_002636A0,
+    [0x92] = func_00263670,
+    [0x93] = func_00263640,
+    [0x94] = func_00263610,
+    [0x95] = func_002635E0,
+    [0x97] = func_002635B0,
+    [0x98] = func_00263580,
+    [0x9B] = func_002634F0,
+    [0xA0] = func_002634C0,
+    [0xA1] = func_00263490,
+    [0xA2] = func_00263460,
+    [0xA3] = func_00263430,
+    [0xA4] = func_00263400,
+    [0xA5] = func_002633D0,
+    [0xA6] = func_002633A0,
+    [0xA7] = func_00263370,
+    [0xA8] = func_00263340,
+    [0xA9] = func_00263310,
+    [0xAA] = func_002632E0,
+    [0xAB] = func_002632B0,
+    [0xAC] = func_00263220,
+};
+
+/* give n of item id: added to one already held if that kind stacks (+0x18), else made in the
+ * group's first free slot with its count set (+0x2C, n - 1). The item, or NULL if it wouldn't
+ * take them or the group is full */
+void *func_00261090(u8 *items, u32 id, s32 n) {
+    u8 *grp = items + (id < 0x40 ? 0 : id < 0xA0 ? 1 : 2) * 0x100;
+    void *o;
+    u32 i;
+
+    for (i = 0; i < 0x40; i++) {
+        o = AT(grp, 0x12E0 + i * 4, void *);
+        if (o == NULL) {
+            break;
+        }
+        if (id == VCALL(o, 0xC, u32 (*)(void *))(o) && (VCALL(o, 0x18, u32 (*)(void *))(o) & 0xFF) == 1) {
+            return VCALL(o, 0x2C, s32 (*)(void *, s32))(o, n) != 0 ? o : NULL;
+        }
+    }
+    if (i == 0x40) {
+        return NULL;
+    }
+    o = NULL;
+    if (id < 0xAD && (kItemCtors[id] != NULL || id == 0x3F)) {
+        void *pool = items + 0x1208;
+
+        o = VCALL(pool, 0x10, void *(*)(void *, u32))(pool, 0x18);
+        if (o != NULL) {
+            void *p = func_0025FF00(0x18, o);
+
+            if (p != NULL) {
+                if (id == 0x3F) {
+                    func_00264060(p, (s32)o);   /* (sic: no id passed - a1 still the object) */
+                } else {
+                    kItemCtors[id](p);
+                }
+            }
+        }
+    }
+    AT(grp, 0x12E0 + i * 4, void *) = o;
+#ifdef HG_NATIVE
+    if (o == NULL) {   /* an id with no class (the PS2 calls through NULL) */
+        return NULL;
+    }
+#endif
+    VCALL(o, 0x2C, s32 (*)(void *, s32))(o, (u8)((n & 0xFF) - 1));
+    return o;
+}
