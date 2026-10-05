@@ -194,6 +194,135 @@ static inline s32 movie_level(Movie *m) {
 }
 
 
+/* ---- D_0046EA40 (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
+ * a quad on the screen's corners textured with the movie's current frame (func_0021E410) while
+ * +0x10 (set by +0x18); its +0xC is func_002B6310 ---- */
+
+extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
+extern void func_002672E0(void *p);   /* delete (effects' heap) */
+extern void func_002E56C0(u8 *quad);
+extern VObject *D_0044E9A0;
+
+/* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
+ * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
+#ifdef HG_NATIVE
+extern void glr_todo(const char *what);
+
+u64 func_0021E410(u8 *mv, s32 page) {
+    VObject *r = D_0044E4F0;
+    s32 buf = VCALL(r, 0x38, s32 (*)(VObject *))(r);
+
+    VCALL(D_0044E9A0, 0x38, s32 (*)(VObject *, s32))(D_0044E9A0, buf);
+    if (!(u8)VCALL(r, 0x94, s32 (*)(VObject *, s32, s32, s32, s32))(r, buf, mv[0] != 0 ? 4 : 3, page, 0)) {
+        return (u64)-1;
+    }
+    glr_todo("movie frame as a texture (func_0021E410)");
+    return (u64)-1;
+}
+#else
+u64 func_0021E410(u8 *mv, s32 page);
+#endif
+
+/* +0x8 destructor */
+void *func_002B60D0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EA40;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046D730;
+        }
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+/* +0x10 update: the movie flag from the game mode (gProgress +0x54) */
+void func_002B62D0(void) {
+    *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
+}
+
+/* +0x14 draw: the screen (corners (-2.61, 4.39, 5.79) / (-0.12, 4.39, 7.53) at the top, 2.06
+ * below), 256 x 224 of the frame at half brightness, in layer 2 */
+void func_002B6140(u8 *o) {
+    if (AT(o, 0x10, s32) != 0) {
+        u64 tex = func_0021E410(D_0045D1F0, 2);
+        struct {
+            void **vtbl;
+            s32 a;
+            u64 tex;
+            void *rec;
+            s32 corners;
+            f32 cx, cy;
+            s32 layer;
+            s16 count, cellX, cellY, cellW, cellH, texW, texH;
+            s8 flags, frames, texId, texGroup, palette;
+        } q __attribute__((aligned(16)));
+        u32 c[16] __attribute__((aligned(16)));
+        struct {
+            s32 rgba[4];
+            f32 pos[4];
+            f32 w, h, turn;
+            s32 frame;
+        } r __attribute__((aligned(16)));
+
+        if (tex == (u64)-1) {
+            return;
+        }
+        r.rgba[3] = 0x80;
+        r.rgba[0] = 0x40;
+        r.rgba[1] = 0x40;
+        r.rgba[2] = 0x40;
+        c[0] = 0xC0274A23;
+        c[8] = 0xC0274A23;
+        c[1] = 0x408C872B;
+        c[5] = 0x408C872B;
+        c[2] = 0x40B93A93;
+        c[10] = 0x40B93A93;
+        r.pos[3] = 1.0f;
+        r.w = 1.0f;
+        q.vtbl = D_0046FC30;
+        r.h = 1.0f;
+        q.rec = &r;
+        c[3] = 0x3F800000;
+        q.corners = (s32)c;
+        q.cellH = 0xE0;
+        c[4] = 0xBDF93DD9;
+        c[12] = 0xBDF93DD9;
+        c[6] = 0x40F0D014;
+        c[14] = 0x40F0D014;
+        c[7] = 0x3F800000;
+        c[9] = 0x400401A3;
+        c[13] = 0x400401A3;
+        c[11] = 0x3F800000;
+        c[15] = 0x3F800000;
+        q.a = -1;
+        q.palette = -1;
+        q.tex = tex;
+        q.layer = 2;
+        q.flags = 2;
+        q.count = 1;
+        q.frames = 1;
+        q.cellW = 0x100;
+        q.texW = 0x100;
+        q.texH = 0x100;
+        r.pos[0] = 0.0f;
+        r.pos[1] = 0.0f;
+        r.pos[2] = 0.0f;
+        r.turn = 0.0f;
+        r.frame = 0;
+        q.cx = 0.0f;
+        q.cy = 0.0f;
+        q.cellX = 0;
+        q.cellY = 0;
+        q.texId = 0;
+        q.texGroup = 0;
+        func_002E56C0((u8 *)&q);
+        q.vtbl = D_00469D00;
+    }
+    *D_0045D1F0 = 1;
+}
+
 /* clear the flag */
 void func_002B6310(Movie *m) {
     *D_0045D1F0 = 0;

@@ -2288,3 +2288,51 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *const D_003FC680;   /* "fan" */
+
+/* room 0x1A (D_003FC660): the fan turns 1.15 degrees a frame */
+s32 func_002AD600(void) {
+    static const union { u32 u; f32 f; } kStep = {0x3CA46C8A}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FC680);
+
+    if (o != NULL) {
+        f32 a = AT(o, 0x14, f32) + kStep.f;
+
+        AT(o, 0x14, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x14, f32) = a - k2Pi.f;
+        }
+    }
+    return 1;
+}
+
+extern void *D_0046EA40[];
+
+/* rooms 0x31 / 0x32 (D_0042A0B8, D_0042C298): the room's effect 1 made anew as D_0046EA40 */
+s32 func_0031E510(void) {
+    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    return 1;
+}
+
+s32 func_00321590(void) {
+    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    return 1;
+}
+
+/* room 0x4C (D_0040AC08): character 0x11's model parts 0xA2 / 0xA4 / 0xAC get bit 2 when byte
+ * 3 is 0, else lose it */
+s32 func_002B3660(void *self, void *a1, u8 *cmd) {
+    u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, 0x11) & 0xFF];
+
+    if (cmd[3] == 0) {
+        AT(AT(c, 0xF0, u8 *), 0xA2, u8) |= 2;
+        AT(AT(c, 0xF0, u8 *), 0xA4, u8) |= 2;
+        AT(AT(c, 0xF0, u8 *), 0xAC, u8) |= 2;
+    } else {
+        AT(AT(c, 0xF0, u8 *), 0xA2, u8) &= ~2;
+        AT(AT(c, 0xF0, u8 *), 0xA4, u8) &= ~2;
+        AT(AT(c, 0xF0, u8 *), 0xAC, u8) &= ~2;
+    }
+    return 1;
+}

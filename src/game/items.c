@@ -68,3 +68,23 @@ s32 func_00260BB0(u8 *o, s32 id) {
     }
     return 0;
 }
+
+/* how many of item `id` (+0x34) the lists hold: 0 if none */
+u32 func_00260CF0(u8 *o, s32 id) {
+    u32 l, i;
+
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 64; i++) {
+            VObject *it = AT(o, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+            if (it == NULL) {
+                break;
+            }
+            if (id == VCALL(it, 0xC, s32 (*)(VObject *))(it)) {
+                it = AT(o, 0x12E0 + l * 0x100 + i * 4, VObject *);
+                return (u8)VCALL(it, 0x34, s32 (*)(VObject *))(it);
+            }
+        }
+    }
+    return 0;
+}
