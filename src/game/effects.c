@@ -673,6 +673,347 @@ void func_002E7F60(u8 *e) {
 }
 
 
+/* ---- room effect D_0046FF20 (0x718 bytes): a burst of 16 sprites in two buffers of quad
+ * records (+0x10 + 0x300 x the current one +0x710), their velocities at +0x648 (12 each),
+ * drawn by the quad drawer at +0x610. Kinds (+0x714): 1 swirling motes that brighten until
+ * their alpha reaches +0x70C and then fade (red one below +0x708 marks the fading), 2
+ * spreading dust, 3 a rising puff (dark, or light when +0x708 is set), others drifting
+ * dust ---- */
+
+#include "effectmgr.h"
+
+extern void *D_0046FF20[], *D_0046F580[];
+extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
+
+#define BURST_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
+#define BURST_VEL(e, i) ((f32 *)((e) + 0x648) + (i) * 3)
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002E8060(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0046FF20;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+static f32 burst_rnd(VObject *rnd) {
+    return VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+}
+
+static s32 burst_int(VObject *rnd) {
+    return VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd);
+}
+
+/* +0x18 start: arg { position, +0x10 kind, +0x14 RGB (kind 3: light), +0x20 the alpha /
+ * spread } */
+void func_002E80F0(u8 *e, u8 *arg) {
+    VObject *rnd;
+    QuadRec *r;
+    f32 *v;
+    s32 i;
+
+    AT(e, 0x714, s32) = AT(arg, 0x10, s32);
+    AT(e, 0x708, s32) = AT(arg, 0x14, s32);
+    AT(e, 0x70C, s32) = AT(arg, 0x20, s32);
+    switch (AT(e, 0x714, s32)) {
+    case 1:
+        rnd = D_0044E550;
+        for (i = 0; i < 16; i++) {
+            f32 dx, dz, s;
+
+            r = BURST_REC(e, AT(e, 0x710, s32), i);
+            v = BURST_VEL(e, i);
+            r->rgba[0] = AT(arg, 0x14, s32);
+            r->rgba[1] = AT(arg, 0x18, s32);
+            r->rgba[2] = AT(arg, 0x1C, s32);
+            r->rgba[3] = 1;
+            dx = burst_rnd(rnd) - 0.5f;
+            dz = burst_rnd(rnd) - 0.5f;
+            r->pos[0] = AT(arg, 0x0, f32) + 2.0f * dx;
+            r->pos[1] = AT(arg, 0x4, f32);
+            r->pos[2] = AT(arg, 0x8, f32) + 2.0f * dz;
+            r->pos[3] = 1.0f;
+            s = 2.0f + 2.0f * burst_rnd(rnd);
+            r->w = s;
+            r->h = s;
+            r->turn = 0x1.921fb60000000p+1f /* 3.14159265 */ * (360.0f * (burst_rnd(rnd) - 0.5f)) / 180.0f;
+            r->frame = 0;
+            v[0] = 0x1.99999a0000000p-5f /* 0.05 */ * dx;
+            v[1] = 0x1.47ae140000000p-7f /* 0.01 */;
+            v[2] = 0x1.99999a0000000p-5f /* 0.05 */ * dz;
+        }
+        break;
+    case 2: {
+        f32 spread = 0x1.47ae140000000p-7f /* 0.01 */ * (f32)AT(e, 0x70C, s32);
+
+        rnd = D_0044E550;
+        for (i = 0; i < 16; i++) {
+            f32 dx, dy, dz;
+
+            r = BURST_REC(e, AT(e, 0x710, s32), i);
+            v = BURST_VEL(e, i);
+            r->rgba[0] = AT(arg, 0x14, s32);
+            r->rgba[1] = AT(arg, 0x18, s32);
+            r->rgba[2] = AT(arg, 0x1C, s32);
+            r->rgba[3] = (burst_int(rnd) & 0x3F) + 0x10;
+            dx = burst_rnd(rnd) - 0.5f;
+            dy = burst_rnd(rnd) - 0.5f;
+            dz = burst_rnd(rnd) - 0.5f;
+            r->pos[0] = AT(arg, 0x0, f32) + 4.0f * dx;
+            r->pos[1] = AT(arg, 0x4, f32) + dy;
+            r->pos[2] = AT(arg, 0x8, f32) + 4.0f * dz;
+            r->pos[3] = 1.0f;
+            r->w = 2.0f;
+            r->h = 2.0f;
+            r->turn = 0.0f;
+            r->frame = 0;
+            v[0] = spread * dx;
+            v[1] = 0x1.47ae140000000p-7f /* 0.01 */;
+            v[2] = spread * dz;
+        }
+        break;
+    }
+    case 3: {
+        s32 alpha = 0x10;
+        f32 tall, big;
+
+        AT(e, 0x618, s64) = -1;
+        AT(e, 0x628, s32) = 0;
+        AT(e, 0x62C, s32) = 0;
+        AT(e, 0x630, s32) = 0x19;
+        AT(e, 0x634, s16) = 0x10;
+        AT(e, 0x636, s16) = 0xC0;
+        AT(e, 0x638, s16) = 0x40;
+        AT(e, 0x63A, s16) = 0x20;
+        AT(e, 0x63C, s16) = 0x20;
+        AT(e, 0x63E, s16) = 0x200;
+        AT(e, 0x640, s16) = 0x100;
+        AT(e, 0x643, s8) = 1;
+        AT(e, 0x644, s8) = 1;
+        AT(e, 0x645, s8) = 0x10;
+        AT(e, 0x646, s8) = 3;
+        if (AT(arg, 0x14, s32) == 0) {
+            big = 3.0f;
+            tall = 2.0f;
+            AT(e, 0x642, s8) = 0x20;
+        } else {
+            AT(e, 0x642, s8) = 0;
+            big = 2.0f;
+            alpha = 0x80;
+            tall = 1.0f;
+        }
+        rnd = D_0044E550;
+        for (i = 0; i < 16; i++) {
+            f32 dx, up, dz, s;
+
+            r = BURST_REC(e, AT(e, 0x710, s32), i);
+            v = BURST_VEL(e, i);
+            r->rgba[0] = 0x10;
+            r->rgba[1] = 0x10;
+            r->rgba[2] = 0x10;
+            r->rgba[3] = alpha;
+            dx = burst_rnd(rnd) - 0.5f;
+            up = burst_rnd(rnd);
+            dz = burst_rnd(rnd) - 0.5f;
+            r->pos[0] = AT(arg, 0x0, f32) + 6.0f * dx;
+            r->pos[1] = AT(arg, 0x4, f32) + 10.0f * up * tall;
+            r->pos[2] = AT(arg, 0x8, f32) + 6.0f * dz;
+            r->pos[3] = 1.0f;
+            s = burst_rnd(rnd);
+            s = big + big * s;
+            r->w = s;
+            r->h = s;
+            r->turn = 0.0f;
+            r->frame = 0;
+            v[0] = 0x1.99999a0000000p-5f /* 0.05 */ * dx;
+            v[1] = 0x1.99999a0000000p-4f /* 0.1 */ + 0x1.3333340000000p-2f /* 0.3 */ * up;
+            v[2] = 0x1.99999a0000000p-5f /* 0.05 */ * dz;
+        }
+        break;
+    }
+    default:
+        rnd = D_0044E550;
+        for (i = 0; i < 16; i++) {
+            f32 dx, dy, dz;
+
+            r = BURST_REC(e, AT(e, 0x710, s32), i);
+            v = BURST_VEL(e, i);
+            r->rgba[0] = AT(arg, 0x14, s32);
+            r->rgba[1] = AT(arg, 0x18, s32);
+            r->rgba[2] = AT(arg, 0x1C, s32);
+            r->rgba[3] = (burst_int(rnd) & 0x3F) + 0x10;
+            dx = burst_rnd(rnd) - 0.5f;
+            dy = burst_rnd(rnd) - 0.5f;
+            dz = burst_rnd(rnd) - 0.5f;
+            r->pos[0] = AT(arg, 0x0, f32) + 4.0f * dx;
+            r->pos[1] = AT(arg, 0x4, f32) + 4.0f * dy;
+            r->pos[2] = AT(arg, 0x8, f32) + 4.0f * dz;
+            r->pos[3] = 1.0f;
+            r->w = 2.0f;
+            r->h = 2.0f;
+            r->turn = 0.0f;
+            r->frame = 0;
+            v[0] = 0x1.47ae140000000p-7f /* 0.01 */ * dx;
+            v[1] = 0x1.47ae140000000p-7f /* 0.01 */ + 0x1.99999a0000000p-4f /* 0.1 */ * (0.5f + dy);
+            v[2] = 0x1.47ae140000000p-7f /* 0.01 */ * dz;
+        }
+        break;
+    }
+}
+
+/* +0x14 draw the current buffer */
+void func_002E8800(u8 *e) {
+    AT(e, 0x620, QuadRec *) = BURST_REC(e, AT(e, 0x710, s32), 0);
+    func_002E56C0(e + 0x610);
+}
+
+/* the turn by a half degree either way, kept to -pi..pi (the backwards turn as the original:
+ * below pi it goes up a full turn) */
+static void burst_turn(QuadRec *r, s32 back) {
+    if (back) {
+        r->turn = r->turn - 0x1.1df46ap-7f /* pi / 360 */;
+        if (r->turn < 0x1.921fb6p+1f) {
+            r->turn = r->turn + 0x1.921fb6p+2f;
+        }
+    } else {
+        r->turn = r->turn + 0x1.1df46ap-7f;
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+    }
+}
+
+static void burst_move(QuadRec *r, f32 *v) {
+    r->pos[0] = r->pos[0] + v[0];
+    r->pos[1] = r->pos[1] + v[1];
+    r->pos[2] = r->pos[2] + v[2];
+}
+
+static void burst_fade(QuadRec *r, VObject *rnd, s32 extra) {
+    r->rgba[3] = r->rgba[3] - ((burst_int(rnd) & 3) + extra);
+    if (r->rgba[3] < 0) {
+        r->rgba[3] = 0;
+    }
+}
+
+/* +0x10 update: flip the buffers, carrying each sprite over and moving it; 0 when all have
+ * gone */
+s32 func_002E8830(u8 *e) {
+    VObject *rnd = D_0044E550;
+    s32 done = 1;
+    s32 i;
+
+    AT(e, 0x710, s32) ^= 1;
+    for (i = 0; i < 16; i++) {
+        u32 *src = (u32 *)BURST_REC(e, AT(e, 0x710, s32) ^ 1, i);
+        u32 *dst = (u32 *)BURST_REC(e, AT(e, 0x710, s32), i);
+        QuadRec *r;
+        f32 *v = BURST_VEL(e, i);
+        s32 k;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = BURST_REC(e, AT(e, 0x710, s32), i);
+        switch (AT(e, 0x714, s32)) {
+        case 1:
+            if (r->w <= 0.0f || r->rgba[3] <= 0) {
+                break;
+            }
+            done = 0;
+            r->w = r->w - 0x1.47ae140000000p-8f /* 0.005 */ * burst_rnd(rnd);
+            if (r->w < 0.0f) {
+                r->w = 0.0f;
+            }
+            r->h = r->w;
+            r->turn = r->turn + 0x1.921fb6p+1f * (0.5f * burst_rnd(rnd)) / 180.0f;
+            if (!(r->turn <= 0x1.921fb6p+1f)) {
+                r->turn = r->turn - 0x1.921fb6p+2f;
+            }
+            burst_move(r, v);
+            if (r->rgba[0] == AT(e, 0x708, s32)) {
+                r->rgba[3] += (burst_int(rnd) & 1) + 1;
+                if (!(r->rgba[3] < AT(e, 0x70C, s32))) {
+                    r->rgba[0] -= 1;
+                    r->rgba[3] = AT(e, 0x70C, s32);
+                }
+            } else {
+                r->rgba[3] -= burst_int(rnd) & 1;
+                if (r->rgba[3] < 0) {
+                    r->rgba[3] = 0;
+                }
+            }
+            break;
+        case 2:
+            if (r->rgba[3] <= 0) {
+                break;
+            }
+            r->w = r->w + 0x1.99999a0000000p-5f /* 0.05 */;
+            r->h = r->w;
+            done = 0;
+            burst_turn(r, v[0] <= 0.0f);
+            v[0] = v[0] * 0x1.e666660000000p-1f /* 0.95 */;
+            v[2] = v[2] * 0x1.e666660000000p-1f /* 0.95 */;
+            burst_move(r, v);
+            burst_fade(r, rnd, 1);
+            break;
+        case 3:
+            if (!(r->pos[1] < 80.0f)) {
+                break;
+            }
+            done = 0;
+            r->w = r->w + 0x1.47ae140000000p-5f /* 0.04 */;
+            r->h = r->w;
+            burst_turn(r, 0);
+            burst_move(r, v);
+            burst_fade(r, rnd, 0);
+            break;
+        default:
+            if (r->rgba[3] <= 0) {
+                break;
+            }
+            done = 0;
+            r->w = r->w + 0x1.47ae140000000p-5f /* 0.04 */;
+            r->h = r->w;
+            burst_turn(r, 0);
+            burst_move(r, v);
+            burst_fade(r, rnd, 0);
+            break;
+        }
+    }
+    return !done;
+}
+
+/* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells at a random column
+ * 0 / 32, row 64) */
+void func_002E9040(u8 *e) {
+    AT(e, 0x710, s32) = 0;
+    AT(e, 0x618, s64) = -1;
+    AT(e, 0x628, s32) = 0;
+    AT(e, 0x62C, s32) = 0;
+    AT(e, 0x630, s32) = 0x19;
+    AT(e, 0x634, s16) = 0x10;
+    AT(e, 0x636, s16) = (burst_int(D_0044E550) & 1) << 5;
+    AT(e, 0x638, s16) = 0x40;
+    AT(e, 0x63A, s16) = 0x20;
+    AT(e, 0x63C, s16) = 0x20;
+    AT(e, 0x63E, s16) = 0x200;
+    AT(e, 0x640, s16) = 0x100;
+    AT(e, 0x642, s8) = 0;
+    AT(e, 0x643, s8) = 1;
+    AT(e, 0x644, s8) = 1;
+    AT(e, 0x645, s8) = 0x10;
+    AT(e, 0x646, s8) = -1;
+}
+
+
 /* ---- room effect D_0046FF40 (event command 0x86): a flame; kind (+0x78) 0 a candle (32
  * frames: a loop, then a flare / snuff played on command), others a 16-frame fire (kind 4 is
  * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (D_00479320)
