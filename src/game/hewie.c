@@ -8360,3 +8360,53 @@ void func_00157480(Hewie *h) {
     HW(h, 0xF3582, u8) = 0;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- hanging on ---- */
+
+extern const PTMF D_003B1888, D_003B1898;
+
+/* hanging on to the pursuer by his jaws (actions 0x1F / 0x20; +0x104 1 or 2 the grip), moved by
+ * the root motion (height kept in +0xF36C4). At each animation's end: the pursuer gone, the
+ * default action; else a quarter of the time his grudge eases, and he holds on (func_00138460 2:
+ * 0x2204 / 0x220D) or is shaken off (+0x94 10, 0x2207 / 0x2210, +0xF36B4 1), flinging him along
+ * the last root motion (+0xF36C8 up, +0xF36E0 across); behaviour D_003B1888 / D_003B1898 */
+void func_001579C0(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+
+    root_ahead(h, root);
+    sceVu0ApplyMatrix(root, h->c.a.rot, root);
+    func_001247E0(&h->c.a, root);
+    HW(h, 0xF36C4, f32) += root[1];
+    h->c.a.pos[1] = HW(h, 0xF36C4, f32);
+    HW(h, 0xF3558, u8) = 1;
+    if (ANIM_DONE(h)) {
+        if (!in_his_room(h, gCharPursuer)) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        if (RNG01() < 0.25f) {
+            func_00166150(h, gCharPursuer, -1);
+        }
+        if (HEWIE_ACTION(h) == 0x20 || HEWIE_ACTION(h) == 0x1F) {
+            s32 grip = h->c.unk104[0];
+
+            if (grip == 1 || grip == 2) {
+                if ((u8)func_00138460(h, 2) == 1) {
+                    HW(h, 0xF36B4, s32) = 0;
+                    func_002DDE20(h->c.motion, grip == 1 ? 0x2204 : 0x220D, -1);
+                } else {
+                    HW(h, 0xF36B4, s32) = 1;
+                    VCALL(h, 0x94, void (*)(Hewie *, s32))(h, 10);
+                    func_002DDE20(h->c.motion, grip == 1 ? 0x2207 : 0x2210, -1);
+                }
+                HW(h, 0xF36C8, f32) = root[1];
+                HW(h, 0xF36E0, f32) = root[0];
+                HW(h, 0xF36E4, s32) = 0;
+                HW(h, 0xF36E8, f32) = root[2];
+                Hewie_SetBehaviour(h, grip == 1 ? &D_003B1888 : &D_003B1898);
+            }
+        }
+    }
+    HW(h, 0xF3582, u8) = 0;
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
