@@ -575,3 +575,11 @@ void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
 s32 func_00209810(void) {
     return 0;
 }
+
+/* a room id as the scripts see it: with progress flag 0xAF, rooms 0x40 / 0x41 are 0x70 */
+s32 func_001FB520(void *ev, s32 room) {
+    if ((AT(gProgress, 0x30, u32) & 0x8000) && (u32)(room - 0x40) < 2) {
+        return 0x70;
+    }
+    return room;
+}

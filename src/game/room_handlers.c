@@ -1944,3 +1944,19 @@ s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
+
+/* Fiona in move 5, room 0x1D's flag 0 not set and its exit 0's door shut */
+s32 func_002ADE30(void) {
+    Progress *p;
+
+    if (AT(gCharPlayer, 0xFC, s32) != 5) {
+        return 0;
+    }
+    p = gProgress;
+    if (Progress_CurRoomFlag(p, 0x1D, 0) != 0 || func_00178980(p, 0x1D, 0) != 0) {
+        return 0;
+    }
+    return 1;
+}

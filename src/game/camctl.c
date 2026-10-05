@@ -167,6 +167,11 @@ void func_002251C0(u8 *d) {
     func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
 }
 
+/* the setup changed since it was taken (+0x78 / +0x7C against +0x6C / +0x70) */
+s32 func_00224650(u8 *d) {
+    return !(AT(d, 0x78, s32) == AT(d, 0x6C, s32) && AT(d, 0x7C, s32) == AT(d, 0x70, s32));
+}
+
 /* take the room's camera data (count first; none or empty: no data), then setup `setup` at t */
 void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t) {
     AT(d, 0x2C, s32 *) = data;
