@@ -315,6 +315,7 @@ void *func_002D0CE0(u8 *o, s32 flags) {
 /* (possibly dead code: nothing in the game references it) */
 /* destructor (D_0046ECF0): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
  * clearing D_00456DF8) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_002D0D60(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ECF0;
@@ -331,6 +332,7 @@ void *func_002D0D60(u8 *o, s32 flags) {
 /* (possibly dead code: nothing in the game references it) */
 /* destructor (vtable at +0x28, D_0046FC00): members at +0xF630 / +0xDC40, then the base
  * (D_0046A980, clearing D_0044F258) */
+/* (possibly dead code: nothing in the game references it) */
 void *func_002D0DF0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x28, void **) = D_0046FC00;

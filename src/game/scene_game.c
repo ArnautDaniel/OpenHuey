@@ -2210,3 +2210,96 @@ void func_0039D000(Scene *g, s32 room) {
         func_00120720((u8 *)g + 0x73EE80, room, spare);
     }
 }
+
+/* ---- small SceneGame methods left (2026-10-05) ---- */
+
+extern s32 func_00120540(void *rooms, s32 slot);
+extern const u16 D_0044C5B0[];   /* flag numbers, 0xFFFF-terminated */
+
+/* the room data of the file slot not in use (+0xF6C1B0 says which), once loaded; NULL before */
+u8 *func_0039A510(u8 *g) {
+    u8 k = AT(g, 0xF6C1B0, s32) == 0;
+
+    if (func_00120540(g + 0x73EE80, k)) {
+        return NULL;
+    }
+    k = AT(g, 0xF6C1B0, s32) == 0;
+    return g + 0x748840 + k * 0x2A0000;
+}
+
+/* start loading that slot */
+void func_0039A5B0(u8 *g) {
+    func_001205A0(g + 0x73EE80, AT(g, 0xF6C1B0, s32) == 0);
+}
+
+/* how many flags D_0044C5B0 lists */
+s32 func_0039A5E0(void) {
+    const u16 *f = D_0044C5B0;
+    s32 n = 0;
+
+    while (*f != 0xFFFF) {
+        f++;
+        n++;
+    }
+    return n;
+}
+
+/* how many of them are set in o's bits (+0x5C) */
+s32 func_0039A620(u8 *o) {
+    const u16 *f = D_0044C5B0;
+    s32 n = 0;
+
+    for (; *f != 0xFFFF; f++) {
+        if ((AT(o, 0x5C + (*f >> 5) * 4, u32) & (1u << (*f & 0x1F))) != 0) {
+            n++;
+        }
+    }
+    return n;
+}
+
+/* what is going on, as bits: 1 mode 2 or a stalker (slot 2+) active in the room, 2 the
+ * partner busy (+0xE0), 4 someone else busy or the low bits of +0xF6CD24 set */
+u8 func_0039A690(u8 *g) {
+    u8 bits = 0;
+    s32 i;
+
+    if (g[0x50] == 2) {
+        bits |= 1;
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *c = (u8 *)gCharacters[i];
+
+        if (c == NULL || c[0x28] == 0) {
+            continue;
+        }
+        if (c[0xE0] != 0) {
+            bits |= i == 1 ? 2 : 4;
+        }
+        if (i >= 2 && AT(c, 0x30, s32) == VCALL(g, 0xA4, s32 (*)(void *))(g)) {
+            bits |= 1;
+        }
+    }
+    if (AT(g, 0xF6CD24, u32) & 0xF) {
+        bits |= 4;
+    }
+    return bits;
+}
+
+/* is the scene (+0xA4) in state 7? */
+s32 func_0039A830(u8 *g) {
+    return VCALL(g, 0xA4, s32 (*)(void *))(g) == 7;
+}
+
+/* end and delete its object at +0x106503C (+0x14, then destructor +0x8) */
+void func_0039A860(u8 *g) {
+    void *o = AT(g, 0x106503C, void *);
+
+    if (o != NULL) {
+        VCALL(o, 0x14, void (*)(void *))(o);
+        o = AT(g, 0x106503C, void *);
+        if (o != NULL) {
+            VCALL(o, 0x8, void (*)(void *, s32))(o, 1);
+        }
+        AT(g, 0x106503C, void *) = NULL;
+    }
+}

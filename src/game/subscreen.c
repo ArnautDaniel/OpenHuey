@@ -1268,3 +1268,44 @@ void func_00384CE0(SubScreen *s) {
         break;
     }
 }
+
+/* ---- text helpers left (2026-10-05); the sub-screen's text task at +0x97868 ---- */
+
+extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
+extern s32 func_0038A2C0(void *s, u32 k);   /* (a u8) */
+extern s32 func_003941C0(void);
+extern const char D_00463A60[];
+
+#define SUB_TEXT(s) ((Task *)((u8 *)(s) + 0x97868))
+
+/* the page counter at the top right: "<page + 1> / <count>" (D_00463A60) and its caption
+ * (message 0x1C6), faded by +0xA8C62 */
+void func_0037E480(u8 *s) {
+    char buf[16];
+    u8 *msg;
+
+    func_0026EDD0(buf, 10, D_00463A60, s[0xA8C81] + 1, func_0038A2C0(s, s[0xA8C80]) & 0xFF);
+    Task_ShowText(SUB_TEXT(s), 0x1B8, 0x10, 0, (u8 *)buf, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
+    msg = Task_MessageText(SUB_TEXT(s), 0x1C6);
+    Task_ShowText(SUB_TEXT(s), 0x160, 0x10, 0, msg, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
+}
+
+/* the two lines of the current entry (+0x15F8, two message ids per entry +0xA8C55; 0 none) at
+ * x 0x2D, y 0x54 / 0xF4 */
+void func_0037E580(u8 *s) {
+    s32 i;
+
+    for (i = 0; i < 2; i++) {
+        u16 id = AT(s, 0x15F8 + (s[0xA8C55] * 2 + i) * 2, u16);
+
+        if (id != 0) {
+            Task_ShowText(SUB_TEXT(s), 0x2D, 0x54 + i * 0xA0, 0x80, Task_MessageText(SUB_TEXT(s), id), 0x80, 0x30,
+                          0x10, 0x15);
+        }
+    }
+}
+
+/* half of (func_003941C0 - 1) */
+u8 func_0037E650(void) {
+    return (u8)((func_003941C0() - 1) / 2);
+}

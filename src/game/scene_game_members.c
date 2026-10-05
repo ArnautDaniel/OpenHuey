@@ -3473,6 +3473,7 @@ void func_001205A0(u8 *o, s32 k) {
 
 /* (possibly dead code: nothing in the game references it) */
 /* clear +0xC700 and the 20 words after it */
+/* (possibly dead code: nothing in the game references it) */
 void func_0017D1B0(u8 *o) {
     s32 i;
 
