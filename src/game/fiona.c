@@ -5241,10 +5241,9 @@ void func_00183400(Fiona *f) {
     sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
 }
 
-/* pulling back from a grab: moved by the motion turned to her heading +0x1AD6D0 (unless
- * +0x1AD6C4 is -1: the plain update) and turned toward it 20 degrees a frame (+0x1AD6C4 set
- * once there), along any wall */
-static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
+/* moved by the motion turned to her heading +0x1AD6D0 (unless +0x1AD6C4 is -1: the plain
+ * update) and turned toward it 20 degrees a frame (+0x1AD6C4 set once there) */
+static inline __attribute__((always_inline)) void pull_back_move(Fiona *f) {
     if (FI(f, 0x1AD6C4, s32) == -1) {
         func_00125A10(&f->c);
     } else {
@@ -5261,6 +5260,11 @@ static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
             FI(f, 0x1AD6C4, s32) = 1;
         }
     }
+}
+
+/* pulling back from a grab, along any wall */
+static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
+    pull_back_move(f);
     func_00183400(f);
 }
 
@@ -5768,4 +5772,66 @@ void func_0018BCC0(Fiona *f) {
         }
         break;
     }
+}
+
+extern const PTMF D_003B2AC8, D_003B2AD8, D_003B2AE8, D_003B2AF8;
+
+/* down after a hard fall: on the ground (0xB01), action 0xA / 0xB, the struggle reset */
+static inline __attribute__((always_inline)) void floored(Fiona *f, const PTMF *next) {
+    f->c.a.unk2D = 0;
+    FI(f, 0x1AD6C0, s32) = 0;
+    func_002DDED0(f->c.motion, 0xB01, -1);
+    f->c.moveMode = 0xA;
+    f->unk1AD580 = 0xB;
+    FI(f, 0x1AD710, u8) = 1;
+    FI(f, 0x1AD714, s32) = 0;
+    Actor_SetState(&f->c.a, next);
+}
+
+/* after being thrown or hit by a door (D_003B2AB8, D_003B2B08): at the motion's event 0x20 -
+ * fallen forward (0x1008) she gets up (0x100A), backward (0x100B) 0x100D; a hard fall (bit 2,
+ * or 0xB04) leaves her on the ground. Meanwhile she slides with the fall (+0x1AD6D0; nav flag 1
+ * not blocking, the doorway flags too while down by a door, action 0xB) and along walls - not
+ * while down (0xA) at a door she can pass (exit bit 1) */
+void func_001913F0(Fiona *f) {
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        s32 cur = AT(f->c.motion, 0x55C, s32);
+
+        if (FI(f, 0x1AD6C8, s32) == 0) {
+            if (cur == 0x1008) {
+                if (!(FI(f, 0x1AD584, s32) & 2)) {
+                    f->c.a.unk2D = 1;
+                    func_002DDE20(f->c.motion, 0x100A, -1);
+                    Actor_SetState(&f->c.a, &D_003B2AC8);
+                } else {
+                    floored(f, &D_003B2AD8);
+                }
+            }
+        } else if (cur == 0xB04) {
+            floored(f, &D_003B2AF8);
+        } else if (cur == 0x100B) {
+            f->c.a.unk2D = 1;
+            func_002DDE20(f->c.motion, 0x100D, -1);
+            Actor_SetState(&f->c.a, &D_003B2AE8);
+        }
+    }
+    if (f->c.moveSub == 0xB) {
+        f->c.a.navMask = 0x8000018;
+    }
+    f->c.a.navMask |= 1;
+    pull_back_move(f);
+    f->c.a.navMask &= ~1;
+    if (f->c.moveSub == 0xA) {
+        Progress *p = gProgress;
+        u32 i;
+
+        for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+            if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 1) {
+                return;
+            }
+        }
+    }
+    func_00183400(f);
 }
