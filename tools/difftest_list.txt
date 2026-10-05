@@ -6597,3 +6597,41 @@ src/leaf/small_hand.c func_00371E00 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/leaf/small_hand.c func_00378550 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
 src/leaf/small_hand.c func_0037BE70 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/leaf/small_hand.c func_00260130 --pre=@0x44E4E0=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AF00..0x0046AF00 --stub-ret=1 --stub-ret=2 --runs=10
+src/leaf/small_hand.c func_002605F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a0+0x12E0=0..1 --pre=a0+0x12E4=0..1 --pre=a0+0x13E0=0..1 --runs=30
+src/leaf/small_hand.c func_00261000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..9 --pre=a2=0x0B100000..0x0B100000 --stub-ret=0 --stub-ret=0x0B400000 --runs=20
+src/leaf/small_hand.c func_0035C9E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00384C50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-3..3 --stub-ret=0 --stub-ret=5 --runs=10
+src/leaf/small_hand.c func_00384C60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x97A8F:u8=0..255 --runs=10
+src/leaf/small_hand.c func_00384C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --runs=30
+src/leaf/small_hand.c func_00384CB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --pre=a0+0x97740=0..0xFFFF --pre=a0+0x97744=0..0xFFFF --runs=30
+src/leaf/small_hand.c func_0038A2C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..20 --runs=10
+src/leaf/small_hand.c func_0038C890 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/leaf/small_hand.c func_0038C8D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/leaf/small_hand.c func_003941C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x15F8:u16=0..1 --pre=a0+0x15FA:u16=0..1 --runs=20
+src/leaf/small_hand.c func_00226790 --pre=a0=-5..5 --runs=5
+src/leaf/small_hand.c func_002267A0 --runs=3
+src/leaf/small_hand.c func_002267B0 --pre=a0=-5..5 --runs=5
+src/leaf/small_hand.c func_002267C0 --runs=3
+src/leaf/small_hand.c func_00226820 --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
+src/leaf/small_hand.c func_00226848 --stub-ret=0x0B400000 --runs=5
+src/leaf/small_hand.c func_002267D0 --stub-ret=0x0B400000 --runs=5
+src/leaf/small_hand.c func_0025C2F8 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/leaf/small_hand.c func_0025C320 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/leaf/small_hand.c func_0025C360 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/leaf/small_hand.c func_0025C3A0 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/leaf/small_hand.c func_0025C3D0 --pre=a0=0..2000000 --runs=5
+src/leaf/small_hand.c func_0025C3E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_0025C400 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
+src/leaf/small_hand.c func_0031F230 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_0031F260 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_0031FBE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_0034BFE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_0031E980 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_0032A890 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_0032C000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/leaf/small_hand.c func_00355940 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00320C70 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/leaf/small_hand.c func_00348980 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=3
+src/leaf/small_hand.c func_003659B0 --runs=3
+src/leaf/small_hand.c func_003659C0 --runs=3
+src/leaf/small_hand.c func_00365CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
