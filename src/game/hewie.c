@@ -7723,27 +7723,13 @@ void func_00153700(Hewie *h) {
     }
 }
 
-/* ---- making room ---- */
-
-/* step away (pose 7) from his target (+0xF3544) while it stands within 6 of him in the same
- * room on the mesh (else the default action): every 30 frames the freest way near away from it
- * (func_00137720, 20, 30..150 degrees) */
-void func_00153D20(Hewie *h) {
-    Character *t = HW(h, 0xF3544, Character *);
-    f32 d[4] __attribute__((aligned(16)));
+/* step away (pose 7) from `from`: every 30 frames the freest way near straight away from it
+ * (func_00137720, 20, 30..150 degrees), head held level toward it */
+static void back_off(Hewie *h, Actor *from) {
     f32 away, step;
 
-    if (t == NULL || t->a.active == 0 || h->c.a.room != t->a.room || t->a.navTri == NAV_NONE) {
-        hewie_want(h, 0, 0);
-        return;
-    }
-    sceVu0SubVector(d, t->a.pos, h->c.a.pos);
-    if (!(__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= 6.0f)) {
-        hewie_want(h, 0, 0);
-        return;
-    }
     func_00141C00(h, 7);
-    away = func_001244D0(&HW(h, 0xF3544, Character *)->a, h->c.a.pos);
+    away = func_001244D0(from, h->c.a.pos);
     if (HW(h, 0xF36B4, s32) != 0) {
         HW(h, 0xF36B4, s32) -= 1;
     } else {
@@ -7758,4 +7744,34 @@ void func_00153D20(Hewie *h) {
     HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
+}
+
+/* ---- making room ---- */
+
+/* step away (pose 7) from his target (+0xF3544) while it stands within 6 of him in the same
+ * room on the mesh (else the default action): every 30 frames the freest way near away from it
+ * (func_00137720, 20, 30..150 degrees) */
+void func_00153D20(Hewie *h) {
+    Character *t = HW(h, 0xF3544, Character *);
+    f32 d[4] __attribute__((aligned(16)));
+
+    if (t == NULL || t->a.active == 0 || h->c.a.room != t->a.room || t->a.navTri == NAV_NONE) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    sceVu0SubVector(d, t->a.pos, h->c.a.pos);
+    if (!(__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= 6.0f)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    back_off(h, &HW(h, 0xF3544, Character *)->a);
+}
+
+/* step away (pose 7) from Fiona while she is within 6 in his room (else the default action) */
+void func_00154150(Hewie *h) {
+    if (!in_his_room(h, gCharPlayer) || !(func_00124490(&h->c.a, gCharPlayer->a.pos) <= 6.0f)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    back_off(h, &gCharPlayer->a);
 }
