@@ -514,3 +514,145 @@ s32 func_0030BB70(Pursuer *p) {
     }
     return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
 }
+
+extern const PTMF D_00423AA8;
+void func_0030A210(Pursuer *p);
+
+/* start of his grab: action 0x17 instead when he may not go for his target; finish the walk,
+   then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and func_0030A210 */
+void func_0030A4D0(Pursuer *p) {
+    if (!(func_00283870(p) & 0xFF)) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, 0xE01, 0);
+    p->c.unk104[0] = 0;
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        PU(p, 0x16F7, u8) = 1;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00423AA8);
+    func_0030A210(p);
+}
+
+/* state: a sweep that hits both: at its key (2) Fiona and Hewie within the reach of attack
+   entry 2 (+0x171C +0x48: +0xC reach) and on the mesh are hit (func_00178070 with the entry,
+   stunning by its +0x18 chance), once each (+0x1760); its end ends the step */
+void func_0030A650(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+        u8 *e = PU(p, 0x171C, u8 *) + 0x48;
+        u32 hit = 0;
+        f32 d;
+
+        d = func_00124490(&p->c.a, gCharPlayer->a.pos);
+        if (d <= AT(e, 0xC, f32) && !(d < 0.0f) &&
+            func_00124480(&p->c.a, gCharPlayer->a.pos, p->c.a.navMask) != (u32)-1) {
+            hit = (hit | 1) & 0xFF;
+        }
+        d = func_00124490(&p->c.a, gCharPartner->a.pos);
+        if (d <= AT(e, 0xC, f32) && !(d < 0.0f) &&
+            func_00124480(&p->c.a, gCharPartner->a.pos, p->c.a.navMask) != (u32)-1) {
+            hit = (hit | 2) & 0xFF;
+        }
+        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            PU(p, 0x1764, s32) = 12;
+        }
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+/* where he sinks away (0x700 bytes, vtable 0x47A750, its drawer at +0x610) */
+extern void *D_0047A750[];
+
+static inline void Sink_Init(void **obj) {
+    obj[0] = D_0047A750;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+extern const PTMF D_00423A88;
+void func_0030A850(Pursuer *p);
+
+/* state: sinking away (animation 0x1304). At its end: out of contact (+0x29 / +0x2D), the sink
+   effect where he stood, moved to the exit of func_00177AB0 kind 9 if any, then (15 frames,
+   +0x1624) toward his target: a point along the path (func_00214890) or where he is when it's
+   out of reach; state D_00423A88 (func_0030A850) */
+void func_0030AB80(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        s32 kind;
+    } sk __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+    u8 *mgr;
+    s32 slot;
+    u32 k, tri;
+    f32 d;
+
+    func_00125A10(&p->c);
+    if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
+        return;
+    }
+    mgr = D_0044E578;
+    p->c.a.disabled = 1;
+    p->c.a.unk2D = 1;
+    slot = Effect_New(mgr, 0x700, Sink_Init);
+    sceVu0CopyVector(sk.pos, p->c.a.pos);
+    sk.kind = 0;
+    func_002D6090(mgr, slot, &sk);
+    k = func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF;
+    if (k != 0xFF) {
+        p->c.a.navTri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, k, p->c.a.pos);
+    }
+    PU(p, 0x1624, s32) = 15;
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    d = func_00214B90(p, tri, t);
+    if (d < 0.0f) {
+        sceVu0CopyVector(p->c.unk110, p->c.a.pos);
+        p->c.unk104[0] = p->c.a.navTri;
+    } else {
+        u32 out;
+
+        func_00214890(p, &out, p->c.unk110, d);
+        p->c.unk104[0] = out;
+    }
+    Actor_SetState(&p->c.a, &D_00423A88);
+    func_0030A850(p);
+}
+
+extern const PTMF D_00423A78;
+
+/* state: closing on his target: when it's out of reach by the mesh (func_001257B0 < 0), back to
+   the walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
+void func_0030AE00(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    if (func_001257B0(&p->c, tri, t, -1) < 0.0f) {
+        if (PU(p, 0x1788, s32) != 0) {
+            func_00297B40(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p), 0);
+        }
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+        return;
+    }
+    func_00297B40(p, 0x1304, 0);
+    Actor_SetState(&p->c.a, &D_00423A78);
+    func_0030AB80(p);
+}
