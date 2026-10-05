@@ -73,6 +73,8 @@ extern s32 func_002D2120(void *o);
 extern s32 func_002D20D0(void *o);
 extern VObject *gFileLoader;
 extern s32 func_00177260(Progress *p, s32 slot);
+extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
+extern VObject *D_00456E00;
 extern u8 *gCharPursuer;
 extern void *D_0044E958;      /* the movie playing */
 
@@ -801,6 +803,66 @@ s32 func_001FC760(VObject *ev) {
 
         if (i != 0xFF && i == PC(ev)[1] && gCharacters[i] != NULL && func_00177260(p, i) == 0) {
             r = 1;
+        }
+        break;
+    }
+    case 0x23: {   /* characters pc[1] and pc[2] (in the scene) within be32 pc[3..6]; Fiona or Hewie to a
+                    * stalker only while the stalker's +0x1544 is set */
+        u8 i1 = (u8)func_001770D0(p, pc[1]);
+        u8 i2 = (u8)func_001770D0(p, PC(ev)[2]);
+        u32 d = be32(PC(ev) + 3);
+        f32 lim = (f32)d;
+        u8 *c1, *c2;
+
+        if (lim <= 0.0f) {
+            lim = -(f32)d;
+        }
+        c1 = cond_char(p, PC(ev)[1]);
+        c2 = cond_char(p, PC(ev)[2]);
+        if (i1 < 2 && i2 >= 2 && i2 < 6) {
+            if (c1 != NULL && c2 != NULL && AT(c2, 0x1544, u8) == 1 && func_00124490(c1, (f32 *)(c2 + 0x10)) <= lim) {
+                r = 1;
+            }
+        } else if (c1 != NULL && c2 != NULL && func_00124490(c1, (f32 *)(c2 + 0x10)) <= lim) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x2E:   /* character pc[1] (in the scene, this room): D_00456E00 +0x14 of its triangle, pc[2] */
+        if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x30, s32) == AT(ev, 0x560, s32)) {
+            u8 *c = cond_char(p, PC(ev)[1]);
+
+            if (AT(c, 0x34, s32) != -1) {
+                r = VCALL(D_00456E00, 0x14, s32 (*)(VObject *, s32, s32))(D_00456E00, AT(c, 0x34, s32), PC(ev)[2]);
+            }
+        }
+        break;
+    case 0x52:   /* character pc[1] (in the scene) at full health */
+        if (cond_char(p, pc[1]) != NULL) {
+            s32 hp = AT(cond_char(p, PC(ev)[1]), 0x14C8, s32);
+
+            if (hp == AT(cond_char(p, PC(ev)[1]), 0x14CC, s32)) {
+                r = 1;
+            }
+        }
+        break;
+    case 0x58: {   /* the context's character (in the scene) is close to one of the placed characters 7..9
+                    * (in the scene, this room) */
+        u8 *c0 = *AT(ev, 0x6FC, u8 **);
+
+        if (c0 != NULL && AT(c0, 0x28, u8) != 0) {
+            u8 **pl = (u8 **)D_0044F258;
+            s32 i;
+
+            for (i = 7; i < 10; i++) {
+                u8 *c = pl[i];
+
+                if (c != NULL && AT(c, 0x28, u8) == 1 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
+                    (u8)func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
+                    r = 1;
+                    break;
+                }
+            }
         }
         break;
     }
