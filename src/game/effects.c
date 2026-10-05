@@ -2732,3 +2732,204 @@ void func_002FEBD0(u8 *e) {
     AT(e, 0x405, s8) = 0x10;
     AT(e, 0x406, s8) = 2;
 }
+
+
+/* ---- D_00470F30 (0xE60 bytes): a spray of blood - 32 dark red drops, in two buffers of quad
+ * records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50 (16 each), the quad
+ * drawer at +0xC10; they shrink and fall, and on the floor of their nav triangle (+0xE54, -1:
+ * none - no floor) half of them leave a splat (D_00472BF0) ---- */
+
+extern void *D_00470F30[], *D_00472BF0[];
+extern VObject *D_0044E570;   /* the nav mesh: +0xC a triangle's centre */
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+#define BLOOD_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
+#define BLOOD_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002FF6D0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470F30;
+    AT(o, 0xC10, void **) = D_0046FC30;
+    AT(o, 0xC10, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* +0x18 start: arg { the point, +0x10 the triangle << 8, or by whose (0 Fiona, 1 the partner,
+ * 0xFE the pursuer) triangle; +0x14 heavy (bigger, brighter, faster drops) } */
+void func_002FF760(u8 *e, u8 *arg) {
+    f32 p[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    u32 who;
+    s32 tri, heavy, i;
+
+    if (arg == NULL) {
+        return;
+    }
+    sceVu0CopyVector(p, (f32 *)arg);
+    who = AT(arg, 0x10, u32);
+    tri = who >> 8;
+    if (tri == 0) {
+        void *c;
+
+        switch (who) {
+        case 0xFE: c = gCharPursuer; break;
+        case 0: c = gCharPlayer; break;
+        case 1: c = gCharPartner; break;
+        default: c = NULL; break;
+        }
+        tri = c != NULL ? AT(c, 0x34, s32) : -1;
+    }
+    AT(e, 0xE54, s32) = tri;
+    heavy = AT(arg, 0x14, s32) != 0;
+    rnd = D_0044E550;
+    for (i = 0; i < 32; i++) {
+        QuadRec *r = BLOOD_REC(e, AT(e, 0xE50, s32), i);
+        f32 *v = BLOOD_VEL(e, i);
+        f32 s;
+
+        r->rgba[0] = 0x30;
+        r->rgba[1] = 0;
+        r->rgba[2] = 0;
+        r->rgba[3] = (burst_int(rnd) & 0x1F) + (heavy ? 0x60 : 0x40);
+        r->pos[0] = p[0] + 0.5f * (burst_rnd(rnd) - 0.5f);
+        r->pos[1] = p[1] + 0.5f * burst_rnd(rnd);
+        r->pos[2] = p[2] + 0.5f * (burst_rnd(rnd) - 0.5f);
+        r->pos[3] = 1.0f;
+        s = (heavy ? 3.0f : 1.0f) + 2.0f * burst_rnd(rnd);
+        r->w = s;
+        r->h = s;
+        r->turn = 0.0f;
+        r->frame = 0;
+        if (heavy) {
+            v[0] = burst_rnd(rnd) - 0.5f;
+            v[1] = 0x1.99999a0000000p-2f /* 0.4 */ + 2.0f * burst_rnd(rnd) / r->w;
+            v[2] = burst_rnd(rnd) - 0.5f;
+        } else {
+            v[0] = 0.5f * (burst_rnd(rnd) - 0.5f);
+            v[1] = 0x1.99999a0000000p-3f /* 0.2 */ + 2.0f * burst_rnd(rnd) / r->w;
+            v[2] = 0.5f * (burst_rnd(rnd) - 0.5f);
+        }
+    }
+}
+
+/* +0x14 draw the current buffer, unless the effects are paused or all are gone */
+void func_002FFC70(u8 *e) {
+    if (func_002D6010(D_0044E578) == 0 && AT(e, 0xE58, u8) == 0) {
+        AT(e, 0xC20, QuadRec *) = BLOOD_REC(e, AT(e, 0xE50, s32), 0);
+        func_002E56C0(e + 0xC10);
+    }
+}
+
+static void splat_init(void **obj) {
+    obj[0] = D_00472BF0;
+    obj[0x70 / 4] = D_00469D00;
+    ((s32 *)obj)[0x74 / 4] = -1;
+    obj[0x70 / 4] = D_0046FC30;
+}
+
+/* +0x10 update (0 once all are gone): flip the buffers; each live drop carried over,
+ * shrinking, falling (slower once falling), stopped by the floor; a drop gone leaves a splat
+ * half the time */
+s32 func_002FFCF0(u8 *e) {
+    struct {
+        f32 pos[4];
+        s32 tri;
+        s32 zero;
+    } sp __attribute__((aligned(16)));
+    f32 floor[4] __attribute__((aligned(16)));
+    VObject *nm, *rnd;
+    u8 *mgr;
+    s32 i, k;
+
+    if (AT(e, 0xE58, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0xE58, u8) = 1;
+    nm = D_0044E570;
+    rnd = D_0044E550;
+    mgr = D_0044E578;
+    AT(e, 0xE50, s32) ^= 1;
+    for (i = 0; i < 32; i++) {
+        u32 *src = (u32 *)BLOOD_REC(e, AT(e, 0xE50, s32) ^ 1, i);
+        u32 *dst = (u32 *)BLOOD_REC(e, AT(e, 0xE50, s32), i);
+        f32 *v = BLOOD_VEL(e, i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = BLOOD_REC(e, AT(e, 0xE50, s32), i);
+        if (r->w <= 0.0f || r->rgba[3] <= 0) {
+            continue;
+        }
+        AT(e, 0xE58, u8) = 0;
+        r->w = r->w - 0x1.47ae140000000p-6f /* 0.02 */;
+        if (r->w < 0.0f) {
+            r->w = 0.0f;
+        }
+        r->h = r->w;
+        v[1] = v[1] + (v[1] < 0.0f ? -0x1.99999a0000000p-5f /* 0.05 */ : -0x1.99999a0000000p-4f /* 0.1 */);
+        if (AT(e, 0xE54, s32) == -1) {
+            r->pos[0] = r->pos[0] + v[0];
+            r->pos[1] = r->pos[1] + v[1];
+            r->pos[2] = r->pos[2] + v[2];
+        } else {
+            VCALL(nm, 0xC, void (*)(VObject *, s32, f32 *))(nm, AT(e, 0xE54, s32), floor);
+            if (r->pos[1] + v[1] < floor[1]) {
+                r->rgba[3] = 0;
+                r->w = 0.0f;
+            } else {
+                r->pos[0] = r->pos[0] + v[0];
+                r->pos[1] = r->pos[1] + v[1];
+                r->pos[2] = r->pos[2] + v[2];
+            }
+        }
+        r->rgba[3] -= 4;
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        if ((r->rgba[3] == 0 || r->w == 0.0f) && AT(e, 0xE54, s32) != -1 && !(burst_int(rnd) & 1)) {
+            s32 slot = Effect_New(mgr, 0x140, splat_init);
+
+            sp.pos[0] = r->pos[0];
+            sp.pos[1] = r->pos[1];
+            sp.pos[2] = r->pos[2];
+            sp.pos[3] = r->pos[3];
+            sp.tri = AT(e, 0xE54, s32);
+            sp.zero = 0;
+            func_002D6090(mgr, slot, &sp);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells at (96, 64), layer
+ * 0x19) */
+void func_00300130(u8 *e) {
+    AT(e, 0xE50, s32) = 0;
+    AT(e, 0xE58, u8) = 0;
+    AT(e, 0xC18, s64) = -1;
+    AT(e, 0xC24, s32) = 0;
+    AT(e, 0xC28, s32) = 0;
+    AT(e, 0xC2C, s32) = 0;
+    AT(e, 0xC30, s32) = 0x19;
+    AT(e, 0xC34, s16) = 0x20;
+    AT(e, 0xC36, s16) = 0x60;
+    AT(e, 0xC38, s16) = 0x40;
+    AT(e, 0xC3A, s16) = 0x20;
+    AT(e, 0xC3C, s16) = 0x20;
+    AT(e, 0xC3E, s16) = 0x200;
+    AT(e, 0xC40, s16) = 0x100;
+    AT(e, 0xC42, s8) = 0;
+    AT(e, 0xC43, s8) = 1;
+    AT(e, 0xC44, s8) = 1;
+    AT(e, 0xC45, s8) = 0x10;
+    AT(e, 0xC46, s8) = -1;
+}
