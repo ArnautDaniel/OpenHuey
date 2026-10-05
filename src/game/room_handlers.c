@@ -1027,3 +1027,123 @@ s32 func_002B1700(void *self, void *a1, u8 *cmd) {
 s32 func_002B2950(void) {
     return 1;
 }
+
+extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* "sara_l", "sara_r", "tenbin" */
+extern void *D_00479580[], *D_0047A390[];
+
+static f32 hook_sqrt(f32 x) {
+    return __builtin_sqrtf(x);
+}
+
+/* Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276,
+ * 160) (others: what the caller left) */
+s32 func_002B18B0(void *self, void *a1, u8 *cmd) {
+    Character *h = gCharacters[func_001770D0(gProgress, 1) & 0xFF];
+    f32 dx = 0.0f, dz = 0.0f;
+
+    if (h == NULL || AT(h, 0x28, u8) == 0 || AT(h, 0xF3564, s32) != 0x7F) {
+        return 0;
+    }
+    switch (cmd[3]) {
+    case 0:
+        dx = 259.5f + AT(h, 0x10, f32);
+        dz = AT(h, 0x18, f32) - 190.0f;
+        break;
+    case 1:
+        dx = 276.0f + AT(h, 0x10, f32);
+        dz = AT(h, 0x18, f32) - 160.0f;
+        break;
+    }
+    return hook_sqrt(dz * dz + dx * dx) < 5.0f;
+}
+
+/* the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped */
+s32 func_002B2450(void *self, void *a1, u8 *cmd) {
+    VObject *objs = D_00456DF8;
+    u8 *o;
+
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C0);
+    if (o != NULL) {
+        AT(o, 0x10, u32) = 0;
+        AT(o, 0x14, u32) = 0;
+        AT(o, 0x18, u32) = 0;
+        if (cmd[3] == 0) {
+            AT(o, 0x20, u32) = 0x40C669AD;
+            AT(o, 0x24, u32) = 0x419E6666;
+        } else {
+            AT(o, 0x20, u32) = 0x40CB367A;
+            AT(o, 0x24, u32) = 0x41A4CCCD;
+        }
+        AT(o, 0x28, u32) = 0x4188CCCD;
+    }
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C4);
+    if (o != NULL) {
+        AT(o, 0x10, u32) = 0;
+        AT(o, 0x14, u32) = 0;
+        AT(o, 0x18, u32) = 0;
+        if (cmd[3] == 0) {
+            AT(o, 0x20, u32) = 0x404322D1;
+            AT(o, 0x24, u32) = 0x419E6666;
+        } else {
+            AT(o, 0x20, u32) = 0x40660419;
+            AT(o, 0x24, u32) = 0x419A0000;
+        }
+        AT(o, 0x28, u32) = 0x4188CCCD;
+    }
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C8);
+    if (o != NULL) {
+        AT(o, 0x10, u32) = 0;
+        AT(o, 0x14, u32) = 0;
+        AT(o, 0x18, u32) = cmd[3] == 0 ? 0 : 0x3EDF66F3;
+        AT(o, 0x20, u32) = 0x4093D14E;
+        AT(o, 0x24, u32) = 0x41A4CCCD;
+        AT(o, 0x28, u32) = 0x4188A7F0;
+    }
+    return 1;
+}
+
+static void effect_6cf0_init(void **obj) {
+    obj[0] = D_00479580;
+    obj[0x6040 / 4] = D_00469D00;
+    ((s32 *)obj)[0x6044 / 4] = -1;
+    obj[0x6040 / 4] = D_0046FC30;
+    obj[0x6078 / 4] = D_00469D00;
+    ((s32 *)obj)[0x607C / 4] = -1;
+    obj[0x6078 / 4] = D_0046FC30;
+    obj[0x60B0 / 4] = D_00469D00;
+    ((s32 *)obj)[0x60B4 / 4] = -1;
+    obj[0x60B0 / 4] = D_0046FC30;
+}
+
+/* the effect D_00479580 (three quad drawers) started with parameter 0 */
+s32 func_002B26F0(void) {
+    u8 *mgr = D_0044E578;
+    s32 slot = Effect_New(mgr, 0x6CF0, effect_6cf0_init);
+    s32 arg = 0;
+
+    func_002D6090(mgr, slot, &arg);
+    return 1;
+}
+
+static void effect_1a60_init(void **obj) {
+    obj[0] = D_0047A390;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+/* byte 3 0: the effect D_0047A390 spawned, its slot in event var 0; 1: removed */
+s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0: {
+        s32 slot = Effect_New(D_0044E578, 0x1A60, effect_1a60_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        break;
+    }
+    case 1:
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+        break;
+    }
+    return 1;
+}
