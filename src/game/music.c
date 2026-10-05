@@ -4,10 +4,11 @@
  * mixes them live: each track's volume and sequence volume, and per MIDI channel a volume,
  * pitch bend and pan, sent as MIDI (driver +0x30: command 0x23). Fades run as "cues" (a
  * member function called each frame). Its state (+0x30) follows the chase (func_00177620),
- * the panic level (progress +0x7B8) and whether the pursuer sees Fiona:
- *   0 start, fading in track 0 (calm) and 1 / 2 (ambience); 1 calm; 2 track 1/2 fading to
- *   the chase; 3 / 4 chase begins (+0x54); 5 / 6 the chase (track 3, +0x58 / +0x5C: seen or
- *   not); 7 panic (+0x60); 8 panic over (+0x64 with progress +0x7B8 == 5); 9 after.
+ * the panic level (progress +0x7B8) and whether the pursuer sees Fiona. The tracks: 0 the
+ * panic (PANIC.SQ), 1 / 2 the calm music's two parts (Sn_NORMALA / B), 3 the chase. States:
+ *   0 start (the calm parts fade in, the others out); 1 calm; 2 calm fading out (being
+ *   followed); 3 / 4 the chase begins (+0x54); 5 / 6 the chase (+0x58 lost / +0x5C seen);
+ *   7 panic (+0x60); 8 panic, over at progress +0x7B8 == 5 (+0x64); 9 after.
  *
  *   +0x4    the music volume (the system's), +0x8 the progress's, +0xC the director's
  *   +0x10   the global volume fading (16.16), +0x12 its integer part (0..255), +0x14 its
@@ -568,5 +569,823 @@ void func_002C3760(u8 *d, u32 k) {
             VCALL(D_0044E560, 0x38, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, ch, 0);
         }
         midi(k, 0xB0, 0xA, f2u(AT(e, 0x8, f32)) & 0xFF, ch);
+    }
+}
+
+/* ---- life ---- */
+
+extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_001002C0(void *block, void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_00100490(void *p);   /* operator delete */
+extern f32 func_0031C6E8(f32 x);      /* logf */
+
+/* placement new */
+void *func_002C01A0(u32 size, void *p) {
+    return p;
+}
+
+/* operator delete of the scene's objects: nothing */
+void func_002C0190(void *p) {
+}
+
+/* a channel (0x10) */
+u8 *func_0039AD70(u8 *e) {
+    AT(e, 0x0, f32) = 100.0f;
+    AT(e, 0x4, f32) = 64.0f;
+    AT(e, 0x8, f32) = 64.0f;
+    AT(e, 0xC, u8) = 0;
+    return e;
+}
+
+void *func_002BFD70(void *e, s32 flags) {
+    if (e != NULL && (s16)flags > 0) {
+        func_00100490(e);
+    }
+    return e;
+}
+
+/* a track (0x110) */
+u8 *func_0039AD10(u8 *t) {
+    func_00100340(t, (void *(*)(void *))func_0039AD70, func_002BFD70, 0x10, 0x10);
+    AT(t, 0x100, f32) = 0.0f;
+    AT(t, 0x104, f32) = 100.0f;
+    AT(t, 0x108, f32) = 1.0f;
+    AT(t, 0x10C, u8) = 0;
+    AT(t, 0x10D, u8) = 0;
+    return t;
+}
+
+void *func_002BFD10(u8 *t, s32 flags) {
+    if (t != NULL) {
+        func_001002C0(t, func_002BFD70, 0x10, 0x10);
+        if ((s16)flags > 0) {
+            func_00100490(t);
+        }
+    }
+    return t;
+}
+
+/* a cue (0x28) */
+u8 *func_0039ACB0(u8 *c) {
+    AT(c, 0x0, u8) = 0xFF;
+    AT(c, 0x1, u8) = 0xFF;
+    AT(c, 0x10, s32) = -1;
+    *(PTMF *)(c + 4) = sGameStateNull;
+    AT(c, 0x14, s32) = 0;
+    AT(c, 0x18, s32) = 0;
+    AT(c, 0x1C, s32) = 0;
+    AT(c, 0x20, s32) = 0;
+    AT(c, 0x24, s8) = -1;
+    AT(c, 0x25, u8) = 0;
+    return c;
+}
+
+void *func_002BFDC0(void *c, s32 flags) {
+    if (c != NULL && (s16)flags > 0) {
+        func_00100490(c);
+    }
+    return c;
+}
+
+/* the director's setup: the synths' bend range (RPN 0: 12 semitones), log2(1..128), volumes */
+void func_002C5FF0(u8 *d) {
+    u8 i;
+
+    midi(0, 0xB0, 0x65, 0, 0xFF);
+    midi(0, 0xB0, 0x64, 0, 0xFF);
+    midi(0, 0xB0, 0x06, 0xC, 0xFF);
+    midi(0, 0xB0, 0x26, 0xC, 0xFF);
+    for (i = 0; i < 0x80; i = (i + 1) & 0xFF) {
+        AT(d, 0x838 + i * 4, f32) = func_0031C6E8((f32)(i + 1)) / 0.6931472f;
+    }
+    AT(d, 0x10, s32) = 0;
+    AT(d, 0xC, f32) = 1.0f;
+    AT(d, 0xA38, u8) = 0;
+    AT(d, 0xA39, u8) = 0;
+    AT(d, 0x15, u8) = 0xFF;
+    AT(d, 0x31, u8) = 0xFF;
+    AT(d, 0x4, f32) = AT(D_0044E978, 0x38, f32);
+    if (gProgress != NULL) {
+        AT(d, 0x8, f32) = AT(gProgress, 0x9F0, f32);
+    } else {
+        AT(d, 0x8, f32) = 1.0f;
+    }
+}
+
+/* the base's destructor (D_0046EBE0) */
+void *func_002C6180(u8 *d, s32 flags) {
+    if (d != NULL) {
+        AT(d, 0x0, void **) = D_0046EBE0;
+        if (d != NULL) {
+            D_00456DF0 = NULL;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(d);
+        }
+    }
+    return d;
+}
+
+/* the director's members and base destructor (notes off on all four tracks) */
+static inline void director_dtor(u8 *d) {
+    u8 k;
+
+    AT(d, 0x0, void **) = D_0046EB70;
+    for (k = 0; k < 4; k++) {
+        midi(k, 0xB0, 0x78, 0, 0xFF);
+    }
+    func_001002C0(d + 0x474, func_002BFDC0, 0x28, 0x18);
+    func_001002C0(d + 0x34, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
+    if (d != NULL) {
+        AT(d, 0x0, void **) = D_0046EBE0;
+        if (d != NULL) {
+            D_00456DF0 = NULL;
+        }
+    }
+}
+
+/* +0x8 */
+void *func_002BFBB0(u8 *d, s32 flags) {
+    if (d != NULL) {
+        director_dtor(d);
+    }
+    return d;
+}
+
+/* +0xC, +0x40: nothing */
+void func_002BFE10(u8 *d) {
+}
+
+void func_002BFE20(u8 *d) {
+}
+
+/* +0x18 */
+void func_002BFE30(u8 *d) {
+    AT(d, 0xA38, u8) = 0;
+}
+
+/* +0x28..+0x34 */
+f32 func_002C0150(u8 *d) {
+    return AT(d, 0x4, f32);
+}
+
+u16 func_002C0160(u8 *d) {
+    return AT(d, 0x12, u16);
+}
+
+f32 func_002C0170(u8 *d) {
+    return AT(d, 0xC, f32);
+}
+
+s8 func_002C0180(u8 *d) {
+    return AT(d, 0x14, s8);
+}
+
+/* +0x20 the music volume (0..1) */
+void func_002BFE50(u8 *d, f32 v) {
+    if (!(v < 0.0f)) {
+        AT(d, 0x4, f32) = v <= 1.0f ? v : 1.0f;
+    } else {
+        AT(d, 0x4, f32) = 0.0f;
+    }
+    send_volumes(d);
+}
+
+/* +0x24 the progress's music volume (0..1) */
+void func_002BFFD0(u8 *d, f32 v) {
+    if (!(v < 0.0f)) {
+        AT(d, 0x8, f32) = v <= 1.0f ? v : 1.0f;
+    } else {
+        AT(d, 0x8, f32) = 0.0f;
+    }
+    send_volumes(d);
+}
+
+/* +0x48 the director's volume back to full */
+void func_002C4330(u8 *d) {
+    AT(d, 0xC, f32) = 1.0f;
+    send_volumes(d);
+}
+
+/* +0x44 the director's volume (0..1; else half) */
+void func_002C4480(u8 *d, f32 v) {
+    if (v <= 1.0f && !(v < 0.0f)) {
+        AT(d, 0xC, f32) = v;
+    } else {
+        AT(d, 0xC, f32) = 0.5f;
+    }
+    send_volumes(d);
+}
+
+/* track 0's channels 3..8 to their volumes */
+static inline void calm_channels_on(u8 *d) {
+    u8 ch;
+
+    for (ch = 3; ch < 9; ch++) {
+        AT(CHAN(d, 0, ch), 0xC, u8) = 0;
+        midi(0, 0xB0, 7, f2u(AT(CHAN(d, 0, ch), 0x0, f32)) & 0xFF, ch);
+    }
+}
+
+/* +0x64 the panic over: track 0's channels 3..8 back */
+void func_002C01B0(u8 *d) {
+    AT(d, 0x30, u8) = 9;
+    calm_channels_on(d);
+}
+
+/* +0x60 panic: track 0 alone, channels 3..8 silent */
+void func_002C04D0(u8 *d) {
+    u8 ch;
+
+    AT(d, 0x30, u8) = 8;
+    midi(0, 0xB0, 0x78, 0, 0xFF);
+    VCALL(D_0044E560, 0x24, void (*)(VObject *, u32, u32))(D_0044E560, 0, 1);
+    func_002C3760(d, 0);
+    func_002C2CD0(d, 1, 1, 0);
+    func_002C2CD0(d, 2, 1, 0);
+    func_002C2CD0(d, 3, 1, 0);
+    func_002C2CD0(d, 0, 1, 0xFF);
+    for (ch = 3; ch < 9; ch++) {
+        AT(CHAN(d, 0, ch), 0xC, u8) = 1;
+        midi(0, 0xB0, 7, 0, ch);
+    }
+}
+
+/* +0x54 the chase begins (`now`: at once): track 3 (the chase) from its start at the chase
+   step's bend, tracks 1 / 2 out; seen or not (+0x5C / +0x58) */
+void func_002C0720(u8 *d, s32 now) {
+    u8 *p = gCharPursuer;
+    u8 step = func_002C1980(d);
+    u32 vol, bend;
+    s32 lost = 0;
+    s32 frames;
+    f32 b;
+
+    if (step != 0xFF) {
+        vol = AT(AT(d, 0x18, u8 *) + step * 8, 0x4, u8);
+        bend = AT(AT(d, 0x18, u8 *) + step * 8, 0x5, u8);
+    } else {
+        vol = 0;
+        bend = 0;
+    }
+    if (p != NULL) {
+        lost = AT(p, 0x16C8, u8) == 0;
+    }
+    if (now == 0) {
+        frames = 0x5A;
+        func_002C2CD0(d, 0, 0x5A, 0);
+    } else {
+        frames = 1;
+        func_002C2CD0(d, 1, 1, 0);
+        func_002C2CD0(d, 2, 1, 0);
+    }
+    if (lost) {
+        VCALL(d, 0x5C, void (*)(u8 *, s32))(d, 1);
+        vol = 0xFF;
+    } else {
+        VCALL(d, 0x58, void (*)(u8 *, s32))(d, 1);
+    }
+    b = (f32)bend;
+    b = (b <= 127.0f ? b : 127.0f) < 0.0f ? 0.0f : (b <= 127.0f ? b : 127.0f);
+    AT(CHAN(d, 3, 0), 0x4, f32) = b;
+    midi(3, 0xE0, 0, f2u(b) & 0xFF, 0);
+    midi(3, 0xB0, 0x78, 0, 0xFF);
+    VCALL(D_0044E560, 0x24, void (*)(VObject *, u32, u32))(D_0044E560, 3, 1);
+    func_002C2CD0(d, 3, frames, vol & 0xFF);
+}
+
+/* +0x4C everything silent and muted */
+void func_002C3C50(u8 *d) {
+    AT(d, 0x30, u8) = 2;
+    track_zero(d, 1);
+    track_zero(d, 2);
+    track_zero(d, 3);
+    track_zero(d, 0);
+    track_mute(d, 1);
+    track_mute(d, 2);
+    track_mute(d, 3);
+    track_mute(d, 0);
+}
+
+extern s32 func_00177620(Progress *p);   /* the chase: 0 none, 1 / 2 being chased */
+
+/* back to calm: tracks 1 / 2 on (their fades dropped) */
+static inline void to_calm(u8 *d) {
+    AT(d, 0x30, u8) = 0;
+    track_unmute(d, 1);
+    track_unmute(d, 2);
+    cues_cancel(d, 1, 0);
+    cues_cancel(d, 2, 0);
+}
+
+/* panic: track 0 on */
+static inline void to_panic(u8 *d) {
+    AT(d, 0x30, u8) = 7;
+    track_unmute(d, 0);
+    cues_cancel(d, 0, 0);
+}
+
+/* chased: track 3 on, state `s` */
+static inline void to_chase(u8 *d, u8 s) {
+    AT(d, 0x30, u8) = s;
+    track_unmute(d, 3);
+    cues_cancel(d, 3, 0);
+}
+
+/* +0x50 a frame of the state (not while the room objects hold it, or with progress flag 8) */
+void func_002C0A30(u8 *d) {
+    Progress *p;
+    s32 seen = 0;
+
+    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) != 0) {
+        return;
+    }
+    p = gProgress;
+    if (Progress_TestFlag(p, 8) != 0) {
+        return;
+    }
+    if (gCharPursuer != NULL) {
+        seen = AT(gCharPursuer, 0x16C8, u8) == 0;
+    }
+    switch (AT(d, 0x30, u8)) {
+    case 0:
+        AT(d, 0x30, u8) = 1;
+        func_002C2CD0(d, 3, 0x5A, 0);
+        func_002C2CD0(d, 0, 0x5A, 0);
+        func_002C2CD0(d, 1, 0x5A, 0xFF);
+        func_002C2CD0(d, 2, 0x5A, 0xFF);
+        break;
+    case 1:
+        if ((func_00177620(p) & 0xFF) == 1) {
+            AT(d, 0x30, u8) = 2;
+            func_002C2CD0(d, 1, 0x5A, 0);
+            func_002C2CD0(d, 2, 0x5A, 0);
+        } else if ((func_00177620(p) & 0xFF) == 2) {
+            to_chase(d, 3);
+        } else if (AT(p, 0x7B8, u8) == 4) {
+            to_panic(d);
+        }
+        break;
+    case 2:
+        if (!(func_00177620(p) & 0xFF)) {
+            to_calm(d);
+        } else if ((func_00177620(p) & 0xFF) == 2) {
+            to_chase(d, 3);
+        } else if (AT(p, 0x7B8, u8) == 4) {
+            to_panic(d);
+        }
+        break;
+    case 3:
+        VCALL(d, 0x54, void (*)(u8 *, s32))(d, 1);
+        break;
+    case 4:
+        VCALL(d, 0x54, void (*)(u8 *, s32))(d, 0);
+        break;
+    case 5:
+        if (!(func_00177620(p) & 0xFF)) {
+            to_calm(d);
+        } else if ((func_00177620(p) & 0xFF) == 1) {
+            AT(d, 0x30, u8) = 2;
+            func_002C2CD0(d, 3, 0x5A, 0);
+        } else if (seen) {
+            VCALL(d, 0x5C, void (*)(u8 *, s32, s32))(d, 0, 1);
+            func_002C2CD0(d, 3, 0x1E, 0xFF);
+        } else if (AT(p, 0x7B8, u8) == 4) {
+            to_panic(d);
+        } else {
+            func_002C1760(d, 3);
+        }
+        break;
+    case 6:
+        if (!(func_00177620(p) & 0xFF)) {
+            to_calm(d);
+        } else if ((func_00177620(p) & 0xFF) == 1) {
+            AT(d, 0x30, u8) = 2;
+            func_002C2CD0(d, 3, 0x5A, 0);
+        } else if (!seen) {
+            VCALL(d, 0x58, void (*)(u8 *, s32, s32))(d, 0, 1);
+        } else if (AT(p, 0x7B8, u8) == 4) {
+            to_panic(d);
+        }
+        break;
+    case 7:
+        VCALL(d, 0x60, void (*)(u8 *))(d);
+        break;
+    case 8:
+        if (AT(p, 0x7B8, u8) == 5) {
+            VCALL(d, 0x64, void (*)(u8 *))(d);
+        }
+        /* fall through */
+    case 9:
+        if (AT(p, 0x7B8, u8) < 4) {
+            if (!(func_00177620(p) & 0xFF)) {
+                to_calm(d);
+            } else if ((func_00177620(p) & 0xFF) != 1) {
+                if ((func_00177620(p) & 0xFF) == 2) {
+                    to_chase(d, 4);
+                }
+            } else {
+                AT(d, 0x30, u8) = 2;
+                func_002C2CD0(d, 0, 0x5A, 0);
+            }
+        }
+        break;
+    }
+}
+
+/* channel `ch` (0xFF all) of track `k`: a value from `tbl` into field `off` (0..127) */
+static inline void chan_set(u8 *d, u32 k, u8 ch, u32 v, s32 off) {
+    f32 f = (f32)v;
+
+    f = (f <= 127.0f ? f : 127.0f) < 0.0f ? 0.0f : (f <= 127.0f ? f : 127.0f);
+    if (ch == 0xFF) {
+        u8 i;
+
+        for (i = 0; i < 0x10; i = (i + 1) & 0xFF) {
+            AT(CHAN(d, k, i), off, f32) = f;
+        }
+    } else {
+        AT(CHAN(d, k, ch), off, f32) = f;
+    }
+}
+
+/* +0x3C start: the volumes at the global one, tracks 1 / 2 full, 0 / 3 silent, each track's
+   sequence volume and channels from the stage's tables, tracks 3 and 0 muted; then +0x40 */
+void func_002C4600(u8 *d) {
+    u8 k;
+
+    AT(d, 0x30, u8) = 1;
+    AT(d, 0x14, s8) = 0;
+    AT(d, 0x10, s32) = 0;
+    send_volumes(d);
+    if ((f2u(AT(TRACK(d, 1), 0x100, f32)) & 0xFF) != 0xFF) {
+        AT(TRACK(d, 1), 0x100, f32) = 255.0f;
+        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, 1, vol_out(d, 0xFF) & 0xFF);
+    }
+    if ((f2u(AT(TRACK(d, 2), 0x100, f32)) & 0xFF) != 0xFF) {
+        AT(TRACK(d, 2), 0x100, f32) = 255.0f;
+        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, 2, vol_out(d, 0xFF) & 0xFF);
+    }
+    track_zero(d, 3);
+    track_zero(d, 0);
+    track_unmute(d, 1);
+    track_unmute(d, 2);
+    for (k = 0; k < 4; k++) {
+        u8 *t = TRACK(d, k);
+        u32 sv = AT(d, 0x28, u8 *)[k];
+        u8 was = f2u(AT(t, 0x104, f32)) & 0xFF;
+        f32 f = (f32)sv;
+        u8 ch;
+
+        f = (f <= 255.0f ? f : 255.0f) < 20.0f ? 20.0f : (f <= 255.0f ? f : 255.0f);
+        AT(t, 0x104, f32) = f;
+        if (was != (f2u(f) & 0xFF)) {
+            VCALL(D_0044E560, 0x3C, void (*)(VObject *, u32, u32))(D_0044E560, k, sv);
+        }
+        for (ch = 0; ch < 0x10; ch++) {
+            u8 *e = CHAN(d, k, ch);
+            u32 v;
+
+            AT(e, 0xC, u8) = 0;
+            midi(k, 0xB0, 7, f2u(AT(e, 0x0, f32)) & 0xFF, ch);
+            v = AT(d, 0x24, u8 *)[k * 0x10 + ch];
+            chan_set(d, k, ch, v, 0x8);
+            midi(k, 0xB0, 0xA, f2u(AT(e, 0x8, f32)) & 0xFF, ch);
+            v = AT(d, 0x20, u8 *)[k * 0x10 + ch];
+            chan_set(d, k, ch, v, 0x4);
+            midi(k, 0xE0, 0, f2u(AT(e, 0x4, f32)) & 0xFF, ch);
+            v = AT(d, 0x1C, u8 *)[k * 0x10 + ch];
+            chan_set(d, k, ch, v, 0x0);
+            VCALL(D_0044E560, 0x38, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, ch, f2u(AT(e, 0x0, f32)) & 0xFF);
+        }
+    }
+    track_mute(d, 3);
+    track_mute(d, 0);
+    VCALL(d, 0x40, void (*)(u8 *))(d);
+}
+
+/* +0x14 reset: the banks' files dropped (still loading) or the banks unloaded; the cues and
+   the tracks back to their defaults */
+void func_002C5BD0(u8 *d) {
+    s32 loading = 0;
+    s32 i, k, ch;
+
+    for (k = 0; k < 4; k++) {
+        loading |= VCALL(D_0044E560, 0x74, s32 (*)(VObject *, s32))(D_0044E560, k) & 0xFF;
+    }
+    for (k = 0; k < 4; k++) {
+        if (loading) {
+            VCALL(D_0044E560, 0x84, void (*)(VObject *, s32))(D_0044E560, k);
+        } else {
+            VCALL(D_0044E560, 0x64, void (*)(VObject *, s32))(D_0044E560, k);
+        }
+    }
+    for (i = 0; i < 0x18; i++) {
+        u8 *c = CUE(d, i);
+
+        AT(c, 0x0, u8) = 0xFF;
+        AT(c, 0x1, u8) = 0xFF;
+        AT(c, 0x10, s32) = -1;
+        *(PTMF *)(c + 4) = sGameStateNull;
+        AT(c, 0x14, s32) = 0;
+        AT(c, 0x18, s32) = 0;
+        AT(c, 0x1C, s32) = 0;
+        AT(c, 0x20, s32) = 0;
+        AT(c, 0x24, s8) = -1;
+        AT(c, 0x25, u8) = 0;
+    }
+    for (k = 0; k < 4; k++) {
+        u8 *t = TRACK(d, k);
+
+        for (ch = 0; ch < 0x10; ch++) {
+            AT(t + ch * 0x10, 0x0, f32) = 100.0f;
+            AT(t + ch * 0x10, 0x4, f32) = 64.0f;
+            AT(t + ch * 0x10, 0x8, f32) = 64.0f;
+            AT(t + ch * 0x10, 0xC, u8) = 0;
+        }
+        AT(t, 0x100, f32) = 0.0f;
+        AT(t, 0x104, f32) = 100.0f;
+        AT(t, 0x108, f32) = 1.0f;
+        AT(t, 0x10C, u8) = 0;
+        AT(t, 0x10D, u8) = 0;
+    }
+}
+
+/* +0x10 the banks in: 1 while still loading; else registered, silent */
+s32 func_002C5E80(u8 *d) {
+    s32 loading = 0;
+    s32 k;
+
+    for (k = 0; k < 4; k++) {
+        loading |= VCALL(D_0044E560, 0x74, s32 (*)(VObject *, s32))(D_0044E560, k) & 0xFF;
+    }
+    if (loading) {
+        return 1;
+    }
+    for (k = 0; k < 4; k++) {
+        VCALL(D_0044E560, 0x60, void (*)(VObject *, s32))(D_0044E560, k);
+    }
+    for (k = 0; k < 4; k++) {
+        VCALL(D_0044E560, 0x34, void (*)(VObject *, s32, s32))(D_0044E560, k, 0);
+    }
+    return 0;
+}
+
+/* ---- the stages ---- */
+
+extern void *D_0046F480[], *D_00473830[], *D_00478AE0[], *D_004799F0[];
+extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], D_0047AC28[], D_00414780[];
+extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], D_0047AD68[], D_0042A2B0[];
+extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], D_0047AF68[], D_00442D50[];
+extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], D_0047AFF8[], D_01991AA0[];
+
+/* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
+void func_0039A8E0(u8 *scene, u32 stage) {
+    static void **const sVtbl[4] = {D_0046F480, D_00473830, D_00478AE0, D_004799F0};
+    static u8 *const sTables[4][6] = {
+        {D_00414650, D_004146C0, D_00414700, D_00414740, D_0047AC28, D_00414780},
+        {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, D_0047AD68, D_0042A2B0},
+        {D_00442C20, D_00442C90, D_00442CD0, D_00442D10, D_0047AF68, D_00442D50},
+        {D_00444850, D_004448C0, D_00444900, D_00444940, D_0047AFF8, D_01991AA0},
+    };
+    u8 *d;
+    s32 i;
+
+    stage &= 0xFF;
+    if (stage >= 4) {
+        return;
+    }
+    d = func_002C01A0(0xA3C, scene + 0x1064600);
+    if (d != NULL) {
+        D_00456DF0 = d;
+        AT(d, 0x0, void **) = D_0046EB70;
+        func_00100340(d + 0x34, (void *(*)(void *))func_0039AD10, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
+        func_00100340(d + 0x474, (void *(*)(void *))func_0039ACB0, func_002BFDC0, 0x28, 0x18);
+        func_002C5FF0(d);
+        AT(d, 0x0, void **) = sVtbl[stage];
+        for (i = 0; i < 6; i++) {
+            AT(d, 0x18 + i * 4, u8 *) = sTables[stage][i];
+        }
+    }
+    AT(scene, 0x106503C, u8 *) = d;
+}
+
+/* the stages' music (subclass +0xC): the bank's header, the four sequences (0 panic, 1 / 2 the
+   calm music's two parts, 3 the chase) and the bank's samples into the progress's buffers */
+static inline void stage_load(u8 *d, const char *const *files) {
+    u8 *p = (u8 *)gProgress;
+
+    AT(d, 0x15, u8) = 0;
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[0], 0, 0, p + 0x16C0);
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[1], 0, 1, p + 0x36C0);
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[2], 1, 1, p + 0x56C0);
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[3], 2, 1, p + 0x76C0);
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[4], 3, 1, p + 0x96C0);
+    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[5], 0, 3, p + 0xB6C0);
+}
+
+/* the chase seen (subclass +0x5C): state 6, the chase's sequence volume to `vol`, the listed
+   channels bent up fully */
+static inline void stage_seen(u8 *d, s32 now, u32 vol, const u8 *chans, s32 n) {
+    s32 frames, i;
+
+    AT(d, 0x30, u8) = 6;
+    frames = now == 0 ? 0x1E : 1;
+    func_002C23E0(d, 3, frames, vol);
+    for (i = 0; i < n; i++) {
+        func_002C1D10(d, 3, chans[i], frames, 0x7F);
+    }
+}
+
+/* the chase lost (subclass +0x58): state 5, the chase's sequence volume back, the listed
+   channels' bend centred */
+static inline void stage_lost(u8 *d, s32 now, const u8 *chans, s32 n) {
+    s32 frames, i;
+
+    AT(d, 0x30, u8) = 5;
+    frames = now == 0 ? 0x5A : 1;
+    func_002C23E0(d, 3, frames, AT(d, 0x28, u8 *)[3]);
+    for (i = 0; i < n; i++) {
+        func_002C1D10(d, 3, chans[i], frames, 0x40);
+    }
+}
+
+/* the chase's channels in `c` on or silent (subclass +0x40) */
+static inline void stage_chans(u8 *d, const u8 *c, s32 n, s32 on) {
+    s32 i;
+
+    for (i = 0; i < n; i++) {
+        if (on) {
+            func_002C35F0(d, 3, c[i]);
+        } else {
+            func_002C36A0(d, 3, c[i]);
+        }
+    }
+}
+
+/* a stage's destructor */
+static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
+    if (d != NULL) {
+        u8 k;
+
+        AT(d, 0x0, void **) = vt;
+        if (d != NULL) {
+            AT(d, 0x0, void **) = D_0046EB70;
+            for (k = 0; k < 4; k++) {
+                func_002C3710(d, k);
+            }
+            func_001002C0(d + 0x474, func_002BFDC0, 0x28, 0x18);
+            func_001002C0(d + 0x34, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
+            if (d != NULL) {
+                AT(d, 0x0, void **) = D_0046EBE0;
+                if (d != NULL) {
+                    D_00456DF0 = NULL;
+                }
+            }
+        }
+        if ((s16)flags > 0) {
+            func_002C0190(d);
+        }
+    }
+    return d;
+}
+
+/* stage 1 (D_0046F480) */
+
+extern const char D_0045D8B0[], D_0045D8C8[], D_0045D8E0[], D_0045D900[], D_0045D920[], D_0045D930[];
+
+void *func_002D3A90(u8 *d, s32 flags) {
+    return stage_dtor(d, flags, D_0046F480);
+}
+
+void func_002D3E80(u8 *d) {
+    static const char *const sFiles[6] = {D_0045D8B0, D_0045D8C8, D_0045D8E0, D_0045D900, D_0045D920, D_0045D930};
+
+    stage_load(d, sFiles);
+}
+
+void func_002D3B80(u8 *d, s32 now) {
+    static const u8 sChans[7] = {0, 1, 3, 4, 5, 6, 7};
+
+    stage_seen(d, now, 0x88, sChans, 7);
+}
+
+void func_002D3C80(u8 *d, s32 now) {
+    static const u8 sChans[6] = {1, 3, 4, 5, 6, 7};
+
+    stage_lost(d, now, sChans, 6);
+}
+
+/* (progress word +0x1C bit 27: which of the chase's two sets) */
+void func_002D3D60(u8 *d) {
+    static const u8 sA[4] = {2, 3, 4, 5}, sB[3] = {6, 7, 8};
+
+    if (AT(gProgress, 0x1C, u32) & 0x08000000) {
+        stage_chans(d, sA, 4, 1);
+        stage_chans(d, sB, 3, 0);
+    } else {
+        stage_chans(d, sA, 4, 0);
+        stage_chans(d, sB, 3, 1);
+    }
+}
+
+/* stage 2 (D_00473830) */
+
+extern const char D_0045FFC0[], D_0045FFD8[], D_0045FFF0[], D_00460010[], D_00460030[], D_00460040[];
+
+void *func_0031ED70(u8 *d, s32 flags) {
+    return stage_dtor(d, flags, D_00473830);
+}
+
+void func_0031EFF0(u8 *d) {
+    static const char *const sFiles[6] = {D_0045FFC0, D_0045FFD8, D_0045FFF0, D_00460010, D_00460030, D_00460040};
+
+    stage_load(d, sFiles);
+}
+
+void func_0031EE70(u8 *d, s32 now) {
+    static const u8 sChans[5] = {0, 2, 3, 4, 5};
+
+    stage_seen(d, now, 0x8C, sChans, 5);
+}
+
+void func_0031EF40(u8 *d, s32 now) {
+    static const u8 sChans[4] = {2, 3, 4, 5};
+
+    stage_lost(d, now, sChans, 4);
+}
+
+void func_0031EE60(u8 *d) {
+}
+
+/* stage 3 (D_00478AE0) */
+
+extern const char D_00462CD0[], D_00462CE8[], D_00462D00[], D_00462D20[], D_00462D40[], D_00462D50[];
+
+void *func_0034DCC0(u8 *d, s32 flags) {
+    return stage_dtor(d, flags, D_00478AE0);
+}
+
+void func_0034DFC0(u8 *d) {
+    static const char *const sFiles[6] = {D_00462CD0, D_00462CE8, D_00462D00, D_00462D20, D_00462D40, D_00462D50};
+
+    stage_load(d, sFiles);
+}
+
+void func_0034DDB0(u8 *d, s32 now) {
+    static const u8 sChans[6] = {0, 1, 2, 4, 5, 6};
+
+    stage_seen(d, now, 0x8C, sChans, 6);
+}
+
+void func_0034DE90(u8 *d, s32 now) {
+    static const u8 sChans[4] = {1, 2, 4, 6};
+
+    stage_lost(d, now, sChans, 4);
+}
+
+/* (progress word +0x2C bit 9) */
+void func_0034DF40(u8 *d) {
+    static const u8 sA[2] = {5, 6};
+
+    stage_chans(d, sA, 2, (AT(gProgress, 0x2C, u32) & 0x200) != 0);
+}
+
+/* stage 4 (D_004799F0) */
+
+extern const char D_004633C0[], D_004633D8[], D_004633F0[], D_00463410[], D_00463430[], D_00463440[];
+
+void *func_0035F100(u8 *d, s32 flags) {
+    return stage_dtor(d, flags, D_004799F0);
+}
+
+void func_0035F490(u8 *d) {
+    static const char *const sFiles[6] = {D_004633C0, D_004633D8, D_004633F0, D_00463410, D_00463430, D_00463440};
+
+    stage_load(d, sFiles);
+}
+
+void func_0035F1F0(u8 *d, s32 now) {
+    static const u8 sChans[6] = {0, 1, 2, 3, 5, 6};
+
+    stage_seen(d, now, 0x6E, sChans, 6);
+}
+
+void func_0035F2D0(u8 *d, s32 now) {
+    static const u8 sChans[6] = {0, 1, 2, 3, 5, 6};
+
+    stage_lost(d, now, sChans, 6);
+}
+
+/* (progress word +0x2C bit 21) */
+void func_0035F3B0(u8 *d) {
+    static const u8 sA[2] = {3, 4}, sB[3] = {5, 6, 7};
+
+    if (AT(gProgress, 0x2C, u32) & 0x200000) {
+        stage_chans(d, sA, 2, 0);
+        stage_chans(d, sB, 3, 1);
+    } else {
+        stage_chans(d, sA, 2, 1);
+        stage_chans(d, sB, 3, 0);
     }
 }

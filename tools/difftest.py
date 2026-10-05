@@ -151,6 +151,7 @@ def b2f(b: int) -> float:
 STUB_RETURNS: list[int] = []  # --stub-ret: values calls return half the time
 STUB_RET_PROB = [0.5]         # --stub-ret-prob
 OUTPARAM_BYTES = [OUTPARAM]   # --outparam
+STACK_ARG_BYTES = [16]        # --stack-arg-bytes: how much of a local passed by reference compares
 STUB_FRETURNS: list[float] = []  # --stub-fret: float values calls return (f0)
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
@@ -526,7 +527,7 @@ class CPU:
                 # (unwritten stack reads as 0, so "never set" and "set to 0" compare equal; so do
                 # saved-register slots, which only sit next to a local by frame-layout accident)
                 content = tuple(0 if v + i in self.save_addrs else w.get(v + i, self.m.read(v + i, 1))
-                                for i in range(16))
+                                for i in range(STACK_ARG_BYTES[0])) + (None,) * (16 - STACK_ARG_BYTES[0])
                 if any(b is not None for b in content):
                     words = []
                     for i in range(0, 16, 4):
@@ -1798,6 +1799,8 @@ def option_parser() -> argparse.ArgumentParser:
                     help="a value stubbed calls return half the time (e.g. a 'done' status), repeatable")
     ap.add_argument("--stub-fret", action="append", default=[], type=float,
                     help="a float value stubbed calls return half the time, repeatable")
+    ap.add_argument("--stack-arg-bytes", type=int, default=16,
+                    help="bytes of a local passed by reference (16-byte aligned) that compare (4: a word)")
     ap.add_argument("--outparam", type=int, default=OUTPARAM,
                     help="bytes stubs write through stack pointer arguments (16: a whole vector)")
     ap.add_argument("--irq", action="append", default=[], type=lambda x: int(x, 0),
@@ -1886,6 +1889,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     STUB_RET_PROB[0] = opts.stub_ret_prob
     IRQ_FLAGS[:] = opts.irq
     OUTPARAM_BYTES[0] = opts.outparam
+    STACK_ARG_BYTES[0] = max(1, min(16, opts.stack_arg_bytes))
     STUB_FRETURNS[:] = opts.stub_fret
     harvest_constants(rom, *orig_range)
     global _RUN_CTX
