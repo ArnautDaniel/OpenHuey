@@ -5913,3 +5913,95 @@ void func_00193B10(Fiona *f) {
     }
     func_00125A10(&f->c);
 }
+
+extern const PTMF D_003B2AA8;
+extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path */
+
+/* a step led along: turned to +0x1AD6D8 (by +0x1AD6DC) and on along the path by +0x1AD6D0 */
+static inline __attribute__((always_inline)) void led_step(Fiona *f) {
+    f32 at[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    func_00124530(&f->c.a, FI(f, 0x1AD6D8, f32), FI(f, 0x1AD6DC, f32));
+    tri = f->c.a.navTri;
+    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.a.navTri = tri;
+    sceVu0CopyVector(f->c.a.pos, at);
+}
+
+/* at the spot (+0x104 / +0x110, on the floor) facing +0x1AD6D8 */
+static inline __attribute__((always_inline)) void led_arrive(Fiona *f) {
+    f32 yaw;
+
+    f->c.a.navTri = f->c.unk104[0];
+    sceVu0CopyVector(f->c.a.pos, f->c.unk110);
+    VCALL((VObject *)D_0044E570, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)D_0044E570, f->c.a.navTri, f->c.a.pos);
+    yaw = FI(f, 0x1AD6D8, f32);
+    f->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix(f->c.a.rot);
+    sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw);
+}
+
+/* led away walking (D_003B2A98): while the motion plays she turns to
+ * +0x1AD6D8 (by +0x1AD6DC) and goes along the path by +0x1AD6D0 a frame; then she is at the
+ * spot (+0x104 / +0x110, on the floor) facing +0x1AD6D8, progress flag 0x2B set unless the game
+ * drives her; her leader gone, she stands */
+void func_00191D10(Fiona *f) {
+    Character *c;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = gCharacters[f->c.unk100];
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        led_arrive(f);
+        FI(f, 0x1AD6C0, s32) = 0;
+        FI(f, 0x1AD6C8, s32) = 0;
+        if (AT(gProgress, 0x1FBEC1, u8) == 0) {
+            Progress_SetFlag(gProgress, 0x2B);
+        }
+        Actor_SetState(&f->c.a, &D_003B2AA8);
+    } else {
+        led_step(f);
+    }
+}
+
+extern const PTMF D_003B2A08;
+
+/* led away by the hand (D_003B29F8): as func_00191D10, but only while her leader leads
+ * (action 8); the pull rumbles (motion flag 2), and when the game drives her she may cry out
+ * (0x38, 1 in 4) at the spot */
+void func_00192F70(Fiona *f) {
+    Character *c;
+
+    f->c.a.unk2A = 1;
+    FI(f, 0x1AD5BC, u8) = 0;
+    c = gCharacters[f->c.unk100];
+    if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    if (c->moveMode != 8) {
+        Fiona_ToIdle(f);
+        return;
+    }
+    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+    }
+    if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
+        if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
+            VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+            func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+        }
+        led_arrive(f);
+        FI(f, 0x1AD6C0, s32) = 0;
+        FI(f, 0x1AD6C8, s32) = 0;
+        FI(f, 0x1AD6CC, s32) = 0;
+        Actor_SetState(&f->c.a, &D_003B2A08);
+    } else {
+        led_step(f);
+    }
+}
