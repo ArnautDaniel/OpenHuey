@@ -5416,3 +5416,10 @@ src/game/model.c func_00208300 --pre=a0=0x0B000000..0x0B000000
 src/game/model.c func_00208F80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xE0..0xFF --stub-ret=0 --stub-ret=3 --stub-ret=7
 src/game/model.c func_00208F10 --pre=a0=0x0B000000..0x0B000000
 src/game/model.c func_00208340 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_002089F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_002084D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_002080D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_00208C90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_00208650 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_00208180 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8
+src/game/model.c func_00208420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..8

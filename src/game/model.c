@@ -260,6 +260,146 @@ void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
     return o;
 }
 
+/* ---- the costume models event 0x97 makes ---- */
+
+extern void *D_0046B8F0[], *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[], *D_004703A0[],
+    *D_00470440[], *D_004703D0[], *D_00470620[];
+extern void *func_001702F0(void *, s32);
+extern void *func_00170670(void *);
+extern void *func_00170460(void *);
+extern void *func_00170080(void *, s32);
+extern void *func_0016FC10(void *);
+void *func_0016FBB0(void *e, s32 flags);
+void *func_00208E90(void *p);
+
+/* the dog model's constructor on the full base (func_0016F4B0), kind `kind`, vtable `vtbl` */
+static inline void *dog_model(u8 *m, u8 kind, void **vtbl) {
+    func_0016F4B0(m);
+    AT(m, 0x0, void **) = D_0046B240;
+    AT(m, 0x890, u8) = kind;
+    func_00100340(m + 0x960, func_00208160, func_001F7E40, 0x90, 2);
+    func_00100340(m + 0xA80, func_001706F0, func_0016FC80, 0x60, 2);
+    AT(m, 0x0, void **) = vtbl;
+    return m;
+}
+
+void *func_002080D0(u8 *m, u8 kind) {   /* Hewie, kind 2 (event 0xB7) */
+    return dog_model(m, kind, D_0046B9B0);
+}
+
+void *func_00208180(u8 *m, u8 kind) {   /* Hewie, kind 1 (event 0xB7) */
+    return dog_model(m, kind, D_0046B8F0);
+}
+
+/* parts of 0x40 (vtable +0x30 D_004703A0) from `from` to `to` */
+static inline void parts40(u8 *from, u8 *to) {
+    u8 *e;
+
+    for (e = from; e < to; e += 0x40) {
+        AT(e, 0x30, void **) = D_004703A0;
+    }
+}
+
+/* Fiona's costume 7 (0xD50 bytes) */
+void *func_00208420(u8 *m, s32 kind) {
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = D_00479420;
+    func_00100340(m + 0x9B0, func_00170670, func_001702F0, 0x50, 5);
+    AT(m, 0xB74, s32) = 0;
+    AT(m, 0xB70, s32) = 0;
+    AT(m, 0xBB0, void **) = D_00470440;
+    AT(m, 0xC14, s32) = 0;
+    AT(m, 0xC10, s32) = 0;
+    AT(m, 0xC50, void **) = D_00470440;
+    AT(m, 0xCB4, s32) = 0;
+    AT(m, 0xCB0, s32) = 0;
+    AT(m, 0xCF0, void **) = D_004703D0;
+    AT(m, 0xD44, s32) = 0;
+    AT(m, 0xD40, s32) = 0;
+    return m;
+}
+
+/* Fiona's costume 6 (0xDE0 bytes) */
+void *func_002084D0(u8 *m, s32 kind) {
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = D_00478490;
+    AT(m, 0x9E0, void **) = D_004703D0;
+    AT(m, 0xA34, s32) = 0;
+    AT(m, 0xA30, s32) = 0;
+    func_00100340(m + 0xA40, func_0016FC10, func_0016FBB0, 0x50, 4);
+    parts40(m + 0xB80, m + 0xD00);
+    AT(m, 0xD34, s32) = 0;
+    AT(m, 0xD30, s32) = 0;
+    AT(m, 0xD70, void **) = D_00470440;
+    AT(m, 0xDD4, s32) = 0;
+    AT(m, 0xDD0, s32) = 0;
+    return m;
+}
+
+/* Fiona's costumes 3 and 2: twelve / eight 0x50 nodes, single parts, sixteen 0x50 nodes, parts
+ * of 0x40, three 0x50 nodes and more parts */
+static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = vtbl;
+    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, n);
+    AT(m, at + 0x4, s32) = 0;
+    AT(m, at + 0x0, s32) = 0;
+    AT(m, at + 0x40, void **) = D_004703D0;
+    AT(m, at + 0x94, s32) = 0;
+    AT(m, at + 0x90, s32) = 0;
+    AT(m, at + 0xD0, void **) = D_00470440;
+    AT(m, at + 0x134, s32) = 0;
+    AT(m, at + 0x130, s32) = 0;
+    AT(m, at + 0x170, void **) = D_004703D0;
+    AT(m, at + 0x1C4, s32) = 0;
+    AT(m, at + 0x1C0, s32) = 0;
+    func_00100340(m + at + 0x1D0, func_002089D0, func_00208970, 0x50, 0x10);
+    AT(m, at + 0x704, s32) = 0;
+    AT(m, at + 0x700, s32) = 0;
+    parts40(m + at + 0x710, m + at + 0x890);
+    func_00100340(m + at + 0x890, func_00208950, func_002088F0, 0x50, 3);
+    AT(m, at + 0x9B4, s32) = 0;
+    AT(m, at + 0x9B0, s32) = 0;
+    parts40(m + at + 0x9C0, m + at + 0xB40);
+    return m;
+}
+
+void *func_00208650(u8 *m) {
+    return costume_model(m, 3, D_00475BC0, 8, 0xC60);
+}
+
+void *func_002089F0(u8 *m) {
+    return costume_model(m, 2, D_00475AE0, 0xC, 0xDA0);
+}
+
+/* Fiona's costume 1 (her sheet model, D_00470620) */
+void *func_00208C90(u8 *m) {
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = 1;
+    AT(m, 0x0, void **) = D_00470620;
+    func_00100340(m + 0x9B0, func_00208E90, func_00208E30, 0x50, 0x20);
+    AT(m, 0x13E4, s32) = 0;
+    AT(m, 0x13E0, s32) = 0;
+    AT(m, 0x1420, void **) = D_004703D0;
+    AT(m, 0x1474, s32) = 0;
+    AT(m, 0x1470, s32) = 0;
+    func_00100340(m + 0x1480, func_0016FC10, func_0016FBB0, 0x50, 4);
+    parts40(m + 0x15C0, m + 0x1740);
+    AT(m, 0x1774, s32) = 0;
+    AT(m, 0x1770, s32) = 0;
+    AT(m, 0x17B0, void **) = D_00470440;
+    AT(m, 0x1814, s32) = 0;
+    AT(m, 0x1810, s32) = 0;
+    return m;
+}
+
 /* the script's value (u16) for character id `id`: a step slot's (+0x578, id 0xF0..0xFA) or a
  * character slot's (+0x590; 0 for none) */
 u32 func_00208F80(VObject *ev, s32 id) {
