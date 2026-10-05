@@ -463,3 +463,79 @@ s32 func_002E5950(void *self, Character *c, u8 *cmd) {
     }
     return 1;
 }
+
+extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
+extern Character *gCharPlayer;
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
+
+/* three hanging things (the room's +0x34 (0..2) objects) swinging, by the command's byte 3:
+ * 0 at rest (push +0x3C 0.9); 1 Fiona's movement pushes them (the squared step) - past 1 one
+ * swings for 20 frames (+0x38) and the first toggles event flag 3 with a sound (Fiona's 1 /
+ * 2); 2 a swing step: +0x30 on by 36 degrees, its tilt +0x10 = (1 + sin) degrees in radians */
+static s32 swing_three(VObject *self, u8 *cmd) {
+    VObject *objs = D_00456DF8, *ev = D_0044E4D0;
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, s32))(objs, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, i));
+
+        if (o == NULL) {
+            continue;
+        }
+        switch (cmd[3]) {
+        case 0:
+            AT(o, 0x30, s32) = 0;
+            AT(o, 0x38, s32) = 0;
+            AT(o, 0x3C, f32) = 0x1.ccccccp-1f /* 0.9 */;
+            break;
+        case 1:
+            if (AT(o, 0x38, f32) <= 8.0f && gCharPlayer != NULL) {
+                f32 d[4] __attribute__((aligned(16)));
+
+                sceVu0CopyVector(d, gCharPlayer->a.prevPos);
+                sceVu0SubVector(d, gCharPlayer->a.pos, d);
+                AT(o, 0x3C, f32) = AT(o, 0x3C, f32) + (d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+                if (!(AT(o, 0x3C, f32) <= 1.0f)) {
+                    AT(o, 0x38, f32) = 20.0f;
+                    AT(o, 0x3C, s32) = 0;
+                    if (i == 0) {
+                        if ((VCALL(ev, 0x58, u32 (*)(VObject *, s32))(ev, 3) & 0xFF) == 1) {
+                            VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 3);
+                            func_00122C20(&gCharPlayer->a, 1, 6, 0, 0, NULL);
+                        } else {
+                            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
+                            func_00122C20(&gCharPlayer->a, 2, 6, 0, 0, NULL);
+                        }
+                    }
+                }
+            }
+            break;
+        case 2:
+            if (!(AT(o, 0x38, f32) <= 0.0f)) {
+                f32 t;
+
+                AT(o, 0x38, f32) = AT(o, 0x38, f32) - 1.0f;
+                if (AT(o, 0x38, f32) < 0.0f) {
+                    AT(o, 0x38, s32) = 0;
+                }
+                AT(o, 0x30, f32) = AT(o, 0x30, f32) + 36.0f;
+                if (!(AT(o, 0x30, f32) < 360.0f)) {
+                    AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
+                }
+                t = 0x1.921fb6p+1f * (1.0f + func_0031C248(0x1.921fb6p+1f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+                AT(o, 0x10, f32) = t;
+                if (!(t <= 0x1.921fb6p+1f)) {
+                    AT(o, 0x10, f32) = t - 0x1.921fb6p+2f;
+                }
+            }
+            break;
+        }
+    }
+    return 1;
+}
+
+s32 func_002E5C60(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
+s32 func_002E60D0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
+s32 func_002E6540(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
+s32 func_002E69B0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }
