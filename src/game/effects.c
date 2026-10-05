@@ -2369,3 +2369,188 @@ void func_002FD760(u8 *e) {
         func_002FD260(e, i, 0);
     }
 }
+
+
+/* ---- D_00470E40 (0x7F8 bytes): a swarm of up to 16 specks (+0x634) buzzing about a centre
+ * (+0x7E0) within a spread (+0x7F0), in two buffers of quad records (+0x10 + 0x300 x the
+ * current one +0x7F4), velocities at +0x648 and their pulls back to the centre at +0x708 (12
+ * each), alphas at +0x7C8, the quad drawer at +0x610; hidden when the camera is within 10, dim
+ * within 20 ---- */
+
+extern void *D_00470E40[];
+
+#define SWARM_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
+#define SWARM_VEL(e, i) ((f32 *)((e) + 0x648 + (i) * 0xC))
+#define SWARM_ACC(e, i) ((f32 *)((e) + 0x708 + (i) * 0xC))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002FD820(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470E40;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+static s32 clamp_byte(s32 c) {
+    if (c < 0) {
+        return 0;
+    }
+    return c >= 0x100 ? 0xFF : c;
+}
+
+/* a speck's new heading: a velocity of up to 0.05 x the spread each way, and a pull back of
+ * an eighth of it */
+static void swarm_heading(u8 *e, s32 i, VObject *rnd) {
+    f32 *v = SWARM_VEL(e, i), *a = SWARM_ACC(e, i);
+
+    v[0] = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f));
+    v[1] = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f));
+    v[2] = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f));
+    a[0] = -0.25f * (0.5f * v[0]);
+    a[1] = -0.25f * (0.5f * v[1]);
+    a[2] = -0.25f * (0.5f * v[2]);
+}
+
+/* +0x18 start: arg { f32 count (16 at most), centre, spread, RGB, alpha (each speck up to 15
+ * / 7 off, from 8 / 4 below) } */
+void func_002FD8B0(u8 *e, u8 *arg) {
+    VObject *rnd;
+    s32 i, r0, g0, b0, a0;
+
+    if (arg == NULL) {
+        return;
+    }
+    AT(e, 0x634, s16) = (s32)AT(arg, 0x0, f32);
+    if (AT(e, 0x634, s16) > 0x10) {
+        AT(e, 0x634, s16) = 0x10;
+    }
+    AT(e, 0x7E0, f32) = AT(arg, 0x4, f32);
+    AT(e, 0x7E4, f32) = AT(arg, 0x8, f32);
+    AT(e, 0x7E8, f32) = AT(arg, 0xC, f32);
+    AT(e, 0x7EC, f32) = 1.0f;
+    AT(e, 0x7F0, f32) = AT(arg, 0x10, f32);
+    r0 = AT(arg, 0x14, s32) - 8;
+    g0 = AT(arg, 0x18, s32) - 8;
+    b0 = AT(arg, 0x1C, s32) - 8;
+    a0 = AT(arg, 0x20, s32) - 4;
+    rnd = D_0044E550;
+    for (i = 0; i < AT(e, 0x634, s16); i++) {
+        QuadRec *r = SWARM_REC(e, AT(e, 0x7F4, s32), i);
+        u8 *alpha = e + 0x7C8 + i;
+        f32 s;
+
+        r->rgba[0] = r0 + (burst_int(rnd) & 0xF);
+        r->rgba[0] = clamp_byte(r->rgba[0]);
+        r->rgba[1] = g0 + (burst_int(rnd) & 0xF);
+        r->rgba[1] = clamp_byte(r->rgba[1]);
+        r->rgba[2] = b0 + (burst_int(rnd) & 0xF);
+        r->rgba[2] = clamp_byte(r->rgba[2]);
+        *alpha = a0 + (burst_int(rnd) & 7);
+        if (*alpha > 0x80) {
+            *alpha = 0x80;
+        }
+        r->pos[0] = AT(e, 0x7E0, f32) + AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f);
+        r->pos[1] = AT(e, 0x7E4, f32) + AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f);
+        r->pos[2] = AT(e, 0x7E8, f32) + AT(e, 0x7F0, f32) * (burst_rnd(rnd) - 0.5f);
+        r->pos[3] = 1.0f;
+        s = 0x1.99999a0000000p-5f /* 0.05 */ + 0x1.47ae140000000p-7f /* 0.01 */ * (AT(e, 0x7F0, f32) * burst_rnd(rnd));
+        r->w = s;
+        r->h = s;
+        r->turn = 0x1.921fb6p+2f * (burst_rnd(rnd) - 0.5f);
+        r->frame = 0;
+        swarm_heading(e, i, rnd);
+    }
+}
+
+/* +0x14 draw the current buffer */
+void func_002FDD40(u8 *e) {
+    AT(e, 0x620, QuadRec *) = SWARM_REC(e, AT(e, 0x7F4, s32), 0);
+    func_002E56C0(e + 0x610);
+}
+
+/* one axis: the velocity pulled, the speck moved, the pull turned back once past the centre */
+static void swarm_axis(f32 *pos, f32 *v, f32 *a, f32 centre) {
+    *v = *v + *a;
+    *pos = *pos + *v;
+    if (*a < 0.0f) {
+        if (*pos - centre < 0.0f) {
+            *a = *a * -1.0f;
+        }
+    } else if (!(*pos - centre <= 0.0f)) {
+        *a = *a * -1.0f;
+    }
+}
+
+/* +0x10 update: flip the buffers; each speck carried over, now and then (1 in 10) a new
+ * heading, moved, turned at random, its alpha by the camera's distance */
+s32 func_002FDD70(u8 *e) {
+    extern VObject *D_0044E4B8;
+    f32 cam[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    f32 dx, dy, dz, d2;
+    s32 shift, i, k;
+
+    AT(e, 0x7F4, s32) ^= 1;
+    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, cam);
+    dy = AT(e, 0x7E4, f32) - cam[1];
+    dx = AT(e, 0x7E0, f32) - cam[0];
+    dz = AT(e, 0x7E8, f32) - cam[2];
+    d2 = dy * dy + dx * dx + dz * dz;
+    if (d2 < 100.0f) {
+        shift = 8;
+    } else if (d2 < 400.0f) {
+        shift = 1;
+    } else {
+        shift = 0;
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < AT(e, 0x634, s16); i++) {
+        u32 *src = (u32 *)SWARM_REC(e, AT(e, 0x7F4, s32) ^ 1, i);
+        u32 *dst = (u32 *)SWARM_REC(e, AT(e, 0x7F4, s32), i);
+        f32 *v = SWARM_VEL(e, i), *a = SWARM_ACC(e, i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = SWARM_REC(e, AT(e, 0x7F4, s32), i);
+        if (burst_rnd(rnd) < 0x1.99999a0000000p-4f /* 0.1 */) {
+            swarm_heading(e, i, rnd);
+        }
+        swarm_axis(&r->pos[0], &v[0], &a[0], AT(e, 0x7E0, f32));
+        swarm_axis(&r->pos[1], &v[1], &a[1], AT(e, 0x7E4, f32));
+        swarm_axis(&r->pos[2], &v[2], &a[2], AT(e, 0x7E8, f32));
+        r->turn = 0x1.921fb6p+2f * (burst_rnd(rnd) - 0.5f);
+        r->rgba[3] = AT(e, 0x7C8 + i, u8) >> shift;
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (a 4 x 4 cell at (238, 78), blended 0x20, palette 2,
+ * layer 0x19) */
+void func_002FE230(u8 *e) {
+    AT(e, 0x7F4, s32) = 0;
+    AT(e, 0x618, s64) = -1;
+    AT(e, 0x624, s32) = 0;
+    AT(e, 0x628, s32) = 0;
+    AT(e, 0x62C, s32) = 0;
+    AT(e, 0x630, s32) = 0x19;
+    AT(e, 0x636, s16) = 0xEE;
+    AT(e, 0x638, s16) = 0x4E;
+    AT(e, 0x63A, s16) = 4;
+    AT(e, 0x63C, s16) = 4;
+    AT(e, 0x63E, s16) = 0x200;
+    AT(e, 0x640, s16) = 0x100;
+    AT(e, 0x642, s8) = 0x20;
+    AT(e, 0x643, s8) = 1;
+    AT(e, 0x644, s8) = 1;
+    AT(e, 0x645, s8) = 0x10;
+    AT(e, 0x646, s8) = 2;
+}
