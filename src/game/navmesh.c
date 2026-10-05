@@ -627,3 +627,212 @@ void *func_00179F60(u8 *o, s32 flags) {
     }
     return o;
 }
+
+/* ---- door regions (+0x14 of them, 0x30 each from +0x20: the triangle on each side, the
+ * facing on each side, the spot on each side) ---- */
+
+#define NAV_DOOR(nm, i) ((u8 *)(nm) + 0x20 + (i) * 0x30)
+
+static inline s32 nav_door_ok(NavMesh *nm, s32 i) {
+    return (i >= 0 && (u32)i < nm->numDoors) ? 1 : 0;
+}
+
+/* +0x54 door region i's triangle on side s (0 / 1); -1 if none */
+s32 func_0017A010(NavMesh *nm, s32 i, s32 s) {
+    if (!(nav_door_ok(nm, i) & 0xFF)) {
+        return -1;
+    }
+    if (s < 0 || (u32)s >= 2) {
+        return -1;
+    }
+    return AT(NAV_DOOR(nm, i), s * 4, s32);
+}
+
+/* +0x58 its facing on side s; 0 if none */
+f32 func_0017A090(NavMesh *nm, s32 i, s32 s) {
+    if (!(nav_door_ok(nm, i) & 0xFF)) {
+        return 0.0f;
+    }
+    if (s < 0 || (u32)s >= 2) {
+        return 0.0f;
+    }
+    return AT(NAV_DOOR(nm, i), 0x8 + s * 4, f32);
+}
+
+/* +0x5C its spot on side s into out; the triangle, -1 if none */
+s32 func_0017A110(NavMesh *nm, s32 i, s32 s, f32 *out) {
+    if (!(nav_door_ok(nm, i) & 0xFF)) {
+        return -1;
+    }
+    if (s < 0 || (u32)s >= 2) {
+        return -1;
+    }
+    sceVu0CopyVector(out, (f32 *)(NAV_DOOR(nm, i) + 0x10 + s * 0x10));
+    return AT(NAV_DOOR(nm, i), s * 4, s32);
+}
+
+extern s32 func_0017A1D0(NavTri *t, f32 *out, f32 *p0, f32 *p1);
+extern f32 func_0017A6D0(NavTri *t, f32 *out);
+
+/* +0x34 where segment p0 -> p1 meets triangle i (func_0017A1D0); 4 if there is no such triangle */
+s32 func_0017C4F0(NavMesh *nm, u32 i, f32 *out, f32 *p0, f32 *p1) {
+    if (i < nm->numTris && nm->tris != NULL) {
+        return func_0017A1D0(&nm->tris[i], out, p0, p1);
+    }
+    return 4;
+}
+
+/* +0x30 triangle i's slope (func_0017A6D0, the way down into out); none: out (0, 0, 0, 1), 0 */
+f32 func_0017C550(NavMesh *nm, u32 i, f32 *out) {
+    if (i < nm->numTris && nm->tris != NULL) {
+        return func_0017A6D0(&nm->tris[i], out);
+    }
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    out[3] = 1.0f;
+    return 0.0f;
+}
+
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+
+/* is p over the triangle (seen from above: on the inner side of all three edges)? 3 if so,
+ * else 4 */
+static inline __attribute__((always_inline)) s32 nav_tri_over(NavTri *t, const f32 *p) {
+    s32 n = 0;
+    u32 k;
+
+    for (k = 0; k < 3; k++) {
+        const f32 *a = t->v[k], *b = t->v[k + 1 < 3 ? k + 1 : 0];
+
+        if (!((p[0] - a[0]) * (b[2] - a[2]) - (p[2] - a[2]) * (b[0] - a[0]) < 0.0f)) {
+            n++;
+        }
+    }
+    return n == 3 ? 3 : 4;
+}
+
+/* the height of the triangle's plane at (q[0], q[2]) */
+static inline __attribute__((always_inline)) f32 nav_tri_height(NavTri *t, const f32 *q) {
+    f32 dy1 = t->v[1][1] - t->v[0][1], dx2 = t->v[2][0] - t->v[0][0], dx1 = t->v[1][0] - t->v[0][0];
+    f32 dy2 = t->v[2][1] - t->v[0][1], qx = q[0] - t->v[0][0];
+    f32 dz1 = t->v[1][2] - t->v[0][2], dz2 = t->v[2][2] - t->v[0][2];
+    f32 a = dx1 * dy2, b = dy1 * dz2, nx, nyz, qz, num, den;
+
+    nx = 0.0f + b - dy2 * dz1;
+    nyz = 0.0f + a - dx2 * dy1;
+    qz = q[2] - t->v[0][2];
+    num = 0.0f + qz * nyz + qx * nx;
+    den = 0.0f + dz1 * dx2 - dz2 * dx1;
+    return t->v[0][1] - num / den;
+}
+
+/* where the segment p0 -> p1 meets the triangle's plane (into out): 3 if that is over the
+ * triangle, else 4 (also for a zero segment or a crossing outside it). A segment along the
+ * plane, or starting on it, is taken where the plane's height matches the far / near end
+ * (the height looked up at v0 - p0, as the original does) */
+s32 func_0017A1D0(NavTri *t, f32 *out, f32 *p0, f32 *p1) {
+    f32 e1[4] __attribute__((aligned(16)));
+    f32 e2[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 dn, d0, y;
+
+    if (p0[0] == p1[0] && p0[1] == p1[1] && p0[2] == p1[2]) {
+        return 4;
+    }
+    sceVu0SubVector(e1, t->v[1], t->v[0]);
+    sceVu0SubVector(e2, t->v[2], t->v[0]);
+    e1[3] = 1.0f;
+    e2[3] = 1.0f;
+    sceVu0OuterProduct(n, e1, e2);
+    n[3] = 1.0f;
+    sceVu0Normalize(n, n);
+    n[3] = 1.0f;
+    sceVu0SubVector(e1, p1, p0);
+    e1[3] = 1.0f;
+    dn = sceVu0InnerProduct(e1, n);
+    sceVu0SubVector(e2, t->v[0], p0);
+    e2[3] = 1.0f;
+    d0 = sceVu0InnerProduct(e2, n);
+    if (dn == 0.0f) {
+        y = nav_tri_height(t, e2);
+        e2[1] = y;
+        if (!(y == p1[1])) {
+            return 4;
+        }
+        sceVu0CopyVector(out, p1);
+        return nav_tri_over(t, out);
+    }
+    if (d0 == 0.0f) {
+        y = nav_tri_height(t, e2);
+        e2[1] = y;
+        if (!(y == p0[1])) {
+            return 4;
+        }
+        sceVu0CopyVector(out, p0);
+        return nav_tri_over(t, out);
+    }
+    {
+        f32 s = d0 / dn;
+
+        if (s < 0.0f || !(s <= 1.0f)) {
+            return 4;
+        }
+        func_0010E640(out, e1, s);
+        sceVu0AddVector(out, p0, out);
+    }
+    return nav_tri_over(t, out);
+}
+
+/* the triangle's slope: the sine of its steepness, and (out) the way down, scaled by it */
+f32 func_0017A6D0(NavTri *t, f32 *out) {
+    f32 c[4] __attribute__((aligned(16)));
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 s[4] __attribute__((aligned(16)));
+    f32 k = 0.0f;
+
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    out[3] = 1.0f;
+    c[0] = (t->v[2][0] + (t->v[1][0] + t->v[0][0])) / 3.0f;
+    c[1] = (t->v[2][1] + (t->v[1][1] + t->v[0][1])) / 3.0f;
+    c[2] = (t->v[2][2] + (t->v[1][2] + t->v[0][2])) / 3.0f;
+    c[3] = 1.0f;
+    sceVu0SubVector(a, t->v[1], t->v[0]);
+    sceVu0SubVector(b, t->v[2], t->v[0]);
+    a[3] = 1.0f;
+    b[3] = 1.0f;
+    sceVu0OuterProduct(n, a, b);
+    sceVu0Normalize(n, n);
+    sceVu0AddVector(a, c, n);
+    a[3] = 1.0f;
+    a[1] = 1.0f;
+    a[0] = 0.0f;
+    a[2] = 0.0f;
+    sceVu0OuterProduct(s, a, n);
+    if (__builtin_sqrtf(s[1] * s[1] + s[0] * s[0] + s[2] * s[2]) != 0.0f) {
+        sceVu0Normalize(s, s);
+        sceVu0AddVector(a, c, s);
+        a[3] = 1.0f;
+        sceVu0OuterProduct(out, s, n);
+        if (__builtin_sqrtf(out[1] * out[1] + out[0] * out[0] + out[2] * out[2]) != 0.0f) {
+            f32 d;
+
+            sceVu0Normalize(out, out);
+            sceVu0AddVector(a, c, out);
+            a[3] = 1.0f;
+            a[0] = out[0];
+            a[1] = 0.0f;
+            a[2] = out[2];
+            a[3] = 1.0f;
+            sceVu0Normalize(a, a);
+            d = sceVu0InnerProduct(a, out);
+            k = __builtin_sqrtf(0.0f + 1.0f - d * d);
+        }
+    }
+    func_0010E640(out, out, k);
+    return k;
+}
