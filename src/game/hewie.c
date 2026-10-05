@@ -8451,3 +8451,189 @@ void func_00157E30(Hewie *h) {
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
+
+/* ---- biting and holding on ---- */
+
+#include "input.h"
+
+extern u32 D_0047E374;   /* pad buttons held */
+extern const PTMF D_003B1828, D_003B1838, D_003B1848, D_003B1858, D_003B1868, D_003B1878;
+
+/* one bite into the pursuer: `base` damage (doubled on difficulty 1, +half with progress
+ * +0xA10), hard when func_001386D0 `kind` */
+static void bite_pursuer(Hewie *h, s32 kind, u16 base) {
+    s32 hard = (u8)func_001386D0(h, kind) == 1;
+    Progress *p = gProgress;
+    u16 dmg = base;
+
+    if ((u8)Progress_GetVar(p, 0x27) == 1) {
+        dmg += base;
+    }
+    if (AT(p, 0xA10, s32) != 0) {
+        dmg += dmg >> 1;
+    }
+    func_00178070(p, AT(h, 0x20, u8), 4, 0xB, dmg, hard ? -0x8000 : 0, 0.0f);
+}
+
+/* the pursuer told to shake him off (its state block 7) */
+static void shaken_off(Hewie *h) {
+    HW(h, 0xF36B4, u32) = 2;
+    post_state(gCharPursuer, 7, 0, 0);
+}
+
+/* biting into the pursuer and holding on (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown; his state
+ * block at 7 throws him). The pursuer gone: the default action. Its bite effect at each event
+ * 0x20 (hard when charged, +0xF3585). At each animation's end, while biting, a shake roll:
+ * +0xF36B8 bites left, the chance to hold on +0xF36BC (+30 on the first, -10 each time held);
+ * failing it, let go and the pursuer shakes. Then by his action and grip (+0x104) the bite
+ * (0x21 / 0x22 / 0x75: 0x2218, 10; grip 1: 0x2201, 2 / 3; grip 2: 0x220A, 2 / 3; grip 0:
+ * 0x2215, 3) or the let-go / thrown animation and behaviour. Between: let go when Fiona calls
+ * (commands 0x27 / 0x2C) or the pursuer is down; under her direct control (+0x1FBEC1) let go on
+ * cross, square presses (5) to keep biting. Always moved by the root motion at the pursuer's
+ * grip height */
+void func_001580F0(Hewie *h) {
+    if (h->c.state[0] == 7) {
+        HW(h, 0xF36B4, u32) = 3;
+        h->c.state[0] = 0;
+    }
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
+        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+    }
+    if (ANIM_DONE(h)) {
+        if (HW(h, 0xF36B4, u32) < 2) {
+            s32 hold;
+
+            HW(h, 0xF36B8, s32) -= 1;
+            if (HW(h, 0xF36B8, s32) != 0) {
+                hold = HW(h, 0xF36BC, s32);
+                if (HW(h, 0xF36B4, u32) == 0) {
+                    HW(h, 0xF36B4, u32) = 1;
+                    hold += 30;
+                    HW(h, 0xF3714, s16) = 0;
+                }
+            } else {
+                hold = 0;
+            }
+            if ((s32)(100.0f * RNG01()) < hold) {
+                HW(h, 0xF36BC, s32) -= 10;
+                if (HW(h, 0xF36BC, s32) < 0) {
+                    HW(h, 0xF36BC, s32) = 0;
+                }
+            } else {
+                shaken_off(h);
+            }
+        }
+        switch (HEWIE_ACTION(h)) {
+        case 0x75:
+        case 0x22:
+        case 0x21:
+            switch (HW(h, 0xF36B4, u32)) {
+            case 0:
+            case 1:
+                if (MOTION_ANIM(h->c.motion) != 0x2218) {
+                    func_002DDE20(h->c.motion, 0x2218, -1);
+                }
+                bite_pursuer(h, 5, 10);
+                break;
+            case 2:
+                HW(h, 0xF36B4, u32) = 0;
+                HW(h, 0xF36C4, f32) = 0.0f;
+                func_002DDE20(h->c.motion, 0x2219, -1);
+                Hewie_SetBehaviour(h, &D_003B1828);
+                break;
+            }
+            break;
+        case 0x20:
+        case 0x1F:
+            switch (h->c.unk104[0]) {
+            case 1:
+            case 2: {
+                s32 g2 = h->c.unk104[0] == 2;
+
+                switch (HW(h, 0xF36B4, u32)) {
+                case 0:
+                case 1:
+                    if (MOTION_ANIM(h->c.motion) != (g2 ? 0x220A : 0x2201)) {
+                        func_002DDE20(h->c.motion, g2 ? 0x220A : 0x2201, -1);
+                    }
+                    if (g2) {
+                        bite_pursuer(h, HW(h, 0xF3585, u8) == 0 ? 0 : 1, HW(h, 0xF3585, u8) == 0 ? 2 : 3);
+                    } else {
+                        bite_pursuer(h, HW(h, 0xF3585, u8) == 0 ? 2 : 3, HW(h, 0xF3585, u8) == 0 ? 2 : 3);
+                    }
+                    break;
+                case 2:
+                    HW(h, 0xF36B4, u32) = 0;
+                    HW(h, 0xF36C4, f32) = 0.0f;
+                    func_002DDE20(h->c.motion, g2 ? 0x220B : 0x2202, -1);
+                    Hewie_SetBehaviour(h, g2 ? &D_003B1858 : &D_003B1838);
+                    break;
+                case 3:
+                    func_002DDE20(h->c.motion, g2 ? 0x220C : 0x2203, -1);
+                    HW(h, 0xF36C4, f32) = h->c.a.pos[1];
+                    h->c.moveMode = 4;
+                    h->c.moveSub = 10;
+                    Hewie_SetBehaviour(h, g2 ? &D_003B1868 : &D_003B1848);
+                    break;
+                }
+                break;
+            }
+            case 0:
+                switch (HW(h, 0xF36B4, u32)) {
+                case 0:
+                case 1:
+                    if (MOTION_ANIM(h->c.motion) != 0x2215) {
+                        func_002DDE20(h->c.motion, 0x2215, -1);
+                    }
+                    bite_pursuer(h, 4, 3);
+                    break;
+                case 2:
+                    HW(h, 0xF36B4, u32) = 0;
+                    HW(h, 0xF36C4, f32) = 0.0f;
+                    func_002DDE20(h->c.motion, 0x2216, -1);
+                    Hewie_SetBehaviour(h, &D_003B1878);
+                    break;
+                }
+                break;
+            }
+            break;
+        }
+    } else {
+        s32 let_go = 0;
+
+        if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
+            if (HW(h, 0xF36B4, u32) < 2) {
+                s32 cmd = HW(h, 0xF3578, s32);
+
+                if (cmd == 0x27 || cmd == 0x2C || gCharPursuer->hp == 0) {
+                    let_go = 1;
+                } else if (HW(h, 0xF36B4, u32) == 1 && cmd == 0x2E) {
+                    HW(h, 0xF36B4, u32) = 0;
+                }
+            }
+        } else if (HW(h, 0xF36B4, u32) < 2) {
+            if ((D_0047E374 & PAD_CROSS) || gCharPursuer->hp == 0) {
+                let_go = 1;
+            } else {
+                if (D_0047E37C & PAD_SQUARE) {
+                    HW(h, 0xF3714, s16) += 1;
+                }
+                if (HW(h, 0xF36B4, u32) == 1 && HW(h, 0xF3714, s16) >= 5) {
+                    HW(h, 0xF36B4, u32) = 0;
+                }
+            }
+        }
+        if ((u8)let_go == 1 && gCharPursuer->state[0] != 4) {
+            shaken_off(h);
+        }
+    }
+    slide_root(h);
+    HW(h, 0xF3581, u8) = 1;
+    HW(h, 0xF3582, u8) = 0;
+    h->c.a.pos[1] = VCALL(gCharPursuer->motion, 0x58, f32 (*)(void *))(gCharPursuer->motion);
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
