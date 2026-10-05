@@ -1813,7 +1813,7 @@ s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC4;   /* room object names */
+extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC4, *D_003FA078;   /* room object names */
 extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 D_0047E364;   /* menu buttons, repeating */
 extern VObject *D_0044E4F8;   /* the camera director's interface */
@@ -2041,6 +2041,61 @@ s32 func_002A9740(void *self, void *a1, u8 *cmd) {
         dp.r = 0x80;
         dp.kind = 0;
         func_002D6090(mgr, slot, &dp);
+    }
+    return 1;
+}
+
+/* frame (v - lo) / div (v kept in lo..hi) forward (fwd) or back; Fiona's sound 0 as it starts */
+static inline __attribute__((always_inline)) void var0_frame(u8 *o, u32 v, u32 lo, u32 hi, f32 div, s32 fwd) {
+    if (v == lo) {
+        func_00122C20(&gCharPlayer->a, 0, 6, 0, 0, NULL);
+    }
+    if (v < lo) {
+        v = lo;
+    }
+    if (v > hi) {
+        v = hi;
+    }
+    AT(o, 0x74, s32) = fwd;
+    AT(o, 0x78, s32) = !fwd;
+    AT(o, 0x7C, f32) = (f32)(v - lo) / div;
+}
+
+/* the room object D_003FA078's animation by event var 0 (byte 3 picks the range: 0 back over
+ * 43..54, 1 / 2 / 5 forward over 12..21, 16..28, 11..18; 3 / 4 back at 0 / 1), +0x7C kept 0..1 */
+s32 func_002AC790(void *self, void *a1, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FA078);
+    u32 v;
+
+    if (o == NULL) {
+        return 1;
+    }
+    v = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    switch (cmd[3]) {
+    case 0:
+        var0_frame(o, v, 0x2B, 0x36, 11.0f, 0);
+        break;
+    case 1:
+        var0_frame(o, v, 0xC, 0x15, 9.0f, 1);
+        break;
+    case 2:
+        var0_frame(o, v, 0x10, 0x1C, 12.0f, 1);
+        break;
+    case 3:
+    case 4:
+        AT(o, 0x74, s32) = 0;
+        AT(o, 0x78, s32) = 1;
+        AT(o, 0x7C, f32) = (f32)(cmd[3] - 3);
+        break;
+    case 5:
+        var0_frame(o, v, 0xB, 0x12, 7.0f, 1);
+        break;
+    }
+    if (!(AT(o, 0x7C, f32) <= 1.0f)) {
+        AT(o, 0x7C, f32) = 1.0f;
+    }
+    if (AT(o, 0x7C, f32) < 0.0f) {
+        AT(o, 0x7C, f32) = 0.0f;
     }
     return 1;
 }
