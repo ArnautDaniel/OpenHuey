@@ -525,6 +525,134 @@ void func_003A1720(Progress *p, u32 slot) {
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
+/* ---- the other setups SceneGame_StateEntry picks by progress variables 0x26 (Fiona's
+ * costume) and 0x27 (the partner): each model allocated from the scene heap and put at
+ * character `slot` +0xF0 ---- */
+
+extern void *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[];
+extern void *func_001702F0(void *, s32);
+extern void *func_00170460(void *);
+extern void *func_00170080(void *, s32);
+extern void *func_002089D0(void *);
+extern void *func_00208970(void *, s32);
+extern void *func_00208950(void *);
+extern void *func_002088F0(void *, s32);
+
+static inline u8 *setup_alloc(Progress *p, u32 size) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+
+    return func_002DC6E0(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
+}
+
+/* parts of 0x40 from `from` to `to` */
+static inline void setup_parts40(u8 *from, u8 *to) {
+    u8 *e;
+
+    for (e = from; e < to; e += 0x40) {
+        func_0016FB90(e);
+    }
+}
+
+/* partner 1: the first dog model (D_0046B8F0) */
+void func_003A1020(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0xB90);
+
+    if (m != NULL) {
+        func_00208210(m, 1);
+        AT(m, 0x0, void **) = D_0046B8F0;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* Fiona's costume 8 (0x9B0 bytes, the bare base) */
+void func_003A1190(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0x9B0);
+
+    if (m != NULL) {
+        func_00170690(m, 8);
+        AT(m, 0x0, void **) = D_00479660;
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* Fiona's costume 7 (0xD50 bytes; as func_00208420) */
+void func_003A1220(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0xD50);
+
+    if (m != NULL) {
+        func_00170690(m, 7);
+        AT(m, 0x0, void **) = D_00479420;
+        func_00100340(m + 0x9B0, func_00170670, func_001702F0, 0x50, 5);
+        func_0016FB80(m + 0xB40);
+        func_00170650(m + 0xB80);
+        func_0016FB80(m + 0xBE0);
+        func_00170650(m + 0xC20);
+        func_0016FB80(m + 0xC80);
+        func_00170670(m + 0xCC0);
+        func_0016FB80(m + 0xD10);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* Fiona's costume 6 (0xDE0 bytes; as func_002084D0) */
+void func_003A1310(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0xDE0);
+
+    if (m != NULL) {
+        func_00170690(m, 6);
+        AT(m, 0x0, void **) = D_00478490;
+        func_00170670(m + 0x9B0);
+        func_0016FB80(m + 0xA00);
+        func_00100340(m + 0xA40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        setup_parts40(m + 0xB80, m + 0xD00);
+        func_0016FB80(m + 0xD00);   /* (the loop's end, passed through a0) */
+        func_00170650(m + 0xD40);
+        func_0016FB80(m + 0xDA0);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* Fiona's costumes 3 and 2 (as costume_model): n 0x50 nodes, single parts, sixteen 0x50
+ * nodes, parts of 0x40, three 0x50 nodes and more parts */
+static inline void setup_costume(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
+    func_00170690(m, kind);
+    AT(m, 0x0, void **) = vtbl;
+    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, n);
+    func_0016FB80(m + at);
+    func_00170670(m + at + 0x40);
+    func_0016FB80(m + at + 0x90);
+    func_00170650(m + at + 0xD0);
+    func_0016FB80(m + at + 0x130);
+    func_00170670(m + at + 0x170);
+    func_0016FB80(m + at + 0x1C0);
+    func_00100340(m + at + 0x200, func_002089D0, func_00208970, 0x50, 0x10);
+    func_0016FB80(m + at + 0x700);
+    setup_parts40(m + at + 0x740, m + at + 0x8C0);
+    func_00100340(m + at + 0x8C0, func_00208950, func_002088F0, 0x50, 3);   /* (the loop's end, a0) */
+    func_0016FB80(m + at + 0x9B0);
+    setup_parts40(m + at + 0x9F0, m + at + 0xB70);
+}
+
+/* Fiona's costume 3 (0x17A0 bytes) */
+void func_003A1420(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0x17A0);
+
+    if (m != NULL) {
+        setup_costume(m, 3, D_00475BC0, 8, 0xC30);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* Fiona's costume 2 (0x18E0 bytes) */
+void func_003A15A0(Progress *p, u32 slot) {
+    u8 *m = setup_alloc(p, 0x18E0);
+
+    if (m != NULL) {
+        setup_costume(m, 2, D_00475AE0, 0xC, 0xD70);
+    }
+    AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
 /* ---- Fiona's model in her clothes (vtable D_00470540, O_FIN, costumes 0..6): its own
  * methods. Its secondary motion: five spring sets - +0xD70 the 12 hair / clothes nodes at
  * +0x9B0, +0xE00 one node (+0xDB0), +0x1100 four hanging nodes (+0xE40) with six collision
