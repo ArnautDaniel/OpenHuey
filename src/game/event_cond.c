@@ -60,6 +60,7 @@ extern VObject *D_0044FE10;   /* the cutscene director */
 extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
 extern s32 func_0013D4A0(u8 *h, s32 n);
 extern s32 func_00139060(u8 *h);
+extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flags (u8) */
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern VObject *D_0044E4B8;   /* the camera */
@@ -613,6 +614,75 @@ s32 func_001FC760(VObject *ev) {
             r = 1;
         }
         break;
+    case 0x21: {   /* the controlled one's (Fiona +0x1AD6B8 / Hewie +0xF3798) is be32 pc[1..4] */
+        s32 v = AT(p, 0x1FBEC1, u8) == 0 ? AT(gCharPlayer, 0x1AD6B8, s32) : AT(gCharPartner, 0xF3798, s32);
+
+        if (v == be32(pc + 1)) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x24:   /* Hewie (in the scene)'s +0xF3564 is be32 pc[1..4] */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 &&
+            be32(pc + 1) == AT(gCharPartner, 0xF3564, s32)) {
+            r = 1;
+        }
+        break;
+    case 0x30: {   /* character pc[1] (in the scene) is in this room with +0x14D4 pc[2] */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL) {
+            s32 room = AT(c, 0x30, s32);
+
+            if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room && PC(ev)[2] == AT(c, 0x14D4, u8)) {
+                r = 1;
+            }
+        }
+        break;
+    }
+    case 0x34: {   /* character pc[1] (in the scene)'s animation flags have pc[2] */
+        u8 *c = cond_char(p, pc[1]);
+
+        if (c != NULL && (PC(ev)[2] & (u8)func_001F4770(AT(c, 0xF0, void *), 0, 0, 1))) {
+            r = 1;
+        }
+        break;
+    }
+    case 0x3B: {   /* the cutscene director's +0x58 (pc[1]) passed pc[2] within its +0x54 step */
+        VObject *d = D_0044FE10;
+        s32 n = (s8)VCALL(d, 0x54, s32 (*)(VObject *, s32, s32))(d, pc[1], 0);
+
+        if (n > 0) {
+            s32 m = (s8)VCALL(d, 0x58, s32 (*)(VObject *, s32))(d, PC(ev)[1]);
+            s32 k = PC(ev)[2];
+
+            if (!(m < k) && m - n < k) {
+                r = 1;
+            }
+        }
+        break;
+    }
+    case 0x43:   /* Hewie (in the scene)'s +0xF35C0 is be32 pc[1..4] */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 &&
+            be32(pc + 1) == AT(gCharPartner, 0xF35C0, s32)) {
+            r = 1;
+        }
+        break;
+    case 0x47: {   /* the context's character and character pc[1] (both in the scene, this room,
+                    * not +0x2A) are close (its +0xC8 / +0xCC margins) */
+        u8 *c0 = *AT(ev, 0x6FC, u8 **);
+
+        if (c0 != NULL && AT(c0, 0x28, u8) != 0) {
+            u8 i = (u8)func_001770D0(p, pc[1]);
+            u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
+
+            if (c != NULL && AT(c, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
+                AT(c, 0x2A, u8) == 0) {
+                r = func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+            }
+        }
+        break;
+    }
     default:
         if (pc[0] < 0x66) {
 #ifdef HG_NATIVE
