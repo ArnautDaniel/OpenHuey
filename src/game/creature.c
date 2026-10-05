@@ -1153,3 +1153,95 @@ void func_002DEC30(Character *c) {
         AT(k, 0x9B, s8) = 1;
     }
 }
+
+extern s32 Progress_TestFlag(Progress *p, u32 id);
+extern const PTMF D_00416700, D_00416710, D_00416720, D_00416730, D_00416740, D_00416750, D_00416760,
+    D_00416770, D_00416780;   /* its states: about Fiona, idle, after her, idle, at the door, to the
+                                 door, idle, travelling, idle */
+
+/* +0x30's thinking: in the room being played (in play) - not come yet: idle (on its triangle's
+ * centre the first time); come: its time runs (+0x20), on her level it hasn't given up (+0x2F);
+ * when she can't be reached (flag 9, her mode 3) about her (+0xF8 2) unless it did that
+ * (+0x9C); she hidden (+0x2D, +0xE0): idle; else for a door (func_002DF5B0) - a closed way
+ * (func_00178980) ends that (+0x84 2), an opened one when it should open it (+0x88) does
+ * (+0x84 0) - by +0x84: 0 after her (from afar, +0x9C, only within 40; else idle with its path
+ * dropped), 1 waiting at the door, 2 to the door. Elsewhere: out of play, travelling once it
+ * has come, else idle */
+void func_002E06E0(Character *c) {
+    u8 *k = CR(c);
+    Progress *p;
+    s32 room;
+
+    if (AT(c, 0x1569, u8) != 0) {
+        return;
+    }
+    func_002E0520(c);
+    room = c->a.room;
+    p = gProgress;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        c->a.disabled = 1;
+        AT(k, 0x83, u8) = 0;
+        AT(k, 0x2F, u8) = 0;
+        if (AT(k, 0x2E, u8) != 0) {
+            AT(k, 0x20, s16) += 1;
+            ptmf_set(&c->a.state, &D_00416770);
+        } else {
+            ptmf_set(&c->a.state, &D_00416780);
+        }
+        return;
+    }
+    c->a.disabled = 0;
+    if (AT(k, 0x2E, u8) == 0) {
+        if (c->a.navTri != NAV_NONE && AT(k, 0x9B, s8) == 0) {
+            AT(k, 0x9B, s8) += 1;
+            VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, c->a.navTri, c->a.pos);
+        }
+        ptmf_set(&c->a.state, &D_00416760);
+        return;
+    }
+    AT(k, 0x20, s16) += 1;
+    if (gCharPlayer->a.pos[1] == c->a.pos[1]) {
+        AT(k, 0x2F, u8) = 0;
+    }
+    if ((Progress_TestFlag(p, 9) != 0 || gCharPlayer->moveMode == 3) && AT(k, 0x9C, s8) == 0) {
+        c->moveMode = 2;
+        ptmf_set(&c->a.state, &D_00416700);
+        return;
+    }
+    if (gCharPlayer->a.unk2D != 0 && gCharPlayer->unkE0 != 0) {
+        c->moveMode = 0;
+        ptmf_set(&c->a.state, &D_00416710);
+        return;
+    }
+    c->moveMode = 0;
+    if (AT(k, 0x86, u8) == 0) {
+        func_002DF5B0(c);
+    }
+    if (AT(k, 0x84, u8) == 1) {
+        if (!(func_00178980(p, c->a.room, AT(k, 0x85, u8)) & 0xFF)) {
+            AT(k, 0x84, u8) = 2;
+            c->a.unk2B = 0;
+        } else if ((VCALL(D_0044E558, 0x30, u32 (*)(VObject *, u32))(D_0044E558, AT(k, 0x85, u8)) & 0xFF) == 1 &&
+                   (AT(k, 0x88, u16) & 1)) {
+            AT(k, 0x84, u8) = 0;
+        }
+    }
+    switch (AT(k, 0x84, u8)) {
+    case 0:
+        if (AT(k, 0x9C, s8) == 0 || AT(k, 0x24, f32) <= 40.0f) {
+            ptmf_set(&c->a.state, &D_00416720);
+        } else {
+            func_00127060(c);
+            AT(k, 0x2B, u8) = 0;
+            c->unk124 = c->unk128;
+            ptmf_set(&c->a.state, &D_00416730);
+        }
+        break;
+    case 1:
+        ptmf_set(&c->a.state, &D_00416740);
+        break;
+    case 2:
+        ptmf_set(&c->a.state, &D_00416750);
+        break;
+    }
+}
