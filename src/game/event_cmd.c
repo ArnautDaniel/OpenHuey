@@ -101,6 +101,13 @@ extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
 extern void *func_00208210(u8 *m, u8 kind);
 extern void *func_00208180(u8 *m, u8 kind);
 extern void *func_002080D0(u8 *m, u8 kind);
+extern void *func_001700E0(u8 *m, s32 kind);
+extern void *func_00208C90(u8 *m);
+extern void *func_002089F0(u8 *m);
+extern void *func_00208650(u8 *m);
+extern void *func_002084D0(u8 *m, s32 kind);
+extern void *func_00208420(u8 *m, s32 kind);
+extern void *func_002083D0(u8 *m);
 extern s32 func_001788F0(Progress *p, u32 door);
 extern void func_00178A60(Progress *p, u32 n);
 extern void func_00178A30(Progress *p, u32 n);
@@ -611,9 +618,14 @@ static u8 *char_present(Progress *p, s32 id) {
 }
 
 /* (0xB7) Hewie's model swapped for kind `k` (0..2) from the progress' pool +0x6FBF00 */
-static void *partner_model(Progress *p, s32 k) {
+static u8 *model_alloc(Progress *p, u32 size) {
     VObject *pool = (VObject *)((u8 *)p + 0x6FBF00);
-    u8 *m = func_002DC6E0(0xB90, VCALL(pool, 0x10, void *(*)(VObject *, s32))(pool, 0xB90));
+
+    return func_002DC6E0(size, VCALL(pool, 0x10, void *(*)(VObject *, s32))(pool, size));
+}
+
+static void *partner_model(Progress *p, s32 k) {
+    u8 *m = model_alloc(p, 0xB90);
 
     if (m == NULL) {
         return m;
@@ -643,6 +655,59 @@ static s32 scene_effect_new(u8 *mgr, u32 size, void **(*ctor)(void **)) {
         }
     }
     return -1;
+}
+
+/* (0x97) Fiona's model for costume `k` (0..8; 4 and 5 none) */
+static void fiona_model(Progress *p, s32 k) {
+    u8 *m;
+
+    switch (k) {
+    case 0:
+        m = model_alloc(p, 0x1270);
+        if (m != NULL) {
+            m = func_001700E0(m, 0);
+        }
+        break;
+    case 1:
+        m = model_alloc(p, 0x1820);
+        if (m != NULL) {
+            m = func_00208C90(m);
+        }
+        break;
+    case 2:
+        m = model_alloc(p, 0x18E0);
+        if (m != NULL) {
+            m = func_002089F0(m);
+        }
+        break;
+    case 3:
+        m = model_alloc(p, 0x17A0);
+        if (m != NULL) {
+            m = func_00208650(m);
+        }
+        break;
+    case 6:
+        m = model_alloc(p, 0xDE0);
+        if (m != NULL) {
+            m = func_002084D0(m, 6);
+        }
+        break;
+    case 7:
+        m = model_alloc(p, 0xD50);
+        if (m != NULL) {
+            m = func_00208420(m, 7);
+        }
+        break;
+    case 8:
+        m = model_alloc(p, 0x9B0);
+        if (m != NULL) {
+            m = func_002083D0(m);
+        }
+        break;
+    default:
+        return;
+    }
+    AT(gCharacters[0], 0xF0, void *) = m;
 }
 
 void func_002029B0(VObject *ev) {
@@ -1833,6 +1898,13 @@ void func_002029B0(VObject *ev) {
         func_002D6090(mgr, slot, &arg);
         break;
     }
+    case 0x97:   /* Fiona out, her model swapped for costume pc[1], back in but not in the scene */
+        VCALL((VObject *)gCharPlayer, 0x20, void (*)(VObject *))((VObject *)gCharPlayer);
+        func_0016D2F0(p, 0);
+        fiona_model(p, PC(ev)[1]);
+        VCALL((VObject *)gCharPlayer, 0x14, void (*)(VObject *))((VObject *)gCharPlayer);
+        AT(gCharPlayer, 0x28, u8) = 0;
+        break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
