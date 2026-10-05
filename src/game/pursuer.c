@@ -10479,3 +10479,61 @@ s32 func_00127BC0(Pursuer *p) {
 s32 func_00127C00(Pursuer *p) {
     return 0;
 }
+
+/* ---- the room character of id 8 (vtable 0x46FF80; built by func_001731A0): a Pursuer that
+ * mostly keeps the Pursuer's own behaviour ---- */
+
+extern void *D_0046FF80[];
+extern const PTMF D_00419E50;   /* its behaviour after a reset */
+
+/* vtable +0x8: destructor */
+Pursuer *func_002ECB80(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = D_0046FF80;
+        if (p != NULL) {
+            Pursuer_DestroyBase(p);
+        }
+        if ((s16)flags > 0) {
+            func_00124E40(&p->c.a);
+        }
+    }
+    return p;
+}
+
+/* vtable +0xF4: setup (the Pursuer's) */
+void func_002ECCB0(Pursuer *p) {
+    func_0029FB20(p);
+}
+
+/* vtable +0x38: on screen, func_00124890(-1) */
+void func_002ECCC0(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* vtable +0x84: a pending reset (state 5): on screen, +0x8C, its behaviour D_00419E50 and the
+ * next one cleared (+0x1758), then +0x114(1); the state is cleared either way */
+void func_002ECD10(Pursuer *p) {
+    if (p->c.state[0] != 5) {
+        return;
+    }
+    if (func_00217510(p) & 0xFF) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00419E50);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    p->c.state[0] = 0;
+    p->c.state[1] = 0;
+}
+
+/* vtable +0x110: a joint action pending for it is cancelled; -1 */
+s32 func_002ECDE0(Pursuer *p) {
+    Progress *pr = gProgress;
+
+    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+        func_001777D0(pr, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
