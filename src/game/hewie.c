@@ -5915,3 +5915,104 @@ void func_00147B90(Hewie *h) {
     }
     func_00141C00(h, HW(h, 0xF3744, u8) == 1 ? 9 : 8);
 }
+
+/* ---- keeping his distance ---- */
+
+/* actions 0x53..0x57 / 0x7C: keep within +0xF36C8 of a point (his target for 0x53..0x55 / 0x7C
+ * while it is in his room and reachable, else the default action; +0xF36E0 for 0x56 / 0x57),
+ * moving along heading +0xF36C4: picked anew (away from the point, the freest way within 30..150
+ * degrees, func_00137720) when +0xF36B4 runs out or the way ahead is shorter than the range
+ * (0x55 / 0x57 then hold it 30..90 frames, +0xF36B8 30 frames before rechecking). Running by
+ * the way ahead (stop under 10, trot under 20) for 0x53 / 0x54 / 0x56 / 0x7C, pose 7 for 0x55
+ * / 0x57. Out of range: action +0xF3570 */
+void func_001480C0(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };
+    f32 d[4] __attribute__((aligned(16)));
+    f32 room, step, a;
+    s32 anim;
+
+    if (HW(h, 0xF3560, s32) != 0) {
+        HW(h, 0xF3560, s32) -= 1;
+    }
+    switch (HEWIE_ACTION(h)) {
+    case 0x56:
+    case 0x57:
+        sceVu0CopyVector(at, &HW(h, 0xF36E0, f32));
+        break;
+    case 0x53:
+    case 0x54:
+    case 0x55:
+    case 0x7C:
+        if (!in_his_room(h, HW(h, 0xF3544, Character *)) ||
+            !(u8)func_0013C1E0(h, HW(h, 0xF3544, Character *)->a.navTri, HW(h, 0xF3544, Character *)->a.pos)) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        sceVu0CopyVector(at, HW(h, 0xF3544, Character *)->a.pos);
+        break;
+    }
+    if (!(func_00124490(&h->c.a, at) <= HW(h, 0xF36C8, f32))) {
+        hewie_want(h, HW(h, 0xF3570, s32), 0);
+        return;
+    }
+    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    if (HW(h, 0xF36B8, s32) != 0) {
+        HW(h, 0xF36B8, s32) -= 1;
+    } else {
+        if (HW(h, 0xF36B4, s32) != 0) {
+            HW(h, 0xF36B4, s32) -= 1;
+        }
+        if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
+            switch (HEWIE_ACTION(h)) {
+            case 0x7C:
+            case 0x56:
+            case 0x54:
+            case 0x53:
+                HW(h, 0xF36B4, s32) = 0;
+                break;
+            case 0x57:
+            case 0x55:
+                HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 30 + 30;
+                HW(h, 0xF36B8, s32) = 30;
+                break;
+            }
+            sceVu0SubVector(d, h->c.a.pos, at);
+            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
+        }
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    step = run_turn(h);
+    a = HW(h, 0xF36C4, f32);
+    turn_toward(h, a, step);
+    switch (HEWIE_ACTION(h)) {
+    case 0x7C:
+    case 0x56:
+    case 0x54:
+    case 0x53:
+        if (func_00140CD0(h, 5) == 0) {
+            anim = MOTION_ANIM(h->c.motion);
+            if (room < 10.0f) {
+                if (anim != 0x200) {
+                    func_002DDED0(h->c.motion, 0x200, -1);
+                }
+            } else if (room < 20.0f) {
+                if (anim != 0x201) {
+                    func_002DDED0(h->c.motion, 0x201, -1);
+                }
+            } else if (anim != 0x202) {
+                func_002DDED0(h->c.motion, 0x202, -1);
+            }
+        }
+        break;
+    case 0x57:
+    case 0x55:
+        func_00141C00(h, 7);
+        break;
+    }
+}
