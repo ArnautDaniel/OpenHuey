@@ -3642,3 +3642,18 @@ src/game/stalker_models.c func_002F8450 --pre=a0=0x0B000000..0x0B000000 --pre=a1
 src/game/model.c func_001F0AF0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4C=0x0B100000..0x0B100000 --pre=a0+0x50=0x0B100100..0x0B100100 --pre=a0+0x54=0x0B100200..0x0B100200 --runs=150
 src/game/stalker_models.c func_003168F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100014=0x0B300000..0x0B300000 --pre=@0x0B100018=0..0x0B700000 --pre=@0x0B70002C=0..0 --pre=@0x0B700030=0x0B800000..0x0B800000 --pre=a1+0x20:u8=0..1 --pre=a0+0x20:u8=0..1 --pre=a0+0x2C=0x0B400000..0x0B400000 --stub-ret=0x0B600000 --runs=150
 src/game/stalker_models.c func_002DC6D0 --runs=5
+src/game/stalker_progress.c func_001777D0 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_001777F0 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_00177810 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_00177830 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_00177850 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_001779C0 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_001779F0 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_00178070 --runs=40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000
+src/game/stalker_progress.c func_00177890 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..3 --pre=a4=0..3 --pre=a0+0x10B0:u8=0..1 --pre=a0+0x10BC:u8=0..1 --pre=a0+0x10C8:u8=0..1 --pre=a0+0x10B2:u8=0..4 --pre=a0+0x10BE:u8=0..4 --pre=a0+0x10CA:u8=0..4 --runs=200
+src/game/stalker_progress.c func_00177AB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a2=0..7 --runs=200
+src/game/stalker_progress.c func_00178750 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
+src/game/stalker_progress.c func_00178840 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
+src/game/stalker_progress.c func_00178A90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
+src/game/stalker_progress.c func_00178C10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
+src/game/stalker_progress.c func_00178DB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B700000..0x0B700000 --pre=a3=0..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x40 --stub-ret=0xFF --runs=200
