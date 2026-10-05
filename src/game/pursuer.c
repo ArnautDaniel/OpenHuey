@@ -10537,3 +10537,40 @@ s32 func_002ECDE0(Pursuer *p) {
     }
     return -1;
 }
+
+/* ---- character kind 14 (vtable D_004723B0, the pursuer base with three of its own) ---- */
+
+extern const PTMF D_00429840;
+
+/* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
+void func_00312EA0(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* +0x84 a request of kind 5 (+0x14E8): when func_00217510 allows it, +0x8C, its state
+ * (+0x174C) D_00429840 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
+void func_00312EF0(Pursuer *p) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((func_00217510(p) & 0xFF) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), &D_00429840);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+/* +0x110 let its progress slot go (func_001777D0) if it holds one (func_00177870); -1 */
+s32 func_00312FC0(Pursuer *p) {
+    Progress *pr = gProgress;
+
+    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+        func_001777D0(pr, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}

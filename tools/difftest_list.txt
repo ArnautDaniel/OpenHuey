@@ -5945,3 +5945,6 @@ src/game/creature.c func_00312BE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=
 src/game/creature.c func_00312C30 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=0..1 --runs=20
 src/game/creature.c func_00312C60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xA8=0..1 --pre=a0+0xB0:u8=0..1 --pre=a0+0xAC=0..2 --pre=a0+0x3C=0..4 --pre=a0+0x6C=0..4 --pre=a0+0xA3:u8=3..4 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-ret-prob=1 --runs=200
 src/game/creature.c func_00312D90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-ret-prob=1 --runs=20
+src/game/pursuer.c func_00312EA0 --pre=a0=0x09000000..0x09000000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=20
+src/game/pursuer.c func_00312EF0 --pre=a0=0x09000000..0x09000000 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=60
+src/game/pursuer.c func_00312FC0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-ret-prob=1 --runs=40
