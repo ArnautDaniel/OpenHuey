@@ -6585,3 +6585,29 @@ void func_0014BE80(Hewie *h) {
         func_00141C00(h, 8);
     }
 }
+
+/* ---- whining at Fiona ---- */
+
+/* with Fiona in his room: once standing, look at her and whine (sound 0x60, action 0x7D, 150
+ * frames); when that is over, action +0xF3570. Without her, action +0xF3570 at once */
+void func_0014C210(Hewie *h) {
+    if (!in_his_room(h, gCharPlayer) || (HW(h, 0xF36B4, s32) != 0 && HW(h, 0xF355C, s32) == 0)) {
+        hewie_want(h, HW(h, 0xF3570, s32), 0);
+        return;
+    }
+    if (func_00140CD0(h, 0) != 0) {
+        return;
+    }
+    if (HW(h, 0xF36B4, s32) == 0) {
+        HW(h, 0xF355C, s32) = 150;
+        HW(h, 0xF36B4, s32) = 1;
+        if (HW(h, 0xF3604, s32) != 0) {
+            HW(h, 0xF3604, s32) = 0;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3544, Character *) = gCharPlayer;
+        func_0013A430(h, 0x60);
+        HEWIE_ACTION(h) = 0x7D;
+    }
+    func_00141C00(h, 0);
+}
