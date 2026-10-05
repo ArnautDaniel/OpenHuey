@@ -6313,3 +6313,122 @@ void func_0014A340(Hewie *h) {
         hewie_want(h, 0, 0);
     }
 }
+
+/* ---- walking to a spot and settling ---- */
+
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* |wrap(+0x10C - his heading)| as the original takes it (twice, 0 becomes -0) */
+static f32 off_heading(Hewie *h) {
+    if (!(func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
+        return func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+    }
+    return -func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+}
+
+/* walk the path to the spot +0x110 (12 frames of root motion ahead along it, or straight once
+ * on its triangle +0x104), stepping less the sharper he turns; near the end (under 3) turn on
+ * the spot (animation 0x1300) to heading +0x10C over the angle +0xF36C4, slowing as it closes,
+ * then stand. Done (at the end, settled, in animation +0x108 or standing): action 0x63 goes on
+ * to 0x64 (0x13), else flag +0xE1 and the default action. Walk animation: +0x108, or by the
+ * distance left with +0xF36B8 2 (pose 7 / 8 / 9 under 10 / 34 / beyond), else pose 7 */
+void func_0014A920(Hewie *h) {
+    f32 root[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 s, a, left, mv, t, r, step, rest;
+    s32 on, anim;
+    u32 tri;
+
+    on = h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE);
+    s = root_ahead(h, root);
+    if ((u8)on != 1) {
+        func_001273D0(&h->c, &tri, at, 12.0f * (s < 0.0f ? 0.0f : s));
+        a = func_001244D0(&h->c.a, at);
+    } else {
+        a = func_001244D0(&h->c.a, h->c.unk110);
+    }
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    anim = MOTION_ANIM(h->c.motion);
+    if (anim == 0x1300) {
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        t = func_0031C248(off_heading(h) * 0x1.becde60000000p+0f /* 1.7453293 */ / HW(h, 0xF36C4, f32));
+        r = 2.0f * (t * HW(h, 0xF36C4, f32)) / 0x1.921fb60000000p+1f /* 3.1415927 */;
+        if (!(r <= 0x1.3333340000000p-1f /* 0.6 */)) {
+            r = 0x1.3333340000000p-1f /* 0.6 */;
+        }
+        AT(MOTION_PTR(h->c.motion, 0x6A4), 0x1C, f32) = r;
+        step = 0x1.99999a0000000p-5f /* 0.05 */ * HW(h, 0xF36C4, f32) * t;
+        if (step < 0x1.1df46a0000000p-6f /* 0.017453292 */) {
+            step = 0x1.1df46a0000000p-6f /* 0.017453292 */;
+        } else if (!(step <= 0x1.aceea00000000p-4f /* 0.10471976 */)) {
+            step = 0x1.aceea00000000p-4f /* 0.10471976 */;
+        }
+        left = func_00124530(&h->c.a, HW(h, 0x10C, f32), step);
+        if (left == 0.0f && AT(h->c.motion, 0x550, f32) <= 0.0f) {
+            func_002DDC60(h->c.motion, !(u8)func_00177620(gProgress) ? 0 : 3, 5, -1);
+        }
+        mv = 0.25f;
+    } else {
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        left = func_00124530(&h->c.a, a, run_turn(h));
+        mv = 0.0f;
+        if (!(s < 0.0f)) {
+            mv = s * ((0x1.921fb60000000p+1f /* 3.1415927 */ - left) / 0x1.921fb60000000p+1f /* 3.1415927 */);
+        }
+        if (mv < 0x1.99999a0000000p-5f /* 0.05 */) {
+            mv = 0x1.99999a0000000p-5f /* 0.05 */;
+        }
+    }
+    h->c.unk128 = func_001273D0(&h->c, &tri, p, mv);
+    h->c.a.navTri = tri;
+    sceVu0CopyVector(h->c.a.pos, p);
+    HW(h, 0xF3558, u8) = 1;
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    if (h->c.unk128 >= h->c.unk124 && HW(h, 0xF36B4, s32) != 0 && left == 0.0f &&
+        (h->c.unk104[1] != -1 ? h->c.unk104[1] == anim : func_001669A0(h) == 0)) {
+        if (HEWIE_ACTION(h) == 0x63) {
+            hewie_want(h, 0x64, 0x13);
+        } else {
+            h->c.unkE1 = 1;
+            hewie_want(h, 0, 0);
+        }
+        return;
+    }
+    if (h->c.unk104[1] != -1) {
+        if (anim == h->c.unk104[1]) {
+            if (VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+                    gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C) < 3.0f) {
+                HW(h, 0xF36B4, s32) = 1;
+            }
+        } else {
+            func_002DDED0(h->c.motion, h->c.unk104[1], -1);
+        }
+    } else if (HW(h, 0xF36B4, s32) == 0) {
+        rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+        if (!(rest < 3.0f)) {
+            if (HW(h, 0xF36B8, s32) == 2 && !(rest < 10.0f)) {
+                func_00141C00(h, rest < 34.0f ? 8 : 9);
+            } else {
+                func_00141C00(h, 7);
+            }
+        } else {
+            r = off_heading(h);
+            if (r < 0x1.1df46a0000000p-6f /* 0.017453292 */) {
+                r = 0x1.1df46a0000000p-6f /* 0.017453292 */;
+            }
+            HW(h, 0xF36C4, f32) = r;
+            HW(h, 0xF36B4, s32) = 1;
+            func_002DDED0(h->c.motion, 0x1300, !(u8)func_00177620(gProgress) ? 0 : 3);
+            AT(MOTION_PTR(h->c.motion, 0x6A4), 0x1C, f32) = 1.0f;
+        }
+    }
+}
