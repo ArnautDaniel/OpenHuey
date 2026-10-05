@@ -1040,6 +1040,63 @@ void func_00222F60(VObject *d, u8 *sec) {
 
 extern s32 func_00118278(const char *a, const char *b);   /* strcmp */
 
+/* a placed object released: its state cleared and its animation key (+0x98) reset */
+void func_0025FC10(u8 *obj) {
+    AT(obj, 0x0, u8) = 0;
+    AT(obj, 0x1, u8) = 0;
+    AT(obj, 0x8, s32) = 0;
+    AT(obj, 0x70, s32) = 0;
+    AT(obj, 0x74, s32) = 0;
+    AT(obj, 0x78, s32) = 0;
+    AT(obj, 0x7C, s32) = 0;
+    AT(obj, 0x90, s32) = 0;
+    AT(obj, 0x94, s32) = 0;
+    func_001F40F0(obj + 0x98, 0, 0, 0);
+}
+
+/* room manager +0x6740 +0x20: each placed object in use released and its bit cleared */
+void func_002C9010(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 0x40; i++) {
+        u8 *obj = o + 0x20 + i * 0xB0;
+        u32 k;
+
+        if (!(AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F)))) {
+            continue;
+        }
+        func_0025FC10(obj);
+        k = (u32)(obj - (o + 0x20)) / 0xB0;
+        AT(o, 0xC + (k >> 5) * 4, u32) &= ~(1u << (k & 0x1F));
+    }
+}
+
+/* room manager +0x6740 +0x1C: entry k of the named record in its table (+0x8: count, then
+ * offsets; each record a name, +0x10 its count, +0x14 the offset of its 0x10-byte entries) */
+u8 *func_002C90F0(u8 *o, const char *name, u32 k) {
+    u8 *tbl = AT(o, 0x8, u8 *);
+    u32 j;
+
+    if (tbl == NULL) {
+        return NULL;
+    }
+    for (j = 0; j < AT(tbl, 0x0, u32); j++) {
+        u8 *e = AT(o, 0x8, u8 *) + AT(tbl, 0x4 + j * 4, u32);
+
+        if (func_00118278((const char *)e, name) == 0) {
+            if (k < AT(e, 0x10, u32)) {
+                return e + AT(e, 0x14, u32) + k * 0x10;
+            }
+            return NULL;
+        }
+    }
+    return NULL;
+}
+
+/* room manager +0x6740 +0x34 */
+void func_002C9460(u8 *o) {
+}
+
 /* room manager +0x6740 +0x18: the placed object named `name` (its +0x70), or NULL */
 u8 *func_002C91D0(u8 *o, const char *name) {
     s32 i;

@@ -666,3 +666,286 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
     AT(c, 0x18, f32) = AT(c, 0x18, f32) + 2.0f;
     return 2;
 }
+
+
+/* ---- the obstacles (D_0044FE08, room manager +0x9380, vtable D_0046C320): 5 things in the
+ * room that can be pushed about (+0x10, 0xB0 each; the room object "oshi0n" is each one's
+ * model, +0x50), their moves (OBSTACLE.MTN at +0x380: count, then offsets), the 5 saved
+ * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
+
+extern void *D_0046C320[], *D_0046C380[];
+extern VObject *D_0044FE08;
+extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
+extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
+extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
+extern void func_0017E060(u8 *o, s32 a, s32 b, s32 c, s32 d);
+extern void func_0017F8F0(u8 *o);
+extern s32 func_0017DD60(u8 *o, s32 a, s32 b);
+extern void func_0017EA30(u8 *o, s32 a);
+extern void func_0017F430(u8 *o, s32 a);
+extern void func_0017F1F0(u8 *o, s32 a);
+extern void func_0017E260(u8 *o, s32 a);
+extern void func_0017D290(u8 *o, s32 a);
+extern s32 func_0017D300(u8 *o, s32 a);
+extern void func_0017D370(u8 *o);
+extern s32 func_0017D4E0(u8 *o, s32 a);
+extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+
+#define OBST(l, i) ((u8 *)(l) + 0x10 + (i) * 0xB0)
+
+/* the room object "oshi0n" */
+static u8 *obstacle_model(const char *base, u32 n) {
+    char name[7];
+    s32 k;
+
+    for (k = 0; k < 7; k++) {
+        name[k] = base[k];
+    }
+    name[5] += n;
+    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+}
+
+/* an obstacle's destructor */
+void *func_0021A370(void *o, s32 flags) {
+    if (o != NULL && (s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
+
+/* +0x8 destructor */
+void *func_0021A2E0(u8 *l, s32 flags) {
+    if (l != NULL) {
+        AT(l, 0x0, void **) = D_0046C320;
+        func_001002C0(l + 0x10, func_0021A370, 0xB0, 5);
+        AT(l, 0x0, void **) = D_0046C380;
+        D_0044FE08 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(l);
+        }
+    }
+    return l;
+}
+
+/* the base's destructor */
+void *func_0021B090(void *l, s32 flags) {
+    if (l != NULL) {
+        AT(l, 0x0, void **) = D_0046C380;
+        D_0044FE08 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(l);
+        }
+    }
+    return l;
+}
+
+/* place obstacle i of `kind` with model "oshi0n": its offset and parts from the kind */
+static void obstacle_make(u8 *l, s32 i, u32 n, s32 kind, const char *base, s32 a, s32 b, s32 saved) {
+    u8 *def = D_0047A938[kind];
+    u8 *o, *m, *part;
+    s32 k;
+
+    if (!(AT(def, 0x8, s32) > 0 && AT(def, 0x8, s32) < 4)) {
+        return;
+    }
+    o = OBST(l, i);
+    m = obstacle_model(base, n & 0xFF);
+    if (m == NULL) {
+        return;
+    }
+    AT(o, 0x0, u8) = 1;
+    AT(o, 0x50, u8 *) = m;
+    AT(o, 0x4, f32) = AT(def, 0x0, f32);
+    AT(o, 0x8, f32) = AT(def, 0x4, f32);
+    if (saved) {
+        AT(o, 0x54, s32) = AT(l, 0x580 + i * 8, s32);
+        AT(o, 0x58, s32) = AT(l, 0x584 + i * 8, s32);
+    } else {
+        AT(o, 0x54, s32) = a;
+        AT(o, 0x58, s32) = b;
+    }
+    part = def + 0xC;
+    for (k = 0; k < AT(def, 0x8, s32); k++, part += 0x10) {
+        func_0017E060(o, AT(part, 0x0, s32), AT(part, 0x4, s32), AT(part, 0x8, s32), AT(part, 0xC, s32));
+    }
+    func_0017F8F0(o);
+}
+
+/* +0x10 obstacle i (model "oshi0n", `kind`) placed at (a, b) */
+void func_0021AE30(u8 *l, s32 i, u32 n, s32 kind, s32 a, s32 b) {
+    if (i < 5) {
+        obstacle_make(l, i, n, kind, D_0047A940, a, b, 0);
+    }
+}
+
+/* +0x14 the same, at its saved place */
+void func_0021ACD0(u8 *l, s32 i, u32 n, s32 kind) {
+    if (i < 5) {
+        obstacle_make(l, i, n, kind, D_0047A948, 0, 0, 1);
+    }
+}
+
+/* +0x18 / +0x1C obstacle i pushed (func_0017F430 + func_0017EA30) / pulled (func_0017F1F0 +
+ * func_0017E260) by `a`; -1 for none */
+s32 func_0021AB30(u8 *l, s32 i, s32 a) {
+    u8 *o;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
+        return -1;
+    }
+    func_0017F430(o, a);
+    func_0017EA30(o, a);
+    return 0;
+}
+
+s32 func_0021AAA0(u8 *l, s32 i, s32 a) {
+    u8 *o;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
+        return -1;
+    }
+    func_0017F1F0(o, a);
+    func_0017E260(o, a);
+    return 0;
+}
+
+/* +0x20 the other active obstacles settle (func_0017EA30(0)); obstacle i pushed by `a` */
+void func_0021A9D0(u8 *l, s32 i, s32 a) {
+    s32 k;
+
+    for (k = 0; k < 5; k++) {
+        if (AT(OBST(l, k), 0x0, u8) == 1 && k != i) {
+            func_0017EA30(OBST(l, k), 0);
+        }
+    }
+    if (AT(OBST(l, i), 0x0, u8) == 1) {
+        func_0017F430(OBST(l, i), a);
+        func_0017EA30(OBST(l, i), a);
+    }
+}
+
+/* +0x24 which active obstacles func_0017DD60(a, 0) finds clear (bit per obstacle) */
+u32 func_0021A930(u8 *l, s32 a) {
+    u32 mask = 0;
+    s32 k;
+
+    for (k = 0; k < 5; k++) {
+        if (AT(OBST(l, k), 0x0, u8) == 1 && func_0017DD60(OBST(l, k), a, 0) == 0) {
+            mask |= 1 << k;
+        }
+    }
+    return mask;
+}
+
+/* +0x28 obstacle i starts move `mv` of OBSTACLE.MTN from `at` */
+s32 func_0021A850(u8 *l, s32 i, s32 mv, const f32 *at) {
+    u8 *o, *rec;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0 || mv < 0 || (u32)mv >= AT(l, 0x380, u32)) {
+        return -1;
+    }
+    AT(o, 0xC, s32) = mv;
+    sceVu0CopyVector((f32 *)(o + 0x20), at);
+    rec = l + AT(l, 0x384 + mv * 4, u8);
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, s32) = AT(rec, 0x380, s32);
+    AT(o, 0x30, u8 *) = rec + 0x384;
+    return 0;
+}
+
+/* +0x2C obstacle i: func_0017D370 */
+s32 func_0021A7E0(u8 *l, s32 i) {
+    u8 *o;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
+        return -1;
+    }
+    func_0017D370(o);
+    return 0;
+}
+
+/* +0x30 obstacle i (not stopped, +0x1): func_0017D4E0(a); -1 otherwise */
+s32 func_0021A760(u8 *l, s32 i, s32 a) {
+    u8 *o;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0 || AT(o, 0x1, u8) == 1) {
+        return -1;
+    }
+    return func_0017D4E0(o, a);
+}
+
+/* +0x34 obstacle i: func_0017D300(a) (0 for none) */
+s32 func_0021A6F0(u8 *l, s32 i, s32 a) {
+    u8 *o;
+
+    if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
+        return 0;
+    }
+    return func_0017D300(o, a);
+}
+
+/* +0x38 obstacle i stopped */
+void func_0021A690(u8 *l, s32 i) {
+    if (i >= 0 && i < 5 && AT(OBST(l, i), 0x0, u8) != 0) {
+        AT(OBST(l, i), 0x1, u8) = 1;
+    }
+}
+
+/* +0x3C obstacle i: func_0017D290(a) */
+void func_0021A630(u8 *l, s32 i, s32 a) {
+    if (i >= 0 && i < 5 && AT(OBST(l, i), 0x0, u8) != 0) {
+        func_0017D290(OBST(l, i), a);
+    }
+}
+
+/* +0x40 obstacle i's saved place set / +0x44 taken from it now (+0x54 / +0x58) */
+void func_0021A600(u8 *l, s32 i, s32 a, s32 b) {
+    if (i >= 0 && i < 5) {
+        AT(l, 0x580 + i * 8, s32) = a;
+        AT(l, 0x584 + i * 8, s32) = b;
+    }
+}
+
+void func_0021A5B0(u8 *l, s32 i) {
+    if (i >= 0 && i < 5) {
+        AT(l, 0x580 + i * 8, s32) = AT(OBST(l, i), 0x54, s32);
+        AT(l, 0x584 + i * 8, s32) = AT(OBST(l, i), 0x58, s32);
+    }
+}
+
+/* +0x48 obstacle i's spot (+0x5B0) kept: where it stands (+0x40, moved by its offset) */
+void func_0021A510(u8 *l, s32 i) {
+    if (i >= 0 && i < 5) {
+        f32 *s = &AT(l, 0x5B0 + i * 0x10, f32);
+        u8 *o = OBST(l, i);
+
+        sceVu0CopyVector(s, (f32 *)(o + 0x40));
+        s[0] = s[0] + AT(o, 0x4, f32);
+        s[2] = s[2] + AT(o, 0x8, f32);
+    }
+}
+
+/* +0x4C the model of obstacle i ("oshi0n") back at its kept spot */
+void func_0021A440(u8 *l, s32 i, u32 n) {
+    u8 *m;
+
+    if (i < 0 || i >= 5) {
+        return;
+    }
+    m = obstacle_model(D_0047A950, n & 0xFF);
+    if (m != NULL) {
+        AT(OBST(l, i), 0x50, u8 *) = m;
+        sceVu0CopyVector((f32 *)(m + 0x20), &AT(l, 0x5B0 + i * 0x10, f32));
+    }
+}
+
+/* +0x50 where obstacle i stands (+0x40, moved by its offset) */
+void func_0021A3C0(u8 *l, s32 i, f32 *out) {
+    if (i >= 0 && i < 5) {
+        u8 *o = OBST(l, i);
+
+        sceVu0CopyVector(out, (f32 *)(o + 0x40));
+        out[0] = out[0] + AT(o, 0x4, f32);
+        out[2] = out[2] + AT(o, 0x8, f32);
+    }
+}
