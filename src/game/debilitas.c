@@ -890,3 +890,221 @@ void func_001291C0(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_003AFFB0);
     func_00128FC0(p);
 }
+
+extern const PTMF D_003AFF00, D_003AFF10, D_003AFF20;
+void func_0012A4C0(Pursuer *p);
+
+/* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0). Otherwise
+   the pending action (0x1C rumbles the pad), or by a 0..100 roll against his table +0x17F0:
+   whether she faces him (within 90 degrees of her heading, his sight range) and whether he's
+   within +0x17E4 of her picks action 1 (close and seen: no wait), or 5 / 6 with the wait +0x162C
+   from the table. Then his chase step (func_0012A4C0). */
+void func_0012B490(Pursuer *p) {
+    s32 next;
+
+    if (PU(p, 0x16B4, u8) == 1) {
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF00);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x264, void (*)(Pursuer *))(p);
+        return;
+    }
+    p->target = gCharPlayer;
+    PU(p, 0x16F6, u8) = 1;
+    if (PU(p, 0x1544, u8) == 0) {
+        VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF10);
+        PU(p, 0x1758, s32) = -1;
+        return;
+    }
+    next = PU(p, 0x1758, s32);
+    if (next == -1) {
+        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        Character *t = p->target;
+        u8 *tbl;
+
+        if (!(func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF)) {
+            if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32))) {
+                if (roll <= AT(PU(p, 0x17F0, u8 *), 0x24, f32)) {
+                    VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+                    PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x0, s32);
+                } else {
+                    VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+                    PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x4, s32);
+                }
+            } else if (roll <= (f32)AT(PU(p, 0x17F0, u8 *), 0x8, u32)) {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x8, s32);
+            } else {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0xC, s32);
+            }
+        } else if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32))) {
+            tbl = PU(p, 0x17F0, u8 *);
+            if (roll <= AT(tbl, 0x2C, f32)) {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x10, s32);
+            } else {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+                PU(p, 0x162C, s32) = AT(PU(p, 0x17F0, u8 *), 0x14, s32);
+            }
+        } else {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PU(p, 0x162C, s32) = 0;
+        }
+    } else if (next != -2) {
+        if (next == 0x1C) {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 0x1E);
+        }
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
+    }
+    PU(p, 0x16ED, u8) = 0;
+    PURSUER_STEP_DONE(p) = 0;
+    PU(p, 0x16EF, u8) = 0;
+    PU(p, 0x1758, s32) = -1;
+    PU(p, 0x1780, s32) = 0;
+    PU(p, 0x1630, s32) = AT(PU(p, 0x17F0, u8 *), 0x20, s32);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF20);
+    PU(p, 0x1758, s32) = -1;
+    func_0012A4C0(p);
+}
+
+extern const PTMF D_003AFF70;
+
+/* vtable +0x2B0: his step while heading somewhere through doors (as func_002928B0): walk to the
+   door +0x17B0, open it (0xA / 0xE), go through, or plan round it; the attacks 0x28 / 0x29 pick
+   their table (vtable +0x130) and strike; 0xB / 0x10 / 0x12 end in a walk (4). When the step is
+   over: through the door (+0x16ED), or back to his first behaviour when chasing */
+void func_00129DB0(Pursuer *p) {
+    u32 ds = 0xFF;
+
+    PU(p, 0x1544, u8) = 1;
+    if (ptmf_test(&p->c.a.state)) {
+        ptmf_scall(p, &p->c.a.state);
+    }
+    if (p->c.moveMode != 2) {
+        func_002837C0(p, 0xFF);
+    }
+    if (PU(p, 0x17B0, u8) != 0xFF) {
+        ds = func_00177BF0(gProgress, PU(p, 0x17B0, u8), *(u8 *)&p->c.a.slot) & 0xFF;
+    }
+    switch (PU(p, 0x175C, s32)) {
+    case 0xD:
+    case 0xC:
+        if (PURSUER_STEP_DONE(p) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x26);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0x28:
+    case 0x29:
+        if (PURSUER_STEP_DONE(p) == 1) {
+            PURSUER_STEP_DONE(p) = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 8);
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, PU(p, 0x175C, s32) == 0x28 ? 0xE : 0xF);
+            func_00283C50(p);
+            return;
+        }
+        break;
+    case 0x12:
+    case 0xB:
+    case 0x10:
+        if (PU(p, 0x16EF, u8) == 1) {
+            PURSUER_STEP_NEXT(p) = 1;
+            func_0029B190(p);
+            PU(p, 0x16EF, u8) = 0;
+            return;
+        }
+        if (PURSUER_STEP_DONE(p) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 4);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0xE:
+        if (PURSUER_STEP_DONE(p) == 1 || (ds & 2)) {
+            PU(p, 0x16ED, u8) = 1;
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0xA:
+        if (PU(p, 0x16EF, u8) == 1) {
+            PU(p, 0x16EF, u8) = 0;
+            func_0029B190(p);
+            return;
+        }
+        if (PURSUER_STEP_DONE(p) == 1) {
+            /* at the door: open it (0xE left in the register by the case chain, as func_002928B0) */
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xE);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 4:
+    case 0x26:
+    case 0x25: {
+        VObject *rooms;
+        f32 door[4] __attribute__((aligned(16)));
+        u32 onMesh, a;
+
+        if (PU(p, 0x16EF, u8) == 1) {
+            PU(p, 0x16EF, u8) = 0;
+            func_0029B190(p);
+            return;
+        }
+        if (func_0029A8C0(p, -1) != 0) {
+            if (PURSUER_STEP_DONE(p) == 1) {
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x25);
+            }
+            break;
+        }
+        rooms = D_0044E568;
+        VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), door);
+        onMesh = func_00124480(&p->c.a, door, -1) != (u32)-1;
+        a = func_00123C60(&p->c.a, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0)) & 0xFF;
+        if (!(ds & 4) && PURSUER_STEP_DONE(p) != 1 && !((onMesh & 0xFF) & a)) {
+            break;
+        }
+        switch (func_00211E00(p, PU(p, 0x17B0, u8)) & 0xFF) {
+        case 5:
+        case 6:
+            if (!(Progress_CurRoomFlag(gProgress, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
+                p->c.unk100 = PU(p, 0x17B0, u8);
+                VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xA);
+                PURSUER_STEP_DONE(p) = 0;
+            }
+            break;
+        case 4:
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xE);
+            PURSUER_STEP_DONE(p) = 0;
+            break;
+        case 3: {
+            /* locked: mark the link as visited (+0x148C) and plan again to the goal room */
+            u32 bit = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFFFF;
+
+            p->c.unk148C[bit >> 5] |= 1 << (bit & 0x1F);
+            if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1 &&
+                (func_0027CA00(p) & 0xFF) != 1) {
+                func_0029AC50(p);
+                return;
+            }
+            PU(p, 0x17B0, u8) = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room);
+            PU(p, 0x15A4, s32) = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
+            PURSUER_STEP_DONE(p) = 0;
+            break;
+        }
+        }
+        break;
+    }
+    }
+    if (PURSUER_STEP_NEXT(p) != 1) {
+        return;
+    }
+    if (PU(p, 0x16ED, u8) == 1) {
+        func_002815E0(p, PU(p, 0x17B0, u8));
+        PU(p, 0x16ED, u8) = 0;
+        return;
+    }
+    if (PU(p, 0x16C8, u8) == 0) {
+        PU(p, 0x16F6, u8) = 1;
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF70);
+        PU(p, 0x1758, s32) = -1;
+    }
+}
