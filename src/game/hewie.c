@@ -10079,3 +10079,127 @@ s32 func_00164830(Hewie *h) {
     func_001777D0(p, AT(h, 0x20, u8));
     return -1;
 }
+
+/* ---- each frame ---- */
+
+/* his per-frame upkeep: hidden (+0x29) when not in the room being played. Unless the partner's
+ * state block holds 5: timers run down (+0xF35DC, +0xF35B4, +0xF3688, +0xF35B0, +0xF355C; his
+ * mood +0xF35BE back to mode 0 at 0; praise +0xF3686 clearing +0xF3684), +0xF35A8 counts up to
+ * 3000; hurt health heals a point every 300 frames (+0xF35AC). At 0 health he goes down (hidden:
+ * kept at 1), down he stays in 0x52; back above 0 he is up hurt (obey time renewed; hidden:
+ * action 0x36 when +0xF3583, else the default). Under 30 health hurt (moving 1, his mood
+ * reset; not in mood 3), else (or in mood 3) well. The mood's grip (+0xF35C4) eases every 300
+ * frames; +0xF3585 kept only in move 8 / action 0x7A; bit 7 of +0xF356C flags +0xF3559 when
+ * +0xF355C is out */
+void func_00164DD0(Hewie *h) {
+    Progress *p = gProgress;
+
+    h->c.a.disabled = h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) ? 0 : 1;
+    if ((gCharPartner->state[0] == 5) == 1) {
+        return;
+    }
+    if (HW(h, 0xF35DC, s32) != 0) {
+        HW(h, 0xF35DC, s32) -= 1;
+    }
+    if (h->c.a.unkC4 != 2 && h->c.hp != 0 && h->c.hp < h->c.hpMax) {
+        HW(h, 0xF35AC, s32) -= 1;
+        if (HW(h, 0xF35AC, s32) <= 0) {
+            HW(h, 0xF35AC, s32) = 300;
+            h->c.hp += 1;
+            if (h->c.hp >= h->c.hpMax) {
+                h->c.hp = h->c.hpMax;
+            }
+        }
+    }
+    if (h->c.a.unkC4 != 2) {
+        if (h->c.hp == 0) {
+            if (h->c.a.disabled) {
+                h->c.hp = 1;
+            } else {
+                h->c.a.unkC4 = 2;
+                func_00138AD0(h, 0, -1);
+            }
+        }
+    } else if (h->c.hp == 0) {
+        if (!h->c.a.disabled) {
+            if (HEWIE_ACTION(h) == 0) {
+                hewie_want(h, 0x52, 0);
+            }
+        } else if (HEWIE_ACTION(h) != 0x52) {
+            hewie_want(h, 0x52, 0);
+        }
+    } else {
+        h->c.a.unkC4 = 1;
+        HW(h, 0xF3598, s32) = 0;
+        if ((Progress_GetVar(p, 0x27) & 0xFF) != 1) {
+            HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+        } else {
+            HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+        }
+        HW(h, 0xF3586, u8) = 0;
+        if (h->c.a.disabled == 1) {
+            if (HW(h, 0xF3583, u8) == 1) {
+                if (HEWIE_ACTION(h) != 0x36) {
+                    hewie_want(h, 0x36, 0);
+                }
+            } else {
+                hewie_want(h, 0, 0);
+            }
+        }
+    }
+    if (h->c.a.unkC4 != 2) {
+        if (h->c.a.unkC4 != 1) {
+            if (h->c.hp < 30 && HW(h, 0xF35C0, s32) != 3) {
+                h->c.a.unkC4 = 1;
+                func_00138AD0(h, 0, -1);
+                HW(h, 0xF35C4, s32) = 0;
+                HW(h, 0xF35C8, s32) = 0;
+            }
+        } else if (!(h->c.hp < 30) || HW(h, 0xF35C0, s32) == 3) {
+            h->c.a.unkC4 = 0;
+        }
+    }
+    if (HW(h, 0xF35C0, s32) != 3 && HW(h, 0xF35C8, s32) != 0) {
+        HW(h, 0xF35C8, s32) -= 1;
+        if (HW(h, 0xF35C8, s32) == 0 && HW(h, 0xF35C4, s32) != 0) {
+            HW(h, 0xF35C4, s32) -= 1;
+            HW(h, 0xF35C8, s32) = 300;
+        }
+    }
+    if (h->c.moveMode != 8 && HEWIE_ACTION(h) != 0x7A) {
+        HW(h, 0xF3585, u8) = 0;
+    }
+    if (HW(h, 0xF35B4, s32) != 0) {
+        HW(h, 0xF35B4, s32) -= 1;
+    }
+    HW(h, 0xF35A8, s16) += 1;
+    if (HW(h, 0xF35A8, s16) >= 3001) {
+        HW(h, 0xF35A8, s16) = 3000;
+    }
+    if (HW(h, 0xF35C0, s32) != 0) {
+        HW(h, 0xF35BE, s16) -= 1;
+        if (HW(h, 0xF35BE, s16) <= 0) {
+            func_00138AD0(h, 0, -1);
+            HW(h, 0xF35C4, s32) = 0;
+            HW(h, 0xF35C8, s32) = 0;
+        }
+    }
+    if (HW(h, 0xF3686, s16) != 0) {
+        HW(h, 0xF3686, s16) -= 1;
+        if (HW(h, 0xF3686, s16) == 0) {
+            HW(h, 0xF3684, s16) = 0;
+        }
+    }
+    if (HW(h, 0xF3688, s16) != 0) {
+        HW(h, 0xF3688, s16) -= 1;
+    }
+    if (HW(h, 0xF355C, s32) > 0) {
+        HW(h, 0xF355C, s32) -= 1;
+    }
+    if (HW(h, 0xF355C, s32) <= 0 && (HW(h, 0xF356C, u32) & 0x80000080) == 0x80) {
+        HW(h, 0xF3559, u8) = 1;
+    }
+    if (HW(h, 0xF35B0, s16) != 0) {
+        HW(h, 0xF35B0, s16) -= 1;
+    }
+}
