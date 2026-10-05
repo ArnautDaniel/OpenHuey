@@ -204,10 +204,10 @@ void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
 
 
 extern void *D_0046D7A0[];
-extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 add);
+extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 
-/* +0x14 draw (a screen tint): when its colour (+0x10) has alpha, a temporary drawer paints it
- * in layer 0x28 (added for modes 1 and 4, +0x14) */
+/* +0x14 draw (a screen bloom): when its colour (+0x10) has alpha, a temporary bloom drawer
+ * (func_0026B180) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
 void func_0026B2C0(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
@@ -271,6 +271,7 @@ extern VObject *D_0044E4B8;   /* the camera */
 
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
+#define GLR_PRIM_GLOW 0x40000u
 
 /* ---- PC: the quad (sprite) drawer with OpenGL - what func_002E4760 / func_002E3500 send ----
  *
@@ -279,10 +280,11 @@ extern VObject *D_0044E4B8;   /* the camera */
  * corners' offset, +0x24 the instance count, the texture's frame cells +0x26 / +0x28 first
  * cell, +0x2A / +0x2C cell size, +0x2E / +0x30 texture size, +0x33 frames, flags +0x32 (1 stay
  * upright, 2 own corners, 4 turned a quarter about y, 0x40 additive, 0x80 also a glow pass -
- * func_002E3500, not done), texture id / group +0x34 / +0x35, palette +0x36 (-1: the first;
+ * func_002E3500: each sprite drawn again into the renderer's 128 x 112 glow buffer, against the
+ * scene's depth copied down to that size; renderer +0x58 then adds that buffer over the frame), texture id / group +0x34 / +0x35, palette +0x36 (-1: the first;
  * passed to the renderer as TEX0's CSA).
  * Billboards face the camera: x from its up x direction, y the direction x that. */
-static s32 gl_sprites(u8 *d) {
+static s32 gl_sprites(u8 *d, s32 glow) {
     VObject *cam = D_0044E4B8;
     const void *tex = VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(d, 0x34, s8),
                                                                               AT(d, 0x35, s8));
@@ -391,17 +393,17 @@ static s32 gl_sprites(u8 *d) {
         }
         glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], tex,
                   1ull << 34 | (u64)(AT(d, 0x36, s8) == -1 ? 0 : AT(d, 0x36, s8) & 0x1F) << 56,
-                  0x10 | 0x40 | GLR_PRIM_NOZW | (flags & 0x40 ? GLR_PRIM_ADD : 0));
+                  0x10 | 0x40 | GLR_PRIM_NOZW | (flags & 0x40 ? GLR_PRIM_ADD : 0) | (glow ? GLR_PRIM_GLOW : 0));
     }
     return 1;
 }
 
 s32 func_002E4760(u8 *d) {
-    return gl_sprites(d);
+    return gl_sprites(d, 0);
 }
 
 s32 func_002E3500(u8 *d) {
-    return gl_sprites(d);
+    return gl_sprites(d, 1);
 }
 #else
 extern s32 func_002E3500(u8 *d);

@@ -24,19 +24,5 @@ void hg_skipped(const char *name) {
     skipped(name);
 }
 
-/* the full-screen blur / dim effect (0x5A0 qwords of offset sprites; D_0046D7A0's draw) */
-int func_002699D0(void *o) {
-    (void)o;
-    skipped("func_002699D0 full-screen blur");
-    return 1;
-}
-
-/* renderer +0x58: the frame's post-process (copy to a smaller buffer and blend back, in strips;
- * once per frame, layer 0x29) */
-int func_001BA260(void *r) {
-    (void)r;
-    skipped("func_001BA260 frame post-process");
-    return 1;
-}
 
 

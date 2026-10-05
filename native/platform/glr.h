@@ -18,6 +18,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
  * no depth writes (translucent sprites) */
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
+/* PC-only bit: also drawn into the glow buffer (the renderer's 128 x 112 work buffer, tested
+ * against the scene's depth at that size) */
+#define GLR_PRIM_GLOW 0x40000u
 
 /* a draw path not ported to OpenGL yet: reported once (nothing is drawn) */
 void glr_todo(const char *what);
@@ -27,6 +30,18 @@ void glr_fog(uint32_t c0, uint32_t c1, float nearZ, float farZ);
 
 /* a full-screen tint over this frame (RGBA, alpha 0x80 = opaque): the screen fades */
 void glr_overlay(uint32_t rgba);
+
+/* renderer +0x58 this frame: the glow buffer fades to 3/4 and is added over the screen at half
+ * strength, stretched (so blurred); it is kept between frames, a trail */
+void glr_glow(void);
+
+/* renderer +0x5C: the glow buffer is cleared to black */
+void glr_glow_clear(void);
+
+/* func_002699D0 this frame: the screen bloom - a blurred half-size copy of the screen goes into
+ * the glow buffer and over the screen, tinted by `rgba` (0x80 = 1.0) at alpha / 2; added, or
+ * subtracted when `subtract` */
+void glr_bloom(uint32_t rgba, int subtract);
 
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);

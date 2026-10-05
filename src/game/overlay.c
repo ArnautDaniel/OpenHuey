@@ -85,13 +85,26 @@ s32 func_002CF8C0(void *ov) {
     return 1;
 }
 
-/* a full-screen colour (vtable D_0046D7A0): colour `rgba` and `arg`, drawn in renderer layer
- * `layer` at once (+0x58: the renderer sends what's queued) */
-void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 arg) {
+/* the screen bloom (vtable D_0046D7A0; its draw func_002699D0): colour `rgba`, subtracted when
+ * `sub`, drawn in renderer layer `layer`; the renderer's glow pass (+0x58) runs this frame too */
+void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 sub) {
     VObject *r = (VObject *)D_0044E4F0;
 
     AT(o, 0x8, u32) = rgba;
-    AT(o, 0xC, s32) = arg;
+    AT(o, 0xC, s32) = sub;
     VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, o, layer, 0);
     VCALL(r, 0x58, void (*)(VObject *))(r);
 }
+
+#ifdef HG_NATIVE
+/* the bloom's draw: the screen halved (256 x 224), brightened and blurred (8 taps at 1/2, then
+ * 8 wider ones at 1/8 added back), an eighth of it added into the renderer's glow buffer, and
+ * stretched over the screen tinted by +0x8 (0x80 = 1.0) at its alpha / 2 - added, or subtracted
+ * when +0xC. On PC glr does the passes (the original's 0x209 qwords of GS sprites) */
+s32 func_002699D0(u8 *o) {
+    extern void glr_bloom(u32 rgba, s32 subtract);   /* native/platform/glr.c */
+
+    glr_bloom(AT(o, 0x8, u32), AT(o, 0xC, s32) != 0);
+    return 1;
+}
+#endif

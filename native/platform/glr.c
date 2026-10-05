@@ -4,6 +4,7 @@
  * then scaled into the window; frame dumps read the offscreen target.
  *
  *   HG_GLDEBUG=1     once a second: the frame's draw count and its first vertex in clip space
+ *                    (and, on glow frames, the glow buffer's brightest value and the bloom colour)
  *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices */
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +60,7 @@
     X(PFNGLDEPTHFUNCPROC, glDepthFunc) \
     X(PFNGLDEPTHMASKPROC, glDepthMask) \
     X(PFNGLBLENDFUNCPROC, glBlendFunc) \
+    X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
     X(PFNGLDRAWARRAYSPROC, glDrawArrays) \
     X(PFNGLPIXELSTOREIPROC, glPixelStorei) \
     X(PFNGLGETSTRINGPROC, glGetString) \
@@ -87,6 +89,9 @@ typedef struct GlrFrame {
     uint32_t fog0, fog1;   /* fog colours at its near / far depth (RGBA, alpha 0x80 = full); 0: none */
     float fogNear, fogFar;
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
+    int glow;           /* the glow buffer fades and is added over the frame (glr_glow) */
+    uint32_t bloom;     /* glr_bloom's colour (0: none) and whether it subtracts */
+    int bloomSub;
     GlrVertex *v;
     int nv, capv;
     GlrDraw *d;
@@ -174,6 +179,8 @@ void glr_end_frame(void) {
     sFrames[sBuilding].nv = 0;
     sFrames[sBuilding].nd = 0;
     sFrames[sBuilding].overlay = 0;
+    sFrames[sBuilding].glow = 0;
+    sFrames[sBuilding].bloom = 0;
     sFrames[sBuilding].fog0 = sFrames[sBuilding].fog1 = 0;
 }
 
@@ -190,15 +197,40 @@ void glr_overlay(uint32_t rgba) {
     sFrames[sBuilding].overlay = rgba;
 }
 
+static int sGlowClear = 1;   /* clear the glow buffer at the next present */
+
+void glr_glow(void) {
+    sFrames[sBuilding].glow = 1;
+}
+
+void glr_glow_clear(void) {
+    sGlowClear = 1;
+}
+
+void glr_bloom(uint32_t rgba, int subtract) {
+    sFrames[sBuilding].bloom = rgba;
+    sFrames[sBuilding].bloomSub = subtract;
+}
+
 /* ---- GL objects ---- */
 
 #define GLR_WIDTH 640
 #define GLR_HEIGHT 448
+#define GLR_GLOW_W 128   /* the renderer's work buffer (frame page 0x1F0) */
+#define GLR_GLOW_H 112
 
 static GLuint sMeshProg, sQuadProg, sFillProg, sVao, sQuadVao, sVbo;
 static GLint sFillLoc;
 static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFog0Loc, sFog1Loc, sFogNearLoc, sFogFarLoc;
 static GLuint sFbo, sColor, sDepth, sGsTex;
+/* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
+ * scratch buffer its fade goes through (A) */
+static GLuint sGlowFbo, sGlowB, sGlowDepth, sGlowAFbo, sGlowA, sPostProg;
+static GLint sPostModeLoc, sPostColorLoc, sPostFixLoc;
+/* the bloom's half-size images: H, H2 and the next H */
+#define GLR_HALF_W 256
+#define GLR_HALF_H 224
+static GLuint sHalf[3], sHalfFbo[3];
 static int sGsW, sGsH;
 
 static const char *kMeshVs =
@@ -273,6 +305,65 @@ static const char *kQuadFs =
     "out vec4 oColor;\n"
     "void main() {\n"
     "    oColor = vec4(texture(uTex, vUv).rgb, 1.0);\n"
+    "}\n";
+
+/* The post passes, in the GS's 8-bit arithmetic (colours 0..255, sprites modulated by their
+ * colour with 0x80 = 1.0, blends (A - B) * FIX >> 7 + D clamped). Textures are sampled whole
+ * texels except where noted; "H" is the half-size (256 x 224) copy of the screen.
+ *
+ * The glow (renderer +0x58), B the 128 x 112 glow buffer:
+ *   0  B fades, through A: A = B * 0x40 >> 7, then B + ((A - B) * 0x40 >> 7)
+ *   1  over the screen: B * 0x40 >> 7 added, B stretched with bilinear filtering
+ * The screen bloom (func_002699D0):
+ *   2  H = the screen at every other pixel
+ *   3  H2 = the sum of H * 0x40 >> 7 at 8 offsets: (+-1, +-1), (+-2, 0), (0, +-2)
+ *   4  H += the sum of H2 * 0x10 >> 7 at 8 offsets: (+-3, 0), (0, +-3), (+-2, +-2)
+ *   5  B += (H * 0x40 >> 7) * 0x20 >> 7, H at every other pixel
+ *   6  over the screen: (H * colour >> 7) * fix >> 7, H stretched with bilinear filtering;
+ *      added or subtracted (the blend) */
+static const char *kPostFs =
+    "#version 460 core\n"
+    "uniform sampler2D uTex;\n"
+    "uniform sampler2D uTex1;\n"
+    "uniform int uMode;\n"
+    "uniform vec4 uColor;\n"   /* 0..255 */
+    "uniform float uFix;\n"
+    "out vec4 oColor;\n"
+    "vec4 at(sampler2D t, ivec2 p) {\n"   /* 0..255; outside the image: nothing */
+    "    ivec2 sz = textureSize(t, 0);\n"
+    "    if (p.x < 0 || p.y < 0 || p.x >= sz.x || p.y >= sz.y) return vec4(0.0);\n"
+    "    return round(texelFetch(t, p, 0) * 255.0);\n"
+    "}\n"
+    "void main() {\n"
+    "    ivec2 p = ivec2(gl_FragCoord.xy);\n"
+    "    vec4 c;\n"
+    "    if (uMode == 0) {\n"
+    "        vec4 b = at(uTex, p);\n"
+    "        vec4 a = floor(b * 0.5);\n"
+    "        c = b + floor((a - b) * 0.5);\n"
+    "    } else if (uMode == 1 || uMode == 6) {\n"
+    "        vec2 sz = vec2(textureSize(uTex, 0));\n"
+    "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
+    "        vec4 h = round(texture(uTex, t / sz) * 255.0);\n"
+    "        c = uMode == 1 ? floor(h * 0.5) : floor(floor(h * uColor / 128.0) * uFix / 128.0);\n"
+    "    } else if (uMode == 2) {\n"   /* the screen is 640 wide here, the game's 512 */
+    "        c = at(uTex, ivec2(int(float(p.x * 2) * 1.25), p.y * 2 + 1));\n"
+    "    } else if (uMode == 3) {\n"
+    "        c = vec4(0.0);\n"
+    "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.5); c += floor(at(uTex, p + ivec2(1, -1)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(-1, 1)) * 0.5);  c += floor(at(uTex, p + ivec2(1, 1)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(-2, 0)) * 0.5);  c += floor(at(uTex, p + ivec2(2, 0)) * 0.5);\n"
+    "        c += floor(at(uTex, p + ivec2(0, -2)) * 0.5);  c += floor(at(uTex, p + ivec2(0, 2)) * 0.5);\n"
+    "    } else if (uMode == 4) {\n"
+    "        c = at(uTex, p);\n"
+    "        c += floor(at(uTex1, p + ivec2(-3, 0)) / 8.0);  c += floor(at(uTex1, p + ivec2(3, 0)) / 8.0);\n"
+    "        c += floor(at(uTex1, p + ivec2(0, -3)) / 8.0);  c += floor(at(uTex1, p + ivec2(0, 3)) / 8.0);\n"
+    "        c += floor(at(uTex1, p + ivec2(-2, -2)) / 8.0); c += floor(at(uTex1, p + ivec2(2, 2)) / 8.0);\n"
+    "        c += floor(at(uTex1, p + ivec2(2, -2)) / 8.0);  c += floor(at(uTex1, p + ivec2(-2, 2)) / 8.0);\n"
+    "    } else {\n"
+    "        c = at(uTex, p) + floor(floor(at(uTex1, ivec2(p.x * 2, p.y * 2 + 1)) * 0.5) * 0.25);\n"
+    "    }\n"
+    "    oColor = vec4(clamp(c.rgb, 0.0, 255.0) / 255.0, 1.0);\n"
     "}\n";
 
 /* ---- textures: decoded from the game's .TEX entries in memory ---- */
@@ -477,6 +568,8 @@ static void APIENTRY debug_cb(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 int glr_init(void) {
+    int i;
+
 #define GLR_LOAD(type, name) \
     if ((p_##name = (type)SDL_GL_GetProcAddress(#name)) == NULL) { \
         fprintf(stderr, "glr: no %s\n", #name); \
@@ -521,7 +614,48 @@ int glr_init(void) {
     p_glCreateFramebuffers(1, &sFbo);
     p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
     p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+
+    sPostProg = program(kQuadVs, kPostFs);
+    sPostModeLoc = p_glGetUniformLocation(sPostProg, "uMode");
+    sPostColorLoc = p_glGetUniformLocation(sPostProg, "uColor");
+    sPostFixLoc = p_glGetUniformLocation(sPostProg, "uFix");
+    p_glProgramUniform1i(sPostProg, p_glGetUniformLocation(sPostProg, "uTex1"), 1);
+    for (i = 0; i < 3; i++) {
+        p_glCreateTextures(GL_TEXTURE_2D, 1, &sHalf[i]);
+        p_glTextureStorage2D(sHalf[i], 1, GL_RGBA8, GLR_HALF_W, GLR_HALF_H);
+        p_glTextureParameteri(sHalf[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        p_glTextureParameteri(sHalf[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        p_glTextureParameteri(sHalf[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        p_glTextureParameteri(sHalf[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        p_glCreateFramebuffers(1, &sHalfFbo[i]);
+        p_glNamedFramebufferTexture(sHalfFbo[i], GL_COLOR_ATTACHMENT0, sHalf[i], 0);
+    }
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sGlowB);
+    p_glTextureStorage2D(sGlowB, 1, GL_RGBA8, GLR_GLOW_W, GLR_GLOW_H);
+    p_glTextureParameteri(sGlowB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sGlowB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sGlowB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    p_glTextureParameteri(sGlowB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sGlowDepth);
+    p_glTextureStorage2D(sGlowDepth, 1, GL_DEPTH_COMPONENT24, GLR_GLOW_W, GLR_GLOW_H);
+    p_glCreateFramebuffers(1, &sGlowFbo);
+    p_glNamedFramebufferTexture(sGlowFbo, GL_COLOR_ATTACHMENT0, sGlowB, 0);
+    p_glNamedFramebufferTexture(sGlowFbo, GL_DEPTH_ATTACHMENT, sGlowDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sGlowA);
+    p_glTextureStorage2D(sGlowA, 1, GL_RGBA8, GLR_GLOW_W, GLR_GLOW_H);
+    p_glCreateFramebuffers(1, &sGlowAFbo);
+    p_glNamedFramebufferTexture(sGlowAFbo, GL_COLOR_ATTACHMENT0, sGlowA, 0);
     return 1;
+}
+
+/* one post pass (kPostFs mode) into `fbo` (w x h) from `t0` / `t1` */
+static void post(int mode, GLuint fbo, int w, int h, GLuint t0, GLuint t1) {
+    p_glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    p_glViewport(0, 0, w, h);
+    p_glProgramUniform1i(sPostProg, sPostModeLoc, mode);
+    p_glBindTextureUnit(0, t0);
+    p_glBindTextureUnit(1, t1);
+    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 /* the software GS frame as a texture (re-created when its size changes) */
@@ -546,7 +680,12 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     static const float kBlack[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     static const float kFar = 1.0f;
     const GlrFrame *f = &sFrames[sBuilding ^ 1];
-    int i;
+    int i, depthDirty = 1;   /* the scene's depth changed since the glow buffer's copy */
+
+    if (sGlowClear) {
+        p_glClearNamedFramebufferfv(sGlowFbo, GL_COLOR, 0, kBlack);
+        sGlowClear = 0;
+    }
 
     p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
     p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
@@ -568,6 +707,21 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
 
         if (n++ % 60 == 0) {
             fprintf(stderr, "glr: %d draws, %d vertices\n", f->nd, f->nv);
+            if (f->glow) {   /* the glow buffer's brightest channel (before this frame's sprites) */
+                static uint8_t px[GLR_GLOW_W * GLR_GLOW_H * 4];
+                int k, m = 0, n;
+
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sGlowFbo);
+                p_glReadPixels(0, 0, GLR_GLOW_W, GLR_GLOW_H, GL_RGBA, GL_UNSIGNED_BYTE, px);
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+                for (k = 0; k < (int)sizeof(px); k++) {
+                    m = (k & 3) != 3 && px[k] > m ? px[k] : m;
+                }
+                for (k = 0, n = 0; k < f->nd; k++) {
+                    n += (f->d[k].prim & GLR_PRIM_GLOW) != 0;
+                }
+                fprintf(stderr, "glr: glow on, %d glow draws, buffer max %d, bloom %08X%s\n", n, m, f->bloom, f->bloomSub ? " sub" : "");
+            }
             if (f->nd > 0) {
                 const float *m = f->d[0].mvp;
                 const GlrVertex *v = &f->v[f->d[0].first];
@@ -636,11 +790,64 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
             p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+            if (d->prim & GLR_PRIM_GLOW) {
+                /* again into the glow buffer, against the scene's depth at its size (the game
+                 * copies its Z buffer down to 128 x 112 for these) */
+                if (depthDirty) {
+                    p_glBlitNamedFramebuffer(sFbo, sGlowFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_GLOW_W,
+                                             GLR_GLOW_H, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+                    depthDirty = 0;
+                }
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sGlowFbo);
+                p_glViewport(0, 0, GLR_GLOW_W, GLR_GLOW_H);
+                p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+                p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
+            } else if (!(d->prim & GLR_PRIM_NOZW)) {
+                depthDirty = 1;
+            }
         }
         p_glDisable(GL_BLEND);
         p_glDepthMask(GL_TRUE);
         p_glDisable(GL_DEPTH_TEST);
     }
+
+    p_glDisable(GL_DEPTH_TEST);
+    p_glDisable(GL_BLEND);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+
+    /* the screen bloom (func_002699D0): H blurred, into the glow buffer and over the screen */
+    if (f->bloom) {
+        post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
+        post(3, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);
+        post(4, sHalfFbo[2], GLR_HALF_W, GLR_HALF_H, sHalf[0], sHalf[1]);
+        post(5, sGlowAFbo, GLR_GLOW_W, GLR_GLOW_H, sGlowB, sHalf[2]);
+        p_glBlitNamedFramebuffer(sGlowAFbo, sGlowFbo, 0, 0, GLR_GLOW_W, GLR_GLOW_H, 0, 0, GLR_GLOW_W, GLR_GLOW_H,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glProgramUniform4f(sPostProg, sPostColorLoc, (float)(f->bloom & 0xFF), (float)((f->bloom >> 8) & 0xFF),
+                             (float)((f->bloom >> 16) & 0xFF), 0.0f);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)(f->bloom >> 25));
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_ONE, GL_ONE);
+        p_glBlendEquation(f->bloomSub ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+        post(6, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[2], 0);
+        p_glBlendEquation(GL_FUNC_ADD);
+        p_glDisable(GL_BLEND);
+    }
+
+    /* the glow (renderer +0x58): B fades through A, then is added over the screen */
+    if (f->glow) {
+        post(0, sGlowAFbo, GLR_GLOW_W, GLR_GLOW_H, sGlowB, 0);
+        p_glBlitNamedFramebuffer(sGlowAFbo, sGlowFbo, 0, 0, GLR_GLOW_W, GLR_GLOW_H, 0, 0, GLR_GLOW_W, GLR_GLOW_H,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glEnable(GL_BLEND);
+        p_glBlendFunc(GL_ONE, GL_ONE);
+        post(1, sFbo, GLR_WIDTH, GLR_HEIGHT, sGlowB, 0);
+        p_glDisable(GL_BLEND);
+    }
+    p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
 
     /* the overlay (screen fades) */
     if (f->overlay >> 24) {

@@ -980,6 +980,13 @@ s32 func_001BA090(u8 *r) {
         return 0;
     }
     AT(r, 0x304BB6, u8) = 1;
+#ifdef HG_NATIVE
+    {
+        extern void glr_glow_clear(void);   /* native/platform/glr.c */
+
+        glr_glow_clear();
+    }
+#endif
     p[0] = DMA_TAG(DMA_CNT, 15, 0);
     ((u32 *)p)[2] = VIF_NOP;
     ((u32 *)p)[3] = VIF_DIRECT(15);
@@ -992,6 +999,25 @@ s32 func_001BA090(u8 *r) {
     return 1;
 }
 
+
+#ifdef HG_NATIVE
+/* +0x58 the glow, once a frame (not after +0x5C's clear; layer 0x29): the 128 x 112 work
+ * buffer (page 0x1F0, which glow sprites - func_002E3500 - also draw into) goes through the
+ * one at page 0x180 at half colour and is blended back 50 / 50, so fades to 3/4, then is
+ * stretched over the 512 x 448 frame and added at half strength. The buffer is not cleared
+ * between frames, so moving glows leave trails. On PC glr does the passes (the original's
+ * packet, 0x96 qwords from +0x10, isn't made: 0 when there was no room for it) */
+s32 func_001BA260(u8 *r) {
+    extern void glr_glow(void);   /* native/platform/glr.c */
+
+    if (AT(r, 0x304BB6, u8) != 0) {
+        return 1;
+    }
+    AT(r, 0x304BB6, u8) = 1;
+    glr_glow();
+    return 1;
+}
+#endif
 
 /* +0x20 the packet for vertex data `key` this frame: open addressing over 2048 slots
  * (+0x300A00, {key, packet}); found: *built = 0 and its packet; new: the slot takes the arena 2
