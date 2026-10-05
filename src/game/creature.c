@@ -499,3 +499,98 @@ void func_002DF5B0(Character *c) {
         }
     }
 }
+
+/* per frame: how far Fiona is (+0x24, on the floor plane) when in the room being played. Out
+ * (+0x82): its rest runs down; done and still elsewhere, it comes back (+0x2E). Else it comes
+ * for her (+0x2E) once she is in reach (her triangle seen, within +0x4) - kind 0x24 after 61
+ * frames (+0x9D) - or right away with no reach */
+void func_002E0520(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    s32 room = c->a.room;
+    u8 come;
+
+    if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        f32 d[4] __attribute__((aligned(16)));
+
+        sceVu0SubVector(d, c->a.pos, gCharPlayer->a.pos);
+        AT(k, 0x24, f32) = __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+    }
+    if (AT(k, 0x82, u8) != 0) {
+        if (AT(k, 0x80, s16) > 0) {
+            AT(k, 0x80, s16) -= 1;
+        }
+        if (AT(k, 0x80, s16) <= 0) {
+            AT(k, 0x80, s16) = 0;
+            room = c->a.room;
+            if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+                AT(k, 0x2E, u8) = 1;
+            }
+        }
+        return;
+    }
+    if (AT(c, 0x1571, u8) == 0x24) {
+        AT(k, 0x9D, u8) += 1;
+        come = AT(k, 0x9D, u8) >= 61;
+    } else {
+        u32 t = gCharPlayer->a.navTri;
+
+        come = func_00124480(&c->a, gCharPlayer->a.pos, NAV_NONE) == t && AT(k, 0x24, f32) <= (f32)AT(k, 0x4, s16);
+    }
+    if (come == 1) {
+        AT(k, 0x2E, u8) = 1;
+    }
+    if (AT(k, 0x4, s16) == 0) {
+        AT(k, 0x2E, u8) = 1;
+    }
+}
+
+/* in play, a bobbing motion: height offset +0x14 (kept within -10..5) moved by +0x18, itself
+ * by +0x1C, which turns over every +0x32 frames (+0x28); now and then (1 in 32) a short burst
+ * (+0x34: 5-frame turns at speed 0.08 for 10 frames, then back) */
+void func_002DEFA0(Character *c) {
+    u8 *k = CR(c);
+
+    if (c->a.disabled) {
+        return;
+    }
+    AT(k, 0x33, u8) = VCALL(D_0044E550, 0x14, s32 (*)(VObject *))(D_0044E550) & 0x1F;
+    if (AT(k, 0x34, u8) == 0) {
+        if (AT(k, 0x33, u8) == 0) {
+            AT(k, 0x34, u8) = 1;
+            AT(k, 0x38, f32) = AT(k, 0x18, f32);
+            AT(k, 0x3C, f32) = AT(k, 0x1C, f32);
+            AT(k, 0x36, s8) = AT(k, 0x28, s8);
+            AT(k, 0x35, s8) = 0;
+            AT(k, 0x28, s8) = 0;
+            if (AT(k, 0x1C, f32) < 0.0f) {
+                AT(k, 0x1C, f32) = -0x1.47ae14p-4f /* -0.08 */;
+            }
+            if (!(AT(k, 0x1C, f32) <= 0.0f)) {
+                AT(k, 0x1C, f32) = 0x1.47ae14p-4f /* 0.08 */;
+            }
+            AT(k, 0x32, u8) = 5;
+        }
+    } else if (AT(k, 0x35, s8)++ == AT(k, 0x32, u8) * 2) {
+        AT(k, 0x34, u8) = 0;
+        AT(k, 0x18, f32) = AT(k, 0x38, f32);
+        AT(k, 0x1C, f32) = AT(k, 0x3C, f32);
+        AT(k, 0x28, s8) = AT(k, 0x36, s8);
+        AT(k, 0x35, s8) = 0;
+        AT(k, 0x32, u8) = 20;
+    }
+    if (AT(k, 0x28, s8) % AT(k, 0x32, u8) == 0) {
+        AT(k, 0x1C, f32) = -AT(k, 0x1C, f32);
+        AT(k, 0x28, s8) = 0;
+    }
+    AT(k, 0x28, s8) += 1;
+    if (!(AT(k, 0x14, f32) < 5.0f)) {
+        AT(k, 0x14, f32) = 5.0f;
+    }
+    if (AT(k, 0x14, f32) <= -10.0f) {
+        AT(k, 0x14, f32) = -10.0f;
+    }
+    AT(k, 0x40, f32) += AT(k, 0x1C, f32);
+    AT(k, 0x14, f32) += AT(k, 0x18, f32);
+    AT(k, 0x18, f32) += AT(k, 0x1C, f32);
+}
