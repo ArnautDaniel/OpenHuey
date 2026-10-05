@@ -968,13 +968,57 @@ extern void func_00146130(Hewie *h);
 extern void func_0013A650(Hewie *h);
 extern void func_00145080(Hewie *h);
 
+/* character c active, not down, in his room (in the room being played only on the mesh) */
+static s32 in_his_room(Hewie *h, Character *c) {
+    if (c == NULL || c->a.active != 1 || c->a.unkC4 == 2) {
+        return 0;
+    }
+    return h->c.a.room == c->a.room &&
+           (h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) || c->a.navTri != (u32)-1);
+}
+
+/* tell progress how close Fiona is (+0x7B9: 1 within 20, 2 within 50, 3 further) */
+static void report_fiona_near(Hewie *h) {
+    if (in_his_room(h, gCharPlayer)) {
+        f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+
+        if (d <= 20.0f) {
+            *((u8 *)gProgress + 0x7B9) = 1;
+        } else if (d <= 50.0f) {
+            *((u8 *)gProgress + 0x7B9) = 2;
+        } else {
+            *((u8 *)gProgress + 0x7B9) = 3;
+        }
+    }
+}
+
+/* heading turned by the animation, orientation rebuilt */
+static void turn_by_anim(Hewie *h) {
+    f32 yaw = func_002E2D00(h->c.a.angle[1] + func_001F6140(h->c.motion, 0.0f));
+
+    h->c.a.angle[1] = yaw;
+    sceVu0UnitMatrix(h->c.a.rot);
+    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
+}
+
+/* move by the animation's root motion (no rise, forward scaled by the motion's speed factor) */
+static void root_motion(Hewie *h) {
+    sceVu0FVECTOR root;
+    f32 k;
+
+    func_001F6370(h->c.motion, root, 0.0f);
+    k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
+    *(s32 *)&root[1] = 0;
+    root[2] = root[2] * k;
+    sceVu0ApplyMatrix(root, h->c.a.rot, root);
+    func_001247E0(&h->c.a, root);
+}
+
 /* vtable +0x44: per-frame update - frame counter (up to 3000), surroundings, how close Fiona
  * is (gProgress +0x7B9: 1 within 20, 2 within 50, 3 further), requests, behaviour, turning and
  * root motion from the animation, then his sub-systems. */
 void func_00167760(Hewie *h) {
     Progress *p;
-    f32 yaw;
-    u8 ok;
 
     h->c.a.navMask = h->c.a.unk2B ? 0 : HEWIE_NAV_MASK;
     h->c.pathReq->mask = h->c.a.navMask;
@@ -984,25 +1028,7 @@ void func_00167760(Hewie *h) {
     }
     func_00143840(h);
     if (h->c.a.unkC4 != 2) {
-        ok = (gCharPlayer != NULL && gCharPlayer->a.active == 1) ? 1 : 0;
-        if (ok == 1 && gCharPlayer->a.unkC4 != 2 && h->c.a.room == gCharPlayer->a.room) {
-            s32 room = h->c.a.room;
-
-            ok = (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) || gCharPlayer->a.navTri != NAV_NONE) ? 1 : 0;
-        } else {
-            ok = 0;
-        }
-        if (ok == 1) {
-            f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
-
-            if (d <= 20.0f) {
-                *((u8 *)gProgress + 0x7B9) = 1;
-            } else if (d <= 50.0f) {
-                *((u8 *)gProgress + 0x7B9) = 2;
-            } else {
-                *((u8 *)gProgress + 0x7B9) = 3;
-            }
-        }
+        report_fiona_near(h);
     }
     VCALL(h, 0x88, void (*)(Hewie *))(h);
     p = gProgress;
@@ -1012,20 +1038,9 @@ void func_00167760(Hewie *h) {
     HW(h, 0xF3558, u8) = 0;
     HW(h, 0xF3582, u8) = 1;
     ptmf_scall(h, HEWIE_STATE(h));
-    yaw = func_002E2D00(h->c.a.angle[1] + func_001F6140(h->c.motion, 0.0f));
-    h->c.a.angle[1] = yaw;
-    sceVu0UnitMatrix(h->c.a.rot);
-    sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
+    turn_by_anim(h);
     if (!h->c.a.disabled && !HW(h, 0xF3558, u8)) {
-        sceVu0FVECTOR root;
-        f32 k;
-
-        func_001F6370(h->c.motion, root, 0.0f);
-        k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
-        *(s32 *)&root[1] = 0;
-        root[2] = root[2] * k;
-        sceVu0ApplyMatrix(root, h->c.a.rot, root);
-        func_001247E0(&h->c.a, root);
+        root_motion(h);
     }
     if ((func_00177870(p, SLOT_U8(h)) & 0xFF) == 1) {
         func_001777D0(p, SLOT_U8(h));
@@ -1854,7 +1869,7 @@ void func_00144940(Hewie *h, s32 door, f32 *out) {
 extern s32 func_00125D80(Character *c);
 
 /* 1 unless he is with Fiona's party in the room being played and cannot reach her. */
-s32 func_001364F0(Hewie *h) {
+static inline s32 fiona_reachable(Hewie *h) {
     Progress *p;
     s32 room;
 
@@ -1877,6 +1892,10 @@ s32 func_001364F0(Hewie *h) {
         return 1;
     }
     return ((func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) ? 1 : 0;
+}
+
+s32 func_001364F0(Hewie *h) {
+    return fiona_reachable(h);
 }
 
 /* A random idle action: 1 (50%), 4 (15%), 5 (35%). */
@@ -3262,16 +3281,6 @@ s32 func_00137020(Hewie *h) {
 /* ---- whom to go for ---- */
 
 extern Character **D_0044F258;   /* the creatures (10 slots) */
-
-
-/* character c active, not down, in his room (in the room being played only on the mesh) */
-static s32 in_his_room(Hewie *h, Character *c) {
-    if (c == NULL || c->a.active != 1 || c->a.unkC4 == 2) {
-        return 0;
-    }
-    return h->c.a.room == c->a.room &&
-           (h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) || c->a.navTri != (u32)-1);
-}
 
 /* the one he goes for: the pursuer when it holds Fiona (her mode 4, sub 9) and he can reach
  * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
@@ -10201,5 +10210,735 @@ void func_00164DD0(Hewie *h) {
     }
     if (HW(h, 0xF35B0, s16) != 0) {
         HW(h, 0xF35B0, s16) -= 1;
+    }
+}
+
+extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
+
+/* can he get to exit `e` from where he is: the exit is on his side (or he is on both) and a path
+   to its spot (left in `at`) exists */
+static s32 exit_reachable(Hewie *h, VObject *rooms, s32 e, f32 *at) {
+    s32 side = HEWIE_SIDE(h);
+
+    if (side != VCALL(rooms, 0x50, s32 (*)(VObject *, s32, s32, s32))(rooms, h->c.a.room, e, 0) && side != 2) {
+        return 0;
+    }
+    return func_0013EE40(h, VCALL(rooms, 0x34, u32 (*)(VObject *, s32, f32 *))(rooms, e, at), at, 1, 1) == 0;
+}
+
+/* Fiona left his room through exit `exit` (0xFF: unknown). If he is in the room being played he
+   decides how to follow: through that exit, through another, or he can't and waits/whines. When
+   the scene is not interactive (+0x1FBEC1) he just takes the same exit. */
+void func_00166DF0(Hewie *h, s32 exit) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 door[4] __attribute__((aligned(16)));
+    f32 d0[4] __attribute__((aligned(16)));
+    f32 d1[4] __attribute__((aligned(16)));
+    VObject *rooms;
+    s32 act, i;
+    u32 e, x = exit & 0xFF;
+
+    if (((u8 *)gProgress)[0x1FBEC1] != 0) {
+        h->c.a.unk2B = 0;
+        if (HEWIE_ACTION(h) != 0x84) {
+            h->c.a.unk2D = 0;
+        }
+        h->c.door = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, h->c.a.room, exit);
+        HW(h, 0xF3710, u8) = 3;
+        return;
+    }
+    if (h->c.unkE0 == 1) {
+        VCALL(h, 0x90, void (*)(Hewie *))(h);
+    }
+    if (h->c.a.room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    if (h->c.hp == 0 &&
+        ((((u32 *)gProgress)[0x30 / 4] & 0x8000) != 0 || !(func_001235C0(&h->c.a, &h->c.a) & 0xFF))) {
+        h->c.hp = 1;
+        h->c.a.unkC4 = 1;
+    }
+    h->c.a.unk2B = 0;
+    h->c.a.navMask = 0x29020008;
+    if (HEWIE_ACTION(h) == 0x65) {
+        h->c.a.navTri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, s32, f32 *))(D_0044E568, HW(h, 0xF36B4, u8), h->c.a.pos);
+    }
+    if (HEWIE_ACTION(h) == 0x66) {
+        h->c.a.navTri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, s32, f32 *))(D_0044E568, HW(h, 0xF36B4, u8), h->c.a.pos);
+    }
+    for (i = 0; i < 13; i++) {
+        h->c.unk148C[i] = 0;
+    }
+    HW(h, 0xF3590, u8) = 0;
+    HW(h, 0xF3583, u8) = 1;
+    if (x != 0xFF && exit_reachable(h, D_0044E568, exit, at)) {
+        HW(h, 0xF3583, u8) = 0;
+        HW(h, 0xF3590, u8) = 1;
+    }
+    if (HW(h, 0xF3583, u8) == 1) {
+        rooms = D_0044E568;
+        for (e = 0; e < 8; e++) {
+            if (e != x &&
+                (VCALL(rooms, 0x74, u32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, e) & 0xFF) == 1 &&
+                exit_reachable(h, rooms, e, at)) {
+                HW(h, 0xF3583, u8) = 0;
+                break;
+            }
+        }
+    }
+
+    act = HEWIE_ACTION(h);
+    if (act == 0x52 && h->c.hp == 0) {
+        return;
+    }
+    if (act == 0x76) {
+        hewie_want(h, 0x77, 0);
+        return;
+    }
+    if (HW(h, 0xF3583, u8) == 1) {
+        hewie_want(h, 0x36, 0);
+        return;
+    }
+    if (HW(h, 0xF3590, u8) == 1) {
+        if ((func_00123C60(&h->c.a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+            HW(h, 0xF36B4, s32) = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, h->c.a.room, exit) & 0xFF;
+            HEWIE_ACTION(h) = 0x88;
+            return;
+        }
+        /* nearer the door than the exit spot: skip the waypoints short of it */
+        rooms = D_0044E568;
+        h->c.unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, exit);
+        VCALL(rooms, 0x30, u32 (*)(VObject *, s32, f32 *))(rooms, exit, door);
+        sceVu0SubVector(d0, h->c.a.pos, door);
+        sceVu0SubVector(d1, at, door);
+        if (sceVu0InnerProduct(d0, d0) <= sceVu0InnerProduct(d1, d1) &&
+            func_00124480(&h->c.a, door, NAV_NONE) != NAV_NONE) {
+            h->c.unk124 = h->c.unk128;
+        }
+    }
+
+    act = HEWIE_ACTION(h);
+    if (HW(h, 0xF3581, u8) == 1 &&
+        (act == 0x75 || act == 0x22 || act == 0x21 || act == 0x20 || act == 0x1F)) {
+        HW(h, 0xF36B4, s32) = gCharPursuer->unk153C;
+        HW(h, 0xF36B8, s32) = HEWIE_ACTION(h);
+        HW(h, 0xF36BC, s32) = h->c.unk104[0];
+        hewie_want(h, 0x38, 0);
+    } else if ((u32)(HEWIE_ACTION(h) - 2) < 2) {
+        HW(h, 0xF3560, s32) = HW(h, 0xF355C, s32) + 150;
+        HW(h, 0xF36B8, s32) = func_001669A0(h);
+        hewie_want(h, 0x2F, 0);
+    } else {
+        for (i = 0; i < 13; i++) {
+            h->c.unk148C[i] = 0;
+        }
+        hewie_want(h, HW(h, 0xF3598, s32) == 0 ? 0x2C : 0, 0);
+    }
+}
+
+
+void func_00161860(Hewie *h);
+extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);
+
+/* Per-frame update in the normal game (frame counter in func_00164DD0): how close Fiona is, his
+ * surroundings, then - unless he is out of play - joint actions, the director (+0x38 busy:
+ * func_00161500), his own decisions or, in a scene, the doors he is told to take; behaviour, turn
+ * and root motion. +0x2A: Fiona can see him. Out of play only a pending state change runs. */
+void func_00167BC0(Hewie *h) {
+    Progress *p;
+    u32 i;
+
+    func_00164DD0(h);
+    func_00143840(h);
+    if (h->c.a.unkC4 != 2) {
+        report_fiona_near(h);
+    }
+    func_0015FE30(h);
+    HW(h, 0xF3581, u8) = 0;
+    if (h->c.a.disabled) {
+        if (func_00143D20(h) != 0) {
+            HW(h, 0xF3578, s32) = -1;
+            HW(h, 0xF3574, s32) = -1;
+            if (h->c.state[0] == 0xD) {
+                func_00137020(h);
+                h->c.state[0] = 0;
+            }
+            func_00161070(h);
+            func_0013BA50(h);
+            ptmf_scall(h, &h->c.a.state);
+            ptmf_scall(h, HEWIE_STATE(h));
+        }
+        VCALL(h, 0x40, void (*)(Hewie *))(h);
+    } else {
+        VCALL(h, 0x84, void (*)(Hewie *))(h);
+        if (h->c.unkE0 == 1) {
+            turn_by_anim(h);
+            root_motion(h);
+            func_00146130(h);
+            func_0013FDE0(h);
+            VCALL(h, 0x40, void (*)(Hewie *))(h);
+            func_0013A650(h);
+            func_00145080(h);
+            return;
+        }
+        h->c.a.navMask = h->c.a.unk2B ? 8 : HEWIE_NAV_MASK;
+        h->c.pathReq->mask = h->c.a.navMask;
+        HW(h, 0xF3558, u8) = 0;
+        HW(h, 0xF3582, u8) = 1;
+        p = gProgress;
+        if (func_00177870(p, SLOT_U8(h)) & 0xFF) {
+            func_00164830(h);
+        } else {
+            if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+                func_00161500(h);
+            } else if (*((u8 *)p + 0x1FBEC1) == 0) {
+                func_00161860(h);
+            } else {
+                VObject *doors;
+
+                if (h->c.a.unkC4 == 2 && h->c.hp == 0 && HEWIE_ACTION(h) == 0x83) {
+                    func_00130AF0(h, 0x52, 0);
+                }
+                doors = D_0044E558;
+                for (i = 0; i < 8; i++) {
+                    if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, i) & 0xFF) == 1 &&
+                        !(VCALL(doors, 0x30, u32 (*)(VObject *, u32))(doors, i) & 0xFF) &&
+                        (func_00177BF0(p, i, SLOT_U8(h)) & 0xFF & 8)) {
+                        HW(h, 0xF36B4, s32) = i;
+                        func_00130AF0(h, 0x86, 0);
+                    }
+                }
+            }
+            if (*((u8 *)p + 0x1FBEC1) == 1) {
+                HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, D_0047E3B0);
+            }
+            ptmf_scall(h, &h->c.a.state);
+            ptmf_scall(h, HEWIE_STATE(h));
+            turn_by_anim(h);
+            if (!h->c.a.disabled && !HW(h, 0xF3558, u8)) {
+                h->c.a.navMask = h->c.a.unk2B ? 8 : HEWIE_NAV_MASK;
+                root_motion(h);
+            }
+        }
+        if (in_his_room(h, gCharPlayer) &&
+            (gCharPlayer->unkE0 == 1 || (func_001241F0(&h->c.a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) == 1)) {
+            h->c.a.unk2A = 1;
+        } else {
+            h->c.a.unk2A = 0;
+        }
+        func_00146130(h);
+        func_0013FDE0(h);
+        func_0013A650(h);
+        VCALL(h, 0x40, void (*)(Hewie *))(h);
+        func_00145080(h);
+    }
+    HW(h, 0xF3620, u8) = 0;
+    func_00144A60(h);
+}
+
+extern s32 func_0013AC20(Hewie *h, s32 *hit);
+
+/* vtable: pending state (+0x14E8) and the command Fiona gave (+0xF4, 0 none). State 7 holds
+ * everything; 4 (stuck) and 13 end with +0x90 (back to normal) once he is clear again, 5 calls +0x8C
+ * and drops what he does. Then the command becomes the action that carries it out. */
+void func_001635B0(Hewie *h) {
+    s32 act;
+
+    switch (h->c.state[0]) {
+    case 7:
+        return;
+    case 0:
+        break;
+    case 4:
+        if (!(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & HEWIE_NAV_MASK) && func_0013AC20(h, h->c.state) == 0) {
+            VCALL(h, 0x90, void (*)(Hewie *))(h);
+            h->c.state[0] = 0;
+            return;
+        }
+        h->c.state[0] = 0;
+        break;
+    case 13:
+        if ((fiona_reachable(h) & 0xFF) == 1) {
+            if ((func_00137020(h) & 0xFF) == 1) {
+                VCALL(h, 0x90, void (*)(Hewie *))(h);
+            }
+            h->c.state[0] = 0;
+            return;
+        }
+        h->c.state[0] = 0;
+        break;
+    case 5:
+        VCALL(h, 0x8C, void (*)(Hewie *))(h);
+        hewie_want(h, 0, 0);
+        /* fall through */
+    default:
+        h->c.state[0] = 0;
+        break;
+    }
+
+    switch ((u32)h->c.unkF4) {
+    case 1:
+        VCALL(h, 0x90, void (*)(Hewie *))(h);
+        /* fall through */
+    case 2:
+    case 3:
+    case 4:
+        act = 0;
+        break;
+    case 5:  act = 0x3F; break;
+    case 6:  act = 0x41; break;
+    case 7:  act = 0x3B; break;
+    case 8:  act = 0x3C; break;
+    case 9:  act = 0x3D; break;
+    case 10: act = 0x40; break;
+    case 11: act = 0x42; break;
+    case 14: act = 0x43; break;
+    case 15: act = 0x44; break;
+    case 16: act = 0x3E; break;
+    case 18: act = 0x45; break;
+    case 19: act = 0x7F; break;
+    case 20: act = 0x46; break;
+    case 21: act = 0x47; break;
+    case 12:
+        HW(h, 0xF35E0, u8) = 0;
+        HW(h, 0xF3610, s32) = h->c.unk100;
+        h->c.unkE1 = 1;
+        /* fall through */
+    default:
+        act = -1;
+        break;
+    case 13:
+        HW(h, 0xF35E0, u8) = 1;
+        sceVu0CopyVector((f32 *)((u8 *)h + 0xF35F0), h->c.unk110);
+        act = -1;
+        break;
+    }
+    if (act >= 0) {
+        hewie_want(h, act, 0);
+    }
+    h->c.unkF4 = 0;
+}
+
+extern const PTMF D_003B1708;   /* sniffing about behaviours */
+extern const PTMF D_003B1718;
+extern const PTMF D_003B1728;
+
+/* a sniff-about animation with its behaviour (+0xF3604 4 = sniffing, +0xF3608 how long) */
+static void sniff(Hewie *h, s32 anim, const PTMF *st) {
+    if (HW(h, 0xF3604, s32) != 4) {
+        HW(h, 0xF3604, s32) = 4;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    func_002DDED0(h->c.motion, anim, -1);
+    *HEWIE_STATE(h) = *st;
+}
+
+/* vtable: pending state (+0x14E8, detail +0x14EC) when he is in the room being played - 12 is a
+ * call from Fiona (come, praise/scold, sniff about, ...), 11 a scene request, 8 and 13 other
+ * requests; 4 stuck, 5 reset, 7 hold. With nothing pending and a scripted move waiting
+ * (+0xF356C) he takes action 0x85. Elsewhere any pending state is dropped. */
+void func_00163DC0(Hewie *h) {
+    Progress *p = gProgress;
+    s32 room;
+    s32 v;
+
+    HW(h, 0xF3578, s32) = -1;
+    room = h->c.a.room;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        if (h->c.state[0] != 0) {
+            h->c.state[0] = 0;
+        }
+        return;
+    }
+    switch (h->c.state[0]) {
+    case 7:
+        return;
+    case 5:
+        VCALL(h, 0x8C, void (*)(Hewie *))(h);
+        h->c.unk124 = h->c.unk128;
+        hewie_want(h, 0, 0);
+        h->c.state[0] = 0;
+        return;
+    case 4:
+        if (func_0013AC20(h, h->c.state) == 0) {
+            h->c.state[0] = 0;
+            return;
+        }
+        h->c.state[0] = 0;
+        break;
+    }
+
+    if (h->c.state[0] == 12 && (u32)h->c.state[1] < 6) {
+        switch (h->c.state[1]) {
+        case 0:
+        case 2:
+            HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
+            /* fall through */
+        case 4:
+            if (HEWIE_ACTION(h) == 0x7D) {
+                HW(h, 0xF3598, s32) = 0;
+                obey_time(h);
+                HW(h, 0xF3586, u8) = 0;
+                HW(h, 0xF359C, s32) += 180;
+            }
+            hewie_want(h, 0x48, 0);
+            break;
+        case 1:
+            v = -7;
+            if ((func_001391E0(h, 0, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
+                (u32)HW(h, 0xF35C0, s32) <= 2 && (HW(h, 0xF3688, s16) != 0 || RNG01() < 0.5f)) {
+                v = -6;
+            }
+            HW(h, 0xF36B4, s32) = v;
+            hewie_want(h, 0x49, 0);
+            HW(h, 0xF358C, s32) = 0;
+            break;
+        case 3:
+            v = -9;
+            if ((func_001391E0(h, 1, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
+                (u32)HW(h, 0xF35C0, s32) <= 1 && h->c.hp >= 80 && (HW(h, 0xF3688, s16) != 0 || RNG01() < 0.5f)) {
+                v = -8;
+            }
+            HW(h, 0xF36B4, s32) = v;
+            hewie_want(h, 0x4A, 0);
+            HW(h, 0xF358C, s32) = 0;
+            break;
+        case 5:
+            v = -1;
+            if (HW(h, 0xF358C, s32) != 1 && (h->c.unkE0 == 1 || (HW(h, 0xF356C, u32) & 0x80000008) == 8)) {
+                if ((HW(h, 0xF3598, s32) == 0 || HEWIE_ACTION(h) == 0x7D) && HW(h, 0xF35C0, s32) != 3) {
+                    v = 0;
+                }
+                HW(h, 0xF358C, s32) = 1;
+            }
+            if (v == 0) {
+                hewie_want(h, 0x4B, 0);
+            } else {
+                switch ((s32)(4.0f * RNG01())) {
+                case 0:
+                    sniff(h, 0x1C06, &D_003B1708);
+                    break;
+                case 1:
+                    sniff(h, 0x1C01, &D_003B1718);
+                    break;
+                case 2:
+                    sniff(h, 0x1C00, &D_003B1728);
+                    break;
+                case 3:
+                    hewie_want(h, 0x55, 0);
+                    break;
+                }
+            }
+            HW(h, 0xF358C, s32) = 0;
+            break;
+        }
+        h->c.state[0] = 0;
+    }
+    if (h->c.state[0] == 11) {
+        switch (h->c.state[1]) {
+        case 0:
+            hewie_want(h, 0x79, 0);
+            break;
+        case 1:
+            hewie_want(h, 0x7A, 0);
+            break;
+        case 2:
+            hewie_want(h, 0x84, 0);
+            break;
+        }
+        h->c.state[0] = 0;
+    }
+    if (h->c.state[0] == 8) {
+        hewie_want(h, 0x4E, 0);
+        h->c.state[0] = 0;
+    }
+    if (h->c.state[0] == 13) {
+        func_00137020(h);
+        HW(h, 0xF358C, s32) = 0;
+        h->c.state[0] = 0;
+    }
+    if (h->c.state[0] != 0) {
+        h->c.state[0] = 0;
+    }
+    if (HW(h, 0xF3798, s32) == -1) {
+        return;
+    }
+    if (h->c.unkE0 == 0 && h->c.moveMode == 0 && HW(h, 0xF356C, u32) != 0 && !(HW(h, 0xF356C, u32) & 0x80000000) &&
+        !(func_00177770(p, 1) & 0xFF) && h->c.state[0] == 0) {
+        func_00130AF0(h, 0x85, 0);
+    }
+}
+
+extern const s8 D_003B11E0[];   /* by trust: chance (percent) he goes for whoever holds Fiona */
+
+/* go to Fiona (0x62) if he can reach her, else wait for her (func_00138AD0) */
+static void to_fiona(Hewie *h) {
+    if ((func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) {
+        hewie_want(h, 0x62, 0);
+    } else {
+        func_00138AD0(h, 0, -1);
+    }
+}
+
+/* answer the pursuer (0x4F) if he can reach it, else forget the call (+0xF36B0 0) */
+static void to_pursuer(Hewie *h) {
+    if ((func_0013C1E0(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) & 0xFF) == 1) {
+        hewie_want(h, 0x4F, 0);
+    } else {
+        HW(h, 0xF36B0, s32) = 0;
+    }
+}
+
+/* told to stay (+0xF35C0 3): a call (+0xF36B0, 0xFF none; 0 from Fiona) or her whistle
+ * (+0xF35C4) brings him; else whichever of Fiona and the pursuer is here (the nearer when
+ * both). 0: nothing for him to do. */
+static s32 staying(Hewie *h) {
+    HW(h, 0xF35B0, s16) = 0;
+    if (HW(h, 0xF36B0, s32) != 0xFF) {
+        if (HW(h, 0xF36B0, s32) == 0 && in_his_room(h, gCharPlayer)) {
+            to_fiona(h);
+        } else {
+            hewie_want(h, 0x4F, 0);
+        }
+        return 1;
+    }
+    if (HW(h, 0xF35C4, s32) > 0 && in_his_room(h, gCharPlayer)) {
+        to_fiona(h);
+        return 1;
+    }
+    if (in_his_room(h, gCharPlayer) && in_his_room(h, gCharPursuer)) {
+        f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+
+        if (d < func_00124490(&h->c.a, gCharPursuer->a.pos)) {
+            to_fiona(h);
+        } else {
+            to_pursuer(h);
+        }
+        return 1;
+    }
+    if (in_his_room(h, gCharPlayer)) {
+        to_fiona(h);
+        return 1;
+    }
+    if (in_his_room(h, gCharPursuer)) {
+        to_pursuer(h);
+        return 1;
+    }
+    return 0;
+}
+
+/* how fast c moves (length of its velocity +0xB0) */
+static f32 speed_of(Character *c) {
+    sceVu0FVECTOR v;
+
+    sceVu0CopyVector(v, c->a.unkB0);
+    return __builtin_sqrtf(sceVu0InnerProduct(v, v));
+}
+
+/* c within 10 and facing away from him by more than 90 degrees: he can bite it from behind */
+static s32 behind(Hewie *h, Character *c) {
+    return func_00124490(&h->c.a, c->a.pos) < 10.0f &&
+           !(hwrap_abs(h->c.a.angle[1] - c->a.angle[1]) <= 0x1.921fb6p+0f /* pi/2 */);
+}
+
+/* His own decisions when nothing else drives him: down (0x52), hurt (+0xF35B4: 0x76), dragged
+ * along (func_00144B30), Fiona panicking or held (answers by trust), told to stay, scared
+ * (0x14), a scene request (+0xF3584: 0x79), a creature he follows (+0xF368C: 0x78), standing on
+ * a slope (0x6E), the pursuer or a creature in reach from behind (0x7C, with +0xF356C 0x100),
+ * a hole under his nose (0x6A) or Fiona right next to him (0x67, with 0x20), praise (0x7E). */
+void func_00161860(Hewie *h) {
+    Progress *p;
+    Character *t;
+    s32 act, g, i;
+    u8 held, go;
+
+    if (h->c.moveMode != 0) {
+        HW(h, 0xF3584, u8) = 0;
+        return;
+    }
+    if (h->c.a.unkC4 == 2) {
+        act = HEWIE_ACTION(h);
+        if (act != 0x52 && act != 0x74) {
+            hewie_want(h, 0x52, 0);
+        }
+        return;
+    }
+    if (HW(h, 0xF35B4, s32) > 0 && HEWIE_ACTION(h) != 0x76) {
+        hewie_want(h, 0x76, 0);
+        return;
+    }
+    switch (func_00144B30(h)) {
+    case 0:
+        if (HEWIE_ACTION(h) != 0x65) {
+            hewie_want(h, 0x65, 0);
+        }
+        return;
+    case 1:
+        act = HEWIE_ACTION(h);
+        if (act != 0x66 && act != 0x65) {
+            hewie_want(h, 0x66, 0);
+        }
+        return;
+    }
+    if (HW(h, 0xF356C, u32) == 0 || (HW(h, 0xF356C, u32) & 0x80000000)) {
+        return;
+    }
+
+    /* Fiona panicking (progress +0x7B8 5, then 4): once each, by chance he answers */
+    if (in_his_room(h, gCharPlayer)) {
+        if (h->c.moveMode == 0 && !(HW(h, 0xF3589, u8) & 2)) {
+            go = 0;
+            if (AT(gProgress, 0x7B8, u8) == 5) {
+                HW(h, 0xF3589, u8) |= 2;
+                if (HW(h, 0xF35C0, s32) != 3) {
+                    go = by_chance(h, D_003B1230);
+                }
+            } else if (!(HW(h, 0xF3589, u8) & 1) && AT(gProgress, 0x7B8, u8) == 4) {
+                HW(h, 0xF3589, u8) |= 1;
+                if (HW(h, 0xF35C0, s32) != 3) {
+                    go = by_chance(h, D_003B1228);
+                }
+            }
+            if (go == 1) {
+                hewie_want(h, 0x4F, 0);
+                return;
+            }
+        }
+        if (AT(gProgress, 0x7B8, u8) < 4) {
+            HW(h, 0xF3589, u8) = 0;
+        }
+    }
+    if (HW(h, 0xF35C0, s32) == 3 && staying(h)) {
+        return;
+    }
+
+    /* Fiona held (her mode 4, sub 9 / 0x12): newly so, by chance he goes for whoever holds her */
+    held = 0;
+    if (in_his_room(h, gCharPlayer)) {
+        if (gCharPlayer->moveMode == 4 && (gCharPlayer->moveSub == 9 || gCharPlayer->moveSub == 0x12)) {
+            held = 1;
+        }
+        if (HW(h, 0xF3580, u8) == 0 && held == 1 && HW(h, 0xF35C0, s32) != 3 && by_chance(h, D_003B11E0)) {
+            HW(h, 0xF3580, u8) = held;
+            if (gCharPlayer->unk100 == 2) {
+                hewie_want(h, 0x5A, 0);
+            } else {
+                HW(h, 0xF3544, Character *) = func_001379C0(h);
+                hewie_want(h, 0x6D, 0);
+            }
+            return;
+        }
+    }
+    p = gProgress;
+    HW(h, 0xF3580, u8) = held;
+    if ((func_00177620(p) & 0xFF) != 2 && HW(h, 0xF366C, u8) == 0 && HW(h, 0xF366D, u8) != 0 &&
+        HEWIE_ACTION(h) != 0x76) {
+        hewie_want(h, 0x14, 0);
+        return;
+    }
+    if (HW(h, 0xF3584, u8) == 1) {
+        HW(h, 0xF3584, u8) = 0;
+        if (HEWIE_ACTION(h) != 0x79) {
+            hewie_want(h, 0x79, 0);
+            return;
+        }
+    }
+
+    /* the creature he follows: lost once it stops, else after it while it is ahead (within 120
+       degrees) and he is on its triangle */
+    if (func_00177620(p) & 0xFF) {
+        HW(h, 0xF368C, Character *) = NULL;
+    } else {
+        t = HW(h, 0xF368C, Character *);
+        act = HEWIE_ACTION(h);
+        if (t != NULL && t->a.active == 1 && t->a.unk2A == 0 && act != 0x78 && act != 0x76 &&
+            HW(h, 0xF3570, s32) != 0x78) {
+            if (speed_of(t) <= 0.5f) {
+                HW(h, 0xF368C, Character *) = NULL;
+            } else {
+                f32 d = func_001244D0(&h->c.a, t->a.pos);
+
+                d -= func_002E2D00(h->c.a.angle[1] + *(f32 *)((u8 *)h->c.motion + 0x858));
+                if (hwrap_abs(d) < 0x1.0c1524p+1f /* 2pi/3 */) {
+                    u32 tri;
+
+                    t = HW(h, 0xF368C, Character *);
+                    tri = t->a.navTri;
+                    if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) == tri) {
+                        if (HEWIE_ACTION(h) == 0x7D) {
+                            HW(h, 0xF3598, s32) = 0;
+                            obey_time(h);
+                            HW(h, 0xF3586, u8) = 0;
+                        }
+                        hewie_want(h, 0x78, 0);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    /* settled on a slope (triangle flag 1) facing down it: lie down across (0x6E) */
+    g = func_001669A0(h);
+    if ((u32)g <= 3 && HEWIE_ACTION(h) != 0x6E && (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
+        sceVu0FVECTOR n, dir, fwd;
+
+        VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+        if (n[1] != 1.0f) {
+            *(s32 *)&n[1] = 0;
+            sceVu0Normalize(dir, n);
+            fwd[2] = 1.0f;
+            *(s32 *)&fwd[0] = 0;
+            *(s32 *)&fwd[1] = 0;
+            sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
+            if (!(sceVu0InnerProduct(fwd, dir) <= 0.5f)) {
+                hewie_want(h, 0x6E, 0);
+                return;
+            }
+        }
+    }
+
+    if ((HW(h, 0xF356C, u32) & 0x80000100) == 0x100 && in_his_room(h, gCharPursuer)) {
+        if (HEWIE_ACTION(h) != 0x7C && behind(h, gCharPursuer)) {
+            hewie_want(h, 0x7C, 0);
+            return;
+        }
+        for (i = 0; i < 10; i++) {
+            Character *c = D_0044F258[i];
+
+            if (in_his_room(h, c) && (VCALL(c, 0x3C, u32 (*)(Character *, u32))(c, i & 0xFF) & 0xFF) == 1 &&
+                behind(h, c)) {
+                hewie_want(h, 0x7C, 0);
+                return;
+            }
+        }
+    }
+
+    if ((HW(h, 0xF356C, u32) & 0x80000020) == 0x20 && (g == 10 || (u32)g <= 3)) {
+        if (HEWIE_ACTION(h) != 0x6A) {
+            sceVu0FVECTOR nose;
+
+            sceVu0CopyVector(nose, func_0017CE80(*(void **)((u8 *)h->c.motion + 0x810), 0x1F) + 12);
+            if (func_00124480(&h->c.a, nose, NAV_NONE) == NAV_NONE) {
+                hewie_want(h, 0x6A, 0);
+                return;
+            }
+        }
+        if (in_his_room(h, gCharPlayer) && HEWIE_ACTION(h) != 0x67 &&
+            func_00124490(&h->c.a, gCharPlayer->a.pos) < 5.0f) {
+            hewie_want(h, 0x67, 0);
+            return;
+        }
+    }
+
+    if (HW(h, 0xF3586, u8) == 1) {
+        HW(h, 0xF3586, u8) = 0;
+        if (in_his_room(h, gCharPlayer) && HW(h, 0xF3598, s32) == 1 &&
+            (HW(h, 0xF356C, u32) & 0x80000400) == 0x400) {
+            act = HEWIE_ACTION(h);
+            if (act != 0x7D && act != 0x7E) {
+                hewie_want(h, 0x7E, 0);
+            }
+        }
     }
 }

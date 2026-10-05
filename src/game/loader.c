@@ -508,27 +508,140 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     return id;
 }
 
-/* +0x14 cancel the requests of `group`: the one in progress is stopped (or dropped if it
- * hasn't started reading), the queued ones dropped */
-void func_0016B8E0(u8 *l, s32 group) {
-    LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
-    u8 i;
+extern void ADXF_Stop(void *f);
+extern void *D_0046A1E0[], *D_0046A220[];
 
-    if (q->group == group && (u32)q->state < 6) {
+/* the request in progress: stopped (with or without waiting) or, before it reads, dropped */
+static void LoadReq_Cancel(LoadReq *q, s32 wait) {
+    if ((u32)q->state < 6) {
         if ((u32)q->state < 3) {
             LoadReq_Clear(q);
         } else {
             q->state = 6;
-            ADXF_StopNw(q->file);
+            if (wait) {
+                ADXF_Stop(q->file);
+            } else {
+                ADXF_StopNw(q->file);
+            }
         }
     }
+}
+
+/* the queued requests (behind the one in progress) of `group` dropped */
+static void Loader_DropGroup(u8 *l, s32 group) {
+    u8 i;
+
     if (LOADER_RD(l) == LOADER_WR(l)) {
         return;
     }
     for (i = LOADER_RD(l) + 1; i != LOADER_WR(l); i++) {
-        q = LOADER_REQ(l, i);
+        LoadReq *q = LOADER_REQ(l, i);
+
         if (q->group == group) {
             LoadReq_Clear(q);
         }
     }
+}
+
+/* +0x14 cancel the requests of `group`: the one in progress is stopped (or dropped if it
+ * hasn't started reading), the queued ones dropped */
+void func_0016B8E0(u8 *l, s32 group) {
+    LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
+
+    if (q->group == group) {
+        LoadReq_Cancel(q, 0);
+    }
+    Loader_DropGroup(l, group);
+}
+
+/* +0x18 the same, waiting for the read in progress to stop */
+void func_0016B750(u8 *l, s32 group) {
+    LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
+
+    if (q->group == group) {
+        LoadReq_Cancel(q, 1);
+    }
+    Loader_DropGroup(l, group);
+}
+
+/* +0x1C cancel everything */
+void func_0016B600(u8 *l) {
+    u8 i;
+
+    LoadReq_Cancel(LOADER_REQ(l, LOADER_RD(l)), 0);
+    if (LOADER_RD(l) == LOADER_WR(l)) {
+        return;
+    }
+    for (i = LOADER_RD(l) + 1; i != LOADER_WR(l); i++) {
+        LoadReq_Clear(LOADER_REQ(l, i));
+    }
+}
+
+/* +0x10 cancel request `id` (+0x10 of the request; 0 none) */
+void func_0016BA70(u8 *l, s32 id) {
+    LoadReq *q;
+    u8 i;
+
+    if (id == 0) {
+        return;
+    }
+    q = LOADER_REQ(l, LOADER_RD(l));
+    if (q->unk10 == id) {
+        LoadReq_Cancel(q, 0);
+        return;
+    }
+    for (i = LOADER_RD(l); i != LOADER_WR(l); i++) {
+        q = LOADER_REQ(l, i);
+        if (q->unk10 == id) {
+            LoadReq_Clear(q);
+            return;
+        }
+    }
+}
+
+/* +0x20 the state of request `id`: ADXF's (2 while it isn't open yet), 3 (done) if it is no
+ * longer queued */
+s32 func_0016B550(u8 *l, s32 id) {
+    u8 i;
+
+    for (i = LOADER_RD(l); i != LOADER_WR(l); i++) {
+        LoadReq *q = LOADER_REQ(l, i);
+
+        if (q->unk10 == id) {
+            return q->file != NULL ? ADXF_GetStat(q->file) : 2;
+        }
+    }
+    return 3;
+}
+
+/* the loader base: destructor */
+static inline void LoaderBase_Destroy(VObject *l) {
+    *(void ***)l = D_0046A220;
+    if (l != NULL) {
+        gFileLoader = NULL;
+    }
+}
+
+void *func_0016C840(VObject *l, s32 flags) {
+    if (l != NULL) {
+        LoaderBase_Destroy(l);
+        if ((s16)flags > 0) {
+            func_00100490(l);
+        }
+    }
+    return l;
+}
+
+/* the loader: destructor */
+void *func_00169280(VObject *l, s32 flags) {
+    if (l != NULL) {
+        *(void ***)l = D_0046A1E0;
+        if (l != NULL) {
+            LoaderBase_Destroy(l);
+        }
+        if ((s16)flags > 0) {
+            func_00100490(l);
+        }
+    }
+    return l;
 }

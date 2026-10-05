@@ -5,6 +5,7 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "task.h"
 
 extern VObject *D_0044E568; /* the rooms (+0x10: the current room) */
 
@@ -93,7 +94,7 @@ void func_0016D350(Progress *p, s32 set) {
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 3, prog + 0x1CCEC0);
 }
 
-extern VObject *gCharacters[6];
+extern VObject *gCharacters[];   /* (func_0016CD60 reads slot 0xFF when nobody is found) */
 
 /* every character: vtable +0xC (start) */
 void func_00176650(Progress *p) {
@@ -1691,4 +1692,178 @@ void func_0016CF50(Progress *p, s32 slot) {
     } else if (slot != 1 && AT(VCALL((VObject *)c, 0xFC, u8 *(*)(VObject *))((VObject *)c), 0x1C, u32) != 0) {
         VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0x1688, void *));
     }
+}
+
+extern void func_00176780(Progress *p);
+extern void *func_0016CC40(void *o, s32 flags);
+extern void func_00100490(void *p);
+extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
+extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
+extern void *D_004699C0[], *D_004699E0[];
+extern void *D_0044F258, *D_0044F260, *gBootMessage;
+
+#define VT(o, off) AT(o, off, void **)
+
+/* a list head (vtables D_004699E0 -> D_004699C0): destructor body */
+static inline void ListHead_Destroy(u8 *o) {
+    if (o != NULL) {
+        VT(o, 0) = D_004699C0;
+        if (o != NULL) {
+            VT(o, 0) = D_004699E0;
+        }
+    }
+}
+
+/* Progress: destructor - the characters in slots 2..5 (their models unloaded by +0x6FBF00
+ * +0x14, then deleted), then its parts in reverse order of construction */
+void *func_0016C8A0(Progress *p, s32 flags) {
+    u8 *b = (u8 *)p;
+    s32 i;
+
+    if (p == NULL) {
+        return p;
+    }
+    VT(b, 0) = Progress_vtable;
+    func_00176780(p);
+    for (i = 2; i < 6; i++) {
+        if (gCharacters[i] != NULL) {
+            VObject *c;
+
+            VCALL(b + 0x6FBF00, 0x14, void (*)(void *, VObject *))(b + 0x6FBF00, gCharacters[i]);
+            c = gCharacters[i];
+            if (c != NULL) {
+                VCALL(c, 0x8, void (*)(VObject *, s32))(c, 1);
+            }
+            gCharacters[i] = NULL;
+        }
+    }
+    if (b + 0x73EB60 != NULL) {
+        VT(b, 0x73EB60) = D_0046A9C0;
+        func_0016CC40(b + 0x73EC80, -1);
+        Task_dtor((Task *)(b + 0x73EB6C), -1);
+    }
+    if (b + 0x73EB00 != NULL) {
+        VT(b, 0x73EB4C) = D_0046A9B0;
+    }
+    if (b + 0x706440 != NULL) {   /* the creatures (D_0044F258) */
+        VT(b, 0x706468) = D_0046FC00;
+        ListHead_Destroy(b + 0x715A70);
+        ListHead_Destroy(b + 0x714080);
+        if (b + 0x706440 != NULL) {
+            VT(b, 0x706468) = D_0046A980;
+            if (b + 0x706440 != NULL) {
+                D_0044F258 = NULL;
+            }
+        }
+    }
+    if (b + 0x6FC340 != NULL) {   /* D_0044F260 */
+        VT(b, 0x6FC340) = D_0046F5C0;
+        ListHead_Destroy(b + 0x706380);
+        if (b + 0x6FC340 != NULL) {
+            VT(b, 0x6FC340) = D_0046A950;
+            if (b + 0x6FC340 != NULL) {
+                D_0044F260 = NULL;
+            }
+        }
+    }
+    if (b + 0x6FC218 != NULL) {   /* the boot message */
+        VT(b, 0x6FC218) = D_0046D7D0;
+        if (b + 0x6FC218 != NULL) {
+            VT(b, 0x6FC218) = D_0046A0D0;
+            if (b + 0x6FC218 != NULL) {
+                gBootMessage = NULL;
+            }
+        }
+    }
+    if (b + 0x6FBF00 != NULL) {
+        VT(b, 0x6FBF00) = D_0046A1C0;
+        if (b + 0x6FBF00 != NULL) {
+            VT(b, 0x6FBF00) = D_004699E0;
+        }
+    }
+    if (p != NULL) {
+        gProgress = NULL;
+    }
+    if ((s16)flags > 0) {
+        func_00100490(p);
+    }
+    return p;
+}
+
+/* the base class's defaults (vtable +0x40 .. +0x88; the game overrides them) */
+s32 func_0016CCA0(Progress *p) { return 0; }   /* +0x40 */
+void func_0016CCB0(Progress *p) {}            /* +0x4C */
+s32 func_0016CD00(Progress *p) { return 0; }   /* +0x50 */
+s32 func_0016CCF0(Progress *p) { return 4; }   /* +0x58 */
+s32 func_0016CCE0(Progress *p) { return 0; }   /* +0x5C */
+s32 func_0016CCD0(Progress *p) { return 0; }   /* +0x60 */
+s32 func_0016CCC0(Progress *p) { return 1; }   /* +0x7C */
+void func_0016CD20(Progress *p) {}            /* +0x84 */
+s32 func_0016CD10(Progress *p) { return 0; }   /* +0x88 */
+
+extern VObject *gFileLoader;
+
+/* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
+void *func_0016CC40(void *o, s32 flags) {
+    extern void *D_0046F350[], *D_00469D00[];
+
+    if (o != NULL) {
+        VT(o, 0) = D_0046F350;
+        if (o != NULL) {
+            VT(o, 0) = D_00469D00;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* start loading the speech file `name` into a fresh 0x41000 buffer (+0x73EDC0, from the memory
+   manager +0x6FBF00) */
+void func_0016CEC0(Progress *p, const char *name) {
+    u8 *b = (u8 *)p;
+
+    AT(b, 0x73EDC0, void *) = VCALL(b + 0x6FBF00, 0x10, void *(*)(void *, u32))(b + 0x6FBF00, 0x41000);
+    VCALL(gFileLoader, 0xC, s32 (*)(VObject *, const char *, void *, s32, u32))(gFileLoader, name,
+                                                                                AT(b, 0x73EDC0, void *), 0x10000000, 0);
+}
+
+/* once it has loaded, character `who` (+0x153C; 0xFE the third slot, 0xFF none) speaks it:
+   the boot message object +0x14 / +0x10 with the character's voice (+0x1528). 0: not loaded. */
+s32 func_0016CD60(Progress *p, s32 who, s32 arg) {
+    VObject *msg;
+    VObject *c;
+    u32 i, slot;
+
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, s32))(gFileLoader, 0x10000000) != 3) {
+        return 0;
+    }
+    who &= 0xFF;
+    slot = 0xFF;
+    if (who == 0xFE) {
+        if (gCharacters[2] != NULL) {
+            slot = 2;
+        }
+    } else if (who != 0xFF) {
+        for (i = 0; i < 6; i++) {
+            if (gCharacters[i] != NULL && who == AT(gCharacters[i], 0x153C, u8)) {
+                slot = i;
+                break;
+            }
+        }
+    }
+    msg = gBootMessage;
+    c = gCharacters[slot];
+    VCALL(msg, 0x14, void (*)(VObject *, u32))(msg, AT(c, 0x1528, u8));
+    VCALL(msg, 0x10, void (*)(VObject *, u32, void *, s32))(msg, AT(c, 0x1528, u8), AT(p, 0x73EDC0, void *), arg);
+    return 1;
+}
+
+/* unload character slot `i`'s model (+0xF0) through the memory manager (+0x6FBF00 +0x14) */
+void func_0016D2F0(Progress *p, s32 i) {
+    u8 *mm = (u8 *)p + 0x6FBF00;
+
+    VCALL(mm, 0x14, void (*)(void *, void *))(mm, AT(gCharacters[i], 0xF0, void *));
+    AT(gCharacters[i], 0xF0, void *) = NULL;
 }

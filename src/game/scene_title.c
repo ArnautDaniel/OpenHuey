@@ -1130,6 +1130,32 @@ void *TextObj_dtor(u8 *o, s32 flags) {
     return o;
 }
 
+/* the entry pool's destructor body: its list, its 192 entries, the global */
+static inline void Pool_Destroy(u8 *pool) {
+    AT(pool, 0x0, void **) = D_0046A078;
+    if (pool + 0x1208 != NULL) {
+        AT(pool, 0x1208, void **) = D_004699C0;
+        if (pool + 0x1208 != NULL) {
+            AT(pool, 0x1208, void **) = D_004699E0;
+        }
+    }
+    func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
+    if (pool != NULL) {
+        D_0044E990 = NULL;
+    }
+}
+
+/* the entry pool (D_0044E990): destructor */
+void *func_00130920(u8 *pool, s32 flags) {
+    if (pool != NULL) {
+        Pool_Destroy(pool);
+        if ((s16)flags > 0) {
+            func_00100490(pool);
+        }
+    }
+    return pool;
+}
+
 /* the sub screen's base: destructor (the pool and its entries) */
 void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
     if (w != NULL) {
@@ -1137,17 +1163,7 @@ void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
 
         w->vtbl = D_0046A090;
         if (pool != NULL) {
-            AT(pool, 0x0, void **) = D_0046A078;
-            if (pool + 0x1208 != NULL) {
-                AT(pool, 0x1208, void **) = D_004699C0;
-                if (pool + 0x1208 != NULL) {
-                    AT(pool, 0x1208, void **) = D_004699E0;
-                }
-            }
-            func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
-            if (pool != NULL) {
-                D_0044E990 = NULL;
-            }
+            Pool_Destroy(pool);
         }
         if (w != NULL) {
             D_0044E988 = NULL;
