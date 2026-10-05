@@ -227,3 +227,20 @@ void *func_0030F110(void) {
 void *func_0030F120(void *self, s32 i) {
     return D_00426760[i];
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+
+/* as func_0030BC60 */
+f32 func_003658F0(void) {
+    return b5_prog_flag8000() ? 45.0f : 2e+01f;
+}
+
+/* as func_0030BCA0 */
+f32 func_00365930(void) {
+    return b5_prog_flag8000() ? 8.0f : 5.0f;
+}
+
+/* as func_0030BCE0 */
+f32 func_00365970(void) {
+    return b5_prog_flag8000() ? 3e+01f : 1e+01f;
+}

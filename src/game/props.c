@@ -2010,3 +2010,112 @@ void func_0033D4B0(u8 *o) {
         }
     }
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void *D_00479800[];
+extern void *D_0047A050[];
+extern void *D_0047A750[];
+
+/* (as func_00321910)  (class D_00479800, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_0035B3C0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479800;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_00321910)  (class D_0047A050, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_0036D360(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A050;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_00350910)  +0x10 update: turn */
+s32 func_00377DD0(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, k2Pi = {0x40C90FDB},
+                         kStepX = {0x3C0EFA35}, kStepYZ = {0x3AE4C389};
+
+    AT(o, 0x4, f32) = AT(o, 0x4, f32) + kStepX.f;
+    if (!(AT(o, 0x4, f32) <= kPi.f)) {
+        AT(o, 0x4, f32) = AT(o, 0x4, f32) - k2Pi.f;
+    }
+    AT(o, 0x8, f32) = AT(o, 0x8, f32) + kStepYZ.f;
+    if (!(AT(o, 0x8, f32) <= kPi.f)) {
+        AT(o, 0x8, f32) = AT(o, 0x8, f32) - k2Pi.f;
+    }
+    AT(o, 0xC, f32) = AT(o, 0xC, f32) - kStepYZ.f;
+    if (AT(o, 0xC, f32) < kMinusPi.f) {
+        AT(o, 0xC, f32) = AT(o, 0xC, f32) + k2Pi.f;
+    }
+    return 1;
+}
+
+/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+void func_00377ED0(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        f32 r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+
+        AT(o, 0x4 + k * 4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    }
+}
+
+/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+void func_003781F0(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        f32 r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+
+        AT(o, 0x4 + k * 4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    }
+}
+
+/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+void func_00378750(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        f32 r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+
+        AT(o, 0x4 + k * 4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    }
+}
+
+/* (as func_00321910)  (class D_0047A750, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+u8 *func_0037D0A0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A750;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}

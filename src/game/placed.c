@@ -1137,3 +1137,448 @@ void func_00315AB0(u8 *o) {
     AT(o, 0x12E, s16) = 2;
     AT(o, 0x132, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void *D_00479E70[];
+extern void *D_00479ED0[];
+extern void *D_00475900[];
+extern void func_003345D0(u8 *o, f32 *at);
+extern void *D_004759C0[];
+extern void *D_00475A20[];
+extern void func_00336290(u8 *o, f32 *at);
+
+/* (as func_002D5290)  the ball bounced at `at` (off the surface with normal n): its velocity mirrored and slowed
+ * to 0.7; `to` = what is left of the step from `at` on (0: nothing left) */
+s32 func_00354FF0(u8 *b, f32 *to, f32 *at, f32 *n) {
+    f32 *v = BALL_VEL(b);
+    f32 d[4] __attribute__((aligned(16)));
+    f32 speed, all, left, k;
+
+    speed = v[1] * v[1] + v[0] * v[0] + v[2] * v[2];
+    AT(b, 0xBC, f32) = 1.0f;
+    speed = ball_sqrt(speed);
+    sceVu0Normalize(v, v);
+    AT(b, 0xBC, f32) = 1.0f;
+    sceVu0ScaleVector(d, n, 2.0f * sceVu0InnerProduct(n, v));
+    sceVu0SubVector(v, d, v);
+    sceVu0ScaleVector(v, v, 0x1.666666p-1f /* 0.7 */ * -speed);
+    AT(b, 0xBC, f32) = 1.0f;
+    sceVu0SubVector(d, BALL_POS(b), to);
+    all = ball_sqrt(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+    sceVu0SubVector(d, BALL_POS(b), at);
+    left = ball_sqrt(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+    if (all <= 0.0f) {
+        return 0;
+    }
+    k = 1.0f - left / all;
+    if (k <= 0.0f) {
+        return 0;
+    }
+    sceVu0ScaleVector(d, v, k);
+    sceVu0AddVector(to, at, d);
+    return 1;
+}
+
+/* (as func_00314CE0)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+void func_003551C0(u8 *o) {
+    sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
+    sceVu0AddVector(BALL_POS(o), BALL_VEL(o), BALL_POS(o));
+    if (++AT(o, 0xE8, u32) >= 31) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* (as func_002D6F60)  the destructor of a thing (D_00479E70) */
+void *func_003671B0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479E70;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_002D54D0)  the rolling state: moved on the nav mesh, slowed by friction (0.03 x the slope's flatness)
+ * and pushed down the slope */
+void func_003674C0(u8 *b) {
+    VObject *nm;
+    f32 *v = BALL_VEL(b);
+    f32 fr[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 c, flat, vx, vy, vz, k;
+
+    if (AT(b, 0x28, u8) == 0) {
+        return;
+    }
+    func_001247E0(b, v);
+    nm = D_0044E570;
+    if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
+        ball_drop(b);
+        return;
+    }
+    sceVu0SubVector(v, BALL_POS(b), (f32 *)(b + 0x40));
+    c = VCALL(nm, 0x30, f32 (*)(VObject *, u32, f32 *))(nm, AT(b, 0x34, u32), n);
+    flat = ball_sqrt(1.0f - c * c);
+    vy = v[1];
+    vz = v[2];
+    vx = v[0];
+    sceVu0Normalize(fr, v);
+    sceVu0ScaleVector(fr, fr, 0x1.eb851ep-6f /* 0.03 */ * flat);
+    if (fr[1] * fr[1] + fr[0] * fr[0] + fr[2] * fr[2] <= vy * vy + vx * vx + vz * vz) {
+        sceVu0SubVector(v, v, fr);
+    } else {
+        v[2] = 0.0f;
+        v[1] = 0.0f;
+        v[0] = 0.0f;
+    }
+    k = c * AT(b, 0x104, f32);
+    if (k <= 0.0f) {
+        k = -k;
+    }
+    sceVu0ScaleVector(n, n, k);
+    sceVu0AddVector(v, n, v);
+}
+
+/* (as func_002D6F60)  the destructor of a thing (D_00479ED0) */
+void *func_00367E20(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479ED0;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_002D54D0)  the rolling state: moved on the nav mesh, slowed by friction (0.03 x the slope's flatness)
+ * and pushed down the slope */
+void func_003681D0(u8 *b) {
+    VObject *nm;
+    f32 *v = BALL_VEL(b);
+    f32 fr[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 c, flat, vx, vy, vz, k;
+
+    if (AT(b, 0x28, u8) == 0) {
+        return;
+    }
+    func_001247E0(b, v);
+    nm = D_0044E570;
+    if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
+        ball_drop(b);
+        return;
+    }
+    sceVu0SubVector(v, BALL_POS(b), (f32 *)(b + 0x40));
+    c = VCALL(nm, 0x30, f32 (*)(VObject *, u32, f32 *))(nm, AT(b, 0x34, u32), n);
+    flat = ball_sqrt(1.0f - c * c);
+    vy = v[1];
+    vz = v[2];
+    vx = v[0];
+    sceVu0Normalize(fr, v);
+    sceVu0ScaleVector(fr, fr, 0x1.eb851ep-6f /* 0.03 */ * flat);
+    if (fr[1] * fr[1] + fr[0] * fr[0] + fr[2] * fr[2] <= vy * vy + vx * vx + vz * vz) {
+        sceVu0SubVector(v, v, fr);
+    } else {
+        v[2] = 0.0f;
+        v[1] = 0.0f;
+        v[0] = 0.0f;
+    }
+    k = c * AT(b, 0x104, f32);
+    if (k <= 0.0f) {
+        k = -k;
+    }
+    sceVu0ScaleVector(n, n, k);
+    sceVu0AddVector(v, n, v);
+}
+
+/* (as func_002D5ED0)  +0xC set up: blocked by nav flags 0x20020008, in the current room, white, flying */
+void func_00368B40(u8 *b) {
+    func_00121300(b);
+    AT(b, 0xC4, s32) = 0;
+    AT(b, 0xC0, u32) = 0x20020008;
+    AT(b, 0xE0, u8) = 0;
+    AT(b, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(b, 0x11C, f32) = 1.0f;
+    AT(b, 0x118, f32) = 1.0f;
+    AT(b, 0x114, f32) = 1.0f;
+    AT(b, 0x110, f32) = 1.0f;
+    AT(b, 0x120, u16) = 0;
+}
+
+/* (as func_002D6F60)  the destructor of a thing (D_004758A0) */
+void *func_00333240(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_004758A0;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_00314CE0)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+void func_00333880(u8 *o) {
+    sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
+    sceVu0AddVector(BALL_POS(o), BALL_VEL(o), BALL_POS(o));
+    if (++AT(o, 0xE8, u32) >= 31) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+u32 func_003341D0(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    return thing_put(b, tri, pos, rot, rr, h);
+}
+
+/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+ * the step is stopped */
+s32 func_00334230(u8 *b, u8 *a, f32 *to) {
+    return thing_step_tri(b, a, to);
+}
+
+/* (as func_002D6F60)  the destructor of a thing (D_00475900) */
+void *func_00334560(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00475900;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_00314CE0)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+void func_003348A0(u8 *o) {
+    sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
+    sceVu0AddVector(BALL_POS(o), BALL_VEL(o), BALL_POS(o));
+    if (++AT(o, 0xE8, u32) >= 31) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* (as func_00314D40)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
+ * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
+ * anything else bursts it */
+void func_00334900(u8 *o) {
+    static const union { u32 u; f32 f; } kDrag = {0x3F733333};
+    f32 *v = BALL_VEL(o);
+    f32 to[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 fl[4] __attribute__((aligned(16)));
+    VObject *nm;
+    u32 tri, hit;
+
+    sceVu0AddVector(v, (f32 *)(o + 0x100), v);
+    v[0] = v[0] * kDrag.f;
+    v[2] = v[2] * kDrag.f;
+    sceVu0AddVector(to, v, BALL_POS(o));
+    nm = D_0044E570;
+    tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
+        nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
+    if (tri == (u32)-1) {
+        AT(o, 0x28, u8) = 0;
+        func_003345D0(o, out);
+        return;
+    }
+    hit = tri & 0xF0000000;
+    if (hit == 0) {
+        sceVu0CopyVector(fl, out);
+        VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, tri, fl);
+        if (out[1] < fl[1]) {
+            AT(o, 0x28, u8) = 0;
+            func_003345D0(o, fl);
+            return;
+        }
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        return;
+    }
+    if (hit == 0x80000000 && (ball_tri_flags(nm, tri & 0xFFFF) & TRI_HOLE)) {
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        ball_drop(o);
+        return;
+    }
+    AT(o, 0x28, u8) = 0;
+    func_003345D0(o, out);
+}
+
+/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+u32 func_00334C60(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    return thing_put(b, tri, pos, rot, rr, h);
+}
+
+/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+ * the step is stopped */
+s32 func_00334CC0(u8 *b, u8 *a, f32 *to) {
+    return thing_step_tri(b, a, to);
+}
+
+/* (as func_003154B0)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
+void func_00335070(u8 *o) {
+    func_00121300(o);
+    AT(o, 0x100, s32) = 0;
+    AT(o, 0x104, u32) = 0xBDCCCCCD;
+    AT(o, 0x108, s32) = 0;
+    AT(o, 0x10C, f32) = 1.0f;
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
+}
+
+/* (as func_00315540)  +0x8 destructor */
+void *func_00335100(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00475960;
+        AT(o, 0x0, void **) = D_00479500;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_00315540)  +0x8 destructor */
+void *func_003356C0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_004759C0;
+        AT(o, 0x0, void **) = D_00479500;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_00315540)  +0x8 destructor */
+void *func_00335C80(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00475A20;
+        AT(o, 0x0, void **) = D_00479500;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_002D6F60)  the destructor of a thing (D_00475A80) */
+void *func_00336220(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00475A80;
+        AT(o, 0x0, void **) = D_00469A00;
+        AT(o, 0x0, void **) = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00121360(o);
+        }
+    }
+    return o;
+}
+
+/* (as func_00314CE0)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+void func_00336550(u8 *o) {
+    sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
+    sceVu0AddVector(BALL_POS(o), BALL_VEL(o), BALL_POS(o));
+    if (++AT(o, 0xE8, u32) >= 31) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* (as func_00314D40)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
+ * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
+ * anything else bursts it */
+void func_003365B0(u8 *o) {
+    static const union { u32 u; f32 f; } kDrag = {0x3F733333};
+    f32 *v = BALL_VEL(o);
+    f32 to[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 fl[4] __attribute__((aligned(16)));
+    VObject *nm;
+    u32 tri, hit;
+
+    sceVu0AddVector(v, (f32 *)(o + 0x100), v);
+    v[0] = v[0] * kDrag.f;
+    v[2] = v[2] * kDrag.f;
+    sceVu0AddVector(to, v, BALL_POS(o));
+    nm = D_0044E570;
+    tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
+        nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
+    if (tri == (u32)-1) {
+        AT(o, 0x28, u8) = 0;
+        func_00336290(o, out);
+        return;
+    }
+    hit = tri & 0xF0000000;
+    if (hit == 0) {
+        sceVu0CopyVector(fl, out);
+        VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, tri, fl);
+        if (out[1] < fl[1]) {
+            AT(o, 0x28, u8) = 0;
+            func_00336290(o, fl);
+            return;
+        }
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        return;
+    }
+    if (hit == 0x80000000 && (ball_tri_flags(nm, tri & 0xFFFF) & TRI_HOLE)) {
+        AT(o, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(o), out);
+        ball_drop(o);
+        return;
+    }
+    AT(o, 0x28, u8) = 0;
+    func_00336290(o, out);
+}
+
+/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+u32 func_00336910(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    return thing_put(b, tri, pos, rot, rr, h);
+}
+
+/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+ * the step is stopped */
+s32 func_00336970(u8 *b, u8 *a, f32 *to) {
+    return thing_step_tri(b, a, to);
+}
+
+/* (as func_003154B0)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
+void func_00336D20(u8 *o) {
+    func_00121300(o);
+    AT(o, 0x100, s32) = 0;
+    AT(o, 0x104, u32) = 0xBDCCCCCD;
+    AT(o, 0x108, s32) = 0;
+    AT(o, 0x10C, f32) = 1.0f;
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
+}

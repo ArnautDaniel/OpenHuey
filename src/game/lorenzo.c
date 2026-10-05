@@ -1163,3 +1163,160 @@ void func_0030CFA0(Pursuer *p) {
     p->c.unkE4 = 0;
     func_001267F0(&p->c, 0x14);
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern const f32 D_00445AF0[7][4];
+extern u8 D_00444AF0[];
+extern u8 D_00444AB0[];
+extern u8 D_00444AD0[];
+extern u8 D_00444A90[];
+
+/* (as func_00309680)  his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
+   hand (bone 0x32) */
+void func_003636D0(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        s32 kind, r, g, b, size;
+    } dp __attribute__((aligned(16)));
+    u8 *mgr;
+    VObject *rnd;
+    u8 i;
+
+    if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
+        return;
+    }
+    sceVu0CopyVector(dp.pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
+    dp.pos[3] = 1.0f;
+    dp.kind = 2;
+    dp.b = 0x50;
+    dp.g = 0x50;
+    dp.r = 0x50;
+    mgr = D_0044E578;
+    rnd = D_0044E550;
+    for (i = 0; i < 8; i++) {
+        s32 slot = Effect_New(mgr, 0x720, Dust_Init);
+
+        dp.size = (s32)(320.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 320;
+        func_002D6090(mgr, slot, &dp);
+    }
+}
+
+/* (as func_00309890)  his blows 0x1904 / 0xE00 / 0xE04 / 0xE05 (hand, bone 0x32) and 0xE06 (bone 0x28): at the
+   key (0x20), seven sparks around the bone (offsets D_00445AF0) of random scale, speed and life */
+void func_003638E0(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        f32 one, scale, speed;
+        s32 life;
+    } sp __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    u8 *mgr;
+    s32 bone;
+    u8 i;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x1904:
+    case 0xE05:
+    case 0xE04:
+    case 0xE00:
+        bone = 0x32;
+        break;
+    case 0xE06:
+        bone = 0x28;
+        break;
+    default:
+        return;
+    }
+    if (!(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
+        return;
+    }
+    sp.one = 1.0f;
+    sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    rnd = D_0044E550;
+    mgr = D_0044E578;
+    for (i = 0; i < 7; i++) {
+        s32 slot;
+
+        sp.scale = 0.0f + 0.5f + 0.5f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+        sp.speed = 0.0f + 0x1.19999ap+0f + 0x1.99999ap-5f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);   /* 1.1 + 0.05 */
+        sp.life = (s32)(6.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 12;
+        slot = Effect_New(mgr, 0x130, Spark_Init);
+        sceVu0AddVector(sp.pos, at, D_00445AF0[i]);
+        func_002D6090(mgr, slot, &sp);
+    }
+}
+
+/* (as func_00309BA0)  vtable +0x138: the hit points of an attack entry; his grab 0xE01 is at Fiona herself */
+void func_00363BF0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+    if (e[0] == 0xE01) {
+        sceVu0CopyVector(a, gCharPlayer->a.pos);
+        sceVu0CopyVector(b, gCharPlayer->a.pos);
+        return;
+    }
+    sceVu0CopyVector(a, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    if (e[2] >= 0) {
+        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
+    } else {
+        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    }
+}
+
+/* (as func_0030A210)  state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
+   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
+   point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
+   the point (also to +0x1770). Its end ends the step */
+void func_00363FA0(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
+        sceVu0CopyVector(p->c.unk110, p->target->a.pos);
+    } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+        u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
+        u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
+        u8 *mgr;
+
+        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            PU(p, 0x1764, s32) = 12;
+        }
+        sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
+        mgr = D_0044E578;
+        func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        AT(p->c.unk110, 0x0, s32) = 0;
+        AT(p->c.unk110, 0x4, s32) = 0;
+        AT(p->c.unk110, 0x8, s32) = 0;
+        AT(p->c.unk110, 0xC, s32) = 0;
+        if (AT(gProgress, 0x30, u32) & 0x8000) {
+            PU(p, 0x16F7, u8) = 0;
+        }
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+/* (as func_0030B1E0)  state: see Lorenzo2_PlayOut */
+void func_00364F90(Pursuer *p) {
+    Lorenzo2_PlayOut(p);
+}
+
+/* (as func_0030BB70)  is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
+s32 func_00365850(Pursuer *p) {
+    if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
+        return 0;
+    }
+    return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
+}
+
+/* (as func_002F9000)  his model files (func_0029F8C0 for kind 11) */
+u8 *func_00365D10(Pursuer *p) {
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AF0 : D_00444AB0;
+}
+
+/* (as func_002F9000)  his model files (func_0029F8C0 for kind 11) */
+u8 *func_00365D50(Pursuer *p) {
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AD0 : D_00444A90;
+}

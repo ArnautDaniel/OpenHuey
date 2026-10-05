@@ -1238,3 +1238,14 @@ void func_002DA6B0(Pursuer *p) {
         }
     }
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+
+/* (as func_002D7CE0)  vtable +0x200: done at the door unless it has a side (+0x104), then the Pursuer's */
+void func_0034BA20(Pursuer *p) {
+    if (p->c.unk104[0] == 0) {
+        PURSUER_STEP_DONE(p) = 1;
+        return;
+    }
+    func_0028D6E0(p);
+}

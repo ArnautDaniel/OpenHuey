@@ -410,3 +410,124 @@ void func_0020D6A0(Pursuer *p) {
     m = p->c.motion;
     VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void func_00346330(Pursuer *p);
+extern void func_00347B80(Pursuer *p);
+extern void func_00348B10(Pursuer *p);
+
+/* (as func_0020C660)  vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
+   (vtable +0xF0) and change room through it (vtable +0x28) */
+void func_003461A0(Pursuer *p, s32 exit) {
+    if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
+        return;
+    }
+    switch (PU(p, 0x175C, s32)) {
+    case 0xC:
+    case 0x29:
+    case 0x28:
+    case 0xD:
+        VCALL(p, 0xF0, void (*)(Pursuer *, s32))(p, exit);
+        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(D_0044E568, 0x28, s32 (*)(VObject *, s32))(D_0044E568, exit), 0, 0);
+        break;
+    }
+}
+
+/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+   senses step; on screen the hit effect (func_00346330) when a cry is heard or her animation
+   reaches its effect key (0x20) */
+void func_00346F50(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+
+    Stalker_ThinkStart(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+            func_00346330(p);
+        }
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    Stalker_ThinkEnd(p);
+}
+
+/* (as func_0020C4D0)  vtable +0x1C: the model files loaded (func_0029F120), then motion vtable +0x34 */
+void func_003479F0(Pursuer *p) {
+    void *m;
+
+    func_0029F120(p);
+    m = p->c.motion;
+    VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
+}
+
+/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+   senses step; on screen the hit effect (func_00347B80) when a cry is heard or her animation
+   reaches its effect key (0x20) */
+void func_00348330(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+
+    Stalker_ThinkStart(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+            func_00347B80(p);
+        }
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    Stalker_ThinkEnd(p);
+}
+
+/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+   senses step; on screen the hit effect (func_00348B10) when a cry is heard or her animation
+   reaches its effect key (0x20) */
+void func_003492C0(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+
+    Stalker_ThinkStart(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+            func_00348B10(p);
+        }
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    Stalker_ThinkEnd(p);
+}

@@ -5123,3 +5123,72 @@ s32 func_00310450(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern s32 D_0047B2C0;
+extern s32 D_0047B2D8;
+extern s32 D_0047B2E8;
+
+/* as func_002E6E20 */
+s32 func_0036E1E0(void) {
+    Effect_New(D_0044E578, 0xC0, effect_C0_init);
+    return 1;
+}
+
+/* as func_002E7560 */
+s32 func_0036ED30(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B2C0, cmd, 1.0f); }
+
+/* (as func_002E7600)  character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
+ * func_0032D150 says done */
+s32 func_0036EDD0(void *self, void *a1, u8 *cmd) {
+    Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
+
+    if (cmd[3] == 0) {
+        func_0032D270(c, 2, -6.0f, 257.0f);
+        return 1;
+    }
+    return func_0032D150(c) == 0 ? 2 : 1;
+}
+
+/* as func_002E7020 */
+s32 func_0036F5C0(void) {
+    Effect_New(D_0044E578, 0x10, effect_10_init);
+    return 1;
+}
+
+/* as func_002E70F0 */
+s32 func_0036F7E0(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B2D8, cmd, 2.0f); }
+
+/* as func_002E7560 */
+s32 func_0036FBA0(void *self, void *a1, u8 *cmd) { return nudge(&D_0047B2E8, cmd, 1.0f); }
+
+/* (as func_0030F2B0)  room 0x48 (D_00426830): the player's func_00124F20(0) */
+s32 func_0036FE40(void) {
+    func_00124F20(gCharPlayer, 0);
+    return 1;
+}
+
+/* (as func_0030F2B0)  room 0x48 (D_00426830): the player's func_00124F20(0) */
+s32 func_00378A00(void) {
+    func_00124F20(gCharPlayer, 0);
+    return 1;
+}
+
+/* (as func_002AF300)  room 0x21 (D_00400BC8) */
+s32 func_00378B80(void *self, void *a1, u8 *cmd) {
+    return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
+}
+
+/* (as func_002AF4E0)  room 0x21 (D_00400BA8) */
+s32 func_00378D20(void *self, void *a1, u8 *cmd) {
+    return lit_quad(cmd, sQuadWindow, 0x10000040);
+}
+
+/* (as func_0036A400)  room 0x37 (D_004469A0): the fan turns, except while a movie plays */
+s32 func_00378EC0(void) {
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    fan_turn(*(const char *const *)D_0047B0C0);   /* (the first of its names) */
+    return 1;
+}

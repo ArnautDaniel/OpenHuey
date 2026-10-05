@@ -2512,3 +2512,95 @@ s32 func_00314700(u8 *o) {
     }
     return 1;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void *D_004737D0[];
+extern void *D_00474080[];
+
+/* (as func_00313030)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0031E890(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_004737D0;
+    AT(o, 0x40, void **) = D_0046FC30;
+    AT(o, 0x40, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_00314700)  +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
+ * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
+ * falling. 0 once none was left last time */
+s32 func_0037C310(u8 *o) {
+    static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
+    VObject *rnd;
+    s32 i;
+
+    if (AT(o, 0xF64, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0xF64, u8) = 1;
+    rnd = D_0044E550;
+    AT(o, 0xF60, s32) ^= 1;
+    for (i = 0; i < 32; i++) {
+        QuadRec *q;
+        f32 *v = DROP_VEL(o, i);
+        f32 *p = DROP_PULL(o, i);
+
+        *DROP_REC(o, AT(o, 0xF60, s32), i) = *DROP_REC(o, AT(o, 0xF60, s32) ^ 1, i);
+        q = DROP_REC(o, AT(o, 0xF60, s32), i);
+        if (q->rgba[3] <= 0) {
+            continue;
+        }
+        AT(o, 0xF64, u8) = 0;
+        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x7F) + 1;
+        v[0] = v[0] + p[0];
+        v[1] = v[1] + p[1];
+        if (!(p[1] <= 0.0f)) {
+            if (!(v[1] <= kMinusHundredth.f)) {
+                q->rgba[3] = 0;
+            }
+        } else if (v[1] < kHundredth.f) {
+            q->rgba[3] = 0;
+        }
+        v[2] = v[2] + p[2];
+        q->pos[0] = q->pos[0] + v[0];
+        q->pos[1] = q->pos[1] + v[1];
+        q->pos[2] = q->pos[2] + v[2];
+    }
+    return 1;
+}
+
+/* (as func_002DE490)  +0x8 destructor */
+Character *func_00324710(Character *c, s32 flags) {
+    if (c != NULL) {
+        AT(c, 0x0, void **) = D_00474080;
+        if (c != NULL) {
+            AT(c, 0x0, void **) = D_0046FB50;
+            if (c != NULL) {
+                AT(c, 0x0, void **) = D_00469C60;
+                if (c != NULL) {
+                    AT(c, 0x0, void **) = D_00469C20;
+                }
+            }
+        }
+        if ((s16)flags > 0) {
+            func_002E2320(c);
+        }
+    }
+    return c;
+}
+
+/* (as func_002E19A0)  +0x28 put on triangle `tri` (func_00125AD0), remembering it as the previous one and the
+   position (+0x38 / +0x40) */
+s32 func_0032BD40(Character *c, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = func_00125AD0(c, tri, heading, pos);
+
+    c->a.prevNavTri = tri;
+    sceVu0CopyVector(c->a.prevPos, c->a.pos);
+    return r;
+}

@@ -2164,3 +2164,111 @@ void func_0030D9F0(u8 *m) {
     AT(m, 0xC4, u8) = 4;
     AT(m, 0xC5, u8) = 0xC0;
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void *D_00474460[];
+
+/* (as func_00313FD0)  +0x8: destructor */
+void *func_0032C510(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00474460;
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* (as func_002F64F0)  the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
+   way) from their anchors */
+void func_00320590(u8 *m) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u8 *p = m + 0xC20;
+    s32 i;
+
+    sceVu0CopyVector(down, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
+    for (i = 0; i < 12; i++, p += 0x60) {
+        AT(p, 0x18, f32) = 0.0f;
+        AT(p, 0x14, f32) = 0.0f;
+        AT(p, 0x10, f32) = 0.0f;
+        if (AT(p, 0x20, u8) != 0) {
+            sceVu0CopyVector(at, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+        }
+        if (i < 6) {
+            sceVu0ScaleVector(d, down, AT(p, 0x40, f32));
+        } else {
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+        }
+        sceVu0AddVector((f32 *)p, at, d);
+        sceVu0CopyVector((f32 *)(p + 0x50), at);
+    }
+}
+
+/* (as func_002F6600)  the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
+void func_003206A0(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0x10A0);
+    for (i = 0; i < 12; i++) {
+        Set_AddLink(m + 0x10A0, m + 0xC20 + i * 0x60);
+    }
+    for (i = 0; i < 5; i++) {
+        Set_AddCollider(m + 0x10A0, m + 0x10E0 + i * 0x70);
+    }
+    Set_Init(m + 0x10A0, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 12; i++) {
+        u8 *n = m + 0xC20 + i * 0x60;
+        s32 j = i % 6;
+
+        AT(n, 0x20, u8) = i % 2 == 0;
+        AT(n, 0x24, s32) = 0xA + i;
+        AT(n, 0x40, f32) = 0x1.19999ap+0f;   /* 1.1 */
+        if (j < 2) {
+            AT(n, 0x44, f32) = 0.0f;
+            AT(n, 0x48, u8 *) = NULL;
+        } else {
+            AT(n, 0x44, f32) = 0.5f;
+            AT(n, 0x48, u8 *) = m + 0xC20 + (i - j + j % 2) * 0x60;
+        }
+    }
+    func_002EE530(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
+    func_002EE530(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
+}
+
+/* (as func_002F69C0)  the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
+void func_00320A60(u8 *m) {
+    s32 i;
+
+    func_002EE960(m + 0xBE0);
+    for (i = 0; i < 4; i++) {
+        Set_AddLink(m + 0xBE0, m + 0x9A0 + i * 0x50);
+    }
+    for (i = 0; i < 4; i++) {
+        Set_AddCollider(m + 0xBE0, m + 0xAE0 + i * 0x40);
+    }
+    Set_Init(m + 0xBE0, m, 0.0f, 0.5f, 0.0f, 0x1.99999ap-2f /* 0.4 */);
+    for (i = 0; i < 4; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.028f5cp+0f;   /* 1.01 */
+        AT(n, 0x24, s32) = 0x16 + i;
+        AT(n, 0x20, u8) = i % 2 == 0;
+    }
+    func_002EE690(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
+}

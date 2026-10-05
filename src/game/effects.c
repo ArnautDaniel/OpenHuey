@@ -4706,3 +4706,155 @@ void func_003063A0(u8 *o) {
         AT(q, 0x0, void **) = D_00469D00;
     }
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern void *D_0047A390[];
+extern void *D_0047A6D0[];
+extern void *D_0047A710[];
+extern void *D_0047A730[];
+extern void *D_00479F30[];
+extern void *D_00479F50[];
+extern void *D_00479F70[];
+extern void *D_00478B50[];
+extern void *D_00479A80[];
+
+/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00376730(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A390;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002FCDC0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0037B2E0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A6D0;
+    AT(o, 0x70, void **) = D_0046FC30;
+    AT(o, 0x70, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002F9810)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0037BE80(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A710;
+    AT(o, 0xC10, void **) = D_0046FC30;
+    AT(o, 0xC10, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002F9210)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0037C5A0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A730;
+    AT(o, 0x3010, void **) = D_0046FC30;
+    AT(o, 0x3010, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002F9810)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00368BB0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479F30;
+    AT(o, 0xC10, void **) = D_0046FC30;
+    AT(o, 0xC10, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00369170(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479F50;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00369690(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479F70;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0034E0E0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00478B50;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* (as func_002D6700)  +0x14 draw: the current buffer through the quad drawer */
+void func_0034E5F0(u8 *o) {
+    AT(o, 0x1820, u8 *) = o + AT(o, 0x1C50, s32) * 0xC00 + 0x10;
+    func_002E56C0(o + 0x1810);
+}
+
+/* (as func_002FCDC0)  +0x8 destructor (the quad drawer's inlined) */
+u8 *func_0035FEA0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479A80;
+    AT(o, 0x70, void **) = D_0046FC30;
+    AT(o, 0x70, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}

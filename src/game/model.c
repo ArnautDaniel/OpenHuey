@@ -5240,3 +5240,55 @@ f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
     r[3] = 0.0f;
     return ee_sqrtf(sceVu0InnerProduct(r, r));
 }
+
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern u8 D_00443FA0[];
+extern u8 D_0042F280[];
+extern u8 D_0042F290[];
+extern u8 D_0042F2A0[];
+extern u8 D_0042F2B0[];
+
+/* (as func_002F7A10)  +0xB8: 16 entries of the table D_00443FA0 (+0x840 count, +0x844 table) */
+void func_0035B0F0(u8 *m) {
+    AT(m, 0x840, s16) = 16;
+    AT(m, 0x844, u8 *) = D_00443FA0;
+}
+
+/* (as func_00170350)  the human-with-kind model's destructor (vtable D_00479740, then the human base) */
+void *func_0035B1B0(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00479740;
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* (as func_002F73C0)  the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
+ * of each pair leading, the phases 1 / 2 x 2 pi / 18 */
+void func_00337820(u8 *m) {
+    static u8 *const sTables[6] = {D_0042F280, D_0042F280, D_0042F290, D_0042F290, D_0042F2A0, D_0042F2B0};
+    static const s32 sBones[6] = {0xB, 0x11, 0xD, 0x13, 0xF, 0x15};
+    static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
+    u8 *set = m + 0xD70;
+    s32 i, j;
+
+    func_002EE960(set);
+    for (i = 0; i < 12; i++) {
+        spring_link(set, m + 0x9B0 + i * 0x50);
+    }
+    spring_set(set, 0x3E4CCCCD /* 0.2f */, 0x3F666666 /* 0.9f */, m);
+    for (i = 0; i < 6; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *node = m + 0x9B0 + (i * 2 + j) * 0x50;
+
+            AT(node, 0x40, u32) = 0x3ED182AA;
+            AT(node, 0x24, s32) = sBones[i] + j;
+            AT(node, 0x44, s32) = (i & 1) ? 6 : 2;
+            AT(node, 0x48, u8 *) = sTables[i];
+            AT(node, 0x20, u8) = (j == 0);
+            AT(node, 0x4C, u32) = sPhase[j];
+        }
+    }
+}
