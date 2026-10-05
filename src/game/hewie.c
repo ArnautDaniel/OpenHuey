@@ -5354,3 +5354,153 @@ void func_00145080(Hewie *h) {
     }
     func_00122C20(&h->c.a, snd + (n & 3), type, 0, (s32)((u32)(2.0f * f) & 0x7F), NULL);
 }
+
+/* ---- where to be by Fiona ---- */
+
+extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);
+extern u32 func_00123E20(Actor *a, f32 *p);
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
+extern const f32 D_003B1D60[2][4];   /* offsets in front of a door, per side */
+
+/* a free point (not blocked for him) by Fiona: the point p, if its triangle is free */
+static s32 free_at(Hewie *h, u32 *tri, f32 *p) {
+    *tri = func_00123E20(&gCharPlayer->a, p);
+    /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
+    return *tri != NAV_NONE && !(NavMesh_TriFlags(D_0044E570, *tri) & h->c.a.navMask);
+}
+
+/* where to go for Fiona's command `cmd` (the point in `out`, its triangle returned): to her
+ * when she isn't in his room, his own spot. On another level of the room (mesh flags 0x100000 /
+ * 0x200000) the door point on his level nearest her. 0x64: 15 in front of the point she shows
+ * (+0x110, heading +0x10C). 0xE / 0xF with the pursuer about: 15 from her toward it (0xF away
+ * from it), tried turned 15 degrees either way. Else beside her: +0xF3550 to her side, drifting
+ * 0.3 a frame (by +0xF3554) while under 5, else 5 to the other side. Her own spot failing all */
+u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
+    f32 off[2][4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 best[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    u32 tri, found, mine;
+    f32 bestd = 0.0f, side;
+    s32 i, j, n;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        sceVu0CopyVector(out, h->c.a.pos);
+        return h->c.a.navTri;
+    }
+    if (cmd != 0x64) {
+        u32 hers;
+
+        mine = NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x300000;
+        hers = NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x300000;
+        if ((mine == 0x100000 && hers == 0x200000) || (mine == 0x200000 && hers == 0x100000)) {
+            n = D_0044E570->numDoors;
+            found = NAV_NONE;
+            for (i = 0; i < 8; i++) {
+                off[i >> 2][i & 3] = D_003B1D60[i >> 2][i & 3];
+            }
+            for (i = 0; i < n; i = (i + 1) & 0xFF) {
+                for (j = 0; j < 2; j++) {
+                    tri = func_00123710(h, i & 0xFF, j, off[j], p);
+                    if ((NavMesh_TriFlags(D_0044E570, tri) & 0x300000) == mine) {
+                        if (found == NAV_NONE) {
+                            found = tri;
+                            sceVu0CopyVector(best, p);
+                            bestd = func_00124490(&gCharPlayer->a, p);
+                        } else {
+                            f32 d = func_00124490(&gCharPlayer->a, p);
+
+                            if (!(bestd <= d)) {
+                                found = tri;
+                                sceVu0CopyVector(best, p);
+                                bestd = d;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            if (found != NAV_NONE) {
+                sceVu0CopyVector(out, best);
+                return found;
+            }
+        }
+    }
+    switch (cmd) {
+    case 0x64:
+        func_002E3130(m, h->c.unk110, HW(h, 0x10C, f32));
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 15.0f;
+        func_002E2DD0(p, m, v);
+        if (free_at(h, &tri, p)) {
+            sceVu0CopyVector(out, p);
+            return tri;
+        }
+        sceVu0CopyVector(out, gCharPlayer->a.pos);
+        return gCharPlayer->a.navTri;
+    case 0xE:
+    case 0xF:
+        if ((HW(h, 0xF366D, u8) == 1 || HW(h, 0xF366D, u8) == 3) && in_his_room(h, gCharPursuer)) {
+            if (cmd == 0xE) {
+                sceVu0SubVector(v, gCharPursuer->a.pos, gCharPlayer->a.pos);
+            } else {
+                sceVu0SubVector(v, gCharPlayer->a.pos, gCharPursuer->a.pos);
+            }
+            sceVu0Normalize(v, v);
+            func_0010E640(v, v, 15.0f);
+            sceVu0AddVector(p, gCharPlayer->a.pos, v);
+            if (free_at(h, &tri, p)) {
+                sceVu0CopyVector(out, p);
+                return tri;
+            }
+            /* (the original steps a counter by 15 degrees but always turns by 15) */
+            for (i = 15; (f32)i < 90.0f; i = (s32)((f32)i + 15.0f)) {
+                func_002E3130(m, gCharPlayer->a.pos, 0x1.0c1524p-2f /* 15 degrees */);
+                func_002E2DD0(p, m, v);
+                if (free_at(h, &tri, p)) {
+                    sceVu0CopyVector(out, p);
+                    return tri;
+                }
+                func_002E3130(m, gCharPlayer->a.pos, -0x1.0c1524p-2f);
+                func_002E2DD0(p, m, v);
+                if (free_at(h, &tri, p)) {
+                    sceVu0CopyVector(out, p);
+                    return tri;
+                }
+            }
+        }
+        break;
+    }
+    side = HW(h, 0xF3550, f32);
+    if (__builtin_fabsf(side) < 5.0f) {
+        if (HW(h, 0xF3554, s32) & 1) {
+            side += 0x1.333334p-2f;   /* 0.3 */
+        } else {
+            side -= 0x1.333334p-2f;
+        }
+    }
+    v[1] = 0.0f;
+    v[0] = side;
+    HW(h, 0xF3550, f32) = side;
+    v[2] = 0.0f;
+    v[3] = 0.0f;
+    sceVu0ApplyMatrix(p, h->c.a.rot, v);
+    sceVu0AddVector(p, p, gCharPlayer->a.pos);
+    if (free_at(h, &tri, p)) {
+        sceVu0CopyVector(out, p);
+        return tri;
+    }
+    v[0] = !(side <= 0.0f) ? -5.0f : 5.0f;
+    sceVu0ApplyMatrix(p, h->c.a.rot, v);
+    sceVu0AddVector(p, p, gCharPlayer->a.pos);
+    if (free_at(h, &tri, p)) {
+        HW(h, 0xF3554, s32) = side < 0.0f ? 1 : 0;
+        HW(h, 0xF3550, f32) = 0.0f;
+        sceVu0CopyVector(out, p);
+        return tri;
+    }
+    sceVu0CopyVector(out, gCharPlayer->a.pos);
+    return gCharPlayer->a.navTri;
+}
