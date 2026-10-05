@@ -2424,28 +2424,8 @@ extern void *func_002D0EE0(void *o, s32 flags);
 extern void *func_002D00A0(void *o, s32 flags);
 extern void *func_00168C20(void *o, s32 flags);
 extern void *func_0020E820(void *o, s32 flags);
+extern void *func_00179F60(void *o, s32 flags);   /* the nav mesh's destructor (navmesh.c) */
 
-/* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
- * base (D_0046AA40, clearing D_0044E570) */
-void *func_00179F60(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046A9D0;
-        if (AT(o, 0x4, void *) != NULL) {
-            AT(o, 0x4, void *) = NULL;
-            AT(o, 0x8, s32) = 0;
-        }
-        if (AT(o, 0xC, void *) != NULL) {
-            AT(o, 0xC, void *) = NULL;
-            AT(o, 0x10, s32) = 0;
-        }
-        AT(o, 0x0, void **) = D_0046AA40;
-        D_0044E570 = NULL;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return o;
-}
 
 /* (D_0046A9C0): its quad drawer (+0x120) and its task's child (+0x88) */
 void *func_00179B10(u8 *o, s32 flags) {

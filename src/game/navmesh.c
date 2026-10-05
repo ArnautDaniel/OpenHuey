@@ -602,3 +602,28 @@ f32 func_0017C410(NavMesh *nm, u32 t, const f32 *p) {
     a[3] = 1.0f;
     return sceVu0InnerProduct(a, n);
 }
+
+extern void *D_0046A9D0[], *D_0046AA40[];
+extern void func_00100490(void *p);   /* operator delete */
+
+/* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
+ * base (D_0046AA40, clearing D_0044E570) */
+void *func_00179F60(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046A9D0;
+        if (AT(o, 0x4, void *) != NULL) {
+            AT(o, 0x4, void *) = NULL;
+            AT(o, 0x8, s32) = 0;
+        }
+        if (AT(o, 0xC, void *) != NULL) {
+            AT(o, 0xC, void *) = NULL;
+            AT(o, 0x10, s32) = 0;
+        }
+        AT(o, 0x0, void **) = D_0046AA40;
+        D_0044E570 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
