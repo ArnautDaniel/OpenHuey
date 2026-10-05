@@ -1287,6 +1287,78 @@ void func_00305520(u8 *m, s32 room) {
     }
 }
 
+/* ---- the saved game state (0xFC0 bytes, kept at SceneGame +0x48 and in the save): its
+ * assignment, as the compiler made it - field by field, the padding left alone ---- */
+
+static void copy_words(u8 *d, const u8 *s, u32 off, u32 n) {
+    u32 i;
+
+    for (i = 0; i < n; i++) {
+        AT(d, off + i * 4, u32) = AT(s, off + i * 4, u32);
+    }
+}
+
+/* a sub-record (+0x75C): four words and three bytes */
+u8 *func_002A8020(u8 *d, const u8 *s) {
+    AT(d, 0x0, s32) = AT(s, 0x0, s32);
+    AT(d, 0x4, s32) = AT(s, 0x4, s32);
+    AT(d, 0x8, s32) = AT(s, 0x8, s32);
+    AT(d, 0xC, s32) = AT(s, 0xC, s32);
+    AT(d, 0x10, u8) = AT(s, 0x10, u8);
+    AT(d, 0x11, u8) = AT(s, 0x11, u8);
+    AT(d, 0x12, u8) = AT(s, 0x12, u8);
+    return d;
+}
+
+/* a sub-record (+0x7B0) */
+u8 *func_002A7F70(u8 *d, const u8 *s) {
+    AT(d, 0x0, u8) = AT(s, 0x0, u8);
+    AT(d, 0x1, u8) = AT(s, 0x1, u8);
+    AT(d, 0x2, s16) = AT(s, 0x2, s16);
+    AT(d, 0x4, u32) = AT(s, 0x4, u32);
+    AT(d, 0x8, s16) = AT(s, 0x8, s16);
+    copy_words(d, s, 0xC, 13);
+    AT(d, 0x40, s32) = AT(s, 0x40, s32);
+    AT(d, 0x44, u8) = AT(s, 0x44, u8);
+    return d;
+}
+
+/* the whole state; the copy's 400 words at +0x11C lose their bit 0 */
+void func_002A7C70(const u8 *s, u8 *d) {
+    u32 i;
+
+    copy_words(d, s, 0x0, 0x94 / 4);
+    for (i = 0; i < 0x40; i++) {
+        AT(d, 0x94 + i, u8) = AT(s, 0x94 + i, u8);
+    }
+    copy_words(d, s, 0xD4, (0x75C - 0xD4) / 4);
+    func_002A8020(d + 0x75C, s + 0x75C);
+    copy_words(d, s, 0x770, 0x10);
+    func_002A7F70(d + 0x7B0, s + 0x7B0);
+    copy_words(d, s, 0x7F8, (0xFAC - 0x7F8) / 4);
+    for (i = 0; i < 8; i++) {
+        AT(d, 0xFAC + i * 2, s16) = AT(s, 0xFAC + i * 2, s16);
+    }
+    for (i = 0; i < 4; i++) {
+        AT(d, 0xFBC + i, u8) = AT(s, 0xFBC + i, u8);
+    }
+    for (i = 0; i < 400; i++) {
+        AT(d, 0x11C + i * 4, u32) &= ~1u;
+    }
+}
+
+/* four bytes cleared */
+void func_002A76E0(u8 *p) {
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 0;
+}
+
+s32 func_002A8AB0(void) {
+    return 0;
+}
+
 /* ---- room manager +0x9360 (D_00456E00): the room's triangle groups (PAC section 14: count,
  * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
 
@@ -1330,6 +1402,80 @@ s32 func_002A8590(u8 *o, u32 g, u32 bits) {
 /* +0x10 clear them */
 s32 func_002A85B0(u8 *o, u32 g, u32 bits) {
     return func_002A8730(o, 1, g, bits);
+}
+
+extern void *D_0046DB40[], *D_0046DB60[];
+extern VObject *D_00456E00;
+extern void func_00100490(void *p);   /* operator delete */
+
+/* the nav mesh triangle t's flag word (NULL->flags, as the original, past the end) */
+static u32 *tri_flags_word(u32 t) {
+    u8 *tri = t < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL
+                  ? AT(D_0044E570, 0x4, u8 *) + t * 0x50 : NULL;
+
+    return &AT(tri, 0x3C, u32);
+}
+
+/* +0x18 set flag bits on triangle t (-1: none, 0 done) */
+s32 func_002A85D0(u8 *o, u32 t, u32 bits) {
+    if (t == (u32)-1 || t >= AT(D_0044E570, 0x8, u32)) {
+        return -1;
+    }
+    *tri_flags_word(t) |= bits;
+    return 0;
+}
+
+/* +0x1C clear them */
+s32 func_002A8640(u8 *o, u32 t, u32 bits) {
+    if (t == (u32)-1 || t >= AT(D_0044E570, 0x8, u32)) {
+        return -1;
+    }
+    *tri_flags_word(t) &= ~bits;
+    return 0;
+}
+
+/* +0x14 whether group g holds triangle t */
+s32 func_002A86B0(u8 *o, u32 t, u32 g) {
+    u8 *sec, *grp;
+    u32 n, i;
+
+    if (g >= AT(o, 0x8, u32)) {
+        return 0;
+    }
+    sec = AT(o, 0x4, u8 *);
+    grp = sec + AT(sec, 0x4 + g * 4, u32);
+    n = AT(grp, 0, u32);
+    for (i = 0; i < n; i++) {
+        if (AT(grp, 4 + i * 4, u32) == t) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* +0x8 destructor */
+void *func_002A8520(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046DB40;
+        AT(o, 0x0, void **) = D_0046DB60;
+        D_00456E00 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the base's destructor */
+void *func_002A88D0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046DB60;
+        D_00456E00 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 #include "progress.h"
