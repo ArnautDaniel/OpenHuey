@@ -190,3 +190,37 @@ void func_0016D180(Progress *p, s32 slot) {
         }
     }
 }
+
+extern void *func_00171090(void *obj, s32 kind, s32 slot);   /* the event character (D_0046D810) */
+
+/* load character kind `id` as an event character into `slot` (3..5, free): 0x17C0 bytes from
+   the scene heap, its kind's model; 1 when it's there, 0 when not (no character for that kind:
+   none either) */
+s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    const CharKind *k;
+    void *mem;
+    u8 *obj;
+
+    id &= 0xFF;
+    slot &= 0xFF;
+    if (id >= 0x28 || sKinds[id].ctor == NULL) {
+        return 0;
+    }
+    k = &sKinds[id];
+    if (slot < 3 || slot >= 6 || gCharacters[slot] != NULL) {
+        return 0;
+    }
+    mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x17C0);
+    if (mem == NULL) {
+        return 0;
+    }
+    obj = func_00124E50(0x17C0, mem);
+    if (obj != NULL) {
+        obj = func_00171090(obj, id, slot);
+    }
+    Characters_Register(p, slot, obj);
+    k->model(p, slot);
+    AT(obj, 0x1668, u8) = 0;
+    return 1;
+}
