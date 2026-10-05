@@ -799,19 +799,19 @@ s32 func_002FF310(void) {
     return 1;
 }
 
-/* a lit quad (effect 0x1B) with corners q[0..15] and colour value `c`, by byte 3: 1 removed,
+/* a lit quad (room effect n) with corners q[0..15] and colour value `c`, by byte 3: 1 removed,
  * 2 on, else off */
-static s32 lit_quad(u8 *cmd, const u32 *corners, u32 c) {
+static inline __attribute__((always_inline)) s32 lit_quad_in(s32 n, u8 *cmd, const u32 *corners, u32 c) {
     u8 *fx;
     u32 q[20] __attribute__((aligned(16)));
     s32 i;
 
     if (cmd[3] == 1) {
-        func_002670F0(D_0044E4C0, 0x1B);
+        func_002670F0(D_0044E4C0, n);
         return 1;
     }
     fx = D_0044E4C0;
-    room_effect_new(fx, 0x1B, D_00472F60);
+    room_effect_new(fx, n, D_00472F60);
     for (i = 0; i < 16; i++) {
         q[i] = corners[i];
     }
@@ -819,8 +819,13 @@ static s32 lit_quad(u8 *cmd, const u32 *corners, u32 c) {
     q[0x11] = c;
     q[0x12] = 0;
     q[0x13] = c;
-    func_00266C70(fx, 0x1B, q);
+    func_00266C70(fx, n, q);
     return 1;
+}
+
+/* the usual one, room effect 0x1B */
+static s32 lit_quad(u8 *cmd, const u32 *corners, u32 c) {
+    return lit_quad_in(0x1B, cmd, corners, c);
 }
 
 /* a lit quad at x -15.96, z -2 .. 6, height 111 / 91 */
@@ -2528,4 +2533,27 @@ s32 func_002AA600(VObject *self, void *a1, u8 *cmd) {
         AT(o, 0x10, f32) = a - k2Pi.f;
     }
     return 1;
+}
+
+extern void *D_00478BE0[];
+
+static void effect_78BE0_init(void **obj) {
+    obj[0] = D_00478BE0;
+}
+
+/* room 0x4E (D_0040B4F8): the 0x10-byte effect D_00478BE0 made */
+s32 func_002B3AA0(void) {
+    Effect_New(D_0044E578, 0x10, effect_78BE0_init);
+    return 1;
+}
+
+/* room 0x21 (D_00400BC8): a lit quad (room effect 0x1A) at x 40.5 .. 49.5, z -10.5 .. -19.5,
+ * from 1.5 to 30 */
+s32 func_002AF300(void *self, void *a1, u8 *cmd) {
+    static const u32 sQuad[16] = {
+        0x4221F660, 0x41F00000, 0xC127F766, 0x3F800000, 0x42460227, 0x41F00000, 0xC19C1340, 0x3F800000,
+        0x4221F660, 0x3FC00000, 0xC127F766, 0x3F800000, 0x42460227, 0x3FC00000, 0xC19C1340, 0x3F800000,
+    };
+
+    return lit_quad_in(0x1A, cmd, sQuad, 0x20000040);
 }

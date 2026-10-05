@@ -295,6 +295,60 @@ void func_003475A0(u8 *o) {
     d.vtbl = D_00469D00;
 }
 
+/* ---- class D_00478BE0 (room 0x4E, 0x10 bytes): a light caustic (texture 8, 120 across) at
+ * (-8.77, -7.4, -0.007), glow threshold 0x80; +0x4/+0x8/+0xC its turns (updated by
+ * func_00350C40) ---- */
+
+extern void *D_00478BE0[];
+
+/* +0x8 destructor */
+u8 *func_00350B30(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00478BE0;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+/* +0xC reset: three random angles in -pi..pi */
+void func_00350D40(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB};
+    VObject *rng = D_0044E550;
+    s32 k;
+
+    for (k = 0; k < 3; k++) {
+        f32 r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+
+        AT(o, 0x4 + k * 4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    }
+}
+
+/* +0x14 draw */
+void func_00350B90(u8 *o) {
+    static const F32Bits kX = {0xC10C3F14}, kY = {0xC0ECCCCD}, kZ = {0xBBEBEDFA};
+    ModelDraw d __attribute__((aligned(16)));
+    ModelDrawParams p __attribute__((aligned(16)));
+
+    p.pos[0] = kX.f;
+    p.pos[1] = kY.f;
+    p.pos[2] = kZ.f;
+    p.pos[3] = 1.0f;
+    p.n = 8;
+    p.radius = 120.0f;
+    p.angle[0] = AT(o, 0x4, f32);
+    p.angle[1] = AT(o, 0x8, f32);
+    p.angle[2] = AT(o, 0xC, f32);
+    p.model = 0x80;
+    p.rgba = 0x80808080;
+    d.slot = -1;
+    d.vtbl = D_00478B70;
+    func_00350660(&d, &p);
+    d.vtbl = D_00469D00;
+}
+
 /* +0x18 start: params[0] 0 at height 45.1 (threshold 0x60), else -5.9 (0x58); then a first
  * update */
 void func_00347540(VObject *o, const s32 *params) {
