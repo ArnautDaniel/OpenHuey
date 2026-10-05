@@ -111,7 +111,9 @@ static const CharKind sKinds[0x28] = {
 
 #ifdef HG_NATIVE
 /* natively, the kinds whose classes are all in C (the rest stay "not loaded") */
-static const u8 sReady[0x28] = { 0 };
+static const u8 sReady[0x28] = {
+    [2] = 1, [3] = 1, [4] = 1, [6] = 1, [10] = 1, [11] = 1,   /* the stalkers */
+};
 extern void hg_skipped(const char *what);   /* native/platform/skip.c */
 #endif
 

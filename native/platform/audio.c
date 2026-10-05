@@ -80,3 +80,17 @@ int ADXT_IsReadyPlayStart(void *adxt) { (void)adxt; return 1; }
 int func_001D3E20(void *adxt) { (void)adxt; return 0; }
 /* ADXT_StartFname (PS2 0x001D4A20) */
 void func_001D4A20(void *adxt, char *name) { (void)adxt; (void)name; }
+
+extern void hg_skipped(const char *what);   /* skip.c */
+
+/* the sound manager's positioned voice (PS2 0x002FF600: the 3D placement 0x2FF4B0, then
+ * method +0xB8) - the pursuers' footsteps and voices: silent until the sound engine is on PC */
+void func_002FF600(void *snd, int id, int a2, int a3, int a4, int a5) {
+    (void)snd;
+    (void)id;
+    (void)a2;
+    (void)a3;
+    (void)a4;
+    (void)a5;
+    hg_skipped("func_002FF600 positioned sound");
+}
