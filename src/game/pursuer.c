@@ -1485,28 +1485,7 @@ extern void *D_0046D810[];
  * freed for slots 3..5 */
 Pursuer *func_00172810(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046D810;
-        VCALL(p, 0x10, void (*)(Pursuer *))(p);
-        if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
-            void **m = p->c.motion;
-
-            if (m != NULL) {
-                if (m != NULL) {
-                    VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                }
-                p->c.motion = NULL;
-            }
-        }
-        if (p != NULL) {
-            p->c.a.vtbl = D_0046C220;
-            VCALL(p, 0x10, void (*)(Pursuer *))(p);
-            if (p != NULL) {
-                p->c.a.vtbl = D_00469C60;
-                if (p != NULL) {
-                    p->c.a.vtbl = D_00469C20;
-                }
-            }
-        }
+        Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             func_00124E40(&p->c.a);
         }

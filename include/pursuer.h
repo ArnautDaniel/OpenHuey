@@ -36,6 +36,35 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 #define PURSUER_STEP_DONE(p) PU(p, 0x16EE, u8)
 #define PURSUER_STEP_NEXT(p) PU(p, 0x16F0, u8)
 
+extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+
+/* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
+ * and runs this inline): vtable +0x10 cleanup at each level, the model freed for slots 3..5. */
+static inline void Pursuer_DestroyBase(Pursuer *p) {
+    p->c.a.vtbl = D_0046D810;
+    VCALL(p, 0x10, void (*)(Pursuer *))(p);
+    if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
+        void **m = p->c.motion;
+
+        if (m != NULL) {
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+            }
+            p->c.motion = NULL;
+        }
+    }
+    if (p != NULL) {
+        p->c.a.vtbl = D_0046C220;
+        VCALL(p, 0x10, void (*)(Pursuer *))(p);
+        if (p != NULL) {
+            p->c.a.vtbl = D_00469C60;
+            if (p != NULL) {
+                p->c.a.vtbl = D_00469C20;
+            }
+        }
+    }
+}
+
 /* The flags of an out-of-range nav triangle: the original takes the record pointer as NULL and
  * reads +0x3C anyway, i.e. a word of low kernel memory on the PS2. Kept for the difftest build;
  * natively an invalid triangle has no flags. */
@@ -176,12 +205,25 @@ extern void func_00166150(Character *hewie, Pursuer *p, s32 kind);   /* tell Hew
 /* ---- end engine ---- */
 
 /* ---- generated from the definitions (tools: protos.py) ---- */
+Pursuer *func_001276F0(Pursuer *p, s32 flags);
+void *func_00127800(void **m, s32 flags);
 void func_00127A40(Pursuer *p, u32 kind);
 void func_00127B80(Pursuer *p);
 s32 func_00127BB0(Pursuer *p);
 s32 func_00127BC0(Pursuer *p);
 s32 func_00127C00(Pursuer *p);
 s32 func_00127C40(Pursuer *p, s32 exit);
+s32 func_00127CC0(Pursuer *p);
+s32 func_00127FC0(Pursuer *p);
+s32 func_00128080(Pursuer *p);
+void func_001286F0(Pursuer *p);
+void func_00128970(Pursuer *p);
+void func_00129550(Pursuer *p);
+void func_00129560(Pursuer *p);
+void func_00129AF0(Pursuer *p);
+void func_00129D10(Pursuer *p);
+s32 func_0012BE60(Pursuer *p);
+s32 func_0012BE70(Pursuer *p);
 Pursuer *func_001710D0(Pursuer *p, s32 flags);
 Pursuer *func_00172810(Pursuer *p, s32 flags);
 void func_00179600(Pursuer *p);

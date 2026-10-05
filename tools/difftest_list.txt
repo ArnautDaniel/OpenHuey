@@ -3306,3 +3306,16 @@ src/game/pursuer.c func_00127BB0 --runs=10
 src/game/pursuer.c func_00127BC0 --runs=10
 src/game/pursuer.c func_00127C00 --runs=10
 src/game/pursuer_ai.c func_00127C40 --stub-ret=0 --stub-ret=2 --stub-ret=3 --stub-ret=4 --stub-ret=5 --stub-ret=6 --stub-ret=7 --runs=60
+src/game/debilitas.c func_001276F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20=0..6 --pre=a1=0..1 --runs=60
+src/game/debilitas.c func_00127800 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --runs=30
+src/game/debilitas.c func_00127CC0 --pre=a0+0x16C8:u8=3..4 --runs=30
+src/game/debilitas.c func_00127FC0 --pre=a0+0x16C4=19..21 --pre=a0+0x16C8:u8=3..4 --stub-ret=0 --stub-ret=1 --stub-ret=0xFF --runs=100
+src/game/debilitas.c func_00128080 --runs=10
+src/game/debilitas.c func_00129550 --runs=10
+src/game/debilitas.c func_00129560 --runs=10
+src/game/debilitas.c func_00129AF0 --pre=a0+0x14D0=-1..2 --runs=40
+src/game/debilitas.c func_0012BE60 --runs=10
+src/game/debilitas.c func_0012BE70 --runs=10
+src/game/debilitas.c func_00128970 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=a0+0x1788=0xFFF..0x1000 --pre=a0+0x14D0=-1..1 --runs=60
+src/game/debilitas.c func_00129D10 --runs=30
+src/game/debilitas.c func_001286F0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A2007B8:u8=4..5 --runs=40
