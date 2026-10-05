@@ -7232,6 +7232,156 @@ void func_00182E80(Fiona *f) {
     FI(f, 0x1AD5F8, s32) = 0x708;
 }
 
+extern void func_002A8440(void *noise, s32 loud, s32 room, u32 tri, s32 door);   /* make a noise */
+extern s32 func_001669A0(Character *h);
+
+static inline void fiona_voice(Fiona *f, s32 id) {
+    func_00122C20(&f->c.a, id, 5, 0, 0, NULL);
+}
+
+static inline f32 fiona_rnd(void) {
+    return VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+}
+
+/* her line for an order (moveSub 0x2C: 0x31..0x33 by the game mode, heard as a noise unless
+ * Hewie is with her; 0x2D: 0x30) - once flag 0x25 is set, just 0x33 or 0x39 */
+void func_00183780(Fiona *f) {
+    Progress *p = gProgress;
+
+    if (Progress_TestFlag(p, 0x25) & 0xFF) {
+        if (fiona_rnd() < 0.5f) {
+            fiona_voice(f, 0x33);
+        } else {
+            fiona_voice(f, 0x39);
+        }
+        return;
+    }
+    switch (f->c.moveSub) {
+    case 0x2C:
+        switch (func_00177620(p) & 0xFF) {
+        case 2:
+            fiona_voice(f, 0x33);
+            break;
+        case 1:
+            fiona_voice(f, 0x31);
+            break;
+        case 0:
+            fiona_voice(f, 0x32);
+            break;
+        }
+        if (FI(f, 0x1AD5D5, u8) == 0) {
+            func_002A8440((u8 *)p + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        }
+        break;
+    case 0x2D:
+        fiona_voice(f, 0x30);
+        break;
+    }
+}
+
+/* her call to Hewie for the command (moveSub 0x23..0x2F); for 0x27 (praise / scold) by what he
+ * is doing (his action, func_001669A0) */
+void func_00183960(Fiona *f) {
+    switch (f->c.moveSub) {
+    case 0x23:
+        if ((func_00177620(gProgress) & 0xFF) == 0) {
+            fiona_voice(f, 0x2E);
+        } else {
+            fiona_voice(f, 0x2F);
+        }
+        break;
+    case 0x24:
+        fiona_voice(f, 0x37);
+        break;
+    case 0x25:
+        fiona_voice(f, 0x34);
+        break;
+    case 0x26:
+        break;
+    case 0x27: {
+        Character *h = (Character *)gCharPartner;
+        s32 act = AT(h, 0xF3564, s32);
+        u8 done = 0;
+
+        switch (act) {
+        case 0x22: case 0x20: case 0x21: case 0x1F: case 0x59: case 0x53:
+            if ((u32)(func_001669A0(h) - 8) < 2) {
+                done = 1;
+                fiona_voice(f, 0x36);
+            }
+            break;
+        }
+        if (done == 0) {
+            switch (act) {
+            case 0x25: case 0x24: case 0x63: case 0x13: case 0xA: case 0x22: case 0x20: case 0x21: case 0x1F:
+                done = 1;
+                fiona_voice(f, 0x36);
+                break;
+            }
+        }
+        if (done == 0 && act == 8) {
+            done = 1;
+            fiona_voice(f, 0x35);
+        }
+        if (done == 0 && h->moveMode == 0 && h->moveSub == 3) {
+            done = 1;
+            fiona_voice(f, 0x35);
+        }
+        if (done == 0) {
+            if (fiona_rnd() < 0.5f) {
+                fiona_voice(f, 0x35);
+            } else {
+                fiona_voice(f, 0x36);
+            }
+        }
+        break;
+    }
+    case 0x28:
+        if (fiona_rnd() < 0.75f) {
+            fiona_voice(f, 0x3A);
+        } else {
+            fiona_voice(f, 0x32);
+        }
+        break;
+    case 0x29:
+        if (AT(gCharPartner, 0xC4, s32) == 2) {
+            fiona_voice(f, 0x33);
+        } else {
+            fiona_voice(f, 0x3A);
+        }
+        break;
+    case 0x2A:
+        fiona_voice(f, 0x39);
+        break;
+    case 0x2B:
+        if (fiona_rnd() < 0.75f) {
+            fiona_voice(f, 0x3B);
+        } else {
+            fiona_voice(f, 0x30);
+        }
+        break;
+    case 0x2C:
+        fiona_voice(f, 0x31);
+        if (FI(f, 0x1AD5D5, u8) == 0) {
+            func_002A8440((u8 *)gProgress + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        }
+        break;
+    case 0x2D:
+        if ((func_00177620(gProgress) & 0xFF) == 2) {
+            fiona_voice(f, 0x2F);
+        } else {
+            fiona_voice(f, 0x30);
+        }
+        break;
+    case 0x2E:
+        fiona_voice(f, 0x2F);
+        break;
+    case 0x2F:
+        fiona_voice(f, 0x3B);
+        break;
+    }
+}
+
 /* Hewie, when he's with her (FI 0x1AD5D5), reacts to what she did (n) */
 void func_001817C0(Fiona *f, s32 n) {
     Character *h;
