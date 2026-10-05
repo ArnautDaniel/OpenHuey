@@ -6181,3 +6181,161 @@ void func_001924F0(Fiona *f) {
     }
     func_00125A10(&f->c);
 }
+
+/* ---- going through a door (moveSub 0x14 in, 0x15 out; the door in unk100, unk104[0] 0 a
+ * single door / else double): the door animation (0x600 + kind, FI 0x1AD6CC, kind at FI
+ * 0x1AD6C8: in 0 / 2 / 4 / 6, out 1 / 3 / 5 / 7, kinds 4..7 the slow ones when she can't
+ * hurry - FI 0x1AD584 bit 2 or the game mode 2), a spot by the door (FI 0x1AD640, its nav tri
+ * FI 0x1AD634) to walk to first ---- */
+
+extern const PTMF D_003B28B8, D_003B28C8, D_003B28D8, D_003B28E8;
+
+/* the door's spot for `kind`: position into pos, facing (y) into dir[1]; its nav tri, or -1 */
+static inline s32 door_spot(Fiona *f, f32 *pos, f32 *dir) {
+    return VCALL(D_0044E558, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
+        D_0044E558, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), pos, dir, 0);
+}
+
+/* walk to the spot (tri, at; facing yaw) and then go on in `next` */
+static inline __attribute__((always_inline)) void door_walk(Fiona *f, s32 tri, f32 *at, f32 yaw,
+                                                            const PTMF *next) {
+    f->c.unk124 = f->c.unk128;
+    FI(f, 0x1AD650, s32) = 0;
+    FI(f, 0x1AD634, s32) = tri;
+    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), at);
+    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    f->savedYaw = yaw;
+    Actor_SetState(&f->c.a, next);
+}
+
+static inline void door_kind(Fiona *f, s32 kind, s32 anim) {
+    FI(f, 0x1AD6C8, s32) = kind;
+    FI(f, 0x1AD6CC, s32) = anim;
+}
+
+/* state D_003B26C8 / D_003B26D8 / D_003B2608 (and 0x2E98): start. Out (0x15): to the spot
+ * (D_003B28E8); no spot: idle, the door shut behind (doors +0x20 / +0x1C, func_00178A90). In
+ * (0x14) through a door that isn't locked (func_00178840 != 1): the same, opening it the other
+ * way (func_00178C10). A locked one: a try at it - slow: from where she is when hurrying is
+ * blocked (D_003B28B8), else from the spot (D_003B28C8); quick: from the spot (D_003B28D8) */
+void func_00197640(Fiona *f) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    u8 quick = 1;
+    s32 tri;
+
+    if ((FI(f, 0x1AD584, s32) & 2) || (func_00177620(gProgress) & 0xFF) == 2) {
+        quick = 0;
+    }
+    if (f->c.moveSub != 0x14) {
+        if (f->c.unk104[0] == 0) {
+            if (quick == 1) {
+                door_kind(f, 1, 0x601);
+            } else {
+                door_kind(f, 5, 0x605);
+            }
+        } else if (quick == 1) {
+            door_kind(f, 3, 0x603);
+        } else {
+            door_kind(f, 7, 0x607);
+        }
+        FI(f, 0x1AD6C0, s32) = door_spot(f, at, dir);
+        if (FI(f, 0x1AD6C0, s32) == -1) {
+            VObject *doors;
+            Progress *p;
+
+            f->unk1AD580 = 0;
+            f->c.moveMode = 0;
+            f->savedYaw = f->c.a.angle[1];
+            f->unk1AD5C0 = 0;
+            f->unk1AD588 = 0;
+            if (f->c.unkE0 == 0) {
+                f->c.a.unk2D = 0;
+                if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
+                    func_001855F0(f, -1);
+                }
+                Actor_SetState(&f->c.a, &D_003B25A8);
+            } else {
+                Actor_SetState(&f->c.a, &D_003B25B8);
+            }
+            p = gProgress;
+            Progress_ClearFlag(p, 0x2B);
+            doors = D_0044E558;
+            VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
+            VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
+            func_00178A90(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+            return;
+        }
+        tri = FI(f, 0x1AD6C0, s32);
+        door_walk(f, tri, at, dir[1], &D_003B28E8);
+        return;
+    }
+    if ((func_00178840(gProgress, f->c.a.room, *(u8 *)&f->c.unk100) & 0xFF) != 1) {
+        if (f->c.unk104[0] == 0) {
+            if (quick == 1) {
+                door_kind(f, 0, 0x600);
+            } else {
+                door_kind(f, 4, 0x604);
+            }
+        } else if (quick == 1) {
+            door_kind(f, 2, 0x602);
+        } else {
+            door_kind(f, 6, 0x606);
+        }
+        FI(f, 0x1AD6C0, s32) = door_spot(f, at, dir);
+        if (FI(f, 0x1AD6C0, s32) == -1) {
+            VObject *doors;
+            Progress *p;
+
+            f->unk1AD580 = 0;
+            f->c.moveMode = 0;
+            f->savedYaw = f->c.a.angle[1];
+            f->unk1AD5C0 = 0;
+            f->unk1AD588 = 0;
+            if (f->c.unkE0 == 0) {
+                f->c.a.unk2D = 0;
+                if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
+                    func_001855F0(f, -1);
+                }
+                Actor_SetState(&f->c.a, &D_003B25A8);
+            } else {
+                Actor_SetState(&f->c.a, &D_003B25B8);
+            }
+            p = gProgress;
+            Progress_ClearFlag(p, 0x2B);
+            doors = D_0044E558;
+            VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
+            VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
+            func_00178C10(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+            return;
+        }
+        tri = FI(f, 0x1AD6C0, s32);
+        door_walk(f, tri, at, dir[1], &D_003B28E8);
+        return;
+    }
+    if (!quick) {
+        if (f->c.unk104[0] == 0) {
+            door_kind(f, 4, 0x60B);
+        } else {
+            door_kind(f, 6, 0x60A);
+        }
+        if (FI(f, 0x1AD584, s32) & 2) {
+            FI(f, 0x1AD634, s32) = door_spot(f, (f32 *)((u8 *)f + 0x1AD640), dir);
+            FI(f, 0x1AD65C, f32) = dir[1];
+            Actor_SetState(&f->c.a, &D_003B28B8);
+        } else {
+            FI(f, 0x1AD6C0, s32) = door_spot(f, at, dir);
+            tri = FI(f, 0x1AD6C0, s32);
+            door_walk(f, tri, at, dir[1], &D_003B28C8);
+        }
+    } else {
+        if (f->c.unk104[0] == 0) {
+            door_kind(f, 0, 0x609);
+        } else {
+            door_kind(f, 2, 0x608);
+        }
+        FI(f, 0x1AD6C0, s32) = door_spot(f, at, dir);
+        tri = FI(f, 0x1AD6C0, s32);
+        door_walk(f, tri, at, dir[1], &D_003B28D8);
+    }
+}
