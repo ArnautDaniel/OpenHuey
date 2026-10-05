@@ -4190,3 +4190,49 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
     take = func_001669A0(h);
     return take == 5 || take == 1 ? -2 : -1;
 }
+
+/* ---- where his target is ---- */
+
+/* the triangle (and in `out` the point) of his target: the character he goes for when it is in
+ * his room, else in target mode 2 the exit +0xF3670 of his room; -1 if none. When it can't be
+ * walked to straight, a path is planned there and the point becomes the one 20 along it */
+s32 func_0013EFB0(Hewie *h, f32 *out) {
+    Character *t = HEWIE_TARGET(h);
+    f32 at[4] __attribute__((aligned(16)));
+    s32 tri;
+
+    if (t != NULL) {
+        if (!in_his_room(h, t)) {
+            return -1;
+        }
+        tri = HEWIE_TARGET(h)->a.navTri;
+        sceVu0CopyVector(at, HEWIE_TARGET(h)->a.pos);
+    } else {
+        VObject *rooms;
+        u8 exit;
+
+        if (HW(h, 0xF366D, u8) != 2 || (exit = HW(h, 0xF3670, u8)) == 0xFF) {
+            return -1;
+        }
+        rooms = D_0044E568;
+        if (!(u8)VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, exit)) {
+            return -1;
+        }
+        tri = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, exit, at);
+    }
+    if (!(u8)func_00122C90(h, h->c.a.navTri, tri, h->c.a.pos, at, 0)) {
+        s32 r;
+
+        h->c.pathReq->mask = 0x40080;
+        r = func_0013EE40(h, tri, at, 0, 1);
+        h->c.pathReq->mask = h->c.a.navMask;
+        if (r == 0) {
+            tri = h->c.a.navTri;
+            sceVu0CopyVector(at, h->c.a.pos);
+            VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
+                gSceneGameF29740, (u32 *)&tri, at, 0, h->c.unk124, h->c.unk12C, 20.0f);
+        }
+    }
+    sceVu0CopyVector(out, at);
+    return tri;
+}
