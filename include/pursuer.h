@@ -624,12 +624,15 @@ void func_002D8AC0(Pursuer *p);
 void func_002D8CB0(Pursuer *p);
 void func_002DA120(Pursuer *p);
 void func_002DA4C0(Pursuer *p);
+void func_002DB480(Pursuer *p);
 void func_002DB7F0(Pursuer *p);
 void func_002DB900(Pursuer *p, s32 on);
 s32 func_002DB950(Pursuer *p);
 s32 func_002DB960(Pursuer *p);
 s32 func_002DB990(Pursuer *p);
 s32 func_002DB9E0(Pursuer *p);
+s32 func_002DBA90(Pursuer *p, f32 *out);
+void func_002DBD70(Pursuer *p);
 void func_002DC070(Pursuer *p);
 void func_002DC4E0(Pursuer *p);
 /* ---- end generated ---- */

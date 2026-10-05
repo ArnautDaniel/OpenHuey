@@ -571,3 +571,203 @@ void func_002DA120(Pursuer *p) {
         func_002D9500(p);
     }
 }
+
+extern const PTMF D_00415680, D_00415690;
+void func_002DA6B0(Pursuer *p);
+
+/* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0).
+   Otherwise the pending action (0x1C rumbles the pad), or: further than 100 hold off (6);
+   closer, seen by her and within +0x17C0 (60) come on (1); else back off (5) or hold off (6) by a
+   roll against his table +0x1824 (+0x14 chance, +0 / +4 waits). Then his chase (func_002DA6B0) */
+void func_002DB480(Pursuer *p) {
+    s32 next;
+
+    p->target = gCharPlayer;
+    PU(p, 0x16F6, u8) = 1;
+    if (PU(p, 0x1544, u8) == 0) {
+        VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00415680);
+        PU(p, 0x1758, s32) = -1;
+        return;
+    }
+    PU(p, 0x17C0, f32) = 60.0f;
+    next = PU(p, 0x1758, s32);
+    if (next == -1) {
+        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        Character *t;
+
+        if (!(PU(p, 0x1588, f32) <= 100.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+            PU(p, 0x162C, s32) = AT(PU(p, 0x1824, u8 *), 0xC, s32);
+        } else if (t = p->target,
+                   (func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+1f /* 180 degrees */) & 0xFF) &&
+                   PU(p, 0x1588, f32) <= PU(p, 0x17C0, f32)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+            PU(p, 0x162C, s32) = 0;
+        } else if (roll <= AT(PU(p, 0x1824, u8 *), 0x14, f32)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+            PU(p, 0x162C, s32) = AT(PU(p, 0x1824, u8 *), 0x0, s32);
+        } else {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+            PU(p, 0x162C, s32) = AT(PU(p, 0x1824, u8 *), 0x4, s32);
+        }
+    } else if (next != -2) {
+        if (next == 0x1C) {
+            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 0x1E);
+        }
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
+    }
+    PU(p, 0x16ED, u8) = 0;
+    PURSUER_STEP_DONE(p) = 0;
+    PU(p, 0x16EF, u8) = 0;
+    PU(p, 0x1758, s32) = -1;
+    PU(p, 0x1780, s32) = 0;
+    PU(p, 0x1630, s32) = AT(PU(p, 0x1824, u8 *), 0x10, s32);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00415690);
+    PU(p, 0x1758, s32) = -1;
+    func_002DA6B0(p);
+}
+
+extern void func_00211A90(Actor *a, f32 dist, f32 *out);                       /* a point ahead */
+extern void func_00211A30(f32 *out, const f32 *from, f32 angle, f32 dist);   /* from + dir * dist */
+extern const f32 D_00415660[4];
+
+/* where the blow of his current animation hits the floor (into `out`; 0 if nowhere). His hammer
+   swings 0xE00 / 0xE04: straight ahead along the nav mesh to the first edge he can't cross
+   (flags 0x80 or no neighbour), stopping at walls (0x4000); his slams 0x2301 / 0x2303 / 0xE06 /
+   0x1602: under the hammer head (bone 0x31, offset D_00415660) */
+s32 func_002DBA90(Pursuer *p, f32 *out) {
+    s32 swing;
+
+    switch (MOTION_ANIM(p)) {
+    case 0x2303:
+    case 0x2301:
+    case 0xE06:
+    case 0x1602:
+        swing = 0;
+        break;
+    case 0xE04:
+    case 0xE00:
+        swing = 1;
+        break;
+    default:
+        return 0;
+    }
+    if (swing) {
+        u32 tri = p->c.a.navTri;
+        f32 ahead[4] __attribute__((aligned(16)));
+        void *nav;
+
+        func_00211A90(&p->c.a, 1000.0f, ahead);
+        nav = D_0044E570;
+        for (;;) {
+            u8 *t = tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL ? AT(nav, 0x4, u8 *) + tri * 0x50 : NULL;
+            s32 edge;
+            u32 next;
+
+            if ((t != NULL ? AT(t, 0x3C, u32) : NAV_BAD_TRI_FLAGS) & 0x4000) {
+                return 0;
+            }
+#ifdef HG_NATIVE
+            if (t == NULL) {
+                return 0;
+            }
+#endif
+            edge = VCALL(nav, 0x20, s32 (*)(void *, u32, f32 *, f32 *))(nav, tri, p->c.a.pos, ahead);
+            if (edge == 3) {
+                func_00211A30(ahead, ahead, p->c.a.angle[1], 1000.0f);
+                continue;
+            }
+            if (edge == 4) {
+                return 0;
+            }
+            next = AT(t, 0x30 + edge * 4, u32);
+            if (next == (u32)-1 || (AT(t, 0x3C, u32) & 0x80)) {
+                VCALL(nav, 0x24, void (*)(void *, u32, f32 *, f32 *, f32 *))(nav, tri, out, p->c.a.pos, ahead);
+                out[1] += 15.0f;
+                return 1;
+            }
+            tri = next;
+        }
+    } else {
+        f32 head[4] __attribute__((aligned(16)));
+        f32 off[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+        u32 tri;
+
+        sceVu0CopyVector(head, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x31) + 0xC);
+        off[0] = D_00415660[0];
+        off[1] = D_00415660[1];
+        off[2] = D_00415660[2];
+        off[3] = D_00415660[3];
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x31));
+        func_002E2DA0(out, m, off);
+        sceVu0AddVector(out, out, head);
+        tri = func_00124480(&p->c.a, out, 0x20008);
+        if (tri == (u32)-1) {
+            return 0;
+        }
+        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, out);
+        return 1;
+    }
+}
+
+/* the impact (0x80 bytes, vtable 0x479600) and the debris cloud (0xF70 bytes, vtable 0x47A710)
+   of his hammer */
+extern void *D_00479600[], *D_0047A710[];
+
+static inline void Impact_Init(void **obj) {
+    obj[0] = D_00479600;
+}
+
+static inline void Debris_Init(void **obj) {
+    obj[0] = D_0047A710;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+typedef struct {
+    s32 rgb[3];    /* 0x80, 0x50, 0x40: brown */
+    f32 pos[3];
+} DebrisParams;
+
+/* at the impact key of his animation (0x20): a jolt (the 0x80 effect, kind 2) and a noise of
+   0x40 where he stands (gProgress+0x798); a debris cloud where his slam or swing hits the floor
+   (func_002DBA90), or for his grab 0x1A01 a hit effect on Fiona */
+void func_002DBD70(Pursuer *p) {
+    u8 *mgr;
+    s32 jolt[4] = { 2, 0, 0, 0 };   /* kind 2 */
+
+    if (!(func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+        return;
+    }
+    mgr = D_0044E578;
+    func_002D6090(mgr, Effect_New(mgr, 0x80, Impact_Init), jolt);
+    func_002A8440((u8 *)gProgress + 0x798, 0x40, p->c.a.room, p->c.a.navTri, 0xFFFF);
+    switch (MOTION_ANIM(p)) {
+    case 0x2303:
+    case 0x2301:
+    case 0x1602: {
+        f32 at[4] __attribute__((aligned(16)));
+        DebrisParams dp;
+        s32 slot;
+
+        if (!(func_002DBA90(p, at) & 0xFF)) {
+            break;
+        }
+        slot = Effect_New(mgr, 0xF70, Debris_Init);
+        dp.rgb[0] = 0x80;
+        dp.rgb[1] = 0x50;
+        dp.rgb[2] = 0x40;
+        dp.pos[0] = at[0];
+        dp.pos[1] = at[1];
+        dp.pos[2] = at[2];
+        func_002D6090(mgr, slot, &dp);
+        break;
+    }
+    case 0x1A01:
+        func_002D7E20(p, gCharPlayer);
+        break;
+    }
+}
