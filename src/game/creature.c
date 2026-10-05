@@ -662,6 +662,26 @@ extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);
 extern s32 func_001272B0(Character *c, f32 speed);
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
+/* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
+static void creature_at_doors(Character *c) {
+    u8 *k = CR(c);
+    VObject *rooms = D_0044E568, *ev_mgr;
+    s32 cur = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    u32 i;
+
+    ev_mgr = D_0044E4D0;
+    for (i = 0; i < 8; i++) {
+        u32 door;
+
+        AT(k, 0x8A + i * 2, u16) = 0;
+        door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, cur, i & 0xFF) & 0xFFFF;
+        if (cur == c->a.room && door != 0xFFFF && c->a.disabled == 0 &&
+            VCALL(ev_mgr, 0x10, s32 (*)(VObject *, f32 *, u32, s32))(ev_mgr, c->a.pos, door, -1) != 0) {
+            AT(k, 0x8A + i * 2, u16) |= (1 << *(s32 *)&c->a.slot) & 0xFFFF;
+        }
+    }
+}
+
 /* travelling (unless in an event, flag 0x18): off screen the distance to the next door
  * (+0x14C4) runs down by its speed (2/3 of it with company, +0x2A); at a door (+0xB) it walks
  * the path at half speed. On arriving at the door (+0x14C0): if the way through is open
@@ -726,27 +746,14 @@ void func_002DFA50(Character *c) {
         f32 in[4] __attribute__((aligned(16)));
         f32 d[4] __attribute__((aligned(16)));
         f32 yaw;
-        u32 tri, i;
-        s32 cur;
-        VObject *ev_mgr;
+        u32 tri;
 
         tri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), at);
         VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), in);
         sceVu0SubVector(d, in, at);
         yaw = func_0031C5C0(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
-        cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-        ev_mgr = D_0044E4D0;
-        for (i = 0; i < 8; i++) {
-            u32 door;
-
-            AT(k, 0x8A + i * 2, u16) = 0;
-            door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, cur, i & 0xFF) & 0xFFFF;
-            if (cur == c->a.room && door != 0xFFFF && c->a.disabled == 0 &&
-                VCALL(ev_mgr, 0x10, s32 (*)(VObject *, f32 *, u32, s32))(ev_mgr, c->a.pos, door, -1) != 0) {
-                AT(k, 0x8A + i * 2, u16) |= (1 << *(s32 *)&c->a.slot) & 0xFFFF;
-            }
-        }
+        creature_at_doors(c);
     } else {
         c->a.navTri = NAV_NONE;
         AT(&c->unk14C4, 0, f32) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room);
@@ -872,4 +879,128 @@ void func_002E0390(Character *c) {
         }
     }
     func_001274E0(c, AT(k, 0x0, f32));
+}
+
+extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
+
+/* +0x64 put in room `room` on triangle `tri`, mode `mode` (+0xC): (the Character's +0x64,
+ * func_00125BA0) in the room being played placed there (+0x28; its result) and its doors
+ * noted, else just its triangle; 0 */
+s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
+    Progress *p;
+    s32 r = 0;
+
+    func_00125BA0(c, room, tri, mode);
+    AT(CR(c), 0xC, s32) = mode;
+    p = gProgress;
+    if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        c->a.navTri = tri;
+        return r;
+    }
+    r = VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, tri, NULL, NULL);
+    creature_at_doors(c);
+    return r;
+}
+
+/* +0x38 the room is entered: if it was out (+0x10) and is in the room being played, back on
+ * its triangle (or, on one it may not stand on, a random place on its level) with its doors
+ * noted; in the room being played it is in play (somewhere random if off the mesh), else not */
+void func_002E0DB0(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    s32 room;
+
+    if (AT(k, 0x10, s32) != 0) {
+        room = c->a.room;
+        if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+            u32 tri = c->a.navTri;
+
+            if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
+                func_002DE540(c, AT(k, 0xC, s32));
+            } else {
+                VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
+                VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
+            }
+            creature_at_doors(c);
+        }
+    }
+    room = c->a.room;
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        if (c->a.navTri == NAV_NONE) {
+            func_002DE540(c, AT(k, 0xC, s32));
+        }
+        c->a.disabled = 0;
+    } else {
+        c->a.disabled = 1;
+    }
+}
+
+/* +0xC set up: the Character's (func_00127660); size 1.5 x 16, company 1, no blocking flags,
+ * path kind 6 blocking 0x40080; no model; a random kind 0..15 (its table entry), strength 0;
+ * all its own state cleared (bobbing 0.5 / 0.05, fade 0x80, turns every 20, gives up after
+ * 60 or with +0x8 30 tries), then +0x5C */
+void func_002E2030(Character *c) {
+    u8 *k = CR(c);
+    const CreatureKind *t;
+    s32 i;
+
+    func_00127660(c);
+    c->a.radius = 1.5f;
+    c->a.height = 16.0f;
+    c->a.unk2A = 1;
+    c->a.navMask = 0;
+    c->pathReq->unk4 = 6;
+    c->pathReq->mask = 0x40080;
+    c->motion = NULL;
+    AT(k, 0x31, u8) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(k, 0x4, s16) = 0;
+    t = &D_004164F0[AT(k, 0x31, u8)];
+    AT(k, 0x8, u8) = t->b;
+    AT(k, 0x0, f32) = t->f;
+    AT(k, 0x6, s16) = t->s;
+    AT(k, 0x28, u8) = 0;
+    AT(k, 0x14, s32) = 0;
+    AT(k, 0x18, f32) = 0.5f;
+    AT(k, 0x1C, f32) = 0x1.99999ap-5f /* 0.05 */;
+    AT(k, 0x9, u8) = 0;
+    AT(k, 0xA, u8) = 0;
+    AT(k, 0xB, u8) = 0;
+    AT(k, 0xC, s32) = 0;
+    AT(k, 0x10, s32) = 0;
+    AT(k, 0x20, s16) = 0;
+    AT(k, 0x22, s16) = 0;
+    AT(k, 0x24, s32) = 0;
+    AT(k, 0x29, u8) = 0;
+    AT(k, 0x2C, s16) = 0x80;
+    AT(k, 0x2A, u8) = 0;
+    AT(k, 0x2B, u8) = 0;
+    AT(k, 0x32, u8) = 20;
+    AT(k, 0x2F, u8) = 0;
+    AT(k, 0x30, u8) = AT(k, 0x8, u8) == 0 ? 60 : 30;
+    AT(k, 0x33, u8) = 0;
+    AT(k, 0x34, u8) = 0;
+    AT(k, 0x35, u8) = 0;
+    AT(k, 0x36, u8) = 0;
+    AT(k, 0x37, u8) = 0;
+    AT(k, 0x38, s32) = 0;
+    AT(k, 0x3C, s32) = 0;
+    AT(k, 0x40, s32) = 0;
+    for (i = 0x50; i < 0x80; i += 4) {
+        AT(k, i, s32) = 0;
+    }
+    AT(k, 0x83, u8) = 0;
+    AT(k, 0x84, u8) = 0;
+    AT(k, 0x85, u8) = 0;
+    AT(k, 0x88, u16) = 0;
+    AT(k, 0x44, s32) = 0;
+    AT(k, 0x86, u8) = 0;
+    AT(k, 0x9D, u8) = 0;
+    for (i = 0; i < 8; i++) {
+        AT(k, 0x8A + i * 2, s16) = 0;
+    }
+    AT(k, 0x87, u8) = 0;
+    AT(k, 0x9A, u8) = 0;
+    AT(k, 0x9B, u8) = 0;
+    AT(k, 0x9C, u8) = 0;
+    VCALL(c, 0x5C, void (*)(Character *))(c);
 }
