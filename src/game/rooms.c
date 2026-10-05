@@ -798,101 +798,247 @@ s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
     }
 }
 
-/* block the triangles under each part (flags |= 0x20400000), the square first stepped twice
- * along `dir` (if any) */
-void func_0017F430(u8 *o, const f32 *dir) {
-    NavMesh *nm = D_0044E570;
-    u8 *part = o + 0x68;
-    s32 i, x, z;
+enum { SQ_BLOCK, SQ_UNBLOCK, SQ_TEST, SQ_FLAG, SQ_CHARS };
 
-    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
-        f32 sx[4] __attribute__((aligned(16)));
-        f32 sz[4] __attribute__((aligned(16)));
-        u32 a, b;
+struct sq_ctx {
+    u32 any, all;   /* SQ_TEST: the flags of any / all triangles */
+    s32 n;          /* SQ_CHARS: the characters' triangles */
+    u32 tri[5];
+};
 
-        sx[1] = 0.0f;
-        sx[0] = 1.0f;
-        sz[2] = 1.0f;
-        sz[0] = 0.0f;
-        sx[2] = 0.0f;
-        sz[1] = 0.0f;
-        a = AT(part, 0x0, u32);
-        b = AT(part, 0x4, u32);
-        if (dir != NULL) {
-            func_0017F660(o, &a, &b, dir);
-            func_0017F660(o, &a, &b, dir);
-        }
-        for (z = 0; z < AT(part, 0x14, s32); z++) {
-            for (x = 0; x < AT(part, 0x10, s32); x++) {
-                NavMesh_Tri(nm, a)->flags |= 0x20400000;
-                NavMesh_Tri(nm, b)->flags |= 0x20400000;
-                func_0017F660(o, &a, &b, sx);
+/* one square (a, b) of a walk; nonzero to stop */
+static inline __attribute__((always_inline)) s32 sq_visit(s32 mode, struct sq_ctx *c, u32 a, u32 b, s32 corner) {
+    s32 k;
+
+    switch (mode) {
+    case SQ_BLOCK:
+        NavMesh_Tri(D_0044E570, a)->flags |= 0x20400000;
+        NavMesh_Tri(D_0044E570, b)->flags |= 0x20400000;
+        break;
+    case SQ_UNBLOCK:
+        NavMesh_Tri(D_0044E570, a)->flags &= 0xDFBFFFFF;
+        NavMesh_Tri(D_0044E570, b)->flags &= 0xDFBFFFFF;
+        break;
+    case SQ_TEST: {
+        u32 fa = NavMesh_Tri(D_0044E570, a)->flags;
+        u32 fb = NavMesh_Tri(D_0044E570, b)->flags;
+
+        c->any = c->any | fa | fb;
+        c->all = c->all & fa & fb;
+        break;
+    }
+    case SQ_FLAG:
+        NavMesh_Tri(D_0044E570, a)->flags |= corner ? 0x20000000 : 0x20800000;
+        NavMesh_Tri(D_0044E570, b)->flags |= corner ? 0x20000000 : 0x20800000;
+        break;
+    case SQ_CHARS:
+        for (k = 0; k < c->n; k++) {
+            if (a == c->tri[k] || b == c->tri[k]) {
+                return 1;
             }
-            func_0017F660(o, &a, &b, sz);
         }
+        break;
+    }
+    return 0;
+}
+
+/* each square of a part (its square first stepped twice along `dir`, if any), row by row */
+static inline __attribute__((always_inline)) void part_area(u8 *o, const u8 *part, const f32 *dir, s32 mode,
+                                                            struct sq_ctx *c) {
+    f32 sx[4] __attribute__((aligned(16)));
+    f32 sz[4] __attribute__((aligned(16)));
+    u32 a, b;
+    s32 x, z;
+
+    sx[1] = 0.0f;
+    sx[0] = 1.0f;
+    sz[2] = 1.0f;
+    sz[0] = 0.0f;
+    sx[2] = 0.0f;
+    sz[1] = 0.0f;
+    a = AT(part, 0x0, u32);
+    b = AT(part, 0x4, u32);
+    if (dir != NULL) {
+        func_0017F660(o, &a, &b, dir);
+        func_0017F660(o, &a, &b, dir);
+    }
+    for (z = 0; z < AT(part, 0x14, s32); z++) {
+        for (x = 0; x < AT(part, 0x10, s32); x++) {
+            sq_visit(mode, c, a, b, 0);
+            func_0017F660(o, &a, &b, sx);
+        }
+        func_0017F660(o, &a, &b, sz);
     }
 }
 
-static void square_flag(NavMesh *nm, u32 a, u32 b, u32 flag) {
-    NavMesh_Tri(nm, a)->flags |= flag;
-    NavMesh_Tri(nm, b)->flags |= flag;
+/* the ring of squares around a part from its square (a, b): each side, then a corner, round
+ * from the -x -z corner; 1 when stopped */
+static inline __attribute__((always_inline)) s32 part_ring(u8 *o, const u8 *part, u32 a, u32 b, s32 mode,
+                                                           struct sq_ctx *c) {
+    f32 sx[4] __attribute__((aligned(16)));
+    f32 sz[4] __attribute__((aligned(16)));
+    s32 side, k;
+
+    sx[1] = 0.0f;
+    sx[0] = -1.0f;
+    sz[2] = -1.0f;
+    sz[0] = 0.0f;
+    sx[2] = 0.0f;
+    sz[1] = 0.0f;
+    func_0017F660(o, &a, &b, sx);
+    func_0017F660(o, &a, &b, sz);
+    for (side = 0; side < 4; side++) {
+        f32 *d = (side & 1) ? sz : sx;
+        s32 n = AT(part, (side & 1) ? 0x14 : 0x10, s32);
+
+        d[(side & 1) ? 2 : 0] = side < 2 ? 1.0f : -1.0f;
+        for (k = 0; k < n; k++) {
+            func_0017F660(o, &a, &b, d);
+            if (sq_visit(mode, c, a, b, 0)) {
+                return 1;
+            }
+        }
+        func_0017F660(o, &a, &b, d);
+        if (sq_visit(mode, c, a, b, 1)) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
-/* mark the ring of squares around each part (the square first stepped twice along `dir`, if
- * any): its sides 0x20800000, its corners 0x20000000 */
+/* block the triangles under each part (flags |= 0x20400000), moved two squares along `dir` */
+void func_0017F430(u8 *o, const f32 *dir) {
+    s32 i;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++) {
+        part_area(o, o + 0x68 + i * 0x18, dir, SQ_BLOCK, NULL);
+    }
+}
+
+/* ... and unblock them */
+void func_0017F1F0(u8 *o, const f32 *dir) {
+    s32 i;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++) {
+        part_area(o, o + 0x68 + i * 0x18, dir, SQ_UNBLOCK, NULL);
+    }
+}
+
+/* mark the ring of squares around each part (moved two squares along `dir`, if any): its
+ * sides 0x20800000, its corners 0x20000000 */
 void func_0017EA30(u8 *o, const f32 *dir) {
-    NavMesh *nm = D_0044E570;
     u8 *part = o + 0x68;
-    s32 i, k;
+    s32 i;
 
     for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
-        f32 sx[4] __attribute__((aligned(16)));
-        f32 sz[4] __attribute__((aligned(16)));
-        u32 a, b;
+        u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
 
-        sx[1] = 0.0f;
-        sx[0] = -1.0f;
-        sz[2] = -1.0f;
-        sz[0] = 0.0f;
-        sx[2] = 0.0f;
-        sz[1] = 0.0f;
-        a = AT(part, 0x0, u32);
-        b = AT(part, 0x4, u32);
         if (dir != NULL) {
             func_0017F660(o, &a, &b, dir);
             func_0017F660(o, &a, &b, dir);
         }
-        func_0017F660(o, &a, &b, sx);
-        func_0017F660(o, &a, &b, sz);
-        sx[0] = 1.0f;
-        for (k = 0; k < AT(part, 0x10, s32); k++) {
-            func_0017F660(o, &a, &b, sx);
-            square_flag(nm, a, b, 0x20800000);
-        }
-        func_0017F660(o, &a, &b, sx);
-        square_flag(nm, a, b, 0x20000000);
-        sz[2] = 1.0f;
-        for (k = 0; k < AT(part, 0x14, s32); k++) {
-            func_0017F660(o, &a, &b, sz);
-            square_flag(nm, a, b, 0x20800000);
-        }
-        func_0017F660(o, &a, &b, sz);
-        square_flag(nm, a, b, 0x20000000);
-        sx[0] = -1.0f;
-        for (k = 0; k < AT(part, 0x10, s32); k++) {
-            func_0017F660(o, &a, &b, sx);
-            square_flag(nm, a, b, 0x20800000);
-        }
-        func_0017F660(o, &a, &b, sx);
-        square_flag(nm, a, b, 0x20000000);
-        sz[2] = -1.0f;
-        for (k = 0; k < AT(part, 0x14, s32); k++) {
-            func_0017F660(o, &a, &b, sz);
-            square_flag(nm, a, b, 0x20800000);
-        }
-        func_0017F660(o, &a, &b, sz);
-        square_flag(nm, a, b, 0x20000000);
+        part_ring(o, part, a, b, SQ_FLAG, NULL);
     }
+}
+
+/* the area the parts would cover two squares along `dir` is free: none of its triangles has
+ * a flag of `forbid`, and all have one of `need` (0; else -1) */
+s32 func_0017D580(u8 *o, u32 forbid, u32 need, const f32 *dir) {
+    struct sq_ctx c;
+    s32 i;
+
+    c.any = 0;
+    c.all = need;
+    for (i = 0; i < AT(o, 0x64, s32); i++) {
+        part_area(o, o + 0x68 + i * 0x18, dir, SQ_TEST, &c);
+    }
+    if (!(c.any & forbid) && (c.all & need)) {
+        return 0;
+    }
+    return -1;
+}
+
+/* no other character (slots 1..5, in the scene and not +0x29) stands on the ring around the
+ * parts moved one or two squares along `dir`: -1; else 0 */
+s32 func_0017D7F0(u8 *o, const f32 *dir) {
+    struct sq_ctx c;
+    u8 *part = o + 0x68;
+    s32 i, pass;
+
+    c.n = 0;
+    for (i = 1; i < 6; i++) {
+        u8 *ch = gCharacters[i];
+
+        if (ch != NULL && AT(ch, 0x28, u8) == 1 && AT(ch, 0x29, u8) == 0) {
+            c.tri[c.n++] = AT(ch, 0x34, u32);
+        }
+    }
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        for (pass = 0; pass < 2; pass++) {
+            u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
+
+            func_0017F660(o, &a, &b, dir);
+            if (pass == 0) {
+                func_0017F660(o, &a, &b, dir);
+            }
+            if (part_ring(o, part, a, b, SQ_CHARS, &c)) {
+                return 0;
+            }
+        }
+    }
+    return -1;
+}
+
+/* can it be pushed along `dir`: nobody in the way, and (with its own blocks lifted) the place
+ * is walkable floor (0x100) without 0x440080 */
+s32 func_0017D4E0(u8 *o, const f32 *dir) {
+    s32 ok = 0;
+
+    if (func_0017D7F0(o, dir) == 0) {
+        return -1;
+    }
+    func_0017F1F0(o, NULL);
+    if (func_0017D580(o, 0x440080, 0x100, dir) == 0) {
+        ok = 1;
+    }
+    func_0017F430(o, NULL);
+    if ((u8)ok == 1) {
+        return 0;
+    }
+    return -1;
+}
+
+/* the target square: the reference square two squares along `dir` (+0x5C / +0x60) */
+void func_0017D290(u8 *o, const f32 *dir) {
+    u32 a = AT(o, 0x54, u32), b = AT(o, 0x58, u32);
+
+    func_0017F660(o, &a, &b, dir);
+    func_0017F660(o, &a, &b, dir);
+    AT(o, 0x5C, u32) = a;
+    AT(o, 0x60, u32) = b;
+}
+
+/* triangle `t` is the obstacle's square (the target one on the last step of a move) */
+s32 func_0017D300(u8 *o, u32 t) {
+    if (AT(o, 0x10, s32) == AT(o, 0x14, s32) - 1) {
+        return AT(o, 0x5C, u32) == t || AT(o, 0x60, u32) == t;
+    }
+    return AT(o, 0x54, u32) == t || AT(o, 0x58, u32) == t;
+}
+
+/* a move done: the target square becomes the reference, the parts and centre follow */
+void func_0017D370(u8 *o) {
+    if (AT(o, 0x5C, u32) == NAV_NONE) {
+        return;
+    }
+    AT(o, 0x54, u32) = AT(o, 0x5C, u32);
+    AT(o, 0x58, u32) = AT(o, 0x60, u32);
+    AT(o, 0x5C, u32) = NAV_NONE;
+    AT(o, 0x60, u32) = NAV_NONE;
+    func_0017E0B0(o);
+    square_centre(D_0044E570, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
+    AT(o, 0x4C, f32) = 1.0f;
+    AT(o, 0x10, s32) = AT(o, 0x14, s32);
 }
 
 /* placed: the centre of the reference square, then the parts' squares, blocked (no move) and
@@ -918,12 +1064,7 @@ extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
 extern s32 func_0017DD60(u8 *o, s32 a, s32 b);
-extern void func_0017F1F0(u8 *o, const f32 *dir);
 extern void func_0017E260(u8 *o, const f32 *dir);
-extern void func_0017D290(u8 *o, s32 a);
-extern s32 func_0017D300(u8 *o, s32 a);
-extern void func_0017D370(u8 *o);
-extern s32 func_0017D4E0(u8 *o, s32 a);
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 #define OBST(l, i) ((u8 *)(l) + 0x10 + (i) * 0xB0)
@@ -1100,7 +1241,7 @@ s32 func_0021A7E0(u8 *l, s32 i) {
 }
 
 /* +0x30 obstacle i (not stopped, +0x1): func_0017D4E0(a); -1 otherwise */
-s32 func_0021A760(u8 *l, s32 i, s32 a) {
+s32 func_0021A760(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0 || AT(o, 0x1, u8) == 1) {
@@ -1110,7 +1251,7 @@ s32 func_0021A760(u8 *l, s32 i, s32 a) {
 }
 
 /* +0x34 obstacle i: func_0017D300(a) (0 for none) */
-s32 func_0021A6F0(u8 *l, s32 i, s32 a) {
+s32 func_0021A6F0(u8 *l, s32 i, u32 a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
@@ -1127,7 +1268,7 @@ void func_0021A690(u8 *l, s32 i) {
 }
 
 /* +0x3C obstacle i: func_0017D290(a) */
-void func_0021A630(u8 *l, s32 i, s32 a) {
+void func_0021A630(u8 *l, s32 i, const f32 *a) {
     if (i >= 0 && i < 5 && AT(OBST(l, i), 0x0, u8) != 0) {
         func_0017D290(OBST(l, i), a);
     }
