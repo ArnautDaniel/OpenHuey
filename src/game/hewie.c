@@ -9211,3 +9211,104 @@ void func_0015BD90(Hewie *h) {
         func_002DDED0(h->c.motion, 0x204, -1);
     }
 }
+
+/* ---- circling to its flank ---- */
+
+/* get round to his target's (+0xF3544, in his room; else the default action) side. Behind it
+ * (his bearing within 45 degrees of the pursuer's heading) and facing much its way (within 135):
+ * line up with the pursuer's heading as he runs; within 40 the side is settled (+0xF36B4 -1,
+ * +0xF36B8 1) and, lined up within 30, the default action. Else (once settled: the default
+ * action): once on its triangle pick the side by the bearing (+0xF36B4 0 / 1), and run for the
+ * point beside it 45 degrees round from straight out, 20 out (up to 40 the more squarely he is
+ * behind), the way clear to it; unsettled, along the path to it. Gait by the distance (walk
+ * under 20, trot under 44, else run) */
+void func_0015C1E0(Hewie *h) {
+    Character *t;
+    f32 p, dd, rel, d, step;
+
+    if (!in_his_room(h, HW(h, 0xF3544, Character *))) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gCharPursuer->a.angle[1];
+    dd = func_00124490(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
+    rel = func_002E2D00(p - func_001244D0(&h->c.a, HW(h, 0xF3544, Character *)->a.pos));
+    if ((rel <= 0.0f ? -rel : rel) < 0x1.921fb60000000p-1f /* 0.7853982 */ && heading_gap(h, gCharPursuer) < 0x1.2d97c80000000p+1f /* 2.3561945 */) {
+        if (HW(h, 0xF3604, s32) != 8) {
+            HW(h, 0xF3604, s32) = 8;
+            HW(h, 0xF3608, s32) = 10;
+        }
+        HW(h, 0xF3614, f32) = 0.0f;
+        HW(h, 0xF3618, f32) = func_002E2D00(p - h->c.a.angle[1]);
+        step = run_turn(h);
+        turn_toward(h, p, step);
+        if (dd < 40.0f) {
+            HW(h, 0xF36B4, s32) = -1;
+            HW(h, 0xF36B8, s32) = 1;
+            if (heading_gap(h, gCharPursuer) < 0x1.0c15240000000p-1f /* 0.5235988 */) {
+                hewie_want(h, 0, 0);
+            }
+        }
+        d = dd - 40.0f;
+    } else {
+        if (HW(h, 0xF36B8, s32) != 0) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        if (HW(h, 0xF36B4, s32) == -1) {
+            t = HW(h, 0xF3544, Character *);
+            if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) == t->a.navTri) {
+                HW(h, 0xF36B4, s32) = rel < 0.0f ? 0 : 1;
+            }
+        }
+        if (HW(h, 0xF36B4, s32) != -1) {
+            f32 m[4][4] __attribute__((aligned(16)));
+            f32 v[4] __attribute__((aligned(16)));
+            f32 at[4] __attribute__((aligned(16)));
+            f32 out = func_001244D0(&HW(h, 0xF3544, Character *)->a, h->c.a.pos);
+            f32 side, reach, a;
+
+            side = HW(h, 0xF36B4, s32) != 0 ? func_002E2D00(out + 0x1.921fb60000000p-1f /* 0.7853982 */) : func_002E2D00(out - 0x1.921fb60000000p-1f /* 0.7853982 */);
+            if ((rel <= 0.0f ? -rel : rel) < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                if (rel <= 0.0f) {
+                    rel = -rel;
+                }
+                reach = 20.0f + 20.0f * (1.0f - func_0031C248(rel));
+            } else {
+                reach = 20.0f;
+            }
+            t = HW(h, 0xF3544, Character *);
+            v[2] = func_00123A70(&h->c.a, t->a.navTri, t->a.pos, NAV_NONE, side, reach);
+            v[0] = 0.0f;
+            v[1] = 0.0f;
+            v[3] = 0.0f;
+            func_002E3130(m, HW(h, 0xF3544, Character *)->a.pos, side);
+            func_002E2DD0(at, m, v);
+            if (func_00124480(&h->c.a, at, NAV_NONE) == NAV_NONE) {
+                sceVu0CopyVector(at, HW(h, 0xF3544, Character *)->a.pos);
+            }
+            a = func_001244D0(&h->c.a, at);
+            if (HW(h, 0xF3604, s32) != 8) {
+                HW(h, 0xF3604, s32) = 8;
+                HW(h, 0xF3608, s32) = 10;
+            }
+            HW(h, 0xF3614, f32) = 0.0f;
+            HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+            step = run_turn(h);
+            turn_toward(h, a, step);
+            d = reach + 40.0f;
+        } else {
+            t = HW(h, 0xF3544, Character *);
+            if (func_0013EE40(h, t->a.navTri, t->a.pos, 0, 1) != 0) {
+                hewie_want(h, 0, 0);
+                return;
+            }
+            if (!(u8)func_00139DE0(h)) {
+                func_00141C00(h, 8);
+            }
+            d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+                gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+        }
+    }
+    func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
+}
