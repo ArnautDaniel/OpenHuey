@@ -1334,3 +1334,146 @@ void func_002E1380(Character *c) {
     ptmf_scall(c, &c->a.state);
     VCALL(c, 0x40, void (*)(Character *))(c);
 }
+
+extern void func_002E56C0(void *drawer);   /* hand a quad drawer to the renderer */
+
+/* +0x2C draw, once it has come (or, out, when its rest is over): six glows - its core (cell
+ * 0x40, white), its colour (red for kinds 0x12.. but 0x24, else blue; size 2.5 + +0x40), three
+ * fading ones along its trail (+0x50 / +0x60 / +0x70, smaller each), and its body (cell 0x60,
+ * palette 3; vanishing: in its colour like the rest); all additive and see-through when it
+ * is vanishing (+0x29). The trail starts at it (+0x83). */
+void func_002E19F0(Character *c) {
+    u8 *k = CR(c);
+    u8 red;
+    s32 i;
+
+    if (AT(c, 0x15C2, u8) == 0) {
+        if (AT(k, 0x80, s16) != 0) {
+            return;
+        }
+    } else if (AT(k, 0x2E, u8) == 0) {
+        return;
+    }
+    if (AT(k, 0x83, u8) == 0) {
+        for (i = 0; i < 3; i++) {
+            func_0010E5F0((f32 *)(k + 0x50 + i * 0x10), c->a.pos);
+            AT(k, 0x54 + i * 0x10, f32) += 12.0f + AT(k, 0x14, f32);
+        }
+        AT(k, 0x83, u8) += 1;
+    }
+    for (i = 0; i < 6; i++) {
+        QuadDrawer q __attribute__((aligned(16)));
+        QuadRec r __attribute__((aligned(16)));
+
+        red = AT(k, 0x31, u8) >= 0x12 && AT(k, 0x31, u8) != 0x24;
+        switch (i) {
+        case 0:
+            r.rgba[3] = 0x60;
+            r.rgba[0] = 0x80;
+            r.rgba[1] = 0x80;
+            r.rgba[2] = 0x80;
+            break;
+        case 1:
+            if (red) {
+                r.rgba[1] = 0;
+                r.rgba[0] = 0x80;
+                r.rgba[2] = 0;
+            } else {
+                r.rgba[0] = 0;
+                r.rgba[1] = 0;
+                r.rgba[2] = 0x80;
+            }
+            r.rgba[3] = 0x60;
+            break;
+        case 5:
+            r.rgba[0] = 0x80;
+            r.rgba[1] = 0x80;
+            r.rgba[2] = 0x80;
+            r.rgba[3] = 0x80;
+            break;
+        default:
+            if (red) {
+                r.rgba[1] = (i + 1) * 0x10;
+                r.rgba[2] = (i + 1) * 0x10;
+                r.rgba[0] = 0x80 - i * 5;
+            } else {
+                r.rgba[0] = (i + 1) * 0x10;
+                r.rgba[1] = (i + 1) * 0x10;
+                r.rgba[2] = 0x80 - i * 5;
+            }
+            r.rgba[3] = 0x60 - i * 5;
+            break;
+        }
+        if (AT(k, 0x29, u8) == 1 && i != 5) {
+            r.rgba[3] = 0;
+        }
+        if (i >= 2 && i != 5) {
+            r.pos[0] = AT(k, 0x30 + i * 0x10, f32);
+            r.pos[1] = AT(k, 0x34 + i * 0x10, f32);
+            r.pos[2] = AT(k, 0x38 + i * 0x10, f32);
+        } else {
+            r.pos[0] = c->a.pos[0];
+            r.pos[1] = 12.0f + c->a.pos[1] + AT(k, 0x14, f32);
+            r.pos[2] = c->a.pos[2];
+        }
+        r.pos[3] = 1.0f;
+        switch (i) {
+        case 0:
+        case 5:
+            r.w = 2.5f;
+            r.h = 2.5f;
+            break;
+        case 1:
+            r.w = 2.5f + AT(k, 0x40, f32);
+            r.h = 2.5f + AT(k, 0x40, f32);
+            break;
+        default:
+            r.w = 2.5f - 0.5f * (f32)(i - 1);
+            r.h = 2.0f - 0x1.99999ap-2f /* 0.4 */ * (f32)(i - 1);
+            break;
+        }
+        *(s32 *)&r.turn = 0;
+        r.frame = 0;
+        q.a = -1;
+        q.tex = (u64)-1;
+        q.vtbl = D_0046FC30;
+        q.rec = &r;
+        *(s32 *)&q.cx = 0;
+        *(s32 *)&q.cy = 0;
+        q.layer = AT(c, 0x152C, s32) == 0x17 ? 0x17 : 0x19;
+        q.count = 1;
+        q.cellX = i == 0 ? 0x40 : i == 5 ? 0x60 : 0xA0;
+        q.cellY = 0x40;
+        q.cellW = 0x20;
+        q.cellH = 0x20;
+        q.texW = 0x200;
+        q.texH = 0x100;
+        q.flags = i == 5 ? 0 : -0x40;
+        q.frames = 1;
+        q.texGroup = 0x10;
+        q.texId = 1;
+        if (i == 5) {
+            if (AT(k, 0x29, u8) == 1) {
+                q.flags = -0x40;
+                if (red) {
+                    r.rgba[0] = 0x80;
+                    r.rgba[1] = 0x30;
+                    r.rgba[3] = 0x60;
+                    r.rgba[2] = 0x30;
+                } else {
+                    r.rgba[0] = 0x30;
+                    r.rgba[1] = 0x30;
+                    r.rgba[2] = 0x80;
+                    r.rgba[3] = 0x60;
+                }
+                q.palette = -1;
+            } else {
+                q.palette = 3;
+            }
+        } else {
+            q.palette = -1;
+        }
+        func_002E56C0(&q);
+        q.vtbl = D_00469D00;
+    }
+}

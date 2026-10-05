@@ -63,4 +63,35 @@ static inline void HitEffect_Spawn(HitEffectParams *hp) {
     func_002D6090(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
 }
 
+
+/* a quad (sprite) drawer (vtable D_0046FC30) handed to the renderer for one frame by
+   func_002E56C0; see gl_sprites in effects.c for its fields */
+typedef struct QuadDrawer {
+    /* 0x00 */ void **vtbl;
+    /* 0x04 */ s32 a;
+    /* 0x08 */ u64 tex;
+    /* 0x10 */ void *rec;       /* the instances: 0x30 each */
+    /* 0x14 */ s32 corners;
+    /* 0x18 */ f32 cx, cy;      /* the corners' offset */
+    /* 0x20 */ s32 layer;
+    /* 0x24 */ s16 count;
+    /* 0x26 */ s16 cellX, cellY;
+    /* 0x2A */ s16 cellW, cellH;
+    /* 0x2E */ s16 texW, texH;
+    /* 0x32 */ s8 flags;        /* 0x40 additive, 0x80 also a glow pass */
+    /* 0x33 */ s8 frames;
+    /* 0x34 */ s8 texId, texGroup;
+    /* 0x36 */ s8 palette;      /* -1: the first */
+} QuadDrawer;
+
+/* an instance of a quad drawer: colour (0x80 = 1.0), position, size, turn, frame */
+typedef struct QuadRec {
+    s32 rgba[4];
+    f32 pos[4];
+    f32 w, h;
+    f32 turn;
+    s32 frame;
+} QuadRec;
+
+
 #endif
