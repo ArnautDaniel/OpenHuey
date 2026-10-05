@@ -4130,3 +4130,63 @@ void func_0013E680(Hewie *h) {
     }
     hewie_want(h, *(const s32 *)e, 0);
 }
+
+/* ---- what a command makes him do ---- */
+
+/* the action Fiona's command `cmd` makes him take, or: -1 none, -2 a refusal (when in an idle
+ * group 1 or 5), -4 the come-here stay (0x29) and -5 the wait (0x2F) when he is calm and
+ * +0xF3688 is set or a quarter of the time. Out of reach (+0xE0 clear) only when
+ * listening (+0xF356C bit 3 without the top bit, +0xF35DC clear, not moving 4); downed only
+ * 0x2A. A plain command he takes once when listening or out of reach, the game calm or (+0xF3598)
+ * already waiting (0x7D), and not in mood 3 */
+s32 func_0013E2D0(Hewie *h, s32 cmd) {
+    u8 reach = h->c.unkE0;
+    s32 take;
+
+    if (reach == 0) {
+        if (h->c.a.unkC4 == 2) {
+            return cmd == 0x2A ? cmd : -1;
+        }
+        if ((HW(h, 0xF356C, u32) & 0x80000008) != 8 || HW(h, 0xF35DC, s32) != 0 || h->c.moveMode == 4) {
+            return -1;
+        }
+    } else if (h->c.a.unkC4 == 2) {
+        return -1;
+    }
+    if (h->c.a.disabled) {
+        return cmd;
+    }
+    switch (cmd) {
+    case 0x28:
+    case 0x2B:
+    case 0x30:
+        return cmd;
+    case 0x2F:
+        if (h->c.a.unkC4 == 1 || HW(h, 0xF3598, s32) != 0 || (u32)HW(h, 0xF35C0, s32) > 2) {
+            return -1;
+        }
+        if (HW(h, 0xF3688, s16) != 0 || VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+            return -5;
+        }
+        return -1;
+    case 0x29:
+        if (h->c.a.unkC4 == 1 || HW(h, 0xF3598, s32) != 0 || (u32)HW(h, 0xF35C0, s32) > 1 || h->c.hp < 0x50) {
+            return -1;
+        }
+        if (HW(h, 0xF3688, s16) != 0 || VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+            return -4;
+        }
+        return -1;
+    }
+    take = HW(h, 0xF358C, s32) != 1 && (reach == 1 || (HW(h, 0xF356C, u32) & 0x80000008) == 8) &&
+           (HW(h, 0xF3598, s32) == 0 || HW(h, 0xF3564, s32) == 0x7D) && HW(h, 0xF35C0, s32) != 3;
+    HW(h, 0xF358C, s32) = 0;
+    if (take) {
+        return cmd;
+    }
+    if ((u8)func_00177620(gProgress)) {
+        return -1;
+    }
+    take = func_001669A0(h);
+    return take == 5 || take == 1 ? -2 : -1;
+}
