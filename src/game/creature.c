@@ -231,3 +231,74 @@ void func_002DEA80(Character *c, s32 a1, s32 a2) {
         c->unk14C0 = AT(c->unk138C, n * 2, u16);
     }
 }
+
+#include "navmesh.h"
+
+extern VObject *gSceneGameF29740;   /* the path planner */
+extern s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt);
+extern void func_00127060(Character *c);
+extern s32 func_001270A0(Character *c);
+extern s32 func_001270F0(Character *c);
+
+/* go through exit `exit` into the next room (off screen): its room, side (+0xC) and door
+ * (+0x9); off the mesh, moving through the door (+0xFC 0x17), out of play; +0x8A.. cleared.
+ * -1: no such exit */
+s32 func_002DF760(Character *c, s32 exit) {
+    u8 *k = CR(c);
+    VObject *rooms;
+    u32 d;
+    s32 i;
+
+    d = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, c->a.room, exit) & 0xFF;
+    if (d == 0xFF) {
+        return -1;
+    }
+    rooms = D_0044E568;
+    c->a.room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, c->a.room, exit);
+    AT(k, 0xC, s32) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, c->a.room, d, 0);
+    AT(k, 0x9, u8) = d;
+    c->a.navTri = NAV_NONE;
+    AT(k, 0xB, u8) = 0;
+    c->moveSub = 0x17;
+    c->a.disabled = 1;
+    for (i = 0; i < 8; i++) {
+        AT(k, 0x8A + i * 2, s16) = 0;
+    }
+    return 0;
+}
+
+/* plan a path to `goal` on `tri` (not across the room's divider; one request at a time,
+ * +0x2B), waiting up to 50 polls for the planner, and start it (`direct`: the straight
+ * variant). 0 = on its way, -1 = no. */
+s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
+    u8 *k = CR(c);
+    s32 r, i;
+
+    if (NavMesh_AcrossDivider(D_0044E570, tri, c->a.navTri)) {
+        return -1;
+    }
+    if (AT(k, 0x2B, u8) == 0) {
+        AT(k, 0x2B, u8) += 1;
+        if (func_00127200(c, 0, tri, goal, -1) == -1) {
+            AT(k, 0x2B, u8) = 0;
+            return -1;
+        }
+    }
+    for (i = 0;;) {
+        r = VCALL(gSceneGameF29740, 0x10, s32 (*)(VObject *, s32))(gSceneGameF29740, c->pathId);
+        if (r != 0 || ++i >= 50) {
+            break;
+        }
+    }
+    if (r > 0) {
+        r = direct ? func_001270A0(c) : func_001270F0(c);
+        func_00127060(c);
+        AT(k, 0x2B, u8) = 0;
+    }
+    if (r >= 0) {
+        return -(r == 0);
+    }
+    func_00127060(c);
+    AT(k, 0x2B, u8) = 0;
+    return -1;
+}

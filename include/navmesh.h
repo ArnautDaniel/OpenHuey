@@ -33,4 +33,11 @@ static inline u32 NavMesh_TriFlags(NavMesh *nm, u32 i) {
     return (i < nm->numTris && nm->tris != NULL) ? nm->tris[i].flags : 0;
 }
 
+/* triangles `a` and `b` on the two sides of a room's divider (flags 0x100000 / 0x200000) */
+static inline s32 NavMesh_AcrossDivider(NavMesh *nm, u32 a, u32 b) {
+    u32 fa = NavMesh_TriFlags(nm, a) & 0x300000, fb = NavMesh_TriFlags(nm, b) & 0x300000;
+
+    return (fa == 0x100000 && fb == 0x200000) || (fa == 0x200000 && fb == 0x100000);
+}
+
 #endif

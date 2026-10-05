@@ -228,11 +228,7 @@ extern VObject *gSceneGameF29740;   /* path planner */
 
 /* Triangles on opposite sides of a divided room (flags 0x100000 / 0x200000). */
 static inline s32 Hewie_OtherSide(Hewie *h, u32 tri) {
-    NavTri *t = NavMesh_Tri(D_0044E570, tri);
-    NavTri *cur = NavMesh_Tri(D_0044E570, h->c.a.navTri);
-    u32 ft = t->flags & 0x300000, fc = cur->flags & 0x300000;
-
-    return (ft == 0x100000 && fc == 0x200000) || (ft == 0x200000 && fc == 0x100000);
+    return NavMesh_AcrossDivider(D_0044E570, tri, h->c.a.navTri);
 }
 
 /* Plan a path to `pos` on `tri` (not across the room's divider); 1 if one was found. */
