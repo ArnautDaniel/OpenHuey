@@ -5200,3 +5200,8 @@ src/game/scene_game_members.c func_001FA430 --pre=@0x44E570=0x0B500000..0x0B5000
 src/game/scene_game_members.c func_001FA6C0 --pre=a2=0xFFFFFFFF..1 --pre=a0+0x10:u32=0..1
 src/game/scene_game_members.c func_001F9FB0
 src/game/scene_game_members.c func_001F9F80 --pre=a0+0x940:u32=0x5F..0x63
+src/game/effects.c func_00352280 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x210=0..1 --pre=a1=0..3 --pre=a2=0..1 --pre=a0+0x214=0..0x1FFF --stub-fret=0.5 --stub-fret=1.5
+src/game/effects.c func_00352700 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x210=0..1 --pre=a0+0x214=0..0x8FFF --pre=a0+0x1C:u32=0..8 --pre=a0+0x4C:u32=0..8 --pre=a0+0xDC:u32=0..8 --pre=a0+0xAC:u32=0..8 --pre=a0+0x7C:u32=0..8 --pre=a0+0x10C:u32=0..8 --pre=a0+0x13C:u32=0..8 --pre=a0+0x16C:u32=0..8 --stub-fret=0.5
+src/game/effects.c func_00352620 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a1=0x0B200000..0x0B200000 --pre=@0x0B200010=0..0x1FFF
+src/game/effects.c func_003526D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x210=0..1
+src/game/effects.c func_003521F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..3

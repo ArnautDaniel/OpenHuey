@@ -1356,6 +1356,9 @@ s32 func_003175B0(u8 *e, s32 i) {
     return refl_near_quad(e, pos, 5.0f, my);
 }
 
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
 #ifdef HG_NATIVE
 extern void glr_layer(s32 layer);
 extern void glr_mask_clear(void);
@@ -1636,8 +1639,6 @@ u8 *func_00358210(u8 *e, s32 flags) {
 extern void glr_layer(s32 layer);
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
 
@@ -1708,6 +1709,158 @@ void func_003582D0(u8 *e) {
     glr_layer(-1);
 }
 #endif
+
+/* ---- D_00479320 (0x218 bytes): 4 wisps rising and swirling about a point (+0x1D0), in two
+ * buffers of sprite instances (+0x10 + 0xC0 x the current one +0x210; 0x30 each), per wisp a
+ * rise speed (+0x1E0), angle (+0x1F0) and radius (+0x200) about the point; drawn by the quad
+ * drawer at +0x190 (set up by func_00352A70). +0x214 its kind: low 12 bits 0 a lasting flame
+ * (slow, respawning), else a burst; bit 0x8000 it ends with room effect 0 ---- */
+
+extern void *D_00479320[];
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_003521F0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00479320;
+    AT(o, 0x190, void **) = D_0046FC30;
+    AT(o, 0x190, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* wisp i anew (`again`: when respawning): orange, half to fully faded in, at a random angle
+ * and radius (0..0.5) about the point, rising 0.2..0.3 a frame (a burst: 0.01..0.26), size
+ * 0.2..0.3 and a random turn; a first one (not `again`) also starts a random height up */
+void func_00352280(u8 *o, s32 i, s32 again) {
+    static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A},
+        k025 = {0x3E800000}, kM0025 = {0xBCCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB};
+    VObject *rnd = D_0044E550;
+    u8 *r = o + AT(o, 0x210, s32) * 0xC0 + i * 0x30 + 0x10;
+    f32 *speed = (f32 *)(o + 0x1E0 + i * 4);
+    s32 up = 0;
+
+    if (!(AT(o, 0x214, s32) & 0xFFF)) {
+        *speed = k02.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    } else {
+        *speed = k001.f + k025.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    rnd = D_0044E550;
+    AT(o, 0x1F0 + i * 4, f32) = (kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f))) / 180.0f;
+    AT(o, 0x200 + i * 4, f32) = 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(r, 0x0, s32) = 0x80;
+    AT(r, 0x4, s32) = 0x40;
+    AT(r, 0x8, s32) = 0x10;
+    AT(r, 0xC, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
+    if (!again) {
+        up = (s32)VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - (s32)(128.0f * (f32)up);
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+        AT(o, 0x1E0 + i * 4, f32) = AT(o, 0x1E0 + i * 4, f32) + kM0025.f * (f32)up;
+        if (AT(o, 0x1E0 + i * 4, f32) < k005.f) {
+            *speed = k005.f;
+        }
+    }
+    AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(AT(o, 0x1F0 + i * 4, f32));
+    AT(r, 0x14, f32) = AT(o, 0x1D4, f32) + (f32)up;
+    AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(AT(o, 0x1F0 + i * 4, f32));
+    AT(r, 0x1C, f32) = 1.0f;
+    rnd = D_0044E550;
+    AT(r, 0x20, f32) = k02.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(r, 0x24, f32) = AT(r, 0x20, f32);
+    AT(r, 0x28, f32) = (kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f))) / 180.0f;
+    AT(r, 0x2C, s32) = 0;
+}
+
+/* +0x18 start: at the point `arg` (its vector), of kind arg +0x10, the 4 wisps placed (a
+ * lasting flame's as first ones) */
+void func_00352620(u8 *o, u8 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(o + 0x1D0), (f32 *)arg);
+    AT(o, 0x214, s32) = AT(arg, 0x10, s32);
+    if (!(AT(o, 0x214, s32) & 0xFFF)) {
+        for (i = 0; i < 4; i++) {
+            func_00352280(o, i, 0);
+        }
+    } else {
+        for (i = 0; i < 4; i++) {
+            func_00352280(o, i, 1);
+        }
+    }
+}
+
+/* +0x14 draw: the current buffer through the quad drawer */
+void func_003526D0(u8 *o) {
+    AT(o, 0x1A0, u8 *) = o + AT(o, 0x210, s32) * 0xC0 + 0x10;
+    func_002E56C0(o + 0x190);
+}
+
+/* +0x10 update: into the other buffer, each wisp fading by 4..7; a faded one comes back anew
+ * (a lasting flame) or stays out; a live one swirls (its radius growing 0.02 / a burst 0.04,
+ * its angle by up to 15 degrees), rises (its speed falling by 0.015 to 0.05) and is placed
+ * about the point. 0 once all are out (with bit 0x8000: also once room effect 0 is gone) */
+s32 func_00352700(u8 *o) {
+    static const union { u32 u; f32 f; } k002 = {0x3CA3D70A}, k004 = {0x3D23D70A}, kSlow = {0xBC75C28F},
+        k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    VObject *rnd = D_0044E550;
+    s32 done = 1, i, k;
+
+    AT(o, 0x210, s32) ^= 1;
+    for (i = 0; i < 4; i++) {
+        u8 *r = o + AT(o, 0x210, s32) * 0xC0 + i * 0x30 + 0x10;
+        u8 *from = o + (AT(o, 0x210, s32) ^ 1) * 0xC0 + i * 0x30 + 0x10;
+        f32 *ang = (f32 *)(o + 0x1F0 + i * 4);
+
+        for (k = 0; k < 12; k++) {
+            AT(r, k * 4, u32) = AT(from, k * 4, u32);
+        }
+        if (AT(r, 0xC, s32) > 0) {
+            AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 3) + 4);
+        }
+        if (AT(r, 0xC, s32) <= 0) {
+            if (!(AT(o, 0x214, s32) & 0xFFF)) {
+                func_00352280(o, i, 1);
+                done = 0;
+            } else {
+                AT(r, 0xC, s32) = 0;
+            }
+            continue;
+        }
+        done = 0;
+        if (!(AT(o, 0x214, s32) & 0xFFF)) {
+            AT(o, 0x200 + i * 4, f32) = AT(o, 0x200 + i * 4, f32) + k002.f;
+        } else {
+            AT(o, 0x200 + i * 4, f32) = AT(o, 0x200 + i * 4, f32) + k004.f;
+        }
+        *ang = *ang + (kPi.f * (30.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f))) / 180.0f;
+        AT(o, 0x1E0 + i * 4, f32) = AT(o, 0x1E0 + i * 4, f32) + kSlow.f;
+        if (AT(o, 0x1E0 + i * 4, f32) < k005.f) {
+            AT(o, 0x1E0 + i * 4, f32) = k005.f;
+        }
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0x1E0 + i * 4, f32);
+        if (*ang < -kPi.f) {
+            *ang = *ang + kTwoPi.f;
+        } else if (!(*ang <= kPi.f)) {
+            *ang = *ang - kTwoPi.f;
+        }
+        AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(*ang);
+        AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(*ang);
+    }
+    if ((AT(o, 0x214, s32) & 0x8000) && func_00266C40(D_0044E4C0, 0) == NULL) {
+        done = 1;
+    }
+    return done != 1;
+}
 
 /* ---- D_0046F5A0 (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
  * sprite instances (+0x10 + 0xC00 x the current one +0x1C50: RGBA, position, size, turn,
