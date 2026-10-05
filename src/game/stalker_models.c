@@ -333,3 +333,105 @@ void func_00210C50(u8 *m) {
     func_002EE840(m + 0xAE0);
     AT(m, 0x850, u8) = 0;
 }
+
+/* ---- more of the model base ---- */
+
+extern void *D_004562A8;   /* the skeleton pool */
+extern void *D_004562B0;   /* the chain pool (motion buffers) */
+extern void func_0017CED0(void *pool, u8 *skel);   /* free a skeleton */
+extern void func_00179BC0(void *pool, void *p);     /* free into D_004562B0 */
+
+/* release the model's skeleton (+0x810) and the skeletons and buffers of its two motion slots
+   (+0x564) and three blend channels (+0x6B0), and clear the slots' key lists */
+void func_001F7AC0(u8 *m) {
+    void *skels = D_004562A8;
+    void *bufs;
+    s32 i, j, k;
+
+    func_0017CED0(skels, AT(m, 0x810, u8 *));
+    AT(m, 0x810, s32) = 0;
+    bufs = D_004562B0;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *s = m + i * 0xA0 + j * 4;
+
+            func_0017CED0(skels, AT(s, 0x58C, u8 *));
+            func_00179BC0(bufs, AT(s, 0x584, void *));
+            func_00179BC0(bufs, AT(s, 0x594, void *));
+            AT(s, 0x58C, s32) = 0;
+            AT(s, 0x584, s32) = 0;
+            AT(s, 0x594, s32) = 0;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *s = m + i * 0x60 + j * 0x1C;
+
+            func_00179BC0(bufs, AT(s, 0x6DC, void *));
+            AT(s, 0x6DC, s32) = 0;
+            func_0017CED0(skels, AT(s, 0x6E0, u8 *));
+            AT(s, 0x6E0, s32) = 0;
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        for (k = 0; k < 24; k++) {
+            AT(m, 0x59C + i * 0xA0 + k * 4, s32) = 0;
+        }
+    }
+}
+
+/* a model matrix: the heading (wrapped to -pi..pi) about Y, at `pos` */
+void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading) {
+    if (!(heading <= 0x1.921fb6p+1f)) {
+        do {
+            heading -= 0x1.921fb6p+2f;
+        } while (!(heading <= 0x1.921fb6p+1f));
+    }
+    if (heading < -0x1.921fb6p+1f) {
+        do {
+            heading += 0x1.921fb6p+2f;
+        } while (heading < -0x1.921fb6p+1f);
+    }
+    sceVu0UnitMatrix(mtx);
+    sceVu0RotMatrixY(mtx, mtx, heading);
+    sceVu0TransMatrix(mtx, mtx, pos);
+}
+
+/* the parts' base (vtable D_004703B0; 0x40 / 0x50 / 0x70 parts, the vtable at +0x30): +0x8 reset,
+   +0xC / +0x10 nothing */
+void func_002EE6D0(u8 *e) {
+    AT(e, 0x8, s32) = 0;
+    AT(e, 0x4, s32) = 0;
+    AT(e, 0x0, s32) = 0;
+    AT(e, 0x18, s32) = 0;
+    AT(e, 0x14, s32) = 0;
+    AT(e, 0x10, s32) = 0;
+    AT(e, 0x24, s32) = -1;
+    AT(e, 0x20, u8) = 1;
+    AT(e, 0x2C, s32) = 0;
+    AT(e, 0x28, s32) = 0;
+}
+
+void func_002EE6C0(u8 *e) {
+}
+
+void func_002EE830(u8 *e) {
+}
+
+/* +0x68: the drawing state cleared (+0x38.., the 16 words at +0x58), then +0x30 */
+void func_002DCA70(u8 *m) {
+    s32 i;
+
+    AT(m, 0x38, s32) = 0;
+    AT(m, 0x3C, s32) = 0;
+    AT(m, 0x40, s32) = 0;
+    AT(m, 0x48, s32) = 0;
+    AT(m, 0x4C, s32) = 0;
+    AT(m, 0x50, s32) = 0;
+    for (i = 0; i < 16; i++) {
+        AT(m, 0x58 + i * 4, s32) = 0;
+    }
+    AT(m, 0x870, s32) = 0;
+    AT(m, 0x30, u8) = 0;
+    VCALL(m, 0x30, void (*)(u8 *))(m);
+}
