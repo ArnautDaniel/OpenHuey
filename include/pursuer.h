@@ -172,6 +172,7 @@ extern s32 func_002EC410(void *list);
 extern void func_002DDC60(void *motion, s32 anim, s32 anim2, s32 variant);
 extern void func_002DDBA0(void *motion, s32 anim, s32 anim2);
 extern void func_0027AD80(Pursuer *p, u32 door);
+extern void func_00166150(Character *hewie, Pursuer *p, s32 kind);   /* tell Hewie */
 /* ---- end engine ---- */
 
 /* ---- generated from the definitions (tools: protos.py) ---- */
@@ -488,6 +489,7 @@ void func_0029AF20(Pursuer *p);
 void func_0029B190(Pursuer *p);
 u32 func_0029B4B0(Pursuer *p);
 void func_0029B5C0(Pursuer *p);
+void func_0029B8B0(Pursuer *p);
 s32 func_0029C570(Pursuer *p);
 void func_0029C8C0(Pursuer *p);
 u32 func_0029CB40(Pursuer *p);

@@ -9622,3 +9622,236 @@ void func_002809E0(Pursuer *p) {
         func_001264C0(&p->c, 5, at);
     }
 }
+
+extern const PTMF D_003EC950, D_003EC960, D_003EC970, D_003EC980, D_003EC990, D_003EC9A0;
+
+/* the bite table +0x173C damage for a hit from in front/behind (bit 0) and high/low (bit 1) */
+static void Pursuer_AddBiteDamage(Pursuer *p, u32 dir) {
+    u8 *t = PU(p, 0x173C, u8 *);
+    static const u8 off[4] = { 0x0, 0x8, 0x4, 0xC };
+
+    if (t == NULL || (dir & 0xFF) > 3) {
+        return;
+    }
+    PU(p, 0x16BC, u32) += AT(t, off[dir & 0xFF], s32);
+    if (PU(p, 0x16BC, u32) > 1000) {
+        PU(p, 0x16BC, u32) = 1000;
+    }
+}
+
+static void Pursuer_ClearMessage(Pursuer *p) {
+    p->c.state[0] = 0;
+    p->c.state[1] = 0;
+}
+
+/* a hit (the message in the state block: [1] kind, [2] who from, 0xFF none; [3] damage, [4] flags,
+   0x8000 stuns): take the damage, count Hewie's bites, and react (flinch, fall, die) */
+void func_0029B8B0(Pursuer *p) {
+    s32 kind = p->c.state[1];
+    s32 from;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 a;
+    u32 dir;
+
+    if (p->c.moveSub == 0xA && kind != 5) {
+        if (PU(p, 0x1628, s32) == 0) {
+            PU(p, 0x1628, s32) = 1;
+        }
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    if (kind == 6) {
+        /* Hewie snapping at it */
+        f32 d = PU(p, 0x158C, f32);
+
+        if (d < 100.0f && !(d < 0.0f) && p->c.moveMode != 4 && p->c.moveMode != 7 &&
+            PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 4) {
+            u8 *t = PU(p, 0x173C, u8 *);
+
+            if (t != NULL) {
+                Progress *pr = gProgress;
+
+                PU(p, 0x16BC, u32) += (Progress_TestFlag(pr, 9) != 0 || Progress_TestFlag(pr, 0xA) != 0) ? AT(t, 0x14, s32) : AT(t, 0x10, s32);
+                if (PU(p, 0x16BC, u32) > 1000) {
+                    PU(p, 0x16BC, u32) = 1000;
+                }
+            }
+            if (PU(p, 0x16DC, u32) < PU(p, 0x16BC, u32) && !(Progress_TestFlag(gProgress, 0xE) & 0xFF) &&
+                PU(p, 0x16C9, u8) < 3 && p->target != gCharPartner && p->c.moveMode == 0) {
+                ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC950);
+                PU(p, 0x1758, s32) = -1;
+            }
+        }
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    VCALL(p, 0x94, void (*)(Pursuer *, s32))(p, p->c.state[3]);
+    PU(p, 0x16C4, s32) += p->c.state[3];
+    if (PU(p, 0x16C4, s32) >= 999) {
+        PU(p, 0x16C4, s32) = 999;
+    }
+    if (p->c.state[1] == 3) {
+        /* a killing blow */
+        VCALL(p, 0x94, void (*)(Pursuer *, s32))(p, p->c.hp);
+    }
+    if (p->c.state[2] != 0xFF) {
+        sceVu0CopyVector(at, gCharacters[p->c.state[2]]->a.pos);
+    } else {
+        sceVu0CopyVector(at, (f32 *)((u8 *)gProgress + p->c.a.slot * 32 + 0x1060));
+    }
+    if (!(func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]) <= 0.0f)) {
+        a = func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]);
+    } else {
+        a = -func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]);
+    }
+    dir = a < 0x1.921fb6p+0f /* 90 degrees */ ? 0 : 1;
+    kind = p->c.state[1];
+    if (kind == 2 || kind == 4) {
+        dir |= 2;
+    }
+    if (p->c.state[2] == 1 && kind != 0xA && kind != 0xB) {
+        Pursuer_AddBiteDamage(p, dir);
+    }
+    if ((MOTION_ANIM(p) & 0xFF00) == 0x700) {
+        /* on the stairs it can't fall */
+        if (p->c.hp <= 0) {
+            p->c.hp = 1;
+        }
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    if (p->c.moveSub == 9) {
+        if (p->c.state[1] == 0xB && (p->c.state[4] & 0x8000)) {
+            p->c.a.unkC4 = 1;
+            PU(p, 0x1790, s32) = 900;
+            PU(p, 0x16F5, u8) = 1;
+            if (p->c.state[2] == 1) {
+                func_00166150(gCharPartner, p, 1);
+            }
+        }
+        {
+            s16 snd = p->c.state[2] == 1 ? 0x1D : 0x1C;
+
+            if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+                func_00122C20(&p->c.a, snd, 7, 0, 0, NULL);
+            }
+        }
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    if (PU(p, 0x16F7, u8) == 1 && p->c.state[1] == 1 && p->c.hp > 0) {
+        if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+            func_00122C20(&p->c.a, 0x1C, 7, 0, 0, NULL);
+        }
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    from = p->c.state[2];
+    if (from != 0xFF) {
+        PU(p, 0x1761, u8) |= (1 << from) & 0xFF;
+    }
+    if (p->c.state[1] == 5) {
+        if (p->c.moveSub == 0xA) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x22);
+        } else {
+            ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC960);
+            PU(p, 0x1758, s32) = -1;
+            VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x21);
+        }
+        if (p->c.a.unkC4 != 2) {
+            PU(p, 0x16C8, u8) = 0;
+            VCALL(p, 0x2BC, void (*)(Pursuer *))(p);
+            PU(p, 0x16C9, u8) = 6;
+            PU(p, 0x16CA, u8) = 7;
+        }
+        p->c.unk100 = p->c.state[4];
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    if (p->c.moveMode == 2) {
+        func_00213270(p, 0xFF);
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+    if (p->c.state[1] == 0xA) {
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC970);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x23);
+        p->c.unk104[0] = p->c.state[4];
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    if (p->c.hp <= 0) {
+        if ((func_00177AB0(gProgress, 0x20, p->c.a.slot) & 0xFF) != 0xFF) {
+            p->c.hp = 1;
+        } else {
+            /* down */
+            ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC980);
+            PU(p, 0x1758, s32) = -1;
+            VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1F);
+            if (p->c.state[2] == 1) {
+                func_00166150(gCharPartner, p, 3);
+            }
+        }
+    }
+    if (p->c.state[1] == 3 && p->c.hp > 0 && p->c.moveMode != 4) {
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC990);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1E);
+        p->c.unk104[0] = 2;
+    }
+    if (p->c.moveSub == 0x11 && p->c.state[1] == 7 && p->c.unk104[0] > 0) {
+        u8 *m = p->c.motion;
+
+        if (AT(AT(m, 0x874, u8 *) + func_001F4710(m, AT(m, 0x55C, s32)) * 6, 0x4, u16) & 1) {
+            u8 *mgr = D_0044E578;
+            s32 args[2];
+
+            p->c.unk104[0] = p->c.state[4] & 0x7FFF;
+            PU(p, 0x1624, s32) = p->c.state[4] & 0x7FFF;
+            func_002D6090(mgr, PU(p, 0x1628, s32), NULL);
+            PU(p, 0x1628, s32) = Effect_New(mgr, 0x38, Pursuer_EffectInit);
+            args[0] = (p->c.unk104[0] - 4) >> 1;
+            args[1] = PU(p, 0x1624, s32);
+            func_002D6090(mgr, PU(p, 0x1628, s32), args);
+        }
+    }
+    if (p->c.moveMode == 4) {
+        Pursuer_ClearMessage(p);
+        return;
+    }
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC9A0);
+    PU(p, 0x1758, s32) = -1;
+    if (p->c.state[2] == 0) {
+        /* hit by Fiona */
+        PU(p, 0x178C, s32) = 0;
+        PU(p, 0x1760, u8) = 0;
+        if (p->target == gCharPartner) {
+            func_00297160(p);
+        }
+    }
+    if (p->c.state[4] & 0x8000) {
+        p->c.a.unkC4 = 1;
+        PU(p, 0x1790, s32) = 900;
+        PU(p, 0x16F5, u8) = 1;
+        if (p->c.state[2] == 1) {
+            func_00166150(gCharPartner, p, 1);
+        }
+    }
+    switch (p->c.state[1]) {
+    case 7:
+        if (p->target == gCharPartner) {
+            PU(p, 0x1761, u8) |= 1;
+            func_00297160(p);
+        }
+        p->c.unk104[0] = p->c.state[4] & 0x7FFF;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x24);
+        break;
+    case 1:
+    case 2:
+    case 4:
+        p->c.unk104[0] = dir & 0xFF;
+        VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1E);
+        break;
+    }
+    Pursuer_ClearMessage(p);
+}
