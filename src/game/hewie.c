@@ -6083,3 +6083,88 @@ void func_001489D0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1D10);
     }
 }
+
+/* ---- being petted, praised and scolded ---- */
+
+/* at the end of each animation of actions 0x49 / 0x4A / 0x4B. 0x49 (praised): praised again
+ * within 600 frames, the third time in mood 0 spoils him (+20 to progress +0xFB6, mode 2);
+ * else after a scolding (+0xF36B4 -6) his mode and mood reset. 0x4A (petted, animations
+ * 0x1D00..0x1D02, held a while longer when Fiona keeps commanding 3 while calm): every 4
+ * strokes +5 health; at full health (-1 from +0xFB6 unless +0xF36BC) mode 1 and action 0x1D.
+ * 0x4B: +0xF3688 300 frames, then action 2 (0 while waiting) */
+void func_00148D00(Hewie *h) {
+    Progress *p = gProgress;
+    s32 spoiled;
+
+    if (!(u8)func_00177620(p) && HEWIE_ACTION(h) == 0x4A && AT(gCharPlayer, 0x1AD6B8, s32) == 3 &&
+        MOTION_ANIM(h->c.motion) == 0x1D01) {
+        HW(h, 0xF36B8, s32) = 2;
+    }
+    if (!ANIM_DONE(h)) {
+        return;
+    }
+    switch (HEWIE_ACTION(h)) {
+    case 0x49:
+        spoiled = 0;
+        if (HW(h, 0xF3686, s16) > 0) {
+            HW(h, 0xF3684, s16) += 1;
+            if (HW(h, 0xF3684, s16) >= 3 && HW(h, 0xF35C0, s32) == 0) {
+                Progress_AddCounter(p, 0xFB6, 20);
+                func_00138AD0(h, 2, -1);
+                spoiled = 1;
+                HW(h, 0xF3684, s16) = 0;
+            } else {
+                HW(h, 0xF3686, s16) = 600;
+            }
+        } else {
+            HW(h, 0xF3684, s16) = 1;
+            HW(h, 0xF3686, s16) = 600;
+        }
+        if (!spoiled && HW(h, 0xF36B4, s32) != -7 && HW(h, 0xF36B4, s32) == -6) {
+            func_00138AD0(h, 0, -1);
+            HW(h, 0xF35C4, s32) = 0;
+            HW(h, 0xF35C8, s32) = 0;
+        }
+        hewie_want(h, 0, 0);
+        break;
+    case 0x4A:
+        switch (MOTION_ANIM(h->c.motion)) {
+        case 0x1D00:
+            HW(h, 0xF36B8, s32) = 3;
+            HW(h, 0xF36C0, s32) = 3;
+            func_002DDE20(h->c.motion, 0x1D01, -1);
+            break;
+        case 0x1D01:
+            HW(h, 0xF36B8, s32) -= 1;
+            HW(h, 0xF36C0, s32) -= 1;
+            if (HW(h, 0xF36C0, s32) == 0) {
+                HW(h, 0xF36C0, s32) = 4;
+                h->c.hp += 5;
+                if (h->c.hp >= h->c.hpMax) {
+                    h->c.hp = h->c.hpMax;
+                }
+            }
+            func_002DDE20(h->c.motion, HW(h, 0xF36B8, s32) == 0 ? 0x1D02 : 0x1D01, -1);
+            break;
+        case 0x1D02:
+            if (h->c.hp == h->c.hpMax) {
+                HW(h, 0xF36B4, s32) = -8;
+                if (HW(h, 0xF36BC, s32) == 0) {
+                    Progress_AddCounter(p, 0xFB6, -1);
+                }
+            }
+            if (HW(h, 0xF36B4, s32) == -8) {
+                func_00138AD0(h, 1, -1);
+                hewie_want(h, 0x1D, 0);
+            } else {
+                hewie_want(h, 0, 0);
+            }
+            break;
+        }
+        break;
+    case 0x4B:
+        HW(h, 0xF3688, s16) = 300;
+        hewie_want(h, HW(h, 0xF3598, s32) == 0 ? 2 : 0, 0);
+        break;
+    }
+}
