@@ -7090,3 +7090,90 @@ void func_0014EE20(Hewie *h) {
         HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
     }
 }
+
+/* ---- the leap at the pursuer ---- */
+
+extern const PTMF D_003B1A38;
+
+/* in a leap at the pursuer (in his room; else, or when his state block holds 7, the default
+ * action). Airborne (blending): turn toward +0xF36CC by +0xF36D0, move +0xF36C4 along the way,
+ * fall (+0xF36C8 -0.3 a frame onto height +0xF36EC, never below the ground); at frame 13 the
+ * noise (unless progress flags 0x13 / 0x2B). Landed: on the spot +0x110 (triangle +0x108), the
+ * hold time +0xF36BC by his mood (3: 110, 2: none, else 5 x (10 + his feeling about it)), the
+ * hit on it (30, +30 on difficulty 1, +half with progress +0xA10; hard when func_001386D0 5) and
+ * its effect, then behaviour D_003B1A38 */
+void func_0014F600(Hewie *h) {
+    f32 p[4] __attribute__((aligned(16)));
+    Progress *pr;
+    u32 tri;
+    u16 dmg;
+
+    if (h->c.state[0] == 7) {
+        h->c.state[0] = 0;
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
+        HW(h, 0xF36B4, s32) -= 1;
+        if (HW(h, 0xF36B4, s32) == 13) {
+            pr = gProgress;
+            if (((u8)Progress_TestFlag(pr, 0x13) | (u8)Progress_TestFlag(pr, 0x2B)) == 0) {
+                Progress_GetVar(pr, 0x27);
+                func_00178070(pr, AT(h, 0x20, u8), 4, 9, 0, 15, 0.0f);
+            }
+        }
+        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+        tri = h->c.a.navTri;
+        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+        h->c.a.navTri = tri;
+        sceVu0CopyVector(h->c.a.pos, p);
+        HW(h, 0xF36C8, f32) -= 0x1.3333340000000p-2f /* 0.3 */;
+        HW(h, 0xF36EC, f32) += HW(h, 0xF36C8, f32);
+        if (!(HW(h, 0xF36EC, f32) <= h->c.a.pos[1])) {
+            h->c.a.pos[1] = HW(h, 0xF36EC, f32);
+        }
+    } else {
+        h->c.a.navTri = h->c.unk104[1];
+        sceVu0CopyVector(h->c.a.pos, h->c.unk110);
+        h->c.a.pos[3] = 1.0f;
+        if (HW(h, 0xF35C0, s32) == 3) {
+            HW(h, 0xF36BC, s32) = 110;
+        } else if (HW(h, 0xF35C0, s32) == 2) {
+            HW(h, 0xF36BC, s32) = 0;
+        } else {
+            s16 f = 0;
+
+            if (gCharPursuer != NULL && gCharPursuer->a.active == 1) {
+                s16 *v = Hewie_Feeling(h, gCharPursuer->unk153C);
+
+                f = v != NULL ? *v : 0;
+            }
+            HW(h, 0xF36BC, s32) = (f + 10) * 5;
+        }
+        HW(h, 0xF36B4, s32) = 1;
+        HW(h, 0xF36B8, s32) = 1;
+        HW(h, 0xF3585, u8) = 1;
+        {
+            s32 hard = (u8)func_001386D0(h, 5) == 1;
+
+            pr = gProgress;
+            dmg = 30;
+            if ((u8)Progress_GetVar(pr, 0x27) == 1) {
+                dmg += 30;
+            }
+            if (AT(pr, 0xA10, s32) != 0) {
+                dmg += dmg >> 1;
+            }
+            func_00178070(pr, AT(h, 0x20, u8), 4, 0xB, dmg, hard ? -0x8000 : 0, 0.0f);
+        }
+        func_0013A1C0(h, 1);
+        Hewie_SetBehaviour(h, &D_003B1A38);
+    }
+    HW(h, 0xF3581, u8) = 1;
+    HW(h, 0xF3558, u8) = 1;
+    HW(h, 0xF3582, u8) = 0;
+}
