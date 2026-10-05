@@ -1291,3 +1291,319 @@ void func_00357940(u8 *o, const s32 *params) {
     AT(o, 0x6038, s32) = 0;
     AT(o, 0x603C, s32) = 0;
 }
+
+/* ---- class D_0046EA90 (event 0x35, a room effect of 0xA0 bytes): a swarm of +0x8C butterflies
+ * about a point +0x10 (moving 0.4 a frame toward the target +0x30 set by +0x18), its centre
+ * +0x20 wandering (heading +0x44 kept turning back toward the point, its tilt +0x40 swaying);
+ * +0x60..+0x68 the flap / bob / turn phases, +0x70..+0x78 each one's phase step, +0x7C..+0x84
+ * the circle each flies out on. A downstroke now and then drops a dust puff (D_00470E00) once
+ * the swarm has moved (+0x88 the tilt last dusted) ---- */
+
+extern void *D_0046EA90[], *D_0046D730[], *D_00470E00[];
+extern void func_002672E0(void *p);   /* delete (the effects' heap) */
+extern f32 func_002E2D00(f32 angle);                     /* wrapped into -pi..pi */
+extern f32 func_002E2BC0(const f32 *v);                 /* heading of v */
+extern void func_002E2C10(f32 *out, f32 angle);         /* the unit vector of a heading */
+extern void func_002E2CA0(f32 *out, f32 *v, f32 angle); /* v turned about y */
+extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
+extern VObject *D_0044E4F8;   /* the camera director's interface: +0x38 a cut is on */
+
+/* +0x8 destructor */
+void *func_002B8E70(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EA90;
+        if (o != NULL) {
+            AT(o, 0x0, void **) = D_0046D730;
+        }
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+/* +0x18 start: the target (3 x s16 big-endian at params), the count (params[6], if any); the
+ * first time also the point and centre there */
+void func_002B8ED0(u8 *o, const u8 *params) {
+    AT(o, 0x30, f32) = (f32)(s16)((params[0] << 8) + params[1]);
+    AT(o, 0x34, f32) = (f32)(s16)((params[2] << 8) + params[3]);
+    AT(o, 0x38, f32) = (f32)(s16)((params[4] << 8) + params[5]);
+    if (params[6] != 0) {
+        AT(o, 0x8C, f32) = (f32)params[6];
+    }
+    if (AT(o, 0x3C, f32) == 0.0f) {
+        AT(o, 0x3C, f32) = 1.0f;
+        sceVu0CopyVector((f32 *)(o + 0x10), (f32 *)(o + 0x30));
+        sceVu0CopyVector((f32 *)(o + 0x20), (f32 *)(o + 0x10));
+    }
+}
+
+/* +0xC set up: all at the origin, the phases random (-pi..pi), the steps pi/2 + random pi
+ * (wrapped), the circles 2..4 */
+void func_002B9F40(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kHalfPi = {0x3FC90FDB};
+    VObject *rng;
+    s32 k;
+
+    AT(o, 0x20, s32) = 0;
+    AT(o, 0x24, s32) = 0;
+    AT(o, 0x28, s32) = 0;
+    AT(o, 0x2C, f32) = 1.0f;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x18, s32) = 0;
+    AT(o, 0x1C, f32) = 1.0f;
+    AT(o, 0x40, s32) = 0;
+    AT(o, 0x44, s32) = 0;
+    AT(o, 0x48, s32) = 0;
+    AT(o, 0x4C, s32) = 0;
+    AT(o, 0x30, s32) = 0;
+    AT(o, 0x34, s32) = 0;
+    AT(o, 0x38, s32) = 0;
+    rng = D_0044E550;
+    AT(o, 0x3C, s32) = 0;
+#define RND() VCALL(rng, 0x20, f32 (*)(VObject *))(rng)
+    for (k = 0; k < 3; k++) {
+        AT(o, 0x60 + k * 4, f32) = k2Pi.f * RND() - kPi.f;
+    }
+    for (k = 0; k < 3; k++) {
+        f32 a = kHalfPi.f + kPi.f * RND();
+
+        AT(o, 0x70 + k * 4, f32) = a;
+        AT(o, 0x70 + k * 4, f32) = func_002E2D00(a);
+    }
+    for (k = 0; k < 3; k++) {
+        AT(o, 0x7C + k * 4, f32) = 2.0f + 2.0f * RND();
+    }
+#undef RND
+}
+
+/* +0x10 update: the point closes on the target 0.4 a frame (or lands on it); the tilt sways
+ * (+-5 degrees, kept within 10), the heading turns 15..35 degrees a frame back toward the point
+ * and the centre goes on 0.4..0.8 along it; the phases step on */
+void func_002B9B00(u8 *o) {
+    static const F32Bits kPi = {0x40490FDB}, k10 = {0x3E32B8C3}, k04 = {0x3ECCCCCD}, k60 = {0x3F860A92};
+    f32 d[4] __attribute__((aligned(16))) = {0};
+    f32 e[4] __attribute__((aligned(16))) = {0};
+    f32 v[4] __attribute__((aligned(16)));
+    VObject *rng;
+    f32 dd, a, t, speed;
+
+    sceVu0SubVector(d, (f32 *)(o + 0x30), (f32 *)(o + 0x10));
+    dd = sceVu0InnerProduct(d, d);
+    if (!(dd <= 1.0f)) {
+        volatile f32 len = __builtin_sqrtf(dd);   /* (sqrt.s then div.s, not rsqrt.s) */
+
+        sceVu0ScaleVector(d, d, k04.f / len);
+        sceVu0AddVector((f32 *)(o + 0x10), (f32 *)(o + 0x10), d);
+    } else if (!(dd <= 0.0f)) {
+        sceVu0CopyVector((f32 *)(o + 0x10), (f32 *)(o + 0x30));
+    }
+    rng = D_0044E550;
+#define RND() VCALL(rng, 0x20, f32 (*)(VObject *))(rng)
+    a = kPi.f * (10.0f * RND() - 5.0f) / 180.0f;
+    t = AT(o, 0x40, f32) + a;
+    if (!((t <= 0.0f ? -t : t) <= k10.f)) {
+        AT(o, 0x40, f32) = AT(o, 0x40, f32) - a;
+    } else {
+        AT(o, 0x40, f32) = AT(o, 0x40, f32) + a;
+    }
+    sceVu0SubVector(e, (f32 *)(o + 0x10), (f32 *)(o + 0x20));
+    if (!(func_002E2D00(func_002E2BC0(e) - AT(o, 0x44, f32)) <= 0.0f)) {
+        t = AT(o, 0x44, f32) + kPi.f * (15.0f + 20.0f * RND()) / 180.0f;
+        AT(o, 0x44, f32) = t;
+        AT(o, 0x44, f32) = func_002E2D00(t);
+    } else {
+        t = AT(o, 0x44, f32) - kPi.f * (15.0f + 20.0f * RND()) / 180.0f;
+        AT(o, 0x44, f32) = t;
+        AT(o, 0x44, f32) = func_002E2D00(t);
+    }
+    rng = D_0044E550;
+    speed = k04.f + k04.f * RND();
+    func_002E2C10(v, AT(o, 0x44, f32));
+    sceVu0ScaleVector(v, v, speed);
+    sceVu0AddVector((f32 *)(o + 0x20), (f32 *)(o + 0x20), v);
+    AT(o, 0x60, f32) = func_002E2D00(AT(o, 0x60, f32) + (k60.f + 20.0f * RND()));
+    t = AT(o, 0x64, f32) + kPi.f * (2.0f + 9.0f * RND()) / 180.0f;
+    AT(o, 0x64, f32) = t;
+    AT(o, 0x64, f32) = func_002E2D00(t);
+    t = AT(o, 0x68, f32) + kPi.f * (40.0f + 20.0f * RND()) / 180.0f;
+    AT(o, 0x68, f32) = t;
+    AT(o, 0x68, f32) = func_002E2D00(t);
+#undef RND
+}
+
+/* one butterfly at matrix `m`: two wings (texture group 0x10, cell 40 x 64 at the origin, own
+ * corners) folded up by `flap` (cos 0.7 out, sin up), scaled by `size`, in colour `rgba`,
+ * layer 1 */
+void func_002B97E0(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
+    f32 c[4][4] __attribute__((aligned(16)));
+    QuadRec r __attribute__((aligned(16)));
+    QuadDrawer q __attribute__((aligned(16)));
+    f32 x = 0x1.666666p-1f /* 0.7 */ * func_0031C058(flap);
+    f32 y = func_0031C248(flap);
+
+    r.rgba[0] = rgba & 0xFF;
+    r.rgba[1] = (rgba >> 8) & 0xFF;
+    r.pos[0] = 0.0f;
+    r.pos[1] = 0.0f;
+    r.rgba[2] = (rgba >> 16) & 0xFF;
+    r.pos[2] = 0.0f;
+    r.rgba[3] = (rgba >> 24) & 0xFF;
+    r.turn = 0.0f;
+    r.pos[3] = 1.0f;
+    r.w = 1.0f;
+    r.h = 1.0f;
+    c[0][2] = 1.0f;
+    c[0][3] = 1.0f;
+    r.frame = 0;
+    c[0][0] = 0.0f;
+    c[0][1] = 0.0f;
+    sceVu0ApplyMatrix(c[0], m, c[0]);
+    c[1][2] = 1.0f;
+    c[1][3] = 1.0f;
+    c[1][0] = -x;
+    c[1][1] = y;
+    sceVu0ApplyMatrix(c[1], m, c[1]);
+    AT(&c[2][2], 0, u32) = 0xBECCCCCC;   /* -0.4 */
+    c[2][3] = 1.0f;
+    c[2][1] = 0.0f;
+    c[2][0] = 0.0f;
+    sceVu0ApplyMatrix(c[2], m, c[2]);
+    AT(&c[3][2], 0, u32) = 0xBECCCCCC;
+    c[3][3] = 1.0f;
+    c[3][0] = -x;
+    c[3][1] = y;
+    sceVu0ApplyMatrix(c[3], m, c[3]);
+    sceVu0ScaleVector(c[0], c[0], size);
+    sceVu0ScaleVector(c[1], c[1], size);
+    sceVu0ScaleVector(c[2], c[2], size);
+    sceVu0ScaleVector(c[3], c[3], size);
+    q.a = -1;
+    q.layer = 1;
+    q.tex = (u64)-1;
+    q.vtbl = D_0046FC30;
+    q.count = 1;
+    q.frames = 1;
+    q.cx = 0.0f;
+    q.rec = &r;
+    q.cy = 0.0f;
+    q.corners = (s32)c;
+    q.cellX = 0;
+    q.cellW = 0x28;
+    q.cellY = 0;
+    q.cellH = 0x40;
+    q.texId = 0;
+    q.texW = 0x200;
+    q.palette = 0;
+    q.texH = 0x100;
+    q.flags = 2;
+    q.texGroup = 0x10;
+    func_002E56C0((u8 *)&q);
+    c[1][2] = 1.0f;
+    c[1][3] = 1.0f;
+    c[1][1] = y;
+    c[1][0] = x;
+    sceVu0ApplyMatrix(c[1], m, c[1]);
+    AT(&c[3][2], 0, u32) = 0xBECCCCCC;
+    c[3][3] = 1.0f;
+    c[3][1] = y;
+    c[3][0] = x;
+    sceVu0ApplyMatrix(c[3], m, c[3]);
+    sceVu0ScaleVector(c[1], c[1], size);
+    sceVu0ScaleVector(c[3], c[3], size);
+    func_002E56C0((u8 *)&q);
+    q.vtbl = D_00469D00;
+}
+
+static void dust_init(void **obj) {
+    obj[0] = D_00470E00;
+    obj[0x70 / 4] = D_00469D00;
+    ((s32 *)obj)[0x74 / 4] = -1;
+    obj[0x70 / 4] = D_0046FC30;
+}
+
+/* +0x14 draw: butterfly i (sign by its parity, phases scaled by i(i+1)) flies its circle about
+ * the wandering centre, bobbing, banking and flapping */
+void func_002B9010(u8 *o) {
+    static const F32Bits kA = {0x3F6CCE68}, kB = {0x3F51FF7F}, kC = {0x3F95ADF0}, k60 = {0x3F860A92},
+                         k08 = {0x3F4CCCCD}, k04 = {0x3ECCCCCD}, k50 = {0x3F5F66F3}, k01 = {0x3DCCCCCD},
+                         k0005 = {0x3BA3D70A}, k005 = {0x3D4CCCCD};
+    f32 col[8];
+    VObject *rng, *cam;
+    u8 *mgr;
+    s32 i, k;
+
+    for (k = 0; k < 8; k++) {
+        AT(&col[k], 0, u32) = AT(&D_00412710[k], 0, u32);
+    }
+    if ((u8)(u32)AT(o, 0x8C, f32) <= 0) {
+        return;
+    }
+    rng = D_0044E550;
+    cam = D_0044E4F8;
+    mgr = D_0044E578;
+    for (i = 0; i < (u8)(u32)AT(o, 0x8C, f32); i++) {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+        f32 d[4] __attribute__((aligned(16)));
+        f32 rot[4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+        s8 sign = (i & 1) * 2 - 1;
+        s32 ii = i * (i + 1);
+        f32 a, b, c, flap, bob, x, y, z, turn, size;
+
+        a = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x70, f32) + kA.f));
+        b = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x74, f32) + kB.f));
+        c = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x78, f32) + kC.f));
+        flap = func_0031C248(func_002E2D00(a + (AT(o, 0x60, f32) + AT(o, 0x70, f32)))) * k60.f;
+        bob = k08.f * func_0031C248(func_002E2D00(b + (AT(o, 0x64, f32) + AT(o, 0x70, f32))));
+        v[0] = AT(o, 0x7C, f32);
+        v[1] = AT(o, 0x80, f32);
+        v[2] = AT(o, 0x84, f32);
+        v[3] = 0.0f;
+        bob = bob + k04.f * func_0031C248(func_002E2D00(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
+        func_002E2CA0(v, v, func_002E2D00(a));
+        y = AT(o, 0x14, f32) + v[1];
+        x = AT(o, 0x10, f32) + v[0];
+        z = AT(o, 0x18, f32) + v[2];
+        sceVu0SubVector(d, (f32 *)(o + 0x20), (f32 *)(o + 0x10));
+        turn = (f32)(i + 1) * ((f32)sign * k50.f);
+        func_002E2CA0(d, d, func_002E2D00(turn));
+        at[1] = y + bob;
+        at[0] = x + d[0];
+        at[2] = z + d[2];
+        rot[0] = AT(o, 0x40, f32);
+        rot[1] = func_002E2D00(AT(o, 0x44, f32) + turn);
+        rot[2] = AT(o, 0x48, f32);
+        rot[3] = 0.0f;
+        if (!(func_0031C248(c) <= 0.0f)) {
+            size = func_0031C248(c);
+        } else {
+            size = -func_0031C248(c);
+        }
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrix(m, m, rot);
+        sceVu0TransMatrix(m, m, at);
+        func_002B97E0(o, m, AT(&col[i & 7], 0, u32), flap, 0.5f + size);
+        if (flap < -1.0f && VCALL(rng, 0x18, f32 (*)(VObject *))(rng) < k01.f &&
+            (u8)(u32)AT(o, 0x8C, f32) >= 2 && !(VCALL(cam, 0x38, s32 (*)(VObject *))(cam) & 0xFF) &&
+            AT(o, 0x88, f32) != AT(o, 0x40, f32)) {
+            s32 slot, p[10];
+
+            AT(o, 0x88, f32) = AT(o, 0x40, f32);
+            slot = Effect_New(mgr, 0xC0, dust_init);
+            p[0] = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F) + 0x80;
+            p[1] = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F;
+            p[2] = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F) + 0x80;
+            p[3] = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0xF) + 0x70;
+            AT(&p[4], 0, f32) = at[0];
+            AT(&p[5], 0, f32) = at[1] + 0.5f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+            AT(&p[6], 0, f32) = at[2];
+            AT(&p[7], 0, f32) = k0005.f * (at[0] - AT(o, 0x10, f32));
+            AT(&p[8], 0, f32) = k005.f + k005.f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
+            AT(&p[9], 0, f32) = k0005.f * (at[2] - AT(o, 0x18, f32));
+            func_002D6090(mgr, slot, p);
+        }
+    }
+}
