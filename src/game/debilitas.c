@@ -739,31 +739,14 @@ void func_00128A20(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_003AFFF0);
 }
 
-/* vtable +0x30: his frame update. Blocking flags, senses (func_00215D80; while his behaviour is
-   fresh, +0x16F6, they are recomputed, else forgotten), then on screen the full think: hits,
-   reactions to cries, the behaviour step, a growl (sound 0x2A) every 90 frames while idle, the
-   stance logic (+0x110) and his voice; off screen the behaviour step and the off-screen move.
-   Then the timers: frames in state/behaviour (+0x1784, +0x1780), the room wait +0x1664 / the
-   route rest +0x17B4, the stand-down +0x1790, the cry hold +0x178C, the stun, and the route
-   growing back +0x1794 */
+/* vtable +0x30: his frame update (Stalker_ThinkStart / Stalker_ThinkEnd around it): on screen
+   the full think: hits, reactions to cries, the behaviour step, a growl (sound 0x2A) every 90
+   frames while idle, the stance logic (+0x110) and his voice; off screen the behaviour step and
+   the off-screen move */
 void func_001297C0(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
-    VCALL(p, 0x84, void (*)(Pursuer *))(p);
-    p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
-    p->c.pathReq->mask = p->c.a.navMask;
-    func_00215D80(p);
-    if (PU(p, 0x16F6, u8) == 1) {
-        func_002177D0(p);
-    } else {
-        PU(p, 0x1544, u8) = 0;
-        PU(p, 0x1545, u8) = 0;
-        PU(p, 0x1546, u8) = 0;
-        PU(p, 0x16CB, u8) = 0;
-        PU(p, 0x16CC, u8) = 0;
-    }
-    VCALL(p, 0x120, void (*)(Pursuer *))(p);
-    func_00297C60(p);
+    Stalker_ThinkStart(p);
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
         func_00218110(p);
@@ -790,42 +773,7 @@ void func_001297C0(Pursuer *p) {
         }
         func_0029D7F0(p);
     }
-    if (PU(p, 0x1784, s32) != -1) {
-        PU(p, 0x1784, s32)++;
-    }
-    if (PU(p, 0x1780, s32) != -1) {
-        PU(p, 0x1780, s32)++;
-    }
-    if (PU(p, 0x1664, s32) != 0) {
-        PU(p, 0x1664, s32)--;
-    } else if (PU(p, 0x17B4, s32) != 0) {
-        PU(p, 0x17B4, s32)--;
-        if (PU(p, 0x17B4, s32) == 0) {
-            PU(p, 0x1620, u8) = PU(p, 0x1621, u8);
-        }
-    }
-    if (PU(p, 0x1790, s32) != 0 && p->c.moveSub != 9) {
-        PU(p, 0x1790, s32)--;
-        if (PU(p, 0x1790, s32) == 0) {
-            p->c.a.unkC4 = 0;
-            PU(p, 0x16F5, u8) = 0;
-        }
-    }
-    if (PU(p, 0x178C, s32) != 0) {
-        PU(p, 0x178C, s32)--;
-        if (PU(p, 0x178C, s32) == 0) {
-            PU(p, 0x1760, u8) = 0;
-        }
-    }
-    func_00129AF0(p);
-    if (PU(p, 0x1794, s32) != 0) {
-        PU(p, 0x1794, s32)--;
-        if (PU(p, 0x1794, s32) == 0 && PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
-            PU(p, 0x1621, u8) = PU(p, 0x1620, u8) + 1;
-        }
-    }
-    VCALL(p, 0x40, void (*)(Pursuer *))(p);
-    VCALL(p, 0x100, void (*)(Pursuer *))(p);
+    Stalker_ThinkEnd(p);
 }
 
 /* a nav triangle's flags (+0x3C), 0 for none */

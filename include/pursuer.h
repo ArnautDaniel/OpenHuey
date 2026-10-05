@@ -197,19 +197,33 @@ s32 func_00127BC0(Pursuer *p);
 s32 func_00127C00(Pursuer *p);
 s32 func_00127C40(Pursuer *p, s32 exit);
 s32 func_00127CC0(Pursuer *p);
+void func_00127D00(Pursuer *p, s8 situation);
 s32 func_00127FC0(Pursuer *p);
 s32 func_00128080(Pursuer *p);
+s32 func_00128090(Pursuer *p);
+void func_00128210(Pursuer *p);
 void func_00128390(Pursuer *p);
+void func_001284C0(Pursuer *p);
 void func_001286F0(Pursuer *p);
+void func_001287B0(Pursuer *p);
 void func_00128970(Pursuer *p);
+void func_00128A20(Pursuer *p);
 void func_00128CA0(Pursuer *p);
+void func_00128DB0(Pursuer *p);
 void func_00128FC0(Pursuer *p);
 void func_00129090(Pursuer *p);
+void func_001291C0(Pursuer *p);
 void func_00129550(Pursuer *p);
 void func_00129560(Pursuer *p);
+void func_00129570(Pursuer *p);
+void func_001297C0(Pursuer *p);
 void func_00129AF0(Pursuer *p);
+void func_00129B30(Pursuer *p);
 void func_00129D10(Pursuer *p);
+void func_00129DB0(Pursuer *p);
 void func_0012A390(Pursuer *p);
+void func_0012A4C0(Pursuer *p);
+void func_0012B490(Pursuer *p);
 void func_0012B860(Pursuer *p);
 void func_0012B990(Pursuer *p);
 void func_0012BAA0(Pursuer *p, Character *c);
@@ -217,6 +231,7 @@ void func_0012BBF0(Pursuer *p);
 void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room);
 s32 func_0012BE60(Pursuer *p);
 s32 func_0012BE70(Pursuer *p);
+void func_0012C030(Pursuer *p);
 Pursuer *func_001710D0(Pursuer *p, s32 flags);
 Pursuer *func_00172810(Pursuer *p, s32 flags);
 void func_00179600(Pursuer *p);
@@ -245,6 +260,26 @@ s32 func_00179940(Pursuer *p);
 s32 func_00179950(Pursuer *p);
 void func_00179960(Pursuer *p);
 Pursuer *func_00179970(Pursuer *p, s32 flags);
+Pursuer *func_0020C3A0(Pursuer *p, s32 flags);
+s32 func_0020C4B0(Pursuer *p);
+void func_0020C4D0(Pursuer *p);
+void func_0020C510(Pursuer *p, s32 side, f32 *out);
+void func_0020C5B0(Pursuer *p, s32 kind, f32 *out);
+void func_0020C660(Pursuer *p, s32 exit);
+void func_0020C730(Pursuer *p, s32 exit);
+void func_0020C7C0(Pursuer *p);
+void func_0020CAE0(Pursuer *p, s32 *e, f32 *a, f32 *b);
+void func_0020CC70(Pursuer *p, s8 situation);
+void func_0020D1F0(Pursuer *p, s32 on);
+s32 func_0020D2E0(Pursuer *p);
+s32 func_0020D2F0(Pursuer *p);
+f32 func_0020D300(Pursuer *p);
+f32 func_0020D310(Pursuer *p);
+f32 func_0020D320(Pursuer *p);
+void func_0020D330(Pursuer *p);
+u8 *func_0020D620(Pursuer *p);
+u8 *func_0020D660(Pursuer *p);
+void func_0020D6A0(Pursuer *p);
 void func_00211C80(Pursuer *p, s32 a2);
 s32 func_00211CF0(Pursuer *p, s32 exit);
 u32 func_00211E00(Pursuer *p, s32 exit);
@@ -679,5 +714,70 @@ static inline void Pursuer_ClearRoute(Pursuer *p) {
     PU(p, 0x1794, s32) = 0;
 }
 
+
+
+/* ---- the stalkers' frame update (vtable +0x30), shared by their own versions ---- */
+
+/* the start: blocking flags, senses (func_00215D80; while the behaviour is fresh, +0x16F6, they
+   are recomputed, else forgotten), vtable +0x120, the threat */
+static inline void Stalker_ThinkStart(Pursuer *p) {
+    VCALL(p, 0x84, void (*)(Pursuer *))(p);
+    p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    p->c.pathReq->mask = p->c.a.navMask;
+    func_00215D80(p);
+    if (PU(p, 0x16F6, u8) == 1) {
+        func_002177D0(p);
+    } else {
+        PU(p, 0x1544, u8) = 0;
+        PU(p, 0x1545, u8) = 0;
+        PU(p, 0x1546, u8) = 0;
+        PU(p, 0x16CB, u8) = 0;
+        PU(p, 0x16CC, u8) = 0;
+    }
+    VCALL(p, 0x120, void (*)(Pursuer *))(p);
+    func_00297C60(p);
+}
+
+/* the end: frames in state/behaviour (+0x1784, +0x1780), the room wait +0x1664 / the route rest
+   +0x17B4, the stand-down +0x1790, the cry hold +0x178C, the stun, the route growing back
+   +0x1794; then the model (+0x40) and the stance (+0x100) */
+static inline void Stalker_ThinkEnd(Pursuer *p) {
+    if (PU(p, 0x1784, s32) != -1) {
+        PU(p, 0x1784, s32)++;
+    }
+    if (PU(p, 0x1780, s32) != -1) {
+        PU(p, 0x1780, s32)++;
+    }
+    if (PU(p, 0x1664, s32) != 0) {
+        PU(p, 0x1664, s32)--;
+    } else if (PU(p, 0x17B4, s32) != 0) {
+        PU(p, 0x17B4, s32)--;
+        if (PU(p, 0x17B4, s32) == 0) {
+            PU(p, 0x1620, u8) = PU(p, 0x1621, u8);
+        }
+    }
+    if (PU(p, 0x1790, s32) != 0 && p->c.moveSub != 9) {
+        PU(p, 0x1790, s32)--;
+        if (PU(p, 0x1790, s32) == 0) {
+            p->c.a.unkC4 = 0;
+            PU(p, 0x16F5, u8) = 0;
+        }
+    }
+    if (PU(p, 0x178C, s32) != 0) {
+        PU(p, 0x178C, s32)--;
+        if (PU(p, 0x178C, s32) == 0) {
+            PU(p, 0x1760, u8) = 0;
+        }
+    }
+    func_00129AF0(p);
+    if (PU(p, 0x1794, s32) != 0) {
+        PU(p, 0x1794, s32)--;
+        if (PU(p, 0x1794, s32) == 0 && PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
+            PU(p, 0x1621, u8) = PU(p, 0x1620, u8) + 1;
+        }
+    }
+    VCALL(p, 0x40, void (*)(Pursuer *))(p);
+    VCALL(p, 0x100, void (*)(Pursuer *))(p);
+}
 
 #endif

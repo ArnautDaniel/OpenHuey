@@ -409,6 +409,7 @@ class CPU:
         self.fcc = False
         self.hi = self.lo = self.hi1 = self.lo1 = 0
         self.save_addrs: set[int] = set()
+        self.entry_saved: dict | None = None   # callee-saved registers on entry (see note_save)
         self.sa = 0
         self.func_lo, self.func_hi = func_lo, func_hi
         self.events: list[tuple] = []
@@ -567,8 +568,15 @@ class CPU:
     SAVED_REGS = set(range(16, 24)) | {30, 31}
 
     def note_save(self, name: str, w: int) -> None:
-        """Remember where the prologue saves callee-saved registers (not data for arg_value)."""
+        """Remember where the prologue saves callee-saved registers (not data for arg_value).
+        Only a store of the caller's value counts: a callee-saved register the function has set
+        (a local kept in $f20 across calls) stored to the stack is data."""
+        if self.entry_saved is None:
+            self.entry_saved = {r: self.g(r) for r in self.SAVED_REGS} | {("f", i): self.f[i] for i in range(20, 32)}
         if name in self.SAVE_STORES and _rs(w) == 29 and (_rt(w) >= 20 if name == "swc1" else _rt(w) in self.SAVED_REGS):
+            r = _rt(w)
+            if (self.f[r] if name == "swc1" else self.g(r)) != self.entry_saved[("f", r) if name == "swc1" else r]:
+                return
             a = (self.g(29) + _imm(w)) & M32
             self.save_addrs.update(range(a, a + self.SAVE_STORES[name]))
 
