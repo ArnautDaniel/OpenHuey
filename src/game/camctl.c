@@ -37,6 +37,14 @@ extern VObject *D_0044E4F0;   /* the renderer */
 extern const PTMF D_003E5240;  /* { 0, -1, func_00224770 } */
 extern const PTMF D_003E5250;  /* { 0, -1, func_00224740 } */
 
+/* vt+0x24 the current camera setup (+0x6C); -1 in the free mode (+0xF4) */
+s32 func_00224300(u8 *d) {
+    if (AT(d, 0xF4, u8) == 1) {
+        return -1;
+    }
+    return AT(d, 0x6C, s32);
+}
+
 /* two modes of the director (update state +0xE8, flag +0xF4); both clear the renderer's
  * work area (+0x5C) */
 void func_00224330(u8 *d) {

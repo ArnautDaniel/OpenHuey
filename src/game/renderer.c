@@ -1060,4 +1060,11 @@ void *func_001BBAA0(u8 *r, void *key, u8 *built) {
 /* +0x8C the floor effect's value (+0x304DDC) */
 void func_001B9250(u8 *r, s32 v) {
     AT(r, 0x304DDC, s32) = v;
+#ifdef HG_NATIVE
+    {
+        extern void glr_refl_flip(s32 flip);   /* native/platform/glr.c: the reflection's mirror */
+
+        glr_refl_flip(v);
+    }
+#endif
 }

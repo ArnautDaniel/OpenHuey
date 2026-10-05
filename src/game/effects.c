@@ -1260,8 +1260,332 @@ void func_002C6570(u8 *e) {
 void func_00319B10(void) {
 }
 
-/* ---- room effect D_00472F60 (room 0x60's floor effect 0x1B): a floor quad of some strength
- * (+0x14; 0 off); its draw (+0x14, func_00317D40) is a GL TODO ---- */
+/* ---- room effect D_00472F60 (room 0x60's floor effect 0x1B): a reflecting floor quad
+ * (corners +0x50..+0x8C) of strength +0x14 (0 off); +0x10 the reflection covers the screen
+ * rather than the quad, +0x18 it mirrors top to bottom rather than left to right. Its draw
+ * (+0x14, func_00317D40) renders the characters and creatures above it again from the
+ * camera reflected in its plane ---- */
+
+extern u8 *D_0044F258;   /* the creature manager: its list of 10 at +0x0 */
+extern void *gCharPlayer;
+extern VObject *D_0044E4B8;   /* the camera */
+extern f32 *func_0017CE80(void *skel, s32 bone);
+
+/* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
+ * screen position lies within the quad's screen bounds widened by mx / my (my shifted by half
+ * when the quad mirrors top to bottom, +0x18) */
+static s32 refl_near_quad(u8 *e, f32 *pos, f32 mx, f32 my) {
+    VObject *cam = D_0044E4B8;
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 x0 = 0.0f, x1 = 0.0f, y0 = 0.0f, y1 = 0.0f;
+    s32 i;
+
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
+    sceVu0ApplyMatrix(v, clip, pos);
+    if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+        return 0;
+    }
+    if (AT(e, 0x10, s32) != 0) {
+        return 1;
+    }
+    VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    for (i = 0; i < 4; i++) {
+        sceVu0ApplyMatrix(v, m, (f32 *)(e + 0x50) + i * 4);
+        v[3] = 1.0f / v[3];
+        v[0] *= v[3];
+        v[1] *= v[3];
+        if (i == 0) {
+            x0 = x1 = v[0];
+            y0 = y1 = v[1];
+            continue;
+        }
+        if (!(x0 <= v[0])) {
+            x0 = v[0];
+        } else if (x1 < v[0]) {
+            x1 = v[0];
+        }
+        if (!(y0 <= v[1])) {
+            y0 = v[1];
+        } else if (y1 < v[1]) {
+            y1 = v[1];
+        }
+    }
+    sceVu0ApplyMatrix(v, m, pos);
+    v[3] = 1.0f / v[3];
+    v[0] *= v[3];
+    v[1] *= v[3];
+    if (AT(e, 0x18, s32) != 0) {
+        v[1] = v[1] + 0.5f * my;
+    }
+    return x0 <= v[0] + mx && !(x1 < v[0] - mx) && y0 <= v[1] + my && !(y1 < v[1] - my);
+}
+
+/* character slot `i` (shown, +0x28 set, +0x29 not 1) is to be reflected: its root bone near the
+ * quad (margins: Fiona 10 x 30, Hewie 20 x 15, others 20 x 30) */
+s32 func_00317920(u8 *e, s32 i) {
+    u8 *c = gCharacters[i];
+    f32 pos[4] __attribute__((aligned(16)));
+
+    if (c == NULL || AT(c, 0x28, u8) == 0 || AT(c, 0x29, u8) == 1) {
+        return 0;
+    }
+    sceVu0CopyVector(pos, func_0017CE80(AT(AT(c, 0xF0, u8 *), 0x810, void *), 0) + 12);
+    return refl_near_quad(e, pos, i == 0 ? 10.0f : 20.0f, i == 1 ? 15.0f : 30.0f);
+}
+
+/* creature `i` (shown) is to be reflected, unless Fiona's +0xE2 is set: creatures 7.. by their
+ * model's root bone (margins 5 x 10), the rest by their position 10 up (5 x 15) */
+s32 func_003175B0(u8 *e, s32 i) {
+    u8 *o = ((u8 **)D_0044F258)[i];
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 my;
+
+    if (o == NULL || AT(o, 0x28, u8) == 0 || AT(o, 0x29, u8) == 1 || AT(gCharPlayer, 0xE2, u8) != 0) {
+        return 0;
+    }
+    if (i >= 7) {
+        sceVu0CopyVector(pos, func_0017CE80(AT(AT(o, 0xF0, u8 *), 0x810, void *), 0) + 12);
+        my = 10.0f;
+    } else {
+        sceVu0CopyVector(pos, (f32 *)(o + 0x10));
+        my = 15.0f;
+        pos[1] += 10.0f;
+    }
+    return refl_near_quad(e, pos, 5.0f, my);
+}
+
+#ifdef HG_NATIVE
+extern void glr_layer(s32 layer);
+extern void glr_mask_clear(void);
+extern void glr_refl(s32 prep, s32 fix, s32 flip, s32 masked, f32 dx);
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern s32 func_00126800(void *c);            /* a character's draw layer (+0x152C) */
+extern void func_001267F0(void *c, s32 layer);
+extern VObject *D_0044E4F8;
+#define GLR_PRIM_MASK 0x100000u
+
+typedef struct ReflCamera {   /* camera +0x88's set (CameraSet) */
+    f32 eye[4];
+    f32 target[4];
+    f32 fov;
+    s32 unk24;
+} ReflCamera;
+
+/* mark the reflection's mask with quad `q` (4 corners, strip order) where it is in front */
+static void refl_mask_quad(const f32 *q) {
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 xyzw[4][4] __attribute__((aligned(16)));
+    f32 st[4][2] = {{0}};
+    u32 rgba[4] = {0x80808080, 0x80808080, 0x80808080, 0x80808080};
+    s32 k;
+
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (k = 0; k < 4; k++) {
+        sceVu0CopyVector(xyzw[k], (f32 *)q + k * 4);
+        AT(&xyzw[k][3], 0, u32) = k < 2 ? 0x8000 : 0;
+    }
+    glr_mask_clear();
+    glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], (const u8 *)rgba, NULL, 0, GLR_PRIM_MASK);
+}
+
+/* every corner of `q` (4) is in view (clip space) */
+static s32 refl_quad_in_view(const f32 *q) {
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    s32 k;
+
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (k = 0; k < 4; k++) {
+        sceVu0ApplyMatrix(v, clip, (f32 *)q + k * 4);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* the reflecting floor's side panels: a fixed quad on each side (which by the effect's kind
+ * +0x1C and the side, the sign of `dx`) shows the reflection again at half strength, moved by
+ * dx (the floor quad's width on screen, 1/16 pixels) */
+void func_00316DE0(u8 *e, f32 dx) {
+    static const u32 kQuads[4][4][4] = {
+        {{0x42480000, 0x41F00000, 0xC1AA6F35, 0x3F800000}, {0x42480000, 0x41F00000, 0xC1E60000, 0x3F800000},
+         {0x42480000, 0x3FA00000, 0xC1AA6F35, 0x3F800000}, {0x42480000, 0x3FA00000, 0xC1E60000, 0x3F800000}},
+        {{0x41FA6F35, 0x41F00000, 0xC1200000, 0x3F800000}, {0x421B0000, 0x41F00000, 0xC1200000, 0x3F800000},
+         {0x41FA6F35, 0x3FC00000, 0xC1200000, 0x3F800000}, {0x421B0000, 0x3FC00000, 0xC1200000, 0x3F800000}},
+        {{0x41200000, 0x41B00000, 0x426AC866, 0x3F800000}, {0x41200000, 0x41B00000, 0x424D0000, 0x3F800000},
+         {0x41200000, 0x00000000, 0x426AC866, 0x3F800000}, {0x41200000, 0x00000000, 0x424D0000, 0x3F800000}},
+        {{0xC10B2196, 0x41B00000, 0x428C0000, 0x3F800000}, {0xBFA00000, 0x41B00000, 0x428C0000, 0x3F800000},
+         {0xC10B2196, 0x00000000, 0x428C0000, 0x3F800000}, {0xBFA00000, 0x00000000, 0x428C0000, 0x3F800000}},
+    };
+    f32 q[4][4] __attribute__((aligned(16)));
+    s32 k = (AT(e, 0x1C, u32) == 0x20000000 ? 0 : 2) + (dx < 0.0f ? 0 : 1), j;
+
+    for (j = 0; j < 16; j++) {
+        AT(&q[0][0], j * 4, u32) = kQuads[k][j / 4][j % 4];
+    }
+    if (!refl_quad_in_view(&q[0][0])) {
+        return;
+    }
+    refl_mask_quad(&q[0][0]);
+    glr_refl(0, AT(e, 0x14, s32) >> 1, 0, 1, dx / 16.0f);
+}
+
+/* `out` = b + (a - b) / 2 */
+static void refl_mid(f32 *out, const f32 *a, const f32 *b) {
+    sceVu0SubVector(out, (f32 *)a, (f32 *)b);
+    sceVu0ScaleVector(out, out, 0.5f);
+    sceVu0AddVector(out, out, (f32 *)b);
+}
+
+/* +0x14 draw (with OpenGL): unless the quad is facing away or out of view (+0x10 0), the
+ * camera is reflected in its plane (eye and target, roll negated, the half-size matrices made
+ * current) and each character (func_00317920) and creature (func_003175B0) near it is drawn
+ * again into renderer layer 0x17 - its draw layer switched for the call (characters with +0xE4
+ * cleared). With the camera back, if anything was drawn the reflection is blended over the
+ * quad (or the screen, +0x10) at strength +0x14, mirrored per +0x18 (layer 0x18); kinds with
+ * +0x1C add side panels (func_00316DE0) */
+void func_00317D40(u8 *e) {
+    VObject *cam = D_0044E4B8, *tc = D_0044E4E8;
+    f32 *q = (f32 *)(e + 0x50);
+    f32 scr[4][4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 m1[4][4] __attribute__((aligned(16)));
+    f32 m2[4][4] __attribute__((aligned(16)));
+    ReflCamera saved __attribute__((aligned(16)));
+    ReflCamera mirrored __attribute__((aligned(16)));
+    f32 d, t, roll;
+    s32 i, k, drawn = 0;
+
+    if (AT(e, 0x14, s32) == 0) {
+        return;
+    }
+    if (AT(e, 0x10, s32) == 0) {
+        if ((u8)VCALL(cam, 0xD4, s32 (*)(VObject *, f32 *))(cam, q) == 1 &&
+            (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, f32 *))(cam, q + 4) == 1 &&
+            (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, f32 *))(cam, q + 8) == 1 &&
+            (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, f32 *))(cam, q + 12) == 1) {
+            f32 p[9][4] __attribute__((aligned(16)));
+
+            refl_mid(p[0], q + 4, q);
+            refl_mid(p[1], q + 8, q);
+            refl_mid(p[2], q + 8, q + 4);
+            refl_mid(p[3], q + 12, q + 8);
+            refl_mid(p[4], q + 4, q + 12);
+            refl_mid(p[5], p[1], p[0]);
+            refl_mid(p[6], p[3], p[1]);
+            refl_mid(p[7], p[4], p[3]);
+            refl_mid(p[8], p[0], p[4]);
+            for (k = 0; k < 9 && (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, f32 *))(cam, p[k]); k++) {
+            }
+            if (k == 5) {
+                return;
+            }
+        }
+        if (!refl_quad_in_view(q)) {
+            return;
+        }
+        VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, m1);
+        for (k = 0; k < 4; k++) {
+            sceVu0ApplyMatrix(scr[k], m1, q + k * 4);
+            scr[k][3] = 1.0f / scr[k][3];
+            scr[k][0] *= scr[k][3];
+            scr[k][1] *= scr[k][3];
+        }
+        if ((scr[1][0] - scr[0][0]) * (scr[2][1] - scr[0][1]) - (scr[1][1] - scr[0][1]) * (scr[2][0] - scr[0][0]) > 0.0f) {
+            return;   /* facing away */
+        }
+    }
+    sceVu0SubVector(a, q + 4, q);
+    sceVu0SubVector(b, q + 8, q);
+    sceVu0OuterProduct(n, a, b);
+    sceVu0Normalize(n, n);
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, saved.eye);
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, saved.target);
+    saved.fov = VCALL(cam, 0x64, f32 (*)(VObject *))(cam);
+    saved.unk24 = VCALL(D_0044E4F8, 0x24, s32 (*)(VObject *))(D_0044E4F8);
+    mirrored = saved;
+    d = sceVu0InnerProduct(n, q);
+    t = sceVu0InnerProduct(n, saved.eye) - d;
+    if (t == 0.0f) {
+        return;
+    }
+    sceVu0ScaleVector(mirrored.eye, n, 2.0f * t);
+    sceVu0SubVector(mirrored.eye, saved.eye, mirrored.eye);
+    t = sceVu0InnerProduct(n, saved.target) - d;
+    if (t == 0.0f) {
+        return;
+    }
+    sceVu0ScaleVector(mirrored.target, n, 2.0f * t);
+    sceVu0SubVector(mirrored.target, saved.target, mirrored.target);
+    roll = VCALL(cam, 0x74, f32 (*)(VObject *))(cam);
+    VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &mirrored);
+    VCALL(cam, 0x70, void (*)(VObject *, f32))(cam, -roll);
+    VCALL(cam, 0x14, void (*)(VObject *))(cam);
+    VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, m1);
+    VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, m2);
+    VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, m1);
+    VCALL(cam, 0x54, void (*)(VObject *, f32 (*)[4]))(cam, m2);
+    for (i = 0; i < 6; i++) {
+        u8 *c = gCharacters[i];
+
+        if ((u8)func_00317920(e, i) == 1) {
+            s32 layer;
+            u8 e4;
+
+            VCALL(tc, 0x18, void (*)(VObject *))(tc);
+            layer = func_00126800(c);
+            func_001267F0(c, 0x17);
+            e4 = AT(c, 0xE4, u8);
+            AT(c, 0xE4, u8) = 0;
+            VCALL(c, 0x2C, void (*)(u8 *))(c);
+            drawn = 1;
+            func_001267F0(c, layer);
+            AT(c, 0xE4, u8) = e4;
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        u8 *o = ((u8 **)D_0044F258)[i];
+
+        if ((u8)func_003175B0(e, i) == 1) {
+            s32 layer;
+
+            VCALL(tc, 0x18, void (*)(VObject *))(tc);
+            layer = func_00126800(o);
+            func_001267F0(o, 0x17);
+            VCALL(o, 0x2C, void (*)(u8 *))(o);
+            drawn = 1;
+            func_001267F0(o, layer);
+        }
+    }
+    VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &saved);
+    VCALL(cam, 0x70, void (*)(VObject *, f32))(cam, roll);
+    VCALL(cam, 0x14, void (*)(VObject *))(cam);
+    VCALL(tc, 0x18, void (*)(VObject *))(tc);
+    if (!drawn) {
+        return;
+    }
+    glr_layer(0x18);
+    if (AT(e, 0x10, s32) == 0) {
+        refl_mask_quad(q);
+    }
+    glr_refl(1, AT(e, 0x14, s32), AT(e, 0x18, s32) != 0, AT(e, 0x10, s32) == 0, 0.0f);
+    if (AT(e, 0x1C, u32) != 0 && AT(e, 0x10, s32) == 0) {
+        f32 dx = (f32)((s32)(scr[1][0] * 16.0f) - (s32)(scr[0][0] * 16.0f));
+
+        if (dx != 0.0f) {
+            func_00316DE0(e, dx);
+            func_00316DE0(e, -dx);
+        }
+    }
+    glr_layer(-1);
+}
+#endif
 
 /* +0x10 update: nothing */
 void func_00319B00(void) {

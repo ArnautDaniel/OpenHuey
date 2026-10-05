@@ -24,6 +24,8 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* PC-only bits: blended Cs * FIX / 128 + Cd, FIX in bits 24..31 (GS ALPHA (Cs - 0) * FIX + Cd) */
 #define GLR_PRIM_FIXB 0x80000u
 #define GLR_PRIM_FIX(f) (GLR_PRIM_FIXB | (uint32_t)(f) << 24)
+/* PC-only bit: a quad marking the reflection's mask where it is in front of the scene */
+#define GLR_PRIM_MASK 0x100000u
 
 /* the renderer layer (0..52, drawn in order) what follows is sent in; -1: none */
 void glr_layer(int layer);
@@ -67,6 +69,16 @@ void glr_caustic_glow(int aref);
 /* func_002C6650 (the depth of field): the screen blurred where its view depth is outside
  * from .. to, fully beyond a / b, in steps of a quarter between */
 void glr_dof(float a, float from, float to, float b);
+
+/* the reflecting floor (func_00317D40): layer 0x17's draws go into the reflection (from the
+ * mirrored camera's half-size matrices; its background the screen mirrored, renderer +0x8C
+ * `flip`); glr_mask_clear and GLR_PRIM_MASK quads mark where it shows; glr_refl blends it over
+ * the screen at fix / 128 - `prep` prepares it first (blurred, sharp where drawn), `flip`
+ * mirrors top / bottom rather than left / right, `masked` only within the marks, moved `dx`
+ * pixels */
+void glr_refl_flip(int flip);
+void glr_mask_clear(void);
+void glr_refl(int prep, int fix, int flip, int masked, float dx);
 
 /* the game finished building a frame (renderer flip): it becomes the one shown */
 void glr_end_frame(void);

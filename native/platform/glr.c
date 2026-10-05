@@ -66,6 +66,7 @@
     X(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate) \
     X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
     X(PFNGLBLENDCOLORPROC, glBlendColor) \
+    X(PFNGLPOLYGONOFFSETPROC, glPolygonOffset) \
     X(PFNGLDISABLEIPROC, glDisablei) \
     X(PFNGLCOLORMASKIPROC, glColorMaski) \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC, glNamedFramebufferDrawBuffers) \
@@ -95,7 +96,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -254,6 +255,22 @@ void glr_dof(float a, float from, float to, float b) {
     d->mvp[3] = b;
 }
 
+static int sReflFlip;   /* the reflection's mirror (renderer +0x8C): 0 left / right, 1 top / bottom */
+
+void glr_refl_flip(int flip) {
+    sReflFlip = flip;
+}
+
+void glr_mask_clear(void) {
+    put_post(POST_MASK_CLEAR, sLayer, 0, 0);
+}
+
+void glr_refl(int prep, int fix, int flip, int masked, float dx) {
+    GlrDraw *d = put_post(POST_REFL, sLayer, (uint32_t)fix, (prep != 0) | (flip != 0) << 1 | (masked != 0) << 2);
+
+    d->mvp[0] = dx;
+}
+
 void glr_caustic_begin(void) {
     put_post(POST_ALPHA_CLEAR, sLayer, 0, 0);
 }
@@ -286,6 +303,9 @@ static GLint sPostModeLoc, sPostColorLoc, sPostColor2Loc, sPostRangeLoc, sPostFi
 #define GLR_HALF_H 224
 static GLuint sHalf[3], sHalfFbo[3];
 static GLuint sCopy, sCopyFbo;   /* a copy of the screen (passes that read it while drawing over it) */
+/* the reflection (layer 0x17's draws, from the mirrored camera's half-size matrices), its
+ * prepared half-size image, and the mask its quads mark (depth tested against the scene) */
+static GLuint sRefl, sReflDepth, sReflFbo, sReflPrep, sReflPrepFbo, sMask, sMaskFbo;
 static int sGsW, sGsH;
 
 static const char *kMeshVs =
@@ -390,6 +410,13 @@ static const char *kQuadFs =
  *      0x20 .. 0x80 over to .. b (view depth, from the depth image; last band passed wins)
  *   17 over the screen by its alpha, stretched
  *      (the depth of field, func_002C6650: 2, eight 15s ping-ponging, 16, 17)
+ * The reflecting floor (func_00317D40 / func_00316DE0), R the reflection's middle at half size:
+ *   18 R blurred: 4 diagonal neighbours lerped in at 1/4 each, then where R's alpha isn't 0
+ *      R lerped back in at 3/4 with its alpha (else alpha 0)
+ *   21 that stretched over the screen, mirrored left / right (uOff.x 0; moved by uRange.x
+ *      pixels) or top / bottom, only where its alpha isn't 0 and (uOff.y) the mask is marked;
+ *      blended by FIX (constant colour)
+ *   22 the screen halved and mirrored into the reflection's middle (its background, alpha 0)
  *   11 the screen (a copy) D + (-D * a >> 7), a = strength x the corner's weight in one of
  *      four gouraud triangles, each from a screen corner to the middles of its two edges
  *      (moved by the offset) */
@@ -410,6 +437,9 @@ static const char *kPostFs =
     "    ivec2 sz = textureSize(t, 0);\n"
     "    if (p.x < 0 || p.y < 0 || p.x >= sz.x || p.y >= sz.y) return vec4(0.0);\n"
     "    return round(texelFetch(t, p, 0) * 255.0);\n"
+    "}\n"
+    "vec4 refl(ivec2 q) {\n"   /* the reflection's middle at half size (0..255 x 0..223) */
+    "    return round(texelFetch(uTex, ivec2(160 + int(float(q.x) * 1.25), 112 + q.y), 0) * 255.0);\n"
     "}\n"
     "float corner(vec2 q, vec2 c, vec2 a, vec2 b) {\n"   /* c's barycentric weight; 0 outside */
     "    float det = (a.y - b.y) * (c.x - b.x) + (b.x - a.x) * (c.y - b.y);\n"
@@ -487,6 +517,36 @@ static const char *kPostFs =
     "        vec2 t = (gl_FragCoord.xy - 0.5) * sz / vec2(640.0, 448.0) + 0.5;\n"
     "        vec4 h = texture(uTex, t / sz) * 255.0;\n"
     "        oColor = vec4(h.rgb / 255.0, clamp(h.a / 128.0, 0.0, 1.0));\n"
+    "        return;\n"
+    "    } else if (uMode == 18) {\n"   /* the reflection prepared (see above) */
+    "        c = refl(p);\n"
+    "        vec4 r = c;\n"
+    "        const ivec2 taps[4] = ivec2[4](ivec2(-1, 1), ivec2(1, 1), ivec2(-1, -1), ivec2(1, -1));\n"
+    "        for (int k = 0; k < 4; k++) {\n"
+    "            ivec2 q = p - taps[k];\n"
+    "            if (q.x >= 0 && q.y >= 0 && q.x < 256 && q.y < 224) {\n"
+    "                vec4 t = refl(q);\n"
+    "                c = vec4(c.rgb + floor((t.rgb - c.rgb) * 0.25), t.a);\n"
+    "            }\n"
+    "        }\n"
+    "        c = r.a != 0.0 ? vec4(c.rgb + floor((r.rgb - c.rgb) * 0.75), r.a) : vec4(c.rgb, 0.0);\n"
+    "        oColor = clamp(c / 255.0, 0.0, 1.0);\n"
+    "        return;\n"
+    "    } else if (uMode == 21) {\n"   /* the prepared reflection stretched over the screen */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 - gl_FragCoord.y);\n"   /* the game's pixels */
+    "        vec2 uv = uOff.x != 0 ? vec2(g.x * 0.5, (448.0 - g.y) * 0.5)\n"
+    "                              : vec2((512.0 + uRange.x - g.x) * 0.5, g.y * 0.5);\n"
+    "        if (uv.x < 0.0 || uv.x >= 256.0) discard;\n"
+    "        if (uOff.y != 0 && texelFetch(uTex1, p, 0).r == 0.0) discard;\n"
+    "        vec4 h = texture(uTex, vec2(uv.x, 224.0 - uv.y) / vec2(256.0, 224.0));\n"
+    "        if (round(h.a * 255.0) == 0.0) discard;\n"
+    "        oColor = vec4(h.rgb, 1.0);\n"
+    "        return;\n"
+    "    } else if (uMode == 22) {\n"   /* the screen mirrored into the reflection's middle (half size) */
+    "        vec2 q = gl_FragCoord.xy - vec2(160.0, 112.0);\n"   /* 0 .. 320 x 0 .. 224 */
+    "        vec2 s = vec2(q.x * 2.0, q.y * 2.0);\n"
+    "        if (uOff.x != 0) s.y = 447.0 - s.y; else s.x = 639.0 - s.x;\n"
+    "        oColor = vec4(texelFetch(uTex, ivec2(s), 0).rgb, 0.0);\n"
     "        return;\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
@@ -780,6 +840,26 @@ int glr_init(void) {
         p_glCreateFramebuffers(1, &sHalfFbo[i]);
         p_glNamedFramebufferTexture(sHalfFbo[i], GL_COLOR_ATTACHMENT0, sHalf[i], 0);
     }
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sRefl);
+    p_glTextureStorage2D(sRefl, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflDepth);
+    p_glTextureStorage2D(sReflDepth, 1, GL_DEPTH_COMPONENT24, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sReflFbo);
+    p_glNamedFramebufferTexture(sReflFbo, GL_COLOR_ATTACHMENT0, sRefl, 0);
+    p_glNamedFramebufferTexture(sReflFbo, GL_DEPTH_ATTACHMENT, sReflDepth, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sReflPrep);
+    p_glTextureStorage2D(sReflPrep, 1, GL_RGBA8, GLR_HALF_W, GLR_HALF_H);
+    p_glTextureParameteri(sReflPrep, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sReflPrep, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    p_glTextureParameteri(sReflPrep, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    p_glTextureParameteri(sReflPrep, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    p_glCreateFramebuffers(1, &sReflPrepFbo);
+    p_glNamedFramebufferTexture(sReflPrepFbo, GL_COLOR_ATTACHMENT0, sReflPrep, 0);
+    p_glCreateTextures(GL_TEXTURE_2D, 1, &sMask);
+    p_glTextureStorage2D(sMask, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
+    p_glCreateFramebuffers(1, &sMaskFbo);
+    p_glNamedFramebufferTexture(sMaskFbo, GL_COLOR_ATTACHMENT0, sMask, 0);
+    p_glNamedFramebufferTexture(sMaskFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sCopy);
     p_glTextureStorage2D(sCopy, 1, GL_RGBA8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateFramebuffers(1, &sCopyFbo);
@@ -864,7 +944,7 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
@@ -935,6 +1015,26 @@ static void run_post(const GlrDraw *d) {
         post(17, sFbo, GLR_WIDTH, GLR_HEIGHT, sHalf[z], 0);
         break;
     }
+    case POST_MASK_CLEAR: {
+        static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+        p_glClearNamedFramebufferfv(sMaskFbo, GL_COLOR, 0, kNone);
+        break;
+    }
+    case POST_REFL: {   /* func_00317D40 / func_00316DE0 */
+        float fix = (float)(int32_t)rgba / 128.0f;
+
+        if (d->prim & 1) {
+            post(18, sReflPrepFbo, GLR_HALF_W, GLR_HALF_H, sRefl, 0);
+        }
+        p_glProgramUniform2i(sPostProg, sPostOffLoc, (d->prim >> 1) & 1, (d->prim >> 2) & 1);
+        p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], 0.0f);
+        p_glEnable(GL_BLEND);
+        p_glBlendColor(fix, fix, fix, fix);
+        p_glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_CONSTANT_COLOR);
+        post(21, sFbo, GLR_WIDTH, GLR_HEIGHT, sReflPrep, sMask);
+        break;
+    }
     case POST_VIGNETTE:
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -1002,6 +1102,7 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     const GlrFrame *f = &sFrames[sBuilding ^ 1];
     int i, depthDirty = 1;   /* the scene's depth changed since the glow buffer's copy */
     int bloomMask = 0, maskCleared = 0;   /* layer 0x26 used this frame; its alpha cleared */
+    int reflStarted = 0;                  /* layer 0x17's reflection begun this frame */
 
     if (sGlowClear) {
         p_glClearNamedFramebufferfv(sGlowFbo, GL_COLOR, 0, kBlack);
@@ -1159,6 +1260,56 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glColorMaski(1, d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
             p_glProgramUniformMatrix4fv(sMeshProg, sMvpLoc, 1, GL_FALSE, d->mvp);
+            if (d->layer == 0x17 || (d->prim & GLR_PRIM_MASK)) {
+                if (d->layer == 0x17 && !reflStarted) {
+                    /* layer 0x17's start (func_001B0D40): the reflection cleared, the screen
+                     * so far halved and mirrored into it as its background */
+                    static const float kNone[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+                    static const float kFar1 = 1.0f;
+
+                    p_glClearNamedFramebufferfv(sReflFbo, GL_COLOR, 0, kNone);
+                    p_glClearNamedFramebufferfv(sReflFbo, GL_DEPTH, 0, &kFar1);
+                    p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                             GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    p_glDisable(GL_DEPTH_TEST);
+                    p_glDisable(GL_BLEND);
+                    p_glUseProgram(sPostProg);
+                    p_glBindVertexArray(sQuadVao);
+                    p_glBindFramebuffer(GL_FRAMEBUFFER, sReflFbo);
+                    p_glViewport(160, 112, 320, 224);
+                    p_glProgramUniform1i(sPostProg, sPostModeLoc, 22);
+                    p_glProgramUniform2i(sPostProg, sPostOffLoc, sReflFlip, 0);
+                    p_glBindTextureUnit(0, sCopy);
+                    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                    mesh_state();
+                    if (mode != 0) {
+                        GLuint t = texture_for((const TexEntry *)d->tex, (int)(d->tex0 >> 56) & 0x1F);
+
+                        p_glBindTextureUnit(0, t);
+                    }
+                    if (d->prim & 0x40) {
+                        p_glEnable(GL_BLEND);
+                        p_glDisablei(GL_BLEND, 1);
+                    }
+                    reflStarted = 1;
+                }
+                if (d->prim & GLR_PRIM_MASK) {   /* a quad marking the mask where it's in front */
+                    p_glBindFramebuffer(GL_FRAMEBUFFER, sMaskFbo);
+                    p_glDepthFunc(GL_LEQUAL);
+                    p_glDepthMask(GL_FALSE);
+                    p_glEnable(GL_POLYGON_OFFSET_FILL);
+                    p_glPolygonOffset(-1.0f, -4.0f);
+                    p_glProgramUniform1i(sMeshProg, sTexModeLoc, 0);
+                    p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+                    p_glDisable(GL_POLYGON_OFFSET_FILL);
+                    p_glDepthFunc(GL_LESS);
+                } else {
+                    p_glBindFramebuffer(GL_FRAMEBUFFER, sReflFbo);
+                    p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+                }
+                p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+                continue;
+            }
             p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
             if (d->prim & GLR_PRIM_GLOW) {
                 /* again into the glow buffer, against the scene's depth at its size (the game
