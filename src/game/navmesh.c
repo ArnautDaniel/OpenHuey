@@ -836,3 +836,95 @@ f32 func_0017A6D0(NavTri *t, f32 *out) {
     func_0010E640(out, out, k);
     return k;
 }
+
+/* the same height without the zero term (mula / msub: a -0 product stays -0) */
+static inline __attribute__((always_inline)) f32 nav_plane_y(NavTri *t, const f32 *q) {
+    f32 dx2 = t->v[2][0] - t->v[0][0], dy2 = t->v[2][1] - t->v[0][1], dy1 = t->v[1][1] - t->v[0][1];
+    f32 dx1 = t->v[1][0] - t->v[0][0], dz1 = t->v[1][2] - t->v[0][2], qx = q[0] - t->v[0][0];
+    f32 dz2 = t->v[2][2] - t->v[0][2], nx, nyz, qz, num, den;
+
+    nx = dy1 * dz2 - dy2 * dz1;
+    qz = q[2] - t->v[0][2];
+    nyz = dx1 * dy2 - dx2 * dy1;
+    num = qz * nyz + qx * nx;
+    den = dz1 * dx2 - dz2 * dx1;
+    return t->v[0][1] - num / den;
+}
+
+/* +0x1C put p on triangle i (p[1]): its highest corner if it is a step / ledge (flags & 3),
+ * else its plane's height at p */
+void func_0017C7B0(NavMesh *nm, u32 i, f32 *p) {
+    NavTri *t;
+
+    if (!(i < nm->numTris) || nm->tris == NULL) {
+        return;
+    }
+    t = &nm->tris[i];
+    if (t->flags & 3) {
+        f32 y = t->v[0][1] < t->v[1][1] ? t->v[1][1] : t->v[0][1];
+
+        p[1] = y < t->v[2][1] ? t->v[2][1] : y;
+        return;
+    }
+    p[1] = nav_plane_y(t, p);
+}
+
+/* +0x18 the same with its lowest corner */
+void func_0017C8C0(NavMesh *nm, u32 i, f32 *p) {
+    NavTri *t;
+
+    if (!(i < nm->numTris) || nm->tris == NULL) {
+        return;
+    }
+    t = &nm->tris[i];
+    if (t->flags & 3) {
+        f32 y = t->v[0][1] <= t->v[1][1] ? t->v[0][1] : t->v[1][1];
+
+        p[1] = y <= t->v[2][1] ? y : t->v[2][1];
+        return;
+    }
+    p[1] = nav_plane_y(t, p);
+}
+
+/* +0x60 which side (0 / 1) of door region i p is at: within 5 in height and 12 across of that
+ * side's spot, with a straight walk over the mesh from triangle tri to it (+0x20 step by step
+ * across edges) ending on the spot's triangle; -1 if neither */
+s32 func_0017B380(NavMesh *nm, s32 i, u32 tri, f32 *p) {
+    u8 *door;
+    s32 s;
+
+    if (i < 0 || !((u32)i < nm->numDoors)) {
+        return -1;
+    }
+    door = NAV_DOOR(nm, i);
+    for (s = 0; s < 2; s++) {
+        f32 d[4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+        f32 *spot = (f32 *)(door + 0x10 + s * 0x10);
+        f32 dy;
+        u32 t;
+
+        sceVu0SubVector(d, p, spot);
+        dy = d[1] <= 0.0f ? -d[1] : d[1];
+        if (!(dy <= 5.0f) || !(__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= 12.0f)) {
+            continue;
+        }
+        sceVu0CopyVector(at, p);
+        t = tri;
+        for (;;) {
+            s32 e = VCALL(nm, 0x20, s32 (*)(NavMesh *, u32, f32 *, f32 *))(nm, t, at, spot);
+
+            if (e == 3) {
+                if (t == AT(door, s * 4, u32)) {
+                    return s;
+                }
+                break;
+            }
+            if (e == 4) {
+                break;
+            }
+            t = nm->tris[t].adj[e];
+        }
+    }
+    return -1;
+}
