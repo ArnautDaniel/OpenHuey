@@ -203,6 +203,10 @@ s32 func_0025FEE0(void *o) {
     return 0;
 }
 
+/* operator delete for pool entries: nothing (the pool is dropped at once) */
+void func_0025FEF0(void *p) {
+}
+
 /* +0x10 (D_0046C7E0, D_0046C830, D_0046C880, ...) */
 s32 func_00264C40(void *o) {
     return 0;

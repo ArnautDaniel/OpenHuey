@@ -47,6 +47,11 @@ void func_00322430(u8 *o) {
     AT(o, 0x646, u8) = 0xA;
 }
 
+/* placement new: its memory */
+void *func_00322570(u32 size, void *mem) {
+    return mem;
+}
+
 extern void func_003219A0(u8 *o, s32 i);
 
 typedef union {

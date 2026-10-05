@@ -41,3 +41,6 @@ void *func_00114DA8(unsigned align, unsigned size) {
 }
 
 void func_00114FD0(void *p) { free(p); }
+
+/* malloc (Sony libc: _malloc_r on the global reent) */
+void *func_00114FA8(unsigned size) { return malloc(size ? size : 1); }

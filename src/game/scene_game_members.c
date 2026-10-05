@@ -1001,6 +1001,10 @@ void func_00267250(u8 *o) {
     }
 }
 
+/* operator delete for the room effects' pool: nothing (the pool is dropped at once) */
+void func_002672E0(void *p) {
+}
+
 extern void func_00169260(void *, void *, u32, void *, s32);   /* heap init */
 
 /* SceneGame +0xF6E200: reset its 64 KB heap (+0x10000, 0x802 blocks) and its 0x400 slots
@@ -1013,6 +1017,10 @@ void func_002D6330(u8 *o) {
         AT(o, 0x18034 + i * 4, s32) = 0;
     }
     AT(o, 0x19034, u8) = 0;
+}
+
+/* the effect heap's free: nothing (effects sit in its arena, dropped all at once) */
+void func_002D63B0(void *p) {
 }
 
 /* whether room slot `slot` is still loading (its handler +0x3C8[slot] runs once the file is
