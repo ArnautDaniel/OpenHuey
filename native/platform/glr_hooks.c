@@ -128,9 +128,25 @@ int func_001AB3F0(uint8_t *r) {
     return 1;
 }
 
+extern void *D_0044E4C0;                               /* the room effects */
+extern void *func_00266C40(void *fx, int k);           /* effect slot k (NULL: none) */
+
 int func_001AC0D0(uint8_t *r) {
-    glr_tint_layer(0x23, renderer_tint(r));
-    glr_todo("layer 0x23 two-colour pass on its draws (func_001AC0D0)");
+    uint32_t t = renderer_tint(r);
+    uint8_t *e = func_00266C40(D_0044E4C0, 0x1F);   /* the two-colour effect */
+
+    glr_tint_layer(0x23, t);
+    if (e != NULL) {   /* its colours, their alphas scaled by the tint's */
+        uint32_t c1, c2;
+        int32_t blur;
+
+        memcpy(&c1, e + 0x10, 4);
+        memcpy(&c2, e + 0x14, 4);
+        memcpy(&blur, e + 0x18, 4);
+        c1 = (c1 & 0xFFFFFF) | (((c1 >> 24) * (t >> 24)) >> 7) << 24;
+        c2 = (c2 & 0xFFFFFF) | (((c2 >> 24) * (t >> 24)) >> 7) << 24;
+        glr_late_layer(c1, c2, blur == 0);
+    }
     return 1;
 }
 

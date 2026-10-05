@@ -105,6 +105,10 @@ void glr_vram_upload(uint32_t addr, const void *rgba, int w, int h);
 void glr_vram_draw(uint32_t addr, int layer);
 void glr_vram_blit(int layer);   /* the last one sent straight into the screen (0x88000) */
 
+/* layer 0x23 is drawn this frame with the room's two-colour effect (effect 0x1F: colour `add`
+ * added, `contrast` pushed from, blurred or not): they and the fog run again on what it draws */
+void glr_late_layer(uint32_t add, uint32_t contrast, int blur);
+
 /* layer 0x14 is drawn this frame: the bright parts of what it draws glow in colour `rgba` */
 void glr_shine_layer(uint32_t rgba);
 

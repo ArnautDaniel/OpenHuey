@@ -112,6 +112,9 @@ typedef struct GlrFrame {
     int soft;           /* layer 0x1C was set up this frame */
     int shine;          /* layer 0x14 was, with this colour */
     uint32_t shineColor;
+    int late;           /* layer 0x23's re-run of the two-colour effect (colours, blurred) */
+    uint32_t lateColor[2];
+    int lateBlur;
     int tinted[3];
     GlrVertex *v;
     int nv, capv;
@@ -210,6 +213,7 @@ void glr_end_frame(void) {
     sFrames[sBuilding].tinted[0] = sFrames[sBuilding].tinted[1] = sFrames[sBuilding].tinted[2] = 0;
     sFrames[sBuilding].soft = 0;
     sFrames[sBuilding].shine = 0;
+    sFrames[sBuilding].late = 0;
 }
 
 
@@ -225,6 +229,13 @@ void glr_tint_layer(int layer, uint32_t tint) {
         sFrames[sBuilding].tint[k] = tint;
         sFrames[sBuilding].tinted[k] = 1;
     }
+}
+
+void glr_late_layer(uint32_t add, uint32_t contrast, int blur) {
+    sFrames[sBuilding].late = 1;
+    sFrames[sBuilding].lateColor[0] = add;
+    sFrames[sBuilding].lateColor[1] = contrast;
+    sFrames[sBuilding].lateBlur = blur;
 }
 
 void glr_shine_layer(uint32_t rgba) {
@@ -746,6 +757,10 @@ static const char *kPostFs =
     "        c += floor(at(uTex, p + ivec2(-1, 1)) * 0.5);  c += floor(at(uTex, p + ivec2(1, 1)) * 0.5);\n"
     "        c += floor(at(uTex, p + ivec2(-2, 0)) * 0.5);  c += floor(at(uTex, p + ivec2(2, 0)) * 0.5);\n"
     "        c += floor(at(uTex, p + ivec2(0, -2)) * 0.5);  c += floor(at(uTex, p + ivec2(0, 2)) * 0.5);\n"
+    "    } else if (uMode == 31) {\n"   /* the marked pixels (alpha bit 7), for the stencil */
+    "        if (at(uTex, p).a < 128.0) discard;\n"
+    "        oColor = vec4(0.0);\n"
+    "        return;\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -1179,7 +1194,7 @@ static void targets_make(void) {
     p_glTextureStorage2D(sDepth, 1, GL_DEPTH24_STENCIL8, GLR_WIDTH, GLR_HEIGHT);
     p_glCreateFramebuffers(1, &sFbo);
     p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT0, sColor, 0);
-    p_glNamedFramebufferTexture(sFbo, GL_DEPTH_ATTACHMENT, sDepth, 0);
+    p_glNamedFramebufferTexture(sFbo, GL_DEPTH_STENCIL_ATTACHMENT, sDepth, 0);   /* stencil: layer 0x23's marks */
     p_glCreateTextures(GL_TEXTURE_2D, 1, &sViewDepth);
     p_glTextureStorage2D(sViewDepth, 1, GL_R32F, GLR_WIDTH, GLR_HEIGHT);
     p_glNamedFramebufferTexture(sFbo, GL_COLOR_ATTACHMENT1, sViewDepth, 0);
@@ -1367,6 +1382,56 @@ static void upload_gs(const uint32_t *px, int pitch, int w, int h) {
     p_glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
     p_glTextureSubImage2D(sGsTex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, px);
     p_glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+}
+
+static void run_post(const GlrDraw *d);
+
+/* layer 0x23's end, after its fading: on what it drew (marked in the frame's alpha, made a
+ * stencil), the room's two-colour effect again (effect 0x1F's colours, their alpha scaled by
+ * the tint) and the frame's fog - it was drawn after them */
+static void late_end(const GlrFrame *f) {
+    static const GLint kZero = 0;
+    GlrDraw g;
+    int k;
+
+    if (!f->late) {
+        return;
+    }
+    p_glClearNamedFramebufferiv(sFbo, GL_STENCIL, 0, &kZero);
+    p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                             GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
+    p_glViewport(0, 0, GLR_WIDTH, GLR_HEIGHT);
+    p_glDisable(GL_DEPTH_TEST);
+    p_glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    p_glEnable(GL_STENCIL_TEST);
+    p_glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    p_glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+    p_glProgramUniform1i(sPostProg, sPostModeLoc, 31);
+    p_glBindTextureUnit(0, sCopy);
+    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    p_glStencilFunc(GL_EQUAL, 1, 0xFF);
+    p_glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    memset(&g, 0, sizeof(g));
+    for (k = 0; k < 2; k++) {   /* added, then contrasted */
+        if ((f->lateColor[k] >> 24) == 0) {
+            continue;
+        }
+        g.post = POST_SCREEN2;
+        g.tex0 = f->lateColor[k];
+        g.prim = (uint32_t)(k == 1) | (uint32_t)(f->lateBlur != 0) << 1;
+        run_post(&g);
+    }
+    for (k = f->nd - 1; k >= 0; k--) {   /* the frame's fog again */
+        if (f->d[k].post == POST_FOG) {
+            run_post(&f->d[k]);
+            break;
+        }
+    }
+    p_glDisable(GL_STENCIL_TEST);
 }
 
 static int cmp_order(const void *a, const void *b) {
@@ -1854,6 +1919,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
             }
             if (tintLayer >= 0 && d->layer != tintLayer) {   /* a fading layer's end */
                 tint_end(f->tint[tint_index(tintLayer)]);
+                if (tintLayer == 0x23) {
+                    late_end(f);
+                }
                 mesh_state();
                 tintLayer = -1;
             }
@@ -2024,6 +2092,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
         }
         if (tintLayer >= 0) {
             tint_end(f->tint[tint_index(tintLayer)]);
+            if (tintLayer == 0x23) {
+                late_end(f);
+            }
         }
         if (inSoft) {
             soft_end();
