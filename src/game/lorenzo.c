@@ -488,13 +488,18 @@ void func_00309890(Pursuer *p) {
     }
 }
 
-/* state: an animation; its end ends the step */
-void func_0030B1E0(Pursuer *p) {
+/* an animation whose end ends the step */
+static inline void Lorenzo2_PlayOut(Pursuer *p) {
     func_00125A10(&p->c);
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     }
+}
+
+/* state: see Lorenzo2_PlayOut */
+void func_0030B1E0(Pursuer *p) {
+    Lorenzo2_PlayOut(p);
 }
 
 extern const PTMF D_00423A38;
@@ -636,9 +641,9 @@ void func_0030AB80(Pursuer *p) {
 
 extern const PTMF D_00423A78;
 
-/* state: closing on his target: when it's out of reach by the mesh (func_001257B0 < 0), back to
-   the walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
-void func_0030AE00(Pursuer *p) {
+/* closing on his target: when it's out of reach by the mesh (func_001257B0 < 0), back to the
+   walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
+static inline void Lorenzo2_Approach(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -655,6 +660,11 @@ void func_0030AE00(Pursuer *p) {
     func_00297B40(p, 0x1304, 0);
     Actor_SetState(&p->c.a, &D_00423A78);
     func_0030AB80(p);
+}
+
+/* state: closing on his target (see Lorenzo2_Approach) */
+void func_0030AE00(Pursuer *p) {
+    Lorenzo2_Approach(p);
 }
 
 /* the burst of his grab (0xFC0 bytes, vtable 0x47A010, four parts at +0xB50 / +0xB88 / +0xBC0 /
@@ -710,23 +720,31 @@ void func_0030A210(Pursuer *p) {
 
 extern const PTMF D_00423A98;
 
-/* state: under the floor after sinking (+0x1624 frames): he travels through the mesh toward his
-   goal (func_00211B00), out of contact where it fails. Then he rises at the goal (+0x104 /
+/* state: under the floor after sinking (Lorenzo2_Underground). Then he rises at the goal (+0x104 /
    +0x110, 5 short of his target when that close), facing his target, in the sweep 0xE02
    (func_0030A650) with the rising effect */
-void func_0030A850(Pursuer *p) {
-    if (PU(p, 0x1624, s32) > 0) {
-        if (func_00214A90(p, p->c.a.navTri) != 0) {
-            p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
-            if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
-                VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, p->c.a.navTri, p->c.a.pos);
-            } else {
-                func_00124890(&p->c.a, -1);
-                p->c.a.disabled = 1;
-                p->c.a.unk2D = 1;
-            }
+/* travelling under the floor (+0x1624 frames left) through the mesh toward his goal
+   (func_00211B00), out of contact where it fails; 1 while travelling */
+static inline s32 Lorenzo2_Underground(Pursuer *p) {
+    if (PU(p, 0x1624, s32) <= 0) {
+        return 0;
+    }
+    if (func_00214A90(p, p->c.a.navTri) != 0) {
+        p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
+        if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
+            VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, p->c.a.navTri, p->c.a.pos);
+        } else {
+            func_00124890(&p->c.a, -1);
+            p->c.a.disabled = 1;
+            p->c.a.unk2D = 1;
         }
-        PU(p, 0x1624, s32)--;
+    }
+    PU(p, 0x1624, s32)--;
+    return 1;
+}
+
+void func_0030A850(Pursuer *p) {
+    if (Lorenzo2_Underground(p)) {
         return;
     }
     {
@@ -770,4 +788,76 @@ void func_0030A850(Pursuer *p) {
         Actor_SetState(&p->c.a, &D_00423A98);
         func_0030A650(p);
     }
+}
+
+extern const PTMF D_00423A68;
+
+/* start of his stalk from below: when he may go for his target, it's reachable by the mesh and
+   there's no exit for him (func_00177AB0 kind 9): finish the walk, then close in (state
+   D_00423A68, Lorenzo2_Approach); otherwise action 0x17 */
+void func_0030AF20(Pursuer *p) {
+    f32 t[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    if (!(func_00283870(p) & 0xFF)) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    sceVu0CopyVector(t, p->target->a.pos);
+    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+        p->c.unk104[0] = 0;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
+        return;
+    }
+    PU(p, 0x16EC, u8) = 0;
+    PURSUER_STEP_NEXT(p) = 0;
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    PU(p, 0x1784, s32) = 0;
+    Actor_SetState(&p->c.a, &D_00423A68);
+    Lorenzo2_Approach(p);
+}
+
+extern const PTMF D_00423A58;
+
+/* state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
+   target, with the rising effect; its end ends the step (as func_0030B1E0) */
+void func_0030B240(Pursuer *p) {
+    struct {
+        f32 pos[4];
+        s32 kind;
+    } sk __attribute__((aligned(16)));
+    f32 goal[4] __attribute__((aligned(16)));
+    u8 *mgr;
+    u32 tri;
+    f32 d, h;
+    s32 slot;
+
+    if (Lorenzo2_Underground(p)) {
+        return;
+    }
+    tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
+    d = func_00214B90(p, tri, goal);
+    if (!(d <= 0.0f)) {
+        func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+    }
+    h = func_001244D0(&p->c.a, p->target->a.pos);
+    p->c.a.angle[1] = h;
+    sceVu0UnitMatrix(p->c.a.rot);
+    sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
+    func_00297B40(p, 0x1305, 1);
+    mgr = D_0044E578;
+    p->c.a.disabled = 0;
+    p->c.a.unk2D = 0;
+    p->c.unkE8 = p->target->unkE8;
+    p->c.unkEC = p->target->unkEC;
+    slot = Effect_New(mgr, 0x700, Sink_Init);
+    sceVu0CopyVector(sk.pos, p->c.a.pos);
+    sk.kind = 1;
+    func_002D6090(mgr, slot, &sk);
+    Actor_SetState(&p->c.a, &D_00423A58);
+    Lorenzo2_PlayOut(p);
 }
