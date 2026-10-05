@@ -617,6 +617,235 @@ u64 func_001FA6B0(u8 *o, s32 i) {
     return AT(o, 0x328 + i * 8, u64);
 }
 
+/* ---- the lights for a model: the light set the character microprograms use ----
+ * A light is 3 vectors: its position, its colour (w the intensity) and (range, falloff, ..).
+ * For a model the 3 brightest lights reaching its nav triangle are picked, and given to VU1
+ * as a direction matrix (transposed: per light the unit direction from the model to it, w
+ * -dir.pos), a colour matrix (rows: colour x intensity; the 4th the ambient) and falloffs.
+ * Per vertex the microprogram then makes min(ambient + sum colour * max(dir.N, 0) *
+ * max(1 + falloff * (dir.P - dir.L), 0), 128) - see model.c (gl_light_rgba). */
+
+extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* rotation about an axis */
+extern void func_0025C770(f32 *q, f32 (*m)[4]);                  /* its matrix */
+
+static f32 light_sqrt(f32 x) {
+    return __builtin_sqrtf(x);
+}
+
+/* light i (12 floats) */
+static void light_get(VObject *l, f32 *out, s32 i) {
+    VCALL(l, 0x1C, void (*)(f32 *, VObject *, s32))(out, l, i);
+}
+
+/* the up to 3 lights brightest at `pos` of those reaching nav triangle `tri` (its +0x4C bits):
+ * by their luminance (0.3 R + 0.6 G + 0.1 B) x intensity, within a range (v2.x, if any)
+ * fading out linearly; their indices into out[0..2] (-1: none) */
+void func_001F99B0(VObject *l, s32 *out, u32 tri, const f32 *pos) {
+    f32 best[3][2];
+    u32 mask = 0;
+    s32 i, k;
+    u8 *tris;
+
+    if (tri < AT(D_0044E570, 0x8, u32) && (tris = AT(D_0044E570, 0x4, u8 *)) != NULL) {
+        mask = AT(tris + tri * 0x50, 0x4C, u32);
+    }
+    best[1][0] = -1.0f;
+    best[0][0] = -1.0f;
+    best[2][0] = -1.0f;
+    for (i = 0; i < 16; i++) {
+        f32 v[12] __attribute__((aligned(16)));
+        f32 idx, score, r;
+
+        if (!(mask & (1u << i))) {
+            continue;
+        }
+        light_get(l, v, i);
+        idx = (f32)i;
+        score = (0x1.333334p-1f /* 0.6 */ * v[5] + 0x1.333334p-2f /* 0.3 */ * v[4] + 0x1.99999ap-4f /* 0.1 */ * v[6]) * v[7];
+        r = v[8];
+        if (!(r <= 0.0f)) {
+            f32 dy = pos[1] - v[1], dx = pos[0] - v[0], dz = pos[2] - v[2];
+            f32 d2 = dy * dy + dx * dx + dz * dz;
+
+            if (!(d2 < r * r)) {
+                score = 0.0f;
+            } else {
+                score = score * ((r - light_sqrt(d2)) / r);
+            }
+        }
+        if (score <= 0.0f) {
+            continue;
+        }
+        for (k = 0; k < 3; k++) {
+            if (best[k][0] == -1.0f) {
+                best[k][0] = idx;
+                best[k][1] = score;
+                break;
+            }
+            if (!(score <= best[k][1])) {
+                f32 ti = best[k][0], ts = best[k][1];
+
+                best[k][0] = idx;
+                best[k][1] = score;
+                idx = ti;
+                score = ts;
+            }
+        }
+    }
+    out[0] = (s32)best[0][0];
+    out[1] = (s32)best[1][0];
+    out[2] = (s32)best[2][0];
+}
+
+/* the scripted lighting on top (+0x950): the lights' colours scaled (+0x970), the ambient
+ * raised (+0x960), and up to two lights from the camera's side (+0x980, 0x30 apart: on, colour
+ * +0x10, turned +0x20 up and +0x24 about) into slots 2 and 1 with no falloff */
+void func_001FA710(u8 *l, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    f32 up[4] __attribute__((aligned(16)));
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 tgt[4] __attribute__((aligned(16)));
+    f32 eye[4] __attribute__((aligned(16)));
+    VObject *cam;
+    s32 i, slot = 2;
+
+    q[3] = 0.0f;
+    q[2] = 0.0f;
+    q[1] = 0.0f;
+    q[0] = 0.0f;
+    if (AT(l, 0x950, u8) == 0) {
+        return;
+    }
+    cam = D_0044E4B8;
+    for (i = 0; i < 3; i++) {
+        col[i][0] = col[i][0] * AT(l, 0x970, f32);
+        col[i][1] = col[i][1] * AT(l, 0x970, f32);
+        col[i][2] = col[i][2] * AT(l, 0x970, f32);
+    }
+    col[3][0] = col[3][0] + AT(l, 0x960, f32);
+    col[3][1] = col[3][1] + AT(l, 0x964, f32);
+    col[3][2] = col[3][2] + AT(l, 0x968, f32);
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, eye);
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, tgt);
+    for (i = 0; i < 2; i++) {
+        u8 *x = l + 0x980 + i * 0x30;
+
+        if (AT(x, 0x0, u8) == 0) {
+            continue;
+        }
+        sceVu0SubVector(d, eye, tgt);
+        sceVu0Normalize(d, d);
+        up[1] = 1.0f;
+        up[2] = 0.0f;
+        up[0] = 0.0f;
+        sceVu0OuterProduct(axis, up, d);
+        sceVu0Normalize(axis, axis);
+        func_0025C6F0(q, axis, AT(x, 0x20, f32));
+        func_0025C770(q, m);
+        sceVu0ApplyMatrix(d, m, d);
+        func_0025C6F0(q, up, AT(x, 0x24, f32));
+        func_0025C770(q, m);
+        sceVu0ApplyMatrix(d, m, d);
+        dir[0][slot] = d[0];
+        dir[1][slot] = d[1];
+        dir[2][slot] = d[2];
+        col[slot][0] = AT(x, 0x10, f32);
+        col[slot][1] = AT(x, 0x14, f32);
+        col[slot][2] = AT(x, 0x18, f32);
+        if (lpos != NULL) {
+            sceVu0CopyVector(lpos[slot], tgt);
+            sceVu0AddVector(lpos[slot], lpos[slot], d);
+        }
+        fall[slot] = 0.0f;
+        slot--;
+    }
+}
+
+/* one picked light into slot k */
+static void light_slot(f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4], s32 k, const f32 *v, const f32 *pos) {
+    f32 at[4] __attribute__((aligned(16)));
+
+    sceVu0SubVector(dir[k], (f32 *)v, pos);
+    sceVu0Normalize(dir[k], dir[k]);
+    sceVu0CopyVector(at, (f32 *)v);
+    if (lpos != NULL) {
+        sceVu0CopyVector(lpos[k], at);
+    }
+    dir[k][3] = -sceVu0InnerProduct(dir[k], at);
+    col[k][0] = v[4] * v[7];
+    col[k][1] = v[5] * v[7];
+    col[k][2] = v[6] * v[7];
+    col[k][3] = 0.0f;
+    fall[k] = v[9];
+}
+
+/* the slots from k on empty: no direction, no colour, falloff 1 */
+static void light_empty(f32 (*dir)[4], f32 (*col)[4], f32 *fall, s32 k) {
+    for (; k < 3; k++) {
+        dir[k][0] = 0.0f;
+        dir[k][1] = 0.0f;
+        dir[k][2] = 0.0f;
+        dir[k][3] = 0.0f;
+        sceVu0Normalize(dir[k], dir[k]);
+        col[k][0] = 0.0f;
+        col[k][1] = 0.0f;
+        col[k][2] = 0.0f;
+        col[k][3] = 0.0f;
+        fall[k] = 1.0f;
+    }
+}
+
+/* +0x10 the light set for a model at `pos` on nav triangle `tri` (none: the room's light 0
+ * alone; no position: just a default ambient) into dir / col / fall (and the lights'
+ * positions into lpos, if given) */
+void func_001FAA00(u8 *l, const f32 *pos, s32 tri, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
+    f32 v[12] __attribute__((aligned(16)));
+    s32 idx[4];
+    s32 k = 0;
+
+    if (AT(l, 0x10, s32) > 0 && tri != -1) {
+        func_001F99B0((VObject *)l, idx, tri, pos);
+        sceVu0UnitMatrix(dir);
+        for (k = 0; k < 3 && idx[k] != -1; k++) {
+            VCALL((VObject *)l, 0x1C, void (*)(f32 *, VObject *, s32))(v, (VObject *)l, idx[k]);
+            light_slot(dir, col, fall, lpos, k, v, pos);
+        }
+    } else if (pos != NULL) {
+        sceVu0UnitMatrix(dir);
+        light_get((VObject *)D_0044E4C8, v, 0);
+        light_slot(dir, col, fall, lpos, 0, v, pos);
+        k = 1;
+    } else {
+        for (k = 0; k < 3; k++) {
+            dir[k][0] = 0.0f;
+            dir[k][1] = 0.0f;
+            dir[k][2] = 0.0f;
+            dir[k][3] = 0.0f;
+            col[k][0] = 0.0f;
+            col[k][1] = 0.0f;
+            col[k][2] = 0.0f;
+            col[k][3] = 0.0f;
+            fall[k] = 1.0f;
+        }
+        AT(col[3], 0x0, u32) = 0x42980000;   /* 76 */
+        AT(col[3], 0x4, u32) = 0x42640000;   /* 57 */
+        AT(col[3], 0x8, u32) = 0x41400000;   /* 12 */
+        col[3][3] = 1.0f;
+        fall[3] = 0.0f;
+        return;
+    }
+    light_empty(dir, col, fall, k);
+    sceVu0TransposeMatrix(dir, dir);
+    col[3][0] = AT(l, 0x14, f32);
+    col[3][1] = AT(l, 0x18, f32);
+    col[3][2] = AT(l, 0x1C, f32);
+    col[3][3] = 1.0f;
+    fall[3] = 0.0f;
+    func_001FA710(l, dir, col, fall, lpos);
+}
+
 /* +0x24 light i back to the room's own (its table +0x9E0, if any) */
 void func_001FA530(u8 *o, s32 i) {
     f32 l[12] __attribute__((aligned(16)));
