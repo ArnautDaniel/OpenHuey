@@ -95,6 +95,8 @@ extern u8 *func_00208340(u8 *e);
 extern void **func_00208070(void **e);
 extern void **func_00208090(void **e);
 extern void **func_00208EB0(void **e);
+extern void **func_00208300(void **e);
+extern void **func_002082C0(void **e);
 extern void func_002B6340(void *movie);
 extern void func_0016D2F0(Progress *p, s32 i);
 extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
@@ -1905,6 +1907,49 @@ void func_002029B0(VObject *ev) {
         VCALL((VObject *)gCharPlayer, 0x14, void (*)(VObject *))((VObject *)gCharPlayer);
         AT(gCharPlayer, 0x28, u8) = 0;
         break;
+    case 0x9F: {   /* a scene effect (func_00208300, 0x800 bytes): pc[1], at (3 x be32 pc[2..] / 1000),
+                    * pc[14], then pc[15..18] */
+        u8 *mgr = D_0044E578;
+        s32 slot = scene_effect_new(mgr, 0x800, func_00208300);
+        struct {
+            f32 a, pos[3], b;
+            s32 c[4];
+        } arg __attribute__((aligned(16)));
+
+        arg.a = (f32)(u32)PC(ev)[1];
+        arg.pos[0] = (f32)be32(PC(ev) + 2) / 1000.0f;
+        arg.pos[1] = (f32)be32(PC(ev) + 6) / 1000.0f;
+        arg.pos[2] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
+        arg.b = (f32)(u32)PC(ev)[0xE];
+        arg.c[0] = PC(ev)[0xF];
+        arg.c[1] = PC(ev)[0x10];
+        arg.c[2] = PC(ev)[0x11];
+        arg.c[3] = PC(ev)[0x12];
+        func_002D6090(mgr, slot, &arg);
+        break;
+    }
+    case 0xA0: {   /* a scene effect (func_002082C0, 0x4E0 bytes): pc[1], pc[2], at (3 x be32 pc[3..] /
+                    * 1000), pc[15], then pc[16..19] */
+        u8 *mgr = D_0044E578;
+        s32 slot = scene_effect_new(mgr, 0x4E0, func_002082C0);
+        struct {
+            f32 a, b, pos[3], c;
+            s32 d[4];
+        } arg __attribute__((aligned(16)));
+
+        arg.a = (f32)(u32)PC(ev)[1];
+        arg.b = (f32)(u32)PC(ev)[2];
+        arg.pos[0] = (f32)be32(PC(ev) + 3) / 1000.0f;
+        arg.pos[1] = (f32)be32(PC(ev) + 7) / 1000.0f;
+        arg.pos[2] = (f32)be32(PC(ev) + 0xB) / 1000.0f;
+        arg.c = (f32)(u32)PC(ev)[0xF];
+        arg.d[0] = PC(ev)[0x10];
+        arg.d[1] = PC(ev)[0x11];
+        arg.d[2] = PC(ev)[0x12];
+        arg.d[3] = PC(ev)[0x13];
+        func_002D6090(mgr, slot, &arg);
+        break;
+    }
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
         func_002013F0(ev);
