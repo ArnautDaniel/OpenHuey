@@ -1812,3 +1812,135 @@ s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_003F43A0, *D_003FA760;   /* room object names */
+extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
+extern u32 D_0047E364;   /* menu buttons, repeating */
+extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern VObject *D_0044E550;   /* random numbers */
+
+/* the dial (D_003F43A0) on progress var 3 (0..6, 30 degrees each): byte 3 0 set to it, 1 turned
+ * by left / right (event +0x60 1 when changed, 0 when confirmed / cancelled), 2 turning to it
+ * a degree a step (event +0x5C 1 there), 3 wait */
+s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDeg = {0x3C8EFA35};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F43A0);
+
+    if (o == NULL) {
+        return 1;
+    }
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x14, f32) = kPi.f * (f32)((Progress_GetVar(gProgress, 3) & 0xFF) * 30) / 180.0f;
+        break;
+    case 1:
+        if (((D_0047E36C >> 4) & 1) | ((D_0047E36C >> 5) & 1)) {
+            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 0);
+        } else {
+            Progress *p = gProgress;
+            u8 v = Progress_GetVar(p, 3);
+
+            if ((D_0047E364 >> 3) & 1) {
+                if (v != 0) {
+                    v = v - 1;
+                }
+            } else if (((D_0047E364 >> 1) & 1) && v < 6) {
+                v = v + 1;
+            }
+            if (v != (u8)Progress_GetVar(p, 3)) {
+                AT(p, 0x9F, u8) = v;
+                VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+            }
+        }
+        break;
+    case 2: {
+        f32 deg = 180.0f * AT(o, 0x14, f32) / kPi.f;
+        f32 d = deg - (f32)((Progress_GetVar(gProgress, 3) & 0xFF) * 30);
+
+        if (!(d <= 1.0f)) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) - kDeg.f;
+        } else if (d < -1.0f) {
+            AT(o, 0x14, f32) = AT(o, 0x14, f32) + kDeg.f;
+        } else {
+            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        }
+        break;
+    }
+    case 3:
+        return 2;
+    default:
+        return 1;
+    }
+    return 1;
+}
+
+/* a lid (D_003FA760, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
+ * bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
+ * thuds), 2 while moving; 3 a random rattle up, 2 while it stays below */
+s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kShut = {0xC1CA6666}, k01 = {0x3DCCCCCD}, kBounce = {0xBE4CCCCD},
+        kStill = {0x3CA3D70A}, k04 = {0x3ECCCCCD};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FA760);
+    f32 v;
+
+    if (o == NULL) {
+        return 1;
+    }
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x24, f32) = 0.0f;
+        AT(o, 0x30, f32) = 1.0f;
+        AT(o, 0x34, f32) = 0.0f;
+        return 1;
+    case 1:
+        AT(o, 0x24, f32) = kShut.f;
+        AT(o, 0x34, f32) = 0.0f;
+        return 1;
+    case 2:
+        AT(o, 0x34, f32) = AT(o, 0x34, f32) - k01.f;
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + AT(o, 0x34, f32);
+        if (AT(o, 0x24, f32) < kShut.f) {
+            if (!(AT(o, 0x30, f32) <= 0.0f)) {
+                Progress *p = gProgress;
+
+                AT(o, 0x30, f32) = -1.0f;
+                AT(p, 0x7C, u32) &= 0xFFFEFFFF;
+                if ((u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *, Progress *))(D_0044E4F8, p) == 0) {
+                    f32 at[4] __attribute__((aligned(16)));
+
+                    at[1] = 30.0f;
+                    at[2] = 30.0f;
+                    at[0] = 0.0f;
+                    func_002FF650(D_0044E560, 2, 6, at, 0, 0);
+                }
+            }
+            AT(o, 0x24, f32) = kShut.f;
+            AT(o, 0x34, f32) = AT(o, 0x34, f32) * kBounce.f;
+        }
+        v = AT(o, 0x34, f32);
+        if (v <= 0.0f) {
+            v = -v;
+        }
+        if (v < kStill.f) {
+            AT(o, 0x24, f32) = kShut.f;
+            return 1;
+        }
+        return 2;
+    case 3:
+        if (AT(o, 0x34, f32) < 0.0f) {
+            AT(o, 0x34, f32) = 1.0f;
+            AT(o, 0x24, f32) = AT(o, 0x24, f32) + k04.f;
+        } else {
+            AT(o, 0x34, f32) = -1.0f;
+            AT(o, 0x24, f32) = AT(o, 0x24, f32) + k01.f;
+        }
+        v = (0.0f + AT(o, 0x24, f32)) + k01.f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        AT(o, 0x24, f32) = v;
+        if (v <= 0.0f) {
+            return 2;
+        }
+        AT(o, 0x24, f32) = 0.0f;
+        return 1;
+    }
+    return 1;
+}
