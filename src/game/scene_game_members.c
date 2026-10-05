@@ -3517,3 +3517,17 @@ void *func_001BF6C0(u8 *o, s32 flags) {
     }
     return o;
 }
+
+/* effect `slot`'s +0x1C (-1: no such effect) */
+s32 func_002D6020(u8 *o, s32 slot) {
+    void *e;
+
+    if (slot < 0 || (u32)slot >= 0x400) {
+        return -1;
+    }
+    e = AT(o, 0x18034 + slot * 4, void *);
+    if (e == NULL) {
+        return -1;
+    }
+    return VCALL(e, 0x1C, s32 (*)(void *))(e);
+}

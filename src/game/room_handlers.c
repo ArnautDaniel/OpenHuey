@@ -3742,3 +3742,19 @@ s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *const D_0040C160;   /* an object's name */
+
+/* lower the object (D_0040C160)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C) */
+s32 func_002B4280(void) {
+    static const union { u32 u; f32 f; } kStep = {0x3CCCCCCD}, kLow = {0xBF47AE14};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0040C160);
+    f32 y = AT(o, 0x14, f32) - kStep.f;
+
+    AT(o, 0x14, f32) = y;
+    if (y <= kLow.f) {
+        AT(o, 0x14, f32) = kLow.f;
+        VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 6);
+    }
+    return 1;
+}

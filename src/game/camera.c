@@ -496,3 +496,70 @@ s32 func_00121A00(Camera *c, f32 *p) {
     }
     return 0;
 }
+
+/* move the camera (eye and target) by d in its own frame: x to the right, y up the view, z
+ * along the view on the level; nothing for a zero d */
+void func_001220A0(Camera *c, f32 *d) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+
+    if (d[0] == 0.0f && d[1] == 0.0f && d[2] == 0.0f) {
+        return;
+    }
+    sceVu0UnitMatrix(m);
+    sceVu0SubVector(v, c->target, c->eye);
+    v[1] = 0.0f;
+    sceVu0Normalize(m[2], v);
+    sceVu0OuterProduct(m[0], c->unk80, m[2]);
+    sceVu0Normalize(m[0], m[0]);
+    sceVu0OuterProduct(m[1], m[2], m[0]);
+    sceVu0ApplyMatrix(v, m, d);
+    c->eye[0] = c->eye[0] + v[0];
+    c->eye[1] = c->eye[1] + v[1];
+    c->eye[2] = c->eye[2] + v[2];
+    c->target[0] = c->target[0] + v[0];
+    c->target[1] = c->target[1] + v[1];
+    c->target[2] = c->target[2] + v[2];
+}
+
+/* turn the view the other way round: the eye (+0x40) goes round the point looked at (+0x50) by
+ * `yaw` about Y, then by `pitch` about the axis square to the up and the view */
+void func_00122370(Camera *c, f32 pitch, f32 yaw) {
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+
+    q[3] = 0.0f;
+    q[2] = 0.0f;
+    q[1] = 0.0f;
+    q[0] = 0.0f;
+    if (yaw != 0.0f) {
+        sceVu0UnitMatrix(r);
+        sceVu0RotMatrixY(r, r, func_002E2D00(yaw));
+        sceVu0SubVector(v, c->eye, c->target);
+        v[3] = 1.0f;
+        sceVu0ApplyMatrix(v, r, v);
+        c->eye[0] = v[0] + c->target[0];
+        c->eye[1] = v[1] + c->target[1];
+        c->eye[2] = v[2] + c->target[2];
+    }
+    if (pitch == 0.0f) {
+        return;
+    }
+    sceVu0SubVector(v, c->target, c->eye);
+    sceVu0OuterProduct(v, c->unk80, v);
+    sceVu0Normalize(v, v);
+    func_0025C6F0(q, v, pitch);
+#ifdef HG_NATIVE
+    if (yaw == 0.0f) {
+        r[3][0] = r[3][1] = r[3][2] = 0.0f;   /* (unset in the original then; no NaN on PC) */
+        r[3][3] = 1.0f;
+    }
+#endif
+    func_0025C770(q, r);
+    sceVu0SubVector(v, c->eye, c->target);
+    sceVu0ApplyMatrix(v, r, v);
+    c->eye[0] = v[0] + c->target[0];
+    c->eye[1] = v[1] + c->target[1];
+    c->eye[2] = v[2] + c->target[2];
+}
