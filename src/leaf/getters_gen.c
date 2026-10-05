@@ -2071,6 +2071,13 @@ s32 func_002AFD30(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B10[i & 0xFF], a, b);
 }
 
+extern PTMF D_01990BD0[];
+
+/* (self->*D_01990BD0[i])(a, b) */
+s32 func_002B11A0(void *self, u32 i, s32 a, s32 b) {
+    return ptmf_scall_r2(self, &D_01990BD0[i & 0xFF], a, b);
+}
+
 /* (self->*D_01990B48[i])(a, b) */
 s32 func_002B0200(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B48[i & 0xFF], a, b);
