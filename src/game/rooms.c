@@ -674,7 +674,7 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
  * +0x40 its centre (w +0x4C), +0x50 the model, +0x54 / +0x58 the reference square ---- */
 
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
-extern void func_0017EA30(u8 *o, const f32 *dir);
+void func_0017EA30(u8 *o, const f32 *dir);
 s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir);
 
 /* a part: `dx` / `dz` squares from the reference square, `w` x `d` squares in size; -1 when
@@ -830,6 +830,68 @@ void func_0017F430(u8 *o, const f32 *dir) {
             }
             func_0017F660(o, &a, &b, sz);
         }
+    }
+}
+
+static void square_flag(NavMesh *nm, u32 a, u32 b, u32 flag) {
+    NavMesh_Tri(nm, a)->flags |= flag;
+    NavMesh_Tri(nm, b)->flags |= flag;
+}
+
+/* mark the ring of squares around each part (the square first stepped twice along `dir`, if
+ * any): its sides 0x20800000, its corners 0x20000000 */
+void func_0017EA30(u8 *o, const f32 *dir) {
+    NavMesh *nm = D_0044E570;
+    u8 *part = o + 0x68;
+    s32 i, k;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        f32 sx[4] __attribute__((aligned(16)));
+        f32 sz[4] __attribute__((aligned(16)));
+        u32 a, b;
+
+        sx[1] = 0.0f;
+        sx[0] = -1.0f;
+        sz[2] = -1.0f;
+        sz[0] = 0.0f;
+        sx[2] = 0.0f;
+        sz[1] = 0.0f;
+        a = AT(part, 0x0, u32);
+        b = AT(part, 0x4, u32);
+        if (dir != NULL) {
+            func_0017F660(o, &a, &b, dir);
+            func_0017F660(o, &a, &b, dir);
+        }
+        func_0017F660(o, &a, &b, sx);
+        func_0017F660(o, &a, &b, sz);
+        sx[0] = 1.0f;
+        for (k = 0; k < AT(part, 0x10, s32); k++) {
+            func_0017F660(o, &a, &b, sx);
+            square_flag(nm, a, b, 0x20800000);
+        }
+        func_0017F660(o, &a, &b, sx);
+        square_flag(nm, a, b, 0x20000000);
+        sz[2] = 1.0f;
+        for (k = 0; k < AT(part, 0x14, s32); k++) {
+            func_0017F660(o, &a, &b, sz);
+            square_flag(nm, a, b, 0x20800000);
+        }
+        func_0017F660(o, &a, &b, sz);
+        square_flag(nm, a, b, 0x20000000);
+        sx[0] = -1.0f;
+        for (k = 0; k < AT(part, 0x10, s32); k++) {
+            func_0017F660(o, &a, &b, sx);
+            square_flag(nm, a, b, 0x20800000);
+        }
+        func_0017F660(o, &a, &b, sx);
+        square_flag(nm, a, b, 0x20000000);
+        sz[2] = -1.0f;
+        for (k = 0; k < AT(part, 0x14, s32); k++) {
+            func_0017F660(o, &a, &b, sz);
+            square_flag(nm, a, b, 0x20800000);
+        }
+        func_0017F660(o, &a, &b, sz);
+        square_flag(nm, a, b, 0x20000000);
     }
 }
 
