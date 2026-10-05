@@ -1135,11 +1135,11 @@ typedef struct ItemSlot {
     u8 ev;
 } ItemSlot;
 
-static s32 place_item(void *o, const ItemSlot *t) {
+static s32 place_item(void *o, const ItemSlot *t, s32 n) {
     Progress *p = gProgress;
     s32 i;
 
-    for (i = 0; i < 7; i++, t++) {
+    for (i = 0; i < n; i++, t++) {
         if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != t->room) {
             continue;
         }
@@ -1163,7 +1163,7 @@ s32 func_00306BC0(void *o) {
         {0x69, 0xB, 1, 4},  {0x47, 8, -1, 1}, {0xC0, 0x1B, 1, 0x14},
     };
 
-    return place_item(o, t);
+    return place_item(o, t, 7);
 }
 
 s32 func_003071D0(void *o) {
@@ -1172,7 +1172,7 @@ s32 func_003071D0(void *o) {
         {0x69, 0xB, 1, 4},  {0x57, 0xD, -1, 0}, {0xC0, 0x1B, 1, 0x14},
     };
 
-    return place_item(o, t);
+    return place_item(o, t, 7);
 }
 
 s32 func_003077E0(void *o) {
@@ -1181,7 +1181,7 @@ s32 func_003077E0(void *o) {
         {0x57, 0xD, 1, 3},  {0x69, 0xB, -1, 0}, {0xC0, 0x1B, 1, 0x14},
     };
 
-    return place_item(o, t);
+    return place_item(o, t, 7);
 }
 
 s32 func_00307DF0(void *o) {
@@ -1190,7 +1190,7 @@ s32 func_00307DF0(void *o) {
         {0x40, 0x11, 0, 0}, {0x42, 5, -1, 0},  {0xC0, 0x1B, 1, 0x14},
     };
 
-    return place_item(o, t);
+    return place_item(o, t, 7);
 }
 
 s32 func_00308400(void *o) {
@@ -1199,7 +1199,7 @@ s32 func_00308400(void *o) {
         {0x69, 0xB, 1, 4}, {0x40, 0x11, 0, 0}, {0xC0, 0x1B, 1, 0x14},
     };
 
-    return place_item(o, t);
+    return place_item(o, t, 7);
 }
 
 /* the three statues' pedestals (room 0x54, spots 0xD / 0x11 / 0x14): a pedestal takes the
@@ -1242,4 +1242,51 @@ s32 func_00339700(void *o) {
     static const ItemPedestal t[3] = {{0x3000, 0x14, 8}, {0xC0, 0xD, 2}, {0x600, 0x11, 5}};
 
     return place_statue(o, t);
+}
+
+/* D_00473070: the medallions' slots without the altar */
+s32 func_0031D1B0(void *o) {
+    static const ItemSlot t[5] = {
+        {0x42, 5, 1, 1}, {0x47, 8, 0, 2}, {0x57, 0xD, 1, 3}, {0x69, 0xB, 1, 4}, {0x56, 4, -1, 9},
+    };
+
+    return place_item(o, t, 5);
+}
+
+extern f32 func_00124490(void *a, const f32 *p);   /* distance */
+
+/* D_004775C0: in room 0x52 with Hewie at hand (+0x40), up and within 20, Fiona not busy
+ * (+0xE8): event 0xB; else on the altar; else the sound while item 0x239 is held, or (with
+ * Progress +0x30 bit 0x8000) while Hewie is in the room being played and item 0x27F is held */
+s32 func_003445D0(void *o) {
+    Progress *p = gProgress;
+    VObject *ev_mgr = D_0044E4D0;
+    s32 r;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x52) {
+        u8 *h = gCharPartner;
+
+        if (VCALL(o, 0x40, s32 (*)(void *))(o) != 0 && AT(h, 0xC4, s32) != 2 && AT(gCharPlayer, 0xE8, s32) == 0 &&
+            func_00124490(gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
+            item_event(ev_mgr, 0, 0xB, gCharPlayer);
+            return 4;
+        }
+    }
+    r = item_offer(p, o);
+    if (r != 0) {
+        return r;
+    }
+    if (!(AT(p, 0x30, u32) & 0x8000)) {
+        return use_sound_only(0, 0x239);
+    }
+    {
+        s32 room = AT(gCharPartner, 0x30, s32);
+
+        if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
+            VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x27F) != 0) {
+            VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+            return 8;
+        }
+    }
+    return 0;
 }
