@@ -5,7 +5,8 @@
  *
  *   HG_GLDEBUG=1     once a second: the frame's draw count and its first vertex in clip space
  *                    (and, on glow frames, the glow buffer's brightest value and the bloom colour)
- *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices */
+ *   HG_GLDEBUG_W=1   with it, the flags words of the first draws' vertices
+ *   HG_POSTOFF=a,b   leave out these frame passes (bloom glow screen2 fog vignette), to compare */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -793,9 +794,21 @@ static void glow_buffer_update(void) {   /* A -> B */
                              GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
+/* HG_POSTOFF names pass `kind` */
+static int post_off(int kind) {
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette"};
+    const char *off = getenv("HG_POSTOFF");
+
+    return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
+}
+
 /* a pass over the frame (the shader's modes, kPostFs) */
 static void run_post(const GlrDraw *d) {
     uint32_t rgba = (uint32_t)d->tex0;
+
+    if (post_off(d->post)) {
+        return;
+    }
 
     p_glDisable(GL_DEPTH_TEST);
     p_glDisable(GL_BLEND);
