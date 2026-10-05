@@ -2294,7 +2294,7 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38;   /* "fan" (rooms 0x1A / 0x31 / 0x21) */
+extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38, *const D_0042C354;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
 
 /* the room's object `name` turns 1.15 degrees a frame */
 static inline __attribute__((always_inline)) void fan_turn(const char *name) {
@@ -2674,5 +2674,14 @@ s32 func_00320FF0(void *self, void *a1, u8 *cmd) {
         room_effect_new(fx, 0x1A, D_00479560);
         func_00266C70(fx, 0x1A, &arg);
     }
+    return 1;
+}
+
+/* room 0x32 (D_0042C2A8): the fan turns, except while a movie plays */
+s32 func_003214E0(void) {
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    fan_turn(D_0042C354);
     return 1;
 }
