@@ -9077,3 +9077,42 @@ void func_0015AE10(Hewie *h) {
         break;
     }
 }
+
+/* ---- coming to Fiona ---- */
+
+/* come where her command puts him by her (her in his room; else the default action): along the
+ * path (pose 8 when the stride fails; no way: the default action), straight once on its
+ * triangle (his head off the mesh then: the default action); gait by the distance left (walk
+ * under 20, trot under 44, else run) */
+void func_0015B130(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 head[4] __attribute__((aligned(16)));
+    f32 d;
+    u32 tri;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    tri = func_00145610(h, HEWIE_ACTION(h), at);
+    if (tri != func_00124480(&h->c.a, at, NAV_NONE)) {
+        if (func_0013EE40(h, tri, at, 0, 1) != 0) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+        if (!(u8)func_00139DE0(h)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        aim_run(h, at);
+        sceVu0CopyVector(head, func_0017CE80(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
+        if (func_00124480(&h->c.a, head, NAV_NONE) == NAV_NONE) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        d = func_00124490(&h->c.a, at);
+    }
+    func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
+}
