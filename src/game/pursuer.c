@@ -9855,3 +9855,210 @@ void func_0029B8B0(Pursuer *p) {
     }
     Pursuer_ClearMessage(p);
 }
+
+extern const PTMF D_003ED600, D_003ED610;
+
+/* func_00295670 for a stalker that also follows Fiona from room to room: when she has left the
+   room it goes after her through the door (+0x17B0, actions 0x27 walk there, 0xE open it) */
+void func_00279350(Pursuer *p) {
+    Progress *pr;
+    const u8 *e;
+    f32 near;
+
+    if (ptmf_test(&p->c.a.state)) {
+        ptmf_scall(p, &p->c.a.state);
+    }
+    pr = gProgress;
+    e = PU(p, 0x1730, u8 *) + AT(pr, 0x7B8, u8) * 12;
+    if (p->c.a.room != gCharPlayer->a.room && PU(p, 0x175C, s32) != 0x27 && PU(p, 0x175C, s32) != 0xE) {
+        /* Fiona has left the room: follow */
+        VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, gCharPlayer);
+        if (PURSUER_STEP_NEXT(p) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x27);
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+        }
+    }
+    switch (PU(p, 0x175C, s32)) {
+    case 0xE: {
+        u32 ds = func_00177BF0(pr, PU(p, 0x17B0, u8), *(u8 *)&p->c.a.slot) & 0xFF;
+
+        if (p->c.a.room == gCharPlayer->a.room) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+            VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, gCharPlayer);
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+        } else if (PURSUER_STEP_DONE(p) == 1 || (ds & 2)) {
+            /* through the door after her */
+            PU(p, 0x162C, s32) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+            Pursuer_ClearRoute(p);
+            if (PU(p, 0x16C8, u8) == 2) {
+                PU(p, 0x16C8, u8) = 1;
+            }
+            func_002815E0(p, PU(p, 0x17B0, u8));
+            return;
+        }
+        break;
+    }
+    case 0x27:
+        if (p->c.a.room == gCharPlayer->a.room) {
+            /* caught up with her */
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+            VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, gCharPlayer);
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+        } else if (PU(p, 0x16EF, u8) == 1 || !(func_00178980(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
+            PU(p, 0x16ED, u8) = 1;
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_DONE(p) = 0;
+        } else if (PURSUER_STEP_DONE(p) == 1 || func_00212190(p, PU(p, 0x17B0, u8)) != 0) {
+            PURSUER_STEP_DONE(p) = 0;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xE);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0x1D:
+        near = 5.0f + (p->c.a.radius + p->target->a.radius);
+        if (!(PU(p, 0x1588, f32) < near) || PU(p, 0x1588, f32) < 0.0f) {
+            Pursuer_HoldOff(p, e);
+        }
+        break;
+    case 6:
+        if (PU(p, 0x16EF, u8) != 0) {
+            Pursuer_Refollow(p);
+        }
+        if (PU(p, 0x162C, s32) <= 0 && PU(p, 0x1588, f32) < 100.0f) {
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
+            func_00283C50(p);
+            return;
+        }
+        if (PU(p, 0x1588, f32) <= p->c.a.radius + p->target->a.radius && !(PU(p, 0x1588, f32) < 0.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1D);
+        }
+        break;
+    case 5:
+        if (PU(p, 0x16EF, u8) != 0) {
+            Pursuer_Refollow(p);
+        }
+        if (PU(p, 0x162C, s32) <= 0 || !(PU(p, 0x1588, f32) <= 100.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+            PU(p, 0x162C, s32) = AT(e, 0x8, s32);
+        } else if (PU(p, 0x1588, f32) <= p->c.a.radius + p->target->a.radius && !(PU(p, 0x1588, f32) < 0.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1D);
+        }
+        break;
+    case 0xB:
+    case 0x10:
+    case 0x12:
+    case 0x1C:
+        if (PU(p, 0x16EF, u8) == 1) {
+            PURSUER_STEP_DONE(p) = 0;
+            PU(p, 0x16EF, u8) = 0;
+            PURSUER_STEP_NEXT(p) = 1;
+            func_0029AF20(p);
+        } else if (PURSUER_STEP_DONE(p) == 1) {
+            Pursuer_HoldOff(p, e);
+            PURSUER_STEP_DONE(p) = 0;
+        }
+        break;
+    case 0x19:
+    case 0x1A:
+        if ((PU(p, 0x175C, s32) == 0x1A || AT(PU(p, 0x1720, u8 *) + p->c.unk104[0] * 8, 0x4, u8) != 0) &&
+            !(PU(p, 0x1588, f32) <= 100.0f)) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
+            PU(p, 0x162C, s32) = AT(e, 0x8, s32);
+            PURSUER_STEP_DONE(p) = 0;
+            PU(p, 0x16EF, u8) = 0;
+        }
+        if (PURSUER_STEP_DONE(p) == 1 || PU(p, 0x16EF, u8) == 1) {
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
+            PU(p, 0x162C, s32) = AT(e, 0x4, s32);
+            PURSUER_STEP_DONE(p) = 0;
+            PU(p, 0x16EF, u8) = 0;
+        }
+        break;
+    case 1: {
+        Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
+        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 a;
+
+        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        if (!(PU(p, 0x1588, f32) <= func_002838E0(p))) {
+            Pursuer_HoldOff(p, e);
+            break;
+        }
+        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        } else {
+            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        }
+        if (!(a <= 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f)) {
+            Pursuer_HoldOff(p, e);
+            break;
+        }
+        if (PU(p, 0x1588, f32) < 0.0f) {
+            VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+            if (!(func_00284440(p) & 0xFF)) {
+                func_0029AF20(p);
+                return;
+            }
+        }
+        break;
+    }
+    }
+    if (PU(p, 0x162C, s32) > 0) {
+        PU(p, 0x162C, s32)--;
+    }
+    if (PURSUER_STEP_NEXT(p) == 1 && PU(p, 0x175C, s32) != 0x12) {
+        s32 d = func_002131A0();
+
+        if (d != -1) {
+            p->c.unk100 = d;
+            p->c.unk104[0] = -1;
+            VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x12);
+        }
+    }
+    if (p->c.moveSub == 6 && gCharPlayer->moveMode != 3 && !(PU(p, 0x1588, f32) <= 0.0f)) {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    if (PURSUER_STEP_NEXT(p) != 1) {
+        return;
+    }
+    if (p->c.a.room == gCharPlayer->a.room && func_00217340(p) != func_002172F0(p, gCharPlayer)) {
+        /* out of reach in the same room: follow her trail */
+        PU(p, 0x16C8, u8) = 1;
+        VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ED600);
+        PU(p, 0x1758, s32) = -1;
+        return;
+    }
+    if (PU(p, 0x1544, u8) == 0) {
+        if (p->c.a.room == gCharPlayer->a.room) {
+            VCALL(p, 0xB0, void (*)(Pursuer *))(p);
+            ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ED610);
+            PU(p, 0x1758, s32) = -1;
+            PU(p, 0x162C, s32) = 0;
+        }
+        return;
+    }
+    near = p->target->moveMode == 3 ? func_00124490(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
+    if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
+        return;
+    }
+    if (near < func_002838E0(p) || near < 10.0f) {
+        f32 a;
+
+        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        } else {
+            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        }
+        if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
+            func_002175B0(&p->c.a, &p->target->a) != 0) {
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)func_00283EF0(p));
+            func_00283C50(p);
+            PU(p, 0x162C, s32) = 0;
+        }
+    }
+}

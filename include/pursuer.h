@@ -291,6 +291,7 @@ u32 func_00219450(Pursuer *p);
 void func_00219460(Pursuer *p);
 void **func_00278490(void **obj, s32 flags);
 void func_00278EB0(Pursuer *p);
+void func_00279350(Pursuer *p);
 void func_0027A1E0(Pursuer *p);
 void func_0027A6A0(Pursuer *p);
 void func_0027AD80(Pursuer *p, u32 door);
