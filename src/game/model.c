@@ -12,7 +12,7 @@ extern void *func_0016F740(void *p);
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
 extern void *func_001F7E40(void *, s32);
 extern void *func_001706F0(void *);
-extern void *func_0016FC80(void *, s32);
+void *func_0016FC80(void *e, s32 flags);
 
 /* placement new (models) */
 void *func_002DC6E0(u32 size, void *p) {
@@ -20,7 +20,7 @@ void *func_002DC6E0(u32 size, void *p) {
 }
 
 /* the model's drawing object (vtable D_0046ADA0, on the overlay base D_00469D00) */
-void *func_0016F770(u8 *o) {
+static inline void DrawObj_Init(u8 *o) {
     s32 i;
 
     AT(o, 0x0, void **) = D_00469D00;
@@ -44,16 +44,17 @@ void *func_0016F770(u8 *o) {
     }
     AT(o, 0x20, u8) = 0;
     AT(o, 0x24, s32) = 0;
+}
+
+void *func_0016F770(u8 *o) {
+    DrawObj_Init(o);
     return o;
 }
 
-/* the model base class's constructor */
-void *func_0016F4B0(u8 *m) {
+/* the model base's own fields (after its drawing object and +0x1D0 part) */
+static inline void ModelBase_Zero(u8 *m) {
     s32 i, k;
 
-    AT(m, 0x0, void **) = D_0046B210;
-    func_0016F770(m + 0x10);
-    func_0016F740(m + 0x1D0);
     for (i = 0; i < 2; i++) {
         AT(m, 0x584 + i * 0xA0, s32) = 0;
         AT(m, 0x58C + i * 0xA0, s32) = 0;
@@ -80,6 +81,14 @@ void *func_0016F4B0(u8 *m) {
     AT(m, 0x4D9, u8) = 0;
     AT(m, 0x840, u16) = 0;
     AT(m, 0x844, s32) = 0;
+}
+
+/* the model base class's constructor */
+void *func_0016F4B0(u8 *m) {
+    AT(m, 0x0, void **) = D_0046B210;
+    func_0016F770(m + 0x10);
+    func_0016F740(m + 0x1D0);
+    ModelBase_Zero(m);
     AT(m, 0x0, void **) = D_0046F9E0;
     return m;
 }
@@ -112,7 +121,7 @@ extern void *func_00208E30(void *, s32);
 extern void *func_0016FB80(void *);
 extern void *func_00170670(void *);
 extern void *func_0016FC10(void *);
-extern void *func_0016FBB0(void *, s32);
+void *func_0016FBB0(void *e, s32 flags);
 extern void *func_0016FB90(void *);
 extern void *func_00170650(void *);
 
@@ -3344,4 +3353,129 @@ u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
         func_001F36B0(AT(slot, 0x50, void *), c, t);
     }
     return !(c[foot] <= 0.0f);
+}
+
+/* ---- the stalkers' and event characters' models (built by the loaders func_0016F420 ..
+ * func_00170FB0 for func_00171160) ---- */
+
+extern void *D_0046B1C0[], *D_0046B0D0[], *D_004703B0[];
+extern void func_00100490(void *p);   /* operator delete */
+extern void func_002DC6D0(void *p);   /* model delete */
+
+/* the human characters' model base before its kind (vtable D_0046B210): drawing object, the
+   +0x1D0 part, the model fields */
+void *func_0016FCD0(u8 *m) {
+    AT(m, 0x0, void **) = D_0046B210;
+    DrawObj_Init(m + 0x10);
+    AT(m, 0x1D0, void **) = D_00469D00;
+    AT(m, 0x1D4, s32) = -1;
+    AT(m, 0x1D0, void **) = D_0046B1C0;
+    AT(m, 0x4B0, s32) = 0;
+    ModelBase_Zero(m);
+    return m;
+}
+
+/* the human model base with its two 0x60 parts' vtables (+0x928 / +0x988) */
+void *func_0016FC30(u8 *m) {
+    func_0016FCD0(m);
+    AT(m, 0x0, void **) = D_0046C160;
+    AT(m, 0x928, void **) = D_0046B0D0;
+    AT(m, 0x988, void **) = D_0046B0D0;
+    return m;
+}
+
+/* its destructor: back down the vtables, then (flags > 0) delete */
+void *func_0016F9E0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_0046C160;
+        AT(m, 0x988, void **) = D_0046B0D0;
+        AT(m, 0x928, void **) = D_0046B0D0;
+        AT(m, 0x0, void **) = D_0046F9E0;
+        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+/* destructors of the model's parts and array elements: the element's vtable (at +0 or +0x30)
+   back to its base, then (flags > 0) delete */
+static inline void *Part_Destroy(u8 *e, s32 at, void **vt, void **base, s32 flags) {
+    if (e != NULL) {
+        AT(e, at, void **) = vt;
+        AT(e, at, void **) = base;
+        if ((s16)flags > 0) {
+            func_00100490(e);
+        }
+    }
+    return e;
+}
+
+void *func_0016F680(void *e, s32 flags) {
+    return Part_Destroy(e, 0x0, D_0046B1C0, D_00469D00, flags);
+}
+
+void *func_0016F6E0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x0, D_0046ADA0, D_00469D00, flags);
+}
+
+void *func_0016F990(void *e, s32 flags) {
+    if (e != NULL && (s16)flags > 0) {
+        func_00100490(e);
+    }
+    return e;
+}
+
+void *func_0016FC80(void *e, s32 flags) {
+    if (e != NULL) {
+        AT(e, 0x58, void **) = D_0046B0D0;
+        if ((s16)flags > 0) {
+            func_00100490(e);
+        }
+    }
+    return e;
+}
+
+extern void *D_004702B0[], *D_00473810[], *D_00470700[], *D_00470440[], *D_004703D0[],
+    *D_00472350[], *D_004737F0[], *D_00470460[], *D_00472C10[];
+
+void *func_0016FBB0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_004702B0, D_004703B0, flags);
+}
+
+void *func_0016FB00(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00473810, D_004703B0, flags);
+}
+
+void *func_00170080(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00470700, D_004703B0, flags);
+}
+
+void *func_00170290(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00470440, D_004703B0, flags);
+}
+
+void *func_001702F0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_004703D0, D_004703B0, flags);
+}
+
+void *func_001709D0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00472350, D_004703B0, flags);
+}
+
+void *func_00170CB0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_004737F0, D_004703B0, flags);
+}
+
+void *func_00170EB0(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00470460, D_004703B0, flags);
+}
+
+void *func_00170F30(void *e, s32 flags) {
+    return Part_Destroy(e, 0x30, D_00472C10, D_004703B0, flags);
 }

@@ -3475,3 +3475,19 @@ src/game/debilitas2.c func_002FC8C0 --pre=a1=0..2 --runs=20
 src/game/debilitas2.c func_002FC8F0 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/debilitas2.c func_002FC930 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/debilitas2.c func_002FC970 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=30
+src/game/model.c func_0016F680 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016F6E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016F990 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016FC80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016FBB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016FB00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170080 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170290 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_001702F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_001709D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170CB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170EB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_00170F30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016F9E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=30
+src/game/model.c func_0016FCD0 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/model.c func_0016FC30 --pre=a0=0x0B000000..0x0B000000 --runs=10
