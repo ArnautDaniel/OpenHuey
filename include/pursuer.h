@@ -48,33 +48,6 @@ extern void *D_0044E570;          /* nav mesh */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 
-/* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
- * and runs this inline): vtable +0x10 cleanup at each level, the model freed for slots 3..5. */
-static inline void Pursuer_DestroyBase(Pursuer *p) {
-    p->c.a.vtbl = D_0046D810;
-    VCALL(p, 0x10, void (*)(Pursuer *))(p);
-    if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
-        void **m = p->c.motion;
-
-        if (m != NULL) {
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-            }
-            p->c.motion = NULL;
-        }
-    }
-    if (p != NULL) {
-        p->c.a.vtbl = D_0046C220;
-        VCALL(p, 0x10, void (*)(Pursuer *))(p);
-        if (p != NULL) {
-            p->c.a.vtbl = D_00469C60;
-            if (p != NULL) {
-                p->c.a.vtbl = D_00469C20;
-            }
-        }
-    }
-}
-
 /* The flags of an out-of-range nav triangle: the original takes the record pointer as NULL and
  * reads +0x3C anyway, i.e. a word of low kernel memory on the PS2. Kept for the difftest build;
  * natively an invalid triangle has no flags. */
@@ -226,16 +199,22 @@ s32 func_00127C40(Pursuer *p, s32 exit);
 s32 func_00127CC0(Pursuer *p);
 s32 func_00127FC0(Pursuer *p);
 s32 func_00128080(Pursuer *p);
+void func_00128390(Pursuer *p);
 void func_001286F0(Pursuer *p);
 void func_00128970(Pursuer *p);
 void func_00128CA0(Pursuer *p);
 void func_00128FC0(Pursuer *p);
+void func_00129090(Pursuer *p);
 void func_00129550(Pursuer *p);
 void func_00129560(Pursuer *p);
 void func_00129AF0(Pursuer *p);
 void func_00129D10(Pursuer *p);
+void func_0012A390(Pursuer *p);
+void func_0012B860(Pursuer *p);
 void func_0012B990(Pursuer *p);
+void func_0012BAA0(Pursuer *p, Character *c);
 void func_0012BBF0(Pursuer *p);
+void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room);
 s32 func_0012BE60(Pursuer *p);
 s32 func_0012BE70(Pursuer *p);
 Pursuer *func_001710D0(Pursuer *p, s32 flags);
@@ -595,5 +574,110 @@ u8 *func_0029F8C0(Pursuer *p);
 void func_0029FB20(Pursuer *p);
 void func_0029FBD0(Pursuer *p);
 /* ---- end generated ---- */
+
+/* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
+ * and runs this inline): vtable +0x10 cleanup at each level, the model freed for slots 3..5. */
+static inline void Pursuer_DestroyBase(Pursuer *p) {
+    p->c.a.vtbl = D_0046D810;
+    VCALL(p, 0x10, void (*)(Pursuer *))(p);
+    if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
+        void **m = p->c.motion;
+
+        if (m != NULL) {
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+            }
+            p->c.motion = NULL;
+        }
+    }
+    if (p != NULL) {
+        p->c.a.vtbl = D_0046C220;
+        VCALL(p, 0x10, void (*)(Pursuer *))(p);
+        if (p != NULL) {
+            p->c.a.vtbl = D_00469C60;
+            if (p != NULL) {
+                p->c.a.vtbl = D_00469C20;
+            }
+        }
+    }
+}
+
+/* ---- helpers shared by the pursuer files ---- */
+
+/* keep walking until the animation (+0x550) is over; returns 1 while walking */
+static inline s32 Pursuer_WalkOn(Pursuer *p) {
+    s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
+
+    if (((over ^ 1) & 0xFF) == 1) {
+        if (PU(p, 0x15C0, u8) != 0xFF) {
+            if (p->c.unk128 < p->c.unk124) {
+                func_00214620(p, p->c.unk128);
+            }
+        } else {
+            func_00125A10(&p->c);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+/* play `anim` unless it is already playing (or ended and loops) */
+static inline void Pursuer_PlayAnim(Pursuer *p, s32 anim) {
+    u8 *m = p->c.motion;
+
+    if (anim == AT(m, 0x55C, s32)) {
+        s32 over = AT(m, 0x550, f32) <= 0.0f;
+
+        if ((over ^ 1) & 0xFF) {
+            return;
+        }
+        if (((AT(AT(m, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0) != 1) {
+            s32 i = func_001F4710(m, anim);
+            u16 fl = i != -1 ? AT(AT(m, 0x874, u8 *) + i * 6, 0x4, u16) : 0;
+
+            if (fl & 4) {
+                return;
+            }
+        }
+        func_002DDED0(p->c.motion, anim, -1);
+    } else {
+        func_002DDED0(m, anim, -1);
+    }
+}
+
+/* play `anim`: restarted like Pursuer_PlayAnim if it is the current one, else blended in */
+static inline void Pursuer_PlayAnimBlend(Pursuer *p, s32 anim) {
+    u8 *m = p->c.motion;
+
+    if (AT(m, 0x55C, s32) == anim) {
+        Pursuer_PlayAnim(p, anim);
+    } else {
+        func_002DDE20(m, anim, -1);
+    }
+}
+
+static inline void Pursuer_SetMove(Pursuer *p, PTMF *m) {
+    ptmf_set((PTMF *)((u8 *)p + 0x17A0), m);
+    PU(p, 0x17AC, s32) = AT(m, 0xC, s32);
+    p->c.moveMode = AT(m, 0x10, s32);
+    p->c.moveSub = AT(m, 0x14, s32);
+    p->c.unk1530 = 0;
+    p->c.unk1538 = 0;
+    p->c.unk1534 = 0;
+}
+
+/* forget the search route (see func_0027E5D0) */
+static inline void Pursuer_ClearRoute(Pursuer *p) {
+    s32 k;
+
+    for (k = 0; k < 8; k++) {
+        PU(p, 0x15E0 + k * 8, s32) = -1;
+        PU(p, 0x15E4 + k * 8, u8) = 0;
+    }
+    PU(p, 0x1620, u8) = 0xFF;
+    PU(p, 0x1621, u8) = 0xFF;
+    PU(p, 0x1794, s32) = 0;
+}
+
 
 #endif

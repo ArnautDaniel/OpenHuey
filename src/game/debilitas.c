@@ -263,3 +263,142 @@ void func_0012BBF0(Pursuer *p) {
         func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     }
 }
+
+/* vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) */
+void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+    void *nm;
+
+    if (room == -1) {
+        room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    }
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
+    }
+    nm = D_0044E570;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0));
+    }
+    if (func_00126F80(&p->c, room, -1, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = room;
+        PU(p, 0x1598, s32) = -1;
+    } else {
+        func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* vtable +0xB4: head for character `c` (NULL: the target); resting, func_0029AF20 instead */
+void func_0012BAA0(Pursuer *p, Character *c) {
+    s32 side;
+
+    if (p->c.unkE0 == 0 && PU(p, 0x16C8, u8) == 4) {
+        func_0029AF20(p);
+        return;
+    }
+    if (c == NULL) {
+        c = p->target;
+    }
+    side = PU(p, 0x1598, s32);
+    if (func_00217370(p, c) != 0) {
+        side = func_002172F0(p, c);
+    } else {
+        s32 room = c->a.room;
+
+        if (p->c.a.room == room || PU(p, 0x1594, s32) != room) {
+            side = -1;
+        }
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            PU(p, 0x15A4, s32) = func_00216E00(p, c->a.navTri, c->a.pos, (f32 *)((u8 *)p + 0x15B0));
+        }
+    }
+    if (func_00126F80(&p->c, c->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = c->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+extern const PTMF D_003AFFB0;
+
+/* state: start the walk of func_00128FC0 (for 60 frames) once the current animation is over */
+void func_00129090(Pursuer *p) {
+    if (Pursuer_WalkOn(p)) {
+        return;
+    }
+    func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    PU(p, 0x1624, s32) = 60;
+    Actor_SetState(&p->c.a, &D_003AFFB0);
+    func_00128FC0(p);
+}
+
+/* state: a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress
+   vtable +0x2C), it lands (func_00178070 kind 1); over when the animation ends, she's out of
+   sight, or 60 units away */
+void func_00128390(Pursuer *p) {
+    func_00125A10(&p->c);
+    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
+        Progress *pr = gProgress;
+
+        if (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(pr, *(u8 *)&p->c.a.slot, 0x1E, 0, 5.0f) != 0) {
+            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 6, 0, 3, 10.0f);
+            PU(p, 0x1760, u8) |= 1;
+        }
+    }
+    if ((AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) || PU(p, 0x1544, u8) == 0 ||
+        !(PU(p, 0x1590, f32) < 60.0f) || PU(p, 0x1590, f32) < 0.0f) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+extern const PTMF D_003AFF60;
+
+/* vtable +0x2AC: go for Fiona: the pending action (+0x1758; -1 action 4), then rest mode with her
+   as the target, and pick the behaviour (vtable +0x2B0) */
+void func_0012A390(Pursuer *p) {
+    s32 next = PU(p, 0x1758, s32);
+
+    if (next == -1) {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 4);
+    } else if (next != -2) {
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, next);
+    }
+    PU(p, 0x16F6, u8) = 0;
+    PU(p, 0x16ED, u8) = 0;
+    PURSUER_STEP_DONE(p) = 0;
+    PU(p, 0x16EF, u8) = 0;
+    PU(p, 0x1758, s32) = -1;
+    PU(p, 0x1780, s32) = 0;
+    PU(p, 0x16F7, u8) = 1;
+    p->target = gCharPlayer;
+    PU(p, 0x16C9, u8) = 6;
+    PU(p, 0x16CA, u8) = 7;
+    if (PU(p, 0x16C8, u8) != 4) {
+        PU(p, 0x16C8, u8) = 4;
+        VCALL(p, 0x2C8, void (*)(Pursuer *, s32))(p, 0);
+    }
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF60);
+    PU(p, 0x1758, s32) = -1;
+    VCALL(p, 0x2B0, void (*)(Pursuer *))(p);
+}
+
+/* vtable +0x27C: the Pursuer's frame update (func_00294240), with his walk: in the idle group,
+   back to the idle while +0x16B4 is set, else the slow walk (vtable +0x324) when chasing within
+   +0x17E8 of Fiona, the normal one (vtable +0x328) otherwise */
+void func_0012B860(Pursuer *p) {
+    func_00294240(p);
+    if (PU(p, 0x175C, s32) != 4 || (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 1) {
+        return;
+    }
+    if (PU(p, 0x16B4, u8) == 1) {
+        if (PU(p, 0x1788, s32) != 0x201) {
+            func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+        }
+    } else if (PU(p, 0x16C8, u8) == 0 && PU(p, 0x1588, f32) < PU(p, 0x17E8, f32)) {
+        if (PU(p, 0x1788, s32) != 0x200) {
+            func_00297B40(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
+        }
+    } else if (PU(p, 0x1788, s32) != 0x201) {
+        func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    }
+}
