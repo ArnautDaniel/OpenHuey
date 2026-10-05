@@ -5398,3 +5398,21 @@ src/game/camctl.c func_002251C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0x
 src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0..0x80 --pre=a6=0xFFFFFFFF..0 --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000
 src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0x80..0x80 --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000
 src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0..0 --pre=a6=0xFFFFFFFF..0xFFFFFFFF --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000
+src/game/model.c func_00208360 --pre=a0=0..0x0B000000 --pre=a1=0..2
+src/game/model.c func_00208070 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_002083B0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_002088F0 --pre=a0=0..0x0B000000 --pre=a1=0..2
+src/game/model.c func_002083D0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208090 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208970 --pre=a0=0..0x0B000000 --pre=a1=0..2
+src/game/model.c func_00208950 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_002082A0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208E30 --pre=a0=0..0x0B000000 --pre=a1=0..2
+src/game/model.c func_002089D0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_002082C0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208F30 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208EB0 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208300 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208F80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xE0..0xFF --stub-ret=0 --stub-ret=3 --stub-ret=7
+src/game/model.c func_00208F10 --pre=a0=0x0B000000..0x0B000000
+src/game/model.c func_00208340 --pre=a0=0x0B000000..0x0B000000

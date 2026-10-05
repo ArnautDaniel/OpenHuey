@@ -131,6 +131,151 @@ void *func_00208210(u8 *m, u8 kind) {
     return m;
 }
 
+/* ---- constructors (vtables and their quad-drawer parts) of the effects the event commands
+ * make (0xC8, 0xD9, 0x9C, 0x9F, 0xA0, 0xA9, 0x35, 0x65, 0x9B, 0x8C) and a few others ---- */
+
+extern void *D_0047A6F0[], *D_0046FF20[], *D_00471000[], *D_00470E60[], *D_00470E40[], *D_0046EB40[],
+    *D_0046D730[], *D_0046D7B0[], *D_0046B0E0[], *D_00479660[], *D_00479F90[], *D_004703B0[],
+    *D_00475CA0[], *D_00472BD0[], *D_0046FF60[], *D_0046EC60[], *D_0046EA90[];
+extern void *D_00469D00[], *D_0046FC30[];
+extern void func_002672E0(void *p);   /* operator delete (the room effects' pool) */
+extern void func_00100490(void *p);   /* operator delete */
+extern void *func_0016FC30(u8 *m);
+extern s32 func_001FBF70(VObject *ev, s32 id);
+extern s32 func_001770D0(Progress *p, s32 id);
+
+void **func_00208070(void **o) {   /* event 0xD9 */
+    o[0] = D_0047A6F0;
+    return o;
+}
+
+void **func_00208090(void **o) {   /* event 0xC8: dust */
+    o[0] = D_0046FF20;
+    o[0x610 / 4] = D_00469D00;
+    ((s32 *)o)[0x614 / 4] = -1;
+    o[0x610 / 4] = D_0046FC30;
+    return o;
+}
+
+void **func_002082A0(void **o) {   /* event 0xA9 */
+    o[0] = D_00471000;
+    return o;
+}
+
+void **func_002082C0(void **o) {   /* event 0xA0 */
+    o[0] = D_00470E60;
+    o[0x3D0 / 4] = D_00469D00;
+    ((s32 *)o)[0x3D4 / 4] = -1;
+    o[0x3D0 / 4] = D_0046FC30;
+    return o;
+}
+
+void **func_00208300(void **o) {   /* event 0x9F */
+    o[0] = D_00470E40;
+    o[0x610 / 4] = D_00469D00;
+    ((s32 *)o)[0x614 / 4] = -1;
+    o[0x610 / 4] = D_0046FC30;
+    return o;
+}
+
+void **func_00208340(void **o) {   /* event 0x9C */
+    o[0] = D_0046EB40;
+    return o;
+}
+
+/* the room effect base's destructor */
+void **func_00208360(void **o, s32 flags) {
+    if (o != NULL) {
+        o[0] = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+void **func_002083B0(void **o) {   /* event 0x9B */
+    o[0] = D_0046D7B0;
+    return o;
+}
+
+/* Fiona's costume 8 model (event 0x97) */
+void *func_002083D0(u8 *m) {
+    func_0016FC30(m);
+    AT(m, 0x0, void **) = D_0046B0E0;
+    AT(m, 0x9A0, u8) = 8;
+    AT(m, 0x0, void **) = D_00479660;
+    return m;
+}
+
+/* destructors / constructors of three kinds with a part at +0x30 (based on D_004703B0) */
+static inline void *part30_dtor(void *o, s32 flags, void **vtbl) {
+    if (o != NULL) {
+        AT(o, 0x30, void **) = vtbl;
+        if (o != NULL) {
+            AT(o, 0x30, void **) = D_004703B0;
+        }
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+void *func_002088F0(void *o, s32 flags) {
+    return part30_dtor(o, flags, D_00479F90);
+}
+
+void *func_00208950(void *o) {
+    AT(o, 0x30, void **) = D_00479F90;
+    return o;
+}
+
+void *func_00208970(void *o, s32 flags) {
+    return part30_dtor(o, flags, D_00475CA0);
+}
+
+void *func_002089D0(void *o) {
+    AT(o, 0x30, void **) = D_00475CA0;
+    return o;
+}
+
+void *func_00208E30(void *o, s32 flags) {
+    return part30_dtor(o, flags, D_00472BD0);
+}
+
+void **func_00208EB0(void **o) {   /* event 0x8C */
+    o[0] = D_0046FF60;
+    return o;
+}
+
+void **func_00208F10(void **o) {   /* event 0x65 */
+    o[0] = D_0046EC60;
+    return o;
+}
+
+void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
+    o[0] = D_0046EA90;
+    AT(o, 0x8C, f32) = (f32)n;
+    return o;
+}
+
+/* the script's value (u16) for character id `id`: a step slot's (+0x578, id 0xF0..0xFA) or a
+ * character slot's (+0x590; 0 for none) */
+u32 func_00208F80(VObject *ev, s32 id) {
+    u32 i;
+
+    if ((id & 0xFF) >= 0xF0 && (id & 0xFF) < 0xFB) {
+        i = (u8)func_001FBF70(ev, id);
+        return AT(ev, 0x578 + i * 0x18, u16);
+    }
+    i = (u8)func_001770D0(gProgress, id);
+    if (i < 6) {
+        return AT(ev, 0x590 + i * 0x18, u16);
+    }
+    return 0;
+}
+
 /* the second dog model (D_0046B9B0, 0xB90 bytes) for character `slot` */
 void func_003A0F90(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
