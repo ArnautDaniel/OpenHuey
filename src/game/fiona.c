@@ -6340,6 +6340,239 @@ void func_00197640(Fiona *f) {
     }
 }
 
+extern s32 func_00188C10(Fiona *f);   /* walk to the door spot: < 0 can't, 0 there, > 0 on the way */
+extern u32 func_00178DB0(Progress *p, s32 room, s32 door, u32 slot);   /* u8: the door won't let her */
+extern const PTMF D_003B28F8, D_003B2908, D_003B2918, D_003B2928, D_003B2938;
+extern u8 D_003B2450[];   /* the event script of a locked door's rattle */
+
+/* give up on the door: idle (the door flag 0x2B cleared) */
+static inline __attribute__((always_inline)) void door_give_up(Fiona *f, Progress *p) {
+    f->unk1AD580 = 0;
+    f->c.moveMode = 0;
+    f->savedYaw = f->c.a.angle[1];
+    f->unk1AD5C0 = 0;
+    f->unk1AD588 = 0;
+    if (f->c.unkE0 == 0) {
+        f->c.a.unk2D = 0;
+        if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
+            func_001855F0(f, -1);
+        }
+        Actor_SetState(&f->c.a, &D_003B25A8);
+    } else {
+        Actor_SetState(&f->c.a, &D_003B25B8);
+    }
+    Progress_ClearFlag(p, 0x2B);
+}
+
+/* the motion's current animation has run out */
+static inline s32 door_anim_done(Fiona *f) {
+    u8 done = 1;
+
+    if (!(AT(f->c.motion, 0x550, f32) <= 0.0f)) {
+        done = 0;
+    }
+    return done;
+}
+
+/* D_003B28E8: walking to the spot; there, a door that is barred for her (exit bit 8) or whose
+ * state (func_00178980) says it can't be used this way makes her give up; else unless it holds
+ * her back (func_00178DB0) it is opened (doors +0x1C) with the door animation (D_003B28F8) */
+void func_00196FC0(Fiona *f) {
+    Progress *p;
+    s32 r;
+    u8 ok;
+
+    r = func_00188C10(f);
+    if (r < 0) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    p = gProgress;
+    if ((func_00177BF0(p, *(u8 *)&f->c.unk100, 2) & 0xFF) & 8) {
+        door_give_up(f, p);
+        return;
+    }
+    ok = func_00178980(p, f->c.a.room, *(u8 *)&f->c.unk100);
+    if (f->c.moveSub == 0x14) {
+        if (ok == 1) {
+            door_give_up(f, p);
+            return;
+        }
+    } else if (ok == 0) {
+        door_give_up(f, p);
+        return;
+    }
+    if ((func_00178DB0(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
+        door_give_up(f, p);
+        return;
+    }
+    f->c.unk104[1] = 1;
+    if (f->c.moveSub == 0x14) {
+        VCALL(D_0044E558, 0x1C, void (*)(VObject *, u32, s32, s32))(D_0044E558, *(u8 *)&f->c.unk100, 1, 0x20000);
+    } else {
+        VCALL(D_0044E558, 0x1C, void (*)(VObject *, u32, s32, s32))(D_0044E558, *(u8 *)&f->c.unk100, 0, 0x20000);
+    }
+    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    f->c.a.unk2B = 1;
+    f->c.a.unk2A = 1;
+    Actor_SetState(&f->c.a, &D_003B28F8);
+}
+
+/* D_003B28F8: the door animation; when it has run out, the doors are told she is through
+ * (+0xC) and she steps out (D_003B2908) */
+void func_00196EF0(Fiona *f) {
+    f->c.a.unk2A = 1;
+    if (!door_anim_done(f)) {
+        return;
+    }
+    VCALL(D_0044E558, 0xC, void (*)(VObject *, u32, s32, s32, s32))(
+        D_0044E558, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), f->c.a.slot, 0);
+    Actor_SetState(&f->c.a, &D_003B2908);
+}
+
+/* D_003B2908: stepping out; at the animation's event 0x20 she is free again (nav flags
+ * 0x28020018): the door shut behind her (doors +0x20 / +0x1C; the progress told,
+ * func_00178C10 in / func_00178A90 out) and idle. Every frame: shown (unk2D) unless still in
+ * the door's region (doors +0x18) on a triangle without flag 0x20000 */
+void func_00196C20(Fiona *f) {
+    s32 r;
+
+    f->c.a.unk2A = 1;
+    if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
+        VObject *doors;
+        Progress *p;
+
+        f->c.a.unk2A = 0;
+        f->c.a.unk2B = 0;
+        AT(f, 0xC0, u32) = 0x28020018;
+        doors = D_0044E558;
+        if (f->c.moveSub == 0x14) {
+            VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
+            VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
+            p = gProgress;
+            func_00178C10(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
+        } else {
+            VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
+            VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
+            p = gProgress;
+            func_00178A90(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
+        }
+        door_give_up(f, p);
+    }
+    func_00125A10(&f->c);
+    r = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+    if (f->c.unk104[0] != r) {
+        f->c.a.unk2D = 1;
+        return;
+    }
+    {
+        u8 *nm = (u8 *)D_0044E570;
+        u32 i = f->c.a.navTri;
+        u32 fl = 0;   /* (the original reads it through a NULL record - address 0x3C - for a
+                       * triangle out of range; 0 here) */
+
+        if (i < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+            fl = AT(AT(nm, 0x4, u8 *) + i * 0x50, 0x3C, u32);
+        }
+        f->c.a.unk2D = (fl & 0x20000) ? 1 : 0;
+    }
+}
+
+/* D_003B2918: the try at a locked door from where she stood; turning (FI 0x1AD65C at
+ * FI 0x1AD6D4 a frame) and walking (FI 0x1AD6D0 a frame) to the spot while it plays, then put
+ * on the spot facing the door (D_003B2928) */
+void func_00196660(Fiona *f) {
+    f32 at[4] __attribute__((aligned(16)));
+    u32 tri;
+    f32 yaw;
+
+    if (door_anim_done(f)) {
+        f->c.a.navTri = FI(f, 0x1AD634, s32);
+        sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD640));
+        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.a.navTri, f->c.a.pos);
+        yaw = FI(f, 0x1AD65C, f32);
+        f->c.a.angle[1] = yaw;
+        sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
+        sceVu0RotMatrixY((f32 (*)[4])((u8 *)f + 0x60), (f32 (*)[4])((u8 *)f + 0x60), yaw);
+        Actor_SetState(&f->c.a, &D_003B2928);
+        return;
+    }
+    func_00124530(&f->c.a, FI(f, 0x1AD65C, f32), FI(f, 0x1AD6D4, f32));
+    tri = f->c.a.navTri;
+    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.a.navTri = tri;
+    sceVu0CopyVector(f->c.a.pos, at);
+}
+
+/* D_003B28B8: a locked door, slow: once the current animation is done, a path to the spot
+ * (func_00127140 / func_001270F0; none: give up); its length / 7 the step and the turn to the
+ * door's facing / 7 the turn a frame, the try played (FI 0x1AD6CC, D_003B2918) */
+void func_001967D0(Fiona *f) {
+    static const union { u32 u; f32 f; } kSeventh = {0x3E126E98};
+    s32 r;
+    f32 d;
+
+    if (!door_anim_done(f)) {
+        return;
+    }
+    r = func_00127140(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
+    if (r > 0) {
+        r = func_001270F0(&f->c);
+    }
+    if (r <= 0) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+        gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, (u8 *)f + 0x12C);
+    FI(f, 0x1AD6D0, f32) = kSeventh.f * d;
+    if (!(func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]) <= 0.0f)) {
+        d = func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
+    } else {
+        d = -func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
+    }
+    FI(f, 0x1AD6D4, f32) = kSeventh.f * d;
+    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    Actor_SetState(&f->c.a, &D_003B2918);
+}
+
+/* D_003B28C8: a locked door, from the spot: walking there, then the try played (D_003B2938) */
+void func_001964C0(Fiona *f) {
+    s32 r = func_00188C10(f);
+
+    if (r < 0) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    Actor_SetState(&f->c.a, &D_003B2938);
+}
+
+/* D_003B28D8: a locked door, quick: walking to the spot, then +0x8C, the rattle's event script
+ * run for her (events +0x1C) and the scripted action 7 with the try's animation (unk104[0]) */
+void func_00196A90(Fiona *f) {
+    s32 r = func_00188C10(f);
+
+    if (r < 0) {
+        door_give_up(f, gProgress);
+        return;
+    }
+    if (r != 0) {
+        return;
+    }
+    f->c.a.unk2A = 1;
+    VCALL(f, 0x8C, void (*)(Fiona *))(f);
+    VCALL(D_0044E4D0, 0x1C, void (*)(VObject *, u32, u8 *))(D_0044E4D0, *(u8 *)&f->c.a.slot, D_003B2450);
+    f->c.unkF4 = 7;
+    f->c.unk104[0] = FI(f, 0x1AD6CC, s32);
+}
+
 extern s32 func_001270A0(Character *c);
 
 /* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
