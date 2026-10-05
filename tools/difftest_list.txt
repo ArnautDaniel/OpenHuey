@@ -5395,3 +5395,6 @@ src/game/scene_game.c func_00399C30 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game.c func_00399C50 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game.c func_00399C80 --pre=a0=0x0B000000..0x0B000000
 src/game/camctl.c func_002251C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0xFFFFFFFF..0 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50
+src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0..0x80 --pre=a6=0xFFFFFFFF..0 --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000
+src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0x80..0x80 --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000
+src/game/scene_game.c func_0039AEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7064A8=0x0B300000..0x0B300000 --pre=a4=0..0 --pre=a6=0xFFFFFFFF..0xFFFFFFFF --pre=@0x44F258=0x0B400000..0x0B400000 --pre=@0x0B400028=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B500000

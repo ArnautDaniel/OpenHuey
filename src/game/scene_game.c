@@ -1745,6 +1745,102 @@ void *func_0039B280(void *o) {
     return creature_init(o, D_0046FAA0);
 }
 
+/* a placed character (D_0044F258) of the creature class in slot `k`, its model too for
+ * slots 7..9; its memory block (NULL: none) */
+static inline __attribute__((always_inline)) u8 *creature_new(u8 *cr, u32 k, s32 other) {
+    u8 *mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
+    u8 *o = func_002E2330(0x1600, mem);
+
+    if (o != NULL) {
+        o = other ? func_0039B230(o) : func_0039B280(o);
+    }
+    AT(cr, k * 4, u8 *) = o;
+    AT(AT(cr, k * 4, u8 *), 0x20, s32) = k;
+    if (k >= 7 && k < 10) {
+        void *part = ((void *(*)(u8 *))AT(AT(cr, 0x28, u8 *), 0xC, void *))(cr);
+
+        part = func_002DC6E0(0x890, part);
+        if (part != NULL) {
+            part = func_0038C8D0(part);
+        }
+        AT(AT(cr, k * 4, u8 *), 0xF0, void *) = part;
+    }
+    return mem;
+}
+
+/* place a creature (flags bit 7: of the other class, in a free slot 7..9; else at triangle
+ * `tri`... -1: a free slot 0..5, otherwise slot 6) in `room` with kind `kind` and the rest;
+ * out of this room: no triangle */
+void func_0039AEA0(Scene *g, u32 room, s32 tri, s32 a3, u32 flags, s32 kind, s32 which, s32 a7, f32 f) {
+    VObject *hm = (VObject *)((u8 *)g + 0x706480);
+    u8 *mem = NULL;
+    s32 k, n;
+
+    if (flags & 0x80) {
+        s32 busy;
+
+        for (n = 0, k = 7;;) {   /* the first free slot */
+            busy = ((s32 (*)(VObject *, s32))AT(AT(hm, 0x28, u8 *), 0x10, void *))(hm, k & 0xFF);
+            if (busy == 0) {
+                break;
+            }
+            k++;
+            n++;
+            if (k >= 0xA) {
+                break;
+            }
+        }
+        if (n >= 3) {
+            return;
+        }
+        if (busy == 0) {
+            mem = creature_new(D_0044F258, k & 0xFF, 1);
+        }
+    } else if (which == -1) {
+        s32 busy;
+
+        for (n = 0, k = 0;;) {   /* the first free slot */
+            busy = ((s32 (*)(VObject *, s32))AT(AT(hm, 0x28, u8 *), 0x10, void *))(hm, k & 0xFF);
+            if (busy == 0) {
+                break;
+            }
+            k++;
+            n++;
+            if (k >= 6) {
+                break;
+            }
+        }
+        if (n >= 6) {
+            return;
+        }
+        if (busy == 0) {
+            mem = creature_new(D_0044F258, k & 0xFF, 0);
+        }
+    } else {
+        u8 *cr = D_0044F258;
+        u8 *o;
+
+        mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
+        o = func_002E2330(0x1600, mem);
+        if (o != NULL) {
+            o = func_0039B280(o);
+        }
+        AT(cr, 0x18, u8 *) = o;
+        k = 6;
+        AT(AT(cr, 0x18, u8 *), 0x20, s32) = k;
+    }
+    if (mem == NULL) {
+        return;
+    }
+    VCALL(mem, 0xC, void (*)(void *))(mem);
+    AT(mem, 0x28, u8) = 1;
+    if ((room & 0xFFFF) != (u32)VCALL(g, 0xA4, s32 (*)(Scene *))(g)) {
+        tri = -1;
+    }
+    ((void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, f32, s64))AT(AT(hm, 0x28, u8 *), 0x18, void *))(
+        hm, room & 0xFFFF, (s16)tri, a3, k & 0xFF, flags, (s16)kind, -1, f, (u16)a7);
+}
+
 /* the room's creatures (count +0x105344D, at most 6 - 3 of the other class, flag
  * +0x105344E bit 7, in slots 7..): each slot not yet placed gets one in a random room next to
  * the current one (within reach, func_0039C040, and through one of its exits); slots 7..9 also
