@@ -3068,7 +3068,7 @@ extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);   /* door i
 extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);   /* door is shut */
 
 extern s32 func_0025EEE0(u8 *obj);   /* the drawn object was on screen */
-extern void func_00278D60(u8 *fx, void *model, f32 *pos, f32 *rot);
+extern void func_00278D60(u8 *fx, u32 tri, f32 *pos, f32 *rot);
 
 /* the doorway (12 x 22, at depth z) through the door's matrix m, as the lights take it (+0x38):
  * its corners (top far, top near, bottom far, bottom near along x by `x0` -> `x1`), its facing
@@ -3113,7 +3113,7 @@ void func_00220E80(u8 *door) {
         return;
     }
     if (AT(door, 0x72, u8) == 1) {
-        func_00278D60(door + 0x190, AT(door, 0x8, void *), (f32 *)(door + 0x10), (f32 *)(door + 0x30));
+        func_00278D60(door + 0x190, AT(door, 0x8, u32), (f32 *)(door + 0x10), (f32 *)(door + 0x30));
     }
     if (!(AT(door, 0x64, f32) <= -78.75f)) {
         return;

@@ -482,17 +482,19 @@ s32 func_002786D0(u8 *o, s32 l) {
     return 1;
 }
 
-/* the door's shadow from each of the (up to 3) lights reaching `pos` (lights +0x2C on, +0x14
- * the lights of the spot), queued in renderer layer 6 when func_002786D0 finds one */
-void func_00278D60(u8 *o, void *model, f32 *pos, f32 *rot) {
+/* the door's shadow from each of the (up to 3) lights reaching `pos` on nav triangle `tri`
+ * (lights +0x2C: a shadow may fall there; +0x14 the lights of the spot), queued in renderer
+ * layer 6 when func_002786D0 finds one. (The original makes the +0x2C call without setting its
+ * arguments: they are this function's own tri and pos, still in their registers.) */
+void func_00278D60(u8 *o, u32 tri, f32 *pos, f32 *rot) {
     VObject *lights = D_0044E4C8;
     s32 l[3];
     s32 i;
 
-    if ((VCALL(lights, 0x2C, s32 (*)(VObject *))(lights) & 0xFF) != 1) {
+    if ((VCALL(lights, 0x2C, s32 (*)(VObject *, u32, f32 *))(lights, tri, pos) & 0xFF) != 1) {
         return;
     }
-    VCALL(lights, 0x14, void (*)(VObject *, f32 *, void *, s32 *))(lights, pos, model, l);
+    VCALL(lights, 0x14, void (*)(VObject *, f32 *, u32, s32 *))(lights, pos, tri, l);
     for (i = 0; i < 3; i++) {
         VObject *r = D_0044E4F0;
 
