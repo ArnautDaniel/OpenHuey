@@ -995,14 +995,131 @@ void func_001A9D20(u8 *pl, u8 *s) {
     }
 }
 
+/* the walk along the line from `from` (in triangle `t`) to `to` through the nav mesh (+0x20 the
+ * edge it leaves by, 3 when it ends inside, 4 off the mesh): the triangle it ends in, or -1 when
+ * it leaves the mesh or crosses one with flags of `stop` */
+static inline __attribute__((always_inline)) u32 line_walk(NavMesh *nm, u32 t, f32 *from, f32 *to, u32 stop,
+                                                           s32 *end) {
+    for (;;) {
+        s32 e = VCALL((VObject *)nm, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nm, t, from, to);
+
+        if (e == 3) {
+            *end = 3;
+            return t;
+        }
+        if (e == 4) {
+            *end = 4;
+            return NAV_NONE;
+        }
+        t = NavMesh_Tri(nm, t)->adj[e];
+        if (t == NAV_NONE || (tri_flags(nm, t) & stop)) {
+            *end = 4;
+            return NAV_NONE;
+        }
+    }
+}
+
+/* the found path smoothed (+0x41198, +0x40194, at most 0x30): from each kept triangle a straight
+ * line to the goal ends it; else the farthest path triangle in sight (tried 5 at a time, then
+ * one at a time) is the next kept one. 0, or -1 (no path, or too long) */
+s32 func_001A95F0(u8 *pl, u8 *s) {
+    NavMesh *nm;
+    f32 from[4] __attribute__((aligned(16)));
+    f32 to[4] __attribute__((aligned(16)));
+    u32 goal, cur, prev = NAV_NONE;
+    s32 n, k = 0, i = 0, seen = 0, j, end;
+
+    func_001A9D20(pl, s);
+    n = AT(pl, 0x40190, s32);
+    if (n == 0) {
+        return -1;
+    }
+    goal = AT(s, 0x8, u32);
+    AT(pl, 0x40194, s32) = 0;
+    sceVu0CopyVector(from, (f32 *)(s + 0x20));
+    nm = D_0044E570;
+    for (;;) {
+        u32 t;
+
+        cur = AT(pl, 0x40198 + i * 2, u16);
+        AT(pl, 0x41198 + k * 2, u16) = cur;
+        if (++k >= 0x30) {
+            AT(pl, 0x40194, s32) = k;
+            return -1;
+        }
+        if (prev == cur) {   /* no way on: the next path triangle */
+            i++;
+            cur = AT(pl, 0x40198 + i * 2, u16);
+            AT(pl, 0x41198 + k * 2, u16) = cur;
+            if (++k >= 0x30) {
+                AT(pl, 0x40194, s32) = k;
+                return -1;
+            }
+        }
+        if (prev != NAV_NONE) {
+            tri_centre(nm, cur, from);
+        }
+        sceVu0CopyVector(to, (f32 *)(s + 0x30));
+        t = line_walk(nm, cur, from, to, AT(s, 0xC, u32), &end);
+        if (end == 3) {
+            s32 found = 0;
+
+            if (t == goal) {
+                found = 1;
+            } else if (VCALL((VObject *)nm, 0x10, s32 (*)(VObject *, u32, f32 *))((VObject *)nm, t, to) == 3) {
+                NavTri *tri = NavMesh_Tri(nm, t);
+
+                for (j = 0; j < 3; j++) {
+                    if (tri->adj[j] == goal) {
+                        found = 1;
+                        break;
+                    }
+                }
+            }
+            if (found == 1) {
+                AT(s, 0x8, u32) = t;
+                AT(pl, 0x41198 + k * 2, u16) = t;
+                AT(pl, 0x40194, s32) = k + 1;
+                return 0;
+            }
+        }
+        for (j = i + 5; j < n - 1; j += 5) {   /* 5 at a time */
+            u32 at = AT(pl, 0x40198 + j * 2, u16);
+
+            tri_centre(nm, at, to);
+            t = line_walk(nm, cur, from, to, AT(s, 0xC, u32), &end);
+            if (end == 3 && t == at) {
+                seen = j;
+            } else {
+                i = seen;
+                j = n;
+            }
+        }
+        for (j = i + 1; j < n - 1; j++) {   /* then one at a time */
+            u32 at = AT(pl, 0x40198 + j * 2, u16);
+
+            tri_centre(nm, at, to);
+            t = line_walk(nm, cur, from, to, AT(s, 0xC, u32), &end);
+            if (end == 3 && t == at) {
+                seen = j;
+            } else {
+                i = seen;
+                j = n;
+            }
+        }
+        if (j == n - 1) {
+            i = seen;
+        }
+        prev = cur;
+    }
+}
+
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
 f32 func_001A8300(VObject *pl, s32 id) {
-    extern s32 func_001A95F0(VObject *pl, u8 *s);
-
     if (id == -1) {
         return -1.0f;
     }
-    if (func_001A95F0(pl, SEARCH(pl, id)) == 0) {
+    if (func_001A95F0((u8 *)pl, SEARCH(pl, id)) == 0) {
         return VCALL(pl, 0x30, f32 (*)(VObject *, s32))(pl, id);
     }
     return -1.0f;
