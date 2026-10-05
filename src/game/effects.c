@@ -2225,3 +2225,147 @@ void func_002FD150(u8 *e) {
     AT(e, 0xA5, s8) = 0x10;
     AT(e, 0xA6, s8) = -1;
 }
+
+
+/* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
+ * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
+ * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
+ * renewed when gone or at height 22; stopped (+0x1C54) by its +0x18 ---- */
+
+extern void *D_00470E20[];
+
+#define PUFF_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0xC00) + (i))
+#define PUFF_VEL(e, i) ((f32 *)((e) + 0x1850 + (i) * 0x10))
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_002FD1D0(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_00470E20;
+    AT(o, 0x1810, void **) = D_0046FC30;
+    AT(o, 0x1810, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* puff i anew: at the bottom (again), or at first somewhere up, bigger and fainter the
+ * higher */
+void func_002FD260(u8 *e, s32 i, s32 again) {
+    VObject *rnd = D_0044E550;
+    QuadRec *r = PUFF_REC(e, AT(e, 0x1C50, s32), i);
+    f32 *v = PUFF_VEL(e, i);
+    s32 up = 0;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x20;
+    r->pos[0] = 15.5f + 0x1.19999a0000000p+0f /* 1.1 */ * (burst_rnd(rnd) - 0.5f);
+    r->w = 0x1.3333340000000p-2f /* 0.3 */;
+    if (!again) {
+        up = (s32)(12.0f * burst_rnd(rnd));
+        r->rgba[3] = r->rgba[3] - up;
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        r->w = r->w * (f32)up;
+    }
+    rnd = D_0044E550;
+    r->pos[1] = 11.0f + (f32)up;
+    r->pos[2] = 22.5f + 0x1.19999a0000000p+0f /* 1.1 */ * (burst_rnd(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->h = r->w;
+    r->turn = 0.0f;
+    r->frame = 0;
+    v[0] = 0x1.eb851e0000000p-6f /* 0.03 */ * (burst_rnd(rnd) - 0.5f);
+    v[1] = 0x1.47ae140000000p-5f /* 0.04 */ + 0x1.99999a0000000p-5f /* 0.05 */ * burst_rnd(rnd);
+    v[2] = 0x1.eb851e0000000p-6f /* 0.03 */ * (burst_rnd(rnd) - 0.5f);
+}
+
+/* +0x18 stop */
+void func_002FD4E0(u8 *e) {
+    AT(e, 0x1C54, u8) = 1;
+}
+
+/* +0x14 draw the current buffer */
+void func_002FD4F0(u8 *e) {
+    AT(e, 0x1820, QuadRec *) = PUFF_REC(e, AT(e, 0x1C50, s32), 0);
+    func_002E56C0(e + 0x1810);
+}
+
+/* +0x10 update (0 once stopped): flip the buffers, each puff carried over, growing, turning (1
+ * degree) and moving */
+s32 func_002FD520(u8 *e) {
+    s32 i, k;
+
+    if (AT(e, 0x1C54, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0x1C50, s32) ^= 1;
+    for (i = 0; i < 64; i++) {
+        u32 *src = (u32 *)PUFF_REC(e, AT(e, 0x1C50, s32) ^ 1, i);
+        u32 *dst = (u32 *)PUFF_REC(e, AT(e, 0x1C50, s32), i);
+        f32 *v = PUFF_VEL(e, i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = PUFF_REC(e, AT(e, 0x1C50, s32), i);
+        r->w = r->w + 0x1.47ae140000000p-6f /* 0.02 */;
+        r->h = r->h + 0x1.47ae140000000p-6f /* 0.02 */;
+        r->turn = r->turn + 0x1.1df46ap-6f /* 1 degree */;
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (!(r->pos[1] < 22.0f)) {
+            func_002FD260(e, i, 1);
+        }
+        if (r->rgba[3] > 0) {
+            if (!(r->pos[1] < 20.0f) && AT(e, 0x1C50, s32) != 0) {
+                r->rgba[3] -= 4;
+                if (r->rgba[3] < 0) {
+                    r->rgba[3] = 0;
+                }
+            }
+        } else {
+            func_002FD260(e, i, 1);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells, row 64, layer 0x19),
+ * every puff placed */
+void func_002FD760(u8 *e) {
+    s32 i;
+
+    AT(e, 0x1C50, s32) = 0;
+    AT(e, 0x1C54, u8) = 0;
+    AT(e, 0x1818, s64) = -1;
+    AT(e, 0x1828, s32) = 0;
+    AT(e, 0x182C, s32) = 0;
+    AT(e, 0x1830, s32) = 0x19;
+    AT(e, 0x1834, s16) = 0x40;
+    AT(e, 0x1836, s16) = 0;
+    AT(e, 0x1838, s16) = 0x40;
+    AT(e, 0x183A, s16) = 0x20;
+    AT(e, 0x183C, s16) = 0x20;
+    AT(e, 0x183E, s16) = 0x200;
+    AT(e, 0x1840, s16) = 0x100;
+    AT(e, 0x1842, s8) = 0;
+    AT(e, 0x1843, s8) = 1;
+    AT(e, 0x1844, s8) = 1;
+    AT(e, 0x1845, s8) = 0x10;
+    AT(e, 0x1846, s8) = -1;
+    for (i = 0; i < 64; i++) {
+        func_002FD260(e, i, 0);
+    }
+}
