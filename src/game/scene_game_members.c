@@ -3449,3 +3449,70 @@ void *func_0020E820(void *o, s32 flags) {
 void func_00267140(void) {
     VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
 }
+
+extern void func_001CA850(void);
+extern void func_001C8478(void);
+extern void func_001C8648(void *p);
+extern s32 RemoveIntcHandler(s32 cause, s32 id);
+extern u8 D_0044FE18[];
+extern void *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046AED0[], *D_0046AD88[], *D_0046AEC0[];
+extern void *D_0044FEF8;
+
+/* start loading file slot k (+0x3C0) unless it already is (bit 31): the loader +0x14, the slot
+ * marked, its callback (+0x3C8, a PTMF each) back to none */
+void func_001205A0(u8 *o, s32 k) {
+    u32 *slot = (u32 *)(o + 0x3C0) + k;
+
+    if (*slot & 0x80000000) {
+        return;
+    }
+    VCALL(gFileLoader, 0x14, void (*)(void *, u32))(gFileLoader, *slot);
+    *slot |= 0x80000000;
+    AT(o, 0x3C8 + k * 12, PTMF) = sGameStateNull;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* clear +0xC700 and the 20 words after it */
+void func_0017D1B0(u8 *o) {
+    s32 i;
+
+    AT(o, 0xC700, s32) = 0;
+    for (i = 0; i < 20; i++) {
+        AT(o, 0xC704 + i * 4, s32) = 0;
+    }
+}
+
+/* shut down: the member at +0x7C44 (+0x14), the sound side (func_001CA850, func_001C8478,
+ * func_001C8648(D_0044FE18)) and its interrupt handler (+0x12C, cause 3) */
+void func_001AAC60(u8 *o) {
+    VObject *m = (VObject *)(o + 0x7C44);
+
+    VCALL(m, 0x14, void (*)(VObject *))(m);
+    func_001CA850();
+    func_001C8478();
+    func_001C8648(D_0044FE18);
+    RemoveIntcHandler(3, AT(o, 0x12C, s32));
+}
+
+/* destructor (D_0046AF00): its members at +0x7C44 (D_0046AED0, clearing D_0044FEF8) and +0x124
+ * (D_0046AD88), then the base (D_0046AEC0, clearing D_0044E980) */
+void *func_001BF6C0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AF00;
+        AT(o, 0x124, void **) = D_0046AF0C;
+        AT(o, 0x7C44, void **) = D_0046C740;
+        AT(o, 0x7C44, void **) = D_0046AED0;
+        AT(o, 0x7C48, u8) = 0;
+        D_0044FEF8 = NULL;
+        AT(o, 0x124, void **) = D_0046AD88;
+        AT(o, 0x0, void **) = D_0046AEC0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        D_0044E980 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
