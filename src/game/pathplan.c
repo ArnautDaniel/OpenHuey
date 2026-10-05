@@ -533,6 +533,110 @@ s32 func_001A5BB0(void *pl, u8 *s) {
     return 0;
 }
 
+#define OPEN(s, i) AT(s, 0xC044 + (i) * 4, u8 *)
+
+/* step for kind 3, greedy best first on the sorted list (+0xC044, the head expanded): its new
+ * neighbours, sorted by the estimate (+0x10), are merged in; the best of them replaces the head,
+ * found with the goal node as a sentinel past the end (its estimate set above it) */
+s32 func_001A6D70(void *pl, u8 *s) {
+    u8 *nbs[3];
+    NavMesh *nm;
+    u8 *cur;
+    NavTri *tri;
+    s32 n, k = 0, e, i, j;
+
+    AT(s, 0x0, s32)++;
+    cur = OPEN(s, 0);
+    n = AT(s, 0x40, s16);
+    nm = D_0044E570;
+    tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
+    if (tri == NULL) {
+        return -1;
+    }
+    for (e = 0; e < 3; e++) {
+        u32 t = tri->adj[e];
+        u8 *nb;
+        u32 f;
+
+        if (t == NAV_NONE) {
+            continue;
+        }
+        nb = NODE(s, t);
+        if (AT(nb, 0x0, u16) & 0xB) {
+            continue;
+        }
+        f = tri_flags(nm, t);
+        if (f & AT(s, 0xC, u32)) {
+            continue;
+        }
+        if ((AT(nb, 0x0, u16) & 4) || (f & AT(s, 0x10, u32))) {
+            AT(s, 0x10048, u8 *) = nb;
+            AT(nb, 0x4, u8 *) = cur;
+            AT(s, 0x40, s16) = n;
+            return AT(s, 0x0, s32);
+        }
+        nbs[k++] = nb;
+        AT(nb, 0x0, u16) |= 1;
+        AT(nb, 0x4, u8 *) = cur;
+    }
+    AT(cur, 0x0, u16) ^= 3;
+    AT(s, 0xE044 + AT(s, 0x42, s16) * 4, u8 *) = cur;
+    AT(s, 0x42, s16)++;
+    if (k == 0) {
+        for (i = 0; i < n - 1; i++) {
+            OPEN(s, i) = OPEN(s, i + 1);
+        }
+    } else {
+        for (i = 1; i < k; i++) {
+            for (j = 0; j < k - i; j++) {
+                if (!(AT(nbs[j], 0x10, f32) <= AT(nbs[j + 1], 0x10, f32))) {
+                    u8 *x = nbs[j];
+
+                    nbs[j] = nbs[j + 1];
+                    nbs[j + 1] = x;
+                }
+            }
+        }
+        if (n == 1) {
+            for (i = 0; i < k; i++) {
+                OPEN(s, i) = nbs[i];
+            }
+        } else {
+            s32 at = n - 1;
+            u8 *g;
+
+            for (i = k - 1; i > 0; i--) {   /* the rest, merged in from the end */
+                u8 *x = nbs[i];
+
+                if (AT(x, 0x10, f32) < AT(OPEN(s, 1), 0x10, f32)) {
+                    for (; at > 0; at--) {
+                        OPEN(s, at + i) = OPEN(s, at);
+                    }
+                } else {
+                    while (AT(x, 0x10, f32) < AT(OPEN(s, at), 0x10, f32)) {
+                        OPEN(s, at + i) = OPEN(s, at);
+                        at--;
+                    }
+                }
+                OPEN(s, at + i) = x;
+            }
+            g = NODE(s, AT(s, 0x8, s32));
+            OPEN(s, n + k - 1) = g;
+            AT(g, 0x10, f32) = 1.0f + AT(nbs[0], 0x10, f32);
+            for (i = 0; !(AT(nbs[0], 0x10, f32) <= AT(OPEN(s, i + 1), 0x10, f32)); i++) {
+                OPEN(s, i) = OPEN(s, i + 1);
+            }
+            OPEN(s, i) = nbs[0];
+        }
+    }
+    n = n + k - 1;
+    AT(s, 0x40, s16) = n;
+    if (n != 0) {
+        return 0;
+    }
+    return -AT(s, 0x0, s32);
+}
+
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
 f32 func_001A8300(VObject *pl, s32 id) {
     extern s32 func_001A95F0(VObject *pl, u8 *s);
