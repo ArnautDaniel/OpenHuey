@@ -7383,7 +7383,7 @@ void func_00183960(Fiona *f) {
 }
 
 /* Hewie, when he's with her (FI 0x1AD5D5), reacts to what she did (n) */
-void func_001817C0(Fiona *f, s32 n) {
+static inline __attribute__((always_inline)) void hewie_react(Fiona *f, s32 n) {
     Character *h;
 
     if (FI(f, 0x1AD5D5, u8) != 1) {
@@ -7393,6 +7393,92 @@ void func_001817C0(Fiona *f, s32 n) {
     func_00138E60(h, D_003B2520[n][0]);
     if (D_003B2520[n][1] > 0 && func_00124490(&f->c.a, h->a.pos) < 30.0f) {
         func_00138DE0(h, D_003B2520[n][1]);
+    }
+}
+
+void func_001817C0(Fiona *f, s32 n) {
+    hewie_react(f, n);
+}
+
+extern f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist);
+extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
+extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);
+
+/* her command to Hewie (moveSub 0x23..0x30): when he is free (no request) and flag 0x25 isn't
+ * set, the request 0xD with it, her point (FI 0x1AD6E0, x and z in 1/100000; for "come", 0x23,
+ * moved to 5 short of where he'd have to go when that is further) and facing (FI 0x1AD6D0) -
+ * unless the game holds him (gProgress +0x1FBEC1); then his reaction to it */
+void func_00183F10(Fiona *f) {
+    Character *h = (Character *)gCharPartner;
+    Progress *p;
+
+    if (h->state[0] == 0 && !((p = gProgress, Progress_TestFlag(p, 0x25)) & 0xFF)) {
+        if (f->c.moveSub == 0x23) {
+            f32 d = func_00123A70(&h->a, FI(f, 0x1AD6C0, u32), (f32 *)((u8 *)f + 0x1AD6E0), (u32)-1,
+                                  FI(f, 0x1AD6D0, f32), 15.0f);
+
+            if (!(d <= 5.0f)) {
+                f32 m[4][4] __attribute__((aligned(16)));
+                f32 v[4] __attribute__((aligned(16)));
+                f32 at[4] __attribute__((aligned(16)));
+                u32 tri;
+
+                v[0] = 0.0f;
+                v[1] = 0.0f;
+                v[2] = d - 5.0f;
+                func_002E3130(m, (f32 *)((u8 *)f + 0x1AD6E0), FI(f, 0x1AD6D0, f32));
+                func_002E2DD0(at, m, v);
+                tri = func_00124480(&f->c.a, at, 0x29020008);
+                if (tri != (u32)-1) {
+                    FI(f, 0x1AD6C0, u32) = tri;
+                    sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD6E0), at);
+                }
+            }
+        }
+        if (AT(p, 0x1FBEC1, u8) == 0) {
+            s32 x = (s32)(100000.0f * FI(f, 0x1AD6E0, f32));
+            s32 z = (s32)(100000.0f * FI(f, 0x1AD6E8, f32));
+
+            /* (the original copies a request local whose last fields are never set) */
+            h = (Character *)gCharPartner;
+            if (h->state[0] != 7) {
+                h->state[0] = 0xD;
+                h->state[1] = f->c.moveSub;
+                h->state[2] = x;
+                h->state[3] = z;
+                h->state[4] = FI(f, 0x1AD6C0, s32);
+                AT(h, 0x14FC, f32) = FI(f, 0x1AD6D0, f32);
+                h->state[6] = 0;
+                AT(h, 0x1504, u8) = 0;
+                AT(h, 0x1505, u8) = 0;
+                AT(h, 0x1506, u16) = 0;
+            }
+        }
+    }
+    switch (f->c.moveSub) {
+    case 0x2D:
+    case 0x23:
+        hewie_react(f, 0);
+        break;
+    case 0x2C:
+        hewie_react(f, 1);
+        break;
+    case 0x27:
+    case 0x25:
+        hewie_react(f, 2);
+        break;
+    case 0x2F:
+        hewie_react(f, 3);
+        break;
+    case 0x29:
+        hewie_react(f, 4);
+        break;
+    case 0x30:
+        hewie_react(f, 14);
+        break;
+    case 0x2E:
+        hewie_react(f, 15);
+        break;
     }
 }
 
