@@ -2,7 +2,7 @@
 # sources, and drop their now redundant extern declarations from those sources.
 import re
 import os
-SRCS=[f for f in ['src/game/pursuer.c','src/game/pursuer_ai.c','src/game/debilitas.c','src/game/daniella.c','src/game/riccardo.c','src/game/lorenzo.c'] if os.path.exists(f)]
+SRCS=[f for f in ['src/game/pursuer.c','src/game/pursuer_ai.c','src/game/debilitas.c','src/game/debilitas_body.inc','src/game/debilitas2.c','src/game/daniella.c','src/game/riccardo.c','src/game/lorenzo.c'] if os.path.exists(f)]
 H='include/pursuer.h'
 DEF=re.compile(r'^((?!static|extern)[A-Za-z][\w \*]*?\b(func_[0-9A-F]{8})\(([^;{]*?)\))\s*\{',re.M)
 protos={}

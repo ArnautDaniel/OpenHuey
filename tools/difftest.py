@@ -1569,6 +1569,13 @@ def original_range(func: str) -> tuple[int, int] | None:
 
 def return_kind(src: Path, func: str) -> str:
     text = src.read_text()
+    # local includes (a class body shared by two files), and a name the file #defines onto `func`
+    for inc in re.findall(r'^#include "([^"]+)"', text, re.M):
+        if (src.parent / inc).exists():
+            text += "\n" + (src.parent / inc).read_text()
+    alias = re.search(rf"^#define\s+(\w+)\s+{re.escape(func)}\s*$", text, re.M)
+    if alias:
+        func = alias.group(1)
     # the definition first (a call at the start of a line would otherwise read as an untyped one)
     m = re.search(rf"^(?:static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\([^;{{}}]*\)\s*\{{", text, re.M) or \
         re.search(rf"^\s*(?:extern\s+|static\s+)?([\w\s\*]+?)\s*\b{re.escape(func)}\s*\(", text, re.M)
