@@ -5504,3 +5504,176 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
     sceVu0CopyVector(out, gCharPlayer->a.pos);
     return gCharPlayer->a.navTri;
 }
+
+/* ---- where he looks ---- */
+
+extern void func_002DD310(void *motion, f32 pitch, f32 yaw, f32 pspeed, f32 yspeed);
+
+/* the head (motion +0x60) of character c, or its position without a motion */
+static void head_of(Character *c, f32 *out) {
+    if (c->motion != NULL) {
+        VCALL(c->motion, 0x60, void (*)(void *, f32 *))(c->motion, out);
+    } else {
+        sceVu0CopyVector(out, c->a.pos);
+    }
+}
+
+/* turn his head: at character slot +0xF3610 (forgotten when it leaves his room), else unless
+ * +0xF35E0 by look mode +0xF3600 (changing to +0xF3604 once the +0xF3608 delay runs out): 0 / 5
+ * his target (5 level; mode 4 once it is gone), 1 / 2 / 3 glancing about at random, 8 held, 4
+ * ahead, 6 / 7 / 9 / 10 / 11 / 12 / 13 fixed poses; with +0xF35E0 the point +0xF35F0. Down:
+ * ahead. Pitch kept to -45..135 degrees and yaw to +-162, turned at 0.15 of the way (yaw
+ * faster by how much his heading changed since +0xF354C for modes 0 / 5 / 8) */
+void func_00146130(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 pitch, yaw, dp, dy, ys;
+    VObject *rng;
+    u32 mode;
+
+    if (h->c.a.unkC4 == 2) {
+        pitch = 0.0f;
+        yaw = 0.0f;
+    } else if (HW(h, 0xF3610, s32) != 0xFF) {
+        Character *c = gCharacters[HW(h, 0xF3610, s32)];
+
+        if (in_his_room(h, c)) {
+            head_of(c, at);
+            func_002DD110(h->c.motion, at, &pitch, &yaw);
+        } else {
+            pitch = 0.0f;
+            yaw = 0.0f;
+            HW(h, 0xF3610, s32) = 0xFF;
+        }
+    } else if (HW(h, 0xF35E0, u8) == 0) {
+        sceVu0CopyVector(at, func_0017CE80(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
+        if (func_00124480(&h->c.a, at, NAV_NONE) != NAV_NONE) {
+            HW(h, 0xF361C, f32) = AT(h->c.motion, 0x858, f32);
+        }
+        if (HW(h, 0xF3608, s32) == 0 && HW(h, 0xF3600, u32) != HW(h, 0xF3604, u32)) {
+            HW(h, 0xF3600, u32) = HW(h, 0xF3604, u32);
+            HW(h, 0xF360C, s32) = 0;
+        } else if (HW(h, 0xF3608, s32) != 0) {
+            HW(h, 0xF3608, s32) -= 1;
+        }
+        mode = HW(h, 0xF3600, u32);
+        switch (mode) {
+        case 0:
+        case 5:
+            if (in_his_room(h, HW(h, 0xF3544, Character *))) {
+                head_of(HW(h, 0xF3544, Character *), at);
+                func_002DD110(h->c.motion, at, &pitch, &yaw);
+                if (HW(h, 0xF3600, u32) == 5) {
+                    pitch = 0.0f;
+                }
+            } else {
+                HW(h, 0xF3600, u32) = 4;
+                HW(h, 0xF360C, s32) = 0;
+                pitch = 0.0f;
+                yaw = 0.0f;
+            }
+            break;
+        case 8:
+            pitch = HW(h, 0xF3614, f32);
+            yaw = HW(h, 0xF3618, f32);
+            break;
+        case 1:
+        case 2:
+            if (HW(h, 0xF360C, s32) == 0) {
+                f32 r;
+
+                rng = D_0044E550;
+                HW(h, 0xF360C, s32) = (s32)((mode == 1 ? 90.0f : 60.0f) * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)) + 20;
+                HW(h, 0xF3614, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (0x1.99999a0000000p-4f /* 0.1 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.99999a0000000p-5f /* 0.05 */);
+                if (AT(h->c.motion, 0x858, f32) < 0.0f) {
+                    r = 0x1.99999a0000000p-1f /* 0.8 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.3333340000000p-2f /* 0.3 */;
+                    HW(h, 0xF3618, f32) = AT(h->c.motion, 0x858, f32) + 0x1.921fb60000000p+1f /* 3.1415927 */ * r;
+                } else {
+                    r = 0x1.99999a0000000p-1f /* 0.8 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.3333340000000p-2f /* 0.3 */;
+                    HW(h, 0xF3618, f32) = AT(h->c.motion, 0x858, f32) - 0x1.921fb60000000p+1f /* 3.1415927 */ * r;
+                }
+            } else {
+                HW(h, 0xF360C, s32) -= 1;
+            }
+            pitch = HW(h, 0xF3614, f32);
+            yaw = HW(h, 0xF3618, f32);
+            break;
+        case 3:
+            if (HW(h, 0xF360C, s32) != 0) {
+                HW(h, 0xF360C, s32) -= 1;
+            } else {
+                rng = D_0044E550;
+                HW(h, 0xF360C, s32) = (s32)(128.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)) + 20;
+                HW(h, 0xF3614, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (-0x1.99999a0000000p-3f /* 0.2 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng));
+                HW(h, 0xF3618, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (0x1.99999a0000000p-3f /* 0.2 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.99999a0000000p-4f /* 0.1 */);
+            }
+            pitch = HW(h, 0xF3614, f32);
+            yaw = HW(h, 0xF3618, f32);
+            break;
+        case 6:
+            pitch = 0.0f;
+            yaw = -0x1.921fb60000000p+0f /* 1.5707964 */;
+            break;
+        case 7:
+            pitch = 0.0f;
+            yaw = 0x1.921fb60000000p+0f /* 1.5707964 */;
+            break;
+        case 4:
+            pitch = 0.0f;
+            yaw = 0.0f;
+            break;
+        case 9:
+            pitch = 0.0f;
+            yaw = -0x1.2d97c80000000p+1f /* 2.3561945 */;
+            break;
+        case 10:
+            pitch = 0.0f;
+            yaw = 0x1.2d97c80000000p+1f /* 2.3561945 */;
+            break;
+        case 11:
+            yaw = 0.0f;
+            pitch = 0x1.e28c760000000p-1f /* 0.9424779 */;
+            break;
+        case 13:
+            pitch = 0x1.3333340000000p-2f /* 0.3 */;
+            yaw = 0x1.41b2f80000000p+0f /* 1.2566371 */;
+            break;
+        case 12:
+            pitch = 0x1.3333340000000p-2f /* 0.3 */;
+            yaw = -0x1.41b2f80000000p+0f /* 1.2566371 */;
+            break;
+        }
+    } else {
+        func_002DD110(h->c.motion, &HW(h, 0xF35F0, f32), &pitch, &yaw);
+    }
+    if (!(pitch <= 0x1.2d97c80000000p+1f /* 2.3561945 */)) {
+        pitch = 0x1.2d97c80000000p+1f /* 2.3561945 */;
+    }
+    if (pitch < -0x1.921fb60000000p-1f /* 0.7853982 */) {
+        pitch = -0x1.921fb60000000p-1f /* 0.7853982 */;
+    }
+    if (!(yaw <= 0x1.69e9560000000p+1f /* 2.8274333 */)) {
+        yaw = 0x1.69e9560000000p+1f /* 2.8274333 */;
+    }
+    if (yaw < -0x1.69e9560000000p+1f /* 2.8274333 */) {
+        yaw = -0x1.69e9560000000p+1f /* 2.8274333 */;
+    }
+    /* (abs as the original has it: 0 becomes -0) */
+    dp = pitch - AT(h->c.motion, 0x854, f32);
+    dy = yaw - AT(h->c.motion, 0x858, f32);
+    if (dp <= 0.0f) {
+        dp = -dp;
+    }
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    ys = 0x1.333334p-3f /* 0.15 */ * dy;
+    mode = HW(h, 0xF3600, u32);
+    if (mode == 8 || mode == 5 || mode == 0) {
+        if (!(func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32)) <= 0.0f)) {
+            ys += func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32));
+        } else {
+            ys += -func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32));
+        }
+    }
+    func_002DD310(h->c.motion, pitch, yaw, 0x1.3333340000000p-3f /* 0.15 */ * dp, ys);
+}
