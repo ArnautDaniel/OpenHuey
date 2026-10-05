@@ -1843,3 +1843,53 @@ s32 func_00312510(u8 *o) {
     AT(o, 0x490, s32)++;
     return 1;
 }
+
+extern u8 *D_0044F258;   /* the creatures: 10 slots */
+
+/* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
+ * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;
+ * none, 0 */
+s32 func_002B4030(void) {
+    static const union { u32 u; f32 f; } kX = {0xC20ECCCD};
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        Character *c = AT(D_0044F258, i * 4, Character *);
+        u8 *mgr;
+        s32 slot;
+        f32 dz, dx;
+        struct {
+            f32 pos[4];
+            u8 rgba[4];
+        } fx __attribute__((aligned(16)));
+
+        if (c == NULL) {
+            continue;
+        }
+        dz = c->a.pos[2] - -7.5f;
+        dx = c->a.pos[0] - kX.f;
+        if (!(dz * dz + dx * dx < 16.0f)) {
+            continue;
+        }
+        mgr = D_0044E578;
+        c->a.active = 0;
+        slot = Effect_New(mgr, 0x4A0, vanish_init);
+        sceVu0CopyVector(fx.pos, c->a.pos);
+        fx.pos[1] = 12.0f + c->a.pos[1] + AT(CR(c), 0x14, f32);
+        if (AT(CR(c), 0x31, u8) < 0x12) {
+            fx.rgba[2] = 0x80;
+            fx.rgba[0] = 0x30;
+            fx.rgba[3] = 0x60;
+            fx.rgba[1] = 0x30;
+        } else {
+            fx.rgba[0] = 0x80;
+            fx.rgba[1] = 0x30;
+            fx.rgba[3] = 0x60;
+            fx.rgba[2] = 0x30;
+        }
+        func_002D6090(mgr, slot, &fx);
+        func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+        return 1;
+    }
+    return 0;
+}
