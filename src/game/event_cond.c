@@ -75,6 +75,7 @@ extern VObject *gFileLoader;
 extern s32 func_00177260(Progress *p, s32 slot);
 extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;
+extern s32 func_00125D80(u8 *c);
 extern u8 *gCharPursuer;
 extern void *D_0044E958;      /* the movie playing */
 
@@ -861,6 +862,32 @@ s32 func_001FC760(VObject *ev) {
                     (u8)func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
                     r = 1;
                     break;
+                }
+            }
+        }
+        break;
+    }
+    case 0x65: {   /* the stalker (in the scene) is in this room and free: not func_00125D80, not in
+                    * action 8 / move 0x18-0x19 or action 4 / move 9-0xA, otherwise func_001235C0 */
+        u8 *c = gCharPursuer;
+
+        if (c != NULL && AT(c, 0x28, u8) == 1) {
+            s32 room = AT(gCharPursuer, 0x30, s32);
+
+            if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room) {
+                r = 1;
+                if ((u8)func_00125D80(gCharPursuer) == 1) {
+                    r = 0;
+                } else if (AT(gCharPursuer, 0xF8, s32) == 8) {
+                    if (AT(gCharPursuer, 0xFC, s32) == 0x18 || AT(gCharPursuer, 0xFC, s32) == 0x19) {
+                        r = 0;
+                    }
+                } else if (AT(gCharPursuer, 0xF8, s32) == 4) {
+                    if (AT(gCharPursuer, 0xFC, s32) == 9 || AT(gCharPursuer, 0xFC, s32) == 0xA) {
+                        r = 0;
+                    }
+                } else if ((u8)func_001235C0(gCharPursuer, gCharPursuer) == 0) {
+                    r = 0;
                 }
             }
         }
