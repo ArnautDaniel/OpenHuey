@@ -1156,6 +1156,306 @@ s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
+/* ---- room 0x61's light shaft, class D_0047A370 (0x700 bytes): a beam of light (a scrolling
+ * texture on a strip between six points, drawn twice) with 16 dust motes rising through it
+ * (double-buffered quad records +0x10 + buffer +0x6EC * 0x300, drawn by the quad drawer at
+ * +0x610), each with its rise (+0x660 + i * 4) and wobble angle (+0x6A0); +0x6E8 the
+ * texture's scroll (0 .. 4096, 1/16 texels), +0x650 where the motes start, +0x6F0 stopped,
+ * +0x6F1 the haze on: the whole screen wavers (phases +0x6E0 / +0x6E4) ---- */
+
+#include "texcache.h"
+
+extern void *D_0047A370[], *D_0046F580[];
+extern VObject *D_0044E550;   /* random numbers */
+extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
+extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern void func_002E56C0(u8 *quad);
+
+#define SHAFT_REC(o, i) ((o) + AT(o, 0x6EC, s32) * 0x300 + (i) * 0x30 + 0x10)
+
+static f32 shaft_rnd(VObject *rnd) {
+    return VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+}
+
+/* +0x8 destructor (the quad drawer's inlined) */
+u8 *func_00374B30(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = D_0047A370;
+    AT(o, 0x610, void **) = D_0046FC30;
+    AT(o, 0x610, void **) = D_00469D00;
+    AT(o, 0x0, void **) = D_0046F580;
+    if ((s16)flags > 0) {
+        func_002D63B0(o);
+    }
+    return o;
+}
+
+/* mote i (re)started at the bottom: rising 0.1 .. 0.3 a frame, grey, alpha 0x40 .. 0x7F, spread
+ * 50 either way along z, sized 3/4 of its rise, a random turn */
+void func_00374BC0(u8 *o, s32 i) {
+    VObject *rnd;
+    u8 *r;
+
+    if (AT(o, 0x6F0, u8) == 1) {
+        return;
+    }
+    rnd = D_0044E550;
+    AT(o, 0x660 + i * 4, f32) = 0x1.99999ap-4f /* 0.1 */ + 0x1.99999ap-3f /* 0.2 */ * shaft_rnd(rnd);
+    AT(o, 0x6A0 + i * 4, f32) = 0x1.921fb6p+2f /* 2 pi */ * (shaft_rnd(rnd) - 0.5f);
+    r = SHAFT_REC(o, i);
+    AT(r, 0x0, s32) = 0x80;
+    AT(r, 0x4, s32) = 0x80;
+    AT(r, 0x8, s32) = 0x80;
+    AT(r, 0xC, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
+    AT(r, 0x10, f32) = AT(o, 0x650, f32);
+    AT(r, 0x14, f32) = AT(o, 0x654, f32);
+    AT(r, 0x18, f32) = AT(o, 0x658, f32) + 100.0f * (shaft_rnd(rnd) - 0.5f);
+    AT(r, 0x1C, f32) = 1.0f;
+    AT(r, 0x20, f32) = AT(r, 0x24, f32) = 0.75f * AT(o, 0x660 + i * 4, f32);
+    AT(r, 0x28, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+    AT(r, 0x2C, s32) = 0;
+}
+
+/* +0x18 start: NULL stops it; kind (+0x10) 0 the motes from the position (+0x0), 1 the haze
+ * on, 2 off */
+void func_00374DB0(u8 *o, u8 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        AT(o, 0x6F0, u8) = 1;
+        return;
+    }
+    switch (AT(arg, 0x10, s32)) {
+    case 0:
+        sceVu0CopyVector((f32 *)(o + 0x650), (f32 *)arg);
+        for (i = 0; i < 16; i++) {
+            func_00374BC0(o, i);
+        }
+        break;
+    case 1:
+        AT(o, 0x6F1, u8) = 1;
+        break;
+    case 2:
+        AT(o, 0x6F1, u8) = 0;
+        break;
+    }
+}
+
+/* +0x10 update: the buffers swapped (the motes copied over), the texture scrolled 3.2 / 16
+ * texels; each mote turns, wobbles 0.1 about its angle and rises; on every other frame it
+ * fades by 0 or 1 and starts over once gone. The haze's phases on by 3 .. 5 and 1 .. 3 degrees */
+s32 func_00376200(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *rnd;
+    f32 t;
+    s32 i, k;
+
+    if (AT(o, 0x6F0, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x6EC, s32) ^= 1;
+    AT(o, 0x6E8, s32) = (s32)((f32)AT(o, 0x6E8, s32) + 0x1.99999ap+1f /* 3.2 */);
+    t = (f32)AT(o, 0x6E8, s32);
+    if (!(t <= 4096.0f)) {
+        AT(o, 0x6E8, s32) = (s32)(t - 4096.0f);
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 16; i++) {
+        s32 cur = AT(o, 0x6EC, s32);
+        u32 *dst = (u32 *)(o + cur * 0x300 + i * 0x30 + 0x10);
+        u32 *src = (u32 *)(o + (cur ^ 1) * 0x300 + i * 0x30 + 0x10);
+        u8 *r;
+        f32 a;
+
+        for (k = 0; k < 12; k++) {
+            *dst++ = *src++;
+        }
+        r = SHAFT_REC(o, i);
+        AT(r, 0x28, f32) = AT(r, 0x28, f32) + 0.5f * (kPi.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) / 180.0f);
+        a = AT(o, 0x6A0 + i * 4, f32) + kPi.f * (90.0f * shaft_rnd(rnd)) / 180.0f;
+        AT(o, 0x6A0 + i * 4, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x6A0 + i * 4, f32) = a - k2Pi.f;
+        }
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + 0x1.99999ap-4f /* 0.1 */ * func_0031C248(AT(o, 0x6A0 + i * 4, f32));
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0x660 + i * 4, f32);
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + 0x1.99999ap-4f /* 0.1 */ * func_0031C058(AT(o, 0x6A0 + i * 4, f32));
+        if (AT(o, 0x6EC, s32) == 0) {
+            AT(r, 0xC, s32) = AT(r, 0xC, s32) - (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1);
+            if (AT(r, 0xC, s32) < 0) {
+                func_00374BC0(o, i);
+            }
+        }
+    }
+    if (AT(o, 0x6F1, u8) == 1) {
+        rnd = D_0044E550;
+        t = AT(o, 0x6E0, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
+        AT(o, 0x6E0, f32) = t;
+        AT(o, 0x6E0, f32) = func_002E2D00(t);
+        t = AT(o, 0x6E4, f32) + kPi.f * (1.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
+        AT(o, 0x6E4, f32) = t;
+        AT(o, 0x6E4, f32) = func_002E2D00(t);
+    }
+    return 1;
+}
+
+/* +0xC set up: a random scroll; the motes' drawer: layer 0x19, texture group 0x10 cell
+ * (0x1A0, 0x40) 32 x 32 of 512 x 256, additive, 5 frames; the haze at random phases */
+void func_003765B0(u8 *o) {
+    VObject *rnd = D_0044E550;
+
+    AT(o, 0x6EC, s32) = 0;
+    AT(o, 0x6F0, u8) = 0;
+    AT(o, 0x6F1, u8) = 0;
+    AT(o, 0x6E8, s32) = (s32)(4096.0f * shaft_rnd(rnd));
+    AT(o, 0x618, s64) = -1;
+    AT(o, 0x624, s32) = 0;
+    AT(o, 0x628, s32) = 0;
+    AT(o, 0x62C, s32) = 0;
+    AT(o, 0x630, s32) = 0x19;
+    AT(o, 0x634, s16) = 0x10;
+    AT(o, 0x636, s16) = 0x1A0;
+    AT(o, 0x638, s16) = 0x40;
+    AT(o, 0x63A, s16) = 0x20;
+    AT(o, 0x63C, s16) = 0x20;
+    AT(o, 0x63E, s16) = 0x200;
+    AT(o, 0x640, s16) = 0x100;
+    AT(o, 0x642, s8) = 0x40;
+    AT(o, 0x643, s8) = 1;
+    AT(o, 0x644, s8) = 1;
+    AT(o, 0x645, s8) = 0x10;
+    AT(o, 0x646, s8) = 5;
+    AT(o, 0x6E0, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
+    AT(o, 0x6E4, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
+}
+
+#ifdef HG_NATIVE
+extern void glr_layer(s32 layer);
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+extern void glr_haze(f32 phase, f32 sway);
+
+/* the beam's corners: the top edge (0, 60, 82 .. 57), the floor (10, 30, 100 .. 40), middles
+ * at z 70 */
+static const f32 kShaft[6][4] __attribute__((aligned(16))) = {
+    {0.0f, 60.0f, 82.0f, 1.0f}, {0.0f, 60.0f, 57.0f, 1.0f}, {10.0f, 30.0f, 100.0f, 1.0f},
+    {10.0f, 30.0f, 40.0f, 1.0f}, {0.0f, 60.0f, 70.0f, 1.0f}, {10.0f, 30.0f, 70.0f, 1.0f},
+};
+
+/* +0x14 draw (PC; the PS2 sends GS packets): when all of the beam is in view, the strip
+ * top-front, floor-front, top-middle, floor-middle, top-back, floor-back (alpha 0x40 at the
+ * edges, 0x80 in the middle, texture group 8 id 0, rows 224 .. 256) twice, scrolled +0x6E8 and
+ * (mirrored) a quarter further, in layer 0x19 without depth writes; then the motes. With the
+ * haze on: in layer 0x2A the screen at half size is copied, blended half with itself drawn in
+ * 33 columns 8 apart each moved down 16 sin(a) (2 + (1 + cos a) / 2) / 16 (a = +0x6E0 + 90
+ * degrees a column) and all of it 2 sin(+0x6E4) right; that blended back over the screen at
+ * 0x48 / 128 */
+void func_00374E50(u8 *o) {
+    static const s8 kOrder[6] = {0, 2, 4, 5, 1, 3};
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 xyzw[6][4] __attribute__((aligned(16)));
+    f32 st[6][2];
+    u8 rgba[6][4];
+    u8 *tex = NULL;
+    s32 in = 1, i, pass;
+
+    if (AT(o, 0x6F0, u8) == 1) {
+        return;
+    }
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    if (TexCache_Resident(8, 0, 0x19, &tex) == -1) {
+        in = 0;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (i = 0; i < 6; i++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0ApplyMatrix(v, clip, kShaft[i]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            in = 0;
+        }
+    }
+    if (in && tex != NULL && AT(tex, 4, u16) != 0 && AT(tex, 6, u16) != 0) {
+        f32 tw = (f32)AT(tex, 4, u16), th = (f32)AT(tex, 6, u16);
+
+        glr_layer(0x19);
+        for (pass = 0; pass < 2; pass++) {
+            s32 s = AT(o, 0x6E8, s32);
+
+            if (pass == 1 && (s += 0x400) >= 0x1001) {
+                s -= 0x1000;
+            }
+            for (i = 0; i < 6; i++) {
+                s32 col = i >> 1;   /* front, middle, back */
+
+                sceVu0CopyVector(xyzw[i], kShaft[kOrder[i]]);
+                AT(&xyzw[i][3], 0, u32) = 0;
+                if (pass == 1) {
+                    col = 2 - col;
+                }
+                st[i][0] = (f32)(s + 8 + (col == 0 ? 0 : col == 1 ? 0x800 : 0x1000)) / 16.0f / tw;
+                st[i][1] = (i & 1 ? 256.5f : 224.5f) / th;
+                rgba[i][0] = rgba[i][1] = rgba[i][2] = 0x80;
+                rgba[i][3] = (i >> 1) == 1 ? 0x80 : 0x40;
+            }
+            glr_strip(&clip[0][0], 6, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, 1ull << 34,
+                      0x10 | 0x40 | 0x20000 /* GLR_PRIM_NOZW */);
+        }
+        glr_layer(-1);
+    }
+    AT(o, 0x620, u8 *) = o + AT(o, 0x6EC, s32) * 0x300 + 0x10;
+    func_002E56C0(o + 0x610);
+    if (AT(o, 0x6F1, u8) == 1) {
+        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+        glr_haze(AT(o, 0x6E0, f32), 2.0f * func_0031C248(AT(o, 0x6E4, f32)));
+    }
+}
+#endif
+
+/* room 0x61: byte 3 0 the light shaft (D_0047A370) started with its motes from (30, 0, 70),
+ * its slot in event var 3; 1 its haze on, 2 off */
+static void shaft_init(void **obj) {
+    obj[0] = D_0047A370;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+s32 func_003114C0(void *self, void *a1, u8 *cmd) {
+    s32 arg[5] __attribute__((aligned(16)));
+    s32 slot;
+
+    switch (cmd[3]) {
+    case 0:
+        slot = Effect_New(D_0044E578, 0x700, shaft_init);
+        AT(&arg[0], 0, f32) = 30.0f;
+        AT(&arg[1], 0, f32) = 0.0f;
+        AT(&arg[2], 0, f32) = 70.0f;
+        AT(&arg[3], 0, f32) = 1.0f;
+        arg[4] = 0;
+        func_002D6090(D_0044E578, slot, arg);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 3, slot);
+        break;
+    case 1:
+        arg[4] = 1;
+        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 3), arg);
+        break;
+    case 2:
+        arg[4] = 2;
+        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 3), arg);
+        break;
+    default:
+        return 1;
+    }
+    return 1;
+}
+
 /* the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
  * the far two on by 1 a frame up to 80 / 140 */
 s32 func_002B2BF0(void) {

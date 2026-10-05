@@ -104,7 +104,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE, POST_HAZE };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -294,6 +294,15 @@ void glr_bloom(uint32_t rgba, int subtract) {
 
 void glr_vignette(int strength, int offset) {
     put_post(POST_VIGNETTE, 0x2A, (uint32_t)strength, (uint32_t)offset);   /* its packet's layer */
+}
+
+/* room 0x61's haze (func_00374E50, its packet's layer 0x2A): phase of the columns' waves, and
+ * how far right all of it is moved */
+void glr_haze(float phase, float sway) {
+    GlrDraw *d = put_post(POST_HAZE, 0x2A, 0, 0);
+
+    d->mvp[0] = phase;
+    d->mvp[1] = sway;
 }
 
 void glr_dof(float a, float from, float to, float b) {
@@ -605,6 +614,14 @@ static const char *kPostFs =
     "    float wa = ((b.y - c.y) * (q.x - b.x) + (c.x - b.x) * (q.y - b.y)) / det;\n"
     "    return wc >= 0.0 && wa >= 0.0 && wc + wa <= 1.0 ? wc : 0.0;\n"
     "}\n"
+    "vec4 haze_at(vec2 q) {\n"   /* the screen at half size, point q (0..256 x 0..224) */
+    "    vec2 sz = vec2(textureSize(uTex, 0));\n"
+    "    return round(texture(uTex, vec2(q.x * 2.5 * uS, (448.0 - q.y * 2.0) * uS) / sz) * 255.0);\n"
+    "}\n"
+    "float haze_off(float k) {\n"   /* column k's move down (half-size pixels, in 1/16) */
+    "    float a = uRange.x + k * 1.5707964;\n"
+    "    return trunc(16.0 * sin(a) * (2.0 + 0.5 * (1.0 + cos(a)))) / 16.0;\n"
+    "}\n"
     "void main() {\n"
     "    ivec2 p = ivec2(gl_FragCoord.xy);\n"
     "    vec4 c;\n"
@@ -761,6 +778,19 @@ static const char *kPostFs =
     "        if (at(uTex, p).a < 128.0) discard;\n"
     "        oColor = vec4(0.0);\n"
     "        return;\n"
+    "    } else if (uMode == 32) {\n"   /* room 0x61's haze (see glr_haze's pass) */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"
+    "        vec2 h = floor(g * 0.5) + 0.5;\n"
+    "        vec4 d = at(uTex, p);\n"
+    "        vec4 hc = haze_at(h);\n"
+    "        vec4 b = hc;\n"
+    "        float u = h.x - uRange.y;\n"
+    "        if (u >= 0.0 && u <= 256.0) {\n"
+    "            float f = u / 8.0, k = floor(f);\n"
+    "            float v = h.y - mix(haze_off(k), haze_off(k + 1.0), f - k);\n"
+    "            if (v >= 0.0 && v < 224.0) b = hc + floor((haze_at(vec2(u, v)) - hc) * 0.5);\n"
+    "        }\n"
+    "        c = d + floor((b - d) * uFix / 128.0);\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -1468,7 +1498,7 @@ static void glow_buffer_update(void) {   /* A -> B */
 
 /* HG_POSTOFF names pass `kind` */
 static int post_off(int kind) {
-    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl", "shadowbegin", "shadowfill", "image"};
+    static const char *const kNames[] = {"", "bloom", "glow", "screen2", "fog", "vignette", "alphaclear", "caustic", "dof", "maskclear", "refl", "shadowbegin", "shadowfill", "image", "haze"};
     const char *off = getenv("HG_POSTOFF");
 
     return off != NULL && kind < (int)(sizeof(kNames) / sizeof(kNames[0])) && strstr(off, kNames[kind]) != NULL;
@@ -1707,6 +1737,14 @@ static void run_post(const GlrDraw *d) {
         post(21, sFbo, GLR_WIDTH, GLR_HEIGHT, sReflPrep, sMask);
         break;
     }
+    case POST_HAZE:   /* func_00374E50: the screen halved, blended half with itself in 33 wavering
+                       * columns, then that over the screen at 0x48 / 128 */
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, 72.0f);
+        p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
+        post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
     case POST_VIGNETTE:
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);

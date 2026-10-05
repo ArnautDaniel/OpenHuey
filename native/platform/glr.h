@@ -63,6 +63,8 @@ void glr_screen2(uint32_t rgba, int contrast, int blur);
 /* func_0021C840 this frame (renderer layer 0x2A): the screen's corners darkened, by up to
  * strength / 128, fading to nothing at the middles of the edges (moved by `offset` pixels) */
 void glr_vignette(int strength, int offset);
+/* room 0x61's haze over the screen (func_00374E50) */
+void glr_haze(float phase, float sway);
 
 /* func_0034E9E0 (the light caustic): the frame's alpha cleared before its grids, then the
  * halved screen where they left alpha >= `aref` blurred and added back at 1/2 */
