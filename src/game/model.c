@@ -2114,6 +2114,15 @@ static void motion_root(u8 *m, s32 slot, s32 k, f32 dt, f32 *out) {
     sceVu0ScaleVector(out, tmp + 4, AT(s, 0x574 + k * 4, f32));
 }
 
+/* the current slot's (+0x540) root translation at its time + dt (0 if it has none) */
+void func_001F6240(u8 *m, f32 *out, f32 dt) {
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    out[3] = 0.0f;
+    motion_root(m, AT(m, 0x540, s32), 0, dt, out);
+}
+
 /* the motion's root movement over dt: the current slot (+0x540) and the previous one
  * (+0x544), each blended with its layer by the track's weight (+0x6A4/+0x6A8 +0x1C), then
  * cross-faded by +0x550 while a fade runs (+0x54C > 0) */
@@ -5198,4 +5207,35 @@ void func_00170FB0(Progress *p, u32 slot) {
         }
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
+}
+
+/* play animation `anim` with its table entry's (+0x874, 6 bytes each) flags, blended in over
+ * the entry's frames (no check for a missing entry) */
+void func_002DDB30(u8 *m, s32 anim) {
+    s32 i = func_001F4710(m, anim);
+    u8 *e = AT(m, 0x874, u8 *) + i * 6;
+
+    func_001F7460(m, anim, AT(e, 0x4, u16), -1, (f32)AT(e, 0x0, s16));
+}
+
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+
+/* the distance of point `c` from the line through `a` and `b` */
+f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+    f32 l1, l2, s;
+
+    sceVu0SubVector(d, (f32 *)b, (f32 *)a);
+    func_0010E640(p, b, -1.0f);
+    l1 = ee_sqrtf(sceVu0InnerProduct(d, d));
+    l2 = ee_sqrtf(sceVu0InnerProduct(d, d));
+    s = sceVu0InnerProduct(p, d);
+    s = (s + sceVu0InnerProduct((f32 *)c, d)) / (l2 * l1);
+    func_0010E640(p, d, s);
+    sceVu0AddVector(p, p, (f32 *)b);
+    sceVu0SubVector(r, (f32 *)c, p);
+    r[3] = 0.0f;
+    return ee_sqrtf(sceVu0InnerProduct(r, r));
 }
