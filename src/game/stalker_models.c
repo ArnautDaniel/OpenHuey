@@ -1301,3 +1301,120 @@ void func_0031EA10(u8 *p, u8 *set) {
     Part_Anchor(p, set, at);
     Part_Hold(p, at, prev);
 }
+
+/* ---- the second Lorenzo's model (vtable D_00471CE0, 0x1160 bytes: kinds 10 / 39): 24 swaying
+   points (+0x9A0, 0x50 each; vtable D_00472350) on the set +0x1120 - six groups of four (bones
+   6..9, 0x16..0x19, 0xA..0xD, 0x1A..0x1D, 0xE..0x11, 0x1E..0x21), as Fiona's (model.c) ---- */
+
+extern void *D_00471CE0[];
+extern void *func_001709D0(void *e, s32 flags);
+
+/* +0x8: destructor */
+void *func_0030DAF0(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00471CE0;
+        func_001002C0(m + 0x9A0, func_001709D0, 0x50, 0x18);
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* +0x84 .. +0x90: his mesh parts */
+s32 func_0030DC30(u8 *m) {
+    return 3;
+}
+
+s32 func_0030DC40(u8 *m) {
+    return 0x13;
+}
+
+s32 func_0030DC50(u8 *m) {
+    return 0x26;
+}
+
+s32 func_0030DC60(u8 *m) {
+    return 0x30;
+}
+
+extern u8 D_00424680[], D_00424690[], D_004246A0[], D_004246B0[];
+
+/* his 24 swaying points: each group of four from its first (+0x20), its bone (+0x24), weight
+   (+0x40), kind (+0x44), table (+0x48) and phase (+0x4C: 5, 10, 15, 20 degrees down the group) */
+void func_0030DC70(u8 *m) {
+    static const u8 sBones[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
+    static const s32 sKinds[2][2] = {{2, 3}, {0x12, 0x13}};
+    static u8 *const sTables[6] = {D_00424680, D_00424680, D_00424690, D_00424690, D_004246A0, D_004246B0};
+    static const u32 sPhases[4] = {0x3DB2B8C3, 0x3E32B8C3, 0x3E860A92, 0x3EB2B8C3};
+    s32 i;
+
+    func_002EE960(m + 0x1120);
+    for (i = 0; i < 24; i++) {
+        Set_AddLink(m + 0x1120, m + 0x9A0 + i * 0x50);
+    }
+    Set_Init(m + 0x1120, m, 0.0f, 0x1.99999ap-3f /* 0.2 */, 0.0f, 0x1.cccccc0p-1f /* 0.9 */);
+    for (i = 0; i < 24; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+        s32 g = i / 4, k = i % 4;
+
+        AT(n, 0x40, f32) = 2.125f;
+        AT(n, 0x24, s32) = sBones[g] + k;
+        AT(n, 0x44, s32) = sKinds[g % 2][k / 2];
+        AT(n, 0x48, u8 *) = sTables[g];
+        AT(n, 0x20, u8) = k == 0;
+        AT(n, 0x4C, u32) = sPhases[k];
+    }
+}
+
+/* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
+void func_0030E060(u8 *m) {
+    s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
+    s32 i;
+
+    func_002EE8A0(m + 0x1120);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + 0x1120);
+    }
+    func_002EE840(m + 0x1120);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+void func_0030E0E0(u8 *m) {
+    func_001F7AC0(m);
+}
+
+/* +0xC: once loaded: the base setup, the part roles, his points, per-part draw settings */
+void func_0030E0F0(u8 *m) {
+    func_002118D0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x28;
+    AT(m, 0x8A0, s32) = 0x12;
+    AT(m, 0x8A4, s32) = 0x13;
+    AT(m, 0x8A8, s32) = 0x14;
+    AT(m, 0x8AC, s32) = 0x15;
+    AT(m, 0x8BC, s32) = 0x32;
+    AT(m, 0x8B0, s32) = 0x2B;
+    AT(m, 0x8B4, s32) = 0x22;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    func_0030DC70(m);
+    AT(m, 0x850, u8) = 1;
+    {
+        static const u8 sParts[][2] = {
+            {0x98, 0x40}, {0x9A, 0x40}, {0x9C, 0x40}, {0xC2, 0x40}, {0xC4, 0x40}, {0xC6, 0x40},
+            {0xA6, 0xC0}, {0xBC, 0xC0},
+        };
+        u32 i;
+
+        for (i = 0; i < sizeof(sParts) / sizeof(sParts[0]); i++) {
+            AT(m, sParts[i][0], u8) = 4;
+            AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
+        }
+    }
+}
