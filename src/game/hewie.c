@@ -4037,3 +4037,48 @@ u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
     }
     return 0xFF;
 }
+
+/* ---- which list fits ---- */
+
+/* Fiona's distance band from him: 0 (< 10), 1 (< 20), 2 (< 40), 3 (< 60), 4 (< 80), 5 (< 100), 6
+ * (farther or not in his room) */
+static s32 player_band(Hewie *h) {
+    f32 d;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        return 6;
+    }
+    d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+    return d < 10.0f ? 0 : d < 20.0f ? 1 : d < 40.0f ? 2 : d < 60.0f ? 3 : d < 80.0f ? 4 : d < 100.0f ? 5 : 6;
+}
+
+/* the list of a situation table that fits him (kind 0xFF: the game's current mode). Calm (not
+ * mode 2): Fiona's distance band. Tense (mode 2), unless panic is 4 or more (0): 1 if the
+ * pursuer in his room moves 1 or 4, 2 if it is within 30 of him, 3 within 30 of Fiona, else 4
+ * plus her band */
+s32 func_0013E920(Hewie *h, u32 kind) {
+    Progress *p;
+
+    if ((u8)kind == 0xFF) {
+        kind = func_00177620(gProgress);
+    }
+    if ((u8)kind != 2) {
+        return player_band(h);
+    }
+    p = gProgress;
+    if (AT(p, 0x7B8, u8) >= 4) {
+        return 0;
+    }
+    if (in_his_room(h, gCharPursuer)) {
+        if (gCharPursuer->a.unkC4 == 1 || gCharPursuer->moveMode == 4) {
+            return 1;
+        }
+        if (func_00124490(&h->c.a, gCharPursuer->a.pos) < 30.0f) {
+            return 2;
+        }
+        if (func_00124490(&gCharPlayer->a, gCharPursuer->a.pos) < 30.0f) {
+            return 3;
+        }
+    }
+    return 4 + player_band(h);
+}
