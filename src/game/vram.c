@@ -521,6 +521,57 @@ s32 func_001BFEC0(VObject *v, TexHeader *t, s32 upper) {
     return id;
 }
 
+/* +0x58 / +0x54 texture `n` of a loaded .TEX file (a count, then 0x10-byte entries) through
+ * +0x5C, upper bits or not; -1 if there's none */
+s32 func_001BFFC0(VObject *v, u8 *tex, u32 n) {
+    if (tex == NULL || n >= AT(tex, 0x0, u32)) {
+        return -1;
+    }
+    return VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10 + n * 0x10), 1);
+}
+
+s32 func_001C0020(VObject *v, u8 *tex, u32 n) {
+    if (tex == NULL || n >= AT(tex, 0x0, u32)) {
+        return -1;
+    }
+    return VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10 + n * 0x10), 0);
+}
+
+extern VObject *gFileLoader;
+extern void *func_00100550(u32 size);   /* malloc */
+extern void func_00100470(void *p);     /* free */
+
+/* +0x50 / +0x4C load .TEX file `name` (into a buffer of whole sectors, 64-byte aligned) and
+ * allocate its first texture through +0x5C, upper bits or not; the entry, -1 if none */
+static inline s32 vram_load_tex(VObject *v, const char *name, s32 upper) {
+    VObject *ld = gFileLoader;
+    s32 size = VCALL(ld, 0x30, s32 (*)(VObject *, const char *))(ld, name);
+    u8 *buf = func_00100550((size + 0x7FF) / 0x800 * 0x800 + 0x3F);
+#ifdef HG_NATIVE
+    u8 *tex = (u8 *)((u32)(buf + 0x3F) / 64 * 64);   /* (PC heaps can be above 2 GB) */
+#else
+    u8 *tex = (u8 *)((s32)(buf + 0x3F) / 64 * 64);
+#endif
+    s32 id;
+
+    VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, name, tex);
+    if (tex == NULL || AT(tex, 0x0, u32) == 0) {
+        id = -1;
+    } else {
+        id = VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10), upper);
+    }
+    func_00100470(buf);
+    return id;
+}
+
+s32 func_001C0080(VObject *v, const char *name) {
+    return vram_load_tex(v, name, 1);
+}
+
+s32 func_001C0190(VObject *v, const char *name) {
+    return vram_load_tex(v, name, 0);
+}
+
 /* log2 of a texture size, rounded up (at most 10) */
 static inline u64 Vram_Log2(u32 n) {
     u32 p = 1;
