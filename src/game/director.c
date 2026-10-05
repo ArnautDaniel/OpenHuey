@@ -847,3 +847,61 @@ void func_002CC130(u8 *d, s32 b, s32 rec) {
         }
     }
 }
+
+/* ---- shots by frame: the script's shot i spans frames +0x2C .. +0x2E (+ i x 12), the
+ * script's length +0x0, its shot count +0x2 ---- */
+
+/* +0x1C the shot frame `t` falls in (wrapped into the script's length), -1 if none */
+s32 func_002CC760(u8 *d, s32 t) {
+    u8 *s;
+    s32 i, n;
+
+    if (t < 0) {
+        do {
+            t += AT(AT(d, 0x18, u8 *), 0x0, u16);
+        } while (t < 0);
+    }
+    s = AT(d, 0x18, u8 *);
+    n = AT(s, 0x0, u16);
+    while (n - 1 < t) {
+        t -= n;
+    }
+    if (s == NULL) {
+        return -1;
+    }
+    n = AT(s, 0x2, u16);
+    for (i = 0; i < n; i++) {
+        if (!(t < AT(s, 0x2C + i * 12, u16)) && !(AT(s, 0x2E + i * 12, u16) < t)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* +0x20 how far frame `t` is into its shot, -1 if in none */
+s32 func_002CC6F0(VObject *d, s32 t) {
+    s32 i = VCALL(d, 0x1C, s32 (*)(VObject *, s32))(d, t);
+
+    if (i < 0) {
+        return -1;
+    }
+    return t - AT(AT(d, 0x18, u8 *), 0x2C + i * 12, u16);
+}
+
+/* +0x24 the shot after frame `t`'s (wrapping), -1 if in none */
+s32 func_002CC6A0(VObject *d, s32 t) {
+    s32 i = VCALL(d, 0x1C, s32 (*)(VObject *, s32))(d, t);
+
+    if (i >= 0) {
+        i++;
+        if (!(i < AT(AT(d, 0x18, u8 *), 0x2, u16))) {
+            i = 0;
+        }
+    }
+    return i;
+}
+
+/* +0x84 */
+s32 func_0037E690(void) {
+    return 8;
+}
