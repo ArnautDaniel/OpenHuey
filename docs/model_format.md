@@ -24,8 +24,7 @@ own meshes with glTF morph targets (shape keys in Blender), textures as PNG (a s
 normal parts, one with alpha for the cut-out parts), and the motions as glTF animations named by
 their motion id (`0100`, `HEW_100_0002`, ...). Blender: File > Import > glTF 2.0.
 
-Known gaps: the human characters' hands (morph parts, kind 0) look glitchy - the converter's
-reading of those parts is still wrong somewhere; root motion (special channels -1/-5/-6) is not exported, so motions play in place;
+Known gaps: root motion (special channels -1/-5/-6) is not exported, so motions play in place;
 the playback rate is assumed (30 fps); motion and shape names are only numbers; the `.MRK` files,
 resource 2 (per-bone shadow volumes) and `*_D000.MTN` (door data) are not decoded; `O_T00` uses
 other formats (.MDL/.SHD/.SHP). Textures other than 8-bit indexed (psm 0x13) are not handled
@@ -141,7 +140,7 @@ the tongue). The head mesh has holes where the eyes go, so without these the eye
 | +0x00 | number of shapes (Fiona's face 16, hands 10) |
 | +0x04 | vertex count |
 | +0x08 | UVs (2 x u16 / 32768) |
-| +0x0C | strip flags (u32 per vertex, bit 15 = no triangle) |
+| +0x0C | strip flags: kind 1 (face) u32 per vertex, bit 15 = no triangle; kind 0 (hands) u8 per vertex, 1 = no triangle (VIF S-8 into position w, `func_002B86A0`) |
 | +0x10 | shape table: 8-byte entries (positions, normals), offsets from the entry |
 | +0x14 | bone (the whole part follows it) |
 | +0x18 | texture id |

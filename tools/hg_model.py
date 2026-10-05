@@ -127,7 +127,8 @@ def read_model(d: bytes):
         parts.append(dict(tex=tex, flags=0, verts=verts))
 
     # morphing parts (resource 1: faces, hands): u32 count, 0x40-byte records at +0x10 (offsets
-    # from the record): shapes, vertex count, UVs (2 x u16), strip flags (u32, bit 15 = no
+    # from the record): shapes, vertex count, UVs (2 x u16), strip flags (face: u32, bit 15 = no;
+    # hands: u8, 1 = no
     # triangle), shape table (8-byte entries: positions, normals; offsets from the entry), bone,
     # texture, kind (1: face, blends 4 shapes; 0: blends 2), flags, base point (3 x s32) at +0x30.
     # Shape 0 is the rest shape; the others become morph targets.
@@ -148,7 +149,10 @@ def read_model(d: bytes):
             verts = []
             for k in range(n):
                 uv = struct.unpack_from("<2H", d, b + o_uv + k * 4)
-                fl = 1 if struct.unpack_from("<I", d, b + o_fl + k * 4)[0] & 0x8000 else 0
+                if kind != 0:   # the face: u32 flags, bit 15
+                    fl = 1 if struct.unpack_from("<I", d, b + o_fl + k * 4)[0] & 0x8000 else 0
+                else:           # the hands: u8 flags (VIF S-8 into position w, func_002B86A0)
+                    fl = d[b + o_fl + k] & 1
                 verts.append(dict(pos=shapes[0][0][k], uv=[uv[0] * UNIT, uv[1] * UNIT], nrm=shapes[0][1][k],
                                   joints=[bone], weights=[1.0], flag=fl))
             parts.append(dict(tex=tex, flags=flags, verts=verts, shapes=shapes[1:], name=f"morph_{i}"))

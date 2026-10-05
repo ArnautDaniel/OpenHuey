@@ -4486,7 +4486,7 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
         u8 *rec = r1 + 0x10 + i * 0x40;
         s32 n = AT(rec, 0x4, s32), nshape = AT(rec, 0x0, s32);
         const u16 *uv = (const u16 *)(rec + AT(rec, 0x8, s32));
-        const u32 *fl = (const u32 *)(rec + AT(rec, 0xC, s32));
+        const u8 *fl = rec + AT(rec, 0xC, s32);   /* strip flags: the face's u32 (bit 15), the hands' u8 (1) */
         const s32 *base = (const s32 *)(rec + 0x30);
         s32 sh[4], ns = 0;
         f32 w[4];
@@ -4534,7 +4534,8 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
             v[2] = (base[2] + p[2]) / 4096.0f;
             v[3] = 1.0f;
             sceVu0ApplyMatrix(t, b, v);
-            vtx_set(k, t, uv[k * 2], uv[k * 2 + 1], fl[k] & 0x8000);
+            vtx_set(k, t, uv[k * 2], uv[k * 2 + 1],
+                    AT(rec, 0x1C, s32) != 0 ? AT(fl, k * 4, u32) & 0x8000 : fl[k] & 1);
             for (j = 0; j < 3; j++) {
                 wn[j] = b[0][j] * nn[0] + b[1][j] * nn[1] + b[2][j] * nn[2];
             }
