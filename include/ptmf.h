@@ -126,5 +126,7 @@ static inline s32 ptmf_scall_rff(void *self, const PTMF *p, f32 x, f32 y) {
  * VCALL(obj, 0x14, void (*)(void *, s32))(obj, 1);
  * Used while the surrounding code is still asm; becomes a real C++ virtual call later. */
 #define VCALL(obj, offset, type) ((type)(*(void ***)(obj))[(offset) / 4])
+/* the same through a vtable kept at `vtbl` in the object (a second base class's, or a member's) */
+#define VCALL_AT(obj, vtbl, offset, type) ((type)(*(void ***)((u8 *)(obj) + (vtbl)))[(offset) / 4])
 
 #endif /* PTMF_H */

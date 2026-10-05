@@ -1548,3 +1548,305 @@ void func_0039D120(Scene *g, u8 exit) {
     VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
     AT(g, 0xF6CD20, u8) = exit;
 }
+
+
+/* ---- doors, nearby rooms, the creatures, the save snapshot ---- */
+
+#include "sce/libvu0.h"
+
+extern s32 func_00178450(Progress *p, u32 d);   /* unlock door d */
+extern s32 func_00178500(Progress *p, u32 d);   /* lock door d */
+extern s32 func_001785B0(Progress *p, s32 room, u32 exit);   /* the door there: state bit 0 (u8) */
+extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);   /* passable from that side (u8) */
+extern void *func_00114FA8(u32 size);   /* malloc */
+extern void func_00114FD0(void *p);     /* free */
+extern void *func_002E2330(u32 size, void *place);   /* placement new */
+extern void *func_0038C8D0(void *m);    /* a creature's extra part */
+extern void func_00110878(u8 *out);     /* the date and time (Sony libcdvd clock) */
+extern void func_003851B0(void *sub, u8 *save);
+extern VObject *D_0044F260;
+extern void *D_00469C20[], *D_00469C60[], *D_00474080[], *D_0046FAA0[];
+
+#define SG_ROOM(g) VCALL((VObject *)(g), 0xA4, s32 (*)(Scene *))(g)
+
+/* every door with a side in room `room` unlocked / locked */
+static void doors_of_room(Scene *g, s32 room, s32 (*set)(Progress *, u32)) {
+    VObject *rooms = D_0044E568;
+    u32 d;
+
+    for (d = 0; d < 0x190; d++) {
+        s32 a = VCALL(rooms, 0x6C, s32 (*)(VObject *, u32, s32))(rooms, d & 0xFFFF, 0);
+
+        if (a == -1) {
+            return;
+        }
+        if (a == room || VCALL(rooms, 0x6C, s32 (*)(VObject *, u32, s32))(rooms, d & 0xFFFF, 1) == room) {
+            set(&AT(g, SG_PROGRESS, Progress), d & 0xFFFF);
+        }
+    }
+}
+
+void func_0039C6C0(Scene *g, s32 room) {
+    doors_of_room(g, room, func_00178450);
+}
+
+void func_0039C7A0(Scene *g, s32 room) {
+    doors_of_room(g, room, func_00178500);
+}
+
+/* room `room`'s exits all closed to `kind`'s side (lock bits 4..7 of the door states: kind 0
+   bit 0, 1 bit 1, 2..5 bit 2, others none) */
+s32 func_0039C4C0(Scene *g, s32 room, u32 kind) {
+    VObject *rooms = D_0044E568;
+    u32 side = 0, exit;
+
+    switch (kind & 0xFF) {
+    case 0:
+        side = 1;
+        break;
+    case 1:
+        side = 2;
+        break;
+    case 2: case 3: case 4: case 5:
+        side = 4;
+        break;
+    }
+    for (exit = 0; exit < 8; exit++) {
+        u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, room, exit) & 0xFFFF;
+
+        if (d < 0x190 && !((AT(g, SG_PROGRESS + 0x124 + d * 4, u32) >> 4) & 0xF & side)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* the way through `room`'s exit `exit` is open: no flag, passable from all three sides */
+static s32 exit_open(Scene *g, s32 room, u32 exit) {
+    Progress *p = &AT(g, SG_PROGRESS, Progress);
+
+    return (u8)func_001785B0(p, room, exit) != 1 && (u8)func_00178300(p, room, exit, 0) &&
+           (u8)func_00178300(p, room, exit, 1) && (u8)func_00178300(p, room, exit, 2);
+}
+
+static s32 in_list(const s32 *list, u32 n, s32 room) {
+    u32 i;
+
+    for (i = 0; i < n; i++) {
+        if (list[i] == room) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* +0xF4: the rooms within two open doors of `room` (-1: the current one): `room` first, then
+   each new one; the rest of the 65 entries -1; how many */
+u32 func_0039C040(Scene *g, s32 *list, s32 room) {
+    VObject *rooms = D_0044E568;
+    u32 n = 1, i, j;
+
+    if (list == NULL) {
+        return 0;
+    }
+    if (room == -1) {
+        room = SG_ROOM(g);
+    }
+    list[0] = room;
+    for (i = 0; i < 8; i++) {
+        s32 r = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, room, i & 0xFF);
+
+        if (r == -1 || !exit_open(g, room, i & 0xFF) || in_list(list, n, r)) {
+            continue;
+        }
+        list[n++] = r;
+        for (j = 0; j < 8; j++) {
+            s32 r2 = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, r, j & 0xFF);
+
+            if (r2 != -1 && exit_open(g, r, j & 0xFF) && !in_list(list, n, r2)) {
+                list[n++] = r2;
+            }
+        }
+    }
+    for (i = n; i < 0x41; i++) {
+        list[i] = -1;
+    }
+    return n;
+}
+
+/* a random one of n things: (u8)(n x the random 0..1, +0x1C) */
+static u32 pick(u32 n) {
+    f32 r = VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+
+    return (u8)(u32)((f32)n * r);
+}
+
+/* a random room near `room` (func_0039C040, 2 or more), else -1 */
+s32 func_0039C380(Scene *g, s32 room) {
+    s32 *list = func_00114FA8(0x104);
+    u32 n;
+    s32 r;
+
+    if (list == NULL) {
+        return -1;
+    }
+    n = VCALL((VObject *)g, 0xF4, u32 (*)(Scene *, s32 *, s32))(g, list, room);
+    if (n < 2) {
+        func_00114FD0(list);
+        return -1;
+    }
+    r = list[pick(n)];
+    func_00114FD0(list);
+    return r;
+}
+
+/* the creatures' two classes (0x1600 bytes on the event character base) */
+static void *creature_init(u8 *o, void **vtbl) {
+    AT(o, 0x0, void **) = D_00469C20;
+    AT(o, 0x20, s32) = 0x0FFFFFFF;
+    AT(o, 0x24, s32) = 0x02000000;
+    AT(o, 0x0, void **) = D_00469C60;
+    AT(o, 0x1380, s32) = 0;
+    AT(o, 0x153C, u8) = 0;
+    AT(o, 0x0, void **) = vtbl;
+    return o;
+}
+
+void *func_0039B230(void *o) {
+    return creature_init(o, D_00474080);
+}
+
+void *func_0039B280(void *o) {
+    return creature_init(o, D_0046FAA0);
+}
+
+/* the room's creatures (count +0x105344D, at most 6 - 3 of the other class, flag
+ * +0x105344E bit 7, in slots 7..): each slot not yet placed gets one in a random room next to
+ * the current one (within reach, func_0039C040, and through one of its exits); slots 7..9 also
+ * get a model */
+void func_0039B2D0(Scene *g) {
+    u8 alt = AT(g, 0x105344E, u8) & 0x80;
+    u8 *count = &AT(g, 0x105344D, u8);
+    VObject *placed = (VObject *)((u8 *)g + 0x706480);
+    VObject *rooms = D_0044E568;
+    u8 *pool = D_0044F258;   /* (its pool's vtable at +0x28) */
+    s32 i;
+
+    if (*count >= (alt ? 4 : 7)) {
+        *count = alt ? 3 : 6;
+    }
+    for (i = 0; i < *count; i++) {
+        u8 slot = alt ? i + 7 : i;
+        s32 room, *list;
+        u32 n, m, k, e;
+        u8 *mem;
+        u8 *o;
+
+        if (VCALL_AT(placed, 0x28, 0x10, s32 (*)(VObject *, u8))(placed, slot) != 0) {
+            continue;
+        }
+        room = SG_ROOM(g);
+        list = func_00114FA8(0x104);
+        if (list == NULL) {
+            continue;
+        }
+        n = VCALL((VObject *)g, 0xF4, u32 (*)(Scene *, s32 *, s32))(g, list, room);
+        m = 0;
+        for (k = 0; k < n; k++) {
+            if (list[k] == -1 || list[k] == room) {
+                continue;
+            }
+            for (e = 0; e < 8; e++) {
+                if (list[k] == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, room, e & 0xFF)) {
+                    list[m++] = list[k];
+                }
+            }
+        }
+        if (m == 0) {
+            func_00114FD0(list);
+            continue;
+        }
+        k = pick(m);
+        mem = VCALL_AT(pool, 0x28, 0x8, void *(*)(void *, u32))(pool, 0x1600);
+        o = func_002E2330(0x1600, mem);
+        if (o != NULL) {
+            o = alt ? func_0039B230(o) : func_0039B280(o);
+        }
+        AT(pool, slot * 4, u8 *) = o;
+        AT(AT(pool, slot * 4, u8 *), 0x20, s32) = slot;
+        if (slot >= 7 && slot < 10) {
+            void *mm = func_002DC6E0(0x890, VCALL_AT(pool, 0x28, 0xC, void *(*)(void *))(pool));
+
+            if (mm != NULL) {
+                mm = func_0038C8D0(mm);
+            }
+            AT(AT(pool, slot * 4, u8 *), 0xF0, void *) = mm;
+        }
+        if (mem != NULL) {
+            VCALL((VObject *)mem, 0xC, void (*)(void *))(mem);
+            AT(mem, 0x28, u8) = 1;
+            VCALL_AT(placed, 0x28, 0x14, void (*)(VObject *, s32, s32, u8, s32))(placed, list[k], -1, slot, 0);
+        }
+        func_00114FD0(list);
+    }
+}
+
+/* SubScreen +0x40 at the start: flag +0x73EEE0 */
+void func_0039BAC0(Scene *g) {
+    AT(g, 0x73EEE0, u8) = 1;
+}
+
+/* save the game into the resident data (D_0044E978): save slot `slot`'s header (+0x70, 0x18
+ * each: room, the sub screen's +0x30, a flag of +0x70, the date, +0x1004..+0x1007) and the
+ * snapshot +0x190 (room, entry, Fiona's triangle / +0xE8 / +0xEC / position / heading, the six
+ * characters' kinds and activity, the progress flags +0x50, the rooms' +0x1010 (13 words), the
+ * sub screen's +0x18F0 and its own part (func_003851B0)), after the partner / stalker / placed
+ * things / D_0044F260 save their state */
+void func_0039B800(Scene *g, u32 slot) {
+    u8 *rd = D_0044E978;
+    u8 *h = rd + 0x70 + (slot & 0xFF) * 0x18;
+    u8 *s = rd + 0x190;
+    VObject *sub = (VObject *)((u8 *)g + 0xF87240);
+    VObject *placed = (VObject *)((u8 *)g + 0x706480);
+    const s32 *w;
+    s32 i;
+
+    AT(h, 0x4, s32) = SG_ROOM(g);
+    AT(h, 0x9, u8) = VCALL(sub, 0x30, u8 (*)(VObject *))(sub);
+    AT(h, 0xA, u8) = (AT(g, 0x70, u32) & 0x8000) != 0;
+    func_00110878(h + 0xB);
+    AT(h, 0x13, u8) = AT(g, 0x1004, u8);
+    AT(h, 0x14, u8) = AT(g, 0x1005, u8);
+    AT(h, 0x15, u8) = AT(g, 0x1006, u8);
+    AT(h, 0x16, u8) = AT(g, 0x1007, u8);
+    AT(s, 0x4, s32) = SG_ROOM(g);
+    AT(s, 0x8, s32) = AT(g, 0x73F240 + (AT(g, 0xF6C1B0, s32) == 0) * 4, s32);
+    AT(s, 0xC, s32) = AT(gCharPlayer, 0x34, s32);
+    AT(s, 0x10, s32) = AT(gCharPlayer, 0xE8, s32);
+    AT(s, 0x14, s32) = AT(gCharPlayer, 0xEC, s32);
+    for (i = 0; i < 6; i++) {
+        if (gCharacters[i] != NULL) {
+            AT(s, 0x18 + i, u8) = AT(gCharacters[i], 0x153C, u8);
+            AT(s, 0x1E + i, u8) = AT(gCharacters[i], 0x28, u8);
+        } else {
+            AT(s, 0x18 + i, u8) = 0xFF;
+            AT(s, 0x1E + i, u8) = 0;
+        }
+    }
+    sceVu0CopyVector((f32 *)(s + 0x30), (f32 *)(gCharPlayer + 0x10));
+    sceVu0CopyVector((f32 *)(s + 0x40), (f32 *)(gCharPlayer + 0x50));
+    VCALL((VObject *)gCharPartner, 0x6C, void (*)(void *))(gCharPartner);
+    if (D_0044F808 != NULL) {
+        VCALL((VObject *)D_0044F808, 0x6C, void (*)(void *))(D_0044F808);
+    }
+    VCALL_AT(placed, 0x28, 0x1C, void (*)(VObject *))(placed);
+    VCALL(D_0044F260, 0x18, void (*)(VObject *))(D_0044F260);
+    Progress_ClearFlag(&AT(g, SG_PROGRESS, Progress), 0x18);
+    func_002A7C70((u8 *)g + 0x48, s + 0x50);
+    w = VCALL(D_0044E568, 0x7C, const s32 *(*)(VObject *))(D_0044E568);
+    for (i = 0; i < 13; i++) {
+        AT(s, 0x1010 + i * 4, s32) = w[i];
+    }
+    AT(s, 0x18F0, u8) = VCALL(sub, 0x30, u8 (*)(VObject *))(sub);
+    func_003851B0(sub, s);
+}
