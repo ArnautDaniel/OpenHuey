@@ -656,3 +656,100 @@ void func_002DF180(Character *c) {
     AT(k, 0x1C, s32) = 0;
     ptmf_set(&c->a.state, &D_00416790);
 }
+
+extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* u8: the way through is open */
+extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);
+extern s32 func_001272B0(Character *c, f32 speed);
+extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
+
+/* travelling (unless in an event, flag 0x18): off screen the distance to the next door
+ * (+0x14C4) runs down by its speed (2/3 of it with company, +0x2A); at a door (+0xB) it walks
+ * the path at half speed. On arriving at the door (+0x14C0): if the way through is open
+ * (func_00178980) and the door isn't shut (Progress_CurRoomFlag), through it - into the room
+ * being played at the exit's spot, facing in, noting the doors whose event spot it stands on
+ * (+0x8A) - else the next leg's distance; a closed way is marked (+0x148C bit) and the trip
+ * ends (+0x86) */
+void func_002DFA50(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    VObject *rooms;
+    u8 arrived = 0;
+    u32 exit;
+
+    if (Progress_TestFlag(p, 0x18) == 0) {
+        if (AT(k, 0xB, u8) != 1) {
+            f32 *left = &AT(&c->unk14C4, 0, f32);
+
+            if (AT(k, 0x2A, u8) == 0) {
+                *left = *left - AT(k, 0x0, f32);
+            } else {
+                *left = *left - AT(k, 0x0, f32) / 1.5f;
+            }
+            if (*left < 0.0f) {
+                *left = 0.0f;
+                arrived = 1;
+                AT(k, 0x2A, u8) = 0;
+            }
+        } else {
+            func_001272B0(c, AT(k, 0x0, f32) / 2.0f);
+            if (!(c->unk128 < c->unk124)) {
+                arrived = 1;
+            }
+        }
+    }
+    if (arrived != 1) {
+        return;
+    }
+    rooms = D_0044E568;
+    exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room) & 0xFF;
+    if (!(func_00178980(p, c->a.room, exit) & 0xFF)) {
+        c->unk148C[c->unk14C0 >> 5] |= 1 << (c->unk14C0 & 0x1F);
+        AT(k, 0xB, u8) = 0;
+        c->a.navTri = NAV_NONE;
+        c->unk1388 = c->unk1384;
+        AT(k, 0x86, u8) = 1;
+        return;
+    }
+    AT(k, 0x9, u8) = exit;
+    if (exit == 0xFF) {
+        AT(k, 0xB, u8) = 0;
+        c->a.navTri = NAV_NONE;
+        return;
+    }
+    if ((Progress_CurRoomFlag(p, c->a.room, exit) & 0xFF) == 1) {
+        return;
+    }
+    AT(k, 0xB, u8) = 0;
+    func_002DF760(c, exit);
+    if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        f32 at[4] __attribute__((aligned(16)));
+        f32 in[4] __attribute__((aligned(16)));
+        f32 d[4] __attribute__((aligned(16)));
+        f32 yaw;
+        u32 tri, i;
+        s32 cur;
+        VObject *ev_mgr;
+
+        tri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), at);
+        VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), in);
+        sceVu0SubVector(d, in, at);
+        yaw = func_0031C5C0(d[0], d[2]);
+        VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
+        cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+        ev_mgr = D_0044E4D0;
+        for (i = 0; i < 8; i++) {
+            u32 door;
+
+            AT(k, 0x8A + i * 2, u16) = 0;
+            door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, cur, i & 0xFF) & 0xFFFF;
+            if (cur == c->a.room && door != 0xFFFF && c->a.disabled == 0 &&
+                VCALL(ev_mgr, 0x10, s32 (*)(VObject *, f32 *, u32, s32))(ev_mgr, c->a.pos, door, -1) != 0) {
+                AT(k, 0x8A + i * 2, u16) |= (1 << *(s32 *)&c->a.slot) & 0xFFFF;
+            }
+        }
+    } else {
+        c->a.navTri = NAV_NONE;
+        AT(&c->unk14C4, 0, f32) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room);
+        c->unk1388 = c->unk1384;
+    }
+}
