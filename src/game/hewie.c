@@ -6612,6 +6612,25 @@ void func_0014C210(Hewie *h) {
     func_00141C00(h, 0);
 }
 
+/* the last stretch to `at`, straight (no path left): turning to it as he runs, head held level
+ * toward it, moving by his root motion unless he already moved this frame */
+static void run_straight(Hewie *h, const f32 *at) {
+    f32 a = func_001244D0(&h->c.a, at);
+    f32 step = run_turn(h);
+
+    turn_toward(h, a, step);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    if (HW(h, 0xF3558, u8) == 0) {
+        slide_root(h);
+        h->c.unk124 = h->c.unk128;
+    }
+}
+
 /* ---- running from the pursuer ---- */
 
 extern const s32 D_003B1C00[8];   /* wait after fleeing, by trust */
@@ -6627,7 +6646,6 @@ void func_0014C480(Hewie *h) {
     f32 door[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     f32 c[4] __attribute__((aligned(16)));
-    f32 a, step;
     s32 there;
 
     if (!in_his_room(h, gCharPursuer)) {
@@ -6650,19 +6668,7 @@ void func_0014C480(Hewie *h) {
             func_00141C00(h, 8);
         }
     } else {
-        a = func_001244D0(&h->c.a, &HW(h, 0xF36E0, f32));
-        step = run_turn(h);
-        turn_toward(h, a, step);
-        if (HW(h, 0xF3604, s32) != 8) {
-            HW(h, 0xF3604, s32) = 8;
-            HW(h, 0xF3608, s32) = 10;
-        }
-        HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
-        if (HW(h, 0xF3558, u8) == 0) {
-            slide_root(h);
-            h->c.unk124 = h->c.unk128;
-        }
+        run_straight(h, &HW(h, 0xF36E0, f32));
     }
     if (!(func_00177BF0(p, (u8)h->c.unk100, (u8)h->c.a.slot) & 0xFF & 1)) {
         return;
@@ -6776,5 +6782,51 @@ void func_0014CF40(Hewie *h) {
             func_002DDED0(h->c.motion, 4, -1);
         }
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+    }
+}
+
+/* ---- getting to the spot before the pursuer ---- */
+
+extern const PTMF D_003B1BB8;
+
+/* while the pursuer hunts in his room (else the default action): run for the spot +0x110 (pose
+ * 9; along the planned path, pose 8 when the stride fails; straight once on its triangle).
+ * Within 10 of it: behaviour D_003B1BB8. No path: the default action */
+void func_0014D490(Hewie *h) {
+    Progress *p;
+    s32 there;
+    f32 d;
+
+    if (!in_his_room(h, gCharPursuer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    p = gProgress;
+    if (!(u8)Progress_TestFlag(p, 9) && !(u8)Progress_TestFlag(p, 0xA)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    there = h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE);
+    if (!there) {
+        if (h->c.unk128 >= h->c.unk124 && func_0013EE40(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+        d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
+            gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
+    } else {
+        d = func_00124490(&h->c.a, h->c.unk110);
+    }
+    if (d < 10.0f) {
+        Hewie_SetBehaviour(h, &D_003B1BB8);
+        return;
+    }
+    func_00141C00(h, 9);
+    if (!there) {
+        if (!(u8)func_00139DE0(h)) {
+            func_00141C00(h, 8);
+        }
+    } else {
+        run_straight(h, h->c.unk110);
     }
 }
