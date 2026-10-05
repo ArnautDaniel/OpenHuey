@@ -1482,3 +1482,24 @@ s32 func_002B47C0(void) {   /* progress flag 0x651 */
 s32 func_002B4970(void) {   /* progress flag 0x650 */
     return item238_sound(0x10000);
 }
+
+extern void *D_0046F5F0[], *D_0046EA40[], *D_00476BF0[];
+
+s32 func_002AD550(void) {   /* room effect 0 (D_0046F5F0) */
+    room_effect_new(D_0044E4C0, 0, D_0046F5F0);
+    return 1;
+}
+
+s32 func_002AF730(void) {   /* room effect 1 (D_0046EA40) */
+    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    return 1;
+}
+
+static inline void effect476bf0_init(void **o) {
+    o[0] = D_00476BF0;
+}
+
+s32 func_002B4BE0(void) {   /* a scene effect (D_00476BF0, 0x6E0 bytes) */
+    Effect_New(D_0044E578, 0x6E0, effect476bf0_init);
+    return 1;
+}
