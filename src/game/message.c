@@ -87,9 +87,74 @@ static inline s32 MsgSlot_Upload(MsgSlot *s, u32 *tex, s32 first) {
 s32 func_0026B690(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 0); }
 s32 func_0026B570(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 1); }
 
+#ifdef HG_NATIVE
+#include <stdlib.h>
+#include <string.h>
+
+/* PC: the PS2 only needs the .TEX file until its textures are in VRAM, and the buffer it was
+ * loaded into is then reused (a character's textures go bad once the next file loads). The PC
+ * renderer decodes the textures from the file when it draws, so the slot keeps its own copy. */
+static u32 *sTexCopy[64];
+
+static u32 tex_file_size(const u32 *tex) {
+    u32 n = tex[0], end = 0x10 + n * 0x10, i;
+
+    for (i = 0; i < n; i++) {
+        const u8 *e = (const u8 *)tex + 0x10 + i * 0x10;
+        u32 e_end = 0x10 + i * 0x10 + AT(e, 0xC, u32) + (AT(e, 0x8, u16) + AT(e, 0xA, u16)) * 16;
+
+        if (e_end > end) {
+            end = e_end;
+        }
+    }
+    return end;
+}
+
+static void tex_copy_free(MsgSlot *s) {
+    s32 k;
+
+    for (k = 0; k < 64; k++) {
+        if (sTexCopy[k] != NULL && sTexCopy[k] == s->tex) {
+            free(sTexCopy[k]);
+            sTexCopy[k] = NULL;
+            s->tex = NULL;
+        }
+    }
+}
+
+static u32 *tex_copy(MsgSlot *s, u32 *tex) {
+    u32 size;
+    u32 *c;
+    s32 k;
+
+    tex_copy_free(s);
+    if (tex == NULL || tex[0] == 0 || tex[0] > 64) {
+        return tex;
+    }
+    size = tex_file_size(tex);
+    c = malloc(size);
+    if (c == NULL) {
+        return tex;
+    }
+    memcpy(c, tex, size);
+    for (k = 0; k < 64; k++) {
+        if (sTexCopy[k] == NULL) {
+            sTexCopy[k] = c;
+            return c;
+        }
+    }
+    free(c);
+    return tex;
+}
+#endif
+
 /* +0x8 set slot `i`'s textures (a .TEX file); 1 if done */
 s32 func_0026BB00(u8 *m, s32 i, u32 *tex) {
     MsgSlot *s = MSG_SLOT(m, i);
+
+#ifdef HG_NATIVE
+    tex = tex_copy(s, tex);
+#endif
 
     s->kind = D_003EA970[(u8)i * 3];
     switch (s->kind) {
@@ -125,6 +190,12 @@ void func_0026B9C0(u8 *m, s32 i) {
     MsgSlot *s = MSG_SLOT(m, i);
     VObject *v;
     u32 j;
+
+#ifdef HG_NATIVE
+    if (s->kind != 0) {
+        tex_copy_free(s);
+    }
+#endif
 
     switch (s->kind) {
     case 1:
