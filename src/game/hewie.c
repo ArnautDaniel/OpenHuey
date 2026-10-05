@@ -9479,3 +9479,94 @@ void func_0015DF40(Hewie *h) {
         }
     }
 }
+
+/* ---- barking at the spot ---- */
+
+/* bark at where his target is (func_0013EFB0; no target in target mode: action 6; none: action
+ * 8): turning to it, head level toward it; facing it within 60 degrees, standing: the noise
+ * (unless progress flags 0x13 / 0x2B) and a bark, +0xF36B4 times, then the default action;
+ * within 10 of it: remember it (+0xF36E0), action 0x57 (0xA). Standing between barks */
+void func_0015E3A0(Hewie *h) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 a, step, left;
+
+    if (HW(h, 0xF3544, Character *) == NULL && HW(h, 0xF366D, u8) != 0) {
+        hewie_want(h, 6, 0);
+        func_00141C00(h, 0);
+        return;
+    }
+    if (func_0013EFB0(h, at) == -1) {
+        hewie_want(h, 8, 0);
+        func_00141C00(h, 0);
+        return;
+    }
+    if (func_00124490(&h->c.a, at) < 10.0f) {
+        sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
+        hewie_want(h, 0x57, 0xA);
+        return;
+    }
+    a = func_001244D0(&h->c.a, at);
+    if (HW(h, 0xF3604, s32) != 8) {
+        HW(h, 0xF3604, s32) = 8;
+        HW(h, 0xF3608, s32) = 10;
+    }
+    HW(h, 0xF3614, f32) = 0.0f;
+    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+        func_00141C00(h, 7);
+        return;
+    }
+    if (func_00140CD0(h, 0) == 0) {
+        Progress *p = gProgress;
+
+        if (((u8)Progress_TestFlag(p, 0x13) | (u8)Progress_TestFlag(p, 0x2B)) == 0) {
+            Progress_GetVar(p, 0x27);
+            func_00178070(p, AT(h, 0x20, u8), 4, 6, 0, 0, 0.0f);
+        }
+        func_001431F0(h);
+        HW(h, 0xF36B4, s32) -= 1;
+        if (HW(h, 0xF36B4, s32) == 0) {
+            hewie_want(h, 0, 0);
+            return;
+        }
+    }
+    func_00141C00(h, 0);
+}
+
+/* ---- waiting by Fiona ---- */
+
+/* turn to Fiona (in his room; else the default action) and, facing her within 60 degrees and
+ * standing, wait in the stance (animation 4, 5 in mood 2); within 10 of her: action 0x55 (9) */
+void func_0015E880(Hewie *h) {
+    f32 a, step, left;
+
+    if (!in_his_room(h, gCharPlayer)) {
+        hewie_want(h, 0, 0);
+        return;
+    }
+    if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
+        hewie_want(h, 0x55, 9);
+        return;
+    }
+    a = func_001244D0(&h->c.a, gCharPlayer->a.pos);
+    step = run_turn(h);
+    left = turn_toward(h, a, step);
+    if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
+        func_00141C00(h, 7);
+        return;
+    }
+    if (func_00140CD0(h, 0) == 0) {
+        s32 anim = MOTION_ANIM(h->c.motion);
+
+        if (HW(h, 0xF35C0, s32) == 2) {
+            if (anim != 5) {
+                func_002DDED0(h->c.motion, 5, -1);
+            }
+        } else if (anim != 4) {
+            func_002DDED0(h->c.motion, 4, -1);
+        }
+    }
+    VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
+}
