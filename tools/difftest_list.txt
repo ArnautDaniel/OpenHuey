@@ -4605,3 +4605,5 @@ src/game/creature.c func_002DE490 --pre=a0=0..0 --runs=10
 src/game/creature.c func_002E19A0 --pre=a0=0x0B000000..0x0B000000 --runs=100
 src/game/creature.c func_002E0BF0 --pre=a0=0x0B000000..0x0B000000 --runs=50
 src/game/creature.c func_002E1340 --pre=a0=0x0B000000..0x0B000000 --runs=50
+src/game/creature.c func_002DE8E0 --pre=a0=0x0B000000..0x0B000000 --pre=a4=0x20..0x25 --pre=a5=0..20 --pre=a6=-1..2 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B70088A:u8=0..1 --pre=@0x0B7008AE:u8=0..1 --pre=@0x0B70089C=bytes:????????????01 --runs=400
+src/game/creature.c func_002DEA80 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1384=0..3 --pre=@0x44F808=0x0B910000..0x0B910000 --pre=@0x44F80C=0..0 --pre=@0x44F810=0x0B920000..0x0B920000 --pre=@0x44F814=0x0B930000..0x0B930000 --pre=@0x0B910028=bytes:01?? --pre=@0x0B920028=bytes:0100 --pre=@0x0B930028=bytes:0001 --pre=@0x0B910030=0..1 --pre=@0x0B920030=0..1 --pre=@0x0B930030=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B300030=0..1 --stub-ret=-1 --stub-ret=0 --stub-ret=5 --runs=400
