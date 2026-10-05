@@ -4278,3 +4278,54 @@ f32 func_0013F220(Hewie *h, Character *c) {
     func_00114FD0(pts);
     return len;
 }
+
+/* ---- overlay animations by his animation and mood ---- */
+
+/* per main animation, the overlay modes for each mood (+0xF35C0 0..3): head (+0xF3640, for
+ * func_0013FC70), ears (+0xF3648, func_0013FA40) and tail (+0xF3654, func_0013F470). -1 ends */
+typedef struct HewieOverlays {
+    s32 anim;
+    s16 head[4];
+    s16 ears[4];
+    s16 tail[4];
+} HewieOverlays;
+
+extern const HewieOverlays D_003B13F0[];   /* calm */
+extern const HewieOverlays D_003B1580[];   /* tense */
+extern void func_0013F470(Hewie *h);
+
+/* set his overlay modes for his animation and mood, restarting a mode's timers when it changes
+ * to 3 (head), 0 (ears) or 4 / 6 (tail), and run the overlays */
+void func_0013FDE0(Hewie *h) {
+    const HewieOverlays *e = !(u8)func_00177620(gProgress) ? D_003B13F0 : D_003B1580;
+    s32 head = HW(h, 0xF3640, s32), ears = HW(h, 0xF3648, s32), tail = HW(h, 0xF3654, s32);
+    s32 m;
+
+    for (; e->anim != -1; e++) {
+        if (e->anim == MOTION_ANIM(h->c.motion)) {
+            m = HW(h, 0xF35C0, s32);
+            if ((u32)m < 4) {
+                HW(h, 0xF3640, s32) = e->head[m];
+                HW(h, 0xF3648, s32) = e->ears[m];
+                HW(h, 0xF3654, s32) = e->tail[m];
+            }
+            break;
+        }
+    }
+    if (e->anim == -1) {
+        return;
+    }
+    if (HW(h, 0xF3640, s32) != head && HW(h, 0xF3640, s32) == 3) {
+        HW(h, 0xF3644, s32) = 0;
+    }
+    if (HW(h, 0xF3648, s32) != ears && HW(h, 0xF3648, s32) == 0) {
+        HW(h, 0xF364C, s32) = 0;
+    }
+    if (HW(h, 0xF3654, s32) != tail && (HW(h, 0xF3654, s32) == 4 || HW(h, 0xF3654, s32) == 6)) {
+        HW(h, 0xF3658, s32) = 0;
+        HW(h, 0xF365C, s32) = 0;
+    }
+    func_0013FC70(h);
+    func_0013FA40(h);
+    func_0013F470(h);
+}
