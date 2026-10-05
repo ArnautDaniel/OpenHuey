@@ -594,3 +594,65 @@ void func_002DEFA0(Character *c) {
     AT(k, 0x14, f32) += AT(k, 0x18, f32);
     AT(k, 0x18, f32) += AT(k, 0x1C, f32);
 }
+
+#include "ptmf.h"
+#include "effectmgr.h"
+
+extern s32 func_00125D80(Character *c);
+extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);
+extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
+extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
+extern void *D_00472370[];
+extern const PTMF D_00416790;   /* vanishing */
+
+/* its vanishing effect (0x4A0 bytes, vtable D_00472370; its quad drawer at +0x370) */
+static void vanish_init(void **o) {
+    o[0] = D_00472370;
+    o[0x370 / 4] = D_00469D00;
+    ((s32 *)o)[0x374 / 4] = -1;
+    o[0x370 / 4] = D_0046FC30;
+}
+
+/* seen: once it has come (+0x2E) and Fiona isn't hidden (+0x2D) or busy (func_00125D80) and
+ * sees it (func_001241F0), a noise (kind 0xD) is made, it vanishes in a glow (12 above it, red
+ * for kinds 0x12.. but 0x24, else blue) with a sound (0x8B) when not in an event, and its
+ * vanishing state starts (+0x37, +0x29 set, the motion +0x18 / +0x1C stopped) */
+void func_002DF180(Character *c) {
+    u8 *k = CR(c);
+    u8 *mgr;
+    s32 slot;
+    struct {
+        f32 pos[4];
+        u8 rgba[4];
+    } fx __attribute__((aligned(16)));
+
+    if (AT(c, 0x1569, u8) != 0 || AT(k, 0x2E, u8) == 0 || gCharPlayer->a.unk2D == 1 ||
+        (func_00125D80(gCharPlayer) & 0xFF) || (func_001241F0(&c->a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) != 1) {
+        return;
+    }
+    func_00177FA0(gProgress, c->a.pos, 1, 0xD, 0, 0, 0.0f);
+    mgr = D_0044E578;
+    slot = Effect_New(mgr, 0x4A0, vanish_init);
+    sceVu0CopyVector(fx.pos, c->a.pos);
+    fx.pos[1] = 12.0f + c->a.pos[1] + AT(k, 0x14, f32);
+    if (AT(k, 0x31, u8) >= 0x12 && AT(k, 0x31, u8) != 0x24) {
+        fx.rgba[0] = 0x80;
+        fx.rgba[1] = 0x30;
+        fx.rgba[3] = 0x60;
+        fx.rgba[2] = 0x30;
+    } else {
+        fx.rgba[2] = 0x80;
+        fx.rgba[0] = 0x30;
+        fx.rgba[3] = 0x60;
+        fx.rgba[1] = 0x30;
+    }
+    func_002D6090(mgr, slot, &fx);
+    if (gCharPlayer->unkE2 == 0 && c->a.disabled == 0 && VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0) {
+        func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+    }
+    AT(k, 0x37, u8) = 1;
+    AT(k, 0x29, u8) = 1;
+    AT(k, 0x18, s32) = 0;
+    AT(k, 0x1C, s32) = 0;
+    ptmf_set(&c->a.state, &D_00416790);
+}
