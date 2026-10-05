@@ -157,3 +157,36 @@ u8 func_00171160(Progress *p, u32 id) {
     func_0016D180(p, 2);
     return 1;
 }
+
+/* the character in `slot` gets its data buffers: their sizes (vtable +0xFC, seven) as one
+ * block from the scene heap (+0x166C; +0x1668 set), split in order to +0x1670, +0x1678,
+ * +0x1674, (none for the fourth, though its size is counted), +0x167C, +0x1680, +0x1684; an
+ * empty one gets no pointer (0) */
+void func_0016D180(Progress *p, s32 slot) {
+    static const u16 sAt[7] = { 0x1670, 0x1678, 0x1674, 0, 0x167C, 0x1680, 0x1684 };
+    u8 *c = gCharacters[slot];
+    const u32 *size = VCALL(c, 0xFC, const u32 *(*)(void *))(c);
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    u32 total = 0;
+    u8 *at;
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        total += size[i];
+    }
+    AT(c, 0x166C, u8 *) = VCALL(heap, 0x10, u8 *(*)(VObject *, u32))(heap, total);
+    AT(c, 0x1668, u8) = 1;
+    for (i = 0; i < 7; i++) {
+        if (sAt[i] != 0) {
+            AT(c, sAt[i], u8 *) = NULL;
+        }
+    }
+    AT(c, 0x1688, u8 *) = NULL;
+    at = AT(c, 0x166C, u8 *);
+    for (i = 0; i < 7; i++) {
+        if (sAt[i] != 0 && size[i] != 0) {
+            AT(c, sAt[i], u8 *) = at;
+            at += size[i];
+        }
+    }
+}

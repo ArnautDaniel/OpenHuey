@@ -4,6 +4,7 @@
 #include "game.h"
 #include "progress.h"
 #include "ptmf.h"
+#include "sce/libvu0.h"
 
 extern VObject *D_0044E568; /* the rooms (+0x10: the current room) */
 
@@ -1372,3 +1373,283 @@ s32 func_00178980(Progress *p, s32 room, s32 exit) {
 }
 
 
+
+
+/* ---- the characters by slot (gCharacters, 6) ---- */
+
+extern u8 *gCharPartner, *gCharPursuer;
+extern void func_0029F2C0(void *c);   /* a character's quick unload (keeps its model) */
+
+#define SLOT_CHAR(slot) ((slot) < 6 ? gCharacters[slot] : NULL)
+
+/* character `slot` active (+0x28) */
+u8 func_00177160(Progress *p, u32 slot) {
+    VObject *c = SLOT_CHAR(slot);
+
+    return c != NULL ? AT(c, 0x28, u8) : 0;
+}
+
+/* character `slot` still loading */
+s32 func_00177260(Progress *p, u32 slot) {
+    VObject *c = SLOT_CHAR(slot);
+
+    return c != NULL ? func_00124D40(c) : 0;
+}
+
+/* character `slot`: vtable +0x14 / +0x1C / +0xC */
+void func_001772B0(Progress *p, u32 slot) {
+    VObject *c = SLOT_CHAR(slot);
+
+    if (c != NULL) {
+        VCALL(c, 0x14, void (*)(VObject *))(c);
+    }
+}
+
+void func_00177300(Progress *p, u32 slot) {
+    VObject *c = SLOT_CHAR(slot);
+
+    if (c != NULL) {
+        VCALL(c, 0x1C, void (*)(VObject *))(c);
+    }
+}
+
+void func_00177350(Progress *p, u32 slot) {
+    VObject *c = SLOT_CHAR(slot);
+
+    if (c != NULL) {
+        VCALL(c, 0xC, void (*)(VObject *))(c);
+    }
+}
+
+/* remove character `slot`: shut down (vtable +0x18, or the quick way when `quick`), +0x20,
+ * +0x10, forget it as player / partner / pursuer; its model back to the scene heap; a loaded
+ * character (2..5) also gives back its data buffers (+0x166C) and is destroyed. 1 when there
+ * was one */
+s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
+    VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
+    VObject *c = SLOT_CHAR(slot);
+
+    if (c == NULL) {
+        return 0;
+    }
+    if (quick) {
+        func_0029F2C0(c);
+    } else {
+        VCALL(gCharacters[slot], 0x18, void (*)(VObject *))(gCharacters[slot]);
+    }
+    VCALL(gCharacters[slot], 0x20, void (*)(VObject *))(gCharacters[slot]);
+    VCALL(gCharacters[slot], 0x10, void (*)(VObject *))(gCharacters[slot]);
+    switch (slot) {
+    case 0:
+        gCharPlayer = NULL;
+        break;
+    case 1:
+        gCharPartner = NULL;
+        break;
+    case 2:
+        gCharPursuer = NULL;
+        break;
+    }
+    c = gCharacters[slot];
+    if (slot >= 2) {
+        if (AT(c, 0x1668, u8) != 0) {
+            VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0x166C, void *));
+            AT(c, 0x1668, u8) = 0;
+        }
+        VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0xF0, void *));
+        AT(c, 0xF0, void *) = NULL;
+        VCALL(c, 0x8, void (*)(VObject *, s32))(c, 1);
+        VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, c);
+    } else {
+        VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0xF0, void *));
+        AT(c, 0xF0, void *) = NULL;
+    }
+    gCharacters[slot] = NULL;
+    return 1;
+}
+
+/* remove all the characters (the slow way) */
+void func_001766D0(Progress *p) {
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        func_001773A0(p, i, 0);
+    }
+}
+
+/* character `a` near character `b` (both active and not hidden (+0x29 = 1), a != b) at `pos`:
+ * pos's height within b's (+0x14 .. +0xCC higher, widened by `margin`) and its distance across
+ * within b's radius (+0xC8) + margin */
+s32 func_00177DB0(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
+    f32 d[4] __attribute__((aligned(16)));
+    VObject *cb;
+    f32 y;
+
+    a &= 0xFF;
+    b &= 0xFF;
+    if (a == b || gCharacters[a] == NULL || AT(gCharacters[a], 0x28, u8) == 0 || AT(gCharacters[a], 0x29, u8) == 1
+        || gCharacters[b] == NULL || AT(gCharacters[b], 0x28, u8) == 0 || AT(gCharacters[b], 0x29, u8) == 1) {
+        return 0;
+    }
+    cb = gCharacters[b];
+    y = pos[1];
+    if (y <= AT(cb, 0x14, f32) - margin || !(y < margin + (AT(cb, 0x14, f32) + AT(cb, 0xCC, f32)))) {
+        return 0;
+    }
+    sceVu0SubVector(d, (f32 *)((u8 *)cb + 0x10), (f32 *)pos);
+    return __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0])) < margin + AT(cb, 0xC8, f32);
+}
+
+extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
+
+/* vtable +0x30 at bone `bone` of character `slot`'s model */
+void func_00177F00(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
+    f32 at[4] __attribute__((aligned(16)));
+    u8 *model = AT(gCharacters[slot & 0xFF], 0xF0, u8 *);
+
+    sceVu0CopyVector(at, func_0017CE80(AT(model, 0x810, void *), bone) + 12);
+    VCALL(p, 0x30, void (*)(Progress *, u32, f32 *, s32, f32))(p, slot, at, arg, f);
+}
+
+/* the three noise slots (+0x1050, 0x20 each) picked by the bits of `which`: a free one gets
+   `pos`, `kind`, two values and `f` */
+void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f) {
+    u8 *e = (u8 *)p;
+    u32 i;
+
+    for (i = 0; i < 3; i++, e += 0x20) {
+        if ((which & 0xFF & (1 << i)) && AT(e, 0x1050, u8) == 0) {
+            sceVu0CopyVector((f32 *)(e + 0x1060), (f32 *)pos);
+            AT(e, 0x1050, u8) = kind;
+            AT(e, 0x1052, s16) = a;
+            AT(e, 0x1054, s16) = b;
+            AT(e, 0x1058, f32) = f;
+        }
+    }
+}
+
+/* the door being used (the rooms' +0x10), unless the rooms say otherwise (+0x44 bit 0): when
+   not unlocked (bit 3) but bit 0 set, set bit 2 for it and clear bit 0; 1 if it did */
+s32 func_00178660(Progress *p) {
+    VObject *rooms = D_0044E568;
+    u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *))(rooms) & 0xFFFF;
+    u32 *s;
+
+    if ((u8)VCALL(rooms, 0x44, s32 (*)(VObject *, u32))(rooms, d) & 1) {
+        return 0;
+    }
+    s = &DOOR_STATE(p, d);
+    if ((*s >> 3) & 1 || !(*s & 1)) {
+        return 0;
+    }
+    *s = (*s & ~4) | 4;
+    *s &= ~1;
+    return 1;
+}
+
+extern s32 func_00183190(void *c, s32 on);
+
+/* Fiona: flag +0x1AD710 on, +0x1AD714 cleared, then func_00183190(1) (u8 result) */
+s32 func_00176D80(Progress *p) {
+    u8 *f = (u8 *)gCharPlayer;
+
+    if (f == NULL) {
+        return 0;
+    }
+    AT(f, 0x1AD710, u8) = 1;
+    AT(f, 0x1AD714, s32) = 0;
+    return func_00183190(f, 1) != 0;
+}
+
+extern void func_0026BC00(void *o);
+extern void func_002E2920(void *o);
+
+/* the parts at +0x6FC218 (func_0026BC00), +0x6FC340 (vtable +0x24) and +0x706440 */
+void func_00176720(Progress *p) {
+    VObject *o = (VObject *)((u8 *)p + 0x6FC340);
+
+    func_0026BC00((u8 *)p + 0x6FC218);
+    VCALL(o, 0x24, void (*)(VObject *))(o);
+    func_002E2920((u8 *)p + 0x706440);
+}
+
+/* ---- movies ---- */
+
+extern void *D_0044E960;   /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *D_0044E958;   /* the movie playing */
+extern void *__nw__FUiPv(u32 size, void *p);
+extern void *func_002B70D0(void *movie);
+extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
+extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[],
+    *D_00470E80[];
+
+/* play movie `path` as scene 0, as movie class `kind` (1..6; others the plain one): 1 if it
+   started */
+s32 func_001768B0(Progress *p, const char *path, u32 kind) {
+    static void **const sClass[7] = { D_00470E80, D_0046EAB0, D_0046EAE0, D_0046EB10, D_0046EC30, D_0046EC90,
+                                      D_00474F80 };
+    u8 *table = D_0044E960;
+    VObject *heap = (VObject *)(table + 0x10D9040);
+    u32 size = (kind & 0xFF) == 4 ? 0x1E8 : 0x1E0;
+    void *mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size);
+    Scene *movie;
+
+    kind &= 0xFF;
+    if (mem == NULL) {
+        return 0;
+    }
+    movie = __nw__FUiPv(size, mem);
+    if (movie != NULL) {
+        func_002B70D0(movie);
+        movie->vtbl = sClass[kind <= 6 ? kind : 0];
+    }
+    AT(table, 0x4, Scene *) = movie;
+    AT(table, 0x4, Scene *)->slot = 0;
+    movie = AT(table, 0x4, Scene *);
+    if (movie == NULL) {
+        return 0;
+    }
+    movie->request = SCENE_REQ_RUN;
+    movie->status = 0;
+    movie->waitFrames = 0;
+    func_002B6D10(D_0044E958, path, 0, 1);
+    return 1;
+}
+
+/* ---- vtable methods that do nothing ---- */
+
+void func_00176880(Progress *p) {
+}
+
+void func_00176890(Progress *p) {
+}
+
+void func_001768A0(Progress *p) {
+}
+
+void func_00177600(Progress *p) {
+}
+
+void func_00177610(Progress *p) {
+}
+
+void func_001780B0(Progress *p) {
+}
+
+void func_00178430(Progress *p) {
+}
+
+void func_00178440(Progress *p) {
+}
+
+s32 func_00177990(Progress *p) {
+    return 0;
+}
+
+s32 func_001779A0(Progress *p) {
+    return -1;
+}
+
+s32 func_001780A0(Progress *p) {
+    return 0;
+}

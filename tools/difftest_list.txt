@@ -3837,3 +3837,22 @@ src/game/hewie_model.c func_001F8D40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0.
 src/game/scene_game_members.c func_001F96B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a2=0x0B100000..0x0B100000 --runs=20
 src/game/scene_game_members.c func_001F9710 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a2=0..1 --pre=a3=0x0B100000..0x0B100000 --runs=20
 src/game/scene_game_members.c func_001F9640 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=20
+src/game/char_load.c func_0016D180 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..5 --pre=@0x0B6FBF00=0x0B500000..0x0B500000 --stub-ret=0x0B100000 --stub-ret=0 --stub-ret-prob=1 --runs=200
+src/game/progress.c func_00177160 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=40
+src/game/progress.c func_00177260 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=40
+src/game/progress.c func_001772B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=40
+src/game/progress.c func_00177300 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=40
+src/game/progress.c func_00177350 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=40
+src/game/progress.c func_001773A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=a2=0..1 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --pre=@0x0B6FBF00=0x0B500000..0x0B500000 --runs=200
+src/game/progress.c func_001766D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --runs=20
+src/game/progress.c func_00177DB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..5 --pre=a2=0x0B400000..0x0B400000 --pre=a3=0..5 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --pre=@0x0B100028=bytes:???? --pre=@0x0B200028=bytes:???? --pre=@0x0B300028=bytes:???? --runs=300
+src/game/progress.c func_00177F00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..4 --pre=@0x44F800=0..0x0B100000 --pre=@0x44F804=0x0B100000..0x0B100000 --pre=@0x44F808=0x0B200000..0x0B200000 --pre=@0x44F80C=0..0x0B300000 --pre=@0x44F810=0x0B300000..0x0B300000 --pre=@0x44F814=0..0 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=30
+src/game/progress.c func_00177FA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B400000..0x0B400000 --pre=a2=0..7 --pre=a0+0x1050:u8=0..1 --pre=a0+0x1070:u8=0..1 --pre=a0+0x1090:u8=0..1 --runs=60
+src/game/progress.c func_00178660 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E568=0x0B500000..0x0B500000 --stub-ret=0 --stub-ret=1 --stub-ret=3 --runs=100
+src/game/progress.c func_00176D80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44F818=0..0x0B100000 --runs=30
+src/game/progress.c func_00176720 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/progress.c func_001768B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B400000..0x0B400000 --pre=a2=0..8 --pre=@0x44E960=0x0A000000..0x0A000000 --pre=@0x0B0D9040=0x0B500000..0x0B500000 --stub-ret=0 --stub-ret=0x0B600000 --stub-ret-prob=1 --runs=100
+src/game/progress.c func_00176880 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c func_00177990 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c func_001779A0 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c func_001780A0 --pre=a0=0x0B000000..0x0B000000 --runs=4
