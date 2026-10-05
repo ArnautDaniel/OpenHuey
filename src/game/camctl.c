@@ -539,7 +539,7 @@ void func_00224C20(u8 *d) {
 
 
 extern f32 D_0047E410, D_0047E418;   /* the right stick, x and y (-1..1) */
-extern void func_00223F70(u8 *o);     /* the event camera's frame */
+void func_00223F70(f32 *p);           /* the event camera's frame */
 
 /* the director's normal mode (+0xE8), each frame. The free camera (+0x68, e.g. debug):
  * orbits the target (+0xB0) with the right stick (yaw +0xE4 in degrees, distance +0xE0 >= 5).
@@ -575,7 +575,7 @@ void func_00224770(u8 *d) {
                 sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0x130), (f32 *)(d + 0x120));
                 VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
             }
-            func_00223F70(d + 0x100);
+            func_00223F70((f32 *)(d + 0x100));
         } else {
             if (AT(d, 0x150, u8) != AT(d, 0x69, u8)) {
                 AT(d, 0x7C, s32) = -1;
@@ -678,4 +678,122 @@ void func_002243D0(u8 *o, s32 rate) {
     }
     b = !(b <= 0.0f) ? b - k10deg.f : b + k10deg.f;
     VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, 0.0f, b * (f32)rate / 100.0f);
+}
+
+/* ---- the camera director's (D_0046C668 at +0x60) small methods (2026-10-05) ---- */
+
+extern void func_00100490(void *p);   /* operator delete */
+extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
+extern void *D_0044E4F8;
+extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *D_0044FE10;   /* the cutscene director */
+
+/* destructor: its two vtables (+0x64, +0x60), the global D_0044E4F8 cleared, its state reset
+ * (+0x2C / +0x38 0, +0x50 6, the spline +0x8..+0x20 cleared) */
+void *func_00223E40(u8 *d, s32 flags) {
+    if (d != NULL) {
+        AT(d, 0x64, void **) = D_0046C660;
+        AT(d, 0x60, void **) = D_0046C668;
+        AT(d, 0x60, void **) = D_0046C6F0;
+        D_0044E4F8 = NULL;
+        AT(d, 0x2C, s32) = 0;
+        AT(d, 0x38, s32) = 0;
+        AT(d, 0x50, f32) = 6.0f;
+        AT(d, 0x8, s32) = 0;
+        AT(d, 0xC, s32) = 0;
+        AT(d, 0x10, s32) = 0;
+        AT(d, 0x14, s32) = 0;
+        AT(d, 0x18, s32) = 0;
+        AT(d, 0x1C, s32) = 0;
+        AT(d, 0x20, s32) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(d);
+        }
+    }
+    return d;
+}
+
+/* on to the next of the camera's set-ups (+0x6C, wrapping at the camera's +0x80 count); no
+ * path (+0x70 -1), +0xB0 0 */
+void func_00223F00(u8 *d) {
+    u32 n = VCALL(D_0044E4B8, 0x80, u32 (*)(VObject *))(D_0044E4B8);
+
+    AT(d, 0x6C, u32) += 1;
+    if (!(AT(d, 0x6C, u32) < n)) {
+        AT(d, 0x6C, u32) = 0;
+    }
+    AT(d, 0x70, s32) = -1;
+    AT(d, 0xB0, s32) = 0;
+}
+
+/* wrapped into -180..180 degrees */
+static inline f32 camdeg_wrap(f32 a) {
+    if (a < -180.0f) {
+        a = a + 360.0f;
+    }
+    if (!(a <= 180.0f)) {
+        a = a - 360.0f;
+    }
+    return a;
+}
+
+/* the event camera's frame (its block at the director's +0x100, set by func_00224190): the
+ * camera on an orbit - p[0] the distance, pitch p[1] + p[3] and yaw p[2] + p[4] (in
+ * degrees) from the point p + 0x20 looked at; a 60 degree view */
+void func_00223F70(f32 *p) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 pitch = camdeg_wrap(p[1] + p[3]);
+    f32 yaw = camdeg_wrap(p[2] + p[4]);
+    VObject *cam;
+
+    v[2] = -1.0f;
+    v[3] = 1.0f;
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixX(m, m, 0x1.921fb6p+1f /* pi */ * pitch / 180.0f);
+    sceVu0RotMatrixY(m, m, 0x1.921fb6p+1f /* pi */ * yaw / 180.0f);
+    sceVu0ApplyMatrix(v, m, v);
+    sceVu0ScaleVector(v, v, p[0]);
+    cam = D_0044E4B8;
+    VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, p[8], p[9], p[10]);
+    sceVu0AddVector(v, p + 8, v);
+    VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+    VCALL(cam, 0x5C, void (*)(VObject *, f32))(cam, 0x1.0c1524p+0f /* 60 degrees */);
+}
+
+/* set the event camera's block (+0x100): distance, pitch, the yaw +0x110, and the vector
+ * +0x130 = (0, e, 0, 1) */
+void func_00224190(u8 *d, f32 a, f32 b, f32 c, f32 e) {
+    AT(d, 0x100, f32) = a;
+    AT(d, 0x104, f32) = b;
+    AT(d, 0x110, f32) = c;
+    AT(d, 0x138, s32) = 0;
+    AT(d, 0x130, s32) = 0;
+    AT(d, 0x13C, f32) = 1.0f;
+    AT(d, 0x134, f32) = e;
+}
+
+/* the path's length (+0x8), -1 with no path (+0x70) */
+f32 func_00224680(u8 *d) {
+    if (AT(d, 0x70, s32) == -1) {
+        return -1.0f;
+    }
+    return AT(d, 0x8, f32);
+}
+
+/* the path (+0x8) to u, if there is one */
+void func_002246B0(u8 *d, f32 u) {
+    if (AT(d, 0x70, s32) != -1) {
+        func_0025F6A0(d + 0x8, u);
+    }
+}
+
+/* remember the set-up and path (+0x6C / +0x70 into +0x78 / +0x7C), then the cutscene
+ * director's letterbox (+0x64) */
+void func_00224740(u8 *d) {
+    AT(d, 0x78, s32) = AT(d, 0x6C, s32);
+    AT(d, 0x7C, s32) = AT(d, 0x70, s32);
+    VCALL(D_0044FE10, 0x64, void (*)(VObject *))(D_0044FE10);
 }

@@ -5933,3 +5933,10 @@ src/game/camera.c func_001220A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x40=0x
 src/game/camera.c func_00122370 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x40=0xC0000000..0x40800000 --pre=a0+0x44=0xC0000000..0x40800000 --pre=a0+0x48=0xC0000000..0x40800000 --pre=a0+0x50=0xC0000000..0x40800000 --pre=a0+0x54=0xC0000000..0x40800000 --pre=a0+0x58=0xC0000000..0x40800000 --pre=a0+0x80=0xC0000000..0x40800000 --pre=a0+0x84=0xC0000000..0x40800000 --pre=a0+0x88=0xC0000000..0x40800000 --pre=f12=-1.0..1.0 --pre=f13=-1.0..1.0 --stub-fret=0.3 --stub-ret-prob=1 --outparam-at=0x0025C6F0:0:16 --outparam-at=0x0025C770:1:64 --runs=200
 src/game/scene_game_members.c func_002D6020 --pre=a0=0x0B500000..0x0B500000 --pre=a1=-2..0x401 --pre=@0x0B518034=0..0x0B600000 --pre=a1=0..1 --stub-ret=7 --stub-ret-prob=1 --runs=100
 src/game/room_handlers.c func_002B4280 --pre=@0x456DF8=0x0B100000..0x0B100000 --pre=@0x44E4D0=0x0B110000..0x0B110000 --pre=@0x0B200014=0xBF400000..0xBF500000 --stub-ret=0x0B200000 --stub-ret-prob=1 --runs=100
+src/game/camctl.c func_00223E40 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/camctl.c func_00223F00 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6C=0..5 --pre=@0x44E4B8=0x0B100000..0x0B100000 --stub-ret=0 --stub-ret=3 --stub-ret=6 --stub-ret-prob=1 --runs=100
+src/game/camctl.c func_00223F70 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0xC3800000..0x43800000 --pre=a0+0xC=0xC3800000..0x43800000 --pre=a0+0x8=0xC3800000..0x43800000 --pre=a0+0x10=0xC3800000..0x43800000 --pre=@0x44E4B8=0x0B100000..0x0B100000 --runs=200
+src/game/camctl.c func_00224190 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-5.0..5.0 --pre=f13=-5.0..5.0 --pre=f14=-5.0..5.0 --pre=f15=-5.0..5.0 --runs=20
+src/game/camctl.c func_00224680 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=-1..1 --runs=40
+src/game/camctl.c func_002246B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=-1..1 --pre=f12=0.0..1.0 --runs=40
+src/game/camctl.c func_00224740 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44FE10=0x0B100000..0x0B100000 --runs=20
