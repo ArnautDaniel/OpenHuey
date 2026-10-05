@@ -43,6 +43,7 @@ unknown targets (random vtable entries) are only compared when both versions
 set them.
 """
 import argparse
+import collections
 import hashlib
 import os
 import pickle
@@ -157,6 +158,7 @@ OUTPARAM_BYTES = [OUTPARAM]   # --outparam
 OUTPARAM_AT: dict[tuple[int, int], int] = {}   # --outparam-at: (callee, argument index) -> bytes
 STACK_ARG_BYTES = [16]        # --stack-arg-bytes: how much of a local passed by reference compares
 STRICT_VU0 = [False]          # --strict-vu0: emulated libvu0 calls also compare as calls
+TRACE_RECENT = [False]        # -v: keep the last pcs, for a runaway's report
 STUB_FRETURNS: list[float] = []  # --stub-fret: float values calls return (f0)
 DICTIONARY: list[int] = []  # constants from the function under test (and +-1), see harvest_constants()
 
@@ -438,6 +440,7 @@ class CPU:
         self.in_func = False
         self.helper_ranges: list[tuple[int, int]] = HELPER_RANGES
         self.done = False
+        self.recent: collections.deque = collections.deque(maxlen=48)
 
     # -- register helpers (writes keep the upper 64 bits of the 128-bit GPR)
     def g(self, i: int) -> int:
@@ -608,7 +611,10 @@ class CPU:
             if pc == RET_MAGIC:
                 return
             self.steps += 1
+            if TRACE_RECENT[0]:
+                self.recent.append(pc)
             if self.steps > self.max_steps:
+                self.last_pc = pc
                 raise TimeoutError
             if IRQ_FLAGS and self.steps % 64 == 0:
                 for a in IRQ_FLAGS:   # an "interrupt": not one of the function's own writes
@@ -1856,7 +1862,13 @@ def _run_seed(i: int):
     if o[0].timed_out or n[0].timed_out:
         if not (o[0].timed_out and n[0].timed_out):
             who = "C version" if n[0].timed_out else "original"
-            return "fail", cov, f"FAIL {func} seed {seed}: only the {who} ran away"
+            msg = f"FAIL {func} seed {seed}: only the {who} ran away"
+            if opts.verbose:
+                r = n[0] if n[0].timed_out else o[0]
+                msg += (f"\n  it was at 0x{getattr(r, 'last_pc', 0):08X} after {len(r.events)} calls; last: "
+                        + ("; ".join(fmt_ev(e) for e in r.events[-3:]) or "none")
+                        + "\n  its last pcs: " + " ".join(f"{a:X}" for a in r.recent))
+            return "fail", cov, msg
         # both loop forever (e.g. a main loop with stubbed callees): compare the calls made
         k = min(len(o[0].events), len(n[0].events))
         if k < 3 or not events_equal(o[0].events[:k], n[0].events[:k]):
@@ -1917,6 +1929,7 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
         OUTPARAM_AT[(addr, arg)] = n
     STACK_ARG_BYTES[0] = max(1, min(16, opts.stack_arg_bytes))
     STRICT_VU0[0] = opts.strict_vu0
+    TRACE_RECENT[0] = opts.verbose
     INLINE_EXTRA.clear()
     for name in opts.inline:
         INLINE_EXTRA.update(v for n, v, _, _, _ in game_symbols() if n == name)
