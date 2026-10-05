@@ -110,19 +110,9 @@ s32 func_002CCED0(void *o) {
 }
 
 s32 func_002CD000(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
-/* use: at spot 0x1B of room 0xC0: the events' +0x30 (1, this item), event 0x14, flag 0x18 */
+/* use: on the altar */
 s32 func_002CD030(void *o) {
-    Progress *p = gProgress;
-    VObject *ev_mgr;
-
-    if (!item_room_spot(p, 0xC0, 0x1B)) {
-        return 0;
-    }
-    ev_mgr = D_0044E4D0;
-    VCALL(ev_mgr, 0x30, void (*)(VObject *, s32, s32))(ev_mgr, 1, AT(o, 0x4, s32));
-    item_event(ev_mgr, 0, 0x14, gCharPlayer);
-    Progress_SetFlag(p, 0x18);
-    return 4;
+    return item_offer(gProgress, o);
 }
 
 s32 func_002CD1A0(void *self, s32 a) { return LOAD(D_0045D500, a); }

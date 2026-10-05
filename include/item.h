@@ -34,6 +34,21 @@ static inline s32 item_room_spot(Progress *p, s32 room, s32 spot) {
     return item_at_spot(D_0044E4D0, gCharPlayer, spot);
 }
 
+/* laid on the altar (spot 0x1B of room 0xC0): the events' +0x30 (1, the item's id), event 0x14,
+   flag 0x18 */
+static inline s32 item_offer(Progress *p, void *o) {
+    VObject *ev_mgr;
+
+    if (!item_room_spot(p, 0xC0, 0x1B)) {
+        return 0;
+    }
+    ev_mgr = D_0044E4D0;
+    VCALL(ev_mgr, 0x30, void (*)(VObject *, s32, s32))(ev_mgr, 1, AT(o, 0x4, s32));
+    item_event(ev_mgr, 0, 0x14, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
 /* door `door` of the room is open (state bit 4) */
 static inline s32 item_door_open(Progress *p, u32 door) {
     return func_00177BF0(p, door, 0) & 0xFF & 4;

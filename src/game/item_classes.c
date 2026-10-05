@@ -1031,3 +1031,60 @@ s32 func_002EEC00(void *o) {
     }
     return use_sound_only(1, 0x232);
 }
+
+extern u32 func_00178610(Progress *p, u32 route);
+
+/* at spot 0x11 of room 0xF once route 8 is open (func_00178610): event 0x16; else on the altar */
+static s32 use_route8_or_offer(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && func_00178610(p, 8) != 0 &&
+        item_at_spot(D_0044E4D0, gCharPlayer, 0x11)) {
+        item_event(D_0044E4D0, 0, 0x16, gCharPlayer);
+        return 4;
+    }
+    return item_offer(p, o);
+}
+
+/* D_0046C7E0 */
+s32 func_00264A60(void *o) {
+    return use_route8_or_offer(o);
+}
+
+/* D_0046C830 */
+s32 func_00264CE0(void *o) {
+    return use_route8_or_offer(o);
+}
+
+/* D_00470FB0: at open door 1 of room 0x14: event 4, flag 0x18; else on the altar */
+s32 func_00303CD0(void *o) {
+    Progress *p = gProgress;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x14 && item_door_open(p, 1)) {
+        item_event(D_0044E4D0, 0, 4, gCharPlayer);
+        Progress_SetFlag(p, 0x18);
+        return 4;
+    }
+    return item_offer(p, o);
+}
+
+/* at spot 0xB of room 0xC7: event 3, or 0x10 with Progress +0x2C bit 0x4000 */
+static s32 use_room_c7(void) {
+    Progress *p = gProgress;
+
+    if (!item_room_spot(p, 0xC7, 0xB)) {
+        return 0;
+    }
+    item_event(D_0044E4D0, 0, (AT(p, 0x2C, u32) & 0x4000) ? 0x10 : 3, gCharPlayer);
+    return 4;
+}
+
+/* D_00478D70 */
+s32 func_00351390(void *o) {
+    return use_room_c7();
+}
+
+/* D_00478DC0 */
+s32 func_00351550(void *o) {
+    return use_room_c7();
+}
