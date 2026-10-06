@@ -35,7 +35,8 @@ static inline f32 B4_FLT(u32 bits) {
 }
 
 /* vtable +0x8: destructor (nothing to free: he lives inside the scene). */
-Hewie *func_00130A70(Hewie *h, s32 flags) {
+/* 0x00130A70 */
+Hewie *Hewie_dtor(Hewie *h, s32 flags) {
     if (h != NULL) {
         h->c.a.vtbl = D_0046A120;
         h->c.a.vtbl = D_00469C60;
@@ -48,21 +49,25 @@ Hewie *func_00130A70(Hewie *h, s32 flags) {
 }
 
 /* vtable +0x10 */
-void func_00168A00(Hewie *h) {
+/* 0x00168A00 */
+void Hewie_Cleanup(Hewie *h) {
 }
 
 /* vtable +0x58: deactivate (Character part only). */
-void func_00166140(Hewie *h) {
+/* 0x00166140 */
+void Hewie_Deactivate(Hewie *h) {
     Character_Deactivate(&h->c);
 }
 
 /* vtable +0x98 */
-s32 func_00130AE0(Hewie *h) {
+/* 0x00130AE0 */
+s32 Hewie_IsBusy(Hewie *h) {
     return 1;
 }
 
 /* vtable +0x4C: disable (as Character), animation paused. */
-void func_00165CD0(Hewie *h) {
+/* 0x00165CD0 */
+void Hewie_Disable(Hewie *h) {
     Character_Disable(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 1;
 }
@@ -399,13 +404,15 @@ void func_00166150(Hewie *h, Character *other, s32 delta) {
 }
 
 /* vtable +0x60: forget path/movement state, then his default action. */
-void func_00165D00(Hewie *h) {
+/* 0x00165D00 */
+void Hewie_ToIdle(Hewie *h) {
     Character_ResetBehaviour(&h->c);
     Hewie_SetAction(h, 0, 0);
 }
 
 /* vtable +0x24: save the previous frame's state. */
-void func_00168360(Hewie *h) {
+/* 0x00168360 */
+void Hewie_RememberPos(Hewie *h) {
     Character_RememberPos(&h->c);
     HW(h, 0xF354C, f32) = h->c.a.angle[1];
     HW(h, 0xF3568, s32) = HW(h, 0xF3564, s32);
@@ -413,7 +420,8 @@ void func_00168360(Hewie *h) {
 }
 
 /* vtable +0x20: release his message slot and stop his animation player, if set up. */
-void func_00168680(Hewie *h) {
+/* 0x00168680 */
+void Hewie_Unload(Hewie *h) {
     if (h->c.a.unkD0) {
         VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, h->c.msgSlot);
         h->c.a.unkD0 = 0;
@@ -426,7 +434,8 @@ void func_00168680(Hewie *h) {
 
 /* vtable +0x2C: room setup done - (outside the special mode, a pending +0x80 call), then put
  * his animation player on his triangle. */
-void func_00168600(Hewie *h) {
+/* 0x00168600 */
+void Hewie_LightChange(Hewie *h) {
     if (*((u8 *)gProgress + 0x1FBEC1) == 0 && h->c.unkE4 == 1) {
         VCALL(h, 0x80, void (*)(Hewie *))(h);
     }
@@ -434,7 +443,8 @@ void func_00168600(Hewie *h) {
 }
 
 /* vtable +0x50: halt (as Character), animation running, then back to his default action. */
-void func_00165C50(Hewie *h) {
+/* 0x00165C50 */
+void Hewie_Halt(Hewie *h) {
     Character_Enable(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
@@ -447,7 +457,8 @@ static inline void Hewie_ToDefault(Hewie *h) {
 }
 
 /* vtable +0x7C: back to his default action. */
-void func_0013D190(Hewie *h) {
+/* 0x0013D190 */
+void Hewie_BackToIdle(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
@@ -481,7 +492,8 @@ void func_0013D1F0(Hewie *h, s32 add) {
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
 /* vtable +0x74: during action 0x23 with animation 0x1E01, his head bone's position (returns 1). */
-s32 func_0013D420(Hewie *h, f32 *out) {
+/* 0x0013D420 */
+s32 Hewie_PointOfInterest(Hewie *h, f32 *out) {
     if (HEWIE_ACTION(h) != 0x23) {
         return 0;
     }
@@ -493,7 +505,8 @@ s32 func_0013D420(Hewie *h, f32 *out) {
 }
 
 /* vtable +0x90: reset (Character part), clear his action state. */
-void func_0015FBE0(Hewie *h) {
+/* 0x0015FBE0 */
+void Hewie_FullStop(Hewie *h) {
     Character_EventReset(&h->c);
     HW(h, 0xF358C, s32) = 0;
     HW(h, 0xF35C4, s32) = 0;
@@ -504,7 +517,8 @@ void func_0015FBE0(Hewie *h) {
 }
 
 /* vtable +0x78: left the room being played during action 0x38 -> default action. */
-void func_0015FB30(Hewie *h) {
+/* 0x0015FB30 */
+void Hewie_LeftBehind(Hewie *h) {
     s32 room = h->c.a.room;
 
     if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && HEWIE_ACTION(h) == 0x38) {
@@ -515,7 +529,8 @@ void func_0015FB30(Hewie *h) {
 
 /* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
  * never, he keeps 1). */
-s32 func_0015FA20(Hewie *h, s32 damage) {
+/* 0x0015FA20 */
+s32 Hewie_TakeDamage(Hewie *h, s32 damage) {
     Progress *p = gProgress;
 
     if (*((u8 *)p + 0x1FBEC1) == 1 && (Progress_GetVar(p, 0x27) & 0xFF) == 1) {
@@ -540,7 +555,8 @@ s32 func_0015FA20(Hewie *h, s32 damage) {
 
 /* vtable +0x48: apply the animation to the model; while enabled, take his position from the
  * root bone (and find his room and nav-mesh triangle). */
-void func_00167AF0(Hewie *h) {
+/* 0x00167AF0 */
+void Hewie_FollowAnim(Hewie *h) {
     sceVu0FMATRIX m;
 
     sceVu0UnitMatrix(m);
@@ -561,7 +577,8 @@ extern s32 func_00143D20(Hewie *h);
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
  * side if he has no triangle yet); in the special mode: note his side, hand him to the
  * animation player and the room objects. */
-void func_00166CE0(Hewie *h) {
+/* 0x00166CE0 */
+void Hewie_Vt38(Hewie *h) {
     Progress *p = gProgress;
 
     if (*((u8 *)p + 0x1FBEC1) != 0) {
@@ -588,7 +605,8 @@ void func_00166CE0(Hewie *h) {
 #define MOTION_PTR(m, off) (*(void **)((u8 *)(m) + (off)))
 
 /* vtable +0x1C: hook his data up to the animation player and the message display. */
-void func_00168700(Hewie *h) {
+/* 0x00168700 */
+void Hewie_FilesLoaded(Hewie *h) {
     void *m = h->c.motion;
 
     MOTION_PTR(m, 0x4C0) = HEWIE_RES(h, 0x1544);
@@ -612,7 +630,8 @@ void func_00168700(Hewie *h) {
 
 /* vtable +0x14: start loading his files: model (by costume, from the unlocked costume bits in
  * the progress flags), textures (into his message buffer + 0x80000), .MRK. */
-void func_00168830(Hewie *h) {
+/* 0x00168830 */
+void Hewie_LoadFiles(Hewie *h) {
     Progress *p = gProgress;
     VObject *loader;
     u32 costume = 0;
@@ -639,7 +658,8 @@ void func_00168830(Hewie *h) {
 
 /* vtable +0x40: animation update in the room being played: ground fit (off the nav mesh: plain),
  * advance; then (still on the mesh) the animation events. */
-void func_00167620(Hewie *h) {
+/* 0x00167620 */
+void Hewie_AnimUpdate(Hewie *h) {
     Progress *p = gProgress;
     s32 room = h->c.a.room;
 
@@ -663,7 +683,8 @@ void func_00167620(Hewie *h) {
 
 /* vtable +0x8C: enable (Character part). If he was busy with Fiona (actions 0x48..0x4B, 0x72)
  * or the pursuer (0x1F..0x22, 0x38, 0x75), that character goes back to idle. */
-void func_0015FC60(Hewie *h) {
+/* 0x0015FC60 */
+void Hewie_Interrupted(Hewie *h) {
     u8 ok;
 
     Character_BackToNormal(&h->c);
@@ -699,7 +720,8 @@ void func_0015FC60(Hewie *h) {
     X(0x835, 0xF3693, s8) X(0x836, 0xF3694, s8) X(0x837, 0xF3695, s8)
 
 /* vtable +0x70: restore his state from the save data. */
-void func_001656C0(Hewie *h) {
+/* 0x001656C0 */
+void Hewie_LoadState(Hewie *h) {
     Progress *p = gProgress;
     f32 yaw;
 
@@ -720,7 +742,8 @@ void func_001656C0(Hewie *h) {
 }
 
 /* vtable +0x6C: store his state in the save data. */
-void func_00165890(Hewie *h) {
+/* 0x00165890 */
+void Hewie_SaveState(Hewie *h) {
     Progress *p = gProgress;
 
     PSAVE(p, 0x800, s32) = h->c.a.room;
@@ -737,7 +760,8 @@ void func_00165890(Hewie *h) {
 }
 
 /* vtable +0xC: initialise (Character part, then his own state). */
-void func_00168A10(Hewie *h) {
+/* 0x00168A10 */
+void Hewie_Reset(Hewie *h) {
     Character_Reset(&h->c);
     HEWIE_SIDE(h) = 2;
     h->c.a.radius = 2.5f;
@@ -801,7 +825,8 @@ void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
 
 /* vtable +0x28: place him (as Character) on triangle `tri`; (in play) his default animation;
  * reset his per-placement state. Returns the placement result. */
-s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
+/* 0x001683D0 */
+s32 Hewie_PlaceOn(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     s32 r = Character_Place(&h->c, tri, heading, pos);
 
     if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
@@ -848,7 +873,8 @@ extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
  * `door`)? For kinds 1..4, if he stands idle facing roughly towards the caller (within 3pi/8),
  * he may react himself instead (+0xF3584, answer no). */
-s32 func_00165A40(Hewie *h, u32 kind, s32 slot, u32 door) {
+/* 0x00165A40 */
+s32 Hewie_CanInteract(Hewie *h, u32 kind, s32 slot, u32 door) {
     u32 k;
 
     if (h->c.moveMode == 4 && (kind & 0xFF) != 0xB) {
@@ -897,7 +923,8 @@ static inline s32 Hewie_PlaceDefault(Hewie *h, u32 tri) {
 /* vtable +0x64: put him in room `room` on triangle `tri` (side `side`). In the room being played:
  * placed, default action, handed to the room objects, nearby state updated; elsewhere he only
  * keeps the triangle. Returns the placement result (0 elsewhere). */
-s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
+/* 0x00166530 */
+s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
     Progress *p;
     s32 r;
 
@@ -988,7 +1015,8 @@ static void root_motion(Hewie *h) {
 /* vtable +0x44: per-frame update - frame counter (up to 3000), surroundings, how close Fiona
  * is (gProgress +0x7B9: 1 within 20, 2 within 50, 3 further), requests, behaviour, turning and
  * root motion from the animation, then his sub-systems. */
-void func_00167760(Hewie *h) {
+/* 0x00167760 */
+void Hewie_Think(Hewie *h) {
     Progress *p;
 
     h->c.a.navMask = h->c.a.unk2B ? 0 : HEWIE_NAV_MASK;
@@ -1052,7 +1080,8 @@ static inline void Hewie_StartScene(Hewie *h, Progress *p) {
 
 /* vtable +0x5C: activate (Character part), then reset his own state; in play idle with action 0,
  * in the special mode the special state with action 0x83. */
-void func_00165D40(Hewie *h) {
+/* 0x00165D40 */
+void Hewie_Activate(Hewie *h) {
     Progress *p;
 
     Character_Activate(&h->c);
@@ -9851,7 +9880,7 @@ void func_00161500(Hewie *h) {
 
 /* ---- put in a room by a placement ---- */
 
-/* put him where `pl` says (as func_00166530): in the room being played (or under direct control,
+/* put him where `pl` says (as Hewie_PlaceInRoom): in the room being played (or under direct control,
  * +0x1FBEC1) placed facing as he was (head straight, standing), his door the placement's exit,
  * the default action; in the room being played also settled in (arrived). Elsewhere he only
  * keeps the triangle, standing. Returns the placement result (0 elsewhere) */
@@ -10096,7 +10125,8 @@ static s32 exit_reachable(Hewie *h, VObject *rooms, s32 e, f32 *at) {
 /* Fiona left his room through exit `exit` (0xFF: unknown). If he is in the room being played he
    decides how to follow: through that exit, through another, or he can't and waits/whines. When
    the scene is not interactive (+0x1FBEC1) he just takes the same exit. */
-void func_00166DF0(Hewie *h, s32 exit) {
+/* 0x00166DF0 */
+void Hewie_Vt34(Hewie *h, s32 exit) {
     f32 at[4] __attribute__((aligned(16)));
     f32 door[4] __attribute__((aligned(16)));
     f32 d0[4] __attribute__((aligned(16)));
@@ -10209,7 +10239,8 @@ void func_00161860(Hewie *h);
  * surroundings, then - unless he is out of play - joint actions, the director (+0x38 busy:
  * func_00161500), his own decisions or, in a scene, the doors he is told to take; behaviour, turn
  * and root motion. +0x2A: Fiona can see him. Out of play only a pending state change runs. */
-void func_00167BC0(Hewie *h) {
+/* 0x00167BC0 */
+void Hewie_Update(Hewie *h) {
     Progress *p;
     u32 i;
 
@@ -10306,7 +10337,8 @@ extern s32 func_0013AC20(Hewie *h, s32 *hit);
 /* vtable: pending state (+0x14E8) and the command Fiona gave (+0xF4, 0 none). State 7 holds
  * everything; 4 (stuck) and 13 end with +0x90 (back to normal) once he is clear again, 5 calls +0x8C
  * and drops what he does. Then the command becomes the action that carries it out. */
-void func_001635B0(Hewie *h) {
+/* 0x001635B0 */
+void Hewie_Requests(Hewie *h) {
     s32 act;
 
     switch (h->c.state[0]) {
@@ -10402,7 +10434,8 @@ static void sniff(Hewie *h, s32 anim, const PTMF *st) {
  * call from Fiona (come, praise/scold, sniff about, ...), 11 a scene request, 8 and 13 other
  * requests; 4 stuck, 5 reset, 7 hold. With nothing pending and a scripted move waiting
  * (+0xF356C) he takes action 0x85. Elsewhere any pending state is dropped. */
-void func_00163DC0(Hewie *h) {
+/* 0x00163DC0 */
+void Hewie_StateBlock(Hewie *h) {
     Progress *p = gProgress;
     s32 room;
     s32 v;

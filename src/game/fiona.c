@@ -77,7 +77,8 @@ static inline void Fiona_ToIdle(Fiona *f) {
 }
 
 /* vtable +0x7C: back to the idle state. */
-void func_0019A300(Fiona *f) {
+/* 0x0019A300 */
+void Fiona_BackToIdle(Fiona *f) {
     Fiona_ToIdle(f);
 }
 
@@ -88,12 +89,14 @@ void func_0019A420(Fiona *f, s32 slot, s32 param) {
 }
 
 /* vtable +0x60? (deactivate) */
-void func_0019AF10(Fiona *f) {
+/* 0x0019AF10 */
+void Fiona_Deactivate(Fiona *f) {
     Character_Deactivate(&f->c);
 }
 
 /* Halt (as Character), and take down her message. */
-void func_0019AA20(Fiona *f) {
+/* 0x0019AA20 */
+void Fiona_Halt(Fiona *f) {
     Character_Enable(&f->c);
     MOTION_U8(f->c.motion, 0x4D8) = 0;
     f->unk1AD5D0 = 1;
@@ -107,7 +110,8 @@ void func_0019AA20(Fiona *f) {
 }
 
 /* Disable (as Character), and show her message if she has one. */
-void func_0019AAC0(Fiona *f) {
+/* 0x0019AAC0 */
+void Fiona_Disable(Fiona *f) {
     Character_Disable(&f->c);
     MOTION_U8(f->c.motion, 0x4D8) = 1;
     f->unk1AD630 = 0;
@@ -120,7 +124,8 @@ void func_0019AAC0(Fiona *f) {
 extern void func_00184BF0(Fiona *f);
 
 /* Put her in room `room` on triangle `tri`, idle. Returns the placement result. */
-s32 func_0019A8C0(Fiona *f, s32 room, u32 tri, s32 arg3) {
+/* 0x0019A8C0 */
+s32 Fiona_PlaceInRoom(Fiona *f, s32 room, u32 tri, s32 arg3) {
     s32 r;
 
     func_00125BA0(&f->c, room, arg3, tri);
@@ -130,7 +135,8 @@ s32 func_0019A8C0(Fiona *f, s32 room, u32 tri, s32 arg3) {
 }
 
 /* Forget path/movement state, then idle. */
-void func_0019AB40(Fiona *f) {
+/* 0x0019AB40 */
+void Fiona_ForgetPath(Fiona *f) {
     Character_ResetBehaviour(&f->c);
     func_00184BF0(f);
     Fiona_ToIdle(f);
@@ -138,7 +144,8 @@ void func_0019AB40(Fiona *f) {
 
 /* vtable +0x5C: activate (Character part), then reset her own state; two timers get random
  * lengths (300 + 330 * r frames, 300 + 30 * int(20 * r)). */
-void func_0019AC70(Fiona *f) {
+/* 0x0019AC70 */
+void Fiona_Activate(Fiona *f) {
     VObject *rng;
     s32 t;
 
@@ -192,7 +199,8 @@ void func_0019AC70(Fiona *f) {
 
 /* Point of interest on her for action 8 (sub 0x1A/0x1B), e.g. for the camera: a bone or an
  * offset in front of her. False if there is none. */
-s32 func_0019A450(Fiona *f, f32 *out) {
+/* 0x0019A450 */
+s32 Fiona_PointOfInterest(Fiona *f, f32 *out) {
     sceVu0FVECTOR v;
 
     if (f->c.moveMode != 8) {
@@ -248,7 +256,8 @@ s32 func_0019A450(Fiona *f, f32 *out) {
 
 /* Can she start interaction `kind` now (with character `otherSlot`, 0xFF = none; door `door`
  * for kind 5)? Depends on what she is doing (moveMode/moveSub). */
-s32 func_0019A670(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
+/* 0x0019A670 */
+s32 Fiona_CanInteract(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
     s32 mode;
 
     kind &= 0xFF;
@@ -307,17 +316,20 @@ s32 func_0019A670(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
     }
 }
 
-void func_001A4330(Fiona *f) {
+/* 0x001A4330 */
+void Fiona_Cleanup(Fiona *f) {
 }
 
 /* vtable +0x24: remember the previous position, and her heading. */
-void func_001A2CC0(Fiona *f) {
+/* 0x001A2CC0 */
+void Fiona_RememberPos(Fiona *f) {
     Character_RememberPos(&f->c);
     FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
 }
 
 /* vtable +0x20: take down her message (unkD0) and stop the animation (unkD1) if requested. */
-void func_001A3E60(Fiona *f) {
+/* 0x001A3E60 */
+void Fiona_Unload(Fiona *f) {
     if (f->c.a.unkD0) {
         VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, f->c.msgSlot);
         f->c.a.unkD0 = 0;
@@ -329,7 +341,8 @@ void func_001A3E60(Fiona *f) {
 }
 
 /* vtable +0x54: start loading her message image (file named by the animation player +0xAC). */
-s32 func_001A4080(Fiona *f) {
+/* 0x001A4080 */
+s32 Fiona_LoadMessage(Fiona *f) {
     if (VCALL(f->c.motion, 0xAC, s32 (*)(void *))(f->c.motion) == 0) {
         return 0;
     }
@@ -340,7 +353,8 @@ s32 func_001A4080(Fiona *f) {
 }
 
 /* vtable +0xC: reset; her collision cylinder (radius 2, height 15) and blocking mask. */
-void func_001A4340(Fiona *f) {
+/* 0x001A4340 */
+void Fiona_Reset(Fiona *f) {
     Character_Reset(&f->c);
     f->c.a.radius = 2.0f;
     f->c.a.height = 15.0f;
@@ -356,7 +370,8 @@ void func_001A4340(Fiona *f) {
 
 /* vtable +0x48: follow the animation (cutscene): position from the root bone, room from
  * progress, triangle from the mesh. */
-void func_001A3000(Fiona *f) {
+/* 0x001A3000 */
+void Fiona_FollowAnim(Fiona *f) {
     sceVu0FMATRIX m;
 
     sceVu0UnitMatrix(m);
@@ -380,7 +395,8 @@ void func_001A3000(Fiona *f) {
 extern void func_00187650(Fiona *f);
 
 /* vtable +0x90: full stop - movement, interaction and the related progress flags. */
-void func_0019D190(Fiona *f) {
+/* 0x0019D190 */
+void Fiona_FullStop(Fiona *f) {
     Progress *p;
 
     Character_EventReset(&f->c);
@@ -412,7 +428,8 @@ static inline void Fiona_Fade(Fiona *f) {
 }
 
 /* vtable +0x2C: choose the screen mode (unk152C) for this frame and pass it to the animation. */
-void func_001A38E0(Fiona *f) {
+/* 0x001A38E0 */
+void Fiona_LightChange(Fiona *f) {
     Progress *p = gProgress;
     s32 s;
 
@@ -447,7 +464,8 @@ void func_001A38E0(Fiona *f) {
 #define MOTION_PTR(m, off) (*(void **)((u8 *)(m) + (off)))
 
 /* vtable +0x1C: hook her data up to the animation player and the message display. */
-void func_001A3EE0(Fiona *f) {
+/* 0x001A3EE0 */
+void Fiona_FilesLoaded(Fiona *f) {
     void *m = f->c.motion;
 
     MOTION_PTR(m, 0x4C0) = FIONA_RES(f, 0x1544);
@@ -482,7 +500,8 @@ static const char sFionaMotion[] = "O_FIN\\FIN_D000.MTN";
 
 /* vtable +0x14: start loading her files: model (by costume, which comes from the unlocked
  * costume bits in the progress flags), message data, motions, animation set. */
-void func_001A4110(Fiona *f) {
+/* 0x001A4110 */
+void Fiona_LoadFiles(Fiona *f) {
     Progress *p = gProgress;
     VObject *loader;
     u32 costume = 0;
@@ -518,7 +537,8 @@ void func_001A4110(Fiona *f) {
 
 /* vtable +0x8C: interrupted (e.g. a cutscene starts): stop, and release Hewie and the pursuer
  * from joint actions with her. */
-void func_0019D2B0(Fiona *f) {
+/* 0x0019D2B0 */
+void Fiona_Interrupted(Fiona *f) {
     Progress *p;
 
     Character_BackToNormal(&f->c);
@@ -562,7 +582,8 @@ static inline void Fiona_SetPose(Fiona *f, s32 set, s32 variant, f32 w) {
 
 /* vtable +0x28: place her (Character), reset interaction state, and on the first placement
  * pick her starting pose from her condition (+0x1AD5F4 of 100, +0x1AD5F8 of 1800 frames). */
-s32 func_001A3A80(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
+/* 0x001A3A80 */
+s32 Fiona_PlaceOn(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
     s32 r = Character_Place(&f->c, tri, heading, pos);
 
     FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
@@ -617,7 +638,8 @@ extern void func_001869D0(Fiona *f);
 
 /* vtable +0x44: per-frame update - controls, behaviour state, sub-systems; tells progress when
  * the pursuer is close (within 200 / 150 units). */
-void func_001A2D00(Fiona *f) {
+/* 0x001A2D00 */
+void Fiona_Think(Fiona *f) {
     sceVu0FVECTOR head;
     Progress *p;
     f32 h;
@@ -707,7 +729,8 @@ static inline s32 Fiona_AnimGroup(s32 anim) {
 }
 
 /* vtable +0x40: animation update - ground alignment (by animation group), advance, events. */
-void func_0019BE70(Fiona *f) {
+/* 0x0019BE70 */
+void Fiona_AnimUpdate(Fiona *f) {
     s32 room;
 
     if (!f->c.a.disabled) {
@@ -964,7 +987,8 @@ extern const PTMF D_003B27D8;
 #define FIONA_ROUTE0(f) (*(u16 *)(f)->c.unk138C)
 
 /* vtable +0x38: room (re-)entry - place her in the current room, or keep her out of it. */
-void func_0019AF20(Fiona *f) {
+/* 0x0019AF20 */
+void Fiona_Vt38(Fiona *f) {
     Progress *p = gProgress;
     VObject *rooms;
     s32 room;
@@ -1568,7 +1592,8 @@ static inline s32 Fiona_ReadsPad(Fiona *f, Progress *p) {
 }
 
 /* vtable +0x30: gameplay update - room, controls, actions, behaviour state, sub-systems. */
-void func_001A3110(Fiona *f) {
+/* 0x001A3110 */
+void Fiona_Update(Fiona *f) {
     Progress *p = gProgress;
     u8 *special = (u8 *)p + 0x1FBEC1;
     sceVu0FVECTOR head;
@@ -1668,7 +1693,8 @@ void func_001A3110(Fiona *f) {
 /* vtable +0x34: going through door `door`. In play, turn to face through it (if the stick
  * points that way, relative to the camera); in the special mode, plan the walk into the next
  * room (with Hewie if he is closer to the door). */
-void func_0019B4F0(Fiona *f, s32 door) {
+/* 0x0019B4F0 */
+void Fiona_Vt34(Fiona *f, s32 door) {
     Progress *p = gProgress;
     VObject *rooms;
 
@@ -1805,7 +1831,8 @@ static inline Character *Fiona_Other(u32 slot) {
 
 /* vtable +0x88: handle requests from outside - the Character state block (state[0]: 4 grabbed,
  * 5 released) and the pending command (+0xF4: scripted moves, animations, look-at targets). */
-void func_0019F8A0(Fiona *f) {
+/* 0x0019F8A0 */
+void Fiona_Requests(Fiona *f) {
     switch (f->c.state[0]) {
     case 0:
         break;
@@ -2308,7 +2335,8 @@ static inline void Fiona_NudgePeriod(Fiona *f, s32 near, s32 far) {
 /* vtable +0x84: handle the Character state block (state[0]: 4 grabbed, 5 released, and the
  * action requests 2/3/9 (go through a door), 8, 0xB, 0xD, 0xE; 0xC with [1] = 6) while she is free to act.
  * state[0] == 7 is left pending; everything else is consumed. */
-void func_001A0370(Fiona *f) {
+/* 0x001A0370 */
+void Fiona_StateBlock(Fiona *f) {
     s32 *st = f->c.state;
 
     if (st[0] == 5) {
@@ -6808,7 +6836,7 @@ void func_00196A90(Fiona *f) {
     f->c.unk104[0] = FI(f, 0x1AD6CC, s32);
 }
 
-/* ---- scripted moves (the commands of func_0019F8A0) ---- */
+/* ---- scripted moves (the commands of Fiona_Requests) ---- */
 
 extern const PTMF D_003B2DB8;   /* walking to the scripted spot */
 

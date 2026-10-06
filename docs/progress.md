@@ -73,8 +73,8 @@ next session). Hewie is paused, not abandoned.
   `func_0013EFB0` (fills a target point, -1 none), `func_0013FDE0`, `func_0014C210`, ...
 - The big ones, last: `Hewie_SetAction` (5759 instructions: start action N, 129 callers; split by
   action ranges to test), `func_00141C00` (1404, move kind N), `func_00140CD0` (969, target
-  check), vtable `func_00167BC0` (+0x30 main update), `func_00166DF0` (+0x34 door),
-  `func_001635B0` (+0x88), `func_00163DC0` (+0x84).
+  check), vtable `Hewie_Update` (+0x30 main update), `Hewie_Vt34` (+0x34 door),
+  `Hewie_Requests` (+0x88), `Hewie_StateBlock` (+0x84).
 - After all functions: the cleanup pass (real struct fields for the `HW(h, 0xF3xxx, T)`
   accesses, enums for actions / modes / behaviours, names). Agreed: no restructure before
   every function is in.

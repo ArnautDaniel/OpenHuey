@@ -15,7 +15,8 @@ void BitMask_Clear(u8 *p, s32 bit) {
     }
 }
 
-s32 func_0017FD40(void *p) {
+/* 0x0017FD40 */
+s32 Fiona_IsBusy(void *p) {
     return 1;
 }
 

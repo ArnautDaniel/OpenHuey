@@ -61,13 +61,13 @@ From looking at the converted models; names with `?` are guesses.
 | `HEW_1xx.MTN` | | extra motion banks (same format as the PCK's motion bank) |
 
 Hewie's model class: vtable `D_0046B240`, 0xB90 bytes at Character +0xF0, built by
-`func_003A10B0` (base `func_0016F4B0`). Fiona's loader `func_001A4110` (vtbl +0x14) shows the
+`func_003A10B0` (base `func_0016F4B0`). Fiona's loader `Fiona_LoadFiles` (vtbl +0x14) shows the
 load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 
 ## .PCK
 
 `u32 count` (4), then `count` resource offsets (0 = none). The character's setup
-(`func_001A3EE0` for Fiona) turns them into pointers on the model:
+(`Fiona_FilesLoaded` for Fiona) turns them into pointers on the model:
 
 | Resource | Model field | What |
 |---|---|---|
