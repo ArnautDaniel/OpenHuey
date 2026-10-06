@@ -1163,8 +1163,9 @@ void *func_002D0110(SubScreen *w, s32 flags) {
     return w;
 }
 
-/* scene mode 5 (0x117540 bytes; vtable D_0047A330): the title's sub screen (+0x180) - load /
- * save - on its own, with the message object (+0xA9180), the BGM (+0x1174E4) and a task (+0x48) */
+/* scene mode 5, the ending (0x117540 bytes; vtable D_0047A330, scene_ending.c): the sub screen
+ * (+0x180) for the clear-data save, the message object (+0xA9180), the BGM (+0x1174E4) and a
+ * task (+0x48) */
 void *Scene5_ctor(u8 *s) {
     SubScreen *w = (SubScreen *)(s + 0x180);
 

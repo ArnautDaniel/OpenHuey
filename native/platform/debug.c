@@ -2,7 +2,7 @@
  *
  *   HG_ROOM=<room>   go into the game at room <room> (hex, e.g. 2A: where New Game starts)
  *                    instead of the title (the boot scene still runs: it loads the system
- *                    files)
+ *                    files); HG_ROOM=END: the ending (staff roll, results) instead
  *   HG_FASTBOOT=1    the boot scene skips its logos, the Capcom movie and the caution screen
  *                    (its loading steps still run)
  *   HG_NOPARTNER=1   no partner (Hewie) in the game scene
@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void hg_debug_next_scene(int32_t *mode, int32_t *param) {
     static int done;
@@ -21,6 +22,10 @@ void hg_debug_next_scene(int32_t *mode, int32_t *param) {
         return;
     }
     done = 1;
+    if (strcmp(room, "END") == 0) {
+        *mode = 5;
+        return;
+    }
     *mode = 3;
     *param = (int32_t)strtol(room, NULL, 16);
 }

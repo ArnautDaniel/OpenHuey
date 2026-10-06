@@ -138,7 +138,7 @@ void Game_StateShutdown(Game *game) {
 extern Scene *SceneBoot_ctor(void *mem);  /* mode 1: memory card check, logos */
 extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen, menus */
 extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
-extern Scene *Scene5_ctor(void *mem);     /* mode 5: unknown */
+extern Scene *Scene5_ctor(void *mem);     /* mode 5: the ending */
 extern void func_001779B0(void *obj, s32 param);
 extern VObject *D_0044E968; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
 extern void *gProgress;     /* include/progress.h */

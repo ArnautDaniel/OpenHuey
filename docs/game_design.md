@@ -127,3 +127,33 @@ plays on. Pressing any face button cuts this short, and the screen fades to blac
 
 The music depends on how far you got. There are five game over tracks, picked from your story
 progress flags, plus one used only by a single special case.
+
+## The results screen and its type
+
+After the staff roll (Start skips it once it is showing), the results screen
+(`src/game/scene_ending.c`) shows the picture for the ending you got (A to D). The picture
+fades in, holds for a second and a half, then dims to half while the record fades in: ending,
+time, dog level, panic, items, critical Hewie injuries, enemies defeated and type. The
+record waits two and a half seconds before a button moves it on.
+
+The type is the first rule on this list that your record meets. The number that earned it is
+highlighted in the record.
+
+1. A Hewie value the game keeps at the ending is 100 or more.
+2. You got ending C.
+3. Dog level A with no critical Hewie injuries.
+4. 80% or more of the items.
+5. 30 or more enemies defeated.
+6. A clear in under 3 hours ("Track Star").
+7. Dog level A or B.
+8. Panic 30 or more.
+9. A clear in under 6 hours.
+10. A clear in under 20 hours.
+11. Anything else, which means 20 hours or more.
+
+The dog level comes from three Hewie values in the record. Dog level A is the best and E the
+lowest.
+
+Each type you earn is remembered in the system data. Clearing the game also sets the "cleared"
+bit and the bit for that ending. If a clear unlocks something new, its messages come before
+the type's own message; types 3 to 6 above each have one. After that comes the clear-data save.
