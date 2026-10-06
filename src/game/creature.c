@@ -3368,3 +3368,68 @@ void func_00326DA0(Character *c) {
     }
     cr19_enter(c, 5);
 }
+
+/* turn to Fiona; once within 20 degrees, state 5 */
+static inline void cr19_face_fiona(Character *c) {
+    f32 h = func_001244D0(&c->a, gCharPlayer->a.pos);
+
+    if (CR19_TURN_LEFT(c, h) < 0x1.6571860p-2f /* 20 degrees */) {
+        cr19_enter(c, 5);
+    } else {
+        func_0032B080(c, gCharPlayer->a.pos);
+    }
+}
+
+/* by step +0x6C: 0 walk (out of contact, +0x2D) to its spot - triangle 0xE in room 0x8F, in
+   room 0x91 0xD0 / 0x9F for kinds 8 / 9 (^ 0x80) - and on arriving block 0x4020028 again;
+   1 turn to Fiona (state 5) */
+void func_00327030(Character *c) {
+    u8 *k = CR(c);
+    f32 at[4] __attribute__((aligned(16)));
+    u32 tri = 0;   /* (the original's register was left as it came in other rooms) */
+    u32 kk;
+
+    switch (AT(k, 0x6C, u8)) {
+    case 0:
+        c->a.unk2D = 1;
+        if (c->a.room == 0x91) {
+            kk = AT(k, 0x6D, u8) ^ 0x80;
+            if (kk == 8) {
+                tri = 0xD0;
+            } else if (kk == 9) {
+                tri = 0x9F;
+            }
+        } else if (c->a.room == 0x8F) {
+            tri = 0xE;
+        }
+        VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, at);
+        if (func_003255C0(c, tri, at, 0) != 0) {
+            return;
+        }
+        if (func_001274E0(c, cr19_stride(c)) != 0) {
+            return;
+        }
+        AT(k, 0x6C, u8)++;
+        c->a.unk2D = 0;
+        c->a.navMask = 0x4020028;
+        c->pathReq->mask = c->a.navMask;
+        return;
+    case 1:
+        cr19_face_fiona(c);
+        return;
+    }
+}
+
+/* state: turn to Fiona (then state 5) */
+void func_003272E0(Character *c) {
+    cr19_face_fiona(c);
+}
+
+/* state: with Fiona caught (+0x1AD630) its approach at 20, else state 5 */
+void func_00327450(Character *c) {
+    if (AT(gCharPlayer, 0x1AD630, u8) == 0) {
+        cr19_enter(c, 5);
+        return;
+    }
+    func_00326130(c, 20.0f);
+}
