@@ -2674,7 +2674,7 @@ s32 FixModel_Draw(u8 *d) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))((VObject *)gSystemData);
+    model = VCALL(gGamePtr, 0x1C, u8 *(*)(VObject *))((VObject *)gGamePtr);
     off = AT(model, AT(d, 0x30, s32) * 4, s32);
     if (off <= 0) {
         return 1;

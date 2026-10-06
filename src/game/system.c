@@ -52,7 +52,7 @@ void Fades_Start(void *self, u8 *p);
 /* Game's base class constructor. */
 /* 0x0020E7F0 */
 void *GameBase_ctor(Game *game) {
-    gSystemData = (u8 *)game;
+    gGamePtr = (u8 *)game;
     game->vtbl = D_0046BEE0;
     game->nextMode = 0;
     game->softResetEnabled = 0;

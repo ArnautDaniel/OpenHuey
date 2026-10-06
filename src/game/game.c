@@ -492,7 +492,7 @@ void *TexCache_dtor(u8 *o, s32 flags) {
 void *Obj46BEE0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046BEE0;
-        gSystemData = NULL;
+        gGamePtr = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -561,7 +561,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     Obj46AE10_dtor(g + 0x69AC0, 0);
 
     AT(g, 0x0, void **) = D_0046BEE0;
-    gSystemData = NULL;
+    gGamePtr = NULL;
     if ((s16)flags > 0) {
         func_00100490(g);
     }

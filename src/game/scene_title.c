@@ -135,7 +135,7 @@ void SceneTitle_StateStart(SceneTitle *t);
 /* +0x10 entry: reset the message object and the sub screen, apply the options, then the title
  * sequence (SceneTitle_StateStart) */
 void SceneTitle_StateEntry(SceneTitle *t) {
-    u8 *sys = gSystemData;
+    u8 *sys = gGamePtr;
     PTMF s = {0, -1, {(void *)SceneTitle_StateStart}};
 
     t->timer = 0;
@@ -353,8 +353,8 @@ void SceneTitle_StateAttractFade(SceneTitle *t) {
  * mode) */
 void SceneTitle_StateOpeningFade(SceneTitle *t) {
     if (!title_movie_fade(t)) {
-        AT(gSystemData, 0x4, s32) = 3;
-        AT(gSystemData, 0x10, s32) = t->next == 5 ? 0x4000002A : 0x2A;
+        AT(gGamePtr, 0x4, s32) = 3;
+        AT(gGamePtr, 0x10, s32) = t->next == 5 ? 0x4000002A : 0x2A;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
     }
 }
@@ -914,8 +914,8 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
         ptmf_set_fn(&t->base.state, SceneTitle_StateNewGame);
         break;
     case 3:
-        AT(gSystemData, 0x4, s32) = 3;
-        AT(gSystemData, 0x10, s32) = -1;
+        AT(gGamePtr, 0x4, s32) = 3;
+        AT(gGamePtr, 0x10, s32) = -1;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     case 4:
@@ -924,8 +924,8 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
         ptmf_set_fn(&t->base.state, SceneTitle_StateNewGame);
         break;
     case 6:
-        AT(gSystemData, 0x4, s32) = 3;
-        AT(gSystemData, 0x10, s32) = 0x37;
+        AT(gGamePtr, 0x4, s32) = 3;
+        AT(gGamePtr, 0x10, s32) = 0x37;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     }

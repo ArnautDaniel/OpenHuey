@@ -79,7 +79,7 @@ s32 EventCond_Eval(VObject *ev) {
     case 0x60: {   /* resident flag set */
         u32 f = be16(pc + 1);
 
-        r = (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+        r = (AT(gGamePtr, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
         break;
     }
     case 0x04:   /* the exit taken (event +0x702) */

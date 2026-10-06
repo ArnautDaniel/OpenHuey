@@ -2205,7 +2205,7 @@ void EventCmd_Flags(VObject *ev) {
         VCALL(gSubScreen, 0x38, void (*)(VObject *, u32))(gSubScreen, n);
         break;
     case 0x12:   /* a resident flag */
-        flag_set(gSystemData + 0x24, n);
+        flag_set(gGamePtr + 0x24, n);
         break;
     }
 }

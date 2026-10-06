@@ -725,7 +725,7 @@ void MusicDir_Setup(u8 *d) {
     AT(d, 0xA39, u8) = 0;
     AT(d, 0x15, u8) = 0xFF;
     AT(d, 0x31, u8) = 0xFF;
-    AT(d, 0x4, f32) = AT(gSystemData, 0x38, f32);
+    AT(d, 0x4, f32) = AT(gGamePtr, 0x38, f32);
     if (gProgress != NULL) {
         AT(d, 0x8, f32) = AT(gProgress, 0x9F0, f32);
     } else {

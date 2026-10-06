@@ -52,7 +52,7 @@ void Bgm_Init(Bgm *b, void *work) {
     }
     ADXT_SetLpFlg(b->adxt, 1);
     ADXT_SetWaitPlayStart(b->adxt, 0);
-    b->volume[3] = *(f32 *)(gSystemData + 0x38);
+    b->volume[3] = *(f32 *)(gGamePtr + 0x38);
     b->volume[4] = 1.0f;
     b->volume[2] = 1.0f;
     b->volume[1] = 1.0f;

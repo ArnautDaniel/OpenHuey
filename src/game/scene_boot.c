@@ -115,7 +115,7 @@ void SceneBoot_StateLoadSystem(SceneBoot *boot) {
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(loader, sErrMesTex, boot->errMesTex);
     VCALL(gBootMessage, 0x8, void (*)(VObject *, s32, void *))(gBootMessage, 6, boot->errMesTex);
-    res = (VObject *)gSystemData;
+    res = (VObject *)gGamePtr;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sGameFixTex, VCALL(res, 0x20, void *(*)(VObject *))(res));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
@@ -167,8 +167,8 @@ void SceneBoot_StateDone(SceneBoot *boot) {
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
     Message_ClearAll(&boot->msg);
-    ((s32 *)gSystemData)[1] = 2;
-    ((s32 *)gSystemData)[4] = 2;
+    ((s32 *)gGamePtr)[1] = 2;
+    ((s32 *)gGamePtr)[4] = 2;
     VCALL(boot, 0x14, void (*)(SceneBoot *))(boot);
 }
 
@@ -186,7 +186,7 @@ static const char sMsgBaseTex[] = "SUBSCR\\MSG_BASE.TEX";
 /* Load the subtitle message file into the resident buffer. */
 /* 0x0037EC00 */
 void SceneBoot_LoadSubtitles(SceneBoot *boot) {
-    VObject *res = (VObject *)gSystemData;
+    VObject *res = (VObject *)gGamePtr;
 
     VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
         gFileLoader, sMsgSubBin, VCALL(res, 0x14, void *(*)(VObject *))(res));
@@ -272,7 +272,7 @@ u32 SceneBoot_StepTexts(SceneBoot *boot) {
         return 1;
     }
     boot->stepFlag = 0;
-    res = (VObject *)gSystemData;
+    res = (VObject *)gGamePtr;
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseBin, VCALL(res, 0xC, void *(*)(VObject *))(res));

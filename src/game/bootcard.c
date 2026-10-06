@@ -266,7 +266,7 @@ void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);
 
 /* the save screen is set up on the system data, with two work buffers */
 void SaveScreen_Init(BootCard *b, void *buf0, void *buf1) {
-    b->sys = (SysData *)((u8 *)gSystemData + 0x20);
+    b->sys = (SysData *)((u8 *)gGamePtr + 0x20);
     b->buf0 = buf0;
     b->buf1 = buf1;
 }
@@ -726,7 +726,7 @@ void BootCard_WriteSave(BootCard *b) {
     SAVE_HEADER(b->sys, b->cursor)[8] = 0;
     VCALL(gProgress, 0x70, void (*)(Progress *, u8))(gProgress, b->cursor);
     b->sys->flags = b->cursor;
-    AT(gSystemData, 0x2C, u32) |= 0x100000;
+    AT(gGamePtr, 0x2C, u32) |= 0x100000;
     sys_resum(b->sys);
     h = SAVE_HEADER(b->sys, b->cursor);
     AT32(h, 0) = bytes_sum(h, 0x18);
@@ -792,7 +792,7 @@ void BootCard_StateSave(BootCard *b) {
     case 0: {
         VObject *ld = gFileLoader;
 
-        AT(gSystemData, 0xC, u8) = 0;
+        AT(gGamePtr, 0xC, u8) = 0;
         b->port = 0;
         VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, str_SUBSCR_ICON_SYS, b->buf0);
         VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, str_SUBSCR_ICON00_ICO, b->buf1);
@@ -1173,7 +1173,7 @@ void BootCard_StateSave(BootCard *b) {
         b->state = b->task.answer == 0 ? 300 : 1;
         break;
     default:
-        AT(gSystemData, 0xC, u8) = 1;
+        AT(gGamePtr, 0xC, u8) = 1;
         Task_Close(&b->task);
         b->state = -1;
         break;

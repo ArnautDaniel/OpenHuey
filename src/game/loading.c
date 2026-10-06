@@ -185,7 +185,7 @@ s32 LoadingEmblem_Draw(u8 *o) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))((VObject *)gSystemData);
+    model = VCALL(gGamePtr, 0x1C, u8 *(*)(VObject *))((VObject *)gGamePtr);
     if (AT(model, 0x0, s32) <= 0) {
         return 1;
     }

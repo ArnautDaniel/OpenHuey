@@ -169,7 +169,7 @@ void SceneGame_StateEntry(Scene *game) {
     void *fiona = (u8 *)game + SG_FIONA;
     void *partner = (u8 *)game + SG_PARTNER;
     VObject *obj550 = gRandom;
-    u8 *save = (u8 *)gSystemData + 0x190;
+    u8 *save = (u8 *)gGamePtr + 0x190;
     void *obj980;
     VObject *obj560;
     f32 *settingDst;
@@ -516,9 +516,9 @@ s32 SceneGame_SubStartRoom(Scene *g) {
         Progress_ActivateChar(prog, 1);
         VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, NULL);
     } else {
-        u8 *save = (u8 *)gSystemData + 0x190;
+        u8 *save = (u8 *)gGamePtr + 0x190;
 
-        AT(g, SG_ENTRY, s32) = AT(gSystemData, 0x194, s32);
+        AT(g, SG_ENTRY, s32) = AT(gGamePtr, 0x194, s32);
         SubScreen_FromSave((SubScreen *)((u8 *)g + 0xF87240), save);
         VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, save + 0x1010);
     }
@@ -581,7 +581,7 @@ s32 SceneGame_SubWaitRoom(Scene *g) {
         return 1;
     }
     if (AT(g, 0xF6CD28, u8) == 1) {
-        RoomMgr_LoadRoom((u8 *)g + 0x73EE80, AT(gSystemData, 0x198, s32),
+        RoomMgr_LoadRoom((u8 *)g + 0x73EE80, AT(gGamePtr, 0x198, s32),
                       (u8)(AT(g, 0xF6C1B0, s32) == 0));
     }
     AvoidPrompt_Upload((u8 *)g + 0x1053480);
@@ -609,7 +609,7 @@ void SceneGame_RoomIn(Scene *g) {
     if (AT(g, 0xF6CD28, u8) == 1) {
         VObject *sub = (VObject *)((u8 *)g + 0xF87240);
 
-        VCALL(sub, 0x2C, void (*)(VObject *, s32))(sub, AT(gSystemData, 0x1A80, s8));
+        VCALL(sub, 0x2C, void (*)(VObject *, s32))(sub, AT(gGamePtr, 0x1A80, s8));
     }
     for (i = 0; i < 3; i++) {
         if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
@@ -683,7 +683,7 @@ void SceneGame_EnterRoom(Scene *g) {
     }
 #endif
     if (AT(g, 0xF6CD28, u8) == 1) {
-        u8 *rd = gSystemData;
+        u8 *rd = gGamePtr;
         u8 *save = rd + 0x190;
         Progress *gp;
         u8 *cs;
@@ -1085,8 +1085,8 @@ void SceneGame_SubPlay(Scene *g) {
         if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
             scenes_to_save();
             VCALL(loader, 0x1C, void (*)(VObject *))(loader);
-            AT(gSystemData, 0x4, s32) = 2;
-            AT(gSystemData, 0x10, s32) = 1;
+            AT(gGamePtr, 0x4, s32) = 2;
+            AT(gGamePtr, 0x10, s32) = 1;
         }
         return;
     }
@@ -1899,7 +1899,7 @@ void SceneGame_SubScreenStart(Scene *g) {
     AT(g, 0x73EEE0, u8) = 1;
 }
 
-/* save the game into the resident data (gSystemData): save slot `slot`'s header (+0x70, 0x18
+/* save the game into the resident data (gGamePtr): save slot `slot`'s header (+0x70, 0x18
  * each: room, the sub screen's +0x30, a flag of +0x70, the date, +0x1004..+0x1007) and the
  * snapshot +0x190 (room, entry, Fiona's triangle / +0xE8 / +0xEC / position / heading, the six
  * characters' kinds and activity, the progress flags +0x50, the rooms' +0x1010 (13 words), the
@@ -1907,7 +1907,7 @@ void SceneGame_SubScreenStart(Scene *g) {
  * things / gPlacedThings save their state */
 /* 0x0039B800 */
 void SceneGame_Save(Scene *g, u32 slot) {
-    u8 *rd = gSystemData;
+    u8 *rd = gGamePtr;
     u8 *h = rd + 0x70 + (slot & 0xFF) * 0x18;
     u8 *s = rd + 0x190;
     VObject *sub = (VObject *)((u8 *)g + 0xF87240);
@@ -2016,8 +2016,8 @@ void SceneGame_SubPaused(Scene *g) {
             if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
                 scenes_to_save();
                 VCALL(loader, 0x1C, void (*)(VObject *))(loader);
-                AT(gSystemData, 0x4, s32) = 2;
-                AT(gSystemData, 0x10, s32) = 1;
+                AT(gGamePtr, 0x4, s32) = 2;
+                AT(gGamePtr, 0x10, s32) = 1;
             }
             return;
         }
@@ -2159,8 +2159,8 @@ void SceneGame_SubTransition(Scene *g) {
         }
         scenes_to_save();
         VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
-        AT(gSystemData, 0x4, s32) = AT(g, 0x73EB40, u8) == 2 ? 5 : 2;
-        AT(gSystemData, 0x10, s32) = 0;
+        AT(gGamePtr, 0x4, s32) = AT(g, 0x73EB40, u8) == 2 ? 5 : 2;
+        AT(gGamePtr, 0x10, s32) = 0;
         return;
     }
     VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);

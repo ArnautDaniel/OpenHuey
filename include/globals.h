@@ -34,7 +34,7 @@ extern VObject *gMusic;         /* 0x0044E970 the music controller (BgmCtl, bgm.
 extern u8 *gEffects;            /* 0x0044E578 the effect manager (effectmgr.h) */
 extern u8 *gRoomEffects;        /* 0x0044E4C0 */
 extern u8 *gCreatures;          /* 0x0044F258 the room creatures (10 slots) */
-extern u8 *gSystemData;         /* 0x0044E978 the system data (options, unlocks, the clear record) */
+extern u8 *gGamePtr;          /* 0x0044E978 the Game object (gGame): its vtable gives the resident buffers; +0x4 / +0x10 the next scene and its start, +0x20 the system data (options, unlocks, the clear record) */
 extern void *gSceneTable;       /* 0x0044E960 the scene table: scenes at +4, the scene heap at +0x10D9040 */
 extern void *gSceneTitle;       /* 0x0044E968 the title scene */
 extern void *gSubPool;          /* 0x0044E990 the sub screen's entry pool */

@@ -955,7 +955,7 @@ Movie *Movie_ctor(Movie *m) {
     m->time = 0;
     m->shownFrame = -1;
     m->frames = NULL;
-    m->volume[2] = *(f32 *)(gSystemData + 0x38);
+    m->volume[2] = *(f32 *)(gGamePtr + 0x38);
     if (gProgress != NULL) {
         m->volume[3] = *(f32 *)((u8 *)gProgress + 0x9F0);
     } else {

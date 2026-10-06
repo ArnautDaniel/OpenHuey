@@ -192,8 +192,8 @@ void SceneEnding_SeqSave(SceneEnding *s) {
     if (END_SUB(s)->open) {
         return;
     }
-    AT(gSystemData, 0x4, s32) = 2;
-    AT(gSystemData, 0x10, s32) = 0;
+    AT(gGamePtr, 0x4, s32) = 2;
+    AT(gGamePtr, 0x10, s32) = 0;
     VCALL(s, 0x14, void (*)(SceneEnding *))(s);
 }
 
@@ -379,7 +379,7 @@ static inline s32 bit_test(u32 *bits, s32 n) {
  * the title's message (SceneEnding_SeqTitleMessage) or the fade to the save */
 /* 0x00372A90 */
 void SceneEnding_SeqResults(SceneEnding *s) {
-    u8 *sys = gSystemData;
+    u8 *sys = gGamePtr;
     u8 *st = sys + 0x190;
     char buf[12];
     u8 a;
@@ -727,7 +727,7 @@ static inline s32 ending_title(SceneEnding *s, u8 *st) {
  * MSG_END loaded, the dog level and type worked out, the results music (0x33); then SceneEnding_SeqResults */
 /* 0x003738C0 */
 void SceneEnding_SeqSetup(SceneEnding *s) {
-    u8 *st = gSystemData + 0x190;
+    u8 *st = gGamePtr + 0x190;
     VObject *msg;
     VObject *snd;
 

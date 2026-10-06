@@ -195,7 +195,7 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
 
 /* apply the options: controller layout, vibration, sound output, volume, screen position */
 void SubScreen_ApplyOptions(VObject *s) {
-    u8 *opt = gSystemData + 0x30;
+    u8 *opt = gGamePtr + 0x30;
     VObject *o;
     f32 vol;
 
@@ -278,7 +278,7 @@ static void sub_se(void) {
 
 /* the options being edited: a copy of the system data's */
 static void sub_copy_options(SubScreen *s) {
-    u8 *sys = gSystemData;
+    u8 *sys = gGamePtr;
     s32 i;
 
     for (i = 0; i < 7; i++) {
@@ -409,7 +409,7 @@ void SubScreen_Open(SubScreen *s) {
         s->page[1] = 1;
         s->page[2] = 2;
         n = 3;
-        sys = gSystemData;
+        sys = gGamePtr;
         if ((AT(sys, 0x2C, u32) & 0x40000) != 0) {
             s->page[3] = 3;
             n++;
@@ -991,7 +991,7 @@ static void opt_back(SubScreen *s, s32 se) {
 /* editing the controller layout (4 types): left / right choose, confirm applies it, cancel
  * (or the in-game menu button) restores it */
 void Options_StateLayout(SubScreen *s) {
-    s8 *opt = (s8 *)gSystemData + 0x30;
+    s8 *opt = (s8 *)gGamePtr + 0x30;
 
     if (!s->fading) {
         if (gMenuPressed & MENU_LEFT) {
@@ -1025,7 +1025,7 @@ void Options_StateLayout(SubScreen *s) {
 
 /* editing the vibration: left / right toggle it (turning it on buzzes the pad) */
 void Options_StateVibration(SubScreen *s) {
-    s8 *opt = (s8 *)gSystemData + 0x30;
+    s8 *opt = (s8 *)gGamePtr + 0x30;
     VObject *o;
 
     if (!s->fading) {
@@ -1066,7 +1066,7 @@ void Options_StateVibration(SubScreen *s) {
 
 /* editing the sound output: left / right cycle it (heard at once) */
 void Options_StateSound(SubScreen *s) {
-    s8 *opt = (s8 *)gSystemData + 0x30;
+    s8 *opt = (s8 *)gGamePtr + 0x30;
 
     if (!s->fading) {
         if (gMenuPressed & MENU_LEFT) {
@@ -1092,7 +1092,7 @@ void Options_StateSound(SubScreen *s) {
 
 /* editing the volume: left / right in steps of 1/64 (heard at once) */
 void Options_StateVolume(SubScreen *s) {
-    u8 *opt = (u8 *)gSystemData + 0x30;
+    u8 *opt = (u8 *)gGamePtr + 0x30;
     VObject *snd;
     f32 v;
 
@@ -1140,7 +1140,7 @@ void Options_StateVolume(SubScreen *s) {
 
 /* editing the screen position: the D-pad moves it (-32..32 each way, seen at once) */
 void Options_StatePosition(SubScreen *s) {
-    s8 *opt = (s8 *)gSystemData + 0x30;
+    s8 *opt = (s8 *)gGamePtr + 0x30;
     s32 a;
 
     if (!s->fading) {
@@ -1206,7 +1206,7 @@ void Options_StateDefaults(SubScreen *s) {
         return;
     }
     if (t->answer == 0) {
-        s8 *sys = gSystemData;
+        s8 *sys = gGamePtr;
         VObject *o;
 
         sys[0x36] = 0;
@@ -1688,7 +1688,7 @@ void SubScreen_StateSave(SubScreen *s) {
 /* is extra `k` unlocked (the system data's +0x24 / +0x2C flags) */
 /* 0x0038DF90 */
 s32 SubScreen_ExtraUnlocked(SubScreen *s, u8 k) {
-    u32 f24 = AT(gSystemData, 0x24, u32), f2C;
+    u32 f24 = AT(gGamePtr, 0x24, u32), f2C;
 
     switch (k) {
     case 3:
@@ -1696,18 +1696,18 @@ s32 SubScreen_ExtraUnlocked(SubScreen *s, u8 k) {
     case 5:
         return (f24 & 0x8) != 0;
     case 8:
-        f2C = AT(gSystemData, 0x2C, u32);
+        f2C = AT(gGamePtr, 0x2C, u32);
         if (!(f2C & 0x400000)) {
             return 0;
         }
         return (f24 & 0x100) || (f24 & 0x1000);
     case 10: case 12: case 14:
     case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
-        return (AT(gSystemData, 0x2C, u32) & 0x400000) != 0;
+        return (AT(gGamePtr, 0x2C, u32) & 0x400000) != 0;
     case 16: case 18: case 20: case 22:
-        return (AT(gSystemData, 0x2C, u32) & 0x2000000) != 0;
+        return (AT(gGamePtr, 0x2C, u32) & 0x2000000) != 0;
     case 15: case 17: case 19: case 21: case 23:
-        return (AT(gSystemData, 0x2C, u32) & 0x200000) != 0;
+        return (AT(gGamePtr, 0x2C, u32) & 0x200000) != 0;
     }
     return (f24 & 0x1) != 0;
 }
@@ -1725,7 +1725,7 @@ void SubScreen_StateEntryQuestion(SubScreen *s) {
     if (AT(&s->ask, 0x10, u8) == 0) {
         u16 *e = kExtraUnlocks[SUB_PAGE(s, 0x0, u8)];
 
-        if ((AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
+        if ((AT(gGamePtr, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
             Task_Open(&s->ask, e[3]);
             ptmf_set(&s->state, &SubScreen_StateQuestion_ptmf);
         } else {
@@ -2114,13 +2114,13 @@ void Results_Setup(SubScreen *s) {
     SUB_PAGE(s, 0x5, u8) = 0x40;
     diff = Progress_GetVar(gProgress, 0x2E);
     if (diff == 0) {
-        if (!(AT(gSystemData, 0x2C, u32) & 0x40000)) {
-            AT(gSystemData, 0x2C, u32) |= 0x40000;
+        if (!(AT(gGamePtr, 0x2C, u32) & 0x40000)) {
+            AT(gGamePtr, 0x2C, u32) |= 0x40000;
             SUB_PAGE(s, 0x2, u8) = 1;
         }
     } else if (diff == 1) {
-        if (!(AT(gSystemData, 0x2C, u32) & 0x80000)) {
-            AT(gSystemData, 0x2C, u32) |= 0x80000;
+        if (!(AT(gGamePtr, 0x2C, u32) & 0x80000)) {
+            AT(gGamePtr, 0x2C, u32) |= 0x80000;
             SUB_PAGE(s, 0x2, u8) = 1;
         }
     }
@@ -2133,7 +2133,7 @@ void Results_Setup(SubScreen *s) {
         sec = 0x3B;
     }
     t = (h * 60 + m) * 60 + sec;
-    sys = gSystemData + diff * 12;
+    sys = gGamePtr + diff * 12;
     for (i = 0; i < 3; i++) {
         u8 *e = sys + 0x3C + i * 4;
 
@@ -2178,7 +2178,7 @@ void SubScreen_DrawEntries(SubScreen *s) {
         s32 y = (k % 8) * 35 + 0x5E;
 
         Task_Printf(&s->text, 0x30, y, color, str_N_7, k + 1);
-        if (AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
+        if (AT(gGamePtr, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, e[1]), 0x80, 0x30, 0x10, 0x15);
         } else {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
@@ -2532,7 +2532,7 @@ void Costumes_Setup(SubScreen *s) {
     SUB_PAGE(s, 0x5, u8) = 8;
     SUB_PAGE(s, 0x6, u8) = 0xFF;
     SUB_PAGE(s, 0x7, u8) = 0xFF;
-    sys = gSystemData;
+    sys = gGamePtr;
     if (!(AT(sys, 0x24, u32) & 0x2)) {
         SUB_PAGE(s, 0x3, u8) |= 0x80;
     }
@@ -2603,7 +2603,7 @@ void Gallery_DrawArtList(SubScreen *s) {
         s32 y = (k % 8) * 35 + 0x5E;
 
         Task_Printf(&s->text, 0x30, y, color, str_N_7, k + 1);
-        if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+        if (AT(gGamePtr, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, (k + 0x190) & 0xFFFF), 0x80, 0x30, 0x10,
                           0x15);
         } else {
@@ -2700,7 +2700,7 @@ extern u8 D_0044BF30[][6];   /* per track: its unlock flag (u16), title (u16), B
 static inline s32 music_unlocked(u8 k) {
     u16 f = AT(D_0044BF30[k], 0x0, u16);
 
-    return (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+    return (AT(gGamePtr, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
 }
 
 /* the music gallery (screen kind 0x8D): the language 1, the headings, the tracks of the
@@ -2981,7 +2981,7 @@ void Gallery_StateArtList(SubScreen *s) {
         if (pad & MENU_CONFIRM) {
             u16 f = D_0044BFE0[*k];
 
-            if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+            if (AT(gGamePtr, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
                 ptmf_set(&s->state, &SubScreen_StatePageOpen_ptmf);
                 Sound_PlaySE(SE_DECIDE);
             } else {
@@ -3069,7 +3069,7 @@ void Results_State(SubScreen *s) {
     RESULTS_PART(0x110, 0x100, 3, 0x80);
     RESULTS_PART(0xC0, 0x100, 4, 0x80);
     for (i = 0; i < 3; i++) {
-        u8 *e = gSystemData + diff * 12 + 0x3C + i * 4;
+        u8 *e = gGamePtr + diff * 12 + 0x3C + i * 4;
         u8 lit = SUB_PAGE(s, 0x3, u8) == i;
         u8 h, m, sec;
 
@@ -3336,7 +3336,7 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 /* movie `i` was seen (or everything is open) */
 static s32 movie_seen(s32 i) {
-    u32 *flags = &AT(gSystemData, 0x24, u32);
+    u32 *flags = &AT(gGamePtr, 0x24, u32);
     u8 f;
 
     if (flags[0] & 0x200000) {
@@ -3835,7 +3835,7 @@ void SubScreen_StateExtrasMenu(SubScreen *s) {
     }
     e = SUB_PAGE(s, EXTRA_CUR(s), u8);
     if (e >= 1 && e <= 4) {
-        u8 *rec = (u8 *)gSystemData + (e - 1) * 12;
+        u8 *rec = (u8 *)gGamePtr + (e - 1) * 12;
 
         for (i = 0; i < 3; i++, rec += 4) {
             u8 m = rec[0x3C], sec = rec[0x3D], f = rec[0x3E];
