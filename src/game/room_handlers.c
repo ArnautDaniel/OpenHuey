@@ -5511,3 +5511,51 @@ s32 func_00341300(void *self, void *a1, u8 *cmd) {
     func_0016CD30(gProgress);
     return 1;
 }
+
+/* ---- the countdown clock (progress +0xFC4 time up, +0xFC5 / +0xFC6 minutes / seconds) ----
+ * Each room's frame hook draws it at (431, 395) through the event manager's text +0x78: "59:59"
+ * (and the flag pinned to 1) while time is up, else "MM:SS" built in its own buffer. */
+static inline s32 clock_draw(char *buf, const char *full) {
+    u8 *p = (u8 *)gProgress;
+    VObject *ev;
+
+    if (p[0xFC4] > 0) {
+        ev = D_0044E4D0;
+        VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
+            ev, 0x1AF, 0x18B, 0, full, 0x80, 0x30, 0x10, 0x15);
+        p[0xFC4] = 1;
+        return 1;
+    }
+    buf[0] = p[0xFC5] / 10 + '0';
+    buf[2] = ':';
+    buf[1] = p[0xFC5] % 10 + '0';
+    buf[3] = p[0xFC6] / 10 + '0';
+    buf[5] = 0;
+    buf[4] = p[0xFC6] % 10 + '0';
+    ev = D_0044E4D0;
+    VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
+        ev, 0x1AF, 0x18B, 0, buf, 0x80, 0x30, 0x10, 0x15);
+    return 1;
+}
+
+extern char D_0047B298[], D_0047B2A0[], D_0047B2A8[], D_0047B2B0[], D_0047B2B8[], D_0047B2C8[], D_0047B2D0[], D_0047B2E0[], D_0047B2F0[], D_0047B2F8[], D_0047B300[], D_0047B308[], D_0047B310[], D_0047B318[], D_0047B320[], D_0047B328[], D_0047B330[], D_0047B338[];
+extern const char D_004636E0[], D_004636E8[], D_004636F0[], D_004636F8[], D_00463700[], D_00463720[], D_00463728[], D_00463730[], D_00463738[], D_00463928[], D_00463930[], D_00463938[], D_00463958[], D_004639B8[], D_004639E0[], D_00463A18[], D_00463A38[], D_00463A40[];   /* "59:59" */
+
+s32 func_0036E090(void) { return clock_draw(D_0047B298, D_004636E0); }
+s32 func_0036E400(void) { return clock_draw(D_0047B2A0, D_004636E8); }
+s32 func_0036E6B0(void) { return clock_draw(D_0047B2A8, D_004636F0); }
+s32 func_0036E930(void) { return clock_draw(D_0047B2B0, D_004636F8); }
+s32 func_0036EBE0(void) { return clock_draw(D_0047B2B8, D_00463700); }
+s32 func_0036F000(void) { return clock_draw(D_0047B2C8, D_00463720); }
+s32 func_0036F690(void) { return clock_draw(D_0047B2D0, D_00463728); }
+s32 func_0036FA50(void) { return clock_draw(D_0047B2E0, D_00463730); }
+s32 func_0036FE70(void) { return clock_draw(D_0047B2F0, D_00463738); }
+s32 func_00378A30(void) { return clock_draw(D_0047B2F8, D_00463928); }
+s32 func_00379140(void) { return clock_draw(D_0047B300, D_00463930); }
+s32 func_003793F0(void) { return clock_draw(D_0047B308, D_00463938); }
+s32 func_003796D0(void) { return clock_draw(D_0047B310, D_00463958); }
+s32 func_003799A0(void) { return clock_draw(D_0047B318, D_004639B8); }
+s32 func_00379DB0(void) { return clock_draw(D_0047B320, D_004639E0); }
+s32 func_0037A450(void) { return clock_draw(D_0047B328, D_00463A18); }
+s32 func_0037A780(void) { return clock_draw(D_0047B330, D_00463A38); }
+s32 func_0037AA30(void) { return clock_draw(D_0047B338, D_00463A40); }
