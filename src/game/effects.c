@@ -3013,6 +3013,83 @@ void func_0037B680(u8 *e) {
     func_002E56C0(e + 0x70);
 }
 
+/* ---- D_0047A6F0 (0x48 bytes): a source of dust motes (D_0047A6D0) at +0x30 heading +0x40 - eight
+ * timers (+0x4) each starting a mote when it runs out (every 300 frames); stopped by +0x44 ---- */
+
+extern void *D_0047A6D0[];
+extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
+
+/* a mote's start arguments */
+typedef struct {
+    f32 pos[4];
+    f32 heading;
+    s32 going;   /* already part way through its life */
+} MoteArgs;
+
+static inline void Mote_Init(void **obj) {
+    obj[0] = D_0047A6D0;
+    obj[0x70 / 4] = D_00469D00;
+    ((s32 *)obj)[0x74 / 4] = -1;
+    obj[0x70 / 4] = D_0046FC30;
+}
+
+/* a mote started at the source */
+static inline void mote_start(u8 *e, u8 *mgr, s32 going) {
+    MoteArgs a __attribute__((aligned(16)));
+    s32 slot = Effect_New(mgr, 0xC0, Mote_Init);
+
+    sceVu0CopyVector(a.pos, (f32 *)(e + 0x30));
+    a.heading = AT(e, 0x40, f32);
+    a.going = going;
+    func_002D6090(mgr, slot, &a);
+}
+
+/* +0x18 start: arg { position, heading in degrees } (none: stopped); six motes at once (already
+ * going), their timers and two more at random */
+void func_0037BA00(u8 *e, f32 *arg) {
+    u8 *mgr;
+    VObject *rnd;
+    s32 i;
+
+    if (arg == NULL) {
+        AT(e, 0x44, u8) = 1;
+        return;
+    }
+    sceVu0CopyVector((f32 *)(e + 0x30), arg);
+    AT(e, 0x40, f32) = func_002E2D00(0x1.921fb6p+1f * arg[4] / 180.0f);
+    rnd = D_0044E550;
+    mgr = D_0044E578;
+    for (i = 0; i < 8; i++) {
+        AT(e, 0x4 + i * 4, s32) = (s32)(300.0f * burst_rnd(rnd));
+        if (i < 6) {
+            AT(e, 0x4 + i * 4, s32) = (s32)(300.0f * burst_rnd(rnd));
+            mote_start(e, mgr, 1);
+        } else {
+            AT(e, 0x4 + i * 4, s32) = (s32)(30.0f * burst_rnd(rnd));
+        }
+    }
+}
+
+/* +0x10 update (0 once stopped): each timer counts down; run out, a new mote and 300 more */
+s32 func_0037BCA0(u8 *e) {
+    u8 *mgr;
+    s32 i;
+
+    if (AT(e, 0x44, u8) == 1) {
+        return 0;
+    }
+    mgr = D_0044E578;
+    for (i = 0; i < 8; i++) {
+        if (AT(e, 0x4 + i * 4, s32) != 0) {
+            AT(e, 0x4 + i * 4, s32)--;
+        } else {
+            AT(e, 0x4 + i * 4, s32) = 0x12C;
+            mote_start(e, mgr, 0);
+        }
+    }
+    return 1;
+}
+
 /* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
  * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
  * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
