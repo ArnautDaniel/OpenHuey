@@ -6420,3 +6420,81 @@ extern const char D_004636D8[], D_00463A48[];   /* "59:59" */
 
 s32 func_0036DB90(void) { return clock_draw_saved(D_0047B290, D_004636D8); }
 s32 func_0037ACE0(void) { return clock_draw_saved(D_0047B340, D_00463A48); }
+
+/* the EE's float to int: past the top it holds at 0x7FFFFFFF */
+static inline s32 ee_ftoi(f32 v) {
+    return v >= 2147483648.0f ? 0x7FFFFFFF : (s32)v;
+}
+
+/* the screen fade (renderer +0x70, alpha in the top byte) and the stalker's light by cutscene
+ * frame: byte 3 0 up from frame 361 (2.04 a frame), 1 down to frame 605 (2.51), 2 up from 1140
+ * and 3 down to 1203 (5.57); full (0x80) leaves it to light 0xA, else light 0x23 (its +0xE4
+ * cleared); other bytes light 0x11 and the fade off (+0x64) */
+s32 func_0032E010(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k0 = {0x40028F5C}, k1 = {0x4020A3D7}, k2 = {0x40B23D71};
+    u32 t = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+    s32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        a = ee_ftoi(k0.f * (f32)(t - 361));
+        break;
+    case 1:
+        a = ee_ftoi(k1.f * (f32)(605 - t));
+        break;
+    case 2:
+        a = ee_ftoi(k2.f * (f32)(t - 1140));
+        break;
+    case 3:
+        a = ee_ftoi(k2.f * (f32)(1203 - t));
+        break;
+    default:
+        func_001267F0(D_0044F808, 0x11);
+        VCALL(D_0044E4F0, 0x64, void (*)(VObject *, u32, s32))(D_0044E4F0, 0x808080, 0);
+        return 1;
+    }
+    if (a >= 0x80) {
+        func_001267F0(D_0044F808, 0xA);
+        return 1;
+    }
+    if (a < 0) {
+        a = 0;
+    }
+    AT(D_0044F808, 0xE4, u8) = 0;
+    func_001267F0(D_0044F808, 0x23);
+    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, (u32)a << 24 | 0x808080);
+    return 1;
+}
+
+/* (as func_0032E010)  byte 3 2 up from frame 1268 (2.79 a frame, light 0x23) and 3 from frame 25
+ * (4.27, light 0xF), held at 0x80; 1 the fade fully on with light 0xA, else off with light 0x11
+ * (+0x64) */
+s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k2 = {0x40328F5C}, k3 = {0x4088A3D7};
+    u32 t = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+    u32 a, s = 0;
+
+    switch (cmd[3]) {
+    case 2:
+    case 3:
+        a = cmd[3] == 2 ? (u32)(k2.f * (f32)(t - 1268)) : (u32)(k3.f * (f32)(t - 25));
+        if (a > 0x80) {
+            a = 0x80;
+        }
+        AT(D_0044F808, 0xE4, u8) = 0;
+        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, a << 24 | 0x808080);
+        func_001267F0(D_0044F808, cmd[3] == 2 ? 0x23 : 0xF);
+        return 1;
+    case 1:
+        s = 0xFF;
+        break;
+    }
+    if (s >= 0xFF) {
+        func_001267F0(D_0044F808, 0xA);
+        s = 0xFF;
+    } else {
+        func_001267F0(D_0044F808, 0x11);
+    }
+    VCALL(D_0044E4F0, 0x64, void (*)(VObject *, u32, s32))(D_0044E4F0, s << 24 | 0x808080, 0);
+    return 1;
+}
