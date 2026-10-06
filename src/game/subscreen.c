@@ -1941,7 +1941,7 @@ void SubScreen_StateEquipAsk(SubScreen *s) {
     if (AT(&s->ask, 0x48, u8) == 0) {
         Items_Equip(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
-            func_00182FC0((Fiona *)gCharPlayer);
+            Fiona_ShowEquipment((Fiona *)gCharPlayer);
         }
     }
     ptmf_set(&s->state, &D_0044B368);
@@ -2023,7 +2023,7 @@ void SubScreen_StateThrowAsk(SubScreen *s) {
     } else if (AT(&s->ask, 0x48, u8) == 0) {
         Items_UseOne(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
-            func_00182FC0((Fiona *)gCharPlayer);
+            Fiona_ShowEquipment((Fiona *)gCharPlayer);
         }
         Task_Open(&s->ask, 0x57);
         ptmf_set(&s->state, &D_0044B348);
@@ -4441,14 +4441,14 @@ void SubScreen_StateItemActions(SubScreen *s) {
                 } else if (equip == 1) {
                     Items_Unequip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
-                        func_00182FC0((Fiona *)gCharPlayer);
+                        Fiona_ShowEquipment((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2E8);
                 } else if (equip == 0) {
                     Items_Equip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
-                        func_00182FC0((Fiona *)gCharPlayer);
+                        Fiona_ShowEquipment((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2D8);

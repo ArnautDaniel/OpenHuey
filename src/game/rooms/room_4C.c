@@ -92,7 +92,7 @@ s32 Room4C_Cmd02(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x4C (D_0040ABF0): byte 3 0 starts counting what the player does (her +0x1AD710 on), 1
- * adds this frame's (func_00183190); at 35 events bit 0x13 */
+ * adds this frame's (Fiona_Shakes); at 35 events bit 0x13 */
 /* 0x002B3720 */
 s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
@@ -102,7 +102,7 @@ s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {
         AT(gCharPlayer, 0x1AD714, s32) = 0;
         break;
     case 1:
-        D_0047B250 += func_00183190((Fiona *)gCharPlayer);
+        D_0047B250 += Fiona_Shakes((Fiona *)gCharPlayer);
         if (D_0047B250 >= 0x23) {
             VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 0x13);
         }

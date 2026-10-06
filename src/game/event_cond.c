@@ -310,7 +310,7 @@ s32 EventCond_Eval(VObject *ev) {
         r = (u8)Zone_HasAnyChar((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
         break;
     case 0x3D:     /* the player can be controlled and the progress state is below 4 */
-        r = (u8)func_0019A2B0((Fiona *)((u8 *)gCharPlayer)) == 1 && AT(p, 0x7B8, u8) < 4;
+        r = (u8)Fiona_IsIdle((Fiona *)((u8 *)gCharPlayer)) == 1 && AT(p, 0x7B8, u8) < 4;
         break;
     case 0x3F:     /* the player's action (+0x1AD580) is be32 pc[1..4] */
         r = AT(gCharPlayer, 0x1AD580, u32) == (u32)(pc[1] << 24 | pc[2] << 16 | pc[3] << 8 | pc[4]);

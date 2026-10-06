@@ -1151,7 +1151,7 @@ void EventCmd_Run(VObject *ev) {
         AT(gCharPlayer, 0x1AD5F4, s32) = 0;
         break;
     case 0x4F:
-        func_00182E80((Fiona *)((u8 *)gCharPlayer));
+        Fiona_ResetRecovery((Fiona *)((u8 *)gCharPlayer));
         break;
     case 0x51:   /* this script's +0xAC with be16 pc[1..2] */
         VCALL(ev, 0xAC, void (*)(VObject *, u32))(ev, be16(pc + 1));
@@ -1220,10 +1220,10 @@ void EventCmd_Run(VObject *ev) {
         AT(p, 0x1114, u8) = pc[1];
         break;
     case 0x94:
-        func_0019A280((Fiona *)((u8 *)gCharPlayer), pc[1]);
+        Fiona_CalmDown((Fiona *)((u8 *)gCharPlayer), pc[1]);
         break;
     case 0x95:
-        func_0019A210((Fiona *)((u8 *)gCharPlayer), pc[1]);
+        Fiona_LowerRecovery((Fiona *)((u8 *)gCharPlayer), pc[1]);
         break;
     case 0x35:   /* room effect pc[1] made anew (a D_0046FF?? kind 8) and set going with pc[2..] */
         if (pc[1] < 0x20) {
@@ -1289,7 +1289,7 @@ void EventCmd_Run(VObject *ev) {
             }
         }
         break;
-    case 0x96: {   /* Fiona's func_0019A420 for character pc[1], be32 pc[2..5] (not > 0: 30) */
+    case 0x96: {   /* Fiona's Fiona_SetTarget for character pc[1], be32 pc[2..5] (not > 0: 30) */
         u8 *f = (u8 *)gCharPlayer;
         s32 i = (u8)Progress_SlotOfId(p, pc[1]);
         s32 n;
@@ -1300,9 +1300,9 @@ void EventCmd_Run(VObject *ev) {
             break;
         }
         if (n > 0) {
-            func_0019A420((Fiona *)f, i, n);
+            Fiona_SetTarget((Fiona *)f, i, n);
         } else {
-            func_0019A420((Fiona *)f, i, 0x1E);
+            Fiona_SetTarget((Fiona *)f, i, 0x1E);
         }
         break;
     }
@@ -1368,7 +1368,7 @@ void EventCmd_Run(VObject *ev) {
     case 0xB2: {
         u8 *f = (u8 *)gCharPlayer;
 
-        func_0019A0D0((Fiona *)f, Progress_SlotOfId(p, pc[1]), pc[2] != 0);
+        Fiona_StartAction4((Fiona *)f, Progress_SlotOfId(p, pc[1]), pc[2] != 0);
         break;
     }
     case 0xB4:
@@ -1378,7 +1378,7 @@ void EventCmd_Run(VObject *ev) {
         cmd_gift(ev, p);
         break;
     case 0xBC:
-        func_001817C0((Fiona *)((u8 *)gCharPlayer), 8);
+        Fiona_HewieReact((Fiona *)((u8 *)gCharPlayer), 8);
         break;
     case 0xBE: {   /* wait on the item manager's +0x20 (pc[1], this script's item pc[2]) */
         s32 item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[2]);

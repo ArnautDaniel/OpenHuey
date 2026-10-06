@@ -328,7 +328,7 @@ void WindowFlash_Draw(u8 *o) {
             v[1] = D_00444980[23 - id][1];
             v[2] = k01.f + D_00444980[23 - id][2];
         }
-        func_002E2DA0(v, m, v);
+        Mtx_ApplyVector(v, m, v);
         sceVu0AddVector(pt[k], (f32 *)(obj + 0x20), v);
         pt[k][3] = 1.0f;
     }

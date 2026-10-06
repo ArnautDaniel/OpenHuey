@@ -2325,7 +2325,7 @@ s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
     dir[1] = 0.0f;
     dir[2] = 1.0f;   /* (w is left unset, as in the original) */
     Mtx_TurnY(m, AT(e, 0x44, f32));
-    func_002E2DA0(dir, m, dir);
+    Mtx_ApplyVector(dir, m, dir);
     sceVu0SubVector(diff, (f32 *)pos, (f32 *)(e + 0x20));
     return !(sceVu0InnerProduct(dir, diff) < 0.0f);
 }

@@ -5382,7 +5382,7 @@ void DropletSpray_SetParams(u8 *o, const SprayParams *sp) {
         off[2] = sp->dist + sp->distRnd * RND();
         a = Angle_Wrap(kPi.f * (jitter - 2.0f * (k03.f * (share * RND())) + (f32)i * share) / 180.0f);
         Mtx_TurnY(m, a);
-        func_002E2DA0(off, m, off);
+        Mtx_ApplyVector(off, m, off);
         sceVu0AddVector((f32 *)(p + 0x10), (f32 *)sp->pos, off);
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + sp->lift;
         AT(p, 0x1C, f32) = 1.0f;
@@ -5424,7 +5424,7 @@ s32 DropletSpray_Update(u8 *o) {
         v[2] = AT(o, 0x6CC + i * 4, f32);
         v[3] = 0.0f;
         Mtx_TurnY(m, AT(o, 0x68C + i * 4, f32));
-        func_002E2DA0(v, m, v);
+        Mtx_ApplyVector(v, m, v);
         AT(o, 0x64C + i * 4, f32) = AT(o, 0x64C + i * 4, f32) - AT(o, 0x70C, f32);
         AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[0];
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x64C + i * 4, f32);

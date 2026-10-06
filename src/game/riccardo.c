@@ -824,7 +824,7 @@ s32 Riccardo_BlowFloorPoint(Pursuer *p, f32 *out) {
         off[2] = D_00415660[2];
         off[3] = D_00415660[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x31));
-        func_002E2DA0(out, m, off);
+        Mtx_ApplyVector(out, m, off);
         sceVu0AddVector(out, out, head);
         tri = Actor_TriTo(&p->c.a, out, 0x20008);
         if (tri == (u32)-1) {

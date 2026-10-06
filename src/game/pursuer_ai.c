@@ -1968,7 +1968,7 @@ s32 func_002143D0(Pursuer *p, const f32 *pos) {
         sceVu0SubVector(v, pos, p->c.a.pos);
     } else {
         Mtx_TurnY(m, Actor_HeadingTo(&p->c.a, pos));
-        func_002E2DA0(v, m, v);
+        Mtx_ApplyVector(v, m, v);
     }
     Actor_Move(&p->c.a, v);
     return Actor_Distance(&p->c.a, pos) < 1.0f;

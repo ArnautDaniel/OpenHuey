@@ -37,16 +37,16 @@ _Static_assert(__builtin_offsetof(Fiona, target) == 0x1AD600, "target");
 _Static_assert(sizeof(Fiona) == 0x1AD740, "Fiona size");
 
 /* fiona.c */
-extern void func_0019A420(Fiona *f, s32 slot, s32 param);
-extern void func_0019A210(Fiona *f, s32 n);
-extern void func_0019A280(Fiona *f, s32 n);
-extern s32 func_0019A2B0(Fiona *f);   /* the player can be controlled */
-extern void func_0019A0D0(Fiona *f, u32 arg, u32 flag);
-extern void func_00182FC0(Fiona *f);   /* her costume put on */
-extern void func_001F1D60(u8 *o);
-extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);   /* m * v */
-extern s32 func_00183190(Fiona *f);
-extern void func_00182E80(Fiona *f);
-extern void func_001817C0(Fiona *f, s32 n);
+extern void Fiona_SetTarget(Fiona *f, s32 slot, s32 param);
+extern void Fiona_LowerRecovery(Fiona *f, s32 n);
+extern void Fiona_CalmDown(Fiona *f, s32 n);
+extern s32 Fiona_IsIdle(Fiona *f);   /* the player can be controlled */
+extern void Fiona_StartAction4(Fiona *f, u32 arg, u32 flag);
+extern void Fiona_ShowEquipment(Fiona *f);   /* her costume put on */
+extern void Lists_Clear(u8 *o);
+extern void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v);   /* m * v */
+extern s32 Fiona_Shakes(Fiona *f);
+extern void Fiona_ResetRecovery(Fiona *f);
+extern void Fiona_HewieReact(Fiona *f, s32 n);
 
 #endif

@@ -141,7 +141,7 @@ s32 Room8F_Cmd00(void *self, void *a1, u8 *cmd) {
     case 1:
         ev = gEvents;
         v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[4]);
-        n = func_00183190((Fiona *)gCharPlayer);
+        n = Fiona_Shakes((Fiona *)gCharPlayer);
         if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
             if (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 1) {
                 Actor_PlaySound(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);

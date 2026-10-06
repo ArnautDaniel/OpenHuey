@@ -18,7 +18,7 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void func_001855F0(Fiona *f, s32);
+extern void Fiona_IdleAnim(Fiona *f, s32);
 
 extern const PTMF D_003B25A8;      /* idle state */
 extern const PTMF D_003B25B8;      /* idle state (while unkE0 is set) */
@@ -67,7 +67,7 @@ static inline void Fiona_ToIdle(Fiona *f) {
     if (f->c.unkE0 == 0) {
         f->c.a.unk2D = 0;
         if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         }
         Actor_SetState(&f->c.a, &D_003B25A8);
     } else {
@@ -83,7 +83,8 @@ void Fiona_BackToIdle(Fiona *f) {
 }
 
 /* Set the character (by slot) she interacts with. */
-void func_0019A420(Fiona *f, s32 slot, s32 param) {
+/* 0x0019A420 */
+void Fiona_SetTarget(Fiona *f, s32 slot, s32 param) {
     f->targetParam = param;
     f->target = gCharacters[slot];
 }
@@ -121,7 +122,7 @@ void Fiona_Disable(Fiona *f) {
     }
 }
 
-extern void func_00184BF0(Fiona *f);
+extern void Fiona_StartInDoor(Fiona *f);
 
 /* Put her in room `room` on triangle `tri`, idle. Returns the placement result. */
 /* 0x0019A8C0 */
@@ -138,7 +139,7 @@ s32 Fiona_PlaceInRoom(Fiona *f, s32 room, u32 tri, s32 arg3) {
 /* 0x0019AB40 */
 void Fiona_ForgetPath(Fiona *f) {
     Character_ResetBehaviour(&f->c);
-    func_00184BF0(f);
+    Fiona_StartInDoor(f);
     Fiona_ToIdle(f);
 }
 
@@ -213,7 +214,7 @@ s32 Fiona_PointOfInterest(Fiona *f, f32 *out) {
         *(s32 *)&v[0] = 0;
         v[1] = 10.0f;
         v[2] = f->c.a.radius;
-        func_002E2DA0(v, f->c.a.rot, v);
+        Mtx_ApplyVector(v, f->c.a.rot, v);
         sceVu0AddVector(out, f->c.a.pos, v);
         return 1;
     }
@@ -392,7 +393,7 @@ void Fiona_FollowAnim(Fiona *f) {
     f->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(gNavMesh, f->c.a.pos, 0);
 }
 
-extern void func_00187650(Fiona *f);
+extern void Fiona_MoveInput(Fiona *f);
 
 /* vtable +0x90: full stop - movement, interaction and the related progress flags. */
 /* 0x0019D190 */
@@ -401,7 +402,7 @@ void Fiona_FullStop(Fiona *f) {
 
     Character_EventReset(&f->c);
     FI(f, 0x1AD5FC, u8) = 0;
-    func_00187650(f);
+    Fiona_MoveInput(f);
     f->unk1AD5D0 = 1;
     f->unk1AD5D1 = 1;
     FI(f, 0x1AD5F0, s32) = 0;
@@ -482,7 +483,7 @@ void Fiona_FilesLoaded(Fiona *f) {
     MOTION_U8(f->c.motion, 0x24) = f->c.msgSlot;
     VCALL(gDoors, 0x4C, void (*)(VObject *, s32))(gDoors, 0);
     MOTION_PTR(f->c.motion, 0x4D4) = (u8 *)f + 0x1AA540;
-    func_00182FC0(f);
+    Fiona_ShowEquipment(f);
     if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == AREA_SPECIAL) {
         f->c.unkE4 = 0;
         FI(f, 0x1AD62C, u16) = 0;
@@ -542,7 +543,7 @@ void Fiona_Interrupted(Fiona *f) {
     Progress *p;
 
     Character_BackToNormal(&f->c);
-    func_00184BF0(f);
+    Fiona_StartInDoor(f);
     FI(f, 0x1AD58C, s32) = 6;
     FI(f, 0x1AD5D2, u8) = 0;
     p = gProgress;
@@ -600,7 +601,7 @@ s32 Fiona_PlaceOn(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
     FI(f, 0x1AD721, u8) = 0xFF;
     FI(f, 0x1AD72C, s32) = 30;
     FI(f, 0x1AD730, s32) = 30;
-    func_001F1D60((u8 *)f + 0x1AD668);
+    Lists_Clear((u8 *)f + 0x1AD668);
     FI(f, 0x1AD6B8, s32) = -1;
     f->c.a.unk2A = 1;
     if (FI(f, 0x1AD5D3, u8) == 1) {
@@ -627,12 +628,12 @@ s32 Fiona_PlaceOn(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
     return r;
 }
 
-extern void func_001A1CA0(Fiona *f);
+extern void Fiona_AreaFade(Fiona *f);
 extern u8 D_0047E3B0[];   /* pad state */
-extern s32 func_001A12B0(Fiona *f);
-extern void func_00185FC0(Fiona *f);
-extern void func_00181F20(Fiona *f);
-extern void func_001869D0(Fiona *f);
+extern s32 Fiona_JointAction(Fiona *f);
+extern void Fiona_HeadLook(Fiona *f);
+extern void Fiona_MotionSounds(Fiona *f);
+extern void Fiona_Footsteps(Fiona *f);
 
 #define FIONA_NAV_MASK 0x28020018
 
@@ -669,7 +670,7 @@ void Fiona_Think(Fiona *f) {
             FI(f, 0x1AD5D7, u8) = 1;
         }
     }
-    func_001A1CA0(f);
+    Fiona_AreaFade(f);
     p = gProgress;
     if ((Progress_TestFlag(p, 0xD) & 0xFF) == 1 && !(Progress_TestFlag(p, 0x2B) & 0xFF)) {
         FI(f, 0x1AD6B8, s32) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)D_0047E3B0);
@@ -677,10 +678,10 @@ void Fiona_Think(Fiona *f) {
     FI(f, 0x1AD6BC, s32) = -1;
     VCALL(f, 0x88, void (*)(Fiona *))(f);
     ptmf_scall(f, &f->c.a.state);
-    func_001A12B0(f);
-    func_00185FC0(f);
-    func_00181F20(f);
-    func_001869D0(f);
+    Fiona_JointAction(f);
+    Fiona_HeadLook(f);
+    Fiona_MotionSounds(f);
+    Fiona_Footsteps(f);
     VCALL(f, 0x40, void (*)(Fiona *))(f);
     near = 0;
     veryNear = 0;
@@ -760,22 +761,25 @@ void Fiona_AnimUpdate(Fiona *f) {
 }
 
 /* Lower the +0x1AD5F8 counter (frames, of 1800) by 60 / n, not below 0. */
-void func_0019A210(Fiona *f, s32 n) {
+/* 0x0019A210 */
+void Fiona_LowerRecovery(Fiona *f, s32 n) {
     FI(f, 0x1AD5F8, s32) -= 60 / (s16)n;
     if (FI(f, 0x1AD5F8, s32) < 0) {
         FI(f, 0x1AD5F8, s32) = 0;
     }
 }
 
-extern void func_00181010(Fiona *f, f32 d);   /* change the fear by d */
+extern void Fiona_ChangeFear(Fiona *f, f32 d);   /* change the fear by d */
 
-/* Calm down by n/30 (the fear, func_00181010). */
-void func_0019A280(Fiona *f, s32 n) {
-    func_00181010(f, -(0x1.11105ep-5f /* 0x3D08882F, ~1/30 */ * (f32)n));
+/* Calm down by n/30 (the fear, Fiona_ChangeFear). */
+/* 0x0019A280 */
+void Fiona_CalmDown(Fiona *f, s32 n) {
+    Fiona_ChangeFear(f, -(0x1.11105ep-5f /* 0x3D08882F, ~1/30 */ * (f32)n));
 }
 
 /* Is she idle (action 0, state not 1/0xE/0xF)? */
-s32 func_0019A2B0(Fiona *f) {
+/* 0x0019A2B0 */
+s32 Fiona_IsIdle(Fiona *f) {
     s32 s;
 
     if (f->c.moveMode != 0) {
@@ -790,9 +794,10 @@ s32 func_0019A2B0(Fiona *f) {
 
 extern const PTMF D_003B27E8;
 
-/* Start action 4 / sub 0xA with parameter `arg` (`flag` 1: also func_00182E80). */
-void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
-    func_00184BF0(f);
+/* Start action 4 / sub 0xA with parameter `arg` (`flag` 1: also Fiona_ResetRecovery). */
+/* 0x0019A0D0 */
+void Fiona_StartAction4(Fiona *f, u32 arg, u32 flag) {
+    Fiona_StartInDoor(f);
     if ((u32)((Progress_GetVar(gProgress, 0x26) & 0xFF) - 6) < 2) {
         VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
     }
@@ -801,7 +806,7 @@ void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
     VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
     f->c.unk100 = arg & 0xFF;
     if ((flag & 0xFF) == 1) {
-        func_00182E80(f);
+        Fiona_ResetRecovery(f);
     }
     f->c.a.unk2A = 1;
     Actor_SetState(&f->c.a, &D_003B27E8);
@@ -814,7 +819,8 @@ extern const PTMF D_003B27F8;
 
 /* State: turn on the spot toward the stick direction (+0x1AD570) by 10 degrees a frame;
  * back to idle if it no longer matches +0x1AD550 (dot <= 0.6). */
-void func_00199ED0(Fiona *f) {
+/* 0x00199ED0 */
+void Fiona_StateTurnStick(Fiona *f) {
     Character_RootMoveMasked(&f->c);
     if (sceVu0InnerProduct((f32 *)((u8 *)f + 0x1AD570), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */) {
         Fiona_ToIdle(f);
@@ -827,7 +833,7 @@ void func_00199ED0(Fiona *f) {
     }
 }
 
-extern s32 func_00188280(Fiona *f, s32, f32 reach);
+extern s32 Fiona_FindPushable(Fiona *f, s32, f32 reach);
 extern const PTMF D_003B2808;  /* push: let go */
 extern const PTMF D_003B2818;  /* push: moving */
 extern const PTMF D_003B2828;  /* push: stop straining */
@@ -836,7 +842,8 @@ extern const PTMF D_003B2828;  /* push: stop straining */
 #define FIONA_PUSH_OBJ(f) FI(f, 0x1AD560, s32)
 
 /* State: pushing an object (animations 0x1200..0x1203). */
-void func_001998F0(Fiona *f) {
+/* 0x001998F0 */
+void Fiona_StatePush(Fiona *f) {
     s32 blocked;
     void *m;
 
@@ -877,7 +884,7 @@ void func_001998F0(Fiona *f) {
         }
         return;
     }
-    if (FIONA_PUSH_OBJ(f) == -1 && func_00188280(f, 1, 0x1.19999ap+1f /* 2.2 */) == -1) {
+    if (FIONA_PUSH_OBJ(f) == -1 && Fiona_FindPushable(f, 1, 0x1.19999ap+1f /* 2.2 */) == -1) {
         Motion_Play(f->c.motion, 0x1202, -1);
         Actor_SetState(&f->c.a, &D_003B2808);
         return;
@@ -918,7 +925,8 @@ static inline s32 Fiona_PushBlocked(Fiona *f) {
 }
 
 /* State: pushing an object, moving it step by step while the stick holds the direction. */
-void func_001991E0(Fiona *f) {
+/* 0x001991E0 */
+void Fiona_StatePushStep(Fiona *f) {
     void *m;
     s32 anim;
 
@@ -977,7 +985,7 @@ void func_001991E0(Fiona *f) {
     }
 }
 
-extern s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32);
+extern s32 Fiona_HeadFor(Fiona *f, u32 tri, f32 *pos, s32);
 extern const PTMF D_003B27D8;
 
 #define Fiona_Place(f, tri, pos) VCALL(f, 0x28, s32 (*)(Fiona *, u32, const f32 *, f32 *))(f, tri, NULL, pos)
@@ -1092,7 +1100,7 @@ void Fiona_Vt38(Fiona *f) {
         if (f->c.a.navTri == NAV_NONE) {
             f->c.a.navTri = Room_ExitPosIn(rooms, f->c.door, f->c.a.pos);
         }
-        if (func_00180D60(f, Room_ExitPosIn(rooms, exit, exitPos), exitPos, 0) != 0) {
+        if (Fiona_HeadFor(f, Room_ExitPosIn(rooms, exit, exitPos), exitPos, 0) != 0) {
             return;
         }
         tri = f->c.a.navTri;
@@ -1119,7 +1127,8 @@ void Fiona_Vt38(Fiona *f) {
 #define FIONA_FADE_T(f) FI(f, 0x1AD62E, s16)
 
 /* Fade handling for area 0x89, and the pursuer grabbing her once the fade has cleared. */
-void func_001A1CA0(Fiona *f) {
+/* 0x001A1CA0 */
+void Fiona_AreaFade(Fiona *f) {
     Progress *p = gProgress;
     s32 flags = FI(f, 0x1AD584, s32);
 
@@ -1174,7 +1183,8 @@ void func_001A1CA0(Fiona *f) {
 
 /* Timers: an alternating period (+0x1AD719 flips when +0x1AD724 runs out; random lengths),
  * sped up / slowed down while Hewie stays close, and three 30-frame counters. */
-void func_001A1860(Fiona *f) {
+/* 0x001A1860 */
+void Fiona_Timers(Fiona *f) {
     Progress *p = gProgress;
     s32 room = f->c.a.room;
 
@@ -1256,7 +1266,8 @@ static inline s32 Fiona_MeetIndex(u32 costume, u32 type) {
 }
 
 /* Start the joint action progress has queued for her: 0 if she is on her way, -1 if not. */
-s32 func_001A12B0(Fiona *f) {
+/* 0x001A12B0 */
+s32 Fiona_JointAction(Fiona *f) {
     Progress *p = gProgress;
     Progress *q;
     Character *o;
@@ -1356,7 +1367,8 @@ s32 func_001A12B0(Fiona *f) {
 #define MOTION_EVENTS(m) (*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18))
 
 /* State: the special room entry (animations 0xB01 -> 0xB02), moving by root motion. */
-void func_0019C210(Fiona *f) {
+/* 0x0019C210 */
+void Fiona_StateSpecialEntry(Fiona *f) {
     sceVu0FVECTOR root, target;
     sceVu0FVECTOR probe = {0.0f, 0.0f, 0.0f, 0.0f};   /* (never set in the original without forward motion) */
     void *m;
@@ -1402,15 +1414,15 @@ void func_0019C210(Fiona *f) {
         f->c.a.navTri = f->c.a.prevNavTri;
         sceVu0CopyVector(f->c.a.pos, f->c.a.prevPos);
     }
-    if (FI(f, 0x1AD6C0, s32) < 0x97 && func_00183190(f) != 0) {
+    if (FI(f, 0x1AD6C0, s32) < 0x97 && Fiona_Shakes(f) != 0) {
         *(s16 *)((u8 *)gProgress + 0x7BA) -= 2;
         FI(f, 0x1AD6C0, s32) += 2;
     }
 }
 
-extern s32 func_001848F0(Fiona *f, s32 cmd, s32 state);
-extern void func_00183F10(Fiona *f);
-extern void func_00183780(Fiona *f);
+extern s32 Fiona_HewieCommandAction(Fiona *f, s32 cmd, s32 state);
+extern void Fiona_CommandHewie(Fiona *f);
+extern void Fiona_OrderLine(Fiona *f);
 extern const PTMF D_003B2788;  /* panic: fall */
 extern const PTMF D_003B2798;  /* panic: stumble */
 extern const PTMF D_003B27A8;  /* panic attack */
@@ -1429,8 +1441,9 @@ static inline void Fiona_MarkActionStart(Fiona *f, s32 code) {
 }
 
 /* Act on the controls' command: panic stumbles and panic attacks, calling Hewie, and starting
- * actions (codes from func_001848F0; 44/45 have their own setup, others are joint actions). */
-void func_0019F1E0(Fiona *f) {
+ * actions (codes from Fiona_HewieCommandAction; 44/45 have their own setup, others are joint actions). */
+/* 0x0019F1E0 */
+void Fiona_ControlCommand(Fiona *f) {
     s32 cmd, mode, s, code;
     u8 joint;
 
@@ -1507,7 +1520,7 @@ void func_0019F1E0(Fiona *f) {
     if (s == 0xE || s == 1 || s == 0xF) {
         return;
     }
-    code = func_001848F0(f, cmd, s);
+    code = Fiona_HewieCommandAction(f, cmd, s);
     if (code == -1) {
         return;
     }
@@ -1516,8 +1529,8 @@ void func_0019F1E0(Fiona *f) {
         && !(code == 45 && (Progress_GameMode(gProgress) & 0xFF) == 1)) {
         Fiona_MarkActionStart(f, code);
         joint = 0;
-        func_00183F10(f);
-        func_00183780(f);
+        Fiona_CommandHewie(f);
+        Fiona_OrderLine(f);
         if (!(Progress_TestFlag(gProgress, 0x25) & 0xFF)) {
             f->targetParam = 30;
             f->target = gCharacters[1];
@@ -1532,12 +1545,12 @@ void func_0019F1E0(Fiona *f) {
     }
 }
 
-extern void func_001A1860(Fiona *f);
-extern void func_0019D4E0(Fiona *f);
-extern void func_001800E0(Fiona *f);
-extern void func_001A1FD0(Fiona *f);
-extern void func_00188960(Fiona *f);
-extern void func_00186180(Fiona *f);
+extern void Fiona_Timers(Fiona *f);
+extern void Fiona_MoodAI(Fiona *f);
+extern void Fiona_OffscreenFrame(Fiona *f);
+extern void Fiona_Panic(Fiona *f);
+extern void Fiona_KeepApart(Fiona *f);
+extern void Fiona_Head(Fiona *f);
 
 /* Note whether Hewie / the pursuer are present (+0x1AD5D4/D6) and enabled (+0x1AD5D5/D7). */
 static inline void Fiona_UpdatePresence(Fiona *f) {
@@ -1602,7 +1615,7 @@ void Fiona_Update(Fiona *f) {
     f32 h;
 
     if (*special == 1) {
-        func_001A1860(f);
+        Fiona_Timers(f);
     }
     room = f->c.a.room;
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
@@ -1611,8 +1624,8 @@ void Fiona_Update(Fiona *f) {
         f->c.moveSub = 0;
         Fiona_UpdatePresence(f);
         f->c.state[0] = 0;
-        func_0019D4E0(f);
-        func_001800E0(f);
+        Fiona_MoodAI(f);
+        Fiona_OffscreenFrame(f);
         if (f->c.a.disabled == 1) {
             VCALL(f, 0x40, void (*)(Fiona *))(f);
             return;
@@ -1632,9 +1645,9 @@ void Fiona_Update(Fiona *f) {
         f->c.a.height = 3.0f;
     }
     Fiona_UpdatePresence(f);
-    func_001A1FD0(f);
+    Fiona_Panic(f);
     if (*special == 1) {
-        func_0019D4E0(f);
+        Fiona_MoodAI(f);
         if (f->c.a.disabled == 1) {
             f->c.state[0] = 0;
             return;
@@ -1643,26 +1656,26 @@ void Fiona_Update(Fiona *f) {
             f->c.a.unk2A = 1;
         }
     }
-    func_00187650(f);
+    Fiona_MoveInput(f);
     FI(f, 0x1AD6BC, s32) = -1;
     if (f->c.state[0] != 0) {
         VCALL(f, 0x84, void (*)(Fiona *))(f);
     } else {
-        func_0019F1E0(f);
+        Fiona_ControlCommand(f);
     }
     FIONA_CMD(f) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)(Fiona_ReadsPad(f, p) ? D_0047E3B0 : NULL));
 
     hewie = Fiona_Touching(f) == 1;
     ptmf_scall(f, &f->c.a.state);
     if (hewie != 1 && f->c.a.unk2A != 1) {
-        func_00188960(f);
+        Fiona_KeepApart(f);
     } else if (f->c.moveMode == 0 && Fiona_Touching(f) == 0) {
         f->c.a.unk2A = 0;
     }
-    func_001A12B0(f);
-    func_00186180(f);
-    func_00181F20(f);
-    func_001869D0(f);
+    Fiona_JointAction(f);
+    Fiona_Head(f);
+    Fiona_MotionSounds(f);
+    Fiona_Footsteps(f);
     VCALL(f, 0x40, void (*)(Fiona *))(f);
     if (f->c.moveMode == 0 && f->unk1AD580 != 1) {
         s32 sub = f->c.moveSub;
@@ -1723,7 +1736,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             f32 h;
 
             Mtx_TurnY(m, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
-            func_002E2DA0(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
+            Mtx_ApplyVector(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
             func_0010E640(v, v, -1.0f);
             h = func_0031C5C0(v[0], v[2]);
             if (Angle_Wrap(h - f->savedYaw) < 0x1.921fb6p+0f /* pi/2 */) {
@@ -1762,7 +1775,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             Fiona_ToIdle(f);
         }
     } else {
-        func_00184BF0(f);
+        Fiona_StartInDoor(f);
         Fiona_ToIdle(f);
     }
     if (FI(f, 0x1AD71C, s32) == 0 || FI(f, 0x1AD71C, s32) == 2) {
@@ -1777,7 +1790,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
         if (d != 0xFF) {
             rooms = gRooms;
             target = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, f->c.a.room, door);
-            if (func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1) == 0) {
+            if (Fiona_HeadFor(f, Room_ExitPosIn(rooms, door, pos), pos, 1) == 0) {
                 through = 1;
             }
         }
@@ -1789,7 +1802,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             side = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, f->c.door, 0);
             if (Character_Route(&f->c, target, tgt2, side, -1) != -1
                 && (Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room) & 0xFF) != 0xFF) {
-                func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1);
+                Fiona_HeadFor(f, Room_ExitPosIn(rooms, door, pos), pos, 1);
             }
         }
         if (through == 1) {
@@ -1816,7 +1829,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
     }
 }
 
-extern s32 func_00182340(Fiona *f, s32 *state);
+extern s32 Fiona_React(Fiona *f, s32 *state);
 extern const PTMF D_003B2698, D_003B26A8, D_003B26B8, D_003B26C8, D_003B26D8, D_003B26E8, D_003B26F8;
 extern const PTMF D_003B2708, D_003B2718, D_003B2728, D_003B2738, D_003B2748, D_003B2758, D_003B2768;
 extern const PTMF D_003B2778;
@@ -1841,7 +1854,7 @@ void Fiona_Requests(Fiona *f) {
 
         if (tri != NAV_NONE
             && (f->c.state[1] == 5 || !(NavMesh_Tri(gNavMesh, tri)->flags & FIONA_NAV_MASK))
-            && func_00182340(f, f->c.state) == 0) {
+            && Fiona_React(f, f->c.state) == 0) {
             VCALL(f, 0x90, void (*)(Fiona *))(f);
             Character_ChooseExit(&f->c, 0xFF);
             return;
@@ -1918,7 +1931,7 @@ void Fiona_Requests(Fiona *f) {
         break;
     case 16:
         f->unk1AD580 = 0x11;
-        func_001855F0(f, f->c.unk104[1]);
+        Fiona_IdleAnim(f, f->c.unk104[1]);
         f->c.unkE1 = 1;
         Actor_SetState(&f->c.a, &D_003B2748);
         break;
@@ -2000,7 +2013,7 @@ void Fiona_Requests(Fiona *f) {
 #define FIONA_FEAR(f) FI(f, 0x1AD5F4, f32)        /* 0..100 */
 
 static inline void Fiona_FearDown(Fiona *f, Progress *p) {
-    func_00181010(f, (Progress_GameMode(p) & 0xFF) == 2 ? -0x1.99999ap-4f /* -0.1 */ : -0x1.333334p-3f /* -0.15 */);
+    Fiona_ChangeFear(f, (Progress_GameMode(p) & 0xFF) == 2 ? -0x1.99999ap-4f /* -0.1 */ : -0x1.333334p-3f /* -0.15 */);
 }
 
 /* Full panic (threat 4): long panic, a scream (noise event 0x6F at her position). */
@@ -2012,8 +2025,9 @@ static inline void Fiona_FullPanic(Fiona *f, Progress *p) {
 }
 
 /* Panic system: threat level -> panic state and duration, the fear meter, timers, and the
- * area fade / pursuer grab (as in func_001A1CA0). */
-void func_001A1FD0(Fiona *f) {
+ * area fade / pursuer grab (as in Fiona_AreaFade). */
+/* 0x001A1FD0 */
+void Fiona_Panic(Fiona *f) {
     Progress *p = gProgress;
     s32 flags;
     u8 threat;
@@ -2058,7 +2072,7 @@ void func_001A1FD0(Fiona *f) {
             } else if (g == 2) {
                 /* running */
                 if (gSubScreen == NULL || VCALL(gSubScreen, 0x10, s32 (*)(VObject *))(gSubScreen) != 0x8C) {
-                    func_00181010(f, (Progress_GameMode(p) & 0xFF) == 2 ? 0x1.111112p-4f /* 1/15 */
+                    Fiona_ChangeFear(f, (Progress_GameMode(p) & 0xFF) == 2 ? 0x1.111112p-4f /* 1/15 */
                                                                      : 0x1.7e4b18p-5f /* 0x3D3F258C */);
                 }
             } else if (g == 1) {
@@ -2133,8 +2147,8 @@ void func_001A1FD0(Fiona *f) {
     }
 }
 
-extern void func_00185CF0(Fiona *f);   /* walk */
-extern void func_00185310(Fiona *f);   /* run */
+extern void Fiona_WalkLook(Fiona *f);   /* walk */
+extern void Fiona_RunLook(Fiona *f);   /* run */
 extern const PTMF D_003B27C8;          /* start pushing */
 
 #define FIONA_STICK_IDLE(f) FI(f, 0x1AD58C, s32)   /* frames since the stick was released, 0 = held */
@@ -2151,12 +2165,13 @@ static inline void Fiona_Exhausted(Fiona *f, s32 g) {
 
 static inline void Fiona_Stand(Fiona *f) {
     FI(f, 0x1AD5C0, u32) = 0;
-    func_001855F0(f, -1);
+    Fiona_IdleAnim(f, -1);
 }
 
 /* State: idle and moving by the stick - stand, rest, walk, run, panic running, turning,
  * root motion; starts pushing when she stops against an object. */
-void func_0019C600(Fiona *f) {
+/* 0x0019C600 */
+void Fiona_StateIdleMove(Fiona *f) {
     sceVu0FMATRIX m;
     sceVu0FVECTOR d, fwd, dir, axis, moved;
     void *mo;
@@ -2186,7 +2201,7 @@ void func_0019C600(Fiona *f) {
                             if (++FI(f, 0x1AD5C0, u32) >= 90) {
                                 Motion_PlayTable(f->c.motion, 1, -1);   /* rest */
                             } else {
-                                func_001855F0(f, -1);
+                                Fiona_IdleAnim(f, -1);
                             }
                         } else {
                             Fiona_Stand(f);
@@ -2201,7 +2216,7 @@ void func_0019C600(Fiona *f) {
                         break;
                     case 1:
                         if (idle < 6) {
-                            func_00185CF0(f);
+                            Fiona_WalkLook(f);
                         } else {
                             Fiona_Stand(f);
                         }
@@ -2209,17 +2224,17 @@ void func_0019C600(Fiona *f) {
                         break;
                     case 2:
                         if (idle < 6) {
-                            func_00185310(f);
+                            Fiona_RunLook(f);
                         } else {
                             FI(f, 0x1AD5C0, u32) = 0;
                             FI(f, 0x1AD5C4, s32) = 0;
-                            func_001855F0(f, -1);
+                            Fiona_IdleAnim(f, -1);
                         }
                         break;
                     default:
                         FI(f, 0x1AD5C0, u32) = 0;
                         FI(f, 0x1AD5C4, s32) = 0;
-                        func_001855F0(f, -1);
+                        Fiona_IdleAnim(f, -1);
                         break;
                     }
                 } else {
@@ -2229,25 +2244,25 @@ void func_0019C600(Fiona *f) {
                         if (FI(f, 0x1AD584, s32) & 0x1) {
                             if (--FI(f, 0x1AD5E8, s32) >= 0) {
                                 FI(f, 0x1AD5C4, s32) += 1;
-                                func_00185310(f);
+                                Fiona_RunLook(f);
                             } else {
                                 Fiona_Exhausted(f, g);
                                 FI(f, 0x1AD5C4, s32) = 0;
                             }
                         } else {
                             FI(f, 0x1AD5C4, s32) += 1;
-                            func_00185310(f);
+                            Fiona_RunLook(f);
                         }
                     } else {
                         FI(f, 0x1AD5C4, s32) = 0;
-                        func_00185CF0(f);
+                        Fiona_WalkLook(f);
                     }
                 }
             } else {
                 /* full panic: run until out of breath */
                 FI(f, 0x1AD624, f32) = 1.0f;
                 if (--FI(f, 0x1AD5E8, s32) >= 0) {
-                    func_00185310(f);
+                    Fiona_RunLook(f);
                     if (FIONA_STICK_IDLE(f) == 0) {
                         f->savedYaw = FIONA_STICK_HEADING(f);
                     }
@@ -2267,10 +2282,10 @@ void func_0019C600(Fiona *f) {
                             Fiona_Stand(f);
                         }
                     } else {
-                        func_00185310(f);
+                        Fiona_RunLook(f);
                     }
                 } else {
-                    func_00185310(f);
+                    Fiona_RunLook(f);
                 }
             }
         }
@@ -2296,7 +2311,7 @@ void func_0019C600(Fiona *f) {
     dz = d[2] * VCALL(f->c.motion, 0x44, f32 (*)(void *, Fiona *))(f->c.motion, f);
     d[2] = dz;
     Mtx_TurnY(m, f->savedYaw);
-    func_002E2DA0(d, m, d);
+    Mtx_ApplyVector(d, m, d);
     axis[2] = 1.0f;
     *(s32 *)&axis[0] = 0;
     *(s32 *)&axis[1] = 0;
@@ -2311,7 +2326,7 @@ void func_0019C600(Fiona *f) {
         sceVu0CopyVector(f->c.a.pos, f->c.a.prevPos);
     }
     if (!(FI(f, 0x1AD584, s32) & 0x2) && f->unk1AD580 != 0xF && MOTION_SPEED(f->c.motion) <= 0.0f
-        && func_00188280(f, 0, dz) == 0) {
+        && Fiona_FindPushable(f, 0, dz) == 0) {
         f->unk1AD580 = 1;
         f->c.moveSub = 5;
         Actor_SetState(&f->c.a, &D_003B27C8);
@@ -2351,7 +2366,7 @@ void Fiona_StateBlock(Fiona *f) {
         return;
     }
     if (st[0] == 4) {
-        if (func_00182340(f, st) == 0) {
+        if (Fiona_React(f, st) == 0) {
             if ((u32)((Progress_GetVar(gProgress, 0x26) & 0xFF) - 6) < 2) {
                 VCALL(f->c.motion, 0x2C, void (*)(void *))(f->c.motion);
             }
@@ -2603,7 +2618,8 @@ static inline f32 Fiona_Dist(Fiona *f, const f32 *p) {
 /* Mood/flight AI (+0x1AD71C): 0 calm near Hewie, 1 waiting, 2 following Hewie, 3/4 fleeing
  * through the best exit (away from the pursuer), 5..8 leaving through some exit, 9 a given exit,
  * 10 caught; 0xB..0xE the same while she is not in the room being played. */
-void func_0019D4E0(Fiona *f) {
+/* 0x0019D4E0 */
+void Fiona_MoodAI(Fiona *f) {
     Progress *p = gProgress;
     s32 room = f->c.a.room;
     VObject *rooms;
@@ -2766,7 +2782,7 @@ void func_0019D4E0(Fiona *f) {
     case 1:
         break;
     case 2:
-        if (func_00180D60(f, gCharPartner->a.navTri, gCharPartner->a.pos, 0) != 0) {
+        if (Fiona_HeadFor(f, gCharPartner->a.navTri, gCharPartner->a.pos, 0) != 0) {
             FIONA_MOOD(f) = 7;
             FIONA_EXIT(f) = 0xFF;
             f->c.unk124 = f->c.unk128;
@@ -2779,7 +2795,7 @@ void func_0019D4E0(Fiona *f) {
         rooms = gRooms;
         if (FIONA_EXIT(f) != 0xFF) {
             tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
-            if (func_00180D60(f, tri, at, 0) != 0) {
+            if (Fiona_HeadFor(f, tri, at, 0) != 0) {
                 FIONA_MOOD(f) = 0;
                 break;
             }
@@ -2866,7 +2882,7 @@ void func_0019D4E0(Fiona *f) {
             FIONA_MOOD(f) = 4;
             FIONA_EXIT2(f) = FIONA_EXIT(f);
         }
-        if (func_00180D60(f, tri, at, 0) != 0) {
+        if (Fiona_HeadFor(f, tri, at, 0) != 0) {
             FIONA_EXIT(f) = 0xFF;
             FIONA_MOOD(f) = 0;
             break;
@@ -2885,7 +2901,7 @@ void func_0019D4E0(Fiona *f) {
         rooms = gRooms;
         if (FIONA_EXIT(f) != 0xFF) {
             tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
-            if (func_00180D60(f, tri, at, 0) != 0) {
+            if (Fiona_HeadFor(f, tri, at, 0) != 0) {
                 FIONA_MOOD(f) = 0;
                 break;
             }
@@ -2936,7 +2952,7 @@ void func_0019D4E0(Fiona *f) {
             FIONA_MOOD(f) = (FIONA_MOOD(f) == 5) ? 6 : 8;
             FIONA_EXIT2(f) = FIONA_EXIT(f);
         }
-        if (func_00180D60(f, tri, at, 0) != 0) {
+        if (Fiona_HeadFor(f, tri, at, 0) != 0) {
             FIONA_MOOD(f) = 0;
             break;
         }
@@ -2955,7 +2971,7 @@ void func_0019D4E0(Fiona *f) {
         rooms = gRooms;
         if (FIONA_EXIT2(f) == 0xFF) {
             tri = Room_ExitPosOut(rooms, FIONA_EXIT(f), at);
-            if (func_00180D60(f, tri, at, 0) != 0) {
+            if (Fiona_HeadFor(f, tri, at, 0) != 0) {
                 FIONA_MOOD(f) = 0;
                 break;
             }
@@ -2989,7 +3005,7 @@ void func_0019D4E0(Fiona *f) {
                 break;
             }
         }
-        if (func_00180D60(f, tri, at, 0) != 0) {
+        if (Fiona_HeadFor(f, tri, at, 0) != 0) {
             FIONA_MOOD(f) = 0;
         }
         break;
@@ -3009,7 +3025,7 @@ void func_0019D4E0(Fiona *f) {
             break;
         }
         tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
-        if (Fiona_WrongSide(side, tri) || func_00180D60(f, tri, at, 0) != 0) {
+        if (Fiona_WrongSide(side, tri) || Fiona_HeadFor(f, tri, at, 0) != 0) {
             FIONA_MOOD(f) = 0;
             break;
         }
@@ -3056,7 +3072,8 @@ static f32 fiona_turn_to(Fiona *f, f32 a) {
 /* the call command's action: 0x2D to a creature within 10 ahead (Fiona in control state 1, the
  * creature in her room and reachable, within 45 degrees), with Hewie controlled (2) 0x2E when he
  * is with her and in state 8, else 0x2D; otherwise 0x23 */
-s32 func_00184700(Fiona *f) {
+/* 0x00184700 */
+s32 Fiona_CallAction(Fiona *f) {
     u8 who = Progress_GameMode(gProgress);
     s32 i;
 
@@ -3091,11 +3108,12 @@ s32 func_00184700(Fiona *f) {
     return 0x23;
 }
 
-/* the action code for Hewie command `cmd` from the controls: 0 call (func_00184700), 1 0x2C,
+/* the action code for Hewie command `cmd` from the controls: 0 call (Fiona_CallAction), 1 0x2C,
  * 2 (stay / come) 0x24 / 0x25 when he is with her within 12 (by his state), 0x27 from further
  * or when not in control, 3 0x2A / 0x28 within 15 (0x2A: his +0xC4 state 2 and facing within 60
  * degrees), else 0x29, 4 0x2B within 15 else 0x2F */
-s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
+/* 0x001848F0 */
+s32 Fiona_HewieCommandAction(Fiona *f, s32 cmd, s32 state) {
     u8 *h;
     u8 who;
     f32 d;
@@ -3103,7 +3121,7 @@ s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
 
     switch (cmd) {
     case 0:
-        return func_00184700(f);
+        return Fiona_CallAction(f);
     case 1:
         return 0x2C;
     case 2:
@@ -3153,7 +3171,8 @@ s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
 
 /* at the start in a door (+0xF8: 2 passing through, 3 standing in it): set the door's state
  * (open sides) and the progress records for it */
-void func_00184BF0(Fiona *f) {
+/* 0x00184BF0 */
+void Fiona_StartInDoor(Fiona *f) {
     u8 *c = (u8 *)f;
     s32 st = AT(c, 0xF8, s32);
     VObject *doors;
@@ -3193,7 +3212,8 @@ void func_00184BF0(Fiona *f) {
 
 /* show the model parts for what she has equipped (gSubScreen +0x10: equipment slots 1 and 3;
  * items 0x86..0x89 -> part variants 1..4, else 0; items 0x8A..0x8D -> 6..9, else 5) */
-void func_00182FC0(Fiona *f) {
+/* 0x00182FC0 */
+void Fiona_ShowEquipment(Fiona *f) {
     VObject *equip = gSubScreen;
     void *m = f->c.motion;
 
@@ -3214,7 +3234,8 @@ void func_00182FC0(Fiona *f) {
 }
 
 /* clear the two 5-word lists at +0x14 and +0x28 */
-void func_001F1D60(u8 *o) {
+/* 0x001F1D60 */
+void Lists_Clear(u8 *o) {
     u32 i;
 
     for (i = 0; i < 5; i++) {
@@ -3225,7 +3246,8 @@ void func_001F1D60(u8 *o) {
 
 /* out.xyz = m's 3x3 part x v. (VU0 macro code: its w is whatever the VU register last held;
    0 here - the callers only use x, y, z) */
-void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v) {
+/* 0x002E2DA0 */
+void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v) {
     f32 x = v[0], y = v[1], z = v[2];
     s32 i;
 
@@ -3279,7 +3301,8 @@ static s32 idle_weight_changed(Fiona *f, f32 w) {
 /* set the idle animation for her condition: exhausted (+0x1AD584 bit 0: variant 4, weight eased
  * toward the progress +0x7BC), out of breath (variant 2 by heart rate +0x1AD5F4) or scared
  * (variant 3 by stamina +0x1AD5F8); anim 5 instead of 0 when the progress mode is 2 */
-void func_001855F0(Fiona *f, s32 blend) {
+/* 0x001855F0 */
+void Fiona_IdleAnim(Fiona *f, s32 blend) {
     static const union { u32 u; f32 f; } k005 = {0x3D4CCCCD};   /* 0.05f */
     void *m;
     s32 variant, anim, idle;
@@ -3347,7 +3370,8 @@ void func_001855F0(Fiona *f, s32 blend) {
 /* change Fiona's fear (+0x1AD5F4, 0..99) by `d`; the worn accessory (sub screen slot 3)
  * scales it: 0x8A less gain, 0x8B less gain and more loss, 0x8C no gain and double loss,
  * 0x8D none */
-void func_00181010(Fiona *f, f32 d) {
+/* 0x00181010 */
+void Fiona_ChangeFear(Fiona *f, f32 d) {
     VObject *items = (VObject *)gSubScreen;
     f32 v;
 
@@ -3412,7 +3436,8 @@ static f32 wrap_abs(f32 a) {
  * (mode 1, then 2 while the direction holds within 15 degrees); 0x4000 runs. While the game
  * walks her (gProgress +0x1FBEC1): towards the target point (states 2..9; 10 once the
  * pursuer is within reach), or (10) at the pursuer, grabbing it (action 8) when facing it. */
-void func_00187650(Fiona *f) {
+/* 0x00187650 */
+void Fiona_MoveInput(Fiona *f) {
     static const union { u32 u; f32 f; } k15deg = {0x3E860A92}, k30deg = {0x3F060A92}, k001 = {0x3C23D70A};
     /* the camera rotation the controls use: while moving in mode 1 the original reuses last
      * frame's (left on its stack); the PC build keeps it explicitly */
@@ -3457,7 +3482,7 @@ void func_00187650(Fiona *f) {
                 FI(f, FMOVE_LOCK, s16) = 3;
                 FI(f, FMOVE_MODE, u8) = 1;
                 Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
-                func_002E2DA0(v, rot, n);
+                Mtx_ApplyVector(v, rot, n);
                 func_0010E640(v, v, -1.0f);
                 FI(f, FMOVE_HEADING, f32) = func_0031C5C0(v[0], v[2]);
             }
@@ -3503,7 +3528,7 @@ void func_00187650(Fiona *f) {
                 Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(v, v, -1.0f);
         FI(f, 0x1AD5E4, f32) = func_0031C5C0(v[0], v[2]);
         break;
@@ -3526,7 +3551,7 @@ void func_00187650(Fiona *f) {
     switch (how) {
     case 3:
         Mtx_TurnY(rot, FI(f, FMOVE_CAMYAW, f32));
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
     case 2:
@@ -3542,7 +3567,7 @@ void func_00187650(Fiona *f) {
         break;
     case 0:
         Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
     }
@@ -3704,12 +3729,13 @@ static s32 fiona_motion_kind(s32 id) {
 
 /* the idle step: when the current motion has played out (+0x550 <= 0), a standing one sets
  * +0xE1, any other picks the next idle; then the character's idle update */
-void func_0018B600(Fiona *f) {
+/* 0x0018B600 */
+void Fiona_StateIdleStep(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) == 0) {
             f->c.unkE1 = 1;
         } else {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         }
     }
     Character_RootMoveMasked(&f->c);
@@ -3740,7 +3766,8 @@ static s32 fiona_sees(Fiona *f, Character *c, f32 range, f32 *fwd) {
  * ahead of her and reachable, the head angles clamped (pitch -18..45 degrees, yaw +-90, or
  * +-108 while held or in moves 0xD / 0xB-0x20); otherwise towards where she is turning. The
  * motion eases the head there, faster for bigger changes and while she turns. */
-void func_00186180(Fiona *f) {
+/* 0x00186180 */
+void Fiona_Head(Fiona *f) {
     static const union { u32 u; f32 f; } kPitchMax = {0x3F490FDB}, kPitchMin = {0xBEA0D97C},
         kYaw = {0x3FC90FDB}, kYawWide = {0x3FF1463B}, k01 = {0x3DCCCCCD};
     f32 fwd[4] __attribute__((aligned(16)));
@@ -3829,12 +3856,13 @@ void func_00186180(Fiona *f) {
     func_002DD310(f->c.motion, pitch, yaw, dp, dy + turn);
 }
 
-extern void func_00181180(Fiona *f, s32 id, s32, s32, s32);   /* a voice */
-extern void func_00183960(Fiona *f);
+extern void Fiona_Voice(Fiona *f, s32 id, s32, s32, s32);   /* a voice */
+extern void Fiona_CallHewie(Fiona *f);
 
 /* the sounds of Fiona's motions, on their key frames (motion events 1 and 0x10): steps,
  * crouching, falling (with a noise others hear), voices */
-void func_00181F20(Fiona *f) {
+/* 0x00181F20 */
+void Fiona_MotionSounds(Fiona *f) {
     s32 v;
 
     if (f->c.unk14D0 != 0 && f->c.unk14D0 != 5) {
@@ -3858,7 +3886,7 @@ void func_00181F20(Fiona *f) {
         case 0xC00:
             if (f->c.moveMode == 0xD) {
                 if (!(u8)Progress_TestFlag(gProgress, 0x25)) {
-                    func_00183960(f);
+                    Fiona_CallHewie(f);
                 } else {
                     Actor_PlaySound(&f->c.a, 0x33, 5, 0, 0, NULL);
                 }
@@ -3889,7 +3917,7 @@ void func_00181F20(Fiona *f) {
         case 0x1404:
         case 0x1403:
         case 0x1500:
-            func_00181180(f, 0x7D, 5, 0, 0);
+            Fiona_Voice(f, 0x7D, 5, 0, 0);
             break;
         case 0xB01:
             Actor_PlaySound(&f->c.a, 0x7E, 5, 0, 0, NULL);
@@ -3897,7 +3925,7 @@ void func_00181F20(Fiona *f) {
         case 0x100B:
         case 0x1008:
         case 0xB00:
-            func_00181180(f, 0x80, 5, 0, 0);
+            Fiona_Voice(f, 0x80, 5, 0, 0);
             break;
         case 0x609:
         case 0x608:
@@ -3932,7 +3960,8 @@ static NavTri *step_tri(NavMesh *nm, u32 i) {
  * splashes in rooms 7 / 0xD1 / 0x106 - with a variant per step, loudness from her speed and
  * a muffled sound when wearing item 0x80; the noise is heard by the pursuer (louder when
  * running) */
-void func_001869D0(Fiona *f) {
+/* 0x001869D0 */
+void Fiona_Footsteps(Fiona *f) {
     static const union { u32 u; f32 f; } k04 = {0x3ECCCCCD}, k07 = {0x3F333334};
     f32 left[4] __attribute__((aligned(16)));
     f32 right[4] __attribute__((aligned(16)));
@@ -4116,7 +4145,8 @@ static void push_probe_point(Fiona *f, f32 side, f32 reach, f32 *out) {
  * the side of the wall she is on) and, with `pick`, takes the lowest object both sides share
  * (gObstacles +0x24: the objects on a triangle, as bits) as +0x1AD560 (else -1). 0, or -1 when
  * there is nothing to push. */
-s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
+/* 0x00188280 */
+s32 Fiona_FindPushable(Fiona *f, s32 pick, f32 reach) {
     static const union { u32 u; f32 f; } kHalfPi = {0x3FC90FDB}, kPi = {0x40490FDB};
     VObject *objs = gObstacles;
     NavMesh *nm;
@@ -4184,7 +4214,7 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
     d[1] = 0.0f;
     d[2] = 1.0f;
     Mtx_TurnY(m, ang);
-    func_002E2DA0(FIONA_STICK(f), m, d);
+    Mtx_ApplyVector(FIONA_STICK(f), m, d);
     FI(f, 0x1AD574, f32) = 0.0f;
     FIONA_PUSH_OBJ(f) = -1;
     if (pick != 0) {
@@ -4202,7 +4232,8 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
  * active and not hidden) at its head (its motion +0x60 into FLOOK_POINT), the head angles
  * aimed there (pitch -18..45 degrees, yaw -126..126) - else straight ahead - eased 10% of the
  * way (the motion's +0x854 / +0x858) */
-void func_00185FC0(Fiona *f) {
+/* 0x00185FC0 */
+void Fiona_HeadLook(Fiona *f) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, kUp = {0x3F490FDB}, kDown = {0xBEA0D97C},
         kSide = {0x400CBE4C}, kNegSide = {0xC00CBE4C};
     u8 *who;
@@ -4240,7 +4271,8 @@ void func_00185FC0(Fiona *f) {
  * pushed out to their radii (+0xC8) apart - along the pursuer's walk when it comes at her, else
  * straight away from it - unless that is off the floor (then +0x2A); overlapping the partner
  * (+0x1AD5D5, unless Progress +0x1FBEC1) she steps out of it or back to where she was */
-void func_00188960(Fiona *f) {
+/* 0x00188960 */
+void Fiona_KeepApart(Fiona *f) {
     static const union { u32 u; f32 f; } k20 = {0x41A00000};
     u8 *a = (u8 *)f;
     u8 *pu = (u8 *)gCharPursuer;
@@ -4304,7 +4336,8 @@ void func_00188960(Fiona *f) {
  * ((100 - it) / 60) and +0x1AD5F8 ((1800 - it) / 1800) - the walk (0x200, mode 2 0x208) alone,
  * or blended with 0x201 or 0x204 by those amounts; a blend is reset only when it moves more
  * than 0.1 */
-void func_00185CF0(Fiona *f) {
+/* 0x00185CF0 */
+void Fiona_WalkLook(Fiona *f) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
     void *m;
     s32 cur, next, base, change;
@@ -4370,13 +4403,14 @@ extern const PTMF D_003B2DC8;   /* Fiona's state: turning on the spot */
 /* State: turning on the spot to +0x1AD5E0 (10 degrees a frame): once there, back to idle;
  * meanwhile the turn left / right animation (0x400 / 0x401) - each only between animations
  * (no blend running) */
-void func_0018A5D0(Fiona *f) {
+/* 0x0018A5D0 */
+void Fiona_StateTurnOnSpot(Fiona *f) {
     static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3};
     f32 left = Actor_TurnToward(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
 
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (left == 0.0f) {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         } else if (Angle_Wrap(FI(f, 0x1AD5E0, f32) - AT(f, 0x54, f32)) < 0.0f) {
             if (AT(f->c.motion, 0x55C, s32) != 0x400) {
                 Motion_PlayTable(f->c.motion, 0x400, -1);
@@ -4391,7 +4425,8 @@ void func_0018A5D0(Fiona *f) {
 /* State: turning while standing, to +0x1AD5E0 (10 degrees a frame), between animations: in a
  * move she goes idle once within 90 degrees; turned all the way, her action is cleared and she
  * stands (or, held +0xE0, is held), Progress flag 0x2B off */
-void func_0018A210(Fiona *f) {
+/* 0x0018A210 */
+void Fiona_StateTurnStanding(Fiona *f) {
     static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3}, kHalfPi = {0x3FC90FDB};
     f32 left = Actor_TurnToward(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
 
@@ -4400,7 +4435,7 @@ void func_0018A210(Fiona *f) {
     }
     if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) != 0) {
         if (left < kHalfPi.f) {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         }
         return;
     }
@@ -4416,7 +4451,7 @@ void func_0018A210(Fiona *f) {
     if (AT(f, 0xE0, u8) == 0) {
         AT(f, 0x2D, u8) = 0;
         if (AT(f->c.motion, 0x4C4, void *) != NULL) {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         }
         Actor_SetState(&f->c.a, &D_003B25A8);
     } else {
@@ -4426,16 +4461,18 @@ void func_0018A210(Fiona *f) {
 }
 
 /* State step: +0x2B set clears +0x1AD5BC first */
-void func_0018B570(Fiona *f) {
+/* 0x0018B570 */
+void Fiona_StateStep(Fiona *f) {
     if (AT(f, 0x2B, u8) == 1) {
         FI(f, 0x1AD5BC, u8) = 0;
     }
     Character_RootMove((Character *)f);
 }
 
-/* the run's look, each frame (+0xFC 2 while idle +0xF8), as the walk's (func_00185CF0) with the
+/* the run's look, each frame (+0xFC 2 while idle +0xF8), as the walk's (Fiona_WalkLook) with the
  * run 0x202 and its blends 0x203 / 0x205; tired (+0x1AD584 bit 1): the tired run 0x206 alone */
-void func_00185310(Fiona *f) {
+/* 0x00185310 */
+void Fiona_RunLook(Fiona *f) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
     s32 cur, next, change;
     f32 a, b, d;
@@ -4511,7 +4548,8 @@ extern const PTMF D_003B2C18;
 
 /* back to an idle animation after action moveSub 0x23..0x2F (progress flag 0x25: at random
  * 1 or 0xC02) */
-void func_00184570(Fiona *f) {
+/* 0x00184570 */
+void Fiona_IdleAfterCommand(Fiona *f) {
     if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
         if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.5f) {
             Motion_PlayTable(f->c.motion, 1, -1);
@@ -4551,8 +4589,9 @@ void func_00184570(Fiona *f) {
 }
 
 /* the looking-around idle (animation 0xC0E, then 0xC0F): the one looked at stays the one to
- * face; func_00183F10 on its motion event 2; at its end back to idle */
-void func_0018F580(Fiona *f) {
+ * face; Fiona_CommandHewie on its motion event 2; at its end back to idle */
+/* 0x0018F580 */
+void Fiona_StateLookAround(Fiona *f) {
     void *m;
 
     if (FI(f, 0x1AD664, Character *) != NULL) {
@@ -4560,7 +4599,7 @@ void func_0018F580(Fiona *f) {
         FI(f, 0x1AD600, Character *) = FI(f, 0x1AD664, Character *);
     }
     if ((u8)Motion_EventFlags(f->c.motion, 0, 0, 1) & 2) {
-        func_00183F10(f);
+        Fiona_CommandHewie(f);
     }
     m = f->c.motion;
     if ((MOTION_EVENTS(m) & 0x20) != 0) {
@@ -4574,8 +4613,9 @@ void func_0018F580(Fiona *f) {
 
 /* the end of a looking action: (unless progress flag 0x25, which forgets it) the one looked at
  * (+0x1AD664) stays the one to face (+0x1AD5FC set, +0x1AD600); once the animation is over
- * func_00184570 and the next state D_003B2C18 */
-void func_0018F760(Fiona *f) {
+ * Fiona_IdleAfterCommand and the next state D_003B2C18 */
+/* 0x0018F760 */
+void Fiona_StateLookEnd(Fiona *f) {
     if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
         FI(f, 0x1AD664, Character *) = NULL;
     } else if (FI(f, 0x1AD664, Character *) != NULL) {
@@ -4583,7 +4623,7 @@ void func_0018F760(Fiona *f) {
         FI(f, 0x1AD600, Character *) = FI(f, 0x1AD664, Character *);
     }
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
-        func_00184570(f);
+        Fiona_IdleAfterCommand(f);
         Actor_SetState(&f->c.a, &D_003B2C18);
     }
 }
@@ -4593,7 +4633,8 @@ void func_0018F760(Fiona *f) {
  * sight (+0x1AD664 the one looked at, cleared first). 0x24 (progress test 2/4 for her slot)
  * goes back to idle unless it passes; 0x2B and 0x28 change the action to
  * 0x2F / 0x29 when theirs (2/0, 2/2) fail. Then the character's update (Character_RootMoveMasked). */
-void func_0018F870(Fiona *f) {
+/* 0x0018F870 */
+void Fiona_StateActionOver(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         f32 tmp[4] __attribute__((aligned(16)));
 
@@ -4693,7 +4734,8 @@ extern const PTMF D_003B2E48, D_003B2E58, D_003B2E68, D_003B2E78, D_003B2E88;
  * crawling (3/7): 8); 3 grabbed 0x10 (already: a shake); 5 carried by door [4] 0xB; 6 caught
  * 0x20 (with the charm on, always); 0xA 9; 0xC 0x12 - none while already reacting (4) or down
  * (3 / 0xA) */
-s32 func_00184E00(Fiona *f, s32 req) {
+/* 0x00184E00 */
+s32 Fiona_Reaction(Fiona *f, s32 req) {
     Progress *p;
     s32 m;
     u32 i;
@@ -4798,9 +4840,10 @@ s32 func_00184E00(Fiona *f, s32 req) {
 }
 
 /* react to the state block `st` ([1] the request, [2] by whom, [4] its detail, [5] the panic it
- * adds): action 4 with the reaction func_00184E00 picked (-1: none), the rumble, and its state */
-s32 func_00182340(Fiona *f, s32 *st) {
-    s32 kind = func_00184E00(f, st[1]);
+ * adds): action 4 with the reaction Fiona_Reaction picked (-1: none), the rumble, and its state */
+/* 0x00182340 */
+s32 Fiona_React(Fiona *f, s32 *st) {
+    s32 kind = Fiona_Reaction(f, st[1]);
     Progress *p;
 
     if (kind == -1) {
@@ -4815,7 +4858,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     f->c.unk14D0 = 0;
     Motion_Unfreeze(f->c.motion);
     f->c.a.unk2D = 1;
-    func_00184BF0(f);
+    Fiona_StartInDoor(f);
     f->c.unk100 = st[2];
     f->unk1AD580 = 0xA;
     f->c.moveMode = 4;
@@ -4872,7 +4915,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
             Progress_SetCondBit(p, 1);
         }
         if (st[4] & 0x8000) {
-            func_00182E80(f);
+            Fiona_ResetRecovery(f);
         }
         f->c.a.unk2A = 0;
         Actor_SetState(&f->c.a, &D_003B2E68);
@@ -4890,7 +4933,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
             Progress_SetCondBit(p, 1);
         }
         if (st[4] & 0x8000) {
-            func_00182E80(f);
+            Fiona_ResetRecovery(f);
         }
         f->c.a.unk2A = 1;
         Actor_SetState(&f->c.a, &D_003B2E48);
@@ -4980,7 +5023,8 @@ s32 func_00182340(Fiona *f, s32 *st) {
 extern const PTMF D_003B2D38, D_003B2D48;
 
 /* 0x12 (D_003B2E78): once the motion has played out, the hold (0x1405, or 0x1406 already) */
-void func_0018BFC0(Fiona *f) {
+/* 0x0018BFC0 */
+void Fiona_StateHold(Fiona *f) {
     void *m = f->c.motion;
 
     if (!(AT(m, 0x550, f32) <= 0.0f)) {
@@ -4996,7 +5040,8 @@ void func_0018BFC0(Fiona *f) {
  * where she may (+0x1AD6C0) by the side her character slot's noise point (gProgress +0x1060)
  * is on: ahead 0x1004, behind 0x1005, left / right 0x1007 / 0x1006; else straight down
  * (0x100F) */
-void func_0018BA70(Fiona *f) {
+/* 0x0018BA70 */
+void Fiona_StateFall13(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         Progress *p = gProgress;
         f32 d[4] __attribute__((aligned(16)));
@@ -5031,7 +5076,8 @@ extern const PTMF D_003B2998, D_003B29A8;
 /* 0x20 caught (D_003B2DF8): once the motion has played out, the rumble, a cry (0x43) and the
  * caught motion by how (+0x104): 1 0xF02, 2 0xF04, 3 0xF03, 4 0xF05 (1, and 3 with someone
  * holding her, set +0x1AD5FC) */
-void func_00194230(Fiona *f) {
+/* 0x00194230 */
+void Fiona_StateCaught(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x80, 8);
         Actor_PlaySound(&f->c.a, 0x43, 5, 0, 0, NULL);
@@ -5062,7 +5108,8 @@ void func_00194230(Fiona *f) {
  * (+0x1AD6E0, +0x1AD6C8 its triangle); a drop under 20 a short pull (0xF02, cry 0x3F, action
  * 0xB), else a fall (0x70A, cry 0x40, +0x1AD6C4); the frames to get there (+0x1AD6C0) falling
  * 0, 0.5, 1, ... a frame, the step across (+0x1AD6D0) */
-void func_00193E90(Fiona *f) {
+/* 0x00193E90 */
+void Fiona_StateCaughtCrawling(Fiona *f) {
     f32 ofs[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     f32 y, step;
@@ -5111,7 +5158,8 @@ extern const PTMF D_003B2B48;
  * its direction (+0x1AD5E0, flipped to within 90 degrees of her heading) and turn toward it by
  * a quarter of the difference (at least half a degree), the way +0x1AD6C0 chose (-1: by the
  * side it is on) */
-void func_00183400(Fiona *f) {
+/* 0x00183400 */
+void Fiona_AlongWall(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB}, kMin = {0x3C0EFA35};
     f32 mv[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -5212,7 +5260,7 @@ static inline __attribute__((always_inline)) void pull_back_move(Fiona *f) {
 /* pulling back from a grab, along any wall */
 static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
     pull_back_move(f);
-    func_00183400(f);
+    Fiona_AlongWall(f);
 }
 
 /* 0x10 grabbed (D_003B2E08): out of a fall (0x100A / 0xB01 / 0xB02) she gets up (0xB03), out
@@ -5220,7 +5268,8 @@ static inline __attribute__((always_inline)) void pull_back(Fiona *f) {
  * when there is room 17 behind her (+0x1AD6C0 / +0x1AD6C4 -1, her heading kept in +0x1AD6D0),
  * else 0x1100. Pulling back she is moved by the motion turned to that heading (once +0x1AD6C4
  * is set) and turned toward it 20 degrees a frame */
-void func_00190380(Fiona *f) {
+/* 0x00190380 */
+void Fiona_StateGrabbed(Fiona *f) {
     void *m;
     s32 cur;
     u8 done = 0, back = 0;
@@ -5251,7 +5300,7 @@ void func_00190380(Fiona *f) {
             v[2] = 17.0f;
             v[0] = 0.0f;
             v[1] = 0.0f;
-            func_002E2DA0(v, f->c.a.rot, v);
+            Mtx_ApplyVector(v, f->c.a.rot, v);
             sceVu0AddVector(v, v, f->c.a.pos);
             if (Actor_TriTo(&f->c.a, v, 0x80001) == (u32)-1) {
                 Motion_PlayTable(f->c.motion, 0x1100, -1);
@@ -5277,7 +5326,8 @@ extern const PTMF D_003B2AB8;
  * backward (0x100B, or 0xB04 facing back for a hard fall, +0x1AD584 bit 2, with a scream 0x42,
  * noise 0x6F and the panic at 1000), else a cry (0x40) and noise 0x5F; +0x1AD6C8 which way.
  * Her update runs with nav flag 1 not blocking */
-void func_00191800(Fiona *f) {
+/* 0x00191800 */
+void Fiona_StateThrown(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
 
     f->c.a.unk2A = 1;
@@ -5338,7 +5388,8 @@ extern const PTMF D_003B2B08;
  * round from her side of it) - forward (0x1008) or backward (0x100B; 0xB04 facing back for a
  * hard fall, +0x1AD584 bit 2, with a scream 0x42, noise 0x6F and the panic at 1000), else a cry
  * 0x40 and noise 0x5F; +0x1AD6C8 which way, +0x1AD6D0 the direction */
-void func_00190FA0(Fiona *f) {
+/* 0x00190FA0 */
+void Fiona_StateHitByDoor(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
     Progress *p;
     f32 a, aa;
@@ -5408,7 +5459,8 @@ static inline __attribute__((always_inline)) void fall_by_side(Fiona *f, f32 aa,
  * of whoever did it ([2] +0x100, 0xFF: her slot's noise point gProgress +0x1060) - 0xC /
  * 0xE a stumble (cry 0x3E; 0xC on the spot 0x100E, 0xE by side 0x1000..), 0xD / 0xF a fall
  * (cry 0x3F; 0xD 0x100F, 0xF by side 0x1004..), each with noise 0x5F */
-void func_00190B50(Fiona *f) {
+/* 0x00190B50 */
+void Fiona_StateKnockedDown(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         f32 d[4] __attribute__((aligned(16)));
         u8 have = 0;
@@ -5512,12 +5564,14 @@ static inline __attribute__((always_inline)) void led_away(Fiona *f, s32 anim, c
 }
 
 /* 9 led away walking (D_003B2E38) */
-void func_00191FF0(Fiona *f) {
+/* 0x00191FF0 */
+void Fiona_StateLedWalking(Fiona *f) {
     led_away(f, 0x1500, &D_003B2A98);
 }
 
 /* 9 led away by the hand ([4] 6; D_003B2E28) */
-void func_00193400(Fiona *f) {
+/* 0x00193400 */
+void Fiona_StateLedByHand(Fiona *f) {
     led_away(f, 0x1400, &D_003B29F8);
 }
 
@@ -5527,7 +5581,8 @@ extern const PTMF D_003B2D58;
 
 /* after the 0x13 fall (D_003B2D48): at the motion's event 0x400 the threat meter rises by 75, on to
  * D_003B2D58 */
-void func_0018B9D0(Fiona *f) {
+/* 0x0018B9D0 */
+void Fiona_StateAfterFall(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x400) != 0) {
         Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
         Actor_SetState(&f->c.a, &D_003B2D58);
@@ -5546,18 +5601,21 @@ static inline __attribute__((always_inline)) void stand_up(Fiona *f) {
 }
 
 /* after being knocked down (D_003B2B18) */
-void func_00190A00(Fiona *f) {
+/* 0x00190A00 */
+void Fiona_StateAfterKnockDown(Fiona *f) {
     stand_up(f);
 }
 
 /* after the 0x13 fall, on the ground (D_003B2D58) */
-void func_0018B880(Fiona *f) {
+/* 0x0018B880 */
+void Fiona_StateOnGround(Fiona *f) {
     stand_up(f);
 }
 
 /* after being caught (D_003B2998): at the motion's event 0x20 she stands; until then, caught
  * from in front or behind (+0x104 1 / 3) by someone, +0x1AD5FC stays set */
-void func_001940A0(Fiona *f) {
+/* 0x001940A0 */
+void Fiona_StateAfterCaught(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         Fiona_ToIdle(f);
     } else if ((f->c.unk104[0] == 3 || f->c.unk104[0] == 1) && f->target != NULL) {
@@ -5571,7 +5629,8 @@ extern const PTMF D_003B29B8, D_003B29C8;
 /* held after a grab (D_003B2B48): a cry (0x41) the first time (+0x1AD6CC); at the motion's
  * event 0x20 (once, +0x1AD6C8) - unless progress flag 0x2C - the game-over flag 0xC (and
  * gProgress +0x73EB00 set); pulling back (0x1101) as she was, else the plain update */
-void func_00190190(Fiona *f) {
+/* 0x00190190 */
+void Fiona_StateHeld(Fiona *f) {
     if (FI(f, 0x1AD6CC, s32) == 0) {
         FI(f, 0x1AD6CC, s32) = 1;
         Actor_PlaySound(&f->c.a, 0x41, 5, 0, 0, NULL);
@@ -5597,7 +5656,8 @@ void func_00190190(Fiona *f) {
  * falling 0.5 a frame faster; a long fall turns to 0x70B at the motion's event 0x20); then
  * on the spot (+0x1AD6E0, triangle +0x1AD6C8) with the rumble and a cry - 0x7D (a short pull)
  * or 0x81 (a fall) */
-void func_00193C60(Fiona *f) {
+/* 0x00193C60 */
+void Fiona_StateCrawlDrop(Fiona *f) {
     f->c.a.unk2A = 1;
     FI(f, 0x1AD5BC, u8) = 0;
     FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - 1;
@@ -5617,10 +5677,10 @@ void func_00193C60(Fiona *f) {
     sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
     VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
     if (FI(f, 0x1AD6C4, s32) == 0) {
-        func_00181180(f, 0x7D, 5, 0, 0);
+        Fiona_Voice(f, 0x7D, 5, 0, 0);
         Actor_SetState(&f->c.a, &D_003B29B8);
     } else {
-        func_00181180(f, 0x81, 5, 0, 0);
+        Fiona_Voice(f, 0x81, 5, 0, 0);
         Actor_SetState(&f->c.a, &D_003B29C8);
     }
 }
@@ -5630,7 +5690,8 @@ extern u32 D_0047E37C;   /* pad buttons pressed this frame */
 /* struggling: how many shakes this frame - the stick (and d-pad) swung through more than 120
  * degrees from the last direction (+0x1AD714), or out from rest (+0x1AD710: back under 0.2),
  * and each of the buttons bits 10..15 pressed; none while the game drives her */
-s32 func_00183190(Fiona *f) {
+/* 0x00183190 */
+s32 Fiona_Shakes(Fiona *f) {
     static const union { u32 u; f32 f; } k08 = {0x3F4CCCCD}, k02 = {0x3E4CCCCD}, k120 = {0x40060A92};
     f32 e[4] __attribute__((aligned(16)));
     s32 n = 0;
@@ -5680,12 +5741,13 @@ s32 func_00183190(Fiona *f) {
  * and +0x1AD6C4 (beyond one a frame); the hold (0x1405, then 0x1406 at the motion's event 0x20)
  * lasts until +0x1AD6C0 runs out or no carrier (creatures 7..9 in her room, action 8) is
  * left, then she gets up (0x1407; standing at its event 0x20) */
-void func_0018BCC0(Fiona *f) {
+/* 0x0018BCC0 */
+void Fiona_StateStruggle(Fiona *f) {
     void *m;
 
     FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - 1;
     if (FI(f, 0x1AD6C0, s32) > 0 && FI(f, 0x1AD6C4, s32) > 0) {
-        s32 k = func_00183190(f);
+        s32 k = Fiona_Shakes(f);
 
         FI(f, 0x1AD6C0, s32) = FI(f, 0x1AD6C0, s32) - k;
         FI(f, 0x1AD6C4, s32) = FI(f, 0x1AD6C4, s32) - k;
@@ -5748,7 +5810,8 @@ static inline __attribute__((always_inline)) void floored(Fiona *f, const PTMF *
  * or 0xB04) leaves her on the ground. Meanwhile she slides with the fall (+0x1AD6D0; nav flag 1
  * not blocking, the doorway flags too while down by a door, action 0xB) and along walls - not
  * while down (0xA) at a door she can pass (exit bit 1) */
-void func_001913F0(Fiona *f) {
+/* 0x001913F0 */
+void Fiona_StateAfterThrow(Fiona *f) {
     f->c.a.unk2A = 1;
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
@@ -5788,14 +5851,15 @@ void func_001913F0(Fiona *f) {
             }
         }
     }
-    func_00183400(f);
+    Fiona_AlongWall(f);
 }
 
 extern const PTMF D_003B29D8;
 
 /* after a crawl-catch fall (D_003B29C8): once the motion has played out, 0x70C on to
  * D_003B29D8 */
-void func_00193BB0(Fiona *f) {
+/* 0x00193BB0 */
+void Fiona_StateCrawlFall(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         Motion_PlayTable(f->c.motion, 0x70C, -1);
@@ -5817,15 +5881,17 @@ static inline __attribute__((always_inline)) void getting_up(Fiona *f, u8 busy) 
 }
 
 /* getting up after a throw (D_003B2AC8, D_003B2AE8) */
-void func_00191280(Fiona *f) {
+/* 0x00191280 */
+void Fiona_StateGetUp(Fiona *f) {
     getting_up(f, 0);
 }
 
 extern const PTMF D_003B29E8;
 
 /* after the crawl-catch short pull (D_003B29B8): at the motion's event 0x20 she stands, out
- * of the door region she is in (RoomSlots_Leave), first func_00182E80 after a fall */
-void func_00193900(Fiona *f) {
+ * of the door region she is in (RoomSlots_Leave), first Fiona_ResetRecovery after a fall */
+/* 0x00193900 */
+void Fiona_StateCrawlPull(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         u32 n = gNavMesh->numDoors;
@@ -5845,7 +5911,7 @@ void func_00193900(Fiona *f) {
         }
         f->c.a.unk2D = 0;
         if (FI(f, 0x1AD6C4, s32) != 0) {
-            func_00182E80(f);
+            Fiona_ResetRecovery(f);
         }
         Fiona_ToIdle(f);
     }
@@ -5854,7 +5920,8 @@ void func_00193900(Fiona *f) {
 
 /* after the crawl-catch fall, down (D_003B29D8): at the motion's event 0x20 she gets up
  * (0x100D) */
-void func_00193B10(Fiona *f) {
+/* 0x00193B10 */
+void Fiona_StateCrawlDown(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         Motion_Play(f->c.motion, 0x100D, -1);
@@ -5894,7 +5961,8 @@ static inline __attribute__((always_inline)) void led_arrive(Fiona *f) {
  * +0x1AD6D8 (by +0x1AD6DC) and goes along the path by +0x1AD6D0 a frame; then she is at the
  * spot (+0x104 / +0x110, on the floor) facing +0x1AD6D8, progress flag 0x2B set unless the game
  * drives her; her leader gone, she stands */
-void func_00191D10(Fiona *f) {
+/* 0x00191D10 */
+void Fiona_StateLedAway(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
@@ -5919,10 +5987,11 @@ void func_00191D10(Fiona *f) {
 
 extern const PTMF D_003B2A08;
 
-/* led away by the hand (D_003B29F8): as func_00191D10, but only while her leader leads
+/* led away by the hand (D_003B29F8): as Fiona_StateLedAway, but only while her leader leads
  * (action 8); the pull rumbles (motion flag 2), and when the game drives her she may cry out
  * (0x38, 1 in 4) at the spot */
-void func_00192F70(Fiona *f) {
+/* 0x00192F70 */
+void Fiona_StateLedHand(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
@@ -5969,7 +6038,8 @@ static inline __attribute__((always_inline)) Character *led_by(Fiona *f) {
 
 /* led away, at the spot (D_003B2AA8): at the motion's event 0x20 - unless progress flag 0x2C -
  * the game-over flag 0xC (and gProgress +0x73EB00 set) */
-void func_00191B40(Fiona *f) {
+/* 0x00191B40 */
+void Fiona_StateLedSpot(Fiona *f) {
     f->c.a.unk2A = 1;
     FI(f, 0x1AD5BC, u8) = 0;
     if (led_by(f) == NULL) {
@@ -5987,7 +6057,8 @@ void func_00191B40(Fiona *f) {
 /* led by the hand, at the spot (D_003B2A08): her leader no longer leading, she pulls free
  * (0xF02, D_003B2A18); still led, at the motion's event 0x20 0x1401 (D_003B2A28); the pull
  * rumbles (motion flag 2) */
-void func_00192CE0(Fiona *f) {
+/* 0x00192CE0 */
+void Fiona_StateHandSpot(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
@@ -6010,20 +6081,22 @@ void func_00192CE0(Fiona *f) {
 }
 
 /* pulled free of the hand that led her (D_003B2A18) */
-void func_00192690(Fiona *f) {
+/* 0x00192690 */
+void Fiona_StatePulledFree(Fiona *f) {
     getting_up(f, 1);
 }
 
 extern const PTMF D_003B2A38, D_003B2A48, D_003B2A58, D_003B2A68;
 extern s8 D_0047A910[];   /* shakes needed to break free, by the threat meter's level */
 
-/* dragged by the hand (D_003B2A28): she struggles - shakes (func_00183190) add to +0x1AD6C8,
+/* dragged by the hand (D_003B2A28): she struggles - shakes (Fiona_Shakes) add to +0x1AD6C8,
  * capped at 10 per pull so far (+0x1AD6CC); enough for the threat level (D_0047A910, or when
  * the game drives her, as many pulls as the level) and she breaks free (+0x1AD6C8 -1,
  * +0x1AD6C0 set, the leader told to stop: state 7). Each pull (0x1401, at the motion's event
  * 0x20) may draw a cry when the game drives her; free, she slips out (0x1403); the sixth pull
  * drags her off (0x1404). Her leader gone or not leading, she pulls free (0xF02) */
-void func_00192800(Fiona *f) {
+/* 0x00192800 */
+void Fiona_StateDragged(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
@@ -6040,7 +6113,7 @@ void func_00192800(Fiona *f) {
     if (FI(f, 0x1AD6C8, s32) != -1) {
         s32 lim;
 
-        FI(f, 0x1AD6C8, s32) = FI(f, 0x1AD6C8, s32) + func_00183190(f);
+        FI(f, 0x1AD6C8, s32) = FI(f, 0x1AD6C8, s32) + Fiona_Shakes(f);
         lim = (FI(f, 0x1AD6CC, s32) + 1) * 10;
         if (lim < FI(f, 0x1AD6C8, s32)) {
             FI(f, 0x1AD6C8, s32) = lim;
@@ -6102,7 +6175,8 @@ extern const PTMF D_003B2A78, D_003B2A88;
 /* dragged off (D_003B2A68): at the end of 0x1404 (its event 0x20) - unless progress flag 0x2C -
  * the game-over flag 0xC (and gProgress +0x73EB00 set); her leader gone or not leading, she
  * pulls free (0xF02) */
-void func_001924F0(Fiona *f) {
+/* 0x001924F0 */
+void Fiona_StateDraggedOff(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
@@ -6162,7 +6236,8 @@ static inline void door_kind(Fiona *f, s32 kind, s32 anim) {
  * (0x14) through a door that isn't locked (DoorHold_Usable != 1): the same, opening it the other
  * way (DoorHold_Open). A locked one: a try at it - slow: from where she is when hurrying is
  * blocked (D_003B28B8), else from the spot (D_003B28C8); quick: from the spot (D_003B28D8) */
-void func_00197640(Fiona *f) {
+/* 0x00197640 */
+void Fiona_StateDoorStart(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
     u8 quick = 1;
@@ -6196,7 +6271,7 @@ void func_00197640(Fiona *f) {
             if (f->c.unkE0 == 0) {
                 f->c.a.unk2D = 0;
                 if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
-                    func_001855F0(f, -1);
+                    Fiona_IdleAnim(f, -1);
                 }
                 Actor_SetState(&f->c.a, &D_003B25A8);
             } else {
@@ -6239,7 +6314,7 @@ void func_00197640(Fiona *f) {
             if (f->c.unkE0 == 0) {
                 f->c.a.unk2D = 0;
                 if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
-                    func_001855F0(f, -1);
+                    Fiona_IdleAnim(f, -1);
                 }
                 Actor_SetState(&f->c.a, &D_003B25A8);
             } else {
@@ -6284,7 +6359,7 @@ void func_00197640(Fiona *f) {
     }
 }
 
-extern s32 func_00188C10(Fiona *f);   /* walk to the door spot: < 0 can't, 0 there, > 0 on the way */
+extern s32 Fiona_DoorFrame(Fiona *f);   /* walk to the door spot: < 0 can't, 0 there, > 0 on the way */
 extern const PTMF D_003B28F8, D_003B2908, D_003B2918, D_003B2928, D_003B2938;
 extern u8 D_003B2450[];   /* the event script of a locked door's rattle */
 
@@ -6298,7 +6373,7 @@ static inline __attribute__((always_inline)) void door_give_up(Fiona *f, Progres
     if (f->c.unkE0 == 0) {
         f->c.a.unk2D = 0;
         if (*(s32 *)((u8 *)f->c.motion + 0x4C4) != 0) {
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         }
         Actor_SetState(&f->c.a, &D_003B25A8);
     } else {
@@ -6401,7 +6476,8 @@ static inline __attribute__((always_inline)) s32 walk_arrive(Fiona *f) {
  * how well she faces it); within 7 of the spot she settles how to face savedYaw there - a
  * quarter turn (anims 0x400 / 0x401) or a half turn (0x402) played on the way, else a straight
  * last part - and steps by the turn's root motion; at the spot she ends with a stop animation */
-s32 func_00188C10(Fiona *f) {
+/* 0x00188C10 */
+s32 Fiona_DoorFrame(Fiona *f) {
     static const union { u32 u; f32 f; } kQuarterPi = {0x3F490FDB}, kThreeQuarterPi = {0x4016CBE4},
         kHalfDeg = {0x3C0EFA35}, kEightDeg = {0x3E0EFA35};
     f32 out[4] __attribute__((aligned(16)));
@@ -6469,7 +6545,7 @@ s32 func_00188C10(Fiona *f) {
         f32 yaw, fwd;
 
         if (door_anim_done(f)) {
-            func_00185CF0(f);
+            Fiona_WalkLook(f);
         }
         Character_WaypointAhead(&f->c, &aheadTri, ahead, 3.0f);
         yaw = Actor_HeadingTo(&f->c.a, ahead);
@@ -6498,7 +6574,7 @@ s32 func_00188C10(Fiona *f) {
             WALK_STEP(f) = 0x1.99999ap-3f /* 0.2 */ * d;
             WALK_TURN(f) = 0x1.99999ap-3f /* 0.2 */ * walk_turn_left(f);
             WALK_FLAGS(f) |= 0x20;
-            func_001855F0(f, -1);
+            Fiona_IdleAnim(f, -1);
         } else {
             WALK_FLAGS(f) |= 0x40;
             if (WALK_FLAGS(f) & 4) {
@@ -6510,7 +6586,7 @@ s32 func_00188C10(Fiona *f) {
                 FI(f, 0x1AD654, s32) = 10;
                 WALK_STEP(f) = 0x1.26e978p-4f /* 0.072 */ * d;
                 WALK_TURN(f) = 0x1.26e978p-4f /* 0.072 */ * walk_turn_left(f);
-                func_00185CF0(f);
+                Fiona_WalkLook(f);
             } else {
                 if (!(WALK_FLAGS(f) & 1)) {
                     t = d / 0x1.23d70ap+2f /* 4.56 */;
@@ -6633,19 +6709,20 @@ step:
         return 1;
     }
     WALK_FLAGS(f) |= 0x20;
-    func_001855F0(f, -1);
+    Fiona_IdleAnim(f, -1);
     return 1;
 }
 
 /* D_003B28E8: walking to the spot; there, a door that is barred for her (exit bit 8) or whose
  * state (Progress_ExitOpen) says it can't be used this way makes her give up; else unless it holds
  * her back (DoorHold_Take) it is opened (doors +0x1C) with the door animation (D_003B28F8) */
-void func_00196FC0(Fiona *f) {
+/* 0x00196FC0 */
+void Fiona_StateDoorWalk(Fiona *f) {
     Progress *p;
     s32 r;
     u8 ok;
 
-    r = func_00188C10(f);
+    r = Fiona_DoorFrame(f);
     if (r < 0) {
         door_give_up(f, gProgress);
         return;
@@ -6686,7 +6763,8 @@ void func_00196FC0(Fiona *f) {
 
 /* D_003B28F8: the door animation; when it has run out, the doors are told she is through
  * (+0xC) and she steps out (D_003B2908) */
-void func_00196EF0(Fiona *f) {
+/* 0x00196EF0 */
+void Fiona_StateDoorAnim(Fiona *f) {
     f->c.a.unk2A = 1;
     if (!door_anim_done(f)) {
         return;
@@ -6700,7 +6778,8 @@ void func_00196EF0(Fiona *f) {
  * 0x28020018): the door shut behind her (doors +0x20 / +0x1C; the progress told,
  * DoorHold_Open in / DoorHold_Shut out) and idle. Every frame: shown (unk2D) unless still in
  * the door's region (doors +0x18) on a triangle without flag 0x20000 */
-void func_00196C20(Fiona *f) {
+/* 0x00196C20 */
+void Fiona_StateDoorStepOut(Fiona *f) {
     s32 r;
 
     f->c.a.unk2A = 1;
@@ -6747,7 +6826,8 @@ void func_00196C20(Fiona *f) {
 /* D_003B2918: the try at a locked door from where she stood; turning (FI 0x1AD65C at
  * FI 0x1AD6D4 a frame) and walking (FI 0x1AD6D0 a frame) to the spot while it plays, then put
  * on the spot facing the door (D_003B2928) */
-void func_00196660(Fiona *f) {
+/* 0x00196660 */
+void Fiona_StateLockedTry(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
     u32 tri;
     f32 yaw;
@@ -6773,7 +6853,8 @@ void func_00196660(Fiona *f) {
 /* D_003B28B8: a locked door, slow: once the current animation is done, a path to the spot
  * (Character_PlanPathKind / Character_WaypointsCurve; none: give up); its length / 7 the step and the turn to the
  * door's facing / 7 the turn a frame, the try played (FI 0x1AD6CC, D_003B2918) */
-void func_001967D0(Fiona *f) {
+/* 0x001967D0 */
+void Fiona_StateLockedSlow(Fiona *f) {
     static const union { u32 u; f32 f; } kSeventh = {0x3E126E98};
     s32 r;
     f32 d;
@@ -6803,8 +6884,9 @@ void func_001967D0(Fiona *f) {
 }
 
 /* D_003B28C8: a locked door, from the spot: walking there, then the try played (D_003B2938) */
-void func_001964C0(Fiona *f) {
-    s32 r = func_00188C10(f);
+/* 0x001964C0 */
+void Fiona_StateLockedSpot(Fiona *f) {
+    s32 r = Fiona_DoorFrame(f);
 
     if (r < 0) {
         door_give_up(f, gProgress);
@@ -6819,8 +6901,9 @@ void func_001964C0(Fiona *f) {
 
 /* D_003B28D8: a locked door, quick: walking to the spot, then +0x8C, the rattle's event script
  * run for her (events +0x1C) and the scripted action 7 with the try's animation (unk104[0]) */
-void func_00196A90(Fiona *f) {
-    s32 r = func_00188C10(f);
+/* 0x00196A90 */
+void Fiona_StateLockedQuick(Fiona *f) {
+    s32 r = Fiona_DoorFrame(f);
 
     if (r < 0) {
         door_give_up(f, gProgress);
@@ -6843,7 +6926,8 @@ extern const PTMF D_003B2DB8;   /* walking to the scripted spot */
 /* D_003B2778 (command 17): the walk's animation playing - turning (to unk104[2] at FI 0x1AD6D4
  * a frame) and stepping (FI 0x1AD6D0) on the path; at its event 0x20 put on the spot (unk110,
  * tri unk100) facing unk104[2], the command done */
-void func_0018A120(Fiona *f) {
+/* 0x0018A120 */
+void Fiona_StateCmdWalkAnim(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -6868,8 +6952,9 @@ void func_0018A120(Fiona *f) {
 }
 
 /* D_003B2DB8: walking to the scripted spot; there the command is done, unable: idle */
-void func_0018A720(Fiona *f) {
-    s32 r = func_00188C10(f);
+/* 0x0018A720 */
+void Fiona_StateCmdToSpot(Fiona *f) {
+    s32 r = Fiona_DoorFrame(f);
 
     if (r == 0) {
         f->c.unkE1 = 1;
@@ -6880,7 +6965,8 @@ void func_0018A720(Fiona *f) {
 
 /* D_003B26E8 (command 5 with no animation): walk to the spot unk110 (tri unk104[0]) and face
  * unk104[2] there (D_003B2DB8) */
-void func_0018A860(Fiona *f) {
+/* 0x0018A860 */
+void Fiona_StateCmdWalkSpot(Fiona *f) {
     f32 yaw = *(f32 *)&f->c.unk104[2];
     s32 tri = f->c.unk104[0];
 
@@ -6905,9 +6991,9 @@ static inline __attribute__((always_inline)) void script_anim_keep(Fiona *f, s32
         if (a == -1) {
             if (walk) {
                 if (f->unk1AD580 == walk) {
-                    func_00185CF0(f);
+                    Fiona_WalkLook(f);
                 } else {
-                    func_00185310(f);
+                    Fiona_RunLook(f);
                 }
             }
         } else if (AT(f->c.motion, 0x55C, s32) != a) {
@@ -6919,7 +7005,8 @@ static inline __attribute__((always_inline)) void script_anim_keep(Fiona *f, s32
 /* D_003B2DA8: walking the planned path, turning toward it (10 degrees a frame) and stepping by
  * the root motion (less the sharper the turn); at its end the rest of the step taken, the
  * command done and idle */
-void func_0018A950(Fiona *f) {
+/* 0x0018A950 */
+void Fiona_StateCmdPath(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTenDeg = {0x3E32B8C3};
     f32 root[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -6959,7 +7046,8 @@ void func_0018A950(Fiona *f) {
 
 /* D_003B2708 (commands 6 / 11): a path to the scripted spot (unk110, tri unk104[0]) walked
  * (D_003B2DA8); none: idle */
-void func_0018AC60(Fiona *f) {
+/* 0x0018AC60 */
+void Fiona_StateCmdPathTo(Fiona *f) {
     s32 n;
 
     VCALL(gNavMesh, 0xC, void (*)(NavMesh *, s32, f32 *))(gNavMesh, f->c.unk104[0], f->c.unk110);
@@ -6976,12 +7064,13 @@ void func_0018AC60(Fiona *f) {
 
 /* D_003B2D78 / D_003B2D98: once the animation has run out the command is done - unless it was
  * the default one and she is still moving, then she is stopped first */
-void func_0018AE20(Fiona *f) {
+/* 0x0018AE20 */
+void Fiona_StateCmdAnimDone(Fiona *f) {
     if (!door_anim_done(f)) {
         return;
     }
     if (f->c.unk104[1] == -1 && Fiona_AnimGroup(AT(f->c.motion, 0x55C, s32)) != 0) {
-        func_001855F0(f, -1);
+        Fiona_IdleAnim(f, -1);
         return;
     }
     f->c.unkE1 = 1;
@@ -6989,7 +7078,8 @@ void func_0018AE20(Fiona *f) {
 
 /* D_003B2D88: turning to unk104[2] (20 degrees a frame) with the scripted animation; then the
  * wait for it to run out (D_003B2D98) */
-void func_0018B0A0(Fiona *f) {
+/* 0x0018B0A0 */
+void Fiona_StateCmdTurn(Fiona *f) {
     static const union { u32 u; f32 f; } kTwentyDeg = {0x3EB2B8C3};
 
     script_anim_keep(f, 0);
@@ -7002,7 +7092,8 @@ extern const PTMF D_003B2D68, D_003B2D78, D_003B2D88;
 
 /* D_003B2D68 (command 5 / 10): walking the planned path (as D_003B2DA8, no rest step); at
  * its end turning to unk104[2] (D_003B2D88), or already facing it, the wait (D_003B2D78) */
-void func_0018B190(Fiona *f) {
+/* 0x0018B190 */
+void Fiona_StateCmdPathTurn(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTenDeg = {0x3E32B8C3};
     f32 root[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -7035,7 +7126,8 @@ void func_0018B190(Fiona *f) {
 
 /* D_003B26F8 (command 5 / 10): a path to the spot unk110 (tri unk104[0]) walked (D_003B2D68);
  * none: idle */
-void func_0018B3D0(Fiona *f) {
+/* 0x0018B3D0 */
+void Fiona_StateCmdPathSpot(Fiona *f) {
     s32 n = Character_PlanPathKind(&f->c, 0, f->c.unk104[0], f->c.unk110);
 
     if (n > 0) {
@@ -7049,7 +7141,8 @@ void func_0018B3D0(Fiona *f) {
 }
 
 /* D_003B25D8 / D_003B26A8: the command done once the animation has run out */
-void func_0018B5B0(Fiona *f) {
+/* 0x0018B5B0 */
+void Fiona_StateCmdDone(Fiona *f) {
     if (door_anim_done(f)) {
         f->c.unkE1 = 1;
     }
@@ -7057,7 +7150,8 @@ void func_0018B5B0(Fiona *f) {
 
 /* D_003B27A8 (panic attack): for FI 0x1AD6C0 frames (then idle, though it plays on) the
  * panic animation 2 kept going with her cry (0x44) */
-void func_0018C080(Fiona *f) {
+/* 0x0018C080 */
+void Fiona_StatePanicAttack(Fiona *f) {
     FI(f, 0x1AD6C0, s32) -= 1;
     if (FI(f, 0x1AD6C0, s32) == 0) {
         door_give_up(f, gProgress);
@@ -7073,7 +7167,8 @@ void func_0018C080(Fiona *f) {
 
 /* the effect on a character her shove met: 0 a burst at it, 1 a hit spark at one of four of its
  * bones (motion +0x84 / +0x88 / +0x8C / +0x90, at random) */
-void func_0017FD50(Fiona *f, s32 kind, Character *c) {
+/* 0x0017FD50 */
+void Fiona_ShoveEffect(Fiona *f, s32 kind, Character *c) {
     u8 *mgr;
 
     if (kind == 1) {
@@ -7141,7 +7236,8 @@ static inline __attribute__((always_inline)) void fiona_show(Fiona *f) {
  * a door that is shut has to be opened (or she waits, -1) - or the current room, entered
  * through it (D_003B2E98). Then the next link: fleeing, one away from the pursuer's room; for
  * Hewie, his way (Character_Route); else a random open one */
-void func_001800E0(Fiona *f) {
+/* 0x001800E0 */
+void Fiona_OffscreenFrame(Fiona *f) {
     static const union { u32 u; f32 f; } kSlowPace = {0x3E99999A}, kWaitPace = {0x3EE66666},
         kEaseFast = {0xBDCCCCCD}, kEase = {0xBE19999A}, kFearFast = {0x3D888889}, kFear = {0x3D3F258C};
     Progress *p = gProgress;
@@ -7168,9 +7264,9 @@ void func_001800E0(Fiona *f) {
                 speed = kWaitPace.f;
             }
             if ((Progress_GameMode(p) & 0xFF) == 2) {
-                func_00181010(f, kEaseFast.f);
+                Fiona_ChangeFear(f, kEaseFast.f);
             } else {
-                func_00181010(f, kEase.f);
+                Fiona_ChangeFear(f, kEase.f);
             }
             break;
         case 0xE:
@@ -7181,9 +7277,9 @@ void func_001800E0(Fiona *f) {
             }
             if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3) != 0x8C) {
                 if ((Progress_GameMode(p) & 0xFF) == 2) {
-                    func_00181010(f, kFearFast.f);
+                    Fiona_ChangeFear(f, kFearFast.f);
                 } else {
-                    func_00181010(f, kFear.f);
+                    Fiona_ChangeFear(f, kFear.f);
                 }
             }
             break;
@@ -7380,7 +7476,8 @@ void func_001800E0(Fiona *f) {
 /* add `amount` to her panic (FI 0x1AD5F4, kept to 0..100), scaled by the accessory she wears
  * (items +0x10(3)): 0x8A gains x0.75, 0x8B gains x0.75 / recovery x1.5, 0x8C gains x0.5 /
  * recovery x2 */
-void func_00180E90(Fiona *f, f32 amount) {
+/* 0x00180E90 */
+void Fiona_AddPanic(Fiona *f, f32 amount) {
     f32 v;
 
     if (gSubScreen != NULL) {
@@ -7429,7 +7526,8 @@ static inline u32 fiona_tri_flags(u8 *nm, u32 i) {
 /* her voice `id` - unless, while the game runs in her room, the line from her feet to her
  * mouth (motion +0x60) crosses a muffling triangle (flags 0x2008000): then a muffled sound
  * (0x1C), which in rooms 7 and 0x106 is heard (a big noise) */
-void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
+/* 0x00181180 */
+void Fiona_Voice(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
     f32 mouth[4] __attribute__((aligned(16)));
     Progress *p = gProgress;
 
@@ -7473,7 +7571,8 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
  * and not in `skip` (by slot): with reach < 0, those touching her (Actor_Touching); else those
  * whose height span (+-reach) holds pos.y and whose radius + reach holds it. Each one not
  * already in request 7 takes it; the slots hit */
-u32 func_001813D0(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
+/* 0x001813D0 */
+u32 Fiona_BlowCreatures(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
     Character **list = (Character **)gCreatures;
     u32 mask = 0;
     s32 i;
@@ -7533,7 +7632,8 @@ extern s8 D_0047A908[6];   /* chances (%) by the pursuer's health ratio */
 
 /* when she is being chased (FI 0x1AD5D6), a roll against the chance for how worn the pursuer
  * is (+0x14C8 / +0x14CC: over 0.8, 0.6, 0.4, 0.2, 0.1, under) */
-s32 func_00181650(Fiona *f) {
+/* 0x00181650 */
+s32 Fiona_ChaseRoll(Fiona *f) {
     s32 k;
     f32 r;
 
@@ -7585,7 +7685,8 @@ static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *d
  * looking back) on her way toward `to`, standing at its side 4 (push: an open door she may go
  * through) or 1 (pull: a closed one, sound 0x91); the progress is told who was shut out
  * (Relation_Request). 1 if anyone was */
-s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
+/* 0x00181880 */
+s32 Fiona_SlamDoor(Fiona *f, f32 *to, u8 ahead) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB},
                                          kQuarterPi = {0x3F490FDB};
     VObject *doors = gDoors;
@@ -7680,7 +7781,8 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
 
 /* her panic's recovery delay (FI 0x1AD5F8) back to 1800 frames - with accessory 0x8C never,
  * 0x8B half the time, 0x8A three times in four */
-void func_00182E80(Fiona *f) {
+/* 0x00182E80 */
+void Fiona_ResetRecovery(Fiona *f) {
     if (gSubScreen != NULL) {
         switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3)) {
         case 0x8D:
@@ -7712,7 +7814,8 @@ static inline f32 fiona_rnd(void) {
 
 /* her line for an order (moveSub 0x2C: 0x31..0x33 by the game mode, heard as a noise unless
  * Hewie is with her; 0x2D: 0x30) - once flag 0x25 is set, just 0x33 or 0x39 */
-void func_00183780(Fiona *f) {
+/* 0x00183780 */
+void Fiona_OrderLine(Fiona *f) {
     Progress *p = gProgress;
 
     if (Progress_TestFlag(p, 0x25) & 0xFF) {
@@ -7748,7 +7851,8 @@ void func_00183780(Fiona *f) {
 
 /* her call to Hewie for the command (moveSub 0x23..0x2F); for 0x27 (praise / scold) by what he
  * is doing (his action, Hewie_AnimGroup) */
-void func_00183960(Fiona *f) {
+/* 0x00183960 */
+void Fiona_CallHewie(Fiona *f) {
     switch (f->c.moveSub) {
     case 0x23:
         if ((Progress_GameMode(gProgress) & 0xFF) == 0) {
@@ -7863,7 +7967,8 @@ static inline __attribute__((always_inline)) void hewie_react(Fiona *f, s32 n) {
     }
 }
 
-void func_001817C0(Fiona *f, s32 n) {
+/* 0x001817C0 */
+void Fiona_HewieReact(Fiona *f, s32 n) {
     hewie_react(f, n);
 }
 
@@ -7871,7 +7976,8 @@ void func_001817C0(Fiona *f, s32 n) {
  * set, the request 0xD with it, her point (FI 0x1AD6E0, x and z in 1/100000; for "come", 0x23,
  * moved to 5 short of where he'd have to go when that is further) and facing (FI 0x1AD6D0) -
  * unless the game holds him (gProgress +0x1FBEC1); then his reaction to it */
-void func_00183F10(Fiona *f) {
+/* 0x00183F10 */
+void Fiona_CommandHewie(Fiona *f) {
     Character *h = (Character *)gCharPartner;
     Progress *p;
 
@@ -7951,7 +8057,8 @@ extern const PTMF D_003B2D28;   /* the flee turn */
  * by the root motion; at its mark 2 (unless the progress var 0x26 is 8) her panic +10, at mark
  * 0x20 a door slammed behind her (her radius back); at its event 0x20 Hewie's reaction 9 and
  * idle */
-void func_0018C240(Fiona *f) {
+/* 0x0018C240 */
+void Fiona_StateFleeTurn(Fiona *f) {
     static const union { u32 u; f32 f; } kTwelveDeg = {0x3E567750};
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -7966,7 +8073,7 @@ void func_0018C240(Fiona *f) {
         f->c.moveMode = 0;
         f->c.a.unk2D = 0;
         if ((Progress_GetVar(gProgress, 0x26) & 0xFF) != 8) {
-            func_00180E90(f, 10.0f);
+            Fiona_AddPanic(f, 10.0f);
         }
     }
     if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 0x20) {
@@ -7974,20 +8081,21 @@ void func_0018C240(Fiona *f) {
         v[1] = 0.0f;
         v[2] = -AT(f, 0xC8, f32);
         v[3] = 0.0f;   /* (unset in the original) */
-        func_002E2DA0(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+        Mtx_ApplyVector(v, (f32 (*)[4])((u8 *)f + 0x60), v);
         sceVu0AddVector(to, f->c.a.pos, v);
-        func_00181880(f, to, 0);
+        Fiona_SlamDoor(f, to, 0);
     }
     Actor_TurnToward(&f->c.a, f->savedYaw, kTwelveDeg.f);
     Motion_RootMovement(f->c.motion, v, 0.0f);
     Mtx_TurnY(m, f->savedYaw);
-    func_002E2DA0(v, m, v);
+    Mtx_ApplyVector(v, m, v);
     Actor_Move(&f->c.a, v);
 }
 
 /* D_003B2678: once the animation has run out the flee turn (D_003B2D28) - away from the
  * pursuer when she's being chased and he is within 30, else the way she faces */
-void func_0018C540(Fiona *f) {
+/* 0x0018C540 */
+void Fiona_StateFleeStart(Fiona *f) {
     Character_RootMoveMasked(&f->c);
     if (!door_anim_done(f)) {
         return;
@@ -8012,7 +8120,8 @@ static inline __attribute__((always_inline)) void fiona_hand(Fiona *f, f32 *out)
  * unk100) made at her hand and sent off (+0x44: thrown 4, dropped 6 - toward FI 0x1AD6E0 when
  * aimed (FI 0x1AD6C0), else her facing; set down: straight down). A thrown ball (kind 0) Hewie
  * may fetch (+0xF368C), after his reaction 12 */
-void func_0018C660(Fiona *f) {
+/* 0x0018C660 */
+void Fiona_StateLetGo(Fiona *f) {
     static const union { u32 u; f32 f; } kFiveDeg = {0x3DB2B8C3};
     VObject *things;
     u8 *t;
@@ -8102,7 +8211,8 @@ extern const PTMF D_003B2D18, D_003B2CF8, D_003B2D08;
  * facing kept (FI 0x1AD6D0) and the animation for it (0xD00 / 0xD01 / 0xD02) - for 0x32 aimed
  * at the pursuer instead (FI 0x1AD6E0, FI 0x1AD6C0 set) when she's being chased and he is within
  * 80 and 60 degrees of her facing; then D_003B2D18 */
-void func_0018CCA0(Fiona *f) {
+/* 0x0018CCA0 */
+void Fiona_StateLetGoStart(Fiona *f) {
     static const union { u32 u; f32 f; } kSixtyDeg = {0x3F860A92};
 
     if (door_anim_done(f)) {
@@ -8135,7 +8245,8 @@ void func_0018CCA0(Fiona *f) {
 }
 
 /* D_003B2D08: idle at the animation's event 0x20 */
-void func_0018CED0(Fiona *f) {
+/* 0x0018CED0 */
+void Fiona_StateIdleAtEvent(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, gProgress);
     }
@@ -8143,7 +8254,8 @@ void func_0018CED0(Fiona *f) {
 
 /* D_003B2CF8: turning to FI 0x1AD6D0 (FI 0x1AD6D4 a frame) until the animation is done, then
  * set to it (D_003B2D08) */
-void func_0018D010(Fiona *f) {
+/* 0x0018D010 */
+void Fiona_StateTurnUntilDone(Fiona *f) {
     f32 yaw;
 
     if (!door_anim_done(f)) {
@@ -8159,7 +8271,8 @@ void func_0018D010(Fiona *f) {
 
 /* D_003B25E8 (request 0xC / 6): animation 0x8000 (8, speed 10) while she turns to unk104[2]
  * (a tenth of the way a frame; D_003B2CF8) */
-void func_0018D100(Fiona *f) {
+/* 0x0018D100 */
+void Fiona_StateRequestTurn(Fiona *f) {
     Motion_PlayWith(f->c.motion, 0x8000, 8, -1, 10.0f);
     Actor_SetState(&f->c.a, &D_003B2CF8);
     FI(f, 0x1AD6D0, f32) = *(f32 *)&f->c.unk104[2];
@@ -8182,7 +8295,8 @@ static inline __attribute__((always_inline)) void gesture_look(Fiona *f) {
 }
 
 /* D_003B2798 / D_003B2928 / D_003B2938: idle at the animation's event 0x20 */
-void func_0018D200(Fiona *f) {
+/* 0x0018D200 */
+void Fiona_StateIdleAtEvent2(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, gProgress);
     }
@@ -8191,7 +8305,8 @@ void func_0018D200(Fiona *f) {
 
 /* D_003B2CE8: the end of a command gesture - idle at its event 0x20, or at once if the pursuer
  * has her */
-void func_0018D340(Fiona *f) {
+/* 0x0018D340 */
+void Fiona_StateGestureEnd(Fiona *f) {
     if (fiona_caught(f)) {
         door_give_up(f, gProgress);
         return;
@@ -8203,16 +8318,17 @@ void func_0018D340(Fiona *f) {
 }
 
 /* D_003B2CD8: a command gesture - looking at its target (FI 0x1AD664) if any; at its event 0x20
- * the command given (func_00183F10) and the gesture's end (0xC0C, D_003B2CE8); idle if the
+ * the command given (Fiona_CommandHewie) and the gesture's end (0xC0C, D_003B2CE8); idle if the
  * pursuer has her */
-void func_0018D5C0(Fiona *f) {
+/* 0x0018D5C0 */
+void Fiona_StateGesture(Fiona *f) {
     if (fiona_caught(f)) {
         door_give_up(f, gProgress);
         return;
     }
     gesture_look(f);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-        func_00183F10(f);
+        Fiona_CommandHewie(f);
         Motion_Play(f->c.motion, 0xC0C, -1);
         Actor_SetState(&f->c.a, &D_003B2CE8);
     }
@@ -8222,7 +8338,8 @@ void func_0018D5C0(Fiona *f) {
 extern const PTMF D_003B2CC8, D_003B2CD8;
 
 /* D_003B2CC8: the gesture's lead-in - at its event 0x20 the gesture (0xC0B, D_003B2CD8) */
-void func_0018D7E0(Fiona *f) {
+/* 0x0018D7E0 */
+void Fiona_StateGestureLeadIn(Fiona *f) {
     if (fiona_caught(f)) {
         door_give_up(f, gProgress);
         return;
@@ -8237,14 +8354,15 @@ void func_0018D7E0(Fiona *f) {
 
 /* D_003B2B78: walking on until the animation is done, then the gesture's lead-in (0xC0A,
  * D_003B2CC8) */
-void func_0018DA00(Fiona *f) {
+/* 0x0018DA00 */
+void Fiona_StateWalkThenGesture(Fiona *f) {
     if (fiona_caught(f)) {
         door_give_up(f, gProgress);
         return;
     }
     gesture_look(f);
     if (!door_anim_done(f)) {
-        func_00185CF0(f);
+        Fiona_WalkLook(f);
         return;
     }
     Motion_PlayTable(f->c.motion, 0xC0A, -1);
@@ -8255,7 +8373,8 @@ void func_0018DA00(Fiona *f) {
  * 3 while Hewie answers it (his moveMode 0xC, normal mode), cut to 2 if he does once it plays -
  * then 0xC09; 0x2B / 0x24 one gesture): at each animation's event 0x20 the next; at the end
  * Hewie's reaction (6 / 5 / 7) and idle */
-void func_0018DC30(Fiona *f) {
+/* 0x0018DC30 */
+void Fiona_StateHeldCommand(Fiona *f) {
     Progress *p = gProgress;
 
     if ((Progress_GameMode(p) & 0xFF) == 0 && f->c.moveSub == 0x28 && FI(f, 0x1AD6B8, s32) == 3 &&
@@ -8307,7 +8426,8 @@ extern const PTMF D_003B2C78, D_003B2C88, D_003B2C98, D_003B2CA8, D_003B2CB8;
 /* D_003B2C78 / D_003B2C88 / D_003B2C98: the held command's gesture (0x2B 0xC0D, 0x28 0xC07,
  * 0x24 0xC06; D_003B2CB8) - Hewie gone: idle; a request 7 for her: cleared, the wait
  * (D_003B2CA8) */
-void func_0018E2B0(Fiona *f) {
+/* 0x0018E2B0 */
+void Fiona_StateHeldGesture(Fiona *f) {
     if (f->c.state[0] == 7) {
         f->c.state[0] = 0;
         Actor_SetState(&f->c.a, &D_003B2CA8);
@@ -8336,7 +8456,8 @@ void func_0018E2B0(Fiona *f) {
  * Hewie_AnimGroup 1, the animation done); then the command registered with the progress
  * (SlotCmd_Give 2, 0x2B: 1 / 0x28: 3 / 0x24: 5) and its gesture; Hewie gone, busy otherwise,
  * or the command refused: idle */
-void func_0018E510(Fiona *f) {
+/* 0x0018E510 */
+void Fiona_StateWaitHewie(Fiona *f) {
     s32 b;
     const PTMF *next;
 
@@ -8386,7 +8507,8 @@ static inline __attribute__((always_inline)) s32 held_off(Fiona *f) {
 }
 
 /* D_003B2C58: the animation run out, the wait for Hewie (D_003B2C68); idle if he's off */
-void func_0018EAC0(Fiona *f) {
+/* 0x0018EAC0 */
+void Fiona_StateHeldStopped(Fiona *f) {
     if (held_off(f)) {
         Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
@@ -8399,7 +8521,8 @@ void func_0018EAC0(Fiona *f) {
 
 /* D_003B2C48: walking to the spot for a held command; there, stopped (D_003B2C58); idle if
  * Hewie is off or she can't get there */
-void func_0018EDA0(Fiona *f) {
+/* 0x0018EDA0 */
+void Fiona_StateHeldWalk(Fiona *f) {
     s32 r;
 
     if (held_off(f)) {
@@ -8407,7 +8530,7 @@ void func_0018EDA0(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    r = func_00188C10(f);
+    r = Fiona_DoorFrame(f);
     if (r < 0) {
         Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
@@ -8416,7 +8539,7 @@ void func_0018EDA0(Fiona *f) {
     if (r != 0) {
         return;
     }
-    func_001855F0(f, -1);
+    Fiona_IdleAnim(f, -1);
     Actor_SetState(&f->c.a, &D_003B2C58);
 }
 
@@ -8425,7 +8548,8 @@ extern const PTMF D_003B2C28, D_003B2C38, D_003B2C48;
 /* D_003B2BB8 / D_003B2BC8 / D_003B2BE8 (a held command, Hewie at unk110 / tri unk104[0]
  * facing unk104[2]): a request 7 for her switches it (0x2B: 0x2F, D_003B2C28; 0x28: 0x29,
  * D_003B2C38; 0x24: idle); Hewie gone: idle; else walk to his spot facing him (D_003B2C48) */
-void func_0018F180(Fiona *f) {
+/* 0x0018F180 */
+void Fiona_StateHeldStart(Fiona *f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     f32 yaw;
     s32 tri;
@@ -8465,13 +8589,14 @@ void func_0018F180(Fiona *f) {
 }
 
 extern const PTMF D_003B2B28, D_003B2B38;
-extern void func_00183400(Fiona *f);
+extern void Fiona_AlongWall(Fiona *f);
 
 /* D_003B2B28 (fallen): sliding on by the root motion turned to FI 0x1AD6D0 (and turning to
  * it, 20 degrees a frame, until there: FI 0x1AD6C4 1) - not while FI 0x1AD6C4 is -1; at the
  * animation's event 0x20 getting up (0xB01, D_003B2B38). Blocked by nothing for the check
- * (+0xC0 bit 0); when no exit is closed to her (bit 0 of every door's state) func_00183400 */
-void func_001906A0(Fiona *f) {
+ * (+0xC0 bit 0); when no exit is closed to her (bit 0 of every door's state) Fiona_AlongWall */
+/* 0x001906A0 */
+void Fiona_StateFallen(Fiona *f) {
     static const union { u32 u; f32 f; } kTwentyDeg = {0x3EB2B8C3};
     Progress *p;
     u8 i;
@@ -8512,12 +8637,13 @@ void func_001906A0(Fiona *f) {
             return;
         }
     }
-    func_00183400(f);
+    Fiona_AlongWall(f);
 }
 
 /* D_003B2788 (panic: fall): once the animation is done the fall itself (0xB00, her cry 0x40, a
  * loud noise 0x5F; D_003B2B28) facing on */
-void func_001908E0(Fiona *f) {
+/* 0x001908E0 */
+void Fiona_StatePanicFall(Fiona *f) {
     f->c.a.unk2A = 1;
     FI(f, 0x1AD5BC, u8) = 0;
     if (door_anim_done(f)) {
@@ -8539,10 +8665,11 @@ extern const PTMF D_003B2988;   /* the kick */
  * 0x90, recoil; the hits so far gathered (FI 0x1AD6C0 who, FI 0x1AD6CC creatures). While no
  * recoil she steps forward until the animation is done. In its hit window (motion flags bit 2
  * clear): a door ahead slammed, else a blow (2, damage 5 x gProgress +0xA04, the pursuer worn
- * down func_00181650 -0x8000) to Hewie (2, once) and the pursuer (4, once) when touching, and to
+ * down Fiona_ChaseRoll -0x8000) to Hewie (2, once) and the pursuer (4, once) when touching, and to
  * the creatures (FI 0x1AD6C8). At its event 0x20 Hewie's reaction 11 (if he wasn't kicked),
  * panic +10, idle */
-void func_001943D0(Fiona *f) {
+/* 0x001943D0 */
+void Fiona_StateKick(Fiona *f) {
     static const union { u32 u; f32 f; } kStep = {0x3F89B08A};
     Progress *p = gProgress;
     u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
@@ -8583,7 +8710,7 @@ void func_001943D0(Fiona *f) {
         if (FI(f, 0x1AD6C4, s32) == 0) {
             hewie_react(f, 11);
         }
-        func_00180E90(f, 10.0f);
+        Fiona_AddPanic(f, 10.0f);
         FI(f, 0x1AD5C4, s32) = 0;
         door_give_up(f, p);
         return;
@@ -8599,9 +8726,9 @@ void func_001943D0(Fiona *f) {
         v[1] = 0.0f;
         v[2] = AT(f, 0xC8, f32);
         v[3] = 0.0f;   /* (unset in the original) */
-        func_002E2DA0(v, (f32 (*)[4])((u8 *)f + 0x60), v);
+        Mtx_ApplyVector(v, (f32 (*)[4])((u8 *)f + 0x60), v);
         sceVu0AddVector(to, f->c.a.pos, v);
-        if (func_00181880(f, to, 1) & 0xFF) {
+        if (Fiona_SlamDoor(f, to, 1) & 0xFF) {
             return;
         }
         if (FI(f, 0x1AD5D5, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 2) &&
@@ -8616,19 +8743,20 @@ void func_001943D0(Fiona *f) {
         if (who != 0) {
             u16 dmg = (u16)(u32)(5.0f * AT(p, 0xA04, f32));
 
-            if ((func_00181650(f) & 0xFF) == 1) {
+            if ((Fiona_ChaseRoll(f) & 0xFF) == 1) {
                 Relation_Request(p, *(u8 *)&f->c.a.slot, who, 2, dmg, -0x8000, 0.0f);
             } else {
                 Relation_Request(p, *(u8 *)&f->c.a.slot, who, 2, dmg, 0, 0.0f);
             }
         }
-        FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), 5, NULL, -1.0f);
+        FI(f, 0x1AD6C8, s32) = Fiona_BlowCreatures(f, FI(f, 0x1AD6CC, u32), 5, NULL, -1.0f);
     }
 }
 
 /* D_003B2628 / D_003B2638: once the animation is done the kick (her cry 0x3D, 0xE01,
  * D_003B2988) */
-void func_001949D0(Fiona *f) {
+/* 0x001949D0 */
+void Fiona_StateKickStart(Fiona *f) {
     Character_RootMoveMasked(&f->c);
     if (!door_anim_done(f)) {
         return;
@@ -8642,7 +8770,7 @@ void func_001949D0(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2988);
 }
 
-extern void func_0017FD50(Fiona *f, s32 kind, Character *c);
+extern void Fiona_ShoveEffect(Fiona *f, s32 kind, Character *c);
 
 /* the effect `kind` on everyone her shove met: Hewie (2), the pursuer (4), the creatures in
  * FI 0x1AD6C8 */
@@ -8651,15 +8779,15 @@ static inline __attribute__((always_inline)) void shove_effects(Fiona *f, u8 hit
     s32 i;
 
     if (hit & 2) {
-        func_0017FD50(f, kind, (Character *)gCharPartner);
+        Fiona_ShoveEffect(f, kind, (Character *)gCharPartner);
     }
     if (hit & 4) {
-        func_0017FD50(f, kind, gCharPursuer);
+        Fiona_ShoveEffect(f, kind, gCharPursuer);
     }
     list = (Character **)gCreatures;
     for (i = 0; i < 10; i++, list++) {
         if (FI(f, 0x1AD6C8, s32) & (1 << i)) {
-            func_0017FD50(f, kind, *list);
+            Fiona_ShoveEffect(f, kind, *list);
         }
     }
 }
@@ -8670,7 +8798,8 @@ static inline __attribute__((always_inline)) void shove_effects(Fiona *f, u8 hit
  * 7: none, else 0x8F) - with var 7 the sparks on them, while she faces back (FI 0x1AD6D0 < 0)
  * the bursts; recoil. Once the animation is done: from 0xE00 its end (0x101); after it Hewie's
  * reaction 10, idle (vars 6 / 7: motion +0x2C) */
-void func_00194AD0(Fiona *f) {
+/* 0x00194AD0 */
+void Fiona_StateShove(Fiona *f) {
     Progress *p = gProgress;
     u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
 
@@ -8725,7 +8854,8 @@ extern const PTMF D_003B2948, D_003B2958, D_003B2968;
  * 0x26 6 / 7 at its normal pace (after motion +0x30); else slower the longer she has been
  * panicking (the recovery delay FI 0x1AD5F8 past 450: 1.5 x (3150 - it) / 1800) and the more
  * panicked she is (over 40: (160 - panic) / 120), whichever is slower */
-void func_00195C70(Fiona *f) {
+/* 0x00195C70 */
+void Fiona_StateShoveStart(Fiona *f) {
     u8 v = Progress_GetVar(gProgress, 0x26);
 
     if (door_anim_done(f)) {
@@ -8763,7 +8893,8 @@ void func_00195C70(Fiona *f) {
 
 /* D_003B2958: the scripted door opened; at the animation's event 0x20 the progress told (in:
  * DoorHold_Release, out: Progress_UseDoor), idle */
-void func_00195EE0(Fiona *f) {
+/* 0x00195EE0 */
+void Fiona_StateScriptDoorOpened(Fiona *f) {
     Progress *p;
 
     if ((MOTION_EVENTS(f->c.motion) & 0x20) == 0) {
@@ -8780,8 +8911,9 @@ void func_00195EE0(Fiona *f) {
 
 /* D_003B2948: walking to the scripted door's spot; there, unless it holds her back
  * (DoorHold_Take), its animation (single 0x600 / double 0x602, D_003B2958); else idle */
-void func_00196070(Fiona *f) {
-    s32 r = func_00188C10(f);
+/* 0x00196070 */
+void Fiona_StateScriptDoorWalk(Fiona *f) {
+    s32 r = Fiona_DoorFrame(f);
     Progress *p;
 
     if (r < 0) {
@@ -8806,7 +8938,8 @@ void func_00196070(Fiona *f) {
 
 /* D_003B25F8: a scripted door (unk100, unk104[0] double): its spot (kind 0 / 2) walked to
  * (D_003B2948) */
-void func_00196350(Fiona *f) {
+/* 0x00196350 */
+void Fiona_StateScriptDoor(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
     s32 tri;
@@ -8824,7 +8957,8 @@ extern const PTMF D_003B2848, D_003B2858;
 /* D_003B2878.. (climbing): at the animation's event 0x20 off the ladder - at the top (0x707)
  * or the bottom (0x703) placed by it (Actor_DoorFront) - the ladder let go, idle; until then moved
  * by the root motion */
-void func_00197FF0(Fiona *f) {
+/* 0x00197FF0 */
+void Fiona_StateLadderOff(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         f32 v[4] __attribute__((aligned(16)));
@@ -8864,8 +8998,9 @@ void func_00197FF0(Fiona *f) {
 
 /* D_003B2848: walking to the ladder; there, onto it (moveSub 7; from the bottom 0x700, from the
  * top 0x704; D_003B2858); can't: the ladder let go, idle */
-void func_00198A70(Fiona *f) {
-    s32 r = func_00188C10(f);
+/* 0x00198A70 */
+void Fiona_StateLadderWalk(Fiona *f) {
+    s32 r = Fiona_DoorFrame(f);
 
     if (r < 0) {
         Progress *p = gProgress;
@@ -8889,7 +9024,8 @@ void func_00198A70(Fiona *f) {
 
 /* D_003B2618: the ladder's foot (or top) point and facing (nav +0x58) walked to (D_003B2848);
  * none: the ladder let go, idle */
-void func_00198C50(Fiona *f) {
+/* 0x00198C50 */
+void Fiona_StateLadder(Fiona *f) {
     f32 v[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     VObject *nm;
@@ -8943,7 +9079,8 @@ static inline __attribute__((always_inline)) void ladder_end(Fiona *f, s32 top, 
  * D_003B2898 / from 0x700 D_003B28A8) - not while the pursuer is above her (door bit 2, within
  * his height): then as if released; released - hold. After a new move her nav triangle is set
  * at the end she's nearest. Moved by the root motion */
-void func_00198240(Fiona *f) {
+/* 0x00198240 */
+void Fiona_StateOnLadder(Fiona *f) {
     s32 anim;
 
     f->c.a.unk2A = 1;
@@ -8952,7 +9089,7 @@ void func_00198240(Fiona *f) {
         return;
     }
     if (FI(f, 0x1AD584, s32) & 2) {
-        func_00184BF0(f);
+        Fiona_StartInDoor(f);
         f->unk1AD580 = 0xA;
         f->c.moveMode = 4;
         f->c.a.unk2A = 1;
@@ -9115,7 +9252,8 @@ void func_00198240(Fiona *f) {
 
 /* D_003B2808 / D_003B2828 / D_003B2838 (letting go of a pushed object): idle when blocked
  * (knocked, or the pursuer has her) or at the animation's event 0x20 */
-void func_00198F00(Fiona *f) {
+/* 0x00198F00 */
+void Fiona_StatePushLetGo(Fiona *f) {
     if (Fiona_PushBlocked(f)) {
         door_give_up(f, gProgress);
         return;
@@ -9147,7 +9285,8 @@ static inline __attribute__((always_inline)) s32 fiona_chance(f32 c) {
  * ahead, reach 3; else the hand, reach 2): the blow (form 6 kind 1 damage 5, form 7 kind 2 10,
  * else kind 1 1; the weapon 0x83 one in ten 50 / 100 (FI 0x1AD6D0 -1), 0x82 kind 2 5, 0x81 2;
  * a chance of -0x8000) x gProgress +0xA04, and to the creatures there */
-void func_00194FC0(Fiona *f) {
+/* 0x00194FC0 */
+void Fiona_StateStrike(Fiona *f) {
     Progress *p = gProgress;
     u8 v = Progress_GetVar(p, 0x26);
     u8 hit = AT(p, 0x1020 + *(u8 *)&f->c.a.slot * 16, u8);
@@ -9213,7 +9352,7 @@ void func_00194FC0(Fiona *f) {
         }
         sceVu0CopyVector(at, Skel_Bone(AT(f->c.motion, 0x810, void *), bone) + 12);
     }
-    who = func_00181880(f, at, 1);
+    who = Fiona_SlamDoor(f, at, 1);
     if (v != 7 && v != 6 && Actor_TriTo(&f->c.a, at, 0x20018) == (u32)-1) {
         if (door_anim_done(f)) {
             Motion_PlayWith(f->c.motion, 0, 0x101, -1, 10.0f);
@@ -9321,14 +9460,15 @@ void func_00194FC0(Fiona *f) {
         if (who != 0) {
             Relation_Request(p, *(u8 *)&f->c.a.slot, who, kind, d, extra, 0.0f);
         }
-        FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), d, pt, reach);
+        FI(f, 0x1AD6C8, s32) = Fiona_BlowCreatures(f, FI(f, 0x1AD6CC, u32), d, pt, reach);
     }
 }
 
 /* head for tri / pos (planning the path, Character_PlanPathKind): 0 on the way, -1 when it's across the
  * room's divider from her or there is no path. `run` 0 starts walking it (Character_WaypointsCurve), else
  * Character_Waypoints */
-s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32 run) {
+/* 0x00180D60 */
+s32 Fiona_HeadFor(Fiona *f, u32 tri, f32 *pos, s32 run) {
     s32 r;
 
     if (NavMesh_AcrossDivider(gNavMesh, tri, f->c.a.navTri)) {

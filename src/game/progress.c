@@ -1052,7 +1052,7 @@ void Progress_PlayerButtons(Progress *p) {
         return;
     }
     pl = (u8 *)gCharPlayer;
-    if (!(u8)func_0019A2B0((Fiona *)pl)) {
+    if (!(u8)Fiona_IsIdle((Fiona *)pl)) {
         return;
     }
     if ((u8)Character_Held(gCharPlayer) == 1 || AT(b, 0x4, s32) != 0) {
@@ -1082,7 +1082,7 @@ void Progress_PlayerButtons(Progress *p) {
             VObject *ev = gEvents;
 
             if (ev != NULL) {
-                func_0019A420((Fiona *)((u8 *)gCharPlayer), 2, 0x1E);
+                Fiona_SetTarget((Fiona *)((u8 *)gCharPlayer), 2, 0x1E);
                 VCALL(ev, 0x3C, void (*)(VObject *, s32))(ev, AT(b, 0x1152, u16));
             }
             break;
@@ -1541,7 +1541,7 @@ s32 Progress_UseDoor(Progress *p) {
     return 1;
 }
 
-/* Fiona: flag +0x1AD710 on, +0x1AD714 cleared, then func_00183190(1) (u8 result) */
+/* Fiona: flag +0x1AD710 on, +0x1AD714 cleared, then Fiona_Shakes(1) (u8 result) */
 /* 0x00176D80 */
 s32 Progress_FionaFlag(Progress *p) {
     u8 *f = (u8 *)gCharPlayer;
@@ -1551,7 +1551,7 @@ s32 Progress_FionaFlag(Progress *p) {
     }
     AT(f, 0x1AD710, u8) = 1;
     AT(f, 0x1AD714, s32) = 0;
-    return ((s32 (*)(void *, s32))func_00183190)(f, 1) != 0;
+    return ((s32 (*)(void *, s32))Fiona_Shakes)(f, 1) != 0;
 }
 
 /* the parts at +0x6FC218 (Message_ClearAll), +0x6FC340 (vtable +0x24) and +0x706440 */

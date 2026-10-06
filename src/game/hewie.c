@@ -875,7 +875,7 @@ s32 Hewie_PlaceOn(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     HW(h, 0xF3620, u8) = 0;
     HW(h, 0xF36A4, s32) = 0;
     HW(h, 0xF36AC, s32) = 0;
-    func_001F1D60((u8 *)h + 0xF3748);
+    Lists_Clear((u8 *)h + 0xF3748);
     HW(h, 0xF3798, s32) = -1;
     return r;
 }
@@ -2819,7 +2819,7 @@ void Hewie_StateMoveAlong(Hewie *h) {
     v[1] = 0.0f;
     v[2] = HW(h, 0xF36C8, f32);
     Mtx_TurnY(m, HW(h, 0xF36C4, f32));
-    func_002E2DA0(v, m, v);
+    Mtx_ApplyVector(v, m, v);
     Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -3088,7 +3088,7 @@ void Hewie_StateJumpArc(Hewie *h) {
 }
 
 /* ---- Hewie under the player's control (gProgress +0x1FBEC1): his movement input, as
- * Fiona's (fiona.c func_00187650) ---- */
+ * Fiona's (fiona.c Fiona_MoveInput) ---- */
 
 #define HMOVE_DIR    0xF3700   /* vec: where to move (world, unit or 0) */
 #define HMOVE_MODE   0xF3710   /* u8: 0 free, 1 camera-locked, 2 held, 3 reset */
@@ -3182,7 +3182,7 @@ void Hewie_LeftStick(Hewie *h) {
                 Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(v, v, -1.0f);
         HW(h, 0xF37A0, f32) = func_0031C5C0(v[0], v[2]);
         break;
@@ -3205,7 +3205,7 @@ void Hewie_LeftStick(Hewie *h) {
     switch (how) {
     case 3:
         Mtx_TurnY(rot, HW(h, HMOVE_CAMYAW, f32));
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
     case 2:
@@ -3221,7 +3221,7 @@ void Hewie_LeftStick(Hewie *h) {
         break;
     case 0:
         Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
-        func_002E2DA0(v, rot, n);
+        Mtx_ApplyVector(v, rot, n);
         func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
     }
@@ -5324,7 +5324,7 @@ s32 Hewie_FirstDoor(Hewie *h) {
             f32 dir[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 1.0f, 0.0f };
 
             Mtx_TurnY(m, VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, e));
-            func_002E2DA0(dir, m, dir);
+            Mtx_ApplyVector(dir, m, dir);
             if (sceVu0InnerProduct(d, dir) < 5.0f) {
                 HW(h, 0xF36B4, s32) = e & 0xFF;
                 Hewie_DoorPoint(h, e, &HW(h, 0xF36E0, f32));
@@ -7590,8 +7590,8 @@ void Hewie_StateSlope(Hewie *h) {
         v[0] = 0.0f;
         v[1] = 0.0f;
         v[3] = 0.0f;
-        func_002E2DA0(fwd, m, v);
-        func_002E2DA0(v, h->c.a.rot, v);
+        Mtx_ApplyVector(fwd, m, v);
+        Mtx_ApplyVector(v, h->c.a.rot, v);
         if (!(sceVu0InnerProduct(fwd, v) <= 0.5f)) {
             hewie_want(h, 0, 0);
             return;
@@ -9816,7 +9816,7 @@ extern const s32 D_003B1390[8], D_003B13B0[8];   /* waiting time by trust (norma
 
 /* his obedience timer (+0xF359C) runs down; waiting (+0xF3598) close to Fiona (within 30, in his
  * room) three times as fast, and unless already in 0x7D / 0x7E every 91 frames (+0xF35A0) he
- * nudges her (func_001817C0 0x10). Out of time: the first time (+0xF3587) only marked; then
+ * nudges her (Fiona_HewieReact 0x10). Out of time: the first time (+0xF3587) only marked; then
  * obeying turns to waiting (not in mood 1; wait by trust, D_003B1390 / D_003B13B0; bit 1 of
  * +0xF356C flags +0xF3559), waiting back to obeying (obey_time; bit 0 flags +0xF3559 or, hidden,
  * action 0x34). Not waiting: +0xF3586 cleared */
@@ -9830,7 +9830,7 @@ void Hewie_Obedience(Hewie *h) {
                 HW(h, 0xF35A0, s16) += 1;
                 if ((u32)HW(h, 0xF35A0, s16) >= 91) {
                     HW(h, 0xF35A0, s16) = 0;
-                    func_001817C0((Fiona *)gCharPlayer, 0x10);
+                    Fiona_HewieReact((Fiona *)gCharPlayer, 0x10);
                 }
             } else {
                 HW(h, 0xF35A0, s16) = 0;

@@ -272,7 +272,7 @@ void Daniella_BlowEffect(Pursuer *p) {
         off[2] = reach;
         off[3] = D_003D8910[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
-        func_002E2DA0(pos, m, off);
+        Mtx_ApplyVector(pos, m, off);
         sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
@@ -300,7 +300,7 @@ static inline void Daniella_HitPoints(Pursuer *p, s32 *e, f32 *a, f32 *b, const 
         off[2] = reach[2];
         off[3] = reach[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
-        func_002E2DA0(a, m, off);
+        Mtx_ApplyVector(a, m, off);
         sceVu0CopyVector(t, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
         sceVu0AddVector(a, a, t);
         sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
@@ -787,7 +787,7 @@ void Kind34_BlowEffect(Pursuer *p) {
         off[2] = reach;
         off[3] = D_0043CD30[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
-        func_002E2DA0(pos, m, off);
+        Mtx_ApplyVector(pos, m, off);
         sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
@@ -853,7 +853,7 @@ void Kind35_BlowEffect(Pursuer *p) {
         off[2] = reach;
         off[3] = D_0043DBC0[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
-        func_002E2DA0(pos, m, off);
+        Mtx_ApplyVector(pos, m, off);
         sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
@@ -919,7 +919,7 @@ void Kind36_BlowEffect(Pursuer *p) {
         off[2] = reach;
         off[3] = D_0043EA70[3];
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
-        func_002E2DA0(pos, m, off);
+        Mtx_ApplyVector(pos, m, off);
         sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
