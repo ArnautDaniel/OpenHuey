@@ -12,6 +12,7 @@ typedef struct VObject VObject;
 extern void Renderer_SetupVideo(u8 *r, s32 mode);
 extern void Renderer_AllocVram(u8 *r);
 extern const u8 *gl2d_image(u32 block);
+extern const u8 *gl2d_image_rgba(u32 block, const u8 *rgba, s32 w, s32 h);   /* PC: a 32-bit image kept at `block` */
 extern void Renderer_WaitChain(u8 *r);
 extern void Renderer_SendFinal(u8 *r);
 extern void Renderer_NextClear(u8 *r);

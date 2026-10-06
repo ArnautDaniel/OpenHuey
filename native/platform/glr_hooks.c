@@ -120,10 +120,18 @@ int func_001AF3B0(uint8_t *r) {
     return 1;
 }
 
-/* layer 0x11: a light / flare pass. GL TODO */
+/* layer 0x11 (the tint stalker / Riccardo's tint). PC: an approximation, not decompiled. The
+ * original draws the layer at half size against a halved Z, adds 15 animated flare sprites
+ * (renderer +0x304C0C, around the stalker's screen point), turns their green into alpha on the
+ * drawn pixels through palette 6 (by the alpha of +0x304D4C) and lays the result over the screen
+ * tinted by +0x304D4C, softened by +-1 pixel copies. Here the layer is a fading layer: what it
+ * draws shows over the background by +0x304D4C's alpha (at most 0x80), with no flares. */
 int func_001B2160(uint8_t *r) {
-    (void)r;
-    glr_todo("layer 0x11 pass (func_001B2160)");
+    uint32_t t, a;
+
+    memcpy(&t, r + 0x304D4C, 4);
+    a = t >> 24 > 0x80 ? 0x80 : t >> 24;
+    glr_tint_layer(0x11, 0x808080u | a << 24);
     return 1;
 }
 

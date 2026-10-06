@@ -17,6 +17,8 @@
 #include "cri/sofdec.h"
 #ifdef HG_NATIVE
 #include "glr.h"
+#include "gl2d.h"
+#include "renderer.h"
 #endif
 #include "libc.h"
 #include "msl.h"
@@ -496,8 +498,8 @@ static inline s32 movie_level(Movie *m) {
  * a quad on the screen's corners textured with the movie's current frame (Movie_PageTex0) while
  * +0x10 (set by +0x18); its +0xC is TvScreenA_Start ---- */
 
-/* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
- * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
+/* the screen drawn so far copied at half size into a texture page (`page` 2) through palette 3 or
+ * 4 (a TV's live feed): its GS TEX0, or -1 when there is none */
 #ifdef HG_NATIVE
 
 /* 0x0021E410 */
@@ -509,8 +511,10 @@ u64 Movie_PageTex0(u8 *mv, s32 page) {
     if (!(u8)VCALL(r, 0x94, s32 (*)(VObject *, s32, s32, s32, s32))(r, buf, mv[0] != 0 ? 4 : 3, page, 0)) {
         return (u64)-1;
     }
-    glr_todo("movie frame as a texture (Movie_PageTex0)");
-    return (u64)-1;
+    /* PC: not decompiled as such - the original copies the screen so far at half size through
+     * palette 3 / 4 (by the movie flag) into page 0x3380; glr shows the screen so far in grey
+     * for this TEX0 instead (glr_screen_copy, see gl_sprites) */
+    return 0x20013380ull | 6ull << 32;
 }
 #else
 #endif
@@ -1051,9 +1055,7 @@ static inline __attribute__((always_inline)) void movie_send(Movie *m, u32 size,
  * XYZ2) on `layer`, with OpenGL: over the screen by its alpha when the prim blends (ABE),
  * else straight */
 static inline void movie_sprite(s32 layer, u64 prim, u32 xy0) {
-    if (xy0 != 0x72007000) {
-        glr_todo("movie: a sprite not over the whole screen");
-    } else if (prim & 0x40) {
+    if (prim & 0x40) {
         glr_vram_draw(0xC0000, layer);
     } else {
         glr_vram_blit(layer);
@@ -1240,7 +1242,7 @@ void MovieAdded_Draw(Movie *m) {
 }
 #endif
 
-/* ---- class 6 (MovieSmall_vtable): a 256 x 64 strip at screen (128, 176) .. (512, 272) (layers 0x2D /
+/* ---- class 6 (MovieSmall_vtable): a 256 x 64 strip shown at screen (64, 176) .. (448, 272) (layer
  * 0x2E) ---- */
 
 /* +0x8 */
@@ -1262,12 +1264,14 @@ void MovieSmall_TakeFrame(Movie *m) {
 }
 
 #ifdef HG_NATIVE
-/* +0x24 draw: the frame in a small rectangle (screen 0x740..0x8C0 x 0x7D0..0x830 in GS units:
- * not drawn yet, glr_todo), blended (layer 0x2E) */
+/* +0x24 draw: the frame (256 x 64) stretched over the screen rectangle (64, 176) .. (448, 272)
+ * (GS 0x740..0x8C0 x 0x7D0..0x830), blended by its alpha (layer 0x2E) */
 /* 0x0032E4A0 */
 void MovieSmall_Draw(Movie *m) {
-    movie_send(m, 0x10000, m->frameH, 0x2D);
-    movie_sprite(0x2E, 0x156, 0x7D007400);
+    const u8 *tex = gl2d_image_rgba(0x3000, (u8 *)m->frames + (m->frameBuf ^ 1) * 0x10000, m->frameW, m->frameH);
+
+    gl2d_sprite(0x2E, 64.0f, 176.0f, 448.0f, 272.0f, tex, 0.5f, 0.5f, (f32)m->frameW + 0.5f, (f32)m->frameH + 0.5f,
+                0x80808080, 0, 0x40);
     texcache_done();
 }
 #endif

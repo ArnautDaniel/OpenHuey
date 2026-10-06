@@ -1862,6 +1862,10 @@ static s32 gl_sprites(u8 *d, s32 glow) {
     VObject *cam = gCamera;
     const void *tex = VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, AT(d, 0x34, s8),
                                                                               AT(d, 0x35, s8));
+
+    if (AT(d, 0x8, u64) != (u64)-1 && (AT(d, 0x8, u64) & 0x3FFF) == 0x3380) {
+        tex = glr_screen_copy();   /* a TV: Movie_PageTex0's page (PC approximation, glr) */
+    }
     s16 cells[64][2];
     f32 corner[4][4] __attribute__((aligned(16)));
     f32 basis[4][4] __attribute__((aligned(16)));
@@ -9350,11 +9354,101 @@ void MirrorFragment_SetParams(u8 *o, const u8 *params) {
 
 #ifdef HG_NATIVE
 
-/* +0x14 draw: the fragment's reflection pass (renderer +0x20.. / camera; not ported yet) */
+/* +0x14 draw: the fragment's reflection - the camera mirrored in the fragment's plane (its normal
+ * +0x50 turned as the placed object +0x10 is, through the object's position +0x20), character
+ * +0x14 drawn again into the reflection layer 0x17, the camera put back.
+ * PC: an approximation, not decompiled. The original then lays the reflection buffer over the
+ * screen with its own GS packet (strips through page 0x3400, alpha +0x18); here glr's reflection
+ * pass shows it at that alpha, masked to an 8 x 8 square of the mirror plane at the fragment
+ * (its real extent isn't known). */
 /* 0x00355AA0 */
 void MirrorFragment_Draw(u8 *o) {
-    (void)o;
-    glr_todo("mirror fragment reflection (MirrorFragment_Draw)");
+    u8 *obj = AT(o, 0x10, u8 *);
+    VObject *cam = gCamera, *tc = gTexCache;
+    Character *c = gCharacters[AT(o, 0x14, s32)];
+    ReflCamera saved, mirrored;
+    f32 n[4] __attribute__((aligned(16)));
+    f32 ang[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 m2[4][4] __attribute__((aligned(16)));
+    f32 u[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 q[4][4] __attribute__((aligned(16)));
+    f32 d, t;
+    s32 layer, k;
+    u8 e4;
+
+    if (obj == NULL || c == NULL) {
+        return;
+    }
+    sceVu0Normalize(n, (f32 *)(o + 0x50));
+    ang[0] = Angle_Wrap(AT(obj, 0x10, f32));
+    ang[1] = Angle_Wrap(AT(obj, 0x14, f32));
+    ang[2] = Angle_Wrap(AT(obj, 0x18, f32));
+    ang[3] = 0.0f;
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrix(m, m, ang);
+    sceVu0ApplyMatrix(n, m, n);
+    sceVu0Normalize(n, n);
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, saved.eye);
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, saved.target);
+    saved.fov = VCALL(cam, 0x64, f32 (*)(VObject *))(cam);
+    saved.unk24 = VCALL(gCamDirector, 0x24, s32 (*)(VObject *))(gCamDirector);
+    mirrored = saved;
+    d = sceVu0InnerProduct(n, (f32 *)(obj + 0x20));
+    t = sceVu0InnerProduct(n, saved.eye) - d;
+    if (t == 0.0f) {
+        return;
+    }
+    sceVu0ScaleVector(mirrored.eye, n, 2.0f * t);
+    sceVu0SubVector(mirrored.eye, saved.eye, mirrored.eye);
+    t = sceVu0InnerProduct(n, saved.target) - d;
+    if (t == 0.0f) {
+        return;
+    }
+    sceVu0ScaleVector(mirrored.target, n, 2.0f * t);
+    sceVu0SubVector(mirrored.target, saved.target, mirrored.target);
+    VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &mirrored);
+    VCALL(cam, 0x14, void (*)(VObject *))(cam);
+    VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, m2);
+    VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    VCALL(cam, 0x54, void (*)(VObject *, f32 (*)[4]))(cam, m2);
+    VCALL(tc, 0x18, void (*)(VObject *))(tc);
+    layer = Character_Get152C(c);
+    Character_Set152C(c, 0x17);
+    e4 = AT(c, 0xE4, u8);
+    AT(c, 0xE4, u8) = 0;
+    VCALL(c, 0x2C, void (*)(Character *))(c);
+    Character_Set152C(c, layer);
+    AT(c, 0xE4, u8) = e4;
+    VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &saved);
+    VCALL(cam, 0x14, void (*)(VObject *))(cam);
+    VCALL(tc, 0x18, void (*)(VObject *))(tc);
+    /* the mask: a square in the mirror plane (u, v across it) around the fragment */
+    u[0] = 0.0f;
+    u[1] = 1.0f;
+    u[2] = 0.0f;
+    u[3] = 0.0f;
+    if (n[1] > 0.9f || n[1] < -0.9f) {
+        u[0] = 1.0f;
+        u[1] = 0.0f;
+    }
+    sceVu0OuterProduct(v, n, u);
+    sceVu0Normalize(v, v);
+    sceVu0OuterProduct(u, v, n);
+    for (k = 0; k < 4; k++) {
+        f32 a = k & 1 ? 4.0f : -4.0f, b = k & 2 ? 4.0f : -4.0f;
+
+        q[k][0] = AT(obj, 0x20, f32) + a * v[0] + b * u[0];
+        q[k][1] = AT(obj, 0x24, f32) + a * v[1] + b * u[1];
+        q[k][2] = AT(obj, 0x28, f32) + a * v[2] + b * u[2];
+        q[k][3] = 1.0f;
+    }
+    glr_layer(0x18);
+    refl_mask_quad(&q[0][0]);
+    glr_refl(1, AT(o, 0x18, s32), 0, 1, 0.0f);
+    glr_layer(-1);
 }
 #endif
 

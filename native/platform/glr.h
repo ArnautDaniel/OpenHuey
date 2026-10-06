@@ -128,6 +128,7 @@ void glr_tint_layer(int layer, uint32_t tint);
 void glr_vram_upload(uint32_t addr, const void *rgba, int w, int h);
 void glr_vram_draw(uint32_t addr, int layer);
 void glr_vram_blit(int layer);   /* the last one sent straight into the screen (0x88000) */
+const void *glr_screen_copy(void);   /* PC: a texture of the screen drawn so far (the TVs' feed, approximated) */
 
 /* layer 0x23 is drawn this frame with the room's two-colour effect (effect 0x1F: colour `add`
  * added, `contrast` pushed from, blurred or not): they and the fog run again on what it draws */

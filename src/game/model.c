@@ -4638,7 +4638,13 @@ static ModelBuf sMb;
  * direction (columns of the transposed matrix, the 4th row -dir.L), a colour, a falloff; the
  * 4th colour row is the ambient. A vertex at world P with normal N gets
  *   min(ambient + sum_i colour_i * max(dir_i.N^, 0) * max(1 + falloff_i * (dir_i.P - dir_i.L_i), 0), 128)
- * (0x80 = 1.0 against the texture), alpha 127. */
+ * (0x80 = 1.0 against the texture), alpha 127.
+ * Not ported: parts whose mode ((model +0x88 + 2 x part) | record +0x18) & 0xFC is 4, 8 or 0xC
+ * use the lit programs (e.g. D_003A2EF0 for rigid parts), which also put a specular term into
+ * the vertex alpha: sum over the lights of max(R.V, 0)^4 x the light's strength (colour row .y)
+ * x its diffuse term, scaled by the eye vector's w (R the light reflected about the normal, V
+ * towards the eye). The other programs (D_003A58A0 ...) skip normalizing the normal and give
+ * alpha 127, as here. */
 static f32 sLDir[4][4] __attribute__((aligned(16)));
 static f32 sLCol[4][4] __attribute__((aligned(16)));
 static f32 sLFall[4];

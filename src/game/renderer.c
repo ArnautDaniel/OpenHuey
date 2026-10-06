@@ -1627,6 +1627,7 @@ s32 Overlay_Draw(void *ov) {
 
 #ifdef HG_NATIVE
 #include <stdlib.h>
+#include <string.h>
 
 /* Raw images sent to VRAM (+0x48 / +0x4C) that sprites then show: kept decoded to RGBA behind a
  * .TEX-style header (PSMCT32, w x h) so the GL renderer takes them like any texture; by their
@@ -1714,6 +1715,43 @@ static void image_put(u32 block, const u8 *img, s32 w, s32 h, s32 bits) {
     for (i = 0; i < n; i++) {
         px[i] = bits == 4 ? pal[(img[i >> 1] >> ((i & 1) * 4)) & 0xF] : pal[img[i]];
     }
+}
+
+/* PC: a 32-bit image (w x h RGBA, e.g. a movie frame) kept as the image at VRAM block `block`;
+ * its .TEX-style entry (as gl2d_image) */
+const u8 *gl2d_image_rgba(u32 block, const u8 *rgba, s32 w, s32 h) {
+    s32 n = w * h, i, slot = -1;
+    Gl2dImage *e;
+
+    for (i = 0; i < 4 && slot < 0; i++) {
+        if (sImages[i].block == block && sImages[i].buf != NULL) {
+            slot = i;
+        }
+    }
+    for (i = 0; i < 4 && slot < 0; i++) {
+        if (sImages[i].buf == NULL) {
+            slot = i;
+        }
+    }
+    e = &sImages[slot < 0 ? 0 : slot];
+    if (e->buf == NULL || AT(e->buf, 4, u16) * AT(e->buf, 6, u16) < n) {
+        free(e->buf);
+        e->buf = malloc(16 + (u32)n * 4);
+        AT(e->buf, 2, u16) = 0;
+    }
+    e->block = block;
+    e->src = rgba;
+    e->sum = 0;
+    e->buf[0] = 0;   /* PSMCT32 */
+    e->buf[1] = 0;
+    AT(e->buf, 2, u16) += 1;   /* (changed: the renderer re-reads it) */
+    AT(e->buf, 4, u16) = w;
+    AT(e->buf, 6, u16) = h;
+    AT(e->buf, 8, u16) = (u16)((u32)n * 4 / 16);
+    AT(e->buf, 10, u16) = 0;
+    AT(e->buf, 12, s32) = 16;
+    memcpy(e->buf + 16, rgba, (u32)n * 4);
+    return e->buf;
 }
 
 /* +0x4C a 4-bit image (w x h, its 16-colour CLUT right after the pixels) for VRAM block

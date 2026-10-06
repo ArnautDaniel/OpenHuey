@@ -108,14 +108,14 @@ enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_AL
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
-    uint32_t tint[3];   /* the fading layers' (0x0F, 0x1A, 0x23) tint when drawn this frame */
+    uint32_t tint[4];   /* the fading layers' (0x0F, 0x1A, 0x23; 0x11 on PC) tint when drawn this frame */
     int soft;           /* layer 0x1C was set up this frame */
     int shine;          /* layer 0x14 was, with this colour */
     uint32_t shineColor;
     int late;           /* layer 0x23's re-run of the two-colour effect (colours, blurred) */
     uint32_t lateColor[2];
     int lateBlur;
-    int tinted[3];
+    int tinted[4];
     GlrVertex *v;
     int nv, capv;
     GlrDraw *d;
@@ -258,6 +258,7 @@ void glr_end_frame(void) {
     sFrames[sBuilding].nd = 0;
     sFrames[sBuilding].overlay = 0;
     sFrames[sBuilding].tinted[0] = sFrames[sBuilding].tinted[1] = sFrames[sBuilding].tinted[2] = 0;
+    sFrames[sBuilding].tinted[3] = 0;
     sFrames[sBuilding].soft = 0;
     sFrames[sBuilding].shine = 0;
     sFrames[sBuilding].late = 0;
@@ -266,7 +267,7 @@ void glr_end_frame(void) {
 
 /* the fading layers: which of 0x0F / 0x1A / 0x23 (-1 none) */
 static int tint_index(int layer) {
-    return layer == 0x0F ? 0 : layer == 0x1A ? 1 : layer == 0x23 ? 2 : -1;
+    return layer == 0x0F ? 0 : layer == 0x1A ? 1 : layer == 0x23 ? 2 : layer == 0x11 ? 3 : -1;
 }
 
 void glr_tint_layer(int layer, uint32_t tint) {
@@ -850,6 +851,12 @@ static const char *kPostFs =
     "            c = vec4(d.rgb + floor((bg.rgb - d.rgb) * (128.0 - a) / 128.0), d.a);\n"
     "        }\n"
     "        oColor = clamp(c / 255.0, 0.0, 1.0);\n"
+    "        return;\n"
+    "    } else if (uMode == 37) {\n"   /* the TV feed: the screen so far at 256 x 224, grey (image row 0 first) */
+    "        if (p.y >= 224) { oColor = vec4(0.0); return; }\n"
+    "        vec4 s = at(uTex, ivec2(int(float(p.x * 2) * 1.25 * uS), int((447.0 - float(p.y * 2)) * uS)));\n"
+    "        float g = dot(s.rgb, vec3(0.299, 0.587, 0.114));\n"
+    "        oColor = vec4(vec3(g) / 255.0, 128.0 / 255.0);\n"
     "        return;\n"
     "    } else if (uMode == 26) {\n"   /* an uploaded image over the whole screen, by its alpha (0x80 = 1) */
     "        vec2 t = gl_FragCoord.xy / (vec2(640.0, 448.0) * uS);\n"
@@ -1581,6 +1588,38 @@ static int cmp_order(const void *a, const void *b) {
 }
 
 /* the 3D strips' state */
+/* PC approximation of the TVs' live feed (Movie_PageTex0 copies the frame drawn so far, at half
+ * size, through palette 3 / 4 into a texture page): a sprite showing glr_screen_copy() gets the
+ * screen so far, at 256 x 224 in grey, once a frame. Not the original's palettes. */
+static const TexEntry sScreenEntry = {0, 0, {0, 0}, 256, 256, 0, 0, 0};
+static GLuint sTvTex, sTvFbo;
+
+const void *glr_screen_copy(void) {
+    return &sScreenEntry;
+}
+
+static void mesh_state(void);
+
+static GLuint tv_copy(void) {
+    if (sTvTex == 0) {
+        p_glCreateTextures(GL_TEXTURE_2D, 1, &sTvTex);
+        p_glTextureStorage2D(sTvTex, 1, GL_RGBA8, 256, 256);
+        p_glTextureParameteri(sTvTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        p_glTextureParameteri(sTvTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        p_glTextureParameteri(sTvTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        p_glTextureParameteri(sTvTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        p_glCreateFramebuffers(1, &sTvFbo);
+        p_glNamedFramebufferTexture(sTvFbo, GL_COLOR_ATTACHMENT0, sTvTex, 0);
+    }
+    p_glDisable(GL_DEPTH_TEST);
+    p_glDisable(GL_BLEND);
+    p_glUseProgram(sPostProg);
+    p_glBindVertexArray(sQuadVao);
+    post(37, sTvFbo, 256, 256, sColor, 0);
+    mesh_state();
+    return sTvTex;
+}
+
 static void mesh_state(void) {
     p_glBindFramebuffer(GL_FRAMEBUFFER, sFbo);
     p_glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -1956,6 +1995,7 @@ void glr_present(int outW, int outH) {
     int tintLayer = -1;                   /* within this fading layer */
     int inSoft = 0;                       /* within layer 0x1C */
     int inShine = 0;                      /* within layer 0x14 */
+    int tvCopied = 0;                     /* the TV feed copied this frame */
 
     {   /* the render scale: as set, or (0) the window's height in 448s, at most 4 */
         int want = sWantScale > 0 ? sWantScale : outH > 0 ? (outH + 447) / 448 : 1;
@@ -2137,7 +2177,17 @@ void glr_present(int outW, int outH) {
                 continue;
             }
             if ((d->prim & 0x10) && d->tex != NULL) {   /* TME */
-                GLuint t = texture_for((const TexEntry *)d->tex, (int)(d->tex0 >> 56) & 0x1F);   /* CSA */
+                GLuint t;
+
+                if (d->tex == &sScreenEntry) {   /* the TV feed: the screen so far, once a frame */
+                    if (!tvCopied) {
+                        sTvTex = tv_copy();
+                        tvCopied = 1;
+                    }
+                    t = sTvTex;
+                } else {
+                    t = texture_for((const TexEntry *)d->tex, (int)(d->tex0 >> 56) & 0x1F);   /* CSA */
+                }
                 uint32_t tfx = (uint32_t)(d->tex0 >> 35) & 3;
 
                 mode = t == 0 ? 0 : tfx == 1 ? 2 : 1;
