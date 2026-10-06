@@ -1672,3 +1672,40 @@ void func_00386000(SubScreen *s) {
         }
     }
 }
+
+extern void *func_00261000(u8 *items, u32 id, u64 *data);   /* an item added, with its data */
+extern void func_00260840(u8 *items, u8 l, u8 i);            /* equip it */
+
+/* the menu's state from a save `save`: the three lists' items (ids +0x1068, 0xFFFF none; their
+ * data +0x11E8), the four equipped (+0x17E8: list << 8 | place), nine words (+0x1044, to
+ * +0x97740) and the file's entries (+0x17F0, each given to vtable +0xC) */
+void func_00385030(SubScreen *s, u8 *save) {
+    u32 l, i;
+
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 0x40; i++) {
+            u16 id = AT(save, 0x1068 + l * 0x80 + i * 2, u16);
+
+            if (id != 0xFFFF) {
+                func_00261000(s->pool, id, (u64 *)(save + 0x11E8 + l * 0x200 + i * 8));
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        u16 v = AT(save, 0x17E8 + i * 2, u16);
+
+        if (v != 0xFFFF) {
+            func_00260840(s->pool, (v >> 8) & 0xFF, v & 0xFF);
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        s->unk97740[i] = AT(save, 0x1044 + i * 4, s32);
+    }
+    for (i = 0; i < 0x80; i++) {
+        u16 v = AT(save, 0x17F0 + i * 2, u16);
+
+        if (v != 0) {
+            VCALL(s, 0xC, void (*)(SubScreen *, u32))(s, v);
+        }
+    }
+}
