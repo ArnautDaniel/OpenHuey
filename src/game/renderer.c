@@ -532,10 +532,10 @@ s32 Renderer_UploadTexture(u8 *r, s32 id, TexHeader *t, s32 layer) {
 
 #include "ptmf.h"
 
-extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) -> RGBA */
+extern PTMF kPaletteGenerators[];     /* palette generators by mode: (this, index, arg) -> RGBA */
 
 #ifdef HG_NATIVE
-/* +0x94: build a 256-colour palette with generator `mode` (D_0047E300) for VRAM slot `slot`'s
+/* +0x94: build a 256-colour palette with generator `mode` (kPaletteGenerators) for VRAM slot `slot`'s
  * CLUT, in renderer layer `layer` - the palette of layer 0x11's effect, which glr doesn't draw
  * yet (func_001B2160) */
 /* 0x001B8D30 */

@@ -386,20 +386,20 @@ void DebilitasModel_Vt3C(u8 *m) {
 
 /* ---- more of the model base ---- */
 
-extern void *D_004562A8;   /* the skeleton pool */
-extern void *D_004562B0;   /* the chain pool (motion buffers) */
+extern void *gSkelPool;   /* the skeleton pool */
+extern void *gChainPool;   /* the chain pool (motion buffers) */
 
 /* release the model's skeleton (+0x810) and the skeletons and buffers of its two motion slots
    (+0x564) and three blend channels (+0x6B0), and clear the slots' key lists */
 /* 0x001F7AC0 */
 void Model_Release(u8 *m) {
-    void *skels = D_004562A8;
+    void *skels = gSkelPool;
     void *bufs;
     s32 i, j, k;
 
     SkelPool_Free(skels, AT(m, 0x810, u8 *));
     AT(m, 0x810, s32) = 0;
-    bufs = D_004562B0;
+    bufs = gChainPool;
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 2; j++) {
             u8 *s = m + i * 0xA0 + j * 4;

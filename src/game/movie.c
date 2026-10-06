@@ -97,7 +97,7 @@ void *func_0025B828(void);
 
 void TvScreenA_SetParams(u8 *self, u8 *src);
 
-extern u8 *D_0045D1F0;
+extern u8 *gMovieFlag;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void TvScreenB_SetParams(u8 *p, const u8 *src);
@@ -401,7 +401,7 @@ _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 extern void *Scene_vtable[];
 extern void *Movie_vtable[];       /* Movie */
 extern void *MovieScene_vtable[];       /* SceneMovie (the boot logo) */
-extern u8 *D_0045D1F0;
+extern u8 *gMovieFlag;
 
 void Movie_Finish(Movie *m);
 void Movie_StateOpening(Movie *m);
@@ -483,7 +483,7 @@ void TvScreenA_SetParams(u8 *self, u8 *src) {
 /* +0x10 update: the movie flag from the game mode (gProgress +0x54) */
 /* 0x002B62D0 */
 void TvScreenA_Update(void) {
-    *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
+    *gMovieFlag = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
 /* a TV's +0x14 draw: its screen (corners (x0, top, z0) (x1, top, z1) (x0, bottom, z0) (x1,
@@ -491,7 +491,7 @@ void TvScreenA_Update(void) {
 static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1, u32 top, u32 bottom, u32 z0,
                                                           u32 z1) {
     if (AT(o, 0x10, s32) != 0) {
-        u64 tex = func_0021E410(D_0045D1F0, 2);
+        u64 tex = func_0021E410(gMovieFlag, 2);
         struct {
             void **vtbl;
             s32 a;
@@ -565,7 +565,7 @@ static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1,
         Drawer_Submit((u8 *)&q);
         q.vtbl = Helper469D00_vtable;
     }
-    *D_0045D1F0 = 1;
+    *gMovieFlag = 1;
 }
 
 /* +0x14 draw: the screen at x -2.61 .. -0.12, z 5.79 .. 7.53, y 2.06 .. 4.39 */
@@ -599,12 +599,12 @@ void TvScreenB_SetParams(u8 *p, const u8 *src) { F(p, 0x10, u32) = *src; }
 /* +0x10 update */
 /* 0x002D78B0 */
 void TvScreenB_Update(void) {
-    *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
+    *gMovieFlag = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
 /* 0x002D78F0 */
 void TvScreenB_Start(u8 *p) {
-    *D_0045D1F0 = 0;
+    *gMovieFlag = 0;
     F(p, 0x10, u32) = 0;
 }
 
@@ -617,7 +617,7 @@ void TvScreenB_Draw(u8 *o) {
 /* clear the flag */
 /* 0x002B6310 */
 void TvScreenA_Start(Movie *m) {
-    *D_0045D1F0 = 0;
+    *gMovieFlag = 0;
     AT(m, 0x10, s32) = 0;
 }
 

@@ -115,7 +115,7 @@ void *func_0020E7B0(void *e) {
 extern void *System_vtable[], *D_0046ADD0[], *Pads_vtable[], *D_0046ADC4[], *D_0046AD88[], *MemCard_vtable[], *D_0046AEB4[];
 extern void *Renderer_vtable[], *D_0046AF00[], *D_0046AF0C[], *MovieLib_vtable[], *Vram_vtable[], *Loader_vtable[];
 extern void *SndDriver_vtable[], *D_0046BF2C[];
-extern u8 gInput[], kButtonMap[16], D_0047E3D0[16];
+extern u8 gInput[], kButtonMap[16], kAnalogMap[16];
 extern const PTMF sGameStateNull;
 
 extern void RenderState_Defaults(u8 *r);
@@ -136,7 +136,7 @@ void *System_ctor(u8 *s) {
         kButtonMap[i] = i;
     }
     for (i = 0; i < 16; i++) {
-        D_0047E3D0[i] = i;
+        kAnalogMap[i] = i;
     }
     AT(s, 0x40, void **) = Pads_vtable;
     AT(s, 0x58, void **) = D_0046ADC4;
@@ -369,12 +369,12 @@ void *BigPool_ElemB(void *e) {
     return e;
 }
 
-extern void *D_004562B0, *D_004562A8;   /* the two pools */
+extern void *gChainPool, *gSkelPool;   /* the two pools */
 
 /* Game +0x14D9DD0: pool of 64 x 0xC and 462 x 0x14 entries. */
 /* 0x0020E1A0 */
 void *SmallPool_ctor(u8 *p) {
-    D_004562B0 = p;
+    gChainPool = p;
     func_00100340(p, SmallPool_ElemA, func_0020D970, 0xC, 0x40);
     func_00100340(p + 0x300, SmallPool_ElemB, func_0020D9C0, 0x14, 0x1CE);
     return p;
@@ -383,7 +383,7 @@ void *SmallPool_ctor(u8 *p) {
 /* Game +0x14DC530: pool of 32 x 0xC and 632 x 0x50 entries. */
 /* 0x0020E110 */
 void *BigPool_ctor(u8 *p) {
-    D_004562A8 = p;
+    gSkelPool = p;
     func_00100340(p, BigPool_ElemA, func_0020D8D0, 0xC, 0x20);
     func_00100340(p + 0x180, BigPool_ElemB, func_0020D920, 0x50, 0x278);
     return p;
@@ -434,8 +434,8 @@ void Slots_Init(u8 *o) {
 extern const char str_SIO2MAN_IRX[], str_SIO2D_IRX[], str_DBCMAN_IRX[], str_LIBSD_IRX[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
 extern void func_001AACD0(void *obj);
 extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank start / end handlers */
-extern u8 D_0047B204, D_0047B208;   /* vblank start / end seen */
-extern u32 D_0047B20C;              /* vblank count */
+extern u8 gVblankStartSeen, gVblankEndSeen;   /* vblank start / end seen */
+extern u32 gVblankCount;              /* vblank count */
 
 /* 0x001BF080 */
 void System_Init(u8 *s) {
@@ -457,14 +457,14 @@ void System_Init(u8 *s) {
     HW_WRITE32(0x10000010, 0x82);
     HW_WRITE32(0x10000000, 0);
     HW_WRITE32(0x10000810, 0x82);
-    D_0047B20C = 0;
-    D_0047B204 = 0;
+    gVblankCount = 0;
+    gVblankStartSeen = 0;
     AT(s, 0x14, s32) = func_0026BE80(2, func_001BEDA0, 0);
     func_0026CCE8(2);
-    D_0047B208 = 0;
+    gVblankEndSeen = 0;
     AT(s, 0x18, s32) = func_0026BE80(3, func_001BED80, 0);
     func_0026CCE8(3);
-    AT(s, 0x1C, s32) = D_0047B20C;
+    AT(s, 0x1C, s32) = gVblankCount;
     Loader_Init(s + 0x319900);
     Loader_RegisterAll(s + 0x319900);
 }
@@ -518,19 +518,19 @@ void System_EndFrame(u8 *s) {
     s32 n;
 
     Renderer_WaitChain(s + 0x460);
-    VSYNC_WAIT(D_0047B204);
-    n = D_0047B20C - AT(s, 0x1C, s32);
+    VSYNC_WAIT(gVblankStartSeen);
+    n = gVblankCount - AT(s, 0x1C, s32);
     if (n < 0) {
         n = -n;
     }
     if (n < 2) {
-        VSYNC_WAIT(D_0047B204);
+        VSYNC_WAIT(gVblankStartSeen);
     }
-    AT(s, 0x1C, s32) = D_0047B20C;
+    AT(s, 0x1C, s32) = gVblankCount;
     HW_WRITE32(0x10000800, 0);   /* timer 1 count */
     Renderer_SendFinal(s + 0x460);
     Renderer_NextClear(s + 0x460);
-    VSYNC_WAIT(D_0047B208);
+    VSYNC_WAIT(gVblankEndSeen);
     HW_WRITE32(0x10000000, 0);   /* timer 0 count */
     Renderer_EndFrame(s + 0x460);
     SndDriver_Frame(s + 0x395D40);

@@ -413,7 +413,7 @@ s32 SlotMachine_Result(u8 *o) {
 
 extern const u8 D_00460430[][35];      /* the reels */
 extern const u8 D_004605C0[][11];      /* per material: the reels' chances (%) */
-extern const u8 D_00460608[11];        /* the reels picked by them (the last: none picked) */
+extern const u8 kSlotReelsPicked[11];        /* the reels picked by them (the last: none picked) */
 extern const u8 D_00460620[][6];       /* per material: the first row's symbols' chances (%) */
 extern const u8 D_00460650[22][2];     /* the cells: the two rows they compare */
 extern const s32 D_00460680[][9];      /* per result: 8 items (-1 none), its amounts' row */
@@ -519,7 +519,7 @@ static void sy_finish(u8 *o) {
 }
 
 /* state: the rolling. First the top row's symbol drawn by the material's chances
- * (D_00460620); then each row in turn: its reel picked (D_004605C0 / D_00460608) at a random
+ * (D_00460620); then each row in turn: its reel picked (D_004605C0 / kSlotReelsPicked) at a random
  * place, spun (a symbol every 5 frames, speeding through 8 levels every 31) until confirm or
  * the top speed stops it, easing onto the next symbol; after the ninth, sy_finish. The rows
  * drawn (the rolling one with the next symbol coming in) and message 0x10 */
@@ -578,13 +578,13 @@ void SlotMachine_StateRoll(u8 *o) {
             for (i = 0; i < 10; i++) {
                 acc += (f32)D_004605C0[(s8)o[0x11E]][i];
                 if (lim <= acc) {
-                    o[0x12A] = D_00460608[i];
+                    o[0x12A] = kSlotReelsPicked[i];
                     found = 1;
                     break;
                 }
             }
             if (!found) {
-                o[0x12A] = D_00460608[10];
+                o[0x12A] = kSlotReelsPicked[10];
             }
             o[0x12B] = (s32)(35.0f * SY_RAND(0x1C));
             o[0x12E] = 0;

@@ -29,7 +29,7 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern u8 D_003EC3E0[]; /* table of 28-byte entries */
+extern u8 kPursuerSteps[]; /* table of 28-byte entries */
 extern u8 pstr_O_DB0_DB0_200_PCK[];
 extern u8 pstr_O_DB0_DB0_200_PCK_2[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -6361,7 +6361,7 @@ void Pursuer_LoadState(Pursuer *p) {
 /* ---- batch 15 ---- */
 
 extern const PTMF Pursuer_StateDownAndUp_ptmf, Pursuer_StateAttackActive_ptmf, Pursuer_StateAttackStep_ptmf, D_003ECEB0, D_003ECEA0;
-extern PTMF D_0045B370, D_0045B3B8;   /* more moves (see Pursuer_SetMove) */
+extern PTMF kPursuerMoveA, kPursuerMoveB;   /* more moves (see Pursuer_SetMove) */
 
 /* vtable +0x...: knocked down (0x1709 / 0x1804 falling forward if there's room / 0x1800);
  * out of health: down for good (stance cleared), and the progress counter of knock-outs +0xFBC
@@ -6499,7 +6499,7 @@ void Pursuer_OffscreenStep(Pursuer *p) {
     case 2:
     case 3:
         if (PURSUER_STEP_DONE(p) == 1) {
-            Pursuer_SetMove(p, &D_0045B3B8);
+            Pursuer_SetMove(p, &kPursuerMoveB);
             PURSUER_STEP_DONE(p) = 0;
             PU(p, 0x17B4, s32) = 0;
             return;
@@ -6515,7 +6515,7 @@ void Pursuer_OffscreenStep(Pursuer *p) {
     case 4:
         if (PURSUER_STEP_DONE(p) == 1) {
             if (p->c.unk128 < p->c.unk124) {
-                Pursuer_SetMove(p, &D_0045B370);
+                Pursuer_SetMove(p, &kPursuerMoveA);
             } else {
                 Pursuer_SetMove(p, &kPursuerWaitMove);
             }
@@ -7121,7 +7121,7 @@ void Pursuer_OffscreenUpdate(Pursuer *p) {
     case 2:
     case 3:
         if (PURSUER_STEP_DONE(p) == 1) {
-            Pursuer_SetMove(p, &D_0045B3B8);
+            Pursuer_SetMove(p, &kPursuerMoveB);
             PURSUER_STEP_DONE(p) = 0;
             PU(p, 0x17B4, s32) = 0;
         } else if (PU(p, 0x17B4, s32) != 0) {
@@ -7137,7 +7137,7 @@ void Pursuer_OffscreenUpdate(Pursuer *p) {
         break;
     case 4:
         if (PURSUER_STEP_DONE(p) == 1) {
-            Pursuer_SetMove(p, p->c.unk128 < p->c.unk124 ? &D_0045B370 : &kPursuerWaitMove);
+            Pursuer_SetMove(p, p->c.unk128 < p->c.unk124 ? &kPursuerMoveA : &kPursuerWaitMove);
             PURSUER_STEP_DONE(p) = 0;
         }
         break;
@@ -10758,7 +10758,7 @@ static void Pursuer_HeadForExit(Pursuer *p, VObject *rooms, u32 door) {
             if (p->c.moveMode != 4 && PU(p, 0x16C8, u8) == 0) {
                 Npc_FionaAtSpawn(p, door);
             }
-            Pursuer_SetMove(p, &D_0045B370);
+            Pursuer_SetMove(p, &kPursuerMoveA);
         }
     }
     p->c.unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, PU(p, 0x17B0, u8));
@@ -11099,7 +11099,7 @@ void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
 
 /* ---- the base functions placed with the stalkers' code (0x127A40..) ---- */
 
-extern u8 D_003EC3E0[];   /* the action table: 0x1C bytes each */
+extern u8 kPursuerSteps[];   /* the action table: 0x1C bytes each */
 
 /* vtable +0x114: start action `kind` (0x1000 set: from the pursuer's own table +0x1714): its
    state, action id +0x175C, move mode and sub, sense mode +0x15C0 and look mode +0x1710 */
@@ -11110,7 +11110,7 @@ void Pursuer_StartAction(Pursuer *p, u32 kind) {
     if (kind & 0x1000) {
         e = PU(p, 0x1714, u8 *) + (kind & ~0x1000) * 0x1C;
     } else {
-        e = D_003EC3E0 + kind * 0x1C;
+        e = kPursuerSteps + kind * 0x1C;
     }
     Actor_SetState(&p->c.a, (const PTMF *)e);
     PU(p, 0x175C, s32) = AT(e, 0xC, s32);
@@ -11129,7 +11129,7 @@ void Pursuer_StartActionNext(void *p, u32 id) {
     if (id & 0x1000) {
         e = FLD(p, 0x1714, u8 *) + (id & 0xFFF) * 28;
     } else {
-        e = D_003EC3E0 + id * 28;
+        e = kPursuerSteps + id * 28;
     }
     FLD(p, 0x175C, s32) = FLD(e, 0xC, s32);
     FLD(p, 0xF8, s32) = FLD(e, 0x10, s32);

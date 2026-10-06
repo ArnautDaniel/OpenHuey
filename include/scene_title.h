@@ -2,7 +2,7 @@
 #define SCENE_TITLE_H
 
 /* Mode 2 scene: the title screen, its menu (new game, load, options, extras) and the opening
- * and attract movies (0x140CE0 bytes from the scene heap, vtable D_0046A040). */
+ * and attract movies (0x140CE0 bytes from the scene heap, vtable SceneTitle_vtable). */
 #include "common.h"
 #include "bgm.h"
 #include "game.h"

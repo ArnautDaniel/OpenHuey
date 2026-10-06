@@ -160,7 +160,7 @@ typedef struct InputState {
     /* 0x1E */ u8 pad1E[2];
     /* 0x20 */ u16 rawReleased;
     /* 0x22 */ u8 pad22[2];
-    /* 0x24 */ u8 analog[16];     /* mapped by D_0047E3D0 */
+    /* 0x24 */ u8 analog[16];     /* mapped by kAnalogMap */
     /* 0x34 */ u8 pad34[0xC];
     /* 0x40 */ f32 stickL[4];
     /* 0x50 */ f32 stickR[4];
@@ -170,7 +170,7 @@ _Static_assert(sizeof(InputState) == 0x60, "InputState");
 
 extern InputState gInput;
 extern const u8 kButtonMap[16];   /* button map */
-extern const u8 D_0047E3D0[16];   /* analog map */
+extern const u8 kAnalogMap[16];   /* analog map */
 
 #define BIT(v, n) (((v) >> (n)) & 1)
 #define SETBIT(w, n, b) ((w) = ((w) & ~(1u << (n))) | ((u32)((b) & 1) << (n)))
@@ -305,7 +305,7 @@ void Pads_BuildInput(u8 *pads) {
     in->rawPressed = in->raw & (in->raw ^ in->prevRaw);
     in->rawReleased = ~in->raw & (in->raw ^ in->prevRaw);
     for (i = 0; i < 16; i++) {
-        in->analog[i] = d->analog[D_0047E3D0[i]];
+        in->analog[i] = d->analog[kAnalogMap[i]];
     }
     Input_Stick(in->stickL, in->analog[2], in->analog[3]);
     Input_Stick(in->stickR, in->analog[0], in->analog[1]);

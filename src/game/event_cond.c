@@ -43,7 +43,7 @@ void EventCond_Skip(VObject *ev) {
 
 extern s32 Zone_HasAnyChar(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 Zone_TestCylinder(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
-extern VObject *D_00456E00;
+extern VObject *gRoomEventObj;
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -796,12 +796,12 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     }
-    case 0x2E:   /* character pc[1] (in the scene, this room): D_00456E00 +0x14 of its triangle, pc[2] */
+    case 0x2E:   /* character pc[1] (in the scene, this room): gRoomEventObj +0x14 of its triangle, pc[2] */
         if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x30, s32) == AT(ev, 0x560, s32)) {
             u8 *c = cond_char(p, PC(ev)[1]);
 
             if (AT(c, 0x34, s32) != -1) {
-                r = VCALL(D_00456E00, 0x14, s32 (*)(VObject *, s32, s32))(D_00456E00, AT(c, 0x34, s32), PC(ev)[2]);
+                r = VCALL(gRoomEventObj, 0x14, s32 (*)(VObject *, s32, s32))(gRoomEventObj, AT(c, 0x34, s32), PC(ev)[2]);
             }
         }
         break;

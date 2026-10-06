@@ -1090,7 +1090,7 @@ void FallingDrops_Start(u8 *o) {
 }
 
 /* ---- class Room66Effect_vtable (room 0x66, 0x1BC0 bytes): smoke rising at spot +0x1BB8 / 2 of the
- * table D_0043B640 (x, z pairs) - 64 puffs, double-buffered (+0x10 + buffer +0x1BB0 * 0xC00, a
+ * table kRoomSpotsX (x, z pairs) - 64 puffs, double-buffered (+0x10 + buffer +0x1BB0 * 0xC00, a
  * quad record of 0x30 each) and drawn by the quad drawer at +0x1840, with a glow sprite (record
  * +0x1810, drawer +0x1878) whose alpha follows how many puffs show. Per puff its rise speed
  * (+0x18B0 + i * 4), sway phase (+0x19B0) and strength (+0x1AB0, 1 at first); +0x1BBC set
@@ -1098,7 +1098,7 @@ void FallingDrops_Start(u8 *o) {
  * 0.003 ---- */
 
 extern void *Room66Effect_vtable[];
-extern f32 D_0043B640[], D_0043B644[];   /* the spots: x, z (read as pairs) */
+extern f32 kRoomSpotsX[], kRoomSpotsZ[];   /* the spots: x, z (read as pairs) */
 
 #define SMOKE_PUFF(o, i) ((o) + AT(o, 0x1BB0, s32) * 0xC00 + (i) * 0x30 + 0x10)
 
@@ -1164,11 +1164,11 @@ void Room66Effect_Puff(u8 *o, s32 i, s32 again) {
 #define RND(o) VCALL(rng, o, f32 (*)(VObject *))(rng)
     k = AT(o, 0x1BB8, s32);
     f = AT(o, 0x1AB0 + i * 4, f32) * (1.0f + (f32)((k == 4) * 5));
-    AT(p, 0x10, f32) = D_0043B640[k] + f * (RND(0x18) - 0.5f);
+    AT(p, 0x10, f32) = kRoomSpotsX[k] + f * (RND(0x18) - 0.5f);
     AT(p, 0x14, f32) = 30.0f * up - 4.0f;
     k = AT(o, 0x1BB8, s32);
     f = AT(o, 0x1AB0 + i * 4, f32) * (1.0f + (f32)((k != 4) << 4));
-    AT(p, 0x18, f32) = D_0043B644[k] + f * (RND(0x18) - 0.5f);
+    AT(p, 0x18, f32) = kRoomSpotsZ[k] + f * (RND(0x18) - 0.5f);
     AT(p, 0x1C, f32) = 1.0f;
     AT(p, 0x24, f32) = AT(p, 0x20, f32);
     AT(p, 0x28, f32) = kPi.f * RND(0x1C) / 180.0f;
@@ -1356,9 +1356,9 @@ void Room66Effect_SetParams(u8 *o, const s8 *params) {
     AT(o, 0x1814, s32) = 0x70;
     AT(o, 0x1818, s32) = 0x70;
     AT(o, 0x181C, s32) = 0x40;
-    AT(o, 0x1820, f32) = D_0043B640[AT(o, 0x1BB8, s32)];
+    AT(o, 0x1820, f32) = kRoomSpotsX[AT(o, 0x1BB8, s32)];
     AT(o, 0x1824, f32) = 12.0f;
-    AT(o, 0x1828, f32) = D_0043B644[AT(o, 0x1BB8, s32)];
+    AT(o, 0x1828, f32) = kRoomSpotsZ[AT(o, 0x1BB8, s32)];
     AT(o, 0x182C, f32) = 1.0f;
     AT(o, 0x1830, f32) = 20.0f;
     AT(o, 0x1834, f32) = AT(o, 0x1830, f32);
@@ -2203,14 +2203,14 @@ void SpiralSmoke_Start(u8 *o) {
 }
 
 /* ---- class Drips_vtable (room 0x52, 0x6E0 bytes): five drips (spots +0x30 + k * 0x10, from
- * D_004309D0) that run by turns - +0x4 + k * 4 on, +0x18 + k * 4 frames to the next switch
+ * kRoom52DripSpots) that run by turns - +0x4 + k * 4 on, +0x18 + k * 4 frames to the next switch
  * (90, or 90..345 off), +0x6C0 + k * 4 its sound (-1 none; +0x6D4 the next of four). Each sends
  * up ripples, 16 per spot (+0x80.. height, +0x1C0.. life (its alpha), +0x300.. size, +0x440..
  * turn, +0x580.. rise; 0x40 per spot), flat additive quads (texture group 0x10, cell (0xE0,
  * 0x60) 32 x 32) ---- */
 
 extern void *Drips_vtable[];
-extern f32 D_004309D0[];   /* the five spots (x, y, z) */
+extern f32 kRoom52DripSpots[];   /* the five spots (x, y, z) */
 
 #define DRIP_P(o, k, j, off) AT((o) + (k) * 0x40 + (j) * 4, (off), f32)
 #define DRIP_LIFE(o, k, j) AT((o) + (k) * 0x40 + (j) * 4, 0x1C0, s32)
@@ -2407,9 +2407,9 @@ void Drips_Start(u8 *o) {
     AT(o, 0x6D4, s32) = 0;
     for (k = 0; k < 5; k++) {
         AT(o, 0x4 + k * 4, s32) = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 1;
-        AT(o, 0x30 + k * 0x10, f32) = D_004309D0[k * 3 + 0];
-        AT(o, 0x34 + k * 0x10, f32) = D_004309D0[k * 3 + 1];
-        AT(o, 0x38 + k * 0x10, f32) = D_004309D0[k * 3 + 2];
+        AT(o, 0x30 + k * 0x10, f32) = kRoom52DripSpots[k * 3 + 0];
+        AT(o, 0x34 + k * 0x10, f32) = kRoom52DripSpots[k * 3 + 1];
+        AT(o, 0x38 + k * 0x10, f32) = kRoom52DripSpots[k * 3 + 2];
         AT(o, 0x3C + k * 0x10, f32) = 1.0f;
         AT(o, 0x6C0 + k * 4, s32) = -1;
         for (j = 0; j < 16; j++) {

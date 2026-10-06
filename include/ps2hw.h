@@ -13,7 +13,7 @@
 #endif
 
 /* Clear an interrupt-set flag and wait until the interrupt sets it again (the vblank handlers
- * set D_0047B204 / D_0047B208). On PC the wait advances the platform's vblank clock. */
+ * set gVblankStartSeen / gVblankEndSeen). On PC the wait advances the platform's vblank clock. */
 #ifdef HG_NATIVE
 #define VSYNC_WAIT(flag) hg_wait_flag(&(flag))
 #else

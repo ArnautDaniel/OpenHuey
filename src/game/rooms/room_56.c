@@ -8,7 +8,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room56_vtable[];
-extern VObject *D_00456E00;
+extern VObject *gRoomEventObj;
 
 extern u8 Room56_EnterScript_data[];
 extern u8 Room56_CharEnterScript_data[];
@@ -64,13 +64,13 @@ s32 Room56_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room56_CmdTable[i & 0xFF], a, b);
 }
 
-/* room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle D_00456E00
+/* room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle gRoomEventObj
  * says yes to: +0x10, then the creature list's +0x28 */
 /* 0x002B4DE0 */
 s32 Room56_Cmd00(void) {
     u8 *list = gCreatures;
     Progress *g = gProgress;
-    VObject *chk = D_00456E00;
+    VObject *chk = gRoomEventObj;
     s32 k;
 
     for (k = 7; k < 10; k++) {

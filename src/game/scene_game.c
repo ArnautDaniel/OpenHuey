@@ -59,8 +59,8 @@ extern const PTMF sGameStateNull;
 extern const PTMF SceneGame_SubStartRoom_ptmf;   /* stored at +0x1053450 */
 extern const PTMF SceneGame_StateMain_ptmf;   /* next state */
 
-extern void *D_004562B0;
-extern void *D_004562A8;
+extern void *gChainPool;
+extern void *gSkelPool;
 
 /* Fiona setups, by progress variable 0x26 (0..8), and the partner's, by variable 0x27 (0..2).
  * Probably costumes; each takes the character's player index. */
@@ -90,7 +90,7 @@ extern void *Overlay_vtable[];
 extern u8 D_0046BAA0[], D_0046BA80[], NavGroups_vtable[];
 extern u8 Rooms_vtable[];
 extern void *NavMesh_vtable[];
-extern void *D_00456E00;
+extern void *gRoomEventObj;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Obj46BA68_ctor(u8 *p);
@@ -175,8 +175,8 @@ void SceneGame_StateEntry(Scene *game) {
     f32 *settingDst;
 
     VCALL(obj550, 0xC, void (*)(VObject *, s32))(obj550, 0x1571);
-    ChainPool_FreeAll(D_004562B0);
-    SkelPool_FreeAll(D_004562A8);
+    ChainPool_FreeAll(gChainPool);
+    SkelPool_FreeAll(gSkelPool);
     Progress_Reset((u8 *)prog);
     AT(game, 0xF6CD29, u8) = 0;
     RoomMgr_ctor((u8 *)game + 0x73EE80);
@@ -299,7 +299,7 @@ extern void *BgmCtl_vtable[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
 extern void *gSceneGameF29740;
-extern void *D_0045D1F0, *gAvoidPrompt;
+extern void *gMovieFlag, *gAvoidPrompt;
 
 /* the characters' common construction (Actor, then Character) */
 static inline void Character_Construct(Character *c, s32 slot) {
@@ -431,7 +431,7 @@ Scene *SceneGame_ctor(Scene *g) {
     /* the music controller */
     gMusic = (VObject *)((u8 *)g + 0x1053424);
     AT(g, 0x1053424, void **) = BgmCtl_vtable;
-    D_0045D1F0 = (u8 *)g + 0x105344C;
+    gMovieFlag = (u8 *)g + 0x105344C;
 
     o = (u8 *)g + 0x1053480;
     gAvoidPrompt = o;
@@ -866,7 +866,7 @@ void SceneGame_PlayStart(Scene *g) {
 }
 
 extern const PTMF SceneGame_SubPaused_ptmf;
-extern void *D_0045D1F0;
+extern void *gMovieFlag;
 
 /* the gameplay state (each frame): the sub-state +0x1053440 */
 /* 0x003A0060 */
@@ -879,7 +879,7 @@ void SceneGame_StatePlay(Scene *g) {
     }
     BgmCtl_Update((BgmCtl *)((u8 *)g + 0x1053424));
     if (!(u8)Progress_TestFlag(prog, 8) && !(u8)Progress_TestFlag(prog, 0x2A)) {
-        func_0021C840(D_0045D1F0, 0x32, 0);
+        func_0021C840(gMovieFlag, 0x32, 0);
     }
     VCALL((VObject *)gLights, 0x34, void (*)(VObject *))((VObject *)gLights);
     if (ptmf_test(sub)) {
@@ -2467,8 +2467,8 @@ void SceneGame_OnSoftReset(u8 *g) {
         }
     }
     Bgm_ApplyVolume((Bgm *)bgm);
-    SceneGame_Clear2718(D_004562B0);
-    Clear_C700(D_004562A8);
+    SceneGame_Clear2718(gChainPool);
+    Clear_C700(gSkelPool);
     g[0x11] = 1;
 }
 
@@ -2567,7 +2567,7 @@ void *func_002D10A0(u8 *p) {
 }
 
 void *func_002D1130(u8 *p) {
-    D_00456E00 = p;
+    gRoomEventObj = p;
     F(p, 0x0, void *) = NavGroups_vtable;
     F(p, 0x4, u32) = 0;
     F(p, 0x8, u32) = 0;
@@ -2748,7 +2748,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     AT(g, 0x1053480, void **) = D_00473440;
     Task_dtor((Task *)(g + 0x10644C8), -1);
     AvoidPromptBase_dtor(g + 0x1053480, 0);
-    D_0045D1F0 = NULL;
+    gMovieFlag = NULL;
     AT(g, 0x1053424, void **) = BgmCtl_vtable;
     AT(g, 0x1053424, void **) = D_0046A100;
     gMusic = NULL;

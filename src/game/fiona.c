@@ -1245,7 +1245,7 @@ typedef struct MeetOffset {
     f32 x, z;
     f32 deg;
 } MeetOffset;
-extern MeetOffset D_003B2460[];
+extern MeetOffset kFionaMeetOffsets[];
 extern f32 D_003B24A8, D_003B24AC;
 
 #define SLOT_U8(f) (*(u8 *)&(f)->c.a.slot)
@@ -1284,7 +1284,7 @@ s32 Fiona_JointAction(Fiona *f) {
         && o != NULL && o->a.active == 1 && o->a.disabled == 0) {
         if (kind == 1) {
             if (f->c.moveMode == 0) {
-                const MeetOffset *mo = &D_003B2460[Fiona_MeetIndex(FI(f, 0x1AD548, u32), type)];
+                const MeetOffset *mo = &kFionaMeetOffsets[Fiona_MeetIndex(FI(f, 0x1AD548, u32), type)];
                 sceVu0FMATRIX m;
                 sceVu0FVECTOR v, target;
                 f32 turn;
@@ -8966,9 +8966,9 @@ void Fiona_StateLadderOff(Fiona *f) {
 
         switch (AT(f->c.motion, 0x55C, s32)) {
         case 0x707:
-            v[0] = D_003B2460[3].x;
+            v[0] = kFionaMeetOffsets[3].x;
             v[1] = 0.0f;
-            v[2] = D_003B2460[3].z;
+            v[2] = kFionaMeetOffsets[3].z;
             v[3] = 0.0f;
             f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 1, v, f->c.a.pos);
             break;
@@ -9033,14 +9033,14 @@ void Fiona_StateLadder(Fiona *f) {
     s32 tri;
 
     if (f->c.unk104[0] != 0) {
-        v[0] = D_003B2460[0].x;
+        v[0] = kFionaMeetOffsets[0].x;
         v[1] = 0.0f;
-        v[2] = D_003B2460[0].z;
+        v[2] = kFionaMeetOffsets[0].z;
         v[3] = 0.0f;
     } else {
-        v[0] = D_003B2460[1].x;
+        v[0] = kFionaMeetOffsets[1].x;
         v[1] = 0.0f;
-        v[2] = D_003B2460[1].z;
+        v[2] = kFionaMeetOffsets[1].z;
         v[3] = 0.0f;
     }
     FI(f, 0x1AD6C0, s32) = Actor_DoorFront(f, f->c.unk100, f->c.unk104[0], v, at);
@@ -9231,9 +9231,9 @@ void Fiona_StateOnLadder(Fiona *f) {
                 v[3] = 0.0f;
                 f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 0, v, at);
             } else {
-                v[0] = D_003B2460[3].x;
+                v[0] = kFionaMeetOffsets[3].x;
                 v[1] = 0.0f;
-                v[2] = D_003B2460[3].z;
+                v[2] = kFionaMeetOffsets[3].z;
                 v[3] = 0.0f;
                 f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 1, v, at);
             }

@@ -5,17 +5,17 @@
 #include "ptmf.h"
 
 /*
- * Messages are byte code from per-language tables (D_01991EC0[lang]: u16 offsets, then the
+ * Messages are byte code from per-language tables (gMessageTables[lang]: u16 offsets, then the
  * texts). Bytes >= 0x1E are glyphs of the small font; 0x1A..0x1C + a byte are glyphs of the
  * big fonts (texcache groups 0x14 + language), 0x1D + a byte a small-font glyph >= 0xE0.
  * Control codes (operand bytes after them):
  *   0x00 end (or back to the enclosing string)   0x01 new line      0x02 page break
- *   0x03 c colour       0x04 default colour       0x08 n parameter string n (D_01991ED0)
+ *   0x03 c colour       0x04 default colour       0x08 n parameter string n (gMessageParams)
  *   0x09 n wait n frames                          0x0A n position preset n (bit 7: no frame)
  *   0x0B w h fixed box size (w glyphs, h lines)   0x0C n speed       0x0D full speed
  *   0x0E f choice (options follow)                0x0F hi lo option leading to message hi:lo
  *   0x10 n close after n frames                   0x11 hi lo continue with message hi:lo
- *   0x12 centred line   0x13 n name n (D_01991F50)   0x14 right-aligned line
+ *   0x12 centred line   0x13 n name n (gMessageNames)   0x14 right-aligned line
  *   0x15 hi lo insert system message 0x100 + hi:lo   0x16 / 0x18 / 0x17 furigana: base text,
  *   reading, end   0x19 a b wait for the child task
  */

@@ -360,7 +360,7 @@ void Debilitas_GoForFiona(Pursuer *p) {
 
 /* the rooms he heads for when he has lost Fiona: {room, nav triangle}, ended by room -1 */
 typedef struct { s32 room; s32 tri; } DebilitasRoomSpot;
-extern DebilitasRoomSpot D_003AFAE0[];
+extern DebilitasRoomSpot kDebilitasRoomSpots[];
 
 /* vtable +0xE8: pick where to go. Already in one of his rooms: go to its spot (when on screen).
    Otherwise route to the nearest of them. Returns 0 when none can be reached. */
@@ -370,8 +370,8 @@ s32 Debilitas_PickDestination(Pursuer *p) {
     u32 best = -1;
     s32 bestRoom = -1;
 
-    for (i = 0; D_003AFAE0[i].room != -1; i++) {
-        DebilitasRoomSpot *e = &D_003AFAE0[i];
+    for (i = 0; kDebilitasRoomSpots[i].room != -1; i++) {
+        DebilitasRoomSpot *e = &kDebilitasRoomSpots[i];
         u32 d;
 
         if (p->c.a.room == e->room) {
@@ -379,7 +379,7 @@ s32 Debilitas_PickDestination(Pursuer *p) {
                 f32 pos[4];
 
                 VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, e->tri, pos);
-                VCALL(p, 0xAC, void (*)(Pursuer *, s32, f32 *, s32))(p, e->tri, pos, D_003AFAE0[i].room);
+                VCALL(p, 0xAC, void (*)(Pursuer *, s32, f32 *, s32))(p, e->tri, pos, kDebilitasRoomSpots[i].room);
             }
             return 1;
         }

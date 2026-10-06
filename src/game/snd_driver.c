@@ -34,10 +34,10 @@
 #include "sce/iop.h"
 #include "sce/sif.h"
 
-extern u32 D_01970D40[8];      /* the call arguments */
-extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
+extern u32 gSndCallArgs[8];      /* the call arguments */
+extern u8 gSndCallBlock[0xB4];    /* a bank's description (command 0xA) */
 extern u8 kPositionedSounds[8][2];    /* the positioned sounds: bank, sound - 0x18 */
-extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memory addresses */
+extern u32 kSoundBankSizes[8][3];   /* the banks' header / table sizes and sound memory addresses */
 
 #define BANK(d, k) ((d) + 0x84 + (k) * 0x10)
 #define XFER(d, k) ((d) + 0x108 + (k) * 0x18)
@@ -101,8 +101,8 @@ void SndDriver_SendMaster(u8 *d) {
     if (v >= 0x100) {
         v = 0xFF;
     }
-    D_01970D40[2] = v;
-    SndLib_Call(0x240000, D_01970D40);
+    gSndCallArgs[2] = v;
+    SndLib_Call(0x240000, gSndCallArgs);
 }
 
 /* set the master volume (0..1) */
@@ -144,11 +144,11 @@ void SndDriver_PlayPositioned(u8 *d, u32 which) {
     if (BANK_TYPE(d, bank) == 1) {
         return;
     }
-    D_01970D40[0] = bank;
-    D_01970D40[2] = 0x2D000000;
-    D_01970D40[3] = (sound << 24) & 0xFF000000;
-    D_01970D40[4] = bank;
-    D_01970D40[6] = (u32)(d + 0x10);
+    gSndCallArgs[0] = bank;
+    gSndCallArgs[2] = 0x2D000000;
+    gSndCallArgs[3] = (sound << 24) & 0xFF000000;
+    gSndCallArgs[4] = bank;
+    gSndCallArgs[6] = (u32)(d + 0x10);
     AT(d, 0x68, s32) = AT(d, 0x104, s8);
     AT(d, 0x10, u8) = vol_byte(127.0f * AT(d, 0x1D4, f32));
     v = AT(d, 0x10, u8);
@@ -157,17 +157,17 @@ void SndDriver_PlayPositioned(u8 *d, u32 which) {
     }
     AT(d, 0x10, u8) = v;
     AT(d, 0x14, f32) = AT(d, 0x1D8, f32);
-    SndLib_Call(0x260000, D_01970D40);
+    SndLib_Call(0x260000, gSndCallArgs);
 }
 
 /* stop every voice (command 0x35, 2) */
 /* 0x0020EB30 */
 void SndDriver_StopVoices(u8 *d) {
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0xFFFFFF;
-    D_01970D40[4] = 2;
-    D_01970D40[5] = 0xFF;
-    SndLib_Call(0x350000, D_01970D40);
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0xFFFFFF;
+    gSndCallArgs[4] = 2;
+    gSndCallArgs[5] = 0xFF;
+    SndLib_Call(0x350000, gSndCallArgs);
 }
 
 /* stop the positioned sounds but those of banks 3 and 4 */
@@ -175,15 +175,15 @@ void SndDriver_StopVoices(u8 *d) {
 void SndDriver_StopPlacedButBanks(u8 *d) {
     u32 i;
 
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0;
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0;
     for (i = 0; i < 8; i++) {
         if (i != 3 && i != 4) {
-            D_01970D40[3] |= 1 << kPositionedSounds[i][1];
+            gSndCallArgs[3] |= 1 << kPositionedSounds[i][1];
         }
     }
-    D_01970D40[4] = 0x80000000;
-    SndLib_Call(0x290000, D_01970D40);
+    gSndCallArgs[4] = 0x80000000;
+    SndLib_Call(0x290000, gSndCallArgs);
 }
 
 /* stop all the positioned sounds */
@@ -191,13 +191,13 @@ void SndDriver_StopPlacedButBanks(u8 *d) {
 void SndDriver_StopPlaced(u8 *d) {
     u32 i;
 
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0;
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0;
     for (i = 0; i < 8; i++) {
-        D_01970D40[3] |= 1 << kPositionedSounds[i][1];
+        gSndCallArgs[3] |= 1 << kPositionedSounds[i][1];
     }
-    D_01970D40[4] = 0x80000000;
-    SndLib_Call(0x290000, D_01970D40);
+    gSndCallArgs[4] = 0x80000000;
+    SndLib_Call(0x290000, gSndCallArgs);
 }
 
 /* the positioned sounds' state `s` (command 0x35, 2) */
@@ -205,14 +205,14 @@ void SndDriver_StopPlaced(u8 *d) {
 void SndDriver_PlacedState(u8 *d, u32 s) {
     u32 i;
 
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0;
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0;
     for (i = 0; i < 8; i++) {
-        D_01970D40[3] |= 1 << kPositionedSounds[i][1];
+        gSndCallArgs[3] |= 1 << kPositionedSounds[i][1];
     }
-    D_01970D40[4] = 2;
-    D_01970D40[5] = s & 0xFF;
-    SndLib_Call(0x350000, D_01970D40);
+    gSndCallArgs[4] = 2;
+    gSndCallArgs[5] = s & 0xFF;
+    SndLib_Call(0x350000, gSndCallArgs);
 }
 
 /* bank `k`'s file loaded (the loader's state 2) */
@@ -262,11 +262,11 @@ void SndDriver_SetVolume(u8 *d, u32 ch, u32 v) {
     ch &= 0xFF;
     if (ch < 2) {
         AT(d, 0x1C8 + ch * 2, u16) = v & 0x3FFF;
-        D_01970D40[2] = ch != 0;
-        D_01970D40[3] = 3;
-        D_01970D40[5] = D_01970D40[4] = AT(d, 0x1C8 + ch * 2, u16);
-        D_01970D40[6] = 0;
-        SndLib_Call(0x150000, D_01970D40);
+        gSndCallArgs[2] = ch != 0;
+        gSndCallArgs[3] = 3;
+        gSndCallArgs[5] = gSndCallArgs[4] = AT(d, 0x1C8 + ch * 2, u16);
+        gSndCallArgs[6] = 0;
+        SndLib_Call(0x150000, gSndCallArgs);
     }
 }
 
@@ -293,13 +293,13 @@ s32 SndDriver_BankLoading(u8 *d, u32 k) {
 void SndDriver_SetOutputMode(u8 *d, s8 mode) {
     AT(d, 0x104, s8) = mode;
     if (mode == 0) {
-        D_01970D40[2] = 0;
+        gSndCallArgs[2] = 0;
         func_001D4750(1);
     } else {
-        D_01970D40[2] = 1;
+        gSndCallArgs[2] = 1;
         func_001D4750(0);
     }
-    SndLib_Call(0x160000, D_01970D40);
+    SndLib_Call(0x160000, gSndCallArgs);
 }
 
 /* unload bank `k` (a sequence stopped first) */
@@ -314,13 +314,13 @@ void SndDriver_Unload(u8 *d, u32 k) {
         }
         return;
     }
-    D_01970D40[0] = k;
+    gSndCallArgs[0] = k;
     if (BANK_TYPE(d, k) != 0) {
-        D_01970D40[2] = 1;
-        D_01970D40[3] = 0xB;
-        SndLib_Call(0x1A0000, D_01970D40);
+        gSndCallArgs[2] = 1;
+        gSndCallArgs[3] = 0xB;
+        SndLib_Call(0x1A0000, gSndCallArgs);
     }
-    SndLib_Call(k | 0xB0000, D_01970C80);
+    SndLib_Call(k | 0xB0000, gSndCallBlock);
     LOADED(d, k) = 0;
 }
 
@@ -343,36 +343,36 @@ void SndDriver_Register(u8 *d, u32 k) {
     if (LOADED(d, k)) {
         VCALL(d, 0x12C, void (*)(u8 *, u32))(d, k);
     }
-    func_0026EDD0((char *)D_01970C80, 0x80, str_DUMMY);
-    AT(D_01970C80, 0x84, u32) = AT(d, 0x80, u32);
-    AT(D_01970C80, 0x98, u32) = 0x4000;
-    AT(D_01970C80, 0x88, u32) = AT(b, 0x8, u32);
+    func_0026EDD0((char *)gSndCallBlock, 0x80, str_DUMMY);
+    AT(gSndCallBlock, 0x84, u32) = AT(d, 0x80, u32);
+    AT(gSndCallBlock, 0x98, u32) = 0x4000;
+    AT(gSndCallBlock, 0x88, u32) = AT(b, 0x8, u32);
     hd = AT(b, 0x0, u32);
     if (hd & 0x80000000) {
         hd = AT(BANK(d, hd & 0x7FFFFFFF), 0x0, u32);
     }
-    AT(D_01970C80, 0x80, u32) = hd;
+    AT(gSndCallBlock, 0x80, u32) = hd;
     if (BANK_TYPE(d, k) == 0) {
-        AT(D_01970C80, 0x8C, u32) = 0;
-        AT(D_01970C80, 0x90, u32) = AT(b, 0x4, u32);
-        SndLib_Call(k | 0xA0000, D_01970C80);
+        AT(gSndCallBlock, 0x8C, u32) = 0;
+        AT(gSndCallBlock, 0x90, u32) = AT(b, 0x4, u32);
+        SndLib_Call(k | 0xA0000, gSndCallBlock);
     } else {
-        AT(D_01970C80, 0x8C, u32) = AT(b, 0x4, u32);
-        AT(D_01970C80, 0x90, u32) = 0;
-        AT(D_01970C80, 0xA8, u8) = k;
-        AT(D_01970C80, 0xA9, u8) = 0;
-        AT(D_01970C80, 0xAA, u8) = k;
-        AT(D_01970C80, 0xAB, u8) = 0;
-        SndLib_Call(k | 0xA0000, D_01970C80);
-        D_01970D40[0] = k;
-        SndLib_Call(0xC0000, D_01970D40);
-        SndLib_Call(0xD0000, D_01970D40);
-        SndLib_Call(0x170000, D_01970D40);
-        D_01970D40[2] = 0xFF;
-        SndLib_Call(0x1B0000, D_01970D40);
-        D_01970D40[2] = k;
-        D_01970D40[3] = 1;
-        SndLib_Call(0x380000, D_01970D40);
+        AT(gSndCallBlock, 0x8C, u32) = AT(b, 0x4, u32);
+        AT(gSndCallBlock, 0x90, u32) = 0;
+        AT(gSndCallBlock, 0xA8, u8) = k;
+        AT(gSndCallBlock, 0xA9, u8) = 0;
+        AT(gSndCallBlock, 0xAA, u8) = k;
+        AT(gSndCallBlock, 0xAB, u8) = 0;
+        SndLib_Call(k | 0xA0000, gSndCallBlock);
+        gSndCallArgs[0] = k;
+        SndLib_Call(0xC0000, gSndCallArgs);
+        SndLib_Call(0xD0000, gSndCallArgs);
+        SndLib_Call(0x170000, gSndCallArgs);
+        gSndCallArgs[2] = 0xFF;
+        SndLib_Call(0x1B0000, gSndCallArgs);
+        gSndCallArgs[2] = k;
+        gSndCallArgs[3] = 1;
+        SndLib_Call(0x380000, gSndCallArgs);
     }
     LOADED(d, k) = 1;
 }
@@ -401,11 +401,11 @@ s32 SndDriver_TransferChunk(u8 *x) {
         AT(x, 0x4, u32) = 0;
     }
     SndLib_DmaToIop(AT(x, 0x8, u32), AT(x, 0x14, u32), n, 0, 0);
-    D_01970D40[2] = AT(x, 0x14, u32);
-    D_01970D40[3] = AT(x, 0xC, u32);
-    D_01970D40[5] = 1;
-    D_01970D40[4] = n;
-    SndLib_Transfer(0x120000, D_01970D40);
+    gSndCallArgs[2] = AT(x, 0x14, u32);
+    gSndCallArgs[3] = AT(x, 0xC, u32);
+    gSndCallArgs[5] = 1;
+    gSndCallArgs[4] = n;
+    SndLib_Transfer(0x120000, gSndCallArgs);
     AT(x, 0x8, u32) += n;
     AT(x, 0xC, u32) += n;
     return 1;
@@ -433,9 +433,9 @@ void SndDriver_QueueSamples(u8 *d, u32 k, u32 src, u32 size) {
     AT(x, 0xC, u32) = spu;
     AT(x, 0x10, u8) = 1;
     AT(x, 0x14, u32) = AT(d, 0x80, u32);
-    AT(D_01970C80, 0x84, u32) = AT(d, 0x80, u32);
-    AT(D_01970C80, 0x98, u32) = 0x4000;
-    AT(D_01970C80, 0x88, u32) = spu;
+    AT(gSndCallBlock, 0x84, u32) = AT(d, 0x80, u32);
+    AT(gSndCallBlock, 0x98, u32) = 0x4000;
+    AT(gSndCallBlock, 0x88, u32) = spu;
 }
 
 /* bank `k`'s samples (`size` bytes at `src`) into sound memory now */
@@ -459,17 +459,17 @@ void SndDriver_SamplesNow(u8 *d, u32 k, u32 src, u32 size) {
             left = 0;
         }
         SndLib_DmaToIop(src, AT(d, 0x80, u32), n, 0, 0);
-        D_01970D40[2] = AT(d, 0x80, u32);
-        D_01970D40[5] = 1;
-        D_01970D40[3] = to;
-        D_01970D40[4] = n;
-        SndLib_Transfer(0x120000, D_01970D40);
+        gSndCallArgs[2] = AT(d, 0x80, u32);
+        gSndCallArgs[5] = 1;
+        gSndCallArgs[3] = to;
+        gSndCallArgs[4] = n;
+        SndLib_Transfer(0x120000, gSndCallArgs);
         while (SndLib_TransferBusy(0x120000, 1) != 0) {
         }
     }
-    AT(D_01970C80, 0x84, u32) = AT(d, 0x80, u32);
-    AT(D_01970C80, 0x98, u32) = 0x4000;
-    AT(D_01970C80, 0x88, u32) = spu;
+    AT(gSndCallBlock, 0x84, u32) = AT(d, 0x80, u32);
+    AT(gSndCallBlock, 0x98, u32) = 0x4000;
+    AT(gSndCallBlock, 0x88, u32) = spu;
 }
 
 /* bank `k`'s sequence (`size` bytes at `src`) into IOP memory */
@@ -527,8 +527,8 @@ u16 SndDriver_SeqTempo(u8 *d, u32 k) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return 0;
     }
-    D_01970D40[0] = k;
-    return *(u16 *)SndLib_Call(0x210000, D_01970D40);
+    gSndCallArgs[0] = k;
+    return *(u16 *)SndLib_Call(0x210000, gSndCallArgs);
 }
 
 /* 0x0020F8E0 */
@@ -537,9 +537,9 @@ s32 SndDriver_SetSeqTempo(u8 *d, u32 k, u32 tempo) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = tempo & 0xFFFF;
-    return (s32)SndLib_Call(0x200000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = tempo & 0xFFFF;
+    return (s32)SndLib_Call(0x200000, gSndCallArgs);
 }
 
 /* its volume (0x1F) */
@@ -549,8 +549,8 @@ u8 SndDriver_SeqVolume(u8 *d, u32 k) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return 0;
     }
-    D_01970D40[0] = k;
-    return *(u8 *)SndLib_Call(0x1F0000, D_01970D40);
+    gSndCallArgs[0] = k;
+    return *(u8 *)SndLib_Call(0x1F0000, gSndCallArgs);
 }
 
 /* 0x0020F9C0 */
@@ -559,9 +559,9 @@ s32 SndDriver_SetSeqVolume(u8 *d, u32 k, u32 v) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = v & 0xFF;
-    return (s32)SndLib_Call(0x1E0000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = v & 0xFF;
+    return (s32)SndLib_Call(0x1E0000, gSndCallArgs);
 }
 
 /* 0x0020FA30 */
@@ -570,10 +570,10 @@ s32 SndDriver_SeqParam2(u8 *d, u32 k, u32 a, u32 b) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[0] = k;
-    D_01970D40[3] = b & 0xFF;
-    D_01970D40[2] = a & 0xFF;
-    return (s32)SndLib_Call(0x1C0000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[3] = b & 0xFF;
+    gSndCallArgs[2] = a & 0xFF;
+    return (s32)SndLib_Call(0x1C0000, gSndCallArgs);
 }
 
 /* 0x0020FAB0 */
@@ -582,9 +582,9 @@ s32 SndDriver_SeqParam1(u8 *d, u32 k, u32 a) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = a & 0xFF;
-    return (s32)SndLib_Call(0x1B0000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = a & 0xFF;
+    return (s32)SndLib_Call(0x1B0000, gSndCallArgs);
 }
 
 /* SndDriver_SeqParam2 with the second argument read from `p` */
@@ -602,10 +602,10 @@ s32 SndDriver_SeqParam2B(u8 *d, u32 k, u32 a, u32 b) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[2] = k;
-    D_01970D40[3] = a;
-    D_01970D40[4] = b & 0xFF;
-    return (s32)SndLib_Call(0x230000, D_01970D40);
+    gSndCallArgs[2] = k;
+    gSndCallArgs[3] = a;
+    gSndCallArgs[4] = b & 0xFF;
+    return (s32)SndLib_Call(0x230000, gSndCallArgs);
 }
 
 /* 0x0020FBD0 */
@@ -614,9 +614,9 @@ s32 SndDriver_SeqParam1B(u8 *d, u32 k, u32 a) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
     }
-    D_01970D40[2] = k;
-    D_01970D40[3] = a & 0xFF;
-    return (s32)SndLib_Call(0x380000, D_01970D40);
+    gSndCallArgs[2] = k;
+    gSndCallArgs[3] = a & 0xFF;
+    return (s32)SndLib_Call(0x380000, gSndCallArgs);
 }
 
 /* restart from `pos`, keeping its volume and tempo */
@@ -629,15 +629,15 @@ void SndDriver_SeqRestart(u8 *d, u32 k, u32 pos) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return;
     }
-    D_01970D40[0] = k;
-    vol = *(u8 *)SndLib_Call(0x1F0000, D_01970D40);
-    tempo = *SndLib_Call(0x210000, D_01970D40);
-    D_01970D40[2] = pos;
-    SndLib_Call(0x180000, D_01970D40);
-    D_01970D40[2] = vol;
-    SndLib_Call(0x1E0000, D_01970D40);
-    D_01970D40[2] = tempo;
-    SndLib_Call(0x200000, D_01970D40);
+    gSndCallArgs[0] = k;
+    vol = *(u8 *)SndLib_Call(0x1F0000, gSndCallArgs);
+    tempo = *SndLib_Call(0x210000, gSndCallArgs);
+    gSndCallArgs[2] = pos;
+    SndLib_Call(0x180000, gSndCallArgs);
+    gSndCallArgs[2] = vol;
+    SndLib_Call(0x1E0000, gSndCallArgs);
+    gSndCallArgs[2] = tempo;
+    SndLib_Call(0x200000, gSndCallArgs);
 }
 
 /* stop */
@@ -647,10 +647,10 @@ void SndDriver_SeqStop(u8 *d, u32 k) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0xB;
-    SndLib_Call(0x1A0000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0xB;
+    SndLib_Call(0x1A0000, gSndCallArgs);
 }
 
 /* play (from `pos` unless negative) with `mode` */
@@ -660,13 +660,13 @@ void SndDriver_SeqPlay(u8 *d, u32 k, u32 pos, u32 mode) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return;
     }
-    D_01970D40[0] = k;
+    gSndCallArgs[0] = k;
     if (!(pos & 0x80000000)) {
-        D_01970D40[2] = pos;
-        SndLib_Call(0x180000, D_01970D40);
+        gSndCallArgs[2] = pos;
+        SndLib_Call(0x180000, gSndCallArgs);
     }
-    D_01970D40[2] = mode & 0xFF;
-    SndLib_Call(0x190000, D_01970D40);
+    gSndCallArgs[2] = mode & 0xFF;
+    SndLib_Call(0x190000, gSndCallArgs);
 }
 
 /* ---- sound effects ---- */
@@ -678,9 +678,9 @@ void SndDriver_StopSound(u8 *d, u32 id, u32 k) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 1) {
         return;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = id | 0x80000000;
-    SndLib_Call(0x280000, D_01970D40);
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = id | 0x80000000;
+    SndLib_Call(0x280000, gSndCallArgs);
 }
 
 /* play sound `id` of bank `k` placed by the 3D block (`vol`, `pitch`: offsets; id bit 30:
@@ -693,14 +693,14 @@ void SndDriver_PlayPlaced(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 1) {
         return;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = (id & 0xFFFFFF) | 0x2C500000;
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = (id & 0xFFFFFF) | 0x2C500000;
     if (!(id & 0x80000000)) {
-        D_01970D40[2] |= 0x80000000;
+        gSndCallArgs[2] |= 0x80000000;
     }
-    D_01970D40[4] = k;
-    D_01970D40[3] = ((vol << 8) & 0xFF00) | ((pitch << 16) & 0xFF0000);
-    D_01970D40[6] = (u32)(d + 0x10);
+    gSndCallArgs[4] = k;
+    gSndCallArgs[3] = ((vol << 8) & 0xFF00) | ((pitch << 16) & 0xFF0000);
+    gSndCallArgs[6] = (u32)(d + 0x10);
     AT(d, 0x68, s32) = AT(d, 0x104, s8);
     AT(d, 0x10, u8) = vol_byte(127.0f * AT(d, 0x1D4, f32));
     if (id & 0x40000000) {
@@ -712,7 +712,7 @@ void SndDriver_PlayPlaced(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
     }
     AT(d, 0x10, u8) = v;
     AT(d, 0x14, f32) = AT(d, 0x1D8, f32);
-    SndLib_Call(0x260000, D_01970D40);
+    SndLib_Call(0x260000, gSndCallArgs);
 }
 
 /* play sound `id` of bank `k` unplaced */
@@ -722,23 +722,23 @@ void SndDriver_Play(u8 *d, u32 id, u32 k) {
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 1) {
         return;
     }
-    D_01970D40[0] = k;
-    D_01970D40[2] = (id & 0xFFFFFF) | 0x04000000;
+    gSndCallArgs[0] = k;
+    gSndCallArgs[2] = (id & 0xFFFFFF) | 0x04000000;
     if (!(id & 0x80000000)) {
-        D_01970D40[2] |= 0x80000000;
+        gSndCallArgs[2] |= 0x80000000;
     }
-    D_01970D40[4] = k;
-    D_01970D40[3] = 0x7840;
-    SndLib_Call(0x260000, D_01970D40);
+    gSndCallArgs[4] = k;
+    gSndCallArgs[3] = 0x7840;
+    SndLib_Call(0x260000, gSndCallArgs);
 }
 
 /* stop the voices in masks `a`, `b` */
 /* 0x00210120 */
 void SndDriver_StopMasks(u8 *d, u32 a, u32 b) {
-    D_01970D40[2] = a & 0xFFFFFF;
-    D_01970D40[3] = b & 0xFFFFFF;
-    D_01970D40[4] = 0x80000000;
-    SndLib_Call(0x290000, D_01970D40);
+    gSndCallArgs[2] = a & 0xFFFFFF;
+    gSndCallArgs[3] = b & 0xFFFFFF;
+    gSndCallArgs[4] = 0x80000000;
+    SndLib_Call(0x290000, gSndCallArgs);
 }
 
 /* stop all voices */
@@ -792,7 +792,7 @@ void SndDriver_Frame(u8 *d) {
 
 extern const char str_MODHSYN_IRX[], str_MODMIDI_IRX[], str_MODMSIN_IRX[], str_SNDDRV_IRX[];   /* the modules */
 extern char D_01970B10[0x100];   /* the driver's arguments */
-extern u8 D_01970C40[0x1C];      /* ... before formatting */
+extern u8 gSndDriverArgs[0x1C];      /* ... before formatting */
 
 /* start: load the sound modules and the driver, connect, set it up; IOP memory for the banks */
 /* 0x002102E0 */
@@ -804,43 +804,43 @@ void SndDriver_Start(u8 *d) {
     AT(d, 0x78, s32) = func_001BC0F0(d, str_MODMSIN_IRX, 0, 0, 0);
     SndLib_Clear();
     SndLib_StartServer(0xA, 0x2000);
-    AT(D_01970C40, 0x0, s32) = -1;
-    AT(D_01970C40, 0x4, s32) = 0x1FFFFF;
-    AT(D_01970C40, 0x8, s32) = 0;
-    AT(D_01970C40, 0xC, s32) = 0x1047;
-    AT(D_01970C40, 0x10, s16) = 0x1B;
-    AT(D_01970C40, 0x12, s16) = 0x1B;
-    AT(D_01970C40, 0x14, s16) = 0x1B;
-    AT(D_01970C40, 0x16, s16) = 0x1B;
-    AT(D_01970C40, 0x18, s16) = 0x17;
-    AT(D_01970C40, 0x1A, s16) = 1;
-    AT(d, 0x7C, s32) = func_001BC0F0(d, str_SNDDRV_IRX, SndLib_DriverArgs(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
+    AT(gSndDriverArgs, 0x0, s32) = -1;
+    AT(gSndDriverArgs, 0x4, s32) = 0x1FFFFF;
+    AT(gSndDriverArgs, 0x8, s32) = 0;
+    AT(gSndDriverArgs, 0xC, s32) = 0x1047;
+    AT(gSndDriverArgs, 0x10, s16) = 0x1B;
+    AT(gSndDriverArgs, 0x12, s16) = 0x1B;
+    AT(gSndDriverArgs, 0x14, s16) = 0x1B;
+    AT(gSndDriverArgs, 0x16, s16) = 0x1B;
+    AT(gSndDriverArgs, 0x18, s16) = 0x17;
+    AT(gSndDriverArgs, 0x1A, s16) = 1;
+    AT(d, 0x7C, s32) = func_001BC0F0(d, str_SNDDRV_IRX, SndLib_DriverArgs(D_01970B10, gSndDriverArgs), (s32)D_01970B10, 0);
     SndLib_Bind();
     SndLib_SendState();
-    D_01970D40[2] = 1;
-    SndLib_Call(0x80000, D_01970D40);
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 3;
-    D_01970D40[4] = 0;
-    D_01970D40[5] = 0;
-    D_01970D40[6] = 1;
-    SndLib_Call(0x150000, D_01970D40);
-    D_01970D40[2] = 1;
-    D_01970D40[4] = 0;
-    D_01970D40[3] = 3;
-    D_01970D40[6] = 1;
-    D_01970D40[5] = 0;
-    SndLib_Call(0x150000, D_01970D40);
+    gSndCallArgs[2] = 1;
+    SndLib_Call(0x80000, gSndCallArgs);
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 3;
+    gSndCallArgs[4] = 0;
+    gSndCallArgs[5] = 0;
+    gSndCallArgs[6] = 1;
+    SndLib_Call(0x150000, gSndCallArgs);
+    gSndCallArgs[2] = 1;
+    gSndCallArgs[4] = 0;
+    gSndCallArgs[3] = 3;
+    gSndCallArgs[6] = 1;
+    gSndCallArgs[5] = 0;
+    SndLib_Call(0x150000, gSndCallArgs);
     AT(d, 0x1CA, s16) = 0;
     AT(d, 0x1C8, s16) = 0;
     VCALL(d, 0x130, void (*)(u8 *, s32))(d, 1);
-    D_01970D40[2] = 0;
-    D_01970D40[3] = 0xFFFFFF;
-    SndLib_Call(0x70000, D_01970D40);
+    gSndCallArgs[2] = 0;
+    gSndCallArgs[3] = 0xFFFFFF;
+    SndLib_Call(0x70000, gSndCallArgs);
     AT(d, 0x80, u32) = func_002744D8(0x4000);
     for (i = 0; i < 8; i++) {
         u8 *b = BANK(d, i);
-        u32 hd = D_003D8930[i][0];
+        u32 hd = kSoundBankSizes[i][0];
 
         if (hd != 0) {
             if (!(hd & 0x80000000)) {
@@ -851,10 +851,10 @@ void SndDriver_Start(u8 *d) {
                 AT(b, 0x0, u32) = hd;
             }
         }
-        if (D_003D8930[i][1] != 0 && AT(b, 0x4, u32) == 0) {
-            AT(b, 0x4, u32) = func_002744D8(D_003D8930[i][1]);
+        if (kSoundBankSizes[i][1] != 0 && AT(b, 0x4, u32) == 0) {
+            AT(b, 0x4, u32) = func_002744D8(kSoundBankSizes[i][1]);
         }
-        AT(b, 0x8, u32) = D_003D8930[i][2];
+        AT(b, 0x8, u32) = kSoundBankSizes[i][2];
     }
     AT(d, 0x1D0, f32) = 1.0f;
     VCALL(d, 0x170, void (*)(u8 *, f32))(d, 1.0f);

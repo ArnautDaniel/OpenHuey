@@ -58,7 +58,7 @@ void func_0021C840(void *ov, int strength, int offset) {
     glr_vignette(strength, offset);
 }
 
-/* ---- the panic screens (ScreenFade_Frame, the screen overlay D_0045D1F0; all in layer 0x2A) ---- */
+/* ---- the panic screens (ScreenFade_Frame, the screen overlay gMovieFlag; all in layer 0x2A) ---- */
 
 /* func_0021E1B0: when the panic fails (game over): the screen's negative. The original draws
  * eight 64-wide untextured sprites, RGBA 0x80, ALPHA (Cs - Cd) * As: each channel 0x80 - itself,

@@ -146,7 +146,7 @@ void Debilitas_ActionOffsets(void *p, s32 kind, f32 *out) {
 
 /* 0x00127A20 */
 void *Debilitas_RoomSpots(void) {
-    return D_003AFAE0;
+    return kDebilitasRoomSpots;
 }
 
 /* 0x00127A30 */

@@ -10,20 +10,20 @@
 #include "sce/sif.h"
 
 /* the RPC clients and the argument / result blocks */
-extern SifClient D_019756C0;   /* 0x77777777 */
-extern SifClient D_01976F00;   /* 0x77777778 */
-extern u32 D_01973EC0[0x26];   /* results */
-extern u16 *D_01971500[0x20];  /* per bank: each sound's 3D distance curve (the bank's table) */
-extern SifDma D_01971580;
-extern u8 D_019715C0[0x80];    /* the driver's state, written by the IOP (uncached) */
-extern u32 D_01971640[4];      /* bit 0 / 1: a transfer (0x11 / 0x12) running (uncached) */
+extern SifClient gSndClient;   /* 0x77777777 */
+extern SifClient gSndClient2;   /* 0x77777778 */
+extern u32 gSndResults[0x26];   /* results */
+extern u16 *gSndCurves[0x20];  /* per bank: each sound's 3D distance curve (the bank's table) */
+extern SifDma gSndDma;
+extern u8 gSndDriverState[0x80];    /* the driver's state, written by the IOP (uncached) */
+extern u32 gSndTransferBits[4];      /* bit 0 / 1: a transfer (0x11 / 0x12) running (uncached) */
 extern u32 D_01975700[8];
 extern u32 gSndLastDma;         /* the last DMA's id */
-extern u32 D_0047B21C;         /* the IOP's copy of D_019715C0 */
-extern void (*D_0047B22C)(void *);
+extern u32 gSndIopState;         /* the IOP's copy of gSndDriverState */
+extern void (*gSndCallback)(void *);
 extern u32 gSoundOutput;         /* the output: 0 stereo, 1 / 2 the surround modes */
 extern f32 D_003DF580[0x400], D_003E0580[0x400];   /* stereo pan: right / left by angle */
-extern s32 D_003E3580[0x168];                      /* by degree: the surround tables' index */
+extern s32 kSurroundIndex[0x168];                      /* by degree: the surround tables' index */
 extern f32 D_003E3B20[], D_003E40C0[], D_003E4660[], D_003E4C00[];
 
 /* ---- the 3D placement ---- */
@@ -96,11 +96,11 @@ u32 SndLib_Place(u8 *b, u32 word) {
     } else {
         deg = rel * 360 / 2048;
         if (gSoundOutput == 1) {
-            l = (s32)(vol * ((f32)v * D_003E40C0[D_003E3580[deg]]));
-            r = (s32)(vol * ((f32)v * D_003E3B20[D_003E3580[deg]]));
+            l = (s32)(vol * ((f32)v * D_003E40C0[kSurroundIndex[deg]]));
+            r = (s32)(vol * ((f32)v * D_003E3B20[kSurroundIndex[deg]]));
         } else if (gSoundOutput == 2) {
-            l = (s32)(vol * ((f32)v * D_003E4C00[D_003E3580[deg]]));
-            r = (s32)(vol * ((f32)v * D_003E4660[D_003E3580[deg]]));
+            l = (s32)(vol * ((f32)v * D_003E4C00[kSurroundIndex[deg]]));
+            r = (s32)(vol * ((f32)v * D_003E4660[kSurroundIndex[deg]]));
         }
     }
     switch (AT(b, 0x58, s32)) {
@@ -190,7 +190,7 @@ s32 SndTable_Count(u8 *t, s32 size) {
 }
 
 /* bank `bank`'s 3D curves: each sound's (+0xE of its first entry) into `out`, kept for the
-   bank (D_01971500) */
+   bank (gSndCurves) */
 /* 0x0021F4A0 */
 void SndTable_Curves(s32 bank, u8 *t, s32 size, u16 *out) {
     u8 e[0x14] __attribute__((aligned(16)));
@@ -214,7 +214,7 @@ void SndTable_Curves(s32 bank, u8 *t, s32 size, u16 *out) {
         SndTable_Unpack(t + i * 0x10, f);
         *o++ = f[0xE];
     }
-    D_01971500[bank] = out;
+    gSndCurves[bank] = out;
 }
 
 /* ---- SIF transfers and calls ---- */
@@ -230,21 +230,21 @@ s32 SndLib_DmaToIop(u32 src, u32 dest, u32 size, s32 attr, s32 inIrq) {
     }
     if (inIrq == 1) {
         do {
-            D_01971580.src = src;
-            D_01971580.dest = dest;
-            D_01971580.size = size;
-            D_01971580.attr = attr;
+            gSndDma.src = src;
+            gSndDma.dest = dest;
+            gSndDma.size = size;
+            gSndDma.attr = attr;
             func_0026CB18(src, src + size);
-            gSndLastDma = isceSifSetDma(&D_01971580, 1);
+            gSndLastDma = isceSifSetDma(&gSndDma, 1);
         } while (gSndLastDma == 0);
     } else if (inIrq == 0) {
         do {
-            D_01971580.src = src;
-            D_01971580.dest = dest;
-            D_01971580.size = size;
-            D_01971580.attr = attr;
+            gSndDma.src = src;
+            gSndDma.dest = dest;
+            gSndDma.size = size;
+            gSndDma.attr = attr;
             func_0026CA98(src, src + size);
-            gSndLastDma = sceSifSetDma(&D_01971580, 1);
+            gSndLastDma = sceSifSetDma(&gSndDma, 1);
         } while (gSndLastDma == 0);
     } else {
         return -2;
@@ -290,7 +290,7 @@ void SndLib_TransferDone1(u32 *flags) {
 /* transfer 0x110000 / 0x120000 still running (poll 0: wait for it) */
 /* 0x0021F2D0 */
 s32 SndLib_TransferBusy(u32 cmd, s32 poll) {
-    volatile u32 *flags = UNCACHED(D_01971640);
+    volatile u32 *flags = UNCACHED(gSndTransferBits);
     u32 bit;
 
     if (cmd == 0x120000) {
@@ -325,20 +325,20 @@ static inline void sif_wait(SifClient *cd) {
 /* the transfer commands (0x110000 / 0x120000) on the second server, not waited for */
 /* 0x0021F9F0 */
 void *SndLib_Transfer(u32 cmd, void *args) {
-    u32 *flags = UNCACHED(D_01971640);
+    u32 *flags = UNCACHED(gSndTransferBits);
 
-    sif_wait(&D_01976F00);
+    sif_wait(&gSndClient2);
     switch (cmd & 0xFFFF0000) {
     case 0x110000:
     case 0x120000:
         if ((cmd & 0xFFFF0000) == 0x110000) {
-            D_0047B22C = (void (*)(void *))SndLib_TransferDone1;
+            gSndCallback = (void (*)(void *))SndLib_TransferDone1;
             *flags |= 1;
         } else {
-            D_0047B22C = (void (*)(void *))SndLib_TransferDone2;
+            gSndCallback = (void (*)(void *))SndLib_TransferDone2;
             *flags |= 2;
         }
-        while (func_002700E8(&D_01976F00, cmd, 1, args, 0x20, D_01975700, 4, D_0047B22C, flags) != 0) {
+        while (func_002700E8(&gSndClient2, cmd, 1, args, 0x20, D_01975700, 4, gSndCallback, flags) != 0) {
         }
         break;
     }
@@ -354,10 +354,10 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     u32 n, i;
     u8 *a;
 
-    sif_wait(&D_019756C0);
+    sif_wait(&gSndClient);
     switch (cmd & 0xFFFF0000) {
     case 0x370000:
-        D_01973EC0[0] = gSoundOutput;
+        gSndResults[0] = gSoundOutput;
         break;
     case 0x360000:
         if (gSoundOutput < 3) {
@@ -375,7 +375,7 @@ u32 *SndLib_Call(u32 cmd, void *args) {
             u32 w = AT(a, 0x8, u32);
 
             if ((w & 0x20000000) == 0x20000000 && (w & 0x08000000) == 0x08000000 && AT(a, 0x18, u8 *) != NULL) {
-                u16 *curves = D_01971500[AT(a, 0x0, u16)];
+                u16 *curves = gSndCurves[AT(a, 0x0, u16)];
 
                 if (curves != NULL) {
                     AT(AT(a, 0x18, u8 *), 0x54, u8) = curves[w & 0xFFFF];
@@ -383,21 +383,21 @@ u32 *SndLib_Call(u32 cmd, void *args) {
                 AT(a, 0x14, u32) = SndLib_Place(AT(a, 0x18, u8 *), w);
             }
         }
-        while (func_002700E8(&D_019756C0, cmd, 0, args, n << 5, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, n << 5, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x260000: {
         u32 w = AT(args, 0x8, u32);
 
         if ((w & 0x20000000) == 0x20000000 && (w & 0x08000000) == 0x08000000 && AT(args, 0x18, u8 *) != NULL) {
-            u16 *curves = D_01971500[AT(args, 0x0, u16)];
+            u16 *curves = gSndCurves[AT(args, 0x0, u16)];
 
             if (curves != NULL) {
                 AT(AT(args, 0x18, u8 *), 0x54, u8) = curves[w & 0xFFFF];
             }
             AT(args, 0x14, u32) = SndLib_Place(AT(args, 0x18, u8 *), w);
         }
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x20, D_01973EC0, 8, SndLib_CallDone, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0x20, gSndResults, 8, SndLib_CallDone, NULL) != 0) {
         }
         break;
     }
@@ -407,24 +407,24 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     case 0x2D0000:
     case 0x2C0000:
     case 0x0:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x2B0000:
-        while (func_002700E8(&D_019756C0, cmd, 1, args, 0x88, D_01973EC0, 4, SndLib_CallDone, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 1, args, 0x88, gSndResults, 4, SndLib_CallDone, NULL) != 0) {
         }
         break;
     case 0x310000:
     case 0x2A0000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x88, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0x88, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0xA0000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0xB4, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0xB4, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x60000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 8, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 8, NULL, NULL) != 0) {
         }
         break;
     case 0x20000:
@@ -433,23 +433,23 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     case 0x2F0000:
     case 0xB0000:
     case 0x90000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x140000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 0x1C, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 0x1C, NULL, NULL) != 0) {
         }
         break;
     case 0x50000:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0, D_01973EC0, 0x98, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 0x98, NULL, NULL) != 0) {
         }
         break;
     default:
-        while (func_002700E8(&D_019756C0, cmd, 0, args, 0x20, D_01973EC0, 4, NULL, NULL) != 0) {
+        while (func_002700E8(&gSndClient, cmd, 0, args, 0x20, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     }
-    return D_01973EC0;
+    return gSndResults;
 }
 
 /* ---- the EE's own RPC server (0x77777779), which the driver calls ---- */
@@ -458,10 +458,10 @@ extern u16 D_0047B228;     /* the driver's argument 10 (1: it reads EE memory it
 extern u32 gSndServerReply;     /* the server's reply */
 
 /* the driver asks: 1 copy EE memory to it (or, with argument 10 set, just the address), 2..5
-   its state words into D_019715C0 (+0x30, +0x20, +0x40, +0x50) */
+   its state words into gSndDriverState (+0x30, +0x20, +0x40, +0x50) */
 /* 0x0021F0E0 */
 void *SndLib_ServerCall(u32 fno, void *buf) {
-    u8 *st = UNCACHED(D_019715C0);
+    u8 *st = UNCACHED(gSndDriverState);
 
     switch (fno & 0xFFFF0000) {
     case 0x50000:
@@ -491,17 +491,17 @@ void *SndLib_ServerCall(u32 fno, void *buf) {
     return NULL;
 }
 
-extern u8 D_01976F30[];   /* the server's queue */
+extern u8 gSndServerQueue[];   /* the server's queue */
 extern u8 D_01976F50[];   /* its serve data */
 extern u8 D_019726C0[];   /* its receive buffer */
-extern s32 D_0047B220;    /* the server thread */
+extern s32 gSndServerThreadId;    /* the server thread */
 
 /* the server thread */
 /* 0x0021F210 */
 void SndLib_ServerThread(void) {
-    func_00270328(D_01976F30, D_0047B220);
-    func_002703C0(D_01976F50, 0x77777779, SndLib_ServerCall, D_019726C0, NULL, NULL, D_01976F30);
-    func_002707D8(D_01976F30);
+    func_00270328(gSndServerQueue, gSndServerThreadId);
+    func_002703C0(D_01976F50, 0x77777779, SndLib_ServerCall, D_019726C0, NULL, NULL, gSndServerQueue);
+    func_002707D8(gSndServerQueue);
 }
 
 typedef struct EeThread {
@@ -515,37 +515,37 @@ typedef struct EeThread {
 } EeThread;
 
 extern s32 D_0047B224;
-extern s32 D_01972680[3];      /* the semaphore's parameters */
-extern EeThread D_01971650;
+extern s32 gSndSemaParams[3];      /* the semaphore's parameters */
+extern EeThread gSndServerThread;
 extern u8 D_01971680[];        /* the server thread's stack */
 extern u8 _gp[];
 
 /* start the EE server (thread priority `prio`, stack `stack` bytes) */
 /* 0x00220150 */
 void SndLib_StartServer(s32 prio, s32 stack) {
-    D_01972680[2] = 0;
-    D_01972680[1] = 1;
-    D_0047B224 = CreateSema(D_01972680);
-    D_01971650.func = SndLib_ServerThread;
-    D_01971650.stack = D_01971680;
-    D_01971650.stackSize = stack;
-    D_01971650.prio = prio;
-    D_01971650.gp = _gp;
-    D_01971650.pad[2] = 0;
-    D_0047B220 = CreateThread(&D_01971650);
-    if (D_0047B220 >= 0) {
-        func_0026D2E0(D_0047B220, NULL);
+    gSndSemaParams[2] = 0;
+    gSndSemaParams[1] = 1;
+    D_0047B224 = CreateSema(gSndSemaParams);
+    gSndServerThread.func = SndLib_ServerThread;
+    gSndServerThread.stack = D_01971680;
+    gSndServerThread.stackSize = stack;
+    gSndServerThread.prio = prio;
+    gSndServerThread.gp = _gp;
+    gSndServerThread.pad[2] = 0;
+    gSndServerThreadId = CreateThread(&gSndServerThread);
+    if (gSndServerThreadId >= 0) {
+        func_0026D2E0(gSndServerThreadId, NULL);
     }
 }
 
-extern u32 D_01970D40[8];   /* the call arguments */
+extern u32 gSndCallArgs[8];   /* the call arguments */
 
 /* give the driver the EE state block: it answers where its copy is, which gets the block */
 /* 0x00220210 */
 void SndLib_SendState(void) {
-    D_01970D40[2] = (u32)UNCACHED(D_019715C0);
-    D_0047B21C = *SndLib_Call(0x40000, D_01970D40);
-    SndLib_DmaToIop(D_01970D40[2], D_0047B21C, 0x80, 0, 0);
+    gSndCallArgs[2] = (u32)UNCACHED(gSndDriverState);
+    gSndIopState = *SndLib_Call(0x40000, gSndCallArgs);
+    SndLib_DmaToIop(gSndCallArgs[2], gSndIopState, 0x80, 0, 0);
 }
 
 extern u8 D_019756E4[], D_01976F24[];   /* the clients' server pointers (bound when set) */
@@ -554,32 +554,32 @@ extern u8 D_019756E4[], D_01976F24[];   /* the clients' server pointers (bound w
 /* 0x00220270 */
 void SndLib_Bind(void) {
     do {
-        func_0026FF08(&D_019756C0, 0x77777777, 0);
+        func_0026FF08(&gSndClient, 0x77777777, 0);
         sif_delay();
     } while (AT(D_019756E4, 0, u32) == 0);
     do {
-        func_0026FF08(&D_01976F00, 0x77777778, 0);
+        func_0026FF08(&gSndClient2, 0x77777778, 0);
         sif_delay();
     } while (AT(D_01976F24, 0, u32) == 0);
 }
 
-extern u8 D_01970C80[0xB4], D_01970D80[0x600], D_01971380[0x10], D_019713C0[0x88], D_01971480[0x60];
+extern u8 gSndCallBlock[0xB4], D_01970D80[0x600], D_01971380[0x10], D_019713C0[0x88], D_01971480[0x60];
 
 /* clear the library's blocks */
 /* 0x00220340 */
 void SndLib_Clear(void) {
-    func_00115D20(D_01970C80, 0, 0xB4);
-    func_00115D20(D_01970D40, 0, 0x20);
+    func_00115D20(gSndCallBlock, 0, 0xB4);
+    func_00115D20(gSndCallArgs, 0, 0x20);
     func_00115D20(D_01970D80, 0, 0x600);
     func_00115D20(D_01971380, 0, 0x10);
     func_00115D20(D_019713C0, 0, 0x88);
     func_00115D20(D_01971480, 0, 0x60);
-    func_00115D20(D_01971500, 0, 0x80);
-    func_00115D20(&D_01971580, 0, 0x10);
+    func_00115D20(gSndCurves, 0, 0x80);
+    func_00115D20(&gSndDma, 0, 0x10);
     gSndLastDma = 0;
-    func_00115D20(UNCACHED(D_019715C0), 0, 0x80);
-    D_0047B21C = 0;
-    func_00115D20(UNCACHED(D_01971640), 0, 0x10);
+    func_00115D20(UNCACHED(gSndDriverState), 0, 0x80);
+    gSndIopState = 0;
+    func_00115D20(UNCACHED(gSndTransferBits), 0, 0x10);
 }
 
 extern const char str_0xN[];   /* "%x" (as the driver reads them) */

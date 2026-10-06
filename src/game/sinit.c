@@ -65,7 +65,7 @@ extern const PTMF D_003EC3A0;
 extern const PTMF D_003EC3B0;
 extern const PTMF D_003EC3C0;
 extern const PTMF D_003EC3D0;
-extern PTMF D_003EC3E0;
+extern PTMF kPursuerSteps;
 extern PTMF D_003EC3FC;
 extern PTMF D_003EC418;
 extern PTMF D_003EC434;
@@ -488,11 +488,11 @@ extern const PTMF RoomE9_Cmd03_ptmf;
 extern const PTMF RoomE9_Cond00_ptmf;
 extern PTMF kPursuerMove;
 extern PTMF kPursuerWaitMove;
-extern PTMF D_0045B370;
+extern PTMF kPursuerMoveA;
 extern PTMF kPursuerStairsMove;
 extern PTMF kPursuerIdleMove;
-extern PTMF D_0045B3B8;
-extern PTMF D_0047E300;
+extern PTMF kPursuerMoveB;
+extern PTMF kPaletteGenerators;
 extern PTMF D_0047E30C;
 extern PTMF D_0047E318;
 extern PTMF D_0047E324;
@@ -843,7 +843,7 @@ void Sinit_Debilitas(void) {
 
 /* 0x00464920 */
 void Sinit_Renderer(void) {
-    D_0047E300 = Palette_FlatLow_ptmf;
+    kPaletteGenerators = Palette_FlatLow_ptmf;
     D_0047E30C = Palette_FlatHigh_ptmf;
     D_0047E318 = Palette_Colour_ptmf;
     D_0047E324 = Palette_RandomGrey_ptmf;
@@ -854,7 +854,7 @@ void Sinit_Renderer(void) {
 
 /* 0x00464B80 */
 void Sinit_Pursuer(void) {
-    D_003EC3E0 = Pursuer_StateStand_ptmf;
+    kPursuerSteps = Pursuer_StateStand_ptmf;
     D_003EC3FC = D_003EC150;
     D_003EC418 = Pursuer_StateWalkThenAnim_ptmf;
     D_003EC434 = D_003EC170;
@@ -898,10 +898,10 @@ void Sinit_Pursuer(void) {
     D_003EC85C = D_003EC3D0;
     kPursuerMove = D_003EC878;
     kPursuerWaitMove = D_003EC888;
-    D_0045B370 = D_003EC898;
+    kPursuerMoveA = D_003EC898;
     kPursuerStairsMove = D_003EC8A8;
     kPursuerIdleMove = D_003EC8B8;
-    D_0045B3B8 = D_003EC8C8;
+    kPursuerMoveB = D_003EC8C8;
 }
 
 /* 0x00465470 */

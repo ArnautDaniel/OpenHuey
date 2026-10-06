@@ -1,4 +1,4 @@
-/* The skeleton pool (D_004562A8): 32 skeletons (12 bytes: ?, first node, node count) and 632
+/* The skeleton pool (gSkelPool): 32 skeletons (12 bytes: ?, first node, node count) and 632
  * 0x50-byte bone nodes (+0x180), each with a use bitmap (+0xC700 skeletons, +0xC704 nodes). */
 #include "common.h"
 #include "skeleton.h"

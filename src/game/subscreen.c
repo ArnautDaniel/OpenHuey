@@ -3467,7 +3467,7 @@ typedef struct {
     u16 name;   /* the costume's name */
     u16 note;   /* its description */
 } CostumeText;
-extern const CostumeText D_0044B700[9];   /* Fiona's six, then Hewie's three */
+extern const CostumeText kCostumeTexts[9];   /* Fiona's six, then Hewie's three */
 
 #define COST_FIONA(s, i) SUB_PAGE(s, (i), u8)        /* Fiona's costumes (0x80 locked, 0xFF ends) */
 #define COST_FIONA_SEL(s) SUB_PAGE(s, 0x7, u8)       /* the one worn */
@@ -3700,11 +3700,11 @@ void Costumes_State(SubScreen *s) {
     switch (COST_ROW(s)) {
     case 0:
         c0 = COST_OPEN(s) == 1 ? 1 : 2;
-        note = D_0044B700[COST_FIONA_CUR(s)].note;
+        note = kCostumeTexts[COST_FIONA_CUR(s)].note;
         break;
     case 1:
         c1 = COST_OPEN(s) == 1 ? 1 : 2;
-        note = D_0044B700[6 + COST_HEWIE_CUR(s)].note;
+        note = kCostumeTexts[6 + COST_HEWIE_CUR(s)].note;
         break;
     case 2:
         c2 = 2;
@@ -3729,7 +3729,7 @@ void Costumes_State(SubScreen *s) {
                 if (!(COST_FIONA(s, i) & 0x80)) {
                     u8 c = i == COST_FIONA_CUR(s) && COST_OPEN(s) ? 2 : i == COST_FIONA_SEL(s) ? 1 : 0;
 
-                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, D_0044B700[i].name), 0x80, 0x33,
+                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, kCostumeTexts[i].name), 0x80, 0x33,
                                   0x10, 0x15);
                     y += 0x20;
                 }
@@ -3739,7 +3739,7 @@ void Costumes_State(SubScreen *s) {
                 if (!(COST_HEWIE(s, i) & 0x80)) {
                     u8 c = i == COST_HEWIE_CUR(s) && COST_OPEN(s) ? 2 : i == COST_HEWIE_SEL(s) ? 1 : 0;
 
-                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, D_0044B700[6 + i].name), 0x80,
+                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, kCostumeTexts[6 + i].name), 0x80,
                                   0x33, 0x10, 0x15);
                     y += 0x20;
                 }

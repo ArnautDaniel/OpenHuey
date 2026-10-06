@@ -12,7 +12,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room62_vtable[];
-extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
+extern f32 gRoom62FallSpeed;   /* room 0x62: the dropped thing's fall speed */
 
 extern u8 Room62_EnterScript_data[];
 extern u8 Room62_CharEnterScript_data[];
@@ -84,7 +84,7 @@ s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        D_0047B280 = 0.0f;
+        gRoom62FallSpeed = 0.0f;
         return 1;
     case 1:
         AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0.5f;
@@ -97,18 +97,18 @@ s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
         break;
     }
     AT(e, 0x28, f32) = AT(e, 0x28, f32) + 0x1.47ae14p-3f /* 0.16 */;
-    v = D_0047B280 - 0.5f;
-    D_0047B280 = v;
+    v = gRoom62FallSpeed - 0.5f;
+    gRoom62FallSpeed = v;
     y = AT(e, 0x24, f32) + v;
     AT(e, 0x24, f32) = y;
     if (y < 0x1.666666p-1f /* 0.7 */) {
         f32 at[4] __attribute__((aligned(16)));
 
         AT(e, 0x24, f32) = 0x1.666666p-1f;
-        D_0047B280 = v * kBounce.f;
+        gRoom62FallSpeed = v * kBounce.f;
         sceVu0CopyVector(at, (f32 *)(e + 0x20));
         Sound_PlayBankAt(gSound, 0, 6, at, 0, 0);
-        if (D_0047B280 < 0x1.99999ap-3f /* 0.2 */) {
+        if (gRoom62FallSpeed < 0x1.99999ap-3f /* 0.2 */) {
             AT(e, 0x74, s32) = 1;
             return 1;
         }

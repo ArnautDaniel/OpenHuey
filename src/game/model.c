@@ -1679,7 +1679,7 @@ void Model_Loaded(u8 *m) {
     ((void (*)(u8 *))AT(AT(m, 0, u8 *), 0xB4, void *))(m);
 }
 
-extern void *D_004562A8;
+extern void *gSkelPool;
 
 /* build the model's skeleton from its bone table (+0x4C0: count, then 0x70-byte bones whose
  * +0x10 is the parent index, -1 for the root) */
@@ -1691,7 +1691,7 @@ void ModelBase_Loaded(u8 *m) {
     s32 i;
 
     AT(m, 0x4C8, s32) = 0;
-    skel = SkelPool_Alloc(D_004562A8, AT(AT(m, 0x4C0, u8 *), 0, s32));
+    skel = SkelPool_Alloc(gSkelPool, AT(AT(m, 0x4C0, u8 *), 0, s32));
     node = AT(skel, 4, u8 *);
     bone = AT(m, 0x4C0, u8 *) + 0x10;
     for (i = 0; i < AT(skel, 8, s32); i++) {
@@ -1711,15 +1711,15 @@ void ModelBase_Loaded(u8 *m) {
     Model_ResetMotion(m);
 }
 
-extern void *D_004562B0;
+extern void *gChainPool;
 
 /* reset the model's motion state: the two motion slots (+0x564, 0xA0 each; current +0x540,
  * next +0x544) and the three blend channels (+0x6B0, 0x60 each), freeing their skeletons and
  * buffers */
 /* 0x001F4910 */
 void Model_ResetMotion(u8 *m) {
-    void *bufs = D_004562B0;
-    void *skels = D_004562A8;
+    void *bufs = gChainPool;
+    void *skels = gSkelPool;
     u8 *slot;
     u8 *ch;
     s32 i, j, k;
@@ -2280,12 +2280,12 @@ void Motion_StartPart(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
     }
     cur = AT(ch, 0x54, u8 *);
     if (AT(cur, 0x10, void *) != NULL) {
-        ChainPool_Free(D_004562B0, AT(cur, 0x10, void *));
+        ChainPool_Free(gChainPool, AT(cur, 0x10, void *));
         AT(AT(ch, 0x54, u8 *), 0x10, void *) = NULL;
     }
     cur = AT(ch, 0x54, u8 *);
     if (AT(cur, 0x14, u8 *) != NULL) {
-        SkelPool_Free(D_004562A8, AT(cur, 0x14, u8 *));
+        SkelPool_Free(gSkelPool, AT(cur, 0x14, u8 *));
         AT(AT(ch, 0x54, u8 *), 0x14, u8 *) = NULL;
     }
     cur = AT(ch, 0x54, u8 *);
@@ -2447,8 +2447,8 @@ void Motion_StartBody(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 ble
  * 12 keys (+0x38, 8 apart) */
 /* 0x001F5020 */
 void Motion_FreeSlot(u8 *m, s32 i) {
-    void *skels = D_004562A8;
-    void *bufs = D_004562B0;
+    void *skels = gSkelPool;
+    void *bufs = gChainPool;
     u8 *slot = MOTION_SLOT(m, i);
     s32 j, k;
 
@@ -2487,8 +2487,8 @@ void Motion_SetupTrack(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
     u8 *node;
     s32 i;
 
-    *keys = ChainPool_Alloc(D_004562B0, AT(mot, 0, s32));
-    *skel = SkelPool_Alloc(D_004562A8, AT(mot, 0, s32));
+    *keys = ChainPool_Alloc(gChainPool, AT(mot, 0, s32));
+    *skel = SkelPool_Alloc(gSkelPool, AT(mot, 0, s32));
     node = AT(*skel, 0x4, u8 *);
     key = AT(*keys, 0x4, u8 *);
     tracks = mot + AT(mot, 0x8, u32);
@@ -2513,7 +2513,7 @@ void Motion_SetupTrack(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
 /* 0x001F6FD0 */
 void Motion_EventKeys(u8 *m, s32 anim, s32 variant) {
     s32 ids[2];
-    void *bufs = D_004562B0;
+    void *bufs = gChainPool;
     s32 t, k, i;
 
     ids[0] = anim;
@@ -3342,8 +3342,8 @@ void Motion_Update(u8 *m) {
             AT(q, 0x504, u8) = 0;
         }
     }
-    chains = D_004562B0;
-    skels = D_004562A8;
+    chains = gChainPool;
+    skels = gSkelPool;
     for (i = 0; i < 3; i++) {
         u8 *l = m + i * 0x60;
         u8 *s;

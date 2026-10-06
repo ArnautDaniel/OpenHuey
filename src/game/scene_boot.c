@@ -176,7 +176,7 @@ void SceneBoot_StateDone(SceneBoot *boot) {
 
 extern s8 gInput;          /* 0 = (no controller?): boot steps then wait for a button */
 extern u8 gLanguage;
-extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
+extern void *gMessageTables;       /* SUBSCR\MSG_BASE.BIN, once loaded */
 extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
 
 static const char sMsgSubBin[] = "SUBSCR\\MSG_SUB.BIN";
@@ -276,7 +276,7 @@ u32 SceneBoot_StepTexts(SceneBoot *boot) {
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseBin, VCALL(res, 0xC, void *(*)(VObject *))(res));
-    D_01991EC0 = VCALL(res, 0xC, void *(*)(VObject *))(res);
+    gMessageTables = VCALL(res, 0xC, void *(*)(VObject *))(res);
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseTex, VCALL(res, 0x10, void *(*)(VObject *))(res));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(

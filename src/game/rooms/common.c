@@ -286,11 +286,11 @@ extern const char *const pstr_hook, *const pstr_a_Puppet, *const pstr_Puppetdoor
 extern void *WindowFlash_vtable[], *DriftingFlecks_vtable[], *SmokePuffs_vtable[];
 
 /* the effect WindowFlash_vtable (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
- * a flash in the shape of a window (half of its outline, D_00444980, mirrored for points 12..23)
+ * a flash in the shape of a window (half of its outline, kWindowOutline, mirrored for points 12..23)
  * at the object, turned with it, each frame a fan through some of the outline (D_00444A70: a
  * count, then the points) */
 extern const s8 *D_00444A70[];
-extern const f32 D_00444980[12][3];
+extern const f32 kWindowOutline[12][3];
 extern void *Bloom_vtable[], *Helper469D00_vtable[];
 #ifdef HG_NATIVE
 
@@ -320,13 +320,13 @@ void WindowFlash_Draw(u8 *o) {
         s32 id = shape[k + 1];
 
         if (id < 12) {
-            v[0] = D_00444980[id][0];
-            v[1] = D_00444980[id][1];
-            v[2] = k01.f + D_00444980[id][2];
+            v[0] = kWindowOutline[id][0];
+            v[1] = kWindowOutline[id][1];
+            v[2] = k01.f + kWindowOutline[id][2];
         } else {
-            v[0] = -D_00444980[23 - id][0];
-            v[1] = D_00444980[23 - id][1];
-            v[2] = k01.f + D_00444980[23 - id][2];
+            v[0] = -kWindowOutline[23 - id][0];
+            v[1] = kWindowOutline[23 - id][1];
+            v[2] = k01.f + kWindowOutline[23 - id][2];
         }
         Mtx_ApplyVector(v, m, v);
         sceVu0AddVector(pt[k], (f32 *)(obj + 0x20), v);
@@ -418,7 +418,7 @@ extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
 extern const char *const D_0047ABEC;     /* room 0x5C's dial */
 extern const char *const pstr_doll;     /* room 0x5D's lever */
 extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
-extern VObject *D_00456E00;
+extern VObject *gRoomEventObj;
 
 /* (Room24_ColourPulse_ptmf's table) room effect 0x1F's colour pulsing by script variable 0 */
 /* 0x002AFD60 */
@@ -463,7 +463,7 @@ extern void *Effect79B00_vtable[];
  * (Room54_ObjectNames, four names a group) pushed to their stops (D_00428010: x, z a group) ---- */
 extern const char *Room54_ObjectNames[];
 extern const f32 D_00428010[];
-extern VObject *D_00456E00;   /* the room's triangle groups */
+extern VObject *gRoomEventObj;   /* the room's triangle groups */
 
 /* a grey puff (dust, 0x50 grey, alpha 0x10) at (x, y, z) */
 static inline void block_dust(u8 *mgr, s32 slot, f32 x, f32 y, f32 z) {
@@ -553,7 +553,7 @@ s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
         break;
     }
     case 5: {
-        VObject *list = gPlacedThings, *rm = D_00456E00;
+        VObject *list = gPlacedThings, *rm = gRoomEventObj;
 
         for (k = 0; k < 0x80; k++) {
             u8 *t = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, k);

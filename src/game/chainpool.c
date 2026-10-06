@@ -1,4 +1,4 @@
-/* The chain pool (D_004562B0), the skeleton pool's sibling for motion data: 64 chains
+/* The chain pool (gChainPool), the skeleton pool's sibling for motion data: 64 chains
  * (12 bytes: ?, first entry, entry count) and 0x14-byte entries (+0x300), each with a use
  * bitmap (+0x2718 chains, +0x2720 entries). */
 #include "common.h"

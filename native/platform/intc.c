@@ -26,19 +26,19 @@ int func_0026CCE8(int cause) {
 
 /* The game's vblank handlers (PS2 0x001BEDA0 / 0x001BED80 end with `ei`, so they stay assembly in
  * the PS2 build). */
-extern unsigned char D_0047B204, D_0047B208;
-extern unsigned D_0047B20C;
+extern unsigned char gVblankStartSeen, gVblankEndSeen;
+extern unsigned gVblankCount;
 
 int func_001BEDA0(int cause) {
     (void)cause;
-    D_0047B204 = 1;
-    D_0047B20C++;
+    gVblankStartSeen = 1;
+    gVblankCount++;
     return 0;
 }
 
 int func_001BED80(int cause) {
     (void)cause;
-    D_0047B208 = 1;
+    gVblankEndSeen = 1;
     return 0;
 }
 
@@ -92,8 +92,8 @@ void hg_wait_flag(volatile unsigned char *flag) {
 
 /* The game's "wait for vsync" (system +0x1C, PS2 0x001BED00): vblank start, then end. */
 void func_001BED00(void) {
-    hg_wait_flag(&D_0047B204);
-    hg_wait_flag(&D_0047B208);
+    hg_wait_flag(&gVblankStartSeen);
+    hg_wait_flag(&gVblankEndSeen);
 }
 
 /* DisableIntc(cause) */

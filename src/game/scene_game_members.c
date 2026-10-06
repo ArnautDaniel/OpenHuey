@@ -1708,7 +1708,7 @@ void EffectMgr_Remove(u8 *o, s32 slot) {
     }
 }
 
-extern u8 *D_00420B20[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
+extern u8 *kMapRooms[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
 extern void **kMapPages[];  /* per map: its pages (by the entry's +0x4) */
 
 /* SceneGame +0x101EBC0 (the map): find which map and page show room `room` (+0x108 the room,
@@ -1726,8 +1726,8 @@ void Map_FindRoom(u8 *m, s32 room) {
     if (room == -1 || (u32)room >= 0x110) {
         return;
     }
-    for (i = 0; D_00420B20[i] != NULL; i++) {
-        for (e = D_00420B20[i]; AT(e, 0, s32) != -1; e += 0x18) {
+    for (i = 0; kMapRooms[i] != NULL; i++) {
+        for (e = kMapRooms[i]; AT(e, 0, s32) != -1; e += 0x18) {
             if (AT(e, 0, s32) == room && kMapPages[i] != NULL &&
                 kMapPages[i][AT(e, 4, s8)] != NULL) {
                 AT(m, 0x108, s32) = room;
@@ -1749,7 +1749,7 @@ void Map_TurnTo(u8 *m, s8 page) {
     if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == page) {
         return;
     }
-    e = D_00420B20[AT(m, 0x10C, s8)];
+    e = kMapRooms[AT(m, 0x10C, s8)];
     if (e == NULL) {
         return;
     }
@@ -1916,7 +1916,7 @@ void Map_HereArrow(u8 *m) {
     if (room == -1 || map == -1 || page == -1 || gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0) {
         return;
     }
-    for (e = D_00420B20[map]; AT(e, 0, s32) != -1; e += 0x18) {
+    for (e = kMapRooms[map]; AT(e, 0, s32) != -1; e += 0x18) {
         if (AT(e, 0, s32) == room && AT(e, 4, s8) == page) {
             found = 1;
             break;
@@ -2114,7 +2114,7 @@ s32 Room00_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990700[i & 0xFF], a, b);
 }
 
-/* ---- room manager +0x9360 (D_00456E00): the room's triangle groups (PAC section 14: count,
+/* ---- room manager +0x9360 (gRoomEventObj): the room's triangle groups (PAC section 14: count,
  * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
 
 /* set (`clear` 0) or clear (1) flag bits `bits` on the triangles of group `g` (-1: no group) */
@@ -2162,7 +2162,7 @@ s32 NavGroups_ClearGroup(u8 *o, u32 g, u32 bits) {
 }
 
 extern void *NavGroups_vtable[], *D_0046DB60[];
-extern VObject *D_00456E00;
+extern VObject *gRoomEventObj;
 
 /* the nav mesh triangle t's flag word (NULL->flags, as the original, past the end) */
 static u32 *tri_flags_word(u32 t) {
@@ -2218,7 +2218,7 @@ void *NavGroups_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = NavGroups_vtable;
         AT(o, 0x0, void **) = D_0046DB60;
-        D_00456E00 = NULL;
+        gRoomEventObj = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2231,7 +2231,7 @@ void *NavGroups_dtor(void *o, s32 flags) {
 void *NavGroupsBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046DB60;
-        D_00456E00 = NULL;
+        gRoomEventObj = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -3303,7 +3303,7 @@ void ScreenFade_Level(u8 *fade, f32 t) {
     AT(fade, 0x34, f32) = t;
 }
 
-extern void *D_0045D1F0;   /* the screen overlay (Scene +0x105344C) */
+extern void *gMovieFlag;   /* the screen overlay (Scene +0x105344C) */
 
 /* the screen fade, each frame (`mode` 2: brighten): while not fully up (+0x34 < 1) the camera
  * shake stops and the brightness (+0x38) is reset to 0x80; at full level the renderer takes
@@ -3316,7 +3316,7 @@ void ScreenFade_Frame(u8 *fade, s32 mode) {
 
     if (AT(fade, 0x0, u8) == 5 || AT(fade, 0x0, u8) == 4) {
         if (AT(fade, 0x0, u8) == 4 && AT(fade, 0x2, s16) < 0 && AT(fade, 0x34, f32) == 1.0f) {
-            func_0021E1B0(D_0045D1F0);
+            func_0021E1B0(gMovieFlag);
         }
         if (AT(fade, 0x34, f32) != 1.0f) {
             cam = gCamera;
@@ -3335,7 +3335,7 @@ void ScreenFade_Frame(u8 *fade, s32 mode) {
                 VCALL(gRenderer, 0x60, void (*)(VObject *, u8))(gRenderer, AT(fade, 0x38, u8));
             }
             if (AT(fade, 0x38, s32) <= 0x10) {
-                func_0021D290(D_0045D1F0);
+                func_0021D290(gMovieFlag);
             }
         } else {
             cam = gCamera;
@@ -3344,7 +3344,7 @@ void ScreenFade_Frame(u8 *fade, s32 mode) {
         }
     }
     if (AT(fade, 0x40, s32) != 0) {
-        func_0021D8F0(D_0045D1F0, 0x30, (s32)((f32)AT(fade, 0x40, s32) * AT(fade, 0x34, f32)));
+        func_0021D8F0(gMovieFlag, 0x30, (s32)((f32)AT(fade, 0x40, s32) * AT(fade, 0x34, f32)));
     }
 }
 

@@ -502,7 +502,7 @@ void *Obj46BEE0_dtor(u8 *o, s32 flags) {
 
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *Heap_vtable[], *D_004699E0[];
 extern void *Camera_vtable[], *D_00469B40[], *System_vtable[];
-extern void *D_004562A8, *D_004562B0;
+extern void *gSkelPool, *gChainPool;
 
 /* the members torn down in reverse: the +0x14E8C90 table, the two pools, the camera, the scene
  * table (+0x400A00, its scenes returned to the heap at +0x14D9A40), the rng, then the +0x69AC0
@@ -518,11 +518,11 @@ void *Game_dtor(u8 *g, s32 flags) {
 
     func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))func_0020D920, 0x50, 0x278);
     func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))func_0020D8D0, 0xC, 0x20);
-    D_004562A8 = NULL;
+    gSkelPool = NULL;
 
     func_001002C0(g + 0x14DA0D0, (void *(*)(void *, s32))func_0020D9C0, 0x14, 0x1CE);
     func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))func_0020D970, 0xC, 0x40);
-    D_004562B0 = NULL;
+    gChainPool = NULL;
 
     AT(g, 0x14D9B00, void **) = Camera_vtable;
     AT(g, 0x14D9B00, void **) = D_00469B40;

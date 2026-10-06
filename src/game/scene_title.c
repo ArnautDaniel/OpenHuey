@@ -24,7 +24,7 @@
 #include "msl.h"
 
 extern void *Scene_vtable[];
-extern void *D_0046A040[];          /* SceneTitle */
+extern void *SceneTitle_vtable[];          /* SceneTitle */
 extern void *Message_vtable[];          /* the message object */
 extern void *SubScreen_vtable[];          /* the title work */
 extern void *BgmCtl_vtable[];
@@ -97,7 +97,7 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     ptmf_set(&t->base.state, &sSceneEntryState);
     gSceneTitle = t;
     gBootMessage = (VObject *)t->msg;
-    t->base.vtbl = D_0046A040;
+    t->base.vtbl = SceneTitle_vtable;
     AT(t->msg, 0, void **) = Message_vtable;
     Task_Construct(&t->task);
     w = &t->sub;
@@ -1027,7 +1027,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
         SubScreen *w;
         Task *task;
 
-        t->base.vtbl = D_0046A040;
+        t->base.vtbl = SceneTitle_vtable;
         BgmCtl_StopNow(&t->bgm);
         Bgm_Release(gAdx);
         if (&t->bgm != NULL) {

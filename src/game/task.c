@@ -15,9 +15,9 @@
 #include "libc.h"
 #include "msl.h"
 
-extern u8 *D_01991EC0[];        /* message tables, by language */
-extern char D_01991ED0[][32];   /* parameter strings (code 0x08) */
-extern char D_01991F50[][8];    /* names (code 0x13) */
+extern u8 *gMessageTables[];        /* message tables, by language */
+extern char gMessageParams[][32];   /* parameter strings (code 0x08) */
+extern char gMessageNames[][8];    /* names (code 0x13) */
 extern u8 gLanguage;           /* language */
 extern u8 D_0044AD00[];         /* small font glyphs: high nibble blank columns, low nibble drop */
 extern u16 D_0044B010[][2];     /* box position presets */
@@ -64,7 +64,7 @@ static inline u8 *msg_text(u32 id) {
     } else {
         lang = gLanguage;
     }
-    table = D_01991EC0[lang];
+    table = gMessageTables[lang];
     return table + *(u16 *)(table + (id & 0xFFFF) * 2 + 2);
 }
 
@@ -164,7 +164,7 @@ void Task_BoxSize(Task *t) {
 /* copy message `id` to name `slot` (code 0x13; up to 7 bytes) */
 void Msg_SetName(void *self, s32 slot, s32 id) {
     u8 *src = msg_text(id & 0xFFFF);
-    char *dst = D_01991F50[slot & 0xFF];
+    char *dst = gMessageNames[slot & 0xFF];
     s32 i = 0;
 
     for (;;) {
@@ -189,7 +189,7 @@ void Msg_SetName(void *self, s32 slot, s32 id) {
 /* copy system message `id` (0x100 + id of the language 0 table) to parameter string `slot` */
 void Msg_SetParamSystem(void *self, s32 slot, s32 id) {
     u8 *src = msg_text((u16)((id & 0xFFFF) + 0x8100));
-    char *dst = D_01991ED0[slot & 0xFF];
+    char *dst = gMessageParams[slot & 0xFF];
     s32 i = 0;
 
     for (;;) {
@@ -216,7 +216,7 @@ void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    func_0026ED98(D_01991ED0[slot & 0xFF], 0x80, fmt, ap);
+    func_0026ED98(gMessageParams[slot & 0xFF], 0x80, fmt, ap);
     va_end(ap);
 }
 
@@ -290,7 +290,7 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
         u8 lang = gLanguage;
         s32 group, idx;
 
-        if (D_01991EC0[lang] == NULL) {
+        if (gMessageTables[lang] == NULL) {
             return;
         }
         if (g[0] == 0x1C) {
@@ -366,12 +366,12 @@ s32 TextCursor_Step(Task *t, TextCursor *c) {
     case 0x08:
         c->stack[c->depth] = p + 2;
         c->depth++;
-        c->p = (u8 *)D_01991ED0[c->p[1]];
+        c->p = (u8 *)gMessageParams[c->p[1]];
         return 0;
     case 0x13:
         c->stack[c->depth] = p + 2;
         c->depth++;
-        c->p = (u8 *)D_01991F50[c->p[1]];
+        c->p = (u8 *)gMessageNames[c->p[1]];
         return 0;
     case 0x11:
         c->p = msg_text((u16)(p[1] << 8 | p[2]));

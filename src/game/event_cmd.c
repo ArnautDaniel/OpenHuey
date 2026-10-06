@@ -38,7 +38,7 @@
 #include "msl.h"
 
 extern u8 gLanguage;         /* the message language set */
-extern VObject *D_00456E00;
+extern VObject *gRoomEventObj;
 extern void EventCmd_Flags(VObject *ev);
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
@@ -680,11 +680,11 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     }
-    case 0x1D:   /* D_00456E00 +0xC (operand 1 = 1) or +0x10 with a byte and a word */
+    case 0x1D:   /* gRoomEventObj +0xC (operand 1 = 1) or +0x10 with a byte and a word */
         if (pc[1] == 1) {
-            VCALL(D_00456E00, 0xC, void (*)(VObject *, s32, s32))(D_00456E00, pc[2], be32(pc + 3));
+            VCALL(gRoomEventObj, 0xC, void (*)(VObject *, s32, s32))(gRoomEventObj, pc[2], be32(pc + 3));
         } else {
-            VCALL(D_00456E00, 0x10, void (*)(VObject *, s32, s32))(D_00456E00, pc[2], be32(pc + 3));
+            VCALL(gRoomEventObj, 0x10, void (*)(VObject *, s32, s32))(gRoomEventObj, pc[2], be32(pc + 3));
         }
         break;
     case 0xA8:
@@ -1607,11 +1607,11 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     }
-    case 0xDA:   /* D_00456E00 +0x18 (pc[1] 1) / +0x1C with be16 pc[2..3], be32 pc[4..7] */
+    case 0xDA:   /* gRoomEventObj +0x18 (pc[1] 1) / +0x1C with be16 pc[2..3], be32 pc[4..7] */
         if (pc[1] == 1) {
-            VCALL(D_00456E00, 0x18, void (*)(VObject *, u32, s32))(D_00456E00, be16(pc + 2), be32(pc + 4));
+            VCALL(gRoomEventObj, 0x18, void (*)(VObject *, u32, s32))(gRoomEventObj, be16(pc + 2), be32(pc + 4));
         } else {
-            VCALL(D_00456E00, 0x1C, void (*)(VObject *, u32, s32))(D_00456E00, be16(pc + 2), be32(pc + 4));
+            VCALL(gRoomEventObj, 0x1C, void (*)(VObject *, u32, s32))(gRoomEventObj, be16(pc + 2), be32(pc + 4));
         }
         break;
     case 0x82:   /* the director's +0x34 (4 x be32 pc[2..] / 1000) when pc[1]; its +0x30 (pc[1]) */

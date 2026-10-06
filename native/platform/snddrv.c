@@ -64,7 +64,7 @@ static Bank sBanks[0x21];
 static unsigned sEeState;      /* the EE's state block (command 4) */
 static unsigned sResult[0x26];
 
-/* a word of the EE's state block (D_019715C0, command 4) as the driver's reports set it */
+/* a word of the EE's state block (gSndDriverState, command 4) as the driver's reports set it */
 void snddrv_report(unsigned off, unsigned value) {
     if (sEeState != 0) {
         *(volatile unsigned *)(sEeState + off) = value;

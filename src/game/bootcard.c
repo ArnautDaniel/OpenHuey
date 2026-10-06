@@ -666,7 +666,7 @@ void SaveScreen_Load(BootCard *b) {
 
 extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */
 extern s32 D_0047B264;                    /* the last check's status */
-extern s32 D_0047B268;                    /* the empty saves written so far */
+extern s32 gCardEmptyWritten;                    /* the empty saves written so far */
 extern const char str_N_2[];           /* "%d" */
 extern const char str_SUBSCR_ICON_SYS[], str_SUBSCR_ICON00_ICO[];   /* "SUBSCR\\ICON.SYS", "SUBSCR\\ICON00.ICO" */
 extern const char str_icon_sys[], str_icon00_ico[];   /* the card's "icon.sys", "icon00.ico" */
@@ -801,7 +801,7 @@ void BootCard_StateSave(BootCard *b) {
         /* fall through */
     case 1:
         b->cursor = 0;
-        D_0047B268 = 0;
+        gCardEmptyWritten = 0;
         Msg_PrintfParam(&b->task, 1, str_N_2, 0xC5);
         if (b->hidden != 0) {
             Task_OpenAt(&b->task, 0x3E, (u8)b->hidden);
@@ -957,10 +957,10 @@ void BootCard_StateSave(BootCard *b) {
             Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
             Sound_PlaySE(SE_BUZZER);
             b->state = 101;
-        } else if ((u32)D_0047B268 < 12) {
-            MEMCARD_WRITE(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, D_0047B268 * SAVE_SIZE + SAVE_DATA_OFF,
+        } else if ((u32)gCardEmptyWritten < 12) {
+            MEMCARD_WRITE(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, gCardEmptyWritten * SAVE_SIZE + SAVE_DATA_OFF,
                           SAVE_SIZE);
-            D_0047B268++;
+            gCardEmptyWritten++;
         } else {
             MEMCARD_CREATE(mc, b->port, str_icon00_ico, b->buf1, 0x1CF58);
             b->state++;
