@@ -1791,3 +1791,77 @@ void func_00394E40(SubScreen *s) {
         ptmf_set(&s->state, &D_0044B378);
     }
 }
+
+extern void func_00260170(u8 *items, s32 id, void *arg);
+extern s32 func_00260130(u8 *items);
+
+#define SUB_SLIDE(s) ((s)->page[0x15C])   /* the tab's slide, 0..0x40 by 4 */
+
+/* +0x20 the in-game tab: `cmd` 0 the item `id` started (func_00260170), slide reset; 1 waiting
+ * for it (when it is done, the menu's textures made resident again); 2 sliding in, 3 shown, 4
+ * sliding out (at the end the screen takes over, +0x28). 1 while it moves; nothing (0) while
+ * +0xA8DDE is set */
+s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
+    VObject *tc;
+
+    if (cmd != 0 && s->unkA8DDE == 1) {
+        return 0;
+    }
+    s->tab = cmd;
+    switch (cmd) {
+    case 0:
+        func_00260170(s->pool, id, (u8 *)s + 0x94F40);
+        SUB_SLIDE(s) = 0;
+        s->unkA8DDE = 0;
+        return 0;
+    case 1:
+        if (func_00260130(s->pool) != 0) {
+            return 1;
+        }
+        tc = D_0044E4E8;
+        VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->baseTex, 0x18);
+        VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, (u8 *)s + 0x94F40, 0x27);
+        return 0;
+    case 2:
+        if (SUB_SLIDE(s) < 0x3D) {
+            SUB_SLIDE(s) += 4;
+            return 1;
+        }
+        return 0;
+    case 4:
+        if (SUB_SLIDE(s) >= 4) {
+            SUB_SLIDE(s) -= 4;
+            return 1;
+        }
+        VCALL(s, 0x28, void (*)(SubScreen *))(s);
+        return 0;
+    }
+    return 0;
+}
+
+extern const PTMF D_0044B338;
+
+/* state: the word plate's question - its list's panels, the grid, the word being made
+ * (+0xA8C58, as parameter 3) and the question; once answered, D_0044B338 */
+void func_00395460(SubScreen *s) {
+    char word[9];
+    s32 i;
+
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    sub_panels(s);
+    func_003949B0(s, 1);
+    for (i = 0; i < 8; i++) {
+        word[i] = s->unkA8C58[i];
+    }
+    word[8] = 0;
+    Msg_PrintfParam(&s->text, 3, D_00464218, word);
+    if (AT(&s->ask, 0x10, u8) != 0) {
+        Task_Run(&s->ask);
+    } else {
+        ptmf_set(&s->state, &D_0044B338);
+    }
+}

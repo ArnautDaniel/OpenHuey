@@ -7047,3 +7047,5 @@ src/game/items.c func_002602A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --p
 src/game/subscreen.c func_003851B0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0B000000..0x0B000000 --stub-ret=-1 --stub-ret=0xFFFF --stub-ret=5 --stub-ret=1 --stub-ret=2 --stub-ret=0x0B300000 --stub-ret-prob=1 --runs=60
 src/game/subscreen.c func_0038D620 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..0x1F --pre=@0x44E4E0=0x0A300000..0x0A300000 --pre=@0x0A300000=0x0046A1E0..0x0046A1E0 --runs=100
 src/game/subscreen.c func_00394E40 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --runs=100
+src/game/subscreen.c func_00384E60 --pre=a0=0x0A000000..0x0A000000 --pre=@0x0A000000=0x0047A790..0x0047A790 --pre=a1=0..5 --pre=a0+0xA8DDE:u8=0..1 --pre=a0+0xA8DDC:u8=0..0x44 --pre=@0x44E4E8=0x0A100000..0x0A100000 --pre=@0x0A100000=0x0046B1D0..0x0046B1D0 --stub-ret=0 --stub-ret=1 --runs=300
+src/game/subscreen.c func_00395460 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --runs=100
