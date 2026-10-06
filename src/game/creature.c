@@ -4694,3 +4694,294 @@ void func_00329440(Character *c) {
     func_00127060(c);
     cr19_settle(c);
 }
+
+/* ---- D_004795E0 (0x2920 bytes, Cr19Gone_Init): what the kind-0x19 creature leaves when it
+ * goes - at a point (+0x2480) on nav triangle +0x2918, 64 bubbles welling up (records +0x10 +
+ * 0xC00 x the current one +0x2910, drawer +0x2410, velocities +0x2490) and 32 drops thrown up
+ * (records +0x1810 + 0x600 x the current one, drawer +0x2448, velocities +0x2790), +0x2914
+ * its frames; at frame 100 a splat (D_00472BF0) on the spot ---- */
+
+extern void *D_00472BF0[];
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+#define GONE_BUBBLE(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
+#define GONE_DROP(o, buf, i) ((QuadRec *)((o) + 0x1810 + (buf) * 0x600) + (i))
+#define GONE_RND() VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)
+
+/* drop `i` thrown up from within 2 of the spot (lower the later, frame `t`), 2.5..3 big,
+ * flying outward and up, faster the later */
+void func_003592E0(u8 *o, s32 i, s32 t) {
+    static const union { u32 u; f32 f; } k4 = {0x40800000}, k001 = {0x3C23D70A}, k360 = {0x43B40000},
+                                         kPi = {0x40490FDB};   /* multiplied first */
+    VObject *rnd = D_0044E550;
+    QuadRec *r = GONE_DROP(o, AT(o, 0x2910, s32), i);
+    f32 dx, dz, *v = (f32 *)(o + 0x2790 + i * 0xC);
+
+    dx = k4.f * (GONE_RND() - 0.5f);
+    dz = k4.f * (GONE_RND() - 0.5f);
+    r->rgba[0] = 0x40;
+    r->rgba[1] = 0x10;
+    r->rgba[2] = 8;
+    r->rgba[3] = 1;
+    r->pos[0] = AT(o, 0x2480, f32) + dx;
+    r->pos[1] = (1.0f + AT(o, 0x2484, f32)) - (k001.f * (f32)t) * GONE_RND();
+    r->pos[2] = AT(o, 0x2488, f32) + dz;
+    r->pos[3] = 1.0f;
+    r->w = 2.5f + 0.5f * GONE_RND();
+    r->h = r->w;
+    r->turn = kPi.f * (k360.f * (GONE_RND() - 0.5f)) / 180.0f;
+    r->frame = 0;
+    v[0] = (k001.f * -dx) * GONE_RND();
+    v[1] = 0x1.47ae14p-7f + 0x1.0624dep-11f * (f32)t;   /* 0.01 + 0.0005 t */
+    v[2] = (k001.f * -dz) * GONE_RND();
+}
+
+/* bubble `i` (re)started within 3 x its size of the spot, two sizes up, drifting out and
+ * rising 0.03..0.06 */
+void func_00359570(u8 *o, s32 i) {
+    static const union { u32 u; f32 f; } k6 = {0x40C00000}, k003 = {0x3CF5C28F}, k360 = {0x43B40000},
+                                         kPi = {0x40490FDB};   /* multiplied first */
+    VObject *rnd = D_0044E550;
+    QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
+    f32 s = r->w, dx, dz, *v = (f32 *)(o + 0x2490 + i * 0xC);
+
+    dx = (k6.f * s) * (GONE_RND() - 0.5f);
+    dz = (k6.f * r->w) * (GONE_RND() - 0.5f);
+    r->rgba[0] = 0x60;
+    r->rgba[1] = 0x30;
+    r->rgba[2] = 0x28;
+    r->rgba[3] = 1;
+    r->pos[0] = AT(o, 0x2480, f32) + dx;
+    r->pos[1] = AT(o, 0x2484, f32) + 2.0f * s;
+    r->pos[2] = AT(o, 0x2488, f32) + dz;
+    r->pos[3] = 1.0f;
+    r->turn = kPi.f * (k360.f * (GONE_RND() - 0.5f)) / 180.0f;
+    r->frame = 0;
+    v[0] = (k003.f * dx) * GONE_RND();
+    v[1] = 0x1.eb851ep-6f + 0x1.eb851ep-6f * GONE_RND();   /* 0.03 + 0.03 x */
+    v[2] = (k003.f * dz) * GONE_RND();
+}
+
+/* +0x18 start: arg { the spot, +0x10 its triangle (-1: nothing) }; every bubble hidden, 0.1 ..
+ * 0.4 big, every drop hidden at 0.5 */
+void func_003597B0(u8 *o, u8 *arg) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* multiplied first */
+    VObject *rnd;
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    sceVu0CopyVector((f32 *)(o + 0x2480), (f32 *)arg);
+    AT(o, 0x2918, s32) = AT(arg, 0x10, s32);
+    if (AT(o, 0x2918, s32) == -1) {
+        return;
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 64; i++) {
+        QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
+        f32 *v = (f32 *)(o + 0x2490 + i * 0xC);
+
+        r->w = k01.f * (f32)((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
+        r->h = r->w;
+        r->rgba[0] = 0;
+        r->rgba[1] = 0;
+        r->rgba[2] = 0;
+        r->rgba[3] = 0;
+        r->pos[0] = 0.0f;
+        r->pos[1] = 0.0f;
+        r->pos[2] = 0.0f;
+        r->pos[3] = 1.0f;
+        r->turn = 0.0f;
+        r->frame = 0;
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 0.0f;
+    }
+    for (i = 0; i < 32; i++) {
+        QuadRec *r = GONE_DROP(o, AT(o, 0x2910, s32), i);
+        f32 *v = (f32 *)(o + 0x2790 + i * 0xC);
+
+        r->rgba[0] = 0;
+        r->rgba[1] = 0;
+        r->rgba[2] = 0;
+        r->rgba[3] = 0;
+        r->pos[0] = 0.0f;
+        r->pos[1] = 0.0f;
+        r->pos[2] = 0.0f;
+        r->pos[3] = 1.0f;
+        r->w = 0.5f;
+        r->h = r->w;
+        r->turn = 0.0f;
+        r->frame = 0;
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 0.0f;
+    }
+}
+
+/* +0x14 draw (not while the effects are paused): the bubbles, then the drops */
+void func_00359980(u8 *o) {
+    if (func_002D6010(D_0044E578) == 0) {
+        AT(o, 0x2420, QuadRec *) = GONE_BUBBLE(o, AT(o, 0x2910, s32), 0);
+        func_002E56C0(o + 0x2410);
+        AT(o, 0x2458, QuadRec *) = GONE_DROP(o, AT(o, 0x2910, s32), 0);
+        func_002E56C0(o + 0x2448);
+    }
+}
+
+static void gone_splat_init(void **obj) {
+    obj[0] = D_00472BF0;
+    obj[0x70 / 4] = D_00469D00;
+    ((s32 *)obj)[0x74 / 4] = -1;
+    obj[0x70 / 4] = D_0046FC30;
+}
+
+/* +0x10 update: flip the buffers, count the frame (at 100 the splat); each bubble showing
+ * carried over, fading in (to over 0x20, then marked) or out by 1..4, slowing as it rises, kept
+ * above the spot by its size; until frame 127 up to 4 hidden bubbles a frame restarted, growing
+ * by 0.05..0.1 (to 0.7) for 90 frames, then shrinking (out under 0.3); each drop showing fading
+ * in / out by 1..2, shrinking (out at 0), turning and flying; until frame 150 one hidden drop a
+ * frame thrown. 0 once nothing shows */
+s32 func_00359A00(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};   /* multiplied first */
+    VObject *rnd;
+    u8 done = 1;
+    s32 i, k, n;
+
+    if (AT(o, 0x2918, s32) == -1) {
+        return 0;
+    }
+    AT(o, 0x2910, s32) ^= 1;
+    AT(o, 0x2914, s32)++;
+    if (AT(o, 0x2914, s32) == 100) {
+        struct {
+            f32 pos[4];
+            s32 tri;
+            u8 one;
+        } sp __attribute__((aligned(16)));
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0x140, gone_splat_init);
+
+        sp.pos[0] = AT(o, 0x2480, f32);
+        sp.pos[1] = AT(o, 0x2484, f32);
+        sp.pos[2] = AT(o, 0x2488, f32);
+        sp.pos[3] = 1.0f;
+        sp.tri = AT(o, 0x2918, s32);
+        sp.one = 1;
+        func_002D6090(mgr, slot, &sp);
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 64; i++) {
+        QuadRec *r;
+        f32 *v = (f32 *)(o + 0x2490 + i * 0xC);
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)GONE_BUBBLE(o, AT(o, 0x2910, s32), i))[k] = ((u32 *)GONE_BUBBLE(o, AT(o, 0x2910, s32) ^ 1, i))[k];
+        }
+        r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
+        if (r->rgba[3] == 0) {
+            continue;
+        }
+        if (r->rgba[0] == 0x60) {
+            r->rgba[3] = r->rgba[3] + ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
+            if (r->rgba[3] >= 0x21) {
+                r->rgba[0]--;
+            }
+        } else {
+            r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
+        }
+        if (r->rgba[3] <= 0) {
+            r->rgba[3] = 0;
+            continue;
+        }
+        v[1] = v[1] - 0x1.47ae14p-9f;   /* 0.0025 */
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        done = 0;
+        if (r->pos[1] < AT(o, 0x2484, f32) + r->w) {
+            r->pos[1] = AT(o, 0x2484, f32) + r->w;
+        }
+        r->pos[2] = r->pos[2] + v[2];
+    }
+    if (AT(o, 0x2914, s32) < 0x7F) {
+        n = 0;
+        for (i = 0; i < 64; i++) {
+            QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
+
+            if (r->rgba[3] != 0) {
+                continue;
+            }
+            if ((u32)AT(o, 0x2914, s32) < 90) {
+                r->w = r->w + (0x1.99999ap-5f + 0x1.99999ap-5f * GONE_RND());   /* 0.05 + 0.05 x */
+                if (!(r->w <= 0x1.666666p-1f)) {
+                    r->w = 0x1.666666p-1f;   /* 0.7 */
+                }
+            } else {
+                r->w = r->w - (0x1.99999ap-5f + 0x1.99999ap-5f * GONE_RND());
+                if (r->w <= 0x1.333334p-2f) {   /* 0.3 */
+                    r->rgba[3] = 0;
+                    r->w = 0.0f;
+                    r->h = 0.0f;
+                    continue;
+                }
+            }
+            r->h = r->w;
+            func_00359570(o, i);
+            n++;
+            done = 0;
+            if (n >= 4) {
+                break;
+            }
+        }
+    }
+    for (i = 0; i < 32; i++) {
+        QuadRec *r;
+        f32 *v = (f32 *)(o + 0x2790 + i * 0xC);
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)GONE_DROP(o, AT(o, 0x2910, s32), i))[k] = ((u32 *)GONE_DROP(o, AT(o, 0x2910, s32) ^ 1, i))[k];
+        }
+        r = GONE_DROP(o, AT(o, 0x2910, s32), i);
+        if (r->rgba[3] == 0) {
+            continue;
+        }
+        done = 0;
+        if (r->rgba[0] == 0x40) {
+            r->rgba[3] = r->rgba[3] + ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 1);
+            if (r->rgba[3] >= 0x21) {
+                r->rgba[0]--;
+            }
+        } else {
+            r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 1);
+            if (r->rgba[3] < 0) {
+                r->rgba[3] = 0;
+            }
+        }
+        if (r->rgba[3] <= 0) {
+            r->rgba[3] = 0;
+            continue;
+        }
+        r->w = r->w - 0x1.47ae14p-7f * GONE_RND();   /* 0.01 */
+        if (r->w < 0.0f) {
+            r->rgba[3] = 0;
+            r->w = 0.0f;
+        }
+        r->h = r->w;
+        r->turn = r->turn + kPi.f * GONE_RND() / 180.0f;
+        if (!(r->turn <= kPi.f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+    }
+    for (i = 0; i < 32; i++) {
+        if (GONE_DROP(o, AT(o, 0x2910, s32), i)->rgba[3] == 0 && (u32)AT(o, 0x2914, s32) < 150) {
+            func_003592E0(o, i, AT(o, 0x2914, s32));
+            done = 0;
+            break;
+        }
+    }
+    return done == 1 ? 0 : 1;
+}
