@@ -2970,3 +2970,82 @@ void func_00387F00(SubScreen *s) {
     }
     func_00386550(s);
 }
+
+/* ---- the clear results ---- */
+
+extern VObject *D_00456DE8;   /* the results' pictures (+0x10: x, y, part, alpha) */
+extern const char D_00464018[], D_00464020[], D_00464028[];   /* "1st" / "2nd" / "3rd" */
+extern const char D_00464030[], D_00464040[];                 /* "%02d:%02d", "-----" */
+
+#define RESULTS_PART(x, y, part, alpha) \
+    VCALL(D_00456DE8, 0x10, void (*)(VObject *, s32, s32, s32, s32))(D_00456DE8, x, y, part, alpha)
+
+/* state: the clear results - shown in steps (page[0], 30 frames each, page[1]); the "clear"
+ * banner pulsing (alpha page[5] between 0x60 and 0x80); then the difficulty's three best
+ * times (rank, minutes:seconds, "-----" for none; the new one, page[3], lit; a mark by a new
+ * best) and finally the new ending's note (page[2]); confirm or cancel ends (flag 4) */
+void func_00388FF0(SubScreen *s) {
+    static const char *const kRank[3] = {D_00464018, D_00464020, D_00464028};
+    Progress *p;
+    u8 diff;
+    s32 i;
+
+    if (SUB_PAGE(s, 0x0, u8) == 0 || SUB_PAGE(s, 0x0, u8) == 1) {
+        if (--SUB_PAGE(s, 0x1, u8) == 0) {
+            SUB_PAGE(s, 0x0, u8)++;
+            SUB_PAGE(s, 0x1, u8) = 0x1E;
+        }
+    }
+    if (SUB_PAGE(s, 0x4, u8) == 0) {
+        SUB_PAGE(s, 0x5, u8) += 4;
+        if (SUB_PAGE(s, 0x5, u8) == 0x80) {
+            SUB_PAGE(s, 0x4, u8) = 1;
+        }
+    } else {
+        SUB_PAGE(s, 0x5, u8) -= 4;
+        if (SUB_PAGE(s, 0x5, u8) == 0x60) {
+            SUB_PAGE(s, 0x4, u8) = 0;
+        }
+    }
+    RESULTS_PART(0x30, 0x70, 2, SUB_PAGE(s, 0x5, u8));
+    p = gProgress;
+    diff = Progress_GetVar(p, 0x2E);
+    if (SUB_PAGE(s, 0x0, u8) == 0) {
+        return;
+    }
+    RESULTS_PART(0x110, 0x100, 3, 0x80);
+    RESULTS_PART(0xC0, 0x100, 4, 0x80);
+    for (i = 0; i < 3; i++) {
+        u8 *e = D_0044E978 + diff * 12 + 0x3C + i * 4;
+        u8 lit = SUB_PAGE(s, 0x3, u8) == i;
+        u8 h, m, sec;
+
+        if (i == 0 && SUB_PAGE(s, 0x3, u8) == 0) {
+            RESULTS_PART(0x50, 0x110, 1, 0x80);
+        }
+        Task_PrintfEx(&s->text, 0xD8, 0x110 + i * 0x20, lit, 0x80, 0x33, kRank[i]);
+        h = e[0];
+        m = e[1];
+        sec = e[2];
+        if (h == 0x63 && m == 0x3B && sec == 0x3B) {
+            Task_PrintfEx(&s->text, 0x105, 0x110 + i * 0x20, lit, 0x80, 0x33, D_00464040);
+            continue;
+        }
+        if (h != 0) {
+            m = 0x3B;
+            sec = 0x3B;
+        }
+        Task_PrintfEx(&s->text, 0x108, 0x110 + i * 0x20, lit, 0x80, 0x33, D_00464030, m, sec);
+    }
+    if (SUB_PAGE(s, 0x0, u8) < 2) {
+        return;
+    }
+    if (SUB_PAGE(s, 0x2, u8) != 0) {
+        RESULTS_PART(0x50, 0xD0, 0, 0x80);
+    }
+    if (D_0047E36C & MENU_CANCEL) {
+        Progress_SetFlag(p, 4);
+    } else if (D_0047E36C & MENU_CONFIRM) {
+        Progress_SetFlag(p, 4);
+    }
+}
