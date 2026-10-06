@@ -29,8 +29,8 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
-extern VObject *gCharacters[6];
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
@@ -643,7 +643,7 @@ void func_002CB6C0(u8 *d) {
             s = actor_slot(d, i);
             if (s != 0xFF) {
                 func_0016D050(gProgress, s);
-                VCALL(gCharacters[s], 0x54, void (*)(VObject *))(gCharacters[s]);
+                VCALL(gCharacters[s], 0x54, void (*)(VObject *))((VObject *)gCharacters[s]);
             }
         }
         AT(BUF(d, AT(d, 0x64, s32)), 0x0, s32) = 0;

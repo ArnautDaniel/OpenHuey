@@ -5,6 +5,7 @@
 #include "gl2d.h"
 #include "game.h"
 #include "globals.h"
+#include "actor.h"
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
 
@@ -795,7 +796,6 @@ u32 func_001BA000(u8 *r) {
     return AT(r, 0x304D4C, u32);
 }
 
-extern u8 *gCharSlot2;   /* the characters' slot 2 */
 
 /* the layer-0x11 tint (+0x304D4C) and its model (+0x304D50; none given: the slot-2 character's,
  * once the game runs) */

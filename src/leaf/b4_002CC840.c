@@ -3,6 +3,7 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "progress.h"
+#include "actor.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 

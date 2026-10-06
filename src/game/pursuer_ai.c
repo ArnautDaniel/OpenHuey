@@ -6,6 +6,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
@@ -140,7 +141,6 @@ u32 func_00219450(Pursuer *p) {
 
 /* ---- batch 2 ---- */
 
-extern Character *gCharPlayer;    /* Fiona */
 extern VObject *gSceneGameF29740; /* path planner */
 
 
@@ -378,8 +378,6 @@ void func_00218E70(Pursuer *p) {
 
 /* ---- batch 3 ---- */
 
-extern Character *gCharacters[6];
-extern Character *gCharPartner;   /* Hewie */
 
 
 /* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */

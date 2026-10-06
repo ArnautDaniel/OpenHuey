@@ -1,16 +1,13 @@
 /* Leaf functions (batch 0), 0x00130A40 - 0x00171090. */
 #include "common.h"
 #include "ptmf.h"
+#include "actor.h"
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 extern f32 D_003B1B48;
 extern f32 D_003B1B4C;
 extern f32 D_003B1B50;
-extern void *gCharacters[6]; /* registered room objects, by kind */
-extern void *gCharPlayer;
-extern void *gCharPartner;
-extern void *gCharPursuer;
 extern void *D_00469C20[];
 extern void *D_00469C60[];
 extern void *D_00469D00[];

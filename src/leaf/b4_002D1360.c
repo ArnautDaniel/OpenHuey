@@ -3,6 +3,7 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "progress.h"
+#include "actor.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -33,7 +34,6 @@ extern u8 *D_0045D1F0;
 extern char D_0045D9E0[];
 extern char D_0045DA00[];
 extern u8 D_00414840[];
-extern s32 gCharPlayer;
 extern u8 D_00414820[], D_004147E0[];
 extern u8 D_00414800[], D_004147C0[];
 
@@ -228,7 +228,7 @@ s32 func_002DBA10(u8 *p) {
     if (F(p, 0xC4, s32) == 1) {
         return 0x203;
     }
-    if (p[0x1544] != 0 && F(p, 0x1540, s32) == gCharPlayer) {
+    if (p[0x1544] != 0 && F(p, 0x1540, s32) == (s32)gCharPlayer) {
         d = F(p, 0x1588, f32);
         if (d < 100.0f && !(d <= 0.0f)) {
             return 0x206;

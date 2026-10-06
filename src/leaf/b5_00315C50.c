@@ -1,8 +1,8 @@
 #include "common.h"
 #include "globals.h"
-extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))

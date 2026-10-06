@@ -7,6 +7,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
 extern void *D_0046BBB0[];
 

@@ -10,6 +10,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 extern void *func_00120D60(void *pool, u32 i);   /* BlockPool: block i if in use */
 extern void *func_00121370(u32 size, void *place);   /* placement new */
@@ -260,7 +261,6 @@ void func_002D69E0(u8 *mgr) {
 
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern void func_00261090(void *list, s32 item, s32 n);   /* given */
-extern VObject *gCharPlayer;
 extern const PTMF sGameStateNull;
 extern const PTMF D_00414790, D_004147A0, D_004147B0;   /* +0x50 (virtual), func_002D54D0, func_002D5460 */
 extern void *D_0046FC30[], *D_00469D00[];
@@ -627,7 +627,7 @@ static inline __attribute__((always_inline)) void thing_kick_up(u8 *b, f32 up) {
     f32 f[4] __attribute__((aligned(16)));
     VObject *fiona;
 
-    fiona = gCharPlayer;
+    fiona = (VObject *)gCharPlayer;
     if (fiona == NULL || AT(fiona, 0x28, u8) != 1 || AT(fiona, 0x29, u8) != 0) {
         return;
     }
@@ -794,7 +794,6 @@ void func_00121300(u8 *o) {
 extern void *D_004727E0[];
 extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), func_00314CE0 */
 extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
-extern VObject *gCharPursuer;
 
 /* +0x8 destructor */
 void *func_00314990(u8 *o, s32 flags) {
@@ -2611,7 +2610,6 @@ void func_00335820(u8 *o) {
 /* ---- the thing the second stalker (gCharSlot2) is drawn to (code 0x3332B0..0x3344A0) and
    more of the 0x367000 kinds ---- */
 
-extern VObject *gCharSlot2;          /* the second stalker */
 extern VObject *gSceneGameF29740;
 extern VObject *D_00456DF8;          /* the room objects */
 extern s32 func_002187D0(void *p, u32 tri, const f32 *pos);

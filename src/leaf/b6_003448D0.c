@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "actor.h"
 
 extern u32 D_00438D30[];
 extern u32 D_00438D60[];
@@ -35,7 +36,6 @@ extern u32 D_0043AB10[];
 extern u32 D_0047AE90[];
 extern u32 D_0047AEA8[];
 extern u32 D_0047AEB0[];
-extern u8 *gCharPursuer;
 
 void *func_003448D0(void) {
     return D_00438D30;
@@ -95,7 +95,7 @@ u32 func_00344A50(void *self, s32 i) {
 
 /* 1 if the object at gCharPursuer exists, is active (+0x28) and is in mode 4 or 5 (+0xE8). */
 s32 func_00344AA0(void) {
-    u8 *p = gCharPursuer;
+    u8 *p = (u8 *)gCharPursuer;
     s32 mode;
 
     if (p == NULL || p[0x28] == 0) {
@@ -106,7 +106,7 @@ s32 func_00344AA0(void) {
 }
 
 s32 func_00344B10(void) {
-    u8 *p = gCharPursuer;
+    u8 *p = (u8 *)gCharPursuer;
     s32 mode;
 
     if (p == NULL || p[0x28] == 0) {
@@ -152,7 +152,7 @@ u32 func_00344C70(void *self, s32 i) {
 }
 
 s32 func_00344CC0(void) {
-    u8 *p = gCharPursuer;
+    u8 *p = (u8 *)gCharPursuer;
 
     if (p == NULL || p[0x28] == 0) {
         return 0;
@@ -161,7 +161,7 @@ s32 func_00344CC0(void) {
 }
 
 s32 func_00344D10(void) {
-    u8 *p = gCharPursuer;
+    u8 *p = (u8 *)gCharPursuer;
 
     if (p == NULL || p[0x28] == 0 || *(s32 *)(p + 0xE8) == 0) {
         return 0;

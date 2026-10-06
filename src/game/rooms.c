@@ -6,6 +6,7 @@
 #include "sce/libvu0.h"
 #include "navmesh.h"
 #include "globals.h"
+#include "actor.h"
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
 void func_0021C760(VObject *rooms, const s32 *saved) {
@@ -641,7 +642,6 @@ void func_0021AC10(void *list) {
 
 
 extern s32 D_0047B24C;   /* frames left of the move below */
-extern void *gCharacters[6];
 extern s32 func_001770D0(Progress *p, s32 id);
 
 /* a room 0x2A handler step (the script's command 0x22, arguments `arg`): arg[3] 0 starts it
@@ -664,7 +664,7 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
         return 2;   /* (not loaded on the PC build yet) */
     }
 #endif
-    c = gCharacters[i];
+    c = (u8 *)gCharacters[i];
     AT(c, 0x14, f32) = AT(c, 0x14, f32) + 0.5f;
     AT(c, 0x18, f32) = AT(c, 0x18, f32) + 2.0f;
     return 2;
@@ -1020,7 +1020,7 @@ s32 func_0017D7F0(u8 *o, const f32 *dir) {
 
     c.n = 0;
     for (i = 1; i < 6; i++) {
-        u8 *ch = gCharacters[i];
+        u8 *ch = (u8 *)gCharacters[i];
 
         if (ch != NULL && AT(ch, 0x28, u8) == 1 && AT(ch, 0x29, u8) == 0) {
             c.tri[c.n++] = AT(ch, 0x34, u32);

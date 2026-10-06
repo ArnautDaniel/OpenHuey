@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 /* gFileLoader vtable +0xC: start loading file `name` into `dest` (flags 0x4000000) */
@@ -118,7 +119,6 @@ void *func_0033B310(void) {
 extern s32 func_0025FF10(void *o);
 extern f32 func_00124490(void *a, const f32 *p);
 extern u32 func_00124480(void *a, const f32 *p, u32 mask);
-extern u8 *gCharPartner, *gCharPlayer;
 
 /* +0x40: Hewie is at hand - he can be reached (func_0025FF10), within 20 and his triangle is
    the one Fiona finds his position on */
@@ -128,11 +128,11 @@ s32 func_0033B4C0(void *o) {
     if ((func_0025FF10(o) & 0xFF) != 1) {
         return 0;
     }
-    if (!(func_00124490(gCharPlayer, (f32 *)(gCharPartner + 0x10)) < 20.0f)) {
+    if (!(func_00124490(gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10)) < 20.0f)) {
         return 0;
     }
-    tri = *(u32 *)(gCharPartner + 0x34);
-    return func_00124480(gCharPlayer, (f32 *)(gCharPartner + 0x10), 0x20008) == tri;
+    tri = *(u32 *)((u8 *)gCharPartner + 0x34);
+    return func_00124480(gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10), 0x20008) == tri;
 }
 
 s32 func_0033BDC0(void *self, void *dest) {

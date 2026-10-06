@@ -2,6 +2,7 @@
  * (or one entry of it), likely per-class descriptor/state tables. */
 #include "common.h"
 #include "ptmf.h"
+#include "actor.h"
 
 extern u32 D_00400AD0[];
 extern u8 D_00400C40[];
@@ -54,11 +55,10 @@ u32 func_002AF0A0(void *self, s32 i) {
     return D_00400C00[i];
 }
 
-extern u8 *gCharPlayer; /* global object; +0xF0 -> sub-object with flag byte at +0xAC */
 
 /* Sets bit 1 of the flag byte three times (inlined setter calls); returns 1. */
 s32 func_002AF4A0(void) {
-    u8 *obj = gCharPlayer;
+    u8 *obj = (u8 *)gCharPlayer;
 
     (*(u8 **)(obj + 0xF0))[0xAC] |= 2;
     (*(u8 **)(obj + 0xF0))[0xAC] |= 2;
@@ -190,13 +190,12 @@ u32 func_002B01E0(void *self, s32 i) {
     return D_0047AB20[i];
 }
 
-extern u8 *gCharPlayer;
 
 s32 func_002B0230(void) {
-    u8 *obj = gCharPlayer;
+    u8 *obj = (u8 *)gCharPlayer;
 
-    if (obj == NULL || gCharPlayer[0x28] != 1 || *(s32 *)(gCharPlayer + 0xF8) != 4 ||
-        *(s32 *)(gCharPlayer + 0x100) != 0xFF) {
+    if (obj == NULL || ((u8 *)gCharPlayer)[0x28] != 1 || *(s32 *)((u8 *)gCharPlayer + 0xF8) != 4 ||
+        *(s32 *)((u8 *)gCharPlayer + 0x100) != 0xFF) {
         return 0;
     }
     return 1;

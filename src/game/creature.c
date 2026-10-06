@@ -138,8 +138,6 @@ void func_002E1340(Character *c) {
     sceVu0CopyVector(v, c->a.pos);
 }
 
-extern Character *gCharacters[];
-extern Character *gCharPlayer;
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
 
 /* per kind (+0x1571): +0x8 a byte, +0x0 a float, +0x6 a short */
@@ -2015,7 +2013,6 @@ void func_00312D90(u8 *o) {
 
 extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
-extern u8 *gCharSlot2;   /* the character in slot 2 (the stalker) */
 extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
@@ -3766,7 +3763,6 @@ void func_00327DD0(Character *c) {
     }
 }
 
-extern Character *gCharPartner;   /* Hewie */
 
 /* state: hit, by step +0x60 (moved by its animation except at 1). 0: its reaction (+0x94 with
    the hit's +0x14F4), facing where the hit came from (+0x14F0: 0 Fiona, 1 Hewie, 0xFF the

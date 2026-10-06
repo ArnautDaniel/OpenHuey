@@ -38,8 +38,6 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 #define PURSUER_STEP_NEXT(p) PU(p, 0x16F0, u8)
 
 /* the game's characters and managers the pursuer code uses */
-extern Character *gCharPlayer;    /* Fiona */
-extern Character *gCharPartner;   /* Hewie */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 

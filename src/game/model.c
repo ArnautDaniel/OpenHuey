@@ -8,9 +8,9 @@
 #include "model.h"
 #include "input.h"
 #include "globals.h"
+#include "actor.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
-extern void *gCharacters[6];
 extern void *func_0016F740(void *p);
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
 extern void *func_001F7E40(void *, s32);

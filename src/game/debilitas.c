@@ -10,6 +10,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 /* his functions defined further down */
 void func_0012B490(Pursuer *p);

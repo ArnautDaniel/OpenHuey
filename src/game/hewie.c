@@ -5,11 +5,8 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
-extern Character *gCharacters[];   /* (the game reads up to slot 6, gCharPlayer, through it) */
-extern Character *gCharPlayer;    /* Fiona */
-extern Character *gCharPartner;   /* Hewie */
-extern Character *gCharPursuer;
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
 #define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))

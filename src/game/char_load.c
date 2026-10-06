@@ -4,8 +4,8 @@
 #include "common.h"
 #include "game.h"
 #include "progress.h"
+#include "actor.h"
 
-extern void *gCharacters[6];
 extern void *func_00124E50(u32 size, void *mem);   /* placement new */
 extern s32 Characters_Register(void *self, u32 slot, void *obj);
 extern void func_0016D180(Progress *p, s32 slot);
@@ -164,7 +164,7 @@ u8 func_00171160(Progress *p, u32 id) {
  * empty one gets no pointer (0) */
 void func_0016D180(Progress *p, s32 slot) {
     static const u16 sAt[7] = { 0x1670, 0x1678, 0x1674, 0, 0x167C, 0x1680, 0x1684 };
-    u8 *c = gCharacters[slot];
+    u8 *c = (u8 *)gCharacters[slot];
     const u32 *size = VCALL(c, 0xFC, const u32 *(*)(void *))(c);
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
     u32 total = 0;

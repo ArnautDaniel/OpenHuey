@@ -14,7 +14,6 @@
 #include "globals.h"
 #include "navmesh.h"
 
-extern Character *gCharacters[];
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
 extern void func_00100490(void *p);   /* operator delete */

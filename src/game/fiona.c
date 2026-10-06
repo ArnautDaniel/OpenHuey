@@ -4,8 +4,8 @@
 #include "progress.h"
 #include "navmesh.h"
 #include "globals.h"
+#include "actor.h"
 
-extern Character *gCharacters[6];
 
 extern void func_001855F0(Fiona *f, s32);
 extern void func_00125D40(Character *c);
@@ -497,8 +497,6 @@ void func_001A4110(Fiona *f) {
     Fiona_Load(f, loader, VCALL(f->c.motion, 0xA4, void *(*)(void *, u32))(f->c.motion, costume), (u8 *)f + 0x1AA540);
 }
 
-extern Character *gCharPartner;
-extern Character *gCharPursuer;
 extern void func_00126450(Character *c);
 
 #define Character_ToIdle(c) VCALL(c, 0x7C, void (*)(Character *))(c)

@@ -7,6 +7,7 @@
 #include "item.h"
 #include "globals.h"
 #include "progress.h"
+#include "actor.h"
 
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */
@@ -1277,7 +1278,7 @@ s32 func_003445D0(void *o) {
     s32 r;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x52) {
-        u8 *h = gCharPartner;
+        u8 *h = (u8 *)gCharPartner;
 
         if (VCALL(o, 0x40, s32 (*)(void *))(o) != 0 && AT(h, 0xC4, s32) != 2 && AT(gCharPlayer, 0xE8, s32) == 0 &&
             func_00124490(gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
@@ -1501,7 +1502,7 @@ s32 func_002D27E0(VObject *it) {
             bit = 0x4F;
         }
         if (done == 2) {
-            u8 *h = gCharPartner;
+            u8 *h = (u8 *)gCharPartner;
 
             if (h != NULL && AT(h, 0x28, u8) == 1 && AT(h, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 AT(h, 0xC4, s32) != 2 &&

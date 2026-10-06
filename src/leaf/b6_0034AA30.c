@@ -1,8 +1,8 @@
 #include "common.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "actor.h"
 
-extern s32 gCharPlayer;
 extern u32 D_0043FA80[];
 extern u32 D_0043FC10[];
 extern u32 D_0043FCC0[];
@@ -190,7 +190,7 @@ s32 func_0034D280(u8 *p) {
     if (*(s32 *)(p + 0x16B8) == 2) {
         return 0x205;
     }
-    if (p[0x1544] != 0 && *(s32 *)(p + 0x1540) == gCharPlayer) {
+    if (p[0x1544] != 0 && *(s32 *)(p + 0x1540) == (s32)gCharPlayer) {
         d = *(f32 *)(p + 0x1588);
         if (d < 100.0f && !(d <= 0.0f)) {
             return 0x206;

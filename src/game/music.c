@@ -29,10 +29,8 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "actor.h"
 
-extern u8 *gCharPursuer;
-extern u8 *gCharSlot2;        /* the character in slot 2 */
-extern u8 *gCharPlayer;
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
 extern const PTMF D_004128A0;   /* func_002C25F0: a track volume fade */
@@ -477,7 +475,7 @@ u8 func_002C1980(u8 *d) {
         extern f32 func_00124490(void *a, f32 *p);
 
         if (dist < 0.0f) {
-            dist = func_00124490(gCharSlot2, (f32 *)(gCharPlayer + 0x10));
+            dist = func_00124490(gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
         }
         while (!(tbl[i * 2] <= 0.0f) && !(dist < tbl[i * 2])) {
             i = (i + 1) & 0xFF;
@@ -811,7 +809,7 @@ void func_002C04D0(u8 *d) {
 /* +0x54 the chase begins (`now`: at once): track 3 (the chase) from its start at the chase
    step's bend, tracks 1 / 2 out; seen or not (+0x5C / +0x58) */
 void func_002C0720(u8 *d, s32 now) {
-    u8 *p = gCharPursuer;
+    u8 *p = (u8 *)gCharPursuer;
     u8 step = func_002C1980(d);
     u32 vol, bend;
     s32 lost = 0;

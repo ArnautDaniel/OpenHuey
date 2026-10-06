@@ -4,6 +4,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
@@ -2619,7 +2620,6 @@ s32 func_00371900(u8 *o) {
  * +0x648 (x, z), the quad drawer at +0x610; each fades in to 0x10, then out on the even
  * frames ---- */
 
-extern void *gCharPlayer;
 extern f32 *func_0017CE80(void *skel, s32 bone);
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 

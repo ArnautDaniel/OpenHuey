@@ -14,10 +14,8 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
-extern void *gCharacters[6];
-extern u8 *gCharPlayer;
-extern u8 *gCharPartner;
 extern u8 D_0047B350;         /* the message language set */
 extern VObject *D_00456E00;
 extern void func_0016D480(Progress *p, s32 room);
@@ -42,8 +40,6 @@ extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
 extern s32 func_001F4770(u8 *model, s32, s32, s32);
 extern void func_001267F0(u8 *c, s32 n);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
-extern void *gCharPursuer;
-extern VObject *gCharSlot2;   /* the stalker */
 extern void func_002EF9E0(void *o, f32 v);
 extern void func_002EC3C0(void *o, u32 id);
 extern void func_002EC450(void *o, u32 id);
@@ -60,7 +56,6 @@ extern void func_00261090(u8 *items, s32 id, s32 n);
 extern void func_0019A420(u8 *f, s32 who, s32 n);
 extern s32 func_00177260(Progress *p, s32 slot);
 extern void func_00177300(Progress *p, s32 slot);
-extern void *gCharSlot3;      /* the character in slot 3 */
 extern VObject *D_00456DE8;
 extern void func_002F0260(void *panic, u32 stage);
 extern void func_0019A0D0(u8 *f, s32 who, s32 on);
@@ -879,7 +874,7 @@ void func_002029B0(VObject *ev) {
         }
         break;
     case 0x13: {   /* take out the character in slot pc[1] (wait while it can't go) */
-        u8 *c = gCharacters[pc[1]];
+        u8 *c = (u8 *)(gCharacters[pc[1]]);
 
         if (c != NULL && AT(c, 0xD0, u8) == 0 && AT(c, 0xD1, u8) == 0) {
             if ((u8)func_00177260(p, pc[1])) {
@@ -1007,7 +1002,7 @@ void func_002029B0(VObject *ev) {
         EV_JUMPED(ev) = 1;
         break;
     case 0x9D: {   /* character pc[1] plays animation be16 pc[2..3] (blend pc[4], speed pc[5]), held */
-        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
 
 #ifdef HG_NATIVE
         if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
@@ -1022,7 +1017,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0x9E: {   /* wait for character pc[1]'s animation to come round (track flag 0x20) */
-        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
 
 #ifdef HG_NATIVE
         if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
@@ -1225,7 +1220,7 @@ void func_002029B0(VObject *ev) {
         AT(gCharPlayer, 0x1AD5F4, s32) = 0;
         break;
     case 0x4F:
-        func_00182E80(gCharPlayer);
+        func_00182E80((u8 *)gCharPlayer);
         break;
     case 0x51:   /* this script's +0xAC with be16 pc[1..2] */
         VCALL(ev, 0xAC, void (*)(VObject *, u32))(ev, be16(pc + 1));
@@ -1255,7 +1250,7 @@ void func_002029B0(VObject *ev) {
         break;
     case 0x5B:   /* the stalker's item (+0x2D4) out */
         if (gCharPursuer != NULL) {
-            func_002EC450((u8 *)p + 0x764, VCALL(gCharSlot2, 0x2D4, u32 (*)(VObject *))(gCharSlot2));
+            func_002EC450((u8 *)p + 0x764, VCALL(gCharSlot2, 0x2D4, u32 (*)(VObject *))((VObject *)gCharSlot2));
         }
         break;
     case 0x64:   /* room effect 0x1C gone */
@@ -1294,10 +1289,10 @@ void func_002029B0(VObject *ev) {
         AT(p, 0x1114, u8) = pc[1];
         break;
     case 0x94:
-        func_0019A280(gCharPlayer, pc[1]);
+        func_0019A280((u8 *)gCharPlayer, pc[1]);
         break;
     case 0x95:
-        func_0019A210(gCharPlayer, pc[1]);
+        func_0019A210((u8 *)gCharPlayer, pc[1]);
         break;
     case 0x35:   /* room effect pc[1] made anew (a D_0046FF?? kind 8) and set going with pc[2..] */
         if (pc[1] < 0x20) {
@@ -1364,7 +1359,7 @@ void func_002029B0(VObject *ev) {
         }
         break;
     case 0x96: {   /* Fiona's func_0019A420 for character pc[1], be32 pc[2..5] (not > 0: 30) */
-        u8 *f = gCharPlayer;
+        u8 *f = (u8 *)gCharPlayer;
         s32 i = (u8)func_001770D0(p, pc[1]);
         s32 n;
 
@@ -1440,7 +1435,7 @@ void func_002029B0(VObject *ev) {
         }
         break;
     case 0xB2: {
-        u8 *f = gCharPlayer;
+        u8 *f = (u8 *)gCharPlayer;
 
         func_0019A0D0(f, func_001770D0(p, pc[1]), pc[2] != 0);
         break;
@@ -1452,7 +1447,7 @@ void func_002029B0(VObject *ev) {
         cmd_gift(ev, p);
         break;
     case 0xBC:
-        func_001817C0(gCharPlayer, 8);
+        func_001817C0((u8 *)gCharPlayer, 8);
         break;
     case 0xBE: {   /* wait on the item manager's +0x20 (pc[1], this script's item pc[2]) */
         s32 item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[2]);
@@ -1461,7 +1456,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0xBF: {   /* Fiona's +0x1AD5F4 = be32 pc[1..4] / 1000 (0..100) */
-        u8 *f = gCharPlayer;
+        u8 *f = (u8 *)gCharPlayer;
         f32 v = (f32)be32(pc + 1) / 1000.0f;
 
         AT(f, 0x1AD5F4, f32) = v;
@@ -1499,7 +1494,7 @@ void func_002029B0(VObject *ev) {
             u32 i = (u8)func_001770D0(p, pc[2]);
 
             if (i >= 2 && i < 6) {
-                c = gCharacters[i];
+                c = (u8 *)gCharacters[i];
             }
             pc = PC(ev);
 #ifdef HG_NATIVE
@@ -2476,7 +2471,7 @@ void func_00201B90(VObject *ev) {
         break;
     }
     case 0x56: {   /* door pc[1]: knock or try it (who: the player for event ids 0xF0..) */
-        u8 *who = AT(AT(ev, 0x6FC, u8 *), 0x13, u8) >= 0xF0 ? gCharPlayer : c;
+        u8 *who = AT(AT(ev, 0x6FC, u8 *), 0x13, u8) >= 0xF0 ? (u8 *)gCharPlayer : c;
 
         if (VCALL(gDoors, 0x34, s32 (*)(VObject *, s32, f32 *))(gDoors, pc[1], tmp) != 0) {
             break;
@@ -2714,7 +2709,7 @@ static void zone_point(VObject *ev, u32 id, f32 *v) {
  *     position, raised by be32 pc+2 thousandths
  *   0xD0 his side of the room be16 pc+1 (0..2, else -1) */
 void func_00200B00(VObject *ev) {
-    u8 *h = gCharPartner;
+    u8 *h = (u8 *)gCharPartner;
     const u8 *pc;
     f32 v[4] __attribute__((aligned(16))) = {0};   /* (a zone not set leaves it as it was) */
 
@@ -2874,7 +2869,7 @@ void func_001FFE00(VObject *ev) {
     case 0x61:
         for (i = 0; i < 6; i++) {
             if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
-                VCALL(gCharacters[i], 0x78, void (*)(VObject *))(gCharacters[i]);
+                VCALL(gCharacters[i], 0x78, void (*)(VObject *))((VObject *)gCharacters[i]);
             }
         }
         VCALL(d, 0x8, void (*)(VObject *))(d);

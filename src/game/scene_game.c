@@ -435,7 +435,6 @@ extern void func_00267250(void *o);
 extern void func_002D6330(void *o);
 extern void func_00385030(SubScreen *s, void *save);
 extern const PTMF D_0044C7C0; /* { 0, -1, func_003A0390 } */
-extern void *gCharacters[6];
 
 /* sub-state: start the room. Once the progress data is ready: reset the sub screen, the
  * members, the characters; when continuing from a save (+0xF6CD28), its entry room and the
@@ -532,7 +531,6 @@ s32 func_003A0390(Scene *g) {
     return 0;
 }
 
-extern u8 *gCharPlayer;
 extern const PTMF D_0044C7D0;   /* the scene's gameplay state */
 extern const PTMF D_0044C7E0;   /* its gameplay sub-state (+0x1053440) */
 extern void func_00225550(void *o);
@@ -570,7 +568,7 @@ void func_003A0160(Scene *g) {
     func_00175430(prog);
     func_002252B0((u8 *)g + 0xF6CBB0, AT(g, 0x74881C, s32));
     if (!(AT(g, 0xF6CD28, u8) & 0x80)) {
-        func_00124F20(gCharPlayer, 0xFF);
+        func_00124F20((u8 *)gCharPlayer, 0xFF);
         AT(g, 0xF6CD28, u8) |= 0x80;
     }
     func_002A8410((u8 *)g + 0x16B4);
@@ -579,8 +577,6 @@ void func_003A0160(Scene *g) {
     ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C7E0);
 }
 
-extern u8 *gCharPartner;
-extern u8 *gCharSlot2;        /* the stalker currently in play */
 extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
 extern void func_0011FFB0(void *rooms, s32 slot);
 extern void func_002D6100(void *o);
@@ -655,20 +651,20 @@ void func_0039D310(Scene *g) {
         AT(gCharPlayer, 0xEC, s32) = AT(rd, 0x1A4, s32);
         VCALL(gCharPlayer, 0x28, void (*)(void *, s32, void *, void *))(
             gCharPlayer, AT(rd, 0x19C, s32), save + 0x44, save + 0x30);
-        func_00124F20(gCharPlayer, 0xFF);
+        func_00124F20((u8 *)gCharPlayer, 0xFF);
         gp = gProgress;
         cs = (u8 *)gp + 0x800;
         if (AT(save, 0x1F, u8)) {
-            func_001662A0(gCharPartner, cs);
+            func_001662A0((u8 *)gCharPartner, cs);
         }
         VCALL(gCharPartner, 0x70, void (*)(void *))(gCharPartner);
-        func_00165510(gCharPartner, AT(cs, 0xC, s32));
+        func_00165510((u8 *)gCharPartner, AT(cs, 0xC, s32));
         if (gCharSlot2 != NULL) {
             if (AT(save, 0x20, u8)) {
                 func_001771A0(prog, 2);
             }
             VCALL(gCharSlot2, 0x70, void (*)(void *))(gCharSlot2);
-            stalker = gCharSlot2;
+            stalker = (u8 *)gCharSlot2;
             if (AT(stalker, 0x28, u8) &&
                 AT(stalker, 0x30, s32) != VCALL(g, 0xA4, s32 (*)(Scene *))(g)) {
                 if (AT(gCharSlot2, 0xC4, s32) == 2 ||
@@ -1008,7 +1004,7 @@ void func_0039EAB0(Scene *g) {
         }
         AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
         if (AT(g, 0x1170, u8) != 0xFF) {
-            u8 *c = gCharacters[AT(g, 0x1170, u8)];
+            u8 *c = (u8 *)gCharacters[AT(g, 0x1170, u8)];
 
             ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(
                 cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
@@ -1363,7 +1359,6 @@ void func_0039C880(Scene *g) {
 
 extern void func_00177630(Progress *p, s32 n);   /* set condition bit n */
 extern s32 func_00177670(Progress *p, s32 n);    /* condition bit n */
-extern u8 *gCharPursuer;
 
 #define CHASE_STATE(g) AT(g, 0x50, u8)   /* 0 calm, 1 tense, 2 chased */
 #define CHASE_PREV(g)  AT(g, 0x51, u8)   /* the state before the last change */
@@ -1945,8 +1940,8 @@ void func_0039B800(Scene *g, u32 slot) {
             AT(s, 0x1E + i, u8) = 0;
         }
     }
-    sceVu0CopyVector((f32 *)(s + 0x30), (f32 *)(gCharPlayer + 0x10));
-    sceVu0CopyVector((f32 *)(s + 0x40), (f32 *)(gCharPlayer + 0x50));
+    sceVu0CopyVector((f32 *)(s + 0x30), (f32 *)((u8 *)gCharPlayer + 0x10));
+    sceVu0CopyVector((f32 *)(s + 0x40), (f32 *)((u8 *)gCharPlayer + 0x50));
     VCALL((VObject *)gCharPartner, 0x6C, void (*)(void *))(gCharPartner);
     if (gCharSlot2 != NULL) {
         VCALL((VObject *)gCharSlot2, 0x6C, void (*)(void *))(gCharSlot2);
@@ -2061,7 +2056,7 @@ void func_0039D990(Scene *g) {
     func_00209210(ev);
     AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
     if (AT(g, 0x1170, u8) != 0xFF) {
-        u8 *c = gCharacters[AT(g, 0x1170, u8)];
+        u8 *c = (u8 *)gCharacters[AT(g, 0x1170, u8)];
 
         ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
     }
@@ -2460,7 +2455,7 @@ void *func_002D0F90(void *o, s32 flags) {
  * +0xF6AFB0, +0xF6A940, the path planner +0xF29740, +0xE35F80, Fiona +0xC88840, the rooms
  * +0x73EE80, the progress +0x40 with the characters in slots 2..5), then the scene base */
 void *SceneGame_dtor(u8 *g, s32 flags) {
-    void **slot;
+    Character **slot;
     s32 i;
 
     if (g == NULL) {

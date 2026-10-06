@@ -114,6 +114,16 @@ typedef struct Character {
     /* 0x1538 */ s32 unk1538;
     /* 0x153C */ u8 unk153C;          /* character id: 0 Fiona, 1 Hewie (set by SceneGame_ctor), ... */
 } Character;
+
+/* the characters in play: slots 0..6 (gCharacters), slot 6 Fiona */
+extern Character *gCharacters[];   /* 0x0044F800 */
+extern Character *gCharSlot1;      /* 0x0044F804 */
+extern Character *gCharSlot2;      /* 0x0044F808 the stalker in play */
+extern Character *gCharSlot3;      /* 0x0044F80C */
+extern Character *gCharSlot4;      /* 0x0044F810 */
+extern Character *gCharPlayer;     /* 0x0044F818 Fiona */
+extern Character *gCharPartner;    /* 0x0044F820 Hewie */
+extern Character *gCharPursuer;    /* 0x0044F828 the pursuer */
 _Static_assert(__builtin_offsetof(Character, pathId) == 0x120, "pathId");
 _Static_assert(__builtin_offsetof(Character, pathReq) == 0x1380, "pathReq");
 _Static_assert(__builtin_offsetof(Character, door) == 0x14D4, "door");

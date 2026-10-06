@@ -13,6 +13,7 @@
 #include "texcache.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
 
 extern VObject *D_00456DF0;
@@ -1862,7 +1863,6 @@ void func_00395460(SubScreen *s) {
 }
 
 extern void func_00182FC0(void *fiona);   /* her costume put on */
-extern void *gCharPlayer;
 extern const PTMF D_0044B368;
 
 /* state: "equip it?" - its list's panels, the grid and the question; once answered yes (+0x48
@@ -2448,7 +2448,6 @@ void func_0038D7E0(SubScreen *s) {
 
 /* ---- the costume page ---- */
 
-extern void *gCharPartner;
 extern s32 func_001364F0(void *c);
 
 /* the costume page set up: the costumes worn kept (progress vars 0x26 / 0x27 to 0x28 / 0x29);
@@ -2495,7 +2494,7 @@ void func_0038F7D0(SubScreen *s) {
     }
     if ((AT(gCharPartner, 0x30, s32) == 0x37 || (AT(p, 0x1C, u32) & 0x1000000)) && p != NULL && gCharPartner != NULL &&
         AT(gCharPartner, 0x28, u8) != 0) {
-        u8 *h = gCharPartner;
+        u8 *h = (u8 *)gCharPartner;
 
         if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && func_001364F0(h)) {
             VCALL(h, 0x90, void (*)(void *))(h);
@@ -4230,7 +4229,6 @@ extern u32 func_002603C0(u8 *items, u8 l, u8 i);   /* its actions (1 use, 2 equi
                                                       0x80000000 its note can change) */
 extern void func_002607A0(u8 *items, u8 l, u8 i);  /* take it off */
 extern s32 func_00177620(Progress *p);             /* the chase: 0 none, 1 / 2 being chased */
-extern u8 *gCharSlot2;                             /* the stalker in play */
 extern const char D_00464238[];                    /* the cursor */
 extern const PTMF D_0044B278, D_0044B288, D_0044B298, D_0044B2A8, D_0044B2B8, D_0044B2C8, D_0044B2D8,
     D_0044B2E8, D_0044B2F8, D_0044B308, D_0044B318, D_0044B328;
@@ -4277,7 +4275,7 @@ static s32 item_actions(SubScreen *s, s32 *id, s32 *kind, u32 *acts, s8 *equip, 
 /* the item can't be used now: in a chase (2), or with the stalker here in the room */
 static s32 item_usable(void) {
     Progress *p = gProgress;
-    u8 *h = gCharSlot2;
+    u8 *h = (u8 *)gCharSlot2;
 
     if ((u8)func_00177620(p) == 2) {
         return 0;

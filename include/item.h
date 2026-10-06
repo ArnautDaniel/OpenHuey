@@ -1,4 +1,3 @@
-#include "globals.h"
 /* Helpers for the items' "use" methods (vtable +0x3C; see src/game/item_classes.c). A use
  * returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
  * started (Fiona's state 5), 5 she / Hewie play an action, 8 a sound only. */
@@ -8,23 +7,24 @@
 #include "common.h"
 #include "game.h"
 #include "progress.h"
+#include "globals.h"
+#include "actor.h"
 
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* the door's state (u8) */
 
 /* character `c` plays event `ev` (who: 0 Fiona, 1 Hewie): its state 5 (0, ev) */
-static inline void item_event(VObject *ev_mgr, s32 who, s32 ev, u8 *c) {
+static inline void item_event(VObject *ev_mgr, s32 who, s32 ev, Character *c) {
     AT(c, 0x14E8, s32) = 5;
     AT(c, 0x14EC, s32) = 0;
     AT(c, 0x14F0, s32) = ev;
-    VCALL(ev_mgr, 0x18, void (*)(VObject *, s32, s32, u8 *))(ev_mgr, who, ev, c);
+    VCALL(ev_mgr, 0x18, void (*)(VObject *, s32, s32, Character *))(ev_mgr, who, ev, c);
 }
 
 /* Fiona stands at event spot `spot` (in the room being played) */
-static inline s32 item_at_spot(VObject *ev_mgr, u8 *fiona, s32 spot) {
-    return VCALL(ev_mgr, 0x10, s32 (*)(VObject *, u8 *, s32, s32))(ev_mgr, fiona + 0x10, spot, -1) != 0;
+static inline s32 item_at_spot(VObject *ev_mgr, Character *fiona, s32 spot) {
+    return VCALL(ev_mgr, 0x10, s32 (*)(VObject *, u8 *, s32, s32))(ev_mgr, (u8 *)fiona + 0x10, spot, -1) != 0;
 }
 
-extern u8 *gCharPlayer, *gCharPartner;
 
 /* Fiona at event spot `spot` of room `room` */
 static inline s32 item_room_spot(Progress *p, s32 room, s32 spot) {
@@ -70,7 +70,7 @@ static inline s32 item_event_flag(Progress *p, s32 ev) {
 
 /* gCharPlayer +0x1AD5F4: f32 clamped to 0..100; +0x1AD5F8: s32 clamped to 0..1800 */
 static inline void item_composure(f32 df) {
-    u8 *g = gCharPlayer;
+    u8 *g = (u8 *)gCharPlayer;
     f32 f = AT(g, 0x1AD5F4, f32) + df;
 
     AT(g, 0x1AD5F4, f32) = f;
@@ -82,7 +82,7 @@ static inline void item_composure(f32 df) {
 }
 
 static inline void item_meters(f32 df, s32 di) {
-    u8 *g = gCharPlayer;
+    u8 *g = (u8 *)gCharPlayer;
 
     item_composure(df);
     AT(g, 0x1AD5F8, s32) += di;

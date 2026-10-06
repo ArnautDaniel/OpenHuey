@@ -1,8 +1,8 @@
 #include "common.h"
 #include "globals.h"
-extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -49,7 +49,7 @@ extern u8 D_004613C0[];
 
 /* gCharPlayer +0x1AD5F4: f32 clamped to 0..100; +0x1AD5F8: s32 clamped to 0..1800 */
 static inline void b5_adjust_meters(f32 df, s32 di) {
-    u8 *g = gCharPlayer;
+    u8 *g = (u8 *)gCharPlayer;
     f32 f = F32(g, 0x1AD5F4) + df;
 
     F32(g, 0x1AD5F4) = f;

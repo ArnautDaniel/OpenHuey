@@ -2,6 +2,7 @@
 #include "ptmf.h"
 #include "progress.h"
 #include "globals.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -42,7 +43,6 @@ extern u8 D_004223A0[];
 extern u8 D_004223C0[];
 extern u8 D_004223E0[];
 extern u8 D_004224C0[];
-extern u8 *gCharPlayer; /* global object; +0x1AD5F4 f32, +0x1AD5F8 s32 (see func_00331510) */
 extern u8 D_0045EC50[];
 extern u8 D_0045EC70[];
 extern u8 D_0045EC90[];

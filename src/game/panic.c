@@ -6,8 +6,8 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
-extern u8 *gCharPlayer;
 extern void func_002EF580(u8 *o);
 extern void func_002EFBE0(u8 *o);
 
@@ -158,7 +158,7 @@ void func_002EF580(u8 *o) {
             if (AT(gCharPlayer, 0xF8, s32) == 0 || AT(gCharPlayer, 0xF8, s32) == 3) {
                 Progress *p;
 
-                func_00122C20(gCharPlayer, 0x42, 5, 0x40, 0, 0);
+                func_00122C20((u8 *)gCharPlayer, 0x42, 5, 0x40, 0, 0);
                 p = gProgress;
                 VCALL(p, 0x44, void (*)(Progress *, s32))(p, 1);
                 AT(o, 0x0, u8) = 4;
@@ -242,7 +242,6 @@ void func_002EF580(u8 *o) {
     }
 }
 
-extern u8 *gCharPursuer;
 extern f32 D_0041A0A0[];   /* fear per pursuer kind and distance band (5 per kind) */
 extern f32 D_0041A0F0[];   /* the same by height difference while both are on stairs (6) */
 extern s32 func_00177620(Progress *p);
@@ -295,7 +294,7 @@ void func_002EFBE0(u8 *o) {
     if (AT(o, 0x8, s16) == 0) {
         AT(o, 0x18, f32) = AT(o, 0x18, f32) + kRecover.f;
     }
-    pu = gCharPursuer;
+    pu = (u8 *)gCharPursuer;
     if (pu == NULL || !AT(pu, 0x28, u8) || AT(pu, 0xC4, s32) == 2 || gCharPlayer == NULL ||
         !AT(gCharPlayer, 0x28, u8)) {
         return;
@@ -314,8 +313,8 @@ void func_002EFBE0(u8 *o) {
     if ((u8)Progress_TestFlag(p, 0x21) == 1) {
         return;
     }
-    pl = gCharPlayer;
-    pu = gCharPursuer;
+    pl = (u8 *)gCharPlayer;
+    pu = (u8 *)gCharPursuer;
     sceVu0SubVector(v, (f32 *)(pu + 0x10), (f32 *)(pl + 0x10));
     dy = v[1];
     d = __builtin_sqrtf(v[2] * v[2] + v[0] * v[0]);
@@ -468,7 +467,7 @@ void func_002EF2B0(u8 *o) {
     if (stage < 1 || stage > 5) {
         return;
     }
-    func_00122C20(gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
+    func_00122C20((u8 *)gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
     VCALL(gRumble, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gRumble, stage == 5 ? D_0041A090 : NULL,
                                                                           sTint[stage - 1]);
 }

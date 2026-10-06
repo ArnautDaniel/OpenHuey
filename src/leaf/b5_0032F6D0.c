@@ -1,9 +1,9 @@
 #include "common.h"
 #include "globals.h"
-extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
 #include "item.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -208,7 +208,6 @@ s32 func_00331A60(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F80, dest);
 }
 
-extern u8 *gCharPartner;
 extern void func_00138AD0(void *h, s32 mode, s32 time);
 
 #define B5_HANDY(o) (VCALL(o, 0x40, s32 (*)(void *))(o) & 0xFF)
@@ -296,7 +295,7 @@ s32 func_003328E0(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
-    VCALL(gCharPartner, 0x94, void (*)(u8 *, s32))(gCharPartner, 50);
+    VCALL(gCharPartner, 0x94, void (*)(u8 *, s32))((u8 *)gCharPartner, 50);
     item_trust(3);
     return item_give_hewie(gEvents, 0x90);
 }

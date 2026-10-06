@@ -8,6 +8,7 @@
 #include "task.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
@@ -94,7 +95,6 @@ void func_0016D350(Progress *p, s32 set) {
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 3, prog + 0x1CCEC0);
 }
 
-extern VObject *gCharacters[];   /* (func_0016CD60 reads slot 0xFF when nobody is found) */
 
 /* every character: vtable +0xC (start) */
 void func_00176650(Progress *p) {
@@ -102,7 +102,7 @@ void func_00176650(Progress *p) {
 
     for (i = 0; i < 6; i++) {
         if (i < 6 && gCharacters[i] != NULL) {
-            VCALL(gCharacters[i], 0xC, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0xC, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
@@ -138,7 +138,7 @@ void func_00176550(Progress *p) {
 
     for (i = 0; i < 6; i++) {
         if (i < 6 && gCharacters[i] != NULL) {
-            VCALL(gCharacters[i], 0x14, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0x14, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
@@ -173,7 +173,7 @@ s32 func_001764C0(Progress *p) {
 /* activate character `i` (vtable +0x5C); 0 if there is none */
 s32 func_001771A0(Progress *p, u32 i) {
     if (i < 6 && gCharacters[i] != NULL) {
-        VCALL(gCharacters[i], 0x5C, void (*)(VObject *))(gCharacters[i]);
+        VCALL(gCharacters[i], 0x5C, void (*)(VObject *))((VObject *)gCharacters[i]);
         return 1;
     }
     return 0;
@@ -185,13 +185,12 @@ void func_001765D0(Progress *p) {
 
     for (i = 0; i < 6; i++) {
         if (i < 6 && gCharacters[i] != NULL) {
-            VCALL(gCharacters[i], 0x1C, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0x1C, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
 
 
-extern u8 *gCharPlayer;
 
 /* make the camera director follow character `idx`, 10 above its origin, if it is in the
  * current room (vt+0xC); 0xFF: follow nothing; otherwise follow the player (index 0).
@@ -269,7 +268,6 @@ void func_0016D480(Progress *p, s32 room) {
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
 }
 
-extern u8 *gCharSlot2;   /* the stalker in play */
 
 /* the gCharacters index of the character with script id `id` (0xFE: the stalker, slot 2;
  * 0xFF / not found: 0xFF) */
@@ -344,7 +342,7 @@ void func_001793A0(Progress *p, u8 slot, s32 a, s32 b) {
 /* character slot `slot`'s +0x58 (1: done, 0: no such character) */
 s32 func_00177200(Progress *p, u32 slot) {
     if (slot < 6 && gCharacters[slot] != NULL) {
-        VCALL(gCharacters[slot], 0x58, void (*)(VObject *, u32))(gCharacters[slot], slot);
+        VCALL(gCharacters[slot], 0x58, void (*)(VObject *, u32))((VObject *)gCharacters[slot], slot);
         return 1;
     }
     return 0;
@@ -891,7 +889,7 @@ void func_00173B60(Progress *p) {
         relB = AT(r, 0x4, s16);
         if ((u8)func_00125D80(gCharacters[i]) ||
             (u8)VCALL(gCharacters[i], 0x68, s32 (*)(VObject *, s32, s32, s32))(
-                gCharacters[i], kind, owner[i], relB) != 1) {
+                (VObject *)gCharacters[i], kind, owner[i], relB) != 1) {
             owner[i] = 0xFF;
             continue;
         }
@@ -1017,7 +1015,7 @@ static void act_copy(u8 *dst, const u8 *src) {
  * at +0x6FB000 from the slot */
 static void player_take_action(u8 *b, s32 off) {
     if (AT(gCharPlayer, 0x14E8, s32) != 7) {
-        act_copy(gCharPlayer + 0x14E8, b + off);
+        act_copy((u8 *)gCharPlayer + 0x14E8, b + off);
     }
     act_copy(b + off + 0x6FB000, b + off);
 }
@@ -1035,7 +1033,7 @@ void func_00174920(Progress *p) {
         AT(gCharPlayer, 0xFC, s32) == 5) {
         return;
     }
-    pl = gCharPlayer;
+    pl = (u8 *)gCharPlayer;
     if (!(u8)func_0019A2B0(pl)) {
         return;
     }
@@ -1066,7 +1064,7 @@ void func_00174920(Progress *p) {
             VObject *ev = gEvents;
 
             if (ev != NULL) {
-                func_0019A420(gCharPlayer, 2, 0x1E);
+                func_0019A420((u8 *)gCharPlayer, 2, 0x1E);
                 VCALL(ev, 0x3C, void (*)(VObject *, s32))(ev, AT(b, 0x1152, u16));
             }
             break;
@@ -1121,7 +1119,7 @@ void func_00176440(Progress *p) {
 
     for (i = 0; i < 6; i++) {
         if (gCharacters[i] != NULL) {
-            VCALL(gCharacters[i], 0x24, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0x24, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
@@ -1146,16 +1144,16 @@ void func_001762B0(Progress *p) {
 #endif
 
     for (i = 0; i < 6; i++) {
-        VObject *c = gCharacters[i];
+        VObject *c = (VObject *)gCharacters[i];
 
         if (c == NULL || AT(gCharacters[i], 0x28, u8) == 0) {
             continue;
         }
         if (AT(gCharacters[i], 0xE0, u8) != 0) {
             if (AT(gCharacters[i], 0xE2, u8) == 0) {
-                VCALL(gCharacters[i], 0x44, void (*)(VObject *))(gCharacters[i]);
+                VCALL(gCharacters[i], 0x44, void (*)(VObject *))((VObject *)gCharacters[i]);
             } else {
-                VCALL(gCharacters[i], 0x48, void (*)(VObject *))(gCharacters[i]);
+                VCALL(gCharacters[i], 0x48, void (*)(VObject *))((VObject *)gCharacters[i]);
             }
             continue;
         }
@@ -1171,7 +1169,7 @@ void func_001762B0(Progress *p) {
             continue;
         }
         if (i < 3) {
-            VCALL(gCharacters[i], 0x30, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0x30, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
@@ -1217,7 +1215,7 @@ void func_00176160(Progress *p) {
             }
         }
         if (AT(gCharacters[i], 0x28, u8) != 0 && AT(gCharacters[i], 0x29, u8) == 0) {
-            VCALL(gCharacters[i], 0x2C, void (*)(VObject *))(gCharacters[i]);
+            VCALL(gCharacters[i], 0x2C, void (*)(VObject *))((VObject *)gCharacters[i]);
         }
     }
 }
@@ -1356,10 +1354,9 @@ s32 func_00178980(Progress *p, s32 room, s32 exit) {
 
 /* ---- the characters by slot (gCharacters, 6) ---- */
 
-extern u8 *gCharPartner, *gCharPursuer;
 extern void func_0029F2C0(void *c);   /* a character's quick unload (keeps its model) */
 
-#define SLOT_CHAR(slot) ((slot) < 6 ? gCharacters[slot] : NULL)
+#define SLOT_CHAR(slot) ((slot) < 6 ? (VObject *)gCharacters[slot] : NULL)
 
 /* character `slot` active (+0x28) */
 u8 func_00177160(Progress *p, u32 slot) {
@@ -1414,10 +1411,10 @@ s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
     if (quick) {
         func_0029F2C0(c);
     } else {
-        VCALL(gCharacters[slot], 0x18, void (*)(VObject *))(gCharacters[slot]);
+        VCALL(gCharacters[slot], 0x18, void (*)(VObject *))((VObject *)gCharacters[slot]);
     }
-    VCALL(gCharacters[slot], 0x20, void (*)(VObject *))(gCharacters[slot]);
-    VCALL(gCharacters[slot], 0x10, void (*)(VObject *))(gCharacters[slot]);
+    VCALL(gCharacters[slot], 0x20, void (*)(VObject *))((VObject *)gCharacters[slot]);
+    VCALL(gCharacters[slot], 0x10, void (*)(VObject *))((VObject *)gCharacters[slot]);
     switch (slot) {
     case 0:
         gCharPlayer = NULL;
@@ -1429,7 +1426,7 @@ s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
         gCharPursuer = NULL;
         break;
     }
-    c = gCharacters[slot];
+    c = (VObject *)gCharacters[slot];
     if (slot >= 2) {
         if (AT(c, 0x1668, u8) != 0) {
             VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, AT(c, 0x166C, void *));
@@ -1471,7 +1468,7 @@ s32 func_00177DB0(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
         || gCharacters[b] == NULL || AT(gCharacters[b], 0x28, u8) == 0 || AT(gCharacters[b], 0x29, u8) == 1) {
         return 0;
     }
-    cb = gCharacters[b];
+    cb = (VObject *)gCharacters[b];
     y = pos[1];
     if (y <= AT(cb, 0x14, f32) - margin || !(y < margin + (AT(cb, 0x14, f32) + AT(cb, 0xCC, f32)))) {
         return 0;
@@ -1722,8 +1719,8 @@ void *func_0016C8A0(Progress *p, s32 flags) {
         if (gCharacters[i] != NULL) {
             VObject *c;
 
-            VCALL(b + 0x6FBF00, 0x14, void (*)(void *, VObject *))(b + 0x6FBF00, gCharacters[i]);
-            c = gCharacters[i];
+            VCALL(b + 0x6FBF00, 0x14, void (*)(void *, VObject *))(b + 0x6FBF00, (VObject *)gCharacters[i]);
+            c = (VObject *)gCharacters[i];
             if (c != NULL) {
                 VCALL(c, 0x8, void (*)(VObject *, s32))(c, 1);
             }
@@ -1846,7 +1843,7 @@ s32 func_0016CD60(Progress *p, s32 who, s32 arg) {
         }
     }
     msg = gBootMessage;
-    c = gCharacters[slot];
+    c = (VObject *)gCharacters[slot];
     VCALL(msg, 0x14, void (*)(VObject *, u32))(msg, AT(c, 0x1528, u8));
     VCALL(msg, 0x10, void (*)(VObject *, u32, void *, s32))(msg, AT(c, 0x1528, u8), AT(p, 0x73EDC0, void *), arg);
     return 1;
@@ -1873,7 +1870,7 @@ static inline void hewie_order(u8 *p, u32 at, s32 state, s32 a) {
     act->a = a;
     act->b = 0;
     if (AT(gCharPartner, 0x14E8, s32) != 7) {
-        char_set_action(gCharPartner, act);
+        char_set_action((u8 *)gCharPartner, act);
     }
     q->state = act->state;
     q->a = act->a;

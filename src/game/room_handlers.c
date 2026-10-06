@@ -410,8 +410,6 @@ u32 func_0037A980(void *o, s32 i) { return ((u32 *)D_0047B130)[i]; }   /* D_0047
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern Character *gCharacters[];
-extern Character *gCharPursuer;
 extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void func_00125960(Character *c);
 extern f32 func_002E2D00(f32 a);
@@ -465,7 +463,6 @@ s32 func_002E5950(void *self, Character *c, u8 *cmd) {
 }
 
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
-extern Character *gCharPlayer;
 extern f32 func_0031C248(f32 x);   /* sinf */
 extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
 
@@ -555,7 +552,6 @@ s32 func_002E69B0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, c
 extern void *D_00479A80[], *D_0047A3D0[], *D_0047A730[];
 extern s32 D_0047B274, D_0047B278, D_0047B27C;   /* the nudge countdowns */
 extern const char *D_004193A8, *D_004193AC;
-extern Character *gCharPartner;
 extern void func_0016CEC0(Progress *p, const char *name);
 extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
 extern void func_0016CD30(Progress *p);
@@ -868,7 +864,6 @@ s32 func_002B12D0(void) {
 }
 
 extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
-extern u8 *gCharSlot2;        /* the stalker in play */
 extern s32 func_0029A710(void *p);
 extern s32 func_00177620(Progress *p);
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
@@ -886,7 +881,7 @@ s32 func_002B0F60(void) {
 /* the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2:
  * in this room, whether the camera sees it; elsewhere 1 */
 s32 func_002B0FA0(void) {
-    u8 *s = gCharSlot2;
+    u8 *s = (u8 *)gCharSlot2;
     Progress *p;
     u8 k;
 
@@ -4243,7 +4238,7 @@ s32 func_002AFB50(void) {
     if (acc & 0xF) {
         return 0;
     }
-    c = gCharSlot2;
+    c = (u8 *)gCharSlot2;
     if (c == NULL || AT(c, 0x28, u8) == 1) {
         return 0;
     }
@@ -4485,7 +4480,7 @@ s32 func_002AA380(void) {
 
 /* room 0x08 (D_003F31F0): the stalker is there but not about */
 s32 func_002AA580(void) {
-    u8 *c = gCharSlot2;
+    u8 *c = (u8 *)gCharSlot2;
 
     return c != NULL && AT(c, 0x28, u8) == 0;
 }
@@ -4688,7 +4683,7 @@ s32 func_002ABD50(void) {
 
 /* room 0x10 (D_003F78F8): the stalker is there, not about, in mode 2, 6 or 7 */
 s32 func_002AC040(void) {
-    u8 *c = gCharSlot2;
+    u8 *c = (u8 *)gCharSlot2;
     u8 k;
 
     if (c == NULL || AT(c, 0x28, u8) != 0) {
@@ -5608,7 +5603,6 @@ s32 func_00342A30(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern Character *gCharacters[];
 
 /* (as func_002E69B0) pushed by the character slot byte 4 names */
 s32 func_0036F150(VObject *self, void *a1, u8 *cmd) {
@@ -7284,7 +7278,6 @@ s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
 /* ---- the marker effect D_00470F90 (effects.c) on character slot 3, its slot in script variable
  * 0, its size eased by variable 1 ---- */
 extern void *D_00470F90[];
-extern u8 *gCharSlot3, *gCharSlot4;   /* character slots 3 / 0 */
 
 static void effect_70F90_init(void **obj) {
     obj[0] = D_00470F90;

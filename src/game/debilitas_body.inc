@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "progress.h"
+#include "actor.h"
 /* The code the two Debilitas classes share (see debilitas.c and debilitas2.c): written with the
  * first class's symbols; debilitas2.c renames them to its own before including this. Each class
  * sets DEBILITAS_GIVE_UP_HITS. */

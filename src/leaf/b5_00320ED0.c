@@ -2,6 +2,7 @@
 #include "ptmf.h"
 #include "progress.h"
 #include "globals.h"
+#include "actor.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -202,7 +203,6 @@ void func_0032D3E0(u8 *self, s32 a, f32 x, f32 y) {
  * +0x162C timer, +0x1630 its sound, +0x1634 / +0x1638 home (x, z), +0x163C / +0x1640 where it
  * runs off to; +0x16A8 / +0x16A9 its feet down last frame. D_01991600: who it watches ---- */
 
-extern u8 *gCharPlayer, *gCharPartner, *gCharPursuer;
 extern u8 D_01991600[];
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 extern f32 func_002E2BC0(const f32 *v);   /* heading of v */

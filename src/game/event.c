@@ -6,6 +6,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -272,7 +273,6 @@ s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
     return 1;
 }
 
-extern void *gCharacters[6];
 
 /* +0xE4 give character slot `slot` the script `script` (its context at +0x564 + (slot + 1) *
  * 0x18: the character, the pc, its id at +0x13); NULL: nothing */
@@ -748,7 +748,6 @@ void *func_0020C170(void **o, s32 flags) {
     return o;
 }
 
-extern u8 *gCharSlot2;        /* character slot 2 (the stalker) */
 extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
 extern void *func_001FB3B0(void *, s32);
 extern void *func_001FB400(void *, s32);
@@ -802,7 +801,7 @@ void func_001FB5F0(void) {
     AT(p, 0xBB, u8)++;
     AT(p, 0xBC, u8) = (u32)VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) % 0x4F;
     k = AT(p, 0xBC, u8);
-    c = gCharSlot2;
+    c = (u8 *)gCharSlot2;
     if (c != NULL && AT(c, 0x28, u8) != 0 && AT(c, 0x30, u32) >= 0x100 && AT(c, 0x30, u32) < 0x106) {
         r = VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g);
         VCALL((VObject *)c, 0x64, void (*)(VObject *, s32, s32, s32))((VObject *)c, r == 0x109 ? 0x10A : 0x109, -1, 2);

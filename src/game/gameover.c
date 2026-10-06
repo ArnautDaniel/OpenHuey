@@ -53,7 +53,6 @@ extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *D_00456DF0;
 extern void *D_0046D750[];      /* a screen tint */
-extern Character *gCharacters[];
 extern void *func_00266C40(u8 *fx, s32 n);
 extern void *func_002672F0(u32 size, void *place);
 extern void func_002EF480(u8 *fade, f32 t);

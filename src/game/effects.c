@@ -7,6 +7,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
 
 static u32 rd32(const u8 *p) {
@@ -106,7 +107,6 @@ void func_002C6540(u8 *e, const f32 *d) {
 }
 
 
-extern void *gCharacters[6];
 extern void func_001267F0(void *c, s32 light);
 extern s32 func_00126800(void *c);
 
@@ -1261,7 +1261,6 @@ void func_00319B10(void) {
  * (+0x14, func_00317D40) renders the characters and creatures above it again from the
  * camera reflected in its plane ---- */
 
-extern void *gCharPlayer;
 extern f32 *func_0017CE80(void *skel, s32 bone);
 
 /* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
@@ -1318,7 +1317,7 @@ static s32 refl_near_quad(u8 *e, f32 *pos, f32 mx, f32 my) {
 /* character slot `i` (shown, +0x28 set, +0x29 not 1) is to be reflected: its root bone near the
  * quad (margins: Fiona 10 x 30, Hewie 20 x 15, others 20 x 30) */
 s32 func_00317920(u8 *e, s32 i) {
-    u8 *c = gCharacters[i];
+    u8 *c = (u8 *)gCharacters[i];
     f32 pos[4] __attribute__((aligned(16)));
 
     if (c == NULL || AT(c, 0x28, u8) == 0 || AT(c, 0x29, u8) == 1) {
@@ -1527,7 +1526,7 @@ void func_00317D40(u8 *e) {
     VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, m1);
     VCALL(cam, 0x54, void (*)(VObject *, f32 (*)[4]))(cam, m2);
     for (i = 0; i < 6; i++) {
-        u8 *c = gCharacters[i];
+        u8 *c = (u8 *)gCharacters[i];
 
         if ((u8)func_00317920(e, i) == 1) {
             s32 layer;
@@ -2745,8 +2744,6 @@ s32 func_00363130(u8 *e) {
  * and a streak 4 long beyond it; after 2 frames (+0x70) the model gives off smoke (D_00479800)
  * and the mark is done (+0x78). +0x74 the model ---- */
 
-extern void *gCharPlayer;
-extern u8 *gCharSlot2;   /* character slot 2 (the stalker) */
 extern void *D_00479800[];
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 extern void func_002E56C0(u8 *quad);
@@ -4304,7 +4301,6 @@ void func_002FE230(u8 *e) {
  * fading, until gone; every other call (+0x4DC) is a rest ---- */
 
 extern void *D_00470E60[];
-extern void *gCharPlayer, *gCharPartner, *gCharPursuer;
 
 #define SPLASH_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1E0) + (i))
 #define SPLASH_VEL(e, i) ((f32 *)((e) + 0x408 + (i) * 0xC))
@@ -5753,8 +5749,6 @@ s32 func_003166B0(u8 *e) {
  *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
 
 extern void *D_00479E50[];
-extern u8 *gCharSlot4;   /* character slot 0 */
-extern u8 *gCharSlot2;   /* character slot 2 (the stalker) */
 extern f32 func_002E2D00(f32 angle);
 
 static void marker_spark_init(void **obj) {

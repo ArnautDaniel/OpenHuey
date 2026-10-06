@@ -10,10 +10,8 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
-extern Character *gCharPlayer;
-extern Character *gCharPursuer;
-extern Character *gCharacters[6];
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 

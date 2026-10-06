@@ -5,8 +5,8 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "actor.h"
 
-extern Character *gCharPartner;   /* Hewie */
 
 /* nothing */
 void func_00283EE0(Pursuer *p) {
@@ -64,7 +64,6 @@ void func_0028ED20(Pursuer *p) {
 /* ---- batch 2 ---- */
 
 
-extern Character *gCharPlayer;    /* Fiona */
 
 
 /* nav triangle +0x179C, if valid */
@@ -578,7 +577,6 @@ void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
 
 /* ---- batch 3 ---- */
 
-extern Character *gCharacters[6];
 extern void *D_003EC8E0;
 
 

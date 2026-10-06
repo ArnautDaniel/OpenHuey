@@ -5,6 +5,7 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
@@ -344,8 +345,6 @@ void func_00120C80(u8 *m) {
     func_00120980(m);
 }
 
-extern void *gCharacters[6];
-extern void *gCharPlayer, *gCharPartner, *gCharPursuer;
 extern void func_002A8060(u8 *p);
 extern void func_002A7B40(u8 *p);
 extern void func_002A8410(u8 *p);
@@ -2409,7 +2408,7 @@ extern s32 func_00177200(Progress *p, u32 slot);
 /* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
    kind `kind`, waited 0); then progress slot refresh (func_00177200) */
 static inline void summoner_take(u8 *o, u8 kind) {
-    u8 *pu = gCharPursuer;
+    u8 *pu = (u8 *)gCharPursuer;
 
     if (pu == NULL) {
         return;
@@ -2494,8 +2493,8 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
         return 0;
     }
     i = (u8)(u32)((f32)m * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
-    pu = gCharPursuer;
-    pl = gCharPlayer;
+    pu = (u8 *)gCharPursuer;
+    pl = (u8 *)gCharPlayer;
     from = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, AT(pl, 0x30, s32), AT(pl, 0x14D4, u8), 1);
     for (e = 0; e < 8; e++) {
         if (VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, list[i], e & 0xFF) == 0) {
@@ -2533,7 +2532,7 @@ s32 func_002EBB00(u8 *o) {
  * (func_002EBB00 / func_002EB730 / func_002EB390); having come, the wait restarts, +0x10 its
  * mode, flag 2 off and the cooldown +0x4 its +0x2D4 seconds. 1 if it came */
 s32 func_002EC170(u8 *o) {
-    u8 *pu = gCharPursuer;
+    u8 *pu = (u8 *)gCharPursuer;
     Progress *p = gProgress;
     u32 k;
     s32 ok = 0;
@@ -2585,7 +2584,7 @@ s32 func_002EC170(u8 *o) {
  * kind 2) or in mode 4 (kind 1), or with the cooldown over 3 s in mode 3 (kind 0), the
  * summoner takes it back. 1 if it did */
 s32 func_002EBED0(u8 *o) {
-    u8 *pu = gCharPursuer;
+    u8 *pu = (u8 *)gCharPursuer;
     u8 *pl;
     u8 mode;
     s32 go = 0, kind = 0;
@@ -2602,7 +2601,7 @@ s32 func_002EBED0(u8 *o) {
         AT(o, 0xC, u32) = 0;
         return 0;
     }
-    pl = gCharPlayer;
+    pl = (u8 *)gCharPlayer;
     if (pl != NULL && AT(pl, 0x28, u8) != 0 && AT(pl, 0x30, s32) != -1) {
         s32 pr = AT(pl, 0x30, s32), ur = AT(pu, 0x30, s32);
         u32 e;
@@ -2646,7 +2645,7 @@ s32 func_002EBED0(u8 *o) {
 /* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
  * +0x28 says the room allows it; then by the stage, +0x64 4) or is placed elsewhere */
 void func_002EC940(u8 *o) {
-    u8 *pu = gCharPursuer;
+    u8 *pu = (u8 *)gCharPursuer;
     Progress *p, *q;
 
     if (pu == NULL || !(AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {

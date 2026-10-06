@@ -11,7 +11,6 @@
 #include "pursuer.h"
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern Character *gCharPursuer;
 extern void func_00124E40(Actor *a);
 extern void func_0016CEC0(Progress *p, const char *name);
 extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);

@@ -6,10 +6,8 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "actor.h"
 
-extern void *gCharacters[6];
-extern u8 *gCharPlayer;
-extern u8 *gCharPartner;
 extern s32 func_001770D0(Progress *p, s32 id);
 extern u8 D_003D72C0[];   /* the conditions' lengths */
 
@@ -45,7 +43,6 @@ extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and 
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
-extern u8 *gCharSlot2;                        /* the stalker in play */
 extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
 extern s32 func_00178610(Progress *p, u32 door);
 extern s32 func_001667C0(u8 *h);
@@ -63,7 +60,6 @@ extern s32 func_00177260(Progress *p, s32 slot);
 extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;
 extern s32 func_00125D80(u8 *c);
-extern u8 *gCharPursuer;
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -329,7 +325,7 @@ s32 func_001FC760(VObject *ev) {
         r = (u8)func_002DE1C0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
         break;
     case 0x3D:     /* the player can be controlled and the progress state is below 4 */
-        r = (u8)func_0019A2B0(gCharPlayer) == 1 && AT(p, 0x7B8, u8) < 4;
+        r = (u8)func_0019A2B0((u8 *)gCharPlayer) == 1 && AT(p, 0x7B8, u8) < 4;
         break;
     case 0x3F:     /* the player's action (+0x1AD580) is be32 pc[1..4] */
         r = AT(gCharPlayer, 0x1AD580, u32) == (u32)(pc[1] << 24 | pc[2] << 16 | pc[3] << 8 | pc[4]);
@@ -381,7 +377,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x0F:   /* Hewie (in the scene): func_001667C0 */
         if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0) {
-            r = func_001667C0(gCharPartner);
+            r = func_001667C0((u8 *)gCharPartner);
         }
         break;
     case 0x12:   /* the counter (+0x703) is pc[1] */
@@ -469,7 +465,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x31:   /* Hewie (in the scene): not func_0013D4A0 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0(gCharPartner, 0) == 0) {
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0((u8 *)gCharPartner, 0) == 0) {
             r = 1;
         }
         break;
@@ -527,7 +523,7 @@ s32 func_001FC760(VObject *ev) {
             r = 1;
             break;
         }
-        c = gCharacters[i];
+        c = (u8 *)gCharacters[i];
         if (c == NULL || AT(c, 0x28, u8) == 0) {
             r = 1;
             break;
@@ -558,7 +554,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x4C:   /* Hewie (in the scene): func_00139060 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060(gCharPartner) == 1) {
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060((u8 *)gCharPartner) == 1) {
             r = 1;
         }
         break;
@@ -589,7 +585,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x56: {   /* character pc[1] is at a motion event */
-        u8 *c = gCharacters[(u8)func_001770D0(p, pc[1])];
+        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
 
         r = (AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, s32) & 0x20) != 0;
         break;
@@ -602,7 +598,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x5A:   /* Hewie's func_001364F0 (no Hewie: 1) */
         if (gCharPartner != NULL) {
-            r = func_001364F0(gCharPartner);
+            r = func_001364F0((u8 *)gCharPartner);
         } else {
             r = 1;
         }
@@ -855,14 +851,14 @@ s32 func_001FC760(VObject *ev) {
     }
     case 0x65: {   /* the stalker (in the scene) is in this room and free: not func_00125D80, not in
                     * action 8 / move 0x18-0x19 or action 4 / move 9-0xA, otherwise func_001235C0 */
-        u8 *c = gCharPursuer;
+        u8 *c = (u8 *)gCharPursuer;
 
         if (c != NULL && AT(c, 0x28, u8) == 1) {
             s32 room = AT(gCharPursuer, 0x30, s32);
 
             if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room) {
                 r = 1;
-                if ((u8)func_00125D80(gCharPursuer) == 1) {
+                if ((u8)func_00125D80((u8 *)gCharPursuer) == 1) {
                     r = 0;
                 } else if (AT(gCharPursuer, 0xF8, s32) == 8) {
                     if (AT(gCharPursuer, 0xFC, s32) == 0x18 || AT(gCharPursuer, 0xFC, s32) == 0x19) {
@@ -872,7 +868,7 @@ s32 func_001FC760(VObject *ev) {
                     if (AT(gCharPursuer, 0xFC, s32) == 9 || AT(gCharPursuer, 0xFC, s32) == 0xA) {
                         r = 0;
                     }
-                } else if ((u8)func_001235C0(gCharPursuer, gCharPursuer) == 0) {
+                } else if ((u8)func_001235C0((u8 *)gCharPursuer, (u8 *)gCharPursuer) == 0) {
                     r = 0;
                 }
             }
@@ -989,7 +985,7 @@ s32 func_002DE1C0(u8 *zone, u8 *c) {
     }
     p = gProgress;
     for (i = 0; i < 6; i++) {
-        u8 *k = gCharacters[i];
+        u8 *k = (u8 *)gCharacters[i];
 
         if (k != NULL && AT(k, 0x28, u8) != 0 &&
             AT(k, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
