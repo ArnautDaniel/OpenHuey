@@ -3540,3 +3540,44 @@ s32 func_003279F0(Character *c, f32 *goal) {
     }
     return t;
 }
+
+/* state: leaving - moved by its animation; out of contact it is gone at once; at frame 65 a
+   sound (0xA), at its animation's end gone; its fade +0x71 runs down by 2 (to 0 under 10) */
+void func_00327B70(Character *c) {
+    u8 *k = CR(c);
+    u8 f;
+
+    cr19_root_move(c);
+    if (c->a.disabled != 0) {
+        c->a.active = 0;
+        func_00127060(c);
+        return;
+    }
+    if (++AT(k, 0x40, s16) == 0x41 && AT(k, 0x6C, u8) == 0) {
+        AT(k, 0x6C, u8)++;
+        func_00122C20(&c->a, 0xA, 5, 0, 0, NULL);
+    }
+    if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
+        c->a.active = 0;
+        func_00127060(c);
+    }
+    f = AT(k, 0x71, u8);
+    if (f < 10) {
+        AT(k, 0x71, u8) = 0;
+    } else {
+        AT(k, 0x71, u8) = f - 2;
+    }
+}
+
+/* state: with progress flag 9, or Fiona in move 4 / 3, its approach at 10; else its flags
+   cleared and state 5 */
+void func_00327CA0(Character *c) {
+    u8 *k = CR(c);
+
+    if (Progress_TestFlag(gProgress, 9) != 0 || AT(gCharPlayer, 0xF8, s32) == 4 || AT(gCharPlayer, 0xF8, s32) == 3) {
+        func_00326130(c, 10.0f);
+        return;
+    }
+    AT(k, 0x6B, u8) = 0;
+    cr19_enter(c, 5);
+}
