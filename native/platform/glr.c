@@ -104,7 +104,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE, POST_HAZE, POST_NEGATIVE, POST_ZOOM_BLUR, POST_PANIC };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE, POST_HAZE, POST_NEGATIVE, POST_ZOOM_BLUR, POST_PANIC, POST_MARKER };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -332,6 +332,20 @@ void glr_zoom_blur(void) {
 
 void glr_panic(int limit, int amount) {
     put_post(POST_PANIC, 0x2A, (uint32_t)limit, (uint32_t)amount);
+}
+
+/* the marker glow (func_00301E70, layer 0xB): 32 spheres about a point (radius 10 + 0.3 k, the
+ * later ones + `jitter`) counted where they show in front of the scene, blurred, and added over
+ * the screen in orange at `fix` / 128. The point: game pixels (x, y), view depth z, `scale`
+ * game pixels per unit there */
+void glr_marker(float x, float y, float z, float scale, float jitter, int fix) {
+    GlrDraw *d = put_post(POST_MARKER, 0xB, (uint32_t)fix, 0);
+
+    d->mvp[0] = x;
+    d->mvp[1] = y;
+    d->mvp[2] = z;
+    d->mvp[3] = scale;
+    d->mvp[4] = jitter;
 }
 
 void glr_dof(float a, float from, float to, float b) {
@@ -651,6 +665,17 @@ static const char *kPostFs =
     "    float a = uRange.x + k * 1.5707964;\n"
     "    return trunc(16.0 * sin(a) * (uBand.x + 0.5 * (1.0 + cos(a)))) / 16.0;\n"
     "}\n"
+    "float marker_count(vec2 g) {\n"   /* the shells over game pixel g that show (0..32) */
+    "    vec2 gl = vec2(g.x * 1.25, 448.0 - g.y) * uS;\n"
+    "    float zs = texelFetch(uTex1, ivec2(clamp(gl, vec2(0.0), vec2(textureSize(uTex1, 0)) - 1.0)), 0).r;\n"
+    "    float dist = length(g - uBand.xy);\n"
+    "    for (int k = 0; k < 32; k++) {\n"
+    "        float r = 10.0 + 0.3 * float(k) + (k > 0 ? uRange.x : 0.0);\n"
+    "        float R = r * uBand.w;\n"
+    "        if (dist < R && uBand.z - r * sqrt(1.0 - (dist / R) * (dist / R)) <= zs) return float(32 - k);\n"
+    "    }\n"
+    "    return 0.0;\n"
+    "}\n"
     "void main() {\n"
     "    ivec2 p = ivec2(gl_FragCoord.xy);\n"
     "    vec4 c;\n"
@@ -822,6 +847,16 @@ static const char *kPostFs =
     "        float amt = uFix;\n"
     "        if (uBand.y > 0.0) amt = floor(floor(32.0 + 64.0 * (1.0 - abs(h.x - 128.0) / 128.0)) * 64.0 / 128.0);\n"
     "        c = d + floor((b - d) * amt / 128.0);\n"
+    "    } else if (uMode == 36) {\n"   /* the marker glow (see glr_marker) */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"
+    "        vec2 h = (floor(g * 0.5) + 0.5) * 2.0;\n"   /* the half-size pixel */
+    "        float w = marker_count(h);\n"
+    "        w += floor(marker_count(h + vec2(2.0, 2.0)) * 64.0 / 128.0);\n"
+    "        w += floor(marker_count(h + vec2(-2.0, 2.0)) * 48.0 / 128.0);\n"
+    "        w += floor(marker_count(h + vec2(2.0, -2.0)) * 32.0 / 128.0);\n"
+    "        w += floor(marker_count(h + vec2(-2.0, -2.0)) * 16.0 / 128.0);\n"
+    "        vec4 d = at(uTex, p);\n"
+    "        c = d + floor(floor(w * vec4(128.0, 96.0, 48.0, 0.0) / 128.0) * uFix / 128.0);\n"
     "    } else if (uMode == 33) {\n"   /* the negative: (0x80 - Cd) * 0x80 >> 7, clamped */
     "        c = max(vec4(0.0), 128.0 - at(uTex, p));\n"
     "    } else if (uMode == 34) {\n"   /* the screen copy 16 pixels bigger each way, bilinear, over it at 0x40 */
@@ -1791,6 +1826,14 @@ static void run_post(const GlrDraw *d) {
         p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
         p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[2], d->mvp[3], 0.0f, 0.0f);
         post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
+    case POST_MARKER:   /* func_00301E70 (see glr_marker) */
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)(int32_t)rgba);
+        p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[4], 0.0f);
+        p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[0], d->mvp[1], d->mvp[2], d->mvp[3]);
+        post(36, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, sViewDepth);
         break;
     case POST_NEGATIVE:   /* func_0021E1B0: the screen's negative, 0x80 - each channel */
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,

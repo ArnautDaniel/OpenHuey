@@ -4688,6 +4688,88 @@ void func_00303C10(u8 *o) {
     AT(o, 0x1E, u8) = 0;
 }
 
+#ifdef HG_NATIVE
+extern void glr_marker(f32 x, f32 y, f32 z, f32 scale, f32 jitter, s32 fix);
+
+/* +0x14 draw (PC; the PS2 sends GS packets): attached to the stalker in slot 2 while it hides
+ * (+0x29) it ends (state 3; done if it went to another room); a stalker idle with the camera
+ * director free ends it too. Otherwise, while on (+0x1D) and not done, its glow round the root
+ * of the model it follows: 32 spheres (radius 10 + 0.3 k, the later ones 0.3 + 0.3 sin(+0x18)
+ * more) counted at half size where they show in front of the scene, blurred (the four diagonal
+ * neighbours at 0x40 / 0x30 / 0x20 / 0x10), and added over the screen in orange (0x80, 0x60,
+ * 0x30) at 64 x min(+0x8, 1) / 128 - layer 0xB */
+void func_00301E70(u8 *o) {
+    VObject *cam;
+    f32 c[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 q[4] __attribute__((aligned(16)));
+    f32 f[3], r[3], n, sx, sy, scale, z;
+    f32 size;
+
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    if (D_0044F808 == NULL && !(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+        return;
+    }
+    if (AT(o, 0x10, s32) == 3) {
+        AT(o, 0x10, s32) = 1;
+    }
+    if (D_0044F808 != NULL && AT(o, 0x4, u8 *) == AT(D_0044F808, 0xF0, u8 *) && AT(D_0044F808, 0x29, u8) == 1) {
+        AT(o, 0x10, s32) = 3;
+        if (VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress) == AT(D_0044F808, 0x30, s32)) {
+            return;
+        }
+        AT(o, 0x1C, u8) = 1;
+    }
+    if (D_0044F808 != NULL && !(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)
+        && AT(D_0044F808, 0x28, u8) == 0) {
+        AT(o, 0x10, s32) = 3;
+        AT(o, 0x1C, u8) = 1;
+    }
+    if (AT(o, 0x1D, u8) == 0 || AT(o, 0x1C, u8) == 1) {
+        return;
+    }
+    sceVu0CopyVector(c, func_0017CE80(AT(AT(o, 0x4, u8 *), 0x810, void *), 0) + 12);
+    c[3] = 1.0f;
+    cam = D_0044E4B8;
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    sceVu0ApplyMatrix(q, m, c);
+    z = q[3];
+    if (!(z > 0.0f)) {
+        return;
+    }
+    /* the view's forward (the clip w's gradient) and a world direction across it */
+    f[0] = m[0][3];
+    f[1] = m[1][3];
+    f[2] = m[2][3];
+    r[0] = f[2];
+    r[1] = 0.0f;
+    r[2] = -f[0];
+    n = r[0] * r[0] + r[2] * r[2];
+    if (!(n > 0.0f)) {
+        r[0] = 1.0f;
+        r[2] = 0.0f;
+        n = 1.0f;
+    }
+    n = 1.0f / __builtin_sqrtf(n);
+    VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    sceVu0ApplyMatrix(q, m, c);
+    sx = q[0] / q[3];
+    sy = q[1] / q[3];
+    c[0] += r[0] * n;
+    c[2] += r[2] * n;
+    sceVu0ApplyMatrix(q, m, c);
+    scale = __builtin_sqrtf((q[0] / q[3] - sx) * (q[0] / q[3] - sx) + (q[1] / q[3] - sy) * (q[1] / q[3] - sy));
+    size = AT(o, 0x8, f32);
+    if (!(size <= 1.0f)) {
+        size = 1.0f;
+    }
+    glr_marker(sx - 1792.0f, sy - 1824.0f, z, scale, 0.3f + 0.3f * func_0031C248(AT(o, 0x18, f32)),
+               (s32)(u32)(64.0f * size));
+}
+#endif
+
 /* ---- D_00471060 (0x840 bytes, room 0x0F): 64 drifting flecks, each a quad, in parallel arrays
  * (4 bytes apart): +0x38 x, +0x138 z, +0x238 / +0x338 their drift, +0x438.. colour bytes (r, g,
  * b; +0x4F8 alpha), +0x538 / +0x638 size, +0x738 frames to the next nudge. The area: +0x30
