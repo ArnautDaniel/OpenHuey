@@ -611,6 +611,26 @@ s32 func_00260480(u8 *items, u8 l, u8 i) {
     return VCALL(it, 0xC, s32 (*)(VObject *))(it);
 }
 
+/* item `i` of list `l`: how many (vtable +0x34; 0 for an empty place) */
+s32 func_00260300(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return 0;
+    }
+    return VCALL(it, 0x34, s32 (*)(VObject *))(it);
+}
+
+/* item `i` of list `l`: is it counted (vtable +0x18; 0 for an empty place) */
+u8 func_00260360(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return 0;
+    }
+    return VCALL(it, 0x18, s32 (*)(VObject *))(it);
+}
+
 /* how many items 0x3F the lists hold */
 s32 func_00260540(u8 *items) {
     u32 l, i;

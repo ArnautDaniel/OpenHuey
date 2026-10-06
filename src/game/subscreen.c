@@ -1361,3 +1361,65 @@ void func_00396900(SubScreen *s) {
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, SUB_LIST(s) == 1 ? 0x5B : 0x5D), 0x80, 0x30,
                   0x10, 0x15);
 }
+
+extern s32 func_002604E0(u8 *items, u8 l, u8 i);   /* the item's word (+0x20) */
+extern s32 func_002606E0(u8 *items, u8 l, u8 i);   /* its equipment status: 1 equipped */
+extern s32 func_00260300(u8 *items, u8 l, u8 i);   /* how many */
+extern u8 func_00260360(u8 *items, u8 l, u8 i);    /* counted */
+extern const char D_00463FD8[];   /* "%2d/%2d" */
+extern const char D_00464218[];   /* "%s" */
+extern const char D_00464230[];   /* "x%2d" */
+
+/* The item grid of the list shown: the page (16 places, two columns of 8 down the screen) the
+ * cursor is on (past the last: the last item), its number of the pages and, with more than
+ * one, the two arrows blinking; each item's icon (by kind), name (message 0x8100 + id; the
+ * word plate's word in parameter 3) in grey or, equipped, highlighted, and its count; the
+ * cursor. */
+void func_003949B0(SubScreen *s, s32 a) {
+    u8 *items = s->pool;
+    u32 n = func_002605F0(items, SUB_LIST(s));
+    s32 last = n != 0 ? (s32)(n - 1) / 16 : 0;
+    s32 i;
+
+    if (last < (s32)(SUB_CURSOR(s) >> 4)) {
+        SUB_CURSOR(s) = func_002605F0(items, SUB_LIST(s)) - 1;
+    }
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, (SUB_CURSOR(s) >> 4) + 1, last + 1);
+    if (last != 0) {
+        s32 b = 0x80 - ((s->frame << 2) & 0xFF);
+        u8 alpha = b > 0 ? b : -b;
+
+        SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+        SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+    }
+    for (i = 0; i < 16; i++) {
+        u8 k = i + (SUB_CURSOR(s) >> 4) * 16;
+        s32 id = func_00260480(items, SUB_LIST(s), k);
+        u8 color = (s8)func_002606E0(items, SUB_LIST(s), k) == 1 ? 0x82 : 0x80;
+
+        if (id != -1) {
+            s32 x = (i / 8) * 0xDA, y = (i % 8) * 35;
+
+            SubScreen_DrawPart(s, (u16)(x + 0x20), (u16)(y + 0x5E), (u8)func_00260420(items, SUB_LIST(s), k), 0x80, 0);
+            if (id == 0x3F) {
+                const u8 *w = (const u8 *)func_002604E0(items, SUB_LIST(s), k);
+                char name[9];
+                s32 j;
+
+                for (j = 0; j < 8; j++) {
+                    name[j] = w[j];
+                }
+                name[8] = 0;
+                Msg_PrintfParam(&s->text, 3, D_00464218, name);
+            }
+            Task_ShowText(&s->text, x + 0x46, y + 0x64, color, Task_MessageText(&s->text, (id + 0x8100) & 0xFFFF), 0x80,
+                          0x30, 0x10, 0x15);
+            if (func_00260360(items, SUB_LIST(s), k) == 1) {
+                Task_Printf(&s->text, x + 0xDE, y + 0x64, color, D_00464230, func_00260300(items, SUB_LIST(s), k));
+            }
+        }
+        if (SUB_CURSOR(s) % 16 == i) {
+            SubScreen_DrawPart(s, (u16)((i / 8) * 0xDA + 0x20), (u16)((i % 8) * 35 + 0x5E), 0x1C, 0x80, 0);
+        }
+    }
+}
