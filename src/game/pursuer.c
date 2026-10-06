@@ -3688,7 +3688,7 @@ s32 Pursuer_PlaceInRoom(Pursuer *p, s32 room, s32 tri, u32 side) {
     VObject *rm;
     u32 i;
 
-    ((void (*)(Character *))Character_ToRoom)(&p->c);   /* the original passes only the character */
+    Character_ToRoom(&p->c, room, tri, (s32)side);   /* (its own a0..a3, passed on untouched) */
     p->c.a.room = room;
     rm = gRooms;
     if (side < 2) {

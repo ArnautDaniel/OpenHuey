@@ -1815,7 +1815,7 @@ s32 EventCond_Eval(VObject *ev) {
         r = VCALL(gCamDirector, 0x2C, s32 (*)(VObject *))(gCamDirector);
         break;
     case 0x2F:   /* the item manager's Items_CountItem3F under 10 */
-        r = Items_CountItem3F((u8 *)gSubScreen + 0x8) < 10;
+        r = (u32)Items_CountItem3F((u8 *)gSubScreen + 0x8) < 10;
         break;
     case 0x11: {   /* the room's +0x2C test pc[1] (with the context's character and the pc) */
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);

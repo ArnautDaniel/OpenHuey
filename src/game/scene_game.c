@@ -2573,7 +2573,7 @@ void StatusTimers_Frame(u8 *o) {
     if (AT(o, 0x4, s32) > 0) {
         AT(o, 0x4, s32)--;
         if (!(AT(o, 0x0, f32) < 0.0f)) {
-            ((void (*)(void *))Threat_Raise)((u8 *)gProgress + 0x7B8);
+            Threat_Raise((u8 *)gProgress + 0x7B8, AT(o, 0x0, f32));   /* (f12 still holds it) */
         } else {
             f32 x = AT(o, 0x0, f32);
 
