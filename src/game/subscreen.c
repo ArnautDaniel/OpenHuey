@@ -163,7 +163,7 @@ void SubScreen_SetLayout(SubScreen *s, s32 type) {
 extern void *func_00322570(u32 size, void *p);   /* placement new */
 extern void func_00305380(void *p);
 extern void SaveScreen_Init(void *card, void *buf, void *buf2);
-extern void func_0038F7D0(void *s);
+void func_0038F7D0(SubScreen *s);
 void func_00388D30(SubScreen *s);
 extern void *D_00474020[];       /* the 0x15C helper's base vtable */
 extern void *D_00474040[];
@@ -2390,4 +2390,135 @@ void func_00386150(SubScreen *s) {
     alpha = b > 0 ? b : -b;
     SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
     SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+}
+
+extern const PTMF D_0044B7A0;
+
+/* state: the extras list - up / down within the group of 8 (round; 31 at most), left /
+ * previous and right / next to the group before / after (round), confirm an unlocked extra
+ * (a fade from 0, progress +0x84, state D_0044B7A0; a buzzer if locked), cancel (progress
+ * flag 4); then the list */
+void func_0038D7E0(SubScreen *s) {
+    if (!s->fading) {
+        u8 *k = &SUB_PAGE(s, 0x0, u8);
+        u8 base = *k & ~7;
+        u32 pad = D_0047E36C;
+
+        if (pad & MENU_UP) {
+            (*k)--;
+            if ((s8)*k < base) {
+                *k = base + 7;
+            }
+            if (*k >= 0x20) {
+                *k = 0x1F;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & MENU_DOWN) {
+            (*k)++;
+            if (base + 7 < *k) {
+                *k = base;
+            }
+            if (*k >= 0x20) {
+                *k = base;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & (MENU_LEFT | MENU_PREV)) {
+            *k -= 8;
+            if ((s8)*k < 0) {
+                *k = 0x1F;
+            }
+            *k &= ~7;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & (MENU_RIGHT | MENU_NEXT)) {
+            *k += 8;
+            if (*k >= 0x20) {
+                *k = 0;
+            }
+            *k &= ~7;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            Progress_SetFlag(gProgress, 4);
+        } else if (D_0047E36C & MENU_CONFIRM) {
+            if (*k < 0x20 && func_0038DF90(s, *k)) {
+                s->fade = 0;
+                s->fadeStep = 0x10;
+                VCALL(gProgress, 0x84, void (*)(Progress *))(gProgress);
+                ptmf_set(&s->state, &D_0044B7A0);
+                Sound_PlaySE(SE_DECIDE);
+            } else {
+                Sound_PlaySE(SE_BUZZER);
+            }
+        }
+    }
+    func_0038DBE0(s);
+}
+
+/* ---- the costume page ---- */
+
+extern void *gCharPartner;
+extern s32 func_001364F0(void *c);
+
+/* the costume page set up: the costumes worn kept (progress vars 0x26 / 0x27 to 0x28 / 0x29);
+ * Fiona's choices (page[0..5]: 0, 2, 3, 7, 6, 8 - the ones not unlocked marked 0x80, the
+ * current one's place in page[7]) and Hewie's (page[8..10]: 0, 1, 2, its place in page[12];
+ * only with him here - his model refreshed first when in the room); the cursors (13..16) */
+void func_0038F7D0(SubScreen *s) {
+    Progress *p = gProgress;
+    u8 *sys;
+    s32 i;
+
+    Progress_SetVar(p, 0x28, Progress_GetVar(p, 0x26));
+    Progress_SetVar(p, 0x29, Progress_GetVar(p, 0x27));
+    SUB_PAGE(s, 0x0, u8) = 0;
+    SUB_PAGE(s, 0x1, u8) = 2;
+    SUB_PAGE(s, 0x2, u8) = 3;
+    SUB_PAGE(s, 0x3, u8) = 7;
+    SUB_PAGE(s, 0x4, u8) = 6;
+    SUB_PAGE(s, 0x5, u8) = 8;
+    SUB_PAGE(s, 0x6, u8) = 0xFF;
+    SUB_PAGE(s, 0x7, u8) = 0xFF;
+    sys = D_0044E978;
+    if (!(AT(sys, 0x24, u32) & 0x2)) {
+        SUB_PAGE(s, 0x3, u8) |= 0x80;
+    }
+    if (!(AT(sys, 0x24, u32) & 0x8)) {
+        SUB_PAGE(s, 0x5, u8) |= 0x80;
+    }
+    if (p != NULL && gCharPlayer != NULL && AT(gCharPlayer, 0x28, u8) != 0) {
+        for (i = 0; SUB_PAGE(s, i, u8) != 0xFF; i++) {
+            if (SUB_PAGE(s, i, u8) == (u8)Progress_GetVar(p, 0x26)) {
+                SUB_PAGE(s, 0x7, u8) = i;
+                break;
+            }
+        }
+    }
+    SUB_PAGE(s, 0x8, u8) = 0;
+    SUB_PAGE(s, 0x9, u8) = 1;
+    SUB_PAGE(s, 0xA, u8) = 2;
+    SUB_PAGE(s, 0xB, u8) = 0xFF;
+    SUB_PAGE(s, 0xC, u8) = 0xFF;
+    if (!(AT(sys, 0x2C, u32) & 0x400000) || !((AT(sys, 0x24, u32) & 0x100) || (AT(sys, 0x24, u32) & 0x1000))) {
+        SUB_PAGE(s, 0xA, u8) |= 0x80;
+    }
+    if ((AT(gCharPartner, 0x30, s32) == 0x37 || (AT(p, 0x1C, u32) & 0x1000000)) && p != NULL && gCharPartner != NULL &&
+        AT(gCharPartner, 0x28, u8) != 0) {
+        u8 *h = gCharPartner;
+
+        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && func_001364F0(h)) {
+            VCALL(h, 0x90, void (*)(void *))(h);
+            VCALL(h, 0x7C, void (*)(void *))(h);
+        }
+        if (AT(gCharPartner, 0xE0, u8) == 0) {
+            for (i = 8; SUB_PAGE(s, i, u8) != 0xFF; i++) {
+                if (SUB_PAGE(s, i, u8) == (u8)Progress_GetVar(p, 0x27)) {
+                    SUB_PAGE(s, 0xC, u8) = i - 8;
+                    break;
+                }
+            }
+        }
+    }
+    SUB_PAGE(s, 0xD, u8) = 0;
+    SUB_PAGE(s, 0xE, u8) = 0;
+    SUB_PAGE(s, 0xF, u8) = SUB_PAGE(s, 0x7, u8);
+    SUB_PAGE(s, 0x10, u8) = SUB_PAGE(s, 0xC, u8);
 }
