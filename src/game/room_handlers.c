@@ -6498,3 +6498,38 @@ s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
     VCALL(D_0044E4F0, 0x64, void (*)(VObject *, u32, s32))(D_0044E4F0, s << 24 | 0x808080, 0);
     return 1;
 }
+
+extern void *D_0047A310[];
+
+static void effect_7A310_init(void **obj) {
+    obj[0] = D_0047A310;
+    obj[0xF10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xF14 / 4] = -1;
+    obj[0xF10 / 4] = D_0046FC30;
+    obj[0xF48 / 4] = D_00469D00;
+    ((s32 *)obj)[0xF4C / 4] = -1;
+    obj[0xF48 / 4] = D_0046FC30;
+}
+
+/* (as func_002A91F0)  the 0x10D0-byte effect D_0047A310: byte 3 0 / 1 one made and sent 1 / 0,
+ * its slot kept in script variable 11; 2 that one sent nothing */
+s32 func_00341C30(void *self, void *a1, u8 *cmd) {
+    u8 *mgr;
+    s32 slot, arg;
+
+    switch (cmd[3]) {
+    case 0:
+    case 1:
+        mgr = D_0044E578;
+        slot = Effect_New(mgr, 0x10D0, effect_7A310_init);
+        arg = cmd[3] == 0;
+        func_002D6090(mgr, slot, &arg);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 11, slot);
+        break;
+    case 2:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 11);
+        func_002D6090(D_0044E578, slot, NULL);
+        break;
+    }
+    return 1;
+}
