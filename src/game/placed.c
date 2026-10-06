@@ -33,10 +33,10 @@ extern void *D_0046F520[], *D_004727E0[], *D_00472840[], *D_004758A0[], *D_00475
 #define SAVED(p) ((u8 *)(p) + 0xA14)
 #define NUM_SAVED 60
 
-void *func_00120F40(void *p);
+void *Thing_dtor(void *p);
 void *Actor_dtor(void *p);
 
-s32 func_002D7430(u8 *p, s32 a1, s32 a2, s32 a3);
+s32 PlacedThings_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3);
 
 extern void *D_00476B50[];
 void *func_003156A0(u8 *o, s32 flags);
@@ -55,10 +55,10 @@ void Kind27_Arrived(void);
 void Kind27_WalkToExit(void);
 void Kind27_OnToNextExit(void);
 s32 Kind27_PickDestination(void);
-void func_00355950(void);
-void func_00367E90(void);
+void ThingShared_Draw(void);
+void Thing10_Draw(void);
 
-void func_00355940(u8 *o);
+void ThingShared_Frame(u8 *o);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -98,7 +98,8 @@ void *func_00120D60(B0_Pool *p, u32 i) {
 /* Free an element by address. */
 /* Allocate an element of the given size. */
 /* Constructor: base vtable, then derived vtable. */
-void *func_00120F40(void *p) {
+/* 0x00120F40 */
+void *Thing_dtor(void *p) {
     if (p != NULL) {
         *(void **)p = D_00469A00;
         *(void **)p = D_00469C20;
@@ -141,7 +142,8 @@ void *func_002D0EE0(u8 *m, s32 flags) {
 }
 
 /* +0x8 a new thing of `kind` (0..10) from the pool (NULL: none / full) */
-void *func_002D6B00(u8 *m, u32 kind) {
+/* 0x002D6B00 */
+void *PlacedThings_New(u8 *m, u32 kind) {
     static void **const sClass[11] = {
         D_0046F520, D_004727E0, D_00472840, D_004758A0, D_00475A80, D_00475960,
         D_00475900, D_004759C0, D_00475A20, D_00479E70, D_00479ED0,
@@ -167,7 +169,8 @@ void *func_002D6B00(u8 *m, u32 kind) {
 }
 
 /* the destructor of a thing (D_00479500) */
-void *func_002D6F60(void *o, s32 flags) {
+/* 0x002D6F60 */
+void *ThingShared_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479500;
         AT(o, 0x0, void **) = D_00469A00;
@@ -181,7 +184,8 @@ void *func_002D6F60(void *o, s32 flags) {
 
 /* +0x14 another of `kind` came: when 10 (kind 10: 5) lie about, the oldest of them is aged out
  * (+0xE4 -1) */
-void func_002D6FD0(u8 *m, u32 kind) {
+/* 0x002D6FD0 */
+void PlacedThings_AnotherCame(u8 *m, u32 kind) {
     s32 max = 10, n = 0, i;
     u8 *oldest = NULL;
 
@@ -221,7 +225,8 @@ void func_002A7700(s32 *e) {
 }
 
 /* +0x1C back from the save */
-void func_002D7120(u8 *m) {
+/* 0x002D7120 */
+void PlacedThings_Load(u8 *m) {
     s32 *e = (s32 *)SAVED(gProgress);
     s32 i;
 
@@ -241,7 +246,8 @@ void func_002D7120(u8 *m) {
 }
 
 /* +0x18 into the save */
-void func_002D71F0(u8 *m) {
+/* 0x002D71F0 */
+void PlacedThings_Save(u8 *m) {
     s32 *e = (s32 *)SAVED(gProgress);
     s32 n = 0, i;
 
@@ -265,7 +271,8 @@ void func_002D71F0(u8 *m) {
 }
 
 /* +0x10 the first thing of `kind` from block `from` on (NULL: none) */
-void *func_002D7320(u8 *m, u32 kind, s32 from) {
+/* 0x002D7320 */
+void *PlacedThings_FirstOfKind(u8 *m, u32 kind, s32 from) {
     s32 i;
 
     if (from < 0 || from >= 0x80) {
@@ -282,7 +289,8 @@ void *func_002D7320(u8 *m, u32 kind, s32 from) {
 }
 
 /* +0xC the thing in block i, if active */
-void *func_002D73D0(u8 *m, s32 i) {
+/* 0x002D73D0 */
+void *PlacedThings_Get(u8 *m, s32 i) {
     u8 *t;
 
     if (i < 0 || i >= 0x80) {
@@ -296,13 +304,15 @@ void *func_002D73D0(u8 *m, s32 i) {
 }
 
 /* tail call: member at +0xA040, virtual slot 0x10 */
-s32 func_002D7430(u8 *p, s32 a1, s32 a2, s32 a3) {
+/* 0x002D7430 */
+s32 PlacedThings_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3) {
     u8 *m = p + 0xA040;
     return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, a1, a2, a3);
 }
 
 /* +0x24 everything gone */
-void func_002D7450(u8 *m) {
+/* 0x002D7450 */
+void PlacedThings_Clear(u8 *m) {
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -319,7 +329,8 @@ void func_002D7450(u8 *m) {
 
 /* +0x20: put the kept kinds lying in the current room onto their nav mesh triangle (+0x34;
  * position +0x10, copied to +0x40) */
-void func_002D69E0(u8 *mgr) {
+/* 0x002D69E0 */
+void PlacedThings_PlaceKept(u8 *mgr) {
     s32 room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     VObject *nav = (VObject *)gNavMesh;
     s32 i;
@@ -347,9 +358,9 @@ void func_002D69E0(u8 *mgr) {
 extern const PTMF sGameStateNull;
 extern const PTMF D_00414790, D_004147A0, D_004147B0;   /* +0x50 (virtual), func_002D54D0, func_002D5460 */
 extern void *D_0046FC30[], *D_00469D00[];
-extern void func_00121300(u8 *a);   /* Actor +0xC */
-extern void func_00121220(u8 *a);   /* Actor +0x30 */
-s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
+extern void Thing_Setup(u8 *a);   /* Actor +0xC */
+extern void Thing_Frame(u8 *a);   /* Actor +0x30 */
+s32 Thing_PutDown(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
 
 #define BALL_VEL(b) ((f32 *)((b) + 0xB0))
 #define BALL_POS(b) ((f32 *)((b) + 0x10))
@@ -376,7 +387,8 @@ static void ball_drop(u8 *b) {
 }
 
 /* the destructor: the ball given back when Fiona has none */
-void *func_002D5F40(u8 *b, s32 flags) {
+/* 0x002D5F40 */
+void *Ball_dtor(u8 *b, s32 flags) {
     if (b != NULL) {
         AT(b, 0x0, void **) = D_0046F520;
         if (gSubScreen != NULL) {
@@ -396,8 +408,9 @@ void *func_002D5F40(u8 *b, s32 flags) {
 }
 
 /* +0xC set up: blocked by nav flags 0x20020008, in the current room, white, flying */
-void func_002D5ED0(u8 *b) {
-    func_00121300(b);
+/* 0x002D5ED0 */
+void Ball_Setup(u8 *b) {
+    Thing_Setup(b);
     AT(b, 0xC4, s32) = 0;
     AT(b, 0xC0, u32) = 0x20020008;
     AT(b, 0xE0, u8) = 0;
@@ -410,7 +423,8 @@ void func_002D5ED0(u8 *b) {
 }
 
 /* +0x2C draw: a 32 x 32 sprite (cell (480, 64)) a unit above it */
-void func_002D5130(u8 *b) {
+/* 0x002D5130 */
+void Ball_Draw(u8 *b) {
     QuadRec r __attribute__((aligned(16)));
     QuadDrawer q __attribute__((aligned(16)));
 
@@ -629,12 +643,14 @@ landed:
     }
 }
 
-void func_002D56D0(u8 *b) {
+/* 0x002D56D0 */
+void Ball_Flying(u8 *b) {
     ball_fly(b, 1, func_002D5290, 1);
 }
 
 /* +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_002D5A50(u8 *b) {
+/* 0x002D5A50 */
+void Ball_MotionState(u8 *b) {
     if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(b, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -662,7 +678,7 @@ void func_002D5A50(u8 *b) {
 }
 
 static inline __attribute__((always_inline)) u32 thing_put(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
-    u32 r = func_00121000(b, tri, pos, rot, rr, h) & 0xFF;
+    u32 r = Thing_PutDown(b, tri, pos, rot, rr, h) & 0xFF;
 
     if (r == 1 && gSubScreen != NULL) {
         VCALL(gSubScreen, 0x1C, void (*)(VObject *))(gSubScreen);
@@ -671,7 +687,8 @@ static inline __attribute__((always_inline)) u32 thing_put(u8 *b, u32 tri, f32 *
 }
 
 /* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_002D5C10(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+/* 0x002D5C10 */
+u32 Ball_PutDown(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return thing_put(b, tri, pos, rot, rr, h);
 }
 
@@ -696,7 +713,8 @@ static inline __attribute__((always_inline)) s32 thing_step_tri(u8 *b, u8 *a, f3
 
 /* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
  * the step is stopped */
-s32 func_002D5C70(u8 *b, u8 *a, f32 *to) {
+/* 0x002D5C70 */
+s32 Ball_LandTri(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
@@ -744,8 +762,9 @@ static inline __attribute__((always_inline)) void thing_kick(u8 *b) {
 
 /* +0x30 each frame: gone after 3 minutes; in Fiona's room, when she touches it (+0x74, within
  * 5) it is kicked the way she faces (2 ahead, 2 up), once per touch */
-void func_002D5D10(u8 *b) {
-    func_00121220(b);
+/* 0x002D5D10 */
+void Ball_Frame(u8 *b) {
+    Thing_Frame(b);
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
@@ -776,7 +795,8 @@ void func_00120F90(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front) {
 }
 
 /* +0x48 where it lands on the mesh: none (-1) */
-s32 func_00120FF0(void) {
+/* 0x00120FF0 */
+s32 Thing_LandTri(void) {
     return -1;
 }
 
@@ -795,7 +815,8 @@ static inline __attribute__((always_inline)) void thing_set_front(u8 *o, f32 y, 
 
 /* +0x44 put it down at pos (turned rot, sizes r / h) where the mesh takes it (+0x48): its spot
  * and front point (r ahead); 0 if the mesh doesn't take it */
-s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h) {
+/* 0x00121000 */
+s32 Thing_PutDown(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h) {
     f32 at[4] __attribute__((aligned(16)));
     s32 t;
 
@@ -814,7 +835,8 @@ s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h) {
 }
 
 /* +0x40 put it at pos (off the mesh): its front point r ahead and 3 up */
-void func_00121100(u8 *o, f32 *pos, f32 *rot, f32 r, f32 h) {
+/* 0x00121100 */
+void Thing_PutAt(u8 *o, f32 *pos, f32 *rot, f32 r, f32 h) {
     sceVu0CopyVector((f32 *)(o + 0x10), pos);
     sceVu0CopyVector((f32 *)(o + 0x50), rot);
     AT(o, 0xEC, f32) = r;
@@ -824,13 +846,15 @@ void func_00121100(u8 *o, f32 *pos, f32 *rot, f32 r, f32 h) {
 }
 
 /* +0x4C to rest (state D_003AF1B8) */
-void func_001211B0(u8 *o) {
+/* 0x001211B0 */
+void Thing_MotionState(u8 *o) {
     ptmf_set(&AT(o, 0xA0, PTMF), &D_003AF1B8);
 }
 
 /* +0x30 a frame: older by one while the game runs (not in a cutscene +0x38, not paused by the
  * events +0x50, not progress flag 8; -1 stays), then +0x4C and its state */
-void func_00121220(u8 *o) {
+/* 0x00121220 */
+void Thing_Frame(u8 *o) {
     if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0
         && (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) & 0xFF) == 0
         && (Progress_TestFlag(gProgress, 8) & 0xFF) == 0) {
@@ -847,11 +871,13 @@ void func_00121220(u8 *o) {
 }
 
 /* +0x2C nothing */
-void func_001212F0(void) {
+/* 0x001212F0 */
+void Thing_Draw(void) {
 }
 
 /* +0xC set up: the actor's, then sizes 0, its bounce (0, -0.2, 0, 1) at +0x100, not held */
-void func_00121300(u8 *o) {
+/* 0x00121300 */
+void Thing_Setup(u8 *o) {
     Actor_Reset((Actor *)o);
     AT(o, 0xF0, s32) = 0;
     AT(o, 0xEC, s32) = 0;
@@ -884,7 +910,8 @@ extern void *D_004727E0[];
 extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), func_00314CE0 */
 
 /* +0x8 destructor */
-void *func_00314990(u8 *o, s32 flags) {
+/* 0x00314990 */
+void *Thing01_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004727E0;
         AT(o, 0x0, void **) = D_00469A00;
@@ -962,7 +989,8 @@ static inline void half_sprite(u8 *o, f32 kr, f32 kg, f32 kb) {
 }
 
 /* +0x2C draw: a half-size sprite in its colour */
-void func_00314B90(u8 *o) {
+/* 0x00314B90 */
+void Thing01_Draw(u8 *o) {
     half_sprite(o, 64.0f, 32.0f, 128.0f);
 }
 
@@ -978,7 +1006,8 @@ void func_00314CE0(u8 *o) {
 /* +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
  * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
  * anything else bursts it */
-void func_00314D40(u8 *o) {
+/* 0x00314D40 */
+void Thing01_Flying(u8 *o) {
     static const union { u32 u; f32 f; } kDrag = {0x3F733333};
     f32 *v = BALL_VEL(o);
     f32 to[4] __attribute__((aligned(16)));
@@ -1024,7 +1053,8 @@ void func_00314D40(u8 *o) {
 }
 
 /* +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00314F20(u8 *o) {
+/* 0x00314F20 */
+void Thing01_MotionState(u8 *o) {
     if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(o, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1049,13 +1079,15 @@ void func_00314F20(u8 *o) {
 }
 
 /* +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_003150A0(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+/* 0x003150A0 */
+u32 Thing01_PutDown(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return thing_put(o, tri, pos, rot, rr, h);
 }
 
 /* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
  * the step is stopped */
-s32 func_00315100(u8 *o, u8 *a, f32 *to) {
+/* 0x00315100 */
+s32 Thing01_LandTri(u8 *o, u8 *a, f32 *to) {
     return thing_step_tri(o, a, to);
 }
 
@@ -1067,7 +1099,7 @@ static inline __attribute__((always_inline)) void thing_stomped(u8 *o, s16 a, s1
     u8 *c;
     f32 d[4] __attribute__((aligned(16)));
 
-    func_00121220(o);
+    Thing_Frame(o);
     if (AT(o, 0x28, u8) == 0) {
         return;
     }
@@ -1104,13 +1136,15 @@ static inline __attribute__((always_inline)) void thing_stomped(u8 *o, s16 a, s1
     thing_kick(o);
 }
 
-void func_003151A0(u8 *o) {
+/* 0x003151A0 */
+void Thing01_Frame(u8 *o) {
     thing_stomped(o, 5, 4, func_00314A00);
 }
 
 /* +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
-void func_003154B0(u8 *o) {
-    func_00121300(o);
+/* 0x003154B0 */
+void Thing01_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0x100, s32) = 0;
     AT(o, 0x104, u32) = 0xBDCCCCCD;
     AT(o, 0x108, s32) = 0;
@@ -1130,7 +1164,7 @@ void func_003154B0(u8 *o) {
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
 extern void *D_00472840[], *D_00479500[], *D_00476B50[];
-extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
+extern void ThingShared_Setup(u8 *o);   /* D_00479500 +0xC */
 extern void func_003546B0(u8 *o);
 extern s32 func_00354910(u8 *o);
 extern void func_00354C90(u8 *o);
@@ -1139,7 +1173,8 @@ extern s32 func_00354D50(u8 *o);
 extern void func_00354AF0(u8 *o);
 
 /* +0x8 destructor */
-void *func_00315540(u8 *o, s32 flags) {
+/* 0x00315540 */
+void *Thing02_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00472840;
         AT(o, 0x0, void **) = D_00479500;
@@ -1173,7 +1208,8 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
 }
 
 /* +0x2C draw */
-void func_003155C0(u8 *o) {
+/* 0x003155C0 */
+void Thing02_Draw(u8 *o) {
     turned_model(o, 1, 0, 1);
 }
 
@@ -1204,7 +1240,7 @@ static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, v
     Progress *p;
     s32 r, a, b;
 
-    func_00355940(o);
+    ThingShared_Frame(o);
     if (AT(o, 0x28, u8) == 0) {
         return;
     }
@@ -1251,13 +1287,14 @@ static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, v
     AT(o, 0x28, u8) = 0;
 }
 
-void func_00315700(u8 *o) {
+/* 0x00315700 */
+void Thing02_Frame(u8 *o) {
     thing_watch(o, 0xFD0, ShoveBurst_Init);
 }
 
 /* the shared class's set up, its settings (+0x122..+0x12E), a random turn */
 static inline void thing_setup(u8 *o, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f, s16 g) {
-    func_00355960(o);
+    ThingShared_Setup(o);
     AT(o, 0x122, s16) = a;
     AT(o, 0x124, s16) = b;
     AT(o, 0x126, s16) = c;
@@ -1269,7 +1306,8 @@ static inline void thing_setup(u8 *o, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f, 
 }
 
 /* +0xC set up */
-void func_00315AB0(u8 *o) {
+/* 0x00315AB0 */
+void Thing02_Setup(u8 *o) {
     thing_setup(o, 100, 20, 15, 900, 10, 10, 2);
 }
 
@@ -1323,8 +1361,9 @@ void func_003551C0(u8 *o) {
     }
 }
 
-/* (as func_002D6F60)  the destructor of a thing (D_00479E70) */
-void *func_003671B0(void *o, s32 flags) {
+/* (as ThingShared_dtor)  the destructor of a thing (D_00479E70) */
+/* 0x003671B0 */
+void *Thing09_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479E70;
         AT(o, 0x0, void **) = D_00469A00;
@@ -1377,8 +1416,9 @@ void func_003674C0(u8 *b) {
     sceVu0AddVector(v, n, v);
 }
 
-/* (as func_002D6F60)  the destructor of a thing (D_00479ED0) */
-void *func_00367E20(void *o, s32 flags) {
+/* (as ThingShared_dtor)  the destructor of a thing (D_00479ED0) */
+/* 0x00367E20 */
+void *Thing10_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479ED0;
         AT(o, 0x0, void **) = D_00469A00;
@@ -1390,7 +1430,8 @@ void *func_00367E20(void *o, s32 flags) {
     return o;
 }
 
-void func_00367E90(void) {
+/* 0x00367E90 */
+void Thing10_Draw(void) {
 }
 
 /* (as func_002D54D0)  the rolling state: moved on the nav mesh, slowed by friction (0.03 x the slope's flatness)
@@ -1438,9 +1479,10 @@ void func_003681D0(u8 *b) {
     ball_roll(b, 1);
 }
 
-/* (as func_002D5ED0)  +0xC set up: blocked by nav flags 0x20020008, in the current room, white, flying */
-void func_00368B40(u8 *b) {
-    func_00121300(b);
+/* (as Ball_Setup)  +0xC set up: blocked by nav flags 0x20020008, in the current room, white, flying */
+/* 0x00368B40 */
+void Thing10_Setup(u8 *b) {
+    Thing_Setup(b);
     AT(b, 0xC4, s32) = 0;
     AT(b, 0xC0, u32) = 0x20020008;
     AT(b, 0xE0, u8) = 0;
@@ -1452,8 +1494,9 @@ void func_00368B40(u8 *b) {
     AT(b, 0x120, u16) = 0;
 }
 
-/* (as func_002D6F60)  the destructor of a thing (D_004758A0) */
-void *func_00333240(void *o, s32 flags) {
+/* (as ThingShared_dtor)  the destructor of a thing (D_004758A0) */
+/* 0x00333240 */
+void *Thing03_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004758A0;
         AT(o, 0x0, void **) = D_00469A00;
@@ -1474,19 +1517,22 @@ void func_00333880(u8 *o) {
     }
 }
 
-/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_003341D0(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+/* (as Ball_PutDown)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+/* 0x003341D0 */
+u32 Thing03_PutDown(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return thing_put(b, tri, pos, rot, rr, h);
 }
 
-/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+/* (as Ball_LandTri)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
  * the step is stopped */
-s32 func_00334230(u8 *b, u8 *a, f32 *to) {
+/* 0x00334230 */
+s32 Thing03_LandTri(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
-/* (as func_002D6F60)  the destructor of a thing (D_00475900) */
-void *func_00334560(void *o, s32 flags) {
+/* (as ThingShared_dtor)  the destructor of a thing (D_00475900) */
+/* 0x00334560 */
+void *Thing06_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00475900;
         AT(o, 0x0, void **) = D_00469A00;
@@ -1507,10 +1553,11 @@ void func_003348A0(u8 *o) {
     }
 }
 
-/* (as func_00314D40)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
+/* (as Thing01_Flying)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
  * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
  * anything else bursts it */
-void func_00334900(u8 *o) {
+/* 0x00334900 */
+void Thing06_Flying(u8 *o) {
     static const union { u32 u; f32 f; } kDrag = {0x3F733333};
     f32 *v = BALL_VEL(o);
     f32 to[4] __attribute__((aligned(16)));
@@ -1555,20 +1602,23 @@ void func_00334900(u8 *o) {
     func_003345D0(o, out);
 }
 
-/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_00334C60(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+/* (as Ball_PutDown)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+/* 0x00334C60 */
+u32 Thing06_PutDown(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return thing_put(b, tri, pos, rot, rr, h);
 }
 
-/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+/* (as Ball_LandTri)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
  * the step is stopped */
-s32 func_00334CC0(u8 *b, u8 *a, f32 *to) {
+/* 0x00334CC0 */
+s32 Thing06_LandTri(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
-/* (as func_003154B0)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
-void func_00335070(u8 *o) {
-    func_00121300(o);
+/* (as Thing01_Setup)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
+/* 0x00335070 */
+void Thing06_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0x100, s32) = 0;
     AT(o, 0x104, u32) = 0xBDCCCCCD;
     AT(o, 0x108, s32) = 0;
@@ -1584,8 +1634,9 @@ void func_00335070(u8 *o) {
     AT(o, 0x120, u16) = 0;
 }
 
-/* (as func_00315540)  +0x8 destructor */
-void *func_00335100(u8 *o, s32 flags) {
+/* (as Thing02_dtor)  +0x8 destructor */
+/* 0x00335100 */
+void *Thing05_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00475960;
         AT(o, 0x0, void **) = D_00479500;
@@ -1598,8 +1649,9 @@ void *func_00335100(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_00315540)  +0x8 destructor */
-void *func_003356C0(u8 *o, s32 flags) {
+/* (as Thing02_dtor)  +0x8 destructor */
+/* 0x003356C0 */
+void *Thing07_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004759C0;
         AT(o, 0x0, void **) = D_00479500;
@@ -1612,8 +1664,9 @@ void *func_003356C0(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_00315540)  +0x8 destructor */
-void *func_00335C80(u8 *o, s32 flags) {
+/* (as Thing02_dtor)  +0x8 destructor */
+/* 0x00335C80 */
+void *Thing08_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00475A20;
         AT(o, 0x0, void **) = D_00479500;
@@ -1626,8 +1679,9 @@ void *func_00335C80(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_002D6F60)  the destructor of a thing (D_00475A80) */
-void *func_00336220(void *o, s32 flags) {
+/* (as ThingShared_dtor)  the destructor of a thing (D_00475A80) */
+/* 0x00336220 */
+void *Thing04_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00475A80;
         AT(o, 0x0, void **) = D_00469A00;
@@ -1648,10 +1702,11 @@ void func_00336550(u8 *o) {
     }
 }
 
-/* (as func_00314D40)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
+/* (as Thing01_Flying)  +0x50 the flying state: under gravity, slowed sideways to 0.95, one step along the nav mesh;
  * landing on a floor above its spot's height ends there (still flying), a hole lets it drop,
  * anything else bursts it */
-void func_003365B0(u8 *o) {
+/* 0x003365B0 */
+void Thing04_Flying(u8 *o) {
     static const union { u32 u; f32 f; } kDrag = {0x3F733333};
     f32 *v = BALL_VEL(o);
     f32 to[4] __attribute__((aligned(16)));
@@ -1696,20 +1751,23 @@ void func_003365B0(u8 *o) {
     func_00336290(o, out);
 }
 
-/* (as func_002D5C10)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
-u32 func_00336910(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+/* (as Ball_PutDown)  +0x44 the base's; when it returns 1, the items are told (+0x1C) */
+/* 0x00336910 */
+u32 Thing04_PutDown(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     return thing_put(b, tri, pos, rot, rr, h);
 }
 
-/* (as func_002D5C70)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
+/* (as Ball_LandTri)  +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`, -1 when
  * the step is stopped */
-s32 func_00336970(u8 *b, u8 *a, f32 *to) {
+/* 0x00336970 */
+s32 Thing04_LandTri(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
-/* (as func_003154B0)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
-void func_00336D20(u8 *o) {
-    func_00121300(o);
+/* (as Thing01_Setup)  +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
+/* 0x00336D20 */
+void Thing04_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0x100, s32) = 0;
     AT(o, 0x104, u32) = 0xBDCCCCCD;
     AT(o, 0x108, s32) = 0;
@@ -1740,8 +1798,9 @@ extern const PTMF D_0042F240;
 extern const PTMF D_0042F250;
 extern const PTMF D_0042F260;
 
-/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00355780(u8 *b) {
+/* (as Ball_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+/* 0x00355780 */
+void ThingShared_MotionState(u8 *b) {
     if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(b, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1768,17 +1827,20 @@ void func_00355780(u8 *b) {
     }
 }
 
-/* +0xE8 counted, then func_00121220 */
-void func_00355940(u8 *o) {
+/* +0xE8 counted, then Thing_Frame */
+/* 0x00355940 */
+void ThingShared_Frame(u8 *o) {
     AT(o, 0xE8, s32)++;
-    func_00121220(o);
+    Thing_Frame(o);
 }
 
-void func_00355950(void) {
+/* 0x00355950 */
+void ThingShared_Draw(void) {
 }
 
-/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00367A00(u8 *b) {
+/* (as Ball_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+/* 0x00367A00 */
+void Thing09_MotionState(u8 *b) {
     if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(b, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1805,8 +1867,9 @@ void func_00367A00(u8 *b) {
     }
 }
 
-/* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00368710(u8 *b) {
+/* (as Ball_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+/* 0x00368710 */
+void Thing10_MotionState(u8 *b) {
     if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(b, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1833,8 +1896,9 @@ void func_00368710(u8 *b) {
     }
 }
 
-/* (as func_00314F20)  +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00334AE0(u8 *o) {
+/* (as Thing01_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+/* 0x00334AE0 */
+void Thing06_MotionState(u8 *o) {
     if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(o, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1858,8 +1922,9 @@ void func_00334AE0(u8 *o) {
     }
 }
 
-/* (as func_00314F20)  +0x4C the motion state for this frame (none outside the current room), and the fade */
-void func_00336790(u8 *o) {
+/* (as Thing01_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
+/* 0x00336790 */
+void Thing04_MotionState(u8 *o) {
     if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         AT(o, 0xA0, PTMF) = sGameStateNull;
         return;
@@ -1903,8 +1968,9 @@ s32 func_003672A0(u8 *b, f32 *to, f32 *at, f32 *n) {
 
 /* D_00479500 +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room,
    white */
-void func_00355960(u8 *o) {
-    func_00121300(o);
+/* 0x00355960 */
+void ThingShared_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0xE8, s32) = 0;
     AT(o, 0xC4, s32) = 0;
     AT(o, 0xC0, u32) = 0x20020008;
@@ -1917,15 +1983,18 @@ void func_00355960(u8 *o) {
     AT(o, 0x120, u16) = 0;
 }
 
-void func_00335C00(u8 *o) {
+/* 0x00335C00 */
+void Thing07_Setup(u8 *o) {
     thing_setup(o, 100, 100, 45, 3600, 20, 10, 2);
 }
 
-void func_00335640(u8 *o) {
+/* 0x00335640 */
+void Thing05_Setup(u8 *o) {
     thing_setup(o, 100, 50, 30, 1800, 15, 10, 2);
 }
 
-void func_003361B0(u8 *o) {
+/* 0x003361B0 */
+void Thing08_Setup(u8 *o) {
     thing_setup(o, 0, 0, 0, 450, 10, 10, 0);
 }
 
@@ -1939,39 +2008,47 @@ void func_003345D0(u8 *o, f32 *at) {
 }
 
 /* +0x2C draws: sprites in its colour (white; no blue) */
-void func_00334760(u8 *o) {
+/* 0x00334760 */
+void Thing06_Draw(u8 *o) {
     half_sprite(o, 128.0f, 128.0f, 128.0f);
 }
 
-void func_00336420(u8 *o) {
+/* 0x00336420 */
+void Thing04_Draw(u8 *o) {
     half_sprite(o, 128.0f, 100.0f, 0.0f);
 }
 
 /* +0x2C draws: its turned model */
-void func_00335180(u8 *o) {
+/* 0x00335180 */
+void Thing05_Draw(u8 *o) {
     turned_model(o, 1, 1, 1);
 }
 
-void func_00335740(u8 *o) {
+/* 0x00335740 */
+void Thing07_Draw(u8 *o) {
     turned_model(o, 1, 2, 1);
 }
 
-void func_00335D00(u8 *o) {
+/* 0x00335D00 */
+void Thing08_Draw(u8 *o) {
     turned_model(o, 3, 0, 1);
 }
 
 /* ---- more of the same in the other kinds: the flying / rolling states without the active
    check or the bounce sound, the stomped and watched checks with their own bursts ---- */
 
-void func_00355410(u8 *b) {
+/* 0x00355410 */
+void ThingShared_Flying(u8 *b) {
     ball_fly(b, 0, func_00354FF0, 1);
 }
 
-void func_003676C0(u8 *b) {
+/* 0x003676C0 */
+void Thing09_Flying(u8 *b) {
     ball_fly(b, 1, func_003672A0, 0);
 }
 
-void func_003683D0(u8 *b) {
+/* 0x003683D0 */
+void Thing10_Flying(u8 *b) {
     ball_fly(b, 1, func_00367F80, 0);
 }
 
@@ -1983,11 +2060,13 @@ void func_00355220(u8 *b) {
     ball_roll(b, 0);
 }
 
-void func_00334D60(u8 *o) {
+/* 0x00334D60 */
+void Thing06_Frame(u8 *o) {
     thing_stomped(o, 0x14, 8, func_003345D0);
 }
 
-void func_00336A10(u8 *o) {
+/* 0x00336A10 */
+void Thing04_Frame(u8 *o) {
     thing_stomped(o, 0xA, 6, func_00336290);
 }
 
@@ -2782,11 +2861,13 @@ static inline void Burst4B_Init(void **obj) {
     Burst4_Init(obj, D_0047A030, 0x1A50);
 }
 
-void func_00335260(u8 *o) {
+/* 0x00335260 */
+void Thing05_Frame(u8 *o) {
     thing_watch(o, 0xFC0, Burst4A_Init);
 }
 
-void func_00335820(u8 *o) {
+/* 0x00335820 */
+void Thing07_Frame(u8 *o) {
     thing_watch(o, 0x22D0, Burst4B_Init);
 }
 
@@ -2863,10 +2944,11 @@ void func_003332B0(u8 *o) {
     }
 }
 
-/* +0x30 each frame (as func_002D5D10): gone after 2.5 minutes; the stalker's check; in Fiona's
+/* +0x30 each frame (as Ball_Frame): gone after 2.5 minutes; the stalker's check; in Fiona's
    room her kick */
-void func_003342D0(u8 *b) {
-    func_00121220(b);
+/* 0x003342D0 */
+void Thing03_Frame(u8 *b) {
+    Thing_Frame(b);
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
@@ -2883,7 +2965,8 @@ void func_003342D0(u8 *b) {
 
 /* +0x2C draw: its model lying flat (-90 degrees), 0.3 up, turned by +0x124 / 256; in its last
    8 frames (age 8993..9000) faded out */
-void func_00333510(u8 *o) {
+/* 0x00333510 */
+void Thing03_Draw(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDown = {0xBFC90FDB};
     struct {
         void **vtbl;
@@ -2917,8 +3000,9 @@ void func_00333510(u8 *o) {
 
 /* +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room, white, the
    pursuer's room (0xFFFF none) and a random turn */
-void func_003344A0(u8 *o) {
-    func_00121300(o);
+/* 0x003344A0 */
+void Thing03_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0xC4, s32) = 0;
     AT(o, 0xC0, u32) = 0x20020008;
     AT(o, 0xE0, u8) = 0;
@@ -2952,14 +3036,16 @@ static inline u8 *thing_room_obj(u8 *o) {
 }
 
 /* its room object kept at its position */
-void func_00367220(u8 *o) {
+/* 0x00367220 */
+void Thing09_Draw(u8 *o) {
     sceVu0CopyVector((f32 *)(thing_room_obj(o) + 0x20), (f32 *)(o + 0x10));
 }
 
 /* +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room, white; its
    room object's flag cleared */
-void func_00367D50(u8 *o) {
-    func_00121300(o);
+/* 0x00367D50 */
+void Thing09_Setup(u8 *o) {
+    Thing_Setup(o);
     AT(o, 0xC4, s32) = 0;
     AT(o, 0xC0, u32) = 0x20020008;
     AT(o, 0xE0, u8) = 0;
@@ -3159,8 +3245,9 @@ s32 func_00354D50(u8 *o) {
 }
 
 /* +0x44 put down (the base's): when placed (1), on the floor at least, and the items told */
-u32 func_00354E70(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
-    u32 r = func_00121000(o, tri, pos, rot, rr, h) & 0xFF;
+/* 0x00354E70 */
+u32 ThingShared_PutDown(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    u32 r = Thing_PutDown(o, tri, pos, rot, rr, h) & 0xFF;
     f32 fl[4] __attribute__((aligned(16)));
 
     if (r != 1) {
@@ -3179,7 +3266,8 @@ u32 func_00354E70(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
 
 /* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`: a wall hit
    (0x40000000) -1, another hit stops `to` there */
-s32 func_00354F20(u8 *b, u8 *a, f32 *to) {
+/* 0x00354F20 */
+s32 ThingShared_LandTri(u8 *b, u8 *a, f32 *to) {
     f32 from[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
@@ -3202,8 +3290,9 @@ s32 func_00354F20(u8 *b, u8 *a, f32 *to) {
 }
 
 /* (as func_00354AF0) a kind's frame: Fiona's kick with less lift (0.6) */
-void func_00367BC0(u8 *o) {
-    func_00121220(o);
+/* 0x00367BC0 */
+void Thing09_Frame(u8 *o) {
+    Thing_Frame(o);
     if (AT(o, 0x28, u8) == 0) {
         return;
     }
@@ -3225,9 +3314,10 @@ s32 func_00367EA0(u8 *o) {
 
 extern const PTMF D_0042F200, D_0042F210, D_0042F220;
 
-/* (as func_00368710) +0x4C the motion state for this frame (none outside the current room),
+/* (as Thing10_MotionState) +0x4C the motion state for this frame (none outside the current room),
    +0x13E 0xFF when it hasn't moved since last frame, and the fade */
-void func_00333FA0(u8 *b) {
+/* 0x00333FA0 */
+void Thing03_MotionState(u8 *b) {
     f32 s;
 
     if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
@@ -3266,10 +3356,11 @@ void func_00333FA0(u8 *b) {
 
 /* +0x30 each frame, while the game runs: gone after 7.5 s; Fiona's kick (0.4 up); the pursuer
    standing on it sets it off (sound 4, a level-0x28 noise) */
-void func_003688D0(u8 *o) {
+/* 0x003688D0 */
+void Thing10_Frame(u8 *o) {
     Progress *p;
 
-    func_00121220(o);
+    Thing_Frame(o);
     if (AT(o, 0x28, u8) == 0) {
         return;
     }
@@ -3309,13 +3400,14 @@ static inline void Burst1_Init(void **obj) {
    current room a sound and a level-0x4F noise (at the door whose event spot it is on, else its
    triangle) and its burst; in a neighbouring room, through the door to the current room when
    that is open, its sound heard from there, and the noise; it is gone. Otherwise Fiona's kick */
-void func_00335DE0(u8 *o) {
+/* 0x00335DE0 */
+void Thing08_Frame(u8 *o) {
     VObject *ev, *rooms;
     Progress *p;
     s32 r, cur;
     u32 d, tri;
 
-    func_00355940(o);
+    ThingShared_Frame(o);
     if (AT(o, 0x28, u8) == 0) {
         return;
     }
@@ -3392,7 +3484,8 @@ static inline void Puff_Init(void **obj) {
    there (state 2, +0x2A); a glancing wall hit drops it to the floor with a puff (size 1, kind
    2, grey 0x50, 16); it tries once more 0.2 back; the bounce sound only when it has moved
    (+0x13E 0) - and any wall bounce counts, even the last */
-void func_00333AD0(u8 *b) {
+/* 0x00333AD0 */
+void Thing03_Flying(u8 *b) {
     f32 *v = BALL_VEL(b);
     f32 to[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
