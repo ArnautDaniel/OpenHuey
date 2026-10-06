@@ -6226,3 +6226,100 @@ s32 func_003413C0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void func_001267F0(void *c, s32 light);
+
+/* the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
+ * (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2), Hewie's
+ * +0xE4 set once there */
+s32 func_0033A980(void *self, void *a1, u8 *cmd) {
+    VObject *ev;
+    u32 c;
+
+    switch (cmd[3]) {
+    case 0:
+        AT(gCharPartner, 0xE4, u8) = 0;
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, u32))(D_0044E4D0, 1, 0x808080);
+        func_001267F0(gCharPartner, 0xF);
+        return 1;
+    case 1:
+        ev = D_0044E4D0;
+        c = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
+        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, c);
+        if (c != 0x80808080) {
+            AT(gCharPartner, 0xE4, u8) = 0;
+            VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c + 0x10000000);
+            func_001267F0(gCharPartner, 0xF);
+            return 2;
+        }
+        AT(gCharPartner, 0xE4, u8) = 1;
+        return 1;
+    case 2:
+        AT(gCharPartner, 0xE4, u8) = 0;
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, u32))(D_0044E4D0, 1, 0x80808080);
+        func_001267F0(gCharPartner, 0xF);
+        return 1;
+    case 3:
+        ev = D_0044E4D0;
+        c = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
+        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, c);
+        if (c != 0x808080) {
+            AT(gCharPartner, 0xE4, u8) = 0;
+            VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c - 0x10000000);
+            func_001267F0(gCharPartner, 0xF);
+            return 2;
+        }
+        AT(gCharPartner, 0xE4, u8) = 1;
+        return 1;
+    }
+    return 1;
+}
+
+extern void *D_004726E0[];   /* the strand (creature.c) */
+
+static void strand_init(void **obj) {
+    obj[0] = D_004726E0;
+    obj[0x40 / 4] = D_00469D00;
+    ((s32 *)obj)[0x44 / 4] = -1;
+    obj[0x40 / 4] = D_0046FC30;
+}
+
+/* D_00479FB0's update: while the pursuer is in state 4 / action 0x11 (and not stopped, +0x34,
+ * nor its delay +0x30 run out) each of its ten timers (+0x4..) counts down; at most one at 0 a
+ * frame restarts (10..41) and lets a strand (kind = the pursuer's, +0x2C) drip */
+s32 func_0036A590(u8 *o) {
+    VObject *rnd;
+    u8 *mgr;
+    u8 spawned = 0;
+    s32 i;
+
+    if (AT(gCharPursuer, 0xF8, s32) != 4 || AT(gCharPursuer, 0xFC, s32) != 0x11 || AT(o, 0x34, u8) == 1) {
+        return 0;
+    }
+    if (AT(o, 0x30, s32) >= 0) {
+        AT(o, 0x30, s32) = AT(o, 0x30, s32) - 1;
+        if (AT(o, 0x30, s32) <= 0) {
+            return 0;
+        }
+    }
+    rnd = D_0044E550;
+    mgr = D_0044E578;
+    for (i = 0; i < 10; i++) {
+        s32 *t = &AT(o, 0x4 + i * 4, s32);
+
+        if (*t != 0) {
+            (*t)--;
+        } else if (!spawned) {
+            s32 msg[2];
+            s32 slot;
+
+            spawned = 1;
+            *t = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x1F) + 10;
+            slot = Effect_New(mgr, 0x220, strand_init);
+            msg[0] = AT(gCharPursuer, 0x153C, u8);
+            msg[1] = AT(o, 0x2C, s32);
+            func_002D6090(mgr, slot, msg);
+        }
+    }
+    return 1;
+}
