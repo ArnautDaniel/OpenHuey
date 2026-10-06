@@ -3329,3 +3329,42 @@ void func_00326950(Character *c) {
         return;
     }
 }
+
+extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
+
+/* state: Fiona in sight (func_00122C90) - back to state 0; across the room's divider from her
+   - state 0x12; else its approach at 10 */
+void func_00326AF0(Character *c) {
+    if ((func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF) == 1) {
+        cr19_reset(c);
+        return;
+    }
+    if (NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+        cr19_enter(c, 0x12);
+        return;
+    }
+    func_00326130(c, 10.0f);
+}
+
+/* by the progress: flag 9 - state 9 in move 2; flag 10, or Fiona free (+0x2D, +0xE0 clear) -
+   state 5 */
+void func_00326DA0(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+
+    if (Progress_TestFlag(p, 9) != 0) {
+        AT(k, 0x69, u8) = 9;
+        AT(c, 0xF8, s32) = 2;
+        func_00127060(c);
+        cr19_settle(c);
+        return;
+    }
+    if ((Progress_TestFlag(p, 0xA) & 0xFF) == 1) {
+        cr19_enter(c, 5);
+        return;
+    }
+    if (AT(gCharPlayer, 0x2D, u8) != 0 || AT(gCharPlayer, 0xE0, u8) != 0) {
+        return;
+    }
+    cr19_enter(c, 5);
+}
