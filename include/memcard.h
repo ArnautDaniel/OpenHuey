@@ -27,6 +27,8 @@ typedef struct MemCard {
     /* 0x50 */ char path[0x80];
 } MemCard;
 
+extern MemCard *gMemCard;   /* 0x0044FF00 */
+
 /* vtable */
 #define MEMCARD_CHECK(mc, port) VCALL(mc, 0xC, void (*)(MemCard *, s32))(mc, port)
 #define MEMCARD_READ(mc, port, buf, off, size) \

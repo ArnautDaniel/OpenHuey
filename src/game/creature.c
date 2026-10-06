@@ -1853,7 +1853,6 @@ s32 func_00312510(u8 *o) {
     return 1;
 }
 
-extern u8 *gCreatures;   /* the creatures: 10 slots */
 
 /* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
  * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;

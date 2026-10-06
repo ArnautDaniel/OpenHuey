@@ -20,10 +20,6 @@ extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *D_004699C0[], *D_0046A
 extern void *D_0046C790[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
-extern void *gSceneTitle;            /* the title scene */
-extern void *gMusic;
-extern void *gAdx;            /* the ADX sound system */
-extern void *gSubPool;
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);   /* __construct_array */
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void func_002D2370(void *bgm, void *work);
@@ -97,7 +93,7 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     Task_ctor(&w->text);
     TextObj_ctor(w->textObj);
     BootCard_ctor(&w->card);
-    gMusic = &t->bgm;
+    gMusic = (VObject *)&t->bgm;
     t->bgm.vtbl = D_0046A110;
     t->unk11DA80 = 0;
     t->loaded = 0;
@@ -109,7 +105,6 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     return t;
 }
 
-extern u8 *gSystemData;          /* the system data */
 extern u8 D_0047B350;           /* the language */
 extern void func_0026BCC0(void *msg);
 extern void SubScreen_Start(void *sub);
@@ -176,8 +171,6 @@ void SceneTitle_StateTitle(SceneTitle *t) {
     func_002E3200(&t->bgm);
 }
 
-extern void *gSceneTable;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *gMovie;          /* the movie playing */
 extern void *D_0046ECC0[];        /* SceneMovie */
 extern const char D_0044E940[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
 extern void *__nw__FUiPv(u32 size, void *p);
@@ -1121,7 +1114,6 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
 /* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
 
 extern void *D_0047A330[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *D_004699C0[], *D_004699E0[];
-extern void *gAdx;
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 static inline void task_end_child(Task *t) {
@@ -1177,7 +1169,7 @@ void *Scene5_ctor(u8 *s) {
     BootCard_ctor(&w->card);
     gBootMessage = (VObject *)(s + 0xA9180);
     AT(s, 0xA9180, void **) = D_0046D7D0;
-    gMusic = s + 0x1174E4;
+    gMusic = (VObject *)(s + 0x1174E4);
     AT(s, 0x1174E4, void **) = D_0046A110;
     AT(s, 0x117500, PTMF) = sGameStateNull;
     func_002D2370(gAdx, s + 0xF4300);

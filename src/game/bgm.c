@@ -18,7 +18,6 @@ typedef struct Bgm {
 
 _Static_assert(__builtin_offsetof(Bgm, volume) == 0x110, "Bgm.volume");
 
-extern u8 *gSystemData;           /* +0x38: the master volume */
 extern void ADXT_Destroy(void *adxt);
 extern void *ADXT_Create(s32 maxch, void *work, s32 size);
 extern void ADXT_SetReloadSct(void *adxt, s32 n);
@@ -212,7 +211,6 @@ typedef struct BgmTrack {
 } BgmTrack;
 
 extern BgmTrack D_00416800[];   /* the tracks */
-extern Bgm *gAdx;
 
 /* every frame: follow the wanted track (fade out to stop, start a new one at full volume),
  * step the fade and the level, set the stream's volume */
@@ -302,7 +300,6 @@ void func_002E31D0(BgmCtl *c) {
 
 extern void *D_0046A110[];   /* BgmCtl */
 extern void *D_0046A100[];   /* its base */
-extern BgmCtl *gMusic;
 extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start

@@ -3269,7 +3269,6 @@ s32 func_00137020(Hewie *h) {
 
 /* ---- whom to go for ---- */
 
-extern Character **gCreatures;   /* the creatures (10 slots) */
 
 /* the one he goes for: the pursuer when it holds Fiona (her mode 4, sub 9) and he can reach
  * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
@@ -3289,7 +3288,7 @@ Character *func_001379C0(Hewie *h) {
     }
     if (in_his_room(h, gCharPlayer) && gCharPlayer->moveMode == 4 && gCharPlayer->moveSub == 0x12) {
         for (i = 7; i < 10; i++) {
-            Character *c = gCreatures[i];
+            Character *c = ((Character **)gCreatures)[i];
 
             if (in_his_room(h, c) && c->moveMode == 8 && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
                 return c;
@@ -3300,7 +3299,7 @@ Character *func_001379C0(Hewie *h) {
         return gCharPursuer;
     }
     for (i = 0; i < 10; i++) {
-        Character *c = gCreatures[i];
+        Character *c = ((Character **)gCreatures)[i];
         f32 d;
 
         if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 || c->a.unkC4 == 2 ||
@@ -3330,7 +3329,7 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
         sceVu0CopyVector(at, func_0017CE80(AT(h->c.motion, 0x810, void *), bone) + 12);
     }
     for (i = 0; i < 10; i++) {
-        Character *c = gCreatures[i];
+        Character *c = ((Character **)gCreatures)[i];
 
         if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 ||
             (done & (1 << c->a.slot))) {
@@ -3917,7 +3916,7 @@ void func_0013C7D0(Hewie *h) {
     }
     p = gProgress;
     for (i = 0; i < 10; i++) {
-        Character *c = gCreatures[i];
+        Character *c = ((Character **)gCreatures)[i];
 
         if (in_his_room(h, c) && (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) == 1) {
             hostile = 1;
@@ -10889,7 +10888,7 @@ void func_00161860(Hewie *h) {
             return;
         }
         for (i = 0; i < 10; i++) {
-            Character *c = gCreatures[i];
+            Character *c = ((Character **)gCreatures)[i];
 
             if (in_his_room(h, c) && (VCALL(c, 0x3C, u32 (*)(Character *, u32))(c, i & 0xFF) & 0xFF) == 1 &&
                 behind(h, c)) {

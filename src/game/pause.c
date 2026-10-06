@@ -17,9 +17,7 @@
 #include "task.h"
 #include "globals.h"
 
-extern u8 *gAdx;        /* the sound mix (+0x114 the volume) */
 extern VObject *D_00456DF0;   /* the music director */
-extern u8 *gMovie;        /* the movie playing */
 extern void func_002D1FD0(void *mix);
 extern void func_002B6340(void *movie);
 extern void func_002CF390(u8 *rect, u32 colour);

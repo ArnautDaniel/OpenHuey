@@ -140,7 +140,6 @@ extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen
 extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
 extern Scene *Scene5_ctor(void *mem);     /* mode 5: the ending */
 extern void func_001779B0(void *obj, s32 param);
-extern VObject *gSceneTitle; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
 extern void *gProgress;     /* include/progress.h */
 
 static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
@@ -278,7 +277,7 @@ extern void func_00100490(void *p);   /* operator delete */
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *D_00469D00[], *D_0046ECF0[], *D_0046F390[];
 extern void *D_0046FC00[], *D_004699C0[], *D_004699E0[], *D_0046A980[];
-extern void *D_00456DE8, *D_00456DF8, *gCreatures;
+extern void *D_00456DE8, *D_00456DF8;
 
 /* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
  * D_00456DE8) */
@@ -369,7 +368,7 @@ void *func_001BE150(u8 *o, s32 flags) {
 
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
-extern void *gSystemData, *gSceneTable, *D_004562A8, *D_004562B0;
+extern void *D_004562A8, *D_004562B0;
 extern void *func_001F4590(u8 *, s32), *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
 extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
 extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);

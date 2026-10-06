@@ -28,5 +28,18 @@ extern VObject *gSubScreen;     /* 0x0044E988 the sub screen (menus; its item li
 extern VObject *gRoutePlanner;  /* 0x0044E580 */
 extern VObject *gPad;           /* 0x0044FEB0 the pad manager */
 extern VObject *gSystem;        /* 0x0044F7F8 the system object */
+extern VObject *gMusic;         /* 0x0044E970 the music controller (BgmCtl, bgm.h) */
+
+/* structures reached by offset (AT) */
+extern u8 *gEffects;            /* 0x0044E578 the effect manager (effectmgr.h) */
+extern u8 *gRoomEffects;        /* 0x0044E4C0 */
+extern u8 *gCreatures;          /* 0x0044F258 the room creatures (10 slots) */
+extern u8 *gSystemData;         /* 0x0044E978 the system data (options, unlocks, the clear record) */
+extern void *gSceneTable;       /* 0x0044E960 the scene table: scenes at +4, the scene heap at +0x10D9040 */
+extern void *gSceneTitle;       /* 0x0044E968 the title scene */
+extern void *gSubPool;          /* 0x0044E990 the sub screen's entry pool */
+extern void *gMovie;            /* 0x0044E958 the movie playing (Movie, movie.c) */
+extern void *gMovieLib;         /* 0x0044FEF8 the CRI movie library's state (MovieLib, movie.c) */
+extern void *gAdx;              /* 0x0044E980 the ADX streaming sound system (Bgm, bgm.c) */
 
 #endif /* GLOBALS_H */

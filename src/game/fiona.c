@@ -3074,7 +3074,6 @@ extern void func_001779C0(Progress *p, s32 door, s32 slot);
 #define DOOR_SET(d, slot, door, side, v) VCALL(d, slot, void (*)(VObject *, s32, s32, s32))(d, door, side, v)
 #define ROOM_DOOR_LINK(r, room, door) VCALL(r, 0x10, s32 (*)(VObject *, s32, s32))(r, room, door)
 
-extern u8 *gCreatures;   /* the creatures: 10 slots */
 
 #define FI_HEWIE_NEAR(f) FI(f, 0x1AD5D5, u8)   /* 1: Hewie is with Fiona */
 

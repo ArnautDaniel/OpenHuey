@@ -99,7 +99,6 @@ void func_0033E2A0(u8 *o, s32 frame) {
     AT(dim, 0x0, void **) = D_00469D00;
 }
 
-extern VObject *gSystemData;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
 extern u8 D_003AC3F0[];       /* DMA chain: the static model microprogram (MPG) */
 
 #define PI 0x1.921fb6p+1f
@@ -180,7 +179,7 @@ s32 func_0033D9F0(u8 *o) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))(gSystemData);
+    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))((VObject *)gSystemData);
     if (AT(model, 0x0, s32) <= 0) {
         return 1;
     }

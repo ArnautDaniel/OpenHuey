@@ -719,7 +719,6 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern u8 *gRoomEffects;        /* the room's effects */
 extern void *D_0046EC60[], *D_00472F60[];   /* a depth range, a lit quad */
 extern void *func_002672F0(u32 size, void *place);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
@@ -4736,7 +4735,6 @@ extern const char *const D_004123E8;     /* room 0x5D's lever */
 extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
 extern s32 D_0047B250;                   /* room 0x4C: what the player has done so far */
 extern void *D_00476BB0[], *D_00472370[];
-extern u8 *gCreatures;                   /* the creatures: 7 pointers; +0x28 vtable */
 extern VObject *D_00456E00;
 extern void func_0025F810(u8 *o);
 extern f32 func_00124490(void *a, f32 *p);

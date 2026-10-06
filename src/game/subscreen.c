@@ -15,10 +15,7 @@
 #include "globals.h"
 
 
-extern u8 *gSystemData;          /* the system data; +0x30 the options */
 extern VObject *D_00456DF0;
-extern void *gMovie;        /* the movie playing */
-extern void *gAdx;        /* the ADX sound system (music) */
 extern void *D_0046C790[];      /* a pool entry */
 extern void func_002B6340(void *movie);   /* apply the movie volume */
 extern void func_002D1FD0(void *bgm);     /* apply the music volume */
@@ -2630,8 +2627,6 @@ void func_0038A2E0(SubScreen *s) {
 /* ---- the music gallery ---- */
 
 extern u8 D_0044BF30[][6];   /* per track: its unlock flag (u16), title (u16), BGM number */
-extern VObject *gMusic;  /* the music director */
-extern void *gAdx;     /* the ADX player */
 extern s32 func_002D20D0(void *adx);   /* the stream is free */
 
 #define MUSIC_WANT(track, pause, restart) \
@@ -2799,7 +2794,6 @@ void func_00387920(SubScreen *s) {
 
 /* ---- the model gallery's start ---- */
 
-extern u8 *gRoomEffects;        /* the room effects */
 extern u8 *func_00266C40(void *fx, s32 k);
 extern void func_002670F0(u8 *fx, s32 n);
 extern void *func_002672F0(u32 size, void *place);

@@ -30,7 +30,6 @@
 #include "ptmf.h"
 #include "globals.h"
 
-extern u8 *gSystemData;        /* +0x38: the music volume */
 extern Progress *gProgress;
 extern u8 *gCharPursuer;
 extern u8 *gCharSlot2;        /* the character in slot 2 */

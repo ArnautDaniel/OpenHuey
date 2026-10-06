@@ -31,7 +31,6 @@
 #include "globals.h"
 
 extern VObject *gCharacters[6];
-extern u8 *gRoomEffects;        /* the effects (SceneGame +0xF6CD30) */
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */

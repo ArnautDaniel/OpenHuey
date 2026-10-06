@@ -106,7 +106,6 @@ extern u8 *D_0045D1F0;
 /* Stores its arguments, then tail-calls gRenderer->vfunc_0xC(self, c, 0). */
 /* Merges two descriptors into the one at self->0x11C: words 4..C are ORed,
  * bytes 0x10..0x16, the word at 0x18 and bytes 0x1C..0x4B are copied from a. */
-extern u8 *gSystemData;
 
 void func_002BFE40(u8 *self) {
     self[0xA38] = 1;

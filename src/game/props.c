@@ -2316,7 +2316,6 @@ s32 func_00378650(u8 *o) {
 }
 
 #ifdef HG_NATIVE
-extern VObject *gSystemData;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
 #include <stdint.h>
 
 extern u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa);   /* loading.c */
@@ -2337,7 +2336,7 @@ s32 func_0033B560(u8 *d) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))(gSystemData);
+    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))((VObject *)gSystemData);
     off = AT(model, AT(d, 0x30, s32) * 4, s32);
     if (off <= 0) {
         return 1;

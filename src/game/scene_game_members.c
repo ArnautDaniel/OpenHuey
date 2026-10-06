@@ -1044,7 +1044,6 @@ void func_002E2820(u8 *o) {
         gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
 }
 
-extern VObject *gRoomEffects;
 extern u8 D_0047B350;
 extern u8 *D_01991EC4;   /* the current room's section 10 */
 extern void func_0017CC00(void *o, void *a, void *b, void *c);
@@ -2308,8 +2307,6 @@ s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
 }
 
 extern VObject *D_00456DF0;
-extern u8 *gMovie;
-extern u8 *gAdx;   /* the BGM player */
 extern void func_002EF9E0(void *o);
 extern void func_002D1FD0(void *bgm);
 extern void func_002B6340(void *movie);
@@ -3728,7 +3725,6 @@ extern void func_001C8648(void *p);
 extern s32 RemoveIntcHandler(s32 cause, s32 id);
 extern u8 D_0044FE18[];
 extern void *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046AED0[], *D_0046AD88[], *D_0046AEC0[];
-extern void *gMovieLib;
 
 /* start loading file slot k (+0x3C0) unless it already is (bit 31): the loader +0x14, the slot
  * marked, its callback (+0x3C8, a PTMF each) back to none */
@@ -3805,7 +3801,6 @@ s32 func_002D6020(u8 *o, s32 slot) {
 }
 
 extern void *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
-extern void *gSceneTable;   /* the scene table */
 
 /* the scene table's destructor (D_0046BF08): its four scenes handed back to the scene heap
  * (+0x10D9040, +0x14) and destroyed, the heap's vtables, gSceneTable cleared */

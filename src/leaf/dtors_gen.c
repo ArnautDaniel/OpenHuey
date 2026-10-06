@@ -3,12 +3,9 @@
  * and generated from it (2026-10-05). */
 #include "common.h"
 #include "globals.h"
+#include "memcard.h"
 
 extern void *gNavMesh;
-extern void *gSystemData;
-extern void *gAdx;
-extern void *gMovieLib;
-extern void *gMemCard;
 extern void *D_00456DE8;
 extern void *D_004699E0[];
 extern void *D_00469B40[];

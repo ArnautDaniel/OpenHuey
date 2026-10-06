@@ -18,7 +18,6 @@ static inline f32 B4_FLT(u32 bits) {
 
 extern u8 D_00469D00[], D_0046C770[];
 extern u8 D_0046A9B0[];
-extern void *gCreatures;
 extern u8 D_0046FC00[], D_004699E0[], D_004699C0[];
 extern u8 D_0046F5C0[], D_004699E0[], D_004699C0[];
 extern u8 D_0046D7D0[];

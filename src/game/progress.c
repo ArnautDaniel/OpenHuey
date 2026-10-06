@@ -1556,8 +1556,6 @@ void func_00176720(Progress *p) {
 
 /* ---- movies ---- */
 
-extern void *gSceneTable;   /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *gMovie;   /* the movie playing */
 extern void *__nw__FUiPv(u32 size, void *p);
 extern void *func_002B70D0(void *movie);
 extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
@@ -1696,7 +1694,6 @@ extern void func_00100490(void *p);
 extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
 extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
 extern void *D_004699C0[], *D_004699E0[];
-extern void *gCreatures;
 
 #define VT(o, off) AT(o, off, void **)
 

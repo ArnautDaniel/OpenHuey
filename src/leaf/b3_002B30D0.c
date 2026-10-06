@@ -2,6 +2,7 @@
  * (or one entry of it), likely per-class descriptor/state tables. */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 extern u8 D_00409950[];
 extern u32 D_00409938[];
@@ -51,7 +52,6 @@ u32 func_002B30E0(void *self, s32 i) {
     return D_00409938[i];
 }
 
-extern u8 *gCreatures;
 
 /* 1 unless the object at +0x18 exists and its byte +0x28 is 1. */
 s32 func_002B3130(void) {

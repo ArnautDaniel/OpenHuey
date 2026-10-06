@@ -417,7 +417,6 @@ s32 func_002E5660(u8 *d) {
 
 
 extern void *D_0046EC60[];      /* the effect 0x1C kind */
-extern VObject *gRoomEffects;     /* the room effects */
 extern void *func_00266C40(void *fx, s32 k);       /* effect slot k */
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void func_002670F0(void *fx, s32 k);        /* remove effect k */
@@ -1261,7 +1260,6 @@ void func_00319B10(void) {
  * (+0x14, func_00317D40) renders the characters and creatures above it again from the
  * camera reflected in its plane ---- */
 
-extern u8 *gCreatures;   /* the creature manager: its list of 10 at +0x0 */
 extern void *gCharPlayer;
 extern f32 *func_0017CE80(void *skel, s32 bone);
 

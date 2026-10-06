@@ -19,7 +19,6 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 
 extern void *D_0046C740[];
 extern void *D_0046AED0[];
-extern MovieLib *gMovieLib;
 extern void func_00100490(void *p);   /* operator delete */
 extern void func_00115D20(void *p, s32 c, u32 n);   /* memset */
 extern void mwPlyInitSfdFx(void *prm);
@@ -143,8 +142,6 @@ _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 extern void *Scene_vtable[];
 extern void *D_0046EA60[];       /* Movie */
 extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
-extern Movie *gMovie;        /* the movie playing */
-extern u8 *gSystemData;           /* +0x38: the master volume */
 extern u8 *gProgress;            /* +0x9F0: the movie volume option */
 extern u8 *D_0045D1F0;
 extern void func_0011F9A0(void *p);           /* delete (scene heap) */

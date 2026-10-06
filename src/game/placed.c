@@ -2823,7 +2823,6 @@ void func_00368150(u8 *o) {
 
 #include "charaction.h"
 
-extern u8 *gCreatures;   /* the placed things list: +0x1C.. slots 7..9 the stalkers */
 extern f32 func_001244D0(void *a, const f32 *pos);
 
 /* actor c (feet cy, top ctop) and the span oy..otop overlap */

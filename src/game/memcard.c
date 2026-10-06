@@ -12,7 +12,6 @@
 
 
 extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
-extern MemCard *gMemCard;
 extern void func_00100490(void *p);   /* operator delete */
 
 /* the states (libmc) */

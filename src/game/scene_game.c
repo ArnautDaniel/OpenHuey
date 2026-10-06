@@ -20,8 +20,6 @@ extern const PTMF sGameStateNull;
 extern const PTMF D_0044C7A0;   /* stored at +0x1053450 */
 extern const PTMF D_0044C7B0;   /* next state */
 
-extern void *gSystemData;        /* resident data; +0x190 holds the save buffer used here */
-extern void *gAdx;
 extern void *D_004562B0;
 extern void *D_004562A8;
 
@@ -212,8 +210,8 @@ extern void *D_0047A790[];          /* the sub screen */
 extern void *D_0046A110[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
-extern void *gSceneGameF29740, *gRoomEffects, *gEffects;
-extern void *gMusic, *D_0045D1F0, *D_00456DE8;
+extern void *gSceneGameF29740;
+extern void *D_0045D1F0, *D_00456DE8;
 
 extern void func_002D15C0(void *);
 extern void func_002D15B0(void *);
@@ -373,7 +371,7 @@ Scene *SceneGame_ctor(Scene *g) {
     BootCard_ctor(&sub->card);
 
     /* the music controller */
-    gMusic = (u8 *)g + 0x1053424;
+    gMusic = (VObject *)((u8 *)g + 0x1053424);
     AT(g, 0x1053424, void **) = D_0046A110;
     D_0045D1F0 = (u8 *)g + 0x105344C;
 
@@ -582,7 +580,6 @@ void func_003A0160(Scene *g) {
 }
 
 extern u8 *gCharPartner;
-extern u8 *gCreatures;        /* the creatures: 10 slots (7.. 9 have an extra part) */
 extern u8 *gCharSlot2;        /* the stalker currently in play */
 extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
 extern void func_0011FFB0(void *rooms, s32 slot);
@@ -857,8 +854,6 @@ void func_003A0060(Scene *g) {
 
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
 extern const PTMF D_0044C800, D_0044C810, D_0044C820, D_0044C830;   /* sub-states: menus */
-extern void *gSceneTable;
-extern void *gMovie;        /* the movie playing */
 extern s8 D_0047E360;           /* the pad: 0 = not connected */
 extern VObject *D_00456DF0;
 extern void func_002E26C0(void *o, s32 room);

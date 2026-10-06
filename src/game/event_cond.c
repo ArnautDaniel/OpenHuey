@@ -12,7 +12,6 @@ extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
 extern s32 func_001770D0(Progress *p, s32 id);
 extern u8 D_003D72C0[];   /* the conditions' lengths */
-extern u8 *gSystemData;    /* resident data (+0x24: flags kept across games) */
 
 #define PC(ev) AT(ev, 0x4, u8 *)
 
@@ -58,9 +57,7 @@ extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flag
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern NavMesh *gNavMesh;   /* the nav mesh */
-extern u8 *gCreatures;        /* the placed characters */
 extern s32 func_001235C0(u8 *a, u8 *c);
-extern void *gAdx;
 extern s32 func_002D2120(void *o);
 extern s32 func_002D20D0(void *o);
 extern s32 func_00177260(Progress *p, s32 slot);
@@ -68,7 +65,6 @@ extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;
 extern s32 func_00125D80(u8 *c);
 extern u8 *gCharPursuer;
-extern void *gMovie;      /* the movie playing */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {

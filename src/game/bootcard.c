@@ -16,7 +16,6 @@
 
 #define AT32(p, off) AT(p, off, s32)
 
-extern MemCard *gMemCard;
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
 extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
@@ -243,7 +242,6 @@ BootCard *BootCard_dtor(BootCard *b, s32 flags) {
 
 /* ---- the save-data screen (the sub screen's load page; mode 6) ---- */
 
-extern void *gSystemData;    /* the system data */
 extern void SaveScreen_DrawPart(BootCard *b, s32 part);
 void SaveScreen_DrawList(BootCard *b);
 void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);

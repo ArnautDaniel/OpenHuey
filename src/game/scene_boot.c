@@ -21,7 +21,6 @@ extern const PTMF sSceneBootStateSequence; /* -> SceneBoot_StateSequence */
 extern const PTMF sSceneBootStateDone;     /* -> SceneBoot_StateDone */
 extern const PTMF16 sSceneBootSteps[8];    /* boot steps, run in order */
 
-extern VObject *gSystemData;   /* global object, type unknown (+0x1C/+0x20 return resident buffers) */
 
 extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
 extern void func_0026BCC0(void *msg);
@@ -112,7 +111,7 @@ void SceneBoot_StateLoadSystem(SceneBoot *boot) {
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(loader, sErrMesTex, boot->errMesTex);
     VCALL(gBootMessage, 0x8, void (*)(VObject *, s32, void *))(gBootMessage, 6, boot->errMesTex);
-    res = gSystemData;
+    res = (VObject *)gSystemData;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sGameFixTex, VCALL(res, 0x20, void *(*)(VObject *))(res));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
@@ -182,7 +181,7 @@ static const char sMsgBaseTex[] = "SUBSCR\\MSG_BASE.TEX";
 
 /* Load the subtitle message file into the resident buffer. */
 void func_0037EC00(SceneBoot *boot) {
-    VObject *res = gSystemData;
+    VObject *res = (VObject *)gSystemData;
 
     VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
         gFileLoader, sMsgSubBin, VCALL(res, 0x14, void *(*)(VObject *))(res));
@@ -265,7 +264,7 @@ u32 func_0037FEF0(SceneBoot *boot) {
         return 1;
     }
     boot->stepFlag = 0;
-    res = gSystemData;
+    res = (VObject *)gSystemData;
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseBin, VCALL(res, 0xC, void *(*)(VObject *))(res));
@@ -377,8 +376,6 @@ u32 func_0037FAC0(SceneBoot *boot) {
     return 1;
 }
 
-extern void *gSceneTable;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *gMovie;          /* the movie playing (Movie, src/game/movie.c) */
 extern void *D_0046ECC0[];        /* SceneMovie */
 extern void *__nw__FUiPv(u32 size, void *p);   /* placement new */
 extern void *func_002B70D0(void *movie);       /* Movie constructor */

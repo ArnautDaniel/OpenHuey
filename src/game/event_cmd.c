@@ -34,7 +34,6 @@ extern s32 func_00177620(Progress *p);
 extern s32 func_001FBF70(VObject *ev, s32 id);
 extern void func_001FBE90(VObject *ev, s32 a, s32 b);
 extern VObject *gNavMesh;   /* the nav mesh */
-extern u8 *gRoomEffects;        /* the room effects */
 extern u8 *func_00266C40(void *fx, s32 k);   /* effect slot k (NULL: none) */
 extern void *func_002672F0(u32 size, void *place);   /* placement new */
 extern u8 *func_00208ED0(u8 *e);                   /* a D_0046FF40 effect */
@@ -45,7 +44,6 @@ extern void func_001267F0(u8 *c, s32 n);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void *gCharPursuer;
 extern VObject *gCharSlot2;   /* the stalker */
-extern void *gMovie;      /* the movie playing */
 extern void func_002EF9E0(void *o, f32 v);
 extern void func_002EC3C0(void *o, u32 id);
 extern void func_002EC450(void *o, u32 id);
@@ -76,7 +74,6 @@ extern void func_002EF4D0(void *panic, s32 n);
 extern void func_001FB5F0(VObject *ev);
 extern void func_002DDE20(void *motion, s32 set, s32 variant);
 extern void func_002ED260(void *model, s32 n);
-extern u8 *gCreatures;
 extern u8 *func_002083B0(u8 *e);
 extern u8 *func_00208340(u8 *e);
 extern void **func_00208070(void **e);
@@ -321,8 +318,6 @@ extern void func_002ECB50(u8 *p);
 extern void func_0029EF80(void *c, s32 room);
 extern s32 func_0016D6D0(Progress *p, u32 id, u32 slot);
 extern void func_001FFC70(VObject *ev);
-extern u8 *gAdx;            /* the running light / sound source */
-extern VObject *gMusic;       /* light / sound sources */
 extern VObject *D_00456DF0;       /* the music */
 extern void *D_003D6A40[];        /* the fades' steps by kind */
 extern s32 func_002D2120(u8 *o);
@@ -2192,7 +2187,6 @@ void func_002013F0(VObject *ev) {
     }
 }
 
-extern u8 *gSystemData;        /* resident data */
 extern void func_00178450(Progress *p, u32 n);
 extern void func_00178500(Progress *p, u32 n);
 extern void func_00178630(Progress *p, u32 n);

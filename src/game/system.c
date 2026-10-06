@@ -4,14 +4,14 @@
 #include "game.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "memcard.h"
 
 
-extern void *gSystemData;   /* the Game (set by its base constructor) */
 extern void *D_0046BEE0[];
 
 /* Game's base class constructor. */
 void *func_0020E7F0(Game *game) {
-    gSystemData = game;
+    gSystemData = (u8 *)game;
     game->vtbl = D_0046BEE0;
     game->nextMode = 0;
     game->softResetEnabled = 0;
@@ -40,9 +40,6 @@ void *func_0020E7B0(void *e) {
 }
 
 /* Global pointers to the parts (set by the constructor). */
-extern void *gMemCard;    /* +0x390 */
-extern void *gAdx;    /* +0x305280 */
-extern void *gMovieLib;    /* +0x305280 +0x7C44 */
 
 extern void *D_0046ADF0[], *D_0046ADD0[], *D_0046ADB0[], *D_0046ADC4[], *D_0046AD88[], *D_0046AE90[], *D_0046AEB4[];
 extern void *D_0046AC50[], *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046B050[], *D_0046A1E0[];
@@ -79,7 +76,7 @@ void *func_0020E340(u8 *s) {
     AT(s, 0x58, void **) = D_0046ADC4;
     func_002D4630(s + 0x300);
 
-    gMemCard = s + 0x390;
+    gMemCard = (MemCard *)(s + 0x390);
     AT(s, 0x390, void **) = D_0046AE90;
     AT(s, 0x39C, void **) = D_0046AEB4;
     gRenderer = (VObject *)(s + 0x460);
@@ -170,7 +167,6 @@ void func_00169260(VObject *h, void *base, u32 size, void *blocks, s32 count) {
 }
 
 extern void *D_0046BF08[], *D_004699E0[], *D_0046A1C0[];
-extern void *gSceneTable;   /* the scene table */
 
 /* Game +0x400A00: the scene table (4 scene pointers) and the scene heap after it (Game.sceneHeap,
  * 0x10D9000 bytes from +0x40). */

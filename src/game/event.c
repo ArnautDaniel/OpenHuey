@@ -117,7 +117,6 @@ void func_00209840(u8 *ev, void *script) {
 #include "progress.h"
 #include "task.h"
 
-extern VObject *gMusic;
 extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 and 1 */
 extern void func_00121890(u8 *ev, u8 *script);   /* start a script */
 extern void func_00121730(u8 *ev);   /* a control op (0xF0..) */
