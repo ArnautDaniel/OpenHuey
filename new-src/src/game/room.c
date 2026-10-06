@@ -3,6 +3,7 @@
 #include "../core/files.h"
 #include "../data/tex.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,4 +79,42 @@ void room_draw(const Room *r, const Mat4 *view_proj) {
         return;
     }
     render_mesh(&r->gpu, view_proj, r->mesh.d, r->mesh.nd, r->textures, r->ntextures, r->groups);
+}
+
+int room_floor_below(const Room *r, float x, float y, float z, float *out) {
+    int i, k, found = 0;
+    float best = -1e30f;
+
+    for (i = 0; i < r->mesh.nd; i++) {
+        const MeshDraw *d = &r->mesh.d[i];
+
+        if (d->part != MESH_SOLID) {
+            continue;
+        }
+        for (k = d->first; k + 2 < d->first + d->count; k += 3) {
+            const MeshVertex *a = &r->mesh.v[k], *b = &r->mesh.v[k + 1], *c = &r->mesh.v[k + 2];
+            /* (x, z) inside the triangle's shadow on the ground plane: barycentric coordinates */
+            float det = (b->z - c->z) * (a->x - c->x) + (c->x - b->x) * (a->z - c->z);
+            float l1, l2, l3, h;
+
+            if (fabsf(det) < 1e-6f) {
+                continue;   /* a wall */
+            }
+            l1 = ((b->z - c->z) * (x - c->x) + (c->x - b->x) * (z - c->z)) / det;
+            l2 = ((c->z - a->z) * (x - c->x) + (a->x - c->x) * (z - c->z)) / det;
+            l3 = 1.0f - l1 - l2;
+            if (l1 < 0.0f || l2 < 0.0f || l3 < 0.0f) {
+                continue;
+            }
+            h = l1 * a->y + l2 * b->y + l3 * c->y;
+            if (h <= y && h > best) {
+                best = h;
+                found = 1;
+            }
+        }
+    }
+    if (found) {
+        *out = best;
+    }
+    return found;
 }

@@ -5,6 +5,7 @@
 
 #include "../forth/forth.h"
 #include "../platform/platform.h"
+#include "actor.h"
 #include "camera.h"
 #include "console.h"
 #include "room.h"
@@ -15,8 +16,10 @@
 typedef struct Engine {
     Forth *forth;
     Input input;           /* this frame's input, as the game sees it (none while the console is open) */
+    bool held[SDL_SCANCODE_COUNT];   /* keys held down by scripts (`key-hold`: demos, tests) */
     Camera camera;
     Room room;
+    Actor actors[MAX_ACTORS];
     Console console;
     Word *hooks[ENGINE_HOOKS];   /* run every tick (`on-tick`) */
     int nhooks;

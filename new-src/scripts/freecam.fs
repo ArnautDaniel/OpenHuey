@@ -31,5 +31,5 @@ fvariable turn-rate  1.6e turn-rate f!  \ radians a second (keys)
         mouse-dy mouse-turn f* fnegate turn-pitch
     then ;
 
-: freecam  fly look ;
+: freecam  playing @ 0= if  fly look  then ;
 ' freecam on-tick

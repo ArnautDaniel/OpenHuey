@@ -30,11 +30,14 @@ static const char *kMeshFs =
     "in vec4 vCol;\n"
     "uniform sampler2D uTex;\n"
     "uniform int uUseTex;\n"
+    "uniform int uSolidTex;\n"   /* the texture's alpha is not transparency */
     "out vec4 oColor;\n"
     "void main() {\n"
     "    vec4 c = vCol;\n"
     "    if (uUseTex != 0) {\n"
-    "        c *= texture(uTex, vSt);\n"
+    "        vec4 t = texture(uTex, vSt);\n"
+    "        if (uSolidTex != 0) t.a = 1.0;\n"
+    "        c *= t;\n"
     "        if (c.a < 1.0 / 255.0) discard;\n"
     "    }\n"
     "    oColor = clamp(c, 0.0, 1.0);\n"
@@ -108,7 +111,7 @@ typedef struct Vertex2d {
 
 static struct {
     GLuint mesh_prog;
-    GLint mesh_mvp, mesh_use_tex;
+    GLint mesh_mvp, mesh_use_tex, mesh_solid_tex;
     GLuint prog2d, vao2d, vbo2d, font;
     GLint proj2d;
     Vertex2d *v2d;
@@ -146,6 +149,7 @@ int render_init(void) {
     R.mesh_prog = program(kMeshVs, kMeshFs);
     R.mesh_mvp = glGetUniformLocation(R.mesh_prog, "uMvp");
     R.mesh_use_tex = glGetUniformLocation(R.mesh_prog, "uUseTex");
+    R.mesh_solid_tex = glGetUniformLocation(R.mesh_prog, "uSolidTex");
     glUseProgram(R.mesh_prog);
     glUniform1i(glGetUniformLocation(R.mesh_prog, "uTex"), 0);
 
@@ -250,6 +254,16 @@ void render_mesh_upload(GpuMesh *g, const MeshVertex *v, int n) {
     g->nv = n;
 }
 
+void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n) {
+    if (g->vao == 0) {
+        render_mesh_upload(g, v, n);
+        return;
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, g->vbo);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)((size_t)n * sizeof(MeshVertex)), v, GL_STREAM_DRAW);
+    g->nv = n;
+}
+
 void render_mesh_free(GpuMesh *g) {
     if (g->vbo != 0) {
         glDeleteBuffers(1, &g->vbo);
@@ -287,6 +301,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         }
         glDepthMask(x->no_zwrite ? GL_FALSE : GL_TRUE);
         glUniform1i(R.mesh_use_tex, tex != 0);
+        glUniform1i(R.mesh_solid_tex, x->solid_tex);
         glBindTexture(GL_TEXTURE_2D, (GLuint)tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
     }

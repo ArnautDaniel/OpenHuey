@@ -36,6 +36,7 @@ typedef struct MeshDraw {
     uint8_t additive;      /* added, not blended */
     uint8_t no_zwrite;
     uint8_t group;         /* visibility group: 0 always shown, others switched by the room */
+    uint8_t solid_tex;     /* the texture's alpha is not transparency (characters' normal parts) */
 } MeshDraw;
 
 typedef struct RoomMesh {

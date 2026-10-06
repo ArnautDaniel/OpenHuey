@@ -9,7 +9,9 @@ fvariable lx  fvariable ly  fvariable lz  fvariable hx  fvariable hy  fvariable 
     lx f@ hx f@ mid  ly f@ hy f@ mid  lz f@ hz f@ mid  cam-at
     0e camera cam.yaw sf!  0e camera cam.pitch sf! ;
 
-: go ( id -- )  room .room frame-room  1.0e camera cam.fov sf! ;
+: go ( id -- )
+    room .room frame-room  1.0e camera cam.fov sf!  -1 view !
+    playing @ if  place-player  then ;
 
 \ the next room that exists from id, stepping by step (-1 if none)
 : next-room ( id step -- id' )

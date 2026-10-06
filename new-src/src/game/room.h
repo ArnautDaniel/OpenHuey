@@ -23,5 +23,7 @@ int room_exists(int id);
 int room_load(Room *r, int id);
 void room_free(Room *r);
 void room_draw(const Room *r, const Mat4 *view_proj);
+/* the highest solid surface at (x, z) below height y: 1 and its height in *out, or 0 if none */
+int room_floor_below(const Room *r, float x, float y, float z, float *out);
 
 #endif

@@ -66,6 +66,7 @@ static int load_scripts(Forth *f) {
 }
 
 static void draw(Engine *e) {
+    int i;
     float aspect;
     Mat4 vp;
 
@@ -74,6 +75,9 @@ static void draw(Engine *e) {
     vp = camera_view_proj(&e->camera, aspect);
     render_begin(e->width, e->height, e->clear);
     room_draw(&e->room, &vp);
+    for (i = 0; i < MAX_ACTORS; i++) {
+        actor_draw(&e->actors[i], &vp);
+    }
     console_draw(&e->console, e->width, e->height);
     render_end();
     if (e->screenshot[0] != 0) {
@@ -168,6 +172,11 @@ int main(int argc, char **argv) {
         }
     }
 
+    for (i = 0; i < MAX_ACTORS; i++) {
+        if (e->actors[i].used) {
+            actor_free(&e->actors[i]);
+        }
+    }
     room_free(&e->room);
     forth_free(e->forth);
     render_shutdown();

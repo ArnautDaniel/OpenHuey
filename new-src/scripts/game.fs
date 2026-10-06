@@ -10,10 +10,16 @@ create path 512 allot  variable path-len
     0 path-len !  scripts-dir path+  s" /" path+  parse-name path+
     path path-len @ included ;
 
+\ shared by the scripts below: are we playing (or flying the free camera)? and what puts
+\ the player in a room (set by player.fs)
+variable playing  0 playing !
+defer place-player
+
 script vectors.fs
 script freecam.fs
-script rooms.fs
 script views.fs
+script rooms.fs
+script player.fs
 
 0.06e 0.06e 0.08e clear-color
 first-room

@@ -28,6 +28,8 @@ GpuTexture render_texture(const uint8_t *rgba, int w, int h);
 void render_texture_free(GpuTexture t);
 
 void render_mesh_upload(GpuMesh *g, const MeshVertex *v, int n);
+/* replace a mesh's vertices (meshes that change every frame: skinned characters) */
+void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n);
 void render_mesh_free(GpuMesh *g);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,

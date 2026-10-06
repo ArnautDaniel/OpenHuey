@@ -59,6 +59,16 @@ PRIM(p_room_group) {   /* ( group flag -- ) show or hide a visibility group */
         gEngine.room.groups[g >> 5] &= ~(1u << (g & 31));
     }
 }
+PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface under a point */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
+
+    if (room_floor_below(&gEngine.room, x, y, z, &h)) {
+        FPUSH(h);
+        PUSH(-1);
+    } else {
+        PUSH(0);
+    }
+}
 PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
     const Room *r = &gEngine.room;
     int i, parts[MESH_PARTS] = {0};
@@ -119,6 +129,63 @@ PRIM(p_room_camera) {   /* ( i -- ) ( F: -- ex ey ez fov-radians tx ty tz ) */
 
 PRIM(p_camera) { PUSH(&gEngine.camera); }
 
+/* ---- actors ---- */
+
+static Actor *actor_arg(Forth *f, Cell id) {
+    if (id < 0 || id >= MAX_ACTORS || !gEngine.actors[id].used) {
+        forth_error(f, "no actor %ld", (long)id);
+    }
+    return &gEngine.actors[id];
+}
+PRIM(p_actor_load) {   /* ( addr len -- id ) s" O_FIN/FIN_000" actor-load */
+    Cell n = POP(), a = POP();
+    char name[64];
+    int id;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    id = actor_load(gEngine.actors, name);
+    if (id < 0) {
+        forth_error(f, "actor-load: can't load %s (.PCK / .TEX)", name);
+    }
+    PUSH(id);
+}
+PRIM(p_actor_free) { actor_free(actor_arg(f, POP())); }
+PRIM(p_actor) { PUSH(actor_arg(f, POP())); }   /* ( id -- addr ) */
+PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+    int index = model_motion_find(&a->model, (int)mid);
+
+    if (index < 0) {
+        forth_error(f, "motion!: %s has no motion %lX", a->name, (long)mid);
+    }
+    if (index != a->motion) {
+        a->motion = index;
+        a->frame = 0.0f;
+    }
+}
+PRIM(p_motion_fetch) {   /* ( id -- motion-id | -1 ) */
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(a->motion < 0 ? -1 : model_motion_id(&a->model, a->motion));
+}
+PRIM(p_motion_done) { PUSH(actor_motion_done(actor_arg(f, POP())) ? -1 : 0); }
+PRIM(p_motion_frames) {   /* ( id -- frames ) of the current motion */
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(model_motion_frames(&a->model, a->motion));
+}
+PRIM(p_motions) {   /* ( id -- ) list the motions */
+    Actor *a = actor_arg(f, POP());
+    int i, n = model_motion_count(&a->model);
+
+    for (i = 0; i < n; i++) {
+        forth_printf(f, "%04X:%-4d%s", model_motion_id(&a->model, i), model_motion_frames(&a->model, i),
+                     i % 8 == 7 ? "\n" : " ");
+    }
+    forth_printf(f, "\n%d motions\n", n);
+}
+
 /* ---- input ---- */
 
 static const bool *keys(void) {
@@ -134,7 +201,16 @@ static Cell scancode(Forth *f) {
     }
     return k;
 }
-PRIM(p_key_down) { PUSH(keys()[scancode(f)] ? -1 : 0); }
+PRIM(p_key_down) {
+    Cell k = scancode(f);
+
+    PUSH(keys()[k] || gEngine.held[k] ? -1 : 0);
+}
+PRIM(p_key_hold) {   /* ( scancode flag -- ) hold a key down (or let it go) as if pressed */
+    Cell on = POP(), k = scancode(f);
+
+    gEngine.held[k] = on != 0;
+}
 PRIM(p_key_pressed) { PUSH(gEngine.input.pressed[scancode(f)] ? -1 : 0); }
 PRIM(p_key_colon) {   /* key: name ( -- scancode ), immediate: `key: W`, `key: Left_Shift` */
     size_t n;
@@ -220,6 +296,9 @@ void engine_tick(Engine *e) {
             i--;
         }
     }
+    for (i = 0; i < MAX_ACTORS; i++) {
+        actor_tick(&e->actors[i]);
+    }
 }
 
 void bind_engine(Forth *f) {
@@ -228,9 +307,12 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {".room", p_room_info},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below}, {".room", p_room_info},
         {"camera", p_camera},
-        {"key-down?", p_key_down}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
+        {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-frames", p_motion_frames}, {".motions", p_motions},
+        {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
@@ -252,4 +334,13 @@ void bind_engine(Forth *f) {
     field(f, "cam.near", offsetof(Camera, znear));
     field(f, "cam.far", offsetof(Camera, zfar));
     field(f, "cam.up", offsetof(Camera, up));
+    field(f, "act.x", offsetof(Actor, pos.x));
+    field(f, "act.y", offsetof(Actor, pos.y));
+    field(f, "act.z", offsetof(Actor, pos.z));
+    field(f, "act.yaw", offsetof(Actor, yaw));
+    field(f, "act.scale", offsetof(Actor, scale));
+    field(f, "act.frame", offsetof(Actor, frame));
+    field(f, "act.rate", offsetof(Actor, rate));
+    field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
+    field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
 }
