@@ -6866,3 +6866,49 @@ s32 func_00342E80(void) {
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, n);
     return 1;
 }
+
+extern const char *D_0043F8D0;
+
+/* the turn (+0x14) of the room object named D_0043F8D0 and the creak (sound 0x80000002, bank 6)
+ * at its edge, 45 out at height 152 */
+static inline void swing_to(u8 *o, f32 a) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 pos[4] __attribute__((aligned(16)));
+
+    AT(o, 0x14, f32) = kPi.f * a / 180.0f;
+    pos[1] = 152.0f;
+    pos[0] = -45.0f * func_0031C058(AT(o, 0x14, f32));
+    pos[2] = -45.0f * -func_0031C248(AT(o, 0x14, f32));
+    pos[3] = 1.0f;
+    func_002FF650(D_0044E560, 0x80000002, 6, pos, 0, 0);
+}
+
+/* byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120 frames,
+ * eased by a sine) */
+s32 func_0034A6A0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0043F8D0);
+    f32 t, e;
+
+    if (o == NULL) {
+        return 1;
+    }
+    t = (f32)(u32)VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) / 120.0f;
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x14, s32) = 0;
+        break;
+    case 1:
+        AT(o, 0x14, u32) = 0x3FC90FDB;   /* pi/2 */
+        break;
+    case 2:
+        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        swing_to(o, 45.0f * (1.0f + e));
+        break;
+    case 3:
+        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        swing_to(o, 90.0f - 45.0f * (1.0f + e));
+        break;
+    }
+    return 1;
+}
