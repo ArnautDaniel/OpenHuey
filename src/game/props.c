@@ -2619,3 +2619,152 @@ s32 func_00371900(u8 *o) {
     }
     return 1;
 }
+
+/* ---- D_00479800 (room 0x2A): 16 wisps of smoke rising from a character's bone (+0x6C8; none:
+ * Fiona's bone 0x23, 3.5 to the side and 1 forward), one more each frame (+0x6D0 counting), in
+ * two buffers of quad records (+0x10 + 0x300 x the current one +0x6CC), sideways drifts at
+ * +0x648 (x, z), the quad drawer at +0x610; each fades in to 0x10, then out on the even
+ * frames ---- */
+
+extern void *gCharPlayer;
+extern f32 *func_0017CE80(void *skel, s32 bone);
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+#define WISPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x300) + (i))
+
+/* wisp `i` (re)started at `p`: hidden, 0.4..0.6 wide and 1.2 high, drifting up to 0.015 a frame */
+void func_0035B450(u8 *o, s32 i, f32 *p) {
+    static const union { u32 u; f32 f; } k003 = {0x3CF5C28F};   /* 0.03, multiplied first */
+    QuadRec *r = WISPS_REC(o, AT(o, 0x6CC, s32), i);
+    VObject *rnd = D_0044E550;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0;
+    r->pos[0] = p[0];
+    r->pos[1] = p[1];
+    r->pos[2] = p[2];
+    r->pos[3] = 1.0f;
+    r->w = 0x1.99999ap-2f + 0x1.99999ap-3f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);   /* 0.4 + 0.2 x */
+    r->h = 0x1.333334p+0f;   /* 1.2 */
+    r->turn = 0.0f;
+    r->frame = 0;
+    AT(o, 0x648 + i * 8, f32) = k003.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(o, 0x64C + i * 8, f32) = k003.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+}
+
+/* where the smoke comes from: the character's bone (its +0x98), or Fiona's bone 0x23 */
+static inline void wisps_source(u8 *o, f32 *p) {
+    u8 *c = AT(o, 0x6C8, u8 *);
+
+    if (c != NULL) {
+        s32 bone = VCALL(c, 0x98, s32 (*)(u8 *))(c);
+
+        sceVu0CopyVector(p, func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+    } else {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
+        v[0] = -3.5f;
+        v[2] = 1.0f;
+        v[3] = 1.0f;
+        v[1] = 0.0f;
+        sceVu0ApplyMatrix(p, m, v);
+    }
+}
+
+/* +0x18 start: from character `c` (none: Fiona), all 16 placed there hidden */
+void func_0035B5C0(u8 *o, u8 *c) {
+    f32 p[4] __attribute__((aligned(16)));
+    s32 i;
+
+    AT(o, 0x6C8, u8 *) = c;
+    wisps_source(o, p);
+    for (i = 0; i < 16; i++) {
+        func_0035B450(o, i, p);
+    }
+}
+
+/* +0x14 draw (not while the effects are paused) */
+void func_0035B6A0(u8 *o) {
+    if (func_002D6010(D_0044E578) == 0) {
+        AT(o, 0x620, QuadRec *) = WISPS_REC(o, AT(o, 0x6CC, s32), 0);
+        func_002E56C0(o + 0x610);
+    }
+}
+
+/* +0x10 update: flip the buffers; each wisp showing carried over, growing up to 0.04 a frame,
+ * drifting and rising 0.02; fading in by 3..6 to 0x10 (then marked, its red 0x7F), then out by
+ * 0..1 on the even frames. The first 16 frames one more is restarted at the source, shown. 0
+ * once none shows */
+s32 func_0035B700(u8 *o) {
+    VObject *rnd = D_0044E550;
+    u8 done = 1;
+    s32 i, k;
+
+    AT(o, 0x6CC, s32) ^= 1;
+    for (i = 0; i < 16; i++) {
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)WISPS_REC(o, AT(o, 0x6CC, s32), i))[k] = ((u32 *)WISPS_REC(o, AT(o, 0x6CC, s32) ^ 1, i))[k];
+        }
+        r = WISPS_REC(o, AT(o, 0x6CC, s32), i);
+        if (r->rgba[3] <= 0) {
+            continue;
+        }
+        done = 0;
+        r->w = r->w + 0x1.47ae14p-5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);   /* 0.04 */
+        r->h = r->h + 0x1.47ae14p-5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->pos[0] = r->pos[0] + AT(o, 0x648 + i * 8, f32);
+        r->pos[1] = r->pos[1] + 0x1.47ae14p-6f;   /* 0.02 */
+        r->pos[2] = r->pos[2] + AT(o, 0x64C + i * 8, f32);
+        if (r->rgba[0] == 0x80) {
+            r->rgba[3] = r->rgba[3] + ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 3);
+            if (r->rgba[3] >= 0x10) {
+                r->rgba[0]--;
+                r->rgba[3] = 0x10;
+            }
+        } else if (AT(o, 0x6CC, s32) == 0) {
+            r->rgba[3] = r->rgba[3] - (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1);
+            if (r->rgba[3] < 0) {
+                r->rgba[3] = 0;
+            }
+        }
+    }
+    if (AT(o, 0x6D0, s32) < 16) {
+        f32 p[4] __attribute__((aligned(16)));
+
+        done = 0;
+        wisps_source(o, p);
+        func_0035B450(o, AT(o, 0x6D0, s32), p);
+        WISPS_REC(o, AT(o, 0x6CC, s32), AT(o, 0x6D0, s32))->rgba[3] = 1;
+    }
+    AT(o, 0x6D0, s32)++;
+    return done == 1 ? 0 : 1;
+}
+
+/* +0xC set up: frame 0; the drawer (16 quads of a 32 x 32 cell at (0 or 32 at random, 64),
+ * blended, the first palette, layer 0x19, half a unit down) */
+void func_0035BA60(u8 *o) {
+    AT(o, 0x6CC, s32) = 0;
+    AT(o, 0x6D0, s32) = 0;
+    AT(o, 0x618, s64) = -1;
+    AT(o, 0x628, s32) = 0;
+    AT(o, 0x62C, f32) = -0.5f;
+    AT(o, 0x630, s32) = 0x19;
+    AT(o, 0x634, s16) = 0x10;
+    AT(o, 0x636, s16) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 1) << 5;
+    AT(o, 0x638, s16) = 0x40;
+    AT(o, 0x63A, s16) = 0x20;
+    AT(o, 0x63C, s16) = 0x20;
+    AT(o, 0x63E, s16) = 0x200;
+    AT(o, 0x640, s16) = 0x100;
+    AT(o, 0x642, s8) = 0x40;
+    AT(o, 0x643, s8) = 1;
+    AT(o, 0x644, s8) = 1;
+    AT(o, 0x645, s8) = 0x10;
+    AT(o, 0x646, s8) = -1;
+}
