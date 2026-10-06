@@ -6617,3 +6617,58 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_00434890, *D_00434894;
+
+/* a turning machine: the wheel D_00434890 (angle +0x18, height +0x24 5.1) driven by the belt
+ * D_00434894 (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
+ * (speed 0.4); 1 runs it a frame (both shaking by up to 0.05); 2 also slows it by 0.01, waiting
+ * (2) until it stops. (The wheel's wrap steps +0x10, not the angle.) */
+s32 func_0033FC10(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k51 = {0x40A33333}, k16Pi = {0x42490FDB}, k2Pi = {0x40C90FDB},
+                                          kPi = {0x40490FDB}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A};
+    VObject *objs = D_00456DF8, *rnd;
+    u8 *w = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434890);
+    u8 *b = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434894);
+    f32 v;
+
+    switch (cmd[3]) {
+    case 0:
+        AT(w, 0x18, s32) = 0;
+        AT(w, 0x24, f32) = k51.f;
+        AT(b, 0x20, s32) = 0;
+        AT(b, 0x24, u32) = 0xC0400000;   /* -3 */
+        AT(b, 0x30, u32) = 0x3ECCCCCD;   /* 0.4 */
+        return 1;
+    case 1:
+    case 2:
+        break;
+    default:
+        return 1;
+    }
+    AT(w, 0x18, f32) = AT(w, 0x18, f32) + k2Pi.f * (AT(b, 0x30, f32) / k16Pi.f);
+    if (!(AT(w, 0x10, f32) <= kPi.f)) {
+        do {
+            AT(w, 0x10, f32) = AT(w, 0x10, f32) - k2Pi.f;
+        } while (!(AT(w, 0x10, f32) <= kPi.f));
+    }
+    rnd = D_0044E550;
+    AT(w, 0x24, f32) = k51.f + k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    AT(b, 0x20, f32) = AT(b, 0x20, f32) + AT(b, 0x30, f32);
+    AT(b, 0x24, f32) = -3.0f + k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    if (!(AT(b, 0x20, f32) < 10.0f)) {
+        do {
+            AT(b, 0x20, f32) = AT(b, 0x20, f32) - 10.0f;
+        } while (!(AT(b, 0x20, f32) < 10.0f));
+    }
+    if (cmd[3] != 2) {
+        return 1;
+    }
+    v = AT(b, 0x30, f32) - k001.f;
+    AT(b, 0x30, f32) = v;
+    if (v <= 0.0f) {
+        AT(b, 0x30, f32) = 0.0f;
+        return 1;
+    }
+    return 2;
+}
