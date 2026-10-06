@@ -5764,6 +5764,41 @@ s32 func_00341A40(void) {
     return 1;
 }
 
+#ifdef HG_NATIVE
+extern void glr_haze2(f32 phase, f32 size);
+
+/* +0x14 draw (PC; the PS2 sends GS packets): unless done (+0x11), and while on (+0x10) or with
+ * the world's origin in view, a heat haze over the screen - the screen halved, blended half
+ * with itself in 32 wavering columns (column k moved down 16 sin(a) (+0x8 + (1 + cos a) / 2)
+ * / 16, a = +0x4 + 90 degrees a column), over the screen by an alpha ramp (0x20 at the edges,
+ * 0x60 in the middle) at half, in layer 0x2A */
+void func_00370100(u8 *o) {
+    VObject *cam = D_0044E4B8;
+
+    if (AT(o, 0x11, u8) == 1) {
+        return;
+    }
+    if (AT(o, 0x10, u8) == 0) {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 p[4] __attribute__((aligned(16)));
+        f32 c[4] __attribute__((aligned(16)));
+
+        p[0] = 0.0f;
+        p[1] = 0.0f;
+        p[2] = 0.0f;
+        p[3] = 1.0f;
+        VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);
+        sceVu0ApplyMatrix(c, m, p);
+        if (!(c[0] <= c[3]) || c[0] < -c[3] || !(c[1] <= c[3]) || c[1] < -c[3] || !(c[2] <= c[3]) || c[2] < -c[3]) {
+            return;
+        }
+    }
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    glr_haze2(AT(o, 0x4, f32), AT(o, 0x8, f32));
+}
+#endif
+
 /* an effect set up: +0x4 a random angle (-pi..pi), +0x8 / +0xC 2, +0x10 on, +0x11 off */
 void func_00371030(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};

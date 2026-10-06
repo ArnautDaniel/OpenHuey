@@ -303,6 +303,20 @@ void glr_haze(float phase, float sway) {
 
     d->mvp[0] = phase;
     d->mvp[1] = sway;
+    d->mvp[2] = 2.0f;   /* the waves' base strength */
+    d->mvp[3] = 0.0f;   /* over the screen at 0x48 */
+}
+
+/* the heat haze effect D_0047A2F0 (func_00370100, layer 0x2A): as room 0x61's with the waves'
+ * base strength `size` and no sway, over the screen by a horizontal alpha ramp (0x20 at the
+ * edges, 0x60 in the middle, halved) */
+void glr_haze2(float phase, float size) {
+    GlrDraw *d = put_post(POST_HAZE, 0x2A, 0, 0);
+
+    d->mvp[0] = phase;
+    d->mvp[1] = 0.0f;
+    d->mvp[2] = size;
+    d->mvp[3] = 1.0f;
 }
 
 /* the panic screens (func_0021E1B0 / func_0021D290 / func_0021D8F0, their packets' layer 0x2A):
@@ -635,7 +649,7 @@ static const char *kPostFs =
     "}\n"
     "float haze_off(float k) {\n"   /* column k's move down (half-size pixels, in 1/16) */
     "    float a = uRange.x + k * 1.5707964;\n"
-    "    return trunc(16.0 * sin(a) * (2.0 + 0.5 * (1.0 + cos(a)))) / 16.0;\n"
+    "    return trunc(16.0 * sin(a) * (uBand.x + 0.5 * (1.0 + cos(a)))) / 16.0;\n"
     "}\n"
     "void main() {\n"
     "    ivec2 p = ivec2(gl_FragCoord.xy);\n"
@@ -805,7 +819,9 @@ static const char *kPostFs =
     "            float v = h.y - mix(haze_off(k), haze_off(k + 1.0), f - k);\n"
     "            if (v >= 0.0 && v < 224.0) b = hc + floor((haze_at(vec2(u, v)) - hc) * 0.5);\n"
     "        }\n"
-    "        c = d + floor((b - d) * uFix / 128.0);\n"
+    "        float amt = uFix;\n"
+    "        if (uBand.y > 0.0) amt = floor(floor(32.0 + 64.0 * (1.0 - abs(h.x - 128.0) / 128.0)) * 64.0 / 128.0);\n"
+    "        c = d + floor((b - d) * amt / 128.0);\n"
     "    } else if (uMode == 33) {\n"   /* the negative: (0x80 - Cd) * 0x80 >> 7, clamped */
     "        c = max(vec4(0.0), 128.0 - at(uTex, p));\n"
     "    } else if (uMode == 34) {\n"   /* the screen copy 16 pixels bigger each way, bilinear, over it at 0x40 */
@@ -1773,6 +1789,7 @@ static void run_post(const GlrDraw *d) {
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
         p_glProgramUniform1f(sPostProg, sPostFixLoc, 72.0f);
         p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
+        p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[2], d->mvp[3], 0.0f, 0.0f);
         post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
         break;
     case POST_NEGATIVE:   /* func_0021E1B0: the screen's negative, 0x80 - each channel */
