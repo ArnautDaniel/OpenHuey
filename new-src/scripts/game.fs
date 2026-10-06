@@ -13,6 +13,7 @@ create path 512 allot  variable path-len
 script vectors.fs
 script freecam.fs
 script rooms.fs
+script views.fs
 
 0.06e 0.06e 0.08e clear-color
 first-room

@@ -75,6 +75,46 @@ PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
                  parts[MESH_GLOW], r->ntextures);
 }
 
+/* the room's camera setups (PAC section 5): 32-byte entries - eye x, y, z, field of view in
+ * degrees (0: 60), target x, y, z, w - until an entry whose first word is -1 */
+static const float *room_cameras(int *count) {
+    size_t size;
+    const uint8_t *sec = pac_section(&gEngine.room.pac, PAC_CAMERAS, &size);
+    int n = 0;
+
+    while (sec != NULL && (size_t)(n + 1) * 32 <= size) {
+        int32_t first;
+
+        memcpy(&first, sec + n * 32, 4);
+        if (first == -1) {
+            break;
+        }
+        n++;
+    }
+    *count = n;
+    return (const float *)sec;
+}
+PRIM(p_room_cameras) {   /* ( -- n ) */
+    int n;
+
+    room_cameras(&n);
+    PUSH(n);
+}
+PRIM(p_room_camera) {   /* ( i -- ) ( F: -- ex ey ez fov-radians tx ty tz ) */
+    Cell i = POP();
+    int n;
+    const float *e = room_cameras(&n);
+    float v[8];
+
+    if (i < 0 || i >= n) {
+        forth_error(f, "room-camera: no camera %ld (the room has %d)", (long)i, n);
+    }
+    memcpy(v, e + i * 8, sizeof(v));   /* (the file's floats may not be aligned for us) */
+    FPUSH(v[0]); FPUSH(v[1]); FPUSH(v[2]);
+    FPUSH((v[3] == 0.0f ? 60.0f : v[3]) * 3.14159265358979 / 180.0);
+    FPUSH(v[4]); FPUSH(v[5]); FPUSH(v[6]);
+}
+
 /* ---- the camera ---- */
 
 PRIM(p_camera) { PUSH(&gEngine.camera); }
@@ -188,7 +228,7 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-group!", p_room_group}, {".room", p_room_info},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {".room", p_room_info},
         {"camera", p_camera},
         {"key-down?", p_key_down}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
