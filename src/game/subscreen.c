@@ -2748,3 +2748,152 @@ void func_003888A0(SubScreen *s) {
     }
     func_00388400(s);
 }
+
+/* ---- the art gallery's picture ---- */
+
+extern const PTMF D_0044C060;
+
+/* state: a picture chosen - fading out (to 0x80); then (the file loaded) the picture unpacked
+ * from the work buffer (progress +0x88; offsets by picture % 8) to +0x200000: runs of bytes
+ * (bit 7 set: the next byte repeated n & 0x7F times; else n bytes as they are) for 0x70000
+ * bytes (pictures 21..: 0x38000), then its 0x400-byte palette; fading in from 0x80 (state
+ * D_0044C060). The list under a darkening overlay or the panels */
+void func_00387920(SubScreen *s) {
+    s->fade += s->fadeStep;
+    if (s->fade >= 0x80) {
+        s->fading = 0;
+        s->fade = 0x80;
+    }
+    if (!s->fading && VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
+        u8 *buf = VCALL(gProgress, 0x88, u8 *(*)(Progress *))(gProgress);
+        u8 k = SUB_PAGE(s, 0x0, u8);
+        const u8 *src = buf + AT(buf, (k % 8) * 4, u32);
+        u8 *dst = buf + 0x200000;
+        s32 size = (k < 0x15 ? 0x380 : 0x1C0) << 9, n = 0, i;
+
+        while (n < size) {
+            u8 c = *src;
+
+            if ((c & 0x80) == 0x80) {
+                c &= 0x7F;
+                for (i = 0; i < c; i++) {
+                    *dst++ = src[1];
+                }
+                n += c;
+                src += 2;
+            } else {
+                src++;
+                for (i = 0; i < c; i++) {
+                    *dst++ = *src++;
+                }
+                n += c;
+            }
+        }
+        for (i = 0; i < 0x400; i++) {
+            *dst++ = *src++;
+        }
+        s->fading = 1;
+        s->fade = 0x80;
+        s->fadeStep = 0;
+        ptmf_set(&s->state, &D_0044C060);
+    }
+    func_00386550(s);
+    sub_fade_back(s);
+}
+
+/* ---- the model gallery's start ---- */
+
+extern VObject *D_0044E4C8;   /* the scene's lights */
+extern VObject *D_0044FE10;   /* the director */
+extern u8 *D_0044E4C0;        /* the room effects */
+extern u8 *func_00266C40(void *fx, s32 k);
+extern void func_002670F0(u8 *fx, s32 n);
+extern void *func_002672F0(u32 size, void *place);
+extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
+extern void *D_0046D750[];
+extern const PTMF D_0044B9B0;
+
+/* keep room effect `k` (its 0x90 bytes from +0x10) in `save` and remove it */
+static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
+    u64 *src = (u64 *)(func_00266C40(fx, k) + 0x10);
+    s32 i;
+
+    for (i = 0; i < 18; i++) {
+        AT(save, i * 8, u64) = src[i];
+    }
+    func_002670F0(fx, k);
+}
+
+/* state: a model chosen in the extras - fading out (to 0x80); then the work buffer (progress
+ * +0x88) split for the gallery's files (+0xA8DEC.. : +0, +0x200000, +0x242000, +0x244000 and
+ * progress +0x16C0) and they loaded (func_0038D620), the renderer reset (+0x1C), state
+ * D_0044B9B0; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
+ * +0x7C, the room effects 0x1D..0x1F kept (+0xA8E40..) and removed, effect 0x1F made anew (a
+ * D_0046D750) and started. The extras list under a darkening overlay or the panels */
+void func_0038BC70(SubScreen *s) {
+    if (s->fade < 0x80) {
+        s->fade += s->fadeStep;
+    } else {
+        s->fade = 0x80;
+    }
+    if (s->fade == 0x80) {
+        Progress *p = gProgress;
+        u8 *buf = VCALL(p, 0x88, u8 *(*)(Progress *))(p);
+
+        if (buf != NULL) {
+            static const union { u32 u; f32 f; } k15 = {0x3E860A92}, k30 = {0x3F060A92};
+            f32 v[4] __attribute__((aligned(16)));
+            VObject *lights;
+            u8 *fx, **slot;
+            u8 msg[8];
+            void *mem;
+
+            AT(s, 0xA8DEC, u8 *) = buf;
+            AT(s, 0xA8DF0, u8 *) = buf + 0x200000;
+            AT(s, 0xA8DF8, u8 *) = buf + 0x242000;
+            AT(s, 0xA8DFC, u8 *) = buf + 0x244000;
+            SUB_GALLERY_MODEL(s) = NULL;
+            AT(s, 0xA8DF4, u8 *) = (u8 *)p + 0x16C0;
+            func_0038D620(s, SUB_PAGE(s, 0x0, u8));
+            VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+            ptmf_set(&s->state, &D_0044B9B0);
+            v[0] = 55.0f;
+            v[1] = 55.0f;
+            v[3] = 0.0f;
+            v[2] = 50.0f;
+            lights = D_0044E4C8;
+            VCALL(lights, 0x48, void (*)(VObject *, s32, f32 *, f32))(lights, 1, v, 0.0f);
+            v[0] = 65.0f;
+            v[3] = 0.0f;
+            v[1] = 60.0f;
+            v[2] = 60.0f;
+            VCALL(lights, 0x4C, void (*)(VObject *, s32, s32, f32 *, f32, f32))(lights, 0, 1, v, k15.f, k30.f);
+            VCALL(D_0044FE10, 0x7C, void (*)(VObject *, s32))(D_0044FE10, 1);
+            fx = D_0044E4C0;
+            gallery_effect_keep(fx, 0x1F, (u8 *)s + 0xA8E40);
+            gallery_effect_keep(fx, 0x1D, (u8 *)s + 0xA8ED0);
+            gallery_effect_keep(fx, 0x1E, (u8 *)s + 0xA8F60);
+            msg[0] = msg[1] = msg[2] = msg[3] = msg[4] = msg[5] = msg[6] = msg[7] = 0;
+            slot = (u8 **)(fx + 0x14B4);
+            if (*slot != NULL) {
+                VCALL(D_0044E4C0 + 0x1400, 0x14, void (*)(void *, void *))(D_0044E4C0 + 0x1400, *slot);
+                *slot = NULL;
+            }
+            mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
+            if (mem != NULL) {
+                u8 *e = func_002672F0(0xA0, mem);
+
+                if (e != NULL) {
+                    AT(e, 0x0, void **) = D_0046D750;
+                }
+                *slot = e;
+                VCALL(*slot, 0xC, void (*)(void *))(*slot);
+            }
+            fx = D_0044E4C0;
+            func_00266C40(fx, 0x1F);
+            func_00266C70(fx, 0x1F, msg);
+        }
+    }
+    func_0038DBE0(s);
+    sub_fade_back(s);
+}
