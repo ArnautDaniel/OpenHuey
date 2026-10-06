@@ -3408,3 +3408,235 @@ void func_0038E0C0(SubScreen *s) {
     VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
                                          0x30, 0);
 }
+
+/* ---- the costume page's choosing ---- */
+
+typedef struct {
+    u16 name;   /* the costume's name */
+    u16 note;   /* its description */
+} CostumeText;
+extern const CostumeText D_0044B700[9];   /* Fiona's six, then Hewie's three */
+
+void func_0038EAE0(SubScreen *s);
+
+#define COST_FIONA(s, i) SUB_PAGE(s, (i), u8)        /* Fiona's costumes (0x80 locked, 0xFF ends) */
+#define COST_FIONA_SEL(s) SUB_PAGE(s, 0x7, u8)       /* the one worn */
+#define COST_HEWIE(s, i) SUB_PAGE(s, 0x8 + (i), u8)  /* Hewie's */
+#define COST_HEWIE_SEL(s) SUB_PAGE(s, 0xC, u8)       /* his worn (0xFF: he isn't here) */
+#define COST_ROW(s) SUB_PAGE(s, 0xD, u8)             /* 0 Fiona, 1 Hewie, 2 done */
+#define COST_OPEN(s) SUB_PAGE(s, 0xE, u8)            /* the row's list is open */
+#define COST_FIONA_CUR(s) SUB_PAGE(s, 0xF, u8)
+#define COST_HEWIE_CUR(s) SUB_PAGE(s, 0x10, u8)
+
+/* the costumes chosen are worn (vars 0x26 / 0x27) and the page ends (flag 4) */
+static void costume_done(SubScreen *s, s32 hewie) {
+    Progress *p = gProgress;
+
+    Progress_SetVar(p, 0x26, COST_FIONA(s, COST_FIONA_SEL(s)));
+    if (hewie) {
+        Progress_SetVar(p, 0x27, COST_HEWIE(s, COST_HEWIE_SEL(s)));
+    }
+    Progress_SetFlag(p, 4);
+}
+
+/* state: the costume page. Up / down pick the row (Fiona, Hewie when he is here, done) or,
+ * with the row's list open, the costume (past the locked ones, round); left / prev / cancel
+ * and right / next / confirm close and open the list, confirm in it choosing the costume and
+ * cancel on the rows going to "done", where cancel or confirm wear the choice and end. Then
+ * the costumes drawn (func_0038EAE0), the rows, the open costume's description and the
+ * row's costumes (the cursor 2, the one worn 1). With no costume of Fiona's at all it just
+ * ends. */
+void func_0038FBE0(SubScreen *s) {
+    s32 hewie = COST_HEWIE_SEL(s) != 0xFF;
+    s32 quiet = 0, changed = 0, d = 0, n;
+    u8 c0, c1, c2;
+    u16 note;
+
+    if (COST_FIONA_SEL(s) == 0xFF) {
+        if (!s->fading) {
+            Progress_SetFlag(gProgress, 4);
+        }
+        return;
+    }
+    if (COST_OPEN(s) == 0) {
+        u8 row = COST_ROW(s), r;
+
+        if (D_0047E36C & MENU_UP) {
+            d = -1;
+        } else if (D_0047E36C & MENU_DOWN) {
+            d = 1;
+        }
+        if (d != 0) {
+            r = row + d;
+            if (r & 0x80) {
+                r = 0;
+            }
+            if (r >= 3) {
+                r = 2;
+            }
+            if (!hewie && r == 1) {
+                r = d < 0 ? 0 : 2;
+            }
+            if (r != row) {
+                changed = 1;
+                COST_ROW(s) = r;
+            }
+        }
+    } else {
+        if (D_0047E36C & MENU_UP) {
+            d = -1;
+        } else if (D_0047E36C & MENU_DOWN) {
+            d = 1;
+        }
+        if (d != 0) {
+            u8 old, c;
+
+            if (COST_ROW(s) == 0) {
+                old = c = COST_FIONA_CUR(s);
+                do {
+                    c += d;
+                    if (c & 0x80) {
+                        c = 5;
+                    } else if (c >= 6) {
+                        c = 0;
+                    }
+                } while (COST_FIONA(s, c) & 0x80);
+                if (old != c) {
+                    changed = 1;
+                    COST_FIONA_CUR(s) = c;
+                }
+            } else {
+                old = c = COST_HEWIE_CUR(s);
+                do {
+                    c += d;
+                    if (c & 0x80) {
+                        c = 2;
+                    } else if (c >= 3) {
+                        c = 0;
+                    }
+                } while (COST_HEWIE(s, c) & 0x80);
+                if (old != c) {
+                    changed = 1;
+                    COST_HEWIE_CUR(s) = c;
+                }
+            }
+        }
+    }
+    if (!changed) {
+        u32 pad = D_0047E36C;
+        u8 old = COST_OPEN(s);
+
+        d = 0;
+        if (pad & (MENU_PREV | MENU_LEFT | MENU_CANCEL)) {
+            d = -1;
+        } else if (pad & (MENU_NEXT | MENU_RIGHT | MENU_CONFIRM)) {
+            d = 1;
+        }
+        COST_OPEN(s) += (u8)d;
+        if (COST_OPEN(s) & 0x80) {
+            COST_OPEN(s) = 0;
+        }
+        if (COST_OPEN(s) >= 2) {
+            COST_OPEN(s) = 1;
+        }
+        if (COST_OPEN(s) == 1 && COST_ROW(s) == 2) {
+            COST_OPEN(s) = 0;
+        }
+        if (old != COST_OPEN(s)) {
+            changed = 1;
+            if (D_0047E36C & MENU_CANCEL) {
+                if (COST_OPEN(s) == 0) {
+                    quiet = 1;
+                }
+            } else if (D_0047E36C & MENU_CONFIRM) {
+                if (old == 0) {
+                    quiet = 1;
+                }
+            }
+        }
+    }
+    if (changed) {
+        if (!quiet) {
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            Sound_PlaySE(SE_CANCEL);
+        } else if (D_0047E36C & MENU_CONFIRM) {
+            Sound_PlaySE(SE_DECIDE);
+        }
+    } else if ((D_0047E36C & MENU_CONFIRM) && COST_OPEN(s) != 0) {
+        if (COST_ROW(s) == 0) {
+            COST_FIONA_SEL(s) = COST_FIONA_CUR(s);
+        } else {
+            COST_HEWIE_SEL(s) = COST_HEWIE_CUR(s);
+        }
+        Sound_PlaySE(SE_DECIDE);
+        COST_OPEN(s) = 0;
+    }
+    if (!s->fading) {
+        if ((D_0047E36C & MENU_CANCEL) && !quiet) {
+            if (COST_OPEN(s) == 0) {
+                if (COST_ROW(s) != 2) {
+                    COST_ROW(s) = 2;
+                    Sound_PlaySE(SE_CANCEL);
+                } else {
+                    costume_done(s, hewie);
+                }
+            }
+        } else if ((D_0047E36C & MENU_CONFIRM) && COST_OPEN(s) == 0 && COST_ROW(s) == 2) {
+            costume_done(s, hewie);
+        }
+    }
+
+    func_0038EAE0(s);
+    c0 = c1 = c2 = 0;
+    note = 0;
+    switch (COST_ROW(s)) {
+    case 0:
+        c0 = COST_OPEN(s) == 1 ? 1 : 2;
+        note = D_0044B700[COST_FIONA_CUR(s)].note;
+        break;
+    case 1:
+        c1 = COST_OPEN(s) == 1 ? 1 : 2;
+        note = D_0044B700[6 + COST_HEWIE_CUR(s)].note;
+        break;
+    case 2:
+        c2 = 2;
+        break;
+    }
+    n = 0;
+    Task_ShowText(&s->text, 0x30, 0x40, c0, Task_MessageText(&s->text, 0x42), 0x80, 0x33, 0x10, 0x15);
+    n++;
+    if (hewie) {
+        Task_ShowText(&s->text, 0x30, n * 0x20 + 0x40, c1, Task_MessageText(&s->text, 0x43), 0x80, 0x33, 0x10, 0x15);
+        n++;
+    }
+    Task_ShowText(&s->text, 0x30, n * 0x20 + 0x40, c2, Task_MessageText(&s->text, 0x44), 0x80, 0x33, 0x10, 0x15);
+    if (COST_ROW(s) != 2) {
+        s32 i, y = 0x48;
+
+        if (COST_OPEN(s) != 0) {
+            Task_ShowText(&s->text, 0x30, 0x150, 0, Task_MessageText(&s->text, note), 0x80, 0x33, 0x10, 0x15);
+        }
+        if (COST_ROW(s) == 0) {
+            for (i = 0; COST_FIONA(s, i) != 0xFF; i++) {
+                if (!(COST_FIONA(s, i) & 0x80)) {
+                    u8 c = i == COST_FIONA_CUR(s) && COST_OPEN(s) ? 2 : i == COST_FIONA_SEL(s) ? 1 : 0;
+
+                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, D_0044B700[i].name), 0x80, 0x33,
+                                  0x10, 0x15);
+                    y += 0x20;
+                }
+            }
+        } else {
+            for (i = 0; COST_HEWIE(s, i) != 0xFF; i++) {
+                if (!(COST_HEWIE(s, i) & 0x80)) {
+                    u8 c = i == COST_HEWIE_CUR(s) && COST_OPEN(s) ? 2 : i == COST_HEWIE_SEL(s) ? 1 : 0;
+
+                    Task_ShowText(&s->text, 0xC0, y, c, Task_MessageText(&s->text, D_0044B700[6 + i].name), 0x80,
+                                  0x33, 0x10, 0x15);
+                    y += 0x20;
+                }
+            }
+        }
+    }
+}
