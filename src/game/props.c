@@ -849,12 +849,12 @@ s32 Caustic_Draw(u8 *d) {
                     AT(&xyzw[v][3], 0, u32) = j == 0 ? 0x8000 : 0;   /* the first column starts the strip */
                     if (g == 0) {
                         st[v][0] = 0.1f + 0.1f * (f32)r
-                                   + 0.05f * func_0031C058(func_002E2D00(phase + 0.5f * (3.1415927f * (f32)r)));
-                        st[v][1] = 0.1f * (f32)j + 0.05f * func_0031C248(func_002E2D00(phase + 0.5f * (3.1415927f * (f32)j)));
+                                   + 0.05f * func_0031C058(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)r)));
+                        st[v][1] = 0.1f * (f32)j + 0.05f * func_0031C248(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)j)));
                     } else {
-                        st[v][0] = 0.1f * (f32)j + 0.05f * func_0031C058(func_002E2D00(phase + -0.4f * (3.1415927f * (f32)r)));
+                        st[v][0] = 0.1f * (f32)j + 0.05f * func_0031C058(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)r)));
                         st[v][1] = 0.1f + 0.1f * (f32)r
-                                   + 0.05f * func_0031C248(func_002E2D00(phase + -0.4f * (3.1415927f * (f32)j)));
+                                   + 0.05f * func_0031C248(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)j)));
                     }
                     AT(rgba[v], 0, u32) = AT(d, 0x38, u32);
                 }
@@ -1778,7 +1778,7 @@ void Butterflies_Start(u8 *o) {
         f32 a = kHalfPi.f + kPi.f * RND();
 
         AT(o, 0x70 + k * 4, f32) = a;
-        AT(o, 0x70 + k * 4, f32) = func_002E2D00(a);
+        AT(o, 0x70 + k * 4, f32) = Angle_Wrap(a);
     }
     for (k = 0; k < 3; k++) {
         AT(o, 0x7C + k * 4, f32) = 2.0f + 2.0f * RND();
@@ -1818,27 +1818,27 @@ void Butterflies_Update(u8 *o) {
         AT(o, 0x40, f32) = AT(o, 0x40, f32) + a;
     }
     sceVu0SubVector(e, (f32 *)(o + 0x10), (f32 *)(o + 0x20));
-    if (!(func_002E2D00(Vec_Heading(e) - AT(o, 0x44, f32)) <= 0.0f)) {
+    if (!(Angle_Wrap(Vec_Heading(e) - AT(o, 0x44, f32)) <= 0.0f)) {
         t = AT(o, 0x44, f32) + kPi.f * (15.0f + 20.0f * RND()) / 180.0f;
         AT(o, 0x44, f32) = t;
-        AT(o, 0x44, f32) = func_002E2D00(t);
+        AT(o, 0x44, f32) = Angle_Wrap(t);
     } else {
         t = AT(o, 0x44, f32) - kPi.f * (15.0f + 20.0f * RND()) / 180.0f;
         AT(o, 0x44, f32) = t;
-        AT(o, 0x44, f32) = func_002E2D00(t);
+        AT(o, 0x44, f32) = Angle_Wrap(t);
     }
     rng = gRandom;
     speed = k04.f + k04.f * RND();
     Heading_Vector(v, AT(o, 0x44, f32));
     sceVu0ScaleVector(v, v, speed);
     sceVu0AddVector((f32 *)(o + 0x20), (f32 *)(o + 0x20), v);
-    AT(o, 0x60, f32) = func_002E2D00(AT(o, 0x60, f32) + (k60.f + 20.0f * RND()));
+    AT(o, 0x60, f32) = Angle_Wrap(AT(o, 0x60, f32) + (k60.f + 20.0f * RND()));
     t = AT(o, 0x64, f32) + kPi.f * (2.0f + 9.0f * RND()) / 180.0f;
     AT(o, 0x64, f32) = t;
-    AT(o, 0x64, f32) = func_002E2D00(t);
+    AT(o, 0x64, f32) = Angle_Wrap(t);
     t = AT(o, 0x68, f32) + kPi.f * (40.0f + 20.0f * RND()) / 180.0f;
     AT(o, 0x68, f32) = t;
-    AT(o, 0x68, f32) = func_002E2D00(t);
+    AT(o, 0x68, f32) = Angle_Wrap(t);
 #undef RND
 }
 
@@ -1964,28 +1964,28 @@ void Butterflies_Draw(u8 *o) {
         s32 ii = i * (i + 1);
         f32 a, b, c, flap, bob, x, y, z, turn, size;
 
-        a = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x70, f32) + kA.f));
-        b = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x74, f32) + kB.f));
-        c = (f32)sign * func_002E2D00((f32)ii * (AT(o, 0x78, f32) + kC.f));
-        flap = func_0031C248(func_002E2D00(a + (AT(o, 0x60, f32) + AT(o, 0x70, f32)))) * k60.f;
-        bob = k08.f * func_0031C248(func_002E2D00(b + (AT(o, 0x64, f32) + AT(o, 0x70, f32))));
+        a = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x70, f32) + kA.f));
+        b = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x74, f32) + kB.f));
+        c = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x78, f32) + kC.f));
+        flap = func_0031C248(Angle_Wrap(a + (AT(o, 0x60, f32) + AT(o, 0x70, f32)))) * k60.f;
+        bob = k08.f * func_0031C248(Angle_Wrap(b + (AT(o, 0x64, f32) + AT(o, 0x70, f32))));
         v[0] = AT(o, 0x7C, f32);
         v[1] = AT(o, 0x80, f32);
         v[2] = AT(o, 0x84, f32);
         v[3] = 0.0f;
-        bob = bob + k04.f * func_0031C248(func_002E2D00(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
-        Vec_TurnY(v, v, func_002E2D00(a));
+        bob = bob + k04.f * func_0031C248(Angle_Wrap(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
+        Vec_TurnY(v, v, Angle_Wrap(a));
         y = AT(o, 0x14, f32) + v[1];
         x = AT(o, 0x10, f32) + v[0];
         z = AT(o, 0x18, f32) + v[2];
         sceVu0SubVector(d, (f32 *)(o + 0x20), (f32 *)(o + 0x10));
         turn = (f32)(i + 1) * ((f32)sign * k50.f);
-        Vec_TurnY(d, d, func_002E2D00(turn));
+        Vec_TurnY(d, d, Angle_Wrap(turn));
         at[1] = y + bob;
         at[0] = x + d[0];
         at[2] = z + d[2];
         rot[0] = AT(o, 0x40, f32);
-        rot[1] = func_002E2D00(AT(o, 0x44, f32) + turn);
+        rot[1] = Angle_Wrap(AT(o, 0x44, f32) + turn);
         rot[2] = AT(o, 0x48, f32);
         rot[3] = 0.0f;
         if (!(func_0031C248(c) <= 0.0f)) {

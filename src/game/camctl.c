@@ -675,13 +675,13 @@ void CamDirector_KeepInView(u8 *o, s32 rate) {
     ht = __builtin_sqrtf(__builtin_fabsf(t[2] * t[2] + t[0] * t[0]));
     hd = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
     a = func_0031C5C0(t[1], ht);
-    b = -func_002E2D00(a - func_0031C5C0(d[1], hd));
+    b = -Angle_Wrap(a - func_0031C5C0(d[1], hd));
     if (!((b <= 0.0f ? -b : b) <= k5deg.f)) {
         b = !(b <= 0.0f) ? b - k5deg.f : b + k5deg.f;
         VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, b * (f32)rate / 100.0f, 0.0f);
     }
     a = func_0031C5C0(t[0], t[2]);
-    b = func_002E2D00(a - func_0031C5C0(d[0], d[2]));
+    b = Angle_Wrap(a - func_0031C5C0(d[0], d[2]));
     if ((b <= 0.0f ? -b : b) <= k10deg.f) {
         return;
     }

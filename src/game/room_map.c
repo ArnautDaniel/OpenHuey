@@ -609,7 +609,7 @@ f32 Rooms_ExitHeading(VObject *r, u32 exit) {
         if (VCALL(doors, 0x18, s32 (*)(VObject *, u32, f32 *))(doors, exit, a) == 1) {
             static const union { u32 u; f32 f; } kPi = {0x40490FDB};
 
-            h = func_002E2D00(kPi.f + h);
+            h = Angle_Wrap(kPi.f + h);
         }
         return h;
     }

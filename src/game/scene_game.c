@@ -698,10 +698,10 @@ void SceneGame_EnterRoom(Scene *g) {
         gp = gProgress;
         cs = (u8 *)gp + 0x800;
         if (AT(save, 0x1F, u8)) {
-            func_001662A0((Hewie *)((u8 *)gCharPartner), (HewiePlacement *)cs);
+            Hewie_PlaceAtPlacement((Hewie *)((u8 *)gCharPartner), (HewiePlacement *)cs);
         }
         VCALL(gCharPartner, 0x70, void (*)(void *))(gCharPartner);
-        func_00165510((Hewie *)((u8 *)gCharPartner), AT(cs, 0xC, s32));
+        Hewie_SetHealthState((Hewie *)((u8 *)gCharPartner), AT(cs, 0xC, s32));
         if (gCharSlot2 != NULL) {
             if (AT(save, 0x20, u8)) {
                 Progress_ActivateChar(prog, 2);

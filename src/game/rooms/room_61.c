@@ -211,14 +211,14 @@ f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw) {
         }
     }
     sceVu0SubVector(d, at, (f32 *)(st + 0x30));
-    a = func_002E2D00(func_0031C5C0(d[0], d[2]) - yaw);
+    a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - yaw);
     if (a < kTurnN.f) {
         a = kTurnN.f;
     }
     if (!(a <= kTurn.f)) {
         a = kTurn.f;
     }
-    return func_002E2D00(yaw + a);
+    return Angle_Wrap(yaw + a);
 }
 
 /* set path `st` up: a point at random in each cell of an nx x ny x nz grid of 10-unit cells
@@ -527,10 +527,10 @@ s32 LightShaft_Update(u8 *o) {
         rnd = gRandom;
         t = AT(o, 0x6E0, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
         AT(o, 0x6E0, f32) = t;
-        AT(o, 0x6E0, f32) = func_002E2D00(t);
+        AT(o, 0x6E0, f32) = Angle_Wrap(t);
         t = AT(o, 0x6E4, f32) + kPi.f * (1.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
         AT(o, 0x6E4, f32) = t;
-        AT(o, 0x6E4, f32) = func_002E2D00(t);
+        AT(o, 0x6E4, f32) = Angle_Wrap(t);
     }
     return 1;
 }

@@ -3270,7 +3270,7 @@ void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32
     e = D_0042C460 + (AT(k, 0x6D, u8) ^ 0x80) * 8;
     AT(c, 0x14C8, s32) = AT(e, 0x0, s32);
     AT(k, 0x46, s16) = AT(e, 0x4, s16);
-    h = func_002E2D00(kPi.f * (f32)deg / 180.0f);
+    h = Angle_Wrap(kPi.f * (f32)deg / 180.0f);
     c->a.angle[1] = h;
     sceVu0UnitMatrix(c->a.rot);
     sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
@@ -3448,7 +3448,7 @@ u32 func_00325EC0(Character *c, f32 dist) {
 
 /* how far c must still turn to face heading `h` (both ways the same) */
 #define CR19_TURN_LEFT(c, h) \
-    (func_002E2D00((h) - (c)->a.angle[1]) <= 0.0f ? -func_002E2D00((h) - (c)->a.angle[1]) : func_002E2D00((h) - (c)->a.angle[1]))
+    (Angle_Wrap((h) - (c)->a.angle[1]) <= 0.0f ? -Angle_Wrap((h) - (c)->a.angle[1]) : Angle_Wrap((h) - (c)->a.angle[1]))
 
 /* its approach, by step +0x6C: 0 stop (`dist` kept, +0x1C); 1 a target near Fiona (once the
    path is done; none: try 1 further); 2 turn to it (within 30 degrees); 3 walk the path there
@@ -3896,7 +3896,7 @@ void func_00327DD0(Character *c) {
             } else {
                 diff = func_0031C5C0(dx, dz) - h;
             }
-            front = (func_002E2D00(diff) <= 0.0f ? -func_002E2D00(diff) : func_002E2D00(diff)) < 0x1.921fb6p+0f;   /* 90 degrees */
+            front = (Angle_Wrap(diff) <= 0.0f ? -Angle_Wrap(diff) : Angle_Wrap(diff)) < 0x1.921fb6p+0f;   /* 90 degrees */
             switch (AT(k, 0x6C, u8)) {
             case 0:
                 sceVu0CopyVector(off, front ? tbl[1] : tbl[0]);
@@ -3916,7 +3916,7 @@ void func_00327DD0(Character *c) {
                 break;
             }
             Mtx_AtHeading(m, gCharPlayer->a.pos, h);
-            func_002E2DD0(at, m, off);
+            Mtx_ApplyPoint(at, m, off);
             tri = Actor_TriOf(&gCharPlayer->a, at);
             if (tri == NAV_NONE) {
                 return;
@@ -3938,7 +3938,7 @@ void func_00327DD0(Character *c) {
         }
         AT(c, 0x10C, f32) = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
         Actor_TurnToward(&c->a, AT(c, 0x10C, f32), 0.0f);
-        h = func_002E2D00(AT(c, 0x10C, f32));
+        h = Angle_Wrap(AT(c, 0x10C, f32));
         c->a.angle[1] = h;
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
@@ -4230,7 +4230,7 @@ void func_0032B080(Character *c, f32 *at) {
         }
         return;
     }
-    h = func_002E2D00(AT(c, 0x10C, f32));
+    h = Angle_Wrap(AT(c, 0x10C, f32));
     c->a.angle[1] = h;
     sceVu0UnitMatrix(c->a.rot);
     sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
@@ -4337,7 +4337,7 @@ void func_0032BB50(Character *c) {
                 func_003257B0(c);
             }
         } else {
-            f32 h = func_002E2D00(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
+            f32 h = Angle_Wrap(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
 
             c->a.angle[1] = h;
             sceVu0UnitMatrix(c->a.rot);

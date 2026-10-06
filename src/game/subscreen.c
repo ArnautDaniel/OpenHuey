@@ -2559,7 +2559,7 @@ void Costumes_Setup(SubScreen *s) {
         AT(gCharPartner, 0x28, u8) != 0) {
         u8 *h = (u8 *)gCharPartner;
 
-        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && func_001364F0((Hewie *)h)) {
+        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && Hewie_FionaReachable((Hewie *)h)) {
             VCALL(h, 0x90, void (*)(void *))(h);
             VCALL(h, 0x7C, void (*)(void *))(h);
         }

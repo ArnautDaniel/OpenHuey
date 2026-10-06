@@ -381,9 +381,9 @@ void Cutscene_GroupKeys(u8 *d) {
             if (o != NULL) {
                 f32 *key = (f32 *)((u8 *)tr + AT(e, 0x8, s32) + KEY_AT(d, FRAME(d)) * 0x18);
 
-                AT(o, 0x10, f32) = func_002E2D00(key[0]);
-                AT(o, 0x14, f32) = func_002E2D00(key[1]);
-                AT(o, 0x18, f32) = func_002E2D00(key[2]);
+                AT(o, 0x10, f32) = Angle_Wrap(key[0]);
+                AT(o, 0x14, f32) = Angle_Wrap(key[1]);
+                AT(o, 0x18, f32) = Angle_Wrap(key[2]);
                 AT(o, 0x20, f32) = key[3];
                 AT(o, 0x24, f32) = key[4];
                 AT(o, 0x28, f32) = key[5];

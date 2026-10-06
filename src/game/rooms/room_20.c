@@ -165,7 +165,7 @@ s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
     u8 *o = room_obj(D_003FF110[cmd[3]]);
 
     if (o != NULL) {
-        AT(chr, 0x10C, f32) = func_002E2D00(func_0031C5C0(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
+        AT(chr, 0x10C, f32) = Angle_Wrap(func_0031C5C0(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
                                                           AT(o, 0x28, f32) - AT(chr, 0x18, f32)));
         chr[0xE1] = 0;
         AT(chr, 0xF4, s32) = 0xF;

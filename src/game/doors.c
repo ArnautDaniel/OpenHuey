@@ -189,7 +189,7 @@ s32 Doors_AnimUserSpot(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf)
         p[1] = 0.0f;
         p[2] = rec[1];
         Mtx_AtHeading(m, (f32 *)(e + 0x30), AT(e, 0x54, f32));
-        func_002E2DD0(to, m, p);
+        Mtx_ApplyPoint(to, m, p);
         tri = AT(e, 0x18, u32);
         sceVu0CopyVector(from, (f32 *)(e + 0x30));
         if (nm == NULL) {
@@ -199,7 +199,7 @@ s32 Doors_AnimUserSpot(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf)
             sceVu0CopyVector(out, to);
             out[3] = 1.0f;
             rot[1] = rec[2] + AT(e, 0x54, f32);
-            rot[1] = func_002E2D00(rot[1]);
+            rot[1] = Angle_Wrap(rot[1]);
             rot[0] = 0.0f;
             rot[2] = 0.0f;
             return tri;
@@ -346,10 +346,10 @@ s32 Doors_NavSpot(VObject *d, u32 i, const f32 *off, f32 *out) {
         return -1;
     }
     if (VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, i, side) == 0) {
-        a = func_002E2D00(PI_F + a);
+        a = Angle_Wrap(PI_F + a);
     }
     Mtx_AtHeading(m, (f32 *)(e + 0x30), a);
-    func_002E2DD0(to, m, off);
+    Mtx_ApplyPoint(to, m, off);
     tri = AT(e, 0x18, u32);
     sceVu0CopyVector(from, (f32 *)(e + 0x30));
     nm = (VObject *)gNavMesh;
@@ -492,7 +492,7 @@ s32 Doors_InArea(VObject *d, s32 kind, u32 i, const f32 *pos) {
     for (k = 0; k < 4; k++) {
         v[0] = q[k * 2];
         v[2] = q[k * 2 + 1];
-        func_002E2DD0(c[k], m, v);
+        Mtx_ApplyPoint(c[k], m, v);
     }
     for (k = 0; k < 4; k++) {
         f32 *a = c[k], *b = c[(k + 1) & 3];

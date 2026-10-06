@@ -706,7 +706,7 @@ s32 Pursuer_Place(Pursuer *p, u32 tri, const f32 *heading, f32 *pos) {
 
     MOTION_AT(p, 0x854, s32) = 0;
     MOTION_AT(p, 0x858, f32) = 0.0f;
-    PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+    PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
     m = p->c.motion;
     VCALL(m, 0x54, void (*)(void *))(m);
     MOTION_AT(p, 0x850, u8) = 1;
@@ -2563,7 +2563,7 @@ void func_002871E0(Pursuer *p) {
                 p->c.hp = 1;
             }
         }
-        PU(p, 0x1634, f32) = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212550(p, (u8)p->c.unk100));
+        PU(p, 0x1634, f32) = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212550(p, (u8)p->c.unk100));
         p->c.unk100 = 0xFF;
     }
     PU(p, 0x1784, s32) = 0;
@@ -2587,7 +2587,7 @@ void Pursuer_DoorBackOff(Pursuer *p) {
         func_0010E640(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
     }
-    h = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + PU(p, 0x1634, f32));
+    h = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + PU(p, 0x1634, f32));
     func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     if ((Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) != 1) {
         Actor_SetState(&p->c.a, &D_003ECF70);
@@ -3140,7 +3140,7 @@ void func_0027FE90(Pursuer *p) {
     } else if (PU(p, 0x16C8, u8) == 4 || func_00217510(p) == 0) {
         return;
     }
-    PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+    PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
     PU(p, 0x1544, u8) = VCALL(p, 0xC0, s32 (*)(Pursuer *))(p);
     if (PU(p, 0x1544, u8) == 1) {
         VCALL(p, 0xCC, void (*)(Pursuer *))(p);
@@ -3348,7 +3348,7 @@ void func_0027FC70(Pursuer *p) {
                 h = func_00212730(p, PU(p, 0x17B0, u8));
             } else {
                 p->c.a.navTri = VCALL(gRooms, 0x28, u32 (*)(VObject *, u32))(gRooms, p->c.door);
-                h = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212730(p, p->c.door));
+                h = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212730(p, p->c.door));
             }
             VCALL(p, 0x28, s32 (*)(Pursuer *, u32, f32 *, s32))(p, p->c.a.navTri, &h, 0);
         } else {
@@ -4081,7 +4081,7 @@ void func_00289280(Pursuer *p) {
             return;
         }
         t = p->target;
-        p->c.unk104[0] = func_002E2D00(func_002E2D00(Actor_HeadingTo(&t->a, p->c.a.pos) - t->a.angle[1])) <= 0.0f ? -1 : 1;
+        p->c.unk104[0] = Angle_Wrap(Angle_Wrap(Actor_HeadingTo(&t->a, p->c.a.pos) - t->a.angle[1])) <= 0.0f ? -1 : 1;
         PU(p, 0x1634, s32) = 0;
         if (PU(p, 0x1788, s32) != 0x200) {
             Pursuer_PlayAnim(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p));
@@ -4945,7 +4945,7 @@ void Pursuer_DoorBackAway(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     PU(p, 0x1634, f32) = 0.0f;
     d = gDoors;
-    PU(p, 0x1634, f32) = func_002E2D00(func_00212550(p, (u8)p->c.unk100));
+    PU(p, 0x1634, f32) = Angle_Wrap(func_00212550(p, (u8)p->c.unk100));
     if (VCALL(d, 0x70, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) != 0) {
         p->c.a.unk2B = 1;
     }
@@ -5009,7 +5009,7 @@ s32 func_00285DE0(Pursuer *p, u32 kind, f32 *heading, f32 *pos) {
     switch (kind & 0xFF) {
     case 14:
     case 15:
-        h = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + h);
+        h = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + h);
         /* fallthrough */
     case 10:
     case 11:
@@ -5027,12 +5027,12 @@ s32 func_00285DE0(Pursuer *p, u32 kind, f32 *heading, f32 *pos) {
         for (side = 0; side < 2; side++) {
             f32 m[4][4] __attribute__((aligned(16)));
             f32 at[4] __attribute__((aligned(16)));
-            f32 r = side != 0 ? func_002E2D00(h + a / 180.0f) : func_002E2D00(h - a / 180.0f);
+            f32 r = side != 0 ? Angle_Wrap(h + a / 180.0f) : Angle_Wrap(h - a / 180.0f);
             f32 dy;
             s32 tri;
 
             Mtx_AtHeading(m, p->c.a.pos, r);
-            func_002E2DD0(at, m, ofs);
+            Mtx_ApplyPoint(at, m, ofs);
             dy = p->c.a.pos[1] - at[1];
             tri = Actor_TriOfOnMesh(&p->c.a, at);
             if (dy <= 0.0f) {
@@ -5212,7 +5212,7 @@ static void Pursuer_LookAt(Pursuer *p, const f32 *pos) {
         yaw = 0.0f;
     }
     func_002DD310(p->c.motion, 0.0f, yaw, 0.0f, VCALL(p, 0xA4, f32 (*)(Pursuer *))(p));
-    PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+    PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
 }
 
 /* vtable +0x44: the per-frame think: blocking flags, senses (+0x88), the behaviour step, the
@@ -5280,7 +5280,7 @@ void func_00287620(Pursuer *p) {
             p->c.hp = 1;
         }
         Pursuer_PlayAnimBlend(p, 0x1005);
-        PU(p, 0x1634, f32) = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212550(p, (u8)p->c.unk100));
+        PU(p, 0x1634, f32) = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212550(p, (u8)p->c.unk100));
         p->c.unk100 = 0xFF;
     }
     PU(p, 0x1784, s32) = 0;
@@ -5951,10 +5951,10 @@ void Pursuer_CloseInGoal(Pursuer *p) {
             f32 d = 1.0f;
 
             if (!(MOTION_KEYS(p) & MOTION_KEY_END)) {
-                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+                if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 } else {
-                    d = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+                    d = -Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 }
             }
             if ((MOTION_KEYS(p) & MOTION_KEY_END) || d < 0x1.99999ap-4f /* 0.1 */) {
@@ -6028,9 +6028,9 @@ void Pursuer_LookAround(Pursuer *p) {
             ph = (f32)(s32)((f32)PU(p, 0x1624, s32) + VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p) / 4.0f);
             amp = VCALL(p, 0x2E0, f32 (*)(Pursuer *))(p) / 2.0f;
         }
-        MOTION_AT(p, 0x858, f32) = func_002E2D00(MOTION_AT(p, 0x858, f32) +
-                                                  amp * func_0031C058(func_002E2D00(ph * (0x1.921fb60000000p+2f /* 6.2831855 */ / VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p)))));
-        PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+        MOTION_AT(p, 0x858, f32) = Angle_Wrap(MOTION_AT(p, 0x858, f32) +
+                                                  amp * func_0031C058(Angle_Wrap(ph * (0x1.921fb60000000p+2f /* 6.2831855 */ / VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p)))));
+        PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
         PU(p, 0x1624, s32)++;
     } else {
         u8 *m = p->c.motion;
@@ -6105,10 +6105,10 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
         if (d < VCALL(p, 0x2E4, f32 (*)(Pursuer *))(p) && !(d < 0.0f)) {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb60000000p+1f /* 3.1415927 */ * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f) {
                 s32 can;
@@ -6185,10 +6185,10 @@ void Pursuer_ChaseDecision(Pursuer *p) {
         if (d < func_002838E0(p) && !(d < 0.0f) && func_002175B0(&p->c.a, &gCharPlayer->a) != 0) {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb60000000p+1f /* 3.1415927 */ * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f && AT(pr, 0x7B8, u8) < 4) {
                 strike = 1;
@@ -6465,7 +6465,7 @@ void func_00284040(Pursuer *p) {
             Motion_LookAt(p->c.motion, v, &pitch, &yaw);
             sp = VCALL(p, 0xA4, f32 (*)(Pursuer *))(p);
             func_002DD310(p->c.motion, pitch, yaw, sp, VCALL(p, 0xA4, f32 (*)(Pursuer *))(p));
-            PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+            PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
             return;
         }
         break;
@@ -6474,10 +6474,10 @@ void func_00284040(Pursuer *p) {
             func_002181D0(p, p->c.a.pos, (f32 *)((u8 *)p + 0x15B0), PU(p, 0x1574, f32), PU(p, 0x1580, f32), PU(p, 0x1584, f32)) != 0) {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
             }
             if (a < 0x1.0c15240000000p-1f /* 0.5235988 */) {
                 Pursuer_LookAt(p, (f32 *)((u8 *)p + 0x15B0));
@@ -6491,7 +6491,7 @@ void func_00284040(Pursuer *p) {
     }
     m = p->c.motion;
     VCALL(m, 0x5C, void (*)(void *, f32))(m, VCALL(p, 0xA4, f32 (*)(Pursuer *))(p));
-    PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+    PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
 }
 
 /* vtable +0x1D0: walking to the door; turn to the side if needed; at it, the next step */
@@ -6535,10 +6535,10 @@ void Pursuer_DoorWalking(Pursuer *p) {
             if (!(MOTION_KEYS(p) & MOTION_KEY_END)) {
                 f32 d;
 
-                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+                if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 } else {
-                    d = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+                    d = -Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 }
                 if (d < 0x1.99999a0000000p-4f /* 0.1 */) {
                     turn = 1;
@@ -6908,10 +6908,10 @@ void Pursuer_WalkToSpot(Pursuer *p) {
         } else {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.99999ap-4f /* 0.1 */) {
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x12);
@@ -6986,10 +6986,10 @@ void Pursuer_FrameUpdate(Pursuer *p) {
             PU(p, 0x16C8, u8) != 4) {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             /* in front or behind */
             VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, a < 0x1.921fb6p+0f /* 90 degrees */ ? 8 : 9);
@@ -7099,7 +7099,7 @@ void Pursuer_EnterRoom(Pursuer *p) {
         PTMF *step = (PTMF *)((u8 *)p + 0x174C);
 
         p->c.a.navTri = VCALL(rooms, 0x24, s32 (*)(VObject *, u32))(rooms, p->c.door);
-        ang = func_002E2D00(0x1.921fb6p+1f /* pi */ + ang);
+        ang = Angle_Wrap(0x1.921fb6p+1f /* pi */ + ang);
         VCALL(p, 0x28, void (*)(Pursuer *, s32, f32 *, s32))(p, p->c.a.navTri, &ang, 0);
         if (!__ptmf_cmpr(step, &D_003ED460) || !__ptmf_cmpr(step, &D_003ED470) || !__ptmf_cmpr(step, &D_003ED480)) {
             func_00280090(p);
@@ -7478,10 +7478,10 @@ void Pursuer_DoorOpen(Pursuer *p) {
     if (PU(p, 0x1788, s32) == 0x400) {
         f32 d, s;
 
-        if (!(func_002E2D00(PU(p, 0x1568, f32) - p->c.a.angle[1]) <= 0.0f)) {
-            d = func_002E2D00(PU(p, 0x1568, f32) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(PU(p, 0x1568, f32) - p->c.a.angle[1]) <= 0.0f)) {
+            d = Angle_Wrap(PU(p, 0x1568, f32) - p->c.a.angle[1]);
         } else {
-            d = -func_002E2D00(PU(p, 0x1568, f32) - p->c.a.angle[1]);
+            d = -Angle_Wrap(PU(p, 0x1568, f32) - p->c.a.angle[1]);
         }
         if (!(VCALL(p, 0xA0, f32 (*)(Pursuer *))(p) <= 0.0f)) {
             s = VCALL(p, 0xA0, f32 (*)(Pursuer *))(p);
@@ -7505,7 +7505,7 @@ void Pursuer_DoorOpen(Pursuer *p) {
             sceVu0UnitMatrix((void *)((u8 *)p + 0x60));
             sceVu0RotMatrixY((void *)((u8 *)p + 0x60), (void *)((u8 *)p + 0x60), h);
         }
-        PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+        PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
         if (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) {
             return;
         }
@@ -8102,7 +8102,7 @@ void Pursuer_Footsteps(Pursuer *p) {
 
         sceVu0CopyMatrix(m, (void *)((u8 *)p + 0x60));
         sceVu0CopyVector(m[3], p->c.a.pos);
-        func_002E2DD0(foot, m, step == 1 ? left : right);
+        Mtx_ApplyPoint(foot, m, step == 1 ? left : right);
         tri = Actor_TriOfOnMesh(&p->c.a, foot);
         t = Pursuer_NavTri(tri != (u32)-1 ? tri : p->c.a.navTri);
         if (p->c.a.room == 7 || p->c.a.room == 0x106) {
@@ -9261,10 +9261,10 @@ void Pursuer_BehaviourAttack(Pursuer *p) {
             if ((d < func_002838E0(p) || d < 10.0f) && !(d <= 0.0f)) {
                 f32 a;
 
-                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
                 } else {
-                    a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                    a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
                 }
                 if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
                     func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -9471,10 +9471,10 @@ void Pursuer_BehaviourHewie(Pursuer *p) {
         if (d < func_002838E0(p) || d < 10.0f) {
             f32 a;
 
-            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f) {
                 VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xB);
@@ -9595,10 +9595,10 @@ void Pursuer_BehaviourStalk(Pursuer *p) {
             Pursuer_HoldOff(p, e);
             break;
         }
-        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (!(a <= 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f)) {
             Pursuer_HoldOff(p, e);
@@ -9647,10 +9647,10 @@ void Pursuer_BehaviourStalk(Pursuer *p) {
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -10162,10 +10162,10 @@ void func_0029B8B0(Pursuer *p) {
     } else {
         sceVu0CopyVector(at, (f32 *)((u8 *)gProgress + p->c.a.slot * 32 + 0x1060));
     }
-    if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]) <= 0.0f)) {
-        a = func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
+    if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]) <= 0.0f)) {
+        a = Angle_Wrap(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
     } else {
-        a = -func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
+        a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
     }
     dir = a < 0x1.921fb6p+0f /* 90 degrees */ ? 0 : 1;
     kind = p->c.state[1];
@@ -10189,7 +10189,7 @@ void func_0029B8B0(Pursuer *p) {
             PU(p, 0x1790, s32) = 900;
             PU(p, 0x16F5, u8) = 1;
             if (p->c.state[2] == 1) {
-                func_00166150((Hewie *)gCharPartner, (Character *)p, 1);
+                Hewie_ChangeFeeling((Hewie *)gCharPartner, (Character *)p, 1);
             }
         }
         {
@@ -10252,7 +10252,7 @@ void func_0029B8B0(Pursuer *p) {
             PU(p, 0x1758, s32) = -1;
             VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1F);
             if (p->c.state[2] == 1) {
-                func_00166150((Hewie *)gCharPartner, (Character *)p, 3);
+                Hewie_ChangeFeeling((Hewie *)gCharPartner, (Character *)p, 3);
             }
         }
     }
@@ -10297,7 +10297,7 @@ void func_0029B8B0(Pursuer *p) {
         PU(p, 0x1790, s32) = 900;
         PU(p, 0x16F5, u8) = 1;
         if (p->c.state[2] == 1) {
-            func_00166150((Hewie *)gCharPartner, (Character *)p, 1);
+            Hewie_ChangeFeeling((Hewie *)gCharPartner, (Character *)p, 1);
         }
     }
     switch (p->c.state[1]) {
@@ -10452,10 +10452,10 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
             Pursuer_HoldOff(p, e);
             break;
         }
-        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (!(a <= 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f)) {
             Pursuer_HoldOff(p, e);
@@ -10513,10 +10513,10 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {

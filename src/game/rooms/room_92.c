@@ -411,7 +411,7 @@ s32 Room92_Cmd03(void) {
     one[3] = 1.0f;
     rnd = gRandom;
     a = kJit.f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd) + kStep.f * (f32)n;
-    a = func_002E2D00(a - kHalf.f);
+    a = Angle_Wrap(a - kHalf.f);
     rot[0] = 0.0f;
     rot[1] = 0.0f;
     rot[2] = a;
@@ -650,7 +650,7 @@ s32 Room92Effect_Update(u8 *o) {
     }
     r = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
     AT(o, 0x4, f32) = AT(o, 0x4, f32) + kPi.f * (50.0f + 20.0f * r) / 180.0f;
-    AT(o, 0x4, f32) = func_002E2D00(AT(o, 0x4, f32));
+    AT(o, 0x4, f32) = Angle_Wrap(AT(o, 0x4, f32));
     if (AT(o, 0x8, f32) != AT(o, 0xC, f32)) {
         if (AT(o, 0x8, f32) <= AT(o, 0xC, f32)) {
             AT(o, 0x8, f32) = AT(o, 0x8, f32) + kTenth.f;

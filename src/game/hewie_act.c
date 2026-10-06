@@ -2,7 +2,7 @@
  * behaviour (a pointer to member, HEWIE_STATE), his animation group (+0xF3604, changed with a
  * 10-frame blend +0xF3608), timers (+0xF355C, +0xF36B4..), his target (+0xF3544) and command
  * flags (+0xF356C). An action he can't do (the target out of sight, a floor that doesn't
- * allow it) passes on to the one func_0013B2C0 picks instead. */
+ * allow it) passes on to the one Hewie_AdjustAction picks instead. */
 #include "common.h"
 #include "hewie.h"
 #include "progress.h"
@@ -35,7 +35,7 @@ static inline void anim(Hewie *h, s32 a) {
 
 /* the action picked instead of `act` (`arg` if it is `act` itself) */
 static inline void instead(Hewie *h, s32 act, s32 arg) {
-    s32 r = func_0013B2C0(h, act);
+    s32 r = Hewie_AdjustAction(h, act);
 
     if (r != act) {
         Hewie_SetAction(h, r, 0);
@@ -54,7 +54,7 @@ static inline void give_up(Hewie *h) {
 }
 
 static inline s32 sees(Hewie *h, void *who) {
-    return (func_00137650(h, who) & 0xFF) == 1;
+    return (Hewie_WithChar2(h, who) & 0xFF) == 1;
 }
 
 /* the flags of his walk-mesh triangle (+0x34) */
@@ -127,7 +127,7 @@ static inline void to_place(Hewie *h, u32 place) {
     HW(h, 0x100, s32) = place;
     HW(h, 0xF36B4, s32) = VCALL(gRooms, 0x30, s32 (*)(VObject *, u32, f32 *))(gRooms, place, at);
     HW(h, 0xF36B8, s32) = 0;
-    HW(h, 0xF36BC, s32) = func_001382F0(h);
+    HW(h, 0xF36BC, s32) = Hewie_RandomLevel(h);
     sceVu0CopyVector((f32 *)((u8 *)h + 0xF36E0), at);
     HW(h, 0x124, s32) = HW(h, 0x128, s32);
     CMD(h) = 0x78D;
@@ -175,12 +175,12 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         if (HW(h, 0xE0, u8) == 1) {
             anim(h, 4);
-            STATE(h, func_0014B590);
+            STATE(h, Hewie_State1D88);
         } else {
             HW(h, 0x2D, u8) = 0;
             HW(h, 0xF3559, s8) = 1;
             anim(h, 4);
-            STATE(h, func_0015F8A0);
+            STATE(h, Hewie_State1D98);
         }
         return;
     case 0x2:   /* follow Fiona */
@@ -190,7 +190,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             TARGET(h) = gCharPlayer;
             WAIT(h) = sWait[HW(h, 0xF35CC, s16)];
             CMD(h) = 0x688;
-            STATE(h, func_0015F760);
+            STATE(h, Hewie_State1DC8);
         } else {
             instead(h, 4, 0);
         }
@@ -198,9 +198,9 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x7:
         MODE(h) = 0;
         WAIT(h) = sWait[HW(h, 0xF35CC, s16)];
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         CMD(h) = 0x58C;
-        STATE(h, func_0015F0A0);
+        STATE(h, Hewie_StateSteer);
         break;
     case 0x1:
         if (sees(h, gCharPlayer)) {
@@ -208,7 +208,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 0);
             TARGET(h) = gCharPlayer;
             CMD(h) = 0x6AE;
-            STATE(h, func_0015F760);
+            STATE(h, Hewie_State1DC8);
         } else {
             instead(h, 4, 0);
         }
@@ -220,7 +220,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 0);
             TARGET(h) = gCharPlayer;
             CMD(h) = 0x688;
-            STATE(h, func_0015F760);
+            STATE(h, Hewie_State1DC8);
         } else {
             instead(h, 4, 0);
         }
@@ -229,7 +229,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0x7AD;
-        STATE(h, func_0015F750);
+        STATE(h, Hewie_StatePose4);
         return;
     case 0x5: {
         s32 r;
@@ -246,35 +246,35 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 0xC);
         }
         CMD(h) = 0x7AD;
-        STATE(h, func_0015F750);
+        STATE(h, Hewie_StatePose4);
         return;
     }
     case 0x14:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_0015BB20);
+        STATE(h, Hewie_State1E48);
         return;
     case 0x6:
         MODE(h) = 0;
         WAIT(h) = 0x5A;
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         CMD(h) = 0x6AF;
-        STATE(h, func_0015F2E0);
+        STATE(h, Hewie_StateFaceScent);
         break;
     case 0x8:
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         if (HW(h, 0xF366D, u8) == 2 || sees(h, TARGET(h))) {
             WAIT(h) = 0x96;
             MODE(h) = 0;
             CMD(h) = 0x7AF;
-            STATE(h, func_0015ECC0);
+            STATE(h, Hewie_StateFaceTarget);
         } else {
             instead(h, 6, 0);
         }
         break;
     case 0xA:
         if (HW(h, 0xF3548, void *) == NULL) {
-            HW(h, 0xF3548, void *) = func_001379C0(h);
+            HW(h, 0xF3548, void *) = Hewie_PickTarget(h);
         }
         if (!sees(h, HW(h, 0xF3548, void *))) {
             instead(h, 6, 0);
@@ -283,7 +283,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xF36B4, s32) = (s32)(2.0f * RNG01()) + 1;
             TARGET(h) = HW(h, 0xF3548, Character *);
             CMD(h) = 0x7AF;
-            STATE(h, func_0015E3A0);
+            STATE(h, Hewie_StateBarkAtTarget);
         }
         break;
     case 0x9:
@@ -293,7 +293,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             TARGET(h) = gCharPlayer;
             WAIT(h) = 0x12C;
             CMD(h) = 0x384;
-            STATE(h, func_0015E880);
+            STATE(h, Hewie_StateWaitForFiona);
         } else {
             instead(h, 6, 0);
         }
@@ -307,7 +307,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 0);
             TARGET(h) = gCharPlayer;
             CMD(h) = 0x384;
-            STATE(h, func_0015DF40);
+            STATE(h, Hewie_StateBarkAtFiona);
         }
         break;
     case 0xC:
@@ -317,7 +317,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             HW(h, 0xF36B4, s32) = 2;
             CMD(h) = 0x68F;
-            STATE(h, func_0015DB60);
+            STATE(h, Hewie_StateSlideToFiona);
         } else {
             instead(h, 0, 0);
         }
@@ -327,7 +327,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             HW(h, 0xF36B4, s32) = 2;
             CMD(h) = 0x58F;
-            STATE(h, func_0015DB60);
+            STATE(h, Hewie_StateSlideToFiona);
         } else {
             instead(h, 0, 0);
         }
@@ -339,17 +339,17 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             HW(h, 0xF36B4, s32) = 0;
             HW(h, 0xF36B8, s32) = 0;
-            HW(h, 0xF36BC, s32) = func_001382F0(h);
+            HW(h, 0xF36BC, s32) = Hewie_RandomLevel(h);
             HW(h, 0xF36C4, f32) = h->c.a.angle[1];
             turn_speed(h);
             TARGET(h) = gCharPlayer;
             WAIT(h) = (s32)(3.0f * RNG01()) * 30 + 30;
             CMD(h) = 0x78D;
-            STATE(h, func_0015CCA0);
+            STATE(h, Hewie_StateKeepAway);
         }
         break;
     case 0x11:
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         if (sees(h, TARGET(h))) {
             MODE(h) = 0;
             HW(h, 0xF36B4, s32) = 0;
@@ -359,20 +359,20 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xF36C8, f32) = 30.0f;
             WAIT(h) = 0x1E;
             CMD(h) = 0x78D;
-            STATE(h, func_0015CCA0);
+            STATE(h, Hewie_StateKeepAway);
         } else {
             instead(h, 0, 0);
         }
         break;
     case 0x12:
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         if (sees(h, TARGET(h))) {
             MODE(h) = 0;
             anim(h, 0);
             HW(h, 0xF36B4, s32) = -1;
             HW(h, 0xF36B8, s32) = 0;
             CMD(h) = 0x48F;
-            STATE(h, func_0015C1E0);
+            STATE(h, Hewie_StateFlank);
         } else {
             instead(h, 0, 0);
         }
@@ -385,7 +385,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36C4, f32) = h->c.a.angle[1];
         HW(h, 0xF36C8, f32) = 5.0f;
         CMD(h) = 0x60F;
-        STATE(h, func_0015BD90);
+        STATE(h, Hewie_StateScramble);
         break;
     case 0x63:
         if (sees(h, gCharPlayer)) {
@@ -394,7 +394,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xF36B4, s32) = 0;
             HW(h, 0xF36B8, s32) = 2;
             HW(h, 0x108, s32) = -1;
-            STATE(h, func_0014B190);
+            STATE(h, Hewie_StateSetOff);
             return;
         }
         instead(h, 0, 0);
@@ -404,30 +404,30 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         anim(h, 0);
         TARGET(h) = gCharPlayer;
         CMD(h) = 0;
-        STATE(h, func_00153350);
+        STATE(h, Hewie_State1F28);
         break;
     case 0x15:
         MODE(h) = 0;
         HW(h, 0xF36B4, s32) = 0x1E;
         HW(h, 0xF36B8, s32) = 0;
-        HW(h, 0xF36BC, s32) = func_001382F0(h);
-        HW(h, 0xF36C4, f32) = func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32));
+        HW(h, 0xF36BC, s32) = Hewie_RandomLevel(h);
+        HW(h, 0xF36C4, f32) = Angle_Wrap(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32));
         turn_speed(h);
         WAIT(h) = (s32)(3.0f * RNG01()) * 30 + 30;
         CMD(h) = 0x78D;
-        STATE(h, func_0015B660);
+        STATE(h, Hewie_StateRoam);
         break;
     case 0x16:
         if (sees(h, gCharPlayer)) {
             MODE(h) = 0;
             CMD(h) = 0x68E;
-            STATE(h, func_0015B130);
+            STATE(h, Hewie_StateComeToCommand);
         } else {
             instead(h, 0, 0);
         }
         break;
     case 0x17:
-        func_00140B00(h);
+        Hewie_IdleAction(h);
         break;
     case 0x18:
         if (tri_flags(h) & 3) {
@@ -437,7 +437,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         HW(h, 0xF36B4, s32) = (s32)(2.0f * RNG01());
         CMD(h) = 0x62D;
-        STATE(h, func_0015AE10);
+        STATE(h, Hewie_StateTricks);
         /* fall through (the floor checked again; his animation group to 4) */
     case 0x19:
     case 0x1A:
@@ -446,7 +446,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             anim(h, 4);
             CMD(h) = 0x62D;
-            STATE(h, func_0015AE10);
+            STATE(h, Hewie_StateTricks);
             return;
         }
         instead(h, 0, 0);
@@ -457,7 +457,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 4);
             WAIT(h) = 0x384;
             CMD(h) = 0x62D;
-            STATE(h, func_0015AE10);
+            STATE(h, Hewie_StateTricks);
             return;
         }
         instead(h, 0, 0);
@@ -467,7 +467,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         anim(h, 0);
         TARGET(h) = gCharPlayer;
         CMD(h) = 0;
-        STATE(h, func_001531F0);
+        STATE(h, Hewie_State1F88);
         break;
     case 0x1F:
     case 0x20:
@@ -486,7 +486,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 HW(h, 0xF3608, s32) = 0;
                 HW(h, 0x104, s32) = -1;
                 CMD(h) = 8;
-                STATE(h, func_0015A460);
+                STATE(h, Hewie_StateRunAtPursuer);
                 return;
             }
         }
@@ -512,7 +512,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 MODE(h) = 8;
                 HW(h, 0xF36B4, s32) = 0x5A;
                 CMD(h) = HW(h, 0xF35C0, s32) != 3 ? 8 : 0;
-                STATE(h, func_001569C0);
+                STATE(h, Hewie_StateCloseOnTarget);
                 return;
             }
         }
@@ -522,26 +522,26 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         u8 place;
 
         if (sees(h, gCharPlayer)) {
-            place = func_0013CDC0(h, gCharPlayer, 0);
+            place = Hewie_FleeExit(h, gCharPlayer, 0);
         } else {
-            place = func_0013CDC0(h, &h->c, 0);
+            place = Hewie_FleeExit(h, &h->c, 0);
         }
         if (place == 0xFF) {
             instead(h, 0, 0);
         } else {
             to_place(h, place);
-            STATE(h, func_0015A720);
+            STATE(h, Hewie_StateGoToExit);
         }
         break;
     }
     case 0x25: {
-        u8 place = func_0013CDC0(h, &h->c, 0);
+        u8 place = Hewie_FleeExit(h, &h->c, 0);
 
         if (place == 0xFF) {
             instead(h, 0x10, 0);
         } else {
             to_place(h, place);
-            STATE(h, func_0015A720);
+            STATE(h, Hewie_StateGoToExit);
         }
         break;
     }
@@ -550,7 +550,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0x7AF;
-        STATE(h, func_001558F0);
+        STATE(h, Hewie_StateAfter27);
         return;
     case 0x28:
     case 0x29:
@@ -558,7 +558,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             anim(h, 4);
             CMD(h) = 0x7AF;
-            STATE(h, func_001557B0);
+            STATE(h, Hewie_StateAfter29);
             return;
         }
         instead(h, 0, 0);
@@ -569,7 +569,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             anim(h, 4);
             CMD(h) = 0x7AF;
-            STATE(h, func_00155670);
+            STATE(h, Hewie_StateAfter2B);
             return;
         }
         instead(h, 0, 0);
@@ -580,7 +580,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         if (HW(h, 0xF3590, u8) == 0) {
             if (Character_Route(&h->c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
-                func_0013E680(h);
+                Hewie_WhenIdle(h);
                 return;
             }
             door_from_path(h);
@@ -598,14 +598,14 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             break;
         }
         CMD(h) = 0xCF;   /* (the original's: the choice above never counts) */
-        STATE(h, func_00155000);
+        STATE(h, Hewie_StateToDoor);
         return;
     case 0x2E:
         MODE(h) = 6;
         CMD(h) = 0xDF;
         WAIT(h) = D_003B13D0[HW(h, 0xF35CC, s16)];
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154E60);
+        STATE(h, Hewie_State2018);
         break;
     case 0x2F:
     case 0x30:
@@ -614,7 +614,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = a == 0x2F ? 0x88 : a == 0x30 ? 0x80 : 0xDF;
         WAIT(h) = HW(h, 0xF3560, s32);
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154E60);
+        STATE(h, Hewie_State2018);
         break;
     case 0x32: {   /* out by a random open exit */
         u8 seen = 0;
@@ -643,10 +643,10 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             }
             MODE(h) = 6;
             CMD(h) = 0xDF;
-            STATE(h, func_00155000);
+            STATE(h, Hewie_StateToDoor);
             return;
         }
-        func_0013E680(h);
+        Hewie_WhenIdle(h);
         break;
     }
     case 0x33: {   /* to the room +0xF3594 */
@@ -665,14 +665,14 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xFC, s32) = 0x17;
             if (Character_Route(&h->c, HW(h, 0xF3594, s32), -1, HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
-                func_0013E680(h);
+                Hewie_WhenIdle(h);
                 return;
             }
             door_from_path(h);
         }
         MODE(h) = 6;
         CMD(h) = 0xDF;
-        STATE(h, func_00155000);
+        STATE(h, Hewie_StateToDoor);
         return;
     }
     case 0x34: {
@@ -686,7 +686,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             Actor_PlaySound(&h->c.a, 0x69, 5, 0, 0, at);
         }
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154E40);
+        STATE(h, Hewie_StateLoudNoise);
         break;
     }
     case 0x35: {   /* to another room by a random open exit (the progress's room: at once) */
@@ -712,7 +712,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                     CMD(h) = 0x80;
                     HW(h, 0xF3590, u8) = 0;
                     HW(h, 0xFC, s32) = 0x17;
-                    STATE(h, func_00155000);
+                    STATE(h, Hewie_StateToDoor);
                     return;
                 }
             }
@@ -721,21 +721,21 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0x80;
         HW(h, 0xF3590, u8) = 0;
         HW(h, 0xFC, s32) = 0x17;
-        STATE(h, func_00154DC0);
+        STATE(h, Hewie_State2098);
         break;
     }
     case 0x36:
         MODE(h) = 6;
         CMD(h) = 0;
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154DB0);
+        STATE(h, Hewie_State20A8);
         break;
     case 0x37:
         MODE(h) = 6;
         CMD(h) = 0;
         path_clear(h);
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154D50);
+        STATE(h, Hewie_StateToDefault);
         break;
     case 0x38:
         MODE(h) = 6;
@@ -760,7 +760,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             break;
         }
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
-        STATE(h, func_00154D40);
+        STATE(h, Hewie_State20C8);
         break;
     case 0x3B:
         MODE(h) = 0;
@@ -768,7 +768,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         Motion_PlayTable(h->c.motion, HW(h, 0x104, s32), -1);
         HW(h, 0xE1, s8) = 1;
-        STATE(h, func_0014B4D0);
+        STATE(h, Hewie_StateRootMotion);
         return;
     case 0x3C:
     case 0x47:
@@ -777,7 +777,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         Motion_PlayBlend(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32), -1);
         HW(h, 0xE1, s8) = 1;
-        STATE(h, func_0014B4D0);
+        STATE(h, Hewie_StateRootMotion);
         return;
     case 0x3D:
         MODE(h) = 0;
@@ -785,35 +785,35 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         Motion_PlayBlend8(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32));
         HW(h, 0xE1, s8) = 1;
-        STATE(h, func_0014B4D0);
+        STATE(h, Hewie_StateRootMotion);
         return;
     case 0x3E:
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0;
-        func_00143550(h, HW(h, 0x108, s32));
+        Hewie_StandAnim(h, HW(h, 0x108, s32));
         HW(h, 0xE1, s8) = 1;
-        STATE(h, func_0014B4D0);
+        STATE(h, Hewie_StateRootMotion);
         return;
     case 0x3F:
         MODE(h) = 0;
         CMD(h) = 0;
         HW(h, 0xF36B4, s32) = 0;
         HW(h, 0xF36B8, s32) = 0;
-        STATE(h, func_0014B190);
+        STATE(h, Hewie_StateSetOff);
         return;
     case 0x40:
         MODE(h) = 0;
         CMD(h) = 0;
         HW(h, 0xF36B4, s32) = 0;
         HW(h, 0xF36B8, s32) = 2;
-        STATE(h, func_0014B190);
+        STATE(h, Hewie_StateSetOff);
         break;
     case 0x41:
     case 0x42:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_0014A790);
+        STATE(h, Hewie_State2138);
         return;
     case 0x43:
         if (gCharacters[HW(h, 0x100, s32)] == NULL) {
@@ -822,32 +822,32 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             CMD(h) = 0;
             HW(h, 0x10C, f32) = Actor_HeadingTo(&h->c.a, gCharacters[HW(h, 0x100, s32)]->a.pos);
-            STATE(h, func_0014A180);
+            STATE(h, Hewie_StateTurnStart);
         }
         break;
     case 0x44:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_0014A180);
+        STATE(h, Hewie_StateTurnStart);
         return;
     case 0x45:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_00149DD0);
+        STATE(h, Hewie_State2168);
         return;
     case 0x46:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_001499F0);
+        STATE(h, Hewie_StateHeadForSpot);
         return;
     case 0x48: {   /* turn toward +0x10C, in steps of 6 degrees */
         f32 d;
         s32 steps;
 
-        if (!(func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
-            d = func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        if (!(Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
+            d = Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
         } else {
-            d = -func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+            d = -Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
         }
         steps = (s32)(d / 0x1.aceea00000000p-4f /* 0.10471976 */);
         HW(h, 0xF36B4, s32) = steps;
@@ -856,7 +856,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         anim(h, 0);
         TARGET(h) = gCharPlayer;
         CMD(h) = 8;
-        STATE(h, func_00149370);
+        STATE(h, Hewie_StateTurnWithFiona);
         break;
     }
     case 0x49:
@@ -865,30 +865,30 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0xC;
         anim(h, 4);
         CMD(h) = 0x408;
-        STATE(h, func_00149270);
+        STATE(h, Hewie_State2198);
         return;
     case 0x4C:
         instead(h, 0x15, 0);
         break;
     case 0x4D:
-        func_001407C0(h);
+        Hewie_After4D(h);
         break;
     case 0x4F:
     case 0x50:
         if (HW(h, 0xF3598, s32) == 1) {
             HW(h, 0xF35B0, s16) = 0x384;
         }
-        func_001404E0(h);
+        Hewie_AfterCall(h);
         break;
     case 0x4E:
         HW(h, 0xF35B0, s16) = 0;
-        func_00140190(h);
+        Hewie_AfterComingOut(h);
         break;
     case 0x51:
-        func_00140050(h);
+        Hewie_RandomIdle(h);
         break;
     case 0x52:
-        func_00138AD0(h, 0, -1);
+        Hewie_SetMode(h, 0, -1);
         if (HW(h, 0x29, u8) == 0) {
             MODE(h) = 0;
             HW(h, 0xF3604, s32) = 4;
@@ -901,7 +901,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0x14C8, s32) = 0;
         WAIT(h) = 0x1518;
         CMD(h) = 0;
-        STATE(h, func_001489D0);
+        STATE(h, Hewie_StateKnockedDown);
         return;
     case 0x54:
         TARGET(h) = gCharPlayer;
@@ -918,7 +918,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 HW(h, 0xF36C4, f32) = h->c.a.angle[1];
                 WAIT(h) = 0x3C;
                 CMD(h) = HW(h, 0xF35C0, s32) != 3 ? 0x88 : 0x80;
-                STATE(h, func_001480C0);
+                STATE(h, Hewie_StateKeepNear);
                 return;
             }
         }
@@ -933,7 +933,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xF36C4, f32) = h->c.a.angle[1];
             HW(h, 0xF36C8, f32) = 20.0f;
             CMD(h) = 0x384;
-            STATE(h, func_001480C0);
+            STATE(h, Hewie_StateKeepNear);
         } else {
             instead(h, 0, 0);
         }
@@ -954,20 +954,20 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36B8, s32) = 0;
         HW(h, 0xF36C4, f32) = h->c.a.angle[1];
         CMD(h) = 0x7AF;
-        STATE(h, func_001480C0);
+        STATE(h, Hewie_StateKeepNear);
         break;
     case 0x58:
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0x68F;
-        STATE(h, func_001480B0);
+        STATE(h, Hewie_StatePose2);
         return;
     case 0x5A:
         HW(h, 0xF3560, s32) = 3;
         /* fall through */
     case 0x59:
         if (HW(h, 0xF3548, void *) == NULL) {
-            HW(h, 0xF3548, void *) = func_001379C0(h);
+            HW(h, 0xF3548, void *) = Hewie_PickTarget(h);
         }
         if (sees(h, HW(h, 0xF3548, void *))) {
             TARGET(h) = HW(h, 0xF3548, Character *);
@@ -1031,7 +1031,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         }
         HW(h, 0xF36B8, s32) = 0x5A;
         CMD(h) = 0;
-        STATE(h, func_00154860);
+        STATE(h, Hewie_StateSqueeze);
         break;
     case 0x66: {
         f32 at[4] __attribute__((aligned(16)));
@@ -1042,12 +1042,12 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xC0, s32) = 8;
         AT(HW(h, 0x1380, void *), 0x40, s32) = HW(h, 0xC0, s32);
         anim(h, 4);
-        if (func_0013EE40(h, VCALL(gRooms, 0x30, s32 (*)(VObject *, u8, f32 *))(gRooms, (u8)HW(h, 0xF36B4, s32), at),
+        if (Hewie_PlanAndGo(h, VCALL(gRooms, 0x30, s32 (*)(VObject *, u8, f32 *))(gRooms, (u8)HW(h, 0xF36B4, s32), at),
                           at, 0, 1) != 0) {
             HW(h, 0x124, s32) = HW(h, 0x128, s32);
         }
         CMD(h) = 0;
-        STATE(h, func_001545A0);
+        STATE(h, Hewie_StateWalkOut);
         break;
     }
     case 0x67:
@@ -1057,7 +1057,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             TARGET(h) = gCharPlayer;
             HW(h, 0xF36B4, s32) = 0;
             CMD(h) = 0x78D;
-            STATE(h, func_00154150);
+            STATE(h, Hewie_StateStepAwayFiona);
         } else {
             instead(h, 0, 0);
         }
@@ -1069,8 +1069,8 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36C8, f32) = 4.0f;
         HW(h, 0xF36CC, f32) = 0.5f;
         Motion_PlayTable(h->c.motion, 0x1000, -1);
-        func_0013A430(h, 0x66);
-        STATE(h, func_00153B00);
+        Hewie_MakeSound(h, 0x66);
+        STATE(h, Hewie_StateMoveAlong);
         return;
     case 0x69:
         MODE(h) = 4;
@@ -1080,17 +1080,17 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36CC, f32) = 0.5f;
         Motion_PlayTable(h->c.motion, 0x1000, -1);
         if (HW(h, 0x104, s32) == 1) {
-            func_0013A430(h, 0x65);
+            Hewie_MakeSound(h, 0x65);
         } else {
-            func_0013A430(h, 0x66);
+            Hewie_MakeSound(h, 0x66);
         }
-        STATE(h, func_00153B00);
+        STATE(h, Hewie_StateMoveAlong);
         return;
     case 0x6A:
         MODE(h) = 0;
         HW(h, 0xF36B4, s32) = 0;
         CMD(h) = 8;
-        STATE(h, func_00153700);
+        STATE(h, Hewie_StateOffMesh);
         return;
     case 0x6B:
     case 0x6C:
@@ -1100,14 +1100,14 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36C8, f32) = 5.0f;
         HW(h, 0xF36CC, f32) = 1.0f;
         Motion_PlayTable(h->c.motion, 0x1000, -1);
-        func_0013A430(h, 0x66);
+        Hewie_MakeSound(h, 0x66);
         if (a == 0x6B) {
-            STATE(h, func_00153B00);
+            STATE(h, Hewie_StateMoveAlong);
             return;
         }
         HW(h, 0x2D, u8) = 1;
         HW(h, 0x2B, s8) = 1;
-        STATE(h, func_00153B00);
+        STATE(h, Hewie_StateMoveAlong);
         break;
     case 0x6D:
         if (sees(h, TARGET(h))) {
@@ -1120,7 +1120,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 CMD(h) = 8;
                 HW(h, 0x104, s32) = 0;
                 HW(h, 0x108, s32) = 0;
-                STATE(h, func_00152D60);
+                STATE(h, Hewie_StateCloseIn);
                 return;
             }
         }
@@ -1131,11 +1131,11 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36B8, s32) = 0;
         MODE(h) = 0;
         CMD(h) = 8;
-        STATE(h, func_00151D10);
+        STATE(h, Hewie_StateSlope);
         return;
     case 0x6F:
         CMD(h) = 0;
-        STATE(h, func_00151B10);
+        STATE(h, Hewie_StateRunToFiona);
         break;
     case 0x70:
         HW(h, 0xF36B4, s32) = 0x1E;
@@ -1143,13 +1143,13 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0;
-        STATE(h, func_001517C0);
+        STATE(h, Hewie_StateRun);
         break;
     case 0x71:
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0x400;
-        STATE(h, func_00151740);
+        STATE(h, Hewie_State22B8);
         return;
     case 0x72:
         if (sees(h, gCharPlayer)) {
@@ -1157,7 +1157,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0x124, s32) = HW(h, 0x128, s32);
             MODE(h) = 0;
             CMD(h) = 0;
-            STATE(h, func_00151190);
+            STATE(h, Hewie_StateKeepBehind);
         } else {
             instead(h, 0, 0);
         }
@@ -1165,14 +1165,14 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x73:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_001506A0);
+        STATE(h, Hewie_StateAnimOver);
         return;
     case 0x74:
         MODE(h) = 0;
         CMD(h) = 0;
         Motion_PlayTable(h->c.motion, 0x2213, -1);
-        func_0013A430(h, 0x66);
-        STATE(h, func_00150610);
+        Hewie_MakeSound(h, 0x66);
+        STATE(h, Hewie_State22E8);
         return;
     case 0x75:
         if (sees(h, gCharPursuer)) {
@@ -1187,7 +1187,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 HW(h, 0xF3608, s32) = 0;
                 CMD(h) = 0;
                 HW(h, 0x2D, u8) = 1;
-                STATE(h, func_00150450);
+                STATE(h, Hewie_StateTargetPursuer);
                 return;
             }
         }
@@ -1196,28 +1196,28 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x76:
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_0014F5B0);
+        STATE(h, Hewie_StatePlayAnim);
         return;
     case 0x77:
         MODE(h) = 6;
         CMD(h) = 8;
-        STATE(h, func_0014F5A0);
+        STATE(h, Hewie_State2318);
         return;
     case 0x78:
         HW(h, 0xF3686, s16) = 0;
         HW(h, 0xF3684, s16) = 0;
         HW(h, 0xF36A4, s32) = 0x78;
         HW(h, 0xF36A2, s8) = 0;
-        func_00139840(h);
+        Hewie_RollReaction(h);
         MODE(h) = 0;
         CMD(h) = 0x68E;
         if (HW(h, 0xF369C, u8) != 0) {
-            STATE(h, func_0014EE20);
+            STATE(h, Hewie_StateFetch);
         } else if (HW(h, 0xF369D, u8) != 0) {
-            STATE(h, func_0014EC10);
+            STATE(h, Hewie_StateFollowMover);
         } else {
             HW(h, 0xF36BC, s32) = 0x5A;
-            STATE(h, func_0014EB40);
+            STATE(h, Hewie_State1A60);
         }
         return;
     case 0x79:
@@ -1227,7 +1227,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 0;
-        STATE(h, func_0014DFB0);
+        STATE(h, Hewie_State2358);
         return;
     case 0x7A:
         MODE(h) = 0;
@@ -1236,14 +1236,14 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 0;
         CMD(h) = AT(gProgress, 0x1FBEC1, u8) == 0 ? 0x88 : 8;
-        STATE(h, func_0014DE70);
+        STATE(h, Hewie_State2388);
         return;
     case 0x7B:
         if (sees(h, gCharPursuer)) {
             s32 m = gCharPursuer->moveMode;
 
             if (m != 3 && m != 4) {
-                u8 place = func_0013CDC0(h, gCharPursuer, 1);
+                u8 place = Hewie_FleeExit(h, gCharPursuer, 1);
 
                 if (place != 0xFF) {
                     f32 at[4] __attribute__((aligned(16)));
@@ -1255,7 +1255,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                     HW(h, 0x124, s32) = HW(h, 0x128, s32);
                     MODE(h) = 0;
                     CMD(h) = 0x88;
-                    STATE(h, func_0014DA50);
+                    STATE(h, Hewie_StatePlanPursuer);
                     return;
                 }
             }
@@ -1263,7 +1263,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         instead(h, 6, 0);
         break;
     case 0x7C:
-        TARGET(h) = func_001379C0(h);
+        TARGET(h) = Hewie_PickTarget(h);
         if (sees(h, TARGET(h))) {
             HW(h, 0xF36C8, f32) = 30.0f;
             MODE(h) = 0;
@@ -1271,7 +1271,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             HW(h, 0xF36B8, s32) = 0;
             HW(h, 0xF36C4, f32) = h->c.a.angle[1];
             CMD(h) = 0x88;
-            STATE(h, func_001480C0);
+            STATE(h, Hewie_StateKeepNear);
             return;
         }
         instead(h, 6, 0);
@@ -1282,7 +1282,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             MODE(h) = 0;
             HW(h, 0xF36B4, s32) = 0;
             CMD(h) = 0x32D;
-            STATE(h, func_0014C210);
+            STATE(h, Hewie_StateWhine);
             return;
         }
         instead(h, 0, 0);
@@ -1292,13 +1292,13 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF36B8, s32) = HW(h, 0x2D, u8) == 1 ? 1 : 0;
         MODE(h) = 0;
         CMD(h) = 0;
-        STATE(h, func_0014BE80);
+        STATE(h, Hewie_StateRunForSpot);
         return;
     case 0x80:
         MODE(h) = 0;
         CMD(h) = 8;
         HW(h, 0xF36B4, s32) = HW(h, 0xF3568, s32);
-        STATE(h, func_0014B780);
+        STATE(h, Hewie_State23D8);
         break;
     case 0x81: {
         f32 dist, ang, to;
@@ -1306,11 +1306,11 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 8);
         Motion_LookAt(h->c.motion, (f32 *)((u8 *)h + 0xF3630), &dist, &ang);
-        to = func_002E2D00(h->c.a.angle[1] + ang);
+        to = Angle_Wrap(h->c.a.angle[1] + ang);
         HW(h, 0xF3614, f32) = dist;
-        HW(h, 0xF3618, f32) = func_002E2D00(to - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(to - h->c.a.angle[1]);
         CMD(h) = 0x7AD;
-        STATE(h, func_0015F750);
+        STATE(h, Hewie_StatePose4);
         break;
     }
     case 0x82: {
@@ -1321,7 +1321,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             anim(h, 0);
             HW(h, 0xF36B4, s32) = 0;
             CMD(h) = 8;
-            STATE(h, func_00153D20);
+            STATE(h, Hewie_StateStepAwayTarget);
             return;
         }
         instead(h, 0, 0);
@@ -1331,7 +1331,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 8;
-        STATE(h, func_00147B90);
+        STATE(h, Hewie_StateSteered);
         return;
     case 0x84:
         HW(h, 0x2D, u8) = 1;
@@ -1339,7 +1339,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 0;
         CMD(h) = 0;
-        STATE(h, func_00147580);
+        STATE(h, Hewie_State2418);
         break;
     case 0x85:   /* look at Fiona, else the pursuer, within 150 */
         MODE(h) = 0;
@@ -1351,7 +1351,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             TARGET(h) = gCharPursuer;
         }
         CMD(h) = 0;
-        STATE(h, func_001470C0);
+        STATE(h, Hewie_StateBark);
         break;
     case 0x86:
         MODE(h) = 0;
@@ -1359,13 +1359,13 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         HW(h, 0x2D, u8) = 1;
         VCALL(gRooms, 0x34, void (*)(VObject *, u8, void *))(gRooms, (u8)HW(h, 0xF36B4, s32), (u8 *)h + 0xF36E0);
         CMD(h) = 0;
-        STATE(h, func_00146AE0);
+        STATE(h, Hewie_StateBackOnMesh);
         break;
     case 0x87:
         MODE(h) = 8;
-        HW(h, 0xF36D0, f32) = func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32));
+        HW(h, 0xF36D0, f32) = Angle_Wrap(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32));
         CMD(h) = 0;
-        STATE(h, func_001476C0);
+        STATE(h, Hewie_StateRunUpJump);
         return;
     default:
         return;

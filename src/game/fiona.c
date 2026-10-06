@@ -1291,7 +1291,7 @@ s32 func_001A12B0(Fiona *f) {
                 if (tri != NAV_NONE && f->c.a.navTri == Actor_TriFrom(&f->c.a, f->c.a.pos, tri, target, NAV_NONE)
                     && (Actor_TriFreeFor(f, &f->c.a) & 0xFF) == 1 && Character_PlanPathKind(&f->c, 0, tri, target) > 0) {
                     FI(f, 0x1AD6F0, u32) = tri;
-                    FI(f, 0x1AD6F4, f32) = func_002E2D00(turn + o->a.angle[1]);
+                    FI(f, 0x1AD6F4, f32) = Angle_Wrap(turn + o->a.angle[1]);
                     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD700), target);
                     SlotCmd_Start(p, SLOT_U8(f));
                     return 0;
@@ -1317,17 +1317,17 @@ s32 func_001A12B0(Fiona *f) {
                     u32 tri;
 
                     if (side != 0) {
-                        ang = func_002E2D00(base + a / 180.0f);
+                        ang = Angle_Wrap(base + a / 180.0f);
                     } else {
-                        ang = func_002E2D00(base - a / 180.0f);
+                        ang = Angle_Wrap(base - a / 180.0f);
                     }
                     Mtx_AtHeading(m, f->c.a.pos, ang);
-                    func_002E2DD0(pt, m, offs);
+                    Mtx_ApplyPoint(pt, m, offs);
                     tri = Actor_TriOf(&f->c.a, pt);
                     if (tri != NAV_NONE && tri == Actor_TriFrom(&f->c.a, pt, h->a.navTri, h->a.pos, FIONA_NAV_MASK)) {
                         *(f32 *)&h->unk104[2] = ang;
                         h->unk104[0] = tri;
-                        *(f32 *)&f->c.unk104[2] = func_002E2D00(F_PI + ang);
+                        *(f32 *)&f->c.unk104[2] = Angle_Wrap(F_PI + ang);
                         SlotCmd_Start(p, SLOT_U8(f));
                         /* queue it (the original copies a local whose other fields are never set) */
                         f->c.state2[0] = 0xC;
@@ -1446,7 +1446,7 @@ void func_0019F1E0(Fiona *f) {
             Mtx_AtHeading(m, f->c.a.pos,
                           FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
                                                     : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
-            func_002E2DD0(r, m, r);
+            Mtx_ApplyPoint(r, m, r);
             if (Actor_TriTo(&f->c.a, r, NAV_NONE) == NAV_NONE) {
                 /* ran into something while panicking */
                 Actor_PlaySound(&f->c.a, 0x7F, 5, 0, 0, NULL);
@@ -1726,7 +1726,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             func_002E2DA0(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
             func_0010E640(v, v, -1.0f);
             h = func_0031C5C0(v[0], v[2]);
-            if (func_002E2D00(h - f->savedYaw) < 0x1.921fb6p+0f /* pi/2 */) {
+            if (Angle_Wrap(h - f->savedYaw) < 0x1.921fb6p+0f /* pi/2 */) {
                 f->unk1AD588 = 3;
                 f->c.a.angle[1] = h;
                 sceVu0UnitMatrix(f->c.a.rot);
@@ -1982,10 +1982,10 @@ void Fiona_Requests(Fiona *f) {
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
             gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
         FI(f, 0x1AD6D0, f32) = 0x1.99999ap-4f /* 0.1 */ + d / (f32)frames;
-        if (!(func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]) <= 0.0f)) {
-            w = func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
+        if (!(Angle_Wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]) <= 0.0f)) {
+            w = Angle_Wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
         } else {
-            w = -func_002E2D00(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
+            w = -Angle_Wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
         }
         FI(f, 0x1AD6D4, f32) = 0x1.c98712p-10f /* 0.1 deg */ + w / (f32)frames;
         f->unk1AD580 = 0x18;
@@ -3047,10 +3047,10 @@ void func_0019D4E0(Fiona *f) {
 
 /* |the heading from Fiona to p, relative to hers| (the original wraps it once per use) */
 static f32 fiona_turn_to(Fiona *f, f32 a) {
-    if (func_002E2D00(a - f->c.a.angle[1]) <= 0.0f) {
-        return -func_002E2D00(a - f->c.a.angle[1]);
+    if (Angle_Wrap(a - f->c.a.angle[1]) <= 0.0f) {
+        return -Angle_Wrap(a - f->c.a.angle[1]);
     }
-    return func_002E2D00(a - f->c.a.angle[1]);
+    return Angle_Wrap(a - f->c.a.angle[1]);
 }
 
 /* the call command's action: 0x2D to a creature within 10 ahead (Fiona in control state 1, the
@@ -3401,10 +3401,10 @@ extern u32 D_0047E374;      /* pad buttons held */
 
 /* |wrap(a)| the way the original computes it (the wrap called again for the result) */
 static f32 wrap_abs(f32 a) {
-    if (!(func_002E2D00(a) <= 0.0f)) {
-        return func_002E2D00(a);
+    if (!(Angle_Wrap(a) <= 0.0f)) {
+        return Angle_Wrap(a);
     }
-    return -func_002E2D00(a);
+    return -Angle_Wrap(a);
 }
 
 /* Fiona's movement input, each frame. Normally the left stick (or the d-pad), camera
@@ -3815,7 +3815,7 @@ void func_00186180(Fiona *f) {
             yaw = 0.0f;
         } else {
             pitch = 0.0f;
-            yaw = func_002E2D00(FI(f, 0x1AD5E0, f32) - f->c.a.angle[1]);
+            yaw = Angle_Wrap(FI(f, 0x1AD5E0, f32) - f->c.a.angle[1]);
         }
     }
     m = f->c.motion;
@@ -3986,7 +3986,7 @@ void func_001869D0(Fiona *f) {
 
     sceVu0CopyMatrix(m, f->c.a.rot);
     sceVu0CopyVector(m[3], f->c.a.pos);
-    func_002E2DD0(foot, m, step == 1 ? left : right);
+    Mtx_ApplyPoint(foot, m, step == 1 ? left : right);
     tri = Actor_TriOfOnMesh(&f->c.a, foot);
     nm = gNavMesh;
     t = step_tri(nm, tri != (u32)-1 ? tri : f->c.a.navTri);
@@ -4171,14 +4171,14 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
     /* the wall edge's direction, turned a quarter: into the wall, from the side she is on */
     t = NavMesh_Tri(nm, from);
     sceVu0SubVector(d, t->v[e + 1 < 3 ? e + 1 : 0], t->v[e]);
-    ang = func_002E2D00(kHalfPi.f + func_0031C5C0(d[0], d[2]));
-    if (!(func_002E2D00(ang - AT(f, 0x54, f32)) <= 0.0f)) {
-        diff = func_002E2D00(ang - AT(f, 0x54, f32));
+    ang = Angle_Wrap(kHalfPi.f + func_0031C5C0(d[0], d[2]));
+    if (!(Angle_Wrap(ang - AT(f, 0x54, f32)) <= 0.0f)) {
+        diff = Angle_Wrap(ang - AT(f, 0x54, f32));
     } else {
-        diff = -func_002E2D00(ang - AT(f, 0x54, f32));
+        diff = -Angle_Wrap(ang - AT(f, 0x54, f32));
     }
     if (!(diff <= kHalfPi.f)) {
-        ang = func_002E2D00(kPi.f + ang);
+        ang = Angle_Wrap(kPi.f + ang);
     }
     d[0] = 0.0f;
     d[1] = 0.0f;
@@ -4377,7 +4377,7 @@ void func_0018A5D0(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (left == 0.0f) {
             func_001855F0(f, -1);
-        } else if (func_002E2D00(FI(f, 0x1AD5E0, f32) - AT(f, 0x54, f32)) < 0.0f) {
+        } else if (Angle_Wrap(FI(f, 0x1AD5E0, f32) - AT(f, 0x54, f32)) < 0.0f) {
             if (AT(f->c.motion, 0x55C, s32) != 0x400) {
                 Motion_PlayTable(f->c.motion, 0x400, -1);
             }
@@ -4941,10 +4941,10 @@ s32 func_00182340(Fiona *f, s32 *st) {
                     f32 h = Actor_HeadingTo(&f->c.a, gCharPursuer->a.pos);
                     f32 d;
 
-                    if (!(func_002E2D00(h - f->c.a.angle[1]) <= 0.0f)) {
-                        d = func_002E2D00(h - f->c.a.angle[1]);
+                    if (!(Angle_Wrap(h - f->c.a.angle[1]) <= 0.0f)) {
+                        d = Angle_Wrap(h - f->c.a.angle[1]);
                     } else {
-                        d = -func_002E2D00(h - f->c.a.angle[1]);
+                        d = -Angle_Wrap(h - f->c.a.angle[1]);
                     }
                     f->c.unk104[0] = d < 0x1.921fb6p+0f /* pi/2 */ ? 1 : 3;
                 }
@@ -5003,7 +5003,7 @@ void func_0018BA70(Fiona *f) {
         f32 a, aa;
 
         sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)p + 0x1060 + f->c.a.slot * 0x20));
-        a = func_002E2D00(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+        a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
         aa = a <= 0.0f ? -a : a;
         if (FI(f, 0x1AD6C0, s32) == 0) {
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
@@ -5162,15 +5162,15 @@ void func_00183400(Fiona *f) {
 #endif
     sceVu0SubVector(d, t->v[e1], t->v[e]);
     f->savedYaw = func_0031C5C0(d[0], d[2]);
-    if (!(func_002E2D00(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
-        aa = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    if (!(Angle_Wrap(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
+        aa = Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     } else {
-        aa = -func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+        aa = -Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     }
     if (!(aa <= kHalfPi.f)) {
-        f->savedYaw = func_002E2D00(kPi.f + f->savedYaw);
+        f->savedYaw = Angle_Wrap(kPi.f + f->savedYaw);
     }
-    a = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    a = Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     step = 0.25f * (a <= 0.0f ? -a : a);
     if (step < kMin.f) {
         step = kMin.f;
@@ -5179,9 +5179,9 @@ void func_00183400(Fiona *f) {
         FI(f, 0x1AD6C0, s32) = a < 0.0f ? 0 : 1;
     }
     if (FI(f, 0x1AD6C0, s32) != 0) {
-        yaw = func_002E2D00(f->c.a.angle[1] + step);
+        yaw = Angle_Wrap(f->c.a.angle[1] + step);
     } else {
-        yaw = func_002E2D00(f->c.a.angle[1] - step);
+        yaw = Angle_Wrap(f->c.a.angle[1] - step);
     }
     f->c.a.angle[1] = yaw;
     sceVu0UnitMatrix(f->c.a.rot);
@@ -5295,17 +5295,17 @@ void func_00191800(Fiona *f) {
             sceVu0SubVector(d, f->c.a.pos, ((Character *)gCharacters[f->c.unk100])->a.pos);
             FI(f, 0x1AD6D0, f32) = func_0031C5C0(d[0], d[2]);
         }
-        if (!(func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]) <= 0.0f)) {
-            aa = func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
+        if (!(Angle_Wrap(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]) <= 0.0f)) {
+            aa = Angle_Wrap(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
         } else {
-            aa = -func_002E2D00(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
+            aa = -Angle_Wrap(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
         }
         if (aa < kHalfPi.f) {
             FI(f, 0x1AD6C8, s32) = 0;
             Motion_PlayTable(f->c.motion, 0x1008, -1);
         } else {
             FI(f, 0x1AD6C8, s32) = 1;
-            FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + FI(f, 0x1AD6D0, f32));
+            FI(f, 0x1AD6D0, f32) = Angle_Wrap(kPi.f + FI(f, 0x1AD6D0, f32));
             if (FI(f, 0x1AD584, s32) & 2) {
                 FI(f, 0x1AD6C4, s32) = -1;
                 f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
@@ -5348,13 +5348,13 @@ void func_00190FA0(Fiona *f) {
     a = VCALL(gDoors, 0x3C, f32 (*)(VObject *, u32))(gDoors, (u8)f->c.unk104[0]);
     p = gProgress;
     if (!(PursuerGroup_Fields(p, (u8)f->c.unk104[0], (u8)f->c.a.slot) & 0xFF & 0x10)) {
-        a = func_002E2D00(kPi.f + a);
+        a = Angle_Wrap(kPi.f + a);
     }
     FI(f, 0x1AD6C4, s32) = 0;
-    if (!(func_002E2D00(a - f->c.a.angle[1]) <= 0.0f)) {
-        aa = func_002E2D00(a - f->c.a.angle[1]);
+    if (!(Angle_Wrap(a - f->c.a.angle[1]) <= 0.0f)) {
+        aa = Angle_Wrap(a - f->c.a.angle[1]);
     } else {
-        aa = -func_002E2D00(a - f->c.a.angle[1]);
+        aa = -Angle_Wrap(a - f->c.a.angle[1]);
     }
     if (aa < kHalfPi.f) {
         FI(f, 0x1AD6C8, s32) = 0;
@@ -5362,7 +5362,7 @@ void func_00190FA0(Fiona *f) {
         Motion_Play(f->c.motion, 0x1008, -1);
     } else {
         FI(f, 0x1AD6C8, s32) = 1;
-        FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + a);
+        FI(f, 0x1AD6D0, f32) = Angle_Wrap(kPi.f + a);
         if (FI(f, 0x1AD584, s32) & 2) {
             FI(f, 0x1AD6C4, s32) = -1;
             f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
@@ -5426,7 +5426,7 @@ void func_00190B50(Fiona *f) {
             }
         }
         if (have == 1) {
-            a = func_002E2D00(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+            a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
             aa = a <= 0.0f ? -a : a;
         } else {
             a = f->c.a.angle[1];
@@ -5492,7 +5492,7 @@ static inline __attribute__((always_inline)) void led_away(Fiona *f, s32 anim, c
                 gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
         Motion_PlayOwnBlend(f->c.motion, anim, -1);
         FI(f, 0x1AD6D8, f32) = FI(f, 0x10C, f32);
-        a = func_002E2D00(FI(f, 0x10C, f32) - f->c.a.angle[1]);
+        a = Angle_Wrap(FI(f, 0x10C, f32) - f->c.a.angle[1]);
         FI(f, 0x1AD6DC, f32) = 0x1.99999ap-3f /* 0.2 */ * (a <= 0.0f ? -a : a);
         Actor_SetState(&f->c.a, next);
         return;
@@ -5658,10 +5658,10 @@ s32 func_00183190(Fiona *f) {
         } else {
             f32 d;
 
-            if (!(func_002E2D00(FI(f, 0x1AD714, f32) - a) <= 0.0f)) {
-                d = func_002E2D00(FI(f, 0x1AD714, f32) - a);
+            if (!(Angle_Wrap(FI(f, 0x1AD714, f32) - a) <= 0.0f)) {
+                d = Angle_Wrap(FI(f, 0x1AD714, f32) - a);
             } else {
-                d = -func_002E2D00(FI(f, 0x1AD714, f32) - a);
+                d = -Angle_Wrap(FI(f, 0x1AD714, f32) - a);
             }
             if (!(d <= k120.f)) {
                 n++;
@@ -6333,10 +6333,10 @@ static inline s32 door_anim_done(Fiona *f) {
 static inline __attribute__((always_inline)) f32 walk_turn_left(Fiona *f) {
     f32 t;
 
-    if (!(func_002E2D00(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
-        t = func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+    if (!(Angle_Wrap(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
+        t = Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     } else {
-        t = -func_002E2D00(f->savedYaw - f->c.a.angle[1]);
+        t = -Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     }
     return t;
 }
@@ -6437,7 +6437,7 @@ s32 func_00188C10(Fiona *f) {
             }
             WALK_FLAGS(f) |= 8;
             sceVu0SubVector(v, (f32 *)((u8 *)f + 0x1AD640), f->c.a.pos);
-            d = func_002E2D00(f->savedYaw - func_0031C5C0(v[0], v[2]));
+            d = Angle_Wrap(f->savedYaw - func_0031C5C0(v[0], v[2]));
             if (!(d <= 0.0f)) {
                 t = d;
             } else {
@@ -6792,10 +6792,10 @@ void func_001967D0(Fiona *f) {
     d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
         gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, (u8 *)f + 0x12C);
     FI(f, 0x1AD6D0, f32) = kSeventh.f * d;
-    if (!(func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]) <= 0.0f)) {
-        d = func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
+    if (!(Angle_Wrap(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]) <= 0.0f)) {
+        d = Angle_Wrap(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
     } else {
-        d = -func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
+        d = -Angle_Wrap(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
     }
     FI(f, 0x1AD6D4, f32) = kSeventh.f * d;
     Motion_PlayOwnBlend(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
@@ -7564,10 +7564,10 @@ extern s32 D_003B2520[][2];   /* Hewie's reactions: { cost, 1 in n chance (when 
 
 /* |the wrapped angle t| (the original wraps it twice) */
 static inline __attribute__((always_inline)) f32 fiona_abs_wrap(f32 t) {
-    if (!(func_002E2D00(t) <= 0.0f)) {
-        return func_002E2D00(t);
+    if (!(Angle_Wrap(t) <= 0.0f)) {
+        return Angle_Wrap(t);
     }
-    return -func_002E2D00(t);
+    return -Angle_Wrap(t);
 }
 
 /* slamming a door (doors +0x68, closing = 0 pushed / 1 pulled) shut as she runs through
@@ -7610,7 +7610,7 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
             if (ahead == 1) {
                 a = f->c.a.angle[1];
             } else {
-                a = func_002E2D00(kPi.f + f->c.a.angle[1]);
+                a = Angle_Wrap(kPi.f + f->c.a.angle[1]);
             }
             facing = facing - a;
             if (fiona_abs_wrap(facing) < kQuarterPi.f && (Progress_ExitUnlocked(p, f->c.a.room, i) & 0xFF) == 0 &&
@@ -7640,11 +7640,11 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
         }
         if ((VCALL(doors, 0x6C, s32 (*)(VObject *, s32, u32, f32 *))(doors, 1, i, f->c.a.pos) & 0xFF) == 1 &&
             (Progress_ExitOpen(p, f->c.a.room, i) & 0xFF) == 1) {
-            facing = func_002E2D00(VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, i) + kHalfPi.f);
+            facing = Angle_Wrap(VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, i) + kHalfPi.f);
             if (ahead == 1) {
                 a = f->c.a.angle[1];
             } else {
-                a = func_002E2D00(kPi.f + f->c.a.angle[1]);
+                a = Angle_Wrap(kPi.f + f->c.a.angle[1]);
             }
             facing = facing - a;
             if (fiona_abs_wrap(facing) < kQuarterPi.f && (tri = Actor_TriTo(&f->c.a, to, 0)) != (u32)-1 &&
@@ -7747,7 +7747,7 @@ void func_00183780(Fiona *f) {
 }
 
 /* her call to Hewie for the command (moveSub 0x23..0x2F); for 0x27 (praise / scold) by what he
- * is doing (his action, func_001669A0) */
+ * is doing (his action, Hewie_AnimGroup) */
 void func_00183960(Fiona *f) {
     switch (f->c.moveSub) {
     case 0x23:
@@ -7772,7 +7772,7 @@ void func_00183960(Fiona *f) {
 
         switch (act) {
         case 0x22: case 0x20: case 0x21: case 0x1F: case 0x59: case 0x53:
-            if ((u32)(func_001669A0((Hewie *)h) - 8) < 2) {
+            if ((u32)(Hewie_AnimGroup((Hewie *)h) - 8) < 2) {
                 done = 1;
                 fiona_voice(f, 0x36);
             }
@@ -7857,9 +7857,9 @@ static inline __attribute__((always_inline)) void hewie_react(Fiona *f, s32 n) {
         return;
     }
     h = (Character *)gCharPartner;
-    func_00138E60((Hewie *)h, D_003B2520[n][0]);
+    Hewie_SpendPool((Hewie *)h, D_003B2520[n][0]);
     if (D_003B2520[n][1] > 0 && Actor_Distance(&f->c.a, h->a.pos) < 30.0f) {
-        func_00138DE0((Hewie *)h, D_003B2520[n][1]);
+        Hewie_Chance((Hewie *)h, D_003B2520[n][1]);
     }
 }
 
@@ -7890,7 +7890,7 @@ void func_00183F10(Fiona *f) {
                 v[1] = 0.0f;
                 v[2] = d - 5.0f;
                 Mtx_AtHeading(m, (f32 *)((u8 *)f + 0x1AD6E0), FI(f, 0x1AD6D0, f32));
-                func_002E2DD0(at, m, v);
+                Mtx_ApplyPoint(at, m, v);
                 tri = Actor_TriTo(&f->c.a, at, 0x29020008);
                 if (tri != (u32)-1) {
                     FI(f, 0x1AD6C0, u32) = tri;
@@ -8333,7 +8333,7 @@ void func_0018E2B0(Fiona *f) {
 }
 
 /* D_003B2C68 / D_003B2CA8: waiting for Hewie to be ready for a held command (his action 0x48,
- * func_001669A0 1, the animation done); then the command registered with the progress
+ * Hewie_AnimGroup 1, the animation done); then the command registered with the progress
  * (SlotCmd_Give 2, 0x2B: 1 / 0x28: 3 / 0x24: 5) and its gesture; Hewie gone, busy otherwise,
  * or the command refused: idle */
 void func_0018E510(Fiona *f) {
@@ -8349,7 +8349,7 @@ void func_0018E510(Fiona *f) {
         Character_RootMoveMasked(&f->c);
         return;
     }
-    if (func_001669A0((Hewie *)((Character *)gCharPartner)) != 1 || !door_anim_done(f)) {
+    if (Hewie_AnimGroup((Hewie *)((Character *)gCharPartner)) != 1 || !door_anim_done(f)) {
         return;
     }
     switch (f->c.moveSub) {
@@ -8453,7 +8453,7 @@ void func_0018F180(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    yaw = func_002E2D00(kPi.f + *(f32 *)&f->c.unk104[2]);
+    yaw = Angle_Wrap(kPi.f + *(f32 *)&f->c.unk104[2]);
     tri = f->c.unk104[0];
     f->c.unk124 = f->c.unk128;
     FI(f, 0x1AD650, s32) = 0;

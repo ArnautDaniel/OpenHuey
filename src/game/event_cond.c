@@ -153,10 +153,10 @@ s32 EventCond_Eval(VObject *ev) {
                                     (AT(e, 0x18, f32) + AT(e, 0x38, f32)) / 2.0f - AT(c, 0x18, f32));
             f32 d;
 
-            if (!(cond_deg(func_002E2D00(ang - AT(c, 0x54, f32))) <= 0.0f)) {
-                d = cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            if (!(cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32)));
             } else {
-                d = -cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+                d = -cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32)));
             }
             r = d <= (f32)PC(ev)[3];
         }
@@ -205,10 +205,10 @@ s32 EventCond_Eval(VObject *ev) {
             f32 ang = func_0031C5C0(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
             f32 d;
 
-            if (!(cond_deg(func_002E2D00(ang - AT(a, 0x54, f32))) <= 0.0f)) {
-                d = cond_deg(func_002E2D00(ang - AT(a, 0x54, f32)));
+            if (!(cond_deg(Angle_Wrap(ang - AT(a, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(Angle_Wrap(ang - AT(a, 0x54, f32)));
             } else {
-                d = -cond_deg(func_002E2D00(ang - AT(a, 0x54, f32)));
+                d = -cond_deg(Angle_Wrap(ang - AT(a, 0x54, f32)));
             }
             r = d <= (f32)PC(ev)[5];
         }
@@ -268,10 +268,10 @@ s32 EventCond_Eval(VObject *ev) {
                                     (f32)(s16)be16(PC(ev) + 4) - AT(c, 0x18, f32));
             f32 d;
 
-            if (!(cond_deg(func_002E2D00(ang - AT(c, 0x54, f32))) <= 0.0f)) {
-                d = cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+            if (!(cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32))) <= 0.0f)) {
+                d = cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32)));
             } else {
-                d = -cond_deg(func_002E2D00(ang - AT(c, 0x54, f32)));
+                d = -cond_deg(Angle_Wrap(ang - AT(c, 0x54, f32)));
             }
             r = d <= (f32)PC(ev)[6];
         }
@@ -360,9 +360,9 @@ s32 EventCond_Eval(VObject *ev) {
             r = 1;
         }
         break;
-    case 0x0F:   /* Hewie (in the scene): func_001667C0 */
+    case 0x0F:   /* Hewie (in the scene): Hewie_FionaNearCommand */
         if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0) {
-            r = func_001667C0((Hewie *)((u8 *)gCharPartner));
+            r = Hewie_FionaNearCommand((Hewie *)((u8 *)gCharPartner));
         }
         break;
     case 0x12:   /* the counter (+0x703) is pc[1] */
@@ -449,8 +449,8 @@ s32 EventCond_Eval(VObject *ev) {
             r = 1;
         }
         break;
-    case 0x31:   /* Hewie (in the scene): not func_0013D4A0 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0((Hewie *)((u8 *)gCharPartner), 0) == 0) {
+    case 0x31:   /* Hewie (in the scene): not Hewie_MayBreakOff */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && Hewie_MayBreakOff((Hewie *)((u8 *)gCharPartner), 0) == 0) {
             r = 1;
         }
         break;
@@ -538,8 +538,8 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     }
-    case 0x4C:   /* Hewie (in the scene): func_00139060 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060((Hewie *)((u8 *)gCharPartner)) == 1) {
+    case 0x4C:   /* Hewie (in the scene): Hewie_FionaCanCommand */
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)Hewie_FionaCanCommand((Hewie *)((u8 *)gCharPartner)) == 1) {
             r = 1;
         }
         break;
@@ -581,9 +581,9 @@ s32 EventCond_Eval(VObject *ev) {
     case 0x59:   /* Fiona's +0x1AD630 */
         r = AT(gCharPlayer, 0x1AD630, u8);
         break;
-    case 0x5A:   /* Hewie's func_001364F0 (no Hewie: 1) */
+    case 0x5A:   /* Hewie's Hewie_FionaReachable (no Hewie: 1) */
         if (gCharPartner != NULL) {
-            r = func_001364F0((Hewie *)((u8 *)gCharPartner));
+            r = Hewie_FionaReachable((Hewie *)((u8 *)gCharPartner));
         } else {
             r = 1;
         }

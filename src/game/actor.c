@@ -1077,7 +1077,7 @@ s32 Character_AttackPoint(Character *c) {
 
 /* Turn by the animation's root rotation. */
 static inline void Character_ApplyRootTurn(Character *c) {
-    f32 yaw = func_002E2D00(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
+    f32 yaw = Angle_Wrap(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
 
     c->a.angle[1] = yaw;
     sceVu0UnitMatrix(c->a.rot);

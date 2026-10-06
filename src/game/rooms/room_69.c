@@ -99,7 +99,7 @@ s32 Room69_Cmd00(void *self, void *a1, u8 *cmd) {
             u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00438700[i]);
 
             if (o != NULL) {
-                AT(o, 0x14, f32) = func_002E2D00(dial_angle(p, i % 3));
+                AT(o, 0x14, f32) = Angle_Wrap(dial_angle(p, i % 3));
             }
         }
         break;
@@ -169,7 +169,7 @@ s32 Room69_Cmd00(void *self, void *a1, u8 *cmd) {
             break;
         }
 #endif
-        d = func_002E2D00(AT(o1, 0x14, f32) - dial_angle(p4, sel));
+        d = Angle_Wrap(AT(o1, 0x14, f32) - dial_angle(p4, sel));
         if (!(d <= k4.f)) {
             AT(o1, 0x14, f32) = AT(o1, 0x14, f32) - k4.f;
             AT(o2, 0x14, f32) = AT(o2, 0x14, f32) - k4.f;
@@ -178,7 +178,7 @@ s32 Room69_Cmd00(void *self, void *a1, u8 *cmd) {
             AT(o2, 0x14, f32) = AT(o2, 0x14, f32) + k4.f;
         } else {
             Progress *p = gProgress;
-            f32 a = func_002E2D00(dial_angle(p, sel));
+            f32 a = Angle_Wrap(dial_angle(p, sel));
 
             AT(o2, 0x14, f32) = a;
             AT(o1, 0x14, f32) = a;

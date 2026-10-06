@@ -785,10 +785,10 @@ void Debilitas_Chase(Pursuer *p) {
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {

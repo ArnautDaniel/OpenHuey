@@ -557,9 +557,9 @@ static void gl_morph(u8 *o, s32 lit) {
 }
 
 static void gl_placed_object(u8 *o) {
-    AT(o, 0x20, f32) = func_002E2D00(AT(o, 0x20, f32));
-    AT(o, 0x24, f32) = func_002E2D00(AT(o, 0x24, f32));
-    AT(o, 0x28, f32) = func_002E2D00(AT(o, 0x28, f32));
+    AT(o, 0x20, f32) = Angle_Wrap(AT(o, 0x20, f32));
+    AT(o, 0x24, f32) = Angle_Wrap(AT(o, 0x24, f32));
+    AT(o, 0x28, f32) = Angle_Wrap(AT(o, 0x28, f32));
     switch (AT(o, 0x8, u32) & 3) {
     case 0:
         gl_rigid(o);

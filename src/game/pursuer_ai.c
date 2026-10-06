@@ -566,7 +566,7 @@ u32 func_00213EC0(Pursuer *p, f32 heading, f32 a, f32 b) {
     if (b <= 0.0f) {
         b = -b;
     }
-    d = func_002E2D00(heading - p->c.a.angle[1]);
+    d = Angle_Wrap(heading - p->c.a.angle[1]);
     if (d <= a) {
         if (!(d < -a)) {
             return 0xFF;
@@ -590,7 +590,7 @@ u32 func_00213EC0(Pursuer *p, f32 heading, f32 a, f32 b) {
 /* turn towards `heading` by at most `step`; the angle left */
 f32 func_002140A0(Pursuer *p, f32 heading, f32 step) {
     f32 cur = p->c.a.angle[1];
-    f32 d = func_002E2D00(heading - cur);
+    f32 d = Angle_Wrap(heading - cur);
     f32 s = step <= 0.0f ? -step : step;
     f32 ad = d <= 0.0f ? -d : d;
     f32 h;
@@ -598,13 +598,13 @@ f32 func_002140A0(Pursuer *p, f32 heading, f32 step) {
     if (ad <= s) {
         h = heading;
     } else if (!(d < 0.0f)) {
-        h = func_002E2D00(cur + step);
+        h = Angle_Wrap(cur + step);
     } else {
-        h = func_002E2D00(cur - step);
+        h = Angle_Wrap(cur - step);
     }
     p->c.a.angle[1] = h;
     Mtx_TurnY(p->c.a.rot, h);
-    return func_002E2D00(heading - h);
+    return Angle_Wrap(heading - h);
 }
 
 /* step along the path; the stride from the animation's root motion if `step` <= 0 */
@@ -706,7 +706,7 @@ s32 func_00217ED0(Pursuer *p, f32 angle, f32 dist) {
     f32 w[4] __attribute__((aligned(16)));
     u32 tri;
 
-    Heading_Vector(v, func_002E2D00(angle + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
+    Heading_Vector(v, Angle_Wrap(angle + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
     sceVu0ScaleVector(v, v, dist);
     sceVu0AddVector(w, p->c.a.pos, v);
     tri = Actor_TriTo(&p->c.a, w, p->c.a.navMask);
@@ -732,7 +732,7 @@ void func_00218110(Pursuer *p) {
     for (i = 0; i < 8; i++) {
         f32 h = Actor_HeadingTo(&p->c.a, gCharPlayer->a.pos);
 
-        PU(p, 0x1548 + i * 4, s32) = func_00217D30(p, func_002E2D00(0x1.921fb60000000p+2f /* 6.2831855 */ * (f32)i / 8.0f + h), 20.0f);
+        PU(p, 0x1548 + i * 4, s32) = func_00217D30(p, Angle_Wrap(0x1.921fb60000000p+2f /* 6.2831855 */ * (f32)i / 8.0f + h), 20.0f);
     }
 }
 
@@ -934,7 +934,7 @@ void func_00213B60(Pursuer *p, u32 mask) {
         f32 r;
 
         VCALL(gNavMesh, 0x40, void (*)(void *, u32, f32 *, f32 *, f32 *, u32))(gNavMesh, p->c.a.navTri, b, p->c.a.pos, a, mask);
-        r = func_002E2D00(p->c.a.angle[1] + func_002E2D00(Actor_HeadingTo(&p->c.a, b) - h));
+        r = Angle_Wrap(p->c.a.angle[1] + Angle_Wrap(Actor_HeadingTo(&p->c.a, b) - h));
         p->c.a.angle[1] = r;
         sceVu0UnitMatrix(p->c.a.rot);
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
@@ -953,7 +953,7 @@ u32 func_00213FA0(Pursuer *p, const f32 *pos, f32 a, f32 b) {
     if (b <= 0.0f) {
         b = -b;
     }
-    d = func_002E2D00(heading - p->c.a.angle[1]);
+    d = Angle_Wrap(heading - p->c.a.angle[1]);
     if (d <= a) {
         if (!(d < -a)) {
             return 0xFF;
@@ -991,7 +991,7 @@ s32 func_002181D0(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 r
         return 0;
     }
     a = a - heading;
-    if (!((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half)) {
+    if (!((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half)) {
         return 0;
     }
     return 1;
@@ -1015,7 +1015,7 @@ s32 func_00218300(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f3
         return 0;
     }
     a = a - heading;
-    if (!((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half)) {
+    if (!((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half)) {
         return 0;
     }
     return 1;
@@ -1262,7 +1262,7 @@ void func_00217680(Pursuer *p) {
         PU(p, 0x1544, u8) = 0;
         PU(p, 0x1545, u8) = 0;
     } else {
-        PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+        PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
         if (p->c.moveMode != 2 && (func_00212850(p) & 0xFF) != 0xFF) {
             PU(p, 0x1544, u8) = 1;
         } else if (p->c.a.room != gCharPlayer->a.room) {
@@ -1291,7 +1291,7 @@ void func_002177D0(Pursuer *p) {
             PU(p, 0x1544, u8) = 0;
             PU(p, 0x1545, u8) = 0;
         } else {
-            PU(p, 0x1574, f32) = func_002E2D00(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+            PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
             if (p->c.moveMode != 2 && (func_00212850(p) & 0xFF) != 0xFF) {
                 PU(p, 0x1544, u8) = 1;
             } else {
@@ -1320,7 +1320,7 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
         u32 tri;
         s32 ok = 0;
 
-        Heading_Vector(v, func_002E2D00(a + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
+        Heading_Vector(v, Angle_Wrap(a + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
         sceVu0ScaleVector(v, v, dist);
         sceVu0AddVector(w, p->c.a.pos, v);
         tri = Actor_TriTo(&p->c.a, w, p->c.a.navMask);
@@ -1433,7 +1433,7 @@ s32 func_002187D0(Pursuer *p, u32 tri, const f32 *pos) {
         a = func_0031C5C0(dx, dz);
         if (dist <= range) {
             a = a - heading;
-            if ((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half) {
+            if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {
                 in = 1;
             }
         }
@@ -1480,7 +1480,7 @@ u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
     void *nm;
     u32 tri, flags, i;
 
-    Heading_Vector(v, func_002E2D00(heading));
+    Heading_Vector(v, Angle_Wrap(heading));
     sceVu0ScaleVector(v, v, dist);
     sceVu0AddVector(w, p->c.a.pos, v);
     tri = Actor_TriTo(&p->c.a, w, 0);
@@ -1525,9 +1525,9 @@ s32 func_002179F0(Pursuer *p, s32 a1, f32 f) {
 
         if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
             (VCALL(pr, 0x30, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
-            f32 d = func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
-                        ? -func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
-                        : func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
+            f32 d = Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
+                        : Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
 
             if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
                 bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
@@ -1548,9 +1548,9 @@ s32 func_00217B90(Pursuer *p, s32 a1, f32 f) {
 
         if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
             (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
-            f32 d = func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
-                        ? -func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
-                        : func_002E2D00(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
+            f32 d = Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
+                        : Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
 
             if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
                 bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
@@ -1722,7 +1722,7 @@ f32 func_00212550(Pursuer *p, u32 exit) {
     }
     a = VCALL(d, 0x3C, f32 (*)(VObject *, u32))(d, exit);
     if (side == 1) {
-        a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+        a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
     }
     return a;
 }
@@ -1916,19 +1916,19 @@ f32 func_00214190(Pursuer *p, const f32 *pos, f32 step) {
     }
     if (!(d < step)) {
         f32 h2 = Actor_HeadingTo(&p->c.a, pos);
-        f32 a = func_002E2D00(h2 - p->c.a.angle[1]) <= 0.0f ? -func_002E2D00(h2 - p->c.a.angle[1])
-                                                            : func_002E2D00(h2 - p->c.a.angle[1]);
-        f32 b = func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32))) <= 0.0f
-                    ? -func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)))
-                    : func_002E2D00(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)));
+        f32 a = Angle_Wrap(h2 - p->c.a.angle[1]) <= 0.0f ? -Angle_Wrap(h2 - p->c.a.angle[1])
+                                                            : Angle_Wrap(h2 - p->c.a.angle[1]);
+        f32 b = Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32))) <= 0.0f
+                    ? -Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)))
+                    : Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)));
         s32 dir;
 
         if (a <= 0x1.0c15240000000p+1f /* 2.0943952 */ || a <= b) {
-            dir = func_002E2D00(h2 - p->c.a.angle[1]) <= 0.0f ? -1 : 1;
+            dir = Angle_Wrap(h2 - p->c.a.angle[1]) <= 0.0f ? -1 : 1;
         } else {
             dir = MOTION_AT(p, 0x858, f32) <= 0.0f ? -1 : 1;
         }
-        r = func_002E2D00(p->c.a.angle[1] + (f32)dir * step);
+        r = Angle_Wrap(p->c.a.angle[1] + (f32)dir * step);
         p->c.a.angle[1] = r;
         sceVu0UnitMatrix(p->c.a.rot);
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
@@ -1937,7 +1937,7 @@ f32 func_00214190(Pursuer *p, const f32 *pos, f32 step) {
         sceVu0UnitMatrix(p->c.a.rot);
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
     }
-    return func_002E2D00(h - p->c.a.angle[1]);
+    return Angle_Wrap(h - p->c.a.angle[1]);
 }
 
 /* step towards `pos`: turn, then walk by the animation's stride (straight if within it) */
@@ -1950,7 +1950,7 @@ s32 func_002143D0(Pursuer *p, const f32 *pos) {
     Motion_RootMovement(p->c.motion, v, 0.0f);
     mo = p->c.motion;
     v[2] *= VCALL(mo, 0x44, f32 (*)(void *, Pursuer *))(mo, p);
-    d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+    d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
     ad = d <= 0.0f ? -d : d;
     if (!(ad < 0x1.921fb60000000p-1f /* 0.7853982 */)) {
         if (d <= 0.0f) {
@@ -2163,9 +2163,9 @@ s32 func_00214620(Pursuer *p, s32 unused) {
     w[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
     VCALL(gNavMesh, 0x14, void (*)(void *, s32, f32 *))(gNavMesh, last, w);
     if (sceVu0InnerProduct(p->c.a.pos, pos) == 0.0f && last == (s32)Actor_TriTo(&p->c.a, w, 0x20008)) {
-        d = func_002E2D00(Actor_HeadingTo(&p->c.a, w) - p->c.a.angle[1]);
+        d = Angle_Wrap(Actor_HeadingTo(&p->c.a, w) - p->c.a.angle[1]);
     } else {
-        d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+        d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
     }
     if (d <= 0.0f) {
         d = -d;
@@ -2361,7 +2361,7 @@ s32 func_00218430(Pursuer *p, Character *c) {
         a = func_0031C5C0(dx, dz);
         if (dist <= range) {
             a = a - heading;
-            if ((func_002E2D00(a) <= 0.0f ? -func_002E2D00(a) : func_002E2D00(a)) <= half) {
+            if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {
                 in = 1;
             }
         }

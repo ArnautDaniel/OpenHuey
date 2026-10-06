@@ -68,11 +68,11 @@ next session). Hewie is paused, not abandoned.
 
 - Method: bottom-up by size. List what's left with the snippet in the git log of `116875d`, or:
   every `glabel` in `asm/game.s` within 0x130A70..0x168A10 not defined in `src/game/hewie.c`.
-- Next small ones: `func_00139460` (147), `func_0013F220` (147, path distance to a character,
-  already called as `f32 func_0013F220(Hewie *, Character *)`), `func_0013A1C0`,
-  `func_0013EFB0` (fills a target point, -1 none), `func_0013FDE0`, `func_0014C210`, ...
+- Next small ones: `Hewie_NearestThing` (147), `Hewie_WalkDistance` (147, path distance to a character,
+  already called as `f32 Hewie_WalkDistance(Hewie *, Character *)`), `Hewie_BiteEffect`,
+  `Hewie_TargetTri` (fills a target point, -1 none), `Hewie_SetOverlays`, `Hewie_StateWhine`, ...
 - The big ones, last: `Hewie_SetAction` (5759 instructions: start action N, 129 callers; split by
-  action ranges to test), `func_00141C00` (1404, move kind N), `func_00140CD0` (969, target
+  action ranges to test), `Hewie_KeepPose` (1404, move kind N), `Hewie_StepToPose` (969, target
   check), vtable `Hewie_Update` (+0x30 main update), `Hewie_Vt34` (+0x34 door),
   `Hewie_Requests` (+0x88), `Hewie_StateBlock` (+0x84).
 - After all functions: the cleanup pass (real struct fields for the `HW(h, 0xF3xxx, T)`

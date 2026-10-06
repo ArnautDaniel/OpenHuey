@@ -665,7 +665,7 @@ static inline s32 clock_start(void) {
     u8 *p = (u8 *)gProgress;
 
     p[0x1FBEC1] = 1;
-    func_00136620((Hewie *)gCharPartner);
+    Hewie_Restart((Hewie *)gCharPartner);
     VCALL(gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, 14.0f);
     func_002A76E0(p + 0xFC4);
     return 1;

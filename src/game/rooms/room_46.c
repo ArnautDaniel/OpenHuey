@@ -101,7 +101,7 @@ s32 Room46_CharHook(void *self, Character *c, u8 *cmd) {
             a = 0x1.91eb86p+0f;
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
         }
-        a = func_002E2D00(a);
+        a = Angle_Wrap(a);
         c->a.angle[1] = a;
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, a);

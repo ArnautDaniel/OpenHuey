@@ -97,7 +97,7 @@ s32 Room5A_Cmd00(void *self, void *a1, u8 *cmd) {
             if (d != NULL) {
                 u32 v = (u8)Progress_GetVar(p, D_0047B254[i]);
 
-                AT(d, 0x14, f32) = func_002E2D00(kPi.f * (f32)(s32)(v * 90) / 180.0f);
+                AT(d, 0x14, f32) = Angle_Wrap(kPi.f * (f32)(s32)(v * 90) / 180.0f);
             }
         }
         return 1;
@@ -134,7 +134,7 @@ s32 Room5A_Cmd00(void *self, void *a1, u8 *cmd) {
         u8 *var = &D_0047B254[sel];
         Progress *p = gProgress;
         u32 v = (u8)Progress_GetVar(p, *var);
-        f32 d = func_002E2D00(AT(o, 0x14, f32) - kPi.f * (f32)(s32)(v * 90) / 180.0f);
+        f32 d = Angle_Wrap(AT(o, 0x14, f32) - kPi.f * (f32)(s32)(v * 90) / 180.0f);
 
         if (!(d <= kStep.f)) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - kStep.f;
@@ -144,7 +144,7 @@ s32 Room5A_Cmd00(void *self, void *a1, u8 *cmd) {
             Progress *q = gProgress;
 
             v = (u8)Progress_GetVar(q, *var);
-            AT(o, 0x14, f32) = func_002E2D00(kPi.f * (f32)(s32)(v * 90) / 180.0f);
+            AT(o, 0x14, f32) = Angle_Wrap(kPi.f * (f32)(s32)(v * 90) / 180.0f);
             if ((u8)Progress_GetVar(q, D_0047B254[0]) == 1 && (u8)Progress_GetVar(p, D_0047B254[1]) == 0 &&
                 (u8)Progress_GetVar(p, D_0047B254[2]) == 2) {
                 VObject *e = gEvents;

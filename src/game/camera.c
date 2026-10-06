@@ -541,7 +541,7 @@ void Camera_TurnView(Camera *c, f32 pitch, f32 yaw) {
     q[0] = 0.0f;
     if (yaw != 0.0f) {
         sceVu0UnitMatrix(r);
-        sceVu0RotMatrixY(r, r, func_002E2D00(yaw));
+        sceVu0RotMatrixY(r, r, Angle_Wrap(yaw));
         sceVu0SubVector(v, c->target, c->eye);
         v[3] = 1.0f;
         sceVu0ApplyMatrix(v, r, v);
@@ -635,7 +635,7 @@ void Camera_Orbit(Camera *c, f32 pitch, f32 yaw) {
     q[0] = 0.0f;
     if (yaw != 0.0f) {
         sceVu0UnitMatrix(r);
-        sceVu0RotMatrixY(r, r, func_002E2D00(yaw));
+        sceVu0RotMatrixY(r, r, Angle_Wrap(yaw));
         sceVu0SubVector(v, c->eye, c->target);
         v[3] = 1.0f;
         sceVu0ApplyMatrix(v, r, v);

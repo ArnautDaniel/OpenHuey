@@ -2272,7 +2272,7 @@ void Event_RunScript(VObject *ev) {
         pos[1] = 0.0f;
         pos[2] = (f32)be32(PC(ev) + 7) / 1000.0f;
         pos[3] = 1.0f;
-        a = func_002E2D00(kPi.f * (f32)(s16)be16(PC(ev) + 0xB) / 180.0f);
+        a = Angle_Wrap(kPi.f * (f32)(s16)be16(PC(ev) + 0xB) / 180.0f);
         AT(c, 0x104, u32) = be16(PC(ev) + 1);
         t = be16(PC(ev) + 0xD);
         AT(c, 0x108, u32) = opt16(t);
@@ -2388,7 +2388,7 @@ void Event_RunScript(VObject *ev) {
     case 0x4B: {   /* turn to an angle */
         static const union { u32 u; f32 f; } kPi = {0x40490FDB};
 
-        AT(c, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
+        AT(c, 0x10C, f32) = Angle_Wrap(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
         CHAR_ACT(c, 0xF);
         break;
     }
@@ -2396,7 +2396,7 @@ void Event_RunScript(VObject *ev) {
         f32 x = (f32)be32(pc + 1) / 1000.0f - AT(c, 0x10, f32);
         f32 z = (f32)be32(pc + 5) / 1000.0f - AT(c, 0x18, f32);
 
-        AT(c, 0x10C, f32) = func_002E2D00(func_0031C5C0(x, z));
+        AT(c, 0x10C, f32) = Angle_Wrap(func_0031C5C0(x, z));
         CHAR_ACT(c, 0xF);
         break;
     }
@@ -2460,7 +2460,7 @@ void Event_RunScript(VObject *ev) {
         pos[3] = 1.0f;
         pos[2] = (f32)be32(PC(ev) + 0xB) / 1000.0f;
         sceVu0CopyVector((f32 *)(c + 0x110), pos);
-        AT(c, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(PC(ev) + 0xF) / 180.0f);
+        AT(c, 0x10C, f32) = Angle_Wrap(kPi.f * (f32)(s16)be16(PC(ev) + 0xF) / 180.0f);
         CHAR_ACT(c, 0x11);
         break;
     }
@@ -2475,7 +2475,7 @@ void Event_RunScript(VObject *ev) {
             func_0010E5F0(tmp, (f32 *)(zone + 0x10));
             tmp[3] = 1.0f;
         }
-        AT(c, 0x10C, f32) = func_002E2D00(func_0031C5C0(tmp[0] - AT(c, 0x10, f32), tmp[2] - AT(c, 0x18, f32)));
+        AT(c, 0x10C, f32) = Angle_Wrap(func_0031C5C0(tmp[0] - AT(c, 0x10, f32), tmp[2] - AT(c, 0x18, f32)));
         CHAR_ACT(c, 0xF);
         break;
     }
@@ -2624,7 +2624,7 @@ static void zone_point(VObject *ev, u32 id, f32 *v) {
 
 /* Hewie's commands (nothing without him; most need him active):
  *   0x39 action be32 pc+1, its argument be32 pc+5      0x3F his +0x64 (be16 pc+1, be16 pc+4, pc[3])
- *   0x63 turn to angle pc+1 (degrees), action 0x72     0x77 func_001654E0 (be16 pc+1, be16 pc+3)
+ *   0x63 turn to angle pc+1 (degrees), action 0x72     0x77 Hewie_SetAnim (be16 pc+1, be16 pc+3)
  *   0x78 action 0x12 (a character action, +0xF4)        0x7A to a position (x, z, y), be16 pc+1 / pc+0xF
  *   0x85 trust + be16 pc+1                              0xAF to a position (action 0x14)
  *   0xB0 to zone pc[1]'s point (pc[2] 0: action 0x14, 1: 0xD)
@@ -2656,12 +2656,12 @@ void EventCmd_Hewie(VObject *ev) {
     case 0x63: {
         static const union { u32 u; f32 f; } kPi = {0x40490FDB};
 
-        AT(h, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
+        AT(h, 0x10C, f32) = Angle_Wrap(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
         Hewie_SetAction((Hewie *)h, 0x72, 0);
         break;
     }
     case 0x77:
-        func_001654E0((Hewie *)h, (s16)be16(pc + 1), be16(pc + 3));
+        Hewie_SetAnim((Hewie *)h, (s16)be16(pc + 1), be16(pc + 3));
         break;
     case 0x78:
         CHAR_ACT(h, 0x12);
@@ -2678,7 +2678,7 @@ void EventCmd_Hewie(VObject *ev) {
         CHAR_ACT(h, 0x13);
         break;
     case 0x85:
-        func_0013D1F0((Hewie *)h, (s16)be16(pc + 1));
+        Hewie_AddTrust((Hewie *)h, (s16)be16(pc + 1));
         break;
     case 0xAF:
         be32_pos(v, pc + 1);
@@ -2714,7 +2714,7 @@ void EventCmd_Hewie(VObject *ev) {
         CHAR_ACT(h, 0x15);
         break;
     case 0xC4:
-        func_00138AD0((Hewie *)h, be32(pc + 1), -1);
+        Hewie_SetMode((Hewie *)h, be32(pc + 1), -1);
         break;
     case 0xC5:
         zone_point(ev, pc[1], v);

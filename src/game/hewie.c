@@ -73,7 +73,8 @@ void Hewie_Disable(Hewie *h) {
 }
 
 /* Group of his current animation (0 idle .. 0xE, 0xF other). */
-s32 func_001669A0(Hewie *h) {
+/* 0x001669A0 */
+s32 Hewie_AnimGroup(Hewie *h) {
     switch (MOTION_ANIM(h->c.motion)) {
     case 0x0: case 0x3: case 0x4: case 0x5: case 0x6: case 0x9:
         return 0;
@@ -116,7 +117,8 @@ s32 func_001669A0(Hewie *h) {
  * counts up, max 10000); while blocked (gCamDirector +0x38) or with progress flags 0x13 / 0x2B
  * set his attack-type actions become waiting ones; then substitutions by his condition
  * (+0xC4), mode (+0xF35C0) and flags. In the special mode the action is kept. */
-s32 func_0013B2C0(Hewie *h, s32 act) {
+/* 0x0013B2C0 */
+s32 Hewie_AdjustAction(Hewie *h, s32 act) {
     Progress *p = gProgress;
     u8 f;
 
@@ -131,7 +133,7 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
             act = 0;
             h->c.hp = 1;
             h->c.a.unkC4 = 1;
-        } else if (HEWIE_ACTION(h) != 0x52 && HEWIE_ACTION(h) != 0x74 && func_001669A0(h) != 0xD) {
+        } else if (HEWIE_ACTION(h) != 0x52 && HEWIE_ACTION(h) != 0x74 && Hewie_AnimGroup(h) != 0xD) {
             s16 *n = (s16 *)((u8 *)p + 0xFB6);
 
             *n += 10;
@@ -212,14 +214,16 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
 /* One chance in `n`: sets +0xF3586. */
-void func_00138DE0(Hewie *h, s32 n) {
+/* 0x00138DE0 */
+void Hewie_Chance(Hewie *h, s32 n) {
     if ((s32)((f32)n * RNG01()) == 0) {
         HW(h, 0xF3586, u8) = 1;
     }
 }
 
 /* Spend `amount` of his pool (+0xF359C) while it is in use (+0xF3598). */
-void func_00138E60(Hewie *h, s32 amount) {
+/* 0x00138E60 */
+void Hewie_SpendPool(Hewie *h, s32 amount) {
     if (HW(h, 0xF3598, s32) == 1) {
         HW(h, 0xF359C, s32) -= amount;
         HW(h, 0xF3587, u8) = 0;
@@ -234,7 +238,8 @@ static inline s32 Hewie_OtherSide(Hewie *h, u32 tri) {
 }
 
 /* Plan a path to `pos` on `tri` (not across the room's divider); 1 if one was found. */
-s32 func_0013C1E0(Hewie *h, u32 tri, const f32 *pos) {
+/* 0x0013C1E0 */
+s32 Hewie_PlanTo(Hewie *h, u32 tri, const f32 *pos) {
     s32 r;
 
     if (Hewie_OtherSide(h, tri)) {
@@ -249,7 +254,8 @@ s32 func_0013C1E0(Hewie *h, u32 tri, const f32 *pos) {
 
 /* Plan a path to `pos` on `tri` (not across the divider) and start it (`direct`: the straight
  * variant); `keep` keeps the planner's previous request. 0 = ok, -1 = failed. */
-s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
+/* 0x0013EE40 */
+s32 Hewie_PlanAndGo(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
     s32 r;
 
     if (Hewie_OtherSide(h, tri)) {
@@ -286,7 +292,8 @@ extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
 /* Set his mode (and its timer: `time`, or -1 for the mode's default: 1 and 2 1800 frames, 3 450).
  * Down: only mode 0; in condition 1 only mode 3. Entering mode 1 / 3 counts in the progress
  * counters; mode 1 refills his pool and may restart action 0x34. */
-void func_00138AD0(Hewie *h, s32 mode, s32 time) {
+/* 0x00138AD0 */
+void Hewie_SetMode(Hewie *h, s32 mode, s32 time) {
     s32 m = mode;
 
     if (h->c.hp == 0 && h->c.a.unkC4 == 2) {
@@ -340,7 +347,7 @@ void func_00138AD0(Hewie *h, s32 mode, s32 time) {
         if (!h->c.a.disabled) {
             HW(h, 0xF3559, u8) = 1;
         } else {
-            Hewie_SetAction(h, func_0013B2C0(h, 0x34), 0);
+            Hewie_SetAction(h, Hewie_AdjustAction(h, 0x34), 0);
         }
     }
     HW(h, 0xF3586, u8) = 0;
@@ -365,7 +372,8 @@ extern const s16 D_003B1264[];   /* by feeling score */
 
 /* In mode 0 with an active pursuer: by his feeling about it, maybe (16-sided roll below the
  * score's threshold) switch to mode 2. */
-void func_0013C5D0(Hewie *h) {
+/* 0x0013C5D0 */
+void Hewie_FeelPursuer(Hewie *h) {
     u8 ok;
     s16 *v;
     s32 score;
@@ -383,13 +391,14 @@ void func_0013C5D0(Hewie *h) {
     }
     score = *v;
     if ((s32)(16.0f * RNG01()) < D_003B1264[score]) {
-        func_00138AD0(h, 2, -1);
+        Hewie_SetMode(h, 2, -1);
     }
 }
 
 /* His feeling about the kind of character `other` is (-10..10, saved with him), changed by
  * `delta`; then re-evaluated. */
-void func_00166150(Hewie *h, Character *other, s32 delta) {
+/* 0x00166150 */
+void Hewie_ChangeFeeling(Hewie *h, Character *other, s32 delta) {
     s16 *v = Hewie_Feeling(h, other->unk153C);
 
     if (v != NULL) {
@@ -400,7 +409,7 @@ void func_00166150(Hewie *h, Character *other, s32 delta) {
             *v = 10;
         }
     }
-    func_0013C5D0(h);
+    Hewie_FeelPursuer(h);
 }
 
 /* vtable +0x60: forget path/movement state, then his default action. */
@@ -448,12 +457,12 @@ void Hewie_Halt(Hewie *h) {
     Character_Enable(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
-    Hewie_SetAction(h, func_0013B2C0(h, 0), 0);
+    Hewie_SetAction(h, Hewie_AdjustAction(h, 0), 0);
 }
 
 /* Back to his default action (inlined in several places in the original). */
 static inline void Hewie_ToDefault(Hewie *h) {
-    Hewie_SetAction(h, func_0013B2C0(h, 0), 0);
+    Hewie_SetAction(h, Hewie_AdjustAction(h, 0), 0);
 }
 
 /* vtable +0x7C: back to his default action. */
@@ -464,7 +473,8 @@ void Hewie_BackToIdle(Hewie *h) {
 
 /* Add to his trust in Fiona (0..10000) and recompute its level 0..7. From level 2 progress flag
    0x11 is cleared, from level 3 flag 0x1D. */
-void func_0013D1F0(Hewie *h, s32 add) {
+/* 0x0013D1F0 */
+void Hewie_AddTrust(Hewie *h, s32 add) {
     static const s16 bounds[] = { 100, 280, 450, 600, 750, 900, 1000 };
     Progress *p;
     s16 t, level;
@@ -524,7 +534,7 @@ void Hewie_LeftBehind(Hewie *h) {
     if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && HEWIE_ACTION(h) == 0x38) {
         Hewie_ToDefault(h);
     }
-    func_00138AD0(h, 0, -1);
+    Hewie_SetMode(h, 0, -1);
 }
 
 /* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
@@ -572,7 +582,7 @@ void Hewie_FollowAnim(Hewie *h) {
     h->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(gNavMesh, h->c.a.pos, 0);
 }
 
-extern s32 func_00143D20(Hewie *h);
+extern s32 Hewie_Arrive(Hewie *h);
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
  * side if he has no triangle yet); in the special mode: note his side, hand him to the
@@ -587,7 +597,7 @@ void Hewie_Vt38(Hewie *h) {
         VCALL(gEvents, 0x2C, void (*)(VObject *, Hewie *))(gEvents, h);
         return;
     }
-    func_00143D20(h);
+    Hewie_Arrive(h);
     if (h->c.a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         h->c.a.disabled = 1;
         return;
@@ -799,7 +809,8 @@ void Hewie_Reset(Hewie *h) {
 }
 
 /* Wraps an angle into [-pi, pi]. */
-f32 func_002E2D00(f32 a) {
+/* 0x002E2D00 */
+f32 Angle_Wrap(f32 a) {
     const f32 pi = B4_FLT(0x40490FDB);
     const f32 twopi = B4_FLT(0x40C90FDB);
 
@@ -813,7 +824,8 @@ f32 func_002E2D00(f32 a) {
 }
 
 /* out.xyz = m x v (v as a point: plus m's translation row; w 0 as above) */
-void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
+/* 0x002E2DD0 */
+void Mtx_ApplyPoint(f32 *out, f32 (*m)[4], const f32 *v) {
     f32 x = v[0], y = v[1], z = v[2];
     s32 i;
 
@@ -868,7 +880,7 @@ s32 Hewie_PlaceOn(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     return r;
 }
 
-extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
+extern u32 Hewie_Dares(Hewie *h, s32 slot);         /* u8 */
 
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
  * `door`)? For kinds 1..4, if he stands idle facing roughly towards the caller (within 3pi/8),
@@ -892,8 +904,8 @@ s32 Hewie_CanInteract(Hewie *h, u32 kind, s32 slot, u32 door) {
     }
     if (!(Progress_TestFlag(gProgress, 0x1D) & 0xFF) && h->c.moveMode == 0 && k >= 1 && k <= 4
         && h->c.a.unkC4 != 2 && HEWIE_ACTION(h) != 0x79
-        && func_002E2D00(Actor_HeadingTo(&h->c.a, gCharacters[slot]->a.pos) - h->c.a.angle[1]) < 0x1.2d97c8p+0f /* 3pi/8 */
-        && (func_00138460(h, slot) & 0xFF) == 1) {
+        && Angle_Wrap(Actor_HeadingTo(&h->c.a, gCharacters[slot]->a.pos) - h->c.a.angle[1]) < 0x1.2d97c8p+0f /* 3pi/8 */
+        && (Hewie_Dares(h, slot) & 0xFF) == 1) {
         HW(h, 0xF3584, u8) = 1;
         return 0;
     }
@@ -903,7 +915,7 @@ s32 Hewie_CanInteract(Hewie *h, u32 kind, s32 slot, u32 door) {
     return (VCALL(gDoors, 0x40, u32 (*)(VObject *, u32))(gDoors, door & 0xFF) & 0xFF) ? 1 : 0;
 }
 
-extern void func_00143840(Hewie *h);
+extern void Hewie_Alert(Hewie *h);
 
 #define Hewie_Place(h, tri) VCALL(h, 0x28, s32 (*)(Hewie *, u32, const f32 *, f32 *))(h, tri, NULL, NULL)
 
@@ -955,16 +967,16 @@ s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
             Character_Sound(&h->c, 3, (s32)v, 0, 0, 0);
         }
     }
-    func_00143840(h);
+    Hewie_Alert(h);
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
     Character_MarkObjects(&h->c);
     return r;
 }
 
 extern u8 D_0047E3B0[];                                   /* pad state */
-extern void func_00146130(Hewie *h);
-extern void func_0013A650(Hewie *h);
-extern void func_00145080(Hewie *h);
+extern void Hewie_TurnHead(Hewie *h);
+extern void Hewie_AnimSounds(Hewie *h);
+extern void Hewie_Feet(Hewie *h);
 
 /* character c active, not down, in his room (in the room being played only on the mesh) */
 static s32 in_his_room(Hewie *h, Character *c) {
@@ -992,7 +1004,7 @@ static void report_fiona_near(Hewie *h) {
 
 /* heading turned by the animation, orientation rebuilt */
 static void turn_by_anim(Hewie *h) {
-    f32 yaw = func_002E2D00(h->c.a.angle[1] + Motion_RootRotation(h->c.motion, 0.0f));
+    f32 yaw = Angle_Wrap(h->c.a.angle[1] + Motion_RootRotation(h->c.motion, 0.0f));
 
     h->c.a.angle[1] = yaw;
     sceVu0UnitMatrix(h->c.a.rot);
@@ -1025,7 +1037,7 @@ void Hewie_Think(Hewie *h) {
     if (HW(h, 0xF35A8, s16) > 3000) {
         HW(h, 0xF35A8, s16) = 3000;
     }
-    func_00143840(h);
+    Hewie_Alert(h);
     if (h->c.a.unkC4 != 2) {
         report_fiona_near(h);
     }
@@ -1044,10 +1056,10 @@ void Hewie_Think(Hewie *h) {
     if ((Progress_HasRelationCmd(p, SLOT_U8(h)) & 0xFF) == 1) {
         SlotCmd_Cancel(p, SLOT_U8(h));
     }
-    func_00146130(h);
-    func_0013A650(h);
+    Hewie_TurnHead(h);
+    Hewie_AnimSounds(h);
     VCALL(h, 0x40, void (*)(Hewie *))(h);
-    func_00145080(h);
+    Hewie_Feet(h);
 }
 
 extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
@@ -1085,8 +1097,8 @@ void Hewie_Activate(Hewie *h) {
     Progress *p;
 
     Character_Activate(&h->c);
-    func_00138AD0(h, 0, -1);
-    func_0013D1F0(h, 0);
+    Hewie_SetMode(h, 0, -1);
+    Hewie_AddTrust(h, 0);
     p = gProgress;
     HW(h, 0xF3598, s32) = 0;
     if ((Progress_GetVar(p, 0x27) & 0xFF) == 1) {
@@ -1134,7 +1146,8 @@ void Hewie_Activate(Hewie *h) {
 
 /* (Re)start: in play idle with action 0, in the special mode the special state, action 0x83. */
 /* (possibly dead code: nothing in the game references it) */
-void func_00136620(Hewie *h) {
+/* 0x00136620 */
+void Hewie_Restart(Hewie *h) {
     Hewie_StartScene(h, gProgress);
 }
 
@@ -1143,7 +1156,8 @@ void func_00136620(Hewie *h) {
 
 /* Make sound `snd` (not within 10 frames of the last one; some repeat only after 40..60
  * frames). Barks 0x65/0x66 (loud) and 0x5D/0x5E also make a noise others can hear. */
-void func_0013A430(Hewie *h, s32 snd) {
+/* 0x0013A430 */
+void Hewie_MakeSound(Hewie *h, s32 snd) {
     s32 prev = HEWIE_LAST_SOUND(h);
 
     if (prev != 0x59 && prev != 0x58 && prev != 0x70 && prev != 0x6F && HEWIE_SOUND_T(h) < 10) {
@@ -1186,7 +1200,8 @@ void func_0013A430(Hewie *h, s32 snd) {
 
 /* Best heading near `yaw` for walking `dist`: tries yaw +- `from`..`to` degrees in steps of `step`
  * (left and right, starting on a random side), stops early at a full-length result. */
-f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
+/* 0x00137720 */
+f32 Hewie_BestHeading(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
     f32 best = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, yaw, dist);
     f32 result = yaw;
     f32 sign;
@@ -1202,7 +1217,7 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
             s32 i;
 
             for (i = 0; i < 2; i++) {
-                f32 a = func_002E2D00(yaw + sign * ang);
+                f32 a = Angle_Wrap(yaw + sign * ang);
                 f32 r = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
 
                 if (best < r) {
@@ -1222,7 +1237,7 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
             s32 i;
 
             for (i = 0; i < 2; i++) {
-                f32 a = func_002E2D00(yaw + sign * ang);
+                f32 a = Angle_Wrap(yaw + sign * ang);
                 f32 r = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
 
                 if (best < r) {
@@ -1242,7 +1257,8 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
 
 /* Start his standing animation (0 normal, 3 / 4 / 5 by progress state and mode, 6 in condition
  * 1, 4 during actions 8 / 0xA) unless it is already playing; `blend` -1: cut. */
-void func_00143550(Hewie *h, s32 blend) {
+/* 0x00143550 */
+void Hewie_StandAnim(Hewie *h, s32 blend) {
     Progress *p;
     s32 cur, a;
 
@@ -1276,29 +1292,35 @@ void func_00143550(Hewie *h, s32 blend) {
 
 /* ---- small behaviour pieces ---- */
 
-void func_00141C00(Hewie *h, u32 kind);
-extern void func_0013C300(Hewie *h);
+void Hewie_KeepPose(Hewie *h, u32 kind);
+extern void Hewie_AfterYelp(Hewie *h);
 
 #define MOTION_EVENTS(m) (*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18))
 
-void func_001480B0(Hewie *h) {
-    func_00141C00(h, 2);
+/* 0x001480B0 */
+void Hewie_StatePose2(Hewie *h) {
+    Hewie_KeepPose(h, 2);
 }
 
-void func_0015F750(Hewie *h) {
-    func_00141C00(h, 4);
+/* 0x0015F750 */
+void Hewie_StatePose4(Hewie *h) {
+    Hewie_KeepPose(h, 4);
 }
 
-void func_0014F5A0(Hewie *h) {
+/* 0x0014F5A0 */
+void Hewie_State2318(Hewie *h) {
 }
 
-void func_00154D40(Hewie *h) {
+/* 0x00154D40 */
+void Hewie_State20C8(Hewie *h) {
 }
 
-void func_00154DB0(Hewie *h) {
+/* 0x00154DB0 */
+void Hewie_State20A8(Hewie *h) {
 }
 
-void func_00154E60(Hewie *h) {
+/* 0x00154E60 */
+void Hewie_State2018(Hewie *h) {
 }
 
 /* 0x001689F0 */
@@ -1307,12 +1329,14 @@ s32 Model_Textures(Hewie *h) {
 }
 
 /* A loud noise where he is (no triangle). */
-void func_00154E40(Hewie *h) {
+/* 0x00154E40 */
+void Hewie_StateLoudNoise(Hewie *h) {
     func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, NAV_NONE, 0xFFFF);
 }
 
 /* Set the animation to play (+0xF35B8) and (if >= 0) +0xF35B4. */
-void func_001654E0(Hewie *h, s32 a, s32 anim) {
+/* 0x001654E0 */
+void Hewie_SetAnim(Hewie *h, s32 a, s32 anim) {
     if (a >= 0) {
         HW(h, 0xF35B4, s32) = a;
     }
@@ -1320,29 +1344,33 @@ void func_001654E0(Hewie *h, s32 a, s32 anim) {
 }
 
 /* Start that animation if it is not playing. */
-void func_0014F5B0(Hewie *h) {
+/* 0x0014F5B0 */
+void Hewie_StatePlayAnim(Hewie *h) {
     if (MOTION_ANIM(h->c.motion) != HW(h, 0xF35B8, s32)) {
         Motion_PlayTable(h->c.motion, HW(h, 0xF35B8, s32), -1);
     }
 }
 
 /* On the animation's event 0x20: (clear +0x2B and) continue. */
-void func_00153AB0(Hewie *h) {
+/* 0x00153AB0 */
+void Hewie_StateOnEvent20(Hewie *h) {
     if ((MOTION_EVENTS(h->c.motion) & 0x20) != 0) {
         h->c.a.unk2B = 0;
-        func_0013C300(h);
+        Hewie_AfterYelp(h);
     }
 }
 
 /* Pending (+0xF3559): go to action 0x83, unless already in it. */
-void func_001602A0(Hewie *h) {
+/* 0x001602A0 */
+void Hewie_StatePending(Hewie *h) {
     if (HW(h, 0xF3559, u8) == 1 && HEWIE_ACTION(h) != 0x83) {
         Hewie_SetAction(h, 0x83, 0);
     }
 }
 
 /* Back to his default action. */
-void func_00154D50(Hewie *h) {
+/* 0x00154D50 */
+void Hewie_StateToDefault(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
@@ -1353,79 +1381,90 @@ static inline void Hewie_SetBehaviour(Hewie *h, const PTMF *s) {
 
 #define ANIM_DONE(h) ((MOTION_EVENTS((h)->c.motion) & 0x20) != 0)   /* animation event 0x20 */
 
-extern s32 func_00140CD0(Hewie *h, u32 kind);
-extern s32 func_001367B0(Hewie *h);   /* u8 */
-extern void func_001431F0(Hewie *h);
+extern s32 Hewie_StepToPose(Hewie *h, u32 kind);
+extern s32 Hewie_PlayerSteering(Hewie *h);   /* u8 */
+extern void Hewie_Bark(Hewie *h);
 extern const PTMF D_003B1B58, D_003B1B48, D_003B1B38, D_003B19A8, D_003B1778, D_003B1B68;
 
-void func_0014E190(Hewie *h) {
-    if (func_00140CD0(h, 3) == 0) {
-        func_001431F0(h);
+/* 0x0014E190 */
+void Hewie_State1AA0(Hewie *h) {
+    if (Hewie_StepToPose(h, 3) == 0) {
+        Hewie_Bark(h);
         Hewie_SetBehaviour(h, &D_003B1B58);
     }
 }
 
-void func_0014E200(Hewie *h) {
+/* 0x0014E200 */
+void Hewie_State1B40(Hewie *h) {
     if (ANIM_DONE(h)) {
         HW(h, 0xF36BC, s32) = 90;
         Hewie_SetBehaviour(h, &D_003B1B48);
     }
 }
 
-void func_00154DC0(Hewie *h) {
+/* 0x00154DC0 */
+void Hewie_State2098(Hewie *h) {
     if (HW(h, 0xF35C8, s32) == 0) {
         Hewie_ToDefault(h);
     }
 }
 
-void func_0014E280(Hewie *h) {
-    if (func_00140CD0(h, 1) == 0) {
+/* 0x0014E280 */
+void Hewie_State1AF0(Hewie *h) {
+    if (Hewie_StepToPose(h, 1) == 0) {
         Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B1B38);
     }
 }
 
-void func_00151740(Hewie *h) {
-    if (func_00140CD0(h, 1) == 0) {
+/* 0x00151740 */
+void Hewie_State22B8(Hewie *h) {
+    if (Hewie_StepToPose(h, 1) == 0) {
         Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B19A8);
     }
 }
 
-void func_0015BD10(Hewie *h) {
-    if (func_00140CD0(h, 1) == 0) {
+/* 0x0015BD10 */
+void Hewie_State1770(Hewie *h) {
+    if (Hewie_StepToPose(h, 1) == 0) {
         Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B1778);
     }
 }
 
-void func_0014E110(Hewie *h) {
+/* 0x0014E110 */
+void Hewie_State1B60(Hewie *h) {
     if (ANIM_DONE(h)) {
-        func_00141C00(h, 1);
+        Hewie_KeepPose(h, 1);
         Hewie_SetBehaviour(h, &D_003B1B68);
     }
 }
 
 /* Animation over: back to his default action. */
-void func_001506A0(Hewie *h) {
+/* 0x001506A0 */
+void Hewie_StateAnimOver(Hewie *h) {
     if (ANIM_DONE(h)) {
         Hewie_ToDefault(h);
     }
 }
 
-void func_0015AD90(Hewie *h) {
+/* 0x0015AD90 */
+void Hewie_StateAnimOver2(Hewie *h) {
     if (ANIM_DONE(h)) {
         Hewie_ToDefault(h);
     }
 }
 
-void func_0015BC90(Hewie *h) {
+/* 0x0015BC90 */
+void Hewie_StateAnimOver3(Hewie *h) {
     if (ANIM_DONE(h)) {
         Hewie_ToDefault(h);
     }
 }
 
-void func_0014DFB0(Hewie *h) {
+/* 0x0014DFB0 */
+void Hewie_State2358(Hewie *h) {
     if (ANIM_DONE(h)) {
         h->c.a.unk2D = 0;
         Hewie_ToDefault(h);
@@ -1434,23 +1473,25 @@ void func_0014DFB0(Hewie *h) {
 
 /* Start action `act` as adjusted to his situation. */
 static inline void Hewie_Start(Hewie *h, s32 act) {
-    Hewie_SetAction(h, func_0013B2C0(h, act), 0);
+    Hewie_SetAction(h, Hewie_AdjustAction(h, act), 0);
 }
 
 #define HEWIE_NEXT(h) HW(h, 0xF3570, s32)     /* action to continue with */
 
-void func_00149D40(Hewie *h) {
-    if (func_00140CD0(h, 3) == 0) {
+/* 0x00149D40 */
+void Hewie_State1CC8(Hewie *h) {
+    if (Hewie_StepToPose(h, 3) == 0) {
         h->c.unkE1 = 1;
-        func_00141C00(h, 3);
+        Hewie_KeepPose(h, 3);
         Hewie_ToDefault(h);
     }
 }
 
-void func_0014B860(Hewie *h) {
-    if (func_00140CD0(h, 0) == 0) {
+/* 0x0014B860 */
+void Hewie_State1C48(Hewie *h) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         h->c.unkE1 = 1;
-        func_00141C00(h, 0);
+        Hewie_KeepPose(h, 0);
         Hewie_ToDefault(h);
     }
 }
@@ -1464,34 +1505,39 @@ static inline s32 Hewie_FreeForCommand(Hewie *h) {
     return 0;
 }
 
-s32 func_00138FD0(Hewie *h) {
+/* 0x00138FD0 */
+s32 Hewie_FreeForCommand2(Hewie *h) {
     return Hewie_FreeForCommand(h);
 }
 
-void func_00150610(Hewie *h) {
+/* 0x00150610 */
+void Hewie_State22E8(Hewie *h) {
     if (ANIM_DONE(h)) {
         Hewie_Start(h, 0x52);
     }
     HW(h, 0xF3558, u8) = 1;
 }
 
-void func_001532B0(Hewie *h) {
+/* 0x001532B0 */
+void Hewie_StateAnimNext(Hewie *h) {
     if (ANIM_DONE(h)) {
         Hewie_Start(h, HEWIE_NEXT(h));
     }
 }
 
-void func_001519B0(Hewie *h) {
+/* 0x001519B0 */
+void Hewie_State19A0(Hewie *h) {
     if (--HW(h, 0xF36B4, s32) == 0) {
         Hewie_Start(h, HEWIE_NEXT(h));
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
 }
 
 extern const PTMF D_003B1998, D_003B1B78;
-extern s32 func_001391E0(Hewie *h, s32 praise, s8 by);   /* u8 */
+extern s32 Hewie_PraiseScold(Hewie *h, s32 praise, s8 by);   /* u8 */
 
-void func_00151A60(Hewie *h) {
+/* 0x00151A60 */
+void Hewie_State1990(Hewie *h) {
     if (--HW(h, 0xF36B4, s32) == 0) {
         if (HW(h, 0xF3604, s32) != 4) {
             HW(h, 0xF3604, s32) = 4;
@@ -1500,11 +1546,12 @@ void func_00151A60(Hewie *h) {
         HW(h, 0xF36B4, s32) = 15;
         Hewie_SetBehaviour(h, &D_003B1998);
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
 }
 
 /* Follow the animation's root motion, keeping the height it gives (not during action 0x47). */
-void func_0014B4D0(Hewie *h) {
+/* 0x0014B4D0 */
+void Hewie_StateRootMotion(Hewie *h) {
     if (HEWIE_ACTION(h) == 0x47) {
         HW(h, 0xF3558, u8) = 1;
         return;
@@ -1522,10 +1569,11 @@ void func_0014B4D0(Hewie *h) {
     }
 }
 
-void func_001531F0(Hewie *h) {
+/* 0x001531F0 */
+void Hewie_State1F88(Hewie *h) {
     if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) == 0x1C01) {
         Hewie_ToDefault(h);
-    } else if (func_00140CD0(h, 1) == 0) {
+    } else if (Hewie_StepToPose(h, 1) == 0) {
         Motion_PlayTable(h->c.motion, 0x1C01, -1);
     }
 }
@@ -1549,25 +1597,28 @@ static inline s32 Hewie_WithChar(Hewie *h, Character *other) {
     return other->a.navTri != NAV_NONE;
 }
 
-s32 func_00137650(Hewie *h, Character *other) {
+/* 0x00137650 */
+s32 Hewie_WithChar2(Hewie *h, Character *other) {
     return Hewie_WithChar(h, other);
 }
 
-void func_0014EB40(Hewie *h) {
+/* 0x0014EB40 */
+void Hewie_State1A60(Hewie *h) {
     if (--HW(h, 0xF36BC, s32) == 0) {
         HW(h, 0xF368C, s32) = 0;
         HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
-        func_001391E0(h, 1, 1);
+        Hewie_PraiseScold(h, 1, 1);
         Hewie_ToDefault(h);
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
 }
 
 #define HEWIE_TARGET(h) HW(h, 0xF3544, Character *)
 
-void func_0014E040(Hewie *h) {
-    if (func_00140CD0(h, 1) == 0) {
-        func_00141C00(h, 1);
+/* 0x0014E040 */
+void Hewie_State1B00(Hewie *h) {
+    if (Hewie_StepToPose(h, 1) == 0) {
+        Hewie_KeepPose(h, 1);
         HW(h, 0xF36BC, s32) = 90;
         HEWIE_TARGET(h) = gCharPlayer;
         if (HW(h, 0xF3604, s32) != 0) {
@@ -1580,7 +1631,8 @@ void func_0014E040(Hewie *h) {
 
 /* His move sub-mode: following a path (mode 6): 0x16 / 0x17 by +0xF3590; standing (mode 0):
  * by his animation group. */
-void func_00144A60(Hewie *h) {
+/* 0x00144A60 */
+void Hewie_MoveSubMode(Hewie *h) {
     if (h->c.moveMode == 6) {
         h->c.moveSub = (HW(h, 0xF3590, u8) == 1) ? 0x16 : 0x17;
         return;
@@ -1588,7 +1640,7 @@ void func_00144A60(Hewie *h) {
     if (h->c.moveMode != 0) {
         return;
     }
-    switch (func_001669A0(h)) {
+    switch (Hewie_AnimGroup(h)) {
     case 0: case 4: case 0xF:
         h->c.moveSub = 0;
         break;
@@ -1609,7 +1661,8 @@ void func_00144A60(Hewie *h) {
 
 /* May his current activity be broken off (`once`: only the first time)? 0 yes, -1 no. Marks the
  * attempt (+0xF358C). */
-s32 func_0013D4A0(Hewie *h, s32 once) {
+/* 0x0013D4A0 */
+s32 Hewie_MayBreakOff(Hewie *h, s32 once) {
     if (once && HW(h, 0xF358C, s32) == 1) {
         return -1;
     }
@@ -1628,12 +1681,13 @@ s32 func_0013D4A0(Hewie *h, s32 once) {
 
 extern const PTMF D_003B1C50, D_003B1CD0, D_003B1CC0;
 
-void func_0014B780(Hewie *h) {
+/* 0x0014B780 */
+void Hewie_State23D8(Hewie *h) {
     u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
 
     if ((stopped ^ 1) == 0) {
-        if (func_001669A0(h) != 0) {
-            func_00143550(h, -1);
+        if (Hewie_AnimGroup(h) != 0) {
+            Hewie_StandAnim(h, -1);
         } else {
             Motion_PlayTable(h->c.motion, 0x1C03, -1);
             HW(h, 0xF36B8, s32) = 30;
@@ -1646,7 +1700,8 @@ void func_0014B780(Hewie *h) {
 /* Character slot flags in the progress data (+0x1020 + 0x10 * slot). */
 #define PROGRESS_SLOT_FLAGS(p, slot) (*((u8 *)(p) + 0x1020 + 0x10 * (slot)))
 
-void func_001522F0(Hewie *h) {
+/* 0x001522F0 */
+void Hewie_State1980(Hewie *h) {
     u8 b = PROGRESS_SLOT_FLAGS(gProgress, SLOT_U8(h));
 
     if ((b & 5) != 0 || h->c.unk104[0] != 0) {
@@ -1659,12 +1714,13 @@ void func_001522F0(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-void func_0014B590(Hewie *h) {
+/* 0x0014B590 */
+void Hewie_State1D88(Hewie *h) {
     u8 stopped;
     s32 g;
 
     if (h->c.a.unkC4 == 2) {
-        if (func_00140CD0(h, 10) == 0) {
+        if (Hewie_StepToPose(h, 10) == 0) {
             h->c.unkE1 = 1;
         }
         return;
@@ -1673,43 +1729,46 @@ void func_0014B590(Hewie *h) {
     if ((stopped ^ 1) != 0) {
         return;
     }
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     if (g == 0xA || g == 9 || g == 8) {
-        func_00143550(h, -1);
+        Hewie_StandAnim(h, -1);
     } else if (g == 0) {
         h->c.unkE1 = 1;
     } else {
-        func_00141C00(h, 0);
+        Hewie_KeepPose(h, 0);
     }
 }
 
-void func_00149DD0(Hewie *h) {
+/* 0x00149DD0 */
+void Hewie_State2168(Hewie *h) {
     if (!(Progress_GameMode(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
-        if (func_00140CD0(h, 3) == 0) {
-            func_001431F0(h);
+        if (Hewie_StepToPose(h, 3) == 0) {
+            Hewie_Bark(h);
             Hewie_SetBehaviour(h, &D_003B1CD0);
         }
-    } else if (func_00140CD0(h, 0) == 0) {
-        func_001431F0(h);
+    } else if (Hewie_StepToPose(h, 0) == 0) {
+        Hewie_Bark(h);
         Hewie_SetBehaviour(h, &D_003B1CC0);
     }
 }
 
 extern const PTMF D_003B1958, D_003B1948, D_003B1D00;
 
-void func_00153350(Hewie *h) {
+/* 0x00153350 */
+void Hewie_State1F28(Hewie *h) {
     if (!(Progress_GameMode(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
-        if (func_00140CD0(h, 3) == 0) {
-            func_001431F0(h);
+        if (Hewie_StepToPose(h, 3) == 0) {
+            Hewie_Bark(h);
             Hewie_SetBehaviour(h, &D_003B1958);
         }
-    } else if (func_00140CD0(h, 0) == 0) {
-        func_001431F0(h);
+    } else if (Hewie_StepToPose(h, 0) == 0) {
+        Hewie_Bark(h);
         Hewie_SetBehaviour(h, &D_003B1948);
     }
 }
 
-void func_00149EC0(Hewie *h) {
+/* 0x00149EC0 */
+void Hewie_State1C98(Hewie *h) {
     u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
 
     if ((stopped ^ 1) != 0) {
@@ -1727,7 +1786,8 @@ void func_00149EC0(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-void func_00149270(Hewie *h) {
+/* 0x00149270 */
+void Hewie_State2198(Hewie *h) {
     switch (HEWIE_ACTION(h)) {
     case 0x4B:
         Motion_PlayTable(h->c.motion, 0x1C05, -1);
@@ -1743,12 +1803,13 @@ void func_00149270(Hewie *h) {
     Hewie_SetBehaviour(h, &D_003B1D00);
 }
 
-void func_0014B680(Hewie *h) {
+/* 0x0014B680 */
+void Hewie_State1C58(Hewie *h) {
     u8 stopped;
 
-    if (func_001669A0(h) != 0) {
+    if (Hewie_AnimGroup(h) != 0) {
         if (--HW(h, 0xF36B8, s32) == 0) {
-            func_00143550(h, -1);
+            Hewie_StandAnim(h, -1);
         }
         return;
     }
@@ -1775,9 +1836,10 @@ static inline void Hewie_ForcedMove(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-void func_00147480(Hewie *h) {
-    if (func_00140CD0(h, 0) == 0) {
-        func_00141C00(h, 0);
+/* 0x00147480 */
+void Hewie_State1D38(Hewie *h) {
+    if (Hewie_StepToPose(h, 0) == 0) {
+        Hewie_KeepPose(h, 0);
         Hewie_SetAction(h, 0, 0);
     }
     Hewie_ForcedMove(h);
@@ -1785,7 +1847,8 @@ void func_00147480(Hewie *h) {
 
 /* Can he take a command now: active in the room being played, idle, not angry (mode 3), a
  * command queued (+0xF356C > 0; any in condition 2), nothing pending. */
-s32 func_00138EC0(Hewie *h) {
+/* 0x00138EC0 */
+s32 Hewie_CanTakeCommand(Hewie *h) {
     Progress *p;
     s32 room;
 
@@ -1809,7 +1872,8 @@ s32 func_00138EC0(Hewie *h) {
     return 1;
 }
 
-void func_00157360(Hewie *h) {
+/* 0x00157360 */
+void Hewie_State18B0(Hewie *h) {
     if (ANIM_DONE(h)) {
         HW(h, 0xF3688, s16) = 300;
         if (HW(h, 0xF36B4, s32) == 0) {
@@ -1818,17 +1882,18 @@ void func_00157360(Hewie *h) {
             if (h->c.a.unkC4 != 2) {
                 Motion_PlayTable(h->c.motion, 0x1003, -1);
             } else {
-                func_0013C300(h);
+                Hewie_AfterYelp(h);
             }
         } else if (MOTION_ANIM(h->c.motion) == 0x1003) {
-            func_0013C300(h);
+            Hewie_AfterYelp(h);
         }
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
 /* A point 24 units out from door `door` on his side of it (if the door is usable). */
-void func_00144940(Hewie *h, s32 door, f32 *out) {
+/* 0x00144940 */
+void Hewie_DoorPoint(Hewie *h, s32 door, f32 *out) {
     VObject *doors;
     sceVu0FMATRIX m;
     sceVu0FVECTOR at;
@@ -1845,13 +1910,13 @@ void func_00144940(Hewie *h, s32 door, f32 *out) {
     VCALL(doors, 0x44, void (*)(VObject *, s32))(doors, door);
     VCALL(doors, 0x34, void (*)(VObject *, s32, f32 *))(doors, door, at);
     if (side == 0) {
-        yaw = func_002E2D00(F_PI + yaw);
+        yaw = Angle_Wrap(F_PI + yaw);
     }
     *(s32 *)&off[0] = 0;
     *(s32 *)&off[1] = 0;
     off[2] = 24.0f;
     Mtx_AtHeading(m, at, yaw);
-    func_002E2DD0(out, m, off);
+    Mtx_ApplyPoint(out, m, off);
 }
 
 /* 1 unless he is with Fiona's party in the room being played and cannot reach her. */
@@ -1877,15 +1942,17 @@ static inline s32 fiona_reachable(Hewie *h) {
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         return 1;
     }
-    return ((func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) ? 1 : 0;
+    return ((Hewie_PlanTo(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) ? 1 : 0;
 }
 
-s32 func_001364F0(Hewie *h) {
+/* 0x001364F0 */
+s32 Hewie_FionaReachable(Hewie *h) {
     return fiona_reachable(h);
 }
 
 /* A random idle action: 1 (50%), 4 (15%), 5 (35%). */
-void func_00140050(Hewie *h) {
+/* 0x00140050 */
+void Hewie_RandomIdle(Hewie *h) {
     s32 r = (s32)(100.0f * RNG01());
 
     if (r < 50) {
@@ -1897,13 +1964,14 @@ void func_00140050(Hewie *h) {
     }
 }
 
-void func_0014DE70(Hewie *h) {
+/* 0x0014DE70 */
+void Hewie_State2388(Hewie *h) {
     if (HW(h, 0xF3604, s32) != 4) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 10;
     }
     if (MOTION_ANIM(h->c.motion) == 9) {
-        if (*((u8 *)gProgress + 0x1FBEC1) == 1 && (func_001367B0(h) & 0xFF) == 1) {
+        if (*((u8 *)gProgress + 0x1FBEC1) == 1 && (Hewie_PlayerSteering(h) & 0xFF) == 1) {
             Hewie_SetAction(h, 0, 0);
             return;
         }
@@ -1912,7 +1980,7 @@ void func_0014DE70(Hewie *h) {
         } else {
             HW(h, 0xF36B4, s32) -= 1;
         }
-    } else if (func_00140CD0(h, 0) == 0) {
+    } else if (Hewie_StepToPose(h, 0) == 0) {
         Motion_PlayTable(h->c.motion, 9, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -1920,8 +1988,8 @@ void func_0014DE70(Hewie *h) {
 
 /* Helper `kind` done: action `act` -> 2, otherwise 1 (or 5 with his pool in use). */
 static inline void Hewie_AfterHelper(Hewie *h, s32 kind, s32 act) {
-    if (func_00140CD0(h, kind) == 0) {
-        func_00141C00(h, kind);
+    if (Hewie_StepToPose(h, kind) == 0) {
+        Hewie_KeepPose(h, kind);
         if (HEWIE_ACTION(h) == act) {
             Hewie_Start(h, 2);
         } else if (HW(h, 0xF3598, s32) == 0) {
@@ -1932,23 +2000,27 @@ static inline void Hewie_AfterHelper(Hewie *h, s32 kind, s32 act) {
     }
 }
 
-void func_00155670(Hewie *h) {
+/* 0x00155670 */
+void Hewie_StateAfter2B(Hewie *h) {
     Hewie_AfterHelper(h, 2, 0x2B);
 }
 
-void func_001557B0(Hewie *h) {
+/* 0x001557B0 */
+void Hewie_StateAfter29(Hewie *h) {
     Hewie_AfterHelper(h, 1, 0x29);
 }
 
-void func_001558F0(Hewie *h) {
+/* 0x001558F0 */
+void Hewie_StateAfter27(Hewie *h) {
     Hewie_AfterHelper(h, 0, 0x27);
 }
 
-void func_0015F760(Hewie *h) {
+/* 0x0015F760 */
+void Hewie_State1DC8(Hewie *h) {
     if (!(Hewie_WithChar(h, gCharPlayer) & 0xFF)) {
         Hewie_ToDefault(h);
     } else {
-        func_00141C00(h, 3);
+        Hewie_KeepPose(h, 3);
     }
 }
 
@@ -1958,7 +2030,8 @@ extern u32 D_0047E374;     /* pad buttons (d-pad bits 4..7) */
 extern f32 D_0047E3A0[4];  /* left stick */
 
 /* Is the player steering (buttons, stick / d-pad beyond 0.8) or has a pad command (+0xF3798)? */
-s32 func_001367B0(Hewie *h) {
+/* 0x001367B0 */
+s32 Hewie_PlayerSteering(Hewie *h) {
     u32 b = D_0047E37C;
     sceVu0FVECTOR v;
     u32 d;
@@ -1979,13 +2052,14 @@ s32 func_001367B0(Hewie *h) {
     return HW(h, 0xF3798, s32) != -1;
 }
 
-void func_00147580(Hewie *h) {
-    if (func_00140CD0(h, 10) == 0) {
+/* 0x00147580 */
+void Hewie_State2418(Hewie *h) {
+    if (Hewie_StepToPose(h, 10) == 0) {
         u32 r;
 
         h->c.a.unkC4 = 2;
-        func_00141C00(h, 10);
-        r = func_001367B0(h) & 0xFF;
+        Hewie_KeepPose(h, 10);
+        r = Hewie_PlayerSteering(h) & 0xFF;
         if (r == 1) {
             h->c.a.unk2D = 0;
             Hewie_SetBehaviour(h, &D_003B1D30);
@@ -1994,15 +2068,16 @@ void func_00147580(Hewie *h) {
     Hewie_ForcedMove(h);
 }
 
-void func_00148880(Hewie *h) {
+/* 0x00148880 */
+void Hewie_State1D18(Hewie *h) {
     if (h->c.a.disabled) {
         h->c.a.unk2D = 0;
-        func_0013E680(h);
+        Hewie_WhenIdle(h);
         return;
     }
-    if (func_00140CD0(h, 0) == 0) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         h->c.a.unk2D = 0;
-        func_00141C00(h, 0);
+        Hewie_KeepPose(h, 0);
         Hewie_ToDefault(h);
     }
     Hewie_ForcedMove(h);
@@ -2010,7 +2085,8 @@ void func_00148880(Hewie *h) {
 
 /* Take him through exit `exit` into the next room (off screen): room, side, door; disabled. With
  * progress flag 0x8000 he gets up again (1 health) if he was down there. -1: no such exit. */
-s32 func_0013AAE0(Hewie *h, s32 exit) {
+/* 0x0013AAE0 */
+s32 Hewie_ThroughExit(Hewie *h, s32 exit) {
     VObject *rooms;
     u32 d;
     s32 room;
@@ -2045,7 +2121,8 @@ static inline void Hewie_PlayIfNot(Hewie *h, s32 cur, s32 anim) {
 }
 
 /* His walking animation: 0x200; limping (condition 1) 0x206; 0x205 by progress state. */
-void func_00143400(Hewie *h) {
+/* 0x00143400 */
+void Hewie_WalkAnim(Hewie *h) {
     s32 cur = MOTION_ANIM(h->c.motion);
 
     if (HEWIE_MODE(h) == 3) {
@@ -2061,7 +2138,8 @@ void func_00143400(Hewie *h) {
     }
 }
 
-void func_001515E0(Hewie *h) {
+/* 0x001515E0 */
+void Hewie_State19B0(Hewie *h) {
     if (!ANIM_DONE(h)) {
         return;
     }
@@ -2074,7 +2152,7 @@ void func_001515E0(Hewie *h) {
             HW(h, 0xF3686, s16) = 600;
         } else {
             Progress_AddCounter(gProgress, 0xFB6, 20);
-            func_00138AD0(h, 2, -1);
+            Hewie_SetMode(h, 2, -1);
             HW(h, 0xF3684, s16) = 0;
         }
     }
@@ -2085,7 +2163,8 @@ void func_001515E0(Hewie *h) {
 
 /* Off the walkable part of the mesh: push back towards his spot (0.4 a frame) and turn to it;
  * back on it: default action. */
-void func_00146AE0(Hewie *h) {
+/* 0x00146AE0 */
+void Hewie_StateBackOnMesh(Hewie *h) {
     NavTri *t = NavMesh_Tri(gNavMesh, h->c.a.navTri);
 
     if (!(t->flags & HEWIE_NAV_MASK)) {
@@ -2104,14 +2183,15 @@ void func_00146AE0(Hewie *h) {
             f32 yaw = Actor_HeadingTo(&h->c.a, HEWIE_SPOT(h));
 
             HW(h, 0xF3614, s32) = 0;
-            HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+            HW(h, 0xF3618, f32) = Angle_Wrap(yaw - h->c.a.angle[1]);
         }
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
     }
 }
 
 /* Random level 0..2 (out of 16), lower thresholds with difficulty 1 / progress state. */
-s32 func_001382F0(Hewie *h) {
+/* 0x001382F0 */
+s32 Hewie_RandomLevel(Hewie *h) {
     s32 r = (s32)(16.0f * RNG01());
     Progress *p = gProgress;
 
@@ -2129,7 +2209,8 @@ s32 func_001382F0(Hewie *h) {
 
 /* His secondary (overlay) animation by +0xF3640: 0x1F00 / 0x1F01 / 0x1F02; 3: change at random
  * every 30..450 frames. */
-void func_0013FC70(Hewie *h) {
+/* 0x0013FC70 */
+void Hewie_OverlayAnim(Hewie *h) {
     switch (HW(h, 0xF3640, s32)) {
     case 0:
         Motion_PlayTableNoCheck(h->c.motion, 0x1F00);
@@ -2160,7 +2241,8 @@ static inline void Hewie_Mark4(Hewie *h) {
     }
 }
 
-void func_0015BB20(Hewie *h) {
+/* 0x0015BB20 */
+void Hewie_State1E48(Hewie *h) {
     u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
 
     if ((u8)(stopped ^ 1) == 1) {
@@ -2168,13 +2250,14 @@ void func_0015BB20(Hewie *h) {
     }
     if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) == 0x1C02) {
         Hewie_Start(h, HW(h, 0xF366D, u8) == 0 ? 6 : 8);
-    } else if (func_00140CD0(h, 0) == 0) {
+    } else if (Hewie_StepToPose(h, 0) == 0) {
         Hewie_Mark4(h);
         Motion_PlayTable(h->c.motion, 0x1C02, -1);
     }
 }
 
-void func_0015D320(Hewie *h) {
+/* 0x0015D320 */
+void Hewie_State1740(Hewie *h) {
     if (--HW(h, 0xF36B8, s32) == 0) {
         Hewie_ToDefault(h);
         return;
@@ -2187,11 +2270,12 @@ void func_0015D320(Hewie *h) {
         HW(h, 0xF3604, s32) = 0;
         HW(h, 0xF3608, s32) = 10;
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
 }
 
 /* Fiona is with him and he can take a command (idle, not angry, one queued, nothing pending). */
-s32 func_00139060(Hewie *h) {
+/* 0x00139060 */
+s32 Hewie_FionaCanCommand(Hewie *h) {
     if ((Hewie_WithChar(h, gCharPlayer) & 0xFF) != 1 || h->c.unkE0 || h->c.moveMode != 0 || HEWIE_MODE(h) == 3
         || HW(h, 0xF356C, s32) == 0 || (HW(h, 0xF356C, s32) & 0x80000000)
         || (Progress_IsLinked(gProgress, 1) & 0xFF) || h->c.state[0] != 0) {
@@ -2200,7 +2284,8 @@ s32 func_00139060(Hewie *h) {
     return 1;
 }
 
-void func_0015F8A0(Hewie *h) {
+/* 0x0015F8A0 */
+void Hewie_State1D98(Hewie *h) {
     s32 room = h->c.a.room;
     s32 g;
 
@@ -2208,7 +2293,7 @@ void func_0015F8A0(Hewie *h) {
         HW(h, 0xF3559, u8) = 1;
         return;
     }
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     if (g == 0xA || g == 9 || g == 8) {
         sceVu0FVECTOR root, to;
         f32 k;
@@ -2222,12 +2307,12 @@ void func_0015F8A0(Hewie *h) {
             u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
 
             if ((u8)(stopped ^ 1) == 0) {
-                func_00143550(h, -1);
+                Hewie_StandAnim(h, -1);
             }
         }
     }
-    if (func_00140CD0(h, 4) == 0) {
-        func_00141C00(h, 4);
+    if (Hewie_StepToPose(h, 4) == 0) {
+        Hewie_KeepPose(h, 4);
         HW(h, 0xF3559, u8) = 1;
     }
 }
@@ -2254,7 +2339,8 @@ void func_001396B0(Hewie *h) {
 
 extern const PTMF D_003B1C80;
 
-void func_0014A790(Hewie *h) {
+/* 0x0014A790 */
+void Hewie_State2138(Hewie *h) {
     sceVu0FVECTOR root;
     f32 k;
     s32 r;
@@ -2279,7 +2365,8 @@ void func_0014A790(Hewie *h) {
     }
 }
 
-void func_00154E70(Hewie *h) {
+/* 0x00154E70 */
+void Hewie_State1920(Hewie *h) {
     s32 act;
 
     if (h->c.a.unkC4 == 1) {
@@ -2294,7 +2381,7 @@ void func_00154E70(Hewie *h) {
     switch (act) {
     case 0x33:
         if (h->c.a.room == HW(h, 0xF3594, s32)) {
-            func_0013E680(h);
+            Hewie_WhenIdle(h);
         } else {
             Hewie_Start(h, 0x33);
         }
@@ -2307,7 +2394,8 @@ void func_00154E70(Hewie *h) {
 
 /* vtable-ish setter: his health state (+0xC4: 1 hurt, 2 down) and matching animation set;
  * then restart his action. */
-void func_00165510(Hewie *h, s32 st) {
+/* 0x00165510 */
+void Hewie_SetHealthState(Hewie *h, s32 st) {
     if (!h->c.a.active) {
         return;
     }
@@ -2324,7 +2412,7 @@ void func_00165510(Hewie *h, s32 st) {
         break;
     }
     Motion_Play(h->c.motion, HW(h, 0xF36F0, s32), -1);
-    func_0013D1F0(h, 0);
+    Hewie_AddTrust(h, 0);
     if (h->c.a.unkC4 == 2) {
         Hewie_Start(h, 0x52);
     } else if (HW(h, 0xF3583, u8) == 1) {
@@ -2351,7 +2439,8 @@ static inline u8 Hewie_CharHere(Hewie *h, Character *c) {
 extern const s8 D_003B12C0[][6];   /* chance (of 100) by kind and pursuer health band */
 
 /* Random roll for reaction `kind`, more likely the more hurt the pursuer is. */
-s32 func_001386D0(Hewie *h, s32 kind) {
+/* 0x001386D0 */
+s32 Hewie_ReactionRoll(Hewie *h, s32 kind) {
     u8 ok = (gCharPursuer != NULL && gCharPursuer->a.active == 1) ? 1 : 0;
     s32 band;
     f32 r;
@@ -2381,7 +2470,8 @@ s32 func_001386D0(Hewie *h, s32 kind) {
 extern const PTMF D_003B1A08, D_003B19F8;
 
 /* Behaviour: (state 7 ends it) go for the pursuer if he's here. */
-void func_00150290(Hewie *h) {
+/* 0x00150290 */
+void Hewie_StateGoForPursuer(Hewie *h) {
     if (h->c.state[0] == 7) {
         h->c.state[0] = 0;
         Hewie_ToDefault(h);
@@ -2395,7 +2485,8 @@ void func_00150290(Hewie *h) {
 }
 
 /* Behaviour: target the pursuer if he's here and reachable. */
-void func_00150450(Hewie *h) {
+/* 0x00150450 */
+void Hewie_StateTargetPursuer(Hewie *h) {
     if (Hewie_CharHere(h, gCharPursuer) == 1) {
         HEWIE_TARGET(h) = gCharPursuer;
         if ((SlotCmd_Give(gProgress, 2, 7, h->c.a.slot, gCharPursuer->a.slot, 0, 0.0f) & 0xFF) == 1) {
@@ -2409,8 +2500,9 @@ void func_00150450(Hewie *h) {
 extern const PTMF D_003B1C90, D_003B1CA0, D_003B1CB0, D_003B19C8;
 
 /* Behaviour: once stopped, turn to heading unk10C: snap if within 1 degree, else start the
- * turning animation (eased by the angle, func_00149FB0). */
-void func_0014A180(Hewie *h) {
+ * turning animation (eased by the angle, Hewie_StateTurning). */
+/* 0x0014A180 */
+void Hewie_StateTurnStart(Hewie *h) {
     u8 stopped;
     f32 target, d, ad;
 
@@ -2422,7 +2514,7 @@ void func_0014A180(Hewie *h) {
     if (((stopped ^ 1) & 0xFF) == 1) {
         return;
     }
-    d = func_002E2D00(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
+    d = Angle_Wrap(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
     ad = d;
     if (ad <= 0.0f) {
         ad = -ad;
@@ -2450,15 +2542,16 @@ void func_0014A180(Hewie *h) {
 
 /* Behaviour: turning to heading unk10C, playback rate and step eased by a sine of the
  * remaining angle (of the total +0xF36C4). */
-void func_00149FB0(Hewie *h) {
+/* 0x00149FB0 */
+void Hewie_StateTurning(Hewie *h) {
     f32 d, s, rate, step;
 
     HW(h, 0xF3558, u8) = 1;
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     HW(h, 0xF3614, s32) = 0;
-    HW(h, 0xF3618, f32) = func_002E2D00(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
-    d = func_002E2D00(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
+    d = Angle_Wrap(*(f32 *)&h->c.unk104[2] - h->c.a.angle[1]);
     if (d <= 0.0f) {
         d = -d;
     }
@@ -2478,7 +2571,8 @@ void func_00149FB0(Hewie *h) {
 }
 
 /* Behaviour: back to normal unless Fiona is here and not busy (then D_003B19C8). */
-void func_00150FD0(Hewie *h) {
+/* 0x00150FD0 */
+void Hewie_StateBackToNormal(Hewie *h) {
     if (Hewie_CharHere(h, gCharPlayer) && gCharPlayer->unkE0 != 1) {
         Hewie_SetBehaviour(h, &D_003B19C8);
     } else {
@@ -2489,7 +2583,8 @@ void func_00150FD0(Hewie *h) {
 extern const PTMF D_003B17F8;
 
 /* Behaviour: (state 7: action 0x5A) go for the pursuer if he's here. */
-void func_00159DC0(Hewie *h) {
+/* 0x00159DC0 */
+void Hewie_StateGoForPursuer2(Hewie *h) {
     if (h->c.state[0] == 7) {
         h->c.state[0] = 0;
         Hewie_Start(h, 0x5A);
@@ -2504,7 +2599,8 @@ void func_00159DC0(Hewie *h) {
 }
 
 /* Idle: on a plain triangle pick a random idle action 0x18..0x1C, not the last one (+0xF357C). */
-void func_00140B00(Hewie *h) {
+/* 0x00140B00 */
+void Hewie_IdleAction(Hewie *h) {
     static const s32 idles[5] = { 0x18, 0x19, 0x1C, 0x1A, 0x1B };
     NavTri *t = NavMesh_Tri(gNavMesh, h->c.a.navTri);
     s32 act = 0x18;
@@ -2526,7 +2622,8 @@ void func_00140B00(Hewie *h) {
 
 /* Count an encounter with the kind of character `other` is (+0xF367C.., next to the feelings;
  * up to 100). */
-void func_0013B860(Hewie *h, Character *other) {
+/* 0x0013B860 */
+void Hewie_CountEncounter(Hewie *h, Character *other) {
     s16 *v = Hewie_Feeling(h, other->unk153C);
 
     if (v != NULL) {
@@ -2537,16 +2634,17 @@ void func_0013B860(Hewie *h, Character *other) {
     }
 }
 
-extern f32 func_0013F220(Hewie *h, Character *c);   /* path distance to c (< 0: none) */
+extern f32 Hewie_WalkDistance(Hewie *h, Character *c);   /* path distance to c (< 0: none) */
 
 /* Fiona is here, he is free to take a command (not in mode 3) and she is within 150 by path. */
-s32 func_001667C0(Hewie *h) {
+/* 0x001667C0 */
+s32 Hewie_FionaNearCommand(Hewie *h) {
     f32 d;
 
     if (!(Hewie_CharHere(h, gCharPlayer) == 1 && HEWIE_MODE(h) != 3 && Hewie_FreeForCommand(h))) {
         return 0;
     }
-    d = func_0013F220(h, gCharPlayer);
+    d = Hewie_WalkDistance(h, gCharPlayer);
     if (d < 0.0f) {
         return 0;
     }
@@ -2555,7 +2653,8 @@ s32 func_001667C0(Hewie *h) {
 
 /* Behaviour: run (move kind 8) until the timer +0xF36B4 runs out or something is within 20
  * ahead; then slow down (kind 7) and once stopped, the default or a stop action (0xC / 0xE). */
-void func_001517C0(Hewie *h) {
+/* 0x001517C0 */
+void Hewie_StateRun(Hewie *h) {
     u8 stopped;
 
     if (HW(h, 0xF36B8, s32) == 0) {
@@ -2564,10 +2663,10 @@ void func_001517C0(Hewie *h) {
             || Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, -1, h->c.a.angle[1], 20.0f) < 20.0f) {
             HW(h, 0xF36B8, s32) = 1;
         }
-        func_00141C00(h, 8);
+        Hewie_KeepPose(h, 8);
         return;
     }
-    func_00141C00(h, 7);
+    Hewie_KeepPose(h, 7);
     stopped = 1;
     if (!(MOTION_SPEED(h->c.motion) <= 0.0f)) {
         stopped = 0;
@@ -2586,13 +2685,14 @@ void func_001517C0(Hewie *h) {
 
 extern const PTMF D_003B1988;
 
-/* Behaviour: run to Fiona if she's here (bark 0x60, then func_001517C0's run). */
-void func_00151B10(Hewie *h) {
+/* Behaviour: run to Fiona if she's here (bark 0x60, then Hewie_StateRun's run). */
+/* 0x00151B10 */
+void Hewie_StateRunToFiona(Hewie *h) {
     if (!Hewie_CharHere(h, gCharPlayer)) {
         Hewie_ToDefault(h);
         return;
     }
-    if (func_00140CD0(h, 3)) {
+    if (Hewie_StepToPose(h, 3)) {
         return;
     }
     Actor_PlaySound(&h->c.a, 0x60, 5, 0, 0, 0);
@@ -2601,7 +2701,7 @@ void func_00151B10(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HEWIE_TARGET(h) = gCharPlayer;
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
     HW(h, 0xF36B4, s32) = 30;
     Hewie_SetBehaviour(h, &D_003B1988);
 }
@@ -2610,7 +2710,8 @@ extern const PTMF D_003B1AB8, D_003B1AC8, D_003B1AD8;
 
 /* Behaviour: follow the moving character +0xF368C (gone: D_003B1AB8; elsewhere on the mesh:
  * D_003B1AD8; slower than 0.5: D_003B1AC8); else steer towards it (+0xF3614 / +0xF3618). */
-void func_0014EC10(Hewie *h) {
+/* 0x0014EC10 */
+void Hewie_StateFollowMover(Hewie *h) {
     Character *c = HW(h, 0xF368C, Character *);
     f32 v[4] __attribute__((aligned(16)));
     f32 a, turn, yaw;
@@ -2638,13 +2739,14 @@ void func_0014EC10(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     Motion_LookAt(h->c.motion, HW(h, 0xF368C, Character *)->a.pos, &a, &turn);
-    yaw = func_002E2D00(h->c.a.angle[1] + turn);
+    yaw = Angle_Wrap(h->c.a.angle[1] + turn);
     HW(h, 0xF3614, f32) = a;
-    HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(yaw - h->c.a.angle[1]);
 }
 
 /* Behaviour: (Fiona here and not busy) play the animation to its end, then default. */
-void func_00150720(Hewie *h) {
+/* 0x00150720 */
+void Hewie_StatePlayToEnd(Hewie *h) {
     if (!Hewie_CharHere(h, gCharPlayer) || gCharPlayer->unkE0 == 1) {
         Hewie_ToDefault(h);
         return;
@@ -2661,11 +2763,12 @@ extern const PTMF D_003B1C40;
 /* Behaviour: turn to heading unk10C (10 degrees a frame; against the animation's turn
  * direction +0x858: rotate directly) while moving along +0xF36E0 by the root motion; at the
  * animation's end stand (D_003B1C40). */
-void func_0014B8F0(Hewie *h) {
+/* 0x0014B8F0 */
+void Hewie_StateTurnTo(Hewie *h) {
     f32 v[4] __attribute__((aligned(16)));
     f32 root[4] __attribute__((aligned(16)));
     f32 target = *(f32 *)&h->c.unk104[2];
-    f32 d = func_002E2D00(target - h->c.a.angle[1]);
+    f32 d = Angle_Wrap(target - h->c.a.angle[1]);
     f32 ad, yaw;
 
     ad = d;
@@ -2678,20 +2781,20 @@ void func_0014B8F0(Hewie *h) {
         Actor_TurnToward(&h->c.a, target, 0x1.657186p-3f);
     } else {
         if (d < 0.0f) {
-            yaw = func_002E2D00(h->c.a.angle[1] + 0x1.657186p-3f);
+            yaw = Angle_Wrap(h->c.a.angle[1] + 0x1.657186p-3f);
         } else {
-            yaw = func_002E2D00(h->c.a.angle[1] - 0x1.657186p-3f);
+            yaw = Angle_Wrap(h->c.a.angle[1] - 0x1.657186p-3f);
         }
         h->c.a.angle[1] = yaw;
         sceVu0UnitMatrix(h->c.a.rot);
         sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, yaw);
-        func_002E2D00(target - h->c.a.angle[1]);
+        Angle_Wrap(target - h->c.a.angle[1]);
     }
     if (ANIM_DONE(h)) {
         if (HW(h, 0xF36B8, s32) == 0) {
             h->c.a.unk2D = 0;
         }
-        func_00143550(h, -1);
+        Hewie_StandAnim(h, -1);
         Hewie_SetBehaviour(h, &D_003B1C40);
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     }
@@ -2706,7 +2809,8 @@ extern const PTMF D_003B1928;
 /* Behaviour: move +0xF36C8 along heading +0xF36C4 (+0xF36CC a frame). Done: unless in action
  * 0x6C, D_003B1928; in 0x6C he leaves through exit +0xF36B4 (clearing unk148C), gets up if
  * down, default action. */
-void func_00153B00(Hewie *h) {
+/* 0x00153B00 */
+void Hewie_StateMoveAlong(Hewie *h) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     VObject *rooms;
@@ -2732,7 +2836,7 @@ void func_00153B00(Hewie *h) {
     rooms = gRooms;
     if (!(VCALL(rooms, 0x70, u32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) & 0xFF)
         && VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) != -1
-        && func_0013AAE0(h, HW(h, 0xF36B4, u8)) == 0) {
+        && Hewie_ThroughExit(h, HW(h, 0xF36B4, u8)) == 0) {
         u32 i;
 
         for (i = 0; i < 13; i++) {
@@ -2748,7 +2852,8 @@ void func_00153B00(Hewie *h) {
 
 /* His idle overlay (ear / tail?) animation by +0xF3648: 2 always 0x2001, 1 0x2000 (hurt 0x2002);
  * 0: (hurt 0x2002) alternate 0x2000 / 0x2001 after a random wait (+0xF364C, 300..2100 frames). */
-void func_0013FA40(Hewie *h) {
+/* 0x0013FA40 */
+void Hewie_IdleOverlay(Hewie *h) {
     s32 r;
 
     switch (HW(h, 0xF3648, s32)) {
@@ -2798,7 +2903,8 @@ void func_0013FA40(Hewie *h) {
 /* Roll his reaction: record kind 0 (+0xF3696[n]) and whether a 0..31 roll is below +0xF3690
  * (+0xF369C); then kind 2 vs +0xF3692 (+0xF369E) if it was, else kind 1 vs +0xF3691
  * (+0xF369D). +0xF36A2 counts the records. */
-void func_00139840(Hewie *h) {
+/* 0x00139840 */
+void Hewie_RollReaction(Hewie *h) {
     u8 r;
     s32 c;
 
@@ -2823,7 +2929,8 @@ void func_00139840(Hewie *h) {
 
 /* Behaviour: while Fiona is in move mode 0xD, turn (6 degrees a frame) to heading unk10C,
  * walking (kind 1) until +0xF36B4 runs low, else the 0x1300 turning animation. */
-void func_00149370(Hewie *h) {
+/* 0x00149370 */
+void Hewie_StateTurnWithFiona(Hewie *h) {
     if (!Hewie_CharHere(h, gCharPlayer)) {
         Hewie_ToDefault(h);
         return;
@@ -2834,7 +2941,7 @@ void func_00149370(Hewie *h) {
         Actor_TurnToward(&h->c.a, *(f32 *)&h->c.unk104[2], 0x1.aceeap-4f /* 6 deg */);
         HW(h, 0xF36B4, s32) -= 1;
         if (HW(h, 0xF36B8, s32) != 0 && HW(h, 0xF36B4, s32) < 16) {
-            func_00141C00(h, 1);
+            Hewie_KeepPose(h, 1);
         } else {
             HW(h, 0xF36B8, s32) = 1;
             if (MOTION_ANIM(h->c.motion) != 0x1300) {
@@ -2845,11 +2952,12 @@ void func_00149370(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
 }
 
-extern s32 func_0013EFB0(Hewie *h, f32 *out);
+extern s32 Hewie_TargetTri(Hewie *h, f32 *out);
 
-/* Behaviour: steer towards a point (from func_0013EFB0 when he has a target, else the saved
+/* Behaviour: steer towards a point (from Hewie_TargetTri when he has a target, else the saved
  * point +0xF3630 if +0xF3620), running (kind 8); without one, stand (kind 4). */
-void func_0015F0A0(Hewie *h) {
+/* 0x0015F0A0 */
+void Hewie_StateSteer(Hewie *h) {
     f32 v[4] __attribute__((aligned(16)));
     f32 a, turn, yaw;
     u8 have;
@@ -2860,7 +2968,7 @@ void func_0015F0A0(Hewie *h) {
     have = 1;
     if (HEWIE_TARGET(h) == NULL && HW(h, 0xF366D, u8) == 0) {
         have = 0;
-    } else if (func_0013EFB0(h, v) == -1) {
+    } else if (Hewie_TargetTri(h, v) == -1) {
         have = 0;
     }
     if (!have && HW(h, 0xF3620, u8) == 1) {
@@ -2876,14 +2984,14 @@ void func_0015F0A0(Hewie *h) {
         if (HW(h, 0xF3620, u8) == 0) {
             a = 0.0f;
         }
-        yaw = func_002E2D00(h->c.a.angle[1] + turn);
+        yaw = Angle_Wrap(h->c.a.angle[1] + turn);
         HW(h, 0xF3614, f32) = a;
-        HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(yaw - h->c.a.angle[1]);
     } else if (HW(h, 0xF3604, s32) != 4) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 10;
     }
-    if (!func_00140CD0(h, 0) && MOTION_ANIM(h->c.motion) != 3) {
+    if (!Hewie_StepToPose(h, 0) && MOTION_ANIM(h->c.motion) != 3) {
         Motion_PlayTable(h->c.motion, 3, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -2893,7 +3001,8 @@ extern const f32 D_003B12A0[][2];   /* offsets (x, z) from him, by kind */
 
 /* Find a spot at offset `kind` around him, turning 0, +-10, ... +-180 degrees: on the walkable
  * mesh (not flags 0x80001) and reachable from Fiona. Writes the heading and point; -1: none. */
-s32 func_00138890(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
+/* 0x00138890 */
+s32 Hewie_FindSpot(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
     f32 off[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
@@ -2911,12 +3020,12 @@ s32 func_00138890(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
         ang = F_PI * (f32)deg;
         for (side = 0;; side++) {
             if (side != 0) {
-                yaw = func_002E2D00(h->c.a.angle[1] + ang / 180.0f);
+                yaw = Angle_Wrap(h->c.a.angle[1] + ang / 180.0f);
             } else {
-                yaw = func_002E2D00(h->c.a.angle[1] - ang / 180.0f);
+                yaw = Angle_Wrap(h->c.a.angle[1] - ang / 180.0f);
             }
             Mtx_AtHeading(m, h->c.a.pos, yaw);
-            func_002E2DD0(p, m, off);
+            Mtx_ApplyPoint(p, m, off);
             tri = Actor_TriOf(&h->c.a, p);
             if (tri != NAV_NONE) {
                 NavTri *t = (tri < nm->numTris && nm->tris != NULL) ? &nm->tris[tri] : NULL;
@@ -2940,7 +3049,8 @@ extern const PTMF D_003B18A8, D_003B18B8;
 
 /* Behaviour: jump arc. Move by +0xF36E0, rise by +0xF36C8 (less 0.5 a frame); on landing the
  * landing animation (D_003B18A8); at the top (actions 0x1F / 0x20) the falling animation. */
-void func_00157770(Hewie *h) {
+/* 0x00157770 */
+void Hewie_StateJumpArc(Hewie *h) {
     f32 y;
 
     Actor_Move(&h->c.a, HEWIE_SPOT(h));
@@ -2990,16 +3100,17 @@ void func_00157770(Hewie *h) {
 #define HMOVE_GO     0xF3744   /* u8: the action button (0x4000) */
 
 static f32 hwrap_abs(f32 a) {
-    if (!(func_002E2D00(a) <= 0.0f)) {
-        return func_002E2D00(a);
+    if (!(Angle_Wrap(a) <= 0.0f)) {
+        return Angle_Wrap(a);
     }
-    return -func_002E2D00(a);
+    return -Angle_Wrap(a);
 }
 
 /* the left stick (or the d-pad), camera relative: after a camera cut the old camera keeps
    steering while the stick is held (mode 1, then 2 while the direction holds within 15
    degrees) */
-void func_00136900(Hewie *h) {
+/* 0x00136900 */
+void Hewie_LeftStick(Hewie *h) {
     static const union { u32 u; f32 f; } k15deg = {0x3E860A92}, k001 = {0x3C23D70A};
     /* the camera rotation the controls use: while moving in mode 1 the original reuses last
      * frame's (left on its stack); the PC build keeps it explicitly */
@@ -3128,14 +3239,14 @@ void func_00136900(Hewie *h) {
 
 /* ---- Fiona's commands ---- */
 
-extern s32 func_0013E2D0(Hewie *h, s32 cmd);   /* the action for a command (-1 none, -2..-5 special) */
-extern s32 func_0013D580(Hewie *h, s32 act);
-extern u8 *func_00139460(Hewie *h);
+extern s32 Hewie_CommandAction(Hewie *h, s32 cmd);   /* the action for a command (-1 none, -2..-5 special) */
+extern s32 Hewie_ActOnCommand(Hewie *h, s32 act);
+extern u8 *Hewie_NearestThing(Hewie *h);
 
 /* action `act` with argument `arg` unless his situation turns it into another (then that one,
    argument 0) */
 static inline void hewie_want(Hewie *h, s32 act, s32 arg) {
-    s32 a = func_0013B2C0(h, act);
+    s32 a = Hewie_AdjustAction(h, act);
 
     Hewie_SetAction(h, a, a != act ? 0 : arg);
 }
@@ -3151,21 +3262,22 @@ static inline void obey_time(Hewie *h) {
 
 /* a command from Fiona (her +0x14EC, kept at +0xF3578): 1 if he acts on it. Hidden, only the
  * plain ones. Ending a wait (action 0x7D) other than by 0x30 resets his obedience; 0x23 can
- * make him find something to do near her (func_00139460: action 0x1D); 0x29 / 0x2F first try
- * func_001391E0 (actions 0x1D / 0x71); otherwise the command's action (func_0013E2D0): -2
+ * make him find something to do near her (Hewie_NearestThing: action 0x1D); 0x29 / 0x2F first try
+ * Hewie_PraiseScold (actions 0x1D / 0x71); otherwise the command's action (Hewie_CommandAction): -2
  * action 0x1E, -3 0x6F (back to the current one after), -4 / -5 0x1D / 0x71 with his mood
- * set, else func_0013D580 */
-s32 func_00137020(Hewie *h) {
+ * set, else Hewie_ActOnCommand */
+/* 0x00137020 */
+s32 Hewie_FionaCommand(Hewie *h) {
     s32 cmd, act;
 
     HW(h, 0xF3578, s32) = h->c.state[1];
     if (h->c.a.disabled) {
-        act = func_0013E2D0(h, HW(h, 0xF3578, s32));
+        act = Hewie_CommandAction(h, HW(h, 0xF3578, s32));
         if (act == -5 || act == -4 || act == -3 || act == -2 || act == -1) {
             return 0;
         }
         HW(h, 0xF3574, s32) = act;
-        func_0013D580(h, act);
+        Hewie_ActOnCommand(h, act);
         return 1;
     }
     if (h->c.unkE0 == 0 && HW(h, 0xF358C, s32) == 1) {
@@ -3184,7 +3296,7 @@ s32 func_00137020(Hewie *h) {
     if (HW(h, 0xF3578, s32) == 0x23 && HW(h, 0xF3598, s32) == 0 && HW(h, 0xF358C, s32) != 1 &&
         !(u8)Progress_GameMode(gProgress) && HW(h, 0xF368C, s32) == 0 &&
         (u8)Actor_CanWalkBetween(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
-        HW(h, 0xF368C, u8 *) = func_00139460(h);
+        HW(h, 0xF368C, u8 *) = Hewie_NearestThing(h);
         if (HW(h, 0xF368C, s32) != 0) {
             hewie_want(h, 0x1D, 0x78);
             h->c.state[0] = 0;
@@ -3193,7 +3305,7 @@ s32 func_00137020(Hewie *h) {
     }
     if (HW(h, 0xF3578, s32) == 0x29) {
         HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
-        if ((u8)func_001391E0(h, 1, 3) == 1) {
+        if ((u8)Hewie_PraiseScold(h, 1, 3) == 1) {
             HW(h, 0xF35DC, s32) = 0x3C;
             hewie_want(h, 0x1D, 0);
             h->c.state[0] = 0;
@@ -3202,14 +3314,14 @@ s32 func_00137020(Hewie *h) {
     }
     if (HW(h, 0xF3578, s32) == 0x2F) {
         HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
-        if ((u8)func_001391E0(h, 0, 3) == 1) {
+        if ((u8)Hewie_PraiseScold(h, 0, 3) == 1) {
             HW(h, 0xF35DC, s32) = 0x3C;
             hewie_want(h, 0x71, 0);
             h->c.state[0] = 0;
             return 1;
         }
     }
-    act = func_0013E2D0(h, HW(h, 0xF3578, s32));
+    act = Hewie_CommandAction(h, HW(h, 0xF3578, s32));
     if (act == -1) {
         return 0;
     }
@@ -3225,18 +3337,18 @@ s32 func_00137020(Hewie *h) {
         return 1;
     }
     case -4:
-        func_00138AD0(h, 1, -1);
+        Hewie_SetMode(h, 1, -1);
         hewie_want(h, 0x1D, 0);
         return 1;
     case -5:
-        func_00138AD0(h, 0, -1);
+        Hewie_SetMode(h, 0, -1);
         HW(h, 0xF35C4, s32) = 0;
         HW(h, 0xF35C8, s32) = 0;
         hewie_want(h, 0x71, 0);
         return 1;
     }
     HW(h, 0xF3574, s32) = act;
-    return func_0013D580(h, act);
+    return Hewie_ActOnCommand(h, act);
 }
 
 /* ---- whom to go for ---- */
@@ -3245,13 +3357,14 @@ s32 func_00137020(Hewie *h) {
  * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
  * if he can reach it (not while it moves 3); else the nearest hostile creature (+0x3C) he can
  * reach, not down or holding; NULL */
-Character *func_001379C0(Hewie *h) {
+/* 0x001379C0 */
+Character *Hewie_PickTarget(Hewie *h) {
     Character *best = NULL;
     f32 bestd = 0.0f;
     s32 chase = 0, i;
 
     if (in_his_room(h, gCharPursuer) && gCharPursuer->moveMode != 3 &&
-        (u8)func_0013C1E0(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) == 1) {
+        (u8)Hewie_PlanTo(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) == 1) {
         chase = 1;
     }
     if (chase && in_his_room(h, gCharPlayer) && gCharPlayer->moveMode == 4 && gCharPlayer->moveSub == 9) {
@@ -3261,7 +3374,7 @@ Character *func_001379C0(Hewie *h) {
         for (i = 7; i < 10; i++) {
             Character *c = ((Character **)gCreatures)[i];
 
-            if (in_his_room(h, c) && c->moveMode == 8 && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
+            if (in_his_room(h, c) && c->moveMode == 8 && (u8)Hewie_PlanTo(h, c->a.navTri, c->a.pos) == 1) {
                 return c;
             }
         }
@@ -3278,7 +3391,7 @@ Character *func_001379C0(Hewie *h) {
             continue;
         }
         d = Actor_Distance(&h->c.a, c->a.pos);
-        if ((best == NULL || d < bestd) && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
+        if ((best == NULL || d < bestd) && (u8)Hewie_PlanTo(h, c->a.navTri, c->a.pos) == 1) {
             best = c;
             bestd = d;
         }
@@ -3290,7 +3403,8 @@ Character *func_001379C0(Hewie *h) {
  * room, hostile (+0x3C), not yet bitten (`done`: a bit per slot +0x20) and not protected
  * (+0x2D), whose body the point is in (its height +0x14 .. +0xCC, its radius +0xC8, plus the
  * margin) is hit for `damage` (state 4, unless already 7); the slots hit */
-u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
+/* 0x00137FE0 */
+u32 Hewie_Bite(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     u32 hit = 0;
@@ -3334,7 +3448,8 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
 
 /* whether he dares go for the character in `slot`: from trust level 2, a 1-in-16 roll under
    his level + 1 + his feeling for its kind (+0xF367C.. / 5, at most 8) */
-u32 func_00138460(Hewie *h, s32 slot) {
+/* 0x00138460 */
+u32 Hewie_Dares(Hewie *h, s32 slot) {
     Character *c = (Character *)gCharacters[slot];
     s32 n = 0;
 
@@ -3365,7 +3480,8 @@ u32 func_00138460(Hewie *h, s32 slot) {
    after action 0x78 his skills involved (+0xF36A2 of them, indices +0xF3696) move by `by`
    (0..31) - up for good ones (+0xF369C), down for bad ones; scolding the other way. 1 if it
    counted */
-s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
+/* 0x001391E0 */
+s32 Hewie_PraiseScold(Hewie *h, s32 praise, s8 by) {
     s32 i;
 
     if (HW(h, 0xF36A4, s32) == 0 || HW(h, 0xF36A4, s32) != HW(h, 0xF36A8, s32)) {
@@ -3410,7 +3526,8 @@ static f32 off_her_heading(const f32 *pos) {
 
 /* the nearest placed thing of kind 0 (+0x20) in front of Fiona (within 90 degrees) that he can
    reach (the triangle at it is its own, +0x34); NULL */
-u8 *func_00139460(Hewie *h) {
+/* 0x00139460 */
+u8 *Hewie_NearestThing(Hewie *h) {
     u8 *best = NULL;
     f32 bestd = 0.0f;
     s32 i;
@@ -3440,7 +3557,8 @@ u8 *func_00139460(Hewie *h) {
 
 /* the side to go at the pursuer from: 0 head on (they face each other within 90 degrees,
    not with progress flag 0x11); else 1 / 2 by its kind and whether he is on its left */
-s32 func_00139A70(Hewie *h) {
+/* 0x00139A70 */
+s32 Hewie_AttackSide(Hewie *h) {
     Character *pu = gCharPursuer;
     f32 a = Actor_HeadingTo(&h->c.a, pu->a.pos);   /* (from him) */
     f32 its = hwrap_abs(a - pu->a.angle[1]);
@@ -3450,7 +3568,7 @@ s32 func_00139A70(Hewie *h) {
         return 0;
     }
     kind = gCharPursuer->unk153C;
-    if (func_002E2D00(func_002E2D00(F_PI + a) - gCharPursuer->a.angle[1]) < 0.0f) {
+    if (Angle_Wrap(Angle_Wrap(F_PI + a) - gCharPursuer->a.angle[1]) < 0.0f) {
         return kind == 3 || kind == 34 || kind == 35 || kind == 36 ? 1 : 2;
     }
     return kind == 3 || kind == 34 || kind == 35 || kind == 36 || kind == 11 ? 2 : 1;
@@ -3468,7 +3586,8 @@ static f32 stride(Hewie *h, f32 *v) {
  * the slope +0x858, degrees; over 30 degrees off within the turn), the motion's blend +0xF3604
  * 8 frames; facing within ~41 degrees the stride's point he steps there (+0x128 its index;
  * 1), else he takes the stride straight ahead (the path back to +0x128; 0) */
-s32 func_00139DE0(Hewie *h) {
+/* 0x00139DE0 */
+s32 Hewie_Stride(Hewie *h) {
     static const union { u32 u; f32 f; } k30deg = {0x3F060A92};
     f32 v[4] __attribute__((aligned(16)));    /* (its w, from the root motion, stays) */
     f32 v2[4] __attribute__((aligned(16)));
@@ -3497,20 +3616,20 @@ s32 func_00139DE0(Hewie *h) {
         rate = s * (12.0f * (0.5f * slope));
     }
     rate = F_PI * rate / 180.0f;
-    off = func_002E2D00(yaw - h->c.a.angle[1]);
+    off = Angle_Wrap(yaw - h->c.a.angle[1]);
     if (!((off <= 0.0f ? -off : off) < k30deg.f) && AT(h->c.motion, 0x858, f32) * off < 0.0f) {
         /* turning against the slope: straight round by the rate */
-        h->c.a.angle[1] = func_002E2D00(off < 0.0f ? h->c.a.angle[1] + rate : h->c.a.angle[1] - rate);
+        h->c.a.angle[1] = Angle_Wrap(off < 0.0f ? h->c.a.angle[1] + rate : h->c.a.angle[1] - rate);
         sceVu0UnitMatrix(h->c.a.rot);
         sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, h->c.a.angle[1]);
-        func_002E2D00(yaw - h->c.a.angle[1]);
+        Angle_Wrap(yaw - h->c.a.angle[1]);
     } else {
         Actor_TurnToward(&h->c.a, yaw, rate);
     }
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     HW(h, 0xF3614, s32) = 0;
-    HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(yaw - h->c.a.angle[1]);
     sceVu0SubVector(d, at, h->c.a.pos);
     d[1] = 0.0f;
     sceVu0Normalize(d, d);
@@ -3537,7 +3656,8 @@ s32 func_00139DE0(Hewie *h) {
 #include "effectmgr.h"   /* HitEffect_Spawn */
 
 /* a bite's hit effect at his mouth (bone 0x25): a big and a small one when `hard`, else small */
-void func_0013A1C0(Hewie *h, s32 hard) {
+/* 0x0013A1C0 */
+void Hewie_BiteEffect(Hewie *h, s32 hard) {
     HitEffectParams hp;
 
     sceVu0CopyVector(hp.pos, Skel_Bone(AT(h->c.motion, 0x810, void *), 0x25) + 12);
@@ -3559,49 +3679,50 @@ void func_0013A1C0(Hewie *h, s32 hard) {
  * barks and growls (barking during actions 0xA / 0xB / 0x7B also makes a noise others hear),
  * a howl (0x1000) heard far; on bit 4, his splash (0x1001) in the room's water (triangle flags
  * 0x02008000) - and in rooms 7 / 0x106 the ripple */
-void func_0013A650(Hewie *h) {
+/* 0x0013A650 */
+void Hewie_AnimSounds(Hewie *h) {
     s32 anim = AT(h->c.motion, 0x55C, s32);
     s32 loud = 0;   /* (the original leaves the caller's register for the other actions) */
 
     switch (anim) {
     case 4:
-        func_0013A430(h, 0x6F);
+        Hewie_MakeSound(h, 0x6F);
         return;
     case 9:
         if (HW(h, 0xF3585, u8) == 1) {
-            func_0013A430(h, 0x70);
+            Hewie_MakeSound(h, 0x70);
             return;
         }
         break;
     case 5:
-        func_0013A430(h, 0x58);
+        Hewie_MakeSound(h, 0x58);
         return;
     case 6: case 7: case 0x206:
-        func_0013A430(h, 0x59);
+        Hewie_MakeSound(h, 0x59);
         return;
     }
     if ((u8)Motion_EventFlags(h->c.motion, 0, 0, 1) & 1) {
         switch (anim) {
         case 0x1C01:
-            func_0013A430(h, 0x60);
+            Hewie_MakeSound(h, 0x60);
             break;
         case 0x1B00: case 0x1B01: case 0x1B02:
-            func_0013A430(h, 0x5A);
+            Hewie_MakeSound(h, 0x5A);
             break;
         case 0x1B03:
-            func_0013A430(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5D);
+            Hewie_MakeSound(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5D);
             break;
         case 0x1B04:
-            func_0013A430(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5E);
+            Hewie_MakeSound(h, HEWIE_ACTION(h) == 0x1D ? 0x5A : 0x5E);
             break;
         case 0x1B05:
-            func_0013A430(h, 0x5F);
+            Hewie_MakeSound(h, 0x5F);
             break;
         case 0x1C04:
-            func_0013A430(h, 0x5C);
+            Hewie_MakeSound(h, 0x5C);
             break;
         case 0x1001: case 0x220C: case 0x2203:
-            func_0013A430(h, 0x66);
+            Hewie_MakeSound(h, 0x66);
             break;
         }
         switch (anim) {
@@ -3636,7 +3757,8 @@ extern const s16 D_003B127E[];   /* by how often Fiona hit him (+0xF35C4): the 1
  * from Fiona (by 0) he learns from it and may sulk (action 3 mode), from another sometimes
  * holds a grudge; 3 also knocks him down - 5 a door: pushed aside (0x6B) or back (0x6C) by
  * which side of it he is; 6 / 0xB: -1 (not taken) */
-s32 func_0013AC20(Hewie *h, s32 *hit) {
+/* 0x0013AC20 */
+s32 Hewie_TakeBlow(Hewie *h, s32 *hit) {
     Progress *p;
     f32 yaw;
 
@@ -3677,12 +3799,12 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
         if (h->c.unk100 != 0xFF) {
             if (h->c.unk100 != 0) {
                 if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
-                    func_00166150(h, (Character *)gCharacters[h->c.unk100], -1);
+                    Hewie_ChangeFeeling(h, (Character *)gCharacters[h->c.unk100], -1);
                 }
                 HW(h, 0xF35C4, s32) = 0;
             } else {
                 HW(h, 0xF36A8, s32) = HEWIE_ACTION(h);
-                func_001391E0(h, 0, 3);
+                Hewie_PraiseScold(h, 0, 3);
                 HW(h, 0xF35C4, s32)++;
                 if (HW(h, 0xF35C4, s32) >= 7) {
                     HW(h, 0xF35C4, s32) = 6;
@@ -3691,7 +3813,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
                 if ((s16)(s32)(16.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) <
                     D_003B127E[HW(h, 0xF35C4, s32)]) {
                     HW(h, 0xF36B0, s32) = 0xFF;
-                    func_00138AD0(h, 3, -1);
+                    Hewie_SetMode(h, 3, -1);
                 }
             }
         }
@@ -3715,7 +3837,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
             yaw += F_PI_2;
             hewie_want(h, 0x6B, 0);
         }
-        HW(h, 0xF36C4, f32) = func_002E2D00(yaw);
+        HW(h, 0xF36C4, f32) = Angle_Wrap(yaw);
         return 0;
     case 6: case 0xB:
         return -1;
@@ -3732,7 +3854,8 @@ extern const s16 D_003B1290[][2];   /* the scuffle's outcomes: {outcome, percent
  * (30..180 frames) and hurt (a tenth of its health, more on hard and with +0xA10; none for 1
  * or with progress flags 0x13 / 0x2B, then maybe his grudge), and he goes for it (action
  * 0x30). -1 if no scuffle */
-s32 func_0013BA50(Hewie *h) {
+/* 0x0013BA50 */
+s32 Hewie_Scuffle(Hewie *h) {
     Progress *p;
     const s16 *o;
     s32 outcome, frames, roll, sum, cur, e, next = 0;
@@ -3769,7 +3892,7 @@ s32 func_0013BA50(Hewie *h) {
             h->c.hp = 1;
         }
         if (VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) < 0.25f) {
-            func_00166150(h, gCharPursuer, -1);
+            Hewie_ChangeFeeling(h, gCharPursuer, -1);
         }
     }
     p = gProgress;
@@ -3803,7 +3926,7 @@ s32 func_0013BA50(Hewie *h) {
         }
         Relation_Request(p, AT(h, 0x20, u8), 4, 8, dmg, frames, 0.0f);
         if (VCALL(rng, 0x1C, f32 (*)(VObject *))(rng) < 0x1.5554760000000p-2f /* 0.33333 */) {
-            func_00166150(h, gCharPursuer, 1);
+            Hewie_ChangeFeeling(h, gCharPursuer, 1);
         }
     }
     HW(h, 0xF3560, s32) = (s16)frames;
@@ -3815,10 +3938,11 @@ s32 func_0013BA50(Hewie *h) {
  * counted (progress +0xFBA, to 9999; not after the game's end, +0x30 bit 15), and he lies
  * there (action 0x52); else +0x2D off and, struck by Fiona with her in his room (her control,
  * not his), he cowers (action 9 the first time, 0xB after); else back to normal */
-void func_0013C300(Hewie *h) {
+/* 0x0013C300 */
+void Hewie_AfterYelp(Hewie *h) {
     if (h->c.a.unkC4 == 2) {
         if (h->c.unk100 != 0xFF && h->c.unk100 != 0) {
-            func_00166150(h, (Character *)gCharacters[h->c.unk100], -3);
+            Hewie_ChangeFeeling(h, (Character *)gCharacters[h->c.unk100], -3);
         }
         if (!(AT(gProgress, 0x30, u32) & 0x8000)) {
             s16 *n = &AT(gProgress, 0xFBA, s16);
@@ -3839,9 +3963,9 @@ void func_0013C300(Hewie *h) {
     hewie_want(h, 0, 0);
 }
 
-extern s32 func_0013E920(Hewie *h, u32 kind);   /* which of a table's lists fits him */
+extern s32 Hewie_SituationList(Hewie *h, u32 kind);   /* which of a table's lists fits him */
 extern const s8 D_003B1240[];   /* by trust: the chance (percent) he growls at the pursuer */
-/* his action lists, per situation, by func_0013E920: {action, weight per trust level 0..7} */
+/* his action lists, per situation, by Hewie_SituationList: {action, weight per trust level 0..7} */
 extern u8 *const D_003B02C0[], *const D_003B05F0[], *const D_003B0850[], *const D_003B0480[], *const D_003B06F0[],
     *const D_003B0A90[], *const D_003B0E20[];
 
@@ -3850,7 +3974,8 @@ extern u8 *const D_003B02C0[], *const D_003B05F0[], *const D_003B0850[], *const 
  * for the situation - a hostile creature in the room, else the chase state (0 calm, 1 being
  * followed, 2 the chase), lists for obeying (+0xF3598) and for hard (Progress var 0x27) -
  * weighted by his trust level */
-void func_0013C7D0(Hewie *h) {
+/* 0x0013C7D0 */
+void Hewie_WhatNext(Hewie *h) {
     Progress *p;
     u8 *const *lists;
     u8 *e;
@@ -3883,17 +4008,17 @@ void func_0013C7D0(Hewie *h) {
     mode = (u8)Progress_GameMode(p);
     if (HW(h, 0xF3598, s32) == 0) {
         if (hostile) {
-            e = D_003B0850[func_0013E920(h, 2)];
+            e = D_003B0850[Hewie_SituationList(h, 2)];
         } else {
-            i = func_0013E920(h, 0xFF);
+            i = Hewie_SituationList(h, 0xFF);
             lists = mode == 0 ? D_003B02C0 : mode == 1 ? D_003B05F0 : D_003B0850;
             e = lists[i];
         }
     } else if (hostile) {
-        i = func_0013E920(h, 2);
+        i = Hewie_SituationList(h, 2);
         e = ((Progress_GetVar(p, 0x27) & 0xFF) != 1 ? D_003B0A90 : D_003B0E20)[i];
     } else {
-        i = func_0013E920(h, 0xFF);
+        i = Hewie_SituationList(h, 0xFF);
         if (mode == 0) {
             e = D_003B0480[i];
         } else if (mode == 1) {
@@ -3917,7 +4042,8 @@ void func_0013C7D0(Hewie *h) {
 /* the exit of his room to flee from `from` by: exits whose door is open and passable from his
  * side (and from `from`'s too if `both`), nearest first, those within 20 of `from` last; the
  * first he can plan a path to. 0xFF if none, or `from` isn't in his room */
-u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
+/* 0x0013CDC0 */
+u8 Hewie_FleeExit(Hewie *h, Character *from, s32 both) {
     VObject *rooms, *doors, *planner;
     Progress *p;
     f32 dist[8];
@@ -4003,7 +4129,8 @@ static s32 player_band(Hewie *h) {
  * mode 2): Fiona's distance band. Tense (mode 2), unless panic is 4 or more (0): 1 if the
  * pursuer in his room moves 1 or 4, 2 if it is within 30 of him, 3 within 30 of Fiona, else 4
  * plus her band */
-s32 func_0013E920(Hewie *h, u32 kind) {
+/* 0x0013E920 */
+s32 Hewie_SituationList(Hewie *h, u32 kind) {
     Progress *p;
 
     if ((u8)kind == 0xFF) {
@@ -4039,7 +4166,8 @@ extern const u8 D_003B11B0[];     /* idle actions {s32 action, u8 weight[8]} */
  * time action 0x2F with the wait for his trust; else a weighted pick from D_003B11B0, the
  * action that suits the game mode weighted 20 more (0x2C calm-only or mode 2; 0x32 mode 0, 0x2E
  * mode 1) */
-void func_0013E680(Hewie *h) {
+/* 0x0013E680 */
+void Hewie_WhenIdle(Hewie *h) {
     const u8 *e;
     Progress *p;
     s32 sum, roll;
@@ -4086,7 +4214,8 @@ void func_0013E680(Hewie *h) {
  * listening (+0xF356C bit 3 without the top bit, +0xF35DC clear, not moving 4); downed only
  * 0x2A. A plain command he takes once when listening or out of reach, the game calm or (+0xF3598)
  * already waiting (0x7D), and not in mood 3 */
-s32 func_0013E2D0(Hewie *h, s32 cmd) {
+/* 0x0013E2D0 */
+s32 Hewie_CommandAction(Hewie *h, s32 cmd) {
     u8 reach = h->c.unkE0;
     s32 take;
 
@@ -4134,7 +4263,7 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
     if ((u8)Progress_GameMode(gProgress)) {
         return -1;
     }
-    take = func_001669A0(h);
+    take = Hewie_AnimGroup(h);
     return take == 5 || take == 1 ? -2 : -1;
 }
 
@@ -4143,7 +4272,8 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
 /* the triangle (and in `out` the point) of his target: the character he goes for when it is in
  * his room, else in target mode 2 the exit +0xF3670 of his room; -1 if none. When it can't be
  * walked to straight, a path is planned there and the point becomes the one 20 along it */
-s32 func_0013EFB0(Hewie *h, f32 *out) {
+/* 0x0013EFB0 */
+s32 Hewie_TargetTri(Hewie *h, f32 *out) {
     Character *t = HEWIE_TARGET(h);
     f32 at[4] __attribute__((aligned(16)));
     s32 tri;
@@ -4171,7 +4301,7 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
         s32 r;
 
         h->c.pathReq->mask = 0x40080;
-        r = func_0013EE40(h, tri, at, 0, 1);
+        r = Hewie_PlanAndGo(h, tri, at, 0, 1);
         h->c.pathReq->mask = h->c.a.navMask;
         if (r == 0) {
             tri = h->c.a.navTri;
@@ -4188,7 +4318,8 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
 
 /* the walking distance from him to c: planned over the mesh (blocked by flags 0x29020008), -1
  * if c isn't in his room, the room isn't the one played on the mesh, or no path */
-f32 func_0013F220(Hewie *h, Character *c) {
+/* 0x0013F220 */
+f32 Hewie_WalkDistance(Hewie *h, Character *c) {
     PathRequest req;
     VObject *planner;
     void *pts;
@@ -4226,7 +4357,7 @@ f32 func_0013F220(Hewie *h, Character *c) {
 /* ---- overlay animations by his animation and mood ---- */
 
 /* per main animation, the overlay modes for each mood (+0xF35C0 0..3): head (+0xF3640, for
- * func_0013FC70), ears (+0xF3648, func_0013FA40) and tail (+0xF3654, func_0013F470). -1 ends */
+ * Hewie_OverlayAnim), ears (+0xF3648, Hewie_IdleOverlay) and tail (+0xF3654, Hewie_TailOverlay). -1 ends */
 typedef struct HewieOverlays {
     s32 anim;
     s16 head[4];
@@ -4236,11 +4367,12 @@ typedef struct HewieOverlays {
 
 extern const HewieOverlays D_003B13F0[];   /* calm */
 extern const HewieOverlays D_003B1580[];   /* tense */
-extern void func_0013F470(Hewie *h);
+extern void Hewie_TailOverlay(Hewie *h);
 
 /* set his overlay modes for his animation and mood, restarting a mode's timers when it changes
  * to 3 (head), 0 (ears) or 4 / 6 (tail), and run the overlays */
-void func_0013FDE0(Hewie *h) {
+/* 0x0013FDE0 */
+void Hewie_SetOverlays(Hewie *h) {
     const HewieOverlays *e = !(u8)Progress_GameMode(gProgress) ? D_003B13F0 : D_003B1580;
     s32 head = HW(h, 0xF3640, s32), ears = HW(h, 0xF3648, s32), tail = HW(h, 0xF3654, s32);
     s32 m;
@@ -4269,9 +4401,9 @@ void func_0013FDE0(Hewie *h) {
         HW(h, 0xF3658, s32) = 0;
         HW(h, 0xF365C, s32) = 0;
     }
-    func_0013FC70(h);
-    func_0013FA40(h);
-    func_0013F470(h);
+    Hewie_OverlayAnim(h);
+    Hewie_IdleOverlay(h);
+    Hewie_TailOverlay(h);
 }
 
 /* ---- tail ---- */
@@ -4300,8 +4432,9 @@ static void tail_wag(Hewie *h, s32 g, s32 sa, s32 sb, s32 sc, s32 wa, s32 wb, s3
 
 /* His tail overlay animation by +0xF3654: 0..3 held poses, 5 / 7 steady wags, 4 / 6 wagging now
  * and then (from pose 2 / 3) */
-void func_0013F470(Hewie *h) {
-    s32 g = func_001669A0(h);
+/* 0x0013F470 */
+void Hewie_TailOverlay(Hewie *h) {
+    s32 g = Hewie_AnimGroup(h);
 
     switch (HW(h, 0xF3654, u32)) {
     case 0:
@@ -4357,10 +4490,11 @@ static s32 by_chance(Hewie *h, const s8 *tbl) {
     return r < (s8)chance;
 }
 
-/* act on Fiona's command `cmd` (from func_0013E2D0); 1 if he took up an action. Hidden (+0x29)
+/* act on Fiona's command `cmd` (from Hewie_CommandAction); 1 if he took up an action. Hidden (+0x29)
  * he only answers 0x2C (come out: 0x2D, or flag +0xF3559 while +0xF35B4 counts) and 0x30
  * (0x39); 0x2A heals him to 10 */
-s32 func_0013D580(Hewie *h, s32 cmd) {
+/* 0x0013D580 */
+s32 Hewie_ActOnCommand(Hewie *h, s32 cmd) {
     Progress *p;
     s32 took = 0;
 
@@ -4430,7 +4564,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
         if (!h->c.a.disabled) {
             p = gProgress;
             if (!(u8)Progress_GameMode(p) && HW(h, 0xF368C, s32) == 0) {
-                HW(h, 0xF368C, u8 *) = func_00139460(h);
+                HW(h, 0xF368C, u8 *) = Hewie_NearestThing(h);
                 if (HW(h, 0xF368C, s32) != 0) {
                     hewie_want(h, 0x1D, 0x78);
                     return 1;
@@ -4491,7 +4625,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
 static s32 go_for(Hewie *h) {
     Character *c;
 
-    HW(h, 0xF3548, Character *) = func_001379C0(h);
+    HW(h, 0xF3548, Character *) = Hewie_PickTarget(h);
     if (!in_his_room(h, HW(h, 0xF3548, Character *))) {
         return 0;
     }
@@ -4510,20 +4644,22 @@ static s32 go_for(Hewie *h) {
 
 /* after coming out (0x4E): go for someone (the pursuer: 0x21 when +0xF3585 and he can go at
  * it head on, else 0x1F), else 6 (0x87 with progress +0x1FBEC1) */
-void func_00140190(Hewie *h) {
+/* 0x00140190 */
+void Hewie_AfterComingOut(Hewie *h) {
     switch (go_for(h)) {
     case 0:
         hewie_want(h, *((u8 *)gProgress + 0x1FBEC1) == 0 ? 6 : 0x87, 0);
         break;
     case 2:
-        hewie_want(h, HW(h, 0xF3585, u8) == 1 && func_00139A70(h) == 0 ? 0x21 : 0x1F, 0);
+        hewie_want(h, HW(h, 0xF3585, u8) == 1 && Hewie_AttackSide(h) == 0 ? 0x21 : 0x1F, 0);
         break;
     }
 }
 
 /* after answering a call (0x4F / 0x50): go for someone (the pursuer: 0x1F after 0x4F, else
  * 0x20), else 6 */
-void func_001404E0(Hewie *h) {
+/* 0x001404E0 */
+void Hewie_AfterCall(Hewie *h) {
     switch (go_for(h)) {
     case 0:
         hewie_want(h, 6, 0);
@@ -4536,8 +4672,9 @@ void func_001404E0(Hewie *h) {
 
 /* after 0x4D: by his animation group, a coin toss between 0x28 / 0x26 and 0x2A (moving 1: 0x2A
  * for groups 0 / 4, 0x26 for 2 / 6) */
-void func_001407C0(Hewie *h) {
-    s32 g = func_001669A0(h);
+/* 0x001407C0 */
+void Hewie_After4D(Hewie *h) {
+    s32 g = Hewie_AnimGroup(h);
     f32 r = RNG01();
 
     switch (g) {
@@ -4561,7 +4698,7 @@ void func_001407C0(Hewie *h) {
 
 /* ---- getting into a pose ---- */
 
-extern void func_00143400(Hewie *h);
+extern void Hewie_WalkAnim(Hewie *h);
 
 static inline void pose_play(Hewie *h, s32 anim) {
     Motion_PlayTable(h->c.motion, anim, -1);
@@ -4588,11 +4725,11 @@ static void pose_leave(Hewie *h, s32 g) {
         }
         break;
     case 9:
-        func_00143400(h);
+        Hewie_WalkAnim(h);
         break;
     case 10:
     case 15:
-        func_00143550(h, -1);
+        Hewie_StandAnim(h, -1);
         break;
     case 11:
         pose_play(h, 0x301);
@@ -4631,18 +4768,19 @@ static s32 pose_basic(Hewie *h, s32 g, s32 from0, s32 from1, s32 from2) {
 /* step him toward pose `kind` from his animation group: 0 stand, 1 sit, 2 lie, 3 / 4 the low
  * groups (0..3) ok, 5 most anything still, 6 group 11 (else lie, then 0x300), 7..9 as 5, 10
  * group 13. 0 once there, else -1 (also while blending) */
-s32 func_00140CD0(Hewie *h, u32 kind) {
+/* 0x00140CD0 */
+s32 Hewie_StepToPose(Hewie *h, u32 kind) {
     s32 g;
 
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
         return -1;
     }
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     if (kind >= 11) {
         return -1;
     }
     if (kind >= 7 && kind <= 9) {
-        return func_00140CD0(h, 5) == 0 ? 0 : -1;
+        return Hewie_StepToPose(h, 5) == 0 ? 0 : -1;
     }
     if ((u32)g >= 16) {
         return -1;
@@ -4693,7 +4831,7 @@ s32 func_00140CD0(Hewie *h, u32 kind) {
         if (g == 12) {
             return ANIM_DONE(h) ? 0 : -1;
         }
-        if (func_00140CD0(h, 2) == 0) {
+        if (Hewie_StepToPose(h, 2) == 0) {
             pose_play(h, 0x300);
         }
         return -1;
@@ -4728,14 +4866,14 @@ static void pose_walk(Hewie *h, s32 anim) {
     }
 }
 
-/* the settled animation of basic group `base`: standing (func_00143550), sitting (1), lying (2,
+/* the settled animation of basic group `base`: standing (Hewie_StandAnim), sitting (1), lying (2,
  * 7 when moving 1), unless already playing */
 static void pose_settle(Hewie *h, s32 base) {
     s32 a;
 
     switch (base) {
     case 0:
-        func_00143550(h, -1);
+        Hewie_StandAnim(h, -1);
         break;
     case 1:
         if (MOTION_ANIM(h->c.motion) != 1) {
@@ -4760,29 +4898,30 @@ static const s16 sPoseInto[4][3] = {
     { 0x1001, 0x101, 0x103 },
 };
 
-/* keep him in pose `kind` (see func_00140CD0): from a basic group (0..2, or its entering 4..6
+/* keep him in pose `kind` (see Hewie_StepToPose): from a basic group (0..2, or its entering 4..6
  * once done) move toward the pose or play its settled animation (3 / 4 / 5: stay as he is);
  * else leave his group (pose_leave). Not while blending */
-void func_00141C00(Hewie *h, u32 kind) {
+/* 0x00141C00 */
+void Hewie_KeepPose(Hewie *h, u32 kind) {
     s32 g, base;
 
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
         return;
     }
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     switch (kind) {
     case 7:
-        if (g == 10 || func_00140CD0(h, 5) == 0) {
-            func_00143400(h);
+        if (g == 10 || Hewie_StepToPose(h, 5) == 0) {
+            Hewie_WalkAnim(h);
         }
         return;
     case 8:
-        if (g == 10 || g == 9 || func_00140CD0(h, 5) == 0) {
+        if (g == 10 || g == 9 || Hewie_StepToPose(h, 5) == 0) {
             pose_walk(h, 0x201);
         }
         return;
     case 9:
-        if (g == 10 || g == 8 || func_00140CD0(h, 5) == 0) {
+        if (g == 10 || g == 8 || Hewie_StepToPose(h, 5) == 0) {
             pose_walk(h, 0x202);
         }
         return;
@@ -4795,7 +4934,7 @@ void func_00141C00(Hewie *h, u32 kind) {
             if (ANIM_DONE(h)) {
                 pose_play(h, 0x203);
             }
-        } else if (g != 11 && func_00140CD0(h, 2) == 0) {
+        } else if (g != 11 && Hewie_StepToPose(h, 2) == 0) {
             pose_play(h, 0x300);
         }
         return;
@@ -4829,7 +4968,7 @@ void func_00141C00(Hewie *h, u32 kind) {
     }
     if (kind == 5 && g >= 8 && g <= 10) {
         if (g == 10) {
-            func_00143400(h);
+            Hewie_WalkAnim(h);
         } else {
             pose_walk(h, g == 8 ? 0x202 : 0x201);
         }
@@ -4860,7 +4999,8 @@ static void play_again(Hewie *h, s32 cur, s32 anim) {
 
 /* bark (animations 0x1B00..): calm and not in actions 0xA / 0xB, by his pose (standing 0x1B00,
  * sitting 0x1B01, lying 0x1B02; moving 1 0x1B05); else by his mood (2: 0x1B04, else 0x1B03) */
-void func_001431F0(Hewie *h) {
+/* 0x001431F0 */
+void Hewie_Bark(Hewie *h) {
     s32 cur = MOTION_ANIM(h->c.motion);
     s32 g;
 
@@ -4869,7 +5009,7 @@ void func_001431F0(Hewie *h) {
             play_again(h, cur, 0x1B05);
             return;
         }
-        g = func_001669A0(h);
+        g = Hewie_AnimGroup(h);
         play_again(h, cur, g == 6 || g == 2 ? 0x1B02 : g == 5 || g == 1 ? 0x1B01 : 0x1B00);
     } else {
         play_again(h, cur, HW(h, 0xF35C0, s32) == 2 ? 0x1B04 : 0x1B03);
@@ -4882,7 +5022,8 @@ void func_001431F0(Hewie *h) {
  * of him (125 degrees either side) with nothing between; 2 an exit of his room leading to the
  * pursuer's room; 3 the noise he heard from slot 2 (the pursuer); else nothing (an exit or the
  * pursuer gone). Each but the last tells the game (Progress_SetCondBit 4) */
-void func_00143840(Hewie *h) {
+/* 0x00143840 */
+void Hewie_Alert(Hewie *h) {
     s32 away = 0;
 
     if (gCharPursuer == NULL || gCharPursuer->a.active != 1 || h->c.a.disabled || h->c.a.unkC4 == 2) {
@@ -4891,7 +5032,7 @@ void func_00143840(Hewie *h) {
     }
     if (in_his_room(h, gCharPursuer) && Actor_Distance(&h->c.a, gCharPursuer->a.pos) <= 200.0f) {
         f32 to = Actor_HeadingTo(&h->c.a, gCharPursuer->a.pos);
-        f32 d = func_002E2D00(to - func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)));
+        f32 d = Angle_Wrap(to - Angle_Wrap(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)));
 
         if (!(d <= 0.0f)) {
         } else {
@@ -4963,7 +5104,7 @@ static void arrived(Hewie *h) {
     if (Actor_PosInCurrentRoom(&h->c.a, v)) {
         Character_Sound(&h->c, 3, (s32)v, 0, 0, 0);
     }
-    func_00143840(h);
+    Hewie_Alert(h);
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
     Character_MarkObjects(&h->c);
 }
@@ -4979,7 +5120,8 @@ static inline void blend_in(Hewie *h) {
  * at the exit; the resting / waiting ones (0, 0x2C..0x39, 0x52, 0x77) kept where he is with
  * the animation they had (else anywhere on the room's mesh, or at exit +0x14D4 facing at
  * random), then a fitting action. -1 for any other action, or (but 0x88) another room */
-s32 func_00143D20(Hewie *h) {
+/* 0x00143D20 */
+s32 Hewie_Arrive(Hewie *h) {
     VObject *rooms;
     f32 at[4] __attribute__((aligned(16)));
     f32 ang;
@@ -5122,9 +5264,10 @@ s32 func_00143D20(Hewie *h) {
 /* the first door of the room he can use (into +0xF36B4): 1 one he can pass that is open (for a
  * plain door) and not locked. Else, stopping at the first door with special access (state bits
  * 4 / 8 / 0x10): 0 when he is at its level (within 5) and within 5 in front of it (kind 0,
- * spot +0xF36E0 from func_00144940), or within 16 of its far point (kind 1, bits 0x10 and 8
+ * spot +0xF36E0 from Hewie_DoorPoint), or within 16 of its far point (kind 1, bits 0x10 and 8
  * or doors +0x6C) and that brings him farther from it; -1 none */
-s32 func_00144B30(Hewie *h) {
+/* 0x00144B30 */
+s32 Hewie_FirstDoor(Hewie *h) {
     VObject *doors = gDoors;
     Progress *p = gProgress;
     s32 kind = -1;
@@ -5184,7 +5327,7 @@ s32 func_00144B30(Hewie *h) {
             func_002E2DA0(dir, m, dir);
             if (sceVu0InnerProduct(d, dir) < 5.0f) {
                 HW(h, 0xF36B4, s32) = e & 0xFF;
-                func_00144940(h, e, &HW(h, 0xF36E0, f32));
+                Hewie_DoorPoint(h, e, &HW(h, 0xF36E0, f32));
                 return 0;
             }
         }
@@ -5193,7 +5336,7 @@ s32 func_00144B30(Hewie *h) {
         VCALL(doors, 0x38, void (*)(VObject *, u32, f32 *))(doors, e, at);
         sceVu0SubVector(d, at, h->c.a.pos);
         if (__builtin_fabsf(d[1]) < 5.0f && __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 16.0f) {
-            func_00144940(h, e, q);
+            Hewie_DoorPoint(h, e, q);
             sceVu0SubVector(d, q, at);
             sceVu0SubVector(d2, h->c.a.pos, at);
             if (!(d[2] * d[2] + d[0] * d[0] <= d2[2] * d2[2] + d2[0] * d2[0])) {
@@ -5214,7 +5357,8 @@ s32 func_00144B30(Hewie *h) {
  * floor (+0x14C8 flags: 0x10 plain, 0x14 / 0x18 / 0x1C, 0x78; 0x18 type 6 when the driver says
  * so), louder the harder he steps. Only in the room being played, on the mesh, not while the
  * room objects hold him (+0x50) nor with progress flag 8 */
-void func_00145080(Hewie *h) {
+/* 0x00145080 */
+void Hewie_Feet(Hewie *h) {
     static const s32 bones[4] = { 0xB, 0xF, 0x17, 0x1C };
     Progress *p = gProgress;
     u8 down[4];
@@ -5241,7 +5385,7 @@ void func_00145080(Hewie *h) {
         }
     }
     if (steps != 0 && (h->c.a.room == 7 || h->c.a.room == 0xD1 || h->c.a.room == 0x106)) {
-        deep = func_001669A0(h) == 8;
+        deep = Hewie_AnimGroup(h) == 8;
         for (i = 0; i < 4; i++) {
             if (steps & (1 << i)) {
                 sceVu0CopyVector(at, Skel_Bone(MOTION_SKELETON(h->c.motion), bones[i]) + 12);
@@ -5308,7 +5452,8 @@ static s32 free_at(Hewie *h, u32 *tri, f32 *p) {
  * (+0x110, heading +0x10C). 0xE / 0xF with the pursuer about: 15 from her toward it (0xF away
  * from it), tried turned 15 degrees either way. Else beside her: +0xF3550 to her side, drifting
  * 0.3 a frame (by +0xF3554) while under 5, else 5 to the other side. Her own spot failing all */
-u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
+/* 0x00145610 */
+u32 Hewie_CommandPlace(Hewie *h, s32 cmd, f32 *out) {
     f32 off[2][4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 best[4] __attribute__((aligned(16)));
@@ -5366,7 +5511,7 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
         v[0] = 0.0f;
         v[1] = 0.0f;
         v[2] = 15.0f;
-        func_002E2DD0(p, m, v);
+        Mtx_ApplyPoint(p, m, v);
         if (free_at(h, &tri, p)) {
             sceVu0CopyVector(out, p);
             return tri;
@@ -5391,13 +5536,13 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
             /* (the original steps a counter by 15 degrees but always turns by 15) */
             for (i = 15; (f32)i < 90.0f; i = (s32)((f32)i + 15.0f)) {
                 Mtx_AtHeading(m, gCharPlayer->a.pos, 0x1.0c1524p-2f /* 15 degrees */);
-                func_002E2DD0(p, m, v);
+                Mtx_ApplyPoint(p, m, v);
                 if (free_at(h, &tri, p)) {
                     sceVu0CopyVector(out, p);
                     return tri;
                 }
                 Mtx_AtHeading(m, gCharPlayer->a.pos, -0x1.0c1524p-2f);
-                func_002E2DD0(p, m, v);
+                Mtx_ApplyPoint(p, m, v);
                 if (free_at(h, &tri, p)) {
                     sceVu0CopyVector(out, p);
                     return tri;
@@ -5455,7 +5600,8 @@ static void head_of(Character *c, f32 *out) {
  * ahead, 6 / 7 / 9 / 10 / 11 / 12 / 13 fixed poses; with +0xF35E0 the point +0xF35F0. Down:
  * ahead. Pitch kept to -45..135 degrees and yaw to +-162, turned at 0.15 of the way (yaw
  * faster by how much his heading changed since +0xF354C for modes 0 / 5 / 8) */
-void func_00146130(Hewie *h) {
+/* 0x00146130 */
+void Hewie_TurnHead(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 pitch, yaw, dp, dy, ys;
     VObject *rng;
@@ -5600,10 +5746,10 @@ void func_00146130(Hewie *h) {
     ys = 0x1.333334p-3f /* 0.15 */ * dy;
     mode = HW(h, 0xF3600, u32);
     if (mode == 8 || mode == 5 || mode == 0) {
-        if (!(func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32)) <= 0.0f)) {
-            ys += func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32));
+        if (!(Angle_Wrap(h->c.a.angle[1] - HW(h, 0xF354C, f32)) <= 0.0f)) {
+            ys += Angle_Wrap(h->c.a.angle[1] - HW(h, 0xF354C, f32));
         } else {
-            ys += -func_002E2D00(h->c.a.angle[1] - HW(h, 0xF354C, f32));
+            ys += -Angle_Wrap(h->c.a.angle[1] - HW(h, 0xF354C, f32));
         }
     }
     func_002DD310(h->c.motion, pitch, yaw, 0x1.3333340000000p-3f /* 0.15 */ * dp, ys);
@@ -5630,7 +5776,8 @@ static void post_state(Character *c, s32 kind, s32 a, s32 b) {
  * 100 in his room, tell her (event 0xD, 0, exit) of each exit whose door he may use (state bit
  * 4) and that isn't open; else tell her where he is (0xD, 1, triangle). Then the default
  * action */
-void func_00146C50(Hewie *h) {
+/* 0x00146C50 */
+void Hewie_StateLookLow(Hewie *h) {
     s32 told = 0;
     u32 e;
 
@@ -5643,10 +5790,10 @@ void func_00146C50(Hewie *h) {
         HW(h, 0xF3604, s32) = 0;
         HW(h, 0xF3608, s32) = 10;
     }
-    if (func_00140CD0(h, 3) != 0) {
+    if (Hewie_StepToPose(h, 3) != 0) {
         return;
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
     if (in_his_room(h, gCharPlayer) && Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 100.0f) {
         Progress *p = gProgress;
 
@@ -5682,7 +5829,8 @@ static void bark_noise(Hewie *h, Progress *p) {
 
 /* bark: look at his target (else ahead); calm and not moving 1, lying down low (pose 3) first,
  * then behaviour D_003B1D50; else standing (pose 0), then D_003B1D40 */
-void func_001470C0(Hewie *h) {
+/* 0x001470C0 */
+void Hewie_StateBark(Hewie *h) {
     Progress *p;
 
     if (HW(h, 0xF3544, Character *) == NULL) {
@@ -5696,14 +5844,14 @@ void func_001470C0(Hewie *h) {
     }
     p = gProgress;
     if (!(u8)Progress_GameMode(p) && h->c.a.unkC4 != 1) {
-        if (func_00140CD0(h, 3) == 0) {
+        if (Hewie_StepToPose(h, 3) == 0) {
             bark_noise(h, p);
-            func_001431F0(h);
+            Hewie_Bark(h);
             Hewie_SetBehaviour(h, &D_003B1D50);
         }
-    } else if (func_00140CD0(h, 0) == 0) {
+    } else if (Hewie_StepToPose(h, 0) == 0) {
         bark_noise(h, p);
-        func_001431F0(h);
+        Hewie_Bark(h);
         Hewie_SetBehaviour(h, &D_003B1D40);
     }
 }
@@ -5713,16 +5861,16 @@ void func_001470C0(Hewie *h) {
 /* turn toward heading `a` by `step` (Actor_TurnToward, which returns how far is left); more than 30
  * degrees off with his head turned the other way, his body snaps `step` toward it instead */
 static f32 turn_toward(Hewie *h, f32 a, f32 step) {
-    f32 d = func_002E2D00(a - h->c.a.angle[1]), ang;
+    f32 d = Angle_Wrap(a - h->c.a.angle[1]), ang;
 
     if ((d <= 0.0f ? -d : d) < 0x1.0c1524p-1f /* 30 degrees */ || !(AT(h->c.motion, 0x858, f32) * d < 0.0f)) {
         return Actor_TurnToward(&h->c.a, a, step);
     }
-    ang = d < 0.0f ? func_002E2D00(h->c.a.angle[1] + step) : func_002E2D00(h->c.a.angle[1] - step);
+    ang = d < 0.0f ? Angle_Wrap(h->c.a.angle[1] + step) : Angle_Wrap(h->c.a.angle[1] - step);
     h->c.a.angle[1] = ang;
     sceVu0UnitMatrix(h->c.a.rot);
     sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, ang);
-    d = func_002E2D00(a - h->c.a.angle[1]);
+    d = Angle_Wrap(a - h->c.a.angle[1]);
     return d <= 0.0f ? -d : d;
 }
 
@@ -5754,17 +5902,18 @@ extern const PTMF D_003B1D20;
  * up and 20 ahead (+0xF36E0), +0xF36B4..+0xF36CC the flight (8 frames, speed 2.8 from his
  * height), facing within 30 degrees of the heading (snapping by 30 when his head turns the
  * other way), animation 0x1E01, sound 0x68, then behaviour D_003B1D20 */
-void func_001476C0(Hewie *h) {
+/* 0x001476C0 */
+void Hewie_StateRunUpJump(Hewie *h) {
     s32 anim = MOTION_ANIM(h->c.motion);
     f32 v[4] __attribute__((aligned(16)));
 
-    if (func_00140CD0(h, 5) == 0 && anim != 0x202) {
+    if (Hewie_StepToPose(h, 5) == 0 && anim != 0x202) {
         Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36D0, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36D0, f32) - h->c.a.angle[1]);
     Actor_TurnToward(&h->c.a, HW(h, 0xF36D0, f32), run_turn(h));
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f) || anim != 0x202) {
         return;
@@ -5795,7 +5944,7 @@ void func_001476C0(Hewie *h) {
     Motion_PlayTable(h->c.motion, 0x1E01, -1);
     HW(h, 0xF356C, u32) |= 0x80000000;
     h->c.a.unk2D = 1;
-    func_0013A430(h, 0x68);
+    Hewie_MakeSound(h, 0x68);
     h->c.unk104[0] = 0;
     h->c.unk104[1] = 0;
     Hewie_SetBehaviour(h, &D_003B1D20);
@@ -5803,20 +5952,21 @@ void func_001476C0(Hewie *h) {
 
 /* ---- under her control: running ---- */
 
-/* steered by Fiona (func_00136900): stopped (+0xF3718), stand ahead; else run (fast with
+/* steered by Fiona (Hewie_LeftStick): stopped (+0xF3718), stand ahead; else run (fast with
  * +0xF3744) with his head toward the way: turning on the spot toward +0xF37A0 (mode 2,
  * speeding up by 0.075 degrees a frame to 3, until done) or along the stick (+0xF3700 /
  * +0xF3708) */
-void func_00147B90(Hewie *h) {
+/* 0x00147B90 */
+void Hewie_StateSteered(Hewie *h) {
     f32 a, step;
 
-    func_00136900(h);
+    Hewie_LeftStick(h);
     if (HW(h, 0xF3718, s32) != 0) {
         if (HW(h, 0xF3604, s32) != 4) {
             HW(h, 0xF3604, s32) = 4;
             HW(h, 0xF3608, s32) = 10;
         }
-        func_00141C00(h, 4);
+        Hewie_KeepPose(h, 4);
         return;
     }
     if (HW(h, 0xF3710, u8) == 2) {
@@ -5825,7 +5975,7 @@ void func_00147B90(Hewie *h) {
             HW(h, 0xF3608, s32) = 10;
         }
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF37A0, f32) - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF37A0, f32) - h->c.a.angle[1]);
         HW(h, 0xF379C, f32) += 0x1.57254e0000000p-10f /* 0.001308997 */;
         if (!(HW(h, 0xF379C, f32) <= 0x1.aceea00000000p-5f /* 0.05235988 */)) {
             HW(h, 0xF379C, f32) = 0x1.aceea00000000p-5f /* 0.05235988 */;
@@ -5840,11 +5990,11 @@ void func_00147B90(Hewie *h) {
             HW(h, 0xF3608, s32) = 10;
         }
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
         step = run_turn(h);
         turn_toward(h, a, step);
     }
-    func_00141C00(h, HW(h, 0xF3744, u8) == 1 ? 9 : 8);
+    Hewie_KeepPose(h, HW(h, 0xF3744, u8) == 1 ? 9 : 8);
 }
 
 /* ---- keeping his distance ---- */
@@ -5852,11 +6002,12 @@ void func_00147B90(Hewie *h) {
 /* actions 0x53..0x57 / 0x7C: keep within +0xF36C8 of a point (his target for 0x53..0x55 / 0x7C
  * while it is in his room and reachable, else the default action; +0xF36E0 for 0x56 / 0x57),
  * moving along heading +0xF36C4: picked anew (away from the point, the freest way within 30..150
- * degrees, func_00137720) when +0xF36B4 runs out or the way ahead is shorter than the range
+ * degrees, Hewie_BestHeading) when +0xF36B4 runs out or the way ahead is shorter than the range
  * (0x55 / 0x57 then hold it 30..90 frames, +0xF36B8 30 frames before rechecking). Running by
  * the way ahead (stop under 10, trot under 20) for 0x53 / 0x54 / 0x56 / 0x7C, pose 7 for 0x55
  * / 0x57. Out of range: action +0xF3570 */
-void func_001480C0(Hewie *h) {
+/* 0x001480C0 */
+void Hewie_StateKeepNear(Hewie *h) {
     f32 at[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };
     f32 d[4] __attribute__((aligned(16)));
     f32 room, step, a;
@@ -5875,7 +6026,7 @@ void func_001480C0(Hewie *h) {
     case 0x55:
     case 0x7C:
         if (!in_his_room(h, HW(h, 0xF3544, Character *)) ||
-            !(u8)func_0013C1E0(h, HW(h, 0xF3544, Character *)->a.navTri, HW(h, 0xF3544, Character *)->a.pos)) {
+            !(u8)Hewie_PlanTo(h, HW(h, 0xF3544, Character *)->a.navTri, HW(h, 0xF3544, Character *)->a.pos)) {
             hewie_want(h, 0, 0);
             return;
         }
@@ -5909,7 +6060,7 @@ void func_001480C0(Hewie *h) {
             }
             sceVu0SubVector(d, h->c.a.pos, at);
             HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
-            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
+            HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
         }
     }
     if (HW(h, 0xF3604, s32) != 8) {
@@ -5917,7 +6068,7 @@ void func_001480C0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     a = HW(h, 0xF36C4, f32);
     turn_toward(h, a, step);
@@ -5926,7 +6077,7 @@ void func_001480C0(Hewie *h) {
     case 0x56:
     case 0x54:
     case 0x53:
-        if (func_00140CD0(h, 5) == 0) {
+        if (Hewie_StepToPose(h, 5) == 0) {
             anim = MOTION_ANIM(h->c.motion);
             if (room < 10.0f) {
                 if (anim != 0x200) {
@@ -5943,7 +6094,7 @@ void func_001480C0(Hewie *h) {
         break;
     case 0x57:
     case 0x55:
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         break;
     }
 }
@@ -5959,7 +6110,8 @@ extern const PTMF D_003B1D10;
  * +0x73EB00 (1, or 3 outside +0x1FBEC1) and set flag 0xC; otherwise left at 1 health. Slides
  * with the root motion (navigation mask 0x80001 lifted); while he has health, behaviour
  * D_003B1D10 */
-void func_001489D0(Hewie *h) {
+/* 0x001489D0 */
+void Hewie_StateKnockedDown(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 k;
 
@@ -5980,7 +6132,7 @@ void func_001489D0(Hewie *h) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 10;
     }
-    if (func_00140CD0(h, 10) == 0) {
+    if (Hewie_StepToPose(h, 10) == 0) {
         Progress *p = gProgress;
 
         if (*((u8 *)p + 0x1FBEC1) == 1 || (AT(p, 0x30, u32) & 0x8000) != 0) {
@@ -5996,7 +6148,7 @@ void func_001489D0(Hewie *h) {
         if (MOTION_ANIM(h->c.motion) == 0x1002) {
             h->c.a.unk2D = 0;
         } else {
-            func_00141C00(h, 10);
+            Hewie_KeepPose(h, 10);
         }
     }
     h->c.a.navMask |= 0x80001;
@@ -6023,7 +6175,8 @@ void func_001489D0(Hewie *h) {
  * 0x1D00..0x1D02, held a while longer when Fiona keeps commanding 3 while calm): every 4
  * strokes +5 health; at full health (-1 from +0xFB6 unless +0xF36BC) mode 1 and action 0x1D.
  * 0x4B: +0xF3688 300 frames, then action 2 (0 while waiting) */
-void func_00148D00(Hewie *h) {
+/* 0x00148D00 */
+void Hewie_StatePraised(Hewie *h) {
     Progress *p = gProgress;
     s32 spoiled;
 
@@ -6041,7 +6194,7 @@ void func_00148D00(Hewie *h) {
             HW(h, 0xF3684, s16) += 1;
             if (HW(h, 0xF3684, s16) >= 3 && HW(h, 0xF35C0, s32) == 0) {
                 Progress_AddCounter(p, 0xFB6, 20);
-                func_00138AD0(h, 2, -1);
+                Hewie_SetMode(h, 2, -1);
                 spoiled = 1;
                 HW(h, 0xF3684, s16) = 0;
             } else {
@@ -6052,7 +6205,7 @@ void func_00148D00(Hewie *h) {
             HW(h, 0xF3686, s16) = 600;
         }
         if (!spoiled && HW(h, 0xF36B4, s32) != -7 && HW(h, 0xF36B4, s32) == -6) {
-            func_00138AD0(h, 0, -1);
+            Hewie_SetMode(h, 0, -1);
             HW(h, 0xF35C4, s32) = 0;
             HW(h, 0xF35C8, s32) = 0;
         }
@@ -6085,7 +6238,7 @@ void func_00148D00(Hewie *h) {
                 }
             }
             if (HW(h, 0xF36B4, s32) == -8) {
-                func_00138AD0(h, 1, -1);
+                Hewie_SetMode(h, 1, -1);
                 hewie_want(h, 0x1D, 0);
             } else {
                 hewie_want(h, 0, 0);
@@ -6107,7 +6260,8 @@ extern const PTMF D_003B1CF0;
 /* wander within 15 of the spot +0x110 (pose 7, head toward the way): every 30..90 frames, or
  * when the way ahead is under 20, a new heading (outward from the spot, the freest within
  * 30..150 degrees for 30), rechecked after 30 frames. Farther off: behaviour D_003B1CF0 */
-void func_001495B0(Hewie *h) {
+/* 0x001495B0 */
+void Hewie_StateWander(Hewie *h) {
     f32 d[4] __attribute__((aligned(16)));
     f32 step;
 
@@ -6130,7 +6284,7 @@ void func_001495B0(Hewie *h) {
             HW(h, 0xF36B8, s32) = 30;
             sceVu0SubVector(d, h->c.a.pos, h->c.unk110);
             HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
-            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 30.0f, 30, 150, 30);
+            HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 30.0f, 30, 150, 30);
         }
     }
     if (HW(h, 0xF3604, s32) != 8) {
@@ -6138,10 +6292,10 @@ void func_001495B0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
-    func_00141C00(h, 7);
+    Hewie_KeepPose(h, 7);
 }
 
 /* ---- going to a spot ---- */
@@ -6150,7 +6304,8 @@ extern const PTMF D_003B1CE0;
 
 /* head for the spot +0x110 (pose 7, head on it): within 10, keep his heading and behaviour
  * D_003B1CE0; facing within 60 degrees of it, stand and flag +0xE1 */
-void func_001499F0(Hewie *h) {
+/* 0x001499F0 */
+void Hewie_StateHeadForSpot(Hewie *h) {
     f32 d[4] __attribute__((aligned(16)));
     f32 a, step, left;
 
@@ -6169,11 +6324,11 @@ void func_001499F0(Hewie *h) {
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     if (left <= 0x1.0c15240000000p+0f /* 1.0471976 */) {
-        if (func_00140CD0(h, 0) == 0) {
+        if (Hewie_StepToPose(h, 0) == 0) {
             h->c.unkE1 = 1;
         }
     } else {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
     }
 }
 
@@ -6191,7 +6346,8 @@ static f32 root_ahead(Hewie *h, f32 *root) {
  * else 10 (action 0x3F) or 20 along the path; stepping along it as far as his root motion
  * goes, less the sharper he turns. At the end, the rest of the step straight on, flag +0xE1
  * and the default action */
-void func_0014A340(Hewie *h) {
+/* 0x0014A340 */
+void Hewie_StateWalkPath(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 root[4] __attribute__((aligned(16)));
@@ -6204,7 +6360,7 @@ void func_0014A340(Hewie *h) {
                 Motion_PlayTable(h->c.motion, h->c.unk104[1], -1);
             }
         } else {
-            func_00141C00(h, HEWIE_ACTION(h) == 0x41 ? 7 : 9);
+            Hewie_KeepPose(h, HEWIE_ACTION(h) == 0x41 ? 7 : 9);
         }
     }
     rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
@@ -6220,7 +6376,7 @@ void func_0014A340(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     left = Actor_TurnToward(&h->c.a, a, run_turn(h));
     s = root_ahead(h, root);
     mv = 0.0f;
@@ -6249,10 +6405,10 @@ void func_0014A340(Hewie *h) {
 
 /* |wrap(+0x10C - his heading)| as the original takes it (twice, 0 becomes -0) */
 static f32 off_heading(Hewie *h) {
-    if (!(func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
-        return func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+    if (!(Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
+        return Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
     }
-    return -func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+    return -Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
 }
 
 /* walk the path to the spot +0x110 (12 frames of root motion ahead along it, or straight once
@@ -6261,7 +6417,8 @@ static f32 off_heading(Hewie *h) {
  * then stand. Done (at the end, settled, in animation +0x108 or standing): action 0x63 goes on
  * to 0x64 (0x13), else flag +0xE1 and the default action. Walk animation: +0x108, or by the
  * distance left with +0xF36B8 2 (pose 7 / 8 / 9 under 10 / 34 / beyond), else pose 7 */
-void func_0014A920(Hewie *h) {
+/* 0x0014A920 */
+void Hewie_StateWalkPath2(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
@@ -6284,7 +6441,7 @@ void func_0014A920(Hewie *h) {
     anim = MOTION_ANIM(h->c.motion);
     if (anim == 0x1300) {
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
         t = func_0031C248(off_heading(h) * 0x1.becde60000000p+0f /* 1.7453293 */ / HW(h, 0xF36C4, f32));
         r = 2.0f * (t * HW(h, 0xF36C4, f32)) / 0x1.921fb60000000p+1f /* 3.1415927 */;
         if (!(r <= 0x1.3333340000000p-1f /* 0.6 */)) {
@@ -6304,7 +6461,7 @@ void func_0014A920(Hewie *h) {
         mv = 0.25f;
     } else {
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
         left = Actor_TurnToward(&h->c.a, a, run_turn(h));
         mv = 0.0f;
         if (!(s < 0.0f)) {
@@ -6322,7 +6479,7 @@ void func_0014A920(Hewie *h) {
         return;
     }
     if (h->c.unk128 >= h->c.unk124 && HW(h, 0xF36B4, s32) != 0 && left == 0.0f &&
-        (h->c.unk104[1] != -1 ? h->c.unk104[1] == anim : func_001669A0(h) == 0)) {
+        (h->c.unk104[1] != -1 ? h->c.unk104[1] == anim : Hewie_AnimGroup(h) == 0)) {
         if (HEWIE_ACTION(h) == 0x63) {
             hewie_want(h, 0x64, 0x13);
         } else {
@@ -6345,9 +6502,9 @@ void func_0014A920(Hewie *h) {
             gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
         if (!(rest < 3.0f)) {
             if (HW(h, 0xF36B8, s32) == 2 && !(rest < 10.0f)) {
-                func_00141C00(h, rest < 34.0f ? 8 : 9);
+                Hewie_KeepPose(h, rest < 34.0f ? 8 : 9);
             } else {
-                func_00141C00(h, 7);
+                Hewie_KeepPose(h, 7);
             }
         } else {
             r = off_heading(h);
@@ -6391,12 +6548,13 @@ static s32 plan_to_spot(Hewie *h) {
 }
 
 /* set off for the spot +0x110: with no animation of his own (+0x108), once standing plan the
- * way and walk it (by the distance with +0xF36B8 2, func_0014A920) in behaviour D_003B1C60;
+ * way and walk it (by the distance with +0xF36B8 2, Hewie_StateWalkPath2) in behaviour D_003B1C60;
  * else in that animation, behaviour D_003B1C70. No way there: the default action */
-void func_0014B190(Hewie *h) {
+/* 0x0014B190 */
+void Hewie_StateSetOff(Hewie *h) {
     slide_root(h);
     if (h->c.unk104[1] == -1) {
-        if (func_00140CD0(h, 0) != 0) {
+        if (Hewie_StepToPose(h, 0) != 0) {
             return;
         }
         if (plan_to_spot(h) > 0) {
@@ -6404,9 +6562,9 @@ void func_0014B190(Hewie *h) {
                 f32 rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
                     gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
 
-                func_00141C00(h, !(rest < 10.0f) ? (rest < 34.0f ? 8 : 9) : 7);
+                Hewie_KeepPose(h, !(rest < 10.0f) ? (rest < 34.0f ? 8 : 9) : 7);
             } else {
-                func_00141C00(h, 7);
+                Hewie_KeepPose(h, 7);
             }
             Hewie_SetBehaviour(h, &D_003B1C60);
             return;
@@ -6430,7 +6588,8 @@ extern const PTMF D_003B1C20, D_003B1C30;
  * event bit 2 is on), then (0x1E05 once it ends) 3 a frame forward falling ever faster (+0xF36CC
  * from 1.2889, +0.5 a frame up to 3). Below the ground: landed (0x1E06), behaviour
  * D_003B1C30 */
-void func_0014BB10(Hewie *h) {
+/* 0x0014BB10 */
+void Hewie_StateLeap(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 ground, y;
@@ -6474,13 +6633,14 @@ void func_0014BB10(Hewie *h) {
 /* run for the spot +0x110 (planned, keeping the request): once within +0x108 of the end of
  * the path and not blending, leap (level toward the spot, turning to it by 20 degrees, rising
  * by animation 0x1E04, behaviour D_003B1C20); meanwhile running (0x202) with the stride
- * (func_00139DE0, else pose 8). No path: the default action */
-void func_0014BE80(Hewie *h) {
+ * (Hewie_Stride, else pose 8). No path: the default action */
+/* 0x0014BE80 */
+void Hewie_StateRunForSpot(Hewie *h) {
     f32 d[4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 a, y;
 
-    if (func_0013EE40(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -6506,11 +6666,11 @@ void func_0014BE80(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1C20);
         return;
     }
-    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+    if (Hewie_StepToPose(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
         Motion_PlayTable(h->c.motion, 0x202, -1);
     }
-    if (!(u8)func_00139DE0(h)) {
-        func_00141C00(h, 8);
+    if (!(u8)Hewie_Stride(h)) {
+        Hewie_KeepPose(h, 8);
     }
 }
 
@@ -6518,12 +6678,13 @@ void func_0014BE80(Hewie *h) {
 
 /* with Fiona in his room: once standing, look at her and whine (sound 0x60, action 0x7D, 150
  * frames); when that is over, action +0xF3570. Without her, action +0xF3570 at once */
-void func_0014C210(Hewie *h) {
+/* 0x0014C210 */
+void Hewie_StateWhine(Hewie *h) {
     if (!in_his_room(h, gCharPlayer) || (HW(h, 0xF36B4, s32) != 0 && HW(h, 0xF355C, s32) == 0)) {
         hewie_want(h, HW(h, 0xF3570, s32), 0);
         return;
     }
-    if (func_00140CD0(h, 0) != 0) {
+    if (Hewie_StepToPose(h, 0) != 0) {
         return;
     }
     if (HW(h, 0xF36B4, s32) == 0) {
@@ -6534,10 +6695,10 @@ void func_0014C210(Hewie *h) {
             HW(h, 0xF3608, s32) = 10;
         }
         HW(h, 0xF3544, Character *) = gCharPlayer;
-        func_0013A430(h, 0x60);
+        Hewie_MakeSound(h, 0x60);
         HEWIE_ACTION(h) = 0x7D;
     }
-    func_00141C00(h, 0);
+    Hewie_KeepPose(h, 0);
 }
 
 /* the last stretch to `at`, straight (no path left): turning to it as he runs, head held level
@@ -6552,7 +6713,7 @@ static void run_straight(Hewie *h, const f32 *at) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     if (HW(h, 0xF3558, u8) == 0) {
         slide_root(h);
         h->c.unk124 = h->c.unk128;
@@ -6566,9 +6727,10 @@ extern const s32 D_003B1C00[8];   /* wait after fleeing, by trust */
 /* flee the pursuer (in his room, while it hunts: progress flags 9 / 0xA) to the point
  * +0xF36E0 (triangle +0xF36B4): running (pose 9) along the planned path (pose 8 when the stride
  * fails in tense mode), straight at it once on its triangle. When the exit +0x100 he flees by
- * is open to him and the point is nearer the door than he is: through it (func_0013AAE0) and
+ * is open to him and the point is nearer the door than he is: through it (Hewie_ThroughExit) and
  * wait (action 0x31) for his trust's time; a dead end, or no pursuer: the default action */
-void func_0014C480(Hewie *h) {
+/* 0x0014C480 */
+void Hewie_StateFlee(Hewie *h) {
     Progress *p;
     VObject *rooms;
     f32 door[4] __attribute__((aligned(16)));
@@ -6586,14 +6748,14 @@ void func_0014C480(Hewie *h) {
         return;
     }
     there = HW(h, 0xF36B4, s32) == (s32)Actor_TriTo(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
-    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
+    if (!there && h->c.unk128 >= h->c.unk124 && Hewie_PlanAndGo(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
-    func_00141C00(h, 9);
+    Hewie_KeepPose(h, 9);
     if (!there) {
-        if (!(u8)func_00139DE0(h) && (u8)Progress_GameMode(p)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h) && (u8)Progress_GameMode(p)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         run_straight(h, &HW(h, 0xF36E0, f32));
@@ -6609,7 +6771,7 @@ void func_0014C480(Hewie *h) {
         if ((VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, (u8)h->c.unk100) & 0xFFFF) == 0xFFFF) {
             hewie_want(h, 0, 0);
         } else {
-            func_0013AAE0(h, (u8)h->c.unk100);
+            Hewie_ThroughExit(h, (u8)h->c.unk100);
             HW(h, 0xF3560, s32) = D_003B1C00[HW(h, 0xF35CC, s16)];
             hewie_want(h, 0x31, 0);
         }
@@ -6621,9 +6783,10 @@ void func_0014C480(Hewie *h) {
 extern const PTMF D_003B1BE8;
 
 /* standing guard while the pursuer hunts in his room (flags 9 / 0xA; else the default action):
- * barking at it (with noise, as func_001470C0) while it is 60..100 away by foot, looking at it;
+ * barking at it (with noise, as Hewie_StateBark) while it is 60..100 away by foot, looking at it;
  * nearer or farther, behaviour D_003B1BE8; unreachable, the default action */
-void func_0014CBD0(Hewie *h) {
+/* 0x0014CBD0 */
+void Hewie_StateGuard(Hewie *h) {
     Progress *p;
     f32 d;
 
@@ -6636,7 +6799,7 @@ void func_0014CBD0(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00140CD0(h, 0) == 0) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         d = Character_PathLength(&h->c, gCharPursuer->a.navTri, gCharPursuer->a.pos, NAV_NONE);
         if (d < 0.0f) {
             hewie_want(h, 0, 0);
@@ -6646,7 +6809,7 @@ void func_0014CBD0(Hewie *h) {
             Hewie_SetBehaviour(h, &D_003B1BE8);
             return;
         }
-        func_001431F0(h);
+        Hewie_Bark(h);
         {
             Progress *q = gProgress;
 
@@ -6670,7 +6833,8 @@ extern const PTMF D_003B1BC8, D_003B1BD8;
 /* while the pursuer hunts in his room (else the default action): within 50, behaviour
  * D_003B1BC8; else turn to face it (pose 7, head on it) and, within 60 degrees, take the
  * stance (animation 4, then behaviour D_003B1BD8) */
-void func_0014CF40(Hewie *h) {
+/* 0x0014CF40 */
+void Hewie_StatePursuerNear(Hewie *h) {
     Progress *p;
     f32 d[4] __attribute__((aligned(16)));
     f32 a, step, left;
@@ -6696,7 +6860,7 @@ void func_0014CF40(Hewie *h) {
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         return;
     }
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f)) {
@@ -6705,7 +6869,7 @@ void func_0014CF40(Hewie *h) {
     if (MOTION_ANIM(h->c.motion) == 4) {
         Hewie_SetBehaviour(h, &D_003B1BD8);
     } else {
-        if (func_00140CD0(h, 0) == 0) {
+        if (Hewie_StepToPose(h, 0) == 0) {
             Motion_PlayTable(h->c.motion, 4, -1);
         }
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -6719,7 +6883,8 @@ extern const PTMF D_003B1BB8;
 /* while the pursuer hunts in his room (else the default action): run for the spot +0x110 (pose
  * 9; along the planned path, pose 8 when the stride fails; straight once on its triangle).
  * Within 10 of it: behaviour D_003B1BB8. No path: the default action */
-void func_0014D490(Hewie *h) {
+/* 0x0014D490 */
+void Hewie_StateRunSpot(Hewie *h) {
     Progress *p;
     s32 there;
     f32 d;
@@ -6735,7 +6900,7 @@ void func_0014D490(Hewie *h) {
     }
     there = h->c.unk104[0] == (s32)Actor_TriTo(&h->c.a, h->c.unk110, NAV_NONE);
     if (!there) {
-        if (h->c.unk128 >= h->c.unk124 && func_0013EE40(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
+        if (h->c.unk128 >= h->c.unk124 && Hewie_PlanAndGo(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
             hewie_want(h, 0, 0);
             return;
         }
@@ -6748,10 +6913,10 @@ void func_0014D490(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1BB8);
         return;
     }
-    func_00141C00(h, 9);
+    Hewie_KeepPose(h, 9);
     if (!there) {
-        if (!(u8)func_00139DE0(h)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         run_straight(h, h->c.unk110);
@@ -6766,7 +6931,8 @@ extern const PTMF D_003B1B88, D_003B1B98, D_003B1BA8;
  * point +0xF36E0 (triangle +0xF36B4) and take the spot 80 along it (+0x110, triangle +0x104).
  * Short of its end: behaviour D_003B1BA8; at it, D_003B1B88 the first time and D_003B1B98 after
  * (+0xF36BC). No way: the default action */
-void func_0014DA50(Hewie *h) {
+/* 0x0014DA50 */
+void Hewie_StatePlanPursuer(Hewie *h) {
     Progress *p;
     VObject *planner;
     PathRequest *req;
@@ -6819,7 +6985,7 @@ void func_0014DA50(Hewie *h) {
 
 extern const PTMF D_003B1B18, D_003B1B28;
 
-/* one step of going where her command puts him by her (func_00145610): along the planned path
+/* one step of going where her command puts him by her (Hewie_CommandPlace): along the planned path
  * (straight once on its triangle), by gait +0xF36B4 with hysteresis on the distance left: walk
  * (0; over 30 trot), trot (1; under 20 walk, over `up` run), run (2; under `down` trot). -1 with
  * no path (the default action taken); 1 when walking within 12 (there; the path ended) */
@@ -6829,9 +6995,9 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
     s32 there;
     u32 tri;
 
-    tri = func_00145610(h, HEWIE_ACTION(h), at);
+    tri = Hewie_CommandPlace(h, HEWIE_ACTION(h), at);
     there = tri == Actor_TriTo(&h->c.a, at, NAV_NONE);
-    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, tri, at, 0, 1) != 0) {
+    if (!there && h->c.unk128 >= h->c.unk124 && Hewie_PlanAndGo(h, tri, at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return -1;
     }
@@ -6848,35 +7014,35 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
             return 1;
         }
         if (d <= 30.0f) {
-            func_00141C00(h, 7);
+            Hewie_KeepPose(h, 7);
         } else {
             HW(h, 0xF36B4, s32) = 1;
-            func_00141C00(h, 8);
+            Hewie_KeepPose(h, 8);
         }
         break;
     case 1:
         if (d < 20.0f) {
             HW(h, 0xF36B4, s32) = 0;
-            func_00141C00(h, 7);
+            Hewie_KeepPose(h, 7);
         } else if (d <= up) {
-            func_00141C00(h, 8);
+            Hewie_KeepPose(h, 8);
         } else {
             HW(h, 0xF36B4, s32) = 2;
-            func_00141C00(h, 9);
+            Hewie_KeepPose(h, 9);
         }
         break;
     case 2:
         if (d < down) {
             HW(h, 0xF36B4, s32) = 1;
-            func_00141C00(h, 8);
+            Hewie_KeepPose(h, 8);
         } else {
-            func_00141C00(h, 9);
+            Hewie_KeepPose(h, 9);
         }
         break;
     }
     if (!there) {
-        if (!(u8)func_00139DE0(h) && HW(h, 0xF36B4, s32) == 2) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h) && HW(h, 0xF36B4, s32) == 2) {
+            Hewie_KeepPose(h, 8);
         }
         return 0;
     }
@@ -6888,7 +7054,7 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     if (HW(h, 0xF3558, u8) == 0) {
         h->c.unk124 = h->c.unk128;
     }
@@ -6897,7 +7063,8 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
 
 /* follow her command's place (follow_step); there: behaviour D_003B1B18 (D_003B1B28 with
  * +0xF36B8) */
-void func_0014E300(Hewie *h) {
+/* 0x0014E300 */
+void Hewie_StateFollowCommand(Hewie *h) {
     if (follow_step(h, 54.0f, 44.0f) == 1) {
         Hewie_SetBehaviour(h, HW(h, 0xF36B8, s32) == 0 ? &D_003B1B18 : &D_003B1B28);
     }
@@ -6911,16 +7078,17 @@ extern const PTMF D_003B1AE8, D_003B1AF8, D_003B1B08;
  * puts him (no way: the default action). Within 12 already: behaviour D_003B1AE8 (D_003B1AF8
  * with +0xF36B8); else pick the gait by the distance (walk under 20 or when moving 1, trot under
  * 44, else run) and follow her (D_003B1B08) */
-void func_0014E8A0(Hewie *h) {
+/* 0x0014E8A0 */
+void Hewie_StateSlideToCommand(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d;
 
-    if (func_00140CD0(h, 3) != 0) {
+    if (Hewie_StepToPose(h, 3) != 0) {
         return;
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
     slide_root(h);
-    if (func_0013EE40(h, func_00145610(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, Hewie_CommandPlace(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -6951,7 +7119,8 @@ extern const PTMF D_003B1A48, D_003B1A58, D_003B1A68, D_003B1A78, D_003B1A88, D_
  * head on it once on its triangle; settled within 6 and him nearly stopped: func_001396B0's
  * rolls decide: pick it up (it goes inactive; D_003B1A88), bring it to Fiona (D_003B1A98), or
  * leave it (D_003B1AA8, 90 frames) */
-void func_0014EE20(Hewie *h) {
+/* 0x0014EE20 */
+void Hewie_StateFetch(Hewie *h) {
     Actor *o = HW(h, 0xF368C, Actor *);
     f32 v[4] __attribute__((aligned(16)));
     f32 root[4] __attribute__((aligned(16)));
@@ -6970,7 +7139,7 @@ void func_0014EE20(Hewie *h) {
     }
     sceVu0CopyVector(v, o->unkB0);
     speed = __builtin_sqrtf(sceVu0InnerProduct(v, v));
-    if (speed < 0.5f && func_0013EE40(h, o->navTri, o->pos, 0, 1) != 0) {
+    if (speed < 0.5f && Hewie_PlanAndGo(h, o->navTri, o->pos, 0, 1) != 0) {
         HW(h, 0xF36B8, s32) = 0;
         if (Hewie_Roll(h, gRandom, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
             HW(h, 0xF36B4, s32) = 2;
@@ -7008,11 +7177,11 @@ void func_0014EE20(Hewie *h) {
             }
             return;
         }
-        func_00141C00(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? (rest < 20.0f ? 7 : 8) : 9);
+        Hewie_KeepPose(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? (rest < 20.0f ? 7 : 8) : 9);
     } else {
-        func_00141C00(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? 8 : 9);
+        Hewie_KeepPose(h, HW(h, 0xF369E, u8) == 0 ? 7 : rest < 30.0f ? 8 : 9);
     }
-    func_00139DE0(h);
+    Hewie_Stride(h);
     o = HW(h, 0xF368C, Actor *);
     if (Actor_TriTo(&h->c.a, o->pos, NAV_NONE) == o->navTri) {
         if (HW(h, 0xF3604, s32) != 8) {
@@ -7020,9 +7189,9 @@ void func_0014EE20(Hewie *h) {
             HW(h, 0xF3608, s32) = 10;
         }
         Motion_LookAt(h->c.motion, HW(h, 0xF368C, Actor *)->pos, &pitch, &yaw);
-        a = func_002E2D00(h->c.a.angle[1] + yaw);
+        a = Angle_Wrap(h->c.a.angle[1] + yaw);
         HW(h, 0xF3614, f32) = pitch;
-        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     }
 }
 
@@ -7053,9 +7222,10 @@ extern const PTMF D_003B1A38;
  * fall (+0xF36C8 -0.3 a frame onto height +0xF36EC, never below the ground); at frame 13 the
  * noise (unless progress flags 0x13 / 0x2B). Landed: on the spot +0x110 (triangle +0x108), the
  * hold time +0xF36BC by his mood (3: 110, 2: none, else 5 x (10 + his feeling about it)), the
- * hit on it (30, +30 on difficulty 1, +half with progress +0xA10; hard when func_001386D0 5) and
+ * hit on it (30, +30 on difficulty 1, +half with progress +0xA10; hard when Hewie_ReactionRoll 5) and
  * its effect, then behaviour D_003B1A38 */
-void func_0014F600(Hewie *h) {
+/* 0x0014F600 */
+void Hewie_StateLeapAtPursuer(Hewie *h) {
     Progress *pr;
     u16 dmg;
 
@@ -7100,7 +7270,7 @@ void func_0014F600(Hewie *h) {
         HW(h, 0xF36B8, s32) = 1;
         HW(h, 0xF3585, u8) = 1;
         {
-            s32 hard = (u8)func_001386D0(h, 5) == 1;
+            s32 hard = (u8)Hewie_ReactionRoll(h, 5) == 1;
 
             pr = gProgress;
             dmg = 30;
@@ -7112,7 +7282,7 @@ void func_0014F600(Hewie *h) {
             }
             Relation_Request(pr, AT(h, 0x20, u8), 4, 0xB, dmg, hard ? -0x8000 : 0, 0.0f);
         }
-        func_0013A1C0(h, 1);
+        Hewie_BiteEffect(h, 1);
         Hewie_SetBehaviour(h, &D_003B1A38);
     }
     HW(h, 0xF3581, u8) = 1;
@@ -7127,7 +7297,8 @@ extern const PTMF D_003B1A28;
 /* the take-off of the leap at the pursuer (in his room; else the default action): once not
  * blending, the leap animation 0x2218 blended over the frames left (+0xF36B4) and behaviour
  * D_003B1A28; airborne meanwhile */
-void func_0014FC70(Hewie *h) {
+/* 0x0014FC70 */
+void Hewie_StateLeapTakeOff(Hewie *h) {
     if (!in_his_room(h, gCharPursuer)) {
         hewie_want(h, 0, 0);
         return;
@@ -7152,7 +7323,8 @@ extern const PTMF D_003B1A18;
  * third of the planned distance, at least 19; the speed, the rise (to land at the spot's height
  * under 0.3 a frame of gravity) and the turn a frame from them; animation 0x1E01, sound 0x68,
  * behaviour D_003B1A18. No way there: a debug message and the default action */
-void func_0014FF10(Hewie *h) {
+/* 0x0014FF10 */
+void Hewie_StateLeapLaunch(Hewie *h) {
     f32 a, d, rest, fn;
     s32 n;
 
@@ -7166,7 +7338,7 @@ void func_0014FF10(Hewie *h) {
         return;
     }
     a = HW(h, 0x10C, f32);
-    if (func_0013EE40(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
         func_0026EE88(D_0044F180);
         hewie_want(h, 0, 0);
         return;
@@ -7182,7 +7354,7 @@ void func_0014FF10(Hewie *h) {
     HW(h, 0xF36B4, s32) = n;
     HW(h, 0xF36C4, f32) = rest / fn;
     HW(h, 0xF36C8, f32) = (h->c.unk110[1] - h->c.a.pos[1]) / fn + 0.5f * (0x1.3333340000000p-2f /* 0.3 */ * fn);
-    d = func_002E2D00(a - h->c.a.angle[1]);
+    d = Angle_Wrap(a - h->c.a.angle[1]);
     HW(h, 0xF36CC, f32) = a;
     if (d <= 0.0f) {
         d = -d;
@@ -7190,7 +7362,7 @@ void func_0014FF10(Hewie *h) {
     HW(h, 0xF36D0, f32) = d / fn;
     Motion_PlayTable(h->c.motion, 0x1E01, -1);
     HW(h, 0xF3558, u8) = 1;
-    func_0013A430(h, 0x68);
+    Hewie_MakeSound(h, 0x68);
     Hewie_SetBehaviour(h, &D_003B1A18);
 }
 
@@ -7202,7 +7374,8 @@ extern const PTMF D_003B19E8;
  * default action): turning toward +0xF36CC by +0xF36D0 and moving +0xF36C4 a frame while
  * blending; then put exactly at +0xF36E0 (triangle +0x104, snapped onto it) facing +0xF36CC,
  * behaviour D_003B19E8 */
-void func_00150930(Hewie *h) {
+/* 0x00150930 */
+void Hewie_StateByFiona(Hewie *h) {
     f32 p[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -7240,7 +7413,8 @@ extern const PTMF D_003B19D8;
  * state block at 7, the default action): animation 0x8000, the point D_003B12A0 in her frame
  * facing heading +0x10C (D_003B12A0[0]; +0xF36E0, planned; no way: the default action), a tenth of
  * the way and of the turn to face away (+0xF36CC) each frame; behaviour D_003B19D8 */
-void func_00150C10(Hewie *h) {
+/* 0x00150C10 */
+void Hewie_StateBehindFiona(Hewie *h) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -7256,15 +7430,15 @@ void func_00150C10(Hewie *h) {
         return;
     }
     a = HW(h, 0x10C, f32);
-    back = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+    back = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
     Motion_PlayWith(h->c.motion, 0x8000, 8, -1, 10.0f);
     v[1] = 0.0f;
     v[3] = 0.0f;
     v[0] = D_003B12A0[0][0];
     v[2] = D_003B12A0[0][1];
     Mtx_AtHeading(m, gCharPlayer->a.pos, a);
-    func_002E2DD0(at, m, v);
-    if (func_0013EE40(h, h->c.unk104[0], at, 0, 1) != 0) {
+    Mtx_ApplyPoint(at, m, v);
+    if (Hewie_PlanAndGo(h, h->c.unk104[0], at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -7272,7 +7446,7 @@ void func_00150C10(Hewie *h) {
         gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
     sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
     HW(h, 0xF36C4, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * rest;
-    d = func_002E2D00(back - h->c.a.angle[1]);
+    d = Angle_Wrap(back - h->c.a.angle[1]);
     HW(h, 0xF36CC, f32) = back;
     if (d <= 0.0f) {
         d = -d;
@@ -7291,7 +7465,8 @@ extern const PTMF D_003B19B8;
  * reach (else the default action). Within 10 of it and facing away from her (within 90 degrees):
  * hold still, and when the game takes it (SlotCmd_Give 2 6) behaviour D_003B19B8. Else walk
  * there (run, 0x202, when the stride says so; else 0x201) */
-void func_00151190(Hewie *h) {
+/* 0x00151190 */
+void Hewie_StateKeepBehind(Hewie *h) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -7311,7 +7486,7 @@ void func_00151190(Hewie *h) {
     v[0] = D_003B12A0[0][0];
     v[2] = D_003B12A0[0][1];
     Mtx_AtHeading(m, gCharPlayer->a.pos, HW(h, 0x10C, f32));
-    func_002E2DD0(at, m, v);
+    Mtx_ApplyPoint(at, m, v);
     tri = Actor_TriOf(&gCharPlayer->a, at);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     if (tri == NAV_NONE || (NavMesh_TriFlags(gNavMesh, tri) & 0x29020008)) {
@@ -7321,10 +7496,10 @@ void func_00151190(Hewie *h) {
     if (Actor_Distance(&h->c.a, at) < 10.0f) {
         f32 d;
 
-        if (!(func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
-            d = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
+        if (!(Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
+            d = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
         } else {
-            d = -func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
+            d = -Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]);
         }
         if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
             HW(h, 0xF3604, s32) = 4;
@@ -7335,9 +7510,9 @@ void func_00151190(Hewie *h) {
             return;
         }
     }
-    if (h->c.unk128 < h->c.unk124 || func_0013EE40(h, tri, at, 0, 0) == 0) {
+    if (h->c.unk128 < h->c.unk124 || Hewie_PlanAndGo(h, tri, at, 0, 0) == 0) {
         anim = MOTION_ANIM(h->c.motion);
-        if ((u8)func_00139DE0(h) == 1) {
+        if ((u8)Hewie_Stride(h) == 1) {
             if (anim != 0x202) {
                 Motion_PlayTable(h->c.motion, 0x202, -1);
             }
@@ -7355,7 +7530,8 @@ void func_00151190(Hewie *h) {
  * way (+0xF36B8, set when the way ahead runs off the mesh) unless already facing within 60
  * degrees of it, then the default action. Turning at least 1.5 degrees a frame; once facing it,
  * testing the step ahead */
-void func_00151D10(Hewie *h) {
+/* 0x00151D10 */
+void Hewie_StateSlope(Hewie *h) {
     Progress *p = gProgress;
     f32 n[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
@@ -7374,7 +7550,7 @@ void func_00151D10(Hewie *h) {
     if (HW(h, 0xF36B4, s32) != -1) {
         if ((u8)e != 8) {
             if (HW(h, 0xF36B4, s32) == 0) {
-                func_0013AAE0(h, e);
+                Hewie_ThroughExit(h, e);
                 hewie_want(h, 0, 0);
                 return;
             }
@@ -7384,7 +7560,7 @@ void func_00151D10(Hewie *h) {
     } else {
         HW(h, 0xF36B4, s32) = (u8)e == 8 ? 0 : 1;
     }
-    func_00141C00(h, 8);
+    Hewie_KeepPose(h, 8);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     if (!(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
         hewie_want(h, 0, 0);
@@ -7405,10 +7581,10 @@ void func_00151D10(Hewie *h) {
     if (HW(h, 0xF36B8, s32) == 0) {
         a = func_0031C5C0(n[0], n[2]);
         if (sceVu0InnerProduct(fwd, dir) < 0.0f) {
-            a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+            a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
         }
     } else {
-        a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_0031C5C0(n[0], n[2]));
+        a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + func_0031C5C0(n[0], n[2]));
         Mtx_TurnY(m, a);
         v[2] = 1.0f;
         v[0] = 0.0f;
@@ -7427,7 +7603,7 @@ void func_00151D10(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     if (step < 0x1.aceea00000000p-6f /* 0.02617994 */) {
         step = 0x1.aceea00000000p-6f /* 0.02617994 */;
@@ -7455,7 +7631,7 @@ static void bite_landed(Hewie *h, Progress *p) {
     }
     if (hit & 4) {
         if (RNG01() < 0x1.555476p-2f /* 0.33333 */) {
-            func_00166150(h, gCharPursuer, 1);
+            Hewie_ChangeFeeling(h, gCharPursuer, 1);
         }
         HW(h, 0xF3688, s16) = 300;
     }
@@ -7483,7 +7659,7 @@ static void aim_run(Hewie *h, const f32 *at) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
 }
 
 /* rush his target (+0xF3544, in his room; else the default action) to bite it, for +0xF36B4
@@ -7492,9 +7668,10 @@ static void aim_run(Hewie *h, const f32 *at) {
  * (+0xF35C4), sound 0x6C, the bitten collected (+0x108). Running (0x202) at it along the path
  * (pose 8 when the stride fails), aiming straight once on its triangle. Unless progress flags
  * 0x13 / 0x2B: Fiona (1) or the pursuer (4) in bite reach (progress +0x2C, bone 0x1F, 3) are
- * bitten (sound 0x68; 5, +5 on difficulty 1, +half with progress +0xA10; hard by func_001386D0
- * 10; then behaviour D_003B1978), and the bite tested on the creatures (func_00137FE0) */
-void func_001523D0(Hewie *h) {
+ * bitten (sound 0x68; 5, +5 on difficulty 1, +half with progress +0xA10; hard by Hewie_ReactionRoll
+ * 10; then behaviour D_003B1978), and the bite tested on the creatures (Hewie_Bite) */
+/* 0x001523D0 */
+void Hewie_StateRush(Hewie *h) {
     Progress *p;
     Character *t;
     s32 there, mask;
@@ -7513,16 +7690,16 @@ void func_001523D0(Hewie *h) {
     }
     t = HW(h, 0xF3544, Character *);
     there = t->a.navTri == Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE);
-    if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
+    if (!there && Hewie_PlanAndGo(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+    if (Hewie_StepToPose(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
         Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     if (!there) {
-        if (!(u8)func_00139DE0(h)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         aim_run(h, HW(h, 0xF3544, Character *)->a.pos);
@@ -7546,8 +7723,8 @@ void func_001523D0(Hewie *h) {
     if (mask != 0) {
         s32 hard;
 
-        func_0013A430(h, 0x68);
-        hard = (u8)func_001386D0(h, 10) == 1;
+        Hewie_MakeSound(h, 0x68);
+        hard = (u8)Hewie_ReactionRoll(h, 10) == 1;
         dmg = 5;
         if ((u8)Progress_GetVar(p, 0x27) == 1) {
             dmg += 5;
@@ -7558,7 +7735,7 @@ void func_001523D0(Hewie *h) {
         Relation_Request(p, AT(h, 0x20, u8), mask, 1, dmg, hard ? -0x8000 : 0, 20.0f);
         Hewie_SetBehaviour(h, &D_003B1978);
     }
-    h->c.unk104[0] = func_00137FE0(h, h->c.unk104[1], 5, 0x1F, 10.0f);
+    h->c.unk104[0] = Hewie_Bite(h, h->c.unk104[1], 5, 0x1F, 10.0f);
 }
 
 /* ---- closing in to bite ---- */
@@ -7568,7 +7745,8 @@ extern const PTMF D_003B1968;
 /* close in on his target (+0xF3544, in his room and reachable; else the default action): once
  * standing and in his run (0x202), behaviour D_003B1968; running at it along the path (pose 8
  * when the stride fails), aiming straight once on its triangle */
-void func_00152D60(Hewie *h) {
+/* 0x00152D60 */
+void Hewie_StateCloseIn(Hewie *h) {
     Character *t;
     s32 there;
 
@@ -7578,11 +7756,11 @@ void func_00152D60(Hewie *h) {
     }
     t = HW(h, 0xF3544, Character *);
     there = t->a.navTri == Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE);
-    if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
+    if (!there && Hewie_PlanAndGo(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00140CD0(h, 5) == 0) {
+    if (Hewie_StepToPose(h, 5) == 0) {
         if (MOTION_ANIM(h->c.motion) == 0x202) {
             Hewie_SetBehaviour(h, &D_003B1968);
         } else {
@@ -7590,8 +7768,8 @@ void func_00152D60(Hewie *h) {
         }
     }
     if (!there) {
-        if (!(u8)func_00139DE0(h)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         aim_run(h, HW(h, 0xF3544, Character *)->a.pos);
@@ -7602,20 +7780,21 @@ void func_00152D60(Hewie *h) {
 
 /* walk (pose 7) along heading +0xF36C4 for +0xF36B4 frames, head held level toward it (the
  * default action taken when they run out, the walk still finishing this frame) */
-void func_00153440(Hewie *h) {
+/* 0x00153440 */
+void Hewie_StateWalkHeading(Hewie *h) {
     f32 step;
 
     HW(h, 0xF36B4, s32) -= 1;
     if (HW(h, 0xF36B4, s32) == 0) {
         hewie_want(h, 0, 0);
     }
-    func_00141C00(h, 7);
+    Hewie_KeepPose(h, 7);
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
 }
@@ -7625,19 +7804,20 @@ void func_00153440(Hewie *h) {
 extern const PTMF D_003B1938;
 
 /* off the mesh: walk (pose 7) along +0xF36C4, picking the freest way near where his head points
- * every 30 frames (func_00137720, 20, 30..150 degrees). Once his head (bone 0x1F) and the point 5
+ * every 30 frames (Hewie_BestHeading, 20, 30..150 degrees). Once his head (bone 0x1F) and the point 5
  * ahead of him are both on the mesh: 16 frames, behaviour D_003B1938 */
-void func_00153700(Hewie *h) {
+/* 0x00153700 */
+void Hewie_StateOffMesh(Hewie *h) {
     f32 head[4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 step;
 
-    func_00141C00(h, 7);
+    Hewie_KeepPose(h, 7);
     if (HW(h, 0xF36B4, s32) != 0) {
         HW(h, 0xF36B4, s32) -= 1;
     } else {
         HW(h, 0xF36B4, s32) = 30;
-        HW(h, 0xF36C4, f32) = func_00137720(h, func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)), 20.0f,
+        HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, Angle_Wrap(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)), 20.0f,
                                             30, 150, 30);
     }
     if (HW(h, 0xF3604, s32) != 8) {
@@ -7645,7 +7825,7 @@ void func_00153700(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
     sceVu0CopyVector(head, Skel_Bone(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
@@ -7665,24 +7845,24 @@ void func_00153700(Hewie *h) {
 }
 
 /* step away (pose 7) from `from`: every 30 frames the freest way near straight away from it
- * (func_00137720, 20, 30..150 degrees), head held level toward it */
+ * (Hewie_BestHeading, 20, 30..150 degrees), head held level toward it */
 static void back_off(Hewie *h, Actor *from) {
     f32 away, step;
 
-    func_00141C00(h, 7);
+    Hewie_KeepPose(h, 7);
     away = Actor_HeadingTo(from, h->c.a.pos);
     if (HW(h, 0xF36B4, s32) != 0) {
         HW(h, 0xF36B4, s32) -= 1;
     } else {
         HW(h, 0xF36B4, s32) = 30;
-        HW(h, 0xF36C4, f32) = func_00137720(h, away, 20.0f, 30, 150, 30);
+        HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, away, 20.0f, 30, 150, 30);
     }
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
 }
@@ -7691,8 +7871,9 @@ static void back_off(Hewie *h, Actor *from) {
 
 /* step away (pose 7) from his target (+0xF3544) while it stands within 6 of him in the same
  * room on the mesh (else the default action): every 30 frames the freest way near away from it
- * (func_00137720, 20, 30..150 degrees) */
-void func_00153D20(Hewie *h) {
+ * (Hewie_BestHeading, 20, 30..150 degrees) */
+/* 0x00153D20 */
+void Hewie_StateStepAwayTarget(Hewie *h) {
     Character *t = HW(h, 0xF3544, Character *);
     f32 d[4] __attribute__((aligned(16)));
 
@@ -7709,7 +7890,8 @@ void func_00153D20(Hewie *h) {
 }
 
 /* step away (pose 7) from Fiona while she is within 6 in his room (else the default action) */
-void func_00154150(Hewie *h) {
+/* 0x00154150 */
+void Hewie_StateStepAwayFiona(Hewie *h) {
     if (!in_his_room(h, gCharPlayer) || !(Actor_Distance(&h->c.a, gCharPlayer->a.pos) <= 6.0f)) {
         hewie_want(h, 0, 0);
         return;
@@ -7720,10 +7902,11 @@ void func_00154150(Hewie *h) {
 /* ---- leaving by an exit ---- */
 
 /* walk (pose 7) his path out by the exit +0xF36B4: stepping by the root motion along it and
- * turning toward the point reached by 6 degrees. At its end: through the exit (func_0013AAE0;
+ * turning toward the point reached by 6 degrees. At its end: through the exit (Hewie_ThroughExit;
  * when that fails his remembered triangles +0x148C clear), +0x2B / +0x2D cleared, picked up if
  * down, and the default action */
-void func_001545A0(Hewie *h) {
+/* 0x001545A0 */
+void Hewie_StateWalkOut(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 s, a;
@@ -7733,7 +7916,7 @@ void func_001545A0(Hewie *h) {
     if ((h->c.unk128 < h->c.unk124) == 1) {
         s = root_ahead(h, root);
         n = Character_WaypointAhead(&h->c, &tri, p, s < 0.0f ? 0.0f : s);
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         a = Actor_HeadingTo(&h->c.a, p);
         turn_toward(h, a, 0x1.aceea00000000p-4f /* 0.10471976 */);
         h->c.a.navTri = tri;
@@ -7744,7 +7927,7 @@ void func_001545A0(Hewie *h) {
     }
     h->c.a.unk2B = 0;
     h->c.a.unk2D = 0;
-    if (func_0013AAE0(h, HW(h, 0xF36B4, u8)) == 0) {
+    if (Hewie_ThroughExit(h, HW(h, 0xF36B4, u8)) == 0) {
         for (i = 0; i < 13; i++) {
             h->c.unk148C[i] = 0;
         }
@@ -7763,7 +7946,8 @@ void func_001545A0(Hewie *h) {
  * (+0x2B) and blocked only by flag 8. Out of it (+0x2B cleared): done when +0xF36B8 runs out or
  * the rooms say the exit is passed (+0x70); and whenever the door no longer gives the way (state
  * bit 0x20): the default action */
-void func_00154860(Hewie *h) {
+/* 0x00154860 */
+void Hewie_StateSqueeze(Hewie *h) {
     f32 dir[4] __attribute__((aligned(16)));
     f32 root[4] __attribute__((aligned(16)));
     f32 a, step;
@@ -7775,8 +7959,8 @@ void func_00154860(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
-    func_00141C00(h, 7);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
+    Hewie_KeepPose(h, 7);
     step = run_turn(h);
     turn_toward(h, a, step);
     nm = gNavMesh;
@@ -7817,8 +8001,9 @@ extern const PTMF D_003B1918;
  * and he stops likewise; an exit flagged in the room's progress is left alone. Else through it:
  * into the room being played, placed at the exit facing in, running in (0x201) and either
  * barking (0x4F, by his trust's chance in 0x39) or carrying on (0x70), settled in as
- * func_00143D20; into another room, off the mesh toward its next door (behaviour D_003B1918) */
-void func_00155000(Hewie *h) {
+ * Hewie_Arrive; into another room, off the mesh toward its next door (behaviour D_003B1918) */
+/* 0x00155000 */
+void Hewie_StateToDoor(Hewie *h) {
     Progress *p;
     VObject *rooms;
     f32 p0[4] __attribute__((aligned(16)));
@@ -7860,7 +8045,7 @@ void func_00155000(Hewie *h) {
         if (HEWIE_ACTION(h) == 0x35) {
             hewie_want(h, 0x35, 0);
         } else {
-            func_0013E680(h);
+            Hewie_WhenIdle(h);
         }
         return;
     }
@@ -7871,7 +8056,7 @@ void func_00155000(Hewie *h) {
     if ((u8)Progress_ExitOpen(p, h->c.a.room, exit) && (u8)Progress_ExitUnlocked(p, h->c.a.room, exit) != 1 &&
         (u8)Progress_ExitPassable(p, h->c.a.room, exit, AT(h, 0x20, u8))) {
         HW(h, 0xF3590, u8) = 0;
-        func_0013AAE0(h, exit);
+        Hewie_ThroughExit(h, exit);
         if (h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
             rooms = gRooms;
             tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, h->c.door, p0);
@@ -7899,7 +8084,7 @@ void func_00155000(Hewie *h) {
     if (HEWIE_ACTION(h) == 0x35) {
         hewie_want(h, 0x35, 0);
     } else {
-        func_0013E680(h);
+        Hewie_WhenIdle(h);
     }
 }
 
@@ -7909,12 +8094,13 @@ void func_00155000(Hewie *h) {
  * blending), its feet touching (+0x64, feet 2 / 3) letting the root motion carry him (+0xF36C0;
  * till then +0xF36C4 a frame); its end, the walk (0x201). In group 9 at the end: the default
  * action. Turning with his head all the while */
-void func_00155A30(Hewie *h) {
+/* 0x00155A30 */
+void Hewie_StateLanding(Hewie *h) {
     f32 v[4] __attribute__((aligned(16)));
     f32 root[4] __attribute__((aligned(16)));
     f32 a;
 
-    if (func_001669A0(h) != 9) {
+    if (Hewie_AnimGroup(h) != 9) {
         if (MOTION_ANIM(h->c.motion) != 0x1E03) {
             if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
                 h->c.a.unk2D = 0;
@@ -7937,7 +8123,7 @@ void func_00155A30(Hewie *h) {
     } else if (ANIM_DONE(h)) {
         hewie_want(h, 0, 0);
     }
-    a = func_002E2D00(h->c.a.angle[1] + 0x1.921fb6p+1f /* pi */ * (2.0f * (0.5f * AT(h->c.motion, 0x858, f32))) / 180.0f);
+    a = Angle_Wrap(h->c.a.angle[1] + 0x1.921fb6p+1f /* pi */ * (2.0f * (0.5f * AT(h->c.motion, 0x858, f32))) / 180.0f);
     h->c.a.angle[1] = a;
     sceVu0UnitMatrix(h->c.a.rot);
     sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, a);
@@ -7957,7 +8143,8 @@ extern const PTMF D_003B1908;
 /* the leaping bite in flight: his bite's effects (bite_landed), forward +0xF36C4 a frame, rising
  * +0xF36C8 (less 0.5 a frame) from height +0xF36CC; below the ground (mesh +0x14): land
  * (0x1E03 unless blending, head ahead), +0xF356C top bit cleared, behaviour D_003B1908 */
-void func_00155D00(Hewie *h) {
+/* 0x00155D00 */
+void Hewie_StateLeapBite(Hewie *h) {
     f32 v[4] __attribute__((aligned(16)));
     f32 g[4] __attribute__((aligned(16)));
 
@@ -7994,10 +8181,10 @@ extern const PTMF D_003B18E8, D_003B18F8;
 
 /* |wrap(c's heading - his)| as the original takes it (the wrap twice, 0 becomes -0) */
 static f32 heading_gap(Hewie *h, Character *c) {
-    if (!(func_002E2D00(c->a.angle[1] - h->c.a.angle[1]) <= 0.0f)) {
-        return func_002E2D00(c->a.angle[1] - h->c.a.angle[1]);
+    if (!(Angle_Wrap(c->a.angle[1] - h->c.a.angle[1]) <= 0.0f)) {
+        return Angle_Wrap(c->a.angle[1] - h->c.a.angle[1]);
     }
-    return -func_002E2D00(c->a.angle[1] - h->c.a.angle[1]);
+    return -Angle_Wrap(c->a.angle[1] - h->c.a.angle[1]);
 }
 
 /* a leaping tackle: its hits so far collected (his progress hit bits into +0xF36BC, and the
@@ -8005,10 +8192,11 @@ static f32 heading_gap(Hewie *h, Character *c) {
  * eased (sine) from +0xF36C8 to +0xF36E4 over +0xF36B8 frames (then behaviour D_003B18E8).
  * Unless progress flags 0x13 / 0x2B: the pursuer, else Fiona, not yet hit and in reach (progress
  * +0x2C, bone 0x1F, 3) takes it: 5 / 8 (from behind / not), 10 / 16 when charged (+0xF3585),
- * doubled on difficulty 1, +half with progress +0xA10; on the pursuer hard by func_001386D0
+ * doubled on difficulty 1, +half with progress +0xA10; on the pursuer hard by Hewie_ReactionRoll
  * (6..9 by charge and side; else the frame count is left unset, taken as 0). The bite also tested
  * on the creatures. Below the ground: landed (0x1E03), behaviour D_003B18F8 */
-void func_00155FF0(Hewie *h) {
+/* 0x00155FF0 */
+void Hewie_StateTackle(Hewie *h) {
     Progress *p = gProgress;
     f32 v[4] __attribute__((aligned(16)));
     f32 g[4] __attribute__((aligned(16)));
@@ -8019,7 +8207,7 @@ void func_00155FF0(Hewie *h) {
     if ((hit & 5) || h->c.unk104[0] != 0) {
         if (hit & 4) {
             if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
-                func_00166150(h, gCharPursuer, 1);
+                Hewie_ChangeFeeling(h, gCharPursuer, 1);
             }
             HW(h, 0xF3688, s16) = 300;
         }
@@ -8069,7 +8257,7 @@ void func_00155FF0(Hewie *h) {
                 } else {
                     kind = HW(h, 0xF3585, u8) == 0 ? 6 : 8;
                 }
-                if ((u8)func_001386D0(h, kind) == 1) {
+                if ((u8)Hewie_ReactionRoll(h, kind) == 1) {
                     frames = -0x8000;
                 }
             }
@@ -8097,7 +8285,7 @@ void func_00155FF0(Hewie *h) {
                 }
                 Relation_Request(p, AT(h, 0x20, u8), mask, type, dmg, frames, 20.0f);
             }
-            h->c.unk104[0] = func_00137FE0(h, h->c.unk104[1], HW(h, 0xF3585, u8) != 0 ? 10 : 5, 0x1F, 10.0f);
+            h->c.unk104[0] = Hewie_Bite(h, h->c.unk104[1], HW(h, 0xF3585, u8) != 0 ? 10 : 5, 0x1F, 10.0f);
         }
     }
     sceVu0CopyVector(g, h->c.a.pos);
@@ -8121,10 +8309,11 @@ extern const PTMF D_003B18D8;
  * default action) running (0x202). Not blending and within 30 by the path: under 5, by its slot
  * the attack (Fiona 0x61, 2..5: 0x59 / 0x5B / 0x5D / 0x5F) while +0xF3560 lasts, else the
  * default action; else, both on plain ground (mesh flag 1 on either: action 0x6D) and facing it
- * (within 60 degrees) on its triangle: pounce (as func_001476C0 but aimed 5 above it, frames by
+ * (within 60 degrees) on its triangle: pounce (as Hewie_StateRunUpJump but aimed 5 above it, frames by
  * the distance at 2.8, behaviour D_003B18D8). Otherwise along the path (pose 8 when the stride
  * fails) */
-void func_001569C0(Hewie *h) {
+/* 0x001569C0 */
+void Hewie_StateCloseOnTarget(Hewie *h) {
     Character *t;
     f32 d[4] __attribute__((aligned(16)));
     f32 fwd[4] __attribute__((aligned(16)));
@@ -8142,11 +8331,11 @@ void func_001569C0(Hewie *h) {
     }
     t = HW(h, 0xF3544, Character *);
     tri = t->a.navTri;
-    if (func_0013EE40(h, tri, t->a.pos, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, tri, t->a.pos, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
+    if (Hewie_StepToPose(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
         Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
@@ -8219,7 +8408,7 @@ void func_001569C0(Hewie *h) {
                 Motion_PlayTable(h->c.motion, 0x1E01, -1);
                 HW(h, 0xF356C, u32) |= 0x80000000;
                 h->c.a.unk2D = 1;
-                func_0013A430(h, 0x68);
+                Hewie_MakeSound(h, 0x68);
                 h->c.unk104[0] = 0;
                 h->c.unk104[1] = 0;
                 Hewie_SetBehaviour(h, &D_003B18D8);
@@ -8227,8 +8416,8 @@ void func_001569C0(Hewie *h) {
             }
         }
     }
-    if (!(u8)func_00139DE0(h)) {
-        func_00141C00(h, 8);
+    if (!(u8)Hewie_Stride(h)) {
+        Hewie_KeepPose(h, 8);
     }
 }
 
@@ -8241,7 +8430,8 @@ extern const PTMF D_003B18C8;
  * 0x2206, 2: 0x220F). Reaching the ground: landing animation (0x2212, or 0x2213 from a high
  * drop, +0xF36B4: in the room being played, on a splashing floor (mesh flags 0x02008000) the
  * splash sound and, in rooms 7 / 0x106, a print), behaviour D_003B18C8 */
-void func_00157480(Hewie *h) {
+/* 0x00157480 */
+void Hewie_StateFalling(Hewie *h) {
     f32 y;
 
     if (HW(h, 0xF36B4, s32) == 0 && ANIM_DONE(h)) {
@@ -8299,10 +8489,11 @@ extern const PTMF D_003B1888, D_003B1898;
 
 /* hanging on to the pursuer by his jaws (actions 0x1F / 0x20; +0x104 1 or 2 the grip), moved by
  * the root motion (height kept in +0xF36C4). At each animation's end: the pursuer gone, the
- * default action; else a quarter of the time his grudge eases, and he holds on (func_00138460 2:
+ * default action; else a quarter of the time his grudge eases, and he holds on (Hewie_Dares 2:
  * 0x2204 / 0x220D) or is shaken off (+0x94 10, 0x2207 / 0x2210, +0xF36B4 1), flinging him along
  * the last root motion (+0xF36C8 up, +0xF36E0 across); behaviour D_003B1888 / D_003B1898 */
-void func_001579C0(Hewie *h) {
+/* 0x001579C0 */
+void Hewie_StateHanging(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
 
     root_ahead(h, root);
@@ -8317,13 +8508,13 @@ void func_001579C0(Hewie *h) {
             return;
         }
         if (RNG01() < 0.25f) {
-            func_00166150(h, gCharPursuer, -1);
+            Hewie_ChangeFeeling(h, gCharPursuer, -1);
         }
         if (HEWIE_ACTION(h) == 0x20 || HEWIE_ACTION(h) == 0x1F) {
             s32 grip = h->c.unk104[0];
 
             if (grip == 1 || grip == 2) {
-                if ((u8)func_00138460(h, 2) == 1) {
+                if ((u8)Hewie_Dares(h, 2) == 1) {
                     HW(h, 0xF36B4, s32) = 0;
                     Motion_Play(h->c.motion, grip == 1 ? 0x2204 : 0x220D, -1);
                 } else {
@@ -8349,11 +8540,12 @@ void func_001579C0(Hewie *h) {
  * the animation's end +0xF3688 300 frames and the default action. Moved by the root motion (level),
  * held at the pursuer's grip height (its motion +0x58): fixed (+0xF36B4 0) until event 2, then
  * easing off over 5 frames (+0xF36C4 0..1), then free (2) */
-void func_00157E30(Hewie *h) {
+/* 0x00157E30 */
+void Hewie_StateClamped(Hewie *h) {
     f32 y0, t, g;
 
     if (Motion_EventFlags(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
-        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+        Hewie_BiteEffect(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
     }
     if (ANIM_DONE(h)) {
         HW(h, 0xF3688, s16) = 300;
@@ -8392,9 +8584,9 @@ extern u32 D_0047E374;   /* pad buttons held */
 extern const PTMF D_003B1828, D_003B1838, D_003B1848, D_003B1858, D_003B1868, D_003B1878;
 
 /* one bite into the pursuer: `base` damage (doubled on difficulty 1, +half with progress
- * +0xA10), hard when func_001386D0 `kind` */
+ * +0xA10), hard when Hewie_ReactionRoll `kind` */
 static void bite_pursuer(Hewie *h, s32 kind, u16 base) {
-    s32 hard = (u8)func_001386D0(h, kind) == 1;
+    s32 hard = (u8)Hewie_ReactionRoll(h, kind) == 1;
     Progress *p = gProgress;
     u16 dmg = base;
 
@@ -8423,7 +8615,8 @@ static void shaken_off(Hewie *h) {
  * (commands 0x27 / 0x2C) or the pursuer is down; under her direct control (+0x1FBEC1) let go on
  * cross, square presses (5) to keep biting. Always moved by the root motion at the pursuer's
  * grip height */
-void func_001580F0(Hewie *h) {
+/* 0x001580F0 */
+void Hewie_StateBiteHold(Hewie *h) {
     if (h->c.state[0] == 7) {
         HW(h, 0xF36B4, u32) = 3;
         h->c.state[0] = 0;
@@ -8433,7 +8626,7 @@ void func_001580F0(Hewie *h) {
         return;
     }
     if (Motion_EventFlags(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
-        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+        Hewie_BiteEffect(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
     }
     if (ANIM_DONE(h)) {
         if (HW(h, 0xF36B4, u32) < 2) {
@@ -8581,7 +8774,8 @@ extern const PTMF D_003B1818;
  * +0x108) facing +0xF36CC, the bite animation (0x2218 / 0x2201 / 0x220A / 0x2215), biting
  * (+0xF36B4 1) with the hold chance 5 x (10 + his feeling about it), behaviour D_003B1818. At
  * the pursuer's grip height throughout */
-void func_00159040(Hewie *h) {
+/* 0x00159040 */
+void Hewie_StateLeapLands(Hewie *h) {
     f32 p[4] __attribute__((aligned(16)));
     s32 kind = 0;   /* (kind and base unset in the original for other actions or grips) */
     u16 base = 0;
@@ -8620,7 +8814,7 @@ void func_00159040(Hewie *h) {
             break;
         }
         bite_pursuer(h, kind, base);
-        func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
+        Hewie_BiteEffect(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
         Actor_PlaySound(&h->c.a, 0x6B, 5, 0, 0, NULL);
         h->c.a.navTri = h->c.unk104[1];
         sceVu0CopyVector(h->c.a.pos, h->c.unk110);
@@ -8682,11 +8876,12 @@ extern const PTMF D_003B1808;
  * the default action; the pursuer gone: the default action; his state block at 7: action 0x5A).
  * The bites he gets (+0xF36B8) by his action, grip and trust (0x1F: grip 0 D_003B1330, else
  * D_003B1310 / D_003B1320 charged; 0x21: D_003B1340; 0x20 / 0x22: 1); his mood easing, sub-move
- * 0x19, a third of the time a grudge, the pursuer told (func_0013B860). The leap animation (0x2217;
+ * 0x19, a third of the time a grudge, the pursuer told (Hewie_CountEncounter). The leap animation (0x2217;
  * grip 1: 0x2200 turned about unless it is kind 0xB, grip 2: 0x2209 turned about, grip 0:
  * 0x2214) toward +0x10C, covering the path and the turn in 12 frames (0x21 / 0x22) or 8; sound
  * 0x68, behaviour D_003B1808 */
-void func_00159770(Hewie *h) {
+/* 0x00159770 */
+void Hewie_StateLeapGrip(Hewie *h) {
     f32 a, rest, d;
 
     if (h->c.state[0] == 7) {
@@ -8698,7 +8893,7 @@ void func_00159770(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_0013EE40(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
         func_0026EE88(D_0044F1A0);
         hewie_want(h, 0, 0);
         return;
@@ -8726,9 +8921,9 @@ void func_00159770(Hewie *h) {
     }
     h->c.moveSub = 0x19;
     if (RNG01() < 0x1.5554760000000p-2f /* 0.33333 */) {
-        func_00166150(h, gCharPursuer, 1);
+        Hewie_ChangeFeeling(h, gCharPursuer, 1);
     }
-    func_0013B860(h, gCharPursuer);
+    Hewie_CountEncounter(h, gCharPursuer);
     a = HW(h, 0x10C, f32);
     switch (HEWIE_ACTION(h)) {
     case 0x22:
@@ -8740,12 +8935,12 @@ void func_00159770(Hewie *h) {
         switch (h->c.unk104[0]) {
         case 1:
             if (gCharPursuer->unk153C != 0xB) {
-                a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+                a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
             }
             Motion_PlayTable(h->c.motion, 0x2200, -1);
             break;
         case 2:
-            a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+            a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
             Motion_PlayTable(h->c.motion, 0x2209, -1);
             break;
         case 0:
@@ -8756,7 +8951,7 @@ void func_00159770(Hewie *h) {
     }
     rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
         gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
-    d = func_002E2D00(a - h->c.a.angle[1]);
+    d = Angle_Wrap(a - h->c.a.angle[1]);
     HW(h, 0xF36CC, f32) = a;
     if ((u32)(HEWIE_ACTION(h) - 0x21) < 2) {
         HW(h, 0xF36C4, f32) = 0x1.5551d60000000p-4f /* 0.08333 */ * rest;
@@ -8774,7 +8969,7 @@ void func_00159770(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     h->c.a.unk2D = 0;
     HW(h, 0xF3581, u8) = 1;
-    func_0013A430(h, 0x68);
+    Hewie_MakeSound(h, 0x68);
     Hewie_SetBehaviour(h, &D_003B1808);
 }
 
@@ -8783,11 +8978,12 @@ void func_00159770(Hewie *h) {
 extern const PTMF D_003B17E8;
 
 /* he goes for the pursuer (in his room, unless progress flags 0x13 / 0x2B: else the default
- * action): with no grip yet (+0x104 -1) the side he comes from (func_00139A70) picks it (head
+ * action): with no grip yet (+0x104 -1) the side he comes from (Hewie_AttackSide) picks it (head
  * on: grip 0 for 0x1F / 0x20; the flanks 1 / 2, action 0x1F (0x1F / 0x21) or 0x20 (0x20 / 0x22));
  * then the noise of the attack for the game by action and grip (frames 15 for 0x21 / 0x22; grip 1
  * 10 / 11 charged, grip 2 12 / 13, grip 0 14), behaviour D_003B17E8 */
-void func_00159F90(Hewie *h) {
+/* 0x00159F90 */
+void Hewie_StateGoesForPursuer(Hewie *h) {
     Progress *p;
     s32 frames = -1;
 
@@ -8801,7 +8997,7 @@ void func_00159F90(Hewie *h) {
         return;
     }
     if (h->c.unk104[0] == -1) {
-        s32 side = func_00139A70(h);
+        s32 side = Hewie_AttackSide(h);
 
         switch (side) {
         case 0:
@@ -8860,7 +9056,8 @@ extern const PTMF D_003B17D8;
 /* run at the pursuer (in his room and reachable; else the default action), trotting or running
  * by the stride; within 23 of it: head level (+0xF3604 4), marked (+0x2D, +0xF356C top bit),
  * behaviour D_003B17D8 */
-void func_0015A460(Hewie *h) {
+/* 0x0015A460 */
+void Hewie_StateRunAtPursuer(Hewie *h) {
     s32 anim;
 
     if (!in_his_room(h, gCharPursuer)) {
@@ -8875,12 +9072,12 @@ void func_0015A460(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B17D8);
         return;
     }
-    if (h->c.unk128 >= h->c.unk124 && func_0013EE40(h, gCharPursuer->a.navTri, gCharPursuer->a.pos, 0, 0) != 0) {
+    if (h->c.unk128 >= h->c.unk124 && Hewie_PlanAndGo(h, gCharPursuer->a.navTri, gCharPursuer->a.pos, 0, 0) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
     anim = MOTION_ANIM(h->c.motion);
-    if ((u8)func_00139DE0(h) == 1) {
+    if ((u8)Hewie_Stride(h) == 1) {
         if (anim != 0x202) {
             Motion_PlayTable(h->c.motion, 0x202, -1);
         }
@@ -8896,7 +9093,8 @@ void func_0015A460(Hewie *h) {
  * way: the default action). When the exit's door is open to him and he is past the point:
  * through it (unless there is no door), remembering the door (+0x148C) when Fiona is in his
  * room but out of his reach; then the default action */
-void func_0015A720(Hewie *h) {
+/* 0x0015A720 */
+void Hewie_StateGoToExit(Hewie *h) {
     Progress *p;
     VObject *rooms;
     f32 door[4] __attribute__((aligned(16)));
@@ -8906,24 +9104,24 @@ void func_0015A720(Hewie *h) {
     u32 d;
 
     there = HW(h, 0xF36B4, s32) == (s32)Actor_TriTo(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
-    if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
+    if (!there && h->c.unk128 >= h->c.unk124 && Hewie_PlanAndGo(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
     switch (HW(h, 0xF36BC, s32)) {
     case 0:
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         break;
     case 1:
-        func_00141C00(h, 8);
+        Hewie_KeepPose(h, 8);
         break;
     case 2:
-        func_00141C00(h, 9);
+        Hewie_KeepPose(h, 9);
         break;
     }
     if (!there) {
-        if (!(u8)func_00139DE0(h)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         run_straight(h, &HW(h, 0xF36E0, f32));
@@ -8941,10 +9139,10 @@ void func_0015A720(Hewie *h) {
     }
     d = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, (u8)h->c.unk100) & 0xFFFF;
     if (d != 0xFFFF) {
-        if (in_his_room(h, gCharPlayer) && !(u8)func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos)) {
+        if (in_his_room(h, gCharPlayer) && !(u8)Hewie_PlanTo(h, gCharPlayer->a.navTri, gCharPlayer->a.pos)) {
             h->c.unk148C[d >> 5] |= 1 << (d & 0x1F);
         }
-        func_0013AAE0(h, (u8)h->c.unk100);
+        Hewie_ThroughExit(h, (u8)h->c.unk100);
     }
     hewie_want(h, 0, 0);
 }
@@ -8957,21 +9155,22 @@ extern const PTMF D_003B1788, D_003B1798, D_003B17A8, D_003B17B8, D_003B17C8;
  * D_003B1788; from lying with +0xF36B4: 0x1C07, D_003B1798); 0x19 sitting (0x1C00, D_003B17A8);
  * 0x1A / 0x1B standing (0x1C08 / 0x1C09, D_003B17B8 / D_003B17C8); 0x1C: sit (0x106), then lie
  * down (8) and stay for +0xF355C, then the default action */
-void func_0015AE10(Hewie *h) {
+/* 0x0015AE10 */
+void Hewie_StateTricks(Hewie *h) {
     switch (HEWIE_ACTION(h)) {
     case 0x18:
         if (HW(h, 0xF36B4, s32) == 0) {
-            if (func_00140CD0(h, 1) == 0) {
+            if (Hewie_StepToPose(h, 1) == 0) {
                 Motion_PlayTable(h->c.motion, 0x1C06, -1);
                 Hewie_SetBehaviour(h, &D_003B1788);
             }
-        } else if (func_00140CD0(h, 2) == 0) {
+        } else if (Hewie_StepToPose(h, 2) == 0) {
             Motion_PlayTable(h->c.motion, 0x1C07, -1);
             Hewie_SetBehaviour(h, &D_003B1798);
         }
         break;
     case 0x19:
-        if (func_00140CD0(h, 1) == 0) {
+        if (Hewie_StepToPose(h, 1) == 0) {
             Motion_PlayTable(h->c.motion, 0x1C00, -1);
             Hewie_SetBehaviour(h, &D_003B17A8);
         }
@@ -8989,20 +9188,20 @@ void func_0015AE10(Hewie *h) {
             }
             break;
         default:
-            if (func_00140CD0(h, 1) == 0) {
+            if (Hewie_StepToPose(h, 1) == 0) {
                 Motion_PlayTable(h->c.motion, 0x106, -1);
             }
             break;
         }
         break;
     case 0x1A:
-        if (func_00140CD0(h, 0) == 0) {
+        if (Hewie_StepToPose(h, 0) == 0) {
             Motion_PlayTable(h->c.motion, 0x1C08, -1);
             Hewie_SetBehaviour(h, &D_003B17B8);
         }
         break;
     case 0x1B:
-        if (func_00140CD0(h, 0) == 0) {
+        if (Hewie_StepToPose(h, 0) == 0) {
             Motion_PlayTable(h->c.motion, 0x1C09, -1);
             Hewie_SetBehaviour(h, &D_003B17C8);
         }
@@ -9016,7 +9215,8 @@ void func_0015AE10(Hewie *h) {
  * path (pose 8 when the stride fails; no way: the default action), straight once on its
  * triangle (his head off the mesh then: the default action); gait by the distance left (walk
  * under 20, trot under 44, else run) */
-void func_0015B130(Hewie *h) {
+/* 0x0015B130 */
+void Hewie_StateComeToCommand(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 head[4] __attribute__((aligned(16)));
     f32 d;
@@ -9026,16 +9226,16 @@ void func_0015B130(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    tri = func_00145610(h, HEWIE_ACTION(h), at);
+    tri = Hewie_CommandPlace(h, HEWIE_ACTION(h), at);
     if (tri != Actor_TriTo(&h->c.a, at, NAV_NONE)) {
-        if (func_0013EE40(h, tri, at, 0, 1) != 0) {
+        if (Hewie_PlanAndGo(h, tri, at, 0, 1) != 0) {
             hewie_want(h, 0, 0);
             return;
         }
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
             gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
-        if (!(u8)func_00139DE0(h)) {
-            func_00141C00(h, 8);
+        if (!(u8)Hewie_Stride(h)) {
+            Hewie_KeepPose(h, 8);
         }
     } else {
         aim_run(h, at);
@@ -9046,17 +9246,18 @@ void func_0015B130(Hewie *h) {
         }
         d = Actor_Distance(&h->c.a, at);
     }
-    func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
+    Hewie_KeepPose(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
 }
 
 /* ---- roaming ---- */
 
 /* roam: along heading +0xF36C4 while the way ahead (Actor_FreeDistance) is at least +0xF36C8; every
  * 90..240 frames, or when it is shorter, a new heading (the freest near where his head points,
- * func_00137720 30..150 degrees for 10 more), held 30 frames before rechecking. Facing it (within
+ * Hewie_BestHeading 30..150 degrees for 10 more), held 30 frames before rechecking. Facing it (within
  * 5 degrees) at a walk he looks about (+0xF3604 2), else ahead. Gait +0xF36BC (walk / trot /
  * run), slower where the way ahead is short (under 10 / 20) */
-void func_0015B660(Hewie *h) {
+/* 0x0015B660 */
+void Hewie_StateRoam(Hewie *h) {
     f32 room, step, left;
 
     room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
@@ -9069,7 +9270,7 @@ void func_0015B660(Hewie *h) {
         if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
             HW(h, 0xF36B4, s32) = (s32)(6.0f * RNG01()) * 30 + 90;
             HW(h, 0xF36B8, s32) = 30;
-            HW(h, 0xF36C4, f32) = func_00137720(h, func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)),
+            HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, Angle_Wrap(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)),
                                                 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
         }
     }
@@ -9086,14 +9287,14 @@ void func_0015B660(Hewie *h) {
             HW(h, 0xF3608, s32) = 10;
         }
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     }
     if (HW(h, 0xF36BC, s32) == 0 || room < 10.0f) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
     } else if (HW(h, 0xF36BC, s32) == 1 || room < 20.0f) {
-        func_00141C00(h, 8);
+        Hewie_KeepPose(h, 8);
     } else {
-        func_00141C00(h, 9);
+        Hewie_KeepPose(h, 9);
     }
 }
 
@@ -9103,8 +9304,9 @@ extern const PTMF D_003B1768;
 
 /* scramble about (animation 0x204) for +0xF355C frames, then head ahead and behaviour
  * D_003B1768: every 10..30 frames, or when the way ahead is under +0xF36C8, a new heading
- * (func_00137720 from his heading, 25, 150 down to 30 degrees), held 30 frames; range 15 after */
-void func_0015BD90(Hewie *h) {
+ * (Hewie_BestHeading from his heading, 25, 150 down to 30 degrees), held 30 frames; range 15 after */
+/* 0x0015BD90 */
+void Hewie_StateScramble(Hewie *h) {
     f32 step;
 
     if (HW(h, 0xF355C, s32) == 0) {
@@ -9126,7 +9328,7 @@ void func_0015BD90(Hewie *h) {
             HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 10 + 10;
             HW(h, 0xF36B8, s32) = 30;
             HW(h, 0xF36C8, f32) = 15.0f;
-            HW(h, 0xF36C4, f32) = func_00137720(h, h->c.a.angle[1], 10.0f + 15.0f, 150, 30, 30);
+            HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, h->c.a.angle[1], 10.0f + 15.0f, 150, 30, 30);
         }
     } else {
         HW(h, 0xF36B8, s32) -= 1;
@@ -9136,10 +9338,10 @@ void func_0015BD90(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
-    if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x204) {
+    if (Hewie_StepToPose(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x204) {
         Motion_PlayTable(h->c.motion, 0x204, -1);
     }
 }
@@ -9154,7 +9356,8 @@ void func_0015BD90(Hewie *h) {
  * point beside it 45 degrees round from straight out, 20 out (up to 40 the more squarely he is
  * behind), the way clear to it; unsettled, along the path to it. Gait by the distance (walk
  * under 20, trot under 44, else run) */
-void func_0015C1E0(Hewie *h) {
+/* 0x0015C1E0 */
+void Hewie_StateFlank(Hewie *h) {
     Character *t;
     f32 p, dd, rel, d, step;
 
@@ -9164,14 +9367,14 @@ void func_0015C1E0(Hewie *h) {
     }
     p = gCharPursuer->a.angle[1];
     dd = Actor_Distance(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
-    rel = func_002E2D00(p - Actor_HeadingTo(&h->c.a, HW(h, 0xF3544, Character *)->a.pos));
+    rel = Angle_Wrap(p - Actor_HeadingTo(&h->c.a, HW(h, 0xF3544, Character *)->a.pos));
     if ((rel <= 0.0f ? -rel : rel) < 0x1.921fb60000000p-1f /* 0.7853982 */ && heading_gap(h, gCharPursuer) < 0x1.2d97c80000000p+1f /* 2.3561945 */) {
         if (HW(h, 0xF3604, s32) != 8) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
         }
         HW(h, 0xF3614, f32) = 0.0f;
-        HW(h, 0xF3618, f32) = func_002E2D00(p - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(p - h->c.a.angle[1]);
         step = run_turn(h);
         turn_toward(h, p, step);
         if (dd < 40.0f) {
@@ -9200,7 +9403,7 @@ void func_0015C1E0(Hewie *h) {
             f32 out = Actor_HeadingTo(&HW(h, 0xF3544, Character *)->a, h->c.a.pos);
             f32 side, reach, a;
 
-            side = HW(h, 0xF36B4, s32) != 0 ? func_002E2D00(out + 0x1.921fb60000000p-1f /* 0.7853982 */) : func_002E2D00(out - 0x1.921fb60000000p-1f /* 0.7853982 */);
+            side = HW(h, 0xF36B4, s32) != 0 ? Angle_Wrap(out + 0x1.921fb60000000p-1f /* 0.7853982 */) : Angle_Wrap(out - 0x1.921fb60000000p-1f /* 0.7853982 */);
             if ((rel <= 0.0f ? -rel : rel) < 0x1.921fb60000000p+0f /* 1.5707964 */) {
                 if (rel <= 0.0f) {
                     rel = -rel;
@@ -9215,7 +9418,7 @@ void func_0015C1E0(Hewie *h) {
             v[1] = 0.0f;
             v[3] = 0.0f;
             Mtx_AtHeading(m, HW(h, 0xF3544, Character *)->a.pos, side);
-            func_002E2DD0(at, m, v);
+            Mtx_ApplyPoint(at, m, v);
             if (Actor_TriTo(&h->c.a, at, NAV_NONE) == NAV_NONE) {
                 sceVu0CopyVector(at, HW(h, 0xF3544, Character *)->a.pos);
             }
@@ -9225,24 +9428,24 @@ void func_0015C1E0(Hewie *h) {
                 HW(h, 0xF3608, s32) = 10;
             }
             HW(h, 0xF3614, f32) = 0.0f;
-            HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+            HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
             step = run_turn(h);
             turn_toward(h, a, step);
             d = reach + 40.0f;
         } else {
             t = HW(h, 0xF3544, Character *);
-            if (func_0013EE40(h, t->a.navTri, t->a.pos, 0, 1) != 0) {
+            if (Hewie_PlanAndGo(h, t->a.navTri, t->a.pos, 0, 1) != 0) {
                 hewie_want(h, 0, 0);
                 return;
             }
-            if (!(u8)func_00139DE0(h)) {
-                func_00141C00(h, 8);
+            if (!(u8)Hewie_Stride(h)) {
+                Hewie_KeepPose(h, 8);
             }
             d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
                 gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
         }
     }
-    func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
+    Hewie_KeepPose(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
 }
 
 /* ---- keeping away from his target ---- */
@@ -9252,7 +9455,8 @@ void func_0015C1E0(Hewie *h) {
  * from it, the freest within 30..150 degrees for 10 more; needing more than a 170-degree turn:
  * the default action), held 30 frames before rechecking; head level the way he goes; gait
  * +0xF36BC, slower where the way ahead is short */
-void func_0015CCA0(Hewie *h) {
+/* 0x0015CCA0 */
+void Hewie_StateKeepAway(Hewie *h) {
     Character *t;
     f32 d[4] __attribute__((aligned(16)));
     f32 room, step;
@@ -9262,7 +9466,7 @@ void func_0015CCA0(Hewie *h) {
         return;
     }
     t = HW(h, 0xF3544, Character *);
-    if (!(u8)func_0013C1E0(h, t->a.navTri, t->a.pos)) {
+    if (!(u8)Hewie_PlanTo(h, t->a.navTri, t->a.pos)) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -9280,11 +9484,11 @@ void func_0015CCA0(Hewie *h) {
             HW(h, 0xF36B8, s32) = 30;
             sceVu0SubVector(d, h->c.a.pos, HW(h, 0xF3544, Character *)->a.pos);
             HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
-            HW(h, 0xF36C4, f32) = func_00137720(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
-            if (!(func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+            HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
+            if (!(Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]) <= 0.0f)) {
+                a = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+                a = -Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
             }
             if (!(a <= 0x1.7bc89c0000000p+1f /* 2.9670596 */)) {
                 hewie_want(h, 0, 0);
@@ -9297,15 +9501,15 @@ void func_0015CCA0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
     if (HW(h, 0xF36BC, s32) == 0 || room < 10.0f) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
     } else if (HW(h, 0xF36BC, s32) == 1 || room < 20.0f) {
-        func_00141C00(h, 8);
+        Hewie_KeepPose(h, 8);
     } else {
-        func_00141C00(h, 9);
+        Hewie_KeepPose(h, 9);
     }
 }
 
@@ -9316,7 +9520,8 @@ extern const PTMF D_003B1758;
 /* come to her (in his room; else the default action) as follow_step (running over 40, back to
  * a trot under 30); there: action +0xF3570, or
  * with none behaviour D_003B1758 for 60 frames */
-void func_0015D490(Hewie *h) {
+/* 0x0015D490 */
+void Hewie_StateComeToFiona(Hewie *h) {
     if (!in_his_room(h, gCharPlayer)) {
         hewie_want(h, 0, 0);
         return;
@@ -9339,7 +9544,8 @@ extern const PTMF D_003B1738, D_003B1748;
  * motion and plan the way to her command's place (no way: the default action). Within 12: there
  * (action +0xF3570, or with none behaviour D_003B1738 for 60 frames); else pick the gait (walk
  * under 20 or when moving 1, trot under 30, else run) and come (D_003B1748) */
-void func_0015DB60(Hewie *h) {
+/* 0x0015DB60 */
+void Hewie_StateSlideToFiona(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -9347,12 +9553,12 @@ void func_0015DB60(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00140CD0(h, 3) != 0) {
+    if (Hewie_StepToPose(h, 3) != 0) {
         return;
     }
-    func_00141C00(h, 3);
+    Hewie_KeepPose(h, 3);
     slide_root(h);
-    if (func_0013EE40(h, func_00145610(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
+    if (Hewie_PlanAndGo(h, Hewie_CommandPlace(h, HEWIE_ACTION(h), at), at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -9375,9 +9581,10 @@ void func_0015DB60(Hewie *h) {
 /* ---- barking for Fiona ---- */
 
 /* turn to Fiona (in his room; else the default action) and, facing her within 60 degrees and
- * standing, bark (func_001431F0) +0xF36B4 times, then the default action; within 10 of her:
+ * standing, bark (Hewie_Bark) +0xF36B4 times, then the default action; within 10 of her:
  * action 0x55 (0xB) */
-void func_0015DF40(Hewie *h) {
+/* 0x0015DF40 */
+void Hewie_StateBarkAtFiona(Hewie *h) {
     f32 a, step, left;
 
     if (!in_his_room(h, gCharPlayer)) {
@@ -9392,11 +9599,11 @@ void func_0015DF40(Hewie *h) {
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         return;
     }
-    if (func_00140CD0(h, 0) == 0) {
-        func_001431F0(h);
+    if (Hewie_StepToPose(h, 0) == 0) {
+        Hewie_Bark(h);
         HW(h, 0xF36B4, s32) -= 1;
         if (HW(h, 0xF36B4, s32) == 0) {
             hewie_want(h, 0, 0);
@@ -9406,22 +9613,23 @@ void func_0015DF40(Hewie *h) {
 
 /* ---- barking at the spot ---- */
 
-/* bark at where his target is (func_0013EFB0; no target in target mode: action 6; none: action
+/* bark at where his target is (Hewie_TargetTri; no target in target mode: action 6; none: action
  * 8): turning to it, head level toward it; facing it within 60 degrees, standing: the noise
  * (unless progress flags 0x13 / 0x2B) and a bark, +0xF36B4 times, then the default action;
  * within 10 of it: remember it (+0xF36E0), action 0x57 (0xA). Standing between barks */
-void func_0015E3A0(Hewie *h) {
+/* 0x0015E3A0 */
+void Hewie_StateBarkAtTarget(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 a, step, left;
 
     if (HW(h, 0xF3544, Character *) == NULL && HW(h, 0xF366D, u8) != 0) {
         hewie_want(h, 6, 0);
-        func_00141C00(h, 0);
+        Hewie_KeepPose(h, 0);
         return;
     }
-    if (func_0013EFB0(h, at) == -1) {
+    if (Hewie_TargetTri(h, at) == -1) {
         hewie_want(h, 8, 0);
-        func_00141C00(h, 0);
+        Hewie_KeepPose(h, 0);
         return;
     }
     if (Actor_Distance(&h->c.a, at) < 10.0f) {
@@ -9435,35 +9643,36 @@ void func_0015E3A0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         return;
     }
-    if (func_00140CD0(h, 0) == 0) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         Progress *p = gProgress;
 
         if (((u8)Progress_TestFlag(p, 0x13) | (u8)Progress_TestFlag(p, 0x2B)) == 0) {
             Progress_GetVar(p, 0x27);
             Relation_Request(p, AT(h, 0x20, u8), 4, 6, 0, 0, 0.0f);
         }
-        func_001431F0(h);
+        Hewie_Bark(h);
         HW(h, 0xF36B4, s32) -= 1;
         if (HW(h, 0xF36B4, s32) == 0) {
             hewie_want(h, 0, 0);
             return;
         }
     }
-    func_00141C00(h, 0);
+    Hewie_KeepPose(h, 0);
 }
 
 /* ---- waiting by Fiona ---- */
 
 /* turn to Fiona (in his room; else the default action) and, facing her within 60 degrees and
  * standing, wait in the stance (animation 4, 5 in mood 2); within 10 of her: action 0x55 (9) */
-void func_0015E880(Hewie *h) {
+/* 0x0015E880 */
+void Hewie_StateWaitForFiona(Hewie *h) {
     f32 a, step, left;
 
     if (!in_his_room(h, gCharPlayer)) {
@@ -9478,10 +9687,10 @@ void func_0015E880(Hewie *h) {
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         return;
     }
-    if (func_00140CD0(h, 0) == 0) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         s32 anim = MOTION_ANIM(h->c.motion);
 
         if (HW(h, 0xF35C0, s32) == 2) {
@@ -9499,7 +9708,7 @@ void func_0015E880(Hewie *h) {
 
 /* the stance: once standing, animation 5 in mood 2, else 4 */
 static void stance(Hewie *h) {
-    if (func_00140CD0(h, 0) == 0) {
+    if (Hewie_StepToPose(h, 0) == 0) {
         s32 anim = MOTION_ANIM(h->c.motion);
 
         if (HW(h, 0xF35C0, s32) == 2) {
@@ -9513,13 +9722,14 @@ static void stance(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-/* turn to where his target is (func_0013EFB0; none: head ahead) and stand facing it (within 60
+/* turn to where his target is (Hewie_TargetTri; none: head ahead) and stand facing it (within 60
  * degrees) in the stance; within 10 of it: remember it (+0xF36E0), action 0x57 (8) */
-void func_0015ECC0(Hewie *h) {
+/* 0x0015ECC0 */
+void Hewie_StateFaceTarget(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 a, step, left;
 
-    if (func_0013EFB0(h, at) == -1) {
+    if (Hewie_TargetTri(h, at) == -1) {
         if (HW(h, 0xF3604, s32) != 4) {
             HW(h, 0xF3604, s32) = 4;
             HW(h, 0xF3608, s32) = 10;
@@ -9538,11 +9748,11 @@ void func_0015ECC0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     HW(h, 0xF3614, f32) = 0.0f;
-    HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+    HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-        func_00141C00(h, 7);
+        Hewie_KeepPose(h, 7);
         return;
     }
     stance(h);
@@ -9550,15 +9760,16 @@ void func_0015ECC0(Hewie *h) {
 
 /* ---- sniffing toward it ---- */
 
-/* face where his target is (func_0013EFB0; or the scent +0xF3630 while +0xF3620; nothing: head
+/* face where his target is (Hewie_TargetTri; or the scent +0xF3630 while +0xF3620; nothing: head
  * ahead) and stand alert (animation 3), head on it (level without the scent); turning to it
  * first (beyond 60 degrees walking, pose 7); within 10: remember it (+0xF36E0), action 0x57 (6) */
-void func_0015F2E0(Hewie *h) {
+/* 0x0015F2E0 */
+void Hewie_StateFaceScent(Hewie *h) {
     f32 at[4] __attribute__((aligned(16)));
     f32 pitch, yaw, a, step, left;
     s32 have = 1;
 
-    if ((HW(h, 0xF3544, Character *) == NULL && HW(h, 0xF366D, u8) == 0) || func_0013EFB0(h, at) == -1) {
+    if ((HW(h, 0xF3544, Character *) == NULL && HW(h, 0xF366D, u8) == 0) || Hewie_TargetTri(h, at) == -1) {
         have = 0;
     }
     if (!have && HW(h, 0xF3620, u8) == 1) {
@@ -9579,13 +9790,13 @@ void func_0015F2E0(Hewie *h) {
         if (HW(h, 0xF3620, u8) == 0) {
             pitch = 0.0f;
         }
-        a = func_002E2D00(h->c.a.angle[1] + yaw);
+        a = Angle_Wrap(h->c.a.angle[1] + yaw);
         HW(h, 0xF3614, f32) = pitch;
-        HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
+        HW(h, 0xF3618, f32) = Angle_Wrap(a - h->c.a.angle[1]);
         step = run_turn(h);
         left = turn_toward(h, a, step);
         if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
-            func_00141C00(h, 7);
+            Hewie_KeepPose(h, 7);
             return;
         }
     } else {
@@ -9593,7 +9804,7 @@ void func_0015F2E0(Hewie *h) {
         hewie_want(h, 0x57, 6);
         return;
     }
-    if (func_00140CD0(h, 0) == 0 && MOTION_ANIM(h->c.motion) != 3) {
+    if (Hewie_StepToPose(h, 0) == 0 && MOTION_ANIM(h->c.motion) != 3) {
         Motion_PlayTable(h->c.motion, 3, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -9609,7 +9820,8 @@ extern const s32 D_003B1390[8], D_003B13B0[8];   /* waiting time by trust (norma
  * obeying turns to waiting (not in mood 1; wait by trust, D_003B1390 / D_003B13B0; bit 1 of
  * +0xF356C flags +0xF3559), waiting back to obeying (obey_time; bit 0 flags +0xF3559 or, hidden,
  * action 0x34). Not waiting: +0xF3586 cleared */
-void func_0015FE30(Hewie *h) {
+/* 0x0015FE30 */
+void Hewie_Obedience(Hewie *h) {
     HW(h, 0xF359C, s32) -= 1;
     if (HW(h, 0xF3598, s32) == 1 && in_his_room(h, gCharPlayer)) {
         if (Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 30.0f) {
@@ -9669,10 +9881,10 @@ extern const PTMF D_003B02A0, D_003B02B0;
 extern const PTMF D_003B0290;   /* tense behaviour */
 
 /* keep his behaviour in step with the game mode (not when down), from the behaviour of mode
- * `own`: in it, his idle choice when flagged (+0xF3559; hidden, func_0013E680 instead).
+ * `own`: in it, his idle choice when flagged (+0xF3559; hidden, Hewie_WhenIdle instead).
  * Otherwise to the mode's behaviour, mood and counters (+0xF35C4 / +0xF36A4 / +0xF36AC)
  * cleared: calm (0, D_003B02B0) not alert; wary (1, D_003B02A0) from calm his feelings tested
- * (func_0013C5D0, when alert) and bit 9 of +0xF356C starting action 0x14; tense (2, D_003B0290)
+ * (Hewie_FeelPursuer, when alert) and bit 9 of +0xF356C starting action 0x14; tense (2, D_003B0290)
  * alert to the pursuer in his room and his feelings tested. Bit 2 of +0xF356C flags +0xF3559
  * (not on that calm-to-wary step) */
 static void mode_behaviour(Hewie *h, u32 own) {
@@ -9687,11 +9899,11 @@ static void mode_behaviour(Hewie *h, u32 own) {
     if (mode == own) {
         if (HW(h, 0xF3559, u8) == 1) {
             if (!h->c.a.disabled) {
-                func_0013C7D0(h);
+                Hewie_WhatNext(h);
                 HW(h, 0xF3559, u8) = 0;
             } else {
                 HW(h, 0xF3559, u8) = 0;
-                func_0013E680(h);
+                Hewie_WhenIdle(h);
             }
         }
         return;
@@ -9711,7 +9923,7 @@ static void mode_behaviour(Hewie *h, u32 own) {
         Actor_SetState(&h->c.a, &D_003B02A0);
         if (own == 0 && !h->c.a.disabled) {
             if (HW(h, 0xF366D, u8) != 0) {
-                func_0013C5D0(h);
+                Hewie_FeelPursuer(h);
             }
             if ((HW(h, 0xF356C, u32) & 0x80000200) == 0x200) {
                 hewie_want(h, 0x14, 0);
@@ -9730,7 +9942,7 @@ static void mode_behaviour(Hewie *h, u32 own) {
                 HW(h, 0xF3670, s32) = gCharPursuer->a.slot;
             }
             if (HW(h, 0xF366D, u8) == 3 || HW(h, 0xF366D, u8) == 1) {
-                func_0013C5D0(h);
+                Hewie_FeelPursuer(h);
             }
         }
         break;
@@ -9743,17 +9955,20 @@ static void mode_behaviour(Hewie *h, u32 own) {
 }
 
 /* the tense behaviour's mode check (mode_behaviour 2) */
-void func_001602F0(Hewie *h) {
+/* 0x001602F0 */
+void Hewie_StateTense(Hewie *h) {
     mode_behaviour(h, 2);
 }
 
 /* the wary behaviour's mode check */
-void func_00160690(Hewie *h) {
+/* 0x00160690 */
+void Hewie_StateWary(Hewie *h) {
     mode_behaviour(h, 1);
 }
 
 /* the calm behaviour's mode check */
-void func_00160B60(Hewie *h) {
+/* 0x00160B60 */
+void Hewie_StateCalm(Hewie *h) {
     mode_behaviour(h, 0);
 }
 
@@ -9768,7 +9983,8 @@ extern const s8 D_003B11E8[8];   /* by trust: chance he goes to a noise */
  * or with time left come out (0x77). Then by +0xF356C: bit 6 with progress test 1 flags
  * +0xF3559; bit 4 with a new noise heard (in a room other than +0xF3594) may send him to it
  * (action 0x33, by his trust's chance) */
-void func_00161070(Hewie *h) {
+/* 0x00161070 */
+void Hewie_HiddenFrame(Hewie *h) {
     Progress *p;
 
     if (h->c.a.unkC4 == 2) {
@@ -9823,7 +10039,8 @@ void func_00161070(Hewie *h) {
  * 0x74). Standing or sitting on a slope (mesh flag 1) facing much along it (within 60 degrees):
  * action 0x6E. Another character (but himself) within 5 in his room on the mesh: his target,
  * action 0x82 */
-void func_00161500(Hewie *h) {
+/* 0x00161500 */
+void Hewie_StandingFrame(Hewie *h) {
     f32 n[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
     f32 fwd[4] __attribute__((aligned(16)));
@@ -9840,7 +10057,7 @@ void func_00161500(Hewie *h) {
         }
         return;
     }
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     if ((g == 3 || g == 2 || g == 1 || g == 0) && HEWIE_ACTION(h) != 0x6E &&
         /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
         (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
@@ -9885,7 +10102,8 @@ void func_00161500(Hewie *h) {
  * +0x1FBEC1) placed facing as he was (head straight, standing), his door the placement's exit,
  * the default action; in the room being played also settled in (arrived). Elsewhere he only
  * keeps the triangle, standing. Returns the placement result (0 elsewhere) */
-s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
+/* 0x001662A0 */
+s32 Hewie_PlaceAtPlacement(Hewie *h, HewiePlacement *pl) {
     s32 r = 0;
 
     Character_ToRoom(&h->c, pl->room, pl->tri, pl->side);
@@ -9927,10 +10145,11 @@ static void post_state2(Character *c, s32 kind, s32 a) {
  * accepted (his second state block (0xC, its type)), -1 if none or cancelled. Out of her reach
  * (+0xE0): cancelled. Only kind 2. Types 0 / 2 / 4 (her starting it): calm, standing or already
  * in it (moves 0 / 0xC), listening (+0xF356C bit 3), on open ground, her within 30 in his room
- * and straight reachable: the meeting point by the type (func_00138890 1 / 2 / 3) given to
+ * and straight reachable: the meeting point by the type (Hewie_FindSpot 1 / 2 / 3) given to
  * her (+0x104 / +0x10C / +0x110) and his heading. Types 1 / 3 / 5 (the second part): in move
  * 0xC, settled sitting (group 1) facing the agreed way, her in his room */
-s32 func_00164830(Hewie *h) {
+/* 0x00164830 */
+s32 Hewie_JointAction(Hewie *h) {
     Progress *p = gProgress;
     Progress *q;
     u32 kind, type;
@@ -9959,7 +10178,7 @@ s32 func_00164830(Hewie *h) {
                 Actor_TriTo(&h->c.a, gCharPlayer->a.pos, 0x60088) == gCharPlayer->a.navTri) {
                 f32 yaw;
                 f32 at[4] __attribute__((aligned(16)));
-                s32 r = func_00138890(h, type == 4 ? 3 : type == 0 ? 1 : 2, &yaw, at);
+                s32 r = Hewie_FindSpot(h, type == 4 ? 3 : type == 0 ? 1 : 2, &yaw, at);
 
                 if (r != -1) {
                     *(f32 *)&gCharPlayer->unk104[2] = yaw;
@@ -9975,7 +10194,7 @@ s32 func_00164830(Hewie *h) {
         case 1:
         case 3:
         case 5:
-            if (h->c.moveMode == 0xC && AT(h->c.motion, 0x550, f32) <= 0.0f && func_001669A0(h) == 1 &&
+            if (h->c.moveMode == 0xC && AT(h->c.motion, 0x550, f32) <= 0.0f && Hewie_AnimGroup(h) == 1 &&
                 HW(h, 0x10C, f32) == h->c.a.angle[1] && in_his_room(h, gCharPlayer)) {
                 SlotCmd_Start(p, AT(h, 0x20, u8));
                 post_state2(&h->c, 0xC, type);
@@ -9999,7 +10218,8 @@ s32 func_00164830(Hewie *h) {
  * reset; not in mood 3), else (or in mood 3) well. The mood's grip (+0xF35C4) eases every 300
  * frames; +0xF3585 kept only in move 8 / action 0x7A; bit 7 of +0xF356C flags +0xF3559 when
  * +0xF355C is out */
-void func_00164DD0(Hewie *h) {
+/* 0x00164DD0 */
+void Hewie_Upkeep(Hewie *h) {
     Progress *p = gProgress;
 
     h->c.a.disabled = h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) ? 0 : 1;
@@ -10025,7 +10245,7 @@ void func_00164DD0(Hewie *h) {
                 h->c.hp = 1;
             } else {
                 h->c.a.unkC4 = 2;
-                func_00138AD0(h, 0, -1);
+                Hewie_SetMode(h, 0, -1);
             }
         }
     } else if (h->c.hp == 0) {
@@ -10059,7 +10279,7 @@ void func_00164DD0(Hewie *h) {
         if (h->c.a.unkC4 != 1) {
             if (h->c.hp < 30 && HW(h, 0xF35C0, s32) != 3) {
                 h->c.a.unkC4 = 1;
-                func_00138AD0(h, 0, -1);
+                Hewie_SetMode(h, 0, -1);
                 HW(h, 0xF35C4, s32) = 0;
                 HW(h, 0xF35C8, s32) = 0;
             }
@@ -10087,7 +10307,7 @@ void func_00164DD0(Hewie *h) {
     if (HW(h, 0xF35C0, s32) != 0) {
         HW(h, 0xF35BE, s16) -= 1;
         if (HW(h, 0xF35BE, s16) <= 0) {
-            func_00138AD0(h, 0, -1);
+            Hewie_SetMode(h, 0, -1);
             HW(h, 0xF35C4, s32) = 0;
             HW(h, 0xF35C8, s32) = 0;
         }
@@ -10120,7 +10340,7 @@ static s32 exit_reachable(Hewie *h, VObject *rooms, s32 e, f32 *at) {
     if (side != VCALL(rooms, 0x50, s32 (*)(VObject *, s32, s32, s32))(rooms, h->c.a.room, e, 0) && side != 2) {
         return 0;
     }
-    return func_0013EE40(h, VCALL(rooms, 0x34, u32 (*)(VObject *, s32, f32 *))(rooms, e, at), at, 1, 1) == 0;
+    return Hewie_PlanAndGo(h, VCALL(rooms, 0x34, u32 (*)(VObject *, s32, f32 *))(rooms, e, at), at, 1, 1) == 0;
 }
 
 /* Fiona left his room through exit `exit` (0xFF: unknown). If he is in the room being played he
@@ -10224,7 +10444,7 @@ void Hewie_Vt34(Hewie *h, s32 exit) {
         hewie_want(h, 0x38, 0);
     } else if ((u32)(HEWIE_ACTION(h) - 2) < 2) {
         HW(h, 0xF3560, s32) = HW(h, 0xF355C, s32) + 150;
-        HW(h, 0xF36B8, s32) = func_001669A0(h);
+        HW(h, 0xF36B8, s32) = Hewie_AnimGroup(h);
         hewie_want(h, 0x2F, 0);
     } else {
         for (i = 0; i < 13; i++) {
@@ -10234,34 +10454,34 @@ void Hewie_Vt34(Hewie *h, s32 exit) {
     }
 }
 
-void func_00161860(Hewie *h);
+void Hewie_OwnDecisions(Hewie *h);
 
-/* Per-frame update in the normal game (frame counter in func_00164DD0): how close Fiona is, his
+/* Per-frame update in the normal game (frame counter in Hewie_Upkeep): how close Fiona is, his
  * surroundings, then - unless he is out of play - joint actions, the director (+0x38 busy:
- * func_00161500), his own decisions or, in a scene, the doors he is told to take; behaviour, turn
+ * Hewie_StandingFrame), his own decisions or, in a scene, the doors he is told to take; behaviour, turn
  * and root motion. +0x2A: Fiona can see him. Out of play only a pending state change runs. */
 /* 0x00167BC0 */
 void Hewie_Update(Hewie *h) {
     Progress *p;
     u32 i;
 
-    func_00164DD0(h);
-    func_00143840(h);
+    Hewie_Upkeep(h);
+    Hewie_Alert(h);
     if (h->c.a.unkC4 != 2) {
         report_fiona_near(h);
     }
-    func_0015FE30(h);
+    Hewie_Obedience(h);
     HW(h, 0xF3581, u8) = 0;
     if (h->c.a.disabled) {
-        if (func_00143D20(h) != 0) {
+        if (Hewie_Arrive(h) != 0) {
             HW(h, 0xF3578, s32) = -1;
             HW(h, 0xF3574, s32) = -1;
             if (h->c.state[0] == 0xD) {
-                func_00137020(h);
+                Hewie_FionaCommand(h);
                 h->c.state[0] = 0;
             }
-            func_00161070(h);
-            func_0013BA50(h);
+            Hewie_HiddenFrame(h);
+            Hewie_Scuffle(h);
             ptmf_scall(h, &h->c.a.state);
             ptmf_scall(h, HEWIE_STATE(h));
         }
@@ -10271,11 +10491,11 @@ void Hewie_Update(Hewie *h) {
         if (h->c.unkE0 == 1) {
             turn_by_anim(h);
             root_motion(h);
-            func_00146130(h);
-            func_0013FDE0(h);
+            Hewie_TurnHead(h);
+            Hewie_SetOverlays(h);
             VCALL(h, 0x40, void (*)(Hewie *))(h);
-            func_0013A650(h);
-            func_00145080(h);
+            Hewie_AnimSounds(h);
+            Hewie_Feet(h);
             return;
         }
         h->c.a.navMask = h->c.a.unk2B ? 8 : HEWIE_NAV_MASK;
@@ -10284,12 +10504,12 @@ void Hewie_Update(Hewie *h) {
         HW(h, 0xF3582, u8) = 1;
         p = gProgress;
         if (Progress_HasRelationCmd(p, SLOT_U8(h)) & 0xFF) {
-            func_00164830(h);
+            Hewie_JointAction(h);
         } else {
             if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) != 0) {
-                func_00161500(h);
+                Hewie_StandingFrame(h);
             } else if (*((u8 *)p + 0x1FBEC1) == 0) {
-                func_00161860(h);
+                Hewie_OwnDecisions(h);
             } else {
                 VObject *doors;
 
@@ -10323,17 +10543,17 @@ void Hewie_Update(Hewie *h) {
         } else {
             h->c.a.unk2A = 0;
         }
-        func_00146130(h);
-        func_0013FDE0(h);
-        func_0013A650(h);
+        Hewie_TurnHead(h);
+        Hewie_SetOverlays(h);
+        Hewie_AnimSounds(h);
         VCALL(h, 0x40, void (*)(Hewie *))(h);
-        func_00145080(h);
+        Hewie_Feet(h);
     }
     HW(h, 0xF3620, u8) = 0;
-    func_00144A60(h);
+    Hewie_MoveSubMode(h);
 }
 
-extern s32 func_0013AC20(Hewie *h, s32 *hit);
+extern s32 Hewie_TakeBlow(Hewie *h, s32 *hit);
 
 /* vtable: pending state (+0x14E8) and the command Fiona gave (+0xF4, 0 none). State 7 holds
  * everything; 4 (stuck) and 13 end with +0x90 (back to normal) once he is clear again, 5 calls +0x8C
@@ -10348,7 +10568,7 @@ void Hewie_Requests(Hewie *h) {
     case 0:
         break;
     case 4:
-        if (!(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & HEWIE_NAV_MASK) && func_0013AC20(h, h->c.state) == 0) {
+        if (!(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & HEWIE_NAV_MASK) && Hewie_TakeBlow(h, h->c.state) == 0) {
             VCALL(h, 0x90, void (*)(Hewie *))(h);
             h->c.state[0] = 0;
             return;
@@ -10357,7 +10577,7 @@ void Hewie_Requests(Hewie *h) {
         break;
     case 13:
         if ((fiona_reachable(h) & 0xFF) == 1) {
-            if ((func_00137020(h) & 0xFF) == 1) {
+            if ((Hewie_FionaCommand(h) & 0xFF) == 1) {
                 VCALL(h, 0x90, void (*)(Hewie *))(h);
             }
             h->c.state[0] = 0;
@@ -10459,7 +10679,7 @@ void Hewie_StateBlock(Hewie *h) {
         h->c.state[0] = 0;
         return;
     case 4:
-        if (func_0013AC20(h, h->c.state) == 0) {
+        if (Hewie_TakeBlow(h, h->c.state) == 0) {
             h->c.state[0] = 0;
             return;
         }
@@ -10484,7 +10704,7 @@ void Hewie_StateBlock(Hewie *h) {
             break;
         case 1:
             v = -7;
-            if ((func_001391E0(h, 0, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
+            if ((Hewie_PraiseScold(h, 0, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
                 (u32)HW(h, 0xF35C0, s32) <= 2 && (HW(h, 0xF3688, s16) != 0 || RNG01() < 0.5f)) {
                 v = -6;
             }
@@ -10494,7 +10714,7 @@ void Hewie_StateBlock(Hewie *h) {
             break;
         case 3:
             v = -9;
-            if ((func_001391E0(h, 1, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
+            if ((Hewie_PraiseScold(h, 1, 3) & 0xFF) != 1 && h->c.a.unkC4 != 1 && HW(h, 0xF3598, s32) == 0 &&
                 (u32)HW(h, 0xF35C0, s32) <= 1 && h->c.hp >= 80 && (HW(h, 0xF3688, s16) != 0 || RNG01() < 0.5f)) {
                 v = -8;
             }
@@ -10552,7 +10772,7 @@ void Hewie_StateBlock(Hewie *h) {
         h->c.state[0] = 0;
     }
     if (h->c.state[0] == 13) {
-        func_00137020(h);
+        Hewie_FionaCommand(h);
         HW(h, 0xF358C, s32) = 0;
         h->c.state[0] = 0;
     }
@@ -10570,18 +10790,18 @@ void Hewie_StateBlock(Hewie *h) {
 
 extern const s8 D_003B11E0[];   /* by trust: chance (percent) he goes for whoever holds Fiona */
 
-/* go to Fiona (0x62) if he can reach her, else wait for her (func_00138AD0) */
+/* go to Fiona (0x62) if he can reach her, else wait for her (Hewie_SetMode) */
 static void to_fiona(Hewie *h) {
-    if ((func_0013C1E0(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) {
+    if ((Hewie_PlanTo(h, gCharPlayer->a.navTri, gCharPlayer->a.pos) & 0xFF) == 1) {
         hewie_want(h, 0x62, 0);
     } else {
-        func_00138AD0(h, 0, -1);
+        Hewie_SetMode(h, 0, -1);
     }
 }
 
 /* answer the pursuer (0x4F) if he can reach it, else forget the call (+0xF36B0 0) */
 static void to_pursuer(Hewie *h) {
-    if ((func_0013C1E0(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) & 0xFF) == 1) {
+    if ((Hewie_PlanTo(h, gCharPursuer->a.navTri, gCharPursuer->a.pos) & 0xFF) == 1) {
         hewie_want(h, 0x4F, 0);
     } else {
         HW(h, 0xF36B0, s32) = 0;
@@ -10641,11 +10861,12 @@ static s32 behind(Hewie *h, Character *c) {
 }
 
 /* His own decisions when nothing else drives him: down (0x52), hurt (+0xF35B4: 0x76), dragged
- * along (func_00144B30), Fiona panicking or held (answers by trust), told to stay, scared
+ * along (Hewie_FirstDoor), Fiona panicking or held (answers by trust), told to stay, scared
  * (0x14), a scene request (+0xF3584: 0x79), a creature he follows (+0xF368C: 0x78), standing on
  * a slope (0x6E), the pursuer or a creature in reach from behind (0x7C, with +0xF356C 0x100),
  * a hole under his nose (0x6A) or Fiona right next to him (0x67, with 0x20), praise (0x7E). */
-void func_00161860(Hewie *h) {
+/* 0x00161860 */
+void Hewie_OwnDecisions(Hewie *h) {
     Progress *p;
     Character *t;
     s32 act, g, i;
@@ -10666,7 +10887,7 @@ void func_00161860(Hewie *h) {
         hewie_want(h, 0x76, 0);
         return;
     }
-    switch (func_00144B30(h)) {
+    switch (Hewie_FirstDoor(h)) {
     case 0:
         if (HEWIE_ACTION(h) != 0x65) {
             hewie_want(h, 0x65, 0);
@@ -10722,7 +10943,7 @@ void func_00161860(Hewie *h) {
             if (gCharPlayer->unk100 == 2) {
                 hewie_want(h, 0x5A, 0);
             } else {
-                HW(h, 0xF3544, Character *) = func_001379C0(h);
+                HW(h, 0xF3544, Character *) = Hewie_PickTarget(h);
                 hewie_want(h, 0x6D, 0);
             }
             return;
@@ -10757,7 +10978,7 @@ void func_00161860(Hewie *h) {
             } else {
                 f32 d = Actor_HeadingTo(&h->c.a, t->a.pos);
 
-                d -= func_002E2D00(h->c.a.angle[1] + *(f32 *)((u8 *)h->c.motion + 0x858));
+                d -= Angle_Wrap(h->c.a.angle[1] + *(f32 *)((u8 *)h->c.motion + 0x858));
                 if (hwrap_abs(d) < 0x1.0c1524p+1f /* 2pi/3 */) {
                     u32 tri;
 
@@ -10778,7 +10999,7 @@ void func_00161860(Hewie *h) {
     }
 
     /* settled on a slope (triangle flag 1) facing down it: lie down across (0x6E) */
-    g = func_001669A0(h);
+    g = Hewie_AnimGroup(h);
     if ((u32)g <= 3 && HEWIE_ACTION(h) != 0x6E && (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
         sceVu0FVECTOR n, dir, fwd;
 

@@ -1904,7 +1904,7 @@ static inline void hewie_order(u8 *p, u32 at, s32 state, s32 a) {
 void Progress_CommandButtons(Progress *p) {
     u8 *b = (u8 *)p;
 
-    if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)func_00138FD0((Hewie *)gCharPartner) == 0
+    if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)Hewie_FreeForCommand2((Hewie *)gCharPartner) == 0
         || AT(b, 0x4, s32) != 0) {
         return;
     }

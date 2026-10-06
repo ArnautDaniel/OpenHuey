@@ -3809,7 +3809,7 @@ void DustMoteSource_SetParams(u8 *e, f32 *arg) {
         return;
     }
     sceVu0CopyVector((f32 *)(e + 0x30), arg);
-    AT(e, 0x40, f32) = func_002E2D00(0x1.921fb6p+1f * arg[4] / 180.0f);
+    AT(e, 0x40, f32) = Angle_Wrap(0x1.921fb6p+1f * arg[4] / 180.0f);
     rnd = gRandom;
     mgr = gEffects;
     for (i = 0; i < 8; i++) {
@@ -5380,7 +5380,7 @@ void DropletSpray_SetParams(u8 *o, const SprayParams *sp) {
         off[1] = 0.0f;
         off[3] = 0.0f;
         off[2] = sp->dist + sp->distRnd * RND();
-        a = func_002E2D00(kPi.f * (jitter - 2.0f * (k03.f * (share * RND())) + (f32)i * share) / 180.0f);
+        a = Angle_Wrap(kPi.f * (jitter - 2.0f * (k03.f * (share * RND())) + (f32)i * share) / 180.0f);
         Mtx_TurnY(m, a);
         func_002E2DA0(off, m, off);
         sceVu0AddVector((f32 *)(p + 0x10), (f32 *)sp->pos, off);
@@ -6537,7 +6537,7 @@ s32 func_003039A0(u8 *o) {
     rnd = gRandom;
     r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.921fb6p+1f /* pi */ * (10.0f * r) / 180.0f;
-    AT(o, 0x14, f32) = func_002E2D00(AT(o, 0x14, f32));
+    AT(o, 0x14, f32) = Angle_Wrap(AT(o, 0x14, f32));
     v = 0x1.99999a0000000p-2f /* 0.4 */ * (1.0f + func_0031C248(AT(o, 0x14, f32)));
     if (AT(o, 0x8, f32) < 1.0f) {
         v *= AT(o, 0x8, f32);
@@ -6550,7 +6550,7 @@ s32 func_003039A0(u8 *o) {
     VCALL(gRenderer, 0x78, void (*)(VObject *, u32))(gRenderer, c);
     r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x18, f32) = AT(o, 0x18, f32) + 0x1.921fb6p+1f /* pi */ * (45.0f * r) / 180.0f;
-    AT(o, 0x18, f32) = func_002E2D00(AT(o, 0x18, f32));
+    AT(o, 0x18, f32) = Angle_Wrap(AT(o, 0x18, f32));
     if (AT(o, 0x10, s32) != 2 && AT(o, 0x10, s32) != 3 && !(AT(o, 0x8, f32) <= 0.0f)) {
         func_003012B0(o, 0);
     }
@@ -6946,10 +6946,10 @@ s32 Room49Effect_Update(u8 *o) {
     rnd = gRandom;
     t = AT(o, 0x1A48, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
     AT(o, 0x1A48, f32) = t;
-    AT(o, 0x1A48, f32) = func_002E2D00(t);
+    AT(o, 0x1A48, f32) = Angle_Wrap(t);
     t = AT(o, 0x1A4C, f32) + kPi.f * (1.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
     AT(o, 0x1A4C, f32) = t;
-    AT(o, 0x1A4C, f32) = func_002E2D00(t);
+    AT(o, 0x1A4C, f32) = Angle_Wrap(t);
     return 1;
 }
 

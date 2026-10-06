@@ -3044,13 +3044,13 @@ s32 Item65_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461100, dest);
 }
 
-/* use: Hewie waits (func_00138AD0 mode 3, 450 frames; Progress +0xA10 too); trust +20 */
+/* use: Hewie waits (Hewie_SetMode mode 3, 450 frames; Progress +0xA10 too); trust +20 */
 /* 0x00332F30 */
 s32 Item65_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
-    func_00138AD0((Hewie *)gCharPartner, 3, 450);
+    Hewie_SetMode((Hewie *)gCharPartner, 3, 450);
     S32(gProgress, 0xA10) = 450;
     item_trust(20);
     return item_give_hewie(gEvents, 0x91);
@@ -3424,11 +3424,11 @@ s32 PoolEntry_CountUp(void *o) {
     return 0;
 }
 
-/* +0x40 the partner's func_00138EC0 (0 without one) */
+/* +0x40 the partner's Hewie_CanTakeCommand (0 without one) */
 /* 0x0025FF10 */
 s32 PoolEntry_PartnerCheck(void *o) {
     if (gCharPartner != NULL) {
-        return func_00138EC0((Hewie *)gCharPartner);
+        return Hewie_CanTakeCommand((Hewie *)gCharPartner);
     }
     return 0;
 }
@@ -3634,9 +3634,9 @@ static inline __attribute__((always_inline)) void animal_face(u8 *self, f32 x, f
     t[2] = z;
     t[3] = 1.0f;
     sceVu0SubVector(t, t, CHAR_POS(self));
-    a = func_002E2D00(Vec_Heading(t));
-    d = func_002E2D00(a - func_002E2D00(F32(self, 0x54)));
-    F32(self, 0x54) = func_002E2D00(0.0f + F32(self, 0x54) + k03.f * d);
+    a = Angle_Wrap(Vec_Heading(t));
+    d = Angle_Wrap(a - Angle_Wrap(F32(self, 0x54)));
+    F32(self, 0x54) = Angle_Wrap(0.0f + F32(self, 0x54) + k03.f * d);
 }
 
 #define ANIMAL_CLIP_DONE(self) ((S32(PTR(PTR(self, 0xF0), 0x6A4), 0x18) & 0x20) != 0)
