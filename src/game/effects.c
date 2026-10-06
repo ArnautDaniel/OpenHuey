@@ -2185,20 +2185,17 @@ static const u8 kShardFace[6][4] = {
     {0, 1, 2, 3}, {1, 5, 3, 7}, {5, 4, 7, 6}, {4, 0, 6, 2}, {0, 1, 4, 5}, {6, 7, 2, 3},
 };
 
-#ifndef HG_NATIVE
-extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
-#else
+#ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-#endif
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 extern VObject *D_0044E4E8;   /* the texture cache */
 
-/* the shards as textured boxes (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
+/* the shards as textured boxes, drawn with OpenGL (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
  * size fb+0x8 / fb+0xC, colour fb+0x10; the shards `stride` bytes apart from +0x10, dead ones skipped if
  * they have the flag); a shard with a corner off screen is skipped */
 static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
-    VObject *tc = D_0044E4E8, *r, *cam;
+    VObject *tc = D_0044E4E8, *cam;
     u8 *tex;
     u32 slot;
     u64 tex0;
@@ -2217,33 +2214,8 @@ static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
             return;
         }
     }
-    r = D_0044E4F0;
-#ifndef HG_NATIVE
-    {
-        u64 *p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 5, 1);
-
-        if (p == NULL) {
-            return;
-        }
-        p[0] = 0x10000004;
-        ((u32 *)p)[2] = 0;
-        ((u32 *)p)[3] = 0x50000004;
-        p[2] = 0x8003 | (u64)0x10000000 << 32;
-        p[3] = 0xE;
-        p[4] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
-                                                                                  AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-        p[5] = 6;          /* TEX0_1 */
-        p[6] = 0x14;       /* PRIM: textured triangle strip */
-        p[7] = 0;
-        ((u32 *)p)[16] = AT(e, fb + 0x10, u32);
-        ((f32 *)p)[17] = 1.0f;
-        p[9] = 1;          /* RGBAQ */
-        tex0 = 0;
-    }
-#else
     tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
                                                                               AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-#endif
     cam = D_0044E4B8;
     VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, screen);
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
@@ -2279,49 +2251,6 @@ static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
         if (off) {
             continue;
         }
-#ifndef HG_NATIVE
-        {
-            s32 xyz[8][4] __attribute__((aligned(16)));
-            u64 *p;
-            s32 f;
-
-            for (k = 0; k < 8; k++) {
-                f32 v[4] __attribute__((aligned(16)));
-                f32 q;
-
-                sceVu0ApplyMatrix(v, screen, world[k]);
-                q = 1.0f / v[3];
-                v[0] *= q;
-                v[1] *= q;
-                v[3] = q;
-                v[2] *= q;
-                sceVu0FTOI4Vector(xyz[k], v);
-                xyz[k][2] /= 16;
-            }
-            p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x32, 1);
-            if (p == NULL) {
-                return;
-            }
-            p[0] = 0x10000031;
-            ((u32 *)p)[2] = 0;
-            ((u32 *)p)[3] = 0x50000031;
-            p[2] = 0x8030 | (u64)0x10000000 << 32;   /* 48 registers: ST, XYZ per vertex */
-            p[3] = 0xE;
-            p += 4;
-            for (f = 0; f < 6; f++) {
-                for (k = 0; k < 4; k++) {
-                    s32 *v = xyz[kShardFace[f][k]];
-
-                    ((f32 *)p)[0] = k & 1 ? AT(e, fb, f32) + AT(e, fb + 0x8, f32) : AT(e, fb, f32);
-                    ((f32 *)p)[1] = k & 2 ? AT(e, fb + 0x4, f32) + AT(e, fb + 0xC, f32) : AT(e, fb + 0x4, f32);
-                    p[1] = 2;   /* ST */
-                    p[2] = (s64)v[0] | (s64)v[1] << 16 | (s64)v[2] << 32;
-                    p[3] = k < 2 ? 0xD : 5;   /* XYZ3 for the first two, then XYZ2 (draws) */
-                    p += 4;
-                }
-            }
-        }
-#else
         {
             u8 rgba[4][4];
             s32 f;
@@ -2342,9 +2271,7 @@ static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
                 glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, tex0, 0x10);
             }
         }
-#endif
     }
-    (void)tex0;
 }
 
 /* +0x14 draw: the shards (texture +0xE34, its cell +0xE20 / +0xE24, size +0xE28 / +0xE2C,
@@ -2352,6 +2279,7 @@ static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
 void func_002EA660(u8 *e) {
     shards_draw(e, 0xE20, sizeof(Shard), 1);
 }
+#endif
 
 /* ---- D_004799D0 (0xD40 bytes): debris - 16 pieces (Shards without the alive flag, 0xD0 apart
  * from +0x10) dropped in a 4 x 4 grid, turned by +0xD38, from about a point (+0xD10) up near the
@@ -2464,10 +2392,12 @@ void func_0035E2C0(u8 *e, u8 *arg) {
     }
 }
 
-/* +0x14 draw */
+#ifdef HG_NATIVE
+/* +0x14 draw (OpenGL) */
 void func_0035E420(u8 *e) {
     shards_draw(e, 0xD20, 0xD0, 0);
 }
+#endif
 
 /* +0x10 update: the pieces tumble and fall, the bigger the faster (each frame 0.01 x their
  * size's volume plus 0.09 more); 0 once the last one is below 500 */

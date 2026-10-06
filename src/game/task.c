@@ -47,10 +47,6 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g);
 void Task_BeginDraw(Task *t);
 s32 TextCursor_Step(Task *t, TextCursor *c);
 
-#define RENDERER_ALLOC(n, layer) \
-    VCALL(D_0044E4F0, 0x10, u64 *(*)(void *, s32, s32))(D_0044E4F0, n, layer)
-#define RENDERER_UPLOAD(slot, tex, layer) \
-    VCALL(D_0044E4F0, 0x44, s32 (*)(void *, s32, u8 *, s32))(D_0044E4F0, slot, tex, layer)
 #define TEXCACHE_SLOT(sel, group) \
     VCALL(D_0044E4E8, 0x8, s32 (*)(void *, s32, s32))(D_0044E4E8, sel, group)
 #define TEXCACHE_TEX(sel, group) \

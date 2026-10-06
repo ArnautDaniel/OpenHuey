@@ -877,72 +877,26 @@ static inline __attribute__((always_inline)) void movie_send(Movie *m, u32 size,
         D_0044E4F0, (u8 *)m->frames + (m->frameBuf ^ 1) * size, 0xC0000, m->frameW, h, layer);
 }
 
-/* the sprite drawing VRAM 0xC0000 (tbw pages wide, uv its corner) at the screen rectangle
- * xy0 .. xy1 on `layer`, Z writes off, blended by `alpha` when the prim says so */
-static inline __attribute__((always_inline)) void movie_sprite(s32 layer, s32 tbw, u64 alpha, u64 prim, u32 xy0,
-                                                               u32 xy1, u32 uv) {
-    u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x10, layer);
-
-    if (p == NULL) {
-        return;
-    }
 #ifdef HG_NATIVE
+/* the sprite showing the frame sent to VRAM 0xC0000 at the screen rectangle xy0 .. xy1 (GS
+ * XYZ2) on `layer`, with OpenGL: over the screen by its alpha when the prim blends (ABE),
+ * else straight */
+static inline void movie_sprite(s32 layer, u64 prim, u32 xy0) {
     if (xy0 != 0x72007000) {
         glr_todo("movie: a sprite not over the whole screen");
     } else if (prim & 0x40) {
-        glr_vram_draw(0xC0000, layer);   /* over the screen by its alpha */
+        glr_vram_draw(0xC0000, layer);
     } else {
         glr_vram_blit(layer);
     }
-    p[0] = 0x1000000F;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000000;
-    (void)tbw; (void)alpha; (void)xy1; (void)uv;
-#else
-    p[0] = 0x1000000F;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000F;
-    p[2] = 0x800E | (0x10000000ULL << 32);
-    p[3] = 0xE;
-    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: no Z writes */
-    p[5] = 0x4E;
-    p[6] = 0x30000;                     /* TEST_1: Z always */
-    p[7] = 0x47;
-    p[8] = 0;                           /* TEXFLUSH */
-    p[9] = 0x3F;
-    p[10] = ((s64)tbw << 14) | 0x64003000 | (6ULL << 32);   /* TEX0_1 */
-    p[11] = 6;
-    p[12] = alpha;                      /* ALPHA_1 */
-    p[13] = 0x42;
-    AT(p, 0x70, u32) = 0x80808080;      /* RGBAQ */
-    AT(p, 0x74, u32) = 0x3F800000;
-    p[15] = 1;
-    p[16] = prim;                       /* PRIM: sprite, textured, UV */
-    p[17] = 0;
-    p[18] = 0;                          /* UV */
-    p[19] = 3;
-    p[20] = xy0;                        /* XYZ2 */
-    p[21] = 5;
-    p[22] = uv;
-    p[23] = 3;
-    p[24] = xy1;
-    p[25] = 5;
-    p[26] = 0x310000A0;
-    p[27] = 0x4E;
-    p[28] = 0x5000F;
-    p[29] = 0x47;
-    p[30] = 0x44;
-    p[31] = 0x42;
-#endif
 }
+#endif
 
 static inline void texcache_done(void) {
     if (D_0044E4E8 != NULL) {
         VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
     }
 }
-
-#define MOVIE_UV(w, h) ((u32)(((w) << 4) | (((h) << 4) << 16)))
 
 /* ---- class 1 (D_0046EAB0): 256 x 224, over the screen by its alpha ---- */
 
@@ -966,12 +920,14 @@ void func_002BA490(Movie *m) {
     movie_take(m, 0x38000, 1, 0);
 }
 
-/* +0x24 */
+#ifdef HG_NATIVE
+/* +0x24 draw: the frame over the screen, blended (layer 0x2C) */
 void func_002BA270(Movie *m) {
     movie_send(m, 0x38000, m->frameH, 0x2B);
-    movie_sprite(0x2C, m->frameW / 64, 0x44, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH));
+    movie_sprite(0x2C, 0x156, 0x72007000);
     texcache_done();
 }
+#endif
 
 /* ---- class 2 (D_0046EAE0): 512 x 224 frames; put over the screen, opaque, only while
  * progress flag 0x29 ---- */
@@ -996,16 +952,17 @@ void func_002BA980(Movie *m) {
     movie_take(m, 0x70000, 0, 1);
 }
 
-/* +0x24 */
+#ifdef HG_NATIVE
+/* +0x24 draw: the frame over the screen, opaque, only while progress flag 0x29 is set */
 void func_002BA730(Movie *m) {
     movie_send(m, 0x70000, m->frameH, 0x2B);
     if ((Progress_TestFlag(gProgress, 0x29) & 0xFF) == 0) {
         return;
     }
-    movie_sprite(0x2C, m->frameW / 64, 0xA8 | (0x80ULL << 32), 0x116, 0x72007000, 0x8E009000,
-                 MOVIE_UV(m->frameW, m->frameH));
+    movie_sprite(0x2C, 0x116, 0x72007000);
     texcache_done();
 }
+#endif
 
 /* ---- class 3 (D_0046EB10): 256 x 448 decoded, half of it shown (layer 3), over the screen
  * by its alpha (layer 4) ---- */
@@ -1025,12 +982,14 @@ void func_002BAE10(Movie *m) {
     movie_take(m, 0x38000, 1, 0);
 }
 
-/* +0x24 */
+#ifdef HG_NATIVE
+/* +0x24 draw: half the frame over the screen, blended (layer 4) */
 void func_002BABC0(Movie *m) {
     movie_send(m, 0x38000, m->frameH / 2, 3);
-    movie_sprite(4, m->frameW / 64, 0x44, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH / 2));
+    movie_sprite(4, 0x156, 0x72007000);
     texcache_done();
 }
+#endif
 
 /* ---- class 4 (D_0046EC30): 256 x 224, plain (layer 6) ---- */
 
@@ -1079,12 +1038,15 @@ void func_002C8A50(Movie *m) {
     m->frameBuf ^= 1;
 }
 
-/* +0x24 */
+#ifdef HG_NATIVE
+/* +0x24 draw: the frame over the screen; its blend (GS ALPHA 0x2A: (0 - 0) * FIX + Cs) leaves
+ * it as it is, so straight */
 void func_002C8830(Movie *m) {
     movie_send(m, 0x38000, m->frameH, 0x2B);
-    movie_sprite(0x2C, m->frameW / 64, 0x2A, 0x156, 0x72007000, 0x8E009000, MOVIE_UV(m->frameW, m->frameH));
+    movie_sprite(0x2C, 0x116, 0x72007000);
     texcache_done();
 }
+#endif
 
 /* ---- class 6 (D_00474F80): a 256 x 64 strip at screen (128, 176) .. (512, 272) (layers 0x2D /
  * 0x2E) ---- */
@@ -1104,9 +1066,12 @@ void func_0032E6C0(Movie *m) {
     movie_take(m, 0x10000, 1, 1);
 }
 
-/* +0x24 */
+#ifdef HG_NATIVE
+/* +0x24 draw: the frame in a small rectangle (screen 0x740..0x8C0 x 0x7D0..0x830 in GS units:
+ * not drawn yet, glr_todo), blended (layer 0x2E) */
 void func_0032E4A0(Movie *m) {
     movie_send(m, 0x10000, m->frameH, 0x2D);
-    movie_sprite(0x2E, (m->frameW + 0x3F) / 64, 0x44, 0x156, 0x7D007400, 0x83008C00, MOVIE_UV(m->frameW, m->frameH));
+    movie_sprite(0x2E, 0x156, 0x7D007400);
     texcache_done();
 }
+#endif

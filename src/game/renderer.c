@@ -114,40 +114,12 @@ extern u32 *_fbss;   /* GIF DMA channel registers (sceDmaGetChan(2)) */
 extern void func_0010D6E8(u32 *chan, void *tag);           /* libdma: sceDmaSend */
 extern s32 func_0010D988(u32 *chan, s32 mode, s32 timeout);   /* libdma: sceDmaSync */
 
-/* Clear all of VRAM: 16 uploads of a 256x256 32-bit block of zeros (256 KB each). */
+#ifdef HG_NATIVE
+/* Clear all of VRAM (the original: 16 uploads of 256 KB of zeros): PC has no VRAM. */
 void func_001B7ED0(u8 *r) {
-    s32 i, base, n;
-    u64 *p;
-
-    for (i = 0, base = 0; i < 16; i++, base += 0x10000) {
-        func_001B7370(r);
-        p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x4008, 1);
-        p[0] = DMA_TAG(DMA_CNT, 5, 0);
-        p[1] = 0;
-        p[2] = GIF_TAG(4, 1, GIF_PACKED, 1);
-        p[3] = GIF_REG_AD;
-        p[4] = GS_BITBLT_DST(base / 64, 4, GS_PSMCT32);
-        p[5] = GS_BITBLTBUF;
-        p[6] = 0;
-        p[7] = GS_TRXPOS;
-        p[8] = 256 | (u64)256 << 32;
-        p[9] = GS_TRXREG;
-        p[10] = 0;   /* host -> local */
-        p[11] = GS_TRXDIR;
-        p[12] = DMA_TAG(DMA_CNT, 0x4001, 0);
-        p[13] = 0;
-        p[14] = GIF_TAG(0x4000, 1, GIF_IMAGE, 0);
-        p[15] = 0;
-        for (p += 16, n = 0; n < 0x4000; n += 8, p += 16) {   /* the image: zeros */
-            p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0; p[4] = 0; p[5] = 0; p[6] = 0; p[7] = 0;
-            p[8] = 0; p[9] = 0; p[10] = 0; p[11] = 0; p[12] = 0; p[13] = 0; p[14] = 0; p[15] = 0;
-        }
-        FlushCache(0);
-        *_fbss &= ~0x40;   /* CHCR.TTE: don't send the tags */
-        func_0010D6E8(_fbss, r + AT(r, 0x304BB4, u8) * 0x360 + 0x10);
-        func_0010D988(_fbss, 0, 0);
-    }
+    (void)r;
 }
+#endif
 
 extern void sceGsDefDispEnv(void *disp, s32 psm, s32 w, s32 h, s32 dx, s32 dy);
 extern s32 func_0010C5C8(void *env, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm);   /* sceGsSetDefDrawEnv */
@@ -158,75 +130,21 @@ extern s32 func_0010C7B0(void *clear, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32
 /* set the 9-bit base field (FBP / ZBP) of a GS register to VRAM byte address `addr` */
 #define GS_SET_BASE(reg, addr) ((reg) = ((reg) & ~0x1FF) | (((addr) / 2048) & 0x1FF))
 
-/* Display and drawing environments: two setups (+0x3006D0.. and +0x3006F8..), each a display
- * environment and a GIF packet of both drawing contexts plus a clear; then the frame / Z buffer
- * bases from the VRAM layout (+0x304BE8 display, +0x304BEC draw, +0x304BF0 Z). */
+#ifdef HG_NATIVE
+/* The GS display and drawing environments (two setups, from the VRAM layout): nothing on PC,
+ * where the GL renderer owns the frame. */
 void func_001B79F0(u8 *r) {
-    s32 dw = AT(r, 0x304C00, s16), dh = AT(r, 0x304C02, s16);
-    s32 w = AT(r, 0x304BFC, s16), h = AT(r, 0x304BFE, s16);
-
-    /* setup 0: draw at dw x dh (24-bit Z test), display w x h */
-    sceGsDefDispEnv(r + 0x3006D0, 0, w, h, 0, AT(r, 0x304C09, u8) == 0x50 ? 0xF : 0);
-    AT(r, 0x300720, u64) = GIF_TAG(0x16, 1, GIF_PACKED, 1);
-    AT(r, 0x300728, u64) = GIF_REG_AD;
-    func_0010C5C8(r + 0x300730, 0, dw, dh, 2, 0x31);
-    func_0010D020(r + 0x3007B0, 0, dw, dh, 2, 0x31);
-    func_0010C7B0(r + 0x300830, 2, (s16)(0x800 - (dw >> 1)), (s16)(0x800 - (dh >> 1)), dw, dh, 0, 0, 0, 0, 0);
-    /* setup 1: 24-bit frame, w x h, no Z test */
-    sceGsDefDispEnv(r + 0x3006F8, 1, w, h, 0, 0);
-    AT(r, 0x300890, u64) = GIF_TAG(0x16, 1, GIF_PACKED, 1);
-    AT(r, 0x300898, u64) = GIF_REG_AD;
-    func_0010C5C8(r + 0x3008A0, 1, w, h, 0, 0x31);
-    func_0010D020(r + 0x300920, 1, w, h, 0, 0x31);
-    func_0010C7B0(r + 0x3009A0, 0, (s16)(0x800 - (w >> 1)), (s16)(0x800 - (h >> 1)), w, h, 0, 0, 0, 0, 0);
-
-    GS_SET_BASE(AT(r, 0x3006E0, u32), AT(r, 0x304BE8, s32));      /* setup 0 DISPFB */
-    GS_SET_BASE(AT(r, 0x3007B0, u64), AT(r, 0x304BEC, s32));      /* context 2 FRAME */
-    AT(r, 0x300730, u64) = (AT(r, 0x300730, u64) & ~0x1FF) | (AT(r, 0x3007B0, u64) & 0x1FF);
-    GS_SET_BASE(AT(r, 0x3007C0, u64), AT(r, 0x304BF0, s32));      /* context 2 ZBUF */
-    AT(r, 0x300740, u64) = (AT(r, 0x300740, u64) & ~0x1FF) | (AT(r, 0x3007C0, u64) & 0x1FF);
-    GS_SET_BASE(AT(r, 0x300708, u32), AT(r, 0x304BE8, s32));      /* setup 1 DISPFB */
-    GS_SET_BASE(AT(r, 0x300920, u64), AT(r, 0x304BE8, s32));
-    AT(r, 0x3008A0, u64) = (AT(r, 0x3008A0, u64) & ~0x1FF) | (AT(r, 0x300920, u64) & 0x1FF);
-    GS_SET_BASE(AT(r, 0x300930, u64), AT(r, 0x304BF0, s32));
-    AT(r, 0x3008B0, u64) = (AT(r, 0x3008B0, u64) & ~0x1FF) | (AT(r, 0x300930, u64) & 0x1FF);
+    (void)r;
 }
+#endif
 
-/* Default GS state at the start of each frame, through VIF1 DIRECT: normal alpha blending,
- * TEXA alpha 0x80, bilinear-ish TEX1, clamped UVs, the drawing area, Z buffer (24-bit at page
- * 0xA0), alpha test "not equal 0" + Z test "greater or equal", frame buffer at page 0x110 (512 wide). */
+#ifdef HG_NATIVE
+/* The default GS state at each frame's start (blending, alpha / Z test, the frame and Z
+ * buffers): the GL renderer sets its own per draw. */
 void func_001B71E0(u8 *r) {
-    u64 *p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0xD, 0);
-    s32 dw = AT(r, 0x304C00, s16), dh = AT(r, 0x304C02, s16);
-
-    p[0] = DMA_TAG(DMA_CNT, 12, 0);
-    ((u32 *)p)[2] = VIF_NOP;
-    ((u32 *)p)[3] = VIF_DIRECT(12);
-    p[2] = GIF_TAG(11, 1, GIF_PACKED, 1);
-    p[3] = GIF_REG_AD;
-    p[4] = 0x44;                    /* ALPHA: (Cs - Cd) * As + Cd */
-    p[5] = GS_ALPHA_1;
-    p[6] = 0;
-    p[7] = GS_FBA_1;
-    p[8] = 0;
-    p[9] = GS_PABE;
-    p[10] = (u64)0x80 << 32;        /* TEXA: TA1 = 0x80 */
-    p[11] = GS_TEXA;
-    p[12] = 0x60;
-    p[13] = GS_TEX1_1;
-    p[14] = 5;                      /* CLAMP: clamp both */
-    p[15] = GS_CLAMP_1;
-    p[16] = (u64)((0x800 - (dw >> 1)) * 16) | (u64)((0x800 - (dh >> 1)) * 16) << 32;
-    p[17] = GS_XYOFFSET_1;
-    p[18] = (u64)(dw - 1) << 16 | (u64)(dh - 1) << 48;
-    p[19] = GS_SCISSOR_1;
-    p[20] = 0x310000A0;             /* ZBUF: page 0xA0, PSMZ24 */
-    p[21] = GS_ZBUF_1;
-    p[22] = 0x5000F;                /* TEST */
-    p[23] = GS_TEST_1;
-    p[24] = 0x80110;                /* FRAME: page 0x110, width 512, PSMCT32 */
-    p[25] = GS_FRAME_1;
+    (void)r;
 }
+#endif
 
 /* the draw buffer (0 / 1) and its DMA chain: 53 layer slots, then an end tag */
 #define REND_BUF(r) AT(r, 0x304BB4, u8)
@@ -545,95 +463,44 @@ extern u64 D_0047D300[];   /* the frame's final packet: draw buffer -> display b
 
 #define REND_VIF1_CHAN(r) AT(r, 0x304BB0, u32 *)
 
-/* wait for the previous frame's chain (VIF1 DMA) */
+#ifdef HG_NATIVE
+/* wait for the previous frame's chain - nothing on PC */
 void func_001B87D0(u8 *r) {
-    func_0010D988(REND_VIF1_CHAN(r), 0, 0);
+    (void)r;
 }
+#endif
 
-/* show buffer 1's environment and send the final copy packet */
+#ifdef HG_NATIVE
+/* buffer 1's environment and the final copy packet sent - nothing on PC */
 void func_001B8750(u8 *r) {
-    FlushCache(0);
-    func_0010D200(r + 0x3006D0, 1);
-    FlushCache(0);
-    *_fbss &= ~0x40;
-    func_0010D6E8(_fbss, D_0047D300);
+    (void)r;
 }
+#endif
 
-/* after the GIF finished: clear colour (+0x304BF8), clear on (XYZ2) or off (XYZ3, +0x304C04),
- * then buffer 0's environment */
+#ifdef HG_NATIVE
+/* after the GIF finished: the next frame's clear and buffer 0's environment - nothing on PC */
 void func_001B86A0(u8 *r) {
-    func_0010D988(_fbss, 0, 0);
-    sceGsSyncPath(0, 0);
-    AT(r, 0x300850, s32) = AT(r, 0x304BF8, s32);
-    AT(r, 0x300878, u64) = AT(r, 0x304C04, u8) == 0 ? GS_XYZ2 : 0xD;
-    FlushCache(0);
-    func_0010D200(r + 0x3006D0, 0);
+    (void)r;
 }
+#endif
 
 extern void func_001B75E0(u8 *r);
 
-/* send this frame's layer chain over VIF1, set up the next frame's final packet, flip */
+#ifdef HG_NATIVE
+/* end of frame: flip to the other draw buffer (the original also sends the layer chain over
+ * VIF1 and sets up the final packet first) */
 void func_001B85B0(u8 *r) {
-    FlushCache(0);
-    *REND_VIF1_CHAN(r) = (*REND_VIF1_CHAN(r) & ~0x40) | 0x40;   /* CHCR.TTE: VIF codes in the tags */
-    func_0010D6E8(REND_VIF1_CHAN(r), REND_CHAIN(r, REND_BUF(r)));
-    AT(r, 0x3009C0, s32) = AT(r, 0x304BF8, s32);
-    AT(r, 0x3009E8, u64) = AT(r, 0x304C05, u8) == 1 ? 0xD : GS_XYZ2;
-    func_001B75E0(r);
     func_001B7370(r);
 }
+#endif
 
-/* The final packet: copy the draw buffer (32-bit, +0x304BEC) onto the display buffer as one
- * sprite at the screen offset, blended with the previous frame by FIX alpha +0x304C06 when
- * +0x304C05 is set (ABE). */
+#ifdef HG_NATIVE
+/* The frame's final packet (the draw buffer copied onto the display buffer, blended with the
+ * last frame by +0x304C06 when +0x304C05 is set): glr_present shows the GL frame instead. */
 void func_001B75E0(u8 *r) {
-    u64 *p = D_0047D300;
-    s32 dw = AT(r, 0x304C00, s16), dh = AT(r, 0x304C02, s16);
-    s32 w = AT(r, 0x304BFC, s16), h = AT(r, 0x304BFE, s16);
-    s32 base = AT(r, 0x304BEC, s32);
-    s32 ox = AT(r, 0x304C07, s8), oy = AT(r, 0x304C08, s8);
-    s32 u = 0, v = 0;
-
-    p[0] = DMA_TAG(DMA_CNT, 11, 0);
-    ((u32 *)p)[2] = VIF_NOP;
-    ((u32 *)p)[3] = VIF_DIRECT(11);
-    p[2] = GIF_TAG(5, 1, GIF_PACKED, 1);
-    p[3] = GIF_REG_AD;
-    p[4] = 0x310000A0 | (u64)1 << 32;   /* ZBUF: no Z writes */
-    p[5] = GS_ZBUF_1;
-    p[6] = 0x30000;                     /* TEST: Z always */
-    p[7] = GS_TEST_1;
-    p[8] = 0;
-    p[9] = GS_TEXFLUSH;
-    p[10] = 0x60;
-    p[11] = GS_TEX1_1;
-    p[12] = (u64)AT(r, 0x304C06, u8) << 32 | 0x64;   /* ALPHA: (Cs - Cd) * FIX + Cd */
-    p[13] = GS_ALPHA_1;
-    p[14] = GIF_TAG(1, 1, GIF_REGLIST, 8);
-    p[15] = GIF_REGS(GIF_CLAMP_1, GIF_TEX0_1, GIF_PRIM, GIF_RGBAQ, GIF_UV, GIF_XYZ2, GIF_UV, GIF_XYZ2);
-    p[16] = (u64)(s64)(dw - 1) << 14 | 0xA | (u64)(s64)(dh - 1) << 34;   /* region clamp */
-    if (base == 0x50000) {
-        p[17] = (u64)(s64)(base >> 6) | 0xA8040000 | (u64)6 << 32;
-    } else if ((u32)dw <= 0x200 && (u32)dh <= 0x1C0) {
-        p[17] = (u64)(s64)(base >> 6) | (u64)(s64)(dw >> 6) << 14 | 0x64000000 | (u64)6 << 32;
-    } else {
-        p[17] = (u64)(s64)(base >> 6) | (u64)(s64)(dw >> 6) << 14 | 0xA9300000 | (u64)0x2007E006 << 32;
-    }
-    p[18] = (u64)AT(r, 0x304C05, u8) << 6 | 0x116;   /* PRIM: sprite, textured, UV */
-    p[19] = AT(r, 0x304BF4, u32);
-    if (w < dw) {
-        u = (dw - w) * 8;
-    }
-    if (h < dh) {
-        v = (dh - h) * 8;
-    }
-    p[20] = (u64)(s64)(u + 8) | (u64)(s64)(v + 8) << 16;
-    p[21] = (u64)(((0x800 - (w >> 1)) + ox) * 16) | (u64)(((0x800 - (h >> 1)) + oy) * 16) << 16;
-    p[22] = (u64)(s64)(dw * 16 - u + 8) | (u64)(s64)(dh * 16 - v + 8) << 16;
-    p[24] = DMA_TAG(DMA_END, 0, 0);
-    p[25] = 0;
-    p[23] = (u64)(((w >> 1) + 0x800 + ox) * 16) | (u64)(((h >> 1) + 0x800 + oy) * 16) << 16;
+    (void)r;
 }
+#endif
 
 /* a texture's entry in a .TEX file */
 typedef struct TexHeader {
@@ -650,32 +517,6 @@ typedef struct TexHeader {
 #define VRAM_TEX_ADDR(v, id) VCALL(v, 0x68, u32 (*)(VObject *, s32))(v, id)    /* in 64-word blocks */
 #define VRAM_CLUT_ADDR(v, id) VCALL(v, 0x6C, u32 (*)(VObject *, s32))(v, id)
 
-/* one upload: the tags (written first) */
-static inline void Rend_UploadTags(u64 *p) {
-    p[0] = DMA_TAG(DMA_CNT, 6, 0);
-    ((u32 *)p)[2] = VIF_NOP;
-    ((u32 *)p)[3] = VIF_DIRECT(6);
-    p[2] = GIF_TAG(4, 1, GIF_PACKED, 1);
-    p[3] = GIF_REG_AD;
-}
-
-/* ... then BITBLTBUF / TRXPOS / TRXREG / TRXDIR, the IMAGE tag and a DMA ref to the data */
-static inline void Rend_UploadRegs(u64 *p, u64 bitblt, u32 w, u32 h, u32 qwc, u8 *data) {
-    p[4] = bitblt;
-    p[5] = GS_BITBLTBUF;
-    p[6] = 0;
-    p[7] = GS_TRXPOS;
-    p[8] = w | (u64)h << 32;
-    p[9] = GS_TRXREG;
-    p[10] = 0;
-    p[11] = GS_TRXDIR;
-    p[12] = GIF_TAG(qwc, 1, GIF_IMAGE, 0);
-    p[13] = 0;
-    p[14] = DMA_TAG(DMA_REF, qwc, (u32)data & 0x0FFFFFFF);
-    ((u32 *)p)[30] = VIF_NOP;
-    ((u32 *)p)[31] = VIF_DIRECT(qwc);
-}
-
 #ifdef HG_NATIVE
 /* +0x44 upload texture `t` to its VRAM entry `id`: nothing to do on PC (the GL renderer reads
  * .TEX entries where they are loaded) */
@@ -689,53 +530,19 @@ s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) -> RGBA */
 
-/* +0x94: build a 256-colour palette with generator `mode` and send it to VRAM slot `slot`'s
- * CLUT (in renderer layer `layer`, -1 the immediate list); colours go as HWREG writes, two per
- * quadword, in the CLUT's entry order (bit 3 and 4 of the index swapped) */
+#ifdef HG_NATIVE
+/* +0x94: build a 256-colour palette with generator `mode` (D_0047E300) for VRAM slot `slot`'s
+ * CLUT, in renderer layer `layer` - the palette of layer 0x11's effect, which glr doesn't draw
+ * yet (func_001B2160) */
 s32 func_001B8D30(VObject *r, s32 slot, s32 mode, s32 layer, s32 arg) {
-    u64 *p;
-    const PTMF *gen;
-    u32 i, k, s;
-    static const s8 sStep[4] = {8, -16, 8, 0};
-
-    if (layer == -1) {
-        p = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 0x86);
-    } else {
-        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x86, layer);
-    }
-    if (p == NULL) {
-        return 0;
-    }
-    p[0] = 0x10000085;              /* DMA cnt 0x85 */
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000085;   /* VIF DIRECT 0x85 */
-    p[2] = 0x8084 | (0x10000000ULL << 32);   /* GIF tag: 0x84 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = ((u64)(u32)VCALL(D_0044E9A0, 0x6C, s32 (*)(VObject *, s32))(D_0044E9A0, slot) << 32) | (0x10000ULL << 32);
-    p[5] = GS_BITBLTBUF;            /* to the CLUT's place, width 64 */
-    p[6] = 0x10 | (0x10ULL << 32);
-    p[7] = GS_TRXREG;               /* 16 x 16 */
-    p[8] = 0;
-    p[9] = GS_TRXPOS;
-    p[10] = 0;
-    p[11] = GS_TRXDIR;
-    p += 12;
-    gen = &D_0047E300[mode];
-    i = 0;
-    do {
-        for (s = 0; s < 4; s++) {
-            for (k = 0; k < 8; k += 2) {
-                AT(p, 0x0, u32) = ptmf_scall_r2(r, gen, i, arg);
-                AT(p, 0x4, u32) = ptmf_scall_r2(r, gen, i + 1, arg);
-                p[1] = 0x54;        /* HWREG */
-                i += 2;
-                p += 2;
-            }
-            i += sStep[s];
-        }
-    } while (i < 0x100);
+    (void)r;
+    (void)slot;
+    (void)mode;
+    (void)layer;
+    (void)arg;
     return 1;
 }
+#endif
 
 /* palette generator 0: grey levels squeezed to 0x7E..0x81 around the middle (a nearly flat
  * ramp, the index clamped to 0x7E..0x80, plus one), in all four channels */
@@ -766,74 +573,14 @@ u32 func_001B8C90(VObject *r, u32 i) {
     return v | v << 8 | v << 16 | v << 24;
 }
 
-/* the 3D layers' start (layer 0x25): clear the frame's alpha (a sprite over the screen writing only
- * alpha 0, in strips of 64 pixels), then Z test on, alpha test (frame alpha marks what's
- * drawn), the full scissor, bilinear textures, FBA on; at layer 0x27 the frame's mask and FBA
- * are put back */
+#ifdef HG_NATIVE
+/* the 3D layers' start (layer 0x25; the original clears the frame's alpha and turns FBA on, put
+ * back at 0x27): glr keeps the frame alpha marks itself (the bloom mask) */
 s32 func_001B1E50(u8 *rp) {
-    VObject *r = (VObject *)rp;
-    static const u64 sStrips[8] = {
-        0x01BF0000003F0000ULL, 0x01BF0000007F0040ULL, 0x01BF000000BF0080ULL, 0x01BF000000FF00C0ULL,
-        0x01BF0000013F0100ULL, 0x01BF0000017F0140ULL, 0x01BF000001BF0180ULL, 0x01BF000001FF01C0ULL,
-    };
-    u64 *p;
-    s32 i;
-
-    p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x25, 0x25);
-
-    if (p == NULL) {
-        return 0;
-    }
-    p[0] = 0x10000024;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000024;   /* DIRECT 0x24 */
-    p[2] = 0x8023 | (0x10000000ULL << 32);
-    p[3] = 0xE;
-    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: Z24 at 0xA0, no Z writes */
-    p[5] = GS_ZBUF_1;
-    p[6] = 0x30000;                     /* TEST_1: Z always */
-    p[7] = GS_TEST_1;
-    p[8] = 0x80110 | (0xFFFFFFULL << 32);   /* FRAME_1: 512 wide at 0x110, only alpha written */
-    p[9] = GS_FRAME_1;
-    p[10] = 0;
-    p[11] = GS_TEX1_1;
-    p[12] = (u64)0x3F800000 << 32;      /* RGBAQ: 0, Q 1 */
-    p[13] = GS_RGBAQ;
-    p[14] = 6;                          /* PRIM: sprite */
-    p[15] = GS_PRIM;
-    for (i = 0; i < 8; i++) {
-        p[16 + i * 6] = sStrips[i];     /* SCISSOR_1: 64 pixels wide */
-        p[17 + i * 6] = GS_SCISSOR_1;
-        p[18 + i * 6] = 0x72007000;     /* (0, 0) */
-        p[19 + i * 6] = GS_XYZ2;
-        p[20 + i * 6] = 0x8E009000;     /* (512, 448) */
-        p[21 + i * 6] = GS_XYZ2;
-    }
-    p[64] = 0x310000A0;                 /* ZBUF_1: Z writes on */
-    p[65] = GS_ZBUF_1;
-    p[66] = 0x5000F;                    /* TEST_1: alpha test, Z test GEQUAL */
-    p[67] = GS_TEST_1;
-    p[68] = 0x01BF000001FF0000ULL;      /* SCISSOR_1: the screen */
-    p[69] = GS_SCISSOR_1;
-    p[70] = 0x60;                       /* TEX1_1: bilinear */
-    p[71] = GS_TEX1_1;
-    p[72] = 1;                          /* FBA_1 */
-    p[73] = GS_FBA_1;
-    p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x4, 0x27);
-    if (p == NULL) {
-        return 0;
-    }
-    p[0] = 0x10000003;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000003;
-    p[2] = 0x8002 | (0x10000000ULL << 32);
-    p[3] = 0xE;
-    p[4] = 0x80110;                     /* FRAME_1: all channels */
-    p[5] = GS_FRAME_1;
-    p[6] = 0;                           /* FBA_1 off */
-    p[7] = GS_FBA_1;
+    (void)rp;
     return 1;
 }
+#endif
 
 /* +0x80 draw a box described by 13 words (+0x7C with them as arguments) */
 void func_001B9810(VObject *r, const s32 *b) {
@@ -910,54 +657,20 @@ s32 func_001B92F0(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s3
 #include "progress.h"
 extern Progress *gProgress;
 
-/* +0x5C clear the 128 x 112 work buffer at frame page 0x1F0 to black (layer 0x29) and set
- * the drawing environment back; not when progress flag 0x28 is set. 0: no packet space */
+#ifdef HG_NATIVE
+/* +0x5C clear the 128 x 112 glow work buffer to black (the original: a sprite in layer 0x29 at
+ * page 0x1F0); not when progress flag 0x28 is set */
 s32 func_001BA090(u8 *r) {
-    static const u64 sRegs[14][2] = {
-        {0x00000001310000A0ULL, GS_ZBUF_1},
-        {0x0000000000030000ULL, GS_TEST_1},
-        {0x00000000000201F0ULL, GS_FRAME_1},      /* page 0x1F0, 128 wide */
-        {0x00007C8000007C00ULL, GS_XYOFFSET_1},
-        {0x006F0000007F0000ULL, GS_SCISSOR_1},    /* 0..127 x 0..111 */
-        {0x3F80000000000000ULL, GS_RGBAQ},        /* black, q 1 */
-        {6, GS_PRIM},                             /* sprite */
-        {0x000000007C807C00ULL, GS_XYZ2},
-        {0x0000000083808400ULL, GS_XYZ2},
-        {0x0000000000080110ULL, GS_FRAME_1},      /* back to the frame buffer */
-        {0x0000720000007000ULL, GS_XYOFFSET_1},
-        {0x01BF000001FF0000ULL, GS_SCISSOR_1},
-        {0x00000000310000A0ULL, GS_ZBUF_1},
-        {0x000000000005000FULL, GS_TEST_1},
-    };
-    u64 *p;
-    s32 i;
+    extern void glr_glow_clear(void);   /* native/platform/glr.c */
 
     if ((u8)Progress_TestFlag(gProgress, 0x28) == 1) {
         return 1;
     }
-    p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x10, 0x29);
-    if (p == NULL) {
-        return 0;
-    }
     AT(r, 0x304BB6, u8) = 1;
-#ifdef HG_NATIVE
-    {
-        extern void glr_glow_clear(void);   /* native/platform/glr.c */
-
-        glr_glow_clear();
-    }
-#endif
-    p[0] = DMA_TAG(DMA_CNT, 15, 0);
-    ((u32 *)p)[2] = VIF_NOP;
-    ((u32 *)p)[3] = VIF_DIRECT(15);
-    p[2] = GIF_TAG(14, 1, GIF_PACKED, 1);
-    p[3] = GIF_REG_AD;
-    for (i = 0; i < 14; i++) {
-        p[4 + i * 2] = sRegs[i][0];
-        p[5 + i * 2] = sRegs[i][1];
-    }
+    glr_glow_clear();
     return 1;
 }
+#endif
 
 
 #ifdef HG_NATIVE

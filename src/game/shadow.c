@@ -557,50 +557,7 @@ static inline __attribute__((always_inline)) void door_shadow_project(VObject *c
     }
 }
 
-#ifndef HG_NATIVE
-/* one side of the box (a strip p0 p1 at the door, p2 p3 at the far end), if it faces the
- * screen: shaded from the colour to 0. 0 if the packet didn't fit */
-s32 func_002784F0(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
-    u64 *g;
-
-    if ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]) >= 0) {
-        return 1;
-    }
-    g = VCALL(D_0044E4F0, 0x14, u64 *(*)(VObject *, s32))(D_0044E4F0, 0xB);
-    if (g == NULL) {
-        return 0;
-    }
-    g[0] = 0x1000000A;
-    AT(g, 0x8, s32) = 0;
-    AT(g, 0xC, s32) = 0x5000000A;
-    g[2] = 0x8009 | (u64)0x10000000 << 32;
-    g[3] = 0xE;
-    g[4] = 0x4C;   /* PRIM: strip, gouraud, blended */
-    g[5] = 0;
-    AT(g, 0x30, u32) = AT(o, 0x54, u32);
-    AT(g, 0x34, f32) = 1.0f;
-    g[7] = 1;
-    g[8] = (u64)((s64)p0[0] | (s64)p0[1] << 16 | (s64)p0[2] << 32);
-    g[9] = 0xD;
-    AT(g, 0x50, u32) = AT(o, 0x54, u32);
-    AT(g, 0x54, f32) = 1.0f;
-    g[11] = 1;
-    g[12] = (u64)((s64)p1[0] | (s64)p1[1] << 16 | (s64)p1[2] << 32);
-    g[13] = 0xD;
-    AT(g, 0x70, u32) = 0;
-    AT(g, 0x74, f32) = 1.0f;
-    g[15] = 1;
-    g[16] = (u64)((s64)p2[0] | (s64)p2[1] << 16 | (s64)p2[2] << 32);
-    g[17] = 5;
-    AT(g, 0x90, u32) = 0;
-    AT(g, 0x94, f32) = 1.0f;
-    g[19] = 1;
-    g[20] = (u64)((s64)p3[0] | (s64)p3[1] << 16 | (s64)p3[2] << 32);
-    g[21] = 5;
-    return 1;
-}
-
-#else
+#ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
 
@@ -629,53 +586,21 @@ static void door_shadow_side(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
     glr_strip(kIdentity, 4, &xyzw[0][0], &st[0][0], &rgba[0][0], NULL, 0, 0x8 | 0x40);
 }
 
-#endif
-
-/* +0xC draw (layer 6): the box's sides into the shadow buffer (page 0x180, 256 x 224); 0 if it
- * is partly out of view or a packet didn't fit. (PC: gouraud strips into layer 6's buffer) */
+/* +0xC draw (layer 6): the box's sides into the shadow buffer (page 0x180, 256 x 224) as
+ * gouraud strips with OpenGL; 0 if it is partly out of view */
 s32 func_002789B0(u8 *o) {
     VObject *cam = D_0044E4B8;
     f32 p[8][4] __attribute__((aligned(16)));
     s32 s[8][4] __attribute__((aligned(16)));
-#ifndef HG_NATIVE
-    u64 *g;
-#endif
 
     if (!door_shadow_corners(o, cam, p)) {
         return 0;
     }
     door_shadow_project(cam, p, s);
-#ifdef HG_NATIVE
     door_shadow_side(o, s[0], s[1], s[4], s[5]);
     door_shadow_side(o, s[1], s[3], s[5], s[7]);
     door_shadow_side(o, s[3], s[2], s[7], s[6]);
     door_shadow_side(o, s[2], s[0], s[6], s[4]);
     return 1;
-#else
-    g = VCALL(D_0044E4F0, 0x14, u64 *(*)(VObject *, s32))(D_0044E4F0, 5);
-    if (g == NULL) {
-        return 0;
-    }
-    g[0] = 0x10000004;
-    AT(g, 0x8, s32) = 0;
-    AT(g, 0xC, s32) = 0x50000004;
-    g[2] = 0x8003 | (u64)0x10000000 << 32;
-    g[3] = 0xE;
-    g[4] = 0x5000F;   /* TEST */
-    g[5] = 0x47;
-    g[6] = 0x40180;   /* FRAME: the shadow buffer */
-    g[7] = 0x4C;
-    g[8] = 0xFF0000 | (u64)0xDF0000 << 32;   /* SCISSOR 0..255 x 0..223 */
-    g[9] = 0x40;
-    if (!(func_002784F0(o, s[0], s[1], s[4], s[5]) & 0xFF)) {
-        return 0;
-    }
-    if (!(func_002784F0(o, s[1], s[3], s[5], s[7]) & 0xFF)) {
-        return 0;
-    }
-    if (!(func_002784F0(o, s[3], s[2], s[7], s[6]) & 0xFF)) {
-        return 0;
-    }
-    return (func_002784F0(o, s[2], s[0], s[6], s[4]) & 0xFF) != 0;
-#endif
 }
+#endif
