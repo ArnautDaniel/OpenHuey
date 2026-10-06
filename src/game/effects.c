@@ -2194,9 +2194,10 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 extern VObject *D_0044E4E8;   /* the texture cache */
 
-/* +0x14 draw: the shards as textured boxes (texture +0xE34, its cell +0xE20 / +0xE24, size
- * +0xE28 / +0xE2C, colour +0xE30); a shard with a corner off screen is skipped */
-void func_002EA660(u8 *e) {
+/* the shards as textured boxes (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
+ * size fb+0x8 / fb+0xC, colour fb+0x10; the shards `stride` bytes apart from +0x10, dead ones skipped if
+ * they have the flag); a shard with a corner off screen is skipped */
+static inline void shards_draw(u8 *e, u32 fb, u32 stride, s32 alive) {
     VObject *tc = D_0044E4E8, *r, *cam;
     u8 *tex;
     u32 slot;
@@ -2205,11 +2206,11 @@ void func_002EA660(u8 *e) {
     f32 clip[4][4] __attribute__((aligned(16)));
     s32 i, k;
 
-    slot = VCALL(tc, 0x8, u32 (*)(VObject *, s32, s32))(tc, AT(e, 0xE34, s32), 0);
+    slot = VCALL(tc, 0x8, u32 (*)(VObject *, s32, s32))(tc, AT(e, fb + 0x14, s32), 0);
     if (slot == (u32)-1) {
         return;
     }
-    tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, AT(e, 0xE34, s32), 0);
+    tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, AT(e, fb + 0x14, s32), 0);
     if (slot & 0x80000000) {
         slot &= 0x7FFFFFFF;
         if (!(VCALL(D_0044E4F0, 0x44, u32 (*)(VObject *, u32, u8 *, s32))(D_0044E4F0, slot, tex, 1) & 0xFF)) {
@@ -2234,7 +2235,7 @@ void func_002EA660(u8 *e) {
         p[5] = 6;          /* TEX0_1 */
         p[6] = 0x14;       /* PRIM: textured triangle strip */
         p[7] = 0;
-        ((u32 *)p)[16] = AT(e, 0xE30, u32);
+        ((u32 *)p)[16] = AT(e, fb + 0x10, u32);
         ((f32 *)p)[17] = 1.0f;
         p[9] = 1;          /* RGBAQ */
         tex0 = 0;
@@ -2247,12 +2248,12 @@ void func_002EA660(u8 *e) {
     VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, screen);
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
     for (i = 0; i < 16; i++) {
-        Shard *s = SHARD(e, i);
+        Shard *s = (Shard *)(e + 0x10 + i * stride);
         f32 m[4][4] __attribute__((aligned(16)));
         f32 world[8][4] __attribute__((aligned(16)));
         s32 off = 0;
 
-        if (s->alive == 0) {
+        if (alive && s->alive == 0) {
             continue;
         }
         sceVu0UnitMatrix(m);
@@ -2311,8 +2312,8 @@ void func_002EA660(u8 *e) {
                 for (k = 0; k < 4; k++) {
                     s32 *v = xyz[kShardFace[f][k]];
 
-                    ((f32 *)p)[0] = k & 1 ? AT(e, 0xE20, f32) + AT(e, 0xE28, f32) : AT(e, 0xE20, f32);
-                    ((f32 *)p)[1] = k & 2 ? AT(e, 0xE24, f32) + AT(e, 0xE2C, f32) : AT(e, 0xE24, f32);
+                    ((f32 *)p)[0] = k & 1 ? AT(e, fb, f32) + AT(e, fb + 0x8, f32) : AT(e, fb, f32);
+                    ((f32 *)p)[1] = k & 2 ? AT(e, fb + 0x4, f32) + AT(e, fb + 0xC, f32) : AT(e, fb + 0x4, f32);
                     p[1] = 2;   /* ST */
                     p[2] = (s64)v[0] | (s64)v[1] << 16 | (s64)v[2] << 32;
                     p[3] = k < 2 ? 0xD : 5;   /* XYZ3 for the first two, then XYZ2 (draws) */
@@ -2326,7 +2327,7 @@ void func_002EA660(u8 *e) {
             s32 f;
 
             for (k = 0; k < 4; k++) {
-                AT(rgba[k], 0, u32) = AT(e, 0xE30, u32);
+                AT(rgba[k], 0, u32) = AT(e, fb + 0x10, u32);
             }
             for (f = 0; f < 6; f++) {
                 f32 xyzw[4][4] __attribute__((aligned(16)));
@@ -2335,8 +2336,8 @@ void func_002EA660(u8 *e) {
                 for (k = 0; k < 4; k++) {
                     sceVu0CopyVector(xyzw[k], world[kShardFace[f][k]]);
                     AT(&xyzw[k][3], 0, u32) = 0;
-                    st[k][0] = k & 1 ? AT(e, 0xE20, f32) + AT(e, 0xE28, f32) : AT(e, 0xE20, f32);
-                    st[k][1] = k & 2 ? AT(e, 0xE24, f32) + AT(e, 0xE2C, f32) : AT(e, 0xE24, f32);
+                    st[k][0] = k & 1 ? AT(e, fb, f32) + AT(e, fb + 0x8, f32) : AT(e, fb, f32);
+                    st[k][1] = k & 2 ? AT(e, fb + 0x4, f32) + AT(e, fb + 0xC, f32) : AT(e, fb + 0x4, f32);
                 }
                 glr_strip(&clip[0][0], 4, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, tex0, 0x10);
             }
@@ -2344,6 +2345,156 @@ void func_002EA660(u8 *e) {
 #endif
     }
     (void)tex0;
+}
+
+/* +0x14 draw: the shards (texture +0xE34, its cell +0xE20 / +0xE24, size +0xE28 / +0xE2C,
+ * colour +0xE30) */
+void func_002EA660(u8 *e) {
+    shards_draw(e, 0xE20, sizeof(Shard), 1);
+}
+
+/* ---- D_004799D0 (0xD40 bytes): debris - 16 pieces (Shards without the alive flag, 0xD0 apart
+ * from +0x10) dropped in a 4 x 4 grid, turned by +0xD38, from about a point (+0xD10) up near the
+ * ceiling; they tumble and fall (the bigger, the faster) until the last one passes 500. Start
+ * kinds 0..2 three spots (3..5 the same with pieces a tenth the size, +0xD3C) ---- */
+
+#define DEBRIS(e, i) ((Shard *)((u8 *)(e) + 0x10 + (i) * 0xD0))
+
+/* throw piece `i`: a random box (each coordinate 0.7 or -0.3 by its sign, less 0.4 x random),
+ * size 0.5..3.5, turn -pi..pi, its grid spot (column i % 4, row i / 4) jittered, spin, and a
+ * small push along the heading */
+void func_0035D840(u8 *e, s32 i) {
+    static const union { u32 u; f32 f; } kPos = {0x3F333333}, kNeg = {0xBE99999A}, k04 = {0x3ECCCCCD},
+                                          kPi = {0x40490FDB}, kCol = {0x40551EB8}, k02 = {0x3E4CCCCD},
+                                          k01 = {0x3DCCCCCD};
+    static const s8 sx[8] = {1, -1, 1, -1, 1, -1, 1, -1};
+    static const s8 sy[8] = {1, 1, 1, 1, -1, -1, -1, -1};
+    static const s8 sz[8] = {1, 1, -1, -1, 1, 1, -1, -1};
+    VObject *rnd = D_0044E550;
+    Shard *s = DEBRIS(e, i);
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    s32 k;
+
+    for (k = 0; k < 8; k++) {
+        s->corner[k][0] = (sx[k] > 0 ? kPos.f : kNeg.f) - k04.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][1] = (sy[k] > 0 ? kPos.f : kNeg.f) - k04.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][2] = (sz[k] > 0 ? kPos.f : kNeg.f) - k04.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        s->corner[k][3] = 1.0f;
+    }
+    for (k = 0; k < 3; k++) {
+        s->scale[k] = 0.5f + 3.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    if (AT(e, 0xD3C, u8) == 1) {
+        s->scale[0] *= k01.f;
+        s->scale[1] *= k01.f;
+        s->scale[2] *= k01.f;
+    }
+    rnd = D_0044E550;
+    for (k = 0; k < 3; k++) {
+        s->rot[k] = kPi.f - 2.0f * (kPi.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+    }
+    v[0] = -5.0f + kCol.f * (f32)(i % 4);
+    v[1] = 1.0f + 2.0f * (f32)(i / 4);
+    v[0] = v[0] + (2.0f - 4.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+    v[1] = v[1] + (1.0f - 2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+    v[2] = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    v[3] = 1.0f;
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixY(m, m, AT(e, 0xD38, f32));
+    sceVu0ApplyMatrix(v, m, v);
+    s->pos[0] = AT(e, 0xD10, f32) + v[0];
+    s->pos[1] = AT(e, 0xD14, f32) + v[1];
+    s->pos[2] = AT(e, 0xD18, f32) + v[2];
+    s->pos[3] = 1.0f;
+    for (k = 0; k < 3; k++) {
+        s->spin[k] = 5.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    }
+    v[0] = 0.0f;
+    v[1] = k02.f + k02.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    v[3] = 0.0f;
+    v[2] = k02.f + k04.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    sceVu0ApplyMatrix(v, m, v);
+    sceVu0CopyVector(s->vel, v);
+}
+
+/* +0x18 start (arg: the kind): its spot (+0xD10) and heading (+0xD38), the texture's cell
+ * (0, 0.32) / size 0.68 / colour / texture 4, the small-piece flag, then all 16 thrown */
+void func_0035E2C0(u8 *e, u8 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    switch (arg[0]) {
+    case 0:
+    case 3:
+        AT(e, 0xD10, u32) = 0x3FC00000;   /* 1.5 */
+        AT(e, 0xD14, u32) = 0x441B0000;   /* 620 */
+        AT(e, 0xD18, u32) = 0x429A0000;   /* 77 */
+        AT(e, 0xD1C, u32) = 0x3F800000;
+        AT(e, 0xD38, s32) = 0;
+        break;
+    case 1:
+    case 4:
+        AT(e, 0xD10, u32) = 0xC2620000;   /* -56.5 */
+        AT(e, 0xD14, u32) = 0x441B0000;
+        AT(e, 0xD18, u32) = 0x42500000;   /* 52 */
+        AT(e, 0xD1C, u32) = 0x3F800000;
+        AT(e, 0xD38, u32) = 0xBF29C91F;   /* -0.663 */
+        break;
+    case 2:
+    case 5:
+        AT(e, 0xD10, u32) = 0xC0A00000;   /* -5 */
+        AT(e, 0xD14, u32) = 0x441B0000;
+        AT(e, 0xD18, u32) = 0xC29A0000;   /* -77 */
+        AT(e, 0xD38, u32) = 0x40490FDB;   /* pi */
+        AT(e, 0xD1C, u32) = 0x3F800000;
+        break;
+    }
+    AT(e, 0xD20, s32) = 0;
+    AT(e, 0xD24, u32) = 0x3EA3D70A;   /* 0.32 */
+    AT(e, 0xD28, u32) = 0x3F2E147B;   /* 0.68 */
+    AT(e, 0xD2C, u32) = 0x3F2E147B;
+    AT(e, 0xD30, u32) = 0x80161414;
+    AT(e, 0xD34, s32) = 4;
+    AT(e, 0xD3C, u8) = arg[0] >= 3;
+    for (i = 0; i < 16; i++) {
+        func_0035D840(e, i);
+    }
+}
+
+/* +0x14 draw */
+void func_0035E420(u8 *e) {
+    shards_draw(e, 0xD20, 0xD0, 0);
+}
+
+/* +0x10 update: the pieces tumble and fall, the bigger the faster (each frame 0.01 x their
+ * size's volume plus 0.09 more); 0 once the last one is below 500 */
+s32 func_0035EF70(u8 *e) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k001 = {0x3C23D70A},
+                                          kFall = {0xBDB851EC};
+    s32 on = 1, i, k;
+
+    for (i = 0; i < 16; i++) {
+        Shard *s = DEBRIS(e, i);
+
+        on = 1;
+        for (k = 0; k < 3; k++) {
+            s->rot[k] += kPi.f * s->spin[k] / 180.0f;
+            if (!(s->rot[k] <= kPi.f)) {
+                s->rot[k] -= k2Pi.f;
+            }
+        }
+        s->pos[0] += s->vel[0];
+        s->pos[1] += s->vel[1];
+        s->pos[2] += s->vel[2];
+        s->vel[1] = s->vel[1] + k001.f * (s->scale[2] * (-s->scale[0] * s->scale[1])) + kFall.f;
+        if (s->pos[1] < 500.0f) {
+            on = 0;
+        }
+    }
+    return on != 0;
 }
 
 
