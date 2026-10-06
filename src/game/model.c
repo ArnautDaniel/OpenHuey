@@ -5445,6 +5445,27 @@ void *func_0035B1B0(void *p, s32 flags) {
     return m;
 }
 
+/* Fiona's costume 2: the one-node set +0xEA0, node +0xE40 on bone 0x19 (as func_002F70C0) */
+void func_00337760(u8 *m) {
+    u8 *node = m + 0xE40;
+
+    func_002EE960(m + 0xEA0);
+    spring_link(m + 0xEA0, node);
+    AT(m, 0xEA0, f32) = 0.0f;
+    AT(m, 0xEA4, f32) = 0.0f;
+    AT(m, 0xEA8, f32) = 0.0f;
+    AT(m, 0xEB0, f32) = 0.75f;
+    AT(m, 0xEB4, u8 *) = m;
+    AT(m, 0xEC0, u8) = 0;
+    AT(m, 0xEBC, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0x19;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
 /* (as func_002F73C0)  the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
  * of each pair leading, the phases 1 / 2 x 2 pi / 18 */
 void func_00337820(u8 *m) {

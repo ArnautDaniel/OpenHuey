@@ -2634,3 +2634,28 @@ void func_00329360(Character *c) {
 s32 func_0032A8D0(Character *c, s32 room, u32 tri, s32 mode) {
     return creature_place(c, room, tri, mode, 0x0, 0x50);
 }
+
+extern void func_003250D0(Character *c, u32 tri);
+
+/* (as func_002E01C0) the other class's: to the door it chose (+0x66 of its block), its spot
+   (+0x30 of its block) as the target */
+void func_00329270(Character *c) {
+    u8 *k = CR(c);
+    VObject *rooms = D_0044E568;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 spot[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(c, 0x15A6, u8), at);
+    if (func_00127140(c, 0, tri, at) > 0) {
+        VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
+    }
+    if (AT(k, 0x66, u8) == 0xFF) {
+        return;
+    }
+    c->unk100 = AT(k, 0x66, u8);
+    tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x66, u8), spot);
+    sceVu0CopyVector((f32 *)(k + 0x30), spot);
+    c->unk124 = c->unk128;
+    func_003250D0(c, tri);
+}

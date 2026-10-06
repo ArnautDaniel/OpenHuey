@@ -803,8 +803,8 @@ void *func_00314990(u8 *o, s32 flags) {
     return o;
 }
 
-/* burst at `at`: a purple drop splash (size 1) and its sound */
-void func_00314A00(u8 *o, f32 *at) {
+/* burst at `at`: a drop splash of colour (r, g, b) and `size`, and its sound */
+static inline void drop_splash(u8 *o, f32 *at, s32 r, s32 g, s32 b, f32 size) {
     u8 *mgr = D_0044E578;
     struct {
         s32 rgb[3];
@@ -813,25 +813,31 @@ void func_00314A00(u8 *o, f32 *at) {
     } sp;
     s32 slot = Effect_New(mgr, 0xF70, DropSplash_Init);
 
-    sp.rgb[0] = 0x40;
-    sp.rgb[1] = 0x20;
-    sp.rgb[2] = 0x80;
+    sp.rgb[0] = r;
+    sp.rgb[1] = g;
+    sp.rgb[2] = b;
     sp.pos[0] = at[0];
     sp.pos[1] = at[1];
     sp.pos[2] = at[2];
-    sp.size = 1.0f;
+    sp.size = size;
     func_002D6090(mgr, slot, &sp);
     func_00122C20(o, 0x8D, 5, 0, 0, NULL);
 }
 
-/* +0x2C draw: a half-size sprite (cell (128, 64)) in its colour */
-void func_00314B90(u8 *o) {
+/* burst at `at`: a purple drop splash (size 1) and its sound */
+void func_00314A00(u8 *o, f32 *at) {
+    drop_splash(o, at, 0x40, 0x20, 0x80, 1.0f);
+}
+
+/* a half-size sprite (cell (128, 64)) in its colour (+0x110..: scaled by kr / kg / kb; kb 0
+   for no blue) */
+static inline void half_sprite(u8 *o, f32 kr, f32 kg, f32 kb) {
     QuadRec r __attribute__((aligned(16)));
     QuadDrawer q __attribute__((aligned(16)));
 
-    r.rgba[0] = (s32)(64.0f * AT(o, 0x110, f32));
-    r.rgba[1] = (s32)(32.0f * AT(o, 0x114, f32));
-    r.rgba[2] = (s32)(128.0f * AT(o, 0x118, f32));
+    r.rgba[0] = (s32)(kr * AT(o, 0x110, f32));
+    r.rgba[1] = (s32)(kg * AT(o, 0x114, f32));
+    r.rgba[2] = kb == 0.0f ? 0 : (s32)(kb * AT(o, 0x118, f32));
     r.rgba[3] = (s32)(128.0f * AT(o, 0x11C, f32));
     sceVu0CopyVector(r.pos, BALL_POS(o));
     r.w = 0.5f;
@@ -860,6 +866,11 @@ void func_00314B90(u8 *o) {
     q.palette = -1;
     func_002E56C0((u8 *)&q);
     q.vtbl = D_00469D00;
+}
+
+/* +0x2C draw: a half-size sprite in its colour */
+void func_00314B90(u8 *o) {
+    half_sprite(o, 64.0f, 32.0f, 128.0f);
 }
 
 /* the dropping state (D_00429C38): falling through for 31 frames, then gone */
@@ -1048,8 +1059,9 @@ void *func_00315540(u8 *o, s32 flags) {
     return o;
 }
 
-/* +0x2C draw: its model (a D_00476B50 drawer) turned by +0x132 / 256 of a full turn - 180 */
-void func_003155C0(u8 *o) {
+/* its model (a D_00476B50 drawer, settings a / b / c) turned by +0x132 / 256 of a full turn
+   - 180 */
+static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     struct {
         void **vtbl;
@@ -1063,8 +1075,13 @@ void func_003155C0(u8 *o) {
     rot[2] = 0.0f;
     d.vtbl = D_00476B50;
     d.a = -1;
-    func_0033BCB0(&d, BALL_POS(o), rot, 1, 0, 1);
+    func_0033BCB0(&d, BALL_POS(o), rot, a, b, c);
     d.vtbl = D_00469D00;
+}
+
+/* +0x2C draw */
+void func_003155C0(u8 *o) {
+    turned_model(o, 1, 0, 1);
 }
 
 static inline __attribute__((always_inline)) void kind2_burst(u8 *o) {
@@ -1129,17 +1146,22 @@ void func_00315700(u8 *o) {
     AT(o, 0x28, u8) = 0;
 }
 
-/* +0xC set up: the shared class's, its settings, a random turn */
-void func_00315AB0(u8 *o) {
+/* the shared class's set up, its settings (+0x122..+0x12E), a random turn */
+static inline void thing_setup(u8 *o, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f, s16 g) {
     func_00355960(o);
-    AT(o, 0x122, s16) = 100;
-    AT(o, 0x124, s16) = 20;
-    AT(o, 0x126, s16) = 15;
-    AT(o, 0x128, s16) = 900;
-    AT(o, 0x12A, s16) = 10;
-    AT(o, 0x12C, s16) = 10;
-    AT(o, 0x12E, s16) = 2;
+    AT(o, 0x122, s16) = a;
+    AT(o, 0x124, s16) = b;
+    AT(o, 0x126, s16) = c;
+    AT(o, 0x128, s16) = d;
+    AT(o, 0x12A, s16) = e;
+    AT(o, 0x12C, s16) = f;
+    AT(o, 0x12E, s16) = g;
     AT(o, 0x132, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
+}
+
+/* +0xC set up */
+void func_00315AB0(u8 *o) {
+    thing_setup(o, 100, 20, 15, 900, 10, 10, 2);
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
@@ -1749,4 +1771,66 @@ s32 func_00367F80(u8 *b, f32 *to, f32 *at, f32 *n) {
 /* (as func_002D5290) */
 s32 func_003672A0(u8 *b, f32 *to, f32 *at, f32 *n) {
     return ball_bounce(b, to, at, n, 0x1.99999ap-2f /* 0.4 */);
+}
+
+/* ---- the shared thing class (D_00479500) and the other kinds over it (code 0x333000..0x337800):
+   their settings, splashes, sprites and models through the helpers above ---- */
+
+/* D_00479500 +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room,
+   white */
+void func_00355960(u8 *o) {
+    func_00121300(o);
+    AT(o, 0xE8, s32) = 0;
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
+}
+
+void func_00335C00(u8 *o) {
+    thing_setup(o, 100, 100, 45, 3600, 20, 10, 2);
+}
+
+void func_00335640(u8 *o) {
+    thing_setup(o, 100, 50, 30, 1800, 15, 10, 2);
+}
+
+void func_003361B0(u8 *o) {
+    thing_setup(o, 0, 0, 0, 450, 10, 10, 0);
+}
+
+/* bursts: an orange splash (size 1), a grey one (size 2) */
+void func_00336290(u8 *o, f32 *at) {
+    drop_splash(o, at, 0x80, 0x64, 0, 1.0f);
+}
+
+void func_003345D0(u8 *o, f32 *at) {
+    drop_splash(o, at, 0x80, 0x80, 0x80, 2.0f);
+}
+
+/* +0x2C draws: sprites in its colour (white; no blue) */
+void func_00334760(u8 *o) {
+    half_sprite(o, 128.0f, 128.0f, 128.0f);
+}
+
+void func_00336420(u8 *o) {
+    half_sprite(o, 128.0f, 100.0f, 0.0f);
+}
+
+/* +0x2C draws: its turned model */
+void func_00335180(u8 *o) {
+    turned_model(o, 1, 1, 1);
+}
+
+void func_00335740(u8 *o) {
+    turned_model(o, 1, 2, 1);
+}
+
+void func_00335D00(u8 *o) {
+    turned_model(o, 3, 0, 1);
 }

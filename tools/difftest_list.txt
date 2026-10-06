@@ -6679,3 +6679,17 @@ src/game/lorenzo.c func_00363CE0 --pre=a1=-2..18 --pre=@0x44E4D8=0x0A200000..0x0
 src/game/stalker_models.c func_00320CB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000850:u8=0..1 --runs=20
 src/game/stalker_models.c func_00320D70 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/stalker_models.c func_0032C630 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=f12=-2..2 --runs=20
+src/game/placed.c func_00336290 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000=0x3F000000..0x40000000 --pre=@0x0B100008=0x3F000000..0x40000000 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --stub-ret-prob=1 --runs=100
+src/game/placed.c func_003345D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000=0x3F000000..0x40000000 --pre=@0x0B100008=0x3F000000..0x40000000 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --stub-ret-prob=1 --runs=100
+src/game/placed.c func_00334760 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x110=0x3F000000..0x3F800000 --pre=a0+0x114=0x3F000000..0x3F800000 --pre=a0+0x118=0x3F000000..0x3F800000 --pre=a0+0x11C=0x3F000000..0x3F800000 --runs=100
+src/game/placed.c func_00336420 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x110=0x3F000000..0x3F800000 --pre=a0+0x114=0x3F000000..0x3F800000 --pre=a0+0x118=0x3F000000..0x3F800000 --pre=a0+0x11C=0x3F000000..0x3F800000 --runs=100
+src/game/placed.c func_00335180 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x132:u16=0..0xFFFF --runs=100
+src/game/placed.c func_00335740 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x132:u16=0..0xFFFF --runs=100
+src/game/placed.c func_00335D00 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x132:u16=0..0xFFFF --runs=100
+src/game/placed.c func_00335C00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0x1234 --runs=10
+src/game/placed.c func_00335640 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0x1234 --runs=10
+src/game/placed.c func_003361B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0x1234 --runs=10
+src/game/placed.c func_00355960 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --runs=10
+src/game/creature.c func_00329270 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x15A6:u8=0xFE..0xFF --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44E568=0x0BA10000..0x0BA10000 --pre=@0x0BA10000=0x0046C3E0..0x0046C3E0 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --outparam=16 --outparam-at=0x1273D0:1:4 --runs=300
+src/game/model.c func_00337760 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xED0=0..0 --pre=a0+0xED4=0..0 --runs=50
+src/game/model.c func_00337760 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xED0=0x0B100000..0x0B100000 --pre=a0+0xED4=0x0B100000..0x0B100000 --runs=50
