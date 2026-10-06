@@ -78,8 +78,8 @@ extern void *Kind25_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf15;
 extern char str_ITEM01_ITEM_02E_TEX[]; /* file name */
 extern char str_ITEM01_ITEM_02D_TEX[]; /* file name */
-s32 func_00264C10(void *self, void *dest);
-s32 func_00264E90(void *self, void *dest);
+s32 Item12_LoadPicture(void *self, void *dest);
+s32 Item13_LoadPicture(void *self, void *dest);
 extern void *Kind18_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf12;
 extern void *Kind26_vtable[];
@@ -92,7 +92,7 @@ extern void *Kind31_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf22;
 extern const PTMF Pursuer_StateRunThenNext_ptmf25;
 extern char str_ITEM00_ITEM_008_TEX[];
-s32 func_002D3A20(void *self, void *dest);
+s32 ItemClassF430_LoadPicture(void *self, void *dest);
 extern u8 pstr_O_FIW_FIW_200_PCK[];
 extern u8 D_00429DB0[];
 extern u8 D_0042C990[];
@@ -112,22 +112,22 @@ extern u8 D_004308B0[];
 extern u8 D_004308F0[];
 extern u8 D_00430940[];
 extern u8 D_00430980[];
-void *func_00339B20(void);
-void *func_00339B30(void);
+void *Kind28_ModelFiles(void);
+void *Kind28_MotionFiles(void);
 extern u8 D_004434D0[], D_00443510[];
-void *func_00352030(void);
-void *func_00352040(void);
-void func_0032DA60(Pursuer *p);
-void func_0032DAB0(Pursuer *p);
-s32 func_0032DB80(Pursuer *p);
-Character *func_00339A10(Character *c, s32 flags);
-void func_00339B50(Pursuer *p);
-void func_00339BA0(Pursuer *p);
-s32 func_00339C70(Pursuer *p);
-Character *func_00351F20(Character *c, s32 flags);
-void func_00352060(Pursuer *p);
-void func_003520B0(Pursuer *p);
-s32 func_00352180(Pursuer *p);
+void *Kind38_ModelFiles(void);
+void *Kind38_MotionFiles(void);
+void Kind26_ShowUp(Pursuer *p);
+void Kind26_EventState(Pursuer *p);
+s32 Kind26_GrabOrder(Pursuer *p);
+Character *Kind28_dtor(Character *c, s32 flags);
+void Kind28_ShowUp(Pursuer *p);
+void Kind28_EventState(Pursuer *p);
+s32 Kind28_GrabOrder(Pursuer *p);
+Character *Kind38_dtor(Character *c, s32 flags);
+void Kind38_ShowUp(Pursuer *p);
+void Kind38_EventState(Pursuer *p);
+s32 Kind38_GrabOrder(Pursuer *p);
 typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flags, s32 arg);
 
 /* gFileLoader->vfunc_0xC(name, dest, 0x4000000, 0): start loading a file */
@@ -1487,7 +1487,8 @@ static inline void animal_go(u8 *self, s32 state) {
  * turning home (5 frames), 5 going back to grazing; 2 alert (someone within 30: meant to face
  * away from them, but the original takes the point's y for its z), 3 running off (within 20) to +0x163C / +0x1640 - 1 once there (its sound
  * +0x1630 + 1 played) */
-s32 func_0032D430(u8 *self) {
+/* 0x0032D430 */
+s32 Kind26_Behaviour(u8 *self) {
     static const union { u32 u; f32 f; } k08 = {0x3F4CCCCD};
     f32 who[4] __attribute__((aligned(16)));
     f32 d = Kind26_NearestDistSq(self, who);
@@ -1582,12 +1583,12 @@ s32 func_0032D430(u8 *self) {
     return 0;
 }
 
-/* a frame of it (func_0032D430) moved by its animation's root motion, a footstep sound
+/* a frame of it (Kind26_Behaviour) moved by its animation's root motion, a footstep sound
  * (+0x1630, unless -1) as either foot comes down; 1 once it has run off */
 static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     f32 d[4] __attribute__((aligned(16)));
     void *m;
-    u8 done = func_0032D430(self) & 0xFF;
+    u8 done = Kind26_Behaviour(self) & 0xFF;
     u8 l, r;
 
     Motion_RootMovement(PTR(self, 0xF0), d, 0.0f);
@@ -1617,35 +1618,43 @@ s32 Kind26_MoveDoneB(u8 *self) {
     return animal_step(self);
 }
 
-void *func_0032DC50(void) {
+/* 0x0032DC50 */
+void *RoomC0_EnterScript(void) {
     return D_0042CA20;
 }
 
-void *func_0032DC60(void) {
+/* 0x0032DC60 */
+void *RoomC0_CharEnterScript(void) {
     return D_0042CB60;
 }
 
-void *func_0032DC70(void) {
+/* 0x0032DC70 */
+void *RoomC0_Phase1Script(void) {
     return D_0042CC00;
 }
 
-void *func_0032DC80(void) {
+/* 0x0032DC80 */
+void *RoomC0_Phase2Script(void) {
     return D_0042D0C0;
 }
 
-void *func_0032DC90(void *self, s32 i) {
+/* 0x0032DC90 */
+void *RoomC0_ActionScript(void *self, s32 i) {
     return D_0042E310[i];
 }
 
-void *func_0032DCB0(void) {
+/* 0x0032DCB0 */
+void *RoomC0_Table38(void) {
     return D_0042E410;
 }
 
-void *func_0032DCC0(void *self, s32 i) {
+/* 0x0032DCC0 */
+void *RoomC0_ObjectName(void *self, s32 i) {
     return pstr_EV0023[i];
 }
 
-void func_0032F4E0(u8 *self) {
+/* 0x0032F4E0 */
+void ThingBurst_Start(u8 *self) {
     S32(self, 0xFC8) = 0;
     self[0xFCC] = 0;
     S32(self, 0xFC0) = 0;
@@ -1688,18 +1697,23 @@ void func_0032F4E0(u8 *self) {
     self[0xC7E] = 0xFF;
 }
 
-void *func_0032F6C0(void) {
+/* 0x0032F6C0 */
+void *Kind27_MotionFiles(void) {
     return D_0042E4C0;
 }
 
-void func_0032DA60(Pursuer *p) { creature_inplay(p); }
+/* 0x0032DA60 */
+void Kind26_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0032DAB0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf18); }
+/* 0x0032DAB0 */
+void Kind26_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf18); }
 
-s32 func_0032DB80(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0032DB80 */
+s32 Kind26_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* Item26_vtable: at spot 3 of room 0x92: flag 0x18, event 4 */
-s32 func_00351B40(void *o) {
+/* 0x00351B40 */
+s32 Item26_Use(void *o) {
     Progress *p = gProgress;
 
     if (!item_room_spot(p, 0x92, 3)) {
@@ -1724,13 +1738,15 @@ static s32 use_sound_only(s32 need_24_4, s32 id) {
 }
 
 /* ItemA4_vtable */
-s32 func_00266370(void *o) {
+/* 0x00266370 */
+s32 ItemA4_Use(void *o) {
     return use_sound_only(0, 0x24B);
 }
 
 /* Item06_vtable: at door 0 of room 6: event 1, flag 0x18; else (with Progress +0x24 bit 4) the
    sound while item 0x232 is held */
-s32 func_002EEC00(void *o) {
+/* 0x002EEC00 */
+s32 Item06_Use(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 6 && item_door_open(p, 0)) {
@@ -1754,25 +1770,30 @@ static s32 use_route8_or_offer(void *o) {
 }
 
 /* Item12_vtable */
-s32 func_00264A60(void *o) {
+/* 0x00264A60 */
+s32 Item12_Use(void *o) {
     return use_route8_or_offer(o);
 }
 
-s32 func_00264C10(void *self, void *dest) {
+/* 0x00264C10 */
+s32 Item12_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_02D_TEX, dest, 0x4000000, 0);
 }
 
 /* Item13_vtable */
-s32 func_00264CE0(void *o) {
+/* 0x00264CE0 */
+s32 Item13_Use(void *o) {
     return use_route8_or_offer(o);
 }
 
-s32 func_00264E90(void *self, void *dest) {
+/* 0x00264E90 */
+s32 Item13_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_02E_TEX, dest, 0x4000000, 0);
 }
 
 /* Item07_vtable: at open door 1 of room 0x14: event 4, flag 0x18; else on the altar */
-s32 func_00303CD0(void *o) {
+/* 0x00303CD0 */
+s32 Item07_Use(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x14 && item_door_open(p, 1)) {
@@ -1795,18 +1816,21 @@ static s32 use_room_c7(void) {
 }
 
 /* Item21_vtable */
-s32 func_00351390(void *o) {
+/* 0x00351390 */
+s32 Item21_Use(void *o) {
     return use_room_c7();
 }
 
 /* Item22_vtable */
-s32 func_00351550(void *o) {
+/* 0x00351550 */
+s32 Item22_Use(void *o) {
     return use_room_c7();
 }
 
 /* Item25_vtable: at room 0x82's open door 0 with route 0xE2: event 2; at room 0x8C's with route
    0xE6: event 8 */
-s32 func_00351920(void *o) {
+/* 0x00351920 */
+s32 Item25_Use(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x82) {
@@ -1818,8 +1842,9 @@ s32 func_00351920(void *o) {
     return 0;
 }
 
-/* (as func_00351D80) at spot 3 of room 0x53: event 0; else on the altar */
-s32 func_0031CE10(void *o) {
+/* (as Item28_Use) at spot 3 of room 0x53: event 0; else on the altar */
+/* 0x0031CE10 */
+s32 Item0E_Use(void *o) {
     Progress *p = gProgress;
 
     if (item_room_spot(p, 0x53, 3)) {
@@ -1829,7 +1854,8 @@ s32 func_0031CE10(void *o) {
 }
 
 /* Item28_vtable: at spot 5 of room 0: event 0xF; else on the altar */
-s32 func_00351D80(void *o) {
+/* 0x00351D80 */
+s32 Item28_Use(void *o) {
     Progress *p = gProgress;
 
     if (item_room_spot(p, 0, 5)) {
@@ -1838,21 +1864,28 @@ s32 func_00351D80(void *o) {
     return item_offer(p, o);
 }
 
-Character *func_00351F20(Character *c, s32 flags) { return creature_dtor(c, flags, Kind38_vtable); }
+/* 0x00351F20 */
+Character *Kind38_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind38_vtable); }
 
-void *func_00352030(void) { return D_004434D0; }
+/* 0x00352030 */
+void *Kind38_ModelFiles(void) { return D_004434D0; }
 
-void *func_00352040(void) { return D_00443510; }
+/* 0x00352040 */
+void *Kind38_MotionFiles(void) { return D_00443510; }
 
-void func_00352060(Pursuer *p) { creature_inplay(p); }
+/* 0x00352060 */
+void Kind38_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_003520B0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf25); }
+/* 0x003520B0 */
+void Kind38_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf25); }
 
-s32 func_00352180(Pursuer *p) { return creature_slot_done(p); }
+/* 0x00352180 */
+s32 Kind38_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* Item0D_vtable: in room 0x4B, at open door 2 with route 0x51: event 1; door 3 with route 0x52:
    event 3; else on the altar */
-s32 func_0031CB40(void *o) {
+/* 0x0031CB40 */
+s32 Item0D_Use(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x4B) {
@@ -1896,7 +1929,8 @@ static s32 place_item(void *o, const ItemSlot *t, s32 n) {
     return 0;
 }
 
-s32 func_00306BC0(void *o) {
+/* 0x00306BC0 */
+s32 Item08_Use(void *o) {
     static const ItemSlot t[7] = {
         {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1}, {0x56, 4, 0, 0xA}, {0x57, 0xD, 1, 3},
         {0x69, 0xB, 1, 4},  {0x47, 8, -1, 1}, {0xC0, 0x1B, 1, 0x14},
@@ -1905,7 +1939,8 @@ s32 func_00306BC0(void *o) {
     return place_item(o, t, 7);
 }
 
-s32 func_003071D0(void *o) {
+/* 0x003071D0 */
+s32 Item09_Use(void *o) {
     static const ItemSlot t[7] = {
         {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1},   {0x47, 8, 0, 2}, {0x56, 4, 0, 0xA},
         {0x69, 0xB, 1, 4},  {0x57, 0xD, -1, 0}, {0xC0, 0x1B, 1, 0x14},
@@ -1914,7 +1949,8 @@ s32 func_003071D0(void *o) {
     return place_item(o, t, 7);
 }
 
-s32 func_003077E0(void *o) {
+/* 0x003077E0 */
+s32 Item0A_Use(void *o) {
     static const ItemSlot t[7] = {
         {0x40, 0x11, 0, 1}, {0x42, 5, 1, 1},   {0x47, 8, 0, 2}, {0x56, 4, 0, 0xA},
         {0x57, 0xD, 1, 3},  {0x69, 0xB, -1, 0}, {0xC0, 0x1B, 1, 0x14},
@@ -1923,7 +1959,8 @@ s32 func_003077E0(void *o) {
     return place_item(o, t, 7);
 }
 
-s32 func_00307DF0(void *o) {
+/* 0x00307DF0 */
+s32 Item0B_Use(void *o) {
     static const ItemSlot t[7] = {
         {0x47, 8, 0, 2},    {0x56, 4, 0, 0xA}, {0x57, 0xD, 1, 3}, {0x69, 0xB, 1, 4},
         {0x40, 0x11, 0, 0}, {0x42, 5, -1, 0},  {0xC0, 0x1B, 1, 0x14},
@@ -1932,7 +1969,8 @@ s32 func_00307DF0(void *o) {
     return place_item(o, t, 7);
 }
 
-s32 func_00308400(void *o) {
+/* 0x00308400 */
+s32 Item0C_Use(void *o) {
     static const ItemSlot t[7] = {
         {0x42, 5, 1, 1},   {0x47, 8, 0, 2},   {0x56, 4, 0, 0xA},    {0x57, 0xD, 1, 3},
         {0x69, 0xB, 1, 4}, {0x40, 0x11, 0, 0}, {0xC0, 0x1B, 1, 0x14},
@@ -1963,44 +2001,54 @@ static s32 place_statue(void *o, const ItemPedestal *t) {
 }
 
 /* Item15_vtable */
-s32 func_00338FA0(void *o) {
+/* 0x00338FA0 */
+s32 Item15_Use(void *o) {
     static const ItemPedestal t[3] = {{0x180, 0xD, 0}, {0xC00, 0x11, 3}, {0x6000, 0x14, 6}};
 
     return place_statue(o, t);
 }
 
 /* Item16_vtable */
-s32 func_00339350(void *o) {
+/* 0x00339350 */
+s32 Item16_Use(void *o) {
     static const ItemPedestal t[3] = {{0xA00, 0x11, 4}, {0x140, 0xD, 1}, {0x5000, 0x14, 7}};
 
     return place_statue(o, t);
 }
 
 /* Item17_vtable */
-s32 func_00339700(void *o) {
+/* 0x00339700 */
+s32 Item17_Use(void *o) {
     static const ItemPedestal t[3] = {{0x3000, 0x14, 8}, {0xC0, 0xD, 2}, {0x600, 0x11, 5}};
 
     return place_statue(o, t);
 }
 
-Character *func_00339A10(Character *c, s32 flags) { return creature_dtor(c, flags, Kind28_vtable); }
+/* 0x00339A10 */
+Character *Kind28_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind28_vtable); }
 
-void *func_00339B20(void) {
+/* 0x00339B20 */
+void *Kind28_ModelFiles(void) {
     return D_0042F470;
 }
 
-void *func_00339B30(void) {
+/* 0x00339B30 */
+void *Kind28_MotionFiles(void) {
     return D_0042F4B0;
 }
 
-void func_00339B50(Pursuer *p) { creature_inplay(p); }
+/* 0x00339B50 */
+void Kind28_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_00339BA0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf19); }
+/* 0x00339BA0 */
+void Kind28_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf19); }
 
-s32 func_00339C70(Pursuer *p) { return creature_slot_done(p); }
+/* 0x00339C70 */
+s32 Kind28_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* Item10_vtable: the medallions' slots without the altar */
-s32 func_0031D1B0(void *o) {
+/* 0x0031D1B0 */
+s32 Item10_Use(void *o) {
     static const ItemSlot t[5] = {
         {0x42, 5, 1, 1}, {0x47, 8, 0, 2}, {0x57, 0xD, 1, 3}, {0x69, 0xB, 1, 4}, {0x56, 4, -1, 9},
     };
@@ -2011,7 +2059,8 @@ s32 func_0031D1B0(void *o) {
 /* Item1D_vtable: in room 0x52 with Hewie at hand (+0x40), up and within 20, Fiona not busy
  * (+0xE8): event 0xB; else on the altar; else the sound while item 0x239 is held, or (with
  * Progress +0x30 bit 0x8000) while Hewie is in the room being played and item 0x27F is held */
-s32 func_003445D0(void *o) {
+/* 0x003445D0 */
+s32 Item1D_Use(void *o) {
     Progress *p = gProgress;
     VObject *ev_mgr = gEvents;
     s32 r;
@@ -2045,7 +2094,8 @@ s32 func_003445D0(void *o) {
 }
 
 /* free the file loader's 0x4000000 area if it is in state 2 */
-void func_002600C0(void) {
+/* 0x002600C0 */
+void Loader_FreePictureArea(void) {
     VObject *ld = gFileLoader;
 
     if (VCALL(ld, 0x28, s32 (*)(VObject *, s32))(ld, 0x4000000) == 2) {
@@ -2055,7 +2105,8 @@ void func_002600C0(void) {
 
 /* an item's +0x18 set from a message { kind (0xFF: none), sub, byte 2, pad, word }: +0x4 0 when
  * unset (+0x5 0xFF), +0x7 the kind, +0x5 the sub (0xFF without a kind), +0x6, +0xC; +0x8 0 */
-void func_0035BC30(u8 *o, const u8 *m) {
+/* 0x0035BC30 */
+void ObjectGlow_SetParams(u8 *o, const u8 *m) {
     if (m == NULL) {
         return;
     }
@@ -2079,7 +2130,8 @@ extern void Sound_PlayBankAt(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, 
  * (+0x5 0xFF). On (+0x7) it fades in (+0x4 up to 0x40 by 2), off it fades out; at 0 it is unset,
  * frees its script variable (+0x6, events +0x30) and plays sound 6 at the object (+0xC, +0x20)
  * unless the camera director's +0x38 is set - all 0. Its phase +0x8 runs 0..45 by 2 a frame */
-s32 func_0035C8C0(u8 *o) {
+/* 0x0035C8C0 */
+s32 ObjectGlow_Update(u8 *o) {
     f32 t;
 
     if (o[5] == 0xFF) {
@@ -2150,7 +2202,8 @@ static inline void item_progress_bit(Progress *p, s32 bit) {
  *  0x27 with +0x30 bit 14, spot 3: "ALCHYMIA" / "ADAMAS" / "POWDER" / "MORGAN" (not yet used:
  *        +0x88 bits 8..11) to the events (+0x30 1: 0x88 / 0x8C / 0x83 / 0x89) and event 8, else 9
  * elsewhere 0 */
-s32 func_002D27E0(VObject *it) {
+/* 0x002D27E0 */
+s32 ItemClassF430_Use(VObject *it) {
     Progress *p = gProgress;
     VObject *ev = gEvents;
 
@@ -2303,7 +2356,8 @@ s32 func_002D27E0(VObject *it) {
     return 0;
 }
 
-s32 func_002D3A20(void *self, void *dest) { return LOAD_002D1360(str_ITEM00_ITEM_008_TEX, dest); }
+/* 0x002D3A20 */
+s32 ItemClassF430_LoadPicture(void *self, void *dest) { return LOAD_002D1360(str_ITEM00_ITEM_008_TEX, dest); }
 
 #ifdef HG_NATIVE
 
@@ -2325,7 +2379,8 @@ static s32 glow_in_view(f32 (*clip)[4], const f32 *pt) {
  *   then, and the screen also brightened, Bloom_Start 0x40808080 in layer 0x28)
  * - eight faint cyan strips standing 40 high at radius r + 5, turning with its phase (+0x8),
  *   added in layer 2, when all in view */
-void func_0035BCA0(u8 *o) {
+/* 0x0035BCA0 */
+void ObjectGlow_Draw(u8 *o) {
     static const union { u32 u; f32 f; } kRadius[8] = {
         {0x409A3D71}, {0x40800000}, {0x407F5C29}, {0x409D70A4}, {0x408D1EB8}, {0x407C28F6}, {0x405E147B}, {0x411A3D71},
     };
@@ -2430,7 +2485,8 @@ void func_0035BCA0(u8 *o) {
 #endif
 
 /* progress +0x84 bits 22..26 as bits 0..4 */
-u8 func_00303F00(void) {
+/* 0x00303F00 */
+u8 Progress_MapsHeld(void) {
     u32 b = AT(gProgress, 0x84, u32);
     u8 v = 0;
 

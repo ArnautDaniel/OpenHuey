@@ -111,7 +111,7 @@ static inline void task_end_child(Task *t) {
     }
 }
 
-/* the maps the player has (progress +0x84 bits 22..26 as bits 0..4, as func_00303F00) */
+/* the maps the player has (progress +0x84 bits 22..26 as bits 0..4, as Progress_MapsHeld) */
 static inline u8 map_owned(void) {
     u32 b = AT(gProgress, 0x84, u32);
     u8 v = 0;
@@ -1745,7 +1745,7 @@ void SubScreen_UseEquipped(u8 *o) {
 
 /* ---- the in-game menu's item page ---- */
 
-extern void func_002600C0(void);
+extern void Loader_FreePictureArea(void);
 extern void SubScreen_DrawItemGrid(SubScreen *s, s32 a);               /* the item grid */
 extern const PTMF SubScreen_StateItemQuestion_ptmf, SubScreen_StateItemActions_ptmf, SubScreen_StateMap_ptmf, SubScreen_StateMap_ptmf2, Options_StateList_ptmf, Options_StateList_ptmf2;
 
@@ -1777,7 +1777,7 @@ void SubScreen_StateItems(SubScreen *s) {
                 } else {
                     s->padA8C54 = 0;
                     s->page[0x15C] = 0;
-                    func_002600C0();
+                    Loader_FreePictureArea();
                     Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
                     ptmf_set(&s->state, &SubScreen_StateItemActions_ptmf);
                 }
@@ -1907,7 +1907,7 @@ void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
 
 /* ---- the in-game menu's map page ---- */
 
-extern u8 func_00303F00(void);      /* the maps the player has (bits) */
+extern u8 Progress_MapsHeld(void);      /* the maps the player has (bits) */
 extern const PTMF SubScreen_StateFiles_ptmf, SubScreen_StateFiles_ptmf2, SubScreen_StateItems_ptmf11, SubScreen_StateItems_ptmf12;
 
 /* draw the screen kind `kind`'s panels */
@@ -1945,7 +1945,7 @@ void SubScreen_StateMap(SubScreen *s) {
     sub_panels(s);
     Map_PageFrame(s->textObj);
     {
-        u8 maps = func_00303F00();
+        u8 maps = Progress_MapsHeld();
 
         if (maps != 0 && !(maps == 4 && AT(s->textObj, 0x10C, s8) == 2)) {
             s32 b = 0x80 - ((s->frame << 2) & 0xFF);
@@ -4906,7 +4906,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
             }
             if (old != SUB_CURSOR(s)) {
                 s->page[0x15C] = 0;
-                func_002600C0();
+                Loader_FreePictureArea();
                 Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
                 Sound_PlaySE(SE_CURSOR);
             }
