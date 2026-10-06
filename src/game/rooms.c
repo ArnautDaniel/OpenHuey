@@ -803,7 +803,7 @@ s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
     }
 }
 
-enum { SQ_BLOCK, SQ_UNBLOCK, SQ_TEST, SQ_FLAG, SQ_CHARS };
+enum { SQ_BLOCK, SQ_UNBLOCK, SQ_TEST, SQ_FLAG, SQ_CHARS, SQ_UNFLAG };
 
 struct sq_ctx {
     u32 any, all;   /* SQ_TEST: the flags of any / all triangles */
@@ -835,6 +835,10 @@ static inline __attribute__((always_inline)) s32 sq_visit(s32 mode, struct sq_ct
     case SQ_FLAG:
         NavMesh_Tri(D_0044E570, a)->flags |= corner ? 0x20000000 : 0x20800000;
         NavMesh_Tri(D_0044E570, b)->flags |= corner ? 0x20000000 : 0x20800000;
+        break;
+    case SQ_UNFLAG:
+        NavMesh_Tri(D_0044E570, a)->flags &= 0xDF7FFFFF;
+        NavMesh_Tri(D_0044E570, b)->flags &= 0xDF7FFFFF;
         break;
     case SQ_CHARS:
         for (k = 0; k < c->n; k++) {
@@ -943,6 +947,22 @@ void func_0017EA30(u8 *o, const f32 *dir) {
             func_0017F660(o, &a, &b, dir);
         }
         part_ring(o, part, a, b, SQ_FLAG, NULL);
+    }
+}
+
+/* ... and unmark them (sides and corners alike) */
+void func_0017E260(u8 *o, const f32 *dir) {
+    u8 *part = o + 0x68;
+    s32 i;
+
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
+
+        if (dir != NULL) {
+            func_0017F660(o, &a, &b, dir);
+            func_0017F660(o, &a, &b, dir);
+        }
+        part_ring(o, part, a, b, SQ_UNFLAG, NULL);
     }
 }
 
