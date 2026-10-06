@@ -3581,3 +3581,137 @@ void func_00327CA0(Character *c) {
     AT(k, 0x6B, u8) = 0;
     cr19_enter(c, 5);
 }
+
+extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);
+extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
+extern void func_00124530(Actor *a, f32 target, f32 step);
+extern void func_002EF9E0(void *threat, f32 amount);
+extern const f32 D_0042C610[4][4];   /* where it grabs from, around Fiona */
+
+/* state: its grab of Fiona, by step +0x60. 0: while she can be grabbed (+0x68 0xC), a spot
+   around her - by +0x6C in turn: her left / right side by which way it is from her (within 90
+   degrees of her facing), the other, behind, in front (D_0042C610) - planned to when on the
+   mesh and not on a blocked triangle (0x4020038); it walks (move 8; a noise when it can't),
+   and with her held (move 4, sub 0x12) turns to her (a sound, animation 0x1900). 1: at its
+   end sounds 9 and 4, animation 0x1901. 2: sounds every 35 / 70 frames; released - animation
+   0x1902, the threat up 75, a noise. 3: moved by its animation; at its end out of contact,
+   held (+0x6B bit 0x80) in state 4, move 4 */
+void func_00327DD0(Character *c) {
+    u8 *k = CR(c);
+    f32 tbl[4][4] __attribute__((aligned(16)));
+    f32 off[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    s32 i;
+
+    for (i = 0; i < 16; i++) {
+        ((u32 *)tbl)[i] = ((const u32 *)D_0042C610)[i];
+    }
+    switch (AT(k, 0x60, u8)) {
+    case 0: {
+        f32 h, diff, dx, dz;
+        u8 front;
+        u32 tri;
+
+        if ((VCALL(gCharPlayer, 0x68, u32 (*)(Character *, s32, s32, s32))(gCharPlayer, 0xC, 0xFF, 0) & 0xFF) != 1) {
+            return;
+        }
+        if (!(c->unk128 < c->unk124)) {
+            h = gCharPlayer->a.angle[1];
+            dx = c->a.pos[0] - gCharPlayer->a.pos[0];
+            dz = c->a.pos[2] - gCharPlayer->a.pos[2];
+            if (0.0f == dx && 0.0f == dz) {
+                diff = c->a.angle[1] - h;
+            } else {
+                diff = func_0031C5C0(dx, dz) - h;
+            }
+            front = (func_002E2D00(diff) <= 0.0f ? -func_002E2D00(diff) : func_002E2D00(diff)) < 0x1.921fb6p+0f;   /* 90 degrees */
+            switch (AT(k, 0x6C, u8)) {
+            case 0:
+                sceVu0CopyVector(off, front ? tbl[1] : tbl[0]);
+                AT(k, 0x6C, u8)++;
+                break;
+            case 1:
+                sceVu0CopyVector(off, front ? tbl[0] : tbl[1]);
+                AT(k, 0x6C, u8)++;
+                break;
+            case 2:
+                sceVu0CopyVector(off, tbl[2]);
+                AT(k, 0x6C, u8)++;
+                break;
+            case 3:
+                sceVu0CopyVector(off, tbl[3]);
+                AT(k, 0x6C, u8) = 0;
+                break;
+            }
+            func_002E3130(m, gCharPlayer->a.pos, h);
+            func_002E2DD0(at, m, off);
+            tri = func_00123D20(&gCharPlayer->a, at);
+            if (tri == NAV_NONE) {
+                return;
+            }
+            if (NavMesh_TriFlags(D_0044E570, tri) & 0x4020038) {
+                return;
+            }
+            if (func_003255C0(c, tri, at, 0) != 0) {
+                return;
+            }
+        }
+        AT(c, 0xF8, s32) = 8;
+        if (func_001274E0(c, cr19_stride(c)) != 0) {
+            func_00177FA0(gProgress, c->a.pos, 1, 0xC, 0, 0, 0.0f);
+            return;
+        }
+        if (AT(gCharPlayer, 0xF8, s32) != 4 || AT(gCharPlayer, 0xFC, s32) != 0x12) {
+            return;
+        }
+        AT(c, 0x10C, f32) = func_001244D0(&c->a, gCharPlayer->a.pos);
+        func_00124530(&c->a, AT(c, 0x10C, f32), 0.0f);
+        h = func_002E2D00(AT(c, 0x10C, f32));
+        c->a.angle[1] = h;
+        sceVu0UnitMatrix(c->a.rot);
+        sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
+        func_00122C20(&c->a, 8, 5, 0, 0, NULL);
+        func_002DDED0(c->motion, 0x1900, -1);
+        AT(k, 0x60, u8)++;
+        return;
+    }
+    case 1:
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
+            return;
+        }
+        func_00122C20(&c->a, 9, 5, 0, 0, NULL);
+        func_00122C20(&c->a, 4, 5, 0, 0, NULL);
+        func_002DDED0(c->motion, 0x1901, -1);
+        AT(k, 0x60, u8)++;
+        return;
+    case 2:
+        if (++AT(k, 0x40, s16) % 35 == 0) {
+            func_00122C20(&c->a, 9, 5, 0, 0, NULL);
+        }
+        if (AT(k, 0x40, s16) % 70 == 0) {
+            func_00122C20(&c->a, 4, 5, 0, 0, NULL);
+        }
+        if (AT(gCharPlayer, 0xF8, s32) == 4 && AT(gCharPlayer, 0xFC, s32) == 0x12) {
+            return;
+        }
+        AT(c, 0xF8, s32) = 4;
+        func_002DDED0(c->motion, 0x1902, -1);
+        func_002EF9E0((u8 *)gProgress + 0x7B8, 75.0f);
+        func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
+        AT(k, 0x60, u8)++;
+        return;
+    case 3:
+        cr19_root_move(c);
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
+            return;
+        }
+        c->a.unk2D = 1;
+        AT(k, 0x69, u8) = 4;
+        AT(k, 0x6B, u8) |= 0x80;
+        AT(c, 0xF8, s32) = 4;
+        func_00127060(c);
+        cr19_settle(c);
+        return;
+    }
+}
