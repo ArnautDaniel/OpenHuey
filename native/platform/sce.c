@@ -7,20 +7,20 @@
  * pokes CHCR directly, so each channel gets a fake register block. */
 static unsigned sDmaRegs[10][0x40];
 
-unsigned func_0010D3B8(unsigned i) { return i < 10 ? (unsigned)sDmaRegs[i] : 0; }
+unsigned libgraph_TableEntry(unsigned i) { return i < 10 ? (unsigned)sDmaRegs[i] : 0; }
 
 /* The GS and DMA side: on PC everything is drawn with OpenGL (glr.c) as the game asks for it,
  * so the packets the game still sends - the frame's display / drawing environments and its
  * clear and copy, VRAM image transfers - have nothing left to do. */
 
 /* sceDmaSend(chan, tag) */
-void func_0010D6E8(void *chan, void *tag) {
+void sceDmaSend(void *chan, void *tag) {
     (void)chan;
     (void)tag;
 }
 
 /* sceGsPutDispEnv(disp) */
-void func_0010C440(unsigned long long *disp) {
+void sceGsPutDispEnv(unsigned long long *disp) {
     (void)disp;
 }
 
@@ -37,7 +37,7 @@ int sceGsSyncPath(int mode, int timeout) {
 }
 
 /* sceDmaSync(chan, mode, timeout): transfers complete immediately on PC */
-int func_0010D988(void *chan, int mode, int timeout) {
+int sceDmaSync(void *chan, int mode, int timeout) {
     (void)chan;
     (void)mode;
     (void)timeout;
@@ -48,16 +48,16 @@ int func_0010D988(void *chan, int mode, int timeout) {
 void FlushCache(int mode) { (void)mode; }
 
 /* libgraph: sceGsResetGraph-like reset (the PC renderer sets itself up in the platform layer) */
-void func_0010D3E0(int mode) { (void)mode; }
+void libgraph_Reset(int mode) { (void)mode; }
 
 /* libdbc: DualShock socket manager init */
-void func_001EE798(void) {}
+void sceDbcInit(void) {}
 
 /* libgraph: sceGsResetPath */
-void func_0010BFB0(void) {}
+void sceGsResetPath(void) {}
 
 /* libgraph: sceGsResetGraph(mode, interlace, ntsc/pal, field/frame) */
-void func_0010BE10(int mode, int inter, int omode, int ffmd) {
+void sceGsResetGraph(int mode, int inter, int omode, int ffmd) {
     (void)mode;
     (void)inter;
     (void)omode;
@@ -114,7 +114,7 @@ int sceGsExecLoadImage(void *lp, const void *src) {
 
 static unsigned char bcd(int v) { return (unsigned char)(((v / 10) % 10) << 4 | (v % 10)); }
 
-int func_00110878(unsigned char *clock) {
+int sceCdReadClock(unsigned char *clock) {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 

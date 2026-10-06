@@ -610,7 +610,7 @@ f32 Actor_HeadingTo(Actor *a, const f32 *p) {
     if (dx == 0.0f && dz == 0.0f) {
         return a->angle[1];
     }
-    return func_0031C5C0(dx, dz);
+    return msl_atan2f(dx, dz);
 }
 
 /* NavMesh vtable +0x40: slide from `from` toward `to` within the mesh starting in `tri`;
@@ -794,7 +794,7 @@ s32 Actor_Place(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
 /* 0x00124D00 */
 void Actor_RememberPos(Actor *a) {
     a->prevNavTri = a->navTri;
-    func_0010E5F0(a->prevPos, a->pos);
+    vu0_CopyXYZ(a->prevPos, a->pos);
 }
 
 /* vtable +0x20 (base): nothing */
@@ -1256,7 +1256,7 @@ void **Helper46FC30_dtor(void **obj, s32 flags) {
         *obj = QuadDrawer_vtable;
         *obj = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(obj);
+            __dl__FPv(obj);
         }
     }
     return obj;
@@ -1267,7 +1267,7 @@ void **Helper469D00_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
         *obj = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(obj);
+            __dl__FPv(obj);
         }
     }
     return obj;
@@ -1538,7 +1538,7 @@ s32 Character_FollowWaypoints(Character *c, f32 speed) {
     dx = p[0] - c->a.pos[0];
     dz = p[2] - c->a.pos[2];
     if (!(dx == 0.0f && dz == 0.0f)) {
-        f32 yaw = func_0031C5C0(dx, dz);
+        f32 yaw = msl_atan2f(dx, dz);
 
         c->a.angle[1] = yaw;
         sceVu0UnitMatrix(c->a.rot);
@@ -1588,7 +1588,7 @@ s32 Character_FollowWaypointsBlocked(Character *c, f32 speed) {
     dx = p[0] - c->a.pos[0];
     dz = p[2] - c->a.pos[2];
     if (!(dx == 0.0f && dz == 0.0f)) {
-        f32 yaw = func_0031C5C0(dx, dz);
+        f32 yaw = msl_atan2f(dx, dz);
 
         c->a.angle[1] = yaw;
         sceVu0UnitMatrix(c->a.rot);

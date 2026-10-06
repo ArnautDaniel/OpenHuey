@@ -131,7 +131,7 @@ s32 Room62_Cmd00(void *self, void *a1, u8 *cmd) {
         }
         return 1;
     }
-    AT(o, 0x10, f32) = AT(o, 0x34, f32) * func_0031C248(0x1.921fb6p+2f /* 2 pi */ * AT(o, 0x30, f32) / 360.0f);
+    AT(o, 0x10, f32) = AT(o, 0x34, f32) * msl_sinf(0x1.921fb6p+2f /* 2 pi */ * AT(o, 0x30, f32) / 360.0f);
     AT(o, 0x30, f32) = AT(o, 0x30, f32) + 60.0f;
     AT(o, 0x34, f32) = AT(o, 0x34, f32) - 0x1.0624de0000000p-10f /* 0.001 */;
     return AT(o, 0x34, f32) <= 0.0f ? 1 : 2;

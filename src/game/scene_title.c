@@ -40,7 +40,7 @@ void *SubScreenBase_ctor(SubScreen *w) {
     w->vtbl = D_0046A090;
     gSubPool = pool;
     AT(pool, 0x0, void **) = D_0046A078;
-    func_00100340(pool + 8, PoolEntry_ctor, PoolEntry_dtor, 0x18, 0xC0);
+    __construct_array(pool + 8, PoolEntry_ctor, PoolEntry_dtor, 0x18, 0xC0);
     AT(pool, 0x1208, void **) = D_004699E0;
     AT(pool, 0x120C, s32) = 0;
     AT(pool, 0x1210, s32) = 0;
@@ -341,13 +341,13 @@ static inline void load_bank_part(VObject *snd, const char *name, s32 m) {
     if (size == 0) {
         return;
     }
-    buf = func_00114DA8(0x40, size);
+    buf = msl_memalign(0x40, size);
     if (buf == NULL) {
         return;
     }
     LOADER_LOAD(name, buf);
     VCALL(snd, m, void (*)(VObject *, s32, void *, s32))(snd, 7, buf, size);
-    func_00114FD0(buf);
+    msl_free(buf);
 }
 
 /* the title sequence, first: load the title picture and its sound bank, then the logo
@@ -438,7 +438,7 @@ void SceneTitle_SeqFadeIn(SceneTitle *t) {
     }
     SceneTitle_PrepareBackground(t);
     SceneTitle_DrawPicture(t, a);
-    SceneTitle_DrawLogo(t, b, 1.0f + 4.0f * func_0031C248(0x1.921fb6p+1f * (90.0f * (1.0f - b)) / 180.0f));
+    SceneTitle_DrawLogo(t, b, 1.0f + 4.0f * msl_sinf(0x1.921fb6p+1f * (90.0f * (1.0f - b)) / 180.0f));
     if (done) {
         t->anim = 90000;
         ptmf_set_fn(&t->seq, SceneTitle_SeqPressStart);
@@ -551,7 +551,7 @@ void SceneTitle_SeqPressStart(SceneTitle *t) {
     SceneTitle_DrawPicture(t, 1.0f);
     SceneTitle_DrawLogo(t, 1.0f, 1.0f);
     SceneTitle_DrawPressStart(t, 1.0f);
-    SceneTitle_DrawPressStartGlow(t, 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f)));
+    SceneTitle_DrawPressStartGlow(t, 0.5f * (1.0f + msl_sinf(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f)));
     if ((gMenuPressed & MENU_CONFIRM) || (gPadPressed & PAD_START)) {
         ptmf_set_fn(&t->seq, SceneTitle_SeqToMenu);
         t->timer = 0;
@@ -790,7 +790,7 @@ void SceneTitle_DrawMenu(SceneTitle *t, f32 alpha) {
         return;
     }
     SceneTitle_PrepareBackground(t);
-    pulse = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
+    pulse = 0.5f * (1.0f + msl_sinf(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
     bit = 1 << t->cursor;
     SceneTitle_DrawBackImage(t, alpha, 0.0f);
     SceneTitle_DrawMenuPanel(t, alpha, 1.0f);
@@ -909,7 +909,7 @@ void *TextObj_dtor(u8 *o, s32 flags) {
             t->child = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -924,7 +924,7 @@ static inline void Pool_Destroy(u8 *pool) {
             AT(pool, 0x1208, void **) = D_004699E0;
         }
     }
-    func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
+    __destroy_arr(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
     if (pool != NULL) {
         gSubPool = NULL;
     }
@@ -943,7 +943,7 @@ void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
             gSubScreen = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(w);
+            __dl__FPv(w);
         }
     }
     return w;
@@ -1135,7 +1135,7 @@ void SceneTitle_DrawMenuAt(SceneTitle *t, f32 alpha) {
         return;
     }
     SceneTitle_PrepareBackground(t);
-    glow = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
+    glow = 0.5f * (1.0f + msl_sinf(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
     sel = 1 << t->cursor;
     SceneTitle_DrawBackImage(t, alpha, 0.0f);
     SceneTitle_DrawMenuPanel(t, alpha, 1.0f);

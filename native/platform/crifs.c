@@ -19,7 +19,7 @@ typedef struct HostDir {
 } HostDir;
 
 /* ROFS_LoadDir(folder, listing, max entries): 0 = done */
-int func_001E7380(const char *dir, void *list, int max) {
+int ROFS_LoadDir(const char *dir, void *list, int max) {
     HostDir *d = list;
 
     (void)max;
@@ -83,7 +83,7 @@ FILE *crifs_open(const char *folder, const char *name) {
 }
 
 /* ADXF open of `name` in the folder whose listing is `list` (NULL handle if missing) */
-void *func_001C9438(const char *name, void *list) {
+void *ADXF_OpenInDir(const char *name, void *list) {
     const HostDir *d = list;
     char dir[1024];
     HostFile *h;
@@ -109,7 +109,7 @@ void *func_001C9438(const char *name, void *list) {
 }
 
 /* ADXF_Close */
-void func_001C9800(HostFile *h) {
+void ADXF_Close(HostFile *h) {
     if (h != NULL) {
         fclose(h->f);
         free(h);
@@ -117,8 +117,8 @@ void func_001C9800(HostFile *h) {
 }
 
 /* ADXF_GetFsizeSct-based size in sectors */
-int func_001CA0B8(HostFile *h) { return (int)((h->size + SECTOR - 1) / SECTOR); }
-int ADXF_GetFsizeSct(HostFile *h) { return func_001CA0B8(h); }
+int ADXF_FileSectors(HostFile *h) { return (int)((h->size + SECTOR - 1) / SECTOR); }
+int ADXF_GetFsizeSct(HostFile *h) { return ADXF_FileSectors(h); }
 
 /* PS2 buffer addresses may carry the uncached / accelerated segment bits */
 static void *host_ptr(unsigned addr) {
@@ -150,7 +150,7 @@ int ADXF_Seek(HostFile *h, int pos, int type) {
     } else if (type == 1) {
         h->pos += pos;
     } else {
-        h->pos = func_001CA0B8(h) + pos;
+        h->pos = ADXF_FileSectors(h) + pos;
     }
     return (int)h->pos;
 }

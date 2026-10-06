@@ -474,7 +474,7 @@ static s32 creature_close_in(Character *c, u32 t) {
         sceVu0SubVector(dir, gCharPlayer->a.pos, c->a.pos);
         *(s32 *)&dir[1] = 0;
         sceVu0Normalize(dir, dir);
-        func_0010E640(dir, dir, AT(k, 0x0, f32));
+        vu0_ScaleXYZ(dir, dir, AT(k, 0x0, f32));
         Actor_Move(&c->a, dir);
     }
     return t;
@@ -891,7 +891,7 @@ void CreatureA_Travel(Character *c) {
         tri = VCALL(gRooms, 0x30, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x9, u8), at);
         VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x9, u8), in);
         sceVu0SubVector(d, in, at);
-        yaw = func_0031C5C0(d[0], d[2]);
+        yaw = msl_atan2f(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
         creature_at_doors(c, 0x8A);
     } else {
@@ -1427,15 +1427,15 @@ void CreatureA_Frame(Character *c) {
 
     switch (trail) {
     case 2:
-        func_0010E5F0((f32 *)(k + 0x70), c->a.pos);
+        vu0_CopyXYZ((f32 *)(k + 0x70), c->a.pos);
         AT(k, 0x74, f32) += 12.0f + AT(k, 0x14, f32);
         break;
     case 0:
-        func_0010E5F0((f32 *)(k + 0x50), c->a.pos);
+        vu0_CopyXYZ((f32 *)(k + 0x50), c->a.pos);
         AT(k, 0x54, f32) += 12.0f + AT(k, 0x14, f32);
         break;
     case 1:
-        func_0010E5F0((f32 *)(k + 0x60), c->a.pos);
+        vu0_CopyXYZ((f32 *)(k + 0x60), c->a.pos);
         AT(k, 0x64, f32) += 12.0f + AT(k, 0x14, f32);
         break;
     }
@@ -1512,7 +1512,7 @@ void CreatureA_Draw(Character *c) {
     }
     if (AT(k, 0x83, u8) == 0) {
         for (i = 0; i < 3; i++) {
-            func_0010E5F0((f32 *)(k + 0x50 + i * 0x10), c->a.pos);
+            vu0_CopyXYZ((f32 *)(k + 0x50 + i * 0x10), c->a.pos);
             AT(k, 0x54 + i * 0x10, f32) += 12.0f + AT(k, 0x14, f32);
         }
         AT(k, 0x83, u8) += 1;
@@ -1966,7 +1966,7 @@ void *Creatures_dtor(u8 *o, s32 flags) {
         AT(o, 0x28, void **) = D_0046A980;
         gCreatures = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2950,7 +2950,7 @@ void CreatureB_Travel(Character *c) {
         tri = VCALL(gRooms, 0x30, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x63, u8), at);
         VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x63, u8), in);
         sceVu0SubVector(d, in, at);
-        yaw = func_0031C5C0(d[0], d[2]);
+        yaw = msl_atan2f(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
         creature_at_doors(c, 0x50);
     } else {
@@ -3409,7 +3409,7 @@ s32 CreatureB_StraightAt(Character *c, f32 *goal) {
         sceVu0Normalize(d, d);
         Motion_RootMovement(c->motion, v, 0.0f);
         *(s32 *)&v[1] = 0;
-        func_0010E640(d, d, v[2]);
+        vu0_ScaleXYZ(d, d, v[2]);
         Actor_Move(&c->a, d);
     }
     return t;
@@ -3496,7 +3496,7 @@ void CreatureB_StateGrab(Character *c) {
             if (0.0f == dx && 0.0f == dz) {
                 diff = c->a.angle[1] - h;
             } else {
-                diff = func_0031C5C0(dx, dz) - h;
+                diff = msl_atan2f(dx, dz) - h;
             }
             front = (Angle_Wrap(diff) <= 0.0f ? -Angle_Wrap(diff) : Angle_Wrap(diff)) < 0x1.921fb6p+0f;   /* 90 degrees */
             switch (AT(k, 0x6C, u8)) {
@@ -3828,7 +3828,7 @@ void CreatureB_TurnToward(Character *c, f32 *at) {
     AT(k, 0x18, f32) = 4.0f;
     ph = *(volatile f32 *)(k + 0x10) + 4.0f;   /* (reloaded, so computed at run time) */
     AT(k, 0x10, f32) = ph;
-    s = func_0031C248(kPi.f * ph / 180.0f);
+    s = msl_sinf(kPi.f * ph / 180.0f);
     AT(AT(c->motion, 0x6A4, u8 *), 0x1C, f32) = s;
     r = Actor_TurnToward(&c->a, AT(c, 0x10C, f32), s * k14deg.f);
     AT(k, 0x14, f32) = 0.0f + AT(k, 0x14, f32) + 14.0f * s;

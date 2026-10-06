@@ -98,7 +98,7 @@ static inline void Pool_Destroy(u8 *pool) {
             AT(pool, 0x1208, void **) = D_004699E0;
         }
     }
-    func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
+    __destroy_arr(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
     if (pool != NULL) {
         gSubPool = NULL;
     }
@@ -185,7 +185,7 @@ void *SubPool_dtor(u8 *pool, s32 flags) {
     if (pool != NULL) {
         Pool_Destroy(pool);
         if ((s16)flags > 0) {
-            func_00100490(pool);
+            __dl__FPv(pool);
         }
     }
     return pool;
@@ -258,7 +258,7 @@ void *Obj46EC80_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046EC80;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -283,11 +283,11 @@ void *SubScreen_dtor(SubScreen *w, s32 flags) {
         AT(o, 0x8, void **) = D_0046A078;
         AT(o, 0x1210, void **) = BlockPool_vtable;
         AT(o, 0x1210, void **) = D_004699E0;
-        func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
+        __destroy_arr(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
         gSubPool = NULL;
         gSubScreen = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return w;
@@ -412,29 +412,29 @@ void Map_HereArrow(u8 *m) {
     fy = 128.0f + (AT(e, 0x14, f32) + AT(gCharPlayer, 0x18, f32) / AT(e, 0xC, f32));
     a = -AT(gCharPlayer, 0x54, f32);
     /* the corners (-16, 16) (16, 16) (-16, -16) (16, -16) turned by a, x squeezed 512 / 640 */
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     x0 = (s32)(fx + 512.0f * (-16.0f * c - 16.0f * s) / 640.0f);
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     y0 = (s32)(fy + (16.0f * c + -16.0f * s));
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     x1 = (s32)(fx + 512.0f * (16.0f * c - 16.0f * s) / 640.0f);
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     y1 = (s32)(fy + (16.0f * c + 16.0f * s));
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     x2 = (s32)(fx + 512.0f * (-16.0f * c - -16.0f * s) / 640.0f);
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     y2 = (s32)(fy + (-16.0f * c + -16.0f * s));
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     x3 = (s32)(fx + 512.0f * (16.0f * c - -16.0f * s) / 640.0f);
-    s = func_0031C248(a);
-    c = func_0031C058(a);
+    s = msl_sinf(a);
+    c = msl_cosf(a);
     y3 = (s32)(fy + (-16.0f * c + 16.0f * s));
     VCALL(gRenderer, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, u32,
                                      s32, s32, s32, s32))(
@@ -1709,7 +1709,7 @@ void SubScreen_DrawPageCount(u8 *s) {
     char buf[16];
     u8 *msg;
 
-    func_0026EDD0(buf, 10, str_N_N, s[0xA8C81] + 1, SubScreen_EntryMotions(s, s[0xA8C80]) & 0xFF);
+    msl_snprintf(buf, 10, str_N_N, s[0xA8C81] + 1, SubScreen_EntryMotions(s, s[0xA8C80]) & 0xFF);
     Task_ShowText(SUB_TEXT(s), 0x1B8, 0x10, 0, (u8 *)buf, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
     msg = Task_MessageText(SUB_TEXT(s), 0x1C6);
     Task_ShowText(SUB_TEXT(s), 0x160, 0x10, 0, msg, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
@@ -2234,19 +2234,19 @@ void Gallery_LoadPck(SubScreen *s, u8 k) {
     VObject *ld = gFileLoader;
     char name[0x20];
 
-    func_0026EDD0(name, 0x20, str_N_PCK, D_0044B7B0[k]);
+    msl_snprintf(name, 0x20, str_N_PCK, D_0044B7B0[k]);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DEC, void *), 0x10000000, 0);
-    func_0026EDD0(name, 0x20, str_N_TEX, D_0044B830[k]);
+    msl_snprintf(name, 0x20, str_N_TEX, D_0044B830[k]);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF0, void *), 0x10000000, 0);
     if (D_0044B930[k][0] != 0) {
-        func_0026EDD0(name, 0x20, str_N_MRK, D_0044B930[k]);
+        msl_snprintf(name, 0x20, str_N_MRK, D_0044B930[k]);
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF8, void *), 0x10000000,
                                                                            0);
     } else {
         AT(s, 0xA8DF8, void *) = NULL;
     }
     if (pstr_O_FIN_FIN_200[k][0] != 0) {
-        func_0026EDD0(name, 0x20, str_N_TEX, pstr_O_FIN_FIN_200[k]);
+        msl_snprintf(name, 0x20, str_N_TEX, pstr_O_FIN_FIN_200[k]);
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF4, void *), 0x10000000,
                                                                            0);
     } else {
@@ -3385,7 +3385,7 @@ static inline void art_group_load(SubScreen *s, VObject *ld, u8 g) {
     char name[0x20];
 
     SUB_PAGE(s, 0x3, u8) = 1;
-    func_0026EDD0(name, 0x20, str_SUBSCR_ARTN_LEN, g);
+    msl_snprintf(name, 0x20, str_SUBSCR_ARTN_LEN, g);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
         ld, name, VCALL(gProgress, 0x88, void *(*)(Progress *))(gProgress), 0x6000000, 0);
 }

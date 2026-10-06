@@ -147,7 +147,7 @@ typedef struct Ply {
 
 static Ply *sPlaying;   /* the one movie whose sound is mixed */
 
-/* the current CRI folder (func_001E7430, adx.c) */
+/* the current CRI folder (CriFs_SetDir, adx.c) */
 extern const void *adx_current_folder(void);
 
 static int rd_fill(Ply *p) {
@@ -650,13 +650,13 @@ static void *sVtbl[12] = {
 void mwPlyInitSfdFx(void *prm) { (void)prm; }
 
 /* mwPlyFinishSfdFx (PS2 0x0023AE40) */
-void func_0023AE40(void) {}
+void mwPlyFinishSfdFx(void) {}
 
 /* mwPlyCalcWorkCprmSfd: work buffer size for the creation parameters (unused here) */
 int mwPlyCalcWorkCprmSfd(void *cprm) { (void)cprm; return 0x40; }
 
 /* mwPlyCreateSofdec (PS2 0x00238BF0): NULL without libavcodec (the game then skips the movie) */
-void *func_00238BF0(void *cprm) {
+void *mwPly_CreateSofdec(void *cprm) {
     Ply *p;
 
     (void)cprm;
@@ -672,13 +672,13 @@ void *func_00238BF0(void *cprm) {
 }
 
 /* (PS2 0x0023E878) a player setting (event command 0x6E / the movie scene) */
-void func_0023E878(void *ply, unsigned a, unsigned b, int c) { (void)ply; (void)a; (void)b; (void)c; }
+void Sofdec_SetParam(void *ply, unsigned a, unsigned b, int c) { (void)ply; (void)a; (void)b; (void)c; }
 
 /* (PS2 0x0023CA88) a player mode */
 void func_0023CA88(void *ply, int mode) { (void)ply; (void)mode; }
 
 /* mwPlyGetTime (PS2 0x0023C480): the frames played */
-int func_0023C480(void *ply) {
+int mwPlyGetTime(void *ply) {
     Ply *p = ply;
 
     return p != NULL && p->shownNo >= 0 ? p->shownNo : 0;
@@ -692,7 +692,7 @@ int func_0023B4B0(void *ply) {
 }
 
 /* mwPlyGetCurFrm (PS2 0x00239828): the frame due, if it is new (its image NULL otherwise) */
-void func_00239828(void *ply, void *frmObj) {
+void mwPlyGetCurFrm(void *ply, void *frmObj) {
     Ply *p = ply;
     uint8_t *o = frmObj;
 
@@ -711,10 +711,10 @@ void func_00239828(void *ply, void *frmObj) {
 }
 
 /* mwPlyRelCurFrm (PS2 0x0023A180) */
-void func_0023A180(void *ply) { (void)ply; }
+void mwPlyRelCurFrm(void *ply) { (void)ply; }
 
 /* (PS2 0x002410B0) the current frame copied out to `dst` (w x h RGBA) */
-void func_002410B0(void *ply, void *frmObj, void *dst) {
+void mwPly_CopyFrame(void *ply, void *frmObj, void *dst) {
     Ply *p = ply;
 
     (void)frmObj;

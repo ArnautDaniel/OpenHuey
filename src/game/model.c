@@ -127,13 +127,13 @@ static inline void SwayPoint_Step(u8 *p, u8 *set) {
     sceVu0SubVector(d, (f32 *)p, at);
     sceVu0Normalize(d, d);
     /* swung too far off the bone's X: turn it back onto the cone's edge */
-    ang = func_0031C3C0(sceVu0InnerProduct(d, from));
+    ang = msl_acosf(sceVu0InnerProduct(d, from));
     if (!(ang <= AT(p, 0x4C, f32))) {
-        f32 s = func_0031C248(ang);
+        f32 s = msl_sinf(ang);
 
         if (!(s <= 0.0f)) {
-            f32 near = func_0031C248(AT(p, 0x4C, f32));
-            f32 far = func_0031C248(ang - AT(p, 0x4C, f32));
+            f32 near = msl_sinf(AT(p, 0x4C, f32));
+            f32 far = msl_sinf(ang - AT(p, 0x4C, f32));
             f32 inv = 1.0f / s;
 
             d[0] = inv * (far * from[0] + near * d[0]);
@@ -394,8 +394,8 @@ void CharLoad_PartnerModel(Progress *p, u32 slot) {
         ModelBase_ctor(m);
         AT(m, 0x0, void **) = DogModel_vtable;
         AT(m, 0x890, u8) = 0;
-        func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
-        func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
+        __construct_array(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+        __construct_array(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -425,7 +425,7 @@ static inline void *part30_dtor(void *o, s32 flags, void **vtbl) {
             AT(o, 0x30, void **) = SpringPartBase_vtable;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -527,11 +527,11 @@ void CharLoad_FionaModel(Progress *p, u32 slot) {
 
         HumanModel_ctor(m, 1);
         AT(m, 0x0, void **) = FionaModel_vtable;
-        func_00100340(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
+        __construct_array(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
         SpringSet_ctor(m + 0x13B0);
         BoneHangPoint_ctor(m + 0x13F0);
         SpringSet_ctor(m + 0x1440);
-        func_00100340(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0x15C0; e < m + 0x1740; e += 0x40) {
             BonePoint_ctor(e);
         }
@@ -556,11 +556,11 @@ void CharLoad_FionaClothes(Progress *p, u32 slot) {
 
         HumanModel_ctor(m, 0);
         AT(m, 0x0, void **) = EventHumanModel_vtable;
-        func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
+        __construct_array(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
         SpringSet_ctor(m + 0xD70);
         BoneHangPoint_ctor(m + 0xDB0);
         SpringSet_ctor(m + 0xE00);
-        func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
             BonePoint_ctor(e);
         }
@@ -631,7 +631,7 @@ void CharLoad_Costume7(Progress *p, u32 slot) {
     if (m != NULL) {
         HumanModel_ctor(m, 7);
         AT(m, 0x0, void **) = Costume7Model_vtable;
-        func_00100340(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
+        __construct_array(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
         SpringSet_ctor(m + 0xB40);
         SprungPoint_ctor(m + 0xB80);
         SpringSet_ctor(m + 0xBE0);
@@ -653,7 +653,7 @@ void CharLoad_Costume6(Progress *p, u32 slot) {
         AT(m, 0x0, void **) = Costume6Model_vtable;
         BoneHangPoint_ctor(m + 0x9B0);
         SpringSet_ctor(m + 0xA00);
-        func_00100340(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         setup_parts40(m + 0xB80, m + 0xD00);
         SpringSet_ctor(m + 0xD00);   /* (the loop's end, passed through a0) */
         SprungPoint_ctor(m + 0xD40);
@@ -667,7 +667,7 @@ void CharLoad_Costume6(Progress *p, u32 slot) {
 static inline void setup_costume(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
     HumanModel_ctor(m, kind);
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
+    __construct_array(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
     SpringSet_ctor(m + at);
     BoneHangPoint_ctor(m + at + 0x40);
     SpringSet_ctor(m + at + 0x90);
@@ -675,10 +675,10 @@ static inline void setup_costume(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
     SpringSet_ctor(m + at + 0x130);
     BoneHangPoint_ctor(m + at + 0x170);
     SpringSet_ctor(m + at + 0x1C0);
-    func_00100340(m + at + 0x200, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
+    __construct_array(m + at + 0x200, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
     SpringSet_ctor(m + at + 0x700);
     setup_parts40(m + at + 0x740, m + at + 0x8C0);
-    func_00100340(m + at + 0x8C0, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);   /* (the loop's end, a0) */
+    __construct_array(m + at + 0x8C0, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);   /* (the loop's end, a0) */
     SpringSet_ctor(m + at + 0x9B0);
     setup_parts40(m + at + 0x9F0, m + at + 0xB70);
 }
@@ -1928,7 +1928,7 @@ void Motion_Unfreeze(u8 *m) {
 }
 
 /* ---- stick gestures: each recognizer arms once the stick is centred (under 0.4) and fires
-   when it is then pushed fully (over 0.99) in its direction (the angle from func_0031C5C0:
+   when it is then pushed fully (over 0.99) in its direction (the angle from msl_atan2f:
    0 forward, +-pi back) ---- */
 
 static s32 gesture_step(s32 *state, f32 len, s32 aimed, s32 gesture) {
@@ -2002,7 +2002,7 @@ s32 Gesture_Update(u8 *g, f32 *stick) {
         return -1;
     }
     len = __builtin_sqrtf(sceVu0InnerProduct(stick, stick));
-    ang = func_0031C5C0(stick[0], stick[2]);
+    ang = msl_atan2f(stick[0], stick[2]);
     for (i = 0; i < 5; i++) {
         if (r == -1) {
             r = ptmf_scall_rff(g, &Gesture_Back_ptmf[i].p, len, ang);
@@ -2395,7 +2395,7 @@ s32 Motion_FootPos(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
     if (AT(prev, 0x20, void *) != NULL) {
         Track_Blend(m, pb, AT(prev, 0x38 + k * 8, void *), AT(prev, 0x3C + k * 8, void *), p0, p1,
                       1.0f - AT(prev, 0x1C, f32));
-        func_0010E610(pa, pb, pa, AT(m, 0x550, f32));
+        vu0_LerpXYZ(pa, pb, pa, AT(m, 0x550, f32));
     }
     out[0] = pa[0];
     out[1] = pa[1];
@@ -2424,9 +2424,9 @@ void Track_Blend(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, f3
         Track_Sample(trkB, b, tb);
     }
     if (trkA != NULL && *trkA != 0 && trkB != NULL && *trkB != 0) {
-        func_0010E610(out, b, a, w);
+        vu0_LerpXYZ(out, b, a, w);
         if (AT(trkA, 0x4, u16) == 2) {
-            func_0010E610(out + 4, b + 4, a + 4, w);
+            vu0_LerpXYZ(out + 4, b + 4, a + 4, w);
         }
     } else if (trkA != NULL && *trkA != 0) {
         sceVu0CopyVector(out, a);
@@ -3672,15 +3672,15 @@ f32 IK_RoundFraction(u8 *ik, f32 *a, f32 *b, f32 *c) {
     f32 la = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(a, a)));
     f32 lb = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(b, b)));
     f32 lc = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(c, c)));
-    f32 ab = func_0031C3C0(sceVu0InnerProduct(a, b) / (la * lb));
-    f32 ac = func_0031C3C0(sceVu0InnerProduct(a, c) / (la * lc));
+    f32 ab = msl_acosf(sceVu0InnerProduct(a, b) / (la * lb));
+    f32 ac = msl_acosf(sceVu0InnerProduct(a, c) / (la * lc));
 
     return ab / (ab + ac);
 }
 
 /* the unit vector `t` of the way along the arc from unit `p` to unit `q`, `w` apart */
 static void slerp(f32 *out, const f32 *p, const f32 *q, f32 w, f32 t) {
-    f32 s = func_0031C248(w);
+    f32 s = msl_sinf(w);
     f32 inv, sp, sq;
 
     if (s == 0.0f) {
@@ -3690,8 +3690,8 @@ static void slerp(f32 *out, const f32 *p, const f32 *q, f32 w, f32 t) {
         return;
     }
     inv = 1.0f / s;
-    sp = func_0031C248(w * (1.0f - t));
-    sq = func_0031C248(w * t);
+    sp = msl_sinf(w * (1.0f - t));
+    sq = msl_sinf(w * t);
     out[0] = inv * (q[0] * sq + p[0] * sp);
     out[1] = inv * (q[1] * sq + p[1] * sp);
     out[2] = inv * (q[2] * sq + p[2] * sp);
@@ -3708,11 +3708,11 @@ void IK_RoundVector(u8 *ik, f32 *out, f32 *a, f32 *mid, f32 *b, f32 t) {
     sceVu0OuterProduct(ca, mid, a);
     sceVu0OuterProduct(cb, mid, b);
     if (!(sceVu0InnerProduct(ca, cb) < 0.0f)) {
-        slerp(out, a, b, func_0031C3C0(sceVu0InnerProduct(a, b)), t);
+        slerp(out, a, b, msl_acosf(sceVu0InnerProduct(a, b)), t);
         return;
     }
-    w1 = func_0031C3C0(sceVu0InnerProduct(a, mid));
-    w2 = func_0031C3C0(sceVu0InnerProduct(mid, b));
+    w1 = msl_acosf(sceVu0InnerProduct(a, mid));
+    w2 = msl_acosf(sceVu0InnerProduct(mid, b));
     sum = w1 + w2;
     if (t < w1 / sum) {
         slerp(out, a, mid, w1, t * sum / w1);
@@ -3915,12 +3915,12 @@ void HairPoint2_Frame(u8 *l, u8 *s) {
     sceVu0AddVector((f32 *)l, (f32 *)l, (f32 *)(l + 0x10));
     sceVu0SubVector(d, (f32 *)l, anchor);
     sceVu0Normalize(d, d);
-    ang = func_0031C3C0(sceVu0InnerProduct(d, b));
+    ang = msl_acosf(sceVu0InnerProduct(d, b));
     if (!(ang <= AT(l, 0x4C, f32))) {
-        sa = func_0031C248(ang);
+        sa = msl_sinf(ang);
         if (!(sa <= 0.0f)) {
-            sl = func_0031C248(AT(l, 0x4C, f32));
-            sr = func_0031C248(ang - AT(l, 0x4C, f32));
+            sl = msl_sinf(AT(l, 0x4C, f32));
+            sr = msl_sinf(ang - AT(l, 0x4C, f32));
             inv = 1.0f / sa;
             d[0] = inv * (sr * b[0] + sl * d[0]);
             d[1] = inv * (sr * b[1] + sl * d[1]);
@@ -4070,11 +4070,11 @@ void BoneHangPoint_Frame(u8 *p, u8 *s) {
     }
     sceVu0Normalize(d, d);
     sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
-    ang = func_0031C3C0(sceVu0InnerProduct(d, m[0]));
+    ang = msl_acosf(sceVu0InnerProduct(d, m[0]));
     if (!(ang <= kCone.f)) {
-        sl = func_0031C248(kCone.f);
-        sr = func_0031C248(ang - kCone.f);
-        inv = 1.0f / func_0031C248(ang);
+        sl = msl_sinf(kCone.f);
+        sr = msl_sinf(ang - kCone.f);
+        inv = 1.0f / msl_sinf(ang);
         d[0] = inv * (sr * m[0][0] + sl * d[0]);
         d[1] = inv * (sr * m[0][1] + sl * d[1]);
         d[2] = inv * (sr * m[0][2] + sl * d[2]);
@@ -4254,13 +4254,13 @@ void CostumeHangPoint_Frame(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
     sceVu0CopyVector(axis, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
-    ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
+    ang = msl_acosf(sceVu0InnerProduct(d, axis));
     if (!(ang <= AT(p, 0x48, f32))) {
-        f32 sa = func_0031C248(ang);
+        f32 sa = msl_sinf(ang);
 
         if (!(sa <= 0.0f)) {
-            sl = func_0031C248(AT(p, 0x48, f32));
-            sr = func_0031C248(ang - AT(p, 0x48, f32));
+            sl = msl_sinf(AT(p, 0x48, f32));
+            sr = msl_sinf(ang - AT(p, 0x48, f32));
             inv = 1.0f / sa;
             d[0] = inv * (sr * axis[0] + sl * d[0]);
             d[1] = inv * (sr * axis[1] + sl * d[1]);
@@ -4336,13 +4336,13 @@ void WindHangPoint_Frame(u8 *p, u8 *s) {
     sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0CopyVector(axis, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
-    ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
+    ang = msl_acosf(sceVu0InnerProduct(d, axis));
     if (!(ang <= AT(p, 0x48, f32))) {
-        f32 sa = func_0031C248(ang);
+        f32 sa = msl_sinf(ang);
 
         if (!(sa <= 0.0f)) {
-            sl = func_0031C248(AT(p, 0x48, f32));
-            sr = func_0031C248(ang - AT(p, 0x48, f32));
+            sl = msl_sinf(AT(p, 0x48, f32));
+            sr = msl_sinf(ang - AT(p, 0x48, f32));
             inv = 1.0f / sa;
             d[0] = inv * (sr * axis[0] + sl * d[0]);
             d[1] = inv * (sr * axis[1] + sl * d[1]);
@@ -5049,7 +5049,7 @@ void Motion_LookAt(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
     p[1] = 0.0f + v[1] - h * up[1];
     p[2] = 0.0f + v[2] - h * up[2];
     p[3] = __builtin_sqrtf(p[2] * p[2] + p[0] * p[0]);
-    *pitch = func_0031C5C0(h, p[3]);
+    *pitch = msl_atan2f(h, p[3]);
     along = sceVu0InnerProduct(p, fwd);
     pp = sceVu0InnerProduct(p, p);
     ff = sceVu0InnerProduct(fwd, fwd);
@@ -5060,7 +5060,7 @@ void Motion_LookAt(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
     if (!(c <= 1.0f)) {
         c = 1.0f;
     }
-    *turn = func_0031C3C0(c);
+    *turn = msl_acosf(c);
     sceVu0OuterProduct(p, fwd, v);
     if (p[1] < 0.0f) {
         *turn = *turn * -1.0f;
@@ -5176,7 +5176,7 @@ static inline void *Part_Destroy(u8 *e, s32 at, void **vt, void **base, s32 flag
         AT(e, at, void **) = vt;
         AT(e, at, void **) = base;
         if ((s16)flags > 0) {
-            func_00100490(e);
+            __dl__FPv(e);
         }
     }
     return e;
@@ -5204,7 +5204,7 @@ void *Part_ctor(u8 *p) {
 /* 0x0016F990 */
 void *Part_delete(void *e, s32 flags) {
     if (e != NULL && (s16)flags > 0) {
-        func_00100490(e);
+        __dl__FPv(e);
     }
     return e;
 }
@@ -5214,7 +5214,7 @@ void *IK2_Destroy(void *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x58, void **) = IK2_vtable;
         if ((s16)flags > 0) {
-            func_00100490(e);
+            __dl__FPv(e);
         }
     }
     return e;
@@ -5227,7 +5227,7 @@ void *IK3_Destroy(void *e, s32 flags) {
         AT(e, 0x58, void **) = IK3_vtable;
         AT(e, 0x58, void **) = IK2_vtable;
         if ((s16)flags > 0) {
-            func_00100490(e);
+            __dl__FPv(e);
         }
     }
     return e;
@@ -5347,7 +5347,7 @@ void *ModelBase_dtor(void *p, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(m);
+            __dl__FPv(m);
         }
     }
     return m;
@@ -5392,13 +5392,13 @@ void *EventHumanModel_ctor(u8 *m, s32 kind) {
     AT(m, 0x0, void **) = CharModel_vtable;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = EventHumanModel_vtable;
-    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
+    __construct_array(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
     AT(m, 0xDA4, s32) = 0;
     AT(m, 0xDA0, s32) = 0;
     AT(m, 0xDE0, void **) = BoneHangPoint_vtable;
     AT(m, 0xE34, s32) = 0;
     AT(m, 0xE30, s32) = 0;
-    func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
@@ -5424,10 +5424,10 @@ void *EventHumanModel_dtor(void *p, s32 flags) {
         AT(m, 0x1210, void **) = SpringPartBase_vtable;
         AT(m, 0x1170, void **) = SprungPoint_vtable;
         AT(m, 0x1170, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0xE40, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0xE40, HangPoint_dtor, 0x50, 4);
         AT(m, 0xDE0, void **) = BoneHangPoint_vtable;
         AT(m, 0xDE0, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
+        __destroy_arr(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
         AT(m, 0x0, void **) = CharModel_vtable;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -5478,12 +5478,12 @@ void CharLoad_Kind23Model(Progress *p, u32 slot) {
 
         HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = Kind23Model_vtable;
-        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
             BonePoint_ctor(e);
         }
         SpringSet_ctor(m + 0xBE0);
-        func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+        __construct_array(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
         SpringSet_ctor(m + 0x10A0);
         for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
             Capsule_ctor(e);
@@ -5526,11 +5526,11 @@ void CharLoad_Kind13Model(Progress *p, u32 slot) {
 
         HumanModel_ctor(m, 0);
         AT(m, 0x0, void **) = EventHumanModel_vtable;
-        func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
+        __construct_array(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
         SpringSet_ctor(m + 0xD70);
         BoneHangPoint_ctor(m + 0xDB0);
         SpringSet_ctor(m + 0xE00);
-        func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
             BonePoint_ctor(e);
         }
@@ -5589,7 +5589,7 @@ void CharLoad_LorenzoModel(Progress *p, u32 slot) {
 
         ModelBase_ctor(m);
         AT(m, 0x0, void **) = LorenzoModel_vtable;
-        func_00100340(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
+        __construct_array(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
         for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
             BonePoint_ctor(e);
         }
@@ -5606,7 +5606,7 @@ void CharLoad_Lorenzo2Model(Progress *p, u32 slot) {
     if (m != NULL) {
         HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = Lorenzo2Model_vtable;
-        func_00100340(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+        __construct_array(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
         SpringSet_ctor(m + 0x1120);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -5622,12 +5622,12 @@ void CharLoad_Kind09Model(Progress *p, u32 slot) {
 
         HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = Kind09Model_vtable;
-        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
+        __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
         for (e = m + 0xB80; e < m + 0xD00; e += 0x40) {
             BonePoint_ctor(e);
         }
         SpringSet_ctor(m + 0xD00);
-        func_00100340(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+        __construct_array(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
         SpringSet_ctor(m + 0x14C0);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -5643,17 +5643,17 @@ void CharLoad_RiccardoModel(Progress *p, u32 slot) {
 
         HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = RiccardoModel_vtable;
-        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
             BonePoint_ctor(e);
         }
         SpringSet_ctor(m + 0xBE0);
-        func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+        __construct_array(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
         SpringSet_ctor(m + 0x10A0);
         for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
             Capsule_ctor(e);
         }
-        func_00100340(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
+        __construct_array(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
         SpringSet_ctor(m + 0x1450);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -5673,19 +5673,19 @@ void CharLoad_DaniellaModel(Progress *p, u32 slot) {
         SpringSet_ctor(m + 0x9E0);
         SpringSet_ctor(m + 0xA20);
         SpringSet_ctor(m + 0xA60);
-        func_00100340(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
+        __construct_array(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
         for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
             Capsule_ctor(e);
         }
         for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
             BonePoint_ctor(e);
         }
-        func_00100340(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
+        __construct_array(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
         for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
             Capsule_ctor(e);
         }
         SprungPoint_ctor(m + 0x1470);
-        func_00100340(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
+        __construct_array(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -5700,7 +5700,7 @@ void CharLoad_DebilitasModel(Progress *p, u32 slot) {
 
         HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = DebilitasModel_vtable;
-        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         SpringSet_ctor(m + 0xAE0);
         for (e = m + 0xB20; e < m + 0xBA0; e += 0x40) {
             BonePoint_ctor(e);

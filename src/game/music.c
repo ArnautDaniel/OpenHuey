@@ -186,7 +186,7 @@ BgmCtl *BgmCtl_dtor(BgmCtl *c, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_00100490(c);
+            __dl__FPv(c);
         }
     }
     return c;
@@ -674,7 +674,7 @@ u8 *MusicChannel_ctor(u8 *e) {
 /* 0x002BFD70 */
 void *MusicChannel_dtor(void *e, s32 flags) {
     if (e != NULL && (s16)flags > 0) {
-        func_00100490(e);
+        __dl__FPv(e);
     }
     return e;
 }
@@ -682,7 +682,7 @@ void *MusicChannel_dtor(void *e, s32 flags) {
 /* a track (0x110) */
 /* 0x0039AD10 */
 u8 *MusicTrack_ctor(u8 *t) {
-    func_00100340(t, (void *(*)(void *))MusicChannel_ctor, MusicChannel_dtor, 0x10, 0x10);
+    __construct_array(t, (void *(*)(void *))MusicChannel_ctor, MusicChannel_dtor, 0x10, 0x10);
     AT(t, 0x100, f32) = 0.0f;
     AT(t, 0x104, f32) = 100.0f;
     AT(t, 0x108, f32) = 1.0f;
@@ -694,9 +694,9 @@ u8 *MusicTrack_ctor(u8 *t) {
 /* 0x002BFD10 */
 void *MusicTrack_dtor(u8 *t, s32 flags) {
     if (t != NULL) {
-        func_001002C0(t, MusicChannel_dtor, 0x10, 0x10);
+        __destroy_arr(t, MusicChannel_dtor, 0x10, 0x10);
         if ((s16)flags > 0) {
-            func_00100490(t);
+            __dl__FPv(t);
         }
     }
     return t;
@@ -721,7 +721,7 @@ u8 *MusicCue_ctor(u8 *c) {
 /* 0x002BFDC0 */
 void *MusicCue_dtor(void *c, s32 flags) {
     if (c != NULL && (s16)flags > 0) {
-        func_00100490(c);
+        __dl__FPv(c);
     }
     return c;
 }
@@ -736,7 +736,7 @@ void MusicDir_Setup(u8 *d) {
     midi(0, 0xB0, 0x06, 0xC, 0xFF);
     midi(0, 0xB0, 0x26, 0xC, 0xFF);
     for (i = 0; i < 0x80; i = (i + 1) & 0xFF) {
-        AT(d, 0x838 + i * 4, f32) = func_0031C6E8((f32)(i + 1)) / 0.6931472f;
+        AT(d, 0x838 + i * 4, f32) = msl_logf((f32)(i + 1)) / 0.6931472f;
     }
     AT(d, 0x10, s32) = 0;
     AT(d, 0xC, f32) = 1.0f;
@@ -761,7 +761,7 @@ void *MusicDirBase_dtor(u8 *d, s32 flags) {
             gStageMusic = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(d);
+            __dl__FPv(d);
         }
     }
     return d;
@@ -786,7 +786,7 @@ void Bgm_ApplyVolume(Bgm *b) {
     if (v == 0.0f) {
         db = -999;
     } else {
-        db = (s32)(100.0f * func_0031C830(v));
+        db = (s32)(100.0f * msl_log10f(v));
     }
     if (db > 0) {
         db = 0;
@@ -816,7 +816,7 @@ s32 Bgm_IsPlaying(Bgm *b) {
     if (b->name[0] == 0) {
         return 1;
     }
-    return func_001D3E20(b->adxt) != 0;
+    return ADXT_IsPlaying(b->adxt) != 0;
 }
 
 /* nonzero once the track can start; a track that has ended starts again */
@@ -830,9 +830,9 @@ s32 Bgm_CanStart(Bgm *b) {
     }
     if (ADXT_GetStat(b->adxt) == ADXT_STAT_PLAYEND) {
         if (b->dir != 0) {
-            func_001E7430(0, b->dir);
+            CriFs_SetDir(0, b->dir);
         }
-        func_001D4A20(b->adxt, b->name);
+        ADXT_StartFname(b->adxt, b->name);
         return 0;
     }
     return ADXT_IsReadyPlayStart(b->adxt) != 0;
@@ -855,8 +855,8 @@ void Bgm_Play(Bgm *b, const char *path, s32 loop, s32 pause) {
             break;
         }
         if (path[i] == '\\') {
-            func_001183C0(b->name, path + i + 1);
-            func_00118978(dir, path, i);
+            msl_strcpy(b->name, path + i + 1);
+            msl_strncpy(dir, path, i);
             dir[i] = 0;
             break;
         }
@@ -865,15 +865,15 @@ void Bgm_Play(Bgm *b, const char *path, s32 loop, s32 pause) {
         b->dir = VCALL(gFileLoader, 0x3C, s32 (*)(VObject *, char *))(gFileLoader, dir);
     } else {
         b->dir = VCALL(gFileLoader, 0x3C, s32 (*)(VObject *, char *))(gFileLoader, NULL);
-        func_001183C0(b->name, path);
+        msl_strcpy(b->name, path);
     }
     if (b->dir != 0) {
-        func_001E7430(0, b->dir);
+        CriFs_SetDir(0, b->dir);
     }
     ADXT_SetLpFlg(b->adxt, loop & 0xFF);
     ADXT_SetWaitPlayStart(b->adxt, 0);
     ADXT_Pause(b->adxt, pause & 0xFF);
-    func_001D4A20(b->adxt, b->name);
+    ADXT_StartFname(b->adxt, b->name);
 }
 
 /* release the stream */
@@ -914,16 +914,16 @@ void Bgm_Init(Bgm *b, void *work) {
     ADXT_SetOutPan(b->adxt, 0, -0x80);
     ADXT_SetOutPan(b->adxt, 1, -0x80);
     if (gSound == NULL) {
-        func_001D4750(0);
+        ADXT_SetOutputMono(0);
     } else {
         s8 mode = VCALL(gSound, 0x6C, s32 (*)(VObject *))(gSound);
 
         if (mode == 2 || mode == 1) {
-            func_001D4750(0);
+            ADXT_SetOutputMono(0);
         } else if (mode == 0) {
-            func_001D4750(1);
+            ADXT_SetOutputMono(1);
         } else {
-            func_001D4750(0);
+            ADXT_SetOutputMono(0);
         }
     }
     ADXT_SetLpFlg(b->adxt, 1);
@@ -943,8 +943,8 @@ static inline void director_dtor(u8 *d) {
     for (k = 0; k < 4; k++) {
         midi(k, 0xB0, 0x78, 0, 0xFF);
     }
-    func_001002C0(d + 0x474, MusicCue_dtor, 0x28, 0x18);
-    func_001002C0(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
+    __destroy_arr(d + 0x474, MusicCue_dtor, 0x28, 0x18);
+    __destroy_arr(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046EBE0;
         if (d != NULL) {
@@ -1528,8 +1528,8 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
             for (k = 0; k < 4; k++) {
                 MusicDir_NotesOff(d, k);
             }
-            func_001002C0(d + 0x474, MusicCue_dtor, 0x28, 0x18);
-            func_001002C0(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
+            __destroy_arr(d + 0x474, MusicCue_dtor, 0x28, 0x18);
+            __destroy_arr(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
             if (d != NULL) {
                 AT(d, 0x0, void **) = D_0046EBE0;
                 if (d != NULL) {

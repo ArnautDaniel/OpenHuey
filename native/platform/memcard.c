@@ -132,4 +132,4 @@ void func_00225860(void *mc) {
 }
 
 /* sceMcEnd: nothing to release on the PC */
-int func_00110B60(void) { return 1; }
+int sceMcEnd(void) { return 1; }

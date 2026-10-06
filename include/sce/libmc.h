@@ -4,7 +4,7 @@
 /* libmc (memory card): native/platform/memcard.c on PC (host files). */
 #include "common.h"
 
-extern s32 func_00110B60(void);   /* sceMcEnd */
+extern s32 sceMcEnd(void);   /* sceMcEnd */
 extern void func_00225770(MemCard *mc);
 extern void func_00225860(MemCard *mc);
 extern void func_00225950(MemCard *mc);   /* write */

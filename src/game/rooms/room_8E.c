@@ -80,10 +80,10 @@ s32 Room8E_Cmd01(void *self, void *a1, u8 *cmd) {
         AT(o, 0x34, f32) = AT(o, 0x34, f32) + AT(o, 0x38, f32);
         AT(o, 0x30, f32) = AT(o, 0x30, f32) + AT(o, 0x34, f32);
         a = AT(o, 0x30, f32) < 90.0f ? AT(o, 0x30, f32) : 90.0f;
-        AT(o, 0x10, f32) = (1.0f - func_0031C248(kPi.f * (90.0f - a) / 180.0f)) * kHalfPi.f;
+        AT(o, 0x10, f32) = (1.0f - msl_sinf(kPi.f * (90.0f - a) / 180.0f)) * kHalfPi.f;
         return AT(o, 0x30, f32) < 90.0f ? 2 : 1;
     case 2:
-        AT(o, 0x10, f32) = func_0031C248(kHalfPi.f);
+        AT(o, 0x10, f32) = msl_sinf(kHalfPi.f);
         return 1;
     }
     return 1;

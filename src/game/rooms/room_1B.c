@@ -100,7 +100,7 @@ s32 Room1B_Cmd00(void *self, void *a1, u8 *cmd) {
         if (!(AT(o, 0x30, f32) + AT(o, 0x34, f32) < 360.0f)) {
             AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
         }
-        AT(o, 0x14, f32) = kPi.f * (swing * func_0031C248(kPi.f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
+        AT(o, 0x14, f32) = kPi.f * (swing * msl_sinf(kPi.f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
         if (!(AT(o, 0x14, f32) <= kPi.f)) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - kTwoPi.f;
         }

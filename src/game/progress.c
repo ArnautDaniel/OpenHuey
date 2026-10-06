@@ -285,12 +285,12 @@ void Progress_LoadSoundSet(Progress *p, s32 set) {
     }
     snd = gSound;
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 4);
-    func_0026EDD0(name, sizeof(name), sBankHd, set);
+    msl_snprintf(name, sizeof(name), sBankHd, set);
     prog = (u8 *)gProgress;
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 0, prog + 0x1CA6C0);
-    func_0026EDD0(name, sizeof(name), sBankSdt, set);
+    msl_snprintf(name, sizeof(name), sBankSdt, set);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 2, prog + 0x1CAEC0);
-    func_0026EDD0(name, sizeof(name), sBankBd, set);
+    msl_snprintf(name, sizeof(name), sBankBd, set);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 3, prog + 0x1CCEC0);
 }
 
@@ -460,12 +460,12 @@ void Progress_LoadRoomSounds(Progress *p, s32 room) {
     VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
     VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
-    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_HD, room & ~7, room);
+    msl_snprintf(name, sizeof(name), str_ST_N_ST1_N_HD, room & ~7, room);
     prog = (u8 *)gProgress;
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 0, prog + 0x1CA6C0);
-    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_SDT, room & ~7, room);
+    msl_snprintf(name, sizeof(name), str_ST_N_ST1_N_SDT, room & ~7, room);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 2, prog + 0x1CAEC0);
-    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_BD, room & ~7, room);
+    msl_snprintf(name, sizeof(name), str_ST_N_ST1_N_BD, room & ~7, room);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
 }
 
@@ -2231,7 +2231,7 @@ void *Progress_dtorGlobal(void *o, s32 flags) {
     if (o != NULL) {
         gProgress = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2454,7 +2454,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         gProgress = NULL;
     }
     if ((s16)flags > 0) {
-        func_00100490(p);
+        __dl__FPv(p);
     }
     return p;
 }
@@ -2490,7 +2490,7 @@ void *Progress73EC80_dtor(void *o, s32 flags) {
             VT(o, 0) = Helper469D00_vtable;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;

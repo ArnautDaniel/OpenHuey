@@ -127,7 +127,7 @@ void Loader_Init(u8 *l) {
         AT(r, 0x11C, u8) = 0;
         AT(r, 0x120, s32) = 0;
     }
-    while ((s16)func_001E7380(D_0044F7F0, l + 0x1FB80, 0x200) != 0) {
+    while ((s16)ROFS_LoadDir(D_0044F7F0, l + 0x1FB80, 0x200) != 0) {
     }
     for (i = 0; i < LOADER_DIRS; i++) {
         AT(l, 0x1280C + i * 0x104, u8 *) = LOADER_DIR_LIST(l, i);
@@ -149,7 +149,7 @@ s32 Loader_RegisterDir(u8 *l, const char *dir) {
             if (free < 0) {
                 free = i;
             }
-        } else if (func_00118278(dir, LOADER_DIR_NAME(l, i)) == 0) {
+        } else if (msl_strcmp(dir, LOADER_DIR_NAME(l, i)) == 0) {
             return i + 1;
         }
     }
@@ -164,9 +164,9 @@ s32 Loader_RegisterDir(u8 *l, const char *dir) {
     if (free < 0) {
         return -1;
     }
-    while ((s16)func_001E7380(dir, LOADER_DIR_LIST(l, free), 0x23) != 0) {
+    while ((s16)ROFS_LoadDir(dir, LOADER_DIR_LIST(l, free), 0x23) != 0) {
     }
-    func_001183C0(LOADER_DIR_NAME(l, free), dir);
+    msl_strcpy(LOADER_DIR_NAME(l, free), dir);
     return 0;
 }
 
@@ -279,7 +279,7 @@ void Loader_RegisterAll(u8 *l) {
     u32 i;
 
     for (i = 0; i < 0x110; i += 8) {
-        func_0026EDD0(name, sizeof(name), str_ST_N, i);
+        msl_snprintf(name, sizeof(name), str_ST_N, i);
         Loader_AddDir(l, sys, name);
     }
     for (i = 0; i < sizeof(sLoaderDirs) / sizeof(sLoaderDirs[0]); i++) {
@@ -304,8 +304,8 @@ void Loader_SplitPath(u8 *q, const char *path) {
     dir[0] = 0;
     for (i = 0; i < 0x100 && path[i] != 0; i++) {
         if (path[i] == '\\') {
-            func_001183C0(REQ_NAME(q), path + i + 1);
-            func_00118978(dir, path, i);
+            msl_strcpy(REQ_NAME(q), path + i + 1);
+            msl_strncpy(dir, path, i);
             dir[i] = 0;
             break;
         }
@@ -314,7 +314,7 @@ void Loader_SplitPath(u8 *q, const char *path) {
         REQ_DIR(q) = VCALL(gFileLoader, 0x3C, void *(*)(VObject *, const char *))(gFileLoader, dir);
     } else {
         REQ_DIR(q) = VCALL(gFileLoader, 0x3C, void *(*)(VObject *, const char *))(gFileLoader, NULL);
-        func_001183C0(REQ_NAME(q), path);
+        msl_strcpy(REQ_NAME(q), path);
     }
 }
 
@@ -359,18 +359,18 @@ void Lzss_Start(u8 *p) {
 /* +0x2C size of file `path` in sectors (0: not found) */
 /* 0x00169450 */
 s32 Loader_FileSectors(VObject *l, const char *path) {
-    u8 *q = func_00100660(0x128);
+    u8 *q = __nw__FUi(0x128);
     void *f;
     s32 n;
 
     Loader_SplitPath(q, path);
-    f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
-    func_00100490(q);
+    f = ADXF_OpenInDir(REQ_NAME(q), REQ_DIR(q));
+    __dl__FPv(q);
     if (f == NULL) {
         return 0;
     }
-    n = func_001CA0B8(f);
-    func_001C9800(f);
+    n = ADXF_FileSectors(f);
+    ADXF_Close(f);
     return n;
 }
 
@@ -383,20 +383,20 @@ u32 Loader_FileSize(VObject *l, const char *path) {
 /* +0x34 load all of file `path` into `dst` (waiting; retried on read errors); returns its size */
 /* 0x001692F0 */
 u32 Loader_LoadNow(VObject *l, const char *path, u32 dst) {
-    u8 *q = func_00100660(0x128);
+    u8 *q = __nw__FUi(0x128);
     void *f;
     s32 st;
     u32 size;
 
     Loader_SplitPath(q, path);
     do {
-        f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
+        f = ADXF_OpenInDir(REQ_NAME(q), REQ_DIR(q));
     } while (f == NULL);
-    func_00100490(q);
+    __dl__FPv(q);
     if (f == NULL) {
         return 0;
     }
-    size = func_001CA0B8(f);
+    size = ADXF_FileSectors(f);
     ADXF_Seek(f, 0, 0);
     dst |= UNCACHED_BIT;   /* uncached */
     ADXF_ReadNw(f, size, dst);
@@ -404,11 +404,11 @@ u32 Loader_LoadNow(VObject *l, const char *path, u32 dst) {
         st = ADXF_GetStat(f);
         if (st == ADXF_STAT_ERROR) {
             ADXF_Seek(f, 0, 0);
-            ADXF_ReadNw(f, func_001CA0B8(f), dst);
+            ADXF_ReadNw(f, ADXF_FileSectors(f), dst);
         }
     } while (st != ADXF_STAT_READEND);
-    size = func_001CA0B8(f) << 11;
-    func_001C9800(f);
+    size = ADXF_FileSectors(f) << 11;
+    ADXF_Close(f);
     return size;
 }
 
@@ -421,7 +421,7 @@ void *Loader_DirListing(u8 *l, const char *dir) {
         return l + 0x1FB80;
     }
     for (i = 0; i < LOADER_DIRS; i++) {
-        if (func_00118278(dir, LOADER_DIR_NAME(l, i)) == 0) {
+        if (msl_strcmp(dir, LOADER_DIR_NAME(l, i)) == 0) {
             return LOADER_DIR_LIST(l, i);
         }
     }
@@ -468,7 +468,7 @@ static inline void LoadReq_Clear(LoadReq *q) {
 
 /* finish the request at the read index and move on */
 static inline void Loader_Retire(u8 *l, LoadReq *q) {
-    func_001C9800(q->file);
+    ADXF_Close(q->file);
     LoadReq_Clear(q);
     LOADER_RD(l)++;
 }
@@ -499,9 +499,9 @@ void Loader_Tick(u8 *l) {
             q->state = 2;
             /* fallthrough */
         case 2:
-            q->file = func_001C9438(q->name, q->dir);
+            q->file = ADXF_OpenInDir(q->name, q->dir);
             if (q->file != NULL) {
-                q->size = func_001CA0B8(q->file) << 11;
+                q->size = ADXF_FileSectors(q->file) << 11;
             }
             if (q->file == NULL) {
                 return;
@@ -510,7 +510,7 @@ void Loader_Tick(u8 *l) {
             /* fallthrough */
         case 3:
             n = 0;
-            if (q->file != NULL && (n = func_001CA0B8(q->file)) != 0) {
+            if (q->file != NULL && (n = ADXF_FileSectors(q->file)) != 0) {
                 n = ADXF_ReadNw(q->file, n, q->dst);
             }
             if (n == 0) {
@@ -590,7 +590,7 @@ void Loader_Tick(u8 *l) {
  * is where it goes. Returns the request id (an equal request already queued: its id). */
 /* 0x0016BBD0 */
 s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
-    LoadReq *t = func_00100660(0x128), *q;
+    LoadReq *t = __nw__FUi(0x128), *q;
     u32 i;
     s32 id;
 
@@ -625,7 +625,7 @@ s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
             q = LOADER_REQ(l, i);
             if (t->group == q->group && t->dir == q->dir && t->dst == q->dst && t->notify == q->notify &&
                 t->kind == q->kind && t->bank == q->bank) {
-                func_00100490(t);
+                __dl__FPv(t);
                 return q->unk10;
             }
         }
@@ -657,7 +657,7 @@ s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     q->bank = t->bank;
     q->size = t->size;
     id = t->unk10;
-    func_00100490(t);
+    __dl__FPv(t);
     return id;
 }
 
@@ -784,7 +784,7 @@ void *LoaderBase_dtor(VObject *l, s32 flags) {
     if (l != NULL) {
         LoaderBase_Destroy(l);
         if ((s16)flags > 0) {
-            func_00100490(l);
+            __dl__FPv(l);
         }
     }
     return l;
@@ -797,7 +797,7 @@ void *LoadingEmblem_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00476F40;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -966,7 +966,7 @@ void *Loader_dtor(VObject *l, s32 flags) {
             LoaderBase_Destroy(l);
         }
         if ((s16)flags > 0) {
-            func_00100490(l);
+            __dl__FPv(l);
         }
     }
     return l;
@@ -981,7 +981,7 @@ void Loader_CloseAll(u8 *l) {
         LoadReq *q = (LoadReq *)(l + 4) + i;
 
         if (q->file != NULL) {
-            func_001C9800(q->file);
+            ADXF_Close(q->file);
         }
     }
 }

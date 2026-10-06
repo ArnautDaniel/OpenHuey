@@ -185,13 +185,13 @@ static inline void model_1310(u8 *m, void **vtbl) {
     IK2_ctor(m + 0x8D0);
     IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
     AT(m, 0xC14, s32) = 0;
     AT(m, 0xC10, s32) = 0;
-    func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+    __construct_array(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
     AT(m, 0x10D4, s32) = 0;
     AT(m, 0x10D0, s32) = 0;
     for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
@@ -621,8 +621,8 @@ void TintStalker_Setup(Pursuer *p) {
 void *Kind23Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = Kind23Model_vtable;
-        func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
-        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0xC20, Part60_dtor, 0x60, 0xC);
+        __destroy_arr(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         AT(m, 0x0, void **) = HumanModel_vtable;
         AT(m, 0x988, void **) = IK2_vtable;
         AT(m, 0x928, void **) = IK2_vtable;

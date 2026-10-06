@@ -115,10 +115,10 @@ static inline void Game_LoadSoundFile(VObject *loader, const char *name, s32 met
     u32 size = LOADER_SIZE(loader, name);
     void *buf;
 
-    if (size != 0 && (buf = func_00114DA8(0x40, size)) != NULL) {
+    if (size != 0 && (buf = msl_memalign(0x40, size)) != NULL) {
         LOADER_LOAD(loader, name, buf);
         VCALL(gSound, method, void (*)(VObject *, s32, void *, u32))(gSound, 5, buf, size);
-        func_00114FD0(buf);
+        msl_free(buf);
     }
 }
 
@@ -240,7 +240,7 @@ void *QuadEntry_dtor(u8 *o, s32 flags) {
         AT(o, 0x40, void **) = D_0046D770;
         AT(o, 0x40, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -324,9 +324,9 @@ void Game_Init(Game *game) {
     s32 ret;
 
     VCALL(&game->unk69AC0, 0xC, void (*)(VObject *))(&game->unk69AC0);
-    ret = func_0037E1F0(&result);
+    ret = Iop_LoadEmbeddedModule(&result);
     if (ret >= 0 && result != 0) {
-        func_001136E8(0);
+        msl_exit(0);
     }
     Game_LoadCommonSounds(game);
     Slots_Init(game->unk14E8C90);
@@ -456,8 +456,8 @@ void *System_ctor(u8 *s) {
     AT(p, 0x7C48, u8) = 0;
     gMovieLib = p + 0x7C44;
     AT(p, 0x7C44, void **) = MovieLib_vtable;
-    func_00115D20(p + 0x7C4C, 0, 0x20);
-    func_00115D20(p + 0x7C6C, 0, 0x30);
+    msl_memset(p + 0x7C4C, 0, 0x20);
+    msl_memset(p + 0x7C6C, 0, 0x30);
 
     gVram = (VObject *)(s + 0x30CF40);
     AT(s, 0x30CF40, void **) = Vram_vtable;
@@ -468,8 +468,8 @@ void *System_ctor(u8 *s) {
     gSound = (VObject *)(p + 4);
     AT(p, 0x0, void **) = SndDriver_vtable;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_00100340(p + 0x84, IopArrayA_ctor, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
-    func_00100340(p + 0x108, IopArrayB_ctor, IopArray_dtor, 0x18, 8);
+    __construct_array(p + 0x84, IopArrayA_ctor, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
+    __construct_array(p + 0x108, IopArrayB_ctor, IopArray_dtor, 0x18, 8);
     AT(p, 0x80, s32) = 0;
     AT(p, 0x104, s8) = -1;
     AT(p, 0x7EC, s32) = 0x100;
@@ -505,8 +505,8 @@ void RenderState_Defaults(u8 *r) {
     AT(r, 0x304C07, u8) = 0;
     AT(r, 0x304C08, u8) = 0;
     AT(r, 0x304C09, u8) = 2;
-    AT(r, 0x304BB0, u32) = func_0010D3B8(1);
-    _fbss = func_0010D3B8(2);
+    AT(r, 0x304BB0, u32) = libgraph_TableEntry(1);
+    _fbss = libgraph_TableEntry(2);
     AT(r, 0x304BB4, u8) = 0;
     AT(r, 0x304BB5, u8) = 0;
     ((void (*)(u8 *))(*(void ***)r)[0x1C / 4])(r);
@@ -525,7 +525,7 @@ void *Obj46ACF0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046ACF0;
         gRenderer = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -537,7 +537,7 @@ void *Obj46AD88_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AD88;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -607,8 +607,8 @@ extern void *gChainPool, *gSkelPool;   /* the two pools */
 /* 0x0020E1A0 */
 void *SmallPool_ctor(u8 *p) {
     gChainPool = p;
-    func_00100340(p, SmallPool_ElemA, Triple_dtor, 0xC, 0x40);
-    func_00100340(p + 0x300, SmallPool_ElemB, Quad4_dtor, 0x14, 0x1CE);
+    __construct_array(p, SmallPool_ElemA, Triple_dtor, 0xC, 0x40);
+    __construct_array(p + 0x300, SmallPool_ElemB, Quad4_dtor, 0x14, 0x1CE);
     return p;
 }
 
@@ -616,8 +616,8 @@ void *SmallPool_ctor(u8 *p) {
 /* 0x0020E110 */
 void *BigPool_ctor(u8 *p) {
     gSkelPool = p;
-    func_00100340(p, BigPool_ElemA, Pair_dtor, 0xC, 0x20);
-    func_00100340(p + 0x180, BigPool_ElemB, Pair44_dtor, 0x50, 0x278);
+    __construct_array(p, BigPool_ElemA, Pair_dtor, 0xC, 0x20);
+    __construct_array(p + 0x180, BigPool_ElemB, Pair44_dtor, 0x50, 0x278);
     return p;
 }
 
@@ -660,7 +660,7 @@ void *Obj46BEE0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046BEE0;
         gGamePtr = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -678,12 +678,12 @@ void *Game_dtor(u8 *g, s32 flags) {
     AT(g, 0x0, void **) = Game_vtable;
     TexCache_dtor(g + 0x14E8C90, -1);
 
-    func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))Pair44_dtor, 0x50, 0x278);
-    func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))Pair_dtor, 0xC, 0x20);
+    __destroy_arr(g + 0x14DC6B0, (void *(*)(void *, s32))Pair44_dtor, 0x50, 0x278);
+    __destroy_arr(g + 0x14DC530, (void *(*)(void *, s32))Pair_dtor, 0xC, 0x20);
     gSkelPool = NULL;
 
-    func_001002C0(g + 0x14DA0D0, (void *(*)(void *, s32))Quad4_dtor, 0x14, 0x1CE);
-    func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))Triple_dtor, 0xC, 0x40);
+    __destroy_arr(g + 0x14DA0D0, (void *(*)(void *, s32))Quad4_dtor, 0x14, 0x1CE);
+    __destroy_arr(g + 0x14D9DD0, (void *(*)(void *, s32))Triple_dtor, 0xC, 0x40);
     gChainPool = NULL;
 
     AT(g, 0x14D9B00, void **) = Camera_vtable;
@@ -725,7 +725,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     AT(g, 0x0, void **) = D_0046BEE0;
     gGamePtr = NULL;
     if ((s16)flags > 0) {
-        func_00100490(g);
+        __dl__FPv(g);
     }
     return g;
 }
@@ -745,19 +745,19 @@ void Slots_Init(u8 *o) {
 
 extern const char str_SIO2MAN_IRX[], str_SIO2D_IRX[], str_DBCMAN_IRX[], str_LIBSD_IRX[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
 extern void func_001AACD0(void *obj);
-extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank start / end handlers */
+extern s32 VBlank_StartHandler(s32 cause), VBlank_EndHandler(s32 cause);         /* vblank start / end handlers */
 extern u8 gVblankStartSeen, gVblankEndSeen;   /* vblank start / end seen */
 extern u32 gVblankCount;              /* vblank count */
 
 /* 0x001BF080 */
 void System_Init(u8 *s) {
-    func_001BC220(s + 0x20);
-    func_0010D3E0(1);
-    AT(s, 0x4, s32) = func_001BC0F0(s + 0x20, str_SIO2MAN_IRX, 0, 0, 0);
-    AT(s, 0x8, s32) = func_001BC0F0(s + 0x20, str_SIO2D_IRX, 0, 0, 0);
-    AT(s, 0xC, s32) = func_001BC0F0(s + 0x20, str_DBCMAN_IRX, 0, 0, 0);
-    func_001EE798();
-    AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, str_LIBSD_IRX, 0, 0, 0);
+    Iop_Reset(s + 0x20);
+    libgraph_Reset(1);
+    AT(s, 0x4, s32) = Iop_LoadModule(s + 0x20, str_SIO2MAN_IRX, 0, 0, 0);
+    AT(s, 0x8, s32) = Iop_LoadModule(s + 0x20, str_SIO2D_IRX, 0, 0, 0);
+    AT(s, 0xC, s32) = Iop_LoadModule(s + 0x20, str_DBCMAN_IRX, 0, 0, 0);
+    sceDbcInit();
+    AT(s, 0x10, s32) = Iop_LoadModule(s + 0x20, str_LIBSD_IRX, 0, 0, 0);
     func_001AACD0(s + 0x305280);
     SndDriver_Start(s + 0x395D40);
     Pads_Init(s + 0x40);
@@ -771,11 +771,11 @@ void System_Init(u8 *s) {
     HW_WRITE32(0x10000810, 0x82);
     gVblankCount = 0;
     gVblankStartSeen = 0;
-    AT(s, 0x14, s32) = func_0026BE80(2, func_001BEDA0, 0);
-    func_0026CCE8(2);
+    AT(s, 0x14, s32) = AddIntcHandler(2, VBlank_StartHandler, 0);
+    EnableIntc(2);
     gVblankEndSeen = 0;
-    AT(s, 0x18, s32) = func_0026BE80(3, func_001BED80, 0);
-    func_0026CCE8(3);
+    AT(s, 0x18, s32) = AddIntcHandler(3, VBlank_EndHandler, 0);
+    EnableIntc(3);
     AT(s, 0x1C, s32) = gVblankCount;
     Loader_Init(s + 0x319900);
     Loader_RegisterAll(s + 0x319900);
@@ -788,7 +788,7 @@ void *Obj46AE10_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AE10;
         gSystem = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -801,13 +801,13 @@ void *Obj46AF20_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AF20;
         gVram = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
 }
 
-extern void func_001AACC0(void *snd);     /* ADX sound system tick */
+extern void Adx_SoundTick(void *snd);     /* ADX sound system tick */
 
 /* +0x10 end of frame: finish the renderer's frame, wait for the vblank (at least two since the
  * last frame: the game runs at 30 fps), restart the timers, send the frame, then tick the parts. */
@@ -832,7 +832,7 @@ void System_EndFrame(u8 *s) {
     HW_WRITE32(0x10000000, 0);   /* timer 0 count */
     Renderer_EndFrame(s + 0x460);
     SndDriver_Frame(s + 0x395D40);
-    func_001AACC0(s + 0x305280);
+    Adx_SoundTick(s + 0x305280);
     Loader_Tick(s + 0x319900);
     Rumble_Tick((Rumble *)(s + 0x300));
     Pads_Tick(s + 0x40);
@@ -846,7 +846,7 @@ void *Obj46ADD0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046ADD0;
         gPad = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -859,18 +859,18 @@ void *IopBuffers_dtor(u8 *e, s32 flags) {
         return e;
     }
     if (AT(e, 0x0, u32) != 0) {
-        func_00274640(AT(e, 0x0, u32));
+        sceSifFreeIopHeap(AT(e, 0x0, u32));
         AT(e, 0x0, u32) = 0;
     }
     if (AT(e, 0x4, u32) != 0) {
-        func_00274640(AT(e, 0x4, u32));
+        sceSifFreeIopHeap(AT(e, 0x4, u32));
         AT(e, 0x4, u32) = 0;
     }
     AT(e, 0x8, s32) = 0;
     AT(e, 0xC, u8) = 0;
     AT(e, 0xD, u8) = 0;
     if ((s16)flags > 0) {
-        func_00100490(e);
+        __dl__FPv(e);
     }
     return e;
 }
@@ -886,7 +886,7 @@ void *IopArray_dtor(u8 *o, s32 flags) {
         AT(o, 0x14, s32) = 0;
         AT(o, 0x10, u8) = 0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -908,8 +908,8 @@ void *System_dtor(u8 *s, s32 flags) {
     p = s + 0x395D40;   /* sound driver */
     AT(p, 0x0, void **) = SndDriver_vtable;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_001002C0(p + 0x108, (void *(*)(void *, s32))IopArray_dtor, 0x18, 8);
-    func_001002C0(p + 0x84, (void *(*)(void *, s32))IopBuffers_dtor, 0x10, 8);
+    __destroy_arr(p + 0x108, (void *(*)(void *, s32))IopArray_dtor, 0x18, 8);
+    __destroy_arr(p + 0x84, (void *(*)(void *, s32))IopBuffers_dtor, 0x10, 8);
     AT(p, 0x4, void **) = D_0046AF90;
     gSound = NULL;
     AT(p, 0x0, void **) = D_0046AD88;
@@ -960,7 +960,7 @@ void *System_dtor(u8 *s, s32 flags) {
     AT(s, 0x0, void **) = D_0046AE10;
     gSystem = NULL;
     if ((s16)flags > 0) {
-        func_00100490(s);
+        __dl__FPv(s);
     }
     return s;
 }
@@ -968,8 +968,8 @@ void *System_dtor(u8 *s, s32 flags) {
 /* +0x18 shutdown: the vblank handlers off, then each part's shutdown, then reset the GS */
 /* 0x001BEDD0 */
 void System_Shutdown(u8 *s) {
-    func_0026CC80(2);
-    func_0026CC80(3);
+    DisableIntc(2);
+    DisableIntc(3);
     RemoveIntcHandler(3, AT(s, 0x18, s32));
     RemoveIntcHandler(2, AT(s, 0x14, s32));
     Pads_Shutdown(s + 0x40);
@@ -978,17 +978,17 @@ void System_Shutdown(u8 *s) {
     Loader_CloseAll(s + 0x319900);
     SndDriver_FreeIop(s + 0x395D40);
     MovieLib_Shutdown(s + 0x305280);
-    func_0010D3E0(0);
+    libgraph_Reset(0);
 }
 
 /* +0x14 frame without the vblank wait: finish and send the renderer's frame, tick the parts */
 /* 0x001BEE70 */
 void System_FrameNoWait(u8 *s) {
     Renderer_WaitChain(s + 0x460);
-    func_0023C310();
+    mwPly_ExecServer();
     Renderer_EndFrame(s + 0x460);
     SndDriver_Frame(s + 0x395D40);
-    func_001AACC0(s + 0x305280);
+    Adx_SoundTick(s + 0x305280);
     Loader_Tick(s + 0x319900);
     Rumble_Tick((Rumble *)(s + 0x300));
     Pads_Tick(s + 0x40);

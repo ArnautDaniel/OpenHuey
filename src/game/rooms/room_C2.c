@@ -32,8 +32,8 @@ static inline void swing_to(u8 *o, f32 a) {
 
     AT(o, 0x14, f32) = kPi.f * a / 180.0f;
     pos[1] = 152.0f;
-    pos[0] = -45.0f * func_0031C058(AT(o, 0x14, f32));
-    pos[2] = -45.0f * -func_0031C248(AT(o, 0x14, f32));
+    pos[0] = -45.0f * msl_cosf(AT(o, 0x14, f32));
+    pos[2] = -45.0f * -msl_sinf(AT(o, 0x14, f32));
     pos[3] = 1.0f;
     Sound_PlayBankAt(gSound, 0x80000002, 6, pos, 0, 0);
 }
@@ -125,11 +125,11 @@ s32 RoomC2_Cmd00(void *self, void *a1, u8 *cmd) {
         AT(o, 0x14, u32) = 0x3FC90FDB;   /* pi/2 */
         break;
     case 2:
-        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        e = msl_sinf(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
         swing_to(o, 45.0f * (1.0f + e));
         break;
     case 3:
-        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        e = msl_sinf(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
         swing_to(o, 90.0f - 45.0f * (1.0f + e));
         break;
     }

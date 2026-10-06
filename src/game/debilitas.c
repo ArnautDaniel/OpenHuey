@@ -678,7 +678,7 @@ void *Debilitas3_ctor(void *p, s32 arg) {
 void *DebilitasModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = DebilitasModel_vtable;
-        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -1853,7 +1853,7 @@ void *DebilitasModel_ctor(u8 *m) {
     IK2_ctor(m + 0x8D0);
     IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = DebilitasModel_vtable;
-    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     AT(m, 0xB14, s32) = 0;
     AT(m, 0xB10, s32) = 0;
     for (e = m + 0xB20; e < m + 0xBA0; e += 0x40) {

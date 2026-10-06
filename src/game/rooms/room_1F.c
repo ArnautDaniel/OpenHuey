@@ -99,7 +99,7 @@ s32 Room1F_Cmd00(void *self, void *a1, u8 *cmd) {
                 }
                 AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
             }
-            AT(o, 0x18, f32) = kPi.f * (4.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+            AT(o, 0x18, f32) = kPi.f * (4.0f * msl_sinf(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
             break;
         }
     }

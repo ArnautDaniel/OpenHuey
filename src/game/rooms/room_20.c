@@ -166,7 +166,7 @@ s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
     u8 *o = room_obj(Room20_ObjectNames[cmd[3]]);
 
     if (o != NULL) {
-        AT(chr, 0x10C, f32) = Angle_Wrap(func_0031C5C0(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
+        AT(chr, 0x10C, f32) = Angle_Wrap(msl_atan2f(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
                                                           AT(o, 0x28, f32) - AT(chr, 0x18, f32)));
         chr[0xE1] = 0;
         AT(chr, 0xF4, s32) = 0xF;
@@ -299,7 +299,7 @@ s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
             at[2] = 90.0f;
             Sound_PlayBankAt(gSound, 0x40000001, 6, at, 0, 0);
         }
-        AT(o, 0x14, f32) = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+        AT(o, 0x14, f32) = kPi.f * (15.0f * msl_sinf(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
         if (!(AT(o, 0x14, f32) <= kPi.f)) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - kTwoPi.f;
         }

@@ -131,7 +131,7 @@ void *Pads_dtor(u8 *o, s32 flags) {
     AT(o, 0x0, void **) = D_0046ADD0;
     gPad = NULL;
     if ((s16)flags > 0) {
-        func_00100490(o);
+        __dl__FPv(o);
     }
     return o;
 }
@@ -140,9 +140,9 @@ void *Pads_dtor(u8 *o, s32 flags) {
 void Pads_Init(u8 *pads) {
     u8 *p = pads + 0x40;
 
-    func_001EF990(0);
-    AT(p, 0x4, s32) = func_001BC0F0(pads + 0x18, str_DS2O_S1_IRX, 0, 0, 0);
-    AT(p, 0x0, s32) = func_001EFA38(0, p + 0x140);
+    scePad2Init(0);
+    AT(p, 0x4, s32) = Iop_LoadModule(pads + 0x18, str_DS2O_S1_IRX, 0, 0, 0);
+    AT(p, 0x0, s32) = scePad2CreateSocket(0, p + 0x140);
     AT(p, 0x8, s32) = 0;
     AT(p, 0xC, s32) = 0;
     AT(p, 0x244, s32) = -1;
@@ -159,7 +159,7 @@ void *RumbleBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AE30;
         gRumble = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -173,7 +173,7 @@ Rumble *Rumble_dtor(Rumble *f, s32 flags) {
         f->vtbl = D_0046AE30;
         gRumble = NULL;
         if ((s16)flags > 0) {
-            func_00100490(f);
+            __dl__FPv(f);
         }
     }
     return f;
@@ -372,16 +372,16 @@ void Pads_Tick(u8 *pads) {
     s32 bytes = 0, data = 0, changed = 1;
     u8 m;
 
-    PAD_STATE(p) = func_001EFD40(PAD_SOCKET(p));
+    PAD_STATE(p) = scePad2GetState(PAD_SOCKET(p));
     switch (PAD_STATE(p)) {
     case 2:
         break;
     case 1:
         if (PAD_PHASE(p) == 0) {
-            func_001EFC70(PAD_SOCKET(p), p + 0x110);
+            scePad2GetButtonProfile(PAD_SOCKET(p), p + 0x110);
             PAD_PHASE(p) = 1;
         } else {
-            func_001EFB98(PAD_SOCKET(p), p + 0x10);
+            scePad2Read(PAD_SOCKET(p), p + 0x10);
             PAD_PHASE(p) = 2;
         }
         break;
@@ -393,7 +393,7 @@ void Pads_Tick(u8 *pads) {
         changed = 0;
     }
     if (PAD_STATE(p) == 1 && PAD_PHASE(p) == 2) {
-        PAD_ACTCOUNT(p) = func_002D25D8(PAD_SOCKET(p), p + 0x242);
+        PAD_ACTCOUNT(p) = Dbc_ActuatorInfo(PAD_SOCKET(p), p + 0x242);
         if (PAD_ACTCOUNT(p) > 0) {
             m = AT(p, 0x242, u8);
             if (m & 1) {
@@ -464,8 +464,8 @@ s32 Pads_GetData(u8 *pads, s32 port, PadData *out) {
 /* the pads (+0x40): close the socket, end the library */
 /* 0x001BE480 */
 void Pads_Shutdown(u8 *pads) {
-    func_001EFB40(AT(pads, 0x40, s32));
-    func_001EF9D0();
+    scePad2DeleteSocket(AT(pads, 0x40, s32));
+    scePad2End();
 }
 
 /* ---- the game's input state (gInput, one per port) ---- */
@@ -560,7 +560,7 @@ static inline void Input_Stick(f32 *out, u8 bx, u8 by) {
         len = __builtin_sqrtf(v[2] * v[2] + v[0] * v[0]);
     }
     sceVu0Normalize(v, v);
-    func_0010E640(out, v, len);
+    vu0_ScaleXYZ(out, v, len);
 }
 
 /* Build the input state from port 0's pad data (pad manager +0x10). */

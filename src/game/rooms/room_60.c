@@ -303,7 +303,7 @@ void Room60Effect_Draw(u8 *o) {
     default:
         return;
     }
-    d = 4.5f * func_0031C248(0x1.921fb6p-1f /* pi / 4 */);
+    d = 4.5f * msl_sinf(0x1.921fb6p-1f /* pi / 4 */);
     pt[0][0] = x;        pt[0][1] = 16.0f; pt[0][2] = z;
     pt[1][0] = x + 4.5f; pt[1][1] = 10.0f; pt[1][2] = z;
     pt[2][0] = x + d;    pt[2][1] = 10.0f; pt[2][2] = z + d;

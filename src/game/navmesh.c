@@ -366,7 +366,7 @@ void *NavMeshBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AA40;
         gNavMesh = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -384,7 +384,7 @@ void *PathPlan_dtor(void *o, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1291,7 +1291,7 @@ s32 PathPlan_Advance(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, 
         i++;
     }
     sceVu0Normalize(d, d);
-    func_0010E640(d, d, dist);
+    vu0_ScaleXYZ(d, d, dist);
     sceVu0AddVector(p, p, d);
     *tri = cur;
     pos[0] = p[0];
@@ -1345,7 +1345,7 @@ s32 PathPlan_AdvanceOnMesh(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 
         e += 0xC;
     }
     sceVu0Normalize(d, d);
-    func_0010E640(d, d, dist);
+    vu0_ScaleXYZ(d, d, dist);
     sceVu0AddVector(q, p, d);
     nm = gNavMesh;
     for (t = cur;;) {
@@ -1564,19 +1564,19 @@ s32 PathPlan_Curve(u8 *pl, s32 id, u8 *out) {
         if (l1 < l3) {
             if (l1 < l2) {
                 sceVu0Normalize(d2, d2);
-                func_0010E640(d2, d2, __builtin_sqrtf(l1));
+                vu0_ScaleXYZ(d2, d2, __builtin_sqrtf(l1));
             } else {
                 sceVu0Normalize(d1, d1);
-                func_0010E640(d1, d1, __builtin_sqrtf(l2));
+                vu0_ScaleXYZ(d1, d1, __builtin_sqrtf(l2));
             }
         } else if (l2 < l3) {
             sceVu0Normalize(d1, d1);
-            func_0010E640(d1, d1, __builtin_sqrtf(l2));
+            vu0_ScaleXYZ(d1, d1, __builtin_sqrtf(l2));
         } else {
             sceVu0Normalize(d1, d1);
-            func_0010E640(d1, d1, __builtin_sqrtf(l3));
+            vu0_ScaleXYZ(d1, d1, __builtin_sqrtf(l3));
             sceVu0Normalize(d2, d2);
-            func_0010E640(d2, d2, __builtin_sqrtf(l3));
+            vu0_ScaleXYZ(d2, d2, __builtin_sqrtf(l3));
         }
         tries = 10;
         start = out + k * 0xC;
@@ -1597,8 +1597,8 @@ s32 PathPlan_Curve(u8 *pl, s32 id, u8 *out) {
                 break;
             }
             tries--;
-            func_0010E640(d1, d1, 0.5f);
-            func_0010E640(d2, d2, 0.5f);
+            vu0_ScaleXYZ(d1, d1, 0.5f);
+            vu0_ScaleXYZ(d2, d2, 0.5f);
             for (j = 1; j < 8; j++, pt += 0xC) {
                 f32 u = (f32)j / 8.0f;
                 f32 u2 = u * u;
@@ -2024,7 +2024,7 @@ void *PathPlanBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AC00;
         gSceneGameF29740 = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2038,7 +2038,7 @@ void *NavGroups_dtor(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046DB60;
         gRoomEventObj = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2138,7 +2138,7 @@ void *NavGroupsBase_dtor(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046DB60;
         gRoomEventObj = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2230,10 +2230,10 @@ void NavMesh_FindDoorRegions(u8 *set) {
             sceVu0OuterProduct(tmp, edge, tmp);
             sceVu0OuterProduct(edge, edge, tmp);
             sceVu0Normalize(tmp, edge);
-            AT(l, 0x8 + s * 4, f32) = func_0031C5C0(tmp[0], tmp[2]);
+            AT(l, 0x8 + s * 4, f32) = msl_atan2f(tmp[0], tmp[2]);
             sceVu0CopyVector(edge, a);
             sceVu0AddVector(edge, edge, b);
-            func_0010E640((f32 *)(l + 0x10 + s * 0x10), edge, 0.5f);
+            vu0_ScaleXYZ((f32 *)(l + 0x10 + s * 0x10), edge, 0.5f);
             AT(l, 0x1C + s * 0x10, f32) = 1.0f;
         }
     }
@@ -2508,7 +2508,7 @@ s32 NavTri_ExitEdgeHit(NavTri *t, f32 *hit, f32 *from, f32 *to) {
             continue;
         }
         sceVu0SubVector(hit, to, from);
-        func_0010E640(hit, hit, s);
+        vu0_ScaleXYZ(hit, hit, s);
         sceVu0AddVector(hit, from, hit);
         {
             f32 *v0 = t->v[0], *v1 = t->v[1], *v2 = t->v[2];
@@ -2604,7 +2604,7 @@ u32 NavTri_Slide(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
     over = sceVu0InnerProduct(e, n);
     s = k11.f;
     for (i = 0; i < 8; i++) {
-        func_0010E640(e, n, over * s);
+        vu0_ScaleXYZ(e, n, over * s);
         sceVu0AddVector(out, to, e);
         if (!((out[0] - a[0]) * (b[2] - a[2]) - (out[2] - a[2]) * (b[0] - a[0]) <= 0.0f)) {
             break;
@@ -2763,7 +2763,7 @@ void *NavMesh_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AA40;
         gNavMesh = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2923,7 +2923,7 @@ s32 NavTri_SegmentHit(NavTri *t, f32 *out, f32 *p0, f32 *p1) {
         if (s < 0.0f || !(s <= 1.0f)) {
             return 4;
         }
-        func_0010E640(out, e1, s);
+        vu0_ScaleXYZ(out, e1, s);
         sceVu0AddVector(out, p0, out);
     }
     return nav_tri_over(t, out);
@@ -2979,7 +2979,7 @@ f32 NavTri_Slope(NavTri *t, f32 *out) {
             k = __builtin_sqrtf(0.0f + 1.0f - d * d);
         }
     }
-    func_0010E640(out, out, k);
+    vu0_ScaleXYZ(out, out, k);
     return k;
 }
 
@@ -3087,7 +3087,7 @@ s32 NavMesh_DoorSide(NavMesh *nm, s32 i, u32 tri, f32 *p) {
 /* 0x0017B9B0 */
 s32 NavMesh_OuterEdge(NavMesh *nm, f32 *p, f32 *q) {
     s32 best = -1;
-    u32 *cand = func_00114FA8(AT(nm, 0x10, u32) * 4);
+    u32 *cand = msl_malloc(AT(nm, 0x10, u32) * 4);
     u32 n = 0, i;
     f32 gap;
 
@@ -3142,7 +3142,7 @@ s32 NavMesh_OuterEdge(NavMesh *nm, f32 *p, f32 *q) {
             gap = p[1] - y;
         }
     }
-    func_00114FD0(cand);
+    msl_free(cand);
     return best;
 }
 

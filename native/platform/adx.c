@@ -42,8 +42,8 @@ typedef struct Adxt {
 } Adxt;
 
 static Adxt *sAll;
-static int sMono;                 /* func_001D4750 */
-static const void *sFolder;       /* func_001E7430: the folder for the next start */
+static int sMono;                 /* ADXT_SetOutputMono */
+static const void *sFolder;       /* CriFs_SetDir: the folder for the next start */
 
 static unsigned be16(const unsigned char *p) { return (p[0] << 8) | p[1]; }
 static unsigned be32(const unsigned char *p) { return ((unsigned)p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]; }
@@ -259,8 +259,8 @@ void ADXT_Destroy(void *h) {
     free(a);
 }
 
-/* ADXT_StartFname: play `name` from the current folder (func_001E7430) */
-void func_001D4A20(void *h, char *name) {
+/* ADXT_StartFname: play `name` from the current folder (CriFs_SetDir) */
+void ADXT_StartFname(void *h, char *name) {
     Adxt *a = h;
     FILE *f;
 
@@ -308,7 +308,7 @@ int ADXT_GetStat(void *h) {
 }
 
 /* ended (PS2 0x001D3E20) */
-int func_001D3E20(void *h) {
+int ADXT_IsPlaying(void *h) {
     Adxt *a = h;
 
     return a == NULL ? -1 : a->stat == ADXT_STAT_PLAYEND;
@@ -356,25 +356,25 @@ void ADXT_Pause(void *h, int on) {
 }
 
 /* ADX: mono / stereo output (PS2 0x001D4750) */
-void func_001D4750(int mono) {
+void ADXT_SetOutputMono(int mono) {
     sMono = mono;
 }
 
 /* the CRI file system's current folder (a directory listing) for the next start (PS2
    0x001E7430; `a` is the device) */
-void func_001E7430(int a, const void *list) {
+void CriFs_SetDir(int a, const void *list) {
     (void)a;
     sFolder = list;
 }
 
-/* the folder set by func_001E7430 (the movie player opens its files there too, sofdec.c) */
+/* the folder set by CriFs_SetDir (the movie player opens its files there too, sofdec.c) */
 const void *adx_current_folder(void) {
     return sFolder;
 }
 
 /* 0x0023C310 -> CRI 0x001CC710: run the middleware's server once by hand (the PC mixer thread
  * runs ADX on its own) */
-void func_0023C310(void) {
+void mwPly_ExecServer(void) {
 }
 
 /* 0x001EEA38: the libpad/dbc shutdown hook the system calls on exit; nothing to do on the PC */

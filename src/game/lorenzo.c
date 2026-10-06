@@ -180,7 +180,7 @@ static inline void Chair_Frame(f32 (*f)[4], const f32 *d) {
     x[1] = 0.0f;
     x[2] = -d[0];
     sceVu0Normalize(f[0], x);
-    func_0010E5F0(f[2], d);
+    vu0_CopyXYZ(f[2], d);
     sceVu0OuterProduct(f[1], (f32 *)d, f[0]);
 }
 
@@ -1767,7 +1767,7 @@ void Lorenzo2Model_Hanging(u8 *m) {
 void *Lorenzo2Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = Lorenzo2Model_vtable;
-        func_001002C0(m + 0x9A0, SwayPointB_dtor, 0x50, 0x18);
+        __destroy_arr(m + 0x9A0, SwayPointB_dtor, 0x50, 0x18);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -1889,7 +1889,7 @@ void Lorenzo2Model_Loaded(u8 *m) {
 void *LorenzoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = LorenzoModel_vtable;
-        func_001002C0(m + 0x890, HangPoint_dtor, 0x50, 6);
+        __destroy_arr(m + 0x890, HangPoint_dtor, 0x50, 6);
         AT(m, 0x0, void **) = Model_vtable;
         AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
@@ -2081,7 +2081,7 @@ void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
     }
     if (!level) {
         sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), rot);
-        func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+        vu0_CopyXYZ((f32 *)(m + 0x800), (f32 *)(a + 0x10));
         AT(m, 0x80C, f32) = 1.0f;
         sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), rot);
         return;
@@ -2104,7 +2104,7 @@ void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
     sceVu0SubVector(p, (f32 *)(a + 0x10), p);
     sceVu0Normalize(p, p);
     Chair_Frame((f32 (*)[4])(m + 0x7D0), p);
-    func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+    vu0_CopyXYZ((f32 *)(m + 0x800), (f32 *)(a + 0x10));
 }
 
 /* his six points (bones 0x17..0x1C, two of three) on +0xCC0, its eight spheres */
@@ -2750,7 +2750,7 @@ void *Lorenzo2Model_ctor(u8 *m) {
     IK2_ctor(m + 0x8D0);
     IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = Lorenzo2Model_vtable;
-    func_00100340(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+    __construct_array(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
     AT(m, 0x1154, s32) = 0;
     AT(m, 0x1150, s32) = 0;
     return m;
@@ -2764,7 +2764,7 @@ void *LorenzoModel_ctor(u8 *m) {
 
     HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = LorenzoModel_vtable;
-    func_00100340(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
+    __construct_array(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
     for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }

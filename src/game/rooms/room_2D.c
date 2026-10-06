@@ -207,8 +207,8 @@ s32 Room2D_Cmd00(VObject *self, void *a1, u8 *cmd) {
             AT(o, 0x18, f32) = 0.0f;
             break;
         }
-        AT(o, 0x10, f32) = AT(o, 0x38, f32) * (AT(o, 0x34, f32) * func_0031C248(AT(o, 0x30, f32)));
-        AT(o, 0x18, f32) = AT(o, 0x3C, f32) * (AT(o, 0x34, f32) * func_0031C248(AT(o, 0x30, f32)));
+        AT(o, 0x10, f32) = AT(o, 0x38, f32) * (AT(o, 0x34, f32) * msl_sinf(AT(o, 0x30, f32)));
+        AT(o, 0x18, f32) = AT(o, 0x3C, f32) * (AT(o, 0x34, f32) * msl_sinf(AT(o, 0x30, f32)));
         return 2;
     }
     return 1;

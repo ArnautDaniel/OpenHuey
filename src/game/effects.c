@@ -1321,13 +1321,13 @@ void Butterflies_Draw(u8 *o) {
         a = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x70, f32) + kA.f));
         b = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x74, f32) + kB.f));
         c = (f32)sign * Angle_Wrap((f32)ii * (AT(o, 0x78, f32) + kC.f));
-        flap = func_0031C248(Angle_Wrap(a + (AT(o, 0x60, f32) + AT(o, 0x70, f32)))) * k60.f;
-        bob = k08.f * func_0031C248(Angle_Wrap(b + (AT(o, 0x64, f32) + AT(o, 0x70, f32))));
+        flap = msl_sinf(Angle_Wrap(a + (AT(o, 0x60, f32) + AT(o, 0x70, f32)))) * k60.f;
+        bob = k08.f * msl_sinf(Angle_Wrap(b + (AT(o, 0x64, f32) + AT(o, 0x70, f32))));
         v[0] = AT(o, 0x7C, f32);
         v[1] = AT(o, 0x80, f32);
         v[2] = AT(o, 0x84, f32);
         v[3] = 0.0f;
-        bob = bob + k04.f * func_0031C248(Angle_Wrap(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
+        bob = bob + k04.f * msl_sinf(Angle_Wrap(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
         Vec_TurnY(v, v, Angle_Wrap(a));
         y = AT(o, 0x14, f32) + v[1];
         x = AT(o, 0x10, f32) + v[0];
@@ -1342,10 +1342,10 @@ void Butterflies_Draw(u8 *o) {
         rot[1] = Angle_Wrap(AT(o, 0x44, f32) + turn);
         rot[2] = AT(o, 0x48, f32);
         rot[3] = 0.0f;
-        if (!(func_0031C248(c) <= 0.0f)) {
-            size = func_0031C248(c);
+        if (!(msl_sinf(c) <= 0.0f)) {
+            size = msl_sinf(c);
         } else {
-            size = -func_0031C248(c);
+            size = -msl_sinf(c);
         }
         sceVu0UnitMatrix(m);
         sceVu0RotMatrix(m, m, rot);
@@ -1381,8 +1381,8 @@ void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     f32 c[4][4] __attribute__((aligned(16)));
     QuadRec r __attribute__((aligned(16)));
     QuadDrawer q __attribute__((aligned(16)));
-    f32 x = 0x1.666666p-1f /* 0.7 */ * func_0031C058(flap);
-    f32 y = func_0031C248(flap);
+    f32 x = 0x1.666666p-1f /* 0.7 */ * msl_cosf(flap);
+    f32 y = msl_sinf(flap);
 
     r.rgba[0] = rgba & 0xFF;
     r.rgba[1] = (rgba >> 8) & 0xFF;
@@ -1726,7 +1726,7 @@ void *FogDrawer_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046EB60;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1800,7 +1800,7 @@ void *TintDrawer_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046D790;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -3611,7 +3611,7 @@ void FloorGlow_SetParams(u8 *p, s32 *src) {
 void FloorGlow_Draw(u8 *e) {
     f32 p[26][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
-    f32 r = 20.0f * func_0031C248(0x1.921fb60000000p-1f /* 0.7853982 */);
+    f32 r = 20.0f * msl_sinf(0x1.921fb60000000p-1f /* 0.7853982 */);
     u32 centre = (u32)AT(e, 0x8, s32) << 24 | 0xFFFFFF;
     s32 i;
 
@@ -3635,9 +3635,9 @@ void FloorGlow_Draw(u8 *e) {
     for (i = 0; i < 16; i++) {
         f32 a = (0x1.921fb60000000p+1f /* 3.1415927 */ * (22.5f * (f32)i)) / 180.0f;
 
-        p[10 + i][0] = 20.0f * func_0031C248(a);
+        p[10 + i][0] = 20.0f * msl_sinf(a);
         AT(&p[10 + i][1], 0, u32) = 0x41A1999A;   /* 20.2 */
-        p[10 + i][2] = 20.0f * func_0031C058(a);
+        p[10 + i][2] = 20.0f * msl_cosf(a);
         p[10 + i][3] = 1.0f;
     }
     VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
@@ -4102,9 +4102,9 @@ void Wisps_Wisp(u8 *o, s32 i, s32 again) {
             *speed = k005.f;
         }
     }
-    AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(AT(o, 0x1F0 + i * 4, f32));
+    AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * msl_cosf(AT(o, 0x1F0 + i * 4, f32));
     AT(r, 0x14, f32) = AT(o, 0x1D4, f32) + (f32)up;
-    AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(AT(o, 0x1F0 + i * 4, f32));
+    AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * msl_sinf(AT(o, 0x1F0 + i * 4, f32));
     AT(r, 0x1C, f32) = 1.0f;
     rnd = gRandom;
     AT(r, 0x20, f32) = k02.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
@@ -4191,8 +4191,8 @@ s32 Wisps_Update(u8 *o) {
         } else if (!(*ang <= kPi.f)) {
             *ang = *ang - kTwoPi.f;
         }
-        AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(*ang);
-        AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(*ang);
+        AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * msl_cosf(*ang);
+        AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * msl_sinf(*ang);
     }
     if ((AT(o, 0x214, s32) & 0x8000) && RoomEffects_Get(gRoomEffects, 0) == NULL) {
         done = 1;
@@ -4798,9 +4798,9 @@ s32 SpiralSmoke_Update(u8 *o) {
             *ph = a - k2Pi.f;
         }
         *rad = *rad + k005.f;
-        AT(p, 0x10, f32) = kX.f + *rad * func_0031C248(*ph);
+        AT(p, 0x10, f32) = kX.f + *rad * msl_sinf(*ph);
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x30B0 + i * 4, f32);
-        AT(p, 0x18, f32) = -10.0f + *rad * func_0031C058(*ph);
+        AT(p, 0x18, f32) = -10.0f + *rad * msl_cosf(*ph);
         if (AT(o, 0x36B0, s32) == 0) {
             AT(p, 0xC, s32)--;
             if (AT(p, 0xC, s32) < 0) {
@@ -5238,9 +5238,9 @@ s32 Room66Effect_Update(u8 *o) {
         if (!(a <= kPi.f)) {
             *ph = a - k2Pi.f;
         }
-        AT(p, 0x10, f32) = AT(p, 0x10, f32) + k01.f * func_0031C248(*ph);
+        AT(p, 0x10, f32) = AT(p, 0x10, f32) + k01.f * msl_sinf(*ph);
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x18B0 + i * 4, f32);
-        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * func_0031C058(*ph);
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * msl_cosf(*ph);
         if (!(AT(p, 0x14, f32) <= 50.0f)) {
             Room66Effect_Puff(o, i, 1);
         }
@@ -5359,7 +5359,7 @@ void *Caustic_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00478B70;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -6935,8 +6935,8 @@ void DustMote_SetParams(u8 *e, u8 *arg) {
     r->h = 5.0f + 2.0f * burst_rnd(rnd);
     r->turn = 0.0f;
     r->frame = 0;
-    AT(e, 0xA8, f32) = k01.f * func_0031C248(AT(arg, 0x10, f32));
-    AT(e, 0xAC, f32) = k01.f * func_0031C058(AT(arg, 0x10, f32));
+    AT(e, 0xA8, f32) = k01.f * msl_sinf(AT(arg, 0x10, f32));
+    AT(e, 0xAC, f32) = k01.f * msl_cosf(AT(arg, 0x10, f32));
     AT(e, 0xB0, s32) = (burst_int(rnd) & 0x1F) + 0x96;
     if (AT(arg, 0x14, s32) != 0) {
         f32 t = burst_rnd(rnd);
@@ -7256,9 +7256,9 @@ s32 LightRing_Update(u8 *e) {
         if (!(*spin <= kPi.f)) {
             *spin = *spin - kTwoPi.f;
         }
-        r->pos[0] = r->pos[0] + kTwentieth.f * func_0031C248(*spin);
+        r->pos[0] = r->pos[0] + kTwentieth.f * msl_sinf(*spin);
         r->pos[1] = r->pos[1] - AT(e, 0x670 + i * 4, f32);
-        r->pos[2] = r->pos[2] + kTwentieth.f * func_0031C058(*spin);
+        r->pos[2] = r->pos[2] + kTwentieth.f * msl_cosf(*spin);
         r->rgba[3] -= (burst_int(rnd) & 3) + 1;
         if (r->rgba[3] < 0) {
             r->rgba[3] = 0;
@@ -7308,9 +7308,9 @@ void LightRing_Draw(u8 *e) {
             s32 k = i / 2 % 16, out = i & 1;
             f32 a = 0x1.921fb6p+1f * (22.5f * (f32)k) / 180.0f, r = out ? outer : inner;
 
-            xyzw[i][0] = AT(e, 0x650, f32) + r * func_0031C248(a);
+            xyzw[i][0] = AT(e, 0x650, f32) + r * msl_sinf(a);
             xyzw[i][1] = AT(e, 0x654, f32);
-            xyzw[i][2] = AT(e, 0x658, f32) + r * func_0031C058(a);
+            xyzw[i][2] = AT(e, 0x658, f32) + r * msl_cosf(a);
             AT(&xyzw[i][3], 0, u32) = i < 2 ? 0x8000 : 0;
             st[i][0] = (k & 1 ? 216.5f : 200.5f) / tw;
             st[i][1] = (out ? 86.5f : 70.5f) / th;
@@ -8354,9 +8354,9 @@ void Effect71000_Draw(u8 *o) {
     sceVu0Normalize(dir, dir);
     if (dir[2] != 0.0f) {
         if (!(dir[2] <= 0.0f)) {
-            sceVu0RotMatrixY(m, m, func_0031BDB0(dir[0] / dir[2]) - kHalfPi.f);
+            sceVu0RotMatrixY(m, m, msl_atanf(dir[0] / dir[2]) - kHalfPi.f);
         } else {
-            sceVu0RotMatrixY(m, m, kPi.f + (func_0031BDB0(dir[0] / dir[2]) - kHalfPi.f));
+            sceVu0RotMatrixY(m, m, kPi.f + (msl_atanf(dir[0] / dir[2]) - kHalfPi.f));
         }
     }
     at[0] = AT(o, 0x38, f32);
@@ -8504,7 +8504,7 @@ void SplashRing_Draw(u8 *o) {
     }
     for (i = 0; i < 16; i++) {
         f32 a = (0x1.921fb60000000p+1f /* 3.1415927 */ * (22.5f * (f32)i)) / 180.0f;
-        f32 s = func_0031C248(a), c = func_0031C058(a);
+        f32 s = msl_sinf(a), c = msl_cosf(a);
         f32 r = AT(o, 0x28, f32), r2 = r - 0x1.99999a0000000p-3f /* 0.2 */;
 
         p[i * 2][0] = AT(o, 0x10, f32) + r * s;
@@ -9062,10 +9062,10 @@ void BigFire_Flame(u8 *o, s32 i, s32 again) {
     }
     head = &AT(o, 0x6AE8 + i * 4, f32);
     rng = gRandom;
-    c = func_0031C058(*head);
+    c = msl_cosf(*head);
     AT(p, 0x10, f32) = (-135.0f + (f32)age) + 4.0f * (RND() - 0.5f) + k01.f * c;
     AT(p, 0x14, f32) = (9.5f + (f32)age) + 2.0f * (RND() - 0.5f);
-    s = func_0031C248(*head);
+    s = msl_sinf(*head);
     AT(p, 0x18, f32) = 11.0f + 4.0f * (RND() - 0.5f) + k01.f * s;
     AT(p, 0x1C, f32) = 1.0f;
     AT(p, 0x20, f32) = AT(p, 0x24, f32) = k03.f + k02.f * RND();
@@ -9307,17 +9307,17 @@ s32 BigFire_Update(u8 *o) {
         if (*drift < k001.f) {
             *drift = k001.f;
         }
-        if (!(k01.f * func_0031C058(*head) <= 0.0f)) {
-            d = k01.f * func_0031C058(*head);
+        if (!(k01.f * msl_cosf(*head) <= 0.0f)) {
+            d = k01.f * msl_cosf(*head);
         } else {
-            d = -(k01.f * func_0031C058(*head));
+            d = -(k01.f * msl_cosf(*head));
         }
         AT(p, 0x10, f32) = AT(p, 0x10, f32) + (*drift + d);
         if (*rise < k005.f) {
             *rise = k005.f;
         }
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + *rise;
-        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * func_0031C248(*head);
+        AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * msl_sinf(*head);
     }
     return alive != 1;
 }
@@ -10142,7 +10142,7 @@ s32 Marker_Update(u8 *o) {
     r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.921fb6p+1f /* pi */ * (10.0f * r) / 180.0f;
     AT(o, 0x14, f32) = Angle_Wrap(AT(o, 0x14, f32));
-    v = 0x1.99999a0000000p-2f /* 0.4 */ * (1.0f + func_0031C248(AT(o, 0x14, f32)));
+    v = 0x1.99999a0000000p-2f /* 0.4 */ * (1.0f + msl_sinf(AT(o, 0x14, f32)));
     if (AT(o, 0x8, f32) < 1.0f) {
         v *= AT(o, 0x8, f32);
     }
@@ -10252,7 +10252,7 @@ void Marker_Draw(u8 *o) {
     if (!(size <= 1.0f)) {
         size = 1.0f;
     }
-    glr_marker(sx - 1792.0f, sy - 1824.0f, z, scale, 0.3f + 0.3f * func_0031C248(AT(o, 0x18, f32)),
+    glr_marker(sx - 1792.0f, sy - 1824.0f, z, scale, 0.3f + 0.3f * msl_sinf(AT(o, 0x18, f32)),
                (s32)(u32)(64.0f * size));
 }
 #endif
@@ -10489,10 +10489,10 @@ void CreatureVanish_Start(u8 *o) {
         AT(p, 0x24, f32) = AT(p, 0x20, f32);
         AT(p, 0x28, s32) = 0;
         AT(p, 0x2C, s32) = 0;
-        AT(o, 0x430 + i * 4, f32) = func_0011F878(func_0011F458(
-            func_0011F148(0x3F747AE140000000ULL /* 0.005f */,
-                          func_0011F208(0x3F9999999999999AULL /* 0.025 */,
-                                        func_0011ED78(VCALL(rng, 0x18, f32 (*)(VObject *))(rng)))),
+        AT(o, 0x430 + i * 4, f32) = sf_truncdfsf2(sf_divdf3(
+            sf_adddf3(0x3F747AE140000000ULL /* 0.005f */,
+                          sf_muldf3(0x3F9999999999999AULL /* 0.025 */,
+                                        sf_extendsfdf2(VCALL(rng, 0x18, f32 (*)(VObject *))(rng)))),
             0x4000000000000000ULL /* 2.0 */));
         AT(o, 0x450 + i * 4, f32) = k0005.f + k002.f * (f32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 7);
         AT(o, 0x470 + i * 4, f32) = (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
@@ -10749,7 +10749,7 @@ void *FixModelDraw_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00476B50;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -10820,9 +10820,9 @@ void DriftingFlecks_Draw(u8 *o) {
         sceVu0Normalize(v, v);
         if (v[2] != 0.0f) {
             if (!(v[2] <= 0.0f)) {
-                sceVu0RotMatrixY(m, m, func_0031BDB0(v[0] / v[2]) - 0x1.921fb6p+0f /* pi / 2 */);
+                sceVu0RotMatrixY(m, m, msl_atanf(v[0] / v[2]) - 0x1.921fb6p+0f /* pi / 2 */);
             } else {
-                sceVu0RotMatrixY(m, m, 0x1.921fb6p+1f /* pi */ + (func_0031BDB0(v[0] / v[2]) - 0x1.921fb6p+0f));
+                sceVu0RotMatrixY(m, m, 0x1.921fb6p+1f /* pi */ + (msl_atanf(v[0] / v[2]) - 0x1.921fb6p+0f));
             }
         }
         t[1] = 0.0f;
@@ -10958,7 +10958,7 @@ void Room49Effect_Draw(u8 *o) {
     Drawer_Submit(o + 0x1810);
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
-    glr_haze_fix(AT(o, 0x1A48, f32), 2.0f * func_0031C248(AT(o, 0x1A4C, f32)), 0x60);
+    glr_haze_fix(AT(o, 0x1A48, f32), 2.0f * msl_sinf(AT(o, 0x1A4C, f32)), 0x60);
 }
 #endif
 
@@ -10995,9 +10995,9 @@ s32 Room49Effect_Update(u8 *o) {
         if (!(a <= kPi.f)) {
             AT(o, 0x1948 + i * 4, f32) = a - k2Pi.f;
         }
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + kTenth.f * func_0031C248(AT(o, 0x1948 + i * 4, f32));
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + kTenth.f * msl_sinf(AT(o, 0x1948 + i * 4, f32));
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0x1848 + i * 4, f32);
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + kTenth.f * func_0031C058(AT(o, 0x1948 + i * 4, f32));
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + kTenth.f * msl_cosf(AT(o, 0x1948 + i * 4, f32));
         if (AT(o, 0x1A54, s32) == 0) {
             AT(r, 0xC, s32) = AT(r, 0xC, s32) - (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1);
             if (AT(r, 0xC, s32) < 0) {
@@ -12721,9 +12721,9 @@ s32 Embers_Update(u8 *o) {
             r->h = r->w;
             r->turn = r->turn + kPi.f * rnd1C(rnd) / 180.0f;
             a = ember_sway(&AT(o, 0xFE0 + i * 4, f32), rnd);
-            r->pos[0] = r->pos[0] + 0x1.99999ap-4f * func_0031C248(a);
+            r->pos[0] = r->pos[0] + 0x1.99999ap-4f * msl_sinf(a);
             r->pos[1] = r->pos[1] + AT(o, 0xF80 + i * 4, f32);
-            r->pos[2] = r->pos[2] + 0x1.99999ap-4f * func_0031C058(AT(o, 0xFE0 + i * 4, f32));
+            r->pos[2] = r->pos[2] + 0x1.99999ap-4f * msl_cosf(AT(o, 0xFE0 + i * 4, f32));
             if (AT(o, 0x10C0, s32) == 0) {
                 r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 2);
                 if (r->rgba[3] < 0) {
@@ -12745,9 +12745,9 @@ s32 Embers_Update(u8 *o) {
         r = EMBER_REC(o, AT(o, 0x10C0, s32), i);
         r->turn = r->turn + 0.5f * (kPi.f * rnd1C(rnd) / 180.0f);
         a = ember_sway(&AT(o, 0x1080 + i * 4, f32), rnd);
-        r->pos[0] = r->pos[0] + 0x1.99999ap-3f * func_0031C248(a);
+        r->pos[0] = r->pos[0] + 0x1.99999ap-3f * msl_sinf(a);
         r->pos[1] = r->pos[1] + AT(o, 0x1040 + i * 4, f32);
-        r->pos[2] = r->pos[2] + 0x1.99999ap-3f * func_0031C058(AT(o, 0x1080 + i * 4, f32));
+        r->pos[2] = r->pos[2] + 0x1.99999ap-3f * msl_cosf(AT(o, 0x1080 + i * 4, f32));
         if (AT(o, 0x10C0, s32) == 0) {
             r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 7);
             if (r->rgba[3] < 0) {
@@ -13014,12 +13014,12 @@ s32 Caustic_Draw(u8 *d) {
                     AT(&xyzw[v][3], 0, u32) = j == 0 ? 0x8000 : 0;   /* the first column starts the strip */
                     if (g == 0) {
                         st[v][0] = 0.1f + 0.1f * (f32)r
-                                   + 0.05f * func_0031C058(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)r)));
-                        st[v][1] = 0.1f * (f32)j + 0.05f * func_0031C248(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)j)));
+                                   + 0.05f * msl_cosf(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)r)));
+                        st[v][1] = 0.1f * (f32)j + 0.05f * msl_sinf(Angle_Wrap(phase + 0.5f * (3.1415927f * (f32)j)));
                     } else {
-                        st[v][0] = 0.1f * (f32)j + 0.05f * func_0031C058(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)r)));
+                        st[v][0] = 0.1f * (f32)j + 0.05f * msl_cosf(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)r)));
                         st[v][1] = 0.1f + 0.1f * (f32)r
-                                   + 0.05f * func_0031C248(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)j)));
+                                   + 0.05f * msl_sinf(Angle_Wrap(phase + -0.4f * (3.1415927f * (f32)j)));
                     }
                     AT(rgba[v], 0, u32) = AT(d, 0x38, u32);
                 }

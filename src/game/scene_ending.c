@@ -150,7 +150,7 @@ void SceneEnding_Format(SceneEnding *s, char *buf, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    func_0026ED98(buf, 9, fmt, ap);
+    msl_vsnprintf(buf, 9, fmt, ap);
     va_end(ap);
 }
 

@@ -89,7 +89,7 @@ s32 Room26_Cmd02(void) {
     v[2] = 0.0f;
     v[3] = 0.0f;
     sceVu0UnitMatrix(m);
-    sceVu0RotMatrixX(m, m, 0x1.921fb6p+1f * (90.0f * AT(chair, 0x34, f32) * func_0031C248(0x1.921fb6p+1f * AT(chair, 0x30, f32) / 180.0f)) / 180.0f);
+    sceVu0RotMatrixX(m, m, 0x1.921fb6p+1f * (90.0f * AT(chair, 0x34, f32) * msl_sinf(0x1.921fb6p+1f * AT(chair, 0x30, f32) / 180.0f)) / 180.0f);
     sceVu0RotMatrixY(m, m, AT(chair, 0x14, f32));
     sceVu0ApplyMatrix(v, m, v);
     sceVu0AddVector(at, (f32 *)(chair + 0x20), v);
@@ -144,7 +144,7 @@ s32 Room26_Cmd01(void *self, void *a1, u8 *cmd) {
                     chair_creak(snd, 2, pos, (s8)(s32)(-100.0f * (1.0f - AT(c, 0x34, f32))));
                 }
             }
-            AT(c, 0x10, f32) = 0x1.921fb6p+1f * (10.0f * AT(c, 0x34, f32) * func_0031C248(0x1.921fb6p+1f * AT(c, 0x30, f32) / 180.0f)) / 180.0f;
+            AT(c, 0x10, f32) = 0x1.921fb6p+1f * (10.0f * AT(c, 0x34, f32) * msl_sinf(0x1.921fb6p+1f * AT(c, 0x30, f32) / 180.0f)) / 180.0f;
             if (!(AT(c, 0x10, f32) <= 0x1.921fb6p+1f)) {
                 AT(c, 0x10, f32) = AT(c, 0x10, f32) - 0x1.921fb6p+2f;
             }
@@ -160,7 +160,7 @@ s32 Room26_Cmd01(void *self, void *a1, u8 *cmd) {
             if (c == NULL) {
                 continue;
             }
-            a = 180.0f * func_0031C4C0(180.0f * AT(c, 0x10, f32) / 0x1.921fb6p+1f / 10.0f) / 0x1.921fb6p+1f;
+            a = 180.0f * msl_asinf(180.0f * AT(c, 0x10, f32) / 0x1.921fb6p+1f / 10.0f) / 0x1.921fb6p+1f;
             AT(c, 0x30, f32) = cmd[3] == 2 ? a : 180.0f - a;
             AT(c, 0x34, f32) = 1.0f;
             AT(c, 0x38, u32) = 0x3D4CCCCD;   /* 0.05 */

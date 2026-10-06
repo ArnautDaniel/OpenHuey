@@ -890,8 +890,8 @@ void *Kind09_ModelFiles(void) {
 void *Kind09Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = Kind09Model_vtable;
-        func_001002C0(m + 0xD40, SwayPointB_dtor, 0x50, 0x18);
-        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 6);
+        __destroy_arr(m + 0xD40, SwayPointB_dtor, 0x50, 0x18);
+        __destroy_arr(m + 0x9A0, HangPoint_dtor, 0x50, 6);
         AT(m, 0x0, void **) = HumanModel_vtable;
         AT(m, 0x988, void **) = IK2_vtable;
         AT(m, 0x928, void **) = IK2_vtable;
@@ -2362,8 +2362,8 @@ s32 ItemClassF430_LoadPicture(void *self, void *dest) { return LOAD_002D1360(str
 #ifdef HG_NATIVE
 
 extern void *Bloom_vtable[], *Helper469D00_vtable[];
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
+extern f32 msl_cosf(f32 x);   /* cosf */
+extern f32 msl_sinf(f32 x);   /* sinf */
 
 /* is clip-space point `p` (camera +0x48) inside the view */
 static s32 glow_in_view(f32 (*clip)[4], const f32 *pt) {
@@ -2406,9 +2406,9 @@ void ObjectGlow_Draw(u8 *o) {
     for (i = 0; i < 16; i++) {
         f32 a = kPi.f * (22.5f * (f32)i) / 180.0f;
 
-        pt[i + 1][0] = c[0] + r * func_0031C248(a);
+        pt[i + 1][0] = c[0] + r * msl_sinf(a);
         pt[i + 1][1] = c[1];
-        pt[i + 1][2] = c[2] - r * func_0031C058(a);
+        pt[i + 1][2] = c[2] - r * msl_cosf(a);
         pt[i + 1][3] = 1.0f;
     }
     for (i = 0; i < 17; i++) {
@@ -2454,8 +2454,8 @@ void ObjectGlow_Draw(u8 *o) {
         f32 a = kPi.f * (45.0f * (f32)i + AT(o, 0x8, f32)) / 180.0f;
 
         sceVu0CopyVector(pt[2 + i * 2], c);
-        pt[2 + i * 2][0] = c[0] + r2 * func_0031C248(a);
-        pt[2 + i * 2][2] = c[2] - r2 * func_0031C058(a);
+        pt[2 + i * 2][0] = c[0] + r2 * msl_sinf(a);
+        pt[2 + i * 2][2] = c[2] - r2 * msl_cosf(a);
         sceVu0CopyVector(pt[3 + i * 2], pt[2 + i * 2]);
         pt[3 + i * 2][1] += 40.0f;
     }
@@ -2610,11 +2610,11 @@ void *Kind18Model_dtor(void *p, s32 flags) {
             Part_delete(m + 0x11A0, -1);
             SprungPoint_dtor(m + 0x1140, -1);
             Part_delete(m + 0x1100, -1);
-            func_001002C0(m + 0xE40, HangPoint_dtor, 0x50, 4);
+            __destroy_arr(m + 0xE40, HangPoint_dtor, 0x50, 4);
             Part_delete(m + 0xE00, -1);
             BoneHangPoint_dtor(m + 0xDB0, -1);
             Part_delete(m + 0xD70, -1);
-            func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
+            __destroy_arr(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
             CharModel_dtor(m, 0);
         }
         if ((s16)flags > 0) {
@@ -2709,13 +2709,13 @@ void *Kind09Model_ctor(u8 *m) {
     IK2_ctor(m + 0x8D0);
     IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = Kind09Model_vtable;
-    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
+    __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
     for (e = m + 0xB80; e < m + 0xD00; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
     AT(m, 0xD34, s32) = 0;
     AT(m, 0xD30, s32) = 0;
-    func_00100340(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+    __construct_array(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
     AT(m, 0x14F4, s32) = 0;
     AT(m, 0x14F0, s32) = 0;
     return m;

@@ -155,7 +155,7 @@ s32 Room02_Cmd03(void *self, void *a1, u8 *cmd) {
             AT(o, 0x30, f32) = t - 360.0f;
         }
         AT(o, 0x24, f32) = AT(o, 0x38, f32) + 0x1.99999ap-3f /* 0.2 */ *
-            (AT(o, 0x34, f32) * func_0031C248(0x1.921fb6p+1f /* pi */ * AT(o, 0x30, f32) / 180.0f));
+            (AT(o, 0x34, f32) * msl_sinf(0x1.921fb6p+1f /* pi */ * AT(o, 0x30, f32) / 180.0f));
         break;
     case 0:
         AT(o, 0x34, s32) = 0;

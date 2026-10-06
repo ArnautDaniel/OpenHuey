@@ -225,7 +225,7 @@ static inline u64 Vram_Tex0(u8 *v, s32 id, u32 psm, u32 w, u32 h, u32 cpsm, u64 
 static inline s32 vram_load_tex(VObject *v, const char *name, s32 upper) {
     VObject *ld = gFileLoader;
     s32 size = VCALL(ld, 0x30, s32 (*)(VObject *, const char *))(ld, name);
-    u8 *buf = func_00100550((size + 0x7FF) / 0x800 * 0x800 + 0x3F);
+    u8 *buf = __sys_alloc((size + 0x7FF) / 0x800 * 0x800 + 0x3F);
 #ifdef HG_NATIVE
     u8 *tex = (u8 *)((u32)(buf + 0x3F) / 64 * 64);   /* (PC heaps can be above 2 GB) */
 #else
@@ -239,7 +239,7 @@ static inline s32 vram_load_tex(VObject *v, const char *name, s32 upper) {
     } else {
         id = VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader_vram *, s32))(v, (TexHeader_vram *)(tex + 0x10), upper);
     }
-    func_00100470(buf);
+    __sys_free(buf);
     return id;
 }
 
@@ -295,7 +295,7 @@ void *Renderer_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046ACF0;
         gRenderer = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -356,8 +356,8 @@ extern void Renderer_DefaultGsState(u8 *r);
 void Renderer_SetupVideo(u8 *r, s32 mode) {
     f32 *e;
 
-    func_0010BFB0();
-    func_0010BE10(0, 1, (u8)mode, 0);
+    sceGsResetPath();
+    sceGsResetGraph(0, 1, (u8)mode, 0);
     Renderer_ClearVram(r);
     AT(r, 0x304BFE, s16) = (u8)mode == 2 ? 448 : 512;
     AT(r, 0x304C09, u8) = mode;
@@ -465,7 +465,7 @@ void Renderer_Flip(u8 *r) {
     if (AT(r, 0x304DE0, u8)) {
         AT(r, 0x304BB5, u8) ^= 1;
         AT(r, 0x304BAC, u8 *) = r + (AT(r, 0x304BB5, u8) << 19) + 0x2006D0;
-        func_00115D20(r + 0x300A00, 0, 0x4000);
+        msl_memset(r + 0x300A00, 0, 0x4000);
         AT(r, 0x304DE0, u8) = 0;
     }
     Renderer_DefaultGsState(r);
@@ -619,7 +619,7 @@ void *Vram_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AF20;
         gVram = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1495,7 +1495,7 @@ void *TexCache_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046B1F0;
         gTexCache = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1515,7 +1515,7 @@ void *Bloom_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = Bloom_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2167,8 +2167,8 @@ void Renderer_Flares(u8 *r) {
         if (!(e[4] <= kPi.f)) {
             e[4] = e[4] - kTwoPi.f;
         }
-        c = 0.5f * func_0031C058(e[4]);
-        s = 0.5f * func_0031C248(e[4]);
+        c = 0.5f * msl_cosf(e[4]);
+        s = 0.5f * msl_sinf(e[4]);
         if (i < 8) {
             e[0] = e[0] + c;
         } else {
@@ -2217,10 +2217,10 @@ void Renderer_Flares(u8 *r) {
 /* 0x001BB9E0 */
 void Renderer_SetVideoMode(u8 *r, u8 mode) {
     if (mode == 0x50) {
-        func_0010BE10(0, 0, 0x50, 0);
+        sceGsResetGraph(0, 0, 0x50, 0);
         AT(r, 0x304BFE, s16) = 0x1C0;
     } else {
-        func_0010BE10(0, 1, mode, 0);
+        sceGsResetGraph(0, 1, mode, 0);
         if (mode == 2) {
             AT(r, 0x304BFE, s16) = 0x1C0;
         } else {

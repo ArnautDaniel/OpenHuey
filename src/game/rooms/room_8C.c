@@ -197,7 +197,7 @@ s32 Room8C_Cmd01(void *self, void *a1, u8 *cmd) {
             AT(o, 0x34, f32) = a + k2Pi.f;
         }
         AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - 0.25f;
-        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * msl_sinf(AT(o, 0x34, f32));
         return AT(o, 0x3C, f32) <= 0.0f ? 1 : 2;
     }
     return 1;

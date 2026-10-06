@@ -112,7 +112,7 @@ static inline void sif_delay(void) {
 }
 
 static inline void sif_wait(SifClient *cd) {
-    while (func_002702E8(cd) == 1) {
+    while (sceSifCheckStatRpc(cd) == 1) {
         sif_delay();
     }
 }
@@ -133,7 +133,7 @@ void *SndDriverBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AF90;
         gSound = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -373,10 +373,10 @@ void SndDriver_SetOutputMode(u8 *d, s8 mode) {
     AT(d, 0x104, s8) = mode;
     if (mode == 0) {
         gSndCallArgs[2] = 0;
-        func_001D4750(1);
+        ADXT_SetOutputMono(1);
     } else {
         gSndCallArgs[2] = 1;
-        func_001D4750(0);
+        ADXT_SetOutputMono(0);
     }
     SndLib_Call(0x160000, gSndCallArgs);
 }
@@ -422,7 +422,7 @@ void SndDriver_Register(u8 *d, u32 k) {
     if (LOADED(d, k)) {
         VCALL(d, 0x12C, void (*)(u8 *, u32))(d, k);
     }
-    func_0026EDD0((char *)gSndCallBlock, 0x80, str_DUMMY);
+    msl_snprintf((char *)gSndCallBlock, 0x80, str_DUMMY);
     AT(gSndCallBlock, 0x84, u32) = AT(d, 0x80, u32);
     AT(gSndCallBlock, 0x98, u32) = 0x4000;
     AT(gSndCallBlock, 0x88, u32) = AT(b, 0x8, u32);
@@ -834,7 +834,7 @@ void SndDriver_FreeIop(u8 *d) {
     u32 i;
 
     if (AT(d, 0x80, u32) != 0) {
-        func_00274640(AT(d, 0x80, u32));
+        sceSifFreeIopHeap(AT(d, 0x80, u32));
         AT(d, 0x80, u32) = 0;
     }
     for (i = 0; i < 8; i++) {
@@ -842,12 +842,12 @@ void SndDriver_FreeIop(u8 *d) {
 
         if (AT(b, 0x0, u32) != 0) {
             if (!(AT(b, 0x0, u32) & 0x80000000)) {
-                func_00274640(AT(b, 0x0, u32));
+                sceSifFreeIopHeap(AT(b, 0x0, u32));
             }
             AT(b, 0x0, u32) = 0;
         }
         if (AT(b, 0x4, u32) != 0) {
-            func_00274640(AT(b, 0x4, u32));
+            sceSifFreeIopHeap(AT(b, 0x4, u32));
             AT(b, 0x4, u32) = 0;
         }
     }
@@ -878,9 +878,9 @@ extern u8 gSndDriverArgs[0x1C];      /* ... before formatting */
 void SndDriver_Start(u8 *d) {
     u32 i;
 
-    AT(d, 0x70, s32) = func_001BC0F0(d, str_MODHSYN_IRX, 0, 0, 0);
-    AT(d, 0x74, s32) = func_001BC0F0(d, str_MODMIDI_IRX, 0, 0, 0);
-    AT(d, 0x78, s32) = func_001BC0F0(d, str_MODMSIN_IRX, 0, 0, 0);
+    AT(d, 0x70, s32) = Iop_LoadModule(d, str_MODHSYN_IRX, 0, 0, 0);
+    AT(d, 0x74, s32) = Iop_LoadModule(d, str_MODMIDI_IRX, 0, 0, 0);
+    AT(d, 0x78, s32) = Iop_LoadModule(d, str_MODMSIN_IRX, 0, 0, 0);
     SndLib_Clear();
     SndLib_StartServer(0xA, 0x2000);
     AT(gSndDriverArgs, 0x0, s32) = -1;
@@ -893,7 +893,7 @@ void SndDriver_Start(u8 *d) {
     AT(gSndDriverArgs, 0x16, s16) = 0x1B;
     AT(gSndDriverArgs, 0x18, s16) = 0x17;
     AT(gSndDriverArgs, 0x1A, s16) = 1;
-    AT(d, 0x7C, s32) = func_001BC0F0(d, str_SNDDRV_IRX, SndLib_DriverArgs(D_01970B10, gSndDriverArgs), (s32)D_01970B10, 0);
+    AT(d, 0x7C, s32) = Iop_LoadModule(d, str_SNDDRV_IRX, SndLib_DriverArgs(D_01970B10, gSndDriverArgs), (s32)D_01970B10, 0);
     SndLib_Bind();
     SndLib_SendState();
     gSndCallArgs[2] = 1;
@@ -916,7 +916,7 @@ void SndDriver_Start(u8 *d) {
     gSndCallArgs[2] = 0;
     gSndCallArgs[3] = 0xFFFFFF;
     SndLib_Call(0x70000, gSndCallArgs);
-    AT(d, 0x80, u32) = func_002744D8(0x4000);
+    AT(d, 0x80, u32) = sceSifAllocIopHeap(0x4000);
     for (i = 0; i < 8; i++) {
         u8 *b = BANK(d, i);
         u32 hd = kSoundBankSizes[i][0];
@@ -924,14 +924,14 @@ void SndDriver_Start(u8 *d) {
         if (hd != 0) {
             if (!(hd & 0x80000000)) {
                 if (AT(b, 0x0, u32) == 0) {
-                    AT(b, 0x0, u32) = func_002744D8(hd);
+                    AT(b, 0x0, u32) = sceSifAllocIopHeap(hd);
                 }
             } else {
                 AT(b, 0x0, u32) = hd;
             }
         }
         if (kSoundBankSizes[i][1] != 0 && AT(b, 0x4, u32) == 0) {
-            AT(b, 0x4, u32) = func_002744D8(kSoundBankSizes[i][1]);
+            AT(b, 0x4, u32) = sceSifAllocIopHeap(kSoundBankSizes[i][1]);
         }
         AT(b, 0x8, u32) = kSoundBankSizes[i][2];
     }
@@ -971,10 +971,10 @@ u32 SndLib_Place(u8 *b, u32 word) {
     if (b + 0x10 == NULL) {
         return 0;
     }
-    at = (s32)(0x1.45f306p+9f /* 4096 / 2pi */ * func_0031C5C0(AT(b, 0x10, f32) - AT(b, 0x20, f32),
+    at = (s32)(0x1.45f306p+9f /* 4096 / 2pi */ * msl_atan2f(AT(b, 0x10, f32) - AT(b, 0x20, f32),
                                                                   AT(b, 0x18, f32) - AT(b, 0x28, f32))) & 0xFFF;
     dist = SndLib_Distance((f32 *)(b + 0x20), (f32 *)(b + 0x10));
-    facing = (s32)(0x1.45f306p+9f * func_0031C5C0(AT(b, 0x30, f32) - AT(b, 0x40, f32),
+    facing = (s32)(0x1.45f306p+9f * msl_atan2f(AT(b, 0x30, f32) - AT(b, 0x40, f32),
                                                   AT(b, 0x38, f32) - AT(b, 0x48, f32))) & 0xFFF;
     rel = (((facing - at + 0x1000) & 0xFFF) / 2 + 0x200) & 0x7FF;
     k = AT(b, 0x54, u8);
@@ -1069,9 +1069,9 @@ void *SndLib_ServerCall(u32 fno, void *buf) {
 /* the server thread */
 /* 0x0021F210 */
 void SndLib_ServerThread(void) {
-    func_00270328(gSndServerQueue, gSndServerThreadId);
+    sceSifSetRpcQueue(gSndServerQueue, gSndServerThreadId);
     func_002703C0(D_01976F50, 0x77777779, SndLib_ServerCall, D_019726C0, NULL, NULL, gSndServerQueue);
-    func_002707D8(gSndServerQueue);
+    sceSifRpcLoop(gSndServerQueue);
 }
 
 /* the end of a nowait call (the SIF interrupt): interrupts back on */
@@ -1172,7 +1172,7 @@ void SndTable_Curves(s32 bank, u8 *t, s32 size, u16 *out) {
    16-bit number) */
 /* 0x0021F5C0 */
 void SndTable_Unpack(u8 *e, u8 *out) {
-    func_00115D20(out, 0, 0x14);
+    msl_memset(out, 0, 0x14);
     switch (e[0]) {
     case 1:
         out[4] = e[1];
@@ -1241,7 +1241,7 @@ s32 SndLib_DmaToIop(u32 src, u32 dest, u32 size, s32 attr, s32 inIrq) {
             gSndDma.dest = dest;
             gSndDma.size = size;
             gSndDma.attr = attr;
-            func_0026CA98(src, src + size);
+            FlushDCacheRange(src, src + size);
             gSndLastDma = sceSifSetDma(&gSndDma, 1);
         } while (gSndLastDma == 0);
     } else {
@@ -1282,7 +1282,7 @@ void *SndLib_Transfer(u32 cmd, void *args) {
             gSndCallback = (void (*)(void *))SndLib_TransferDone2;
             *flags |= 2;
         }
-        while (func_002700E8(&gSndClient2, cmd, 1, args, 0x20, D_01975700, 4, gSndCallback, flags) != 0) {
+        while (sceSifCallRpc(&gSndClient2, cmd, 1, args, 0x20, D_01975700, 4, gSndCallback, flags) != 0) {
         }
         break;
     }
@@ -1327,7 +1327,7 @@ u32 *SndLib_Call(u32 cmd, void *args) {
                 AT(a, 0x14, u32) = SndLib_Place(AT(a, 0x18, u8 *), w);
             }
         }
-        while (func_002700E8(&gSndClient, cmd, 0, args, n << 5, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, n << 5, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x260000: {
@@ -1341,7 +1341,7 @@ u32 *SndLib_Call(u32 cmd, void *args) {
             }
             AT(args, 0x14, u32) = SndLib_Place(AT(args, 0x18, u8 *), w);
         }
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0x20, gSndResults, 8, SndLib_CallDone, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0x20, gSndResults, 8, SndLib_CallDone, NULL) != 0) {
         }
         break;
     }
@@ -1351,24 +1351,24 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     case 0x2D0000:
     case 0x2C0000:
     case 0x0:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x2B0000:
-        while (func_002700E8(&gSndClient, cmd, 1, args, 0x88, gSndResults, 4, SndLib_CallDone, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 1, args, 0x88, gSndResults, 4, SndLib_CallDone, NULL) != 0) {
         }
         break;
     case 0x310000:
     case 0x2A0000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0x88, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0x88, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0xA0000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0xB4, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0xB4, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x60000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 8, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0, gSndResults, 8, NULL, NULL) != 0) {
         }
         break;
     case 0x20000:
@@ -1377,19 +1377,19 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     case 0x2F0000:
     case 0xB0000:
     case 0x90000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     case 0x140000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 0x1C, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0, gSndResults, 0x1C, NULL, NULL) != 0) {
         }
         break;
     case 0x50000:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0, gSndResults, 0x98, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0, gSndResults, 0x98, NULL, NULL) != 0) {
         }
         break;
     default:
-        while (func_002700E8(&gSndClient, cmd, 0, args, 0x20, gSndResults, 4, NULL, NULL) != 0) {
+        while (sceSifCallRpc(&gSndClient, cmd, 0, args, 0x20, gSndResults, 4, NULL, NULL) != 0) {
         }
         break;
     }
@@ -1410,7 +1410,7 @@ void SndLib_StartServer(s32 prio, s32 stack) {
     gSndServerThread.pad[2] = 0;
     gSndServerThreadId = CreateThread(&gSndServerThread);
     if (gSndServerThreadId >= 0) {
-        func_0026D2E0(gSndServerThreadId, NULL);
+        Kernel_StartThread(gSndServerThreadId, NULL);
     }
 }
 
@@ -1426,11 +1426,11 @@ void SndLib_SendState(void) {
 /* 0x00220270 */
 void SndLib_Bind(void) {
     do {
-        func_0026FF08(&gSndClient, 0x77777777, 0);
+        sceSifBindRpc(&gSndClient, 0x77777777, 0);
         sif_delay();
     } while (AT(D_019756E4, 0, u32) == 0);
     do {
-        func_0026FF08(&gSndClient2, 0x77777778, 0);
+        sceSifBindRpc(&gSndClient2, 0x77777778, 0);
         sif_delay();
     } while (AT(D_01976F24, 0, u32) == 0);
 }
@@ -1438,18 +1438,18 @@ void SndLib_Bind(void) {
 /* clear the library's blocks */
 /* 0x00220340 */
 void SndLib_Clear(void) {
-    func_00115D20(gSndCallBlock, 0, 0xB4);
-    func_00115D20(gSndCallArgs, 0, 0x20);
-    func_00115D20(D_01970D80, 0, 0x600);
-    func_00115D20(D_01971380, 0, 0x10);
-    func_00115D20(D_019713C0, 0, 0x88);
-    func_00115D20(D_01971480, 0, 0x60);
-    func_00115D20(gSndCurves, 0, 0x80);
-    func_00115D20(&gSndDma, 0, 0x10);
+    msl_memset(gSndCallBlock, 0, 0xB4);
+    msl_memset(gSndCallArgs, 0, 0x20);
+    msl_memset(D_01970D80, 0, 0x600);
+    msl_memset(D_01971380, 0, 0x10);
+    msl_memset(D_019713C0, 0, 0x88);
+    msl_memset(D_01971480, 0, 0x60);
+    msl_memset(gSndCurves, 0, 0x80);
+    msl_memset(&gSndDma, 0, 0x10);
     gSndLastDma = 0;
-    func_00115D20(UNCACHED(gSndDriverState), 0, 0x80);
+    msl_memset(UNCACHED(gSndDriverState), 0, 0x80);
     gSndIopState = 0;
-    func_00115D20(UNCACHED(gSndTransferBits), 0, 0x10);
+    msl_memset(UNCACHED(gSndTransferBits), 0, 0x10);
 }
 
 /* the driver's start arguments into `out` ("a\0b\0..."; three addresses, then numbers - the
@@ -1460,16 +1460,16 @@ s8 SndLib_DriverArgs(char *out, u8 *p) {
     char *e = out;
     s32 i, n;
 
-    func_0026EDD0(s[0], 0x10, str_0xN, AT(p, 0x0, u32));
-    func_0026EDD0(s[1], 0x10, str_0xN, AT(p, 0x4, u32));
-    func_0026EDD0(s[2], 0x10, str_0xN, AT(p, 0x8, u32));
-    func_0026EDD0(s[3], 0x10, D_004572B8, AT(p, 0xC, u32));
+    msl_snprintf(s[0], 0x10, str_0xN, AT(p, 0x0, u32));
+    msl_snprintf(s[1], 0x10, str_0xN, AT(p, 0x4, u32));
+    msl_snprintf(s[2], 0x10, str_0xN, AT(p, 0x8, u32));
+    msl_snprintf(s[3], 0x10, D_004572B8, AT(p, 0xC, u32));
     for (i = 0; i < 6; i++) {
-        func_0026EDD0(s[4 + i], 0x10, D_004572B8, AT(p, 0x10 + i * 2, u16));
+        msl_snprintf(s[4 + i], 0x10, D_004572B8, AT(p, 0x10 + i * 2, u16));
     }
     D_0047B228 = AT(p, 0x1A, u16);
     for (i = 0; i < 10; i++) {
-        e = func_001180E8(func_001183C0(e, s[i]), 0) + 1;
+        e = msl_strchr(msl_strcpy(e, s[i]), 0) + 1;
     }
     n = (e - out) & 0xFF;
     if (n >= 0xFB) {
@@ -1528,8 +1528,8 @@ u8 *SndDriver_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = SndDriver_vtable;
         AT(d, 0x4, void **) = D_0046BF2C;
-        func_001002C0(d + 0x108, (void * (*)(void *, s32))IopArray_dtor, 0x18, 8);
-        func_001002C0(d + 0x84, (void * (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
+        __destroy_arr(d + 0x108, (void * (*)(void *, s32))IopArray_dtor, 0x18, 8);
+        __destroy_arr(d + 0x84, (void * (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
         if (d + 4 != NULL) {
             AT(d, 0x4, void **) = D_0046AF90;
             if (d + 4 != NULL) {
@@ -1540,7 +1540,7 @@ u8 *SndDriver_dtor(u8 *d, s32 flags) {
             AT(d, 0x0, void **) = D_0046AD88;
         }
         if ((s16)flags > 0) {
-            func_00100490(d);
+            __dl__FPv(d);
         }
     }
     return d;
@@ -1553,49 +1553,49 @@ u8 *SndDriver_dtor(u8 *d, s32 flags) {
 #define THUNKV(name, target, params, args) \
     void name params { target args; }
 
-THUNK(func_002108E0, u8 *, SndDriver_dtor, (u8 *s, s32 f), (s - 4, f))
-THUNKV(func_002108D0, SndDriver_StopAll, (u8 *s), (s - 4))
-THUNKV(func_002108C0, SndDriver_StopMasks, (u8 *s, u32 a, u32 b), (s - 4, a, b))
-THUNKV(func_002108B0, SndDriver_Play, (u8 *s, u32 id, u32 k), (s - 4, id, k))
-THUNKV(func_002108A0, SndDriver_StopSound, (u8 *s, u32 id, u32 k), (s - 4, id, k))
-THUNKV(func_00210890, SndDriver_SeqPlay, (u8 *s, u32 k, u32 pos, u32 m), (s - 4, k, pos, m))
-THUNKV(func_00210880, SndDriver_SeqStop, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210870, SndDriver_SeqRestart, (u8 *s, u32 k, u32 pos), (s - 4, k, pos))
-THUNK(func_00210860, s32, SndDriver_SeqParam1B, (u8 *s, u32 k, u32 a), (s - 4, k, a))
-THUNK(func_00210840, s32, SndDriver_SeqParam2B, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
-THUNK(func_00210850, s32, SndDriver_SeqParamPtr, (u8 *s, u32 k, s32 *p), (s - 4, k, p))
-THUNK(func_00210830, s32, SndDriver_SeqParam1, (u8 *s, u32 k, u32 a), (s - 4, k, a))
-THUNK(func_00210820, s32, SndDriver_SeqParam2, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
-THUNK(func_00210810, s32, SndDriver_SetSeqVolume, (u8 *s, u32 k, u32 v), (s - 4, k, v))
-THUNK(func_00210800, u8, SndDriver_SeqVolume, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_002107F0, s32, SndDriver_SetSeqTempo, (u8 *s, u32 k, u32 t), (s - 4, k, t))
-THUNK(func_002107E0, u16, SndDriver_SeqTempo, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002107D0, SndDriver_Header, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107C0, SndDriver_Table, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107B0, SndDriver_Sequence, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107A0, SndDriver_SamplesNow, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_00210790, SndDriver_QueueSamples, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_00210780, SndDriver_Register, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210770, SndDriver_Unload, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210760, SndDriver_SetOutputMode, (u8 *s, s8 m), (s - 4, m))
-THUNK(func_00210750, s8, SndDriver_OutputMode, (u8 *s), (s - 4))
-THUNK(func_00210740, u8, SndDriver_TransferRunning, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_00210730, s32, SndDriver_BankLoading, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_00210720, u16, SndDriver_GetVolume, (u8 *s, u32 ch), (s - 4, ch))
-THUNKV(func_00210710, SndDriver_SetVolume, (u8 *s, u32 ch, u32 v), (s - 4, ch, v))
-THUNK(func_00210700, s32, SndDriver_LoadPart, (u8 *s, const char *f, u32 k, u32 p, void *buf), (s - 4, f, k, p, buf))
-THUNKV(func_002106E0, SndDriver_CancelFile, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106D0, SndDriver_DropFile, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106F0, SndDriver_DropFiles, (u8 *s), (s - 4))
-THUNK(func_002106C0, s32, SndDriver_BankFileLoaded, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106B0, SndDriver_PlacedState, (u8 *s, u32 st), (s - 4, st))
-THUNKV(func_002106A0, SndDriver_StopPlaced, (u8 *s), (s - 4))
-THUNKV(func_00210690, SndDriver_StopPlacedButBanks, (u8 *s), (s - 4))
-THUNKV(func_00210680, SndDriver_StopVoices, (u8 *s), (s - 4))
-THUNK(func_00210670, u8, SndDriver_BankLoaded, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210650, SndDriver_SetSound, (u8 *s, f32 v), (s - 4, v))
-THUNKV(func_00210640, SndDriver_SetMaster, (u8 *s, f32 v), (s - 4, v))
-THUNKV(func_00210630, SndDriver_SendMaster, (u8 *s), (s - 4))
-THUNKV(func_00210620, SndDriver_PlayPlaced, (u8 *s, u32 id, u32 k, s8 v, s8 p), (s - 4, id, k, v, p))
-THUNKV(func_00210660, SndDriver_PlayPositioned, (u8 *s, u32 w), (s - 4, w))
-THUNK(func_00210610, u8 *, SndDriver_Block3D, (u8 *s), (s - 4))
+THUNK(SndDriver_dtor_thunk, u8 *, SndDriver_dtor, (u8 *s, s32 f), (s - 4, f))
+THUNKV(SndDriver_StopAll_thunk, SndDriver_StopAll, (u8 *s), (s - 4))
+THUNKV(SndDriver_StopMasks_thunk, SndDriver_StopMasks, (u8 *s, u32 a, u32 b), (s - 4, a, b))
+THUNKV(SndDriver_Play_thunk, SndDriver_Play, (u8 *s, u32 id, u32 k), (s - 4, id, k))
+THUNKV(SndDriver_StopSound_thunk, SndDriver_StopSound, (u8 *s, u32 id, u32 k), (s - 4, id, k))
+THUNKV(SndDriver_SeqPlay_thunk, SndDriver_SeqPlay, (u8 *s, u32 k, u32 pos, u32 m), (s - 4, k, pos, m))
+THUNKV(SndDriver_SeqStop_thunk, SndDriver_SeqStop, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_SeqRestart_thunk, SndDriver_SeqRestart, (u8 *s, u32 k, u32 pos), (s - 4, k, pos))
+THUNK(SndDriver_SeqParam1B_thunk, s32, SndDriver_SeqParam1B, (u8 *s, u32 k, u32 a), (s - 4, k, a))
+THUNK(SndDriver_SeqParam2B_thunk, s32, SndDriver_SeqParam2B, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
+THUNK(SndDriver_SeqParamPtr_thunk, s32, SndDriver_SeqParamPtr, (u8 *s, u32 k, s32 *p), (s - 4, k, p))
+THUNK(SndDriver_SeqParam1_thunk, s32, SndDriver_SeqParam1, (u8 *s, u32 k, u32 a), (s - 4, k, a))
+THUNK(SndDriver_SeqParam2_thunk, s32, SndDriver_SeqParam2, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
+THUNK(SndDriver_SetSeqVolume_thunk, s32, SndDriver_SetSeqVolume, (u8 *s, u32 k, u32 v), (s - 4, k, v))
+THUNK(SndDriver_SeqVolume_thunk, u8, SndDriver_SeqVolume, (u8 *s, u32 k), (s - 4, k))
+THUNK(SndDriver_SetSeqTempo_thunk, s32, SndDriver_SetSeqTempo, (u8 *s, u32 k, u32 t), (s - 4, k, t))
+THUNK(SndDriver_SeqTempo_thunk, u16, SndDriver_SeqTempo, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_Header_thunk, SndDriver_Header, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(SndDriver_Table_thunk, SndDriver_Table, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(SndDriver_Sequence_thunk, SndDriver_Sequence, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(SndDriver_SamplesNow_thunk, SndDriver_SamplesNow, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(SndDriver_QueueSamples_thunk, SndDriver_QueueSamples, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(SndDriver_Register_thunk, SndDriver_Register, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_Unload_thunk, SndDriver_Unload, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_SetOutputMode_thunk, SndDriver_SetOutputMode, (u8 *s, s8 m), (s - 4, m))
+THUNK(SndDriver_OutputMode_thunk, s8, SndDriver_OutputMode, (u8 *s), (s - 4))
+THUNK(SndDriver_TransferRunning_thunk, u8, SndDriver_TransferRunning, (u8 *s, u32 k), (s - 4, k))
+THUNK(SndDriver_BankLoading_thunk, s32, SndDriver_BankLoading, (u8 *s, u32 k), (s - 4, k))
+THUNK(SndDriver_GetVolume_thunk, u16, SndDriver_GetVolume, (u8 *s, u32 ch), (s - 4, ch))
+THUNKV(SndDriver_SetVolume_thunk, SndDriver_SetVolume, (u8 *s, u32 ch, u32 v), (s - 4, ch, v))
+THUNK(SndDriver_LoadPart_thunk, s32, SndDriver_LoadPart, (u8 *s, const char *f, u32 k, u32 p, void *buf), (s - 4, f, k, p, buf))
+THUNKV(SndDriver_CancelFile_thunk, SndDriver_CancelFile, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_DropFile_thunk, SndDriver_DropFile, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_DropFiles_thunk, SndDriver_DropFiles, (u8 *s), (s - 4))
+THUNK(SndDriver_BankFileLoaded_thunk, s32, SndDriver_BankFileLoaded, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_PlacedState_thunk, SndDriver_PlacedState, (u8 *s, u32 st), (s - 4, st))
+THUNKV(SndDriver_StopPlaced_thunk, SndDriver_StopPlaced, (u8 *s), (s - 4))
+THUNKV(SndDriver_StopPlacedButBanks_thunk, SndDriver_StopPlacedButBanks, (u8 *s), (s - 4))
+THUNKV(SndDriver_StopVoices_thunk, SndDriver_StopVoices, (u8 *s), (s - 4))
+THUNK(SndDriver_BankLoaded_thunk, u8, SndDriver_BankLoaded, (u8 *s, u32 k), (s - 4, k))
+THUNKV(SndDriver_SetSound_thunk, SndDriver_SetSound, (u8 *s, f32 v), (s - 4, v))
+THUNKV(SndDriver_SetMaster_thunk, SndDriver_SetMaster, (u8 *s, f32 v), (s - 4, v))
+THUNKV(SndDriver_SendMaster_thunk, SndDriver_SendMaster, (u8 *s), (s - 4))
+THUNKV(SndDriver_PlayPlaced_thunk, SndDriver_PlayPlaced, (u8 *s, u32 id, u32 k, s8 v, s8 p), (s - 4, id, k, v, p))
+THUNKV(SndDriver_PlayPositioned_thunk, SndDriver_PlayPositioned, (u8 *s, u32 w), (s - 4, w))
+THUNK(SndDriver_Block3D_thunk, u8 *, SndDriver_Block3D, (u8 *s), (s - 4))

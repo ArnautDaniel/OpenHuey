@@ -85,7 +85,7 @@ s32 Room0C_Cmd03(void *self, void *a1, u8 *cmd) {
                 AT(o, 0x34, f32) = a - 0x1.921fb6p+2f /* 2 pi */;
             }
             AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - 0x1.99999ap-4f /* 0.1 */;
-            AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+            AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * msl_sinf(AT(o, 0x34, f32));
             if (!(AT(o, 0x3C, f32) <= 0.0f)) {
                 moving = 1;
                 break;

@@ -156,7 +156,7 @@ s32 Room08_Cmd01(VObject *self, void *a1, u8 *cmd) {
     if (!(a < 360.0f)) {
         AT(o, 0x30, f32) = a - 360.0f;
     }
-    a = kPi.f * (1.0f + func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+    a = kPi.f * (1.0f + msl_sinf(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
     AT(o, 0x10, f32) = a;
     if (!(a <= kPi.f)) {
         AT(o, 0x10, f32) = a - k2Pi.f;

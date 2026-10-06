@@ -86,7 +86,7 @@ static inline void *room_dtor(void *o, s32 flags, void **own, void **base) {
             AT(o, 0x0, void **) = base;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -150,7 +150,7 @@ static inline __attribute__((always_inline)) s32 swing_three_by(VObject *self, u
                 if (!(AT(o, 0x30, f32) < 360.0f)) {
                     AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
                 }
-                t = 0x1.921fb6p+1f * (1.0f + func_0031C248(0x1.921fb6p+1f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
+                t = 0x1.921fb6p+1f * (1.0f + msl_sinf(0x1.921fb6p+1f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
                 AT(o, 0x10, f32) = t;
                 if (!(t <= 0x1.921fb6p+1f)) {
                     AT(o, 0x10, f32) = t - 0x1.921fb6p+2f;
@@ -269,7 +269,7 @@ static inline __attribute__((always_inline)) s32 hangers_swing(VObject *self, u8
                 if (!(AT(o, 0x30, f32) + AT(o, 0x34, f32) < 360.0f)) {
                     AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
                 }
-                t = 0x1.921fb6p+1f * (1.0f + func_0031C248(0x1.921fb6p+1f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
+                t = 0x1.921fb6p+1f * (1.0f + msl_sinf(0x1.921fb6p+1f * (AT(o, 0x30, f32) + AT(o, 0x34, f32)) / 180.0f)) / 180.0f;
                 AT(o, 0x10, f32) = t;
                 if (!(t <= 0x1.921fb6p+1f)) {
                     AT(o, 0x10, f32) = t - 0x1.921fb6p+2f;

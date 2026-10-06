@@ -325,7 +325,7 @@ static inline void delete_child(Task *t) {
             Task_dtor(c->child, 1);
             c->child = NULL;
         }
-        func_00100490(c);
+        __dl__FPv(c);
         t->child = NULL;
     }
 }
@@ -345,11 +345,11 @@ Task *Task_dtor(Task *t, s32 flags) {
             chain[6]->child = NULL;
         }
         for (; n > 0; n--) {
-            func_00100490(chain[n]);
+            __dl__FPv(chain[n]);
             chain[n - 1]->child = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(t);
+            __dl__FPv(t);
         }
     }
     return t;
@@ -545,7 +545,7 @@ void *Message_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046A0D0;
         gBootMessage = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -628,7 +628,7 @@ void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    func_0026ED98(gMessageParams[slot & 0xFF], 0x80, fmt, ap);
+    msl_vsnprintf(gMessageParams[slot & 0xFF], 0x80, fmt, ap);
     va_end(ap);
 }
 
@@ -674,8 +674,8 @@ void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer) {
         xy[0] = cx;
         xy[1] = cy;
         for (i = 0; i < 5; i++) {
-            s32 dx = (s32)(32.0f * func_0031C058(angles[i]));
-            s32 dy = (s32)(32.0f * func_0031C248(angles[i]));
+            s32 dx = (s32)(32.0f * msl_cosf(angles[i]));
+            s32 dy = (s32)(32.0f * msl_sinf(angles[i]));
 
             xy[2 + i * 2] = (k & 1) ? cx + dx : cx - dx;
             xy[3 + i * 2] = (k & 2) ? cy + dy : cy - dy;
@@ -1152,7 +1152,7 @@ void Task_StateChild(Task *t) {
             Task_dtor(c->child, 1);
             c->child = NULL;
         }
-        func_00100490(c);
+        __dl__FPv(c);
     }
     t->child = NULL;
 }
@@ -1488,7 +1488,7 @@ void Task_PrintfEx(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const
     va_list ap;
 
     va_start(ap, fmt);
-    func_0026ED98(t->text, 0x80, fmt, ap);
+    msl_vsnprintf(t->text, 0x80, fmt, ap);
     va_end(ap);
     Task_ShowText(t, x, y, color, (u8 *)t->text, alpha, layer, 0x10, 0x15);
 }
@@ -1498,7 +1498,7 @@ void Task_Printf(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    func_0026ED98(t->text, 0x80, fmt, ap);
+    msl_vsnprintf(t->text, 0x80, fmt, ap);
     va_end(ap);
     Task_ShowText(t, x, y, color, (u8 *)t->text, 0x80, 0x30, 0x10, 0x15);
 }

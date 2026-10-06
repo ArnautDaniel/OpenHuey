@@ -1853,10 +1853,10 @@ void Sinit_FillTables(void) {
 extern void func_001030B0(void *, s32), func_00103620(void *, s32);                      /* their destructors */
 
 static inline void Sinit_Iostreams(void *a, void *alink, void *b, void *blink) {
-    func_00102D80(a);
-    func_00100AB0(a, func_001030B0, alink);
+    Iostream_InitCtor(a);
+    __register_global_object(a, func_001030B0, alink);
     func_001032F0(b);
-    func_00100AB0(b, func_00103620, blink);
+    __register_global_object(b, func_00103620, blink);
 }
 
 extern u8 D_0047B210[], D_0047B214[], D_004879C8[], D_004879D8[], D_004879E8[];
@@ -1883,7 +1883,7 @@ void Sinit_Game(void) {
     BigPool_ctor(g + 0x14DC530);
     Slots_ctor(gGame.unk14E8C90);
     Game_SetState(&gGame, &Game_Init_ptmf);
-    func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
+    __register_global_object(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
 }
 
 /* 0x00466BD0 */

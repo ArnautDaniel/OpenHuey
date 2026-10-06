@@ -177,7 +177,7 @@ void *Door_dtor(u8 *e, s32 flags) {
         AT(e, 0x88, s32) = 0;
         AT(e, 0x80, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(e);
+            __dl__FPv(e);
         }
     }
     return e;
@@ -188,11 +188,11 @@ void *Door_dtor(u8 *e, s32 flags) {
 void *Doors_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = Doors_vtable;
-        func_001002C0(d + 0x10, (void *(*)(void *, s32))Door_dtor, 0x210, 8);
+        __destroy_arr(d + 0x10, (void *(*)(void *, s32))Door_dtor, 0x210, 8);
         AT(d, 0x0, void **) = D_0046C5D0;
         gDoors = NULL;
         if ((s16)flags > 0) {
-            func_00100490(d);
+            __dl__FPv(d);
         }
     }
     return d;
@@ -205,7 +205,7 @@ void *DoorsBase_dtor(u8 *d, s32 flags) {
         AT(d, 0x0, void **) = D_0046C5D0;
         gDoors = NULL;
         if ((s16)flags > 0) {
-            func_00100490(d);
+            __dl__FPv(d);
         }
     }
     return d;
@@ -216,7 +216,7 @@ void *DoorsBase_dtor(u8 *d, s32 flags) {
 void *Doors_ctor(u8 *p) {
     AT(p, 0x0, void **) = Doors_vtable;
     gDoors = (VObject *)p;
-    func_00100340(p + 0x10, PlacedMeshHolder_ctor, Door_dtor, 0x210, 8);
+    __construct_array(p + 0x10, PlacedMeshHolder_ctor, Door_dtor, 0x210, 8);
     AT(p, 0x4, s32) = 0;
     return p;
 }
@@ -945,11 +945,11 @@ void Doors_TakeRoom(u8 *d, u8 *sec) {
         if (AT(e, 0x8, s32) != -1) {
             AT(e, 0x70, u8) = 1;
         }
-        func_0010E5F0((f32 *)(e + 0x10), (f32 *)(src + 0x4));
+        vu0_CopyXYZ((f32 *)(e + 0x10), (f32 *)(src + 0x4));
         AT(e, 0x1C, f32) = 1.0f;
-        func_0010E5F0((f32 *)(e + 0x20), (f32 *)(src + 0x10));
+        vu0_CopyXYZ((f32 *)(e + 0x20), (f32 *)(src + 0x10));
         AT(e, 0x2C, f32) = 1.0f;
-        func_0010E5F0((f32 *)(e + 0x40), (f32 *)(src + 0x1C));
+        vu0_CopyXYZ((f32 *)(e + 0x40), (f32 *)(src + 0x1C));
         AT(e, 0x4C, f32) = 0.0f;
         sceVu0CopyVector((f32 *)(e + 0x30), (f32 *)(e + 0x40));
         AT(e, 0x72, u8) = 1;
@@ -1299,7 +1299,7 @@ void *RoutePlanner_dtor(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046C530;
         gRoutePlanner = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1312,7 +1312,7 @@ void *RoutePlannerBase_dtor(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046C530;
         gRoutePlanner = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;

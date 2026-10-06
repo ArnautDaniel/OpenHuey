@@ -8,7 +8,7 @@ static IntcHandler sHandlers[16];
 static int sEnabled[16];
 
 /* AddIntcHandler(cause, handler, next): returns a handler id */
-int func_0026BE80(int cause, IntcHandler handler, int next) {
+int AddIntcHandler(int cause, IntcHandler handler, int next) {
     (void)next;
     if (cause >= 0 && cause < 16) {
         sHandlers[cause] = handler;
@@ -17,7 +17,7 @@ int func_0026BE80(int cause, IntcHandler handler, int next) {
 }
 
 /* EnableIntc(cause) */
-int func_0026CCE8(int cause) {
+int EnableIntc(int cause) {
     if (cause >= 0 && cause < 16) {
         sEnabled[cause] = 1;
     }
@@ -29,14 +29,14 @@ int func_0026CCE8(int cause) {
 extern unsigned char gVblankStartSeen, gVblankEndSeen;
 extern unsigned gVblankCount;
 
-int func_001BEDA0(int cause) {
+int VBlank_StartHandler(int cause) {
     (void)cause;
     gVblankStartSeen = 1;
     gVblankCount++;
     return 0;
 }
 
-int func_001BED80(int cause) {
+int VBlank_EndHandler(int cause) {
     (void)cause;
     gVblankEndSeen = 1;
     return 0;
@@ -97,7 +97,7 @@ void func_001BED00(void) {
 }
 
 /* DisableIntc(cause) */
-int func_0026CC80(int cause) {
+int DisableIntc(int cause) {
     if (cause >= 0 && cause < 16) {
         sEnabled[cause] = 0;
     }

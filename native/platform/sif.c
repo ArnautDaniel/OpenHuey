@@ -13,20 +13,20 @@
 #define CD_SERVER(cd) (*(unsigned *)((char *)(cd) + 0x24))
 
 /* sceSifBindRpc */
-int func_0026FF08(void *cd, unsigned id, int mode) {
+int sceSifBindRpc(void *cd, unsigned id, int mode) {
     (void)mode;
     CD_SERVER(cd) = id;
     return 0;
 }
 
 /* sceSifCheckStatRpc: calls finish at once */
-int func_002702E8(void *cd) {
+int sceSifCheckStatRpc(void *cd) {
     (void)cd;
     return 0;
 }
 
 /* sceSifCallRpc */
-int func_002700E8(void *cd, unsigned fno, unsigned mode, void *send, int ssize, void *recv, int rsize,
+int sceSifCallRpc(void *cd, unsigned fno, unsigned mode, void *send, int ssize, void *recv, int rsize,
                   void (*end)(void *), void *endParam) {
     void *r = NULL;
 
@@ -56,19 +56,19 @@ int func_002700E8(void *cd, unsigned fno, unsigned mode, void *send, int ssize, 
 
 /* the EE's own RPC server (registered by the game's server thread, which isn't run): the IOP
    side calls the game's handler SndLib_ServerCall directly */
-void func_00270328(void *queue, int thread) { (void)queue; (void)thread; }
+void sceSifSetRpcQueue(void *queue, int thread) { (void)queue; (void)thread; }
 void func_002703C0(void *sd, unsigned id, void *func, void *buf, void *cfunc, void *cbuf, void *queue) {
     (void)sd; (void)id; (void)func; (void)buf; (void)cfunc; (void)cbuf; (void)queue;
 }
-void func_002707D8(void *queue) { (void)queue; }
+void sceSifRpcLoop(void *queue) { (void)queue; }
 
 /* EE kernel: threads and semaphores the sound library makes (not run) */
 int CreateSema(void *s) { (void)s; return 1; }
 int CreateThread(void *t) { (void)t; return 1; }
-int func_0026D2E0(int thread, void *arg) { (void)thread; (void)arg; return 0; }   /* StartThread */
+int Kernel_StartThread(int thread, void *arg) { (void)thread; (void)arg; return 0; }   /* StartThread */
 
 /* data cache write-back before a DMA: nothing on PC */
-void func_0026CA98(unsigned start, unsigned end) { (void)start; (void)end; }
+void FlushDCacheRange(unsigned start, unsigned end) { (void)start; (void)end; }
 void func_0026CB18(unsigned start, unsigned end) { (void)start; (void)end; }
 
 typedef struct SifDma {
@@ -105,5 +105,5 @@ int sceSifDmaStat(unsigned id) { (void)id; return -1; }
 int isceSifDmaStat(unsigned id) { (void)id; return -1; }
 
 /* sceSifAllocIopHeap / sceSifFreeIopHeap */
-unsigned func_002744D8(unsigned size) { return iop_alloc(size); }
-int func_00274640(unsigned addr) { (void)addr; return 0; }
+unsigned sceSifAllocIopHeap(unsigned size) { return iop_alloc(size); }
+int sceSifFreeIopHeap(unsigned addr) { (void)addr; return 0; }

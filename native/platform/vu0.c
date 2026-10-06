@@ -50,7 +50,7 @@ void sceVu0InterVector(Vec d, const Vec a, const Vec b, float t) {
 }
 
 /* d.xyz = a * t + b * (1 - t), d.w = a.w (PS2 0x0010E610) */
-void func_0010E610(Vec d, const Vec a, const Vec b, float t) {
+void vu0_LerpXYZ(Vec d, const Vec a, const Vec b, float t) {
     float u = 1.0f - t, w = a[3];
     int i;
 
@@ -61,14 +61,14 @@ void func_0010E610(Vec d, const Vec a, const Vec b, float t) {
 }
 
 /* copy x, y, z (PS2 0x0010E5F0) */
-void func_0010E5F0(Vec d, const Vec a) {
+void vu0_CopyXYZ(Vec d, const Vec a) {
     d[0] = a[0];
     d[1] = a[1];
     d[2] = a[2];
 }
 
 /* scale x, y, z; keep w (PS2 0x0010E640) */
-void func_0010E640(Vec d, const Vec a, float s) {
+void vu0_ScaleXYZ(Vec d, const Vec a, float s) {
     d[0] = a[0] * s;
     d[1] = a[1] * s;
     d[2] = a[2] * s;

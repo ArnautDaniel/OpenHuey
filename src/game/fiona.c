@@ -249,7 +249,7 @@ static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
     AT(m, 0x0, void **) = CharModel_vtable;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
+    __construct_array(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
     AT(m, at + 0x4, s32) = 0;
     AT(m, at + 0x0, s32) = 0;
     AT(m, at + 0x40, void **) = BoneHangPoint_vtable;
@@ -261,11 +261,11 @@ static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
     AT(m, at + 0x170, void **) = BoneHangPoint_vtable;
     AT(m, at + 0x1C4, s32) = 0;
     AT(m, at + 0x1C0, s32) = 0;
-    func_00100340(m + at + 0x1D0, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
+    __construct_array(m + at + 0x1D0, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
     AT(m, at + 0x704, s32) = 0;
     AT(m, at + 0x700, s32) = 0;
     parts40(m + at + 0x710, m + at + 0x890);
-    func_00100340(m + at + 0x890, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);
+    __construct_array(m + at + 0x890, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);
     AT(m, at + 0x9B4, s32) = 0;
     AT(m, at + 0x9B0, s32) = 0;
     parts40(m + at + 0x9C0, m + at + 0xB40);
@@ -420,15 +420,15 @@ static inline void costume_frame(u8 *m, u32 at) {
 static inline void *costume_dtor(u8 *m, s32 flags, void **vtbl, s32 n, u32 at) {
     if (m != NULL) {
         AT(m, 0x0, void **) = vtbl;
-        func_001002C0(m + at + 0x890, WindHangPoint_dtor, 0x50, 3);
-        func_001002C0(m + at + 0x1D0, CostumeHangPoint_dtor, 0x50, 0x10);
+        __destroy_arr(m + at + 0x890, WindHangPoint_dtor, 0x50, 3);
+        __destroy_arr(m + at + 0x1D0, CostumeHangPoint_dtor, 0x50, 0x10);
         AT(m, at + 0x170, void **) = BoneHangPoint_vtable;
         AT(m, at + 0x170, void **) = SpringPartBase_vtable;
         AT(m, at + 0xD0, void **) = SprungPoint_vtable;
         AT(m, at + 0xD0, void **) = SpringPartBase_vtable;
         AT(m, at + 0x40, void **) = BoneHangPoint_vtable;
         AT(m, at + 0x40, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, n);
+        __destroy_arr(m + 0x9B0, SwayPointA_dtor, 0x50, n);
         AT(m, 0x0, void **) = CharModel_vtable;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -1356,7 +1356,7 @@ void Fiona_StateTurnStick(Fiona *f) {
         Fiona_ToIdle(f);
         return;
     }
-    if (Actor_TurnToward(&f->c.a, func_0031C5C0(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
+    if (Actor_TurnToward(&f->c.a, msl_atan2f(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
                       0x1.657186p-3f /* 10 deg */) == 0.0f) {
         Motion_PlayOwnBlend(f->c.motion, 0x1200, -1);
         Actor_SetState(&f->c.a, &Fiona_StatePush_ptmf);
@@ -1642,7 +1642,7 @@ void Fiona_Vt38(Fiona *f) {
         Character_WaypointAhead(&f->c, &f->c.a.navTri, f->c.a.pos, FI(f, 0x1AD73C, f32));
         sceVu0SubVector(d, f->c.a.pos, back);
         {
-            f32 yaw = func_0031C5C0(d[0], d[2]);
+            f32 yaw = msl_atan2f(d[0], d[2]);
 
             f->c.a.angle[1] = yaw;
             sceVu0UnitMatrix(f->c.a.rot);
@@ -1908,7 +1908,7 @@ void Fiona_StateSpecialEntry(Fiona *f) {
     if (MOTION_SPEED(m) <= 0.0f) {
         if (MOTION_ANIM(m) == 0xB01) {
             if (FI(f, 0x1AD58C, s32) == 0) {
-                f->savedYaw = func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32));
+                f->savedYaw = msl_atan2f(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32));
             }
             if (!(FI(f, 0x1AD584, s32) & 0x1)) {
                 Motion_PlayTable(f->c.motion, 0xB02, -1);
@@ -1988,7 +1988,7 @@ void Fiona_ControlCommand(Fiona *f) {
             Motion_RootMovement(f->c.motion, r, 0.0f);
             Mtx_AtHeading(m, f->c.a.pos,
                           FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
-                                                    : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
+                                                    : msl_atan2f(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
             Mtx_ApplyPoint(r, m, r);
             if (Actor_TriTo(&f->c.a, r, NAV_NONE) == NAV_NONE) {
                 /* ran into something while panicking */
@@ -2267,8 +2267,8 @@ void Fiona_Vt34(Fiona *f, s32 door) {
 
             Mtx_TurnY(m, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             Mtx_ApplyVector(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
-            func_0010E640(v, v, -1.0f);
-            h = func_0031C5C0(v[0], v[2]);
+            vu0_ScaleXYZ(v, v, -1.0f);
+            h = msl_atan2f(v[0], v[2]);
             if (Angle_Wrap(h - f->savedYaw) < 0x1.921fb6p+0f /* pi/2 */) {
                 f->unk1AD588 = 3;
                 f->c.a.angle[1] = h;
@@ -2682,7 +2682,7 @@ extern void Fiona_RunLook(Fiona *f);   /* run */
 extern const PTMF Fiona_StateTurnStick_ptmf;          /* start pushing */
 
 #define FIONA_STICK_IDLE(f) FI(f, 0x1AD58C, s32)   /* frames since the stick was released, 0 = held */
-#define FIONA_STICK_HEADING(f) func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32))
+#define FIONA_STICK_HEADING(f) msl_atan2f(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32))
 
 /* Exhausted from running in panic: catch breath (animation 0x207), new panic run length.
  * (`g` is passed to the random call only because the original leaves it in $a2 there; the
@@ -2847,7 +2847,7 @@ void Fiona_StateIdleMove(Fiona *f) {
     *(s32 *)&axis[1] = 0;
     sceVu0ApplyMatrix(fwd, f->c.a.rot, axis);
     sceVu0ApplyMatrix(dir, m, axis);
-    func_0010E640(d, d, ((1.0f + sceVu0InnerProduct(dir, fwd)) / 2.0f) * FI(f, 0x1AD624, f32));
+    vu0_ScaleXYZ(d, d, ((1.0f + sceVu0InnerProduct(dir, fwd)) / 2.0f) * FI(f, 0x1AD624, f32));
     *(s32 *)&d[3] = 0;
     Actor_Move(&f->c.a, d);
     sceVu0SubVector(moved, f->c.a.pos, f->c.a.prevPos);
@@ -3630,7 +3630,7 @@ s32 Fiona_CallAction(Fiona *f) {
             if (Actor_TriTo(&f->c.a, c->pos, NAV_NONE) != tri) {
                 continue;
             }
-            if (fiona_turn_to(f, func_0031C5C0(d[0], d[2])) < 0x1.921fb60000000p-1f /* 0.7853982 */) {
+            if (fiona_turn_to(f, msl_atan2f(d[0], d[2])) < 0x1.921fb60000000p-1f /* 0.7853982 */) {
                 return 0x2D;
             }
         }
@@ -3791,7 +3791,7 @@ void *Costume7Model_ctor(u8 *m, s32 kind) {
     AT(m, 0x0, void **) = CharModel_vtable;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = Costume7Model_vtable;
-    func_00100340(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
+    __construct_array(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
     AT(m, 0xB74, s32) = 0;
     AT(m, 0xB70, s32) = 0;
     AT(m, 0xBB0, void **) = SprungPoint_vtable;
@@ -3816,7 +3816,7 @@ void *Costume6Model_ctor(u8 *m, s32 kind) {
     AT(m, 0x9E0, void **) = BoneHangPoint_vtable;
     AT(m, 0xA34, s32) = 0;
     AT(m, 0xA30, s32) = 0;
-    func_00100340(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     parts40(m + 0xB80, m + 0xD00);
     AT(m, 0xD34, s32) = 0;
     AT(m, 0xD30, s32) = 0;
@@ -3843,13 +3843,13 @@ void *FionaModel_ctor(u8 *m) {
     AT(m, 0x0, void **) = CharModel_vtable;
     AT(m, 0x9A0, u8) = 1;
     AT(m, 0x0, void **) = FionaModel_vtable;
-    func_00100340(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
+    __construct_array(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
     AT(m, 0x13E4, s32) = 0;
     AT(m, 0x13E0, s32) = 0;
     AT(m, 0x1420, void **) = BoneHangPoint_vtable;
     AT(m, 0x1474, s32) = 0;
     AT(m, 0x1470, s32) = 0;
-    func_00100340(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     parts40(m + 0x15C0, m + 0x1740);
     AT(m, 0x1774, s32) = 0;
     AT(m, 0x1770, s32) = 0;
@@ -4412,10 +4412,10 @@ void *FionaModel_dtor(void *p, s32 flags) {
         AT(m, 0x0, void **) = FionaModel_vtable;
         AT(m, 0x17B0, void **) = SprungPoint_vtable;
         AT(m, 0x17B0, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0x1480, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0x1480, HangPoint_dtor, 0x50, 4);
         AT(m, 0x1420, void **) = BoneHangPoint_vtable;
         AT(m, 0x1420, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0x9B0, HairPoint2_dtor, 0x50, 0x20);
+        __destroy_arr(m + 0x9B0, HairPoint2_dtor, 0x50, 0x20);
         AT(m, 0x0, void **) = CharModel_vtable;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -5149,7 +5149,7 @@ void *Costume6Model_dtor(void *p, s32 flags) {
         AT(m, 0x0, void **) = Costume6Model_vtable;
         AT(m, 0xD70, void **) = SprungPoint_vtable;
         AT(m, 0xD70, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0xA40, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0xA40, HangPoint_dtor, 0x50, 4);
         AT(m, 0x9E0, void **) = BoneHangPoint_vtable;
         AT(m, 0x9E0, void **) = SpringPartBase_vtable;
         AT(m, 0x0, void **) = CharModel_vtable;
@@ -5426,7 +5426,7 @@ void *Costume7Model_dtor(u8 *m, s32 flags) {
         AT(m, 0xC50, void **) = SpringPartBase_vtable;
         AT(m, 0xBB0, void **) = SprungPoint_vtable;
         AT(m, 0xBB0, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0x9B0, BoneHangPoint_dtor, 0x50, 5);
+        __destroy_arr(m + 0x9B0, BoneHangPoint_dtor, 0x50, 5);
         AT(m, 0x0, void **) = CharModel_vtable;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -5912,8 +5912,8 @@ void Fiona_MoveInput(Fiona *f) {
                 FI(f, FMOVE_MODE, u8) = 1;
                 Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
                 Mtx_ApplyVector(v, rot, n);
-                func_0010E640(v, v, -1.0f);
-                FI(f, FMOVE_HEADING, f32) = func_0031C5C0(v[0], v[2]);
+                vu0_ScaleXYZ(v, v, -1.0f);
+                FI(f, FMOVE_HEADING, f32) = msl_atan2f(v[0], v[2]);
             }
         }
     }
@@ -5958,15 +5958,15 @@ void Fiona_MoveInput(Fiona *f) {
             }
         }
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(v, v, -1.0f);
-        FI(f, 0x1AD5E4, f32) = func_0031C5C0(v[0], v[2]);
+        vu0_ScaleXYZ(v, v, -1.0f);
+        FI(f, 0x1AD5E4, f32) = msl_atan2f(v[0], v[2]);
         break;
     case 2:
         if (moving) {
-            f32 a = func_0031C5C0(FI(f, FMOVE_LAST, f32), FI(f, FMOVE_LAST + 8, f32));
+            f32 a = msl_atan2f(FI(f, FMOVE_LAST, f32), FI(f, FMOVE_LAST + 8, f32));
 
             how = 0;
-            if (!(wrap_abs(func_0031C5C0(n[0], n[2]) - a) <= k15deg.f)) {
+            if (!(wrap_abs(msl_atan2f(n[0], n[2]) - a) <= k15deg.f)) {
                 FI(f, FMOVE_MODE, u8) = 0;
             }
             break;
@@ -5981,7 +5981,7 @@ void Fiona_MoveInput(Fiona *f) {
     case 3:
         Mtx_TurnY(rot, FI(f, FMOVE_CAMYAW, f32));
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
+        vu0_ScaleXYZ(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
     case 2:
         FI(f, FMOVE_DIR, f32) = 0.0f;
@@ -5997,7 +5997,7 @@ void Fiona_MoveInput(Fiona *f) {
     case 0:
         Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
+        vu0_ScaleXYZ(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
     }
     sceVu0CopyVector(&FI(f, FMOVE_STICK, f32), e);
@@ -6057,7 +6057,7 @@ autowalk:
         sceVu0SubVector(d, pt, f->c.a.pos);
         d[1] = 0.0f;
         sceVu0Normalize(&FI(f, FMOVE_DIR, f32), d);
-        FI(f, FMOVE_HEADING, f32) = func_0031C5C0(d[0], d[2]);
+        FI(f, FMOVE_HEADING, f32) = msl_atan2f(d[0], d[2]);
         FI(f, FMOVE_GO, u8) = (u32)(FI(f, FAUTO_STATE, s32) - 5) < 2 ? 0 : 1;
         return;
     }
@@ -6077,7 +6077,7 @@ autowalk:
         sceVu0SubVector(d, gCharPursuer->a.pos, f->c.a.pos);
         d[1] = 0.0f;
         sceVu0Normalize(&FI(f, FMOVE_DIR, f32), d);
-        FI(f, FMOVE_HEADING, f32) = func_0031C5C0(d[0], d[2]);
+        FI(f, FMOVE_HEADING, f32) = msl_atan2f(d[0], d[2]);
         FI(f, FMOVE_GO, u8) = 1;
         if (!(wrap_abs(FI(f, FMOVE_HEADING, f32) - f->c.a.angle[1]) < k30deg.f)) {
             return;
@@ -6630,7 +6630,7 @@ s32 Fiona_FindPushable(Fiona *f, s32 pick, f32 reach) {
     /* the wall edge's direction, turned a quarter: into the wall, from the side she is on */
     t = NavMesh_Tri(nm, from);
     sceVu0SubVector(d, t->v[e + 1 < 3 ? e + 1 : 0], t->v[e]);
-    ang = Angle_Wrap(kHalfPi.f + func_0031C5C0(d[0], d[2]));
+    ang = Angle_Wrap(kHalfPi.f + msl_atan2f(d[0], d[2]));
     if (!(Angle_Wrap(ang - AT(f, 0x54, f32)) <= 0.0f)) {
         diff = Angle_Wrap(ang - AT(f, 0x54, f32));
     } else {
@@ -6725,7 +6725,7 @@ void Fiona_KeepApart(Fiona *f) {
             sceVu0ApplyMatrix(v, m, v);
             if (!(sceVu0InnerProduct(v, d) <= 0.0f)) {
                 along = 1;
-                func_0010E640(v, v, k20.f);
+                vu0_ScaleXYZ(v, v, k20.f);
                 sceVu0AddVector(v, v, d);
             }
         }
@@ -6734,7 +6734,7 @@ void Fiona_KeepApart(Fiona *f) {
         }
         v[1] = 0.0f;
         sceVu0Normalize(v, v);
-        func_0010E640(v, v, rsum - dist);
+        vu0_ScaleXYZ(v, v, rsum - dist);
         sceVu0AddVector(at, (f32 *)(a + 0x10), v);
         tri = Actor_TriTo(&f->c.a, at, -1);
         if (tri == NAV_NONE) {
@@ -7477,7 +7477,7 @@ void Fiona_StateFall13(Fiona *f) {
         f32 a, aa;
 
         sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)p + 0x1060 + f->c.a.slot * 0x20));
-        a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+        a = Angle_Wrap(msl_atan2f(d[0], d[2]) - f->c.a.angle[1]);
         aa = a <= 0.0f ? -a : a;
         if (FI(f, 0x1AD6C0, s32) == 0) {
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
@@ -7638,7 +7638,7 @@ void Fiona_AlongWall(Fiona *f) {
     }
 #endif
     sceVu0SubVector(d, t->v[e1], t->v[e]);
-    f->savedYaw = func_0031C5C0(d[0], d[2]);
+    f->savedYaw = msl_atan2f(d[0], d[2]);
     if (!(Angle_Wrap(f->savedYaw - f->c.a.angle[1]) <= 0.0f)) {
         aa = Angle_Wrap(f->savedYaw - f->c.a.angle[1]);
     } else {
@@ -7772,7 +7772,7 @@ void Fiona_StateThrown(Fiona *f) {
 
             FI(f, 0x1AD6C4, s32) = 0;
             sceVu0SubVector(d, f->c.a.pos, ((Character *)gCharacters[f->c.unk100])->a.pos);
-            FI(f, 0x1AD6D0, f32) = func_0031C5C0(d[0], d[2]);
+            FI(f, 0x1AD6D0, f32) = msl_atan2f(d[0], d[2]);
         }
         if (!(Angle_Wrap(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]) <= 0.0f)) {
             aa = Angle_Wrap(FI(f, 0x1AD6D0, f32) - f->c.a.angle[1]);
@@ -7907,7 +7907,7 @@ void Fiona_StateKnockedDown(Fiona *f) {
             }
         }
         if (have == 1) {
-            a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
+            a = Angle_Wrap(msl_atan2f(d[0], d[2]) - f->c.a.angle[1]);
             aa = a <= 0.0f ? -a : a;
         } else {
             a = f->c.a.angle[1];
@@ -8139,7 +8139,7 @@ s32 Fiona_Shakes(Fiona *f) {
             FI(f, 0x1AD714, f32) = 0.0f;
         }
     } else {
-        f32 a = func_0031C5C0(e[0], e[2]);
+        f32 a = msl_atan2f(e[0], e[2]);
 
         if (FI(f, 0x1AD710, u8) != 0) {
             n++;
@@ -8942,7 +8942,7 @@ s32 Fiona_DoorFrame(Fiona *f) {
             }
             WALK_FLAGS(f) |= 8;
             sceVu0SubVector(v, (f32 *)((u8 *)f + 0x1AD640), f->c.a.pos);
-            d = Angle_Wrap(f->savedYaw - func_0031C5C0(v[0], v[2]));
+            d = Angle_Wrap(f->savedYaw - msl_atan2f(v[0], v[2]));
             if (!(d <= 0.0f)) {
                 t = d;
             } else {
@@ -9775,7 +9775,7 @@ void Fiona_OffscreenFrame(Fiona *f) {
             tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, f->c.door, a);
             VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, f->c.door, b);
             sceVu0SubVector(d, b, a);
-            yaw = func_0031C5C0(d[0], d[2]);
+            yaw = msl_atan2f(d[0], d[2]);
             VCALL(f, 0x28, void (*)(Fiona *, u32, f32 *, f32 *))(f, tri, &yaw, a);
         } else {
             f32 at[4] __attribute__((aligned(16)));
@@ -10587,7 +10587,7 @@ void Fiona_StateLetGo(Fiona *f) {
             sceVu0SubVector(d, (f32 *)((u8 *)f + 0x1AD6E0), hand);
             d[1] = 0.0f;
             dir[0] = 0.0f;
-            dir[1] = func_0031C5C0(d[0], d[2]);
+            dir[1] = msl_atan2f(d[0], d[2]);
             dir[2] = 0.0f;
             dir[3] = 1.0f;
         }

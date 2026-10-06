@@ -754,7 +754,7 @@ static void zone_point(VObject *ev, u32 id, f32 *v) {
     u8 *zone = (u8 *)ev + k * 0x30 + 0xBF0;
 
     if (AT(zone, 0x4, u8)) {
-        func_0010E5F0(v, (f32 *)(zone + 0x10));
+        vu0_CopyXYZ(v, (f32 *)(zone + 0x10));
         v[3] = 1.0f;
     }
 }
@@ -1580,7 +1580,7 @@ s32 EventCond_Eval(VObject *ev) {
             (u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, s32, s32))(ev, (f32 *)(c + 0x10), PC(ev)[2], -1) == 1) {
             u32 *tbl = AT(ev, 0x10, u32 *);
             u8 *e = (u8 *)(tbl + tbl[PC(ev)[2]]);
-            f32 ang = func_0031C5C0((AT(e, 0x10, f32) + AT(e, 0x30, f32)) / 2.0f - AT(c, 0x10, f32),
+            f32 ang = msl_atan2f((AT(e, 0x10, f32) + AT(e, 0x30, f32)) / 2.0f - AT(c, 0x10, f32),
                                     (AT(e, 0x18, f32) + AT(e, 0x38, f32)) / 2.0f - AT(c, 0x18, f32));
             f32 d;
 
@@ -1633,7 +1633,7 @@ s32 EventCond_Eval(VObject *ev) {
 
         if (a != NULL && b != NULL &&
             (u8)Actor_Touching((Actor *)a, (Actor *)b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
-            f32 ang = func_0031C5C0(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
+            f32 ang = msl_atan2f(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
             f32 d;
 
             if (!(cond_deg(Angle_Wrap(ang - AT(a, 0x54, f32))) <= 0.0f)) {
@@ -1695,7 +1695,7 @@ s32 EventCond_Eval(VObject *ev) {
         u8 *c = cond_char(p, pc[1]);
 
         if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
-            f32 ang = func_0031C5C0((f32)(s16)be16(PC(ev) + 2) - AT(c, 0x10, f32),
+            f32 ang = msl_atan2f((f32)(s16)be16(PC(ev) + 2) - AT(c, 0x10, f32),
                                     (f32)(s16)be16(PC(ev) + 4) - AT(c, 0x18, f32));
             f32 d;
 
@@ -2452,7 +2452,7 @@ void EventCmd_Movie(VObject *ev) {
         VCALL(d, 0x38, void (*)(VObject *, const char *))(d, room_string(ev, PC(ev)[1]));
         return;
     case 0x6E:
-        func_0023E878(AT(mv, 0x14, void *), pc[1], pc[2], 0);
+        Sofdec_SetParam(AT(mv, 0x14, void *), pc[1], pc[2], 0);
         return;
     case 0x89:
         Task_Prepare((Task *)((u8 *)ev + 0x708), (pc[1] << 8 | pc[2]) & 0xFFFF);
@@ -3048,7 +3048,7 @@ void Event_RunScript(VObject *ev) {
         sceVu0CopyVector((f32 *)(c + 0x10), pos);
         VCALL(rooms, 0x34, void (*)(VObject *, s32, f32 *))(rooms, PC(ev)[1], tmp);
         sceVu0SubVector(dir, tmp, pos);
-        a = func_0031C5C0(dir[0], dir[2]);
+        a = msl_atan2f(dir[0], dir[2]);
         AT(c, 0x54, f32) = a;
         sceVu0UnitMatrix((f32 (*)[4])(c + 0x60));
         sceVu0RotMatrixY((f32 (*)[4])(c + 0x60), (f32 (*)[4])(c + 0x60), a);
@@ -3116,7 +3116,7 @@ void Event_RunScript(VObject *ev) {
         f32 x = (f32)be32(pc + 1) / 1000.0f - AT(c, 0x10, f32);
         f32 z = (f32)be32(pc + 5) / 1000.0f - AT(c, 0x18, f32);
 
-        AT(c, 0x10C, f32) = Angle_Wrap(func_0031C5C0(x, z));
+        AT(c, 0x10C, f32) = Angle_Wrap(msl_atan2f(x, z));
         CHAR_ACT(c, 0xF);
         break;
     }
@@ -3192,10 +3192,10 @@ void Event_RunScript(VObject *ev) {
         u8 *zone = (u8 *)ev + k * 0x30 + 0xBF0;
 
         if (AT(zone, 0x4, u8)) {
-            func_0010E5F0(tmp, (f32 *)(zone + 0x10));
+            vu0_CopyXYZ(tmp, (f32 *)(zone + 0x10));
             tmp[3] = 1.0f;
         }
-        AT(c, 0x10C, f32) = Angle_Wrap(func_0031C5C0(tmp[0] - AT(c, 0x10, f32), tmp[2] - AT(c, 0x18, f32)));
+        AT(c, 0x10C, f32) = Angle_Wrap(msl_atan2f(tmp[0] - AT(c, 0x10, f32), tmp[2] - AT(c, 0x18, f32)));
         CHAR_ACT(c, 0xF);
         break;
     }
@@ -4793,7 +4793,7 @@ void Events_SetPoint(u8 *ev, u8 i, const f32 *pos, f32 a, f32 b) {
 
     r[0xBF4] = 1;
     r[0xBF5] = 0;
-    func_0010E5F0((f32 *)(r + 0xC00), pos);
+    vu0_CopyXYZ((f32 *)(r + 0xC00), pos);
     AT(r, 0xC0C, f32) = 1.0f;
     AT(r, 0xC10, f32) = a;
     AT(r, 0xC14, f32) = b;
@@ -4810,7 +4810,7 @@ s32 Events_NearestPoint(u8 *ev, const f32 *pos, f32 *out) {
         u8 *r = ev + i * 0x30;
 
         if (r[0xBF4]) {
-            func_0010E5F0(p, (f32 *)(r + 0xC00));
+            vu0_CopyXYZ(p, (f32 *)(r + 0xC00));
             p[3] = 1.0f;
         }
         if (r[0xBF4] && ((r[0xBF4] ? r[0xBF5] : 0xFF) & 1)) {
@@ -4828,7 +4828,7 @@ s32 Events_NearestPoint(u8 *ev, const f32 *pos, f32 *out) {
         return 0;
     }
     if (ev[k * 0x30 + 0xBF4]) {
-        func_0010E5F0(out, (f32 *)(ev + k * 0x30 + 0xC00));
+        vu0_CopyXYZ(out, (f32 *)(ev + k * 0x30 + 0xC00));
         out[3] = 1.0f;
     }
     return 1;
@@ -4880,7 +4880,7 @@ void *Obj46BA80_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046BA80;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -4893,7 +4893,7 @@ void *EventsBase_dtor(void **o, s32 flags) {
         o[0] = D_0046BAA0;
         gEvents = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -4910,7 +4910,7 @@ u8 *Events_dtor(u8 *o, s32 flags) {
     }
     AT(o, 0x0, void **) = Events_vtable;
     AT(o, 0xC, void **) = D_0046B3B8;
-    func_001002C0(o + 0xBF0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
+    __destroy_arr(o + 0xBF0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
     AT(o, 0x938, void **) = Cutscene_vtable;
     AT(o, 0x938, void **) = D_0046BB20;
     gCutscene = NULL;
@@ -4918,14 +4918,14 @@ u8 *Events_dtor(u8 *o, s32 flags) {
         Task_dtor(AT(o, 0x784, void *), 1);
         AT(o, 0x784, void *) = NULL;
     }
-    func_001002C0(o + 0x120, RoomBase_dtor, 4, 0x110);
+    __destroy_arr(o + 0x120, RoomBase_dtor, 4, 0x110);
     AT(o, 0x20, void **) = Overlay_vtable;
     AT(o, 0x20, void **) = Helper469D00_vtable;
     AT(o, 0xC, void **) = D_0046BAA0;
     gEvents = NULL;
     AT(o, 0x0, void **) = D_0046BA80;
     if ((s16)flags > 0) {
-        func_00100490(o);
+        __dl__FPv(o);
     }
     return o;
 }

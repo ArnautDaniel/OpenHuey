@@ -510,8 +510,8 @@ void RoomMgr_LoadRoom(u8 *rm, u32 room, s32 slot) {
         AT(rm, 0x3C8 + slot * 12, PTMF) = sGameStateNull;
     }
     *cur = room;
-    func_0026EDD0(name, sizeof(name), str_ST_N_ST_N_PAC, room & ~7, room);
-    func_001183C0(path, name);
+    msl_snprintf(name, sizeof(name), str_ST_N_ST_N_PAC, room & ~7, room);
+    msl_strcpy(path, name);
     loader = gFileLoader;
     if (VCALL(loader, 0x30, s32 (*)(VObject *, char *))(loader, path) > 0) {
         VCALL(loader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
@@ -564,7 +564,7 @@ void *RoomMeshes_dtor(u8 *o, s32 flags) {
         AT(o, 0x8, s32) = 0;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -578,7 +578,7 @@ void *PlacedMesh_dtor(u8 *o, s32 flags) {
         AT(o, 0x8, s32) = 0;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1264,7 +1264,7 @@ void *PlacedModelBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046D770;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1393,7 +1393,7 @@ u8 *PlacedObjects_RecordEntry(u8 *o, const char *name, u32 k) {
     for (j = 0; j < AT(tbl, 0x0, u32); j++) {
         u8 *e = AT(o, 0x8, u8 *) + AT(tbl, 0x4 + j * 4, u32);
 
-        if (func_00118278((const char *)e, name) == 0) {
+        if (msl_strcmp((const char *)e, name) == 0) {
             if (k < AT(e, 0x10, u32)) {
                 return e + AT(e, 0x14, u32) + k * 0x10;
             }
@@ -1417,7 +1417,7 @@ u8 *PlacedObjects_Named(u8 *o, const char *name) {
         }
 #endif
         if ((AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) &&
-            func_00118278(AT(obj, 0x70, const char *), name) == 0) {
+            msl_strcmp(AT(obj, 0x70, const char *), name) == 0) {
             return obj;
         }
     }
@@ -1500,7 +1500,7 @@ void PlacedObjects_ClearAll(u8 *p) {
 void *PlacedObjects_ctor(u8 *p) {
     AT(p, 0x0, void **) = PlacedObjects_vtable;
     gRoomObjects = p;
-    func_00100340(p + 0x20, PlacedModelHolder_ctor, QuadEntry_dtor, 0xB0, 0x40);
+    __construct_array(p + 0x20, PlacedModelHolder_ctor, QuadEntry_dtor, 0xB0, 0x40);
     return p;
 }
 

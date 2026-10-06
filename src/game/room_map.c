@@ -685,7 +685,7 @@ VObject *Rooms_dtor(VObject *r, s32 flags) {
     r->vtbl = D_0046C480;
     gRooms = NULL;
     if ((s16)flags > 0) {
-        func_00100490(r);
+        __dl__FPv(r);
     }
     return r;
 }
@@ -699,7 +699,7 @@ VObject *RoomsBase_dtor(VObject *r, s32 flags) {
     r->vtbl = D_0046C480;
     gRooms = NULL;
     if ((s16)flags > 0) {
-        func_00100490(r);
+        __dl__FPv(r);
     }
     return r;
 }
@@ -773,7 +773,7 @@ s32 Room2A_HandlerStep(void *room, s32 n, const u8 *arg) {
 void *Obstacles_ctor(u8 *p) {
     AT(p, 0x0, void **) = Obstacles_vtable;
     gObstacles = (VObject *)p;
-    func_00100340(p + 0x10, Elem_ctorNoop, Obstacle_dtor, 0xB0, 5);
+    __construct_array(p + 0x10, Elem_ctorNoop, Obstacle_dtor, 0xB0, 5);
     return p;
 }
 
@@ -860,7 +860,7 @@ static void square_centre(NavMesh *nm, u32 a, u32 b, f32 *out) {
     sceVu0AddVector(out, out, t->v[0]);
     sceVu0AddVector(out, out, t->v[1]);
     sceVu0AddVector(out, out, t->v[2]);
-    func_0010E640(out, out, kSixth.f);
+    vu0_ScaleXYZ(out, out, kSixth.f);
 }
 
 /* move the square (*a, *b) one square along `dir`: from its centre 5 units along dir through
@@ -882,7 +882,7 @@ s32 Obstacle_StepSquare(u8 *o, u32 *a, u32 *b, const f32 *dir) {
     square_centre(nm, ta, tb, from);
     from[3] = 1.0f;
     sceVu0Normalize(d, dir);
-    func_0010E640(d, d, 5.0f);
+    vu0_ScaleXYZ(d, d, 5.0f);
     sceVu0AddVector(to, from, d);
     if (VCALL(nm, 0x10, s32 (*)(NavMesh *, u32, f32 *))(nm, *a, from) == 3) {
         cur = *a;
@@ -1245,7 +1245,7 @@ void Obstacle_MoveFrame(u8 *o) {
     } else {
         f32 v[4] __attribute__((aligned(16)));
 
-        func_0010E640(v, (f32 *)(o + 0x20), AT(o, 0x30, f32 *)[AT(o, 0x10, s32) - 1]);
+        vu0_ScaleXYZ(v, (f32 *)(o + 0x20), AT(o, 0x30, f32 *)[AT(o, 0x10, s32) - 1]);
         sceVu0AddVector((f32 *)(o + 0x40), (f32 *)(o + 0x40), v);
     }
 }
@@ -1292,7 +1292,7 @@ static u8 *obstacle_model(const char *base, u32 n) {
 /* 0x0021A370 */
 void *Obstacle_dtor(void *o, s32 flags) {
     if (o != NULL && (s16)flags > 0) {
-        func_00100490(o);
+        __dl__FPv(o);
     }
     return o;
 }
@@ -1302,11 +1302,11 @@ void *Obstacle_dtor(void *o, s32 flags) {
 void *Obstacles_dtor(u8 *l, s32 flags) {
     if (l != NULL) {
         AT(l, 0x0, void **) = Obstacles_vtable;
-        func_001002C0(l + 0x10, Obstacle_dtor, 0xB0, 5);
+        __destroy_arr(l + 0x10, Obstacle_dtor, 0xB0, 5);
         AT(l, 0x0, void **) = D_0046C380;
         gObstacles = NULL;
         if ((s16)flags > 0) {
-            func_00100490(l);
+            __dl__FPv(l);
         }
     }
     return l;
@@ -1319,7 +1319,7 @@ void *ObstaclesBase_dtor(void *l, s32 flags) {
         AT(l, 0x0, void **) = D_0046C380;
         gObstacles = NULL;
         if ((s16)flags > 0) {
-            func_00100490(l);
+            __dl__FPv(l);
         }
     }
     return l;

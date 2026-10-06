@@ -126,7 +126,7 @@ void *PlacedThings_Destroy(u8 *m, s32 flags) {
         AT(m, 0x0, void **) = D_0046A950;
         gPlacedThings = NULL;
         if ((s16)flags > 0) {
-            func_00100490(m);
+            __dl__FPv(m);
         }
     }
     return m;
@@ -240,11 +240,11 @@ void ThingSave_Clear(s32 *e) {
 void *PlacedThings_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = PlacedObjects_vtable;
-        func_001002C0(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
+        __destroy_arr(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
         AT(o, 0x0, void **) = D_0046F390;
         gRoomObjects = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;

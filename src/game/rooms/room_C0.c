@@ -159,8 +159,8 @@ s32 RoomC0_Cmd00(void *self, void *a1, u8 *cmd) {
             AT(o, 0x34, f32) = a - k2Pi.f;
         }
         AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - kDecay.f;
-        AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
-        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+        AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * msl_sinf(AT(o, 0x34, f32));
+        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * msl_sinf(AT(o, 0x34, f32));
         return AT(o, 0x3C, f32) <= 0.0f ? 1 : 2;
     case 2:
         AT(o, 0x20, u32) = 0xC1840000;   /* -16.5 */

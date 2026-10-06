@@ -183,7 +183,7 @@ void *Lights_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046B350;
         gLights = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -566,14 +566,14 @@ s32 Shadow_BlockerVolumes(u8 *s) {
 
             sceVu0SubVector(d, lp, (f32 *)(q + 0x50));
             sceVu0Normalize(d, d);
-            func_0010E640(d, d, len);
+            vu0_ScaleXYZ(d, d, len);
             if (!(sceVu0InnerProduct(d, (f32 *)(q + 0x40)) < 0.0f)) {
                 continue;
             }
             for (i = 0; i < 4; i++) {
                 sceVu0SubVector(e[i], lp, (f32 *)(q + i * 0x10));
                 sceVu0Normalize(e[i], e[i]);
-                func_0010E640(e[i], e[i], len);
+                vu0_ScaleXYZ(e[i], e[i], len);
             }
             for (i = 0; i < 8; i++) {
                 f32 t[4] __attribute__((aligned(16)));
@@ -701,7 +701,7 @@ s32 Shadow_Draw(u8 *s) {
         sceVu0InversMatrix(inv, b);
         sceVu0Normalize(l, d);
         sceVu0ApplyMatrix(l, inv, l);
-        func_0010E640(l, l, rec[11]);
+        vu0_ScaleXYZ(l, l, rec[11]);
         Shadow_Outline(s, base, box, l);
         if (Shadow_Project(s, bs, bc, (f32 *)(base + AT(box, 0x10, s32))) == 0) {
             glr_shadow_cancel();
@@ -1100,7 +1100,7 @@ static inline __attribute__((always_inline)) s32 door_shadow_corners(u8 *o, VObj
         } else {
             sceVu0SubVector(p[i], (f32 *)(o + 0x60), p[i - 4]);
             sceVu0Normalize(p[i], p[i]);
-            func_0010E640(p[i], p[i], AT(o, 0x70, f32));
+            vu0_ScaleXYZ(p[i], p[i], AT(o, 0x70, f32));
             sceVu0SubVector(p[i], p[i - 4], p[i]);
         }
         sceVu0ApplyMatrix(v, clip, p[i]);

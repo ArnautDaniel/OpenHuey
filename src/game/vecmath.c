@@ -128,27 +128,27 @@ static inline f32 B4_FLT(u32 bits) {
 u64 Random_Res53(VObject *rng) {
     u32 a = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) >> 5;
     u32 b = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) >> 6;
-    u64 x = func_0011F208(DBL_2POW26, func_00100230(a));
+    u64 x = sf_muldf3(DBL_2POW26, sf_floatunsidf(a));
 
-    return func_0011F208(func_0011F148(x, func_00100230(b)), DBL_2POWM53);
+    return sf_muldf3(sf_adddf3(x, sf_floatunsidf(b)), DBL_2POWM53);
 }
 
 /* +0x20 genrand_real3: (0, 1) */
 /* 0x001A4460 */
 f32 Random_Real3(VObject *r) {
-    return func_0011F878(func_0011F458(func_0011F148(DBL_HALF, func_00100230(MT_INT32(r))), DBL_2POW32));
+    return sf_truncdfsf2(sf_divdf3(sf_adddf3(DBL_HALF, sf_floatunsidf(MT_INT32(r))), DBL_2POW32));
 }
 
 /* +0x1C genrand_real2: [0, 1) (RNG01() in the game code) */
 /* 0x001A44C0 */
 f32 Random_Real2(VObject *r) {
-    return func_0011F878(func_0011F458(func_00100230(MT_INT32(r)), DBL_2POW32));
+    return sf_truncdfsf2(sf_divdf3(sf_floatunsidf(MT_INT32(r)), DBL_2POW32));
 }
 
 /* +0x18 genrand_real1: [0, 1] */
 /* 0x001A4510 */
 f32 Random_Real1(VObject *r) {
-    return func_0011F878(func_0011F458(func_00100230(MT_INT32(r)), DBL_2POW32M1));
+    return sf_truncdfsf2(sf_divdf3(sf_floatunsidf(MT_INT32(r)), DBL_2POW32M1));
 }
 
 /* +0x14 genrand_int31 */
@@ -212,7 +212,7 @@ VObject *Random_dtor(VObject *r, s32 flags) {
         r->vtbl = D_0046AB80;
         gRandom = NULL;
         if ((s16)flags > 0) {
-            func_00100490(r);
+            __dl__FPv(r);
         }
     }
     return r;
@@ -236,7 +236,7 @@ void *RandomBase_dtor(void *o, s32 flags) {
             gRandom = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -293,12 +293,12 @@ f32 Vec_LineDistance(const f32 *a, const f32 *b, const f32 *c) {
     f32 l1, l2, s;
 
     sceVu0SubVector(d, (f32 *)b, (f32 *)a);
-    func_0010E640(p, b, -1.0f);
+    vu0_ScaleXYZ(p, b, -1.0f);
     l1 = ee_sqrtf(sceVu0InnerProduct(d, d));
     l2 = ee_sqrtf(sceVu0InnerProduct(d, d));
     s = sceVu0InnerProduct(p, d);
     s = (s + sceVu0InnerProduct((f32 *)c, d)) / (l2 * l1);
-    func_0010E640(p, d, s);
+    vu0_ScaleXYZ(p, d, s);
     sceVu0AddVector(p, p, (f32 *)b);
     sceVu0SubVector(r, (f32 *)c, p);
     r[3] = 0.0f;
@@ -318,12 +318,12 @@ void Vec_Along(f32 *out, f32 *from, f32 angle, f32 dist) {
 /* 0x0025C6F0 */
 void Quat_FromAxisAngle(f32 *q, const f32 *axis, f32 angle) {
     f32 h = 0.5f * angle;
-    f32 s = func_0031C248(h);
+    f32 s = msl_sinf(h);
 
     q[0] = axis[0] * s;
     q[1] = axis[1] * s;
     q[2] = axis[2] * s;
-    q[3] = func_0031C058(h);
+    q[3] = msl_cosf(h);
 }
 
 /* its 3 x 3 rotation matrix (the translation row is left as it is) */
@@ -438,7 +438,7 @@ f32 Vec_Heading(const f32 *v) {
     if (v[0] == 0.0f && v[2] == 0.0f) {
         return 10.0f;
     }
-    return func_0031C5C0(v[0], v[2]);
+    return msl_atan2f(v[0], v[2]);
 }
 
 /* the unit vector of heading `angle` */
@@ -585,13 +585,13 @@ void Bone_BlendMatrix(f32 *q, f32 (*out)[4], f32 (*a)[4], f32 (*b)[4], f32 t) {
     axis[1] = r[0][2] - r[2][0];
     axis[2] = r[1][0] - r[0][1];
     sceVu0Normalize(axis, axis);
-    axis[3] = 2.0f * func_0031C3C0(0.5f * __builtin_sqrtf(1.0f + (r[2][2] + (r[0][0] + r[1][1]))));
+    axis[3] = 2.0f * msl_acosf(0.5f * __builtin_sqrtf(1.0f + (r[2][2] + (r[0][0] + r[1][1]))));
     h = 0.5f * (axis[3] * t);
-    s = func_0031C248(h);
+    s = msl_sinf(h);
     q[0] = axis[0] * s;
     q[1] = axis[1] * s;
     q[2] = axis[2] * s;
-    q[3] = func_0031C058(h);
+    q[3] = msl_cosf(h);
     Quat_ToMatrix(q, r);
     sceVu0MulMatrix(out, r, ra);
     sceVu0InterVector(p, tb, ta, t);
@@ -605,5 +605,5 @@ void Mtx_ToAxisAngle(f32 *unused, f32 *q, f32 (*m)[4]) {
     q[1] = m[0][2] - m[2][0];
     q[2] = m[1][0] - m[0][1];
     sceVu0Normalize(q, q);
-    q[3] = 2.0f * func_0031C3C0(0.5f * __builtin_sqrtf(1.0f + (m[2][2] + (m[0][0] + m[1][1]))));
+    q[3] = 2.0f * msl_acosf(0.5f * __builtin_sqrtf(1.0f + (m[2][2] + (m[0][0] + m[1][1]))));
 }

@@ -95,8 +95,8 @@ static inline void *dog_model(u8 *m, u8 kind, void **vtbl) {
     ModelBase_ctor(m);
     AT(m, 0x0, void **) = DogModel_vtable;
     AT(m, 0x890, u8) = kind;
-    func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
-    func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
+    __construct_array(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+    __construct_array(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     AT(m, 0x0, void **) = vtbl;
     return m;
 }
@@ -108,8 +108,8 @@ const char *DogModel_Textures(void);
 
 static void HewieModel_Destroy(u8 *m, s32 flags) {
     AT(m, 0x0, void **) = DogModel_vtable;
-    func_001002C0(m + 0xA80, IK2_Destroy, 0x60, 2);
-    func_001002C0(m + 0x960, IK3_Destroy, 0x90, 2);
+    __destroy_arr(m + 0xA80, IK2_Destroy, 0x60, 2);
+    __destroy_arr(m + 0x960, IK3_Destroy, 0x90, 2);
     AT(m, 0x0, void **) = Model_vtable;
     AT(m, 0x0, void **) = ModelBase_vtable;
     AT(m, 0x1D0, void **) = D_0046B1C0;
@@ -165,7 +165,7 @@ static void frame_along(f32 (*f)[4], const f32 *dir) {
     x[2] = -dir[0];
     x[3] = 0.0f;
     sceVu0Normalize(f[0], x);
-    func_0010E5F0(f[2], dir);
+    vu0_CopyXYZ(f[2], dir);
     sceVu0OuterProduct(f[1], (f32 *)dir, f[0]);
 }
 
@@ -361,7 +361,7 @@ static inline void face(Hewie *h) {
         anim(h, 4);
         sceVu0CopyVector(at, (f32 *)((u8 *)gProgress + (HW(h, 0x20, u8) << 5) + 0x1060));
         sceVu0SubVector(d, h->c.a.pos, at);
-        heading = func_0031C5C0(d[0], d[2]);
+        heading = msl_atan2f(d[0], d[2]);
     }
     HW(h, 0xF36C4, f32) = heading;
 }
@@ -2581,7 +2581,7 @@ void DogModel_BodyFrames(u8 *m, u8 *a, f32 ahead, f32 behind) {
     AT(m, 0x80C, f32) = 1.0f;
     if (!on_floor(a, floor, ahead, behind)) {
         sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
-        func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+        vu0_CopyXYZ((f32 *)(m + 0x800), (f32 *)(a + 0x10));
         AT(m, 0x80C, f32) = 1.0f;
         sceVu0CopyMatrix((f32 (*)[4])(m + 0xB40), mtx);
         return;
@@ -2594,7 +2594,7 @@ void DogModel_BodyFrames(u8 *m, u8 *a, f32 ahead, f32 behind) {
     sceVu0SubVector(p, (f32 *)(a + 0x10), p);
     sceVu0Normalize(p, p);
     frame_along((f32 (*)[4])(m + 0x7D0), p);
-    func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+    vu0_CopyXYZ((f32 *)(m + 0x800), (f32 *)(a + 0x10));
 }
 
 /* +0x48: how level the floor under him runs along his body (the horizontal part of the unit
@@ -2793,8 +2793,8 @@ void *DogModel_ctor(u8 *m, u8 kind) {
     HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = DogModel_vtable;
     AT(m, 0x890, u8) = kind;
-    func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
-    func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
+    __construct_array(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+    __construct_array(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     return m;
 }
 
@@ -4568,7 +4568,7 @@ void Hewie_StateTurning(Hewie *h) {
     if (d <= 0.0f) {
         d = -d;
     }
-    s = func_0031C248(d * F_PI / HW(h, 0xF36C4, f32));
+    s = msl_sinf(d * F_PI / HW(h, 0xF36C4, f32));
     rate = 2.0f * (s * HW(h, 0xF36C4, f32)) / F_PI;
     if (!(rate <= 0x1.333334p-1f /* 0.6 */)) {
         rate = 0x1.333334p-1f;
@@ -4812,7 +4812,7 @@ void Hewie_StateTurnTo(Hewie *h) {
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     }
     Motion_RootTranslation(h->c.motion, root, 0.0f);
-    func_0010E640(v, HEWIE_SPOT(h), root[2]);
+    vu0_ScaleXYZ(v, HEWIE_SPOT(h), root[2]);
     Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
 }
@@ -5196,15 +5196,15 @@ void Hewie_LeftStick(Hewie *h) {
             }
         }
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(v, v, -1.0f);
-        HW(h, 0xF37A0, f32) = func_0031C5C0(v[0], v[2]);
+        vu0_ScaleXYZ(v, v, -1.0f);
+        HW(h, 0xF37A0, f32) = msl_atan2f(v[0], v[2]);
         break;
     case 2:
         if (moving) {
-            f32 a = func_0031C5C0(HW(h, HMOVE_LAST, f32), HW(h, HMOVE_LAST + 8, f32));
+            f32 a = msl_atan2f(HW(h, HMOVE_LAST, f32), HW(h, HMOVE_LAST + 8, f32));
 
             how = 0;
-            if (!(hwrap_abs(func_0031C5C0(n[0], n[2]) - a) <= k15deg.f)) {
+            if (!(hwrap_abs(msl_atan2f(n[0], n[2]) - a) <= k15deg.f)) {
                 HW(h, HMOVE_MODE, u8) = 0;
             }
             break;
@@ -5219,7 +5219,7 @@ void Hewie_LeftStick(Hewie *h) {
     case 3:
         Mtx_TurnY(rot, HW(h, HMOVE_CAMYAW, f32));
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
+        vu0_ScaleXYZ(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
     case 2:
         HW(h, HMOVE_DIR, f32) = 0.0f;
@@ -5235,7 +5235,7 @@ void Hewie_LeftStick(Hewie *h) {
     case 0:
         Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         Mtx_ApplyVector(v, rot, n);
-        func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
+        vu0_ScaleXYZ(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
     }
     sceVu0CopyVector(&HW(h, HMOVE_STICK, f32), e);
@@ -6358,12 +6358,12 @@ f32 Hewie_WalkDistance(Hewie *h, Character *c) {
         VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, h->c.pathId);
         return -1.0f;
     }
-    pts = func_00114FA8(0x1200);
+    pts = msl_malloc(0x1200);
     planner = gSceneGameF29740;
     n = VCALL(planner, 0x18, s32 (*)(VObject *, s32, void *))(planner, h->c.pathId, pts);
     VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, h->c.pathId);
     len = VCALL(planner, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(planner, h->c.a.pos, 0, n, pts);
-    func_00114FD0(pts);
+    msl_free(pts);
     return len;
 }
 
@@ -7540,7 +7540,7 @@ u32 Hewie_CommandPlace(Hewie *h, s32 cmd, f32 *out) {
                 sceVu0SubVector(v, gCharPlayer->a.pos, gCharPursuer->a.pos);
             }
             sceVu0Normalize(v, v);
-            func_0010E640(v, v, 15.0f);
+            vu0_ScaleXYZ(v, v, 15.0f);
             sceVu0AddVector(p, gCharPlayer->a.pos, v);
             if (free_at(h, &tri, p)) {
                 sceVu0CopyVector(out, p);
@@ -7997,7 +7997,7 @@ void Hewie_StateSteered(Hewie *h) {
             HW(h, 0xF3710, u8) = 0;
         }
     } else {
-        a = func_0031C5C0(HW(h, 0xF3700, f32), HW(h, 0xF3708, f32));
+        a = msl_atan2f(HW(h, 0xF3700, f32), HW(h, 0xF3708, f32));
         if (HW(h, 0xF3604, s32) != 8) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
@@ -8072,7 +8072,7 @@ void Hewie_StateKeepNear(Hewie *h) {
                 break;
             }
             sceVu0SubVector(d, h->c.a.pos, at);
-            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = msl_atan2f(d[0], d[2]);
             HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
         }
     }
@@ -8296,7 +8296,7 @@ void Hewie_StateWander(Hewie *h) {
             HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 30 + 30;
             HW(h, 0xF36B8, s32) = 30;
             sceVu0SubVector(d, h->c.a.pos, h->c.unk110);
-            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = msl_atan2f(d[0], d[2]);
             HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 30.0f, 30, 150, 30);
         }
     }
@@ -8455,7 +8455,7 @@ void Hewie_StateWalkPath2(Hewie *h) {
     if (anim == 0x1300) {
         HW(h, 0xF3614, f32) = 0.0f;
         HW(h, 0xF3618, f32) = Angle_Wrap(HW(h, 0x10C, f32) - h->c.a.angle[1]);
-        t = func_0031C248(off_heading(h) * 0x1.becde60000000p+0f /* 1.7453293 */ / HW(h, 0xF36C4, f32));
+        t = msl_sinf(off_heading(h) * 0x1.becde60000000p+0f /* 1.7453293 */ / HW(h, 0xF36C4, f32));
         r = 2.0f * (t * HW(h, 0xF36C4, f32)) / 0x1.921fb60000000p+1f /* 3.1415927 */;
         if (!(r <= 0x1.3333340000000p-1f /* 0.6 */)) {
             r = 0x1.3333340000000p-1f /* 0.6 */;
@@ -8614,7 +8614,7 @@ void Hewie_StateLeap(Hewie *h) {
     }
     if (MOTION_ANIM(h->c.motion) == 0x1E04) {
         Motion_RootTranslation(h->c.motion, root, 0.0f);
-        func_0010E640(v, &HW(h, 0xF36E0, f32), root[2]);
+        vu0_ScaleXYZ(v, &HW(h, 0xF36E0, f32), root[2]);
         Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         ground = h->c.a.pos[1];
@@ -8624,7 +8624,7 @@ void Hewie_StateLeap(Hewie *h) {
             y = HW(h, 0xF36C8, f32) + root[1] * HW(h, 0xF36C4, f32);
         }
     } else {
-        func_0010E640(v, &HW(h, 0xF36E0, f32), 3.0f);
+        vu0_ScaleXYZ(v, &HW(h, 0xF36E0, f32), 3.0f);
         Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         ground = h->c.a.pos[1];
@@ -8668,7 +8668,7 @@ void Hewie_StateRunForSpot(Hewie *h) {
         HW(h, 0x10C, f32) = a;
         turn_toward(h, a, 0x1.6571860000000p-2f /* 0.34906587 */);
         Motion_RootTranslation(h->c.motion, d, 0.0f);
-        func_0010E640(v, &HW(h, 0xF36E0, f32), d[2]);
+        vu0_ScaleXYZ(v, &HW(h, 0xF36E0, f32), d[2]);
         Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         y = HW(h, 0xF36C8, f32) + d[1] * HW(h, 0xF36C4, f32);
@@ -9352,7 +9352,7 @@ void Hewie_StateLeapLaunch(Hewie *h) {
     }
     a = HW(h, 0x10C, f32);
     if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
-        func_0026EE88(str_Dog_New_Hide_Attack_No_Route);
+        msl_printf(str_Dog_New_Hide_Attack_No_Route);
         hewie_want(h, 0, 0);
         return;
     }
@@ -9592,12 +9592,12 @@ void Hewie_StateSlope(Hewie *h) {
     fwd[3] = 0.0f;
     sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
     if (HW(h, 0xF36B8, s32) == 0) {
-        a = func_0031C5C0(n[0], n[2]);
+        a = msl_atan2f(n[0], n[2]);
         if (sceVu0InnerProduct(fwd, dir) < 0.0f) {
             a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
         }
     } else {
-        a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + func_0031C5C0(n[0], n[2]));
+        a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + msl_atan2f(n[0], n[2]));
         Mtx_TurnY(m, a);
         v[2] = 1.0f;
         v[0] = 0.0f;
@@ -10075,7 +10075,7 @@ void Hewie_StateToDoor(Hewie *h) {
             tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, h->c.door, p0);
             VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, h->c.door, p1);
             sceVu0SubVector(d, p1, p0);
-            ang = func_0031C5C0(d[0], d[2]);
+            ang = msl_atan2f(d[0], d[2]);
             {
                 s32 bark = HEWIE_ACTION(h) == 0x39 && by_chance(h, D_003B1230);
 
@@ -10250,7 +10250,7 @@ void Hewie_StateTackle(Hewie *h) {
         f32 y0 = HW(h, 0xF36C8, f32);
 
         h->c.a.pos[1] = y0 + (HW(h, 0xF36E4, f32) - y0) *
-                                 func_0031C248(0.5f * (0x1.921fb60000000p+1f /* 3.1415927 */ * ((f32)HW(h, 0xF36B4, s32) / (f32)HW(h, 0xF36B8, s32))));
+                                 msl_sinf(0.5f * (0x1.921fb60000000p+1f /* 3.1415927 */ * ((f32)HW(h, 0xF36B4, s32) / (f32)HW(h, 0xF36B8, s32))));
         HW(h, 0xF36B4, s32) += 1;
     }
     {
@@ -10906,7 +10906,7 @@ void Hewie_StateLeapGrip(Hewie *h) {
         return;
     }
     if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
-        func_0026EE88(str_Dog_Bite_Enemy_No_Route);
+        msl_printf(str_Dog_Bite_Enemy_No_Route);
         hewie_want(h, 0, 0);
         return;
     }
@@ -11420,7 +11420,7 @@ void Hewie_StateFlank(Hewie *h) {
                 if (rel <= 0.0f) {
                     rel = -rel;
                 }
-                reach = 20.0f + 20.0f * (1.0f - func_0031C248(rel));
+                reach = 20.0f + 20.0f * (1.0f - msl_sinf(rel));
             } else {
                 reach = 20.0f;
             }
@@ -11495,7 +11495,7 @@ void Hewie_StateKeepAway(Hewie *h) {
             HW(h, 0xF36B4, s32) = (s32)(5.0f * RNG01()) * 30 + 30;
             HW(h, 0xF36B8, s32) = 30;
             sceVu0SubVector(d, h->c.a.pos, HW(h, 0xF3544, Character *)->a.pos);
-            HW(h, 0xF36C4, f32) = func_0031C5C0(d[0], d[2]);
+            HW(h, 0xF36C4, f32) = msl_atan2f(d[0], d[2]);
             HW(h, 0xF36C4, f32) = Hewie_BestHeading(h, HW(h, 0xF36C4, f32), 10.0f + HW(h, 0xF36C8, f32), 30, 150, 30);
             if (!(Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]) <= 0.0f)) {
                 a = Angle_Wrap(HW(h, 0xF36C4, f32) - h->c.a.angle[1]);

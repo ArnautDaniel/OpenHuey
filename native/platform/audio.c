@@ -6,7 +6,7 @@ void func_001AACD0(void *snd) { (void)snd; }
 
 
 /* per-frame tick of the ADX sound system: nothing to do yet */
-void func_001AACC0(void *snd) { (void)snd; }
+void Adx_SoundTick(void *snd) { (void)snd; }
 
 /* CRI ADX streams (ADXT): adx.c */
 

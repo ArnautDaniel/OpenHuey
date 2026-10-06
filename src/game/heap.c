@@ -93,7 +93,7 @@ Heap *Heap_dtor(Heap *h, s32 flags) {
         h->vtbl = Heap_vtable;
         h->vtbl = D_004699E0;
         if ((s16)flags > 0) {
-            func_00100490(h);
+            __dl__FPv(h);
         }
     }
     return h;
@@ -507,7 +507,7 @@ BlockPool *BlockPool_dtor(BlockPool *p, s32 flags) {
             p->vtbl = D_004699E0;
         }
         if ((s16)flags > 0) {
-            func_00100490(p);
+            __dl__FPv(p);
         }
     }
     return p;

@@ -3,10 +3,10 @@
 #include <stdio.h>
 
 /* reset the IOP and set up module loading */
-void func_001BC220(void *iop) { (void)iop; }
+void Iop_Reset(void *iop) { (void)iop; }
 
 /* load IOP module `name` (SIO2MAN.IRX, LIBSD.IRX...): nothing to load; report a module id */
-int func_001BC0F0(void *iop, const char *name, int a, int b, int c) {
+int Iop_LoadModule(void *iop, const char *name, int a, int b, int c) {
     (void)iop;
     (void)a;
     (void)b;
@@ -17,7 +17,7 @@ int func_001BC0F0(void *iop, const char *name, int a, int b, int c) {
 
 /* load the IOP module embedded in the executable; *result = its start status (non-zero would
  * make Game_Init exit) */
-int func_0037E1F0(int *result) {
+int Iop_LoadEmbeddedModule(int *result) {
     *result = 0;
     return 0;
 }

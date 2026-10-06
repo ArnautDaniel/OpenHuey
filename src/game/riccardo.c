@@ -215,13 +215,13 @@ static inline void model_1310(u8 *m, void **vtbl) {
     IK2_ctor(m + 0x8D0);
     IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    __construct_array(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
     AT(m, 0xC14, s32) = 0;
     AT(m, 0xC10, s32) = 0;
-    func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+    __construct_array(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
     AT(m, 0x10D4, s32) = 0;
     AT(m, 0x10D0, s32) = 0;
     for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
@@ -585,9 +585,9 @@ void Riccardo_Setup(Pursuer *p) {
 void *RiccardoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = RiccardoModel_vtable;
-        func_001002C0(m + 0x1310, Part50_dtor, 0x50, 4);
-        func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
-        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
+        __destroy_arr(m + 0x1310, Part50_dtor, 0x50, 4);
+        __destroy_arr(m + 0xC20, Part60_dtor, 0x60, 0xC);
+        __destroy_arr(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -2047,7 +2047,7 @@ void Kind37_Update(Pursuer *p) {
         }
     }
     Stalker_ThinkTimers(p);
-    alpha = (u8)(u32)(80.0f + 80.0f * func_0031C248(PU(p, 0x17C4, f32)));
+    alpha = (u8)(u32)(80.0f + 80.0f * msl_sinf(PU(p, 0x17C4, f32)));
     if ((s32)alpha < 80) {
         VCALL(gRenderer, 0x6C, void (*)(VObject *))(gRenderer);
     }
@@ -2060,7 +2060,7 @@ void Kind37_Update(Pursuer *p) {
         }
     } else {
         f32 rnd = VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
-        f32 step = 4.0f * func_0031C058(PU(p, 0x17C4, f32)) + 10.0f * rnd;
+        f32 step = 4.0f * msl_cosf(PU(p, 0x17C4, f32)) + 10.0f * rnd;
 
         PU(p, 0x17C4, f32) = Angle_Wrap(PU(p, 0x17C4, f32) + 0x1.921fb6p+1f * step / 180.0f);
     }
@@ -2172,7 +2172,7 @@ void Kind37_Setup(Pursuer *p) {
 /* 0x0038CEE0 */
 void *RiccardoModel_ctor(u8 *m) {
     model_1310(m, RiccardoModel_vtable);
-    func_00100340(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
+    __construct_array(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
     AT(m, 0x1484, s32) = 0;
     AT(m, 0x1480, s32) = 0;
     return m;

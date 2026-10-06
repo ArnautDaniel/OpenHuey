@@ -212,7 +212,7 @@ f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw) {
         }
     }
     sceVu0SubVector(d, at, (f32 *)(st + 0x30));
-    a = Angle_Wrap(func_0031C5C0(d[0], d[2]) - yaw);
+    a = Angle_Wrap(msl_atan2f(d[0], d[2]) - yaw);
     if (a < kTurnN.f) {
         a = kTurnN.f;
     }
@@ -471,7 +471,7 @@ void LightShaft_Draw(u8 *o) {
     if (AT(o, 0x6F1, u8) == 1) {
         VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
         VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
-        glr_haze(AT(o, 0x6E0, f32), 2.0f * func_0031C248(AT(o, 0x6E4, f32)));
+        glr_haze(AT(o, 0x6E0, f32), 2.0f * msl_sinf(AT(o, 0x6E4, f32)));
     }
 }
 
@@ -514,9 +514,9 @@ s32 LightShaft_Update(u8 *o) {
         if (!(a <= kPi.f)) {
             AT(o, 0x6A0 + i * 4, f32) = a - k2Pi.f;
         }
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + 0x1.99999ap-4f /* 0.1 */ * func_0031C248(AT(o, 0x6A0 + i * 4, f32));
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + 0x1.99999ap-4f /* 0.1 */ * msl_sinf(AT(o, 0x6A0 + i * 4, f32));
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0x660 + i * 4, f32);
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + 0x1.99999ap-4f /* 0.1 */ * func_0031C058(AT(o, 0x6A0 + i * 4, f32));
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + 0x1.99999ap-4f /* 0.1 */ * msl_cosf(AT(o, 0x6A0 + i * 4, f32));
         if (AT(o, 0x6EC, s32) == 0) {
             AT(r, 0xC, s32) = AT(r, 0xC, s32) - (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1);
             if (AT(r, 0xC, s32) < 0) {

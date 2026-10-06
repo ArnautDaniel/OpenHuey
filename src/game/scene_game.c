@@ -165,7 +165,7 @@ void *SceneTableBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004699E0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -401,10 +401,10 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x0, void **) = Events_vtable;
     AT(o, 0xC, void **) = D_0046B3B8;
     DimOverlay_ctor(o + 0x20);
-    func_00100340(o + 0x120, RoomBase_ctor, RoomBase_dtor, 4, 0x110);
+    __construct_array(o + 0x120, RoomBase_ctor, RoomBase_dtor, 4, 0x110);
     Task_ctor((Task *)(o + 0x708));
     Cutscene_ctor(o + 0x938);
-    func_00100340(o + 0xBF0, Obj46BA68_ctor, Obj46BA68_dtor, 0x30, 0x20);
+    __construct_array(o + 0xBF0, Obj46BA68_ctor, Obj46BA68_dtor, 0x30, 0x20);
     AT(o, 0x702, u8) = 0xFF;
     for (i = 0; i < 17; i++) {
         AT(o, 0x564 + i * 0x18, s32) = 0;
@@ -485,7 +485,7 @@ void *AvoidPrompt_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046F3D0;
         gAvoidPrompt = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -498,7 +498,7 @@ void *AvoidPromptBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046F3D0;
         gAvoidPrompt = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -1731,7 +1731,7 @@ static u32 pick(u32 n) {
 /* a random room near `room` (SceneGame_RoomsNear, 2 or more), else -1 */
 /* 0x0039C380 */
 s32 SceneGame_RandomRoomNear(Scene *g, s32 room) {
-    s32 *list = func_00114FA8(0x104);
+    s32 *list = msl_malloc(0x104);
     u32 n;
     s32 r;
 
@@ -1740,11 +1740,11 @@ s32 SceneGame_RandomRoomNear(Scene *g, s32 room) {
     }
     n = VCALL((VObject *)g, 0xF4, u32 (*)(Scene *, s32 *, s32))(g, list, room);
     if (n < 2) {
-        func_00114FD0(list);
+        msl_free(list);
         return -1;
     }
     r = list[pick(n)];
-    func_00114FD0(list);
+    msl_free(list);
     return r;
 }
 
@@ -1872,7 +1872,7 @@ void SceneGame_RoomCreatures(Scene *g) {
             continue;
         }
         room = SG_ROOM(g);
-        list = func_00114FA8(0x104);
+        list = msl_malloc(0x104);
         if (list == NULL) {
             continue;
         }
@@ -1889,7 +1889,7 @@ void SceneGame_RoomCreatures(Scene *g) {
             }
         }
         if (m == 0) {
-            func_00114FD0(list);
+            msl_free(list);
             continue;
         }
         k = pick(m);
@@ -1913,7 +1913,7 @@ void SceneGame_RoomCreatures(Scene *g) {
             AT(mem, 0x28, u8) = 1;
             VCALL_AT(placed, 0x28, 0x14, void (*)(VObject *, s32, s32, u8, s32))(placed, list[k], -1, slot, 0);
         }
-        func_00114FD0(list);
+        msl_free(list);
     }
 }
 
@@ -1942,7 +1942,7 @@ void SceneGame_Save(Scene *g, u32 slot) {
     AT(h, 0x4, s32) = SG_ROOM(g);
     AT(h, 0x9, u8) = VCALL(sub, 0x30, u8 (*)(VObject *))(sub);
     AT(h, 0xA, u8) = (AT(g, 0x70, u32) & 0x8000) != 0;
-    func_00110878(h + 0xB);
+    sceCdReadClock(h + 0xB);
     AT(h, 0x13, u8) = AT(g, 0x1004, u8);
     AT(h, 0x14, u8) = AT(g, 0x1005, u8);
     AT(h, 0x15, u8) = AT(g, 0x1006, u8);
@@ -2336,8 +2336,8 @@ void SceneGame_MusicDirector(u8 *scene, u32 stage) {
     if (d != NULL) {
         gStageMusic = (VObject *)d;
         AT(d, 0x0, void **) = MusicDir_vtable;
-        func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
-        func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
+        __construct_array(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
+        __construct_array(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
         MusicDir_Setup(d);
         AT(d, 0x0, void **) = sVtbl[stage];
         for (i = 0; i < 6; i++) {
@@ -2396,7 +2396,7 @@ void *Obj46AEC0_dtor(u8 *o, s32 flags) {
         AT(o, 0xC, s32) = 0;
         gAdx = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2436,7 +2436,7 @@ void *Obj46B350_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046B350;
         gLights = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2448,7 +2448,7 @@ void *RoomBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = RoomBase_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2460,7 +2460,7 @@ void *Obj46BA68_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046BA68;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2504,7 +2504,7 @@ void *SceneTable_dtor(u8 *t, s32 flags) {
     AT(t, 0x10D9040, void **) = D_004699E0;
     gSceneTable = NULL;
     if ((s16)flags > 0) {
-        func_00100490(t);
+        __dl__FPv(t);
     }
     return t;
 }
@@ -2514,7 +2514,7 @@ void *SceneTable_dtor(u8 *t, s32 flags) {
 /* 0x0020E820 */
 void *NoVtable_dtor(void *o, s32 flags) {
     if (o != NULL && (s16)flags > 0) {
-        func_00100490(o);
+        __dl__FPv(o);
     }
     return o;
 }
@@ -2526,7 +2526,7 @@ void *Obj46C6F0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046C6F0;
         gCamDirector = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2540,7 +2540,7 @@ void *Obj46D780_dtor(u8 *o, s32 flags) {
         AT(o, 0x8, s32) = 0;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2809,7 +2809,7 @@ void *Obj46A9C0_dtor(u8 *o, s32 flags) {
             AT(o, 0x88, void *) = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -2821,7 +2821,7 @@ void *Obj46A9B0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x4C, void **) = D_0046A9B0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -3018,10 +3018,10 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     gLights = NULL;
     AT(g, 0xF6AFB0, void **) = Events_vtable;
     AT(g, 0xF6AFBC, void **) = D_0046B3B8;
-    func_001002C0(g + 0xF6BBA0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
+    __destroy_arr(g + 0xF6BBA0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
     Cutscene_dtor(g + 0xF6B8E8, -1);
     Task_dtor((Task *)(g + 0xF6B6B8), -1);
-    func_001002C0(g + 0xF6B0D0, RoomBase_dtor, 4, 0x110);
+    __destroy_arr(g + 0xF6B0D0, RoomBase_dtor, 4, 0x110);
     Progress73EC80_dtor(g + 0xF6AFD0, -1);
     EventsBase_dtor((void **)(g + 0xF6AFBC), 0);
     Obj46BA80_dtor((void **)(g + 0xF6AFB0), 0);

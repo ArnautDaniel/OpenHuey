@@ -112,7 +112,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
     Progress *p = gProgress;
     VObject *rooms = gRooms;
     s32 cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-    s32 *list = func_00114FA8(0x104);
+    s32 *list = msl_malloc(0x104);
     u32 n, m = 0, i, e;
     u8 *pu, *pl;
     s32 from, to = -1, ok = 0;
@@ -122,7 +122,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
     }
     n = VCALL(p, 0x3C, u32 (*)(Progress *, s32 *, s32))(p, list, cur);
     if (n == 0) {
-        func_00114FD0(list);
+        msl_free(list);
         return 0;
     }
     for (i = 0; i < n; i++) {
@@ -149,7 +149,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
         }
     }
     if (m == 0) {
-        func_00114FD0(list);
+        msl_free(list);
         return 0;
     }
     i = (u8)(u32)((f32)m * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
@@ -170,7 +170,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
     if (ok) {
         Pursuer_IntoRoomByEvent((Pursuer *)pu, list[i], (AT(o, 0x0, u32) & 0x80000000) != 0, plan, to);
     }
-    func_00114FD0(list);
+    msl_free(list);
     return ok;
 }
 
@@ -657,7 +657,7 @@ void **SmallObj46D800_dtor(void **obj, s32 flags) {
             *obj = Helper469D00_vtable;
         }
         if ((s16)flags > 0) {
-            func_00100490(obj);
+            __dl__FPv(obj);
         }
     }
     return obj;
@@ -2176,7 +2176,7 @@ void Pursuer_DoorPushThrough(Pursuer *p) {
         f32 v[4] __attribute__((aligned(16)));
 
         Heading_Vector(v, PU(p, 0x1634, f32));
-        func_0010E640(v, v, 3.0f);
+        vu0_ScaleXYZ(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
     }
     if ((Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) != 1) {
@@ -2558,7 +2558,7 @@ void Pursuer_DoorBackOff(Pursuer *p) {
         f32 v[4] __attribute__((aligned(16)));
 
         Heading_Vector(v, PU(p, 0x1634, f32));
-        func_0010E640(v, v, 3.0f);
+        vu0_ScaleXYZ(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
     }
     h = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + PU(p, 0x1634, f32));
@@ -4431,7 +4431,7 @@ void Pursuer_StateBargedThrough(Pursuer *p) {
             }
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
-        func_0010E640(v, v, 3.0f);
+        vu0_ScaleXYZ(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
         if (!(Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             PU(p, 0x1634, s32) = 0;
@@ -4902,7 +4902,7 @@ void Pursuer_StateKnockedThrough(Pursuer *p) {
             }
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
-        func_0010E640(v, v, 3.0f);
+        vu0_ScaleXYZ(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
         if (!(Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             PU(p, 0x1634, s32) = 0;
@@ -4961,7 +4961,7 @@ void Pursuer_DoorBackAway(Pursuer *p) {
             p->c.a.unk2B = 0;
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
-        func_0010E640(v, v, 3.0f);
+        vu0_ScaleXYZ(v, v, 3.0f);
         Actor_Move(&p->c.a, v);
     }
 }
@@ -6316,7 +6316,7 @@ void Pursuer_LookAround(Pursuer *p) {
             amp = VCALL(p, 0x2E0, f32 (*)(Pursuer *))(p) / 2.0f;
         }
         MOTION_AT(p, 0x858, f32) = Angle_Wrap(MOTION_AT(p, 0x858, f32) +
-                                                  amp * func_0031C058(Angle_Wrap(ph * (0x1.921fb60000000p+2f /* 6.2831855 */ / VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p)))));
+                                                  amp * msl_cosf(Angle_Wrap(ph * (0x1.921fb60000000p+2f /* 6.2831855 */ / VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p)))));
         PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
         PU(p, 0x1624, s32)++;
     } else {
@@ -13535,7 +13535,7 @@ s32 Eye_CanSee(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 rang
     if (dx == 0.0f && dz == 0.0f) {
         return 0;
     }
-    a = func_0031C5C0(dx, dz);
+    a = msl_atan2f(dx, dz);
     if (!(dist <= range)) {
         return 0;
     }
@@ -13560,7 +13560,7 @@ s32 Eye_ActorSees(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f3
     if (dx == 0.0f && dz == 0.0f) {
         return 0;
     }
-    a = func_0031C5C0(dx, dz);
+    a = msl_atan2f(dx, dz);
     if (!(dist <= range)) {
         return 0;
     }
@@ -13614,7 +13614,7 @@ s32 Npc_SeesChar(Pursuer *p, Character *c) {
     dx = c->a.pos[0] - p->c.a.pos[0];
     dz = c->a.pos[2] - p->c.a.pos[2];
     if (!(dx == 0.0f && dz == 0.0f)) {
-        a = func_0031C5C0(dx, dz);
+        a = msl_atan2f(dx, dz);
         if (dist <= range) {
             a = a - heading;
             if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {
@@ -13671,7 +13671,7 @@ s32 Npc_SeesPoint(Pursuer *p, u32 tri, const f32 *pos) {
     dx = pos[0] - p->c.a.pos[0];
     dz = pos[2] - p->c.a.pos[2];
     if (!(dx == 0.0f && dz == 0.0f)) {
-        a = func_0031C5C0(dx, dz);
+        a = msl_atan2f(dx, dz);
         if (dist <= range) {
             a = a - heading;
             if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {

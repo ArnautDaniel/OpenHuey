@@ -248,7 +248,7 @@ s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
             if (o == NULL) {
                 continue;
             }
-            AT(o, 0x7C, f32) = 0.5f + 0.5f * func_0031C058(AT(o, 0x30, f32));
+            AT(o, 0x7C, f32) = 0.5f + 0.5f * msl_cosf(AT(o, 0x30, f32));
             a = AT(o, 0x30, f32) + kStep.f;
             AT(o, 0x30, f32) = a;
             if (!(a <= kPi.f)) {

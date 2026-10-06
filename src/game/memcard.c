@@ -253,7 +253,7 @@ BootCard *BootCard_dtor(BootCard *b, s32 flags) {
             b->task.child = NULL;
         }
         if ((s16)flags > 0) {
-            func_00100490(b);
+            __dl__FPv(b);
         }
     }
     return b;
@@ -265,7 +265,7 @@ void *MemCardBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AE60;
         gMemCard = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -291,7 +291,7 @@ MemCard *MemCard_dtor(MemCard *mc, s32 flags) {
         mc->vtbl = D_0046AE60;
         gMemCard = NULL;
         if ((s16)flags > 0) {
-            func_00100490(mc);
+            __dl__FPv(mc);
         }
     }
     return mc;
@@ -354,7 +354,7 @@ void MemCard_Tick(MemCard *mc) {
 /* shut the memory card library down (the mc argument is unused) */
 /* 0x00226560 */
 s32 MemCard_Shutdown(MemCard *mc) {
-    return func_00110B60();
+    return sceMcEnd();
 }
 
 #ifdef HG_NATIVE

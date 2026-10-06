@@ -178,7 +178,7 @@ Camera *Camera_dtor(Camera *c, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_00100490(c);
+            __dl__FPv(c);
         }
     }
     return c;
@@ -222,7 +222,7 @@ void *CameraBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469B40;
         gCamera = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -530,7 +530,7 @@ void *CamDirector_dtor(u8 *d, s32 flags) {
         AT(d, 0x1C, s32) = 0;
         AT(d, 0x20, s32) = 0;
         if ((s16)flags > 0) {
-            func_00100490(d);
+            __dl__FPv(d);
         }
     }
     return d;
@@ -688,14 +688,14 @@ void CamDirector_KeepInView(u8 *o, s32 rate) {
     sceVu0SubVector(t, t, eye);
     ht = __builtin_sqrtf(__builtin_fabsf(t[2] * t[2] + t[0] * t[0]));
     hd = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
-    a = func_0031C5C0(t[1], ht);
-    b = -Angle_Wrap(a - func_0031C5C0(d[1], hd));
+    a = msl_atan2f(t[1], ht);
+    b = -Angle_Wrap(a - msl_atan2f(d[1], hd));
     if (!((b <= 0.0f ? -b : b) <= k5deg.f)) {
         b = !(b <= 0.0f) ? b - k5deg.f : b + k5deg.f;
         VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, b * (f32)rate / 100.0f, 0.0f);
     }
-    a = func_0031C5C0(t[0], t[2]);
-    b = Angle_Wrap(a - func_0031C5C0(d[0], d[2]));
+    a = msl_atan2f(t[0], t[2]);
+    b = Angle_Wrap(a - msl_atan2f(d[0], d[2]));
     if ((b <= 0.0f ? -b : b) <= k10deg.f) {
         return;
     }
@@ -934,12 +934,12 @@ void CamDirector_Ease(u8 *d) {
             AT(d, 0x8C, u8) = cut - 1;
             limDeg = 180.0f * AT(d, 0x88, f32) / kPi.f;
             fovDeg = 180.0f * AT(d, 0x84, f32) / kPi.f;
-            deg = fovDeg - (1.0f + func_0031C058(0.0f)) * limDeg;
+            deg = fovDeg - (1.0f + msl_cosf(0.0f)) * limDeg;
         } else if (AT(d, 0x90, u32) < 60) {
             AT(d, 0x90, u32)++;
             limDeg = 180.0f * AT(d, 0x88, f32) / kPi.f;
             fovDeg = 180.0f * AT(d, 0x84, f32) / kPi.f;
-            deg = fovDeg - (1.0f + func_0031C058(kPi.f * (f32)AT(d, 0x90, u32) / 60.0f)) * limDeg;
+            deg = fovDeg - (1.0f + msl_cosf(kPi.f * (f32)AT(d, 0x90, u32) / 60.0f)) * limDeg;
         } else {
             AT(d, 0x8C, u8) = 0x80;
             deg = 180.0f * AT(d, 0x84, f32) / kPi.f;
@@ -1005,7 +1005,7 @@ void CamDirector_RoomStart(u8 *d, s32 target) {
     AT(d, 0x88, f32) = kPi.f * (k02.f * (180.0f * AT(d, 0x84, f32) / kPi.f)) / 180.0f;
     limDeg = 180.0f * AT(d, 0x88, f32) / kPi.f;
     fovDeg = 180.0f * AT(d, 0x84, f32) / kPi.f;
-    AT(d, 0x80, f32) = kPi.f * (fovDeg - (1.0f + func_0031C058(0.0f)) * limDeg) / 180.0f;
+    AT(d, 0x80, f32) = kPi.f * (fovDeg - (1.0f + msl_cosf(0.0f)) * limDeg) / 180.0f;
     AT(d, 0x8C, u8) = 0;
     AT(d, 0x90, s32) = 0;
     if (target != 0) {
@@ -1144,7 +1144,7 @@ void Camera_GetView(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->view); 
 
 /* +0x68 heading of the view direction */
 /* 0x00122000 */
-f32 Camera_ViewHeading(Camera *c) { return func_0031C5C0(c->view[0][2], c->view[2][2]); }
+f32 Camera_ViewHeading(Camera *c) { return msl_atan2f(c->view[0][2], c->view[2][2]); }
 
 /* +0x6C */
 /* 0x00121FF0 */
@@ -1357,7 +1357,7 @@ void Camera_ViewMatrix(Camera *c, f32 (*out)[4]) {
     c->unk70[1] = c->target[1] - c->eye[1];
     c->unk70[2] = c->target[2] - c->eye[2];
     sceVu0Normalize(c->unk70, c->unk70);
-    AT(c, 0x8, f32) = 0x1.666666p+0f / func_0031C338(0.5f * c->fov);
+    AT(c, 0x8, f32) = 0x1.666666p+0f / msl_tanf(0.5f * c->fov);
     if (c->unk4 == 0.0f) {
         s[0] = 0.0f;
         s[2] = 0.0f;

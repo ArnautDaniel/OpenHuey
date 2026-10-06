@@ -112,7 +112,7 @@ void *MovieLibBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x4, u8) = 0;
         gMovieLib = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -136,7 +136,7 @@ void *MovieSys_dtor(u8 *o, s32 flags) {
         AT(o, 0xC, s32) = 0;
         gAdx = NULL;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -154,7 +154,7 @@ MovieLib *MovieLib_dtor(MovieLib *lib, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_00100490(lib);
+            __dl__FPv(lib);
         }
     }
     return lib;
@@ -164,13 +164,13 @@ MovieLib *MovieLib_dtor(MovieLib *lib, s32 flags) {
  * most, 6 Mbit/s) */
 /* 0x002266F0 */
 void MovieLib_Setup(MovieLib *lib) {
-    func_00115D20(lib->init, 0, 0x20);
+    msl_memset(lib->init, 0, 0x20);
     *(f32 *)(lib->init + 0x0) = 0x1.df851ep+5f;   /* 59.94 */
     *(s32 *)(lib->init + 0x4) = 1;
     *(s32 *)(lib->init + 0x8) = 1;
     lib->init[0xC] = 1;
     mwPlyInitSfdFx(lib->init);
-    func_00115D20(lib->create, 0, 0x30);
+    msl_memset(lib->create, 0, 0x30);
     CPRM(lib, 0x48, s32) = 0;
     CPRM(lib, 0x28, s32) = 1;
     CPRM(lib, 0x2C, s32) = 6000000;
@@ -355,7 +355,7 @@ void *Sud_Version(void) {
 /* (possibly dead code: nothing in the game references it) */
 /* 0x0025C2F8 */
 s64 Ticks_Convert(s64 ticks) {
-    return func_0011CE88(ticks, gTimerRate);
+    return sf_divdi3(ticks, gTimerRate);
 }
 
 /* in microseconds, milliseconds, seconds */
@@ -420,9 +420,9 @@ void MovieLib_SetWork(MovieLib *lib, void *work) {
 /* +0x14 shut the library down */
 /* 0x00226680 */
 void MovieLib_Shutdown_14(MovieLib *lib) {
-    func_0023AE40();
-    func_00115D20(lib->init, 0, 0x20);
-    func_00115D20(lib->create, 0, 0x30);
+    mwPlyFinishSfdFx();
+    msl_memset(lib->init, 0, 0x20);
+    msl_memset(lib->create, 0, 0x30);
 }
 
 /* +0x18 create a player (NULL without a work buffer or on failure) */
@@ -431,7 +431,7 @@ void *MovieLib_CreatePlayer(MovieLib *lib) {
     if (CPRM(lib, 0x40, void *) == NULL) {
         return NULL;
     }
-    return func_00238BF0(lib->create);
+    return mwPly_CreateSofdec(lib->create);
 }
 
 /* +0x1C the movie's size and kind */
@@ -481,7 +481,7 @@ static inline s32 movie_level(Movie *m) {
     if (v == 0.0f) {
         db = -960;
     } else {
-        db = (s32)(100.0f * func_0031C830(v));
+        db = (s32)(100.0f * msl_log10f(v));
     }
     if (db > 0) {
         db = 0;
@@ -574,17 +574,17 @@ s32 Movie_FrameShown(Movie *m) {
 /* +0x1C per frame: take the decoded frame and draw it; at the end, finish (or loop) */
 /* 0x002B6510 */
 void Movie_Frame(Movie *m) {
-    s32 t = func_0023C480(m->ply);
+    s32 t = mwPlyGetTime(m->ply);
 
     if (t != m->time) {
         m->time = t;
     }
-    func_00239828(m->ply, &m->frame);
+    mwPlyGetCurFrm(m->ply, &m->frame);
     if (m->frame != NULL) {
         m->shownFrame = m->frameNo;
         VCALL(m, 0x20, void (*)(Movie *))(m);
         m->hasFrame = 1;
-        func_0023A180(m->ply);
+        mwPlyRelCurFrm(m->ply);
     }
     m->stat = VCALL(m->ply, 0x20, s32 (*)(VObject *))(m->ply);
     if ((u8)(m->stat - 3) < 2) {
@@ -614,7 +614,7 @@ s32 Movie_Restart(Movie *m) {
         return 0;
     }
     if (m->dir != 0) {
-        func_001E7430(0, m->dir);
+        CriFs_SetDir(0, m->dir);
     }
     VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
     m->hasFrame = 0;
@@ -625,7 +625,7 @@ s32 Movie_Restart(Movie *m) {
 /* restart the file after an error */
 static inline void movie_retry(Movie *m) {
     if (m->dir != 0) {
-        func_001E7430(0, m->dir);
+        CriFs_SetDir(0, m->dir);
     }
     VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
 }
@@ -663,7 +663,7 @@ void Movie_StatePausedFirst(Movie *m) {
     movie_take_screen(m);
     VCALL(m, 0x20, void (*)(Movie *))(m);
     m->hasFrame = 1;
-    func_0023A180(m->ply);
+    mwPlyRelCurFrm(m->ply);
     VCALL(m, 0x24, void (*)(Movie *))(m);
     VCALL(m->ply, 0x28, void (*)(VObject *, s32))(m->ply, 0);
     movie_sound_on(m);
@@ -678,7 +678,7 @@ void Movie_StateWaitFirst(Movie *m) {
         movie_retry(m);
         return;
     }
-    func_00239828(m->ply, &m->frame);
+    mwPlyGetCurFrm(m->ply, &m->frame);
     if (m->frame == NULL) {
         return;
     }
@@ -714,7 +714,7 @@ void Movie_StateStart(Movie *m) {
         return;
     }
     if (m->dir != 0) {
-        func_001E7430(0, m->dir);
+        CriFs_SetDir(0, m->dir);
     }
     func_0023CA88(m->ply, 2);
     VCALL(m->ply, 0x18, void (*)(VObject *, char *))(m->ply, m->name);
@@ -747,8 +747,8 @@ void Movie_SetFile(Movie *m, const char *path, s32 mode, s32 keep) {
             break;
         }
         if (path[i] == '\\') {
-            func_001183C0(m->name, path + i + 1);
-            func_00118978(dir, path, i);
+            msl_strcpy(m->name, path + i + 1);
+            msl_strncpy(dir, path, i);
             dir[i] = 0;
             break;
         }
@@ -758,7 +758,7 @@ void Movie_SetFile(Movie *m, const char *path, s32 mode, s32 keep) {
         m->keepRenderer = keep;
     } else {
         m->dir = VCALL(gFileLoader, 0x3C, s32 (*)(VObject *, char *))(gFileLoader, NULL);
-        func_001183C0(m->name, path);
+        msl_strcpy(m->name, path);
         m->keepRenderer = keep;
     }
     m->time = 0;
@@ -787,7 +787,7 @@ void Movie_Entry(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    m->work = func_00114DA8(0x40, size);
+    m->work = msl_memalign(0x40, size);
     if (m->work == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
@@ -815,13 +815,13 @@ Movie *Movie_dtor(Movie *m, s32 flags) {
             m->ply = NULL;
         }
         if (m->work != NULL) {
-            func_00114FD0(m->work);
+            msl_free(m->work);
             m->work = NULL;
         }
         m->name[0] = 0;
         m->hasFrame = 0;
         if (m->frames != NULL) {
-            func_00114FD0(m->frames);
+            msl_free(m->frames);
             m->frames = NULL;
         }
         if (&m->ply != NULL) {
@@ -926,7 +926,7 @@ void MovieOwnBuf_Draw(Movie *m) {
 /* +0x20 the frame into the next of the two */
 /* 0x002FECD0 */
 void MovieOwnBuf_TakeFrame(Movie *m) {
-    func_002410B0(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * 0x38000);
+    mwPly_CopyFrame(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * 0x38000);
     FlushCache(0);
     m->frameBuf ^= 1;
 }
@@ -943,7 +943,7 @@ void MovieOwnBuf_Entry(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    m->work = func_00114DA8(0x40, size);
+    m->work = msl_memalign(0x40, size);
     if (m->work == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
@@ -955,7 +955,7 @@ void MovieOwnBuf_Entry(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
     }
     m->frames = (u8 *)gProgress + 0xCA6C0;
-    func_0023E878(m->ply, 0x10, 0x20, 0);
+    Sofdec_SetParam(m->ply, 0x10, 0x20, 0);
     Movie_SetState(m, &Movie_StateStart_ptmf6);
 }
 
@@ -998,7 +998,7 @@ static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    m->work = func_00114DA8(0x40, size);
+    m->work = msl_memalign(0x40, size);
     if (m->work == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
@@ -1011,7 +1011,7 @@ static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s
     }
     m->frames = (u8 *)gProgress + at;
     if (setting) {
-        func_0023E878(m->ply, 0x10, 0x20, 0);
+        Sofdec_SetParam(m->ply, 0x10, 0x20, 0);
     }
     Movie_SetState(m, start);
 }
@@ -1030,7 +1030,7 @@ static inline __attribute__((always_inline)) u8 movie_shot(Movie *m, u8 *shot, u
 
 /* +0x20 the decoded frame copied into the next of the two (`size` bytes each) */
 static inline __attribute__((always_inline)) void movie_take(Movie *m, u32 size, s32 flush, s32 mark) {
-    func_002410B0(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * size);
+    mwPly_CopyFrame(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * size);
     if (flush) {
         FlushCache(0);
     }
@@ -1197,7 +1197,7 @@ u8 MovieCopied_Shot(Movie *m, u8 *shot) {
 /* +0x20 the frame copied */
 /* 0x002C6320 */
 void MovieCopied_TakeFrame(Movie *m) {
-    func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
+    msl_memcpy(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
     m->frameBuf ^= 1;
 }
 
@@ -1225,7 +1225,7 @@ void MovieAdded_Entry(Movie *m) {
 /* +0x20 the frame copied */
 /* 0x002C8A50 */
 void MovieAdded_TakeFrame(Movie *m) {
-    func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
+    msl_memcpy(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
     m->frameBuf ^= 1;
 }
 

@@ -707,7 +707,7 @@ void *Pair_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, s32) = 0;
         AT(o, 0x4, s32) = 0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -720,7 +720,7 @@ void *Pair44_dtor(u8 *o, s32 flags) {
         AT(o, 0x44, s32) = 0;
         AT(o, 0x48, s32) = 0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -734,7 +734,7 @@ void *Triple_dtor(u8 *o, s32 flags) {
         AT(o, 0x4, s32) = 0;
         AT(o, 0x8, s32) = 0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -749,7 +749,7 @@ void *Quad4_dtor(u8 *o, s32 flags) {
         AT(o, 0x4, s32) = 0;
         AT(o, 0x8, s32) = 0;
         if ((s16)flags > 0) {
-            func_00100490(o);
+            __dl__FPv(o);
         }
     }
     return o;
@@ -760,11 +760,11 @@ void *Quad4_dtor(u8 *o, s32 flags) {
 void *DaniellaModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = DaniellaModel_vtable;
-        func_001002C0(m + 0x14D0, BoneHangPoint_dtor, 0x50, 2);
+        __destroy_arr(m + 0x14D0, BoneHangPoint_dtor, 0x50, 2);
         AT(m, 0x14A0, void **) = SprungPoint_vtable;
         AT(m, 0x14A0, void **) = SpringPartBase_vtable;
-        func_001002C0(m + 0xDE0, HairPoint_dtor, 0x70, 0xA);
-        func_001002C0(m + 0xAA0, HangingPart_dtor, 0x50, 6);
+        __destroy_arr(m + 0xDE0, HairPoint_dtor, 0x70, 0xA);
+        __destroy_arr(m + 0xAA0, HangingPart_dtor, 0x50, 6);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -2001,18 +2001,18 @@ void *DaniellaModel_ctor(u8 *m) {
         AT(e, 0x34, s32) = 0;
         AT(e, 0x30, s32) = 0;
     }
-    func_00100340(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
+    __construct_array(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
     for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
         AT(e, 0x30, void **) = D_00470390;
     }
     for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
-    func_00100340(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
+    __construct_array(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
     for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
         AT(e, 0x30, void **) = D_00470390;
     }
     AT(m, 0x14A0, void **) = SprungPoint_vtable;
-    func_00100340(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
+    __construct_array(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
     return m;
 }
