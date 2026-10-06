@@ -2682,6 +2682,30 @@ static inline f32 cr19_stride(Character *c) {
     return v[2];
 }
 
+/* reset: stopped (its path dropped), speed 0.7, a wait of 150 / 300 / 450 (+0x42), no target;
+   its flags +0x6B kept only with bit 0x80 */
+static inline void cr19_reset(Character *c) {
+    u8 *k = CR(c);
+
+    AT(k, 0x69, u8) = 0;
+    AT(c, 0xF8, s32) = 0;
+    func_00127060(c);
+    AT(k, 0x64, u8) = 0;
+    AT(k, 0x60, u8) = 0;
+    AT(k, 0x40, s16) = 0;
+    AT(k, 0x6C, u8) = 0;
+    AT(k, 0x4, u32) = 0x3F333333;   /* 0.7f */
+    AT(k, 0x1C, s32) = 0;
+    if (!(AT(k, 0x6B, u8) & 0x80)) {
+        AT(k, 0x6B, u8) = 0;
+    }
+    AT(k, 0x42, s16) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 0xF) % 3 * 150 + 150;
+    AT(k, 0x3C, s32) = 0;
+    AT(k, 0x38, s32) = 0;
+    AT(k, 0x34, s32) = 0;
+    AT(k, 0x30, s32) = 0;
+}
+
 /* (as func_002DF470) on the way to `tri`: while not there the path ahead is looked at (one
    stride; unused); a door on the way (+0x4C bit 0) with an exit +0x100 is gone through */
 void func_003250D0(Character *c, u32 tri) {
@@ -2772,22 +2796,210 @@ s32 func_00325410(Character *c, s32 exit) {
     for (i = 0; i < 8; i++) {
         AT(k, 0x50 + i * 2, s16) = 0;
     }
-    AT(k, 0x69, u8) = 0;
-    AT(c, 0xF8, s32) = 0;
-    func_00127060(c);
-    AT(k, 0x64, u8) = 0;
-    AT(k, 0x60, u8) = 0;
-    AT(k, 0x40, s16) = 0;
-    AT(k, 0x6C, u8) = 0;
-    AT(k, 0x4, u32) = 0x3F333333;   /* 0.7f */
-    AT(k, 0x1C, s32) = 0;
-    if (!(AT(k, 0x6B, u8) & 0x80)) {
-        AT(k, 0x6B, u8) = 0;
-    }
-    AT(k, 0x42, s16) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 0xF) % 3 * 150 + 150;
-    AT(k, 0x3C, s32) = 0;
-    AT(k, 0x38, s32) = 0;
-    AT(k, 0x34, s32) = 0;
-    AT(k, 0x30, s32) = 0;
+    cr19_reset(c);
     return 0;
+}
+
+extern void func_00124890(Actor *a, s32 kind);
+
+/* (as func_002DEA80) +0x9C set up to come after Fiona: out (+0x6E, +0x6F cleared) with a rest
+   time (+0x4A, 1800 .. 7200), a path to her room and its length through its doors */
+void func_00324FA0(Character *c, s32 a1, s32 a2) {
+    u8 *k = CR(c);
+    s32 n;
+
+    VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, 2);
+    AT(k, 0x6F, u8) = 0;
+    AT(k, 0x6E, u8) = 1;
+    AT(k, 0x4A, s16) = ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) + 1) * 1800;
+    if (func_00126F80(c, gCharPlayer->a.room, -1, AT(k, 0x0, s32), -1) == -1) {
+        return;
+    }
+    for (n = 0; n < c->unk1384; n++) {
+        VObject *rooms = D_0044E568;
+        u16 door = AT(c->unk138C, n * 2, u16);
+
+        AT(&c->unk14C4, 0, f32) += (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, door, a1);
+        c->unk14C0 = AT(c->unk138C, n * 2, u16);
+    }
+}
+
+/* (as func_002E0DB0) the room entered, by its state +0x8: 2 - reset to 0; 1 - in the room
+   being played, back on its triangle (or somewhere on its level) with its doors noted (+0x50).
+   1 unless state 1 */
+s32 func_00325B60(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    u32 tri;
+
+    switch (AT(k, 0x8, s32)) {
+    case 2:
+        AT(k, 0x8, s32) = 0;
+        return 1;
+    case 1:
+        break;
+    default:
+        return 1;
+    }
+    if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return 0;
+    }
+    tri = c->a.navTri;
+    if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
+        func_00124890(&c->a, AT(k, 0x0, s32));
+    } else {
+        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
+        VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
+    }
+    creature_at_doors(c, 0x50);
+    return 0;
+}
+
+extern VObject *D_0044E4F0;   /* the renderer */
+extern f32 func_002E2D00(f32 angle);
+
+/* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
+   alpha grows as it stands further inside from the door's event plane (the plane's normal
+   along the door's facing, the further of its two sides): 0 at the plane, 0x80 half the
+   plane's width in; layer 0xF */
+void func_003247D0(Character *c) {
+    VObject *rooms, *ev;
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 face[4] __attribute__((aligned(16)));
+    f32 p0[4] __attribute__((aligned(16)));
+    f32 p1[4] __attribute__((aligned(16)));
+    f32 p2[4] __attribute__((aligned(16)));
+    f32 e[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 mid[4] __attribute__((aligned(16)));
+    u16 bit = (1 << *(u8 *)&c->a.slot) & 0xFFFF;
+    u32 d;
+    f32 dot, half;
+    u32 col;
+
+    for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+        if ((AT(c, 0x1590 + (d & 0xFF) * 2, u16) & bit) != 0) {
+            break;
+        }
+    }
+    if ((d & 0xFF) == 8) {
+        c->unk152C = 0xA;
+        return;
+    }
+    rooms = D_0044E568;
+    VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, d, a);
+    VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, d, b);
+    sceVu0SubVector(face, b, a);
+    *(s32 *)&face[1] = 0;
+    sceVu0Normalize(face, face);
+    ev = D_0044E4D0;
+    VCALL(ev, 0x24, void (*)(VObject *, u32, f32 *, f32 *, f32 *))(ev, d, p0, p1, p2);
+    sceVu0SubVector(e, p1, p0);
+    *(s32 *)&e[1] = 0;
+    sceVu0Normalize(n, e);
+    dot = sceVu0InnerProduct(face, n);
+    if ((dot <= 0.0f ? -dot : dot) < 0x1.6a09e6p-1f /* 0.7071 */) {
+        sceVu0SubVector(e, p1, p2);
+        *(s32 *)&e[1] = 0;
+        sceVu0Normalize(n, e);
+        dot = sceVu0InnerProduct(face, n);
+    }
+    if (dot < 0.0f) {
+        sceVu0ScaleVector(n, n, -1.0f);
+    }
+    half = 0.5f * __builtin_sqrtf(e[2] * e[2] + e[0] * e[0]);
+    VCALL(ev, 0x20, void (*)(VObject *, u32, f32 *))(ev, d, mid);
+    sceVu0SubVector(e, mid, c->a.pos);
+    dot = sceVu0InnerProduct(e, n);
+    c->unk152C = 0xF;
+    if (dot <= 0.0f) {
+        col = 0x808080;
+    } else {
+        col = (u32)(128.0f * (dot / half));
+        if (col > 0x80) {
+            col = 0x80;
+        }
+        col = col << 24 | 0x808080;
+    }
+    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, col);
+}
+
+/* from save slot `slot` (gProgress +0x878, 0x24 each) when in use (+0x12): its timers,
+   strength x10, out and its flags, kind, state, heading (+0x1C), +0x28; a rest time when out */
+void func_00324AE0(Character *c, s32 slot) {
+    u8 *s = (u8 *)gProgress + slot * 0x24 + 0x878;
+    u8 *k = CR(c);
+    f32 h;
+
+    if (AT(s, 0x12, u8) == 0) {
+        return;
+    }
+    AT(k, 0x44, s16) = AT(s, 0xC, s16);
+    AT(k, 0x48, s16) = AT(s, 0xF, u8) * 10;
+    AT(k, 0x6E, u8) = AT(s, 0x10, u8);
+    AT(k, 0x6F, u8) = AT(s, 0x11, u8);
+    AT(k, 0x70, u8) = AT(s, 0x13, u8);
+    AT(k, 0x62, u8) = AT(s, 0x14, u8);
+    AT(k, 0x69, u8) = AT(k, 0x62, u8);
+    AT(c, 0x14C8, s32) = AT(s, 0x18, s32);
+    AT(k, 0x28, f32) = AT(s, 0x20, f32);
+    h = AT(s, 0x1C, f32);
+    c->a.angle[1] = h;
+    sceVu0UnitMatrix(c->a.rot);
+    sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
+    if (AT(k, 0x6E, u8) != 0) {
+        AT(k, 0x4A, s16) = ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) + 1) * 1800;
+    }
+}
+
+extern const u8 D_0042C460[];   /* per kind (^ 0x80): s32, s16 */
+
+/* +0xA0 set up: mode `mode` (+0x0), kind `kind` (+0x6D) with its table entry, heading `deg`,
+   strength x10 (+0x48); from save slot `slot` when given (a reset if its state was 2). Not out:
+   +0x28 = `f` without a slot, state 0xB when +0x28 > 0; kinds 8 / 9 (^ 0x80) block nothing and
+   plan as kind 6. Then the Character's reset (+0x64) */
+void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32 slot, u32 deg, f32 f) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    u8 *k = CR(c);
+    const u8 *e;
+    f32 h;
+    u32 kk;
+
+    AT(k, 0x0, s32) = mode;
+    AT(k, 0x6E, u8) = 0;
+    AT(k, 0x4A, s16) = 0;
+    AT(c, 0x14C4, s32) = 0;
+    AT(k, 0x6F, u8) = 0;
+    AT(k, 0x6D, u8) = kind;
+    e = D_0042C460 + (AT(k, 0x6D, u8) ^ 0x80) * 8;
+    AT(c, 0x14C8, s32) = AT(e, 0x0, s32);
+    AT(k, 0x46, s16) = AT(e, 0x4, s16);
+    h = func_002E2D00(kPi.f * (f32)deg / 180.0f);
+    c->a.angle[1] = h;
+    sceVu0UnitMatrix(c->a.rot);
+    sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
+    AT(k, 0x48, s16) = (s16)str * 10;
+    if (slot != -1) {
+        func_00324AE0(c, slot);
+        if (AT(k, 0x69, u8) == 2) {
+            cr19_reset(c);
+        }
+    }
+    if (AT(k, 0x6F, u8) == 0) {
+        if (slot == -1) {
+            AT(k, 0x28, f32) = f;
+        }
+        if (!(AT(k, 0x28, f32) <= 0.0f)) {
+            AT(k, 0x69, u8) = 0xB;
+            AT(k, 0x62, u8) = 0xB;
+        }
+        kk = AT(k, 0x6D, u8) ^ 0x80;
+        if (kk == 9 || kk == 8) {
+            c->a.navMask = 0;
+            c->pathReq->unk4 = 6;
+            c->pathReq->mask = 0x40080;
+        }
+    }
+    VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, mode);
 }
