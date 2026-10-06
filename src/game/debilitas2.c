@@ -61,14 +61,14 @@
 #define Debilitas_AttackTable func_002FA380
 #define Debilitas_GivesUp func_002FA640
 #define Debilitas_PickDestination func_002FA700
-#define func_00128390 func_002FA880
-#define func_001284C0 func_002FA9B0
-#define func_001286F0 func_002FABE0
-#define func_001287B0 func_002FACA0
-#define func_00128970 func_002FAE60
-#define func_00128A20 func_002FAF10
-#define func_00128CA0 func_002FB190
-#define func_00128DB0 func_002FB2A0
+#define Debilitas_StateGrab func_002FA880
+#define Debilitas_StartGrab func_002FA9B0
+#define Debilitas_StateLunge func_002FABE0
+#define Debilitas_StartLunge func_002FACA0
+#define Debilitas_StateStun func_002FAE60
+#define Debilitas_StateBlow func_002FAF10
+#define Debilitas_StateTurnToFiona func_002FB190
+#define Debilitas_StartTurnToFiona func_002FB2A0
 #define Debilitas_DoorAnim func_002FB4B0
 #define Debilitas_Stairs func_002FB4C0
 #define Debilitas_ChaseTarget func_002FB4D0
@@ -235,7 +235,8 @@ void Debilitas2_Timer10s(Pursuer *p) {
 extern u8 D_0041B570[], D_0041B590[], D_0041B5B0[], D_0041B5D0[];
 
 /* his model files (Pursuer_ModelFiles for kind 6) */
-u8 *func_002FC8F0(Pursuer *p) {
+/* 0x002FC8F0 */
+u8 *Debilitas2_ModelFileTable(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041B5D0 : D_0041B590;
 }
 

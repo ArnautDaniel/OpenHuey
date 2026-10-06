@@ -77,7 +77,7 @@ s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
     case 1:
         return Progress_Speak(gProgress, 3, 0) == 0 ? 2 : 1;
     }
-    ((void (*)(Progress *))func_0016CD30)(gProgress);
+    ((void (*)(Progress *))Progress_SpeechCall)(gProgress);
     return 1;
 }
 

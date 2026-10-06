@@ -4065,7 +4065,7 @@ void LightRing_Draw(u8 *e) {
 }
 #endif
 
-/* ---- D_0047A350 (0x130 bytes): Lorenzo's spark (func_00309890) - two quad records (+0x10 +
+/* ---- D_0047A350 (0x130 bytes): Lorenzo's spark (Lorenzo2_BlowSparks) - two quad records (+0x10 +
  * 0x60 x the current one +0x128) growing (+0x120 a frame), turning and drifting (+0x108, 12
  * each) as their alpha fades (+0x124 a frame) and their colour dims; the quad drawer at +0xD0;
  * stopped (+0x12C) once both are gone ---- */

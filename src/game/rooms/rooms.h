@@ -75,8 +75,8 @@ extern void *D_0047A3D0[];
 extern void *D_00479A80[];
 
 /* common.c */
-extern void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3);
-extern void func_0032D270(u8 *self, s32 a, f32 x, f32 y);
+extern void Progress_SpeechCall(u8 *p, s32 a1, s32 a2, s32 a3);
+extern void Kind26_MoveTo(u8 *self, s32 a, f32 x, f32 y);
 
 /* a room's class: its vtable, then the base's */
 static inline void *room_dtor(void *o, s32 flags, void **own, void **base) {
@@ -653,7 +653,7 @@ static inline s32 slam_shake(void) {
     if (gCharPursuer == NULL || AT(gCharPursuer, 0x153C, u8) != 0xA) {
         return 1;
     }
-    if (func_0030BB70((Pursuer *)gCharSlot2) != 0) {
+    if (Lorenzo2_SlamImpact((Pursuer *)gCharSlot2) != 0) {
         VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
     }
     return 1;

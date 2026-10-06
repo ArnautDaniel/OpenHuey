@@ -14,7 +14,7 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-f32 func_00310C90(u8 *st, f32 *at, f32 yaw);
+f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw);
 
 #include "gl2d.h"
 #include "ptmf.h"
@@ -78,7 +78,7 @@ static void swim_step(s32 kind, u8 *st) {
         return;
     }
 #endif
-    yaw = func_00310C90(st, (f32 *)(c + 0x10), AT(c, 0x54, f32));
+    yaw = SwimPath_Step(st, (f32 *)(c + 0x10), AT(c, 0x54, f32));
     AT(c, 0x54, f32) = yaw;
     sceVu0UnitMatrix((f32 (*)[4])(c + 0x60));
     sceVu0RotMatrixY((f32 (*)[4])(c + 0x60), (f32 (*)[4])(c + 0x60), yaw);
@@ -135,7 +135,8 @@ void *Room61_Table38(void) {
 }
 
 /* point i's way on: 20 along the line from the point before to the one after */
-void func_00310B20(u8 *st, s32 i, f32 *out) {
+/* 0x00310B20 */
+void SwimPath_PointOn(u8 *st, s32 i, f32 *out) {
     f32 b[4] __attribute__((aligned(16)));
     s32 prev = i - 1, next;
 
@@ -161,7 +162,8 @@ void func_00310B20(u8 *st, s32 i, f32 *out) {
 
 /* one frame along the path: `at` moved on the curve (kept in the box); returns the heading
  * `yaw` turned towards the way it moved, by at most 3.6 degrees */
-f32 func_00310C90(u8 *st, f32 *at, f32 yaw) {
+/* 0x00310C90 */
+f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw) {
     static const union { u32 u; f32 f; } kTurn = {0x3D80ADFD}, kTurnN = {0xBD80ADFD};
     f32 c[4][4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -182,10 +184,10 @@ f32 func_00310C90(u8 *st, f32 *at, f32 yaw) {
     sceVu0CopyVector((f32 *)(st + 0x30), at);
     path_point(c[0], st, AT(st, 0x24, s32));
     path_point(c[1], st, AT(st, 0x24, s32));
-    func_00310B20(st, AT(st, 0x24, s32), d);
+    SwimPath_PointOn(st, AT(st, 0x24, s32), d);
     sceVu0AddVector(c[1], c[1], d);
     path_point(c[2], st, next);
-    func_00310B20(st, next, d);
+    SwimPath_PointOn(st, next, d);
     sceVu0SubVector(c[2], c[2], d);
     path_point(c[3], st, next);
     for (i = 0; i < 3; i++) {
@@ -222,7 +224,8 @@ f32 func_00310C90(u8 *st, f32 *at, f32 yaw) {
 /* set path `st` up: a point at random in each cell of an nx x ny x nz grid of 10-unit cells
  * from (ox, oy, oz) into `pts`, then shuffled (30 random swaps among the first 30 per point),
  * `frames` between two */
-void func_00311140(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox, f32 oy, f32 oz) {
+/* 0x00311140 */
+void SwimPath_Setup(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox, f32 oy, f32 oz) {
     VObject *rnd;
     s16 *p = pts;
     s32 x, y, z, n;
@@ -306,20 +309,20 @@ s32 Room61_Cmd01(void *self, void *a1, u8 *cmd) {
 s32 Room61_Cmd00(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        func_00311140(D_01991210, 2, 3, 7, 0x1E0, D_019912D0, 25.0f, 0.0f, 40.0f);
+        SwimPath_Setup(D_01991210, 2, 3, 7, 0x1E0, D_019912D0, 25.0f, 0.0f, 40.0f);
         Effect_New(gEffects, 4, glint_init);
         return 1;
     case 1:
         swim_step(0x14, D_01991210);
         return 2;
     case 2:
-        func_00311140(D_01991250, 2, 3, 5, 0xF0, D_019913D0, 30.0f, 0.0f, 50.0f);
+        SwimPath_Setup(D_01991250, 2, 3, 5, 0xF0, D_019913D0, 30.0f, 0.0f, 50.0f);
         return 1;
     case 3:
         swim_step(0x15, D_01991250);
         return 2;
     case 4:
-        func_00311140(D_01991290, 2, 3, 5, 0x118, D_01991490, 30.0f, 0.0f, 50.0f);
+        SwimPath_Setup(D_01991290, 2, 3, 5, 0x118, D_01991490, 30.0f, 0.0f, 50.0f);
         return 1;
     case 5:
         swim_step(0x16, D_01991290);
@@ -346,7 +349,8 @@ u8 *LightShaft_dtor(u8 *o, s32 flags) {
 
 /* mote i (re)started at the bottom: rising 0.1 .. 0.3 a frame, grey, alpha 0x40 .. 0x7F, spread
  * 50 either way along z, sized 3/4 of its rise, a random turn */
-void func_00374BC0(u8 *o, s32 i) {
+/* 0x00374BC0 */
+void LightShaft_Mote(u8 *o, s32 i) {
     VObject *rnd;
     u8 *r;
 
@@ -384,7 +388,7 @@ void LightShaft_SetParams(u8 *o, u8 *arg) {
     case 0:
         sceVu0CopyVector((f32 *)(o + 0x650), (f32 *)arg);
         for (i = 0; i < 16; i++) {
-            func_00374BC0(o, i);
+            LightShaft_Mote(o, i);
         }
         break;
     case 1:
@@ -515,7 +519,7 @@ s32 LightShaft_Update(u8 *o) {
         if (AT(o, 0x6EC, s32) == 0) {
             AT(r, 0xC, s32) = AT(r, 0xC, s32) - (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1);
             if (AT(r, 0xC, s32) < 0) {
-                func_00374BC0(o, i);
+                LightShaft_Mote(o, i);
             }
         }
     }

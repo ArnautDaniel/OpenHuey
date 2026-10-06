@@ -1180,7 +1180,7 @@ void *func_003497E0(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -1422,7 +1422,7 @@ void func_0034A120(u8 *p) {
 
 /* Fiona's sheet model (D_00470620): +0x10 */
 void func_002F8320(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* Fiona's sheet model (D_00470620): +0x8 destructor */
@@ -1440,7 +1440,7 @@ void *func_002F7A30(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -5628,7 +5628,7 @@ void *func_0033E620(void *p, s32 flags) {
             func_00170350(m, 0);
         }
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -5668,7 +5668,7 @@ void func_0033E750(u8 *m) {
 
 /* +0x10 */
 void func_0033E740(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 extern void *D_00470540[], *D_004703A0[];
@@ -5721,7 +5721,7 @@ void *func_0016FF50(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -6483,7 +6483,7 @@ static inline void *costume_dtor(u8 *m, s32 flags, void **vtbl, s32 n, u32 at) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -6703,7 +6703,7 @@ void *func_00353C90(u8 *m, s32 flags) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -7018,7 +7018,7 @@ void *func_0035AF70(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;

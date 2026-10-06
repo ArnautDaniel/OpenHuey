@@ -59,7 +59,8 @@ s32 Room37_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* room 0x37 (D_004469A0): the fan turns, except while a movie plays */
-s32 func_0036A400(void) {
+/* 0x0036A400 */
+s32 Room37_Fan(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }

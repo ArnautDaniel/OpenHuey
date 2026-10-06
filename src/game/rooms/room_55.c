@@ -78,7 +78,8 @@ s32 Room55_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 55 (D_004210F8): the 0x18-byte effect D_00477E10 started with 0 or 1 by byte 3; 0 also
  * lays a floor quad (effect 0x1B: 60 x 60 at height 45), else the 0x6D0-byte effect D_00479400
  * is made too */
-s32 func_00305FB0(void *self, void *a1, u8 *cmd) {
+/* 0x00305FB0 */
+s32 Room55_Effect(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x18, effect_77E10_init);
     s32 on;

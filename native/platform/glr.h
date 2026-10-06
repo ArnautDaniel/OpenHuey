@@ -88,7 +88,7 @@ void glr_negative(void);
 void glr_zoom_blur(void);
 void glr_panic(int limit, int amount);
 
-/* func_0034E9E0 (the light caustic): the frame's alpha cleared before its grids, then the
+/* Caustic_Draw (the light caustic): the frame's alpha cleared before its grids, then the
  * halved screen where they left alpha >= `aref` blurred and added back at 1/2 */
 void glr_caustic_begin(void);
 void glr_caustic_glow(int aref);

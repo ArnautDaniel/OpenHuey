@@ -287,11 +287,11 @@ s32 Room92_Cmd07(void) {
         return 1;
     }
     if (AT(gCharPursuer, 0x153C, u8) == 0xA) {
-        if (func_0030BB70((Pursuer *)gCharSlot2) != 0) {
+        if (Lorenzo2_SlamImpact((Pursuer *)gCharSlot2) != 0) {
             VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     } else if (AT(gCharPursuer, 0x153C, u8) == 0x27) {
-        if (func_00365850((Pursuer *)gCharSlot2) != 0) {
+        if (Kind39_SlamImpact((Pursuer *)gCharSlot2) != 0) {
             VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     }

@@ -3769,14 +3769,14 @@ u8 *Pursuer_ModelFiles(Pursuer *p) {
     if (p->c.a.slot != 2) {
         switch (p->c.unk153C) {
         case 2: return func_0012BFB0(p);
-        case 3: return func_0020D620(p);
+        case 3: return Daniella_ModelFileTable(p);
         case 4: return func_002DC460(p);
-        case 6: return func_002FC8F0(p);
+        case 6: return Debilitas2_ModelFileTable(p);
         case 7: return func_002CF140(p);
         case 8: return D_00419DF0;
         case 9: return func_00309410(p);
         case 10: return func_0030C1B0(p);
-        case 11: return func_002F9000(p);
+        case 11: return Lorenzo_ModelFileTable(p);
         case 12: return D_00423B50;
         case 13: return D_00429750;
         case 14: case 15: return D_004297E0;
@@ -3802,7 +3802,7 @@ u8 *Pursuer_ModelFiles(Pursuer *p) {
         case 36: return func_003495B0(p);
         case 37: return func_0034D980(p);
         case 38: return D_004434F0;
-        case 39: return func_00365D10(p);
+        case 39: return Kind39_ModelFileTable(p);
         default: return NULL;
         }
     }

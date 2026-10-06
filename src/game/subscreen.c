@@ -289,7 +289,7 @@ static void sub_copy_options(SubScreen *s) {
 
 /* the save slot screen's helper object (0x15C bytes at +0xA8C80) */
 static void sub_new_slots(SubScreen *s, void **vtbl) {
-    u8 *p = func_00322570(0x15C, s->page);
+    u8 *p = SynthBase_new(0x15C, s->page);
 
     if (p != NULL) {
         AT(p, 0, void **) = D_00474020;

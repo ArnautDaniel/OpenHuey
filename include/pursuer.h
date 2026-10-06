@@ -516,7 +516,7 @@ static inline void Stalker_ThinkTimers(Pursuer *p) {
             PU(p, 0x1760, u8) = 0;
         }
     }
-    func_00129AF0(p);
+    Debilitas_StunDown(p);
     if (PU(p, 0x1794, s32) != 0) {
         PU(p, 0x1794, s32)--;
         if (PU(p, 0x1794, s32) == 0 && PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {

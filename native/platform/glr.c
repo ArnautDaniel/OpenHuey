@@ -644,7 +644,7 @@ static const char *kQuadVs =
  * The vignette (func_0021C840), uFix its strength, uRange.x its offset:
  *   12 H where its alpha (the frame's) >= uFix, else nothing
  *   13 H + the sum of H * 0x40 >> 7 at the 4 diagonal neighbours
- *      (the caustic, func_0034E9E0: 2, 12, 13, then 6 at colour 0x80 and FIX 0x40, added)
+ *      (the caustic, Caustic_Draw: 2, 12, 13, then 6 at colour 0x80 and FIX 0x40, added)
  *   15 D + ((S at p - offset) - D) * 0x40 >> 7 (D the target's own image, S the other)
  *   16 the colour with the depth of field's alpha: 0x80, stepping 0x60 .. 0 over a .. from,
  *      0x20 .. 0x80 over to .. b (view depth, from the depth image; last band passed wins)
@@ -1735,7 +1735,7 @@ static void run_post(const GlrDraw *d) {
         p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 0, kNone);
         break;
     }
-    case POST_CAUSTIC:   /* func_0034E9E0: the halved screen where alpha >= args, blurred, added at 1/2 */
+    case POST_CAUSTIC:   /* Caustic_Draw: the halved screen where alpha >= args, blurred, added at 1/2 */
         p_glProgramUniform1f(sPostProg, sPostFixLoc, 0.0f);
         post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
         p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)d->prim);

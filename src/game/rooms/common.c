@@ -46,7 +46,8 @@ void WindowFlash_Start(u8 *o);
 void Effect79B00_Start(void);
 
 /* Tail call of the sub-object's virtual +0x14 with the value at +0x73EDC0. */
-void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3) {
+/* 0x0016CD30 */
+void Progress_SpeechCall(u8 *p, s32 a1, s32 a2, s32 a3) {
     void *obj = p + 0x6FBF00;
 
     VCALL(obj, 0x14, void (*)(void *, s32, s32, s32))(obj, FLD(p, 0x73EDC0, s32), a2, a3);
@@ -107,7 +108,8 @@ extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
 extern void *D_00479A80[], *D_0047A3D0[], *D_0047A730[];
 
 /* an empty hook */
-void func_002FCB30(void) {
+/* 0x002FCB30 */
+void Room_EmptyHook(void) {
 }
 
 /* destructor (vtable D_00471060) */
@@ -189,7 +191,8 @@ static inline void smoke_init(void **o) {
     o[0x1810 / 4] = D_0046FC30;
 }
 
-s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
+/* 0x002AFE90 */
+s32 Room24_Smoke(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
     Effect_New(gEffects, 0x1C60, smoke_init);
     return 1;
 }
@@ -197,7 +200,8 @@ s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
 extern void *D_0046FF20[];
 
 /* room 54 step (D_00428040): find the nav mesh's door regions again */
-s32 func_0030FA60(void) {
+/* 0x0030FA60 */
+s32 Room54_DoorRegions(void) {
     VObject *nav = (VObject *)gNavMesh;
 
     VCALL(nav, 0x4C, void (*)(VObject *))(nav);
@@ -211,7 +215,8 @@ extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* 
 /* room 0x24 (D_004022C8): the kiln's ground, kiln and charcoal glow - byte 3 0 sets them up
  * (+0x74 0, +0x78 1, glow +0x7C 0, phase +0x30 -pi), else the glow pulses (0.5 + cos(phase) /
  * 2, the phase on by 12 degrees) */
-s32 func_002AFF80(void *self, void *a1, u8 *cmd) {
+/* 0x002AFF80 */
+s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kMinusPi = {0xC0490FDB}, kStep = {0x3E567750}, kPi = {0x40490FDB},
         k2Pi = {0x40C90FDB};
     const char *names[3];
@@ -416,7 +421,8 @@ extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
 extern VObject *D_00456E00;
 
 /* (D_004022E0's table) room effect 0x1F's colour pulsing by script variable 0 */
-s32 func_002AFD60(void) {
+/* 0x002AFD60 */
+s32 Room24_ColourPulse(void) {
     colour_pulse(0, 0x50, 0x24, 0x2A, 0x2A, 0x46);
     return 1;
 }
@@ -481,7 +487,8 @@ static inline void block_dust(u8 *mgr, s32 slot, f32 x, f32 y, f32 z) {
 /* byte 4: 0 the group at its stop; 1 / 2 a step (0.25) along x / z toward it (event 0 cleared,
  * +0x60, when one gets there) and half the time a puff by the third; 3 / 4 the grinding sound
  * (0xC) on / off at the first; 5 the placed things on the group's triangles lifted (+0x28) */
-s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
+/* 0x0030FA90 */
+s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kQ = {0x3E800000};   /* 0.25 */
     VObject *ev, *rnd;
     u32 g = cmd[3];
@@ -562,7 +569,8 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-void func_0032D270(u8 *self, s32 a, f32 x, f32 y) {
+/* 0x0032D270 */
+void Kind26_MoveTo(u8 *self, s32 a, f32 x, f32 y) {
     S32(self, 0x1624) = 0;
     S32(self, 0x1628) = 1;
     S32(self, 0x162C) = 60;

@@ -60,7 +60,8 @@ s32 RoomD0_Condition(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* the progress object's +0x7C with the caller's arguments */
-s32 func_0036DB40(void *self, s32 a1, s32 a2, s32 a3) {
+/* 0x0036DB40 */
+s32 RoomD0_ProgressCall(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
@@ -70,8 +71,11 @@ s32 RoomD0_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991AC0[i & 0xFF], a, b);
 }
 
-s32 func_0036DB90(void) { return clock_draw_saved(D_0047B290, D_004636D8); }
+/* 0x0036DB90 */
+s32 RoomD0_ClockDrawSaved(void) { return clock_draw_saved(D_0047B290, D_004636D8); }
 
-s32 func_0036DE60(void) { return clock_save(); }
+/* 0x0036DE60 */
+s32 RoomD0_ClockSave(void) { return clock_save(); }
 
-s32 func_0036DEE0(void) { return clock_stop(); }
+/* 0x0036DEE0 */
+s32 RoomD0_ClockStop(void) { return clock_stop(); }

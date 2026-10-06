@@ -52,13 +52,15 @@ s32 Room31_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991570[i & 0xFF], a, b);
 }
 
-/* (as func_00378D20) the window quad lit with flags 0x40 */
-s32 func_0031E2C0(void *self, void *a1, u8 *cmd) {
+/* (as RoomE0_WindowLight) the window quad lit with flags 0x40 */
+/* 0x0031E2C0 */
+s32 Room31_WindowLight(void *self, void *a1, u8 *cmd) {
     return lit_quad(cmd, sQuadWindow, 0x40);
 }
 
 /* room 0x31 (D_0042A0C8): the fan turns, except while a movie plays (gProgress +0x54) */
-s32 func_0031E460(void) {
+/* 0x0031E460 */
+s32 Room31_Fan(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
@@ -67,7 +69,8 @@ s32 func_0031E460(void) {
 }
 
 /* rooms 0x31 / 0x32 (D_0042A0B8, D_0042C298): the room's effect 1 made anew as D_0046EA40 */
-s32 func_0031E510(void) {
+/* 0x0031E510 */
+s32 Room31_RoomEffect(void) {
     room_effect_slot_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }

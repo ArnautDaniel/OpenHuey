@@ -46,13 +46,13 @@ void Kind34_ActionOffsets(void *self, s32 i, f32 *out);
 s32 Room55Effect_Update(f32 *a);
 void *Kind35_MotionFiles(void);
 
-s32 func_00345FF0(void);
-s32 func_003479D0(void);
+s32 Kind34_Kind(void);
+s32 Kind35_Kind(void);
 
 void Kind34_FilesLoaded(Pursuer *p);
 
 extern void *D_00478B70[];
-void *func_00347640(u8 *o, s32 flags);
+void *Caustic_dtor(u8 *o, s32 flags);
 
 s32 Room4EEffect_Update(f32 *a);
 
@@ -174,11 +174,12 @@ void Room2AWisps_Start(u8 *o) {
 }
 
 /* placement new: its memory */
-void *func_00322570(u32 size, void *mem) {
+/* 0x00322570 */
+void *SynthBase_new(u32 size, void *mem) {
     return mem;
 }
 
-extern void func_003219A0(u8 *o, s32 i);
+extern void Room2AWisps_Particle(u8 *o, s32 i);
 
 typedef union {
     u32 u;
@@ -206,7 +207,7 @@ void Room2AWisps_SetParams(u8 *o, f32 *params) {
         u8 *e;
         f32 r;
 
-        func_003219A0(o, i);
+        Room2AWisps_Particle(o, i);
         e = o + AT(o, 0x8F4, s32) * 0x300 + i * 0x30 + 0x10;
         r = VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
         AT(e, 0x10, f32) = (AT(o, 0x650, f32) - 20.0f) + 100.0f * r;
@@ -218,7 +219,8 @@ void Room2AWisps_SetParams(u8 *o, f32 *params) {
 
 /* particle i of the current set (+0x10 + set * 0x300, 0x30 each): grey, scattered around the
  * spot, with random spin (+0x820 + i * 12), angles (+0x660 + i * 16) and sizes (+0x760) */
-void func_003219A0(u8 *o, s32 i) {
+/* 0x003219A0 */
+void Room2AWisps_Particle(u8 *o, s32 i) {
     static const F32Bits k02 = {0x3E4CCCCD}, k005 = {0x3D4CCCCD}, k001 = {0x3C23D70A},
                          kM005 = {0xBD4CCCCD}, kPi = {0x40490FDB};
     VObject *rng = gRandom;
@@ -311,7 +313,7 @@ s32 Effect78BC0_Update(u8 *o) {
 }
 
 /* a model to draw this frame: position, ..., angles, model, colour. Drawn by D_00478B70's
- * func_0034E9E0 these are a light caustic: n the texture, radius the patch's size, angle[0]
+ * Caustic_Draw these are a light caustic: n the texture, radius the patch's size, angle[0]
  * the ripple phase, angle[1] / angle[2] its two layers' turns, model the alpha threshold of
  * its glow */
 typedef struct ModelDrawParams {
@@ -323,7 +325,7 @@ typedef struct ModelDrawParams {
     u32 rgba;
 } ModelDrawParams;
 
-/* the temporary draw object func_00350660 fills from the parameters (vtable D_00478B70) */
+/* the temporary draw object ModelDraw_Queue fills from the parameters (vtable D_00478B70) */
 typedef struct ModelDraw {
     void **vtbl;
     s32 slot;
@@ -331,7 +333,7 @@ typedef struct ModelDraw {
     ModelDrawParams p;
 } ModelDraw;
 
-void func_00350660(ModelDraw *d, const ModelDrawParams *p);   /* queue a model draw */
+void ModelDraw_Queue(ModelDraw *d, const ModelDrawParams *p);   /* queue a model draw */
 
 /* +0x14 draw: model +0x10 at its spot (65.64, 6.1, 70.94), turned by its angles */
 /* 0x00350860 */
@@ -353,7 +355,7 @@ void Effect78BC0_Draw(u8 *o) {
     p.rgba = 0x80808080;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -368,7 +370,8 @@ void Effect78BC0_SetParams(VObject *o, const u8 *params) {
 }
 
 /* fill draw object `d` from `p` and queue it with the renderer (+0xC, layer 0x19) */
-void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
+/* 0x00350660 */
+void ModelDraw_Queue(ModelDraw *d, const ModelDrawParams *p) {
     d->p.pos[0] = p->pos[0];
     d->p.pos[1] = p->pos[1];
     d->p.pos[2] = p->pos[2];
@@ -419,7 +422,8 @@ void Room55Effect_Start(u8 *o) {
 /* 0x003478C0 */
 Character *Kind35_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477E30); }
 
-s32 func_003479D0(void) {
+/* 0x003479D0 */
+s32 Kind35_Kind(void) {
     return 0x23;
 }
 
@@ -447,12 +451,13 @@ void Room55Effect_Draw(u8 *o) {
     p.rgba = 0x80808080;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
 /* destructor (vtable D_00478B70) */
-void *func_00347640(u8 *o, s32 flags) {
+/* 0x00347640 */
+void *Caustic_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478B70;
         AT(o, 0x0, void **) = D_00469D00;
@@ -534,7 +539,7 @@ void Room4EEffect_Draw(u8 *o) {
     p.rgba = 0x80808080;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -575,7 +580,7 @@ void Effect7A3D0_Draw(u8 *o) {
     p.rgba = 0x80808080;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -600,7 +605,7 @@ void BackdropModel_Draw(u8 *o) {
     p.rgba = 0x40404040;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -646,7 +651,7 @@ void TurningModel_Draw(u8 *o) {
     p.rgba = 0x40404040;
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -680,7 +685,7 @@ void BackdropModel2_Draw(u8 *o) {
     }
     d.slot = -1;
     d.vtbl = D_00478B70;
-    func_00350660(&d, &p);
+    ModelDraw_Queue(&d, &p);
     d.vtbl = D_00469D00;
 }
 
@@ -749,7 +754,7 @@ s32 Room2AWisps_Update(u8 *o) {
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + (AT(o, 0x824 + i * 0xC, f32) + AT(o, 0x8E4, f32));
         AT(p, 0x18, f32) = AT(p, 0x18, f32) + (AT(o, 0x828 + i * 0xC, f32) + AT(o, 0x8E8, f32));
         if (!(AT(p, 0x10, f32) < 300.0f)) {
-            func_003219A0(o, i);
+            Room2AWisps_Particle(o, i);
             continue;
         }
         AT(o, 0x8F8, u8) = 0;
@@ -800,7 +805,7 @@ void Room2AWisps_Draw(u8 *o) {
 #define GLR_PRIM_NOZW 0x20000u
 #define GLR_PRIM_FIX(f) (0x80000u | (u32)(f) << 24)   /* blend Cs * f / 128 + Cd */
 
-/* func_0034E9E0, the caustic (vtable D_00478B70 +0xC; the draw object of func_00350660): the
+/* Caustic_Draw, the caustic (vtable D_00478B70 +0xC; the draw object of ModelDraw_Queue): the
  * frame's alpha cleared, then two 8 x 8 grids of the texture (+0x20) - a square of side +0x24
  * at +0x10 lying flat, turned +0x2C / +0x30 about y - added at 1/8 in colour +0x38, depth
  * tested without depth writes. Their texture coordinates wobble by 0.05 with the phase +0x28
@@ -808,7 +813,8 @@ void Room2AWisps_Draw(u8 *o) {
  * half turn per cell). Where they leave the frame's alpha at least +0x34, the halved screen is
  * blurred (4 diagonal taps at 1/2) and added back at 1/2 - the caustic's glow. On PC glr does
  * the passes; 0 = nothing linked into the layer. */
-s32 func_0034E9E0(u8 *d) {
+/* 0x0034E9E0 */
+s32 Caustic_Draw(u8 *d) {
     VObject *cam = gCamera;
     const void *tex = VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, AT(d, 0x20, s32), 0);
     f32 size = AT(d, 0x24, f32), half = 0.5f * size, cell = 0.125f * size, phase = AT(d, 0x28, f32);
@@ -893,7 +899,8 @@ u8 *FallingDrops_dtor(u8 *o, s32 flags) {
 
 /* drop i anew: faint grey (alpha 0x70), half size, somewhere in the square up to 150 high,
  * turned at random, falling 1.5..2.5 a frame */
-void func_00353330(u8 *o, s32 i) {
+/* 0x00353330 */
+void FallingDrops_Drop(u8 *o, s32 i) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     u8 *p = DROP(o, i);
@@ -1047,7 +1054,7 @@ s32 FallingDrops_Update(u8 *o) {
                     AT(o, 0x68C, s32)++;
                 }
             }
-            func_00353330(o, i);
+            FallingDrops_Drop(o, i);
         }
     }
     return 1;
@@ -1078,7 +1085,7 @@ void FallingDrops_Start(u8 *o) {
     AT(o, 0x645, u8) = 0x10;
     AT(o, 0x646, u8) = 0xFF;
     for (i = 0; i < 16; i++) {
-        func_00353330(o, i);
+        FallingDrops_Drop(o, i);
     }
 }
 
@@ -1117,7 +1124,8 @@ u8 *Room66Effect_dtor(u8 *o, s32 flags) {
  * (+-0x20 by strength), size 0.5..8, scattered about the spot (wider across x at spot 4,
  * else along z), rising 0.65 +- 0.15 x strength; dying down, its strength falls and once the
  * glow is out it just stays hidden */
-void func_00345490(u8 *o, s32 i, s32 again) {
+/* 0x00345490 */
+void Room66Effect_Puff(u8 *o, s32 i, s32 again) {
     static const F32Bits k02 = {0x3E4CCCCD}, k0003 = {0x3B449BA6}, k03 = {0x3E99999A}, k065 = {0x3F266666},
                          kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *rng;
@@ -1214,7 +1222,7 @@ s32 Room66Effect_Update(u8 *o) {
         AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x18B0 + i * 4, f32);
         AT(p, 0x18, f32) = AT(p, 0x18, f32) + k01.f * func_0031C058(*ph);
         if (!(AT(p, 0x14, f32) <= 50.0f)) {
-            func_00345490(o, i, 1);
+            Room66Effect_Puff(o, i, 1);
         }
         if (AT(o, 0x1BB0, s32) == 0) {
             f32 w = 1.0f - AT(o, 0x1AB0 + i * 4, f32);
@@ -1222,7 +1230,7 @@ s32 Room66Effect_Update(u8 *o) {
 
             AT(p, 0xC, s32) = AT(p, 0xC, s32) - ((s32)(20.0f * w * w) + (s32)(r & 3));
             if (AT(p, 0xC, s32) <= 0) {
-                func_00345490(o, i, 1);
+                Room66Effect_Puff(o, i, 1);
             }
         }
     }
@@ -1272,7 +1280,8 @@ void Room66Effect_Start(u8 *p) {
 /* 0x00345EE0 */
 Character *Kind34_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477AE0); }
 
-s32 func_00345FF0(void) {
+/* 0x00345FF0 */
+s32 Kind34_Kind(void) {
     return 0x22;
 }
 
@@ -1325,7 +1334,7 @@ void Room66Effect_SetParams(u8 *o, const s8 *params) {
     }
     AT(o, 0x1BB8, s32) = (params[0] & 0xF) * 2;
     for (i = 0; i < 64; i++) {
-        func_00345490(o, i, 0);
+        Room66Effect_Puff(o, i, 0);
     }
     AT(o, 0x1880, s64) = -1;
     AT(o, 0x1890, s32) = 0;
@@ -1395,7 +1404,8 @@ void BigFire_Start(u8 *o) {
 }
 
 /* smoke puff i anew (`again` 0: the first time, part way up already) */
-void func_00357630(u8 *o, s32 i, s32 again) {
+/* 0x00357630 */
+void BigFire_Smoke(u8 *o, s32 i, s32 again) {
     static const F32Bits k004 = {0x3D23D70A}, kX = {0xC311999A}, kZ = {0x40E9999A}, k003 = {0x3CF5C28F},
                          k007 = {0x3D8F5C29}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB};
     VObject *rng = gRandom;
@@ -1432,7 +1442,8 @@ void func_00357630(u8 *o, s32 i, s32 again) {
 
 /* flame tongue i anew: orange-red, its drift 0.7..0.8, rise 0.1..0.3, heading at random,
  * placed about the fire by its heading */
-void func_003571B0(u8 *o, s32 i, s32 again) {
+/* 0x003571B0 */
+void BigFire_Flame(u8 *o, s32 i, s32 again) {
     static const F32Bits k07 = {0x3F333333}, k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k001 = {0x3C23D70A},
                          kM0025 = {0xBCCCCCCD}, k005 = {0x3D4CCCCD}, k03 = {0x3E99999A}, kPi = {0x40490FDB};
     VObject *rng = gRandom;
@@ -1520,13 +1531,13 @@ s32 BigFire_Update(u8 *o) {
             AT(p, 0x14, f32) = AT(p, 0x14, f32) + AT(o, 0x60EC + i * 12, f32);
             AT(p, 0x18, f32) = AT(p, 0x18, f32) + AT(o, 0x60F0 + i * 12, f32);
             if (!(AT(p, 0x14, f32) <= 100.0f)) {
-                func_00357630(o, i, 1);
+                BigFire_Smoke(o, i, 1);
             }
             if (AT(o, 0x6CE8, s32) == 0) {
                 AT(p, 0xC, s32) = AT(p, 0xC, s32) - (s32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3);
             }
             if (AT(p, 0xC, s32) <= 0) {
-                func_00357630(o, i, 1);
+                BigFire_Smoke(o, i, 1);
             }
         }
         AT(o, 0x601C, s32) = AT(o, 0x601C, s32) == 0x30 ? 0x38 : 0x30;
@@ -1557,7 +1568,7 @@ s32 BigFire_Update(u8 *o) {
             if (AT(o, 0x6CEC, s32) != 0) {
                 AT(p, 0xC, s32) = 0;
             } else {
-                func_003571B0(o, i, 1);
+                BigFire_Flame(o, i, 1);
                 alive = 0;
             }
             continue;
@@ -1640,7 +1651,7 @@ void BigFire_SetParams(u8 *o, const s32 *params) {
     AT(o, 0x6075, u8) = 0x10;
     AT(o, 0x6076, u8) = 0xFF;
     for (i = 0; i < 128; i++) {
-        func_00357630(o, i, 0);
+        BigFire_Smoke(o, i, 0);
     }
     AT(o, 0x6080, s64) = -1;
     AT(o, 0x608C, s32) = 0;
@@ -1660,7 +1671,7 @@ void BigFire_SetParams(u8 *o, const s32 *params) {
     AT(o, 0x60AD, u8) = 0x10;
     AT(o, 0x60AE, u8) = 0xFF;
     for (i = 0; i < 32; i++) {
-        func_003571B0(o, i, 0);
+        BigFire_Flame(o, i, 0);
     }
     AT(o, 0x60B8, s64) = -1;
     AT(o, 0x60C8, s32) = 0;
@@ -1703,7 +1714,8 @@ extern void *D_0046EA90[], *D_0046D730[], *D_00470E00[];
 extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
 
 /* +0x8 destructor */
-void *func_002B8E70(void *o, s32 flags) {
+/* 0x002B8E70 */
+void *Butterflies_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EA90;
         if (o != NULL) {
@@ -1718,7 +1730,8 @@ void *func_002B8E70(void *o, s32 flags) {
 
 /* +0x18 start: the target (3 x s16 big-endian at params), the count (params[6], if any); the
  * first time also the point and centre there */
-void func_002B8ED0(u8 *o, const u8 *params) {
+/* 0x002B8ED0 */
+void Butterflies_SetParams(u8 *o, const u8 *params) {
     AT(o, 0x30, f32) = (f32)(s16)((params[0] << 8) + params[1]);
     AT(o, 0x34, f32) = (f32)(s16)((params[2] << 8) + params[3]);
     AT(o, 0x38, f32) = (f32)(s16)((params[4] << 8) + params[5]);
@@ -1734,7 +1747,8 @@ void func_002B8ED0(u8 *o, const u8 *params) {
 
 /* +0xC set up: all at the origin, the phases random (-pi..pi), the steps pi/2 + random pi
  * (wrapped), the circles 2..4 */
-void func_002B9F40(u8 *o) {
+/* 0x002B9F40 */
+void Butterflies_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kHalfPi = {0x3FC90FDB};
     VObject *rng;
     s32 k;
@@ -1775,7 +1789,8 @@ void func_002B9F40(u8 *o) {
 /* +0x10 update: the point closes on the target 0.4 a frame (or lands on it); the tilt sways
  * (+-5 degrees, kept within 10), the heading turns 15..35 degrees a frame back toward the point
  * and the centre goes on 0.4..0.8 along it; the phases step on */
-void func_002B9B00(u8 *o) {
+/* 0x002B9B00 */
+void Butterflies_Update(u8 *o) {
     static const F32Bits kPi = {0x40490FDB}, k10 = {0x3E32B8C3}, k04 = {0x3ECCCCCD}, k60 = {0x3F860A92};
     f32 d[4] __attribute__((aligned(16))) = {0};
     f32 e[4] __attribute__((aligned(16))) = {0};
@@ -1830,7 +1845,8 @@ void func_002B9B00(u8 *o) {
 /* one butterfly at matrix `m`: two wings (texture group 0x10, cell 40 x 64 at the origin, own
  * corners) folded up by `flap` (cos 0.7 out, sin up), scaled by `size`, in colour `rgba`,
  * layer 1 */
-void func_002B97E0(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
+/* 0x002B97E0 */
+void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     f32 c[4][4] __attribute__((aligned(16)));
     QuadRec r __attribute__((aligned(16)));
     QuadDrawer q __attribute__((aligned(16)));
@@ -1919,7 +1935,8 @@ static void dust_init(void **obj) {
 
 /* +0x14 draw: butterfly i (sign by its parity, phases scaled by i(i+1)) flies its circle about
  * the wandering centre, bobbing, banking and flapping */
-void func_002B9010(u8 *o) {
+/* 0x002B9010 */
+void Butterflies_Draw(u8 *o) {
     static const F32Bits kA = {0x3F6CCE68}, kB = {0x3F51FF7F}, kC = {0x3F95ADF0}, k60 = {0x3F860A92},
                          k08 = {0x3F4CCCCD}, k04 = {0x3ECCCCCD}, k50 = {0x3F5F66F3}, k01 = {0x3DCCCCCD},
                          k0005 = {0x3BA3D70A}, k005 = {0x3D4CCCCD};
@@ -1979,7 +1996,7 @@ void func_002B9010(u8 *o) {
         sceVu0UnitMatrix(m);
         sceVu0RotMatrix(m, m, rot);
         sceVu0TransMatrix(m, m, at);
-        func_002B97E0(o, m, AT(&col[i & 7], 0, u32), flap, 0.5f + size);
+        Butterflies_DrawOne(o, m, AT(&col[i & 7], 0, u32), flap, 0.5f + size);
         if (flap < -1.0f && VCALL(rng, 0x18, f32 (*)(VObject *))(rng) < k01.f &&
             (u8)(u32)AT(o, 0x8C, f32) >= 2 && !(VCALL(cam, 0x38, s32 (*)(VObject *))(cam) & 0xFF) &&
             AT(o, 0x88, f32) != AT(o, 0x40, f32)) {
@@ -2032,7 +2049,8 @@ u8 *SpiralSmoke_dtor(u8 *o, s32 flags) {
 
 /* puff i anew (`again` 0: the first time, part way up and faded already): orange, 2..3 across
  * (more the higher), turned at random, rising 0.5..1.5 a frame */
-void func_0033C540(u8 *o, s32 i, s32 again) {
+/* 0x0033C540 */
+void SpiralSmoke_Puff(u8 *o, s32 i, s32 again) {
     static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *rng = gRandom;
     u8 *p = SMOKE2_PUFF(o, i);
@@ -2113,7 +2131,7 @@ s32 SpiralSmoke_Update(u8 *o) {
         if (AT(o, 0x36B0, s32) == 0) {
             AT(p, 0xC, s32)--;
             if (AT(p, 0xC, s32) < 0) {
-                func_0033C540(o, i, 1);
+                SpiralSmoke_Puff(o, i, 1);
             }
         }
         for (k = 0; k < 3; k++) {
@@ -2152,7 +2170,7 @@ void SpiralSmoke_Start(u8 *o) {
     AT(o, 0x3075, u8) = 0x10;
     AT(o, 0x3076, u8) = 2;
     for (i = 0; i < 128; i++) {
-        func_0033C540(o, i, 0);
+        SpiralSmoke_Puff(o, i, 0);
     }
     AT(o, 0x3080, s64) = -1;
     AT(o, 0x3090, s32) = 0;
@@ -2223,7 +2241,8 @@ static inline __attribute__((always_inline)) void ripple_reset(u8 *o, s32 k, s32
 
 /* spot k's ripples: each live one (life down 2 a frame) spreads (size + 1), turns, and bobs on
  * its rise (falling 0.05 a frame); out of life or 4 below the spot it is reset */
-void func_0033CD20(u8 *o, s32 k) {
+/* 0x0033CD20 */
+void Drips_Ripples(u8 *o, s32 k) {
     static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k005 = {0x3D4CCCCD};
     f32 *spot = &AT(o, 0x34 + k * 0x10, f32);
     VObject *rng = gRandom;
@@ -2373,7 +2392,7 @@ s32 Drips_Update(u8 *o) {
                 }
             }
         }
-        func_0033CD20(o, k);
+        Drips_Ripples(o, k);
     }
     return 1;
 }
@@ -2399,7 +2418,7 @@ void Drips_Start(u8 *o) {
         if (AT(o, 0x4 + k * 4, s32) != 0) {
             AT(o, 0x18 + k * 4, s32) = 0x5A;
             for (n = 0; n < 64; n++) {
-                func_0033CD20(o, k);
+                Drips_Ripples(o, k);
             }
         } else {
             AT(o, 0x18 + k * 4, s32) = (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0xFF) + 0x5A;
@@ -2641,7 +2660,8 @@ s32 BackdropModel2_Update(u8 *o) {
 /* +0xC draw: GAME_FIX.GFM model +0x30 (texture 2 of group 0x10, palettes the parts' +0x4 plus
  * +0x34) at +0x10 turned by +0x20; its later parts each turned and moved further by their
  * own +0x30 / +0x40. 0 when the texture isn't loaded. */
-s32 func_0033B560(u8 *d) {
+/* 0x0033B560 */
+s32 FixModel_Draw(u8 *d) {
     VObject *tc = gTexCache;
     f32 m[4][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
@@ -2686,7 +2706,8 @@ s32 func_0033B560(u8 *d) {
 
 /* a model draw `d` filled (+0x10 position, w 1; +0x20 angles; +0x30 / +0x34) and queued in
  * renderer layer `layer` */
-void func_0033BCB0(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 layer) {
+/* 0x0033BCB0 */
+void ModelDraw_Fill(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 layer) {
     sceVu0CopyVector((f32 *)(d + 0x10), pos);
     AT(d, 0x1C, u32) = 0x3F800000;
     sceVu0CopyVector((f32 *)(d + 0x20), rot);
@@ -2714,7 +2735,8 @@ static inline f32 rnd1C(VObject *rnd) {
 /* (re)start ember `i` within 10 of the centre at -4, 0.2..0.4 big, turned at random, rising
  * 0.2..0.6 a frame; not `fresh` (the first round): somewhere up its first 5, dimmer the
  * higher */
-void func_00371180(u8 *o, s32 i, s32 fresh) {
+/* 0x00371180 */
+void Embers_Ember(u8 *o, s32 i, s32 fresh) {
     static const union { u32 u; f32 f; } k5 = {0x40A00000}, k02 = {0x3E4CCCCD}, k20 = {0x41A00000},
                                          k360 = {0x43B40000}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};   /* multiplied first */
     QuadRec *r;
@@ -2749,7 +2771,8 @@ void func_00371180(u8 *o, s32 i, s32 fresh) {
 /* (re)start flame `i` within 5 of the centre at -16, 10..13 big, turned at random, rising
  * 0.6..0.65 a frame; not `fresh` (the first round): somewhere up its first 25, smaller and
  * dimmer the higher */
-void func_00371400(u8 *o, s32 i, s32 fresh) {
+/* 0x00371400 */
+void Embers_Flame(u8 *o, s32 i, s32 fresh) {
     static const union { u32 u; f32 f; } k25 = {0x41C80000}, k004 = {0x3D23D70A}, k10 = {0x41200000},
                                          k360 = {0x43B40000}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};   /* multiplied first */
     QuadRec *r;
@@ -2813,7 +2836,7 @@ void Embers_SetParams(u8 *o, s32 *arg) {
         AT(o, 0xF45, s8) = 0x10;
         AT(o, 0xF46, s8) = 6;
         for (i = 0; i < 24; i++) {
-            func_00371400(o, i, 0);
+            Embers_Flame(o, i, 0);
         }
     }
     AT(o, 0xF50, s64) = -1;
@@ -2834,7 +2857,7 @@ void Embers_SetParams(u8 *o, s32 *arg) {
     AT(o, 0xF7D, s8) = 0x10;
     AT(o, 0xF7E, s8) = 6;
     for (i = 0; i < 16; i++) {
-        func_00371180(o, i, 0);
+        Embers_Ember(o, i, 0);
     }
 }
 
@@ -2903,7 +2926,7 @@ s32 Embers_Update(u8 *o) {
             if (AT(o, 0x10C0, s32) == 0) {
                 r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 2);
                 if (r->rgba[3] < 0) {
-                    func_00371400(o, i, 1);
+                    Embers_Flame(o, i, 1);
                 }
             }
         }
@@ -2927,7 +2950,7 @@ s32 Embers_Update(u8 *o) {
         if (AT(o, 0x10C0, s32) == 0) {
             r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 7);
             if (r->rgba[3] < 0) {
-                func_00371180(o, i, 1);
+                Embers_Ember(o, i, 1);
             }
         }
     }
@@ -2949,7 +2972,8 @@ void Embers_Start(u8 *o) {
 #define WISPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x300) + (i))
 
 /* wisp `i` (re)started at `p`: hidden, 0.4..0.6 wide and 1.2 high, drifting up to 0.015 a frame */
-void func_0035B450(u8 *o, s32 i, f32 *p) {
+/* 0x0035B450 */
+void BoneSmoke_Wisp(u8 *o, s32 i, f32 *p) {
     static const union { u32 u; f32 f; } k003 = {0x3CF5C28F};   /* 0.03, multiplied first */
     QuadRec *r = WISPS_REC(o, AT(o, 0x6CC, s32), i);
     VObject *rnd = gRandom;
@@ -3000,7 +3024,7 @@ void BoneSmoke_SetParams(u8 *o, u8 *c) {
     AT(o, 0x6C8, u8 *) = c;
     wisps_source(o, p);
     for (i = 0; i < 16; i++) {
-        func_0035B450(o, i, p);
+        BoneSmoke_Wisp(o, i, p);
     }
 }
 
@@ -3058,7 +3082,7 @@ s32 BoneSmoke_Update(u8 *o) {
 
         done = 0;
         wisps_source(o, p);
-        func_0035B450(o, AT(o, 0x6D0, s32), p);
+        BoneSmoke_Wisp(o, AT(o, 0x6D0, s32), p);
         WISPS_REC(o, AT(o, 0x6CC, s32), AT(o, 0x6D0, s32))->rgba[3] = 1;
     }
     AT(o, 0x6D0, s32)++;

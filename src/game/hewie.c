@@ -1133,6 +1133,7 @@ void Hewie_Activate(Hewie *h) {
 }
 
 /* (Re)start: in play idle with action 0, in the special mode the special state, action 0x83. */
+/* (possibly dead code: nothing in the game references it) */
 void func_00136620(Hewie *h) {
     Hewie_StartScene(h, gProgress);
 }

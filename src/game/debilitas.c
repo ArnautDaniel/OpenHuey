@@ -77,7 +77,7 @@ void *Model_dtor(void **m, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -161,7 +161,8 @@ s32 RoomBase_Table3C(Pursuer *p) {
 }
 
 /* count the stun +0x14D0 down; at 0 the motion stops being frozen */
-void func_00129AF0(Pursuer *p) {
+/* 0x00129AF0 */
+void Debilitas_StunDown(Pursuer *p) {
     if (p->c.unk14D0 > 0) {
         p->c.unk14D0--;
         if (p->c.unk14D0 <= 0) {
@@ -171,7 +172,8 @@ void func_00129AF0(Pursuer *p) {
 }
 
 /* state: walking his path while looking out (+0x1624 counts down while the walk goes on) */
-void func_00128FC0(Pursuer *p) {
+/* 0x00128FC0 */
+void Debilitas_StateLookWalk(Pursuer *p) {
     s32 arrived = 0;
 
     func_002837C0(p, 0xFF);
@@ -194,7 +196,7 @@ void func_00128FC0(Pursuer *p) {
 
 extern const PTMF D_003AFEF0;
 
-/* vtable +0x264: the next behaviour; his own (func_0012B490) unless +0x16B4 is set or at threat
+/* vtable +0x264: the next behaviour; his own (Debilitas_Behaviour) unless +0x16B4 is set or at threat
    level 5, then the Pursuer's */
 /* 0x0012B990 */
 void Debilitas_ChaseDecision(Pursuer *p) {
@@ -216,7 +218,7 @@ void Debilitas_ChaseDecision(Pursuer *p) {
     } else if (next != -1) {
         VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, next);
     }
-    func_0012B490(p);
+    Debilitas_Behaviour(p);
 }
 
 /* 0x0012BE50 */
@@ -299,15 +301,16 @@ void *Debilitas_ModelFiles(void) {
 
 extern const PTMF D_003AFFB0;
 
-/* state: start the walk of func_00128FC0 (for 60 frames) once the current animation is over */
-void func_00129090(Pursuer *p) {
+/* state: start the walk of Debilitas_StateLookWalk (for 60 frames) once the current animation is over */
+/* 0x00129090 */
+void Debilitas_StateStartWalk(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
     func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
     Actor_SetState(&p->c.a, &D_003AFFB0);
-    func_00128FC0(p);
+    Debilitas_StateLookWalk(p);
 }
 
 /* vtable +0x27C: the Pursuer's frame update (Pursuer_BehaviourRun), with his walk: in the idle group,
@@ -419,8 +422,9 @@ extern const PTMF D_003AFFA0;
 
 /* start of a wander: try as many random nav triangles as there are for one he may walk on, on
    the same floor level as his (flags 0x300000; not both), at least 20 units away; then walk
-   there (state func_00128FC0, at most 60 frames). None: give up (+0x16EF) */
-void func_001291C0(Pursuer *p) {
+   there (state Debilitas_StateLookWalk, at most 60 frames). None: give up (+0x16EF) */
+/* 0x001291C0 */
+void Debilitas_StartWander(Pursuer *p) {
     void *nav = gNavMesh;
     u32 n;
     u32 i;
@@ -468,7 +472,7 @@ void func_001291C0(Pursuer *p) {
     func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
     Actor_SetState(&p->c.a, &D_003AFFB0);
-    func_00128FC0(p);
+    Debilitas_StateLookWalk(p);
 }
 
 extern const PTMF D_003AFF00, D_003AFF10, D_003AFF20;
@@ -477,8 +481,9 @@ extern const PTMF D_003AFF00, D_003AFF10, D_003AFF20;
    the pending action (0x1C rumbles the pad), or by a 0..100 roll against his table +0x17F0:
    whether she faces him (within 90 degrees of her heading, his sight range) and whether he's
    within +0x17E4 of her picks action 1 (close and seen: no wait), or 5 / 6 with the wait +0x162C
-   from the table. Then his chase step (func_0012A4C0). */
-void func_0012B490(Pursuer *p) {
+   from the table. Then his chase step (Debilitas_Chase). */
+/* 0x0012B490 */
+void Debilitas_Behaviour(Pursuer *p) {
     s32 next;
 
     if (PU(p, 0x16B4, u8) == 1) {
@@ -544,7 +549,7 @@ void func_0012B490(Pursuer *p) {
     PU(p, 0x1630, s32) = AT(PU(p, 0x17F0, u8 *), 0x20, s32);
     ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF20);
     PU(p, 0x1758, s32) = -1;
-    func_0012A4C0(p);
+    Debilitas_Chase(p);
 }
 
 /* does Fiona (the target) face him: within 90 degrees of her heading and his sight range */
@@ -590,12 +595,13 @@ static s32 Debilitas_StrikeOrWait(Pursuer *p) {
 
 extern const PTMF D_003AFF30, D_003AFF40, D_003AFF50;
 
-/* his chase (from func_0012B490): as the Pursuer's Pursuer_BehaviourStalk he stalks Fiona, closing in
+/* his chase (from Debilitas_Behaviour): as the Pursuer's Pursuer_BehaviourStalk he stalks Fiona, closing in
    (1), backing off (5) or holding off (6) for the waits from his table +0x17F0, and now and then
    lunging (attack table 0xA) by the threat-level chance. Seen by her while close, he comes
    straight on (1) a limited number of times (+0x1630). Right up against her with no room
    around, he steps in (0x1D); close and with her standing still, grabs (0x1000) */
-void func_0012A4C0(Pursuer *p) {
+/* 0x0012A4C0 */
+void Debilitas_Chase(Pursuer *p) {
     f32 near;
 
     if (ptmf_test(&p->c.a.state)) {

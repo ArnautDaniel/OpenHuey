@@ -1168,7 +1168,7 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     rot[2] = 0.0f;
     d.vtbl = D_00476B50;
     d.a = -1;
-    func_0033BCB0((u8 *)&d, BALL_POS(o), rot, a, b, c);
+    ModelDraw_Fill((u8 *)&d, BALL_POS(o), rot, a, b, c);
     d.vtbl = D_00469D00;
 }
 
@@ -2907,10 +2907,10 @@ void func_00333510(u8 *o) {
 
         VCALL(tc, 0x18, void (*)(VObject *))(tc);
         VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, (u32)(8 - late) << 28 | 0x808080);
-        func_0033BCB0((u8 *)&d, pos, rot, 2, 0, 0xF);
+        ModelDraw_Fill((u8 *)&d, pos, rot, 2, 0, 0xF);
         VCALL(tc, 0x18, void (*)(VObject *))(tc);
     } else {
-        func_0033BCB0((u8 *)&d, pos, rot, 2, 0, 1);
+        ModelDraw_Fill((u8 *)&d, pos, rot, 2, 0, 1);
     }
     d.vtbl = D_00469D00;
 }

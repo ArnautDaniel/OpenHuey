@@ -115,7 +115,8 @@ s32 Room66_Condition(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* room 0x66 (D_0041F5B0): the character's x (byte 3 0) or z is at least be32 bytes 4..7 / 1000 */
-s32 func_003002E0(void *self, u8 *chr, u8 *cmd) {
+/* 0x003002E0 */
+s32 Room66_CharPast(void *self, u8 *chr, u8 *cmd) {
     f32 v = (f32)(s32)((u32)cmd[4] << 24 | (u32)cmd[5] << 16 | (u32)cmd[6] << 8 | cmd[7]) / 1000.0f;
 
     if (cmd[3] == 0) {
@@ -126,7 +127,8 @@ s32 func_003002E0(void *self, u8 *chr, u8 *cmd) {
 
 /* room 0x66 (D_0041F5A0): in the eight letters of script variables 0 and 1, from the place in
  * variable 2: the next 'L' / 'R' - matched by byte 3 (0 'L', else 'R') is stepped over (1) */
-s32 func_003003C0(void *self, void *a1, u8 *cmd) {
+/* 0x003003C0 */
+s32 Room66_Letters(void *self, void *a1, u8 *cmd) {
     VObject *ev = gEvents;
     s32 w[2];
     u8 *b = (u8 *)w;
@@ -163,14 +165,16 @@ s32 Room66_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* room 0x66 (D_0041F590): room effect 0x1F's colour pulsing by script variable 9 */
-s32 func_00300520(void) {
+/* 0x00300520 */
+s32 Room66_ColourPulse(void) {
     colour_pulse(9, 0x5A, 0x44, 0x46, 0x52, 0x4B);
     return 1;
 }
 
 /* room 0x66 (D_0041F580): byte 4 0 lights a fire (D_00478B50, kind byte 3), its slot in script
  * variable 8; else that fire put out (-1) */
-s32 func_00300650(void *self, void *a1, u8 *cmd) {
+/* 0x00300650 */
+s32 Room66_Fire(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
         s32 slot = Effect_New(gEffects, 0x1C60, fire_init);
         s32 prm[4] = {0, 0, 0, 0};   /* (zeroed past the two words, as the original's stack) */
@@ -189,7 +193,8 @@ s32 func_00300650(void *self, void *a1, u8 *cmd) {
 
 /* room 0x66 (D_0041F570): character 8 sinks 0.1 a frame: a fire (kind byte 3) as it starts
  * (slot in variable 7), put out below -24; done (1) below -25, else wait (2) */
-s32 func_003007E0(void *self, void *a1, u8 *cmd) {
+/* 0x003007E0 */
+s32 Room66_Sink(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[(u8)Progress_SlotOfId(gProgress, 8)];
     f32 y = c->a.pos[1] - 0x1.99999a0000000p-4f /* 0.1 */;
 
@@ -220,7 +225,8 @@ s32 func_003007E0(void *self, void *a1, u8 *cmd) {
 
 /* room 66 (D_0041F568): byte 4 0 starts the 0x1BC0-byte effect D_00477AC0 (parameters from
  * byte 3), its slot kept in event variable byte 3 + 3; else that effect is sent 0xFF (stop) */
-s32 func_00300A20(void *self, void *a1, u8 *cmd) {
+/* 0x00300A20 */
+s32 Room66_Effect(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x1BC0, effect_77AC0_init);
@@ -240,7 +246,8 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
  * Character_RootTurn, then: a foot (model +0x64) coming down while she stands (model +0x550 not above
  * 0) steps (voice 4 on motion 0x201, else 3) and, each foot, puffs mud; event flags 5 / 6 keep
  * which feet are down */
-s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
+/* 0x00300BC0 */
+s32 Room66_CharHook(void *self, Character *c, u8 *cmd) {
     VObject *m, *ev;
     u8 *mgr;
     u8 l, r, wasL, wasR, fl, fr;

@@ -74,7 +74,8 @@ s32 RoomE0_Condition(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* the progress object's +0x7C with the caller's arguments */
-s32 func_003789B0(void *self, s32 a1, s32 a2, s32 a3) {
+/* 0x003789B0 */
+s32 RoomE0_ProgressCall(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
@@ -85,25 +86,30 @@ s32 RoomE0_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* (as Room48_Cmd04)  room 0x48 (D_00426830): the player's Character_ChooseExit(0) */
-s32 func_00378A00(void) {
+/* 0x00378A00 */
+s32 RoomE0_ChooseExit(void) {
     Character_ChooseExit(gCharPlayer, 0);
     return 1;
 }
 
-s32 func_00378A30(void) { return clock_draw(D_0047B2F8, D_00463928); }
+/* 0x00378A30 */
+s32 RoomE0_ClockDraw(void) { return clock_draw(D_0047B2F8, D_00463928); }
 
 /* (as Room21_Cmd04)  room 0x21 (D_00400BC8) */
-s32 func_00378B80(void *self, void *a1, u8 *cmd) {
+/* 0x00378B80 */
+s32 RoomE0_DoorLight(void *self, void *a1, u8 *cmd) {
     return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
 }
 
 /* (as Room21_Cmd02)  room 0x21 (D_00400BA8) */
-s32 func_00378D20(void *self, void *a1, u8 *cmd) {
+/* 0x00378D20 */
+s32 RoomE0_WindowLight(void *self, void *a1, u8 *cmd) {
     return lit_quad(cmd, sQuadWindow, 0x10000040);
 }
 
-/* (as func_0036A400)  room 0x37 (D_004469A0): the fan turns, except while a movie plays */
-s32 func_00378EC0(void) {
+/* (as Room37_Fan)  room 0x37 (D_004469A0): the fan turns, except while a movie plays */
+/* 0x00378EC0 */
+s32 RoomE0_Fan(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
@@ -111,4 +117,5 @@ s32 func_00378EC0(void) {
     return 1;
 }
 
-s32 func_00378F70(void) { return clock_start(); }
+/* 0x00378F70 */
+s32 RoomE0_ClockStart(void) { return clock_start(); }

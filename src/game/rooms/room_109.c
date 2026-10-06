@@ -10,7 +10,7 @@
 extern void *D_0046DB80[];
 extern void *D_0046FE40[];
 extern s32 D_0047B278;
-extern s32 func_0032D150(Character *c);
+extern s32 Kind26_MoveDone(Character *c);
 
 extern u8 D_004193D0[];
 extern u8 D_00419400[];
@@ -51,15 +51,15 @@ s32 Room109_Command(void *self, u32 i, s32 a, s32 b) {
 /* 0x002E7560 */
 s32 Room109_Cmd01(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B278, cmd, 1.0f); }
 
-/* character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
- * func_0032D150 says done */
+/* character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
+ * Kind26_MoveDone says done */
 /* 0x002E7600 */
 s32 Room109_Cmd00(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[Progress_SlotOfId(gProgress, 0x1A) & 0xFF];
 
     if (cmd[3] == 0) {
-        func_0032D270((u8 *)c, 2, -6.0f, 257.0f);
+        Kind26_MoveTo((u8 *)c, 2, -6.0f, 257.0f);
         return 1;
     }
-    return func_0032D150(c) == 0 ? 2 : 1;
+    return Kind26_MoveDone(c) == 0 ? 2 : 1;
 }

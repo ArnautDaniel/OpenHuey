@@ -146,7 +146,7 @@ s32 Room60_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_00300A20)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
+/* (as Room66_Effect)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
  * slot kept in event variable byte 3 + 2; else that effect is ended */
 /* 0x003104D0 */
 s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -175,7 +175,7 @@ s32 Room60_Cmd01(void *self, void *a1, u8 *cmd) {
     case 1:
         return Progress_Speak(gProgress, 0xFE, 0) == 0 ? 2 : 1;
     }
-    ((void (*)(Progress *))func_0016CD30)(gProgress);
+    ((void (*)(Progress *))Progress_SpeechCall)(gProgress);
     return 1;
 }
 

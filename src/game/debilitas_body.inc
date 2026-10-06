@@ -14,7 +14,7 @@
  * sets DEBILITAS_GIVE_UP_HITS. */
 
 extern void *D_00469D10[];
-void func_00128A20(Pursuer *p);
+void Debilitas_StateBlow(Pursuer *p);
 
 /* vtable +0x8: destructor */
 /* 0x001276F0 */
@@ -83,7 +83,8 @@ s32 Debilitas_AttackAnimA(Pursuer *p) {
 }
 
 /* a stun: the flinch (0x1004) unless already reeling, and frozen while it lasts */
-void func_00128970(Pursuer *p) {
+/* 0x00128970 */
+void Debilitas_StateStun(Pursuer *p) {
     if (PU(p, 0x1788, s32) != 0x1000 && p->c.unk14D0 <= 0) {
         func_00297B40(p, 0x1004, 1);
     }
@@ -133,14 +134,16 @@ static inline void Debilitas_LungeEnd(Pursuer *p) {
 }
 
 /* state: the lunge animation (see Debilitas_LungeEnd) */
-void func_001286F0(Pursuer *p) {
+/* 0x001286F0 */
+void Debilitas_StateLunge(Pursuer *p) {
     Debilitas_LungeEnd(p);
 }
 
 extern const PTMF D_003B0000;
 
-/* start of the lunge: finish the current walk, then animation 0x1306 in state func_001286F0 */
-void func_001287B0(Pursuer *p) {
+/* start of the lunge: finish the current walk, then animation 0x1306 in state Debilitas_StateLunge */
+/* 0x001287B0 */
+void Debilitas_StartLunge(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     if (Pursuer_WalkOn(p)) {
@@ -154,13 +157,13 @@ void func_001287B0(Pursuer *p) {
 
 extern const PTMF D_003AFFD0;
 
-/* turning to Fiona; when the animation ends, the next part (func_00128A20) */
+/* turning to Fiona; when the animation ends, the next part (Debilitas_StateBlow) */
 static inline void Debilitas_TurnToFiona(Pursuer *p) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         func_00297B40(p, 0x205, 0);
         p->c.moveSub = 0x1C;
         Actor_SetState(&p->c.a, &D_003AFFD0);
-        func_00128A20(p);
+        Debilitas_StateBlow(p);
         return;
     }
     Character_RootMoveMasked(&p->c);
@@ -173,15 +176,17 @@ static inline void Debilitas_TurnToFiona(Pursuer *p) {
 }
 
 /* state: turning to Fiona (see Debilitas_TurnToFiona) */
-void func_00128CA0(Pursuer *p) {
+/* 0x00128CA0 */
+void Debilitas_StateTurnToFiona(Pursuer *p) {
     Debilitas_TurnToFiona(p);
 }
 
 extern const PTMF D_003AFFC0;
 
 /* start of the turn to Fiona: finish the current walk, then animation 0x1304 in state
-   func_00128CA0 */
-void func_00128DB0(Pursuer *p) {
+   Debilitas_StateTurnToFiona */
+/* 0x00128DB0 */
+void Debilitas_StartTurnToFiona(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     if (Pursuer_WalkOn(p)) {
@@ -300,14 +305,16 @@ static inline void Debilitas_Grab(Pursuer *p) {
 }
 
 /* state: the grab (see Debilitas_Grab) */
-void func_00128390(Pursuer *p) {
+/* 0x00128390 */
+void Debilitas_StateGrab(Pursuer *p) {
     Debilitas_Grab(p);
 }
 
 extern const PTMF D_003B0020;
 
-/* start of the grab: finish the current walk, then animation 0xE06 in state func_00128390 */
-void func_001284C0(Pursuer *p) {
+/* start of the grab: finish the current walk, then animation 0xE06 in state Debilitas_StateGrab */
+/* 0x001284C0 */
+void Debilitas_StartGrab(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     if (Pursuer_WalkOn(p)) {
@@ -522,7 +529,8 @@ extern const PTMF D_003AFFE0, D_003AFFF0;
    (+0x171C, +0x94); off the nav mesh it misses (flinch, state D_003AFFE0). Otherwise when it
    reaches Fiona or Hewie it lands: Relation_Request with the entry's kind and damage, stunning
    (0x8000) when a 0..100 roll is under its stun chance; then the flinch and state D_003AFFF0 */
-void func_00128A20(Pursuer *p) {
+/* 0x00128A20 */
+void Debilitas_StateBlow(Pursuer *p) {
     u8 *e = PU(p, 0x171C, u8 *) + 0x90;
     f32 pos[4] __attribute__((aligned(16)));
     u32 hit;

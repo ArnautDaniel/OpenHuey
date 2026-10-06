@@ -45,4 +45,5 @@ s32 Room99_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A28[i & 0xFF], a, b);
 }
 
-s32 func_00352C00(void) { return slam_shake(); }
+/* 0x00352C00 */
+s32 Room99_SlamShake(void) { return slam_shake(); }

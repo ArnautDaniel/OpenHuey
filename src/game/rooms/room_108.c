@@ -57,7 +57,7 @@ s32 Room108_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
- * message slot shows progress +0x73EDC0; else func_0016CD30 and the slot is closed */
+ * message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed */
 /* 0x002E7350 */
 s32 Room108_Cmd00(void *self, void *a1, u8 *cmd) {
     Progress *p;
@@ -78,7 +78,7 @@ s32 Room108_Cmd00(void *self, void *a1, u8 *cmd) {
                                                                        AT(p, 0x73EDC0, s32), 1);
         break;
     default:
-        ((void (*)(Progress *))func_0016CD30)(gProgress);
+        ((void (*)(Progress *))Progress_SpeechCall)(gProgress);
         VCALL(gBootMessage, 0x14, void (*)(VObject *, u32))(gBootMessage, gCharPartner->msgSlot);
         break;
     }

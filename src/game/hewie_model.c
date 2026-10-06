@@ -55,7 +55,7 @@ static void HewieModel_Destroy(u8 *m, s32 flags) {
     AT(m, 0x10, void **) = D_0046ADA0;
     AT(m, 0x10, void **) = D_00469D00;
     if ((s16)flags > 0) {
-        func_002DC6D0(m);
+        StalkerModel_delete(m);
     }
 }
 

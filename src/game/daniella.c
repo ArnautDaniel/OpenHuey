@@ -50,7 +50,7 @@ s32 Kind34_AttackAnimB(void);
 s32 Kind34_AttackAnimA(void);
 s32 Kind35_AttackAnimB(void);
 s32 Kind35_AttackAnimA(void);
-s32 func_00348960(void);
+s32 Kind36_Kind(void);
 s32 Kind36_AttackAnimB(void);
 s32 Kind36_AttackAnimA(void);
 
@@ -106,7 +106,8 @@ Pursuer *Daniella_dtor(Pursuer *p, s32 flags) {
 }
 
 /* vtable +0x32C: her character kind */
-s32 func_0020C4B0(Pursuer *p) {
+/* 0x0020C4B0 */
+s32 Daniella_Kind(Pursuer *p) {
     return 3;
 }
 
@@ -220,7 +221,8 @@ extern const f32 D_003D8910[4];
 /* the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
    strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
    larger for 0xE04 / 0xE05 and the grabs */
-void func_0020C7C0(Pursuer *p) {
+/* 0x0020C7C0 */
+void Daniella_BlowEffect(Pursuer *p) {
     HitEffectParams hp;
     f32 pos[4] __attribute__((aligned(16)));
     f32 reach = 1.5f;
@@ -419,7 +421,7 @@ f32 Daniella_ReachHewie(Pursuer *p) {
 }
 
 /* vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
-   senses step; on screen the hit effect (func_0020C7C0) when a cry is heard or her animation
+   senses step; on screen the hit effect (Daniella_BlowEffect) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x0020D330 */
 void Daniella_Update(Pursuer *p) {
@@ -429,7 +431,7 @@ void Daniella_Update(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
         if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
-            func_0020C7C0(p);
+            Daniella_BlowEffect(p);
         }
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
@@ -452,7 +454,8 @@ void Daniella_Update(Pursuer *p) {
 extern u8 D_003D7330[], D_003D7350[], D_003D7370[], D_003D7390[];
 
 /* her model files (Pursuer_ModelFiles for kind 3) */
-u8 *func_0020D620(Pursuer *p) {
+/* 0x0020D620 */
+u8 *Daniella_ModelFileTable(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_003D7390 : D_003D7350;
 }
 
@@ -570,9 +573,9 @@ void *func_0020D9C0(u8 *o, s32 flags) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern void func_00346330(Pursuer *p);
-extern void func_00347B80(Pursuer *p);
-extern void func_00348B10(Pursuer *p);
+extern void Kind34_BlowEffect(Pursuer *p);
+extern void Kind35_BlowEffect(Pursuer *p);
+extern void Kind36_BlowEffect(Pursuer *p);
 
 /* (as Daniella_DoorBreak)  vtable +0xE4: at a door she breaks (Progress_ExitOpen) while opening or attacking it: mark it
    (vtable +0xF0) and change room through it (vtable +0x28) */
@@ -593,7 +596,7 @@ void Kind34_DoorBreak(Pursuer *p, s32 exit) {
 }
 
 /* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
-   senses step; on screen the hit effect (func_00346330) when a cry is heard or her animation
+   senses step; on screen the hit effect (Kind34_BlowEffect) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x00346F50 */
 void Kind34_Update(Pursuer *p) {
@@ -603,7 +606,7 @@ void Kind34_Update(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
         if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
-            func_00346330(p);
+            Kind34_BlowEffect(p);
         }
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
@@ -654,7 +657,7 @@ void Kind35_ActionOffsets(void *self, s32 i, f32 *out) {
 }
 
 /* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
-   senses step; on screen the hit effect (func_00347B80) when a cry is heard or her animation
+   senses step; on screen the hit effect (Kind35_BlowEffect) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x00348330 */
 void Kind35_Update(Pursuer *p) {
@@ -664,7 +667,7 @@ void Kind35_Update(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
         if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
-            func_00347B80(p);
+            Kind35_BlowEffect(p);
         }
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
@@ -690,7 +693,7 @@ void *Kind35_ModelFiles(void) {
 }
 
 /* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
-   senses step; on screen the hit effect (func_00348B10) when a cry is heard or her animation
+   senses step; on screen the hit effect (Kind36_BlowEffect) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x003492C0 */
 void Kind36_Update(Pursuer *p) {
@@ -700,7 +703,7 @@ void Kind36_Update(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
         if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
-            func_00348B10(p);
+            Kind36_BlowEffect(p);
         }
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
@@ -730,10 +733,11 @@ extern const f32 D_0043CD30[4];
 extern const f32 D_0043DBC0[4];
 extern const f32 D_0043EA70[4];
 
-/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+/* (as Daniella_BlowEffect)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
    strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
    larger for 0xE04 / 0xE05 and the grabs */
-void func_00346330(Pursuer *p) {
+/* 0x00346330 */
+void Kind34_BlowEffect(Pursuer *p) {
     HitEffectParams hp;
     f32 pos[4] __attribute__((aligned(16)));
     f32 reach = 1.5f;
@@ -795,10 +799,11 @@ void func_00346330(Pursuer *p) {
     HitEffect_Spawn(&hp);
 }
 
-/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+/* (as Daniella_BlowEffect)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
    strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
    larger for 0xE04 / 0xE05 and the grabs */
-void func_00347B80(Pursuer *p) {
+/* 0x00347B80 */
+void Kind35_BlowEffect(Pursuer *p) {
     HitEffectParams hp;
     f32 pos[4] __attribute__((aligned(16)));
     f32 reach = 1.5f;
@@ -860,10 +865,11 @@ void func_00347B80(Pursuer *p) {
     HitEffect_Spawn(&hp);
 }
 
-/* (as func_0020C7C0)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
+/* (as Daniella_BlowEffect)  the effect at her blow: for her grabs of Fiona (0x1904 / 0x1A01) at Fiona's bone, for her
    strikes (0xE00..0xE07) at a point along her hand (bone 0x2D; 1.5 out, 3.5 for 0xE03 / 0xE05);
    larger for 0xE04 / 0xE05 and the grabs */
-void func_00348B10(Pursuer *p) {
+/* 0x00348B10 */
+void Kind36_BlowEffect(Pursuer *p) {
     HitEffectParams hp;
     f32 pos[4] __attribute__((aligned(16)));
     f32 reach = 1.5f;
@@ -1259,7 +1265,8 @@ void Kind35_Setup(Pursuer *p) {
 /* 0x00348850 */
 Character *Kind36_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478160); }
 
-s32 func_00348960(void) {
+/* 0x00348960 */
+s32 Kind36_Kind(void) {
     return 0x24;
 }
 

@@ -25,7 +25,7 @@ void *Lorenzo_MotionFiles(void);
 
 extern void *D_0046F580[];
 extern void *D_00470F90[];
-void *func_00301250(u8 *o, s32 flags);
+void *Obj470F90_dtor(u8 *o, s32 flags);
 
 extern u8 D_004224C0[];
 /* writes {x, 0, z} */
@@ -229,7 +229,8 @@ void Lorenzo_Update(Pursuer *p) {
 extern u8 D_0041A570[], D_0041A590[], D_0041A5B0[], D_0041A5D0[];
 
 /* his model files (Pursuer_ModelFiles for kind 11) */
-u8 *func_002F9000(Pursuer *p) {
+/* 0x002F9000 */
+u8 *Lorenzo_ModelFileTable(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041A5D0 : D_0041A590;
 }
 
@@ -292,7 +293,8 @@ void Lorenzo_Setup(Pursuer *p) {
 }
 
 /* destructor (vtable D_00470F90) */
-void *func_00301250(u8 *o, s32 flags) {
+/* 0x00301250 */
+void *Obj470F90_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00470F90;
         AT(o, 0x0, void **) = D_0046F580;
@@ -472,7 +474,7 @@ f32 Lorenzo2_ReachHewie(u8 *self) {
 
 /* vtable +0x30: his frame update. On screen: back in contact (+0x29 / +0x2D cleared) once in
    action 0x10 or 0x21; mode 2 on from threat level 1 while chasing and idle, off at level 0; the
-   cries heard, the behaviour step, func_00309890 and func_00309680, stance and voice. Off
+   cries heard, the behaviour step, Lorenzo2_BlowSparks and Lorenzo2_SlamDust, stance and voice. Off
    screen the behaviour step and the off-screen move */
 /* 0x0030BE20 */
 void Lorenzo2_Update(Pursuer *p) {
@@ -496,8 +498,8 @@ void Lorenzo2_Update(Pursuer *p) {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_00309890(p);
-        func_00309680(p);
+        Lorenzo2_BlowSparks(p);
+        Lorenzo2_SlamDust(p);
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
             func_0029D4C0(p, -1);
@@ -580,7 +582,8 @@ static inline void Dust_Init(void **obj) {
 
 /* his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
    hand (bone 0x32) */
-void func_00309680(Pursuer *p) {
+/* 0x00309680 */
+void Lorenzo2_SlamDust(Pursuer *p) {
     struct {
         f32 pos[4];
         s32 kind, r, g, b, size;
@@ -622,7 +625,8 @@ extern const f32 D_00423AC0[7][4];
 
 /* his blows 0x1904 / 0xE00 / 0xE04 / 0xE05 (hand, bone 0x32) and 0xE06 (bone 0x28): at the
    key (0x20), seven sparks around the bone (offsets D_00423AC0) of random scale, speed and life */
-void func_00309890(Pursuer *p) {
+/* 0x00309890 */
+void Lorenzo2_BlowSparks(Pursuer *p) {
     struct {
         f32 pos[4];
         f32 one, scale, speed;
@@ -676,26 +680,29 @@ static inline void Lorenzo2_PlayOut(Pursuer *p) {
 }
 
 /* state: see Lorenzo2_PlayOut */
-void func_0030B1E0(Pursuer *p) {
+/* 0x0030B1E0 */
+void Lorenzo2_StatePlayOut(Pursuer *p) {
     Lorenzo2_PlayOut(p);
 }
 
 extern const PTMF D_00423A38;
 
-/* animation 0x1303 in state `st` (D_00423A38: func_0030B540), run at once */
+/* animation 0x1303 in state `st` (D_00423A38: Lorenzo2_StateSink), run at once */
 static inline __attribute__((always_inline)) void Lorenzo2_SinkBehindAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     func_00297B40(p, 0x1303, 0);
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
-#define Lorenzo2_SinkBehind(p) Lorenzo2_SinkBehindAs(p, &D_00423A38, func_0030B540)
+#define Lorenzo2_SinkBehind(p) Lorenzo2_SinkBehindAs(p, &D_00423A38, Lorenzo2_StateSink)
 
-void func_0030B7C0(Pursuer *p) {
+/* 0x0030B7C0 */
+void Lorenzo2_StateSinkBehind(Pursuer *p) {
     Lorenzo2_SinkBehind(p);
 }
 
 /* is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
-s32 func_0030BB70(Pursuer *p) {
+/* 0x0030BB70 */
+s32 Lorenzo2_SlamImpact(Pursuer *p) {
     if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
@@ -705,8 +712,9 @@ s32 func_0030BB70(Pursuer *p) {
 extern const PTMF D_00423AA8;
 
 /* start of his grab: action 0x17 instead when he may not go for his target; finish the walk,
-   then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and func_0030A210 */
-void func_0030A4D0(Pursuer *p) {
+   then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and Lorenzo2_StateGrab */
+/* 0x0030A4D0 */
+void Lorenzo2_StartGrab(Pursuer *p) {
     if (!(func_00283870(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
@@ -724,13 +732,14 @@ void func_0030A4D0(Pursuer *p) {
     }
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00423AA8);
-    func_0030A210(p);
+    Lorenzo2_StateGrab(p);
 }
 
 /* state: a sweep that hits both: at its key (2) Fiona and Hewie within the reach of attack
    entry 2 (+0x171C +0x48: +0xC reach) and on the mesh are hit (Relation_Request with the entry,
    stunning by its +0x18 chance), once each (+0x1760); its end ends the step */
-void func_0030A650(Pursuer *p) {
+/* 0x0030A650 */
+void Lorenzo2_StateSweep(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x48;
@@ -774,7 +783,7 @@ extern const PTMF D_00423A88;
 
 /* state: sinking away (animation 0x1304). At its end (Lorenzo2_Sink) he heads under the floor
    toward his target: a point along the path (func_00214890), or where he is when it's out of
-   reach; state D_00423A88 (func_0030A850) */
+   reach; state D_00423A88 (Lorenzo2_StateRise) */
 /* the end of a sinking: out of contact (+0x29 / +0x2D), the sink effect where he stood, moved
    to the exit of PursuerGroup_Find kind 9 if any, 15 frames underground (+0x1624); returns the
    distance (func_00214B90) to his target's point `t` on the mesh */
@@ -803,7 +812,8 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     return func_00214B90(p, tri, t);
 }
 
-void func_0030AB80(Pursuer *p) {
+/* 0x0030AB80 */
+void Lorenzo2_StateAB80(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -822,13 +832,13 @@ void func_0030AB80(Pursuer *p) {
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00423A88);
-    func_0030A850(p);
+    Lorenzo2_StateRise(p);
 }
 
 extern const PTMF D_00423A78;
 
 /* closing on his target: when it's out of reach by the mesh (Character_PathLength < 0), back to the
-   walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
+   walk and the step ends; otherwise he sinks away (0x1304, Lorenzo2_StateAB80) */
 static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
@@ -847,10 +857,11 @@ static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
-#define Lorenzo2_Approach(p) Lorenzo2_ApproachAs(p, &D_00423A78, func_0030AB80)
+#define Lorenzo2_Approach(p) Lorenzo2_ApproachAs(p, &D_00423A78, Lorenzo2_StateAB80)
 
 /* state: closing on his target (see Lorenzo2_Approach) */
-void func_0030AE00(Pursuer *p) {
+/* 0x0030AE00 */
+void Lorenzo2_StateApproach(Pursuer *p) {
     Lorenzo2_Approach(p);
 }
 
@@ -873,7 +884,8 @@ static inline void Burst_Init(void **obj) {
    hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
-void func_0030A210(Pursuer *p) {
+/* 0x0030A210 */
+void Lorenzo2_StateGrab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
@@ -909,7 +921,7 @@ extern const PTMF D_00423A98;
 
 /* state: under the floor after sinking (Lorenzo2_Underground). Then he rises at the goal (+0x104 /
    +0x110, 5 short of his target when that close), facing his target, in the sweep 0xE02
-   (func_0030A650) with the rising effect */
+   (Lorenzo2_StateSweep) with the rising effect */
 /* travelling under the floor (+0x1624 frames left) through the mesh toward his goal
    (func_00211B00), out of contact where it fails; 1 while travelling */
 static inline s32 Lorenzo2_Underground(Pursuer *p) {
@@ -930,7 +942,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
     return 1;
 }
 
-/* the sweep of the other class (func_003643E0): at its key (2) whoever it touches
+/* the sweep of the other class (Kind39_StateSweep): at its key (2) whoever it touches
    (func_00217920) is hit (Relation_Request with attack entry 2, stunning by its +0x18 chance),
    once each (+0x1760); its end ends the step */
 static inline void Lorenzo2b_Sweep(Pursuer *p) {
@@ -952,7 +964,7 @@ static inline void Lorenzo2b_Sweep(Pursuer *p) {
     }
 }
 
-/* the rise into state `state` with its sweep: his (func_0030A650) or the other class's */
+/* the rise into state `state` with its sweep: his (Lorenzo2_StateSweep) or the other class's */
 static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
     if (Lorenzo2_Underground(p)) {
         return;
@@ -999,12 +1011,13 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
         if (other) {
             Lorenzo2b_Sweep(p);
         } else {
-            func_0030A650(p);
+            Lorenzo2_StateSweep(p);
         }
     }
 }
 
-void func_0030A850(Pursuer *p) {
+/* 0x0030A850 */
+void Lorenzo2_StateRise(Pursuer *p) {
     Lorenzo2_Rise(p, &D_00423A98, 0);
 }
 
@@ -1013,7 +1026,8 @@ extern const PTMF D_00423A68;
 /* start of his stalk from below: when he may go for his target, it's reachable by the mesh and
    there's no exit for him (PursuerGroup_Find kind 9): finish the walk, then close in (state
    D_00423A68, Lorenzo2_Approach); otherwise action 0x17 */
-void func_0030AF20(Pursuer *p) {
+/* 0x0030AF20 */
+void Lorenzo2_StartStalkBelow(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -1042,8 +1056,9 @@ void func_0030AF20(Pursuer *p) {
 extern const PTMF D_00423A58;
 
 /* state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
-   target, with the rising effect; its end ends the step (as func_0030B1E0) */
-void func_0030B240(Pursuer *p) {
+   target, with the rising effect; its end ends the step (as Lorenzo2_StatePlayOut) */
+/* 0x0030B240 */
+void Lorenzo2_StateUnderFloor(Pursuer *p) {
     struct {
         f32 pos[4];
         s32 kind;
@@ -1084,8 +1099,9 @@ extern const PTMF D_00423A48;
 
 /* state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
    the floor for a point 10 short of his target along the path, or where he is when it's nearer
-   than 20; state D_00423A48 (func_0030B240) */
-void func_0030B540(Pursuer *p) {
+   than 20; state D_00423A48 (Lorenzo2_StateUnderFloor) */
+/* 0x0030B540 */
+void Lorenzo2_StateSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -1104,7 +1120,7 @@ void func_0030B540(Pursuer *p) {
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00423A48);
-    func_0030B240(p);
+    Lorenzo2_StateUnderFloor(p);
 }
 
 extern const PTMF D_00423A28;
@@ -1112,7 +1128,8 @@ extern const PTMF D_00423A28;
 /* start of sinking to come up by his target: when it's 30 or more away by the mesh and there's
    no exit for him (PursuerGroup_Find kind 9), finish the walk and sink (Lorenzo2_SinkBehind).
    Otherwise: out of reach or when he may not go, action 0x17; else his grab (0x13, attack 1) */
-void func_0030B840(Pursuer *p) {
+/* 0x0030B840 */
+void Lorenzo2_StartSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
     f32 d;
@@ -1476,9 +1493,10 @@ void Kind39_ExitDone(u8 *o) {
     AT(o, 0x16EE, u8) = 1;
 }
 
-/* (as func_00309680)  his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
+/* (as Lorenzo2_SlamDust)  his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
    hand (bone 0x32) */
-void func_003636D0(Pursuer *p) {
+/* 0x003636D0 */
+void Kind39_SlamDust(Pursuer *p) {
     struct {
         f32 pos[4];
         s32 kind, r, g, b, size;
@@ -1506,9 +1524,10 @@ void func_003636D0(Pursuer *p) {
     }
 }
 
-/* (as func_00309890)  his blows 0x1904 / 0xE00 / 0xE04 / 0xE05 (hand, bone 0x32) and 0xE06 (bone 0x28): at the
+/* (as Lorenzo2_BlowSparks)  his blows 0x1904 / 0xE00 / 0xE04 / 0xE05 (hand, bone 0x32) and 0xE06 (bone 0x28): at the
    key (0x20), seven sparks around the bone (offsets D_00445AF0) of random scale, speed and life */
-void func_003638E0(Pursuer *p) {
+/* 0x003638E0 */
+void Kind39_BlowSparks(Pursuer *p) {
     struct {
         f32 pos[4];
         f32 one, scale, speed;
@@ -1568,11 +1587,12 @@ void Kind39_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     }
 }
 
-/* (as func_0030A210)  state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
+/* (as Lorenzo2_StateGrab)  state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
    hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
-void func_00363FA0(Pursuer *p) {
+/* 0x00363FA0 */
+void Kind39_StateGrab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
@@ -1604,13 +1624,15 @@ void func_00363FA0(Pursuer *p) {
     }
 }
 
-/* (as func_0030B1E0)  state: see Lorenzo2_PlayOut */
-void func_00364F90(Pursuer *p) {
+/* (as Lorenzo2_StatePlayOut)  state: see Lorenzo2_PlayOut */
+/* 0x00364F90 */
+void Kind39_StatePlayOut(Pursuer *p) {
     Lorenzo2_PlayOut(p);
 }
 
-/* (as func_0030BB70)  is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
-s32 func_00365850(Pursuer *p) {
+/* (as Lorenzo2_SlamImpact)  is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
+/* 0x00365850 */
+s32 Kind39_SlamImpact(Pursuer *p) {
     if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
@@ -1655,12 +1677,13 @@ f32 Kind39_ReachHewie(void) {
     return 12.0f;
 }
 
-/* (as func_002F9000)  his model files (Pursuer_ModelFiles for kind 11) */
-u8 *func_00365D10(Pursuer *p) {
+/* (as Lorenzo_ModelFileTable)  his model files (Pursuer_ModelFiles for kind 11) */
+/* 0x00365D10 */
+u8 *Kind39_ModelFileTable(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AF0 : D_00444AB0;
 }
 
-/* (as func_002F9000)  his model files (Pursuer_ModelFiles for kind 11) */
+/* (as Lorenzo_ModelFileTable)  his model files (Pursuer_ModelFiles for kind 11) */
 /* 0x00365D50 */
 u8 *Kind39_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AD0 : D_00444A90;
@@ -1668,13 +1691,14 @@ u8 *Kind39_ModelFiles(Pursuer *p) {
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern const PTMF D_00445AB8;
-extern void func_00364510(Pursuer *p);
+extern void Kind39_StateRise(Pursuer *p);
 extern const PTMF D_00445A88;
 extern const PTMF D_00445A78;
-extern void func_00364FF0(Pursuer *p);
+extern void Kind39_StateUnderFloor(Pursuer *p);
 
-/* as func_0030AB80 */
-void func_00364930(Pursuer *p) {
+/* as Lorenzo2_StateAB80 */
+/* 0x00364930 */
+void Kind39_State4930(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -1693,12 +1717,13 @@ void func_00364930(Pursuer *p) {
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00445AB8);
-    func_00364510(p);
+    Kind39_StateRise(p);
 }
 
-/* (as func_0030B240)  state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
-   target, with the rising effect; its end ends the step (as func_0030B1E0) */
-void func_00364FF0(Pursuer *p) {
+/* (as Lorenzo2_StateUnderFloor)  state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
+   target, with the rising effect; its end ends the step (as Lorenzo2_StatePlayOut) */
+/* 0x00364FF0 */
+void Kind39_StateUnderFloor(Pursuer *p) {
     struct {
         f32 pos[4];
         s32 kind;
@@ -1735,10 +1760,11 @@ void func_00364FF0(Pursuer *p) {
     Lorenzo2_PlayOut(p);
 }
 
-/* (as func_0030B540)  state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
+/* (as Lorenzo2_StateSink)  state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
    the floor for a point 10 short of his target along the path, or where he is when it's nearer
-   than 20; state D_00445A78 (func_00364FF0) */
-void func_003652F0(Pursuer *p) {
+   than 20; state D_00445A78 (Kind39_StateUnderFloor) */
+/* 0x003652F0 */
+void Kind39_StateSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -1757,27 +1783,30 @@ void func_003652F0(Pursuer *p) {
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00445A78);
-    func_00364FF0(p);
+    Kind39_StateUnderFloor(p);
 }
 
 /* ---- the same states in the other class (its states D_00445Axx), sharing Lorenzo's helpers ---- */
 
 extern const PTMF D_00445A58, D_00445A68, D_00445A98, D_00445AA8;
-extern void func_00364930(Pursuer *p);
-extern void func_003652F0(Pursuer *p);
+extern void Kind39_State4930(Pursuer *p);
+extern void Kind39_StateSink(Pursuer *p);
 
-/* (as func_0030AE00) */
-void func_00364BB0(Pursuer *p) {
-    Lorenzo2_ApproachAs(p, &D_00445AA8, func_00364930);
+/* (as Lorenzo2_StateApproach) */
+/* 0x00364BB0 */
+void Kind39_StateApproach(Pursuer *p) {
+    Lorenzo2_ApproachAs(p, &D_00445AA8, Kind39_State4930);
 }
 
-/* (as func_0030B7C0) */
-void func_00365570(Pursuer *p) {
-    Lorenzo2_SinkBehindAs(p, &D_00445A68, func_003652F0);
+/* (as Lorenzo2_StateSinkBehind) */
+/* 0x00365570 */
+void Kind39_StateSinkBehind(Pursuer *p) {
+    Lorenzo2_SinkBehindAs(p, &D_00445A68, Kind39_StateSink);
 }
 
-/* (as func_0030AF20) */
-void func_00364CD0(Pursuer *p) {
+/* (as Lorenzo2_StartStalkBelow) */
+/* 0x00364CD0 */
+void Kind39_StartStalkBelow(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -1800,11 +1829,12 @@ void func_00364CD0(Pursuer *p) {
     }
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00445A98);
-    Lorenzo2_ApproachAs(p, &D_00445AA8, func_00364930);
+    Lorenzo2_ApproachAs(p, &D_00445AA8, Kind39_State4930);
 }
 
-/* (as func_0030B840) */
-void func_003655F0(Pursuer *p) {
+/* (as Lorenzo2_StartSink) */
+/* 0x003655F0 */
+void Kind39_StartSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
     f32 d;
@@ -1830,14 +1860,15 @@ void func_003655F0(Pursuer *p) {
     }
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00445A58);
-    Lorenzo2_SinkBehindAs(p, &D_00445A68, func_003652F0);
+    Lorenzo2_SinkBehindAs(p, &D_00445A68, Kind39_StateSink);
 }
 
 extern const PTMF D_00445AD8;
-extern void func_00363FA0(Pursuer *p);
+extern void Kind39_StateGrab(Pursuer *p);
 
-/* (as func_0030A4D0) the other class's start of the grab */
-void func_00364260(Pursuer *p) {
+/* (as Lorenzo2_StartGrab) the other class's start of the grab */
+/* 0x00364260 */
+void Kind39_StartGrab(Pursuer *p) {
     if (!(func_00283870(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
@@ -1855,7 +1886,7 @@ void func_00364260(Pursuer *p) {
     }
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00445AD8);
-    func_00363FA0(p);
+    Kind39_StateGrab(p);
 }
 
 extern u8 D_00444ED0[], D_00445990[], D_004459E0[], D_00445A00[], D_00445A48[], D_00444D40[], D_004454E0[],
@@ -1937,19 +1968,21 @@ void Kind39_AttackTable(Pursuer *p, s8 situation) {
 }
 
 /* its sweep state */
-void func_003643E0(Pursuer *p) {
+/* 0x003643E0 */
+void Kind39_StateSweep(Pursuer *p) {
     Lorenzo2b_Sweep(p);
 }
 
 extern const PTMF D_00445AC8;
 
-/* its rise from under the floor (as func_0030A850) into the sweep */
-void func_00364510(Pursuer *p) {
+/* its rise from under the floor (as Lorenzo2_StateRise) into the sweep */
+/* 0x00364510 */
+void Kind39_StateRise(Pursuer *p) {
     Lorenzo2_Rise(p, &D_00445AC8, 1);
 }
 
 /* vtable +0x30: its frame update (as Lorenzo2_Update, without his mode 2), with its dust
-   (func_003638E0 / func_003636D0) */
+   (Kind39_BlowSparks / Kind39_SlamDust) */
 /* 0x003659D0 */
 void Kind39_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
@@ -1965,8 +1998,8 @@ void Kind39_Update(Pursuer *p) {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_003638E0(p);
-        func_003636D0(p);
+        Kind39_BlowSparks(p);
+        Kind39_SlamDust(p);
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
             func_0029D4C0(p, -1);

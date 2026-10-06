@@ -3769,12 +3769,14 @@ static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     return done;
 }
 
-/* the two animals' copies (started by func_0032D270 / func_0032D3E0) */
-s32 func_0032D150(u8 *self) {
+/* the two animals' copies (started by Kind26_MoveTo / Kind26_MoveToB) */
+/* 0x0032D150 */
+s32 Kind26_MoveDone(u8 *self) {
     return animal_step(self);
 }
 
-s32 func_0032D2C0(u8 *self) {
+/* 0x0032D2C0 */
+s32 Kind26_MoveDoneB(u8 *self) {
     return animal_step(self);
 }
 

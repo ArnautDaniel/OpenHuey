@@ -1419,7 +1419,7 @@ void EventCmd_Run(VObject *ev) {
         AT(p, 0x1118, f32) = (f32)be32(pc + 1) / 1000.0f;
         break;
     case 0xCC:   /* pc[1] 3: the director's +0x78 (pc[2]); else character pc[2] (slots 2..5)'s
-                  * model: 0 +0x2C, 1 +0x30, 2 +0x34 (pc[3]), 4 func_002ED260 (pc[3]) */
+                  * model: 0 +0x2C, 1 +0x30, 2 +0x34 (pc[3]), 4 DaniellaModel_BackCapsules (pc[3]) */
         if (pc[1] != 3) {
             u8 *c = NULL;
             u32 i = (u8)Progress_SlotOfId(p, pc[2]);
@@ -1444,7 +1444,7 @@ void EventCmd_Run(VObject *ev) {
                 VCALL(AT(c, 0xF0, VObject *), 0x34, void (*)(VObject *, s32))(AT(c, 0xF0, VObject *), pc[3]);
                 break;
             case 4:
-                func_002ED260(AT(c, 0xF0, void *), pc[3]);
+                DaniellaModel_BackCapsules(AT(c, 0xF0, void *), pc[3]);
                 break;
             }
         } else {

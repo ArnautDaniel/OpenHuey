@@ -24,7 +24,7 @@ extern f32 Debilitas2_TurnRateFast(Pursuer *p);
 extern f32 Debilitas2_TurnRate(Pursuer *p);
 extern void Debilitas2_SetTimer(Pursuer *p, s32 t);
 extern void Debilitas2_Timer10s(Pursuer *p);
-extern u8 *func_002FC8F0(Pursuer *p);
+extern u8 *Debilitas2_ModelFileTable(Pursuer *p);
 extern u8 *Debilitas2_ModelFiles(Pursuer *p);
 extern void Debilitas2_Setup(Pursuer *p);
 

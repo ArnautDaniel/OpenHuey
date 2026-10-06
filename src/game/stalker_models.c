@@ -18,7 +18,7 @@
 
 /* ---- the model base class's trivial methods ---- */
 
-void func_00320C70(u8 *m);
+void Kind23Model_Springs(u8 *m);
 
 /* +0x1C / +0x20 / +0x24 / +0x2C / +0x30 / +0x14 / +0x3C / +0x4C / +0x50 / +0x54 / +0x60:
    nothing */
@@ -197,18 +197,18 @@ void Model_SecondaryMotion(u8 *m) {
     AT(m, 0x874, void *) = NULL;
 }
 
-extern void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading);
+extern void Mtx_Model(f32 (*mtx)[4], const f32 *pos, f32 heading);
 
 /* +0x40: the model matrix from the actor's position and heading */
 /* 0x002DCDD0 */
 void Model_BodyFrames(u8 *m, void *actor, f32 a, f32 b) {
-    func_002E3040((f32 (*)[4])(m + 0x7D0), (f32 *)((u8 *)actor + 0x10), AT(actor, 0x54, f32));
+    Mtx_Model((f32 (*)[4])(m + 0x7D0), (f32 *)((u8 *)actor + 0x10), AT(actor, 0x54, f32));
 }
 
-/* +0x10 of the base: func_001F7AC0, no secondary-motion table */
+/* +0x10 of the base: Model_Release, no secondary-motion table */
 /* 0x002DE070 */
 void Model_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
     AT(m, 0x874, void *) = NULL;
 }
 
@@ -271,7 +271,8 @@ s32 DebilitasModel_Part3(u8 *m) {
 
 /* his four hanging points (+0x9A0, 0x50 each, bones 10..13, the last two hanging from the first)
    on the spring system +0xAE0, and its two collision spheres on bone 2 */
-void func_00210A70(u8 *m) {
+/* 0x00210A70 */
+void DebilitasModel_Springs(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0xAE0);
@@ -352,7 +353,7 @@ void DebilitasModel_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, s32) = 0;
     AT(m, 0x858, s32) = 0;
-    func_00210A70(m);
+    DebilitasModel_Springs(m);
     {
         static const u8 sLoose[] = {0x9C, 0x9E, 0xA0, 0xA2, 0xC2, 0xC4, 0xC6};
         static const u8 sStiff[] = {0xB4, 0xBC, 0xBE, 0xC0};
@@ -390,7 +391,8 @@ extern void *D_004562B0;   /* the chain pool (motion buffers) */
 
 /* release the model's skeleton (+0x810) and the skeletons and buffers of its two motion slots
    (+0x564) and three blend channels (+0x6B0), and clear the slots' key lists */
-void func_001F7AC0(u8 *m) {
+/* 0x001F7AC0 */
+void Model_Release(u8 *m) {
     void *skels = D_004562A8;
     void *bufs;
     s32 i, j, k;
@@ -428,7 +430,8 @@ void func_001F7AC0(u8 *m) {
 }
 
 /* a model matrix: the heading (wrapped to -pi..pi) about Y, at `pos` */
-void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading) {
+/* 0x002E3040 */
+void Mtx_Model(f32 (*mtx)[4], const f32 *pos, f32 heading) {
     if (!(heading <= 0x1.921fb6p+1f)) {
         do {
             heading -= 0x1.921fb6p+2f;
@@ -446,7 +449,8 @@ void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading) {
 
 /* the parts' base (vtable D_004703B0; 0x40 / 0x50 / 0x70 parts, the vtable at +0x30): +0x8 reset,
    +0xC / +0x10 nothing */
-void func_002EE6D0(u8 *e) {
+/* 0x002EE6D0 */
+void SpringPart_Reset(u8 *e) {
     AT(e, 0x8, s32) = 0;
     AT(e, 0x4, s32) = 0;
     AT(e, 0x0, s32) = 0;
@@ -459,14 +463,17 @@ void func_002EE6D0(u8 *e) {
     AT(e, 0x28, s32) = 0;
 }
 
-void func_002EE6C0(u8 *e) {
+/* 0x002EE6C0 */
+void SpringPart_NoopC(u8 *e) {
 }
 
-void func_002EE830(u8 *e) {
+/* 0x002EE830 */
+void SpringPart_Noop10(u8 *e) {
 }
 
 /* the stalker models' delete: nothing (their memory belongs to the character slot) */
-void func_002DC6D0(void *p) {
+/* 0x002DC6D0 */
+void StalkerModel_delete(void *p) {
 }
 
 /* +0x68: the drawing state cleared (+0x38.., the 16 words at +0x58), then +0x30 */
@@ -531,7 +538,8 @@ static inline void Set_Init(u8 *set, u8 *m, f32 fx, f32 fy, f32 fz, f32 damp) {
 }
 
 /* a capsule collider between bones `b1` and `b2` (ends p1, p2 in their bones' space, radius r) */
-void func_002EE530(u8 *cap, s32 b1, s32 b2, f32 x1, f32 y1, f32 z1, f32 r, f32 x2, f32 y2, f32 z2) {
+/* 0x002EE530 */
+void Capsule_Set(u8 *cap, s32 b1, s32 b2, f32 x1, f32 y1, f32 z1, f32 r, f32 x2, f32 y2, f32 z2) {
     AT(cap, 0x10, f32) = x1;
     AT(cap, 0x14, f32) = y1;
     AT(cap, 0x18, f32) = z1;
@@ -645,11 +653,12 @@ s32 DaniellaModel_Part3(u8 *m) {
 /* +0x10 */
 /* 0x002EE110 */
 void DaniellaModel_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* her five back capsules (bone 2 to bone 6) by pose: 0 standing, 1 flat, 2 bent (crawling) */
-void func_002ED260(u8 *m, s32 pose) {
+/* 0x002ED260 */
+void DaniellaModel_BackCapsules(u8 *m, s32 pose) {
     static const f32 sCaps[3][5][7] = {
         {
             {0.0f, 1.0f, 1.0f, 0x1.99999ap+0f, 0.0f, 1.0f, -1.0f},
@@ -678,12 +687,13 @@ void func_002ED260(u8 *m, s32 pose) {
 
     AT(m, 0x1578, s8) = pose;
     for (k = 0; k < 5; k++) {
-        func_002EE530(m + 0x1240 + k * 0x70, 2, 6, c[k][0], c[k][1], c[k][2], c[k][3], c[k][4], c[k][5], c[k][6]);
+        Capsule_Set(m + 0x1240 + k * 0x70, 2, 6, c[k][0], c[k][1], c[k][2], c[k][3], c[k][4], c[k][5], c[k][6]);
     }
 }
 
 /* the two parts on the set +0xA60 (bones 0x2F, 0x30) */
-void func_002ED600(u8 *m) {
+/* 0x002ED600 */
+void DaniellaModel_PartsA60(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0xA60);
@@ -722,7 +732,8 @@ static inline void Parts_Rest(u8 *p, s32 n, s32 size, const f32 *dir, u8 *owner)
 }
 
 /* her hair at rest: each point its length (+0x40) along bone 0's Z axis from its anchor */
-void func_002ED6E0(u8 *m) {
+/* 0x002ED6E0 */
+void DaniellaModel_HairRest(u8 *m) {
     f32 down[4] __attribute__((aligned(16)));
 
     sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x9B4, u8 *), 0x810, u8 *), 0) + 8);
@@ -731,7 +742,8 @@ void func_002ED6E0(u8 *m) {
 
 /* her hair: the two strands (bones 0xB..0xF and 0x10..0x14), each point tied to the one beside
    it in the other strand, stiffer at the root; the five capsules */
-void func_002ED7C0(u8 *m) {
+/* 0x002ED7C0 */
+void DaniellaModel_Hair(u8 *m) {
     static const f32 sStiff[5] = {
         0x1.99999ap-1f, 0x1.333334p-1f, 0x1.99999ap-2f, 0x1.99999ap-3f, 0.0f,   /* 0.8 .. 0 */
     };
@@ -755,11 +767,12 @@ void func_002ED7C0(u8 *m) {
         AT(n, 0x48, f32) = i < 5 ? -1.0f : 1.0f;
         AT(n, 0x60, f32) = sStiff[i % 5];
     }
-    func_002ED260(m, 0);
+    DaniellaModel_BackCapsules(m, 0);
 }
 
 /* the one part on the set +0xA20 (bone 0x17) */
-void func_002EDA90(u8 *m) {
+/* 0x002EDA90 */
+void DaniellaModel_PartA20(u8 *m) {
     func_002EE960(m + 0xA20);
     Set_AddLink(m + 0xA20, m + 0x1470);
     Set_Init(m + 0xA20, m, 0.0f, 0.0f, 0.0f, 0.75f);
@@ -773,7 +786,8 @@ void func_002EDA90(u8 *m) {
 
 /* the six hanging parts (bones 0x22..0x27, two strands of three) on the set +0x9E0, with two
    capsules and two spheres */
-void func_002EDB50(u8 *m) {
+/* 0x002EDB50 */
+void DaniellaModel_Hanging(u8 *m) {
     static const f32 sStiff[3] = {0x1.99999ap-3f, 0x1.99999ap-4f, 0.0f};   /* 0.2, 0.1, 0 */
     s32 i;
 
@@ -796,15 +810,16 @@ void func_002EDB50(u8 *m) {
         AT(n, 0x40, f32) = 0x1.99999ap-1f;   /* 0.8 */
         AT(n, 0x44, f32) = sStiff[i % 3];
     }
-    func_002EE530(m + 0xC80, 0x19, 0x29, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-    func_002EE530(m + 0xCF0, 0x17, 0x17, 1.5f, 0.0f, -0.5f, 1.0f, -1.5f, 0.0f, -0.5f);
+    Capsule_Set(m + 0xC80, 0x19, 0x29, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+    Capsule_Set(m + 0xCF0, 0x17, 0x17, 1.5f, 0.0f, -0.5f, 1.0f, -1.5f, 0.0f, -0.5f);
     func_002EE690(m + 0xD60, 0x1F, 0.0f, 0.0f, 0.0f, 1.0f);
     func_002EE690(m + 0xDA0, 0x1F, 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* the six hanging parts at rest: each its length (+0x40) along bone 0x1F's Z axis bent by the
    set's force (+0x44 of it), from its anchor */
-void func_002EDE30(u8 *m) {
+/* 0x002EDE30 */
+void DaniellaModel_HangingRest(u8 *m) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     u8 *p = m + 0xAA0;
@@ -829,11 +844,12 @@ void func_002EDE30(u8 *m) {
 }
 
 /* all her springs */
-void func_002EDF30(u8 *m) {
-    func_002EDB50(m);
-    func_002EDA90(m);
-    func_002ED7C0(m);
-    func_002ED600(m);
+/* 0x002EDF30 */
+void DaniellaModel_Springs(u8 *m) {
+    DaniellaModel_Hanging(m);
+    DaniellaModel_PartA20(m);
+    DaniellaModel_Hair(m);
+    DaniellaModel_PartsA60(m);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -847,18 +863,18 @@ void DaniellaModel_Vt3C(u8 *m) {
 
     if ((u32)(AT(m, 0x55C, s32) - 0x1800) < 4) {
         if (AT(m, 0x1578, s8) != 2) {
-            func_002ED260(m, 2);
+            DaniellaModel_BackCapsules(m, 2);
             AT(m, 0x9A0, f32) = -0x1.99999ap-2f * AT(m, 0x7F0, f32);
             AT(m, 0x9A8, f32) = -0x1.99999ap-2f * AT(m, 0x7F8, f32);
         }
     } else if (AT(m, 0x1578, s8) == 2) {
-        func_002ED260(m, 0);
+        DaniellaModel_BackCapsules(m, 0);
         AT(m, 0x9A0, s32) = 0;
         AT(m, 0x9A8, s32) = 0;
     }
     if (AT(m, 0x850, u8) != 0) {
-        func_002ED6E0(m);
-        func_002EDE30(m);
+        DaniellaModel_HairRest(m);
+        DaniellaModel_HangingRest(m);
         nHair = AT(m, 0x1574, s32);
         n = AT(m, 0x1570, s32);
     }
@@ -916,7 +932,7 @@ void DaniellaModel_Loaded(u8 *m) {
     }
     AT(m, 0x1570, s32) = 50;
     AT(m, 0x1574, s32) = 50;
-    func_002EDF30(m);
+    DaniellaModel_Springs(m);
 }
 
 /* ---- the capsule collider (vtable D_00470390, +0x30 in a 0x70 part): ends +0 / +0x40 in the
@@ -924,7 +940,8 @@ void DaniellaModel_Loaded(u8 *m) {
 
 /* +0x8: the push on point `pt` (into `out`), `k` times its depth: off the segment when it's
    alongside, else off the nearer end (not normalized there, as the original) */
-void func_002EE220(u8 *cap, f32 *out, const f32 *pt, f32 k) {
+/* 0x002EE220 */
+void Capsule_Push(u8 *cap, f32 *out, const f32 *pt, f32 k) {
     f32 axis[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     f32 d1[4] __attribute__((aligned(16)));
@@ -985,7 +1002,8 @@ void func_002EE220(u8 *cap, f32 *out, const f32 *pt, f32 k) {
 
 /* +0x14: its bone's matrix from the point: X toward the point, Y toward the partner, at the
    anchor */
-void func_002EEF90(u8 *pt, u8 *set) {
+/* 0x002EEF90 */
+void HairPoint_Pose(u8 *pt, u8 *set) {
     f32 *mtx = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
     f32 at[4] __attribute__((aligned(16)));
     f32 side[4] __attribute__((aligned(16)));
@@ -1011,7 +1029,8 @@ void func_002EEF90(u8 *pt, u8 *set) {
 /* +0x10: a step: follow the anchor by the stiffness, the set's force, pushed off the colliders
    (3 times their depth), kept about 0.438 from its partner, damped, held at its length from
    the anchor */
-void func_002EF0A0(u8 *pt, u8 *set) {
+/* 0x002EF0A0 */
+void HairPoint_Step(u8 *pt, u8 *set) {
     f32 *mtx = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
     f32 at[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
@@ -1052,7 +1071,8 @@ void func_002EF0A0(u8 *pt, u8 *set) {
 /* +0x10 of her six hanging parts (+0xAA0, vtable D_00472C10): pulled along bone 0x1F's Z (by
    +0x44), the set's force, pushed off the colliders, kept above the set's floor (+0x1C, when
    +0x20), damped, held at its length from the anchor */
-void func_003168F0(u8 *p, u8 *set) {
+/* 0x003168F0 */
+void HangingPart_Step(u8 *p, u8 *set) {
     f32 g[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
@@ -1079,7 +1099,8 @@ void func_003168F0(u8 *p, u8 *set) {
 }
 
 /* the capsule's +0xC: its ends from their bones */
-void func_002EE4B0(u8 *cap, u8 *m) {
+/* 0x002EE4B0 */
+void Capsule_Update(u8 *cap, u8 *m) {
     f32 mtx[4][4] __attribute__((aligned(16)));
 
     sceVu0CopyMatrix(mtx, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), AT(cap, 0x28, s32)));
@@ -1159,7 +1180,8 @@ s32 RiccardoModel_Part3(u8 *m) {
 }
 
 /* the four parts on +0x1450 (bones 0x26..0x29, two of two) */
-void func_002F63D0(u8 *m) {
+/* 0x002F63D0 */
+void RiccardoModel_Parts1450(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0x1450);
@@ -1179,7 +1201,8 @@ void func_002F63D0(u8 *m) {
 
 /* the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
    way) from their anchors */
-void func_002F64F0(u8 *m) {
+/* 0x002F64F0 */
+void RiccardoModel_PartsRest(u8 *m) {
     f32 down[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1207,7 +1230,8 @@ void func_002F64F0(u8 *m) {
 }
 
 /* the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
-void func_002F6600(u8 *m) {
+/* 0x002F6600 */
+void RiccardoModel_Parts10A0(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0x10A0);
@@ -1233,15 +1257,16 @@ void func_002F6600(u8 *m) {
             AT(n, 0x48, u8 *) = m + 0xC20 + (i - j + j % 2) * 0x60;
         }
     }
-    func_002EE530(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
 }
 
 /* the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
-void func_002F69C0(u8 *m) {
+/* 0x002F69C0 */
+void RiccardoModel_PartsBE0(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0xBE0);
@@ -1266,11 +1291,12 @@ void func_002F69C0(u8 *m) {
 }
 
 /* all his springs */
-void func_002F6BD0(u8 *m) {
+/* 0x002F6BD0 */
+void RiccardoModel_Springs(u8 *m) {
     AT(m, 0x850, u8) = 1;
-    func_002F69C0(m);
-    func_002F6600(m);
-    func_002F63D0(m);
+    RiccardoModel_PartsBE0(m);
+    RiccardoModel_Parts10A0(m);
+    RiccardoModel_Parts1450(m);
 }
 
 /* +0x3C: his springs a frame: one step, or after a reset (+0x850) at rest and 30 to settle */
@@ -1280,7 +1306,7 @@ void RiccardoModel_Vt3C(u8 *m) {
     s32 i;
 
     if (AT(m, 0x850, u8) != 0) {
-        func_002F64F0(m);
+        RiccardoModel_PartsRest(m);
         n = 30;
     }
     func_002EE8A0(m + 0xBE0);
@@ -1300,7 +1326,7 @@ void RiccardoModel_Vt3C(u8 *m) {
 /* +0x10 */
 /* 0x002F6CD0 */
 void RiccardoModel_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* +0xC: once loaded: the base setup, the part roles, his springs, per-part draw settings */
@@ -1325,7 +1351,7 @@ void RiccardoModel_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, s32) = 0;
     AT(m, 0x858, s32) = 0;
-    func_002F6BD0(m);
+    RiccardoModel_Springs(m);
     AT(m, 0xC8, u8) = 4;
     AT(m, 0xC9, u8) = 0x40;
     AT(m, 0xCA, u8) = 4;
@@ -1341,7 +1367,8 @@ void RiccardoModel_Loaded(u8 *m) {
 /* +0x10 of his 0x60 parts (vtable D_00473810): follow the anchor (0.6), the set's force, the
    colliders (strength 1), held about 1.9 from the part it's tied to (+0x48, by +0x44), damped,
    at its length */
-void func_0031EB70(u8 *p, u8 *set) {
+/* 0x0031EB70 */
+void Part60_Step(u8 *p, u8 *set) {
     f32 at[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1374,7 +1401,8 @@ void func_0031EB70(u8 *p, u8 *set) {
 
 /* +0x10 of his 0x50 parts (vtable D_004737F0): drawn toward where its bone points (its length
    out along the bone's X axis, by +0x44), the set's force, damped, at its length */
-void func_0031EA10(u8 *p, u8 *set) {
+/* 0x0031EA10 */
+void Part50_Step(u8 *p, u8 *set) {
     f32 prev[4] __attribute__((aligned(16)));
     f32 t[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -1440,7 +1468,8 @@ extern u8 D_00424680[], D_00424690[], D_004246A0[], D_004246B0[];
 
 /* his 24 swaying points: each group of four from its first (+0x20), its bone (+0x24), weight
    (+0x40), kind (+0x44), table (+0x48) and phase (+0x4C: 5, 10, 15, 20 degrees down the group) */
-void func_0030DC70(u8 *m) {
+/* 0x0030DC70 */
+void Lorenzo2Model_SwayPoints(u8 *m) {
     static const u8 sBones[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
     static const s32 sKinds[2][2] = {{2, 3}, {0x12, 0x13}};
     static u8 *const sTables[6] = {D_00424680, D_00424680, D_00424690, D_00424690, D_004246A0, D_004246B0};
@@ -1482,7 +1511,7 @@ void Lorenzo2Model_Vt3C(u8 *m) {
 /* +0x10 */
 /* 0x0030E0E0 */
 void Lorenzo2Model_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* +0xC: once loaded: the base setup, the part roles, his points, per-part draw settings */
@@ -1506,7 +1535,7 @@ void Lorenzo2Model_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, s32) = 0;
     AT(m, 0x858, s32) = 0;
-    func_0030DC70(m);
+    Lorenzo2Model_SwayPoints(m);
     AT(m, 0x850, u8) = 1;
     {
         static const u8 sParts[][2] = {
@@ -1605,27 +1634,32 @@ static inline void SwayPoint_Pose(u8 *p, u8 *set) {
 }
 
 /* +0x10: step */
-void func_00311D70(u8 *p, u8 *set) {
+/* 0x00311D70 */
+void SwayPointB_Step(u8 *p, u8 *set) {
     SwayPoint_Step(p, set);
 }
 
-void func_002F8550(u8 *p, u8 *set) {
+/* 0x002F8550 */
+void SwayPointA_Step(u8 *p, u8 *set) {
     SwayPoint_Step(p, set);
 }
 
 /* +0x14: pose its bone */
-void func_00311C70(u8 *p, u8 *set) {
+/* 0x00311C70 */
+void SwayPointB_Pose(u8 *p, u8 *set) {
     SwayPoint_Pose(p, set);
 }
 
-void func_002F8450(u8 *p, u8 *set) {
+/* 0x002F8450 */
+void SwayPointA_Pose(u8 *p, u8 *set) {
     SwayPoint_Pose(p, set);
 }
 
 /* ---- matrices of the model base used by Lorenzo's ---- */
 
 /* a frame from bone matrix `b` keeping its Z axis (flipped to face `up`'s side) with Y = `up` */
-void func_001F93E0(f32 (*out)[4], f32 (*b)[4], const f32 *up) {
+/* 0x001F93E0 */
+void Mtx_FrameKeepZ(f32 (*out)[4], f32 (*b)[4], const f32 *up) {
     sceVu0CopyVector(out[2], b[2]);
     out[2][1] = 0.0f;
     if (sceVu0InnerProduct(b[1], up) < 0.0f) {
@@ -1640,7 +1674,8 @@ void func_001F93E0(f32 (*out)[4], f32 (*b)[4], const f32 *up) {
 }
 
 /* `out` turned `a` about axes[0] then `b` about axes[1] (its translation cleared) */
-void func_001F94B0(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
+/* 0x001F94B0 */
+void Mtx_TurnTwo(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
     f32 q[4] __attribute__((aligned(16)));
     f32 ra[4][4] __attribute__((aligned(16)));
     f32 rb[4][4] __attribute__((aligned(16)));
@@ -1683,7 +1718,7 @@ void *LorenzoModel_dtor(u8 *m, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = D_00469D00;
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -1816,15 +1851,15 @@ void LorenzoModel_AdjustBone(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
         sceVu0MulMatrix(out, u, r);
         break;
     case 0xB:
-        func_001F94B0(out, (f32 (*)[4])(m + 0xC70), 0.0f, 0x1.333334p-2f * -AT(m, 0x858, f32));
+        Mtx_TurnTwo(out, (f32 (*)[4])(m + 0xC70), 0.0f, 0x1.333334p-2f * -AT(m, 0x858, f32));
         break;
     case 0x12:
-        func_001F93E0(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
-        func_001F94B0(out, frame, 0x1.99999ap-2f * AT(m, 0x854, f32), 0x1.333334p-2f * -AT(m, 0x858, f32));
+        Mtx_FrameKeepZ(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
+        Mtx_TurnTwo(out, frame, 0x1.99999ap-2f * AT(m, 0x854, f32), 0x1.333334p-2f * -AT(m, 0x858, f32));
         break;
     case 0x13:
-        func_001F93E0(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
-        func_001F94B0(out, frame, 0x1.99999ap-3f * AT(m, 0x854, f32), 0x1.99999ap-2f * -AT(m, 0x858, f32));
+        Mtx_FrameKeepZ(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
+        Mtx_TurnTwo(out, frame, 0x1.99999ap-3f * AT(m, 0x854, f32), 0x1.99999ap-2f * -AT(m, 0x858, f32));
         break;
     case 0xA: {
         f32 inv[4][4] __attribute__((aligned(16)));
@@ -1912,7 +1947,8 @@ void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
 }
 
 /* his six points (bones 0x17..0x1C, two of three) on +0xCC0, its eight spheres */
-void func_0030EAB0(u8 *m) {
+/* 0x0030EAB0 */
+void Lorenzo2Model_Points(u8 *m) {
     static const struct { u8 bone; f32 y, z; } sSpheres[8] = {
         {0xC, 0.0f, 0.0f}, {0x1D, 0.0f, 0.0f}, {0xD, 0.0f, 0.0f}, {0x1E, 0.0f, 0.0f},
         {0x13, 0.0f, 0.0f}, {0x13, 1.0f, 0.0f}, {0x13, 0.0f, 0x1.99999ap-2f}, {0x13, 1.0f, 0x1.99999ap-2f},
@@ -1956,7 +1992,7 @@ void LorenzoModel_Vt3C(u8 *m) {
 /* +0x10 */
 /* 0x0030EDE0 */
 void LorenzoModel_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* +0xC: once loaded: the plain model's setup, his points, per-part draw settings */
@@ -1968,7 +2004,7 @@ void LorenzoModel_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, s32) = 0;
     AT(m, 0x858, s32) = 0;
-    func_0030EAB0(m);
+    Lorenzo2Model_Points(m);
     AT(m, 0x850, u8) = 1;
     {
         static const u8 sParts[][2] = {
@@ -2003,7 +2039,7 @@ void *Kind14Model_dtor(u8 *m, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = D_00469D00;
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -2017,7 +2053,7 @@ void Kind14Model_Loaded(u8 *m) {
 
 /* 0x00314240 */
 void Kind14Model_Frame(u8 *m) {
-    func_001F7AC0(m);
+    Model_Release(m);
 }
 
 /* +0x38 draw: the form by the animation, the texture cache's layers forgotten */
@@ -2064,7 +2100,7 @@ void *Kind09Model_dtor(u8 *m, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = D_00469D00;
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -2108,7 +2144,8 @@ static inline __attribute__((always_inline)) void spring_link(u8 *set, u8 *node)
 
 /* his six strands of four (bones from 6 / 0x16 / 0xA / 0x1A / 0xE / 0x1E on), each node 20
  * degrees freer than the one above, on the spring set +0x14C0 */
-void func_0030D2F0(u8 *m) {
+/* 0x0030D2F0 */
+void Lorenzo2Model_Strands(u8 *m) {
     static const s32 kBone[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
     static u8 *const kTable[6] = {D_00424450, D_00424450, D_00424460, D_00424460, D_00424470, D_00424480};
     static const u32 kAngle[4] = {0x3EB2B8C3, 0x3F32B8C3, 0x3F860A92, 0x3FB2B8C3};   /* 20 .. 80 deg */
@@ -2141,7 +2178,8 @@ void func_0030D2F0(u8 *m) {
 
 /* his six hanging points (bones 0x2F..0x34, the first and fourth fixed) on the spring set +0xD00,
  * with its six collision spheres (+0xB80: bones 0x24, 0x35, 0x25, 0x36 and two on 0x2B) */
-void func_0030D6E0(u8 *m) {
+/* 0x0030D6E0 */
+void Lorenzo2Model_Hanging(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0xD00);
@@ -2222,8 +2260,8 @@ void Kind09Model_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, f32) = 0.0f;
     AT(m, 0x858, f32) = 0.0f;
-    func_0030D6E0(m);
-    func_0030D2F0(m);
+    Lorenzo2Model_Hanging(m);
+    Lorenzo2Model_Strands(m);
     AT(m, 0x850, u8) = 1;
     AT(m, 0x9C, u8) = 4;
     AT(m, 0x9D, u8) = 0x40;
@@ -2258,15 +2296,16 @@ void *Kind33Model_dtor(u8 *m, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = D_00469D00;
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
 }
 
-/* (as func_002F64F0)  the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
+/* (as RiccardoModel_PartsRest)  the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
    way) from their anchors */
-void func_00320590(u8 *m) {
+/* 0x00320590 */
+void Kind23Model_PartsRest(u8 *m) {
     f32 down[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -2293,8 +2332,9 @@ void func_00320590(u8 *m) {
     }
 }
 
-/* (as func_002F6600)  the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
-void func_003206A0(u8 *m) {
+/* (as RiccardoModel_Parts10A0)  the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
+/* 0x003206A0 */
+void Kind23Model_Parts10A0(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0x10A0);
@@ -2320,15 +2360,16 @@ void func_003206A0(u8 *m) {
             AT(n, 0x48, u8 *) = m + 0xC20 + (i - j + j % 2) * 0x60;
         }
     }
-    func_002EE530(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
-    func_002EE530(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
 }
 
-/* (as func_002F69C0)  the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
-void func_00320A60(u8 *m) {
+/* (as RiccardoModel_PartsBE0)  the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
+/* 0x00320A60 */
+void Kind23Model_PartsBE0(u8 *m) {
     s32 i;
 
     func_002EE960(m + 0xBE0);
@@ -2352,11 +2393,12 @@ void func_00320A60(u8 *m) {
     func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
 }
 
-/* a model's +0x850 on, then func_00320A60 and func_003206A0 */
-void func_00320C70(u8 *m) {
+/* a model's +0x850 on, then Kind23Model_PartsBE0 and Kind23Model_Parts10A0 */
+/* 0x00320C70 */
+void Kind23Model_Springs(u8 *m) {
     AT(m, 0x850, u8) = 1;
-    func_00320A60(m);
-    func_003206A0(m);
+    Kind23Model_PartsBE0(m);
+    Kind23Model_Parts10A0(m);
 }
 
 extern void *D_00473BD0[];
@@ -2379,7 +2421,7 @@ void *Kind23Model_dtor(u8 *m, s32 flags) {
         AT(m, 0x10, void **) = D_0046ADA0;
         AT(m, 0x10, void **) = D_00469D00;
         if ((s16)flags > 0) {
-            func_002DC6D0(m);
+            StalkerModel_delete(m);
         }
     }
     return m;
@@ -2395,7 +2437,7 @@ void Kind23Model_Vt3C(u8 *m) {
     s32 i;
 
     if (AT(m, 0x850, u8) != 0) {
-        func_00320590(m);
+        Kind23Model_PartsRest(m);
         n = 30;
     }
     func_002EE8A0(m + 0xBE0);
@@ -2433,7 +2475,7 @@ void Kind23Model_Loaded(u8 *m) {
     AT(m, 0x868, f32) = 0.0f;
     AT(m, 0x854, s32) = 0;
     AT(m, 0x858, s32) = 0;
-    func_00320C70(m);
+    Kind23Model_Springs(m);
     for (i = 0; i < sizeof(sParts); i++) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;
@@ -2448,5 +2490,5 @@ void Kind33Model_BodyFrames(u8 *m, u8 *actor, f32 lift) {
 
     sceVu0CopyVector(pos, (f32 *)(actor + 0x10));
     pos[1] += lift;
-    func_002E3040((f32 (*)[4])(m + 0x7D0), pos, AT(actor, 0x54, f32));
+    Mtx_Model((f32 (*)[4])(m + 0x7D0), pos, AT(actor, 0x54, f32));
 }
