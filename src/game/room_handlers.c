@@ -6956,3 +6956,79 @@ s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* ---- the marker effect D_00470F90 (effects.c) on character slot 3, its slot in script variable
+ * 0, its size eased by variable 1 ---- */
+extern void *D_00470F90[];
+extern u8 *D_0044F80C, *D_0044F810;   /* character slots 3 / 0 */
+
+static void effect_70F90_init(void **obj) {
+    obj[0] = D_00470F90;
+}
+
+/* the marker's message { state, the model it follows, size, from slot } to the one in var 0 */
+static inline s32 marker_send(s32 *msg) {
+    s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+
+    func_002D6090(D_0044E578, slot, msg);
+    return 1;
+}
+
+/* byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
+ * 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
+ * variable 1 (a step a call, to 0.5 + v / 200 or v / 334) */
+s32 func_00340230(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k334 = {0x43A70000};
+    VObject *ev;
+    s32 msg[4];
+    s32 slot, v;
+
+    switch (cmd[3]) {
+    case 0:
+        func_001267F0(D_0044F80C, 0x14);
+        func_001267F0(D_0044F810, 0x14);
+        slot = Effect_New(D_0044E578, 0x20, effect_70F90_init);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        /* fall through */
+    case 1:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        msg[0] = 6;
+        msg[1] = AT(D_0044F80C, 0xF0, s32);
+        msg[2] = 0x3F800000;   /* 1 */
+        msg[3] = slot;
+        func_002D6090(D_0044E578, slot, msg);
+        return 1;
+    case 2:
+        msg[0] = 2;
+        return marker_send(msg);
+    case 3:
+        msg[0] = 3;
+        return marker_send(msg);
+    case 4:
+        msg[0] = 4;
+        msg[1] = 0x3F800000;
+        return marker_send(msg);
+    case 5:
+    case 7:
+        ev = D_0044E4D0;
+        slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
+        msg[0] = 4;
+        v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1) - 1;
+        if (v < 0) {
+            v = 0;
+        }
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, v);
+        if (cmd[3] == 5) {
+            AT(&msg[1], 0, f32) = 0.5f + 0.5f * ((f32)v / 100.0f);
+        } else {
+            AT(&msg[1], 0, f32) = (f32)v / k334.f;
+        }
+        func_002D6090(D_0044E578, slot, msg);
+        return 1;
+    case 6:
+        msg[0] = 4;
+        msg[1] = 0x3F000000;   /* 0.5 */
+        return marker_send(msg);
+    }
+    return 1;
+}
