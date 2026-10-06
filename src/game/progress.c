@@ -720,27 +720,11 @@ void func_001776F0(Progress *p) {
 }
 
 
-/* a character action (Character +0x14E8: current, +0x1508: saved); state 7 = held by
- * another character's relation */
-typedef struct CharAction {
-    s32 state, a, b, c, d;
-    f32 e;
-    s32 f;
-    u8 g, h;
-    u16 i;
-} CharAction;
+#include "charaction.h"
 
-static void char_set_action(u8 *c, const CharAction *act) {
-    AT(c, 0x14E8, s32) = act->state;
-    AT(c, 0x14EC, s32) = act->a;
-    AT(c, 0x14F0, s32) = act->b;
-    AT(c, 0x14F4, s32) = act->c;
-    AT(c, 0x14F8, s32) = act->d;
-    AT(c, 0x14FC, f32) = act->e;
-    AT(c, 0x1500, s32) = act->f;
-    AT(c, 0x1504, u8) = act->g;
-    AT(c, 0x1505, u8) = act->h;
-    AT(c, 0x1506, u16) = act->i;
+/* (kept out of line, as the original) */
+static void char_set_action_ool(u8 *c, const CharAction *act) {
+    char_set_action(c, act);
 }
 
 /* the pending relation changes of the 3 character slots (+0x10B0, 12 bytes each: kind, sub,
@@ -772,7 +756,7 @@ void func_00173670(Progress *p) {
                 act.h = AT(c, 0x1525, u8);
                 act.i = AT(c, 0x1526, u16);
                 if (act.state != 0 && AT(gCharacters[i], 0x14E8, s32) != 7) {
-                    char_set_action((u8 *)gCharacters[i], &act);
+                    char_set_action_ool((u8 *)gCharacters[i], &act);
                 }
                 func_002A84C0(e);
             }
@@ -782,7 +766,7 @@ void func_00173670(Progress *p) {
                 c = (u8 *)gCharacters[e[2]];
                 act.state = 7;
                 if (AT(c, 0x14E8, s32) != 7) {
-                    char_set_action(c, &act);
+                    char_set_action_ool(c, &act);
                 }
                 func_002A84C0(e);
             } else if (e[1] == 1) {
@@ -941,7 +925,7 @@ void func_00173B60(Progress *p) {
             act.d = relB;
             act.e = f;
             if (AT(c, 0x14E8, s32) != 7) {
-                char_set_action(c, &act);
+                char_set_action_ool(c, &act);
             }
             func_002A84C0(b + 0x10B0 + i * 0xC);
         }
@@ -965,7 +949,7 @@ void func_00173B60(Progress *p) {
                 act.d = relB;
                 act.e = 0.0f;
                 if (AT(c, 0x14E8, s32) != 7) {
-                    char_set_action(c, &act);
+                    char_set_action_ool(c, &act);
                 }
             }
         }
@@ -1006,7 +990,7 @@ void func_001739A0(Progress *p) {
             act.c = AT(r, 0x2, u16);
             act.d = AT(r, 0x4, s16);
             if (AT(c, 0x14E8, s32) != 7) {
-                char_set_action(c, &act);
+                char_set_action_ool(c, &act);
             }
         }
     }

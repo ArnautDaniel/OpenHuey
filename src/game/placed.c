@@ -621,9 +621,9 @@ s32 func_002D5C70(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
-/* when Fiona touches it (+0x74, within 5) it is kicked the way she faces (2 ahead, 2 up),
+/* when Fiona touches it (+0x74, within 5) it is kicked the way she faces (2 ahead, `up` up),
  * once per touch */
-static inline __attribute__((always_inline)) void thing_kick(u8 *b) {
+static inline __attribute__((always_inline)) void thing_kick_up(u8 *b, f32 up) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 f[4] __attribute__((aligned(16)));
     VObject *fiona;
@@ -652,11 +652,15 @@ static inline __attribute__((always_inline)) void thing_kick(u8 *b) {
     f[0] = 0.0f;
     f[1] = 0.0f;
     sceVu0ApplyMatrix(f, m, f);
-    f[1] = f[1] + 2.0f;
+    f[1] = f[1] + up;
     sceVu0AddVector(BALL_VEL(b), BALL_VEL(b), f);
     AT(b, 0x14, f32) = AT(b, 0x14, f32) + 0x1.99999a0000000p-4f /* 0.1 */;
     AT(b, 0xE0, u8) = 0;
     AT(b, 0xE1, u8) = 1;
+}
+
+static inline __attribute__((always_inline)) void thing_kick(u8 *b) {
+    thing_kick_up(b, 2.0f);
 }
 
 /* +0x30 each frame: gone after 3 minutes; in Fiona's room, when she touches it (+0x74, within
@@ -2122,4 +2126,224 @@ void func_00368150(u8 *o) {
     if (AT(o, 0x14, f32) < -30.0f) {
         AT(o, 0x28, u8) = 0;
     }
+}
+
+/* ---- the shared thing class (D_00479500, code 0x3544C0..0x355960): who it touches, when it
+   goes off, Fiona's kick, its noise ---- */
+
+#include "charaction.h"
+
+extern u8 *D_0044F258;   /* the placed things list: +0x1C.. slots 7..9 the stalkers */
+extern f32 func_001244D0(void *a, const f32 *pos);
+
+/* actor c (feet cy, top ctop) and the span oy..otop overlap */
+static inline s32 thing_spans(f32 cy, f32 ctop, f32 oy, f32 otop) {
+    if (ctop < otop && !(ctop <= oy)) {
+        return 1;
+    }
+    return otop < ctop && !(otop <= cy);
+}
+
+/* c's position within `r` of o's across the floor */
+static inline s32 thing_near(u8 *c, u8 *o, f32 r) {
+    f32 d[4] __attribute__((aligned(16)));
+
+    sceVu0SubVector(d, (f32 *)(c + 0x10), (f32 *)(o + 0x10));
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < r;
+}
+
+/* the stalkers (slots 7..9) standing on it (1 high, within their radius) get action 4 (sub 1,
+   0xFF, its kind +0x126); 1 if any did */
+s32 func_003544C0(u8 *o) {
+    s32 hit = 0;
+    s32 i;
+
+    for (i = 7; i < 10; i++) {
+        u8 *c = ((u8 **)D_0044F258)[i];
+
+        if (c == NULL || AT(c, 0x28, u8) != 1 || AT(o, 0x30, s32) != AT(c, 0x30, s32)) {
+            continue;
+        }
+        if (!thing_spans(AT(c, 0x14, f32), AT(c, 0x14, f32) + AT(c, 0xCC, f32), AT(o, 0x14, f32), 1.0f + AT(o, 0x14, f32))) {
+            continue;
+        }
+        if (thing_near(c, o, AT(c, 0xC8, f32))) {
+            CharAction act;
+
+            act.state = 4;
+            act.a = 1;
+            act.b = 0xFF;
+            act.c = AT(o, 0x126, u16);
+            act.d = 0;
+            act.e = 0.0f;
+            act.f = 0;
+            act.g = 0;
+            act.h = 0;
+            act.i = 0;
+            if (AT(c, 0x14E8, s32) != 7) {
+                char_set_action(c, &act);
+            }
+            hit = 1;
+        }
+    }
+    return hit;
+}
+
+/* once armed (age +0xE4 >= +0x128): the stalkers within its reach (+0x12C high, +0x12A across)
+   get action 4 facing it */
+void func_003546B0(u8 *o) {
+    s32 i;
+
+    if (AT(o, 0xE4, u32) < AT(o, 0x128, u16)) {
+        return;
+    }
+    for (i = 7; i < 10; i++) {
+        u8 *c = ((u8 **)D_0044F258)[i];
+        CharAction act;
+
+        if (c == NULL || AT(c, 0x28, u8) != 1 || AT(o, 0x30, s32) != AT(c, 0x30, s32)) {
+            continue;
+        }
+        if (!thing_spans(AT(c, 0x14, f32), AT(c, 0x14, f32) + AT(c, 0xCC, f32), AT(o, 0x14, f32),
+                         AT(o, 0x14, f32) + (f32)(u32)AT(o, 0x12C, u16))) {
+            continue;
+        }
+        if (!thing_near(c, o, (f32)(u32)AT(o, 0x12A, u16))) {
+            continue;
+        }
+        act.state = 4;
+        act.d = 0;
+        act.a = 1;
+        act.b = 0xFF;
+        act.c = AT(o, 0x126, u16);
+        act.e = func_001244D0(c, (f32 *)(o + 0x10));
+        act.f = 0;
+        act.g = 0;
+        act.h = 0;
+        act.i = 0;
+        if (AT(c, 0x14E8, s32) != 7) {
+            char_set_action(c, &act);
+        }
+    }
+}
+
+/* once armed: 0 not yet, 2 set off - by the pursuer in its reach in the current room, or
+   elsewhere in his room by a +0x122 % roll - else 1 */
+s32 func_00354910(u8 *o) {
+    u8 *p;
+    s32 room;
+
+    if (AT(o, 0xE4, u32) < AT(o, 0x128, u16)) {
+        return 0;
+    }
+    p = (u8 *)gCharPursuer;
+    if (p == NULL || AT(p, 0x28, u8) != 1) {
+        return 1;
+    }
+    room = AT(o, 0x30, s32);
+    if (room != AT(gCharPursuer, 0x30, s32)) {
+        return 1;
+    }
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        if (thing_spans(AT(p, 0x14, f32), AT(p, 0x14, f32) + AT(p, 0xCC, f32), AT(o, 0x14, f32),
+                        AT(o, 0x14, f32) + (f32)(u32)AT(o, 0x12C, u16)) &&
+            thing_near(p, o, (f32)(u32)AT(o, 0x12A, u16))) {
+            return 2;
+        }
+        return 1;
+    }
+    if ((s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < AT(o, 0x122, u16)) {
+        return 2;
+    }
+    return 1;
+}
+
+/* in the current room, Fiona's kick */
+void func_00354AF0(u8 *o) {
+    if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    thing_kick(o);
+}
+
+/* its noise (kind +0x12E, loudness +0x126), 0x8000 (startling) by a +0x124 % roll */
+void func_00354C90(u8 *o) {
+    /* the loudness goes as the u16 it is (the callee takes its low half) */
+    void (*noise)(Progress *, const f32 *, u32, u32, u32, s32, f32) =
+        (void (*)(Progress *, const f32 *, u32, u32, u32, s32, f32))func_00177FA0;
+
+    if ((s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < AT(o, 0x124, u16)) {
+        noise(gProgress, (f32 *)(o + 0x10), 4, AT(o, 0x12E, u8), AT(o, 0x126, u16), -0x8000, 0.0f);
+    } else {
+        noise(gProgress, (f32 *)(o + 0x10), 4, AT(o, 0x12E, u8), AT(o, 0x126, u16), 0, 0.0f);
+    }
+}
+
+/* 1 when the pursuer stands on it in the current room */
+s32 func_00354D50(u8 *o) {
+    u8 *p;
+
+    if (AT(o, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return 0;
+    }
+    p = (u8 *)gCharPursuer;
+    if (p == NULL || AT(p, 0x28, u8) != 1 || AT(p, 0x29, u8) != 0) {
+        return 0;
+    }
+    if (!thing_spans(AT(p, 0x14, f32), AT(p, 0x14, f32) + AT(p, 0xCC, f32), AT(o, 0x14, f32), 1.0f + AT(o, 0x14, f32))) {
+        return 0;
+    }
+    return thing_near(p, o, AT(p, 0xC8, f32));
+}
+
+/* +0x44 put down (the base's): when placed (1), on the floor at least, and the items told */
+u32 func_00354E70(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
+    u32 r = func_00121000(o, tri, pos, rot, rr, h) & 0xFF;
+    f32 fl[4] __attribute__((aligned(16)));
+
+    if (r != 1) {
+        return r;
+    }
+    sceVu0CopyVector(fl, (f32 *)(o + 0x10));
+    VCALL(D_0044E570, 0x14, void (*)(VObject *, u32, f32 *))(D_0044E570, AT(o, 0x34, u32), fl);
+    if (AT(o, 0x14, f32) < fl[1]) {
+        AT(o, 0x14, f32) = fl[1];
+    }
+    if (D_0044E988 != NULL) {
+        VCALL(D_0044E988, 0x1C, void (*)(VObject *))(D_0044E988);
+    }
+    return r;
+}
+
+/* +0x48 the triangle reached stepping from actor a's spot (at height to.y) to `to`: a wall hit
+   (0x40000000) -1, another hit stops `to` there */
+s32 func_00354F20(u8 *b, u8 *a, f32 *to) {
+    f32 from[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    u32 r = -1;
+
+    if (a != NULL) {
+        sceVu0CopyVector(from, BALL_POS(a));
+        from[1] = to[1];
+        r = VCALL(D_0044E570, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
+            D_0044E570, AT(a, 0x34, u32), out, from, to, n, AT(b, 0xC0, u32));
+    }
+    if (r & 0xF0000000) {
+        if (r & 0x40000000) {
+            return -1;
+        }
+        sceVu0CopyVector(to, out);
+        r &= 0xFFFF;
+    }
+    return r;
+}
+
+/* (as func_00354AF0) a kind's frame: Fiona's kick with less lift (0.6) */
+void func_00367BC0(u8 *o) {
+    func_00121220(o);
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    thing_kick_up(o, 0x1.333334p-1f);
 }
