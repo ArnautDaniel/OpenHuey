@@ -7220,6 +7220,164 @@ u8 *func_0034E0E0(u8 *o, s32 flags) {
     return o;
 }
 
+/* ---- D_00478B50 (0x1C60 bytes; room 0x66): a fire - 64 flames (records +0x10 + 0xC00 x the
+ * current one +0x1C50, velocities +0x1850, the drawer +0x1810) at one of the room's spots
+ * (+0x1C58 twice its index: x / z pairs at D_00442D60 for a small fire, D_00442D80 for a big
+ * one, +0x1C54); +0x1C5C put out: no new flames ---- */
+
+extern f32 D_00442D60[], D_00442D64[];   /* the small fires' spots (x, z pairs) */
+extern f32 D_00442D80[], D_00442D84[];   /* the big fires' */
+
+#define FIRE_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
+#define FIRE_VEL(o, i) ((f32 *)((o) + 0x1850 + (i) * 0x10))
+
+/* flame `i` (re)started round the spot - small: within 7.5 across, 3..10 big, rising 0.02 ..
+ * 0.07; big: 12 up and within 5 across, 3..6 big, rising 0.02..0.12 - drifting out, alpha
+ * 0x10 (`hidden`: 0) */
+void func_0034E170(u8 *o, s32 i, s32 hidden) {
+    static const union { u32 u; f32 f; } k2 = {0x40000000}, k005 = {0x3D4CCCCD};   /* multiplied first */
+    QuadRec *r = FIRE_REC(o, AT(o, 0x1C50, s32), i);
+    f32 *v = FIRE_VEL(o, i);
+    VObject *rnd;
+    f32 a, b, c;
+    s32 spot;
+
+    if (AT(o, 0x1C54, s32) == 0) {
+        r->rgba[0] = 0x46;
+        r->rgba[1] = 0x2B;
+        r->rgba[2] = 0x1E;
+        r->rgba[3] = hidden ? 0 : 0x10;
+        rnd = D_0044E550;
+        a = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        b = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        c = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        spot = AT(o, 0x1C58, s32);
+        r->pos[0] = D_00442D60[spot] + 15.0f * a;
+        r->pos[1] = k2.f * b;
+        r->pos[2] = D_00442D64[AT(o, 0x1C58, s32)] + 15.0f * c;
+        r->pos[3] = 1.0f;
+        r->w = 3.0f + 7.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->h = r->w;
+        r->turn = 0.0f;
+        r->frame = 0;
+        v[0] = k005.f * a;
+        v[1] = 0x1.47ae14p-6f + 0x1.99999ap-5f * (0.5f + b);   /* 0.02 + 0.05 (..) */
+        v[2] = k005.f * c;
+    } else {
+        r->rgba[0] = 0x46;
+        r->rgba[1] = 0x30;
+        r->rgba[2] = 0x1A;
+        r->rgba[3] = hidden ? 0 : 0x10;
+        rnd = D_0044E550;
+        a = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        b = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        c = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
+        spot = AT(o, 0x1C58, s32);
+        r->pos[0] = D_00442D80[spot] + 10.0f * a;
+        r->pos[1] = 12.0f + 20.0f * b;
+        r->pos[2] = D_00442D84[AT(o, 0x1C58, s32)] + 10.0f * c;
+        r->pos[3] = 1.0f;
+        r->w = 3.0f + 3.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->h = r->w;
+        r->turn = 0.0f;
+        r->frame = 0;
+        v[0] = k005.f * a;
+        v[1] = 0x1.47ae14p-6f + 0x1.99999ap-4f * (0.5f + b);   /* 0.02 + 0.1 (..) */
+        v[2] = k005.f * c;
+    }
+}
+
+/* +0x18 start: arg { the spot (negative: put out), big }: every flame started, those past 16
+ * (small) or 32 (big) hidden */
+void func_0034E500(u8 *o, s32 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    if (arg[0] < 0) {
+        AT(o, 0x1C5C, u8) = 1;
+        return;
+    }
+    AT(o, 0x1C58, s32) = arg[0] * 2;
+    AT(o, 0x1C54, s32) = arg[1];
+    for (i = 0; i < 64; i++) {
+        if (AT(o, 0x1C54, s32) == 0) {
+            func_0034E170(o, i, i >= 16);
+        } else {
+            func_0034E170(o, i, i >= 32);
+        }
+    }
+}
+
+/* +0x10 update: flip the buffers; each flame showing carried over, growing 0.04, turning half
+ * a degree, rising, fading in by up to 7 (to 0x60 small / 0x40 big, then marked) and out by up
+ * to 7 (big: 3); unless put out, one hidden flame a frame restarted. 0 once none shows */
+s32 func_0034E620(u8 *o) {
+    VObject *rnd = D_0044E550;
+    u8 done = 1;
+    s32 i, k;
+
+    AT(o, 0x1C50, s32) ^= 1;
+    for (i = 0; i < 64; i++) {
+        QuadRec *r;
+        f32 *v = FIRE_VEL(o, i);
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)FIRE_REC(o, AT(o, 0x1C50, s32), i))[k] = ((u32 *)FIRE_REC(o, AT(o, 0x1C50, s32) ^ 1, i))[k];
+        }
+        r = FIRE_REC(o, AT(o, 0x1C50, s32), i);
+        if (r->rgba[3] == 0) {
+            continue;
+        }
+        done = 0;
+        r->w = r->w + 0x1.47ae14p-5f;   /* 0.04 */
+        r->h = r->w;
+        r->turn = r->turn + 0x1.1df46ap-7f;   /* half a degree */
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (AT(o, 0x1C54, s32) == 0) {
+            if (r->rgba[0] == 0x46) {
+                r->rgba[3] = r->rgba[3] + (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7);
+                if (r->rgba[3] >= 0x61) {
+                    r->rgba[3] = 0x60;
+                    r->rgba[0]++;
+                }
+            } else {
+                r->rgba[3] = r->rgba[3] - (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7);
+                if (r->rgba[3] < 0) {
+                    r->rgba[3] = 0;
+                }
+            }
+        } else if (r->rgba[0] == 0x46) {
+            r->rgba[3] = r->rgba[3] + (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7);
+            if (r->rgba[3] >= 0x41) {
+                r->rgba[3] = 0x40;
+                r->rgba[0]++;
+            }
+        } else {
+            r->rgba[3] = r->rgba[3] - (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3);
+            if (r->rgba[3] < 0) {
+                r->rgba[3] = 0;
+            }
+        }
+    }
+    if (!AT(o, 0x1C5C, u8)) {
+        for (i = 0; i < 64; i++) {
+            if (FIRE_REC(o, AT(o, 0x1C50, s32), i)->rgba[3] == 0) {
+                func_0034E170(o, i, 0);
+                done = 0;
+                break;
+            }
+        }
+    }
+    return done != 1;
+}
+
 /* (as func_002D6700)  +0x14 draw: the current buffer through the quad drawer */
 void func_0034E5F0(u8 *o) {
     AT(o, 0x1820, u8 *) = o + AT(o, 0x1C50, s32) * 0xC00 + 0x10;
