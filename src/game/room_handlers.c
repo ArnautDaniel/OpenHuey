@@ -5814,3 +5814,94 @@ s32 func_003422B0(void *self, void *a1, u8 *cmd) {
     func_00177FA0(gProgress, pos, which & 0xFF, 2, 5, 0, 10.0f);
     return 1;
 }
+
+/* the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
+ * their timer (+0xE4) to 300000 */
+s32 func_0033FA60(void) {
+    VObject *list = D_0044F260, *ev = D_0044E4D0;
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        u8 *o = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, i);
+
+        if (o == NULL) {
+            continue;
+        }
+        switch (AT(o, 0x20, u32)) {
+        case 0:
+        case 2:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+            if ((u8)VCALL(ev, 0x10, s32 (*)(VObject *, void *, s32, s32))(ev, o + 0x10, 0xB, -1) == 1) {
+                AT(o, 0xE4, s32) = 300000;
+            }
+            break;
+        }
+    }
+    return 1;
+}
+
+/* Hewie's +0x14C8 to script variable 2 (byte 3 0), or back from it (1; 0 there gives 10) */
+s32 func_0033FB40(void *self, void *a1, u8 *cmd) {
+    VObject *ev;
+
+    switch (cmd[3]) {
+    case 0:
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 2, AT(gCharPartner, 0x14C8, s32));
+        break;
+    case 1:
+        ev = D_0044E4D0;
+        if (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2) == 0) {
+            AT(gCharPartner, 0x14C8, s32) = 10;
+        } else {
+            AT(gCharPartner, 0x14C8, s32) = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2);
+        }
+        break;
+    }
+    return 1;
+}
+
+extern s32 func_00365850(void *p);   /* (lorenzo.c) his slam at its impact key, second form */
+
+/* (as slam_shake, both of Lorenzo's forms: 0xA and 0x27) */
+s32 func_00342500(void) {
+    if (gCharPursuer == NULL) {
+        return 1;
+    }
+    if (AT(gCharPursuer, 0x153C, u8) == 0xA) {
+        if (func_0030BB70(D_0044F808) != 0) {
+            VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+        }
+    } else if (AT(gCharPursuer, 0x153C, u8) == 0x27) {
+        if (func_00365850(D_0044F808) != 0) {
+            VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+        }
+    }
+    return 1;
+}
+
+/* door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
+ * (doors +0x74), waiting (2) until there */
+s32 func_00340C50(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    VObject *ev;
+    s32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, -90);
+        return 1;
+    case 1:
+        ev = D_0044E4D0;
+        a = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0) + 10;
+        if (a >= 0) {
+            a = 0;
+        }
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, a);
+        VCALL(D_0044E558, 0x74, void (*)(VObject *, s32, f32))(D_0044E558, 0, kPi.f * (f32)a / 180.0f);
+        return a < 0 ? 2 : 1;
+    }
+    return 1;
+}

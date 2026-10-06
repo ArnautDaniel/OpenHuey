@@ -1935,6 +1935,39 @@ u8 *func_0036BCC0(u8 *o, s32 flags) {
     return Burst4_Destroy(o, D_0047A030, 0x1A50, flags);
 }
 
+/* their draws (unless the effects are paused): each drawer's record (+0x10) the current frame's
+   (+0xFAC / +0x22BC) in its block, then drawn */
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u32 *stride) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        u8 *d = o + at + i * 0x38;
+
+        AT(d, 0x10, u8 *) = o + cur * stride[i] + base[i];
+        func_002E56C0(d);
+    }
+}
+
+void func_0036B130(u8 *o) {
+    static const u32 base[4] = {0x10, 0x610, 0x670, 0xAF0}, stride[4] = {0x300, 0x30, 0x240, 0x30};
+
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    Burst4_Draw(o, 0xB50, AT(o, 0xFAC, s32), base, stride);
+}
+
+void func_0036C7B0(u8 *o) {
+    static const u32 base[4] = {0x10, 0xC10, 0xD30, 0x1930}, stride[4] = {0x600, 0x90, 0x600, 0x90};
+
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    Burst4_Draw(o, 0x1A50, AT(o, 0x22BC, s32), base, stride);
+}
+
 static inline void Burst4A_Init(void **obj) {
     Burst4_Init(obj, D_0047A010, 0xB50);
 }
