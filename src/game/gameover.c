@@ -1,5 +1,5 @@
 /* The transition screen (SceneGame +0x73EB40): the game over / ending sequences, run by
- * func_0039E380 each frame until flag 0xC. A state machine (+0x50, a PTMF): the start picks
+ * SceneGame_SubTransition each frame until flag 0xC. A state machine (+0x50, a PTMF): the start picks
  * the sequence by its mode (+0x0) - 0 the movie one (its frames drawn by this, +0x4), 1 / 4..
  * and 3 the faded-out ones with their music, 2 none (done at once), and in a special scene
  * (progress +0x1FBEC1) its own one. The faded-out sequences: the music and the movie stop, the

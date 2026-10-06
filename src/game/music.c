@@ -1,5 +1,5 @@
 /* The stage music director (scene +0x1064600, 0xA3C bytes, global D_00456DF0; base vtable
- * D_0046EB70, one subclass per stage set up by func_0039A8E0). It plays the stage's music on
+ * D_0046EB70, one subclass per stage set up by SceneGame_MusicDirector). It plays the stage's music on
  * the sound driver's four sequence banks (0..3, an SQ each over the stage's HD/BD bank) and
  * mixes them live: each track's volume and sequence volume, and per MIDI channel a volume,
  * pitch bend and pan, sent as MIDI (driver +0x30: command 0x23). Fades run as "cues" (a
@@ -36,10 +36,10 @@
 
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
-extern const PTMF D_004128A0;   /* func_002C25F0: a track volume fade */
-extern const PTMF D_00412890;   /* func_002C2ED0: the global volume fade */
-extern const PTMF D_004128B0;   /* func_002C1F80: a sequence volume fade */
-extern const PTMF D_004128C0;   /* func_002C1AC0: a channel bend fade */
+extern const PTMF D_004128A0;   /* MusicDir_TrackFade: a track volume fade */
+extern const PTMF D_00412890;   /* MusicDir_GlobalFade: the global volume fade */
+extern const PTMF D_004128B0;   /* MusicDir_SeqFade: a sequence volume fade */
+extern const PTMF D_004128C0;   /* MusicDir_BendFade: a channel bend fade */
 extern void *D_0046EB70[], *D_0046EBE0[];
 
 #define TRACK(d, k) ((u8 *)(d) + 0x34 + ((k) & 0xFF) * 0x110)
@@ -47,9 +47,9 @@ extern void *D_0046EB70[], *D_0046EBE0[];
 #define CUE(d, i) ((u8 *)(d) + 0x474 + (i) * 0x28)
 #define CUR(d) AT(d, 0x834, u8 *)
 
-void func_002BFE40(u8 *self);
-void func_002C0700(u8 *self);
-void func_002C0710(u8 *self);
+void MusicDir_Hold(u8 *self);
+void MusicDir_Seen(u8 *self);
+void MusicDir_Lost(u8 *self);
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 extern void *D_004738A0[];
@@ -84,7 +84,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -176,13 +176,14 @@ static inline u8 cue_free(u8 *d) {
     return 0xFF;
 }
 
-void func_002C3760(u8 *d, u32 k);
+void MusicDir_SendTrack(u8 *d, u32 k);
 
 /* ---- cues ---- */
 
 /* a track volume fade (the cue's track, target +0x14, step +0x1C): done at the target (a
    target 0 mutes the track) */
-void func_002C25F0(u8 *d) {
+/* 0x002C25F0 */
+void MusicDir_TrackFade(u8 *d) {
     u8 *c = CUR(d);
     u8 k = AT(c, 0x0, u8);
     u32 to = AT(c, 0x14, s32);
@@ -227,7 +228,8 @@ void func_002C25F0(u8 *d) {
 }
 
 /* the global volume fade (+0x10, 16.16, by the cue's +0x18 toward +0x14) */
-void func_002C2ED0(u8 *d) {
+/* 0x002C2ED0 */
+void MusicDir_GlobalFade(u8 *d) {
     s8 dir = AT(d, 0x14, s8);
 
     if (dir == 1) {
@@ -259,7 +261,8 @@ static inline u8 seqvol_out(f32 v) {
 }
 
 /* a sequence volume fade */
-void func_002C1F80(u8 *d) {
+/* 0x002C1F80 */
+void MusicDir_SeqFade(u8 *d) {
     u8 *c = CUR(d);
     u8 k = AT(c, 0x0, u8);
     u32 to = AT(c, 0x14, s32);
@@ -303,7 +306,8 @@ void func_002C1F80(u8 *d) {
 }
 
 /* a channel's bend fade (the cue's track, channel +1) */
-void func_002C1AC0(u8 *d) {
+/* 0x002C1AC0 */
+void MusicDir_BendFade(u8 *d) {
     u8 *c = CUR(d);
     u8 k = AT(c, 0x0, u8), ch = AT(c, 0x1, u8);
     s32 to = AT(c, 0x14, s32);
@@ -335,7 +339,8 @@ void func_002C1AC0(u8 *d) {
 /* ---- starting cues ---- */
 
 /* track `k`'s volume to `to` over `frames` frames: 1 if started */
-s32 func_002C2CD0(u8 *d, u8 k, s32 frames, s32 to) {
+/* 0x002C2CD0 */
+s32 MusicDir_TrackVolumeTo(u8 *d, u8 k, s32 frames, s32 to) {
     u8 *t = TRACK(d, k), *c;
     u8 i;
 
@@ -355,7 +360,8 @@ s32 func_002C2CD0(u8 *d, u8 k, s32 frames, s32 to) {
 }
 
 /* track `k`'s sequence volume to `to` (20..255) over `frames` frames */
-s32 func_002C23E0(u8 *d, u8 k, s32 frames, s32 to) {
+/* 0x002C23E0 */
+s32 MusicDir_SeqVolumeTo(u8 *d, u8 k, s32 frames, s32 to) {
     u8 *t = TRACK(d, k), *c;
     u8 i;
 
@@ -375,7 +381,8 @@ s32 func_002C23E0(u8 *d, u8 k, s32 frames, s32 to) {
 }
 
 /* track `k` channel `ch`'s bend to `to` (0..127) over `frames` frames */
-s32 func_002C1D10(u8 *d, u8 k, u8 ch, s32 frames, u32 to) {
+/* 0x002C1D10 */
+s32 MusicDir_BendTo(u8 *d, u8 k, u8 ch, s32 frames, u32 to) {
     u8 *c;
     u8 i;
     s32 j;
@@ -405,7 +412,8 @@ s32 func_002C1D10(u8 *d, u8 k, u8 ch, s32 frames, u32 to) {
 }
 
 /* track `k`'s volume to `to` at `rate` a frame */
-s32 func_002C2A70(u8 *d, u8 k, s32 to, f32 rate) {
+/* 0x002C2A70 */
+s32 MusicDir_TrackVolumeRate(u8 *d, u8 k, s32 to, f32 rate) {
     u8 *t = TRACK(d, k), *c;
     u8 i;
 
@@ -438,7 +446,8 @@ typedef union Fixed {
 } Fixed;
 
 /* the global volume to `to` (0..255) over `frames` frames (before the start: just set) */
-s32 func_002C32D0(u8 *d, s32 frames, u8 to) {
+/* 0x002C32D0 */
+s32 MusicDir_GlobalVolumeTo(u8 *d, s32 frames, u8 to) {
     u8 *c;
     u8 i;
     Fixed x;
@@ -473,13 +482,14 @@ s32 func_002C32D0(u8 *d, s32 frames, u8 to) {
 }
 
 /* a frame: the tracks' settings sent again if asked (+0xA39), the state (+0x50), the cues */
-void func_002C34C0(u8 *d) {
+/* 0x002C34C0 */
+void MusicDir_Frame(u8 *d) {
     u8 k;
     s32 i;
 
     if (AT(d, 0xA39, u8) != 0) {
         for (k = 0; k < 4; k = (k + 1) & 0xFF) {
-            func_002C3760(d, k);
+            MusicDir_SendTrack(d, k);
         }
         AT(d, 0xA39, u8) = 0;
     }
@@ -509,7 +519,8 @@ void func_002C34C0(u8 *d) {
 /* ---- the chase table ---- */
 
 /* the chase step (by the pursuer's distance; 0xFF: none in slot 2) */
-u8 func_002C1980(u8 *d) {
+/* 0x002C1980 */
+u8 MusicDir_ChaseStep(u8 *d) {
     u8 i = 0;
     f32 *tbl;
 
@@ -521,7 +532,7 @@ u8 func_002C1980(u8 *d) {
         f32 dist = AT(gCharSlot2, 0x1588, f32);
 
         if (dist < 0.0f) {
-            dist = func_00124490((Actor *)gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
+            dist = Actor_Distance((Actor *)gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
         }
         while (!(tbl[i * 2] <= 0.0f) && !(dist < tbl[i * 2])) {
             i = (i + 1) & 0xFF;
@@ -535,8 +546,9 @@ u8 func_002C1980(u8 *d) {
 }
 
 /* track `k` to the chase step's volume, the marked channels' bends to its bend */
-s32 func_002C1760(u8 *d, u32 k) {
-    u8 step = func_002C1980(d);
+/* 0x002C1760 */
+s32 MusicDir_ChaseTrack(u8 *d, u32 k) {
+    u8 step = MusicDir_ChaseStep(d);
     u8 *e, *t;
     u8 v, ch;
 
@@ -552,11 +564,11 @@ s32 func_002C1760(u8 *d, u32 k) {
             VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, v) & 0xFF);
         }
     } else {
-        func_002C2A70(d, k, v, 2.5f);
+        MusicDir_TrackVolumeRate(d, k, v, 2.5f);
     }
     for (ch = 0; ch < 0x10; ch = (ch + 1) & 0xFF) {
         if (AT(d, 0x2C, u8 *)[ch] != 0) {
-            func_002C1D10(d, k, ch, 0x5A, AT(e, 0x5, u8));
+            MusicDir_BendTo(d, k, ch, 0x5A, AT(e, 0x5, u8));
         }
     }
     return 1;
@@ -565,7 +577,8 @@ s32 func_002C1760(u8 *d, u32 k) {
 /* ---- channels ---- */
 
 /* channel `ch` of track `k` on at its volume */
-void func_002C35F0(u8 *d, u32 k, u32 ch) {
+/* 0x002C35F0 */
+void MusicDir_ChannelOn(u8 *d, u32 k, u32 ch) {
     u8 *e = CHAN(d, k, ch);
 
     AT(e, 0xC, u8) = 0;
@@ -573,19 +586,22 @@ void func_002C35F0(u8 *d, u32 k, u32 ch) {
 }
 
 /* channel `ch` of track `k` silent */
-void func_002C36A0(u8 *d, u32 k, u32 ch) {
+/* 0x002C36A0 */
+void MusicDir_ChannelOff(u8 *d, u32 k, u32 ch) {
     AT(CHAN(d, k, ch), 0xC, u8) = 1;
     midi(k, 0xB0, 7, 0, ch);
 }
 
 /* track `k`'s notes off (CC 120) */
-void func_002C3710(u8 *d, u32 k) {
+/* 0x002C3710 */
+void MusicDir_NotesOff(u8 *d, u32 k) {
     midi(k, 0xB0, 0x78, 0, 0xFF);
 }
 
 /* track `k`'s settings to the driver: volume, sequence volume, and per channel bend, volume,
    pan */
-void func_002C3760(u8 *d, u32 k) {
+/* 0x002C3760 */
+void MusicDir_SendTrack(u8 *d, u32 k) {
     u8 *t = TRACK(d, k);
     f32 v;
     u8 ch;
@@ -616,16 +632,19 @@ void func_002C3760(u8 *d, u32 k) {
 /* ---- life ---- */
 
 /* placement new */
-void *func_002C01A0(u32 size, void *p) {
+/* 0x002C01A0 */
+void *MusicDir_new(u32 size, void *p) {
     return p;
 }
 
 /* operator delete of the scene's objects: nothing */
-void func_002C0190(void *p) {
+/* 0x002C0190 */
+void MusicDir_delete(void *p) {
 }
 
 /* a channel (0x10) */
-u8 *func_0039AD70(u8 *e) {
+/* 0x0039AD70 */
+u8 *MusicChannel_ctor(u8 *e) {
     AT(e, 0x0, f32) = 100.0f;
     AT(e, 0x4, f32) = 64.0f;
     AT(e, 0x8, f32) = 64.0f;
@@ -633,7 +652,8 @@ u8 *func_0039AD70(u8 *e) {
     return e;
 }
 
-void *func_002BFD70(void *e, s32 flags) {
+/* 0x002BFD70 */
+void *MusicChannel_dtor(void *e, s32 flags) {
     if (e != NULL && (s16)flags > 0) {
         func_00100490(e);
     }
@@ -641,8 +661,9 @@ void *func_002BFD70(void *e, s32 flags) {
 }
 
 /* a track (0x110) */
-u8 *func_0039AD10(u8 *t) {
-    func_00100340(t, (void *(*)(void *))func_0039AD70, func_002BFD70, 0x10, 0x10);
+/* 0x0039AD10 */
+u8 *MusicTrack_ctor(u8 *t) {
+    func_00100340(t, (void *(*)(void *))MusicChannel_ctor, MusicChannel_dtor, 0x10, 0x10);
     AT(t, 0x100, f32) = 0.0f;
     AT(t, 0x104, f32) = 100.0f;
     AT(t, 0x108, f32) = 1.0f;
@@ -651,9 +672,10 @@ u8 *func_0039AD10(u8 *t) {
     return t;
 }
 
-void *func_002BFD10(u8 *t, s32 flags) {
+/* 0x002BFD10 */
+void *MusicTrack_dtor(u8 *t, s32 flags) {
     if (t != NULL) {
-        func_001002C0(t, func_002BFD70, 0x10, 0x10);
+        func_001002C0(t, MusicChannel_dtor, 0x10, 0x10);
         if ((s16)flags > 0) {
             func_00100490(t);
         }
@@ -662,7 +684,8 @@ void *func_002BFD10(u8 *t, s32 flags) {
 }
 
 /* a cue (0x28) */
-u8 *func_0039ACB0(u8 *c) {
+/* 0x0039ACB0 */
+u8 *MusicCue_ctor(u8 *c) {
     AT(c, 0x0, u8) = 0xFF;
     AT(c, 0x1, u8) = 0xFF;
     AT(c, 0x10, s32) = -1;
@@ -676,7 +699,8 @@ u8 *func_0039ACB0(u8 *c) {
     return c;
 }
 
-void *func_002BFDC0(void *c, s32 flags) {
+/* 0x002BFDC0 */
+void *MusicCue_dtor(void *c, s32 flags) {
     if (c != NULL && (s16)flags > 0) {
         func_00100490(c);
     }
@@ -684,7 +708,8 @@ void *func_002BFDC0(void *c, s32 flags) {
 }
 
 /* the director's setup: the synths' bend range (RPN 0: 12 semitones), log2(1..128), volumes */
-void func_002C5FF0(u8 *d) {
+/* 0x002C5FF0 */
+void MusicDir_Setup(u8 *d) {
     u8 i;
 
     midi(0, 0xB0, 0x65, 0, 0xFF);
@@ -709,7 +734,8 @@ void func_002C5FF0(u8 *d) {
 }
 
 /* the base's destructor (D_0046EBE0) */
-void *func_002C6180(u8 *d, s32 flags) {
+/* 0x002C6180 */
+void *MusicDirBase_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046EBE0;
         if (d != NULL) {
@@ -730,8 +756,8 @@ static inline void director_dtor(u8 *d) {
     for (k = 0; k < 4; k++) {
         midi(k, 0xB0, 0x78, 0, 0xFF);
     }
-    func_001002C0(d + 0x474, func_002BFDC0, 0x28, 0x18);
-    func_001002C0(d + 0x34, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
+    func_001002C0(d + 0x474, MusicCue_dtor, 0x28, 0x18);
+    func_001002C0(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046EBE0;
         if (d != NULL) {
@@ -741,7 +767,8 @@ static inline void director_dtor(u8 *d) {
 }
 
 /* +0x8 */
-void *func_002BFBB0(u8 *d, s32 flags) {
+/* 0x002BFBB0 */
+void *MusicDir_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         director_dtor(d);
     }
@@ -749,40 +776,49 @@ void *func_002BFBB0(u8 *d, s32 flags) {
 }
 
 /* +0xC, +0x40: nothing */
-void func_002BFE10(u8 *d) {
+/* 0x002BFE10 */
+void MusicDir_Load(u8 *d) {
 }
 
-void func_002BFE20(u8 *d) {
+/* 0x002BFE20 */
+void MusicDir_StageChans(u8 *d) {
 }
 
 /* +0x18 */
-void func_002BFE30(u8 *d) {
+/* 0x002BFE30 */
+void MusicDir_Release(u8 *d) {
     AT(d, 0xA38, u8) = 0;
 }
 
-void func_002BFE40(u8 *self) {
+/* 0x002BFE40 */
+void MusicDir_Hold(u8 *self) {
     self[0xA38] = 1;
 }
 
 /* +0x28..+0x34 */
-f32 func_002C0150(u8 *d) {
+/* 0x002C0150 */
+f32 MusicDir_Volume4(u8 *d) {
     return AT(d, 0x4, f32);
 }
 
-u16 func_002C0160(u8 *d) {
+/* 0x002C0160 */
+u16 MusicDir_Get12(u8 *d) {
     return AT(d, 0x12, u16);
 }
 
-f32 func_002C0170(u8 *d) {
+/* 0x002C0170 */
+f32 MusicDir_VolumeC(u8 *d) {
     return AT(d, 0xC, f32);
 }
 
-s8 func_002C0180(u8 *d) {
+/* 0x002C0180 */
+s8 MusicDir_Get14(u8 *d) {
     return AT(d, 0x14, s8);
 }
 
 /* +0x20 the music volume (0..1) */
-void func_002BFE50(u8 *d, f32 v) {
+/* 0x002BFE50 */
+void MusicDir_SetMusicVolume(u8 *d, f32 v) {
     if (!(v < 0.0f)) {
         AT(d, 0x4, f32) = v <= 1.0f ? v : 1.0f;
     } else {
@@ -792,7 +828,8 @@ void func_002BFE50(u8 *d, f32 v) {
 }
 
 /* +0x24 the progress's music volume (0..1) */
-void func_002BFFD0(u8 *d, f32 v) {
+/* 0x002BFFD0 */
+void MusicDir_SetProgressVolume(u8 *d, f32 v) {
     if (!(v < 0.0f)) {
         AT(d, 0x8, f32) = v <= 1.0f ? v : 1.0f;
     } else {
@@ -802,13 +839,15 @@ void func_002BFFD0(u8 *d, f32 v) {
 }
 
 /* +0x48 the director's volume back to full */
-void func_002C4330(u8 *d) {
+/* 0x002C4330 */
+void MusicDir_FullVolume(u8 *d) {
     AT(d, 0xC, f32) = 1.0f;
     send_volumes(d);
 }
 
 /* +0x44 the director's volume (0..1; else half) */
-void func_002C4480(u8 *d, f32 v) {
+/* 0x002C4480 */
+void MusicDir_SetVolume(u8 *d, f32 v) {
     if (v <= 1.0f && !(v < 0.0f)) {
         AT(d, 0xC, f32) = v;
     } else {
@@ -828,42 +867,47 @@ static inline void calm_channels_on(u8 *d) {
 }
 
 /* +0x64 the panic over: track 0's channels 3..8 back */
-void func_002C01B0(u8 *d) {
+/* 0x002C01B0 */
+void MusicDir_PanicOver(u8 *d) {
     AT(d, 0x30, u8) = 9;
     calm_channels_on(d);
 }
 
 /* +0x60 panic: track 0 alone, channels 3..8 silent */
-void func_002C04D0(u8 *d) {
+/* 0x002C04D0 */
+void MusicDir_Panic(u8 *d) {
     u8 ch;
 
     AT(d, 0x30, u8) = 8;
     midi(0, 0xB0, 0x78, 0, 0xFF);
     VCALL(gSound, 0x24, void (*)(VObject *, u32, u32))(gSound, 0, 1);
-    func_002C3760(d, 0);
-    func_002C2CD0(d, 1, 1, 0);
-    func_002C2CD0(d, 2, 1, 0);
-    func_002C2CD0(d, 3, 1, 0);
-    func_002C2CD0(d, 0, 1, 0xFF);
+    MusicDir_SendTrack(d, 0);
+    MusicDir_TrackVolumeTo(d, 1, 1, 0);
+    MusicDir_TrackVolumeTo(d, 2, 1, 0);
+    MusicDir_TrackVolumeTo(d, 3, 1, 0);
+    MusicDir_TrackVolumeTo(d, 0, 1, 0xFF);
     for (ch = 3; ch < 9; ch++) {
         AT(CHAN(d, 0, ch), 0xC, u8) = 1;
         midi(0, 0xB0, 7, 0, ch);
     }
 }
 
-void func_002C0700(u8 *self) {
+/* 0x002C0700 */
+void MusicDir_Seen(u8 *self) {
     self[0x30] = 5;
 }
 
-void func_002C0710(u8 *self) {
+/* 0x002C0710 */
+void MusicDir_Lost(u8 *self) {
     self[0x30] = 5;
 }
 
 /* +0x54 the chase begins (`now`: at once): track 3 (the chase) from its start at the chase
    step's bend, tracks 1 / 2 out; seen or not (+0x5C / +0x58) */
-void func_002C0720(u8 *d, s32 now) {
+/* 0x002C0720 */
+void MusicDir_ChaseBegins(u8 *d, s32 now) {
     u8 *p = (u8 *)gCharPursuer;
-    u8 step = func_002C1980(d);
+    u8 step = MusicDir_ChaseStep(d);
     u32 vol, bend;
     s32 lost = 0;
     s32 frames;
@@ -881,11 +925,11 @@ void func_002C0720(u8 *d, s32 now) {
     }
     if (now == 0) {
         frames = 0x5A;
-        func_002C2CD0(d, 0, 0x5A, 0);
+        MusicDir_TrackVolumeTo(d, 0, 0x5A, 0);
     } else {
         frames = 1;
-        func_002C2CD0(d, 1, 1, 0);
-        func_002C2CD0(d, 2, 1, 0);
+        MusicDir_TrackVolumeTo(d, 1, 1, 0);
+        MusicDir_TrackVolumeTo(d, 2, 1, 0);
     }
     if (lost) {
         VCALL(d, 0x5C, void (*)(u8 *, s32))(d, 1);
@@ -899,11 +943,12 @@ void func_002C0720(u8 *d, s32 now) {
     midi(3, 0xE0, 0, f2u(b) & 0xFF, 0);
     midi(3, 0xB0, 0x78, 0, 0xFF);
     VCALL(gSound, 0x24, void (*)(VObject *, u32, u32))(gSound, 3, 1);
-    func_002C2CD0(d, 3, frames, vol & 0xFF);
+    MusicDir_TrackVolumeTo(d, 3, frames, vol & 0xFF);
 }
 
 /* +0x4C everything silent and muted */
-void func_002C3C50(u8 *d) {
+/* 0x002C3C50 */
+void MusicDir_Silence(u8 *d) {
     AT(d, 0x30, u8) = 2;
     track_zero(d, 1);
     track_zero(d, 2);
@@ -939,7 +984,8 @@ static inline void to_chase(u8 *d, u8 s) {
 }
 
 /* +0x50 a frame of the state (not while the room objects hold it, or with progress flag 8) */
-void func_002C0A30(u8 *d) {
+/* 0x002C0A30 */
+void MusicDir_StateFrame(u8 *d) {
     Progress *p;
     s32 seen = 0;
 
@@ -956,16 +1002,16 @@ void func_002C0A30(u8 *d) {
     switch (AT(d, 0x30, u8)) {
     case 0:
         AT(d, 0x30, u8) = 1;
-        func_002C2CD0(d, 3, 0x5A, 0);
-        func_002C2CD0(d, 0, 0x5A, 0);
-        func_002C2CD0(d, 1, 0x5A, 0xFF);
-        func_002C2CD0(d, 2, 0x5A, 0xFF);
+        MusicDir_TrackVolumeTo(d, 3, 0x5A, 0);
+        MusicDir_TrackVolumeTo(d, 0, 0x5A, 0);
+        MusicDir_TrackVolumeTo(d, 1, 0x5A, 0xFF);
+        MusicDir_TrackVolumeTo(d, 2, 0x5A, 0xFF);
         break;
     case 1:
         if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
-            func_002C2CD0(d, 1, 0x5A, 0);
-            func_002C2CD0(d, 2, 0x5A, 0);
+            MusicDir_TrackVolumeTo(d, 1, 0x5A, 0);
+            MusicDir_TrackVolumeTo(d, 2, 0x5A, 0);
         } else if ((Progress_GameMode(p) & 0xFF) == 2) {
             to_chase(d, 3);
         } else if (AT(p, 0x7B8, u8) == 4) {
@@ -992,14 +1038,14 @@ void func_002C0A30(u8 *d) {
             to_calm(d);
         } else if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
-            func_002C2CD0(d, 3, 0x5A, 0);
+            MusicDir_TrackVolumeTo(d, 3, 0x5A, 0);
         } else if (seen) {
             VCALL(d, 0x5C, void (*)(u8 *, s32, s32))(d, 0, 1);
-            func_002C2CD0(d, 3, 0x1E, 0xFF);
+            MusicDir_TrackVolumeTo(d, 3, 0x1E, 0xFF);
         } else if (AT(p, 0x7B8, u8) == 4) {
             to_panic(d);
         } else {
-            func_002C1760(d, 3);
+            MusicDir_ChaseTrack(d, 3);
         }
         break;
     case 6:
@@ -1007,7 +1053,7 @@ void func_002C0A30(u8 *d) {
             to_calm(d);
         } else if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
-            func_002C2CD0(d, 3, 0x5A, 0);
+            MusicDir_TrackVolumeTo(d, 3, 0x5A, 0);
         } else if (!seen) {
             VCALL(d, 0x58, void (*)(u8 *, s32, s32))(d, 0, 1);
         } else if (AT(p, 0x7B8, u8) == 4) {
@@ -1032,7 +1078,7 @@ void func_002C0A30(u8 *d) {
                 }
             } else {
                 AT(d, 0x30, u8) = 2;
-                func_002C2CD0(d, 0, 0x5A, 0);
+                MusicDir_TrackVolumeTo(d, 0, 0x5A, 0);
             }
         }
         break;
@@ -1057,7 +1103,8 @@ static inline void chan_set(u8 *d, u32 k, u8 ch, u32 v, s32 off) {
 
 /* +0x3C start: the volumes at the global one, tracks 1 / 2 full, 0 / 3 silent, each track's
    sequence volume and channels from the stage's tables, tracks 3 and 0 muted; then +0x40 */
-void func_002C4600(u8 *d) {
+/* 0x002C4600 */
+void MusicDir_Start(u8 *d) {
     u8 k;
 
     AT(d, 0x30, u8) = 1;
@@ -1115,7 +1162,8 @@ void func_002C4600(u8 *d) {
  * +0x10D), 3 the four tracks on (driver +0x24), the director started (+0x3C), the global
  * volume faded in over 90 frames to the one asked for meanwhile (+0x31) - then 4: the frame
  * update */
-void func_002C5980(u8 *d) {
+/* 0x002C5980 */
+void MusicDir_Update(u8 *d) {
     VObject *drv;
     u32 k;
 
@@ -1151,14 +1199,15 @@ void func_002C5980(u8 *d) {
         AT(d, 0x15, u8) = 4;
         break;
     case 4:
-        func_002C34C0(d);
+        MusicDir_Frame(d);
         break;
     }
 }
 
 /* +0x14 reset: the banks' files dropped (still loading) or the banks unloaded; the cues and
    the tracks back to their defaults */
-void func_002C5BD0(u8 *d) {
+/* 0x002C5BD0 */
+void MusicDir_Reset(u8 *d) {
     s32 loading = 0;
     s32 i, k, ch;
 
@@ -1204,7 +1253,8 @@ void func_002C5BD0(u8 *d) {
 }
 
 /* +0x10 the banks in: 1 while still loading; else registered, silent */
-s32 func_002C5E80(u8 *d) {
+/* 0x002C5E80 */
+s32 MusicDir_BanksIn(u8 *d) {
     s32 loading = 0;
     s32 k;
 
@@ -1232,7 +1282,8 @@ extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], D_0047AF68[], 
 extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], D_0047AFF8[], D_01991AA0[];
 
 /* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
-void func_0039A8E0(u8 *scene, u32 stage) {
+/* 0x0039A8E0 */
+void SceneGame_MusicDirector(u8 *scene, u32 stage) {
     static void **const sVtbl[4] = {D_0046F480, D_00473830, D_00478AE0, D_004799F0};
     static u8 *const sTables[4][6] = {
         {D_00414650, D_004146C0, D_00414700, D_00414740, D_0047AC28, D_00414780},
@@ -1247,13 +1298,13 @@ void func_0039A8E0(u8 *scene, u32 stage) {
     if (stage >= 4) {
         return;
     }
-    d = func_002C01A0(0xA3C, scene + 0x1064600);
+    d = MusicDir_new(0xA3C, scene + 0x1064600);
     if (d != NULL) {
         D_00456DF0 = d;
         AT(d, 0x0, void **) = D_0046EB70;
-        func_00100340(d + 0x34, (void *(*)(void *))func_0039AD10, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
-        func_00100340(d + 0x474, (void *(*)(void *))func_0039ACB0, func_002BFDC0, 0x28, 0x18);
-        func_002C5FF0(d);
+        func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
+        func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
+        MusicDir_Setup(d);
         AT(d, 0x0, void **) = sVtbl[stage];
         for (i = 0; i < 6; i++) {
             AT(d, 0x18 + i * 4, u8 *) = sTables[stage][i];
@@ -1283,9 +1334,9 @@ static inline void stage_seen(u8 *d, s32 now, u32 vol, const u8 *chans, s32 n) {
 
     AT(d, 0x30, u8) = 6;
     frames = now == 0 ? 0x1E : 1;
-    func_002C23E0(d, 3, frames, vol);
+    MusicDir_SeqVolumeTo(d, 3, frames, vol);
     for (i = 0; i < n; i++) {
-        func_002C1D10(d, 3, chans[i], frames, 0x7F);
+        MusicDir_BendTo(d, 3, chans[i], frames, 0x7F);
     }
 }
 
@@ -1296,9 +1347,9 @@ static inline void stage_lost(u8 *d, s32 now, const u8 *chans, s32 n) {
 
     AT(d, 0x30, u8) = 5;
     frames = now == 0 ? 0x5A : 1;
-    func_002C23E0(d, 3, frames, AT(d, 0x28, u8 *)[3]);
+    MusicDir_SeqVolumeTo(d, 3, frames, AT(d, 0x28, u8 *)[3]);
     for (i = 0; i < n; i++) {
-        func_002C1D10(d, 3, chans[i], frames, 0x40);
+        MusicDir_BendTo(d, 3, chans[i], frames, 0x40);
     }
 }
 
@@ -1308,9 +1359,9 @@ static inline void stage_chans(u8 *d, const u8 *c, s32 n, s32 on) {
 
     for (i = 0; i < n; i++) {
         if (on) {
-            func_002C35F0(d, 3, c[i]);
+            MusicDir_ChannelOn(d, 3, c[i]);
         } else {
-            func_002C36A0(d, 3, c[i]);
+            MusicDir_ChannelOff(d, 3, c[i]);
         }
     }
 }
@@ -1324,10 +1375,10 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
         if (d != NULL) {
             AT(d, 0x0, void **) = D_0046EB70;
             for (k = 0; k < 4; k++) {
-                func_002C3710(d, k);
+                MusicDir_NotesOff(d, k);
             }
-            func_001002C0(d + 0x474, func_002BFDC0, 0x28, 0x18);
-            func_001002C0(d + 0x34, (void *(*)(void *, s32))func_002BFD10, 0x110, 4);
+            func_001002C0(d + 0x474, MusicCue_dtor, 0x28, 0x18);
+            func_001002C0(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
             if (d != NULL) {
                 AT(d, 0x0, void **) = D_0046EBE0;
                 if (d != NULL) {
@@ -1336,7 +1387,7 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
             }
         }
         if ((s16)flags > 0) {
-            func_002C0190(d);
+            MusicDir_delete(d);
         }
     }
     return d;
@@ -1346,30 +1397,35 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
 
 extern const char D_0045D8B0[], D_0045D8C8[], D_0045D8E0[], D_0045D900[], D_0045D920[], D_0045D930[];
 
-void *func_002D3A90(u8 *d, s32 flags) {
+/* 0x002D3A90 */
+void *MusicStage1_dtor(u8 *d, s32 flags) {
     return stage_dtor(d, flags, D_0046F480);
 }
 
-void func_002D3E80(u8 *d) {
+/* 0x002D3E80 */
+void MusicStage1_Load(u8 *d) {
     static const char *const sFiles[6] = {D_0045D8B0, D_0045D8C8, D_0045D8E0, D_0045D900, D_0045D920, D_0045D930};
 
     stage_load(d, sFiles);
 }
 
-void func_002D3B80(u8 *d, s32 now) {
+/* 0x002D3B80 */
+void MusicStage1_Seen(u8 *d, s32 now) {
     static const u8 sChans[7] = {0, 1, 3, 4, 5, 6, 7};
 
     stage_seen(d, now, 0x88, sChans, 7);
 }
 
-void func_002D3C80(u8 *d, s32 now) {
+/* 0x002D3C80 */
+void MusicStage1_Lost(u8 *d, s32 now) {
     static const u8 sChans[6] = {1, 3, 4, 5, 6, 7};
 
     stage_lost(d, now, sChans, 6);
 }
 
 /* (progress word +0x1C bit 27: which of the chase's two sets) */
-void func_002D3D60(u8 *d) {
+/* 0x002D3D60 */
+void MusicStage1_StageChans(u8 *d) {
     static const u8 sA[4] = {2, 3, 4, 5}, sB[3] = {6, 7, 8};
 
     if (AT(gProgress, 0x1C, u32) & 0x08000000) {
@@ -1385,11 +1441,13 @@ void func_002D3D60(u8 *d) {
 
 extern const char D_0045FFC0[], D_0045FFD8[], D_0045FFF0[], D_00460010[], D_00460030[], D_00460040[];
 
-void *func_0031ED70(u8 *d, s32 flags) {
+/* 0x0031ED70 */
+void *MusicStage2_dtor(u8 *d, s32 flags) {
     return stage_dtor(d, flags, D_00473830);
 }
 
-void func_0031EFF0(u8 *d) {
+/* 0x0031EFF0 */
+void MusicStage2_Load(u8 *d) {
     static const char *const sFiles[6] = {D_0045FFC0, D_0045FFD8, D_0045FFF0, D_00460010, D_00460030, D_00460040};
 
     stage_load(d, sFiles);
@@ -1454,49 +1512,57 @@ void TintStalker_ActionOffsets(void *self, s32 id, f32 *out) {
     }
 }
 
-void func_0031EE70(u8 *d, s32 now) {
+/* 0x0031EE70 */
+void MusicStage2_Seen(u8 *d, s32 now) {
     static const u8 sChans[5] = {0, 2, 3, 4, 5};
 
     stage_seen(d, now, 0x8C, sChans, 5);
 }
 
-void func_0031EF40(u8 *d, s32 now) {
+/* 0x0031EF40 */
+void MusicStage2_Lost(u8 *d, s32 now) {
     static const u8 sChans[4] = {2, 3, 4, 5};
 
     stage_lost(d, now, sChans, 4);
 }
 
-void func_0031EE60(u8 *d) {
+/* 0x0031EE60 */
+void MusicStage2_StageChans(u8 *d) {
 }
 
 /* stage 3 (D_00478AE0) */
 
 extern const char D_00462CD0[], D_00462CE8[], D_00462D00[], D_00462D20[], D_00462D40[], D_00462D50[];
 
-void *func_0034DCC0(u8 *d, s32 flags) {
+/* 0x0034DCC0 */
+void *MusicStage3_dtor(u8 *d, s32 flags) {
     return stage_dtor(d, flags, D_00478AE0);
 }
 
-void func_0034DFC0(u8 *d) {
+/* 0x0034DFC0 */
+void MusicStage3_Load(u8 *d) {
     static const char *const sFiles[6] = {D_00462CD0, D_00462CE8, D_00462D00, D_00462D20, D_00462D40, D_00462D50};
 
     stage_load(d, sFiles);
 }
 
-void func_0034DDB0(u8 *d, s32 now) {
+/* 0x0034DDB0 */
+void MusicStage3_Seen(u8 *d, s32 now) {
     static const u8 sChans[6] = {0, 1, 2, 4, 5, 6};
 
     stage_seen(d, now, 0x8C, sChans, 6);
 }
 
-void func_0034DE90(u8 *d, s32 now) {
+/* 0x0034DE90 */
+void MusicStage3_Lost(u8 *d, s32 now) {
     static const u8 sChans[4] = {1, 2, 4, 6};
 
     stage_lost(d, now, sChans, 4);
 }
 
 /* (progress word +0x2C bit 9) */
-void func_0034DF40(u8 *d) {
+/* 0x0034DF40 */
+void MusicStage3_StageChans(u8 *d) {
     static const u8 sA[2] = {5, 6};
 
     stage_chans(d, sA, 2, (AT(gProgress, 0x2C, u32) & 0x200) != 0);
@@ -1506,30 +1572,35 @@ void func_0034DF40(u8 *d) {
 
 extern const char D_004633C0[], D_004633D8[], D_004633F0[], D_00463410[], D_00463430[], D_00463440[];
 
-void *func_0035F100(u8 *d, s32 flags) {
+/* 0x0035F100 */
+void *MusicStage4_dtor(u8 *d, s32 flags) {
     return stage_dtor(d, flags, D_004799F0);
 }
 
-void func_0035F490(u8 *d) {
+/* 0x0035F490 */
+void MusicStage4_Load(u8 *d) {
     static const char *const sFiles[6] = {D_004633C0, D_004633D8, D_004633F0, D_00463410, D_00463430, D_00463440};
 
     stage_load(d, sFiles);
 }
 
-void func_0035F1F0(u8 *d, s32 now) {
+/* 0x0035F1F0 */
+void MusicStage4_Seen(u8 *d, s32 now) {
     static const u8 sChans[6] = {0, 1, 2, 3, 5, 6};
 
     stage_seen(d, now, 0x6E, sChans, 6);
 }
 
-void func_0035F2D0(u8 *d, s32 now) {
+/* 0x0035F2D0 */
+void MusicStage4_Lost(u8 *d, s32 now) {
     static const u8 sChans[6] = {0, 1, 2, 3, 5, 6};
 
     stage_lost(d, now, sChans, 6);
 }
 
 /* (progress word +0x2C bit 21) */
-void func_0035F3B0(u8 *d) {
+/* 0x0035F3B0 */
+void MusicStage4_StageChans(u8 *d) {
     static const u8 sA[2] = {3, 4}, sB[3] = {5, 6, 7};
 
     if (AT(gProgress, 0x2C, u32) & 0x200000) {

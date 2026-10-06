@@ -144,10 +144,10 @@ s32 Room8F_Cmd00(void *self, void *a1, u8 *cmd) {
         n = func_00183190((Fiona *)gCharPlayer);
         if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
             if (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 1) {
-                func_00122C20(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);
+                Actor_PlaySound(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);
                 VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[6], 45);
             } else {
-                func_00122C20(&gCharPlayer->a, 0x45, 5, 0, 0, NULL);
+                Actor_PlaySound(&gCharPlayer->a, 0x45, 5, 0, 0, NULL);
                 VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[6], 60);
             }
         }

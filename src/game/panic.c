@@ -160,7 +160,7 @@ void Panic_Stage(u8 *o) {
             if (AT(gCharPlayer, 0xF8, s32) == 0 || AT(gCharPlayer, 0xF8, s32) == 3) {
                 Progress *p;
 
-                func_00122C20((Actor *)((u8 *)gCharPlayer), 0x42, 5, 0x40, 0, 0);
+                Actor_PlaySound((Actor *)((u8 *)gCharPlayer), 0x42, 5, 0x40, 0, 0);
                 p = gProgress;
                 VCALL(p, 0x44, void (*)(Progress *, s32))(p, 1);
                 AT(o, 0x0, u8) = 4;
@@ -474,7 +474,7 @@ void Panic_Breath(u8 *o) {
     if (stage < 1 || stage > 5) {
         return;
     }
-    func_00122C20((Actor *)((u8 *)gCharPlayer), 0x29, 5, sPitch[stage - 1], 0, 0);
+    Actor_PlaySound((Actor *)((u8 *)gCharPlayer), 0x29, 5, sPitch[stage - 1], 0, 0);
     VCALL(gRumble, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gRumble, stage == 5 ? D_0041A090 : NULL,
                                                                           sTint[stage - 1]);
 }

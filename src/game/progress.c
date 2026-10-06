@@ -171,7 +171,7 @@ s32 Progress_AnyLoading(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
-        u8 busy = (i < 6 && gCharacters[i] != NULL) ? (u8)func_00124D40((Actor *)gCharacters[i]) : 0;
+        u8 busy = (i < 6 && gCharacters[i] != NULL) ? (u8)Actor_DataLoaded((Actor *)gCharacters[i]) : 0;
 
         if (busy == 1) {
             return 1;
@@ -688,14 +688,14 @@ void Progress_CharRequests(Progress *p) {
                 if (q[2] & mask) rf |= 4;
                 if (q[3] & mask) rf |= 8;
                 if ((u32)(q[2] & sel) == (u32)(1 << i)) {
-                    if (i == 0 && !(u8)func_00123960((Actor *)gCharacters[i], d, 0)) {
+                    if (i == 0 && !(u8)Actor_FacingDoor((Actor *)gCharacters[i], d, 0)) {
                         continue;
                     }
                     AT(blk, 0x0, u32) = 3;
                     AT(blk, 0x4, s32) = 0;
                     AT(blk, 0x8, u32) = d;
                 } else if ((u32)(q[1] & sel) == (u32)(1 << i)) {
-                    if (i == 0 && !(u8)func_00123960((Actor *)gCharacters[i], d, 1)) {
+                    if (i == 0 && !(u8)Actor_FacingDoor((Actor *)gCharacters[i], d, 1)) {
                         continue;
                     }
                     AT(blk, 0x0, u32) = 3;
@@ -907,7 +907,7 @@ void Progress_ResolveRelations(Progress *p) {
         r = b + 0x1014 + owner[i] * 0x10;
         kind = r[1];
         relB = AT(r, 0x4, s16);
-        if ((u8)func_00125D80(gCharacters[i]) ||
+        if ((u8)Character_Held(gCharacters[i]) ||
             (u8)VCALL(gCharacters[i], 0x68, s32 (*)(VObject *, s32, s32, s32))(
                 (VObject *)gCharacters[i], kind, owner[i], relB) != 1) {
             owner[i] = 0xFF;
@@ -993,7 +993,7 @@ void Progress_OwnRequests(Progress *p) {
 
             if (gCharacters[i] == NULL || AT(gCharacters[i], 0x28, u8) != 1 ||
                 AT(gCharacters[i], 0x2D, u8) != 0 || r[0] == 0 ||
-                (u8)func_00125D80(gCharacters[i])) {
+                (u8)Character_Held(gCharacters[i])) {
                 continue;
             }
             c = (u8 *)gCharacters[i];
@@ -1055,7 +1055,7 @@ void Progress_PlayerButtons(Progress *p) {
     if (!(u8)func_0019A2B0((Fiona *)pl)) {
         return;
     }
-    if ((u8)func_00125D80(gCharPlayer) == 1 || AT(b, 0x4, s32) != 0) {
+    if ((u8)Character_Held(gCharPlayer) == 1 || AT(b, 0x4, s32) != 0) {
         return;
     }
     noAct = AT(pl, 0x1AD580, s32) == 0xD;
@@ -1379,7 +1379,7 @@ u8 Progress_CharActive(Progress *p, u32 slot) {
 s32 Progress_CharLoading(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
-    return c != NULL ? func_00124D40((Actor *)c) : 0;
+    return c != NULL ? Actor_DataLoaded((Actor *)c) : 0;
 }
 
 /* character `slot`: vtable +0x14 / +0x1C / +0xC */

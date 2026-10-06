@@ -129,10 +129,10 @@ static inline __attribute__((always_inline)) s32 swing_three_by(VObject *self, u
                     if (i == 0) {
                         if ((VCALL(ev, 0x58, u32 (*)(VObject *, s32))(ev, 3) & 0xFF) == 1) {
                             VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(&ch->a, 1, 6, 0, 0, NULL);
+                            Actor_PlaySound(&ch->a, 1, 6, 0, 0, NULL);
                         } else {
                             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(&ch->a, 2, 6, 0, 0, NULL);
+                            Actor_PlaySound(&ch->a, 2, 6, 0, 0, NULL);
                         }
                     }
                 }
@@ -250,10 +250,10 @@ static inline __attribute__((always_inline)) s32 hangers_swing(VObject *self, u8
                     if (i == 0) {
                         if ((VCALL(ev, 0x58, u32 (*)(VObject *, s32))(ev, flag) & 0xFF) == 1) {
                             VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, flag);
-                            func_00122C20(&gCharPlayer->a, sndOn, 6, 0, 0, NULL);
+                            Actor_PlaySound(&gCharPlayer->a, sndOn, 6, 0, 0, NULL);
                         } else {
                             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, flag);
-                            func_00122C20(&gCharPlayer->a, sndOff, 6, 0, 0, NULL);
+                            Actor_PlaySound(&gCharPlayer->a, sndOff, 6, 0, 0, NULL);
                         }
                     }
                 }
@@ -425,7 +425,7 @@ static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 
 /* frame (v - lo) / div (v kept in lo..hi) forward (fwd) or back; Fiona's sound 0 as it starts */
 static inline __attribute__((always_inline)) void var0_frame(u8 *o, u32 v, u32 lo, u32 hi, f32 div, s32 fwd) {
     if (v == lo) {
-        func_00122C20(&gCharPlayer->a, 0, 6, 0, 0, NULL);
+        Actor_PlaySound(&gCharPlayer->a, 0, 6, 0, 0, NULL);
     }
     if (v < lo) {
         v = lo;

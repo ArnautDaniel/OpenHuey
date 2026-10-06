@@ -138,69 +138,69 @@ _Static_assert(__builtin_offsetof(Character, heard) == 0x14D8, "heard");
 _Static_assert(__builtin_offsetof(Character, hearThreshold) == 0x152A, "hearThreshold");
 
 /* actor.c */
-extern s32 func_00122B50(Actor *a, f32 *out);   /* a point to sound from (u8) */
-extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
-extern u32 func_00123080(void *self, u32 from, u32 to, const f32 *fromPos, const f32 *toPos, u32 mask);
-extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
-extern s32 func_00123470(void *self, u32 tri, s32 arg);
-extern s32 func_001235C0(void *self, Actor *a);
-extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);   /* a point by a door */
-extern s32 func_00123960(Actor *a, s32 door, s32 side);
-extern f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist);
-extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
-extern u32 func_00123D20(Actor *a, const f32 *p);   /* the nav triangle under a point (actor.c) */
-extern u32 func_00123E20(Actor *a, f32 *p);
-extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
-extern s32 func_00123F70(Actor *a, Actor *other);   /* step `a` out of `b` (its triangle, -1: can't) */
-extern s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin);   /* a and b close */
-extern u32 func_00124480(Actor *a, const f32 *target, u32 mask);
-extern f32 func_00124490(Actor *a, const f32 *p);   /* distance */
-extern f32 func_001244D0(Actor *a, const f32 *p);   /* heading towards a point */
-extern void func_001247E0(Actor *a, const f32 *delta);   /* moved on the nav mesh */
-extern f32 func_00124530(Actor *a, f32 target, f32 step);
-extern void func_00124890(Actor *a, s32 kind);
-extern s32 func_00124D40(Actor *a);   /* a character still loading */
+extern s32 Actor_PosInCurrentRoom(Actor *a, f32 *out);   /* a point to sound from (u8) */
+extern void Actor_PlaySound(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
+extern u32 Actor_WalkMesh(void *self, u32 from, u32 to, const f32 *fromPos, const f32 *toPos, u32 mask);
+extern s32 Actor_CanWalkBetween(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
+extern s32 Actor_TriFree(void *self, u32 tri, s32 arg);
+extern s32 Actor_TriFreeFor(void *self, Actor *a);
+extern u32 Actor_DoorFront(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);   /* a point by a door */
+extern s32 Actor_FacingDoor(Actor *a, s32 door, s32 side);
+extern f32 Actor_FreeDistance(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist);
+extern s32 Actor_NearerRoom(Actor *a, s32 room, const f32 *pos);
+extern u32 Actor_TriOf(Actor *a, const f32 *p);   /* the nav triangle under a point (actor.c) */
+extern u32 Actor_TriOfOnMesh(Actor *a, f32 *p);
+extern u32 Actor_TriFrom(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
+extern s32 Actor_PushOut(Actor *a, Actor *other);   /* step `a` out of `b` (its triangle, -1: can't) */
+extern s32 Actor_Touching(Actor *a, Actor *b, f32 margin, f32 vmargin);   /* a and b close */
+extern u32 Actor_TriTo(Actor *a, const f32 *target, u32 mask);
+extern f32 Actor_Distance(Actor *a, const f32 *p);   /* distance */
+extern f32 Actor_HeadingTo(Actor *a, const f32 *p);   /* heading towards a point */
+extern void Actor_Move(Actor *a, const f32 *delta);   /* moved on the nav mesh */
+extern f32 Actor_TurnToward(Actor *a, f32 target, f32 step);
+extern void Actor_TeleportRandom(Actor *a, s32 kind);
+extern s32 Actor_DataLoaded(Actor *a);   /* a character still loading */
 extern void Actor_Cleanup(Actor *a);
 extern void Actor_Reset(Actor *a);   /* the actor's set-up */
-extern void func_00124E40(Actor *a);
-extern void *func_00124E50(void *a, void *b);   /* placement new */
-extern void func_00124F20(Character *c, u32 door);
-extern f32 func_001257B0(Character *c, u32 goalTri, const f32 *goal, u32 mask);   /* walking distance */
-extern void func_00125900(Character *c);
-extern void func_00125960(Character *c);   /* a character's step (base) */
-extern void func_00125A10(Character *c);
+extern void Actor_Destroy(Actor *a);
+extern void *Actor_new(void *a, void *b);   /* placement new */
+extern void Character_ChooseExit(Character *c, u32 door);
+extern f32 Character_PathLength(Character *c, u32 goalTri, const f32 *goal, u32 mask);   /* walking distance */
+extern void Character_RootTurn(Character *c);
+extern void Character_RootMove(Character *c);   /* a character's step (base) */
+extern void Character_RootMoveMasked(Character *c);
 extern s32 Character_Place(Character *c, u32 tri, const f32 *heading, f32 *pos);
-extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
+extern s32 Character_ToRoom(Character *c, s32 room, s32 a2, s32 a3);
 extern void Character_ResetBehaviour(Character *c);
-extern s32 func_00125D80(Character *c);   /* the character can't take part (u8) */
-extern void func_00126270(Character *c);
+extern s32 Character_Held(Character *c);   /* the character can't take part (u8) */
+extern void Character_MarkObjects(Character *c);
 extern void Character_EventReset(Character *c);
 extern void Character_BackToNormal(Character *c);
-extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
-extern void func_001267F0(Character *c, s32 v);
-extern s32 func_00126800(Character *c);   /* a character's draw layer (+0x152C) */
+extern void Character_Sound(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
+extern void Character_Set152C(Character *c, s32 v);
+extern s32 Character_Get152C(Character *c);   /* a character's draw layer (+0x152C) */
 extern void Character_Enable(Character *c);
 extern void Character_Disable(Character *c);
-extern f32 func_00126E40(Character *c);
-extern s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7);
-extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
-extern void func_00127060(Character *c);
-extern s32 func_001270A0(Character *c);
-extern s32 func_001270F0(Character *c);
-extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
-extern s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt);
-extern s32 func_001272B0(Character *c, f32 speed);
-extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path */
-extern s32 func_001274E0(Character *c, f32 speed);
+extern f32 Character_PathRemaining2(Character *c);
+extern s32 Character_RouteVia(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7);
+extern s32 Character_Route(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
+extern void Character_ReleasePath(Character *c);
+extern s32 Character_Waypoints(Character *c);
+extern s32 Character_WaypointsCurve(Character *c);
+extern s32 Character_PlanPathKind(Character *c, s32 kind, u32 goalTri, const f32 *goal);
+extern s32 Character_PlanPathOpt(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt);
+extern s32 Character_FollowWaypoints(Character *c, f32 speed);
+extern s32 Character_WaypointAhead(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path */
+extern s32 Character_FollowWaypointsBlocked(Character *c, f32 speed);
 extern void Character_RememberPos(Character *c);
 extern void Character_Reset(Character *c);
-extern void func_00125E10(Character *c, f32 *pos, s32 big);
-extern s32 func_001264D0(Character *c, f32 *out);
-extern void func_001269C0(Character *c);
+extern void Character_WaterStep(Character *c, f32 *pos, s32 big);
+extern s32 Character_RouteExitPoint(Character *c, f32 *out);
+extern void Character_Hearing(Character *c);
 extern void Character_Activate(Character *c);
 extern void Character_Deactivate(Character *c);
-extern void *func_00121370(u32 size, void *place);   /* placement new */
-extern void func_00121360(void *p);   /* delete (the pool's: nothing) */
+extern void *ActorPool_new(u32 size, void *place);   /* placement new */
+extern void ActorPool_delete(void *p);   /* delete (the pool's: nothing) */
 
 /* Set an actor's behaviour state (pointer to member function), if it is a valid one. */
 static inline void Actor_SetState(Actor *a, const PTMF *state) {

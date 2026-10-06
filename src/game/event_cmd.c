@@ -2029,7 +2029,7 @@ void EventCmd_Character(VObject *ev) {
         AT(c, 0x2C, u8) = pc[2] != 0;
         break;
     case 0x45:
-        func_00122C20((Actor *)c, be32(pc + 2), pc[6], 0, 0, 0);
+        Actor_PlaySound((Actor *)c, be32(pc + 2), pc[6], 0, 0, 0);
         break;
     case 0x47:
         AT(c, 0xC4, s32) = be32(pc + 2);
@@ -2094,11 +2094,11 @@ void EventCmd_Character(VObject *ev) {
         } else {
             AT(c, 0xE4, u8) = 0;
             VCALL(gRenderer, 0x70, void (*)(VObject *, s32))(gRenderer, be32(PC(ev) + 2));
-            func_001267F0((Character *)c, 0xF);
+            Character_Set152C((Character *)c, 0xF);
         }
         break;
     case 0xB5:
-        func_001267F0((Character *)c, pc[2]);
+        Character_Set152C((Character *)c, pc[2]);
         break;
     case 0x87: {   /* an effect at it: 1 if it hasn't moved (from +0x40), else 2 */
         f32 a[4] __attribute__((aligned(16)));
@@ -2407,7 +2407,7 @@ void Event_RunScript(VObject *ev) {
             break;
         }
         if (who != NULL) {
-            func_00122C20((Actor *)who, PC(ev)[2] == 1 ? 0x27 : 0x28, 5, 0, 0, (const f32 *)((s32)tmp));
+            Actor_PlaySound((Actor *)who, PC(ev)[2] == 1 ? 0x27 : 0x28, 5, 0, 0, (const f32 *)((s32)tmp));
         }
         break;
     }

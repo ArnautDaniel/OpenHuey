@@ -2460,7 +2460,7 @@ void func_002EC3C0(u8 *o, s32 sec) {
  * current one (+0x3C) - `near` 0: one not next to it; else one next to it (once per exit
  * leading there) that the rooms allow (+0x88); either way not the current room and with its
  * progress bit clear - then the first of its exits (rooms +0x74) with a route from Fiona's
- * exit point to the exit's point (func_00126F30; next-door: route mode 1, the point not 0 / 1;
+ * exit point to the exit's point (Character_RouteVia; next-door: route mode 1, the point not 0 / 1;
  * else mode 2); it comes in there with plan `plan` (and +0's summoned bit). 1 if it came */
 static s32 summon_via(u8 *o, s32 near, s32 plan) {
     Progress *p = gProgress;
@@ -2515,7 +2515,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
             continue;
         }
         to = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, list[i], e & 0xFF, 1);
-        if (func_00126F30((Character *)pu, AT(pl, 0x30, s32), list[i], AT(pu, 0x20, s32), 1, from, to, near ? 1 : 2) >= 0 &&
+        if (Character_RouteVia((Character *)pu, AT(pl, 0x30, s32), list[i], AT(pu, 0x20, s32), 1, from, to, near ? 1 : 2) >= 0 &&
             (!near || (to != 0 && to != 1))) {
             ok = 1;
             break;

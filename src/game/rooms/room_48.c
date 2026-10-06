@@ -110,10 +110,10 @@ s32 Room48_Cmd05(void) {
     return 1;
 }
 
-/* room 0x48 (D_00426830): the player's func_00124F20(0) */
+/* room 0x48 (D_00426830): the player's Character_ChooseExit(0) */
 /* 0x0030F2B0 */
 s32 Room48_Cmd04(void) {
-    func_00124F20(gCharPlayer, 0);
+    Character_ChooseExit(gCharPlayer, 0);
     return 1;
 }
 
@@ -193,10 +193,10 @@ s32 Room48_Cmd00(VObject *self, void *a1, u8 *cmd) {
                 if (i == 0) {
                     if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 0x11) == 1) {
                         VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0x11);
-                        func_00122C20(&gCharPlayer->a, 4, 6, 0, 0, NULL);
+                        Actor_PlaySound(&gCharPlayer->a, 4, 6, 0, 0, NULL);
                     } else {
                         VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0x11);
-                        func_00122C20(&gCharPlayer->a, 5, 6, 0, 0, NULL);
+                        Actor_PlaySound(&gCharPlayer->a, 5, 6, 0, 0, NULL);
                     }
                 }
             }

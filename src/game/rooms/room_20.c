@@ -239,7 +239,7 @@ s32 Room20_Cmd03(void *self) {
     a.navMask = 0x20020008;
     a.navTri = tri;
     sceVu0CopyVector(a.pos, (f32 *)(o + 0x20));
-    func_001247E0(&a, (f32 *)(o + 0x30));
+    Actor_Move(&a, (f32 *)(o + 0x30));
     nm = (u8 *)gNavMesh;
     VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, a.navTri, a.pos);
     y += AT(o, 0x34, f32);
@@ -335,6 +335,6 @@ s32 Room20_Cmd00(void *self, void *a1, u8 *cmd) {
     at[2] = 90.0f;
     at[1] = 0.0f;
     at[3] = 1.0f;
-    func_00122C20(&gCharPlayer->a, cmd[3], 7, 0, 0, at);
+    Actor_PlaySound(&gCharPlayer->a, cmd[3], 7, 0, 0, at);
     return 1;
 }

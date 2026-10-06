@@ -392,16 +392,16 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
 }
 
-/* in play: func_00124890(-1) */
+/* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -3137,11 +3137,11 @@ s32 ItemClass6B00_PartnerCheck(void *o) {
     if ((PoolEntry_PartnerCheck(o) & 0xFF) != 1) {
         return 0;
     }
-    if (!(func_00124490((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10)) < 20.0f)) {
+    if (!(Actor_Distance((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10)) < 20.0f)) {
         return 0;
     }
     tri = *(u32 *)((u8 *)gCharPartner + 0x34);
-    return func_00124480((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10), 0x20008) == tri;
+    return Actor_TriTo((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10), 0x20008) == tri;
 }
 
 /* +0x3C (D_00476B60) */
@@ -3736,7 +3736,7 @@ s32 func_0032D430(u8 *self) {
         dz = F32(self, 0x1640) - F32(self, 0x18);
         dx = F32(self, 0x163C) - F32(self, 0x10);
         if (dz * dz + dx * dx < 1.0f) {
-            func_00122C20((Actor *)self, S32(self, 0x1630) + 1, 6, 0, 0, NULL);
+            Actor_PlaySound((Actor *)self, S32(self, 0x1630) + 1, 6, 0, 0, NULL);
             return 1;
         }
         break;
@@ -3754,7 +3754,7 @@ static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     u8 l, r;
 
     func_001F6370(PTR(self, 0xF0), d, 0.0f);
-    func_00125900((Character *)self);
+    Character_RootTurn((Character *)self);
     sceVu0ApplyMatrix(d, (f32 (*)[4])(self + 0x60), d);
     sceVu0AddVector(CHAR_POS(self), CHAR_POS(self), d);
     m = PTR(self, 0xF0);
@@ -3762,7 +3762,7 @@ static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     m = PTR(self, 0xF0);
     r = VCALL(m, 0x64, s32 (*)(void *, s32, s32))(m, 0, 0) & 0xFF;
     if (((l == 1 && self[0x16A8] == 0) || (r == 1 && self[0x16A9] == 0)) && S32(self, 0x1630) != -1) {
-        func_00122C20((Actor *)self, S32(self, 0x1630), 6, 0, 0, NULL);
+        Actor_PlaySound((Actor *)self, S32(self, 0x1630), 6, 0, 0, NULL);
     }
     self[0x16A8] = l;
     self[0x16A9] = r;
@@ -4181,7 +4181,7 @@ s32 func_003445D0(void *o) {
         u8 *h = (u8 *)gCharPartner;
 
         if (VCALL(o, 0x40, s32 (*)(void *))(o) != 0 && AT(h, 0xC4, s32) != 2 && AT(gCharPlayer, 0xE8, s32) == 0 &&
-            func_00124490((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
+            Actor_Distance((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
             item_event(ev_mgr, 0, 0xB, gCharPlayer);
             return 4;
         }
@@ -4405,7 +4405,7 @@ s32 func_002D27E0(VObject *it) {
 
             if (h != NULL && AT(h, 0x28, u8) == 1 && AT(h, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 AT(h, 0xC4, s32) != 2 &&
-                (item_at_spot(ev, gCharPlayer, 0xA) || func_00124490((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f)) {
+                (item_at_spot(ev, gCharPlayer, 0xA) || Actor_Distance((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f)) {
                 item_event(ev, 0, 5, gCharPlayer);
                 Progress_SetFlag(p, 0x18);
                 if (!given) {

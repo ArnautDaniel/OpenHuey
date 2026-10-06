@@ -211,7 +211,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -257,10 +257,10 @@ void Effect79FF0_SetParams(u8 *o, s32 *m);
 void Effect79FF0_Start(u8 *o);
 s32 Effect79FF0_Update(u8 *o);
 
-/* in play: func_00124890(-1) */
+/* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -329,7 +329,7 @@ void Pursuer_AttackTable(Pursuer *p) {
 
 /* a character's step (base) */
 void func_002992F0(Pursuer *p) {
-    func_00125960(&p->c);
+    Character_RootMove(&p->c);
 }
 
 /* chasing Hewie? */
@@ -453,7 +453,7 @@ void func_00292120(Pursuer *p) {
 /* vtable +0x240: step, count +0x104 down */
 /* 0x00289810 */
 void Pursuer_StepCount(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     p->c.unk104[0]--;
     if (p->c.unk104[0] <= 0) {
         PURSUER_STEP_DONE(p) = 1;
@@ -462,7 +462,7 @@ void Pursuer_StepCount(Pursuer *p) {
 
 /* step until the animation ends */
 void func_00289F50(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (MOTION_KEYS(p) & MOTION_KEY_END) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -488,7 +488,7 @@ void func_00291C30(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -503,7 +503,7 @@ void func_00285AB0(Pursuer *p) {
             PU(p, 0x1624, s32) = 0;
         }
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* vtable +0x4C: disable, animation paused, its message taken down */
@@ -521,9 +521,9 @@ void Pursuer_Disable(Pursuer *p) {
 void Pursuer_EventOver2(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
 
-    if (func_00122B50(&p->c.a, pos) != 0) {
-        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 0, pos);
-        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 5, pos);
+    if (Actor_PosInCurrentRoom(&p->c.a, pos) != 0) {
+        ((void (*)(Character *, s32, f32 *))Character_Sound)(&p->c, 0, pos);
+        ((void (*)(Character *, s32, f32 *))Character_Sound)(&p->c, 5, pos);
     }
 }
 
@@ -650,7 +650,7 @@ void Pursuer_Move180(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
     if (((over ^ 1) & 0xFF) == 1) {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     } else if (p->c.unkE0 != 0) {
         p->c.unkE1 = 1;
     }
@@ -868,7 +868,7 @@ void Pursuer_ClearBehaviour(Pursuer *p) {
 
 /* wait for animation 0x1903 to end, then hold for (+0x1748)[0] frames (90 without) */
 void func_0028A660(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if ((MOTION_KEYS(p) & MOTION_KEY_END) != 0 && MOTION_ANIM(p) == 0x1903) {
         s32 *t = PU(p, 0x1748, s32 *);
 
@@ -963,14 +963,14 @@ void Pursuer_Plan16C(Pursuer *p) {
 
 /* step while facing within 45 degrees of the target */
 void func_00289500(Pursuer *p) {
-    f32 h = func_001244D0(&p->c.a, p->target->a.pos);
+    f32 h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
     f32 d = func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
 
     if (d <= 0.0f) {
         d = -d;
     }
     if (d < 0x1.921fb60000000p-1f /* 0.7853982 */) {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -1004,7 +1004,7 @@ void Pursuer_ExitOpen(Pursuer *p) {
 /* a sound at the pursuer, unless a room object or progress flag 8 holds them */
 void func_0029D410(Pursuer *p, s32 sound, s32 a2, s32 a3, s32 a4, void *a5) {
     if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-        func_00122C20(&p->c.a, sound, a2, a3, a4, a5);
+        Actor_PlaySound(&p->c.a, sound, a2, a3, a4, a5);
     }
 }
 
@@ -1110,7 +1110,7 @@ void func_0028A860(Pursuer *p) {
         Panic_Fright((u8 *)gProgress + 0x7B8, VCALL(p, 0x300, f32 (*)(Pursuer *))(p));
         return;
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* vtable +0x1F4: go to the room exit +0x17B0 */
@@ -1266,7 +1266,7 @@ void Pursuer_ChaseTarget(Pursuer *p) {
         Character *t = p->target;
         u32 tri = t->a.navTri;
 
-        if (func_00124480(&p->c.a, t->a.pos, -1) != tri) {
+        if (Actor_TriTo(&p->c.a, t->a.pos, -1) != tri) {
             s32 n = p->c.unk128;
 
             if ((n < p->c.unk124) == 1) {
@@ -1346,7 +1346,7 @@ void func_00286AA0(Pursuer *p) {
         PU(p, 0x1638, s32) = 0;
         Actor_SetState(&p->c.a, &D_003ED210);
     } else {
-        func_00124530(&p->c.a, PU(p, 0x1634, f32), PU(p, 0x1638, f32));
+        Actor_TurnToward(&p->c.a, PU(p, 0x1634, f32), PU(p, 0x1638, f32));
     }
 }
 
@@ -1487,7 +1487,7 @@ u32 func_0029B4B0(Pursuer *p) {
         snd = PU(p, 0x1764, s32);
         if (snd >= 0) {
             if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
-                func_00122C20(&p->c.a, snd, 7, 0, 0, NULL);
+                Actor_PlaySound(&p->c.a, snd, 7, 0, 0, NULL);
             }
             p->c.unk14D0 = 5;
             func_001F6E30(p->c.motion);
@@ -1752,7 +1752,7 @@ void Pursuer_BackToStand(Pursuer *p) {
             func_002DDED0(m, 0, -1);
         }
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -1856,7 +1856,7 @@ Pursuer *Kind22_dtor(Pursuer *p, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -1885,7 +1885,7 @@ Pursuer *Pursuer_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -1977,7 +1977,7 @@ void func_00299370(Pursuer *p) {
         s32 tri = PU(p, 0x15A4, s32);
 
         if ((s32)p->c.a.navTri != tri) {
-            f32 d = func_001257B0(&p->c, tri, (f32 *)((u8 *)p + 0x15B0), -1);
+            f32 d = Character_PathLength(&p->c, tri, (f32 *)((u8 *)p + 0x15B0), -1);
 
             if (d < 0x1.99999a0000000p-4f /* 0.1 */ && !(d < 0.0f)) {
                 p->c.a.navTri = PU(p, 0x15A4, s32);
@@ -2210,13 +2210,13 @@ void Pursuer_DoorPushThrough(Pursuer *p) {
 
         Heading_Vector(v, PU(p, 0x1634, f32));
         func_0010E640(v, v, 3.0f);
-        func_001247E0(&p->c.a, v);
+        Actor_Move(&p->c.a, v);
     }
     if ((Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) != 1) {
         Actor_SetState(&p->c.a, &D_003ECF90);
         VCALL(p, 0x214, void (*)(Pursuer *))(p);
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -2254,7 +2254,7 @@ void Pursuer_GoAfterFiona(Pursuer *p) {
 
 /* repeated taunt: threat up each time the animation ends, 6 times, then animation 0x1904 */
 void func_0028A700(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (MOTION_KEYS(p) & MOTION_KEY_END) {
         Panic_Fright((u8 *)gProgress + 0x7B8, VCALL(p, 0x304, f32 (*)(Pursuer *))(p));
         p->c.unk104[0]++;
@@ -2291,7 +2291,7 @@ void Pursuer_WalkToGoal(Pursuer *p) {
         if (!(func_00284440(p) & 0xFF)) {
             PU(p, 0x16EF, u8) = 1;
         }
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
         return;
     }
     PU(p, 0x1624, s32) = -1;
@@ -2361,7 +2361,7 @@ void func_0029E210(Pursuer *p) {
         if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
             VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, p->c.a.navTri, p->c.a.pos);
         } else {
-            func_00124890(&p->c.a, -1);
+            Actor_TeleportRandom(&p->c.a, -1);
         }
     }
     if (p->c.moveMode == 0) {
@@ -2371,7 +2371,7 @@ void func_0029E210(Pursuer *p) {
             if (func_00214A90(p, p->c.a.navTri) & 0xFF) {
                 p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
                 if (p->c.a.navTri == (u32)-1 || func_00214A90(p, p->c.a.navTri) != 0) {
-                    func_00124890(&p->c.a, -1);
+                    Actor_TeleportRandom(&p->c.a, -1);
                 }
             } else {
                 VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, p->c.a.navTri, p->c.a.pos);
@@ -2397,7 +2397,7 @@ void func_00287B50(Pursuer *p) {
     }
     PURSUER_STEP_NEXT(p) = 0;
     func_00213B60(p, -1);
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* vtable +0x...: look around (animation 0x1A00) */
@@ -2420,7 +2420,7 @@ void func_00289DD0(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -2469,7 +2469,7 @@ s32 func_0027CA00(Pursuer *p) {
         /* fallthrough */
     case 1:
     case 2:
-        return func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0;
+        return Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0;
     case 3: {
         s32 again = 0;
         VObject *rm;
@@ -2491,11 +2491,11 @@ s32 func_0027CA00(Pursuer *p) {
         rm = gRooms;
         PU(p, 0x1594, s32) = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, exit);
         PU(p, 0x1598, s32) = -1;
-        if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0) {
+        if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0) {
             return 1;
         }
         PU(p, 0x1594, s32) = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, p->c.door);
-        return func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0;
+        return Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0;
     }
     case 4:
         return VCALL(p, 0xE8, s32 (*)(Pursuer *))(p);
@@ -2550,7 +2550,7 @@ void func_002871E0(Pursuer *p) {
     pr = gProgress;
     st = PursuerGroup_Fields(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
     VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
-    if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
+    if ((Actor_Distance(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
         Progress_ExitPassable(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
         p->c.a.unk2B = 1;
@@ -2585,7 +2585,7 @@ void Pursuer_DoorBackOff(Pursuer *p) {
 
         Heading_Vector(v, PU(p, 0x1634, f32));
         func_0010E640(v, v, 3.0f);
-        func_001247E0(&p->c.a, v);
+        Actor_Move(&p->c.a, v);
     }
     h = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + PU(p, 0x1634, f32));
     func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
@@ -2593,7 +2593,7 @@ void Pursuer_DoorBackOff(Pursuer *p) {
         Actor_SetState(&p->c.a, &D_003ECF70);
         VCALL(p, 0x208, void (*)(Pursuer *))(p);
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -2766,11 +2766,11 @@ void Pursuer_DoorAnim(Pursuer *p) {
         switch (AT(m, 0x55C, s32)) {
         case 0x703:
             VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, 3, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 0, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 0, ofs, p->c.a.pos);
             break;
         case 0x707:
             VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, 2, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 1, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 1, ofs, p->c.a.pos);
             break;
         }
         RoomSlots_Leave(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot);
@@ -2785,7 +2785,7 @@ void Pursuer_DoorAnim(Pursuer *p) {
         f32 v[4] __attribute__((aligned(16)));
 
         func_001F6370(m, v, 0.0f);
-        func_00125900(&p->c);
+        Character_RootTurn(&p->c);
         sceVu0ApplyMatrix(v, p->c.a.rot, v);
         sceVu0AddVector(p->c.a.pos, p->c.a.pos, v);
         p->c.a.pos[3] = 1.0f;
@@ -2891,7 +2891,7 @@ void Pursuer_DoorWait(Pursuer *p) {
                 Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, 5, 0, *(s16 *)&p->c.unk100, 20.0f);
             }
         }
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
         return;
     }
     if (p->c.moveSub == 0x15) {
@@ -3207,7 +3207,7 @@ void func_0028AEC0(Pursuer *p) {
 void Pursuer_NextPathExit(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
-    if (p->c.unk1388 < p->c.unk1384 && func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
+    if (p->c.unk1388 < p->c.unk1384 && Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
         VObject *rm = gRooms;
 
         PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
@@ -3266,7 +3266,7 @@ void Pursuer_OnToNextExit(Pursuer *p) {
 
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
-    if (p->c.unk1388 < p->c.unk1384 && func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
+    if (p->c.unk1388 < p->c.unk1384 && Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
         PU(p, 0x17B0, u8) = VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
     } else {
         PU(p, 0x17B0, u8) = func_00212A80(p, p->c.door);
@@ -3319,7 +3319,7 @@ void Pursuer_DoorLineUp(Pursuer *p) {
         return;
     }
     PU(p, 0x1568, f32) = dir[1];
-    if (func_00124490(&p->c.a, (f32 *)((u8 *)p + 0x15D0)) < 0x1.99999a0000000p-4f /* 0.1 */) {
+    if (Actor_Distance(&p->c.a, (f32 *)((u8 *)p + 0x15D0)) < 0x1.99999a0000000p-4f /* 0.1 */) {
         f32 d2 = p->c.a.angle[1] - PU(p, 0x1568, f32);
 
         if (d2 <= 0.0f) {
@@ -3352,7 +3352,7 @@ void func_0027FC70(Pursuer *p) {
             }
             VCALL(p, 0x28, s32 (*)(Pursuer *, u32, f32 *, s32))(p, p->c.a.navTri, &h, 0);
         } else {
-            func_00124890(&p->c.a, func_00217340(p));
+            Actor_TeleportRandom(&p->c.a, func_00217340(p));
         }
     } else {
         s32 k = PU(p, 0x17AC, s32);
@@ -3364,7 +3364,7 @@ void func_0027FC70(Pursuer *p) {
             return;
         }
         if (VCALL(p, 0x28, s32 (*)(Pursuer *, u32, f32 *, s32))(p, p->c.a.navTri, NULL, 0) == -1) {
-            func_00124890(&p->c.a, -1);
+            Actor_TeleportRandom(&p->c.a, -1);
         }
     }
 }
@@ -3426,7 +3426,7 @@ void func_00289050(Pursuer *p) {
     for (;;) {
         f32 v[4] __attribute__((aligned(16)));
         f32 a = (f32)p->c.unk104[0] * 0x1.6571860000000p-4f /* 0.08726647 */;
-        f32 r = func_00124490(&p->c.a, p->target->a.pos);
+        f32 r = Actor_Distance(&p->c.a, p->target->a.pos);
         u32 tri;
         s32 ok, clear;
 
@@ -3435,9 +3435,9 @@ void func_00289050(Pursuer *p) {
         sceVu0Normalize(v, v);
         sceVu0ScaleVector(v, v, r);
         sceVu0AddVector(v, v, p->target->a.pos);
-        tri = func_00124480(&p->c.a, v, 0);
+        tri = Actor_TriTo(&p->c.a, v, 0);
         ok = tri != (u32)-1 && func_00214A90(p, tri) == 0;
-        clear = func_00122C90(&p->c.a, tri, p->target->a.navTri, v, p->target->a.pos, 0) & 0xFF;
+        clear = Actor_CanWalkBetween(&p->c.a, tri, p->target->a.navTri, v, p->target->a.pos, 0) & 0xFF;
         if (!(ok & 0xFF) || !(clear & 0xFF)) {
             if (!(flipped & 0xFF)) {
                 PU(p, 0x1634, f32) = 0.0f;
@@ -3449,7 +3449,7 @@ void func_00289050(Pursuer *p) {
             return;
         }
         func_002143D0(p, v);
-        PU(p, 0x1634, f32) += func_00124490(&p->c.a, p->c.a.prevPos);
+        PU(p, 0x1634, f32) += Actor_Distance(&p->c.a, p->c.a.prevPos);
         if (PU(p, 0x1634, f32) <= 30.0f) {
             if (PU(p, 0x1784, u32) >= 121) {
                 PU(p, 0x1634, f32) = 0.0f;
@@ -3494,7 +3494,7 @@ void Pursuer_KnockAtDoor(Pursuer *p) {
         sound = AT(t + (i & 0xFF) * 8, 0x0, s16);
     }
     if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-        func_00122C20(&p->c.a, sound, 7, 0, 0, pos);
+        Actor_PlaySound(&p->c.a, sound, 7, 0, 0, pos);
     }
     pr = gProgress;
     if (PursuerGroup_Fields(pr, exit, 0) & 0xFF & 4) {
@@ -3525,7 +3525,7 @@ void func_00291EE0(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -3552,19 +3552,19 @@ void Pursuer_Pace(Pursuer *p) {
     if (Progress_TestFlag(pr, 9) == 0) {
         switch (PU(p, 0x16C8, u8)) {
         case 0:
-            func_001272B0(&p->c, 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom));
+            Character_FollowWaypoints(&p->c, 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom));
             break;
         case 2:
         case 3:
-            func_001272B0(&p->c, 0x1.3333340000000p-1f /* 0.6 */);
+            Character_FollowWaypoints(&p->c, 0x1.3333340000000p-1f /* 0.6 */);
             break;
         case 1:
         case 4:
-            func_001272B0(&p->c, 1.0f);
+            Character_FollowWaypoints(&p->c, 1.0f);
             break;
         }
     } else {
-        func_001272B0(&p->c, 2.0f);
+        Character_FollowWaypoints(&p->c, 2.0f);
     }
     if (!(p->c.unk128 < p->c.unk124)) {
         s32 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, PU(p, 0x17B0, u8));
@@ -3592,13 +3592,13 @@ void func_002895B0(Pursuer *p) {
     Pursuer_PlayAnim(p, 0x404);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_003ED130);
-    h = func_001244D0(&p->c.a, p->target->a.pos);
+    h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
     d = func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     if (d <= 0.0f) {
         d = -d;
     }
     if (d < 0x1.921fb60000000p-1f /* 0.7853982 */) {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -3644,7 +3644,7 @@ void Pursuer_PlanToGoal(Pursuer *p) {
             }
             return;
         }
-    } else if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) <= 0) {
+    } else if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) <= 0) {
         p->c.unk1384 = p->c.unk1388;
         PU(p, 0x16F4, u8) = 1;
         return;
@@ -3684,7 +3684,7 @@ void func_00291C80(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -3701,7 +3701,7 @@ s32 Pursuer_PlaceInRoom(Pursuer *p, s32 room, s32 tri, u32 side) {
     VObject *rm;
     u32 i;
 
-    ((void (*)(Character *))func_00125BA0)(&p->c);   /* the original passes only the character */
+    ((void (*)(Character *))Character_ToRoom)(&p->c);   /* the original passes only the character */
     p->c.a.room = room;
     rm = gRooms;
     if (side < 2) {
@@ -3739,7 +3739,7 @@ s32 Pursuer_PlaceInRoom(Pursuer *p, s32 room, s32 tri, u32 side) {
         if (tri != -1) {
             VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, s32))(p, tri, NULL, 0);
         } else {
-            func_00124890(&p->c.a, func_00217340(p));
+            Actor_TeleportRandom(&p->c.a, func_00217340(p));
         }
         func_002DDE20(p->c.motion, 0, -1);
         p->c.a.unk2A = 0;
@@ -3825,7 +3825,7 @@ void func_0028B0D0(Pursuer *p) {
                 u32 s = i & 0xFF;
                 Character *c = gCharacters[s];
 
-                if (c != NULL && s != (u32)p->c.a.slot && c->a.active != 0 && func_00124490(&p->c.a, c->a.pos) < AT(e, 0xC, f32)) {
+                if (c != NULL && s != (u32)p->c.a.slot && c->a.active != 0 && Actor_Distance(&p->c.a, c->a.pos) < AT(e, 0xC, f32)) {
                     PU(p, 0x1760, u8) |= (1 << s) & 0xFF;
                 }
             }
@@ -3845,11 +3845,11 @@ void func_0028B0D0(Pursuer *p) {
         return;
     }
     if (AT(e, 0x1C, u8) != 0) {
-        f32 h = func_001244D0(&p->c.a, p->target->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* vtable +0x1C0: pushing at the door +0x100 (held shut from Fiona's side: noise) */
@@ -3884,7 +3884,7 @@ void Pursuer_DoorPush(Pursuer *p) {
             Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, 5, 0, *(s16 *)&p->c.unk100, 20.0f);
         }
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* vtable +0x2BC: chase Fiona in the played room (behaviour 0xC), or the wait move elsewhere */
@@ -3967,7 +3967,7 @@ void Pursuer_PlanWayOn(Pursuer *p) {
         for (i = 0; i < 13; i++) {
             p->c.unk148C[i] = 0;
         }
-        if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
+        if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
             PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C, u16), p->c.a.room);
             func_0029AC50(p);
             return;
@@ -4081,7 +4081,7 @@ void func_00289280(Pursuer *p) {
             return;
         }
         t = p->target;
-        p->c.unk104[0] = func_002E2D00(func_002E2D00(func_001244D0(&t->a, p->c.a.pos) - t->a.angle[1])) <= 0.0f ? -1 : 1;
+        p->c.unk104[0] = func_002E2D00(func_002E2D00(Actor_HeadingTo(&t->a, p->c.a.pos) - t->a.angle[1])) <= 0.0f ? -1 : 1;
         PU(p, 0x1634, s32) = 0;
         if (PU(p, 0x1788, s32) != 0x200) {
             Pursuer_PlayAnim(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p));
@@ -4195,7 +4195,7 @@ void func_0029D7F0(Pursuer *p) {
         f32 d;
 
         PU(p, 0x1538, f32) = PU(p, 0x1534, f32);
-        d = func_00126E40(&p->c);
+        d = Character_PathRemaining2(&p->c);
         PU(p, 0x1534, f32) = d;
         if (d <= 80.0f) {
             f32 acc, f;
@@ -4220,13 +4220,13 @@ void func_0029D7F0(Pursuer *p) {
                 if (!(f <= 1.0f)) {
                     f = 1.0f;
                 }
-                if (func_001264D0(&p->c, pos) != 0) {
+                if (Character_RouteExitPoint(&p->c, pos) != 0) {
                     s8 vol = (u8)(u32)(10.0f * f) & 0x7F;
                     s8 vol2 = (u8)(u32)(2.0f * f) & 0x7F;
                     s32 foot = PU(p, 0x16A4, s32) & 1;
 
                     if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-                        func_00122C20(&p->c.a, foot, 7, vol, vol2, pos);
+                        Actor_PlaySound(&p->c.a, foot, 7, vol, vol2, pos);
                     }
                     PU(p, 0x16A4, s32)++;
                 }
@@ -4273,7 +4273,7 @@ void func_00283C50(Pursuer *p) {
         break;
     case 0x14:
     case 0x15:
-        if (!(((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, gCharPlayer, i) & 0xFF)) {
+        if (!(((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, gCharPlayer, i) & 0xFF)) {
             VCALL(p, 0x134, void (*)(Pursuer *))(p);
             return;
         }
@@ -4403,7 +4403,7 @@ void func_0029CEE0(Pursuer *p, s32 room, u32 found, s32 plan, s32 side) {
 void func_00287380(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (p->c.unk100 == 0xFF) {
         if (MOTION_KEYS(p) & MOTION_KEY_END) {
             Heading_Vector(v, PU(p, 0x1634, f32));
@@ -4418,7 +4418,7 @@ void func_00287380(Pursuer *p) {
                 if (!(p->c.a.navMask & flags)) {
                     break;
                 }
-                func_001247E0(&p->c.a, v);
+                Actor_Move(&p->c.a, v);
             }
             PURSUER_STEP_DONE(p) = 1;
             PURSUER_STEP_NEXT(p) = 1;
@@ -4439,7 +4439,7 @@ void func_00287380(Pursuer *p) {
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
         func_0010E640(v, v, 3.0f);
-        func_001247E0(&p->c.a, v);
+        Actor_Move(&p->c.a, v);
         if (!(Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             PU(p, 0x1634, s32) = 0;
             p->c.a.unk2B = 0;
@@ -4490,10 +4490,10 @@ void Pursuer_EventOver(Pursuer *p, s32 exit) {
         y = p->c.a.pos[1];
         if (!(y <= PU(p, 0x15D4, f32)) || (y == PU(p, 0x15D4, f32) && y < PU(p, 0x15B4, f32))) {
             VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, 3, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 0, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 0, ofs, p->c.a.pos);
         } else {
             VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, 2, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 1, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 1, ofs, p->c.a.pos);
         }
     }
     if (p->c.unkE0 == 1) {
@@ -4752,7 +4752,7 @@ void func_00285B10(Pursuer *p) {
             PU(p, 0x1624, s32) = 0;
         }
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* ---- batch 11 ---- */
@@ -4844,7 +4844,7 @@ void Pursuer_LocateTarget(Pursuer *p) {
                 PU(p, 0x1598, s32) = -1;
             } else {
                 VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, p->c.heard.tri, v);
-                if (func_00217510(p) != 0 && func_00217340(p) != -1 && func_001257B0(&p->c, p->c.heard.tri, v, -1) < 0.0f) {
+                if (func_00217510(p) != 0 && func_00217340(p) != -1 && Character_PathLength(&p->c, p->c.heard.tri, v, -1) < 0.0f) {
                     if (func_002138F0(p, p->c.heard.tri) == 0 && func_00213690(p, p->c.heard.tri) == 0) {
                         PU(p, 0x1594, s32) = p->c.heard.room;
                         PU(p, 0x1598, s32) = (func_00217340(p) == 0) & 0xFF;
@@ -4871,7 +4871,7 @@ void Pursuer_LocateTarget(Pursuer *p) {
 void func_00286F10(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (p->c.unk100 == 0xFF) {
         if (MOTION_KEYS(p) & MOTION_KEY_END) {
             Heading_Vector(v, PU(p, 0x1634, f32));
@@ -4886,7 +4886,7 @@ void func_00286F10(Pursuer *p) {
                 if (!(p->c.a.navMask & flags)) {
                     break;
                 }
-                func_001247E0(&p->c.a, v);
+                Actor_Move(&p->c.a, v);
             }
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x20);
             p->c.a.unk2B = 0;
@@ -4906,7 +4906,7 @@ void func_00286F10(Pursuer *p) {
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
         func_0010E640(v, v, 3.0f);
-        func_001247E0(&p->c.a, v);
+        Actor_Move(&p->c.a, v);
         if (!(Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             PU(p, 0x1634, s32) = 0;
             p->c.a.unk2B = 0;
@@ -4965,7 +4965,7 @@ void Pursuer_DoorBackAway(Pursuer *p) {
         }
         Heading_Vector(v, PU(p, 0x1634, f32));
         func_0010E640(v, v, 3.0f);
-        func_001247E0(&p->c.a, v);
+        Actor_Move(&p->c.a, v);
     }
 }
 
@@ -4981,7 +4981,7 @@ void func_0027CB90(Pursuer *p, u32 exit) {
     }
     node = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, exit) & 0xFFFF;
     p->c.unk148C[node >> 5] |= 1 << (node & 0x1F);
-    if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
+    if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
         if (PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 2) {
             Pursuer_SetMove(p, &D_0045B358);
         } else {
@@ -4999,7 +4999,7 @@ void func_0027CB90(Pursuer *p, u32 exit) {
 /* where to stand to grab Hewie (grab kinds 10..15; 14 / 15 from the other side): search
  * around him in 10 degree steps for a walkable spot level with the pursuer */
 s32 func_00285DE0(Pursuer *p, u32 kind, f32 *heading, f32 *pos) {
-    f32 h = func_001244D0(&p->c.a, gCharPartner->a.pos);
+    f32 h = Actor_HeadingTo(&p->c.a, gCharPartner->a.pos);
     f32 ofs[4] __attribute__((aligned(16)));
     f32 best[4] __attribute__((aligned(16)));
     f32 bestH = 0.0f, bestDy = 0.0f;
@@ -5034,11 +5034,11 @@ s32 func_00285DE0(Pursuer *p, u32 kind, f32 *heading, f32 *pos) {
             Mtx_AtHeading(m, p->c.a.pos, r);
             func_002E2DD0(at, m, ofs);
             dy = p->c.a.pos[1] - at[1];
-            tri = func_00123E20(&p->c.a, at);
+            tri = Actor_TriOfOnMesh(&p->c.a, at);
             if (dy <= 0.0f) {
                 dy = -dy;
             }
-            if (tri != -1 && tri == func_00124320(&p->c.a, at, gCharPartner->a.navTri, gCharPartner->a.pos, 0x29020008)) {
+            if (tri != -1 && tri == Actor_TriFrom(&p->c.a, at, gCharPartner->a.navTri, gCharPartner->a.pos, 0x29020008)) {
                 if (dy == 0.0f) {
                     *heading = r;
                     sceVu0CopyVector(pos, at);
@@ -5108,7 +5108,7 @@ void func_0029B5C0(Pursuer *p) {
         }
         p->c.door = VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), (u8)p->c.state[4]);
         if (snd >= 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, snd, 7, 0, 0, pos);
+            Actor_PlaySound(&p->c.a, snd, 7, 0, 0, pos);
         }
     } else if (p->c.state[1] == 8) {
         f32 pos[4] __attribute__((aligned(16)));
@@ -5117,11 +5117,11 @@ void func_0029B5C0(Pursuer *p) {
             p->c.hp = 1;
         }
         PU(p, 0x1664, s32) += p->c.state[4];
-        if (p->c.state[3] > 0 && (func_001264D0(&p->c, pos) & 0xFF) == 1) {
+        if (p->c.state[3] > 0 && (Character_RouteExitPoint(&p->c, pos) & 0xFF) == 1) {
             snd = 0x1D;
         }
         if (snd >= 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, snd, 7, 0, 0, pos);
+            Actor_PlaySound(&p->c.a, snd, 7, 0, 0, pos);
         }
     }
     p->c.state[0] = 0;
@@ -5141,7 +5141,7 @@ void func_0029A940(Pursuer *p) {
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x20);
     }
-    if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0) {
+    if (((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) != 0) {
         Pursuer_PlayAnimBlend(p, 0x1806);
     } else {
         Pursuer_PlayAnimBlend(p, 0x1802);
@@ -5270,7 +5270,7 @@ void func_00287620(Pursuer *p) {
     pr = gProgress;
     st = PursuerGroup_Fields(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
     VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
-    if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
+    if ((Actor_Distance(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
         Progress_ExitPassable(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         Pursuer_PlayAnimBlend(p, 0x1004);
         PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
@@ -5340,7 +5340,7 @@ void func_0029D4C0(Pursuer *p, s32 anim) {
                         bank = 6;
                         snd = 0x1D;
                         if (room == 7 || room == 0xD1 || room == 0x106) {
-                            func_00125E10(&p->c, p->c.a.pos, 1);
+                            Character_WaterStep(&p->c, p->c.a.pos, 1);
                         }
                         break;
                     }
@@ -5355,7 +5355,7 @@ void func_0029D4C0(Pursuer *p, s32 anim) {
                 }
             }
             if (VCALL(ro, 0x50, s32 (*)(VObject *))(ro) == 0 && Progress_TestFlag(pr, 8) == 0) {
-                func_00122C20(&p->c.a, (s16)snd, bank & 0xFF, 0, 0, NULL);
+                Actor_PlaySound(&p->c.a, (s16)snd, bank & 0xFF, 0, 0, NULL);
             }
         }
         if (twice == 0) {
@@ -5604,7 +5604,7 @@ s32 Pursuer_PickTarget(Pursuer *p) {
         room = gCharPartner->a.room;
         break;
     }
-    if (func_00126F80(&p->c, room, side, -1, -1) >= 0) {
+    if (Character_Route(&p->c, room, side, -1, -1) >= 0) {
         if (PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 4) {
             PU(p, 0x16F2, u8) = 1;
             PU(p, 0x16F1, u8) = 1;
@@ -5619,7 +5619,7 @@ s32 Pursuer_PickTarget(Pursuer *p) {
         VCALL(p, 0xD0, void (*)(Pursuer *))(p);
         return 1;
     }
-    func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     PU(p, 0x1544, u8) = 0;
     PU(p, 0x1545, u8) = 0;
     PU(p, 0x1546, u8) = 0;
@@ -5655,7 +5655,7 @@ s32 Pursuer_GrabOrder(Pursuer *p) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
         return -1;
     }
-    if (!(((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) & 0xFF)) {
+    if (!(((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) & 0xFF)) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
         return -1;
     }
@@ -5665,7 +5665,7 @@ s32 Pursuer_GrabOrder(Pursuer *p) {
             f32 h;
             s32 tri = func_00285DE0(p, kind, &h, pos);
 
-            if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+            if (tri != -1 && (Actor_TriFree(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == Actor_TriTo(&p->c.a, pos, 0x28020028)) {
                 sceVu0CopyVector(c->unk110, pos);
                 AT(c, 0x10C, f32) = h;
                 c->unk104[1] = tri;
@@ -5679,7 +5679,7 @@ s32 Pursuer_GrabOrder(Pursuer *p) {
         f32 h;
         s32 tri = func_00285DE0(p, 0xF, &h, pos);
 
-        if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+        if (tri != -1 && (Actor_TriFree(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == Actor_TriTo(&p->c.a, pos, 0x28020028)) {
             sceVu0CopyVector(c->unk110, pos);
             AT(c, 0x10C, f32) = h;
             c->unk104[1] = tri;
@@ -5783,7 +5783,7 @@ void func_00287CD0(Pursuer *p) {
                 Pursuer_PlayAnimBlend(p, a);
                 PU(p, 0x1628, s32) = 0;
             }
-            func_00125A10(&p->c);
+            Character_RootMoveMasked(&p->c);
             return;
         }
         Pursuer_PlayAnim(p, a + 1);
@@ -5932,7 +5932,7 @@ void Pursuer_CloseInGoal(Pursuer *p) {
             }
         }
         if ((p->c.unk128 < p->c.unk124) == 1) {
-            if (PU(p, 0x1628, s32) == 0 && PU(p, 0x15A4, u32) == func_00124480(&p->c.a, (f32 *)((u8 *)p + 0x15B0), -1)) {
+            if (PU(p, 0x1628, s32) == 0 && PU(p, 0x15A4, u32) == Actor_TriTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0), -1)) {
                 VCALL(p, 0xD8, s32 (*)(Pursuer *))(p);
                 PU(p, 0x1628, s32) = 1;
             }
@@ -5945,16 +5945,16 @@ void Pursuer_CloseInGoal(Pursuer *p) {
     } else {
         s32 over;
 
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
         over = MOTION_AT(p, 0x550, f32) <= 0.0f;
         if (!((over ^ 1) & 0xFF)) {
             f32 d = 1.0f;
 
             if (!(MOTION_KEYS(p) & MOTION_KEY_END)) {
-                if (!(func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    d = func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 } else {
-                    d = -func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+                    d = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 }
             }
             if ((MOTION_KEYS(p) & MOTION_KEY_END) || d < 0x1.99999ap-4f /* 0.1 */) {
@@ -5979,11 +5979,11 @@ s32 func_0029A710(Pursuer *p) {
     f32 h;
     s32 tri;
 
-    if (func_00125D80(&p->c) & 0xFF) {
+    if (Character_Held(&p->c) & 0xFF) {
         return 0;
     }
     tri = func_00285DE0(p, 0xF, &h, pos);
-    if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+    if (tri != -1 && (Actor_TriFree(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == Actor_TriTo(&p->c.a, pos, 0x28020028)) {
         sceVu0CopyVector(gCharPartner->unk110, pos);
         AT(gCharPartner, 0x10C, f32) = h;
         gCharPartner->unk104[1] = tri;
@@ -6015,7 +6015,7 @@ void Pursuer_LookAround(Pursuer *p) {
     s32 t;
 
     if (((over ^ 1) & 0xFF) == 1) {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
     t = PU(p, 0x1624, s32);
     if ((f32)t < 1.5f * VCALL(p, 0x2DC, f32 (*)(Pursuer *))(p)) {
@@ -6105,10 +6105,10 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
         if (d < VCALL(p, 0x2E4, f32 (*)(Pursuer *))(p) && !(d < 0.0f)) {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb60000000p+1f /* 3.1415927 */ * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f) {
                 s32 can;
@@ -6119,7 +6119,7 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
                     can = 1 & 0xFF;
                 }
                 if (can != 0) {
-                    if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, gCharPlayer, 0) != 0) {
+                    if (((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, gCharPlayer, 0) != 0) {
                         Actor_SetState(&p->c.a, hit);
                         Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, 9, 0, a5, 0.0f);
                         Actor_SetState(&p->c.a, after);
@@ -6138,7 +6138,7 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
     }
     {
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
-        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
@@ -6185,10 +6185,10 @@ void Pursuer_ChaseDecision(Pursuer *p) {
         if (d < func_002838E0(p) && !(d < 0.0f) && func_002175B0(&p->c.a, &gCharPlayer->a) != 0) {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb60000000p+1f /* 3.1415927 */ * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f && AT(pr, 0x7B8, u8) < 4) {
                 strike = 1;
@@ -6282,7 +6282,7 @@ void func_002885B0(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     if (p->c.unk104[0] == 0x1709) {
         Pursuer_PlayAnimBlend(p, 0x1709);
-    } else if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 && func_00217600(p) != 0) {
+    } else if (((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) != 0 && func_00217600(p) != 0) {
         Pursuer_PlayAnim(p, 0x1804);
     } else {
         Pursuer_PlayAnim(p, 0x1800);
@@ -6351,7 +6351,7 @@ void func_0028B970(Pursuer *p) {
                 if (func_002838E0(p) > 50.0f) {
                     reach = func_002838E0(p);
                 }
-                go = func_00124490(&p->c.a, p->target->a.pos) < reach;
+                go = Actor_Distance(&p->c.a, p->target->a.pos) < reach;
             }
             if (go) {
                 u8 *e = PU(p, 0x171C, u8 *) + PU(p, 0x1724, s8 *)[PU(p, 0x1728, s32) * 4 + PU(p, 0x172C, s8)] * 0x24;
@@ -6415,7 +6415,7 @@ void Pursuer_OffscreenStep(Pursuer *p) {
         }
         if (PU(p, 0x17B4, s32) != 0) {
             Pursuer_SetMove(p, &D_0045B3A0);
-        } else if (!(func_00126E40(&p->c) <= 0.0f) &&
+        } else if (!(Character_PathRemaining2(&p->c) <= 0.0f) &&
                    PU(p, 0x17B0, u8) != (VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
             p->c.unk124 = p->c.unk128;
             Pursuer_SetMove(p, &D_0045B358);
@@ -6470,14 +6470,14 @@ void func_00284040(Pursuer *p) {
         }
         break;
     case 3:
-        if (PU(p, 0x15A4, u32) == func_00124480(&p->c.a, (f32 *)((u8 *)p + 0x15B0), 0x40080) &&
+        if (PU(p, 0x15A4, u32) == Actor_TriTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0), 0x40080) &&
             func_002181D0(p, p->c.a.pos, (f32 *)((u8 *)p + 0x15B0), PU(p, 0x1574, f32), PU(p, 0x1580, f32), PU(p, 0x1584, f32)) != 0) {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0)) - p->c.a.angle[1]);
             }
             if (a < 0x1.0c15240000000p-1f /* 0.5235988 */) {
                 Pursuer_LookAt(p, (f32 *)((u8 *)p + 0x15B0));
@@ -6535,10 +6535,10 @@ void Pursuer_DoorWalking(Pursuer *p) {
             if (!(MOTION_KEYS(p) & MOTION_KEY_END)) {
                 f32 d;
 
-                if (!(func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    d = func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 } else {
-                    d = -func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+                    d = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
                 }
                 if (d < 0x1.99999a0000000p-4f /* 0.1 */) {
                     turn = 1;
@@ -6550,7 +6550,7 @@ void Pursuer_DoorWalking(Pursuer *p) {
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xB);
             }
         }
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
     if (PU(p, 0x1590, f32) == 0.0f) {
         Actor_SetState(&p->c.a, &D_003ECEB0);
@@ -6625,11 +6625,11 @@ void func_00288150(Pursuer *p) {
             func_00213B60(p, -1);
             c0 = p->c.a.navMask;
             p->c.a.navMask = c0 | 0x80001;
-            func_00125A10(&p->c);
+            Character_RootMoveMasked(&p->c);
             p->c.a.navMask = c0;
         } else {
             func_00213B60(p, -1);
-            func_00125A10(&p->c);
+            Character_RootMoveMasked(&p->c);
         }
         return;
     }
@@ -6775,7 +6775,7 @@ void Pursuer_StepBack(Pursuer *p) {
         }
     }
     PU(p, 0x1624, s32) = anim;
-    PU(p, 0x1628, s32) = PU(p, 0x15A4, u32) == func_00124480(&p->c.a, (f32 *)((u8 *)p + 0x15B0), -1) ? 1 : 0;
+    PU(p, 0x1628, s32) = PU(p, 0x15A4, u32) == Actor_TriTo(&p->c.a, (f32 *)((u8 *)p + 0x15B0), -1) ? 1 : 0;
     Actor_SetState(&p->c.a, &D_003ECDC0);
     VCALL(p, 0x19C, void (*)(Pursuer *))(p);
 }
@@ -6908,17 +6908,17 @@ void Pursuer_WalkToSpot(Pursuer *p) {
         } else {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, pos) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.99999ap-4f /* 0.1 */) {
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x12);
             }
         }
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 extern const PTMF D_003ECD40, D_003ECD50;
@@ -6944,7 +6944,7 @@ void Pursuer_FrameUpdate(Pursuer *p) {
         if (VCALL(p, 0x11C, s32 (*)(Pursuer *))(p) != 0) {
             PU(p, 0x16C4, s32) = 0;
             if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-                func_00122C20(&p->c.a, 0x20, 7, 0, 0, NULL);
+                Actor_PlaySound(&p->c.a, 0x20, 7, 0, 0, NULL);
             }
             p->c.unk1384 = p->c.unk1388;
             ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECD40);
@@ -6965,7 +6965,7 @@ void Pursuer_FrameUpdate(Pursuer *p) {
         PU(p, 0x1761, u8) = 0;
         if (PU(p, 0x16F5, u8) != 0 && PU(p, 0x16C8, u8) != 4 &&
             VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, 0x1F, 7, 0, 0, NULL);
+            Actor_PlaySound(&p->c.a, 0x1F, 7, 0, 0, NULL);
         }
         PU(p, 0x16F5, u8) = 0;
         if (PU(p, 0x16C8, u8) != 4) {
@@ -6986,10 +6986,10 @@ void Pursuer_FrameUpdate(Pursuer *p) {
             PU(p, 0x16C8, u8) != 4) {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             /* in front or behind */
             VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, a < 0x1.921fb6p+0f /* 90 degrees */ ? 8 : 9);
@@ -7033,7 +7033,7 @@ void Pursuer_OffscreenUpdate(Pursuer *p) {
             PU(p, 0x17B4, s32) = 0;
         } else if (PU(p, 0x17B4, s32) != 0) {
             Pursuer_SetMove(p, &D_0045B3A0);
-        } else if (!(func_00126E40(&p->c) <= 0.0f)) {
+        } else if (!(Character_PathRemaining2(&p->c) <= 0.0f)) {
             u8 want = PU(p, 0x17B0, u8);
 
             if (want != (VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
@@ -7146,7 +7146,7 @@ void Pursuer_EnterRoom(Pursuer *p) {
             VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 3, 0x80, 0xF);
         }
     }
-    func_00126270(&p->c);
+    Character_MarkObjects(&p->c);
 }
 
 extern const PTMF D_003ECFD0, D_003ECFE0;
@@ -7178,7 +7178,7 @@ void Pursuer_Stairs(Pursuer *p) {
 
         /* mid step: root motion */
         func_001F6370(p->c.motion, v, 0.0f);
-        func_00125900(&p->c);
+        Character_RootTurn(&p->c);
         sceVu0ApplyMatrix(v, (void *)((u8 *)p + 0x60), v);
         sceVu0AddVector(p->c.a.pos, p->c.a.pos, v);
         p->c.a.pos[3] = 1.0f;
@@ -7206,7 +7206,7 @@ void Pursuer_Stairs(Pursuer *p) {
                 func_002DDD20(p->c.motion, 0x703, -1);
             }
             VCALL(p, 0x9C, void (*)(Pursuer *, s32, f32 *))(p, 3, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 0, ofs, end);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 0, ofs, end);
             Actor_SetState(&p->c.a, &D_003ECFD0);
             return;
         }
@@ -7229,7 +7229,7 @@ void Pursuer_Stairs(Pursuer *p) {
         }
         if (anim == 0x704 || PU(p, 0x16C8, u8) == 4) {
             VCALL(p, 0x9C, void (*)(Pursuer *, s32, f32 *))(p, 2, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 1, ofs, end);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 1, ofs, end);
         } else if (turn) {
             p->c.unk104[0] = 1;
             PU(p, 0x1624, s32) = PU(p, 0x15A4, s32);
@@ -7309,7 +7309,7 @@ void Pursuer_ReactToEvent(Pursuer *p) {
         }
         p->c.unk104[0] = 90;
         if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, 0x21, 7, 0, 0, NULL);
+            Actor_PlaySound(&p->c.a, 0x21, 7, 0, 0, NULL);
         }
         Actor_SetState(&p->c.a, &D_003ED110);
         VCALL(p, 0x240, void (*)(Pursuer *))(p);
@@ -7324,7 +7324,7 @@ void Pursuer_ReactToEvent(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -7493,7 +7493,7 @@ void Pursuer_DoorOpen(Pursuer *p) {
                 Actor_SetState(&p->c.a, &D_003ECE60);
                 VCALL(p, 0x1B4, void (*)(Pursuer *))(p);
             } else {
-                func_00125900(&p->c);
+                Character_RootTurn(&p->c);
             }
             return;
         }
@@ -7780,7 +7780,7 @@ void func_00288970(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
 }
 
@@ -7967,12 +7967,12 @@ void func_0028B340(Pursuer *p) {
     }
     if (AT(e, 0x1C, u8) != 0) {
         /* keep turning to the target */
-        f32 h = func_001244D0(&p->c.a, p->target->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
     if (p->c.unk14D0 <= 0) {
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
     }
     if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
         pr = gProgress;
@@ -7989,7 +7989,7 @@ void func_0028B340(Pursuer *p) {
                     Pursuer_PlayAnim(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p));
                     PU(p, 0x16F7, u8) = 0;
                     if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
-                        func_00122C20(&p->c.a, 0x2B, 7, 0, 0, NULL);
+                        Actor_PlaySound(&p->c.a, 0x2B, 7, 0, 0, NULL);
                     }
                     return;
                 }
@@ -7999,7 +7999,7 @@ void func_0028B340(Pursuer *p) {
                     PU(p, 0x1760, u8) = 0;
                 }
                 if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
-                    func_00122C20(&p->c.a, 0x10, 7, 0, 0, NULL);
+                    Actor_PlaySound(&p->c.a, 0x10, 7, 0, 0, NULL);
                 }
                 p->c.unk104[0] = 1;
             }
@@ -8024,7 +8024,7 @@ void func_0028B340(Pursuer *p) {
         VCALL(p, 0x12C, void (*)(Pursuer *, f32))(p, AT(e, 0x14, f32) / 2.0f);
     }
     if (PU(p, 0x172C, s8) < 4 && PU(p, 0x1724, s8 *)[PU(p, 0x1728, s32) * 4 + PU(p, 0x172C, s8) + 1] != -1 &&
-        func_00124490(&p->c.a, p->target->a.pos) < 50.0f) {
+        Actor_Distance(&p->c.a, p->target->a.pos) < 50.0f) {
         /* still in reach: chain the next step */
         PU(p, 0x172C, s8)++;
         PU(p, 0x1770, s32) = 0;
@@ -8103,10 +8103,10 @@ void Pursuer_Footsteps(Pursuer *p) {
         sceVu0CopyMatrix(m, (void *)((u8 *)p + 0x60));
         sceVu0CopyVector(m[3], p->c.a.pos);
         func_002E2DD0(foot, m, step == 1 ? left : right);
-        tri = func_00123E20(&p->c.a, foot);
+        tri = Actor_TriOfOnMesh(&p->c.a, foot);
         t = Pursuer_NavTri(tri != (u32)-1 ? tri : p->c.a.navTri);
         if (p->c.a.room == 7 || p->c.a.room == 0x106) {
-            func_00125E10(&p->c, foot, 1);
+            Character_WaterStep(&p->c, foot, 1);
         }
         flags = -1;
         snd = -1;
@@ -8127,10 +8127,10 @@ void Pursuer_Footsteps(Pursuer *p) {
             case 0x703:
             case 0x704:
                 VCALL(p, 0x9C, void (*)(Pursuer *, s32, f32 *))(p, 3, ofs);
-                if (func_00124320(&p->c.a, foot, func_00123710(p, p->c.unk100, 0, ofs, end), end, 0) == (u32)-1) {
+                if (Actor_TriFrom(&p->c.a, foot, Actor_DoorFront(p, p->c.unk100, 0, ofs, end), end, 0) == (u32)-1) {
                     snd = 10;
                 } else if (MOTION_ANIM(p) == 0x703) {
-                    tri = func_00124320(&p->c.a, foot,
+                    tri = Actor_TriFrom(&p->c.a, foot,
                         VCALL(gNavMesh, 0x5C, s32 (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 0, end), end, 0);
                     if (tri != (u32)-1) {
                         t = Pursuer_NavTri(tri);
@@ -8139,7 +8139,7 @@ void Pursuer_Footsteps(Pursuer *p) {
                 }
                 break;
             case 0x707:
-                tri = func_00124320(&p->c.a, foot,
+                tri = Actor_TriFrom(&p->c.a, foot,
                     VCALL(gNavMesh, 0x5C, s32 (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 1, end), end, 0);
                 if (tri != (u32)-1) {
                     t = Pursuer_NavTri(tri);
@@ -8193,7 +8193,7 @@ void Pursuer_Footsteps(Pursuer *p) {
         }
         vol = (u32)(2.0f * speed) & 0xFF & 0x7F;
         if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, snd, level, 0, (s8)vol, NULL);
+            Actor_PlaySound(&p->c.a, snd, level, 0, (s8)vol, NULL);
         }
         func_002A8440((u8 *)gProgress + 0x798, speed < 0.5f ? 0x1C : 0x1F, p->c.a.room, p->c.a.navTri, 0xFFFF);
     }
@@ -8511,7 +8511,7 @@ void Pursuer_EventCommand(Pursuer *p) {
             break;
         }
         Pursuer_PlayAnim(p, 0x200);
-        *(f32 *)&p->c.unk104[2] = func_001244D0(&p->c.a, gCharacters[p->c.unk100]->a.pos);
+        *(f32 *)&p->c.unk104[2] = Actor_HeadingTo(&p->c.a, gCharacters[p->c.unk100]->a.pos);
         ptmf_set(step, &D_003ECB40);
         PU(p, 0x1758, s32) = -1;
         break;
@@ -8666,7 +8666,7 @@ void func_00286170(Pursuer *p) {
     } else if (PU(p, 0x1628, s32) == 2 && PU(p, 0x1624, s32) + 1 == MOTION_ANIM(p) && p->c.hp <= 0) {
         p->c.hp = 1;
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 extern const PTMF D_003ECBA0, D_003ECBB0, D_003ECBC0, D_003ECBD0, D_003ECBE0, D_003ECBF0;
@@ -9261,10 +9261,10 @@ void Pursuer_BehaviourAttack(Pursuer *p) {
             if ((d < func_002838E0(p) || d < 10.0f) && !(d <= 0.0f)) {
                 f32 a;
 
-                if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                    a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                    a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
                 } else {
-                    a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                    a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
                 }
                 if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
                     func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -9362,7 +9362,7 @@ void Pursuer_BehaviourHewie(Pursuer *p) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 3);
         } else {
             Character *t = gCharPartner != NULL ? gCharPartner : p->target;
-            f32 h = func_001244D0(&p->c.a, t->a.pos);
+            f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
             func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
             if (!(PU(p, 0x158C, f32) <= VCALL(p, 0x2F0, f32 (*)(Pursuer *))(p)) || PU(p, 0x158C, f32) < 0.0f) {
@@ -9471,10 +9471,10 @@ void Pursuer_BehaviourHewie(Pursuer *p) {
         if (d < func_002838E0(p) || d < 10.0f) {
             f32 a;
 
-            if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
             }
             if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f) {
                 VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xB);
@@ -9500,7 +9500,7 @@ static void Pursuer_HoldOff(Pursuer *p, const u8 *e) {
 static void Pursuer_Refollow(Pursuer *p) {
     u32 tri = p->target->a.navTri;
 
-    if (func_00124480(&p->c.a, p->target->a.pos, 0) == tri) {
+    if (Actor_TriTo(&p->c.a, p->target->a.pos, 0) == tri) {
         if (PU(p, 0x1788, s32) != 0x201) {
             Pursuer_PlayAnim(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p));
         }
@@ -9587,7 +9587,7 @@ void Pursuer_BehaviourStalk(Pursuer *p) {
         break;
     case 1: {
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
-        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
         f32 a;
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
@@ -9595,10 +9595,10 @@ void Pursuer_BehaviourStalk(Pursuer *p) {
             Pursuer_HoldOff(p, e);
             break;
         }
-        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (!(a <= 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f)) {
             Pursuer_HoldOff(p, e);
@@ -9640,17 +9640,17 @@ void Pursuer_BehaviourStalk(Pursuer *p) {
         PU(p, 0x162C, s32) = 0;
         return;
     }
-    near = p->target->moveMode == 3 ? func_00124490(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
+    near = p->target->moveMode == 3 ? Actor_Distance(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
     if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
         return;
     }
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -9669,7 +9669,7 @@ static s32 Pursuer_Replan(Pursuer *p, VObject *rooms) {
     PURSUER_STEP_DONE(p) = 0;
     bit = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFFFF;
     p->c.unk148C[bit >> 5] |= 1 << (bit & 0x1F);
-    return func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    return Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
 }
 
 extern const PTMF D_003ECCE0, D_003ECCF0, D_003ECD00, D_003ECD10, D_003ECD20;
@@ -9733,8 +9733,8 @@ void Pursuer_BehaviourDoors(Pursuer *p) {
         }
         rooms = gRooms;
         VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), door);
-        onMesh = func_00124480(&p->c.a, door, -1) != (u32)-1;
-        a = func_00123C60(&p->c.a, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0)) & 0xFF;
+        onMesh = Actor_TriTo(&p->c.a, door, -1) != (u32)-1;
+        a = Actor_NearerRoom(&p->c.a, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0)) & 0xFF;
         if (!(ds & 4) && PURSUER_STEP_DONE(p) != 1 && !((onMesh & 0xFF) & a)) {
             break;
         }
@@ -9923,7 +9923,7 @@ extern const PTMF D_003ED3B0, D_003ED3C0, D_003ED3D0, D_003ED3E0, D_003ED3F0, D_
 /* place the pursuer on triangle tri facing its heading (vtable +0x28), or nowhere */
 static void Pursuer_PlaceOn(Pursuer *p, s32 tri) {
     if (VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, f32 *))(p, tri, &p->c.a.angle[1], p->c.a.pos) == -1) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -10007,12 +10007,12 @@ void Pursuer_ShowUp(Pursuer *p) {
                     PU(p, 0x1664, s32) = 0;
                 } else if (PU(p, 0x17B4, s32) != 0) {
                     VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1F);
-                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 ? 0x1804 : 0x1800);
+                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) != 0 ? 0x1804 : 0x1800);
                     PU(p, 0x17B4, s32) = 0;
                 } else {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1F);
                     Actor_SetState(&p->c.a, &D_003ED410);
-                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 ? 0x1806 : 0x1802);
+                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) != 0 ? 0x1806 : 0x1802);
                 }
                 PU(p, 0x1761, u8) = 1;
                 func_0027EEA0(p);
@@ -10072,17 +10072,17 @@ void Pursuer_ShowUp(Pursuer *p) {
             if (p->c.a.navTri != (u32)-1) {
                 VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, f32 *))(p, p->c.a.navTri, NULL, NULL);
             } else {
-                func_00124890(&p->c.a, -1);
+                Actor_TeleportRandom(&p->c.a, -1);
             }
             PURSUER_STEP_NEXT(p) = 1;
         }
         p->c.unk14C4 = 0;
         func_0027F5F0(p);
-        func_00126270(&p->c);
+        Character_MarkObjects(&p->c);
     }
-    if (func_00122B50(&p->c.a, at) != 0) {
-        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 0, at);
-        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 5, at);
+    if (Actor_PosInCurrentRoom(&p->c.a, at) != 0) {
+        ((void (*)(Character *, s32, f32 *))Character_Sound)(&p->c, 0, at);
+        ((void (*)(Character *, s32, f32 *))Character_Sound)(&p->c, 5, at);
     }
 }
 
@@ -10162,10 +10162,10 @@ void func_0029B8B0(Pursuer *p) {
     } else {
         sceVu0CopyVector(at, (f32 *)((u8 *)gProgress + p->c.a.slot * 32 + 0x1060));
     }
-    if (!(func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]) <= 0.0f)) {
-        a = func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]);
+    if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]) <= 0.0f)) {
+        a = func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
     } else {
-        a = -func_002E2D00(func_001244D0(&p->c.a, at) - p->c.a.angle[1]);
+        a = -func_002E2D00(Actor_HeadingTo(&p->c.a, at) - p->c.a.angle[1]);
     }
     dir = a < 0x1.921fb6p+0f /* 90 degrees */ ? 0 : 1;
     kind = p->c.state[1];
@@ -10196,7 +10196,7 @@ void func_0029B8B0(Pursuer *p) {
             s16 snd = p->c.state[2] == 1 ? 0x1D : 0x1C;
 
             if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-                func_00122C20(&p->c.a, snd, 7, 0, 0, NULL);
+                Actor_PlaySound(&p->c.a, snd, 7, 0, 0, NULL);
             }
         }
         Pursuer_ClearMessage(p);
@@ -10204,7 +10204,7 @@ void func_0029B8B0(Pursuer *p) {
     }
     if (PU(p, 0x16F7, u8) == 1 && p->c.state[1] == 1 && p->c.hp > 0) {
         if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
-            func_00122C20(&p->c.a, 0x1C, 7, 0, 0, NULL);
+            Actor_PlaySound(&p->c.a, 0x1C, 7, 0, 0, NULL);
         }
         Pursuer_ClearMessage(p);
         return;
@@ -10444,7 +10444,7 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
         break;
     case 1: {
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
-        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
         f32 a;
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
@@ -10452,10 +10452,10 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
             Pursuer_HoldOff(p, e);
             break;
         }
-        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (!(a <= 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f)) {
             Pursuer_HoldOff(p, e);
@@ -10506,17 +10506,17 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
         }
         return;
     }
-    near = p->target->moveMode == 3 ? func_00124490(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
+    near = p->target->moveMode == 3 ? Actor_Distance(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
     if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
         return;
     }
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -10536,7 +10536,7 @@ static s32 Pursuer_HewieDelay(Character *h, s32 base) {
 
 /* plan from where the pursuer is to its goal room; 0 when there's no way and it can't wait */
 static s32 Pursuer_PlanOn(Pursuer *p) {
-    return func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0 || (func_0027CA00(p) & 0xFF);
+    return Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0 || (func_0027CA00(p) & 0xFF);
 }
 
 /* a door or stair move still in progress when the pursuer leaves the screen: finish it */
@@ -10582,10 +10582,10 @@ static void Pursuer_FinishCrossing(Pursuer *p) {
         y = p->c.a.pos[1];
         if (!(y <= PU(p, 0x15D4, f32)) || (y == PU(p, 0x15D4, f32) && y < PU(p, 0x15B4, f32))) {
             VCALL(p, 0x9C, void (*)(Pursuer *, s32, f32 *))(p, 3, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 0, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 0, ofs, p->c.a.pos);
         } else {
             VCALL(p, 0x9C, void (*)(Pursuer *, s32, f32 *))(p, 2, ofs);
-            p->c.a.navTri = func_00123710(p, p->c.unk100, 1, ofs, p->c.a.pos);
+            p->c.a.navTri = Actor_DoorFront(p, p->c.unk100, 1, ofs, p->c.a.pos);
         }
     }
     if (p->c.unkE0 == 1) {
@@ -10636,7 +10636,7 @@ static void Pursuer_LeaveOffScreen(Pursuer *p, s32 next, u32 door) {
         }
     } else if (PU(p, 0x16C8, u8) == 0) {
         VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
-        if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
+        if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
             func_0029AC50(p);
         }
     }
@@ -10683,7 +10683,7 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
         }
         break;
     case 1:
-        if (!(func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
+        if (!(Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
             PU(p, 0x16F4, u8) = 1;
             if (!(func_0027CA00(p) & 0xFF)) {
                 Pursuer_SetMove(p, &D_0045B3A0);
@@ -10967,7 +10967,7 @@ void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
         link = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, door) & 0xFFFF;
         p->c.unk148C[link >> 5] &= ~(1 << (link & 0x1F));
         VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
-        if (!(func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
+        if (!(Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
             PU(p, 0x17B4, s32) = 150;
             Pursuer_SetMove(p, &D_0045B3A0);
             PU(p, 0x16F4, u8) = 1;
@@ -11113,7 +11113,7 @@ Pursuer *Kind08_dtor(Pursuer *p, s32 flags) {
             Pursuer_DestroyBase(p);
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11132,11 +11132,11 @@ void func_002ECCB0(Pursuer *p) {
     Pursuer_Setup(p);
 }
 
-/* vtable +0x38: on screen, func_00124890(-1) */
+/* vtable +0x38: on screen, Actor_TeleportRandom(-1) */
 /* 0x002ECCC0 */
 void Kind08_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -11188,7 +11188,7 @@ Character *Kind09_dtor(Character *c, s32 flags) {
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -11223,11 +11223,11 @@ void Kind09_BehaviourSearch(Character *c) {
 
 extern const PTMF D_00429840;
 
-/* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
+/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when func_00217510 says so */
 /* 0x00312EA0 */
 void Kind14_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -11271,7 +11271,7 @@ Pursuer *Kind16_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_004728A0;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11287,11 +11287,11 @@ void *Kind16_MotionFiles(void) {
     return D_00429C90;
 }
 
-/* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
+/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when func_00217510 says so */
 /* 0x00315C70 */
 void Kind16_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -11335,7 +11335,7 @@ Pursuer *Kind17_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_00472C30;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11351,11 +11351,11 @@ void *Kind17_MotionFiles(void) {
     return D_00429D20;
 }
 
-/* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
+/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when func_00217510 says so */
 /* 0x00316BF0 */
 void Kind17_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -11667,7 +11667,7 @@ Pursuer *Kind21_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_00474560;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11718,7 +11718,7 @@ Pursuer *Kind15_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_004723B0;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11741,7 +11741,7 @@ Pursuer *Kind14_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_004723B0;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -11854,13 +11854,13 @@ void Kind09_BehaviourIdle(Pursuer *p) {
 void Kind09_OffscreenStep(Pursuer *p) {
 }
 
-/* in play: func_00124890(-1), the state D_00422430 (+0x1758 -1) */
+/* in play: Actor_TeleportRandom(-1), the state D_00422430 (+0x1758 -1) */
 /* 0x00309180 */
 void Kind09_ShowUp(Pursuer *p) {
     if (func_00217510(p) == 0) {
         return;
     }
-    func_00124890(&p->c.a, -1);
+    Actor_TeleportRandom(&p->c.a, -1);
     ptmf_set(&PU(p, 0x174C, PTMF), &D_00422430);
     PU(p, 0x1758, s32) = -1;
 }
@@ -11957,10 +11957,10 @@ void *Kind13_MotionFiles(void) {
     return D_00429770;
 }
 
-/* in play: func_00124890(-1) */
+/* in play: Actor_TeleportRandom(-1) */
 /* 0x00311AE0 */
 void Kind13_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }

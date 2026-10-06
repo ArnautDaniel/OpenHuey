@@ -102,16 +102,16 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
 }
 
-/* in play: func_00124890(-1) */
+/* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 
@@ -326,7 +326,7 @@ void func_002DE8E0(Character *c, s32 a1, s32 a2, s32 mode, s32 kind, s32 str, s3
 }
 
 /* +0x9C set up to come after Fiona: (+0x64 with mode 2) +0x2A whether someone (slots 2..5) is
- * up in her room; out, with a rest time; a path to her room (func_00126F80) and its length
+ * up in her room; out, with a rest time; a path to her room (Character_Route) and its length
  * through the doors on it (rooms +0x38 by `a1`) into +0x14C4, the last door +0x14C0 */
 void func_002DEA80(Character *c, s32 a1, s32 a2) {
     u8 *k = CR(c);
@@ -345,7 +345,7 @@ void func_002DEA80(Character *c, s32 a1, s32 a2) {
     AT(k, 0x2E, u8) = 0;
     AT(k, 0x82, u8) = 1;
     creature_rest(k);
-    if (func_00126F80(c, gCharPlayer->a.room, -1, AT(k, 0xC, s32), -1) == -1) {
+    if (Character_Route(c, gCharPlayer->a.room, -1, AT(k, 0xC, s32), -1) == -1) {
         return;
     }
     for (n = 0; n < c->unk1384; n++) {
@@ -400,7 +400,7 @@ static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32
     }
     if (AT(k, busy, u8) == 0) {
         AT(k, busy, u8) += 1;
-        if (func_00127200(c, 0, tri, goal, -1) == -1) {
+        if (Character_PlanPathOpt(c, 0, tri, goal, -1) == -1) {
             AT(k, busy, u8) = 0;
             return -1;
         }
@@ -412,14 +412,14 @@ static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32
         }
     }
     if (r > 0) {
-        r = direct ? func_001270A0(c) : func_001270F0(c);
-        func_00127060(c);
+        r = direct ? Character_Waypoints(c) : Character_WaypointsCurve(c);
+        Character_ReleasePath(c);
         AT(k, busy, u8) = 0;
     }
     if (r >= 0) {
         return -(r == 0);
     }
-    func_00127060(c);
+    Character_ReleasePath(c);
     AT(k, busy, u8) = 0;
     return -1;
 }
@@ -434,15 +434,15 @@ s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
 void func_002DF470(Character *c, u32 tri) {
     u8 *k = CR(c);
 
-    if (tri != func_00124480(&c->a, c->a.unkB0, NAV_NONE)) {
+    if (tri != Actor_TriTo(&c->a, c->a.unkB0, NAV_NONE)) {
         u32 t;
         f32 far[4] __attribute__((aligned(16)));
         f32 near[4] __attribute__((aligned(16)));
         f32 dir[4] __attribute__((aligned(16)));
         f32 fwd[4] __attribute__((aligned(16)));
 
-        func_001273D0(c, &t, far, 12.0f * AT(k, 0x0, f32));
-        func_001273D0(c, &t, near, AT(k, 0x0, f32));
+        Character_WaypointAhead(c, &t, far, 12.0f * AT(k, 0x0, f32));
+        Character_WaypointAhead(c, &t, near, AT(k, 0x0, f32));
         sceVu0SubVector(dir, near, c->a.pos);
         *(s32 *)&dir[1] = 0;
         sceVu0Normalize(dir, dir);
@@ -472,7 +472,7 @@ static s32 creature_close_in(Character *c, u32 t) {
         *(s32 *)&dir[1] = 0;
         sceVu0Normalize(dir, dir);
         func_0010E640(dir, dir, AT(k, 0x0, f32));
-        func_001247E0(&c->a, dir);
+        Actor_Move(&c->a, dir);
     }
     return t;
 }
@@ -485,12 +485,12 @@ s32 func_002DFF70(Character *c) {
     u32 t;
 
     AT(c, 0x15DB, u8) = 0;
-    t = func_00124480(&c->a, gCharPlayer->a.pos, c->pathReq->mask);
+    t = Actor_TriTo(&c->a, gCharPlayer->a.pos, c->pathReq->mask);
     if (AT(k, 0x8, u8) != 0) {
         if (t != gCharPlayer->a.navTri) {
             return -1;
         }
-        func_00127060(c);
+        Character_ReleasePath(c);
         AT(k, 0x2B, u8) = 0;
         c->unk124 = c->unk128;
         return creature_close_in(c, t);
@@ -498,7 +498,7 @@ s32 func_002DFF70(Character *c) {
     if (t == NAV_NONE) {
         return -1;
     }
-    func_00127060(c);
+    Character_ReleasePath(c);
     AT(k, 0x2B, u8) = 0;
     c->unk124 = c->unk128;
     if (gCharPlayer->a.pos[1] != c->a.pos[1]) {
@@ -628,7 +628,7 @@ void func_002DF5B0(Character *c) {
                 c->unk124 = c->unk128;
             }
             if (c->unk128 < c->unk124) {
-                s32 next = func_001273D0(c, &t, p, AT(k, 0x0, f32));
+                s32 next = Character_WaypointAhead(c, &t, p, AT(k, 0x0, f32));
 
                 c->a.navTri = t;
                 sceVu0CopyVector(c->a.pos, p);
@@ -674,7 +674,7 @@ void func_002E0520(Character *c) {
     } else {
         u32 t = gCharPlayer->a.navTri;
 
-        come = func_00124480(&c->a, gCharPlayer->a.pos, NAV_NONE) == t && AT(k, 0x24, f32) <= (f32)AT(k, 0x4, s16);
+        come = Actor_TriTo(&c->a, gCharPlayer->a.pos, NAV_NONE) == t && AT(k, 0x24, f32) <= (f32)AT(k, 0x4, s16);
     }
     if (come == 1) {
         AT(k, 0x2E, u8) = 1;
@@ -748,8 +748,8 @@ static void vanish_init(void **o) {
     o[0x370 / 4] = D_0046FC30;
 }
 
-/* seen: once it has come (+0x2E) and Fiona isn't hidden (+0x2D) or busy (func_00125D80) and
- * sees it (func_001241F0), a noise (kind 0xD) is made, it vanishes in a glow (12 above it, red
+/* seen: once it has come (+0x2E) and Fiona isn't hidden (+0x2D) or busy (Character_Held) and
+ * sees it (Actor_Touching), a noise (kind 0xD) is made, it vanishes in a glow (12 above it, red
  * for kinds 0x12.. but 0x24, else blue) with a sound (0x8B) when not in an event, and its
  * vanishing state starts (+0x37, +0x29 set, the motion +0x18 / +0x1C stopped) */
 void func_002DF180(Character *c) {
@@ -762,7 +762,7 @@ void func_002DF180(Character *c) {
     } fx __attribute__((aligned(16)));
 
     if (AT(c, 0x1569, u8) != 0 || AT(k, 0x2E, u8) == 0 || gCharPlayer->a.unk2D == 1 ||
-        (func_00125D80(gCharPlayer) & 0xFF) || (func_001241F0(&c->a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) != 1) {
+        (Character_Held(gCharPlayer) & 0xFF) || (Actor_Touching(&c->a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) != 1) {
         return;
     }
     Progress_Noise(gProgress, c->a.pos, 1, 0xD, 0, 0, 0.0f);
@@ -783,7 +783,7 @@ void func_002DF180(Character *c) {
     }
     func_002D6090(mgr, slot, &fx);
     if (gCharPlayer->unkE2 == 0 && c->a.disabled == 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0) {
-        func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
     }
     AT(k, 0x37, u8) = 1;
     AT(k, 0x29, u8) = 1;
@@ -841,7 +841,7 @@ void func_002DFA50(Character *c) {
                 AT(k, 0x2A, u8) = 0;
             }
         } else {
-            func_001272B0(c, AT(k, 0x0, f32) / 2.0f);
+            Character_FollowWaypoints(c, AT(k, 0x0, f32) / 2.0f);
             if (!(c->unk128 < c->unk124)) {
                 arrived = 1;
             }
@@ -907,7 +907,7 @@ void func_002DFE10(Character *c) {
             return;
         }
         c->a.active = 0;
-        func_00127060(c);
+        Character_ReleasePath(c);
         return;
     }
     if (!(AT(k, 0x14, f32) <= -12.0f)) {
@@ -926,7 +926,7 @@ void func_002DFE10(Character *c) {
         func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
     }
     c->a.active = 0;
-    func_00127060(c);
+    Character_ReleasePath(c);
 }
 
 /* state: to the door it chose (+0x85): its spot asked of the planner; on the way there
@@ -939,7 +939,7 @@ void func_002E01C0(Character *c) {
     u32 tri;
 
     tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(c, 0x15C5, u8), at);
-    if (func_00127140(c, 0, tri, at) > 0) {
+    if (Character_PlanPathKind(c, 0, tri, at) > 0) {
         VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
     }
     if (AT(k, 0x85, u8) == 0xFF) {
@@ -953,7 +953,7 @@ void func_002E01C0(Character *c) {
 }
 
 /* state: travelling: at the end of its doors (+0x1388) and not at a door, a new trip to the
- * room being played (func_00126F80): its first door (+0x14C0) and that leg's distance
+ * room being played (Character_Route): its first door (+0x14C0) and that leg's distance
  * (+0x14C4); none: the closed ways it noted (+0x148C) are forgotten */
 static inline __attribute__((always_inline)) void creature_route(Character *c, u32 flagOff, u32 idOff) {
     u8 *k = CR(c);
@@ -962,7 +962,7 @@ static inline __attribute__((always_inline)) void creature_route(Character *c, u
     if (c->unk1388 < c->unk1384 || AT(k, flagOff, u8) != 0) {
         return;
     }
-    if (func_00126F80(c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, AT(k, idOff, s32), -1) <= 0) {
+    if (Character_Route(c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, AT(k, idOff, s32), -1) <= 0) {
         for (i = 0; i < 13; i++) {
             c->unk148C[i] = 0;
         }
@@ -1006,18 +1006,18 @@ void func_002E0390(Character *c) {
             return;
         }
     }
-    func_001274E0(c, AT(k, 0x0, f32));
+    Character_FollowWaypointsBlocked(c, AT(k, 0x0, f32));
 }
 
 /* +0x64 put in room `room` on triangle `tri`, mode `mode` (+0xC): (the Character's +0x64,
- * func_00125BA0) in the room being played placed there (+0x28; its result) and its doors
+ * Character_ToRoom) in the room being played placed there (+0x28; its result) and its doors
  * noted, else just its triangle; 0 */
 static inline __attribute__((always_inline)) s32 creature_place(Character *c, s32 room, u32 tri, s32 mode, u32 modeOff,
                                                                   u32 doors) {
     Progress *p;
     s32 r = 0;
 
-    func_00125BA0(c, room, tri, mode);
+    Character_ToRoom(c, room, tri, mode);
     AT(CR(c), modeOff, s32) = mode;
     p = gProgress;
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
@@ -1165,7 +1165,7 @@ static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at)
 
 /* +0x34 Fiona left by exit `exit` (+0xA its door): in the room being played it follows - by
  * that exit if it can (+0xB), else by another (+0x87 0 once one is found) - and, when going by
- * hers and she isn't just beyond it (func_00123C60), skips its path to the door if already
+ * hers and she isn't just beyond it (Actor_NearerRoom), skips its path to the door if already
  * nearer the door than the exit's spot; if she is, it stays out (+0x10 0) */
 void func_002E0FE0(Character *c, u32 exit) {
     u8 *k = CR(c);
@@ -1201,7 +1201,7 @@ void func_002E0FE0(Character *c, u32 exit) {
     if (AT(k, 0x87, u8) == 1 || AT(k, 0xB, u8) != 1) {
         return;
     }
-    if ((func_00123C60(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+    if ((Actor_NearerRoom(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
         VCALL(rooms, 0x14, s32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
         AT(k, 0x10, s32) = 0;
         return;
@@ -1216,7 +1216,7 @@ void func_002E0FE0(Character *c, u32 exit) {
         VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exit, door);
         sceVu0SubVector(d0, c->a.pos, door);
         sceVu0SubVector(d1, at, door);
-        if (sceVu0InnerProduct(d0, d0) <= sceVu0InnerProduct(d1, d1) && func_00124480(&c->a, door, NAV_NONE) != NAV_NONE) {
+        if (sceVu0InnerProduct(d0, d0) <= sceVu0InnerProduct(d1, d1) && Actor_TriTo(&c->a, door, NAV_NONE) != NAV_NONE) {
             c->unk124 = c->unk128;
         }
     }
@@ -1236,7 +1236,7 @@ void func_002DEC30(Character *c) {
 
     if (AT(c, 0x15DB, s8) == 0) {
         AT(k, 0x9B, s8) += 1;
-        func_00127060(c);
+        Character_ReleasePath(c);
         AT(k, 0x2B, u8) = 0;
         c->unk124 = c->unk128;
     }
@@ -1273,7 +1273,7 @@ void func_002DEC30(Character *c) {
                 sceVu0ApplyMatrix(w, m, off);
                 sceVu0AddVector(goal, gCharPlayer->a.pos, w);
                 turn = D_004167A0[VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0xF];
-                AT(k, 0x44, u32) = func_00123D20(&gCharPlayer->a, goal);
+                AT(k, 0x44, u32) = Actor_TriOf(&gCharPlayer->a, goal);
                 tri = AT(k, 0x44, u32);
                 if (tri == NAV_NONE || c->a.navTri == tri) {
                     continue;
@@ -1293,7 +1293,7 @@ void func_002DEC30(Character *c) {
         AT(k, 0x9B, s8) = 1;
         return;
     }
-    if (func_001274E0(c, AT(k, 0x0, f32)) == 0) {
+    if (Character_FollowWaypointsBlocked(c, AT(k, 0x0, f32)) == 0) {
         AT(k, 0x9B, s8) = 1;
     }
 }
@@ -1374,7 +1374,7 @@ void func_002E06E0(Character *c) {
         if (AT(k, 0x9C, s8) == 0 || AT(k, 0x24, f32) <= 40.0f) {
             ptmf_set(&c->a.state, &D_00416720);
         } else {
-            func_00127060(c);
+            Character_ReleasePath(c);
             AT(k, 0x2B, u8) = 0;
             c->unk124 = c->unk128;
             ptmf_set(&c->a.state, &D_00416730);
@@ -1444,7 +1444,7 @@ void func_002E1380(Character *c) {
             ptmf_set(&c->a.state, &D_004166C0);
         } else if (AT(k, 0x20, s16) >= AT(k, 0x6, s16)) {
             AT(k, 0x29, u8) = 1;
-            func_00122C20(&c->a, 0x8C, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 0x8C, 5, 0, 0, NULL);
             ptmf_set(&c->a.state, &D_004166B0);
         }
     } else {
@@ -1452,7 +1452,7 @@ void func_002E1380(Character *c) {
 
         if (AT(k, 0x20, s16) >= AT(k, 0x6, s16)) {
             c->a.active = 0;
-            func_00127060(c);
+            Character_ReleasePath(c);
         }
         if (AT(k, 0x10, s32) != 0) {
             s32 room = c->a.room;
@@ -2016,7 +2016,7 @@ s32 func_002B4030(void) {
             fx.rgba[2] = 0x30;
         }
         func_002D6090(mgr, slot, &fx);
-        func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
         return 1;
     }
     return 0;
@@ -2917,7 +2917,7 @@ void func_00329270(Character *c) {
     u32 tri;
 
     tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(c, 0x15A6, u8), at);
-    if (func_00127140(c, 0, tri, at) > 0) {
+    if (Character_PlanPathKind(c, 0, tri, at) > 0) {
         VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
     }
     if (AT(k, 0x66, u8) == 0xFF) {
@@ -2975,7 +2975,7 @@ static inline void cr19_settle(Character *c) {
 static inline void cr19_enter(Character *c, u8 st) {
     AT(CR(c), 0x69, u8) = st;
     AT(c, 0xF8, s32) = 0;
-    func_00127060(c);
+    Character_ReleasePath(c);
     cr19_settle(c);
 }
 
@@ -2988,13 +2988,13 @@ static inline void cr19_reset(Character *c) {
 void func_003250D0(Character *c, u32 tri) {
     u8 *k = CR(c);
 
-    if (tri != func_00124480(&c->a, (f32 *)(k + 0x30), NAV_NONE)) {
+    if (tri != Actor_TriTo(&c->a, (f32 *)(k + 0x30), NAV_NONE)) {
         u32 t;
         f32 near[4] __attribute__((aligned(16)));
         f32 dir[4] __attribute__((aligned(16)));
         f32 fwd[4] __attribute__((aligned(16)));
 
-        func_001273D0(c, &t, near, cr19_stride(c));
+        Character_WaypointAhead(c, &t, near, cr19_stride(c));
         sceVu0SubVector(dir, near, c->a.pos);
         *(s32 *)&dir[1] = 0;
         sceVu0Normalize(dir, dir);
@@ -3038,7 +3038,7 @@ void func_00325220(Character *c) {
                 c->unk124 = c->unk128;
             }
             if (c->unk128 < c->unk124) {
-                s32 next = func_001273D0(c, &t, p, cr19_stride(c));
+                s32 next = Character_WaypointAhead(c, &t, p, cr19_stride(c));
 
                 c->a.navTri = t;
                 sceVu0CopyVector(c->a.pos, p);
@@ -3087,7 +3087,7 @@ void func_00324FA0(Character *c, s32 a1, s32 a2) {
     AT(k, 0x6F, u8) = 0;
     AT(k, 0x6E, u8) = 1;
     AT(k, 0x4A, s16) = ((VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) + 1) * 1800;
-    if (func_00126F80(c, gCharPlayer->a.room, -1, AT(k, 0x0, s32), -1) == -1) {
+    if (Character_Route(c, gCharPlayer->a.room, -1, AT(k, 0x0, s32), -1) == -1) {
         return;
     }
     for (n = 0; n < c->unk1384; n++) {
@@ -3121,7 +3121,7 @@ s32 func_00325B60(Character *c) {
     }
     tri = c->a.navTri;
     if (NavMesh_TriFlags(gNavMesh, tri) & c->a.navMask) {
-        func_00124890(&c->a, AT(k, 0x0, s32));
+        Actor_TeleportRandom(&c->a, AT(k, 0x0, s32));
     } else {
         VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, c->a.pos);
         VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
@@ -3322,7 +3322,7 @@ void func_003257B0(Character *c) {
                 arrived = 1;
             }
         } else {
-            func_001272B0(c, 0x1.666666p-2f);
+            Character_FollowWaypoints(c, 0x1.666666p-2f);
             if (!(c->unk128 < c->unk124)) {
                 arrived = 1;
             }
@@ -3385,11 +3385,11 @@ void func_00325D70(Character *c) {
 
         if (a == 4 || a == 2 || a == 1) {
             c->unk124 = c->unk128;
-            func_00127060(c);
+            Character_ReleasePath(c);
             AT(k, 0x69, u8) = 2;
             AT(k, 0x62, u8) = 2;
             AT(c, 0xF8, s32) = 4;
-            func_00127060(c);
+            Character_ReleasePath(c);
             cr19_settle(c);
         }
     }
@@ -3438,8 +3438,8 @@ u32 func_00325EC0(Character *c, f32 dist) {
         sceVu0AddVector((f32 *)(k + 0x30), gCharPlayer->a.pos, d);
         func_0032B080(c, (f32 *)(k + 0x30));
         yaw = tbl[VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF];
-        AT(k, 0x20, u32) = func_00123D20(&gCharPlayer->a, (f32 *)(k + 0x30));
-        if (func_00124480(&c->a, (f32 *)(k + 0x30), c->pathReq->mask) != NAV_NONE && c->a.navTri != AT(k, 0x20, u32)) {
+        AT(k, 0x20, u32) = Actor_TriOf(&gCharPlayer->a, (f32 *)(k + 0x30));
+        if (Actor_TriTo(&c->a, (f32 *)(k + 0x30), c->pathReq->mask) != NAV_NONE && c->a.navTri != AT(k, 0x20, u32)) {
             break;
         }
     }
@@ -3462,7 +3462,7 @@ void func_00326130(Character *c, f32 dist) {
     switch (AT(k, 0x6C, u8)) {
     case 0:
         AT(k, 0x6C, u8)++;
-        func_00127060(c);
+        Character_ReleasePath(c);
         AT(k, 0x64, u8) = 0;
         c->unk124 = c->unk128;
         AT(k, 0x1C, f32) = dist;
@@ -3479,7 +3479,7 @@ void func_00326130(Character *c, f32 dist) {
         AT(k, 0x1C, f32) = AT(k, 0x1C, f32) + 1.0f;
         return;
     case 2:
-        h = func_001244D0(&c->a, (f32 *)(k + 0x30));
+        h = Actor_HeadingTo(&c->a, (f32 *)(k + 0x30));
         if (CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f /* 30 degrees */) {
             AT(k, 0x6C, u8)++;
         } else {
@@ -3498,7 +3498,7 @@ void func_00326130(Character *c, f32 dist) {
 
             sceVu0SubVector(d, o->a.pos, c->a.pos);
             if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < c->a.radius + o->a.radius) {
-                func_00127060(c);
+                Character_ReleasePath(c);
                 AT(k, 0x64, u8) = 0;
                 hit = 1;
                 c->unk124 = c->unk128;
@@ -3506,7 +3506,7 @@ void func_00326130(Character *c, f32 dist) {
             if (hit == 1 && AT(k, 0x69, u8) != 3 && !(AT(k, 0x6B, u8) & 0x80) && AT(gCharPlayer, 0xF8, s32) != 8) {
                 AT(k, 0x69, u8) = 3;
                 AT(c, 0xF8, s32) = 0;
-                func_00127060(c);
+                Character_ReleasePath(c);
                 cr19_settle(c);
                 return;
             }
@@ -3517,12 +3517,12 @@ void func_00326130(Character *c, f32 dist) {
                 return;
             }
         }
-        if (func_001274E0(c, cr19_stride(c)) == 0) {
+        if (Character_FollowWaypointsBlocked(c, cr19_stride(c)) == 0) {
             AT(k, 0x6C, u8)++;
         }
         return;
     case 4:
-        h = func_001244D0(&c->a, gCharPlayer->a.pos);
+        h = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
         if (!(CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f)) {
             func_0032B080(c, gCharPlayer->a.pos);
             return;
@@ -3536,7 +3536,7 @@ void func_00326130(Character *c, f32 dist) {
                 AT(k, 0x69, u8) = 0;
             }
             AT(c, 0xF8, s32) = 2;
-            func_00127060(c);
+            Character_ReleasePath(c);
             cr19_settle(c);
         }
         return;
@@ -3550,7 +3550,7 @@ static inline void cr19_root_move(Character *c) {
     func_001F6370(c->motion, v, 0.0f);
     *(s32 *)&v[1] = 0;
     sceVu0ApplyMatrix(v, c->a.rot, v);
-    func_001247E0(&c->a, v);
+    Actor_Move(&c->a, v);
 }
 
 /* state: held off - it moves by its animation, facing Fiona; when she is no longer across the
@@ -3614,10 +3614,10 @@ void func_00326950(Character *c) {
     }
 }
 
-/* state: Fiona in sight (func_00122C90) - back to state 0; across the room's divider from her
+/* state: Fiona in sight (Actor_CanWalkBetween) - back to state 0; across the room's divider from her
    - state 0x12; else its approach at 10 */
 void func_00326AF0(Character *c) {
-    if ((func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF) == 1) {
+    if ((Actor_CanWalkBetween(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF) == 1) {
         cr19_reset(c);
         return;
     }
@@ -3637,7 +3637,7 @@ void func_00326DA0(Character *c) {
     if (Progress_TestFlag(p, 9) != 0) {
         AT(k, 0x69, u8) = 9;
         AT(c, 0xF8, s32) = 2;
-        func_00127060(c);
+        Character_ReleasePath(c);
         cr19_settle(c);
         return;
     }
@@ -3653,7 +3653,7 @@ void func_00326DA0(Character *c) {
 
 /* turn to Fiona; once within 20 degrees, state 5 */
 static inline void cr19_face_fiona(Character *c) {
-    f32 h = func_001244D0(&c->a, gCharPlayer->a.pos);
+    f32 h = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
 
     if (CR19_TURN_LEFT(c, h) < 0x1.6571860p-2f /* 20 degrees */) {
         cr19_enter(c, 5);
@@ -3688,7 +3688,7 @@ void func_00327030(Character *c) {
         if (func_003255C0(c, tri, at, 0) != 0) {
             return;
         }
-        if (func_001274E0(c, cr19_stride(c)) != 0) {
+        if (Character_FollowWaypointsBlocked(c, cr19_stride(c)) != 0) {
             return;
         }
         AT(k, 0x6C, u8)++;
@@ -3729,7 +3729,7 @@ void func_00327540(Character *c) {
         AT(k, 0x28, f32) = AT(k, 0x28, f32) - AT(k, 0x2C, f32);
         AT(k, 0x2C, f32) = AT(k, 0x2C, f32) + 0x1.5c28f6p-4f;   /* 0.085 */
         if (AT(k, 0x28, f32) <= 0.0f) {
-            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 5, 5, 0, 0, NULL);
             AT(k, 0x28, s32) = 0;
             AT(k, 0x2C, s32) = 0;
             AT(k, 0x60, u8)++;
@@ -3749,7 +3749,7 @@ void func_00327540(Character *c) {
         break;
     case 3:
         if (++AT(k, 0x40, s16) == 0x22) {
-            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 5, 5, 0, 0, NULL);
         }
         cr19_root_move(c);
         if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
@@ -3783,12 +3783,12 @@ void func_003278F0(Character *c) {
    (+0x6A) after 30 tries close by (+0xC) unless on her triangle. Her triangle, -1 if not */
 s32 func_003279F0(Character *c, f32 *goal) {
     u8 *k = CR(c);
-    u32 t = func_00124480(&c->a, goal, c->pathReq->mask);
+    u32 t = Actor_TriTo(&c->a, goal, c->pathReq->mask);
 
     if (t != gCharPlayer->a.navTri) {
         return -1;
     }
-    func_00127060(c);
+    Character_ReleasePath(c);
     AT(k, 0x64, u8) = 0;
     c->unk124 = c->unk128;
     if (goal[1] != c->a.pos[1]) {
@@ -3811,7 +3811,7 @@ s32 func_003279F0(Character *c, f32 *goal) {
         func_001F6370(c->motion, v, 0.0f);
         *(s32 *)&v[1] = 0;
         func_0010E640(d, d, v[2]);
-        func_001247E0(&c->a, d);
+        Actor_Move(&c->a, d);
     }
     return t;
 }
@@ -3825,16 +3825,16 @@ void func_00327B70(Character *c) {
     cr19_root_move(c);
     if (c->a.disabled != 0) {
         c->a.active = 0;
-        func_00127060(c);
+        Character_ReleasePath(c);
         return;
     }
     if (++AT(k, 0x40, s16) == 0x41 && AT(k, 0x6C, u8) == 0) {
         AT(k, 0x6C, u8)++;
-        func_00122C20(&c->a, 0xA, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 0xA, 5, 0, 0, NULL);
     }
     if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
         c->a.active = 0;
-        func_00127060(c);
+        Character_ReleasePath(c);
     }
     f = AT(k, 0x71, u8);
     if (f < 10) {
@@ -3917,7 +3917,7 @@ void func_00327DD0(Character *c) {
             }
             Mtx_AtHeading(m, gCharPlayer->a.pos, h);
             func_002E2DD0(at, m, off);
-            tri = func_00123D20(&gCharPlayer->a, at);
+            tri = Actor_TriOf(&gCharPlayer->a, at);
             if (tri == NAV_NONE) {
                 return;
             }
@@ -3929,20 +3929,20 @@ void func_00327DD0(Character *c) {
             }
         }
         AT(c, 0xF8, s32) = 8;
-        if (func_001274E0(c, cr19_stride(c)) != 0) {
+        if (Character_FollowWaypointsBlocked(c, cr19_stride(c)) != 0) {
             Progress_Noise(gProgress, c->a.pos, 1, 0xC, 0, 0, 0.0f);
             return;
         }
         if (AT(gCharPlayer, 0xF8, s32) != 4 || AT(gCharPlayer, 0xFC, s32) != 0x12) {
             return;
         }
-        AT(c, 0x10C, f32) = func_001244D0(&c->a, gCharPlayer->a.pos);
-        func_00124530(&c->a, AT(c, 0x10C, f32), 0.0f);
+        AT(c, 0x10C, f32) = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
+        Actor_TurnToward(&c->a, AT(c, 0x10C, f32), 0.0f);
         h = func_002E2D00(AT(c, 0x10C, f32));
         c->a.angle[1] = h;
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
-        func_00122C20(&c->a, 8, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 8, 5, 0, 0, NULL);
         func_002DDED0(c->motion, 0x1900, -1);
         AT(k, 0x60, u8)++;
         return;
@@ -3951,17 +3951,17 @@ void func_00327DD0(Character *c) {
         if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
             return;
         }
-        func_00122C20(&c->a, 9, 5, 0, 0, NULL);
-        func_00122C20(&c->a, 4, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 9, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 4, 5, 0, 0, NULL);
         func_002DDED0(c->motion, 0x1901, -1);
         AT(k, 0x60, u8)++;
         return;
     case 2:
         if (++AT(k, 0x40, s16) % 35 == 0) {
-            func_00122C20(&c->a, 9, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 9, 5, 0, 0, NULL);
         }
         if (AT(k, 0x40, s16) % 70 == 0) {
-            func_00122C20(&c->a, 4, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 4, 5, 0, 0, NULL);
         }
         if (AT(gCharPlayer, 0xF8, s32) == 4 && AT(gCharPlayer, 0xFC, s32) == 0x12) {
             return;
@@ -3981,7 +3981,7 @@ void func_00327DD0(Character *c) {
         AT(k, 0x69, u8) = 4;
         AT(k, 0x6B, u8) |= 0x80;
         AT(c, 0xF8, s32) = 4;
-        func_00127060(c);
+        Character_ReleasePath(c);
         cr19_settle(c);
         return;
     }
@@ -4008,10 +4008,10 @@ void func_003284F0(Character *c) {
             h = AT(c, 0x14FC, f32);
             break;
         case 1:
-            h = func_001244D0(&c->a, gCharPartner->a.pos);
+            h = Actor_HeadingTo(&c->a, gCharPartner->a.pos);
             break;
         case 0:
-            h = func_001244D0(&c->a, gCharPlayer->a.pos);
+            h = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
             break;
         }
         if (CR19_TURN_LEFT(c, h) < 0x1.921fb6p+0f) {
@@ -4019,7 +4019,7 @@ void func_003284F0(Character *c) {
         } else {
             func_002DDED0(c->motion, 0x1000, -1);
         }
-        func_00122C20(&c->a, 3, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 3, 5, 0, 0, NULL);
         AT(k, 0x60, u8)++;
         return;
     case 1: {
@@ -4033,12 +4033,12 @@ void func_003284F0(Character *c) {
         z[2] = 0.0f;
         z[1] = 0.0f;
         z[0] = 0.0f;
-        func_001247E0(&c->a, z);
+        Actor_Move(&c->a, z);
         if (AT(c, 0x14C8, s32) <= 0) {
             AT(k, 0x69, u8) = 4;
             AT(k, 0x6B, u8) |= 0x80;
             AT(c, 0xF8, s32) = 4;
-            func_00127060(c);
+            Character_ReleasePath(c);
             cr19_settle(c);
             return;
         }
@@ -4055,7 +4055,7 @@ void func_003284F0(Character *c) {
         return;
     case 3:
         if (++AT(k, 0x40, s16) == 0x22) {
-            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 5, 5, 0, 0, NULL);
         }
         if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
             return;
@@ -4076,14 +4076,14 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
     cr19_root_move(c);
     func_0032B080(c, gCharPlayer->a.pos);
     if (sound && AT(k, 0x40, s16) % 44 == 0) {
-        func_00122C20(&c->a, 2, 5, 0, 0, NULL);
+        Actor_PlaySound(&c->a, 2, 5, 0, 0, NULL);
     }
     AT(k, 0x40, s16)++;
     if (Progress_TestFlag(gProgress, 9) != 0) {
         if ((u32)AT(k, 0x40, s16) % 150 == 0) {
             AT(k, 0x69, u8) = 9;
             AT(c, 0xF8, s32) = 2;
-            func_00127060(c);
+            Character_ReleasePath(c);
             cr19_settle(c);
         }
         return;
@@ -4092,12 +4092,12 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
         if ((u32)AT(k, 0x40, s16) % 150 == 0) {
             AT(k, 0x69, u8) = 0xC;
             AT(c, 0xF8, s32) = 2;
-            func_00127060(c);
+            Character_ReleasePath(c);
             cr19_settle(c);
         }
         return;
     }
-    if (!(func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
+    if (!(Actor_CanWalkBetween(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
         if ((u32)AT(k, 0x40, s16) % 150 == 0) {
             cr19_enter(c, 0x10);
         }
@@ -4118,7 +4118,7 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
         }
     }
     AT(c, 0xF8, s32) = 0;
-    func_00127060(c);
+    Character_ReleasePath(c);
     cr19_settle(c);
 }
 
@@ -4140,7 +4140,7 @@ void func_0032AA50(Character *c) {
     room = c->a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         if (c->a.navTri == NAV_NONE) {
-            func_00124890(&c->a, AT(k, 0x0, s32));
+            Actor_TeleportRandom(&c->a, AT(k, 0x0, s32));
             AT(k, 0x69, u8) = 0;
             AT(k, 0x62, u8) = 0;
         }
@@ -4200,7 +4200,7 @@ void func_0032C000(Character *c) {
 
 /* turn toward `at` (+0x10C) unless its model is busy (+0x550 > 0): the turn's phase +0x10
    restarts at 34 degrees (+0x18 4), a step of 14 degrees x sin(phase) (the model's +0x1C its
-   rate) and its sway +0x14 grows by 14 x that; once the turn is done (func_00124530 0) the
+   rate) and its sway +0x14 grows by 14 x that; once the turn is done (Actor_TurnToward 0) the
    phase mirrors past 90 and +0x18 is 8. (At 180 and over - never, as it restarts - it would
    snap to the heading.) */
 void func_0032B080(Character *c, f32 *at) {
@@ -4208,7 +4208,7 @@ void func_0032B080(Character *c, f32 *at) {
     u8 *k = CR(c);
     f32 s, r, h, ph;
 
-    AT(c, 0x10C, f32) = func_001244D0(&c->a, at);
+    AT(c, 0x10C, f32) = Actor_HeadingTo(&c->a, at);
     if (!(AT(c->motion, 0x550, f32) <= 0.0f)) {
         return;
     }
@@ -4219,7 +4219,7 @@ void func_0032B080(Character *c, f32 *at) {
     AT(k, 0x10, f32) = ph;
     s = func_0031C248(kPi.f * ph / 180.0f);
     AT(AT(c->motion, 0x6A4, u8 *), 0x1C, f32) = s;
-    r = func_00124530(&c->a, AT(c, 0x10C, f32), s * k14deg.f);
+    r = Actor_TurnToward(&c->a, AT(c, 0x10C, f32), s * k14deg.f);
     AT(k, 0x14, f32) = 0.0f + AT(k, 0x14, f32) + 14.0f * s;
     if (AT(k, 0x10, f32) < 180.0f) {
         if (0.0f == r) {
@@ -4243,12 +4243,12 @@ s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
     u8 *k = CR(c);
     Character *h;
 
-    if (func_00124480(&c->a, gCharPlayer->a.pos, NAV_NONE) == gCharPlayer->a.navTri && fiona <= (f32)AT(k, 0x48, s16)) {
+    if (Actor_TriTo(&c->a, gCharPlayer->a.pos, NAV_NONE) == gCharPlayer->a.navTri && fiona <= (f32)AT(k, 0x48, s16)) {
         return 1;
     }
     h = gCharPartner;
     if (h != NULL && h->a.active == 1 && c->a.room == h->a.room && !(hewie < 0.0f) &&
-        func_00124480(&c->a, gCharPartner->a.pos, NAV_NONE) == gCharPartner->a.navTri && hewie <= 30.0f) {
+        Actor_TriTo(&c->a, gCharPartner->a.pos, NAV_NONE) == gCharPartner->a.navTri && hewie <= 30.0f) {
         return 1;
     }
     if (AT(c, 0xF8, s32) != 4 && AT(c, 0x14E8, s32) == 4) {
@@ -4278,10 +4278,10 @@ void func_0032AF00(Character *c) {
     right = func_002DD420(c->motion, r, 0, 0.0f, 1.0f);
     if (AT(c->motion, 0x55C, s32) == 0x200) {
         if (right == 1 && AT(k, 0x73, u8) == 0) {
-            func_00122C20(&c->a, 6, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 6, 5, 0, 0, NULL);
         }
         if (left == 1 && AT(k, 0x72, u8) == 0) {
-            func_00122C20(&c->a, 7, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 7, 5, 0, 0, NULL);
         }
     }
     AT(k, 0x72, u8) = left;
@@ -4379,7 +4379,7 @@ void func_0032A260(Character *c) {
                 if ((func_0032A0E0(c, AT(k, 0x24, f32), hd) & 0xFF) == 1 && AT(k, 0x6F, u8) == 0) {
                     u32 kk;
 
-                    func_00122C20(&c->a, 1, 5, 0, 0, NULL);
+                    Actor_PlaySound(&c->a, 1, 5, 0, 0, NULL);
                     AT(k, 0x6F, u8) = 1;
                     AT(k, 0x69, u8) = 0xD;
                     kk = AT(k, 0x6D, u8) ^ 0x80;
@@ -4387,7 +4387,7 @@ void func_0032A260(Character *c) {
                         AT(k, 0x69, u8) = 0xE;
                     }
                     AT(c, 0xF8, s32) = 0;
-                    func_00127060(c);
+                    Character_ReleasePath(c);
                     cr19_settle(c);
                 }
             } else {
@@ -4503,7 +4503,7 @@ extern void func_002E2310(Character *c);
 /* head for exit `exit` (+0x67 its door): in the room being played, its closed ways forgotten;
    a path to the exit's spot (+0x34; 0xFF: none) or else the first open door's (+0x70 0 once
    one is planned, +0x61 1 for the exit's own). With the exit seen from Fiona's spot
-   (func_00123C60) the door is noted and its state 0. Without a plan, straight to the exit's
+   (Actor_NearerRoom) the door is noted and its state 0. Without a plan, straight to the exit's
    spot when that works. On its way (+0x61) it keeps the next door (+0x14C0) and drops back
    onto its plan when that is no further from the door than it is */
 void func_0032AAF0(Character *c, u32 exit) {
@@ -4555,7 +4555,7 @@ void func_0032AAF0(Character *c, u32 exit) {
     if (AT(k, 0x70, u8) == 1) {
         return;
     }
-    if (e != 0xFF && (func_00123C60(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+    if (e != 0xFF && (Actor_NearerRoom(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
         VCALL(rooms, 0x14, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
         AT(k, 0x8, s32) = 0;
         return;
@@ -4563,13 +4563,13 @@ void func_0032AAF0(Character *c, u32 exit) {
     if (AT(k, 0x61, u8) == 0) {
         u32 tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, exit, b);
 
-        if (func_00127140(c, 0, tri, b) > 0) {
+        if (Character_PlanPathKind(c, 0, tri, b) > 0) {
             sceVu0CopyVector(at, b);
-            if (func_001270A0(c) > 0) {
+            if (Character_Waypoints(c) > 0) {
                 AT(k, 0x61, u8) = 1;
             }
         }
-        func_00127060(c);
+        Character_ReleasePath(c);
     }
     if (AT(k, 0x61, u8) != 1) {
         return;
@@ -4590,7 +4590,7 @@ void func_0032AAF0(Character *c, u32 exit) {
             return;
         }
     }
-    if (func_00124480(&c->a, door, c->pathReq->mask) == NAV_NONE) {
+    if (Actor_TriTo(&c->a, door, c->pathReq->mask) == NAV_NONE) {
         return;
     }
     c->unk124 = c->unk128;
@@ -4821,7 +4821,7 @@ void func_0032B210(Character *c, u8 st) {
 static inline void cr19_enter_move(Character *c, u8 st, s32 move) {
     AT(CR(c), 0x69, u8) = st;
     AT(c, 0xF8, s32) = move;
-    func_00127060(c);
+    Character_ReleasePath(c);
     cr19_settle(c);
 }
 
@@ -4907,13 +4907,13 @@ void func_00329440(Character *c) {
                 return;
             }
             if (func_003255C0(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
-                if (!(func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
+                if (!(Actor_CanWalkBetween(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
                     cr19_enter(c, 0x10);
                 }
                 return;
             }
         }
-        func_001274E0(c, cr19_stride(c));
+        Character_FollowWaypointsBlocked(c, cr19_stride(c));
     }
     if (AT(k, 0x24, f32) < 40.0f || !(AT(k, 0x24, f32) <= 80.0f)) {
         return;
@@ -4931,7 +4931,7 @@ void func_00329440(Character *c) {
         }
     }
     AT(c, 0xF8, s32) = 0;
-    func_00127060(c);
+    Character_ReleasePath(c);
     cr19_settle(c);
 }
 

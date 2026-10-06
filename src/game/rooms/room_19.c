@@ -92,5 +92,5 @@ s32 Room19_Cond00(void) {
     if (AT(s, 0x30, s32) != VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g)) {
         return 1;
     }
-    return !(func_00124490(&s->a, p->a.pos) < 30.0f);
+    return !(Actor_Distance(&s->a, p->a.pos) < 30.0f);
 }

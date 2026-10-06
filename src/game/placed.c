@@ -80,7 +80,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -156,7 +156,7 @@ void *func_002D6B00(u8 *m, u32 kind) {
     if (mem == NULL) {
         return NULL;
     }
-    t = func_00121370(0x140, mem);
+    t = ActorPool_new(0x140, mem);
     if (t != NULL) {
         AT(t, 0x0, void **) = D_00469C20;
         AT(t, 0x20, u32) = kind;
@@ -173,7 +173,7 @@ void *func_002D6F60(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -389,7 +389,7 @@ void *func_002D5F40(u8 *b, s32 flags) {
         AT(b, 0x0, void **) = D_00469A00;
         AT(b, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(b);
+            ActorPool_delete(b);
         }
     }
     return b;
@@ -507,7 +507,7 @@ void func_002D54D0(u8 *b) {
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0((Actor *)b, v);
+    Actor_Move((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -625,7 +625,7 @@ landed:
     AT(b, 0x34, u32) = tri;
     sceVu0CopyVector(BALL_POS(b), out);
     if (bounced) {
-        func_00122C20((Actor *)b, 0x7C, 5, 0, 0, NULL);
+        Actor_PlaySound((Actor *)b, 0x7C, 5, 0, 0, NULL);
     }
 }
 
@@ -890,7 +890,7 @@ void *func_00314990(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -914,7 +914,7 @@ static inline void drop_splash(u8 *o, f32 *at, s32 r, s32 g, s32 b, f32 size) {
     sp.pos[2] = at[2];
     sp.size = size;
     func_002D6090(mgr, slot, &sp);
-    func_00122C20((Actor *)o, 0x8D, 5, 0, 0, NULL);
+    Actor_PlaySound((Actor *)o, 0x8D, 5, 0, 0, NULL);
 }
 
 /* burst at `at`: a purple drop splash (size 1) and its sound */
@@ -1146,7 +1146,7 @@ void *func_00315540(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1192,7 +1192,7 @@ void *func_003156A0(u8 *o, s32 flags) {
 static inline __attribute__((always_inline)) void kind2_burst(u8 *o, u32 size, void (*init)(void **)) {
     u8 *mgr;
 
-    func_00122C20((Actor *)o, 0x8E, 5, 0, 0, NULL);
+    Actor_PlaySound((Actor *)o, 0x8E, 5, 0, 0, NULL);
     mgr = gEffects;
     func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
 }
@@ -1239,7 +1239,7 @@ static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, v
         func_00354AF0(o);
         return;
     }
-    func_00122C20((Actor *)o, 0x8E, 5, 0, 0, NULL);
+    Actor_PlaySound((Actor *)o, 0x8E, 5, 0, 0, NULL);
     if (b != 0) {
         func_00354C90(o);
     }
@@ -1330,7 +1330,7 @@ void *func_003671B0(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1348,7 +1348,7 @@ void func_003674C0(u8 *b) {
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0((Actor *)b, v);
+    Actor_Move((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -1384,7 +1384,7 @@ void *func_00367E20(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1405,7 +1405,7 @@ static inline __attribute__((always_inline)) void ball_roll(u8 *b, s32 check) {
     if (check && AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0((Actor *)b, v);
+    Actor_Move((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -1459,7 +1459,7 @@ void *func_00333240(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1492,7 +1492,7 @@ void *func_00334560(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1592,7 +1592,7 @@ void *func_00335100(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1606,7 +1606,7 @@ void *func_003356C0(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1620,7 +1620,7 @@ void *func_00335C80(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -1633,7 +1633,7 @@ void *func_00336220(void *o, s32 flags) {
         AT(o, 0x0, void **) = D_00469A00;
         AT(o, 0x0, void **) = D_00469C20;
         if ((s16)flags > 0) {
-            func_00121360(o);
+            ActorPool_delete(o);
         }
     }
     return o;
@@ -2224,7 +2224,7 @@ void BurstA_SetParams(u8 *o, f32 *arg) {
         AT(o, 0xF68 + i * 0x10, f32) = i & 2 ? 2.0f : -2.0f;
         AT(o, 0xF6C + i * 0x10, f32) = 1.0f;
     }
-    tri = func_00123D20((Actor *)gCharPlayer, p);
+    tri = Actor_TriOf((Actor *)gCharPlayer, p);
     if (tri == (u32)-1) {
         return;
     }
@@ -2394,7 +2394,7 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, b->puffVel + 4 + i * 0xC, f32);
         AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, b->puffVel + 8 + i * 0xC, f32);
         AT(o, b->puffVel + 4 + i * 0xC, f32) = AT(o, b->puffVel + 4 + i * 0xC, f32) - AT(o, b->puffRate + i * 4, f32);
-        tri = func_00123D20((Actor *)gCharPlayer, (f32 *)(r + 0x10));
+        tri = Actor_TriOf((Actor *)gCharPlayer, (f32 *)(r + 0x10));
         sceVu0CopyVector(g, (f32 *)(r + 0x10));
         VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
         if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
@@ -2734,7 +2734,7 @@ void BurstB_SetParams(u8 *o, f32 *arg) {
             AT(corners, k * 0x10 + 8, f32) = k & 2 ? 2.0f : -2.0f;
             AT(corners, k * 0x10 + 0xC, f32) = 1.0f;
         }
-        tri = func_00123D20((Actor *)gCharPlayer, q);
+        tri = Actor_TriOf((Actor *)gCharPlayer, q);
         if (tri == (u32)-1) {
             continue;
         }
@@ -2841,7 +2841,7 @@ void func_003332B0(u8 *o) {
     if (!(func_002187D0((Pursuer *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
         return;
     }
-    if (func_001257B0((Character *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
+    if (Character_PathLength((Character *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
         return;
     }
     if (AT(s, 0x16C9, u8) != 4) {
@@ -2853,7 +2853,7 @@ void func_003332B0(u8 *o) {
     }
     VCALL(s, 0xAC, void (*)(void *, u32, f32 *, s32))(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1);
     func_0027E5A0((Pursuer *)s, AT(o, 0x34, u32));
-    if (func_00124490((Actor *)o, (f32 *)(s + 0x10)) < 10.0f) {
+    if (Actor_Distance((Actor *)o, (f32 *)(s + 0x10)) < 10.0f) {
         AT(o, 0x28, u8) = 0;
         return;
     }
@@ -3078,7 +3078,7 @@ void func_003546B0(u8 *o) {
         act.a = 1;
         act.b = 0xFF;
         act.c = AT(o, 0x126, u16);
-        act.e = func_001244D0((Actor *)c, (f32 *)(o + 0x10));
+        act.e = Actor_HeadingTo((Actor *)c, (f32 *)(o + 0x10));
         act.f = 0;
         act.g = 0;
         act.h = 0;
@@ -3338,7 +3338,7 @@ void func_00335DE0(u8 *o) {
     if (AT(o, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         u8 *mgr;
 
-        func_00122C20((Actor *)o, 0, 5, 0, 0, NULL);
+        Actor_PlaySound((Actor *)o, 0, 5, 0, 0, NULL);
         tri = AT(o, 0x34, u32);
         rooms = gRooms;
         for (d = 0; d < 8; d = (d + 1) & 0xFF) {
@@ -3369,8 +3369,8 @@ void func_00335DE0(u8 *o) {
         if ((Progress_DoorOpen(p, door) & 0xFF) == 1) {
             f32 at[4] __attribute__((aligned(16)));
 
-            if ((func_00122B50((Actor *)o, at) & 0xFF) == 1) {
-                func_00122C20((Actor *)o, 0, 5, 0, 0, at);
+            if ((Actor_PosInCurrentRoom((Actor *)o, at) & 0xFF) == 1) {
+                Actor_PlaySound((Actor *)o, 0, 5, 0, 0, at);
             }
         }
     }
@@ -3498,7 +3498,7 @@ landed:
     AT(b, 0x34, u32) = tri;
     sceVu0CopyVector(BALL_POS(b), out);
     if (bounced && AT(b, 0x13E, u16) == 0) {
-        func_00122C20((Actor *)b, 0x7C, 5, 0, 0, NULL);
+        Actor_PlaySound((Actor *)b, 0x7C, 5, 0, 0, NULL);
     }
 }
 
@@ -3589,7 +3589,7 @@ s32 ThingPuff_Update(u8 *o) {
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + v[1];
         AT(r, 0x18, f32) = AT(r, 0x18, f32) + v[2];
         v[1] = v[1] - AT(o, 0x748 + i * 4, f32);
-        tri = func_00123D20((Actor *)gCharPlayer, (f32 *)(r + 0x10));
+        tri = Actor_TriOf((Actor *)gCharPlayer, (f32 *)(r + 0x10));
         sceVu0CopyVector(g, (f32 *)(r + 0x10));
         VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
         if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {

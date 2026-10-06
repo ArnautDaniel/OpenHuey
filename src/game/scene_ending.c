@@ -644,7 +644,7 @@ void SceneEnding_SeqResults(SceneEnding *s) {
 }
 
 /* the record's DOG LEVEL (0 A .. 4 E): +0xFFC, less +0xFFE in bands of 20, plus +0x1000 in
- * bands of 10 (the two Hewie values the game scene keeps at the ending, func_0039E380) */
+ * bands of 10 (the two Hewie values the game scene keeps at the ending, SceneGame_SubTransition) */
 static inline s32 ending_dog_level(u8 *st) {
     s16 saves = AT(st, 0xFFE, s16), escapes = AT(st, 0x1000, s16);
     s16 a, b;

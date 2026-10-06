@@ -201,7 +201,7 @@ s32 EventCond_Eval(VObject *ev) {
         u8 *b = cond_char(p, PC(ev)[2]);
 
         if (a != NULL && b != NULL &&
-            (u8)func_001241F0((Actor *)a, (Actor *)b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
+            (u8)Actor_Touching((Actor *)a, (Actor *)b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
             f32 ang = func_0031C5C0(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
             f32 d;
 
@@ -657,7 +657,7 @@ s32 EventCond_Eval(VObject *ev) {
 
             if (c != NULL && AT(c, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
                 AT(c, 0x2A, u8) == 0) {
-                r = func_001241F0((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+                r = Actor_Touching((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
             }
         }
         break;
@@ -715,10 +715,10 @@ s32 EventCond_Eval(VObject *ev) {
         r = VCALL(gCamera, 0xD4, s32 (*)(VObject *, f32 *))(gCamera, v);
         break;
     }
-    case 0x50: {   /* character pc[1] (in the scene, this room): func_001235C0 */
+    case 0x50: {   /* character pc[1] (in the scene, this room): Actor_TriFreeFor */
         u8 *c = cond_char(p, pc[1]);
 
-        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) && (u8)func_001235C0(c, (Actor *)c) == 1) {
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) && (u8)Actor_TriFreeFor(c, (Actor *)c) == 1) {
             r = 1;
         }
         break;
@@ -788,10 +788,10 @@ s32 EventCond_Eval(VObject *ev) {
         c1 = cond_char(p, PC(ev)[1]);
         c2 = cond_char(p, PC(ev)[2]);
         if (i1 < 2 && i2 >= 2 && i2 < 6) {
-            if (c1 != NULL && c2 != NULL && AT(c2, 0x1544, u8) == 1 && func_00124490((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
+            if (c1 != NULL && c2 != NULL && AT(c2, 0x1544, u8) == 1 && Actor_Distance((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
                 r = 1;
             }
-        } else if (c1 != NULL && c2 != NULL && func_00124490((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
+        } else if (c1 != NULL && c2 != NULL && Actor_Distance((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
             r = 1;
         }
         break;
@@ -826,7 +826,7 @@ s32 EventCond_Eval(VObject *ev) {
                 u8 *c = pl[i];
 
                 if (c != NULL && AT(c, 0x28, u8) == 1 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
-                    (u8)func_001241F0((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
+                    (u8)Actor_Touching((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
                     r = 1;
                     break;
                 }
@@ -834,8 +834,8 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     }
-    case 0x65: {   /* the stalker (in the scene) is in this room and free: not func_00125D80, not in
-                    * action 8 / move 0x18-0x19 or action 4 / move 9-0xA, otherwise func_001235C0 */
+    case 0x65: {   /* the stalker (in the scene) is in this room and free: not Character_Held, not in
+                    * action 8 / move 0x18-0x19 or action 4 / move 9-0xA, otherwise Actor_TriFreeFor */
         u8 *c = (u8 *)gCharPursuer;
 
         if (c != NULL && AT(c, 0x28, u8) == 1) {
@@ -843,7 +843,7 @@ s32 EventCond_Eval(VObject *ev) {
 
             if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room) {
                 r = 1;
-                if ((u8)func_00125D80((Character *)((u8 *)gCharPursuer)) == 1) {
+                if ((u8)Character_Held((Character *)((u8 *)gCharPursuer)) == 1) {
                     r = 0;
                 } else if (AT(gCharPursuer, 0xF8, s32) == 8) {
                     if (AT(gCharPursuer, 0xFC, s32) == 0x18 || AT(gCharPursuer, 0xFC, s32) == 0x19) {
@@ -853,7 +853,7 @@ s32 EventCond_Eval(VObject *ev) {
                     if (AT(gCharPursuer, 0xFC, s32) == 9 || AT(gCharPursuer, 0xFC, s32) == 0xA) {
                         r = 0;
                     }
-                } else if ((u8)func_001235C0((u8 *)gCharPursuer, (Actor *)((u8 *)gCharPursuer)) == 0) {
+                } else if ((u8)Actor_TriFreeFor((u8 *)gCharPursuer, (Actor *)((u8 *)gCharPursuer)) == 0) {
                     r = 0;
                 }
             }

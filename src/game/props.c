@@ -87,16 +87,16 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
 }
 
-/* in play: func_00124890(-1) */
+/* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
     if (func_00217510(p) != 0) {
-        func_00124890(&p->c.a, -1);
+        Actor_TeleportRandom(&p->c.a, -1);
     }
 }
 

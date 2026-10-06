@@ -398,7 +398,7 @@ static inline s32 Pursuer_WalkOn(Pursuer *p) {
                 func_00214620(p, p->c.unk128);
             }
         } else {
-            func_00125A10(&p->c);
+            Character_RootMoveMasked(&p->c);
         }
         return 1;
     }

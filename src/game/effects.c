@@ -110,7 +110,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -238,9 +238,9 @@ void func_002BB280(u8 *o) {
             continue;
         }
         if (AT(o, 0x20 + i * 4, s32) != 0) {
-            func_001267F0(gCharacters[k], group);
-        } else if (func_00126800(gCharacters[k]) == group) {
-            func_001267F0(gCharacters[k], 0xA);
+            Character_Set152C(gCharacters[k], group);
+        } else if (Character_Get152C(gCharacters[k]) == group) {
+            Character_Set152C(gCharacters[k], 0xA);
         }
     }
 }
@@ -1664,13 +1664,13 @@ void func_00317D40(u8 *e) {
             u8 e4;
 
             VCALL(tc, 0x18, void (*)(VObject *))(tc);
-            layer = func_00126800((Character *)c);
-            func_001267F0((Character *)c, 0x17);
+            layer = Character_Get152C((Character *)c);
+            Character_Set152C((Character *)c, 0x17);
             e4 = AT(c, 0xE4, u8);
             AT(c, 0xE4, u8) = 0;
             VCALL(c, 0x2C, void (*)(u8 *))(c);
             drawn = 1;
-            func_001267F0((Character *)c, layer);
+            Character_Set152C((Character *)c, layer);
             AT(c, 0xE4, u8) = e4;
         }
     }
@@ -1681,11 +1681,11 @@ void func_00317D40(u8 *e) {
             s32 layer;
 
             VCALL(tc, 0x18, void (*)(VObject *))(tc);
-            layer = func_00126800((Character *)o);
-            func_001267F0((Character *)o, 0x17);
+            layer = Character_Get152C((Character *)o);
+            Character_Set152C((Character *)o, 0x17);
             VCALL(o, 0x2C, void (*)(u8 *))(o);
             drawn = 1;
-            func_001267F0((Character *)o, layer);
+            Character_Set152C((Character *)o, layer);
         }
     }
     VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &saved);

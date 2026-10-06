@@ -1,4 +1,4 @@
-/* The cutscene director (vtable D_0046ED30, global gCutscene, constructed by func_002D1000).
+/* The cutscene director (vtable D_0046ED30, global gCutscene, constructed by Cutscene_ctor).
  * A cutscene ("name" +0x14) is a script (progress +0x16C0, +0x18 here), a per-frame signal
  * table (progress +0x26C0, +0x1C) and light / effect cues (progress +0x66C0), loaded at the
  * start, then a series of shots streamed in turn into two buffers (progress +0xA6C0 +

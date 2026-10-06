@@ -63,7 +63,7 @@ Pursuer *Riccardo_dtor(Pursuer *p, s32 flags) {
             Pursuer_DestroyBase(p);
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -390,7 +390,7 @@ extern const PTMF D_00415788;
 /* the end of his lunge animation: at threat level 5 it leads straight into attack 5;
    otherwise it ends the step */
 static inline void Riccardo_LungeEnd(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         if (AT(gProgress, 0x7B8, u8) != 5) {
             PURSUER_STEP_DONE(p) = 1;
@@ -451,10 +451,10 @@ void func_002D8AC0(Pursuer *p) {
         PURSUER_STEP_NEXT(p) = 1;
         return;
     }
-    if (!(func_002E2D00(func_001244D0(&p->c.a, t->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-        a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+    if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, t->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+        a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
     } else {
-        a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
     }
     if (!(a <= 0x1.921fb6p+0f /* 90 degrees */)) {
         PURSUER_STEP_DONE(p) = 1;
@@ -474,7 +474,7 @@ static inline void Riccardo_Blow(Pursuer *p) {
     if ((func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
 
-        if (func_00124490(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
+        if (Actor_Distance(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
             Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, AT(e, 0x10, u8), AT(e, 0x12, u16), AT(e, 0x4, s16), AT(e, 0x14, f32));
         }
     }
@@ -484,7 +484,7 @@ static inline void Riccardo_Blow(Pursuer *p) {
         Actor_SetState(&p->c.a, &D_00415758);
         func_002D8AC0(p);
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* state: a blow (see Riccardo_Blow) */
@@ -506,7 +506,7 @@ void func_002DA4C0(Pursuer *p) {
         PU(p, 0x1624, s32) = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         p->c.unk104[0] = 0;
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
         return;
     }
     PU(p, 0x16EC, u8) = 0;
@@ -588,7 +588,7 @@ s32 func_002D8840(Pursuer *p, Character *who) {
     if (who == NULL) {
         who = p->target;
     }
-    d = func_00124490(&p->c.a, who->a.pos);
+    d = Actor_Distance(&p->c.a, who->a.pos);
     any = 10.0f;
     if (d < 10.0f) {
         any = 100.0f;
@@ -663,7 +663,7 @@ void func_002DA120(Pursuer *p) {
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x13);
         PU(p, 0x1728, s32) = 2;
         PU(p, 0x172C, u8) = 0;
-        func_00125A10(&p->c);
+        Character_RootMoveMasked(&p->c);
         return;
     }
     e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
@@ -816,7 +816,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x31));
         func_002E2DA0(out, m, off);
         sceVu0AddVector(out, out, head);
-        tri = func_00124480(&p->c.a, out, 0x20008);
+        tri = Actor_TriTo(&p->c.a, out, 0x20008);
         if (tri == (u32)-1) {
             return 0;
         }
@@ -911,10 +911,10 @@ void func_002D8DF0(Pursuer *p) {
             (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) != 1) {
             goto done;
         }
-        if (!(func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, hewie) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, hewie) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, hewie) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, hewie) - p->c.a.angle[1]);
         }
         if (!(a < 0x1.0c1524p-1f /* 30 degrees */) || !(PU(p, 0x158C, f32) < 30.0f)) {
             goto done;
@@ -925,7 +925,7 @@ void func_002D8DF0(Pursuer *p) {
             u32 k;
 
             if (!(func_00211910(p->c.a.pos, hewie, fiona) <= 4.0f) ||
-                func_00124490(&p->c.a, hewie) < func_00124490(&p->c.a, fiona)) {
+                Actor_Distance(&p->c.a, hewie) < Actor_Distance(&p->c.a, fiona)) {
                 /* Hewie */
                 if ((func_002D8840(p, gCharPartner) & 0xFF) != 0xFF) {
                     Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
@@ -964,7 +964,7 @@ void func_002D8DF0(Pursuer *p) {
     }
     if (p->c.unk100 == -1) {
         Character *t = gCharPartner != NULL ? gCharPartner : p->target;
-        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
@@ -978,14 +978,14 @@ void func_002D8DF0(Pursuer *p) {
         100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         func_0029D410(p, 0x15, 7, 0, 0, NULL);
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 extern const PTMF D_00415738;
 
 /* is `pt` clear of the swing at `at` (not within 4 of the line to it, or no nearer than it) */
 static inline s32 Riccardo_OutOfLine(Pursuer *p, const f32 *at, const f32 *pt) {
-    return !(func_00211910(p->c.a.pos, at, pt) <= 4.0f) || func_00124490(&p->c.a, at) < func_00124490(&p->c.a, pt);
+    return !(func_00211910(p->c.a.pos, at, pt) <= 4.0f) || Actor_Distance(&p->c.a, at) < Actor_Distance(&p->c.a, pt);
 }
 
 /* state: his blow at Fiona. At the hit key he aims (+0x100 bits) if he may go for her, sees her
@@ -1011,10 +1011,10 @@ void func_002D9500(Pursuer *p) {
             !(func_002175B0(&p->c.a, &gCharPlayer->a) & 0xFF)) {
             p->c.unk100 = 0;
         } else {
-            if (!(func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]) <= 0.0f)) {
-                a = func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]);
+            if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, fiona) - p->c.a.angle[1]) <= 0.0f)) {
+                a = func_002E2D00(Actor_HeadingTo(&p->c.a, fiona) - p->c.a.angle[1]);
             } else {
-                a = -func_002E2D00(func_001244D0(&p->c.a, fiona) - p->c.a.angle[1]);
+                a = -func_002E2D00(Actor_HeadingTo(&p->c.a, fiona) - p->c.a.angle[1]);
             }
             if (!(a <= 0x1.0c1524p-1f /* 30 degrees */)) {
                 p->c.unk100 = 0;
@@ -1025,13 +1025,13 @@ void func_002D9500(Pursuer *p) {
                 if (VCALL(gEvents, 0x68, s32 (*)(VObject *, f32 *, f32 *))(gEvents, fiona, obj) != 0) {
                     sceVu0SubVector(d, fiona, obj);
                     d[3] = 0.0f;
-                    if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(func_00124490(&p->c.a, obj) <= 20.0f)) {
+                    if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(Actor_Distance(&p->c.a, obj) <= 20.0f)) {
                         p->c.unk100 |= 1;
                     }
                 }
                 sceVu0SubVector(d, fiona, hewie);
                 d[3] = 0.0f;
-                if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(func_00124490(&p->c.a, hewie) <= 20.0f)) {
+                if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(Actor_Distance(&p->c.a, hewie) <= 20.0f)) {
                     p->c.unk100 |= 2;
                 }
             }
@@ -1044,7 +1044,7 @@ void func_002D9500(Pursuer *p) {
         PU(p, 0x1778, s32) = 0;
     } else if (aim == (u32)-1) {
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
-        f32 h = func_001244D0(&p->c.a, t->a.pos);
+        f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
         func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     } else {
@@ -1052,16 +1052,16 @@ void func_002D9500(Pursuer *p) {
         f32 at[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         if (aim & 1) {
-            u32 tri = func_00124320(&p->c.a, obj, gCharPlayer->a.navTri, fiona, 0);
+            u32 tri = Actor_TriFrom(&p->c.a, obj, gCharPlayer->a.navTri, fiona, 0);
 
             if (tri == (u32)-1) {
-                tri = func_00124480(&p->c.a, obj, 0);
+                tri = Actor_TriTo(&p->c.a, obj, 0);
             }
             if (tri != (u32)-1 && func_002187D0(p, tri, obj) != 0 &&
                 p->c.a.pos[1] - obj[1] < 10.0f && !(p->c.a.pos[1] - obj[1] <= -15.0f) &&
                 Riccardo_OutOfLine(p, obj, fiona) &&
                 (!(func_00211910(p->c.a.pos, obj, hewie) <= 4.0f) ||
-                 func_00124490(&p->c.a, obj) < func_00124490(&p->c.a, hewie) || PU(p, 0x1545, u8) == 0)) {
+                 Actor_Distance(&p->c.a, obj) < Actor_Distance(&p->c.a, hewie) || PU(p, 0x1545, u8) == 0)) {
                 sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), obj);
                 p->c.unk100 = 0;
                 goto end;
@@ -1076,7 +1076,7 @@ void func_002D9500(Pursuer *p) {
             }
             p->c.unk100 = 0;
         } else if (p->c.unk100 & 4) {
-            if (func_00124490(&p->c.a, fiona) < 20.0f && fiona[1] + gCharPlayer->a.height < p->c.a.pos[1] + 5.0f) {
+            if (Actor_Distance(&p->c.a, fiona) < 20.0f && fiona[1] + gCharPlayer->a.height < p->c.a.pos[1] + 5.0f) {
                 /* she's below the swing */
                 if (func_002DBA90(p, at) & 0xFF) {
                     Riccardo_Debris(at);
@@ -1129,7 +1129,7 @@ end:
             func_0029D410(p, 0x23, 7, 0, 0, NULL);
         }
     }
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
 }
 
 /* does Fiona (the target) see him: within 180 degrees of her heading and his sight range */
@@ -1331,17 +1331,17 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
         PU(p, 0x162C, s32) = 0;
         return;
     }
-    near = p->target->moveMode == 3 ? func_00124490(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
+    near = p->target->moveMode == 3 ? Actor_Distance(&p->c.a, p->target->a.pos) : PU(p, 0x1588, f32);
     if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
         return;
     }
     if (near < func_002838E0(p) || near < 10.0f) {
         f32 a;
 
-        if (!(func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
-            a = func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+        if (!(func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
+            a = func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         } else {
-            a = -func_002E2D00(func_001244D0(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
+            a = -func_002E2D00(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
             func_002175B0(&p->c.a, &p->target->a) != 0) {
@@ -1677,5 +1677,5 @@ void Kind37_Setup(Pursuer *p) {
     VCALL(m, 0x2C, void (*)(void *))(m);
     PU(p, 0x17C8, s32) = 0;
     PU(p, 0x17C4, s32) = 0;
-    func_001267F0(&p->c, 0x11);
+    Character_Set152C(&p->c, 0x11);
 }

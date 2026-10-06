@@ -854,7 +854,7 @@ u8 *func_001FB250(u8 *o, s32 flags) {
     }
     AT(o, 0x0, void **) = D_0046B3A0;
     AT(o, 0xC, void **) = D_0046B3B8;
-    func_001002C0(o + 0xBF0, (void * (*)(void *, s32))func_001FB400, 0x30, 0x20);
+    func_001002C0(o + 0xBF0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
     AT(o, 0x938, void **) = D_0046ED30;
     AT(o, 0x938, void **) = D_0046BB20;
     gCutscene = NULL;

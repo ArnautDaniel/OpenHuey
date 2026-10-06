@@ -96,11 +96,11 @@ s32 RoomC2_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991990[i & 0xFF], a, b);
 }
 
-/* byte 3 to the player's func_00124F20 while she's active */
+/* byte 3 to the player's Character_ChooseExit while she's active */
 /* 0x0034A650 */
 s32 RoomC2_Cmd01(void *self, void *a1, u8 *cmd) {
     if (gCharPlayer != NULL && AT(gCharPlayer, 0x28, u8) != 0) {
-        func_00124F20(gCharPlayer, cmd[3]);
+        Character_ChooseExit(gCharPlayer, cmd[3]);
     }
     return 1;
 }

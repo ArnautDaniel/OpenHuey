@@ -141,7 +141,7 @@ s32 Room5C_Cond00(void) {
                 prm.col[2] = 0x30;
             }
             func_002D6090(gEffects, slot, &prm);
-            func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
+            Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
             return 1;
         }
     }

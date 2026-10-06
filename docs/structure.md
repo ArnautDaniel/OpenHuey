@@ -57,12 +57,12 @@ Members (from `SceneGame_ctor`):
 
 ### SceneGame per-frame flow
 
-`SceneGame_StateEntry` -> state `D_0044C7B0` = `func_003A06E0` every frame: frame counter at
-+0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `func_003A04A0`: room
-load, returns 1 while busy), else the gameplay tick `func_003A0160`:
+`SceneGame_StateEntry` -> state `D_0044C7B0` = `SceneGame_StateMain` every frame: frame counter at
++0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `SceneGame_SubStartRoom`: room
+load, returns 1 while busy), else the gameplay tick `SceneGame_RoomIn`:
 
-1. `CamDirector_NewRoom(+0xF6CBB0)`, `Progress_CameraOn(Progress, 0)`, `func_0039D310(game)` (416 insns:
-   events, items, camera? - calls Progress flags, `func_00124F20(gCharPlayer, ...)`)
+1. `CamDirector_NewRoom(+0xF6CBB0)`, `Progress_CameraOn(Progress, 0)`, `SceneGame_EnterRoom(game)` (416 insns:
+   events, items, camera? - calls Progress flags, `Character_ChooseExit(gCharPlayer, ...)`)
 2. **characters**: vtable +0x38 (per-frame update) on `gCharacters[0..2]` whose byte +0x28 == 1
 3. `func_002E2650(+0x706480)`, game vtable +0xDC, `Progress_CharRequests(Progress)` (620 insns),
    `CamDirector_RoomStart(+0xF6CBB0, ...)` (camera/collision?)

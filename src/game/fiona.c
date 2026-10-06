@@ -128,7 +128,7 @@ extern void func_00184BF0(Fiona *f);
 s32 Fiona_PlaceInRoom(Fiona *f, s32 room, u32 tri, s32 arg3) {
     s32 r;
 
-    func_00125BA0(&f->c, room, arg3, tri);
+    Character_ToRoom(&f->c, room, arg3, tri);
     r = VCALL(f, 0x28, s32 (*)(Fiona *, u32, const f32 *, f32 *))(f, tri, NULL, NULL);
     Fiona_ToIdle(f);
     return r;
@@ -684,9 +684,9 @@ void Fiona_Think(Fiona *f) {
     VCALL(f, 0x40, void (*)(Fiona *))(f);
     near = 0;
     veryNear = 0;
-    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && Actor_Distance(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
         near = 1;
-        if (func_00124490(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
+        if (Actor_Distance(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
             veryNear = 1;
         }
     }
@@ -815,12 +815,12 @@ extern const PTMF D_003B27F8;
 /* State: turn on the spot toward the stick direction (+0x1AD570) by 10 degrees a frame;
  * back to idle if it no longer matches +0x1AD550 (dot <= 0.6). */
 void func_00199ED0(Fiona *f) {
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if (sceVu0InnerProduct((f32 *)((u8 *)f + 0x1AD570), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */) {
         Fiona_ToIdle(f);
         return;
     }
-    if (func_00124530(&f->c.a, func_0031C5C0(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
+    if (Actor_TurnToward(&f->c.a, func_0031C5C0(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
                       0x1.657186p-3f /* 10 deg */) == 0.0f) {
         func_002DDD20(f->c.motion, 0x1200, -1);
         Actor_SetState(&f->c.a, &D_003B27F8);
@@ -842,10 +842,10 @@ void func_001998F0(Fiona *f) {
 
     blocked = 0;
     if (!(FI(f, 0x1AD584, s32) & 0x2)) {
-        if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+        if (FI(f, 0x1AD5D7, u8) == 1 && (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
             blocked = 1;
         } else {
-            func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
+            Actor_Touching(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
         }
     } else {
         blocked = 1;
@@ -854,7 +854,7 @@ void func_001998F0(Fiona *f) {
         Fiona_ToIdle(f);
         return;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if (sceVu0InnerProduct(FIONA_STICK(f), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */) {
         /* stick released: let go once the animation has stopped */
         m = f->c.motion;
@@ -897,7 +897,7 @@ void func_001998F0(Fiona *f) {
         VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
         func_002DDE20(f->c.motion, 0x1201, -1);
         VCALL(objs, 0x28, void (*)(VObject *, s32, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), 0, FIONA_STICK(f));
-        func_00122C20(&f->c.a, 0x45, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x45, 5, 0, 0, NULL);
         Actor_SetState(&f->c.a, &D_003B2818);
     }
 }
@@ -910,10 +910,10 @@ static inline s32 Fiona_PushBlocked(Fiona *f) {
     if (FI(f, 0x1AD584, s32) & 0x2) {
         return 1;
     }
-    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
         return 1;
     }
-    func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
+    Actor_Touching(&f->c.a, &gCharPartner->a, 0.0f, 0.0f);   /* (result unused) */
     return 0;
 }
 
@@ -926,7 +926,7 @@ void func_001991E0(Fiona *f) {
         Fiona_ToIdle(f);
         return;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     m = f->c.motion;
     anim = *(s32 *)((u8 *)m + 0x55C);
     if ((*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18) & 0x20) != 0) {
@@ -948,7 +948,7 @@ void func_001991E0(Fiona *f) {
                 v[2] = 0x1.19999ap+1f;   /* 2.2 */
                 sceVu0ApplyMatrix(v, f->c.a.rot, v);
                 sceVu0AddVector(target, f->c.a.prevPos, v);
-                tri = func_00124480(&f->c.a, target, 0);
+                tri = Actor_TriTo(&f->c.a, target, 0);
                 if (tri != NAV_NONE && (NavMesh_Tri(gNavMesh, tri)->flags & NAV_PUSHABLE)) {
                     ok = 0;
                 }
@@ -1035,7 +1035,7 @@ void Fiona_Vt38(Fiona *f) {
         }
     }
     if (!ok) {
-        func_00124890(&f->c.a, VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, f->c.a.room, f->c.door, 0));
+        Actor_TeleportRandom(&f->c.a, VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, f->c.a.room, f->c.door, 0));
     }
     VCALL(gEvents, 0x2C, void (*)(VObject *, Fiona *))(gEvents, f);
     if (f->c.a.navTri == NAV_NONE) {
@@ -1047,11 +1047,11 @@ void Fiona_Vt38(Fiona *f) {
     {
         sceVu0FVECTOR v;
 
-        if (func_00122B50(&f->c.a, v)) {
-            func_001264C0(&f->c, 3, (s32)v, 0, 0, 0);
+        if (Actor_PosInCurrentRoom(&f->c.a, v)) {
+            Character_Sound(&f->c, 3, (s32)v, 0, 0, 0);
         }
     }
-    func_00126270(&f->c);
+    Character_MarkObjects(&f->c);
     if (*((u8 *)p + 0x7B8) == 5) {
         FI(f, 0x1AD71C, s32) = 0;
         f->c.moveMode = 0xA;
@@ -1100,8 +1100,8 @@ void Fiona_Vt38(Fiona *f) {
         if (step < 0.0f) {
             step = 0.0f;
         }
-        func_001273D0(&f->c, &tri, back, step);
-        func_001273D0(&f->c, &f->c.a.navTri, f->c.a.pos, FI(f, 0x1AD73C, f32));
+        Character_WaypointAhead(&f->c, &tri, back, step);
+        Character_WaypointAhead(&f->c, &f->c.a.navTri, f->c.a.pos, FI(f, 0x1AD73C, f32));
         sceVu0SubVector(d, f->c.a.pos, back);
         {
             f32 yaw = func_0031C5C0(d[0], d[2]);
@@ -1151,8 +1151,8 @@ void func_001A1CA0(Fiona *f) {
 
     if (f->unk1AD630 == 1 && FIONA_FADE(f) == 0 && FI(f, 0x1AD5D7, u8) == 1
         && gCharPursuer->a.unkC4 != 2 && !gCharPursuer->unkE0
-        && (func_001241F0(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
-        && !(func_00125D80(&f->c) & 0xFF)) {
+        && (Actor_Touching(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
+        && !(Character_Held(&f->c) & 0xFF)) {
         if (f->c.state[0] != 7) {
             /* grabbed (the original copies a local whose last fields are never set) */
             f->c.state[0] = 4;
@@ -1179,7 +1179,7 @@ void func_001A1860(Fiona *f) {
     s32 room = f->c.a.room;
 
     if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
-        if (func_00124490(&f->c.a, gCharPartner->a.pos) < 50.0f) {
+        if (Actor_Distance(&f->c.a, gCharPartner->a.pos) < 50.0f) {
             FI(f, 0x1AD730, s32) = FI(f, 0x1AD730, s32) - 1;
         } else {
             FI(f, 0x1AD730, s32) = 30;
@@ -1287,9 +1287,9 @@ s32 func_001A12B0(Fiona *f) {
                 sceVu0CopyMatrix(m, o->a.rot);
                 sceVu0ApplyMatrix(v, m, v);
                 sceVu0AddVector(target, o->a.pos, v);
-                tri = func_00124320(&f->c.a, target, o->a.navTri, o->a.pos, NAV_NONE);
-                if (tri != NAV_NONE && f->c.a.navTri == func_00124320(&f->c.a, f->c.a.pos, tri, target, NAV_NONE)
-                    && (func_001235C0(f, &f->c.a) & 0xFF) == 1 && func_00127140(&f->c, 0, tri, target) > 0) {
+                tri = Actor_TriFrom(&f->c.a, target, o->a.navTri, o->a.pos, NAV_NONE);
+                if (tri != NAV_NONE && f->c.a.navTri == Actor_TriFrom(&f->c.a, f->c.a.pos, tri, target, NAV_NONE)
+                    && (Actor_TriFreeFor(f, &f->c.a) & 0xFF) == 1 && Character_PlanPathKind(&f->c, 0, tri, target) > 0) {
                     FI(f, 0x1AD6F0, u32) = tri;
                     FI(f, 0x1AD6F4, f32) = func_002E2D00(turn + o->a.angle[1]);
                     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD700), target);
@@ -1323,8 +1323,8 @@ s32 func_001A12B0(Fiona *f) {
                     }
                     Mtx_AtHeading(m, f->c.a.pos, ang);
                     func_002E2DD0(pt, m, offs);
-                    tri = func_00123D20(&f->c.a, pt);
-                    if (tri != NAV_NONE && tri == func_00124320(&f->c.a, pt, h->a.navTri, h->a.pos, FIONA_NAV_MASK)) {
+                    tri = Actor_TriOf(&f->c.a, pt);
+                    if (tri != NAV_NONE && tri == Actor_TriFrom(&f->c.a, pt, h->a.navTri, h->a.pos, FIONA_NAV_MASK)) {
                         *(f32 *)&h->unk104[2] = ang;
                         h->unk104[0] = tri;
                         *(f32 *)&f->c.unk104[2] = func_002E2D00(F_PI + ang);
@@ -1379,26 +1379,26 @@ void func_0019C210(Fiona *f) {
     if (!(root[2] <= 0.0f)) {
         f32 yaw0 = f->c.a.angle[1];
 
-        func_00124530(&f->c.a, f->savedYaw, (F_PI * (10.0f * root[2])) / 180.0f);
+        Actor_TurnToward(&f->c.a, f->savedYaw, (F_PI * (10.0f * root[2])) / 180.0f);
         *(s32 *)&target[0] = 0;
         *(s32 *)&target[1] = 0;
         target[2] = 4.0f;
         sceVu0ApplyMatrix(probe, f->c.a.rot, target);
         sceVu0AddVector(target, f->c.a.pos, probe);
-        if (func_00124480(&f->c.a, target, NAV_NONE) == NAV_NONE) {
+        if (Actor_TriTo(&f->c.a, target, NAV_NONE) == NAV_NONE) {
             f->c.a.angle[1] = yaw0;
             sceVu0UnitMatrix(f->c.a.rot);
             sceVu0RotMatrixY(f->c.a.rot, f->c.a.rot, yaw0);
         }
     }
-    func_00125900(&f->c);
+    Character_RootTurn(&f->c);
     f->savedYaw = f->c.a.angle[1];
     sceVu0ApplyMatrix(root, f->c.a.rot, root);
     f->c.a.navMask |= 1;
-    func_001247E0(&f->c.a, root);
+    Actor_Move(&f->c.a, root);
     f->c.a.navMask &= ~1;
     sceVu0AddVector(target, f->c.a.pos, probe);
-    if (func_00124480(&f->c.a, target, NAV_NONE) == NAV_NONE) {
+    if (Actor_TriTo(&f->c.a, target, NAV_NONE) == NAV_NONE) {
         f->c.a.navTri = f->c.a.prevNavTri;
         sceVu0CopyVector(f->c.a.pos, f->c.a.prevPos);
     }
@@ -1447,9 +1447,9 @@ void func_0019F1E0(Fiona *f) {
                           FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
                                                     : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
             func_002E2DD0(r, m, r);
-            if (func_00124480(&f->c.a, r, NAV_NONE) == NAV_NONE) {
+            if (Actor_TriTo(&f->c.a, r, NAV_NONE) == NAV_NONE) {
                 /* ran into something while panicking */
-                func_00122C20(&f->c.a, 0x7F, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x7F, 5, 0, 0, NULL);
                 if (FI(f, 0x1AD5EC, s32) == 0) {
                     FI(f, 0x1AD5EC, s32) = 30;
                     if (RNG01() < 0x1.99999ap-3f /* 0.2 */) {
@@ -1496,7 +1496,7 @@ void func_0019F1E0(Fiona *f) {
             gCharPartner->state[6] = 0;
             gCharPartner->state[7] = 0;
         }
-        func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x38, 5, 0, 0, NULL);
         FI(f, 0x1AD5C8, s32) = 60;
         return;
     }
@@ -1561,10 +1561,10 @@ static inline void Fiona_UpdatePresence(Fiona *f) {
 
 /* Touching: 2 = the pursuer, 1 = Hewie, 0 = neither (Hewie is always tested). */
 static inline s32 Fiona_Touching(Fiona *f) {
-    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
         return 2;
     }
-    return (func_001241F0(&f->c.a, &gCharPartner->a, 0.0f, 0.0f) & 0xFF) == 1 ? 1 : 0;
+    return (Actor_Touching(&f->c.a, &gCharPartner->a, 0.0f, 0.0f) & 0xFF) == 1 ? 1 : 0;
 }
 
 /* Should the controller be read this frame? */
@@ -1673,9 +1673,9 @@ void Fiona_Update(Fiona *f) {
     }
     near = 0;
     veryNear = 0;
-    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && Actor_Distance(&f->c.a, gCharPursuer->a.pos) <= 200.0f) {
         near = 1;
-        if (func_00124490(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
+        if (Actor_Distance(&f->c.a, gCharPursuer->a.pos) <= 150.0f) {
             veryNear = 1;
         }
     }
@@ -1787,14 +1787,14 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             rooms = gRooms;
             tgt2 = VCALL(rooms, 0x58, s32 (*)(VObject *, s32, s32, s32))(rooms, f->c.a.room, door, 0);
             side = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, f->c.door, 0);
-            if (func_00126F80(&f->c, target, tgt2, side, -1) != -1
+            if (Character_Route(&f->c, target, tgt2, side, -1) != -1
                 && (Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room) & 0xFF) != 0xFF) {
                 func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1);
             }
         }
         if (through == 1) {
             FIONA_ROUTE0(f) = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, s32))(gRooms, f->c.a.room, door);
-            if ((func_00123C60(&f->c.a, door, gCharPartner->a.pos) & 0xFF) == 1) {
+            if ((Actor_NearerRoom(&f->c.a, door, gCharPartner->a.pos) & 0xFF) == 1) {
                 FI(f, 0x1AD718, u8) = 1;
                 FI(f, 0x1AD6C0, s32) = 0;
             } else {
@@ -1807,7 +1807,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
                 sceVu0SubVector(da, f->c.a.pos, a);
                 sceVu0SubVector(db, b, a);
                 la = sceVu0InnerProduct(da, da);
-                if (la <= sceVu0InnerProduct(db, db) && func_00124480(&f->c.a, a, NAV_NONE) != NAV_NONE) {
+                if (la <= sceVu0InnerProduct(db, db) && Actor_TriTo(&f->c.a, a, NAV_NONE) != NAV_NONE) {
                     FI(f, 0x1AD718, u8) = 1;
                     FI(f, 0x1AD6C0, s32) = 1;
                 }
@@ -1843,7 +1843,7 @@ void Fiona_Requests(Fiona *f) {
             && (f->c.state[1] == 5 || !(NavMesh_Tri(gNavMesh, tri)->flags & FIONA_NAV_MASK))
             && func_00182340(f, f->c.state) == 0) {
             VCALL(f, 0x90, void (*)(Fiona *))(f);
-            func_00124F20(&f->c, 0xFF);
+            Character_ChooseExit(&f->c, 0xFF);
             return;
         }
         f->c.state[0] = 0;
@@ -1864,7 +1864,7 @@ void Fiona_Requests(Fiona *f) {
     switch (f->c.unkF4) {
     case 1:
         VCALL(f, 0x90, void (*)(Fiona *))(f);
-        func_00124F20(&f->c, 0xFF);
+        Character_ChooseExit(&f->c, 0xFF);
         Fiona_ToIdle(f);
         f->c.unkF4 = 0;
         return;
@@ -1950,7 +1950,7 @@ void Fiona_Requests(Fiona *f) {
         if (o != NULL) {
             f->unk1AD580 = 0x16;
             FI(f, 0x1AD5FC, u8) = 0;
-            f->savedYaw = func_001244D0(&f->c.a, o->a.pos);
+            f->savedYaw = Actor_HeadingTo(&f->c.a, o->a.pos);
             Actor_SetState(&f->c.a, &D_003B2758);
         } else {
             f->c.unkE1 = 1;
@@ -1966,12 +1966,12 @@ void Fiona_Requests(Fiona *f) {
         break;
     case 17: {
         /* scripted walk to point unk110 with animation unk104/unk108 */
-        s32 n = func_00127140(&f->c, 0, f->c.unk100, f->c.unk110);
+        s32 n = Character_PlanPathKind(&f->c, 0, f->c.unk100, f->c.unk110);
         s32 frames;
         f32 d, w;
 
         if (n > 0) {
-            n = func_001270F0(&f->c);
+            n = Character_WaypointsCurve(&f->c);
         }
         if (n <= 0) {
             f->c.unkE1 = 1;
@@ -2116,8 +2116,8 @@ void func_001A1FD0(Fiona *f) {
     }
     if (f->unk1AD630 == 1 && FIONA_FADE(f) == 0 && FI(f, 0x1AD5D7, u8) == 1
         && gCharPursuer->a.unkC4 != 2 && gCharPursuer->unkE0 == 0
-        && (func_001241F0(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
-        && !(func_00125D80(&f->c) & 0xFF)) {
+        && (Actor_Touching(&f->c.a, &gCharPursuer->a, 1.0f, 0.0f) & 0xFF) == 1
+        && !(Character_Held(&f->c) & 0xFF)) {
         if (f->c.state[0] != 7) {
             f->c.state[0] = 4;
             f->c.state[1] = 6;
@@ -2276,19 +2276,19 @@ void func_0019C600(Fiona *f) {
         }
     }
 
-    func_00125900(&f->c);
+    Character_RootTurn(&f->c);
     if (f->unk1AD588 == 2) {
         /* accelerating turn toward +0x1AD5E4 */
         FI(f, 0x1AD5B4, f32) = FI(f, 0x1AD5B4, f32) + 0x1.57254ep-10f /* 0x3AAB92A7 */;
         if (!(FI(f, 0x1AD5B4, f32) <= 0x1.aceea0p-5f /* 3 deg */)) {
             FI(f, 0x1AD5B4, f32) = 0x1.aceea0p-5f;
         }
-        if (func_00124530(&f->c.a, FI(f, 0x1AD5E4, f32), FI(f, 0x1AD5B4, f32)) < FI(f, 0x1AD5B4, f32)) {
+        if (Actor_TurnToward(&f->c.a, FI(f, 0x1AD5E4, f32), FI(f, 0x1AD5B4, f32)) < FI(f, 0x1AD5B4, f32)) {
             f->unk1AD588 = 0;
         }
         f->savedYaw = f->c.a.angle[1];
     } else {
-        func_00124530(&f->c.a, f->savedYaw, 0x1.657186p-3f /* 10 deg */);
+        Actor_TurnToward(&f->c.a, f->savedYaw, 0x1.657186p-3f /* 10 deg */);
     }
 
     /* root motion, scaled down when the stick points away from where she faces */
@@ -2304,7 +2304,7 @@ void func_0019C600(Fiona *f) {
     sceVu0ApplyMatrix(dir, m, axis);
     func_0010E640(d, d, ((1.0f + sceVu0InnerProduct(dir, fwd)) / 2.0f) * FI(f, 0x1AD624, f32));
     *(s32 *)&d[3] = 0;
-    func_001247E0(&f->c.a, d);
+    Actor_Move(&f->c.a, d);
     sceVu0SubVector(moved, f->c.a.pos, f->c.a.prevPos);
     if (sceVu0InnerProduct(d, moved) < 0.0f) {
         f->c.a.navTri = f->c.a.prevNavTri;
@@ -2325,9 +2325,9 @@ extern const PTMF D_003B2688;
 /* +0x1AD71C mood request (9 = asked by Hewie's command), +0x1AD720 its argument;
  * +0x1AD724 the period counter of the +0x1AD719 alternation. */
 static inline void Fiona_NudgePeriod(Fiona *f, s32 near, s32 far) {
-    if (func_00124490(&f->c.a, gCharPartner->a.pos) < 50.0f) {
+    if (Actor_Distance(&f->c.a, gCharPartner->a.pos) < 50.0f) {
         FI(f, 0x1AD724, s32) += near;
-    } else if (func_00124490(&f->c.a, gCharPartner->a.pos) < 100.0f) {
+    } else if (Actor_Distance(&f->c.a, gCharPartner->a.pos) < 100.0f) {
         FI(f, 0x1AD724, s32) += far;
     }
 }
@@ -2373,7 +2373,7 @@ void Fiona_StateBlock(Fiona *f) {
         && f->unk1AD580 != 0xF) {
         switch (st[0]) {
         case 9:
-            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+            if (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
                 st[0] = 0;
                 break;
             }
@@ -2390,7 +2390,7 @@ void Fiona_StateBlock(Fiona *f) {
             VObject *rooms;
             sceVu0FVECTOR at;
 
-            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+            if (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
                 st[0] = 0;
                 break;
             }
@@ -2412,7 +2412,7 @@ void Fiona_StateBlock(Fiona *f) {
             break;
         }
         case 3:
-            if (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
+            if (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) {
                 st[0] = 0;
                 break;
             }
@@ -2597,7 +2597,7 @@ static inline s32 Fiona_PostExit(Fiona *f, u32 exit) {
 }
 
 static inline f32 Fiona_Dist(Fiona *f, const f32 *p) {
-    return func_00124490(&f->c.a, p);
+    return Actor_Distance(&f->c.a, p);
 }
 
 /* Mood/flight AI (+0x1AD71C): 0 calm near Hewie, 1 waiting, 2 following Hewie, 3/4 fleeing
@@ -2668,7 +2668,7 @@ void func_0019D4E0(Fiona *f) {
             rooms = gRooms;
             ps = Room_Side(rooms, pr, gCharPursuer->door);
             fs = Room_Side(rooms, f->c.a.room, f->c.door);
-            if (func_00126F80(&f->c, pr, ps, fs, 1) != -1) {
+            if (Character_Route(&f->c, pr, ps, fs, 1) != -1) {
                 found = 1;
                 f->c.unk14C0 = FIONA_ROUTE0(f);
                 FIONA_MOOD(f) = 3;
@@ -3080,7 +3080,7 @@ s32 func_00184700(Fiona *f) {
                 continue;
             }
             tri = c->navTri;
-            if (func_00124480(&f->c.a, c->pos, NAV_NONE) != tri) {
+            if (Actor_TriTo(&f->c.a, c->pos, NAV_NONE) != tri) {
                 continue;
             }
             if (fiona_turn_to(f, func_0031C5C0(d[0], d[2])) < 0x1.921fb60000000p-1f /* 0.7853982 */) {
@@ -3110,7 +3110,7 @@ s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
         if ((u8)Progress_GameMode(gProgress) != 0 || FI_HEWIE_NEAR(f) != 1) {
             return 0x27;
         }
-        d = func_00124490(&f->c.a, (f32 *)((u8 *)gCharPartner + 0x10));
+        d = Actor_Distance(&f->c.a, (f32 *)((u8 *)gCharPartner + 0x10));
         if (!(d < 30.0f)) {
             return 0x27;
         }
@@ -3128,11 +3128,11 @@ s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
             return 0x29;
         }
         h = (u8 *)gCharPartner;
-        if (!(func_00124490(&f->c.a, (f32 *)(h + 0x10)) < 15.0f)) {
+        if (!(Actor_Distance(&f->c.a, (f32 *)(h + 0x10)) < 15.0f)) {
             return 0x29;
         }
         if (AT(h, 0xC4, s32) == 2) {
-            return fiona_turn_to(f, func_001244D0(&f->c.a, (f32 *)(h + 0x10))) < 0x1.0c15240000000p+0f /* 1.0471976 */ ? 0x2A : 0x29;
+            return fiona_turn_to(f, Actor_HeadingTo(&f->c.a, (f32 *)(h + 0x10))) < 0x1.0c15240000000p+0f /* 1.0471976 */ ? 0x2A : 0x29;
         }
         if (who != 0 || AT(h, 0xF35C0, s32) == 3) {
             return 0x29;
@@ -3143,7 +3143,7 @@ s32 func_001848F0(Fiona *f, s32 cmd, s32 state) {
             return 0x2F;
         }
         h = (u8 *)gCharPartner;
-        if (!(func_00124490(&f->c.a, (f32 *)(h + 0x10)) < 15.0f) || AT(h, 0xF35C0, s32) == 3) {
+        if (!(Actor_Distance(&f->c.a, (f32 *)(h + 0x10)) < 15.0f) || AT(h, 0xF35C0, s32) == 3) {
             return 0x2F;
         }
         return 0x2B;
@@ -3581,7 +3581,7 @@ autowalk:
         }
         FI(f, FMOVE_STILL, s32) = 0;
         tri = f->c.a.navTri;
-        func_001273D0(&f->c, &tri, pt, 1.5f);
+        Character_WaypointAhead(&f->c, &tri, pt, 1.5f);
         if (!(FI(f, 0x1AD584, u32) & 2) && FI(f, 0x1AD5D7, u8) == 1 && gCharPursuer->a.unkC4 != 2) {
             s32 near = 0;
             f32 py = f->c.a.pos[1];
@@ -3712,7 +3712,7 @@ void func_0018B600(Fiona *f) {
             func_001855F0(f, -1);
         }
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 #define FLOOK_ON     0x1AD5FC   /* u8: looking at a character */
@@ -3726,14 +3726,14 @@ static s32 fiona_sees(Fiona *f, Character *c, f32 range, f32 *fwd) {
     static const union { u32 u; f32 f; } k06 = {0x3F19999A};
     f32 d[4] __attribute__((aligned(16)));
 
-    if (!(func_00124490(&f->c.a, c->a.pos) < range)) {
+    if (!(Actor_Distance(&f->c.a, c->a.pos) < range)) {
         return 0;
     }
     sceVu0SubVector(d, c->a.pos, f->c.a.pos);
     if (sceVu0InnerProduct(fwd, d) <= k06.f) {
         return 0;
     }
-    return (u8)func_00122C90(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
+    return (u8)Actor_CanWalkBetween(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
 }
 
 /* Fiona's head, each frame: she looks at the pursuer (within 200) or Hewie (within 50) when
@@ -3844,7 +3844,7 @@ void func_00181F20(Fiona *f) {
         switch (AT(f->c.motion, 0x55C, s32)) {
         case 1:
             if (f->c.moveMode == 0xD) {
-                func_00122C20(&f->c.a, 0x39, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x39, 5, 0, 0, NULL);
             }
             break;
         case 0xC0E:
@@ -3860,20 +3860,20 @@ void func_00181F20(Fiona *f) {
                 if (!(u8)Progress_TestFlag(gProgress, 0x25)) {
                     func_00183960(f);
                 } else {
-                    func_00122C20(&f->c.a, 0x33, 5, 0, 0, NULL);
+                    Actor_PlaySound(&f->c.a, 0x33, 5, 0, 0, NULL);
                 }
             }
             break;
         case 0xD01:
         case 0xD00:
-            func_00122C20(&f->c.a, 0x3C, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3C, 5, 0, 0, NULL);
             break;
         case 0xE00: {
             Progress *p = gProgress;
 
             v = Progress_GetVar(p, 0x26) & 0xFF;
             if (v != 7 && v != 6) {
-                func_00122C20(&f->c.a, 0x3C, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x3C, 5, 0, 0, NULL);
             }
             func_002A8440((u8 *)p + 0x778, 0x1F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
@@ -3883,7 +3883,7 @@ void func_00181F20(Fiona *f) {
     if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 0x10) {
         switch (AT(f->c.motion, 0x55C, s32)) {
         case 0x403:
-            func_00122C20(&f->c.a, 0xF, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0xF, 5, 0, 0, NULL);
             break;
         case 0xF02:
         case 0x1404:
@@ -3892,7 +3892,7 @@ void func_00181F20(Fiona *f) {
             func_00181180(f, 0x7D, 5, 0, 0);
             break;
         case 0xB01:
-            func_00122C20(&f->c.a, 0x7E, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x7E, 5, 0, 0, NULL);
             break;
         case 0x100B:
         case 0x1008:
@@ -3901,14 +3901,14 @@ void func_00181F20(Fiona *f) {
             break;
         case 0x609:
         case 0x608:
-            func_00122C20(&f->c.a, 0x71, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x71, 5, 0, 0, NULL);
             break;
         case 0xE00:
             v = Progress_GetVar(gProgress, 0x26) & 0xFF;
             if (v == 6) {
-                func_00122C20(&f->c.a, 0x21, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x21, 5, 0, 0, NULL);
             } else if (v == 7) {
-                func_00122C20(&f->c.a, 0x20, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x20, 5, 0, 0, NULL);
             }
             break;
         }
@@ -3987,12 +3987,12 @@ void func_001869D0(Fiona *f) {
     sceVu0CopyMatrix(m, f->c.a.rot);
     sceVu0CopyVector(m[3], f->c.a.pos);
     func_002E2DD0(foot, m, step == 1 ? left : right);
-    tri = func_00123E20(&f->c.a, foot);
+    tri = Actor_TriOfOnMesh(&f->c.a, foot);
     nm = gNavMesh;
     t = step_tri(nm, tri != (u32)-1 ? tri : f->c.a.navTri);
     room = f->c.a.room;
     if (room == 7 || room == 0xD1 || room == 0x106) {
-        func_00125E10(&f->c, foot, f->c.moveMode == 0 && f->c.moveSub == 2);
+        Character_WaterStep(&f->c, foot, f->c.moveMode == 0 && f->c.moveSub == 2);
     }
 
     flags = (u32)-1;
@@ -4020,12 +4020,12 @@ void func_001869D0(Fiona *f) {
             v[1] = 0.0f;
             v[2] = D_003B247C;
             v[3] = 0.0f;
-            tri = func_00123710(f, f->c.unk100, 0, v, tmp);
-            if (func_00124320(&f->c.a, foot, tri, tmp, 0) == (u32)-1) {
+            tri = Actor_DoorFront(f, f->c.unk100, 0, v, tmp);
+            if (Actor_TriFrom(&f->c.a, foot, tri, tmp, 0) == (u32)-1) {
                 sound = 0x14;
             } else if (id == 0x703) {
                 tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, f->c.unk100, 0, tmp);
-                tri = func_00124320(&f->c.a, foot, tri, tmp, 0);
+                tri = Actor_TriFrom(&f->c.a, foot, tri, tmp, 0);
                 if (tri != (u32)-1) {
                     t = step_tri(nm, tri);
                     flags = t->flags;
@@ -4034,7 +4034,7 @@ void func_001869D0(Fiona *f) {
             break;
         case 7:
             tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, f->c.unk100, 1, tmp);
-            tri = func_00124320(&f->c.a, foot, tri, tmp, 0);
+            tri = Actor_TriFrom(&f->c.a, foot, tri, tmp, 0);
             if (tri != (u32)-1) {
                 t = step_tri(nm, tri);
                 flags = t->flags;
@@ -4043,7 +4043,7 @@ void func_001869D0(Fiona *f) {
         }
     }
     if (sound != -1) {
-        func_00122C20(&f->c.a, sound, 4, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, sound, 4, 0, 0, NULL);
         func_002A8440((u8 *)p + 0x778, 4, f->c.a.room, f->c.a.navTri, 0xFFFF);
         return;
     }
@@ -4086,10 +4086,10 @@ void func_001869D0(Fiona *f) {
     }
     vol = (u32)(2.0f * x) & 0x7F;
     if (gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 0) == 0x80) {
-        func_00122C20(&f->c.a, base, bank, -0x30, (s8)vol, NULL);
+        Actor_PlaySound(&f->c.a, base, bank, -0x30, (s8)vol, NULL);
         noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 5 : 1;
     } else {
-        func_00122C20(&f->c.a, base, bank, 0, (s8)vol, NULL);
+        Actor_PlaySound(&f->c.a, base, bank, 0, (s8)vol, NULL);
         noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 0x14 : 4;
     }
     func_002A8440((u8 *)p + 0x778, noise, f->c.a.room, f->c.a.navTri, 0xFFFF);
@@ -4156,13 +4156,13 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
         }
     }
     push_probe_point(f, -2.0f, reach, at);
-    tri = func_00124480(&f->c.a, at, 0);
+    tri = Actor_TriTo(&f->c.a, at, 0);
     if (tri == NAV_NONE || !(NavMesh_TriFlags(nm, tri) & NAV_PUSHABLE)) {
         return -1;
     }
     a = VCALL(objs, 0x24, u32 (*)(VObject *, u32))(objs, tri);
     push_probe_point(f, 2.0f, reach, at);
-    tri = func_00124480(&f->c.a, at, 0);
+    tri = Actor_TriTo(&f->c.a, at, 0);
     if (tri == NAV_NONE || !(NavMesh_TriFlags(nm, tri) & NAV_PUSHABLE)) {
         return -1;
     }
@@ -4253,7 +4253,7 @@ void func_00188960(Fiona *f) {
     u32 tri;
 
     if (FI(f, 0x1AD5D7, u8) == 1 && AT(pu, 0x2A, u8) == 0 &&
-        (u8)func_001241F0(&f->c.a, (Actor *)pu, 0.0f, 0.0f) == 1) {
+        (u8)Actor_Touching(&f->c.a, (Actor *)pu, 0.0f, 0.0f) == 1) {
         sceVu0SubVector(d, (f32 *)(a + 0x10), (f32 *)(pu + 0x10));
         dist = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
         rsum = AT(a, 0xC8, f32) + AT(gCharPursuer, 0xC8, f32);
@@ -4275,7 +4275,7 @@ void func_00188960(Fiona *f) {
         sceVu0Normalize(v, v);
         func_0010E640(v, v, rsum - dist);
         sceVu0AddVector(at, (f32 *)(a + 0x10), v);
-        tri = func_00124480(&f->c.a, at, -1);
+        tri = Actor_TriTo(&f->c.a, at, -1);
         if (tri == NAV_NONE) {
             AT(a, 0x2A, u8) = 1;
         } else {
@@ -4288,10 +4288,10 @@ void func_00188960(Fiona *f) {
     if (AT(gProgress, 0x1FBEC1, u8) != 0 || FI(f, 0x1AD5D5, u8) != 1 || AT(gCharPartner, 0x2A, u8) != 0) {
         return;
     }
-    if ((u8)func_001241F0(&f->c.a, (Actor *)gCharPartner, 0.0f, 0.0f) != 1) {
+    if ((u8)Actor_Touching(&f->c.a, (Actor *)gCharPartner, 0.0f, 0.0f) != 1) {
         return;
     }
-    if (func_00123F70(&f->c.a, (Actor *)gCharPartner) == -1) {
+    if (Actor_PushOut(&f->c.a, (Actor *)gCharPartner) == -1) {
         AT(a, 0x34, u32) = AT(a, 0x38, u32);
         sceVu0CopyVector((f32 *)(a + 0x10), (f32 *)(a + 0x40));
     }
@@ -4372,7 +4372,7 @@ extern const PTMF D_003B2DC8;   /* Fiona's state: turning on the spot */
  * (no blend running) */
 void func_0018A5D0(Fiona *f) {
     static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3};
-    f32 left = func_00124530(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
+    f32 left = Actor_TurnToward(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
 
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (left == 0.0f) {
@@ -4393,7 +4393,7 @@ void func_0018A5D0(Fiona *f) {
  * stands (or, held +0xE0, is held), Progress flag 0x2B off */
 void func_0018A210(Fiona *f) {
     static const union { u32 u; f32 f; } k10deg = {0x3E32B8C3}, kHalfPi = {0x3FC90FDB};
-    f32 left = func_00124530(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
+    f32 left = Actor_TurnToward(&f->c.a, FI(f, 0x1AD5E0, f32), k10deg.f);
 
     if (!(AT(f->c.motion, 0x550, f32) <= 0.0f)) {
         return;
@@ -4430,7 +4430,7 @@ void func_0018B570(Fiona *f) {
     if (AT(f, 0x2B, u8) == 1) {
         FI(f, 0x1AD5BC, u8) = 0;
     }
-    func_00125960((Character *)f);
+    Character_RootMove((Character *)f);
 }
 
 /* the run's look, each frame (+0xFC 2 while idle +0xF8), as the walk's (func_00185CF0) with the
@@ -4504,7 +4504,7 @@ extern const PTMF D_003B2B58, D_003B2B68, D_003B2B78, D_003B2B88, D_003B2B98, D_
 
 /* the character `c` is in sight of her (their nav triangles and positions, no mask) */
 static inline s32 fiona_in_sight(Fiona *f, Character *c) {
-    return (u8)func_00122C90(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
+    return (u8)Actor_CanWalkBetween(f, f->c.a.navTri, c->a.navTri, f->c.a.pos, c->a.pos, 0) == 1;
 }
 
 extern const PTMF D_003B2C18;
@@ -4592,7 +4592,7 @@ void func_0018F760(Fiona *f) {
  * 0x2F): she may glance at Hewie (+0x1AD5D5 he can act) or the pursuer (+0x1AD5D7) when in
  * sight (+0x1AD664 the one looked at, cleared first). 0x24 (progress test 2/4 for her slot)
  * goes back to idle unless it passes; 0x2B and 0x28 change the action to
- * 0x2F / 0x29 when theirs (2/0, 2/2) fail. Then the character's update (func_00125A10). */
+ * 0x2F / 0x29 when theirs (2/0, 2/2) fail. Then the character's update (Character_RootMoveMasked). */
 void func_0018F870(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         f32 tmp[4] __attribute__((aligned(16)));
@@ -4677,7 +4677,7 @@ void func_0018F870(Fiona *f) {
             break;
         }
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* ---- Fiona taking a hit or being caught (state block [0] 4) ---- */
@@ -4905,7 +4905,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         sceVu0CopyVector(f->c.unk110, (f32 *)((u8 *)f + 0x1AD700));
         f->c.unk104[1] = st[4];
         FI(f, 0x1AD6C8, s32) = 0;
-        func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x43, 5, 0, 0, NULL);
         Actor_SetState(&f->c.a, f->c.unk104[1] == 6 ? &D_003B2E28 : &D_003B2E38);
         break;
     case 8:
@@ -4938,7 +4938,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
                 if (NavMesh_TriFlags(gNavMesh, f->c.a.navTri) & 0x80001) {
                     f->c.unk104[0] = 3;
                 } else {
-                    f32 h = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+                    f32 h = Actor_HeadingTo(&f->c.a, gCharPursuer->a.pos);
                     f32 d;
 
                     if (!(func_002E2D00(h - f->c.a.angle[1]) <= 0.0f)) {
@@ -4958,7 +4958,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
                 break;
             }
             Actor_SetState(&f->c.a, &D_003B2DF8);
-        } else if ((func_001235C0(f, &f->c.a) & 0xFF) == 1) {
+        } else if ((Actor_TriFreeFor(f, &f->c.a) & 0xFF) == 1) {
             VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
             f->c.unk100 = 0xFF;
             f->c.a.unk2A = 1;
@@ -5006,10 +5006,10 @@ void func_0018BA70(Fiona *f) {
         a = func_002E2D00(func_0031C5C0(d[0], d[2]) - f->c.a.angle[1]);
         aa = a <= 0.0f ? -a : a;
         if (FI(f, 0x1AD6C0, s32) == 0) {
-            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             func_002DDED0(f->c.motion, 0x100F, -1);
         } else {
-            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             if (aa < 0x1.0c1524p+0f /* 60 deg */) {
                 func_002DDED0(f->c.motion, 0x1004, -1);
             } else if (!(aa <= 0x1.0c1524p+1f /* 120 deg */)) {
@@ -5023,7 +5023,7 @@ void func_0018BA70(Fiona *f) {
         func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         Actor_SetState(&f->c.a, &D_003B2D48);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2998, D_003B29A8;
@@ -5034,7 +5034,7 @@ extern const PTMF D_003B2998, D_003B29A8;
 void func_00194230(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x80, 8);
-        func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x43, 5, 0, 0, NULL);
         switch (f->c.unk104[0]) {
         case 4:
             func_002DDED0(f->c.motion, 0xF05, -1);
@@ -5055,7 +5055,7 @@ void func_00194230(Fiona *f) {
         }
         Actor_SetState(&f->c.a, &D_003B2998);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* 8 (D_003B2E18), caught while crawling: dragged to door +0x104's side 1, 15 out
@@ -5073,17 +5073,17 @@ void func_00193E90(Fiona *f) {
     ofs[0] = 0.0f;
     ofs[2] = 10.0f;
     ofs[1] = 0.0f;
-    FI(f, 0x1AD6C8, s32) = func_00123710(f, f->c.unk104[0], 1, ofs, (f32 *)((u8 *)f + 0x1AD6E0));
+    FI(f, 0x1AD6C8, s32) = Actor_DoorFront(f, f->c.unk104[0], 1, ofs, (f32 *)((u8 *)f + 0x1AD6E0));
     sceVu0SubVector(d, f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
     if (d[1] < 20.0f) {
         FI(f, 0x1AD6C4, s32) = 0;
         f->c.moveMode = 0xB;
         func_002DDED0(f->c.motion, 0xF02, -1);
-        func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
     } else {
         FI(f, 0x1AD6C4, s32) = 1;
         func_002DDED0(f->c.motion, 0x70A, -1);
-        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
     }
     y = d[1];
     step = 0.0f;
@@ -5192,7 +5192,7 @@ void func_00183400(Fiona *f) {
  * update) and turned toward it 20 degrees a frame (+0x1AD6C4 set once there) */
 static inline __attribute__((always_inline)) void pull_back_move(Fiona *f) {
     if (FI(f, 0x1AD6C4, s32) == -1) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
     } else {
         f32 d[4] __attribute__((aligned(16)));
         f32 r[4][4] __attribute__((aligned(16)));
@@ -5201,9 +5201,9 @@ static inline __attribute__((always_inline)) void pull_back_move(Fiona *f) {
         sceVu0UnitMatrix(r);
         sceVu0RotMatrixY(r, r, FI(f, 0x1AD6D0, f32));
         sceVu0ApplyMatrix(d, r, d);
-        func_001247E0(&f->c.a, d);
+        Actor_Move(&f->c.a, d);
         if (FI(f, 0x1AD6C4, s32) == 0 &&
-            func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), 0x1.657186p-2f /* 20 deg */) == 0.0f) {
+            Actor_TurnToward(&f->c.a, FI(f, 0x1AD6D0, f32), 0x1.657186p-2f /* 20 deg */) == 0.0f) {
             FI(f, 0x1AD6C4, s32) = 1;
         }
     }
@@ -5243,7 +5243,7 @@ void func_00190380(Fiona *f) {
         FI(f, 0x1AD6C0, s32) = -1;
         FI(f, 0x1AD6C4, s32) = -1;
         FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
-        if (!(func_001235C0(f, &f->c.a) & 0xFF)) {
+        if (!(Actor_TriFreeFor(f, &f->c.a) & 0xFF)) {
             func_002DDED0(f->c.motion, 0x1100, -1);
         } else {
             f32 v[4] __attribute__((aligned(16)));
@@ -5253,7 +5253,7 @@ void func_00190380(Fiona *f) {
             v[1] = 0.0f;
             func_002E2DA0(v, f->c.a.rot, v);
             sceVu0AddVector(v, v, f->c.a.pos);
-            if (func_00124480(&f->c.a, v, 0x80001) == (u32)-1) {
+            if (Actor_TriTo(&f->c.a, v, 0x80001) == (u32)-1) {
                 func_002DDED0(f->c.motion, 0x1100, -1);
             } else {
                 back = 1;
@@ -5264,7 +5264,7 @@ void func_00190380(Fiona *f) {
     if (back == 1) {
         pull_back(f);
     } else {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
     }
     FI(f, 0x1AD6C8, s32) = 0;
     Actor_SetState(&f->c.a, &D_003B2B48);
@@ -5318,17 +5318,17 @@ void func_00191800(Fiona *f) {
             Progress *p = gProgress;
 
             AT(p, 0x7D8, f32) = 1000.0f;
-            func_00122C20(&f->c.a, 0x42, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x42, 5, 0, 0, NULL);
             func_002A8440((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         } else {
-            func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         }
         FI(f, 0x1AD6C0, s32) = -1;
         Actor_SetState(&f->c.a, &D_003B2AB8);
     }
     f->c.a.navMask |= 1;
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     f->c.a.navMask &= ~1;
 }
 
@@ -5373,16 +5373,16 @@ void func_00190FA0(Fiona *f) {
     }
     FI(f, 0x1AD6C0, s32) = -1;
     f->c.a.navMask |= 1;
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     f->c.a.navMask &= ~1;
     if (FI(f, 0x1AD584, s32) & 2) {
         Progress *q = gProgress;
 
         AT(q, 0x7D8, f32) = 1000.0f;
-        func_00122C20(&f->c.a, 0x42, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x42, 5, 0, 0, NULL);
         func_002A8440((u8 *)q + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
     } else {
-        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
         func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
     }
     Actor_SetState(&f->c.a, &D_003B2B08);
@@ -5434,29 +5434,29 @@ void func_00190B50(Fiona *f) {
         }
         switch (f->c.moveSub) {
         case 0xC:
-            func_00122C20(&f->c.a, 0x3E, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3E, 5, 0, 0, NULL);
             func_002DDED0(f->c.motion, 0x100E, -1);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xE:
-            func_00122C20(&f->c.a, 0x3E, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3E, 5, 0, 0, NULL);
             fall_by_side(f, aa, a, 0x1000);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xD:
-            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             func_002DDED0(f->c.motion, 0x100F, -1);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xF:
-            func_00122C20(&f->c.a, 0x3F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             fall_by_side(f, aa, a, 0x1004);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         }
         Actor_SetState(&f->c.a, &D_003B2B18);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2A98, D_003B29F8;
@@ -5480,9 +5480,9 @@ static inline __attribute__((always_inline)) void led_away(Fiona *f, s32 anim, c
         Fiona_ToIdle(f);
         return;
     }
-    r = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
+    r = Character_PlanPathKind(&f->c, 0, f->c.unk104[0], f->c.unk110);
     if (r > 0) {
-        r = func_001270F0(&f->c);
+        r = Character_WaypointsCurve(&f->c);
     }
     if (r > 0) {
         f32 a;
@@ -5532,7 +5532,7 @@ void func_0018B9D0(Fiona *f) {
         Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
         Actor_SetState(&f->c.a, &D_003B2D58);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* at the motion's event 0x20 she stands (+0x1AD5EC 30) */
@@ -5542,7 +5542,7 @@ static inline __attribute__((always_inline)) void stand_up(Fiona *f) {
         f->c.a.unk2D = 0;
         Fiona_ToIdle(f);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* after being knocked down (D_003B2B18) */
@@ -5563,7 +5563,7 @@ void func_001940A0(Fiona *f) {
     } else if ((f->c.unk104[0] == 3 || f->c.unk104[0] == 1) && f->target != NULL) {
         FI(f, 0x1AD5FC, u8) = 1;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B29B8, D_003B29C8;
@@ -5574,7 +5574,7 @@ extern const PTMF D_003B29B8, D_003B29C8;
 void func_00190190(Fiona *f) {
     if (FI(f, 0x1AD6CC, s32) == 0) {
         FI(f, 0x1AD6CC, s32) = 1;
-        func_00122C20(&f->c.a, 0x41, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x41, 5, 0, 0, NULL);
     }
     FI(f, 0x1AD5BC, u8) = 0;
     if (FI(f, 0x1AD6C8, s32) == 0 && (MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
@@ -5589,7 +5589,7 @@ void func_00190190(Fiona *f) {
     if (AT(f->c.motion, 0x55C, s32) == 0x1101) {
         pull_back(f);
     } else {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
     }
 }
 
@@ -5812,7 +5812,7 @@ static inline __attribute__((always_inline)) void getting_up(Fiona *f, u8 busy) 
         Fiona_ToIdle(f);
     }
     f->c.a.navMask |= 1;
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     f->c.a.navMask &= ~1;
 }
 
@@ -5849,7 +5849,7 @@ void func_00193900(Fiona *f) {
         }
         Fiona_ToIdle(f);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* after the crawl-catch fall, down (D_003B29D8): at the motion's event 0x20 she gets up
@@ -5860,7 +5860,7 @@ void func_00193B10(Fiona *f) {
         func_002DDE20(f->c.motion, 0x100D, -1);
         Actor_SetState(&f->c.a, &D_003B29E8);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2AA8;
@@ -5870,9 +5870,9 @@ static inline __attribute__((always_inline)) void led_step(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
     u32 tri;
 
-    func_00124530(&f->c.a, FI(f, 0x1AD6D8, f32), FI(f, 0x1AD6DC, f32));
+    Actor_TurnToward(&f->c.a, FI(f, 0x1AD6D8, f32), FI(f, 0x1AD6DC, f32));
     tri = f->c.a.navTri;
-    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.unk128 = Character_WaypointAhead(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
     f->c.a.navTri = tri;
     sceVu0CopyVector(f->c.a.pos, at);
 }
@@ -5942,7 +5942,7 @@ void func_00192F70(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
             VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
-            func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x38, 5, 0, 0, NULL);
         }
         led_arrive(f);
         FI(f, 0x1AD6C0, s32) = 0;
@@ -5981,7 +5981,7 @@ void func_00191B40(Fiona *f) {
         AT(p, 0x73EB00, u8) = 1;
         Progress_SetFlag(p, 0xC);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* led by the hand, at the spot (D_003B2A08): her leader no longer leading, she pulls free
@@ -6006,7 +6006,7 @@ void func_00192CE0(Fiona *f) {
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* pulled free of the hand that led her (D_003B2A18) */
@@ -6065,7 +6065,7 @@ void func_00192800(Fiona *f) {
                 func_002DDE20(f->c.motion, 0x1401, -1);
                 if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
                     VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
-                    func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
+                    Actor_PlaySound(&f->c.a, 0x38, 5, 0, 0, NULL);
                 }
             }
         }
@@ -6094,7 +6094,7 @@ void func_00192800(Fiona *f) {
             }
         }
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2A78, D_003B2A88;
@@ -6123,7 +6123,7 @@ void func_001924F0(Fiona *f) {
         AT(p, 0x73EB00, u8) = 1;
         Progress_SetFlag(p, 0xC);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* ---- going through a door (moveSub 0x14 in, 0x15 out; the door in unk100, unk104[0] 0 a
@@ -6418,12 +6418,12 @@ s32 func_00188C10(Fiona *f) {
     }
     if (!(WALK_FLAGS(f) & 8)) {
         if (!(f->c.unk128 < f->c.unk124)) {
-            n = func_00127140(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
+            n = Character_PlanPathKind(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
             if (n > 0) {
-                n = func_001270F0(&f->c);
+                n = Character_WaypointsCurve(&f->c);
             }
             if (n < 0) {
-                func_00125A10(&f->c);
+                Character_RootMoveMasked(&f->c);
                 return -1;
             }
         }
@@ -6431,7 +6431,7 @@ s32 func_00188C10(Fiona *f) {
             gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, (u8 *)f + 0x12C);
         if (d < 7.0f) {
             if (!door_anim_done(f)) {
-                func_00125A10(&f->c);
+                Character_RootMoveMasked(&f->c);
                 f->c.unk124 = f->c.unk128;
                 return 1;
             }
@@ -6471,8 +6471,8 @@ s32 func_00188C10(Fiona *f) {
         if (door_anim_done(f)) {
             func_00185CF0(f);
         }
-        func_001273D0(&f->c, &aheadTri, ahead, 3.0f);
-        yaw = func_001244D0(&f->c.a, ahead);
+        Character_WaypointAhead(&f->c, &aheadTri, ahead, 3.0f);
+        yaw = Actor_HeadingTo(&f->c.a, ahead);
         func_001F6370(f->c.motion, v, 0.0f);
         fwd = v[2];
         if (fwd < 0.0f) {
@@ -6487,7 +6487,7 @@ s32 func_00188C10(Fiona *f) {
         sceVu0ApplyMatrix(v, m, r);
         sceVu0ApplyMatrix(r, (f32 (*)[4])((u8 *)f + 0x60), r);
         WALK_STEP(f) = fwd * ((1.0f + sceVu0InnerProduct(v, r)) / 2.0f);
-        func_00124530(&f->c.a, yaw, kEightDeg.f);
+        Actor_TurnToward(&f->c.a, yaw, kEightDeg.f);
         goto step;
     }
 
@@ -6555,12 +6555,12 @@ s32 func_00188C10(Fiona *f) {
     if (WALK_TURN(f) < kHalfDeg.f) {
         WALK_TURN(f) = kHalfDeg.f;
     }
-    if (func_00124530(&f->c.a, f->savedYaw, WALK_TURN(f)) == 0.0f) {
+    if (Actor_TurnToward(&f->c.a, f->savedYaw, WALK_TURN(f)) == 0.0f) {
         turned = 1;
     }
 
 step:
-    n = func_001273D0(&f->c, &tri, out, WALK_STEP(f));
+    n = Character_WaypointAhead(&f->c, &tri, out, WALK_STEP(f));
     if (f->c.a.unk2B == 0) {
         u8 *nm;
         u32 fl;
@@ -6582,9 +6582,9 @@ step:
     f->c.unk128 = n;
 
     near = 0;
-    if (FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+    if (FI(f, 0x1AD5D7, u8) == 1 && (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
         near = 2;
-    } else if ((func_001241F0(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
+    } else if ((Actor_Touching(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
         near = 1;
     }
     if (near == 2) {
@@ -6725,7 +6725,7 @@ void func_00196C20(Fiona *f) {
         }
         door_give_up(f, p);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     r = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, *(u8 *)&f->c.unk100, f->c.a.pos);
     if (f->c.unk104[0] != r) {
         f->c.a.unk2D = 1;
@@ -6763,15 +6763,15 @@ void func_00196660(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B2928);
         return;
     }
-    func_00124530(&f->c.a, FI(f, 0x1AD65C, f32), FI(f, 0x1AD6D4, f32));
+    Actor_TurnToward(&f->c.a, FI(f, 0x1AD65C, f32), FI(f, 0x1AD6D4, f32));
     tri = f->c.a.navTri;
-    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.unk128 = Character_WaypointAhead(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
     f->c.a.navTri = tri;
     sceVu0CopyVector(f->c.a.pos, at);
 }
 
 /* D_003B28B8: a locked door, slow: once the current animation is done, a path to the spot
- * (func_00127140 / func_001270F0; none: give up); its length / 7 the step and the turn to the
+ * (Character_PlanPathKind / Character_WaypointsCurve; none: give up); its length / 7 the step and the turn to the
  * door's facing / 7 the turn a frame, the try played (FI 0x1AD6CC, D_003B2918) */
 void func_001967D0(Fiona *f) {
     static const union { u32 u; f32 f; } kSeventh = {0x3E126E98};
@@ -6781,9 +6781,9 @@ void func_001967D0(Fiona *f) {
     if (!door_anim_done(f)) {
         return;
     }
-    r = func_00127140(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
+    r = Character_PlanPathKind(&f->c, 0, FI(f, 0x1AD634, u32), (f32 *)((u8 *)f + 0x1AD640));
     if (r > 0) {
-        r = func_001270F0(&f->c);
+        r = Character_WaypointsCurve(&f->c);
     }
     if (r <= 0) {
         door_give_up(f, gProgress);
@@ -6860,9 +6860,9 @@ void func_0018A120(Fiona *f) {
         f->c.unkE1 = 1;
         return;
     }
-    func_00124530(&f->c.a, *(f32 *)&f->c.unk104[2], FI(f, 0x1AD6D4, f32));
+    Actor_TurnToward(&f->c.a, *(f32 *)&f->c.unk104[2], FI(f, 0x1AD6D4, f32));
     tri = f->c.a.navTri;
-    f->c.unk128 = func_001273D0(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
+    f->c.unk128 = Character_WaypointAhead(&f->c, &tri, at, FI(f, 0x1AD6D0, f32));
     f->c.a.navTri = tri;
     sceVu0CopyVector(f->c.a.pos, at);
 }
@@ -6931,14 +6931,14 @@ void func_0018A950(Fiona *f) {
     d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
         gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
     func_001F6370(f->c.motion, root, 0.0f);
-    func_001273D0(&f->c, &tri, at, 3.0f);
-    turn = func_00124530(&f->c.a, func_001244D0(&f->c.a, at), kTenDeg.f);
+    Character_WaypointAhead(&f->c, &tri, at, 3.0f);
+    turn = Actor_TurnToward(&f->c.a, Actor_HeadingTo(&f->c.a, at), kTenDeg.f);
     if (root[2] < 0.0f) {
         step = 0.0f;
     } else {
         step = root[2] * ((kPi.f - turn) / kPi.f);
     }
-    n = func_001273D0(&f->c, &tri, at, step);
+    n = Character_WaypointAhead(&f->c, &tri, at, step);
     f->c.a.navTri = tri;
     sceVu0CopyVector(f->c.a.pos, at);
     f->c.unk128 = n;
@@ -6951,7 +6951,7 @@ void func_0018A950(Fiona *f) {
         root[1] = 0.0f;
         root[2] = root[2] - d;
         sceVu0ApplyMatrix(root, (f32 (*)[4])((u8 *)f + 0x60), root);
-        func_001247E0(&f->c.a, root);
+        Actor_Move(&f->c.a, root);
     }
     f->c.unkE1 = 1;
     door_give_up(f, gProgress);
@@ -6963,9 +6963,9 @@ void func_0018AC60(Fiona *f) {
     s32 n;
 
     VCALL(gNavMesh, 0xC, void (*)(NavMesh *, s32, f32 *))(gNavMesh, f->c.unk104[0], f->c.unk110);
-    n = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
+    n = Character_PlanPathKind(&f->c, 0, f->c.unk104[0], f->c.unk110);
     if (n > 0) {
-        n = func_001270F0(&f->c);
+        n = Character_WaypointsCurve(&f->c);
     }
     if (n > 0) {
         Actor_SetState(&f->c.a, &D_003B2DA8);
@@ -6993,7 +6993,7 @@ void func_0018B0A0(Fiona *f) {
     static const union { u32 u; f32 f; } kTwentyDeg = {0x3EB2B8C3};
 
     script_anim_keep(f, 0);
-    if (func_00124530(&f->c.a, *(f32 *)&f->c.unk104[2], kTwentyDeg.f) == 0.0f) {
+    if (Actor_TurnToward(&f->c.a, *(f32 *)&f->c.unk104[2], kTwentyDeg.f) == 0.0f) {
         Actor_SetState(&f->c.a, &D_003B2D98);
     }
 }
@@ -7011,14 +7011,14 @@ void func_0018B190(Fiona *f) {
     s32 n;
 
     func_001F6370(f->c.motion, root, 0.0f);
-    func_001273D0(&f->c, &tri, at, 3.0f);
-    turn = func_00124530(&f->c.a, func_001244D0(&f->c.a, at), kTenDeg.f);
+    Character_WaypointAhead(&f->c, &tri, at, 3.0f);
+    turn = Actor_TurnToward(&f->c.a, Actor_HeadingTo(&f->c.a, at), kTenDeg.f);
     if (root[2] < 0.0f) {
         step = 0.0f;
     } else {
         step = root[2] * ((kPi.f - turn) / kPi.f);
     }
-    n = func_001273D0(&f->c, &tri, at, step);
+    n = Character_WaypointAhead(&f->c, &tri, at, step);
     f->c.a.navTri = tri;
     sceVu0CopyVector(f->c.a.pos, at);
     f->c.unk128 = n;
@@ -7026,7 +7026,7 @@ void func_0018B190(Fiona *f) {
         script_anim_keep(f, 0x12);
         return;
     }
-    if (func_00124530(&f->c.a, *(f32 *)&f->c.unk104[2], kTenDeg.f) == 0.0f) {
+    if (Actor_TurnToward(&f->c.a, *(f32 *)&f->c.unk104[2], kTenDeg.f) == 0.0f) {
         Actor_SetState(&f->c.a, &D_003B2D78);
     } else {
         Actor_SetState(&f->c.a, &D_003B2D88);
@@ -7036,10 +7036,10 @@ void func_0018B190(Fiona *f) {
 /* D_003B26F8 (command 5 / 10): a path to the spot unk110 (tri unk104[0]) walked (D_003B2D68);
  * none: idle */
 void func_0018B3D0(Fiona *f) {
-    s32 n = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
+    s32 n = Character_PlanPathKind(&f->c, 0, f->c.unk104[0], f->c.unk110);
 
     if (n > 0) {
-        n = func_001270F0(&f->c);
+        n = Character_WaypointsCurve(&f->c);
     }
     if (n > 0) {
         Actor_SetState(&f->c.a, &D_003B2D68);
@@ -7063,10 +7063,10 @@ void func_0018C080(Fiona *f) {
         door_give_up(f, gProgress);
     }
     if (door_anim_done(f) && AT(f->c.motion, 0x55C, s32) != 2) {
-        func_00122C20(&f->c.a, 0x44, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x44, 5, 0, 0, NULL);
         func_002DDED0(f->c.motion, 2, -1);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 #include "effectmgr.h"
@@ -7129,10 +7129,10 @@ static inline __attribute__((always_inline)) void fiona_show(Fiona *f) {
         AT(f, 0x18, s32) = 0;
         AT(f, 0x1C, f32) = 0x1.99999ap-4f /* 0.1 */;
     }
-    if (func_00122B50(&f->c.a, at)) {
-        func_001264C0(&f->c, 3, (s32)at, 0, 0, 0);
+    if (Actor_PosInCurrentRoom(&f->c.a, at)) {
+        Character_Sound(&f->c, 3, (s32)at, 0, 0, 0);
     }
-    func_00126270(&f->c);
+    Character_MarkObjects(&f->c);
 }
 
 /* a frame of it. In the current room, just placed and shown. Elsewhere her pace by her panic
@@ -7140,7 +7140,7 @@ static inline __attribute__((always_inline)) void fiona_show(Fiona *f) {
  * then, growing while she follows unless she wears 0x8C); at a link's end the next room, where
  * a door that is shut has to be opened (or she waits, -1) - or the current room, entered
  * through it (D_003B2E98). Then the next link: fleeing, one away from the pursuer's room; for
- * Hewie, his way (func_00126F80); else a random open one */
+ * Hewie, his way (Character_Route); else a random open one */
 void func_001800E0(Fiona *f) {
     static const union { u32 u; f32 f; } kSlowPace = {0x3E99999A}, kWaitPace = {0x3EE66666},
         kEaseFast = {0xBDCCCCCD}, kEase = {0xBE19999A}, kFearFast = {0x3D888889}, kFear = {0x3D3F258C};
@@ -7193,7 +7193,7 @@ void func_001800E0(Fiona *f) {
         return;
     }
     if (f->c.unk128 < f->c.unk124) {
-        func_001272B0(&f->c, speed);
+        Character_FollowWaypoints(&f->c, speed);
         if (f->c.unk128 < f->c.unk124) {
             return;
         }
@@ -7331,7 +7331,7 @@ void func_001800E0(Fiona *f) {
             if (way == 2) {
                 way = cur;
             }
-            if (func_00126F80(&f->c, h->a.room, way, cur, -1) == -1) {
+            if (Character_Route(&f->c, h->a.room, way, cur, -1) == -1) {
                 return;
             }
             f->c.unk14C0 = LINK(f);
@@ -7446,9 +7446,9 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
             u8 *rec;
 
             if ((fiona_tri_flags(nm, tri) & 0x2008000) == 0x2008000) {
-                func_00122C20(&f->c.a, 0x1C, 6, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x1C, 6, 0, 0, NULL);
                 if (f->c.a.room == 7 || f->c.a.room == 0x106) {
-                    func_00125E10(&f->c, f->c.a.pos, 1);
+                    Character_WaterStep(&f->c, f->c.a.pos, 1);
                 }
                 return;
             }
@@ -7466,11 +7466,11 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
             tri = AT(rec + side * 4, 0x30, u32);   /* the neighbour across that side */
         } while (tri != (u32)-1);
     }
-    func_00122C20(&f->c.a, id, a2, a3, a4, NULL);
+    Actor_PlaySound(&f->c.a, id, a2, a3, a4, NULL);
 }
 
 /* a blow (request 4, `arg`) to the creatures in slots 7..9 within reach of `pos` in her room
- * and not in `skip` (by slot): with reach < 0, those touching her (func_001241F0); else those
+ * and not in `skip` (by slot): with reach < 0, those touching her (Actor_Touching); else those
  * whose height span (+-reach) holds pos.y and whose radius + reach holds it. Each one not
  * already in request 7 takes it; the slots hit */
 u32 func_001813D0(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
@@ -7493,7 +7493,7 @@ u32 func_001813D0(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
         case 9:
             hit = 0;
             if (reach < 0.0f) {
-                if ((func_001241F0(&f->c.a, &c->a, 0.0f, 0.0f) & 0xFF) == 1) {
+                if ((Actor_Touching(&f->c.a, &c->a, 0.0f, 0.0f) & 0xFF) == 1) {
                     hit = 1;
                 }
             } else {
@@ -7615,7 +7615,7 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
             facing = facing - a;
             if (fiona_abs_wrap(facing) < kQuarterPi.f && (Progress_ExitUnlocked(p, f->c.a.room, i) & 0xFF) == 0 &&
                 (DoorHold_Usable(p, f->c.a.room, i) & 0xFF) == 0 &&
-                (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 && (fiona_tri_flags(nm, tri) & 0x20000) &&
+                (tri = Actor_TriTo(&f->c.a, to, 0)) != (u32)-1 && (fiona_tri_flags(nm, tri) & 0x20000) &&
                 (DoorHold_Take(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
                 u16 region;
 
@@ -7631,7 +7631,7 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
                             who |= 4;
                         }
                     } else if ((func_00126EC0(gCharPursuer) & 0xFFFF) == region &&
-                               func_00126E40(gCharPursuer) < 15.0f) {
+                               Character_PathRemaining2(gCharPursuer) < 15.0f) {
                         who |= 4;
                     }
                 }
@@ -7647,12 +7647,12 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
                 a = func_002E2D00(kPi.f + f->c.a.angle[1]);
             }
             facing = facing - a;
-            if (fiona_abs_wrap(facing) < kQuarterPi.f && (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 &&
+            if (fiona_abs_wrap(facing) < kQuarterPi.f && (tri = Actor_TriTo(&f->c.a, to, 0)) != (u32)-1 &&
                 (fiona_tri_flags(nm, tri) & 0x20000) &&
                 (DoorHold_Take(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
                 u32 s;
 
-                func_00122C20(&f->c.a, 0x91, 5, 0, 0, NULL);
+                Actor_PlaySound(&f->c.a, 0x91, 5, 0, 0, NULL);
                 door_slam(f, doors, i, 1);
                 who = 0;
                 if (FI(f, 0x1AD5D5, u8) == 1) {
@@ -7703,7 +7703,7 @@ void func_00182E80(Fiona *f) {
 }
 
 static inline void fiona_voice(Fiona *f, s32 id) {
-    func_00122C20(&f->c.a, id, 5, 0, 0, NULL);
+    Actor_PlaySound(&f->c.a, id, 5, 0, 0, NULL);
 }
 
 static inline f32 fiona_rnd(void) {
@@ -7858,7 +7858,7 @@ static inline __attribute__((always_inline)) void hewie_react(Fiona *f, s32 n) {
     }
     h = (Character *)gCharPartner;
     func_00138E60((Hewie *)h, D_003B2520[n][0]);
-    if (D_003B2520[n][1] > 0 && func_00124490(&f->c.a, h->a.pos) < 30.0f) {
+    if (D_003B2520[n][1] > 0 && Actor_Distance(&f->c.a, h->a.pos) < 30.0f) {
         func_00138DE0((Hewie *)h, D_003B2520[n][1]);
     }
 }
@@ -7877,7 +7877,7 @@ void func_00183F10(Fiona *f) {
 
     if (h->state[0] == 0 && !((p = gProgress, Progress_TestFlag(p, 0x25)) & 0xFF)) {
         if (f->c.moveSub == 0x23) {
-            f32 d = func_00123A70(&h->a, FI(f, 0x1AD6C0, u32), (f32 *)((u8 *)f + 0x1AD6E0), (u32)-1,
+            f32 d = Actor_FreeDistance(&h->a, FI(f, 0x1AD6C0, u32), (f32 *)((u8 *)f + 0x1AD6E0), (u32)-1,
                                   FI(f, 0x1AD6D0, f32), 15.0f);
 
             if (!(d <= 5.0f)) {
@@ -7891,7 +7891,7 @@ void func_00183F10(Fiona *f) {
                 v[2] = d - 5.0f;
                 Mtx_AtHeading(m, (f32 *)((u8 *)f + 0x1AD6E0), FI(f, 0x1AD6D0, f32));
                 func_002E2DD0(at, m, v);
-                tri = func_00124480(&f->c.a, at, 0x29020008);
+                tri = Actor_TriTo(&f->c.a, at, 0x29020008);
                 if (tri != (u32)-1) {
                     FI(f, 0x1AD6C0, u32) = tri;
                     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD6E0), at);
@@ -7978,23 +7978,23 @@ void func_0018C240(Fiona *f) {
         sceVu0AddVector(to, f->c.a.pos, v);
         func_00181880(f, to, 0);
     }
-    func_00124530(&f->c.a, f->savedYaw, kTwelveDeg.f);
+    Actor_TurnToward(&f->c.a, f->savedYaw, kTwelveDeg.f);
     func_001F6370(f->c.motion, v, 0.0f);
     func_002E3190(m, f->savedYaw);
     func_002E2DA0(v, m, v);
-    func_001247E0(&f->c.a, v);
+    Actor_Move(&f->c.a, v);
 }
 
 /* D_003B2678: once the animation has run out the flee turn (D_003B2D28) - away from the
  * pursuer when she's being chased and he is within 30, else the way she faces */
 void func_0018C540(Fiona *f) {
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if (!door_anim_done(f)) {
         return;
     }
     f->savedYaw = f->c.a.angle[1];
-    if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) < 30.0f) {
-        f->savedYaw = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+    if (FI(f, 0x1AD5D7, u8) == 1 && Actor_Distance(&f->c.a, gCharPursuer->a.pos) < 30.0f) {
+        f->savedYaw = Actor_HeadingTo(&f->c.a, gCharPursuer->a.pos);
     }
     func_002DDED0(f->c.motion, 0x403, -1);
     Actor_SetState(&f->c.a, &D_003B2D28);
@@ -8019,7 +8019,7 @@ void func_0018C660(Fiona *f) {
     f32 hand[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
 
-    func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), kFiveDeg.f);
+    Actor_TurnToward(&f->c.a, FI(f, 0x1AD6D0, f32), kFiveDeg.f);
     switch (f->c.moveSub) {
     case 0x31:
     case 0x32:
@@ -8093,7 +8093,7 @@ void func_0018C660(Fiona *f) {
             t, f, hand, dir, 0.0f, 0.0f);
         break;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2D18, D_003B2CF8, D_003B2D08;
@@ -8113,8 +8113,8 @@ void func_0018CCA0(Fiona *f) {
             break;
         case 0x32:
             FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
-            if (FI(f, 0x1AD5D7, u8) == 1 && func_00124490(&f->c.a, gCharPursuer->a.pos) < 80.0f) {
-                f32 yaw = func_001244D0(&f->c.a, gCharPursuer->a.pos);
+            if (FI(f, 0x1AD5D7, u8) == 1 && Actor_Distance(&f->c.a, gCharPursuer->a.pos) < 80.0f) {
+                f32 yaw = Actor_HeadingTo(&f->c.a, gCharPursuer->a.pos);
 
                 if (fiona_abs_wrap(yaw - f->c.a.angle[1]) < kSixtyDeg.f) {
                     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD6E0), gCharPursuer->a.pos);
@@ -8131,7 +8131,7 @@ void func_0018CCA0(Fiona *f) {
         }
         Actor_SetState(&f->c.a, &D_003B2D18);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* D_003B2D08: idle at the animation's event 0x20 */
@@ -8147,7 +8147,7 @@ void func_0018D010(Fiona *f) {
     f32 yaw;
 
     if (!door_anim_done(f)) {
-        func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), FI(f, 0x1AD6D4, f32));
+        Actor_TurnToward(&f->c.a, FI(f, 0x1AD6D0, f32), FI(f, 0x1AD6D4, f32));
         return;
     }
     yaw = FI(f, 0x1AD6D0, f32);
@@ -8170,7 +8170,7 @@ extern const PTMF D_003B2CE8;
 
 /* she is touching the pursuer while being chased */
 static inline __attribute__((always_inline)) s32 fiona_caught(Fiona *f) {
-    return FI(f, 0x1AD5D7, u8) == 1 && (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1;
+    return FI(f, 0x1AD5D7, u8) == 1 && (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1;
 }
 
 /* looking at the command's target (FI 0x1AD664), if any */
@@ -8186,7 +8186,7 @@ void func_0018D200(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, gProgress);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* D_003B2CE8: the end of a command gesture - idle at its event 0x20, or at once if the pursuer
@@ -8199,7 +8199,7 @@ void func_0018D340(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, gProgress);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* D_003B2CD8: a command gesture - looking at its target (FI 0x1AD664) if any; at its event 0x20
@@ -8216,7 +8216,7 @@ void func_0018D5C0(Fiona *f) {
         func_002DDE20(f->c.motion, 0xC0C, -1);
         Actor_SetState(&f->c.a, &D_003B2CE8);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2CC8, D_003B2CD8;
@@ -8232,7 +8232,7 @@ void func_0018D7E0(Fiona *f) {
         func_002DDE20(f->c.motion, 0xC0B, -1);
         Actor_SetState(&f->c.a, &D_003B2CD8);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* D_003B2B78: walking on until the animation is done, then the gesture's lead-in (0xC0A,
@@ -8299,7 +8299,7 @@ void func_0018DC30(Fiona *f) {
             break;
         }
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2C78, D_003B2C88, D_003B2C98, D_003B2CA8, D_003B2CB8;
@@ -8314,7 +8314,7 @@ void func_0018E2B0(Fiona *f) {
         return;
     }
     if (FI(f, 0x1AD5D5, u8) == 0) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
@@ -8341,12 +8341,12 @@ void func_0018E510(Fiona *f) {
     const PTMF *next;
 
     if (FI(f, 0x1AD5D5, u8) == 0 || AT(gCharPartner, 0xF3564, s32) != 0x48) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
     if (!door_anim_done(f)) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         return;
     }
     if (func_001669A0((Hewie *)((Character *)gCharPartner)) != 1 || !door_anim_done(f)) {
@@ -8366,7 +8366,7 @@ void func_0018E510(Fiona *f) {
         next = &D_003B2C98;
         break;
     default:
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
@@ -8374,7 +8374,7 @@ void func_0018E510(Fiona *f) {
         Actor_SetState(&f->c.a, next);
         return;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     door_give_up(f, gProgress);
 }
 
@@ -8388,7 +8388,7 @@ static inline __attribute__((always_inline)) s32 held_off(Fiona *f) {
 /* D_003B2C58: the animation run out, the wait for Hewie (D_003B2C68); idle if he's off */
 void func_0018EAC0(Fiona *f) {
     if (held_off(f)) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
@@ -8403,13 +8403,13 @@ void func_0018EDA0(Fiona *f) {
     s32 r;
 
     if (held_off(f)) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
     r = func_00188C10(f);
     if (r < 0) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
@@ -8432,7 +8432,7 @@ void func_0018F180(Fiona *f) {
 
     if (f->c.state[0] == 7) {
         f->c.state[0] = 0;
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         switch (f->c.moveSub) {
         case 0x2B:
             f->c.moveSub = 0x2F;
@@ -8449,7 +8449,7 @@ void func_0018F180(Fiona *f) {
         return;
     }
     if (FI(f, 0x1AD5D5, u8) == 0) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
         door_give_up(f, gProgress);
         return;
     }
@@ -8490,7 +8490,7 @@ void func_001906A0(Fiona *f) {
     }
     AT(f, 0xC0, u32) |= 1;
     if (FI(f, 0x1AD6C4, s32) == -1) {
-        func_00125A10(&f->c);
+        Character_RootMoveMasked(&f->c);
     } else {
         f32 m[4][4] __attribute__((aligned(16)));
         f32 v[4] __attribute__((aligned(16)));
@@ -8499,9 +8499,9 @@ void func_001906A0(Fiona *f) {
         sceVu0UnitMatrix(m);
         sceVu0RotMatrixY(m, m, FI(f, 0x1AD6D0, f32));
         sceVu0ApplyMatrix(v, m, v);
-        func_001247E0(&f->c.a, v);
+        Actor_Move(&f->c.a, v);
         if (FI(f, 0x1AD6C4, s32) == 0 &&
-            func_00124530(&f->c.a, FI(f, 0x1AD6D0, f32), kTwentyDeg.f) == 0.0f) {
+            Actor_TurnToward(&f->c.a, FI(f, 0x1AD6D0, f32), kTwentyDeg.f) == 0.0f) {
             FI(f, 0x1AD6C4, s32) = 1;
         }
     }
@@ -8525,11 +8525,11 @@ void func_001908E0(Fiona *f) {
         FI(f, 0x1AD6C4, s32) = -1;
         FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
         func_002DDED0(f->c.motion, 0xB00, -1);
-        func_00122C20(&f->c.a, 0x40, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
         func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         Actor_SetState(&f->c.a, &D_003B2B28);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2988;   /* the kick */
@@ -8560,7 +8560,7 @@ void func_001943D0(Fiona *f) {
                 AT(p, 0xFB6, s16) = 0x2710;
             }
         }
-        func_00122C20(&f->c.a, 0x90, 5, 0, 0, NULL);
+        Actor_PlaySound(&f->c.a, 0x90, 5, 0, 0, NULL);
         f->c.unk14D0 = 5;
         func_001F6E30(f->c.motion);
         FI(f, 0x1AD6C0, s32) |= hit;
@@ -8574,9 +8574,9 @@ void func_001943D0(Fiona *f) {
             v[2] = kStep.f;
             v[3] = 0.0f;   /* (unset in the original) */
             sceVu0ApplyMatrix(v, (f32 (*)[4])((u8 *)f + 0x60), v);
-            func_001247E0(&f->c.a, v);
+            Actor_Move(&f->c.a, v);
         } else {
-            func_00125A10(&f->c);
+            Character_RootMoveMasked(&f->c);
         }
     }
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
@@ -8605,12 +8605,12 @@ void func_001943D0(Fiona *f) {
             return;
         }
         if (FI(f, 0x1AD5D5, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 2) &&
-            (func_001241F0(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
+            (Actor_Touching(&f->c.a, &((Character *)gCharPartner)->a, 0.0f, 0.0f) & 0xFF) == 1) {
             who |= 2;
             FI(f, 0x1AD6C4, s32) = 1;
         }
         if (FI(f, 0x1AD5D7, u8) == 1 && !(FI(f, 0x1AD6C0, s32) & 4) &&
-            (func_001241F0(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
+            (Actor_Touching(&f->c.a, &gCharPursuer->a, 0.0f, 0.0f) & 0xFF) == 1) {
             who |= 4;
         }
         if (who != 0) {
@@ -8629,11 +8629,11 @@ void func_001943D0(Fiona *f) {
 /* D_003B2628 / D_003B2638: once the animation is done the kick (her cry 0x3D, 0xE01,
  * D_003B2988) */
 void func_001949D0(Fiona *f) {
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if (!door_anim_done(f)) {
         return;
     }
-    func_00122C20(&f->c.a, 0x3D, 5, 0, 0, NULL);
+    Actor_PlaySound(&f->c.a, 0x3D, 5, 0, 0, NULL);
     FI(f, 0x1AD6C0, s32) = 0;
     FI(f, 0x1AD6C4, s32) = 0;
     FI(f, 0x1AD6C8, s32) = 0;
@@ -8688,9 +8688,9 @@ void func_00194AD0(Fiona *f) {
         }
         v = Progress_GetVar(p, 0x26);
         if (v == 6) {
-            func_00122C20(&f->c.a, 0x22, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x22, 5, 0, 0, NULL);
         } else if (v != 7) {
-            func_00122C20(&f->c.a, 0x8F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x8F, 5, 0, 0, NULL);
         }
         if (v == 7) {
             shove_effects(f, hit, 1);
@@ -8716,7 +8716,7 @@ void func_00194AD0(Fiona *f) {
             }
         }
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 extern const PTMF D_003B2948, D_003B2958, D_003B2968;
@@ -8758,7 +8758,7 @@ void func_00195C70(Fiona *f) {
         FI(f, 0x1AD6D4, f32) = 1.0f;
         Actor_SetState(&f->c.a, &D_003B2968);
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
 }
 
 /* D_003B2958: the scripted door opened; at the animation's event 0x20 the progress told (in:
@@ -8822,7 +8822,7 @@ void func_00196350(Fiona *f) {
 extern const PTMF D_003B2848, D_003B2858;
 
 /* D_003B2878.. (climbing): at the animation's event 0x20 off the ladder - at the top (0x707)
- * or the bottom (0x703) placed by it (func_00123710) - the ladder let go, idle; until then moved
+ * or the bottom (0x703) placed by it (Actor_DoorFront) - the ladder let go, idle; until then moved
  * by the root motion */
 void func_00197FF0(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
@@ -8836,14 +8836,14 @@ void func_00197FF0(Fiona *f) {
             v[1] = 0.0f;
             v[2] = D_003B2460[3].z;
             v[3] = 0.0f;
-            f->c.a.navTri = func_00123710(f, f->c.unk100, 1, v, f->c.a.pos);
+            f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 1, v, f->c.a.pos);
             break;
         case 0x703:
             v[0] = D_003B2478;
             v[1] = 0.0f;
             v[2] = D_003B247C;
             v[3] = 0.0f;
-            f->c.a.navTri = func_00123710(f, f->c.unk100, 0, v, f->c.a.pos);
+            f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 0, v, f->c.a.pos);
             break;
         }
         p = gProgress;
@@ -8855,7 +8855,7 @@ void func_00197FF0(Fiona *f) {
         f32 d[4] __attribute__((aligned(16)));
 
         func_001F6370(f->c.motion, d, 0.0f);
-        func_00125900(&f->c);
+        Character_RootTurn(&f->c);
         sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
         sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
         f->c.a.pos[3] = 1.0f;
@@ -8907,7 +8907,7 @@ void func_00198C50(Fiona *f) {
         v[2] = D_003B2460[1].z;
         v[3] = 0.0f;
     }
-    FI(f, 0x1AD6C0, s32) = func_00123710(f, f->c.unk100, f->c.unk104[0], v, at);
+    FI(f, 0x1AD6C0, s32) = Actor_DoorFront(f, f->c.unk100, f->c.unk104[0], v, at);
     if (FI(f, 0x1AD6C0, s32) == -1) {
         Progress *p = gProgress;
 
@@ -9092,13 +9092,13 @@ void func_00198240(Fiona *f) {
                 v[1] = 0.0f;
                 v[2] = D_003B247C;
                 v[3] = 0.0f;
-                f->c.a.navTri = func_00123710(f, f->c.unk100, 0, v, at);
+                f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 0, v, at);
             } else {
                 v[0] = D_003B2460[3].x;
                 v[1] = 0.0f;
                 v[2] = D_003B2460[3].z;
                 v[3] = 0.0f;
-                f->c.a.navTri = func_00123710(f, f->c.unk100, 1, v, at);
+                f->c.a.navTri = Actor_DoorFront(f, f->c.unk100, 1, v, at);
             }
         }
     }
@@ -9106,7 +9106,7 @@ void func_00198240(Fiona *f) {
         f32 d[4] __attribute__((aligned(16)));
 
         func_001F6370(f->c.motion, d, 0.0f);
-        func_00125900(&f->c);
+        Character_RootTurn(&f->c);
         sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
         sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
         f->c.a.pos[3] = 1.0f;
@@ -9120,7 +9120,7 @@ void func_00198F00(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, gProgress);
     }
@@ -9169,9 +9169,9 @@ void func_00194FC0(Fiona *f) {
             }
         }
         if (v == 6) {
-            func_00122C20(&f->c.a, 0x22, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x22, 5, 0, 0, NULL);
         } else if (v != 7) {
-            func_00122C20(&f->c.a, 0x8F, 5, 0, 0, NULL);
+            Actor_PlaySound(&f->c.a, 0x8F, 5, 0, 0, NULL);
         }
         if (v == 7) {
             shove_effects(f, hit, 1);
@@ -9185,7 +9185,7 @@ void func_00194FC0(Fiona *f) {
         FI(f, 0x1AD6CC, s32) |= FI(f, 0x1AD6C8, s32);
         FI(f, 0x1AD6C8, s32) = 0;
     }
-    func_00125A10(&f->c);
+    Character_RootMoveMasked(&f->c);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         door_give_up(f, p);
         if ((u32)(v - 6) < 2) {
@@ -9214,7 +9214,7 @@ void func_00194FC0(Fiona *f) {
         sceVu0CopyVector(at, Skel_Bone(AT(f->c.motion, 0x810, void *), bone) + 12);
     }
     who = func_00181880(f, at, 1);
-    if (v != 7 && v != 6 && func_00124480(&f->c.a, at, 0x20018) == (u32)-1) {
+    if (v != 7 && v != 6 && Actor_TriTo(&f->c.a, at, 0x20018) == (u32)-1) {
         if (door_anim_done(f)) {
             func_002DE030(f->c.motion, 0, 0x101, -1, 10.0f);
         }
@@ -9325,18 +9325,18 @@ void func_00194FC0(Fiona *f) {
     }
 }
 
-/* head for tri / pos (planning the path, func_00127140): 0 on the way, -1 when it's across the
- * room's divider from her or there is no path. `run` 0 starts walking it (func_001270F0), else
- * func_001270A0 */
+/* head for tri / pos (planning the path, Character_PlanPathKind): 0 on the way, -1 when it's across the
+ * room's divider from her or there is no path. `run` 0 starts walking it (Character_WaypointsCurve), else
+ * Character_Waypoints */
 s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32 run) {
     s32 r;
 
     if (NavMesh_AcrossDivider(gNavMesh, tri, f->c.a.navTri)) {
         return -1;
     }
-    r = func_00127140(&f->c, 0, tri, pos);
+    r = Character_PlanPathKind(&f->c, 0, tri, pos);
     if (r > 0) {
-        r = run == 0 ? func_001270F0(&f->c) : func_001270A0(&f->c);
+        r = run == 0 ? Character_WaypointsCurve(&f->c) : Character_Waypoints(&f->c);
     }
     return -(r < 0);
 }

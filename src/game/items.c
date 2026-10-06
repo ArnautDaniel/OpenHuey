@@ -247,7 +247,7 @@ void *Items_Give(u8 *items, u32 id, s32 n) {
 
         o = VCALL(pool, 0x10, void *(*)(void *, u32))(pool, 0x18);
         if (o != NULL) {
-            void *p = func_0025FF00(0x18, o);
+            void *p = SubPool_new(0x18, o);
 
             if (p != NULL) {
                 if (id == 0x3F) {
@@ -439,7 +439,7 @@ void Items_Remove(u8 *items, VObject *it) {
     }
     VCALL(it, 0x8, void (*)(VObject *, s32))(it, 1);
     {
-        u8 *b = func_0025FF00(0x18, it);
+        u8 *b = SubPool_new(0x18, it);
 
         if (b != NULL) {
             AT(b, 0x0, void **) = D_0046C790;

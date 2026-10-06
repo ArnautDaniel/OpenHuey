@@ -84,9 +84,9 @@ s32 RoomE0_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991CD0[i & 0xFF], a, b);
 }
 
-/* (as Room48_Cmd04)  room 0x48 (D_00426830): the player's func_00124F20(0) */
+/* (as Room48_Cmd04)  room 0x48 (D_00426830): the player's Character_ChooseExit(0) */
 s32 func_00378A00(void) {
-    func_00124F20(gCharPlayer, 0);
+    Character_ChooseExit(gCharPlayer, 0);
     return 1;
 }
 

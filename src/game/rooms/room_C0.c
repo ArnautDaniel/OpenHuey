@@ -118,19 +118,19 @@ s32 RoomC0_Cmd01(void *self, void *a1, u8 *cmd) {
         a = ee_ftoi(k2.f * (f32)(1203 - t));
         break;
     default:
-        func_001267F0(gCharSlot2, 0x11);
+        Character_Set152C(gCharSlot2, 0x11);
         VCALL(gRenderer, 0x64, void (*)(VObject *, u32, s32))(gRenderer, 0x808080, 0);
         return 1;
     }
     if (a >= 0x80) {
-        func_001267F0(gCharSlot2, 0xA);
+        Character_Set152C(gCharSlot2, 0xA);
         return 1;
     }
     if (a < 0) {
         a = 0;
     }
     AT(gCharSlot2, 0xE4, u8) = 0;
-    func_001267F0(gCharSlot2, 0x23);
+    Character_Set152C(gCharSlot2, 0x23);
     VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, (u32)a << 24 | 0x808080);
     return 1;
 }

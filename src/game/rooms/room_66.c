@@ -236,8 +236,8 @@ s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* byte 3 0: the character's +0xE1 / +0xF4 cleared; 1 / 2 / else func_00125A10 / func_00125960 /
- * func_00125900, then: a foot (model +0x64) coming down while she stands (model +0x550 not above
+/* byte 3 0: the character's +0xE1 / +0xF4 cleared; 1 / 2 / else Character_RootMoveMasked / Character_RootMove /
+ * Character_RootTurn, then: a foot (model +0x64) coming down while she stands (model +0x550 not above
  * 0) steps (voice 4 on motion 0x201, else 3) and, each foot, puffs mud; event flags 5 / 6 keep
  * which feet are down */
 s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
@@ -254,13 +254,13 @@ s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
         AT(c, 0xF4, s32) = 0;
         break;
     case 1:
-        func_00125A10(c);
+        Character_RootMoveMasked(c);
         break;
     case 2:
-        func_00125960(c);
+        Character_RootMove(c);
         break;
     default:
-        func_00125900(c);
+        Character_RootTurn(c);
         break;
     }
     if (cmd[3] == 0) {
@@ -274,7 +274,7 @@ s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
     wasL = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 5);
     wasR = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 6);
     if (AT(c->motion, 0x550, f32) <= 0.0f && ((!wasL && l) || (!wasR && r))) {
-        func_00122C20(&c->a, AT(c->motion, 0x55C, s32) == 0x201 ? 4 : 3, 6, 0, 0, NULL);
+        Actor_PlaySound(&c->a, AT(c->motion, 0x55C, s32) == 0x201 ? 4 : 3, 6, 0, 0, NULL);
     }
     fl = func_002DD420(c->motion, posL, 0, 0.0f, 1.0f);
     fr = func_002DD420(c->motion, posR, 1, 0.0f, 1.0f);

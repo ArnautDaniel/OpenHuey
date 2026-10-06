@@ -178,17 +178,17 @@ s32 RoomC7_Cmd03(void *self, void *a1, u8 *cmd) {
         }
         AT(gCharSlot2, 0xE4, u8) = 0;
         VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, a << 24 | 0x808080);
-        func_001267F0(gCharSlot2, cmd[3] == 2 ? 0x23 : 0xF);
+        Character_Set152C(gCharSlot2, cmd[3] == 2 ? 0x23 : 0xF);
         return 1;
     case 1:
         s = 0xFF;
         break;
     }
     if (s >= 0xFF) {
-        func_001267F0(gCharSlot2, 0xA);
+        Character_Set152C(gCharSlot2, 0xA);
         s = 0xFF;
     } else {
-        func_001267F0(gCharSlot2, 0x11);
+        Character_Set152C(gCharSlot2, 0x11);
     }
     VCALL(gRenderer, 0x64, void (*)(VObject *, u32, s32))(gRenderer, s << 24 | 0x808080, 0);
     return 1;
@@ -292,7 +292,7 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
     case 0:
         AT(gCharPartner, 0xE4, u8) = 0;
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, u32))(gEvents, 1, 0x808080);
-        func_001267F0(gCharPartner, 0xF);
+        Character_Set152C(gCharPartner, 0xF);
         return 1;
     case 1:
         ev = gEvents;
@@ -301,7 +301,7 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
         if (c != 0x80808080) {
             AT(gCharPartner, 0xE4, u8) = 0;
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c + 0x10000000);
-            func_001267F0(gCharPartner, 0xF);
+            Character_Set152C(gCharPartner, 0xF);
             return 2;
         }
         AT(gCharPartner, 0xE4, u8) = 1;
@@ -309,7 +309,7 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
     case 2:
         AT(gCharPartner, 0xE4, u8) = 0;
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, u32))(gEvents, 1, 0x80808080);
-        func_001267F0(gCharPartner, 0xF);
+        Character_Set152C(gCharPartner, 0xF);
         return 1;
     case 3:
         ev = gEvents;
@@ -318,7 +318,7 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
         if (c != 0x808080) {
             AT(gCharPartner, 0xE4, u8) = 0;
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c - 0x10000000);
-            func_001267F0(gCharPartner, 0xF);
+            Character_Set152C(gCharPartner, 0xF);
             return 2;
         }
         AT(gCharPartner, 0xE4, u8) = 1;

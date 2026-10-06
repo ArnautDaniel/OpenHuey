@@ -364,5 +364,5 @@ void TintStalker_Setup(Pursuer *p) {
     PU(p, 0x17C4, s32) = 0;
     PU(p, 0x17C8, u8) = 0;
     PU(p, 0x17CC, f32) = 0.0f;
-    func_001267F0(&p->c, 0x11);
+    Character_Set152C(&p->c, 0x11);
 }

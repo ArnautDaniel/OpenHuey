@@ -82,7 +82,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
         c->a.vtbl = D_00469C60;
         c->a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&c->a);
+            Actor_Destroy(&c->a);
         }
     }
     return c;
@@ -99,7 +99,7 @@ Pursuer *Daniella_dtor(Pursuer *p, s32 flags) {
             Pursuer_DestroyBase(p);
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;

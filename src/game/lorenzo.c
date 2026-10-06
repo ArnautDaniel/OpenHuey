@@ -95,7 +95,7 @@ Pursuer *Lorenzo_dtor(Pursuer *p, s32 flags) {
             Pursuer_DestroyBase(p);
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -317,7 +317,7 @@ Pursuer *Lorenzo2_dtor(Pursuer *p, s32 flags) {
             Pursuer_DestroyBase(p);
         }
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -668,7 +668,7 @@ void func_00309890(Pursuer *p) {
 
 /* an animation whose end ends the step */
 static inline void Lorenzo2_PlayOut(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -731,20 +731,20 @@ void func_0030A4D0(Pursuer *p) {
    entry 2 (+0x171C +0x48: +0xC reach) and on the mesh are hit (Relation_Request with the entry,
    stunning by its +0x18 chance), once each (+0x1760); its end ends the step */
 void func_0030A650(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x48;
         u32 hit = 0;
         f32 d;
 
-        d = func_00124490(&p->c.a, gCharPlayer->a.pos);
+        d = Actor_Distance(&p->c.a, gCharPlayer->a.pos);
         if (d <= AT(e, 0xC, f32) && !(d < 0.0f) &&
-            func_00124480(&p->c.a, gCharPlayer->a.pos, p->c.a.navMask) != (u32)-1) {
+            Actor_TriTo(&p->c.a, gCharPlayer->a.pos, p->c.a.navMask) != (u32)-1) {
             hit = (hit | 1) & 0xFF;
         }
-        d = func_00124490(&p->c.a, gCharPartner->a.pos);
+        d = Actor_Distance(&p->c.a, gCharPartner->a.pos);
         if (d <= AT(e, 0xC, f32) && !(d < 0.0f) &&
-            func_00124480(&p->c.a, gCharPartner->a.pos, p->c.a.navMask) != (u32)-1) {
+            Actor_TriTo(&p->c.a, gCharPartner->a.pos, p->c.a.navMask) != (u32)-1) {
             hit = (hit | 2) & 0xFF;
         }
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
@@ -807,7 +807,7 @@ void func_0030AB80(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
         return;
     }
@@ -827,7 +827,7 @@ void func_0030AB80(Pursuer *p) {
 
 extern const PTMF D_00423A78;
 
-/* closing on his target: when it's out of reach by the mesh (func_001257B0 < 0), back to the
+/* closing on his target: when it's out of reach by the mesh (Character_PathLength < 0), back to the
    walk and the step ends; otherwise he sinks away (0x1304, func_0030AB80) */
 static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     f32 t[4] __attribute__((aligned(16)));
@@ -835,7 +835,7 @@ static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p
 
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    if (func_001257B0(&p->c, tri, t, -1) < 0.0f) {
+    if (Character_PathLength(&p->c, tri, t, -1) < 0.0f) {
         if (PU(p, 0x1788, s32) != 0) {
             func_00297B40(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p), 0);
         }
@@ -874,7 +874,7 @@ static inline void Burst_Init(void **obj) {
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
 void func_0030A210(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
     } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
@@ -921,7 +921,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
         if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
             VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, p->c.a.navTri, p->c.a.pos);
         } else {
-            func_00124890(&p->c.a, -1);
+            Actor_TeleportRandom(&p->c.a, -1);
             p->c.a.disabled = 1;
             p->c.a.unk2D = 1;
         }
@@ -934,7 +934,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
    (func_00217920) is hit (Relation_Request with attack entry 2, stunning by its +0x18 chance),
    once each (+0x1760); its end ends the step */
 static inline void Lorenzo2b_Sweep(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u32 hit = func_00217920(p) & 0xFF;
 
@@ -977,9 +977,9 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
             d -= 5.0f;
         }
         if (!(d <= 0.0f)) {
-            func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+            Character_WaypointAhead(&p->c, &p->c.a.navTri, p->c.a.pos, d);
         }
-        h = func_001244D0(&p->c.a, p->target->a.pos);
+        h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
         p->c.a.angle[1] = h;
         sceVu0UnitMatrix(p->c.a.rot);
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
@@ -1024,7 +1024,7 @@ void func_0030AF20(Pursuer *p) {
     }
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (Character_PathLength(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -1060,9 +1060,9 @@ void func_0030B240(Pursuer *p) {
     tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
     d = func_00214B90(p, tri, goal);
     if (!(d <= 0.0f)) {
-        func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+        Character_WaypointAhead(&p->c, &p->c.a.navTri, p->c.a.pos, d);
     }
-    h = func_001244D0(&p->c.a, p->target->a.pos);
+    h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
     p->c.a.angle[1] = h;
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
@@ -1089,7 +1089,7 @@ void func_0030B540(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
         return;
     }
@@ -1119,7 +1119,7 @@ void func_0030B840(Pursuer *p) {
 
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    d = func_001257B0(&p->c, tri, t, -1);
+    d = Character_PathLength(&p->c, tri, t, -1);
     if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
             p->c.unk104[0] = 0;
@@ -1199,7 +1199,7 @@ Pursuer *Kind12_dtor(Pursuer *p, s32 flags) {
         p->c.a.vtbl = D_00469C60;
         p->c.a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&p->c.a);
+            Actor_Destroy(&p->c.a);
         }
     }
     return p;
@@ -1432,7 +1432,7 @@ void Kind12_Setup(Pursuer *p) {
     PU(p, 0x17C0, u8) = 1;
     PU(p, 0x17C4, f32) = k02.f;
     p->c.unkE4 = 0;
-    func_001267F0(&p->c, 0x14);
+    Character_Set152C(&p->c, 0x14);
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
@@ -1573,7 +1573,7 @@ void Kind39_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
 void func_00363FA0(Pursuer *p) {
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
     } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
@@ -1678,7 +1678,7 @@ void func_00364930(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
         return;
     }
@@ -1715,9 +1715,9 @@ void func_00364FF0(Pursuer *p) {
     tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
     d = func_00214B90(p, tri, goal);
     if (!(d <= 0.0f)) {
-        func_001273D0(&p->c, &p->c.a.navTri, p->c.a.pos, d);
+        Character_WaypointAhead(&p->c, &p->c.a.navTri, p->c.a.pos, d);
     }
-    h = func_001244D0(&p->c.a, p->target->a.pos);
+    h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
     p->c.a.angle[1] = h;
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
@@ -1742,7 +1742,7 @@ void func_003652F0(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     f32 d;
 
-    func_00125A10(&p->c);
+    Character_RootMoveMasked(&p->c);
     if (!(AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END)) {
         return;
     }
@@ -1788,7 +1788,7 @@ void func_00364CD0(Pursuer *p) {
     }
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (Character_PathLength(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -1811,7 +1811,7 @@ void func_003655F0(Pursuer *p) {
 
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    d = func_001257B0(&p->c, tri, t, -1);
+    d = Character_PathLength(&p->c, tri, t, -1);
     if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
             p->c.unk104[0] = 0;

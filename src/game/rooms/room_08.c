@@ -136,10 +136,10 @@ s32 Room08_Cmd01(VObject *self, void *a1, u8 *cmd) {
             AT(o, 0x3C, f32) = 0.0f;
             if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 7) == 1) {
                 VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 7);
-                func_00122C20(&gCharPlayer->a, 4, 6, 0, 0, NULL);
+                Actor_PlaySound(&gCharPlayer->a, 4, 6, 0, 0, NULL);
             } else {
                 VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 7);
-                func_00122C20(&gCharPlayer->a, 5, 6, 0, 0, NULL);
+                Actor_PlaySound(&gCharPlayer->a, 5, 6, 0, 0, NULL);
             }
         }
     }

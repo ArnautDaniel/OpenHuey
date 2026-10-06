@@ -114,7 +114,7 @@ s32 CharLoad_Partner(Progress *p, u32 id) {   /* (a u8) */
     if (mem == NULL) {
         return 0;
     }
-    obj = func_00124E50((void *)k->size, mem);
+    obj = Actor_new((void *)k->size, mem);
     if (obj != NULL) {
         if (k->withKind) {
             obj = ((void *(*)(void *, s32, s32))k->ctor)(obj, 2, id);
@@ -210,7 +210,7 @@ s32 CharLoad_EventChar(Progress *p, u32 id, u32 slot) {
     if (mem == NULL) {
         return 0;
     }
-    obj = func_00124E50((void *)0x17C0, mem);
+    obj = Actor_new((void *)0x17C0, mem);
     if (obj != NULL) {
         obj = Pursuer_ctor(obj, id, slot);
     }

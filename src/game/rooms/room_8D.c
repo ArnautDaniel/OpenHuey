@@ -106,8 +106,8 @@ s32 Room8D_Cmd01(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        func_001267F0(gCharSlot3, 0x14);
-        func_001267F0(gCharSlot4, 0x14);
+        Character_Set152C(gCharSlot3, 0x14);
+        Character_Set152C(gCharSlot4, 0x14);
         slot = Effect_New(gEffects, 0x20, effect_70F90_init);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
         /* fall through */

@@ -501,7 +501,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
             s32 m = TARGET(h)->moveMode;
 
             if (m != 4 && m != 3) {
-                if (func_00124490(&h->c.a, TARGET(h)->a.pos) <= 10.0f) {
+                if (Actor_Distance(&h->c.a, TARGET(h)->a.pos) <= 10.0f) {
                     if (TARGET(h) != gCharPlayer) {
                         instead(h, 0x59, 0);
                     } else {
@@ -578,7 +578,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x2D:
     case 0x39:   /* out of the room by the path he has (or to the progress's room) */
         if (HW(h, 0xF3590, u8) == 0) {
-            if (func_00126F80(&h->c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, HEWIE_SIDE(h), -1) <= 0) {
+            if (Character_Route(&h->c, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), -1, HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
                 func_0013E680(h);
                 return;
@@ -631,7 +631,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                 || !exit_open(h, e)) {
                 continue;
             }
-            if (func_00126F80(&h->c, VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e), -1,
+            if (Character_Route(&h->c, VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e), -1,
                               HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
                 continue;
@@ -663,7 +663,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         if (!(ok & 0xFF)) {
             HW(h, 0xF3590, u8) = 0;
             HW(h, 0xFC, s32) = 0x17;
-            if (func_00126F80(&h->c, HW(h, 0xF3594, s32), -1, HEWIE_SIDE(h), -1) <= 0) {
+            if (Character_Route(&h->c, HW(h, 0xF3594, s32), -1, HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
                 func_0013E680(h);
                 return;
@@ -681,9 +681,9 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 6;
         CMD(h) = 0x80;
         WAIT(h) = 0x3C;
-        if (func_00122B50(&h->c.a, at) != 0) {
+        if (Actor_PosInCurrentRoom(&h->c.a, at) != 0) {
             sceVu0SubVector(at, at, h->c.a.pos);
-            func_00122C20(&h->c.a, 0x69, 5, 0, 0, at);
+            Actor_PlaySound(&h->c.a, 0x69, 5, 0, 0, at);
         }
         HW(h, 0x1388, s32) = HW(h, 0x1384, s32);
         STATE(h, func_00154E40);
@@ -694,7 +694,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         u8 seen = 0;
         u32 n;
 
-        if (func_00126F80(&h->c, VCALL(p, 0xC, s32 (*)(Progress *))(p), -1, HEWIE_SIDE(h), -1) != 2) {
+        if (Character_Route(&h->c, VCALL(p, 0xC, s32 (*)(Progress *))(p), -1, HEWIE_SIDE(h), -1) != 2) {
             for (n = 0; n < 8; n++) {
                 u8 e = exit_random(h, &seen);
                 s32 room;
@@ -706,7 +706,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
                     continue;
                 }
                 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e);
-                if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p) && func_00126F80(&h->c, room, -1, HEWIE_SIDE(h), -1) == 1) {
+                if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p) && Character_Route(&h->c, room, -1, HEWIE_SIDE(h), -1) == 1) {
                     door_from_path(h);
                     MODE(h) = 6;
                     CMD(h) = 0x80;
@@ -821,7 +821,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         } else {
             MODE(h) = 0;
             CMD(h) = 0;
-            HW(h, 0x10C, f32) = func_001244D0(&h->c.a, gCharacters[HW(h, 0x100, s32)]->a.pos);
+            HW(h, 0x10C, f32) = Actor_HeadingTo(&h->c.a, gCharacters[HW(h, 0x100, s32)]->a.pos);
             STATE(h, func_0014A180);
         }
         break;
@@ -1344,10 +1344,10 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x85:   /* look at Fiona, else the pursuer, within 150 */
         MODE(h) = 0;
         TARGET(h) = NULL;
-        if (sees(h, gCharPlayer) && func_00124490(&h->c.a, gCharPlayer->a.pos) < 150.0f) {
+        if (sees(h, gCharPlayer) && Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 150.0f) {
             TARGET(h) = gCharPlayer;
         }
-        if (TARGET(h) == NULL && sees(h, gCharPursuer) && func_00124490(&h->c.a, gCharPursuer->a.pos) < 150.0f) {
+        if (TARGET(h) == NULL && sees(h, gCharPursuer) && Actor_Distance(&h->c.a, gCharPursuer->a.pos) < 150.0f) {
             TARGET(h) = gCharPursuer;
         }
         CMD(h) = 0;

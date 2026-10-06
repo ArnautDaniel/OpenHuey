@@ -1492,7 +1492,7 @@ void *Fiona_dtor(void **o, s32 flags) {
         o[0] = D_00469C60;
         o[0] = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40((Actor *)o);
+            Actor_Destroy((Actor *)o);
         }
     }
     return o;

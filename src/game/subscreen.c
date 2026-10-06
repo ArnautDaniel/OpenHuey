@@ -37,7 +37,7 @@
 extern VObject *D_00456DF0;
 extern void *D_0046C790[];      /* a pool entry */
 
-void func_00396900(SubScreen *s);
+void SubScreen_StateItems(SubScreen *s);
 void SubScreen_DrawLoadWait(SubScreen *s);
 void SubScreen_Open(SubScreen *s);
 
@@ -46,28 +46,31 @@ static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
 
 extern void *D_00472700[];
 extern const u8 D_0044BF10[];
-s32 func_00260130(void *pool);
-u32 func_002605F0(u8 *o, u8 row);
-void *func_00261000(u8 *items, u32 id, u64 *data);
-s32 func_0038A2C0(void *o, u32 i);   /* (a u8) */
-void *func_0038C890(u8 *m);
-u32 func_003941C0(u8 *o);
+s32 SubScreen_LoaderIdle(void *pool);
+u32 Items_FirstFree(u8 *o, u8 row);
+void *Items_GiveWithData(u8 *items, u32 id, u64 *data);
+s32 SubScreen_EntryMotions(void *o, u32 i);   /* (a u8) */
+void *Kind14Model_ctor(u8 *m);
+u32 SubScreen_FileCount(u8 *o);
 
 extern void *D_0046EC80[];
-void *func_002C65C0(u8 *o, s32 flags);
+void *Obj46EC80_dtor(u8 *o, s32 flags);
 
 /* placement new (pool entries) */
-void *func_0025FF00(u32 size, void *p) {
+/* 0x0025FF00 */
+void *SubPool_new(u32 size, void *p) {
     return p;
 }
 
 /* the file loader's +0x28 (0x4000000) is 2 */
-s32 func_00260130(void *pool) {
+/* 0x00260130 */
+s32 SubScreen_LoaderIdle(void *pool) {
     return VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x4000000) == 2;
 }
 
 /* the first free (0) of the 64 words in row `row` (0x100 bytes from +0x12E0); 64 if none */
-u32 func_002605F0(u8 *o, u8 row) {
+/* 0x002605F0 */
+u32 Items_FirstFree(u8 *o, u8 row) {
     u32 i;
 
     for (i = 0; i < 0x40; i++) {
@@ -79,7 +82,8 @@ u32 func_002605F0(u8 *o, u8 row) {
 }
 
 /* an item `id` (one, Items_Give) with its 8 bytes at +0x10 */
-void *func_00261000(u8 *items, u32 id, u64 *data) {
+/* 0x00261000 */
+void *Items_GiveWithData(u8 *items, u32 id, u64 *data) {
     u8 *it = Items_Give(items, id, 1);
 
     if (it != NULL) {
@@ -94,7 +98,7 @@ void SubPool_Reset(u8 *pool) {
     s32 i, j;
 
     for (i = 0; i < 0x40; i++) {
-        u8 *e = func_0025FF00(0x18, pool + 8 + i * 0x18);
+        u8 *e = SubPool_new(0x18, pool + 8 + i * 0x18);
 
         if (e != NULL) {
             AT(e, 0x0, void **) = D_0046C790;
@@ -115,7 +119,8 @@ void SubPool_Reset(u8 *pool) {
 }
 
 /* destructor (vtable D_0046EC80) */
-void *func_002C65C0(u8 *o, s32 flags) {
+/* 0x002C65C0 */
+void *Obj46EC80_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EC80;
         AT(o, 0x0, void **) = D_00469D00;
@@ -152,7 +157,7 @@ void SubScreen_Start(SubScreen *s) {
     s->open = 0;
     s->resumeKind = 0;
     s->kind = 0;
-    ptmf_set_fn(&s->resume, func_00396900);
+    ptmf_set_fn(&s->resume, SubScreen_StateItems);
     ptmf_set_fn(&s->draw, SubScreen_DrawLoadWait);
 }
 
@@ -223,27 +228,27 @@ void SubScreen_SetLayout(SubScreen *s, s32 type) {
     }
 }
 
-void func_0038F7D0(SubScreen *s);
-void func_00388D30(SubScreen *s);
+void Costumes_Setup(SubScreen *s);
+void Results_Setup(SubScreen *s);
 extern void *D_00474020[];       /* the 0x15C helper's base vtable */
 extern void *D_00474040[];
 extern void *D_00474060[];
 
 void Options_StateList(SubScreen *s);
-void func_003912E0(SubScreen *s);
-void func_003908B0(SubScreen *s);
-void func_00390790(SubScreen *s);
+void SubScreen_StateSave(SubScreen *s);
+void SubScreen_StateWordMake(SubScreen *s);
+void SubScreen_StatePageObject(SubScreen *s);
 void SubScreen_StateLoad(SubScreen *s);
-void func_0038FBE0(SubScreen *s);
-void func_0038E0C0(SubScreen *s);
-void func_003894F0(SubScreen *s);
-void func_0038D7E0(SubScreen *s);
-void func_00388FF0(SubScreen *s);
-void func_003888A0(SubScreen *s);
-void func_00387F00(SubScreen *s);
-void func_00386150(SubScreen *s);
+void Costumes_State(SubScreen *s);
+void SubScreen_StateMovies(SubScreen *s);
+void SubScreen_StateExtrasMenu(SubScreen *s);
+void SubScreen_StateExtras(SubScreen *s);
+void Results_State(SubScreen *s);
+void Gallery_StateMusic(SubScreen *s);
+void Gallery_StateArtList(SubScreen *s);
+void SubScreen_StateEntries(SubScreen *s);
 void SubScreen_DrawFadeIn(SubScreen *s);
-void func_00398100(SubScreen *s);
+void SubScreen_DrawOpening(SubScreen *s);
 
 static const char sSubSave[] = "SUBSCR\\SUBSAVE.TEX";
 static const char sPlate[] = "SUBSCR\\PLATE.TEX";
@@ -322,7 +327,7 @@ void SubScreen_Open(SubScreen *s) {
         s->card.state = 0;
         s->card.hidden = 0;
         s->kind = 0x85;
-        ptmf_set_fn(&s->state, func_003912E0);
+        ptmf_set_fn(&s->state, SubScreen_StateSave);
         break;
     case 2:
         sub_free_vram();
@@ -333,7 +338,7 @@ void SubScreen_Open(SubScreen *s) {
         }
         s->unkA8C60 = 0;
         s->kind = 0x84;
-        ptmf_set_fn(&s->state, func_003908B0);
+        ptmf_set_fn(&s->state, SubScreen_StateWordMake);
         sub_se();
         break;
     case 3:
@@ -341,7 +346,7 @@ void SubScreen_Open(SubScreen *s) {
         sub_load(s, sSynSlot, s->pageTex);
         sub_new_slots(s, D_00474060);
         s->kind = 0x86;
-        ptmf_set_fn(&s->state, func_00390790);
+        ptmf_set_fn(&s->state, SubScreen_StatePageObject);
         sub_se();
         break;
     case 4:
@@ -349,7 +354,7 @@ void SubScreen_Open(SubScreen *s) {
         sub_load(s, sSynSlot, s->pageTex);
         sub_new_slots(s, D_00474040);
         s->kind = 0x87;
-        ptmf_set_fn(&s->state, func_00390790);
+        ptmf_set_fn(&s->state, SubScreen_StatePageObject);
         sub_se();
         break;
     case 5:
@@ -371,8 +376,8 @@ void SubScreen_Open(SubScreen *s) {
         sub_free_vram();
         sub_load(s, sSubMg, s->pageTex);
         s->kind = 0x80;
-        func_0038F7D0(s);
-        ptmf_set_fn(&s->state, func_0038FBE0);
+        Costumes_Setup(s);
+        ptmf_set_fn(&s->state, Costumes_State);
         break;
     case 8: {
         VObject *ld;
@@ -385,7 +390,7 @@ void SubScreen_Open(SubScreen *s) {
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sThumbnail, (u8 *)p + 0x16C0, 0x6000000, 0);
         s->kind = 0x8B;
         s->page[0] = Progress_GetVar(p, 0x2B);
-        ptmf_set_fn(&s->state, func_0038E0C0);
+        ptmf_set_fn(&s->state, SubScreen_StateMovies);
         break;
     }
     case 9:
@@ -393,7 +398,7 @@ void SubScreen_Open(SubScreen *s) {
         s->card.state = 0;
         s->card.hidden = 1;
         s->kind = 0x85;
-        ptmf_set_fn(&s->state, func_003912E0);
+        ptmf_set_fn(&s->state, SubScreen_StateSave);
         break;
     case 10:
         /* the extras menu: entries 0..2, then 3 and 4 when unlocked, then 5 */
@@ -416,19 +421,19 @@ void SubScreen_Open(SubScreen *s) {
         s->page[n] = 5;
         s->page[6] = n + 1;
         s->page[7] = 0;
-        ptmf_set_fn(&s->state, func_003894F0);
+        ptmf_set_fn(&s->state, SubScreen_StateExtrasMenu);
         break;
     case 11:
         sub_free_vram();
         sub_load(s, sGalModel, s->pageTex);
         s->kind = 0x8C;
         s->page[0] = 0;
-        ptmf_set_fn(&s->state, func_0038D7E0);
+        ptmf_set_fn(&s->state, SubScreen_StateExtras);
         break;
     case 12:
         s->kind = 0x80;
-        func_00388D30(s);
-        ptmf_set_fn(&s->state, func_00388FF0);
+        Results_Setup(s);
+        ptmf_set_fn(&s->state, Results_State);
         break;
     case 13:
         sub_free_vram();
@@ -437,7 +442,7 @@ void SubScreen_Open(SubScreen *s) {
         s->page[0] = 0;
         s->page[2] = 0xFF;
         s->page[1] = 0xFF;
-        ptmf_set_fn(&s->state, func_003888A0);
+        ptmf_set_fn(&s->state, Gallery_StateMusic);
         break;
     case 14: {
         VObject *ld;
@@ -460,7 +465,7 @@ void SubScreen_Open(SubScreen *s) {
         s->page[10] = 0;
         s->page[11] = 0;
         s->page[12] = 0;
-        ptmf_set_fn(&s->state, func_00387F00);
+        ptmf_set_fn(&s->state, Gallery_StateArtList);
         break;
     }
     case 15:
@@ -468,7 +473,7 @@ void SubScreen_Open(SubScreen *s) {
         sub_load(s, sGalType, s->pageTex);
         s->kind = 0x8F;
         s->page[0] = 0;
-        ptmf_set_fn(&s->state, func_00386150);
+        ptmf_set_fn(&s->state, SubScreen_StateEntries);
         break;
     }
     s->showBehind = 1;
@@ -478,7 +483,7 @@ void SubScreen_Open(SubScreen *s) {
     ptmf_set_fn(&s->draw, SubScreen_DrawFadeIn);
     if (s->mode == 7 || s->mode == 0xC || s->mode == 0xA) {
         s->fadeStep = 8;
-        ptmf_set_fn(&s->draw, func_00398100);
+        ptmf_set_fn(&s->draw, SubScreen_DrawOpening);
     }
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);
@@ -672,7 +677,7 @@ void Options_StateSound(SubScreen *s);
 void Options_StateVolume(SubScreen *s);
 void Options_StatePosition(SubScreen *s);
 void Options_StateDefaults(SubScreen *s);
-void func_00394260(SubScreen *s);
+void SubScreen_StateFiles(SubScreen *s);
 void Options_Draw(SubScreen *s, s32 editing);
 
 /* in-game, not in a special scene (gProgress +0x1FBEC1) */
@@ -713,12 +718,12 @@ void Options_StateList(SubScreen *s) {
             Sound_PlaySE(SE_DECIDE);
         } else if ((D_0047E36C & MENU_NEXT) && sub_ingame_menu(s)) {
             s->unkA8C50 = 0;
-            ptmf_set_fn(&s->state, func_00396900);
-            ptmf_set_fn(&s->resume, func_00396900);
+            ptmf_set_fn(&s->state, SubScreen_StateItems);
+            ptmf_set_fn(&s->resume, SubScreen_StateItems);
             Sound_PlaySE(SE_PAGE);
         } else if ((D_0047E36C & MENU_PREV) && sub_ingame_menu(s)) {
-            ptmf_set_fn(&s->state, func_00394260);
-            ptmf_set_fn(&s->resume, func_00394260);
+            ptmf_set_fn(&s->state, SubScreen_StateFiles);
+            ptmf_set_fn(&s->resume, SubScreen_StateFiles);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_CANCEL) {
             s->close = 1;
@@ -729,7 +734,8 @@ void Options_StateList(SubScreen *s) {
 }
 
 /* the first free (0) of the 128 halfwords from +0x15F8; 128 if none */
-u32 func_003941C0(u8 *o) {
+/* 0x003941C0 */
+u32 SubScreen_FileCount(u8 *o) {
     u32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -1224,7 +1230,8 @@ void Options_StateDefaults(SubScreen *s) {
 
 /* add `id` to the list at +0x15F8 (128 u16, 0-terminated): 1 if added, 0 if already there or
  * the list is full */
-s32 func_00394200(SubScreen *s, u32 id) {
+/* 0x00394200 */
+s32 SubScreen_AddFile(SubScreen *s, u32 id) {
     u16 *list = &AT(s, 0x15F8, u16);
     u32 i;
 
@@ -1243,7 +1250,8 @@ s32 func_00394200(SubScreen *s, u32 id) {
 /* +0x24 the in-game tab, drawn each gameplay frame: base parts 0xC (at y 0x60) and 0xB (at y
  * 0x8C) slide in from the left (state 2) as page[0x15C] grows to 0x40, stay (3) and slide out
  * to the right (4), fading with the slide */
-void func_00384CE0(SubScreen *s) {
+/* 0x00384CE0 */
+void SubScreen_DrawTab(SubScreen *s) {
     u8 t = s->page[0x15C];
 
     switch (s->tab) {
@@ -1270,11 +1278,12 @@ extern const char D_00463A60[];
 
 /* the page counter at the top right: "<page + 1> / <count>" (D_00463A60) and its caption
  * (message 0x1C6), faded by +0xA8C62 */
-void func_0037E480(u8 *s) {
+/* 0x0037E480 */
+void SubScreen_DrawPageCount(u8 *s) {
     char buf[16];
     u8 *msg;
 
-    func_0026EDD0(buf, 10, D_00463A60, s[0xA8C81] + 1, func_0038A2C0(s, s[0xA8C80]) & 0xFF);
+    func_0026EDD0(buf, 10, D_00463A60, s[0xA8C81] + 1, SubScreen_EntryMotions(s, s[0xA8C80]) & 0xFF);
     Task_ShowText(SUB_TEXT(s), 0x1B8, 0x10, 0, (u8 *)buf, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
     msg = Task_MessageText(SUB_TEXT(s), 0x1C6);
     Task_ShowText(SUB_TEXT(s), 0x160, 0x10, 0, msg, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
@@ -1282,7 +1291,8 @@ void func_0037E480(u8 *s) {
 
 /* the two lines of the current entry (+0x15F8, two message ids per entry +0xA8C55; 0 none) at
  * x 0x2D, y 0x54 / 0xF4 */
-void func_0037E580(u8 *s) {
+/* 0x0037E580 */
+void SubScreen_DrawFileLines(u8 *s) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
@@ -1295,20 +1305,22 @@ void func_0037E580(u8 *s) {
     }
 }
 
-/* the file's last page: its entries (+0x15F8, func_003941C0) two to a page */
-u8 func_0037E650(u8 *s) {
-    return (u8)(((s32)func_003941C0(s) - 1) / 2);
+/* the file's last page: its entries (+0x15F8, SubScreen_FileCount) two to a page */
+/* 0x0037E650 */
+u8 SubScreen_FileLastPage(u8 *s) {
+    return (u8)(((s32)SubScreen_FileCount(s) - 1) / 2);
 }
 
 /* its items (+0x8) Items_UseEquipped with 2 */
-void func_00384C20(u8 *o) {
+/* 0x00384C20 */
+void SubScreen_UseEquipped(u8 *o) {
     Items_UseEquipped(o + 0x8, 2);
 }
 
 /* ---- the in-game menu's item page ---- */
 
 extern void func_002600C0(void);
-extern void func_003949B0(SubScreen *s, s32 a);               /* the item grid */
+extern void SubScreen_DrawItemGrid(SubScreen *s, s32 a);               /* the item grid */
 extern const PTMF D_0044B200, D_0044B210, D_0044B220, D_0044B230, D_0044B240, D_0044B250;
 
 #define SUB_LIST(s) ((s)->unkA8C50)              /* the item list shown: 0 items, 1 / 2 the others */
@@ -1319,11 +1331,12 @@ extern const PTMF D_0044B200, D_0044B210, D_0044B220, D_0044B230, D_0044B240, D_
  * started, D_0044B210); list 1 sorts with the default button; next / previous turn to the
  * other lists and then the map page (D_0044B220 / D_0044B230) or the page before (D_0044B240 /
  * D_0044B250); cancel closes. Then its panels, the grid and the help line. */
-void func_00396900(SubScreen *s) {
+/* 0x00396900 */
+void SubScreen_StateItems(SubScreen *s) {
     u8 *items = s->pool;
 
     if (!s->fading) {
-        u32 n = func_002605F0(items, SUB_LIST(s));
+        u32 n = Items_FirstFree(items, SUB_LIST(s));
         s32 last = n != 0 ? (s32)(n - 1) / 16 : 0;
         u32 pad = D_0047E36C;
         u8 *cur = &SUB_CURSOR(s);
@@ -1402,7 +1415,7 @@ void func_00396900(SubScreen *s) {
             SubScreen_DrawPanel(s, (u8)panel[i], 0x80, 0x30);
         }
     }
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, SUB_LIST(s) == 1 ? 0x5B : 0x5D), 0x80, 0x30,
                   0x10, 0x15);
 }
@@ -1416,14 +1429,15 @@ extern const char D_00464230[];   /* "x%2d" */
  * one, the two arrows blinking; each item's icon (by kind), name (message 0x8100 + id; the
  * word plate's word in parameter 3) in grey or, equipped, highlighted, and its count; the
  * cursor. */
-void func_003949B0(SubScreen *s, s32 a) {
+/* 0x003949B0 */
+void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
     u8 *items = s->pool;
-    u32 n = func_002605F0(items, SUB_LIST(s));
+    u32 n = Items_FirstFree(items, SUB_LIST(s));
     s32 last = n != 0 ? (s32)(n - 1) / 16 : 0;
     s32 i;
 
     if (last < (s32)(SUB_CURSOR(s) >> 4)) {
-        SUB_CURSOR(s) = func_002605F0(items, SUB_LIST(s)) - 1;
+        SUB_CURSOR(s) = Items_FirstFree(items, SUB_LIST(s)) - 1;
     }
     Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, (SUB_CURSOR(s) >> 4) + 1, last + 1);
     if (last != 0) {
@@ -1485,7 +1499,8 @@ static inline void sub_panels(SubScreen *s) {
 /* The map page: next / previous turn to the page after (D_0044B388 / D_0044B398) or back to
  * the item lists' last (D_0044B3A8 / D_0044B3B8); cancel closes. Its panels, the map and,
  * when there are other maps to turn to, the two arrows blinking. */
-void func_00394670(SubScreen *s) {
+/* 0x00394670 */
+void SubScreen_StateMap(SubScreen *s) {
     if (!s->fading) {
         if (D_0047E36C & MENU_NEXT) {
             ptmf_set(&s->state, &D_0044B388);
@@ -1525,8 +1540,9 @@ extern const PTMF D_0044B3C8, D_0044B3D8, D_0044B3E8, D_0044B3F8;
 /* The file page: left / right turn its pages (round), next / previous turn to the page after
  * (D_0044B3C8 / D_0044B3D8) or back to the map (D_0044B3E8 / D_0044B3F8); cancel closes. Its
  * panels, the page number and, with more than one, the arrows blinking; the file. */
-void func_00394260(SubScreen *s) {
-    u8 last = func_0037E650((u8 *)s);
+/* 0x00394260 */
+void SubScreen_StateFiles(SubScreen *s) {
+    u8 last = SubScreen_FileLastPage((u8 *)s);
 
     if (!s->fading) {
         u8 old = SUB_FILE_PAGE(s);
@@ -1569,13 +1585,14 @@ void func_00394260(SubScreen *s) {
         SubScreen_DrawPart(s, 0x168, 0x180, 0x1A, alpha, 0);
         SubScreen_DrawPart(s, 0x1B3, 0x180, 0x1B, alpha, 0);
     }
-    func_0037E580((u8 *)s);
+    SubScreen_DrawFileLines((u8 *)s);
 }
 
 /* ---- costumes ---- */
 
 /* the costume worn (equipment slot 2, items 0x90..0x9B) as 0..8; -1 none */
-s32 func_00385370(SubScreen *s) {
+/* 0x00385370 */
+s32 SubScreen_Costume(SubScreen *s) {
     static const s8 kIndex[12] = {0, 1, 2, 3, 4, 5, -1, 6, 7, -1, -1, 8};
     u32 k = Items_Equipped(s->pool, 2) - 0x90;
 
@@ -1583,19 +1600,21 @@ s32 func_00385370(SubScreen *s) {
 }
 
 /* the costume worn as its model variant 0x31..0x33; 0 none */
-s32 func_00385410(SubScreen *s) {
+/* 0x00385410 */
+s32 SubScreen_CostumeModel(SubScreen *s) {
     static const u8 kModel[12] = {0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0, 0x32, 0x33, 0, 0, 0x33};
     u32 k = Items_Equipped(s->pool, 2) - 0x90;
 
     return k < 12 ? kModel[k] : 0;
 }
 
-extern void func_00385C30(SubScreen *s);
+extern void SubScreen_DrawEntries(SubScreen *s);
 extern const PTMF D_0044C108;
 
-/* state: a question being asked (its page drawn, func_00385C30); once answered, D_0044C108 */
-void func_00385F60(SubScreen *s) {
-    func_00385C30(s);
+/* state: a question being asked (its page drawn, SubScreen_DrawEntries); once answered, D_0044C108 */
+/* 0x00385F60 */
+void SubScreen_StateQuestion(SubScreen *s) {
+    SubScreen_DrawEntries(s);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
         ptmf_set(&s->state, &D_0044C108);
@@ -1604,12 +1623,13 @@ void func_00385F60(SubScreen *s) {
 
 /* ---- page openings and states ---- */
 
-extern void func_00386550(SubScreen *s);
+extern void Gallery_DrawArtList(SubScreen *s);
 extern const PTMF D_0044C050;
 
 /* open the page: its start values (+4 / +6 0x100 / 0xE0, +9 set), fading in (step 0x10), set
- * up (func_00386550), then state D_0044C050 */
-void func_00387E00(SubScreen *s) {
+ * up (Gallery_DrawArtList), then state D_0044C050 */
+/* 0x00387E00 */
+void SubScreen_StatePageOpen(SubScreen *s) {
     SUB_PAGE(s, 0x4, s16) = 0x100;
     SUB_PAGE(s, 0x6, s16) = 0xE0;
     SUB_PAGE(s, 0x8, u8) = 0;
@@ -1620,13 +1640,14 @@ void func_00387E00(SubScreen *s) {
     s->fading = 1;
     s->fade = 0;
     s->fadeStep = 0x10;
-    func_00386550(s);
+    Gallery_DrawArtList(s);
     ptmf_set(&s->state, &D_0044C050);
 }
 
 /* state: the page's own object (+0xA8C80, screen kind 0x86) runs (+0x10); when it is done
  * (+0x158) it ends (+0x14) and progress flag 4 is set */
-void func_00390790(SubScreen *s) {
+/* 0x00390790 */
+void SubScreen_StatePageObject(SubScreen *s) {
     VObject *o = (VObject *)s->page;
 
     s->kind = 0x86;
@@ -1645,7 +1666,8 @@ void func_00390790(SubScreen *s) {
 
 /* state: the save screens (screen kind 0x85): done (card state < 0) it closes (progress flag 4)
  * and stays drawn; else the card runs (flag 4 cleared) */
-void func_003912E0(SubScreen *s) {
+/* 0x003912E0 */
+void SubScreen_StateSave(SubScreen *s) {
     s->kind = 0x85;
     if (s->card.state < 0) {
         if (!s->fading) {
@@ -1664,7 +1686,8 @@ void func_003912E0(SubScreen *s) {
 }
 
 /* is extra `k` unlocked (the system data's +0x24 / +0x2C flags) */
-s32 func_0038DF90(SubScreen *s, u8 k) {
+/* 0x0038DF90 */
+s32 SubScreen_ExtraUnlocked(SubScreen *s, u8 k) {
     u32 f24 = AT(gSystemData, 0x24, u32), f2C;
 
     switch (k) {
@@ -1695,8 +1718,9 @@ extern const PTMF D_0044C0E8, D_0044C0F8;
 
 /* state: a question being asked; once answered, with the page's entry (page[0]) unlocked and a
  * message to follow, that message (D_0044C0E8), else D_0044C0F8 */
-void func_00386000(SubScreen *s) {
-    func_00385C30(s);
+/* 0x00386000 */
+void SubScreen_StateEntryQuestion(SubScreen *s) {
+    SubScreen_DrawEntries(s);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
         u16 *e = D_0044C080[SUB_PAGE(s, 0x0, u8)];
@@ -1713,7 +1737,8 @@ void func_00386000(SubScreen *s) {
 /* the menu's state from a save `save`: the three lists' items (ids +0x1068, 0xFFFF none; their
  * data +0x11E8), the four equipped (+0x17E8: list << 8 | place), nine words (+0x1044, to
  * +0x97740) and the file's entries (+0x17F0, each given to vtable +0xC) */
-void func_00385030(SubScreen *s, u8 *save) {
+/* 0x00385030 */
+void SubScreen_FromSave(SubScreen *s, u8 *save) {
     u32 l, i;
 
     for (l = 0; l < 3; l++) {
@@ -1721,7 +1746,7 @@ void func_00385030(SubScreen *s, u8 *save) {
             u16 id = AT(save, 0x1068 + l * 0x80 + i * 2, u16);
 
             if (id != 0xFFFF) {
-                func_00261000(s->pool, id, (u64 *)(save + 0x11E8 + l * 0x200 + i * 8));
+                Items_GiveWithData(s->pool, id, (u64 *)(save + 0x11E8 + l * 0x200 + i * 8));
             }
         }
     }
@@ -1744,8 +1769,9 @@ void func_00385030(SubScreen *s, u8 *save) {
     }
 }
 
-/* the menu's state into a save `save` (as func_00385030 reads it back) */
-void func_003851B0(SubScreen *s, u8 *save) {
+/* the menu's state into a save `save` (as SubScreen_FromSave reads it back) */
+/* 0x003851B0 */
+void SubScreen_ToSave(SubScreen *s, u8 *save) {
     u32 l, i;
 
     for (i = 0; i < 4; i++) {
@@ -1805,14 +1831,15 @@ extern const PTMF D_0044B378;
 
 /* state: the item page with a question up: its panels, the grid, a box and the question; once
  * answered, the item under the cursor is used (Items_Use), D_0044B378 */
-void func_00394E40(SubScreen *s) {
+/* 0x00394E40 */
+void SubScreen_StateItemQuestion(SubScreen *s) {
     if (SUB_LIST(s) == 0) {
         s->kind = 0;
     } else {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     sub_panels(s);
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     Task_DrawBox(&s->text, 0x100, 0xE0, 0x1A0, 0x160, 0x60, 0x30);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
@@ -1827,7 +1854,8 @@ void func_00394E40(SubScreen *s) {
  * for it (when it is done, the menu's textures made resident again); 2 sliding in, 3 shown, 4
  * sliding out (at the end the screen takes over, +0x28). 1 while it moves; nothing (0) while
  * +0xA8DDE is set */
-s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
+/* 0x00384E60 */
+s32 SubScreen_TabCommand(SubScreen *s, u8 cmd, s32 id) {
     VObject *tc;
 
     if (cmd != 0 && s->unkA8DDE == 1) {
@@ -1841,7 +1869,7 @@ s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
         s->unkA8DDE = 0;
         return 0;
     case 1:
-        if (func_00260130(s->pool) != 0) {
+        if (SubScreen_LoaderIdle(s->pool) != 0) {
             return 1;
         }
         tc = gTexCache;
@@ -1869,7 +1897,8 @@ extern const PTMF D_0044B338;
 
 /* state: the word plate's question - its list's panels, the grid, the word being made
  * (+0xA8C58, as parameter 3) and the question; once answered, D_0044B338 */
-void func_00395460(SubScreen *s) {
+/* 0x00395460 */
+void SubScreen_StateWordPlate(SubScreen *s) {
     char word[9];
     s32 i;
 
@@ -1879,7 +1908,7 @@ void func_00395460(SubScreen *s) {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     sub_panels(s);
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     for (i = 0; i < 8; i++) {
         word[i] = s->unkA8C58[i];
     }
@@ -1896,14 +1925,15 @@ extern const PTMF D_0044B368;
 
 /* state: "equip it?" - its list's panels, the grid and the question; once answered yes (+0x48
  * clear) the item under the cursor is equipped (a costume, list 1: put on Fiona), D_0044B368 */
-void func_00395000(SubScreen *s) {
+/* 0x00395000 */
+void SubScreen_StateEquipAsk(SubScreen *s) {
     if (SUB_LIST(s) == 0) {
         s->kind = 0;
     } else {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     sub_panels(s);
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     if (AT(&s->ask, 0x10, u8) != 0) {
         Task_Run(&s->ask);
         return;
@@ -1927,7 +1957,8 @@ extern s32 *D_0044BE90[];   /* per entry: its motion */
 /* the model gallery's motions: entries 3 / 4 switch the model's state (+0x2C, or +0x30 at
  * motion 0xE00); entry 5 runs on 0x800 -> 0x801 -> 0x802 as each ends; otherwise, when the
  * motion ends (unless it loops), the entry's own again (D_0044BE90; past 0x19 blended in) */
-void func_0038A740(SubScreen *s) {
+/* 0x0038A740 */
+void Gallery_ModelMotions(SubScreen *s) {
     u8 *m = SUB_GALLERY_MODEL(s);
     u8 k;
 
@@ -1970,7 +2001,8 @@ extern const PTMF D_0044B348, D_0044B358;
 /* state: "throw one away?" for an item with a word - its list's panels, the grid, the word and
  * the question; answered yes, one of it goes (a costume, list 1: Fiona changes back) and
  * message 0x57 (D_0044B348); no: D_0044B358 */
-void func_003951E0(SubScreen *s) {
+/* 0x003951E0 */
+void SubScreen_StateThrowAsk(SubScreen *s) {
     char word[9];
     s32 i;
 
@@ -1980,7 +2012,7 @@ void func_003951E0(SubScreen *s) {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     sub_panels(s);
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     for (i = 0; i < 8; i++) {
         word[i] = s->unkA8C58[i];
     }
@@ -2008,7 +2040,8 @@ extern const PTMF D_0044B1C0;
 /* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
  * or its panels at the fade's alpha (layer 0x31); depth of field set from 151; asked to close
  * (or progress flag 4): fading back (draw D_0044B1C0), with sound 0x95 unless quiet */
-void func_00397AB0(SubScreen *s) {
+/* 0x00397AB0 */
+void SubScreen_StateRun(SubScreen *s) {
     Progress *p = gProgress;
     struct {
         void **vtbl;
@@ -2067,7 +2100,8 @@ void func_00397AB0(SubScreen *s) {
  * difficulty, progress var 0x2E 0 / 1; page[2] set when new), the play time (59:59 at most)
  * placed among that difficulty's three best (system data +0x3C + difficulty * 12: hours,
  * minutes, seconds; page[3] its rank, 0xFF none) */
-void func_00388D30(SubScreen *s) {
+/* 0x00388D30 */
+void Results_Setup(SubScreen *s) {
     u8 *sys;
     u8 diff, h, m, sec;
     s32 t, i, k;
@@ -2127,7 +2161,8 @@ extern const char D_00463FD0[];
 /* the entry list (screen kind 0x8F): the language set to 1, the two headings, the entries of
  * the current one's group (page[0] / 8) with their numbers and titles ("???" until unlocked,
  * D_0044C080's flag), the current one highlighted; the group number of 2 */
-void func_00385C30(SubScreen *s) {
+/* 0x00385C30 */
+void SubScreen_DrawEntries(SubScreen *s) {
     u8 g;
     s32 k;
 
@@ -2154,7 +2189,7 @@ void func_00385C30(SubScreen *s) {
 
 /* ---- the model gallery's model ---- */
 
-extern u8 *func_0038C160(SubScreen *s, u8 k);   /* the gallery model made */
+extern u8 *Gallery_MakeModel(SubScreen *s, u8 k);   /* the gallery model made */
 extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
 extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
 extern const PTMF D_0044B9C0;
@@ -2163,7 +2198,8 @@ extern const PTMF D_0044B9C0;
  * (+0x4D8 / +0x4D9 set), the camera taken (+0xA8E00 / +0xA8E10) and aimed (26, 0, -27,
  * distance 10 + D_0044BB70, height D_0044B9F4), entries 6..8 idling (motions 0x1F00 / 0x2000 /
  * 0x2102) and the entry's first motion (D_0044BE90; past 0x19 blended in) */
-void func_0038B900(SubScreen *s) {
+/* 0x0038B900 */
+void Gallery_StateModelLoad(SubScreen *s) {
     VObject *cam;
     u8 *m;
     u8 k;
@@ -2174,7 +2210,7 @@ void func_0038B900(SubScreen *s) {
     s->fade = 0x80;
     ptmf_set(&s->state, &D_0044B9C0);
     SUB_PAGE(s, 0x1, u8) = 0;
-    SUB_GALLERY_MODEL(s) = func_0038C160(s, SUB_PAGE(s, 0x0, u8));
+    SUB_GALLERY_MODEL(s) = Gallery_MakeModel(s, SUB_PAGE(s, 0x0, u8));
     AT(SUB_GALLERY_MODEL(s), 0x4D8, u8) = 1;
     AT(SUB_GALLERY_MODEL(s), 0x4D9, u8) = 1;
     VCALL(gCamDirector, 0x14, void (*)(VObject *))(gCamDirector);
@@ -2208,9 +2244,10 @@ void func_0038B900(SubScreen *s) {
 /* ---- the extras list ---- */
 
 /* the extras list (screen kind 0x8C): the language 1, the headings, the eight entries of the
- * current one's group (titles 0x70 + entry, "???" until unlocked, func_0038DF90), the current
+ * current one's group (titles 0x70 + entry, "???" until unlocked, SubScreen_ExtraUnlocked), the current
  * one highlighted; the help line, the group number of 4 and the arrows blinking */
-void func_0038DBE0(SubScreen *s) {
+/* 0x0038DBE0 */
+void SubScreen_DrawExtras(SubScreen *s) {
     u8 base;
     u32 i;
     s32 b, x;
@@ -2230,7 +2267,7 @@ void func_0038DBE0(SubScreen *s) {
         if (k >= 0x20) {
             continue;
         }
-        msg = func_0038DF90(s, k) ? (u16)(base + 0x70 + i) : 0x16E;
+        msg = SubScreen_ExtraUnlocked(s, k) ? (u16)(base + 0x70 + i) : 0x16E;
         color = SUB_PAGE(s, 0x0, u8) == k ? 0x82 : 0x80;
         Task_Printf(&s->text, 0x30, 0x5E + i * 35, color, D_00463FD0, k + 1);
         Task_ShowText(&s->text, 0x58, 0x5E + i * 35, color, Task_MessageText(&s->text, msg), 0x80, 0x30, 0x10, 0x15);
@@ -2290,7 +2327,8 @@ static void sub_fade_sound(f32 f) {
 /* draw: closing - the page's textures given back and SUBBACK.TEX reloaded at the start, the fade
  * from 0x40 to 0x80 (sound coming back up); once loaded, the screen's own textures made resident,
  * draw D_0044B1F0 and progress flags 8 and 4 */
-void func_003970D0(SubScreen *s) {
+/* 0x003970D0 */
+void SubScreen_DrawClosing(SubScreen *s) {
     Progress *p = gProgress;
     struct {
         void **vtbl;
@@ -2333,7 +2371,8 @@ void func_003970D0(SubScreen *s) {
 /* draw: opening - once the textures are loaded the fade runs up to 0x40 (sound going down);
  * there the screen starts (flags cleared; modes 7 / 10 make their page resident) with draw
  * D_0044B190. Depth of field drawing in from far to near with it. */
-void func_00398100(SubScreen *s) {
+/* 0x00398100 */
+void SubScreen_DrawOpening(SubScreen *s) {
     static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD};
     struct {
         void **vtbl;
@@ -2373,7 +2412,8 @@ extern const PTMF D_0044C0D8;
 /* state: the entry list - up / down through the group (0..7, 8..10, round), left / right /
  * next / previous to the other group, confirm opens the entry (D_0044C080's message, state
  * D_0044C0D8), cancel closes; then the list, the help line and the arrows */
-void func_00386150(SubScreen *s) {
+/* 0x00386150 */
+void SubScreen_StateEntries(SubScreen *s) {
     s32 b, x;
     u8 alpha;
 
@@ -2398,7 +2438,7 @@ void func_00386150(SubScreen *s) {
             s->close = 1;
         }
     }
-    func_00385C30(s);
+    SubScreen_DrawEntries(s);
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
     x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
     Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
@@ -2414,7 +2454,8 @@ extern const PTMF D_0044B7A0;
  * previous and right / next to the group before / after (round), confirm an unlocked extra
  * (a fade from 0, progress +0x84, state D_0044B7A0; a buzzer if locked), cancel (progress
  * flag 4); then the list */
-void func_0038D7E0(SubScreen *s) {
+/* 0x0038D7E0 */
+void SubScreen_StateExtras(SubScreen *s) {
     if (!s->fading) {
         u8 *k = &SUB_PAGE(s, 0x0, u8);
         u8 base = *k & ~7;
@@ -2455,7 +2496,7 @@ void func_0038D7E0(SubScreen *s) {
         } else if (D_0047E36C & MENU_CANCEL) {
             Progress_SetFlag(gProgress, 4);
         } else if (D_0047E36C & MENU_CONFIRM) {
-            if (*k < 0x20 && func_0038DF90(s, *k)) {
+            if (*k < 0x20 && SubScreen_ExtraUnlocked(s, *k)) {
                 s->fade = 0;
                 s->fadeStep = 0x10;
                 VCALL(gProgress, 0x84, void (*)(Progress *))(gProgress);
@@ -2466,7 +2507,7 @@ void func_0038D7E0(SubScreen *s) {
             }
         }
     }
-    func_0038DBE0(s);
+    SubScreen_DrawExtras(s);
 }
 
 /* ---- the costume page ---- */
@@ -2475,7 +2516,8 @@ void func_0038D7E0(SubScreen *s) {
  * Fiona's choices (page[0..5]: 0, 2, 3, 7, 6, 8 - the ones not unlocked marked 0x80, the
  * current one's place in page[7]) and Hewie's (page[8..10]: 0, 1, 2, its place in page[12];
  * only with him here - his model refreshed first when in the room); the cursors (13..16) */
-void func_0038F7D0(SubScreen *s) {
+/* 0x0038F7D0 */
+void Costumes_Setup(SubScreen *s) {
     Progress *p = gProgress;
     u8 *sys;
     s32 i;
@@ -2543,7 +2585,8 @@ extern u16 D_0044BFE0[];   /* per picture: its unlock flag (system data +0x24 bi
 /* the art gallery's list (screen kind 0x8E): the language 1, the headings, the eight pictures
  * of the current one's group (titles 0x190 + picture, "???" until unlocked), the current one
  * highlighted; the help line, the group number of 6 and the arrows blinking */
-void func_00386550(SubScreen *s) {
+/* 0x00386550 */
+void Gallery_DrawArtList(SubScreen *s) {
     u8 g;
     s32 k, x, b;
     u8 alpha;
@@ -2601,7 +2644,8 @@ static inline s32 stick_out(f32 v, f32 *out) {
 /* the model gallery's camera by the sticks: the right one in (distance, entry's nearest .. 60)
  * and round (the turn kept within -pi..pi), the left one up and down (within the entry's
  * heights); L3 sets it back */
-void func_0038A2E0(SubScreen *s) {
+/* 0x0038A2E0 */
+void Gallery_ModelCamera(SubScreen *s) {
     static const union { u32 u; f32 f; } kStep = {0x3DB2B8C3};
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
     f32 d;
@@ -2662,7 +2706,8 @@ static inline s32 music_unlocked(u8 k) {
 /* the music gallery (screen kind 0x8D): the language 1, the headings, the tracks of the
  * current one's group (titles, "???" until unlocked), the current one highlighted and the one
  * playing marked; the help lines (other while one plays), the group number of 4, the arrows */
-void func_00388400(SubScreen *s) {
+/* 0x00388400 */
+void Gallery_DrawMusic(SubScreen *s) {
     u8 g;
     s32 k, b;
     u8 *msg, alpha;
@@ -2704,7 +2749,8 @@ void func_00388400(SubScreen *s) {
  * marked playing; a buzzer if locked), the cursor round its group of 8 (up / down; 27 tracks)
  * and through the groups (left / previous, right / next), cancel stops the music (or, when
  * the stream is busy, closes); once the stream is free the queued track starts. Then the list. */
-void func_003888A0(SubScreen *s) {
+/* 0x003888A0 */
+void Gallery_StateMusic(SubScreen *s) {
     if (!s->fading) {
         u8 *k = &SUB_PAGE(s, 0x0, u8);
         u32 pad = D_0047E36C;
@@ -2756,7 +2802,7 @@ void func_003888A0(SubScreen *s) {
             }
         }
     }
-    func_00388400(s);
+    Gallery_DrawMusic(s);
 }
 
 /* ---- the art gallery's picture ---- */
@@ -2768,7 +2814,8 @@ extern const PTMF D_0044C060;
  * (bit 7 set: the next byte repeated n & 0x7F times; else n bytes as they are) for 0x70000
  * bytes (pictures 21..: 0x38000), then its 0x400-byte palette; fading in from 0x80 (state
  * D_0044C060). The list under a darkening overlay or the panels */
-void func_00387920(SubScreen *s) {
+/* 0x00387920 */
+void Gallery_StatePicture(SubScreen *s) {
     s->fade += s->fadeStep;
     if (s->fade >= 0x80) {
         s->fading = 0;
@@ -2807,7 +2854,7 @@ void func_00387920(SubScreen *s) {
         s->fadeStep = 0;
         ptmf_set(&s->state, &D_0044C060);
     }
-    func_00386550(s);
+    Gallery_DrawArtList(s);
     sub_fade_back(s);
 }
 
@@ -2833,7 +2880,8 @@ static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
  * D_0044B9B0; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
  * +0x7C, the room effects 0x1D..0x1F kept (+0xA8E40..) and removed, effect 0x1F made anew (a
  * D_0046D750) and started. The extras list under a darkening overlay or the panels */
-void func_0038BC70(SubScreen *s) {
+/* 0x0038BC70 */
+void Gallery_StateModelChosen(SubScreen *s) {
     if (s->fade < 0x80) {
         s->fade += s->fadeStep;
     } else {
@@ -2897,7 +2945,7 @@ void func_0038BC70(SubScreen *s) {
             func_00266C70(fx, 0x1F, msg);
         }
     }
-    func_0038DBE0(s);
+    SubScreen_DrawExtras(s);
     sub_fade_back(s);
 }
 
@@ -2918,7 +2966,8 @@ static inline void art_group_load(SubScreen *s, VObject *ld, u8 g) {
 /* state: the art gallery's list - up / down round the group of 8 (48 pictures), left /
  * previous and right / next to the group before / after (its pictures loaded), confirm an
  * unlocked picture (state D_0044C040; a buzzer if locked), cancel closes; then the list */
-void func_00387F00(SubScreen *s) {
+/* 0x00387F00 */
+void Gallery_StateArtList(SubScreen *s) {
     if (!s->fading) {
         VObject *ld = gFileLoader;
         u8 *k = &SUB_PAGE(s, 0x0, u8);
@@ -2971,7 +3020,7 @@ void func_00387F00(SubScreen *s) {
             Sound_PlaySE(SE_CURSOR);
         }
     }
-    func_00386550(s);
+    Gallery_DrawArtList(s);
 }
 
 /* ---- the clear results ---- */
@@ -2987,7 +3036,8 @@ extern const char D_00464030[], D_00464040[];                 /* "%02d:%02d", "-
  * banner pulsing (alpha page[5] between 0x60 and 0x80); then the difficulty's three best
  * times (rank, minutes:seconds, "-----" for none; the new one, page[3], lit; a mark by a new
  * best) and finally the new ending's note (page[2]); confirm or cancel ends (flag 4) */
-void func_00388FF0(SubScreen *s) {
+/* 0x00388FF0 */
+void Results_State(SubScreen *s) {
     static const char *const kRank[3] = {D_00464018, D_00464020, D_00464028};
     Progress *p;
     u8 diff;
@@ -3060,7 +3110,8 @@ void func_00388FF0(SubScreen *s) {
  * set 2 (+0xA8DF0, and +0xA8DF4 if any), the marker file (+0xA8DF8, model +0x4D4), set up
  * (+0xC), +0x24 2; entries 11 / 12 take variant 0 (+0x34), 15 / 16 the other (+0x2C). NULL past
  * entry 31. */
-u8 *func_0038C160(SubScreen *s, u8 k) {
+/* 0x0038C160 */
+u8 *Gallery_MakeModel(SubScreen *s, u8 k) {
     u8 *mem = AT(s, 0xA8DFC, u8 *), *m, *pck;
     VObject *bm;
 
@@ -3083,8 +3134,8 @@ u8 *func_0038C160(SubScreen *s, u8 k) {
     case 19: case 20: m = NEW(0x1500, func_0038C9E0(m)); break;
     case 21: case 22: m = NEW(0x1160, func_0038C960(m)); break;
     case 23: m = NEW(0x9A0, func_0038C910(m)); break;
-    case 25: m = NEW(0x890, func_0038C8D0(m)); break;
-    case 27: m = NEW(0x890, func_0038C890(m)); break;
+    case 25: m = NEW(0x890, Kind33Model_ctor(m)); break;
+    case 27: m = NEW(0x890, Kind14Model_ctor(m)); break;
     case 24: case 26: case 28: case 29: case 30: case 31: m = NEW(0x890, func_0016F4B0(m)); break;
     default:
         return NULL;
@@ -3112,7 +3163,8 @@ u8 *func_0038C160(SubScreen *s, u8 k) {
 }
 
 /* model classes D_00472700 / D_00474460 over the plain one (func_0016FCD0) */
-void *func_0038C890(u8 *m) {
+/* 0x0038C890 */
+void *Kind14Model_ctor(u8 *m) {
     func_0016FCD0(m);
     AT(m, 0x0, void **) = D_00472700;
     return m;
@@ -3174,7 +3226,8 @@ static inline s32 word_golem_room(Progress *p) {
  * cancel takes a letter back (none: closes); start goes to done; up / down by rows, left /
  * right by keys, next / previous to the letter after / before. Then the word, its cursor, the
  * key's light and the plates left */
-void func_003908B0(SubScreen *s) {
+/* 0x003908B0 */
+void SubScreen_StateWordMake(SubScreen *s) {
     s32 i;
     u8 ch[2];
 
@@ -3297,7 +3350,8 @@ static s32 movie_seen(s32 i) {
  * turn it; cancel ends (flag 4, var 0x2B the cursor, 0x2A none), confirm on a seen movie ends
  * playing it (var 0x2A). Its panels, the titles ("???" unseen), the page count, the blinking
  * arrows and the cursor's thumbnail beside the list. */
-void func_0038E0C0(SubScreen *s) {
+/* 0x0038E0C0 */
+void SubScreen_StateMovies(SubScreen *s) {
     Task *t = &s->text;
     s32 base, i;
 
@@ -3441,7 +3495,8 @@ static void cost_row(const s16 (*cols)[3], s32 n, s32 y, s32 h, s32 v) {
 
 /* the costume page's frames: the rows' (one more with Hewie here), then - not on "done" -
  * the row's costumes' (as many as are unlocked) and, with that list open, the description's */
-void func_0038EAE0(SubScreen *s) {
+/* 0x0038EAE0 */
+void Costumes_DrawFrames(SubScreen *s) {
     static const s16 kRows[2][3] = {{0x10, 0x68, 0}, {0x78, 0x20, 0x98}};
     static const s16 kList[3][3] = {{0xA8, 0x98, 0}, {0x140, 0x78, 0x20}, {0x1B8, 0x38, 0x80}};
     static const s16 kNote[4][3] = {{0x10, 0x98, 0}, {0xA8, 0x78, 0x20}, {0x120, 0x78, 0x20}, {0x198, 0x58, 0x60}};
@@ -3494,10 +3549,11 @@ static void costume_done(SubScreen *s, s32 hewie) {
  * with the row's list open, the costume (past the locked ones, round); left / prev / cancel
  * and right / next / confirm close and open the list, confirm in it choosing the costume and
  * cancel on the rows going to "done", where cancel or confirm wear the choice and end. Then
- * the costumes drawn (func_0038EAE0), the rows, the open costume's description and the
+ * the costumes drawn (Costumes_DrawFrames), the rows, the open costume's description and the
  * row's costumes (the cursor 2, the one worn 1). With no costume of Fiona's at all it just
  * ends. */
-void func_0038FBE0(SubScreen *s) {
+/* 0x0038FBE0 */
+void Costumes_State(SubScreen *s) {
     s32 hewie = COST_HEWIE_SEL(s) != 0xFF;
     s32 quiet = 0, changed = 0, d = 0, n;
     u8 c0, c1, c2;
@@ -3638,7 +3694,7 @@ void func_0038FBE0(SubScreen *s) {
         }
     }
 
-    func_0038EAE0(s);
+    Costumes_DrawFrames(s);
     c0 = c1 = c2 = 0;
     note = 0;
     switch (COST_ROW(s)) {
@@ -3701,7 +3757,8 @@ void func_0038FBE0(SubScreen *s) {
  * per entry past three); for the entry under the cursor its picture (the extras' frame for 0;
  * the difficulties' (1..4) with their three best times) and its note; cancel leaves (var
  * 0x2E none), confirm on a difficulty or the last entry picks it (var 0x2E: 0..3, 0xFF) */
-void func_003894F0(SubScreen *s) {
+/* 0x003894F0 */
+void SubScreen_StateExtrasMenu(SubScreen *s) {
     Task *t = &s->text;
     s32 i;
     u8 e;
@@ -3809,7 +3866,8 @@ void func_003894F0(SubScreen *s) {
     }
 }
 
-s32 func_0038A2C0(void *o, u32 i) {
+/* 0x0038A2C0 */
+s32 SubScreen_EntryMotions(void *o, u32 i) {
     return D_0044BF10[i];
 }
 
@@ -3910,14 +3968,15 @@ static void gallery_leave(SubScreen *s) {
 /* state: the model gallery. Fading in; then cancel leaves (fading out, gallery_leave) and
  * start shows the help (fading a shade in, start again, back out). Confirm replays the
  * motion, next / previous step through the entry's motions (D_0044BF10, round), select the bars,
- * else the stick turns and moves the camera (func_0038A2E0); the camera placed round the
+ * else the stick turns and moves the camera (Gallery_ModelCamera); the camera placed round the
  * model, the room effects run, the model drawn on a backdrop. The help's text, the bars (the
- * entry's name, the controls, func_0037E480) and the fade */
-void func_0038A990(SubScreen *s) {
+ * entry's name, the controls, SubScreen_DrawPageCount) and the fade */
+/* 0x0038A990 */
+void Gallery_StateModel(SubScreen *s) {
     Task *t = &s->text;
     u8 *m;
 
-    func_0038A740(s);
+    Gallery_ModelMotions(s);
     switch (GALLERY_STEP(s)) {
     case 0:
         if (s->fade > 0) {
@@ -3988,7 +4047,7 @@ void func_0038A990(SubScreen *s) {
             GALLERY_BARS(s) ^= 1;
             Sound_PlaySE(SE_DECIDE);
         } else {
-            func_0038A2E0(s);
+            Gallery_ModelCamera(s);
         }
         v[0] = 0.0f;
         v[1] = 0.0f;
@@ -4030,7 +4089,7 @@ void func_0038A990(SubScreen *s) {
         Task_ShowText(t, 0x20, 0x10, 1, Task_MessageText(t, (u16)(SUB_PAGE(s, 0x0, u8) + 0x70)), 0x80 - s->fade, 0x33,
                       0x10, 0x15);
         Task_ShowText(t, 0x20, 0x198, 0, Task_MessageText(t, 0x9E), 0x80 - s->fade, 0x33, 0x10, 0x15);
-        func_0037E480((u8 *)s);
+        SubScreen_DrawPageCount((u8 *)s);
     }
     sub_fade_back(s);
 }
@@ -4057,7 +4116,8 @@ extern const PTMF D_0044C070;
  * centres, R3 zooms about the centre, kept on screen; cancel fades out back to the list
  * (D_0044C070). Then the fade's background, the picture (a GL sprite of the image sent to VRAM)
  * and the bars (its name, the help) */
-void func_00386990(SubScreen *s) {
+/* 0x00386990 */
+void Gallery_StateArtView(SubScreen *s) {
     Task *t = &s->text;
 
     switch (ART_STEP(s)) {
@@ -4197,7 +4257,7 @@ void func_00386990(SubScreen *s) {
     }
     sub_fade_back(s);
     if (ART_STEP(s) == 4) {
-        func_00386550(s);
+        Gallery_DrawArtList(s);
         return;
     }
     {
@@ -4345,7 +4405,8 @@ static void item_use(SubScreen *s, s32 id, s32 kind) {
  * next / previous item (its picture loaded); cancel puts the cursor on back (D_0044B328).
  * Then the list's panels and grid and, staying here: the picture (sliding in), the name,
  * count and note, and the actions' box with the cursor */
-void func_00395630(SubScreen *s) {
+/* 0x00395630 */
+void SubScreen_StateItemActions(SubScreen *s) {
     u8 *items = s->pool;
     Task *t = &s->text;
     u8 list[4];
@@ -4416,13 +4477,13 @@ void func_00395630(SubScreen *s) {
             old = SUB_CURSOR(s);
             if (D_0047E36C & MENU_NEXT) {
                 SUB_CURSOR(s) = old + 1;
-                if (SUB_CURSOR(s) >= func_002605F0(items, SUB_LIST(s))) {
+                if (SUB_CURSOR(s) >= Items_FirstFree(items, SUB_LIST(s))) {
                     SUB_CURSOR(s) = 0;
                 }
             } else if (old != 0) {
                 SUB_CURSOR(s)--;
             } else {
-                SUB_CURSOR(s) = func_002605F0(items, SUB_LIST(s)) - 1;
+                SUB_CURSOR(s) = Items_FirstFree(items, SUB_LIST(s)) - 1;
             }
             if (old != SUB_CURSOR(s)) {
                 s->page[0x15C] = 0;
@@ -4445,13 +4506,13 @@ void func_00395630(SubScreen *s) {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     sub_panels(s);
-    func_003949B0(s, 1);
+    SubScreen_DrawItemGrid(s, 1);
     if (stay) {
         char word[9];
         s32 note;
 
         SubScreen_DrawPart(s, 0x10, 0x30, 0xA, 0x80, 0);
-        if (func_00260130(items) == 0) {
+        if (SubScreen_LoaderIdle(items) == 0) {
             VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, (u8 *)s + 0x94F40, 0x27);
             if (s->page[0x15C] < 0x40) {
                 s->page[0x15C] += 8;

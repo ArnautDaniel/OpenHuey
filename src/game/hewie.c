@@ -42,7 +42,7 @@ Hewie *Hewie_dtor(Hewie *h, s32 flags) {
         h->c.a.vtbl = D_00469C60;
         h->c.a.vtbl = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(&h->c.a);
+            Actor_Destroy(&h->c.a);
         }
     }
     return h;
@@ -127,7 +127,7 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
         act = 0x52;
     }
     if (act == 0x52) {
-        if (!h->c.a.disabled && !(func_001235C0(&h->c.a, &h->c.a) & 0xFF)) {
+        if (!h->c.a.disabled && !(Actor_TriFreeFor(&h->c.a, &h->c.a) & 0xFF)) {
             act = 0;
             h->c.hp = 1;
             h->c.a.unkC4 = 1;
@@ -240,7 +240,7 @@ s32 func_0013C1E0(Hewie *h, u32 tri, const f32 *pos) {
     if (Hewie_OtherSide(h, tri)) {
         return 0;
     }
-    r = func_00127140(&h->c, 0, tri, pos);
+    r = Character_PlanPathKind(&h->c, 0, tri, pos);
     if (r > 0) {
         r = VCALL(gSceneGameF29740, 0x14, s32 (*)(VObject *))(gSceneGameF29740);
     }
@@ -255,14 +255,14 @@ s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
     if (Hewie_OtherSide(h, tri)) {
         return -1;
     }
-    r = func_00127140(&h->c, 0, tri, pos);
+    r = Character_PlanPathKind(&h->c, 0, tri, pos);
     if (r <= 0) {
         return -(r < 0);
     }
     if (!keep) {
         VCALL(gSceneGameF29740, 0x34, void (*)(VObject *, s32, s32))(gSceneGameF29740, h->c.pathId, 3);
     }
-    r = direct ? func_001270A0(&h->c) : func_001270F0(&h->c);
+    r = direct ? Character_Waypoints(&h->c) : Character_WaypointsCurve(&h->c);
     return -(r < 0);
 }
 
@@ -596,7 +596,7 @@ void Hewie_Vt38(Hewie *h) {
         h->c.a.disabled = 0;
         return;
     }
-    func_00124890(&h->c.a, HEWIE_SIDE(h));
+    Actor_TeleportRandom(&h->c.a, HEWIE_SIDE(h));
     h->c.a.disabled = 0;
 }
 
@@ -892,7 +892,7 @@ s32 Hewie_CanInteract(Hewie *h, u32 kind, s32 slot, u32 door) {
     }
     if (!(Progress_TestFlag(gProgress, 0x1D) & 0xFF) && h->c.moveMode == 0 && k >= 1 && k <= 4
         && h->c.a.unkC4 != 2 && HEWIE_ACTION(h) != 0x79
-        && func_002E2D00(func_001244D0(&h->c.a, gCharacters[slot]->a.pos) - h->c.a.angle[1]) < 0x1.2d97c8p+0f /* 3pi/8 */
+        && func_002E2D00(Actor_HeadingTo(&h->c.a, gCharacters[slot]->a.pos) - h->c.a.angle[1]) < 0x1.2d97c8p+0f /* 3pi/8 */
         && (func_00138460(h, slot) & 0xFF) == 1) {
         HW(h, 0xF3584, u8) = 1;
         return 0;
@@ -915,7 +915,7 @@ static inline s32 Hewie_PlaceDefault(Hewie *h, u32 tri) {
     MOTION_PTR(h->c.motion, 0x854) = NULL;
     HW(h, 0xF36F0, s32) = 0;
     r = Hewie_Place(h, tri);
-    func_00124F20(&h->c, 0xFF);
+    Character_ChooseExit(&h->c, 0xFF);
     Hewie_ToDefault(h);
     return r;
 }
@@ -928,7 +928,7 @@ s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
     Progress *p;
     s32 r;
 
-    func_00125BA0(&h->c, room, tri, side);
+    Character_ToRoom(&h->c, room, tri, side);
     p = gProgress;
     HEWIE_SIDE(h) = side;
     if (*((u8 *)p + 0x1FBEC1) != 0) {
@@ -951,13 +951,13 @@ s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
     {
         sceVu0FVECTOR v;
 
-        if (func_00122B50(&h->c.a, v)) {
-            func_001264C0(&h->c, 3, (s32)v, 0, 0, 0);
+        if (Actor_PosInCurrentRoom(&h->c.a, v)) {
+            Character_Sound(&h->c, 3, (s32)v, 0, 0, 0);
         }
     }
     func_00143840(h);
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
-    func_00126270(&h->c);
+    Character_MarkObjects(&h->c);
     return r;
 }
 
@@ -978,7 +978,7 @@ static s32 in_his_room(Hewie *h, Character *c) {
 /* tell progress how close Fiona is (+0x7B9: 1 within 20, 2 within 50, 3 further) */
 static void report_fiona_near(Hewie *h) {
     if (in_his_room(h, gCharPlayer)) {
-        f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+        f32 d = Actor_Distance(&h->c.a, gCharPlayer->a.pos);
 
         if (d <= 20.0f) {
             *((u8 *)gProgress + 0x7B9) = 1;
@@ -1009,7 +1009,7 @@ static void root_motion(Hewie *h) {
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
 }
 
 /* vtable +0x44: per-frame update - frame counter (up to 3000), surroundings, how close Fiona
@@ -1176,7 +1176,7 @@ void func_0013A430(Hewie *h, s32 snd) {
         }
         break;
     }
-    func_00122C20(&h->c.a, snd, 5, 0, 0, NULL);
+    Actor_PlaySound(&h->c.a, snd, 5, 0, 0, NULL);
     HEWIE_LAST_SOUND(h) = snd;
     HEWIE_SOUND_T(h) = 0;
 }
@@ -1186,7 +1186,7 @@ void func_0013A430(Hewie *h, s32 snd) {
 /* Best heading near `yaw` for walking `dist`: tries yaw +- `from`..`to` degrees in steps of `step`
  * (left and right, starting on a random side), stops early at a full-length result. */
 f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
-    f32 best = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, yaw, dist);
+    f32 best = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, yaw, dist);
     f32 result = yaw;
     f32 sign;
     s32 deg;
@@ -1202,7 +1202,7 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
 
             for (i = 0; i < 2; i++) {
                 f32 a = func_002E2D00(yaw + sign * ang);
-                f32 r = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
+                f32 r = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
 
                 if (best < r) {
                     result = a;
@@ -1222,7 +1222,7 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
 
             for (i = 0; i < 2; i++) {
                 f32 a = func_002E2D00(yaw + sign * ang);
-                f32 r = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
+                f32 r = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, a, dist);
 
                 if (best < r) {
                     result = a;
@@ -1514,7 +1514,7 @@ void func_0014B4D0(Hewie *h) {
 
         func_001F6370(h->c.motion, root, 0.0f);
         sceVu0ApplyMatrix(root, h->c.a.rot, root);
-        func_001247E0(&h->c.a, root);
+        Actor_Move(&h->c.a, root);
         h->c.a.pos[1] = y + root[1];
         HW(h, 0xF3558, u8) = 1;
         HW(h, 0xF3582, u8) = 0;
@@ -1653,7 +1653,7 @@ void func_001522F0(Hewie *h) {
             HW(h, 0xF3688, s16) = 300;
         }
         HW(h, 0xF36B0, s32) = 0xFF;
-        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+        Actor_PlaySound(&h->c.a, 0x6C, 5, 0, 0, NULL);
     }
     Hewie_ToDefault(h);
 }
@@ -1768,7 +1768,7 @@ static inline void Hewie_ForcedMove(Hewie *h) {
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
     HW(h, 0xF3558, u8) = 1;
     h->c.a.navMask &= ~0x80001;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -1866,7 +1866,7 @@ static inline s32 fiona_reachable(Hewie *h) {
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         return 1;
     }
-    if (h->c.a.unk2D || h->c.a.unk2B || (func_00125D80(&h->c) & 0xFF)) {
+    if (h->c.a.unk2D || h->c.a.unk2B || (Character_Held(&h->c) & 0xFF)) {
         return 0;
     }
     if (gCharPlayer == NULL || !gCharPlayer->a.active) {
@@ -2098,9 +2098,9 @@ void func_00146AE0(Hewie *h) {
         sceVu0SubVector(d, HEWIE_SPOT(h), h->c.a.pos);
         sceVu0Normalize(d, d);
         sceVu0ScaleVector(d, d, 0x1.99999ap-2f /* 0.4 */);
-        func_001247E0(&h->c.a, d);
+        Actor_Move(&h->c.a, d);
         {
-            f32 yaw = func_001244D0(&h->c.a, HEWIE_SPOT(h));
+            f32 yaw = Actor_HeadingTo(&h->c.a, HEWIE_SPOT(h));
 
             HW(h, 0xF3614, s32) = 0;
             HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
@@ -2178,7 +2178,7 @@ void func_0015D320(Hewie *h) {
         Hewie_ToDefault(h);
         return;
     }
-    if (!(func_00124490(&h->c.a, gCharPlayer->a.pos) <= 20.0f)) {
+    if (!(Actor_Distance(&h->c.a, gCharPlayer->a.pos) <= 20.0f)) {
         Hewie_Start(h, HEWIE_ACTION(h));
     }
     HEWIE_TARGET(h) = gCharPlayer;
@@ -2217,7 +2217,7 @@ void func_0015F8A0(Hewie *h) {
         root[2] = root[2] * k;
         sceVu0ApplyMatrix(root, h->c.a.rot, root);
         sceVu0AddVector(to, h->c.a.pos, root);
-        if (func_00124480(&h->c.a, to, NAV_NONE) == NAV_NONE) {
+        if (Actor_TriTo(&h->c.a, to, NAV_NONE) == NAV_NONE) {
             u8 stopped = (MOTION_SPEED(h->c.motion) <= 0.0f) ? 1 : 0;
 
             if ((u8)(stopped ^ 1) == 0) {
@@ -2263,12 +2263,12 @@ void func_0014A790(Hewie *h) {
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
     HW(h, 0xF3558, u8) = 1;
     VCALL(gNavMesh, 0xC, void (*)(NavMesh *, s32, f32 *))(gNavMesh, h->c.unk104[0], (f32 *)h->c.unk110);
-    r = func_00127140(&h->c, 0, h->c.unk104[0], (f32 *)h->c.unk110);
+    r = Character_PlanPathKind(&h->c, 0, h->c.unk104[0], (f32 *)h->c.unk110);
     if (r > 0) {
-        r = func_001270F0(&h->c);
+        r = Character_WaypointsCurve(&h->c);
     }
     if (r > 0) {
         Hewie_Mark4(h);
@@ -2471,7 +2471,7 @@ void func_00149FB0(Hewie *h) {
     if (step < 0x1.1df46ap-7f /* 0.5 deg */) {
         step = 0x1.1df46ap-7f;
     }
-    if (func_00124530(&h->c.a, *(f32 *)&h->c.unk104[2], step) == 0.0f) {
+    if (Actor_TurnToward(&h->c.a, *(f32 *)&h->c.unk104[2], step) == 0.0f) {
         Hewie_SetBehaviour(h, &D_003B1CB0);
     }
 }
@@ -2560,7 +2560,7 @@ void func_001517C0(Hewie *h) {
     if (HW(h, 0xF36B8, s32) == 0) {
         HW(h, 0xF36B4, s32) -= 1;
         if (HW(h, 0xF36B4, s32) == 0
-            || func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, -1, h->c.a.angle[1], 20.0f) < 20.0f) {
+            || Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, -1, h->c.a.angle[1], 20.0f) < 20.0f) {
             HW(h, 0xF36B8, s32) = 1;
         }
         func_00141C00(h, 8);
@@ -2594,7 +2594,7 @@ void func_00151B10(Hewie *h) {
     if (func_00140CD0(h, 3)) {
         return;
     }
-    func_00122C20(&h->c.a, 0x60, 5, 0, 0, 0);
+    Actor_PlaySound(&h->c.a, 0x60, 5, 0, 0, 0);
     if (HW(h, 0xF3604, s32) != 0) {
         HW(h, 0xF3604, s32) = 0;
         HW(h, 0xF3608, s32) = 10;
@@ -2621,7 +2621,7 @@ void func_0014EC10(Hewie *h) {
         return;
     }
     tri = c->a.navTri;
-    if (func_00124480(&h->c.a, c->a.pos, 0) != tri) {
+    if (Actor_TriTo(&h->c.a, c->a.pos, 0) != tri) {
         HW(h, 0xF36BC, s32) = 90;
         Hewie_SetBehaviour(h, &D_003B1AD8);
         return;
@@ -2672,9 +2672,9 @@ void func_0014B8F0(Hewie *h) {
         ad = -d;
     }
     if (ad < 0x1.0c1524p-1f /* 30 deg */) {
-        func_00124530(&h->c.a, target, 0x1.657186p-3f /* 10 deg */);
+        Actor_TurnToward(&h->c.a, target, 0x1.657186p-3f /* 10 deg */);
     } else if (!(*(f32 *)((u8 *)h->c.motion + 0x858) * d < 0.0f)) {
-        func_00124530(&h->c.a, target, 0x1.657186p-3f);
+        Actor_TurnToward(&h->c.a, target, 0x1.657186p-3f);
     } else {
         if (d < 0.0f) {
             yaw = func_002E2D00(h->c.a.angle[1] + 0x1.657186p-3f);
@@ -2696,7 +2696,7 @@ void func_0014B8F0(Hewie *h) {
     }
     func_001F6240(h->c.motion, root, 0.0f);
     func_0010E640(v, HEWIE_SPOT(h), root[2]);
-    func_001247E0(&h->c.a, v);
+    Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
 }
 
@@ -2715,7 +2715,7 @@ void func_00153B00(Hewie *h) {
     v[2] = HW(h, 0xF36C8, f32);
     func_002E3190(m, HW(h, 0xF36C4, f32));
     func_002E2DA0(v, m, v);
-    func_001247E0(&h->c.a, v);
+    Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     HW(h, 0xF36C8, f32) = HW(h, 0xF36C8, f32) - HW(h, 0xF36CC, f32);
@@ -2830,7 +2830,7 @@ void func_00149370(Hewie *h) {
     if (gCharPlayer->moveMode != 0xD) {
         Hewie_ToDefault(h);
     } else {
-        func_00124530(&h->c.a, *(f32 *)&h->c.unk104[2], 0x1.aceeap-4f /* 6 deg */);
+        Actor_TurnToward(&h->c.a, *(f32 *)&h->c.unk104[2], 0x1.aceeap-4f /* 6 deg */);
         HW(h, 0xF36B4, s32) -= 1;
         if (HW(h, 0xF36B8, s32) != 0 && HW(h, 0xF36B4, s32) < 16) {
             func_00141C00(h, 1);
@@ -2916,12 +2916,12 @@ s32 func_00138890(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
             }
             Mtx_AtHeading(m, h->c.a.pos, yaw);
             func_002E2DD0(p, m, off);
-            tri = func_00123D20(&h->c.a, p);
+            tri = Actor_TriOf(&h->c.a, p);
             if (tri != NAV_NONE) {
                 NavTri *t = (tri < nm->numTris && nm->tris != NULL) ? &nm->tris[tri] : NULL;
 
                 if (!(t->flags & 0x80001)
-                    && func_00124320(&h->c.a, p, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0x280A0019) == tri) {
+                    && Actor_TriFrom(&h->c.a, p, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0x280A0019) == tri) {
                     *yawOut = yaw;
                     sceVu0CopyVector(posOut, p);
                     return tri;
@@ -2942,7 +2942,7 @@ extern const PTMF D_003B18A8, D_003B18B8;
 void func_00157770(Hewie *h) {
     f32 y;
 
-    func_001247E0(&h->c.a, HEWIE_SPOT(h));
+    Actor_Move(&h->c.a, HEWIE_SPOT(h));
     y = HW(h, 0xF36C4, f32) + HW(h, 0xF36C8, f32);
     HW(h, 0xF3558, u8) = 1;
     if (y < h->c.a.pos[1]) {
@@ -3182,7 +3182,7 @@ s32 func_00137020(Hewie *h) {
     }
     if (HW(h, 0xF3578, s32) == 0x23 && HW(h, 0xF3598, s32) == 0 && HW(h, 0xF358C, s32) != 1 &&
         !(u8)Progress_GameMode(gProgress) && HW(h, 0xF368C, s32) == 0 &&
-        (u8)func_00122C90(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
+        (u8)Actor_CanWalkBetween(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
         HW(h, 0xF368C, u8 *) = func_00139460(h);
         if (HW(h, 0xF368C, s32) != 0) {
             hewie_want(h, 0x1D, 0x78);
@@ -3276,7 +3276,7 @@ Character *func_001379C0(Hewie *h) {
             c->moveMode == 4) {
             continue;
         }
-        d = func_00124490(&h->c.a, c->a.pos);
+        d = Actor_Distance(&h->c.a, c->a.pos);
         if ((best == NULL || d < bestd) && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
             best = c;
             bestd = d;
@@ -3404,7 +3404,7 @@ s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
 
 /* Fiona's angle to a point, |wrapped| (from her heading) */
 static f32 off_her_heading(const f32 *pos) {
-    return hwrap_abs(func_001244D0(&gCharPlayer->a, pos) - gCharPlayer->a.angle[1]);
+    return hwrap_abs(Actor_HeadingTo(&gCharPlayer->a, pos) - gCharPlayer->a.angle[1]);
 }
 
 /* the nearest placed thing of kind 0 (+0x20) in front of Fiona (within 90 degrees) that he can
@@ -3421,17 +3421,17 @@ u8 *func_00139460(Hewie *h) {
             continue;
         }
         if (best != NULL) {
-            f32 d = func_00124490(&gCharPlayer->a, (f32 *)(t + 0x10));
+            f32 d = Actor_Distance(&gCharPlayer->a, (f32 *)(t + 0x10));
 
             if (d < bestd && off_her_heading((f32 *)(t + 0x10)) < F_PI_2 &&
-                func_00124480(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
+                Actor_TriTo(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
                 best = t;
                 bestd = d;
             }
         } else if (off_her_heading((f32 *)(t + 0x10)) < F_PI_2 &&
-                   func_00124480(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
+                   Actor_TriTo(&h->c.a, (f32 *)(t + 0x10), -1) == AT(t, 0x34, u32)) {
             best = t;
-            bestd = func_00124490(&gCharPlayer->a, (f32 *)(t + 0x10));
+            bestd = Actor_Distance(&gCharPlayer->a, (f32 *)(t + 0x10));
         }
     }
     return best;
@@ -3441,7 +3441,7 @@ u8 *func_00139460(Hewie *h) {
    not with progress flag 0x11); else 1 / 2 by its kind and whether he is on its left */
 s32 func_00139A70(Hewie *h) {
     Character *pu = gCharPursuer;
-    f32 a = func_001244D0(&h->c.a, pu->a.pos);   /* (from him) */
+    f32 a = Actor_HeadingTo(&h->c.a, pu->a.pos);   /* (from him) */
     f32 its = hwrap_abs(a - pu->a.angle[1]);
     u8 kind;
 
@@ -3483,9 +3483,9 @@ s32 func_00139DE0(Hewie *h) {
     if (s < 0.0f) {
         s = 0.0f;
     }
-    func_001273D0(&h->c, &tri, ahead, 12.0f * s);
-    yaw = func_001244D0(&h->c.a, ahead);
-    next = func_001273D0(&h->c, &tri, at, s);
+    Character_WaypointAhead(&h->c, &tri, ahead, 12.0f * s);
+    yaw = Actor_HeadingTo(&h->c.a, ahead);
+    next = Character_WaypointAhead(&h->c, &tri, at, s);
     s = stride(h, v2);
     rate = 0.0f;
     if (!(s < 0.0f)) {
@@ -3504,7 +3504,7 @@ s32 func_00139DE0(Hewie *h) {
         sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, h->c.a.angle[1]);
         func_002E2D00(yaw - h->c.a.angle[1]);
     } else {
-        func_00124530(&h->c.a, yaw, rate);
+        Actor_TurnToward(&h->c.a, yaw, rate);
     }
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
@@ -3527,7 +3527,7 @@ s32 func_00139DE0(Hewie *h) {
     stride(h, v3);
     v3[1] = 0.0f;
     sceVu0ApplyMatrix(v3, h->c.a.rot, v3);
-    func_001247E0(&h->c.a, v3);
+    Actor_Move(&h->c.a, v3);
     HW(h, 0xF3558, u8) = 1;
     h->c.unk124 = h->c.unk128;
     return 0;
@@ -3619,9 +3619,9 @@ void func_0013A650(Hewie *h) {
         (u8)VCALL(gProgress, 0x50, s32 (*)(Progress *))(gProgress) == 1 &&
         h->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) &&
         (NavMesh_Tri(gNavMesh, h->c.a.navTri)->flags & 0x02008000) == 0x02008000) {
-        func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
+        Actor_PlaySound(&h->c.a, 0x1E, 6, 0, 0, NULL);
         if (h->c.a.room == 7 || h->c.a.room == 0x106) {
-            func_00125E10(&h->c, h->c.a.pos, 1);
+            Character_WaterStep(&h->c, h->c.a.pos, 1);
         }
     }
 }
@@ -3782,9 +3782,9 @@ s32 func_0013BA50(Hewie *h) {
     if (next) {
         f32 at[4] __attribute__((aligned(16)));
 
-        if ((u8)func_00122B50(&h->c.a, at) == 1) {
+        if ((u8)Actor_PosInCurrentRoom(&h->c.a, at) == 1) {
             sceVu0SubVector(at, at, h->c.a.pos);
-            func_00122C20(&h->c.a, outcome == 2 ? 0x69 : 0x66, 5, 0, 0, at);
+            Actor_PlaySound(&h->c.a, outcome == 2 ? 0x69 : 0x66, 5, 0, 0, at);
         }
     }
     h->c.unk1388 = h->c.unk1384;
@@ -3972,7 +3972,7 @@ u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
     planner = gSceneGameF29740;
     for (i = 0; i < n; i++) {
         u32 tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exits[i], goal);
-        s32 r = func_00127140(&h->c, 0, tri, goal);
+        s32 r = Character_PlanPathKind(&h->c, 0, tri, goal);
 
         if (r > 0) {
             r = VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
@@ -3994,7 +3994,7 @@ static s32 player_band(Hewie *h) {
     if (!in_his_room(h, gCharPlayer)) {
         return 6;
     }
-    d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+    d = Actor_Distance(&h->c.a, gCharPlayer->a.pos);
     return d < 10.0f ? 0 : d < 20.0f ? 1 : d < 40.0f ? 2 : d < 60.0f ? 3 : d < 80.0f ? 4 : d < 100.0f ? 5 : 6;
 }
 
@@ -4019,10 +4019,10 @@ s32 func_0013E920(Hewie *h, u32 kind) {
         if (gCharPursuer->a.unkC4 == 1 || gCharPursuer->moveMode == 4) {
             return 1;
         }
-        if (func_00124490(&h->c.a, gCharPursuer->a.pos) < 30.0f) {
+        if (Actor_Distance(&h->c.a, gCharPursuer->a.pos) < 30.0f) {
             return 2;
         }
-        if (func_00124490(&gCharPlayer->a, gCharPursuer->a.pos) < 30.0f) {
+        if (Actor_Distance(&gCharPlayer->a, gCharPursuer->a.pos) < 30.0f) {
             return 3;
         }
     }
@@ -4166,7 +4166,7 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
         }
         tri = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, exit, at);
     }
-    if (!(u8)func_00122C90(h, h->c.a.navTri, tri, h->c.a.pos, at, 0)) {
+    if (!(u8)Actor_CanWalkBetween(h, h->c.a.navTri, tri, h->c.a.pos, at, 0)) {
         s32 r;
 
         h->c.pathReq->mask = 0x40080;
@@ -4888,8 +4888,8 @@ void func_00143840(Hewie *h) {
         HW(h, 0xF366D, u8) = 0;
         return;
     }
-    if (in_his_room(h, gCharPursuer) && func_00124490(&h->c.a, gCharPursuer->a.pos) <= 200.0f) {
-        f32 to = func_001244D0(&h->c.a, gCharPursuer->a.pos);
+    if (in_his_room(h, gCharPursuer) && Actor_Distance(&h->c.a, gCharPursuer->a.pos) <= 200.0f) {
+        f32 to = Actor_HeadingTo(&h->c.a, gCharPursuer->a.pos);
         f32 d = func_002E2D00(to - func_002E2D00(h->c.a.angle[1] + AT(h->c.motion, 0x858, f32)));
 
         if (!(d <= 0.0f)) {
@@ -4897,7 +4897,7 @@ void func_00143840(Hewie *h) {
             d = -d;
         }
         if (d <= 0x1.1740bp+1f /* 125 degrees */ &&
-            (u8)func_00122C90(h, h->c.a.navTri, gCharPursuer->a.navTri, h->c.a.pos, gCharPursuer->a.pos, 0) == 1) {
+            (u8)Actor_CanWalkBetween(h, h->c.a.navTri, gCharPursuer->a.navTri, h->c.a.pos, gCharPursuer->a.pos, 0) == 1) {
             HW(h, 0xF366D, u8) = 1;
             HW(h, 0xF3670, s32) = gCharPursuer->a.slot;
             Progress_SetCondBit(gProgress, 4);
@@ -4959,12 +4959,12 @@ static void arrived(Hewie *h) {
         h->c.a.pos[2] = 0.0f;
         h->c.a.pos[3] = 0x1.99999ap-4f;   /* 0.1 */
     }
-    if (func_00122B50(&h->c.a, v)) {
-        func_001264C0(&h->c, 3, (s32)v, 0, 0, 0);
+    if (Actor_PosInCurrentRoom(&h->c.a, v)) {
+        Character_Sound(&h->c, 3, (s32)v, 0, 0, 0);
     }
     func_00143840(h);
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
-    func_00126270(&h->c);
+    Character_MarkObjects(&h->c);
 }
 
 static inline void blend_in(Hewie *h) {
@@ -5035,7 +5035,7 @@ s32 func_00143D20(Hewie *h) {
             if (h->c.a.navTri != NAV_NONE) {
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
                 if (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & h->c.a.navMask) {
-                    func_00124890(&h->c.a, HEWIE_SIDE(h));
+                    Actor_TeleportRandom(&h->c.a, HEWIE_SIDE(h));
                 } else {
                     VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, h->c.a.pos);
                     Hewie_PlaceAt(h, h->c.a.navTri, &h->c.a.angle[1], h->c.a.pos);
@@ -5096,7 +5096,7 @@ s32 func_00143D20(Hewie *h) {
             ang = 2.0f * (0x1.921fb6p+1f /* pi */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)) -
                   0x1.921fb6p+1f;
             if (tri == NAV_NONE || Hewie_PlaceAt(h, tri, &ang, at) == -1) {
-                func_00124890(&h->c.a, HEWIE_SIDE(h));
+                Actor_TeleportRandom(&h->c.a, HEWIE_SIDE(h));
             }
         }
     }
@@ -5244,7 +5244,7 @@ void func_00145080(Hewie *h) {
         for (i = 0; i < 4; i++) {
             if (steps & (1 << i)) {
                 sceVu0CopyVector(at, Skel_Bone(MOTION_SKELETON(h->c.motion), bones[i]) + 12);
-                func_00125E10(&h->c, at, deep);
+                Character_WaterStep(&h->c, at, deep);
             }
         }
     }
@@ -5287,7 +5287,7 @@ void func_00145080(Hewie *h) {
     if (!(f <= 1.0f)) {
         f = 1.0f;
     }
-    func_00122C20(&h->c.a, snd + (n & 3), type, 0, (s32)((u32)(2.0f * f) & 0x7F), NULL);
+    Actor_PlaySound(&h->c.a, snd + (n & 3), type, 0, (s32)((u32)(2.0f * f) & 0x7F), NULL);
 }
 
 /* ---- where to be by Fiona ---- */
@@ -5296,7 +5296,7 @@ extern const f32 D_003B1D60[2][4];   /* offsets in front of a door, per side */
 
 /* a free point (not blocked for him) by Fiona: the point p, if its triangle is free */
 static s32 free_at(Hewie *h, u32 *tri, f32 *p) {
-    *tri = func_00123E20(&gCharPlayer->a, p);
+    *tri = Actor_TriOfOnMesh(&gCharPlayer->a, p);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     return *tri != NAV_NONE && !(NavMesh_TriFlags(gNavMesh, *tri) & h->c.a.navMask);
 }
@@ -5334,14 +5334,14 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
             }
             for (i = 0; i < n; i = (i + 1) & 0xFF) {
                 for (j = 0; j < 2; j++) {
-                    tri = func_00123710(h, i & 0xFF, j, off[j], p);
+                    tri = Actor_DoorFront(h, i & 0xFF, j, off[j], p);
                     if ((NavMesh_TriFlags(gNavMesh, tri) & 0x300000) == mine) {
                         if (found == NAV_NONE) {
                             found = tri;
                             sceVu0CopyVector(best, p);
-                            bestd = func_00124490(&gCharPlayer->a, p);
+                            bestd = Actor_Distance(&gCharPlayer->a, p);
                         } else {
-                            f32 d = func_00124490(&gCharPlayer->a, p);
+                            f32 d = Actor_Distance(&gCharPlayer->a, p);
 
                             if (!(bestd <= d)) {
                                 found = tri;
@@ -5476,7 +5476,7 @@ void func_00146130(Hewie *h) {
         }
     } else if (HW(h, 0xF35E0, u8) == 0) {
         sceVu0CopyVector(at, Skel_Bone(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
-        if (func_00124480(&h->c.a, at, NAV_NONE) != NAV_NONE) {
+        if (Actor_TriTo(&h->c.a, at, NAV_NONE) != NAV_NONE) {
             HW(h, 0xF361C, f32) = AT(h->c.motion, 0x858, f32);
         }
         if (HW(h, 0xF3608, s32) == 0 && HW(h, 0xF3600, u32) != HW(h, 0xF3604, u32)) {
@@ -5646,7 +5646,7 @@ void func_00146C50(Hewie *h) {
         return;
     }
     func_00141C00(h, 3);
-    if (in_his_room(h, gCharPlayer) && func_00124490(&h->c.a, gCharPlayer->a.pos) < 100.0f) {
+    if (in_his_room(h, gCharPlayer) && Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 100.0f) {
         Progress *p = gProgress;
 
         for (e = 0; e < 8; e = (e + 1) & 0xFF) {
@@ -5709,13 +5709,13 @@ void func_001470C0(Hewie *h) {
 
 /* ---- turning toward a heading ---- */
 
-/* turn toward heading `a` by `step` (func_00124530, which returns how far is left); more than 30
+/* turn toward heading `a` by `step` (Actor_TurnToward, which returns how far is left); more than 30
  * degrees off with his head turned the other way, his body snaps `step` toward it instead */
 static f32 turn_toward(Hewie *h, f32 a, f32 step) {
     f32 d = func_002E2D00(a - h->c.a.angle[1]), ang;
 
     if ((d <= 0.0f ? -d : d) < 0x1.0c1524p-1f /* 30 degrees */ || !(AT(h->c.motion, 0x858, f32) * d < 0.0f)) {
-        return func_00124530(&h->c.a, a, step);
+        return Actor_TurnToward(&h->c.a, a, step);
     }
     ang = d < 0.0f ? func_002E2D00(h->c.a.angle[1] + step) : func_002E2D00(h->c.a.angle[1] - step);
     h->c.a.angle[1] = ang;
@@ -5764,7 +5764,7 @@ void func_001476C0(Hewie *h) {
     HW(h, 0xF3608, s32) = 0;
     HW(h, 0xF3614, f32) = 0.0f;
     HW(h, 0xF3618, f32) = func_002E2D00(HW(h, 0xF36D0, f32) - h->c.a.angle[1]);
-    func_00124530(&h->c.a, HW(h, 0xF36D0, f32), run_turn(h));
+    Actor_TurnToward(&h->c.a, HW(h, 0xF36D0, f32), run_turn(h));
     if (!(AT(h->c.motion, 0x550, f32) <= 0.0f) || anim != 0x202) {
         return;
     }
@@ -5881,11 +5881,11 @@ void func_001480C0(Hewie *h) {
         sceVu0CopyVector(at, HW(h, 0xF3544, Character *)->a.pos);
         break;
     }
-    if (!(func_00124490(&h->c.a, at) <= HW(h, 0xF36C8, f32))) {
+    if (!(Actor_Distance(&h->c.a, at) <= HW(h, 0xF36C8, f32))) {
         hewie_want(h, HW(h, 0xF3570, s32), 0);
         return;
     }
-    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
     if (HW(h, 0xF36B8, s32) != 0) {
         HW(h, 0xF36B8, s32) -= 1;
     } else {
@@ -6004,7 +6004,7 @@ void func_001489D0(Hewie *h) {
     root[1] = 0.0f;
     root[2] *= k;
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
     HW(h, 0xF3558, u8) = 1;
     h->c.a.navMask &= 0xFFF7FFFE;
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -6123,7 +6123,7 @@ void func_001495B0(Hewie *h) {
         if (HW(h, 0xF36B4, s32) != 0) {
             HW(h, 0xF36B4, s32) -= 1;
         }
-        room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), 20.0f);
+        room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), 20.0f);
         if (HW(h, 0xF36B4, s32) == 0 || room < 20.0f) {
             HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 30 + 30;
             HW(h, 0xF36B8, s32) = 30;
@@ -6161,7 +6161,7 @@ void func_001499F0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1CE0);
         return;
     }
-    a = func_001244D0(&h->c.a, h->c.unk110);
+    a = Actor_HeadingTo(&h->c.a, h->c.unk110);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     func_002DD110(h->c.motion, h->c.unk110, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
@@ -6208,11 +6208,11 @@ void func_0014A340(Hewie *h) {
     }
     rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
         gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
-    if ((h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE)) != 1) {
-        func_001273D0(&h->c, &tri, at, HEWIE_ACTION(h) == 0x3F ? 10.0f : 20.0f);
-        a = func_001244D0(&h->c.a, at);
+    if ((h->c.unk104[0] == (s32)Actor_TriTo(&h->c.a, h->c.unk110, NAV_NONE)) != 1) {
+        Character_WaypointAhead(&h->c, &tri, at, HEWIE_ACTION(h) == 0x3F ? 10.0f : 20.0f);
+        a = Actor_HeadingTo(&h->c.a, at);
     } else {
-        a = func_001244D0(&h->c.a, h->c.unk110);
+        a = Actor_HeadingTo(&h->c.a, h->c.unk110);
     }
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
@@ -6220,13 +6220,13 @@ void func_0014A340(Hewie *h) {
     }
     HW(h, 0xF3614, f32) = 0.0f;
     HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
-    left = func_00124530(&h->c.a, a, run_turn(h));
+    left = Actor_TurnToward(&h->c.a, a, run_turn(h));
     s = root_ahead(h, root);
     mv = 0.0f;
     if (!(s < 0.0f)) {
         mv = s * ((0x1.921fb60000000p+1f /* 3.1415927 */ - left) / 0x1.921fb60000000p+1f /* 3.1415927 */);
     }
-    h->c.unk128 = func_001273D0(&h->c, &tri, p, mv);
+    h->c.unk128 = Character_WaypointAhead(&h->c, &tri, p, mv);
     h->c.a.navTri = tri;
     sceVu0CopyVector(h->c.a.pos, p);
     HW(h, 0xF3558, u8) = 1;
@@ -6237,7 +6237,7 @@ void func_0014A340(Hewie *h) {
             root[1] = 0.0f;
             root[2] = s - rest;
             sceVu0ApplyMatrix(root, h->c.a.rot, root);
-            func_001247E0(&h->c.a, root);
+            Actor_Move(&h->c.a, root);
         }
         h->c.unkE1 = 1;
         hewie_want(h, 0, 0);
@@ -6268,13 +6268,13 @@ void func_0014A920(Hewie *h) {
     s32 on, anim;
     u32 tri;
 
-    on = h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE);
+    on = h->c.unk104[0] == (s32)Actor_TriTo(&h->c.a, h->c.unk110, NAV_NONE);
     s = root_ahead(h, root);
     if ((u8)on != 1) {
-        func_001273D0(&h->c, &tri, at, 12.0f * (s < 0.0f ? 0.0f : s));
-        a = func_001244D0(&h->c.a, at);
+        Character_WaypointAhead(&h->c, &tri, at, 12.0f * (s < 0.0f ? 0.0f : s));
+        a = Actor_HeadingTo(&h->c.a, at);
     } else {
-        a = func_001244D0(&h->c.a, h->c.unk110);
+        a = Actor_HeadingTo(&h->c.a, h->c.unk110);
     }
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
@@ -6296,7 +6296,7 @@ void func_0014A920(Hewie *h) {
         } else if (!(step <= 0x1.aceea00000000p-4f /* 0.10471976 */)) {
             step = 0x1.aceea00000000p-4f /* 0.10471976 */;
         }
-        left = func_00124530(&h->c.a, HW(h, 0x10C, f32), step);
+        left = Actor_TurnToward(&h->c.a, HW(h, 0x10C, f32), step);
         if (left == 0.0f && AT(h->c.motion, 0x550, f32) <= 0.0f) {
             func_002DDC60(h->c.motion, !(u8)Progress_GameMode(gProgress) ? 0 : 3, 5, -1);
         }
@@ -6304,7 +6304,7 @@ void func_0014A920(Hewie *h) {
     } else {
         HW(h, 0xF3614, f32) = 0.0f;
         HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
-        left = func_00124530(&h->c.a, a, run_turn(h));
+        left = Actor_TurnToward(&h->c.a, a, run_turn(h));
         mv = 0.0f;
         if (!(s < 0.0f)) {
             mv = s * ((0x1.921fb60000000p+1f /* 3.1415927 */ - left) / 0x1.921fb60000000p+1f /* 3.1415927 */);
@@ -6313,7 +6313,7 @@ void func_0014A920(Hewie *h) {
             mv = 0x1.99999a0000000p-5f /* 0.05 */;
         }
     }
-    h->c.unk128 = func_001273D0(&h->c, &tri, p, mv);
+    h->c.unk128 = Character_WaypointAhead(&h->c, &tri, p, mv);
     h->c.a.navTri = tri;
     sceVu0CopyVector(h->c.a.pos, p);
     HW(h, 0xF3558, u8) = 1;
@@ -6375,16 +6375,16 @@ static void slide_root(Hewie *h) {
     root[1] = 0.0f;
     root[2] *= k;
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
     HW(h, 0xF3558, u8) = 1;
 }
 
 /* plan his path to the spot +0x110 (triangle +0x104): > 0 if there is one */
 static s32 plan_to_spot(Hewie *h) {
-    s32 r = func_00127140(&h->c, 0, h->c.unk104[0], h->c.unk110);
+    s32 r = Character_PlanPathKind(&h->c, 0, h->c.unk104[0], h->c.unk110);
 
     if (r > 0) {
-        r = func_001270F0(&h->c);
+        r = Character_WaypointsCurve(&h->c);
     }
     return r;
 }
@@ -6442,7 +6442,7 @@ void func_0014BB10(Hewie *h) {
     if (MOTION_ANIM(h->c.motion) == 0x1E04) {
         func_001F6240(h->c.motion, root, 0.0f);
         func_0010E640(v, &HW(h, 0xF36E0, f32), root[2]);
-        func_001247E0(&h->c.a, v);
+        Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         ground = h->c.a.pos[1];
         if (!((u8)func_001F4770(h->c.motion, 0, 0, 1) & 2)) {
@@ -6452,7 +6452,7 @@ void func_0014BB10(Hewie *h) {
         }
     } else {
         func_0010E640(v, &HW(h, 0xF36E0, f32), 3.0f);
-        func_001247E0(&h->c.a, v);
+        Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         ground = h->c.a.pos[1];
         HW(h, 0xF36CC, f32) += 0.5f;
@@ -6490,12 +6490,12 @@ void func_0014BE80(Hewie *h) {
         d[1] = 0.0f;
         sceVu0Normalize(&HW(h, 0xF36E0, f32), d);
         HW(h, 0xF36C8, f32) = h->c.a.pos[1];
-        a = func_001244D0(&h->c.a, h->c.unk110);
+        a = Actor_HeadingTo(&h->c.a, h->c.unk110);
         HW(h, 0x10C, f32) = a;
         turn_toward(h, a, 0x1.6571860000000p-2f /* 0.34906587 */);
         func_001F6240(h->c.motion, d, 0.0f);
         func_0010E640(v, &HW(h, 0xF36E0, f32), d[2]);
-        func_001247E0(&h->c.a, v);
+        Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         y = HW(h, 0xF36C8, f32) + d[1] * HW(h, 0xF36C4, f32);
         h->c.a.pos[1] = y;
@@ -6542,7 +6542,7 @@ void func_0014C210(Hewie *h) {
 /* the last stretch to `at`, straight (no path left): turning to it as he runs, head held level
  * toward it, moving by his root motion unless he already moved this frame */
 static void run_straight(Hewie *h, const f32 *at) {
-    f32 a = func_001244D0(&h->c.a, at);
+    f32 a = Actor_HeadingTo(&h->c.a, at);
     f32 step = run_turn(h);
 
     turn_toward(h, a, step);
@@ -6584,7 +6584,7 @@ void func_0014C480(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    there = HW(h, 0xF36B4, s32) == (s32)func_00124480(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
+    there = HW(h, 0xF36B4, s32) == (s32)Actor_TriTo(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
     if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
@@ -6636,7 +6636,7 @@ void func_0014CBD0(Hewie *h) {
         return;
     }
     if (func_00140CD0(h, 0) == 0) {
-        d = func_001257B0(&h->c, gCharPursuer->a.navTri, gCharPursuer->a.pos, NAV_NONE);
+        d = Character_PathLength(&h->c, gCharPursuer->a.navTri, gCharPursuer->a.pos, NAV_NONE);
         if (d < 0.0f) {
             hewie_want(h, 0, 0);
             return;
@@ -6688,7 +6688,7 @@ void func_0014CF40(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1BC8);
         return;
     }
-    a = func_001244D0(&h->c.a, gCharPursuer->a.pos);
+    a = Actor_HeadingTo(&h->c.a, gCharPursuer->a.pos);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     func_002DD110(h->c.motion, gCharPursuer->a.pos, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
@@ -6732,7 +6732,7 @@ void func_0014D490(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    there = h->c.unk104[0] == (s32)func_00124480(&h->c.a, h->c.unk110, NAV_NONE);
+    there = h->c.unk104[0] == (s32)Actor_TriTo(&h->c.a, h->c.unk110, NAV_NONE);
     if (!there) {
         if (h->c.unk128 >= h->c.unk124 && func_0013EE40(h, h->c.unk104[0], h->c.unk110, 0, 1) != 0) {
             hewie_want(h, 0, 0);
@@ -6741,7 +6741,7 @@ void func_0014D490(Hewie *h) {
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
             gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
     } else {
-        d = func_00124490(&h->c.a, h->c.unk110);
+        d = Actor_Distance(&h->c.a, h->c.unk110);
     }
     if (d < 10.0f) {
         Hewie_SetBehaviour(h, &D_003B1BB8);
@@ -6795,7 +6795,7 @@ void func_0014DA50(Hewie *h) {
     }
     r = VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
     if (r > 0) {
-        r = func_001270F0(&h->c);
+        r = Character_WaypointsCurve(&h->c);
     }
     if (r < 0) {
         hewie_want(h, 0, 0);
@@ -6829,7 +6829,7 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
     u32 tri;
 
     tri = func_00145610(h, HEWIE_ACTION(h), at);
-    there = tri == func_00124480(&h->c.a, at, NAV_NONE);
+    there = tri == Actor_TriTo(&h->c.a, at, NAV_NONE);
     if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, tri, at, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return -1;
@@ -6838,7 +6838,7 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
             gSceneGameF29740, h->c.a.pos, h->c.unk128, h->c.unk124, h->c.unk12C);
     } else {
-        d = func_00124490(&h->c.a, at);
+        d = Actor_Distance(&h->c.a, at);
     }
     switch (HW(h, 0xF36B4, s32)) {
     case 0:
@@ -6879,7 +6879,7 @@ static s32 follow_step(Hewie *h, f32 up, f32 down) {
         }
         return 0;
     }
-    a = func_001244D0(&h->c.a, at);
+    a = Actor_HeadingTo(&h->c.a, at);
     step = run_turn(h);
     turn_toward(h, a, step);
     if (HW(h, 0xF3604, s32) != 8) {
@@ -7013,7 +7013,7 @@ void func_0014EE20(Hewie *h) {
     }
     func_00139DE0(h);
     o = HW(h, 0xF368C, Actor *);
-    if (func_00124480(&h->c.a, o->pos, NAV_NONE) == o->navTri) {
+    if (Actor_TriTo(&h->c.a, o->pos, NAV_NONE) == o->navTri) {
         if (HW(h, 0xF3604, s32) != 8) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
@@ -7031,9 +7031,9 @@ static void leap_fly(Hewie *h) {
     f32 p[4] __attribute__((aligned(16)));
     u32 tri;
 
-    func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+    Actor_TurnToward(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
     tri = h->c.a.navTri;
-    func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+    Character_WaypointAhead(&h->c, &tri, p, HW(h, 0xF36C4, f32));
     h->c.a.navTri = tri;
     sceVu0CopyVector(h->c.a.pos, p);
     HW(h, 0xF36C8, f32) -= 0x1.333334p-2f /* 0.3 */;
@@ -7221,9 +7221,9 @@ void func_00150930(Hewie *h) {
         sceVu0RotMatrixY(h->c.a.rot, h->c.a.rot, a);
         Hewie_SetBehaviour(h, &D_003B19E8);
     } else {
-        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+        Actor_TurnToward(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
         tri = h->c.a.navTri;
-        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+        Character_WaypointAhead(&h->c, &tri, p, HW(h, 0xF36C4, f32));
         h->c.a.navTri = tri;
         sceVu0CopyVector(h->c.a.pos, p);
     }
@@ -7311,13 +7311,13 @@ void func_00151190(Hewie *h) {
     v[2] = D_003B12A0[0][1];
     Mtx_AtHeading(m, gCharPlayer->a.pos, HW(h, 0x10C, f32));
     func_002E2DD0(at, m, v);
-    tri = func_00123D20(&gCharPlayer->a, at);
+    tri = Actor_TriOf(&gCharPlayer->a, at);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     if (tri == NAV_NONE || (NavMesh_TriFlags(gNavMesh, tri) & 0x29020008)) {
         tri = gCharPlayer->a.navTri;
         sceVu0CopyVector(at, gCharPlayer->a.pos);
     }
-    if (func_00124490(&h->c.a, at) < 10.0f) {
+    if (Actor_Distance(&h->c.a, at) < 10.0f) {
         f32 d;
 
         if (!(func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
@@ -7431,13 +7431,13 @@ void func_00151D10(Hewie *h) {
     if (step < 0x1.aceea00000000p-6f /* 0.02617994 */) {
         step = 0x1.aceea00000000p-6f /* 0.02617994 */;
     }
-    if (func_00124530(&h->c.a, HW(h, 0xF36C4, f32), step) == 0.0f) {
+    if (Actor_TurnToward(&h->c.a, HW(h, 0xF36C4, f32), step) == 0.0f) {
         if (root_ahead(h, fwd) < 0.0f) {
             fwd[2] = 0.0f;
         }
         sceVu0ApplyMatrix(fwd, h->c.a.rot, fwd);
         sceVu0AddVector(pt, h->c.a.pos, fwd);
-        if (func_00124480(&h->c.a, pt, NAV_NONE) == NAV_NONE) {
+        if (Actor_TriTo(&h->c.a, pt, NAV_NONE) == NAV_NONE) {
             HW(h, 0xF36B8, s32) = 1;
         }
     }
@@ -7464,7 +7464,7 @@ static void bite_landed(Hewie *h, Progress *p) {
     }
     HW(h, 0xF36B0, s32) = 0xFF;
     h->c.unk104[1] |= h->c.unk104[0];
-    func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+    Actor_PlaySound(&h->c.a, 0x6C, 5, 0, 0, NULL);
 }
 
 /* ---- biting ---- */
@@ -7473,7 +7473,7 @@ extern const PTMF D_003B1978;
 
 /* turn toward `at` as he runs, head held level toward it */
 static void aim_run(Hewie *h, const f32 *at) {
-    f32 a = func_001244D0(&h->c.a, at);
+    f32 a = Actor_HeadingTo(&h->c.a, at);
     f32 step = run_turn(h);
 
     turn_toward(h, a, step);
@@ -7511,7 +7511,7 @@ void func_001523D0(Hewie *h) {
         return;
     }
     t = HW(h, 0xF3544, Character *);
-    there = t->a.navTri == func_00124480(&h->c.a, t->a.pos, NAV_NONE);
+    there = t->a.navTri == Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE);
     if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
@@ -7576,7 +7576,7 @@ void func_00152D60(Hewie *h) {
         return;
     }
     t = HW(h, 0xF3544, Character *);
-    there = t->a.navTri == func_00124480(&h->c.a, t->a.pos, NAV_NONE);
+    there = t->a.navTri == Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE);
     if (!there && func_0013EE40(h, t->a.navTri, HW(h, 0xF3544, Character *)->a.pos, 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
@@ -7648,7 +7648,7 @@ void func_00153700(Hewie *h) {
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
     sceVu0CopyVector(head, Skel_Bone(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
-    if (func_00124480(&h->c.a, head, NAV_NONE) == NAV_NONE) {
+    if (Actor_TriTo(&h->c.a, head, NAV_NONE) == NAV_NONE) {
         return;
     }
     v[2] = 5.0f;
@@ -7657,7 +7657,7 @@ void func_00153700(Hewie *h) {
     v[3] = 0.0f;
     sceVu0ApplyMatrix(v, h->c.a.rot, v);
     sceVu0AddVector(head, h->c.a.pos, v);
-    if (func_00124480(&h->c.a, head, NAV_NONE) != NAV_NONE) {
+    if (Actor_TriTo(&h->c.a, head, NAV_NONE) != NAV_NONE) {
         HW(h, 0xF36B4, s32) = 16;
         Hewie_SetBehaviour(h, &D_003B1938);
     }
@@ -7669,7 +7669,7 @@ static void back_off(Hewie *h, Actor *from) {
     f32 away, step;
 
     func_00141C00(h, 7);
-    away = func_001244D0(from, h->c.a.pos);
+    away = Actor_HeadingTo(from, h->c.a.pos);
     if (HW(h, 0xF36B4, s32) != 0) {
         HW(h, 0xF36B4, s32) -= 1;
     } else {
@@ -7709,7 +7709,7 @@ void func_00153D20(Hewie *h) {
 
 /* step away (pose 7) from Fiona while she is within 6 in his room (else the default action) */
 void func_00154150(Hewie *h) {
-    if (!in_his_room(h, gCharPlayer) || !(func_00124490(&h->c.a, gCharPlayer->a.pos) <= 6.0f)) {
+    if (!in_his_room(h, gCharPlayer) || !(Actor_Distance(&h->c.a, gCharPlayer->a.pos) <= 6.0f)) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -7731,9 +7731,9 @@ void func_001545A0(Hewie *h) {
 
     if ((h->c.unk128 < h->c.unk124) == 1) {
         s = root_ahead(h, root);
-        n = func_001273D0(&h->c, &tri, p, s < 0.0f ? 0.0f : s);
+        n = Character_WaypointAhead(&h->c, &tri, p, s < 0.0f ? 0.0f : s);
         func_00141C00(h, 7);
-        a = func_001244D0(&h->c.a, p);
+        a = Actor_HeadingTo(&h->c.a, p);
         turn_toward(h, a, 0x1.aceea00000000p-4f /* 0.10471976 */);
         h->c.a.navTri = tri;
         sceVu0CopyVector(h->c.a.pos, p);
@@ -7768,7 +7768,7 @@ void func_00154860(Hewie *h) {
     f32 a, step;
     NavMesh *nm;
 
-    a = func_001244D0(&h->c.a, &HW(h, 0xF36E0, f32));
+    a = Actor_HeadingTo(&h->c.a, &HW(h, 0xF36E0, f32));
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
@@ -7787,7 +7787,7 @@ void func_00154860(Hewie *h) {
     sceVu0SubVector(dir, &HW(h, 0xF36E0, f32), h->c.a.pos);
     sceVu0Normalize(dir, dir);
     sceVu0ScaleVector(dir, dir, root_ahead(h, root));
-    func_001247E0(&h->c.a, dir);
+    Actor_Move(&h->c.a, dir);
     HW(h, 0xF3558, u8) = 1;
     if (HW(h, 0xF36B8, s32) != 0) {
         HW(h, 0xF36B8, s32) -= 1;
@@ -7828,7 +7828,7 @@ void func_00155000(Hewie *h) {
     u32 exit, tri;
 
     if (HW(h, 0xF3590, u8) == 1) {
-        func_001272B0(&h->c, HEWIE_ACTION(h) == 0x39 ? 10.0f : h->c.a.unkC4 == 1 ? 0x1.851eb80000000p-2f /* 0.38 */ : 0x1.99999a0000000p+0f /* 1.6 */);
+        Character_FollowWaypoints(&h->c, HEWIE_ACTION(h) == 0x39 ? 10.0f : h->c.a.unkC4 == 1 ? 0x1.851eb80000000p-2f /* 0.38 */ : 0x1.99999a0000000p+0f /* 1.6 */);
         if (h->c.unk128 >= h->c.unk124) {
             arrived_ = 1;
         }
@@ -7945,7 +7945,7 @@ void func_00155A30(Hewie *h) {
     v[3] = 0.0f;
     v[2] = HW(h, 0xF36C0, s32) == 0 ? HW(h, 0xF36C4, f32) : root_ahead(h, root);
     sceVu0ApplyMatrix(v, h->c.a.rot, v);
-    func_001247E0(&h->c.a, v);
+    Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
 }
 
@@ -7966,7 +7966,7 @@ void func_00155D00(Hewie *h) {
     v[2] = HW(h, 0xF36C4, f32);
     v[3] = 0.0f;
     sceVu0ApplyMatrix(v, h->c.a.rot, v);
-    func_001247E0(&h->c.a, v);
+    Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
     HW(h, 0xF36CC, f32) += HW(h, 0xF36C8, f32);
     HW(h, 0xF36C8, f32) -= 0.5f;
@@ -8029,7 +8029,7 @@ void func_00155FF0(Hewie *h) {
         }
         h->c.unk104[1] |= h->c.unk104[0];
         HW(h, 0xF36B0, s32) = 0xFF;
-        func_00122C20(&h->c.a, 0x6C, 5, 0, 0, NULL);
+        Actor_PlaySound(&h->c.a, 0x6C, 5, 0, 0, NULL);
     }
     turn_toward(h, HW(h, 0xF36D0, f32), 0x1.6571860000000p-3f /* 0.17453294 */);
     v[0] = 0.0f;
@@ -8037,7 +8037,7 @@ void func_00155FF0(Hewie *h) {
     v[2] = HW(h, 0xF36C4, f32);
     v[3] = 0.0f;
     sceVu0ApplyMatrix(v, h->c.a.rot, v);
-    func_001247E0(&h->c.a, v);
+    Actor_Move(&h->c.a, v);
     if (HW(h, 0xF36B4, s32) == HW(h, 0xF36B8, s32)) {
         h->c.a.pos[1] = HW(h, 0xF36E4, f32);
         HW(h, 0xF36C8, f32) = 0.0f;
@@ -8199,7 +8199,7 @@ void func_001569C0(Hewie *h) {
                     HW(h, 0xF3608, s32) = 10;
                 }
                 t = HW(h, 0xF3544, Character *);
-                if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) != t->a.navTri) {
+                if (Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE) != t->a.navTri) {
                     h->c.unk124 = h->c.unk128;
                     hewie_want(h, 0, 0);
                     return;
@@ -8212,7 +8212,7 @@ void func_001569C0(Hewie *h) {
                 HW(h, 0xF36C4, f32) = 0x1.6666660000000p+1f /* 2.8 */;
                 HW(h, 0xF36C8, f32) = h->c.a.pos[1];
                 HW(h, 0xF36CC, s32) = 0;
-                a = func_001244D0(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
+                a = Actor_HeadingTo(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
                 HW(h, 0xF36D0, f32) = a;
                 turn_toward(h, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
                 func_002DDED0(h->c.motion, 0x1E01, -1);
@@ -8262,7 +8262,7 @@ void func_00157480(Hewie *h) {
             }
         }
     }
-    func_001247E0(&h->c.a, &HW(h, 0xF36E0, f32));
+    Actor_Move(&h->c.a, &HW(h, 0xF36E0, f32));
     y = HW(h, 0xF36C4, f32) + HW(h, 0xF36C8, f32);
     HW(h, 0xF3558, u8) = 1;
     if (y < h->c.a.pos[1]) {
@@ -8276,9 +8276,9 @@ void func_00157480(Hewie *h) {
                 h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
                 (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x02008000) == 0x02008000) {
-                func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
+                Actor_PlaySound(&h->c.a, 0x1E, 6, 0, 0, NULL);
                 if (h->c.a.room == 7 || h->c.a.room == 0x106) {
-                    func_00125E10(&h->c, h->c.a.pos, 1);
+                    Character_WaterStep(&h->c, h->c.a.pos, 1);
                 }
             }
         }
@@ -8306,7 +8306,7 @@ void func_001579C0(Hewie *h) {
 
     root_ahead(h, root);
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
-    func_001247E0(&h->c.a, root);
+    Actor_Move(&h->c.a, root);
     HW(h, 0xF36C4, f32) += root[1];
     h->c.a.pos[1] = HW(h, 0xF36C4, f32);
     HW(h, 0xF3558, u8) = 1;
@@ -8620,7 +8620,7 @@ void func_00159040(Hewie *h) {
         }
         bite_pursuer(h, kind, base);
         func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
-        func_00122C20(&h->c.a, 0x6B, 5, 0, 0, NULL);
+        Actor_PlaySound(&h->c.a, 0x6B, 5, 0, 0, NULL);
         h->c.a.navTri = h->c.unk104[1];
         sceVu0CopyVector(h->c.a.pos, h->c.unk110);
         VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, h->c.a.pos);
@@ -8658,9 +8658,9 @@ void func_00159040(Hewie *h) {
         HW(h, 0xF3714, s16) = 0;
         Hewie_SetBehaviour(h, &D_003B1818);
     } else {
-        func_00124530(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
+        Actor_TurnToward(&h->c.a, HW(h, 0xF36CC, f32), HW(h, 0xF36D0, f32));
         tri = h->c.a.navTri;
-        func_001273D0(&h->c, &tri, p, HW(h, 0xF36C4, f32));
+        Character_WaypointAhead(&h->c, &tri, p, HW(h, 0xF36C4, f32));
         h->c.a.navTri = tri;
         sceVu0CopyVector(h->c.a.pos, p);
     }
@@ -8866,7 +8866,7 @@ void func_0015A460(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00124490(&h->c.a, gCharPursuer->a.pos) < 23.0f) {
+    if (Actor_Distance(&h->c.a, gCharPursuer->a.pos) < 23.0f) {
         h->c.a.unk2D = 1;
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 0;
@@ -8904,7 +8904,7 @@ void func_0015A720(Hewie *h) {
     s32 there;
     u32 d;
 
-    there = HW(h, 0xF36B4, s32) == (s32)func_00124480(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
+    there = HW(h, 0xF36B4, s32) == (s32)Actor_TriTo(&h->c.a, &HW(h, 0xF36E0, f32), NAV_NONE);
     if (!there && h->c.unk128 >= h->c.unk124 && func_0013EE40(h, HW(h, 0xF36B4, s32), &HW(h, 0xF36E0, f32), 0, 1) != 0) {
         hewie_want(h, 0, 0);
         return;
@@ -9026,7 +9026,7 @@ void func_0015B130(Hewie *h) {
         return;
     }
     tri = func_00145610(h, HEWIE_ACTION(h), at);
-    if (tri != func_00124480(&h->c.a, at, NAV_NONE)) {
+    if (tri != Actor_TriTo(&h->c.a, at, NAV_NONE)) {
         if (func_0013EE40(h, tri, at, 0, 1) != 0) {
             hewie_want(h, 0, 0);
             return;
@@ -9039,18 +9039,18 @@ void func_0015B130(Hewie *h) {
     } else {
         aim_run(h, at);
         sceVu0CopyVector(head, Skel_Bone(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
-        if (func_00124480(&h->c.a, head, NAV_NONE) == NAV_NONE) {
+        if (Actor_TriTo(&h->c.a, head, NAV_NONE) == NAV_NONE) {
             hewie_want(h, 0, 0);
             return;
         }
-        d = func_00124490(&h->c.a, at);
+        d = Actor_Distance(&h->c.a, at);
     }
     func_00141C00(h, d < 20.0f ? 7 : d < 44.0f ? 8 : 9);
 }
 
 /* ---- roaming ---- */
 
-/* roam: along heading +0xF36C4 while the way ahead (func_00123A70) is at least +0xF36C8; every
+/* roam: along heading +0xF36C4 while the way ahead (Actor_FreeDistance) is at least +0xF36C8; every
  * 90..240 frames, or when it is shorter, a new heading (the freest near where his head points,
  * func_00137720 30..150 degrees for 10 more), held 30 frames before rechecking. Facing it (within
  * 5 degrees) at a walk he looks about (+0xF3604 2), else ahead. Gait +0xF36BC (walk / trot /
@@ -9058,7 +9058,7 @@ void func_0015B130(Hewie *h) {
 void func_0015B660(Hewie *h) {
     f32 room, step, left;
 
-    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
     if (HW(h, 0xF36B8, s32) != 0) {
         HW(h, 0xF36B8, s32) -= 1;
     } else {
@@ -9120,7 +9120,7 @@ void func_0015BD90(Hewie *h) {
         if (HW(h, 0xF36B4, s32) != 0) {
             HW(h, 0xF36B4, s32) -= 1;
         }
-        room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+        room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
         if (HW(h, 0xF36B4, s32) == 0 || room < HW(h, 0xF36C8, f32)) {
             HW(h, 0xF36B4, s32) = (s32)(3.0f * RNG01()) * 10 + 10;
             HW(h, 0xF36B8, s32) = 30;
@@ -9162,8 +9162,8 @@ void func_0015C1E0(Hewie *h) {
         return;
     }
     p = gCharPursuer->a.angle[1];
-    dd = func_00124490(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
-    rel = func_002E2D00(p - func_001244D0(&h->c.a, HW(h, 0xF3544, Character *)->a.pos));
+    dd = Actor_Distance(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
+    rel = func_002E2D00(p - Actor_HeadingTo(&h->c.a, HW(h, 0xF3544, Character *)->a.pos));
     if ((rel <= 0.0f ? -rel : rel) < 0x1.921fb60000000p-1f /* 0.7853982 */ && heading_gap(h, gCharPursuer) < 0x1.2d97c80000000p+1f /* 2.3561945 */) {
         if (HW(h, 0xF3604, s32) != 8) {
             HW(h, 0xF3604, s32) = 8;
@@ -9188,7 +9188,7 @@ void func_0015C1E0(Hewie *h) {
         }
         if (HW(h, 0xF36B4, s32) == -1) {
             t = HW(h, 0xF3544, Character *);
-            if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) == t->a.navTri) {
+            if (Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE) == t->a.navTri) {
                 HW(h, 0xF36B4, s32) = rel < 0.0f ? 0 : 1;
             }
         }
@@ -9196,7 +9196,7 @@ void func_0015C1E0(Hewie *h) {
             f32 m[4][4] __attribute__((aligned(16)));
             f32 v[4] __attribute__((aligned(16)));
             f32 at[4] __attribute__((aligned(16)));
-            f32 out = func_001244D0(&HW(h, 0xF3544, Character *)->a, h->c.a.pos);
+            f32 out = Actor_HeadingTo(&HW(h, 0xF3544, Character *)->a, h->c.a.pos);
             f32 side, reach, a;
 
             side = HW(h, 0xF36B4, s32) != 0 ? func_002E2D00(out + 0x1.921fb60000000p-1f /* 0.7853982 */) : func_002E2D00(out - 0x1.921fb60000000p-1f /* 0.7853982 */);
@@ -9209,16 +9209,16 @@ void func_0015C1E0(Hewie *h) {
                 reach = 20.0f;
             }
             t = HW(h, 0xF3544, Character *);
-            v[2] = func_00123A70(&h->c.a, t->a.navTri, t->a.pos, NAV_NONE, side, reach);
+            v[2] = Actor_FreeDistance(&h->c.a, t->a.navTri, t->a.pos, NAV_NONE, side, reach);
             v[0] = 0.0f;
             v[1] = 0.0f;
             v[3] = 0.0f;
             Mtx_AtHeading(m, HW(h, 0xF3544, Character *)->a.pos, side);
             func_002E2DD0(at, m, v);
-            if (func_00124480(&h->c.a, at, NAV_NONE) == NAV_NONE) {
+            if (Actor_TriTo(&h->c.a, at, NAV_NONE) == NAV_NONE) {
                 sceVu0CopyVector(at, HW(h, 0xF3544, Character *)->a.pos);
             }
-            a = func_001244D0(&h->c.a, at);
+            a = Actor_HeadingTo(&h->c.a, at);
             if (HW(h, 0xF3604, s32) != 8) {
                 HW(h, 0xF3604, s32) = 8;
                 HW(h, 0xF3608, s32) = 10;
@@ -9265,7 +9265,7 @@ void func_0015CCA0(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    room = func_00123A70(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
+    room = Actor_FreeDistance(&h->c.a, h->c.a.navTri, h->c.a.pos, NAV_NONE, HW(h, 0xF36C4, f32), HW(h, 0xF36C8, f32));
     if (HW(h, 0xF36B8, s32) != 0) {
         HW(h, 0xF36B8, s32) -= 1;
     } else {
@@ -9383,11 +9383,11 @@ void func_0015DF40(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
+    if (Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
         hewie_want(h, 0x55, 0xB);
         return;
     }
-    a = func_001244D0(&h->c.a, gCharPlayer->a.pos);
+    a = Actor_HeadingTo(&h->c.a, gCharPlayer->a.pos);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
@@ -9423,12 +9423,12 @@ void func_0015E3A0(Hewie *h) {
         func_00141C00(h, 0);
         return;
     }
-    if (func_00124490(&h->c.a, at) < 10.0f) {
+    if (Actor_Distance(&h->c.a, at) < 10.0f) {
         sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
         hewie_want(h, 0x57, 0xA);
         return;
     }
-    a = func_001244D0(&h->c.a, at);
+    a = Actor_HeadingTo(&h->c.a, at);
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
@@ -9469,11 +9469,11 @@ void func_0015E880(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
+    if (Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 10.0f) {
         hewie_want(h, 0x55, 9);
         return;
     }
-    a = func_001244D0(&h->c.a, gCharPlayer->a.pos);
+    a = Actor_HeadingTo(&h->c.a, gCharPlayer->a.pos);
     step = run_turn(h);
     left = turn_toward(h, a, step);
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
@@ -9526,12 +9526,12 @@ void func_0015ECC0(Hewie *h) {
         stance(h);
         return;
     }
-    if (func_00124490(&h->c.a, at) < 10.0f) {
+    if (Actor_Distance(&h->c.a, at) < 10.0f) {
         sceVu0CopyVector(&HW(h, 0xF36E0, f32), at);
         hewie_want(h, 0x57, 8);
         return;
     }
-    a = func_001244D0(&h->c.a, at);
+    a = Actor_HeadingTo(&h->c.a, at);
     if (HW(h, 0xF3604, s32) != 8) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
@@ -9569,7 +9569,7 @@ void func_0015F2E0(Hewie *h) {
             HW(h, 0xF3604, s32) = 4;
             HW(h, 0xF3608, s32) = 10;
         }
-    } else if (!(func_00124490(&h->c.a, at) < 10.0f)) {
+    } else if (!(Actor_Distance(&h->c.a, at) < 10.0f)) {
         if (HW(h, 0xF3604, s32) != 8) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
@@ -9611,7 +9611,7 @@ extern const s32 D_003B1390[8], D_003B13B0[8];   /* waiting time by trust (norma
 void func_0015FE30(Hewie *h) {
     HW(h, 0xF359C, s32) -= 1;
     if (HW(h, 0xF3598, s32) == 1 && in_his_room(h, gCharPlayer)) {
-        if (func_00124490(&h->c.a, gCharPlayer->a.pos) < 30.0f) {
+        if (Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 30.0f) {
             HW(h, 0xF359C, s32) -= 2;
             if (HEWIE_ACTION(h) != 0x7D && HEWIE_ACTION(h) != 0x7E) {
                 HW(h, 0xF35A0, s16) += 1;
@@ -9887,7 +9887,7 @@ void func_00161500(Hewie *h) {
 s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
     s32 r = 0;
 
-    func_00125BA0(&h->c, pl->room, pl->tri, pl->side);
+    Character_ToRoom(&h->c, pl->room, pl->tri, pl->side);
     HEWIE_SIDE(h) = pl->side;
     if (*((u8 *)gProgress + 0x1FBEC1) == 0 && pl->room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         h->c.a.navTri = pl->tri;
@@ -9954,8 +9954,8 @@ s32 func_00164830(Hewie *h) {
                 (HW(h, 0xF356C, u32) & 0x80000008) == 8 &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
                 !(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x80001) && in_his_room(h, gCharPlayer) &&
-                func_00124490(&h->c.a, gCharPlayer->a.pos) < 30.0f &&
-                func_00124480(&h->c.a, gCharPlayer->a.pos, 0x60088) == gCharPlayer->a.navTri) {
+                Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 30.0f &&
+                Actor_TriTo(&h->c.a, gCharPlayer->a.pos, 0x60088) == gCharPlayer->a.navTri) {
                 f32 yaw;
                 f32 at[4] __attribute__((aligned(16)));
                 s32 r = func_00138890(h, type == 4 ? 3 : type == 0 ? 1 : 2, &yaw, at);
@@ -10151,7 +10151,7 @@ void Hewie_Vt34(Hewie *h, s32 exit) {
         return;
     }
     if (h->c.hp == 0 &&
-        ((((u32 *)gProgress)[0x30 / 4] & 0x8000) != 0 || !(func_001235C0(&h->c.a, &h->c.a) & 0xFF))) {
+        ((((u32 *)gProgress)[0x30 / 4] & 0x8000) != 0 || !(Actor_TriFreeFor(&h->c.a, &h->c.a) & 0xFF))) {
         h->c.hp = 1;
         h->c.a.unkC4 = 1;
     }
@@ -10197,7 +10197,7 @@ void Hewie_Vt34(Hewie *h, s32 exit) {
         return;
     }
     if (HW(h, 0xF3590, u8) == 1) {
-        if ((func_00123C60(&h->c.a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+        if ((Actor_NearerRoom(&h->c.a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
             HW(h, 0xF36B4, s32) = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, h->c.a.room, exit) & 0xFF;
             HEWIE_ACTION(h) = 0x88;
             return;
@@ -10209,7 +10209,7 @@ void Hewie_Vt34(Hewie *h, s32 exit) {
         sceVu0SubVector(d0, h->c.a.pos, door);
         sceVu0SubVector(d1, at, door);
         if (sceVu0InnerProduct(d0, d0) <= sceVu0InnerProduct(d1, d1) &&
-            func_00124480(&h->c.a, door, NAV_NONE) != NAV_NONE) {
+            Actor_TriTo(&h->c.a, door, NAV_NONE) != NAV_NONE) {
             h->c.unk124 = h->c.unk128;
         }
     }
@@ -10317,7 +10317,7 @@ void Hewie_Update(Hewie *h) {
             }
         }
         if (in_his_room(h, gCharPlayer) &&
-            (gCharPlayer->unkE0 == 1 || (func_001241F0(&h->c.a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) == 1)) {
+            (gCharPlayer->unkE0 == 1 || (Actor_Touching(&h->c.a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) == 1)) {
             h->c.a.unk2A = 1;
         } else {
             h->c.a.unk2A = 0;
@@ -10605,9 +10605,9 @@ static s32 staying(Hewie *h) {
         return 1;
     }
     if (in_his_room(h, gCharPlayer) && in_his_room(h, gCharPursuer)) {
-        f32 d = func_00124490(&h->c.a, gCharPlayer->a.pos);
+        f32 d = Actor_Distance(&h->c.a, gCharPlayer->a.pos);
 
-        if (d < func_00124490(&h->c.a, gCharPursuer->a.pos)) {
+        if (d < Actor_Distance(&h->c.a, gCharPursuer->a.pos)) {
             to_fiona(h);
         } else {
             to_pursuer(h);
@@ -10635,7 +10635,7 @@ static f32 speed_of(Character *c) {
 
 /* c within 10 and facing away from him by more than 90 degrees: he can bite it from behind */
 static s32 behind(Hewie *h, Character *c) {
-    return func_00124490(&h->c.a, c->a.pos) < 10.0f &&
+    return Actor_Distance(&h->c.a, c->a.pos) < 10.0f &&
            !(hwrap_abs(h->c.a.angle[1] - c->a.angle[1]) <= 0x1.921fb6p+0f /* pi/2 */);
 }
 
@@ -10754,7 +10754,7 @@ void func_00161860(Hewie *h) {
             if (speed_of(t) <= 0.5f) {
                 HW(h, 0xF368C, Character *) = NULL;
             } else {
-                f32 d = func_001244D0(&h->c.a, t->a.pos);
+                f32 d = Actor_HeadingTo(&h->c.a, t->a.pos);
 
                 d -= func_002E2D00(h->c.a.angle[1] + *(f32 *)((u8 *)h->c.motion + 0x858));
                 if (hwrap_abs(d) < 0x1.0c1524p+1f /* 2pi/3 */) {
@@ -10762,7 +10762,7 @@ void func_00161860(Hewie *h) {
 
                     t = HW(h, 0xF368C, Character *);
                     tri = t->a.navTri;
-                    if (func_00124480(&h->c.a, t->a.pos, NAV_NONE) == tri) {
+                    if (Actor_TriTo(&h->c.a, t->a.pos, NAV_NONE) == tri) {
                         if (HEWIE_ACTION(h) == 0x7D) {
                             HW(h, 0xF3598, s32) = 0;
                             obey_time(h);
@@ -10817,13 +10817,13 @@ void func_00161860(Hewie *h) {
             sceVu0FVECTOR nose;
 
             sceVu0CopyVector(nose, Skel_Bone(*(void **)((u8 *)h->c.motion + 0x810), 0x1F) + 12);
-            if (func_00124480(&h->c.a, nose, NAV_NONE) == NAV_NONE) {
+            if (Actor_TriTo(&h->c.a, nose, NAV_NONE) == NAV_NONE) {
                 hewie_want(h, 0x6A, 0);
                 return;
             }
         }
         if (in_his_room(h, gCharPlayer) && HEWIE_ACTION(h) != 0x67 &&
-            func_00124490(&h->c.a, gCharPlayer->a.pos) < 5.0f) {
+            Actor_Distance(&h->c.a, gCharPlayer->a.pos) < 5.0f) {
             hewie_want(h, 0x67, 0);
             return;
         }
