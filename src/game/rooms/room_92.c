@@ -20,14 +20,14 @@
 extern void *RoomBase_vtable[];
 extern void *Room92_vtable[];
 extern void *DepthRange_vtable[];
-extern void *D_00479F50[];
+extern void *WispColumn_vtable[];
 extern const char *D_00437D48[];   /* room objects 10..15 */
 extern const char *D_00437D40[];   /* room objects 8, 9 */
-extern void *D_0047A2F0[];
-extern void *D_0047A310[];
-extern void *D_00479F70[];
+extern void *Room92Effect_vtable[];
+extern void *Embers_vtable[];
+extern void *SparkSpray_vtable[];
 extern const char *D_00437D30[];   /* room objects 4, 5 */
-extern void *D_00479F30[];
+extern void *SmokeTrail_vtable[];
 extern u32 D_00436CF0[];
 extern u32 D_00436D70[];
 extern u32 D_00436DE0[];
@@ -41,18 +41,18 @@ extern void *EffectBase_vtable[];
 extern PTMF D_01991820[];
 
 static void effect_1c60_init(void **obj) {
-    obj[0] = D_00479F50;
+    obj[0] = WispColumn_vtable;
     obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
     obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_7A2F0_init(void **obj) {
-    obj[0] = D_0047A2F0;
+    obj[0] = Room92Effect_vtable;
 }
 
 static void effect_7A310_init(void **obj) {
-    obj[0] = D_0047A310;
+    obj[0] = Embers_vtable;
     obj[0xF10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xF14 / 4] = -1;
     obj[0xF10 / 4] = QuadDrawer_vtable;
@@ -62,14 +62,14 @@ static void effect_7A310_init(void **obj) {
 }
 
 static void effect_79F70_init(void **obj) {
-    obj[0] = D_00479F70;
+    obj[0] = SparkSpray_vtable;
     obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
     obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_79F30_init(void **obj) {
-    obj[0] = D_00479F30;
+    obj[0] = SmokeTrail_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;
@@ -122,7 +122,7 @@ s32 Room92_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991820[i & 0xFF], a, b);
 }
 
-/* (as Room02_Cmd02)  the 0x10D0-byte effect D_0047A310: byte 3 0 / 1 one made and sent 1 / 0,
+/* (as Room02_Cmd02)  the 0x10D0-byte effect Embers_vtable: byte 3 0 / 1 one made and sent 1 / 0,
  * its slot kept in script variable 11; 2 that one sent nothing */
 /* 0x00341C30 */
 s32 Room92_Cmd13(void *self, void *a1, u8 *cmd) {
@@ -146,7 +146,7 @@ s32 Room92_Cmd13(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as Room49_Cmd02)  byte 3 0: the 0x14-byte effect D_0047A2F0 spawned, its slot in script
+/* (as Room49_Cmd02)  byte 3 0: the 0x14-byte effect Room92Effect_vtable spawned, its slot in script
  * variable 10; 1 / 2: it is sent (byte 4, byte 3 - 1) */
 /* 0x00341EF0 */
 s32 Room92_Cmd12(void *self, void *a1, u8 *cmd) {
@@ -242,7 +242,7 @@ s32 Room92_Cmd09(void *self, void *a1, u8 *cmd) {
 /* 0x00342370 */
 s32 Room92_Cmd08(void) {
     static const union { u32 u; f32 f; } kDown = {0x3E4CCCCD}, kTop = {0x3F333333}, kUp = {0x3ECCCCCD};
-    VObject *objs = D_00456DF8, *ev = gEvents;
+    VObject *objs = gRoomObjects, *ev = gEvents;
     s32 k;
 
     for (k = 8; k < 10; k++) {
@@ -298,7 +298,7 @@ s32 Room92_Cmd07(void) {
     return 1;
 }
 
-/* the 0x20E0-byte effect D_00479F70 (sent byte 3): byte 3 0 / 1 one made, its slot in script
+/* the 0x20E0-byte effect SparkSpray_vtable (sent byte 3): byte 3 0 / 1 one made, its slot in script
  * variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing */
 /* 0x003425D0 */
 s32 Room92_Cmd06(void *self, void *a1, u8 *cmd) {
@@ -343,7 +343,7 @@ s32 Room92_Cmd05(void) {
             n--;
         }
     }
-    objs = D_00456DF8;
+    objs = gRoomObjects;
     for (i = 10; i < 16; i++) {
         u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D48[i - 10]);
 
@@ -355,7 +355,7 @@ s32 Room92_Cmd05(void) {
     return 1;
 }
 
-/* (as Room49_Cmd02) byte 3 0: the effect D_00479F50 spawned (told 1), its slot in event var
+/* (as Room49_Cmd02) byte 3 0: the effect WispColumn_vtable spawned (told 1), its slot in event var
    0; 1: it is told 0 */
 /* 0x00342A30 */
 s32 Room92_Cmd04(void *self, void *a1, u8 *cmd) {
@@ -382,7 +382,7 @@ s32 Room92_Cmd04(void *self, void *a1, u8 *cmd) {
 
 /* the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of five
  * spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle (with a
- * little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect D_00479F30 on it */
+ * little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect SmokeTrail_vtable on it */
 /* 0x00342BC0 */
 s32 Room92_Cmd03(void) {
     static const union { u32 u; f32 f; } kStep = {0x3FA0D97C}, kJit = {0x3F80ADFD}, kHalf = {0x3F00ADFD};
@@ -451,7 +451,7 @@ s32 Room92_Cmd02(void) {
         cnt = 6 - n;
     }
     list = gPlacedThings;
-    objs = D_00456DF8;
+    objs = gRoomObjects;
     nav = (VObject *)gNavMesh;
     for (i = 0; i < cnt; i++) {
         u8 *t = VCALL(list, 0x8, u8 *(*)(VObject *, s32))(list, 9);
@@ -512,7 +512,7 @@ s32 Room92_Cmd01(void) {
 s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k005 = {0x3D4CCCCD}, k002 = {0x3CA3D70A}, k01 = {0x3DCCCCCD},
                                           kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    VObject *objs = D_00456DF8, *ev;
+    VObject *objs = gRoomObjects, *ev;
     s32 k;
 
     if (cmd[3] == 0) {
@@ -572,11 +572,11 @@ s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* destructor (vtable D_0047A2F0) */
+/* destructor (vtable Room92Effect_vtable) */
 /* 0x00370030 */
 void *Room92Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A2F0;
+        AT(o, 0x0, void **) = Room92Effect_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

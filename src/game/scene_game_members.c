@@ -32,7 +32,7 @@
 #include "sce/intc.h"
 
 extern void *Obstacles_vtable[], *PlacedObjects_vtable[], *Doors_vtable[];
-extern void *D_00456DF8;
+extern void *gRoomObjects;
 
 extern void *D_0046AEC0[];
 void *Obj46AEC0_dtor(u8 *o, s32 flags);
@@ -135,11 +135,11 @@ void *Obstacles_ctor(u8 *p) {
     return p;
 }
 
-/* a manager of 64 objects of 0xB0 bytes (vtable PlacedObjects_vtable, global D_00456DF8) */
+/* a manager of 64 objects of 0xB0 bytes (vtable PlacedObjects_vtable, global gRoomObjects) */
 /* 0x002D1160 */
 void *PlacedObjects_ctor(u8 *p) {
     AT(p, 0x0, void **) = PlacedObjects_vtable;
-    D_00456DF8 = p;
+    gRoomObjects = p;
     func_00100340(p + 0x20, func_002D11C0, QuadEntry_dtor, 0xB0, 0x40);
     return p;
 }
@@ -1133,7 +1133,7 @@ void Creatures_HookMessages(u8 *o) {
         gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
 }
 
-extern u8 D_0047B350;
+extern u8 gLanguage;
 extern u8 *D_01991EC4;   /* the current room's section 10 */
 extern void Doors_TakeRoom(u8 *d, u8 *sec);
 extern s32 RoomMgr_TakeSection14(u8 *o, u8 *sec);
@@ -1203,7 +1203,7 @@ void RoomMgr_MakeCurrent(u8 *rm, s32 slot) {
     VCALL(gCamera, 0x78, void (*)(VObject *, void *))(gCamera, ROOM_SEC(rm, 0x9998));
     if (AT(pac, 0x28, u32) != 0) {
         ROOM_SEC(rm, 0x99A8) = pac + AT(pac, 0x28, u32);
-        D_0047B350 = 1;
+        gLanguage = 1;
     } else {
         ROOM_SEC(rm, 0x99A8) = NULL;
     }
@@ -1590,7 +1590,7 @@ void PlacedObject_ToDef(u8 *o) {
 void PlacedObject_StartAnim(u8 *o, s32 id) {
     u8 *a;
 
-    AT(o, 0x94, u8 *) = VCALL((VObject *)D_00456DF8, 0x1C, u8 *(*)(void *, u8 *, s32))(D_00456DF8, AT(o, 0x70, u8 *), id);
+    AT(o, 0x94, u8 *) = VCALL((VObject *)gRoomObjects, 0x1C, u8 *(*)(void *, u8 *, s32))(gRoomObjects, AT(o, 0x70, u8 *), id);
     a = AT(o, 0x94, u8 *);
     if (a != NULL) {
         Triple_Set(o + 0x98, AT(a, 0x4, s32), (s32)(a + AT(a, 0x8, s32)), AT(a, 0x0, s32));
@@ -1709,7 +1709,7 @@ void EffectMgr_Remove(u8 *o, s32 slot) {
 }
 
 extern u8 *D_00420B20[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
-extern void **D_0041F950[];  /* per map: its pages (by the entry's +0x4) */
+extern void **kMapPages[];  /* per map: its pages (by the entry's +0x4) */
 
 /* SceneGame +0x101EBC0 (the map): find which map and page show room `room` (+0x108 the room,
  * +0x10C/+0x10D the map, +0x10E/+0x10F the page; -1: none) */
@@ -1728,8 +1728,8 @@ void Map_FindRoom(u8 *m, s32 room) {
     }
     for (i = 0; D_00420B20[i] != NULL; i++) {
         for (e = D_00420B20[i]; AT(e, 0, s32) != -1; e += 0x18) {
-            if (AT(e, 0, s32) == room && D_0041F950[i] != NULL &&
-                D_0041F950[i][AT(e, 4, s8)] != NULL) {
+            if (AT(e, 0, s32) == room && kMapPages[i] != NULL &&
+                kMapPages[i][AT(e, 4, s8)] != NULL) {
                 AT(m, 0x108, s32) = room;
                 AT(m, 0x10D, s8) = i;
                 AT(m, 0x10C, s8) = i;
@@ -1809,7 +1809,7 @@ static inline s32 map_shown(s8 map) {
     if (owned == 0) {
         return 0;
     }
-    if (D_0041F950[map] == NULL) {
+    if (kMapPages[map] == NULL) {
         return 0;
     }
     return (owned & (1 << map)) ? 1 : 0;
@@ -1818,7 +1818,7 @@ static inline s32 map_shown(s8 map) {
 /* the current map's last page */
 static inline void map_last_page(u8 *m) {
     MAP_PAGE(m) = 0;
-    while (D_0041F950[MAP_CUR(m)][MAP_PAGE(m) + 1] != NULL) {
+    while (kMapPages[MAP_CUR(m)][MAP_PAGE(m) + 1] != NULL) {
         MAP_PAGE(m)++;
     }
 }
@@ -1827,7 +1827,7 @@ static inline void map_last_page(u8 *m) {
 static inline void map_first(u8 *m, s8 map, s8 page) {
     MAP_CUR(m) = 0;
     for (;;) {
-        if (D_0041F950[MAP_CUR(m)] == NULL) {
+        if (kMapPages[MAP_CUR(m)] == NULL) {
             MAP_CUR(m) = map;
             *(volatile s8 *)&MAP_PAGE(m) = page;   /* (stored again, unchanged, as the original) */
             return;
@@ -1843,7 +1843,7 @@ static inline void map_first(u8 *m, s8 map, s8 page) {
  * player has (round), its last / first page. A new page has its picture loaded: 1. */
 /* 0x00303F90 */
 s32 Map_LeftRight(u8 *m) {
-    u32 pad = D_0047E36C;
+    u32 pad = gMenuPressed;
     s8 map = MAP_CUR(m), page = MAP_PAGE(m);
 
     if (pad & MENU_LEFT) {
@@ -1862,7 +1862,7 @@ s32 Map_LeftRight(u8 *m) {
                 } else {
                     do {
                         MAP_CUR(m)++;
-                    } while (D_0041F950[MAP_CUR(m) + 1] != NULL);
+                    } while (kMapPages[MAP_CUR(m) + 1] != NULL);
                 }
                 if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
                     break;
@@ -1871,7 +1871,7 @@ s32 Map_LeftRight(u8 *m) {
             map_last_page(m);
         }
     } else if (pad & MENU_RIGHT) {
-        if (map_shown(map) && D_0041F950[map][page + 1] != NULL) {
+        if (map_shown(map) && kMapPages[map][page + 1] != NULL) {
             MAP_PAGE(m)++;
         } else if (map == -1) {
             map_first(m, map, page);
@@ -1882,7 +1882,7 @@ s32 Map_LeftRight(u8 *m) {
         } else {
             for (;;) {
                 MAP_CUR(m)++;
-                if (D_0041F950[MAP_CUR(m)] == NULL) {
+                if (kMapPages[MAP_CUR(m)] == NULL) {
                     MAP_CUR(m) = 0;
                 }
                 if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
@@ -1896,7 +1896,7 @@ s32 Map_LeftRight(u8 *m) {
         return 0;
     }
     VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
-        gFileLoader, D_0041F950[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+        gFileLoader, kMapPages[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
     return 1;
 }
 
@@ -2028,7 +2028,7 @@ void Map_BackToPlayer(u8 *m) {
         return;
     }
     VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
-        gFileLoader, D_0041F950[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+        gFileLoader, kMapPages[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
 }
 
 /* ---- the saved game state (0xFC0 bytes, kept at SceneGame +0x48 and in the save): its
@@ -2435,7 +2435,7 @@ s32 Doors_Side(VObject *doors, u32 k, const f32 *pos) {
     return !(sceVu0InnerProduct(dir, diff) < 0.0f);
 }
 
-extern VObject *D_00456DF0;
+extern VObject *gStageMusic;
 
 static f32 clamp01(f32 v) {
     if (v < 0.0f) {
@@ -2493,8 +2493,8 @@ void StatusTimers_Frame(u8 *o) {
         VCALL(gSound, 0xAC, void (*)(VObject *, f32))(gSound, AT(o, 0x10, f32));
         AT(gAdx, 0x120, f32) = clamp01(AT(o, 0x10, f32));
         Bgm_ApplyVolume(gAdx);   /* the music player, passed through a0 */
-        if (D_00456DF0 != NULL) {
-            VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, AT(o, 0x10, f32));
+        if (gStageMusic != NULL) {
+            VCALL(gStageMusic, 0x24, void (*)(VObject *, f32))(gStageMusic, AT(o, 0x10, f32));
         }
         if (gMovie != NULL) {
             AT(gMovie, 0x1D4, f32) = clamp01(AT(o, 0x10, f32));

@@ -68,7 +68,7 @@ s32 Room1B_Command(void *self, u32 i, s32 a, s32 b) {
 /* 0x002AD7B0 */
 s32 Room1B_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FCB00[cmd[3]]);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003FCB00[cmd[3]]);
     f32 period = 360.0f, swing = 15.0f;
 
     switch (cmd[3]) {

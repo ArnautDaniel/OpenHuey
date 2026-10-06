@@ -124,7 +124,7 @@ static inline s32 b5_prog_flag8000(void);
 extern void *D_0046D730[];
 extern void *EffectBase_vtable[];
 extern void *Reflection_vtable[];
-extern void *D_00479FF0[];
+extern void *Effect79FF0_vtable[];
 void *Obj472F60_dtor(u8 *o, s32 flags);
 void *Effect79FF0_dtor(u8 *o, s32 flags);
 
@@ -144,7 +144,7 @@ extern u8 D_00441830[], D_004417F0[];
 void Effect79FF0_Draw(void);
 
 extern const PTMF D_00422348;            /* a creature state */
-extern void *D_004726E0[];   /* the strand (creature.c) */
+extern void *Effect726E0_vtable[];   /* the strand (creature.c) */
 extern u8 D_00422360[];
 extern u8 D_004223A0[];
 extern u8 D_004223E0[];
@@ -244,7 +244,7 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p);
 
 static void strand_init(void **obj) {
-    obj[0] = D_004726E0;
+    obj[0] = Effect726E0_vtable;
     obj[0x40 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x44 / 4] = -1;
     obj[0x40 / 4] = QuadDrawer_vtable;
@@ -3316,7 +3316,7 @@ void Pursuer_Door1E4(Pursuer *p) {
 /* ---- batch 8 ---- */
 
 extern const PTMF D_003ED260, D_003ECE30, D_003ED5B0, Pursuer_StateEndStep_ptmf, Pursuer_StateStepFacing_ptmf, D_003ED580, Pursuer_StateEndStep_ptmf2;
-extern PTMF D_0045B3A0;   /* followed by the idle move: +0xC kind, +0x10 move mode, +0x14 sub */
+extern PTMF kPursuerIdleMove;   /* followed by the idle move: +0xC kind, +0x10 move mode, +0x14 sub */
 
 /* vtable +0x254: on to the next exit (of the path, or a random one) */
 /* 0x002856A0 */
@@ -3695,10 +3695,10 @@ void Pursuer_PlanToGoal(Pursuer *p) {
             break;
         }
         if (!(Pursuer_PlanWhere(p) & 0xFF)) {
-            ptmf_set((PTMF *)((u8 *)p + 0x17A0), &D_0045B3A0);
-            PU(p, 0x17AC, s32) = (&AT(&D_0045B3A0, 0xC, s32))[0];
-            p->c.moveMode = AT(&D_0045B3A0, 0x10, s32);
-            p->c.moveSub = AT(&D_0045B3A0, 0x14, s32);
+            ptmf_set((PTMF *)((u8 *)p + 0x17A0), &kPursuerIdleMove);
+            PU(p, 0x17AC, s32) = (&AT(&kPursuerIdleMove, 0xC, s32))[0];
+            p->c.moveMode = AT(&kPursuerIdleMove, 0x10, s32);
+            p->c.moveSub = AT(&kPursuerIdleMove, 0x14, s32);
             p->c.unk1530 = 0;
             p->c.unk1538 = 0;
             p->c.unk1534 = 0;
@@ -3756,7 +3756,7 @@ void Pursuer_StateWalkGesture(Pursuer *p) {
 
 extern const PTMF Pursuer_AttackNextStep_ptmf4, D_003ECE90, D_003ECA00, D_003ECA10, D_003ECA20, D_003ED560, D_003ED570,
     D_003ECC30, D_003ECDE0, D_003ECDD0, Pursuer_StateSidestep_ptmf;
-extern PTMF D_0045B358;   /* followed by the wait move: +0xC kind, +0x10 move mode, +0x14 sub */
+extern PTMF kPursuerWaitMove;   /* followed by the wait move: +0xC kind, +0x10 move mode, +0x14 sub */
 
 /* vtable +0x70: placed into room `room` (triangle `tri`, -1: by its exit / way in), on side
  * `side` (0 / 1; else any usable exit) */
@@ -3976,10 +3976,10 @@ void Pursuer_ChaseFionaHere(Pursuer *p) {
         Pursuer_SearchRoom(p);
     } else {
         p->c.unk1388 = p->c.unk1384;
-        ptmf_set((PTMF *)((u8 *)p + 0x17A0), &D_0045B358);
-        PU(p, 0x17AC, s32) = AT(&D_0045B358, 0xC, s32);
-        p->c.moveMode = AT(&D_0045B358, 0x10, s32);
-        p->c.moveSub = AT(&D_0045B358, 0x14, s32);
+        ptmf_set((PTMF *)((u8 *)p + 0x17A0), &kPursuerWaitMove);
+        PU(p, 0x17AC, s32) = AT(&kPursuerWaitMove, 0xC, s32);
+        p->c.moveMode = AT(&kPursuerWaitMove, 0x10, s32);
+        p->c.moveSub = AT(&kPursuerWaitMove, 0x14, s32);
         p->c.unk1530 = 0;
         p->c.unk1538 = 0;
         p->c.unk1534 = 0;
@@ -4167,8 +4167,8 @@ void Pursuer_StateSidestepRoom(Pursuer *p) {
 
 extern const PTMF Pursuer_StateRunThenNext_ptmf, D_003EC940, D_003ED350, D_003ED4B0, D_003ED4C0, D_003ED4D0, D_003ED4E0,
     D_003ED4F0, D_003ED500, D_003ECEE0, Pursuer_StateRunThenNext_ptmf5, D_003ECB70, Pursuer_StateCountKeys_ptmf;
-extern PTMF D_0045B340;   /* followed by a move: +0xC kind, +0x10 move mode, +0x14 sub */
-extern void *D_00479FF0[];
+extern PTMF kPursuerMove;   /* followed by a move: +0xC kind, +0x10 move mode, +0x14 sub */
+extern void *Effect79FF0_vtable[];
 
 /* a move from one of the tables at 0x45B340 / 0x45B358 / 0x45B3A0: step function to +0x17A0, kind
  * +0x17AC, move mode and sub */
@@ -4763,15 +4763,15 @@ void Pursuer_BackToStance(Pursuer *p) {
     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     switch (PU(p, 0x16C8, u8)) {
     case 0:
-        Pursuer_SetMove(p, &D_0045B340);
+        Pursuer_SetMove(p, &kPursuerMove);
         break;
     case 1:
     case 3:
     case 4:
-        Pursuer_SetMove(p, &D_0045B358);
+        Pursuer_SetMove(p, &kPursuerWaitMove);
         break;
     case 2:
-        Pursuer_SetMove(p, &D_0045B3A0);
+        Pursuer_SetMove(p, &kPursuerIdleMove);
         break;
     }
     if (p->c.unkE0 == 0) {
@@ -4789,7 +4789,7 @@ void Pursuer_BackToStance(Pursuer *p) {
 }
 
 static void Pursuer_EffectInit(void **obj) {
-    *obj = D_00479FF0;
+    *obj = Effect79FF0_vtable;
 }
 
 /* a special animation (0x1006) with an effect (0x479FF0) for +0x104 */
@@ -4863,7 +4863,7 @@ void Pursuer_StartSearch(Pursuer *p) {
         PU(p, 0x1620, u8) = 1;
         PU(p, 0x1621, u8) = 1;
     } else {
-        Pursuer_SetMove(p, &D_0045B358);
+        Pursuer_SetMove(p, &kPursuerWaitMove);
         ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA50);
         PU(p, 0x1758, s32) = -1;
         p->c.unk1384 = p->c.unk1388;
@@ -5059,16 +5059,16 @@ void Pursuer_ExitClosed(Pursuer *p, u32 exit) {
     p->c.unk148C[node >> 5] |= 1 << (node & 0x1F);
     if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
         if (PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 2) {
-            Pursuer_SetMove(p, &D_0045B358);
+            Pursuer_SetMove(p, &kPursuerWaitMove);
         } else {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
         }
         return;
     }
     if (PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 2) {
-        Pursuer_SetMove(p, &D_0045B358);
+        Pursuer_SetMove(p, &kPursuerWaitMove);
     } else {
-        Pursuer_SetMove(p, &D_0045B340);
+        Pursuer_SetMove(p, &kPursuerMove);
     }
 }
 
@@ -5263,7 +5263,7 @@ void Pursuer_GoForFionaStance0(Pursuer *p) {
         if (PU(p, 0x17AC, s32) != 0) {
             ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC9F0);
             PU(p, 0x1758, s32) = -1;
-            Pursuer_SetMove(p, &D_0045B340);
+            Pursuer_SetMove(p, &kPursuerMove);
         }
         PURSUER_STEP_NEXT(p) = 1;
         PU(p, 0x17B4, s32) = 0;
@@ -5563,7 +5563,7 @@ void Pursuer_Reset(Pursuer *p) {
     PU(p, 0x16B8, s32) = 0;
     PU(p, 0x17B0, u8) = 0xFF;
     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 8);
-    Pursuer_SetMove(p, &D_0045B358);
+    Pursuer_SetMove(p, &kPursuerWaitMove);
     ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC900);
     PU(p, 0x1758, s32) = -1;
     PU(p, 0x1718, s32) = 0;
@@ -5627,7 +5627,7 @@ void Pursuer_TravelOffscreen(Pursuer *p) {
             Pursuer_ThroughDoor(p, PU(p, 0x17B0, u8));
             return;
         }
-        Pursuer_SetMove(p, &D_0045B358);
+        Pursuer_SetMove(p, &kPursuerWaitMove);
     }
 }
 
@@ -6505,11 +6505,11 @@ void Pursuer_OffscreenStep(Pursuer *p) {
             return;
         }
         if (PU(p, 0x17B4, s32) != 0) {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
         } else if (!(Character_PathRemaining2(&p->c) <= 0.0f) &&
                    PU(p, 0x17B0, u8) != (VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
             p->c.unk124 = p->c.unk128;
-            Pursuer_SetMove(p, &D_0045B358);
+            Pursuer_SetMove(p, &kPursuerWaitMove);
         }
         break;
     case 4:
@@ -6517,7 +6517,7 @@ void Pursuer_OffscreenStep(Pursuer *p) {
             if (p->c.unk128 < p->c.unk124) {
                 Pursuer_SetMove(p, &D_0045B370);
             } else {
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
             }
             PURSUER_STEP_DONE(p) = 0;
         }
@@ -7125,19 +7125,19 @@ void Pursuer_OffscreenUpdate(Pursuer *p) {
             PURSUER_STEP_DONE(p) = 0;
             PU(p, 0x17B4, s32) = 0;
         } else if (PU(p, 0x17B4, s32) != 0) {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
         } else if (!(Character_PathRemaining2(&p->c) <= 0.0f)) {
             u8 want = PU(p, 0x17B0, u8);
 
             if (want != (VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
                 p->c.unk124 = p->c.unk128;
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
             }
         }
         break;
     case 4:
         if (PURSUER_STEP_DONE(p) == 1) {
-            Pursuer_SetMove(p, p->c.unk128 < p->c.unk124 ? &D_0045B370 : &D_0045B358);
+            Pursuer_SetMove(p, p->c.unk128 < p->c.unk124 ? &D_0045B370 : &kPursuerWaitMove);
             PURSUER_STEP_DONE(p) = 0;
         }
         break;
@@ -8975,7 +8975,7 @@ void Pursuer_ThroughDoor(Pursuer *p, u32 door) {
         if (p->c.a.unkC4 == 2) {
             ptmf_set(step, &D_003ED370);
             PU(p, 0x1758, s32) = -1;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
         }
         if (PU(p, 0x175C, s32) == 0x20) {
             Motion_Play(p->c.motion, 0x1802, -1);
@@ -8985,7 +8985,7 @@ void Pursuer_ThroughDoor(Pursuer *p, u32 door) {
             case 2:
                 ptmf_set(step, &D_003ED380);
                 PU(p, 0x1758, s32) = -1;
-                Pursuer_SetMove(p, &D_0045B340);
+                Pursuer_SetMove(p, &kPursuerMove);
                 break;
             case 1:
             case 3:
@@ -8993,16 +8993,16 @@ void Pursuer_ThroughDoor(Pursuer *p, u32 door) {
                 ptmf_set(step, &D_003ED390);
                 PU(p, 0x1758, s32) = -1;
                 if (room == PU(p, 0x1594, s32) && p->c.unk1388 >= p->c.unk1384) {
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                 } else {
-                    Pursuer_SetMove(p, &D_0045B358);
+                    Pursuer_SetMove(p, &kPursuerWaitMove);
                 }
                 break;
             case 4:
                 p->c.unk1388++;
                 ptmf_set(step, &D_003ED3A0);
                 PU(p, 0x1758, s32) = -1;
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
                 break;
             }
             if (PU(p, 0x16C9, u8) == 2) {
@@ -9038,18 +9038,18 @@ void Pursuer_ThroughDoor(Pursuer *p, u32 door) {
             switch (PU(p, 0x16C8, u8)) {
             case 0:
             case 2:
-                Pursuer_SetMove(p, &D_0045B340);
+                Pursuer_SetMove(p, &kPursuerMove);
                 break;
             case 1:
             case 3:
                 if (room == PU(p, 0x1594, s32) && p->c.unk1388 >= p->c.unk1384) {
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                 } else {
-                    Pursuer_SetMove(p, &D_0045B358);
+                    Pursuer_SetMove(p, &kPursuerWaitMove);
                 }
                 break;
             case 4:
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
                 break;
             }
         }
@@ -9102,7 +9102,7 @@ void Pursuer_ThroughDoorEnding(Pursuer *p, u32 door) {
         if (p->c.a.unkC4 == 2) {
             ptmf_set(step, &D_003ED5C0);
             PU(p, 0x1758, s32) = -1;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
         }
         if (PU(p, 0x175C, s32) == 0x20) {
             Motion_Play(p->c.motion, 0x1802, -1);
@@ -9112,7 +9112,7 @@ void Pursuer_ThroughDoorEnding(Pursuer *p, u32 door) {
             case 2:
                 ptmf_set(step, &D_003ED5D0);
                 PU(p, 0x1758, s32) = -1;
-                Pursuer_SetMove(p, &D_0045B3A0);
+                Pursuer_SetMove(p, &kPursuerIdleMove);
                 PU(p, 0x17B4, s32) = 150;
                 break;
             case 1:
@@ -9121,16 +9121,16 @@ void Pursuer_ThroughDoorEnding(Pursuer *p, u32 door) {
                 ptmf_set(step, &D_003ED5E0);
                 PU(p, 0x1758, s32) = -1;
                 if (room == PU(p, 0x1594, s32) && p->c.unk1388 >= p->c.unk1384) {
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                 } else {
-                    Pursuer_SetMove(p, &D_0045B358);
+                    Pursuer_SetMove(p, &kPursuerWaitMove);
                 }
                 break;
             case 4:
                 p->c.unk1388++;
                 ptmf_set(step, &D_003ED5F0);
                 PU(p, 0x1758, s32) = -1;
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
                 break;
             }
             if (PU(p, 0x16C9, u8) == 2) {
@@ -9166,22 +9166,22 @@ void Pursuer_ThroughDoorEnding(Pursuer *p, u32 door) {
             case 0:
             case 2:
                 if (room != gCharPlayer->a.room) {
-                    Pursuer_SetMove(p, &D_0045B340);
+                    Pursuer_SetMove(p, &kPursuerMove);
                 } else {
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                     PU(p, 0x17B4, s32) = 150;
                 }
                 break;
             case 1:
             case 3:
                 if (room == PU(p, 0x1594, s32) && p->c.unk1388 >= p->c.unk1384) {
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                 } else {
-                    Pursuer_SetMove(p, &D_0045B358);
+                    Pursuer_SetMove(p, &kPursuerWaitMove);
                 }
                 break;
             case 4:
-                Pursuer_SetMove(p, &D_0045B358);
+                Pursuer_SetMove(p, &kPursuerWaitMove);
                 break;
             }
         }
@@ -10629,7 +10629,7 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
     }
 }
 
-extern PTMF D_0045B388;   /* the move along the stairs */
+extern PTMF kPursuerStairsMove;   /* the move along the stairs */
 
 /* the time Hewie keeps a stalker busy (his "stay" level, +0xF35CC) */
 static s32 Pursuer_HewieDelay(Character *h, s32 base) {
@@ -10734,7 +10734,7 @@ static void Pursuer_LeaveOffScreen(Pursuer *p, s32 next, u32 door) {
         AT(p, 0x2A, u8) = 0;
     } else if (PU(p, 0x16C8, u8) == 3) {
         if (p->c.unk1388 >= p->c.unk1384 && PU(p, 0x17B4, s32) == 0) {
-            Pursuer_SetMove(p, &D_0045B358);
+            Pursuer_SetMove(p, &kPursuerWaitMove);
         }
     } else if (PU(p, 0x16C8, u8) == 0) {
         VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
@@ -10747,13 +10747,13 @@ static void Pursuer_LeaveOffScreen(Pursuer *p, s32 next, u32 door) {
 /* walk to the exit +0x17B0 of the plan (or along the stairs) */
 static void Pursuer_HeadForExit(Pursuer *p, VObject *rooms, u32 door) {
     if (p->c.moveMode == 3) {
-        Pursuer_SetMove(p, &D_0045B388);
+        Pursuer_SetMove(p, &kPursuerStairsMove);
     } else {
         PU(p, 0x15A4, s32) = VCALL(rooms, 0x34, s32 (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
         p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
         AT(p->c.pathReq, 0x40, u32) = p->c.a.navMask;
         if ((Npc_PlanToGoal(p) & 0xFF) != 1) {
-            Pursuer_SetMove(p, &D_0045B388);
+            Pursuer_SetMove(p, &kPursuerStairsMove);
         } else {
             if (p->c.moveMode != 4 && PU(p, 0x16C8, u8) == 0) {
                 Npc_FionaAtSpawn(p, door);
@@ -10774,13 +10774,13 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
     switch (PU(p, 0x16C8, u8)) {
     case 2:
         if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8)) {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             return 0;
         }
         if (!(PU(p, 0x1621, u8) < 8)) {
             Pursuer_ClearRoute(p);
             Pursuer_SearchRouteIn(p);
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             return 0;
         }
         break;
@@ -10788,7 +10788,7 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
         if (!(Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
             PU(p, 0x16F4, u8) = 1;
             if (!(Pursuer_PlanWhere(p) & 0xFF)) {
-                Pursuer_SetMove(p, &D_0045B3A0);
+                Pursuer_SetMove(p, &kPursuerIdleMove);
                 return 0;
             }
         }
@@ -10796,7 +10796,7 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
         break;
     case 3:
         if (PU(p, 0x1620, u8) < PU(p, 0x1621, u8) || !Pursuer_PlanOn(p)) {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             return 0;
         }
         Pursuer_NextExit(p, rooms);
@@ -10807,12 +10807,12 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
 
         for (e = VCALL(p, 0x314, s32 *(*)(Pursuer *))(p); *e != -1; e += 2) {
             if (room == *e) {
-                Pursuer_SetMove(p, &D_0045B3A0);
+                Pursuer_SetMove(p, &kPursuerIdleMove);
                 return 0;
             }
         }
         if (!Pursuer_PlanOn(p)) {
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             PU(p, 0x16F4, u8) = 1;
             return 0;
         }
@@ -10914,13 +10914,13 @@ void Pursuer_LeaveScreenEnding(Pursuer *p, u32 door) {
     if (PU(p, 0x16C8, u8) == 0) {
         if ((door & 0xFF) == 0xFF) {
             PU(p, 0x17B4, s32) = 150;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             PU(p, 0x16F4, u8) = 1;
             return;
         }
         if (!(Pursuer_PlanWhere(p) & 0xFF)) {
             PU(p, 0x17B4, s32) = 150;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             if (p->c.a.room != gCharPlayer->a.room) {
                 PU(p, 0x16F4, u8) = 1;
             }
@@ -11060,7 +11060,7 @@ void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
 
         if ((door & 0xFF) == 0xFF) {
             PU(p, 0x17B4, s32) = 150;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             PU(p, 0x16F4, u8) = 1;
             return;
         }
@@ -11071,7 +11071,7 @@ void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
         VCALL(p, 0xB8, void (*)(Pursuer *, u32))(p, door);
         if (!(Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0)) {
             PU(p, 0x17B4, s32) = 150;
-            Pursuer_SetMove(p, &D_0045B3A0);
+            Pursuer_SetMove(p, &kPursuerIdleMove);
             PU(p, 0x16F4, u8) = 1;
             return;
         }
@@ -11081,7 +11081,7 @@ void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
 
                 if (a != VCALL(rooms, 0x1C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), p->c.a.room)) {
                     PU(p, 0x17B4, s32) = 150;
-                    Pursuer_SetMove(p, &D_0045B3A0);
+                    Pursuer_SetMove(p, &kPursuerIdleMove);
                     PU(p, 0x16F4, u8) = 1;
                     return;
                 }
@@ -11682,11 +11682,11 @@ u8 *Kind37_ModelFileTable(Pursuer *p) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
 }
 
-/* destructor (vtable D_00479FF0) */
+/* destructor (vtable Effect79FF0_vtable) */
 /* 0x0036A4D0 */
 void *Effect79FF0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479FF0;
+        AT(o, 0x0, void **) = Effect79FF0_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

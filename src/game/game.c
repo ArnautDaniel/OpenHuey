@@ -35,7 +35,7 @@ extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 
 void PlacedObjects_SetPair(void *p, s32 a, s32 b);
 
-extern void *D_00456DE8;
+extern void *gAvoidPrompt;
 extern void *Helper469D00_vtable[];
 extern void *TexCache_vtable[];
 extern void *D_0046B1F0[];
@@ -170,7 +170,7 @@ void Game_StateMain(Game *game) {
     }
 
     /* Soft reset: hold Select+Start for a second. */
-    if ((D_0047E374 & PAD_SELECT) && (D_0047E374 & PAD_START)) {
+    if ((gPadHeld & PAD_SELECT) && (gPadHeld & PAD_START)) {
         u32 n = game->resetHoldFrames + 1;
         if (n != 0) {
             game->resetHoldFrames = n;
@@ -365,10 +365,10 @@ u8 *Game_Resident38AC0(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: 
 
 extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *Helper469D00_vtable[], *PlacedObjects_vtable[], *D_0046F390[];
 extern void *Creatures_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A980[];
-extern void *D_00456DE8, *D_00456DF8;
+extern void *gAvoidPrompt, *gRoomObjects;
 
 /* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
- * D_00456DE8) */
+ * gAvoidPrompt) */
 /* 0x002D0B60 */
 void *AvoidPrompt_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
@@ -378,7 +378,7 @@ void *AvoidPrompt_dtor(u8 *o, s32 flags) {
             AT(o, 0x110C4, void *) = NULL;
         }
         AT(o, 0x0, void **) = D_0046F3D0;
-        D_00456DE8 = NULL;
+        gAvoidPrompt = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -391,7 +391,7 @@ void *AvoidPrompt_dtor(u8 *o, s32 flags) {
 void *AvoidPromptBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046F3D0;
-        D_00456DE8 = NULL;
+        gAvoidPrompt = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -414,7 +414,7 @@ void *QuadEntry_dtor(u8 *o, s32 flags) {
 
 /* (possibly dead code: nothing in the game references it) */
 /* destructor (PlacedObjects_vtable): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
- * clearing D_00456DF8) */
+ * clearing gRoomObjects) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0D60 */
 void *PlacedThings_dtor(u8 *o, s32 flags) {
@@ -422,7 +422,7 @@ void *PlacedThings_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = PlacedObjects_vtable;
         func_001002C0(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
         AT(o, 0x0, void **) = D_0046F390;
-        D_00456DF8 = NULL;
+        gRoomObjects = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

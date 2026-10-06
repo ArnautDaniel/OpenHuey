@@ -11,7 +11,7 @@
 extern void *RoomBase_vtable[];
 extern void *RoomC8_vtable[];
 extern u8 D_0047AF40[];
-extern void *D_0047A410[];
+extern void *TurningModel_vtable[];
 extern u32 D_00441520[];
 extern u32 D_00441560[];
 extern u32 D_00441620[];
@@ -24,7 +24,7 @@ extern void *EffectBase_vtable[];
 extern PTMF D_01991A08[];
 
 static void effect_47a410_init(void **obj) {
-    obj[0] = D_0047A410;
+    obj[0] = TurningModel_vtable;
 }
 
 /* 0x0034B5C0 */
@@ -69,18 +69,18 @@ s32 RoomC8_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A08[i & 0xFF], a, b);
 }
 
-/* an effect D_0047A410 (8 bytes), not started */
+/* an effect TurningModel_vtable (8 bytes), not started */
 /* 0x0034B6E0 */
 s32 RoomC8_Cmd00(void) {
     Effect_New(gEffects, 0x8, effect_47a410_init);
     return 1;
 }
 
-/* destructor (vtable D_0047A410) */
+/* destructor (vtable TurningModel_vtable) */
 /* 0x00378310 */
 void *TurningModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A410;
+        AT(o, 0x0, void **) = TurningModel_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

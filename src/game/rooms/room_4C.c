@@ -116,7 +116,7 @@ s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {
 /* 0x002B37D0 */
 s32 Room4C_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD}, kLow = {0xBF333333};
-    VObject *objs = D_00456DF8, *ev = gEvents, *snd = gSound;
+    VObject *objs = gRoomObjects, *ev = gEvents, *snd = gSound;
     s32 i;
 
     for (i = 0; i < 4; i++) {

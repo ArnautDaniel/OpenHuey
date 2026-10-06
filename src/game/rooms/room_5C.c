@@ -11,7 +11,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room5C_vtable[];
-extern void *D_00472370[];
+extern void *CreatureVanish_vtable[];
 extern u8 D_00410F70[];
 extern u8 D_00410FB0[];
 extern u8 D_00411180[];
@@ -25,7 +25,7 @@ extern PTMF D_01990DF8[];
 extern PTMF D_01990E08[];
 
 static void effect_472370_init(void **obj) {
-    obj[0] = D_00472370;
+    obj[0] = CreatureVanish_vtable;
     obj[0x370 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x374 / 4] = -1;
     obj[0x370 / 4] = QuadDrawer_vtable;
@@ -81,7 +81,7 @@ s32 Room5C_Condition(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* room 0x5C (Room5C_Cond00_ptmf): the first creature within 3 of (59.1, 1.43) is put away with an
- * effect (D_00472370) above it - blue (+0x1571 below 0x12) or red - and its action 0x8B */
+ * effect (CreatureVanish_vtable) above it - blue (+0x1571 below 0x12) or red - and its action 0x8B */
 /* 0x002B59E0 */
 s32 Room5C_Cond00(void) {
     s32 i;

@@ -14,8 +14,8 @@
 extern void *RoomBase_vtable[];
 extern void *Room66_vtable[];
 extern u8 D_0047ACC8[], D_0047ACE0[];
-extern void *D_00477AC0[];
-extern void *D_00478B50[];
+extern void *Room66Effect_vtable[];
+extern void *Fire_vtable[];
 /* ---- room 66 (D_0041F558): footsteps in the mud - a character callback ---- */
 extern u8 D_0041E110[];
 extern u8 D_0041E260[];
@@ -27,7 +27,7 @@ extern PTMF D_01991030[];
 extern PTMF D_01991070[];
 
 static void effect_77AC0_init(void **obj) {
-    obj[0] = D_00477AC0;
+    obj[0] = Room66Effect_vtable;
     obj[0x1840 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1844 / 4] = -1;
     obj[0x1840 / 4] = QuadDrawer_vtable;
@@ -37,13 +37,13 @@ static void effect_77AC0_init(void **obj) {
 }
 
 static void fire_init(void **obj) {
-    obj[0] = D_00478B50;
+    obj[0] = Fire_vtable;
     obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
     obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
-/* two brown puffs (D_0046FF20 dust, colour 0x46 / 0x34 / 0x29, alpha 0x20) at the foot, the
+/* two brown puffs (SpriteBurst_vtable dust, colour 0x46 / 0x34 / 0x29, alpha 0x20) at the foot, the
  * second 4 behind */
 static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
     s32 slot = Effect_New(mgr, 0x720, dust_cloud_init);
@@ -171,7 +171,7 @@ s32 Room66_ColourPulse(void) {
     return 1;
 }
 
-/* room 0x66 (Room66_Fire_ptmf): byte 4 0 lights a fire (D_00478B50, kind byte 3), its slot in script
+/* room 0x66 (Room66_Fire_ptmf): byte 4 0 lights a fire (Fire_vtable, kind byte 3), its slot in script
  * variable 8; else that fire put out (-1) */
 /* 0x00300650 */
 s32 Room66_Fire(void *self, void *a1, u8 *cmd) {
@@ -223,7 +223,7 @@ s32 Room66_Sink(void *self, void *a1, u8 *cmd) {
     return c->a.pos[1] < -25.0f ? 1 : 2;
 }
 
-/* room 66 (D_0041F568): byte 4 0 starts the 0x1BC0-byte effect D_00477AC0 (parameters from
+/* room 66 (D_0041F568): byte 4 0 starts the 0x1BC0-byte effect Room66Effect_vtable (parameters from
  * byte 3), its slot kept in event variable byte 3 + 3; else that effect is sent 0xFF (stop) */
 /* 0x00300A20 */
 s32 Room66_Effect(void *self, void *a1, u8 *cmd) {

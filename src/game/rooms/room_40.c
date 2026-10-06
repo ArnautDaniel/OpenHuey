@@ -66,7 +66,7 @@ s32 Room40_Command(void *self, u32 i, s32 a, s32 b) {
 /* the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped */
 /* 0x002B2450 */
 s32 Room40_Cmd00(void *self, void *a1, u8 *cmd) {
-    VObject *objs = D_00456DF8;
+    VObject *objs = gRoomObjects;
     u8 *o;
 
     o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C0);

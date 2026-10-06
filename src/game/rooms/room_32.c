@@ -94,7 +94,7 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
     if (cmd[3] < 4) {
         return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
     }
-    o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0042C328);
+    o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0042C328);
     if (o != NULL) {
         u8 *fx;
         struct {

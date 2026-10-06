@@ -12,7 +12,7 @@
 extern void *RoomBase_vtable[];
 extern void *RoomC5_vtable[];
 extern u8 D_0047AF20[], D_0047AF28[];
-extern void *D_00479870[];
+extern void *ObjectGlow_vtable[];
 extern const char *D_00441140[];   /* room objects 0..9 */
 extern u32 D_004401B0[];
 extern u32 D_00440210[];
@@ -25,7 +25,7 @@ extern void *EffectBase_vtable[];
 extern PTMF D_019919F8[];
 
 static void effect_79870_init(void **obj) {
-    obj[0] = D_00479870;
+    obj[0] = ObjectGlow_vtable;
 }
 
 /* 0x0034B0E0 */
@@ -73,7 +73,7 @@ s32 RoomC5_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019919F8[i & 0xFF], a, b);
 }
 
-/* the 0x10-byte effect D_00479870 on room object k + 1 (byte 4 = k, 1..8; script variable 11 - k
+/* the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable 11 - k
  * keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 - k, the
  * variable, the object), with sound 1 at the object when on and the camera director's +0x38 is
  * clear */
@@ -111,11 +111,11 @@ s32 RoomC5_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* destructor (vtable D_00479870) */
+/* destructor (vtable ObjectGlow_vtable) */
 /* 0x0035BBD0 */
 void *ObjectGlow_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479870;
+        AT(o, 0x0, void **) = ObjectGlow_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

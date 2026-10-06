@@ -36,7 +36,7 @@
 
 extern u32 D_01970D40[8];      /* the call arguments */
 extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
-extern u8 D_003D8990[8][2];    /* the positioned sounds: bank, sound - 0x18 */
+extern u8 kPositionedSounds[8][2];    /* the positioned sounds: bank, sound - 0x18 */
 extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memory addresses */
 
 #define BANK(d, k) ((d) + 0x84 + (k) * 0x10)
@@ -131,11 +131,11 @@ void SndDriver_SetSound(u8 *d, f32 v) {
     VCALL(d, 0x178, void (*)(u8 *))(d);
 }
 
-/* play positioned sound `which` (D_003D8990: footsteps and the like) at the 3D block */
+/* play positioned sound `which` (kPositionedSounds: footsteps and the like) at the 3D block */
 /* 0x0020E9F0 */
 void SndDriver_PlayPositioned(u8 *d, u32 which) {
-    u8 bank = D_003D8990[which & 0xFF][0];
-    u8 sound = D_003D8990[which & 0xFF][1] + 0x18;
+    u8 bank = kPositionedSounds[which & 0xFF][0];
+    u8 sound = kPositionedSounds[which & 0xFF][1] + 0x18;
     u8 v;
 
     if (!LOADED(d, bank)) {
@@ -179,7 +179,7 @@ void SndDriver_StopPlacedButBanks(u8 *d) {
     D_01970D40[3] = 0;
     for (i = 0; i < 8; i++) {
         if (i != 3 && i != 4) {
-            D_01970D40[3] |= 1 << D_003D8990[i][1];
+            D_01970D40[3] |= 1 << kPositionedSounds[i][1];
         }
     }
     D_01970D40[4] = 0x80000000;
@@ -194,7 +194,7 @@ void SndDriver_StopPlaced(u8 *d) {
     D_01970D40[2] = 0;
     D_01970D40[3] = 0;
     for (i = 0; i < 8; i++) {
-        D_01970D40[3] |= 1 << D_003D8990[i][1];
+        D_01970D40[3] |= 1 << kPositionedSounds[i][1];
     }
     D_01970D40[4] = 0x80000000;
     SndLib_Call(0x290000, D_01970D40);
@@ -208,7 +208,7 @@ void SndDriver_PlacedState(u8 *d, u32 s) {
     D_01970D40[2] = 0;
     D_01970D40[3] = 0;
     for (i = 0; i < 8; i++) {
-        D_01970D40[3] |= 1 << D_003D8990[i][1];
+        D_01970D40[3] |= 1 << kPositionedSounds[i][1];
     }
     D_01970D40[4] = 2;
     D_01970D40[5] = s & 0xFF;

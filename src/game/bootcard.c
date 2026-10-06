@@ -20,8 +20,8 @@
 
 #define AT32(p, off) AT(p, off, s32)
 
-extern s32 D_0047B258[2];   /* check status per slot */
-extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
+extern s32 gCardCheckStatus[2];   /* check status per slot */
+extern s32 gCardSlot1Status;      /* slot 1's status; 9: its data couldn't be read */
 
 static const char sFmtDec[] = "%d";
 static const char sSlot1[] = "1";
@@ -78,9 +78,9 @@ void BootCard_Check(BootCard *b) {
         b->saved.flags = b->sys->flags;
         Msg_PrintfParam(&b->task, 1, sFmtDec, 0xC5);   /* the space needed, in KB */
         b->port = 0;
-        D_0047B260 = -1;
-        D_0047B258[1] = -1;
-        D_0047B258[0] = -1;
+        gCardSlot1Status = -1;
+        gCardCheckStatus[1] = -1;
+        gCardCheckStatus[0] = -1;
         MEMCARD_CHECK(mc, b->port);
         Task_OpenAt(&b->task, MSG_CHECKING, 1);
         b->state++;
@@ -90,8 +90,8 @@ void BootCard_Check(BootCard *b) {
         if (st < 0) {
             break;
         }
-        D_0047B260 = st;
-        D_0047B258[0] = st;
+        gCardSlot1Status = st;
+        gCardCheckStatus[0] = st;
         if (st != MC_HAS_DATA) {
             b->port = 1;
             MEMCARD_CHECK(mc, b->port);
@@ -108,7 +108,7 @@ void BootCard_Check(BootCard *b) {
         }
         if (st != 0 || !sys_valid(b->sys)) {
             sys_copy(b->sys, &b->saved);
-            D_0047B260 = 9;
+            gCardSlot1Status = 9;
             b->sys->flags = b->saved.flags;
             b->port = 1;
             MEMCARD_CHECK(mc, b->port);
@@ -126,19 +126,19 @@ void BootCard_Check(BootCard *b) {
         if (st < 0) {
             break;
         }
-        D_0047B258[1] = st;
+        gCardCheckStatus[1] = st;
         if (st == MC_HAS_DATA) {
             MEMCARD_READ(mc, b->port, b->sys, 0, 0x50);
             b->state++;
             goto slot2_read;
         }
-        if (D_0047B260 == 9) {
+        if (gCardSlot1Status == 9) {
             Msg_PrintfParam(&b->task, 0, sSlot1);
             Task_OpenAt(&b->task, MSG_NO_DATA, 1);
         } else if (st == MC_NO_CARD) {
-            if (D_0047B260 == MC_NO_CARD) {
+            if (gCardSlot1Status == MC_NO_CARD) {
                 Task_OpenAt(&b->task, MSG_NO_CARDS, 1);
-            } else if (D_0047B260 == MC_NO_ROOM) {
+            } else if (gCardSlot1Status == MC_NO_ROOM) {
                 Msg_PrintfParam(&b->task, 0, sSlot1);
                 Task_OpenAt(&b->task, MSG_NO_ROOM, 1);
             } else {
@@ -146,10 +146,10 @@ void BootCard_Check(BootCard *b) {
                 break;
             }
         } else if (st == MC_NO_ROOM) {
-            if (D_0047B260 == MC_NO_CARD) {
+            if (gCardSlot1Status == MC_NO_CARD) {
                 Msg_PrintfParam(&b->task, 0, sSlot2);
                 Task_OpenAt(&b->task, MSG_NO_ROOM, 1);
-            } else if (D_0047B260 == MC_NO_ROOM) {
+            } else if (gCardSlot1Status == MC_NO_ROOM) {
                 Msg_PrintfParam(&b->task, 0, sSlots12);
                 Task_OpenAt(&b->task, MSG_NO_ROOM, 1);
             } else {
@@ -178,7 +178,7 @@ void BootCard_Check(BootCard *b) {
         }
         sys_copy(b->sys, &b->saved);
         b->sys->flags = b->saved.flags;
-        Msg_PrintfParam(&b->task, 0, D_0047B260 == 9 ? sSlots12 : sSlot2);
+        Msg_PrintfParam(&b->task, 0, gCardSlot1Status == 9 ? sSlots12 : sSlot2);
         Task_OpenAt(&b->task, MSG_NO_DATA, 1);
         b->port = 0;
         MEMCARD_CHECK(mc, b->port);
@@ -195,7 +195,7 @@ void BootCard_Check(BootCard *b) {
         if (st < 0) {
             break;
         }
-        if (st != D_0047B258[b->port] || mc->error == 5) {
+        if (st != gCardCheckStatus[b->port] || mc->error == 5) {
             b->state = 0;
             break;
         }
@@ -204,7 +204,7 @@ void BootCard_Check(BootCard *b) {
         break;
     case 300:
         b->timer++;
-        if (b->task.mode != 0 && !(D_0047E37C & 8) && (u32)b->timer < 151) {
+        if (b->task.mode != 0 && !(gPadPressed & 8) && (u32)b->timer < 151) {
             break;
         }
         b->state = 400;
@@ -468,16 +468,16 @@ void SaveScreen_Load(BootCard *b) {
         b->state++;
         break;
     case 2:
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             MEMCARD_CHECK(mc, b->port);
             Msg_PrintfParam(&b->task, 0, sFmtDec, b->port + 1);
             Task_Open(&b->task, 0x13);
             b->state++;
             Sound_PlaySE(SE_DECIDE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             b->state = 300;
         } else {
-            pad = D_0047E36C;
+            pad = gMenuPressed;
             if ((pad & MENU_LEFT) || (pad & MENU_PREV)) {
                 if (b->port != 0) {
                     b->port = 0;
@@ -560,7 +560,7 @@ void SaveScreen_Load(BootCard *b) {
             b->state = 101;
             break;
         }
-        pad = D_0047E36C;
+        pad = gMenuPressed;
         if (pad & MENU_CONFIRM) {
             if (b->slots[b->cursor] == 0) {
                 Task_Open(&b->task, 0x23);
@@ -576,7 +576,7 @@ void SaveScreen_Load(BootCard *b) {
             u32 row = (u32)b->cursor % 6;
             u32 col = (u32)b->cursor / 6 * 6;
 
-            pad = D_0047E36C;
+            pad = gMenuPressed;
             if (pad & MENU_UP) {
                 b->cursor = (row != 0 ? row - 1 : 5) + col;
                 Sound_PlaySE(SE_CURSOR);
@@ -812,18 +812,18 @@ void BootCard_StateSave(BootCard *b) {
         }
         break;
     case 2:
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             MEMCARD_CHECK(mc, b->port);
             Msg_PrintfParam(&b->task, 0, D_0045D210, b->port + 1);
             Task_OpenAt(&b->task, 0x13, (u8)b->hidden);
             b->state++;
             Sound_PlaySE(SE_DECIDE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             Task_OpenAt(&b->task, 0x3D, (u8)b->hidden);
             b->state = 200;
             Sound_PlaySE(SE_CANCEL);
         } else {
-            pad = D_0047E36C;
+            pad = gMenuPressed;
             if ((pad & MENU_LEFT) || (pad & MENU_PREV)) {
                 if (b->port != 0) {
                     b->port = 0;
@@ -1038,7 +1038,7 @@ void BootCard_StateSave(BootCard *b) {
             b->state = 101;
             break;
         }
-        pad = D_0047E36C;
+        pad = gMenuPressed;
         if (pad & MENU_CONFIRM) {
             if (b->slots[b->cursor] == 0) {
                 Task_OpenAt(&b->task, 0x3C, (u8)b->hidden);
@@ -1058,7 +1058,7 @@ void BootCard_StateSave(BootCard *b) {
             u32 row = (u32)b->cursor % 6;
             u32 col = (u32)b->cursor / 6 * 6;
 
-            pad = D_0047E36C;
+            pad = gMenuPressed;
             if (pad & MENU_UP) {
                 b->cursor = (row != 0 ? row - 1 : 5) + col;
                 Sound_PlaySE(SE_CURSOR);

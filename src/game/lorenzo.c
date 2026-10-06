@@ -571,10 +571,10 @@ void Lorenzo2_Setup(Pursuer *p) {
 }
 
 /* a dust cloud (0x720 bytes, vtable 0x46FF20, its quad drawer at +0x610; as room 0x03's prop) */
-extern void *D_0046FF20[];
+extern void *SpriteBurst_vtable[];
 
 static inline void Dust_Init(void **obj) {
-    obj[0] = D_0046FF20;
+    obj[0] = SpriteBurst_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -612,10 +612,10 @@ void Lorenzo2_SlamDust(Pursuer *p) {
 }
 
 /* a spark (0x130 bytes, vtable 0x47A350, its part at +0xD0) */
-extern void *D_0047A350[];
+extern void *LorenzoSpark_vtable[];
 
 static inline void Spark_Init(void **obj) {
-    obj[0] = D_0047A350;
+    obj[0] = LorenzoSpark_vtable;
     obj[0xD0 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xD4 / 4] = -1;
     obj[0xD0 / 4] = QuadDrawer_vtable;
@@ -770,10 +770,10 @@ void Lorenzo2_StateSweep(Pursuer *p) {
 }
 
 /* where he sinks away (0x700 bytes, vtable 0x47A750, its drawer at +0x610) */
-extern void *D_0047A750[];
+extern void *LightRing_vtable[];
 
 static inline void Sink_Init(void **obj) {
-    obj[0] = D_0047A750;
+    obj[0] = LightRing_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -867,12 +867,12 @@ void Lorenzo2_StateApproach(Pursuer *p) {
 
 /* the burst of his grab (0xFC0 bytes, vtable 0x47A010, four parts at +0xB50 / +0xB88 / +0xBC0 /
    +0xBF8) */
-extern void *D_0047A010[];
+extern void *BurstA_vtable[];
 
 static inline void Burst_Init(void **obj) {
     s32 k;
 
-    obj[0] = D_0047A010;
+    obj[0] = BurstA_vtable;
     for (k = 0; k < 4; k++) {
         obj[(0xB50 + k * 0x38) / 4] = Helper469D00_vtable;
         ((s32 *)obj)[(0xB54 + k * 0x38) / 4] = -1;

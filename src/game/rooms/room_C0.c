@@ -13,13 +13,13 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomC0_vtable[];
-extern void *D_00479A60[];
+extern void *CeilingDrips_vtable[];
 extern const char *D_0042E408;
 extern PTMF D_01991610[];
 extern PTMF D_01991650[];
 
 static void effect_479a60_init(void **obj) {
-    obj[0] = D_00479A60;
+    obj[0] = CeilingDrips_vtable;
     obj[0x550 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x554 / 4] = -1;
     obj[0x550 / 4] = QuadDrawer_vtable;
@@ -68,7 +68,7 @@ s32 RoomC0_Cmd04(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as Room0F_Cmd02) an effect D_00471060 with its box */
+/* (as Room0F_Cmd02) an effect DriftingFlecks_vtable with its box */
 /* 0x0032DDF0 */
 s32 RoomC0_Cmd03(void) {
     s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
@@ -87,7 +87,7 @@ s32 RoomC0_Cmd03(void) {
     return 1;
 }
 
-/* an effect D_00479A60 (0x640 bytes, its quad drawer at +0x550), not started */
+/* an effect CeilingDrips_vtable (0x640 bytes, its quad drawer at +0x550), not started */
 /* 0x0032DF20 */
 s32 RoomC0_Cmd02(void) {
     Effect_New(gEffects, 0x640, effect_479a60_init);
@@ -143,7 +143,7 @@ s32 RoomC0_Cmd01(void *self, void *a1, u8 *cmd) {
 s32 RoomC0_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
                                           kDecay = {0x3D4CCCCD};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0042E408);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0042E408);
     f32 a;
 
     switch (cmd[3]) {

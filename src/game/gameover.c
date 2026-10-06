@@ -38,7 +38,7 @@ extern const PTMF GameOver_StateOthers_ptmf2;   /* GameOver_StateOthers */
 extern const PTMF GameOver_StateSpecial_ptmf;   /* GameOver_StateSpecial */
 extern const char D_0045E2E0[];  /* the movie */
 
-extern VObject *D_00456DF0;
+extern VObject *gStageMusic;
 extern void *Tint_vtable[];      /* a screen tint */
 
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
@@ -215,7 +215,7 @@ static void tint_drift(GameOver *o) {
 
     AT(o->tint, 0x10, u32) = b;
     AT(o->tint, 0x14, u32) = a;
-    if (--o->timer == 0 || (D_0047E37C & 0xF000)) {
+    if (--o->timer == 0 || (gPadPressed & 0xF000)) {
         play_music(0xFF);
         o->timer = 0;
         o->step++;
@@ -267,8 +267,8 @@ static void game_over(GameOver *o, s32 kind) {
 
     switch (o->step) {
     case 0:
-        if (D_00456DF0 != NULL) {
-            VCALL(D_00456DF0, 0x38, void (*)(VObject *, s32, s32))(D_00456DF0, 0x1E, 0);
+        if (gStageMusic != NULL) {
+            VCALL(gStageMusic, 0x38, void (*)(VObject *, s32, s32))(gStageMusic, 0x1E, 0);
         }
         movie_stop();
         o->step++;
@@ -390,8 +390,8 @@ void GameOver_StateMovie(GameOver *o) {
     case 0:
         bgm_full();
         play_music(6);
-        if (D_00456DF0 != NULL) {
-            VCALL(D_00456DF0, 0x38, void (*)(VObject *, s32, s32))(D_00456DF0, 0x1E, 0);
+        if (gStageMusic != NULL) {
+            VCALL(gStageMusic, 0x38, void (*)(VObject *, s32, s32))(gStageMusic, 0x1E, 0);
         }
         movie_stop();
         o->step++;

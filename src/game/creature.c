@@ -774,12 +774,12 @@ void CreatureA_Bob(Character *c) {
 #include "ptmf.h"
 #include "effectmgr.h"
 
-extern void *D_00472370[];
+extern void *CreatureVanish_vtable[];
 extern const PTMF CreatureA_StateVanish_ptmf4;   /* vanishing */
 
-/* its vanishing effect (0x4A0 bytes, vtable D_00472370; its quad drawer at +0x370) */
+/* its vanishing effect (0x4A0 bytes, vtable CreatureVanish_vtable; its quad drawer at +0x370) */
 static void vanish_init(void **o) {
-    o[0] = D_00472370;
+    o[0] = CreatureVanish_vtable;
     o[0x370 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x374 / 4] = -1;
     o[0x370 / 4] = QuadDrawer_vtable;
@@ -1809,7 +1809,7 @@ void Creatures_RemoveAll(u8 *m) {
     }
 }
 
-/* ---- D_00472370 (0x4A0 bytes): a creature's vanishing - a glow (records +0x10 + buffer
+/* ---- CreatureVanish_vtable (0x4A0 bytes): a creature's vanishing - a glow (records +0x10 + buffer
  * +0x3A8 * 0x30, frames 0..15 of its animation) and 8 sparks (+0x70 + buffer * 0x180) that
  * burst out, then zig-zag (+0x3BC), slow (+0x430 their drag, doubling) and shrink (+0x450) and
  * fade (+0x470); +0x3B0.. each spark's velocity, +0x490 the frame, +0x494 bits 1 / 2 / 4 the
@@ -1827,7 +1827,7 @@ u8 *CreatureVanish_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00472370;
+    AT(o, 0x0, void **) = CreatureVanish_vtable;
     AT(o, 0x370, void **) = QuadDrawer_vtable;
     AT(o, 0x370, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2090,11 +2090,11 @@ s32 Room4F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
 }
 
-/* ---- class D_00472390: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
+/* ---- class LoopingSprite_vtable: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
  * 0x30, drawn by the quad drawer at +0x70; 4 frames of 32 x 32 at (0x40, 0) in 512 x 256,
  * layer 0x19), each loop at a new random turn; +0xAC frames per frame, +0xB0 stopped ---- */
 
-extern void *D_00472390[];
+extern void *LoopingSprite_vtable[];
 
 #define LOOP_REC(o) ((o) + AT(o, 0xA8, s32) * 0x30 + 0x10)
 
@@ -2104,7 +2104,7 @@ u8 *LoopingSprite_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00472390;
+    AT(o, 0x0, void **) = LoopingSprite_vtable;
     AT(o, 0x70, void **) = QuadDrawer_vtable;
     AT(o, 0x70, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2200,13 +2200,13 @@ void LoopingSprite_Start(u8 *o) {
     AT(r, 0x2C, s32) = 0;
 }
 
-/* ---- class D_004726E0 (0x220 bytes): a strand hanging from the stalker in slot 2 (drool /
+/* ---- class Effect726E0_vtable (0x220 bytes): a strand hanging from the stalker in slot 2 (drool /
  * blood): up to 4 segments (0x50 each from +0x80: a matrix, alpha +0xC0, cells +0xC4..+0xCA)
  * grown one from the other down a chain of its bones (+0x214: pairs per stalker kind, +0x210
  * the pair), each drawn as two crossed quads +0x20C long with the quad drawer at +0x40 (record
  * +0x10: the colour); +0x218 the kind of strand, +0x21C stopped ---- */
 
-extern void *D_004726E0[];
+extern void *Effect726E0_vtable[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
@@ -2218,7 +2218,7 @@ u8 *Effect726E0_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_004726E0;
+    AT(o, 0x0, void **) = Effect726E0_vtable;
     AT(o, 0x40, void **) = QuadDrawer_vtable;
     AT(o, 0x40, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2437,7 +2437,7 @@ void Effect726E0_Draw(u8 *o) {
  * on by the length) once it has shown a frame, every 4 the bone pair moved on (the end of the
  * chain: no new segment; else the segment aimed down the bones); every live segment fades by
  * 8..15 (gone under 17) with new cells; for a kind of strand, after +0x208 frames a drop
- * (D_004727C0) from the newest segment, in its colour by the fade. 0 once it stopped */
+ * (StrandSplash_vtable) from the newest segment, in its colour by the fade. 0 once it stopped */
 /* 0x00313980 */
 s32 Effect726E0_Update(u8 *o) {
     VObject *rnd;
@@ -2543,7 +2543,7 @@ s32 Effect726E0_Update(u8 *o) {
     return 1;
 }
 
-/* ---- D_004727C0 (0xF68 bytes): the strand's drop splash, 32 droplets in two buffers of quad
+/* ---- StrandSplash_vtable (0xF68 bytes): the strand's drop splash, 32 droplets in two buffers of quad
  * records (+0x10 + 0x600 x the current one +0xF60), each with a velocity (+0xC60) and a pull
  * against it (+0xDE0, 12 bytes each); the quad drawer at +0xC10, the splash point at +0xC50
  * (w 1.0 until a one-frame flash has been drawn there) ---- */
@@ -2558,7 +2558,7 @@ u8 *StrandSplash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_004727C0;
+    AT(o, 0x0, void **) = StrandSplash_vtable;
     AT(o, 0xC10, void **) = QuadDrawer_vtable;
     AT(o, 0xC10, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2747,7 +2747,7 @@ void StrandSplash_Start(u8 *self) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern void *D_004737D0[];
+extern void *Effect737D0_vtable[];
 extern void *CreatureB_vtable[];
 
 /* (as Effect726E0_dtor)  +0x8 destructor (the quad drawer's inlined) */
@@ -2756,7 +2756,7 @@ u8 *Effect737D0_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_004737D0;
+    AT(o, 0x0, void **) = Effect737D0_vtable;
     AT(o, 0x40, void **) = QuadDrawer_vtable;
     AT(o, 0x40, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2814,7 +2814,7 @@ void Effect737D0_Start(u8 *self) {
     self[0x76] = 0xFF;
 }
 
-/* (class D_0047A710, as StrandSplash_SetParams)  +0x18 start (arg: colour 0..127 x3, position): every
+/* (class DropletFlash_vtable, as StrandSplash_SetParams)  +0x18 start (arg: colour 0..127 x3, position): every
  * droplet at the point in the colour, a random alpha and size (0.2..0.6), flung out at random
  * (slower the bigger, three times as fast upwards) and pulled back by 20..50% of its speed */
 /* 0x0037BF10 */
@@ -2861,7 +2861,7 @@ void DropletFlash_SetParams(u8 *o, s32 *arg) {
     }
 }
 
-/* (class D_0047A710)  +0x14 draw: the droplets, a reddish flash (0x80, 0x50, 0x40) on the first
+/* (class DropletFlash_vtable)  +0x14 draw: the droplets, a reddish flash (0x80, 0x50, 0x40) on the first
  * frame */
 /* 0x0037C1B0 */
 void DropletFlash_Draw(u8 *o) {
@@ -4804,11 +4804,11 @@ s32 Kind25_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 extern const PTMF CreatureB_StateWatch0_ptmf, CreatureB_StateWatch1_ptmf, CreatureB_StateHit_ptmf, CreatureB_StateGrab_ptmf, CreatureB_StateLeaving_ptmf, CreatureB_StateAfterFiona_ptmf, CreatureB_StateToDoor_ptmf,
     CreatureB_StateApproach10_ptmf, CreatureB_StateFlag9_ptmf, CreatureB_StateFionaOffMesh_ptmf, CreatureB_StateKnockedDown_ptmf, CreatureB_StateFionaCaught_ptmf, CreatureB_StateTurnToFiona_ptmf, CreatureB_StateWalkSpot_ptmf, CreatureB_StateByProgress_ptmf,
     CreatureB_StateFionaInSight_ptmf, CreatureB_StateDoor_ptmf, CreatureB_StateHeldOff_ptmf, CreatureB_StateNone_ptmf;
-extern void *D_004795E0[];
+extern void *Cr19Bubbles_vtable[];
 
-/* the effect it leaves when it goes (0x2920 bytes, D_004795E0, two quad drawers at +0x2410) */
+/* the effect it leaves when it goes (0x2920 bytes, Cr19Bubbles_vtable, two quad drawers at +0x2410) */
 static inline void Cr19Gone_Init(void **obj) {
-    obj[0] = D_004795E0;
+    obj[0] = Cr19Bubbles_vtable;
     obj[0x2410 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x2414 / 4] = -1;
     obj[0x2410 / 4] = QuadDrawer_vtable;
@@ -5057,13 +5057,13 @@ void CreatureB_StateAfterFiona(Character *c) {
 void CreatureB_StateNone(void) {
 }
 
-/* ---- D_004795E0 (0x2920 bytes, Cr19Gone_Init): what the kind-0x19 creature leaves when it
+/* ---- Cr19Bubbles_vtable (0x2920 bytes, Cr19Gone_Init): what the kind-0x19 creature leaves when it
  * goes - at a point (+0x2480) on nav triangle +0x2918, 64 bubbles welling up (records +0x10 +
  * 0xC00 x the current one +0x2910, drawer +0x2410, velocities +0x2490) and 32 drops thrown up
  * (records +0x1810 + 0x600 x the current one, drawer +0x2448, velocities +0x2790), +0x2914
- * its frames; at frame 100 a splat (D_00472BF0) on the spot ---- */
+ * its frames; at frame 100 a splat (FloorSplat_vtable) on the spot ---- */
 
-extern void *D_00472BF0[];
+extern void *FloorSplat_vtable[];
 
 #define GONE_BUBBLE(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
 #define GONE_DROP(o, buf, i) ((QuadRec *)((o) + 0x1810 + (buf) * 0x600) + (i))
@@ -5196,7 +5196,7 @@ void Cr19Bubbles_Draw(u8 *o) {
 }
 
 static void gone_splat_init(void **obj) {
-    obj[0] = D_00472BF0;
+    obj[0] = FloorSplat_vtable;
     obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
     obj[0x70 / 4] = QuadDrawer_vtable;

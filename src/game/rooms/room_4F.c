@@ -9,8 +9,8 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room4F_vtable[];
-extern void *D_00476BD0[];
-extern void *D_00476BB0[];
+extern void *SpiralSmoke_vtable[];
+extern void *DustShaft_vtable[];
 extern u8 D_0040B520[];
 extern u8 D_0040B5C0[];
 extern u8 D_0040B680[];
@@ -21,7 +21,7 @@ extern u8 D_0040C170[];
 extern PTMF D_01990D70[];
 
 static inline void effect476bd0_init(void **o) {
-    o[0] = D_00476BD0;
+    o[0] = SpiralSmoke_vtable;
     o[0x3040 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x3044 / 4] = -1;
     o[0x3040 / 4] = QuadDrawer_vtable;
@@ -31,7 +31,7 @@ static inline void effect476bd0_init(void **o) {
 }
 
 static void effect_476bb0_init(void **obj) {
-    obj[0] = D_00476BB0;
+    obj[0] = DustShaft_vtable;
     obj[0x6010 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x6014 / 4] = -1;
     obj[0x6010 / 4] = QuadDrawer_vtable;
@@ -85,7 +85,7 @@ s32 Room4F_Condition(void *self, u32 i, s32 a, s32 b) {
 /* 0x002B4280 */
 s32 Room4F_Cmd03(void) {
     static const union { u32 u; f32 f; } kStep = {0x3CCCCCCD}, kLow = {0xBF47AE14};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0040C160);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0040C160);
     f32 y = AT(o, 0x14, f32) - kStep.f;
 
     AT(o, 0x14, f32) = y;
@@ -96,7 +96,7 @@ s32 Room4F_Cmd03(void) {
     return 1;
 }
 
-/* byte 3 0: a D_00476BD0 effect (0x36C0 bytes) spawned, its slot kept in event var 0; else that
+/* byte 3 0: a SpiralSmoke_vtable effect (0x36C0 bytes) spawned, its slot kept in event var 0; else that
  * slot's effect removed */
 /* 0x002B4310 */
 s32 Room4F_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -110,7 +110,7 @@ s32 Room4F_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x4F (Room4F_Cmd01_ptmf): an effect (D_00476BB0, 0x7460 bytes), not started */
+/* room 0x4F (Room4F_Cmd01_ptmf): an effect (DustShaft_vtable, 0x7460 bytes), not started */
 /* 0x002B4480 */
 s32 Room4F_Cmd01(void) {
     Effect_New(gEffects, 0x7460, effect_476bb0_init);

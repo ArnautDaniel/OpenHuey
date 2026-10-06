@@ -16,8 +16,8 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room60_vtable[];
-extern void *D_004795A0[];
-extern void *D_004795C0[];
+extern void *FloorGlow_vtable[];
+extern void *Room60Effect_vtable[];
 extern u8 D_004280A0[];
 extern u8 D_004281E0[];
 extern u8 D_00428220[];
@@ -34,11 +34,11 @@ extern void *EffectBase_vtable[];
 extern PTMF D_019911C0[];
 
 static void effect_795A0_init(void **obj) {
-    obj[0] = D_004795A0;
+    obj[0] = FloorGlow_vtable;
 }
 
 static void effect_795C0_init(void **obj) {
-    obj[0] = D_004795C0;
+    obj[0] = Room60Effect_vtable;
 }
 
 #ifdef HG_NATIVE
@@ -146,7 +146,7 @@ s32 Room60_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as Room66_Effect)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
+/* (as Room66_Effect)  byte 4 0 starts the 8-byte effect Room60Effect_vtable (parameters from byte 3), its
  * slot kept in event variable byte 3 + 2; else that effect is ended */
 /* 0x003104D0 */
 s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -180,7 +180,7 @@ s32 Room60_Cmd01(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
- * removed with its glow effect (event variable 1); 0 made, with the glow (D_004795A0); then (and
+ * removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable); then (and
  * for other values) its strength from event variable 0 (0..4: 0, 30, 60, 90, 128), also sent to
  * the glow */
 /* 0x003106E0 */
@@ -250,11 +250,11 @@ void *Room60_ObjectName(void *self, s32 i) {
     return D_004290C0[i];
 }
 
-/* destructor (vtable D_004795C0) */
+/* destructor (vtable Room60Effect_vtable) */
 /* 0x00358C20 */
 void *Room60Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004795C0;
+        AT(o, 0x0, void **) = Room60Effect_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -272,7 +272,7 @@ void Room60Effect_SetParams(u8 *p, u8 *src) {
 
 #ifdef HG_NATIVE
 
-/* D_004795C0's +0x14 draw: at the corner +0x4 picks (0..3: (-15, -15), (15, -15), (15, 15),
+/* Room60Effect_vtable's +0x14 draw: at the corner +0x4 picks (0..3: (-15, -15), (15, -15), (15, 15),
  * (-15, 15); -1 none) a cone of light - its tip at height 16, an octagon of radius 4.5 at 10 -
  * added into the bloom's mask (layer 0x26) as a fan shaded from nothing at the tip to alpha
  * 0x20 round the rim, when all of it is in view */

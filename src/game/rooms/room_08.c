@@ -107,7 +107,7 @@ s32 Room08_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room08_Cmd01(VObject *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k09 = {0x3F666666}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     const char *name = VCALL(self, 0x34, const char *(*)(VObject *, s32))(self, 0xA);
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
     f32 t, a;
 
     if (o == NULL) {

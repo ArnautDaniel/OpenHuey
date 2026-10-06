@@ -837,14 +837,14 @@ s32 Riccardo_BlowFloorPoint(Pursuer *p, f32 *out) {
 
 /* the impact (0x80 bytes, vtable 0x479600) and the debris cloud (0xF70 bytes, vtable 0x47A710)
    of his hammer */
-extern void *D_00479600[], *D_0047A710[];
+extern void *StrikeMark_vtable[], *DropletFlash_vtable[];
 
 static inline void Impact_Init(void **obj) {
-    obj[0] = D_00479600;
+    obj[0] = StrikeMark_vtable;
 }
 
 static inline void Debris_Init(void **obj) {
-    obj[0] = D_0047A710;
+    obj[0] = DropletFlash_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;

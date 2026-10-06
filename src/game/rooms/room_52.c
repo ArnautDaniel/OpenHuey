@@ -8,7 +8,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room52_vtable[];
-extern void *D_00476BF0[];
+extern void *Drips_vtable[];
 extern u8 D_0040E3B0[];
 extern u8 D_0040E480[];
 extern u8 D_0040E550[];
@@ -21,7 +21,7 @@ extern PTMF D_01990DA8[];
 extern PTMF D_01990DB8[];
 
 static inline void effect476bf0_init(void **o) {
-    o[0] = D_00476BF0;
+    o[0] = Drips_vtable;
 }
 
 /* 0x002B4A70 */
@@ -78,7 +78,7 @@ s32 Room52_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x002B4BE0 */
-s32 Room52_Cmd00(void) {   /* a scene effect (D_00476BF0, 0x6E0 bytes) */
+s32 Room52_Cmd00(void) {   /* a scene effect (Drips_vtable, 0x6E0 bytes) */
     Effect_New(gEffects, 0x6E0, effect476bf0_init);
     return 1;
 }

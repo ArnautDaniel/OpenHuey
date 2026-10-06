@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room55_vtable[];
-extern void *D_00477E10[], *D_00479400[];
+extern void *Room55Effect_vtable[], *FallingDrops_vtable[];
 extern u8 D_00420B40[];
 extern u8 D_00420B80[];
 extern u8 D_00420CD0[];
@@ -21,11 +21,11 @@ extern u8 D_00421110[];
 extern PTMF D_01991088[];
 
 static void effect_77E10_init(void **obj) {
-    obj[0] = D_00477E10;
+    obj[0] = Room55Effect_vtable;
 }
 
 static void effect_79400_init(void **obj) {
-    obj[0] = D_00479400;
+    obj[0] = FallingDrops_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -75,8 +75,8 @@ s32 Room55_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991088[i & 0xFF], a, b);
 }
 
-/* room 55 (D_004210F8): the 0x18-byte effect D_00477E10 started with 0 or 1 by byte 3; 0 also
- * lays a floor quad (effect 0x1B: 60 x 60 at height 45), else the 0x6D0-byte effect D_00479400
+/* room 55 (D_004210F8): the 0x18-byte effect Room55Effect_vtable started with 0 or 1 by byte 3; 0 also
+ * lays a floor quad (effect 0x1B: 60 x 60 at height 45), else the 0x6D0-byte effect FallingDrops_vtable
  * is made too */
 /* 0x00305FB0 */
 s32 Room55_Effect(void *self, void *a1, u8 *cmd) {

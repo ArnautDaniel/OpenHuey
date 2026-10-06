@@ -283,7 +283,7 @@ s32 Room20_Cmd03(void *self) {
 s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     u32 mode = cmd[4];
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FF110[cmd[3]]);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003FF110[cmd[3]]);
 
     if (mode == 0) {
         AT(o, 0x30, f32) = 0.0f;

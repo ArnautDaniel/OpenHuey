@@ -8,7 +8,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room25_vtable[];
-extern void *D_00470A50[];   /* the rising motes */
+extern void *RisingMotes_vtable[];   /* the rising motes */
 extern u8 D_00402330[];
 extern u8 D_00402420[];
 extern u8 D_004024F0[];
@@ -23,7 +23,7 @@ extern PTMF D_01990B38[];
 extern PTMF D_01990B48[];
 
 static void motes_init(void **obj) {
-    obj[0] = D_00470A50;
+    obj[0] = RisingMotes_vtable;
     obj[0x3010 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x3014 / 4] = -1;
     obj[0x3010 / 4] = QuadDrawer_vtable;

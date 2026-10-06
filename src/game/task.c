@@ -18,7 +18,7 @@
 extern u8 *D_01991EC0[];        /* message tables, by language */
 extern char D_01991ED0[][32];   /* parameter strings (code 0x08) */
 extern char D_01991F50[][8];    /* names (code 0x13) */
-extern u8 D_0047B350;           /* language */
+extern u8 gLanguage;           /* language */
 extern u8 D_0044AD00[];         /* small font glyphs: high nibble blank columns, low nibble drop */
 extern u16 D_0044B010[][2];     /* box position presets */
 extern u8 D_0047B140[];         /* frames per glyph, by speed */
@@ -62,7 +62,7 @@ static inline u8 *msg_text(u32 id) {
         lang = 0;
         id &= 0x7FFF;
     } else {
-        lang = D_0047B350;
+        lang = gLanguage;
     }
     table = D_01991EC0[lang];
     return table + *(u16 *)(table + (id & 0xFFFF) * 2 + 2);
@@ -287,7 +287,7 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
     }
     font = TEXCACHE_TEX(0, 0x14);
     if (g[0] >= 0x1A && g[0] < 0x1D) {
-        u8 lang = D_0047B350;
+        u8 lang = gLanguage;
         s32 group, idx;
 
         if (D_01991EC0[lang] == NULL) {
@@ -306,7 +306,7 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
         if (g[0] == 0x1B) {
             idx += 0x100;
         }
-        if (D_0047B350 == 2) {
+        if (gLanguage == 2) {
             u = (idx & 0x1F) << 4;
             v = (idx & 0xFFE0) >> 1;
         } else {
@@ -749,7 +749,7 @@ void Task_StateChild(Task *t) {
  * when allowed, picks the last option; up / down go through the options, left / right through
  * the ones on the same line. */
 void Task_StateChoice(Task *t) {
-    u32 b = D_0047E36C;
+    u32 b = gMenuPressed;
     u8 old;
 
     if (b & MENU_CONFIRM) {
@@ -835,7 +835,7 @@ void Task_StateChoice(Task *t) {
 
 /* state: close when a button is pressed */
 void Task_StateWaitButton(Task *t) {
-    if (D_0047E37C & ANY_BUTTON) {
+    if (gPadPressed & ANY_BUTTON) {
         t->mode = 0;
         t->flags = 0;
         Task_SetState(t, Task_StateIdle);
@@ -853,7 +853,7 @@ void Task_StateWaitFrames(Task *t) {
 
 /* state: next page when a button is pressed */
 void Task_StateNextPage(Task *t) {
-    if (D_0047E37C & ANY_BUTTON) {
+    if (gPadPressed & ANY_BUTTON) {
         t->page = t->cur.p;
         t->shown = 0;
         t->color = t->baseColor;
@@ -864,7 +864,7 @@ void Task_StateNextPage(Task *t) {
 
 /* state: the delay after a glyph (cancel skips it) */
 void Task_StateGlyphDelay(Task *t) {
-    if (D_0047E36C & MENU_CANCEL) {
+    if (gMenuPressed & MENU_CANCEL) {
         t->wait = 0;
         Task_StateType(t);
     } else if (--t->wait == 0) {
@@ -979,7 +979,7 @@ void Task_StateType(Task *t) {
             n = (u8)TextCursor_Step(t, &t->cur);
             if (n != 0) {
                 t->cur.p += n;
-                if (!(D_0047E36C & MENU_CANCEL) && !hidden) {
+                if (!(gMenuPressed & MENU_CANCEL) && !hidden) {
                     t->wait = D_0047B140[t->speed];
                     if (t->wait != 0) {
                         Task_SetState(t, Task_StateGlyphDelay);
@@ -1031,12 +1031,12 @@ void Task_Close(Task *t) {
 
 /* Show message `id` at once (0x4000 / 0x2000: in language 2 / 1). */
 void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer) {
-    u8 lang = D_0047B350;
+    u8 lang = gLanguage;
 
     if (id & 0x4000) {
-        D_0047B350 = 2;
+        gLanguage = 2;
     } else if (id & 0x2000) {
-        D_0047B350 = 1;
+        gLanguage = 1;
     }
     Task_Open(t, id & 0x1FFF);
     t->baseColor = color;
@@ -1045,7 +1045,7 @@ void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer) {
     t->layer = layer;
     Task_StateType(t);
     Task_DrawPage(t);
-    D_0047B350 = lang;
+    gLanguage = lang;
 }
 
 /* Show `text` at once with its top left at x, y (no frame). */

@@ -12,7 +12,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room2D_vtable[];
-extern void *D_00472390[];   /* a 0xC0-byte effect */
+extern void *LoopingSprite_vtable[];   /* a 0xC0-byte effect */
 extern u8 D_00405AC0[];
 extern u8 D_00405B80[];
 extern u8 D_00405BD0[];
@@ -25,7 +25,7 @@ extern PTMF D_01990C10[];
 extern PTMF D_01990C38[];
 
 static void effect_c0b_init(void **obj) {
-    obj[0] = D_00472390;
+    obj[0] = LoopingSprite_vtable;
     obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
     obj[0x70 / 4] = QuadDrawer_vtable;
@@ -109,7 +109,7 @@ s32 Room2D_Cmd02(VObject *self, void *a1, u8 *cmd) {
     return hangers_swing(self, cmd, 4, 2, 5.0f, 1, 3, 1, 2);
 }
 
-/* something dropped (effect D_00472390, its slot in event var 1) from (-276.5, 3, 160), by
+/* something dropped (effect LoopingSprite_vtable, its slot in event var 1) from (-276.5, 3, 160), by
  * byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it drifts 0.5
  * a frame in x and falls 0.05 x n(n+1)/2, gone below -10 */
 /* 0x002B1D50 */
@@ -158,8 +158,8 @@ s32 Room2D_Cmd01(void *self, void *a1, u8 *cmd) {
  * shrinking to 0.4 at each end; under half a degree it stops) - 2 while it swings */
 /* 0x002B2050 */
 s32 Room2D_Cmd00(VObject *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, s32))(
-        D_00456DF8, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, cmd[3] + 2));
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, s32))(
+        gRoomObjects, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, cmd[3] + 2));
     f32 d[4] __attribute__((aligned(16)));
     f32 a;
 

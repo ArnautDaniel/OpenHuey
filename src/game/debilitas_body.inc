@@ -399,7 +399,7 @@ s32 Debilitas_PickDestination(Pursuer *p) {
 }
 
 extern const PTMF D_003AFF90;
-extern PTMF D_0045B340;
+extern PTMF kPursuerMove;
 
 /* vtable +0x2B8: carry on with his behaviour. Out of route (and not just changing rooms,
    Pursuer_IsOwnRoom): head for one of his rooms (vtable +0xE8), forgetting the searched rooms once if
@@ -439,7 +439,7 @@ void Debilitas_CarryOn(Pursuer *p) {
         PU(p, 0x16F6, u8) = 1;
         ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF90);
         PU(p, 0x1758, s32) = -1;
-        Pursuer_SetMove(p, &D_0045B340);
+        Pursuer_SetMove(p, &kPursuerMove);
     }
 }
 

@@ -79,7 +79,7 @@ s32 Room0A_Cmd01(void) {
 /* the dial D_003F43A0 on progress var 3 */
 /* 0x002AAD60 */
 s32 Room0A_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F43A0);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F43A0);
 
     if (o == NULL) {
         return 1;

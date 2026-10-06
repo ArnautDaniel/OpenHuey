@@ -10,7 +10,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room80_vtable[];
-extern void *D_0047A430[];
+extern void *BackdropModel2_vtable[];
 extern u32 D_0043EA90[];
 extern u32 D_0043EAE0[];
 extern u32 D_0043EBA0[];
@@ -23,7 +23,7 @@ extern void *EffectBase_vtable[];
 extern PTMF D_01991968[];
 
 static void effect_7a430_init(void **obj) {
-    obj[0] = D_0047A430;
+    obj[0] = BackdropModel2_vtable;
 }
 
 /* 0x0034A140 */
@@ -65,7 +65,7 @@ s32 Room80_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991968[i & 0xFF], a, b);
 }
 
-/* (as Room2A_Cmd03) the 0x14-byte effect D_0047A430 started with byte 3 as a word */
+/* (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word */
 /* 0x0034A250 */
 s32 Room80_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
@@ -75,11 +75,11 @@ s32 Room80_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* destructor (vtable D_0047A430) */
+/* destructor (vtable BackdropModel2_vtable) */
 /* 0x003784F0 */
 void *BackdropModel2_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A430;
+        AT(o, 0x0, void **) = BackdropModel2_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

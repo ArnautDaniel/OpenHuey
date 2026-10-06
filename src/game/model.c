@@ -59,7 +59,7 @@ extern void *D_0046D730[];
 extern void *ScreenBlend_vtable[];
 extern void *Fog_vtable[];
 extern void *EffectBase_vtable[];
-extern void *D_0047A6F0[];
+extern void *DustMoteSource_vtable[];
 void *ScreenBlend_dtor(u8 *o, s32 flags);
 void *Fog_dtor(u8 *o, s32 flags);
 void *DustMoteSource_dtor(u8 *o, s32 flags);
@@ -339,21 +339,21 @@ void *DogModel_ctor(u8 *m, u8 kind) {
 /* ---- constructors (vtables and their quad-drawer parts) of the effects the event commands
  * make (0xC8, 0xD9, 0x9C, 0x9F, 0xA0, 0xA9, 0x35, 0x65, 0x9B, 0x8C) and a few others ---- */
 
-extern void *D_0047A6F0[], *D_0046FF20[], *D_00471000[], *D_00470E60[], *D_00470E40[], *Fog_vtable[],
+extern void *DustMoteSource_vtable[], *SpriteBurst_vtable[], *Effect71000_vtable[], *Splash_vtable[], *SpeckSwarm_vtable[], *Fog_vtable[],
     *D_0046D730[], *ScreenBlend_vtable[], *CharModel_vtable[], *Costume8Model_vtable[], *WindHangPoint_vtable[], *SpringPartBase_vtable[],
-    *CostumeHangPoint_vtable[], *HairPoint2_vtable[], *D_0046FF60[], *DepthRange_vtable[], *D_0046EA90[];
+    *CostumeHangPoint_vtable[], *HairPoint2_vtable[], *Effect6FF60_vtable[], *DepthRange_vtable[], *D_0046EA90[];
 extern void *Helper469D00_vtable[], *QuadDrawer_vtable[];
 extern void *HumanModel_PartsCtor(u8 *m);
 
 /* 0x00208070 */
 void **DustMoteSource_Init(void **o) {   /* event 0xD9 */
-    o[0] = D_0047A6F0;
+    o[0] = DustMoteSource_vtable;
     return o;
 }
 
 /* 0x00208090 */
 void **SpriteBurst_InitDust(void **o) {   /* event 0xC8: dust */
-    o[0] = D_0046FF20;
+    o[0] = SpriteBurst_vtable;
     o[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x614 / 4] = -1;
     o[0x610 / 4] = QuadDrawer_vtable;
@@ -362,13 +362,13 @@ void **SpriteBurst_InitDust(void **o) {   /* event 0xC8: dust */
 
 /* 0x002082A0 */
 void **Effect71000_Init(void **o) {   /* event 0xA9 */
-    o[0] = D_00471000;
+    o[0] = Effect71000_vtable;
     return o;
 }
 
 /* 0x002082C0 */
 void **Splash_InitEvent(void **o) {   /* event 0xA0 */
-    o[0] = D_00470E60;
+    o[0] = Splash_vtable;
     o[0x3D0 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x3D4 / 4] = -1;
     o[0x3D0 / 4] = QuadDrawer_vtable;
@@ -377,7 +377,7 @@ void **Splash_InitEvent(void **o) {   /* event 0xA0 */
 
 /* 0x00208300 */
 void **SpeckSwarm_InitEvent(void **o) {   /* event 0x9F */
-    o[0] = D_00470E40;
+    o[0] = SpeckSwarm_vtable;
     o[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x614 / 4] = -1;
     o[0x610 / 4] = QuadDrawer_vtable;
@@ -461,7 +461,7 @@ void *HairPoint2_dtor(void *o, s32 flags) {
 
 /* 0x00208EB0 */
 void **Effect6FF60_Init(void **o) {   /* event 0x8C */
-    o[0] = D_0046FF60;
+    o[0] = Effect6FF60_vtable;
     return o;
 }
 
@@ -2613,7 +2613,7 @@ s32 Gesture_Forward(u8 *g, f32 len, f32 ang) {
 /* 2: R3 pressed with the stick centred */
 /* 0x001F19C0 */
 s32 Gesture_R3(u8 *g, f32 len, f32 ang) {
-    return len < 0x1.99999ap-2f /* 0.4 */ && (D_0047E37C & PAD_R3) ? 2 : -1;
+    return len < 0x1.99999ap-2f /* 0.4 */ && (gPadPressed & PAD_R3) ? 2 : -1;
 }
 
 /* 3: right (within 0.6 of +pi/2) */
@@ -4924,11 +4924,11 @@ void WindHangPoint_AdjustBone(u8 *p, u8 *s) {
     sceVu0CopyVector(a + 12, anchor);
 }
 
-/* destructor (vtable D_0047A6F0) */
+/* destructor (vtable DustMoteSource_vtable) */
 /* 0x0037B9A0 */
 void *DustMoteSource_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A6F0;
+        AT(o, 0x0, void **) = DustMoteSource_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

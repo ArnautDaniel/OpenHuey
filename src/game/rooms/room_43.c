@@ -9,7 +9,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room43_vtable[];
 extern u8 D_0047AB3C[];
-extern void *D_00479580[];
+extern void *BigFire_vtable[];
 extern u8 D_00407AE0[];
 extern u8 D_00407B70[];
 extern u8 D_00407C00[];
@@ -20,7 +20,7 @@ extern u8 D_00407E50[];
 extern PTMF D_01990C58[];
 
 static void effect_6cf0_init(void **obj) {
-    obj[0] = D_00479580;
+    obj[0] = BigFire_vtable;
     obj[0x6040 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x6044 / 4] = -1;
     obj[0x6040 / 4] = QuadDrawer_vtable;
@@ -74,7 +74,7 @@ s32 Room43_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C58[i & 0xFF], a, b);
 }
 
-/* the effect D_00479580 (three quad drawers) started with parameter 0 */
+/* the effect BigFire_vtable (three quad drawers) started with parameter 0 */
 /* 0x002B26F0 */
 s32 Room43_Cmd00(void) {
     u8 *mgr = gEffects;

@@ -41,7 +41,7 @@ void *MovieLibBase_dtor(u8 *o, s32 flags);
 extern s32 D_003E5260, D_003E5264;
 extern void *D_01976F98;
 extern const u8 D_004573C0[];
-extern s64 D_003EA900;   /* the timer's rate (ticks a second) */
+extern s64 gTimerRate;   /* the timer's rate (ticks a second) */
 void func_00226790(s32 v);
 s32 func_002267A0(void);
 void func_002267B0(s32 v);
@@ -300,28 +300,28 @@ void *func_0025B828(void) {
 
 /* (possibly dead code: nothing in the game references it) */
 s64 func_0025C2F8(s64 ticks) {
-    return func_0011CE88(ticks, D_003EA900);
+    return func_0011CE88(ticks, gTimerRate);
 }
 
 /* in microseconds, milliseconds, seconds */
 /* (possibly dead code: nothing in the game references it) */
 f32 func_0025C320(s32 ticks) {
-    return (f32)ticks * 1000000.0f / (f32)(s32)D_003EA900;
+    return (f32)ticks * 1000000.0f / (f32)(s32)gTimerRate;
 }
 
 /* (possibly dead code: nothing in the game references it) */
 f32 func_0025C360(s32 ticks) {
-    return (f32)ticks * 1000.0f / (f32)(s32)D_003EA900;
+    return (f32)ticks * 1000.0f / (f32)(s32)gTimerRate;
 }
 
 /* (possibly dead code: nothing in the game references it) */
 f32 func_0025C3A0(s32 ticks) {
-    return (f32)ticks / (f32)(s32)D_003EA900;
+    return (f32)ticks / (f32)(s32)gTimerRate;
 }
 
 /* 0x0025C3D0 */
 void Ticks_SetRate(s64 rate) {
-    D_003EA900 = rate;
+    gTimerRate = rate;
 }
 
 /* a measure: { sum, min, max, count } cleared / one more value */

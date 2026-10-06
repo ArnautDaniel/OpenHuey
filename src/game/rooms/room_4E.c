@@ -9,7 +9,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room4E_vtable[];
 extern const char *D_0040B508;
-extern void *D_00478BE0[];
+extern void *Room4EEffect_vtable[];
 extern u8 D_0040AE90[];
 extern u8 D_0040AF40[];
 extern u8 D_0040B040[];
@@ -22,7 +22,7 @@ extern u32 D_0040B500[];
 extern PTMF D_01990D10[];
 
 static void effect_78BE0_init(void **obj) {
-    obj[0] = D_00478BE0;
+    obj[0] = Room4EEffect_vtable;
 }
 
 /* 0x002B3970 */
@@ -74,7 +74,7 @@ s32 Room4E_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D10[i & 0xFF], a, b);
 }
 
-/* room 0x4E (D_0040B4F8): the 0x10-byte effect D_00478BE0 made */
+/* room 0x4E (D_0040B4F8): the 0x10-byte effect Room4EEffect_vtable made */
 /* 0x002B3AA0 */
 s32 Room4E_Cmd02(void) {
     Effect_New(gEffects, 0x10, effect_78BE0_init);

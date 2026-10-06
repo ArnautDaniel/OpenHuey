@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room10B_vtable[];
-extern void *D_0047A730[];
+extern void *AshFlakes_vtable[];
 extern u8 D_00419A80[];
 extern u8 D_00419AA0[];
 extern u8 D_00419AE0[];
@@ -22,7 +22,7 @@ extern PTMF D_01990F68[];
 extern PTMF D_01990F78[];
 
 static void effect_4480_init(void **obj) {
-    obj[0] = D_0047A730;
+    obj[0] = AshFlakes_vtable;
     obj[0x3010 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x3014 / 4] = -1;
     obj[0x3010 / 4] = QuadDrawer_vtable;

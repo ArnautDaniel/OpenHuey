@@ -67,7 +67,7 @@ typedef struct SubScreen {
     /* 0xA8C61 */ u8 fading;            /* a fade is running: input ignored */
     /* 0xA8C62 */ s16 fade;             /* 0..0x80 */
     /* 0xA8C64 */ s16 fadeStep;
-    /* 0xA8C66 */ u8 kind;              /* which panels (D_0044C120); 0x80.. pages over black */
+    /* 0xA8C66 */ u8 kind;              /* which panels (kSubScreenFadePanels); 0x80.. pages over black */
     /* 0xA8C67 */ u8 resumeKind;
     /* 0xA8C68 */ u8 quietClose;        /* no sound when closing */
     /* 0xA8C69 */ u8 padA8C69[0x17];

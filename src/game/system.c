@@ -115,7 +115,7 @@ void *func_0020E7B0(void *e) {
 extern void *System_vtable[], *D_0046ADD0[], *Pads_vtable[], *D_0046ADC4[], *D_0046AD88[], *MemCard_vtable[], *D_0046AEB4[];
 extern void *Renderer_vtable[], *D_0046AF00[], *D_0046AF0C[], *MovieLib_vtable[], *Vram_vtable[], *Loader_vtable[];
 extern void *SndDriver_vtable[], *D_0046BF2C[];
-extern u8 D_0047E360[], D_0047E3C0[16], D_0047E3D0[16];
+extern u8 gInput[], kButtonMap[16], D_0047E3D0[16];
 extern const PTMF sGameStateNull;
 
 extern void RenderState_Defaults(u8 *r);
@@ -131,9 +131,9 @@ void *System_ctor(u8 *s) {
     AT(s, 0x20, void **) = D_0046AD88;
     gPad = (VObject *)(s + 0x40);
     AT(s, 0x40, void **) = D_0046ADD0;
-    Fades_Start(s + 0x40, D_0047E360);
+    Fades_Start(s + 0x40, gInput);
     for (i = 0; i < 16; i++) {
-        D_0047E3C0[i] = i;
+        kButtonMap[i] = i;
     }
     for (i = 0; i < 16; i++) {
         D_0047E3D0[i] = i;

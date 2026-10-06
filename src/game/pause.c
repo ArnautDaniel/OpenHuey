@@ -21,7 +21,7 @@
 #include "overlay.h"
 #include "pause.h"
 
-extern VObject *D_00456DF0;   /* the music director */
+extern VObject *gStageMusic;   /* the music director */
 
 /* the states */
 extern const PTMF Pause_StateOpening_ptmf, MoviePause_StateOpening_ptmf, Pause_StateOpen_ptmf, Pause_StateClosing_ptmf, Pause_StateMenu_ptmf, Pause_StateClosing_ptmf2, Pause_StateMenuClosing_ptmf,
@@ -67,11 +67,11 @@ static void duck(f32 down, s32 normal) {
     AT(gAdx, 0x114, f32) = v;
     clamp01(&AT(gAdx, 0x114, f32));
     Bgm_ApplyVolume(gAdx);
-    if (D_00456DF0 != NULL) {
+    if (gStageMusic != NULL) {
         if (!normal) {
-            VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, v);
+            VCALL(gStageMusic, 0x44, void (*)(VObject *, f32))(gStageMusic, v);
         } else {
-            VCALL(D_00456DF0, 0x48, void (*)(VObject *))(D_00456DF0);
+            VCALL(gStageMusic, 0x48, void (*)(VObject *))(gStageMusic);
         }
     }
     if (gMovie != NULL) {
@@ -157,10 +157,10 @@ static void confirm_texts(u8 *o, f32 a) {
 static void choose(u8 *o) {
     u8 was = CHOICE(o);
 
-    if (D_0047E36C & MENU_UP) {
+    if (gMenuPressed & MENU_UP) {
         CHOICE(o) = 0;
     }
-    if (D_0047E36C & MENU_DOWN) {
+    if (gMenuPressed & MENU_DOWN) {
         CHOICE(o) = 1;
     }
     if (was != CHOICE(o)) {
@@ -192,16 +192,16 @@ void MoviePause_StateOpen(u8 *o) {
     dim_draw(o);
     movie_texts(o);
     if (!MESSAGE_ONLY(o)) {
-        if (D_0047E36C & MENU_CANCEL) {
+        if (gMenuPressed & MENU_CANCEL) {
             T(o) = 0.0f;
             STATE(o) = MoviePause_StateSkip_ptmf;
             sound(0x97);
-        } else if (D_0047E37C & PAD_START) {
+        } else if (gPadPressed & PAD_START) {
             movie_pause(0);
             STATE(o) = MoviePause_StateClosing_ptmf;
             sound(0x97);
         }
-    } else if (D_0047E36C & MENU_CONFIRM) {
+    } else if (gMenuPressed & MENU_CONFIRM) {
         movie_pause(0);
         STATE(o) = MoviePause_StateClosing_ptmf2;
         sound(0x97);
@@ -259,15 +259,15 @@ void Pause_StateOpening(u8 *o) {
 /* 0x002F59A0 */
 void Pause_StateOpen(u8 *o) {
     if (!MESSAGE_ONLY(o)) {
-        if (D_0047E37C & PAD_START) {
+        if (gPadPressed & PAD_START) {
             STATE(o) = Pause_StateClosing_ptmf;
             sound(0x97);
-        } else if (D_0047E37C & PAD_SELECT) {
+        } else if (gPadPressed & PAD_SELECT) {
             CHOICE(o) = 0;
             STATE(o) = Pause_StateMenu_ptmf;
             sound(0x96);
         }
-    } else if (D_0047E36C & MENU_CONFIRM) {
+    } else if (gMenuPressed & MENU_CONFIRM) {
         STATE(o) = Pause_StateClosing_ptmf2;
         sound(0x97);
     }
@@ -295,7 +295,7 @@ void Pause_StateMenu(u8 *o) {
     choose(o);
     dim_draw(o);
     menu_texts(o);
-    if (D_0047E36C & MENU_CONFIRM) {
+    if (gMenuPressed & MENU_CONFIRM) {
         if (CHOICE(o) == 0) {
             STATE(o) = Pause_StateMenuClosing_ptmf;
             sound(0x97);
@@ -327,7 +327,7 @@ void Pause_StateQuitAsk(u8 *o) {
     choose(o);
     dim_draw(o);
     confirm_texts(o, 128.0f * T(o));
-    if (D_0047E36C & MENU_CONFIRM) {
+    if (gMenuPressed & MENU_CONFIRM) {
         if (CHOICE(o) == 0) {
             T(o) = 0.0f;
             STATE(o) = Pause_StateQuit_ptmf;
@@ -336,7 +336,7 @@ void Pause_StateQuitAsk(u8 *o) {
             STATE(o) = Pause_StateOpen_ptmf2;
             sound(0x96);
         }
-    } else if (D_0047E36C & MENU_CANCEL) {
+    } else if (gMenuPressed & MENU_CANCEL) {
         STATE(o) = Pause_StateOpen_ptmf3;
         sound(0x97);
     }

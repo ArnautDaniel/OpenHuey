@@ -129,7 +129,7 @@ void BgmCtl_ctor(u8 *p) {
     F(p, 0x14, u32) = 0;
 }
 
-extern u8 D_0047B350;           /* the language */
+extern u8 gLanguage;           /* the language */
 void SceneTitle_StateStart(SceneTitle *t);
 
 /* +0x10 entry: reset the message object and the sub screen, apply the options, then the title
@@ -149,7 +149,7 @@ void SceneTitle_StateEntry(SceneTitle *t) {
     Message_Init(t->msg);
     SubScreen_Start(&t->sub);
     SubScreen_ApplyOptions((VObject *)&t->sub);
-    D_0047B350 = 2;
+    gLanguage = 2;
     t->extras = 0;
     if (AT(sys, 0x24, u32) & 1) {
         t->extras = 1;
@@ -267,7 +267,7 @@ void SceneTitle_StateAttractFade(SceneTitle *t);
 
 /* wait for the movie (Start, once it shows, skips it), then state `next` */
 static inline void title_movie_wait(SceneTitle *t, void (*next)(SceneTitle *)) {
-    if ((D_0047E37C & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
+    if ((gPadPressed & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
         t->movieSkipped = 1;
     }
     if (gMovie != NULL && !t->movieSkipped) {
@@ -612,7 +612,7 @@ void SceneTitle_SeqPressStart(SceneTitle *t) {
     SceneTitle_DrawLogo(t, 1.0f, 1.0f);
     SceneTitle_DrawPressStart(t, 1.0f);
     SceneTitle_DrawPressStartGlow(t, 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f)));
-    if ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START)) {
+    if ((gMenuPressed & MENU_CONFIRM) || (gPadPressed & PAD_START)) {
         ptmf_set_fn(&t->seq, SceneTitle_SeqToMenu);
         t->timer = 0;
         snd = gSound;
@@ -763,12 +763,12 @@ void SceneTitle_SeqMenu(SceneTitle *t) {
     SceneTitle_DrawMenu(t, 1.0f);
     old = t->cursor;
     n = t->extras ? 5 : 3;
-    if (D_0047E36C & MENU_UP) {
+    if (gMenuPressed & MENU_UP) {
         t->cursor = old - 1;
         if (t->cursor < 0) {
             t->cursor = n - 1;
         }
-    } else if (D_0047E36C & MENU_DOWN) {
+    } else if (gMenuPressed & MENU_DOWN) {
         t->cursor++;
         if (n - 1 < t->cursor) {
             t->cursor = 0;
@@ -779,14 +779,14 @@ void SceneTitle_SeqMenu(SceneTitle *t) {
         Sound_PlaySE(SE_CURSOR);
         t->anim = 90000;
     }
-    if (D_0047E36C & MENU_CANCEL) {
+    if (gMenuPressed & MENU_CANCEL) {
         Sound_PlaySE(SE_CANCEL);
         t->timer = 0;
         BGM_WANT(0xFF, 0, 0, 1.0f);
         ptmf_set_fn(&t->seq, SceneTitle_SeqMenuToTitle);
         return;
     }
-    if (old == t->cursor && ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START))) {
+    if (old == t->cursor && ((gMenuPressed & MENU_CONFIRM) || (gPadPressed & PAD_START))) {
         BGM_WANT(0xFF, 0, 0, 1.0f);
         switch (t->cursor) {
         case 0:
@@ -844,7 +844,7 @@ void SceneTitle_DrawMenu(SceneTitle *t, f32 alpha) {
     f32 pulse;
     u8 bit;
 
-    D_0047B350 = 2;
+    gLanguage = 2;
     t->anim = (t->anim + 5000) % 360000;
     if (!t->loaded) {
         return;
@@ -1237,7 +1237,7 @@ void SceneTitle_DrawMenuAt(SceneTitle *t, f32 alpha) {
     u8 sel;
     s32 i;
 
-    D_0047B350 = 2;
+    gLanguage = 2;
     t->anim = (t->anim + 5000) % 360000;
     if (!t->loaded) {
         return;

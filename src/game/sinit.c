@@ -486,11 +486,11 @@ extern const PTMF RoomE9_Cmd01_ptmf;
 extern const PTMF RoomE9_Cmd02_ptmf;
 extern const PTMF RoomE9_Cmd03_ptmf;
 extern const PTMF RoomE9_Cond00_ptmf;
-extern PTMF D_0045B340;
-extern PTMF D_0045B358;
+extern PTMF kPursuerMove;
+extern PTMF kPursuerWaitMove;
 extern PTMF D_0045B370;
-extern PTMF D_0045B388;
-extern PTMF D_0045B3A0;
+extern PTMF kPursuerStairsMove;
+extern PTMF kPursuerIdleMove;
 extern PTMF D_0045B3B8;
 extern PTMF D_0047E300;
 extern PTMF D_0047E30C;
@@ -896,11 +896,11 @@ void Sinit_Pursuer(void) {
     D_003EC824 = D_003EC3B0;
     D_003EC840 = D_003EC3C0;
     D_003EC85C = D_003EC3D0;
-    D_0045B340 = D_003EC878;
-    D_0045B358 = D_003EC888;
+    kPursuerMove = D_003EC878;
+    kPursuerWaitMove = D_003EC888;
     D_0045B370 = D_003EC898;
-    D_0045B388 = D_003EC8A8;
-    D_0045B3A0 = D_003EC8B8;
+    kPursuerStairsMove = D_003EC8A8;
+    kPursuerIdleMove = D_003EC8B8;
     D_0045B3B8 = D_003EC8C8;
 }
 

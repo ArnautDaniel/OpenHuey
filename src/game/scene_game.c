@@ -299,7 +299,7 @@ extern void *BgmCtl_vtable[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
 extern void *gSceneGameF29740;
-extern void *D_0045D1F0, *D_00456DE8;
+extern void *D_0045D1F0, *gAvoidPrompt;
 
 /* the characters' common construction (Actor, then Character) */
 static inline void Character_Construct(Character *c, s32 slot) {
@@ -434,7 +434,7 @@ Scene *SceneGame_ctor(Scene *g) {
     D_0045D1F0 = (u8 *)g + 0x105344C;
 
     o = (u8 *)g + 0x1053480;
-    D_00456DE8 = o;
+    gAvoidPrompt = o;
     AT(o, 0x0, void **) = D_00473440;
     Task_Construct((Task *)(o + 0x11048));
     return g;
@@ -471,7 +471,7 @@ static inline void rng_tick(Scene *g) {
     u8 rng[0x80] __attribute__((aligned(16)));
 
     AT(g, 0x1065040, s32)++;
-    if ((u16)D_0047E37C != 0) {
+    if ((u16)gPadPressed != 0) {
         AT(g, 0x1065040, s32)++;
     }
     AT(rng, 0x0, void **) = D_00476F40;
@@ -889,8 +889,8 @@ void SceneGame_StatePlay(Scene *g) {
 
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
 extern const PTMF SceneGame_SubTransition_ptmf, SceneGame_SubMoviePaused_ptmf, SceneGame_SubPaused_ptmf2, SceneGame_SubSubScreen_ptmf;   /* sub-states: menus */
-extern s8 D_0047E360;           /* the pad: 0 = not connected */
-extern VObject *D_00456DF0;
+extern s8 gInput;           /* the pad: 0 = not connected */
+extern VObject *gStageMusic;
 extern void SceneGame_ActionPrompt(Scene *g);
 extern void SceneGame_Danger(Scene *g);
 
@@ -985,7 +985,7 @@ void SceneGame_SubPlay(Scene *g) {
 #endif
     if (AT(g, 0x44, s32) == 0) {
         RoomMgr_SlotLoading(rooms, AT(g, 0xF6C1B0, s32) == 0);
-        if ((D_0047E37C >> 3) & 1 || D_0047E360 == 0) {
+        if ((gPadPressed >> 3) & 1 || gInput == 0) {
             Progress_SetFlag(prog, 6);
         }
         *flags &= ~1;
@@ -1022,7 +1022,7 @@ void SceneGame_SubPlay(Scene *g) {
         } else {
             *flags &= ~0x3F0;
         }
-        if ((D_0047E37C & 1) && !(u8)Progress_TestFlag(prog, 5) && AT(gCharPlayer, 0xE0, u8) == 0 &&
+        if ((gPadPressed & 1) && !(u8)Progress_TestFlag(prog, 5) && AT(gCharPlayer, 0xE0, u8) == 0 &&
             AT(gCharPlayer, 0x14E8, s32) != 5 && AT(g, 0x7F8, u8) < 4 &&
             AT(gCharPlayer, 0xF8, s32) == 0 && !Progress_TestFlag(prog, 8) &&
             !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev)) {
@@ -1177,8 +1177,8 @@ void SceneGame_SubPlay(Scene *g) {
         AT(gAdx, 0x120, f32) = 1.0f;
         clamp01(&AT(gAdx, 0x120, f32));
         Bgm_ApplyVolume(gAdx);
-        if (D_00456DF0 != NULL) {
-            VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, 1.0f);
+        if (gStageMusic != NULL) {
+            VCALL(gStageMusic, 0x24, void (*)(VObject *, f32))(gStageMusic, 1.0f);
         }
         if (gMovie != NULL) {
             AT(gMovie, 0x1D4, f32) = 1.0f;
@@ -1193,7 +1193,7 @@ void SceneGame_SubPlay(Scene *g) {
             if ((*flags & 0xF) == 0 && AT(g, 0x44, s32) == 0 &&
                 !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie != NULL) {
                 VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
-                Pause_Open((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
+                Pause_Open((u8 *)g + 0x73EBA0, (gInput == 0 ? 0x80 : 0) | 1);
                 Panic_Pause((u8 *)g + 0x7F8);
                 menu = 1;
                 ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubMoviePaused_ptmf);
@@ -1201,7 +1201,7 @@ void SceneGame_SubPlay(Scene *g) {
         } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie == NULL &&
                    !(u8)Progress_TestFlag(prog, 0x19)) {
             VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
-            Pause_Open((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
+            Pause_Open((u8 *)g + 0x73EBA0, gInput == 0 ? 0x80 : 0);
             Panic_Pause((u8 *)g + 0x7F8);
             menu = 1;
             ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubPaused_ptmf2);
@@ -2100,7 +2100,7 @@ void SceneGame_SubSubScreen(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
     u8 *cam = (u8 *)g + SG_CAMDIR;
 
-    if (D_0047E37C & 1) {
+    if (gPadPressed & 1) {
         Progress_SetFlag(prog, 4);
     }
     CamDirector_Ease(cam);

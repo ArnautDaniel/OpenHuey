@@ -12,7 +12,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room02_vtable[];
 extern const char *D_003F0404;
-extern void *D_00470A70[];
+extern void *OrangeSparks_vtable[];
 extern u8 D_003EEDF0[];
 extern u8 D_003EEF70[];
 extern u8 D_003EF0D0[];
@@ -27,7 +27,7 @@ extern PTMF D_01990730[];
 extern PTMF D_01990760[];
 
 static void effect_70A70_init(void **obj) {
-    obj[0] = D_00470A70;
+    obj[0] = OrangeSparks_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;
@@ -127,7 +127,7 @@ s32 Room02_Command(void *self, u32 i, s32 a, s32 b) {
  * 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height */
 /* 0x002A9080 */
 s32 Room02_Cmd03(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F03FC);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F03FC);
     f32 t;
 
 #ifdef HG_NATIVE
@@ -168,7 +168,7 @@ s32 Room02_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x02 (D_003F03A0): the 0xE60-byte effect D_00470A70 by byte 3 - 0 made (its slot kept
+/* room 0x02 (D_003F03A0): the 0xE60-byte effect OrangeSparks_vtable by byte 3 - 0 made (its slot kept
  * in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1 */
 /* 0x002A91F0 */
 s32 Room02_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -208,7 +208,7 @@ s32 Room02_Cmd01(void) {
 /* 0x002A94C0 */
 s32 Room02_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kTop = {0x4217E979};   /* 37.978 */
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0404);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F0404);
 
     if (o == NULL) {
         return 1;

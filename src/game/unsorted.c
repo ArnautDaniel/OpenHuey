@@ -22,7 +22,7 @@ s32 Fiona_IsBusy(void *p) {
 
 static const char sAvoidTex[] = "SYSTEM\\AVOID.TEX";
 
-/* (SceneGame +0x1053480, global D_00456DE8) for a new room: load SYSTEM\AVOID.TEX, reset */
+/* (SceneGame +0x1053480, global gAvoidPrompt) for a new room: load SYSTEM\AVOID.TEX, reset */
 /* 0x0031E150 */
 void AvoidPrompt_Load(u8 *o) {
     VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, sAvoidTex, o + 0x40, 0x10000000, 0);

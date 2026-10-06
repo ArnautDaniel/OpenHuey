@@ -174,8 +174,8 @@ void SceneBoot_StateDone(SceneBoot *boot) {
 
 /* ---- boot steps and their helpers ---- */
 
-extern s8 D_0047E360;          /* 0 = (no controller?): boot steps then wait for a button */
-extern u8 D_0047B350;
+extern s8 gInput;          /* 0 = (no controller?): boot steps then wait for a button */
+extern u8 gLanguage;
 extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
 extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
 
@@ -249,11 +249,11 @@ void SceneBoot_DrawLines(SceneBoot *boot);
 /* Shared start of the boot steps: without (a controller?), show the message and wait
  * until button bit 14 is pressed. Returns nonzero while still waiting. */
 static inline s32 SceneBoot_WaitButton(SceneBoot *boot) {
-    if (D_0047E360 == 0) {
+    if (gInput == 0) {
         boot->stepFlag = 1;
     }
     if (boot->stepFlag != 0) {
-        if (!(D_0047E37C & 0x4000)) {
+        if (!(gPadPressed & 0x4000)) {
             SceneBoot_DrawLines(boot);
             return 1;
         }
@@ -282,7 +282,7 @@ u32 SceneBoot_StepTexts(SceneBoot *boot) {
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
         gTexCache, VCALL(res, 0x10, void *(*)(VObject *))(res), 0x14);
     SceneBoot_LoadSubtitles(boot);
-    D_0047B350 = 2;
+    gLanguage = 2;
     return 0;
 }
 
@@ -402,7 +402,7 @@ u32 SceneBoot_StepCapcom(SceneBoot *boot) {
     s32 ok;
 
     if (boot->stepTimer != 0) {
-        if (gMovie != NULL && !(D_0047E37C & 8)) {
+        if (gMovie != NULL && !(gPadPressed & 8)) {
             return 1;
         }
         movie = SCENE_TABLE_SCENE(1);
@@ -506,7 +506,7 @@ u32 SceneBoot_StepProgressive(SceneBoot *boot) {
             gBootMessage, 6, BOOT_IMAGE_67C40(boot), 0);
         gs = gRenderer;
         boot->savedVideoMode = VCALL(gs, 0x28, u32 (*)(VObject *))(gs);
-        if ((D_0047E374 & PAD_TRIANGLE) && (D_0047E374 & PAD_CROSS)) {
+        if ((gPadHeld & PAD_TRIANGLE) && (gPadHeld & PAD_CROSS)) {
             boot->stepTimer = 1;
         } else {
             result = 0;
@@ -570,12 +570,12 @@ u32 SceneBoot_StepProgressive(SceneBoot *boot) {
     }
 
     /* same button wait as the other steps, but drawn through tasks[1] */
-    if (D_0047E360 == 0) {
+    if (gInput == 0) {
         boot->stepFlag = 1;
     }
     busy = 0;
     if (boot->stepFlag != 0) {
-        if (!(D_0047E37C & PAD_CROSS)) {
+        if (!(gPadPressed & PAD_CROSS)) {
             Task_ShowMessage(&boot->tasks[1], 8, 0, 0x80, 0x33);
             busy = 1;
         } else {
@@ -645,7 +645,7 @@ void ItemFound_StateShow(u8 *o) {
             }
         }
     }
-    if ((flags & 0x80) && (D_0047E36C & MENU_CONFIRM)) {
+    if ((flags & 0x80) && (gMenuPressed & MENU_CONFIRM)) {
         if (id != -1) {
             Items_Give((u8 *)gSubScreen + 8, id, o[0x14B]);
         }

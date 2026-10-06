@@ -55,7 +55,7 @@ extern void *SubScreen_vtable[];          /* the sub screen */
 extern void *Message_vtable[], *D_0046A0D0[];   /* the message object, its base */
 extern void *BgmCtl_vtable[], *D_0046A100[];   /* the BGM controller, its base */
 extern void *MovieScene_vtable[];          /* SceneMovie */
-extern u8 D_0047B350;               /* the message language set */
+extern u8 gLanguage;               /* the message language set */
 extern u8 *D_01991EC4;              /* the message text */
 extern const char D_004638F8[];     /* "STAFF_ROLL.SFD" */
 extern const char D_00463840[], D_00463860[], D_00463880[], D_004638A0[];   /* "SYSTEM\\ENDING_A..D.TEX" */
@@ -568,7 +568,7 @@ void SceneEnding_SeqResults(SceneEnding *s) {
         s->step++;
         break;
     case 5:
-        if ((D_0047E374 & PAD_CIRCLE) || (D_0047E374 & PAD_START)) {
+        if ((gPadHeld & PAD_CIRCLE) || (gPadHeld & PAD_START)) {
             s->step++;
         }
         break;
@@ -754,7 +754,7 @@ void SceneEnding_SeqSetup(SceneEnding *s) {
     D_01991EC4 = END_TEXT(s);
     LOADER_LOAD(D_004638E0, END_FONT(s));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, END_FONT(s), 0x15);
-    D_0047B350 = 1;
+    gLanguage = 1;
     s->dogLevel = ending_dog_level(st);
     s->title = ending_title(s, st);
     s->step = 0;
@@ -847,7 +847,7 @@ void SceneEnding_StateStaffFade(SceneEnding *s) {
 void SceneEnding_StateStaffRoll(SceneEnding *s) {
     s32 skip = 0;
 
-    if ((D_0047E37C & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
+    if ((gPadPressed & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
         skip = 1;
     }
     if (gMovie != NULL && !skip) {

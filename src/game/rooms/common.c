@@ -30,10 +30,10 @@ void DriftingFlecks_SetParams(u8 *self, f32 *src);
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
 extern void *EffectBase_vtable[];
-extern void *D_00471060[];
-extern void *D_00479AC0[];
-extern void *D_00479B00[];
-extern void *D_0047A3D0[];
+extern void *DriftingFlecks_vtable[];
+extern void *WindowFlash_vtable[];
+extern void *Effect79B00_vtable[];
+extern void *Effect7A3D0_vtable[];
 void *DriftingFlecks_dtor(u8 *o, s32 flags);
 void *WindowFlash_dtor(u8 *o, s32 flags);
 void *Effect79B00_dtor(u8 *o, s32 flags);
@@ -99,24 +99,24 @@ s32 RoomBase_ActionScript(void *o) {   /* +0x24 */
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
+extern VObject *gRoomObjects;   /* the room's objects: +0x18 (id) the object */
 
 /* ---- more hooks: effects spawned into the effect manager, Fiona nudged, a partner's line ---- */
 
 #include "effectmgr.h"
 
-extern void *D_00479A80[], *D_0047A3D0[], *D_0047A730[];
+extern void *OneDrip_vtable[], *Effect7A3D0_vtable[], *AshFlakes_vtable[];
 
 /* an empty hook */
 /* 0x002FCB30 */
 void Room_EmptyHook(void) {
 }
 
-/* destructor (vtable D_00471060) */
+/* destructor (vtable DriftingFlecks_vtable) */
 /* 0x00306290 */
 void *DriftingFlecks_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00471060;
+        AT(o, 0x0, void **) = DriftingFlecks_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -150,7 +150,7 @@ extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "mov
 
 extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* "sara_l", "sara_r", "tenbin" */
 
-/* ---- room 0x61's light shaft, class D_0047A370 (0x700 bytes): a beam of light (a scrolling
+/* ---- room 0x61's light shaft, class LightShaft_vtable (0x700 bytes): a beam of light (a scrolling
  * texture on a strip between six points, drawn twice) with 16 dust motes rising through it
  * (double-buffered quad records +0x10 + buffer +0x6EC * 0x300, drawn by the quad drawer at
  * +0x610), each with its rise (+0x660 + i * 4) and wobble angle (+0x6A0); +0x6E8 the
@@ -159,7 +159,7 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
 
 #include "texcache.h"
 
-/* ---- class D_0047A390 (0x1A60 bytes), the haze of effect 0x1A60 (Room49_Cmd02): as the light
+/* ---- class Room49Effect_vtable (0x1A60 bytes), the haze of effect 0x1A60 (Room49_Cmd02): as the light
  * shaft's motes and haze without the beam - 64 motes (records +0x10 + 0xC00 x the current one
  * +0x1A54, the quad drawer at +0x1810) from (-60, 0, -60 + 0.4 x the frames counted at
  * +0x1A50), rising (+0x1848) and wobbling (+0x1948); the haze always on (phases +0x1A48 /
@@ -175,29 +175,29 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
  * to a cell of a grid of 10-unit cells, at random in the cell, shuffled; a cubic curve from
  * each to the next ---- */
 
-/* ---- class D_0047A3B0 (4 bytes): a glint on character 0x14 (its bone 6) ---- */
+/* ---- class Glint_vtable (4 bytes): a glint on character 0x14 (its bone 6) ---- */
 
 extern const char *const D_00403964;   /* "movechair_3" */
 
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
 extern const char *const D_003F99B8[];   /* { "kousi" } */
 
-extern void *D_0046F5A0[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
+extern void *RisingSmoke_vtable[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
 
 static inline void smoke_init(void **o) {
-    o[0] = D_0046F5A0;
+    o[0] = RisingSmoke_vtable;
     o[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x1814 / 4] = -1;
     o[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002AFE90 */
-s32 Room24_Smoke(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
+s32 Room24_Smoke(void) {   /* the rising smoke (RisingSmoke_vtable, 0x1C60 bytes) */
     Effect_New(gEffects, 0x1C60, smoke_init);
     return 1;
 }
 
-extern void *D_0046FF20[];
+extern void *SpriteBurst_vtable[];
 
 /* room 54 step (D_00428040): find the nav mesh's door regions again */
 /* 0x0030FA60 */
@@ -226,7 +226,7 @@ s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
     names[1] = D_004022B4;
     names[2] = D_004022B8;
     if (cmd[3] == 0) {
-        VObject *objs = D_00456DF8;
+        VObject *objs = gRoomObjects;
 
         for (i = 0; i < 3; i++) {
             u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, names[i]);
@@ -239,7 +239,7 @@ s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
             }
         }
     } else {
-        VObject *objs = D_00456DF8;
+        VObject *objs = gRoomObjects;
 
         for (i = 0; i < 3; i++) {
             u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, names[i]);
@@ -265,9 +265,9 @@ extern const char *const D_0042C328;   /* "a_fragment0" */
 
 extern const char *const D_00438D00;   /* room 0x6A's object */
 
-extern const char *const D_00438700[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
+extern const char *const kDialNames[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
 
-extern void *D_004737D0[];
+extern void *Effect737D0_vtable[];
 
 extern const char *const D_0040C160;   /* an object's name */
 
@@ -283,9 +283,9 @@ extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8
 extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
 extern const char *const D_003F5440[];                  /* room 0x0C (+13: the three pairs) */
 extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
-extern void *D_00479AC0[], *D_00471060[], *D_00470E20[];
+extern void *WindowFlash_vtable[], *DriftingFlecks_vtable[], *SmokePuffs_vtable[];
 
-/* the effect D_00479AC0 (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
+/* the effect WindowFlash_vtable (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
  * a flash in the shape of a window (half of its outline, D_00444980, mirrored for points 12..23)
  * at the object, turned with it, each frame a fan through some of the outline (D_00444A70: a
  * count, then the points) */
@@ -381,11 +381,11 @@ void WindowFlash_Start(u8 *o) {
     AT(o, 0x4, s32) = -1;
 }
 
-/* destructor (vtable D_00479B00) */
+/* destructor (vtable Effect79B00_vtable) */
 /* 0x00361940 */
 void *Effect79B00_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479B00;
+        AT(o, 0x0, void **) = Effect79B00_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -398,11 +398,11 @@ void *Effect79B00_dtor(u8 *o, s32 flags) {
 void Effect79B00_Start(void) {
 }
 
-/* destructor (vtable D_0047A3D0) */
+/* destructor (vtable Effect7A3D0_vtable) */
 /* 0x00377CC0 */
 void *Effect7A3D0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A3D0;
+        AT(o, 0x0, void **) = Effect7A3D0_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -449,8 +449,8 @@ extern const char *const D_00429130;
 
 #include "charaction.h"
 
-/* ---- three 0x1C30-byte effects D_00479B00 (grey 0x303030) at once, each told its spot ---- */
-extern void *D_00479B00[];
+/* ---- three 0x1C30-byte effects Effect79B00_vtable (grey 0x303030) at once, each told its spot ---- */
+extern void *Effect79B00_vtable[];
 
 #include "input.h"
 
@@ -583,11 +583,11 @@ void Kind26_MoveTo(u8 *self, s32 a, f32 x, f32 y) {
     S32(self, 0x1630) = a;
 }
 
-/* destructor (vtable D_00479AC0) */
+/* destructor (vtable WindowFlash_vtable) */
 /* 0x00360B60 */
 void *WindowFlash_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479AC0;
+        AT(o, 0x0, void **) = WindowFlash_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

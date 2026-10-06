@@ -18,10 +18,10 @@ extern SifDma D_01971580;
 extern u8 D_019715C0[0x80];    /* the driver's state, written by the IOP (uncached) */
 extern u32 D_01971640[4];      /* bit 0 / 1: a transfer (0x11 / 0x12) running (uncached) */
 extern u32 D_01975700[8];
-extern u32 D_0047B218;         /* the last DMA's id */
+extern u32 gSndLastDma;         /* the last DMA's id */
 extern u32 D_0047B21C;         /* the IOP's copy of D_019715C0 */
 extern void (*D_0047B22C)(void *);
-extern u32 D_0047A958;         /* the output: 0 stereo, 1 / 2 the surround modes */
+extern u32 gSoundOutput;         /* the output: 0 stereo, 1 / 2 the surround modes */
 extern f32 D_003DF580[0x400], D_003E0580[0x400];   /* stereo pan: right / left by angle */
 extern s32 D_003E3580[0x168];                      /* by degree: the surround tables' index */
 extern f32 D_003E3B20[], D_003E40C0[], D_003E4660[], D_003E4C00[];
@@ -85,7 +85,7 @@ u32 SndLib_Place(u8 *b, u32 word) {
         }
     }
     v = (s16)((v << 13) / 100);
-    if (D_0047A958 == 0) {
+    if (gSoundOutput == 0) {
         if (rel > 0x400) {
             l = (s32)(vol * ((f32)v * -D_003E0580[0x800 - rel]));
             r = (s32)(vol * ((f32)v * D_003DF580[0x800 - rel]));
@@ -95,10 +95,10 @@ u32 SndLib_Place(u8 *b, u32 word) {
         }
     } else {
         deg = rel * 360 / 2048;
-        if (D_0047A958 == 1) {
+        if (gSoundOutput == 1) {
             l = (s32)(vol * ((f32)v * D_003E40C0[D_003E3580[deg]]));
             r = (s32)(vol * ((f32)v * D_003E3B20[D_003E3580[deg]]));
-        } else if (D_0047A958 == 2) {
+        } else if (gSoundOutput == 2) {
             l = (s32)(vol * ((f32)v * D_003E4C00[D_003E3580[deg]]));
             r = (s32)(vol * ((f32)v * D_003E4660[D_003E3580[deg]]));
         }
@@ -235,8 +235,8 @@ s32 SndLib_DmaToIop(u32 src, u32 dest, u32 size, s32 attr, s32 inIrq) {
             D_01971580.size = size;
             D_01971580.attr = attr;
             func_0026CB18(src, src + size);
-            D_0047B218 = isceSifSetDma(&D_01971580, 1);
-        } while (D_0047B218 == 0);
+            gSndLastDma = isceSifSetDma(&D_01971580, 1);
+        } while (gSndLastDma == 0);
     } else if (inIrq == 0) {
         do {
             D_01971580.src = src;
@@ -244,21 +244,21 @@ s32 SndLib_DmaToIop(u32 src, u32 dest, u32 size, s32 attr, s32 inIrq) {
             D_01971580.size = size;
             D_01971580.attr = attr;
             func_0026CA98(src, src + size);
-            D_0047B218 = sceSifSetDma(&D_01971580, 1);
-        } while (D_0047B218 == 0);
+            gSndLastDma = sceSifSetDma(&D_01971580, 1);
+        } while (gSndLastDma == 0);
     } else {
         return -2;
     }
-    if (D_0047B218 == 0) {
+    if (gSndLastDma == 0) {
         return -3;
     }
     for (;;) {
         if (inIrq == 1) {
-            if (isceSifDmaStat(D_0047B218) < 0) {
+            if (isceSifDmaStat(gSndLastDma) < 0) {
                 break;
             }
         } else if (inIrq == 0) {
-            if (sceSifDmaStat(D_0047B218) < 0) {
+            if (sceSifDmaStat(gSndLastDma) < 0) {
                 break;
             }
         } else {
@@ -357,13 +357,13 @@ u32 *SndLib_Call(u32 cmd, void *args) {
     sif_wait(&D_019756C0);
     switch (cmd & 0xFFFF0000) {
     case 0x370000:
-        D_01973EC0[0] = D_0047A958;
+        D_01973EC0[0] = gSoundOutput;
         break;
     case 0x360000:
-        if (D_0047A958 < 3) {
-            D_0047A958 = cmd & 0xFF;
+        if (gSoundOutput < 3) {
+            gSoundOutput = cmd & 0xFF;
         } else {
-            D_0047A958 = 0;
+            gSoundOutput = 0;
         }
         break;
     case 0x270000:
@@ -455,7 +455,7 @@ u32 *SndLib_Call(u32 cmd, void *args) {
 /* ---- the EE's own RPC server (0x77777779), which the driver calls ---- */
 
 extern u16 D_0047B228;     /* the driver's argument 10 (1: it reads EE memory itself) */
-extern u32 D_0047B230;     /* the server's reply */
+extern u32 gSndServerReply;     /* the server's reply */
 
 /* the driver asks: 1 copy EE memory to it (or, with argument 10 set, just the address), 2..5
    its state words into D_019715C0 (+0x30, +0x20, +0x40, +0x50) */
@@ -466,27 +466,27 @@ void *SndLib_ServerCall(u32 fno, void *buf) {
     switch (fno & 0xFFFF0000) {
     case 0x50000:
         AT(st, 0x50, u32) = AT(buf, 0x8, u32);
-        D_0047B230 = 0;
-        return &D_0047B230;
+        gSndServerReply = 0;
+        return &gSndServerReply;
     case 0x40000:
         AT(st, 0x40, u32) = AT(buf, 0x8, u32);
-        D_0047B230 = 0;
-        return &D_0047B230;
+        gSndServerReply = 0;
+        return &gSndServerReply;
     case 0x30000:
         AT(st, 0x20, u32) = AT(buf, 0x8, u32);
-        D_0047B230 = 0;
-        return &D_0047B230;
+        gSndServerReply = 0;
+        return &gSndServerReply;
     case 0x20000:
         AT(st, 0x30, u32) = AT(buf, 0x8, u32);
-        D_0047B230 = 0;
-        return &D_0047B230;
+        gSndServerReply = 0;
+        return &gSndServerReply;
     case 0x10000:
         if (D_0047B228 == 1) {
             return AT(buf, 0x8, void *);
         }
-        D_0047B230 = SndLib_DmaToIop(AT(buf, 0x8, u32), AT(buf, 0xC, u32), AT(buf, 0x10, u32), AT(buf, 0x14, s32),
+        gSndServerReply = SndLib_DmaToIop(AT(buf, 0x8, u32), AT(buf, 0xC, u32), AT(buf, 0x10, u32), AT(buf, 0x14, s32),
                                    AT(buf, 0x18, s32));
-        return &D_0047B230;
+        return &gSndServerReply;
     }
     return NULL;
 }
@@ -576,7 +576,7 @@ void SndLib_Clear(void) {
     func_00115D20(D_01971480, 0, 0x60);
     func_00115D20(D_01971500, 0, 0x80);
     func_00115D20(&D_01971580, 0, 0x10);
-    D_0047B218 = 0;
+    gSndLastDma = 0;
     func_00115D20(UNCACHED(D_019715C0), 0, 0x80);
     D_0047B21C = 0;
     func_00115D20(UNCACHED(D_01971640), 0, 0x10);

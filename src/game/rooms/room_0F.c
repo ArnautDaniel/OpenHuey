@@ -103,7 +103,7 @@ s32 Room0F_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x0F (Room0F_Cmd02_ptmf): an effect (D_00471060, 0x840 bytes) with its box */
+/* room 0x0F (Room0F_Cmd02_ptmf): an effect (DriftingFlecks_vtable, 0x840 bytes) with its box */
 /* 0x002ABC20 */
 s32 Room0F_Cmd02(void) {
     s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);

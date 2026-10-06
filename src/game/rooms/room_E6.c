@@ -81,7 +81,7 @@ s32 RoomE6_Cmd01(void) { return clock_draw(D_0047B328, D_00463A18); }
 /* the room object named by D_0047B110[0]: +0x24 -25.3, +0x34 0 */
 /* 0x0037A5A0 */
 s32 RoomE6_Cmd00(void) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, *(const char **)D_0047B110);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, *(const char **)D_0047B110);
 
     if (o != NULL) {
         AT(o, 0x24, u32) = 0xC1CA6666;   /* -25.3 */

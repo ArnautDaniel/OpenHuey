@@ -100,7 +100,7 @@ s32 RoomC3_Command(void *self, u32 i, s32 a, s32 b) {
 /* sound 3 (bank 6) at the room object named D_004400F0[0] */
 /* 0x0034AB40 */
 s32 RoomC3_Cmd02(void) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400F0[0]);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_004400F0[0]);
 
     if (o != NULL) {
         Sound_PlayBankAt(gSound, 3, 6, (f32 *)(o + 0x20), 0, 0);
@@ -132,7 +132,7 @@ s32 RoomC3_Cmd01(void) {
 /* 0x0034AD00 */
 s32 RoomC3_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400E0);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_004400E0);
     f32 t, e;
 
     if (o == NULL) {

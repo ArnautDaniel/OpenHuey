@@ -70,7 +70,7 @@ s32 Room13_Command(void *self, u32 i, s32 a, s32 b) {
 
 /* 0x002AC600 */
 s32 Room13_Cmd00(void *a0, void *a1, u8 *arg) {
-    u8 *kousi = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F99B8[0]);
+    u8 *kousi = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F99B8[0]);
 
     if (kousi != NULL) {
         AT(kousi, 0x14, f32) = arg[3] == 0 ? 0.0f : -0x1.921fb6p+0f;

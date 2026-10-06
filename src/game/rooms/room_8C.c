@@ -129,7 +129,7 @@ s32 Room8C_Cmd03(void *self, void *a1, u8 *cmd) {
 s32 Room8C_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k51 = {0x40A33333}, k16Pi = {0x42490FDB}, k2Pi = {0x40C90FDB},
                                           kPi = {0x40490FDB}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A};
-    VObject *objs = D_00456DF8, *rnd;
+    VObject *objs = gRoomObjects, *rnd;
     u8 *w = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434890);
     u8 *b = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434894);
     f32 v;
@@ -181,7 +181,7 @@ s32 Room8C_Cmd02(void *self, void *a1, u8 *cmd) {
 /* 0x0033FE90 */
 s32 Room8C_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kNegPi = {0xC0490FDB}, k2Pi = {0x40C90FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00434888);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00434888);
     f32 a;
 
     switch (cmd[3]) {

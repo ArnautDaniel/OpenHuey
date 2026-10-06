@@ -1,4 +1,4 @@
-/* The stage music director (scene +0x1064600, 0xA3C bytes, global D_00456DF0; base vtable
+/* The stage music director (scene +0x1064600, 0xA3C bytes, global gStageMusic; base vtable
  * MusicDir_vtable, one subclass per stage set up by SceneGame_MusicDirector). It plays the stage's music on
  * the sound driver's four sequence banks (0..3, an SQ each over the stage's HD/BD bank) and
  * mixes them live: each track's volume and sequence volume, and per MIDI channel a volume,
@@ -34,7 +34,7 @@
 #include "music.h"
 #include "msl.h"
 
-extern void *D_00456DF0;      /* the director */
+extern void *gStageMusic;      /* the director */
 extern const PTMF sGameStateNull;
 extern const PTMF MusicDir_TrackFade_ptmf;   /* MusicDir_TrackFade: a track volume fade */
 extern const PTMF MusicDir_GlobalFade_ptmf;   /* MusicDir_GlobalFade: the global volume fade */
@@ -739,7 +739,7 @@ void *MusicDirBase_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046EBE0;
         if (d != NULL) {
-            D_00456DF0 = NULL;
+            gStageMusic = NULL;
         }
         if ((s16)flags > 0) {
             func_00100490(d);
@@ -761,7 +761,7 @@ static inline void director_dtor(u8 *d) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046EBE0;
         if (d != NULL) {
-            D_00456DF0 = NULL;
+            gStageMusic = NULL;
         }
     }
 }
@@ -1300,7 +1300,7 @@ void SceneGame_MusicDirector(u8 *scene, u32 stage) {
     }
     d = MusicDir_new(0xA3C, scene + 0x1064600);
     if (d != NULL) {
-        D_00456DF0 = d;
+        gStageMusic = d;
         AT(d, 0x0, void **) = MusicDir_vtable;
         func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
         func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
@@ -1382,7 +1382,7 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
             if (d != NULL) {
                 AT(d, 0x0, void **) = D_0046EBE0;
                 if (d != NULL) {
-                    D_00456DF0 = NULL;
+                    gStageMusic = NULL;
                 }
             }
         }

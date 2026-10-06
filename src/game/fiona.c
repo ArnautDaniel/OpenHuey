@@ -31,7 +31,7 @@ extern const PTMF Fiona_StateIdleStep_ptmf;      /* idle state (while unkE0 is s
 u32 func_00126EC0(void *p);
 
 extern void *EffectBase_vtable[];
-extern void *D_00479600[];
+extern void *StrikeMark_vtable[];
 void *StrikeMark_dtor(u8 *o, s32 flags);
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
@@ -629,7 +629,7 @@ s32 Fiona_PlaceOn(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
 }
 
 extern void Fiona_AreaFade(Fiona *f);
-extern u8 D_0047E3B0[];   /* pad state */
+extern u8 gPadState[];   /* pad state */
 extern s32 Fiona_JointAction(Fiona *f);
 extern void Fiona_HeadLook(Fiona *f);
 extern void Fiona_MotionSounds(Fiona *f);
@@ -673,7 +673,7 @@ void Fiona_Think(Fiona *f) {
     Fiona_AreaFade(f);
     p = gProgress;
     if ((Progress_TestFlag(p, 0xD) & 0xFF) == 1 && !(Progress_TestFlag(p, 0x2B) & 0xFF)) {
-        FI(f, 0x1AD6B8, s32) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)D_0047E3B0);
+        FI(f, 0x1AD6B8, s32) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)gPadState);
     }
     FI(f, 0x1AD6BC, s32) = -1;
     VCALL(f, 0x88, void (*)(Fiona *))(f);
@@ -1663,7 +1663,7 @@ void Fiona_Update(Fiona *f) {
     } else {
         Fiona_ControlCommand(f);
     }
-    FIONA_CMD(f) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)(Fiona_ReadsPad(f, p) ? D_0047E3B0 : NULL));
+    FIONA_CMD(f) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)(Fiona_ReadsPad(f, p) ? gPadState : NULL));
 
     hewie = Fiona_Touching(f) == 1;
     ptmf_scall(f, &f->c.a.state);
@@ -3257,11 +3257,11 @@ void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v) {
     *(s32 *)&out[3] = 0;
 }
 
-/* destructor (vtable D_00479600) */
+/* destructor (vtable StrikeMark_vtable) */
 /* 0x0035A230 */
 void *StrikeMark_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479600;
+        AT(o, 0x0, void **) = StrikeMark_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -3409,8 +3409,8 @@ void Fiona_ChangeFear(Fiona *f, f32 d) {
     }
 }
 
-extern f32 D_0047E3A0[4];   /* the left stick as a vector (x, 0, z) */
-extern u32 D_0047E374;      /* pad buttons held */
+extern f32 gLeftStick[4];   /* the left stick as a vector (x, 0, z) */
+extern u32 gPadHeld;      /* pad buttons held */
 
 #define FMOVE_DIR     0x1AD550   /* vec: where to move (world, unit or 0) */
 #define FMOVE_STILL   0x1AD58C   /* s32: frames without input (to 6) */
@@ -3458,9 +3458,9 @@ void Fiona_MoveInput(Fiona *f) {
         }
         return;
     }
-    sceVu0CopyVector(e, D_0047E3A0);
-    e[0] += (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
-    e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    sceVu0CopyVector(e, gLeftStick);
+    e[0] += (f32)(s32)(((gPadHeld >> 5) & 1) - ((gPadHeld >> 7) & 1));
+    e[2] += (f32)(s32)(((gPadHeld >> 6) & 1) - ((gPadHeld >> 4) & 1));
     sceVu0Normalize(n, e);
     cut = FI(f, FMOVE_MODE, u8) == 3;
     if (!cut && VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera) != -1) {
@@ -3578,7 +3578,7 @@ void Fiona_MoveInput(Fiona *f) {
     if (FI(f, FMOVE_MODE, u8) != 2) {
         sceVu0CopyVector(&FI(f, FMOVE_LAST, f32), n);
     }
-    if (D_0047E374 & 0x4000) {
+    if (gPadHeld & 0x4000) {
         FI(f, FMOVE_GO, u8) = 1;
     }
     return;
@@ -5685,7 +5685,7 @@ void Fiona_StateCrawlDrop(Fiona *f) {
     }
 }
 
-extern u32 D_0047E37C;   /* pad buttons pressed this frame */
+extern u32 gPadPressed;   /* pad buttons pressed this frame */
 
 /* struggling: how many shakes this frame - the stick (and d-pad) swung through more than 120
  * degrees from the last direction (+0x1AD714), or out from rest (+0x1AD710: back under 0.2),
@@ -5700,9 +5700,9 @@ s32 Fiona_Shakes(Fiona *f) {
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
         return 0;
     }
-    sceVu0CopyVector(e, D_0047E3A0);
-    e[0] = e[0] + (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
-    e[2] = e[2] + (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    sceVu0CopyVector(e, gLeftStick);
+    e[0] = e[0] + (f32)(s32)(((gPadHeld >> 5) & 1) - ((gPadHeld >> 7) & 1));
+    e[2] = e[2] + (f32)(s32)(((gPadHeld >> 6) & 1) - ((gPadHeld >> 4) & 1));
     len = __builtin_sqrtf(e[2] * e[2] + e[0] * e[0]);
     if (len <= k08.f) {
         if (len < k02.f) {
@@ -5730,8 +5730,8 @@ s32 Fiona_Shakes(Fiona *f) {
             }
         }
     }
-    if ((D_0047E37C >> 14) & 1 || (D_0047E37C >> 13) & 1 || (D_0047E37C >> 12) & 1 || (D_0047E37C >> 15) & 1 ||
-        (D_0047E37C >> 10) & 1 || (D_0047E37C >> 11) & 1) {
+    if ((gPadPressed >> 14) & 1 || (gPadPressed >> 13) & 1 || (gPadPressed >> 12) & 1 || (gPadPressed >> 15) & 1 ||
+        (gPadPressed >> 10) & 1 || (gPadPressed >> 11) & 1) {
         n++;
     }
     return n;
@@ -9063,7 +9063,7 @@ void Fiona_StateLadder(Fiona *f) {
     Actor_SetState(&f->c.a, &Fiona_StateLadderWalk_ptmf);
 }
 
-extern f32 D_0047E3A8;   /* the stick's vertical */
+extern f32 gStickVertical;   /* the stick's vertical */
 extern const PTMF Fiona_StateCaughtCrawling_ptmf, Fiona_StateLadderOff_ptmf, Fiona_StateLadderOff_ptmf2, Fiona_StateLadderOff_ptmf3, Fiona_StateLadderOff_ptmf4;
 
 /* the ladder's foot (0) or top (1) end point (nav +0x5C) */
@@ -9104,7 +9104,7 @@ void Fiona_StateOnLadder(Fiona *f) {
         f32 stick, a;
         u8 idle = 1, moved = 0;
 
-        stick = D_0047E3A8 + (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+        stick = gStickVertical + (f32)(s32)(((gPadHeld >> 6) & 1) - ((gPadHeld >> 4) & 1));
         if (!(stick <= 0.0f)) {
             a = stick;
         } else {
@@ -9264,11 +9264,11 @@ void Fiona_StatePushLetGo(Fiona *f) {
     }
 }
 
-extern void *D_00479600[];
+extern void *StrikeMark_vtable[];
 extern const PTMF Fiona_StateShove_ptmf;
 
 static void strike_mark_init(void **obj) {
-    obj[0] = D_00479600;
+    obj[0] = StrikeMark_vtable;
 }
 
 /* a chance out of 1 */
@@ -9278,7 +9278,7 @@ static inline __attribute__((always_inline)) s32 fiona_chance(f32 c) {
 
 /* Fiona_StateStrike_ptmf: her strike (the progress var 0x26: 6 / 7 the two special forms). Hits taken back
  * as for the shove, gathered (FI 0x1AD6C0 / 0x1AD6CC). At its event 0x20 idle (6 / 7: motion
- * +0x2C). At its strike mark (motion flags bit 2): with form 7 once a mark (D_00479600); the
+ * +0x2C). At its strike mark (motion flags bit 2): with form 7 once a mark (StrikeMark_vtable); the
  * hand's point (form 6 / 7 bone +0x78, else +0x74) - a door there slammed; normally a point off
  * the mesh ends the swing (0x101) - then whom it reaches (the progress +0x30: Hewie 2 / the
  * pursuer 4, once each) from the striking point (form 7: 10 to the side, reach 10; form 6: 6

@@ -36,7 +36,7 @@
 #include "scene_game_members.h"
 #include "libc.h"
 
-extern VObject *D_00456DF8;   /* the room's placed objects */
+extern VObject *gRoomObjects;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF Cutscene_StateScript_ptmf, Cutscene_StateFirstShot_ptmf, Cutscene_StatePlaying_ptmf;   /* states: loading, first shot, playing */
 extern void *Fog_vtable[], *DepthRange_vtable[];   /* effect classes for slots 0x1D / 0x1C */
@@ -102,7 +102,7 @@ static s32 *group_list(u8 *d, s32 k) {
 }
 
 static u8 *group_object(s32 *list, s32 i) {
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, void *))(D_00456DF8, (u8 *)list + 4 + i * 0x10);
+    return VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, void *))(gRoomObjects, (u8 *)list + 4 + i * 0x10);
 }
 
 /* actor i's character kind, and that character's slot (0xFF none) */
@@ -376,7 +376,7 @@ void Cutscene_GroupKeys(u8 *d) {
         tr = AT(d, 0x44 + k * 4, u32 *);
         for (i = 0; i < *tr; i++) {
             u8 *e = (u8 *)tr + 4 + i * 0x1C;
-            u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, void *))(D_00456DF8, e + 0xC);
+            u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, void *))(gRoomObjects, e + 0xC);
 
             if (o != NULL) {
                 f32 *key = (f32 *)((u8 *)tr + AT(e, 0x8, s32) + KEY_AT(d, FRAME(d)) * 0x18);

@@ -10,7 +10,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room03_vtable[];
 extern const char *D_003F0DC4;
-extern void *D_0046FF20[];
+extern void *SpriteBurst_vtable[];
 extern u8 D_003F0450[];
 extern u8 D_003F0540[];
 extern u8 D_003F0580[];
@@ -23,7 +23,7 @@ extern u8 D_003F0DD0[];
 extern PTMF D_01990780[];
 
 static inline void dust_init(void **o) {
-    o[0] = D_0046FF20;
+    o[0] = SpriteBurst_vtable;
     o[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x614 / 4] = -1;
     o[0x610 / 4] = QuadDrawer_vtable;
@@ -89,7 +89,7 @@ s32 Room03_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
     /* (volatile: a compile-time fold of the pulled case would round as IEEE, not as the EE) */
     static const volatile union { u32 u; f32 f; } kPi = {0x40490FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0DC4);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F0DC4);
     s32 dust = 0;
     f32 deg;
 

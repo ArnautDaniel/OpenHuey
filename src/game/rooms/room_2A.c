@@ -9,8 +9,8 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room2A_vtable[];
-extern void *D_00474000[];   /* the room 0x2A effect (props.c) */
-extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
+extern void *Room2AWisps_vtable[];   /* the room 0x2A effect (props.c) */
+extern void *Effect78BC0_vtable[];   /* a 0x14-byte effect (props.c) */
 extern u8 D_00404740[];
 extern u8 D_004048E0[];
 extern u8 D_00404A20[];
@@ -23,14 +23,14 @@ extern u32 D_00405610[];
 extern PTMF D_01990BD0[];
 
 static void room2a_effect_init(void **obj) {
-    obj[0] = D_00474000;
+    obj[0] = Room2AWisps_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_14_init(void **obj) {
-    obj[0] = D_00478BC0;
+    obj[0] = Effect78BC0_vtable;
 }
 
 /* 0x002B10A0 */
@@ -82,7 +82,7 @@ s32 Room2A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990BD0[i & 0xFF], a, b);
 }
 
-/* the 0x14-byte effect (D_00478BC0) started with the command's parameters (from byte 3) */
+/* the 0x14-byte effect (Effect78BC0_vtable) started with the command's parameters (from byte 3) */
 /* 0x002B11D0 */
 s32 Room2A_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
@@ -91,7 +91,7 @@ s32 Room2A_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x2A: its effect (D_00474000) started at (220, 0, -100) */
+/* room 0x2A: its effect (Room2AWisps_vtable) started at (220, 0, -100) */
 /* 0x002B12D0 */
 s32 Room2A_Cmd02(void) {
     u8 *mgr = gEffects;
@@ -110,7 +110,7 @@ s32 Room2A_Cmd02(void) {
  * 1 back 1.5 degrees, 2 on 0.5, 3 back 0.5 */
 /* 0x002B14A0 */
 s32 Room2A_Cmd00(void *self, void *a1, u8 *cmd) {
-    VObject *objs = D_00456DF8;
+    VObject *objs = gRoomObjects;
     u8 *o;
 
     switch (cmd[3]) {

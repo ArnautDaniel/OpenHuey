@@ -38,7 +38,7 @@ void Sound_SetPosition(VObject *snd, f32 *pos) {
     AT(b, 0x55, u8) = 0;
 }
 
-/* positioned sound `which` (D_003D8990: footsteps and the like) at `pos` */
+/* positioned sound `which` (kPositionedSounds: footsteps and the like) at `pos` */
 /* 0x002FF600 */
 void Sound_PlayAt(VObject *snd, u32 which, f32 *pos) {
     Sound_SetPosition(snd, pos);

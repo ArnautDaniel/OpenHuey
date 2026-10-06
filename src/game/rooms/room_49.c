@@ -10,7 +10,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room49_vtable[];
 extern void *DepthRange_vtable[];
-extern void *D_0047A390[];
+extern void *Room49Effect_vtable[];
 extern u8 D_00407F30[];
 extern u8 D_00407F80[];
 extern u8 D_00407FE0[];
@@ -22,7 +22,7 @@ extern u32 D_00408670[];
 extern PTMF D_01990C80[];
 
 static void effect_1a60_init(void **obj) {
-    obj[0] = D_0047A390;
+    obj[0] = Room49Effect_vtable;
     obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
     obj[0x1810 / 4] = QuadDrawer_vtable;
@@ -72,7 +72,7 @@ s32 Room49_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C80[i & 0xFF], a, b);
 }
 
-/* byte 3 0: the effect D_0047A390 spawned, its slot in event var 0; 1: removed */
+/* byte 3 0: the effect Room49Effect_vtable spawned, its slot in event var 0; 1: removed */
 /* 0x002B2A80 */
 s32 Room49_Cmd02(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {

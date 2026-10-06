@@ -27,7 +27,7 @@
 #include "synth.h"
 
 extern void *SynthBase_vtable[];
-extern u8 D_0047B350;
+extern u8 gLanguage;
 extern const char D_00460408[];                     /* the count's format */
 extern const char D_00460410[];                     /* "ITEM SYNTHESIZER(POT)" */
 extern const PTMF SynthPot_StateDebug_ptmf, SlotMachine_StateChoose_ptmf, SlotMachine_StateNothing_ptmf, SlotMachine_StateRoll_ptmf, ItemFound_StateShow_ptmf;
@@ -81,7 +81,7 @@ void func_00322560(void *o) {
 /* base +0x10: each frame, its state */
 /* 0x00322A10 */
 void SynthBase_Update(u8 *o) {
-    D_0047B350 = 1;
+    gLanguage = 1;
     if (ptmf_test(SY_STATE(o))) {
         ptmf_scall(o, SY_STATE(o));
     }
@@ -122,7 +122,7 @@ void *SynthPot_dtor(u8 *o, s32 flags) {
 
 /* 0x00322B30 */
 void SynthPot_StateDebug(u8 *self) {
-    if ((D_0047E36C >> 5) & 1) {
+    if ((gMenuPressed >> 5) & 1) {
         self[0x158] = 1;
     }
 }
@@ -215,7 +215,7 @@ void SlotMachine_Update(u8 *o) {
 void SlotMachine_StateNothing(u8 *o) {
     Task_Open(SY_TASK(o), 3);
     Task_Run(SY_TASK(o));
-    if (D_0047E36C & (MENU_CANCEL | MENU_CONFIRM)) {
+    if (gMenuPressed & (MENU_CANCEL | MENU_CONFIRM)) {
         o[0x158] = 1;
     }
 }
@@ -259,20 +259,20 @@ s8 SlotMachine_MaterialList(u8 *o) {
         }
     }
     old = SY_STEP(o);
-    if (D_0047E36C & MENU_UP) {
+    if (gMenuPressed & MENU_UP) {
         if (--SY_STEP(o) < 0) {
             SY_STEP(o) = last;
         }
-    } else if (D_0047E36C & MENU_DOWN) {
+    } else if (gMenuPressed & MENU_DOWN) {
         if (last < ++SY_STEP(o)) {
             SY_STEP(o) = 0;
         }
     }
     if (old != SY_STEP(o)) {
         Sound_PlaySE(SE_CURSOR);
-    } else if (D_0047E36C & MENU_CANCEL) {
+    } else if (gMenuPressed & MENU_CANCEL) {
         o[0x158] = 1;
-    } else if ((D_0047E36C & MENU_CONFIRM) && (s8)o[0x118 + sel] > 0) {
+    } else if ((gMenuPressed & MENU_CONFIRM) && (s8)o[0x118 + sel] > 0) {
         chosen = sel;
         Sound_PlaySE(SE_DECIDE);
     }
@@ -607,7 +607,7 @@ void SlotMachine_StateRoll(u8 *o) {
                     o[0x12E] = 8;
                 }
             }
-            if ((D_0047E36C & MENU_CONFIRM) || (s8)o[0x12E] == 8) {
+            if ((gMenuPressed & MENU_CONFIRM) || (s8)o[0x12E] == 8) {
                 Sound_Play(gSound, 2, 6);
                 o[0x11F] |= 4;
             }

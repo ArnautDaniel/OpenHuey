@@ -310,9 +310,9 @@ s32 Items_Field20(u8 *items, u8 l, u8 i) {
     return VCALL(it, 0x20, s32 (*)(VObject *))(it);
 }
 
-extern const s8 D_003EA918[];   /* by item kind (+0x10) */
+extern const s8 kItemKindSlot[];   /* by item kind (+0x10) */
 
-/* item `i` of list `l`: D_003EA918 of its kind (+0x10); -1 for an empty place */
+/* item `i` of list `l`: kItemKindSlot of its kind (+0x10); -1 for an empty place */
 /* 0x00260630 */
 s32 Items_KindSlot(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
@@ -320,7 +320,7 @@ s32 Items_KindSlot(u8 *items, u8 l, u8 i) {
     if (it == NULL) {
         return -1;
     }
-    return D_003EA918[VCALL(it, 0x10, s32 (*)(VObject *))(it)];
+    return kItemKindSlot[VCALL(it, 0x10, s32 (*)(VObject *))(it)];
 }
 
 /* item `id` (+0xC) in the lists: its +0x28 with `arg` */
@@ -355,11 +355,11 @@ void *Items_NewItem3F(u8 *items, const u8 *src) {
     return it;
 }
 
-/* item `i` of list `l` equipped: into its kind's slot (D_003EA918, +0x15E0) if it has one */
+/* item `i` of list `l` equipped: into its kind's slot (kItemKindSlot, +0x15E0) if it has one */
 /* 0x00260840 */
 void Items_Equip(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
-    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+    s32 k = *e == NULL ? -1 : kItemKindSlot[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
 
     if (k >= 0) {
         AT(items, 0x15E0 + k * 4, VObject *) = *e;
@@ -370,7 +370,7 @@ void Items_Equip(u8 *items, u8 l, u8 i) {
 /* 0x002607A0 */
 void Items_Unequip(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
-    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+    s32 k = *e == NULL ? -1 : kItemKindSlot[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
 
     if (k >= 0 && AT(items, 0x15E0 + k * 4, VObject *) == *e) {
         AT(items, 0x15E0 + k * 4, VObject *) = NULL;
@@ -382,7 +382,7 @@ void Items_Unequip(u8 *items, u8 l, u8 i) {
 /* 0x002606E0 */
 s32 Items_EquipState(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
-    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+    s32 k = *e == NULL ? -1 : kItemKindSlot[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
     VObject *eq;
 
     if (k < 0) {

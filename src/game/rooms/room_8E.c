@@ -65,7 +65,7 @@ s32 Room8E_Command(void *self, u32 i, s32 a, s32 b) {
 /* 0x00340AD0 */
 s32 Room8E_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00435978);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00435978);
     f32 a;
 
     switch (cmd[3]) {

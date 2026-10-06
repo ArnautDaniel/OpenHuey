@@ -43,7 +43,7 @@ typedef struct DoorDef {
     /* 0xC */ u32 flags;   /* 0x10 / 0x8: side 1 / 2 ..., 0x40 / 0x80: ... */
 } DoorDef;
 
-extern DoorDef D_003DCFC0[];
+extern DoorDef kDoorDefs[];
 
 #define ROOM_EXIT_DOOR(r, room, exit) AT(r, 0x38 + (room) * 16 + (exit) * 2, u16)   /* 0x110 x 8 */
 
@@ -59,14 +59,14 @@ void Rooms_Rebuild(VObject *r) {
             ROOM_EXIT_DOOR(r, i, k) = 0xFFFF;
         }
     }
-    if (D_003DCFC0[0].room == 0xFFFF) {
+    if (kDoorDefs[0].room == 0xFFFF) {
         return;
     }
     d = 0;
     do {
         if (!VCALL(r, 0x60, s32 (*)(VObject *, s32))(r, d)) {
             for (k = 0; k < 2; k++) {
-                u8 *e = (u8 *)&D_003DCFC0[d] + k * 6;
+                u8 *e = (u8 *)&kDoorDefs[d] + k * 6;
                 u16 *slot = &ROOM_EXIT_DOOR(r, AT(e, 0, u16), e[2]);
 
                 if (*slot == 0xFFFF) {
@@ -75,7 +75,7 @@ void Rooms_Rebuild(VObject *r) {
             }
         }
         d++;
-    } while (D_003DCFC0[d].room != 0xFFFF);
+    } while (kDoorDefs[d].room != 0xFFFF);
 }
 
 /* +0x60 is door `d` closed off (bit d of the 13 saved words at +4; 400 doors)? */
@@ -153,7 +153,7 @@ s32 Rooms_DoorExit(VObject *r, u32 d, u32 room) {
     if (VCALL(r, 0x60, s32 (*)(VObject *, u32))(r, d)) {
         return 0xFF;
     }
-    def = &D_003DCFC0[d & 0xFFFF];
+    def = &kDoorDefs[d & 0xFFFF];
     if (room == def->room) {
         return def->exit;
     }
@@ -205,7 +205,7 @@ s32 Rooms_ExitSideFlag(VObject *r, u32 room, u32 exit, s32 checked) {
     if (d == 0xFFFF) {
         return -1;
     }
-    def = &D_003DCFC0[d];
+    def = &kDoorDefs[d];
     for (s = 0; s < 2; s++) {
         const u8 *side = (const u8 *)def + s * 6;
 
@@ -244,7 +244,7 @@ s32 Rooms_ExitDoorFlags(VObject *r, s32 room, s32 exit) {
     return VCALL(r, 0x44, s32 (*)(VObject *, u32))(r, d);
 }
 
-/* ---- the door table (D_003DCFC0: two sides {room, exit, tri at +4} 6 bytes apart, flags +0xC)
+/* ---- the door table (kDoorDefs: two sides {room, exit, tri at +4} 6 bytes apart, flags +0xC)
  * and the room table (D_003D8BC0: per room 8 exits {3 triangles, camera area}, 0x40 bytes) ---- */
 
 extern u8 D_003D8BC0[];
@@ -276,10 +276,10 @@ s32 Rooms_OtherExit(VObject *r, u32 room, u32 exit) {
         return 0xFF;
     }
     for (s = 0; s < 2; s++) {
-        const u8 *side = DOOR_SIDE(&D_003DCFC0[d], s);
+        const u8 *side = DOOR_SIDE(&kDoorDefs[d], s);
 
         if (AT(side, 0, u16) == room && side[2] == exit) {
-            return DOOR_SIDE(&D_003DCFC0[d], s ^ 1)[2];
+            return DOOR_SIDE(&kDoorDefs[d], s ^ 1)[2];
         }
     }
     return 0xFF;
@@ -297,10 +297,10 @@ s32 Rooms_OtherRoom(VObject *r, u32 room, u32 exit) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        const u8 *side = DOOR_SIDE(&D_003DCFC0[d], s);
+        const u8 *side = DOOR_SIDE(&kDoorDefs[d], s);
 
         if (AT(side, 0, u16) == room && side[2] == exit) {
-            return AT(DOOR_SIDE(&D_003DCFC0[d], s ^ 1), 0, u16);
+            return AT(DOOR_SIDE(&kDoorDefs[d], s ^ 1), 0, u16);
         }
     }
     return -1;
@@ -315,8 +315,8 @@ s32 Rooms_DoorLeadsTo(VObject *r, u32 d, u32 room) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        if (AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s), 0, u16) == room) {
-            return AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s ^ 1), 0, u16);
+        if (AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s), 0, u16) == room) {
+            return AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s ^ 1), 0, u16);
         }
     }
     return -1;
@@ -388,8 +388,8 @@ s32 Rooms_DoorTri(VObject *r, u32 d, u32 room) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        if (AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s), 0, u16) == room) {
-            return AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s), 4, s16);
+        if (AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s), 0, u16) == room) {
+            return AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s), 4, s16);
         }
     }
     return -1;
@@ -401,7 +401,7 @@ s32 Rooms_DoorFlags(VObject *r, u32 d) {
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
         return 0xFF;
     }
-    return (u8)D_003DCFC0[d & 0xFFFF].flags;
+    return (u8)kDoorDefs[d & 0xFFFF].flags;
 }
 
 /* +0x4C whether exit `exit` of `room` has its side's flag (side 1: 2, side 2: 4) */
@@ -416,10 +416,10 @@ s32 Rooms_ExitHasSideFlag(VObject *r, u32 room, u32 exit) {
         return 0;
     }
     for (s = 0; s < 2; s++) {
-        const u8 *side = DOOR_SIDE(&D_003DCFC0[d], s);
+        const u8 *side = DOOR_SIDE(&kDoorDefs[d], s);
 
         if (AT(side, 0, u16) == room && side[2] == exit &&
-            (D_003DCFC0[d].flags & (s == 0 ? 2 : 4))) {
+            (kDoorDefs[d].flags & (s == 0 ? 2 : 4))) {
             return 1;
         }
     }
@@ -446,8 +446,8 @@ s32 Rooms_DoorFromSide(VObject *r, u32 d, u32 room, s32 checked) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        if (AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s), 0, u16) == room &&
-            (v = side_flag(D_003DCFC0[d & 0xFFFF].flags, s, checked, 0x10, 0x40, 0x8, 0x80)) != -2) {
+        if (AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s), 0, u16) == room &&
+            (v = side_flag(kDoorDefs[d & 0xFFFF].flags, s, checked, 0x10, 0x40, 0x8, 0x80)) != -2) {
             return v;
         }
     }
@@ -466,10 +466,10 @@ s32 Rooms_ExitFromOther(VObject *r, u32 room, u32 exit, s32 checked) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        const u8 *side = DOOR_SIDE(&D_003DCFC0[d], s);
+        const u8 *side = DOOR_SIDE(&kDoorDefs[d], s);
 
         if (AT(side, 0, u16) == room && side[2] == exit &&
-            (v = side_flag(D_003DCFC0[d].flags, s, checked, 0x8, 0x80, 0x10, 0x40)) != -2) {
+            (v = side_flag(kDoorDefs[d].flags, s, checked, 0x8, 0x80, 0x10, 0x40)) != -2) {
             return v;
         }
     }
@@ -485,8 +485,8 @@ s32 Rooms_DoorFromOther(VObject *r, u32 d, u32 room, s32 checked) {
         return -1;
     }
     for (s = 0; s < 2; s++) {
-        if (AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s), 0, u16) == room &&
-            (v = side_flag(D_003DCFC0[d & 0xFFFF].flags, s, checked, 0x8, 0x80, 0x10, 0x40)) != -2) {
+        if (AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s), 0, u16) == room &&
+            (v = side_flag(kDoorDefs[d & 0xFFFF].flags, s, checked, 0x8, 0x80, 0x10, 0x40)) != -2) {
             return v;
         }
     }
@@ -496,7 +496,7 @@ s32 Rooms_DoorFromOther(VObject *r, u32 d, u32 room, s32 checked) {
 /* +0x6C the room of door d's side s */
 /* 0x0021B270 */
 u32 Rooms_DoorSideRoom(VObject *r, u32 d, u32 s) {
-    return AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s & 0xFF), 0, u16);
+    return AT(DOOR_SIDE(&kDoorDefs[d & 0xFFFF], s & 0xFF), 0, u16);
 }
 
 /* +0x70 whether the exit leads back into the same room */
@@ -1198,7 +1198,7 @@ void Obstacle_Placed(u8 *o) {
  * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
 
 extern void *Obstacles_vtable[], *D_0046C380[];
-extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
+extern VObject *gRoomObjects;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
 extern void Obstacle_UnmarkRing(u8 *o, const f32 *dir);
@@ -1214,7 +1214,7 @@ static u8 *obstacle_model(const char *base, u32 n) {
         name[k] = base[k];
     }
     name[5] += n;
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    return VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
 }
 
 /* an obstacle's destructor */

@@ -41,7 +41,7 @@ static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
 
 /* ---- the hit effect (0xE60 bytes, vtable 0x470F30, its part at +0xC10) the stalkers and Hewie
    leave where a blow lands ---- */
-extern void *D_00470F30[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
+extern void *BloodSpray_vtable[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
 
 typedef struct {
     f32 pos[4];
@@ -50,7 +50,7 @@ typedef struct {
 } HitEffectParams;
 
 static inline void HitEffect_Init(void **obj) {
-    obj[0] = D_00470F30;
+    obj[0] = BloodSpray_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;
@@ -62,23 +62,23 @@ static inline void HitEffect_Spawn(HitEffectParams *hp) {
     EffectMgr_Start(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
 }
 
-/* ---- the drop splash (0xF70 bytes, vtable D_004727C0; creature.c): spawned by the dripping
+/* ---- the drop splash (0xF70 bytes, vtable StrandSplash_vtable; creature.c): spawned by the dripping
    strand and by the kind-1 thing (placed.c) with { s32 colour 0..127 x3; f32 pos[3]; f32 size } ---- */
-extern void *D_004727C0[];
+extern void *StrandSplash_vtable[];
 
 static inline void DropSplash_Init(void **obj) {
-    obj[0] = D_004727C0;
+    obj[0] = StrandSplash_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
-/* ---- the burst (0xFD0 bytes, vtable D_00474FB0; two quad drawers) a kind-2 thing or a shoved
+/* ---- the burst (0xFD0 bytes, vtable ThingBurst_vtable; two quad drawers) a kind-2 thing or a shoved
    character gives off, spawned with the position ---- */
-extern void *D_00474FB0[];
+extern void *ThingBurst_vtable[];
 
 static inline void ShoveBurst_Init(void **obj) {
-    obj[0] = D_00474FB0;
+    obj[0] = ThingBurst_vtable;
     obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
     obj[0xC10 / 4] = QuadDrawer_vtable;

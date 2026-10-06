@@ -4,9 +4,9 @@
 /* The controller state the game reads (written each frame by the pad code, src/game/pad.c). */
 #include "common.h"
 
-extern u32 D_0047E374;   /* pad buttons held */
-extern u32 D_0047E37C;   /* pad buttons pressed this frame */
-extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
+extern u32 gPadHeld;   /* pad buttons held */
+extern u32 gPadPressed;   /* pad buttons pressed this frame */
+extern u32 gMenuPressed;   /* menu buttons pressed this frame (MENU_*) */
 
 /* pad buttons (PS2 order) */
 #define PAD_SELECT   0x0001

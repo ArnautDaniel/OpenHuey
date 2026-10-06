@@ -34,7 +34,7 @@
 #include "libc.h"
 #include "msl.h"
 
-extern VObject *D_00456DF0;
+extern VObject *gStageMusic;
 extern void *PoolEntry_vtable[];      /* a pool entry */
 
 void SubScreen_StateItems(SubScreen *s);
@@ -161,11 +161,11 @@ void SubScreen_Start(SubScreen *s) {
     ptmf_set_fn(&s->draw, SubScreen_DrawLoadWait);
 }
 
-/* the master volume (0..1): sound effects, voices (D_00456DF0), the movie, the music */
+/* the master volume (0..1): sound effects, voices (gStageMusic), the movie, the music */
 static void opt_apply_volume(VObject *snd, f32 vol) {
     VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, vol);
-    if (D_00456DF0 != NULL) {
-        VCALL(D_00456DF0, 0x20, void (*)(VObject *, f32))(D_00456DF0, vol);
+    if (gStageMusic != NULL) {
+        VCALL(gStageMusic, 0x20, void (*)(VObject *, f32))(gStageMusic, vol);
     }
     if (gMovie != NULL) {
         f32 *v = &AT(gMovie, 0x1D0, f32);
@@ -215,7 +215,7 @@ void SubScreen_ApplyOptions(VObject *s) {
 }
 
 extern u16 D_0044B5E0[][6][2];   /* per controller layout: 6 x (button, its name's message) */
-extern u8 D_0047E3C0[];          /* button mapping (+0xA: the six configurable actions) */
+extern u8 kButtonMap[];          /* button mapping (+0xA: the six configurable actions) */
 extern u8 D_0047B150[6];         /* the name slot of each action */
 
 /* +0x34 apply controller layout `type`: map the six actions and name their buttons */
@@ -223,7 +223,7 @@ void SubScreen_SetLayout(SubScreen *s, s32 type) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
-        D_0047E3C0[0xA + i] = D_0044B5E0[type][i][0];
+        kButtonMap[0xA + i] = D_0044B5E0[type][i][0];
         Msg_SetName(&s->ask, D_0047B150[i], D_0044B5E0[type][i][1]);
     }
 }
@@ -510,8 +510,8 @@ void SubScreen_DrawLoadWait(SubScreen *s) {
     SubScreen_Open(s);
 }
 
-extern s8 D_0044C120[][4];       /* per screen kind: up to 4 panels to draw while fading */
-extern u8 D_0047B350;
+extern s8 kSubScreenFadePanels[][4];       /* per screen kind: up to 4 panels to draw while fading */
+extern u8 gLanguage;
 extern void *Overlay_vtable[];       /* overlay vtable */
 extern void *Helper469D00_vtable[];       /* its base */
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
@@ -561,7 +561,7 @@ void SubScreen_DrawPart(void *s, s32 x, s32 y, s32 part, s32 alpha, s32 top);
 #endif
 
 /* the fade: a black overlay over the menu for screens 0x80.., else the screen's panels
- * (D_0044C120) drawn at the fade's alpha */
+ * (kSubScreenFadePanels) drawn at the fade's alpha */
 static void sub_draw_fade(SubScreen *s) {
     u8 kind;
 
@@ -582,7 +582,7 @@ static void sub_draw_fade(SubScreen *s) {
         u8 alpha = s->fade;
 
         if (alpha != 0 && kind != 0xFF) {
-            s8 *panel = D_0044C120[kind & 0x7F];
+            s8 *panel = kSubScreenFadePanels[kind & 0x7F];
             s32 i;
 
             for (i = 0; i < 4; i++, panel++) {
@@ -609,8 +609,8 @@ static void sub_set_volume(SubScreen *s, f32 vol) {
         AT(bgm, 0x114, f32) = 1.0f;
     }
     Bgm_ApplyVolume((Bgm *)bgm);
-    if (D_00456DF0 != NULL) {
-        VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, vol);
+    if (gStageMusic != NULL) {
+        VCALL(gStageMusic, 0x44, void (*)(VObject *, f32))(gStageMusic, vol);
     }
 }
 
@@ -629,7 +629,7 @@ void SubScreen_DrawFadeIn(SubScreen *s) {
             if (s->mode != 0) {
                 VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
             }
-            D_0047B350 = 2;
+            gLanguage = 2;
             s->fadeStep = -0x20;
             ptmf_set_fn(&s->draw, SubScreen_DrawFadeFromBlack);
         }
@@ -694,38 +694,38 @@ void Options_StateList(SubScreen *s) {
     };
 
     if (!s->fading) {
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             if (s->optCursor < 5) {
                 ptmf_set_fn(&s->state, sEditors[s->optCursor]);
             }
             Sound_PlaySE(SE_DECIDE);
-        } else if (D_0047E36C & MENU_UP) {
+        } else if (gMenuPressed & MENU_UP) {
             if (s->optCursor != 0) {
                 s->optCursor--;
             } else {
                 s->optCursor = 4;
             }
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_DOWN) {
+        } else if (gMenuPressed & MENU_DOWN) {
             s->optCursor++;
             if (s->optCursor >= 5) {
                 s->optCursor = 0;
             }
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_DEFAULT) {
+        } else if (gMenuPressed & MENU_DEFAULT) {
             Task_Open(&s->ask, 0x84);
             ptmf_set_fn(&s->state, Options_StateDefaults);
             Sound_PlaySE(SE_DECIDE);
-        } else if ((D_0047E36C & MENU_NEXT) && sub_ingame_menu(s)) {
+        } else if ((gMenuPressed & MENU_NEXT) && sub_ingame_menu(s)) {
             s->unkA8C50 = 0;
             ptmf_set_fn(&s->state, SubScreen_StateItems);
             ptmf_set_fn(&s->resume, SubScreen_StateItems);
             Sound_PlaySE(SE_PAGE);
-        } else if ((D_0047E36C & MENU_PREV) && sub_ingame_menu(s)) {
+        } else if ((gMenuPressed & MENU_PREV) && sub_ingame_menu(s)) {
             ptmf_set_fn(&s->state, SubScreen_StateFiles);
             ptmf_set_fn(&s->resume, SubScreen_StateFiles);
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             s->close = 1;
         }
     }
@@ -787,7 +787,7 @@ void Options_Draw(SubScreen *s, s32 editing) {
     }
     kind = s->kind;
     if (kind != 0xFF) {
-        s8 *panel = D_0044C120[kind & 0x7F];
+        s8 *panel = kSubScreenFadePanels[kind & 0x7F];
 
         for (i = 0; i < 4; i++, panel++) {
             if (*panel < 0) {
@@ -894,7 +894,7 @@ void SubScreen_DrawFadeOut(SubScreen *s) {
             sub_free_vram();
             sub_load(s, sSubBack, s->pageTex);
         }
-        D_0047B350 = 1;
+        gLanguage = 1;
         s->showBehind = 1;
         s->fade = 0x80;
         s->fadeStep = -0x10;
@@ -979,7 +979,7 @@ static void opt_editor_draw(SubScreen *s, s32 xl, s32 xr, s32 y) {
 
 /* in-game menu button: closes the editor like cancel */
 static s32 opt_cancelled(void) {
-    return (D_0047E36C & MENU_CANCEL) || (gProgress != NULL && Progress_TestFlag(gProgress, 4));
+    return (gMenuPressed & MENU_CANCEL) || (gProgress != NULL && Progress_TestFlag(gProgress, 4));
 }
 
 /* leave an editor: back to the list */
@@ -994,21 +994,21 @@ void Options_StateLayout(SubScreen *s) {
     s8 *opt = (s8 *)gSystemData + 0x30;
 
     if (!s->fading) {
-        if (D_0047E36C & MENU_LEFT) {
+        if (gMenuPressed & MENU_LEFT) {
             if (s->opt[6] != 0) {
                 s->opt[6]--;
             } else {
                 s->opt[6] = 3;
             }
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_RIGHT) {
+        } else if (gMenuPressed & MENU_RIGHT) {
             s->opt[6]++;
             if (s->opt[6] >= 4) {
                 s->opt[6] = 0;
             }
             Sound_PlaySE(SE_CURSOR);
         }
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             opt[6] = s->opt[6];
             VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, s->opt[6]);
             opt_back(s, 0x2B);
@@ -1029,7 +1029,7 @@ void Options_StateVibration(SubScreen *s) {
     VObject *o;
 
     if (!s->fading) {
-        if ((D_0047E36C & MENU_LEFT) || (D_0047E36C & MENU_RIGHT)) {
+        if ((gMenuPressed & MENU_LEFT) || (gMenuPressed & MENU_RIGHT)) {
             o = gRumble;
             if (s->opt[4] == 1) {
                 s->opt[4] = 0;
@@ -1044,7 +1044,7 @@ void Options_StateVibration(SubScreen *s) {
             }
             Sound_PlaySE(SE_CURSOR);
         }
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             o = gRumble;
             opt[4] = s->opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
@@ -1069,16 +1069,16 @@ void Options_StateSound(SubScreen *s) {
     s8 *opt = (s8 *)gSystemData + 0x30;
 
     if (!s->fading) {
-        if (D_0047E36C & MENU_LEFT) {
+        if (gMenuPressed & MENU_LEFT) {
             s->opt[0] = s->opt[0] == 0 ? 2 : s->opt[0] == 1 ? 0 : 1;
             SND_OUTPUT(gSound, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_RIGHT) {
+        } else if (gMenuPressed & MENU_RIGHT) {
             s->opt[0] = s->opt[0] == 0 ? 1 : s->opt[0] == 1 ? 2 : 0;
             SND_OUTPUT(gSound, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
         }
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             opt[0] = s->opt[0];
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
@@ -1097,7 +1097,7 @@ void Options_StateVolume(SubScreen *s) {
     f32 v;
 
     if (!s->fading) {
-        if (D_0047E36C & MENU_LEFT) {
+        if (gMenuPressed & MENU_LEFT) {
             if (!(s->optVolume < 0.0f)) {
                 s->optVolume = v = s->optVolume - 0.015625f;
                 if (v < 0.0f) {
@@ -1107,7 +1107,7 @@ void Options_StateVolume(SubScreen *s) {
                 VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, s->optVolume);
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
-        } else if (D_0047E36C & MENU_RIGHT) {
+        } else if (gMenuPressed & MENU_RIGHT) {
             if (s->optVolume < 1.0f) {
                 s->optVolume = v = s->optVolume + 0.015625f;
                 if (!(v < 1.0f)) {
@@ -1118,7 +1118,7 @@ void Options_StateVolume(SubScreen *s) {
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
         }
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             snd = gSound;
             v = s->optVolume;
             AT(opt, 8, f32) = v;
@@ -1144,7 +1144,7 @@ void Options_StatePosition(SubScreen *s) {
     s32 a;
 
     if (!s->fading) {
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
 
         if (pad & MENU_UP) {
             if (s->opt[3] >= -0x1F) {
@@ -1159,7 +1159,7 @@ void Options_StatePosition(SubScreen *s) {
                 Sound_PlaySE(SE_CURSOR);
             }
         }
-        pad = D_0047E36C;
+        pad = gMenuPressed;
         if (pad & MENU_LEFT) {
             if (s->opt[2] >= -0x1F) {
                 s->opt[2]--;
@@ -1173,7 +1173,7 @@ void Options_StatePosition(SubScreen *s) {
                 Sound_PlaySE(SE_CURSOR);
             }
         }
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             opt[2] = s->opt[2];
             opt[3] = s->opt[3];
             opt_back(s, 0x2B);
@@ -1338,7 +1338,7 @@ void SubScreen_StateItems(SubScreen *s) {
     if (!s->fading) {
         u32 n = Items_FirstFree(items, SUB_LIST(s));
         s32 last = n != 0 ? (s32)(n - 1) / 16 : 0;
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
         u8 *cur = &SUB_CURSOR(s);
         s32 c = *cur;
         u8 old = c;
@@ -1376,7 +1376,7 @@ void SubScreen_StateItems(SubScreen *s) {
         } else if (SUB_LIST(s) == 1 && (pad & MENU_DEFAULT)) {
             Items_Sort(items, SUB_LIST(s));
             Sound_PlaySE(SE_DECIDE);
-        } else if (D_0047E36C & MENU_NEXT) {
+        } else if (gMenuPressed & MENU_NEXT) {
             if (SUB_LIST(s) < 2) {
                 SUB_LIST(s)++;
                 old = SUB_CURSOR(s);
@@ -1386,7 +1386,7 @@ void SubScreen_StateItems(SubScreen *s) {
                 ptmf_set(&s->resume, &SubScreen_StateMap_ptmf2);
             }
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_PREV) {
+        } else if (gMenuPressed & MENU_PREV) {
             if (SUB_LIST(s) != 0) {
                 SUB_LIST(s)--;
                 old = SUB_CURSOR(s);
@@ -1395,7 +1395,7 @@ void SubScreen_StateItems(SubScreen *s) {
                 ptmf_set(&s->resume, &Options_StateList_ptmf2);
             }
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             s->close = 1;
         }
         if (old != SUB_CURSOR(s)) {
@@ -1408,7 +1408,7 @@ void SubScreen_StateItems(SubScreen *s) {
         s->kind = SUB_LIST(s) == 1 ? 8 : 9;
     }
     if (s->kind != 0xFF) {
-        s8 *panel = D_0044C120[s->kind & 0x7F];
+        s8 *panel = kSubScreenFadePanels[s->kind & 0x7F];
         s32 i;
 
         for (i = 0; i < 4 && panel[i] >= 0; i++) {
@@ -1420,8 +1420,8 @@ void SubScreen_StateItems(SubScreen *s) {
                   0x10, 0x15);
 }
 
-extern const char D_00463FD8[];   /* "%2d/%2d" */
-extern const char D_00464218[];   /* "%s" */
+extern const char kFmtSlash[];   /* "%2d/%2d" */
+extern const char kFmtString[];   /* "%s" */
 extern const char D_00464230[];   /* "x%2d" */
 
 /* The item grid of the list shown: the page (16 places, two columns of 8 down the screen) the
@@ -1439,7 +1439,7 @@ void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
     if (last < (s32)(SUB_CURSOR(s) >> 4)) {
         SUB_CURSOR(s) = Items_FirstFree(items, SUB_LIST(s)) - 1;
     }
-    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, (SUB_CURSOR(s) >> 4) + 1, last + 1);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, kFmtSlash, (SUB_CURSOR(s) >> 4) + 1, last + 1);
     if (last != 0) {
         s32 b = 0x80 - ((s->frame << 2) & 0xFF);
         u8 alpha = b > 0 ? b : -b;
@@ -1465,7 +1465,7 @@ void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
                     name[j] = w[j];
                 }
                 name[8] = 0;
-                Msg_PrintfParam(&s->text, 3, D_00464218, name);
+                Msg_PrintfParam(&s->text, 3, kFmtString, name);
             }
             Task_ShowText(&s->text, x + 0x46, y + 0x64, color, Task_MessageText(&s->text, (id + 0x8100) & 0xFFFF), 0x80,
                           0x30, 0x10, 0x15);
@@ -1487,7 +1487,7 @@ extern const PTMF SubScreen_StateFiles_ptmf, SubScreen_StateFiles_ptmf2, SubScre
 /* draw the screen kind `kind`'s panels */
 static inline void sub_panels(SubScreen *s) {
     if (s->kind != 0xFF) {
-        s8 *panel = D_0044C120[s->kind & 0x7F];
+        s8 *panel = kSubScreenFadePanels[s->kind & 0x7F];
         s32 i;
 
         for (i = 0; i < 4 && panel[i] >= 0; i++) {
@@ -1502,16 +1502,16 @@ static inline void sub_panels(SubScreen *s) {
 /* 0x00394670 */
 void SubScreen_StateMap(SubScreen *s) {
     if (!s->fading) {
-        if (D_0047E36C & MENU_NEXT) {
+        if (gMenuPressed & MENU_NEXT) {
             ptmf_set(&s->state, &SubScreen_StateFiles_ptmf);
             ptmf_set(&s->resume, &SubScreen_StateFiles_ptmf2);
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_PREV) {
+        } else if (gMenuPressed & MENU_PREV) {
             SUB_LIST(s) = 2;
             ptmf_set(&s->state, &SubScreen_StateItems_ptmf11);
             ptmf_set(&s->resume, &SubScreen_StateItems_ptmf12);
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             s->close = 1;
         }
     }
@@ -1547,28 +1547,28 @@ void SubScreen_StateFiles(SubScreen *s) {
     if (!s->fading) {
         u8 old = SUB_FILE_PAGE(s);
 
-        if (D_0047E36C & MENU_LEFT) {
+        if (gMenuPressed & MENU_LEFT) {
             if (old != 0) {
                 SUB_FILE_PAGE(s)--;
             } else {
                 SUB_FILE_PAGE(s) = last;
             }
-        } else if (D_0047E36C & MENU_RIGHT) {
+        } else if (gMenuPressed & MENU_RIGHT) {
             if (old < last) {
                 SUB_FILE_PAGE(s)++;
             } else {
                 SUB_FILE_PAGE(s) = 0;
             }
-        } else if (D_0047E36C & MENU_NEXT) {
+        } else if (gMenuPressed & MENU_NEXT) {
             ptmf_set(&s->state, &Options_StateList_ptmf3);
             ptmf_set(&s->resume, &Options_StateList_ptmf4);
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_PREV) {
+        } else if (gMenuPressed & MENU_PREV) {
             Map_BackToPlayer(s->textObj);
             ptmf_set(&s->state, &SubScreen_StateMap_ptmf3);
             ptmf_set(&s->resume, &SubScreen_StateMap_ptmf4);
             Sound_PlaySE(SE_PAGE);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             s->close = 1;
         }
         if (old != SUB_FILE_PAGE(s)) {
@@ -1577,7 +1577,7 @@ void SubScreen_StateFiles(SubScreen *s) {
     }
     s->kind = 2;
     sub_panels(s);
-    Task_Printf(&s->text, 0x186, 0x186, 0x80, D_00463FD8, SUB_FILE_PAGE(s) + 1, last + 1);
+    Task_Printf(&s->text, 0x186, 0x186, 0x80, kFmtSlash, SUB_FILE_PAGE(s) + 1, last + 1);
     if (last != 0) {
         s32 b = 0x80 - ((s->frame << 2) & 0xFF);
         u8 alpha = b > 0 ? b : -b;
@@ -1712,7 +1712,7 @@ s32 SubScreen_ExtraUnlocked(SubScreen *s, u8 k) {
     return (f24 & 0x1) != 0;
 }
 
-extern u16 D_0044C080[][4];   /* per entry: its unlock flag (system data +0x24 bits), .., .., the
+extern u16 kExtraUnlocks[][4];   /* per entry: its unlock flag (system data +0x24 bits), .., .., the
                                  message to follow (0xFFFF none) */
 extern const PTMF SubScreen_StateQuestion_ptmf, SubScreen_StateEntries_ptmf;
 
@@ -1723,7 +1723,7 @@ void SubScreen_StateEntryQuestion(SubScreen *s) {
     SubScreen_DrawEntries(s);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
-        u16 *e = D_0044C080[SUB_PAGE(s, 0x0, u8)];
+        u16 *e = kExtraUnlocks[SUB_PAGE(s, 0x0, u8)];
 
         if ((AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
             Task_Open(&s->ask, e[3]);
@@ -1913,7 +1913,7 @@ void SubScreen_StateWordPlate(SubScreen *s) {
         word[i] = s->unkA8C58[i];
     }
     word[8] = 0;
-    Msg_PrintfParam(&s->text, 3, D_00464218, word);
+    Msg_PrintfParam(&s->text, 3, kFmtString, word);
     if (AT(&s->ask, 0x10, u8) != 0) {
         Task_Run(&s->ask);
     } else {
@@ -1949,14 +1949,14 @@ void SubScreen_StateEquipAsk(SubScreen *s) {
 
 /* ---- the galleries ---- */
 
-extern s32 *D_0044BE90[];   /* per entry: its motion */
+extern s32 *kGalleryMotions[];   /* per entry: its motion */
 
 #define SUB_GALLERY_MODEL(s) AT(s, 0xA8DE8, u8 *)
 #define MOTION_END(m) (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 0x20)
 
 /* the model gallery's motions: entries 3 / 4 switch the model's state (+0x2C, or +0x30 at
  * motion 0xE00); entry 5 runs on 0x800 -> 0x801 -> 0x802 as each ends; otherwise, when the
- * motion ends (unless it loops), the entry's own again (D_0044BE90; past 0x19 blended in) */
+ * motion ends (unless it loops), the entry's own again (kGalleryMotions; past 0x19 blended in) */
 /* 0x0038A740 */
 void Gallery_ModelMotions(SubScreen *s) {
     u8 *m = SUB_GALLERY_MODEL(s);
@@ -1990,9 +1990,9 @@ void Gallery_ModelMotions(SubScreen *s) {
         return;
     }
     if (k < 0x18 || k == 0x19) {
-        Motion_PlayTable(m, D_0044BE90[k][0], -1);
+        Motion_PlayTable(m, kGalleryMotions[k][0], -1);
     } else {
-        Motion_PlayWith(m, D_0044BE90[k][0], 1, -1, 5.0f);
+        Motion_PlayWith(m, kGalleryMotions[k][0], 1, -1, 5.0f);
     }
 }
 
@@ -2017,7 +2017,7 @@ void SubScreen_StateThrowAsk(SubScreen *s) {
         word[i] = s->unkA8C58[i];
     }
     word[8] = 0;
-    Msg_PrintfParam(&s->text, 3, D_00464218, word);
+    Msg_PrintfParam(&s->text, 3, kFmtString, word);
     if (AT(&s->ask, 0x10, u8) != 0) {
         Task_Run(&s->ask);
     } else if (AT(&s->ask, 0x48, u8) == 0) {
@@ -2068,7 +2068,7 @@ void SubScreen_StateRun(SubScreen *s) {
         u8 alpha = s->fade;
 
         if (alpha != 0 && s->kind != 0xFF) {
-            s8 *panel = D_0044C120[s->kind & 0x7F];
+            s8 *panel = kSubScreenFadePanels[s->kind & 0x7F];
             s32 i;
 
             for (i = 0; i < 4 && panel[i] >= 0; i++) {
@@ -2154,13 +2154,13 @@ void Results_Setup(SubScreen *s) {
 
 /* ---- the entry list (the file's index) ---- */
 
-extern u8 D_0047B350;           /* the language */
+extern u8 gLanguage;           /* the language */
 extern u8 D_0047B180[][2];      /* per group of 8: its first entry and the end */
 extern const char D_00463FD0[];
 
 /* the entry list (screen kind 0x8F): the language set to 1, the two headings, the entries of
  * the current one's group (page[0] / 8) with their numbers and titles ("???" until unlocked,
- * D_0044C080's flag), the current one highlighted; the group number of 2 */
+ * kExtraUnlocks's flag), the current one highlighted; the group number of 2 */
 /* 0x00385C30 */
 void SubScreen_DrawEntries(SubScreen *s) {
     u8 g;
@@ -2168,12 +2168,12 @@ void SubScreen_DrawEntries(SubScreen *s) {
 
     s->kind = 0x8F;
     sub_panels(s);
-    D_0047B350 = 1;
+    gLanguage = 1;
     Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x2B), 0x80, 0x30, 0x10, 0x15);
     g = SUB_PAGE(s, 0x0, u8) >> 3;
     for (k = D_0047B180[g][0]; k < D_0047B180[g][1]; k++) {
-        u16 *e = D_0044C080[k];
+        u16 *e = kExtraUnlocks[k];
         u8 color = k == SUB_PAGE(s, 0x0, u8) ? 0x82 : 0x80;
         s32 y = (k % 8) * 35 + 0x5E;
 
@@ -2184,20 +2184,20 @@ void SubScreen_DrawEntries(SubScreen *s) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
         }
     }
-    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 2);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, kFmtSlash, g + 1, 2);
 }
 
 /* ---- the model gallery's model ---- */
 
 extern u8 *Gallery_MakeModel(SubScreen *s, u8 k);   /* the gallery model made */
-extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
+extern f32 kGalleryCameraDistance[];      /* per entry: the camera's extra distance */
 extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
 extern const PTMF Gallery_StateModel_ptmf;
 
 /* state: the model gallery's files loading; then shown (state Gallery_StateModel_ptmf): the model made
  * (+0x4D8 / +0x4D9 set), the camera taken (+0xA8E00 / +0xA8E10) and aimed (26, 0, -27,
- * distance 10 + D_0044BB70, height D_0044B9F4), entries 6..8 idling (motions 0x1F00 / 0x2000 /
- * 0x2102) and the entry's first motion (D_0044BE90; past 0x19 blended in) */
+ * distance 10 + kGalleryCameraDistance, height D_0044B9F4), entries 6..8 idling (motions 0x1F00 / 0x2000 /
+ * 0x2102) and the entry's first motion (kGalleryMotions; past 0x19 blended in) */
 /* 0x0038B900 */
 void Gallery_StateModelLoad(SubScreen *s) {
     VObject *cam;
@@ -2221,7 +2221,7 @@ void Gallery_StateModelLoad(SubScreen *s) {
     AT(s, 0xA8E24, f32) = 0.0f;
     AT(s, 0xA8E28, f32) = -27.0f;
     AT(s, 0xA8E2C, f32) = 1.0f;
-    AT(s, 0xA8E30, f32) = 10.0f + D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+    AT(s, 0xA8E30, f32) = 10.0f + kGalleryCameraDistance[SUB_PAGE(s, 0x0, u8)];
     AT(s, 0xA8E34, f32) = 0.0f;
     AT(s, 0xA8E38, f32) = D_0044B9F4[SUB_PAGE(s, 0x0, u8)][0];
     AT(s, 0xA8E3C, u8) = 1;
@@ -2234,9 +2234,9 @@ void Gallery_StateModelLoad(SubScreen *s) {
     k = SUB_PAGE(s, 0x0, u8);
     m = SUB_GALLERY_MODEL(s);
     if (k < 0x18 || k == 0x19) {
-        Motion_PlayTable(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+        Motion_PlayTable(m, kGalleryMotions[k][SUB_PAGE(s, 0x1, u8)], -1);
     } else {
-        Motion_PlayWith(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+        Motion_PlayWith(m, kGalleryMotions[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
     }
     SUB_PAGE(s, 0x2, u8) = 0;
 }
@@ -2255,7 +2255,7 @@ void SubScreen_DrawExtras(SubScreen *s) {
 
     s->kind = 0x8C;
     sub_panels(s);
-    D_0047B350 = 1;
+    gLanguage = 1;
     Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
     base = SUB_PAGE(s, 0x0, u8) & ~7;
@@ -2275,7 +2275,7 @@ void SubScreen_DrawExtras(SubScreen *s) {
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
     x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
     Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
-    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, (base >> 3) + 1, 4);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, kFmtSlash, (base >> 3) + 1, 4);
     b = 0x80 - ((s->frame << 2) & 0xFF);
     alpha = b > 0 ? b : -b;
     SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
@@ -2306,7 +2306,7 @@ static void sub_fade_back(SubScreen *s) {
         u8 alpha = s->fade;
 
         if (alpha != 0 && s->kind != 0xFF) {
-            s8 *panel = D_0044C120[s->kind & 0x7F];
+            s8 *panel = kSubScreenFadePanels[s->kind & 0x7F];
             s32 i;
 
             for (i = 0; i < 4 && panel[i] >= 0; i++) {
@@ -2316,11 +2316,11 @@ static void sub_fade_back(SubScreen *s) {
     }
 }
 
-/* the music's (+0x94) and the voices' (D_00456DF0 +0x44) level `f` 0..1 */
+/* the music's (+0x94) and the voices' (gStageMusic +0x44) level `f` 0..1 */
 static void sub_fade_sound(f32 f) {
     VCALL(gSound, 0x94, void (*)(VObject *, u32))(gSound, (u8)(u32)(255.0f * f));
-    if (D_00456DF0 != NULL) {
-        VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, f);
+    if (gStageMusic != NULL) {
+        VCALL(gStageMusic, 0x44, void (*)(VObject *, f32))(gStageMusic, f);
     }
 }
 
@@ -2410,7 +2410,7 @@ void SubScreen_DrawOpening(SubScreen *s) {
 extern const PTMF SubScreen_StateEntryQuestion_ptmf;
 
 /* state: the entry list - up / down through the group (0..7, 8..10, round), left / right /
- * next / previous to the other group, confirm opens the entry (D_0044C080's message, state
+ * next / previous to the other group, confirm opens the entry (kExtraUnlocks's message, state
  * SubScreen_StateEntryQuestion_ptmf), cancel closes; then the list, the help line and the arrows */
 /* 0x00386150 */
 void SubScreen_StateEntries(SubScreen *s) {
@@ -2418,11 +2418,11 @@ void SubScreen_StateEntries(SubScreen *s) {
     u8 alpha;
 
     if (!s->fading) {
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
         u8 *k = &SUB_PAGE(s, 0x0, u8);
 
         if (pad & MENU_CONFIRM) {
-            Task_Open(&s->ask, D_0044C080[*k][2]);
+            Task_Open(&s->ask, kExtraUnlocks[*k][2]);
             ptmf_set(&s->state, &SubScreen_StateEntryQuestion_ptmf);
             Sound_PlaySE(SE_DECIDE);
         } else if (pad & MENU_UP) {
@@ -2459,7 +2459,7 @@ void SubScreen_StateExtras(SubScreen *s) {
     if (!s->fading) {
         u8 *k = &SUB_PAGE(s, 0x0, u8);
         u8 base = *k & ~7;
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
 
         if (pad & MENU_UP) {
             (*k)--;
@@ -2470,7 +2470,7 @@ void SubScreen_StateExtras(SubScreen *s) {
                 *k = 0x1F;
             }
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_DOWN) {
+        } else if (gMenuPressed & MENU_DOWN) {
             (*k)++;
             if (base + 7 < *k) {
                 *k = base;
@@ -2479,23 +2479,23 @@ void SubScreen_StateExtras(SubScreen *s) {
                 *k = base;
             }
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & (MENU_LEFT | MENU_PREV)) {
+        } else if (gMenuPressed & (MENU_LEFT | MENU_PREV)) {
             *k -= 8;
             if ((s8)*k < 0) {
                 *k = 0x1F;
             }
             *k &= ~7;
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & (MENU_RIGHT | MENU_NEXT)) {
+        } else if (gMenuPressed & (MENU_RIGHT | MENU_NEXT)) {
             *k += 8;
             if (*k >= 0x20) {
                 *k = 0;
             }
             *k &= ~7;
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             Progress_SetFlag(gProgress, 4);
-        } else if (D_0047E36C & MENU_CONFIRM) {
+        } else if (gMenuPressed & MENU_CONFIRM) {
             if (*k < 0x20 && SubScreen_ExtraUnlocked(s, *k)) {
                 s->fade = 0;
                 s->fadeStep = 0x10;
@@ -2593,7 +2593,7 @@ void Gallery_DrawArtList(SubScreen *s) {
 
     s->kind = 0x8E;
     sub_panels(s);
-    D_0047B350 = 1;
+    gLanguage = 1;
     Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
     g = SUB_PAGE(s, 0x0, u8) >> 3;
@@ -2613,7 +2613,7 @@ void Gallery_DrawArtList(SubScreen *s) {
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
     x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
     Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
-    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 6);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, kFmtSlash, g + 1, 6);
     b = 0x80 - ((s->frame << 2) & 0xFF);
     alpha = b > 0 ? b : -b;
     SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
@@ -2622,7 +2622,7 @@ void Gallery_DrawArtList(SubScreen *s) {
 
 /* ---- the model gallery's camera ---- */
 
-extern f32 D_0047E3A0, D_0047E3A8, D_0047E3B8;   /* the sticks (-1..1) */
+extern f32 gLeftStick, gStickVertical, D_0047E3B8;   /* the sticks (-1..1) */
 extern f32 D_0044B9F0[][3], D_0044B9F8[][3];     /* per entry: the height's lowest / highest */
 
 #define GALLERY_DIST(s) AT(s, 0xA8E30, f32)
@@ -2650,16 +2650,16 @@ void Gallery_ModelCamera(SubScreen *s) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
     f32 d;
 
-    if (stick_out(D_0047E3A8, &d)) {
+    if (stick_out(gStickVertical, &d)) {
         GALLERY_DIST(s) = GALLERY_DIST(s) + d;
-        if (GALLERY_DIST(s) < D_0044BB70[SUB_PAGE(s, 0x0, u8)]) {
-            GALLERY_DIST(s) = D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+        if (GALLERY_DIST(s) < kGalleryCameraDistance[SUB_PAGE(s, 0x0, u8)]) {
+            GALLERY_DIST(s) = kGalleryCameraDistance[SUB_PAGE(s, 0x0, u8)];
         }
         if (!(GALLERY_DIST(s) <= 60.0f)) {
             GALLERY_DIST(s) = 60.0f;
         }
     }
-    if (stick_out(D_0047E3A0, &d)) {
+    if (stick_out(gLeftStick, &d)) {
         GALLERY_TURN(s) = GALLERY_TURN(s) + d * kStep.f;
         while (GALLERY_TURN(s) < kNegPi.f) {
             GALLERY_TURN(s) += kTwoPi.f;
@@ -2677,12 +2677,12 @@ void Gallery_ModelCamera(SubScreen *s) {
             GALLERY_HEIGHT(s) = D_0044B9F0[SUB_PAGE(s, 0x0, u8)][0];
         }
     }
-    if (D_0047E37C & PAD_L3) {
+    if (gPadPressed & PAD_L3) {
         AT(s, 0xA8E20, f32) = 26.0f;
         AT(s, 0xA8E24, f32) = 0.0f;
         AT(s, 0xA8E28, f32) = -27.0f;
         AT(s, 0xA8E2C, f32) = 1.0f;
-        GALLERY_DIST(s) = 10.0f + D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+        GALLERY_DIST(s) = 10.0f + kGalleryCameraDistance[SUB_PAGE(s, 0x0, u8)];
         GALLERY_TURN(s) = 0.0f;
         GALLERY_HEIGHT(s) = D_0044B9F4[SUB_PAGE(s, 0x0, u8)][0];
     }
@@ -2714,7 +2714,7 @@ void Gallery_DrawMusic(SubScreen *s) {
 
     s->kind = 0x8D;
     sub_panels(s);
-    D_0047B350 = 1;
+    gLanguage = 1;
     Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
     g = SUB_PAGE(s, 0x0, u8) >> 3;
@@ -2738,7 +2738,7 @@ void Gallery_DrawMusic(SubScreen *s) {
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x1C8), 0x80, 0x30, 0x10, 0x15);
     msg = Task_MessageText(&s->text, SUB_MUSIC_PLAYING(s) == 0xFF ? 0x13 : 0x1C7);
     Task_ShowText(&s->text, Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56, 0x186, 0x80, msg, 0x80, 0x30, 0x10, 0x15);
-    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 4);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, kFmtSlash, g + 1, 4);
     b = 0x80 - ((s->frame << 2) & 0xFF);
     alpha = b > 0 ? b : -b;
     SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
@@ -2753,7 +2753,7 @@ void Gallery_DrawMusic(SubScreen *s) {
 void Gallery_StateMusic(SubScreen *s) {
     if (!s->fading) {
         u8 *k = &SUB_PAGE(s, 0x0, u8);
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
 
         if (pad & MENU_CONFIRM) {
             if (music_unlocked(*k)) {
@@ -2977,7 +2977,7 @@ void Gallery_StateArtList(SubScreen *s) {
             SUB_PAGE(s, 0x3, u8) = 0;
         }
         SUB_PAGE(s, 0x1, u8) = *k;
-        pad = D_0047E36C;
+        pad = gMenuPressed;
         if (pad & MENU_CONFIRM) {
             u16 f = D_0044BFE0[*k];
 
@@ -3025,12 +3025,12 @@ void Gallery_StateArtList(SubScreen *s) {
 
 /* ---- the clear results ---- */
 
-extern VObject *D_00456DE8;   /* the results' pictures (+0x10: x, y, part, alpha) */
+extern VObject *gAvoidPrompt;   /* the results' pictures (+0x10: x, y, part, alpha) */
 extern const char D_00464018[], D_00464020[], D_00464028[];   /* "1st" / "2nd" / "3rd" */
 extern const char D_00464030[], D_00464040[];                 /* "%02d:%02d", "-----" */
 
 #define RESULTS_PART(x, y, part, alpha) \
-    VCALL(D_00456DE8, 0x10, void (*)(VObject *, s32, s32, s32, s32))(D_00456DE8, x, y, part, alpha)
+    VCALL(gAvoidPrompt, 0x10, void (*)(VObject *, s32, s32, s32, s32))(gAvoidPrompt, x, y, part, alpha)
 
 /* state: the clear results - shown in steps (page[0], 30 frames each, page[1]); the "clear"
  * banner pulsing (alpha page[5] between 0x60 and 0x80); then the difficulty's three best
@@ -3096,9 +3096,9 @@ void Results_State(SubScreen *s) {
     if (SUB_PAGE(s, 0x2, u8) != 0) {
         RESULTS_PART(0x50, 0xD0, 0, 0x80);
     }
-    if (D_0047E36C & MENU_CANCEL) {
+    if (gMenuPressed & MENU_CANCEL) {
         Progress_SetFlag(p, 4);
-    } else if (D_0047E36C & MENU_CONFIRM) {
+    } else if (gMenuPressed & MENU_CONFIRM) {
         Progress_SetFlag(p, 4);
     }
 }
@@ -3232,7 +3232,7 @@ void SubScreen_StateWordMake(SubScreen *s) {
     u8 ch[2];
 
     if (!s->fading) {
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
 
             if (c == '@') {
@@ -3246,7 +3246,7 @@ void SubScreen_StateWordMake(SubScreen *s) {
                             word[i] = SUB_WORD(s)[i];
                         }
                         word[8] = 0;
-                        Msg_PrintfParam(&s->text, 3, D_00464218, word);
+                        Msg_PrintfParam(&s->text, 3, kFmtString, word);
                         p = gProgress;
                         Progress_SetFlag(p, 4);
                         if (word_golem_room(p)) {
@@ -3270,7 +3270,7 @@ void SubScreen_StateWordMake(SubScreen *s) {
                     Sound_PlaySE(SE_DECIDE);
                 }
             }
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             if (SUB_WORD_LEN(s) == 0) {
                 Progress_SetFlag(gProgress, 4);
             } else {
@@ -3281,24 +3281,24 @@ void SubScreen_StateWordMake(SubScreen *s) {
         } else {
             u8 old = SUB_WORD_CURSOR(s);
 
-            if (D_0047E37C & PAD_START) {
+            if (gPadPressed & PAD_START) {
                 SUB_WORD_CURSOR(s) = 0x27;
             }
-            if (D_0047E36C & MENU_UP) {
+            if (gMenuPressed & MENU_UP) {
                 SUB_WORD_CURSOR(s) += SUB_WORD_CURSOR(s) < 0x10 ? 0x20 : -0x10;
-            } else if (D_0047E36C & MENU_DOWN) {
+            } else if (gMenuPressed & MENU_DOWN) {
                 SUB_WORD_CURSOR(s) += SUB_WORD_CURSOR(s) < 0x20 ? 0x10 : -0x20;
             }
-            if (D_0047E36C & MENU_LEFT) {
+            if (gMenuPressed & MENU_LEFT) {
                 SUB_WORD_CURSOR(s) = word_step(SUB_WORD_CURSOR(s), 0);
-            } else if (D_0047E36C & MENU_RIGHT) {
+            } else if (gMenuPressed & MENU_RIGHT) {
                 SUB_WORD_CURSOR(s) = word_step(SUB_WORD_CURSOR(s), 1);
             }
-            if (D_0047E36C & MENU_NEXT) {
+            if (gMenuPressed & MENU_NEXT) {
                 u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
 
                 word_find(s, c == 'Z' ? '@' : c + 1);
-            } else if (D_0047E36C & MENU_PREV) {
+            } else if (gMenuPressed & MENU_PREV) {
                 u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
 
                 word_find(s, c == '@' ? 'Z' : c - 1);
@@ -3357,7 +3357,7 @@ void SubScreen_StateMovies(SubScreen *s) {
 
     if (!s->fading) {
         u8 cur = s->page[0];
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
 
         base = (cur >> 3) * 8;
         if (pad & MENU_UP) {
@@ -3415,7 +3415,7 @@ void SubScreen_StateMovies(SubScreen *s) {
 
     s->kind = 0x8B;
     sub_panels(s);
-    D_0047B350 = 1;
+    gLanguage = 1;
     Task_ShowText(t, 0x30, 0x3B, 0x80, Task_MessageText(t, 0xF), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(t, 0x58, 0x3B, 0x80, Task_MessageText(t, 0x10), 0x80, 0x30, 0x10, 0x15);
     base = (s->page[0] >> 3) * 8;
@@ -3435,7 +3435,7 @@ void SubScreen_StateMovies(SubScreen *s) {
     Task_ShowText(t, 0x46, 0x186, 0x80, Task_MessageText(t, 0x12), 0x80, 0x30, 0x10, 0x15);
     Task_ShowText(t, (u16)(Task_MessageWidth(t, 0x12, 0x10) + 0x56), 0x186, 0x80, Task_MessageText(t, 0x13), 0x80,
                   0x30, 0x10, 0x15);
-    Task_Printf(t, 0x186, 0x176, 0x80, D_00463FD8, base / 8 + 1, 0xE);
+    Task_Printf(t, 0x186, 0x176, 0x80, kFmtSlash, base / 8 + 1, 0xE);
     {
         s32 b = 0x80 - ((s->frame << 2) & 0xFF);
         u8 alpha = b > 0 ? b : -b;
@@ -3568,9 +3568,9 @@ void Costumes_State(SubScreen *s) {
     if (COST_OPEN(s) == 0) {
         u8 row = COST_ROW(s), r;
 
-        if (D_0047E36C & MENU_UP) {
+        if (gMenuPressed & MENU_UP) {
             d = -1;
-        } else if (D_0047E36C & MENU_DOWN) {
+        } else if (gMenuPressed & MENU_DOWN) {
             d = 1;
         }
         if (d != 0) {
@@ -3590,9 +3590,9 @@ void Costumes_State(SubScreen *s) {
             }
         }
     } else {
-        if (D_0047E36C & MENU_UP) {
+        if (gMenuPressed & MENU_UP) {
             d = -1;
-        } else if (D_0047E36C & MENU_DOWN) {
+        } else if (gMenuPressed & MENU_DOWN) {
             d = 1;
         }
         if (d != 0) {
@@ -3630,7 +3630,7 @@ void Costumes_State(SubScreen *s) {
         }
     }
     if (!changed) {
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
         u8 old = COST_OPEN(s);
 
         d = 0;
@@ -3651,11 +3651,11 @@ void Costumes_State(SubScreen *s) {
         }
         if (old != COST_OPEN(s)) {
             changed = 1;
-            if (D_0047E36C & MENU_CANCEL) {
+            if (gMenuPressed & MENU_CANCEL) {
                 if (COST_OPEN(s) == 0) {
                     quiet = 1;
                 }
-            } else if (D_0047E36C & MENU_CONFIRM) {
+            } else if (gMenuPressed & MENU_CONFIRM) {
                 if (old == 0) {
                     quiet = 1;
                 }
@@ -3665,12 +3665,12 @@ void Costumes_State(SubScreen *s) {
     if (changed) {
         if (!quiet) {
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             Sound_PlaySE(SE_CANCEL);
-        } else if (D_0047E36C & MENU_CONFIRM) {
+        } else if (gMenuPressed & MENU_CONFIRM) {
             Sound_PlaySE(SE_DECIDE);
         }
-    } else if ((D_0047E36C & MENU_CONFIRM) && COST_OPEN(s) != 0) {
+    } else if ((gMenuPressed & MENU_CONFIRM) && COST_OPEN(s) != 0) {
         if (COST_ROW(s) == 0) {
             COST_FIONA_SEL(s) = COST_FIONA_CUR(s);
         } else {
@@ -3680,7 +3680,7 @@ void Costumes_State(SubScreen *s) {
         COST_OPEN(s) = 0;
     }
     if (!s->fading) {
-        if ((D_0047E36C & MENU_CANCEL) && !quiet) {
+        if ((gMenuPressed & MENU_CANCEL) && !quiet) {
             if (COST_OPEN(s) == 0) {
                 if (COST_ROW(s) != 2) {
                     COST_ROW(s) = 2;
@@ -3689,7 +3689,7 @@ void Costumes_State(SubScreen *s) {
                     costume_done(s, hewie);
                 }
             }
-        } else if ((D_0047E36C & MENU_CONFIRM) && COST_OPEN(s) == 0 && COST_ROW(s) == 2) {
+        } else if ((gMenuPressed & MENU_CONFIRM) && COST_OPEN(s) == 0 && COST_ROW(s) == 2) {
             costume_done(s, hewie);
         }
     }
@@ -3763,14 +3763,14 @@ void SubScreen_StateExtrasMenu(SubScreen *s) {
     s32 i;
     u8 e;
 
-    if (D_0047E36C & MENU_UP) {
+    if (gMenuPressed & MENU_UP) {
         Sound_PlaySE(SE_CURSOR);
         if (EXTRA_CUR(s) == 0) {
             EXTRA_CUR(s) = EXTRA_COUNT(s) - 1;
         } else {
             EXTRA_CUR(s) = EXTRA_CUR(s) - 1;
         }
-    } else if (D_0047E36C & MENU_DOWN) {
+    } else if (gMenuPressed & MENU_DOWN) {
         Sound_PlaySE(SE_CURSOR);
         EXTRA_CUR(s) = EXTRA_CUR(s) + 1;
         if (EXTRA_CUR(s) == EXTRA_COUNT(s)) {
@@ -3848,11 +3848,11 @@ void SubScreen_StateExtrasMenu(SubScreen *s) {
         }
     }
     if (!s->fading) {
-        if (D_0047E36C & MENU_CANCEL) {
+        if (gMenuPressed & MENU_CANCEL) {
             Sound_PlaySE(SE_CANCEL);
             Progress_SetFlag(gProgress, 4);
             Progress_SetVar(gProgress, 0x2E, 0xFF);
-        } else if (D_0047E36C & MENU_CONFIRM) {
+        } else if (gMenuPressed & MENU_CONFIRM) {
             e = SUB_PAGE(s, EXTRA_CUR(s), u8);
             if (e >= 1 && e <= 5) {
                 Progress *p;
@@ -3884,9 +3884,9 @@ static void gallery_motion(SubScreen *s, u8 *m) {
     u8 k = SUB_PAGE(s, 0x0, u8);
 
     if (k < 0x18 || k == 0x19) {
-        Motion_PlayTable(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+        Motion_PlayTable(m, kGalleryMotions[k][SUB_PAGE(s, 0x1, u8)], -1);
     } else {
-        Motion_PlayWith(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+        Motion_PlayWith(m, kGalleryMotions[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
     }
 }
 
@@ -3993,7 +3993,7 @@ void Gallery_StateModel(SubScreen *s) {
         }
         break;
     case 3:
-        if (D_0047E37C & PAD_START) {
+        if (gPadPressed & PAD_START) {
             GALLERY_STEP(s) = 4;
             Sound_PlaySE(SE_DECIDE);
         }
@@ -4013,10 +4013,10 @@ void Gallery_StateModel(SubScreen *s) {
         }
         break;
     default:
-        if (D_0047E36C & MENU_CANCEL) {
+        if (gMenuPressed & MENU_CANCEL) {
             GALLERY_STEP(s) = 5;
             Sound_PlaySE(SE_CANCEL);
-        } else if (D_0047E37C & PAD_START) {
+        } else if (gPadPressed & PAD_START) {
             GALLERY_STEP(s) = 2;
             Sound_PlaySE(SE_DECIDE);
         }
@@ -4029,21 +4029,21 @@ void Gallery_StateModel(SubScreen *s) {
         f32 at[4] __attribute__((aligned(16)));
         VObject *cam;
 
-        if (D_0047E36C & MENU_CONFIRM) {
+        if (gMenuPressed & MENU_CONFIRM) {
             gallery_motion(s, m);
-        } else if (D_0047E36C & MENU_NEXT) {
+        } else if (gMenuPressed & MENU_NEXT) {
             SUB_PAGE(s, 0x1, u8)++;
             if (D_0044BF10[SUB_PAGE(s, 0x0, u8)] - 1 < SUB_PAGE(s, 0x1, u8)) {
                 SUB_PAGE(s, 0x1, u8) = 0;
             }
             gallery_motion(s, SUB_GALLERY_MODEL(s));
-        } else if (D_0047E36C & MENU_PREV) {
+        } else if (gMenuPressed & MENU_PREV) {
             SUB_PAGE(s, 0x1, u8)--;
             if ((s8)SUB_PAGE(s, 0x1, u8) < 0) {
                 SUB_PAGE(s, 0x1, u8) = D_0044BF10[SUB_PAGE(s, 0x0, u8)] - 1;
             }
             gallery_motion(s, SUB_GALLERY_MODEL(s));
-        } else if (D_0047E37C & PAD_SELECT) {
+        } else if (gPadPressed & PAD_SELECT) {
             GALLERY_BARS(s) ^= 1;
             Sound_PlaySE(SE_DECIDE);
         } else {
@@ -4161,10 +4161,10 @@ void Gallery_StateArtView(SubScreen *s) {
         }
         break;
     default:
-        if (D_0047E37C & PAD_SELECT) {
+        if (gPadPressed & PAD_SELECT) {
             ART_BARS(s) ^= 1;
             Sound_PlaySE(SE_DECIDE);
-        } else if (D_0047E37C & PAD_START) {
+        } else if (gPadPressed & PAD_START) {
             if (!s->fading) {
                 ART_HELP(s) ^= 1;
                 s->fading = 1;
@@ -4174,7 +4174,7 @@ void Gallery_StateArtView(SubScreen *s) {
         } else {
             s16 d;
 
-            if (D_0047E36C & MENU_CONFIRM) {
+            if (gMenuPressed & MENU_CONFIRM) {
                 ART_TURN(s) ^= 1;
                 if (ART_TURN(s) == 0) {
                     SubScreen_DrawPart(s, 0x2C, 0xD8, 0x1A, 0x80, 0);
@@ -4186,30 +4186,30 @@ void Gallery_StateArtView(SubScreen *s) {
                 Sound_PlaySE(SE_DECIDE);
             }
             d = ART_TURN(s) ? -1 : 1;
-            if (D_0047E374 & PAD_UP) {
+            if (gPadHeld & PAD_UP) {
                 ART_Y(s) -= d;
             }
-            if (D_0047E374 & PAD_DOWN) {
+            if (gPadHeld & PAD_DOWN) {
                 ART_Y(s) += d;
             }
-            if (D_0047E374 & PAD_LEFT) {
+            if (gPadHeld & PAD_LEFT) {
                 ART_X(s) -= d;
             }
-            if (D_0047E374 & PAD_RIGHT) {
+            if (gPadHeld & PAD_RIGHT) {
                 ART_X(s) += d;
             }
-            if (ART_STICK(D_0047E3A0)) {
-                ART_X(s) = (s32)((f32)ART_X(s) + (8.0f * (f32)d) * D_0047E3A0);
+            if (ART_STICK(gLeftStick)) {
+                ART_X(s) = (s32)((f32)ART_X(s) + (8.0f * (f32)d) * gLeftStick);
             }
-            if (ART_STICK(D_0047E3A8)) {
-                ART_Y(s) = (s32)((f32)ART_Y(s) + (8.0f * (f32)d) * D_0047E3A8);
+            if (ART_STICK(gStickVertical)) {
+                ART_Y(s) = (s32)((f32)ART_Y(s) + (8.0f * (f32)d) * gStickVertical);
             }
-            if (D_0047E37C & PAD_L3) {
+            if (gPadPressed & PAD_L3) {
                 ART_X(s) = 0x100;
                 ART_Y(s) = 0xE0;
                 Sound_PlaySE(SE_DECIDE);
             }
-            if (D_0047E37C & PAD_R3) {
+            if (gPadPressed & PAD_R3) {
                 ART_ZOOM(s) ^= 1;
                 if (ART_ZOOM(s) == 0) {
                     ART_X(s) = ((ART_X(s) - 0x100) >> 1) + 0x100;
@@ -4247,7 +4247,7 @@ void Gallery_StateArtView(SubScreen *s) {
         if (!s->fading) {
             if (ART_HELP(s)) {
                 Task_ShowText(t, 0x20, 0x20, 0, Task_MessageText(t, 0x1C5), 0x80, 0x33, 0x10, 0x15);
-            } else if (D_0047E36C & MENU_CANCEL) {
+            } else if (gMenuPressed & MENU_CANCEL) {
                 s->fading = 1;
                 ART_STEP(s) = 3;
                 Sound_PlaySE(SE_CANCEL);
@@ -4417,7 +4417,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
 
     n = item_actions(s, &id, &kind, &acts, &equip, list);
     if (!s->fading) {
-        u32 pad = D_0047E36C;
+        u32 pad = gMenuPressed;
 
         if (pad & MENU_CONFIRM) {
             switch (list[SUB_ACTION(s)]) {
@@ -4469,13 +4469,13 @@ void SubScreen_StateItemActions(SubScreen *s) {
         } else if (pad & MENU_DOWN) {
             SUB_ACTION(s) = (SUB_ACTION(s) + 1) % n;
             Sound_PlaySE(SE_CURSOR);
-        } else if (D_0047E36C & (MENU_NEXT | MENU_PREV)) {
+        } else if (gMenuPressed & (MENU_NEXT | MENU_PREV)) {
             u8 old;
 
             redo = 1;
             SUB_ACTION(s) = 0;
             old = SUB_CURSOR(s);
-            if (D_0047E36C & MENU_NEXT) {
+            if (gMenuPressed & MENU_NEXT) {
                 SUB_CURSOR(s) = old + 1;
                 if (SUB_CURSOR(s) >= Items_FirstFree(items, SUB_LIST(s))) {
                     SUB_CURSOR(s) = 0;
@@ -4491,7 +4491,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
                 Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
                 Sound_PlaySE(SE_CURSOR);
             }
-        } else if (D_0047E36C & MENU_CANCEL) {
+        } else if (gMenuPressed & MENU_CANCEL) {
             SUB_ACTION(s) = n - 1;
             ptmf_set(&s->state, &SubScreen_StateItems_ptmf6);
             Sound_PlaySE(SE_CANCEL);
@@ -4523,7 +4523,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
             word[i] = s->unkA8C58[i];
         }
         word[8] = 0;
-        Msg_PrintfParam(t, 3, D_00464218, word);
+        Msg_PrintfParam(t, 3, kFmtString, word);
         Task_ShowText(t, 0x38, 0x49, 0x80, Task_MessageText(t, (u16)(id + 0x8100)), 0x80, 0x30, 0x10, 0x15);
         if (Items_IsCounted(items, SUB_LIST(s), SUB_CURSOR(s)) == 1) {
             Task_Printf(t, 0xD2, 0x49, 0x80, D_00464230, Items_HowMany(items, SUB_LIST(s), SUB_CURSOR(s)));

@@ -70,7 +70,7 @@ s32 Room1F_Command(void *self, u32 i, s32 a, s32 b) {
 /* 0x002AE1B0 */
 s32 Room1F_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    VObject *objs = D_00456DF8, *snd = gSound;
+    VObject *objs = gRoomObjects, *snd = gSound;
     f32 at[4] __attribute__((aligned(16)));
     s32 i;
 

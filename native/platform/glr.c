@@ -354,7 +354,7 @@ void glr_haze(float phase, float sway) {
     d->mvp[3] = 0.0f;   /* over the screen at 0x48 */
 }
 
-/* as glr_haze, over the screen at `fix` / 128 (D_0047A390's, Room49Effect_Draw: 0x60) */
+/* as glr_haze, over the screen at `fix` / 128 (Room49Effect_vtable's, Room49Effect_Draw: 0x60) */
 void glr_haze_fix(float phase, float sway, int fix) {
     GlrDraw *d = put_post(POST_HAZE, 0x2A, (uint32_t)fix, 0);
 
@@ -364,7 +364,7 @@ void glr_haze_fix(float phase, float sway, int fix) {
     d->mvp[3] = 0.0f;
 }
 
-/* the heat haze effect D_0047A2F0 (Room92Effect_Draw, layer 0x2A): as room 0x61's with the waves'
+/* the heat haze effect Room92Effect_vtable (Room92Effect_Draw, layer 0x2A): as room 0x61's with the waves'
  * base strength `size` and no sway, over the screen by a horizontal alpha ramp (0x20 at the
  * edges, 0x60 in the middle, halved) */
 void glr_haze2(float phase, float size) {

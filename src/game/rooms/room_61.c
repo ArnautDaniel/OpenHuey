@@ -21,10 +21,10 @@ f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw);
 
 extern void *RoomBase_vtable[];
 extern void *Room61_vtable[];
-extern void *D_0047A370[], *EffectBase_vtable[];
+extern void *LightShaft_vtable[], *EffectBase_vtable[];
 extern u8 D_01991210[], D_01991250[], D_01991290[];   /* the three paths */
 extern s16 D_019912D0[], D_019913D0[], D_01991490[];   /* their points */
-extern void *D_0047A3B0[];
+extern void *Glint_vtable[];
 
 #define SHAFT_REC(o, i) ((o) + AT(o, 0x6EC, s32) * 0x300 + (i) * 0x30 + 0x10)
 
@@ -50,10 +50,10 @@ extern u8 D_00429580[];
 
 extern PTMF D_01991550[];
 
-/* room 0x61: byte 3 0 the light shaft (D_0047A370) started with its motes from (30, 0, 70),
+/* room 0x61: byte 3 0 the light shaft (LightShaft_vtable) started with its motes from (30, 0, 70),
  * its slot in event var 3; 1 its haze on, 2 off */
 static void shaft_init(void **obj) {
-    obj[0] = D_0047A370;
+    obj[0] = LightShaft_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -85,7 +85,7 @@ static void swim_step(s32 kind, u8 *st) {
 }
 
 static void glint_init(void **obj) {
-    obj[0] = D_0047A3B0;
+    obj[0] = Glint_vtable;
 }
 
 #ifdef HG_NATIVE
@@ -303,7 +303,7 @@ s32 Room61_Cmd01(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x61 (byte 3): 0 / 2 / 4 set up the paths of characters 0x14 (2 x 3 x 7 cells from (25,
- * 0, 40), 480 frames a stretch; with the glint D_0047A3B0) / 0x15 (2 x 3 x 5 from (30, 0, 50),
+ * 0, 40), 480 frames a stretch; with the glint Glint_vtable) / 0x15 (2 x 3 x 5 from (30, 0, 50),
  * 240) / 0x16 (the same box, 280); 1 / 3 / 5 move them a frame (returning 2: again next frame) */
 /* 0x003116B0 */
 s32 Room61_Cmd00(void *self, void *a1, u8 *cmd) {
@@ -337,7 +337,7 @@ u8 *LightShaft_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0047A370;
+    AT(o, 0x0, void **) = LightShaft_vtable;
     AT(o, 0x610, void **) = QuadDrawer_vtable;
     AT(o, 0x610, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -572,7 +572,7 @@ void **Glint_dtor(void **o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    o[0] = D_0047A3B0;
+    o[0] = Glint_vtable;
     o[0] = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);

@@ -356,7 +356,7 @@ void Events_RunPhase(u8 *ev, u8 phase) {
     }
 }
 
-extern u8 *D_003D6760[];   /* the shared action scripts (actions 0x80..) */
+extern u8 *kBuiltinScripts[];   /* the shared action scripts (actions 0x80..) */
 
 /* +0xE0 start character slot `slot`'s action `act`: a shared script (0x80..) or the room's
  * (its handler +0x24), through +0xE4 */
@@ -366,7 +366,7 @@ void Events_StartAction(VObject *ev, s32 slot, s32 act) {
 
     act &= 0xFF;
     if (act & 0x80) {
-        script = D_003D6760[act];
+        script = kBuiltinScripts[act];
     } else {
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
 

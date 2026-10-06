@@ -294,10 +294,10 @@ s32 Progress_PadCondition(Progress *p, u32 which, u32 how) {
         return 0;
     }
     b = buttons[which & 0xFF];
-    if ((how & 1) && (D_0047E374 & b)) {
+    if ((how & 1) && (gPadHeld & b)) {
         return 1;
     }
-    if ((how & 2) && (D_0047E37C & b)) {
+    if ((how & 2) && (gPadPressed & b)) {
         return 1;
     }
     return 0;
@@ -1013,7 +1013,7 @@ void Progress_OwnRequests(Progress *p) {
     }
 }
 
-extern u32 D_0047E37C;
+extern u32 gPadPressed;
 
 static void act_copy(u8 *dst, const u8 *src) {
     AT(dst, 0x0, s32) = AT(src, 0x0, s32);
@@ -1062,7 +1062,7 @@ void Progress_PlayerButtons(Progress *p) {
     if (AT(gCharPlayer, 0xE0, u8) == 0) {
         act_copy(b + 0x1674, b + 0x1134);
     }
-    if ((D_0047E37C & 0x2000) && !noAct) {
+    if ((gPadPressed & 0x2000) && !noAct) {
         s32 taken = 0;
 
         switch (AT(b, 0x1134, s32)) {
@@ -1104,13 +1104,13 @@ void Progress_PlayerButtons(Progress *p) {
     if (AT(b, 0x7B8, u8) >= 4 || (AT(b, 0x8, u32) & 0x100000)) {
         return;
     }
-    if ((D_0047E37C & 0x8000) && AT(gCharPlayer, 0xF8, s32) == 0) {
+    if ((gPadPressed & 0x8000) && AT(gCharPlayer, 0xF8, s32) == 0) {
         AT(b, 0x1154, s32) = 8;
         AT(b, 0x1158, s32) = 0x1A;
         AT(b, 0x115C, s32) = 0;
         player_take_action(b, 0x1154);
     }
-    if ((D_0047E37C & 0x1000) && !noAct) {
+    if ((gPadPressed & 0x1000) && !noAct) {
         VObject *sub = gSubScreen;
         s32 item = VCALL(sub, 0x14, s32 (*)(VObject *))(sub);
         s32 n = VCALL(sub, 0x18, s32 (*)(VObject *))(sub);
@@ -1122,7 +1122,7 @@ void Progress_PlayerButtons(Progress *p) {
             player_take_action(b, 0x1194);
         }
     }
-    if ((D_0047E37C & 0x800) && AT(gCharPlayer, 0xF8, s32) == 0) {
+    if ((gPadPressed & 0x800) && AT(gCharPlayer, 0xF8, s32) == 0) {
         AT(b, 0x11B4, s32) = 0xB;
         AT(b, 0x11B8, s32) = 0x22;
         AT(b, 0x11BC, s32) = 0;
@@ -1932,16 +1932,16 @@ void Progress_CommandButtons(Progress *p) {
         || AT(b, 0x4, s32) != 0) {
         return;
     }
-    if (D_0047E37C & PAD_R1) {
+    if (gPadPressed & PAD_R1) {
         hewie_order(b, 0x1294, 0xB, 0);
     }
-    if (D_0047E37C & PAD_L1) {
+    if (gPadPressed & PAD_L1) {
         hewie_order(b, 0x1254, 0xB, 2);
     }
-    if (D_0047E37C & PAD_SQUARE) {
+    if (gPadPressed & PAD_SQUARE) {
         hewie_order(b, 0x1234, 8, 0);
     }
-    if (D_0047E37C & PAD_CIRCLE) {
+    if (gPadPressed & PAD_CIRCLE) {
         hewie_order(b, 0x1214, 0xB, 1);
     }
 }

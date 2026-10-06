@@ -13,7 +13,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room48_vtable[];
-extern void *D_00479890[];
+extern void *WallShadow_vtable[];
 extern u8 D_004252D0[];
 extern u8 D_00425460[];
 extern u8 D_00425520[];
@@ -28,7 +28,7 @@ extern PTMF D_01991140[];
 extern PTMF D_01991188[];
 
 static void effect_79890_init(void **obj) {
-    obj[0] = D_00479890;
+    obj[0] = WallShadow_vtable;
 }
 
 /* 0x0030F070 */
@@ -130,7 +130,7 @@ s32 Room48_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x48 (D_00426818): byte 3 0 starts the wall shadow (D_00479890, its slot in event
+/* room 0x48 (D_00426818): byte 3 0 starts the wall shadow (WallShadow_vtable, its slot in event
  * variable 2); else that one is ended */
 /* 0x0030F350 */
 s32 Room48_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -158,7 +158,7 @@ s32 Room48_Cmd01(void) {
 /* 0x0030F4E0 */
 s32 Room48_Cmd00(VObject *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    VObject *objs = D_00456DF8;
+    VObject *objs = gRoomObjects;
     VObject *ev = gEvents;
     s32 i;
 

@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room12_vtable[];
-extern void *D_00470E20[];
+extern void *SmokePuffs_vtable[];
 extern u8 D_003F8200[];
 extern u8 D_003F8350[];
 extern u8 D_003F83F0[];
@@ -23,7 +23,7 @@ extern PTMF D_019908E0[];
 extern PTMF D_019908F0[];
 
 static void smoke_puffs_init(void **obj) {
-    obj[0] = D_00470E20;
+    obj[0] = SmokePuffs_vtable;
     obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
     obj[0x1810 / 4] = QuadDrawer_vtable;
@@ -97,7 +97,7 @@ s32 Room12_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908E0[i & 0xFF], a, b);
 }
 
-/* room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (D_00470E20), their slot in script
+/* room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in script
  * variable 0; else that slot started */
 /* 0x002AC370 */
 s32 Room12_Cmd00(void *self, void *a1, u8 *cmd) {

@@ -15,10 +15,10 @@
 extern void *RoomBase_vtable[];
 extern void *RoomC7_vtable[];
 extern u8 D_0047ADF8[];
-extern void *D_0047A3F0[];
-extern void *D_004799D0[];
-extern void *D_004798B0[];
-extern f32 D_0047E3A0[4];   /* left stick */
+extern void *BackdropModel_vtable[];
+extern void *Debris_vtable[];
+extern void *RoomC7Cursor_vtable[];
+extern f32 gLeftStick[4];   /* left stick */
 extern u8 D_0042F500[];
 extern u8 D_0042F590[];
 extern u8 D_0042F5D0[];
@@ -34,15 +34,15 @@ extern PTMF D_01991660[];
 extern PTMF D_019916C0[];
 
 static void effect_7A3F0_init(void **obj) {
-    obj[0] = D_0047A3F0;
+    obj[0] = BackdropModel_vtable;
 }
 
 static void effect_799d0_init(void **obj) {
-    obj[0] = D_004799D0;
+    obj[0] = Debris_vtable;
 }
 
 static void effect_798B0_init(void **obj) {
-    obj[0] = D_004798B0;
+    obj[0] = RoomC7Cursor_vtable;
 }
 
 #ifdef HG_NATIVE
@@ -123,7 +123,7 @@ s32 RoomC7_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991660[i & 0xFF], a, b);
 }
 
-/* (as Room48_Cmd02) byte 3 0 starts the effect D_0047A3F0 (its slot in event variable 9);
+/* (as Room48_Cmd02) byte 3 0 starts the effect BackdropModel_vtable (its slot in event variable 9);
    else that one is ended (EffectMgr_Remove) */
 /* 0x00339F00 */
 s32 RoomC7_Cmd06(void *self, void *a1, u8 *cmd) {
@@ -150,7 +150,7 @@ s32 RoomC7_Cmd05(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as Room2A_Cmd03) the 0xD40-byte effect D_004799D0 started with byte 3 */
+/* (as Room2A_Cmd03) the 0xD40-byte effect Debris_vtable started with byte 3 */
 /* 0x0033A0B0 */
 s32 RoomC7_Cmd04(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
@@ -194,7 +194,7 @@ s32 RoomC7_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* a cursor effect (D_004798B0) at (x, y) kept in script variables 7 / 8, its slot in 6: byte 3 0
+/* a cursor effect (RoomC7Cursor_vtable) at (x, y) kept in script variables 7 / 8, its slot in 6: byte 3 0
  * puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y 0..420),
  * waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it */
 /* 0x0033A470 */
@@ -229,9 +229,9 @@ s32 RoomC7_Cmd02(void *self, void *a1, u8 *cmd) {
     slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     pos[0] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
     pos[1] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
-    sceVu0CopyVector(v, D_0047E3A0);
-    v[0] += (f32)(((D_0047E374 & PAD_RIGHT) != 0) - ((D_0047E374 & PAD_LEFT) != 0));
-    v[2] += (f32)(((D_0047E374 & PAD_DOWN) != 0) - ((D_0047E374 & PAD_UP) != 0));
+    sceVu0CopyVector(v, gLeftStick);
+    v[0] += (f32)(((gPadHeld & PAD_RIGHT) != 0) - ((gPadHeld & PAD_LEFT) != 0));
+    v[2] += (f32)(((gPadHeld & PAD_DOWN) != 0) - ((gPadHeld & PAD_UP) != 0));
     a = v[0];
     if (a <= 0.0f) {
         a = -a;
@@ -263,11 +263,11 @@ s32 RoomC7_Cmd02(void *self, void *a1, u8 *cmd) {
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
     EffectMgr_Start(gEffects, slot, pos);
-    if (D_0047E36C & MENU_CONFIRM) {
+    if (gMenuPressed & MENU_CONFIRM) {
         VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 4);
         return 1;
     }
-    if (D_0047E36C & MENU_CANCEL) {
+    if (gMenuPressed & MENU_CANCEL) {
         VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 4);
         return 1;
     }
@@ -327,11 +327,11 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* destructor (vtable D_004798B0) */
+/* destructor (vtable RoomC7Cursor_vtable) */
 /* 0x0035CE40 */
 void *RoomC7Cursor_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004798B0;
+        AT(o, 0x0, void **) = RoomC7Cursor_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -385,11 +385,11 @@ void RoomC7Cursor_Start(u8 *o) {
     AT(o, 0x4, u8) = 0;
 }
 
-/* destructor (vtable D_004799D0) */
+/* destructor (vtable Debris_vtable) */
 /* 0x0035D7E0 */
 void *Debris_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004799D0;
+        AT(o, 0x0, void **) = Debris_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -402,11 +402,11 @@ void *Debris_dtor(u8 *o, s32 flags) {
 void Debris_Start(void) {
 }
 
-/* destructor (vtable D_0047A3F0) */
+/* destructor (vtable BackdropModel_vtable) */
 /* 0x00377FF0 */
 void *BackdropModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0047A3F0;
+        AT(o, 0x0, void **) = BackdropModel_vtable;
         AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);

@@ -286,8 +286,8 @@ static inline void Progress_AddCounter(Progress *p, u32 off, s32 n) {
     }
 }
 
-extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
-extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
+extern const s32 kHewieLevelNormal[];   /* by +0xF35CC (normal) */
+extern const s32 kHewieLevelHard[];   /* by +0xF35CC (difficulty 1) */
 
 /* Set his mode (and its timer: `time`, or -1 for the mode's default: 1 and 2 1800 frames, 3 450).
  * Down: only mode 0; in condition 1 only mode 3. Entering mode 1 / 3 counts in the progress
@@ -339,9 +339,9 @@ void Hewie_SetMode(Hewie *h, s32 mode, s32 time) {
     }
     HW(h, 0xF3598, s32) = 0;
     if ((Progress_GetVar(gProgress, 0x27) & 0xFF) == 1) {
-        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelHard[HW(h, 0xF35CC, s16)];
     } else {
-        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelNormal[HW(h, 0xF35CC, s16)];
     }
     if ((HW(h, 0xF356C, s32) & 0x80000001) == 1) {
         if (!h->c.a.disabled) {
@@ -973,7 +973,7 @@ s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
     return r;
 }
 
-extern u8 D_0047E3B0[];                                   /* pad state */
+extern u8 gPadState[];                                   /* pad state */
 extern void Hewie_TurnHead(Hewie *h);
 extern void Hewie_AnimSounds(Hewie *h);
 extern void Hewie_Feet(Hewie *h);
@@ -1044,7 +1044,7 @@ void Hewie_Think(Hewie *h) {
     VCALL(h, 0x88, void (*)(Hewie *))(h);
     p = gProgress;
     if (*((u8 *)p + 0x1FBEC1) == 1) {
-        HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
+        HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)gPadState);
     }
     HW(h, 0xF3558, u8) = 0;
     HW(h, 0xF3582, u8) = 1;
@@ -1062,8 +1062,8 @@ void Hewie_Think(Hewie *h) {
     Hewie_Feet(h);
 }
 
-extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
-extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
+extern const s32 kHewieLevelNormal[];   /* by +0xF35CC (normal) */
+extern const s32 kHewieLevelHard[];   /* by +0xF35CC (difficulty 1) */
 extern const PTMF Hewie_StateCalm_ptmf;    /* idle state */
 extern const PTMF Hewie_StatePending_ptmf;    /* special-mode state */
 
@@ -1102,9 +1102,9 @@ void Hewie_Activate(Hewie *h) {
     p = gProgress;
     HW(h, 0xF3598, s32) = 0;
     if ((Progress_GetVar(p, 0x27) & 0xFF) == 1) {
-        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelHard[HW(h, 0xF35CC, s16)];
     } else {
-        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelNormal[HW(h, 0xF35CC, s16)];
     }
     HW(h, 0xF3586, u8) = 0;
     HW(h, 0xF3559, u8) = 1;
@@ -2025,14 +2025,14 @@ void Hewie_State1DC8(Hewie *h) {
 }
 
 extern const PTMF Hewie_State1D38_ptmf;
-extern u32 D_0047E37C;     /* pad buttons */
-extern u32 D_0047E374;     /* pad buttons (d-pad bits 4..7) */
-extern f32 D_0047E3A0[4];  /* left stick */
+extern u32 gPadPressed;     /* pad buttons */
+extern u32 gPadHeld;     /* pad buttons (d-pad bits 4..7) */
+extern f32 gLeftStick[4];  /* left stick */
 
 /* Is the player steering (buttons, stick / d-pad beyond 0.8) or has a pad command (+0xF3798)? */
 /* 0x001367B0 */
 s32 Hewie_PlayerSteering(Hewie *h) {
-    u32 b = D_0047E37C;
+    u32 b = gPadPressed;
     sceVu0FVECTOR v;
     u32 d;
     f32 x, z;
@@ -2040,8 +2040,8 @@ s32 Hewie_PlayerSteering(Hewie *h) {
     if ((b >> 14 & 1) || (b >> 13 & 1) || (b >> 12 & 1) || (b >> 15 & 1) || (b >> 10 & 1) || (b >> 11 & 1)) {
         return 1;
     }
-    sceVu0CopyVector(v, D_0047E3A0);
-    d = D_0047E374;
+    sceVu0CopyVector(v, gLeftStick);
+    d = gPadHeld;
     x = v[0] + (f32)(s32)((d >> 5 & 1) - (d >> 7 & 1));
     v[0] = x;
     z = v[2] + (f32)(s32)((d >> 6 & 1) - (d >> 4 & 1));
@@ -2997,7 +2997,7 @@ void Hewie_StateSteer(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-extern const f32 D_003B12A0[][2];   /* offsets (x, z) from him, by kind */
+extern const f32 kHewieMeetOffsets[][2];   /* offsets (x, z) from him, by kind */
 
 /* Find a spot at offset `kind` around him, turning 0, +-10, ... +-180 degrees: on the walkable
  * mesh (not flags 0x80001) and reachable from Fiona. Writes the heading and point; -1: none. */
@@ -3011,9 +3011,9 @@ s32 Hewie_FindSpot(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
     f32 ang, yaw;
     u32 tri;
 
-    off[0] = D_003B12A0[kind][0];
+    off[0] = kHewieMeetOffsets[kind][0];
     off[1] = 0.0f;
-    off[2] = D_003B12A0[kind][1];
+    off[2] = kHewieMeetOffsets[kind][1];
     off[3] = 1.0f;
     nm = gNavMesh;
     for (deg = 0; deg <= 180; deg += 10) {
@@ -3124,9 +3124,9 @@ void Hewie_LeftStick(Hewie *h) {
     s32 moving, cut, how = 0;
 
     HW(h, HMOVE_GO, u8) = 0;
-    sceVu0CopyVector(e, D_0047E3A0);
-    e[0] += (f32)(s32)(((D_0047E374 >> 5) & 1) - ((D_0047E374 >> 7) & 1));
-    e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
+    sceVu0CopyVector(e, gLeftStick);
+    e[0] += (f32)(s32)(((gPadHeld >> 5) & 1) - ((gPadHeld >> 7) & 1));
+    e[2] += (f32)(s32)(((gPadHeld >> 6) & 1) - ((gPadHeld >> 4) & 1));
     sceVu0Normalize(n, e);
     cut = HW(h, HMOVE_MODE, u8) == 3;
     if (!cut && VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera) != -1) {
@@ -3232,7 +3232,7 @@ void Hewie_LeftStick(Hewie *h) {
     if (HW(h, HMOVE_MODE, u8) != 2) {
         sceVu0CopyVector(&HW(h, HMOVE_LAST, f32), n);
     }
-    if (D_0047E374 & 0x4000) {
+    if (gPadHeld & 0x4000) {
         HW(h, HMOVE_GO, u8) = 1;
     }
 }
@@ -3254,9 +3254,9 @@ static inline void hewie_want(Hewie *h, s32 act, s32 arg) {
 /* how long he keeps obeying (+0xF359C) by his trust level, the harder table on difficulty 1 */
 static inline void obey_time(Hewie *h) {
     if ((Progress_GetVar(gProgress, 0x27) & 0xFF) != 1) {
-        HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelNormal[HW(h, 0xF35CC, s16)];
     } else {
-        HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+        HW(h, 0xF359C, s32) = kHewieLevelHard[HW(h, 0xF35CC, s16)];
     }
 }
 
@@ -7410,8 +7410,8 @@ void Hewie_StateByFiona(Hewie *h) {
 extern const PTMF Hewie_StateByFiona_ptmf;
 
 /* head for the place behind Fiona (her in his room and not out of reach; else, or with his
- * state block at 7, the default action): animation 0x8000, the point D_003B12A0 in her frame
- * facing heading +0x10C (D_003B12A0[0]; +0xF36E0, planned; no way: the default action), a tenth of
+ * state block at 7, the default action): animation 0x8000, the point kHewieMeetOffsets in her frame
+ * facing heading +0x10C (kHewieMeetOffsets[0]; +0xF36E0, planned; no way: the default action), a tenth of
  * the way and of the turn to face away (+0xF36CC) each frame; behaviour Hewie_StateByFiona_ptmf */
 /* 0x00150C10 */
 void Hewie_StateBehindFiona(Hewie *h) {
@@ -7434,8 +7434,8 @@ void Hewie_StateBehindFiona(Hewie *h) {
     Motion_PlayWith(h->c.motion, 0x8000, 8, -1, 10.0f);
     v[1] = 0.0f;
     v[3] = 0.0f;
-    v[0] = D_003B12A0[0][0];
-    v[2] = D_003B12A0[0][1];
+    v[0] = kHewieMeetOffsets[0][0];
+    v[2] = kHewieMeetOffsets[0][1];
     Mtx_AtHeading(m, gCharPlayer->a.pos, a);
     Mtx_ApplyPoint(at, m, v);
     if (Hewie_PlanAndGo(h, h->c.unk104[0], at, 0, 1) != 0) {
@@ -7460,7 +7460,7 @@ void Hewie_StateBehindFiona(Hewie *h) {
 
 extern const PTMF Hewie_StateBackToNormal_ptmf;
 
-/* keep to the place behind Fiona (D_003B12A0[0] in her frame by heading +0x10C; her own spot
+/* keep to the place behind Fiona (kHewieMeetOffsets[0] in her frame by heading +0x10C; her own spot
  * when that is off the mesh or blocked by flags 0x29020008), her in his room and not out of
  * reach (else the default action). Within 10 of it and facing away from her (within 90 degrees):
  * hold still, and when the game takes it (SlotCmd_Give 2 6) behaviour Hewie_StateBackToNormal_ptmf. Else walk
@@ -7483,8 +7483,8 @@ void Hewie_StateKeepBehind(Hewie *h) {
     }
     v[1] = 0.0f;
     v[3] = 0.0f;
-    v[0] = D_003B12A0[0][0];
-    v[2] = D_003B12A0[0][1];
+    v[0] = kHewieMeetOffsets[0][0];
+    v[2] = kHewieMeetOffsets[0][1];
     Mtx_AtHeading(m, gCharPlayer->a.pos, HW(h, 0x10C, f32));
     Mtx_ApplyPoint(at, m, v);
     tri = Actor_TriOf(&gCharPlayer->a, at);
@@ -8580,7 +8580,7 @@ void Hewie_StateClamped(Hewie *h) {
 
 #include "input.h"
 
-extern u32 D_0047E374;   /* pad buttons held */
+extern u32 gPadHeld;   /* pad buttons held */
 extern const PTMF Hewie_StateClamped_ptmf, Hewie_StateClamped_ptmf2, Hewie_StateHanging_ptmf, Hewie_StateClamped_ptmf3, Hewie_StateHanging_ptmf2, Hewie_StateClamped_ptmf4;
 
 /* one bite into the pursuer: `base` damage (doubled on difficulty 1, +half with progress
@@ -8741,10 +8741,10 @@ void Hewie_StateBiteHold(Hewie *h) {
                 }
             }
         } else if (HW(h, 0xF36B4, u32) < 2) {
-            if ((D_0047E374 & PAD_CROSS) || gCharPursuer->hp == 0) {
+            if ((gPadHeld & PAD_CROSS) || gCharPursuer->hp == 0) {
                 let_go = 1;
             } else {
-                if (D_0047E37C & PAD_SQUARE) {
+                if (gPadPressed & PAD_SQUARE) {
                     HW(h, 0xF3714, s16) += 1;
                 }
                 if (HW(h, 0xF36B4, u32) == 1 && HW(h, 0xF3714, s16) >= 5) {
@@ -10260,9 +10260,9 @@ void Hewie_Upkeep(Hewie *h) {
         h->c.a.unkC4 = 1;
         HW(h, 0xF3598, s32) = 0;
         if ((Progress_GetVar(p, 0x27) & 0xFF) != 1) {
-            HW(h, 0xF359C, s32) = D_003B1350[HW(h, 0xF35CC, s16)];
+            HW(h, 0xF359C, s32) = kHewieLevelNormal[HW(h, 0xF35CC, s16)];
         } else {
-            HW(h, 0xF359C, s32) = D_003B1370[HW(h, 0xF35CC, s16)];
+            HW(h, 0xF359C, s32) = kHewieLevelHard[HW(h, 0xF35CC, s16)];
         }
         HW(h, 0xF3586, u8) = 0;
         if (h->c.a.disabled == 1) {
@@ -10527,7 +10527,7 @@ void Hewie_Update(Hewie *h) {
                 }
             }
             if (*((u8 *)p + 0x1FBEC1) == 1) {
-                HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
+                HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)gPadState);
             }
             ptmf_scall(h, &h->c.a.state);
             ptmf_scall(h, HEWIE_STATE(h));

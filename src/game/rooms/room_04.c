@@ -129,10 +129,10 @@ s32 Room04_Cmd00(void *self, void *a1, u8 *cmd) {
     u32 var;
 
     if (cmd[3] == 0) {
-        o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F17B8);
+        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F17B8);
         var = 0;
     } else {
-        o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F17C8);
+        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F17C8);
         var = 1;
     }
     if (o == NULL) {

@@ -842,7 +842,7 @@ void EvEffect7F_Start(u8 *e) {
     AT(e, 0x74, s32) = 0;
 }
 
-/* ---- room effect D_0046FF20 (0x718 bytes): a burst of 16 sprites in two buffers of quad
+/* ---- room effect SpriteBurst_vtable (0x718 bytes): a burst of 16 sprites in two buffers of quad
  * records (+0x10 + 0x300 x the current one +0x710), their velocities at +0x648 (12 each),
  * drawn by the quad drawer at +0x610. Kinds (+0x714): 1 swirling motes that brighten until
  * their alpha reaches +0x70C and then fade (red one below +0x708 marks the fading), 2
@@ -851,7 +851,7 @@ void EvEffect7F_Start(u8 *e) {
 
 #include "effectmgr.h"
 
-extern void *D_0046FF20[], *EffectBase_vtable[];
+extern void *SpriteBurst_vtable[], *EffectBase_vtable[];
 
 #define BURST_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
 #define BURST_VEL(e, i) ((f32 *)((e) + 0x648) + (i) * 3)
@@ -862,7 +862,7 @@ u8 *SpriteBurst_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0046FF20;
+    AT(o, 0x0, void **) = SpriteBurst_vtable;
     AT(o, 0x610, void **) = QuadDrawer_vtable;
     AT(o, 0x610, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -1188,12 +1188,12 @@ void SpriteBurst_Start(u8 *e) {
 
 /* ---- room effect EvEffect86_vtable (event command 0x86): a flame; kind (+0x78) 0 a candle (32
  * frames: a loop, then a flare / snuff played on command), others a 16-frame fire (kind 4 is
- * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (D_00479320)
+ * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (Wisps_vtable)
  * above it; commanded (+0x74 1 / 2) the fire throws two / four sparks and the candle plays its
  * second half (2: shrinking away) ----
  * the record and drawer settings as EvEffect7F_vtable's */
 
-extern void *EvEffect86_vtable[], *D_00479320[];
+extern void *EvEffect86_vtable[], *Wisps_vtable[];
 #include "effectmgr.h"
 
 /* +0x8 destructor */
@@ -1211,7 +1211,7 @@ u8 *EvEffect86_dtor(u8 *e, s32 flags) {
 
 /* a spark: its quad drawer embedded at +0x190 */
 static void spark_init(void **obj) {
-    obj[0] = D_00479320;
+    obj[0] = Wisps_vtable;
     obj[0x190 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x194 / 4] = -1;
     obj[0x190 / 4] = QuadDrawer_vtable;
@@ -1782,18 +1782,18 @@ void Reflection_SetParams(u8 *e, u8 *arg) {
     VCALL(gRenderer, 0x8C, void (*)(VObject *, s32))(gRenderer, AT(e, 0x18, s32));
 }
 
-/* ---- D_004795A0 (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
+/* ---- FloorGlow_vtable (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
  * follows a level (+0x4): up to the level and back down to 30 (+0xC 0 / 1), or for level 0x80
  * slowly up to 0x38 (2); 0xFF done (its +0xC / +0x10 / +0x18 in src/leaf/b7_00351D50.c). Its
  * draw (+0x14, FloorGlow_Draw) is the light's glow ---- */
 
-extern void *D_004795A0[], *EffectBase_vtable[];
+extern void *FloorGlow_vtable[], *EffectBase_vtable[];
 
 /* +0x8 destructor */
 /* 0x00358210 */
 u8 *FloorGlow_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x0, void **) = D_004795A0;
+        AT(e, 0x0, void **) = FloorGlow_vtable;
         AT(e, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(e);
@@ -1923,13 +1923,13 @@ void FloorGlow_Start(u8 *p) {
     B7_W(p, 0xC) = 0;
 }
 
-/* ---- D_00479320 (0x218 bytes): 4 wisps rising and swirling about a point (+0x1D0), in two
+/* ---- Wisps_vtable (0x218 bytes): 4 wisps rising and swirling about a point (+0x1D0), in two
  * buffers of sprite instances (+0x10 + 0xC0 x the current one +0x210; 0x30 each), per wisp a
  * rise speed (+0x1E0), angle (+0x1F0) and radius (+0x200) about the point; drawn by the quad
  * drawer at +0x190 (set up by Wisps_Start). +0x214 its kind: low 12 bits 0 a lasting flame
  * (slow, respawning), else a burst; bit 0x8000 it ends with room effect 0 ---- */
 
-extern void *D_00479320[];
+extern void *Wisps_vtable[];
 
 /* +0x8 destructor (the quad drawer's inlined) */
 /* 0x003521F0 */
@@ -1937,7 +1937,7 @@ u8 *Wisps_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479320;
+    AT(o, 0x0, void **) = Wisps_vtable;
     AT(o, 0x190, void **) = QuadDrawer_vtable;
     AT(o, 0x190, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2104,12 +2104,12 @@ void Wisps_Start(u8 *p) {
     B7_B(p, 0x1C6) = 0xFF;
 }
 
-/* ---- D_0046F5A0 (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
+/* ---- RisingSmoke_vtable (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
  * sprite instances (+0x10 + 0xC00 x the current one +0x1C50: RGBA, position, size, turn,
  * frame - 0x30 each), their velocities at +0x1850 (16 each), drawn by the quad drawer at
  * +0x1810 ---- */
 
-extern void *D_0046F5A0[];
+extern void *RisingSmoke_vtable[];
 
 /* +0x8 destructor (the quad drawer's inlined) */
 /* 0x002D63F0 */
@@ -2117,7 +2117,7 @@ u8 *RisingSmoke_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0046F5A0;
+    AT(o, 0x0, void **) = RisingSmoke_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -2238,7 +2238,7 @@ void RisingSmoke_Start(u8 *o) {
     }
 }
 
-/* ---- D_00476BB0 (0x7460 bytes; room 0x4F): 256 motes of dust drifting down through a shaft
+/* ---- DustShaft_vtable (0x7460 bytes; room 0x4F): 256 motes of dust drifting down through a shaft
  * (around x 38, z -11, from up to 50 high), in two buffers of quad records (+0x10 + 0x3000 x the
  * current one +0x7450), velocities at +0x6050 (16 each), the quad drawer at +0x6010, each one's
  * fade direction at +0x7050 (bit 31: fading out) ---- */
@@ -2369,11 +2369,11 @@ s32 EffectBase_Query(void) {
     return -1;
 }
 
-/* ---- room effect D_0046FF60: shards - 16 small random boxes thrown up from a point (+0xE10)
+/* ---- room effect Effect6FF60_vtable: shards - 16 small random boxes thrown up from a point (+0xE10)
  * that tumble, fall and bounce on its height until they settle; kind (+0xE38) 0 / 3 a gentle
  * spray, 2 / 3 bigger, slower turning pieces thrown higher, 4 thrown down ---- */
 
-extern void *D_0046FF60[], *EffectBase_vtable[];
+extern void *Effect6FF60_vtable[], *EffectBase_vtable[];
 
 typedef struct Shard {
     /* 0x00 */ f32 corner[8][4];   /* a random box: the signs of x, y, z by corner */
@@ -2385,11 +2385,11 @@ typedef struct Shard {
     /* 0xC0 */ f32 spin[3];        /* degrees per frame */
     /* 0xCC */ u8 padCC[4];
     /* 0xD0 */ s32 alive;
-    /* 0xD4 */ f32 floor;          /* (D_00479B00) the floor under it */
-    /* 0xD8 */ s16 delay;          /* (D_00479B00) frames before it shows */
-    /* 0xDA */ u8 alpha;           /* (D_00479B00) */
-    /* 0xDB */ u8 bounce;          /* (D_00479B00) it bounces off its floor */
-    /* 0xDC */ u8 landed;          /* (D_00479B00) */
+    /* 0xD4 */ f32 floor;          /* (Effect79B00_vtable) the floor under it */
+    /* 0xD8 */ s16 delay;          /* (Effect79B00_vtable) frames before it shows */
+    /* 0xDA */ u8 alpha;           /* (Effect79B00_vtable) */
+    /* 0xDB */ u8 bounce;          /* (Effect79B00_vtable) it bounces off its floor */
+    /* 0xDC */ u8 landed;          /* (Effect79B00_vtable) */
     /* 0xDD */ u8 padDD[3];
 } Shard;
 
@@ -2402,7 +2402,7 @@ _Static_assert(sizeof(Shard) == 0xE0, "Shard");
 /* 0x002E9B00 */
 u8 *Effect6FF60_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x0, void **) = D_0046FF60;
+        AT(e, 0x0, void **) = Effect6FF60_vtable;
         if (e != NULL) {
             AT(e, 0x0, void **) = EffectBase_vtable;
         }
@@ -2688,7 +2688,7 @@ void Effect6FF60_Draw(u8 *e) {
 }
 #endif
 
-/* ---- D_004799D0 (0xD40 bytes): debris - 16 pieces (Shards without the alive flag, 0xD0 apart
+/* ---- Debris_vtable (0xD40 bytes): debris - 16 pieces (Shards without the alive flag, 0xD0 apart
  * from +0x10) dropped in a 4 x 4 grid, turned by +0xD38, from about a point (+0xD10) up near the
  * ceiling; they tumble and fall (the bigger, the faster) until the last one passes 500. Start
  * kinds 0..2 three spots (3..5 the same with pieces a tenth the size, +0xD3C) ---- */
@@ -2838,7 +2838,7 @@ s32 Debris_Update(u8 *e) {
     return on != 0;
 }
 
-/* ---- D_00479B00 (0x1C30 bytes): falling stones - 32 pieces (Shards, 0xE0 apart from +0x10)
+/* ---- Effect79B00_vtable (0x1C30 bytes): falling stones - 32 pieces (Shards, 0xE0 apart from +0x10)
  * dropped from a height (+0x1C10) onto random floor triangles, each after its own wait, some
  * already partway down at the start; they tumble, fall (the bigger the faster), bounce once off
  * floors that allow it and fade out on the ground, then start over. +0x1C14 .. +0x1C20 the
@@ -3015,13 +3015,13 @@ void *Kind39_MotionFiles(void) {
     return D_00444B10;
 }
 
-/* ---- D_00479600 (0x80 bytes): a strike's mark - between two points of a model (+0x50 from
+/* ---- StrikeMark_vtable (0x80 bytes): a strike's mark - between two points of a model (+0x50 from
  * its bone +0x98, +0x60 from its bone +0x9C; none: two points by Fiona's bone 0x23), a frame
  * (+0x10, its z axis from the second point to the first), drawn as a glow at the first point
- * and a streak 4 long beyond it; after 2 frames (+0x70) the model gives off smoke (D_00479800)
+ * and a streak 4 long beyond it; after 2 frames (+0x70) the model gives off smoke (BoneSmoke_vtable)
  * and the mark is done (+0x78). +0x74 the model ---- */
 
-extern void *D_00479800[];
+extern void *BoneSmoke_vtable[];
 
 /* the two points: the model's bones, or Fiona's bone 0x23 at (-3.5, 0, 1) and (-1, 0, 1) */
 static inline void mark_points(u8 *o) {
@@ -3095,7 +3095,7 @@ void StrikeMark_SetParams(u8 *o, s32 *arg) {
 }
 
 static inline void mark_smoke_init(void **obj) {
-    obj[0] = D_00479800;
+    obj[0] = BoneSmoke_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -3218,12 +3218,12 @@ void StrikeMark_Draw(u8 *o) {
 }
 #endif
 
-/* ---- D_00470A50 (0x3858 bytes): 128 motes rising from around (0, 70, 35), in two buffers of
+/* ---- RisingMotes_vtable (0x3858 bytes): 128 motes rising from around (0, 70, 35), in two buffers of
  * quad records (+0x10 + 0x1800 x the current one +0x3850), their velocities at +0x3050 (16
  * each), drawn by the quad drawer at +0x3010; a mote is renewed past height 130 or, counted on
  * the even frames, when it has faded out ---- */
 
-extern void *D_00470A50[];
+extern void *RisingMotes_vtable[];
 
 #define MOTE_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1800) + (i))
 #define MOTE_VEL(e, i) ((f32 *)((e) + 0x3050 + (i) * 0x10))
@@ -3234,7 +3234,7 @@ u8 *RisingMotes_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470A50;
+    AT(o, 0x0, void **) = RisingMotes_vtable;
     AT(o, 0x3010, void **) = QuadDrawer_vtable;
     AT(o, 0x3010, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -3356,12 +3356,12 @@ void RisingMotes_Start(u8 *e) {
     }
 }
 
-/* ---- D_00470A70 (0xE58 bytes): 32 orange sparks drifting up from around (276.5, 6, -145.9),
+/* ---- OrangeSparks_vtable (0xE58 bytes): 32 orange sparks drifting up from around (276.5, 6, -145.9),
  * in two buffers of quad records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50
  * (16 each), the quad drawer (additive) at +0xC10; a spark is renewed when it fades, falls back
  * or reaches height 50 - unless the burst is ending (+0xE54), when it just goes out ---- */
 
-extern void *D_00470A70[];
+extern void *OrangeSparks_vtable[];
 
 #define SPARK_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
 #define SPARK_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
@@ -3372,7 +3372,7 @@ u8 *OrangeSparks_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470A70;
+    AT(o, 0x0, void **) = OrangeSparks_vtable;
     AT(o, 0xC10, void **) = QuadDrawer_vtable;
     AT(o, 0xC10, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -3547,11 +3547,11 @@ void *Debilitas2_MotionFiles(void) {
     return D_0041B5F0;
 }
 
-/* ---- D_00470E00 (0xC0 bytes): one sprite (+0x10 + 0x30 x the current one +0xB8), slowly
+/* ---- SinkingSprite_vtable (0xC0 bytes): one sprite (+0x10 + 0x30 x the current one +0xB8), slowly
  * growing and sinking, with its velocity at +0xA8 and the quad drawer at +0x70; each update
  * (only every other call, +0xBC) fades it a little ---- */
 
-extern void *D_00470E00[];
+extern void *SinkingSprite_vtable[];
 
 #define ONE_REC(e, buf) ((QuadRec *)((e) + 0x10) + (buf))
 
@@ -3561,7 +3561,7 @@ u8 *SinkingSprite_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470E00;
+    AT(o, 0x0, void **) = SinkingSprite_vtable;
     AT(o, 0x70, void **) = QuadDrawer_vtable;
     AT(o, 0x70, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -3672,7 +3672,7 @@ void SinkingSprite_Start(u8 *e) {
     AT(e, 0xA6, s8) = -1;
 }
 
-/* ---- D_0047A6D0 (as D_00470E00): one dust mote in the fog's colour, drifting along a heading
+/* ---- DustMote_vtable (as SinkingSprite_vtable): one dust mote in the fog's colour, drifting along a heading
  * (+0xA8 / +0xAC), fading in to 0x40 over its life (+0xB0) and out again (+0xB4 its alpha),
  * fainter within 64 of the camera ---- */
 
@@ -3821,10 +3821,10 @@ void DustMote_Draw(u8 *e) {
     Drawer_Submit(e + 0x70);
 }
 
-/* ---- D_0047A6F0 (0x48 bytes): a source of dust motes (D_0047A6D0) at +0x30 heading +0x40 - eight
+/* ---- DustMoteSource_vtable (0x48 bytes): a source of dust motes (DustMote_vtable) at +0x30 heading +0x40 - eight
  * timers (+0x4) each starting a mote when it runs out (every 300 frames); stopped by +0x44 ---- */
 
-extern void *D_0047A6D0[];
+extern void *DustMote_vtable[];
 
 /* a mote's start arguments */
 typedef struct {
@@ -3834,7 +3834,7 @@ typedef struct {
 } MoteArgs;
 
 static inline void Mote_Init(void **obj) {
-    obj[0] = D_0047A6D0;
+    obj[0] = DustMote_vtable;
     obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
     obj[0x70 / 4] = QuadDrawer_vtable;
@@ -3899,7 +3899,7 @@ s32 DustMoteSource_Update(u8 *e) {
     return 1;
 }
 
-/* ---- D_0047A750 (0x6F8 bytes): a ring of light spreading over the ground from a point (+0x650),
+/* ---- LightRing_vtable (0x6F8 bytes): a ring of light spreading over the ground from a point (+0x650),
  * its radius (+0x660) growing at a slowing speed (+0x664) and its alpha (+0x668) fading, its
  * width (+0x66C) following the alpha; with 16 sparks (quad records +0x10 + 0x300 x the current
  * one +0x6F0, the quad drawer at +0x610) spiralling (+0x6B0) up or down (+0x670); stopped (+0x6F4)
@@ -4120,7 +4120,7 @@ void LightRing_Draw(u8 *e) {
 }
 #endif
 
-/* ---- D_0047A350 (0x130 bytes): Lorenzo's spark (Lorenzo2_BlowSparks) - two quad records (+0x10 +
+/* ---- LorenzoSpark_vtable (0x130 bytes): Lorenzo's spark (Lorenzo2_BlowSparks) - two quad records (+0x10 +
  * 0x60 x the current one +0x128) growing (+0x120 a frame), turning and drifting (+0x108, 12
  * each) as their alpha fades (+0x124 a frame) and their colour dims; the quad drawer at +0xD0;
  * stopped (+0x12C) once both are gone ---- */
@@ -4269,12 +4269,12 @@ void LorenzoSpark_Draw(u8 *e) {
     }
 }
 
-/* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
+/* ---- SmokePuffs_vtable (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
  * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
  * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
  * renewed when gone or at height 22; stopped (+0x1C54) by its +0x18 ---- */
 
-extern void *D_00470E20[];
+extern void *SmokePuffs_vtable[];
 
 #define PUFF_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0xC00) + (i))
 #define PUFF_VEL(e, i) ((f32 *)((e) + 0x1850 + (i) * 0x10))
@@ -4285,7 +4285,7 @@ u8 *SmokePuffs_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470E20;
+    AT(o, 0x0, void **) = SmokePuffs_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -4418,13 +4418,13 @@ void SmokePuffs_Start(u8 *e) {
     }
 }
 
-/* ---- D_00470E40 (0x7F8 bytes): a swarm of up to 16 specks (+0x634) buzzing about a centre
+/* ---- SpeckSwarm_vtable (0x7F8 bytes): a swarm of up to 16 specks (+0x634) buzzing about a centre
  * (+0x7E0) within a spread (+0x7F0), in two buffers of quad records (+0x10 + 0x300 x the
  * current one +0x7F4), velocities at +0x648 and their pulls back to the centre at +0x708 (12
  * each), alphas at +0x7C8, the quad drawer at +0x610; hidden when the camera is within 10, dim
  * within 20 ---- */
 
-extern void *D_00470E40[];
+extern void *SpeckSwarm_vtable[];
 
 #define SWARM_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
 #define SWARM_VEL(e, i) ((f32 *)((e) + 0x648 + (i) * 0xC))
@@ -4436,7 +4436,7 @@ u8 *SpeckSwarm_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470E40;
+    AT(o, 0x0, void **) = SpeckSwarm_vtable;
     AT(o, 0x610, void **) = QuadDrawer_vtable;
     AT(o, 0x610, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -4606,13 +4606,13 @@ void SpeckSwarm_Start(u8 *e) {
     AT(e, 0x646, s8) = 2;
 }
 
-/* ---- D_00470E60 (0x4E0 bytes): a splash - up to 10 specks (+0x3F4) thrown up and away from
+/* ---- Splash_vtable (0x4E0 bytes): a splash - up to 10 specks (+0x3F4) thrown up and away from
  * a character (the pursuer, the partner or Fiona), in two buffers of quad records (+0x10 +
  * 0x1E0 x the current one +0x4D8), velocities at +0x408 (12 each) and their sideways drags at
  * +0x480 (x, z), the quad drawer at +0x3D0; each speck bounces off the ground (+0x4D0),
  * fading, until gone; every other call (+0x4DC) is a rest ---- */
 
-extern void *D_00470E60[];
+extern void *Splash_vtable[];
 
 #define SPLASH_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1E0) + (i))
 #define SPLASH_VEL(e, i) ((f32 *)((e) + 0x408 + (i) * 0xC))
@@ -4624,7 +4624,7 @@ u8 *Splash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470E60;
+    AT(o, 0x0, void **) = Splash_vtable;
     AT(o, 0x3D0, void **) = QuadDrawer_vtable;
     AT(o, 0x3D0, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -4787,12 +4787,12 @@ void Splash_Start(u8 *e) {
     AT(e, 0x406, s8) = 2;
 }
 
-/* ---- D_00470F30 (0xE60 bytes): a spray of blood - 32 dark red drops, in two buffers of quad
+/* ---- BloodSpray_vtable (0xE60 bytes): a spray of blood - 32 dark red drops, in two buffers of quad
  * records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50 (16 each), the quad
  * drawer at +0xC10; they shrink and fall, and on the floor of their nav triangle (+0xE54, -1:
- * none - no floor) half of them leave a splat (D_00472BF0) ---- */
+ * none - no floor) half of them leave a splat (FloorSplat_vtable) ---- */
 
-extern void *D_00470F30[], *D_00472BF0[];
+extern void *BloodSpray_vtable[], *FloorSplat_vtable[];
 
 #define BLOOD_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
 #define BLOOD_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
@@ -4803,7 +4803,7 @@ u8 *BloodSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00470F30;
+    AT(o, 0x0, void **) = BloodSpray_vtable;
     AT(o, 0xC10, void **) = QuadDrawer_vtable;
     AT(o, 0xC10, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -4882,7 +4882,7 @@ void BloodSpray_Draw(u8 *e) {
 }
 
 static void splat_init(void **obj) {
-    obj[0] = D_00472BF0;
+    obj[0] = FloorSplat_vtable;
     obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
     obj[0x70 / 4] = QuadDrawer_vtable;
@@ -4990,18 +4990,18 @@ void BloodSpray_Start(u8 *e) {
     AT(e, 0xC46, s8) = -1;
 }
 
-/* ---- D_00471000 (0x60 bytes; event command 0xA9): a 2 x 2 quad (texture group 0x10, cell
+/* ---- Effect71000_vtable (0x60 bytes; event command 0xA9): a 2 x 2 quad (texture group 0x10, cell
  * (64, 0) 64 x 64, palette 1) wandering about its place: +0x10 the place, +0x20 its turn, +0x30
  * / +0x34 the range (x, z), +0x38 / +0x3C the offset now, +0x40 / +0x44 where it heads, +0x48 /
  * +0x4C its step (its facing too), +0x50 frames to wait ---- */
 
-extern void *D_00471000[];
+extern void *Effect71000_vtable[];
 
 /* +0x8 destructor */
 /* 0x003055F0 */
 void *Effect71000_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00471000;
+        AT(o, 0x0, void **) = Effect71000_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = EffectBase_vtable;
         }
@@ -5217,18 +5217,18 @@ void Effect71000_Draw(u8 *o) {
     q.vtbl = Helper469D00_vtable;
 }
 
-/* ---- D_00479AE0 (0x40 bytes): a splash ring on water - a flat ring at +0x10 (16 sides, 0.2
+/* ---- SplashRing_vtable (0x40 bytes): a splash ring on water - a flat ring at +0x10 (16 sides, 0.2
  * wide) growing from radius 0.2 by +0x2C a frame, its colour +0x20 (RGB, and the alpha it
  * fades in to), fading in by 16 a frame (while +0x30) then out by 4 (alpha now +0x24); +0x31
  * set once it is gone ---- */
 
-extern void *D_00479AE0[];
+extern void *SplashRing_vtable[];
 
 /* +0x8 destructor */
 /* 0x00361260 */
 void *SplashRing_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479AE0;
+        AT(o, 0x0, void **) = SplashRing_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = EffectBase_vtable;
         }
@@ -5335,14 +5335,14 @@ void SplashRing_Draw(u8 *o) {
 }
 #endif
 
-/* ---- D_00479AA0 (0x720 bytes): a spray of up to 16 droplets (+0x710 of them), double-
+/* ---- DropletSpray_vtable (0x720 bytes): a spray of up to 16 droplets (+0x710 of them), double-
  * buffered (+0x10 + buffer +0x648 * 0x300, a quad record of 0x30 each) and drawn by the quad
  * drawer at +0x610 (texture group 0x10, cell (0x6C, 0x4C) 8 x 8, additive with glow); per
  * droplet its rise speed (+0x64C + i * 4, less +0x70C gravity a frame), heading (+0x68C) and
  * outward speed (+0x6CC). It ends (+0x714) once a droplet has faded out or falls faster than
  * 10 ---- */
 
-extern void *D_00479AA0[];
+extern void *DropletSpray_vtable[];
 
 /* its start parameters: where, colour, how many; sizes, distances out, rise and outward
  * speeds as base + random * spread; the height above `pos` they start at and the gravity */
@@ -5366,7 +5366,7 @@ u8 *DropletSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479AA0;
+    AT(o, 0x0, void **) = DropletSpray_vtable;
     AT(o, 0x610, void **) = QuadDrawer_vtable;
     AT(o, 0x610, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -5503,12 +5503,12 @@ void DropletSpray_Draw(u8 *o) {
     Drawer_Submit(o + 0x610);
 }
 
-/* ---- the drips that make those: D_00479A60 (0x640 bytes) 14 drops falling from fixed spots
- * of room 0xC0's ceiling (y 40) to the floor under them, D_00479A80 (0xC0 bytes) one drop at
+/* ---- the drips that make those: CeilingDrips_vtable (0x640 bytes) 14 drops falling from fixed spots
+ * of room 0xC0's ceiling (y 40) to the floor under them, OneDrip_vtable (0xC0 bytes) one drop at
  * (-226, -100) from y 30 into water at 0. Each lands as a spray (and the single one with a
  * ring) and starts over after a random wait ---- */
 
-/* the ring's start parameters (D_00479AE0) */
+/* the ring's start parameters (SplashRing_vtable) */
 typedef struct RingParams {
     f32 pos[4];
     u8 rgba[4];
@@ -5516,11 +5516,11 @@ typedef struct RingParams {
 } RingParams;
 
 static inline void ring_init(void **obj) {
-    obj[0] = D_00479AE0;
+    obj[0] = SplashRing_vtable;
 }
 
 static inline void spray_init(void **obj) {
-    obj[0] = D_00479AA0;
+    obj[0] = DropletSpray_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -5822,17 +5822,17 @@ void MirrorFragment_Draw(u8 *o) {
 }
 #endif
 
-/* ---- D_00479890 (8 bytes, room 0x48): a soft shadow on the wall at x 127 (z -114 .. -130,
+/* ---- WallShadow_vtable (8 bytes, room 0x48): a soft shadow on the wall at x 127 (z -114 .. -130,
  * y 1 .. 26) - eight black quads stepping 0.1 off the wall, alpha 0x80 down to 0x10; +0x4 set
  * (its start) it is gone ---- */
 
-extern void *D_00479890[];
+extern void *WallShadow_vtable[];
 
 /* +0x8 destructor */
 /* 0x0035C9F0 */
 void *WallShadow_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479890;
+        AT(o, 0x0, void **) = WallShadow_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = EffectBase_vtable;
         }
@@ -5907,7 +5907,7 @@ void WallShadow_Draw(u8 *o) {
 }
 #endif
 
-/* ---- D_00472BF0 (0x140 bytes): a splat on the floor - one quad (two buffers of a record at
+/* ---- FloorSplat_vtable (0x140 bytes): a splat on the floor - one quad (two buffers of a record at
  * +0x10 + 0x30 x the current one +0x134) drawn as four corners (+0xF0..+0x120, the drawer at
  * +0x70 takes them) in the floor's frame (+0xB0: side, normal, along), growing (+0x130) while
  * it fades; +0x138 gone, +0x139 its kind (0 a blood splat, else a dark stain) ---- */
@@ -5920,7 +5920,7 @@ u8 *FloorSplat_dtor(u8 *e, s32 flags) {
     if (e == NULL) {
         return e;
     }
-    AT(e, 0x0, void **) = D_00472BF0;
+    AT(e, 0x0, void **) = FloorSplat_vtable;
     AT(e, 0x70, void **) = QuadDrawer_vtable;
     AT(e, 0x70, void **) = Helper469D00_vtable;
     AT(e, 0x0, void **) = EffectBase_vtable;
@@ -6119,10 +6119,10 @@ void FloorSplat_Start(u8 *self) {
  *   +0xC a slot to look for room from   +0x10 its state (1 on, 2 ending, 3 ended, 4 resized)
  *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
 
-extern void *D_00479E50[];
+extern void *Spark_vtable[];
 
 static void marker_spark_init(void **obj) {
-    obj[0] = D_00479E50;
+    obj[0] = Spark_vtable;
     obj[0xD0 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xD4 / 4] = -1;
     obj[0xD0 / 4] = QuadDrawer_vtable;
@@ -6131,7 +6131,7 @@ static void marker_spark_init(void **obj) {
     obj[0x108 / 4] = QuadDrawer_vtable;
 }
 
-/* a spark (D_00479E50, 0x170 bytes) in the first free slot from `from` (-1: from 0); -1 if none */
+/* a spark (Spark_vtable, 0x170 bytes) in the first free slot from `from` (-1: from 0); -1 if none */
 static s32 spark_new(u8 *mgr, s32 from) {
     void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32))(EFFECT_HEAP(mgr), 0x170);
     s32 i;
@@ -6168,7 +6168,7 @@ static s32 rnd_int(void) {
     return VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom);
 }
 
-/* ---- the spark itself (D_00479E50, 0x170 bytes): two quads - a glow (records +0x10 / +0x40,
+/* ---- the spark itself (Spark_vtable, 0x170 bytes): two quads - a glow (records +0x10 / +0x40,
  * drawer +0xD0, velocity +0x150) and a flare (records +0x70 / +0xA0, drawer +0x108, velocity
  * +0x15C), the current frame +0x168; at a bone (+0x144) of a model (+0x140), size +0x148, the
  * marker's slot +0x14C; +0x16C gone, +0x16D placed at the bone again next frame, +0x16E
@@ -6721,7 +6721,7 @@ void Marker_Draw(u8 *o) {
 }
 #endif
 
-/* ---- D_00471060 (0x840 bytes, room 0x0F): 64 drifting flecks, each a quad, in parallel arrays
+/* ---- DriftingFlecks_vtable (0x840 bytes, room 0x0F): 64 drifting flecks, each a quad, in parallel arrays
  * (4 bytes apart): +0x38 x, +0x138 z, +0x238 / +0x338 their drift, +0x438.. colour bytes (r, g,
  * b; +0x4F8 alpha), +0x538 / +0x638 size, +0x738 frames to the next nudge. The area: +0x30
  * half width, +0x34 depth; placed at +0x10, turned by +0x20 ---- */
@@ -6892,15 +6892,15 @@ void DriftingFlecks_Draw(u8 *o) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern void *D_0047A390[];
-extern void *D_0047A6D0[];
-extern void *D_0047A710[];
-extern void *D_0047A730[];
-extern void *D_00479F30[];
-extern void *D_00479F50[];
-extern void *D_00479F70[];
-extern void *D_00478B50[];
-extern void *D_00479A80[];
+extern void *Room49Effect_vtable[];
+extern void *DustMote_vtable[];
+extern void *DropletFlash_vtable[];
+extern void *AshFlakes_vtable[];
+extern void *SmokeTrail_vtable[];
+extern void *WispColumn_vtable[];
+extern void *SparkSpray_vtable[];
+extern void *Fire_vtable[];
+extern void *OneDrip_vtable[];
 
 /* (as RisingSmoke_dtor)  +0x8 destructor (the quad drawer's inlined) */
 /* 0x00376730 */
@@ -6908,7 +6908,7 @@ u8 *Room49Effect_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0047A390;
+    AT(o, 0x0, void **) = Room49Effect_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -6948,7 +6948,7 @@ void LightShaft_Mote2(u8 *o, s32 i) {
 }
 
 #ifdef HG_NATIVE
-/* D_0047A390's +0x14 draw (PC; the PS2 sends GS packets): unless stopped, the motes, then the
+/* Room49Effect_vtable's +0x14 draw (PC; the PS2 sends GS packets): unless stopped, the motes, then the
  * haze as room 0x61's (phases +0x1A48 / +0x1A4C) over the screen at 0x60 */
 /* 0x00376990 */
 void Room49Effect_Draw(u8 *o) {
@@ -7066,7 +7066,7 @@ u8 *DustMote_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0047A6D0;
+    AT(o, 0x0, void **) = DustMote_vtable;
     AT(o, 0x70, void **) = QuadDrawer_vtable;
     AT(o, 0x70, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7082,7 +7082,7 @@ u8 *DropletFlash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0047A710;
+    AT(o, 0x0, void **) = DropletFlash_vtable;
     AT(o, 0xC10, void **) = QuadDrawer_vtable;
     AT(o, 0xC10, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7122,7 +7122,7 @@ u8 *AshFlakes_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0047A730;
+    AT(o, 0x0, void **) = AshFlakes_vtable;
     AT(o, 0x3010, void **) = QuadDrawer_vtable;
     AT(o, 0x3010, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7132,7 +7132,7 @@ u8 *AshFlakes_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- D_0047A730 (0x4478 bytes): 128 ash flakes about (-80, -20, -10), in two buffers of
+/* ---- AshFlakes_vtable (0x4478 bytes): 128 ash flakes about (-80, -20, -10), in two buffers of
  * quad records (+0x10 + 0x1800 x the current one +0x4470), turned by angles (+0x3060, 16 each)
  * at their spins (+0x3860, 12 each), moving by their velocities (+0x3E60, 12 each) and a wind
  * (+0x4460); dead ones (alpha 0) come back three a frame, spread wider as the frames count up
@@ -7295,7 +7295,7 @@ u8 *SmokeTrail_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479F30;
+    AT(o, 0x0, void **) = SmokeTrail_vtable;
     AT(o, 0xC10, void **) = QuadDrawer_vtable;
     AT(o, 0xC10, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7305,7 +7305,7 @@ u8 *SmokeTrail_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- D_00479F30 (0xE60 bytes): a trail of 32 smoke puffs rising from an object (+0xE50, its
+/* ---- SmokeTrail_vtable (0xE60 bytes): a trail of 32 smoke puffs rising from an object (+0xE50, its
  * position at +0x10; done once its +0x28 clears), in two buffers of quad records (+0x10 +
  * 0x600 x the current one +0xE58), velocities at +0xC50 (16 each), the quad drawer at +0xC10;
  * +0xE54 off: no new puffs, gone once all have faded ---- */
@@ -7439,7 +7439,7 @@ u8 *WispColumn_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479F50;
+    AT(o, 0x0, void **) = WispColumn_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7449,7 +7449,7 @@ u8 *WispColumn_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- D_00479F50 (0x1C58 bytes): a column of 64 large (20 x 20) wisps rising 5 a frame from
+/* ---- WispColumn_vtable (0x1C58 bytes): a column of 64 large (20 x 20) wisps rising 5 a frame from
  * -20 to 60 and starting over, in two buffers of quad records (+0x10 + 0xC00 x the current one
  * +0x1C54), velocities at +0x1850 (16 each), the quad drawer at +0x1810; +0x1C51 their alpha,
  * +0x1C50 off: the alpha runs down to 0; gone at once in a cutscene unless the stalker is
@@ -7586,7 +7586,7 @@ u8 *SparkSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479F70;
+    AT(o, 0x0, void **) = SparkSpray_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7596,7 +7596,7 @@ u8 *SparkSpray_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- D_00479F70 (0x20E0 bytes): 64 sparks sprayed from one side (+0x20D4: 0 the left at
+/* ---- SparkSpray_vtable (0x20E0 bytes): 64 sparks sprayed from one side (+0x20D4: 0 the left at
  * x -75, else the right at x 75; y 14) across and down, in two buffers of quad records (+0x10
  * + 0xC00 x the current one +0x20D8), velocities at +0x1850 and their pulls at +0x1C50 (16
  * each), start delays at +0x2050 (s16), the quad drawer at +0x1810; +0x20D0 off: no new
@@ -7767,7 +7767,7 @@ u8 *Fire_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00478B50;
+    AT(o, 0x0, void **) = Fire_vtable;
     AT(o, 0x1810, void **) = QuadDrawer_vtable;
     AT(o, 0x1810, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;
@@ -7777,7 +7777,7 @@ u8 *Fire_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- D_00478B50 (0x1C60 bytes; room 0x66): a fire - 64 flames (records +0x10 + 0xC00 x the
+/* ---- Fire_vtable (0x1C60 bytes; room 0x66): a fire - 64 flames (records +0x10 + 0xC00 x the
  * current one +0x1C50, velocities +0x1850, the drawer +0x1810) at one of the room's spots
  * (+0x1C58 twice its index: x / z pairs at D_00442D60 for a small fire, D_00442D80 for a big
  * one, +0x1C54); +0x1C5C put out: no new flames ---- */
@@ -7974,7 +7974,7 @@ u8 *OneDrip_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_00479A80;
+    AT(o, 0x0, void **) = OneDrip_vtable;
     AT(o, 0x70, void **) = QuadDrawer_vtable;
     AT(o, 0x70, void **) = Helper469D00_vtable;
     AT(o, 0x0, void **) = EffectBase_vtable;

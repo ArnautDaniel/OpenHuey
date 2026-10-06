@@ -1590,8 +1590,8 @@ void Motion_Disable(u8 *p) {
 
 #include "effectmgr.h"
 
-extern void *D_00479AE0[];   /* ripple effect vtable */
-extern void *D_00479AA0[];   /* splash particle effect vtable */
+extern void *SplashRing_vtable[];   /* ripple effect vtable */
+extern void *DropletSpray_vtable[];   /* splash particle effect vtable */
 
 typedef struct RippleParams {
     f32 pos[4] __attribute__((aligned(16)));
@@ -1607,11 +1607,11 @@ typedef struct SplashParams {
 } SplashParams;
 
 static inline void Ripple_Init(void **obj) {
-    obj[0] = D_00479AE0;
+    obj[0] = SplashRing_vtable;
 }
 
 static inline void Splash_Init(void **obj) {
-    obj[0] = D_00479AA0;
+    obj[0] = DropletSpray_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;

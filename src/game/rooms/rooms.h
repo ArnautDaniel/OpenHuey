@@ -20,7 +20,7 @@
 #include "scene_game_members.h"
 #include "msl.h"
 
-extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
+extern VObject *gRoomObjects;   /* the room's objects: +0x18 (id) the object */
 extern void *Reflection_vtable[];
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
 extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
@@ -29,16 +29,16 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
 extern const char *const D_00403964;   /* "movechair_3" */
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
 extern const char *const D_003F99B8[];   /* { "kousi" } */
-extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
-extern u32 D_0047E364;   /* menu buttons, repeating */
+extern u32 gMenuPressed;   /* menu buttons pressed this frame (MENU_*) */
+extern u32 gMenuRepeat;   /* menu buttons, repeating */
 extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38, *const D_0042C354;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
 extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* "jimen", "kama", "sumi" */
 extern const char *const D_003F03FC;   /* "doramukan" (the drum can) */
 extern const char *const D_0042C328;   /* "a_fragment0" */
 extern const char *const D_00438D00;   /* room 0x6A's object */
-extern const char *const D_00438700[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
-extern u32 D_0047E36C;                   /* menu buttons pressed (MENU_*) */
-extern u32 D_0047E364;                   /* menu buttons repeating */
+extern const char *const kDialNames[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
+extern u32 gMenuPressed;                   /* menu buttons pressed (MENU_*) */
+extern u32 gMenuRepeat;                   /* menu buttons repeating */
 extern const char *const D_0040C160;   /* an object's name */
 extern const char *const D_003FF124;     /* room 0x20's falling object */
 extern const char *const D_0040187C;
@@ -64,15 +64,15 @@ typedef struct GreyMsg {
     s16 spot;
 } GreyMsg;
 
-extern void *D_00479B00[];
-extern void *D_00471060[];
-extern void *D_00479AC0[];
-extern void *D_0046FF20[];
+extern void *Effect79B00_vtable[];
+extern void *DriftingFlecks_vtable[];
+extern void *WindowFlash_vtable[];
+extern void *SpriteBurst_vtable[];
 extern void *Helper469D00_vtable[];
 extern void *QuadDrawer_vtable[];
-extern void *D_004737D0[];
-extern void *D_0047A3D0[];
-extern void *D_00479A80[];
+extern void *Effect737D0_vtable[];
+extern void *Effect7A3D0_vtable[];
+extern void *OneDrip_vtable[];
 
 /* common.c */
 extern void Progress_SpeechCall(u8 *p, s32 a1, s32 a2, s32 a3);
@@ -97,7 +97,7 @@ static inline void *room_dtor(void *o, s32 flags, void **own, void **base) {
  * swings for 20 frames (+0x38) and the first toggles event flag 3 with a sound (Fiona's 1 /
  * 2); 2 a swing step: +0x30 on by 36 degrees, its tilt +0x10 = (1 + sin) degrees in radians */
 static inline __attribute__((always_inline)) s32 swing_three_by(VObject *self, u8 *cmd, s32 byIndex) {
-    VObject *objs = D_00456DF8, *ev = gEvents;
+    VObject *objs = gRoomObjects, *ev = gEvents;
     s32 i;
 
     for (i = 0; i < 3; i++) {
@@ -218,7 +218,7 @@ static __attribute__((unused)) f32 hook_sqrt(f32 x) {
  * and a swing step (+0x30 on by 36 degrees, the tilt +0x10 (1 + sin) degrees in radians) */
 static inline __attribute__((always_inline)) s32 hangers_swing(VObject *self, u8 *cmd, s32 base, s32 n, f32 push,
                                                               s32 root, s32 flag, s32 sndOn, s32 sndOff) {
-    VObject *objs = D_00456DF8, *ev = gEvents;
+    VObject *objs = gRoomObjects, *ev = gEvents;
     f32 d[4] __attribute__((aligned(16)));
     s32 i;
 
@@ -296,7 +296,7 @@ static inline s32 item238_sound(u32 bit) {
  * once, else by 0.2 a step */
 static inline s32 var_fade(const char *name, s32 var, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD};   /* 0.2 */
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
 
     if (o == NULL) {
         return 1;
@@ -324,7 +324,7 @@ static inline s32 var_fade(const char *name, s32 var, u8 *cmd) {
 /* room object `name`'s animation by event var 0 (12..): byte 3 0 forward (+0x74) to frame
  * (var - 12) / 18, 1 back (+0x78) to (var - 12) / 16, 2 / 3 back at 0 / 1; +0x7C kept 0..1 */
 static inline __attribute__((always_inline)) s32 var0_anim(u8 *cmd, const char *name) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
     u32 v;
 
     if (o == NULL) {
@@ -384,17 +384,17 @@ static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 
         AT(o, 0x14, f32) = kPi.f * (f32)((s32)(Progress_GetVar(gProgress, var) & 0xFF) * 30 + off) / 180.0f;
         break;
     case 1:
-        if (((D_0047E36C >> 4) & 1) | ((D_0047E36C >> 5) & 1)) {
+        if (((gMenuPressed >> 4) & 1) | ((gMenuPressed >> 5) & 1)) {
             VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 0);
         } else {
             Progress *p = gProgress;
             u8 v = Progress_GetVar(p, var);
 
-            if ((D_0047E364 >> 3) & 1) {
+            if ((gMenuRepeat >> 3) & 1) {
                 if (v != 0) {
                     v = v - 1;
                 }
-            } else if (((D_0047E364 >> 1) & 1) && v < 6) {
+            } else if (((gMenuRepeat >> 1) & 1) && v < 6) {
                 v = v + 1;
             }
             if (v != (u8)Progress_GetVar(p, var)) {
@@ -441,7 +441,7 @@ static inline __attribute__((always_inline)) void var0_frame(u8 *o, u32 v, u32 l
 /* the room object D_003FA078's animation by event var 0 (byte 3 picks the range: 0 back over
  * 43..54, 1 / 2 / 5 forward over 12..21, 16..28, 11..18; 3 / 4 back at 0 / 1), +0x7C kept 0..1 */
 static inline s32 var0_obj_anim(const char *name, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
     u32 v;
 
     if (o == NULL) {
@@ -480,7 +480,7 @@ static inline s32 var0_obj_anim(const char *name, u8 *cmd) {
 /* the room's object `name` turns 1.15 degrees a frame */
 static inline __attribute__((always_inline)) void fan_turn(const char *name) {
     static const union { u32 u; f32 f; } kStep = {0x3CA46C8A}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
 
     if (o != NULL) {
         f32 a = AT(o, 0x14, f32) + kStep.f;
@@ -493,13 +493,13 @@ static inline __attribute__((always_inline)) void fan_turn(const char *name) {
 }
 
 static __attribute__((unused)) void glow4_init(void **obj) {
-    obj[0] = D_004737D0;
+    obj[0] = Effect737D0_vtable;
     obj[0x40 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x44 / 4] = -1;
     obj[0x40 / 4] = QuadDrawer_vtable;
 }
 
-/* byte 4 0: the effect D_004737D0 (grey, 0x18, size 30) at one of four spots by byte 3 (-332 /
+/* byte 4 0: the effect Effect737D0_vtable (grey, 0x18, size 30) at one of four spots by byte 3 (-332 /
  * -368, 100.8, -12 / 55 / 165 / 165), its slot in event var byte 3; else that effect removed */
 static inline s32 glow4_spot(u8 *cmd, u32 first) {
     static const union { u32 u; f32 f; } kY = {0x42C9999A};   /* 100.8 */
@@ -546,7 +546,7 @@ static inline s32 glow4_spot(u8 *cmd, u32 first) {
 }
 
 static inline u8 *room_obj(const char *name) {
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    return VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
 }
 
 /* an object's angle field `off` set, if it is there */
@@ -559,10 +559,10 @@ static inline void obj_angle(const char *name, u32 off, u32 bits) {
 }
 
 static __attribute__((unused)) void effect_479ac0_init(void **obj) {
-    obj[0] = D_00479AC0;
+    obj[0] = WindowFlash_vtable;
 }
 
-/* an effect of class D_00479AC0 (0x10 bytes) on object `o` with value `f` */
+/* an effect of class WindowFlash_vtable (0x10 bytes) on object `o` with value `f` */
 static inline void obj_effect(u8 *o, u32 f) {
     struct {
         u8 *o;
@@ -690,7 +690,7 @@ static inline s32 clock_save(void) {
 }
 
 static __attribute__((unused)) void effect_79B00_init(void **obj) {
-    obj[0] = D_00479B00;
+    obj[0] = Effect79B00_vtable;
 }
 
 static inline void grey_send(u8 *mgr, GreyMsg *m, s16 spot, f32 b, f32 c, f32 d) {
@@ -748,14 +748,14 @@ static __attribute__((unused)) s32 swing_three(VObject *self, u8 *cmd) {
 }
 
 static __attribute__((unused)) void effect_C0_init(void **obj) {
-    obj[0] = D_00479A80;
+    obj[0] = OneDrip_vtable;
     obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
     obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 static __attribute__((unused)) void effect_10_init(void **obj) {
-    obj[0] = D_0047A3D0;
+    obj[0] = Effect7A3D0_vtable;
 }
 
 /* byte 3 0: a 90-frame countdown starts; else while it runs the character kind 0xE moves by
@@ -799,19 +799,19 @@ static const u32 sQuadDoor[16] = {
 };
 
 static __attribute__((unused)) void dust_cloud_init(void **obj) {
-    obj[0] = D_0046FF20;
+    obj[0] = SpriteBurst_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 static __attribute__((unused)) void effect_471060_init(void **obj) {
-    obj[0] = D_00471060;
+    obj[0] = DriftingFlecks_vtable;
 }
 
 /* the room object by name, out of line (keeps a2 untouched for difftest) */
 static __attribute__((noinline, unused)) u8 *obj_named(const char *name) {
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    return VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
 }
 
 #endif /* ROOMS_H */

@@ -141,7 +141,7 @@ s32 Pads_GetData(u8 *pads, s32 port, PadData *out) {
     return 0;
 }
 
-/* ---- the game's input state (D_0047E360, one per port) ---- */
+/* ---- the game's input state (gInput, one per port) ---- */
 
 typedef struct InputState {
     /* 0x00 */ s8 connected;
@@ -152,7 +152,7 @@ typedef struct InputState {
     /* 0x0A */ u8 padA[2];
     /* 0x0C */ u32 pressed;       /* new presses (directions: with key repeat) */
     /* 0x10 */ u8 repeat[4];      /* direction key repeat counters */
-    /* 0x14 */ u16 raw;           /* all buttons, mapped by D_0047E3C0 */
+    /* 0x14 */ u16 raw;           /* all buttons, mapped by kButtonMap */
     /* 0x16 */ u8 pad16[2];
     /* 0x18 */ u16 prevRaw;
     /* 0x1A */ u8 pad1A[2];
@@ -168,8 +168,8 @@ typedef struct InputState {
 
 _Static_assert(sizeof(InputState) == 0x60, "InputState");
 
-extern InputState D_0047E360;
-extern const u8 D_0047E3C0[16];   /* button map */
+extern InputState gInput;
+extern const u8 kButtonMap[16];   /* button map */
 extern const u8 D_0047E3D0[16];   /* analog map */
 
 #define BIT(v, n) (((v) >> (n)) & 1)
@@ -179,7 +179,7 @@ extern const u8 D_0047E3D0[16];   /* analog map */
 /* 0x0037E320 */
 void Pads_FaceButtons(u8 *pads, s32 port) {
     u32 b = AT(pads + port * 0x14, 4, u32);
-    InputState *in = &D_0047E360 + port;
+    InputState *in = &gInput + port;
 
     SETBIT(in->held, 4, BIT(b, 14));
     SETBIT(in->held, 5, BIT(b, 12));
@@ -239,7 +239,7 @@ static inline void Input_Stick(f32 *out, u8 bx, u8 by) {
 /* Build the input state from port 0's pad data (pad manager +0x10). */
 /* 0x002D4780 */
 void Pads_BuildInput(u8 *pads) {
-    InputState *in = &D_0047E360;
+    InputState *in = &gInput;
     s32 wasConnected = in->connected != 0;
     PadData *d = (PadData *)(pads + 4);
     u32 b, newly;
@@ -298,7 +298,7 @@ void Pads_BuildInput(u8 *pads) {
         u16 raw = 0;
 
         for (i = 0; i < 16; i++) {
-            raw |= ((1 << D_0047E3C0[i] & d->buttons) != 0) << i;
+            raw |= ((1 << kButtonMap[i] & d->buttons) != 0) << i;
         }
         in->raw = raw;
     }

@@ -1170,7 +1170,7 @@ void Thing01_Setup(u8 *o) {
 }
 
 /* ---- kind 2 (Thing02_vtable, over the shared thing class ThingShared_vtable): set down at a random turn;
- * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
+ * it goes off (sound 0x8E and a ThingBurst_vtable burst at it) when the shared checks say so ---- */
 
 extern void *Thing02_vtable[], *ThingShared_vtable[], *D_00476B50[];
 extern void ThingShared_Setup(u8 *o);   /* ThingShared_vtable +0xC */
@@ -2094,9 +2094,9 @@ void Thing04_Frame(u8 *o) {
     thing_stomped(o, 0xA, 6, Thing04_Burst);
 }
 
-/* bursts of four quad drawers (0xFC0 bytes, D_0047A010, drawers from +0xB50; 0x22D0 bytes,
-   D_0047A030, drawers from +0x1A50) */
-extern void *D_0047A010[], *D_0047A030[];
+/* bursts of four quad drawers (0xFC0 bytes, BurstA_vtable, drawers from +0xB50; 0x22D0 bytes,
+   BurstB_vtable, drawers from +0x1A50) */
+extern void *BurstA_vtable[], *BurstB_vtable[];
 
 static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
     s32 i;
@@ -2136,12 +2136,12 @@ static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
 
 /* 0x0036A860 */
 u8 *BurstA_dtor(u8 *o, s32 flags) {
-    return Burst4_Destroy(o, D_0047A010, 0xB50, flags);
+    return Burst4_Destroy(o, BurstA_vtable, 0xB50, flags);
 }
 
 /* 0x0036BCC0 */
 u8 *BurstB_dtor(u8 *o, s32 flags) {
-    return Burst4_Destroy(o, D_0047A030, 0x1A50, flags);
+    return Burst4_Destroy(o, BurstB_vtable, 0x1A50, flags);
 }
 
 /* their draws (unless the effects are paused): each drawer's record (+0x10) the current frame's
@@ -2555,7 +2555,7 @@ s32 BurstB_Update(u8 *o) {
     return burst_update(o, &kB);
 }
 
-/* ---- the shove burst D_00474FB0 (0xFD0 bytes, ShoveBurst_Init): where a kind-2 thing breaks
+/* ---- the shove burst ThingBurst_vtable (0xFD0 bytes, ShoveBurst_Init): where a kind-2 thing breaks
  * or a character is shoved - 16 pieces (records +0x10 + 0x300 x the current one +0xFC8,
  * velocities +0xC80, falls +0xD40, drifts +0xF40 / +0xF80) and 16 puffs (records +0x610,
  * velocities +0xE00, rates +0xF00, heights +0xEC0), +0xFC4 its frames, +0xFCC all gone ---- */
@@ -2878,11 +2878,11 @@ void BurstB_Start(u8 *o) {
 }
 
 static inline void Burst4A_Init(void **obj) {
-    Burst4_Init(obj, D_0047A010, 0xB50);
+    Burst4_Init(obj, BurstA_vtable, 0xB50);
 }
 
 static inline void Burst4B_Init(void **obj) {
-    Burst4_Init(obj, D_0047A030, 0x1A50);
+    Burst4_Init(obj, BurstB_vtable, 0x1A50);
 }
 
 /* 0x00335260 */
@@ -2899,7 +2899,7 @@ void Thing07_Frame(u8 *o) {
    more of the 0x367000 kinds ---- */
 
 extern VObject *gSceneGameF29740;
-extern VObject *D_00456DF8;          /* the room objects */
+extern VObject *gRoomObjects;          /* the room objects */
 
 /* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
    from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
@@ -3057,7 +3057,7 @@ static inline u8 *thing_room_obj(u8 *o) {
         key[i + 1] = D_0047B018[i + 1];
     }
     key[4] += AT(o, 0x122, u8);
-    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, u8 *))(D_00456DF8, key);
+    return VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, u8 *))(gRoomObjects, key);
 }
 
 /* its room object kept at its position */
@@ -3420,11 +3420,11 @@ void Thing10_Frame(u8 *o) {
     }
 }
 
-extern void *D_0047A050[];
+extern void *ThingPuff_vtable[];
 
-/* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
+/* its burst (0x7A0 bytes, ThingPuff_vtable, a quad drawer at +0x610) */
 static inline void Burst1_Init(void **obj) {
-    obj[0] = D_0047A050;
+    obj[0] = ThingPuff_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -3504,11 +3504,11 @@ void Thing08_Frame(u8 *o) {
     AT(o, 0x28, u8) = 0;
 }
 
-extern void *D_0046FF20[];
+extern void *SpriteBurst_vtable[];
 
-/* its puff (0x720 bytes, D_0046FF20, a quad drawer at +0x610) */
+/* its puff (0x720 bytes, SpriteBurst_vtable, a quad drawer at +0x610) */
 static inline void Puff_Init(void **obj) {
-    obj[0] = D_0046FF20;
+    obj[0] = SpriteBurst_vtable;
     obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
     obj[0x610 / 4] = QuadDrawer_vtable;
@@ -3629,7 +3629,7 @@ landed:
     }
 }
 
-/* ---- the burst D_0047A050 (0x7A0 bytes, Burst1_Init): 16 puffs thrown up from a point and
+/* ---- the burst ThingPuff_vtable (0x7A0 bytes, Burst1_Init): 16 puffs thrown up from a point and
  * falling back, in two buffers of quad records (+0x10 + 0x300 x the current one +0x790),
  * velocities at +0x648 (12 each), falls at +0x748, start heights at +0x708, the quad drawer at
  * +0x610; +0x794 all gone ---- */

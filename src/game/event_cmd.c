@@ -37,14 +37,14 @@
 #include "cri/sofdec.h"
 #include "msl.h"
 
-extern u8 D_0047B350;         /* the message language set */
+extern u8 gLanguage;         /* the message language set */
 extern VObject *D_00456E00;
 extern void EventCmd_Flags(VObject *ev);
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern void Event_StartAction(VObject *ev, s32 a, s32 b);
-extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
-extern VObject *D_00456DE8;
+extern u8 *kBuiltinScripts[];   /* the built-in action scripts (ids 0x80..) */
+extern VObject *gAvoidPrompt;
 extern u8 D_003D6A60[];   /* stalker kind -> gift table row */
 extern u8 D_003D6A90[];   /* gift tables: 8 x (only if missing, item) */
 void Event_StepReset(VObject *ev, u8 *s, s32 c);
@@ -257,7 +257,7 @@ static void cmd_scene_change(VObject *ev, Progress *p, const u8 *pc) {
 }
 
 extern void EventCmd_Music(VObject *ev);
-extern VObject *D_00456DF0;       /* the music */
+extern VObject *gStageMusic;       /* the music */
 extern void *D_003D6A40[];        /* the fades' steps by kind */
 void Event_StartStep(VObject *ev, s32 prio, void *step);
 
@@ -366,7 +366,7 @@ static void room_effect_new(VObject *ev, u8 *(*ctor)(u8 *), s32 kind) {
     RoomEffects_Send(gRoomEffects, PC(ev)[1], &arg);
 }
 
-extern VObject *D_00456DF8;   /* the room's placed objects (+0x18 by name) */
+extern VObject *gRoomObjects;   /* the room's placed objects (+0x18 by name) */
 
 /* event command 0x50: the room's placed object named by the room handler (+0x34 of pc[2]):
  * pc[1] 0 shown (pc[3]), 1 / 2 animation pc[3] once / looped, 3 animation reset, 4 hidden and
@@ -375,7 +375,7 @@ extern VObject *D_00456DF8;   /* the room's placed objects (+0x18 by name) */
 void EventCmd_PlacedObject(VObject *ev) {
     VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
     const char *name = VCALL(room, 0x34, const char *(*)(VObject *, s32))(room, PC(ev)[2]);
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);
     const u8 *pc = PC(ev);
 
 #ifdef HG_NATIVE
@@ -411,7 +411,7 @@ void EventCmd_PlacedObject(VObject *ev) {
 /* (0x25 / 0x2C) the script `id` (0x80..: built in, else the room's, vtable +0x24) */
 static u8 *script_by_id(VObject *ev, u32 id) {
     if (id & 0x80) {
-        return D_003D6760[id];
+        return kBuiltinScripts[id];
     } else {
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
 
@@ -650,7 +650,7 @@ void EventCmd_Run(VObject *ev) {
     case 0x03: {
         u32 msg = be16(pc + 1);
 
-        D_0047B350 = (msg & 0x4000) ? 2 : 1;
+        gLanguage = (msg & 0x4000) ? 2 : 1;
         Task_Open((Task *)((u8 *)ev + 0x708), be16(PC(ev) + 1) & ~0x4000);
         AT(ev, 0x80C, s32) = *AT(ev, 0x6FC, s32 *);
         break;
@@ -862,7 +862,7 @@ void EventCmd_Run(VObject *ev) {
         AT(fade, 0x18, f32) = (f32)(0x80 / AT(ev, 0x11F0, u8));
         Event_StartStep(ev, 0xFA, D_003D6A40[AT(ev, 0x11F1, u8)]);
         kind = AT(ev, 0x11F1, u8);
-        snd = D_00456DF0;
+        snd = gStageMusic;
         switch (PC(ev)[2] & 0xC0) {
         case 0x80:
             if (snd != NULL) {
@@ -886,7 +886,7 @@ void EventCmd_Run(VObject *ev) {
         kind = AT(ev, 0x11F1, u8);
         switch (PC(ev)[2] & 0x30) {
         case 0x20:
-            if (D_00456DF0 != NULL) {
+            if (gStageMusic != NULL) {
                 if (kind == 4) {
                     AT(p, 0x1120, f32) = -1.0f;
                 } else if (kind == 1) {
@@ -895,7 +895,7 @@ void EventCmd_Run(VObject *ev) {
             }
             break;
         case 0x10:
-            if (D_00456DF0 != NULL) {
+            if (gStageMusic != NULL) {
                 if (kind == 4) {
                     AT(p, 0x1120, f32) = -1.0f * (1.0f / (f32)AT(ev, 0x11F0, u8));
                 } else if (kind == 1) {
@@ -1372,7 +1372,7 @@ void EventCmd_Run(VObject *ev) {
         break;
     }
     case 0xB4:
-        VCALL(D_00456DE8, 0xC, void (*)(VObject *, s32))(D_00456DE8, pc[1]);
+        VCALL(gAvoidPrompt, 0xC, void (*)(VObject *, s32))(gAvoidPrompt, pc[1]);
         break;
     case 0xB6:
         cmd_gift(ev, p);
@@ -2532,7 +2532,7 @@ void Event_StartAction(VObject *ev, s32 id, s32 script) {
 
     script &= 0xFF;
     if (script & 0x80) {
-        pc = D_003D6760[script];
+        pc = kBuiltinScripts[script];
     } else {
         VObject *room = (VObject *)(e + 0x120 + AT(e, 0x560, s32) * 4);
 
@@ -2555,12 +2555,12 @@ void Event_StartAction(VObject *ev, s32 id, s32 script) {
     AT(s, 0x4, u8 *) = pc;
 }
 
-/* music commands: 0x6A sub-op pc[1] on the music (D_00456DF0): 0 +0x38 fade (pc[2], pc[3]),
+/* music commands: 0x6A sub-op pc[1] on the music (gStageMusic): 0 +0x38 fade (pc[2], pc[3]),
  * 1 +0x40, 2 +0xC then +0x1C, 3 wait while +0x10 says it isn't ready, 4 +0x18, 5 +0x4C; 0x6B
  * the progress' +0x48 with pc[1]; 0x6C its +0x4C */
 /* 0x001FFC70 */
 void EventCmd_Music(VObject *ev) {
-    VObject *mus = D_00456DF0;
+    VObject *mus = gStageMusic;
     const u8 *pc = PC(ev);
 
     switch (pc[0]) {

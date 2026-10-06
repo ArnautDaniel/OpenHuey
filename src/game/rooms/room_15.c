@@ -98,7 +98,7 @@ s32 Room15_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room15_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kShut = {0xC1CA6666}, k01 = {0x3DCCCCCD}, kBounce = {0xBE4CCCCD},
         kStill = {0x3CA3D70A}, k04 = {0x3ECCCCCD};
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FA760);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003FA760);
     f32 v;
 
     if (o == NULL) {
