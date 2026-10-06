@@ -4519,3 +4519,121 @@ void func_0032B210(Character *c, u8 st) {
         break;
     }
 }
+
+/* into state `st` in move `move` */
+static inline void cr19_enter_move(Character *c, u8 st, s32 move) {
+    AT(CR(c), 0x69, u8) = st;
+    AT(c, 0xF8, s32) = move;
+    func_00127060(c);
+    cr19_settle(c);
+}
+
+/* state: after Fiona. Progress flag 9 - state 9 (move 2); Fiona caught - 0xC (move 2); Fiona out
+   of contact or busy (+0x2D / +0xE0) without flag 10 - 0xF; a door it may use shut for kind 2
+   - 0x11; across the room's divider from her - 0x12. Else facing her: her in move 4 / 3 -
+   state 7 (+0x6B bit 0x40). It walks straight at her when it can (func_003279F0, unless given
+   up, +0x6A); during an event (flag 0x18) elsewhere or with her busy - 9. Within 10 and on her
+   triangle (not in state 3, held, or her move 8) it grabs (state 3). Without a straight way it
+   walks its path to her (re-planned when done; her triangle blocked - 0xA; unplannable and out
+   of sight - 0x10). At 40..80 from her, every +0x42 frames it settles in state 0 or 1 */
+void func_00329440(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    VObject *doors;
+    s32 t;
+    u32 d;
+
+    if (Progress_TestFlag(p, 9) != 0) {
+        cr19_enter_move(c, 9, 2);
+        return;
+    }
+    if (AT(gCharPlayer, 0x1AD630, u8) == 1) {
+        cr19_enter_move(c, 0xC, 2);
+        return;
+    }
+    if (AT(gCharPlayer, 0x2D, u8) == 1 || AT(gCharPlayer, 0xE0, u8) == 1) {
+        if (!(Progress_TestFlag(p, 0xA) & 0xFF)) {
+            cr19_enter(c, 0xF);
+            return;
+        }
+    }
+    doors = D_0044E558;
+    for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+        if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, d) & 0xFF) != 1) {
+            continue;
+        }
+        if (!((AT(c, 0x1590 + (d & 0xFF) * 2, u16) & ((1 << *(u8 *)&c->a.slot) & 0xFFFF)) != 0)) {
+            continue;
+        }
+        if (!(func_00177BF0(p, d, 2) & 0xFF & 4)) {
+            continue;
+        }
+        cr19_enter(c, 0x11);
+        return;
+    }
+    if (NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+        cr19_enter(c, 0x12);
+        return;
+    }
+    AT(k, 0x68, u8) = 0;
+    func_0032B080(c, gCharPlayer->a.pos);
+    if (AT(gCharPlayer, 0xF8, s32) == 4 || AT(gCharPlayer, 0xF8, s32) == 3) {
+        AT(k, 0x6B, u8) |= 0x40;
+        cr19_enter(c, 7);
+        return;
+    }
+    AT(k, 0x40, s16)++;
+    t = -1;
+    if (AT(k, 0x6A, u8) == 0) {
+        t = func_003279F0(c, gCharPlayer->a.pos);
+    }
+    if (Progress_TestFlag(p, 0x18) != 0) {
+        if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p) || AT(gCharPlayer, 0xE0, u8) != 0) {
+            cr19_enter_move(c, 9, 2);
+            return;
+        }
+    }
+    if (t != -1 && AT(k, 0x24, f32) <= 10.0f && AT(k, 0x69, u8) != 3 && !(AT(k, 0x6B, u8) & 0x80) &&
+        AT(gCharPlayer, 0xF8, s32) != 8) {
+        if (t == (s32)gCharPlayer->a.navTri) {
+            cr19_enter(c, 3);
+        }
+        return;
+    }
+    if (t < 0) {
+        if (!(c->unk128 < c->unk124)) {
+            if (gCharPlayer->a.navTri == NAV_NONE) {
+                return;
+            }
+            if (NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x4020028) {
+                cr19_enter(c, 0xA);
+                return;
+            }
+            if (func_003255C0(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
+                if (!(func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
+                    cr19_enter(c, 0x10);
+                }
+                return;
+            }
+        }
+        func_001274E0(c, cr19_stride(c));
+    }
+    if (AT(k, 0x24, f32) < 40.0f || !(AT(k, 0x24, f32) <= 80.0f)) {
+        return;
+    }
+    if (AT(k, 0x40, s16) % AT(k, 0x42, s16) != 0) {
+        return;
+    }
+    {
+        s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+
+        if (r == 0) {
+            AT(k, 0x69, u8) = 0;
+        } else if (r == 1) {
+            AT(k, 0x69, u8) = 1;
+        }
+    }
+    AT(c, 0xF8, s32) = 0;
+    func_00127060(c);
+    cr19_settle(c);
+}
