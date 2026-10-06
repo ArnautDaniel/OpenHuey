@@ -60,6 +60,16 @@ defer on-hit   ' noop is on-hit
 Control: `if else then`, `begin until`, `begin while repeat`, `begin again`,
 `do loop`, `?do loop`, `+loop`, `i j leave unloop`, `case of endof endcase`, `exit`, `recurse`.
 
+Quotations: `[: ... ;]` leaves anonymous code as an execution token, inside definitions or at
+the prompt (Factor's `[ ... ]`): `{ 1 2 3 } [: dup * ;] map`.
+
+Lists: growable arrays of cells. `{ 1 2 3 }` makes one (in a definition, each time it runs),
+`list` an empty one; `push ( x l -- )`, `pop`, `nth ( i l -- x )` (negative counts from the end),
+`nth!`, `length`, `list-clear`, `list-free`. Higher-order words (prelude.fs): `each`, `map`,
+`filter`, `reduce ( l acc xt -- acc' )`, `find ( l xt -- x true | false )`, `any?`, `all?`, `count`,
+`contains? ( x l -- flag )`, `range ( n -- l )`, `.list`. Lists made while loading live for good;
+free the ones made over and over at run time.
+
 Strings: `s" text"` gives `addr len`; `." text"` prints; `type`, `s=`, `compare`.
 
 Comments: `( ... )` and `\ to the end of the line`.

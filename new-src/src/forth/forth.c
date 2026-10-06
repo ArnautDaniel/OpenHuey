@@ -1419,7 +1419,7 @@ static Word *as_word(Forth *f, Cell x) {
 }
 
 /* show a word: a colon definition is decompiled */
-static void see_code(Forth *f, Cell *p, Cell *end) {
+static void see_code(Forth *f, Cell *p, Cell *end, int newline) {
     while (p < end) {
         Word *x = (Word *)*p++;
 
@@ -1444,7 +1444,19 @@ static void see_code(Forth *f, Cell *p, Cell *end) {
             forth_printf(f, "s\" %.*s\" ", (int)n, (const char *)p);
             p += CELLS_FOR((size_t)n);
         } else if (x == f->w_exit && p == end) {
-            forth_type(f, ";", 1);
+            if (newline) {
+                forth_type(f, ";", 1);
+            }
+        } else if (x->operands == 1 && x->len == 6 && memcmp(x->name, "branch", 6) == 0 && (Cell *)*p > p &&
+                   ((Word *)(p + 1))->code == docol && ((Word *)(p + 1))->len == 0) {
+            /* a quotation: a branch over a headless word, then the word as a literal */
+            Word *q = (Word *)(p + 1);
+            Cell *after = (Cell *)*p;
+
+            forth_type(f, "[: ", 3);
+            see_code(f, q->body, after - 1, 0);   /* (its body, up to its exit) */
+            forth_type(f, ";] ", 3);
+            p = after + 2;   /* past the literal that leaves it */
         } else if (x->operands == 1) {
             forth_printf(f, "%s(%+ld) ", x->name, (long)(((Cell *)*p - p) * (Cell)sizeof(Cell)));
             p++;
@@ -1452,7 +1464,9 @@ static void see_code(Forth *f, Cell *p, Cell *end) {
             forth_printf(f, "%s ", x->len > 0 ? x->name : "?");
         }
     }
-    forth_type(f, "\n", 1);
+    if (newline) {
+        forth_type(f, "\n", 1);
+    }
 }
 PRIM(p_see) {
     Word *x = parse_find(f, "see"), *next = word_after(f, x);
@@ -1460,15 +1474,130 @@ PRIM(p_see) {
 
     if (x->code == docol) {
         forth_printf(f, ": %s %s", x->name, x->flags & WORD_IMMEDIATE ? "( immediate ) " : "");
-        see_code(f, x->body, end);
+        see_code(f, x->body, end, 1);
     } else if (x->code == dodoes) {
         forth_printf(f, "%s (made by a defining word); does> ", x->name);
-        see_code(f, x->does, (Cell *)x);
+        see_code(f, x->does, (Cell *)x, 1);
     } else {
         forth_printf(f, "%s is a %s\n", x->name, word_kind(x));
     }
 }
 PRIM(p_bye) { f->bye = 1; }
+
+/* ---- quotations: [: ... ;] leaves the code between as an execution token ---- */
+
+/* the code goes inline: a branch over a headless word, then the word as a literal. At the
+ * prompt it is compiled the same way, then the token left on the stack */
+PRIM(p_quote_begin) {
+    Cell *slot = NULL;
+    Word *q;
+
+    if (f->compiling) {
+        comma(f, (Cell)forth_find(f, "branch", 6));
+        comma(f, 0);
+        slot = (Cell *)(f->here - sizeof(Cell));
+    }
+    align_here(f);
+    q = allot(f, sizeof(Word));   /* not linked into a vocabulary: it has no name */
+    memset(q, 0, sizeof(Word));
+    q->code = docol;
+    q->vocab = f->m.current;
+    PUSH(slot);
+    PUSH(q);
+    f->compiling = -1;
+}
+PRIM(p_quote_end) {
+    Word *q = (Word *)POP();
+    Cell *slot = (Cell *)POP();
+
+    comma(f, (Cell)f->w_exit);
+    if (slot != NULL) {   /* inside a definition: jump here, then the token as a literal */
+        *slot = (Cell)f->here;
+        comma(f, (Cell)f->w_lit);
+        comma(f, (Cell)q);
+    } else {
+        f->compiling = 0;
+        PUSH(q);
+    }
+}
+
+/* ---- lists ---- */
+
+static List *list_arg(Forth *f, Cell x) {
+    if (x == 0) {
+        forth_error(f, "not a list (0)");
+    }
+    return (List *)x;
+}
+static void list_add(List *l, Cell x) {
+    if (l->n == l->cap) {
+        l->cap = l->cap * 2 + 8;
+        l->items = realloc(l->items, (size_t)l->cap * sizeof(Cell));
+    }
+    l->items[l->n++] = x;
+}
+PRIM(p_list) { PUSH(calloc(1, sizeof(List))); }   /* ( -- l ) */
+PRIM(p_list_free) {   /* ( l -- ) */
+    List *l = list_arg(f, POP());
+
+    free(l->items);
+    free(l);
+}
+PRIM(p_push) { List *l = list_arg(f, POP()); list_add(l, POP()); }   /* ( x l -- ) */
+PRIM(p_pop) {   /* ( l -- x ) the last */
+    List *l = list_arg(f, POP());
+
+    if (l->n == 0) {
+        forth_error(f, "pop: the list is empty");
+    }
+    PUSH(l->items[--l->n]);
+}
+static Cell index_arg(Forth *f, List *l, Cell i) {
+    if (i < 0) {
+        i += l->n;   /* -1: the last */
+    }
+    if (i < 0 || i >= l->n) {
+        forth_error(f, "list index %ld out of range (length %ld)", (long)i, (long)l->n);
+    }
+    return i;
+}
+PRIM(p_nth) { List *l = list_arg(f, POP()); Cell i = POP(); PUSH(l->items[index_arg(f, l, i)]); }   /* ( i l -- x ) */
+PRIM(p_nth_store) {   /* ( x i l -- ) */
+    List *l = list_arg(f, POP());
+    Cell i = POP(), x = POP();
+
+    l->items[index_arg(f, l, i)] = x;
+}
+PRIM(p_length) { PUSH(list_arg(f, POP())->n); }   /* ( l -- n ) */
+PRIM(p_list_clear) { list_arg(f, POP())->n = 0; }
+/* { a b c } - the values put on the stack in between, as a new list */
+PRIM(p_brace_open) {
+    Task *t = f->t;
+
+    if (t->nmarks >= 16) {
+        forth_error(f, "{ nested too deep");
+    }
+    t->marks[t->nmarks++] = t->sp;
+}
+PRIM(p_brace_close) {
+    Task *t = f->t;
+    List *l;
+    int i, from;
+
+    if (t->nmarks == 0) {
+        forth_error(f, "} without {");
+    }
+    from = t->marks[--t->nmarks];
+    if (from > t->sp) {
+        forth_error(f, "}: the stack lost items since {");
+    }
+    l = calloc(1, sizeof(List));
+    for (i = from; i < t->sp; i++) {
+        list_add(l, t->ds[i]);
+    }
+    t->sp = from;
+    PUSH(l);
+}
 
 /* catch ( xt -- 0 | -1 ): run xt; if it fails, put the stacks back as they were and give -1
  * (the message is in `error-message`) */
@@ -1661,6 +1790,9 @@ static void define_core(Forth *f) {
         {"'", p_tick}, {"create", p_create}, {">body", p_tobody}, {"latest", p_latest},
         {"find", p_find}, {"parse-name", p_parse_name}, {"parse-line", p_parse_line}, {"char", p_char}, {"include", p_include},
         {"included", p_included}, {"evaluate", p_evaluate}, {"execute", p_execute},
+        {"list", p_list}, {"list-free", p_list_free}, {"push", p_push}, {"pop", p_pop}, {"nth", p_nth},
+        {"nth!", p_nth_store}, {"length", p_length}, {"list-clear", p_list_clear}, {"{", p_brace_open},
+        {"}", p_brace_close},
         {"words", p_words}, {"see", p_see}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
         {"IN:", p_in}, {"USING:", p_using}, {"USE:", p_use}, {"<PRIVATE", p_private_begin},
         {"PRIVATE>", p_private_end}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
@@ -1675,7 +1807,8 @@ static void define_core(Forth *f) {
         {";", p_semicolon}, {"[", p_lbracket}, {"[']", p_brackettick}, {"literal", p_literal},
         {"fliteral", p_fliteral}, {"postpone", p_postpone}, {"recurse", p_recurse},
         {"does>", p_docompile}, {"s\"", p_squote}, {".\"", p_dotquote}, {".(", p_dotparen},
-        {"(", p_paren}, {"\\", p_backslash}, {"[char]", p_bracketchar},
+        {"(", p_paren}, {"\\", p_backslash}, {"[char]", p_bracketchar}, {"[:", p_quote_begin},
+        {";]", p_quote_end},
     };
     size_t i;
 

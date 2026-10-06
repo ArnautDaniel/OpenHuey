@@ -86,6 +86,7 @@ struct Task {
     Cell rs[STACK_CELLS];   /* return stack */
     Float fs[FSTACK_CELLS]; /* float stack */
     int sp, rp, fp;
+    int marks[16], nmarks;  /* `{`: where each list being gathered starts on the data stack */
     Cell *ip;               /* the next cell of threaded code to run; NULL when stopped */
     Cell boot[2];           /* a task's first code: its word, then halt */
     int state;
@@ -183,6 +184,13 @@ void forth_compile_literal(Forth *f, Cell x);
 /* tasks: run a word as a task; each frame forth_run_tasks gives every ready task a turn */
 Task *forth_spawn(Forth *f, Word *w);
 void forth_run_tasks(Forth *f);
+
+/* lists: growable arrays of cells, made by `list` or `{ ... }`; an address on the stack. They
+ * live until `list-free` (lists made while loading scripts usually live for good) */
+typedef struct List {
+    Cell n, cap;
+    Cell *items;
+} List;
 
 /* the stacks, for primitives */
 void forth_push(Forth *f, Cell x);
