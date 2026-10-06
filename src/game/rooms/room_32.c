@@ -16,59 +16,59 @@ extern void *Room32_vtable[];
 extern void *TvScreenA_vtable[];
 extern void *MirrorFragment_vtable[];
 
-extern u8 D_0042B0B0[];
-extern u8 D_0042B160[];
+extern u8 Room32_EnterScript_data[];
+extern u8 Room32_CharEnterScript_data[];
 
-extern u8 D_0042B200[];
-extern u8 D_0042B520[];
-extern void *D_0042C200[];
-extern void *D_0042C2F0[];
-extern u8 D_0042C360[];
+extern u8 Room32_Phase1Script_data[];
+extern u8 Room32_Phase2Script_data[];
+extern void *Room32_ActionScripts[];
+extern void *Room32_ObjectNames[];
+extern u8 Room32_Table38_data[];
 
-extern PTMF D_019915A0[];
+extern PTMF Room32_CmdTable[];
 
 /* 0x00320E50 */
 void *Room32_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room32_vtable, RoomBase_vtable); }
 
 /* 0x00320EB0 */
 void *Room32_EnterScript(void) {
-    return D_0042B0B0;
+    return Room32_EnterScript_data;
 }
 
 /* 0x00320EC0 */
 void *Room32_CharEnterScript(void) {
-    return D_0042B160;
+    return Room32_CharEnterScript_data;
 }
 
 /* 0x00320ED0 */
 void *Room32_Phase1Script(void) {
-    return D_0042B200;
+    return Room32_Phase1Script_data;
 }
 
 /* 0x00320EE0 */
 void *Room32_Phase2Script(void) {
-    return D_0042B520;
+    return Room32_Phase2Script_data;
 }
 
 /* 0x00320EF0 */
 void *Room32_ActionScript(void *self, s32 i) {
-    return D_0042C200[i];
+    return Room32_ActionScripts[i];
 }
 
 /* 0x00320F10 */
 void *Room32_Table38(void) {
-    return D_0042C360;
+    return Room32_Table38_data;
 }
 
 /* 0x00320F20 */
 void *Room32_ObjectName(void *self, s32 i) {
-    return D_0042C2F0[i];
+    return Room32_ObjectNames[i];
 }
 
-/* (self->*D_019915A0[i])(a, b) */
+/* (self->*Room32_CmdTable[i])(a, b) */
 /* 0x00320F40 */
 s32 Room32_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019915A0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room32_CmdTable[i & 0xFF], a, b);
 }
 
 /* the player's model tint: white (byte 3 0) or blue halved */

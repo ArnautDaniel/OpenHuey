@@ -11,68 +11,68 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room5A_vtable[];
-extern u8 D_0047ABE0[];
-extern const char *D_00410F38[];   /* the three dials' object names */
+extern u8 Room5A_EnterScript_data[];
+extern const char *Room5A_ObjectNames[];   /* the three dials' object names */
 extern u8 gSndProgressVars[3];           /* their progress vars */
 
-extern u8 D_00410BE0[];
-extern u8 D_00410D00[];
-extern u8 D_00410D90[];
-extern u8 D_00410DC0[];
+extern u8 Room5A_CharEnterScript_data[];
+extern u8 Room5A_Phase1Script_data[];
+extern u8 Room5A_Phase2Script_data[];
+extern u8 Room5A_Phase5Script_data[];
 
-extern u32 D_00410F10[];
-extern u8 D_00410F50[];
+extern u32 Room5A_ActionScripts[];
+extern u8 Room5A_Table38_data[];
 
-extern PTMF D_01990DE8[];
+extern PTMF Room5A_CmdTable[];
 
 /* 0x002B5280 */
 void *Room5A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5A_vtable, RoomBase_vtable); }
 
 /* 0x002B52E0 */
-void *Room5A_EnterScript(void *o) { return D_0047ABE0; }   /* Room5A_vtable +0xC */
+void *Room5A_EnterScript(void *o) { return Room5A_EnterScript_data; }   /* Room5A_vtable +0xC */
 
 /* 0x002B52F0 */
 void *Room5A_CharEnterScript(void) {
-    return D_00410BE0;
+    return Room5A_CharEnterScript_data;
 }
 
 /* 0x002B5300 */
 void *Room5A_Phase1Script(void) {
-    return D_00410D00;
+    return Room5A_Phase1Script_data;
 }
 
 /* 0x002B5310 */
 void *Room5A_Phase2Script(void) {
-    return D_00410D90;
+    return Room5A_Phase2Script_data;
 }
 
 /* 0x002B5320 */
 void *Room5A_Phase5Script(void) {
-    return D_00410DC0;
+    return Room5A_Phase5Script_data;
 }
 
 /* 0x002B5330 */
 u32 Room5A_ActionScript(void *self, s32 i) {
-    return D_00410F10[i];
+    return Room5A_ActionScripts[i];
 }
 
 /* 0x002B5350 */
 void *Room5A_Table38(void) {
-    return D_00410F50;
+    return Room5A_Table38_data;
 }
 
 /* 0x002B5360 */
 u32 Room5A_ObjectName(void *self, s32 i) {
-    return (u32)D_00410F38[i];
+    return (u32)Room5A_ObjectNames[i];
 }
 
-/* (self->*D_01990DE8[i])(a, b) */
+/* (self->*Room5A_CmdTable[i])(a, b) */
 /* 0x002B5380 */
 s32 Room5A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990DE8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room5A_CmdTable[i & 0xFF], a, b);
 }
 
-/* the three dials (D_00410F38, progress vars gSndProgressVars: 0..3, 90 degrees each), event var 0 the
+/* the three dials (Room5A_ObjectNames, progress vars gSndProgressVars: 0..3, 90 degrees each), event var 0 the
  * one picked: byte 3 0 set (the original sets the picked one three times), 1 up / down picks
  * one (event var 0), left / right turns it (event +0x5C 3), cancel leaves (+0x60 2); 2 turning
  * to it 4 degrees a step, and there: solved at 1 / 0 / 2 (+0x60 2, +0x5C 4), else +0x60 3; 3
@@ -83,7 +83,7 @@ s32 Room5A_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *ev = gEvents;
     u32 sel = (u8)VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
     VObject *objs = gRoomObjects;
-    const char **name = &D_00410F38[sel];
+    const char **name = &Room5A_ObjectNames[sel];
     u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, *name);
     s32 i;
 

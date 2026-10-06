@@ -8,10 +8,10 @@
 extern void *Room101_vtable[];
 extern void *RoomBase_vtable[];
 
-extern u8 D_00417320[];
-extern u8 D_00417420[];
-extern u8 D_004174A0[];
-extern u8 D_0047AC58[];
+extern u8 Room101_CharEnterScript_data[];
+extern u8 Room101_Phase1Script_data[];
+extern u8 Room101_Table38_data[];
+extern u8 Room101_EnterScript_data[];
 
 /* destructors */
 /* 0x0020B090 */
@@ -19,20 +19,20 @@ void *Room101_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room101_vtab
 
 /* 0x0020B0F0 */
 void *Room101_EnterScript(void) {
-    return D_0047AC58;
+    return Room101_EnterScript_data;
 }
 
 /* 0x0020B100 */
 void *Room101_CharEnterScript(void) {
-    return D_00417320;
+    return Room101_CharEnterScript_data;
 }
 
 /* 0x0020B110 */
 void *Room101_Phase1Script(void) {
-    return D_00417420;
+    return Room101_Phase1Script_data;
 }
 
 /* 0x0020B120 */
 void *Room101_Table38(void) {
-    return D_004174A0;
+    return Room101_Table38_data;
 }

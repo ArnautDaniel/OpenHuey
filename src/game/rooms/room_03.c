@@ -11,16 +11,16 @@ extern void *RoomBase_vtable[];
 extern void *Room03_vtable[];
 extern const char *D_003F0DC4;
 extern void *SpriteBurst_vtable[];
-extern u8 D_003F0450[];
-extern u8 D_003F0540[];
-extern u8 D_003F0580[];
-extern u8 D_003F06A0[];
-extern u8 D_003F0820[];
-extern u8 D_003F0860[];
-extern void *D_003F0D60[];
-extern void *D_003F0DB0[];
-extern u8 D_003F0DD0[];
-extern PTMF D_01990780[];
+extern u8 Room03_EnterScript_data[];
+extern u8 Room03_CharEnterScript_data[];
+extern u8 Room03_Phase1Script_data[];
+extern u8 Room03_Phase2Script_data[];
+extern u8 Room03_Phase3Script_data[];
+extern u8 Room03_Phase5Script_data[];
+extern void *Room03_ActionScripts[];
+extern void *Room03_ObjectNames[];
+extern u8 Room03_Table38_data[];
+extern PTMF Room03_CmdTable[];
 
 static inline void dust_init(void **o) {
     o[0] = SpriteBurst_vtable;
@@ -34,53 +34,53 @@ void *Room03_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room03_vtable
 
 /* 0x002A9660 */
 void *Room03_EnterScript(void) {
-    return D_003F0450;
+    return Room03_EnterScript_data;
 }
 
 /* 0x002A9670 */
 void *Room03_CharEnterScript(void) {
-    return D_003F0540;
+    return Room03_CharEnterScript_data;
 }
 
 /* 0x002A9680 */
 void *Room03_Phase1Script(void) {
-    return D_003F0580;
+    return Room03_Phase1Script_data;
 }
 
 /* 0x002A9690 */
 void *Room03_Phase2Script(void) {
-    return D_003F06A0;
+    return Room03_Phase2Script_data;
 }
 
 /* 0x002A96A0 */
 void *Room03_Phase3Script(void) {
-    return D_003F0820;
+    return Room03_Phase3Script_data;
 }
 
 /* 0x002A96B0 */
 void *Room03_Phase5Script(void) {
-    return D_003F0860;
+    return Room03_Phase5Script_data;
 }
 
 /* 0x002A96C0 */
 void *Room03_ActionScript(void *self, s32 i) {
-    return D_003F0D60[i];
+    return Room03_ActionScripts[i];
 }
 
 /* 0x002A96E0 */
 void *Room03_Table38(void) {
-    return D_003F0DD0;
+    return Room03_Table38_data;
 }
 
 /* 0x002A96F0 */
 void *Room03_ObjectName(void *self, s32 i) {
-    return D_003F0DB0[i];
+    return Room03_ObjectNames[i];
 }
 
-/* (self->*D_01990780[i])(a, b) */
+/* (self->*Room03_CmdTable[i])(a, b) */
 /* 0x002A9710 */
 s32 Room03_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990780[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room03_CmdTable[i & 0xFF], a, b);
 }
 
 /* a lever (D_003F0DC4, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled

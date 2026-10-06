@@ -13,18 +13,18 @@ extern void *RoomBase_vtable[];
 extern void *Room02_vtable[];
 extern const char *D_003F0404;
 extern void *OrangeSparks_vtable[];
-extern u8 D_003EEDF0[];
-extern u8 D_003EEF70[];
-extern u8 D_003EF0D0[];
-extern u8 D_003EF5B0[];
-extern u8 D_003EF780[];
-extern u8 D_003EF8E0[];
-extern void *D_003F0310[];
-extern void *D_003F03E0[];
-extern u8 D_003F0410[];
-extern u8 D_003F0430[];
-extern PTMF D_01990730[];
-extern PTMF D_01990760[];
+extern u8 Room02_EnterScript_data[];
+extern u8 Room02_CharEnterScript_data[];
+extern u8 Room02_Phase1Script_data[];
+extern u8 Room02_Phase2Script_data[];
+extern u8 Room02_Phase3Script_data[];
+extern u8 Room02_Phase5Script_data[];
+extern void *Room02_ActionScripts[];
+extern void *Room02_ObjectNames[];
+extern u8 Room02_Table38_data[];
+extern u8 Room02_Table3C_data[];
+extern PTMF Room02_CmdTable[];
+extern PTMF Room02_CondTable[];
 
 static void effect_70A70_init(void **obj) {
     obj[0] = OrangeSparks_vtable;
@@ -38,58 +38,58 @@ void *Room02_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room02_vtable
 
 /* 0x002A8E60 */
 void *Room02_EnterScript(void) {
-    return D_003EEDF0;
+    return Room02_EnterScript_data;
 }
 
 /* 0x002A8E70 */
 void *Room02_CharEnterScript(void) {
-    return D_003EEF70;
+    return Room02_CharEnterScript_data;
 }
 
 /* 0x002A8E80 */
 void *Room02_Phase1Script(void) {
-    return D_003EF0D0;
+    return Room02_Phase1Script_data;
 }
 
 /* 0x002A8E90 */
 void *Room02_Phase2Script(void) {
-    return D_003EF5B0;
+    return Room02_Phase2Script_data;
 }
 
 /* 0x002A8EA0 */
 void *Room02_Phase3Script(void) {
-    return D_003EF780;
+    return Room02_Phase3Script_data;
 }
 
 /* 0x002A8EB0 */
 void *Room02_Phase5Script(void) {
-    return D_003EF8E0;
+    return Room02_Phase5Script_data;
 }
 
 /* 0x002A8EC0 */
 void *Room02_ActionScript(void *self, s32 i) {
-    return D_003F0310[i];
+    return Room02_ActionScripts[i];
 }
 
 /* 0x002A8EE0 */
 void *Room02_Table38(void) {
-    return D_003F0410;
+    return Room02_Table38_data;
 }
 
 /* 0x002A8EF0 */
 void *Room02_Table3C(void) {
-    return D_003F0430;
+    return Room02_Table3C_data;
 }
 
 /* 0x002A8F00 */
 void *Room02_ObjectName(void *self, s32 i) {
-    return D_003F03E0[i];
+    return Room02_ObjectNames[i];
 }
 
-/* (self->*D_01990760[i])(a, b) */
+/* (self->*Room02_CondTable[i])(a, b) */
 /* 0x002A8F20 */
 s32 Room02_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990760[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room02_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x02 (Room02_Cond01_ptmf): the pursuer is about, in a mode other than 0, 1 or 5, and progress
@@ -116,10 +116,10 @@ s32 Room02_Cond00(void) {
     return 0;
 }
 
-/* (self->*D_01990730[i])(a, b) */
+/* (self->*Room02_CmdTable[i])(a, b) */
 /* 0x002A9050 */
 s32 Room02_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990730[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room02_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its

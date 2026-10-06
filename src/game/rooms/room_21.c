@@ -11,66 +11,66 @@ extern void *RoomBase_vtable[];
 extern void *Room21_vtable[];
 extern void *TvScreenA_vtable[];
 
-extern u8 D_003FF170[];
-extern u8 D_003FF200[];
-extern u8 D_003FF340[];
-extern u8 D_003FF650[];
-extern u8 D_003FF810[];
+extern u8 Room21_EnterScript_data[];
+extern u8 Room21_CharEnterScript_data[];
+extern u8 Room21_Phase1Script_data[];
+extern u8 Room21_Phase2Script_data[];
+extern u8 Room21_Phase3Script_data[];
 
-extern u32 D_00400AD0[];
-extern u8 D_00400C40[];
-extern u32 D_00400C00[];
+extern u32 Room21_ActionScripts[];
+extern u8 Room21_Table38_data[];
+extern u32 Room21_ObjectNames[];
 
-extern PTMF D_01990A70[];
-extern PTMF D_01990AC8[];
+extern PTMF Room21_CmdTable[];
+extern PTMF Room21_CondTable[];
 
 /* 0x002AEFC0 */
 void *Room21_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room21_vtable, RoomBase_vtable); }
 
 /* 0x002AF020 */
 void *Room21_EnterScript(void) {
-    return D_003FF170;
+    return Room21_EnterScript_data;
 }
 
 /* 0x002AF030 */
 void *Room21_CharEnterScript(void) {
-    return D_003FF200;
+    return Room21_CharEnterScript_data;
 }
 
 /* 0x002AF040 */
 void *Room21_Phase1Script(void) {
-    return D_003FF340;
+    return Room21_Phase1Script_data;
 }
 
 /* 0x002AF050 */
 void *Room21_Phase2Script(void) {
-    return D_003FF650;
+    return Room21_Phase2Script_data;
 }
 
 /* 0x002AF060 */
 void *Room21_Phase3Script(void) {
-    return D_003FF810;
+    return Room21_Phase3Script_data;
 }
 
 /* 0x002AF070 */
 u32 Room21_ActionScript(void *self, s32 i) {
-    return D_00400AD0[i];
+    return Room21_ActionScripts[i];
 }
 
 /* 0x002AF090 */
 void *Room21_Table38(void) {
-    return D_00400C40;
+    return Room21_Table38_data;
 }
 
 /* 0x002AF0A0 */
 u32 Room21_ObjectName(void *self, s32 i) {
-    return D_00400C00[i];
+    return Room21_ObjectNames[i];
 }
 
-/* (self->*D_01990AC8[i])(a, b) */
+/* (self->*Room21_CondTable[i])(a, b) */
 /* 0x002AF0C0 */
 s32 Room21_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990AC8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room21_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x21 (Room21_Cond00_ptmf): the pursuer, about and not in state 2, is in its mode 2 but in
@@ -88,10 +88,10 @@ s32 Room21_Cond00(void) {
     return AT(s, 0x30, s32) != VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
-/* (self->*D_01990A70[i])(a, b) */
+/* (self->*Room21_CmdTable[i])(a, b) */
 /* 0x002AF1A0 */
 s32 Room21_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990A70[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room21_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x21 (Room21_Cmd06_ptmf): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */

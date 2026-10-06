@@ -15,58 +15,58 @@ extern s32 D_0047B2C0;
 extern char D_0047B2B8[];
 extern const char D_00463700[];
 
-extern u8 D_00447300[];
-extern u8 D_00447330[];
-extern u8 D_00447460[];
-extern u8 D_00447550[];
-extern u8 D_00447560[];
-extern void *D_00447608[];
-extern u8 D_00447660[];
-extern PTMF D_01991B90[];
-extern PTMF D_01991BB8[];
+extern u8 RoomD5_EnterScript_data[];
+extern u8 RoomD5_CharEnterScript_data[];
+extern u8 RoomD5_Phase1Script_data[];
+extern u8 RoomD5_Phase5Script_data[];
+extern u8 RoomD5_Phase3Script_data[];
+extern void *RoomD5_ActionScripts[];
+extern u8 RoomD5_Table38_data[];
+extern PTMF RoomD5_CmdTable[];
+extern PTMF RoomD5_CondTable[];
 
 /* 0x0036EA80 */
 void *RoomD5_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomD5_vtable, RoomBase_vtable); }
 
 /* 0x0036EAE0 */
 void *RoomD5_EnterScript(void) {
-    return D_00447300;
+    return RoomD5_EnterScript_data;
 }
 
 /* 0x0036EAF0 */
 void *RoomD5_CharEnterScript(void) {
-    return D_00447330;
+    return RoomD5_CharEnterScript_data;
 }
 
 /* 0x0036EB00 */
 void *RoomD5_Phase1Script(void) {
-    return D_00447460;
+    return RoomD5_Phase1Script_data;
 }
 
 /* 0x0036EB10 */
 void *RoomD5_Phase3Script(void) {
-    return D_00447560;
+    return RoomD5_Phase3Script_data;
 }
 
 /* 0x0036EB20 */
 void *RoomD5_Phase5Script(void) {
-    return D_00447550;
+    return RoomD5_Phase5Script_data;
 }
 
 /* 0x0036EB30 */
 void *RoomD5_ActionScript(void *self, s32 i) {
-    return D_00447608[i];
+    return RoomD5_ActionScripts[i];
 }
 
 /* 0x0036EB50 */
 void *RoomD5_Table38(void) {
-    return D_00447660;
+    return RoomD5_Table38_data;
 }
 
-/* (self->*D_01991BB8[i])(a, b) */
+/* (self->*RoomD5_CondTable[i])(a, b) */
 /* 0x0036EB60 */
 s32 RoomD5_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991BB8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD5_CondTable[i & 0xFF], a, b);
 }
 
 /* the progress object's +0x7C with the caller's arguments */
@@ -75,10 +75,10 @@ s32 RoomD5_Cond00(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
-/* (self->*D_01991B90[i])(a, b) */
+/* (self->*RoomD5_CmdTable[i])(a, b) */
 /* 0x0036EBB0 */
 s32 RoomD5_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991B90[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD5_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x0036EBE0 */

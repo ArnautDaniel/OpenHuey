@@ -9,44 +9,44 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room27_vtable[];
-extern u8 D_0047ACB0[];
+extern u8 Room27_CharEnterScript_data[];
 
-extern u8 D_0041C390[];
-extern u8 D_0041C3E0[];
-extern u8 D_0041C420[];
-extern void *D_0041CA40[];
-extern PTMF D_01990FD8[];
+extern u8 Room27_EnterScript_data[];
+extern u8 Room27_Phase1Script_data[];
+extern u8 Room27_Phase2Script_data[];
+extern void *Room27_ActionScripts[];
+extern PTMF Room27_CmdTable[];
 
 /* 0x002FCB40 */
 void *Room27_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room27_vtable, RoomBase_vtable); }
 
 /* 0x002FCBA0 */
 void *Room27_EnterScript(void) {
-    return D_0041C390;
+    return Room27_EnterScript_data;
 }
 
 /* 0x002FCBB0 */
-void *Room27_CharEnterScript(void *o) { return D_0047ACB0; }   /* Room27_vtable +0x30 */
+void *Room27_CharEnterScript(void *o) { return Room27_CharEnterScript_data; }   /* Room27_vtable +0x30 */
 
 /* 0x002FCBC0 */
 void *Room27_Phase1Script(void) {
-    return D_0041C3E0;
+    return Room27_Phase1Script_data;
 }
 
 /* 0x002FCBD0 */
 void *Room27_Phase2Script(void) {
-    return D_0041C420;
+    return Room27_Phase2Script_data;
 }
 
 /* 0x002FCBE0 */
 void *Room27_ActionScript(void *self, s32 i) {
-    return D_0041CA40[i];
+    return Room27_ActionScripts[i];
 }
 
-/* (self->*D_01990FD8[i])(a, b) */
+/* (self->*Room27_CmdTable[i])(a, b) */
 /* 0x002FCC00 */
 s32 Room27_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990FD8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room27_CmdTable[i & 0xFF], a, b);
 }
 
 /* the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0

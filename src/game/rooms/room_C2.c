@@ -12,19 +12,19 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomC2_vtable[];
-extern u8 D_0047AF04[];
-extern const char *D_0043F8D0;
-extern u32 D_0043F0C0[];
-extern u32 D_0043F1A0[];
-extern u32 D_0043F230[];
-extern u32 D_0043F480[];
-extern u32 D_0043F4D0[];
-extern u32 D_0043F880[];
+extern u8 RoomC2_Table38_data[];
+extern const char *RoomC2_ObjectNames;
+extern u32 RoomC2_EnterScript_data[];
+extern u32 RoomC2_CharEnterScript_data[];
+extern u32 RoomC2_Phase1Script_data[];
+extern u32 RoomC2_Phase2Script_data[];
+extern u32 RoomC2_Phase5Script_data[];
+extern u32 RoomC2_ActionScripts[];
 
-extern PTMF D_01991990[];
-extern PTMF D_019919A8[];
+extern PTMF RoomC2_CmdTable[];
+extern PTMF RoomC2_CondTable[];
 
-/* the turn (+0x14) of the room object named D_0043F8D0 and the creak (sound 0x80000002, bank 6)
+/* the turn (+0x14) of the room object named RoomC2_ObjectNames and the creak (sound 0x80000002, bank 6)
  * at its edge, 45 out at height 152 */
 static inline void swing_to(u8 *o, f32 a) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
@@ -43,46 +43,46 @@ void *RoomC2_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC2_vtable
 
 /* 0x0034A520 */
 void *RoomC2_EnterScript(void) {
-    return D_0043F0C0;
+    return RoomC2_EnterScript_data;
 }
 
 /* 0x0034A530 */
 void *RoomC2_CharEnterScript(void) {
-    return D_0043F1A0;
+    return RoomC2_CharEnterScript_data;
 }
 
 /* 0x0034A540 */
 void *RoomC2_Phase1Script(void) {
-    return D_0043F230;
+    return RoomC2_Phase1Script_data;
 }
 
 /* 0x0034A550 */
 void *RoomC2_Phase2Script(void) {
-    return D_0043F480;
+    return RoomC2_Phase2Script_data;
 }
 
 /* 0x0034A560 */
 void *RoomC2_Phase5Script(void) {
-    return D_0043F4D0;
+    return RoomC2_Phase5Script_data;
 }
 
 /* 0x0034A570 */
 u32 RoomC2_ActionScript(void *self, s32 i) {
-    return D_0043F880[i];
+    return RoomC2_ActionScripts[i];
 }
 
 /* 0x0034A590 */
-void *RoomC2_Table38(void *o) { return D_0047AF04; }   /* RoomC2_vtable +0x38 */
+void *RoomC2_Table38(void *o) { return RoomC2_Table38_data; }   /* RoomC2_vtable +0x38 */
 
 /* 0x0034A5A0 */
 u32 RoomC2_ObjectName(void *self, s32 i) {
-    return ((u32 *)&D_0043F8D0)[i];   /* its table of names (one is reached by name too) */
+    return ((u32 *)&RoomC2_ObjectNames)[i];   /* its table of names (one is reached by name too) */
 }
 
-/* (self->*D_019919A8[i])(a, b) */
+/* (self->*RoomC2_CondTable[i])(a, b) */
 /* 0x0034A5C0 */
 s32 RoomC2_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019919A8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC2_CondTable[i & 0xFF], a, b);
 }
 
 /* 0x0034A5F0 */
@@ -90,10 +90,10 @@ s32 RoomC2_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
-/* (self->*D_01991990[i])(a, b) */
+/* (self->*RoomC2_CmdTable[i])(a, b) */
 /* 0x0034A620 */
 s32 RoomC2_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991990[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC2_CmdTable[i & 0xFF], a, b);
 }
 
 /* byte 3 to the player's Character_ChooseExit while she's active */
@@ -110,7 +110,7 @@ s32 RoomC2_Cmd01(void *self, void *a1, u8 *cmd) {
 /* 0x0034A6A0 */
 s32 RoomC2_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0043F8D0);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, RoomC2_ObjectNames);
     f32 t, e;
 
     if (o == NULL) {

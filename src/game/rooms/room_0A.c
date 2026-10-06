@@ -10,63 +10,63 @@ extern void *RoomBase_vtable[];
 extern void *Room0A_vtable[];
 extern const char *D_003F43A0;
 
-extern u8 D_003F3C90[];
-extern u8 D_003F3CF0[];
-extern u8 D_003F3DA0[];
-extern u8 D_003F3E90[];
-extern u8 D_003F3EF0[];
-extern void *D_003F4350[];
-extern void *D_003F4398[];
-extern u8 D_003F43B0[];
-extern PTMF D_01990830[];
+extern u8 Room0A_EnterScript_data[];
+extern u8 Room0A_CharEnterScript_data[];
+extern u8 Room0A_Phase1Script_data[];
+extern u8 Room0A_Phase2Script_data[];
+extern u8 Room0A_Phase3Script_data[];
+extern void *Room0A_ActionScripts[];
+extern void *Room0A_ObjectNames[];
+extern u8 Room0A_Table38_data[];
+extern PTMF Room0A_CmdTable[];
 
 /* 0x002AAB00 */
 void *Room0A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room0A_vtable, RoomBase_vtable); }
 
 /* 0x002AAB60 */
 void *Room0A_EnterScript(void) {
-    return D_003F3C90;
+    return Room0A_EnterScript_data;
 }
 
 /* 0x002AAB70 */
 void *Room0A_CharEnterScript(void) {
-    return D_003F3CF0;
+    return Room0A_CharEnterScript_data;
 }
 
 /* 0x002AAB80 */
 void *Room0A_Phase1Script(void) {
-    return D_003F3DA0;
+    return Room0A_Phase1Script_data;
 }
 
 /* 0x002AAB90 */
 void *Room0A_Phase2Script(void) {
-    return D_003F3E90;
+    return Room0A_Phase2Script_data;
 }
 
 /* 0x002AABA0 */
 void *Room0A_Phase3Script(void) {
-    return D_003F3EF0;
+    return Room0A_Phase3Script_data;
 }
 
 /* 0x002AABB0 */
 void *Room0A_ActionScript(void *self, s32 i) {
-    return D_003F4350[i];
+    return Room0A_ActionScripts[i];
 }
 
 /* 0x002AABD0 */
 void *Room0A_Table38(void) {
-    return D_003F43B0;
+    return Room0A_Table38_data;
 }
 
 /* 0x002AABE0 */
 void *Room0A_ObjectName(void *self, s32 i) {
-    return D_003F4398[i];
+    return Room0A_ObjectNames[i];
 }
 
-/* (self->*D_01990830[i])(a, b) */
+/* (self->*Room0A_CmdTable[i])(a, b) */
 /* 0x002AAC00 */
 s32 Room0A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990830[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room0A_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88 */

@@ -501,230 +501,230 @@ extern PTMF D_0047E33C;
 extern PTMF D_0047E348;
 extern PTMF D_01990700;
 extern PTMF D_0199070C;
-extern PTMF D_01990718;
-extern PTMF D_01990730;
+extern PTMF Room00_CondTable;
+extern PTMF Room02_CmdTable;
 extern PTMF D_0199073C;
 extern PTMF D_01990748;
 extern PTMF D_01990754;
-extern PTMF D_01990760;
+extern PTMF Room02_CondTable;
 extern PTMF D_0199076C;
-extern PTMF D_01990780;
+extern PTMF Room03_CmdTable;
 extern PTMF D_0199078C;
-extern PTMF D_019907A0;
+extern PTMF Room04_CmdTable;
 extern PTMF D_019907AC;
 extern PTMF D_019907B8;
 extern PTMF D_019907C4;
-extern PTMF D_019907D0;
-extern PTMF D_019907E0;
+extern PTMF Room06_CmdTable;
+extern PTMF Room08_CmdTable;
 extern PTMF D_019907EC;
-extern PTMF D_01990800;
+extern PTMF Room08_CondTable;
 extern PTMF D_0199080C;
-extern PTMF D_01990818;
-extern PTMF D_01990830;
+extern PTMF Room09_CondTable;
+extern PTMF Room0A_CmdTable;
 extern PTMF D_0199083C;
-extern PTMF D_01990848;
-extern PTMF D_01990860;
+extern PTMF Room0B_CondTable;
+extern PTMF Room0C_CmdTable;
 extern PTMF D_0199086C;
 extern PTMF D_01990878;
 extern PTMF D_01990884;
-extern PTMF D_01990890;
+extern PTMF Room0F_CmdTable;
 extern PTMF D_0199089C;
 extern PTMF D_019908A8;
 extern PTMF D_019908B4;
 extern PTMF D_019908C0;
-extern PTMF D_019908D0;
-extern PTMF D_019908E0;
-extern PTMF D_019908F0;
-extern PTMF D_01990900;
-extern PTMF D_01990910;
-extern PTMF D_01990920;
-extern PTMF D_01990930;
-extern PTMF D_01990940;
-extern PTMF D_01990950;
-extern PTMF D_01990960;
+extern PTMF Room10_CondTable;
+extern PTMF Room12_CmdTable;
+extern PTMF Room12_CondTable;
+extern PTMF Room13_CmdTable;
+extern PTMF Room14_CmdTable;
+extern PTMF Room15_CmdTable;
+extern PTMF Room15_CondTable;
+extern PTMF Room18_CmdTable;
+extern PTMF Room19_CondTable;
+extern PTMF Room1A_CmdTable;
 extern PTMF D_0199096C;
-extern PTMF D_01990978;
-extern PTMF D_01990990;
+extern PTMF Room1B_CmdTable;
+extern PTMF Room1C_CmdTable;
 extern PTMF D_0199099C;
-extern PTMF D_019909B0;
+extern PTMF Room1D_CmdTable;
 extern PTMF D_019909BC;
-extern PTMF D_019909C8;
-extern PTMF D_019909D8;
-extern PTMF D_019909F0;
+extern PTMF Room1D_CondTable;
+extern PTMF Room1F_CmdTable;
+extern PTMF Room20_CmdTable;
 extern PTMF D_019909FC;
 extern PTMF D_01990A08;
 extern PTMF D_01990A14;
 extern PTMF D_01990A20;
 extern PTMF D_01990A2C;
-extern PTMF D_01990A40;
+extern PTMF Room20_CondTable;
 extern PTMF D_01990A4C;
 extern PTMF D_01990A58;
-extern PTMF D_01990A70;
+extern PTMF Room21_CmdTable;
 extern PTMF D_01990A7C;
 extern PTMF D_01990A88;
 extern PTMF D_01990A94;
 extern PTMF D_01990AA0;
 extern PTMF D_01990AAC;
 extern PTMF D_01990AB8;
-extern PTMF D_01990AC8;
-extern PTMF D_01990AD8;
-extern PTMF D_01990AF0;
+extern PTMF Room21_CondTable;
+extern PTMF Room23_CondTable;
+extern PTMF Room23_CmdTable;
 extern PTMF D_01990AFC;
-extern PTMF D_01990B10;
+extern PTMF Room24_CmdTable;
 extern PTMF D_01990B1C;
 extern PTMF D_01990B28;
-extern PTMF D_01990B38;
-extern PTMF D_01990B48;
-extern PTMF D_01990B58;
-extern PTMF D_01990B70;
+extern PTMF Room25_CmdTable;
+extern PTMF Room25_CondTable;
+extern PTMF Room26_CondTable;
+extern PTMF Room26_CmdTable;
 extern PTMF D_01990B7C;
 extern PTMF D_01990B88;
-extern PTMF D_01990B98;
-extern PTMF D_01990BB0;
+extern PTMF Room28_CondTable;
+extern PTMF Room29_CondTable;
 extern PTMF D_01990BBC;
-extern PTMF D_01990BD0;
+extern PTMF Room2A_CmdTable;
 extern PTMF D_01990BDC;
 extern PTMF D_01990BE8;
 extern PTMF D_01990BF4;
-extern PTMF D_01990C00;
-extern PTMF D_01990C10;
+extern PTMF Room2B_CmdTable;
+extern PTMF Room2D_CmdTable;
 extern PTMF D_01990C1C;
 extern PTMF D_01990C28;
-extern PTMF D_01990C38;
-extern PTMF D_01990C48;
-extern PTMF D_01990C58;
-extern PTMF D_01990C68;
-extern PTMF D_01990C80;
+extern PTMF Room2D_CondTable;
+extern PTMF Room40_CmdTable;
+extern PTMF Room43_CmdTable;
+extern PTMF Room45_CmdTable;
+extern PTMF Room49_CmdTable;
 extern PTMF D_01990C8C;
 extern PTMF D_01990C98;
-extern PTMF D_01990CB0;
+extern PTMF Room4B_CmdTable;
 extern PTMF D_01990CBC;
-extern PTMF D_01990CC8;
-extern PTMF D_01990CE0;
+extern PTMF Room4B_CondTable;
+extern PTMF Room4C_CmdTable;
 extern PTMF D_01990CEC;
 extern PTMF D_01990CF8;
-extern PTMF D_01990D10;
+extern PTMF Room4E_CmdTable;
 extern PTMF D_01990D1C;
 extern PTMF D_01990D28;
 extern PTMF D_01990D40;
 extern PTMF D_01990D4C;
 extern PTMF D_01990D58;
 extern PTMF D_01990D64;
-extern PTMF D_01990D70;
-extern PTMF D_01990D80;
-extern PTMF D_01990D90;
+extern PTMF Room4F_CondTable;
+extern PTMF Room50_CmdTable;
+extern PTMF Room51_CmdTable;
 extern PTMF D_01990D9C;
-extern PTMF D_01990DA8;
-extern PTMF D_01990DB8;
-extern PTMF D_01990DC8;
-extern PTMF D_01990DD8;
-extern PTMF D_01990DE8;
-extern PTMF D_01990DF8;
-extern PTMF D_01990E08;
-extern PTMF D_01990E20;
+extern PTMF Room52_CmdTable;
+extern PTMF Room52_CondTable;
+extern PTMF Room56_CmdTable;
+extern PTMF Room59_CmdTable;
+extern PTMF Room5A_CmdTable;
+extern PTMF Room5C_CmdTable;
+extern PTMF Room5C_CondTable;
+extern PTMF Room5D_CmdTable;
 extern PTMF D_01990E2C;
-extern PTMF D_01990E38;
-extern PTMF D_01990E48;
-extern PTMF D_01990E78;
-extern PTMF D_01990E88;
-extern PTMF D_01990E98;
-extern PTMF D_01990EA8;
-extern PTMF D_01990EB8;
-extern PTMF D_01990EC8;
-extern PTMF D_01990ED8;
-extern PTMF D_01990EE8;
-extern PTMF D_01990F00;
+extern PTMF Room2F_CondTable;
+extern PTMF Room30_CondTable;
+extern PTMF Room46_CmdTable;
+extern PTMF Room46_CondTable;
+extern PTMF Room102_CmdTable;
+extern PTMF Room103_CmdTable;
+extern PTMF Room104_CmdTable;
+extern PTMF Room105_CmdTable;
+extern PTMF Room106_CmdTable;
+extern PTMF Room107_CondTable;
+extern PTMF Room107_CmdTable;
 extern PTMF D_01990F0C;
-extern PTMF D_01990F18;
-extern PTMF D_01990F30;
+extern PTMF Room108_CmdTable;
+extern PTMF Room109_CmdTable;
 extern PTMF D_01990F3C;
-extern PTMF D_01990F48;
-extern PTMF D_01990F58;
-extern PTMF D_01990F68;
-extern PTMF D_01990F78;
-extern PTMF D_01990FD8;
-extern PTMF D_01990FF0;
+extern PTMF Room10A_CondTable;
+extern PTMF Room10A_CmdTable;
+extern PTMF Room10B_CmdTable;
+extern PTMF Room10B_CondTable;
+extern PTMF Room27_CmdTable;
+extern PTMF Room2E_CmdTable;
 extern PTMF D_01990FFC;
 extern PTMF D_01991008;
 extern PTMF D_01991014;
 extern PTMF D_01991020;
-extern PTMF D_01991030;
+extern PTMF Room66_CmdTable;
 extern PTMF D_0199103C;
 extern PTMF D_01991048;
 extern PTMF D_01991054;
 extern PTMF D_01991060;
-extern PTMF D_01991070;
+extern PTMF Room66_CondTable;
 extern PTMF D_0199107C;
-extern PTMF D_01991088;
-extern PTMF D_01991098;
-extern PTMF D_019910B0;
+extern PTMF Room55_CmdTable;
+extern PTMF Room63_CmdTable;
+extern PTMF Room62_CmdTable;
 extern PTMF D_019910BC;
-extern PTMF D_01991140;
+extern PTMF Room48_CmdTable;
 extern PTMF D_0199114C;
 extern PTMF D_01991158;
 extern PTMF D_01991164;
 extern PTMF D_01991170;
 extern PTMF D_0199117C;
-extern PTMF D_01991188;
-extern PTMF D_019911A0;
+extern PTMF Room48_CondTable;
+extern PTMF Room54_CmdTable;
 extern PTMF D_019911AC;
-extern PTMF D_019911C0;
+extern PTMF Room60_CmdTable;
 extern PTMF D_019911CC;
 extern PTMF D_019911D8;
 extern PTMF D_019911E4;
 extern PTMF D_019911F0;
 extern PTMF D_019911FC;
-extern PTMF D_01991550;
+extern PTMF Room61_CmdTable;
 extern PTMF D_0199155C;
-extern PTMF D_01991570;
+extern PTMF Room31_CmdTable;
 extern PTMF D_0199157C;
 extern PTMF D_01991588;
-extern PTMF D_019915A0;
+extern PTMF Room32_CmdTable;
 extern PTMF D_019915AC;
 extern PTMF D_019915B8;
 extern PTMF D_019915C4;
 extern PTMF D_019915D0;
 extern PTMF D_019915DC;
-extern PTMF D_019915E8;
-extern PTMF D_01991610;
+extern PTMF Room86_CmdTable;
+extern PTMF RoomC0_CmdTable;
 extern PTMF D_0199161C;
 extern PTMF D_01991628;
 extern PTMF D_01991634;
 extern PTMF D_01991640;
-extern PTMF D_01991650;
-extern PTMF D_01991660;
+extern PTMF RoomC0_CondTable;
+extern PTMF RoomC7_CmdTable;
 extern PTMF D_0199166C;
 extern PTMF D_01991678;
 extern PTMF D_01991684;
 extern PTMF D_01991690;
 extern PTMF D_0199169C;
 extern PTMF D_019916A8;
-extern PTMF D_019916C0;
+extern PTMF RoomC7_CondTable;
 extern PTMF D_019916CC;
-extern PTMF D_019916D8;
-extern PTMF D_019916E8;
-extern PTMF D_019916F8;
-extern PTMF D_01991708;
-extern PTMF D_01991720;
+extern PTMF Room84_CmdTable;
+extern PTMF Room85_CmdTable;
+extern PTMF Room87_CmdTable;
+extern PTMF Room88_CmdTable;
+extern PTMF Room8C_CmdTable;
 extern PTMF D_0199172C;
 extern PTMF D_01991738;
 extern PTMF D_01991744;
 extern PTMF D_01991750;
-extern PTMF D_01991760;
+extern PTMF Room8D_CmdTable;
 extern PTMF D_0199176C;
 extern PTMF D_01991778;
-extern PTMF D_01991790;
+extern PTMF Room8E_CmdTable;
 extern PTMF D_0199179C;
-extern PTMF D_019917B0;
+extern PTMF Room8F_CmdTable;
 extern PTMF D_019917BC;
 extern PTMF D_019917C8;
 extern PTMF D_019917D4;
-extern PTMF D_019917E0;
-extern PTMF D_019917F0;
+extern PTMF Room8F_CondTable;
+extern PTMF Room91_CmdTable;
 extern PTMF D_019917FC;
 extern PTMF D_01991808;
 extern PTMF D_01991814;
-extern PTMF D_01991820;
+extern PTMF Room92_CmdTable;
 extern PTMF D_0199182C;
 extern PTMF D_01991838;
 extern PTMF D_01991844;
@@ -738,100 +738,100 @@ extern PTMF D_01991898;
 extern PTMF D_019918A4;
 extern PTMF D_019918B0;
 extern PTMF D_019918BC;
-extern PTMF D_019918C8;
-extern PTMF D_019918D8;
-extern PTMF D_019918F0;
+extern PTMF Room97_CmdTable;
+extern PTMF Room69_CmdTable;
+extern PTMF Room6A_CmdTable;
 extern PTMF D_019918FC;
-extern PTMF D_01991910;
+extern PTMF Room6C_CondTable;
 extern PTMF D_0199191C;
-extern PTMF D_01991930;
+extern PTMF Room6D_CondTable;
 extern PTMF D_0199193C;
-extern PTMF D_01991948;
-extern PTMF D_01991958;
-extern PTMF D_01991968;
-extern PTMF D_01991978;
-extern PTMF D_01991990;
+extern PTMF Room6F_CmdTable;
+extern PTMF Room6F_CondTable;
+extern PTMF Room80_CmdTable;
+extern PTMF RoomC1_CondTable;
+extern PTMF RoomC2_CmdTable;
 extern PTMF D_0199199C;
-extern PTMF D_019919A8;
-extern PTMF D_019919C0;
+extern PTMF RoomC2_CondTable;
+extern PTMF RoomC3_CmdTable;
 extern PTMF D_019919CC;
 extern PTMF D_019919D8;
-extern PTMF D_019919E8;
-extern PTMF D_019919F8;
-extern PTMF D_01991A08;
-extern PTMF D_01991A18;
-extern PTMF D_01991A28;
-extern PTMF D_01991A38;
-extern PTMF D_01991A48;
-extern PTMF D_01991A58;
-extern PTMF D_01991A68;
-extern PTMF D_01991A78;
-extern PTMF D_01991A88;
-extern PTMF D_01991AB0;
-extern PTMF D_01991AC0;
+extern PTMF RoomC3_CondTable;
+extern PTMF RoomC5_CmdTable;
+extern PTMF RoomC8_CmdTable;
+extern PTMF Room98_CmdTable;
+extern PTMF Room99_CmdTable;
+extern PTMF Room9A_CmdTable;
+extern PTMF Room9B_CmdTable;
+extern PTMF Room93_CmdTable;
+extern PTMF Room94_CmdTable;
+extern PTMF Room95_CmdTable;
+extern PTMF Room96_CmdTable;
+extern PTMF Room37_CmdTable;
+extern PTMF RoomD0_CmdTable;
 extern PTMF D_01991ACC;
 extern PTMF D_01991AD8;
-extern PTMF D_01991AE8;
-extern PTMF D_01991B00;
+extern PTMF RoomD0_CondTable;
+extern PTMF RoomD1_CmdTable;
 extern PTMF D_01991B0C;
-extern PTMF D_01991B18;
-extern PTMF D_01991B28;
-extern PTMF D_01991B38;
-extern PTMF D_01991B48;
-extern PTMF D_01991B58;
-extern PTMF D_01991B68;
-extern PTMF D_01991B78;
-extern PTMF D_01991B90;
+extern PTMF RoomD1_CondTable;
+extern PTMF RoomD2_CmdTable;
+extern PTMF RoomD2_CondTable;
+extern PTMF RoomD3_CmdTable;
+extern PTMF RoomD3_CondTable;
+extern PTMF RoomD4_CmdTable;
+extern PTMF RoomD4_CondTable;
+extern PTMF RoomD5_CmdTable;
 extern PTMF D_01991B9C;
 extern PTMF D_01991BA8;
-extern PTMF D_01991BB8;
-extern PTMF D_01991BD0;
+extern PTMF RoomD5_CondTable;
+extern PTMF RoomD6_CmdTable;
 extern PTMF D_01991BDC;
-extern PTMF D_01991BE8;
-extern PTMF D_01991C00;
+extern PTMF RoomD6_CondTable;
+extern PTMF RoomD7_CondTable;
 extern PTMF D_01991C0C;
-extern PTMF D_01991C20;
+extern PTMF RoomD7_CmdTable;
 extern PTMF D_01991C2C;
 extern PTMF D_01991C38;
-extern PTMF D_01991C50;
+extern PTMF RoomD8_CondTable;
 extern PTMF D_01991C5C;
-extern PTMF D_01991C70;
+extern PTMF RoomD8_CmdTable;
 extern PTMF D_01991C7C;
-extern PTMF D_01991C90;
+extern PTMF RoomD9_CmdTable;
 extern PTMF D_01991C9C;
 extern PTMF D_01991CA8;
-extern PTMF D_01991CB8;
-extern PTMF D_01991CD0;
+extern PTMF RoomD9_CondTable;
+extern PTMF RoomE0_CmdTable;
 extern PTMF D_01991CDC;
 extern PTMF D_01991CE8;
 extern PTMF D_01991CF4;
 extern PTMF D_01991D00;
 extern PTMF D_01991D0C;
-extern PTMF D_01991D18;
-extern PTMF D_01991D28;
-extern PTMF D_01991D38;
-extern PTMF D_01991D48;
-extern PTMF D_01991D58;
-extern PTMF D_01991D68;
-extern PTMF D_01991D78;
-extern PTMF D_01991D90;
+extern PTMF RoomE0_CondTable;
+extern PTMF RoomE1_CmdTable;
+extern PTMF RoomE1_CondTable;
+extern PTMF RoomE2_CmdTable;
+extern PTMF RoomE2_CondTable;
+extern PTMF RoomE3_CmdTable;
+extern PTMF RoomE3_CondTable;
+extern PTMF RoomE4_CmdTable;
 extern PTMF D_01991D9C;
-extern PTMF D_01991DA8;
-extern PTMF D_01991DC0;
+extern PTMF RoomE4_CondTable;
+extern PTMF RoomE5_CmdTable;
 extern PTMF D_01991DCC;
-extern PTMF D_01991DD8;
-extern PTMF D_01991DF0;
+extern PTMF RoomE5_CondTable;
+extern PTMF RoomE6_CmdTable;
 extern PTMF D_01991DFC;
-extern PTMF D_01991E08;
-extern PTMF D_01991E18;
-extern PTMF D_01991E28;
-extern PTMF D_01991E38;
-extern PTMF D_01991E48;
-extern PTMF D_01991E60;
+extern PTMF RoomE6_CondTable;
+extern PTMF RoomE7_CmdTable;
+extern PTMF RoomE7_CondTable;
+extern PTMF RoomE8_CmdTable;
+extern PTMF RoomE8_CondTable;
+extern PTMF RoomE9_CmdTable;
 extern PTMF D_01991E6C;
 extern PTMF D_01991E78;
 extern PTMF D_01991E84;
-extern PTMF D_01991E90;
+extern PTMF RoomE9_CondTable;
 
 /* 0x00464860 */
 void Sinit_Debilitas(void) {
@@ -908,28 +908,28 @@ void Sinit_Pursuer(void) {
 void Sinit_SceneGameMembers(void) {
     D_01990700 = Room00_Cmd00_ptmf;
     D_0199070C = Room00_Cmd01_ptmf;
-    D_01990718 = D_003EE730;
+    Room00_CondTable = D_003EE730;
 }
 
 /* 0x004654F0 */
 void Sinit_Room02(void) {
-    D_01990730 = Room02_Cmd00_ptmf;
+    Room02_CmdTable = Room02_Cmd00_ptmf;
     D_0199073C = Room02_Cmd01_ptmf;
     D_01990748 = Room02_Cmd02_ptmf;
     D_01990754 = Room02_Cmd03_ptmf;
-    D_01990760 = Room02_Cond00_ptmf;
+    Room02_CondTable = Room02_Cond00_ptmf;
     D_0199076C = Room02_Cond01_ptmf;
 }
 
 /* 0x00465600 */
 void Sinit_Room03(void) {
-    D_01990780 = Room03_Cmd00_ptmf;
+    Room03_CmdTable = Room03_Cmd00_ptmf;
     D_0199078C = Room03_Cmd01_ptmf;
 }
 
 /* 0x00465660 */
 void Sinit_Room04(void) {
-    D_019907A0 = Room04_Cmd00_ptmf;
+    Room04_CmdTable = Room04_Cmd00_ptmf;
     D_019907AC = Room04_Cmd01_ptmf;
     D_019907B8 = Room04_Cmd02_ptmf;
     D_019907C4 = Room04_Cmd03_ptmf;
@@ -937,36 +937,36 @@ void Sinit_Room04(void) {
 
 /* 0x00465720 */
 void Sinit_Room06(void) {
-    D_019907D0 = Room06_Cmd00_ptmf;
+    Room06_CmdTable = Room06_Cmd00_ptmf;
 }
 
 /* 0x00465750 */
 void Sinit_Room08(void) {
-    D_019907E0 = Room08_Cmd00_ptmf;
+    Room08_CmdTable = Room08_Cmd00_ptmf;
     D_019907EC = Room08_Cmd01_ptmf;
-    D_01990800 = Room08_Cond00_ptmf;
+    Room08_CondTable = Room08_Cond00_ptmf;
     D_0199080C = Room08_Cond01_ptmf;
 }
 
 /* 0x00465800 */
 void Sinit_Room09(void) {
-    D_01990818 = Room09_Cond00_ptmf;
+    Room09_CondTable = Room09_Cond00_ptmf;
 }
 
 /* 0x00465830 */
 void Sinit_Room0A(void) {
-    D_01990830 = Room0A_Cmd00_ptmf;
+    Room0A_CmdTable = Room0A_Cmd00_ptmf;
     D_0199083C = Room0A_Cmd01_ptmf;
 }
 
 /* 0x00465890 */
 void Sinit_Room0B(void) {
-    D_01990848 = Room0B_Cond00_ptmf;
+    Room0B_CondTable = Room0B_Cond00_ptmf;
 }
 
 /* 0x004658C0 */
 void Sinit_Room0C(void) {
-    D_01990860 = Room0C_Cmd00_ptmf;
+    Room0C_CmdTable = Room0C_Cmd00_ptmf;
     D_0199086C = Room0C_Cmd01_ptmf;
     D_01990878 = Room0C_Cmd02_ptmf;
     D_01990884 = Room0C_Cmd03_ptmf;
@@ -974,7 +974,7 @@ void Sinit_Room0C(void) {
 
 /* 0x00465980 */
 void Sinit_Room0F(void) {
-    D_01990890 = Room0F_Cmd00_ptmf;
+    Room0F_CmdTable = Room0F_Cmd00_ptmf;
     D_0199089C = Room0F_Cmd01_ptmf;
     D_019908A8 = Room0F_Cmd02_ptmf;
     D_019908B4 = Room0F_Cmd03_ptmf;
@@ -983,137 +983,137 @@ void Sinit_Room0F(void) {
 
 /* 0x00465A70 */
 void Sinit_Room10(void) {
-    D_019908D0 = Room10_Cond00_ptmf;
+    Room10_CondTable = Room10_Cond00_ptmf;
 }
 
 /* 0x00465AA0 */
 void Sinit_Room12(void) {
-    D_019908E0 = Room12_Cmd00_ptmf;
-    D_019908F0 = Room12_Cond00_ptmf;
+    Room12_CmdTable = Room12_Cmd00_ptmf;
+    Room12_CondTable = Room12_Cond00_ptmf;
 }
 
 /* 0x00465AF0 */
 void Sinit_Room13(void) {
-    D_01990900 = Room13_Cmd00_ptmf;
+    Room13_CmdTable = Room13_Cmd00_ptmf;
 }
 
 /* 0x00465B20 */
 void Sinit_Room14(void) {
-    D_01990910 = Room14_Cmd00_ptmf;
+    Room14_CmdTable = Room14_Cmd00_ptmf;
 }
 
 /* 0x00465B50 */
 void Sinit_Room15(void) {
-    D_01990920 = Room15_Cmd00_ptmf;
-    D_01990930 = Room15_Cond00_ptmf;
+    Room15_CmdTable = Room15_Cmd00_ptmf;
+    Room15_CondTable = Room15_Cond00_ptmf;
 }
 
 /* 0x00465BA0 */
 void Sinit_Room18(void) {
-    D_01990940 = Room18_Cmd00_ptmf;
+    Room18_CmdTable = Room18_Cmd00_ptmf;
 }
 
 /* 0x00465BD0 */
 void Sinit_Room19(void) {
-    D_01990950 = Room19_Cond00_ptmf;
+    Room19_CondTable = Room19_Cond00_ptmf;
 }
 
 /* 0x00465C00 */
 void Sinit_Room1A(void) {
-    D_01990960 = Room1A_Cmd00_ptmf;
+    Room1A_CmdTable = Room1A_Cmd00_ptmf;
     D_0199096C = Room1A_Cmd01_ptmf;
 }
 
 /* 0x00465C60 */
 void Sinit_Room1B(void) {
-    D_01990978 = Room1B_Cmd00_ptmf;
+    Room1B_CmdTable = Room1B_Cmd00_ptmf;
 }
 
 /* 0x00465C90 */
 void Sinit_Room1C(void) {
-    D_01990990 = Room1C_Cmd00_ptmf;
+    Room1C_CmdTable = Room1C_Cmd00_ptmf;
     D_0199099C = Room1C_Cmd01_ptmf;
 }
 
 /* 0x00465CF0 */
 void Sinit_Room1D(void) {
-    D_019909B0 = Room1D_Cmd00_ptmf;
+    Room1D_CmdTable = Room1D_Cmd00_ptmf;
     D_019909BC = Room1D_Cmd01_ptmf;
-    D_019909C8 = Room1D_Cond00_ptmf;
+    Room1D_CondTable = Room1D_Cond00_ptmf;
 }
 
 /* 0x00465D70 */
 void Sinit_Room1F(void) {
-    D_019909D8 = Room1F_Cmd00_ptmf;
+    Room1F_CmdTable = Room1F_Cmd00_ptmf;
 }
 
 /* 0x00465DA0 */
 void Sinit_Room20(void) {
-    D_019909F0 = Room20_Cmd00_ptmf;
+    Room20_CmdTable = Room20_Cmd00_ptmf;
     D_019909FC = Room20_Cmd01_ptmf;
     D_01990A08 = Room20_Cmd02_ptmf;
     D_01990A14 = Room20_Cmd03_ptmf;
     D_01990A20 = Room20_Cmd04_ptmf;
     D_01990A2C = Room20_Cmd05_ptmf;
-    D_01990A40 = Room20_Cond00_ptmf;
+    Room20_CondTable = Room20_Cond00_ptmf;
     D_01990A4C = Room20_Cond01_ptmf;
     D_01990A58 = Room20_Cond02_ptmf;
 }
 
 /* 0x00465F40 */
 void Sinit_Room21(void) {
-    D_01990A70 = Room21_Cmd00_ptmf;
+    Room21_CmdTable = Room21_Cmd00_ptmf;
     D_01990A7C = Room21_Cmd01_ptmf;
     D_01990A88 = Room21_Cmd02_ptmf;
     D_01990A94 = Room21_Cmd03_ptmf;
     D_01990AA0 = Room21_Cmd04_ptmf;
     D_01990AAC = Room21_Cmd05_ptmf;
     D_01990AB8 = Room21_Cmd06_ptmf;
-    D_01990AC8 = Room21_Cond00_ptmf;
+    Room21_CondTable = Room21_Cond00_ptmf;
 }
 
 /* 0x004660B0 */
 void Sinit_Room23(void) {
-    D_01990AD8 = Room23_Cond00_ptmf;
-    D_01990AF0 = Room23_Cmd00_ptmf;
+    Room23_CondTable = Room23_Cond00_ptmf;
+    Room23_CmdTable = Room23_Cmd00_ptmf;
     D_01990AFC = Room23_Cmd01_ptmf;
 }
 
 /* 0x00466130 */
 void Sinit_Room24(void) {
-    D_01990B10 = Room24_KilnGlow_ptmf;
+    Room24_CmdTable = Room24_KilnGlow_ptmf;
     D_01990B1C = Room24_Smoke_ptmf;
     D_01990B28 = Room24_ColourPulse_ptmf;
 }
 
 /* 0x004661C0 */
 void Sinit_Room25(void) {
-    D_01990B38 = Room25_Cmd00_ptmf;
-    D_01990B48 = Room25_Cond00_ptmf;
+    Room25_CmdTable = Room25_Cmd00_ptmf;
+    Room25_CondTable = Room25_Cond00_ptmf;
 }
 
 /* 0x00466210 */
 void Sinit_Room26(void) {
-    D_01990B58 = Room26_Cond00_ptmf;
-    D_01990B70 = Room26_Cmd00_ptmf;
+    Room26_CondTable = Room26_Cond00_ptmf;
+    Room26_CmdTable = Room26_Cmd00_ptmf;
     D_01990B7C = Room26_Cmd01_ptmf;
     D_01990B88 = Room26_Cmd02_ptmf;
 }
 
 /* 0x004662C0 */
 void Sinit_Room28(void) {
-    D_01990B98 = Room28_Cond00_ptmf;
+    Room28_CondTable = Room28_Cond00_ptmf;
 }
 
 /* 0x004662F0 */
 void Sinit_Room29(void) {
-    D_01990BB0 = Room29_Cond00_ptmf;
+    Room29_CondTable = Room29_Cond00_ptmf;
     D_01990BBC = Room29_Cond01_ptmf;
 }
 
 /* 0x00466350 */
 void Sinit_Room2A(void) {
-    D_01990BD0 = Room2A_Cmd00_ptmf;
+    Room2A_CmdTable = Room2A_Cmd00_ptmf;
     D_01990BDC = Room2A_HandlerStep_ptmf;
     D_01990BE8 = Room2A_Cmd02_ptmf;
     D_01990BF4 = Room2A_Cmd03_ptmf;
@@ -1121,56 +1121,56 @@ void Sinit_Room2A(void) {
 
 /* 0x00466410 */
 void Sinit_Room2B(void) {
-    D_01990C00 = Room2B_Cmd00_ptmf;
+    Room2B_CmdTable = Room2B_Cmd00_ptmf;
 }
 
 /* 0x00466440 */
 void Sinit_Room2D(void) {
-    D_01990C10 = Room2D_Cmd00_ptmf;
+    Room2D_CmdTable = Room2D_Cmd00_ptmf;
     D_01990C1C = Room2D_Cmd01_ptmf;
     D_01990C28 = Room2D_Cmd02_ptmf;
-    D_01990C38 = Room2D_Cond00_ptmf;
+    Room2D_CondTable = Room2D_Cond00_ptmf;
 }
 
 /* 0x004664F0 */
 void Sinit_Room40(void) {
-    D_01990C48 = Room40_Cmd00_ptmf;
+    Room40_CmdTable = Room40_Cmd00_ptmf;
 }
 
 /* 0x00466520 */
 void Sinit_Room43(void) {
-    D_01990C58 = Room43_Cmd00_ptmf;
+    Room43_CmdTable = Room43_Cmd00_ptmf;
 }
 
 /* 0x00466550 */
 void Sinit_Room45(void) {
-    D_01990C68 = Room45_Cmd00_ptmf;
+    Room45_CmdTable = Room45_Cmd00_ptmf;
 }
 
 /* 0x00466580 */
 void Sinit_Room49(void) {
-    D_01990C80 = Room49_Cmd00_ptmf;
+    Room49_CmdTable = Room49_Cmd00_ptmf;
     D_01990C8C = Room49_Cmd01_ptmf;
     D_01990C98 = Room49_Cmd02_ptmf;
 }
 
 /* 0x00466610 */
 void Sinit_Room4B(void) {
-    D_01990CB0 = Room4B_Cmd00_ptmf;
+    Room4B_CmdTable = Room4B_Cmd00_ptmf;
     D_01990CBC = Room4B_Cmd01_ptmf;
-    D_01990CC8 = Room4B_Cond00_ptmf;
+    Room4B_CondTable = Room4B_Cond00_ptmf;
 }
 
 /* 0x00466690 */
 void Sinit_Room4C(void) {
-    D_01990CE0 = Room4C_Cmd00_ptmf;
+    Room4C_CmdTable = Room4C_Cmd00_ptmf;
     D_01990CEC = Room4C_Cmd01_ptmf;
     D_01990CF8 = Room4C_Cmd02_ptmf;
 }
 
 /* 0x00466720 */
 void Sinit_Room4E(void) {
-    D_01990D10 = Room4E_Cmd00_ptmf;
+    Room4E_CmdTable = Room4E_Cmd00_ptmf;
     D_01990D1C = Room4E_Cmd01_ptmf;
     D_01990D28 = Room4E_Cmd02_ptmf;
 }
@@ -1181,61 +1181,61 @@ void Sinit_Creature(void) {
     D_01990D4C = Room4F_Cmd01_ptmf;
     D_01990D58 = Room4F_Cmd02_ptmf;
     D_01990D64 = Room4F_Cmd03_ptmf;
-    D_01990D70 = Room4F_CreatureVanish_ptmf;
+    Room4F_CondTable = Room4F_CreatureVanish_ptmf;
 }
 
 /* 0x00466890 */
 void Sinit_Room50(void) {
-    D_01990D80 = Room50_Cmd00_ptmf;
+    Room50_CmdTable = Room50_Cmd00_ptmf;
 }
 
 /* 0x004668C0 */
 void Sinit_Room51(void) {
-    D_01990D90 = Room51_Cmd00_ptmf;
+    Room51_CmdTable = Room51_Cmd00_ptmf;
     D_01990D9C = Room51_Cmd01_ptmf;
 }
 
 /* 0x00466920 */
 void Sinit_Room52(void) {
-    D_01990DA8 = Room52_Cmd00_ptmf;
-    D_01990DB8 = Room52_Cond00_ptmf;
+    Room52_CmdTable = Room52_Cmd00_ptmf;
+    Room52_CondTable = Room52_Cond00_ptmf;
 }
 
 /* 0x00466970 */
 void Sinit_Room56(void) {
-    D_01990DC8 = Room56_Cmd00_ptmf;
+    Room56_CmdTable = Room56_Cmd00_ptmf;
 }
 
 /* 0x004669A0 */
 void Sinit_Room59(void) {
-    D_01990DD8 = Room59_Cmd00_ptmf;
+    Room59_CmdTable = Room59_Cmd00_ptmf;
 }
 
 /* 0x004669D0 */
 void Sinit_Room5A(void) {
-    D_01990DE8 = Room5A_Cmd00_ptmf;
+    Room5A_CmdTable = Room5A_Cmd00_ptmf;
 }
 
 /* 0x00466A00 */
 void Sinit_Room5C(void) {
-    D_01990DF8 = Room5C_Cmd00_ptmf;
-    D_01990E08 = Room5C_Cond00_ptmf;
+    Room5C_CmdTable = Room5C_Cmd00_ptmf;
+    Room5C_CondTable = Room5C_Cond00_ptmf;
 }
 
 /* 0x00466A50 */
 void Sinit_Room5D(void) {
-    D_01990E20 = Room5D_Cmd00_ptmf;
+    Room5D_CmdTable = Room5D_Cmd00_ptmf;
     D_01990E2C = Room5D_Cmd01_ptmf;
 }
 
 /* 0x00466AB0 */
 void Sinit_Room2F(void) {
-    D_01990E38 = Room2F_Cond00_ptmf;
+    Room2F_CondTable = Room2F_Cond00_ptmf;
 }
 
 /* 0x00466AE0 */
 void Sinit_Room30(void) {
-    D_01990E48 = Room30_Cond00_ptmf;
+    Room30_CondTable = Room30_Cond00_ptmf;
 }
 
 /* 0x00466B10 */
@@ -1254,63 +1254,63 @@ void Sinit_Riccardo(void) {
 
 /* 0x00466C90 */
 void Sinit_Room46(void) {
-    D_01990E78 = Room46_CharHook_ptmf;
-    D_01990E88 = Room46_PursuerBusy_ptmf;
+    Room46_CmdTable = Room46_CharHook_ptmf;
+    Room46_CondTable = Room46_PursuerBusy_ptmf;
 }
 
 /* 0x00466CE0 */
 void Sinit_Room102(void) {
-    D_01990E98 = Room102_Cmd00_ptmf;
+    Room102_CmdTable = Room102_Cmd00_ptmf;
 }
 
 /* 0x00466D10 */
 void Sinit_Room103(void) {
-    D_01990EA8 = Room103_Cmd00_ptmf;
+    Room103_CmdTable = Room103_Cmd00_ptmf;
 }
 
 /* 0x00466D40 */
 void Sinit_Room104(void) {
-    D_01990EB8 = Room104_Cmd00_ptmf;
+    Room104_CmdTable = Room104_Cmd00_ptmf;
 }
 
 /* 0x00466D70 */
 void Sinit_Room105(void) {
-    D_01990EC8 = Room105_Cmd00_ptmf;
+    Room105_CmdTable = Room105_Cmd00_ptmf;
 }
 
 /* 0x00466DA0 */
 void Sinit_Room106(void) {
-    D_01990ED8 = Room106_Cmd00_ptmf;
+    Room106_CmdTable = Room106_Cmd00_ptmf;
 }
 
 /* 0x00466DD0 */
 void Sinit_Room107(void) {
-    D_01990EE8 = Room107_Cond00_ptmf;
-    D_01990F00 = Room107_Cmd00_ptmf;
+    Room107_CondTable = Room107_Cond00_ptmf;
+    Room107_CmdTable = Room107_Cmd00_ptmf;
     D_01990F0C = Room107_Cmd01_ptmf;
 }
 
 /* 0x00466E50 */
 void Sinit_Room108(void) {
-    D_01990F18 = Room108_Cmd00_ptmf;
+    Room108_CmdTable = Room108_Cmd00_ptmf;
 }
 
 /* 0x00466E80 */
 void Sinit_Room109(void) {
-    D_01990F30 = Room109_Cmd00_ptmf;
+    Room109_CmdTable = Room109_Cmd00_ptmf;
     D_01990F3C = Room109_Cmd01_ptmf;
 }
 
 /* 0x00466EE0 */
 void Sinit_Room10A(void) {
-    D_01990F48 = Room10A_Cond00_ptmf;
-    D_01990F58 = Room10A_Cmd00_ptmf;
+    Room10A_CondTable = Room10A_Cond00_ptmf;
+    Room10A_CmdTable = Room10A_Cmd00_ptmf;
 }
 
 /* 0x00466F30 */
 void Sinit_Room10B(void) {
-    D_01990F68 = Room10B_Cmd00_ptmf;
-    D_01990F78 = Room10B_Cond00_ptmf;
+    Room10B_CmdTable = Room10B_Cmd00_ptmf;
+    Room10B_CondTable = Room10B_Cond00_ptmf;
 }
 
 /* 0x00466F80 */
@@ -1323,12 +1323,12 @@ void Sinit_Debilitas2(void) {
 
 /* 0x00467040 */
 void Sinit_Room27(void) {
-    D_01990FD8 = Room27_Cmd00_ptmf;
+    Room27_CmdTable = Room27_Cmd00_ptmf;
 }
 
 /* 0x00467070 */
 void Sinit_Room2E(void) {
-    D_01990FF0 = Room2E_Cmd00_ptmf;
+    Room2E_CmdTable = Room2E_Cmd00_ptmf;
     D_01990FFC = Room2E_Cmd01_ptmf;
     D_01991008 = Room2E_Cmd02_ptmf;
     D_01991014 = Room2E_Cmd03_ptmf;
@@ -1337,28 +1337,28 @@ void Sinit_Room2E(void) {
 
 /* 0x00467160 */
 void Sinit_Room66(void) {
-    D_01991030 = Room66_CharHook_ptmf;
+    Room66_CmdTable = Room66_CharHook_ptmf;
     D_0199103C = Room66_Effect_ptmf;
     D_01991048 = Room66_Sink_ptmf;
     D_01991054 = Room66_Fire_ptmf;
     D_01991060 = Room66_ColourPulse_ptmf;
-    D_01991070 = Room66_Letters_ptmf;
+    Room66_CondTable = Room66_Letters_ptmf;
     D_0199107C = Room66_CharPast_ptmf;
 }
 
 /* 0x004672A0 */
 void Sinit_Room55(void) {
-    D_01991088 = Room55_Effect_ptmf;
+    Room55_CmdTable = Room55_Effect_ptmf;
 }
 
 /* 0x004672D0 */
 void Sinit_Room63(void) {
-    D_01991098 = Room63_Cmd00_ptmf;
+    Room63_CmdTable = Room63_Cmd00_ptmf;
 }
 
 /* 0x00467300 */
 void Sinit_Room62(void) {
-    D_019910B0 = Room62_Cmd00_ptmf;
+    Room62_CmdTable = Room62_Cmd00_ptmf;
     D_019910BC = Room62_Cmd01_ptmf;
 }
 
@@ -1371,24 +1371,24 @@ void Sinit_Lorenzo(void) {
 
 /* 0x004673F0 */
 void Sinit_Room48(void) {
-    D_01991140 = Room48_Cmd00_ptmf;
+    Room48_CmdTable = Room48_Cmd00_ptmf;
     D_0199114C = Room48_Cmd01_ptmf;
     D_01991158 = Room48_Cmd02_ptmf;
     D_01991164 = Room48_Cmd03_ptmf;
     D_01991170 = Room48_Cmd04_ptmf;
     D_0199117C = Room48_Cmd05_ptmf;
-    D_01991188 = Room48_Cond00_ptmf;
+    Room48_CondTable = Room48_Cond00_ptmf;
 }
 
 /* 0x00467530 */
 void Sinit_Room54(void) {
-    D_019911A0 = Room54_GroupStep_ptmf;
+    Room54_CmdTable = Room54_GroupStep_ptmf;
     D_019911AC = Room54_DoorRegions_ptmf;
 }
 
 /* 0x00467590 */
 void Sinit_Room60(void) {
-    D_019911C0 = Room60_Cmd00_ptmf;
+    Room60_CmdTable = Room60_Cmd00_ptmf;
     D_019911CC = Room60_Cmd01_ptmf;
     D_019911D8 = Room60_Cmd02_ptmf;
     D_019911E4 = Room60_Cmd03_ptmf;
@@ -1398,20 +1398,20 @@ void Sinit_Room60(void) {
 
 /* 0x004676B0 */
 void Sinit_Room61(void) {
-    D_01991550 = Room61_Cmd00_ptmf;
+    Room61_CmdTable = Room61_Cmd00_ptmf;
     D_0199155C = Room61_Cmd01_ptmf;
 }
 
 /* 0x00467710 */
 void Sinit_Room31(void) {
-    D_01991570 = Room31_RoomEffect_ptmf;
+    Room31_CmdTable = Room31_RoomEffect_ptmf;
     D_0199157C = Room31_Fan_ptmf;
     D_01991588 = Room31_WindowLight_ptmf;
 }
 
 /* 0x004677A0 */
 void Sinit_Room32(void) {
-    D_019915A0 = Room32_Cmd00_ptmf;
+    Room32_CmdTable = Room32_Cmd00_ptmf;
     D_019915AC = Room32_Cmd01_ptmf;
     D_019915B8 = Room32_Cmd02_ptmf;
     D_019915C4 = Room32_Cmd03_ptmf;
@@ -1421,17 +1421,17 @@ void Sinit_Room32(void) {
 
 /* 0x004678C0 */
 void Sinit_Room86(void) {
-    D_019915E8 = Room86_Cmd00_ptmf;
+    Room86_CmdTable = Room86_Cmd00_ptmf;
 }
 
 /* 0x004678F0 */
 void Sinit_RoomC0(void) {
-    D_01991610 = RoomC0_Cmd00_ptmf;
+    RoomC0_CmdTable = RoomC0_Cmd00_ptmf;
     D_0199161C = RoomC0_Cmd01_ptmf;
     D_01991628 = RoomC0_Cmd02_ptmf;
     D_01991634 = RoomC0_Cmd03_ptmf;
     D_01991640 = RoomC0_Cmd04_ptmf;
-    D_01991650 = RoomC0_Cond00_ptmf;
+    RoomC0_CondTable = RoomC0_Cond00_ptmf;
 }
 
 /* 0x00467A00 */
@@ -1444,40 +1444,40 @@ void Sinit_Debilitas3_2(void) {
 
 /* 0x00467AC0 */
 void Sinit_RoomC7(void) {
-    D_01991660 = RoomC7_Cmd00_ptmf;
+    RoomC7_CmdTable = RoomC7_Cmd00_ptmf;
     D_0199166C = RoomC7_Cmd01_ptmf;
     D_01991678 = RoomC7_Cmd02_ptmf;
     D_01991684 = RoomC7_Cmd03_ptmf;
     D_01991690 = RoomC7_Cmd04_ptmf;
     D_0199169C = RoomC7_Cmd05_ptmf;
     D_019916A8 = RoomC7_Cmd06_ptmf;
-    D_019916C0 = RoomC7_Cond00_ptmf;
+    RoomC7_CondTable = RoomC7_Cond00_ptmf;
     D_019916CC = RoomC7_Cond01_ptmf;
 }
 
 /* 0x00467C60 */
 void Sinit_Room84(void) {
-    D_019916D8 = Room84_Cmd00_ptmf;
+    Room84_CmdTable = Room84_Cmd00_ptmf;
 }
 
 /* 0x00467C90 */
 void Sinit_Room85(void) {
-    D_019916E8 = Room85_Cmd00_ptmf;
+    Room85_CmdTable = Room85_Cmd00_ptmf;
 }
 
 /* 0x00467CC0 */
 void Sinit_Room87(void) {
-    D_019916F8 = Room87_Cmd00_ptmf;
+    Room87_CmdTable = Room87_Cmd00_ptmf;
 }
 
 /* 0x00467CF0 */
 void Sinit_Room88(void) {
-    D_01991708 = Room88_Cmd00_ptmf;
+    Room88_CmdTable = Room88_Cmd00_ptmf;
 }
 
 /* 0x00467D20 */
 void Sinit_Room8C(void) {
-    D_01991720 = Room8C_Cmd00_ptmf;
+    Room8C_CmdTable = Room8C_Cmd00_ptmf;
     D_0199172C = Room8C_Cmd01_ptmf;
     D_01991738 = Room8C_Cmd02_ptmf;
     D_01991744 = Room8C_Cmd03_ptmf;
@@ -1486,29 +1486,29 @@ void Sinit_Room8C(void) {
 
 /* 0x00467E10 */
 void Sinit_Room8D(void) {
-    D_01991760 = Room8D_Cmd00_ptmf;
+    Room8D_CmdTable = Room8D_Cmd00_ptmf;
     D_0199176C = Room8D_Cmd01_ptmf;
     D_01991778 = Room8D_Cmd02_ptmf;
 }
 
 /* 0x00467EA0 */
 void Sinit_Room8E(void) {
-    D_01991790 = Room8E_Cmd00_ptmf;
+    Room8E_CmdTable = Room8E_Cmd00_ptmf;
     D_0199179C = Room8E_Cmd01_ptmf;
 }
 
 /* 0x00467F00 */
 void Sinit_Room8F(void) {
-    D_019917B0 = Room8F_Cmd00_ptmf;
+    Room8F_CmdTable = Room8F_Cmd00_ptmf;
     D_019917BC = Room8F_Cmd01_ptmf;
     D_019917C8 = Room8F_Cmd02_ptmf;
     D_019917D4 = Room8F_Cmd03_ptmf;
-    D_019917E0 = Room8F_Cond00_ptmf;
+    Room8F_CondTable = Room8F_Cond00_ptmf;
 }
 
 /* 0x00467FE0 */
 void Sinit_Room91(void) {
-    D_019917F0 = Room91_Cmd00_ptmf;
+    Room91_CmdTable = Room91_Cmd00_ptmf;
     D_019917FC = Room91_Cmd01_ptmf;
     D_01991808 = Room91_Cmd02_ptmf;
     D_01991814 = Room91_Cmd03_ptmf;
@@ -1516,7 +1516,7 @@ void Sinit_Room91(void) {
 
 /* 0x004680A0 */
 void Sinit_Room92(void) {
-    D_01991820 = Room92_Cmd00_ptmf;
+    Room92_CmdTable = Room92_Cmd00_ptmf;
     D_0199182C = Room92_Cmd01_ptmf;
     D_01991838 = Room92_Cmd02_ptmf;
     D_01991844 = Room92_Cmd03_ptmf;
@@ -1534,111 +1534,111 @@ void Sinit_Room92(void) {
 
 /* 0x00468340 */
 void Sinit_Room97(void) {
-    D_019918C8 = Room97_Cmd00_ptmf;
+    Room97_CmdTable = Room97_Cmd00_ptmf;
 }
 
 /* 0x00468370 */
 void Sinit_Room69(void) {
-    D_019918D8 = Room69_Cmd00_ptmf;
+    Room69_CmdTable = Room69_Cmd00_ptmf;
 }
 
 /* 0x004683A0 */
 void Sinit_Room6A(void) {
-    D_019918F0 = Room6A_Cmd00_ptmf;
+    Room6A_CmdTable = Room6A_Cmd00_ptmf;
     D_019918FC = Room6A_Cmd01_ptmf;
 }
 
 /* 0x00468400 */
 void Sinit_Room6C(void) {
-    D_01991910 = Room6C_Cond00_ptmf;
+    Room6C_CondTable = Room6C_Cond00_ptmf;
     D_0199191C = Room6C_Cond01_ptmf;
 }
 
 /* 0x00468460 */
 void Sinit_Room6D(void) {
-    D_01991930 = Room6D_Cond00_ptmf;
+    Room6D_CondTable = Room6D_Cond00_ptmf;
     D_0199193C = Room6D_Cond01_ptmf;
 }
 
 /* 0x004684C0 */
 void Sinit_Room6F(void) {
-    D_01991948 = Room6F_Cmd00_ptmf;
-    D_01991958 = Room6F_Cond00_ptmf;
+    Room6F_CmdTable = Room6F_Cmd00_ptmf;
+    Room6F_CondTable = Room6F_Cond00_ptmf;
 }
 
 /* 0x00468510 */
 void Sinit_Room80(void) {
-    D_01991968 = Room80_Cmd00_ptmf;
+    Room80_CmdTable = Room80_Cmd00_ptmf;
 }
 
 /* 0x00468540 */
 void Sinit_RoomC1(void) {
-    D_01991978 = RoomC1_Cond00_ptmf;
+    RoomC1_CondTable = RoomC1_Cond00_ptmf;
 }
 
 /* 0x00468570 */
 void Sinit_RoomC2(void) {
-    D_01991990 = RoomC2_Cmd00_ptmf;
+    RoomC2_CmdTable = RoomC2_Cmd00_ptmf;
     D_0199199C = RoomC2_Cmd01_ptmf;
-    D_019919A8 = RoomC2_Cond00_ptmf;
+    RoomC2_CondTable = RoomC2_Cond00_ptmf;
 }
 
 /* 0x004685F0 */
 void Sinit_RoomC3(void) {
-    D_019919C0 = RoomC3_Cmd00_ptmf;
+    RoomC3_CmdTable = RoomC3_Cmd00_ptmf;
     D_019919CC = RoomC3_Cmd01_ptmf;
     D_019919D8 = RoomC3_Cmd02_ptmf;
-    D_019919E8 = RoomC3_Cond00_ptmf;
+    RoomC3_CondTable = RoomC3_Cond00_ptmf;
 }
 
 /* 0x004686A0 */
 void Sinit_RoomC5(void) {
-    D_019919F8 = RoomC5_Cmd00_ptmf;
+    RoomC5_CmdTable = RoomC5_Cmd00_ptmf;
 }
 
 /* 0x004686D0 */
 void Sinit_RoomC8(void) {
-    D_01991A08 = RoomC8_Cmd00_ptmf;
+    RoomC8_CmdTable = RoomC8_Cmd00_ptmf;
 }
 
 /* 0x00468700 */
 void Sinit_Room98(void) {
-    D_01991A18 = Room98_SlamShake_ptmf;
+    Room98_CmdTable = Room98_SlamShake_ptmf;
 }
 
 /* 0x00468730 */
 void Sinit_Room99(void) {
-    D_01991A28 = Room99_SlamShake_ptmf;
+    Room99_CmdTable = Room99_SlamShake_ptmf;
 }
 
 /* 0x00468760 */
 void Sinit_Room9A(void) {
-    D_01991A38 = Room9A_Cmd00_ptmf;
+    Room9A_CmdTable = Room9A_Cmd00_ptmf;
 }
 
 /* 0x00468790 */
 void Sinit_Room9B(void) {
-    D_01991A48 = Room9B_Cmd00_ptmf;
+    Room9B_CmdTable = Room9B_Cmd00_ptmf;
 }
 
 /* 0x004687C0 */
 void Sinit_Room93(void) {
-    D_01991A58 = Room93_SlamShake_ptmf;
+    Room93_CmdTable = Room93_SlamShake_ptmf;
 }
 
 /* 0x004687F0 */
 void Sinit_Room94(void) {
-    D_01991A68 = Room94_Cmd00_ptmf;
+    Room94_CmdTable = Room94_Cmd00_ptmf;
 }
 
 /* 0x00468820 */
 void Sinit_Room95(void) {
-    D_01991A78 = Room95_Cmd00_ptmf;
+    Room95_CmdTable = Room95_Cmd00_ptmf;
 }
 
 /* 0x00468850 */
 void Sinit_Room96(void) {
-    D_01991A88 = Room96_Cmd00_ptmf;
+    Room96_CmdTable = Room96_Cmd00_ptmf;
 }
 
 /* 0x00468880 */
@@ -1650,151 +1650,151 @@ void Sinit_Lorenzo_2(void) {
 
 /* 0x00468910 */
 void Sinit_Room37(void) {
-    D_01991AB0 = Room37_Fan_ptmf;
+    Room37_CmdTable = Room37_Fan_ptmf;
 }
 
 /* 0x00468940 */
 void Sinit_RoomD0(void) {
-    D_01991AC0 = RoomD0_ClockStop_ptmf;
+    RoomD0_CmdTable = RoomD0_ClockStop_ptmf;
     D_01991ACC = RoomD0_ClockSave_ptmf;
     D_01991AD8 = RoomD0_ClockDrawSaved_ptmf;
-    D_01991AE8 = RoomD0_ProgressCall_ptmf;
+    RoomD0_CondTable = RoomD0_ProgressCall_ptmf;
 }
 
 /* 0x004689F0 */
 void Sinit_RoomD1(void) {
-    D_01991B00 = RoomD1_Cmd00_ptmf;
+    RoomD1_CmdTable = RoomD1_Cmd00_ptmf;
     D_01991B0C = RoomD1_Cmd01_ptmf;
-    D_01991B18 = RoomD1_Cond00_ptmf;
+    RoomD1_CondTable = RoomD1_Cond00_ptmf;
 }
 
 /* 0x00468A70 */
 void Sinit_RoomD2(void) {
-    D_01991B28 = RoomD2_Cmd00_ptmf;
-    D_01991B38 = RoomD2_Cond00_ptmf;
+    RoomD2_CmdTable = RoomD2_Cmd00_ptmf;
+    RoomD2_CondTable = RoomD2_Cond00_ptmf;
 }
 
 /* 0x00468AC0 */
 void Sinit_RoomD3(void) {
-    D_01991B48 = RoomD3_Cmd00_ptmf;
-    D_01991B58 = RoomD3_Cond00_ptmf;
+    RoomD3_CmdTable = RoomD3_Cmd00_ptmf;
+    RoomD3_CondTable = RoomD3_Cond00_ptmf;
 }
 
 /* 0x00468B10 */
 void Sinit_RoomD4(void) {
-    D_01991B68 = RoomD4_Cmd00_ptmf;
-    D_01991B78 = RoomD4_Cond00_ptmf;
+    RoomD4_CmdTable = RoomD4_Cmd00_ptmf;
+    RoomD4_CondTable = RoomD4_Cond00_ptmf;
 }
 
 /* 0x00468B60 */
 void Sinit_RoomD5(void) {
-    D_01991B90 = RoomD5_Cmd00_ptmf;
+    RoomD5_CmdTable = RoomD5_Cmd00_ptmf;
     D_01991B9C = RoomD5_Cmd01_ptmf;
     D_01991BA8 = RoomD5_Cmd02_ptmf;
-    D_01991BB8 = RoomD5_Cond00_ptmf;
+    RoomD5_CondTable = RoomD5_Cond00_ptmf;
 }
 
 /* 0x00468C10 */
 void Sinit_RoomD6(void) {
-    D_01991BD0 = RoomD6_Cmd00_ptmf;
+    RoomD6_CmdTable = RoomD6_Cmd00_ptmf;
     D_01991BDC = RoomD6_Cmd01_ptmf;
-    D_01991BE8 = RoomD6_Cond00_ptmf;
+    RoomD6_CondTable = RoomD6_Cond00_ptmf;
 }
 
 /* 0x00468C90 */
 void Sinit_RoomD7(void) {
-    D_01991C00 = D_00447B70;
+    RoomD7_CondTable = D_00447B70;
     D_01991C0C = RoomD7_Cond01_ptmf;
-    D_01991C20 = RoomD7_Cmd00_ptmf;
+    RoomD7_CmdTable = RoomD7_Cmd00_ptmf;
     D_01991C2C = RoomD7_Cmd01_ptmf;
     D_01991C38 = RoomD7_Cmd02_ptmf;
 }
 
 /* 0x00468D70 */
 void Sinit_RoomD8(void) {
-    D_01991C50 = D_00447E20;
+    RoomD8_CondTable = D_00447E20;
     D_01991C5C = RoomD8_Cond01_ptmf;
-    D_01991C70 = RoomD8_Cmd00_ptmf;
+    RoomD8_CmdTable = RoomD8_Cmd00_ptmf;
     D_01991C7C = RoomD8_Cmd01_ptmf;
 }
 
 /* 0x00468E20 */
 void Sinit_RoomD9(void) {
-    D_01991C90 = RoomD9_Cmd00_ptmf;
+    RoomD9_CmdTable = RoomD9_Cmd00_ptmf;
     D_01991C9C = RoomD9_Cmd01_ptmf;
     D_01991CA8 = RoomD9_Cmd02_ptmf;
-    D_01991CB8 = RoomD9_Cond00_ptmf;
+    RoomD9_CondTable = RoomD9_Cond00_ptmf;
 }
 
 /* 0x00468ED0 */
 void Sinit_RoomE0(void) {
-    D_01991CD0 = RoomE0_ClockStart_ptmf;
+    RoomE0_CmdTable = RoomE0_ClockStart_ptmf;
     D_01991CDC = RoomE0_Fan_ptmf;
     D_01991CE8 = RoomE0_WindowLight_ptmf;
     D_01991CF4 = RoomE0_DoorLight_ptmf;
     D_01991D00 = RoomE0_ClockDraw_ptmf;
     D_01991D0C = RoomE0_ChooseExit_ptmf;
-    D_01991D18 = RoomE0_ProgressCall_ptmf;
+    RoomE0_CondTable = RoomE0_ProgressCall_ptmf;
 }
 
 /* 0x00469010 */
 void Sinit_RoomE1(void) {
-    D_01991D28 = RoomE1_Cmd00_ptmf;
-    D_01991D38 = RoomE1_Cond00_ptmf;
+    RoomE1_CmdTable = RoomE1_Cmd00_ptmf;
+    RoomE1_CondTable = RoomE1_Cond00_ptmf;
 }
 
 /* 0x00469060 */
 void Sinit_RoomE2(void) {
-    D_01991D48 = RoomE2_Cmd00_ptmf;
-    D_01991D58 = RoomE2_Cond00_ptmf;
+    RoomE2_CmdTable = RoomE2_Cmd00_ptmf;
+    RoomE2_CondTable = RoomE2_Cond00_ptmf;
 }
 
 /* 0x004690B0 */
 void Sinit_RoomE3(void) {
-    D_01991D68 = RoomE3_Cmd00_ptmf;
-    D_01991D78 = RoomE3_Cond00_ptmf;
+    RoomE3_CmdTable = RoomE3_Cmd00_ptmf;
+    RoomE3_CondTable = RoomE3_Cond00_ptmf;
 }
 
 /* 0x00469100 */
 void Sinit_RoomE4(void) {
-    D_01991D90 = RoomE4_Cmd00_ptmf;
+    RoomE4_CmdTable = RoomE4_Cmd00_ptmf;
     D_01991D9C = RoomE4_Cmd01_ptmf;
-    D_01991DA8 = RoomE4_Cond00_ptmf;
+    RoomE4_CondTable = RoomE4_Cond00_ptmf;
 }
 
 /* 0x00469180 */
 void Sinit_RoomE5(void) {
-    D_01991DC0 = RoomE5_Cmd00_ptmf;
+    RoomE5_CmdTable = RoomE5_Cmd00_ptmf;
     D_01991DCC = RoomE5_Cmd01_ptmf;
-    D_01991DD8 = RoomE5_Cond00_ptmf;
+    RoomE5_CondTable = RoomE5_Cond00_ptmf;
 }
 
 /* 0x00469200 */
 void Sinit_RoomE6(void) {
-    D_01991DF0 = RoomE6_Cmd00_ptmf;
+    RoomE6_CmdTable = RoomE6_Cmd00_ptmf;
     D_01991DFC = RoomE6_Cmd01_ptmf;
-    D_01991E08 = RoomE6_Cond00_ptmf;
+    RoomE6_CondTable = RoomE6_Cond00_ptmf;
 }
 
 /* 0x00469280 */
 void Sinit_RoomE7(void) {
-    D_01991E18 = RoomE7_Cmd00_ptmf;
-    D_01991E28 = RoomE7_Cond00_ptmf;
+    RoomE7_CmdTable = RoomE7_Cmd00_ptmf;
+    RoomE7_CondTable = RoomE7_Cond00_ptmf;
 }
 
 /* 0x004692D0 */
 void Sinit_RoomE8(void) {
-    D_01991E38 = RoomE8_Cmd00_ptmf;
-    D_01991E48 = RoomE8_Cond00_ptmf;
+    RoomE8_CmdTable = RoomE8_Cmd00_ptmf;
+    RoomE8_CondTable = RoomE8_Cond00_ptmf;
 }
 
 /* 0x00469320 */
 void Sinit_RoomE9(void) {
-    D_01991E60 = RoomE9_Cmd00_ptmf;
+    RoomE9_CmdTable = RoomE9_Cmd00_ptmf;
     D_01991E6C = RoomE9_Cmd01_ptmf;
     D_01991E78 = RoomE9_Cmd02_ptmf;
     D_01991E84 = RoomE9_Cmd03_ptmf;
-    D_01991E90 = RoomE9_Cond00_ptmf;
+    RoomE9_CondTable = RoomE9_Cond00_ptmf;
 }
 
 /* ---- hand-written ---- */

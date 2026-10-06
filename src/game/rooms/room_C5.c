@@ -11,18 +11,18 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomC5_vtable[];
-extern u8 D_0047AF20[], D_0047AF28[];
+extern u8 RoomC5_Phase5Script_data[], RoomC5_Table38_data[];
 extern void *ObjectGlow_vtable[];
-extern const char *D_00441140[];   /* room objects 0..9 */
-extern u32 D_004401B0[];
-extern u32 D_00440210[];
-extern u32 D_00440250[];
-extern u32 D_00440E00[];
-extern u32 D_00441110[];
+extern const char *RoomC5_ObjectNames[];   /* room objects 0..9 */
+extern u32 RoomC5_EnterScript_data[];
+extern u32 RoomC5_CharEnterScript_data[];
+extern u32 RoomC5_Phase1Script_data[];
+extern u32 RoomC5_Phase2Script_data[];
+extern u32 RoomC5_ActionScripts[];
 
 extern void *EffectBase_vtable[];
 
-extern PTMF D_019919F8[];
+extern PTMF RoomC5_CmdTable[];
 
 static void effect_79870_init(void **obj) {
     obj[0] = ObjectGlow_vtable;
@@ -33,44 +33,44 @@ void *RoomC5_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC5_vtable
 
 /* 0x0034B140 */
 void *RoomC5_EnterScript(void) {
-    return D_004401B0;
+    return RoomC5_EnterScript_data;
 }
 
 /* 0x0034B150 */
 void *RoomC5_CharEnterScript(void) {
-    return D_00440210;
+    return RoomC5_CharEnterScript_data;
 }
 
 /* 0x0034B160 */
 void *RoomC5_Phase1Script(void) {
-    return D_00440250;
+    return RoomC5_Phase1Script_data;
 }
 
 /* 0x0034B170 */
 void *RoomC5_Phase2Script(void) {
-    return D_00440E00;
+    return RoomC5_Phase2Script_data;
 }
 
 /* 0x0034B180 */
-void *RoomC5_Phase5Script(void *o) { return D_0047AF20; }   /* RoomC5_vtable +0x20 */
+void *RoomC5_Phase5Script(void *o) { return RoomC5_Phase5Script_data; }   /* RoomC5_vtable +0x20 */
 
 /* 0x0034B190 */
 u32 RoomC5_ActionScript(void *self, s32 i) {
-    return D_00441110[i];
+    return RoomC5_ActionScripts[i];
 }
 
 /* 0x0034B1B0 */
-void *RoomC5_Table38(void *o) { return D_0047AF28; }   /* RoomC5_vtable +0x38 */
+void *RoomC5_Table38(void *o) { return RoomC5_Table38_data; }   /* RoomC5_vtable +0x38 */
 
 /* 0x0034B1C0 */
 u32 RoomC5_ObjectName(void *self, s32 i) {
-    return (u32)D_00441140[i];
+    return (u32)RoomC5_ObjectNames[i];
 }
 
-/* (self->*D_019919F8[i])(a, b) */
+/* (self->*RoomC5_CmdTable[i])(a, b) */
 /* 0x0034B1E0 */
 s32 RoomC5_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019919F8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC5_CmdTable[i & 0xFF], a, b);
 }
 
 /* the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable 11 - k
@@ -98,7 +98,7 @@ s32 RoomC5_Cmd00(void *self, void *a1, u8 *cmd) {
         slot = Effect_New(gEffects, 0x10, effect_79870_init);
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, var, slot);
     }
-    o = obj_named(D_00441140[name]);
+    o = obj_named(RoomC5_ObjectNames[name]);
     msg.idx = idx;
     msg.var = var;
     msg.on = on;

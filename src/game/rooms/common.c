@@ -281,7 +281,7 @@ extern const char *const D_0040187C;
 extern const char *const D_003F0DBC, *const D_003F0DC0;   /* room 0x03 (and D_003F0DC4) */
 extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8) */
 extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
-extern const char *const D_003F5440[];                  /* room 0x0C (+13: the three pairs) */
+extern const char *const Room0C_ObjectNames[];                  /* room 0x0C (+13: the three pairs) */
 extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
 extern void *WindowFlash_vtable[], *DriftingFlecks_vtable[], *SmokePuffs_vtable[];
 
@@ -413,11 +413,11 @@ void *Effect7A3D0_dtor(u8 *o, s32 flags) {
 
 /* ---- rooms 0x15 .. 0x66 (second batch) ---- */
 
-extern const char *const D_003FB370[];   /* room 0x18's objects */
-extern const char *const D_0040C140[];   /* room 0x4F's objects */
+extern const char *const Room18_ObjectNames[];   /* room 0x18's objects */
+extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
 extern const char *const D_0047ABEC;     /* room 0x5C's dial */
 extern const char *const D_004123E8;     /* room 0x5D's lever */
-extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
+extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
 extern VObject *D_00456E00;
 
 /* (Room24_ColourPulse_ptmf's table) room effect 0x1F's colour pulsing by script variable 0 */
@@ -429,7 +429,7 @@ s32 Room24_ColourPulse(void) {
 
 /* ---- room 0x66's fires, room 0x62's swinging object, a room creature class ---- */
 
-extern const char *const D_0047AD08[];   /* room 0x62's objects */
+extern const char *const Room62_ObjectNames[];   /* room 0x62's objects */
 
 /* ---- creature class Kind09_vtable (a pursuer-like character) ---- */
 
@@ -460,8 +460,8 @@ extern void *Effect79B00_vtable[];
 #endif
 
 /* ---- room 54 (D_00428030): the sliding blocks - group byte 3 of four room objects
- * (D_00428050, four names a group) pushed to their stops (D_00428010: x, z a group) ---- */
-extern const char *D_00428050[];
+ * (Room54_ObjectNames, four names a group) pushed to their stops (D_00428010: x, z a group) ---- */
+extern const char *Room54_ObjectNames[];
 extern const f32 D_00428010[];
 extern VObject *D_00456E00;   /* the room's triangle groups */
 
@@ -499,7 +499,7 @@ s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
     switch (cmd[4]) {
     case 0:
         for (k = 0; k < 4; k++) {
-            o = obj_named(D_00428050[g * 4 + k]);
+            o = obj_named(Room54_ObjectNames[g * 4 + k]);
             AT(o, 0x20, f32) = D_00428010[g * 2];
             AT(o, 0x28, f32) = D_00428010[g * 2 + 1];
         }
@@ -511,7 +511,7 @@ s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
             u32 at = cmd[4] == 1 ? 0x20 : 0x28;
             f32 stop = D_00428010[g * 2 + (cmd[4] == 1 ? 0 : 1)];
 
-            o = obj_named(D_00428050[g * 4 + k]);
+            o = obj_named(Room54_ObjectNames[g * 4 + k]);
             v = AT(o, at, f32) - kQ.f;
             AT(o, at, f32) = v;
             if (v < stop) {
@@ -523,7 +523,7 @@ s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
         if (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) {
             break;
         }
-        o = obj_named(D_00428050[g * 4 + 2]);
+        o = obj_named(Room54_ObjectNames[g * 4 + 2]);
         if (cmd[4] == 1) {
             mgr = gEffects;
             slot = Effect_New(mgr, 0x720, dust_cloud_init);
@@ -547,7 +547,7 @@ s32 Room54_GroupStep(void *self, void *a1, u8 *cmd) {
     case 4: {
         f32 pos[4] __attribute__((aligned(16)));
 
-        o = obj_named(D_00428050[g * 4]);
+        o = obj_named(Room54_ObjectNames[g * 4]);
         sceVu0CopyVector(pos, (f32 *)(o + 0x20));
         Sound_PlayBankAt(gSound, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
         break;

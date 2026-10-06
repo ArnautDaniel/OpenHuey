@@ -10,17 +10,17 @@
 extern void *RoomBase_vtable[];
 extern void *Room12_vtable[];
 extern void *SmokePuffs_vtable[];
-extern u8 D_003F8200[];
-extern u8 D_003F8350[];
-extern u8 D_003F83F0[];
-extern u8 D_003F8750[];
-extern u8 D_003F8900[];
-extern u8 D_003F89D0[];
-extern void *D_003F90F0[];
-extern void *D_003F9170[];
-extern u8 D_003F9190[];
-extern PTMF D_019908E0[];
-extern PTMF D_019908F0[];
+extern u8 Room12_EnterScript_data[];
+extern u8 Room12_CharEnterScript_data[];
+extern u8 Room12_Phase1Script_data[];
+extern u8 Room12_Phase2Script_data[];
+extern u8 Room12_Phase3Script_data[];
+extern u8 Room12_Phase5Script_data[];
+extern void *Room12_ActionScripts[];
+extern void *Room12_ObjectNames[];
+extern u8 Room12_Table38_data[];
+extern PTMF Room12_CmdTable[];
+extern PTMF Room12_CondTable[];
 
 static void smoke_puffs_init(void **obj) {
     obj[0] = SmokePuffs_vtable;
@@ -34,53 +34,53 @@ void *Room12_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room12_vtable
 
 /* 0x002AC1F0 */
 void *Room12_EnterScript(void) {
-    return D_003F8200;
+    return Room12_EnterScript_data;
 }
 
 /* 0x002AC200 */
 void *Room12_CharEnterScript(void) {
-    return D_003F8350;
+    return Room12_CharEnterScript_data;
 }
 
 /* 0x002AC210 */
 void *Room12_Phase1Script(void) {
-    return D_003F83F0;
+    return Room12_Phase1Script_data;
 }
 
 /* 0x002AC220 */
 void *Room12_Phase2Script(void) {
-    return D_003F8750;
+    return Room12_Phase2Script_data;
 }
 
 /* 0x002AC230 */
 void *Room12_Phase3Script(void) {
-    return D_003F8900;
+    return Room12_Phase3Script_data;
 }
 
 /* 0x002AC240 */
 void *Room12_Phase5Script(void) {
-    return D_003F89D0;
+    return Room12_Phase5Script_data;
 }
 
 /* 0x002AC250 */
 void *Room12_ActionScript(void *self, s32 i) {
-    return D_003F90F0[i];
+    return Room12_ActionScripts[i];
 }
 
 /* 0x002AC270 */
 void *Room12_Table38(void) {
-    return D_003F9190;
+    return Room12_Table38_data;
 }
 
 /* 0x002AC280 */
 void *Room12_ObjectName(void *self, s32 i) {
-    return D_003F9170[i];
+    return Room12_ObjectNames[i];
 }
 
-/* (self->*D_019908F0[i])(a, b) */
+/* (self->*Room12_CondTable[i])(a, b) */
 /* 0x002AC2A0 */
 s32 Room12_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019908F0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room12_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x12 (Room12_Cond00_ptmf): the pursuer is about, in a mode other than 0 and 3 */
@@ -91,10 +91,10 @@ s32 Room12_Cond00(void) {
     return s != NULL && s->a.active != 0 && AT(s, 0xE8, s32) != 3 && AT(s, 0xE8, s32) != 0;
 }
 
-/* (self->*D_019908E0[i])(a, b) */
+/* (self->*Room12_CmdTable[i])(a, b) */
 /* 0x002AC340 */
 s32 Room12_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019908E0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room12_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in script

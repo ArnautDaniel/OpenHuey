@@ -12,17 +12,17 @@
 extern void *RoomBase_vtable[];
 extern void *Room5C_vtable[];
 extern void *CreatureVanish_vtable[];
-extern u8 D_00410F70[];
-extern u8 D_00410FB0[];
-extern u8 D_00411180[];
-extern u8 D_00411430[];
-extern u8 D_004114E0[];
-extern u32 D_00411B00[];
-extern u8 D_00411B60[];
-extern u32 D_0047ABE8[];
+extern u8 Room5C_EnterScript_data[];
+extern u8 Room5C_CharEnterScript_data[];
+extern u8 Room5C_Phase1Script_data[];
+extern u8 Room5C_Phase2Script_data[];
+extern u8 Room5C_Phase3Script_data[];
+extern u32 Room5C_ActionScripts[];
+extern u8 Room5C_Table38_data[];
+extern u32 Room5C_ObjectNames[];
 
-extern PTMF D_01990DF8[];
-extern PTMF D_01990E08[];
+extern PTMF Room5C_CmdTable[];
+extern PTMF Room5C_CondTable[];
 
 static void effect_472370_init(void **obj) {
     obj[0] = CreatureVanish_vtable;
@@ -36,48 +36,48 @@ void *Room5C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5C_vtable
 
 /* 0x002B5910 */
 void *Room5C_EnterScript(void) {
-    return D_00410F70;
+    return Room5C_EnterScript_data;
 }
 
 /* 0x002B5920 */
 void *Room5C_CharEnterScript(void) {
-    return D_00410FB0;
+    return Room5C_CharEnterScript_data;
 }
 
 /* 0x002B5930 */
 void *Room5C_Phase1Script(void) {
-    return D_00411180;
+    return Room5C_Phase1Script_data;
 }
 
 /* 0x002B5940 */
 void *Room5C_Phase2Script(void) {
-    return D_00411430;
+    return Room5C_Phase2Script_data;
 }
 
 /* 0x002B5950 */
 void *Room5C_Phase3Script(void) {
-    return D_004114E0;
+    return Room5C_Phase3Script_data;
 }
 
 /* 0x002B5960 */
 u32 Room5C_ActionScript(void *self, s32 i) {
-    return D_00411B00[i];
+    return Room5C_ActionScripts[i];
 }
 
 /* 0x002B5980 */
 void *Room5C_Table38(void) {
-    return D_00411B60;
+    return Room5C_Table38_data;
 }
 
 /* 0x002B5990 */
 u32 Room5C_ObjectName(void *self, s32 i) {
-    return D_0047ABE8[i];
+    return Room5C_ObjectNames[i];
 }
 
-/* (self->*D_01990E08[i])(a, b) */
+/* (self->*Room5C_CondTable[i])(a, b) */
 /* 0x002B59B0 */
 s32 Room5C_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990E08[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room5C_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x5C (Room5C_Cond00_ptmf): the first creature within 3 of (59.1, 1.43) is put away with an
@@ -148,10 +148,10 @@ s32 Room5C_Cond00(void) {
     return 0;
 }
 
-/* (self->*D_01990DF8[i])(a, b) */
+/* (self->*Room5C_CmdTable[i])(a, b) */
 /* 0x002B5C00 */
 s32 Room5C_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990DF8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room5C_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0 0x2B..0x38

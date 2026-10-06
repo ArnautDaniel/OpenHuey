@@ -7,45 +7,45 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room0B_vtable[];
-extern u8 D_0047A9C8[];
+extern u8 Room0B_ObjectNames[];
 
-extern u8 D_003F43C0[];
-extern u8 D_003F43E0[];
-extern u8 D_003F4470[];
-extern void *D_003F4620[];
-extern PTMF D_01990848[];
+extern u8 Room0B_EnterScript_data[];
+extern u8 Room0B_CharEnterScript_data[];
+extern u8 Room0B_Phase1Script_data[];
+extern void *Room0B_ActionScripts[];
+extern PTMF Room0B_CondTable[];
 
 /* 0x002AB030 */
 void *Room0B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room0B_vtable, RoomBase_vtable); }
 
 /* 0x002AB090 */
 void *Room0B_EnterScript(void) {
-    return D_003F43C0;
+    return Room0B_EnterScript_data;
 }
 
 /* 0x002AB0A0 */
 void *Room0B_CharEnterScript(void) {
-    return D_003F43E0;
+    return Room0B_CharEnterScript_data;
 }
 
 /* 0x002AB0B0 */
 void *Room0B_Phase1Script(void) {
-    return D_003F4470;
+    return Room0B_Phase1Script_data;
 }
 
 /* 0x002AB0C0 */
 void *Room0B_ActionScript(void *self, s32 i) {
-    return D_003F4620[i];
+    return Room0B_ActionScripts[i];
 }
 
 /* entry `i` of a table of the room's */
 /* 0x002AB0E0 */
-u32 Room0B_ObjectName(void *o, s32 i) { return ((u32 *)D_0047A9C8)[i]; }   /* Room0B_vtable +0x34 */
+u32 Room0B_ObjectName(void *o, s32 i) { return ((u32 *)Room0B_ObjectNames)[i]; }   /* Room0B_vtable +0x34 */
 
-/* (self->*D_01990848[i])(a, b) */
+/* (self->*Room0B_CondTable[i])(a, b) */
 /* 0x002AB100 */
 s32 Room0B_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990848[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room0B_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6 */

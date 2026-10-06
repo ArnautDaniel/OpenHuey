@@ -13,70 +13,70 @@
 extern void *RoomBase_vtable[];
 extern void *Room08_vtable[];
 
-extern u8 D_003F2500[];
-extern u8 D_003F2640[];
-extern u8 D_003F2780[];
-extern u8 D_003F28A0[];
-extern u8 D_003F2910[];
-extern u8 D_003F2980[];
-extern void *D_003F3180[];
-extern void *D_003F3200[];
-extern u8 D_003F3230[];
-extern PTMF D_019907E0[];
-extern PTMF D_01990800[];
+extern u8 Room08_EnterScript_data[];
+extern u8 Room08_CharEnterScript_data[];
+extern u8 Room08_Phase1Script_data[];
+extern u8 Room08_Phase2Script_data[];
+extern u8 Room08_Phase3Script_data[];
+extern u8 Room08_Phase5Script_data[];
+extern void *Room08_ActionScripts[];
+extern void *Room08_ObjectNames[];
+extern u8 Room08_Table38_data[];
+extern PTMF Room08_CmdTable[];
+extern PTMF Room08_CondTable[];
 
 /* 0x002AA440 */
 void *Room08_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room08_vtable, RoomBase_vtable); }
 
 /* 0x002AA4A0 */
 void *Room08_EnterScript(void) {
-    return D_003F2500;
+    return Room08_EnterScript_data;
 }
 
 /* 0x002AA4B0 */
 void *Room08_CharEnterScript(void) {
-    return D_003F2640;
+    return Room08_CharEnterScript_data;
 }
 
 /* 0x002AA4C0 */
 void *Room08_Phase1Script(void) {
-    return D_003F2780;
+    return Room08_Phase1Script_data;
 }
 
 /* 0x002AA4D0 */
 void *Room08_Phase2Script(void) {
-    return D_003F28A0;
+    return Room08_Phase2Script_data;
 }
 
 /* 0x002AA4E0 */
 void *Room08_Phase3Script(void) {
-    return D_003F2910;
+    return Room08_Phase3Script_data;
 }
 
 /* 0x002AA4F0 */
 void *Room08_Phase5Script(void) {
-    return D_003F2980;
+    return Room08_Phase5Script_data;
 }
 
 /* 0x002AA500 */
 void *Room08_ActionScript(void *self, s32 i) {
-    return D_003F3180[i];
+    return Room08_ActionScripts[i];
 }
 
 /* 0x002AA520 */
 void *Room08_Table38(void) {
-    return D_003F3230;
+    return Room08_Table38_data;
 }
 
 /* 0x002AA530 */
 void *Room08_ObjectName(void *self, s32 i) {
-    return D_003F3200[i];
+    return Room08_ObjectNames[i];
 }
 
-/* (self->*D_01990800[i])(a, b) */
+/* (self->*Room08_CondTable[i])(a, b) */
 /* 0x002AA550 */
 s32 Room08_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990800[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room08_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x08 (Room08_Cond01_ptmf): the stalker is there but not about */
@@ -93,10 +93,10 @@ s32 Room08_Cond00(void *self, void *a1, u8 *cmd) {
     return Progress_DoorOpen(gProgress, (cmd[3] << 8 | cmd[4]) & 0xFFFF);
 }
 
-/* (self->*D_019907E0[i])(a, b) */
+/* (self->*Room08_CmdTable[i])(a, b) */
 /* 0x002AA5D0 */
 s32 Room08_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019907E0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room08_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x08 (D_003F31D8): the hanging object named by the handler's string 0xA - byte 3 0 sets

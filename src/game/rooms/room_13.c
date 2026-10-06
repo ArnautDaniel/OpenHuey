@@ -9,63 +9,63 @@
 extern void *RoomBase_vtable[];
 extern void *Room13_vtable[];
 
-extern u8 D_003F91A0[];
-extern u8 D_003F92E0[];
-extern u8 D_003F93A0[];
-extern u8 D_003F9530[];
-extern u8 D_003F95F0[];
-extern void *D_003F9980[];
-extern void *D_003F99B0[];
-extern u8 D_003F99C0[];
-extern PTMF D_01990900[];
+extern u8 Room13_EnterScript_data[];
+extern u8 Room13_CharEnterScript_data[];
+extern u8 Room13_Phase1Script_data[];
+extern u8 Room13_Phase2Script_data[];
+extern u8 Room13_Phase3Script_data[];
+extern void *Room13_ActionScripts[];
+extern void *Room13_ObjectNames[];
+extern u8 Room13_Table38_data[];
+extern PTMF Room13_CmdTable[];
 
 /* 0x002AC4D0 */
 void *Room13_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room13_vtable, RoomBase_vtable); }
 
 /* 0x002AC530 */
 void *Room13_EnterScript(void) {
-    return D_003F91A0;
+    return Room13_EnterScript_data;
 }
 
 /* 0x002AC540 */
 void *Room13_CharEnterScript(void) {
-    return D_003F92E0;
+    return Room13_CharEnterScript_data;
 }
 
 /* 0x002AC550 */
 void *Room13_Phase1Script(void) {
-    return D_003F93A0;
+    return Room13_Phase1Script_data;
 }
 
 /* 0x002AC560 */
 void *Room13_Phase2Script(void) {
-    return D_003F9530;
+    return Room13_Phase2Script_data;
 }
 
 /* 0x002AC570 */
 void *Room13_Phase3Script(void) {
-    return D_003F95F0;
+    return Room13_Phase3Script_data;
 }
 
 /* 0x002AC580 */
 void *Room13_ActionScript(void *self, s32 i) {
-    return D_003F9980[i];
+    return Room13_ActionScripts[i];
 }
 
 /* 0x002AC5A0 */
 void *Room13_Table38(void) {
-    return D_003F99C0;
+    return Room13_Table38_data;
 }
 
 /* 0x002AC5B0 */
 void *Room13_ObjectName(void *self, s32 i) {
-    return D_003F99B0[i];
+    return Room13_ObjectNames[i];
 }
 
-/* (self->*D_01990900[i])(a, b) */
+/* (self->*Room13_CmdTable[i])(a, b) */
 /* 0x002AC5D0 */
 s32 Room13_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990900[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room13_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002AC600 */

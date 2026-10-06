@@ -15,8 +15,8 @@ extern void *RoomBase_vtable[];
 extern void *RoomC0_vtable[];
 extern void *CeilingDrips_vtable[];
 extern const char *D_0042E408;
-extern PTMF D_01991610[];
-extern PTMF D_01991650[];
+extern PTMF RoomC0_CmdTable[];
+extern PTMF RoomC0_CondTable[];
 
 static void effect_479a60_init(void **obj) {
     obj[0] = CeilingDrips_vtable;
@@ -33,10 +33,10 @@ static inline s32 ee_ftoi(f32 v) {
 /* 0x0032DBF0 */
 void *RoomC0_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC0_vtable, RoomBase_vtable); }
 
-/* (self->*D_01991650[i])(a, b) */
+/* (self->*RoomC0_CondTable[i])(a, b) */
 /* 0x0032DCE0 */
 s32 RoomC0_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991650[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC0_CondTable[i & 0xFF], a, b);
 }
 
 /* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (RoomC0_Cond00_ptmf, RoomC1_Cond00_ptmf, RoomC2_Cond00_ptmf, RoomC3_Cond00_ptmf): the timer at
@@ -46,10 +46,10 @@ s32 RoomC0_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
-/* (self->*D_01991610[i])(a, b) */
+/* (self->*RoomC0_CmdTable[i])(a, b) */
 /* 0x0032DD40 */
 s32 RoomC0_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991610[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC0_CmdTable[i & 0xFF], a, b);
 }
 
 /* the screen fade (renderer +0x90): byte 3 0 full 0x80; else clearing from cutscene frame 120

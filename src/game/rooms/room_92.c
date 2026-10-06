@@ -28,17 +28,17 @@ extern void *Embers_vtable[];
 extern void *SparkSpray_vtable[];
 extern const char *D_00437D30[];   /* room objects 4, 5 */
 extern void *SmokeTrail_vtable[];
-extern u32 D_00436CF0[];
-extern u32 D_00436D70[];
-extern u32 D_00436DE0[];
-extern u32 D_004370F0[];
-extern u32 D_00437140[];
-extern u32 D_00437BF0[];
-extern u32 D_00437D20[];
+extern u32 Room92_EnterScript_data[];
+extern u32 Room92_CharEnterScript_data[];
+extern u32 Room92_Phase1Script_data[];
+extern u32 Room92_Phase2Script_data[];
+extern u32 Room92_Phase3Script_data[];
+extern u32 Room92_ActionScripts[];
+extern u32 Room92_ObjectNames[];
 
 extern void *EffectBase_vtable[];
 
-extern PTMF D_01991820[];
+extern PTMF Room92_CmdTable[];
 
 static void effect_1c60_init(void **obj) {
     obj[0] = WispColumn_vtable;
@@ -83,43 +83,43 @@ void *Room92_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room92_vtable
 
 /* 0x00341B70 */
 void *Room92_EnterScript(void) {
-    return D_00436CF0;
+    return Room92_EnterScript_data;
 }
 
 /* 0x00341B80 */
 void *Room92_CharEnterScript(void) {
-    return D_00436D70;
+    return Room92_CharEnterScript_data;
 }
 
 /* 0x00341B90 */
 void *Room92_Phase1Script(void) {
-    return D_00436DE0;
+    return Room92_Phase1Script_data;
 }
 
 /* 0x00341BA0 */
 void *Room92_Phase2Script(void) {
-    return D_004370F0;
+    return Room92_Phase2Script_data;
 }
 
 /* 0x00341BB0 */
 void *Room92_Phase3Script(void) {
-    return D_00437140;
+    return Room92_Phase3Script_data;
 }
 
 /* 0x00341BC0 */
 u32 Room92_ActionScript(void *self, s32 i) {
-    return D_00437BF0[i];
+    return Room92_ActionScripts[i];
 }
 
 /* 0x00341BE0 */
 u32 Room92_ObjectName(void *self, s32 i) {
-    return D_00437D20[i];
+    return Room92_ObjectNames[i];
 }
 
-/* (self->*D_01991820[i])(a, b) */
+/* (self->*Room92_CmdTable[i])(a, b) */
 /* 0x00341C00 */
 s32 Room92_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991820[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room92_CmdTable[i & 0xFF], a, b);
 }
 
 /* (as Room02_Cmd02)  the 0x10D0-byte effect Embers_vtable: byte 3 0 / 1 one made and sent 1 / 0,

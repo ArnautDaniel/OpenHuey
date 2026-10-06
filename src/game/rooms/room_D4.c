@@ -7,47 +7,47 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomD4_vtable[];
-extern u8 D_0047B06C[];
+extern u8 RoomD4_EnterScript_data[];
 extern char D_0047B2B0[];
 extern const char D_004636F8[];
 
-extern u8 D_00447130[];
-extern u8 D_00447230[];
-extern u8 D_004472B0[];
-extern u8 D_004472F0[];
-extern PTMF D_01991B68[];
-extern PTMF D_01991B78[];
+extern u8 RoomD4_CharEnterScript_data[];
+extern u8 RoomD4_Phase1Script_data[];
+extern u8 RoomD4_Phase3Script_data[];
+extern u8 RoomD4_Table38_data[];
+extern PTMF RoomD4_CmdTable[];
+extern PTMF RoomD4_CondTable[];
 
 /* 0x0036E800 */
 void *RoomD4_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomD4_vtable, RoomBase_vtable); }
 
 /* 0x0036E860 */
-void *RoomD4_EnterScript(void *o) { return D_0047B06C; }   /* RoomD4_vtable +0xC */
+void *RoomD4_EnterScript(void *o) { return RoomD4_EnterScript_data; }   /* RoomD4_vtable +0xC */
 
 /* 0x0036E870 */
 void *RoomD4_CharEnterScript(void) {
-    return D_00447130;
+    return RoomD4_CharEnterScript_data;
 }
 
 /* 0x0036E880 */
 void *RoomD4_Phase1Script(void) {
-    return D_00447230;
+    return RoomD4_Phase1Script_data;
 }
 
 /* 0x0036E890 */
 void *RoomD4_Phase3Script(void) {
-    return D_004472B0;
+    return RoomD4_Phase3Script_data;
 }
 
 /* 0x0036E8A0 */
 void *RoomD4_Table38(void) {
-    return D_004472F0;
+    return RoomD4_Table38_data;
 }
 
-/* (self->*D_01991B78[i])(a, b) */
+/* (self->*RoomD4_CondTable[i])(a, b) */
 /* 0x0036E8B0 */
 s32 RoomD4_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991B78[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD4_CondTable[i & 0xFF], a, b);
 }
 
 /* the progress object's +0x7C with the caller's arguments */
@@ -56,10 +56,10 @@ s32 RoomD4_Cond00(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
-/* (self->*D_01991B68[i])(a, b) */
+/* (self->*RoomD4_CmdTable[i])(a, b) */
 /* 0x0036E900 */
 s32 RoomD4_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991B68[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD4_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x0036E930 */

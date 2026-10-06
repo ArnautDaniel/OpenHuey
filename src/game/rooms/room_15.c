@@ -12,64 +12,64 @@ extern void *RoomBase_vtable[];
 extern void *Room15_vtable[];
 extern const char *D_003FA760;
 
-extern u8 D_003FA090[];
-extern u8 D_003FA110[];
-extern u8 D_003FA1C0[];
-extern u8 D_003FA2C0[];
-extern u8 D_003FA330[];
-extern void *D_003FA700[];
-extern void *D_003FA750[];
-extern u8 D_003FA770[];
-extern PTMF D_01990920[];
-extern PTMF D_01990930[];
+extern u8 Room15_EnterScript_data[];
+extern u8 Room15_CharEnterScript_data[];
+extern u8 Room15_Phase1Script_data[];
+extern u8 Room15_Phase2Script_data[];
+extern u8 Room15_Phase3Script_data[];
+extern void *Room15_ActionScripts[];
+extern void *Room15_ObjectNames[];
+extern u8 Room15_Table38_data[];
+extern PTMF Room15_CmdTable[];
+extern PTMF Room15_CondTable[];
 
 /* 0x002ACB60 */
 void *Room15_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room15_vtable, RoomBase_vtable); }
 
 /* 0x002ACBC0 */
 void *Room15_EnterScript(void) {
-    return D_003FA090;
+    return Room15_EnterScript_data;
 }
 
 /* 0x002ACBD0 */
 void *Room15_CharEnterScript(void) {
-    return D_003FA110;
+    return Room15_CharEnterScript_data;
 }
 
 /* 0x002ACBE0 */
 void *Room15_Phase1Script(void) {
-    return D_003FA1C0;
+    return Room15_Phase1Script_data;
 }
 
 /* 0x002ACBF0 */
 void *Room15_Phase3Script(void) {
-    return D_003FA330;
+    return Room15_Phase3Script_data;
 }
 
 /* 0x002ACC00 */
 void *Room15_ActionScript(void *self, s32 i) {
-    return D_003FA700[i];
+    return Room15_ActionScripts[i];
 }
 
 /* 0x002ACC20 */
 void *Room15_Phase2Script(void) {
-    return D_003FA2C0;
+    return Room15_Phase2Script_data;
 }
 
 /* 0x002ACC30 */
 void *Room15_Table38(void) {
-    return D_003FA770;
+    return Room15_Table38_data;
 }
 
 /* 0x002ACC40 */
 void *Room15_ObjectName(void *self, s32 i) {
-    return D_003FA750[i];
+    return Room15_ObjectNames[i];
 }
 
-/* (self->*D_01990930[i])(a, b) */
+/* (self->*Room15_CondTable[i])(a, b) */
 /* 0x002ACC60 */
 s32 Room15_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990930[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room15_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x15 (Room15_Cond00_ptmf): Hewie is about in room 0xF in state 0x2F or 0x52 */
@@ -85,10 +85,10 @@ s32 Room15_Cond00(void) {
     return s == 0x2F || s == 0x52;
 }
 
-/* (self->*D_01990920[i])(a, b) */
+/* (self->*Room15_CmdTable[i])(a, b) */
 /* 0x002ACD20 */
 s32 Room15_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990920[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room15_CmdTable[i & 0xFF], a, b);
 }
 
 /* a lid (D_003FA760, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and

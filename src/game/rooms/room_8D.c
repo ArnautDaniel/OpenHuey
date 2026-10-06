@@ -13,17 +13,17 @@ extern void *Room8D_vtable[];
 /* ---- the marker effect Marker_vtable (effects.c) on character slot 3, its slot in script variable
  * 0, its size eased by variable 1 ---- */
 extern void *Marker_vtable[];
-extern u32 D_004348E0[];
-extern u32 D_00434940[];
-extern u32 D_00434A00[];
-extern u32 D_00434B50[];
-extern u32 D_00434BE0[];
-extern u32 D_00434C00[];
-extern u32 D_00434FE0[];
-extern u32 D_00435040[];
-extern u32 D_0047AE58[];
+extern u32 Room8D_EnterScript_data[];
+extern u32 Room8D_CharEnterScript_data[];
+extern u32 Room8D_Phase1Script_data[];
+extern u32 Room8D_Phase2Script_data[];
+extern u32 Room8D_Phase3Script_data[];
+extern u32 Room8D_Phase5Script_data[];
+extern u32 Room8D_ActionScripts[];
+extern u32 Room8D_Table38_data[];
+extern u32 Room8D_ObjectNames[];
 
-extern PTMF D_01991760[];
+extern PTMF Room8D_CmdTable[];
 
 static void effect_70F90_init(void **obj) {
     obj[0] = Marker_vtable;
@@ -42,53 +42,53 @@ void *Room8D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8D_vtable
 
 /* 0x003400C0 */
 void *Room8D_EnterScript(void) {
-    return D_004348E0;
+    return Room8D_EnterScript_data;
 }
 
 /* 0x003400D0 */
 void *Room8D_CharEnterScript(void) {
-    return D_00434940;
+    return Room8D_CharEnterScript_data;
 }
 
 /* 0x003400E0 */
 void *Room8D_Phase1Script(void) {
-    return D_00434A00;
+    return Room8D_Phase1Script_data;
 }
 
 /* 0x003400F0 */
 void *Room8D_Phase2Script(void) {
-    return D_00434B50;
+    return Room8D_Phase2Script_data;
 }
 
 /* 0x00340100 */
 void *Room8D_Phase3Script(void) {
-    return D_00434BE0;
+    return Room8D_Phase3Script_data;
 }
 
 /* 0x00340110 */
 void *Room8D_Phase5Script(void) {
-    return D_00434C00;
+    return Room8D_Phase5Script_data;
 }
 
 /* 0x00340120 */
 u32 Room8D_ActionScript(void *self, s32 i) {
-    return D_00434FE0[i];
+    return Room8D_ActionScripts[i];
 }
 
 /* 0x00340140 */
 void *Room8D_Table38(void) {
-    return D_00435040;
+    return Room8D_Table38_data;
 }
 
 /* 0x00340150 */
 u32 Room8D_ObjectName(void *self, s32 i) {
-    return D_0047AE58[i];
+    return Room8D_ObjectNames[i];
 }
 
-/* (self->*D_01991760[i])(a, b) */
+/* (self->*Room8D_CmdTable[i])(a, b) */
 /* 0x00340170 */
 s32 Room8D_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991760[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room8D_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x003401A0 */

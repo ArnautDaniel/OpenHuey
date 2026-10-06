@@ -10,65 +10,65 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room8C_vtable[];
-extern u8 D_0047AE50[];
+extern u8 Room8C_Phase5Script_data[];
 extern const char *D_00434888;
 extern const char *D_00434890, *D_00434894;
 
-extern u32 D_00433CC0[];
-extern u32 D_00433D80[];
-extern u32 D_00433E00[];
-extern u32 D_00433F50[];
-extern u32 D_004347E0[];
-extern u32 D_00434870[];
-extern u32 D_004348D0[];
+extern u32 Room8C_EnterScript_data[];
+extern u32 Room8C_CharEnterScript_data[];
+extern u32 Room8C_Phase1Script_data[];
+extern u32 Room8C_Phase2Script_data[];
+extern u32 Room8C_ActionScripts[];
+extern u32 Room8C_ObjectNames[];
+extern u32 Room8C_Table38_data[];
 
-extern PTMF D_01991720[];
+extern PTMF Room8C_CmdTable[];
 
 /* 0x0033F930 */
 void *Room8C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8C_vtable, RoomBase_vtable); }
 
 /* 0x0033F990 */
 void *Room8C_EnterScript(void) {
-    return D_00433CC0;
+    return Room8C_EnterScript_data;
 }
 
 /* 0x0033F9A0 */
 void *Room8C_CharEnterScript(void) {
-    return D_00433D80;
+    return Room8C_CharEnterScript_data;
 }
 
 /* 0x0033F9B0 */
 void *Room8C_Phase1Script(void) {
-    return D_00433E00;
+    return Room8C_Phase1Script_data;
 }
 
 /* 0x0033F9C0 */
 void *Room8C_Phase2Script(void) {
-    return D_00433F50;
+    return Room8C_Phase2Script_data;
 }
 
 /* 0x0033F9D0 */
-void *Room8C_Phase5Script(void *o) { return D_0047AE50; }   /* Room8C_vtable +0x20 */
+void *Room8C_Phase5Script(void *o) { return Room8C_Phase5Script_data; }   /* Room8C_vtable +0x20 */
 
 /* 0x0033F9E0 */
 u32 Room8C_ActionScript(void *self, s32 i) {
-    return D_004347E0[i];
+    return Room8C_ActionScripts[i];
 }
 
 /* 0x0033FA00 */
 void *Room8C_Table38(void) {
-    return D_004348D0;
+    return Room8C_Table38_data;
 }
 
 /* 0x0033FA10 */
 u32 Room8C_ObjectName(void *self, s32 i) {
-    return D_00434870[i];
+    return Room8C_ObjectNames[i];
 }
 
-/* (self->*D_01991720[i])(a, b) */
+/* (self->*Room8C_CmdTable[i])(a, b) */
 /* 0x0033FA30 */
 s32 Room8C_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991720[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room8C_CmdTable[i & 0xFF], a, b);
 }
 
 /* the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):

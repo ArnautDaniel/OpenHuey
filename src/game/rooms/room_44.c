@@ -8,54 +8,54 @@
 extern void *Room44_vtable[];
 extern void *RoomBase_vtable[];
 
-extern u8 D_00415BA0[];
-extern u8 D_00415C90[];
-extern u8 D_00415DB0[];
-extern u8 D_00415FA0[];
-extern u8 D_00416030[];
-extern u8 D_00416130[];
-extern void *D_004164C0[];
-extern u8 D_004164D0[];
+extern u8 Room44_EnterScript_data[];
+extern u8 Room44_CharEnterScript_data[];
+extern u8 Room44_Phase1Script_data[];
+extern u8 Room44_Phase2Script_data[];
+extern u8 Room44_Phase3Script_data[];
+extern u8 Room44_Phase5Script_data[];
+extern void *Room44_ActionScripts[];
+extern u8 Room44_Table38_data[];
 
 /* 0x0020B7B0 */
 void *Room44_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room44_vtable, RoomBase_vtable); }
 
 /* 0x0020B810 */
 void *Room44_EnterScript(void) {
-    return D_00415BA0;
+    return Room44_EnterScript_data;
 }
 
 /* 0x0020B820 */
 void *Room44_CharEnterScript(void) {
-    return D_00415C90;
+    return Room44_CharEnterScript_data;
 }
 
 /* 0x0020B830 */
 void *Room44_Phase1Script(void) {
-    return D_00415DB0;
+    return Room44_Phase1Script_data;
 }
 
 /* 0x0020B840 */
 void *Room44_Phase2Script(void) {
-    return D_00415FA0;
+    return Room44_Phase2Script_data;
 }
 
 /* 0x0020B850 */
 void *Room44_Phase3Script(void) {
-    return D_00416030;
+    return Room44_Phase3Script_data;
 }
 
 /* 0x0020B860 */
 void *Room44_Phase5Script(void) {
-    return D_00416130;
+    return Room44_Phase5Script_data;
 }
 
 /* 0x0020B870 */
 void *Room44_ActionScript(void *self, s32 i) {
-    return D_004164C0[i];
+    return Room44_ActionScripts[i];
 }
 
 /* 0x0020B890 */
 void *Room44_Table38(void) {
-    return D_004164D0;
+    return Room44_Table38_data;
 }

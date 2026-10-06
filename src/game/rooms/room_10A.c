@@ -8,58 +8,58 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room10A_vtable[];
-extern u8 D_0047AC80[];
+extern u8 Room10A_Phase5Script_data[];
 extern s32 D_0047B27C;
 
-extern u8 D_00419730[];
-extern u8 D_00419770[];
-extern u8 D_00419870[];
-extern u8 D_00419950[];
-extern void *D_00419A30[];
-extern u8 D_00419A60[];
+extern u8 Room10A_EnterScript_data[];
+extern u8 Room10A_CharEnterScript_data[];
+extern u8 Room10A_Phase1Script_data[];
+extern u8 Room10A_Phase2Script_data[];
+extern void *Room10A_ActionScripts[];
+extern u8 Room10A_Table38_data[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-extern PTMF D_01990F48[];
-extern PTMF D_01990F58[];
+extern PTMF Room10A_CondTable[];
+extern PTMF Room10A_CmdTable[];
 
 /* 0x002E76A0 */
 void *Room10A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room10A_vtable, RoomBase_vtable); }
 
 /* 0x002E7700 */
-void *Room10A_EnterScript(void) { return D_00419730; }
+void *Room10A_EnterScript(void) { return Room10A_EnterScript_data; }
 
 /* 0x002E7710 */
-void *Room10A_CharEnterScript(void) { return D_00419770; }
+void *Room10A_CharEnterScript(void) { return Room10A_CharEnterScript_data; }
 
 /* 0x002E7720 */
-void *Room10A_Phase1Script(void) { return D_00419870; }
+void *Room10A_Phase1Script(void) { return Room10A_Phase1Script_data; }
 
 /* 0x002E7730 */
-void *Room10A_Phase2Script(void) { return D_00419950; }
+void *Room10A_Phase2Script(void) { return Room10A_Phase2Script_data; }
 
 /* 0x002E7740 */
-void *Room10A_Phase5Script(void *o) { return D_0047AC80; }   /* Room10A_vtable +0x20 */
+void *Room10A_Phase5Script(void *o) { return Room10A_Phase5Script_data; }   /* Room10A_vtable +0x20 */
 
 /* 0x002E7750 */
-void *Room10A_ActionScript(void *self, s32 i) { return D_00419A30[i]; }
+void *Room10A_ActionScript(void *self, s32 i) { return Room10A_ActionScripts[i]; }
 
 /* 0x002E7770 */
-void *Room10A_Table38(void) { return D_00419A60; }
+void *Room10A_Table38(void) { return Room10A_Table38_data; }
 
-/* (self->*D_01990F58[i])(a, b) */
+/* (self->*Room10A_CmdTable[i])(a, b) */
 /* 0x002E7780 */
 s32 Room10A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990F58[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room10A_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002E77B0 */
 s32 Room10A_Cmd00(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B27C, cmd, 1.0f); }
 
-/* (self->*D_01990F48[i])(a, b) */
+/* (self->*Room10A_CondTable[i])(a, b) */
 /* 0x002E7850 */
 s32 Room10A_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990F48[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room10A_CondTable[i & 0xFF], a, b);
 }
 
 /* 0x002E7880 */

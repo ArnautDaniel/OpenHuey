@@ -11,17 +11,17 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room69_vtable[];
-extern u8 D_0047AE7C[];
+extern u8 Room69_Phase5Script_data[];
 extern u8 kDialVars[];                  /* the dials' progress variables (0x18..0x1A) */
-extern u32 D_00437E50[];
-extern u32 D_00437F50[];
-extern u32 D_00437FD0[];
-extern u32 D_00438230[];
-extern u32 D_00438290[];
-extern u32 D_004386D0[];
-extern u32 D_00438720[];
+extern u32 Room69_EnterScript_data[];
+extern u32 Room69_CharEnterScript_data[];
+extern u32 Room69_Phase1Script_data[];
+extern u32 Room69_Phase2Script_data[];
+extern u32 Room69_Phase3Script_data[];
+extern u32 Room69_ActionScripts[];
+extern u32 Room69_Table38_data[];
 
-extern PTMF D_019918D8[];
+extern PTMF Room69_CmdTable[];
 
 /* a dial's angle for its setting (0..3, a quarter turn each) */
 static inline __attribute__((always_inline)) f32 dial_angle(Progress *p, s32 k) {
@@ -33,40 +33,40 @@ void *Room69_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room69_vtable
 
 /* 0x00343920 */
 void *Room69_EnterScript(void) {
-    return D_00437E50;
+    return Room69_EnterScript_data;
 }
 
 /* 0x00343930 */
 void *Room69_CharEnterScript(void) {
-    return D_00437F50;
+    return Room69_CharEnterScript_data;
 }
 
 /* 0x00343940 */
 void *Room69_Phase1Script(void) {
-    return D_00437FD0;
+    return Room69_Phase1Script_data;
 }
 
 /* 0x00343950 */
 void *Room69_Phase2Script(void) {
-    return D_00438230;
+    return Room69_Phase2Script_data;
 }
 
 /* 0x00343960 */
-void *Room69_Phase5Script(void *o) { return D_0047AE7C; }   /* Room69_vtable +0x20 */
+void *Room69_Phase5Script(void *o) { return Room69_Phase5Script_data; }   /* Room69_vtable +0x20 */
 
 /* 0x00343970 */
 void *Room69_Phase3Script(void) {
-    return D_00438290;
+    return Room69_Phase3Script_data;
 }
 
 /* 0x00343980 */
 u32 Room69_ActionScript(void *self, s32 i) {
-    return D_004386D0[i];
+    return Room69_ActionScripts[i];
 }
 
 /* 0x003439A0 */
 void *Room69_Table38(void) {
-    return D_00438720;
+    return Room69_Table38_data;
 }
 
 /* 0x003439B0 */
@@ -74,10 +74,10 @@ u32 Room69_ObjectName(void *self, s32 i) {
     return (u32)kDialNames[i];
 }
 
-/* (self->*D_019918D8[i])(a, b) */
+/* (self->*Room69_CmdTable[i])(a, b) */
 /* 0x003439D0 */
 s32 Room69_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019918D8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room69_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set

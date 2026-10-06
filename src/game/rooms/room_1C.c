@@ -12,58 +12,58 @@ extern void *RoomBase_vtable[];
 extern void *Room1C_vtable[];
 extern void *DepthRange_vtable[];
 
-extern u32 D_003FD310[];
-extern u8 D_003FD360[];
-extern u32 D_0047AA78[];
+extern u32 Room1C_ActionScripts[];
+extern u8 Room1C_Table38_data[];
+extern u32 Room1C_ObjectNames[];
 
-extern u8 D_003FCB30[];
-extern u8 D_003FCBC0[];
-extern u8 D_003FCC40[];
-extern u8 D_003FCD70[];
-extern PTMF D_01990990[];
+extern u8 Room1C_EnterScript_data[];
+extern u8 Room1C_CharEnterScript_data[];
+extern u8 Room1C_Phase1Script_data[];
+extern u8 Room1C_Phase2Script_data[];
+extern PTMF Room1C_CmdTable[];
 
 /* 0x002AD9F0 */
 void *Room1C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1C_vtable, RoomBase_vtable); }
 
 /* 0x002ADA50 */
 void *Room1C_EnterScript(void) {
-    return D_003FCB30;
+    return Room1C_EnterScript_data;
 }
 
 /* 0x002ADA60 */
 void *Room1C_CharEnterScript(void) {
-    return D_003FCBC0;
+    return Room1C_CharEnterScript_data;
 }
 
 /* 0x002ADA70 */
 void *Room1C_Phase1Script(void) {
-    return D_003FCC40;
+    return Room1C_Phase1Script_data;
 }
 
 /* 0x002ADA80 */
 void *Room1C_Phase2Script(void) {
-    return D_003FCD70;
+    return Room1C_Phase2Script_data;
 }
 
 /* 0x002ADA90 */
 u32 Room1C_ActionScript(void *self, s32 i) {
-    return D_003FD310[i];
+    return Room1C_ActionScripts[i];
 }
 
 /* 0x002ADAB0 */
 void *Room1C_Table38(void) {
-    return D_003FD360;
+    return Room1C_Table38_data;
 }
 
 /* 0x002ADAC0 */
 u32 Room1C_ObjectName(void *self, s32 i) {
-    return D_0047AA78[i];
+    return Room1C_ObjectNames[i];
 }
 
-/* (self->*D_01990990[i])(a, b) */
+/* (self->*Room1C_CmdTable[i])(a, b) */
 /* 0x002ADAE0 */
 s32 Room1C_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990990[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room1C_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1 */

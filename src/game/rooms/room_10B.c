@@ -10,16 +10,16 @@
 extern void *RoomBase_vtable[];
 extern void *Room10B_vtable[];
 extern void *AshFlakes_vtable[];
-extern u8 D_00419A80[];
-extern u8 D_00419AA0[];
-extern u8 D_00419AE0[];
-extern u8 D_00419B70[];
-extern void *D_00419D78[];
-extern u8 D_00419DA8[];
-extern void *D_0047AC88[];
+extern u8 Room10B_EnterScript_data[];
+extern u8 Room10B_CharEnterScript_data[];
+extern u8 Room10B_Phase1Script_data[];
+extern u8 Room10B_Phase3Script_data[];
+extern void *Room10B_ActionScripts[];
+extern u8 Room10B_Table38_data[];
+extern void *Room10B_ObjectNames[];
 
-extern PTMF D_01990F68[];
-extern PTMF D_01990F78[];
+extern PTMF Room10B_CmdTable[];
+extern PTMF Room10B_CondTable[];
 
 static void effect_4480_init(void **obj) {
     obj[0] = AshFlakes_vtable;
@@ -32,30 +32,30 @@ static void effect_4480_init(void **obj) {
 void *Room10B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room10B_vtable, RoomBase_vtable); }
 
 /* 0x002E7940 */
-void *Room10B_EnterScript(void) { return D_00419A80; }
+void *Room10B_EnterScript(void) { return Room10B_EnterScript_data; }
 
 /* 0x002E7950 */
-void *Room10B_CharEnterScript(void) { return D_00419AA0; }
+void *Room10B_CharEnterScript(void) { return Room10B_CharEnterScript_data; }
 
 /* 0x002E7960 */
-void *Room10B_Phase1Script(void) { return D_00419AE0; }
+void *Room10B_Phase1Script(void) { return Room10B_Phase1Script_data; }
 
 /* 0x002E7970 */
-void *Room10B_Phase3Script(void) { return D_00419B70; }
+void *Room10B_Phase3Script(void) { return Room10B_Phase3Script_data; }
 
 /* 0x002E7980 */
-void *Room10B_ActionScript(void *self, s32 i) { return D_00419D78[i]; }
+void *Room10B_ActionScript(void *self, s32 i) { return Room10B_ActionScripts[i]; }
 
 /* 0x002E79A0 */
-void *Room10B_Table38(void) { return D_00419DA8; }
+void *Room10B_Table38(void) { return Room10B_Table38_data; }
 
 /* 0x002E79B0 */
-void *Room10B_ObjectName(void *self, s32 i) { return D_0047AC88[i]; }
+void *Room10B_ObjectName(void *self, s32 i) { return Room10B_ObjectNames[i]; }
 
-/* (self->*D_01990F78[i])(a, b) */
+/* (self->*Room10B_CondTable[i])(a, b) */
 /* 0x002E79D0 */
 s32 Room10B_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990F78[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room10B_CondTable[i & 0xFF], a, b);
 }
 
 /* 0x002E7A00 */
@@ -63,10 +63,10 @@ s32 Room10B_Cond00(void) {
     return AT(gProgress, 0xFB6, s16) >= 100;
 }
 
-/* (self->*D_01990F68[i])(a, b) */
+/* (self->*Room10B_CmdTable[i])(a, b) */
 /* 0x002E7A20 */
 s32 Room10B_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990F68[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room10B_CmdTable[i & 0xFF], a, b);
 }
 
 /* byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's

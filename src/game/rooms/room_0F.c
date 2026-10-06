@@ -10,14 +10,14 @@
 extern void *RoomBase_vtable[];
 extern void *Room0F_vtable[];
 extern const char *D_003F6F64;
-extern u8 D_003F5EC0[];
-extern u8 D_003F5FC0[];
-extern u8 D_003F6120[];
-extern u8 D_003F6420[];
-extern void *D_003F6E70[];
-extern void *D_003F6F40[];
-extern u8 D_003F6F68[];
-extern PTMF D_01990890[];
+extern u8 Room0F_EnterScript_data[];
+extern u8 Room0F_CharEnterScript_data[];
+extern u8 Room0F_Phase1Script_data[];
+extern u8 Room0F_Phase2Script_data[];
+extern void *Room0F_ActionScripts[];
+extern void *Room0F_ObjectNames[];
+extern u8 Room0F_Table38_data[];
+extern PTMF Room0F_CmdTable[];
 
 /* an object's +0x14 back to 0 (the PS2 writes through junk when it isn't there) */
 static inline void obj_unturn(const char *name) {
@@ -36,43 +36,43 @@ void *Room0F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room0F_vtable
 
 /* 0x002ABA50 */
 void *Room0F_EnterScript(void) {
-    return D_003F5EC0;
+    return Room0F_EnterScript_data;
 }
 
 /* 0x002ABA60 */
 void *Room0F_CharEnterScript(void) {
-    return D_003F5FC0;
+    return Room0F_CharEnterScript_data;
 }
 
 /* 0x002ABA70 */
 void *Room0F_Phase1Script(void) {
-    return D_003F6120;
+    return Room0F_Phase1Script_data;
 }
 
 /* 0x002ABA80 */
 void *Room0F_Phase2Script(void) {
-    return D_003F6420;
+    return Room0F_Phase2Script_data;
 }
 
 /* 0x002ABA90 */
 void *Room0F_ActionScript(void *self, s32 i) {
-    return D_003F6E70[i];
+    return Room0F_ActionScripts[i];
 }
 
 /* 0x002ABAB0 */
 void *Room0F_Table38(void) {
-    return D_003F6F68;
+    return Room0F_Table38_data;
 }
 
 /* 0x002ABAC0 */
 void *Room0F_ObjectName(void *self, s32 i) {
-    return D_003F6F40[i];
+    return Room0F_ObjectNames[i];
 }
 
-/* (self->*D_01990890[i])(a, b) */
+/* (self->*Room0F_CmdTable[i])(a, b) */
 /* 0x002ABAE0 */
 s32 Room0F_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990890[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room0F_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x0F (Room0F_Cmd04_ptmf): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and +0xCC */

@@ -8,30 +8,30 @@
 extern void *Room65_vtable[];
 extern void *RoomBase_vtable[];
 
-extern u8 D_00429640[];
-extern u8 D_00429700[];
-extern u8 D_0047AD50[];
-extern u8 D_0047AD58[];
+extern u8 Room65_CharEnterScript_data[];
+extern u8 Room65_Phase1Script_data[];
+extern u8 Room65_EnterScript_data[];
+extern u8 Room65_Table38_data[];
 
 /* 0x0020B380 */
 void *Room65_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room65_vtable, RoomBase_vtable); }
 
 /* 0x0020B3E0 */
 void *Room65_EnterScript(void) {
-    return D_0047AD50;
+    return Room65_EnterScript_data;
 }
 
 /* 0x0020B3F0 */
 void *Room65_CharEnterScript(void) {
-    return D_00429640;
+    return Room65_CharEnterScript_data;
 }
 
 /* 0x0020B400 */
 void *Room65_Phase1Script(void) {
-    return D_00429700;
+    return Room65_Phase1Script_data;
 }
 
 /* 0x0020B410 */
 void *Room65_Table38(void) {
-    return D_0047AD58;
+    return Room65_Table38_data;
 }

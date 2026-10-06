@@ -11,16 +11,16 @@ extern void *RoomBase_vtable[];
 extern void *Room2A_vtable[];
 extern void *Room2AWisps_vtable[];   /* the room 0x2A effect (props.c) */
 extern void *Effect78BC0_vtable[];   /* a 0x14-byte effect (props.c) */
-extern u8 D_00404740[];
-extern u8 D_004048E0[];
-extern u8 D_00404A20[];
-extern u8 D_00404CE0[];
-extern u8 D_00404E00[];
-extern u32 D_00405570[];
-extern u8 D_00405620[];
-extern u32 D_00405610[];
+extern u8 Room2A_EnterScript_data[];
+extern u8 Room2A_CharEnterScript_data[];
+extern u8 Room2A_Phase1Script_data[];
+extern u8 Room2A_Phase2Script_data[];
+extern u8 Room2A_Phase5Script_data[];
+extern u32 Room2A_ActionScripts[];
+extern u8 Room2A_Table38_data[];
+extern u32 Room2A_ObjectNames[];
 
-extern PTMF D_01990BD0[];
+extern PTMF Room2A_CmdTable[];
 
 static void room2a_effect_init(void **obj) {
     obj[0] = Room2AWisps_vtable;
@@ -38,48 +38,48 @@ void *Room2A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2A_vtable
 
 /* 0x002B1100 */
 void *Room2A_EnterScript(void) {
-    return D_00404740;
+    return Room2A_EnterScript_data;
 }
 
 /* 0x002B1110 */
 void *Room2A_CharEnterScript(void) {
-    return D_004048E0;
+    return Room2A_CharEnterScript_data;
 }
 
 /* 0x002B1120 */
 void *Room2A_Phase1Script(void) {
-    return D_00404A20;
+    return Room2A_Phase1Script_data;
 }
 
 /* 0x002B1130 */
 void *Room2A_Phase2Script(void) {
-    return D_00404CE0;
+    return Room2A_Phase2Script_data;
 }
 
 /* 0x002B1140 */
 void *Room2A_Phase5Script(void) {
-    return D_00404E00;
+    return Room2A_Phase5Script_data;
 }
 
 /* 0x002B1150 */
 u32 Room2A_ActionScript(void *self, s32 i) {
-    return D_00405570[i];
+    return Room2A_ActionScripts[i];
 }
 
 /* 0x002B1170 */
 void *Room2A_Table38(void) {
-    return D_00405620;
+    return Room2A_Table38_data;
 }
 
 /* 0x002B1180 */
 u32 Room2A_ObjectName(void *self, s32 i) {
-    return D_00405610[i];
+    return Room2A_ObjectNames[i];
 }
 
-/* (self->*D_01990BD0[i])(a, b) */
+/* (self->*Room2A_CmdTable[i])(a, b) */
 /* 0x002B11A0 */
 s32 Room2A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990BD0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room2A_CmdTable[i & 0xFF], a, b);
 }
 
 /* the 0x14-byte effect (Effect78BC0_vtable) started with the command's parameters (from byte 3) */

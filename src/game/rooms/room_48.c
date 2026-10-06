@@ -14,18 +14,18 @@
 extern void *RoomBase_vtable[];
 extern void *Room48_vtable[];
 extern void *WallShadow_vtable[];
-extern u8 D_004252D0[];
-extern u8 D_00425460[];
-extern u8 D_00425520[];
-extern u8 D_004258D0[];
-extern u8 D_004259B0[];
-extern void *D_00426760[];
+extern u8 Room48_EnterScript_data[];
+extern u8 Room48_CharEnterScript_data[];
+extern u8 Room48_Phase1Script_data[];
+extern u8 Room48_Phase2Script_data[];
+extern u8 Room48_Phase5Script_data[];
+extern void *Room48_ActionScripts[];
 
-extern void *D_00426860[];
-extern u8 D_00426890[];
+extern void *Room48_ObjectNames[];
+extern u8 Room48_Table38_data[];
 
-extern PTMF D_01991140[];
-extern PTMF D_01991188[];
+extern PTMF Room48_CmdTable[];
+extern PTMF Room48_CondTable[];
 
 static void effect_79890_init(void **obj) {
     obj[0] = WallShadow_vtable;
@@ -36,48 +36,48 @@ void *Room48_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room48_vtable
 
 /* 0x0030F0D0 */
 void *Room48_EnterScript(void) {
-    return D_004252D0;
+    return Room48_EnterScript_data;
 }
 
 /* 0x0030F0E0 */
 void *Room48_CharEnterScript(void) {
-    return D_00425460;
+    return Room48_CharEnterScript_data;
 }
 
 /* 0x0030F0F0 */
 void *Room48_Phase1Script(void) {
-    return D_00425520;
+    return Room48_Phase1Script_data;
 }
 
 /* 0x0030F100 */
 void *Room48_Phase2Script(void) {
-    return D_004258D0;
+    return Room48_Phase2Script_data;
 }
 
 /* 0x0030F110 */
 void *Room48_Phase5Script(void) {
-    return D_004259B0;
+    return Room48_Phase5Script_data;
 }
 
 /* 0x0030F120 */
 void *Room48_ActionScript(void *self, s32 i) {
-    return D_00426760[i];
+    return Room48_ActionScripts[i];
 }
 
 /* 0x0030F140 */
 void *Room48_Table38(void) {
-    return D_00426890;
+    return Room48_Table38_data;
 }
 
 /* 0x0030F150 */
 void *Room48_ObjectName(void *self, s32 i) {
-    return D_00426860[i];
+    return Room48_ObjectNames[i];
 }
 
-/* (self->*D_01991188[i])(a, b) */
+/* (self->*Room48_CondTable[i])(a, b) */
 /* 0x0030F170 */
 s32 Room48_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991188[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room48_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x48 (Room48_Cond00_ptmf): door 0 of room 0x48 (Progress_CurRoomFlag) */
@@ -86,10 +86,10 @@ s32 Room48_Cond00(void) {
     return Progress_CurRoomFlag(gProgress, 0x48, 0);
 }
 
-/* (self->*D_01991140[i])(a, b) */
+/* (self->*Room48_CmdTable[i])(a, b) */
 /* 0x0030F1C0 */
 s32 Room48_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991140[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room48_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x48 (Room48_Cmd05_ptmf): the creatures (10) in play in the current room: the list's +0x2C */

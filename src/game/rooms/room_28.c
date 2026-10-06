@@ -9,64 +9,64 @@
 extern void *RoomBase_vtable[];
 extern void *Room28_vtable[];
 
-extern u8 D_00403980[];
-extern u8 D_004039B0[];
-extern u8 D_00403A10[];
-extern u8 D_00403C10[];
-extern u8 D_00403C30[];
-extern u32 D_00403F40[];
-extern u8 D_00403F80[];
-extern u32 D_0047AB34[];
+extern u8 Room28_EnterScript_data[];
+extern u8 Room28_CharEnterScript_data[];
+extern u8 Room28_Phase1Script_data[];
+extern u8 Room28_Phase2Script_data[];
+extern u8 Room28_Phase5Script_data[];
+extern u32 Room28_ActionScripts[];
+extern u8 Room28_Table38_data[];
+extern u32 Room28_ObjectNames[];
 
-extern PTMF D_01990B98[];
+extern PTMF Room28_CondTable[];
 
 /* 0x002B0CF0 */
 void *Room28_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room28_vtable, RoomBase_vtable); }
 
 /* 0x002B0D50 */
 void *Room28_EnterScript(void) {
-    return D_00403980;
+    return Room28_EnterScript_data;
 }
 
 /* 0x002B0D60 */
 void *Room28_CharEnterScript(void) {
-    return D_004039B0;
+    return Room28_CharEnterScript_data;
 }
 
 /* 0x002B0D70 */
 void *Room28_Phase1Script(void) {
-    return D_00403A10;
+    return Room28_Phase1Script_data;
 }
 
 /* 0x002B0D80 */
 void *Room28_Phase2Script(void) {
-    return D_00403C10;
+    return Room28_Phase2Script_data;
 }
 
 /* 0x002B0D90 */
 void *Room28_Phase5Script(void) {
-    return D_00403C30;
+    return Room28_Phase5Script_data;
 }
 
 /* 0x002B0DA0 */
 u32 Room28_ActionScript(void *self, s32 i) {
-    return D_00403F40[i];
+    return Room28_ActionScripts[i];
 }
 
 /* 0x002B0DC0 */
 void *Room28_Table38(void) {
-    return D_00403F80;
+    return Room28_Table38_data;
 }
 
 /* 0x002B0DD0 */
 u32 Room28_ObjectName(void *self, s32 i) {
-    return D_0047AB34[i];
+    return Room28_ObjectNames[i];
 }
 
-/* (self->*D_01990B98[i])(a, b) */
+/* (self->*Room28_CondTable[i])(a, b) */
 /* 0x002B0DF0 */
 s32 Room28_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990B98[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room28_CondTable[i & 0xFF], a, b);
 }
 
 /* the pursuer's Pursuer_GrabHewieBehind */

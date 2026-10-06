@@ -10,72 +10,72 @@ extern void *RoomBase_vtable[];
 extern void *Room4B_vtable[];
 extern const char *D_00409940;
 
-extern u8 D_00408B90[];
-extern u8 D_00408CD0[];
-extern u8 D_00408E50[];
-extern u8 D_004090C0[];
-extern u8 D_004092E0[];
-extern u8 D_004092C0[];
-extern u32 D_004098D0[];
+extern u8 Room4B_EnterScript_data[];
+extern u8 Room4B_CharEnterScript_data[];
+extern u8 Room4B_Phase1Script_data[];
+extern u8 Room4B_Phase2Script_data[];
+extern u8 Room4B_Phase3Script_data[];
+extern u8 Room4B_Phase5Script_data[];
+extern u32 Room4B_ActionScripts[];
 
-extern u8 D_00409950[];
-extern u32 D_00409938[];
+extern u8 Room4B_Table38_data[];
+extern u32 Room4B_ObjectNames[];
 
-extern PTMF D_01990CB0[];
-extern PTMF D_01990CC8[];
+extern PTMF Room4B_CmdTable[];
+extern PTMF Room4B_CondTable[];
 
 /* 0x002B2FF0 */
 void *Room4B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room4B_vtable, RoomBase_vtable); }
 
 /* 0x002B3050 */
 void *Room4B_EnterScript(void) {
-    return D_00408B90;
+    return Room4B_EnterScript_data;
 }
 
 /* 0x002B3060 */
 void *Room4B_CharEnterScript(void) {
-    return D_00408CD0;
+    return Room4B_CharEnterScript_data;
 }
 
 /* 0x002B3070 */
 void *Room4B_Phase1Script(void) {
-    return D_00408E50;
+    return Room4B_Phase1Script_data;
 }
 
 /* 0x002B3080 */
 void *Room4B_Phase2Script(void) {
-    return D_004090C0;
+    return Room4B_Phase2Script_data;
 }
 
 /* 0x002B3090 */
 void *Room4B_Phase3Script(void) {
-    return D_004092E0;
+    return Room4B_Phase3Script_data;
 }
 
 /* 0x002B30A0 */
 void *Room4B_Phase5Script(void) {
-    return D_004092C0;
+    return Room4B_Phase5Script_data;
 }
 
 /* 0x002B30B0 */
 u32 Room4B_ActionScript(void *self, s32 i) {
-    return D_004098D0[i];
+    return Room4B_ActionScripts[i];
 }
 
 /* 0x002B30D0 */
 void *Room4B_Table38(void) {
-    return D_00409950;
+    return Room4B_Table38_data;
 }
 
 /* 0x002B30E0 */
 u32 Room4B_ObjectName(void *self, s32 i) {
-    return D_00409938[i];
+    return Room4B_ObjectNames[i];
 }
 
-/* (self->*D_01990CC8[i])(a, b) */
+/* (self->*Room4B_CondTable[i])(a, b) */
 /* 0x002B3100 */
 s32 Room4B_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990CC8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room4B_CondTable[i & 0xFF], a, b);
 }
 
 /* 1 unless the object at +0x18 exists and its byte +0x28 is 1. */
@@ -86,10 +86,10 @@ s32 Room4B_Cond00(void) {
     return !(p != NULL && p[0x28] == 1);
 }
 
-/* (self->*D_01990CB0[i])(a, b) */
+/* (self->*Room4B_CmdTable[i])(a, b) */
 /* 0x002B3170 */
 s32 Room4B_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990CB0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room4B_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002B31A0 */

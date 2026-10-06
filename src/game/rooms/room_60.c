@@ -18,20 +18,20 @@ extern void *RoomBase_vtable[];
 extern void *Room60_vtable[];
 extern void *FloorGlow_vtable[];
 extern void *Room60Effect_vtable[];
-extern u8 D_004280A0[];
-extern u8 D_004281E0[];
-extern u8 D_00428220[];
-extern u8 D_00428460[];
-extern u8 D_004284A0[];
-extern void *D_00429090[];
-extern void *D_004290C0[];
-extern u8 D_004291A0[];
+extern u8 Room60_EnterScript_data[];
+extern u8 Room60_CharEnterScript_data[];
+extern u8 Room60_Phase1Script_data[];
+extern u8 Room60_Phase2Script_data[];
+extern u8 Room60_Phase3Script_data[];
+extern void *Room60_ActionScripts[];
+extern void *Room60_ObjectNames[];
+extern u8 Room60_Table38_data[];
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
 extern void *EffectBase_vtable[];
 
-extern PTMF D_019911C0[];
+extern PTMF Room60_CmdTable[];
 
 static void effect_795A0_init(void **obj) {
     obj[0] = FloorGlow_vtable;
@@ -49,43 +49,43 @@ void *Room60_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room60_vtable
 
 /* 0x003101D0 */
 void *Room60_EnterScript(void) {
-    return D_004280A0;
+    return Room60_EnterScript_data;
 }
 
 /* 0x003101E0 */
 void *Room60_CharEnterScript(void) {
-    return D_004281E0;
+    return Room60_CharEnterScript_data;
 }
 
 /* 0x003101F0 */
 void *Room60_Phase1Script(void) {
-    return D_00428220;
+    return Room60_Phase1Script_data;
 }
 
 /* 0x00310200 */
 void *Room60_Phase2Script(void) {
-    return D_00428460;
+    return Room60_Phase2Script_data;
 }
 
 /* 0x00310210 */
 void *Room60_Phase3Script(void) {
-    return D_004284A0;
+    return Room60_Phase3Script_data;
 }
 
 /* 0x00310220 */
 void *Room60_ActionScript(void *self, s32 i) {
-    return D_00429090[i];
+    return Room60_ActionScripts[i];
 }
 
 /* 0x00310240 */
 void *Room60_Table38(void) {
-    return D_004291A0;
+    return Room60_Table38_data;
 }
 
-/* (self->*D_019911C0[i])(a, b) */
+/* (self->*Room60_CmdTable[i])(a, b) */
 /* 0x00310250 */
 s32 Room60_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019911C0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room60_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x60 (Room60_Cmd05_ptmf): the player's model +0xCC 0 (byte 3 0) or 1 */
@@ -247,7 +247,7 @@ s32 Room60_Cmd00(void *self, void *a1, u8 *cmd) {
 
 /* 0x00310A10 */
 void *Room60_ObjectName(void *self, s32 i) {
-    return D_004290C0[i];
+    return Room60_ObjectNames[i];
 }
 
 /* destructor (vtable Room60Effect_vtable) */

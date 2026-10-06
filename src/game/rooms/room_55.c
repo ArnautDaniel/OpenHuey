@@ -10,15 +10,15 @@
 extern void *RoomBase_vtable[];
 extern void *Room55_vtable[];
 extern void *Room55Effect_vtable[], *FallingDrops_vtable[];
-extern u8 D_00420B40[];
-extern u8 D_00420B80[];
-extern u8 D_00420CD0[];
-extern u8 D_00420D80[];
-extern void *D_004210D0[];
-extern void *D_00421100[];
-extern u8 D_00421110[];
+extern u8 Room55_EnterScript_data[];
+extern u8 Room55_CharEnterScript_data[];
+extern u8 Room55_Phase1Script_data[];
+extern u8 Room55_Phase2Script_data[];
+extern void *Room55_ActionScripts[];
+extern void *Room55_ObjectNames[];
+extern u8 Room55_Table38_data[];
 
-extern PTMF D_01991088[];
+extern PTMF Room55_CmdTable[];
 
 static void effect_77E10_init(void **obj) {
     obj[0] = Room55Effect_vtable;
@@ -36,43 +36,43 @@ void *Room55_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room55_vtable
 
 /* 0x00305EF0 */
 void *Room55_EnterScript(void) {
-    return D_00420B40;
+    return Room55_EnterScript_data;
 }
 
 /* 0x00305F00 */
 void *Room55_CharEnterScript(void) {
-    return D_00420B80;
+    return Room55_CharEnterScript_data;
 }
 
 /* 0x00305F10 */
 void *Room55_Phase1Script(void) {
-    return D_00420CD0;
+    return Room55_Phase1Script_data;
 }
 
 /* 0x00305F20 */
 void *Room55_Phase2Script(void) {
-    return D_00420D80;
+    return Room55_Phase2Script_data;
 }
 
 /* 0x00305F30 */
 void *Room55_ActionScript(void *self, s32 i) {
-    return D_004210D0[i];
+    return Room55_ActionScripts[i];
 }
 
 /* 0x00305F50 */
 void *Room55_Table38(void) {
-    return D_00421110;
+    return Room55_Table38_data;
 }
 
 /* 0x00305F60 */
 void *Room55_ObjectName(void *self, s32 i) {
-    return D_00421100[i];
+    return Room55_ObjectNames[i];
 }
 
-/* (self->*D_01991088[i])(a, b) */
+/* (self->*Room55_CmdTable[i])(a, b) */
 /* 0x00305F80 */
 s32 Room55_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991088[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room55_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 55 (D_004210F8): the 0x18-byte effect Room55Effect_vtable started with 0 or 1 by byte 3; 0 also

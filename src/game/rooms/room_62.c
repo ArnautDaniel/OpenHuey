@@ -14,63 +14,63 @@ extern void *RoomBase_vtable[];
 extern void *Room62_vtable[];
 extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
 
-extern u8 D_00421C60[];
-extern u8 D_00421CD0[];
-extern u8 D_00421D50[];
-extern u8 D_00421EF0[];
-extern u8 D_00421FC0[];
-extern void *D_004222D0[];
-extern u8 D_00422320[];
+extern u8 Room62_EnterScript_data[];
+extern u8 Room62_CharEnterScript_data[];
+extern u8 Room62_Phase1Script_data[];
+extern u8 Room62_Phase2Script_data[];
+extern u8 Room62_Phase3Script_data[];
+extern void *Room62_ActionScripts[];
+extern u8 Room62_Table38_data[];
 
-extern PTMF D_019910B0[];
+extern PTMF Room62_CmdTable[];
 
 /* 0x00308AF0 */
 void *Room62_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room62_vtable, RoomBase_vtable); }
 
 /* 0x00308B50 */
 void *Room62_EnterScript(void) {
-    return D_00421C60;
+    return Room62_EnterScript_data;
 }
 
 /* 0x00308B60 */
 void *Room62_CharEnterScript(void) {
-    return D_00421CD0;
+    return Room62_CharEnterScript_data;
 }
 
 /* 0x00308B70 */
 void *Room62_Phase1Script(void) {
-    return D_00421D50;
+    return Room62_Phase1Script_data;
 }
 
 /* 0x00308B80 */
 void *Room62_Phase2Script(void) {
-    return D_00421EF0;
+    return Room62_Phase2Script_data;
 }
 
 /* 0x00308B90 */
 void *Room62_Phase3Script(void) {
-    return D_00421FC0;
+    return Room62_Phase3Script_data;
 }
 
 /* 0x00308BA0 */
 void *Room62_ActionScript(void *self, s32 i) {
-    return D_004222D0[i];
+    return Room62_ActionScripts[i];
 }
 
 /* 0x00308BC0 */
 void *Room62_Table38(void) {
-    return D_00422320;
+    return Room62_Table38_data;
 }
 
 /* 0x00308BD0 */
 void *Room62_ObjectName(void *self, s32 i) {
-    return (void *)D_0047AD08[i];
+    return (void *)Room62_ObjectNames[i];
 }
 
-/* (self->*D_019910B0[i])(a, b) */
+/* (self->*Room62_CmdTable[i])(a, b) */
 /* 0x00308BF0 */
 s32 Room62_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019910B0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room62_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x62 (D_00422318): the room's effect 0 dropped by byte 3 - 0 at rest (speed 0), 1 raised
@@ -121,7 +121,7 @@ s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
  * the size down 0.001); 2 until it is still */
 /* 0x00308D70 */
 s32 Room62_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *o = room_obj(D_0047AD08[cmd[4]]);
+    u8 *o = room_obj(Room62_ObjectNames[cmd[4]]);
 
     if (cmd[3] == 0) {
         AT(o, 0x30, f32) = 0.0f;

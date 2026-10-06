@@ -11,49 +11,49 @@ extern void *RoomBase_vtable[];
 extern void *Room108_vtable[];
 extern const char *D_004193A8, *D_004193AC;
 
-extern u8 D_00418DC0[];
-extern u8 D_00418E40[];
-extern u8 D_00418F40[];
-extern u8 D_00419050[];
-extern void *D_00419370[];
-extern u8 D_004190F0[];
-extern u8 D_004193B0[];
+extern u8 Room108_EnterScript_data[];
+extern u8 Room108_CharEnterScript_data[];
+extern u8 Room108_Phase1Script_data[];
+extern u8 Room108_Phase2Script_data[];
+extern void *Room108_ActionScripts[];
+extern u8 Room108_Phase5Script_data[];
+extern u8 Room108_Table38_data[];
 
-extern void *D_004193A0[];
+extern void *Room108_ObjectNames[];
 
-extern PTMF D_01990F18[];
+extern PTMF Room108_CmdTable[];
 
 /* 0x002E7220 */
 void *Room108_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room108_vtable, RoomBase_vtable); }
 
 /* 0x002E7280 */
-void *Room108_EnterScript(void) { return D_00418DC0; }
+void *Room108_EnterScript(void) { return Room108_EnterScript_data; }
 
 /* 0x002E7290 */
-void *Room108_CharEnterScript(void) { return D_00418E40; }
+void *Room108_CharEnterScript(void) { return Room108_CharEnterScript_data; }
 
 /* 0x002E72A0 */
-void *Room108_Phase1Script(void) { return D_00418F40; }
+void *Room108_Phase1Script(void) { return Room108_Phase1Script_data; }
 
 /* 0x002E72B0 */
-void *Room108_Phase2Script(void) { return D_00419050; }
+void *Room108_Phase2Script(void) { return Room108_Phase2Script_data; }
 
 /* 0x002E72C0 */
-void *Room108_ActionScript(void *self, s32 i) { return D_00419370[i]; }
+void *Room108_ActionScript(void *self, s32 i) { return Room108_ActionScripts[i]; }
 
 /* 0x002E72E0 */
-void *Room108_Phase5Script(void) { return D_004190F0; }
+void *Room108_Phase5Script(void) { return Room108_Phase5Script_data; }
 
 /* 0x002E72F0 */
-void *Room108_Table38(void) { return D_004193B0; }
+void *Room108_Table38(void) { return Room108_Table38_data; }
 
 /* 0x002E7300 */
-void *Room108_ObjectName(void *self, s32 i) { return D_004193A0[i]; }
+void *Room108_ObjectName(void *self, s32 i) { return Room108_ObjectNames[i]; }
 
-/* (self->*D_01990F18[i])(a, b) */
+/* (self->*Room108_CmdTable[i])(a, b) */
 /* 0x002E7320 */
 s32 Room108_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990F18[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room108_CmdTable[i & 0xFF], a, b);
 }
 
 /* byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's

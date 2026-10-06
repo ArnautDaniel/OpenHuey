@@ -45,14 +45,14 @@ extern const char *const D_0040187C;
 extern const char *const D_003F0DBC, *const D_003F0DC0;   /* room 0x03 (and D_003F0DC4) */
 extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8) */
 extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
-extern const char *const D_003F5440[];                  /* room 0x0C (+13: the three pairs) */
+extern const char *const Room0C_ObjectNames[];                  /* room 0x0C (+13: the three pairs) */
 extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
-extern const char *const D_003FB370[];   /* room 0x18's objects */
-extern const char *const D_0040C140[];   /* room 0x4F's objects */
+extern const char *const Room18_ObjectNames[];   /* room 0x18's objects */
+extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
 extern const char *const D_0047ABEC;     /* room 0x5C's dial */
 extern const char *const D_004123E8;     /* room 0x5D's lever */
-extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
-extern const char *const D_0047AD08[];   /* room 0x62's objects */
+extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
+extern const char *const Room62_ObjectNames[];   /* room 0x62's objects */
 extern const char *const D_00429130;
 /* ---- the slam shake: frame hooks of Lorenzo's (kind 0xA) rooms shake the camera (+0x6C, 0.5)
  * when his slam lands ---- */

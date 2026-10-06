@@ -9,18 +9,18 @@
 extern void *RoomBase_vtable[];
 extern void *Room25_vtable[];
 extern void *RisingMotes_vtable[];   /* the rising motes */
-extern u8 D_00402330[];
-extern u8 D_00402420[];
-extern u8 D_004024F0[];
-extern u8 D_00402700[];
-extern u8 D_004027E0[];
-extern u8 D_00402880[];
-extern u32 D_00402CD0[];
-extern u8 D_00402D30[];
-extern u32 D_0047AB20[];
+extern u8 Room25_EnterScript_data[];
+extern u8 Room25_CharEnterScript_data[];
+extern u8 Room25_Phase1Script_data[];
+extern u8 Room25_Phase2Script_data[];
+extern u8 Room25_Phase3Script_data[];
+extern u8 Room25_Phase5Script_data[];
+extern u32 Room25_ActionScripts[];
+extern u8 Room25_Table38_data[];
+extern u32 Room25_ObjectNames[];
 
-extern PTMF D_01990B38[];
-extern PTMF D_01990B48[];
+extern PTMF Room25_CmdTable[];
+extern PTMF Room25_CondTable[];
 
 static void motes_init(void **obj) {
     obj[0] = RisingMotes_vtable;
@@ -34,53 +34,53 @@ void *Room25_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room25_vtable
 
 /* 0x002B0150 */
 void *Room25_EnterScript(void) {
-    return D_00402330;
+    return Room25_EnterScript_data;
 }
 
 /* 0x002B0160 */
 void *Room25_CharEnterScript(void) {
-    return D_00402420;
+    return Room25_CharEnterScript_data;
 }
 
 /* 0x002B0170 */
 void *Room25_Phase1Script(void) {
-    return D_004024F0;
+    return Room25_Phase1Script_data;
 }
 
 /* 0x002B0180 */
 void *Room25_Phase2Script(void) {
-    return D_00402700;
+    return Room25_Phase2Script_data;
 }
 
 /* 0x002B0190 */
 void *Room25_Phase3Script(void) {
-    return D_004027E0;
+    return Room25_Phase3Script_data;
 }
 
 /* 0x002B01A0 */
 void *Room25_Phase5Script(void) {
-    return D_00402880;
+    return Room25_Phase5Script_data;
 }
 
 /* 0x002B01B0 */
 u32 Room25_ActionScript(void *self, s32 i) {
-    return D_00402CD0[i];
+    return Room25_ActionScripts[i];
 }
 
 /* 0x002B01D0 */
 void *Room25_Table38(void) {
-    return D_00402D30;
+    return Room25_Table38_data;
 }
 
 /* 0x002B01E0 */
 u32 Room25_ObjectName(void *self, s32 i) {
-    return D_0047AB20[i];
+    return Room25_ObjectNames[i];
 }
 
-/* (self->*D_01990B48[i])(a, b) */
+/* (self->*Room25_CondTable[i])(a, b) */
 /* 0x002B0200 */
 s32 Room25_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990B48[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room25_CondTable[i & 0xFF], a, b);
 }
 
 /* 0x002B0230 */
@@ -94,10 +94,10 @@ s32 Room25_Cond00(void) {
     return 1;
 }
 
-/* (self->*D_01990B38[i])(a, b) */
+/* (self->*Room25_CmdTable[i])(a, b) */
 /* 0x002B02A0 */
 s32 Room25_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990B38[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room25_CmdTable[i & 0xFF], a, b);
 }
 
 /* the rising motes started */

@@ -8,63 +8,63 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room51_vtable[];
-extern u8 D_0047AB98[];
+extern u8 Room51_Phase5Script_data[];
 
-extern u8 D_0040CF40[];
-extern u8 D_0040D000[];
-extern u8 D_0040D060[];
-extern u8 D_0040D1F0[];
-extern u32 D_0040E2E0[];
-extern u8 D_0040E3A0[];
-extern u32 D_0040E360[];
+extern u8 Room51_EnterScript_data[];
+extern u8 Room51_CharEnterScript_data[];
+extern u8 Room51_Phase1Script_data[];
+extern u8 Room51_Phase2Script_data[];
+extern u32 Room51_ActionScripts[];
+extern u8 Room51_Table38_data[];
+extern u32 Room51_ObjectNames[];
 
-extern PTMF D_01990D90[];
+extern PTMF Room51_CmdTable[];
 
 /* 0x002B4840 */
 void *Room51_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room51_vtable, RoomBase_vtable); }
 
 /* 0x002B48A0 */
 void *Room51_EnterScript(void) {
-    return D_0040CF40;
+    return Room51_EnterScript_data;
 }
 
 /* 0x002B48B0 */
 void *Room51_CharEnterScript(void) {
-    return D_0040D000;
+    return Room51_CharEnterScript_data;
 }
 
 /* 0x002B48C0 */
 void *Room51_Phase1Script(void) {
-    return D_0040D060;
+    return Room51_Phase1Script_data;
 }
 
 /* 0x002B48D0 */
 void *Room51_Phase2Script(void) {
-    return D_0040D1F0;
+    return Room51_Phase2Script_data;
 }
 
 /* 0x002B48E0 */
-void *Room51_Phase5Script(void *o) { return D_0047AB98; }   /* Room51_vtable +0x20 */
+void *Room51_Phase5Script(void *o) { return Room51_Phase5Script_data; }   /* Room51_vtable +0x20 */
 
 /* 0x002B48F0 */
 u32 Room51_ActionScript(void *self, s32 i) {
-    return D_0040E2E0[i];
+    return Room51_ActionScripts[i];
 }
 
 /* 0x002B4910 */
 void *Room51_Table38(void) {
-    return D_0040E3A0;
+    return Room51_Table38_data;
 }
 
 /* 0x002B4920 */
 u32 Room51_ObjectName(void *self, s32 i) {
-    return D_0040E360[i];
+    return Room51_ObjectNames[i];
 }
 
-/* (self->*D_01990D90[i])(a, b) */
+/* (self->*Room51_CmdTable[i])(a, b) */
 /* 0x002B4940 */
 s32 Room51_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990D90[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room51_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002B4970 */

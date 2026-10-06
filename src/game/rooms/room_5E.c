@@ -8,42 +8,42 @@
 extern void *Room5E_vtable[];
 extern void *RoomBase_vtable[];
 
-extern u8 D_00412410[];
-extern u8 D_00412430[];
-extern u8 D_00412510[];
-extern u8 D_004125E0[];
-extern u8 D_00412688[];
-extern void *D_0047ABF0[];
+extern u8 Room5E_EnterScript_data[];
+extern u8 Room5E_CharEnterScript_data[];
+extern u8 Room5E_Phase1Script_data[];
+extern u8 Room5E_Phase2Script_data[];
+extern u8 Room5E_Table38_data[];
+extern void *Room5E_ActionScripts[];
 
 /* 0x0020B5A0 */
 void *Room5E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5E_vtable, RoomBase_vtable); }
 
 /* 0x0020B600 */
 void *Room5E_EnterScript(void) {
-    return D_00412410;
+    return Room5E_EnterScript_data;
 }
 
 /* 0x0020B610 */
 void *Room5E_CharEnterScript(void) {
-    return D_00412430;
+    return Room5E_CharEnterScript_data;
 }
 
 /* 0x0020B620 */
 void *Room5E_Phase1Script(void) {
-    return D_00412510;
+    return Room5E_Phase1Script_data;
 }
 
 /* 0x0020B630 */
 void *Room5E_Phase2Script(void) {
-    return D_004125E0;
+    return Room5E_Phase2Script_data;
 }
 
 /* 0x0020B640 */
 void *Room5E_ActionScript(void *self, s32 i) {
-    return D_0047ABF0[i];
+    return Room5E_ActionScripts[i];
 }
 
 /* 0x0020B660 */
 void *Room5E_Table38(void) {
-    return D_00412688;
+    return Room5E_Table38_data;
 }

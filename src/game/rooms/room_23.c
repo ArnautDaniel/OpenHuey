@@ -11,59 +11,59 @@
 extern void *RoomBase_vtable[];
 extern void *Room23_vtable[];
 
-extern u8 D_004010A0[];
-extern u8 D_004010E0[];
-extern u8 D_00401140[];
-extern u8 D_004011B0[];
-extern u32 D_00401800[];
-extern u8 D_00401880[];
-extern u32 D_00401860[];
+extern u8 Room23_EnterScript_data[];
+extern u8 Room23_CharEnterScript_data[];
+extern u8 Room23_Phase1Script_data[];
+extern u8 Room23_Phase2Script_data[];
+extern u32 Room23_ActionScripts[];
+extern u8 Room23_Table38_data[];
+extern u32 Room23_ObjectNames[];
 
-extern PTMF D_01990AD8[];
-extern PTMF D_01990AF0[];
+extern PTMF Room23_CondTable[];
+extern PTMF Room23_CmdTable[];
 
 /* 0x002AF8E0 */
 void *Room23_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room23_vtable, RoomBase_vtable); }
 
 /* 0x002AF940 */
 void *Room23_EnterScript(void) {
-    return D_004010A0;
+    return Room23_EnterScript_data;
 }
 
 /* 0x002AF950 */
 void *Room23_CharEnterScript(void) {
-    return D_004010E0;
+    return Room23_CharEnterScript_data;
 }
 
 /* 0x002AF960 */
 void *Room23_Phase1Script(void) {
-    return D_00401140;
+    return Room23_Phase1Script_data;
 }
 
 /* 0x002AF970 */
 void *Room23_Phase2Script(void) {
-    return D_004011B0;
+    return Room23_Phase2Script_data;
 }
 
 /* 0x002AF980 */
 u32 Room23_ActionScript(void *self, s32 i) {
-    return D_00401800[i];
+    return Room23_ActionScripts[i];
 }
 
 /* 0x002AF9A0 */
 void *Room23_Table38(void) {
-    return D_00401880;
+    return Room23_Table38_data;
 }
 
 /* 0x002AF9B0 */
 u32 Room23_ObjectName(void *self, s32 i) {
-    return D_00401860[i];
+    return Room23_ObjectNames[i];
 }
 
-/* (self->*D_01990AF0[i])(a, b) */
+/* (self->*Room23_CmdTable[i])(a, b) */
 /* 0x002AF9D0 */
 s32 Room23_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990AF0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room23_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x23 (Room23_Cmd01_ptmf): byte 3 0 a progress name, 1 wait for character 3 (2 while not), else
@@ -96,10 +96,10 @@ s32 Room23_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (self->*D_01990AD8[i])(a, b) */
+/* (self->*Room23_CondTable[i])(a, b) */
 /* 0x002AFB20 */
 s32 Room23_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990AD8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room23_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x23 (Room23_Cond00_ptmf): none of the six slots' PursuerGroup_Fields bits 0..3, and the stalker is

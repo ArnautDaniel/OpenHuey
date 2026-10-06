@@ -7,58 +7,58 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room45_vtable[];
-extern u8 D_0047AB50[];
-extern u8 D_0047AB58[], D_0047AB70[];
+extern u8 Room45_Phase1Script_data[];
+extern u8 Room45_Phase5Script_data[], Room45_Table38_data[];
 
-extern u8 D_00407E70[];
-extern u8 D_00407E90[];
-extern u8 D_00407ED0[];
-extern u32 D_0047AB60[];
-extern u32 D_0047AB68[];
+extern u8 Room45_EnterScript_data[];
+extern u8 Room45_CharEnterScript_data[];
+extern u8 Room45_Phase2Script_data[];
+extern u32 Room45_ActionScripts[];
+extern u32 Room45_ObjectNames[];
 
-extern PTMF D_01990C68[];
+extern PTMF Room45_CmdTable[];
 
 /* 0x002B2820 */
 void *Room45_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room45_vtable, RoomBase_vtable); }
 
 /* 0x002B2880 */
 void *Room45_EnterScript(void) {
-    return D_00407E70;
+    return Room45_EnterScript_data;
 }
 
 /* 0x002B2890 */
 void *Room45_CharEnterScript(void) {
-    return D_00407E90;
+    return Room45_CharEnterScript_data;
 }
 
 /* 0x002B28A0 */
-void *Room45_Phase1Script(void *o) { return D_0047AB50; }   /* Room45_vtable +0x10 */
+void *Room45_Phase1Script(void *o) { return Room45_Phase1Script_data; }   /* Room45_vtable +0x10 */
 
 /* 0x002B28B0 */
 void *Room45_Phase2Script(void) {
-    return D_00407ED0;
+    return Room45_Phase2Script_data;
 }
 
 /* 0x002B28C0 */
-void *Room45_Phase5Script(void *o) { return D_0047AB58; }   /* Room45_vtable +0x20 */
+void *Room45_Phase5Script(void *o) { return Room45_Phase5Script_data; }   /* Room45_vtable +0x20 */
 
 /* 0x002B28D0 */
 u32 Room45_ActionScript(void *self, s32 i) {
-    return D_0047AB60[i];
+    return Room45_ActionScripts[i];
 }
 
 /* 0x002B28F0 */
-void *Room45_Table38(void *o) { return D_0047AB70; }   /* Room45_vtable +0x38 */
+void *Room45_Table38(void *o) { return Room45_Table38_data; }   /* Room45_vtable +0x38 */
 
 /* 0x002B2900 */
 u32 Room45_ObjectName(void *self, s32 i) {
-    return D_0047AB68[i];
+    return Room45_ObjectNames[i];
 }
 
-/* (self->*D_01990C68[i])(a, b) */
+/* (self->*Room45_CmdTable[i])(a, b) */
 /* 0x002B2920 */
 s32 Room45_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C68[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room45_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002B2950 */

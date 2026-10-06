@@ -8,69 +8,69 @@
 extern void *RoomBase_vtable[];
 extern void *Room63_vtable[];
 
-extern u8 D_00421130[];
-extern u8 D_004211D0[];
-extern u8 D_00421250[];
-extern u8 D_00421400[];
-extern u8 D_00421420[];
-extern void *D_00421BB0[];
-extern void *D_00421BF0[];
-extern u8 D_00421C50[];
+extern u8 Room63_EnterScript_data[];
+extern u8 Room63_CharEnterScript_data[];
+extern u8 Room63_Phase1Script_data[];
+extern u8 Room63_Phase2Script_data[];
+extern u8 Room63_Phase5Script_data[];
+extern void *Room63_ActionScripts[];
+extern void *Room63_ObjectNames[];
+extern u8 Room63_Table38_data[];
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 
-extern PTMF D_01991098[];
+extern PTMF Room63_CmdTable[];
 
 /* 0x00308990 */
 void *Room63_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room63_vtable, RoomBase_vtable); }
 
 /* 0x003089F0 */
 void *Room63_EnterScript(void) {
-    return D_00421130;
+    return Room63_EnterScript_data;
 }
 
 /* 0x00308A00 */
 void *Room63_CharEnterScript(void) {
-    return D_004211D0;
+    return Room63_CharEnterScript_data;
 }
 
 /* 0x00308A10 */
 void *Room63_Phase1Script(void) {
-    return D_00421250;
+    return Room63_Phase1Script_data;
 }
 
 /* 0x00308A20 */
 void *Room63_Phase2Script(void) {
-    return D_00421400;
+    return Room63_Phase2Script_data;
 }
 
 /* 0x00308A30 */
 void *Room63_Phase5Script(void) {
-    return D_00421420;
+    return Room63_Phase5Script_data;
 }
 
 /* 0x00308A40 */
 void *Room63_ActionScript(void *self, s32 i) {
-    return D_00421BB0[i];
+    return Room63_ActionScripts[i];
 }
 
 /* 0x00308A60 */
 void *Room63_Table38(void) {
-    return D_00421C50;
+    return Room63_Table38_data;
 }
 
 /* 0x00308A70 */
 void *Room63_ObjectName(void *self, s32 i) {
-    return D_00421BF0[i];
+    return Room63_ObjectNames[i];
 }
 
-/* (self->*D_01991098[i])(a, b) */
+/* (self->*Room63_CmdTable[i])(a, b) */
 /* 0x00308A90 */
 s32 Room63_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991098[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room63_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x00308AC0 */

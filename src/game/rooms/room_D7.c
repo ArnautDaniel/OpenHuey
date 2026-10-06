@@ -8,63 +8,63 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomD7_vtable[];
-extern u8 D_0047B07C[];
-extern u8 D_0047B080[], D_0047B088[];
+extern u8 RoomD7_Phase2Script_data[];
+extern u8 RoomD7_Phase5Script_data[], RoomD7_ActionScripts[];
 extern s32 D_0047B2D8;
 extern char D_0047B2D0[];
 extern const char D_00463728[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-extern u8 D_00447A70[];
-extern u8 D_00447A90[];
-extern u8 D_00447AD0[];
-extern u8 D_00447B00[];
-extern u8 D_00447BC0[];
-extern PTMF D_01991C00[];
-extern PTMF D_01991C20[];
+extern u8 RoomD7_EnterScript_data[];
+extern u8 RoomD7_CharEnterScript_data[];
+extern u8 RoomD7_Phase1Script_data[];
+extern u8 RoomD7_Phase3Script_data[];
+extern u8 RoomD7_Table38_data[];
+extern PTMF RoomD7_CondTable[];
+extern PTMF RoomD7_CmdTable[];
 
 /* 0x0036F4A0 */
 void *RoomD7_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomD7_vtable, RoomBase_vtable); }
 
 /* 0x0036F500 */
 void *RoomD7_EnterScript(void) {
-    return D_00447A70;
+    return RoomD7_EnterScript_data;
 }
 
 /* 0x0036F510 */
 void *RoomD7_CharEnterScript(void) {
-    return D_00447A90;
+    return RoomD7_CharEnterScript_data;
 }
 
 /* 0x0036F520 */
 void *RoomD7_Phase1Script(void) {
-    return D_00447AD0;
+    return RoomD7_Phase1Script_data;
 }
 
 /* 0x0036F530 */
-void *RoomD7_Phase2Script(void *o) { return D_0047B07C; }   /* RoomD7_vtable +0x14 */
+void *RoomD7_Phase2Script(void *o) { return RoomD7_Phase2Script_data; }   /* RoomD7_vtable +0x14 */
 
 /* 0x0036F540 */
 void *RoomD7_Phase3Script(void) {
-    return D_00447B00;
+    return RoomD7_Phase3Script_data;
 }
 
 /* 0x0036F550 */
-void *RoomD7_Phase5Script(void *o) { return D_0047B080; }   /* RoomD7_vtable +0x20 */
+void *RoomD7_Phase5Script(void *o) { return RoomD7_Phase5Script_data; }   /* RoomD7_vtable +0x20 */
 
 /* 0x0036F560 */
-u32 RoomD7_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B088)[i]; }   /* RoomD7_vtable +0x24 */
+u32 RoomD7_ActionScript(void *o, s32 i) { return ((u32 *)RoomD7_ActionScripts)[i]; }   /* RoomD7_vtable +0x24 */
 
 /* 0x0036F580 */
 void *RoomD7_Table38(void) {
-    return D_00447BC0;
+    return RoomD7_Table38_data;
 }
 
-/* (self->*D_01991C20[i])(a, b) */
+/* (self->*RoomD7_CmdTable[i])(a, b) */
 /* 0x0036F590 */
 s32 RoomD7_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991C20[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD7_CmdTable[i & 0xFF], a, b);
 }
 
 /* as Room107_Cmd01 */
@@ -81,10 +81,10 @@ s32 RoomD7_Cmd01(void) { return clock_draw(D_0047B2D0, D_00463728); }
 /* 0x0036F7E0 */
 s32 RoomD7_Cmd00(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B2D8, cmd, 2.0f); }
 
-/* (self->*D_01991C00[i])(a, b) */
+/* (self->*RoomD7_CondTable[i])(a, b) */
 /* 0x0036F880 */
 s32 RoomD7_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991C00[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomD7_CondTable[i & 0xFF], a, b);
 }
 
 /* the progress object's +0x7C with the caller's arguments */

@@ -12,60 +12,60 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room4C_vtable[];
-extern const char *D_0040AC10[];
+extern const char *Room4C_ObjectNames[];
 extern s32 D_0047B250;                   /* room 0x4C: what the player has done so far */
 
-extern u8 D_00409980[];
-extern u8 D_00409A80[];
-extern u8 D_00409AD0[];
-extern u8 D_0040A020[];
-extern u32 D_0040AB80[];
-extern u8 D_0040AC60[];
+extern u8 Room4C_EnterScript_data[];
+extern u8 Room4C_CharEnterScript_data[];
+extern u8 Room4C_Phase1Script_data[];
+extern u8 Room4C_Phase2Script_data[];
+extern u32 Room4C_ActionScripts[];
+extern u8 Room4C_Table38_data[];
 
-extern PTMF D_01990CE0[];
+extern PTMF Room4C_CmdTable[];
 
 /* 0x002B3540 */
 void *Room4C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room4C_vtable, RoomBase_vtable); }
 
 /* 0x002B35A0 */
 void *Room4C_EnterScript(void) {
-    return D_00409980;
+    return Room4C_EnterScript_data;
 }
 
 /* 0x002B35B0 */
 void *Room4C_CharEnterScript(void) {
-    return D_00409A80;
+    return Room4C_CharEnterScript_data;
 }
 
 /* 0x002B35C0 */
 void *Room4C_Phase1Script(void) {
-    return D_00409AD0;
+    return Room4C_Phase1Script_data;
 }
 
 /* 0x002B35D0 */
 void *Room4C_Phase2Script(void) {
-    return D_0040A020;
+    return Room4C_Phase2Script_data;
 }
 
 /* 0x002B35E0 */
 u32 Room4C_ActionScript(void *self, s32 i) {
-    return D_0040AB80[i];
+    return Room4C_ActionScripts[i];
 }
 
 /* 0x002B3600 */
 void *Room4C_Table38(void) {
-    return D_0040AC60;
+    return Room4C_Table38_data;
 }
 
 /* 0x002B3610 */
 u32 Room4C_ObjectName(void *self, s32 i) {
-    return (u32)D_0040AC10[i];
+    return (u32)Room4C_ObjectNames[i];
 }
 
-/* (self->*D_01990CE0[i])(a, b) */
+/* (self->*Room4C_CmdTable[i])(a, b) */
 /* 0x002B3630 */
 s32 Room4C_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990CE0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room4C_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x4C (D_0040AC08): character 0x11's model parts 0xA2 / 0xA4 / 0xAC get bit 2 when byte
@@ -111,7 +111,7 @@ s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* four room objects (D_0040AC10) pressed in (+0x24 down 0.2 to -0.7, a sound as each starts) while
+/* four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each starts) while
  * event flag i is set, else back up 0.2 to 0; byte 3 0 all reset */
 /* 0x002B37D0 */
 s32 Room4C_Cmd00(void *self, void *a1, u8 *cmd) {
@@ -120,7 +120,7 @@ s32 Room4C_Cmd00(void *self, void *a1, u8 *cmd) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
-        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040AC10[i]);
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, Room4C_ObjectNames[i]);
 
         if (o == NULL) {
             continue;

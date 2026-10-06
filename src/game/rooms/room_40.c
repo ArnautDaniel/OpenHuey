@@ -9,58 +9,58 @@
 extern void *RoomBase_vtable[];
 extern void *Room40_vtable[];
 
-extern u8 D_00406550[];
-extern u8 D_00406630[];
-extern u8 D_00406770[];
-extern u8 D_00406930[];
-extern u32 D_00407050[];
-extern u8 D_004070D0[];
-extern u32 D_00407090[];
+extern u8 Room40_EnterScript_data[];
+extern u8 Room40_CharEnterScript_data[];
+extern u8 Room40_Phase1Script_data[];
+extern u8 Room40_Phase2Script_data[];
+extern u32 Room40_ActionScripts[];
+extern u8 Room40_Table38_data[];
+extern u32 Room40_ObjectNames[];
 
-extern PTMF D_01990C48[];
+extern PTMF Room40_CmdTable[];
 
 /* 0x002B2330 */
 void *Room40_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room40_vtable, RoomBase_vtable); }
 
 /* 0x002B2390 */
 void *Room40_EnterScript(void) {
-    return D_00406550;
+    return Room40_EnterScript_data;
 }
 
 /* 0x002B23A0 */
 void *Room40_CharEnterScript(void) {
-    return D_00406630;
+    return Room40_CharEnterScript_data;
 }
 
 /* 0x002B23B0 */
 void *Room40_Phase1Script(void) {
-    return D_00406770;
+    return Room40_Phase1Script_data;
 }
 
 /* 0x002B23C0 */
 void *Room40_Phase2Script(void) {
-    return D_00406930;
+    return Room40_Phase2Script_data;
 }
 
 /* 0x002B23D0 */
 u32 Room40_ActionScript(void *self, s32 i) {
-    return D_00407050[i];
+    return Room40_ActionScripts[i];
 }
 
 /* 0x002B23F0 */
 void *Room40_Table38(void) {
-    return D_004070D0;
+    return Room40_Table38_data;
 }
 
 /* 0x002B2400 */
 u32 Room40_ObjectName(void *self, s32 i) {
-    return D_00407090[i];
+    return Room40_ObjectNames[i];
 }
 
-/* (self->*D_01990C48[i])(a, b) */
+/* (self->*Room40_CmdTable[i])(a, b) */
 /* 0x002B2420 */
 s32 Room40_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C48[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room40_CmdTable[i & 0xFF], a, b);
 }
 
 /* the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped */

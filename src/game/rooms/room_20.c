@@ -14,20 +14,20 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room20_vtable[];
-extern const char *D_003FF110[];
+extern const char *Room20_ObjectNames[];
 extern void *Actor_vtable[];   /* Actor base vtable */
-extern u8 D_003FE460[];
-extern u8 D_003FE540[];
-extern u8 D_003FE680[];
-extern u8 D_003FE9C0[];
-extern u8 D_003FEA60[];
-extern u8 D_003FEAD0[];
-extern u32 D_003FF030[];
-extern u8 D_003FF130[];
-extern u8 D_003FF150[];
+extern u8 Room20_EnterScript_data[];
+extern u8 Room20_CharEnterScript_data[];
+extern u8 Room20_Phase1Script_data[];
+extern u8 Room20_Phase2Script_data[];
+extern u8 Room20_Phase3Script_data[];
+extern u8 Room20_Phase5Script_data[];
+extern u32 Room20_ActionScripts[];
+extern u8 Room20_Table38_data[];
+extern u8 Room20_Table3C_data[];
 
-extern PTMF D_019909F0[];
-extern PTMF D_01990A40[];
+extern PTMF Room20_CmdTable[];
+extern PTMF Room20_CondTable[];
 
 /* nav triangle `i`'s record, or NULL */
 static inline u8 *nav_tri(u32 i) {
@@ -41,64 +41,64 @@ void *Room20_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room20_vtable
 
 /* 0x002AE3F0 */
 void *Room20_EnterScript(void) {
-    return D_003FE460;
+    return Room20_EnterScript_data;
 }
 
 /* 0x002AE400 */
 void *Room20_CharEnterScript(void) {
-    return D_003FE540;
+    return Room20_CharEnterScript_data;
 }
 
 /* 0x002AE410 */
 void *Room20_Phase1Script(void) {
-    return D_003FE680;
+    return Room20_Phase1Script_data;
 }
 
 /* 0x002AE420 */
 void *Room20_Phase2Script(void) {
-    return D_003FE9C0;
+    return Room20_Phase2Script_data;
 }
 
 /* 0x002AE430 */
 void *Room20_Phase3Script(void) {
-    return D_003FEA60;
+    return Room20_Phase3Script_data;
 }
 
 /* 0x002AE440 */
 void *Room20_Phase5Script(void) {
-    return D_003FEAD0;
+    return Room20_Phase5Script_data;
 }
 
 /* 0x002AE450 */
 u32 Room20_ActionScript(void *self, s32 i) {
-    return D_003FF030[i];
+    return Room20_ActionScripts[i];
 }
 
 /* 0x002AE470 */
 void *Room20_Table38(void) {
-    return D_003FF130;
+    return Room20_Table38_data;
 }
 
 /* 0x002AE480 */
 void *Room20_Table3C(void) {
-    return D_003FF150;
+    return Room20_Table3C_data;
 }
 
 /* 0x002AE490 */
 u32 Room20_ObjectName(void *self, s32 i) {
-    return (u32)D_003FF110[i];
+    return (u32)Room20_ObjectNames[i];
 }
 
-/* (self->*D_01990A40[i])(a, b) */
+/* (self->*Room20_CondTable[i])(a, b) */
 /* 0x002AE4B0 */
 s32 Room20_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990A40[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room20_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x20 (Room20_Cond02_ptmf): object byte 3 becomes event point byte 4 (radii 5) */
 /* 0x002AE4E0 */
 s32 Room20_Cond02(void *self, void *a1, u8 *cmd) {
-    u8 *o = room_obj(D_003FF110[cmd[3]]);
+    u8 *o = room_obj(Room20_ObjectNames[cmd[3]]);
 
     if (o == NULL) {
         return 0;
@@ -153,16 +153,16 @@ s32 Room20_Cond00(void) {
     return 1;
 }
 
-/* (self->*D_019909F0[i])(a, b) */
+/* (self->*Room20_CmdTable[i])(a, b) */
 /* 0x002AE760 */
 s32 Room20_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019909F0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room20_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x20 (Room20_Cmd05_ptmf): the character turns to face object byte 3 */
 /* 0x002AE790 */
 s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
-    u8 *o = room_obj(D_003FF110[cmd[3]]);
+    u8 *o = room_obj(Room20_ObjectNames[cmd[3]]);
 
     if (o != NULL) {
         AT(chr, 0x10C, f32) = Angle_Wrap(func_0031C5C0(AT(o, 0x20, f32) - AT(chr, 0x10, f32),
@@ -277,13 +277,13 @@ s32 Room20_Cmd03(void *self) {
     return 1;
 }
 
-/* a pendulum (room object D_003FF110[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
+/* a pendulum (room object Room20_ObjectNames[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
  * degrees (a tick sound at (-85, 30, 90) each turn), swinging 15 degrees (+0x14) */
 /* 0x002AED60 */
 s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     u32 mode = cmd[4];
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003FF110[cmd[3]]);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, Room20_ObjectNames[cmd[3]]);
 
     if (mode == 0) {
         AT(o, 0x30, f32) = 0.0f;

@@ -11,16 +11,16 @@
 extern void *RoomBase_vtable[];
 extern void *Room80_vtable[];
 extern void *BackdropModel2_vtable[];
-extern u32 D_0043EA90[];
-extern u32 D_0043EAE0[];
-extern u32 D_0043EBA0[];
-extern u32 D_0043EC20[];
-extern u32 D_0047AEF0[];
-extern u32 D_0047AEF4[];
+extern u32 Room80_EnterScript_data[];
+extern u32 Room80_CharEnterScript_data[];
+extern u32 Room80_Phase1Script_data[];
+extern u32 Room80_Phase2Script_data[];
+extern u32 Room80_ActionScripts[];
+extern u32 Room80_ObjectNames[];
 
 extern void *EffectBase_vtable[];
 
-extern PTMF D_01991968[];
+extern PTMF Room80_CmdTable[];
 
 static void effect_7a430_init(void **obj) {
     obj[0] = BackdropModel2_vtable;
@@ -31,38 +31,38 @@ void *Room80_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room80_vtable
 
 /* 0x0034A1A0 */
 void *Room80_EnterScript(void) {
-    return D_0043EA90;
+    return Room80_EnterScript_data;
 }
 
 /* 0x0034A1B0 */
 void *Room80_CharEnterScript(void) {
-    return D_0043EAE0;
+    return Room80_CharEnterScript_data;
 }
 
 /* 0x0034A1C0 */
 void *Room80_Phase1Script(void) {
-    return D_0043EBA0;
+    return Room80_Phase1Script_data;
 }
 
 /* 0x0034A1D0 */
 void *Room80_Phase2Script(void) {
-    return D_0043EC20;
+    return Room80_Phase2Script_data;
 }
 
 /* 0x0034A1E0 */
 u32 Room80_ActionScript(void *self, s32 i) {
-    return D_0047AEF0[i];
+    return Room80_ActionScripts[i];
 }
 
 /* 0x0034A200 */
 u32 Room80_ObjectName(void *self, s32 i) {
-    return D_0047AEF4[i];
+    return Room80_ObjectNames[i];
 }
 
-/* (self->*D_01991968[i])(a, b) */
+/* (self->*Room80_CmdTable[i])(a, b) */
 /* 0x0034A220 */
 s32 Room80_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991968[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room80_CmdTable[i & 0xFF], a, b);
 }
 
 /* (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word */

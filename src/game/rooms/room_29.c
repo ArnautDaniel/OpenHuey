@@ -10,64 +10,64 @@
 extern void *RoomBase_vtable[];
 extern void *Room29_vtable[];
 
-extern u8 D_00403F90[];
-extern u8 D_00404040[];
-extern u8 D_00404080[];
-extern u8 D_00404100[];
-extern u8 D_00404198[];
-extern u32 D_004046C0[];
-extern u8 D_00404730[];
-extern u32 D_00404710[];
+extern u8 Room29_EnterScript_data[];
+extern u8 Room29_CharEnterScript_data[];
+extern u8 Room29_Phase1Script_data[];
+extern u8 Room29_Phase2Script_data[];
+extern u8 Room29_Phase5Script_data[];
+extern u32 Room29_ActionScripts[];
+extern u8 Room29_Table38_data[];
+extern u32 Room29_ObjectNames[];
 
-extern PTMF D_01990BB0[];
+extern PTMF Room29_CondTable[];
 
 /* 0x002B0E30 */
 void *Room29_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room29_vtable, RoomBase_vtable); }
 
 /* 0x002B0E90 */
 void *Room29_EnterScript(void) {
-    return D_00403F90;
+    return Room29_EnterScript_data;
 }
 
 /* 0x002B0EA0 */
 void *Room29_CharEnterScript(void) {
-    return D_00404040;
+    return Room29_CharEnterScript_data;
 }
 
 /* 0x002B0EB0 */
 void *Room29_Phase1Script(void) {
-    return D_00404080;
+    return Room29_Phase1Script_data;
 }
 
 /* 0x002B0EC0 */
 void *Room29_Phase2Script(void) {
-    return D_00404100;
+    return Room29_Phase2Script_data;
 }
 
 /* 0x002B0ED0 */
 void *Room29_Phase5Script(void) {
-    return D_00404198;
+    return Room29_Phase5Script_data;
 }
 
 /* 0x002B0EE0 */
 u32 Room29_ActionScript(void *self, s32 i) {
-    return D_004046C0[i];
+    return Room29_ActionScripts[i];
 }
 
 /* 0x002B0F00 */
 void *Room29_Table38(void) {
-    return D_00404730;
+    return Room29_Table38_data;
 }
 
 /* 0x002B0F10 */
 u32 Room29_ObjectName(void *self, s32 i) {
-    return D_00404710[i];
+    return Room29_ObjectNames[i];
 }
 
-/* (self->*D_01990BB0[i])(a, b) */
+/* (self->*Room29_CondTable[i])(a, b) */
 /* 0x002B0F30 */
 s32 Room29_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990BB0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room29_CondTable[i & 0xFF], a, b);
 }
 
 /* no thing of kind 3 lies about */

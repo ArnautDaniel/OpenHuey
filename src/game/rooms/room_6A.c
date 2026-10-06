@@ -9,64 +9,64 @@
 extern void *RoomBase_vtable[];
 extern void *Room6A_vtable[];
 
-extern u32 D_00438730[];
-extern u32 D_004387A0[];
-extern u32 D_004388C0[];
-extern u32 D_004389F0[];
-extern u32 D_00438A70[];
-extern u32 D_00438CC0[];
-extern u32 D_00438CF8[];
-extern u32 D_00438D10[];
+extern u32 Room6A_EnterScript_data[];
+extern u32 Room6A_CharEnterScript_data[];
+extern u32 Room6A_Phase1Script_data[];
+extern u32 Room6A_Phase2Script_data[];
+extern u32 Room6A_Phase5Script_data[];
+extern u32 Room6A_ActionScripts[];
+extern u32 Room6A_ObjectNames[];
+extern u32 Room6A_Table38_data[];
 
-extern PTMF D_019918F0[];
+extern PTMF Room6A_CmdTable[];
 
 /* 0x00344050 */
 void *Room6A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room6A_vtable, RoomBase_vtable); }
 
 /* 0x003440B0 */
 void *Room6A_EnterScript(void) {
-    return D_00438730;
+    return Room6A_EnterScript_data;
 }
 
 /* 0x003440C0 */
 void *Room6A_CharEnterScript(void) {
-    return D_004387A0;
+    return Room6A_CharEnterScript_data;
 }
 
 /* 0x003440D0 */
 void *Room6A_Phase1Script(void) {
-    return D_004388C0;
+    return Room6A_Phase1Script_data;
 }
 
 /* 0x003440E0 */
 void *Room6A_Phase2Script(void) {
-    return D_004389F0;
+    return Room6A_Phase2Script_data;
 }
 
 /* 0x003440F0 */
 void *Room6A_Phase5Script(void) {
-    return D_00438A70;
+    return Room6A_Phase5Script_data;
 }
 
 /* 0x00344100 */
 u32 Room6A_ActionScript(void *self, s32 i) {
-    return D_00438CC0[i];
+    return Room6A_ActionScripts[i];
 }
 
 /* 0x00344120 */
 void *Room6A_Table38(void) {
-    return D_00438D10;
+    return Room6A_Table38_data;
 }
 
 /* 0x00344130 */
 u32 Room6A_ObjectName(void *self, s32 i) {
-    return D_00438CF8[i];
+    return Room6A_ObjectNames[i];
 }
 
-/* (self->*D_019918F0[i])(a, b) */
+/* (self->*Room6A_CmdTable[i])(a, b) */
 /* 0x00344150 */
 s32 Room6A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019918F0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room6A_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x6A (D_00438CF0): its object's animation (+0x74 forward, +0x78 back) at a point +0x7C

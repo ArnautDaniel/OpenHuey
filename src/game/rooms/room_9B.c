@@ -8,44 +8,44 @@
 extern void *RoomBase_vtable[];
 extern void *Room9B_vtable[];
 
-extern u8 D_00443870[], D_00443890[], D_00443910[], D_00443AB0[], D_00443B00[];
-extern void *D_00443DD0[];
-extern u8 D_00443E10[];
-extern void *D_00443E00[];
+extern u8 Room9B_EnterScript_data[], Room9B_CharEnterScript_data[], Room9B_Phase1Script_data[], Room9B_Phase2Script_data[], Room9B_Phase3Script_data[];
+extern void *Room9B_ActionScripts[];
+extern u8 Room9B_Table38_data[];
+extern void *Room9B_ObjectNames[];
 
-extern PTMF D_01991A48[];
+extern PTMF Room9B_CmdTable[];
 
 /* 0x00352E20 */
 void *Room9B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room9B_vtable, RoomBase_vtable); }
 
 /* 0x00352E80 */
-void *Room9B_EnterScript(void) { return D_00443870; }
+void *Room9B_EnterScript(void) { return Room9B_EnterScript_data; }
 
 /* 0x00352E90 */
-void *Room9B_CharEnterScript(void) { return D_00443890; }
+void *Room9B_CharEnterScript(void) { return Room9B_CharEnterScript_data; }
 
 /* 0x00352EA0 */
-void *Room9B_Phase1Script(void) { return D_00443910; }
+void *Room9B_Phase1Script(void) { return Room9B_Phase1Script_data; }
 
 /* 0x00352EB0 */
-void *Room9B_Phase2Script(void) { return D_00443AB0; }
+void *Room9B_Phase2Script(void) { return Room9B_Phase2Script_data; }
 
 /* 0x00352EC0 */
-void *Room9B_Phase3Script(void) { return D_00443B00; }
+void *Room9B_Phase3Script(void) { return Room9B_Phase3Script_data; }
 
 /* 0x00352ED0 */
-void *Room9B_ActionScript(void *self, s32 i) { return D_00443DD0[i]; }
+void *Room9B_ActionScript(void *self, s32 i) { return Room9B_ActionScripts[i]; }
 
 /* 0x00352EF0 */
-void *Room9B_Table38(void) { return D_00443E10; }
+void *Room9B_Table38(void) { return Room9B_Table38_data; }
 
 /* 0x00352F00 */
-void *Room9B_ObjectName(void *self, s32 i) { return D_00443E00[i]; }
+void *Room9B_ObjectName(void *self, s32 i) { return Room9B_ObjectNames[i]; }
 
-/* (self->*D_01991A48[i])(a, b) */
+/* (self->*Room9B_CmdTable[i])(a, b) */
 /* 0x00352F20 */
 s32 Room9B_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991A48[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room9B_CmdTable[i & 0xFF], a, b);
 }
 
 /* (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step

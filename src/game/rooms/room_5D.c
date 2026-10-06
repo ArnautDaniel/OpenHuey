@@ -9,57 +9,57 @@
 extern void *RoomBase_vtable[];
 extern void *Room5D_vtable[];
 
-extern u8 D_00411B80[];
-extern u8 D_00411C60[];
-extern u8 D_00411D60[];
-extern u8 D_00411FB0[];
-extern u32 D_00412390[];
-extern u8 D_004123F0[];
+extern u8 Room5D_EnterScript_data[];
+extern u8 Room5D_CharEnterScript_data[];
+extern u8 Room5D_Phase1Script_data[];
+extern u8 Room5D_Phase2Script_data[];
+extern u32 Room5D_ActionScripts[];
+extern u8 Room5D_Table38_data[];
 
-extern PTMF D_01990E20[];
+extern PTMF Room5D_CmdTable[];
 
 /* 0x002B5E80 */
 void *Room5D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5D_vtable, RoomBase_vtable); }
 
 /* 0x002B5EE0 */
 void *Room5D_EnterScript(void) {
-    return D_00411B80;
+    return Room5D_EnterScript_data;
 }
 
 /* 0x002B5EF0 */
 void *Room5D_CharEnterScript(void) {
-    return D_00411C60;
+    return Room5D_CharEnterScript_data;
 }
 
 /* 0x002B5F00 */
 void *Room5D_Phase1Script(void) {
-    return D_00411D60;
+    return Room5D_Phase1Script_data;
 }
 
 /* 0x002B5F10 */
 void *Room5D_Phase2Script(void) {
-    return D_00411FB0;
+    return Room5D_Phase2Script_data;
 }
 
 /* 0x002B5F20 */
 u32 Room5D_ActionScript(void *self, s32 i) {
-    return D_00412390[i];
+    return Room5D_ActionScripts[i];
 }
 
 /* 0x002B5F40 */
 void *Room5D_Table38(void) {
-    return D_004123F0;
+    return Room5D_Table38_data;
 }
 
 /* 0x002B5F50 */
 u32 Room5D_ObjectName(void *self, s32 i) {
-    return (u32)D_004123D0[i];
+    return (u32)Room5D_ObjectNames[i];
 }
 
-/* (self->*D_01990E20[i])(a, b) */
+/* (self->*Room5D_CmdTable[i])(a, b) */
 /* 0x002B5F70 */
 s32 Room5D_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990E20[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room5D_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x5D (Room5D_Cmd01_ptmf): the lever at -60 / 0 / 60 degrees by byte 3 */
@@ -89,7 +89,7 @@ s32 Room5D_Cmd00(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
-        u8 *o = room_obj(D_004123D0[i + 2]);
+        u8 *o = room_obj(Room5D_ObjectNames[i + 2]);
 
         if (o != NULL) {
             AT(o, 0x20, f32) = AT(o, 0x20, f32) - 60.0f;

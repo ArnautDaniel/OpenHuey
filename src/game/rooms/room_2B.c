@@ -11,12 +11,12 @@ extern void *RoomBase_vtable[];
 extern void *Room2B_vtable[];
 extern s32 Kind26_MoveDoneB(Character *c);
 
-extern u8 D_00405640[];
-extern u8 D_004056D0[];
-extern u8 D_00405730[];
-extern u8 D_00405850[];
-extern u32 D_00405A70[];
-extern u8 D_00405AA0[];
+extern u8 Room2B_EnterScript_data[];
+extern u8 Room2B_CharEnterScript_data[];
+extern u8 Room2B_Phase1Script_data[];
+extern u8 Room2B_Phase2Script_data[];
+extern u32 Room2B_ActionScripts[];
+extern u8 Room2B_Table38_data[];
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
@@ -24,45 +24,45 @@ extern u8 D_00405AA0[];
 
 void Kind26_MoveToB(u8 *self, s32 a, f32 x, f32 y);
 
-extern PTMF D_01990C00[];
+extern PTMF Room2B_CmdTable[];
 
 /* 0x002B1600 */
 void *Room2B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2B_vtable, RoomBase_vtable); }
 
 /* 0x002B1660 */
 void *Room2B_EnterScript(void) {
-    return D_00405640;
+    return Room2B_EnterScript_data;
 }
 
 /* 0x002B1670 */
 void *Room2B_CharEnterScript(void) {
-    return D_004056D0;
+    return Room2B_CharEnterScript_data;
 }
 
 /* 0x002B1680 */
 void *Room2B_Phase1Script(void) {
-    return D_00405730;
+    return Room2B_Phase1Script_data;
 }
 
 /* 0x002B1690 */
 void *Room2B_Phase2Script(void) {
-    return D_00405850;
+    return Room2B_Phase2Script_data;
 }
 
 /* 0x002B16A0 */
 u32 Room2B_ActionScript(void *self, s32 i) {
-    return D_00405A70[i];
+    return Room2B_ActionScripts[i];
 }
 
 /* 0x002B16C0 */
 void *Room2B_Table38(void) {
-    return D_00405AA0;
+    return Room2B_Table38_data;
 }
 
-/* (self->*D_01990C00[i])(a, b) */
+/* (self->*Room2B_CmdTable[i])(a, b) */
 /* 0x002B16D0 */
 s32 Room2B_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C00[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room2B_CmdTable[i & 0xFF], a, b);
 }
 
 /* character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until

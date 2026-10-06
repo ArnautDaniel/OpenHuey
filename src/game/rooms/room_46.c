@@ -12,54 +12,54 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room46_vtable[];
-extern u8 D_0047AC40[];
+extern u8 Room46_Phase5Script_data[];
 
-extern u8 D_00416A50[];
-extern u8 D_00416AF0[];
-extern u8 D_00416B90[];
-extern u8 D_00416D60[];
-extern u8 D_00416DB0[];
-extern void *D_00417120[];
-extern u8 D_00417170[];
-extern void *D_0047AC48[];
+extern u8 Room46_EnterScript_data[];
+extern u8 Room46_CharEnterScript_data[];
+extern u8 Room46_Phase1Script_data[];
+extern u8 Room46_Phase2Script_data[];
+extern u8 Room46_Phase3Script_data[];
+extern void *Room46_ActionScripts[];
+extern u8 Room46_Table38_data[];
+extern void *Room46_ObjectNames[];
 
-extern PTMF D_01990E78[];
-extern PTMF D_01990E88[];
+extern PTMF Room46_CmdTable[];
+extern PTMF Room46_CondTable[];
 
 /* 0x002E5740 */
 void *Room46_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room46_vtable, RoomBase_vtable); }
 
 /* 0x002E57A0 */
-void *Room46_EnterScript(void) { return D_00416A50; }
+void *Room46_EnterScript(void) { return Room46_EnterScript_data; }
 
 /* 0x002E57B0 */
-void *Room46_CharEnterScript(void) { return D_00416AF0; }
+void *Room46_CharEnterScript(void) { return Room46_CharEnterScript_data; }
 
 /* 0x002E57C0 */
-void *Room46_Phase1Script(void) { return D_00416B90; }
+void *Room46_Phase1Script(void) { return Room46_Phase1Script_data; }
 
 /* 0x002E57D0 */
-void *Room46_Phase2Script(void) { return D_00416D60; }
+void *Room46_Phase2Script(void) { return Room46_Phase2Script_data; }
 
 /* 0x002E57E0 */
-void *Room46_Phase3Script(void) { return D_00416DB0; }
+void *Room46_Phase3Script(void) { return Room46_Phase3Script_data; }
 
 /* 0x002E57F0 */
-void *Room46_Phase5Script(void *o) { return D_0047AC40; }   /* Room46_vtable +0x20 */
+void *Room46_Phase5Script(void *o) { return Room46_Phase5Script_data; }   /* Room46_vtable +0x20 */
 
 /* 0x002E5800 */
-void *Room46_ActionScript(void *self, s32 i) { return D_00417120[i]; }
+void *Room46_ActionScript(void *self, s32 i) { return Room46_ActionScripts[i]; }
 
 /* 0x002E5820 */
-void *Room46_Table38(void) { return D_00417170; }
+void *Room46_Table38(void) { return Room46_Table38_data; }
 
 /* 0x002E5830 */
-void *Room46_ObjectName(void *self, s32 i) { return D_0047AC48[i]; }
+void *Room46_ObjectName(void *self, s32 i) { return Room46_ObjectNames[i]; }
 
-/* (self->*D_01990E88[i])(a, b) */
+/* (self->*Room46_CondTable[i])(a, b) */
 /* 0x002E5850 */
 s32 Room46_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990E88[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room46_CondTable[i & 0xFF], a, b);
 }
 
 /* the pursuer is about and up to something (+0xE8 0 / 1) or out of sight */
@@ -74,10 +74,10 @@ s32 Room46_PursuerBusy(void) {
     return 0;
 }
 
-/* (self->*D_01990E78[i])(a, b) */
+/* (self->*Room46_CmdTable[i])(a, b) */
 /* 0x002E5920 */
 s32 Room46_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990E78[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room46_CmdTable[i & 0xFF], a, b);
 }
 
 /* a character `c` hook by the command's byte 3: 0 its +0xE1 / +0xF4 cleared, 1 it turns

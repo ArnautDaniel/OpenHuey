@@ -11,14 +11,14 @@ extern void *RoomBase_vtable[];
 extern void *Room4F_vtable[];
 extern void *SpiralSmoke_vtable[];
 extern void *DustShaft_vtable[];
-extern u8 D_0040B520[];
-extern u8 D_0040B5C0[];
-extern u8 D_0040B680[];
-extern u8 D_0040B8A0[];
-extern u32 D_0040C0A0[];
-extern u8 D_0040C170[];
+extern u8 Room4F_EnterScript_data[];
+extern u8 Room4F_CharEnterScript_data[];
+extern u8 Room4F_Phase1Script_data[];
+extern u8 Room4F_Phase2Script_data[];
+extern u32 Room4F_ActionScripts[];
+extern u8 Room4F_Table38_data[];
 
-extern PTMF D_01990D70[];
+extern PTMF Room4F_CondTable[];
 
 static inline void effect476bd0_init(void **o) {
     o[0] = SpiralSmoke_vtable;
@@ -42,43 +42,43 @@ void *Room4F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room4F_vtable
 
 /* 0x002B3F70 */
 void *Room4F_EnterScript(void) {
-    return D_0040B520;
+    return Room4F_EnterScript_data;
 }
 
 /* 0x002B3F80 */
 void *Room4F_CharEnterScript(void) {
-    return D_0040B5C0;
+    return Room4F_CharEnterScript_data;
 }
 
 /* 0x002B3F90 */
 void *Room4F_Phase1Script(void) {
-    return D_0040B680;
+    return Room4F_Phase1Script_data;
 }
 
 /* 0x002B3FA0 */
 void *Room4F_Phase2Script(void) {
-    return D_0040B8A0;
+    return Room4F_Phase2Script_data;
 }
 
 /* 0x002B3FB0 */
 u32 Room4F_ActionScript(void *self, s32 i) {
-    return D_0040C0A0[i];
+    return Room4F_ActionScripts[i];
 }
 
 /* 0x002B3FD0 */
 void *Room4F_Table38(void) {
-    return D_0040C170;
+    return Room4F_Table38_data;
 }
 
 /* 0x002B3FE0 */
 u32 Room4F_ObjectName(void *self, s32 i) {
-    return (u32)D_0040C140[i];
+    return (u32)Room4F_ObjectNames[i];
 }
 
-/* (self->*D_01990D70[i])(a, b) */
+/* (self->*Room4F_CondTable[i])(a, b) */
 /* 0x002B4000 */
 s32 Room4F_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990D70[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room4F_CondTable[i & 0xFF], a, b);
 }
 
 /* lower the object (D_0040C160)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C) */
@@ -121,7 +121,7 @@ s32 Room4F_Cmd01(void) {
  * step (0.02, not during a movie); once down, events bit 3 */
 /* 0x002B4570 */
 s32 Room4F_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *o = room_obj(D_0040C140[cmd[3]]);
+    u8 *o = room_obj(Room4F_ObjectNames[cmd[3]]);
     f32 a;
 
     switch (cmd[4]) {

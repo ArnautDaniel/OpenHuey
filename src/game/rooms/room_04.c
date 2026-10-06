@@ -12,57 +12,57 @@ extern void *Room04_vtable[];
 extern const char *D_003F17B8, *D_003F17C8;
 extern void *MirrorFragment_vtable[];
 
-extern u8 D_003F0DF0[];
-extern u8 D_003F0E80[];
-extern u8 D_003F0F70[];
-extern u8 D_003F1060[];
-extern void *D_003F1740[];
-extern void *D_003F17B0[];
-extern u8 D_003F17F0[];
-extern PTMF D_019907A0[];
+extern u8 Room04_EnterScript_data[];
+extern u8 Room04_CharEnterScript_data[];
+extern u8 Room04_Phase1Script_data[];
+extern u8 Room04_Phase2Script_data[];
+extern void *Room04_ActionScripts[];
+extern void *Room04_ObjectNames[];
+extern u8 Room04_Table38_data[];
+extern PTMF Room04_CmdTable[];
 
 /* 0x002A9A50 */
 void *Room04_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room04_vtable, RoomBase_vtable); }
 
 /* 0x002A9AB0 */
 void *Room04_EnterScript(void) {
-    return D_003F0DF0;
+    return Room04_EnterScript_data;
 }
 
 /* 0x002A9AC0 */
 void *Room04_CharEnterScript(void) {
-    return D_003F0E80;
+    return Room04_CharEnterScript_data;
 }
 
 /* 0x002A9AD0 */
 void *Room04_Phase1Script(void) {
-    return D_003F0F70;
+    return Room04_Phase1Script_data;
 }
 
 /* 0x002A9AE0 */
 void *Room04_Phase2Script(void) {
-    return D_003F1060;
+    return Room04_Phase2Script_data;
 }
 
 /* 0x002A9AF0 */
 void *Room04_ActionScript(void *self, s32 i) {
-    return D_003F1740[i];
+    return Room04_ActionScripts[i];
 }
 
 /* 0x002A9B10 */
 void *Room04_Table38(void) {
-    return D_003F17F0;
+    return Room04_Table38_data;
 }
 
 /* 0x002A9B20 */
 void *Room04_ObjectName(void *self, s32 i) {
-    return D_003F17B0[i];
+    return Room04_ObjectNames[i];
 }
 
-/* (self->*D_019907A0[i])(a, b) */
+/* (self->*Room04_CmdTable[i])(a, b) */
 /* 0x002A9B40 */
 s32 Room04_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019907A0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room04_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x04 (Room04_Cmd03_ptmf): an effect on one object (byte 3 0: at 90 degrees) or the other (0) */

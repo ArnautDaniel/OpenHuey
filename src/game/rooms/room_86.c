@@ -8,52 +8,52 @@
 extern void *RoomBase_vtable[];
 extern void *Room86_vtable[];
 
-extern u8 D_0042C770[];
-extern u8 D_0042C790[];
-extern u8 D_0042C810[];
-extern u8 D_0042C860[];
-extern void *D_0047ADB4[];
-extern void *D_0047ADB8[];
+extern u8 Room86_EnterScript_data[];
+extern u8 Room86_CharEnterScript_data[];
+extern u8 Room86_Phase1Script_data[];
+extern u8 Room86_Table38_data[];
+extern void *Room86_ActionScripts[];
+extern void *Room86_ObjectNames[];
 
-extern PTMF D_019915E8[];
+extern PTMF Room86_CmdTable[];
 
 /* 0x0032C690 */
 void *Room86_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room86_vtable, RoomBase_vtable); }
 
 /* 0x0032C6F0 */
 void *Room86_EnterScript(void) {
-    return D_0042C770;
+    return Room86_EnterScript_data;
 }
 
 /* 0x0032C700 */
 void *Room86_CharEnterScript(void) {
-    return D_0042C790;
+    return Room86_CharEnterScript_data;
 }
 
 /* 0x0032C710 */
 void *Room86_Phase1Script(void) {
-    return D_0042C810;
+    return Room86_Phase1Script_data;
 }
 
 /* 0x0032C720 */
 void *Room86_ActionScript(void *self, s32 i) {
-    return D_0047ADB4[i];
+    return Room86_ActionScripts[i];
 }
 
 /* 0x0032C740 */
 void *Room86_Table38(void) {
-    return D_0042C860;
+    return Room86_Table38_data;
 }
 
 /* 0x0032C750 */
 void *Room86_ObjectName(void *self, s32 i) {
-    return D_0047ADB8[i];
+    return Room86_ObjectNames[i];
 }
 
-/* (self->*D_019915E8[i])(a, b) */
+/* (self->*Room86_CmdTable[i])(a, b) */
 /* 0x0032C770 */
 s32 Room86_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019915E8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room86_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x0032C7A0 */

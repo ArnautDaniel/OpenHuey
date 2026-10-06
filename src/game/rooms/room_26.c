@@ -11,17 +11,17 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room26_vtable[];
-extern u8 D_00402D50[];
-extern u8 D_00402E10[];
-extern u8 D_00402EC0[];
-extern u8 D_00402FA0[];
+extern u8 Room26_EnterScript_data[];
+extern u8 Room26_CharEnterScript_data[];
+extern u8 Room26_Phase1Script_data[];
+extern u8 Room26_Phase2Script_data[];
 
-extern u32 D_004038B0[];
-extern u8 D_00403970[];
-extern u32 D_00403940[];
+extern u32 Room26_ActionScripts[];
+extern u8 Room26_Table38_data[];
+extern u32 Room26_ObjectNames[];
 
-extern PTMF D_01990B58[];
-extern PTMF D_01990B70[];
+extern PTMF Room26_CondTable[];
+extern PTMF Room26_CmdTable[];
 
 /* the creak of the chairs, at (2.09, 0.3, -2.09) */
 static void chair_creak(VObject *snd, u32 id, f32 *pos, s32 vol) {
@@ -36,43 +36,43 @@ void *Room26_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room26_vtable
 
 /* 0x002B0420 */
 void *Room26_EnterScript(void) {
-    return D_00402D50;
+    return Room26_EnterScript_data;
 }
 
 /* 0x002B0430 */
 void *Room26_CharEnterScript(void) {
-    return D_00402E10;
+    return Room26_CharEnterScript_data;
 }
 
 /* 0x002B0440 */
 void *Room26_Phase1Script(void) {
-    return D_00402EC0;
+    return Room26_Phase1Script_data;
 }
 
 /* 0x002B0450 */
 void *Room26_Phase2Script(void) {
-    return D_00402FA0;
+    return Room26_Phase2Script_data;
 }
 
 /* 0x002B0460 */
 u32 Room26_ActionScript(void *self, s32 i) {
-    return D_004038B0[i];
+    return Room26_ActionScripts[i];
 }
 
 /* 0x002B0480 */
 void *Room26_Table38(void) {
-    return D_00403970;
+    return Room26_Table38_data;
 }
 
 /* 0x002B0490 */
 u32 Room26_ObjectName(void *self, s32 i) {
-    return D_00403940[i];
+    return Room26_ObjectNames[i];
 }
 
-/* (self->*D_01990B70[i])(a, b) */
+/* (self->*Room26_CmdTable[i])(a, b) */
 /* 0x002B04B0 */
 s32 Room26_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990B70[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room26_CmdTable[i & 0xFF], a, b);
 }
 
 /* the partner's target (+0xF35E0 on, +0xF35F0) 3 above the rocking chair (movechair_2): its
@@ -188,10 +188,10 @@ s32 Room26_Cmd00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (self->*D_01990B58[i])(a, b) */
+/* (self->*Room26_CondTable[i])(a, b) */
 /* 0x002B0C60 */
 s32 Room26_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990B58[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room26_CondTable[i & 0xFF], a, b);
 }
 
 /* the first rocking chair still rocking (+0x34 over 0.3) */

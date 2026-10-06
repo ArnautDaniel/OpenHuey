@@ -13,66 +13,66 @@ extern void *RoomBase_vtable[];
 extern void *Room8F_vtable[];
 extern const char *D_004365E4, *D_004365E8;
 
-extern u32 D_00435990[];
-extern u32 D_00435A60[];
-extern u32 D_00435AF0[];
-extern u32 D_00435C20[];
-extern u32 D_00435CA0[];
-extern u32 D_00436520[];
-extern u32 D_004365F0[];
+extern u32 Room8F_EnterScript_data[];
+extern u32 Room8F_CharEnterScript_data[];
+extern u32 Room8F_Phase1Script_data[];
+extern u32 Room8F_Phase2Script_data[];
+extern u32 Room8F_Phase3Script_data[];
+extern u32 Room8F_ActionScripts[];
+extern u32 Room8F_Table38_data[];
 
-extern u32 D_004365C0[];
+extern u32 Room8F_ObjectNames[];
 
-extern PTMF D_019917B0[];
-extern PTMF D_019917E0[];
+extern PTMF Room8F_CmdTable[];
+extern PTMF Room8F_CondTable[];
 
 /* 0x00340D60 */
 void *Room8F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8F_vtable, RoomBase_vtable); }
 
 /* 0x00340DC0 */
 void *Room8F_EnterScript(void) {
-    return D_00435990;
+    return Room8F_EnterScript_data;
 }
 
 /* 0x00340DD0 */
 void *Room8F_CharEnterScript(void) {
-    return D_00435A60;
+    return Room8F_CharEnterScript_data;
 }
 
 /* 0x00340DE0 */
 void *Room8F_Phase1Script(void) {
-    return D_00435AF0;
+    return Room8F_Phase1Script_data;
 }
 
 /* 0x00340DF0 */
 void *Room8F_Phase2Script(void) {
-    return D_00435C20;
+    return Room8F_Phase2Script_data;
 }
 
 /* 0x00340E00 */
 void *Room8F_Phase3Script(void) {
-    return D_00435CA0;
+    return Room8F_Phase3Script_data;
 }
 
 /* 0x00340E10 */
 u32 Room8F_ActionScript(void *self, s32 i) {
-    return D_00436520[i];
+    return Room8F_ActionScripts[i];
 }
 
 /* 0x00340E30 */
 void *Room8F_Table38(void) {
-    return D_004365F0;
+    return Room8F_Table38_data;
 }
 
 /* 0x00340E40 */
 u32 Room8F_ObjectName(void *self, s32 i) {
-    return D_004365C0[i];
+    return Room8F_ObjectNames[i];
 }
 
-/* (self->*D_019917E0[i])(a, b) */
+/* (self->*Room8F_CondTable[i])(a, b) */
 /* 0x00340E60 */
 s32 Room8F_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019917E0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room8F_CondTable[i & 0xFF], a, b);
 }
 
 /* the pursuer is active and out of view: state 3 (+0xE8), or the camera's on-screen test
@@ -91,10 +91,10 @@ s32 Room8F_Cond00(void) {
     return 0;
 }
 
-/* (self->*D_019917B0[i])(a, b) */
+/* (self->*Room8F_CmdTable[i])(a, b) */
 /* 0x00340F20 */
 s32 Room8F_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019917B0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room8F_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x00340F50 */

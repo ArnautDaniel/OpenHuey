@@ -8,45 +8,45 @@
 extern void *RoomBase_vtable[];
 extern void *Room103_vtable[];
 
-extern u8 D_00417840[];
-extern u8 D_00417850[];
-extern u8 D_00417960[];
-extern u8 D_00417A20[];
+extern u8 Room103_EnterScript_data[];
+extern u8 Room103_CharEnterScript_data[];
+extern u8 Room103_Phase1Script_data[];
+extern u8 Room103_Phase2Script_data[];
 
-extern void *D_00417B90[];
-extern u8 D_00417BC0[];
-extern void *D_00417BB0[];
+extern void *Room103_ActionScripts[];
+extern u8 Room103_Table38_data[];
+extern void *Room103_ObjectNames[];
 
-extern PTMF D_01990EA8[];
+extern PTMF Room103_CmdTable[];
 
 /* 0x002E5FB0 */
 void *Room103_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room103_vtable, RoomBase_vtable); }
 
 /* 0x002E6010 */
-void *Room103_EnterScript(void) { return D_00417840; }
+void *Room103_EnterScript(void) { return Room103_EnterScript_data; }
 
 /* 0x002E6020 */
-void *Room103_CharEnterScript(void) { return D_00417850; }
+void *Room103_CharEnterScript(void) { return Room103_CharEnterScript_data; }
 
 /* 0x002E6030 */
-void *Room103_Phase1Script(void) { return D_00417960; }
+void *Room103_Phase1Script(void) { return Room103_Phase1Script_data; }
 
 /* 0x002E6040 */
-void *Room103_Phase2Script(void) { return D_00417A20; }
+void *Room103_Phase2Script(void) { return Room103_Phase2Script_data; }
 
 /* 0x002E6050 */
-void *Room103_ActionScript(void *self, s32 i) { return D_00417B90[i]; }
+void *Room103_ActionScript(void *self, s32 i) { return Room103_ActionScripts[i]; }
 
 /* 0x002E6070 */
-void *Room103_Table38(void) { return D_00417BC0; }
+void *Room103_Table38(void) { return Room103_Table38_data; }
 
 /* 0x002E6080 */
-void *Room103_ObjectName(void *self, s32 i) { return D_00417BB0[i]; }
+void *Room103_ObjectName(void *self, s32 i) { return Room103_ObjectNames[i]; }
 
-/* (self->*D_01990EA8[i])(a, b) */
+/* (self->*Room103_CmdTable[i])(a, b) */
 /* 0x002E60A0 */
 s32 Room103_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990EA8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room103_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002E60D0 */

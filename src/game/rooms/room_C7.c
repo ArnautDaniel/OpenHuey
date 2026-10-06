@@ -14,24 +14,24 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomC7_vtable[];
-extern u8 D_0047ADF8[];
+extern u8 RoomC7_Table38_data[];
 extern void *BackdropModel_vtable[];
 extern void *Debris_vtable[];
 extern void *RoomC7Cursor_vtable[];
 extern f32 gLeftStick[4];   /* left stick */
-extern u8 D_0042F500[];
-extern u8 D_0042F590[];
-extern u8 D_0042F5D0[];
-extern u8 D_0042F7B0[];
-extern u8 D_0042F860[];
-extern u8 D_0042F9C0[];
-extern void *D_00430700[];
-extern void *D_004307F0[];
+extern u8 RoomC7_EnterScript_data[];
+extern u8 RoomC7_CharEnterScript_data[];
+extern u8 RoomC7_Phase1Script_data[];
+extern u8 RoomC7_Phase2Script_data[];
+extern u8 RoomC7_Phase3Script_data[];
+extern u8 RoomC7_Phase5Script_data[];
+extern void *RoomC7_ActionScripts[];
+extern void *RoomC7_ObjectNames[];
 
 extern void *EffectBase_vtable[];
 
-extern PTMF D_01991660[];
-extern PTMF D_019916C0[];
+extern PTMF RoomC7_CmdTable[];
+extern PTMF RoomC7_CondTable[];
 
 static void effect_7A3F0_init(void **obj) {
     obj[0] = BackdropModel_vtable;
@@ -56,51 +56,51 @@ void *RoomC7_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC7_vtable
 
 /* 0x00339D40 */
 void *RoomC7_EnterScript(void) {
-    return D_0042F500;
+    return RoomC7_EnterScript_data;
 }
 
 /* 0x00339D50 */
 void *RoomC7_CharEnterScript(void) {
-    return D_0042F590;
+    return RoomC7_CharEnterScript_data;
 }
 
 /* 0x00339D60 */
 void *RoomC7_Phase1Script(void) {
-    return D_0042F5D0;
+    return RoomC7_Phase1Script_data;
 }
 
 /* 0x00339D70 */
 void *RoomC7_Phase2Script(void) {
-    return D_0042F7B0;
+    return RoomC7_Phase2Script_data;
 }
 
 /* 0x00339D80 */
 void *RoomC7_Phase3Script(void) {
-    return D_0042F860;
+    return RoomC7_Phase3Script_data;
 }
 
 /* 0x00339D90 */
 void *RoomC7_Phase5Script(void) {
-    return D_0042F9C0;
+    return RoomC7_Phase5Script_data;
 }
 
 /* 0x00339DA0 */
 void *RoomC7_ActionScript(void *self, s32 i) {
-    return D_00430700[i];
+    return RoomC7_ActionScripts[i];
 }
 
 /* 0x00339DC0 */
-void *RoomC7_Table38(void *o) { return D_0047ADF8; }   /* RoomC7_vtable +0x38 */
+void *RoomC7_Table38(void *o) { return RoomC7_Table38_data; }   /* RoomC7_vtable +0x38 */
 
 /* 0x00339DD0 */
 void *RoomC7_ObjectName(void *self, s32 i) {
-    return D_004307F0[i];
+    return RoomC7_ObjectNames[i];
 }
 
-/* (self->*D_019916C0[i])(a, b) */
+/* (self->*RoomC7_CondTable[i])(a, b) */
 /* 0x00339DF0 */
 s32 RoomC7_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019916C0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC7_CondTable[i & 0xFF], a, b);
 }
 
 /* a room callback: the pursuer's Pursuer_GrabHewieBehind */
@@ -117,10 +117,10 @@ s32 RoomC7_Cond00(void) {
     return x >= 0x97 && x < 0x10E && z >= 0xAB && z < 0xDC;
 }
 
-/* (self->*D_01991660[i])(a, b) */
+/* (self->*RoomC7_CmdTable[i])(a, b) */
 /* 0x00339ED0 */
 s32 RoomC7_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991660[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomC7_CmdTable[i & 0xFF], a, b);
 }
 
 /* (as Room48_Cmd02) byte 3 0 starts the effect BackdropModel_vtable (its slot in event variable 9);

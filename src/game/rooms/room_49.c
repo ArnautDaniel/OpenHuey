@@ -11,15 +11,15 @@ extern void *RoomBase_vtable[];
 extern void *Room49_vtable[];
 extern void *DepthRange_vtable[];
 extern void *Room49Effect_vtable[];
-extern u8 D_00407F30[];
-extern u8 D_00407F80[];
-extern u8 D_00407FE0[];
-extern u8 D_004080A0[];
-extern u32 D_00408610[];
-extern u8 D_00408690[];
-extern u32 D_00408670[];
+extern u8 Room49_EnterScript_data[];
+extern u8 Room49_CharEnterScript_data[];
+extern u8 Room49_Phase1Script_data[];
+extern u8 Room49_Phase2Script_data[];
+extern u32 Room49_ActionScripts[];
+extern u8 Room49_Table38_data[];
+extern u32 Room49_ObjectNames[];
 
-extern PTMF D_01990C80[];
+extern PTMF Room49_CmdTable[];
 
 static void effect_1a60_init(void **obj) {
     obj[0] = Room49Effect_vtable;
@@ -33,43 +33,43 @@ void *Room49_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room49_vtable
 
 /* 0x002B29C0 */
 void *Room49_EnterScript(void) {
-    return D_00407F30;
+    return Room49_EnterScript_data;
 }
 
 /* 0x002B29D0 */
 void *Room49_CharEnterScript(void) {
-    return D_00407F80;
+    return Room49_CharEnterScript_data;
 }
 
 /* 0x002B29E0 */
 void *Room49_Phase1Script(void) {
-    return D_00407FE0;
+    return Room49_Phase1Script_data;
 }
 
 /* 0x002B29F0 */
 void *Room49_Phase2Script(void) {
-    return D_004080A0;
+    return Room49_Phase2Script_data;
 }
 
 /* 0x002B2A00 */
 u32 Room49_ActionScript(void *self, s32 i) {
-    return D_00408610[i];
+    return Room49_ActionScripts[i];
 }
 
 /* 0x002B2A20 */
 void *Room49_Table38(void) {
-    return D_00408690;
+    return Room49_Table38_data;
 }
 
 /* 0x002B2A30 */
 u32 Room49_ObjectName(void *self, s32 i) {
-    return D_00408670[i];
+    return Room49_ObjectNames[i];
 }
 
-/* (self->*D_01990C80[i])(a, b) */
+/* (self->*Room49_CmdTable[i])(a, b) */
 /* 0x002B2A50 */
 s32 Room49_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C80[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room49_CmdTable[i & 0xFF], a, b);
 }
 
 /* byte 3 0: the effect Room49Effect_vtable spawned, its slot in event var 0; 1: removed */

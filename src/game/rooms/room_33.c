@@ -7,32 +7,32 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room33_vtable[];
-extern u8 D_0047AF70[], D_0047AF78[];
+extern u8 Room33_EnterScript_data[], Room33_Phase1Script_data[];
 
-extern u32 D_00442DA0[];
-extern u32 D_00442F48[];
-extern u32 D_0047AF80[];
+extern u32 Room33_CharEnterScript_data[];
+extern u32 Room33_ActionScripts[];
+extern u32 Room33_ObjectNames[];
 
 /* 0x003506E0 */
 void *Room33_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room33_vtable, RoomBase_vtable); }
 
 /* 0x00350740 */
-void *Room33_EnterScript(void *o) { return D_0047AF70; }   /* Room33_vtable +0xC */
+void *Room33_EnterScript(void *o) { return Room33_EnterScript_data; }   /* Room33_vtable +0xC */
 
 /* 0x00350750 */
 void *Room33_CharEnterScript(void) {
-    return D_00442DA0;
+    return Room33_CharEnterScript_data;
 }
 
 /* 0x00350760 */
-void *Room33_Phase1Script(void *o) { return D_0047AF78; }   /* Room33_vtable +0x10 */
+void *Room33_Phase1Script(void *o) { return Room33_Phase1Script_data; }   /* Room33_vtable +0x10 */
 
 /* 0x00350770 */
 u32 Room33_ActionScript(void *self, s32 i) {
-    return D_00442F48[i];
+    return Room33_ActionScripts[i];
 }
 
 /* 0x00350790 */
 u32 Room33_ObjectName(void *self, s32 i) {
-    return D_0047AF80[i];
+    return Room33_ObjectNames[i];
 }

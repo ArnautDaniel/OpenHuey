@@ -13,18 +13,18 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room66_vtable[];
-extern u8 D_0047ACC8[], D_0047ACE0[];
+extern u8 Room66_Phase5Script_data[], Room66_ObjectNames[];
 extern void *Room66Effect_vtable[];
 extern void *Fire_vtable[];
 /* ---- room 66 (D_0041F558): footsteps in the mud - a character callback ---- */
-extern u8 D_0041E110[];
-extern u8 D_0041E260[];
-extern u8 D_0041E360[];
-extern u8 D_0041E700[];
-extern void *D_0041F4E0[];
-extern u8 D_0041F5C0[];
-extern PTMF D_01991030[];
-extern PTMF D_01991070[];
+extern u8 Room66_EnterScript_data[];
+extern u8 Room66_CharEnterScript_data[];
+extern u8 Room66_Phase1Script_data[];
+extern u8 Room66_Phase2Script_data[];
+extern void *Room66_ActionScripts[];
+extern u8 Room66_Table38_data[];
+extern PTMF Room66_CmdTable[];
+extern PTMF Room66_CondTable[];
 
 static void effect_77AC0_init(void **obj) {
     obj[0] = Room66Effect_vtable;
@@ -74,44 +74,44 @@ void *Room66_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room66_vtable
 
 /* 0x00300210 */
 void *Room66_EnterScript(void) {
-    return D_0041E110;
+    return Room66_EnterScript_data;
 }
 
 /* 0x00300220 */
 void *Room66_CharEnterScript(void) {
-    return D_0041E260;
+    return Room66_CharEnterScript_data;
 }
 
 /* 0x00300230 */
 void *Room66_Phase1Script(void) {
-    return D_0041E360;
+    return Room66_Phase1Script_data;
 }
 
 /* 0x00300240 */
 void *Room66_Phase2Script(void) {
-    return D_0041E700;
+    return Room66_Phase2Script_data;
 }
 
 /* 0x00300250 */
-void *Room66_Phase5Script(void *o) { return D_0047ACC8; }   /* Room66_vtable +0x20 */
+void *Room66_Phase5Script(void *o) { return Room66_Phase5Script_data; }   /* Room66_vtable +0x20 */
 
 /* 0x00300260 */
 void *Room66_ActionScript(void *self, s32 i) {
-    return D_0041F4E0[i];
+    return Room66_ActionScripts[i];
 }
 
 /* 0x00300280 */
 void *Room66_Table38(void) {
-    return D_0041F5C0;
+    return Room66_Table38_data;
 }
 
 /* 0x00300290 */
-u32 Room66_ObjectName(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* Room66_vtable +0x34 */
+u32 Room66_ObjectName(void *o, s32 i) { return ((u32 *)Room66_ObjectNames)[i]; }   /* Room66_vtable +0x34 */
 
-/* (self->*D_01991070[i])(a, b) */
+/* (self->*Room66_CondTable[i])(a, b) */
 /* 0x003002B0 */
 s32 Room66_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991070[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room66_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x66 (Room66_CharPast_ptmf): the character's x (byte 3 0) or z is at least be32 bytes 4..7 / 1000 */
@@ -158,10 +158,10 @@ s32 Room66_Letters(void *self, void *a1, u8 *cmd) {
     return r;
 }
 
-/* (self->*D_01991030[i])(a, b) */
+/* (self->*Room66_CmdTable[i])(a, b) */
 /* 0x003004F0 */
 s32 Room66_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991030[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room66_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x66 (Room66_ColourPulse_ptmf): room effect 0x1F's colour pulsing by script variable 9 */

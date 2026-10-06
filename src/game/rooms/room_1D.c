@@ -9,64 +9,64 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room1D_vtable[];
-extern u8 D_0047AA80[];
+extern u8 Room1D_Phase5Script_data[];
 
-extern u8 D_003FD370[];
-extern u8 D_003FD420[];
-extern u8 D_003FD470[];
-extern u8 D_003FD580[];
-extern u32 D_003FD950[];
-extern u8 D_003FD660[];
-extern u8 D_003FD9B0[];
+extern u8 Room1D_EnterScript_data[];
+extern u8 Room1D_CharEnterScript_data[];
+extern u8 Room1D_Phase1Script_data[];
+extern u8 Room1D_Phase2Script_data[];
+extern u32 Room1D_ActionScripts[];
+extern u8 Room1D_Phase3Script_data[];
+extern u8 Room1D_Table38_data[];
 
-extern PTMF D_019909B0[];
-extern PTMF D_019909C8[];
+extern PTMF Room1D_CmdTable[];
+extern PTMF Room1D_CondTable[];
 
 /* 0x002ADD10 */
 void *Room1D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1D_vtable, RoomBase_vtable); }
 
 /* 0x002ADD70 */
 void *Room1D_EnterScript(void) {
-    return D_003FD370;
+    return Room1D_EnterScript_data;
 }
 
 /* 0x002ADD80 */
 void *Room1D_CharEnterScript(void) {
-    return D_003FD420;
+    return Room1D_CharEnterScript_data;
 }
 
 /* 0x002ADD90 */
 void *Room1D_Phase1Script(void) {
-    return D_003FD470;
+    return Room1D_Phase1Script_data;
 }
 
 /* 0x002ADDA0 */
 void *Room1D_Phase2Script(void) {
-    return D_003FD580;
+    return Room1D_Phase2Script_data;
 }
 
 /* 0x002ADDB0 */
 u32 Room1D_ActionScript(void *self, s32 i) {
-    return D_003FD950[i];
+    return Room1D_ActionScripts[i];
 }
 
 /* 0x002ADDD0 */
 void *Room1D_Phase3Script(void) {
-    return D_003FD660;
+    return Room1D_Phase3Script_data;
 }
 
 /* 0x002ADDE0 */
-void *Room1D_Phase5Script(void *o) { return D_0047AA80; }   /* Room1D_vtable +0x20 */
+void *Room1D_Phase5Script(void *o) { return Room1D_Phase5Script_data; }   /* Room1D_vtable +0x20 */
 
 /* 0x002ADDF0 */
 void *Room1D_Table38(void) {
-    return D_003FD9B0;
+    return Room1D_Table38_data;
 }
 
-/* (self->*D_019909C8[i])(a, b) */
+/* (self->*Room1D_CondTable[i])(a, b) */
 /* 0x002ADE00 */
 s32 Room1D_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019909C8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room1D_CondTable[i & 0xFF], a, b);
 }
 
 /* Fiona in move 5, room 0x1D's flag 0 not set and its exit 0's door shut */
@@ -84,10 +84,10 @@ s32 Room1D_Cond00(void) {
     return 1;
 }
 
-/* (self->*D_019909B0[i])(a, b) */
+/* (self->*Room1D_CmdTable[i])(a, b) */
 /* 0x002ADEB0 */
 s32 Room1D_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_019909B0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room1D_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x1D (Room1D_Cmd01_ptmf): door 0's +0x74 (0, or -0.08 by byte 3) */

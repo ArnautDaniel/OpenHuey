@@ -9,63 +9,63 @@ extern void *RoomBase_vtable[];
 extern void *Room1A_vtable[];
 extern void *TvScreenB_vtable[];
 
-extern u8 D_003FC060[];
-extern u8 D_003FC0A0[];
-extern u8 D_003FC110[];
-extern u8 D_003FC220[];
-extern u8 D_003FC290[];
-extern void *D_003FC630[];
-extern void *D_003FC678[];
-extern u8 D_003FC690[];
-extern PTMF D_01990960[];
+extern u8 Room1A_EnterScript_data[];
+extern u8 Room1A_CharEnterScript_data[];
+extern u8 Room1A_Phase1Script_data[];
+extern u8 Room1A_Phase2Script_data[];
+extern u8 Room1A_Phase3Script_data[];
+extern void *Room1A_ActionScripts[];
+extern void *Room1A_ObjectNames[];
+extern u8 Room1A_Table38_data[];
+extern PTMF Room1A_CmdTable[];
 
 /* 0x002AD420 */
 void *Room1A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1A_vtable, RoomBase_vtable); }
 
 /* 0x002AD480 */
 void *Room1A_EnterScript(void) {
-    return D_003FC060;
+    return Room1A_EnterScript_data;
 }
 
 /* 0x002AD490 */
 void *Room1A_CharEnterScript(void) {
-    return D_003FC0A0;
+    return Room1A_CharEnterScript_data;
 }
 
 /* 0x002AD4A0 */
 void *Room1A_Phase1Script(void) {
-    return D_003FC110;
+    return Room1A_Phase1Script_data;
 }
 
 /* 0x002AD4B0 */
 void *Room1A_Phase2Script(void) {
-    return D_003FC220;
+    return Room1A_Phase2Script_data;
 }
 
 /* 0x002AD4C0 */
 void *Room1A_Phase3Script(void) {
-    return D_003FC290;
+    return Room1A_Phase3Script_data;
 }
 
 /* 0x002AD4D0 */
 void *Room1A_ActionScript(void *self, s32 i) {
-    return D_003FC630[i];
+    return Room1A_ActionScripts[i];
 }
 
 /* 0x002AD4F0 */
 void *Room1A_Table38(void) {
-    return D_003FC690;
+    return Room1A_Table38_data;
 }
 
 /* 0x002AD500 */
 void *Room1A_ObjectName(void *self, s32 i) {
-    return D_003FC678[i];
+    return Room1A_ObjectNames[i];
 }
 
-/* (self->*D_01990960[i])(a, b) */
+/* (self->*Room1A_CmdTable[i])(a, b) */
 /* 0x002AD520 */
 s32 Room1A_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990960[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room1A_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002AD550 */

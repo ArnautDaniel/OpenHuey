@@ -14,50 +14,50 @@ extern void *RoomBase_vtable[];
 extern void *Room0C_vtable[];
 extern void *DepthRange_vtable[];
 
-extern u8 D_003F4650[];
-extern u8 D_003F46E0[];
-extern u8 D_003F4720[];
-extern u8 D_003F4850[];
-extern void *D_003F53B0[];
-extern PTMF D_01990860[];
+extern u8 Room0C_EnterScript_data[];
+extern u8 Room0C_CharEnterScript_data[];
+extern u8 Room0C_Phase1Script_data[];
+extern u8 Room0C_Phase2Script_data[];
+extern void *Room0C_ActionScripts[];
+extern PTMF Room0C_CmdTable[];
 
 /* 0x002AB1F0 */
 void *Room0C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room0C_vtable, RoomBase_vtable); }
 
 /* 0x002AB250 */
 void *Room0C_EnterScript(void) {
-    return D_003F4650;
+    return Room0C_EnterScript_data;
 }
 
 /* 0x002AB260 */
 void *Room0C_CharEnterScript(void) {
-    return D_003F46E0;
+    return Room0C_CharEnterScript_data;
 }
 
 /* 0x002AB270 */
 void *Room0C_Phase1Script(void) {
-    return D_003F4720;
+    return Room0C_Phase1Script_data;
 }
 
 /* 0x002AB280 */
 void *Room0C_Phase2Script(void) {
-    return D_003F4850;
+    return Room0C_Phase2Script_data;
 }
 
 /* 0x002AB290 */
 void *Room0C_ActionScript(void *self, s32 i) {
-    return D_003F53B0[i];
+    return Room0C_ActionScripts[i];
 }
 
 /* 0x002AB2B0 */
 void *Room0C_ObjectName(void *self, s32 i) {
-    return (void *)D_003F5440[i];
+    return (void *)Room0C_ObjectNames[i];
 }
 
-/* (self->*D_01990860[i])(a, b) */
+/* (self->*Room0C_CmdTable[i])(a, b) */
 /* 0x002AB2D0 */
 s32 Room0C_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990860[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room0C_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30, phase
@@ -69,7 +69,7 @@ s32 Room0C_Cmd03(void *self, void *a1, u8 *cmd) {
     s32 i;
 
     for (i = 0; i < 3; i++) {
-        u8 *o = room_obj(D_003F5440[cmd[4] + i * 2 + 13]);
+        u8 *o = room_obj(Room0C_ObjectNames[cmd[4] + i * 2 + 13]);
         f32 a;
 
         switch (cmd[3]) {

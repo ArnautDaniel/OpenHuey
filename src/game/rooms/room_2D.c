@@ -13,16 +13,16 @@
 extern void *RoomBase_vtable[];
 extern void *Room2D_vtable[];
 extern void *LoopingSprite_vtable[];   /* a 0xC0-byte effect */
-extern u8 D_00405AC0[];
-extern u8 D_00405B80[];
-extern u8 D_00405BD0[];
-extern u8 D_00405E30[];
-extern u32 D_00406470[];
-extern u8 D_00406530[];
-extern u32 D_00406510[];
+extern u8 Room2D_EnterScript_data[];
+extern u8 Room2D_CharEnterScript_data[];
+extern u8 Room2D_Phase1Script_data[];
+extern u8 Room2D_Phase2Script_data[];
+extern u32 Room2D_ActionScripts[];
+extern u8 Room2D_Table38_data[];
+extern u32 Room2D_ObjectNames[];
 
-extern PTMF D_01990C10[];
-extern PTMF D_01990C38[];
+extern PTMF Room2D_CmdTable[];
+extern PTMF Room2D_CondTable[];
 
 static void effect_c0b_init(void **obj) {
     obj[0] = LoopingSprite_vtable;
@@ -36,43 +36,43 @@ void *Room2D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2D_vtable
 
 /* 0x002B17F0 */
 void *Room2D_EnterScript(void) {
-    return D_00405AC0;
+    return Room2D_EnterScript_data;
 }
 
 /* 0x002B1800 */
 void *Room2D_CharEnterScript(void) {
-    return D_00405B80;
+    return Room2D_CharEnterScript_data;
 }
 
 /* 0x002B1810 */
 void *Room2D_Phase1Script(void) {
-    return D_00405BD0;
+    return Room2D_Phase1Script_data;
 }
 
 /* 0x002B1820 */
 void *Room2D_Phase2Script(void) {
-    return D_00405E30;
+    return Room2D_Phase2Script_data;
 }
 
 /* 0x002B1830 */
 u32 Room2D_ActionScript(void *self, s32 i) {
-    return D_00406470[i];
+    return Room2D_ActionScripts[i];
 }
 
 /* 0x002B1850 */
 void *Room2D_Table38(void) {
-    return D_00406530;
+    return Room2D_Table38_data;
 }
 
 /* 0x002B1860 */
 u32 Room2D_ObjectName(void *self, s32 i) {
-    return D_00406510[i];
+    return Room2D_ObjectNames[i];
 }
 
-/* (self->*D_01990C38[i])(a, b) */
+/* (self->*Room2D_CondTable[i])(a, b) */
 /* 0x002B1880 */
 s32 Room2D_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C38[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room2D_CondTable[i & 0xFF], a, b);
 }
 
 /* Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276,
@@ -98,10 +98,10 @@ s32 Room2D_Cond00(void *self, void *a1, u8 *cmd) {
     return hook_sqrt(dz * dz + dx * dx) < 5.0f;
 }
 
-/* (self->*D_01990C10[i])(a, b) */
+/* (self->*Room2D_CmdTable[i])(a, b) */
 /* 0x002B19D0 */
 s32 Room2D_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C10[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room2D_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002B1A00 */

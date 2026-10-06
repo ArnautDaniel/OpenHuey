@@ -10,46 +10,46 @@ extern void *RoomBase_vtable[];
 extern void *Room31_vtable[];
 extern void *TvScreenA_vtable[];
 
-extern u8 D_00429E40[];
-extern u8 D_00429E60[];
-extern u8 D_00429F10[];
-extern void *D_0042A0A0[];
-extern void *D_0042A0E0[];
+extern u8 Room31_EnterScript_data[];
+extern u8 Room31_CharEnterScript_data[];
+extern u8 Room31_Phase1Script_data[];
+extern void *Room31_ActionScripts[];
+extern void *Room31_ObjectNames[];
 
-extern PTMF D_01991570[];
+extern PTMF Room31_CmdTable[];
 
 /* 0x0031E1C0 */
 void *Room31_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room31_vtable, RoomBase_vtable); }
 
 /* 0x0031E220 */
 void *Room31_EnterScript(void) {
-    return D_00429E40;
+    return Room31_EnterScript_data;
 }
 
 /* 0x0031E230 */
 void *Room31_CharEnterScript(void) {
-    return D_00429E60;
+    return Room31_CharEnterScript_data;
 }
 
 /* 0x0031E240 */
 void *Room31_Phase1Script(void) {
-    return D_00429F10;
+    return Room31_Phase1Script_data;
 }
 
 /* 0x0031E250 */
 void *Room31_ActionScript(void *self, s32 i) {
-    return D_0042A0A0[i];
+    return Room31_ActionScripts[i];
 }
 
 /* 0x0031E270 */
 void *Room31_ObjectName(void *self, s32 i) {
-    return D_0042A0E0[i];
+    return Room31_ObjectNames[i];
 }
 
-/* (self->*D_01991570[i])(a, b) */
+/* (self->*Room31_CmdTable[i])(a, b) */
 /* 0x0031E290 */
 s32 Room31_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991570[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room31_CmdTable[i & 0xFF], a, b);
 }
 
 /* (as RoomE0_WindowLight) the window quad lit with flags 0x40 */

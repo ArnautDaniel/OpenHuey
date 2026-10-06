@@ -7,31 +7,31 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room17_vtable[];
-extern u8 D_0047AC10[];
+extern u8 Room17_Phase2Script_data[];
 
-extern u8 D_00414390[];
-extern u8 D_004143B0[];
-extern u8 D_00414430[];
-extern void *D_0047AC18[];
-extern void *D_0047AC20[];
+extern u8 Room17_EnterScript_data[];
+extern u8 Room17_CharEnterScript_data[];
+extern u8 Room17_Phase1Script_data[];
+extern void *Room17_ActionScripts[];
+extern void *Room17_ObjectNames[];
 
 /* 0x002D2500 */
 void *Room17_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room17_vtable, RoomBase_vtable); }
 
 /* 0x002D2560 */
-void *Room17_EnterScript(void) { return D_00414390; }
+void *Room17_EnterScript(void) { return Room17_EnterScript_data; }
 
 /* 0x002D2570 */
-void *Room17_CharEnterScript(void) { return D_004143B0; }
+void *Room17_CharEnterScript(void) { return Room17_CharEnterScript_data; }
 
 /* 0x002D2580 */
-void *Room17_Phase1Script(void) { return D_00414430; }
+void *Room17_Phase1Script(void) { return Room17_Phase1Script_data; }
 
 /* 0x002D2590 */
-void *Room17_Phase2Script(void *o) { return D_0047AC10; }   /* Room17_vtable +0x14 */
+void *Room17_Phase2Script(void *o) { return Room17_Phase2Script_data; }   /* Room17_vtable +0x14 */
 
 /* 0x002D25A0 */
-void *Room17_ActionScript(void *self, s32 i) { return D_0047AC18[i]; }
+void *Room17_ActionScript(void *self, s32 i) { return Room17_ActionScripts[i]; }
 
 /* 0x002D25C0 */
-void *Room17_ObjectName(void *self, s32 i) { return D_0047AC20[i]; }
+void *Room17_ObjectName(void *self, s32 i) { return Room17_ObjectNames[i]; }

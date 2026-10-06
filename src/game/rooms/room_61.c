@@ -39,16 +39,16 @@ static const f32 kShaft[6][4] __attribute__((aligned(16))) = {
 
 #endif
 
-extern u8 D_004291C0[];
-extern u8 D_00429210[];
-extern u8 D_004292A0[];
-extern u8 D_004293E0[];
-extern u8 D_00429408[];
-extern u8 D_00429418[];
-extern void *D_00429540[];
-extern u8 D_00429580[];
+extern u8 Room61_EnterScript_data[];
+extern u8 Room61_CharEnterScript_data[];
+extern u8 Room61_Phase1Script_data[];
+extern u8 Room61_Phase2Script_data[];
+extern u8 Room61_Phase3Script_data[];
+extern u8 Room61_Phase5Script_data[];
+extern void *Room61_ActionScripts[];
+extern u8 Room61_Table38_data[];
 
-extern PTMF D_01991550[];
+extern PTMF Room61_CmdTable[];
 
 /* room 0x61: byte 3 0 the light shaft (LightShaft_vtable) started with its motes from (30, 0, 70),
  * its slot in event var 3; 1 its haze on, 2 off */
@@ -96,42 +96,42 @@ void *Room61_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room61_vtable
 
 /* 0x00310A90 */
 void *Room61_EnterScript(void) {
-    return D_004291C0;
+    return Room61_EnterScript_data;
 }
 
 /* 0x00310AA0 */
 void *Room61_CharEnterScript(void) {
-    return D_00429210;
+    return Room61_CharEnterScript_data;
 }
 
 /* 0x00310AB0 */
 void *Room61_Phase1Script(void) {
-    return D_004292A0;
+    return Room61_Phase1Script_data;
 }
 
 /* 0x00310AC0 */
 void *Room61_Phase2Script(void) {
-    return D_004293E0;
+    return Room61_Phase2Script_data;
 }
 
 /* 0x00310AD0 */
 void *Room61_ActionScript(void *self, s32 i) {
-    return D_00429540[i];
+    return Room61_ActionScripts[i];
 }
 
 /* 0x00310AF0 */
 void *Room61_Phase3Script(void) {
-    return D_00429408;
+    return Room61_Phase3Script_data;
 }
 
 /* 0x00310B00 */
 void *Room61_Phase5Script(void) {
-    return D_00429418;
+    return Room61_Phase5Script_data;
 }
 
 /* 0x00310B10 */
 void *Room61_Table38(void) {
-    return D_00429580;
+    return Room61_Table38_data;
 }
 
 /* point i's way on: 20 along the line from the point before to the one after */
@@ -266,10 +266,10 @@ void SwimPath_Setup(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox
     AT(st, 0x14, f32) = 0.0f + oz + 10.0f * (f32)nz;
 }
 
-/* (self->*D_01991550[i])(a, b) */
+/* (self->*Room61_CmdTable[i])(a, b) */
 /* 0x00311490 */
 s32 Room61_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991550[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room61_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x003114C0 */

@@ -11,63 +11,63 @@
 extern void *RoomBase_vtable[];
 extern void *Room19_vtable[];
 
-extern u8 D_003FB3B0[];
-extern u8 D_003FB420[];
-extern u8 D_003FB520[];
-extern u8 D_003FB720[];
-extern u8 D_003FB840[];
-extern void *D_003FBFD0[];
-extern void *D_003FC020[];
-extern u8 D_003FC040[];
-extern PTMF D_01990950[];
+extern u8 Room19_EnterScript_data[];
+extern u8 Room19_CharEnterScript_data[];
+extern u8 Room19_Phase1Script_data[];
+extern u8 Room19_Phase2Script_data[];
+extern u8 Room19_Phase3Script_data[];
+extern void *Room19_ActionScripts[];
+extern void *Room19_ObjectNames[];
+extern u8 Room19_Table38_data[];
+extern PTMF Room19_CondTable[];
 
 /* 0x002AD1C0 */
 void *Room19_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room19_vtable, RoomBase_vtable); }
 
 /* 0x002AD220 */
 void *Room19_EnterScript(void) {
-    return D_003FB3B0;
+    return Room19_EnterScript_data;
 }
 
 /* 0x002AD230 */
 void *Room19_CharEnterScript(void) {
-    return D_003FB420;
+    return Room19_CharEnterScript_data;
 }
 
 /* 0x002AD240 */
 void *Room19_Phase1Script(void) {
-    return D_003FB520;
+    return Room19_Phase1Script_data;
 }
 
 /* 0x002AD250 */
 void *Room19_Phase2Script(void) {
-    return D_003FB720;
+    return Room19_Phase2Script_data;
 }
 
 /* 0x002AD260 */
 void *Room19_Phase3Script(void) {
-    return D_003FB840;
+    return Room19_Phase3Script_data;
 }
 
 /* 0x002AD270 */
 void *Room19_ActionScript(void *self, s32 i) {
-    return D_003FBFD0[i];
+    return Room19_ActionScripts[i];
 }
 
 /* 0x002AD290 */
 void *Room19_Table38(void) {
-    return D_003FC040;
+    return Room19_Table38_data;
 }
 
 /* 0x002AD2A0 */
 void *Room19_ObjectName(void *self, s32 i) {
-    return D_003FC020[i];
+    return Room19_ObjectNames[i];
 }
 
-/* (self->*D_01990950[i])(a, b) */
+/* (self->*Room19_CondTable[i])(a, b) */
 /* 0x002AD2C0 */
 s32 Room19_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990950[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room19_CondTable[i & 0xFF], a, b);
 }
 
 /* room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while Hewie is

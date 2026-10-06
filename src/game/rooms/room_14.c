@@ -9,57 +9,57 @@ extern void *RoomBase_vtable[];
 extern void *Room14_vtable[];
 extern const char *D_003FA078;
 
-extern u8 D_003F99E0[];
-extern u8 D_003F9A30[];
-extern u8 D_003F9AC0[];
-extern u8 D_003F9B60[];
-extern void *D_003FA030[];
-extern void *D_003FA070[];
-extern u8 D_003FA080[];
-extern PTMF D_01990910[];
+extern u8 Room14_EnterScript_data[];
+extern u8 Room14_CharEnterScript_data[];
+extern u8 Room14_Phase1Script_data[];
+extern u8 Room14_Phase2Script_data[];
+extern void *Room14_ActionScripts[];
+extern void *Room14_ObjectNames[];
+extern u8 Room14_Table38_data[];
+extern PTMF Room14_CmdTable[];
 
 /* 0x002AC670 */
 void *Room14_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room14_vtable, RoomBase_vtable); }
 
 /* 0x002AC6D0 */
 void *Room14_EnterScript(void) {
-    return D_003F99E0;
+    return Room14_EnterScript_data;
 }
 
 /* 0x002AC6E0 */
 void *Room14_CharEnterScript(void) {
-    return D_003F9A30;
+    return Room14_CharEnterScript_data;
 }
 
 /* 0x002AC6F0 */
 void *Room14_Phase1Script(void) {
-    return D_003F9AC0;
+    return Room14_Phase1Script_data;
 }
 
 /* 0x002AC700 */
 void *Room14_Phase2Script(void) {
-    return D_003F9B60;
+    return Room14_Phase2Script_data;
 }
 
 /* 0x002AC710 */
 void *Room14_ActionScript(void *self, s32 i) {
-    return D_003FA030[i];
+    return Room14_ActionScripts[i];
 }
 
 /* 0x002AC730 */
 void *Room14_Table38(void) {
-    return D_003FA080;
+    return Room14_Table38_data;
 }
 
 /* 0x002AC740 */
 void *Room14_ObjectName(void *self, s32 i) {
-    return D_003FA070[i];
+    return Room14_ObjectNames[i];
 }
 
-/* (self->*D_01990910[i])(a, b) */
+/* (self->*Room14_CmdTable[i])(a, b) */
 /* 0x002AC760 */
 s32 Room14_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990910[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room14_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x002AC790 */

@@ -7,32 +7,32 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room34_vtable[];
-extern u8 D_0047AF58[], D_0047AF5C[];
+extern u8 Room34_EnterScript_data[], Room34_Phase1Script_data[];
 
-extern u32 D_00442950[];
-extern u32 D_00442C10[];
-extern u32 D_0047AF60[];
+extern u32 Room34_CharEnterScript_data[];
+extern u32 Room34_ActionScripts[];
+extern u32 Room34_ObjectNames[];
 
 /* 0x0034DBF0 */
 void *Room34_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room34_vtable, RoomBase_vtable); }
 
 /* 0x0034DC50 */
-void *Room34_EnterScript(void *o) { return D_0047AF58; }   /* Room34_vtable +0xC */
+void *Room34_EnterScript(void *o) { return Room34_EnterScript_data; }   /* Room34_vtable +0xC */
 
 /* 0x0034DC60 */
 void *Room34_CharEnterScript(void) {
-    return D_00442950;
+    return Room34_CharEnterScript_data;
 }
 
 /* 0x0034DC70 */
-void *Room34_Phase1Script(void *o) { return D_0047AF5C; }   /* Room34_vtable +0x10 */
+void *Room34_Phase1Script(void *o) { return Room34_Phase1Script_data; }   /* Room34_vtable +0x10 */
 
 /* 0x0034DC80 */
 u32 Room34_ActionScript(void *self, s32 i) {
-    return D_00442C10[i];
+    return Room34_ActionScripts[i];
 }
 
 /* 0x0034DCA0 */
 u32 Room34_ObjectName(void *self, s32 i) {
-    return D_0047AF60[i];
+    return Room34_ObjectNames[i];
 }

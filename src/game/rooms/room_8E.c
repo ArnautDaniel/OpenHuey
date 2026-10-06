@@ -11,52 +11,52 @@ extern void *RoomBase_vtable[];
 extern void *Room8E_vtable[];
 extern const char *D_00435978;
 
-extern u32 D_00435050[];
-extern u32 D_00435080[];
-extern u32 D_004350E0[];
-extern u32 D_00435200[];
-extern u32 D_00435920[];
-extern u32 D_00435970[];
+extern u32 Room8E_EnterScript_data[];
+extern u32 Room8E_CharEnterScript_data[];
+extern u32 Room8E_Phase1Script_data[];
+extern u32 Room8E_Phase2Script_data[];
+extern u32 Room8E_ActionScripts[];
+extern u32 Room8E_ObjectNames[];
 
-extern PTMF D_01991790[];
+extern PTMF Room8E_CmdTable[];
 
 /* 0x003409C0 */
 void *Room8E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8E_vtable, RoomBase_vtable); }
 
 /* 0x00340A20 */
 void *Room8E_EnterScript(void) {
-    return D_00435050;
+    return Room8E_EnterScript_data;
 }
 
 /* 0x00340A30 */
 void *Room8E_CharEnterScript(void) {
-    return D_00435080;
+    return Room8E_CharEnterScript_data;
 }
 
 /* 0x00340A40 */
 void *Room8E_Phase1Script(void) {
-    return D_004350E0;
+    return Room8E_Phase1Script_data;
 }
 
 /* 0x00340A50 */
 void *Room8E_Phase2Script(void) {
-    return D_00435200;
+    return Room8E_Phase2Script_data;
 }
 
 /* 0x00340A60 */
 u32 Room8E_ActionScript(void *self, s32 i) {
-    return D_00435920[i];
+    return Room8E_ActionScripts[i];
 }
 
 /* 0x00340A80 */
 u32 Room8E_ObjectName(void *self, s32 i) {
-    return D_00435970[i];
+    return Room8E_ObjectNames[i];
 }
 
-/* (self->*D_01991790[i])(a, b) */
+/* (self->*Room8E_CmdTable[i])(a, b) */
 /* 0x00340AA0 */
 s32 Room8E_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991790[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room8E_CmdTable[i & 0xFF], a, b);
 }
 
 /* the room object named D_00435978 falling over: byte 3 0 starts it (angle +0x30, speed +0x34

@@ -10,58 +10,58 @@ extern void *RoomBase_vtable[];
 extern void *Room56_vtable[];
 extern VObject *D_00456E00;
 
-extern u8 D_0040ED10[];
-extern u8 D_0040ED80[];
-extern u8 D_0040EDC0[];
-extern u8 D_0040EF30[];
-extern u8 D_0040EFB0[];
-extern u32 D_0040F430[];
-extern u8 D_0040F478[];
+extern u8 Room56_EnterScript_data[];
+extern u8 Room56_CharEnterScript_data[];
+extern u8 Room56_Phase1Script_data[];
+extern u8 Room56_Phase2Script_data[];
+extern u8 Room56_Phase3Script_data[];
+extern u32 Room56_ActionScripts[];
+extern u8 Room56_Table38_data[];
 
-extern PTMF D_01990DC8[];
+extern PTMF Room56_CmdTable[];
 
 /* 0x002B4CD0 */
 void *Room56_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room56_vtable, RoomBase_vtable); }
 
 /* 0x002B4D30 */
 void *Room56_EnterScript(void) {
-    return D_0040ED10;
+    return Room56_EnterScript_data;
 }
 
 /* 0x002B4D40 */
 void *Room56_CharEnterScript(void) {
-    return D_0040ED80;
+    return Room56_CharEnterScript_data;
 }
 
 /* 0x002B4D50 */
 void *Room56_Phase1Script(void) {
-    return D_0040EDC0;
+    return Room56_Phase1Script_data;
 }
 
 /* 0x002B4D60 */
 void *Room56_Phase2Script(void) {
-    return D_0040EF30;
+    return Room56_Phase2Script_data;
 }
 
 /* 0x002B4D70 */
 void *Room56_Phase3Script(void) {
-    return D_0040EFB0;
+    return Room56_Phase3Script_data;
 }
 
 /* 0x002B4D80 */
 u32 Room56_ActionScript(void *self, s32 i) {
-    return D_0040F430[i];
+    return Room56_ActionScripts[i];
 }
 
 /* 0x002B4DA0 */
 void *Room56_Table38(void) {
-    return D_0040F478;
+    return Room56_Table38_data;
 }
 
-/* (self->*D_01990DC8[i])(a, b) */
+/* (self->*Room56_CmdTable[i])(a, b) */
 /* 0x002B4DB0 */
 s32 Room56_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990DC8[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room56_CmdTable[i & 0xFF], a, b);
 }
 
 /* room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle D_00456E00

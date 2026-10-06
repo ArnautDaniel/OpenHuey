@@ -8,16 +8,16 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room43_vtable[];
-extern u8 D_0047AB3C[];
+extern u8 Room43_Phase5Script_data[];
 extern void *BigFire_vtable[];
-extern u8 D_00407AE0[];
-extern u8 D_00407B70[];
-extern u8 D_00407C00[];
-extern u8 D_00407CB0[];
-extern u32 D_00407E20[];
-extern u8 D_00407E50[];
+extern u8 Room43_EnterScript_data[];
+extern u8 Room43_CharEnterScript_data[];
+extern u8 Room43_Phase1Script_data[];
+extern u8 Room43_Phase2Script_data[];
+extern u32 Room43_ActionScripts[];
+extern u8 Room43_Table38_data[];
 
-extern PTMF D_01990C58[];
+extern PTMF Room43_CmdTable[];
 
 static void effect_6cf0_init(void **obj) {
     obj[0] = BigFire_vtable;
@@ -37,41 +37,41 @@ void *Room43_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room43_vtable
 
 /* 0x002B2640 */
 void *Room43_EnterScript(void) {
-    return D_00407AE0;
+    return Room43_EnterScript_data;
 }
 
 /* 0x002B2650 */
 void *Room43_CharEnterScript(void) {
-    return D_00407B70;
+    return Room43_CharEnterScript_data;
 }
 
 /* 0x002B2660 */
 void *Room43_Phase1Script(void) {
-    return D_00407C00;
+    return Room43_Phase1Script_data;
 }
 
 /* 0x002B2670 */
 void *Room43_Phase2Script(void) {
-    return D_00407CB0;
+    return Room43_Phase2Script_data;
 }
 
 /* 0x002B2680 */
-void *Room43_Phase5Script(void *o) { return D_0047AB3C; }   /* Room43_vtable +0x20 */
+void *Room43_Phase5Script(void *o) { return Room43_Phase5Script_data; }   /* Room43_vtable +0x20 */
 
 /* 0x002B2690 */
 u32 Room43_ActionScript(void *self, s32 i) {
-    return D_00407E20[i];
+    return Room43_ActionScripts[i];
 }
 
 /* 0x002B26B0 */
 void *Room43_Table38(void) {
-    return D_00407E50;
+    return Room43_Table38_data;
 }
 
-/* (self->*D_01990C58[i])(a, b) */
+/* (self->*Room43_CmdTable[i])(a, b) */
 /* 0x002B26C0 */
 s32 Room43_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990C58[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room43_CmdTable[i & 0xFF], a, b);
 }
 
 /* the effect BigFire_vtable (three quad drawers) started with parameter 0 */

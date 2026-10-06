@@ -8,48 +8,48 @@
 extern void *RoomBase_vtable[];
 extern void *Room68_vtable[];
 
-extern u8 D_00424880[];
-extern u8 D_00424890[];
-extern u8 D_00424990[];
-extern u8 D_00424AC0[];
-extern u8 D_00424AF0[];
-extern void *D_0047AD20[];
-extern void *D_0047AD24[];
+extern u8 Room68_EnterScript_data[];
+extern u8 Room68_CharEnterScript_data[];
+extern u8 Room68_Phase1Script_data[];
+extern u8 Room68_Phase2Script_data[];
+extern u8 Room68_Phase4Script_data[];
+extern void *Room68_ActionScripts[];
+extern void *Room68_ObjectNames[];
 
 /* 0x0030EE90 */
 void *Room68_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room68_vtable, RoomBase_vtable); }
 
 /* 0x0030EEF0 */
 void *Room68_EnterScript(void) {
-    return D_00424880;
+    return Room68_EnterScript_data;
 }
 
 /* 0x0030EF00 */
 void *Room68_CharEnterScript(void) {
-    return D_00424890;
+    return Room68_CharEnterScript_data;
 }
 
 /* 0x0030EF10 */
 void *Room68_Phase1Script(void) {
-    return D_00424990;
+    return Room68_Phase1Script_data;
 }
 
 /* 0x0030EF20 */
 void *Room68_Phase2Script(void) {
-    return D_00424AC0;
+    return Room68_Phase2Script_data;
 }
 
 /* 0x0030EF30 */
 void *Room68_Phase4Script(void) {
-    return D_00424AF0;
+    return Room68_Phase4Script_data;
 }
 
 /* 0x0030EF40 */
 void *Room68_ActionScript(void *self, s32 i) {
-    return D_0047AD20[i];
+    return Room68_ActionScripts[i];
 }
 
 /* 0x0030EF60 */
 void *Room68_ObjectName(void *self, s32 i) {
-    return D_0047AD24[i];
+    return Room68_ObjectNames[i];
 }

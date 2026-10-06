@@ -8,59 +8,59 @@
 
 extern void *RoomBase_vtable[];
 extern void *RoomE6_vtable[];
-extern u8 D_0047B100[], D_0047B108[], D_0047B110[];
+extern u8 RoomE6_Phase2Script_data[], RoomE6_ActionScripts[], RoomE6_ObjectNames[];
 extern char D_0047B328[];
 extern const char D_00463A18[];
 
-extern u8 D_004498F0[];
-extern u8 D_00449910[];
-extern u8 D_00449990[];
-extern u8 D_004499E0[];
-extern u8 D_00449AC0[];
-extern PTMF D_01991DF0[];
-extern PTMF D_01991E08[];
+extern u8 RoomE6_EnterScript_data[];
+extern u8 RoomE6_CharEnterScript_data[];
+extern u8 RoomE6_Phase1Script_data[];
+extern u8 RoomE6_Phase3Script_data[];
+extern u8 RoomE6_Table38_data[];
+extern PTMF RoomE6_CmdTable[];
+extern PTMF RoomE6_CondTable[];
 
 /* 0x0037A2D0 */
 void *RoomE6_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomE6_vtable, RoomBase_vtable); }
 
 /* 0x0037A330 */
 void *RoomE6_EnterScript(void) {
-    return D_004498F0;
+    return RoomE6_EnterScript_data;
 }
 
 /* 0x0037A340 */
 void *RoomE6_CharEnterScript(void) {
-    return D_00449910;
+    return RoomE6_CharEnterScript_data;
 }
 
 /* 0x0037A350 */
 void *RoomE6_Phase1Script(void) {
-    return D_00449990;
+    return RoomE6_Phase1Script_data;
 }
 
 /* 0x0037A360 */
 void *RoomE6_Phase3Script(void) {
-    return D_004499E0;
+    return RoomE6_Phase3Script_data;
 }
 
 /* 0x0037A370 */
-u32 RoomE6_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B108)[i]; }   /* RoomE6_vtable +0x24 */
+u32 RoomE6_ActionScript(void *o, s32 i) { return ((u32 *)RoomE6_ActionScripts)[i]; }   /* RoomE6_vtable +0x24 */
 
 /* 0x0037A390 */
-void *RoomE6_Phase2Script(void *o) { return D_0047B100; }   /* RoomE6_vtable +0x14 */
+void *RoomE6_Phase2Script(void *o) { return RoomE6_Phase2Script_data; }   /* RoomE6_vtable +0x14 */
 
 /* 0x0037A3A0 */
 void *RoomE6_Table38(void) {
-    return D_00449AC0;
+    return RoomE6_Table38_data;
 }
 
 /* 0x0037A3B0 */
-u32 RoomE6_ObjectName(void *o, s32 i) { return ((u32 *)D_0047B110)[i]; }   /* RoomE6_vtable +0x34 */
+u32 RoomE6_ObjectName(void *o, s32 i) { return ((u32 *)RoomE6_ObjectNames)[i]; }   /* RoomE6_vtable +0x34 */
 
-/* (self->*D_01991E08[i])(a, b) */
+/* (self->*RoomE6_CondTable[i])(a, b) */
 /* 0x0037A3D0 */
 s32 RoomE6_Condition(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991E08[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomE6_CondTable[i & 0xFF], a, b);
 }
 
 /* the progress object's +0x7C with the caller's arguments */
@@ -69,19 +69,19 @@ s32 RoomE6_Cond00(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
-/* (self->*D_01991DF0[i])(a, b) */
+/* (self->*RoomE6_CmdTable[i])(a, b) */
 /* 0x0037A420 */
 s32 RoomE6_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01991DF0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &RoomE6_CmdTable[i & 0xFF], a, b);
 }
 
 /* 0x0037A450 */
 s32 RoomE6_Cmd01(void) { return clock_draw(D_0047B328, D_00463A18); }
 
-/* the room object named by D_0047B110[0]: +0x24 -25.3, +0x34 0 */
+/* the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0 */
 /* 0x0037A5A0 */
 s32 RoomE6_Cmd00(void) {
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, *(const char **)D_0047B110);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, *(const char **)RoomE6_ObjectNames);
 
     if (o != NULL) {
         AT(o, 0x24, u32) = 0xC1CA6666;   /* -25.3 */

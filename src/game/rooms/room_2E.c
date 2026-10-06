@@ -10,57 +10,57 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room2E_vtable[];
-extern u8 D_0047ACC4[];
+extern u8 Room2E_Phase2Script_data[];
 extern void *DepthRange_vtable[];
 
-extern u8 D_0041D2E0[];
-extern u8 D_0041D330[];
-extern u8 D_0041D3C0[];
-extern u8 D_0041D4E0[];
-extern void *D_0041D7A0[];
-extern void *D_0041D808[];
-extern PTMF D_01990FF0[];
+extern u8 Room2E_EnterScript_data[];
+extern u8 Room2E_CharEnterScript_data[];
+extern u8 Room2E_Phase1Script_data[];
+extern u8 Room2E_Phase5Script_data[];
+extern void *Room2E_ActionScripts[];
+extern void *Room2E_ObjectNames[];
+extern PTMF Room2E_CmdTable[];
 
 /* 0x002FEF80 */
 void *Room2E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2E_vtable, RoomBase_vtable); }
 
 /* 0x002FEFE0 */
 void *Room2E_EnterScript(void) {
-    return D_0041D2E0;
+    return Room2E_EnterScript_data;
 }
 
 /* 0x002FEFF0 */
 void *Room2E_CharEnterScript(void) {
-    return D_0041D330;
+    return Room2E_CharEnterScript_data;
 }
 
 /* 0x002FF000 */
 void *Room2E_Phase1Script(void) {
-    return D_0041D3C0;
+    return Room2E_Phase1Script_data;
 }
 
 /* 0x002FF010 */
-void *Room2E_Phase2Script(void *o) { return D_0047ACC4; }   /* Room2E_vtable +0x14 */
+void *Room2E_Phase2Script(void *o) { return Room2E_Phase2Script_data; }   /* Room2E_vtable +0x14 */
 
 /* 0x002FF020 */
 void *Room2E_Phase5Script(void) {
-    return D_0041D4E0;
+    return Room2E_Phase5Script_data;
 }
 
 /* 0x002FF030 */
 void *Room2E_ActionScript(void *self, s32 i) {
-    return D_0041D7A0[i];
+    return Room2E_ActionScripts[i];
 }
 
 /* 0x002FF050 */
 void *Room2E_ObjectName(void *self, s32 i) {
-    return D_0041D808[i];
+    return Room2E_ObjectNames[i];
 }
 
-/* (self->*D_01990FF0[i])(a, b) */
+/* (self->*Room2E_CmdTable[i])(a, b) */
 /* 0x002FF070 */
 s32 Room2E_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990FF0[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room2E_CmdTable[i & 0xFF], a, b);
 }
 
 /* the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05 */
