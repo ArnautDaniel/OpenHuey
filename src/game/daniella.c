@@ -23,44 +23,44 @@
 extern void *D_0046BBB0[];
 
 extern u8 D_003D73B0[];
-void *func_0020C4C0(void);
+void *Daniella_MotionFiles(void);
 
 extern u32 D_0043DC50[];
 extern u8 D_0043B6A0[], D_0043B660[];
 extern u8 D_0043C260[], D_0043C348[], D_0043C2D0[], D_0043C210[], D_0043C338[], D_0043C2B0[];
 extern u8 D_0043CC20[], D_0043CD08[], D_0043CC90[], D_0043CBD0[], D_0043CCF8[], D_0043CC70[];
 extern u8 D_0043CD80[], D_0043CD40[];
-void func_00346E10(u8 *p, s32 alt);
-f32 func_00346F20(void);
-f32 func_00346F30(void);
-f32 func_00346F40(void);
-void *func_003472D0(void);
-void func_00347A30(void *self, s32 i, f32 *out);
-void func_00347AD0(void *self, s32 i, f32 *out);
-f32 func_00348300(void);
-f32 func_00348310(void);
-f32 func_00348320(void);
-void *func_00348660(void);
-void *func_00348970(void);
-void func_003489C0(void *self, s32 i, f32 *out);
-void func_00348A60(void *self, s32 i, f32 *out);
-f32 func_00349290(void);
+void Kind34_SetRage(u8 *p, s32 alt);
+f32 Kind34_ThreatAmount(void);
+f32 Kind34_FrightSeen(void);
+f32 Kind34_ReachHewie(void);
+void *Kind34_ModelFiles(void);
+void Kind35_DoorOffset(void *self, s32 i, f32 *out);
+void Kind35_ActionOffsets(void *self, s32 i, f32 *out);
+f32 Kind35_ThreatAmount(void);
+f32 Kind35_FrightSeen(void);
+f32 Kind35_ReachHewie(void);
+void *Kind35_ModelFiles(void);
+void *Kind36_MotionFiles(void);
+void Kind36_DoorOffset(void *self, s32 i, f32 *out);
+void Kind36_ActionOffsets(void *self, s32 i, f32 *out);
+f32 Kind36_ThreatAmount(void);
 
-s32 func_00346F00(void);
-s32 func_00346F10(void);
-s32 func_003482E0(void);
-s32 func_003482F0(void);
+s32 Kind34_AttackAnimB(void);
+s32 Kind34_AttackAnimA(void);
+s32 Kind35_AttackAnimB(void);
+s32 Kind35_AttackAnimA(void);
 s32 func_00348960(void);
-s32 func_00349270(void);
-s32 func_00349280(void);
+s32 Kind36_AttackAnimB(void);
+s32 Kind36_AttackAnimA(void);
 
 extern void *D_00478160[];
-void func_00348980(Pursuer *p);
+void Kind36_FilesLoaded(Pursuer *p);
 
 extern u8 D_0043DC10[], D_0043DBD0[];
-f32 func_003492A0(void);
-f32 func_003492B0(void);
-void *func_003495F0(void);
+f32 Kind36_FrightSeen(void);
+f32 Kind36_ReachHewie(void);
+void *Kind36_ModelFiles(void);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -88,10 +88,11 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
     return c;
 }
 
-Character *func_00348850(Character *c, s32 flags);
+Character *Kind36_dtor(Character *c, s32 flags);
 
 /* vtable +0x8: destructor */
-Pursuer *func_0020C3A0(Pursuer *p, s32 flags) {
+/* 0x0020C3A0 */
+Pursuer *Daniella_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046BBB0;
         if (p != NULL) {
@@ -109,21 +110,24 @@ s32 func_0020C4B0(Pursuer *p) {
     return 3;
 }
 
-void *func_0020C4C0(void) {
+/* 0x0020C4C0 */
+void *Daniella_MotionFiles(void) {
     return D_003D73B0;
 }
 
-/* vtable +0x1C: the model files loaded (func_0029F120), then motion vtable +0x34 */
-void func_0020C4D0(Pursuer *p) {
+/* vtable +0x1C: the model files loaded (Pursuer_FilesLoaded), then motion vtable +0x34 */
+/* 0x0020C4D0 */
+void Daniella_FilesLoaded(Pursuer *p) {
     void *m;
 
-    func_0029F120(p);
+    Pursuer_FilesLoaded(p);
     m = p->c.motion;
     VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
 }
 
 /* vtable +0x9C: where she stands by a door, by side 0..3 (local offsets) */
-void func_0020C510(Pursuer *p, s32 side, f32 *out) {
+/* 0x0020C510 */
+void Daniella_DoorOffset(Pursuer *p, s32 side, f32 *out) {
     f32 z;
 
     switch (side) {
@@ -148,7 +152,8 @@ void func_0020C510(Pursuer *p, s32 side, f32 *out) {
 }
 
 /* vtable +0x2D8: the offsets of her actions 10..15 (local) */
-void func_0020C5B0(Pursuer *p, s32 kind, f32 *out) {
+/* 0x0020C5B0 */
+void Daniella_ActionOffsets(Pursuer *p, s32 kind, f32 *out) {
     f32 x, z;
 
     switch (kind) {
@@ -180,7 +185,8 @@ void func_0020C5B0(Pursuer *p, s32 kind, f32 *out) {
 
 /* vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
    (vtable +0xF0) and change room through it (vtable +0x28) */
-void func_0020C660(Pursuer *p, s32 exit) {
+/* 0x0020C660 */
+void Daniella_DoorBreak(Pursuer *p, s32 exit) {
     if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
         return;
     }
@@ -197,7 +203,8 @@ void func_0020C660(Pursuer *p, s32 exit) {
 
 /* vtable +0xF0: the door `exit` of her room used (DoorHold_Take), then damaged: in mode 2
    (+0x16B8) by DoorHold_Open, otherwise DoorHold_Shut */
-void func_0020C730(Pursuer *p, s32 exit) {
+/* 0x0020C730 */
+void Daniella_ExitArg(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
     DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
@@ -305,7 +312,8 @@ static inline void Daniella_HitPoints(Pursuer *p, s32 *e, f32 *a, f32 *b, const 
     }
 }
 
-void func_0020CAE0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x0020CAE0 */
+void Daniella_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_003D8900);
 }
 
@@ -343,7 +351,8 @@ static u8 *const sAttackTables[2][2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation */
-void func_0020CC70(Pursuer *p, s8 situation) {
+/* 0x0020CC70 */
+void Daniella_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
     s32 mode2 = PU(p, 0x16B8, s32) == 2;
 
@@ -355,7 +364,8 @@ extern u8 D_003D87B0[], D_003D8800[], D_003D8850[], D_003D8870[], D_003D88D8[], 
 
 /* vtable +0x31C: mode 2 (+0x16B8) on or off, with its hold-off (+0x1730), +0x1740 and cry
    (+0x1748) tables */
-void func_0020D1F0(Pursuer *p, s32 on) {
+/* 0x0020D1F0 */
+void Daniella_SetRage(Pursuer *p, s32 on) {
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         if (on) {
             PU(p, 0x16B8, s32) = 2;
@@ -382,31 +392,37 @@ void func_0020D1F0(Pursuer *p, s32 on) {
 }
 
 /* vtable +0x310 / +0x30C */
-s32 func_0020D2E0(Pursuer *p) {
+/* 0x0020D2E0 */
+s32 Daniella_AttackAnimB(Pursuer *p) {
     return 12;
 }
 
-s32 func_0020D2F0(Pursuer *p) {
+/* 0x0020D2F0 */
+s32 Daniella_AttackAnimA(Pursuer *p) {
     return 11;
 }
 
 /* vtable +0x308 / +0x300 / +0x2F0 */
-f32 func_0020D300(Pursuer *p) {
+/* 0x0020D300 */
+f32 Daniella_ThreatAmount(Pursuer *p) {
     return 15.0f;
 }
 
-f32 func_0020D310(Pursuer *p) {
+/* 0x0020D310 */
+f32 Daniella_FrightSeen(Pursuer *p) {
     return 5.0f;
 }
 
-f32 func_0020D320(Pursuer *p) {
+/* 0x0020D320 */
+f32 Daniella_ReachHewie(Pursuer *p) {
     return 12.0f;
 }
 
 /* vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_0020C7C0) when a cry is heard or her animation
    reaches its effect key (0x20) */
-void func_0020D330(Pursuer *p) {
+/* 0x0020D330 */
+void Daniella_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -435,25 +451,27 @@ void func_0020D330(Pursuer *p) {
 
 extern u8 D_003D7330[], D_003D7350[], D_003D7370[], D_003D7390[];
 
-/* her model files (func_0029F8C0 for kind 3) */
+/* her model files (Pursuer_ModelFiles for kind 3) */
 u8 *func_0020D620(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_003D7390 : D_003D7350;
 }
 
 /* vtable +0xF8: her model files in slot 2 */
-u8 *func_0020D660(Pursuer *p) {
+/* 0x0020D660 */
+u8 *Daniella_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_003D7370 : D_003D7330;
 }
 
 extern u8 D_003D73F0[], D_003D7530[], D_003D7550[], D_003D7730[], D_003D7760[], D_003D7F40[],
     D_003D8890[], D_0047A928[];
 
-/* vtable +0xF4: her setup over the Pursuer's (func_0029FB20): her tables and stats (different
+/* vtable +0xF4: her setup over the Pursuer's (Pursuer_Setup): her tables and stats (different
    when gProgress+0x30 bit 0x8000 is set) */
-void func_0020D6A0(Pursuer *p) {
+/* 0x0020D6A0 */
+void Daniella_Setup(Pursuer *p) {
     void *m;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 100;
         PU(p, 0x171C, u8 *) = D_003D7550;
@@ -556,9 +574,10 @@ extern void func_00346330(Pursuer *p);
 extern void func_00347B80(Pursuer *p);
 extern void func_00348B10(Pursuer *p);
 
-/* (as func_0020C660)  vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
+/* (as Daniella_DoorBreak)  vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
    (vtable +0xF0) and change room through it (vtable +0x28) */
-void func_003461A0(Pursuer *p, s32 exit) {
+/* 0x003461A0 */
+void Kind34_DoorBreak(Pursuer *p, s32 exit) {
     if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
         return;
     }
@@ -573,10 +592,11 @@ void func_003461A0(Pursuer *p, s32 exit) {
     }
 }
 
-/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_00346330) when a cry is heard or her animation
    reaches its effect key (0x20) */
-void func_00346F50(Pursuer *p) {
+/* 0x00346F50 */
+void Kind34_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -603,16 +623,18 @@ void func_00346F50(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-/* (as func_0020C4D0)  vtable +0x1C: the model files loaded (func_0029F120), then motion vtable +0x34 */
-void func_003479F0(Pursuer *p) {
+/* (as Daniella_FilesLoaded)  vtable +0x1C: the model files loaded (Pursuer_FilesLoaded), then motion vtable +0x34 */
+/* 0x003479F0 */
+void Kind35_FilesLoaded(Pursuer *p) {
     void *m;
 
-    func_0029F120(p);
+    Pursuer_FilesLoaded(p);
     m = p->c.motion;
     VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
 }
 
-void func_00347A30(void *self, s32 i, f32 *out) {
+/* 0x00347A30 */
+void Kind35_DoorOffset(void *self, s32 i, f32 *out) {
     switch (i) {
     case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
     case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
@@ -621,7 +643,8 @@ void func_00347A30(void *self, s32 i, f32 *out) {
     }
 }
 
-void func_00347AD0(void *self, s32 i, f32 *out) {
+/* 0x00347AD0 */
+void Kind35_ActionOffsets(void *self, s32 i, f32 *out) {
     switch (i) {
     case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
     case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
@@ -630,10 +653,11 @@ void func_00347AD0(void *self, s32 i, f32 *out) {
     }
 }
 
-/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_00347B80) when a cry is heard or her animation
    reaches its effect key (0x20) */
-void func_00348330(Pursuer *p) {
+/* 0x00348330 */
+void Kind35_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -660,14 +684,16 @@ void func_00348330(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-void *func_00348660(void) {
+/* 0x00348660 */
+void *Kind35_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
 }
 
-/* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_00348B10) when a cry is heard or her animation
    reaches its effect key (0x20) */
-void func_003492C0(Pursuer *p) {
+/* 0x003492C0 */
+void Kind36_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -694,7 +720,8 @@ void func_003492C0(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-void *func_003495F0(void) {
+/* 0x003495F0 */
+void *Kind36_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC10 : D_0043DBD0;
 }
 
@@ -906,7 +933,8 @@ extern const f32 D_0043CD20[4], D_0043DBB0[4], D_0043EA60[4];
 /* the first: vtable +0xF0: the door `exit` used, then damaged: in mode 2, in the ending
    (gProgress+0x1FBEC1) or with gProgress+0x30 bit 0x8000 by DoorHold_Open, otherwise
    DoorHold_Shut */
-void func_00346270(Pursuer *p, s32 exit) {
+/* 0x00346270 */
+void Kind34_ExitArg(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
     DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
@@ -918,15 +946,18 @@ void func_00346270(Pursuer *p, s32 exit) {
 }
 
 /* vtable +0x138 of the three */
-void func_00346640(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x00346640 */
+void Kind34_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_0043CD20);
 }
 
-void func_00347E90(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x00347E90 */
+void Kind35_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_0043DBB0);
 }
 
-void func_00348E20(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x00348E20 */
+void Kind36_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_0043EA60);
 }
 
@@ -965,7 +996,8 @@ static u8 *const sAttackTables1[2][2][17] = {
 
 /* the first: vtable +0x130: the attack table for a situation; in the ending situations 15 and
    14 have their own */
-void func_003467D0(Pursuer *p, s8 situation) {
+/* 0x003467D0 */
+void Kind34_AttackTable(Pursuer *p, s8 situation) {
     s32 alt, mode2;
 
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
@@ -985,18 +1017,20 @@ void func_003467D0(Pursuer *p, s8 situation) {
 
 /* the first: vtable +0x200: done at the door in the ending or with gProgress+0x30 bit 0x8000,
    else the Pursuer's */
-void func_00346DB0(Pursuer *p) {
+/* 0x00346DB0 */
+void Kind34_ExitDone(Pursuer *p) {
     Progress *pr = gProgress;
 
     if (AT(pr, 0x1FBEC1, u8) != 0 || (AT(pr, 0x30, u32) & 0x8000)) {
         PURSUER_STEP_DONE(p) = 1;
         return;
     }
-    func_0028D6E0(p);
+    Pursuer_ExitDone(p);
 }
 
 /* Picks one of four table sets depending on story flag 0x8000 (gProgress+0x30) and `alt`. */
-void func_00346E10(u8 *p, s32 alt) {
+/* 0x00346E10 */
+void Kind34_SetRage(u8 *p, s32 alt) {
     if (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) {
         if (alt) {
             *(s32 *)(p + 0x16B8) = 2;
@@ -1024,35 +1058,42 @@ void func_00346E10(u8 *p, s32 alt) {
     }
 }
 
-s32 func_00346F00(void) {
+/* 0x00346F00 */
+s32 Kind34_AttackAnimB(void) {
     return 0xC;
 }
 
-s32 func_00346F10(void) {
+/* 0x00346F10 */
+s32 Kind34_AttackAnimA(void) {
     return 0xB;
 }
 
-f32 func_00346F20(void) {
+/* 0x00346F20 */
+f32 Kind34_ThreatAmount(void) {
     return 15.0f;
 }
 
-f32 func_00346F30(void) {
+/* 0x00346F30 */
+f32 Kind34_FrightSeen(void) {
     return 5.0f;
 }
 
-f32 func_00346F40(void) {
+/* 0x00346F40 */
+f32 Kind34_ReachHewie(void) {
     return 12.0f;
 }
 
 /* the first: vtable +0x5C: the Pursuer's reset; in the ending the Hewie bite tolerance is 80 */
-void func_00347240(Pursuer *p) {
-    func_0029E520(p);
+/* 0x00347240 */
+void Kind34_Activate(Pursuer *p) {
+    Pursuer_Activate(p);
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
         PU(p, 0x16DC, s32) = 80;
     }
 }
 
-void *func_003472D0(void) {
+/* 0x003472D0 */
+void *Kind34_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6A0 : D_0043B660;
 }
 
@@ -1060,11 +1101,12 @@ extern u8 D_0043B700[], D_0043B840[], D_0043B860[], D_0043BA40[], D_0043BA70[], 
     D_0043C2B0[], D_0043C2F0[], D_0043C338[], D_0043CBD0[], D_0043CC70[], D_0043CCB0[],
     D_0043CCF8[], D_0047AED8[];
 
-/* the first: vtable +0xF4: setup over the Pursuer's (func_0029FB20) */
-void func_00347310(Pursuer *p) {
+/* the first: vtable +0xF4: setup over the Pursuer's (Pursuer_Setup) */
+/* 0x00347310 */
+void Kind34_Setup(Pursuer *p) {
     void *m;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 200;
         PU(p, 0x171C, u8 *) = D_0043B860;
@@ -1130,29 +1172,35 @@ static u8 *const sAttackTables2[2][17] = {
 };
 
 /* the second: vtable +0x130 */
-void func_00348020(Pursuer *p, s8 situation) {
+/* 0x00348020 */
+void Kind35_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables2[alt][(u32)situation < 17 ? situation : 0];
 }
 
-s32 func_003482E0(void) {
+/* 0x003482E0 */
+s32 Kind35_AttackAnimB(void) {
     return 0xC;
 }
 
-s32 func_003482F0(void) {
+/* 0x003482F0 */
+s32 Kind35_AttackAnimA(void) {
     return 0xB;
 }
 
-f32 func_00348300(void) {
+/* 0x00348300 */
+f32 Kind35_ThreatAmount(void) {
     return 15.0f;
 }
 
-f32 func_00348310(void) {
+/* 0x00348310 */
+f32 Kind35_FrightSeen(void) {
     return 5.0f;
 }
 
-f32 func_00348320(void) {
+/* 0x00348320 */
+f32 Kind35_ReachHewie(void) {
     return 12.0f;
 }
 
@@ -1161,8 +1209,9 @@ extern u8 D_0043CDE0[], D_0043CF20[], D_0043D100[], D_0043D130[], D_0043D5E0[], 
     D_0047AEE0[];
 
 /* the second: vtable +0xF4: setup over the Pursuer's */
-void func_003486A0(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x003486A0 */
+void Kind35_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 80;
         PU(p, 0x171C, u8 *) = D_0043CF20;
@@ -1207,23 +1256,27 @@ void func_003486A0(Pursuer *p) {
     PU(p, 0x16A0, f32) = 1.5f;
 }
 
-Character *func_00348850(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478160); }
+/* 0x00348850 */
+Character *Kind36_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478160); }
 
 s32 func_00348960(void) {
     return 0x24;
 }
 
-void *func_00348970(void) {
+/* 0x00348970 */
+void *Kind36_MotionFiles(void) {
     return D_0043DC50;
 }
 
-/* (as func_00346010) */
-void func_00348980(Pursuer *p) {
-    func_0029F120(p);
+/* (as Kind34_FilesLoaded) */
+/* 0x00348980 */
+void Kind36_FilesLoaded(Pursuer *p) {
+    Pursuer_FilesLoaded(p);
     VCALL(p->c.motion, 0x34, void (*)(void *, s32))(p->c.motion, 1);
 }
 
-void func_003489C0(void *self, s32 i, f32 *out) {
+/* 0x003489C0 */
+void Kind36_DoorOffset(void *self, s32 i, f32 *out) {
     switch (i) {
     case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
     case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
@@ -1232,7 +1285,8 @@ void func_003489C0(void *self, s32 i, f32 *out) {
     }
 }
 
-void func_00348A60(void *self, s32 i, f32 *out) {
+/* 0x00348A60 */
+void Kind36_ActionOffsets(void *self, s32 i, f32 *out) {
     switch (i) {
     case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
     case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
@@ -1259,29 +1313,35 @@ static u8 *const sAttackTables3[2][17] = {
 };
 
 /* the third: vtable +0x130 */
-void func_00348FB0(Pursuer *p, s8 situation) {
+/* 0x00348FB0 */
+void Kind36_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables3[alt][(u32)situation < 17 ? situation : 0];
 }
 
-s32 func_00349270(void) {
+/* 0x00349270 */
+s32 Kind36_AttackAnimB(void) {
     return 0xC;
 }
 
-s32 func_00349280(void) {
+/* 0x00349280 */
+s32 Kind36_AttackAnimA(void) {
     return 0xB;
 }
 
-f32 func_00349290(void) {
+/* 0x00349290 */
+f32 Kind36_ThreatAmount(void) {
     return 15.0f;
 }
 
-f32 func_003492A0(void) {
+/* 0x003492A0 */
+f32 Kind36_FrightSeen(void) {
     return 5.0f;
 }
 
-f32 func_003492B0(void) {
+/* 0x003492B0 */
+f32 Kind36_ReachHewie(void) {
     return 12.0f;
 }
 
@@ -1290,8 +1350,9 @@ extern u8 D_0043DC70[], D_0043DDB0[], D_0043DF90[], D_0043DFC0[], D_0043E470[], 
     D_0047AEE8[];
 
 /* the third: vtable +0xF4: setup over the Pursuer's */
-void func_00349630(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x00349630 */
+void Kind36_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 80;
         PU(p, 0x171C, u8 *) = D_0043DDB0;

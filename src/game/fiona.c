@@ -89,12 +89,12 @@ void func_0019A420(Fiona *f, s32 slot, s32 param) {
 
 /* vtable +0x60? (deactivate) */
 void func_0019AF10(Fiona *f) {
-    func_00125D40(&f->c);
+    Character_Deactivate(&f->c);
 }
 
 /* Halt (as Character), and take down her message. */
 void func_0019AA20(Fiona *f) {
-    func_00126810(&f->c);
+    Character_Enable(&f->c);
     MOTION_U8(f->c.motion, 0x4D8) = 0;
     f->unk1AD5D0 = 1;
     f->unk1AD5D1 = 1;
@@ -108,7 +108,7 @@ void func_0019AA20(Fiona *f) {
 
 /* Disable (as Character), and show her message if she has one. */
 void func_0019AAC0(Fiona *f) {
-    func_00126910(&f->c);
+    Character_Disable(&f->c);
     MOTION_U8(f->c.motion, 0x4D8) = 1;
     f->unk1AD630 = 0;
     f->unk1AD62E = 0;
@@ -131,7 +131,7 @@ s32 func_0019A8C0(Fiona *f, s32 room, u32 tri, s32 arg3) {
 
 /* Forget path/movement state, then idle. */
 void func_0019AB40(Fiona *f) {
-    func_00125BE0(&f->c);
+    Character_ResetBehaviour(&f->c);
     func_00184BF0(f);
     Fiona_ToIdle(f);
 }
@@ -142,7 +142,7 @@ void func_0019AC70(Fiona *f) {
     VObject *rng;
     s32 t;
 
-    func_00125CC0(&f->c);
+    Character_Activate(&f->c);
     f->unk1AD580 = 0;
     FI(f, 0x1AD584, s32) = 0;
     f->unk1AD588 = 0;
@@ -312,7 +312,7 @@ void func_001A4330(Fiona *f) {
 
 /* vtable +0x24: remember the previous position, and her heading. */
 void func_001A2CC0(Fiona *f) {
-    func_00127650(&f->c);
+    Character_RememberPos(&f->c);
     FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
 }
 
@@ -341,7 +341,7 @@ s32 func_001A4080(Fiona *f) {
 
 /* vtable +0xC: reset; her collision cylinder (radius 2, height 15) and blocking mask. */
 void func_001A4340(Fiona *f) {
-    func_00127660(&f->c);
+    Character_Reset(&f->c);
     f->c.a.radius = 2.0f;
     f->c.a.height = 15.0f;
     f->c.a.navMask = 0x28020018;
@@ -383,7 +383,7 @@ extern void func_00187650(Fiona *f);
 void func_0019D190(Fiona *f) {
     Progress *p;
 
-    func_00126360(&f->c);
+    Character_EventReset(&f->c);
     FI(f, 0x1AD5FC, u8) = 0;
     func_00187650(f);
     f->unk1AD5D0 = 1;
@@ -521,7 +521,7 @@ void func_001A4110(Fiona *f) {
 void func_0019D2B0(Fiona *f) {
     Progress *p;
 
-    func_00126450(&f->c);
+    Character_BackToNormal(&f->c);
     func_00184BF0(f);
     FI(f, 0x1AD58C, s32) = 6;
     FI(f, 0x1AD5D2, u8) = 0;
@@ -563,7 +563,7 @@ static inline void Fiona_SetPose(Fiona *f, s32 set, s32 variant, f32 w) {
 /* vtable +0x28: place her (Character), reset interaction state, and on the first placement
  * pick her starting pose from her condition (+0x1AD5F4 of 100, +0x1AD5F8 of 1800 frames). */
 s32 func_001A3A80(Fiona *f, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00125AD0(&f->c, tri, heading, pos);
+    s32 r = Character_Place(&f->c, tri, heading, pos);
 
     FI(f, 0x1AD5B8, f32) = f->c.a.angle[1];
     f->savedYaw = f->c.a.angle[1];

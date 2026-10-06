@@ -77,6 +77,15 @@ def main() -> None:
                 entry += f" // {note}"
             sym_lines.append(entry)
             names_in_use.add(new)
+    # a new name must not already be a word in the sources (a static, a macro, a local)
+    taken = re.compile(r"\b(" + "|".join(map(re.escape, mapping.values())) + r")\b")
+    clash = set()
+    for g in TEXT_GLOBS[:6]:
+        for p in ROOT.glob(g):
+            if p.is_file():
+                clash |= set(taken.findall(p.read_text(errors="surrogateescape")))
+    if clash:
+        sys.exit("already used in the sources: " + " ".join(sorted(clash)))
     SYM.write_text("\n".join(sym_lines) + "\n")
     word = re.compile(r"\b(" + "|".join(map(re.escape, sorted(mapping, key=len, reverse=True))) + r")\b")
     changed = 0

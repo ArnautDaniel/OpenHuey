@@ -21,7 +21,7 @@
 extern void *D_00470720[];
 
 extern u8 D_0041A5F0[];
-void *func_002F8930(void);
+void *Lorenzo_MotionFiles(void);
 
 extern void *D_0046F580[];
 extern void *D_00470F90[];
@@ -31,9 +31,9 @@ extern u8 D_004224C0[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
 
-void *func_003095A0(void);
-void func_003095B0(void *self, s32 id, f32 *out);
-void func_00309670(u8 *self);
+void *Lorenzo2_MotionFiles(void);
+void Lorenzo2_ActionOffsets(void *self, s32 id, f32 *out);
+void Lorenzo2_ExitDone(u8 *self);
 
 extern u8 D_00422440[];
 extern u8 D_00422480[];
@@ -56,38 +56,39 @@ extern u8 D_019910D8[];
 
 #define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
 
-void func_003636C0(u8 *o);
-f32 func_003659B0(void);
-f32 func_003659C0(void);
-void func_00365CD0(Pursuer *p);
+void Kind39_ExitDone(u8 *o);
+f32 Kind39_AttackRange(void);
+f32 Kind39_ReachHewie(void);
+void Kind39_Activate(Pursuer *p);
 
-s32 func_003658D0(void);
-s32 func_003658E0(void);
+s32 Kind39_AttackAnimB(void);
+s32 Kind39_AttackAnimA(void);
 
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
 }
 
-void func_0030BAA0(u8 *self, s32 alt);
-f32 func_0030BC60(void);
-f32 func_0030BCA0(void);
-f32 func_0030BCE0(void);
-f32 func_0030BD20(u8 *self);
-f32 func_0030BDA0(u8 *self);
-void *func_0030C1F0(void);
-void *func_0030C4F0(void);
-void *func_0030C500(void);
-void func_0030C510(u8 *self);
-f32 func_0030CBB0(void);
-f32 func_0030CBC0(void);
-s32 func_0030CF80(void *self);
-f32 func_003658F0(void);
-f32 func_00365930(void);
-f32 func_00365970(void);
+void Lorenzo2_SetRage(u8 *self, s32 alt);
+f32 Lorenzo2_ThreatAmount(void);
+f32 Lorenzo2_FrightAttack(void);
+f32 Lorenzo2_FrightSeen(void);
+f32 Lorenzo2_AttackRange(u8 *self);
+f32 Lorenzo2_ReachHewie(u8 *self);
+void *Lorenzo2_ModelFiles(void);
+void *Kind12_ModelFiles(void);
+void *Kind12_MotionFiles(void);
+void Kind12_ExitDone(u8 *self);
+f32 Kind12_AttackRange(void);
+f32 Kind12_ReachHewie(void);
+s32 Kind12_StopSounds(void *self);
+f32 Kind39_ThreatAmount(void);
+f32 Kind39_FrightAttack(void);
+f32 Kind39_FrightSeen(void);
 
 /* vtable +0x8: destructor */
-Pursuer *func_002F8820(Pursuer *p, s32 flags) {
+/* 0x002F8820 */
+Pursuer *Lorenzo_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_00470720;
         if (p != NULL) {
@@ -100,17 +101,20 @@ Pursuer *func_002F8820(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_002F8930(void) {
+/* 0x002F8930 */
+void *Lorenzo_MotionFiles(void) {
     return D_0041A5F0;
 }
 
 /* vtable +0xA0: his turn rate, 2 degrees */
-f32 func_002F8940(Pursuer *p) {
+/* 0x002F8940 */
+f32 Lorenzo_TurnRate(Pursuer *p) {
     return 0x1.1df46ap-5f;   /* 0.0349066 */
 }
 
 /* vtable +0x2D8: the offsets of his actions 10..15 (local) */
-void func_002F8960(Pursuer *p, s32 kind, f32 *out) {
+/* 0x002F8960 */
+void Lorenzo_ActionOffsets(Pursuer *p, s32 kind, f32 *out) {
     f32 x, z;
 
     switch (kind) {
@@ -141,7 +145,8 @@ void func_002F8960(Pursuer *p, s32 kind, f32 *out) {
 }
 
 /* vtable +0x200: done at the door at once */
-void func_002F8A10(Pursuer *p) {
+/* 0x002F8A10 */
+void Lorenzo_ExitDone(Pursuer *p) {
     PURSUER_STEP_DONE(p) = 1;
 }
 
@@ -163,27 +168,31 @@ static u8 *const sAttackTables[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation */
-void func_002F8A20(Pursuer *p, s8 situation) {
+/* 0x002F8A20 */
+void Lorenzo_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables[alt][(u32)situation < 17 ? situation : 0];
 }
 
 /* vtable +0x2F4 / +0x2F0 */
-f32 func_002F8CE0(Pursuer *p) {
+/* 0x002F8CE0 */
+f32 Lorenzo_AttackRange(Pursuer *p) {
     return 18.0f;
 }
 
-f32 func_002F8CF0(Pursuer *p) {
+/* 0x002F8CF0 */
+f32 Lorenzo_ReachHewie(Pursuer *p) {
     return 12.0f;
 }
 
-/* vtable +0x100: the Pursuer's footsteps (func_0029DA80), only in his move groups 0x200 / 0x400 */
-void func_002F8D00(Pursuer *p) {
+/* vtable +0x100: the Pursuer's footsteps (Pursuer_Footsteps), only in his move groups 0x200 / 0x400 */
+/* 0x002F8D00 */
+void Lorenzo_Footsteps(Pursuer *p) {
     switch (MOTION_ANIM(p) & 0xFF00) {
     case 0x400:
     case 0x200:
-        func_0029DA80(p);
+        Pursuer_Footsteps(p);
         break;
     }
 }
@@ -191,7 +200,8 @@ void func_002F8D00(Pursuer *p) {
 /* vtable +0x30: his frame update: the stalkers' (see Stalker_ThinkStart), on screen with the hits,
    the cries heard, the behaviour step, stance and voice; off screen the behaviour step and the
    off-screen move */
-void func_002F8D50(Pursuer *p) {
+/* 0x002F8D50 */
+void Lorenzo_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -218,23 +228,25 @@ void func_002F8D50(Pursuer *p) {
 
 extern u8 D_0041A570[], D_0041A590[], D_0041A5B0[], D_0041A5D0[];
 
-/* his model files (func_0029F8C0 for kind 11) */
+/* his model files (Pursuer_ModelFiles for kind 11) */
 u8 *func_002F9000(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041A5D0 : D_0041A590;
 }
 
 /* vtable +0xF8: his model files in slot 2 */
-u8 *func_002F9040(Pursuer *p) {
+/* 0x002F9040 */
+u8 *Lorenzo_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041A5B0 : D_0041A570;
 }
 
 extern u8 D_0041A630[], D_0041A760[], D_0041A770[], D_0041A830[], D_0041A850[], D_0041ABD0[],
     D_0041AC20[], D_0041AC40[], D_0041AFC0[], D_0041B008[], D_01990F90[], D_0047AC98[];
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables and stats (different
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
    when gProgress+0x30 bit 0x8000 is set) */
-void func_002F9080(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x002F9080 */
+void Lorenzo_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 75;
         PU(p, 0x171C, u8 *) = D_0041A770;
@@ -297,7 +309,8 @@ void *func_00301250(u8 *o, s32 flags) {
 extern void *D_004715C0[];
 
 /* vtable +0x8: destructor */
-Pursuer *func_00309490(Pursuer *p, s32 flags) {
+/* 0x00309490 */
+Pursuer *Lorenzo2_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_004715C0;
         if (p != NULL) {
@@ -310,11 +323,13 @@ Pursuer *func_00309490(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_003095A0(void) {
+/* 0x003095A0 */
+void *Lorenzo2_MotionFiles(void) {
     return D_004224C0;
 }
 
-void func_003095B0(void *self, s32 id, f32 *out) {
+/* 0x003095B0 */
+void Lorenzo2_ActionOffsets(void *self, s32 id, f32 *out) {
     switch (id) {
     case 10:
     case 11:
@@ -334,16 +349,19 @@ void func_003095B0(void *self, s32 id, f32 *out) {
 }
 
 /* vtable +0x10C: never (0) */
-s32 func_00309660(Pursuer *p) {
+/* 0x00309660 */
+s32 Lorenzo2_InStance2Anim(Pursuer *p) {
     return 0;
 }
 
-void func_00309670(u8 *self) {
+/* 0x00309670 */
+void Lorenzo2_ExitDone(u8 *self) {
     self[0x16EE] = 1;
 }
 
 /* vtable +0x138: the hit points of an attack entry; his grab 0xE01 is at Fiona herself */
-void func_00309BA0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x00309BA0 */
+void Lorenzo2_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     if (e[0] == 0xE01) {
         sceVu0CopyVector(a, gCharPlayer->a.pos);
         sceVu0CopyVector(b, gCharPlayer->a.pos);
@@ -389,7 +407,8 @@ static u8 *const sAttackTables2[2][2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation */
-void func_00309C90(Pursuer *p, s8 situation) {
+/* 0x00309C90 */
+void Lorenzo2_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
     s32 mode2 = PU(p, 0x16B8, s32) == 2;
 
@@ -397,10 +416,11 @@ void func_00309C90(Pursuer *p, s8 situation) {
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables2[alt][mode2][situation] : sAttackTables2[alt][0][0];
 }
 
-/* vtable +0x328: the Pursuer's walk (func_00297A70); with gProgress+0x30 bit 0x8000 always the
+/* vtable +0x328: the Pursuer's walk (Pursuer_SlowWalkAnim); with gProgress+0x30 bit 0x8000 always the
    fast one 0x205 unless it's 0x203 */
-s32 func_0030BBF0(Pursuer *p) {
-    s32 r = func_00297A70(p);
+/* 0x0030BBF0 */
+s32 Lorenzo2_SlowWalkAnim(Pursuer *p) {
+    s32 r = Pursuer_SlowWalkAnim(p);
 
     if ((AT(gProgress, 0x30, u32) & 0x8000) && r != 0x203) {
         r = 0x205;
@@ -409,34 +429,41 @@ s32 func_0030BBF0(Pursuer *p) {
 }
 
 /* vtable +0x310 / +0x30C */
-s32 func_0030BC40(Pursuer *p) {
+/* 0x0030BC40 */
+s32 Lorenzo2_AttackAnimB(Pursuer *p) {
     return 10;
 }
 
-s32 func_0030BC50(Pursuer *p) {
+/* 0x0030BC50 */
+s32 Lorenzo2_AttackAnimA(Pursuer *p) {
     return 9;
 }
 
-f32 func_0030BC60(void) {
+/* 0x0030BC60 */
+f32 Lorenzo2_ThreatAmount(void) {
     return b5_prog_flag8000() ? 45.0f : 2e+01f;
 }
 
-f32 func_0030BCA0(void) {
+/* 0x0030BCA0 */
+f32 Lorenzo2_FrightAttack(void) {
     return b5_prog_flag8000() ? 8.0f : 5.0f;
 }
 
-f32 func_0030BCE0(void) {
+/* 0x0030BCE0 */
+f32 Lorenzo2_FrightSeen(void) {
     return b5_prog_flag8000() ? 3e+01f : 1e+01f;
 }
 
-f32 func_0030BD20(u8 *self) {
+/* 0x0030BD20 */
+f32 Lorenzo2_AttackRange(u8 *self) {
     if (b5_prog_flag8000()) {
         return S32(self, 0x16B8) == 2 ? 18.0f : 40.0f;
     }
     return S32(self, 0x16B8) == 2 ? 18.0f : 70.0f;
 }
 
-f32 func_0030BDA0(u8 *self) {
+/* 0x0030BDA0 */
+f32 Lorenzo2_ReachHewie(u8 *self) {
     if (b5_prog_flag8000()) {
         return S32(self, 0x16B8) == 2 ? 12.0f : 30.0f;
     }
@@ -447,7 +474,8 @@ f32 func_0030BDA0(u8 *self) {
    action 0x10 or 0x21; mode 2 on from threat level 1 while chasing and idle, off at level 0; the
    cries heard, the behaviour step, func_00309890 and func_00309680, stance and voice. Off
    screen the behaviour step and the off-screen move */
-void func_0030BE20(Pursuer *p) {
+/* 0x0030BE20 */
+void Lorenzo2_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -485,7 +513,8 @@ void func_0030BE20(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-void *func_0030C1F0(void) {
+/* 0x0030C1F0 */
+void *Lorenzo2_ModelFiles(void) {
     return b5_prog_flag8000() ? D_00422480 : D_00422440;
 }
 
@@ -493,10 +522,11 @@ extern u8 D_00422500[], D_00422650[], D_00422690[], D_004226F0[], D_00422880[], 
     D_00422A40[], D_00423020[], D_004230C0[], D_004230E0[], D_00423128[], D_004238B0[],
     D_00423950[], D_00423990[], D_019910C8[], D_0047AD10[];
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables and stats (different
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
    when gProgress+0x30 bit 0x8000 is set) */
-void func_0030C230(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x0030C230 */
+void Lorenzo2_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 400;
         PU(p, 0x171C, u8 *) = D_00422880;
@@ -1111,7 +1141,8 @@ void func_0030B840(Pursuer *p) {
     Lorenzo2_SinkBehind(p);
 }
 
-void func_0030BAA0(u8 *self, s32 alt) {
+/* 0x0030BAA0 */
+void Lorenzo2_SetRage(u8 *self, s32 alt) {
     if (b5_prog_flag8000()) {
         if (alt) {
             S32(self, 0x16B8) = 2;
@@ -1149,7 +1180,8 @@ extern u8 D_00423CF0[], D_00423D60[], D_00423D80[], D_00423BB0[], D_00423CE0[], 
 
 /* vtable +0x8: destructor (0x4718F0 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the
  * model freed for slots 3..5 */
-Pursuer *func_0030C3E0(Pursuer *p, s32 flags) {
+/* 0x0030C3E0 */
+Pursuer *Kind12_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_004718F0;
         p->c.a.vtbl = D_0046D810;
@@ -1173,15 +1205,18 @@ Pursuer *func_0030C3E0(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_0030C4F0(void) {
+/* 0x0030C4F0 */
+void *Kind12_ModelFiles(void) {
     return D_00423B30;
 }
 
-void *func_0030C500(void) {
+/* 0x0030C500 */
+void *Kind12_MotionFiles(void) {
     return D_00423B70;
 }
 
-void func_0030C510(u8 *self) {
+/* 0x0030C510 */
+void Kind12_ExitDone(u8 *self) {
     self[0x16EE] = 1;
 }
 
@@ -1204,9 +1239,10 @@ static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
     func_002D6090(mgr, slot, arg);
 }
 
-/* vtable +0x38: func_002809E0, then (when func_00217510 allows) the marker */
-void func_0030C520(Pursuer *p) {
-    func_002809E0(p);
+/* vtable +0x38: Pursuer_ShowUp, then (when func_00217510 allows) the marker */
+/* 0x0030C520 */
+void Kind12_ShowUp(Pursuer *p) {
+    Pursuer_ShowUp(p);
     if (func_00217510(p) != 0) {
         k12_mark(p);
     } else {
@@ -1214,9 +1250,10 @@ void func_0030C520(Pursuer *p) {
     }
 }
 
-/* vtable +0x148: the same over func_002804B0 */
-void func_0030C670(Pursuer *p) {
-    func_002804B0(p);
+/* vtable +0x148: the same over Pursuer_EnterRoom */
+/* 0x0030C670 */
+void Kind12_EnterRoom(Pursuer *p) {
+    Pursuer_EnterRoom(p);
     if (func_00217510(p) != 0) {
         k12_mark(p);
     } else {
@@ -1235,15 +1272,17 @@ static u8 *const sK12Tables[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation (out of range: the first of the plain set) */
-void func_0030C7C0(Pursuer *p, s8 situation) {
+/* 0x0030C7C0 */
+void Kind12_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sK12Tables[alt][situation] : D_00423D90;
 }
 
 /* vtable +0x84: a request of kind 4 seen (+0x14E8, not yet handled +0x14F0) raises the threat,
- * except in game modes 6 / 7; then func_0029C8C0 and back to full health */
-void func_0030CA80(Pursuer *p) {
+ * except in game modes 6 / 7; then Pursuer_EventState and back to full health */
+/* 0x0030CA80 */
+void Kind12_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) == 4 && PU(p, 0x14F0, s32) == 0 && func_00283870(p) != 0) {
         Progress *pr = gProgress;
         u8 mode = Progress_GetVar(pr, 0x26) & 0xFF;
@@ -1252,12 +1291,13 @@ void func_0030CA80(Pursuer *p) {
             Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
         }
     }
-    func_0029C8C0(p);
+    Pursuer_EventState(p);
     p->c.hp = p->c.hpMax;
 }
 
 /* vtable +0x110: let his progress slot go if he holds one; -1 */
-s32 func_0030CB40(Pursuer *p) {
+/* 0x0030CB40 */
+s32 Kind12_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
@@ -1266,23 +1306,27 @@ s32 func_0030CB40(Pursuer *p) {
     return -1;
 }
 
-f32 func_0030CBB0(void) {
+/* 0x0030CBB0 */
+f32 Kind12_AttackRange(void) {
     return 18.0f;
 }
 
-f32 func_0030CBC0(void) {
+/* 0x0030CBC0 */
+f32 Kind12_ReachHewie(void) {
     return 14.0f;
 }
 
 /* vtable +0x58: the marker off, then the Pursuer's */
-void func_0030CBD0(Pursuer *p) {
+/* 0x0030CBD0 */
+void Kind12_Deactivate(Pursuer *p) {
     PU(p, 0x17C0, u8) = 0;
-    func_0029E600(p);
+    Pursuer_Deactivate(p);
 }
 
 /* vtable +0x30: his frame update - the stalkers', with the senses kept on him while the
  * behaviour is fresh outside cutscenes, and the threat raised when he hits */
-void func_0030CBE0(Pursuer *p) {
+/* 0x0030CBE0 */
+void Kind12_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
     Progress *pr;
 
@@ -1340,16 +1384,18 @@ void func_0030CBE0(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-s32 func_0030CF80(void *self) {
+/* 0x0030CF80 */
+s32 Kind12_StopSounds(void *self) {
     return VCALL(gSound, 0x10, s32 (*)(void *, s32, s32))(gSound, 0, 0x400000);
 }
 
 /* vtable +0xF4: his setup over the Pursuer's: tables (two sets by gProgress+0x30 bit 0x8000),
  * 9999 health, his stats */
-void func_0030CFA0(Pursuer *p) {
+/* 0x0030CFA0 */
+void Kind12_Setup(Pursuer *p) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD};
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     p->c.hpMax = 9999;
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         PU(p, 0x1730, u8 *) = D_004241F0;
@@ -1396,8 +1442,9 @@ extern u8 D_00444AB0[];
 extern u8 D_00444AD0[];
 extern u8 D_00444A90[];
 
-/* (as func_003095B0)  vtable +0x2D8: the point (x, 0, z) for spot `id` 10..15 (others untouched) */
-void func_00363610(void *self, s32 id, f32 *out) {
+/* (as Lorenzo2_ActionOffsets)  vtable +0x2D8: the point (x, 0, z) for spot `id` 10..15 (others untouched) */
+/* 0x00363610 */
+void Kind39_ActionOffsets(void *self, s32 id, f32 *out) {
     switch (id) {
     case 10:
     case 11:
@@ -1424,7 +1471,8 @@ void func_00363610(void *self, s32 id, f32 *out) {
     }
 }
 
-void func_003636C0(u8 *o) {
+/* 0x003636C0 */
+void Kind39_ExitDone(u8 *o) {
     AT(o, 0x16EE, u8) = 1;
 }
 
@@ -1504,8 +1552,9 @@ void func_003638E0(Pursuer *p) {
     }
 }
 
-/* (as func_00309BA0)  vtable +0x138: the hit points of an attack entry; his grab 0xE01 is at Fiona herself */
-void func_00363BF0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* (as Lorenzo2_BonePositions)  vtable +0x138: the hit points of an attack entry; his grab 0xE01 is at Fiona herself */
+/* 0x00363BF0 */
+void Kind39_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     if (e[0] == 0xE01) {
         sceVu0CopyVector(a, gCharPlayer->a.pos);
         sceVu0CopyVector(b, gCharPlayer->a.pos);
@@ -1568,44 +1617,52 @@ s32 func_00365850(Pursuer *p) {
     return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
 }
 
-s32 func_003658D0(void) {
+/* 0x003658D0 */
+s32 Kind39_AttackAnimB(void) {
     return 0xA;
 }
 
-s32 func_003658E0(void) {
+/* 0x003658E0 */
+s32 Kind39_AttackAnimA(void) {
     return 0x9;
 }
 
-/* as func_0030BC60 */
-f32 func_003658F0(void) {
+/* as Lorenzo2_ThreatAmount */
+/* 0x003658F0 */
+f32 Kind39_ThreatAmount(void) {
     return b5_prog_flag8000() ? 45.0f : 2e+01f;
 }
 
-/* as func_0030BCA0 */
-f32 func_00365930(void) {
+/* as Lorenzo2_FrightAttack */
+/* 0x00365930 */
+f32 Kind39_FrightAttack(void) {
     return b5_prog_flag8000() ? 8.0f : 5.0f;
 }
 
-/* as func_0030BCE0 */
-f32 func_00365970(void) {
+/* as Lorenzo2_FrightSeen */
+/* 0x00365970 */
+f32 Kind39_FrightSeen(void) {
     return b5_prog_flag8000() ? 3e+01f : 1e+01f;
 }
 
-f32 func_003659B0(void) {
+/* 0x003659B0 */
+f32 Kind39_AttackRange(void) {
     return 18.0f;
 }
 
-f32 func_003659C0(void) {
+/* 0x003659C0 */
+f32 Kind39_ReachHewie(void) {
     return 12.0f;
 }
 
-/* (as func_002F9000)  his model files (func_0029F8C0 for kind 11) */
+/* (as func_002F9000)  his model files (Pursuer_ModelFiles for kind 11) */
 u8 *func_00365D10(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AF0 : D_00444AB0;
 }
 
-/* (as func_002F9000)  his model files (func_0029F8C0 for kind 11) */
-u8 *func_00365D50(Pursuer *p) {
+/* (as func_002F9000)  his model files (Pursuer_ModelFiles for kind 11) */
+/* 0x00365D50 */
+u8 *Kind39_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AD0 : D_00444A90;
 }
 
@@ -1805,9 +1862,10 @@ extern u8 D_00444ED0[], D_00445990[], D_004459E0[], D_00445A00[], D_00445A48[], 
     D_00445530[], D_00445550[], D_00445598[], D_00444CE0[], D_00445060[], D_00445090[], D_00444B50[],
     D_00444CA0[], D_0047B010[];
 
-/* (as func_0030C230) the other class's setup: its tables, and its own stats */
-void func_00365D90(Pursuer *p) {
-    func_0029FB20(p);
+/* (as Lorenzo2_Setup) the other class's setup: its tables, and its own stats */
+/* 0x00365D90 */
+void Kind39_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 300;
         PU(p, 0x171C, u8 *) = D_00444ED0;
@@ -1870,8 +1928,9 @@ static u8 *const sAttackTables3[2][17] = {
       D_00445968, D_00445978, D_00445950 },
 };
 
-/* vtable +0x130 (as func_0030C7C0) */
-void func_00363CE0(Pursuer *p, s8 situation) {
+/* vtable +0x130 (as Kind12_AttackTable) */
+/* 0x00363CE0 */
+void Kind39_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables3[alt][(u32)situation < 17 ? situation : 0];
@@ -1889,9 +1948,10 @@ void func_00364510(Pursuer *p) {
     Lorenzo2_Rise(p, &D_00445AC8, 1);
 }
 
-/* vtable +0x30: its frame update (as func_0030BE20, without his mode 2), with its dust
+/* vtable +0x30: its frame update (as Lorenzo2_Update, without his mode 2), with its dust
    (func_003638E0 / func_003636D0) */
-void func_003659D0(Pursuer *p) {
+/* 0x003659D0 */
+void Kind39_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -1922,8 +1982,9 @@ void func_003659D0(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-/* func_0029E520, then +0x31C (1) */
-void func_00365CD0(Pursuer *p) {
-    func_0029E520(p);
+/* Pursuer_Activate, then +0x31C (1) */
+/* 0x00365CD0 */
+void Kind39_Activate(Pursuer *p) {
+    Pursuer_Activate(p);
     VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 1);
 }

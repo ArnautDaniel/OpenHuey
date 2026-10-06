@@ -39,8 +39,8 @@ void *func_002C64E0(u8 *o, s32 flags);
 
 extern u8 D_0041B5F0[];
 extern u8 D_00444B10[];
-void *func_002FA1C0(void);
-void *func_00363600(void);
+void *Debilitas2_MotionFiles(void);
+void *Kind39_MotionFiles(void);
 
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 
@@ -116,7 +116,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
     return c;
 }
 
-Character *func_003634F0(Character *c, s32 flags);
+Character *Kind39_dtor(Character *c, s32 flags);
 
 /* an effect's quad drawer (at `drawer`) given the current one of its records (`size` apart from
  * +0x10, the index at `idx`), and drawn */
@@ -2920,9 +2920,11 @@ s32 func_00363130(u8 *e) {
     return 1;
 }
 
-Character *func_003634F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00479B20); }
+/* 0x003634F0 */
+Character *Kind39_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00479B20); }
 
-void *func_00363600(void) {
+/* 0x00363600 */
+void *Kind39_MotionFiles(void) {
     return D_00444B10;
 }
 
@@ -3439,7 +3441,8 @@ void func_002F9FF0(u8 *e) {
     }
 }
 
-void *func_002FA1C0(void) {
+/* 0x002FA1C0 */
+void *Debilitas2_MotionFiles(void) {
     return D_0041B5F0;
 }
 

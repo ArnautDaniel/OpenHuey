@@ -15,8 +15,8 @@
 
 void TintStalker_SetDelay(Pursuer *p);
 
-s32 func_0031FBF0(void);
-s32 func_0031FC00(void);
+s32 TintStalker_AttackAnimB(void);
+s32 TintStalker_AttackAnimA(void);
 
 extern u8 D_0042A2C0[];
 extern u8 D_0042A300[];
@@ -33,10 +33,10 @@ static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
 }
 
-f32 func_0031FC10(void);
-f32 func_0031FC20(void);
-f32 func_0031FC30(void);
-s32 func_0031FC40(u8 *self);
+f32 TintStalker_FrightAttack(void);
+f32 TintStalker_FrightSeen(void);
+f32 TintStalker_ReachHewie(void);
+s32 TintStalker_SlowWalkAnim(u8 *self);
 void *TintStalker_Table(void);
 
 /* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),
@@ -174,37 +174,43 @@ void TintStalker_DoorDone(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         return;
     }
-    func_0028D6E0(p);
+    Pursuer_ExitDone(p);
 }
 
-/* +0x17C4 / +0x17C8 = 150, then func_002927D0 */
+/* +0x17C4 / +0x17C8 = 150, then Pursuer_BehaviourEnded */
 /* 0x0031FBE0 */
 void TintStalker_SetDelay(Pursuer *p) {
     PU(p, 0x17C4, s32) = 0x96;
-    func_002927D0(p);
+    Pursuer_BehaviourEnded(p);
 }
 
-s32 func_0031FBF0(void) {
+/* 0x0031FBF0 */
+s32 TintStalker_AttackAnimB(void) {
     return 0x11;
 }
 
-s32 func_0031FC00(void) {
+/* 0x0031FC00 */
+s32 TintStalker_AttackAnimA(void) {
     return 0x10;
 }
 
-f32 func_0031FC10(void) {
+/* 0x0031FC10 */
+f32 TintStalker_FrightAttack(void) {
     return 1e+01f;
 }
 
-f32 func_0031FC20(void) {
+/* 0x0031FC20 */
+f32 TintStalker_FrightSeen(void) {
     return 3e+01f;
 }
 
-f32 func_0031FC30(void) {
+/* 0x0031FC30 */
+f32 TintStalker_ReachHewie(void) {
     return 12.0f;
 }
 
-s32 func_0031FC40(u8 *self) {
+/* 0x0031FC40 */
+s32 TintStalker_SlowWalkAnim(u8 *self) {
     f32 d;
 
     if (S32(self, 0xC4) == 1) {
@@ -257,7 +263,7 @@ void TintStalker_Update(Pursuer *p) {
    is 20 */
 /* 0x0031FFA0 */
 void TintStalker_Reset(Pursuer *p) {
-    func_0029E520(p);
+    Pursuer_Activate(p);
     PU(p, 0x17C4, s32) = 0;
     PU(p, 0x17C8, u8) = 0;
     PU(p, 0x17CC, f32) = 0.0f;
@@ -304,13 +310,13 @@ void *TintStalker_Table(void) {
 extern u8 D_0042A380[], D_0042A4D0[], D_0042A4E0[], D_0042A770[], D_0042A7A0[], D_0042AAD0[],
     D_0042AB20[], D_0042AB40[], D_0042AB88[], D_0047AD70[];
 
-/* vtable +0xF4: its setup over the Pursuer's (func_0029FB20): tables and stats (more health
+/* vtable +0xF4: its setup over the Pursuer's (Pursuer_Setup): tables and stats (more health
    and a closer reach when gProgress+0x30 bit 0x8000 is set), the tint off, layer 0x11 */
 /* 0x003201D0 */
 void TintStalker_Setup(Pursuer *p) {
     void *m;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 125;
         PU(p, 0x171C, u8 *) = D_0042A4E0;

@@ -34,22 +34,22 @@ extern void *D_00477AE0[];
 extern void *D_00477E30[];
 extern u8 D_00430A10[];
 extern u8 D_00430A50[];
-void *func_0033D7D0(void);
-void *func_0033D7E0(void);
+void *Kind32_ModelFiles(void);
+void *Kind32_MotionFiles(void);
 
 extern u32 D_0043B6E0[];
 extern u32 D_0043CDC0[];
 void func_00345E20(u8 *p);
-void *func_00346000(void);
-void func_00346050(void *self, s32 i, f32 *out);
-void func_003460F0(void *self, s32 i, f32 *out);
+void *Kind34_MotionFiles(void);
+void Kind34_DoorOffset(void *self, s32 i, f32 *out);
+void Kind34_ActionOffsets(void *self, s32 i, f32 *out);
 s32 func_003476A0(f32 *a);
-void *func_003479E0(void);
+void *Kind35_MotionFiles(void);
 
 s32 func_00345FF0(void);
 s32 func_003479D0(void);
 
-void func_00346010(Pursuer *p);
+void Kind34_FilesLoaded(Pursuer *p);
 
 extern void *D_00478B70[];
 void *func_00347640(u8 *o, s32 flags);
@@ -125,12 +125,12 @@ static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) 
     return -1;
 }
 
-Character *func_0033D6C0(Character *c, s32 flags);
-void func_0033D800(Pursuer *p);
-void func_0033D850(Pursuer *p);
-s32 func_0033D920(Pursuer *p);
-Character *func_00345EE0(Character *c, s32 flags);
-Character *func_003478C0(Character *c, s32 flags);
+Character *Kind32_dtor(Character *c, s32 flags);
+void Kind32_ShowUp(Pursuer *p);
+void Kind32_EventState(Pursuer *p);
+s32 Kind32_GrabOrder(Pursuer *p);
+Character *Kind34_dtor(Character *c, s32 flags);
+Character *Kind35_dtor(Character *c, s32 flags);
 
 /* (class D_00474000, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
 u8 *func_00321910(u8 *o, s32 flags) {
@@ -406,13 +406,15 @@ void func_003477A0(u8 *o) {
     }
 }
 
-Character *func_003478C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477E30); }
+/* 0x003478C0 */
+Character *Kind35_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477E30); }
 
 s32 func_003479D0(void) {
     return 0x23;
 }
 
-void *func_003479E0(void) {
+/* 0x003479E0 */
+void *Kind35_MotionFiles(void) {
     return D_0043CDC0;
 }
 
@@ -1234,24 +1236,28 @@ void func_00345E20(u8 *p) {
     }
 }
 
-Character *func_00345EE0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477AE0); }
+/* 0x00345EE0 */
+Character *Kind34_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477AE0); }
 
 s32 func_00345FF0(void) {
     return 0x22;
 }
 
-void *func_00346000(void) {
+/* 0x00346000 */
+void *Kind34_MotionFiles(void) {
     return D_0043B6E0;
 }
 
-/* (a pursuer class) func_0029F120, then its model's +0x34 (1) */
-void func_00346010(Pursuer *p) {
-    func_0029F120(p);
+/* (a pursuer class) Pursuer_FilesLoaded, then its model's +0x34 (1) */
+/* 0x00346010 */
+void Kind34_FilesLoaded(Pursuer *p) {
+    Pursuer_FilesLoaded(p);
     VCALL(p->c.motion, 0x34, void (*)(void *, s32))(p->c.motion, 1);
 }
 
 /* Writes a position {0, 0, z} for index 0..3. */
-void func_00346050(void *self, s32 i, f32 *out) {
+/* 0x00346050 */
+void Kind34_DoorOffset(void *self, s32 i, f32 *out) {
     switch (i) {
     case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
     case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
@@ -1261,7 +1267,8 @@ void func_00346050(void *self, s32 i, f32 *out) {
 }
 
 /* Writes a position {x, 0, z} for index 10..15. */
-void func_003460F0(void *self, s32 i, f32 *out) {
+/* 0x003460F0 */
+void Kind34_ActionOffsets(void *self, s32 i, f32 *out) {
     switch (i) {
     case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
     case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
@@ -2353,21 +2360,27 @@ void func_0033D4B0(u8 *o) {
     }
 }
 
-Character *func_0033D6C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476C10); }
+/* 0x0033D6C0 */
+Character *Kind32_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476C10); }
 
-void *func_0033D7D0(void) {
+/* 0x0033D7D0 */
+void *Kind32_ModelFiles(void) {
     return D_00430A10;
 }
 
-void *func_0033D7E0(void) {
+/* 0x0033D7E0 */
+void *Kind32_MotionFiles(void) {
     return D_00430A50;
 }
 
-void func_0033D800(Pursuer *p) { creature_inplay(p); }
+/* 0x0033D800 */
+void Kind32_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0033D850(Pursuer *p) { creature_act5(p, &D_00430A90); }
+/* 0x0033D850 */
+void Kind32_EventState(Pursuer *p) { creature_act5(p, &D_00430A90); }
 
-s32 func_0033D920(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0033D920 */
+s32 Kind32_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *D_00479800[];

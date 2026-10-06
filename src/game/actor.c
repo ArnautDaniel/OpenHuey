@@ -368,12 +368,14 @@ s32 func_00123C60(Actor *a, s32 room, const f32 *pos) {
 }
 
 /* vtable +0x3C (base): always true */
-s32 func_00123D00(Actor *a) {
+/* 0x00123D00 */
+s32 Actor_CanAct(Actor *a) {
     return 1;
 }
 
 /* vtable +0x34 (base): nothing */
-void func_00123D10(Actor *a) {
+/* 0x00123D10 */
+void Actor_LeaveScreen(Actor *a) {
 }
 
 /* Triangle containing `p`, found by walking from the actor's triangle toward it; -1 if the
@@ -425,11 +427,13 @@ u32 func_00123E20(Actor *a, f32 *p) {
 }
 
 /* vtable +0x30 (base): nothing */
-void func_00123F50(Actor *a) {
+/* 0x00123F50 */
+void Actor_Update(Actor *a) {
 }
 
 /* vtable +0x2C (base): nothing */
-void func_00123F60(Actor *a) {
+/* 0x00123F60 */
+void Actor_LightChange(Actor *a) {
 }
 
 /* Triangle containing `target`, walking from triangle `tri` at `from`; -1 if the walk leaves
@@ -697,7 +701,8 @@ void func_00124890(Actor *a, s32 kind) {
 /* vtable +0x28: place the actor in triangle `tri`, optionally turning to `*heading` and moving
  * to `pos` (which must lie in the triangle; it is put on the surface), else to the triangle's
  * centre. 0, or -1 if the triangle is invalid, blocked or doesn't contain `pos`. */
-s32 func_00124B80(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
+/* 0x00124B80 */
+s32 Actor_Place(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
     NavMesh *nm = gNavMesh;
 
     a->prevNavTri = tri;
@@ -732,17 +737,20 @@ s32 func_00124B80(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
 }
 
 /* vtable +0x24: remember the current position and triangle as the previous ones. */
-void func_00124D00(Actor *a) {
+/* 0x00124D00 */
+void Actor_RememberPos(Actor *a) {
     a->prevNavTri = a->navTri;
     func_0010E5F0(a->prevPos, a->pos);
 }
 
 /* vtable +0x20 (base): nothing */
-void func_00124D20(Actor *a) {
+/* 0x00124D20 */
+void Actor_Unload(Actor *a) {
 }
 
 /* vtable +0x1C (base): nothing */
-void func_00124D30(Actor *a) {
+/* 0x00124D30 */
+void Actor_FilesLoaded(Actor *a) {
 }
 
 /* Has the actor's data file (id flags24 | slot) finished loading? */
@@ -751,19 +759,23 @@ s32 func_00124D40(Actor *a) {
 }
 
 /* vtable +0x18 (base): nothing */
-void func_00124D80(Actor *a) {
+/* 0x00124D80 */
+void Actor_FilesLoading(Actor *a) {
 }
 
 /* vtable +0x14 (base): nothing */
-void func_00124D90(Actor *a) {
+/* 0x00124D90 */
+void Actor_LoadFiles(Actor *a) {
 }
 
 /* vtable +0x10 (base): nothing */
-void func_00124DA0(Actor *a) {
+/* 0x00124DA0 */
+void Actor_Cleanup(Actor *a) {
 }
 
 /* vtable +0xC: reset position, orientation and state. */
-void func_00124DB0(Actor *a) {
+/* 0x00124DB0 */
+void Actor_Reset(Actor *a) {
     a->navTri = NAV_NONE;
     a->pos[2] = 0.0f;
     a->pos[1] = 0.0f;
@@ -800,7 +812,8 @@ extern void *D_00469C20[];   /* Actor base vtable */
 extern void *D_00469C60[];   /* Actor vtable */
 
 /* vtable +0x8 (0x469C60): destructor. Actors live inside their scene, so "delete" does nothing. */
-Actor *func_00124E60(Actor *a, s32 flags) {
+/* 0x00124E60 */
+Actor *Character_dtor(Actor *a, s32 flags) {
     if (a != NULL) {
         a->vtbl = D_00469C60;
         a->vtbl = D_00469C20;
@@ -811,16 +824,19 @@ Actor *func_00124E60(Actor *a, s32 flags) {
     return a;
 }
 
-s32 func_00124EC0(Actor *a) {
+/* 0x00124EC0 */
+s32 Character_LoadMessage(Actor *a) {
     return 0;
 }
 
-s32 func_00124F10(Actor *a) {
+/* 0x00124F10 */
+s32 Character_IsBusy(Actor *a) {
     return 0;
 }
 
 /* vtable +0x38 (base): per-frame update - nothing for a plain actor */
-void func_00120F80(Actor *a) {
+/* 0x00120F80 */
+void Actor_ShowUp(Actor *a) {
 }
 
 extern VObject *gSceneGameF29740;   /* path planner */
@@ -935,7 +951,8 @@ void func_00124F20(Character *c, u32 door) {
 
 /* vtable +0x80: screen fade by how far the character is past the boundary of the first region
  * flagged for its slot (progress flag bit 0): alpha 0..128 over half the boundary length. */
-void func_001254B0(Character *c) {
+/* 0x001254B0 */
+void Character_RegionFade(Character *c) {
     VObject *rooms, *objs;
     sceVu0FVECTOR a, b, fwd, p0, p1, p2, e, n, q;
     f32 d, ad, half, t;
@@ -1017,13 +1034,16 @@ f32 func_001257B0(Character *c, u32 goalTri, const f32 *goal, u32 mask) {
     return VCALL(planner, 0x40, f32 (*)(VObject *, s32))(planner, c->pathId);
 }
 
-void func_001258D0(Character *c) {
+/* 0x001258D0 */
+void Character_BackToStance(Character *c) {
 }
 
-void func_001258E0(Character *c) {
+/* 0x001258E0 */
+void Character_LeftBehind(Character *c) {
 }
 
-s32 func_001258F0(Character *c) {
+/* 0x001258F0 */
+s32 Character_AttackPoint(Character *c) {
     return 0;
 }
 
@@ -1065,13 +1085,16 @@ void func_00125A10(Character *c) {
     func_001247E0(&c->a, d);
 }
 
-void func_00125AA0(Character *c) {
+/* 0x00125AA0 */
+void Character_LoadState(Character *c) {
 }
 
-void func_00125AB0(Character *c) {
+/* 0x00125AB0 */
+void Character_SaveState(Character *c) {
 }
 
-s32 func_00125AC0(Character *c) {
+/* 0x00125AC0 */
+s32 Character_EventConcerns(Character *c) {
     return 1;
 }
 
@@ -1087,8 +1110,9 @@ static inline void Character_CancelPath(Character *c) {
 #define Character_Tracked(c) ((VCALL(c, 0x98, u32 (*)(Character *))(c) & 0xFF) == 1)
 
 /* vtable +0x28 (Character): place, then drop any path and reset the state blocks. */
-s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00124B80(&c->a, tri, heading, pos);
+/* 0x00125AD0 */
+s32 Character_Place(Character *c, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = Actor_Place(&c->a, tri, heading, pos);
 
     Character_CancelPath(c);
     c->unk14D0 = 0;
@@ -1110,7 +1134,8 @@ s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3) {
 }
 
 /* Forget the path and movement state. */
-void func_00125BE0(Character *c) {
+/* 0x00125BE0 */
+void Character_ResetBehaviour(Character *c) {
     s32 i;
 
     c->unk14C0 = 0xFFFF;
@@ -1199,7 +1224,8 @@ void func_00126270(Character *c) {
 }
 
 /* Full stop: forget path and movement state, clear the flags. */
-void func_00126360(Character *c) {
+/* 0x00126360 */
+void Character_EventReset(Character *c) {
     s32 i;
 
     c->unk14C0 = 0xFFFF;
@@ -1223,7 +1249,8 @@ void func_00126360(Character *c) {
     c->unkE4 = 1;
 }
 
-void func_00126450(Character *c) {
+/* 0x00126450 */
+void Character_BackToNormal(Character *c) {
     c->unk14D0 = 0;
     func_001F6E10(c->motion);
     c->unkE0 = 1;
@@ -1232,7 +1259,8 @@ void func_00126450(Character *c) {
     VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
 }
 
-void func_001264B0(Character *c) {
+/* 0x001264B0 */
+void Character_EventCommand(Character *c) {
 }
 
 /* Forward to the sound manager. */
@@ -1249,7 +1277,8 @@ s32 func_00126800(Character *c) {
 }
 
 /* Halt: forget path and movement state, stop the animation (motion vtable +0x68). */
-void func_00126810(Character *c) {
+/* 0x00126810 */
+void Character_Enable(Character *c) {
     s32 i;
 
     c->unk14C0 = 0xFFFF;
@@ -1275,7 +1304,8 @@ void func_00126810(Character *c) {
 }
 
 /* Disable the character (vtable +0x60 first). */
-void func_00126910(Character *c) {
+/* 0x00126910 */
+void Character_Disable(Character *c) {
     s32 s;
 
     VCALL(c, 0x60, void (*)(Character *))(c);
@@ -1292,10 +1322,12 @@ void func_00126910(Character *c) {
     func_002DCAE0(c->motion);
 }
 
-void func_001269A0(Character *c) {
+/* 0x001269A0 */
+void Character_PlaceModel(Character *c) {
 }
 
-void func_001269B0(Character *c) {
+/* 0x001269B0 */
+void Character_Think(Character *c) {
 }
 
 static inline f32 Character_PathRemaining(Character *c) {
@@ -1469,13 +1501,15 @@ s32 func_001274E0(Character *c, f32 speed) {
 }
 
 /* vtable +0x24 (Character): as the base. */
-void func_00127650(Character *c) {
-    func_00124D00(&c->a);
+/* 0x00127650 */
+void Character_RememberPos(Character *c) {
+    Actor_RememberPos(&c->a);
 }
 
 /* vtable +0xC (Character): reset. */
-void func_00127660(Character *c) {
-    func_00124DB0(&c->a);
+/* 0x00127660 */
+void Character_Reset(Character *c) {
+    Actor_Reset(&c->a);
     c->pathReq = &c->req;
     c->pathId = -1;
     c->moveMode = 0;
@@ -1768,9 +1802,10 @@ void func_001269C0(Character *c) {
     c->heardSlot = 0xFF;
 }
 
-/* Activate the character (state reset), then vtable +0x60. Shares its tail with func_00125D40
+/* Activate the character (state reset), then vtable +0x60. Shares its tail with Character_Deactivate
  * in the original. */
-void func_00125CC0(Character *c) {
+/* 0x00125CC0 */
+void Character_Activate(Character *c) {
     c->a.active = 1;
     c->a.unkC4 = 0;
     c->unkE0 = 0;
@@ -1797,7 +1832,8 @@ void func_00125CC0(Character *c) {
 }
 
 /* Deactivate: vtable +0x60, then off the mesh. */
-void func_00125D40(Character *c) {
+/* 0x00125D40 */
+void Character_Deactivate(Character *c) {
     VCALL(c, 0x60, void (*)(Character *))(c);
     c->a.active = 0;
     c->a.navTri = NAV_NONE;

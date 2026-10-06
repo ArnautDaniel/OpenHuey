@@ -34,15 +34,15 @@ extern u8 D_003AF1F0[];
 extern u8 D_003AF230[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 func_00124ED0(void *p, s32 n);
-void func_00127B20(void *p, u32 id);
-void func_00127B90(void *p);
-void func_00127BA0(void *p);
-f32 func_00127BD0(void);
-f32 func_00127BE0(void);
-f32 func_00127BF0(void);
-void func_00127C10(void *p, s32 on);
-s32 func_00127C30(void *p);
+s32 Character_TimerDown(void *p, s32 n);
+void Pursuer_StartActionNext(void *p, u32 id);
+void Pursuer_Caught(void *p);
+void Pursuer_NoGiveUp(void *p);
+f32 Pursuer_FrightSeen(void);
+f32 Pursuer_FrightAttack(void);
+f32 Pursuer_ThreatAmount(void);
+void Pursuer_SetRage(void *p, s32 on);
+s32 Pursuer_IsBusy(void *p);
 
 extern void *D_00477790[];
 extern void *D_00476C10[];
@@ -86,17 +86,17 @@ extern u8 D_004297C0[];
 extern u8 D_00429800[];
 extern u8 D_0042C870[];
 extern u8 D_0042C8B0[];
-void *func_001795E0(void);
-void *func_001795F0(void);
-void *func_00179A90(void);
-void *func_00179AA0(void);
+void *Kind14_ModelFiles(void);
+void *Kind14_MotionFiles(void);
+void *Kind21_ModelFiles(void);
+void *Kind21_MotionFiles(void);
 void *func_002ECC90(void);
 void *func_002ECCA0(void);
 
 extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_002CF180(void);
+void *Debilitas3_ModelFiles(void);
 
 extern u8 D_00414820[], D_004147E0[];
 
@@ -109,16 +109,16 @@ extern u8 D_004224A0[];
 static inline s32 b5_prog_flag8000(void);
 
 extern u8 D_00429C50[];
-void *func_00315C40(void);
+void *Kind16_ModelFiles(void);
 
 extern u8 D_00429C90[];
 extern u8 D_00429CE0[];
 extern u8 D_00429D20[];
 extern u8 D_0042A2E0[];
 extern u8 D_0042A320[];
-void *func_00315C50(void);
-void *func_00316BC0(void);
-void *func_00316BD0(void);
+void *Kind16_MotionFiles(void);
+void *Kind17_ModelFiles(void);
+void *Kind17_MotionFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
 extern void *D_0046D730[];
@@ -148,43 +148,43 @@ extern void *D_004726E0[];   /* the strand (creature.c) */
 extern u8 D_00422360[];
 extern u8 D_004223A0[];
 extern u8 D_004223E0[];
-void *func_00308FD0(void);
-void *func_00309450(void);
+void *Kind09_MotionFiles(void);
+void *Kind09_ModelFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
 extern u8 D_00429730[];
 extern u8 D_00429770[];
-void *func_00311AB0(void);
-void *func_00311AC0(void);
+void *Kind13_ModelFiles(void);
+void *Kind13_MotionFiles(void);
 
 extern u8 D_0042A0F0[];
 extern u8 D_0042A130[];
-void *func_0031E6D0(void);
-void *func_0031E6E0(void);
+void *Kind19_ModelFiles(void);
+void *Kind19_MotionFiles(void);
 
 extern u8 D_0042C380[];
 extern u8 D_0042C3C0[];
 extern u8 D_0042C900[];
 extern u8 D_0042C940[];
-void *func_00321750(void);
-void *func_00321760(void);
-void *func_0032CAD0(void);
-void *func_0032CAE0(void);
+void *Kind24_ModelFiles(void);
+void *Kind24_MotionFiles(void);
+void *Kind20_ModelFiles(void);
+void *Kind20_MotionFiles(void);
 
 extern u8 D_00430820[];
 extern u8 D_00430860[];
-void *func_0033ACB0(void);
-void *func_0033ACC0(void);
+void *Kind29_ModelFiles(void);
+void *Kind29_MotionFiles(void);
 
 extern u32 D_0043B5B0[];
 extern u32 D_0043B5F0[];
-void *func_00345210(void);
-void *func_00345220(void);
+void *Kind33_ModelFiles(void);
+void *Kind33_MotionFiles(void);
 
 extern u32 D_00441850[];
-void *func_0034B8C0(void);
-void func_0034B8D0(void *self, s32 i, f32 *out);
-void func_0034B970(void *self, s32 i, f32 *out);
+void *Kind37_MotionFiles(void);
+void Kind37_DoorOffset(void *self, s32 i, f32 *out);
+void Kind37_ActionOffsets(void *self, s32 i, f32 *out);
 
 extern const PTMF D_0042A170;
 extern const PTMF D_0042C400;
@@ -217,28 +217,28 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
     return c;
 }
 
-Character *func_003119A0(Character *c, s32 flags);
-Character *func_0031E5C0(Character *c, s32 flags);
-void func_0031E700(Pursuer *p);
-void func_0031E750(Pursuer *p);
-s32 func_0031E820(Pursuer *p);
-Character *func_00321640(Character *c, s32 flags);
-void func_00321780(Pursuer *p);
-void func_003217D0(Pursuer *p);
-s32 func_003218A0(Pursuer *p);
-Character *func_0032C9C0(Character *c, s32 flags);
-void func_0032CB00(Pursuer *p);
-void func_0032CB50(Pursuer *p);
-s32 func_0032CC20(Pursuer *p);
-Character *func_0033ABA0(Character *c, s32 flags);
-void func_0033ACE0(Pursuer *p);
-void func_0033AD30(Pursuer *p);
-s32 func_0033AE00(Pursuer *p);
-Character *func_00345100(Character *c, s32 flags);
-void func_00345240(Pursuer *p);
-void func_00345290(Pursuer *p);
-s32 func_00345360(Pursuer *p);
-Character *func_0034B7B0(Character *c, s32 flags);
+Character *Kind13_dtor(Character *c, s32 flags);
+Character *Kind19_dtor(Character *c, s32 flags);
+void Kind19_ShowUp(Pursuer *p);
+void Kind19_EventState(Pursuer *p);
+s32 Kind19_GrabOrder(Pursuer *p);
+Character *Kind24_dtor(Character *c, s32 flags);
+void Kind24_ShowUp(Pursuer *p);
+void Kind24_EventState(Pursuer *p);
+s32 Kind24_GrabOrder(Pursuer *p);
+Character *Kind20_dtor(Character *c, s32 flags);
+void Kind20_ShowUp(Pursuer *p);
+void Kind20_EventState(Pursuer *p);
+s32 Kind20_GrabOrder(Pursuer *p);
+Character *Kind29_dtor(Character *c, s32 flags);
+void Kind29_ShowUp(Pursuer *p);
+void Kind29_EventState(Pursuer *p);
+s32 Kind29_GrabOrder(Pursuer *p);
+Character *Kind33_dtor(Character *c, s32 flags);
+void Kind33_ShowUp(Pursuer *p);
+void Kind33_EventState(Pursuer *p);
+s32 Kind33_GrabOrder(Pursuer *p);
+Character *Kind37_dtor(Character *c, s32 flags);
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p);
 static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st);
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p);
@@ -250,9 +250,9 @@ static void strand_init(void **obj) {
     obj[0x40 / 4] = D_0046FC30;
 }
 
-Character *func_00308EC0(Character *c, s32 flags);
-void func_00308FF0(Character *c);
-void func_00309080(Character *c);
+Character *Kind09_dtor(Character *c, s32 flags);
+void Kind09_Behaviour25C(Character *c);
+void Kind09_BehaviourSearch(Character *c);
 void func_0036A530(u8 *o, s32 *m);
 void func_0036A7F0(u8 *o);
 s32 func_0036A590(u8 *o);
@@ -289,9 +289,9 @@ static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) 
     return -1;
 }
 
-void func_0032C830(Pursuer *p);
-void func_0032C880(Pursuer *p);
-s32 func_0032C950(Pursuer *p);
+void Kind21_ShowUp(Pursuer *p);
+void Kind21_EventState(Pursuer *p);
+s32 Kind21_GrabOrder(Pursuer *p);
 
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {
@@ -310,7 +310,8 @@ static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
 }
 
 /* Count down the timer at +0x14C8 by |n|; 1 (and clamp to 0) when it runs out. */
-s32 func_00124ED0(void *p, s32 n) {
+/* 0x00124ED0 */
+s32 Character_TimerDown(void *p, s32 n) {
     if (n <= 0) {
         n = -n;
     }
@@ -322,7 +323,8 @@ s32 func_00124ED0(void *p, s32 n) {
     return 1;
 }
 /* nothing */
-void func_00283EE0(Pursuer *p) {
+/* 0x00283EE0 */
+void Pursuer_AttackTable(Pursuer *p) {
 }
 
 /* a character's step (base) */
@@ -336,33 +338,39 @@ s32 func_0029A850(Pursuer *p) {
 }
 
 /* stop the pursuer's sounds (sound driver +0x10) */
-void func_0029D3E0(Pursuer *p) {
+/* 0x0029D3E0 */
+void Pursuer_StopSounds(Pursuer *p) {
     VCALL(gSound, 0x10, void (*)(VObject *, s32, s32))(gSound, 0, 0x400002);
 }
 
 /* clear a 3-word vector (third argument) */
-void func_0029CE40(Pursuer *p, s32 a1, s32 *out) {
+/* 0x0029CE40 */
+void Pursuer_ActionOffsets(Pursuer *p, s32 a1, s32 *out) {
     out[0] = 0;
     out[1] = 0;
     out[2] = 0;
 }
 
 /* vtable +0x58: deactivate (Character part) */
-void func_0029E600(Pursuer *p) {
-    func_00125D40(&p->c);
+/* 0x0029E600 */
+void Pursuer_Deactivate(Pursuer *p) {
+    Character_Deactivate(&p->c);
 }
 
 /* vtable +0x24 */
-void func_0029EAA0(Pursuer *p) {
-    func_00127650(&p->c);
+/* 0x0029EAA0 */
+void Pursuer_RememberPos(Pursuer *p) {
+    Character_RememberPos(&p->c);
 }
 
 /* vtable +0x10: nothing */
-void func_0029EE00(Pursuer *p) {
+/* 0x0029EE00 */
+void Pursuer_Cleanup(Pursuer *p) {
 }
 
 /* vtable +0x1C4 */
-void func_0028ED20(Pursuer *p) {
+/* 0x0028ED20 */
+void Pursuer_Door1C4(Pursuer *p) {
     PU(p, 0x16EE, u8) = 1;
     PU(p, 0x16F0, u8) = 1;
     p->c.unk100 = -1;
@@ -397,19 +405,22 @@ void func_0029A6D0(Pursuer *p) {
 }
 
 /* vtable +0x2C4: timer +0x1660 to 900 frames (15 s), 1 when the progress byte +0x1FBEC1 is set */
-void func_0027E560(Pursuer *p) {
+/* 0x0027E560 */
+void Pursuer_Timer15s(Pursuer *p) {
     PU(p, 0x1660, s32) = AT(gProgress, 0x1FBEC1, u8) != 0 ? 1 : 900;
 }
 
 /* vtable +0x324 / +0x320: animation ids by stance (+0xC4) and +0x16B8 */
-s32 func_00297AC0(Pursuer *p) {
+/* 0x00297AC0 */
+s32 Pursuer_StanceAnim(Pursuer *p) {
     if (p->c.a.unkC4 != 1) {
         return PU(p, 0x16B8, s32) == 2 ? 0x204 : 0x200;
     }
     return 0x202;
 }
 
-s32 func_00297B00(Pursuer *p) {
+/* 0x00297B00 */
+s32 Pursuer_WalkAnim(Pursuer *p) {
     if (p->c.a.unkC4 != 1) {
         return PU(p, 0x16B8, s32) == 2 ? 3 : 0;
     }
@@ -417,7 +428,8 @@ s32 func_00297B00(Pursuer *p) {
 }
 
 /* vtable +0x328 */
-s32 func_00297A70(Pursuer *p) {
+/* 0x00297A70 */
+s32 Pursuer_SlowWalkAnim(Pursuer *p) {
     if (p->c.a.unkC4 != 1) {
         if (PU(p, 0x16B8, s32) != 2) {
             return PU(p, 0x16C8, u8) != 0 ? 0x201 : 0x206;
@@ -439,7 +451,8 @@ void func_00292120(Pursuer *p) {
 }
 
 /* vtable +0x240: step, count +0x104 down */
-void func_00289810(Pursuer *p) {
+/* 0x00289810 */
+void Pursuer_StepCount(Pursuer *p) {
     func_00125A10(&p->c);
     p->c.unk104[0]--;
     if (p->c.unk104[0] <= 0) {
@@ -457,7 +470,8 @@ void func_00289F50(Pursuer *p) {
 }
 
 /* vtable +0x10C: in stance 2 playing animation 0x1805 / 0x1806 */
-s32 func_0029A870(Pursuer *p) {
+/* 0x0029A870 */
+s32 Pursuer_InStance2Anim(Pursuer *p) {
     if (p->c.a.unkC4 == 2) {
         s32 anim = MOTION_ANIM(p);
 
@@ -493,8 +507,9 @@ void func_00285AB0(Pursuer *p) {
 }
 
 /* vtable +0x4C: disable, animation paused, its message taken down */
-void func_002990E0(Pursuer *p) {
-    func_00126910(&p->c);
+/* 0x002990E0 */
+void Pursuer_Disable(Pursuer *p) {
+    Character_Disable(&p->c);
     MOTION_AT(p, 0x4D8, u8) = 1;
     if (PU(p, 0x1688, s32) != 0) {
         VCALL(gBootMessage, 0x10, void (*)(VObject *, u32, s32, s32))(gBootMessage, p->c.msgSlot, PU(p, 0x1688, s32), 0);
@@ -502,7 +517,8 @@ void func_002990E0(Pursuer *p) {
 }
 
 /* vtable +0x150 */
-void func_002801B0(Pursuer *p) {
+/* 0x002801B0 */
+void Pursuer_EventOver2(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
 
     if (func_00122B50(&p->c.a, pos) != 0) {
@@ -512,8 +528,9 @@ void func_002801B0(Pursuer *p) {
 }
 
 /* vtable +0x50: enable, animation running, its message released */
-void func_00299080(Pursuer *p) {
-    func_00126810(&p->c);
+/* 0x00299080 */
+void Pursuer_Enable(Pursuer *p) {
+    Character_Enable(&p->c);
     MOTION_AT(p, 0x4D8, u8) = 0;
     if (PU(p, 0x1688, s32) != 0) {
         VCALL(gBootMessage, 0x14, void (*)(VObject *, u32))(gBootMessage, p->c.msgSlot);
@@ -522,7 +539,8 @@ void func_00299080(Pursuer *p) {
 }
 
 /* vtable +0x54: load the message image (file name at (+0x168C)->+0x1C) */
-s32 func_0029EE10(Pursuer *p) {
+/* 0x0029EE10 */
+s32 Pursuer_LoadMessage(Pursuer *p) {
     char *name = AT(PU(p, 0x168C, u8 *), 0x1C, char *);
 
     if (*name == 0) {
@@ -574,7 +592,8 @@ void func_00299300(Pursuer *p) {
 }
 
 /* vtable +0x178: count +0x1624 down while the room's flag +0x17B0 isn't set */
-void func_0027CE80(Pursuer *p) {
+/* 0x0027CE80 */
+void Pursuer_WaitRoomFlag(Pursuer *p) {
     if (Progress_CurRoomFlag(gProgress, p->c.a.room, PU(p, 0x17B0, u8)) != 0) {
         PU(p, 0x1624, s32) = 0;
     }
@@ -597,7 +616,8 @@ s32 func_00283870(Pursuer *p) {
 }
 
 /* vtable +0x1FC: through the door +0x100 once it's open */
-void func_0028D540(Pursuer *p) {
+/* 0x0028D540 */
+void Pursuer_DoorThroughOpen(Pursuer *p) {
     if (VCALL(gDoors, 0x30, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) != 0) {
         func_00212CA0(p, (u8)p->c.unk100);
         p->c.moveMode = 0;
@@ -609,7 +629,8 @@ void func_0028D540(Pursuer *p) {
 }
 
 /* vtable +0x1E0: reset to idle */
-void func_0028DBD0(Pursuer *p) {
+/* 0x0028DBD0 */
+void Pursuer_DoorIdle(Pursuer *p) {
     PU(p, 0x1624, s32) = 0;
     PURSUER_STEP_DONE(p) = 1;
     PURSUER_STEP_NEXT(p) = 1;
@@ -624,7 +645,8 @@ void func_0028DBD0(Pursuer *p) {
 }
 
 /* vtable +0x180 */
-void func_002919B0(Pursuer *p) {
+/* 0x002919B0 */
+void Pursuer_Move180(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
     if (((over ^ 1) & 0xFF) == 1) {
@@ -635,7 +657,8 @@ void func_002919B0(Pursuer *p) {
 }
 
 /* vtable +0x170 */
-void func_0027D130(Pursuer *p) {
+/* 0x0027D130 */
+void Pursuer_Plan170(Pursuer *p) {
     if (func_00217510(p) == 0) {
         if (PU(p, 0x17B4, s32) == 0 && PU(p, 0x1664, s32) == 0 && (func_00212A80(p, 0xFF) & 0xFF) != 0xFF) {
             PURSUER_STEP_DONE(p) = 1;
@@ -646,7 +669,8 @@ void func_0027D130(Pursuer *p) {
 }
 
 /* vtable +0x208 */
-void func_0028D040(Pursuer *p) {
+/* 0x0028D040 */
+void Pursuer_Door208(Pursuer *p) {
     PU(p, 0x1634, s32) = 0;
     p->c.a.unk2B = 0;
     if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) & 0xFF) {
@@ -675,8 +699,9 @@ s32 func_0029A8C0(Pursuer *p, s32 room) {
 }
 
 /* vtable +0x28: placement, turned to the animation's heading */
-s32 func_0029ED80(Pursuer *p, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00125AD0(&p->c, tri, heading, pos);
+/* 0x0029ED80 */
+s32 Pursuer_Place(Pursuer *p, u32 tri, const f32 *heading, f32 *pos) {
+    s32 r = Character_Place(&p->c, tri, heading, pos);
     u8 *m;
 
     MOTION_AT(p, 0x854, s32) = 0;
@@ -702,7 +727,8 @@ void func_002994B0(Pursuer *p) {
 }
 
 /* vtable +0x2C: room light change */
-void func_0029ED00(Pursuer *p) {
+/* 0x0029ED00 */
+void Pursuer_LightChange(Pursuer *p) {
     u8 *m;
 
     if (p->c.a.disabled == 1) {
@@ -716,7 +742,8 @@ void func_0029ED00(Pursuer *p) {
 }
 
 /* vtable +0x78: left behind in another room while in behaviour 0x23 */
-void func_00298FF0(Pursuer *p) {
+/* 0x00298FF0 */
+void Pursuer_LeftBehind(Pursuer *p) {
     s32 room = p->c.a.room;
 
     if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && PU(p, 0x175C, s32) == 0x23) {
@@ -737,7 +764,8 @@ void func_0029F2C0(Pursuer *p) {
 }
 
 /* vtable +0x18 */
-void func_0029F350(Pursuer *p) {
+/* 0x0029F350 */
+void Pursuer_FilesLoading(Pursuer *p) {
     if (p->c.a.slot != 2) {
         VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
         return;
@@ -809,7 +837,8 @@ void func_002860D0(Pursuer *p) {
 }
 
 /* vtable +0x20: unload: message, model, sounds */
-void func_0029EC60(Pursuer *p) {
+/* 0x0029EC60 */
+void Pursuer_Unload(Pursuer *p) {
     if (p->c.a.unkD0 != 0) {
         VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, p->c.msgSlot);
         p->c.a.unkD0 = 0;
@@ -824,7 +853,8 @@ void func_0029EC60(Pursuer *p) {
 }
 
 /* vtable +0x2A4: behaviour state cleared */
-void func_0027DFA0(Pursuer *p) {
+/* 0x0027DFA0 */
+void Pursuer_ClearBehaviour(Pursuer *p) {
     PU(p, 0x16F6, u8) = 0;
     PU(p, 0x16ED, u8) = 0;
     PURSUER_STEP_DONE(p) = 0;
@@ -851,7 +881,8 @@ void func_0028A660(Pursuer *p) {
 }
 
 /* vtable +0x108: sound id of the current path node (move 8 / 0x1A..0x1C), -1 none */
-u32 func_0029CB40(Pursuer *p) {
+/* 0x0029CB40 */
+u32 Pursuer_PathNodeSound(Pursuer *p) {
     if (p->c.moveMode == 8) {
         s32 sub = p->c.moveSub;
 
@@ -875,7 +906,8 @@ u32 func_0029CB40(Pursuer *p) {
 }
 
 /* the positions of bones `bones`[1] and (if >= 0) `bones`[2] */
-void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
+/* 0x00283A50 */
+void Pursuer_BonePositions(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
     sceVu0CopyVector(a, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bones[1]) + 0xC);
     if (bones[2] >= 0) {
         sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bones[2]) + 0xC);
@@ -887,7 +919,8 @@ void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
 extern void *D_003EC8E0;
 
 /* the defaults of every pursuer (radius, height, hp 100, hearing, timers) */
-void func_0029FB20(Pursuer *p) {
+/* 0x0029FB20 */
+void Pursuer_Setup(Pursuer *p) {
     p->c.a.radius = 5.0f;
     p->c.a.height = 20.0f;
     p->c.hpMax = 100;
@@ -918,7 +951,8 @@ void func_0029FB20(Pursuer *p) {
 }
 
 /* vtable +0x16C */
-void func_0027D1B0(Pursuer *p) {
+/* 0x0027D1B0 */
+void Pursuer_Plan16C(Pursuer *p) {
     p->c.moveSub = p->c.unk128 < p->c.unk124 ? 0x16 : 0x17;
     p->c.unk1530 = 0;
     p->c.unk1538 = 0;
@@ -941,7 +975,8 @@ void func_00289500(Pursuer *p) {
 }
 
 /* vtable +0x214 */
-void func_0028CD70(Pursuer *p) {
+/* 0x0028CD70 */
+void Pursuer_Door214(Pursuer *p) {
     PU(p, 0x1634, s32) = 0;
     p->c.a.unk2B = 0;
     if (!(VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
@@ -956,7 +991,8 @@ void func_0028CD70(Pursuer *p) {
 }
 
 /* vtable +0x1EC: open the door the pursuer heads for, unless it already is */
-void func_0028D8A0(Pursuer *p) {
+/* 0x0028D8A0 */
+void Pursuer_ExitOpen(Pursuer *p) {
     func_00214620(p, 0);
     if (!(PursuerGroup_Fields(gProgress, p->c.door, *(u8 *)&p->c.a.slot) & 0xFF & 1)) {
         p->c.unk100 = p->c.door;
@@ -1010,7 +1046,8 @@ void func_00289FA0(Pursuer *p) {
 }
 
 /* vtable +0x210: walk to the door */
-void func_0028CF80(Pursuer *p) {
+/* 0x0028CF80 */
+void Pursuer_DoorWalk(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
@@ -1023,7 +1060,8 @@ void func_0028CF80(Pursuer *p) {
 }
 
 /* vtable +0x1BC: the door animation over, through */
-void func_0028EFC0(Pursuer *p) {
+/* 0x0028EFC0 */
+void Pursuer_DoorThrough(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
     if (((over ^ 1) & 0xFF) != 1) {
@@ -1050,7 +1088,8 @@ void func_0029EF80(Pursuer *p, s32 id) {
 }
 
 /* vtable +0x160: follow the planned path */
-void func_0027D810(Pursuer *p) {
+/* 0x0027D810 */
+void Pursuer_FollowPlan(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 1;
     p->c.unk124 = p->c.unk128;
     *(f32 *)&p->c.unk14C4 = (f32)VCALL(gRooms, 0x38, s32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) + 150.0f;
@@ -1075,7 +1114,8 @@ void func_0028A860(Pursuer *p) {
 }
 
 /* vtable +0x1F4: go to the room exit +0x17B0 */
-void func_0028D7D0(Pursuer *p) {
+/* 0x0028D7D0 */
+void Pursuer_ExitGoTo(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     PU(p, 0x15A4, s32) = VCALL(gRooms, 0x24, s32 (*)(VObject *, u32))(gRooms, PU(p, 0x17B0, u8));
@@ -1087,7 +1127,8 @@ void func_0028D7D0(Pursuer *p) {
 }
 
 /* vtable +0x6C: store the pursuer's state in the progress (saved with the game) */
-void func_0029E9D0(Pursuer *p) {
+/* 0x0029E9D0 */
+void Pursuer_SaveState(Pursuer *p) {
     u8 *s = (u8 *)gProgress + 0x83C;
 
     AT(gProgress, 0x83C, s32) = p->c.a.room;
@@ -1110,7 +1151,8 @@ void func_0029E9D0(Pursuer *p) {
 }
 
 /* the behaviour ended (+0x1758 next, -1 none): reset, vtable +0x2A0 */
-void func_002927D0(Pursuer *p) {
+/* 0x002927D0 */
+void Pursuer_BehaviourEnded(Pursuer *p) {
     s32 next = PU(p, 0x1758, s32);
 
     if (next != -1 && next != -2) {
@@ -1133,7 +1175,8 @@ void func_002927D0(Pursuer *p) {
 }
 
 /* vtable +0x5C: reset (room entry) */
-void func_0029E520(Pursuer *p) {
+/* 0x0029E520 */
+void Pursuer_Activate(Pursuer *p) {
     p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
     if (p->c.a.slot == 2) {
         func_002DDE20(p->c.motion, 0, -1);
@@ -1157,13 +1200,14 @@ void func_0029E520(Pursuer *p) {
         p->c.hp = p->c.hpMax;
     }
     VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 0);
-    func_00125CC0(&p->c);
+    Character_Activate(&p->c);
 }
 
 /* the D_0046F020 stalker's +0x5C reset: the base one, and its +0x16DC 0x10 while the countdown
  * runs (progress +0x1FBEC1) */
-void func_002CF0F0(Pursuer *p) {
-    func_0029E520(p);
+/* 0x002CF0F0 */
+void Debilitas3_Activate(Pursuer *p) {
+    Pursuer_Activate(p);
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
         AT(p, 0x16DC, s32) = 0x10;
     }
@@ -1173,7 +1217,8 @@ u8 *func_002CF140(Pursuer *p) {
     return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413530 : D_004134F0;
 }
 
-void *func_002CF180(void) {
+/* 0x002CF180 */
+void *Debilitas3_ModelFiles(void) {
     return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413510 : D_004134D0;
 }
 
@@ -1210,7 +1255,8 @@ void func_002DD310(u8 *p, f32 tx, f32 ty, f32 sx, f32 sy) {
 }
 
 /* the chase towards the target: by path, or straight at it once on its triangle */
-void func_00290810(Pursuer *p) {
+/* 0x00290810 */
+void Pursuer_ChaseTarget(Pursuer *p) {
     if (PU(p, 0x1590, f32) < 0.0f) {
         VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, p->target);
         if (p->c.a.room == p->target->a.room && !(func_00284440(p) & 0xFF)) {
@@ -1233,7 +1279,8 @@ void func_00290810(Pursuer *p) {
 }
 
 /* vtable +0x60: reset all behaviour state */
-void func_0029E440(Pursuer *p) {
+/* 0x0029E440 */
+void Pursuer_ResetBehaviour(Pursuer *p) {
     if (func_00217510(p) != 0 && p->c.moveMode == 2) {
         func_00213270(p, 0xFF);
     }
@@ -1267,7 +1314,7 @@ void func_0029E440(Pursuer *p) {
     PU(p, 0x1774, s32) = 0;
     PU(p, 0x1778, s32) = 0;
     VCALL(p, 0x7C, void (*)(Pursuer *))(p);
-    func_00125BE0(&p->c);
+    Character_ResetBehaviour(&p->c);
 }
 
 /* give the model the motion banks loaded by character `slot` (its +0x1670 file) */
@@ -1304,7 +1351,8 @@ void func_00286AA0(Pursuer *p) {
 }
 
 /* vtable +0x1F8 .. : through the exit +0x17B0 if it's usable */
-void func_0028D6E0(Pursuer *p) {
+/* 0x0028D6E0 */
+void Pursuer_ExitDone(Pursuer *p) {
     if (PU(p, 0x16B8, s32) == 2) {
         PURSUER_STEP_DONE(p) = 1;
         return;
@@ -1337,7 +1385,8 @@ void func_0028D6E0(Pursuer *p) {
     } while (0)
 
 /* vtable +0x288 */
-void func_00294150(Pursuer *p) {
+/* 0x00294150 */
+void Pursuer_Behaviour288(Pursuer *p) {
     PURSUER_BEGIN(p, 0x14);
     PU(p, 0x16F6, u8) = 1;
     PU(p, 0x16ED, u8) = 0;
@@ -1353,7 +1402,8 @@ void func_00294150(Pursuer *p) {
 }
 
 /* vtable +0x278: chase Fiona */
-void func_002947F0(Pursuer *p) {
+/* 0x002947F0 */
+void Pursuer_ChaseFiona(Pursuer *p) {
     PURSUER_BEGIN(p, 4);
     p->target = gCharPlayer;
     PU(p, 0x16F6, u8) = 1;
@@ -1368,7 +1418,8 @@ void func_002947F0(Pursuer *p) {
 }
 
 /* vtable +0x25C */
-void func_00296ED0(Pursuer *p) {
+/* 0x00296ED0 */
+void Pursuer_Behaviour25C(Pursuer *p) {
     PURSUER_BEGIN(p, 8);
     p->target = gCharPlayer;
     PU(p, 0x16F6, u8) = 1;
@@ -1389,7 +1440,8 @@ extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_
     D_003ECF00;
 
 /* vtable +0x40 (via +0x84 first): blocking flags (8 = held at a door), then +0x110 / +0x40 */
-void func_0029E390(Pursuer *p) {
+/* 0x0029E390 */
+void Pursuer_Update(Pursuer *p) {
     VCALL(p, 0x84, void (*)(Pursuer *))(p);
     p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
     p->c.pathReq->mask = p->c.a.navMask;
@@ -1467,7 +1519,8 @@ void func_0029EE70(Pursuer *p) {
 }
 
 /* threat: `amount` within 10 units of the target, * 0.75 for each further 10, none past 40 */
-void func_002982A0(Pursuer *p, f32 amount) {
+/* 0x002982A0 */
+void Pursuer_Threat(Pursuer *p, f32 amount) {
     f32 d = PU(p, 0x1588, f32);
 
     if (d < 0.0f) {
@@ -1586,7 +1639,8 @@ void func_0028A540(Pursuer *p) {
 }
 
 /* vtable +0x1C8 */
-void func_0028FC10(Pursuer *p) {
+/* 0x0028FC10 */
+void Pursuer_Door1C8(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -1599,7 +1653,8 @@ void func_0028FC10(Pursuer *p) {
 }
 
 /* vtable +0x184 */
-void func_00291880(Pursuer *p) {
+/* 0x00291880 */
+void Pursuer_Move184(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -1612,7 +1667,8 @@ void func_00291880(Pursuer *p) {
 }
 
 /* vtable +0x1F0 */
-void func_0028DAA0(Pursuer *p) {
+/* 0x0028DAA0 */
+void Pursuer_Exit1F0(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -1625,7 +1681,8 @@ void func_0028DAA0(Pursuer *p) {
 }
 
 /* vtable +0x74: the point the attack lands (+0x1770), while attacking */
-s32 func_0029CBE0(Pursuer *p, f32 *out) {
+/* 0x0029CBE0 */
+s32 Pursuer_AttackPoint(Pursuer *p, f32 *out) {
     if (PU(p, 0x175C, s32) != 0x23) {
         if (p->c.moveMode == 8) {
             s32 sub = p->c.moveSub;
@@ -1649,7 +1706,8 @@ s32 func_0029CBE0(Pursuer *p, f32 *out) {
 }
 
 /* vtable +0x290: the idle behaviour (another one while the progress byte +0x1FBEC1 is set) */
-void func_0027E440(Pursuer *p) {
+/* 0x0027E440 */
+void Pursuer_BehaviourIdle(Pursuer *p) {
     PU(p, 0x16F6, u8) = 1;
     PU(p, 0x16ED, u8) = 0;
     PURSUER_STEP_DONE(p) = 0;
@@ -1668,7 +1726,8 @@ void func_0027E440(Pursuer *p) {
 }
 
 /* vtable +0x188: once the animation ends, back to the stand animation */
-void func_00291760(Pursuer *p) {
+/* 0x00291760 */
+void Pursuer_BackToStand(Pursuer *p) {
     if (((MOTION_KEYS(p) & MOTION_KEY_END) != 0) == 1) {
         u8 *m;
 
@@ -1734,7 +1793,8 @@ s32 func_00297160(Pursuer *p) {
 }
 
 /* vtable +0x48: place the model on the character (or let the model place it) */
-void func_0029A2A0(Pursuer *p) {
+/* 0x0029A2A0 */
+void Pursuer_PlaceModel(Pursuer *p) {
     u8 *m;
 
     if (p->c.unkE3 == 0) {
@@ -1764,7 +1824,8 @@ void func_0029A2A0(Pursuer *p) {
 
 /* destructor of the kind 0x15 class (vtables 0x474560 / 0x46A620 -> 0x46D810 -> 0x46C220 ->
  * Character) */
-Pursuer *func_00179970(Pursuer *p, s32 flags) {
+/* 0x00179970 */
+Pursuer *Kind22_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046A620;
         if (p != NULL) {
@@ -1801,11 +1862,13 @@ Pursuer *func_00179970(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00179A90(void) {
+/* 0x00179A90 */
+void *Kind21_ModelFiles(void) {
     return D_0042C870;
 }
 
-void *func_00179AA0(void) {
+/* 0x00179AA0 */
+void *Kind21_MotionFiles(void) {
     return D_0042C8B0;
 }
 
@@ -1817,7 +1880,8 @@ extern void *D_0046D810[];
 
 /* vtable +0x8: destructor (Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model is
  * freed for slots 3..5 */
-Pursuer *func_00172810(Pursuer *p, s32 flags) {
+/* 0x00172810 */
+Pursuer *Pursuer_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
@@ -1827,56 +1891,69 @@ Pursuer *func_00172810(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00172910(void *p, s32 arg) {
+/* 0x00172910 */
+void *Kind33_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x21, arg, D_00477790);
 }
 
-void *func_00172960(void *p, s32 arg) {
+/* 0x00172960 */
+void *Kind32_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x20, arg, D_00476C10);
 }
 
-void *func_001729B0(void *p, s32 arg) {
+/* 0x001729B0 */
+void *Kind31_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1F, arg, D_004767D0);
 }
 
-void *func_00172A00(void *p, s32 arg) {
+/* 0x00172A00 */
+void *Kind30_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1E, arg, D_004764A0);
 }
 
-void *func_00172A50(void *p, s32 arg) {
+/* 0x00172A50 */
+void *Kind29_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1D, arg, D_00476120);
 }
 
-void *func_00172AA0(void *p, s32 arg) {
+/* 0x00172AA0 */
+void *Kind28_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1C, arg, D_00475DB0);
 }
 
-void *func_00172AF0(void *p, s32 arg) {
+/* 0x00172AF0 */
+void *Kind26_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1A, arg, D_00474C10);
 }
 
-void *func_00172B40(void *p, s32 arg) {
+/* 0x00172B40 */
+void *Kind25_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x19, arg, D_00474130);
 }
 
-void *func_00172B90(void *p, s32 arg) {
+/* 0x00172B90 */
+void *Kind24_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x18, arg, D_00473CD0);
 }
 
-void *func_00172BE0(void *p, s32 arg) {
+/* 0x00172BE0 */
+void *Kind37_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x25, arg, D_00478770);
 }
 
-void *func_00172C30(void *p, s32 arg) {
+/* 0x00172C30 */
+void *TintStalker_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x17, arg, D_004738A0);
 }
 
-void *func_00172C80(void *p, u32 id, u32 arg) {
+/* 0x00172C80 */
+void *Kind22_ctor(void *p, u32 id, u32 arg) {
     return b0_RoomCtor(p, id, (u8)arg, D_0046A620);
 }
 
 /* vtable +0x1F8: open the door at exit +0x17B0 and step through */
-void func_0028D5B0(Pursuer *p) {
+/* 0x0028D5B0 */
+void Pursuer_ExitOpenStep(Pursuer *p) {
     VObject *d = gDoors;
     u32 side;
 
@@ -1921,7 +1998,8 @@ void func_00299370(Pursuer *p) {
 }
 
 /* vtable +0x68: does event `kind` concern the pursuer (character `slot`, door `door`)? */
-s32 func_0029CD00(Pursuer *p, u32 kind, s32 slot, u32 door) {
+/* 0x0029CD00 */
+s32 Pursuer_EventConcerns(Pursuer *p, u32 kind, s32 slot, u32 door) {
     kind &= 0xFF;
     if (kind != 5) {
         Character *c = gCharacters[slot];
@@ -1959,7 +2037,8 @@ s32 func_0029CD00(Pursuer *p, u32 kind, s32 slot, u32 door) {
 }
 
 /* walk on to the exit the pursuer heads for */
-void func_00285360(Pursuer *p) {
+/* 0x00285360 */
+void Pursuer_WalkToExit(Pursuer *p) {
     s32 done = 0;
 
     if (PU(p, 0x1590, f32) < 0.0f) {
@@ -1991,7 +2070,8 @@ void func_00285360(Pursuer *p) {
 }
 
 /* turned to the door (+0x1568): open it with the arm (animation 0x700 / 0x704 by +0x104) */
-void func_0028C420(Pursuer *p) {
+/* 0x0028C420 */
+void Pursuer_DoorArmOpen(Pursuer *p) {
     u8 *m;
 
     if (func_002140A0(p, PU(p, 0x1568, f32), VCALL(p, 0xA0, f32 (*)(Pursuer *))(p)) != 0.0f) {
@@ -2054,7 +2134,8 @@ s32 func_00283EF0(Pursuer *p) {
 }
 
 /* vtable +0x1E8: through the door the pursuer heads for */
-void func_0028D950(Pursuer *p) {
+/* 0x0028D950 */
+void Pursuer_ExitThrough(Pursuer *p) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     VObject *d;
@@ -2085,7 +2166,8 @@ void func_0028D950(Pursuer *p) {
 
 /* vtable +0x90: reset after an event (stance 4 resolved, Hewie back on his feet: Fiona's
  * relief) */
-void func_0029A3D0(Pursuer *p) {
+/* 0x0029A3D0 */
+void Pursuer_EventReset(Pursuer *p) {
     if (p->c.moveMode == 2 && (Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
         func_00213270(p, 0xFF);
     }
@@ -2108,7 +2190,7 @@ void func_0029A3D0(Pursuer *p) {
     PU(p, 0x1700, s32) = 0;
     PU(p, 0x1704, s32) = 0;
     PU(p, 0x1708, s32) = 0;
-    func_00126360(&p->c);
+    Character_EventReset(&p->c);
     if (p->c.a.unkC4 == 2) {
         p->c.a.unkC4 = 0;
         p->c.hp = p->c.hpMax;
@@ -2117,7 +2199,8 @@ void func_0029A3D0(Pursuer *p) {
 }
 
 /* vtable +0x214: push through the door +0x100 */
-void func_0028CE20(Pursuer *p) {
+/* 0x0028CE20 */
+void Pursuer_DoorPushThrough(Pursuer *p) {
     if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) != 0 &&
         p->c.a.unk2B != 0 && !(PursuerGroup_Fields(gProgress, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF & 8)) {
         p->c.a.unk2B = 0;
@@ -2138,7 +2221,8 @@ void func_0028CE20(Pursuer *p) {
 }
 
 /* vtable +0x280: go after Fiona (behaviour 0x1C / 0x27 by +0x16CA) */
-void func_002934C0(Pursuer *p) {
+/* 0x002934C0 */
+void Pursuer_GoAfterFiona(Pursuer *p) {
     s32 prev = PU(p, 0x1758, s32);
 
     if (prev != -1) {
@@ -2190,7 +2274,8 @@ void func_0028A700(Pursuer *p) {
 }
 
 /* vtable +0x194: walk to the goal triangle +0x15A4 */
-void func_00291600(Pursuer *p) {
+/* 0x00291600 */
+void Pursuer_WalkToGoal(Pursuer *p) {
     u32 tri;
 
     PU(p, 0x16EC, u8) = 0;
@@ -2221,7 +2306,8 @@ extern const PTMF D_003ED360, D_003ED100, D_003ED2A0, D_003ED1F0, D_003ECF70, D_
     D_003ECE40;
 
 /* the attack: pick one from the table +0x1718 ({kind, value, chance} by a 0..100 roll) */
-void func_00283AE0(Pursuer *p) {
+/* 0x00283AE0 */
+void Pursuer_PickAttack(Pursuer *p) {
     u8 *e;
     s32 kind;
     f32 roll;
@@ -2339,7 +2425,8 @@ void func_00289DD0(Pursuer *p) {
 }
 
 /* vtable +0x258: go to the door the pursuer heads for */
-void func_00284FD0(Pursuer *p) {
+/* 0x00284FD0 */
+void Pursuer_GoToDoor(Pursuer *p) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     VObject *d;
@@ -2419,7 +2506,8 @@ s32 func_0027CA00(Pursuer *p) {
 
 /* vtable +0x1C: the model files loaded: give the model its motion banks, message image, door
  * sounds and +0x4D4 (slot 2; others func_0029EE70) */
-void func_0029F120(Pursuer *p) {
+/* 0x0029F120 */
+void Pursuer_FilesLoaded(Pursuer *p) {
     if (p->c.a.slot == 2) {
         u8 *f = PU(p, 0x1670, u8 *);
         u8 *m = p->c.motion;
@@ -2484,7 +2572,8 @@ void func_002871E0(Pursuer *p) {
 }
 
 /* vtable +0x204: back off from the door +0x100 */
-void func_0028D0C0(Pursuer *p) {
+/* 0x0028D0C0 */
+void Pursuer_DoorBackOff(Pursuer *p) {
     f32 h;
 
     if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) != 0 &&
@@ -2572,7 +2661,8 @@ void func_00299140(Pursuer *p) {
 }
 
 /* vtable +0x40: model update: placed by its stance (+0x1694.. by +0x1788) or on the floor */
-void func_0029EAB0(Pursuer *p) {
+/* 0x0029EAB0 */
+void Pursuer_ModelUpdate(Pursuer *p) {
     s32 on = 0;
     u8 *m;
 
@@ -2609,7 +2699,8 @@ void func_0029EAB0(Pursuer *p) {
 }
 
 /* vtable +0x8C: back to normal (deactivation of an event) */
-void func_0029A520(Pursuer *p) {
+/* 0x0029A520 */
+void Pursuer_BackToNormal(Pursuer *p) {
     if (p->c.moveMode == 2 && (Progress_CurRoomFlag(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
         func_00213270(p, 0xFF);
     }
@@ -2652,11 +2743,12 @@ void func_0029A520(Pursuer *p) {
     PU(p, 0x1700, s32) = 0;
     PU(p, 0x1704, s32) = 0;
     PU(p, 0x1708, s32) = 0;
-    func_00126450(&p->c);
+    Character_BackToNormal(&p->c);
 }
 
 /* the door-opening animation: done (0x703 / 0x707: placed on the other side) or moving */
-void func_0028BD40(Pursuer *p) {
+/* 0x0028BD40 */
+void Pursuer_DoorAnim(Pursuer *p) {
     Progress *pr = gProgress;
     u8 *m;
 
@@ -2701,7 +2793,8 @@ void func_0028BD40(Pursuer *p) {
 }
 
 /* vtable +0x1B0: go through door +0x100 from side +0x104, if it isn't locked to us */
-void func_0028F840(Pursuer *p) {
+/* 0x0028F840 */
+void Pursuer_DoorGoThrough(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((Progress_CurRoomFlag(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1 &&
@@ -2784,7 +2877,8 @@ void func_0027E5D0(Pursuer *p, s32 n) {
 }
 
 /* vtable +0x1DC: wait at the door until it opens; make noise if Fiona holds it shut */
-void func_0028DC40(Pursuer *p) {
+/* 0x0028DC40 */
+void Pursuer_DoorWait(Pursuer *p) {
     VObject *d = gDoors;
 
     if (!(VCALL(d, 0x30, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) & 0xFF)) {
@@ -2811,7 +2905,8 @@ void func_0028DC40(Pursuer *p) {
 }
 
 /* vtable +0x2A8: give up (unless +0x1664): stand, heal, behaviour by the stance */
-void func_0027DDB0(Pursuer *p) {
+/* 0x0027DDB0 */
+void Pursuer_GiveUp(Pursuer *p) {
     if (PU(p, 0x1664, s32) == 0) {
         u8 *m = p->c.motion;
 
@@ -2840,7 +2935,8 @@ void func_0027DDB0(Pursuer *p) {
 }
 
 /* vtable +0x1B4: at the door, turn to it (within ~60 degrees) or step to its side */
-void func_0028F650(Pursuer *p) {
+/* 0x0028F650 */
+void Pursuer_DoorFace(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
     if (((over ^ 1) & 0xFF) != 1) {
@@ -2859,7 +2955,8 @@ void func_0028F650(Pursuer *p) {
 }
 
 /* vtable +0x194..: walk the search route (8 stops at most, then give up the search) */
-void func_00290620(Pursuer *p) {
+/* 0x00290620 */
+void Pursuer_SearchRoute(Pursuer *p) {
     void *nm = gNavMesh;
 
     PU(p, 0x16EC, u8) = 0;
@@ -2907,7 +3004,8 @@ void func_00290620(Pursuer *p) {
 }
 
 /* vtable +0x248: walked there; the stance animation */
-void func_002854A0(Pursuer *p) {
+/* 0x002854A0 */
+void Pursuer_Arrived(Pursuer *p) {
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
         return;
     }
@@ -2917,7 +3015,8 @@ void func_002854A0(Pursuer *p) {
 }
 
 /* vtable +0x244: follow the path (+0xE8) to the next exit on it */
-void func_002858B0(Pursuer *p) {
+/* 0x002858B0 */
+void Pursuer_FollowPathExit(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if (VCALL(p, 0xE8, s32 (*)(Pursuer *))(p) & 0xFF) {
@@ -3013,7 +3112,8 @@ void func_00287950(Pursuer *p) {
 }
 
 /* vtable +0x1B8: facing the door; open it (side +0x104) if it is ours to open */
-void func_0028E2D0(Pursuer *p) {
+/* 0x0028E2D0 */
+void Pursuer_DoorFacing(Pursuer *p) {
     if (func_002140A0(p, PU(p, 0x1568, f32), VCALL(p, 0xA0, f32 (*)(Pursuer *))(p)) == 0.0f) {
         Progress *pr = gProgress;
 
@@ -3058,7 +3158,8 @@ void func_0027FE90(Pursuer *p) {
 }
 
 /* vtable +0x18C */
-void func_0028FD30(Pursuer *p) {
+/* 0x0028FD30 */
+void Pursuer_Move18C(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -3071,7 +3172,8 @@ void func_0028FD30(Pursuer *p) {
 }
 
 /* vtable +0x17C */
-void func_00291A20(Pursuer *p) {
+/* 0x00291A20 */
+void Pursuer_Move17C(Pursuer *p) {
     PU(p, 0x16EC, u8) = 1;
     PURSUER_STEP_NEXT(p) = 1;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -3101,7 +3203,8 @@ void func_0028AEC0(Pursuer *p) {
 }
 
 /* vtable +0x250: to the next exit of the path; look through it first if it's where Fiona was */
-void func_00285150(Pursuer *p) {
+/* 0x00285150 */
+void Pursuer_NextPathExit(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if (p->c.unk1388 < p->c.unk1384 && func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
@@ -3135,7 +3238,8 @@ void func_00285150(Pursuer *p) {
 }
 
 /* vtable +0x1D4 */
-void func_0028E0C0(Pursuer *p) {
+/* 0x0028E0C0 */
+void Pursuer_Door1E4(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     if ((Pursuer_WalkOn(p) & 0xFF) == 1) {
@@ -3156,7 +3260,8 @@ extern const PTMF D_003ED260, D_003ECE30, D_003ED5B0, D_003ECD70, D_003ED130, D_
 extern PTMF D_0045B3A0;   /* followed by the idle move: +0xC kind, +0x10 move mode, +0x14 sub */
 
 /* vtable +0x254: on to the next exit (of the path, or a random one) */
-void func_002856A0(Pursuer *p) {
+/* 0x002856A0 */
+void Pursuer_OnToNextExit(Pursuer *p) {
     VObject *rm;
 
     PU(p, 0x16EC, u8) = 0;
@@ -3190,7 +3295,8 @@ void func_002856A0(Pursuer *p) {
 }
 
 /* vtable +0x1AC: line up at the door +0x100 (side by which way it opens) */
-void func_0028FA00(Pursuer *p) {
+/* 0x0028FA00 */
+void Pursuer_DoorLineUp(Pursuer *p) {
     f32 dir[4] __attribute__((aligned(16)));
     VObject *d = gDoors;
     s8 r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, p->c.a.pos);
@@ -3270,7 +3376,8 @@ extern u8 D_003AF270[], D_0041B610[], D_00413570[], D_0042E4E0[], D_003D73D0[], 
     D_00430910[], D_004309A0[], D_00430A70[], D_0043B610[], D_00443530[];
 
 /* vtable +0xFC: the motion / message files of character id +0x153C (slot 2: vtable +0xFC) */
-u8 *func_0029F690(Pursuer *p) {
+/* 0x0029F690 */
+u8 *Pursuer_MotionFiles(Pursuer *p) {
     if (p->c.a.slot != 2) {
         switch (p->c.unk153C) {
         case 2: return D_003AF270;
@@ -3359,7 +3466,8 @@ void func_00289050(Pursuer *p) {
 
 /* vtable +0x174: knock at / try the door: wait 1..3 s, a door sound (table +0x16B0 by chance,
  * else 0x21), noise if it's locked */
-void func_0027CEF0(Pursuer *p) {
+/* 0x0027CEF0 */
+void Pursuer_KnockAtDoor(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     VObject *rnd = gRandom;
     VObject *rm = gRooms;
@@ -3423,7 +3531,8 @@ void func_00291EE0(Pursuer *p) {
 
 /* vtable +0x...: pace (stance 0 chasing: 1.0..1.2, searching 0.6, else 1.0; 2.0 with
  * progress flag 9), then the exits along the way */
-void func_0027D5B0(Pursuer *p) {
+/* 0x0027D5B0 */
+void Pursuer_Pace(Pursuer *p) {
     Progress *pr;
 
     if (PU(p, 0x1664, s32) != 0 || PU(p, 0x17B4, s32) != 0) {
@@ -3495,7 +3604,8 @@ void func_002895B0(Pursuer *p) {
 
 /* vtable +0x16C: plan the way to the goal room (+0x1594), first exit to +0x17B0, its path
  * length to +0x14C4; none: the idle move */
-void func_0027D8D0(Pursuer *p) {
+/* 0x0027D8D0 */
+void Pursuer_PlanToGoal(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 1;
     p->c.unk124 = p->c.unk128;
     if (p->c.unk1388 >= p->c.unk1384) {
@@ -3586,7 +3696,8 @@ extern PTMF D_0045B358;   /* followed by the wait move: +0xC kind, +0x10 move mo
 
 /* vtable +0x70: placed into room `room` (triangle `tri`, -1: by its exit / way in), on side
  * `side` (0 / 1; else any usable exit) */
-s32 func_0029D180(Pursuer *p, s32 room, s32 tri, u32 side) {
+/* 0x0029D180 */
+s32 Pursuer_PlaceInRoom(Pursuer *p, s32 room, s32 tri, u32 side) {
     VObject *rm;
     u32 i;
 
@@ -3653,7 +3764,8 @@ extern u8 D_00419DF0[], D_00423B50[], D_00429750[], D_004297E0[], D_00429C70[], 
     D_0042F490[], D_00430840[], D_004308D0[], D_00430960[], D_00430A30[], D_0043B5D0[], D_004434F0[];
 
 /* vtable +0xF8: the model files of character id +0x153C (slot 2: vtable +0xF8) */
-u8 *func_0029F8C0(Pursuer *p) {
+/* 0x0029F8C0 */
+u8 *Pursuer_ModelFiles(Pursuer *p) {
     if (p->c.a.slot != 2) {
         switch (p->c.unk153C) {
         case 2: return func_0012BFB0(p);
@@ -3741,7 +3853,8 @@ void func_0028B0D0(Pursuer *p) {
 }
 
 /* vtable +0x1C0: pushing at the door +0x100 (held shut from Fiona's side: noise) */
-void func_0028ED50(Pursuer *p) {
+/* 0x0028ED50 */
+void Pursuer_DoorPush(Pursuer *p) {
     VObject *d;
     u32 tri = p->c.a.navTri;
     u8 *e;
@@ -3822,7 +3935,8 @@ void func_0029AF20(Pursuer *p) {
 }
 
 /* vtable +0x168: plan the way on (Fiona's room / the search), path length to the next exit */
-void func_0027DB30(Pursuer *p) {
+/* 0x0027DB30 */
+void Pursuer_PlanWayOn(Pursuer *p) {
     VObject *rm;
     u32 node;
 
@@ -3874,7 +3988,8 @@ void func_0027DB30(Pursuer *p) {
 }
 
 /* vtable +0x270: go for Hewie (behaviour 1 attack / 3 turn first / 7 approach; 30 s limit) */
-void func_002953F0(Pursuer *p) {
+/* 0x002953F0 */
+void Pursuer_GoForHewie(Pursuer *p) {
     s32 prev;
 
     p->target = gCharPartner;
@@ -3941,13 +4056,15 @@ static void Pursuer_CloseIn(Pursuer *p, s32 skip, u32 slotAnim, const PTMF *next
     }
 }
 
-void func_002908F0(Pursuer *p) {
+/* 0x002908F0 */
+void Pursuer_Chase1A4(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     Pursuer_CloseIn(p, 0x201, 0x328, &D_003ECDE0);
 }
 
-void func_00290B70(Pursuer *p) {
+/* 0x00290B70 */
+void Pursuer_Chase1A0(Pursuer *p) {
     PU(p, 0x16EC, u8) = 1;
     PURSUER_STEP_NEXT(p) = 1;
     Pursuer_CloseIn(p, 0x200, 0x324, &D_003ECDD0);
@@ -3991,7 +4108,8 @@ extern void *D_00479FF0[];
 
 /* vtable +0x84: the state block (+0x14E8) of an event: 4 hit, 5 back to normal, 0xC hurt (30),
  * 7 freed */
-void func_0029C8C0(Pursuer *p) {
+/* 0x0029C8C0 */
+void Pursuer_EventState(Pursuer *p) {
     switch (p->c.state[0]) {
     case 4:
         if (func_00217510(p) != 0) {
@@ -4040,7 +4158,7 @@ void func_0029C8C0(Pursuer *p) {
                 PU(p, 0x1778, s32) = 0;
                 PU(p, 0x1624, s32) = a;
                 PU(p, 0x1628, s32) = b;
-                func_00126450(&p->c);
+                Character_BackToNormal(&p->c);
             }
             ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC930);
             PU(p, 0x1758, s32) = -1;
@@ -4171,7 +4289,8 @@ void func_00283C50(Pursuer *p) {
 }
 
 /* vtable +0x154: what next after a move, by the move mode / behaviour / stance */
-void func_0027F350(Pursuer *p) {
+/* 0x0027F350 */
+void Pursuer_AfterMove(Pursuer *p) {
     if (p->c.moveMode == 4) {
         if (p->c.a.unkC4 == 2 || PU(p, 0x175C, s32) == 0x20 || p->c.moveSub == 0xA) {
             if (PU(p, 0x1664, u32) < 60) {
@@ -4347,7 +4466,8 @@ void func_00287380(Pursuer *p) {
 }
 
 /* vtable +0x14C: an event over: the door left, placed by the side it's on, state cleared */
-void func_00280210(Pursuer *p, s32 exit) {
+/* 0x00280210 */
+void Pursuer_EventOver(Pursuer *p, s32 exit) {
     if (p->c.moveMode == 2) {
         Progress *pr = gProgress;
 
@@ -4420,7 +4540,8 @@ void func_00280210(Pursuer *p, s32 exit) {
 
 /* vtable +0x14: load the files: motions / message (+0x0 / +0x8), slot 2 also its sound banks
  * (+0x10 / +0x14 / +0x18), door sounds (+0xC) and +0x4 */
-void func_0029F3E0(Pursuer *p) {
+/* 0x0029F3E0 */
+void Pursuer_LoadFiles(Pursuer *p) {
     u8 *f = PU(p, 0x168C, u8 *);
     char *name;
 
@@ -4520,7 +4641,8 @@ s32 func_0027F0A0(Pursuer *p, u32 exit) {
 }
 
 /* vtable +0x1D8: barge through the door +0x100 (animation 0x600..0x603 by side) */
-void func_0028DE10(Pursuer *p) {
+/* 0x0028DE10 */
+void Pursuer_DoorBarge(Pursuer *p) {
     f32 dir[4] __attribute__((aligned(16)));
     VObject *d = gDoors;
     s32 r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, p->c.a.pos);
@@ -4564,7 +4686,8 @@ void func_0028DE10(Pursuer *p) {
 }
 
 /* vtable +0x7C: back to the move of the stance (behaviour 1), in the room or off-screen */
-void func_00298D20(Pursuer *p) {
+/* 0x00298D20 */
+void Pursuer_BackToStance(Pursuer *p) {
     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     switch (PU(p, 0x16C8, u8)) {
     case 0:
@@ -4691,7 +4814,8 @@ void func_0029AC50(Pursuer *p) {
 
 /* vtable +0xD0: where the target (+0x16CB: 5 Fiona, 1 Hewie, 4 a heard noise +0x14DC / +0x14E0)
  * is, to the triangle +0x179C; the path planned (vtable +0xD8) */
-void func_002849B0(Pursuer *p) {
+/* 0x002849B0 */
+void Pursuer_LocateTarget(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
 
     switch (PU(p, 0x16CB, u8)) {
@@ -4813,7 +4937,8 @@ void func_00286F10(Pursuer *p) {
 }
 
 /* vtable +0x204..: back away from the door +0x100, then the 0x404 animation */
-void func_0028D260(Pursuer *p) {
+/* 0x0028D260 */
+void Pursuer_DoorBackAway(Pursuer *p) {
     VObject *d;
 
     PU(p, 0x16EC, u8) = 0;
@@ -5093,7 +5218,8 @@ static void Pursuer_LookAt(Pursuer *p, const f32 *pos) {
 /* vtable +0x44: the per-frame think: blocking flags, senses (+0x88), the behaviour step, the
  * stance logic (+0x110 / +0x100), animation sounds, the head turned to who it looks at
  * (+0x100: 0 Fiona, 1 Hewie, else +0x1700), the model (+0x40) */
-void func_00299F80(Pursuer *p) {
+/* 0x00299F80 */
+void Pursuer_Think(Pursuer *p) {
     u8 *m;
 
     p->c.a.navMask = p->c.a.unk2B != 0 ? 0 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
@@ -5241,7 +5367,8 @@ void func_0029D4C0(Pursuer *p, s32 anim) {
 }
 
 /* vtable +0x230: walk, then step aside (45 degrees, 8 units) if the way on is blocked */
-void func_002902E0(Pursuer *p) {
+/* 0x002902E0 */
+void Pursuer_WalkAside(Pursuer *p) {
     u8 *m;
 
     PU(p, 0x16EC, u8) = 0;
@@ -5271,10 +5398,11 @@ void func_002902E0(Pursuer *p) {
 
 /* vtable +0xC: init (NPC init, then all pursuer state, stance 2 with Fiona as the target, the
  * file tables of the kind) */
-void func_0029FBD0(Pursuer *p) {
+/* 0x0029FBD0 */
+void Pursuer_Reset(Pursuer *p) {
     s32 k;
 
-    func_00219460(p);
+    NPC_Reset(p);
     PU(p, 0x16C9, u8) = 0;
     PU(p, 0x16CB, u8) = 0;
     PU(p, 0x16CA, u8) = 0;
@@ -5365,7 +5493,8 @@ void func_0029FBD0(Pursuer *p) {
 /* off-screen travel: count down the way to the next exit (+0x14C4) at the stance's pace; at
  * it, through. (Going for Fiona the pace is 1.0..1.2 and then 0.6 more each frame: the original
  * falls through from that case into the next) */
-void func_0027D260(Pursuer *p) {
+/* 0x0027D260 */
+void Pursuer_TravelOffscreen(Pursuer *p) {
     if (PU(p, 0x1664, s32) != 0 || PU(p, 0x17B4, s32) != 0) {
         return;
     }
@@ -5422,7 +5551,8 @@ void func_0027D260(Pursuer *p) {
 
 /* vtable +0xCC: what to go after: seeing Fiona (5, alert 7) or Hewie (1, 2), hearing Fiona (5, 6),
  * Hewie (1, 1) or another noise (4, 5); a higher alert than now takes over */
-s32 func_00284C80(Pursuer *p) {
+/* 0x00284C80 */
+s32 Pursuer_PickTarget(Pursuer *p) {
     s32 room, side;
 
     PU(p, 0x16CB, u8) = 0;
@@ -5502,7 +5632,8 @@ extern const PTMF D_003ED1B0, D_003ED200, D_003ECFA0;
 
 /* vtable +0x110: a grab ordered by the progress (Hewie, kinds 10..15): take position, or
  * refuse (-1) */
-s32 func_0029C570(Pursuer *p) {
+/* 0x0029C570 */
+s32 Pursuer_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
     Progress *pr2;
     u32 who, how, kind;
@@ -5723,7 +5854,8 @@ void func_00286B90(Pursuer *p) {
 }
 
 /* vtable +0x218: walk to the door +0x100 (side +0x104, -1: either), then line up */
-void func_0028C9E0(Pursuer *p) {
+/* 0x0028C9E0 */
+void Pursuer_DoorApproach(Pursuer *p) {
     s32 tri = -1;
     f32 pos[4] __attribute__((aligned(16)));
     u32 t = 0xFF;
@@ -5774,7 +5906,8 @@ void func_0028C9E0(Pursuer *p) {
 
 /* vtable +0x...: close in on the planned goal; turn if it's off to the side; at the end
  * the animation +0x1624 and the behaviour again */
-void func_00290DF0(Pursuer *p) {
+/* 0x00290DF0 */
+void Pursuer_CloseInGoal(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     s32 tri = -1;
     s32 done = 0;
@@ -5876,7 +6009,8 @@ extern const PTMF D_003ED0C0, D_003ED040, D_003ECC00, D_003ECC10, D_003EC910, D_
 
 /* look around: the head swept by a sine over vtable +0x2DC frames (full swing +0x2E0, half
  * at the ends), then back to straight ahead */
-void func_0028FF30(Pursuer *p) {
+/* 0x0028FF30 */
+void Pursuer_LookAround(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
     s32 t;
 
@@ -6021,7 +6155,8 @@ void func_0028AB10(Pursuer *p) {
 /* vtable +0x264: the chase decision: in reach (the ground gained in 5 frames), on the same
  * floor, facing her and the threat below stage 4: strike (1); else by the stage's table
  * (+0x1730: {chance, ...}): 5 or 6 */
-void func_002961D0(Pursuer *p) {
+/* 0x002961D0 */
+void Pursuer_ChaseDecision(Pursuer *p) {
     Progress *pr;
     u8 *e;
 
@@ -6089,8 +6224,9 @@ void func_002961D0(Pursuer *p) {
     VCALL(p, 0x268, void (*)(Pursuer *))(p);
 }
 
-/* vtable +0x70 ...: back from the save (see func_0029E9D0) */
-void func_0029E610(Pursuer *p) {
+/* vtable +0x70 ...: back from the save (see Pursuer_SaveState) */
+/* 0x0029E610 */
+void Pursuer_LoadState(Pursuer *p) {
     u8 *s = (u8 *)gProgress + 0x83C;
 
     p->c.a.room = AT(gProgress, 0x83C, s32);
@@ -6255,7 +6391,8 @@ void func_0028B970(Pursuer *p) {
 }
 
 /* vtable +0x158: the off-screen move step (+0x17A0) and what follows it by its kind +0x17AC */
-void func_0027E040(Pursuer *p) {
+/* 0x0027E040 */
+void Pursuer_OffscreenStep(Pursuer *p) {
     PTMF *st;
 
     if (PU(p, 0x16ED, u8) == 1) {
@@ -6358,7 +6495,8 @@ void func_00284040(Pursuer *p) {
 }
 
 /* vtable +0x1D0: walking to the door; turn to the side if needed; at it, the next step */
-void func_0028E4D0(Pursuer *p) {
+/* 0x0028E4D0 */
+void Pursuer_DoorWalking(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     s32 tri;
 
@@ -6421,7 +6559,8 @@ void func_0028E4D0(Pursuer *p) {
 }
 
 /* vtable +0x1CC: walk to the door +0x100 (plan with +0xDC), stance animation near it */
-void func_0028E8E0(Pursuer *p) {
+/* 0x0028E8E0 */
+void Pursuer_DoorWalkTo(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     s32 tri = -1;
     u32 t = 0xFF;
@@ -6528,7 +6667,8 @@ void func_00288150(Pursuer *p) {
 }
 
 /* pick the behaviour step (+0x174C) for the current mode +0x16C8 */
-void func_00284540(Pursuer *p) {
+/* 0x00284540 */
+void Pursuer_PickStep(Pursuer *p) {
     PTMF *step = (PTMF *)((u8 *)p + 0x174C);
 
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
@@ -6591,7 +6731,8 @@ void func_00284540(Pursuer *p) {
 }
 
 /* step back from an obstacle onto the nav mesh, then pick an animation and start moving */
-void func_00291190(Pursuer *p) {
+/* 0x00291190 */
+void Pursuer_StepBack(Pursuer *p) {
     u32 tri;
     f32 pos[4] __attribute__((aligned(16)));
     u32 dir;
@@ -6642,8 +6783,9 @@ void func_00291190(Pursuer *p) {
 extern const PTMF D_003ED620, D_003ED630, D_003ED640, D_003ED650, D_003ED660, D_003ED670, D_003ED680,
     D_003ED690, D_003ED6A0, D_003ED6B0, D_003ED6C0;
 
-/* as func_00284540, another set of steps; mode 0 only looks around in Fiona's room */
-void func_00278EB0(Pursuer *p) {
+/* as Pursuer_PickStep, another set of steps; mode 0 only looks around in Fiona's room */
+/* 0x00278EB0 */
+void Pursuer_PickStepAlt(Pursuer *p) {
     PTMF *step = (PTMF *)((u8 *)p + 0x174C);
 
     if (p->c.a.unkC4 == 2) {
@@ -6708,7 +6850,8 @@ void func_00278EB0(Pursuer *p) {
 extern const PTMF D_003ECFB0;
 
 /* walk to the spot +0x15D0; once there, stand (move mode 3) and hand over to vtable +0x220 */
-void func_0028C560(Pursuer *p) {
+/* 0x0028C560 */
+void Pursuer_WalkToSpot(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };   /* read even when no triangle was found */
     u32 tri;
     u8 *m;
@@ -6782,7 +6925,8 @@ extern const PTMF D_003ECD40, D_003ECD50;
 
 /* the frame update: run the state; a step done, either give up (vtable +0x11C), go on to the
    next behaviour, or rest; otherwise, at an animation's hit key, strike at Fiona when in reach */
-void func_00292310(Pursuer *p) {
+/* 0x00292310 */
+void Pursuer_FrameUpdate(Pursuer *p) {
     if (p->c.a.unkC4 == 2) {
         PU(p, 0x1544, u8) = 0;
         PU(p, 0x1545, u8) = 0;
@@ -6857,7 +7001,8 @@ void func_00292310(Pursuer *p) {
 
 /* off-screen update: run the move step +0x17A0; follow Fiona's room while idle, and choose the
    next move from what the last one (+0x17AC kind) finished with */
-void func_0027A1E0(Pursuer *p) {
+/* 0x0027A1E0 */
+void Pursuer_OffscreenUpdate(Pursuer *p) {
     if (PU(p, 0x16ED, u8) == 1) {
         return;
     }
@@ -6916,7 +7061,8 @@ extern const PTMF D_003ED450, D_003ED460, D_003ED470, D_003ED480, D_003ED490, D_
 
 /* come into a room through the door +0x14D4: stand at its triangle facing in, pick the next
    behaviour, and react to a locked or barred door */
-void func_002804B0(Pursuer *p) {
+/* 0x002804B0 */
+void Pursuer_EnterRoom(Pursuer *p) {
     VObject *rooms;
     f32 ang;
 
@@ -7008,7 +7154,8 @@ extern const PTMF D_003ECFD0, D_003ECFE0;
 /* climb the stairs +0x100, up (+0x104 = 1) or down, one step animation after another (0x701/0x702
    up, 0x705/0x706 down); turn round when the goal +0x15A4 is the other way, and step off at the
    top (0x703) or bottom (0x707) */
-void func_0028BEF0(Pursuer *p) {
+/* 0x0028BEF0 */
+void Pursuer_Stairs(Pursuer *p) {
     Progress *pr = gProgress;
     f32 end[4] __attribute__((aligned(16)));
     f32 ofs[4] __attribute__((aligned(16)));
@@ -7114,7 +7261,8 @@ extern const PTMF D_003ED110, D_003ED120;
 /* react to the event +0x16CA once the current animation is over: 7 and 4 play a short reaction
    (0x1601, 0x1602; 4 also clears the event state and switches to searching), 1, 5 and 6 turn
    towards the spot +0x15B0 (or the room's centre) and call out */
-void func_00289860(Pursuer *p) {
+/* 0x00289860 */
+void Pursuer_ReactToEvent(Pursuer *p) {
     u8 ev;
 
     PU(p, 0x16EC, u8) = 0;
@@ -7183,7 +7331,8 @@ void func_00289860(Pursuer *p) {
 extern const PTMF D_003ECC80, D_003ECC90, D_003ECCA0;
 
 /* run the state, then act on how the current action +0x175C went */
-void func_00294240(Pursuer *p) {
+/* 0x00294240 */
+void Pursuer_BehaviourRun(Pursuer *p) {
     if (ptmf_test(&p->c.a.state)) {
         ptmf_scall(p, &p->c.a.state);
     }
@@ -7321,7 +7470,8 @@ static void Pursuer_DropDoor(Pursuer *p) {
 
 /* turn to the heading +0x1568, then open the door +0x100 (+0x104 its kind, 0..3) unless it's
    locked against this pursuer */
-void func_0028F080(Pursuer *p) {
+/* 0x0028F080 */
+void Pursuer_DoorOpen(Pursuer *p) {
     Progress *pr;
     s32 kind;
 
@@ -7650,7 +7800,8 @@ static void Pursuer_Resight(Pursuer *p) {
 
 /* the mode machine +0x16C8: 0 chasing Fiona, 1 following her trail, 2 heading for a noise or
    sighting, 3 searching, 4 resting; +0x1544 sight, +0x16F2 a new lead, +0x16F4 lead lost */
-void func_0027A6A0(Pursuer *p) {
+/* 0x0027A6A0 */
+void Pursuer_Modes(Pursuer *p) {
     if (p->c.a.unkC4 == 2) {
         if (PU(p, 0x16C8, u8) != 3) {
             PU(p, 0x16C8, u8) = 3;
@@ -7897,7 +8048,8 @@ static u8 *Pursuer_NavTri(u32 tri) {
 /* footsteps: when a foot comes down, play the step for the floor under it (the triangle's
    material flags +0x3C; stairs have their own), as loud as the pursuer is fast, and leave a
    noise for the others to hear (0x1C slow, 0x1F fast) */
-void func_0029DA80(Pursuer *p) {
+/* 0x0029DA80 */
+void Pursuer_Footsteps(Pursuer *p) {
     f32 left[4] __attribute__((aligned(16)));
     f32 right[4] __attribute__((aligned(16)));
     u32 l, r;
@@ -8056,9 +8208,10 @@ static s32 Pursuer_ResightTest(Pursuer *p) {
     return func_00217260(p) != 0 && (a >= 2 || b >= 2 || a == b);
 }
 
-/* the mode machine of func_0027A6A0 for pursuers that search a random number of stops when they
+/* the mode machine of Pursuer_Modes for pursuers that search a random number of stops when they
    go somewhere, and give up on the room (vtable +0xB0) rather than turn on Hewie */
-void func_002983C0(Pursuer *p) {
+/* 0x002983C0 */
+void Pursuer_ModesSearching(Pursuer *p) {
     Progress *pr = gProgress;
 
     if (AT(pr, 0x1FBEC1, u8) != 0) {
@@ -8246,7 +8399,8 @@ static void Pursuer_ScriptMove(Pursuer *p, s32 group, const PTMF *step) {
 
 /* commands from events: a pending nav-mask change (+0x14E8 4), then the script command +0xF4 with
    its arguments +0x100.. (go to a triangle or a point, play animations, look at someone) */
-void func_00299530(Pursuer *p) {
+/* 0x00299530 */
+void Pursuer_EventCommand(Pursuer *p) {
     PTMF *step = (PTMF *)((u8 *)p + 0x174C);
 
     if (p->c.state[0] == 4) {
@@ -8270,7 +8424,7 @@ void func_00299530(Pursuer *p) {
     switch (p->c.unkF4) {
     case 1:
         if (p->c.moveSub == 7) {
-            func_00126360(&p->c);
+            Character_EventReset(&p->c);
             func_0027FE90(p);
             VCALL(p, 0x13C, void (*)(Pursuer *))(p);
             PU(p, 0x1758, s32) = -2;
@@ -8554,9 +8708,10 @@ static s32 Pursuer_StopSkipped(Pursuer *p) {
     return 1;
 }
 
-/* as func_00294240, while searching: run the state, act on how the action +0x175C went, then
+/* as Pursuer_BehaviourRun, while searching: run the state, act on how the action +0x175C went, then
    pick the next behaviour (chase on sight, go for Hewie when he's done enough damage, ...) */
-void func_00296580(Pursuer *p) {
+/* 0x00296580 */
+void Pursuer_BehaviourSearch(Pursuer *p) {
     PTMF *step = (PTMF *)((u8 *)p + 0x174C);
 
     if (ptmf_test(&p->c.a.state)) {
@@ -8968,10 +9123,11 @@ static u32 Pursuer_TurnDir(Pursuer *p) {
 
 extern const PTMF D_003ECCC0;
 
-/* as func_00294240, while attacking: run the state, act on how the action +0x175C went (close
+/* as Pursuer_BehaviourRun, while attacking: run the state, act on how the action +0x175C went (close
    in, turn, back off, strike again), and once done (+0x16ED) choose: another attack if the
    target is right there, go after Hewie if he's hurt it enough, or the next behaviour */
-void func_00293620(Pursuer *p) {
+/* 0x00293620 */
+void Pursuer_BehaviourAttack(Pursuer *p) {
     s32 act;
     u32 dir;
 
@@ -9140,9 +9296,10 @@ void func_00293620(Pursuer *p) {
 
 extern const PTMF D_003ECC40, D_003ECC50, D_003ECC60;
 
-/* as func_00294240, while after Hewie: run the state, follow him from room to room (through
+/* as Pursuer_BehaviourRun, while after Hewie: run the state, follow him from room to room (through
    doors, +0x17B0), act on how the action +0x175C went, and attack when he's in reach */
-void func_002948E0(Pursuer *p) {
+/* 0x002948E0 */
+void Pursuer_BehaviourHewie(Pursuer *p) {
     Progress *pr;
     u32 dir;
 
@@ -9354,10 +9511,11 @@ static void Pursuer_Refollow(Pursuer *p) {
 
 extern const PTMF D_003ECC20;
 
-/* as func_00294240 for a pursuer that stalks Fiona at a distance: it closes in, then backs or
+/* as Pursuer_BehaviourRun for a pursuer that stalks Fiona at a distance: it closes in, then backs or
    holds off for a while (chance and times from +0x1730 by the threat level, gProgress+0x7B8),
    and strikes when she's right in front of it */
-void func_00295670(Pursuer *p) {
+/* 0x00295670 */
+void Pursuer_BehaviourStalk(Pursuer *p) {
     const u8 *e;
     f32 near;
 
@@ -9516,9 +9674,10 @@ static s32 Pursuer_Replan(Pursuer *p, VObject *rooms) {
 
 extern const PTMF D_003ECCE0, D_003ECCF0, D_003ECD00, D_003ECD10, D_003ECD20;
 
-/* as func_00294240 while heading through doors on screen: walk to the door (+0x17B0), open it
+/* as Pursuer_BehaviourRun while heading through doors on screen: walk to the door (+0x17B0), open it
    (action 0xE), go through (0xF / func_002815E0), or plan round it when it's locked */
-void func_002928B0(Pursuer *p) {
+/* 0x002928B0 */
+void Pursuer_BehaviourDoors(Pursuer *p) {
     u32 ds = 0xFF;
     u32 r;
 
@@ -9771,7 +9930,8 @@ static void Pursuer_PlaceOn(Pursuer *p, s32 tri) {
 /* show up: once the pursuer is in Fiona's room (func_00217510) stand it at the door it came in
    by and pick what to do, by the behaviour step it was given (+0x174C); while still away, wait
    at the door (+0x1624 1: go through) */
-void func_002809E0(Pursuer *p) {
+/* 0x002809E0 */
+void Pursuer_ShowUp(Pursuer *p) {
     PTMF *step = (PTMF *)((u8 *)p + 0x174C);
     f32 at[4] __attribute__((aligned(16)));
 
@@ -10161,9 +10321,10 @@ void func_0029B8B0(Pursuer *p) {
 
 extern const PTMF D_003ED600, D_003ED610;
 
-/* func_00295670 for a stalker that also follows Fiona from room to room: when she has left the
+/* Pursuer_BehaviourStalk for a stalker that also follows Fiona from room to room: when she has left the
    room it goes after her through the door (+0x17B0, actions 0x27 walk there, 0xE open it) */
-void func_00279350(Pursuer *p) {
+/* 0x00279350 */
+void Pursuer_BehaviourFollow(Pursuer *p) {
     Progress *pr;
     const u8 *e;
     f32 near;
@@ -10561,9 +10722,10 @@ static s32 Pursuer_PickExit(Pursuer *p, VObject *rooms) {
 }
 
 /* leave the screen through door `door` while the progress byte +0x1FBEC1 is set (see
-   func_00282010): finish a door or stair move in progress, reset the per-room state, and set
+   Pursuer_LeaveScreen): finish a door or stair move in progress, reset the per-room state, and set
    off-screen moving (or, still in view, walking) to the next exit of its plan */
-void func_0027B810(Pursuer *p, u32 door) {
+/* 0x0027B810 */
+void Pursuer_LeaveScreenEnding(Pursuer *p, u32 door) {
     Character *h;
     VObject *rooms;
 
@@ -10691,10 +10853,11 @@ static s32 Pursuer_RandomWait(Pursuer *p) {
     }
 }
 
-/* leave the screen through door `door` (func_0027B810 while the progress byte +0x1FBEC1 is set):
+/* leave the screen through door `door` (Pursuer_LeaveScreenEnding while the progress byte +0x1FBEC1 is set):
    finish a crossing, react to Hewie still hanging on, reset the per-room state, and set off for
    the next exit of the plan, after a random wait when it was chasing */
-void func_00282010(Pursuer *p, u32 door) {
+/* 0x00282010 */
+void Pursuer_LeaveScreen(Pursuer *p, u32 door) {
     Character *h;
     VObject *rooms;
 
@@ -10838,7 +11001,8 @@ extern u8 D_003EC3E0[];   /* the action table: 0x1C bytes each */
 
 /* vtable +0x114: start action `kind` (0x1000 set: from the pursuer's own table +0x1714): its
    state, action id +0x175C, move mode and sub, sense mode +0x15C0 and look mode +0x1710 */
-void func_00127A40(Pursuer *p, u32 kind) {
+/* 0x00127A40 */
+void Pursuer_StartAction(Pursuer *p, u32 kind) {
     u8 *e;
 
     if (kind & 0x1000) {
@@ -10855,7 +11019,8 @@ void func_00127A40(Pursuer *p, u32 kind) {
     PU(p, 0x15A0, u8) = 1;
 }
 
-void func_00127B20(void *p, u32 id) {
+/* 0x00127B20 */
+void Pursuer_StartActionNext(void *p, u32 id) {
     u8 *e;
 
     FLD(p, 0x1758, u32) = id;
@@ -10870,48 +11035,59 @@ void func_00127B20(void *p, u32 id) {
 }
 
 /* vtable +0x190: nothing */
-void func_00127B80(Pursuer *p) {
+/* 0x00127B80 */
+void Pursuer_Nothing190(Pursuer *p) {
 }
 
-void func_00127B90(void *p) {
+/* 0x00127B90 */
+void Pursuer_Caught(void *p) {
     FLD(p, 0x1660, s32) = FLD(p, 0x16D4, s32);
 }
 
-void func_00127BA0(void *p) {
+/* 0x00127BA0 */
+void Pursuer_NoGiveUp(void *p) {
     FLD(p, 0x1664, s32) = FLD(p, 0x16D0, s32);
 }
 
 /* vtable +0x2D0 / +0x2D4 */
-s32 func_00127BB0(Pursuer *p) {
+/* 0x00127BB0 */
+s32 Pursuer_Get2D0(Pursuer *p) {
     return PU(p, 0x16E0, s32);
 }
 
-s32 func_00127BC0(Pursuer *p) {
+/* 0x00127BC0 */
+s32 Pursuer_Get2D4(Pursuer *p) {
     return PU(p, 0x16E4, s32);
 }
 
-f32 func_00127BD0(void) {
+/* 0x00127BD0 */
+f32 Pursuer_FrightSeen(void) {
     return 10.0f;
 }
 
-f32 func_00127BE0(void) {
+/* 0x00127BE0 */
+f32 Pursuer_FrightAttack(void) {
     return 5.0f;
 }
 
-f32 func_00127BF0(void) {
+/* 0x00127BF0 */
+f32 Pursuer_ThreatAmount(void) {
     return 20.0f;
 }
 
 /* vtable +0x318 */
-s32 func_00127C00(Pursuer *p) {
+/* 0x00127C00 */
+s32 Pursuer_Get318(Pursuer *p) {
     return 0;
 }
 
-void func_00127C10(void *p, s32 on) {
+/* 0x00127C10 */
+void Pursuer_SetRage(void *p, s32 on) {
     FLD(p, 0x16B8, s32) = on ? 2 : 0;
 }
 
-s32 func_00127C30(void *p) {
+/* 0x00127C30 */
+s32 Pursuer_IsBusy(void *p) {
     return FLD(p, 0x20, s32) == 2;
 }
 
@@ -10922,14 +11098,15 @@ u8 *func_0012BFB0(Pursuer *p) {
     return D_003AF1F0;
 }
 
-/* ---- the room character of id 8 (vtable 0x46FF80; built by func_001731A0): a Pursuer that
+/* ---- the room character of id 8 (vtable 0x46FF80; built by Kind08_ctor): a Pursuer that
  * mostly keeps the Pursuer's own behaviour ---- */
 
 extern void *D_0046FF80[];
 extern const PTMF D_00419E50;   /* its behaviour after a reset */
 
 /* vtable +0x8: destructor */
-Pursuer *func_002ECB80(Pursuer *p, s32 flags) {
+/* 0x002ECB80 */
+Pursuer *Kind08_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046FF80;
         if (p != NULL) {
@@ -10952,11 +11129,12 @@ void *func_002ECCA0(void) {
 
 /* vtable +0xF4: setup (the Pursuer's) */
 void func_002ECCB0(Pursuer *p) {
-    func_0029FB20(p);
+    Pursuer_Setup(p);
 }
 
 /* vtable +0x38: on screen, func_00124890(-1) */
-void func_002ECCC0(Pursuer *p) {
+/* 0x002ECCC0 */
+void Kind08_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00124890(&p->c.a, -1);
     }
@@ -10964,7 +11142,8 @@ void func_002ECCC0(Pursuer *p) {
 
 /* vtable +0x84: a pending reset (state 5): on screen, +0x8C, its behaviour D_00419E50 and the
  * next one cleared (+0x1758), then +0x114(1); the state is cleared either way */
-void func_002ECD10(Pursuer *p) {
+/* 0x002ECD10 */
+void Kind08_EventState(Pursuer *p) {
     if (p->c.state[0] != 5) {
         return;
     }
@@ -10990,7 +11169,8 @@ s32 func_002ECDE0(Pursuer *p) {
 
 /* +0x8 destructor (0x471290 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model freed
  * for slots 3..5 */
-Character *func_00308EC0(Character *c, s32 flags) {
+/* 0x00308EC0 */
+Character *Kind09_dtor(Character *c, s32 flags) {
     if (c != NULL) {
         c->a.vtbl = D_00471290;
         c->a.vtbl = D_0046D810;
@@ -11014,12 +11194,14 @@ Character *func_00308EC0(Character *c, s32 flags) {
     return c;
 }
 
-void *func_00308FD0(void) {
+/* 0x00308FD0 */
+void *Kind09_MotionFiles(void) {
     return D_004223E0;
 }
 
 /* a state: +0x114 5, the state D_00422348 at +0x174C, +0x1758 -1, then +0x260 */
-void func_00308FF0(Character *c) {
+/* 0x00308FF0 */
+void Kind09_Behaviour25C(Character *c) {
     VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
     ptmf_set(&AT(c, 0x174C, PTMF), &D_00422348);
     AT(c, 0x1758, s32) = -1;
@@ -11027,7 +11209,8 @@ void func_00308FF0(Character *c) {
 }
 
 /* each frame: its state (+0xA0), then back to +0x114 5 unless already (+0x175C) */
-void func_00309080(Character *c) {
+/* 0x00309080 */
+void Kind09_BehaviourSearch(Character *c) {
     if (ptmf_test(&AT(c, 0xA0, PTMF))) {
         ptmf_scall(c, &AT(c, 0xA0, PTMF));
     }
@@ -11041,7 +11224,8 @@ void func_00309080(Character *c) {
 extern const PTMF D_00429840;
 
 /* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
-void func_00312EA0(Pursuer *p) {
+/* 0x00312EA0 */
+void Kind14_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00124890(&p->c.a, -1);
     }
@@ -11049,7 +11233,8 @@ void func_00312EA0(Pursuer *p) {
 
 /* +0x84 a request of kind 5 (+0x14E8): when func_00217510 allows it, +0x8C, its state
  * (+0x174C) D_00429840 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-void func_00312EF0(Pursuer *p) {
+/* 0x00312EF0 */
+void Kind14_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
         return;
     }
@@ -11064,7 +11249,8 @@ void func_00312EF0(Pursuer *p) {
 }
 
 /* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
-s32 func_00312FC0(Pursuer *p) {
+/* 0x00312FC0 */
+s32 Kind14_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
@@ -11079,7 +11265,8 @@ extern void *D_004728A0[];
 extern const PTMF D_00429CD0;
 
 /* +0x8 destructor */
-Pursuer *func_00315B30(Pursuer *p, s32 flags) {
+/* 0x00315B30 */
+Pursuer *Kind16_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_004728A0;
         Pursuer_DestroyBase(p);
@@ -11090,16 +11277,19 @@ Pursuer *func_00315B30(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00315C40(void) {
+/* 0x00315C40 */
+void *Kind16_ModelFiles(void) {
     return D_00429C50;
 }
 
-void *func_00315C50(void) {
+/* 0x00315C50 */
+void *Kind16_MotionFiles(void) {
     return D_00429C90;
 }
 
 /* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
-void func_00315C70(Pursuer *p) {
+/* 0x00315C70 */
+void Kind16_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00124890(&p->c.a, -1);
     }
@@ -11107,7 +11297,8 @@ void func_00315C70(Pursuer *p) {
 
 /* +0x84 a request of kind 5 (+0x14E8): when func_00217510 allows it, +0x8C, its state
  * (+0x174C) D_00429CD0 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-void func_00315CC0(Pursuer *p) {
+/* 0x00315CC0 */
+void Kind16_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
         return;
     }
@@ -11122,7 +11313,8 @@ void func_00315CC0(Pursuer *p) {
 }
 
 /* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
-s32 func_00315D90(Pursuer *p) {
+/* 0x00315D90 */
+s32 Kind16_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
@@ -11137,7 +11329,8 @@ extern void *D_00472C30[];
 extern const PTMF D_00429D60;
 
 /* +0x8 destructor */
-Pursuer *func_00316AB0(Pursuer *p, s32 flags) {
+/* 0x00316AB0 */
+Pursuer *Kind17_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_00472C30;
         Pursuer_DestroyBase(p);
@@ -11148,16 +11341,19 @@ Pursuer *func_00316AB0(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00316BC0(void) {
+/* 0x00316BC0 */
+void *Kind17_ModelFiles(void) {
     return D_00429CE0;
 }
 
-void *func_00316BD0(void) {
+/* 0x00316BD0 */
+void *Kind17_MotionFiles(void) {
     return D_00429D20;
 }
 
 /* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
-void func_00316BF0(Pursuer *p) {
+/* 0x00316BF0 */
+void Kind17_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00124890(&p->c.a, -1);
     }
@@ -11165,7 +11361,8 @@ void func_00316BF0(Pursuer *p) {
 
 /* +0x84 a request of kind 5 (+0x14E8): when func_00217510 allows it, +0x8C, its state
  * (+0x174C) D_00429D60 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-void func_00316C40(Pursuer *p) {
+/* 0x00316C40 */
+void Kind17_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
         return;
     }
@@ -11180,7 +11377,8 @@ void func_00316C40(Pursuer *p) {
 }
 
 /* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
-s32 func_00316D10(Pursuer *p) {
+/* 0x00316D10 */
+s32 Kind17_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
@@ -11201,99 +11399,132 @@ void *func_00316D80(u8 *o, s32 flags) {
     return o;
 }
 
-Character *func_0031E5C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_004734A0); }
+/* 0x0031E5C0 */
+Character *Kind19_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004734A0); }
 
-void *func_0031E6D0(void) {
+/* 0x0031E6D0 */
+void *Kind19_ModelFiles(void) {
     return D_0042A0F0;
 }
 
-void *func_0031E6E0(void) {
+/* 0x0031E6E0 */
+void *Kind19_MotionFiles(void) {
     return D_0042A130;
 }
 
-void func_0031E700(Pursuer *p) { creature_inplay(p); }
+/* 0x0031E700 */
+void Kind19_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0031E750(Pursuer *p) { creature_act5(p, &D_0042A170); }
+/* 0x0031E750 */
+void Kind19_EventState(Pursuer *p) { creature_act5(p, &D_0042A170); }
 
-s32 func_0031E820(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0031E820 */
+s32 Kind19_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 u8 *func_00320150(Pursuer *p) {
     return b5_prog_flag8000() ? D_0042A320 : D_0042A2E0;
 }
 
-Character *func_00321640(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473CD0); }
+/* 0x00321640 */
+Character *Kind24_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473CD0); }
 
-void *func_00321750(void) {
+/* 0x00321750 */
+void *Kind24_ModelFiles(void) {
     return D_0042C380;
 }
 
-void *func_00321760(void) {
+/* 0x00321760 */
+void *Kind24_MotionFiles(void) {
     return D_0042C3C0;
 }
 
-void func_00321780(Pursuer *p) { creature_inplay(p); }
+/* 0x00321780 */
+void Kind24_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_003217D0(Pursuer *p) { creature_act5(p, &D_0042C400); }
+/* 0x003217D0 */
+void Kind24_EventState(Pursuer *p) { creature_act5(p, &D_0042C400); }
 
-s32 func_003218A0(Pursuer *p) { return creature_slot_done(p); }
+/* 0x003218A0 */
+s32 Kind24_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-void func_0032C830(Pursuer *p) { creature_inplay(p); }
+/* 0x0032C830 */
+void Kind21_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0032C880(Pursuer *p) { creature_act5(p, &D_0042C8F0); }
+/* 0x0032C880 */
+void Kind21_EventState(Pursuer *p) { creature_act5(p, &D_0042C8F0); }
 
-s32 func_0032C950(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0032C950 */
+s32 Kind21_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-Character *func_0032C9C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474890); }
+/* 0x0032C9C0 */
+Character *Kind20_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474890); }
 
-void *func_0032CAD0(void) {
+/* 0x0032CAD0 */
+void *Kind20_ModelFiles(void) {
     return D_0042C900;
 }
 
-void *func_0032CAE0(void) {
+/* 0x0032CAE0 */
+void *Kind20_MotionFiles(void) {
     return D_0042C940;
 }
 
-void func_0032CB00(Pursuer *p) { creature_inplay(p); }
+/* 0x0032CB00 */
+void Kind20_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0032CB50(Pursuer *p) { creature_act5(p, &D_0042C980); }
+/* 0x0032CB50 */
+void Kind20_EventState(Pursuer *p) { creature_act5(p, &D_0042C980); }
 
-s32 func_0032CC20(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0032CC20 */
+s32 Kind20_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 u8 *func_00331200(Pursuer *p) {
     return b5_prog_flag8000() ? D_0042E4A0 : D_0042E460;
 }
 
-Character *func_0033ABA0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476120); }
+/* 0x0033ABA0 */
+Character *Kind29_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476120); }
 
-void *func_0033ACB0(void) {
+/* 0x0033ACB0 */
+void *Kind29_ModelFiles(void) {
     return D_00430820;
 }
 
-void *func_0033ACC0(void) {
+/* 0x0033ACC0 */
+void *Kind29_MotionFiles(void) {
     return D_00430860;
 }
 
-void func_0033ACE0(Pursuer *p) { creature_inplay(p); }
+/* 0x0033ACE0 */
+void Kind29_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0033AD30(Pursuer *p) { creature_act5(p, &D_004308A0); }
+/* 0x0033AD30 */
+void Kind29_EventState(Pursuer *p) { creature_act5(p, &D_004308A0); }
 
-s32 func_0033AE00(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0033AE00 */
+s32 Kind29_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-Character *func_00345100(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477790); }
+/* 0x00345100 */
+Character *Kind33_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477790); }
 
-void *func_00345210(void) {
+/* 0x00345210 */
+void *Kind33_ModelFiles(void) {
     return D_0043B5B0;
 }
 
-void *func_00345220(void) {
+/* 0x00345220 */
+void *Kind33_MotionFiles(void) {
     return D_0043B5F0;
 }
 
-void func_00345240(Pursuer *p) { creature_inplay(p); }
+/* 0x00345240 */
+void Kind33_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_00345290(Pursuer *p) { creature_act5(p, &D_0043B630); }
+/* 0x00345290 */
+void Kind33_EventState(Pursuer *p) { creature_act5(p, &D_0043B630); }
 
-s32 func_00345360(Pursuer *p) { return creature_slot_done(p); }
+/* 0x00345360 */
+s32 Kind33_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 u8 *func_00347290(Pursuer *p) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6C0 : D_0043B680;
@@ -11307,13 +11538,16 @@ u8 *func_003495B0(Pursuer *p) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC30 : D_0043DBF0;
 }
 
-Character *func_0034B7B0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478770); }
+/* 0x0034B7B0 */
+Character *Kind37_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478770); }
 
-void *func_0034B8C0(void) {
+/* 0x0034B8C0 */
+void *Kind37_MotionFiles(void) {
     return D_00441850;
 }
 
-void func_0034B8D0(void *self, s32 i, f32 *out) {
+/* 0x0034B8D0 */
+void Kind37_DoorOffset(void *self, s32 i, f32 *out) {
     switch (i) {
     case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.e49ba6p+2f /* 7.572 */; break;
     case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.b8e21ap+2f /* -6.8888 */; break;
@@ -11322,7 +11556,8 @@ void func_0034B8D0(void *self, s32 i, f32 *out) {
     }
 }
 
-void func_0034B970(void *self, s32 i, f32 *out) {
+/* 0x0034B970 */
+void Kind37_ActionOffsets(void *self, s32 i, f32 *out) {
     switch (i) {
     case 10: case 11: out[0] = -0x1.3eab36p-5f /* -0.0389 */; out[1] = 0.0f; out[2] = 0x1.4cf4fp+3f /* 10.4049 */; break;
     case 12: case 13: out[0] = 0x1.7652bep-1f /* 0.7311 */; out[1] = 0.0f; out[2] = 0x1.a80832p+3f /* 13.251 */; break;
@@ -11421,7 +11656,8 @@ void func_0036A7F0(u8 *o) {
 extern void *D_00474560[], *D_004723B0[];
 
 /* vtable +0x8 of D_00474560 (kind 0x15's second class): its vtable, then the base's */
-Pursuer *func_00172CD0(Pursuer *p, s32 flags) {
+/* 0x00172CD0 */
+Pursuer *Kind21_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_00474560;
         Pursuer_DestroyBase(p);
@@ -11432,38 +11668,46 @@ Pursuer *func_00172CD0(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00172DE0(void *p, s32 arg, u32 id) {
+/* 0x00172DE0 */
+void *Kind21_ctor(void *p, s32 arg, u32 id) {
     return b0_RoomCtor(p, id, arg, D_00474560);
 }
 
-void *func_00172E20(void *p, s32 arg) {
+/* 0x00172E20 */
+void *Kind20_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x14, arg, D_00474890);
 }
 
-void *func_00172E70(void *p, s32 arg) {
+/* 0x00172E70 */
+void *Kind19_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x13, arg, D_004734A0);
 }
 
-void *func_00172EC0(void *p, s32 arg) {
+/* 0x00172EC0 */
+void *Kind18_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x12, arg, D_00473110);
 }
 
-void *func_00172F10(void *p, s32 arg) {
+/* 0x00172F10 */
+void *Kind17_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x11, arg, D_00472C30);
 }
 
-void *func_00172F60(void *p, s32 arg) {
+/* 0x00172F60 */
+void *Kind16_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x10, arg, D_004728A0);
 }
 
-void *func_00172FB0(void *p, u32 id, u32 arg) {
+/* 0x00172FB0 */
+void *Kind15_ctor(void *p, u32 id, u32 arg) {
     return b0_RoomCtor(p, id, (u8)arg, D_0046A2F0);
 }
 
 extern void *D_0046A2F0[];
 
 /* vtable +0x8 of D_0046A2F0 (derived from kind 14) */
-Pursuer *func_001794C0(Pursuer *p, s32 flags) {
+/* 0x001794C0 */
+Pursuer *Kind15_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046A2F0;
         p->c.a.vtbl = D_004723B0;
@@ -11475,16 +11719,19 @@ Pursuer *func_001794C0(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_001795E0(void) {
+/* 0x001795E0 */
+void *Kind14_ModelFiles(void) {
     return D_004297C0;
 }
 
-void *func_001795F0(void) {
+/* 0x001795F0 */
+void *Kind14_MotionFiles(void) {
     return D_00429800;
 }
 
 /* vtable +0x8 of D_004723B0 (kind 14) */
-Pursuer *func_00173000(Pursuer *p, s32 flags) {
+/* 0x00173000 */
+Pursuer *Kind14_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_004723B0;
         Pursuer_DestroyBase(p);
@@ -11495,71 +11742,88 @@ Pursuer *func_00173000(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_00173110(void *p, s32 arg, u32 id) {
+/* 0x00173110 */
+void *Kind14_ctor(void *p, s32 arg, u32 id) {
     return b0_RoomCtor(p, id, arg, D_004723B0);
 }
 
-void *func_00173150(void *p, s32 arg) {
+/* 0x00173150 */
+void *Kind13_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0xD, arg, D_00472020);
 }
 
-void *func_001731A0(void *p, s32 arg) {
+/* 0x001731A0 */
+void *Kind08_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x8, arg, D_0046FF80);
 }
 
-void *func_001731F0(void *p, s32 arg) {
+/* 0x001731F0 */
+void *Kind12_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0xC, arg, D_004718F0);
 }
 
-void *func_00173240(void *p, s32 arg) {
+/* 0x00173240 */
+void *Lorenzo_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0xB, arg, D_00470720);
 }
 
-void *func_00173290(void *p, s32 arg) {
+/* 0x00173290 */
+void *Kind39_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x27, arg, D_00479B20);
 }
 
-void *func_001732E0(void *p, s32 arg) {
+/* 0x001732E0 */
+void *Lorenzo2_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0xA, arg, D_004715C0);
 }
 
-void *func_00173330(void *p, s32 arg) {
+/* 0x00173330 */
+void *Kind09_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x9, arg, D_00471290);
 }
 
-void *func_00173380(void *p, s32 arg) {
+/* 0x00173380 */
+void *Riccardo_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x4, arg, D_0046F6B0);
 }
 
-void *func_001733D0(void *p, s32 arg) {
+/* 0x001733D0 */
+void *Kind36_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x24, arg, D_00478160);
 }
 
-void *func_00173420(void *p, s32 arg) {
+/* 0x00173420 */
+void *Kind35_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x23, arg, D_00477E30);
 }
 
-void *func_00173470(void *p, s32 arg) {
+/* 0x00173470 */
+void *Kind34_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x22, arg, D_00477AE0);
 }
 
-void *func_001734C0(void *p, s32 arg) {
+/* 0x001734C0 */
+void *Daniella_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x3, arg, D_0046BBB0);
 }
 
-void *func_00173510(void *p, s32 arg) {
+/* 0x00173510 */
+void *Kind27_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x1B, arg, D_00474FD0);
 }
 
-void *func_00173560(void *p, s32 arg) {
+/* 0x00173560 */
+void *Debilitas3_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x7, arg, D_0046F020);
 }
 
-void *func_001735B0(void *p, s32 arg) {
+/* 0x001735B0 */
+void *Debilitas2_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x6, arg, D_00470A90);
 }
 
-void *func_00173600(void *p, s32 arg) {
+/* 0x00173600 */
+void *Debilitas_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x2, arg, D_00469D10);
 }
 
@@ -11574,17 +11838,20 @@ void func_00173660(void) {
 extern const PTMF D_00422338, D_00422420, D_00422430, D_004297B0;
 
 /* a state: D_00422338 at +0x174C, +0x1758 -1, then +0x294 */
-void func_003090F0(Pursuer *p) {
+/* 0x003090F0 */
+void Kind09_BehaviourIdle(Pursuer *p) {
     ptmf_set(&PU(p, 0x174C, PTMF), &D_00422338);
     PU(p, 0x1758, s32) = -1;
     VCALL(p, 0x294, void (*)(Pursuer *))(p);
 }
 
-void func_00309170(Pursuer *p) {
+/* 0x00309170 */
+void Kind09_OffscreenStep(Pursuer *p) {
 }
 
 /* in play: func_00124890(-1), the state D_00422430 (+0x1758 -1) */
-void func_00309180(Pursuer *p) {
+/* 0x00309180 */
+void Kind09_ShowUp(Pursuer *p) {
     if (func_00217510(p) == 0) {
         return;
     }
@@ -11608,11 +11875,13 @@ static inline __attribute__((always_inline)) void act5(Pursuer *p, const PTMF *s
     PU(p, 0x14EC, s32) = 0;
 }
 
-void func_00309210(Pursuer *p) {
+/* 0x00309210 */
+void Kind09_EventState(Pursuer *p) {
     act5(p, &D_00422420);
 }
 
-void func_00311B30(Pursuer *p) {
+/* 0x00311B30 */
+void Kind13_EventState(Pursuer *p) {
     act5(p, &D_004297B0);
 }
 
@@ -11626,17 +11895,20 @@ static inline __attribute__((always_inline)) s32 slot_done(Pursuer *p) {
     return -1;
 }
 
-s32 func_003092E0(Pursuer *p) {
+/* 0x003092E0 */
+s32 Kind09_GrabOrder(Pursuer *p) {
     return slot_done(p);
 }
 
-s32 func_00311C00(Pursuer *p) {
+/* 0x00311C00 */
+s32 Kind13_GrabOrder(Pursuer *p) {
     return slot_done(p);
 }
 
 /* each frame: +0x84; the nav mask +0xC0 (8 when +0x2B is 1, else +0xA8) onto its model
  * (+0x1380 +0x40); in play func_00297C60, its state (+0x174C) and +0x110; then +0x40 */
-void func_00309350(Pursuer *p) {
+/* 0x00309350 */
+void Kind09_Update(Pursuer *p) {
     VCALL(p, 0x84, void (*)(Pursuer *))(p);
     if (AT(p, 0x2B, u8) == 1) {
         AT(p, 0xC0, s32) = 8;
@@ -11658,7 +11930,8 @@ u8 *func_00309410(Pursuer *p) {
     return b5_prog_flag8000() ? D_004223C0 : D_00422380;
 }
 
-void *func_00309450(void) {
+/* 0x00309450 */
+void *Kind09_ModelFiles(void) {
     return b5_prog_flag8000() ? D_004223A0 : D_00422360;
 }
 
@@ -11666,18 +11939,22 @@ u8 *func_0030C1B0(Pursuer *p) {
     return b5_prog_flag8000() ? D_004224A0 : D_00422460;
 }
 
-Character *func_003119A0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00472020); }
+/* 0x003119A0 */
+Character *Kind13_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00472020); }
 
-void *func_00311AB0(void) {
+/* 0x00311AB0 */
+void *Kind13_ModelFiles(void) {
     return D_00429730;
 }
 
-void *func_00311AC0(void) {
+/* 0x00311AC0 */
+void *Kind13_MotionFiles(void) {
     return D_00429770;
 }
 
 /* in play: func_00124890(-1) */
-void func_00311AE0(Pursuer *p) {
+/* 0x00311AE0 */
+void Kind13_ShowUp(Pursuer *p) {
     if (func_00217510(p) != 0) {
         func_00124890(&p->c.a, -1);
     }

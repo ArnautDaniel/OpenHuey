@@ -35,7 +35,7 @@ s32 func_00127CC0(Pursuer *p) {
     if (PU(p, 0x16C8, u8) == 4) {
         return 0x203;
     }
-    return func_00297A70(p);
+    return Pursuer_SlowWalkAnim(p);
 }
 
 /* vtable +0x11C: does he give up and go elsewhere? Never with fewer than DEBILITAS_GIVE_UP_HITS hits taken (+0x16C4),
@@ -59,11 +59,11 @@ s32 func_00127FC0(Pursuer *p) {
 
 /* vtable +0x228 / +0x224: the Pursuer's */
 void func_00129550(Pursuer *p) {
-    func_0028BD40(p);
+    Pursuer_DoorAnim(p);
 }
 
 void func_00129560(Pursuer *p) {
-    func_0028BEF0(p);
+    Pursuer_Stairs(p);
 }
 
 /* vtable +0x310 / +0x30C */
@@ -186,7 +186,7 @@ void func_00128DB0(Pursuer *p) {
     Debilitas_TurnToFiona(p);
 }
 
-/* vtable +0xB0: head for Fiona (the Pursuer's func_00219100 without the door test); resting,
+/* vtable +0xB0: head for Fiona (the Pursuer's NPC_HeadForFiona without the door test); resting,
    func_0029B190 instead */
 void func_0012BBF0(Pursuer *p) {
     Character *f;
@@ -449,7 +449,7 @@ void func_00127D00(Pursuer *p, s8 situation) {
 
 extern const f32 D_003B0030[4];
 
-/* vtable +0x1A8: the chase towards the target (func_00290810), but on the path he cuts straight
+/* vtable +0x1A8: the chase towards the target (Pursuer_ChaseTarget), but on the path he cuts straight
    for the target once he's no more than 10 units further from it than the path's end is */
 void func_00129570(Pursuer *p) {
     Character *t;
@@ -578,7 +578,7 @@ void func_001297C0(Pursuer *p) {
 
 extern const PTMF D_003AFF70;
 
-/* vtable +0x2B0: his step while heading somewhere through doors (as func_002928B0): walk to the
+/* vtable +0x2B0: his step while heading somewhere through doors (as Pursuer_BehaviourDoors): walk to the
    door +0x17B0, open it (0xA / 0xE), go through, or plan round it; the attacks 0x28 / 0x29 pick
    their table (vtable +0x130) and strike; 0xB / 0x10 / 0x12 end in a walk (4). When the step is
    over: through the door (+0x16ED), or back to his first behaviour when chasing */
@@ -640,7 +640,7 @@ void func_00129DB0(Pursuer *p) {
             return;
         }
         if (PURSUER_STEP_DONE(p) == 1) {
-            /* at the door: open it (0xE left in the register by the case chain, as func_002928B0) */
+            /* at the door: open it (0xE left in the register by the case chain, as Pursuer_BehaviourDoors) */
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xE);
             PURSUER_STEP_DONE(p) = 0;
         }

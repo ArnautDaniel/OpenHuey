@@ -28,25 +28,25 @@ extern u8 D_00414840[];
 extern u8 D_00414800[], D_004147C0[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_002D7B80(void);
-void func_002D7B90(void *self, s32 id, u32 *out);
-void func_002D7C30(void *self, s32 id, u32 *out);
-f32 func_002DB970(void);
-f32 func_002DB980(void);
-s32 func_002DBA10(u8 *p);
-void *func_002DC4A0(void);
+void *Riccardo_MotionFiles(void);
+void Riccardo_DoorOffset(void *self, s32 id, u32 *out);
+void Riccardo_ActionOffsets(void *self, s32 id, u32 *out);
+f32 Riccardo_AttackRange(void);
+f32 Riccardo_ReachHewie(void);
+s32 Riccardo_SlowWalkAnim(u8 *p);
+void *Riccardo_ModelFiles(void);
 
-void func_0034BFE0(Pursuer *p);
+void Kind37_BehaviourEnded(Pursuer *p);
 
-s32 func_0034D230(void);
-s32 func_0034D240(void);
+s32 Kind37_AttackAnimB(void);
+s32 Kind37_AttackAnimA(void);
 
 extern u8 D_00441810[], D_004417D0[];
-f32 func_0034D250(void);
-f32 func_0034D260(void);
-f32 func_0034D270(void);
-s32 func_0034D280(u8 *p);
-void *func_0034D9C0(void);
+f32 Kind37_FrightAttack(void);
+f32 Kind37_FrightSeen(void);
+f32 Kind37_ReachHewie(void);
+s32 Kind37_SlowWalkAnim(u8 *p);
+void *Kind37_ModelFiles(void);
 
 /* 0x46F69C: nothing (0) */
 s32 func_002D7A60(void) {
@@ -54,7 +54,8 @@ s32 func_002D7A60(void) {
 }
 
 /* vtable +0x8: destructor */
-Pursuer *func_002D7A70(Pursuer *p, s32 flags) {
+/* 0x002D7A70 */
+Pursuer *Riccardo_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046F6B0;
         if (p != NULL) {
@@ -67,9 +68,11 @@ Pursuer *func_002D7A70(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_002D7B80(void) { return D_00414840; }
+/* 0x002D7B80 */
+void *Riccardo_MotionFiles(void) { return D_00414840; }
 
-void func_002D7B90(void *self, s32 id, u32 *out) {
+/* 0x002D7B90 */
+void Riccardo_DoorOffset(void *self, s32 id, u32 *out) {
     u32 z;
 
     switch (id) {
@@ -84,7 +87,8 @@ void func_002D7B90(void *self, s32 id, u32 *out) {
     out[2] = z;
 }
 
-void func_002D7C30(void *self, s32 id, u32 *out) {
+/* 0x002D7C30 */
+void Riccardo_ActionOffsets(void *self, s32 id, u32 *out) {
     u32 x, z;
 
     switch (id) {
@@ -100,17 +104,19 @@ void func_002D7C30(void *self, s32 id, u32 *out) {
 }
 
 /* vtable +0x200: done at the door unless it has a side (+0x104), then the Pursuer's */
-void func_002D7CE0(Pursuer *p) {
+/* 0x002D7CE0 */
+void Riccardo_ExitDone(Pursuer *p) {
     if (p->c.unk104[0] == 0) {
         PURSUER_STEP_DONE(p) = 1;
         return;
     }
-    func_0028D6E0(p);
+    Pursuer_ExitDone(p);
 }
 
 /* vtable +0xE4: at a door he breaks (func_00178980) while opening or attacking it: use and
    damage it (DoorHold_Take / DoorHold_Shut) and change room through it (vtable +0x28) */
-void func_002D7D20(Pursuer *p, s32 exit) {
+/* 0x002D7D20 */
+void Riccardo_DoorBreak(Pursuer *p, s32 exit) {
     Progress *pr;
 
     if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
@@ -129,12 +135,14 @@ void func_002D7D20(Pursuer *p, s32 exit) {
 }
 
 /* vtable +0xF0: nothing */
-void func_002D7E10(Pursuer *p, s32 exit) {
+/* 0x002D7E10 */
+void Riccardo_ExitArg(Pursuer *p, s32 exit) {
 }
 
 /* vtable +0x138: the hit points of an attack entry (`e`: +0 animation, +4 / +8 bones); his
    grab 0xE05 is at Fiona herself */
-void func_002D8120(Pursuer *p, s32 *e, f32 *a, f32 *b) {
+/* 0x002D8120 */
+void Riccardo_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     if (e[0] == 0xE05) {
         sceVu0CopyVector(a, gCharPlayer->a.pos);
         sceVu0CopyVector(b, gCharPlayer->a.pos);
@@ -166,7 +174,8 @@ static u8 *const sAttackTables[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation */
-void func_002D8210(Pursuer *p, s8 situation) {
+/* 0x002D8210 */
+void Riccardo_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables[alt][(u32)situation < 17 ? situation : 0];
@@ -176,11 +185,12 @@ extern const PTMF D_00415670;
 
 /* vtable +0x264: the next behaviour; his own (func_002DB480) unless at threat level 5, then the
    Pursuer's */
-void func_002DB7F0(Pursuer *p) {
+/* 0x002DB7F0 */
+void Riccardo_ChaseDecision(Pursuer *p) {
     s32 next;
 
     if (AT(gProgress, 0x7B8, u8) == 5) {
-        func_002961D0(p);
+        Pursuer_ChaseDecision(p);
         return;
     }
     next = PU(p, 0x1758, s32);
@@ -199,7 +209,8 @@ void func_002DB7F0(Pursuer *p) {
 }
 
 /* vtable +0x31C: his rage (mode 2, +0x16B8) on, with a roar (sound 0x26), or off */
-void func_002DB900(Pursuer *p, s32 on) {
+/* 0x002DB900 */
+void Riccardo_SetRage(Pursuer *p, s32 on) {
     if (!on) {
         PU(p, 0x16B8, s32) = 0;
         return;
@@ -209,21 +220,26 @@ void func_002DB900(Pursuer *p, s32 on) {
 }
 
 /* vtable +0x310 / +0x30C */
-s32 func_002DB950(Pursuer *p) {
+/* 0x002DB950 */
+s32 Riccardo_AttackAnimB(Pursuer *p) {
     return 0x11;
 }
 
-s32 func_002DB960(Pursuer *p) {
+/* 0x002DB960 */
+s32 Riccardo_AttackAnimA(Pursuer *p) {
     return 0x10;
 }
 
-f32 func_002DB970(void) { return 20.0f; }
+/* 0x002DB970 */
+f32 Riccardo_AttackRange(void) { return 20.0f; }
 
-f32 func_002DB980(void) { return 12.0f; }
+/* 0x002DB980 */
+f32 Riccardo_ReachHewie(void) { return 12.0f; }
 
-/* vtable +0x320: the Pursuer's choice (func_00297B00), but 1 for 0 / 3 unless +0xE0 is set */
-s32 func_002DB990(Pursuer *p) {
-    s32 r = func_00297B00(p);
+/* vtable +0x320: the Pursuer's choice (Pursuer_WalkAnim), but 1 for 0 / 3 unless +0xE0 is set */
+/* 0x002DB990 */
+s32 Riccardo_WalkAnim(Pursuer *p) {
+    s32 r = Pursuer_WalkAnim(p);
 
     if (p->c.unkE0 == 0 && (r == 3 || r == 0)) {
         r = 1;
@@ -231,14 +247,16 @@ s32 func_002DB990(Pursuer *p) {
     return r;
 }
 
-/* vtable +0x324: the Pursuer's slow walk (func_00297AC0), 0x200 for 0x204 */
-s32 func_002DB9E0(Pursuer *p) {
-    s32 r = func_00297AC0(p);
+/* vtable +0x324: the Pursuer's slow walk (Pursuer_StanceAnim), 0x200 for 0x204 */
+/* 0x002DB9E0 */
+s32 Riccardo_StanceAnim(Pursuer *p) {
+    s32 r = Pursuer_StanceAnim(p);
 
     return r == 0x204 ? 0x200 : r;
 }
 
-s32 func_002DBA10(u8 *p) {
+/* 0x002DBA10 */
+s32 Riccardo_SlowWalkAnim(u8 *p) {
     f32 d;
 
     if (F(p, 0xC4, s32) == 1) {
@@ -257,7 +275,8 @@ s32 func_002DBA10(u8 *p) {
    idle (vtable +0x31C), out of it below; a cry heard from Fiona or Hewie makes him react
    (func_002D7E20); the behaviour step, stance and voice; a snort (sound 0x24) at the key of
    animation 0x600; func_002DBD70. Off screen the behaviour step and the off-screen move */
-void func_002DC070(Pursuer *p) {
+/* 0x002DC070 */
+void Riccardo_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -300,7 +319,8 @@ void func_002DC070(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-void *func_002DC4A0(void) {
+/* 0x002DC4A0 */
+void *Riccardo_ModelFiles(void) {
     return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414800 : D_004147C0;
 }
 
@@ -308,12 +328,13 @@ extern u8 D_004148A0[], D_004148E0[], D_00414A30[], D_00414A40[], D_00414CD0[], 
     D_00415060[], D_004150B0[], D_004150D0[], D_00415118[], D_00415130[], D_004155E0[],
     D_00415630[], D_00415650[], D_0047AC30[];
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables and stats (different
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
    when gProgress+0x30 bit 0x8000 is set) */
-void func_002DC4E0(Pursuer *p) {
+/* 0x002DC4E0 */
+void Riccardo_Setup(Pursuer *p) {
     void *m;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 125;
         PU(p, 0x171C, u8 *) = D_00414A40;
@@ -1344,26 +1365,28 @@ void func_0034BFF0(Pursuer *p) {
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 
-/* (as func_002D7CE0)  vtable +0x200: done at the door unless it has a side (+0x104), then the Pursuer's */
-void func_0034BA20(Pursuer *p) {
+/* (as Riccardo_ExitDone)  vtable +0x200: done at the door unless it has a side (+0x104), then the Pursuer's */
+/* 0x0034BA20 */
+void Kind37_ExitDone(Pursuer *p) {
     if (p->c.unk104[0] == 0) {
         PURSUER_STEP_DONE(p) = 1;
         return;
     }
-    func_0028D6E0(p);
+    Pursuer_ExitDone(p);
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern const PTMF D_004428F8;
 extern void func_0034CDC0(Pursuer *p);
 
-/* (as func_002DB7F0)  vtable +0x264: the next behaviour; his own (func_0034CDC0) unless at threat level 5, then the
+/* (as Riccardo_ChaseDecision)  vtable +0x264: the next behaviour; his own (func_0034CDC0) unless at threat level 5, then the
    Pursuer's */
-void func_0034D120(Pursuer *p) {
+/* 0x0034D120 */
+void Kind37_ChaseDecision(Pursuer *p) {
     s32 next;
 
     if (AT(gProgress, 0x7B8, u8) == 5) {
-        func_002961D0(p);
+        Pursuer_ChaseDecision(p);
         return;
     }
     next = PU(p, 0x1758, s32);
@@ -1381,27 +1404,33 @@ void func_0034D120(Pursuer *p) {
     func_0034CDC0(p);
 }
 
-s32 func_0034D230(void) {
+/* 0x0034D230 */
+s32 Kind37_AttackAnimB(void) {
     return 0x11;
 }
 
-s32 func_0034D240(void) {
+/* 0x0034D240 */
+s32 Kind37_AttackAnimA(void) {
     return 0x10;
 }
 
-f32 func_0034D250(void) {
+/* 0x0034D250 */
+f32 Kind37_FrightAttack(void) {
     return 7.0f;
 }
 
-f32 func_0034D260(void) {
+/* 0x0034D260 */
+f32 Kind37_FrightSeen(void) {
     return 2e+01f;
 }
 
-f32 func_0034D270(void) {
+/* 0x0034D270 */
+f32 Kind37_ReachHewie(void) {
     return 12.0f;
 }
 
-s32 func_0034D280(u8 *p) {
+/* 0x0034D280 */
+s32 Kind37_SlowWalkAnim(u8 *p) {
     f32 d;
 
     if (*(s32 *)(p + 0xC4) == 1) {
@@ -1455,17 +1484,19 @@ static u8 *const sAttackTables2[2][2][17] = {
     },
 };
 
-/* vtable +0x130 (as Lorenzo's func_00309C90, alerted for mode 2) */
-void func_0034BA60(Pursuer *p, s8 situation) {
+/* vtable +0x130 (as Lorenzo's Lorenzo2_AttackTable, alerted for mode 2) */
+/* 0x0034BA60 */
+void Kind37_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
     s32 alert = p->c.a.unkC4 == 1;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables2[alt][alert][situation] : sAttackTables2[alt][0][0];
 }
 
-void func_0034BFE0(Pursuer *p) {
+/* 0x0034BFE0 */
+void Kind37_BehaviourEnded(Pursuer *p) {
     PU(p, 0x17C8, s32) = 0x96;
-    func_002927D0(p);
+    Pursuer_BehaviourEnded(p);
 }
 
 extern const PTMF D_00442908, D_00442918;
@@ -1481,7 +1512,8 @@ extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];
    is alerted (+0xC4 = 1, its alert tables, a stand-down of 600) and calms again below. The
    tint breathes with the phase +0x17C4 (alpha 80 +- 80), wandering by a random step while not
    held (+0x17C8 counts the hold down while it is free) */
-void func_0034D320(Pursuer *p) {
+/* 0x0034D320 */
+void Kind37_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
     VObject *r;
     u32 alpha;
@@ -1553,7 +1585,8 @@ void func_0034D320(Pursuer *p) {
 }
 
 /* vtable +0x2C: the draw (as TintStalker_Draw, always shown) */
-void func_0034D840(Pursuer *p) {
+/* 0x0034D840 */
+void Kind37_LightChange(Pursuer *p) {
     f32 mtx[4][4] __attribute__((aligned(16)));
     VObject *cam;
     u8 *m;
@@ -1579,19 +1612,21 @@ void func_0034D840(Pursuer *p) {
     }
 }
 
-void *func_0034D9C0(void) {
+/* 0x0034D9C0 */
+void *Kind37_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
 }
 
 extern u8 D_00441890[], D_004419E0[], D_00441C70[], D_00441CA0[], D_004421A0[], D_004421F0[],
     D_00442230[], D_00442278[], D_00442290[], D_00442870[], D_004428C0[], D_0047AF48[];
 
-/* vtable +0xF4: its setup over the Pursuer's (func_0029FB20); its reach +0x17C0 is 30, the
+/* vtable +0xF4: its setup over the Pursuer's (Pursuer_Setup); its reach +0x17C0 is 30, the
    tint off, layer 0x11 */
-void func_0034DA00(Pursuer *p) {
+/* 0x0034DA00 */
+void Kind37_Setup(Pursuer *p) {
     void *m;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 125;
         PU(p, 0x171C, u8 *) = D_004419E0;

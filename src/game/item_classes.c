@@ -93,10 +93,10 @@ s32 func_002CD310(void *self, s32 a);
 s32 func_002CD340(void);
 s32 func_002CD490(void *self, s32 a);
 s32 func_002CD4C0(void);
-void *func_002CD5F0(void);
-void func_002CD600(void *self, s32 id, u32 *out);
-void func_002CD6A0(void *self, s32 id, u32 *out);
-void func_002CD750(u8 *p);
+void *Debilitas3_MotionFiles(void);
+void Debilitas3_DoorOffset(void *self, s32 id, u32 *out);
+void Debilitas3_ActionOffsets(void *self, s32 id, u32 *out);
+void Debilitas3_ExitDone(u8 *p);
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 extern const char *const D_0042C358;
@@ -113,11 +113,11 @@ extern void *D_004767D0[];
 extern const PTMF D_004309C0;
 extern void *D_00478FF0[];
 extern const PTMF D_00443550;
-void func_002CD760(void);
-void func_002CD770(void);
-void func_002CD780(void);
-void func_002CD790(void);
-s32 func_002CD7A0(void);
+void Debilitas3_FollowPathExit(void);
+void Debilitas3_Arrived(void);
+void Debilitas3_WalkToExit(void);
+void Debilitas3_OnToNextExit(void);
+s32 Debilitas3_PickDestination(void);
 
 extern char D_0045D890[];
 extern char D_0045D9E0[];
@@ -157,8 +157,8 @@ s32 func_0031CDE0(void *self, void *dest);
 s32 func_0031D020(void *self, void *dest);
 s32 func_0031D180(void *self, void *dest);
 s32 func_0031D600(void *self, void *dest);
-void *func_0031D800(void);
-void *func_0031D810(void);
+void *Kind18_ModelFiles(void);
+void *Kind18_MotionFiles(void);
 
 extern u8 D_0042C990[];
 extern u8 D_0042C9D0[];
@@ -230,10 +230,10 @@ s32 func_003396D0(void *self, void *dest);
 void *func_00339B20(void);
 void *func_00339B30(void);
 s32 func_0033AEE0(void *self, void *dest);
-void *func_0033B030(void);
-void *func_0033B040(void);
-void *func_0033B300(void);
-void *func_0033B310(void);
+void *Kind30_ModelFiles(void);
+void *Kind30_MotionFiles(void);
+void *Kind31_ModelFiles(void);
+void *Kind31_MotionFiles(void);
 s32 func_0033B4C0(void *o);
 s32 func_0033BDC0(void *self, void *dest);
 s32 func_0033E8D0(void *self, void *dest);
@@ -368,8 +368,8 @@ static f32 animal_rnd(void) {
 }
 
 s32 func_0032CD00(void *self, void *dest);
-void *func_0032CF10(void);
-void *func_0032CF20(void);
+void *Kind26_ModelFiles(void);
+void *Kind26_MotionFiles(void);
 f32 func_0032CF40(u8 *self, f32 *out);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
@@ -430,12 +430,12 @@ static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) 
     return -1;
 }
 
-Character *func_002CD4E0(Character *c, s32 flags);
-Character *func_0031D6F0(Character *c, s32 flags);
-void func_0031D830(Pursuer *p);
-void func_0031D880(Pursuer *p);
-s32 func_0031D950(Pursuer *p);
-Character *func_0032CE00(Character *c, s32 flags);
+Character *Debilitas3_dtor(Character *c, s32 flags);
+Character *Kind18_dtor(Character *c, s32 flags);
+void Kind18_ShowUp(Pursuer *p);
+void Kind18_EventState(Pursuer *p);
+s32 Kind18_GrabOrder(Pursuer *p);
+Character *Kind26_dtor(Character *c, s32 flags);
 void func_0032DA60(Pursuer *p);
 void func_0032DAB0(Pursuer *p);
 s32 func_0032DB80(Pursuer *p);
@@ -443,14 +443,14 @@ Character *func_00339A10(Character *c, s32 flags);
 void func_00339B50(Pursuer *p);
 void func_00339BA0(Pursuer *p);
 s32 func_00339C70(Pursuer *p);
-Character *func_0033AF20(Character *c, s32 flags);
-void func_0033B060(Pursuer *p);
-void func_0033B0B0(Pursuer *p);
-s32 func_0033B180(Pursuer *p);
-Character *func_0033B1F0(Character *c, s32 flags);
-void func_0033B330(Pursuer *p);
-void func_0033B380(Pursuer *p);
-s32 func_0033B450(Pursuer *p);
+Character *Kind30_dtor(Character *c, s32 flags);
+void Kind30_ShowUp(Pursuer *p);
+void Kind30_EventState(Pursuer *p);
+s32 Kind30_GrabOrder(Pursuer *p);
+Character *Kind31_dtor(Character *c, s32 flags);
+void Kind31_ShowUp(Pursuer *p);
+void Kind31_EventState(Pursuer *p);
+s32 Kind31_GrabOrder(Pursuer *p);
 Character *func_00351F20(Character *c, s32 flags);
 void func_00352060(Pursuer *p);
 void func_003520B0(Pursuer *p);
@@ -1583,11 +1583,14 @@ s32 func_002CD4C0(void) {
     return 2;
 }
 
-Character *func_002CD4E0(Character *c, s32 flags) { return creature_dtor(c, flags, D_0046F020); }
+/* 0x002CD4E0 */
+Character *Debilitas3_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_0046F020); }
 
-void *func_002CD5F0(void) { return D_00413550; }
+/* 0x002CD5F0 */
+void *Debilitas3_MotionFiles(void) { return D_00413550; }
 
-void func_002CD600(void *self, s32 id, u32 *out) {
+/* 0x002CD600 */
+void Debilitas3_DoorOffset(void *self, s32 id, u32 *out) {
     u32 z;
 
     switch (id) {
@@ -1602,7 +1605,8 @@ void func_002CD600(void *self, s32 id, u32 *out) {
     out[2] = z;
 }
 
-void func_002CD6A0(void *self, s32 id, u32 *out) {
+/* 0x002CD6A0 */
+void Debilitas3_ActionOffsets(void *self, s32 id, u32 *out) {
     u32 x, z;
 
     switch (id) {
@@ -1617,21 +1621,27 @@ void func_002CD6A0(void *self, s32 id, u32 *out) {
     out[2] = z;
 }
 
-void func_002CD750(u8 *p) { p[0x16EE] = 1; }
+/* 0x002CD750 */
+void Debilitas3_ExitDone(u8 *p) { p[0x16EE] = 1; }
 
-void func_002CD760(void) {
+/* 0x002CD760 */
+void Debilitas3_FollowPathExit(void) {
 }
 
-void func_002CD770(void) {
+/* 0x002CD770 */
+void Debilitas3_Arrived(void) {
 }
 
-void func_002CD780(void) {
+/* 0x002CD780 */
+void Debilitas3_WalkToExit(void) {
 }
 
-void func_002CD790(void) {
+/* 0x002CD790 */
+void Debilitas3_OnToNextExit(void) {
 }
 
-s32 func_002CD7A0(void) {
+/* 0x002CD7A0 */
+s32 Debilitas3_PickDestination(void) {
     return 0;
 }
 void *func_002D7910(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F610, D_0046D640); }
@@ -2646,37 +2656,49 @@ s32 func_0033AF10(void *o) {
     return 0;
 }
 
-Character *func_0033AF20(Character *c, s32 flags) { return creature_dtor(c, flags, D_004764A0); }
+/* 0x0033AF20 */
+Character *Kind30_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004764A0); }
 
-void *func_0033B030(void) {
+/* 0x0033B030 */
+void *Kind30_ModelFiles(void) {
     return D_004308B0;
 }
 
-void *func_0033B040(void) {
+/* 0x0033B040 */
+void *Kind30_MotionFiles(void) {
     return D_004308F0;
 }
 
-void func_0033B060(Pursuer *p) { creature_inplay(p); }
+/* 0x0033B060 */
+void Kind30_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0033B0B0(Pursuer *p) { creature_act5(p, &D_00430930); }
+/* 0x0033B0B0 */
+void Kind30_EventState(Pursuer *p) { creature_act5(p, &D_00430930); }
 
-s32 func_0033B180(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0033B180 */
+s32 Kind30_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-Character *func_0033B1F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_004767D0); }
+/* 0x0033B1F0 */
+Character *Kind31_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004767D0); }
 
-void *func_0033B300(void) {
+/* 0x0033B300 */
+void *Kind31_ModelFiles(void) {
     return D_00430940;
 }
 
-void *func_0033B310(void) {
+/* 0x0033B310 */
+void *Kind31_MotionFiles(void) {
     return D_00430980;
 }
 
-void func_0033B330(Pursuer *p) { creature_inplay(p); }
+/* 0x0033B330 */
+void Kind31_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0033B380(Pursuer *p) { creature_act5(p, &D_004309C0); }
+/* 0x0033B380 */
+void Kind31_EventState(Pursuer *p) { creature_act5(p, &D_004309C0); }
 
-s32 func_0033B450(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0033B450 */
+s32 Kind31_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* +0x40: Hewie is at hand - he can be reached (func_0025FF10), within 20 and his triangle is
    the one Fiona finds his position on */
@@ -3027,21 +3049,27 @@ s32 func_0031D630(void *o) {
     return use_at_door(0x55, 4, 2);
 }
 
-Character *func_0031D6F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473110); }
+/* 0x0031D6F0 */
+Character *Kind18_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473110); }
 
-void *func_0031D800(void) {
+/* 0x0031D800 */
+void *Kind18_ModelFiles(void) {
     return D_00429D70;
 }
 
-void *func_0031D810(void) {
+/* 0x0031D810 */
+void *Kind18_MotionFiles(void) {
     return D_00429DB0;
 }
 
-void func_0031D830(Pursuer *p) { creature_inplay(p); }
+/* 0x0031D830 */
+void Kind18_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0031D880(Pursuer *p) { creature_act5(p, &D_00429DF0); }
+/* 0x0031D880 */
+void Kind18_EventState(Pursuer *p) { creature_act5(p, &D_00429DF0); }
 
-s32 func_0031D950(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0031D950 */
+s32 Kind18_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* D_00474BC0: at door 1 of room 0x25 unless Progress +0x20 bit 0x800000, event 4 */
 s32 func_0032CD30(void *o) {
@@ -3055,13 +3083,16 @@ s32 func_0032CD30(void *o) {
     return 4;
 }
 
-Character *func_0032CE00(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474C10); }
+/* 0x0032CE00 */
+Character *Kind26_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474C10); }
 
-void *func_0032CF10(void) {
+/* 0x0032CF10 */
+void *Kind26_ModelFiles(void) {
     return D_0042C990;
 }
 
-void *func_0032CF20(void) {
+/* 0x0032CF20 */
+void *Kind26_MotionFiles(void) {
     return D_0042C9D0;
 }
 

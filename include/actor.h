@@ -160,8 +160,8 @@ extern void func_001247E0(Actor *a, const f32 *delta);   /* moved on the nav mes
 extern f32 func_00124530(Actor *a, f32 target, f32 step);
 extern void func_00124890(Actor *a, s32 kind);
 extern s32 func_00124D40(Actor *a);   /* a character still loading */
-extern void func_00124DA0(Actor *a);
-extern void func_00124DB0(Actor *a);   /* the actor's set-up */
+extern void Actor_Cleanup(Actor *a);
+extern void Actor_Reset(Actor *a);   /* the actor's set-up */
 extern void func_00124E40(Actor *a);
 extern void *func_00124E50(void *a, void *b);   /* placement new */
 extern void func_00124F20(Character *c, u32 door);
@@ -169,18 +169,18 @@ extern f32 func_001257B0(Character *c, u32 goalTri, const f32 *goal, u32 mask); 
 extern void func_00125900(Character *c);
 extern void func_00125960(Character *c);   /* a character's step (base) */
 extern void func_00125A10(Character *c);
-extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
+extern s32 Character_Place(Character *c, u32 tri, const f32 *heading, f32 *pos);
 extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
-extern void func_00125BE0(Character *c);
+extern void Character_ResetBehaviour(Character *c);
 extern s32 func_00125D80(Character *c);   /* the character can't take part (u8) */
 extern void func_00126270(Character *c);
-extern void func_00126360(Character *c);
-extern void func_00126450(Character *c);
+extern void Character_EventReset(Character *c);
+extern void Character_BackToNormal(Character *c);
 extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
 extern void func_001267F0(Character *c, s32 v);
 extern s32 func_00126800(Character *c);   /* a character's draw layer (+0x152C) */
-extern void func_00126810(Character *c);
-extern void func_00126910(Character *c);
+extern void Character_Enable(Character *c);
+extern void Character_Disable(Character *c);
 extern f32 func_00126E40(Character *c);
 extern s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7);
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
@@ -192,13 +192,13 @@ extern s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s
 extern s32 func_001272B0(Character *c, f32 speed);
 extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path */
 extern s32 func_001274E0(Character *c, f32 speed);
-extern void func_00127650(Character *c);
-extern void func_00127660(Character *c);
+extern void Character_RememberPos(Character *c);
+extern void Character_Reset(Character *c);
 extern void func_00125E10(Character *c, f32 *pos, s32 big);
 extern s32 func_001264D0(Character *c, f32 *out);
 extern void func_001269C0(Character *c);
-extern void func_00125CC0(Character *c);
-extern void func_00125D40(Character *c);
+extern void Character_Activate(Character *c);
+extern void Character_Deactivate(Character *c);
 extern void *func_00121370(u32 size, void *place);   /* placement new */
 extern void func_00121360(void *p);   /* delete (the pool's: nothing) */
 

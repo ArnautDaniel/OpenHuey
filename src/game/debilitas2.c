@@ -88,10 +88,11 @@
 #include "ptmf.h"
 #include "debilitas2.h"
 
-void *func_002FA320(void);
+void *Debilitas2_RoomSpots(void);
 
 /* vtable +0x9C: where he stands by a door, by side 0..3 (local offsets; as Debilitas) */
-void func_002FA1D0(Pursuer *p, s32 side, f32 *out) {
+/* 0x002FA1D0 */
+void Debilitas2_DoorOffset(Pursuer *p, s32 side, f32 *out) {
     f32 z;
 
     switch (side) {
@@ -116,7 +117,8 @@ void func_002FA1D0(Pursuer *p, s32 side, f32 *out) {
 }
 
 /* vtable +0x2D8: the offsets of his actions 10..15 (local; as Debilitas) */
-void func_002FA270(Pursuer *p, s32 kind, f32 *out) {
+/* 0x002FA270 */
+void Debilitas2_ActionOffsets(Pursuer *p, s32 kind, f32 *out) {
     f32 x, z;
 
     switch (kind) {
@@ -146,83 +148,100 @@ void func_002FA270(Pursuer *p, s32 kind, f32 *out) {
     out[2] = z;
 }
 
-void *func_002FA320(void) {
+/* 0x002FA320 */
+void *Debilitas2_RoomSpots(void) {
     return D_0041BE40;
 }
 
 /* vtable +0x200: done at the door at once */
-void func_002FA330(Pursuer *p) {
+/* 0x002FA330 */
+void Debilitas2_ExitDone(Pursuer *p) {
     PURSUER_STEP_DONE(p) = 1;
 }
 
 /* vtable +0xA8: his blocking triangle flags */
-u32 func_002FC790(Pursuer *p) {
+/* 0x002FC790 */
+u32 Debilitas2_BlockFlags(Pursuer *p) {
     return 0x2C020068;
 }
 
 /* vtable +0x2FC .. +0x2DC, +0xA4, +0xA0: his tuning (as Debilitas) */
-f32 func_002FC7C0(Pursuer *p) {
+/* 0x002FC7C0 */
+f32 Debilitas2_SpeedBase(Pursuer *p) {
     return 0x1.333334p-1f;   /* 0.6 */
 }
 
-f32 func_002FC7E0(Pursuer *p) {
+/* 0x002FC7E0 */
+f32 Debilitas2_SpeedTop(Pursuer *p) {
     return 0x1.666666p+0f;   /* 1.4 */
 }
 
-f32 func_002FC800(Pursuer *p) {
+/* 0x002FC800 */
+f32 Debilitas2_AttackRange(Pursuer *p) {
     return 24.0f;
 }
 
-f32 func_002FC810(Pursuer *p) {
+/* 0x002FC810 */
+f32 Debilitas2_ReachHewie(Pursuer *p) {
     return 16.0f;
 }
 
-f32 func_002FC820(Pursuer *p) {
+/* 0x002FC820 */
+f32 Debilitas2_AttackAngle(Pursuer *p) {
     return 20.0f;
 }
 
-f32 func_002FC830(Pursuer *p) {
+/* 0x002FC830 */
+f32 Debilitas2_Dist2E8(Pursuer *p) {
     return 10.0f;
 }
 
-f32 func_002FC840(Pursuer *p) {
+/* 0x002FC840 */
+f32 Debilitas2_ReachFiona(Pursuer *p) {
     return 20.0f;
 }
 
-f32 func_002FC850(Pursuer *p) {
+/* 0x002FC850 */
+f32 Debilitas2_LookSwing(Pursuer *p) {
     return 0x1.eb851ep-4f;   /* 0.12 */
 }
 
-f32 func_002FC870(Pursuer *p) {
+/* 0x002FC870 */
+f32 Debilitas2_LookFrames(Pursuer *p) {
     return 60.0f;
 }
 
-f32 func_002FC880(Pursuer *p) {
+/* 0x002FC880 */
+f32 Debilitas2_TurnRateFast(Pursuer *p) {
     return 0x1.1df46ap-3f;   /* 8 degrees */
 }
 
-f32 func_002FC8A0(Pursuer *p) {
+/* 0x002FC8A0 */
+f32 Debilitas2_TurnRate(Pursuer *p) {
     return 0x1.aceea0p-5f;   /* 3 degrees */
 }
 
 /* vtable +0x2C8 / +0x2C0: the room wait +0x1660 (900 frames by default / 600) */
-void func_002FC8C0(Pursuer *p, s32 t) {
+/* 0x002FC8C0 */
+void Debilitas2_SetTimer(Pursuer *p, s32 t) {
     PU(p, 0x1660, s32) = t != 0 ? t : 900;
 }
 
-void func_002FC8E0(Pursuer *p) {
+/* 0x002FC8E0 */
+void Debilitas2_Timer10s(Pursuer *p) {
     PU(p, 0x1660, s32) = 600;
 }
 
 extern u8 D_0041B570[], D_0041B590[], D_0041B5B0[], D_0041B5D0[];
 
-/* his model files (func_0029F8C0 for kind 6) */
+/* his model files (Pursuer_ModelFiles for kind 6) */
 u8 *func_002FC8F0(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041B5D0 : D_0041B590;
 }
 
 /* vtable +0xF8: his model files in slot 2 */
-u8 *func_002FC930(Pursuer *p) {
+/* 0x002FC930 */
+u8 *Debilitas2_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041B5B0 : D_0041B570;
 }
 
@@ -230,10 +249,11 @@ extern u8 D_0041B670[], D_0041B6E0[], D_0041B840[], D_0041B860[], D_0041BA80[], 
     D_0041BDF0[], D_0041BE60[], D_0041BE80[], D_0041BEC8[], D_0041C260[], D_0041C2B0[],
     D_0047ACA8[];
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables and stats (different
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
    when gProgress+0x30 bit 0x8000 is set), with +0x16B4 set: the Pursuer's behaviour */
-void func_002FC970(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x002FC970 */
+void Debilitas2_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 135;
         PU(p, 0x1730, u8 *) = D_0041C260;

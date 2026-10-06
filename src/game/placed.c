@@ -34,7 +34,7 @@ extern void *D_0046F520[], *D_004727E0[], *D_00472840[], *D_004758A0[], *D_00475
 #define NUM_SAVED 60
 
 void *func_00120F40(void *p);
-void *func_00122B30(void *p);
+void *Actor_dtor(void *p);
 
 s32 func_002D7430(u8 *p, s32 a1, s32 a2, s32 a3);
 
@@ -46,15 +46,15 @@ extern void *D_00474FD0[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
 
-void func_0032F6D0(void *self, s32 id, f32 *out);
-void func_0032F770(void *self, s32 id, f32 *out);
-void func_0032F820(u8 *self);
+void Kind27_DoorOffset(void *self, s32 id, f32 *out);
+void Kind27_ActionOffsets(void *self, s32 id, f32 *out);
+void Kind27_ExitDone(u8 *self);
 
-void func_0032F830(void);
-void func_0032F840(void);
-void func_0032F850(void);
-void func_0032F860(void);
-s32 func_0032F870(void);
+void Kind27_FollowPathExit(void);
+void Kind27_Arrived(void);
+void Kind27_WalkToExit(void);
+void Kind27_OnToNextExit(void);
+s32 Kind27_PickDestination(void);
 void func_00355950(void);
 void func_00367E90(void);
 
@@ -86,7 +86,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
     return c;
 }
 
-Character *func_0032F5B0(Character *c, s32 flags);
+Character *Kind27_dtor(Character *c, s32 flags);
 
 void *func_00120D60(B0_Pool *p, u32 i) {
     if (i < p->count && p->used[i] != 0) {
@@ -852,7 +852,7 @@ void func_001212F0(void) {
 
 /* +0xC set up: the actor's, then sizes 0, its bounce (0, -0.2, 0, 1) at +0x100, not held */
 void func_00121300(u8 *o) {
-    func_00124DB0((Actor *)o);
+    Actor_Reset((Actor *)o);
     AT(o, 0xF0, s32) = 0;
     AT(o, 0xEC, s32) = 0;
     AT(o, 0x100, s32) = 0;
@@ -869,7 +869,8 @@ void func_00121300(u8 *o) {
 /* Move the point at +0x50 and translate +0x40 by the same delta. */
 /* Move the point at +0x40 and translate +0x50 by the same delta. */
 /* Tail call of virtual function 0xC (arguments passed through). */
-void *func_00122B30(void *p) {
+/* 0x00122B30 */
+void *Actor_dtor(void *p) {
     if (p != NULL) {
         *(void **)p = D_00469C20;
     }
@@ -2532,9 +2533,11 @@ s32 func_0032EF30(u8 *o) {
     return burst_update(o, &kC);
 }
 
-Character *func_0032F5B0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474FD0); }
+/* 0x0032F5B0 */
+Character *Kind27_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474FD0); }
 
-void func_0032F6D0(void *self, s32 id, f32 *out) {
+/* 0x0032F6D0 */
+void Kind27_DoorOffset(void *self, s32 id, f32 *out) {
     switch (id) {
     case 1:
         B5_SET3(out, 0.0f, 0x1.4ccccc0000000p+3f /* 10.4 */);
@@ -2551,7 +2554,8 @@ void func_0032F6D0(void *self, s32 id, f32 *out) {
     }
 }
 
-void func_0032F770(void *self, s32 id, f32 *out) {
+/* 0x0032F770 */
+void Kind27_ActionOffsets(void *self, s32 id, f32 *out) {
     switch (id) {
     case 10:
     case 11:
@@ -2570,23 +2574,29 @@ void func_0032F770(void *self, s32 id, f32 *out) {
     }
 }
 
-void func_0032F820(u8 *self) {
+/* 0x0032F820 */
+void Kind27_ExitDone(u8 *self) {
     self[0x16EE] = 1;
 }
 
-void func_0032F830(void) {
+/* 0x0032F830 */
+void Kind27_FollowPathExit(void) {
 }
 
-void func_0032F840(void) {
+/* 0x0032F840 */
+void Kind27_Arrived(void) {
 }
 
-void func_0032F850(void) {
+/* 0x0032F850 */
+void Kind27_WalkToExit(void) {
 }
 
-void func_0032F860(void) {
+/* 0x0032F860 */
+void Kind27_OnToNextExit(void) {
 }
 
-s32 func_0032F870(void) {
+/* 0x0032F870 */
+s32 Kind27_PickDestination(void) {
     return 0;
 }
 

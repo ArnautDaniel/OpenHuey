@@ -57,12 +57,12 @@ extern u8 D_0042A340[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
 
-void *func_0031F220(void);
-void func_0031F290(void *self, s32 id, f32 *out);
-void func_0031F330(void *self, s32 id, f32 *out);
+void *TintStalker_MotionFiles(void);
+void TintStalker_DoorOffset(void *self, s32 id, f32 *out);
+void TintStalker_ActionOffsets(void *self, s32 id, f32 *out);
 
-void func_0031F230(Pursuer *p);
-void func_0031F260(Pursuer *p);
+void TintStalker_Disable(Pursuer *p);
+void TintStalker_Enable(Pursuer *p);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -90,7 +90,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
     return c;
 }
 
-Character *func_0031F110(Character *c, s32 flags);
+Character *TintStalker_dtor(Character *c, s32 flags);
 
 /* (the EE's float -> unsigned conversion) */
 static inline u32 f2u(f32 f) {
@@ -1395,24 +1395,29 @@ void func_0031EFF0(u8 *d) {
     stage_load(d, sFiles);
 }
 
-Character *func_0031F110(Character *c, s32 flags) { return creature_dtor(c, flags, D_004738A0); }
+/* 0x0031F110 */
+Character *TintStalker_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004738A0); }
 
-void *func_0031F220(void) {
+/* 0x0031F220 */
+void *TintStalker_MotionFiles(void) {
     return D_0042A340;
 }
 
-/* (pursuer classes) their func_002990E0 / func_00299080 with +0x17C8 on / off */
-void func_0031F230(Pursuer *p) {
-    func_002990E0(p);
+/* (pursuer classes) their Pursuer_Disable / Pursuer_Enable with +0x17C8 on / off */
+/* 0x0031F230 */
+void TintStalker_Disable(Pursuer *p) {
+    Pursuer_Disable(p);
     PU(p, 0x17C8, u8) = 1;
 }
 
-void func_0031F260(Pursuer *p) {
-    func_00299080(p);
+/* 0x0031F260 */
+void TintStalker_Enable(Pursuer *p) {
+    Pursuer_Enable(p);
     PU(p, 0x17C8, u8) = 0;
 }
 
-void func_0031F290(void *self, s32 id, f32 *out) {
+/* 0x0031F290 */
+void TintStalker_DoorOffset(void *self, s32 id, f32 *out) {
     switch (id) {
     case 1:
         B5_SET3(out, 0.0f, 0x1.e49ba60000000p+2f /* 7.572 */);
@@ -1429,7 +1434,8 @@ void func_0031F290(void *self, s32 id, f32 *out) {
     }
 }
 
-void func_0031F330(void *self, s32 id, f32 *out) {
+/* 0x0031F330 */
+void TintStalker_ActionOffsets(void *self, s32 id, f32 *out) {
     switch (id) {
     case 10:
     case 11:

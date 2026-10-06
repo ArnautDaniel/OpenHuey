@@ -33,26 +33,26 @@ extern u8 D_003AF1D0[];
 extern u8 D_003AF210[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_001278C0(void);
-void func_001278D0(void *p, s32 kind, f32 *out);
-void func_00127970(void *p, s32 kind, f32 *out);
-void *func_00127A20(void);
-void func_00127A30(void *p);
-s32 func_0012BE50(void);
-f32 func_0012BE80(void);
-f32 func_0012BEA0(void);
-f32 func_0012BEC0(void);
-f32 func_0012BED0(void);
-f32 func_0012BEE0(void);
-f32 func_0012BEF0(void);
-f32 func_0012BF00(void);
-f32 func_0012BF10(void);
-f32 func_0012BF30(void);
-f32 func_0012BF40(void);
-f32 func_0012BF60(void);
-void func_0012BF80(void *p, s32 t);
-void func_0012BFA0(void *p);
-void *func_0012BFF0(void);
+void *Debilitas_MotionFiles(void);
+void Debilitas_DoorOffset(void *p, s32 kind, f32 *out);
+void Debilitas_ActionOffsets(void *p, s32 kind, f32 *out);
+void *Debilitas_RoomSpots(void);
+void Debilitas_ExitDone(void *p);
+s32 Debilitas_BlockFlags(void);
+f32 Debilitas_SpeedBase(void);
+f32 Debilitas_SpeedTop(void);
+f32 Debilitas_AttackRange(void);
+f32 Debilitas_ReachHewie(void);
+f32 Debilitas_AttackAngle(void);
+f32 Debilitas_Dist2E8(void);
+f32 Debilitas_ReachFiona(void);
+f32 Debilitas_LookSwing(void);
+f32 Debilitas_LookFrames(void);
+f32 Debilitas_TurnRateFast(void);
+f32 Debilitas_TurnRate(void);
+void Debilitas_SetTimer(void *p, s32 t);
+void Debilitas_Timer10s(void *p);
+void *Debilitas_ModelFiles(void);
 
 void *func_00127800(void **m, s32 flags) {
     if (m != NULL) {
@@ -82,11 +82,13 @@ void *func_00127800(void **m, s32 flags) {
     return m;
 }
 
-void *func_001278C0(void) {
+/* 0x001278C0 */
+void *Debilitas_MotionFiles(void) {
     return D_003AF250;
 }
 
-void func_001278D0(void *p, s32 kind, f32 *out) {
+/* 0x001278D0 */
+void Debilitas_DoorOffset(void *p, s32 kind, f32 *out) {
     f32 z;
 
     switch (kind) {
@@ -110,7 +112,8 @@ void func_001278D0(void *p, s32 kind, f32 *out) {
     out[2] = z;
 }
 
-void func_00127970(void *p, s32 kind, f32 *out) {
+/* 0x00127970 */
+void Debilitas_ActionOffsets(void *p, s32 kind, f32 *out) {
     f32 x, z;
 
     switch (kind) {
@@ -140,11 +143,13 @@ void func_00127970(void *p, s32 kind, f32 *out) {
     out[2] = z;
 }
 
-void *func_00127A20(void) {
+/* 0x00127A20 */
+void *Debilitas_RoomSpots(void) {
     return D_003AFAE0;
 }
 
-void func_00127A30(void *p) {
+/* 0x00127A30 */
+void Debilitas_ExitDone(void *p) {
     FLD(p, 0x16EE, u8) = 1;
 }
 
@@ -189,11 +194,12 @@ extern const PTMF D_003AFEF0;
 
 /* vtable +0x264: the next behaviour; his own (func_0012B490) unless +0x16B4 is set or at threat
    level 5, then the Pursuer's */
-void func_0012B990(Pursuer *p) {
+/* 0x0012B990 */
+void Debilitas_ChaseDecision(Pursuer *p) {
     s32 next;
 
     if (PU(p, 0x16B4, u8) != 0 || AT(gProgress, 0x7B8, u8) == 5) {
-        func_002961D0(p);
+        Pursuer_ChaseDecision(p);
         return;
     }
     next = PU(p, 0x1758, s32);
@@ -211,63 +217,78 @@ void func_0012B990(Pursuer *p) {
     func_0012B490(p);
 }
 
-s32 func_0012BE50(void) {
+/* 0x0012BE50 */
+s32 Debilitas_BlockFlags(void) {
     return 0x2C020068;
 }
 
-f32 func_0012BE80(void) {
+/* 0x0012BE80 */
+f32 Debilitas_SpeedBase(void) {
     return 0x1.3333340000000p-1f /* 0.6 */;
 }
 
-f32 func_0012BEA0(void) {
+/* 0x0012BEA0 */
+f32 Debilitas_SpeedTop(void) {
     return 0x1.6666660000000p+0f /* 1.4 */;
 }
 
-f32 func_0012BEC0(void) {
+/* 0x0012BEC0 */
+f32 Debilitas_AttackRange(void) {
     return 24.0f;
 }
 
-f32 func_0012BED0(void) {
+/* 0x0012BED0 */
+f32 Debilitas_ReachHewie(void) {
     return 16.0f;
 }
 
-f32 func_0012BEE0(void) {
+/* 0x0012BEE0 */
+f32 Debilitas_AttackAngle(void) {
     return 20.0f;
 }
 
-f32 func_0012BEF0(void) {
+/* 0x0012BEF0 */
+f32 Debilitas_Dist2E8(void) {
     return 10.0f;
 }
 
-f32 func_0012BF00(void) {
+/* 0x0012BF00 */
+f32 Debilitas_ReachFiona(void) {
     return 20.0f;
 }
 
-f32 func_0012BF10(void) {
+/* 0x0012BF10 */
+f32 Debilitas_LookSwing(void) {
     return 0x1.eb851e0000000p-4f /* 0.12 */;
 }
 
-f32 func_0012BF30(void) {
+/* 0x0012BF30 */
+f32 Debilitas_LookFrames(void) {
     return 60.0f;
 }
 
-f32 func_0012BF40(void) {
+/* 0x0012BF40 */
+f32 Debilitas_TurnRateFast(void) {
     return 0x1.1df46a0000000p-3f /* 0.13962634 */; /* 8 degrees in radians */
 }
 
-f32 func_0012BF60(void) {
+/* 0x0012BF60 */
+f32 Debilitas_TurnRate(void) {
     return 0x1.aceea00000000p-5f /* 0.052359879 */; /* 3 degrees in radians */
 }
 
-void func_0012BF80(void *p, s32 t) {
+/* 0x0012BF80 */
+void Debilitas_SetTimer(void *p, s32 t) {
     FLD(p, 0x1660, s32) = t != 0 ? t : 900;
 }
 
-void func_0012BFA0(void *p) {
+/* 0x0012BFA0 */
+void Debilitas_Timer10s(void *p) {
     FLD(p, 0x1660, s32) = 600;
 }
 
-void *func_0012BFF0(void) {
+/* 0x0012BFF0 */
+void *Debilitas_ModelFiles(void) {
     if (FLD(gProgress, 0x30, u32) & 0x8000) {
         return D_003AF210;
     }
@@ -287,11 +308,12 @@ void func_00129090(Pursuer *p) {
     func_00128FC0(p);
 }
 
-/* vtable +0x27C: the Pursuer's frame update (func_00294240), with his walk: in the idle group,
+/* vtable +0x27C: the Pursuer's frame update (Pursuer_BehaviourRun), with his walk: in the idle group,
    back to the idle while +0x16B4 is set, else the slow walk (vtable +0x324) when chasing within
    +0x17E8 of Fiona, the normal one (vtable +0x328) otherwise */
-void func_0012B860(Pursuer *p) {
-    func_00294240(p);
+/* 0x0012B860 */
+void Debilitas_BehaviourRun(Pursuer *p) {
+    Pursuer_BehaviourRun(p);
     if (PU(p, 0x175C, s32) != 4 || (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 1) {
         return;
     }
@@ -311,7 +333,8 @@ void func_0012B860(Pursuer *p) {
 /* vtable +0x128: the walk for his mode: the slow walk (vtable +0x324) when chasing with the path
    short enough (+0x17E8) and Fiona not hiding (move mode 3), or searching in sub-states 0/2;
    the normal walk (vtable +0x328) otherwise */
-void func_00128210(Pursuer *p) {
+/* 0x00128210 */
+void Debilitas_StandAnim(Pursuer *p) {
     s32 slow;
 
     switch (PU(p, 0x16C8, u8)) {
@@ -341,12 +364,13 @@ extern PTMF D_003AF2D0;
 extern u8 D_003AF340[], D_003AF4A0[], D_003AF4D0[], D_003AF6F0[], D_003AF730[], D_003AFA90[],
     D_003AFAF0[], D_003AFB10[], D_003AFB58[], D_003AFB70[], D_0047A900[];
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables, and his stats, which
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables, and his stats, which
    are different when gProgress+0x30 bit 0x8000 is set */
-void func_0012C030(Pursuer *p) {
+/* 0x0012C030 */
+void Debilitas_Setup(Pursuer *p) {
     s32 alt;
 
-    func_0029FB20(p);
+    Pursuer_Setup(p);
     alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
     p->c.hpMax = alt ? 110 : 70;
     PU(p, 0x171C, u8 *) = D_003AF4D0;
@@ -564,7 +588,7 @@ static s32 Debilitas_StrikeOrWait(Pursuer *p) {
 
 extern const PTMF D_003AFF30, D_003AFF40, D_003AFF50;
 
-/* his chase (from func_0012B490): as the Pursuer's func_00295670 he stalks Fiona, closing in
+/* his chase (from func_0012B490): as the Pursuer's Pursuer_BehaviourStalk he stalks Fiona, closing in
    (1), backing off (5) or holding off (6) for the waits from his table +0x17F0, and now and then
    lunging (attack table 0xA) by the threat-level chance. Seen by her while close, he comes
    straight on (1) a limited number of times (+0x1630). Right up against her with no room

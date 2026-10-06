@@ -18,106 +18,130 @@
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
 
-void func_00179600(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x00179600 */
+void Kind14_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
 }
 
 /* vtable +0x11C */
-s32 func_00179610(Pursuer *p) {
+/* 0x00179610 */
+s32 Pursuer_GivesUp(Pursuer *p) {
     return 0;
 }
 
 /* vtable +0x2AC .. +0x2B8: nothing */
-void func_00179710(Pursuer *p) {
+/* 0x00179710 */
+void Pursuer_GoForFiona(Pursuer *p) {
 }
 
-void func_00179720(Pursuer *p) {
+/* 0x00179720 */
+void Pursuer_HeadingStep(Pursuer *p) {
 }
 
-void func_00179730(Pursuer *p) {
+/* 0x00179730 */
+void Pursuer_FreshStart(Pursuer *p) {
 }
 
-void func_00179740(Pursuer *p) {
+/* 0x00179740 */
+void Pursuer_CarryOn(Pursuer *p) {
 }
 
 /* vtable +0x2C0: timer +0x1660 to 600 frames (10 s) */
-void func_00179750(Pursuer *p) {
+/* 0x00179750 */
+void Pursuer_Timer10s(Pursuer *p) {
     PU(p, 0x1660, s32) = 600;
 }
 
 /* vtable +0x2C8: timer +0x1660 to `frames`, 0 = 900 (15 s) */
-void func_00179760(Pursuer *p, s32 frames) {
+/* 0x00179760 */
+void Pursuer_SetTimer(Pursuer *p, s32 frames) {
     PU(p, 0x1660, s32) = frames != 0 ? frames : 900;
 }
 
 /* vtable +0xA0 / +0xA4: turn rates, 4 and 8 degrees (in radians) */
-f32 func_00179830(Pursuer *p) {
+/* 0x00179830 */
+f32 Pursuer_TurnRate(Pursuer *p) {
     return 0x1.1df46a0000000p-4f /* 0.06981317 */;
 }
 
-f32 func_00179850(Pursuer *p) {
+/* 0x00179850 */
+f32 Pursuer_TurnRateFast(Pursuer *p) {
     return 0x1.1df46a0000000p-3f /* 0.13962634 */;
 }
 
 /* vtable +0x2DC .. +0x2FC: distances and factors */
-f32 func_00179870(Pursuer *p) {
+/* 0x00179870 */
+f32 Pursuer_LookFrames(Pursuer *p) {
     return 60.0f;
 }
 
-f32 func_00179880(Pursuer *p) {
+/* 0x00179880 */
+f32 Pursuer_LookSwing(Pursuer *p) {
     return 0x1.eb851e0000000p-4f /* 0.12 */;
 }
 
-f32 func_001798A0(Pursuer *p) {
+/* 0x001798A0 */
+f32 Pursuer_ReachFiona(Pursuer *p) {
     return 20.0f;
 }
 
-f32 func_001798B0(Pursuer *p) {
+/* 0x001798B0 */
+f32 Pursuer_Dist2E8(Pursuer *p) {
     return 20.0f;
 }
 
-f32 func_001798C0(Pursuer *p) {
+/* 0x001798C0 */
+f32 Pursuer_AttackAngle(Pursuer *p) {
     return 20.0f;
 }
 
-f32 func_001798D0(Pursuer *p) {
+/* 0x001798D0 */
+f32 Pursuer_ReachHewie(Pursuer *p) {
     return 16.0f;
 }
 
-f32 func_001798E0(Pursuer *p) {
+/* 0x001798E0 */
+f32 Pursuer_AttackRange(Pursuer *p) {
     return 24.0f;
 }
 
-f32 func_001798F0(Pursuer *p) {
+/* 0x001798F0 */
+f32 Pursuer_SpeedTop(Pursuer *p) {
     return 0x1.6666660000000p+0f /* 1.4 */;
 }
 
-f32 func_00179910(Pursuer *p) {
+/* 0x00179910 */
+f32 Pursuer_SpeedBase(Pursuer *p) {
     return 0x1.3333340000000p-1f /* 0.6 */;
 }
 
-s32 func_00179930(Pursuer *p) {
+/* 0x00179930 */
+s32 Pursuer_AttackAnimA(Pursuer *p) {
     return -1;
 }
 
-s32 func_00179940(Pursuer *p) {
+/* 0x00179940 */
+s32 Pursuer_AttackAnimB(Pursuer *p) {
     return -1;
 }
 
 /* vtable +0x314 */
-s32 func_00179950(Pursuer *p) {
+/* 0x00179950 */
+s32 Pursuer_RoomSpots(Pursuer *p) {
     return 0;
 }
 
 /* vtable +0xE8 */
-void func_00179960(Pursuer *p) {
+/* 0x00179960 */
+void NPC_PickDestination(Pursuer *p) {
     func_00212400(p);
 }
 
 /* ---- 0x211C80..0x219460 ---- */
 
 /* vtable +0xE4: nothing */
-void func_00212540(Pursuer *p) {
+/* 0x00212540 */
+void NPC_DoorBreak(Pursuer *p) {
 }
 
 /* shut / open door `door` (doors vtable +0x1C) */
@@ -135,12 +159,14 @@ s32 func_00217340(Pursuer *p) {
 }
 
 /* vtable +0xC8: reacting to a noise */
-s32 func_002181C0(Pursuer *p) {
+/* 0x002181C0 */
+s32 NPC_HearNoise(Pursuer *p) {
     return p->c.heardSlot != 0xFF;
 }
 
 /* vtable +0xA8: blocking nav triangle flags */
-u32 func_00219450(Pursuer *p) {
+/* 0x00219450 */
+u32 NPC_BlockFlags(Pursuer *p) {
     return 0x2C020028;
 }
 
@@ -184,7 +210,8 @@ u32 func_00211B00(Pursuer *p, u32 tri) {
 }
 
 /* `a2` for the pursuer in its room (progress) */
-void func_00211C80(Pursuer *p, s32 a2) {
+/* 0x00211C80 */
+void NPC_ExitArg(Pursuer *p, s32 a2) {
     Progress *pr = gProgress;
 
     DoorHold_Take(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
@@ -383,7 +410,8 @@ void func_00218E70(Pursuer *p) {
 /* ---- batch 3 ---- */
 
 /* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */
-void func_00179780(Pursuer *p, s32 side, f32 *out) {
+/* 0x00179780 */
+void Pursuer_DoorOffset(Pursuer *p, s32 side, f32 *out) {
     switch (side) {
     case 0:
         AT(out, 0x0, u32) = 0;
@@ -409,7 +437,8 @@ void func_00179780(Pursuer *p, s32 side, f32 *out) {
 }
 
 /* vtable +0x128 (Debilitas: own): the stand animation by +0x16C8 */
-void func_00179620(Pursuer *p) {
+/* 0x00179620 */
+void Pursuer_StandAnim(Pursuer *p) {
     u8 k = PU(p, 0x16C8, u8);
 
     switch (k) {
@@ -484,7 +513,8 @@ s32 func_002131A0(void) {
 }
 
 /* path length to triangle `tri` / point `pos`, from the nearest walkable triangle if blocked */
-f32 func_00213C60(Pursuer *p, u32 tri, const f32 *pos) {
+/* 0x00213C60 */
+f32 NPC_PathLengthTo(Pursuer *p, u32 tri, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
     u32 flags;
 
@@ -707,7 +737,8 @@ void func_00218110(Pursuer *p) {
 }
 
 /* is Hewie close enough to be caught (in reach and on the same walkable triangle)? */
-s32 func_00218940(Pursuer *p) {
+/* 0x00218940 */
+s32 NPC_HewieInReach(Pursuer *p) {
     Character *h = gCharPartner;
 
     if (func_00218430(p, h) != 0) {
@@ -760,7 +791,8 @@ s32 func_00218B60(Pursuer *p) {
 }
 
 /* head for the room / side next to Hewie's (exit `exit` of his room); else keep the goal */
-void func_00218C90(Pursuer *p, u32 exit) {
+/* 0x00218C90 */
+void NPC_HeadNearHewie(Pursuer *p, u32 exit) {
     Character *h = gCharPartner;
     VObject *rm = gRooms;
     s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, h->a.room, exit);
@@ -775,7 +807,8 @@ void func_00218C90(Pursuer *p, u32 exit) {
 }
 
 /* the same next to Fiona's room */
-void func_00218D80(Pursuer *p, u32 exit) {
+/* 0x00218D80 */
+void NPC_HeadNearFiona(Pursuer *p, u32 exit) {
     Character *f = gCharPlayer;
     VObject *rm = gRooms;
     s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, f->a.room, exit);
@@ -990,7 +1023,8 @@ s32 func_00218300(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f3
 
 /* is Fiona within reach to be caught (seen, or 20 units on a walkable line; 10 with progress
  * flag 0xA; never with flag 9 or while her +0x1AD630 is set)? */
-s32 func_00218A30(Pursuer *p) {
+/* 0x00218A30 */
+s32 NPC_FionaInReach(Pursuer *p) {
     Character *f = gCharPlayer;
     Progress *pr;
     f32 reach, d;
@@ -1027,7 +1061,8 @@ s32 func_00218A30(Pursuer *p) {
 extern void *D_0046C220[], *D_00469C60[], *D_00469C20[];
 
 /* vtable +0x8: NPC destructor (-> Character) */
-Pursuer *func_001710D0(Pursuer *p, s32 flags) {
+/* 0x001710D0 */
+Pursuer *NPC_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_0046C220;
         VCALL(p, 0x10, void (*)(Pursuer *))(p);
@@ -1045,11 +1080,12 @@ Pursuer *func_001710D0(Pursuer *p, s32 flags) {
 }
 
 /* vtable +0xC: NPC init */
-void func_00219460(Pursuer *p) {
+/* 0x00219460 */
+void NPC_Reset(Pursuer *p) {
     u32 i;
 
     p->c.a.unkC4 = 0;
-    func_00127660(&p->c);
+    Character_Reset(&p->c);
     p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
     for (i = 0; i < 13; i++) {
         p->c.unk148C[i] = 0;
@@ -1136,7 +1172,8 @@ u32 func_00212E00(Pursuer *p, u32 tri, const f32 *pos, u32 door) {
 }
 
 /* vtable +0xAC: go to triangle `tri` / point `pos` of room `room` (-1 the played one) */
-void func_00219310(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+/* 0x00219310 */
+void NPC_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;
 
     if (room == -1) {
@@ -1312,7 +1349,8 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
 /* ---- batch 6 ---- */
 
 /* path length to the nearest walkable point of triangle +0x15C4 / point +0x15D0 (+0x1590) */
-s32 func_00216B20(Pursuer *p) {
+/* 0x00216B20 */
+s32 NPC_PathLengthSpot(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1344,7 +1382,8 @@ s32 func_00216B20(Pursuer *p) {
 }
 
 /* the same for the goal triangle +0x15A4 / point +0x15B0 */
-s32 func_00216C90(Pursuer *p) {
+/* 0x00216C90 */
+s32 NPC_PathLengthGoal(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1606,7 +1645,8 @@ s32 func_00212FE0(Pursuer *p, s32 side) {
 
 /* path length to character `c` (null: the target): +0x1590, and +0x1588 (Fiona) / +0x158C
  * (Hewie) */
-s32 func_00216960(Pursuer *p, Character *c) {
+/* 0x00216960 */
+s32 NPC_PathLengthChar(Pursuer *p, Character *c) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     void *nm;
@@ -1689,7 +1729,8 @@ f32 func_00212550(Pursuer *p, u32 exit) {
 
 /* vtable +0xB0: head for Fiona (her room's side; her triangle if she's in a room the pursuer
  * can reach) */
-void func_00219100(Pursuer *p) {
+/* 0x00219100 */
+void NPC_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
     s32 side = PU(p, 0x1598, s32);
     s32 other = 0;
@@ -1815,7 +1856,8 @@ u32 func_00212850(Pursuer *p) {
 }
 
 /* vtable +0xB4: head for character `c` (null: the target) */
-void func_00218ED0(Pursuer *p, Character *c) {
+/* 0x00218ED0 */
+void NPC_HeadFor(Pursuer *p, Character *c) {
     s32 side = PU(p, 0x1598, s32);
     s32 other = 0;
 
@@ -2527,7 +2569,8 @@ s32 func_00215D80(Pursuer *p) {
 
 /* vtable +0xEC: can the pursuer go through exit `exit`: 1 if func_00211E00 says 4, 5 or 6,
    2 if it says 2 (passed on as is), else 0 */
-s32 func_00127C40(Pursuer *p, s32 exit) {
+/* 0x00127C40 */
+s32 NPC_CanUseExit(Pursuer *p, s32 exit) {
     switch (func_00211E00(p, exit) & 0xFF) {
     case 2:
         return 2;

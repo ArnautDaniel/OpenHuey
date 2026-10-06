@@ -66,8 +66,8 @@ extern u8 D_0042C6E0[];
 void func_00324790(u8 *self, s32 unused, u32 v);
 s32 func_003247C0(u8 *self);
 void func_00324C00(u8 *self, s32 slot, u32 b12);
-void *func_0032C350(void);
-void *func_0032C360(void);
+void *Kind25_ModelFiles(void);
+void *Kind25_MotionFiles(void);
 
 extern const char *const D_0042C358;
 extern void *D_00474130[];
@@ -140,10 +140,10 @@ static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) 
     return -1;
 }
 
-Character *func_0032C240(Character *c, s32 flags);
-void func_0032C380(Pursuer *p);
-void func_0032C3D0(Pursuer *p);
-s32 func_0032C4A0(Pursuer *p);
+Character *Kind25_dtor(Character *c, s32 flags);
+void Kind25_ShowUp(Pursuer *p);
+void Kind25_EventState(Pursuer *p);
+s32 Kind25_GrabOrder(Pursuer *p);
 
 void func_002E2260(Character *c) {   /* +0xA8 */
 }
@@ -178,12 +178,12 @@ void func_002E22F0(Character *c) {   /* +0x2C */
 
 /* +0x10 */
 void func_002E2300(Character *c) {
-    func_00124DA0(&c->a);
+    Actor_Cleanup(&c->a);
 }
 
 /* +0xC */
 void func_002E2310(Character *c) {
-    func_00127660(c);
+    Character_Reset(c);
 }
 
 /* operator delete for objects put in place (nothing to free) */
@@ -239,21 +239,21 @@ void func_002DFDF0(Character *c) {   /* +0x88 */
 void func_002E0510(Character *c) {   /* a state with nothing to do */
 }
 
-/* +0x28 put on triangle `tri` (func_00125AD0), remembering it as the previous one and the
+/* +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
    position (+0x38 / +0x40) */
 s32 func_002E19A0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00125AD0(c, tri, heading, pos);
+    s32 r = Character_Place(c, tri, heading, pos);
 
     c->a.prevNavTri = tri;
     sceVu0CopyVector(c->a.prevPos, c->a.pos);
     return r;
 }
 
-/* +0x5C reset (func_00125CC0): not hit (+0xB), no target (+0x9 0xFF), mode 2 (+0xC) */
+/* +0x5C reset (Character_Activate): not hit (+0xB), no target (+0x9 0xFF), mode 2 (+0xC) */
 void func_002E0BF0(Character *c) {
     u8 *k = CR(c);
 
-    func_00125CC0(c);
+    Character_Activate(c);
     AT(k, 0xB, u8) = 0;
     AT(k, 0x9, u8) = 0xFF;
     AT(k, 0xC, s32) = 2;
@@ -1072,7 +1072,7 @@ void func_002E0DB0(Character *c) {
     }
 }
 
-/* +0xC set up: the Character's (func_00127660); size 1.5 x 16, company 1, no blocking flags,
+/* +0xC set up: the Character's (Character_Reset); size 1.5 x 16, company 1, no blocking flags,
  * path kind 6 blocking 0x40080; no model; a random kind 0..15 (its table entry), strength 0;
  * all its own state cleared (bobbing 0.5 / 0.05, fade 0x80, turns every 20, gives up after
  * 60 or with +0x8 30 tries), then +0x5C */
@@ -1081,7 +1081,7 @@ void func_002E2030(Character *c) {
     const CreatureKind *t;
     s32 i;
 
-    func_00127660(c);
+    Character_Reset(c);
     c->a.radius = 1.5f;
     c->a.height = 16.0f;
     c->a.unk2A = 1;
@@ -2849,10 +2849,10 @@ s32 func_003247C0(u8 *self) {
     return self[0x15AF] != 0;
 }
 
-/* (as func_002E19A0)  +0x28 put on triangle `tri` (func_00125AD0), remembering it as the previous one and the
+/* (as func_002E19A0)  +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
    position (+0x38 / +0x40) */
 s32 func_0032BD40(Character *c, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00125AD0(c, tri, heading, pos);
+    s32 r = Character_Place(c, tri, heading, pos);
 
     c->a.prevNavTri = tri;
     sceVu0CopyVector(c->a.prevPos, c->a.pos);
@@ -4459,11 +4459,11 @@ void func_0032A550(Character *c) {
     }
 }
 
-/* (a creature class) func_00125CC0, its own block +0x61 0, +0x63 0xFF, mode 2 */
+/* (a creature class) Character_Activate, its own block +0x61 0, +0x63 0xFF, mode 2 */
 void func_0032A890(Character *c) {
     u8 *k = (u8 *)c + 0x1540;
 
-    func_00125CC0(c);
+    Character_Activate(c);
     AT(k, 0x61, u8) = 0;
     AT(k, 0x63, u8) = 0xFF;
     AT(k, 0x0, s32) = 2;
@@ -4634,21 +4634,27 @@ void func_0032C040(Character *c) {
     AT(k, 0x69, u8) = 0;
 }
 
-Character *func_0032C240(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474130); }
+/* 0x0032C240 */
+Character *Kind25_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474130); }
 
-void *func_0032C350(void) {
+/* 0x0032C350 */
+void *Kind25_ModelFiles(void) {
     return D_0042C6A0;
 }
 
-void *func_0032C360(void) {
+/* 0x0032C360 */
+void *Kind25_MotionFiles(void) {
     return D_0042C6E0;
 }
 
-void func_0032C380(Pursuer *p) { creature_inplay(p); }
+/* 0x0032C380 */
+void Kind25_ShowUp(Pursuer *p) { creature_inplay(p); }
 
-void func_0032C3D0(Pursuer *p) { creature_act5(p, &D_0042C720); }
+/* 0x0032C3D0 */
+void Kind25_EventState(Pursuer *p) { creature_act5(p, &D_0042C720); }
 
-s32 func_0032C4A0(Pursuer *p) { return creature_slot_done(p); }
+/* 0x0032C4A0 */
+s32 Kind25_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 extern const PTMF D_0042C4B0, D_0042C4C0, D_0042C4D0, D_0042C4E0, D_0042C4F0, D_0042C500, D_0042C510,
     D_0042C520, D_0042C530, D_0042C540, D_0042C550, D_0042C560, D_0042C570, D_0042C580, D_0042C590,

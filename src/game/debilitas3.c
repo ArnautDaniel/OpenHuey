@@ -1,6 +1,6 @@
 /* The third Debilitas class (kind 7, vtable D_0046F020; code 0x2CD7A0..0x2CF3xx): a Pursuer
  * with Debilitas's model and its own behaviour, used where the countdown runs (its reset gives
- * +0x16DC 0x10 while progress +0x1FBEC1 is set, pursuer.c func_002CF0F0). See debilitas.c. */
+ * +0x16DC 0x10 while progress +0x1FBEC1 is set, pursuer.c Debilitas3_Activate). See debilitas.c. */
 #include "common.h"
 #include "pursuer.h"
 #include "progress.h"
@@ -20,32 +20,32 @@ extern u8 D_004137B0[], D_00414220[], D_00414270[], D_00413E10[], D_00413E60[], 
 extern u8 D_004139D0[], D_00413A10[], D_00413640[], D_004137A0[], D_0047AC08[];
 extern const PTMF D_004135D0;
 
-u32 func_002CEF90(void);
-f32 func_002CEFC0(void);
-f32 func_002CEFE0(void);
-f32 func_002CF000(void);
-f32 func_002CF010(void);
-f32 func_002CF020(void);
-f32 func_002CF030(void);
-f32 func_002CF040(void);
-f32 func_002CF050(void);
-f32 func_002CF070(void);
-f32 func_002CF080(void);
-f32 func_002CF0A0(void);
+u32 Debilitas3_BlockFlags(void);
+f32 Debilitas3_SpeedBase(void);
+f32 Debilitas3_SpeedTop(void);
+f32 Debilitas3_AttackRange(void);
+f32 Debilitas3_ReachHewie(void);
+f32 Debilitas3_AttackAngle(void);
+f32 Debilitas3_Dist2E8(void);
+f32 Debilitas3_ReachFiona(void);
+f32 Debilitas3_LookSwing(void);
+f32 Debilitas3_LookFrames(void);
+f32 Debilitas3_TurnRateFast(void);
+f32 Debilitas3_TurnRate(void);
 
-s32 func_003310B0(void);
-s32 func_003310C0(void);
+s32 Kind27_AttackAnimB(void);
+s32 Kind27_AttackAnimA(void);
 void func_00331440(void);
-s32 func_002CEFA0(void);
-s32 func_002CEFB0(void);
+s32 Debilitas3_AttackAnimB(void);
+s32 Debilitas3_AttackAnimA(void);
 void func_002CF380(void);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002CF0C0(u8 *p, s32 v);
-void func_002CF0E0(u8 *p);
+void Debilitas3_SetTimer(u8 *p, s32 v);
+void Debilitas3_Timer10s(u8 *p);
 
-u32 func_00330D10(Pursuer *p);
+u32 Kind27_PathNodeSound(Pursuer *p);
 
 extern u8 D_0042E440[];
 extern u8 D_0042E480[];
@@ -59,26 +59,27 @@ static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
 }
 
-u32 func_003310A0(void);
-f32 func_003310D0(void);
-f32 func_003310F0(void);
-f32 func_00331110(void);
-f32 func_00331120(void);
-f32 func_00331130(void);
-f32 func_00331140(void);
-f32 func_00331150(void);
-f32 func_00331160(void);
-f32 func_00331180(void);
-f32 func_00331190(void);
-f32 func_003311B0(void);
-void func_003311D0(u8 *self, s32 t);
-void func_003311F0(u8 *self);
-void *func_00331240(void);
+u32 Kind27_BlockFlags(void);
+f32 Kind27_SpeedBase(void);
+f32 Kind27_SpeedTop(void);
+f32 Kind27_AttackRange(void);
+f32 Kind27_ReachHewie(void);
+f32 Kind27_AttackAngle(void);
+f32 Kind27_Dist2E8(void);
+f32 Kind27_ReachFiona(void);
+f32 Kind27_LookSwing(void);
+f32 Kind27_LookFrames(void);
+f32 Kind27_TurnRateFast(void);
+f32 Kind27_TurnRate(void);
+void Kind27_SetTimer(u8 *self, s32 t);
+void Kind27_Timer10s(u8 *self);
+void *Kind27_ModelFiles(void);
 
-/* vtable +0xF4: his setup over the Pursuer's (func_0029FB20): his tables and stats (165 hp and
+/* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (165 hp and
  * +0x16E8 18 when gProgress+0x30 bit 0x8000 is set, else 110 hp and 12) */
-void func_002CF1C0(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x002CF1C0 */
+void Debilitas3_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 165;
         PU(p, 0x171C, u8 *) = D_004137B0;
@@ -126,7 +127,8 @@ void func_002CF380(void) {
 
 /* vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's func_0012BAA0 without
  * the resting check */
-void func_002CEC40(Pursuer *p, Character *c) {
+/* 0x002CEC40 */
+void Debilitas3_HeadFor(Pursuer *p, Character *c) {
     s32 side;
 
     if (c == NULL) {
@@ -154,7 +156,8 @@ void func_002CEC40(Pursuer *p, Character *c) {
 }
 
 /* vtable +0xB0: head for Fiona - Debilitas's func_0012BBF0 without the resting check */
-void func_002CED60(Pursuer *p) {
+/* 0x002CED60 */
+void Debilitas3_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
     s32 side = PU(p, 0x1598, s32);
 
@@ -176,7 +179,8 @@ void func_002CED60(Pursuer *p) {
 
 /* vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) - as Debilitas's
  * func_0012BD10 */
-void func_002CEE50(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+/* 0x002CEE50 */
+void Debilitas3_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;
 
     if (room == -1) {
@@ -197,41 +201,57 @@ void func_002CEE50(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     }
 }
 
-u32 func_002CEF90(void) { return 0x2C020068; }
+/* 0x002CEF90 */
+u32 Debilitas3_BlockFlags(void) { return 0x2C020068; }
 
-s32 func_002CEFA0(void) {
+/* 0x002CEFA0 */
+s32 Debilitas3_AttackAnimB(void) {
     return 0xE;
 }
 
-s32 func_002CEFB0(void) {
+/* 0x002CEFB0 */
+s32 Debilitas3_AttackAnimA(void) {
     return 0xD;
 }
 
-f32 func_002CEFC0(void) { return 0x1.3333340000000p-1f /* 0.6 */; }
+/* 0x002CEFC0 */
+f32 Debilitas3_SpeedBase(void) { return 0x1.3333340000000p-1f /* 0.6 */; }
 
-f32 func_002CEFE0(void) { return 0x1.6666660000000p+0f /* 1.4 */; }
+/* 0x002CEFE0 */
+f32 Debilitas3_SpeedTop(void) { return 0x1.6666660000000p+0f /* 1.4 */; }
 
-f32 func_002CF000(void) { return 24.0f; }
+/* 0x002CF000 */
+f32 Debilitas3_AttackRange(void) { return 24.0f; }
 
-f32 func_002CF010(void) { return 16.0f; }
+/* 0x002CF010 */
+f32 Debilitas3_ReachHewie(void) { return 16.0f; }
 
-f32 func_002CF020(void) { return 20.0f; }
+/* 0x002CF020 */
+f32 Debilitas3_AttackAngle(void) { return 20.0f; }
 
-f32 func_002CF030(void) { return 10.0f; }
+/* 0x002CF030 */
+f32 Debilitas3_Dist2E8(void) { return 10.0f; }
 
-f32 func_002CF040(void) { return 20.0f; }
+/* 0x002CF040 */
+f32 Debilitas3_ReachFiona(void) { return 20.0f; }
 
-f32 func_002CF050(void) { return 0x1.eb851e0000000p-4f /* 0.12 */; }
+/* 0x002CF050 */
+f32 Debilitas3_LookSwing(void) { return 0x1.eb851e0000000p-4f /* 0.12 */; }
 
-f32 func_002CF070(void) { return 60.0f; }
+/* 0x002CF070 */
+f32 Debilitas3_LookFrames(void) { return 60.0f; }
 
-f32 func_002CF080(void) { union { u32 u; f32 f; } c = { 0x3E0EFA35 }; return c.f; }
+/* 0x002CF080 */
+f32 Debilitas3_TurnRateFast(void) { union { u32 u; f32 f; } c = { 0x3E0EFA35 }; return c.f; }
 
-f32 func_002CF0A0(void) { union { u32 u; f32 f; } c = { 0x3D567750 }; return c.f; }
+/* 0x002CF0A0 */
+f32 Debilitas3_TurnRate(void) { union { u32 u; f32 f; } c = { 0x3D567750 }; return c.f; }
 
-void func_002CF0C0(u8 *p, s32 v) { F(p, 0x1660, s32) = v != 0 ? v : 900; }
+/* 0x002CF0C0 */
+void Debilitas3_SetTimer(u8 *p, s32 v) { F(p, 0x1660, s32) = v != 0 ? v : 900; }
 
-void func_002CF0E0(u8 *p) { F(p, 0x1660, s32) = 600; }
+/* 0x002CF0E0 */
+void Debilitas3_Timer10s(u8 *p) { F(p, 0x1660, s32) = 600; }
 
 /* a stun: the flinch (0x1004) unless already reeling, and frozen while it lasts - as Debilitas's
  * func_00128970 */
@@ -308,19 +328,22 @@ static u8 *const sAttackTables3[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation */
-void func_002CD7B0(Pursuer *p, s8 situation) {
+/* 0x002CD7B0 */
+void Debilitas3_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables3[alt][situation] : sAttackTables3[alt][0];
 }
 
 /* vtable +0x228 / +0x224: the Pursuer's */
-void func_002CE6A0(Pursuer *p) {
-    func_0028BD40(p);
+/* 0x002CE6A0 */
+void Debilitas3_DoorAnim(Pursuer *p) {
+    Pursuer_DoorAnim(p);
 }
 
-void func_002CE6B0(Pursuer *p) {
-    func_0028BEF0(p);
+/* 0x002CE6B0 */
+void Debilitas3_Stairs(Pursuer *p) {
+    Pursuer_Stairs(p);
 }
 
 /* a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress vtable
@@ -448,7 +471,8 @@ extern const f32 D_00414300[4];
 
 /* vtable +0x1A8: the chase towards the target - as Debilitas's func_00129570: on the path he cuts
  * straight for the target once he's no more than 10 units further from it than the path's end */
-void func_002CE6C0(Pursuer *p) {
+/* 0x002CE6C0 */
+void Debilitas3_ChaseTarget(Pursuer *p) {
     Character *t;
 
     if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
@@ -499,7 +523,8 @@ void func_002CE6C0(Pursuer *p) {
 
 /* vtable +0x30: his frame update - as Debilitas's func_001297C0 (full think on screen, with a
  * growl every 90 idle frames; off screen the behaviour step and the off-screen move) */
-void func_002CE910(Pursuer *p) {
+/* 0x002CE910 */
+void Debilitas3_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -555,8 +580,9 @@ static u8 *const sAttackTablesD[2][17] = {
       D_0042F0E8, D_0042F0F8, D_0042F0C0 },
 };
 
-/* vtable +0x130: the attack table for a situation (as func_002CD7B0) */
-void func_0032F880(Pursuer *p, s8 situation) {
+/* vtable +0x130: the attack table for a situation (as Debilitas3_AttackTable) */
+/* 0x0032F880 */
+void Kind27_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTablesD[alt][situation] : sAttackTablesD[alt][0];
@@ -676,9 +702,10 @@ void func_003301D0(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_0042F1B0);
 }
 
-/* (as func_002CE6C0)  vtable +0x1A8: the chase towards the target - as Debilitas's func_00129570: on the path he cuts
+/* (as Debilitas3_ChaseTarget)  vtable +0x1A8: the chase towards the target - as Debilitas's func_00129570: on the path he cuts
  * straight for the target once he's no more than 10 units further from it than the path's end */
-void func_00330790(Pursuer *p) {
+/* 0x00330790 */
+void Kind27_ChaseTarget(Pursuer *p) {
     Character *t;
 
     if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
@@ -727,9 +754,10 @@ void func_00330790(Pursuer *p) {
     func_00214620(p, p->c.unk128);
 }
 
-/* (as func_002CE910)  vtable +0x30: his frame update - as Debilitas's func_001297C0 (full think on screen, with a
+/* (as Debilitas3_Update)  vtable +0x30: his frame update - as Debilitas's func_001297C0 (full think on screen, with a
  * growl every 90 idle frames; off screen the behaviour step and the off-screen move) */
-void func_003309E0(Pursuer *p) {
+/* 0x003309E0 */
+void Kind27_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -762,17 +790,19 @@ void func_003309E0(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-/* (a pursuer class) its threat: 50 in action 0x1001, else the pursuers' func_0029CB40 */
-u32 func_00330D10(Pursuer *p) {
+/* (a pursuer class) its threat: 50 in action 0x1001, else the pursuers' Pursuer_PathNodeSound */
+/* 0x00330D10 */
+u32 Kind27_PathNodeSound(Pursuer *p) {
     if (PU(p, 0x175C, s32) == 0x1001) {
         return 0x32;
     }
-    return func_0029CB40(p);
+    return Pursuer_PathNodeSound(p);
 }
 
-/* (as func_002CEC40)  vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's func_0012BAA0 without
+/* (as Debilitas3_HeadFor)  vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's func_0012BAA0 without
  * the resting check */
-void func_00330D50(Pursuer *p, Character *c) {
+/* 0x00330D50 */
+void Kind27_HeadFor(Pursuer *p, Character *c) {
     s32 side;
 
     if (c == NULL) {
@@ -799,8 +829,9 @@ void func_00330D50(Pursuer *p, Character *c) {
     }
 }
 
-/* (as func_002CED60)  vtable +0xB0: head for Fiona - Debilitas's func_0012BBF0 without the resting check */
-void func_00330E70(Pursuer *p) {
+/* (as Debilitas3_HeadForFiona)  vtable +0xB0: head for Fiona - Debilitas's func_0012BBF0 without the resting check */
+/* 0x00330E70 */
+void Kind27_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
     s32 side = PU(p, 0x1598, s32);
 
@@ -820,9 +851,10 @@ void func_00330E70(Pursuer *p) {
     }
 }
 
-/* (as func_002CEE50)  vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) - as Debilitas's
+/* (as Debilitas3_GoTo)  vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) - as Debilitas's
  * func_0012BD10 */
-void func_00330F60(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+/* 0x00330F60 */
+void Kind27_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;
 
     if (room == -1) {
@@ -843,71 +875,88 @@ void func_00330F60(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     }
 }
 
-u32 func_003310A0(void) {
+/* 0x003310A0 */
+u32 Kind27_BlockFlags(void) {
     return 0x2C020068;
 }
 
-s32 func_003310B0(void) {
+/* 0x003310B0 */
+s32 Kind27_AttackAnimB(void) {
     return 0xE;
 }
 
-s32 func_003310C0(void) {
+/* 0x003310C0 */
+s32 Kind27_AttackAnimA(void) {
     return 0xD;
 }
 
-f32 func_003310D0(void) {
+/* 0x003310D0 */
+f32 Kind27_SpeedBase(void) {
     return 0x1.3333340000000p-1f /* 0.6 */;
 }
 
-f32 func_003310F0(void) {
+/* 0x003310F0 */
+f32 Kind27_SpeedTop(void) {
     return 0x1.6666660000000p+0f /* 1.4 */;
 }
 
-f32 func_00331110(void) {
+/* 0x00331110 */
+f32 Kind27_AttackRange(void) {
     return 24.0f;
 }
 
-f32 func_00331120(void) {
+/* 0x00331120 */
+f32 Kind27_ReachHewie(void) {
     return 16.0f;
 }
 
-f32 func_00331130(void) {
+/* 0x00331130 */
+f32 Kind27_AttackAngle(void) {
     return 2e+01f;
 }
 
-f32 func_00331140(void) {
+/* 0x00331140 */
+f32 Kind27_Dist2E8(void) {
     return 1e+01f;
 }
 
-f32 func_00331150(void) {
+/* 0x00331150 */
+f32 Kind27_ReachFiona(void) {
     return 2e+01f;
 }
 
-f32 func_00331160(void) {
+/* 0x00331160 */
+f32 Kind27_LookSwing(void) {
     return 0x1.eb851e0000000p-4f /* 0.12 */;
 }
 
-f32 func_00331180(void) {
+/* 0x00331180 */
+f32 Kind27_LookFrames(void) {
     return 6e+01f;
 }
 
-f32 func_00331190(void) {
+/* 0x00331190 */
+f32 Kind27_TurnRateFast(void) {
     return 0x1.1df46a0000000p-3f /* 0.13962634 */;
 }
 
-f32 func_003311B0(void) {
+/* 0x003311B0 */
+f32 Kind27_TurnRate(void) {
     return 0x1.aceea00000000p-5f /* 0.05235988 */;
 }
 
-void func_003311D0(u8 *self, s32 t) {
+/* 0x003311D0 */
+void Kind27_SetTimer(u8 *self, s32 t) {
     S32(self, 0x1660) = t != 0 ? t : 900;
 }
 
-void func_003311F0(u8 *self) {
+/* 0x003311F0 */
+void Kind27_Timer10s(u8 *self) {
     S32(self, 0x1660) = 600;
 }
 
-void *func_00331240(void) {
+/* 0x00331240 */
+void *Kind27_ModelFiles(void) {
     return b5_prog_flag8000() ? D_0042E480 : D_0042E440;
 }
 
@@ -915,11 +964,12 @@ extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], D_0042EDA8[], 
 extern u8 D_0042E940[], D_0042E980[], D_0042E5B0[], D_0042E710[], D_0047ADC0[];
 extern const PTMF D_0042E540;
 
-/* (as func_002CF1C0) the D_00474FD0 Debilitas's vtable +0xF4: its setup over the Pursuer's -
+/* (as Debilitas3_Setup) the D_00474FD0 Debilitas's vtable +0xF4: its setup over the Pursuer's -
  * its tables and stats (165 hp and +0x16E8 18 when gProgress+0x30 bit 0x8000 is set, else 110
  * hp and 12; Hewie bite tolerance 30) */
-void func_00331280(Pursuer *p) {
-    func_0029FB20(p);
+/* 0x00331280 */
+void Kind27_Setup(Pursuer *p) {
+    Pursuer_Setup(p);
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         p->c.hpMax = 165;
         PU(p, 0x171C, u8 *) = D_0042E720;

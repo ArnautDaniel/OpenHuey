@@ -53,7 +53,7 @@ void func_00168A00(Hewie *h) {
 
 /* vtable +0x58: deactivate (Character part only). */
 void func_00166140(Hewie *h) {
-    func_00125D40(&h->c);
+    Character_Deactivate(&h->c);
 }
 
 /* vtable +0x98 */
@@ -63,7 +63,7 @@ s32 func_00130AE0(Hewie *h) {
 
 /* vtable +0x4C: disable (as Character), animation paused. */
 void func_00165CD0(Hewie *h) {
-    func_00126910(&h->c);
+    Character_Disable(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 1;
 }
 
@@ -400,13 +400,13 @@ void func_00166150(Hewie *h, Character *other, s32 delta) {
 
 /* vtable +0x60: forget path/movement state, then his default action. */
 void func_00165D00(Hewie *h) {
-    func_00125BE0(&h->c);
+    Character_ResetBehaviour(&h->c);
     Hewie_SetAction(h, 0, 0);
 }
 
 /* vtable +0x24: save the previous frame's state. */
 void func_00168360(Hewie *h) {
-    func_00127650(&h->c);
+    Character_RememberPos(&h->c);
     HW(h, 0xF354C, f32) = h->c.a.angle[1];
     HW(h, 0xF3568, s32) = HW(h, 0xF3564, s32);
     HW(h, 0xF366C, u8) = HW(h, 0xF366D, u8);
@@ -435,7 +435,7 @@ void func_00168600(Hewie *h) {
 
 /* vtable +0x50: halt (as Character), animation running, then back to his default action. */
 void func_00165C50(Hewie *h) {
-    func_00126810(&h->c);
+    Character_Enable(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
     Hewie_SetAction(h, func_0013B2C0(h, 0), 0);
@@ -494,7 +494,7 @@ s32 func_0013D420(Hewie *h, f32 *out) {
 
 /* vtable +0x90: reset (Character part), clear his action state. */
 void func_0015FBE0(Hewie *h) {
-    func_00126360(&h->c);
+    Character_EventReset(&h->c);
     HW(h, 0xF358C, s32) = 0;
     HW(h, 0xF35C4, s32) = 0;
     HW(h, 0xF3610, s32) = 0xFF;
@@ -666,7 +666,7 @@ void func_00167620(Hewie *h) {
 void func_0015FC60(Hewie *h) {
     u8 ok;
 
-    func_00126450(&h->c);
+    Character_BackToNormal(&h->c);
     h->c.a.unk2A = 1;
     HW(h, 0xF35E0, u8) = 0;
 
@@ -738,7 +738,7 @@ void func_00165890(Hewie *h) {
 
 /* vtable +0xC: initialise (Character part, then his own state). */
 void func_00168A10(Hewie *h) {
-    func_00127660(&h->c);
+    Character_Reset(&h->c);
     HEWIE_SIDE(h) = 2;
     h->c.a.radius = 2.5f;
     h->c.a.height = 5.0f;
@@ -802,7 +802,7 @@ void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
 /* vtable +0x28: place him (as Character) on triangle `tri`; (in play) his default animation;
  * reset his per-placement state. Returns the placement result. */
 s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
-    s32 r = func_00125AD0(&h->c, tri, heading, pos);
+    s32 r = Character_Place(&h->c, tri, heading, pos);
 
     if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
         func_002DDE20(h->c.motion, HW(h, 0xF36F0, s32), -1);
@@ -1055,7 +1055,7 @@ static inline void Hewie_StartScene(Hewie *h, Progress *p) {
 void func_00165D40(Hewie *h) {
     Progress *p;
 
-    func_00125CC0(&h->c);
+    Character_Activate(&h->c);
     func_00138AD0(h, 0, -1);
     func_0013D1F0(h, 0);
     p = gProgress;
