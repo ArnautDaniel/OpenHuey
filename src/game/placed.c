@@ -1901,6 +1901,40 @@ static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
     }
 }
 
+/* their destructors: the four drawers back down to the drawer base (last first), then the
+   effect base, then (flags > 0) delete */
+extern void *D_0046F580[];
+extern void func_002D63B0(void *p);
+
+static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
+    s32 i;
+
+    if (o != NULL) {
+        AT(o, 0x0, void **) = vtbl;
+        for (i = 3; i >= 0; i--) {
+            u8 *e = o + at + i * 0x38;
+
+            if (e != NULL) {
+                AT(e, 0x0, void **) = D_0046FC30;
+                AT(e, 0x0, void **) = D_00469D00;
+            }
+        }
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+u8 *func_0036A860(u8 *o, s32 flags) {
+    return Burst4_Destroy(o, D_0047A010, 0xB50, flags);
+}
+
+u8 *func_0036BCC0(u8 *o, s32 flags) {
+    return Burst4_Destroy(o, D_0047A030, 0x1A50, flags);
+}
+
 static inline void Burst4A_Init(void **obj) {
     Burst4_Init(obj, D_0047A010, 0xB50);
 }

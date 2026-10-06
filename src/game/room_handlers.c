@@ -5447,3 +5447,67 @@ s32 func_00320F70(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_004795C0[];
+
+static void effect_795C0_init(void **obj) {
+    obj[0] = D_004795C0;
+}
+
+/* (as func_00300A20)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
+ * slot kept in event variable byte 3 + 2; else that effect is ended */
+s32 func_003104D0(void *self, void *a1, u8 *cmd) {
+    if (cmd[4] == 0) {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 8, effect_795C0_init);
+
+        func_002D6090(mgr, slot, cmd + 3);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, (cmd[3] + 2) & 0xFF, slot);
+    } else {
+        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, (cmd[3] + 2) & 0xFF);
+
+        func_002D6170(D_0044E578, slot);
+    }
+    return 1;
+}
+
+/* (as func_002B2BF0)  the depth range (effect 0x1C) from cutscene frame 825: 1 / 1 + 0.3 a frame
+ * up to 21 / 80 + 0.7 a frame up to 120 / 160 */
+s32 func_003420A0(void) {
+    static const union { u32 u; f32 f; } kNear = {0x3E999999}, kFar = {0x3F333333};
+    u8 *fx = D_0044E4C0;
+    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 825);
+    f32 r[4] __attribute__((aligned(16)));
+
+    room_effect_new(fx, 0x1C, D_0046EC60);
+    r[0] = 1.0f;
+    r[1] = 1.0f + kNear.f * t;
+    if (!(r[1] <= 21.0f)) {
+        r[1] = 21.0f;
+    }
+    r[2] = 80.0f + kFar.f * t;
+    if (!(r[2] <= 120.0f)) {
+        r[2] = 120.0f;
+    }
+    r[3] = 160.0f;
+    func_00266C70(fx, 0x1C, r);
+    return 1;
+}
+
+extern const char *D_004365E4, *D_004365E8;
+
+/* byte 3: 0 / 1 a named progress call; 2 waits (2) for func_0016CD60(0, 0); else func_0016CD30 */
+s32 func_00341300(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0:
+        func_0016CEC0(gProgress, D_004365E4);
+        return 1;
+    case 1:
+        func_0016CEC0(gProgress, D_004365E8);
+        return 1;
+    case 2:
+        return func_0016CD60(gProgress, 0, 0) == 0 ? 2 : 1;
+    }
+    func_0016CD30(gProgress);
+    return 1;
+}
