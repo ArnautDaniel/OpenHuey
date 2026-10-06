@@ -788,7 +788,7 @@ void EventCmd_Run(VObject *ev) {
         if ((u8)CharLoad_Partner(p, pc[1]) == 1) {
             Progress_CharStart3(p, 2);
             Progress_CharLoad(p, 2);
-            func_002ECB50((u8 *)p + 0x764);
+            Summoner_Reset((u8 *)p + 0x764);
         }
         break;
     case 0x12:   /* bring in character pc[1] in slot pc[2], placed at exit pc[3] of this room (0xFF: as is) */

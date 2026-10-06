@@ -42,33 +42,33 @@ extern s32 pstr_This_CFT_function_doesn_t_support_the_fu, D_003E5264;
 extern void *D_01976F98;
 extern const u8 str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004[];
 extern s64 gTimerRate;   /* the timer's rate (ticks a second) */
-void func_00226790(s32 v);
-s32 func_002267A0(void);
-void func_002267B0(s32 v);
-s32 func_002267C0(void);
+void Cft_SetValue0(s32 v);
+s32 Cft_GetValue0(void);
+void Cft_SetValue1(s32 v);
+s32 Cft_GetValue1(void);
 void Sofdec_SetValue(s32 v);
 s32 Sofdec_GetValue(void);
-void func_002267D0(void);
-s64 func_0025C2F8(s64 ticks);
-f32 func_0025C320(s32 ticks);
-f32 func_0025C360(s32 ticks);
-f32 func_0025C3A0(s32 ticks);
+void Cft_Init(void);
+s64 Ticks_Convert(s64 ticks);
+f32 Ticks_ToMicros(s32 ticks);
+f32 Ticks_ToMillis(s32 ticks);
+f32 Ticks_ToSeconds(s32 ticks);
 void Ticks_SetRate(s64 rate);
-void func_0025C3E0(u8 *s);
-void func_0025C400(u8 *s, s64 v);
+void Measure_Clear(u8 *s);
+void Measure_Add(u8 *s, s64 v);
 
-void func_00226808(void);
-void func_00226868(void);
-void func_00226870(void);
-void func_00226878(void);
-void func_00226880(void);
-void func_00226888(void);
-void func_00226890(void);
-void func_00226898(void);
-void func_002268A0(void);
-void func_002268A8(void);
-void func_002268B0(void);
-void func_002268B8(void);
+void Cft_Noop(void);
+void Cft_Stub1(void);
+void Cft_Stub2(void);
+void Cft_Stub3(void);
+void Cft_Stub4(void);
+void Cft_Stub5(void);
+void Cft_Stub6(void);
+void Cft_Stub7(void);
+void Cft_Stub8(void);
+void Cft_Stub9(void);
+void Cft_Stub10(void);
+void Cft_Stub11(void);
 
 extern u8 D_003E5268[];
 extern u8 D_003E5270[];
@@ -82,18 +82,18 @@ extern u8 D_00459930[];
 extern u8 str_CRI_SFH_PS2EE_Ver_1_19_Build_Sep_17_2004[];
 extern u8 str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004[];
 extern u8 str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004[];
-void *func_00226810(void);
-void *func_0022A6F8(void);
-void *func_00230B48(void);
-void *func_00233720(void);
-void *func_00236B70(void);
-void *func_0023AA68(void);
-void *func_0023AA78(void);
-void *func_0023FFA0(void);
-void *func_00246A80(void);
-void *func_002577D8(void);
-void *func_00259EE8(void);
-void *func_0025B828(void);
+void *Cft_ValuePtr(void);
+void *Sofdec_Data3E5270(void);
+void *Sofdec_Data4574B8(void);
+void *Sofdec_Data457558(void);
+void *Sofdec_Data4575C0(void);
+void *Sofdec_Data457ED0(void);
+void *Sofdec_Data3E88D0(void);
+void *Sofdec_Data3E9F18(void);
+void *Sofdec_Data459930(void);
+void *Sfh_Version(void);
+void *Sfx_Version(void);
+void *Sud_Version(void);
 
 void TvScreenA_SetParams(u8 *self, u8 *src);
 
@@ -158,164 +158,197 @@ void MovieLib_Setup(MovieLib *lib) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226790(s32 v) {
+/* 0x00226790 */
+void Cft_SetValue0(s32 v) {
     pstr_This_CFT_function_doesn_t_support_the_fu = v;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-s32 func_002267A0(void) {
+/* 0x002267A0 */
+s32 Cft_GetValue0(void) {
     return pstr_This_CFT_function_doesn_t_support_the_fu;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_002267B0(s32 v) {
+/* 0x002267B0 */
+void Cft_SetValue1(s32 v) {
     D_003E5264 = v;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-s32 func_002267C0(void) {
+/* 0x002267C0 */
+s32 Cft_GetValue1(void) {
     return D_003E5264;
 }
 
-/* D_01976F98 = str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004, func_00226810's value 0, then 0x80 */
+/* D_01976F98 = str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004, Cft_ValuePtr's value 0, then 0x80 */
 /* (possibly dead code: nothing in the game references it) */
-void func_002267D0(void) {
+/* 0x002267D0 */
+void Cft_Init(void) {
     D_01976F98 = (void *)str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004;
-    AT(func_00226810(), 0x0, s32) = 0;
+    AT(Cft_ValuePtr(), 0x0, s32) = 0;
     Sofdec_SetValue(0x80);
 }
 
-void func_00226808(void) {
+/* 0x00226808 */
+void Cft_Noop(void) {
 }
 
-void *func_00226810(void) {
+/* 0x00226810 */
+void *Cft_ValuePtr(void) {
     return D_003E5268;
 }
 
-/* the value behind func_00226810 set / read */
+/* the value behind Cft_ValuePtr set / read */
 /* 0x00226820 */
 void Sofdec_SetValue(s32 v) {
-    AT(func_00226810(), 0x0, s32) = v;
+    AT(Cft_ValuePtr(), 0x0, s32) = v;
 }
 
 /* 0x00226848 */
 s32 Sofdec_GetValue(void) {
-    return AT(func_00226810(), 0x0, s32);
+    return AT(Cft_ValuePtr(), 0x0, s32);
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226868(void) {
+/* 0x00226868 */
+void Cft_Stub1(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226870(void) {
+/* 0x00226870 */
+void Cft_Stub2(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226878(void) {
+/* 0x00226878 */
+void Cft_Stub3(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226880(void) {
+/* 0x00226880 */
+void Cft_Stub4(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226888(void) {
+/* 0x00226888 */
+void Cft_Stub5(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226890(void) {
+/* 0x00226890 */
+void Cft_Stub6(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_00226898(void) {
+/* 0x00226898 */
+void Cft_Stub7(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_002268A0(void) {
+/* 0x002268A0 */
+void Cft_Stub8(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_002268A8(void) {
+/* 0x002268A8 */
+void Cft_Stub9(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_002268B0(void) {
+/* 0x002268B0 */
+void Cft_Stub10(void) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_002268B8(void) {
+/* 0x002268B8 */
+void Cft_Stub11(void) {
 }
 
-void *func_0022A6F8(void) {
+/* 0x0022A6F8 */
+void *Sofdec_Data3E5270(void) {
     return D_003E5270;
 }
 
-void *func_00230B48(void) {
+/* 0x00230B48 */
+void *Sofdec_Data4574B8(void) {
     return D_004574B8;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_00233720(void) {
+/* 0x00233720 */
+void *Sofdec_Data457558(void) {
     return D_00457558;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_00236B70(void) {
+/* 0x00236B70 */
+void *Sofdec_Data4575C0(void) {
     return D_004575C0;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_0023AA68(void) {
+/* 0x0023AA68 */
+void *Sofdec_Data457ED0(void) {
     return D_00457ED0;
 }
 
-void *func_0023AA78(void) {
+/* 0x0023AA78 */
+void *Sofdec_Data3E88D0(void) {
     return D_003E88D0;
 }
 
-void *func_0023FFA0(void) {
+/* 0x0023FFA0 */
+void *Sofdec_Data3E9F18(void) {
     return D_003E9F18;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_00246A80(void) {
+/* 0x00246A80 */
+void *Sofdec_Data459930(void) {
     return D_00459930;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_002577D8(void) {
+/* 0x002577D8 */
+void *Sfh_Version(void) {
     return str_CRI_SFH_PS2EE_Ver_1_19_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_00259EE8(void) {
+/* 0x00259EE8 */
+void *Sfx_Version(void) {
     return str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_0025B828(void) {
+/* 0x0025B828 */
+void *Sud_Version(void) {
     return str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-s64 func_0025C2F8(s64 ticks) {
+/* 0x0025C2F8 */
+s64 Ticks_Convert(s64 ticks) {
     return func_0011CE88(ticks, gTimerRate);
 }
 
 /* in microseconds, milliseconds, seconds */
 /* (possibly dead code: nothing in the game references it) */
-f32 func_0025C320(s32 ticks) {
+/* 0x0025C320 */
+f32 Ticks_ToMicros(s32 ticks) {
     return (f32)ticks * 1000000.0f / (f32)(s32)gTimerRate;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-f32 func_0025C360(s32 ticks) {
+/* 0x0025C360 */
+f32 Ticks_ToMillis(s32 ticks) {
     return (f32)ticks * 1000.0f / (f32)(s32)gTimerRate;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-f32 func_0025C3A0(s32 ticks) {
+/* 0x0025C3A0 */
+f32 Ticks_ToSeconds(s32 ticks) {
     return (f32)ticks / (f32)(s32)gTimerRate;
 }
 
@@ -326,7 +359,8 @@ void Ticks_SetRate(s64 rate) {
 
 /* a measure: { sum, min, max, count } cleared / one more value */
 /* (possibly dead code: nothing in the game references it) */
-void func_0025C3E0(u8 *s) {
+/* 0x0025C3E0 */
+void Measure_Clear(u8 *s) {
     AT(s, 0x18, s32) = 0;
     AT(s, 0x8, s64) = (s64)((u64)-1 >> 1);
     AT(s, 0x0, s64) = 0;
@@ -334,7 +368,8 @@ void func_0025C3E0(u8 *s) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void func_0025C400(u8 *s, s64 v) {
+/* 0x0025C400 */
+void Measure_Add(u8 *s, s64 v) {
     s64 lo = AT(s, 0x8, s64), hi = AT(s, 0x10, s64);
 
     if (hi < v) {
@@ -436,7 +471,7 @@ static inline s32 movie_level(Movie *m) {
 }
 
 /* ---- TvScreenA_vtable (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
- * a quad on the screen's corners textured with the movie's current frame (func_0021E410) while
+ * a quad on the screen's corners textured with the movie's current frame (Movie_PageTex0) while
  * +0x10 (set by +0x18); its +0xC is TvScreenA_Start ---- */
 
 extern void *TvScreenA_vtable[], *D_0046D730[], *QuadDrawer_vtable[], *Helper469D00_vtable[];
@@ -445,7 +480,8 @@ extern void *TvScreenA_vtable[], *D_0046D730[], *QuadDrawer_vtable[], *Helper469
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
 #ifdef HG_NATIVE
 
-u64 func_0021E410(u8 *mv, s32 page) {
+/* 0x0021E410 */
+u64 Movie_PageTex0(u8 *mv, s32 page) {
     VObject *r = gRenderer;
     s32 buf = VCALL(r, 0x38, s32 (*)(VObject *))(r);
 
@@ -453,11 +489,11 @@ u64 func_0021E410(u8 *mv, s32 page) {
     if (!(u8)VCALL(r, 0x94, s32 (*)(VObject *, s32, s32, s32, s32))(r, buf, mv[0] != 0 ? 4 : 3, page, 0)) {
         return (u64)-1;
     }
-    glr_todo("movie frame as a texture (func_0021E410)");
+    glr_todo("movie frame as a texture (Movie_PageTex0)");
     return (u64)-1;
 }
 #else
-u64 func_0021E410(u8 *mv, s32 page);
+u64 Movie_PageTex0(u8 *mv, s32 page);
 #endif
 
 /* +0x8 destructor */
@@ -491,7 +527,7 @@ void TvScreenA_Update(void) {
 static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1, u32 top, u32 bottom, u32 z0,
                                                           u32 z1) {
     if (AT(o, 0x10, s32) != 0) {
-        u64 tex = func_0021E410(gMovieFlag, 2);
+        u64 tex = Movie_PageTex0(gMovieFlag, 2);
         struct {
             void **vtbl;
             s32 a;

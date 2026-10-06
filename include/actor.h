@@ -103,7 +103,7 @@ typedef struct Character {
     /* 0x14D5 */ u8 heardSlot;        /* noise event the character reacts to (0..3), 0xFF = none */
     /* 0x14D6 */ u8 pad14D6[2];
     /* 0x14D8 */ NoiseEvent heard;     /* copy of that event */
-    /* 0x14E8 */ s32 state[8];        /* state block (func_002A8410 resets it); [0] 4/5 = special */
+    /* 0x14E8 */ s32 state[8];        /* state block (Record20_Clear resets it); [0] 4/5 = special */
     /* 0x1508 */ s32 state2[8];
     /* 0x1528 */ u8 msgSlot;          /* message display slot (gBootMessage) */
     /* 0x1529 */ u8 pad1529;

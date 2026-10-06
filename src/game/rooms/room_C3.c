@@ -117,7 +117,7 @@ s32 RoomC3_Cmd01(void) {
     if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0 || AT(gCharPlayer, 0xE0, u8) != 0) {
         return 1;
     }
-    func_002A8410((u8 *)&act);
+    Record20_Clear((u8 *)&act);
     act.state = 0xB;
     act.a = 0x21;
     act.b = 0xFF;

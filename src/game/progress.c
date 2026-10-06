@@ -581,7 +581,7 @@ void Progress_CharRequests(Progress *p) {
         s32 j;
 
         for (j = 0; j < 7; j++) {
-            func_002A8410(blk + j * 0x20);
+            Record20_Clear(blk + j * 0x20);
         }
         if (c == NULL || room != AT(c, 0x30, s32) || AT(c, 0xE0, u8) == 1 ||
             (AT(p, 0x8, u32) & 0x40000) != 0) {

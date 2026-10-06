@@ -1803,7 +1803,8 @@ void SubScreen_ToSave(SubScreen *s, u8 *save) {
 extern const char *D_0044B7B0[], *D_0044B830[], *pstr_O_FIN_FIN_200[], *D_0044B930[];
 extern const char str_N_PCK[], str_N_TEX[], str_N_MRK[];   /* "%s.PCK", "%s.TEX", "%s.MRK" */
 
-void func_0038D620(SubScreen *s, u8 k) {
+/* 0x0038D620 */
+void Gallery_LoadPck(SubScreen *s, u8 k) {
     VObject *ld = gFileLoader;
     char name[0x20];
 
@@ -2876,7 +2877,7 @@ static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
 
 /* state: a model chosen in the extras - fading out (to 0x80); then the work buffer (progress
  * +0x88) split for the gallery's files (+0xA8DEC.. : +0, +0x200000, +0x242000, +0x244000 and
- * progress +0x16C0) and they loaded (func_0038D620), the renderer reset (+0x1C), state
+ * progress +0x16C0) and they loaded (Gallery_LoadPck), the renderer reset (+0x1C), state
  * Gallery_StateModelLoad_ptmf; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
  * +0x7C, the room effects 0x1D..0x1F kept (+0xA8E40..) and removed, effect 0x1F made anew (a
  * Tint_vtable) and started. The extras list under a darkening overlay or the panels */
@@ -2905,7 +2906,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
             AT(s, 0xA8DFC, u8 *) = buf + 0x244000;
             SUB_GALLERY_MODEL(s) = NULL;
             AT(s, 0xA8DF4, u8 *) = (u8 *)p + 0x16C0;
-            func_0038D620(s, SUB_PAGE(s, 0x0, u8));
+            Gallery_LoadPck(s, SUB_PAGE(s, 0x0, u8));
             VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
             ptmf_set(&s->state, &Gallery_StateModelLoad_ptmf);
             v[0] = 55.0f;

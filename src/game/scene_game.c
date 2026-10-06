@@ -96,25 +96,25 @@ extern void *gRoomEventObj;
 void *Obj46BA68_ctor(u8 *p);
 void *Cutscene_ctor(u8 *p);
 void *RoomBase_ctor(u8 *p);
-void *func_002D1040(u8 *p);
+void *DimOverlay_ctor(u8 *p);
 void *Events_ctor(u8 *p);
-void *func_002D10A0(u8 *p);
-void *func_002D1130(u8 *p);
+void *Obj46BA80_ctor(u8 *p);
+void *NavGroups_ctor(u8 *p);
 void *Rooms_ctor(u8 *p);
-void *func_002D12E0(u8 *p);
-void *func_002D1320(u8 *p);
+void *NavMesh_ctor(u8 *p);
+void *Obj46D780_ctor(u8 *p);
 
 extern void *D_0046A9B0[];
 extern u8 Creatures_vtable[];
 extern u8 PlacedThings_vtable[];
 extern void *BlockPool_vtable[];
 extern void *Heap_vtable[];
-void *func_002D1360(u8 *p);
+void *RoomMeshes_ctor(u8 *p);
 void *Obj46A9B0_ctor(u8 *p);
-void *func_002D1490(u8 *p);
-void *func_002D1510(u8 *p);
+void *Creatures_ctor(u8 *p);
+void *PlacedThings_ctor(u8 *p);
 void *Message_ctor(u8 *p);
-void *func_002D1580(u8 *p);
+void *SceneHeap_ctor(u8 *p);
 void *Progress_ctor(u8 *p);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -326,10 +326,10 @@ Scene *SceneGame_ctor(Scene *g) {
     Base_ctorNoop(prog + 8);
     AT(prog, 0x1FBEC0, u8) = 0;
     AT(prog, 0x1FBEC1, u8) = 0;
-    func_002D1580(prog + 0x6FBF00);
+    SceneHeap_ctor(prog + 0x6FBF00);
     Message_ctor(prog + 0x6FC218);
-    func_002D1510(prog + 0x6FC340);
-    func_002D1490(prog + 0x706440);
+    PlacedThings_ctor(prog + 0x6FC340);
+    Creatures_ctor(prog + 0x706440);
     Obj46A9B0_ctor(prog + 0x73EB00);
     DimMessage_ctor(prog + 0x73EB60);
     Progress_Reset((u8 *)((Progress *)prog));
@@ -339,13 +339,13 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(g, SG_PROGRESS, void **) = D_0047A7E8;
 
     m = (u8 *)g + 0x73EE80;
-    func_002D1360(m);
-    func_002D1320(m + 0x340);
-    func_002D12E0(m + 0x3E0);
+    RoomMeshes_ctor(m);
+    Obj46D780_ctor(m + 0x340);
+    NavMesh_ctor(m + 0x3E0);
     Rooms_ctor(m + 0x4F0);
     Doors_ctor(m + 0x1640);
     PlacedObjects_ctor(m + 0x6740);
-    func_002D1130(m + 0x9360);
+    NavGroups_ctor(m + 0x9360);
     Obstacles_ctor(m + 0x9380);
     RoomMgr_ctor(m);
 
@@ -364,11 +364,11 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(g, 0xF6A940, void **) = RoutePlanner_vtable;
 
     o = (u8 *)g + 0xF6AFB0;
-    func_002D10A0(o);
+    Obj46BA80_ctor(o);
     Events_ctor(o + 0xC);
     AT(o, 0x0, void **) = Events_vtable;
     AT(o, 0xC, void **) = D_0046B3B8;
-    func_002D1040(o + 0x20);
+    DimOverlay_ctor(o + 0x20);
     func_00100340(o + 0x120, RoomBase_ctor, RoomBase_dtor, 4, 0x110);
     Task_ctor((Task *)(o + 0x708));
     Cutscene_ctor(o + 0x938);
@@ -624,8 +624,8 @@ void SceneGame_RoomIn(Scene *g) {
         Character_ChooseExit((Character *)((u8 *)gCharPlayer), 0xFF);
         AT(g, 0xF6CD28, u8) |= 0x80;
     }
-    func_002A8410((u8 *)g + 0x16B4);
-    func_002A8410((u8 *)g + 0x16D4);
+    Record20_Clear((u8 *)g + 0x16B4);
+    Record20_Clear((u8 *)g + 0x16D4);
     ptmf_set(&g->state, &SceneGame_StatePlay_ptmf);
     ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubPlay_ptmf2);
 }
@@ -772,15 +772,15 @@ void SceneGame_EnterRoom(Scene *g) {
     VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 0, 0);
     VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 1, 0);
     EffectMgr_RoomReset((u8 *)g + 0xF6E200);
-    func_002A7B40((u8 *)g + 0x1010);
+    RoomSlotBytes_Clear((u8 *)g + 0x1010);
     Map_FindRoom((u8 *)g + 0x101EBC0, AT(gCharPlayer, 0x30, s32));
     Progress_ClearFlag(prog, 0x2D);
     for (i = 0; i < 6; i++) {
         u8 *c = (u8 *)gCharacters[i];
 
         if (c != NULL && AT(c, 0x28, u8)) {
-            func_002A8410(c + 0x14E8);
-            func_002A8410(c + 0x1508);
+            Record20_Clear(c + 0x14E8);
+            Record20_Clear(c + 0x1508);
             VCALL(prog, 0x34, void (*)(Progress *, u8))(prog, i);
         }
     }
@@ -1261,8 +1261,8 @@ void SceneGame_ActionPrompt(Scene *g) {
         return;
     }
     if (Progress_TestFlag(prog, 0x12)) {
-        func_002A8410(cur);
-        func_002A8410(last);
+        Record20_Clear(cur);
+        Record20_Clear(last);
     }
     if (AT(gCharPlayer, 0xE0, u8) != 0) {
         prompt_hide_all();
@@ -1287,7 +1287,7 @@ void SceneGame_ActionPrompt(Scene *g) {
             show = 1;
             break;
         case 0:
-            func_002A8410(last);
+            Record20_Clear(last);
             break;
         }
     }
@@ -2542,7 +2542,8 @@ void *RoomBase_ctor(u8 *p) {
     return p;
 }
 
-void *func_002D1040(u8 *p) {
+/* 0x002D1040 */
+void *DimOverlay_ctor(u8 *p) {
     F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
     F(p, 0x0, void *) = Overlay_vtable;
@@ -2559,14 +2560,16 @@ void *Events_ctor(u8 *p) {
     return p;
 }
 
-void *func_002D10A0(u8 *p) {
+/* 0x002D10A0 */
+void *Obj46BA80_ctor(u8 *p) {
     F(p, 0x0, void *) = D_0046BA80;
     F(p, 0x4, u32) = 0;
     p[0x8] = 0;
     return p;
 }
 
-void *func_002D1130(u8 *p) {
+/* 0x002D1130 */
+void *NavGroups_ctor(u8 *p) {
     gRoomEventObj = p;
     F(p, 0x0, void *) = NavGroups_vtable;
     F(p, 0x4, u32) = 0;
@@ -2581,7 +2584,8 @@ void *Rooms_ctor(u8 *p) {
     return p;
 }
 
-void *func_002D12E0(u8 *p) {
+/* 0x002D12E0 */
+void *NavMesh_ctor(u8 *p) {
     s32 i;
 
     gNavMesh = (NavMesh *)p;
@@ -2592,7 +2596,8 @@ void *func_002D12E0(u8 *p) {
     return p;
 }
 
-void *func_002D1320(u8 *p) {
+/* 0x002D1320 */
+void *Obj46D780_ctor(u8 *p) {
     F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
     F(p, 0x0, void *) = D_0046D780;
@@ -2602,7 +2607,8 @@ void *func_002D1320(u8 *p) {
     return p;
 }
 
-void *func_002D1360(u8 *p) {
+/* 0x002D1360 */
+void *RoomMeshes_ctor(u8 *p) {
     F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
     F(p, 0x0, void *) = D_0046C770;
@@ -2622,7 +2628,8 @@ void *Obj46A9B0_ctor(u8 *p) {
     return p;
 }
 
-void *func_002D1490(u8 *p) {
+/* 0x002D1490 */
+void *Creatures_ctor(u8 *p) {
     u8 *a = p + 0xDC40;
     u8 *b = p + 0xF630;
 
@@ -2645,7 +2652,8 @@ void *func_002D1490(u8 *p) {
     return p;
 }
 
-void *func_002D1510(u8 *p) {
+/* 0x002D1510 */
+void *PlacedThings_ctor(u8 *p) {
     u8 *a = p + 0xA040;
 
     gPlacedThings = (VObject *)p;
@@ -2667,7 +2675,8 @@ void *Message_ctor(u8 *p) {
     return p;
 }
 
-void *func_002D1580(u8 *p) {
+/* 0x002D1580 */
+void *SceneHeap_ctor(u8 *p) {
     F(p, 0x0, void *) = D_004699E0;
     F(p, 0x4, u32) = 0;
     F(p, 0x8, u32) = 0;

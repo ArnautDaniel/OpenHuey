@@ -22,6 +22,6 @@ extern void Slots_Init(u8 *o);   /* init Game.unk14E8C90 */
 extern void *Obj46AE10_dtor(u8 *o, s32 flags);
 extern void *Vram_dtor(u8 *o, s32 flags);
 extern void *IopBuffers_dtor(u8 *e, s32 flags);
-extern void *func_001BECA0(u8 *o, s32 flags);
+extern void *IopArray_dtor(u8 *o, s32 flags);
 
 #endif /* SYSTEM_H */

@@ -91,7 +91,8 @@ void Fades_Start(void *self, u8 *p) {
 }
 
 /* Element constructors for two arrays in the +0x395D40 object. */
-void *func_0020E7D0(void *e) {
+/* 0x0020E7D0 */
+void *IopArrayA_ctor(void *e) {
     AT(e, 0x8, s32) = 0;
     AT(e, 0x4, s32) = 0;
     AT(e, 0x0, s32) = 0;
@@ -100,7 +101,8 @@ void *func_0020E7D0(void *e) {
     return e;
 }
 
-void *func_0020E7B0(void *e) {
+/* 0x0020E7B0 */
+void *IopArrayB_ctor(void *e) {
     AT(e, 0x4, s32) = 0;
     AT(e, 0x0, s32) = 0;
     AT(e, 0xC, s32) = 0;
@@ -173,8 +175,8 @@ void *System_ctor(u8 *s) {
     gSound = (VObject *)(p + 4);
     AT(p, 0x0, void **) = SndDriver_vtable;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_00100340(p + 0x84, func_0020E7D0, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
-    func_00100340(p + 0x108, func_0020E7B0, func_001BECA0, 0x18, 8);
+    func_00100340(p + 0x84, IopArrayA_ctor, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
+    func_00100340(p + 0x108, IopArrayB_ctor, IopArray_dtor, 0x18, 8);
     AT(p, 0x80, s32) = 0;
     AT(p, 0x104, s8) = -1;
     AT(p, 0x7EC, s32) = 0x100;
@@ -375,8 +377,8 @@ extern void *gChainPool, *gSkelPool;   /* the two pools */
 /* 0x0020E1A0 */
 void *SmallPool_ctor(u8 *p) {
     gChainPool = p;
-    func_00100340(p, SmallPool_ElemA, func_0020D970, 0xC, 0x40);
-    func_00100340(p + 0x300, SmallPool_ElemB, func_0020D9C0, 0x14, 0x1CE);
+    func_00100340(p, SmallPool_ElemA, Triple_dtor, 0xC, 0x40);
+    func_00100340(p + 0x300, SmallPool_ElemB, Quad4_dtor, 0x14, 0x1CE);
     return p;
 }
 
@@ -384,8 +386,8 @@ void *SmallPool_ctor(u8 *p) {
 /* 0x0020E110 */
 void *BigPool_ctor(u8 *p) {
     gSkelPool = p;
-    func_00100340(p, BigPool_ElemA, func_0020D8D0, 0xC, 0x20);
-    func_00100340(p + 0x180, BigPool_ElemB, func_0020D920, 0x50, 0x278);
+    func_00100340(p, BigPool_ElemA, Pair_dtor, 0xC, 0x20);
+    func_00100340(p + 0x180, BigPool_ElemB, Pair44_dtor, 0x50, 0x278);
     return p;
 }
 
@@ -587,7 +589,8 @@ void *IopBuffers_dtor(u8 *e, s32 flags) {
 }
 
 /* destructor (vtable ?) */
-void *func_001BECA0(u8 *o, s32 flags) {
+/* 0x001BECA0 */
+void *IopArray_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x4, s32) = 0;
         AT(o, 0x0, s32) = 0;
@@ -618,7 +621,7 @@ void *System_dtor(u8 *s, s32 flags) {
     p = s + 0x395D40;   /* sound driver */
     AT(p, 0x0, void **) = SndDriver_vtable;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_001002C0(p + 0x108, (void *(*)(void *, s32))func_001BECA0, 0x18, 8);
+    func_001002C0(p + 0x108, (void *(*)(void *, s32))IopArray_dtor, 0x18, 8);
     func_001002C0(p + 0x84, (void *(*)(void *, s32))IopBuffers_dtor, 0x10, 8);
     AT(p, 0x4, void **) = D_0046AF90;
     gSound = NULL;

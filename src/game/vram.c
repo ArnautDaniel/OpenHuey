@@ -32,17 +32,17 @@ extern u8 D_00455C38[];
 extern u8 str_ROCI_Ver_1_15_Build_Sep_3_2004_17_20_13[];
 extern u8 str_RSU_Ver_1_10_Build_Sep_3_2004_17_20_13[];
 extern u8 D_0047E878[];
-void *func_001CEC50(void);
-void *func_001D6E40(void);
-void *func_001DC580(void);
-void *func_001DE030(void);
-void *func_001DE0A8(void);
-void *func_001E61D0(void);
-void *func_001E8138(void);
-void *func_001EB650(void);
-void *func_001ED190(void);
-void *func_001ED1D0(void);
-void *func_001EDFF0(void);
+void *AdxEnc_Version(void);
+void *Adx_Data47E878(void);
+void *Adx_Data3C5D90(void);
+void *Adx_Data3C6348(void);
+void *Adx_Data3C6450(void);
+void *Adx_Data4555C8(void);
+void *Rofs_Version(void);
+void *Adx_Data455C38(void);
+void *Roci_Version(void);
+void *Adx_Data3D5B80(void);
+void *Rsu_Version(void);
 
 /* +0xC init: 8 free regions, 64 empty entries */
 /* 0x001C2970 */
@@ -76,50 +76,61 @@ void Vram_Init(u8 *v) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_001CEC50(void) {
+/* 0x001CEC50 */
+void *AdxEnc_Version(void) {
     return str_ADXENC_DLL_Ver_1_09_Nov_12_2004;
 }
 
-void *func_001D6E40(void) {
+/* 0x001D6E40 */
+void *Adx_Data47E878(void) {
     return D_0047E878;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_001DC580(void) {
+/* 0x001DC580 */
+void *Adx_Data3C5D90(void) {
     return D_003C5D90;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_001DE030(void) {
+/* 0x001DE030 */
+void *Adx_Data3C6348(void) {
     return D_003C6348;
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_001DE0A8(void) {
+/* 0x001DE0A8 */
+void *Adx_Data3C6450(void) {
     return D_003C6450;
 }
 
-void *func_001E61D0(void) {
+/* 0x001E61D0 */
+void *Adx_Data4555C8(void) {
     return D_004555C8;
 }
 
-void *func_001E8138(void) {
+/* 0x001E8138 */
+void *Rofs_Version(void) {
     return str_ROFS_Ver_1_76_Build_Sep_3_2004_17_20_10;
 }
 
-void *func_001EB650(void) {
+/* 0x001EB650 */
+void *Adx_Data455C38(void) {
     return D_00455C38;
 }
 
-void *func_001ED190(void) {
+/* 0x001ED190 */
+void *Roci_Version(void) {
     return str_ROCI_Ver_1_15_Build_Sep_3_2004_17_20_13;
 }
 
-void *func_001ED1D0(void) {
+/* 0x001ED1D0 */
+void *Adx_Data3D5B80(void) {
     return D_003D5B80;
 }
 
-void *func_001EDFF0(void) {
+/* 0x001EDFF0 */
+void *Rsu_Version(void) {
     return str_RSU_Ver_1_10_Build_Sep_3_2004_17_20_13;
 }
 

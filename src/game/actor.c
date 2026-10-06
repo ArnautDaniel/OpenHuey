@@ -1148,9 +1148,9 @@ s32 Character_Place(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     Character_CancelPath(c);
     c->unk14D0 = 0;
     if (c->state[0] != 5) {
-        func_002A8410((u8 *)c->state);
+        Record20_Clear((u8 *)c->state);
     }
-    func_002A8410((u8 *)c->state2);
+    Record20_Clear((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1178,8 +1178,8 @@ void Character_ResetBehaviour(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410((u8 *)c->state);
-    func_002A8410((u8 *)c->state2);
+    Record20_Clear((u8 *)c->state);
+    Record20_Clear((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1273,8 +1273,8 @@ void Character_EventReset(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410((u8 *)c->state);
-    func_002A8410((u8 *)c->state2);
+    Record20_Clear((u8 *)c->state);
+    Record20_Clear((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1329,8 +1329,8 @@ void Character_Enable(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410((u8 *)c->state);
-    func_002A8410((u8 *)c->state2);
+    Record20_Clear((u8 *)c->state);
+    Record20_Clear((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1566,8 +1566,8 @@ void Character_Reset(Character *c) {
     c->moveMode = 0;
     c->unk128 = 0;
     c->unk124 = 0;
-    func_002A8410((u8 *)c->state);
-    func_002A8410((u8 *)c->state2);
+    Record20_Clear((u8 *)c->state);
+    Record20_Clear((u8 *)c->state2);
     c->unkE0 = 0;
     c->unkE1 = 0;
     c->unkE2 = 0;

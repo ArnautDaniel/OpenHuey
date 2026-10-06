@@ -1804,7 +1804,8 @@ void Sinit_RoomE9(void) {
 /* MW guard flags for function-level statics (set once). */
 extern s8 D_0047B9A8, D_0047B9B0, D_0047BA10, D_0047BA18;
 
-void func_00464480(void) {
+/* 0x00464480 */
+void Sinit_Flags(void) {
     if (!D_0047B9A8) {
         D_0047B9A8 = 1;
     }
@@ -1824,7 +1825,8 @@ static void fill16(u32 addr, s32 n, u16 v) {
     }
 }
 
-void func_004644D0(void) {
+/* 0x004644D0 */
+void Sinit_FillTables(void) {
     fill16(0x003AC932, 1, 0x106);
     fill16(0x003AC934, 4, 0x104);
     fill16(0x003AC960, 1, 0x142);
@@ -1865,7 +1867,8 @@ extern void *Game_vtable[];
 extern const PTMF Game_Init_ptmf;    /* Game's first state */
 
 /* gGame's constructor. */
-void func_00464A70(void) {
+/* 0x00464A70 */
+void Sinit_Game(void) {
     u8 *g = (u8 *)&gGame;
 
     Sinit_Iostreams(D_0047B210, D_004879C8, D_0047B214, D_004879D8);
@@ -1882,10 +1885,12 @@ void func_00464A70(void) {
     func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
 }
 
-void func_00466BD0(void) {
+/* 0x00466BD0 */
+void Sinit_Iostreams2(void) {
     Sinit_Iostreams(D_0047B26C, D_01990E58, D_0047B270, D_01990E68);
 }
 
-void func_00469400(void) {
+/* 0x00469400 */
+void Sinit_Iostreams3(void) {
     Sinit_Iostreams(D_0047B348, D_01991EA0, D_0047B34C, D_01991EB0);
 }

@@ -38,12 +38,12 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 #define SY_STEP(o) AT(o, 0x10, s32)
 #define SY_STATE(o) ((PTMF *)((o) + 0x4))
 
-void func_00322560(void *o);
-void func_00322A00(void);
-void func_00322B70(void);
-void func_003244C0(void);
+void SynthBase_Noop(void *o);
+void SynthBase_Noop14(void);
+void SynthPot_Noop14(void);
+void SlotMachine_Noop14(void);
 
-void func_00322A60(u8 *self);
+void SynthBase_Reset(u8 *self);
 void SynthPot_StateDebug(u8 *self);
 
 /* a sprite from the synthesizer's texture (4 of group 0x19), layer 0x30 */
@@ -75,7 +75,8 @@ void *SynthBase_Destroy(u8 *o) {
     return o;
 }
 
-void func_00322560(void *o) {
+/* 0x00322560 */
+void SynthBase_Noop(void *o) {
 }
 
 /* base +0x10: each frame, its state */
@@ -87,7 +88,8 @@ void SynthBase_Update(u8 *o) {
     }
 }
 
-void func_00322A60(u8 *self) {
+/* 0x00322A60 */
+void SynthBase_Reset(u8 *self) {
     s32 i;
 
     for (i = 0; i < 0x40; i++) {
@@ -106,7 +108,7 @@ static inline void *sy_dtor(u8 *o, void **vtbl, s32 flags) {
             Task_dtor(SY_TASK(o), -1);
         }
         if ((s16)flags > 0) {
-            func_00322560(o);
+            SynthBase_Noop(o);
         }
     }
     return o;
@@ -127,7 +129,8 @@ void SynthPot_StateDebug(u8 *self) {
     }
 }
 
-void func_00322B70(void) {
+/* 0x00322B70 */
+void SynthPot_Noop14(void) {
 }
 
 /* the slot machine +0x8 */
@@ -151,7 +154,8 @@ s32 Synth_CountMaterials(u8 *o) {
     return any;
 }
 
-void func_00322A00(void) {
+/* 0x00322A00 */
+void SynthBase_Noop14(void) {
 }
 
 /* the pot +0xC: started - the counts taken, its state SynthPot_StateDebug_ptmf */
@@ -299,7 +303,8 @@ void SlotMachine_StateChoose(u8 *o) {
     }
 }
 
-void func_003244C0(void) {
+/* 0x003244C0 */
+void SlotMachine_Noop14(void) {
 }
 
 /* the found item's step: the panel over the rows fading in (3 frames) and out (12; then bit 0,

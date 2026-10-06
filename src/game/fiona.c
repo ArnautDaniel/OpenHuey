@@ -28,7 +28,7 @@ extern const PTMF Fiona_StateIdleStep_ptmf;      /* idle state (while unkE0 is s
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-u32 func_00126EC0(void *p);
+u32 Character_ActionTarget(void *p);
 
 extern void *EffectBase_vtable[];
 extern void *StrikeMark_vtable[];
@@ -40,7 +40,8 @@ void *StrikeMark_dtor(u8 *o, s32 flags);
 
 void StrikeMark_Start(u8 *p);
 
-u32 func_00126EC0(void *p) {
+/* 0x00126EC0 */
+u32 Character_ActionTarget(void *p) {
     if (FLD(p, 0xF8, s32) == 6) {
         s32 k = FLD(p, 0xFC, s32);
 
@@ -7731,7 +7732,7 @@ s32 Fiona_SlamDoor(Fiona *f, f32 *to, u8 ahead) {
                         if ((PursuerGroup_Fields(p, i, 2) & 0x14) == 0x14) {
                             who |= 4;
                         }
-                    } else if ((func_00126EC0(gCharPursuer) & 0xFFFF) == region &&
+                    } else if ((Character_ActionTarget(gCharPursuer) & 0xFFFF) == region &&
                                Character_PathRemaining2(gCharPursuer) < 15.0f) {
                         who |= 4;
                     }

@@ -44,8 +44,8 @@ extern void *Helper469D00_vtable[];
 extern u8 D_0046D770[], D_0046C780[], D_0046D800[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_002D11C0(u8 *p);
-void *func_002D1260(u8 *p);
+void *PlacedModelHolder_ctor(u8 *p);
+void *PlacedMeshHolder_ctor(u8 *p);
 
 /* (a base-class constructor that does nothing) */
 /* 0x002D15B0 */
@@ -77,7 +77,8 @@ void Door_ReleaseRequest(u8 *p) {
     }
 }
 
-void func_002A8410(u8 *p) {
+/* 0x002A8410 */
+void Record20_Clear(u8 *p) {
     AT(p, 0x0, s32) = 0;
     AT(p, 0x1C, u8) = 0;
     AT(p, 0x18, s32) = 0;
@@ -95,7 +96,8 @@ void PlacedThings_ctorPool(u8 *p) {
     BlockPool_Init((BlockPool *)(p + 0xA040), p + 0x40, 0x140, 0x80, p + 0xA058);
 }
 
-void func_002ECB50(u8 *p) {
+/* 0x002ECB50 */
+void Summoner_Reset(u8 *p) {
     AT(p, 0xC, s32) = 0;
     AT(p, 0x4, s32) = 0;
     AT(p, 0x0, s32) = 0;
@@ -140,11 +142,12 @@ void *Obstacles_ctor(u8 *p) {
 void *PlacedObjects_ctor(u8 *p) {
     AT(p, 0x0, void **) = PlacedObjects_vtable;
     gRoomObjects = p;
-    func_00100340(p + 0x20, func_002D11C0, QuadEntry_dtor, 0xB0, 0x40);
+    func_00100340(p + 0x20, PlacedModelHolder_ctor, QuadEntry_dtor, 0xB0, 0x40);
     return p;
 }
 
-void *func_002D11C0(u8 *p) {
+/* 0x002D11C0 */
+void *PlacedModelHolder_ctor(u8 *p) {
     F(p, 0x40, void *) = Helper469D00_vtable;
     F(p, 0x44, s32) = -1;
     F(p, 0x40, void *) = D_0046D770;
@@ -159,12 +162,13 @@ void *func_002D11C0(u8 *p) {
 void *Doors_ctor(u8 *p) {
     AT(p, 0x0, void **) = Doors_vtable;
     gDoors = (VObject *)p;
-    func_00100340(p + 0x10, func_002D1260, Door_dtor, 0x210, 8);
+    func_00100340(p + 0x10, PlacedMeshHolder_ctor, Door_dtor, 0x210, 8);
     AT(p, 0x4, s32) = 0;
     return p;
 }
 
-void *func_002D1260(u8 *p) {
+/* 0x002D1260 */
+void *PlacedMeshHolder_ctor(u8 *p) {
     F(p, 0x80, void *) = Helper469D00_vtable;
     F(p, 0x84, s32) = -1;
     F(p, 0x80, void *) = D_0046C780;
@@ -180,7 +184,8 @@ void *func_002D1260(u8 *p) {
     return p;
 }
 
-void func_002F08E0(u8 *p) {
+/* 0x002F08E0 */
+void Panic_Reset(u8 *p) {
     AT(p, 0x0, u8) = 0;
     AT(p, 0x1, u8) = 0;
     AT(p, 0x2, u16) = 0;
@@ -234,7 +239,8 @@ void Doors_ReleaseRequests(u8 *p) {
     AT(p, 0x4, void *) = NULL;
 }
 
-void func_002A7B40(u8 *p) {
+/* 0x002A7B40 */
+void RoomSlotBytes_Clear(u8 *p) {
     s32 i;
 
     for (i = 0; i < 8; i++) {
@@ -281,7 +287,7 @@ void func_002A7B40(u8 *p) {
     }
 }
 
-extern void func_002F08E0(u8 *p);
+extern void Panic_Reset(u8 *p);
 
 /* a progress sub-object's reset */
 /* 0x002A8060 */
@@ -298,7 +304,7 @@ void Progress_SubReset(u8 *p) {
     for (i = 0; i < 9; i++) {
         AT(p, 0xF8 + i * 4, s32) = 0;
     }
-    func_002ECB50(p + 0x75C);
+    Summoner_Reset(p + 0x75C);
     for (i = 0; i < 0x20; i++) {
         AT(p, 0x14 + i * 4, s32) = 0;
     }
@@ -317,7 +323,7 @@ void Progress_SubReset(u8 *p) {
         AT(p, 0x778 + i * 0x10, s32) = -1;
         AT(p, 0x77C + i * 0x10, u16) = 0xFFFF;
     }
-    func_002F08E0(p + 0x7B0);
+    Panic_Reset(p + 0x7B0);
     AT(p, 0x9D8, f32) = 0.0f;
     AT(p, 0x9DC, f32) = 0.0f;
     AT(p, 0x9E0, f32) = 1.0f;
@@ -434,10 +440,10 @@ void Progress_Reset(u8 *prog) {
     gCharPursuer = NULL;
     gCharacters[5] = NULL;
     Progress_SubReset(prog + 8);
-    func_002A7B40(prog + 0xFD0);
+    RoomSlotBytes_Clear(prog + 0xFD0);
     for (i = 0; i < 6; i++) {
         for (j = 0; j < 7; j++) {
-            func_002A8410(prog + 0x1134 + i * 0xE0 + j * 0x20);
+            Record20_Clear(prog + 0x1134 + i * 0xE0 + j * 0x20);
         }
     }
     Message_Init(prog + 0x6FC218);
@@ -2104,7 +2110,8 @@ void Bytes4_Clear(u8 *p) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-s32 func_002A8AB0(void) {
+/* 0x002A8AB0 */
+s32 Room00_HookNone(void) {
     return 0;
 }
 

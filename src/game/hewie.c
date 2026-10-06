@@ -2329,7 +2329,8 @@ static inline s32 Hewie_Roll(Hewie *h, VObject *rng, s32 kind, s8 t, u32 resultO
     return hit;
 }
 
-void func_001396B0(Hewie *h) {
+/* 0x001396B0 */
+void Hewie_RollReactions(Hewie *h) {
     VObject *rng = gRandom;
 
     if (!Hewie_Roll(h, rng, 3, HW(h, 0xF3693, s8), 0xF369F)) {
@@ -7116,7 +7117,7 @@ extern const PTMF Hewie_StateSlideToCommand_ptmf, Hewie_State1A60_ptmf, Hewie_St
  * a roll (kind 5 against +0xF3695): won, behaviour Hewie_StateSlideToCommand_ptmf (+0xF36B4 2), else Hewie_State1A60_ptmf for
  * 90 frames; likewise Hewie_StateSlideToCommand_ptmf2 / Hewie_State1A60_ptmf2 when it has settled (speed under 0.5) somewhere he
  * can't reach. Else run for it (eager +0xF369E: by the path left, walk / trot / run; else walk),
- * head on it once on its triangle; settled within 6 and him nearly stopped: func_001396B0's
+ * head on it once on its triangle; settled within 6 and him nearly stopped: Hewie_RollReactions's
  * rolls decide: pick it up (it goes inactive; Hewie_StateSlideToCommand_ptmf3), bring it to Fiona (Hewie_State1AA0_ptmf), or
  * leave it (Hewie_State1A60_ptmf3, 90 frames) */
 /* 0x0014EE20 */
@@ -7156,7 +7157,7 @@ void Hewie_StateFetch(Hewie *h) {
     if (speed < 1.0f) {
         if (speed < 0.5f && (s <= 0.0f ? -s : s) < 0.8f && rest < 6.0f) {
             HW(h, 0xF36B8, s32) = 1;
-            func_001396B0(h);
+            Hewie_RollReactions(h);
             if (HW(h, 0xF369F, u8) != 0) {
                 o = HW(h, 0xF368C, Actor *);
                 if (o->active != 0) {

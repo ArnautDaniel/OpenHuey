@@ -516,12 +516,12 @@ void *Game_dtor(u8 *g, s32 flags) {
     AT(g, 0x0, void **) = Game_vtable;
     TexCache_dtor(g + 0x14E8C90, -1);
 
-    func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))func_0020D920, 0x50, 0x278);
-    func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))func_0020D8D0, 0xC, 0x20);
+    func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))Pair44_dtor, 0x50, 0x278);
+    func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))Pair_dtor, 0xC, 0x20);
     gSkelPool = NULL;
 
-    func_001002C0(g + 0x14DA0D0, (void *(*)(void *, s32))func_0020D9C0, 0x14, 0x1CE);
-    func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))func_0020D970, 0xC, 0x40);
+    func_001002C0(g + 0x14DA0D0, (void *(*)(void *, s32))Quad4_dtor, 0x14, 0x1CE);
+    func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))Triple_dtor, 0xC, 0x40);
     gChainPool = NULL;
 
     AT(g, 0x14D9B00, void **) = Camera_vtable;

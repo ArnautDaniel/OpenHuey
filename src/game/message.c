@@ -27,7 +27,7 @@ typedef struct MsgSlot {
 #define MSG_LAST(m) AT(m, 0x100, u8)
 
 extern u8 D_01989558[];
-void *func_0026EFF0(void);
+void *Message_Pool(void);
 
 static inline void Message_Reset(u8 *m) {
     s8 i;
@@ -55,7 +55,8 @@ void Message_Init(u8 *m) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-void *func_0026EFF0(void) {
+/* 0x0026EFF0 */
+void *Message_Pool(void) {
     return D_01989558;
 }
 

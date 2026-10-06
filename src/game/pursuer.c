@@ -90,8 +90,8 @@ void *Kind14_ModelFiles(void);
 void *Kind14_MotionFiles(void);
 void *Kind21_ModelFiles(void);
 void *Kind21_MotionFiles(void);
-void *func_002ECC90(void);
-void *func_002ECCA0(void);
+void *Kind08_Table6C(void);
+void *Kind08_Table70(void);
 
 extern u8 pstr_O_DB2_DB2_200_PCK_2[], pstr_O_DB2_DB2_200_PCK[], D_00413510[], D_004134D0[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -11222,11 +11222,13 @@ Pursuer *Kind08_dtor(Pursuer *p, s32 flags) {
     return p;
 }
 
-void *func_002ECC90(void) {
+/* 0x002ECC90 */
+void *Kind08_Table6C(void) {
     return D_00419DD0;
 }
 
-void *func_002ECCA0(void) {
+/* 0x002ECCA0 */
+void *Kind08_Table70(void) {
     return D_00419E10;
 }
 

@@ -35,7 +35,7 @@ src/game/placed.c Thing_dtor
 src/game/camera.c Camera_MtxTranslation
 src/game/placed.c Actor_dtor
 src/game/pursuer.c Character_TimerDown
-src/game/fiona.c func_00126EC0
+src/game/fiona.c Character_ActionTarget
 src/game/debilitas.c Debilitas_MotionFiles
 src/game/debilitas.c Debilitas_DoorOffset
 src/game/debilitas.c Debilitas_ActionOffsets
@@ -490,21 +490,21 @@ src/game/game.c Game_Resident38AC0
 src/game/scene_game.c Obj46BA68_ctor
 src/game/scene_game.c Cutscene_ctor
 src/game/scene_game.c RoomBase_ctor
-src/game/scene_game.c func_002D1040
+src/game/scene_game.c DimOverlay_ctor
 src/game/scene_game.c Events_ctor
-src/game/scene_game.c func_002D10A0
-src/game/scene_game.c func_002D1130
-src/game/scene_game_members.c func_002D11C0
-src/game/scene_game_members.c func_002D1260
+src/game/scene_game.c Obj46BA80_ctor
+src/game/scene_game.c NavGroups_ctor
+src/game/scene_game_members.c PlacedModelHolder_ctor
+src/game/scene_game_members.c PlacedMeshHolder_ctor
 src/game/scene_game.c Rooms_ctor
-src/game/scene_game.c func_002D12E0
-src/game/scene_game.c func_002D1320
-src/game/scene_game.c func_002D1360
+src/game/scene_game.c NavMesh_ctor
+src/game/scene_game.c Obj46D780_ctor
+src/game/scene_game.c RoomMeshes_ctor
 src/game/scene_game.c Obj46A9B0_ctor
-src/game/scene_game.c func_002D1490
-src/game/scene_game.c func_002D1510
+src/game/scene_game.c Creatures_ctor
+src/game/scene_game.c PlacedThings_ctor
 src/game/scene_game.c Message_ctor
-src/game/scene_game.c func_002D1580
+src/game/scene_game.c SceneHeap_ctor
 src/game/scene_game.c Progress_ctor
 src/game/rooms/room_17.c Room17_EnterScript
 src/game/rooms/room_17.c Room17_CharEnterScript
@@ -777,7 +777,7 @@ src/game/rooms/room_32.c Room32_Table38
 src/game/rooms/room_32.c Room32_ObjectName
 src/game/pursuer.c Kind24_ModelFiles
 src/game/pursuer.c Kind24_MotionFiles
-src/game/synth.c func_00322A60
+src/game/synth.c SynthBase_Reset
 src/game/synth.c SynthPot_StateDebug
 src/game/creature.c CreatureB_SetSaveSlot
 src/game/creature.c CreatureB_IsUp
@@ -1561,7 +1561,7 @@ src/game/hewie.c Hewie_State1E48 --runs=200 --pre=a0+0xF0=0x0A000000..0x0A000000
 src/game/hewie.c Hewie_State1740 --runs=200 --pre=a0+0xF36B8=0..2 --pre=a0+0xF3604=0..1 --stub-fret=10.0 --stub-fret=30.0 --stub-ret=0 --stub-ret=1
 src/game/hewie.c Hewie_FionaCanCommand --runs=300 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44F818=0x0A100000..0x0A100000 --pre=@0x0A100028=1..1 --pre=@0x0A1000C4=1..1 --pre=@0x0A100030=0..1 --pre=a0+0x30=0..1 --pre=a0+0xE0=0..1 --pre=a0+0xF8=0..1 --pre=a0+0xF35C0=2..3 --pre=a0+0xF356C=0..2 --pre=a0+0x14E8=0..1 --stub-ret=0 --stub-ret=1
 src/game/hewie.c Hewie_State1D98 --runs=200 --pre=a0+0x30=0..1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A000550=0..1 --pre=@0x0A00055C=0x200..0x202 --stub-ret=0 --stub-ret=1 --stub-ret=-1
-src/game/hewie.c func_001396B0 --runs=200 --pre=a0+0xF3693=0..0x2020 --pre=a0+0xF36A2=0..5 --stub-fret=0.1 --stub-fret=0.5 --stub-fret=0.9
+src/game/hewie.c Hewie_RollReactions --runs=200 --pre=a0+0xF3693=0..0x2020 --pre=a0+0xF36A2=0..5 --stub-fret=0.1 --stub-fret=0.5 --stub-fret=0.9
 src/game/hewie.c Hewie_Restart --runs=100 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC0=0..0x100 --stub-ret=1 --stub-ret=0
 src/game/hewie.c Hewie_State2138 --runs=100 --pre=a0+0xF3604=3..4 --stub-ret=0 --stub-ret=1 --stub-ret=-1
 src/game/hewie.c Hewie_State1920 --runs=300 --pre=a0+0xC4=0..1 --pre=a0+0x14C4=0x3F000000..0x40000000 --pre=a0+0xF3564=0x2B..0x3A --pre=a0+0x30=0..1 --pre=a0+0xF3594=0..1 --stub-ret=0x33 --stub-ret=0
@@ -1726,14 +1726,14 @@ src/game/sinit.c Sinit_RoomE6 --runs=5
 src/game/sinit.c Sinit_RoomE7 --runs=5
 src/game/sinit.c Sinit_RoomE8 --runs=5
 src/game/sinit.c Sinit_RoomE9 --runs=5
-src/game/sinit.c func_00464480 --runs=5
-src/game/sinit.c func_004644D0 --runs=5
-src/game/sinit.c func_00464A70 --runs=5
-src/game/sinit.c func_00466BD0 --runs=5
-src/game/sinit.c func_00469400 --runs=5
+src/game/sinit.c Sinit_Flags --runs=5
+src/game/sinit.c Sinit_FillTables --runs=5
+src/game/sinit.c Sinit_Game --runs=5
+src/game/sinit.c Sinit_Iostreams2 --runs=5
+src/game/sinit.c Sinit_Iostreams3 --runs=5
 src/game/system.c GameBase_ctor
-src/game/system.c func_0020E7D0
-src/game/system.c func_0020E7B0
+src/game/system.c IopArrayA_ctor
+src/game/system.c IopArrayB_ctor
 src/game/system.c System_ctor --runs=10
 src/game/system.c RenderState_Defaults
 src/game/rumble.c Rumble_ctor
@@ -2159,19 +2159,19 @@ src/game/scene_game_members.c Obstacle_ElemCtor --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Elem_ctorNoop --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Pair_Clear --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Door_ReleaseRequest --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0..1
-src/game/scene_game_members.c func_002A8410 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c Record20_Clear --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c PlacedThings_ctorPool --pre=a0=0x0B000000..0x0B000000
-src/game/scene_game_members.c func_002ECB50 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c Summoner_Reset --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c NavMesh_DropPending --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Doors_Reset --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Obstacles_ctor --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c PlacedObjects_ctor --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Doors_ctor --pre=a0=0x0B000000..0x0B000000
-src/game/scene_game_members.c func_002F08E0 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c Panic_Reset --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Creatures_ctorPools --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Doors_ReleaseRequests --pre=a0=0x0B000000..0x0B000000 --pre=a0+4=0x0B100000..0x0B100000 --runs=40
 src/game/scene_game_members.c Doors_ReleaseRequests --pre=a0=0x0B000000..0x0B000000 --pre=a0+4=0..0
-src/game/scene_game_members.c func_002A7B40 --pre=a0=0x0B000000..0x0B000000
+src/game/scene_game_members.c RoomSlotBytes_Clear --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Progress_SubReset --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c RoomMgr_Clear --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c DimMessage_ctor --pre=a0=0x0B000000..0x0B000000
@@ -5069,7 +5069,7 @@ src/game/scene_game_members.c Progress_CopyState --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c Progress_Sub7B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=30
 src/game/scene_game_members.c Progress_Sub75C --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=30
 src/game/scene_game_members.c Bytes4_Clear --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/scene_game_members.c func_002A8AB0 --runs=10
+src/game/scene_game_members.c Room00_HookNone --runs=10
 src/game/scene_game_members.c NavGroups_SetTri --pre=a1=0..44 --pre=a2=0..0xFF --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900004=0..0x0BA00000 --pre=@0x0B900008=0..40 --runs=200
 src/game/scene_game_members.c NavGroups_ClearTri --pre=a1=0..44 --pre=a2=0..0xFF --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900004=0..0x0BA00000 --pre=@0x0B900008=0..40 --runs=200
 src/game/scene_game_members.c NavGroups_Holds --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0x0B100000..0x0B100000 --pre=a0+0x8=0..3 --pre=@0x0B100004=0x10..0x10 --pre=@0x0B100008=0x20..0x20 --pre=@0x0B100010=0..3 --pre=@0x0B100014=0..4 --pre=@0x0B100018=0..4 --pre=@0x0B100020=0..2 --pre=@0x0B100024=0..4 --pre=a1=0..4 --pre=a2=0..3 --runs=300
@@ -5774,7 +5774,7 @@ src/game/system.c Renderer_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/system.c Obj46ACF0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/system.c Obj46AD88_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/system.c Obj46ADD0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BECA0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c IopArray_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/system.c Obj46AE10_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/rumble.c RumbleBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/memcard.c MemCardBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
@@ -5786,10 +5786,10 @@ src/game/system.c Vram_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/game.c TexCache_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46B350_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46BA68_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/daniella.c func_0020D8D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/daniella.c func_0020D920 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/daniella.c func_0020D970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/daniella.c func_0020D9C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c Pair_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c Pair44_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c Triple_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c Quad4_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/game.c Obj46BEE0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46C6F0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c RoomMeshes_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
@@ -6447,10 +6447,10 @@ src/game/rooms/room_E6.c RoomE6_Cond00 --pre=@0x44E4D8=0x0B600000..0x0B600000 --
 src/game/rooms/room_E7.c RoomE7_Cond00 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/game/rooms/room_E8.c RoomE8_Cond00 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/game/rooms/room_E9.c RoomE9_Cond00 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
-src/game/synth.c func_00322560 --runs=3
-src/game/synth.c func_00322A00 --runs=3
-src/game/synth.c func_00322B70 --runs=3
-src/game/synth.c func_003244C0 --runs=3
+src/game/synth.c SynthBase_Noop --runs=3
+src/game/synth.c SynthBase_Noop14 --runs=3
+src/game/synth.c SynthPot_Noop14 --runs=3
+src/game/synth.c SlotMachine_Noop14 --runs=3
 src/game/placed.c Kind27_FollowPathExit --runs=3
 src/game/placed.c Kind27_Arrived --runs=3
 src/game/placed.c Kind27_WalkToExit --runs=3
@@ -6477,18 +6477,18 @@ src/game/debilitas3.c Debilitas3_AttackAnimB --runs=3
 src/game/debilitas3.c Debilitas3_AttackAnimA --runs=3
 src/game/debilitas3.c Debilitas3_StateNone --runs=3
 src/game/model.c Kind18Model_ShowParts --runs=3
-src/game/movie.c func_00226808 --runs=3
-src/game/movie.c func_00226868 --runs=3
-src/game/movie.c func_00226870 --runs=3
-src/game/movie.c func_00226878 --runs=3
-src/game/movie.c func_00226880 --runs=3
-src/game/movie.c func_00226888 --runs=3
-src/game/movie.c func_00226890 --runs=3
-src/game/movie.c func_00226898 --runs=3
-src/game/movie.c func_002268A0 --runs=3
-src/game/movie.c func_002268A8 --runs=3
-src/game/movie.c func_002268B0 --runs=3
-src/game/movie.c func_002268B8 --runs=3
+src/game/movie.c Cft_Noop --runs=3
+src/game/movie.c Cft_Stub1 --runs=3
+src/game/movie.c Cft_Stub2 --runs=3
+src/game/movie.c Cft_Stub3 --runs=3
+src/game/movie.c Cft_Stub4 --runs=3
+src/game/movie.c Cft_Stub5 --runs=3
+src/game/movie.c Cft_Stub6 --runs=3
+src/game/movie.c Cft_Stub7 --runs=3
+src/game/movie.c Cft_Stub8 --runs=3
+src/game/movie.c Cft_Stub9 --runs=3
+src/game/movie.c Cft_Stub10 --runs=3
+src/game/movie.c Cft_Stub11 --runs=3
 src/game/stalker_k23.c TintStalker_AttackAnimB --runs=3
 src/game/stalker_k23.c TintStalker_AttackAnimA --runs=3
 src/game/creature.c Effect737D0_Update --runs=3
@@ -6563,20 +6563,20 @@ src/game/subscreen.c SubScreen_EntryMotions --pre=a0=0x0B000000..0x0B000000 --pr
 src/game/subscreen.c Kind14Model_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/scene_game.c Kind33Model_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/subscreen.c SubScreen_FileCount --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x15F8:u16=0..1 --pre=a0+0x15FA:u16=0..1 --runs=20
-src/game/movie.c func_00226790 --pre=a0=-5..5 --runs=5
-src/game/movie.c func_002267A0 --runs=3
-src/game/movie.c func_002267B0 --pre=a0=-5..5 --runs=5
-src/game/movie.c func_002267C0 --runs=3
+src/game/movie.c Cft_SetValue0 --pre=a0=-5..5 --runs=5
+src/game/movie.c Cft_GetValue0 --runs=3
+src/game/movie.c Cft_SetValue1 --pre=a0=-5..5 --runs=5
+src/game/movie.c Cft_GetValue1 --runs=3
 src/game/movie.c Sofdec_SetValue --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
 src/game/movie.c Sofdec_GetValue --stub-ret=0x0B400000 --runs=5
-src/game/movie.c func_002267D0 --stub-ret=0x0B400000 --runs=5
-src/game/movie.c func_0025C2F8 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/game/movie.c func_0025C320 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/game/movie.c func_0025C360 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/game/movie.c func_0025C3A0 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c Cft_Init --stub-ret=0x0B400000 --runs=5
+src/game/movie.c Ticks_Convert --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c Ticks_ToMicros --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c Ticks_ToMillis --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c Ticks_ToSeconds --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
 src/game/movie.c Ticks_SetRate --pre=a0=0..2000000 --runs=5
-src/game/movie.c func_0025C3E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/game/movie.c func_0025C400 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
+src/game/movie.c Measure_Clear --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/movie.c Measure_Add --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
 src/game/music.c TintStalker_Disable --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
 src/game/music.c TintStalker_Enable --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
 src/game/stalker_k23.c TintStalker_SetDelay --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
@@ -7015,7 +7015,7 @@ src/game/model.c Kind09Model_ctor --pre=a0=0x0A000000..0x0A000000 --runs=20
 src/game/subscreen.c SubScreen_FromSave --pre=a0=0x0A000000..0x0A000000 --pre=@0x0A000000=0x0047A790..0x0047A790 --pre=a1=0x0B000000..0x0B000000 --pre=a1+0x1068:u16=0xFFFE..0xFFFF --pre=a1+0x106A:u16=0xFFFE..0xFFFF --pre=a1+0x10E8:u16=0xFFFE..0xFFFF --pre=a1+0x1168:u16=0xFFFE..0xFFFF --pre=a1+0x17E8:u16=0xFFFE..0xFFFF --pre=a1+0x17EA:u16=0xFFFE..0xFFFF --pre=a1+0x17EC:u16=0xFFFE..0xFFFF --pre=a1+0x17EE:u16=0xFFFE..0xFFFF --pre=a1+0x17F0:u16=0xFFFE..0xFFFF --pre=a1+0x17F2:u16=0xFFFE..0xFFFF --pre=a1+0x18EE:u16=0xFFFE..0xFFFF --runs=100
 src/game/items.c Items_Data --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a2=0..3 --pre=a0+0x12E0=0..0x0B100000 --pre=a0+0x12E4=0..0x0B100000 --pre=a0+0x13E0=0..0x0B100000 --pre=@0x0B100000=0x0046F430..0x0046F430 --stub-ret=0x0B200000 --runs=60
 src/game/subscreen.c SubScreen_ToSave --pre=a0=0x0A000000..0x0A000000 --pre=a1=0x0B000000..0x0B000000 --stub-ret=-1 --stub-ret=0xFFFF --stub-ret=5 --stub-ret=1 --stub-ret=2 --stub-ret=0x0B300000 --stub-ret-prob=1 --runs=60
-src/game/subscreen.c func_0038D620 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..0x1F --pre=@0x44E4E0=0x0A300000..0x0A300000 --pre=@0x0A300000=0x0046A1E0..0x0046A1E0 --runs=100
+src/game/subscreen.c Gallery_LoadPck --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..0x1F --pre=@0x44E4E0=0x0A300000..0x0A300000 --pre=@0x0A300000=0x0046A1E0..0x0046A1E0 --runs=100
 src/game/subscreen.c SubScreen_StateItemQuestion --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --runs=100
 src/game/subscreen.c SubScreen_TabCommand --pre=a0=0x0A000000..0x0A000000 --pre=@0x0A000000=0x0047A790..0x0047A790 --pre=a1=0..5 --pre=a0+0xA8DDE:u8=0..1 --pre=a0+0xA8DDC:u8=0..0x44 --pre=@0x44E4E8=0x0A100000..0x0A100000 --pre=@0x0A100000=0x0046B1D0..0x0046B1D0 --stub-ret=0 --stub-ret=1 --runs=300
 src/game/subscreen.c SubScreen_StateWordPlate --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --runs=100

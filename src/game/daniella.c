@@ -522,7 +522,8 @@ void Daniella_Setup(Pursuer *p) {
 }
 
 /* destructor (vtable ?) */
-void *func_0020D8D0(u8 *o, s32 flags) {
+/* 0x0020D8D0 */
+void *Pair_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, s32) = 0;
         AT(o, 0x4, s32) = 0;
@@ -534,7 +535,8 @@ void *func_0020D8D0(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable ?) */
-void *func_0020D920(u8 *o, s32 flags) {
+/* 0x0020D920 */
+void *Pair44_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x44, s32) = 0;
         AT(o, 0x48, s32) = 0;
@@ -546,7 +548,8 @@ void *func_0020D920(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable ?) */
-void *func_0020D970(u8 *o, s32 flags) {
+/* 0x0020D970 */
+void *Triple_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, s32) = 0;
         AT(o, 0x4, s32) = 0;
@@ -559,7 +562,8 @@ void *func_0020D970(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable ?) */
-void *func_0020D9C0(u8 *o, s32 flags) {
+/* 0x0020D9C0 */
+void *Quad4_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x10, s32) = 0;
         AT(o, 0xC, s32) = 0;

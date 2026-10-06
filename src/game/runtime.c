@@ -7,16 +7,18 @@ extern u8 str_exception[];
 extern u8 str_bad_alloc[];
 extern u8 str_bad_exception[];
 extern u8 D_0044DAB0[];
-void *func_00100540(void);
-void *func_00100650(void);
-void *func_00102310(void);
-void *func_00114B90(void);
+void *Exception_What(void);
+void *BadAlloc_What(void);
+void *BadException_What(void);
+void *Libc_Data44DAB0(void);
 
-void *func_00100540(void) {
+/* 0x00100540 */
+void *Exception_What(void) {
     return str_exception;
 }
 
-void *func_00100650(void) {
+/* 0x00100650 */
+void *BadAlloc_What(void) {
     return str_bad_alloc;
 }
 /* __ptmf_cmpr: whether two member function pointers differ */
@@ -26,10 +28,12 @@ s32 __ptmf_cmpr(const PTMF *a, const PTMF *b) {
            (a->u.vptr_offset ^ b->u.vptr_offset) ? 1 : 0;
 }
 
-void *func_00102310(void) {
+/* 0x00102310 */
+void *BadException_What(void) {
     return str_bad_exception;
 }
 
-void *func_00114B90(void) {
+/* 0x00114B90 */
+void *Libc_Data44DAB0(void) {
     return D_0044DAB0;
 }

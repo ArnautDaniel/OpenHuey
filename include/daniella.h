@@ -27,9 +27,9 @@ extern void Daniella_Update(Pursuer *p);
 extern u8 *Daniella_ModelFileTable(Pursuer *p);
 extern u8 *Daniella_ModelFiles(Pursuer *p);
 extern void Daniella_Setup(Pursuer *p);
-extern void *func_0020D8D0(u8 *o, s32 flags);
-extern void *func_0020D920(u8 *o, s32 flags);
-extern void *func_0020D970(u8 *o, s32 flags);
-extern void *func_0020D9C0(u8 *o, s32 flags);
+extern void *Pair_dtor(u8 *o, s32 flags);
+extern void *Pair44_dtor(u8 *o, s32 flags);
+extern void *Triple_dtor(u8 *o, s32 flags);
+extern void *Quad4_dtor(u8 *o, s32 flags);
 
 #endif /* DANIELLA_H */

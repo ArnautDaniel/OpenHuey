@@ -7,12 +7,12 @@
 /* scene_game_members.c */
 extern void *Base_ctorNoop(void *p);
 extern void Door_ReleaseRequest(u8 *p);
-extern void func_002A8410(u8 *p);   /* reset a state block */
-extern void func_002ECB50(u8 *p);
+extern void Record20_Clear(u8 *p);   /* reset a state block */
+extern void Summoner_Reset(u8 *p);
 extern void *Obstacles_ctor(u8 *p);
 extern void *PlacedObjects_ctor(u8 *p);
 extern void *Doors_ctor(u8 *p);
-extern void func_002A7B40(u8 *p);
+extern void RoomSlotBytes_Clear(u8 *p);
 extern void Progress_SubReset(u8 *p);   /* a fresh save's progress */
 extern void RoomMgr_Clear(u8 *m);
 extern void *DimMessage_ctor(u8 *p);
