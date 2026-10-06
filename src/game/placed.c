@@ -1968,6 +1968,39 @@ void func_0036C7B0(u8 *o) {
     Burst4_Draw(o, 0x1A50, AT(o, 0x22BC, s32), base, stride);
 }
 
+/* a drawer's fixed set up: no texture yet, layer 0x19, the sprite cells on the 512x256 sheet
+   (texture 1 / group 0x10, the first palette) */
+static inline void burst_quad(QuadDrawer *q, f32 cy, s16 count, s16 x, s16 y, s16 w, s16 h, s8 flags, s8 frames) {
+    q->tex = (u64)-1;
+    q->corners = 0;
+    q->cx = 0.0f;
+    q->cy = cy;
+    q->layer = 0x19;
+    q->count = count;
+    q->cellX = x;
+    q->cellY = y;
+    q->cellW = w;
+    q->cellH = h;
+    q->texW = 0x200;
+    q->texH = 0x100;
+    q->flags = flags;
+    q->frames = frames;
+    q->texId = 1;
+    q->texGroup = 0x10;
+    q->palette = -1;
+}
+
+/* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
+void func_0036D210(u8 *o) {
+    AT(o, 0x22BC, s32) = 0;
+    AT(o, 0x22C0, u8) = 0;
+    AT(o, 0x22B0, s32) = 0;
+    AT(o, 0x22B4, s32) = 0;
+    burst_quad((QuadDrawer *)(o + 0x1A50), 0.0f, 0x20, 0x20, 0x40, 0x20, 0x20, 0x40, 1);
+    burst_quad((QuadDrawer *)(o + 0x1A88), -1.0f, 3, 0, 0xA0, 0x20, 0x40, 0x41, 0xA);
+    burst_quad((QuadDrawer *)(o + 0x1AC0), 0.0f, 0x20, 0xE, 0x6E, 4, 4, 0x40, 1);
+}
+
 static inline void Burst4A_Init(void **obj) {
     Burst4_Init(obj, D_0047A010, 0xB50);
 }

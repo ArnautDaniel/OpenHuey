@@ -5986,3 +5986,67 @@ s32 func_0034ABB0(void) {
     func_002EF9E0((u8 *)gProgress + 0x7B8, 50.0f);
     return 1;
 }
+
+extern const char *D_00437D48[];   /* room objects 10..15 */
+
+/* the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
+ * script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set */
+s32 func_003428D0(void) {
+    VObject *ev = D_0044E4D0, *list, *objs;
+    s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
+    s32 i;
+
+    list = D_0044F260;
+    for (i = 0; i < 0x80; i++) {
+        u8 *o = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, i);
+
+        if (o != NULL && AT(o, 0x20, s32) == 9 && AT(o, 0x14, f32) < -30.0f) {
+            AT(o, 0x28, u8) = 0;
+            VCALL(ev, 0x5C, void (*)(VObject *))(ev);
+            n--;
+        }
+    }
+    objs = D_00456DF8;
+    for (i = 10; i < 16; i++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D48[i - 10]);
+
+        if (AT(o, 0x24, f32) < -30.0f) {
+            AT(o, 0x0, u8) = 1;
+        }
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, n);
+    return 1;
+}
+
+/* character 0xFE's model +0x9E0 / +0x9E4 / +0x9E8: byte 3 0 -0.2 / 0.2 / -0.2; 1 eases them by
+ * script variable 6 (a step a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0 */
+s32 func_003102E0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, kN02 = {0xBE4CCCCD}, k01 = {0x3DCCCCCE},
+                                          k03 = {0x3E99999A};
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+    VObject *ev;
+    s32 v;
+    f32 a, b;
+
+    if (cmd[3] == 0) {
+        AT(m, 0x9E0, f32) = kN02.f;
+        AT(m, 0x9E4, f32) = k02.f;
+        AT(m, 0x9E8, f32) = kN02.f;
+        return 1;
+    }
+    if (cmd[3] != 1) {
+        AT(m, 0x9E0, s32) = 0;
+        AT(m, 0x9E4, f32) = k03.f;
+        AT(m, 0x9E8, s32) = 0;
+        return 1;
+    }
+    ev = D_0044E4D0;
+    v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
+    a = kN02.f + k02.f * (f32)v / 60.0f;
+    b = k02.f + k01.f * (f32)v / 60.0f;
+    AT(m, 0x9E0, f32) = a;
+    AT(m, 0x9E4, f32) = b;
+    AT(m, 0x9E8, f32) = a;
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, v + 1);
+    return v + 1 < 61 ? 2 : 1;
+}
