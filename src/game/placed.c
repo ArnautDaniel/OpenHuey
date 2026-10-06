@@ -2186,13 +2186,18 @@ typedef struct BurstShape {
     s32 nFlash; u32 flash, flashBuf, flashFrames;
     s32 nPuff; u32 puff, puffBuf, puffVel, puffRate;
     s32 nRing; u32 ring, ringBuf, size, corners, frame;
+    f32 driftDiv;                                         /* the push grows by itself / this */
+    s32 fallAge;                                          /* frames the falls apply */
+    f32 liftEven, liftOdd;                                /* the even / odd pieces' rise x fall */
+    f32 grow;                                             /* the pieces' growth a frame (0: none) */
 } BurstShape;
 
 /* +0x10 update (the frame buffers swapped, each record carried over): the pieces spin, drift
- * (their push halving in, over 4 frames), then shrink their cells, fade and fall (after 8 frames,
- * by their falls); the flashes fade and play their frames once; the puffs rise and fade, out when
- * under the floor; the rings fade and grow (the first by 1, the others 0.5), facing the camera.
- * 0 once all of it was gone. */
+ * (their push growing by itself / driftDiv, over 4 frames), then shrink their cells, fade and
+ * fall (for fallAge frames by their falls; rising liftEven / liftOdd x their fall); the flashes
+ * fade and play their frames once; the puffs rise and fade, out when under the floor; the rings
+ * fade and grow (the first by 1, the others 0.5), facing the camera. 0 once all of it was
+ * gone. */
 static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const BurstShape *b) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *rnd, *nav;
@@ -2216,6 +2221,10 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
             continue;
         }
         AT(o, b->done, u8) = 0;
+        if (b->grow != 0.0f) {
+            AT(r, 0x20, f32) = AT(r, 0x20, f32) + b->grow;
+            AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        }
         a = AT(r, 0x28, f32) + kPi.f * (2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
         AT(r, 0x28, f32) = a;
         if (!(a < kPi.f)) {
@@ -2224,8 +2233,8 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         AT(r, 0x10, f32) = AT(r, 0x10, f32) + (AT(o, b->vel + i * 0xC, f32) + AT(o, b->driftX + i * 4, f32));
         AT(r, 0x18, f32) = AT(r, 0x18, f32) + (AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->driftZ + i * 4, f32));
         if (AT(o, b->age, s32) < 4) {
-            AT(o, b->driftX + i * 4, f32) = AT(o, b->driftX + i * 4, f32) + AT(o, b->driftX + i * 4, f32) / 2.0f;
-            AT(o, b->driftZ + i * 4, f32) = AT(o, b->driftZ + i * 4, f32) + AT(o, b->driftZ + i * 4, f32) / 2.0f;
+            AT(o, b->driftX + i * 4, f32) = AT(o, b->driftX + i * 4, f32) + AT(o, b->driftX + i * 4, f32) / b->driftDiv;
+            AT(o, b->driftZ + i * 4, f32) = AT(o, b->driftZ + i * 4, f32) + AT(o, b->driftZ + i * 4, f32) / b->driftDiv;
             continue;
         }
         if (AT(r, 0x0, s32) != 0 && --AT(r, 0x0, s32) < 0) {
@@ -2241,15 +2250,15 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         if (AT(r, 0xC, s32) < 0) {
             AT(r, 0xC, s32) = 0;
         }
-        if (AT(o, b->age, s32) < 8) {
+        if (AT(o, b->age, s32) < b->fallAge) {
             AT(o, b->vel + i * 0xC, f32) = AT(o, b->vel + i * 0xC, f32) + AT(o, b->fall + i * 0xC, f32);
             AT(o, b->vel + 4 + i * 0xC, f32) = AT(o, b->vel + 4 + i * 0xC, f32) + AT(o, b->fall + 4 + i * 0xC, f32);
             AT(o, b->vel + 8 + i * 0xC, f32) = AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->fall + 8 + i * 0xC, f32);
         }
         if (i % 2 == 0) {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 4.0f * AT(o, b->vel + 4 + i * 0xC, f32);
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + b->liftEven * AT(o, b->vel + 4 + i * 0xC, f32);
         } else {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 8.0f * AT(o, b->vel + 4 + i * 0xC, f32);
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + b->liftOdd * AT(o, b->vel + 4 + i * 0xC, f32);
         }
         AT(o, b->driftX + i * 4, s32) = 0;
         AT(o, b->driftZ + i * 4, s32) = 0;
@@ -2324,7 +2333,7 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
 s32 func_0036B200(u8 *o) {
     static const BurstShape kA = {0xFAC, 0xFB0, 0xFA4, 16, 0x10, 0x300, 0xC30, 0xCF0, 0xEA0, 0xEE0,
                                   1, 0x610, 0x30, 0xBBB, 12, 0x670, 0x240, 0xDB0, 0xE70,
-                                  1, 0xAF0, 0x30, 0xFA8, 0xF60, 0xF20};
+                                  1, 0xAF0, 0x30, 0xFA8, 0xF60, 0xF20, 2.0f, 8, 4.0f, 8.0f};
 
     return burst_update(o, &kA);
 }
@@ -2332,9 +2341,98 @@ s32 func_0036B200(u8 *o) {
 s32 func_0036C880(u8 *o) {
     static const BurstShape kB = {0x22BC, 0x22C0, 0x22B4, 32, 0x10, 0x600, 0x1B30, 0x1CB0, 0x20B0, 0x2130,
                                   3, 0xC10, 0x90, 0x1ABB, 32, 0xD30, 0x600, 0x1E30, 0x2030,
-                                  3, 0x1930, 0x90, 0x22B8, 0x21F0, 0x21B0};
+                                  3, 0x1930, 0x90, 0x22B8, 0x21F0, 0x21B0, 2.0f, 8, 4.0f, 8.0f};
 
     return burst_update(o, &kB);
+}
+
+/* ---- the shove burst D_00474FB0 (0xFD0 bytes, ShoveBurst_Init): where a kind-2 thing breaks
+ * or a character is shoved - 16 pieces (records +0x10 + 0x300 x the current one +0xFC8,
+ * velocities +0xC80, falls +0xD40, drifts +0xF40 / +0xF80) and 16 puffs (records +0x610,
+ * velocities +0xE00, rates +0xF00, heights +0xEC0), +0xFC4 its frames, +0xFCC all gone ---- */
+
+/* +0x18 start (arg: the point): the pieces thrown out round it (2..4 big, brown), the puffs
+ * rising from it (every other one half alpha) */
+void func_0032E950(u8 *o, f32 *arg) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
+                                          k360 = {0x43B40000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
+    VObject *rnd;
+    f32 x, y, z, sc;
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    rnd = D_0044E550;
+    x = arg[0];
+    y = 1.0f + arg[1];
+    z = arg[2];
+    for (i = 0; i < 16; i++) {
+        u8 *r = o + 0x10 + AT(o, 0xFC8, s32) * 0x300 + i * 0x30;
+
+        AT(r, 0x0, s32) = 0x5F;
+        AT(r, 0x4, s32) = 0x48;
+        AT(r, 0x8, s32) = 0x1C;
+        AT(r, 0xC, s32) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
+        AT(r, 0x10, f32) = x + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x14, f32) = y;
+        AT(r, 0x18, f32) = z + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = 2.0f + 2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        AT(r, 0x28, f32) = kPi.f * (k360.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+        AT(r, 0x2C, s32) = 0;
+        AT(o, 0xC80 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0xC84 + i * 0xC, f32) = k01.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(o, 0xC88 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        sc = k01.f + k005.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(o, 0xD40 + i * 0xC, f32) = -(AT(o, 0xC80 + i * 0xC, f32) * sc);
+        AT(o, 0xD44 + i * 0xC, f32) = -(0.5f * (AT(o, 0xC84 + i * 0xC, f32) * sc));
+        AT(o, 0xD48 + i * 0xC, f32) = -(AT(o, 0xC88 + i * 0xC, f32) * sc);
+        AT(o, 0xF40 + i * 4, f32) = AT(o, 0xC80 + i * 0xC, f32) / 8.0f;
+        AT(o, 0xF80 + i * 4, f32) = AT(o, 0xC88 + i * 0xC, f32) / 8.0f;
+    }
+    for (i = 0; i < 16; i++) {
+        u8 *r = o + 0x610 + AT(o, 0xFC8, s32) * 0x300 + i * 0x30;
+
+        AT(r, 0x0, s32) = 0x5F;
+        AT(r, 0x4, s32) = 0x48;
+        AT(r, 0x8, s32) = 0x1C;
+        AT(r, 0xC, s32) = i % 2 == 0 ? 0x40 : 0x80;
+        AT(r, 0x10, f32) = x + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x14, f32) = y;
+        AT(r, 0x18, f32) = z + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = k01.f + 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        AT(r, 0x2C, s32) = 0;
+        AT(r, 0x28, s32) = 0;
+        AT(o, 0xE00 + i * 0xC, f32) = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0xE04 + i * 0xC, f32) = k25.f * (k01.f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
+        AT(o, 0xE08 + i * 0xC, f32) = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0xF00 + i * 4, f32) = 0x1.47ae14p-6f + k01.f * AT(o, 0xE04 + i * 0xC, f32);   /* 0.02 + 0.1 x */
+        AT(o, 0xEC0 + i * 4, f32) = AT(r, 0x14, f32);
+    }
+}
+
+/* +0x14 draw (not while the effects are paused): the pieces, then the puffs */
+void func_0032EEB0(u8 *o) {
+    if (func_002D6010(D_0044E578) == 0) {
+        AT(o, 0xC20, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x10;
+        func_002E56C0(o + 0xC10);
+        AT(o, 0xC58, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x610;
+        func_002E56C0(o + 0xC48);
+    }
+}
+
+/* +0x10 update: as the bursts' (the pieces growing 0.05, their push by a sixth, falls for 10
+ * frames, rising 2 / 4 x their fall), no flash or ring */
+s32 func_0032EF30(u8 *o) {
+    static const BurstShape kC = {0xFC8, 0xFCC, 0xFC4, 16, 0x10, 0x300, 0xC80, 0xD40, 0xF40, 0xF80,
+                                  0, 0, 0, 0, 16, 0x610, 0x300, 0xE00, 0xF00,
+                                  0, 0, 0, 0, 0, 0, 6.0f, 10, 2.0f, 4.0f, 0x1.99999ap-5f /* 0.05 */};
+
+    return burst_update(o, &kC);
 }
 
 extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
