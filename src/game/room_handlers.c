@@ -6386,3 +6386,37 @@ s32 func_00343180(void) {
 
     return grey_three(50.0f, spot, b, c, d);
 }
+
+/* the clock frozen: while event flag 1 (+0x58) is set, the time saved in script variables
+ * (clock_save: 0 time up -> "59:59", 1 / 2 minutes / seconds) instead of the running one */
+static inline s32 clock_draw_saved(char *buf, const char *full) {
+    VObject *ev = D_0044E4D0;
+    u32 t;
+
+    if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 1) == 0) {
+        return clock_draw(buf, full);
+    }
+    if (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0) != 0) {
+        VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
+            ev, 0x1AF, 0x18B, 0, full, 0x80, 0x30, 0x10, 0x15);
+        return 1;
+    }
+    ev = D_0044E4D0;
+    buf[0] = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1) / 10 + '0';
+    t = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
+    buf[2] = ':';
+    buf[1] = t % 10 + '0';
+    buf[3] = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 2) / 10 + '0';
+    t = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 2);
+    buf[5] = 0;
+    buf[4] = t % 10 + '0';
+    VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
+        ev, 0x1AF, 0x18B, 0, buf, 0x80, 0x30, 0x10, 0x15);
+    return 1;
+}
+
+extern char D_0047B290[], D_0047B340[];
+extern const char D_004636D8[], D_00463A48[];   /* "59:59" */
+
+s32 func_0036DB90(void) { return clock_draw_saved(D_0047B290, D_004636D8); }
+s32 func_0037ACE0(void) { return clock_draw_saved(D_0047B340, D_00463A48); }
