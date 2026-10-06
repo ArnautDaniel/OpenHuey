@@ -5590,3 +5590,104 @@ s32 func_0035D2A0(void) { return slam_shake(); }
 s32 func_0035D430(void) { return slam_shake(); }
 s32 func_0035D5C0(void) { return slam_shake(); }
 s32 func_0035D750(void) { return slam_shake(); }
+
+/* ---- the countdown's start / stop hooks ---- */
+extern void func_00136620(void *h);   /* Hewie restarted (hewie.c) */
+extern void func_002A76E0(u8 *p);     /* four bytes cleared */
+
+/* the countdown on (+0x1FBEC1), Hewie restarted, the camera director +0x40 (14), the clock
+ * (+0xFC4..) zeroed */
+static inline s32 clock_start(void) {
+    u8 *p = (u8 *)gProgress;
+
+    p[0x1FBEC1] = 1;
+    func_00136620(gCharPartner);
+    VCALL(D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, 14.0f);
+    func_002A76E0(p + 0xFC4);
+    return 1;
+}
+
+/* the countdown off, the camera director +0x40 (-1) */
+static inline s32 clock_stop(void) {
+    AT(gProgress, 0x1FBEC1, u8) = 0;
+    VCALL(D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, -1.0f);
+    return 1;
+}
+
+s32 func_0036FFC0(void) { return clock_start(); }
+s32 func_00378F70(void) { return clock_start(); }
+s32 func_0036DEE0(void) { return clock_stop(); }
+s32 func_0037B290(void) { return clock_stop(); }
+
+/* byte 3 to the player's func_00124F20 while she's active */
+s32 func_0034A650(void *self, void *a1, u8 *cmd) {
+    if (gCharPlayer != NULL && AT(gCharPlayer, 0x28, u8) != 0) {
+        func_00124F20(gCharPlayer, cmd[3]);
+    }
+    return 1;
+}
+
+/* the room object named by D_0047B110[0]: +0x24 -25.3, +0x34 0 */
+s32 func_0037A5A0(void) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, *(const char **)D_0047B110);
+
+    if (o != NULL) {
+        AT(o, 0x24, u32) = 0xC1CA6666;   /* -25.3 */
+        AT(o, 0x34, s32) = 0;
+    }
+    return 1;
+}
+
+extern const char *D_004400F0[];
+
+/* sound 3 (bank 6) at the room object named D_004400F0[0] */
+s32 func_0034AB40(void) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400F0[0]);
+
+    if (o != NULL) {
+        func_002FF650(D_0044E560, 3, 6, (f32 *)(o + 0x20), 0, 0);
+    }
+    return 1;
+}
+
+/* D_00479FB0 effect message: none sets +0x34 (done); else +0x2C its word 0, and below 2 in word 1
+ * +0x30 30 */
+void func_0036A530(u8 *o, s32 *m) {
+    if (m == NULL) {
+        AT(o, 0x34, u8) = 1;
+        return;
+    }
+    AT(o, 0x2C, s32) = m[0];
+    if (m[1] < 2) {
+        AT(o, 0x30, s32) = 30;
+    }
+}
+
+/* its set up: +0x34 0, +0x30 -1, ten random 0..15 from +0x4 */
+void func_0036A7F0(u8 *o) {
+    VObject *rnd;
+    s32 i;
+
+    AT(o, 0x34, u8) = 0;
+    AT(o, 0x30, s32) = -1;
+    rnd = D_0044E550;
+    for (i = 0; i < 10; i++) {
+        AT(o, 0x4 + i * 4, s32) = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF;
+    }
+}
+
+/* an effect message: +0xC its word 0 (word 1 set: +0x8 too); a 0 there becomes 3 / 3 and +0x10 */
+void func_00370090(u8 *o, s32 *m) {
+    if (m == NULL) {
+        return;
+    }
+    AT(o, 0xC, f32) = AT(m, 0x0, f32);
+    if (m[1] != 0) {
+        AT(o, 0x8, f32) = AT(o, 0xC, f32);
+    }
+    if (AT(o, 0xC, f32) == 0.0f) {
+        AT(o, 0xC, u32) = 0x40400000;   /* 3 */
+        AT(o, 0x8, u32) = 0x40400000;
+        AT(o, 0x10, u8) = 1;
+    }
+}
