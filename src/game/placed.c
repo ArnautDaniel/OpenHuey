@@ -2521,3 +2521,127 @@ void func_00335DE0(u8 *o) {
     func_002A8440((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
     AT(o, 0x28, u8) = 0;
 }
+
+extern void *D_0046FF20[];
+
+/* its puff (0x720 bytes, D_0046FF20, a quad drawer at +0x610) */
+static inline void Puff_Init(void **obj) {
+    obj[0] = D_0046FF20;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* (as ball_fly) +0x50 the flying state of this kind: always active; into a hole it settles
+   there (state 2, +0x2A); a glancing wall hit drops it to the floor with a puff (size 1, kind
+   2, grey 0x50, 16); it tries once more 0.2 back; the bounce sound only when it has moved
+   (+0x13E 0) - and any wall bounce counts, even the last */
+void func_00333AD0(u8 *b) {
+    f32 *v = BALL_VEL(b);
+    f32 to[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    f32 n[4] __attribute__((aligned(16)));
+    f32 fl[4] __attribute__((aligned(16)));
+    VObject *nm;
+    u8 *mgr;
+    s32 bounced = 0, again = 0;
+    u32 tri, prev, hit;
+
+    sceVu0AddVector(v, (f32 *)(b + 0x100), v);
+    nm = D_0044E570;
+    mgr = D_0044E578;
+    for (;;) {
+        sceVu0AddVector(to, v, BALL_POS(b));
+        tri = AT(b, 0x34, u32);
+        for (;;) {
+            prev = tri;
+            tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
+                nm, tri & 0xFFFF, out, BALL_POS(b), to, n, AT(b, 0xC0, u32));
+            if (tri == (u32)-1) {
+                break;
+            }
+            hit = tri & 0xF0000000;
+            if (hit == 0) {
+                sceVu0CopyVector(fl, out);
+                VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, tri, fl);
+                if (out[1] < fl[1]) {
+                    AT(b, 0xE0, u8) = 1;
+                    out[1] = fl[1];
+                }
+                goto landed;
+            }
+            if (hit == 0x80000000 && (ball_tri_flags(nm, tri & 0xFFFF) & TRI_HOLE)) {
+                AT(b, 0x34, u32) = tri;
+                sceVu0CopyVector(BALL_POS(b), out);
+                AT(b, 0xE0, u8) = 2;
+                AT(b, 0xE8, s32) = 0;
+                AT(b, 0x2A, u8) = 1;
+                return;
+            }
+            if (!func_003336B0(b, to, out, n)) {
+                VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, AT(b, 0x34, u32), BALL_POS(b));
+                AT(b, 0xE0, u8) = 1;
+                return;
+            }
+            if (hit == 0x80000000) {
+                f32 d = sceVu0InnerProduct(n, v);
+
+                if (d <= 0.0f) {
+                    d = -d;
+                }
+                if (d < 0.5f) {
+                    struct {
+                        f32 pos[3];
+                        f32 size;
+                        s32 kind;
+                        s32 rgb[3];
+                        s32 count;
+                    } sp;
+                    s32 slot;
+
+                    tri &= 0xFFFF;
+                    VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, tri, out);
+                    AT(b, 0xE0, u8) = 1;
+                    slot = Effect_New(mgr, 0x720, Puff_Init);
+                    sp.pos[0] = AT(b, 0x10, f32);
+                    sp.pos[1] = AT(b, 0x14, f32);
+                    sp.pos[2] = AT(b, 0x18, f32);
+                    sp.size = 1.0f;
+                    sp.count = 0x10;
+                    sp.kind = 2;
+                    sp.rgb[2] = 0x50;
+                    sp.rgb[1] = 0x50;
+                    sp.rgb[0] = 0x50;
+                    func_002D6090(mgr, slot, &sp);
+                }
+            }
+            bounced = 1;
+            if (AT(b, 0xE0, u8) == 1) {
+                goto landed;
+            }
+        }
+        if (again) {
+            break;
+        }
+        again = 1;
+        sceVu0ScaleVector(v, v, -0x1.99999ap-3f /* 0.2 */);
+    }
+    fl[1] = to[1];
+    tri = VCALL(nm, 0x40, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, u32))(
+        nm, prev & 0xFFFF, out, BALL_POS(b), to, AT(b, 0xC0, u32));
+    if (tri != (u32)-1) {
+        AT(b, 0x34, u32) = tri;
+        sceVu0CopyVector(BALL_POS(b), out);
+        AT(b, 0x14, f32) = fl[1];
+    } else {
+        VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, AT(b, 0x34, u32), BALL_POS(b));
+        AT(b, 0xE0, u8) = 1;
+    }
+    return;
+landed:
+    AT(b, 0x34, u32) = tri;
+    sceVu0CopyVector(BALL_POS(b), out);
+    if (bounced && AT(b, 0x13E, u16) == 0) {
+        func_00122C20(b, 0x7C, 5, 0, 0, NULL);
+    }
+}
