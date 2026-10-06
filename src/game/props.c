@@ -2221,6 +2221,58 @@ s32 func_00378650(u8 *o) {
     return spin_step(o, 0x3AE4C389, 0x3A64C389);
 }
 
+#ifdef HG_NATIVE
+extern VObject *D_0044E978;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
+#include <stdint.h>
+
+extern u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa);   /* loading.c */
+
+/* +0xC draw: GAME_FIX.GFM model +0x30 (texture 2 of group 0x10, palettes the parts' +0x4 plus
+ * +0x34) at +0x10 turned by +0x20; its later parts each turned and moved further by their
+ * own +0x30 / +0x40. 0 when the texture isn't loaded. */
+s32 func_0033B560(u8 *d) {
+    VObject *tc = D_0044E4E8;
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 rot[4] __attribute__((aligned(16)));
+    f32 trans[4] __attribute__((aligned(16)));
+    u8 *texh, *model, *part;
+    s32 off, count, first = 1;
+
+    if (VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, 2, 0x10) == -1) {
+        return 0;
+    }
+    texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
+    model = VCALL(D_0044E978, 0x1C, u8 *(*)(VObject *))(D_0044E978);
+    off = AT(model, AT(d, 0x30, s32) * 4, s32);
+    if (off <= 0) {
+        return 1;
+    }
+    part = model + off;
+    count = AT(part, 0x8, s32);
+    while (count != 0) {
+        count--;
+        sceVu0UnitMatrix(m);
+        if (first) {
+            first = 0;
+            sceVu0CopyVector(rot, (f32 *)(d + 0x20));
+            sceVu0RotMatrix(m, m, rot);
+            sceVu0CopyVector(trans, (f32 *)(d + 0x10));
+        } else {
+            sceVu0AddVector(rot, rot, (f32 *)(part + 0x30));
+            sceVu0RotMatrix(m, m, rot);
+            sceVu0AddVector(trans, trans, (f32 *)(part + 0x40));
+        }
+        sceVu0TransMatrix(m, m, trans);
+        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+        sceVu0MulMatrix(clip, clip, m);
+        part = gl_gfm_part(part, clip, texh, AT(part, 0x4, s32) + AT(d, 0x34, s32));
+        part = (u8 *)(((uintptr_t)part + 15) & ~(uintptr_t)15);
+    }
+    return 1;
+}
+#endif
+
 /* a model draw `d` filled (+0x10 position, w 1; +0x20 angles; +0x30 / +0x34) and queued in
  * renderer layer `layer` */
 void func_0033BCB0(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 layer) {

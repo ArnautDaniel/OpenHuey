@@ -5,6 +5,10 @@
 #include "ptmf.h"
 #include "gs.h"
 #include "sce/libvu0.h"
+#ifdef HG_NATIVE
+#include <stdint.h>
+#include <stdlib.h>
+#endif
 
 extern void *D_00469D00[];
 #include "task.h"
@@ -114,59 +118,71 @@ static inline f32 wrap_angle(f32 a) {
     return a;
 }
 
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
+/* One part of a GAME_FIX.GFM model with OpenGL, as the static model microprogram (D_003AC3F0)
+ * draws it: `nv` vertices of UVs (V2-16, / 32768), colours (V4-8, 0x80 = 1.0), positions (V3-16
+ * running differences from the part's start, +0x20; / 16) and strip flags (S-8: set, the
+ * triangle ending there is skipped), one textured, blended triangle strip; `mvp` the camera's
+ * +0x48 by the part's world matrix, `tex` its .TEX entry with palette `csa`. Returns the end of
+ * its flags (the next part follows, 16-byte aligned). */
+u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa) {
+    s32 nv = AT(part, 0x0, s32), i;
+    const u16 *uv = (const u16 *)(part + AT(part, 0x10, s32));
+    const u8 *col = part + AT(part, 0x14, s32);
+    const s16 *pos = (const s16 *)(part + AT(part, 0x18, s32));
+    u8 *flags = part + AT(part, 0x1C, s32);
+    s32 row[3];
+    f32 *xyzw, *st;
+
+    if (nv <= 0) {
+        return flags;
+    }
+    row[0] = AT(part, 0x20, s32);
+    row[1] = AT(part, 0x24, s32);
+    row[2] = AT(part, 0x28, s32);
+    xyzw = malloc((u32)nv * 16);
+    st = malloc((u32)nv * 8);
+    for (i = 0; i < nv; i++) {
+        u32 fl = flags[i] ? 0x8000 : 0;
+
+        row[0] += pos[i * 3];
+        row[1] += pos[i * 3 + 1];
+        row[2] += pos[i * 3 + 2];
+        xyzw[i * 4] = (f32)row[0] / 16.0f;
+        xyzw[i * 4 + 1] = (f32)row[1] / 16.0f;
+        xyzw[i * 4 + 2] = (f32)row[2] / 16.0f;
+        AT(&xyzw[i * 4 + 3], 0, u32) = fl;
+        st[i * 2] = (f32)uv[i * 2] / 32768.0f;
+        st[i * 2 + 1] = (f32)uv[i * 2 + 1] / 32768.0f;
+    }
+    glr_strip((const f32 *)mvp, nv, xyzw, st, col, tex, 1ull << 34 | (u64)(csa & 0x1F) << 56, 0x10 | 0x40);
+    free(xyzw);
+    free(st);
+    return flags + nv;
+}
+
 /* Draw the loading emblem `o` (renderer object: +0x10 position, +0x20 rotation, +0x30.. the
- * parts' extra rotations, +0x70 1: only the last part). Its parts are chained, each turned and
- * moved relative to the previous; each is sent to VU1 in batches of 64 vertices: a GIF tag, UVs
- * (V2-16), colours (V4-8), positions (V3-16, differences from the part's start, +0x20) and strip
- * flags (S-8 masked into position w). */
+ * parts' extra rotations, +0x70 1: only the last part): GAME_FIX.GFM's first model, texture 2
+ * of group 0x10, its parts chained, each turned and moved relative to the previous (palette:
+ * the part's +0x4). */
 s32 func_0033D9F0(u8 *o) {
-    VObject *tc = D_0044E4E8, *r, *vram, *cam;
+    VObject *tc = D_0044E4E8, *cam;
     f32 world[4][4] __attribute__((aligned(16)));
     f32 view[4][4] __attribute__((aligned(16)));
-    f32 clip[4][4] __attribute__((aligned(16)));
     f32 rel[4][4] __attribute__((aligned(16)));
     f32 extra[4][4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
     f32 trans[4] __attribute__((aligned(16)));
     f32 rot[4] __attribute__((aligned(16)));
-    s32 slot, curTex, count, n, nv, tex;
-    u8 *texh, *model, *part, *uv, *col, *pos, *flags;
-    u64 *q;
+    s32 count, n;
+    u8 *texh, *model, *part;
 
-    slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, 2, 0x10);
-    if (slot == -1) {
+    if (VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, 2, 0x10) == -1) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    if (slot & 0x80000000) {
-        slot &= 0x7FFFFFFF;
-        if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, texh, -1)) {
-            return 0;
-        }
-    }
-    r = D_0044E4F0;
-    q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 1);
-    if (q == NULL) {
-        return 0;
-    }
-    q[0] = DMA_ADDR(D_003AC3F0) | 0x50000000;   /* DMA call: the microprogram */
-    AT(q, 0x8, u32) = 0x01000101;                /* STCYCL 1, 1 */
-    AT(q, 0xC, u32) = 0;
-    q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 4);
-    if (q == NULL) {
-        return 0;
-    }
-    q[0] = 0x10000003;
-    AT(q, 0x8, u32) = 0;
-    AT(q, 0xC, u32) = 0x50000003;                /* DIRECT 3 */
-    q[2] = 0x8002 | (0x10000000ULL << 32);
-    q[3] = 0xE;
-    vram = D_0044E9A0;
-    q[4] = VCALL(vram, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(vram, slot, AT(texh, 4, u16), AT(texh, 6, u16), texh[1]);
-    q[5] = GS_TEX0_1;
-    q[6] = 0x5C;                                 /* PRIM: triangle strip, Gouraud, textured, blended */
-    q[7] = GS_PRIM;
-    curTex = -1;
     model = VCALL(D_0044E978, 0x1C, u8 *(*)(VObject *))(D_0044E978);
     if (AT(model, 0x0, s32) <= 0) {
         return 1;
@@ -179,12 +195,9 @@ s32 func_0033D9F0(u8 *o) {
     }
     cam = D_0044E4B8;
     do {
+        u8 *next;
+
         count--;
-        uv = part + AT(part, 0x10, s32);
-        col = part + AT(part, 0x14, s32);
-        pos = part + AT(part, 0x18, s32);
-        nv = AT(part, 0x0, s32);
-        flags = part + AT(part, 0x1C, s32);
         if (n == 0) {
             sceVu0CopyVector(rot, (f32 *)(o + 0x20));
             sceVu0UnitMatrix(m);
@@ -207,93 +220,15 @@ s32 func_0033D9F0(u8 *o) {
         }
         n++;
         if (AT(o, 0x70, s32) != 0 && count != 0) {
-            flags += nv;
+            next = part + AT(part, 0x1C, s32) + AT(part, 0x0, s32);   /* (only the last part drawn) */
         } else {
             sceVu0TransMatrix(world, m, trans);
-            tex = AT(part, 0x4, s32);
-            if (curTex != tex) {
-                curTex = tex;
-                q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 3);
-                if (q == NULL) {
-                    return 0;
-                }
-                q[0] = 0x10000002;
-                AT(q, 0x8, u32) = 0;
-                AT(q, 0xC, u32) = 0x50000002;
-                q[2] = 0x8001 | (0x10000000ULL << 32);
-                q[3] = 0xE;
-                q[4] = VCALL(vram, 0x34, u64 (*)(VObject *, s32, s32, s32, s32))(vram, slot, tex, texh[0], texh[1]);
-                q[5] = 0x16;                     /* TEX2_1 */
-            }
             VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, view);
             sceVu0MulMatrix(view, view, world);
-            VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, clip);
-            sceVu0MulMatrix(clip, clip, world);
-            q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 0xA);
-            if (q == NULL) {
-                return 0;
-            }
-            q[0] = 0x10000008;
-            AT(q, 0x8, u32) = 0x01000101;
-            AT(q, 0xC, u32) = 0x6C088000;            /* UNPACK V4-32 x 8 to 0 (+TOPS) */
-            sceVu0CopyMatrix((void *)(q + 2), clip);
-            sceVu0CopyMatrix((void *)(q + 10), view);
-            q[18] = 0x10000000;
-            AT(q, 0x98, u32) = 0x14000000;           /* MSCAL 0 */
-            AT(q, 0x9C, u32) = 0;
-            q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 2);
-            if (q == NULL) {
-                return 0;
-            }
-            q[0] = DMA_ADDR(part + 0x20) | 0x30000001;   /* ref: the position base */
-            AT(q, 0x8, u32) = 0x01000103;            /* STCYCL 3, 1 */
-            AT(q, 0xC, u32) = 0x30000000;            /* STROW (the referenced quadword) */
-            q[2] = 0x10000000;
-            AT(q, 0x18, u32) = 0x20000000;           /* STMASK */
-            AT(q, 0x1C, u32) = 0x3F;                 /*   x y z kept, w from the data */
-            while (nv > 0) {
-                s32 k = nv < 0x40 ? nv : 0x40;
-                u32 qwFlags = (k + 15) >> 4, qw4 = (k * 4 + 15) >> 4, qw6 = (k * 6 + 15) >> 4;
-
-                q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 7);
-                if (q == NULL) {
-                    return 0;
-                }
-                q[0] = 0x10000001;
-                AT(q, 0x8, u32) = 0;
-                AT(q, 0xC, u32) = 0x6C018000;        /* UNPACK V4-32 x 1 to 0: */
-                q[2] = (u64)(s64)k | 0x8000 | (0x30000000ULL << 32);   /* the GIF tag: k x (ST RGBAQ XYZ2), EOP */
-                q[3] = 0x512;
-                q[4] = (u64)(qw4 | 0x30000000) | DMA_ADDR(uv);
-                AT(q, 0x28, u32) = 0;
-                AT(q, 0x2C, u32) = (k << 16) | 0x6500C001;   /* UNPACK V2-16 unsigned to 1 */
-                uv += k * 4;
-                q[6] = (u64)(qw4 | 0x30000000) | DMA_ADDR(col);
-                AT(q, 0x38, u32) = 0;
-                AT(q, 0x3C, u32) = (k << 16) | 0x6E00C002;   /* UNPACK V4-8 unsigned to 2 */
-                col += k * 4;
-                q[8] = (u64)(qw6 | 0x30000000) | DMA_ADDR(pos);
-                AT(q, 0x48, u32) = 0x05000002;               /* STMOD difference */
-                AT(q, 0x4C, u32) = (k << 16) | 0x69008003;   /* UNPACK V3-16 to 3 */
-                pos += k * 6;
-                q[10] = (u64)(qwFlags | 0x30000000) | DMA_ADDR(flags);
-                AT(q, 0x58, u32) = 0x05000000;               /* STMOD normal */
-                AT(q, 0x5C, u32) = (k << 16) | 0x72008003;   /* UNPACK S-8 masked to 3 */
-                flags += k;
-                q[12] = 0x10000000;
-                AT(q, 0x68, u32) = 0x17000000;               /* MSCNT */
-                AT(q, 0x6C, u32) = 0;
-                nv -= 0x40;
-            }
-            q = VCALL(r, 0x14, u64 *(*)(VObject *, s32))(r, 1);
-            if (q == NULL) {
-                return 0;
-            }
-            q[0] = 0x10000000;
-            AT(q, 0x8, u32) = 0x13000000;                    /* FLUSHA */
-            AT(q, 0xC, u32) = 0;
+            next = gl_gfm_part(part, view, texh, AT(part, 0x4, s32));
         }
-        part = (u8 *)(((u32)flags + 15) & ~15u);
+        part = (u8 *)(((uintptr_t)next + 15) & ~(uintptr_t)15);
     } while (count != 0);
     return 1;
 }
+#endif

@@ -2237,7 +2237,6 @@ src/game/quat.c func_0025C6F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B10000
 src/game/quat.c func_0025C770 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
 src/game/camera.c func_001225F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x4=0..0 --pre=a0+0x14=0x3F000000..0x3F800000 --stub-fret=0.5 --pre=a0+0x40=0x3F000000..0x40000000 --pre=a0+0x50=0x40800000..0x41000000
 src/game/camera.c func_001225F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x4=0x3F000000..0x3F800000 --pre=a0+0x14=0x3F000000..0x3F800000 --stub-fret=0.5 --pre=a0+0x40=0x3F000000..0x40000000 --pre=a0+0x50=0x40800000..0x41000000
-src/game/loading.c func_0033D9F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0..1 --stub-ret=0x0B500000 --stub-ret-prob=1 --pre=@0x0B500000=bytes:0000000000000000000000000000000000000000000000000000000000000000
 src/game/renderer.c func_001B1E50 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B400000 --stub-ret=0 --runs=30
 src/game/overlay.c func_0026B180 --pre=a0=0x0B000000..0x0B000000
 src/game/renderer.c func_001B9810 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
