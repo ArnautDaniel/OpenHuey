@@ -3156,3 +3156,103 @@ u32 func_00325EC0(Character *c, f32 dist) {
     }
     return AT(k, 0x20, u32);
 }
+
+extern s32 func_001274E0(Character *c, f32 step);
+extern f32 func_001244D0(Actor *a, const f32 *p);
+
+/* how far c must still turn to face heading `h` (both ways the same) */
+#define CR19_TURN_LEFT(c, h) \
+    (func_002E2D00((h) - (c)->a.angle[1]) <= 0.0f ? -func_002E2D00((h) - (c)->a.angle[1]) : func_002E2D00((h) - (c)->a.angle[1]))
+
+/* its approach, by step +0x6C: 0 stop (`dist` kept, +0x1C); 1 a target near Fiona (once the
+   path is done; none: try 1 further); 2 turn to it (within 30 degrees); 3 walk the path there
+   (a fresh path when the last is done; none: back to 1) - when Fiona is caught (+0x1AD630)
+   and it touches the first character, state 3 unless held (+0x6B bit 0x80) or she is in move
+   8; 4 turn to Fiona, and at the end of its animation settle in state 0 or 1 (random), move 2 */
+void func_00326130(Character *c, f32 dist) {
+    u8 *k = CR(c);
+    f32 h;
+
+    switch (AT(k, 0x6C, u8)) {
+    case 0:
+        AT(k, 0x6C, u8)++;
+        func_00127060(c);
+        AT(k, 0x64, u8) = 0;
+        c->unk124 = c->unk128;
+        AT(k, 0x1C, f32) = dist;
+        return;
+    case 1:
+        AT(k, 0x6C, u8)++;
+        if (c->unk128 < c->unk124) {
+            return;
+        }
+        if (func_00325EC0(c, AT(k, 0x1C, f32)) != NAV_NONE) {
+            return;
+        }
+        AT(k, 0x6C, u8) = 1;
+        AT(k, 0x1C, f32) = AT(k, 0x1C, f32) + 1.0f;
+        return;
+    case 2:
+        h = func_001244D0(&c->a, (f32 *)(k + 0x30));
+        if (CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f /* 30 degrees */) {
+            AT(k, 0x6C, u8)++;
+        } else {
+            func_0032B080(c, (f32 *)(k + 0x30));
+        }
+        return;
+    case 3:
+        if (AT(k, 0x20, s32) == -1) {
+            AT(k, 0x6C, u8) = 1;
+            return;
+        }
+        if (AT(gCharPlayer, 0x1AD630, u8) == 1) {
+            Character *o = gCharacters[0];
+            f32 d[4] __attribute__((aligned(16)));
+            u8 hit = 0;
+
+            sceVu0SubVector(d, o->a.pos, c->a.pos);
+            if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < c->a.radius + o->a.radius) {
+                func_00127060(c);
+                AT(k, 0x64, u8) = 0;
+                hit = 1;
+                c->unk124 = c->unk128;
+            }
+            if (hit == 1 && AT(k, 0x69, u8) != 3 && !(AT(k, 0x6B, u8) & 0x80) && AT(gCharPlayer, 0xF8, s32) != 8) {
+                AT(k, 0x69, u8) = 3;
+                AT(c, 0xF8, s32) = 0;
+                func_00127060(c);
+                cr19_settle(c);
+                return;
+            }
+        }
+        if (!(c->unk128 < c->unk124)) {
+            if (func_003255C0(c, AT(k, 0x20, u32), (f32 *)(k + 0x30), 0) != 0) {
+                AT(k, 0x6C, u8) = 1;
+                return;
+            }
+        }
+        if (func_001274E0(c, cr19_stride(c)) == 0) {
+            AT(k, 0x6C, u8)++;
+        }
+        return;
+    case 4:
+        h = func_001244D0(&c->a, gCharPlayer->a.pos);
+        if (!(CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f)) {
+            func_0032B080(c, gCharPlayer->a.pos);
+            return;
+        }
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
+            s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+
+            if (r == 0) {
+                AT(k, 0x69, u8) = 1;
+            } else if (r == 1) {
+                AT(k, 0x69, u8) = 0;
+            }
+            AT(c, 0xF8, s32) = 2;
+            func_00127060(c);
+            cr19_settle(c);
+        }
+        return;
+    }
+}
