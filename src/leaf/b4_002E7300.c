@@ -88,3 +88,29 @@ void *func_002E7980(void *self, s32 i) { return D_00419D78[i]; }
 void *func_002E79A0(void) { return D_00419DA8; }
 
 void *func_002E79B0(void *self, s32 i) { return D_0047AC88[i]; }
+
+/* (as func_002E7880) last frame's noise requests (gProgress +0x10D4) of kind 0xD8 / 0xD7 and
+   loudness 0x20 or more */
+s32 func_0036FC90(void) {
+    u8 *e = gProgress + 0x10D4;
+    s32 i;
+
+    for (i = 0; i < 4; i++, e += 16) {
+        if (F(e, 0x4, s32) == 0xD8 && e[0] >= 0x20) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+s32 func_0036F8D0(void) {
+    u8 *e = gProgress + 0x10D4;
+    s32 i;
+
+    for (i = 0; i < 4; i++, e += 16) {
+        if (F(e, 0x4, s32) == 0xD7 && e[0] >= 0x20) {
+            return 1;
+        }
+    }
+    return 0;
+}

@@ -223,3 +223,19 @@ void func_0035AE90(u8 *p) {
 
 void *func_0035AF20(void) { return D_00443E60; }
 void *func_0035AF30(void *self, s32 i) { return D_0047AFC8[i]; }
+
+extern u8 D_00463220[], D_00463240[], D_00463260[], D_00463280[], D_004632A0[], D_004632C0[], D_004632E0[];
+
+/* (as func_00353EF0) */
+void *func_0035B060(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00463220;
+    case 1: return D_00463240;
+    case 2: return D_00463260;
+    case 3: return D_00463280;
+    case 4: return D_004632A0;
+    case 5: return D_004632C0;
+    case 6: return D_004632E0;
+    }
+    return NULL;
+}

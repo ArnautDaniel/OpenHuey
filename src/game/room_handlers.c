@@ -2648,8 +2648,8 @@ static inline __attribute__((always_inline)) void var0_frame(u8 *o, u32 v, u32 l
 
 /* the room object D_003FA078's animation by event var 0 (byte 3 picks the range: 0 back over
  * 43..54, 1 / 2 / 5 forward over 12..21, 16..28, 11..18; 3 / 4 back at 0 / 1), +0x7C kept 0..1 */
-s32 func_002AC790(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FA078);
+static inline s32 var0_obj_anim(const char *name, u8 *cmd) {
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
     u32 v;
 
     if (o == NULL) {
@@ -2683,6 +2683,10 @@ s32 func_002AC790(void *self, void *a1, u8 *cmd) {
         AT(o, 0x7C, f32) = 0.0f;
     }
     return 1;
+}
+
+s32 func_002AC790(void *self, void *a1, u8 *cmd) {
+    return var0_obj_anim(D_003FA078, cmd);
 }
 
 extern const char *D_00410F38[];   /* the three dials' object names */
@@ -5252,4 +5256,11 @@ s32 func_00310640(void *self, void *a1, u8 *cmd) {
     }
     func_0016CD30(gProgress);
     return 1;
+}
+
+extern const char *D_0047B0FC;   /* a room object's name */
+
+/* (as func_002AC790) the same for the room object D_0047B0FC */
+s32 func_00379F00(void *self, void *a1, u8 *cmd) {
+    return var0_obj_anim(D_0047B0FC, cmd);
 }
