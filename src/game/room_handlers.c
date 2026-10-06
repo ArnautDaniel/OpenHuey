@@ -6802,3 +6802,67 @@ s32 func_00342BC0(void) {
     func_002D6090(D_0044E578, Effect_New(D_0044E578, 0xE60, effect_79F30_init), t);
     return 1;
 }
+
+/* up to 6 things out (script variable 6 counts them): 1..3 more placed things of kind 9 (+0x8),
+ * each tied to the first room object 10..15 flagged (+0 = 1) (+0x122 its index), set up (+0xC,
+ * +0x28 on) and dropped at a random spot 40..50 out and 25..40 up in any direction that lands on
+ * the nav mesh (+0x3C) */
+s32 func_00342E80(void) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    VObject *ev = D_0044E4D0, *rnd, *list, *objs, *nav;
+    s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
+    s32 cnt, i;
+
+    if (n >= 6) {
+        return 1;
+    }
+    rnd = D_0044E550;
+    cnt = (s32)(3.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd)) + 1;
+    if (6 - n < cnt) {
+        cnt = 6 - n;
+    }
+    list = D_0044F260;
+    objs = D_00456DF8;
+    nav = (VObject *)D_0044E570;
+    for (i = 0; i < cnt; i++) {
+        u8 *t = VCALL(list, 0x8, u8 *(*)(VObject *, s32))(list, 9);
+        s32 k, tri;
+        f32 off[4] __attribute__((aligned(16)));
+        f32 p[4] __attribute__((aligned(16)));
+        f32 m[4][4] __attribute__((aligned(16)));
+
+        if (t == NULL) {
+            continue;
+        }
+        n++;
+        for (k = 10; k < 16; k++) {
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D48[k - 10]);
+
+            if (o[0] == 1) {
+                break;
+            }
+        }
+        AT(t, 0x122, s16) = k - 10;
+        VCALL((VObject *)t, 0xC, void (*)(VObject *))((VObject *)t);
+        AT(t, 0x28, u8) = 1;
+        do {
+            f32 r, ang;
+
+            r = VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);
+            off[0] = 0.0f;
+            ang = kPi.f - 2.0f * (kPi.f * r);
+            off[1] = 40.0f + 10.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);
+            r = VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);
+            off[3] = 0.0f;
+            off[2] = 25.0f + 15.0f * r;
+            sceVu0UnitMatrix(m);
+            sceVu0RotMatrixY(m, m, ang);
+            sceVu0ApplyMatrix(p, m, off);
+            tri = VCALL(nav, 0x3C, s32 (*)(VObject *, f32 *, s32))(nav, p, 0);
+        } while (tri == -1);
+        AT(t, 0x34, s32) = tri;
+        sceVu0CopyVector((f32 *)(t + 0x10), p);
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, n);
+    return 1;
+}
