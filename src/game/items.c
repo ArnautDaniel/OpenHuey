@@ -427,6 +427,78 @@ void func_002607A0(u8 *items, u8 l, u8 i) {
     }
 }
 
+/* item `i` of list `l`'s equipment: -1 its kind has no slot (or no item), 0 the slot is empty,
+ * 1 it is the one equipped, 2 another is */
+s32 func_002606E0(u8 *items, u8 l, u8 i) {
+    VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+    VObject *eq;
+
+    if (k < 0) {
+        return -1;
+    }
+    eq = AT(items, 0x15E0 + k * 4, VObject *);
+    if (eq == NULL) {
+        return 0;
+    }
+    return eq == *e ? 1 : 2;
+}
+
+extern void *D_0046C790[];   /* a pool entry */
+
+/* item `it` taken out: off any equipment slot, out of its list (the rest moved up), destroyed
+ * back to a bare pool entry and returned to the pool (+0x1208 vtable +0x14) */
+void func_002608D0(u8 *items, VObject *it) {
+    u32 g, i;
+    s32 found;
+
+    if (it == NULL) {
+        return;
+    }
+    for (i = 0; i < 4; i++) {
+        if (AT(items, 0x15E0 + i * 4, VObject *) == it) {
+            AT(items, 0x15E0 + i * 4, VObject *) = NULL;
+        }
+    }
+    for (g = 0; g < 3; g++) {
+        found = 0;
+        for (i = 0; i < 0x40; i++) {
+            if (AT(items, 0x12E0 + g * 0x100 + i * 4, VObject *) == it) {
+                found = 1;
+                break;
+            }
+        }
+        if (found) {
+            break;
+        }
+    }
+    if (i < 0x40) {
+        u8 *grp = items + g * 0x100;
+
+        for (; i < 0x3F; i++) {
+            VObject *next = AT(grp, 0x12E0 + (i + 1) * 4, VObject *);
+
+            if (next == NULL) {
+                break;
+            }
+            AT(grp, 0x12E0 + i * 4, VObject *) = next;
+        }
+        AT(grp, 0x12E0 + i * 4, VObject *) = NULL;
+    }
+    VCALL(it, 0x8, void (*)(VObject *, s32))(it, 1);
+    {
+        u8 *b = func_0025FF00(0x18, it);
+
+        if (b != NULL) {
+            AT(b, 0x0, void **) = D_0046C790;
+            AT(b, 0x4, s32) = -1;
+            AT(b, 0x8, u8) = 0;
+            AT(b, 0x10, u64) = 0;
+        }
+    }
+    VCALL(items + 0x1208, 0x14, void (*)(void *, VObject *))(items + 0x1208, it);
+}
+
 extern void func_002608D0(u8 *items, VObject *it);   /* an item taken out of the lists */
 
 /* one of item `it` used: a counted one (+0x18 1) with 2 or more (+0x34) loses one (+0x30), else
@@ -461,6 +533,52 @@ void func_00260B00(u8 *items, u8 l, u8 i) {
 
     if (it != NULL) {
         item_use_one_at(items, l, i, it);
+    }
+}
+
+/* item `i` of list `l` used (vtable +0x3C, its result returned); when that gives bit 0 or 1,
+ * one of it is spent */
+u32 func_00260DD0(u8 *items, u8 l, u8 i) {
+    VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+    u32 r = 0;
+
+    if (*e != NULL) {
+        r = VCALL(*e, 0x3C, u32 (*)(VObject *))(*e) & 0xFF;
+        if ((r & 3) && *e != NULL) {
+            item_use_one(items, *e);
+        }
+    }
+    return r;
+}
+
+/* list `l` sorted by vtable +0x1C (a bubble sort up to its first empty place) */
+void func_0025FF80(u8 *items, u8 l) {
+    u8 *grp = items + l * 0x100;
+    u32 n, pass, j;
+
+    for (n = 0; n < 0x40; n++) {
+        if (AT(grp, 0x12E0 + n * 4, VObject *) == NULL) {
+            break;
+        }
+    }
+    if (n == 0) {
+        return;
+    }
+    for (pass = 0; pass < n - 1; pass++) {
+        u32 lim = n - 1 - pass;
+
+        for (j = 0; j < lim; j++) {
+            VObject **s = &AT(grp, 0x12E0 + j * 4, VObject *);
+            u32 a = VCALL(s[0], 0x1C, u32 (*)(VObject *))(s[0]);
+            u32 b = VCALL(s[1], 0x1C, u32 (*)(VObject *))(s[1]);
+
+            if (b < a) {
+                VObject *t = s[0];
+
+                s[0] = s[1];
+                s[1] = t;
+            }
+        }
     }
 }
 
