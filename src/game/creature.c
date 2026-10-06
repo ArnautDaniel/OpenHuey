@@ -2436,9 +2436,9 @@ void func_003142F0(u8 *o, s32 *arg) {
     }
 }
 
-/* +0x14 draw (unless the effects are paused): the droplets, and on the first frame a white
- * flash (2 x 2) at the point */
-void func_003145A0(u8 *o) {
+/* the droplets drawn (unless the effects are paused), and on the first frame a flash (2 x 2) of
+ * colour r, g, b at the point */
+static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
     if (func_002D6010(D_0044E578) != 0) {
         return;
     }
@@ -2448,9 +2448,9 @@ void func_003145A0(u8 *o) {
         QuadDrawer q __attribute__((aligned(16)));
         QuadRec r __attribute__((aligned(16)));
 
-        r.rgba[0] = 0xC0;
-        r.rgba[1] = 0xC0;
-        r.rgba[2] = 0xC0;
+        r.rgba[0] = cr;
+        r.rgba[1] = cg;
+        r.rgba[2] = cb;
         r.rgba[3] = 0x80;
         sceVu0CopyVector(r.pos, (f32 *)(o + 0xC50));
         r.w = 2.0f;
@@ -2481,6 +2481,11 @@ void func_003145A0(u8 *o) {
         AT(o, 0xC5C, f32) = 0.0f;
         q.vtbl = D_00469D00;
     }
+}
+
+/* +0x14 draw: the droplets, a white flash on the first frame */
+void func_003145A0(u8 *o) {
+    drops_draw(o, 0xC0, 0xC0, 0xC0);
 }
 
 /* +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
@@ -2543,6 +2548,58 @@ u8 *func_0031E890(u8 *o, s32 flags) {
         func_002D63B0(o);
     }
     return o;
+}
+
+/* (class D_0047A710, as func_003142F0)  +0x18 start (arg: colour 0..127 x3, position): every
+ * droplet at the point in the colour, a random alpha and size (0.2..0.6), flung out at random
+ * (slower the bigger, three times as fast upwards) and pulled back by 20..50% of its speed */
+void func_0037BF10(u8 *o, s32 *arg) {
+    static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD},
+                                         kThreeTenths = {0x3E99999A};
+    VObject *rnd;
+    s32 r, g, b, i;
+
+    if (arg == NULL) {
+        return;
+    }
+    r = clamp_colour(arg[0]);
+    g = clamp_colour(arg[1]);
+    b = clamp_colour(arg[2]);
+    rnd = D_0044E550;
+    AT(o, 0xC50, f32) = ((f32 *)arg)[3];
+    AT(o, 0xC54, f32) = ((f32 *)arg)[4];
+    AT(o, 0xC58, f32) = ((f32 *)arg)[5];
+    AT(o, 0xC5C, f32) = 1.0f;
+    for (i = 0; i < 32; i++) {
+        QuadRec *q = DROP_REC(o, AT(o, 0xF60, s32), i);
+        f32 *v = DROP_VEL(o, i);
+        f32 *p = DROP_PULL(o, i);
+        f32 speed, k;
+
+        q->rgba[0] = r;
+        q->rgba[1] = g;
+        q->rgba[2] = b;
+        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x1F) + 0x60;
+        sceVu0CopyVector(q->pos, (f32 *)(o + 0xC50));
+        q->w = 0.0f + kFifth.f + kTwoFifths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        q->h = q->w;
+        q->turn = 0.0f;
+        q->frame = 0;
+        speed = 0.0f + 8.0f - 10.0f * q->w;
+        v[0] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        v[1] = 3.0f * speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        v[2] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        k = 0.0f + kFifth.f + kThreeTenths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        p[0] = -(v[0] * k);
+        p[1] = -(v[1] * k);
+        p[2] = -(v[2] * k);
+    }
+}
+
+/* (class D_0047A710)  +0x14 draw: the droplets, a reddish flash (0x80, 0x50, 0x40) on the first
+ * frame */
+void func_0037C1B0(u8 *o) {
+    drops_draw(o, 0x80, 0x50, 0x40);
 }
 
 /* (as func_00314700)  +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
