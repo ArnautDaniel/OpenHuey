@@ -1,4 +1,4 @@
-/* The item manager (D_0044E988): Fiona's inventory and equipment. */
+/* The item manager (gItems): Fiona's inventory and equipment. */
 #include "common.h"
 #include "game.h"
 

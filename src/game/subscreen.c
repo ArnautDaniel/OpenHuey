@@ -15,11 +15,11 @@
 
 
 extern VObject *gFileLoader;
-extern u8 *D_0044E978;          /* the system data; +0x30 the options */
-extern VObject *D_0044E7A8;     /* the pad actuator (vibration) */
+extern u8 *gSystemData;          /* the system data; +0x30 the options */
+extern VObject *gScreenFade;     /* the pad actuator (vibration) */
 extern VObject *D_00456DF0;
-extern void *D_0044E958;        /* the movie playing */
-extern void *D_0044E980;        /* the ADX sound system (music) */
+extern void *gMovie;        /* the movie playing */
+extern void *gAdx;        /* the ADX sound system (music) */
 extern void *D_0046C790[];      /* a pool entry */
 extern void func_002B6340(void *movie);   /* apply the movie volume */
 extern void func_002D1FD0(void *bgm);     /* apply the music volume */
@@ -99,8 +99,8 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
     if (D_00456DF0 != NULL) {
         VCALL(D_00456DF0, 0x20, void (*)(VObject *, f32))(D_00456DF0, vol);
     }
-    if (D_0044E958 != NULL) {
-        f32 *v = &AT(D_0044E958, 0x1D0, f32);
+    if (gMovie != NULL) {
+        f32 *v = &AT(gMovie, 0x1D0, f32);
 
         *v = vol;
         if (vol < 0.0f) {
@@ -109,10 +109,10 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002B6340(D_0044E958);
+        func_002B6340(gMovie);
     }
-    if (D_0044E980 != NULL) {
-        f32 *v = &AT(D_0044E980, 0x11C, f32);
+    if (gAdx != NULL) {
+        f32 *v = &AT(gAdx, 0x11C, f32);
 
         *v = vol;
         if (vol < 0.0f) {
@@ -121,29 +121,29 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002D1FD0(D_0044E980);
+        func_002D1FD0(gAdx);
     }
 }
 
 /* apply the options: controller layout, vibration, sound output, volume, screen position */
 void SubScreen_ApplyOptions(VObject *s) {
-    u8 *opt = D_0044E978 + 0x30;
+    u8 *opt = gSystemData + 0x30;
     VObject *o;
     f32 vol;
 
     VCALL(s, 0x34, void (*)(VObject *, s32))(s, (s8)opt[6]);
-    o = D_0044E7A8;
+    o = gScreenFade;
     VCALL(o, 0x10, void (*)(VObject *))(o);
     if ((s8)opt[4] == 1) {
         VCALL(o, 0x28, void (*)(VObject *, s32))(o, 1);
     } else {
         VCALL(o, 0x28, void (*)(VObject *, s32))(o, 0);
     }
-    o = D_0044E560;
+    o = gSound;
     VCALL(o, 0x68, void (*)(VObject *, s32))(o, (s8)opt[0]);
     vol = *(f32 *)(opt + 8);
     opt_apply_volume(o, vol);
-    VCALL(D_0044E4F0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4F0, (s8)opt[2], (s8)opt[3]);
+    VCALL(gRenderer, 0x30, void (*)(VObject *, s32, s32))(gRenderer, (s8)opt[2], (s8)opt[3]);
 }
 
 extern u16 D_0044B5E0[][6][2];   /* per controller layout: 6 x (button, its name's message) */
@@ -206,16 +206,16 @@ static void sub_load(SubScreen *s, const char *name, void *dst) {
 }
 
 static void sub_free_vram(void) {
-    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+    VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
 }
 
 static void sub_se(void) {
-    Sound_Play(D_0044E560, SE_OPEN, SE_BANK_MENU);
+    Sound_Play(gSound, SE_OPEN, SE_BANK_MENU);
 }
 
 /* the options being edited: a copy of the system data's */
 static void sub_copy_options(SubScreen *s) {
-    u8 *sys = D_0044E978;
+    u8 *sys = gSystemData;
     s32 i;
 
     for (i = 0; i < 7; i++) {
@@ -346,7 +346,7 @@ void SubScreen_Open(SubScreen *s) {
         s->page[1] = 1;
         s->page[2] = 2;
         n = 3;
-        sys = D_0044E978;
+        sys = gSystemData;
         if ((AT(sys, 0x2C, u32) & 0x40000) != 0) {
             s->page[3] = 3;
             n++;
@@ -441,7 +441,7 @@ void SubScreen_DrawLoadWait(SubScreen *s) {
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) == 2) {
         return;
     }
-    tc = D_0044E4E8;
+    tc = gTexCache;
     VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->baseTex, 0x18);
     VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->pageTex, 0x19);
     SubScreen_Open(s);
@@ -455,7 +455,7 @@ extern void func_002CF390(void *ov, u32 rgba);
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
 
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *gVram;   /* the VRAM manager */
 
 /* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
 extern u16 D_0044C160[][7];
@@ -517,7 +517,7 @@ static void sub_draw_fade(SubScreen *s) {
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         func_002CF390(ov, (u32)s->fade << 24);
-        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
         u8 alpha = s->fade;
@@ -540,8 +540,8 @@ static void sub_draw_fade(SubScreen *s) {
 static void sub_set_volume(SubScreen *s, f32 vol) {
     u8 *bgm;
 
-    VCALL(D_0044E560, 0x94, void (*)(VObject *, s32))(D_0044E560, (u8)(0xFF - s->fade));
-    bgm = D_0044E980;
+    VCALL(gSound, 0x94, void (*)(VObject *, s32))(gSound, (u8)(0xFF - s->fade));
+    bgm = gAdx;
     AT(bgm, 0x114, f32) = vol;
     if (vol < 0.0f) {
         AT(bgm, 0x114, f32) = 0.0f;
@@ -568,7 +568,7 @@ void SubScreen_DrawFadeIn(SubScreen *s) {
             || VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
             VCALL((VObject *)s, 0x28, void (*)(VObject *))((VObject *)s);
             if (s->mode != 0) {
-                VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+                VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
             }
             D_0047B350 = 2;
             s->fadeStep = -0x20;
@@ -810,7 +810,7 @@ void SubScreen_DrawRun(SubScreen *s) {
     }
 }
 
-extern VObject *D_0044E4F8;
+extern VObject *gCamDirector;
 void SubScreen_DrawFadeBack(SubScreen *s);
 
 /* draw state: fade back to black over the screen; at black restore the menu's background
@@ -833,7 +833,7 @@ void SubScreen_DrawFadeOut(SubScreen *s) {
         s->fadeStep = -0x10;
         mode = s->mode;
         if (mode == 0xB || mode == 8 || (u32)(mode - 0xD) < 3) {
-            VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
+            VCALL(gCamDirector, 0x30, void (*)(VObject *, s32))(gCamDirector, 0);
         }
         if (s->mode == 8) {
             s->fade = 0;
@@ -859,7 +859,7 @@ void SubScreen_DrawFadeBack(SubScreen *s) {
     }
     if (s->fade < 0) {
         s->fade = 0;
-        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+        VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
         ptmf_set_fn(&s->draw, SubScreen_Open);
         if (gProgress != NULL) {
             Progress_SetFlag(gProgress, 4);
@@ -928,7 +928,7 @@ static void opt_back(SubScreen *s, s32 se) {
 /* editing the controller layout (4 types): left / right choose, confirm applies it, cancel
  * (or the in-game menu button) restores it */
 void Options_StateLayout(SubScreen *s) {
-    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    s8 *opt = (s8 *)gSystemData + 0x30;
 
     if (!s->fading) {
         if (D_0047E36C & MENU_LEFT) {
@@ -963,12 +963,12 @@ void Options_StateLayout(SubScreen *s) {
 
 /* editing the vibration: left / right toggle it (turning it on buzzes the pad) */
 void Options_StateVibration(SubScreen *s) {
-    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    s8 *opt = (s8 *)gSystemData + 0x30;
     VObject *o;
 
     if (!s->fading) {
         if ((D_0047E36C & MENU_LEFT) || (D_0047E36C & MENU_RIGHT)) {
-            o = D_0044E7A8;
+            o = gScreenFade;
             if (s->opt[4] == 1) {
                 s->opt[4] = 0;
                 VCALL(o, 0x10, void (*)(VObject *))(o);
@@ -983,13 +983,13 @@ void Options_StateVibration(SubScreen *s) {
             Sound_PlaySE(SE_CURSOR);
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            o = D_0044E7A8;
+            o = gScreenFade;
             opt[4] = s->opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
-            o = D_0044E7A8;
+            o = gScreenFade;
             s->opt[4] = opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
@@ -1004,16 +1004,16 @@ void Options_StateVibration(SubScreen *s) {
 
 /* editing the sound output: left / right cycle it (heard at once) */
 void Options_StateSound(SubScreen *s) {
-    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    s8 *opt = (s8 *)gSystemData + 0x30;
 
     if (!s->fading) {
         if (D_0047E36C & MENU_LEFT) {
             s->opt[0] = s->opt[0] == 0 ? 2 : s->opt[0] == 1 ? 0 : 1;
-            SND_OUTPUT(D_0044E560, s->opt[0]);
+            SND_OUTPUT(gSound, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
         } else if (D_0047E36C & MENU_RIGHT) {
             s->opt[0] = s->opt[0] == 0 ? 1 : s->opt[0] == 1 ? 2 : 0;
-            SND_OUTPUT(D_0044E560, s->opt[0]);
+            SND_OUTPUT(gSound, s->opt[0]);
             Sound_PlaySE(SE_CURSOR);
         }
         if (D_0047E36C & MENU_CONFIRM) {
@@ -1021,7 +1021,7 @@ void Options_StateSound(SubScreen *s) {
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
             s->opt[0] = opt[0];
-            SND_OUTPUT(D_0044E560, s->opt[0]);
+            SND_OUTPUT(gSound, s->opt[0]);
             opt_back(s, 0x2C);
         }
     }
@@ -1030,7 +1030,7 @@ void Options_StateSound(SubScreen *s) {
 
 /* editing the volume: left / right in steps of 1/64 (heard at once) */
 void Options_StateVolume(SubScreen *s) {
-    u8 *opt = (u8 *)D_0044E978 + 0x30;
+    u8 *opt = (u8 *)gSystemData + 0x30;
     VObject *snd;
     f32 v;
 
@@ -1041,7 +1041,7 @@ void Options_StateVolume(SubScreen *s) {
                 if (v < 0.0f) {
                     s->optVolume = 0.0f;
                 }
-                snd = D_0044E560;
+                snd = gSound;
                 VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, s->optVolume);
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
@@ -1051,20 +1051,20 @@ void Options_StateVolume(SubScreen *s) {
                 if (!(v < 1.0f)) {
                     s->optVolume = 1.0f;
                 }
-                snd = D_0044E560;
+                snd = gSound;
                 VCALL(snd, 0xA8, void (*)(VObject *, f32))(snd, s->optVolume);
                 Sound_Play(snd, SE_CURSOR, SE_BANK_MENU);
             }
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            snd = D_0044E560;
+            snd = gSound;
             v = s->optVolume;
             AT(opt, 8, f32) = v;
             opt_apply_volume(snd, v);
             Sound_Play(snd, SE_DECIDE, SE_BANK_MENU);
             ptmf_set_fn(&s->state, Options_StateList);
         } else if (opt_cancelled()) {
-            snd = D_0044E560;
+            snd = gSound;
             s->optVolume = AT(opt, 8, f32);
             opt_apply_volume(snd, AT(opt, 8, f32));
             Sound_Play(snd, SE_CANCEL, SE_BANK_MENU);
@@ -1074,11 +1074,11 @@ void Options_StateVolume(SubScreen *s) {
     opt_editor_draw(s, 0xE0, 0x1C0, 0x134);
 }
 
-#define SCREEN_POS(x, y) VCALL(D_0044E4F0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4F0, x, y)
+#define SCREEN_POS(x, y) VCALL(gRenderer, 0x30, void (*)(VObject *, s32, s32))(gRenderer, x, y)
 
 /* editing the screen position: the D-pad moves it (-32..32 each way, seen at once) */
 void Options_StatePosition(SubScreen *s) {
-    s8 *opt = (s8 *)D_0044E978 + 0x30;
+    s8 *opt = (s8 *)gSystemData + 0x30;
     s32 a;
 
     if (!s->fading) {
@@ -1144,7 +1144,7 @@ void Options_StateDefaults(SubScreen *s) {
         return;
     }
     if (t->answer == 0) {
-        s8 *sys = D_0044E978;
+        s8 *sys = gSystemData;
         VObject *o;
 
         sys[0x36] = 0;
@@ -1155,10 +1155,10 @@ void Options_StateDefaults(SubScreen *s) {
         sys[0x33] = 0;
         sub_copy_options(s);
         VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, sys[0x36]);
-        o = D_0044E7A8;
+        o = gScreenFade;
         VCALL(o, 0x10, void (*)(VObject *))(o);
         VIB_ENABLE(o, sys[0x34] == 1);
-        o = D_0044E560;
+        o = gSound;
         SND_OUTPUT(o, sys[0x30]);
         opt_apply_volume(o, AT(sys, 0x38, f32));
         SCREEN_POS(sys[0x32], sys[0x33]);
@@ -1629,7 +1629,7 @@ void func_003912E0(SubScreen *s) {
 
 /* is extra `k` unlocked (the system data's +0x24 / +0x2C flags) */
 s32 func_0038DF90(SubScreen *s, u8 k) {
-    u32 f24 = AT(D_0044E978, 0x24, u32), f2C;
+    u32 f24 = AT(gSystemData, 0x24, u32), f2C;
 
     switch (k) {
     case 3:
@@ -1637,18 +1637,18 @@ s32 func_0038DF90(SubScreen *s, u8 k) {
     case 5:
         return (f24 & 0x8) != 0;
     case 8:
-        f2C = AT(D_0044E978, 0x2C, u32);
+        f2C = AT(gSystemData, 0x2C, u32);
         if (!(f2C & 0x400000)) {
             return 0;
         }
         return (f24 & 0x100) || (f24 & 0x1000);
     case 10: case 12: case 14:
     case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
-        return (AT(D_0044E978, 0x2C, u32) & 0x400000) != 0;
+        return (AT(gSystemData, 0x2C, u32) & 0x400000) != 0;
     case 16: case 18: case 20: case 22:
-        return (AT(D_0044E978, 0x2C, u32) & 0x2000000) != 0;
+        return (AT(gSystemData, 0x2C, u32) & 0x2000000) != 0;
     case 15: case 17: case 19: case 21: case 23:
-        return (AT(D_0044E978, 0x2C, u32) & 0x200000) != 0;
+        return (AT(gSystemData, 0x2C, u32) & 0x200000) != 0;
     }
     return (f24 & 0x1) != 0;
 }
@@ -1665,7 +1665,7 @@ void func_00386000(SubScreen *s) {
     if (AT(&s->ask, 0x10, u8) == 0) {
         u16 *e = D_0044C080[SUB_PAGE(s, 0x0, u8)];
 
-        if ((AT(D_0044E978, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
+        if ((AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
             Task_Open(&s->ask, e[3]);
             ptmf_set(&s->state, &D_0044C0E8);
         } else {
@@ -1819,7 +1819,7 @@ s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
         if (func_00260130(s->pool) != 0) {
             return 1;
         }
-        tc = D_0044E4E8;
+        tc = gTexCache;
         VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, s->baseTex, 0x18);
         VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, (u8 *)s + 0x94F40, 0x27);
         return 0;
@@ -2011,7 +2011,7 @@ void func_00397AB0(SubScreen *s) {
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
         func_002CF390(ov, (u32)s->fade << 24);
-        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
         u8 alpha = s->fade;
@@ -2045,7 +2045,7 @@ void func_00397AB0(SubScreen *s) {
 
 /* ---- the clear results ---- */
 
-extern VObject *D_0044E4D0;   /* the events (+0x34: the play time's hours / minutes / seconds) */
+extern VObject *gEvents;   /* the events (+0x34: the play time's hours / minutes / seconds) */
 
 /* the results page set up: the ending's flag noted (system data +0x2C bit 18 / 19 by the
  * difficulty, progress var 0x2E 0 / 1; page[2] set when new), the play time (59:59 at most)
@@ -2064,26 +2064,26 @@ void func_00388D30(SubScreen *s) {
     SUB_PAGE(s, 0x5, u8) = 0x40;
     diff = Progress_GetVar(gProgress, 0x2E);
     if (diff == 0) {
-        if (!(AT(D_0044E978, 0x2C, u32) & 0x40000)) {
-            AT(D_0044E978, 0x2C, u32) |= 0x40000;
+        if (!(AT(gSystemData, 0x2C, u32) & 0x40000)) {
+            AT(gSystemData, 0x2C, u32) |= 0x40000;
             SUB_PAGE(s, 0x2, u8) = 1;
         }
     } else if (diff == 1) {
-        if (!(AT(D_0044E978, 0x2C, u32) & 0x80000)) {
-            AT(D_0044E978, 0x2C, u32) |= 0x80000;
+        if (!(AT(gSystemData, 0x2C, u32) & 0x80000)) {
+            AT(gSystemData, 0x2C, u32) |= 0x80000;
             SUB_PAGE(s, 0x2, u8) = 1;
         }
     }
-    h = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
-    m = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1);
-    sec = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 2);
+    h = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
+    m = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 1);
+    sec = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 2);
     if (h != 0) {
         m = 0x3B;
         h = 0;
         sec = 0x3B;
     }
     t = (h * 60 + m) * 60 + sec;
-    sys = D_0044E978 + diff * 12;
+    sys = gSystemData + diff * 12;
     for (i = 0; i < 3; i++) {
         u8 *e = sys + 0x3C + i * 4;
 
@@ -2127,7 +2127,7 @@ void func_00385C30(SubScreen *s) {
         s32 y = (k % 8) * 35 + 0x5E;
 
         Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
-        if (AT(D_0044E978, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
+        if (AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, e[1]), 0x80, 0x30, 0x10, 0x15);
         } else {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
@@ -2139,8 +2139,8 @@ void func_00385C30(SubScreen *s) {
 /* ---- the model gallery's model ---- */
 
 extern u8 *func_0038C160(SubScreen *s, u8 k);   /* the gallery model made */
-extern VObject *D_0044E4F8;   /* the camera director */
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamDirector;   /* the camera director */
+extern VObject *gCamera;   /* the camera */
 extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
 extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
 extern const PTMF D_0044B9C0;
@@ -2163,8 +2163,8 @@ void func_0038B900(SubScreen *s) {
     SUB_GALLERY_MODEL(s) = func_0038C160(s, SUB_PAGE(s, 0x0, u8));
     AT(SUB_GALLERY_MODEL(s), 0x4D8, u8) = 1;
     AT(SUB_GALLERY_MODEL(s), 0x4D9, u8) = 1;
-    VCALL(D_0044E4F8, 0x14, void (*)(VObject *))(D_0044E4F8);
-    cam = D_0044E4B8;
+    VCALL(gCamDirector, 0x14, void (*)(VObject *))(gCamDirector);
+    cam = gCamera;
     VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, (f32 *)((u8 *)s + 0xA8E00));
     VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, (f32 *)((u8 *)s + 0xA8E10));
     AT(s, 0xA8E20, f32) = 26.0f;
@@ -2249,7 +2249,7 @@ static void sub_fade_back(SubScreen *s) {
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
         func_002CF390(ov, (u32)s->fade << 24);
-        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
         u8 alpha = s->fade;
@@ -2267,7 +2267,7 @@ static void sub_fade_back(SubScreen *s) {
 
 /* the music's (+0x94) and the voices' (D_00456DF0 +0x44) level `f` 0..1 */
 static void sub_fade_sound(f32 f) {
-    VCALL(D_0044E560, 0x94, void (*)(VObject *, u32))(D_0044E560, (u8)(u32)(255.0f * f));
+    VCALL(gSound, 0x94, void (*)(VObject *, u32))(gSound, (u8)(u32)(255.0f * f));
     if (D_00456DF0 != NULL) {
         VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, f);
     }
@@ -2289,7 +2289,7 @@ void func_003970D0(SubScreen *s) {
         Progress_ClearFlag(p, 4);
     }
     if (s->fade == 0x40) {
-        VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+        VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
         VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, D_00464240, s->pageTex,
                                                                                    0x6000000, 0);
     }
@@ -2299,7 +2299,7 @@ void func_003970D0(SubScreen *s) {
     } else {
         s->fade = 0x80;
         if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
-            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+            VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
             if (p != NULL) {
                 ptmf_set(&s->draw, &D_0044B1F0);
                 Progress_SetFlag(gProgress, 8);
@@ -2337,7 +2337,7 @@ void func_00398100(SubScreen *s) {
         s->quietClose = 0;
         s->close = 0;
         if (s->mode == 7 || s->mode == 10) {
-            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+            VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
         }
         ptmf_set(&s->draw, &D_0044B190);
     }
@@ -2479,7 +2479,7 @@ void func_0038F7D0(SubScreen *s) {
     SUB_PAGE(s, 0x5, u8) = 8;
     SUB_PAGE(s, 0x6, u8) = 0xFF;
     SUB_PAGE(s, 0x7, u8) = 0xFF;
-    sys = D_0044E978;
+    sys = gSystemData;
     if (!(AT(sys, 0x24, u32) & 0x2)) {
         SUB_PAGE(s, 0x3, u8) |= 0x80;
     }
@@ -2549,7 +2549,7 @@ void func_00386550(SubScreen *s) {
         s32 y = (k % 8) * 35 + 0x5E;
 
         Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
-        if (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+        if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, (k + 0x190) & 0xFFFF), 0x80, 0x30, 0x10,
                           0x15);
         } else {
@@ -2636,19 +2636,19 @@ void func_0038A2E0(SubScreen *s) {
 /* ---- the music gallery ---- */
 
 extern u8 D_0044BF30[][6];   /* per track: its unlock flag (u16), title (u16), BGM number */
-extern VObject *D_0044E970;  /* the music director */
-extern void *D_0044E980;     /* the ADX player */
+extern VObject *gMusic;  /* the music director */
+extern void *gAdx;     /* the ADX player */
 extern s32 func_002D20D0(void *adx);   /* the stream is free */
 
 #define MUSIC_WANT(track, pause, restart) \
-    VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, 1.0f)
+    VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, track, pause, restart, 1.0f)
 #define SUB_MUSIC_NEXT(s) SUB_PAGE(s, 0x1, u8)      /* the track to start (0xFF none) */
 #define SUB_MUSIC_PLAYING(s) SUB_PAGE(s, 0x2, u8)   /* the track playing (0xFF none) */
 
 static inline s32 music_unlocked(u8 k) {
     u16 f = AT(D_0044BF30[k], 0x0, u16);
 
-    return (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+    return (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
 }
 
 /* the music gallery (screen kind 0x8D): the language 1, the headings, the tracks of the
@@ -2732,14 +2732,14 @@ void func_003888A0(SubScreen *s) {
             *k = (*k >> 3) < 3 ? ((*k >> 3) + 1) * 8 : 0;
             Sound_PlaySE(SE_CURSOR);
         } else if (pad & MENU_CANCEL) {
-            if (func_002D20D0(D_0044E980) == 0) {
+            if (func_002D20D0(gAdx) == 0) {
                 MUSIC_WANT(0xFF, 0, 0);
                 SUB_MUSIC_NEXT(s) = 0xFF;
             } else {
                 s->close = 1;
             }
         }
-        if (func_002D20D0(D_0044E980) != 0) {
+        if (func_002D20D0(gAdx) != 0) {
             if (SUB_MUSIC_NEXT(s) != 0xFF) {
                 MUSIC_WANT(D_0044BF30[SUB_MUSIC_NEXT(s)][4], 0, 1);
                 SUB_MUSIC_NEXT(s) = 0xFF;
@@ -2805,9 +2805,9 @@ void func_00387920(SubScreen *s) {
 
 /* ---- the model gallery's start ---- */
 
-extern VObject *D_0044E4C8;   /* the scene's lights */
-extern VObject *D_0044FE10;   /* the director */
-extern u8 *D_0044E4C0;        /* the room effects */
+extern VObject *gLights;   /* the scene's lights */
+extern VObject *gCutscene;   /* the director */
+extern u8 *gRoomEffects;        /* the room effects */
 extern u8 *func_00266C40(void *fx, s32 k);
 extern void func_002670F0(u8 *fx, s32 n);
 extern void *func_002672F0(u32 size, void *place);
@@ -2857,28 +2857,28 @@ void func_0038BC70(SubScreen *s) {
             SUB_GALLERY_MODEL(s) = NULL;
             AT(s, 0xA8DF4, u8 *) = (u8 *)p + 0x16C0;
             func_0038D620(s, SUB_PAGE(s, 0x0, u8));
-            VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+            VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
             ptmf_set(&s->state, &D_0044B9B0);
             v[0] = 55.0f;
             v[1] = 55.0f;
             v[3] = 0.0f;
             v[2] = 50.0f;
-            lights = D_0044E4C8;
+            lights = gLights;
             VCALL(lights, 0x48, void (*)(VObject *, s32, f32 *, f32))(lights, 1, v, 0.0f);
             v[0] = 65.0f;
             v[3] = 0.0f;
             v[1] = 60.0f;
             v[2] = 60.0f;
             VCALL(lights, 0x4C, void (*)(VObject *, s32, s32, f32 *, f32, f32))(lights, 0, 1, v, k15.f, k30.f);
-            VCALL(D_0044FE10, 0x7C, void (*)(VObject *, s32))(D_0044FE10, 1);
-            fx = D_0044E4C0;
+            VCALL(gCutscene, 0x7C, void (*)(VObject *, s32))(gCutscene, 1);
+            fx = gRoomEffects;
             gallery_effect_keep(fx, 0x1F, (u8 *)s + 0xA8E40);
             gallery_effect_keep(fx, 0x1D, (u8 *)s + 0xA8ED0);
             gallery_effect_keep(fx, 0x1E, (u8 *)s + 0xA8F60);
             msg[0] = msg[1] = msg[2] = msg[3] = msg[4] = msg[5] = msg[6] = msg[7] = 0;
             slot = (u8 **)(fx + 0x14B4);
             if (*slot != NULL) {
-                VCALL(D_0044E4C0 + 0x1400, 0x14, void (*)(void *, void *))(D_0044E4C0 + 0x1400, *slot);
+                VCALL(gRoomEffects + 0x1400, 0x14, void (*)(void *, void *))(gRoomEffects + 0x1400, *slot);
                 *slot = NULL;
             }
             mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
@@ -2891,7 +2891,7 @@ void func_0038BC70(SubScreen *s) {
                 *slot = e;
                 VCALL(*slot, 0xC, void (*)(void *))(*slot);
             }
-            fx = D_0044E4C0;
+            fx = gRoomEffects;
             func_00266C40(fx, 0x1F);
             func_00266C70(fx, 0x1F, msg);
         }
@@ -2931,7 +2931,7 @@ void func_00387F00(SubScreen *s) {
         if (pad & MENU_CONFIRM) {
             u16 f = D_0044BFE0[*k];
 
-            if (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+            if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
                 ptmf_set(&s->state, &D_0044C040);
                 Sound_PlaySE(SE_DECIDE);
             } else {
@@ -3018,7 +3018,7 @@ void func_00388FF0(SubScreen *s) {
     RESULTS_PART(0x110, 0x100, 3, 0x80);
     RESULTS_PART(0xC0, 0x100, 4, 0x80);
     for (i = 0; i < 3; i++) {
-        u8 *e = D_0044E978 + diff * 12 + 0x3C + i * 4;
+        u8 *e = gSystemData + diff * 12 + 0x3C + i * 4;
         u8 lit = SUB_PAGE(s, 0x3, u8) == i;
         u8 h, m, sec;
 
@@ -3201,7 +3201,7 @@ void func_003908B0(SubScreen *s) {
                         p = gProgress;
                         Progress_SetFlag(p, 4);
                         if (word_golem_room(p)) {
-                            Sound_Play(D_0044E560, 2, 6);
+                            Sound_Play(gSound, 2, 6);
                             s->quietClose = 1;
                         }
                         AT(p, 0x20, u32) |= 1;
@@ -3216,7 +3216,7 @@ void func_003908B0(SubScreen *s) {
                     SUB_WORD_CURSOR(s) = 0x27;
                 }
                 if (word_golem_room(gProgress)) {
-                    Sound_Play(D_0044E560, 0, 6);
+                    Sound_Play(gSound, 0, 6);
                 } else {
                     Sound_PlaySE(SE_DECIDE);
                 }
@@ -3287,7 +3287,7 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 /* movie `i` was seen (or everything is open) */
 static s32 movie_seen(s32 i) {
-    u32 *flags = &AT(D_0044E978, 0x24, u32);
+    u32 *flags = &AT(gSystemData, 0x24, u32);
     u8 f;
 
     if (flags[0] & 0x200000) {
@@ -3395,19 +3395,19 @@ void func_0038E0C0(SubScreen *s) {
     }
     if (s->page[0] < MOVIE_COUNT) {
         if (movie_seen(s->page[0])) {
-            VObject *tc = D_0044E4E8;
+            VObject *tc = gTexCache;
             u8 *thumbs = (u8 *)gProgress + 0x16C0;
 
             VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, thumbs + ((u32 *)thumbs)[s->page[0] + 1], 0x27);
-            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0, 0, 0x70, 0x60, 0x80808080,
+            VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0x158, 0xB0, 0x70, 0x60, 0, 0, 0x70, 0x60, 0x80808080,
                                                  0, 0x27, 0x30, -1);
             VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x27);
         } else {
-            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0x10, 0, 0x70, 0x60, 0x80808080,
+            VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0x158, 0xB0, 0x70, 0x60, 0x10, 0, 0x70, 0x60, 0x80808080,
                                                  0, 0x1B, 0x30, 1);
         }
     }
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
                                          0x30, 0);
 }
 
@@ -3430,7 +3430,7 @@ extern const CostumeText D_0044B700[9];   /* Fiona's six, then Hewie's three */
 
 /* one tile of the costume page's frames (sheet 0x19) */
 static void cost_tile(s32 x, s32 y, s32 w, s32 h, s32 u, s32 v) {
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, x, y, w, h, u, v, w, h, 0x80808080, 2, 0x19, 0x33, 1);
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, x, y, w, h, u, v, w, h, 0x80808080, 2, 0x19, 0x33, 1);
 }
 
 /* one row of a frame: its tiles' x, width and u across (`n` of them), at `y` from the
@@ -3782,7 +3782,7 @@ void func_003894F0(SubScreen *s) {
     }
     e = SUB_PAGE(s, EXTRA_CUR(s), u8);
     if (e >= 1 && e <= 4) {
-        u8 *rec = (u8 *)D_0044E978 + (e - 1) * 12;
+        u8 *rec = (u8 *)gSystemData + (e - 1) * 12;
 
         for (i = 0; i < 3; i++, rec += 4) {
             u8 m = rec[0x3C], sec = rec[0x3D], f = rec[0x3E];
@@ -3890,22 +3890,22 @@ static void gallery_leave(SubScreen *s) {
     if (m != NULL) {
         VCALL(m, 0x8, void (*)(VObject *, s32))(m, 1);
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     SUB_GALLERY_MODEL(s) = NULL;
     VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, AT(s, 0xA8E00, f32), AT(s, 0xA8E04, f32),
                                                          AT(s, 0xA8E08, f32));
     VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, AT(s, 0xA8E10, f32), AT(s, 0xA8E14, f32),
                                                          AT(s, 0xA8E18, f32));
     VCALL(cam, 0x14, void (*)(VObject *))(cam);
-    VCALL(D_0044E4F8, 0x10, void (*)(VObject *))(D_0044E4F8);
-    VCALL(D_0044E4C8, 0x48, void (*)(VObject *, s32, f32 *, f32))(D_0044E4C8, 0, NULL, 0.0f);
-    fx = D_0044E4C0;
+    VCALL(gCamDirector, 0x10, void (*)(VObject *))(gCamDirector);
+    VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, NULL, 0.0f);
+    fx = gRoomEffects;
     func_002670F0(fx, 0x1F);
-    gallery_effect_new(D_0044E4C0, &AT(fx, 0x14B4, VObject *), D_0046D750);
-    gallery_effect_back(D_0044E4C0, 0x1F, (u8 *)s + 0xA8E40);
-    gallery_effect_new(D_0044E4C0, &AT(D_0044E4C0, 0x14AC, VObject *), D_0046EB40);
-    gallery_effect_back(D_0044E4C0, 0x1D, (u8 *)s + 0xA8ED0);
-    gallery_effect_new(D_0044E4C0, &AT(D_0044E4C0, 0x14B0, VObject *), D_0046D7B0);
+    gallery_effect_new(gRoomEffects, &AT(fx, 0x14B4, VObject *), D_0046D750);
+    gallery_effect_back(gRoomEffects, 0x1F, (u8 *)s + 0xA8E40);
+    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14AC, VObject *), D_0046EB40);
+    gallery_effect_back(gRoomEffects, 0x1D, (u8 *)s + 0xA8ED0);
+    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14B0, VObject *), D_0046D7B0);
     gallery_effect_back(fx, 0x1E, (u8 *)s + 0xA8F60);
     s->fading = 1;
     s->fade = 0x80;
@@ -4005,13 +4005,13 @@ void func_0038A990(SubScreen *s) {
         sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));
         mat[3][1] = GALLERY_HEIGHT(s);
         sceVu0ApplyMatrix(v, mat, v);
-        cam = D_0044E4B8;
+        cam = gCamera;
         VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
         sceVu0CopyVector(at, (f32 *)((u8 *)s + 0xA8E20));
         at[1] = at[1] + GALLERY_HEIGHT(s);
         VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, at[0], at[1], at[2]);
         VCALL(cam, 0x14, void (*)(VObject *))(cam);
-        func_00267160(D_0044E4C0);
+        func_00267160(gRoomEffects);
         if (SUB_GALLERY_MODEL(s) != NULL) {
             sceVu0UnitMatrix(mat);
             sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));
@@ -4025,14 +4025,14 @@ void func_0038A990(SubScreen *s) {
             m = SUB_GALLERY_MODEL(s);
             VCALL(m, 0x38, void (*)(u8 *, s32, s32, s32))(m, 0xA, 0x2E, 0);
         }
-        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x1C0, 0, 0, 0, 0, 0x805C503C, -1, 0, 1, -1);
+        VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x1C0, 0, 0, 0, 0, 0x805C503C, -1, 0, 1, -1);
     }
     if (GALLERY_STEP(s) == 3) {
         Task_ShowText(t, 0x20, 0x20, 0, Task_MessageText(t, 0x1C4), 0x80, 0x33, 0x10, 0x15);
     }
     if (GALLERY_BARS(s)) {
-        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
-        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+        VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+        VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
         Task_ShowText(t, 0x20, 0x10, 1, Task_MessageText(t, (u16)(SUB_PAGE(s, 0x0, u8) + 0x70)), 0x80 - s->fade, 0x33,
                       0x10, 0x15);
         Task_ShowText(t, 0x20, 0x198, 0, Task_MessageText(t, 0x9E), 0x80 - s->fade, 0x33, 0x10, 0x15);
@@ -4219,7 +4219,7 @@ void func_00386990(SubScreen *s) {
             hh = h >> 1;
         }
         buf = VCALL(gProgress, 0x88, u8 *(*)(Progress *))(gProgress);
-        if ((u8)VCALL(D_0044E4F0, 0x48, s32 (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, buf + 0x200000,
+        if ((u8)VCALL(gRenderer, 0x48, s32 (*)(VObject *, u8 *, s32, s32, s32, s32))(gRenderer, buf + 0x200000,
                                                                                      0x200, h, 0xC0000, 1)) {
             const u8 *tex = gl2d_image(0xC0000 >> 6);
 
@@ -4229,8 +4229,8 @@ void func_00386990(SubScreen *s) {
             }
         }
         if (ART_BARS(s)) {
-            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
-            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31,
+            VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+            VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31,
                                             -1);
             Task_ShowText(t, 0x20, 0x10, 1, Task_MessageText(t, (u16)(SUB_PAGE(s, 0x0, u8) + 0x190)), 0x80 - s->fade,
                           0x33, 0x10, 0x15);
@@ -4246,7 +4246,7 @@ extern u32 func_002603C0(u8 *items, u8 l, u8 i);   /* its actions (1 use, 2 equi
                                                       0x80000000 its note can change) */
 extern void func_002607A0(u8 *items, u8 l, u8 i);  /* take it off */
 extern s32 func_00177620(Progress *p);             /* the chase: 0 none, 1 / 2 being chased */
-extern u8 *D_0044F808;                             /* the stalker in play */
+extern u8 *gCharSlot2;                             /* the stalker in play */
 extern const char D_00464238[];                    /* the cursor */
 extern const PTMF D_0044B278, D_0044B288, D_0044B298, D_0044B2A8, D_0044B2B8, D_0044B2C8, D_0044B2D8,
     D_0044B2E8, D_0044B2F8, D_0044B308, D_0044B318, D_0044B328;
@@ -4293,7 +4293,7 @@ static s32 item_actions(SubScreen *s, s32 *id, s32 *kind, u32 *acts, s8 *equip, 
 /* the item can't be used now: in a chase (2), or with the stalker here in the room */
 static s32 item_usable(void) {
     Progress *p = gProgress;
-    u8 *h = D_0044F808;
+    u8 *h = gCharSlot2;
 
     if ((u8)func_00177620(p) == 2) {
         return 0;
@@ -4461,7 +4461,7 @@ void func_00395630(SubScreen *s) {
 
         SubScreen_DrawPart(s, 0x10, 0x30, 0xA, 0x80, 0);
         if (func_00260130(items) == 0) {
-            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, (u8 *)s + 0x94F40, 0x27);
+            VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, (u8 *)s + 0x94F40, 0x27);
             if (s->page[0x15C] < 0x40) {
                 s->page[0x15C] += 8;
             }

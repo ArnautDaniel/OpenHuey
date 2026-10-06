@@ -1,4 +1,4 @@
-/* The renderer (system +0x460, vtable 0x46AC50, global D_0044E4F0). It builds PS2 DMA / GIF
+/* The renderer (system +0x460, vtable 0x46AC50, global gRenderer). It builds PS2 DMA / GIF
  * packets in double-buffered arenas inside itself; the PC build interprets those packets where
  * the PS2 would send them (libdma / libgraph), so this code stays as the game had it. */
 #include "common.h"
@@ -78,7 +78,7 @@ void func_001B83D0(u8 *r, s32 mode) {
     }
 }
 
-extern VObject *D_0044E9A0;   /* VRAM allocator (system +0x30CF40) */
+extern VObject *gVram;   /* VRAM allocator (system +0x30CF40) */
 
 /* Allocate the renderer's VRAM (allocator +0x18: address, pixel format 0x13 = 8-bit indexed,
  * width, height): one 0xFF area (+0x304BE4) and 11 layers (+0x304BB8: 10 of 256x256 below
@@ -88,11 +88,11 @@ void func_001B8250(u8 *r) {
     u32 i;
 
     if (AT(r, 0x304BE4, s32) < 0) {
-        v = D_0044E9A0;
+        v = gVram;
         AT(r, 0x304BE4, s32) = VCALL(v, 0x14, s32 (*)(VObject *, s32, s32, s32, s32))(v, 0xFF, 0, 0, 0);
         VCALL(v, 0x24, void (*)(VObject *, s32))(v, AT(r, 0x304BE4, s32));
     }
-    v = D_0044E9A0;
+    v = gVram;
     for (i = 0; i < 11; i++) {
         s32 *id = &AT(r, 0x304BB8 + i * 4, s32);
 
@@ -527,7 +527,7 @@ s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
 
 #include "ptmf.h"
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *gVram;   /* the VRAM manager */
 extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) -> RGBA */
 
 #ifdef HG_NATIVE
@@ -588,8 +588,8 @@ void func_001B9810(VObject *r, const s32 *b) {
         r, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]);
 }
 
-extern VObject *D_0044E4E8;   /* the texture cache */
-extern VObject *D_0044E4F0;   /* the renderer (this one) */
+extern VObject *gTexCache;   /* the texture cache */
+extern VObject *gRenderer;   /* the renderer (this one) */
 
 #define SX32(x) ((s64)(s32)(u32)(x))
 
@@ -597,7 +597,7 @@ extern VObject *D_0044E4F0;   /* the renderer (this one) */
 /* the texture-cache entry of texture `tex` of group `group` for a 2D draw (NULL: not loaded;
  * the cache keeps it resident) */
 static TexHeader *tex2d_entry(s32 tex, s32 group) {
-    VObject *tc = D_0044E4E8;
+    VObject *tc = gTexCache;
 
     if (VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, tex, group) == -1) {
         return NULL;
@@ -800,14 +800,14 @@ u32 func_001BA000(u8 *r) {
     return AT(r, 0x304D4C, u32);
 }
 
-extern u8 *D_0044F808;   /* the characters' slot 2 */
+extern u8 *gCharSlot2;   /* the characters' slot 2 */
 
 /* the layer-0x11 tint (+0x304D4C) and its model (+0x304D50; none given: the slot-2 character's,
  * once the game runs) */
 void func_001BA010(u8 *r, u32 c, void *model) {
     AT(r, 0x304D4C, u32) = c;
     if (model == NULL && gProgress != NULL) {
-        AT(r, 0x304D50, void *) = AT(D_0044F808, 0xF0, void *);
+        AT(r, 0x304D50, void *) = AT(gCharSlot2, 0xF0, void *);
         return;
     }
     AT(r, 0x304D50, void *) = model;

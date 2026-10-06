@@ -1,4 +1,4 @@
-/* The effect manager (SceneGame +0xF6E200, D_0044E578): spawned scene objects (effects,
+/* The effect manager (SceneGame +0xF6E200, gEffects): spawned scene objects (effects,
  * props) in 0x400 slots, allocated from its heap. */
 #ifndef EFFECTMGR_H
 #define EFFECTMGR_H
@@ -8,7 +8,7 @@
 
 /* A heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
  * effect slots at +0x18034; func_002D6090 starts the effect in a slot with its parameters. */
-extern u8 *D_0044E578;
+extern u8 *gEffects;
 extern void *func_002D63C0(u32 size, void *mem);            /* placement new */
 extern s32 func_002D6090(u8 *mgr, s32 slot, void *params);
 
@@ -58,7 +58,7 @@ static inline void HitEffect_Init(void **obj) {
 }
 
 static inline void HitEffect_Spawn(HitEffectParams *hp) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
 
     func_002D6090(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
 }

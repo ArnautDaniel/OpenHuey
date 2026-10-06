@@ -5,7 +5,7 @@
 #include "sce/libvu0.h"
 
 extern Character *gCharPartner;   /* Hewie */
-extern VObject *D_0044E560;       /* sound driver */
+extern VObject *gSound;       /* sound driver */
 
 /* nothing */
 void func_00283EE0(Pursuer *p) {
@@ -24,7 +24,7 @@ s32 func_0029A850(Pursuer *p) {
 
 /* stop the pursuer's sounds (sound driver +0x10) */
 void func_0029D3E0(Pursuer *p) {
-    VCALL(D_0044E560, 0x10, void (*)(VObject *, s32, s32))(D_0044E560, 0, 0x400002);
+    VCALL(gSound, 0x10, void (*)(VObject *, s32, s32))(gSound, 0, 0x400002);
 }
 
 /* clear a 3-word vector (third argument) */
@@ -68,14 +68,14 @@ extern Character *gCharPlayer;    /* Fiona */
 extern VObject *gBootMessage;     /* message display */
 extern VObject *gFileLoader;
 extern VObject *gRandom;       /* random numbers */
-extern VObject *D_0044E558;       /* doors */
-extern VObject *D_0044E568;       /* rooms */
-extern void *D_0044E570;          /* nav mesh */
+extern VObject *gDoors;       /* doors */
+extern VObject *gRooms;       /* rooms */
+extern void *gNavMesh;          /* nav mesh */
 
 
 /* nav triangle +0x179C, if valid */
 void func_0027E5A0(Pursuer *p, u32 tri) {
-    if (tri < AT(D_0044E570, 0x8, u32)) {
+    if (tri < AT(gNavMesh, 0x8, u32)) {
         PU(p, 0x179C, u32) = tri;
     }
 }
@@ -298,7 +298,7 @@ s32 func_00283870(Pursuer *p) {
 
 /* vtable +0x1FC: through the door +0x100 once it's open */
 void func_0028D540(Pursuer *p) {
-    if (VCALL(D_0044E558, 0x30, s32 (*)(VObject *, u32))(D_0044E558, (u8)p->c.unk100) != 0) {
+    if (VCALL(gDoors, 0x30, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) != 0) {
         func_00212CA0(p, (u8)p->c.unk100);
         p->c.moveMode = 0;
         PURSUER_STEP_DONE(p) = 1;
@@ -349,7 +349,7 @@ void func_0027D130(Pursuer *p) {
 void func_0028D040(Pursuer *p) {
     PU(p, 0x1634, s32) = 0;
     p->c.a.unk2B = 0;
-    if (VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, (u8)p->c.unk100) & 0xFF) {
+    if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) & 0xFF) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
     } else {
@@ -432,7 +432,7 @@ void func_0029F2C0(Pursuer *p) {
         VCALL(gFileLoader, 0x18, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
         return;
     }
-    VCALL(D_0044E560, 0x88, void (*)(VObject *, s32))(D_0044E560, 7);
+    VCALL(gSound, 0x88, void (*)(VObject *, s32))(gSound, 7);
     VCALL(gFileLoader, 0x18, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
 }
 
@@ -442,7 +442,7 @@ void func_0029F350(Pursuer *p) {
         VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
         return;
     }
-    VCALL(D_0044E560, 0x84, void (*)(VObject *, s32))(D_0044E560, 7);
+    VCALL(gSound, 0x84, void (*)(VObject *, s32))(gSound, 7);
     VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
 }
 
@@ -520,7 +520,7 @@ void func_0029EC60(Pursuer *p) {
         VCALL(m, 0x10, void (*)(void *))(m);
         p->c.a.unkD1 = 0;
     }
-    VCALL(D_0044E560, 0x10, void (*)(VObject *, s32, s32))(D_0044E560, 0, 0x40F002);
+    VCALL(gSound, 0x10, void (*)(VObject *, s32, s32))(gSound, 0, 0x40F002);
 }
 
 /* vtable +0x2A4: behaviour state cleared */
@@ -584,7 +584,7 @@ void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
 
 /* ---- batch 3 ---- */
 
-extern VObject *D_0044E4D0;       /* room objects */
+extern VObject *gEvents;       /* room objects */
 extern Character *gCharacters[6];
 extern void *D_003EC8E0;
 
@@ -647,7 +647,7 @@ void func_00289500(Pursuer *p) {
 void func_0028CD70(Pursuer *p) {
     PU(p, 0x1634, s32) = 0;
     p->c.a.unk2B = 0;
-    if (!(VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
+    if (!(VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
         if (p->c.a.unkC4 == 2) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x20);
         }
@@ -670,7 +670,7 @@ void func_0028D8A0(Pursuer *p) {
 
 /* a sound at the pursuer, unless a room object or progress flag 8 holds them */
 void func_0029D410(Pursuer *p, s32 sound, s32 a2, s32 a3, s32 a4, void *a5) {
-    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
         func_00122C20(&p->c.a, sound, a2, a3, a4, a5);
     }
 }
@@ -717,7 +717,7 @@ void func_0028CF80(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
-    if (VCALL(D_0044E558, 0x70, s32 (*)(VObject *, u32))(D_0044E558, (u8)p->c.unk100) != 0) {
+    if (VCALL(gDoors, 0x70, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) != 0) {
         p->c.a.unk2B = 1;
     }
     PU(p, 0x1784, s32) = 0;
@@ -730,7 +730,7 @@ void func_0028EFC0(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
     if (((over ^ 1) & 0xFF) != 1) {
-        VCALL(D_0044E558, 0xC, void (*)(VObject *, u32, s32, s32, s32))(D_0044E558, (u8)p->c.unk100, p->c.unk104[0], p->c.a.slot, 1);
+        VCALL(gDoors, 0xC, void (*)(VObject *, u32, s32, s32, s32))(gDoors, (u8)p->c.unk100, p->c.unk104[0], p->c.a.slot, 1);
         Actor_SetState(&p->c.a, &D_003ECE80);
     }
 }
@@ -756,7 +756,7 @@ void func_0029EF80(Pursuer *p, s32 id) {
 void func_0027D810(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 1;
     p->c.unk124 = p->c.unk128;
-    *(f32 *)&p->c.unk14C4 = (f32)VCALL(D_0044E568, 0x38, s32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room) + 150.0f;
+    *(f32 *)&p->c.unk14C4 = (f32)VCALL(gRooms, 0x38, s32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) + 150.0f;
     p->c.unk1530 = 0;
     p->c.unk1538 = 0;
     p->c.unk1534 = 0;
@@ -781,8 +781,8 @@ void func_0028A860(Pursuer *p) {
 void func_0028D7D0(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
-    PU(p, 0x15A4, s32) = VCALL(D_0044E568, 0x24, s32 (*)(VObject *, u32))(D_0044E568, PU(p, 0x17B0, u8));
-    VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
+    PU(p, 0x15A4, s32) = VCALL(gRooms, 0x24, s32 (*)(VObject *, u32))(gRooms, PU(p, 0x17B0, u8));
+    VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
     VCALL(p, 0xD8, void (*)(Pursuer *))(p);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_003ECF30);
@@ -974,7 +974,7 @@ void func_0028D6E0(Pursuer *p) {
     }
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
-    if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
+    if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
         PU(p, 0x16EF, u8) = 1;
         PURSUER_STEP_NEXT(p) = 1;
         return;
@@ -1047,7 +1047,7 @@ void func_00296ED0(Pursuer *p) {
 
 /* ---- batch 4 ---- */
 
-extern VObject *D_0044FE10;
+extern VObject *gCutscene;
 extern void *D_0046A620[], *D_00474560[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
     D_003ECF00;
@@ -1078,7 +1078,7 @@ s32 func_00284440(Pursuer *p) {
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xB);
         return 1;
     }
-    if (AT(D_0044E570, 0x14, u32) >= 2 && (func_00212FE0(p, -1) & 0xFF) == 1) {
+    if (AT(gNavMesh, 0x14, u32) >= 2 && (func_00212FE0(p, -1) & 0xFF) == 1) {
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x12);
         return 1;
     }
@@ -1099,7 +1099,7 @@ u32 func_0029B4B0(Pursuer *p) {
         PU(p, 0x1760, u8) |= heard;
         snd = PU(p, 0x1764, s32);
         if (snd >= 0) {
-            if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(pr, 8) == 0) {
+            if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
                 func_00122C20(&p->c.a, snd, 7, 0, 0, NULL);
             }
             p->c.unk14D0 = 5;
@@ -1415,7 +1415,7 @@ void func_0029A2A0(Pursuer *p) {
     }
     if (p->c.a.disabled == 0) {
         func_001F6AF0(p->c.motion);
-        if (VCALL(D_0044FE10, 0x54, s32 (*)(VObject *, s32, s32))(D_0044FE10, 0, 0) > 0) {
+        if (VCALL(gCutscene, 0x54, s32 (*)(VObject *, s32, s32))(gCutscene, 0, 0) > 0) {
             MOTION_AT(p, 0x850, u8) = 1;
         }
         m = p->c.motion;
@@ -1424,7 +1424,7 @@ void func_0029A2A0(Pursuer *p) {
         if (p->c.unkE3 == 0) {
             sceVu0CopyVector(p->c.a.pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0) + 0xC);
         }
-        p->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(void *, f32 *, s32))(D_0044E570, p->c.a.pos, 0);
+        p->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(void *, f32 *, s32))(gNavMesh, p->c.a.pos, 0);
     }
 }
 
@@ -1488,7 +1488,7 @@ Pursuer *func_00172810(Pursuer *p, s32 flags) {
 
 /* vtable +0x1F8: open the door at exit +0x17B0 and step through */
 void func_0028D5B0(Pursuer *p) {
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
     u32 side;
 
     p->c.unk100 = PU(p, 0x17B0, u8);
@@ -1540,7 +1540,7 @@ s32 func_0029CD00(Pursuer *p, u32 kind, s32 slot, u32 door) {
         if (c == NULL || (c->a.active == 0 && c->a.disabled == 1)) {
             return 0;
         }
-    } else if (!(VCALL(D_0044E558, 0x40, s32 (*)(VObject *, u32))(D_0044E558, door & 0xFF) & 0xFF)) {
+    } else if (!(VCALL(gDoors, 0x40, s32 (*)(VObject *, u32))(gDoors, door & 0xFF) & 0xFF)) {
         return 0;
     }
     switch (kind) {
@@ -1580,7 +1580,7 @@ void func_00285360(Pursuer *p) {
         if (func_00284440(p) & 0xFF) {
             return;
         }
-        rm = D_0044E568;
+        rm = gRooms;
         PU(p, 0x17B0, u8) = p->c.door;
         PU(p, 0x15A4, s32) = VCALL(rm, 0x34, s32 (*)(VObject *, u32, f32 *))(rm, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
         VCALL(p, 0xD8, void (*)(Pursuer *))(p);
@@ -1671,11 +1671,11 @@ void func_0028D950(Pursuer *p) {
     VObject *d;
     u32 r, side;
 
-    if (VCALL(D_0044E568, 0x34, s32 (*)(VObject *, u32, f32 *))(D_0044E568, p->c.door, a) == -1) {
+    if (VCALL(gRooms, 0x34, s32 (*)(VObject *, u32, f32 *))(gRooms, p->c.door, a) == -1) {
         PU(p, 0x16EF, u8) = 1;
         return;
     }
-    d = D_0044E558;
+    d = gDoors;
     r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, p->c.door, a) & 0xFF;
     if (r == 0) {
         side = 1;
@@ -1729,11 +1729,11 @@ void func_0029A3D0(Pursuer *p) {
 
 /* vtable +0x214: push through the door +0x100 */
 void func_0028CE20(Pursuer *p) {
-    if (VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, (u8)p->c.unk100) != 0 &&
+    if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) != 0 &&
         p->c.a.unk2B != 0 && !(func_00177BF0(gProgress, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF & 8)) {
         p->c.a.unk2B = 0;
     }
-    if (VCALL(D_0044E558, 0x70, s32 (*)(VObject *, u32))(D_0044E558, (u8)p->c.unk100) != 0 && p->c.a.unk2B != 0) {
+    if (VCALL(gDoors, 0x70, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) != 0 && p->c.a.unk2B != 0) {
         f32 v[4] __attribute__((aligned(16)));
 
         func_002E2C10(v, PU(p, 0x1634, f32));
@@ -1807,10 +1807,10 @@ void func_00291600(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     tri = PU(p, 0x15A4, u32);
-    if (tri == (u32)-1 || tri >= AT(D_0044E570, 0x8, u32)) {
+    if (tri == (u32)-1 || tri >= AT(gNavMesh, 0x8, u32)) {
         VCALL(p, 0xB4, void (*)(Pursuer *, s32))(p, 0);
     }
-    if (VCALL(D_0044E570, 0x10, s32 (*)(void *, u32, f32 *))(D_0044E570, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) == 4) {
+    if (VCALL(gNavMesh, 0x10, s32 (*)(void *, u32, f32 *))(gNavMesh, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) == 4) {
         VCALL(p, 0xB4, void (*)(Pursuer *, s32))(p, 0);
     }
     if (!(VCALL(p, 0xD8, s32 (*)(Pursuer *))(p) & 0xFF)) {
@@ -1886,13 +1886,13 @@ void func_0029E210(Pursuer *p) {
     if (func_00214A90(p, p->c.a.navTri) != 0 && p->c.a.unk2B == 0 && func_00217510(p) != 0) {
         p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
         if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
-            VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, p->c.a.navTri, p->c.a.pos);
+            VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, p->c.a.navTri, p->c.a.pos);
         } else {
             func_00124890(&p->c.a, -1);
         }
     }
     if (p->c.moveMode == 0) {
-        void *nm = D_0044E570;
+        void *nm = gNavMesh;
 
         if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, p->c.a.navTri, p->c.a.pos) == 4) {
             if (func_00214A90(p, p->c.a.navTri) & 0xFF) {
@@ -1960,11 +1960,11 @@ void func_00284FD0(Pursuer *p) {
 
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
-    if (VCALL(D_0044E568, 0x34, s32 (*)(VObject *, u32, f32 *))(D_0044E568, p->c.door, a) == -1) {
+    if (VCALL(gRooms, 0x34, s32 (*)(VObject *, u32, f32 *))(gRooms, p->c.door, a) == -1) {
         PU(p, 0x16EF, u8) = 1;
         return;
     }
-    d = D_0044E558;
+    d = gDoors;
     r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, p->c.door, a) & 0xFF;
     if (r == 0) {
         side = 1;
@@ -2014,7 +2014,7 @@ s32 func_0027CA00(Pursuer *p) {
                 break;
             }
         }
-        rm = D_0044E568;
+        rm = gRooms;
         PU(p, 0x1594, s32) = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, exit);
         PU(p, 0x1598, s32) = -1;
         if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0) {
@@ -2052,7 +2052,7 @@ void func_0029F120(Pursuer *p) {
             MOTION_AT(p, 0x24, u8) = p->c.msgSlot;
         }
         if (*AT(PU(p, 0x168C, u8 *), 0xC, char *) != 0) {
-            VCALL(D_0044E558, 0x4C, void (*)(VObject *, s32))(D_0044E558, 1);
+            VCALL(gDoors, 0x4C, void (*)(VObject *, s32))(gDoors, 1);
         }
         if (*AT(PU(p, 0x168C, u8 *), 0x4, char *) != 0) {
             MOTION_AT(p, 0x4D4, s32) = PU(p, 0x1678, s32);
@@ -2074,7 +2074,7 @@ void func_002871E0(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     pr = gProgress;
     st = func_00177BF0(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
-    VCALL(D_0044E558, 0x38, void (*)(VObject *, u32, f32 *))(D_0044E558, (u8)p->c.unk100, v);
+    VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
     if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
         func_00178300(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
@@ -2100,11 +2100,11 @@ void func_002871E0(Pursuer *p) {
 void func_0028D0C0(Pursuer *p) {
     f32 h;
 
-    if (VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, (u8)p->c.unk100) != 0 &&
+    if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) != 0 &&
         p->c.a.unk2B != 0 && !(func_00177BF0(gProgress, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF & 8)) {
         p->c.a.unk2B = 0;
     }
-    if (VCALL(D_0044E558, 0x70, s32 (*)(VObject *, u32))(D_0044E558, (u8)p->c.unk100) != 0 && p->c.a.unk2B != 0) {
+    if (VCALL(gDoors, 0x70, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) != 0 && p->c.a.unk2B != 0) {
         f32 v[4] __attribute__((aligned(16)));
 
         func_002E2C10(v, PU(p, 0x1634, f32));
@@ -2160,7 +2160,7 @@ void func_00296FC0(Pursuer *p) {
                 PU(p, 0x16C9, u8) = 6;
                 PU(p, 0x16CA, u8) = 7;
             }
-            if ((VCALL(D_0044E558, 0x70, s32 (*)(VObject *, u32))(D_0044E558, (u8)p->c.unk100) & 0xFF) == 1 &&
+            if ((VCALL(gDoors, 0x70, s32 (*)(VObject *, u32))(gDoors, (u8)p->c.unk100) & 0xFF) == 1 &&
                 (func_00177BF0(gProgress, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF & 8)) {
                 p->c.a.unk2B = 1;
             }
@@ -2362,7 +2362,7 @@ void func_0027E5D0(Pursuer *p, s32 n) {
     u32 count = n & 0xFF;
 
     if ((s32)count > 0) {
-        VObject *o = VCALL(D_0044E4D0, 0x64, VObject *(*)(VObject *))(D_0044E4D0);
+        VObject *o = VCALL(gEvents, 0x64, VObject *(*)(VObject *))(gEvents);
         s32 *pts = VCALL(o, 0x38, s32 *(*)(VObject *))(o);
         u32 npts = 0, used = 0, i;
 
@@ -2398,7 +2398,7 @@ void func_0027E5D0(Pursuer *p, s32 n) {
 
 /* vtable +0x1DC: wait at the door until it opens; make noise if Fiona holds it shut */
 void func_0028DC40(Pursuer *p) {
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
 
     if (!(VCALL(d, 0x30, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) & 0xFF)) {
         if (p->c.unk104[0] == 0) {
@@ -2473,7 +2473,7 @@ void func_0028F650(Pursuer *p) {
 
 /* vtable +0x194..: walk the search route (8 stops at most, then give up the search) */
 void func_00290620(Pursuer *p) {
-    void *nm = D_0044E570;
+    void *nm = gNavMesh;
 
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
@@ -2542,7 +2542,7 @@ void func_002858B0(Pursuer *p) {
                 return;
             }
         } else {
-            VObject *rm = D_0044E568;
+            VObject *rm = gRooms;
 
             PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
             PU(p, 0x15A4, s32) = VCALL(rm, 0x34, s32 (*)(VObject *, u32, f32 *))(rm, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
@@ -2718,7 +2718,7 @@ void func_00285150(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if (p->c.unk1388 < p->c.unk1384 && func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
         PU(p, 0x15A4, s32) = VCALL(rm, 0x34, s32 (*)(VObject *, u32, f32 *))(rm, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
@@ -2775,18 +2775,18 @@ void func_002856A0(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 1;
     if (p->c.unk1388 < p->c.unk1384 && func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
-        PU(p, 0x17B0, u8) = VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
+        PU(p, 0x17B0, u8) = VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
     } else {
         PU(p, 0x17B0, u8) = func_00212A80(p, p->c.door);
     }
-    PU(p, 0x15A4, s32) = VCALL(D_0044E568, 0x34, s32 (*)(VObject *, u32, f32 *))(D_0044E568, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
+    PU(p, 0x15A4, s32) = VCALL(gRooms, 0x34, s32 (*)(VObject *, u32, f32 *))(gRooms, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
     if (!(VCALL(p, 0xD8, s32 (*)(Pursuer *))(p) & 0xFF)) {
         u32 node;
 
         if (func_00284440(p) & 0xFF) {
             return;
         }
-        rm = D_0044E568;
+        rm = gRooms;
         PU(p, 0x17B0, u8) = p->c.door;
         PU(p, 0x15A4, s32) = VCALL(rm, 0x34, s32 (*)(VObject *, u32, f32 *))(rm, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0));
         VCALL(p, 0xD8, s32 (*)(Pursuer *))(p);
@@ -2805,7 +2805,7 @@ void func_002856A0(Pursuer *p) {
 /* vtable +0x1AC: line up at the door +0x100 (side by which way it opens) */
 void func_0028FA00(Pursuer *p) {
     f32 dir[4] __attribute__((aligned(16)));
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
     s8 r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, p->c.a.pos);
 
     if (r == -1) {
@@ -2851,10 +2851,10 @@ void func_0027FC70(Pursuer *p) {
     if (p->c.a.navTri == (u32)-1) {
         if (PU(p, 0x17AC, s32) != 4 && p->c.door != 0xFF) {
             if (*(f32 *)&p->c.unk14C4 <= 80.0f && PU(p, 0x17B0, u8) != 0xFF) {
-                p->c.a.navTri = VCALL(D_0044E568, 0x28, u32 (*)(VObject *, u32))(D_0044E568, PU(p, 0x17B0, u8));
+                p->c.a.navTri = VCALL(gRooms, 0x28, u32 (*)(VObject *, u32))(gRooms, PU(p, 0x17B0, u8));
                 h = func_00212730(p, PU(p, 0x17B0, u8));
             } else {
-                p->c.a.navTri = VCALL(D_0044E568, 0x28, u32 (*)(VObject *, u32))(D_0044E568, p->c.door);
+                p->c.a.navTri = VCALL(gRooms, 0x28, u32 (*)(VObject *, u32))(gRooms, p->c.door);
                 h = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_00212730(p, p->c.door));
             }
             VCALL(p, 0x28, s32 (*)(Pursuer *, u32, f32 *, s32))(p, p->c.a.navTri, &h, 0);
@@ -2865,7 +2865,7 @@ void func_0027FC70(Pursuer *p) {
         s32 k = PU(p, 0x17AC, s32);
 
         if ((k == 5 || k == 0 || k == 1 || k == 3) && *(f32 *)&p->c.unk14C4 <= 80.0f && PU(p, 0x17B0, u8) != 0xFF) {
-            p->c.a.navTri = VCALL(D_0044E568, 0x28, u32 (*)(VObject *, u32))(D_0044E568, PU(p, 0x17B0, u8));
+            p->c.a.navTri = VCALL(gRooms, 0x28, u32 (*)(VObject *, u32))(gRooms, PU(p, 0x17B0, u8));
             h = func_00212730(p, PU(p, 0x17B0, u8));
             VCALL(p, 0x28, s32 (*)(Pursuer *, u32, f32 *, s32))(p, p->c.a.navTri, &h, 0);
             return;
@@ -2975,7 +2975,7 @@ void func_00289050(Pursuer *p) {
 void func_0027CEF0(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     VObject *rnd = gRandom;
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     s16 sound;
     u32 exit;
     Progress *pr;
@@ -2998,7 +2998,7 @@ void func_0027CEF0(Pursuer *p) {
         }
         sound = AT(t + (i & 0xFF) * 8, 0x0, s16);
     }
-    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
         func_00122C20(&p->c.a, sound, 7, 0, 0, pos);
     }
     pr = gProgress;
@@ -3071,7 +3071,7 @@ void func_0027D5B0(Pursuer *p) {
         func_001272B0(&p->c, 2.0f);
     }
     if (!(p->c.unk128 < p->c.unk124)) {
-        s32 room = VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, PU(p, 0x17B0, u8));
+        s32 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, PU(p, 0x17B0, u8));
 
         if (room == VCALL(pr, 0xC, s32 (*)(Progress *))(pr) && (func_00211E00(p, PU(p, 0x17B0, u8)) & 0xFF) == 5 &&
             PU(p, 0x16C8, u8) != 4) {
@@ -3152,7 +3152,7 @@ void func_0027D8D0(Pursuer *p) {
         PU(p, 0x16F4, u8) = 1;
         return;
     }
-    PU(p, 0x17B0, u8) = VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room);
+    PU(p, 0x17B0, u8) = VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room);
     p->c.unk14C0 = PU(p, 0x138C, u16);
     *(f32 *)&p->c.unk14C4 = func_00212060(p, p->c.a.room, PU(p, 0x17B0, u8), p->c.door);
     p->c.unk1530 = 0;
@@ -3205,7 +3205,7 @@ s32 func_0029D180(Pursuer *p, s32 room, s32 tri, u32 side) {
 
     func_00125BA0(&p->c);
     p->c.a.room = room;
-    rm = D_0044E568;
+    rm = gRooms;
     if (side < 2) {
         for (i = 0; i < 8; i = (i + 1) & 0xFF) {
             if (VCALL(rm, 0x74, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) != 0 && (func_00211E00(p, i) & 0xFF) != 3 &&
@@ -3360,9 +3360,9 @@ void func_0028ED50(Pursuer *p) {
     u8 *e;
     s32 side;
 
-    e = tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL ? AT(D_0044E570, 0x4, u8 *) + tri * 0x50 : NULL;
+    e = tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL ? AT(gNavMesh, 0x4, u8 *) + tri * 0x50 : NULL;
     p->c.a.unk2A = (AT(e, 0x3C, u32) & 0x20000) ? 1 : 0;
-    d = D_0044E558;
+    d = gDoors;
     side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, gCharPlayer->a.pos);
     if (VCALL(d, 0x30, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) & 0xFF) {
         if (p->c.moveSub == 0x15) {
@@ -3458,7 +3458,7 @@ void func_0027DB30(Pursuer *p) {
             PU(p, 0x16F4, u8) = 0;
         }
     }
-    rm = D_0044E568;
+    rm = gRooms;
     node = VCALL(rm, 0x10, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, p->c.door) & 0xFFFF;
     if ((func_0027CA00(p) & 0xFF) != 1) {
         u32 i;
@@ -3720,7 +3720,7 @@ void func_0029D7F0(Pursuer *p) {
                     s8 vol2 = (u8)(u32)(2.0f * f) & 0x7F;
                     s32 foot = PU(p, 0x16A4, s32) & 1;
 
-                    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+                    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
                         func_00122C20(&p->c.a, foot, 7, vol, vol2, pos);
                     }
                     PU(p, 0x16A4, s32)++;
@@ -3888,7 +3888,7 @@ void func_0029CEE0(Pursuer *p, s32 room, u32 found, s32 plan, s32 side) {
         break;
     }
     if (plan == 0) {
-        p->c.door = VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room);
+        p->c.door = VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room);
     }
 }
 
@@ -3904,8 +3904,8 @@ void func_00287380(Pursuer *p) {
             for (;;) {
                 u32 tri = p->c.a.navTri, flags;
 
-                if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-                    flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+                if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                    flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
                 } else {
                     flags = 0;
                 }
@@ -3921,7 +3921,7 @@ void func_00287380(Pursuer *p) {
             PU(p, 0x1634, s32) = 0;
         }
     } else {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, p->c.unk100 & 0xFF) != 0 && p->c.a.unk2B != 0) {
             Progress *pr = gProgress;
@@ -4025,7 +4025,7 @@ void func_00280210(Pursuer *p, s32 exit) {
         PU(p, 0x1544, u8) = 0;
         PU(p, 0x1545, u8) = 0;
         p->c.unk124 = p->c.unk128;
-    } else if (VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, s32))(D_0044E568, gCharPlayer->a.room, exit) == p->c.a.room) {
+    } else if (VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, s32))(gRooms, gCharPlayer->a.room, exit) == p->c.a.room) {
         p->c.unk14C4 = 0;
         p->c.a.unk2A = 0;
     }
@@ -4052,15 +4052,15 @@ void func_0029F3E0(Pursuer *p) {
     }
     name = AT(f, 0x10, char *);
     if (*name != 0) {
-        VCALL(D_0044E560, 0x80, void (*)(VObject *, char *, s32, s32, s32))(D_0044E560, name, 7, 2, PU(p, 0x167C, s32));
+        VCALL(gSound, 0x80, void (*)(VObject *, char *, s32, s32, s32))(gSound, name, 7, 2, PU(p, 0x167C, s32));
     }
     name = AT(PU(p, 0x168C, u8 *), 0x14, char *);
     if (*name != 0) {
-        VCALL(D_0044E560, 0x80, void (*)(VObject *, char *, s32, s32, s32))(D_0044E560, name, 7, 0, PU(p, 0x1680, s32));
+        VCALL(gSound, 0x80, void (*)(VObject *, char *, s32, s32, s32))(gSound, name, 7, 0, PU(p, 0x1680, s32));
     }
     name = AT(PU(p, 0x168C, u8 *), 0x18, char *);
     if (*name != 0) {
-        VCALL(D_0044E560, 0x80, void (*)(VObject *, char *, s32, s32, s32))(D_0044E560, name, 7, 3, PU(p, 0x1684, s32));
+        VCALL(gSound, 0x80, void (*)(VObject *, char *, s32, s32, s32))(gSound, name, 7, 3, PU(p, 0x1684, s32));
     }
     name = AT(PU(p, 0x168C, u8 *), 0x0, char *);
     if (*name != 0) {
@@ -4072,7 +4072,7 @@ void func_0029F3E0(Pursuer *p) {
     }
     if (*AT(PU(p, 0x168C, u8 *), 0xC, char *) != 0) {
         VCALL(gFileLoader, 0xC, void (*)(VObject *, char *, s32, u32, s32))(gFileLoader, AT(PU(p, 0x168C, u8 *), 0xC, char *),
-                                                                           VCALL(D_0044E558, 0x48, s32 (*)(VObject *, s32))(D_0044E558, 1),
+                                                                           VCALL(gDoors, 0x48, s32 (*)(VObject *, s32))(gDoors, 1),
                                                                            p->c.a.flags24 | p->c.a.slot, 0);
     }
     name = AT(PU(p, 0x168C, u8 *), 0x4, char *);
@@ -4090,7 +4090,7 @@ s32 func_0027F0A0(Pursuer *p, u32 exit) {
     if ((Progress_CurRoomFlag(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 0;
     }
-    rm = D_0044E568;
+    rm = gRooms;
     if (VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, exit) != VCALL(pr, 0xC, s32 (*)(Progress *))(pr)) {
         switch (func_00211CF0(p, exit) & 0xFF) {
         case 1:
@@ -4121,7 +4121,7 @@ s32 func_0027F0A0(Pursuer *p, u32 exit) {
     case 2:
         return 0;
     default:
-        rm = D_0044E568;
+        rm = gRooms;
         node = VCALL(rm, 0x10, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, exit) & 0xFFFF;
         p->c.unk148C[node >> 5] &= ~(1 << (node & 0x1F));
         p->c.unk100 = VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, exit) & 0xFF;
@@ -4135,7 +4135,7 @@ s32 func_0027F0A0(Pursuer *p, u32 exit) {
 /* vtable +0x1D8: barge through the door +0x100 (animation 0x600..0x603 by side) */
 void func_0028DE10(Pursuer *p) {
     f32 dir[4] __attribute__((aligned(16)));
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
     s32 r = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, (u8)p->c.unk100, p->c.a.pos);
     Progress *pr;
 
@@ -4225,7 +4225,7 @@ void func_00285B10(Pursuer *p) {
     } else {
         PU(p, 0x1624, s32) = p->c.unk104[0];
     }
-    mgr = D_0044E578;
+    mgr = gEffects;
     PU(p, 0x1628, s32) = Effect_New(mgr, 0x38, Pursuer_EffectInit);
     args[0] = (p->c.unk104[0] - 4) >> 1;
     args[1] = PU(p, 0x1624, s32);
@@ -4333,7 +4333,7 @@ void func_002849B0(Pursuer *p) {
                 PU(p, 0x1594, s32) = room;
                 PU(p, 0x1598, s32) = -1;
             } else {
-                VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, p->c.heard.tri, v);
+                VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, p->c.heard.tri, v);
                 if (func_00217510(p) != 0 && func_00217340(p) != -1 && func_001257B0(&p->c, p->c.heard.tri, v, -1) < 0.0f) {
                     if (func_002138F0(p, p->c.heard.tri) == 0 && func_00213690(p, p->c.heard.tri) == 0) {
                         PU(p, 0x1594, s32) = p->c.heard.room;
@@ -4368,8 +4368,8 @@ void func_00286F10(Pursuer *p) {
             for (;;) {
                 u32 tri = p->c.a.navTri, flags;
 
-                if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-                    flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+                if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                    flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
                 } else {
                     flags = 0;
                 }
@@ -4384,7 +4384,7 @@ void func_00286F10(Pursuer *p) {
             PU(p, 0x1634, s32) = 0;
         }
     } else {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, p->c.unk100 & 0xFF) != 0 && p->c.a.unk2B != 0) {
             Progress *pr = gProgress;
@@ -4433,7 +4433,7 @@ void func_0028D260(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     PU(p, 0x1634, f32) = 0.0f;
-    d = D_0044E558;
+    d = gDoors;
     PU(p, 0x1634, f32) = func_002E2D00(func_00212550(p, (u8)p->c.unk100));
     if (VCALL(d, 0x70, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) != 0) {
         p->c.a.unk2B = 1;
@@ -4448,7 +4448,7 @@ void func_0028D260(Pursuer *p) {
     if (VCALL(d, 0x70, s32 (*)(VObject *, u32))(d, (u8)p->c.unk100) != 0) {
         f32 v[4] __attribute__((aligned(16)));
 
-        if (VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, (u8)p->c.unk100) != 0 &&
+        if (VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, (u8)p->c.unk100) != 0 &&
             p->c.a.unk2B != 0 && !(func_00177BF0(gProgress, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF & 8)) {
             p->c.a.unk2B = 0;
         }
@@ -4468,7 +4468,7 @@ void func_0027CB90(Pursuer *p, u32 exit) {
     for (i = 0; i < 13; i++) {
         p->c.unk148C[i] = 0;
     }
-    node = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, exit) & 0xFFFF;
+    node = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, exit) & 0xFFFF;
     p->c.unk148C[node >> 5] |= 1 << (node & 0x1F);
     if (func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) == -1) {
         if (PU(p, 0x16C8, u8) != 0 && PU(p, 0x16C8, u8) != 2) {
@@ -4578,7 +4578,7 @@ void func_0029B5C0(Pursuer *p) {
     }
     if (p->c.state[1] == 5) {
         f32 pos[4] __attribute__((aligned(16)));
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, (s8)VCALL(rm, 0x14, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, PU(p, 0x17B0, u8)), pos);
         if (p->c.hp > 0) {
@@ -4596,7 +4596,7 @@ void func_0029B5C0(Pursuer *p) {
             snd = 0x1B;
         }
         p->c.door = VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), (u8)p->c.state[4]);
-        if (snd >= 0 && VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+        if (snd >= 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, snd, 7, 0, 0, pos);
         }
     } else if (p->c.state[1] == 8) {
@@ -4609,7 +4609,7 @@ void func_0029B5C0(Pursuer *p) {
         if (p->c.state[3] > 0 && (func_001264D0(&p->c, pos) & 0xFF) == 1) {
             snd = 0x1D;
         }
-        if (snd >= 0 && VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+        if (snd >= 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, snd, 7, 0, 0, pos);
         }
     }
@@ -4757,7 +4757,7 @@ void func_00287620(Pursuer *p) {
     }
     pr = gProgress;
     st = func_00177BF0(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
-    VCALL(D_0044E558, 0x38, void (*)(VObject *, u32, f32 *))(D_0044E558, (u8)p->c.unk100, v);
+    VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
     if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
         func_00178300(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         Pursuer_PlayAnimBlend(p, 0x1004);
@@ -4806,8 +4806,8 @@ void func_0029D4C0(Pursuer *p, s32 anim) {
         snd = PU(p, 0x16AC, s16 *)[func_001F4710(p->c.motion, anim) * 2 + 1];
         break;
     }
-    nm = D_0044E570;
-    ro = D_0044E4D0;
+    nm = gNavMesh;
+    ro = gEvents;
     pr = gProgress;
     for (;;) {
         if ((s16)snd >= 0) {
@@ -5013,7 +5013,7 @@ void func_0027D260(Pursuer *p) {
         }
     }
     if (*(f32 *)&p->c.unk14C4 <= 0.0f) {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         PU(p, 0x17B0, u8) = VCALL(rm, 0x3C, u32 (*)(VObject *, u32, s32))(rm, PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room);
         if (PU(p, 0x17B0, u8) < 8) {
@@ -5071,7 +5071,7 @@ s32 func_00284C80(Pursuer *p) {
     if (func_00217510(p) != 0 && p->c.a.room == p->c.heard.room && PU(p, 0x16CC, u8) == 5 && p->c.moveMode == 8) {
         f32 v[4] __attribute__((aligned(16)));
 
-        VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, p->c.heard.tri, v);
+        VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, p->c.heard.tri, v);
         if (func_002187D0(p, p->c.heard.tri, v) != 0) {
             return 0;
         }
@@ -5365,7 +5365,7 @@ void func_0028C9E0(Pursuer *p) {
             return;
         }
     }
-    PU(p, 0x1568, f32) = VCALL(D_0044E570, 0x58, f32 (*)(void *, s32, s32))(D_0044E570, p->c.unk100, p->c.unk104[0]);
+    PU(p, 0x1568, f32) = VCALL(gNavMesh, 0x58, f32 (*)(void *, s32, s32))(gNavMesh, p->c.unk100, p->c.unk104[0]);
     if (!(PU(p, 0x1590, f32) < 4.0f)) {
         func_00214890(p, (u32 *)&tri, pos, 0x1.99999a0000000p-4f /* 0.1 */);
         if (tri != -1) {
@@ -5487,7 +5487,7 @@ s32 func_0029A710(Pursuer *p) {
 /* ---- batch 14 ---- */
 
 extern const PTMF D_003ED0C0, D_003ED040, D_003ECC00, D_003ECC10, D_003EC910, D_003EC920;
-extern VObject *D_0044E7A8;   /* controller vibration */
+extern VObject *gScreenFade;   /* controller vibration */
 
 /* look around: the head swept by a sine over vtable +0x2DC frames (full swing +0x2E0, half
  * at the ends), then back to straight ahead */
@@ -5653,7 +5653,7 @@ void func_002961D0(Pursuer *p) {
     case -2:
         break;
     case 0x1C:
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 30);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 30);
         /* fallthrough */
     default:
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
@@ -5894,7 +5894,7 @@ void func_0027E040(Pursuer *p) {
         if (PU(p, 0x17B4, s32) != 0) {
             Pursuer_SetMove(p, &D_0045B3A0);
         } else if (!(func_00126E40(&p->c) <= 0.0f) &&
-                   PU(p, 0x17B0, u8) != (VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
+                   PU(p, 0x17B0, u8) != (VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
             p->c.unk124 = p->c.unk128;
             Pursuer_SetMove(p, &D_0045B358);
         }
@@ -6184,7 +6184,7 @@ void func_00284540(Pursuer *p) {
         tri = PU(p, 0x179C, s32);
         if (tri != -1) {
             PU(p, 0x15A4, s32) = tri;
-            VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
+            VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
         }
         return;
     }
@@ -6299,7 +6299,7 @@ void func_00278EB0(Pursuer *p) {
         tri = PU(p, 0x179C, s32);
         if (tri != -1) {
             PU(p, 0x15A4, s32) = tri;
-            VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
+            VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
         }
         return;
     }
@@ -6414,7 +6414,7 @@ void func_00292310(Pursuer *p) {
         }
         if (VCALL(p, 0x11C, s32 (*)(Pursuer *))(p) != 0) {
             PU(p, 0x16C4, s32) = 0;
-            if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+            if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
                 func_00122C20(&p->c.a, 0x20, 7, 0, 0, NULL);
             }
             p->c.unk1384 = p->c.unk1388;
@@ -6435,7 +6435,7 @@ void func_00292310(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 0;
         PU(p, 0x1761, u8) = 0;
         if (PU(p, 0x16F5, u8) != 0 && PU(p, 0x16C8, u8) != 4 &&
-            VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+            VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, 0x1F, 7, 0, 0, NULL);
         }
         PU(p, 0x16F5, u8) = 0;
@@ -6506,7 +6506,7 @@ void func_0027A1E0(Pursuer *p) {
         } else if (!(func_00126E40(&p->c) <= 0.0f)) {
             u8 want = PU(p, 0x17B0, u8);
 
-            if (want != (VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
+            if (want != (VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room) & 0xFF)) {
                 p->c.unk124 = p->c.unk128;
                 Pursuer_SetMove(p, &D_0045B358);
             }
@@ -6543,7 +6543,7 @@ void func_002804B0(Pursuer *p) {
         return;
     }
     {
-        VObject *o = VCALL(D_0044E4D0, 0x64, VObject *(*)(VObject *))(D_0044E4D0);
+        VObject *o = VCALL(gEvents, 0x64, VObject *(*)(VObject *))(gEvents);
         s32 *t = VCALL(o, 0x38, s32 *(*)(VObject *))(o);
 
         if (t != NULL) {
@@ -6555,7 +6555,7 @@ void func_002804B0(Pursuer *p) {
             PU(p, 0x1738, u32) = (u32)((f32)n * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
         }
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     ang = VCALL(rooms, 0x8C, f32 (*)(VObject *, u32))(rooms, p->c.door);
     if (PU(p, 0x1624, s32) == 1) {
         p->c.a.navTri = VCALL(rooms, 0x28, s32 (*)(VObject *, u32))(rooms, p->c.door);
@@ -6599,7 +6599,7 @@ void func_002804B0(Pursuer *p) {
         }
     }
     PURSUER_STEP_NEXT(p) = 1;
-    if ((VCALL(D_0044E558, 0x40, s32 (*)(VObject *, u32))(D_0044E558, p->c.door) & 0xFF) == 1) {
+    if ((VCALL(gDoors, 0x40, s32 (*)(VObject *, u32))(gDoors, p->c.door) & 0xFF) == 1) {
         Progress *pr = gProgress;
 
         if (func_00178980(pr, p->c.a.room, p->c.door) & 0xFF) {
@@ -6612,7 +6612,7 @@ void func_002804B0(Pursuer *p) {
             /* the door won't open for it: give up on it, with a rumble */
             VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0xC);
             p->c.a.unk2D = 1;
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 0xF);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 0xF);
         }
     }
     func_00126270(&p->c);
@@ -6666,7 +6666,7 @@ void func_0028BEF0(Pursuer *p) {
     }
     anim = MOTION_ANIM(p);
     if (p->c.unk104[0] == 1) {
-        VCALL(D_0044E570, 0x5C, void (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 0, end);
+        VCALL(gNavMesh, 0x5C, void (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 0, end);
         if (end[1] - p->c.a.pos[1] < 20.0f) {
             if (anim == 0x701) {
                 func_002DDE20(p->c.motion, 0x703, -1);
@@ -6685,7 +6685,7 @@ void func_0028BEF0(Pursuer *p) {
             return;
         }
     } else {
-        VCALL(D_0044E570, 0x5C, void (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 1, end);
+        VCALL(gNavMesh, 0x5C, void (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 1, end);
         if (p->c.a.pos[1] - end[1] < 4.0f) {
             if (anim == 0x706) {
                 func_002DDE20(p->c.motion, 0x707, -1);
@@ -6769,13 +6769,13 @@ void func_00289860(Pursuer *p) {
         if (PU(p, 0x1594, s32) == room) {
             sceVu0CopyVector((f32 *)((u8 *)p + 0x1700), (f32 *)((u8 *)p + 0x15B0));
         } else {
-            VObject *rooms = D_0044E568;
+            VObject *rooms = gRooms;
 
             VCALL(rooms, 0x30, void (*)(VObject *, s32, f32 *))(rooms,
                 VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, PU(p, 0x138C, u16), room), (f32 *)((u8 *)p + 0x1700));
         }
         p->c.unk104[0] = 90;
-        if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+        if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, 0x21, 7, 0, 0, NULL);
         }
         Actor_SetState(&p->c.a, &D_003ED110);
@@ -6845,7 +6845,7 @@ void func_00294240(Pursuer *p) {
 
             if (tri != -1) {
                 PU(p, 0x15A4, s32) = tri;
-                VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
+                VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
             }
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 4);
         } else {
@@ -7453,7 +7453,7 @@ void func_0028B340(Pursuer *p) {
                     /* the blow is blocked: back to the idle */
                     Pursuer_PlayAnim(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p));
                     PU(p, 0x16F7, u8) = 0;
-                    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(pr, 8) == 0) {
+                    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
                         func_00122C20(&p->c.a, 0x2B, 7, 0, 0, NULL);
                     }
                     return;
@@ -7463,7 +7463,7 @@ void func_0028B340(Pursuer *p) {
                 if (p->c.unk104[0] == 2) {
                     PU(p, 0x1760, u8) = 0;
                 }
-                if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(pr, 8) == 0) {
+                if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(pr, 8) == 0) {
                     func_00122C20(&p->c.a, 0x10, 7, 0, 0, NULL);
                 }
                 p->c.unk104[0] = 1;
@@ -7504,8 +7504,8 @@ void func_0028B340(Pursuer *p) {
 
 /* the nav triangle record (0x50 bytes) of tri, if valid */
 static u8 *Pursuer_NavTri(u32 tri) {
-    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        return AT(D_0044E570, 0x4, u8 *) + tri * 0x50;
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        return AT(gNavMesh, 0x4, u8 *) + tri * 0x50;
     }
     return NULL;
 }
@@ -7595,7 +7595,7 @@ void func_0029DA80(Pursuer *p) {
                     snd = 10;
                 } else if (MOTION_ANIM(p) == 0x703) {
                     tri = func_00124320(&p->c.a, foot,
-                        VCALL(D_0044E570, 0x5C, s32 (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 0, end), end, 0);
+                        VCALL(gNavMesh, 0x5C, s32 (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 0, end), end, 0);
                     if (tri != (u32)-1) {
                         t = Pursuer_NavTri(tri);
                         flags = t != NULL ? AT(t, 0x3C, s32) : (s32)NAV_BAD_TRI_FLAGS;
@@ -7604,7 +7604,7 @@ void func_0029DA80(Pursuer *p) {
                 break;
             case 0x707:
                 tri = func_00124320(&p->c.a, foot,
-                    VCALL(D_0044E570, 0x5C, s32 (*)(void *, s32, s32, f32 *))(D_0044E570, p->c.unk100, 1, end), end, 0);
+                    VCALL(gNavMesh, 0x5C, s32 (*)(void *, s32, s32, f32 *))(gNavMesh, p->c.unk100, 1, end), end, 0);
                 if (tri != (u32)-1) {
                     t = Pursuer_NavTri(tri);
                     flags = t != NULL ? AT(t, 0x3C, s32) : (s32)NAV_BAD_TRI_FLAGS;
@@ -7656,7 +7656,7 @@ void func_0029DA80(Pursuer *p) {
             speed = 1.0f;
         }
         vol = (u32)(2.0f * speed) & 0xFF & 0x7F;
-        if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+        if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, snd, level, 0, (s8)vol, NULL);
         }
         func_002A8440((u8 *)gProgress + 0x798, speed < 0.5f ? 0x1C : 0x1F, p->c.a.room, p->c.a.navTri, 0xFFFF);
@@ -7923,7 +7923,7 @@ void func_00299530(Pursuer *p) {
     case 6:
     case 11:
         PU(p, 0x15A4, s32) = p->c.unk104[0];
-        VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
+        VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
         if (p->c.unkF4 == 6) {
             Pursuer_ScriptMove(p, 0x200, &D_003ECAE0);
         } else {
@@ -8311,7 +8311,7 @@ void func_002815E0(Pursuer *p, u32 door) {
         return;
     }
     p->c.unk1530 = 0;
-    rooms = D_0044E568;
+    rooms = gRooms;
     p->c.unk1538 = 0;
     p->c.unk1534 = 0;
     room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, p->c.a.room, door);
@@ -8422,7 +8422,7 @@ void func_002815E0(Pursuer *p, u32 door) {
         PU(p, 0x16C8, u8) = 2;
     }
     VCALL(p, 0x148, void (*)(Pursuer *))(p);
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Pursuer *))(D_0044E4D0, p);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Pursuer *))(gEvents, p);
     if (p->c.state[0] == 5 && p->c.moveMode == 2) {
         func_00213270(p, 0xFF);
     }
@@ -8433,7 +8433,7 @@ extern const PTMF D_003ED5C0, D_003ED5D0, D_003ED5E0, D_003ED5F0;
 /* func_002815E0 while the progress byte +0x1FBEC1 is set: a chase that keeps to Fiona's room
    (on arriving there it waits 150 frames, +0x17B4) */
 void func_0027AD80(Pursuer *p, u32 door) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     s32 room;
     u8 exit;
 
@@ -8553,7 +8553,7 @@ void func_0027AD80(Pursuer *p, u32 door) {
         PU(p, 0x16C8, u8) = 2;
     }
     VCALL(p, 0x148, void (*)(Pursuer *))(p);
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Pursuer *))(D_0044E4D0, p);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Pursuer *))(gEvents, p);
 }
 
 /* func_00283870, inline: may the pursuer go for its target? */
@@ -9170,7 +9170,7 @@ void func_002928B0(Pursuer *p) {
             PURSUER_STEP_DONE(p) = 0;
             break;
         case 3:
-            if (Pursuer_Replan(p, D_0044E568) == -1 && !(func_0027CA00(p) & 0xFF)) {
+            if (Pursuer_Replan(p, gRooms) == -1 && !(func_0027CA00(p) & 0xFF)) {
                 func_0029AF20(p);
                 return;
             }
@@ -9188,7 +9188,7 @@ void func_002928B0(Pursuer *p) {
             func_0029AF20(p);
             return;
         }
-        rooms = D_0044E568;
+        rooms = gRooms;
         VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), door);
         onMesh = func_00124480(&p->c.a, door, -1) != (u32)-1;
         a = func_00123C60(&p->c.a, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0)) & 0xFF;
@@ -9234,7 +9234,7 @@ void func_002928B0(Pursuer *p) {
         break;
     case 0xE:
         if ((PURSUER_STEP_DONE(p) == 1 || (ds & 2)) && !(ds & 8)) {
-            if (VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, PU(p, 0x17B0, u8)) != 0) {
+            if (VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, PU(p, 0x17B0, u8)) != 0) {
                 /* the door is open: through it */
                 p->c.unk104[0] = PU(p, 0x162C, s32);
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xF);
@@ -9344,7 +9344,7 @@ void func_002928B0(Pursuer *p) {
             if (!(func_00217260(p) & 0xFF)) {
                 u8 want = PU(p, 0x17B0, u8);
 
-                if (want == (VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568,
+                if (want == (VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms,
                                  PU(p, 0x138C + p->c.unk1388 * 2, u16), p->c.a.room) & 0xFF)) {
                     PU(p, 0x162C, s32) = 0;
                     func_002815E0(p, PU(p, 0x17B0, u8));
@@ -9486,7 +9486,7 @@ void func_002809E0(Pursuer *p) {
                     Pursuer_PlaceOn(p, p->c.a.navTri);
                 } else {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x20);
-                    p->c.a.navTri = VCALL(D_0044E568, 0x28, s32 (*)(VObject *, u32))(D_0044E568, p->c.door);
+                    p->c.a.navTri = VCALL(gRooms, 0x28, s32 (*)(VObject *, u32))(gRooms, p->c.door);
                     VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, f32 *))(p, p->c.a.navTri, NULL, NULL);
                 }
             }
@@ -9523,7 +9523,7 @@ void func_002809E0(Pursuer *p) {
             u32 fl = t != NULL ? AT(t, 0x3C, u32) : 0;
 
             if ((fl & p->c.a.navMask) || (fl & 0x300000) == 0x300000) {
-                p->c.a.navTri = VCALL(D_0044E568, 0x28, s32 (*)(VObject *, u32))(D_0044E568, p->c.door);
+                p->c.a.navTri = VCALL(gRooms, 0x28, s32 (*)(VObject *, u32))(gRooms, p->c.door);
             }
             if (p->c.a.navTri != (u32)-1) {
                 VCALL(p, 0x28, s32 (*)(Pursuer *, s32, f32 *, f32 *))(p, p->c.a.navTri, NULL, NULL);
@@ -9651,7 +9651,7 @@ void func_0029B8B0(Pursuer *p) {
         {
             s16 snd = p->c.state[2] == 1 ? 0x1D : 0x1C;
 
-            if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+            if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
                 func_00122C20(&p->c.a, snd, 7, 0, 0, NULL);
             }
         }
@@ -9659,7 +9659,7 @@ void func_0029B8B0(Pursuer *p) {
         return;
     }
     if (PU(p, 0x16F7, u8) == 1 && p->c.state[1] == 1 && p->c.hp > 0) {
-        if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
+        if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             func_00122C20(&p->c.a, 0x1C, 7, 0, 0, NULL);
         }
         Pursuer_ClearMessage(p);
@@ -9722,7 +9722,7 @@ void func_0029B8B0(Pursuer *p) {
         u8 *m = p->c.motion;
 
         if (AT(AT(m, 0x874, u8 *) + func_001F4710(m, AT(m, 0x55C, s32)) * 6, 0x4, u16) & 1) {
-            u8 *mgr = D_0044E578;
+            u8 *mgr = gEffects;
             s32 args[2];
 
             p->c.unk104[0] = p->c.state[4] & 0x7FFF;
@@ -10012,7 +10012,7 @@ static void Pursuer_FinishCrossing(Pursuer *p) {
             p->c.a.unk2D = 0;
             p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
             if (func_00214A90(p, p->c.a.navTri) != 0) {
-                VObject *doors = D_0044E558;
+                VObject *doors = gDoors;
                 f32 v[4] __attribute__((aligned(16)));
                 s8 side = VCALL(doors, 0x18, s32 (*)(VObject *, u32, f32 *))(doors, (u8)p->c.unk100, p->c.a.pos);
 
@@ -10215,7 +10215,7 @@ void func_0027B810(Pursuer *p, u32 door) {
         p->c.unk104[0] = -1;
     }
     Pursuer_ResetForRoom(p);
-    rooms = D_0044E568;
+    rooms = gRooms;
     if (func_00217510(p) == 0) {
         Pursuer_LeaveOffScreen(p, VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms,
             VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), door), door);
@@ -10364,7 +10364,7 @@ void func_00282010(Pursuer *p, u32 door) {
         p->c.unk104[0] = -1;
     }
     Pursuer_ResetForRoom(p);
-    rooms = D_0044E568;
+    rooms = gRooms;
     if (func_00217510(p) == 0) {
         Pursuer_LeaveOffScreen(p, VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, gCharPlayer->a.room, door), door);
         return;

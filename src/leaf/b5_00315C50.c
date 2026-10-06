@@ -36,7 +36,7 @@ extern u8 D_0042A340[];
 extern u8 D_0042AED0[];
 extern u8 D_0042B0B0[];
 extern u8 D_0042B160[];
-extern void *D_0044E4E8;
+extern void *gTexCache;
 extern u8 D_0045FE20[];
 extern u8 D_0045FE40[];
 extern u8 D_0045FE60[];
@@ -101,7 +101,7 @@ void func_0031DDF0(u8 *self, u32 id) {
 
 /* (possibly dead code: nothing in the game references it) */
 s32 func_0031E0B0(void *self) {
-    return VCALL(D_0044E4E8, 0x14, s32 (*)(void *, s32))(D_0044E4E8, 0x2D);
+    return VCALL(gTexCache, 0x14, s32 (*)(void *, s32))(gTexCache, 0x2D);
 }
 
 /* Count down the timer set by func_0031DDF0; id 0xFF = none. */
@@ -115,7 +115,7 @@ void func_0031E0D0(u8 *self) {
 }
 
 s32 func_0031E130(u8 *self) {
-    return VCALL(D_0044E4E8, 0x10, s32 (*)(void *, void *, s32))(D_0044E4E8, self + 0x40, 0x2D);
+    return VCALL(gTexCache, 0x10, s32 (*)(void *, void *, s32))(gTexCache, self + 0x40, 0x2D);
 }
 
 void *func_0031E220(void) {

@@ -1,4 +1,4 @@
-/* Controller input (system +0x40, vtable 0x46ADB0, global D_0044FEB0), on top of libpad2
+/* Controller input (system +0x40, vtable 0x46ADB0, global gPad), on top of libpad2
  * (replaced on PC by native/platform/pad.c). */
 #include "common.h"
 #include "game.h"

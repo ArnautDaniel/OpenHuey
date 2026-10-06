@@ -1,11 +1,11 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-/* The sound driver (global D_0044E560): banks of sound effects played by id. */
+/* The sound driver (global gSound): banks of sound effects played by id. */
 #include "common.h"
 #include "game.h"
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 
 /* banks */
 #define SE_BANK_MENU 5    /* the system / menu sounds */
@@ -27,7 +27,7 @@ static inline void Sound_Play(VObject *snd, s32 id, s32 bank) {
 
 /* a menu sound */
 static inline void Sound_PlaySE(s32 id) {
-    Sound_Play(D_0044E560, id, SE_BANK_MENU);
+    Sound_Play(gSound, id, SE_BANK_MENU);
 }
 
 #endif /* SOUND_H */

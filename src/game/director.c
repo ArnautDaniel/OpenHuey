@@ -1,4 +1,4 @@
-/* The cutscene director (vtable D_0046ED30, global D_0044FE10, constructed by func_002D1000).
+/* The cutscene director (vtable D_0046ED30, global gCutscene, constructed by func_002D1000).
  * A cutscene ("name" +0x14) is a script (progress +0x16C0, +0x18 here), a per-frame signal
  * table (progress +0x26C0, +0x1C) and light / effect cues (progress +0x66C0), loaded at the
  * start, then a series of shots streamed in turn into two buffers (progress +0xA6C0 +
@@ -31,14 +31,14 @@
 
 extern VObject *gCharacters[6];
 extern VObject *gFileLoader;
-extern VObject *D_0044FE10;   /* the director */
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044E4C8;   /* the scene's lights */
-extern u8 *D_0044E4C0;        /* the effects (SceneGame +0xF6CD30) */
-extern VObject *D_0044E4F0;   /* the renderer */
-extern VObject *D_0044E4F8;   /* the camera director */
-extern VObject *D_0044E558;   /* the doors */
-extern VObject *D_0044E7A8;   /* the screen fades */
+extern VObject *gCutscene;   /* the director */
+extern VObject *gCamera;   /* the camera */
+extern VObject *gLights;   /* the scene's lights */
+extern u8 *gRoomEffects;        /* the effects (SceneGame +0xF6CD30) */
+extern VObject *gRenderer;   /* the renderer */
+extern VObject *gCamDirector;   /* the camera director */
+extern VObject *gDoors;   /* the doors */
+extern VObject *gScreenFade;   /* the screen fades */
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
@@ -361,14 +361,14 @@ void func_002C9FB0(u8 *d) {
 void func_002CA130(u8 *d) {
     f32 col[4] __attribute__((aligned(16))) = { 0 };
     f32 amb[4] __attribute__((aligned(16))) = { 0 };
-    VObject *lights = D_0044E4C8;
+    VObject *lights = gLights;
     u8 *cues = (u8 *)gProgress + 0x66C0;
     u8 *c = cues + 0x10;
     u8 *fx;
     s32 i;
 
     VCALL(lights, 0x48, void (*)(VObject *, s32, f32 *, f32))(lights, 0, amb, 0.0f);
-    fx = D_0044E4C0;
+    fx = gRoomEffects;
     func_002670F0(fx, 0x1C);
     if (AT(d, 0x238, u8)) {
         effect_need(fx, 0x1D, D_0046EB40);
@@ -420,10 +420,10 @@ void func_002CA790(u8 *d) {
         return;
     }
     k = (f32 *)(AT(d, 0x20, u8 *) + 0x10 + (KEY_AT(d, FRAME(d)) << 5));
-    VCALL(D_0044E4B8, 0x1C, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, k[0], k[1], k[2]);
-    VCALL(D_0044E4B8, 0x28, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, k[3], k[4], k[5]);
-    VCALL(D_0044E4B8, 0x5C, void (*)(VObject *, f32))(D_0044E4B8, k[6]);
-    VCALL(D_0044E4B8, 0x70, void (*)(VObject *, f32))(D_0044E4B8, k[7]);
+    VCALL(gCamera, 0x1C, void (*)(VObject *, f32, f32, f32))(gCamera, k[0], k[1], k[2]);
+    VCALL(gCamera, 0x28, void (*)(VObject *, f32, f32, f32))(gCamera, k[3], k[4], k[5]);
+    VCALL(gCamera, 0x5C, void (*)(VObject *, f32))(gCamera, k[6]);
+    VCALL(gCamera, 0x70, void (*)(VObject *, f32))(gCamera, k[7]);
 }
 
 /* +0x14 each frame playing: a flash at signal 0, the camera, the doors, the object groups,
@@ -434,14 +434,14 @@ void func_002CA8C0(u8 *d) {
     s32 i;
 
     if (SIGNALED(d, 0, NULL) > 0) {
-        VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+        VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
     }
     func_002CA790(d);
     for (i = 0; i < 8; i++) {
         if (AT(REC(d, REC_AT(d, FRAME(d))), 0x28, u8) & (1 << i)) {
             u8 *keys = AT(d, 0x24 + i * 4, u8 *) + 0x20;
 
-            VCALL(D_0044E558, 0x78, void (*)(VObject *, u32, f32))(D_0044E558, i & 0xFF,
+            VCALL(gDoors, 0x78, void (*)(VObject *, u32, f32))(gDoors, i & 0xFF,
                                                                    AT(keys + KEY_AT(d, FRAME(d)) * 12, 0x4, f32));
         }
     }
@@ -458,15 +458,15 @@ void func_002CA8C0(u8 *d) {
     b = (u8)VCALL((VObject *)d, 0x74, s32 (*)(u8 *))(d);
     if (LAST(d) != FRAME(d)) {
         if (a != AT(d, 0x298, u8)) {
-            VCALL(D_0044E7A8, 0x14, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 2, a != 0, 0x2D0);
+            VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, a != 0, 0x2D0);
         }
         if (b != AT(d, 0x299, u8)) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, u8, s32))(D_0044E7A8, 2, AT(d, 0x29A + b, u8), 0x2D0);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, u8, s32))(gScreenFade, 2, AT(d, 0x29A + b, u8), 0x2D0);
         }
     } else {
         a = b = 0;
-        VCALL(D_0044E7A8, 0x14, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 2, 0, 1);
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 2, 0, 1);
+        VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
     }
     AT(d, 0x298, u8) = a;
     AT(d, 0x299, u8) = b;
@@ -497,9 +497,9 @@ void func_002CAB90(u8 *d) {
         }
     }
     func_002CBBE0(d);
-    VCALL(D_0044E7A8, 0x14, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 2, 0, 1);
-    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 2, 0, 1);
-    fx = D_0044E4C0;
+    VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
+    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
+    fx = gRoomEffects;
     if (AT(d, 0x238, u8)) {
         effect_need(fx, 0x1D, D_0046EB40);
         func_00266C70(fx, 0x1D, d + 0x248);
@@ -513,7 +513,7 @@ void func_002CAB90(u8 *d) {
         func_002670F0(fx, 0x1C);
     }
     zero[0] = zero[1] = zero[2] = 0.0f;
-    VCALL(D_0044E4C8, 0x48, void (*)(VObject *, s32, f32 *, f32))(D_0044E4C8, 0, zero, 0.0f);
+    VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, zero, 0.0f);
 }
 
 
@@ -577,7 +577,7 @@ void func_002CAFB0(u8 *d) {
         }
     }
     if (REC_AT(d, FRAME(d)) > 0 && REC_AT(d, LAST(d)) != REC_AT(d, FRAME(d))) {
-        VCALL(D_0044E4F0, 0x1C, void (*)(VObject *))(D_0044E4F0);
+        VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
     }
 }
 
@@ -598,10 +598,10 @@ void func_002CB500(u8 *d) {
     AT(BUF(d, AT(d, 0x64, s32)), 0x4, s32) = 2;
     AT(d, 0x2A0, PTMF) = D_00412940;
     func_002CBD10(d);
-    if (D_0044E4F8 != NULL) {
-        VCALL(D_0044E4F8, 0x14, void (*)(VObject *))(D_0044E4F8);
+    if (gCamDirector != NULL) {
+        VCALL(gCamDirector, 0x14, void (*)(VObject *))(gCamDirector);
     }
-    fx = D_0044E4C0;
+    fx = gRoomEffects;
     AT(d, 0x238, u8) = 0;
     e = func_00266C40(fx, 0x1D);
     if (e != NULL) {
@@ -692,7 +692,7 @@ void func_002CB9A0(u8 *d) {
     load(file, p + 0x26C0, 0x10000000);
     func_0026EDD0(file, 0x20, D_0045D2D8, NAME(d));
     load(file, p + 0x66C0, 0x10000000);
-    VCALL(D_0044FE10, 0x18, void (*)(VObject *, void *, void *))(D_0044FE10, p + 0x16C0, p + 0x26C0);
+    VCALL(gCutscene, 0x18, void (*)(VObject *, void *, void *))(gCutscene, p + 0x16C0, p + 0x26C0);
     for (i = 0; i < 0x20; i++) {
         SLOT(d, i)[2] = 0;
         SLOT(d, i)[3] = 0;

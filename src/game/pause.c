@@ -16,14 +16,14 @@
 #include "ptmf.h"
 #include "task.h"
 
-extern VObject *D_0044E4F0;   /* the renderer */
-extern VObject *D_0044E4E8;   /* the texture cache */
-extern VObject *D_0044E560;   /* the sound driver */
-extern VObject *D_0044E4D0;   /* the room objects */
+extern VObject *gRenderer;   /* the renderer */
+extern VObject *gTexCache;   /* the texture cache */
+extern VObject *gSound;   /* the sound driver */
+extern VObject *gEvents;   /* the room objects */
 extern VObject *gBootMessage;
-extern u8 *D_0044E980;        /* the sound mix (+0x114 the volume) */
+extern u8 *gAdx;        /* the sound mix (+0x114 the volume) */
 extern VObject *D_00456DF0;   /* the music director */
-extern u8 *D_0044E958;        /* the movie playing */
+extern u8 *gMovie;        /* the movie playing */
 extern void func_002D1FD0(void *mix);
 extern void func_002B6340(void *movie);
 extern void func_002CF390(u8 *rect, u32 colour);
@@ -41,7 +41,7 @@ extern const PTMF D_0041A1D0, D_0041A1E0, D_0041A1F0, D_0041A200, D_0041A210, D_
 
 /* sound effect `id` (driver +0x14) */
 static void sound(s32 id) {
-    VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, id, 5);
+    VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, id, 5);
 }
 
 static f32 clamp01(f32 *v) {
@@ -56,8 +56,8 @@ static f32 clamp01(f32 *v) {
 
 /* the movie's sound-effects channel paused (1) or going again (0) */
 static void movie_pause(s32 on) {
-    if (D_0044E958 != NULL) {
-        VObject *sfd = AT(D_0044E958, 0x14, VObject *);
+    if (gMovie != NULL) {
+        VObject *sfd = AT(gMovie, 0x14, VObject *);
 
         VCALL(sfd, 0x28, void (*)(VObject *, s32))(sfd, on);
     }
@@ -68,10 +68,10 @@ static void movie_pause(s32 on) {
 static void duck(f32 down, s32 normal) {
     f32 v = (0.0f + 100.0f - 100.0f * down) / 100.0f;
 
-    VCALL(D_0044E560, 0x94, void (*)(VObject *, u8))(D_0044E560, (u8)(u32)(0.0f + 255.0f - 255.0f * down));
-    AT(D_0044E980, 0x114, f32) = v;
-    clamp01(&AT(D_0044E980, 0x114, f32));
-    func_002D1FD0(D_0044E980);
+    VCALL(gSound, 0x94, void (*)(VObject *, u8))(gSound, (u8)(u32)(0.0f + 255.0f - 255.0f * down));
+    AT(gAdx, 0x114, f32) = v;
+    clamp01(&AT(gAdx, 0x114, f32));
+    func_002D1FD0(gAdx);
     if (D_00456DF0 != NULL) {
         if (!normal) {
             VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, v);
@@ -79,10 +79,10 @@ static void duck(f32 down, s32 normal) {
             VCALL(D_00456DF0, 0x48, void (*)(VObject *))(D_00456DF0);
         }
     }
-    if (D_0044E958 != NULL) {
-        AT(D_0044E958, 0x1CC, f32) = v;
-        clamp01(&AT(D_0044E958, 0x1CC, f32));
-        func_002B6340(D_0044E958);
+    if (gMovie != NULL) {
+        AT(gMovie, 0x1CC, f32) = v;
+        clamp01(&AT(gMovie, 0x1CC, f32));
+        func_002B6340(gMovie);
     }
 }
 
@@ -92,7 +92,7 @@ static void dim(u8 *o, f32 a) {
 }
 
 static void dim_draw(u8 *o) {
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, u8 *, s32, s32))(D_0044E4F0, o + 0x120, 0x33, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, u8 *, s32, s32))(gRenderer, o + 0x120, 0x33, 0);
 }
 
 /* message `id` centred on x 0x100 at y, alpha a */
@@ -109,7 +109,7 @@ static void highlight_w(u8 *o, u32 w, s32 y, f32 a) {
     AT(o, 0x22C, s32) = w * 2;
     AT(o, 0x230, s32) = 0x20;
     AT(o, 0x244, u32) = (AT(o, 0x244, u32) & 0xFFFFFF) | (((u32)a << 24) & 0xFF000000);
-    VCALL(D_0044E4F0, 0x80, void (*)(VObject *, u8 *))(D_0044E4F0, o + 0x224);
+    VCALL(gRenderer, 0x80, void (*)(VObject *, u8 *))(gRenderer, o + 0x224);
 }
 
 /* ... round message `id` */
@@ -180,7 +180,7 @@ void func_002F4330(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
-        if (D_0044E958 == NULL || VCALL(D_0044E4D0, 0x54, s32 (*)(VObject *))(D_0044E4D0) == 0) {
+        if (gMovie == NULL || VCALL(gEvents, 0x54, s32 (*)(VObject *))(gEvents) == 0) {
             STATE(o) = D_0041A280;
         }
     }
@@ -381,7 +381,7 @@ void func_002F60B0(u8 *o, u8 mode) {
 
 /* each frame open: the texture cache's layers and the boot message's reset, the state run */
 void func_002F6050(u8 *o) {
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     ptmf_scall(o, &STATE(o));
 }

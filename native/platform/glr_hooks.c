@@ -156,12 +156,12 @@ int func_001AB3F0(uint8_t *r) {
     return 1;
 }
 
-extern void *D_0044E4C0;                               /* the room effects */
+extern void *gRoomEffects;                               /* the room effects */
 extern void *func_00266C40(void *fx, int k);           /* effect slot k (NULL: none) */
 
 int func_001AC0D0(uint8_t *r) {
     uint32_t t = renderer_tint(r);
-    uint8_t *e = func_00266C40(D_0044E4C0, 0x1F);   /* the two-colour effect */
+    uint8_t *e = func_00266C40(gRoomEffects, 0x1F);   /* the two-colour effect */
 
     glr_tint_layer(0x23, t);
     if (e != NULL) {   /* its colours, their alphas scaled by the tint's */

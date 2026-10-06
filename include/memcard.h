@@ -4,7 +4,7 @@
 #include "common.h"
 #include "ptmf.h"
 
-/* Memory card manager (system +0x390, global D_0044FF00); see src/game/memcard.c. */
+/* Memory card manager (system +0x390, global gMemCard); see src/game/memcard.c. */
 typedef struct MemCard {
     /* 0x00 */ void **vtbl;
     /* 0x04 */ s32 status;

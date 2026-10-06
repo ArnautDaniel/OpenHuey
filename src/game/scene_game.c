@@ -10,7 +10,7 @@
 #define SG_PROGRESS 0x40        /* Progress (second base class) */
 #define SG_FIONA 0xC88840       /* Fiona */
 #define SG_PARTNER 0xE35F80     /* second character (Hewie?) */
-#define SG_SETTING_A30 0xA30    /* f32 0..1, also given to D_0044E560 +0xAC */
+#define SG_SETTING_A30 0xA30    /* f32 0..1, also given to gSound +0xAC */
 #define SG_ENTRY 0x6FC254       /* = Progress +0x6FC214: how the scene was entered (Game modeParam) */
 #define ENTRY_FLAG 0x40000000   /* top bits of the entry value */
 #define ENTRY_NEW -1            /* -1: start from the resident save buffer */
@@ -20,11 +20,11 @@ extern const PTMF D_0044C7A0;   /* stored at +0x1053450 */
 extern const PTMF D_0044C7B0;   /* next state */
 
 extern VObject *gRandom;
-extern VObject *D_0044E560;
-extern VObject *D_0044E7A8;
-extern VObject *D_0044E4B8;
-extern void *D_0044E978;        /* resident data; +0x190 holds the save buffer used here */
-extern void *D_0044E980;
+extern VObject *gSound;
+extern VObject *gScreenFade;
+extern VObject *gCamera;
+extern void *gSystemData;        /* resident data; +0x190 holds the save buffer used here */
+extern void *gAdx;
 extern void *D_004562B0;
 extern void *D_004562A8;
 
@@ -86,7 +86,7 @@ void SceneGame_StateEntry(Scene *game) {
     void *fiona = (u8 *)game + SG_FIONA;
     void *partner = (u8 *)game + SG_PARTNER;
     VObject *obj550 = gRandom;
-    u8 *save = (u8 *)D_0044E978 + 0x190;
+    u8 *save = (u8 *)gSystemData + 0x190;
     void *obj980;
     VObject *obj560;
     f32 *settingDst;
@@ -169,17 +169,17 @@ void SceneGame_StateEntry(Scene *game) {
     func_00176650(prog);
     func_00176550(prog);
     func_001F9D90((u8 *)game + 0xF6C1C0);
-    obj980 = D_0044E980;
+    obj980 = gAdx;
     func_002D2370(obj980, (u8 *)game + 0x1030240);
     func_002E34D0((u8 *)game + 0x1053424);
     AT(game, 0x1053440, PTMF) = sGameStateNull;
     func_002E2890((u8 *)game + 0x706480, &sGameStateNull);
     AT(game, 0x105344D, u8) = 0;
     AT(game, 0x105344E, u8) = 0;
-    VCALL(D_0044E7A8, 0x10, void (*)(VObject *))(D_0044E7A8);
+    VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
     AT(game, 0x106503C, s32) = 0;
-    VCALL(D_0044E4B8, 0xC, void (*)(VObject *))(D_0044E4B8);
-    obj560 = D_0044E560;
+    VCALL(gCamera, 0xC, void (*)(VObject *))(gCamera);
+    obj560 = gSound;
     VCALL(obj560, 0x94, void (*)(VObject *, s32))(obj560, 0xFF);
     VCALL(obj560, 0xAC, void (*)(VObject *, f32))(obj560, AT(game, SG_SETTING_A30, f32));
     settingDst = &AT(obj980, 0x120, f32);
@@ -215,8 +215,8 @@ extern void *D_0047A790[];          /* the sub screen */
 extern void *D_0046A110[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
-extern void *gSceneGameF29740, *D_0044E580, *D_0044E4C8, *D_0044E4F8, *D_0044E4C0, *D_0044E578;
-extern void *D_0044E970, *D_0045D1F0, *D_00456DE8;
+extern void *gSceneGameF29740, *gRoutePlanner, *gLights, *gCamDirector, *gRoomEffects, *gEffects;
+extern void *gMusic, *D_0045D1F0, *D_00456DE8;
 
 extern void func_002D15C0(void *);
 extern void func_002D15B0(void *);
@@ -307,7 +307,7 @@ Scene *SceneGame_ctor(Scene *g) {
     c->unk153C = 1;
     c->a.vtbl = D_0046A120;
     AT(g, 0xF29740, void **) = D_0046ABB0;
-    D_0044E580 = (u8 *)g + 0xF6A940;
+    gRoutePlanner = (u8 *)g + 0xF6A940;
     AT(g, 0xF6A940, void **) = D_0046C520;
 
     o = (u8 *)g + 0xF6AFB0;
@@ -324,7 +324,7 @@ Scene *SceneGame_ctor(Scene *g) {
     for (i = 0; i < 17; i++) {
         AT(o, 0x564 + i * 0x18, s32) = 0;
     }
-    D_0044E4C8 = (u8 *)g + 0xF6C1C0;
+    gLights = (u8 *)g + 0xF6C1C0;
     AT(o, 0x6FC, s32) = 0;
 
     o = (u8 *)g + 0xF6C1C0;
@@ -346,16 +346,16 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x60, void **) = D_0046C6F0;
     AT(o, 0x64, void **) = D_0046C660;
     AT(o, 0x60, void **) = D_0046C668;
-    D_0044E4F8 = o + 0x60;
+    gCamDirector = o + 0x60;
 
     o = (u8 *)g + 0xF6CD30;
     AT(o, 0x1400, void **) = D_004699E0;
     AT(o, 0x1404, s32) = 0;
-    D_0044E4C0 = o;
+    gRoomEffects = o;
     AT(o, 0x1408, s32) = 0;
     AT(o, 0x1400, void **) = D_004699C0;
     AT(o, 0x140C, s32) = 0;
-    D_0044E578 = (u8 *)g + 0xF6E200;   /* a sub-heap (its header after its 64 KB) */
+    gEffects = (u8 *)g + 0xF6E200;   /* a sub-heap (its header after its 64 KB) */
     AT(o, 0x1410, s32) = 0;
     AT(o, 0x1414, s32) = 0;
     o = (u8 *)g + 0xF6E200;
@@ -376,7 +376,7 @@ Scene *SceneGame_ctor(Scene *g) {
     BootCard_ctor(&sub->card);
 
     /* the music controller */
-    D_0044E970 = (u8 *)g + 0x1053424;
+    gMusic = (u8 *)g + 0x1053424;
     AT(g, 0x1053424, void **) = D_0046A110;
     D_0045D1F0 = (u8 *)g + 0x105344C;
 
@@ -439,8 +439,8 @@ extern void func_001AABC0(void *o);
 extern void func_00267250(void *o);
 extern void func_002D6330(void *o);
 extern void func_00385030(SubScreen *s, void *save);
-extern VObject *D_0044FE08;
-extern VObject *D_0044E568;   /* the rooms */
+extern VObject *gObstacles;
+extern VObject *gRooms;   /* the rooms */
 extern const PTMF D_0044C7C0; /* { 0, -1, func_003A0390 } */
 extern void *gCharacters[6];
 
@@ -461,17 +461,17 @@ s32 func_003A04A0(Scene *g) {
     func_0031E150((u8 *)g + 0x1053480);
     if (AT(g, 0xF6CD28, u8) != 1) {
         func_001771A0(prog, 1);
-        VCALL(D_0044E568, 0xC, void (*)(VObject *, void *))(D_0044E568, NULL);
+        VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, NULL);
     } else {
-        u8 *save = (u8 *)D_0044E978 + 0x190;
+        u8 *save = (u8 *)gSystemData + 0x190;
 
-        AT(g, SG_ENTRY, s32) = AT(D_0044E978, 0x194, s32);
+        AT(g, SG_ENTRY, s32) = AT(gSystemData, 0x194, s32);
         func_00385030((SubScreen *)((u8 *)g + 0xF87240), save);
-        VCALL(D_0044E568, 0xC, void (*)(VObject *, void *))(D_0044E568, save + 0x1010);
+        VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, save + 0x1010);
     }
     func_001771A0(prog, 0);
     func_001765D0(prog);
-    VCALL(D_0044FE08, 0xC, void (*)(VObject *))(D_0044FE08);
+    VCALL(gObstacles, 0xC, void (*)(VObject *))(gObstacles);
     func_00209850((u8 *)g + 0xF6AFB0);
     func_0039AD90(g);
     func_00120720((u8 *)g + 0x73EE80, AT(g, SG_ENTRY, s32), AT(g, 0xF6C1B0, s32));
@@ -531,7 +531,7 @@ s32 func_003A0390(Scene *g) {
         return 1;
     }
     if (AT(g, 0xF6CD28, u8) == 1) {
-        func_00120720((u8 *)g + 0x73EE80, AT(D_0044E978, 0x198, s32),
+        func_00120720((u8 *)g + 0x73EE80, AT(gSystemData, 0x198, s32),
                       (u8)(AT(g, 0xF6C1B0, s32) == 0));
     }
     func_0031E130((u8 *)g + 0x1053480);
@@ -566,7 +566,7 @@ void func_003A0160(Scene *g) {
     if (AT(g, 0xF6CD28, u8) == 1) {
         VObject *sub = (VObject *)((u8 *)g + 0xF87240);
 
-        VCALL(sub, 0x2C, void (*)(VObject *, s32))(sub, AT(D_0044E978, 0x1A80, s8));
+        VCALL(sub, 0x2C, void (*)(VObject *, s32))(sub, AT(gSystemData, 0x1A80, s8));
     }
     for (i = 0; i < 3; i++) {
         if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) == 1) {
@@ -588,9 +588,9 @@ void func_003A0160(Scene *g) {
 }
 
 extern u8 *gCharPartner;
-extern VObject *D_0044F260;
-extern u8 *D_0044F258;        /* the creatures: 10 slots (7.. 9 have an extra part) */
-extern u8 *D_0044F808;        /* the stalker currently in play */
+extern VObject *gPlacedThings;
+extern u8 *gCreatures;        /* the creatures: 10 slots (7.. 9 have an extra part) */
+extern u8 *gCharSlot2;        /* the stalker currently in play */
 extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
 extern void func_0011FFB0(void *rooms, s32 slot);
 extern void func_002D6100(void *o);
@@ -620,7 +620,7 @@ void func_0039D310(Scene *g) {
     const s32 *t;
 
     if (!(u8)Progress_TestFlag(prog, 0x27)) {
-        snd = D_0044E560;
+        snd = gSound;
         VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
         VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
         VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
@@ -630,7 +630,7 @@ void func_0039D310(Scene *g) {
 #ifdef HG_NATIVE
     if (sDebugPlace) {   /* debug start: Fiona at the first door's way in (rooms +0x34), else on
                           * the middle of walk-mesh triangle 0 */
-        NavMesh *nm = D_0044E570;
+        NavMesh *nm = gNavMesh;
         f32 pos[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 1.0f};
         f32 dir[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
         u32 tri = NAV_NONE;
@@ -638,7 +638,7 @@ void func_0039D310(Scene *g) {
 
         sDebugPlace = 0;
         for (k = 0; k < 8 && tri == NAV_NONE; k++) {
-            tri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, k, pos);
+            tri = VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, k, pos);
         }
         if (tri == NAV_NONE && nm != NULL && nm->tris != NULL && nm->numTris > 0) {
             tri = 0;
@@ -654,7 +654,7 @@ void func_0039D310(Scene *g) {
     }
 #endif
     if (AT(g, 0xF6CD28, u8) == 1) {
-        u8 *rd = D_0044E978;
+        u8 *rd = gSystemData;
         u8 *save = rd + 0x190;
         Progress *gp;
         u8 *cs;
@@ -673,21 +673,21 @@ void func_0039D310(Scene *g) {
         }
         VCALL(gCharPartner, 0x70, void (*)(void *))(gCharPartner);
         func_00165510(gCharPartner, AT(cs, 0xC, s32));
-        if (D_0044F808 != NULL) {
+        if (gCharSlot2 != NULL) {
             if (AT(save, 0x20, u8)) {
                 func_001771A0(prog, 2);
             }
-            VCALL(D_0044F808, 0x70, void (*)(void *))(D_0044F808);
-            stalker = D_0044F808;
+            VCALL(gCharSlot2, 0x70, void (*)(void *))(gCharSlot2);
+            stalker = gCharSlot2;
             if (AT(stalker, 0x28, u8) &&
                 AT(stalker, 0x30, s32) != VCALL(g, 0xA4, s32 (*)(Scene *))(g)) {
-                if (AT(D_0044F808, 0xC4, s32) == 2 ||
+                if (AT(gCharSlot2, 0xC4, s32) == 2 ||
                     (u8)VCALL(prog, 0x64, s32 (*)(Progress *))(prog) == 4) {
                     func_002EC470((u8 *)g + 0x7A4, 0);
                 }
             }
         }
-        cr = D_0044F258;
+        cr = gCreatures;
         for (i = 0; i < 10; i++) {
             u8 *e = (u8 *)gp + 0x878 + i * 0x24;
             u8 *mem;
@@ -724,9 +724,9 @@ void func_0039D310(Scene *g) {
         if (Progress_TestFlag(prog, 0x16)) {
             VCALL(gp, 0x78, void (*)(Progress *, s32, s32))(gp, 5, 0);
         }
-        VCALL(D_0044F260, 0x1C, void (*)(VObject *))(D_0044F260);
+        VCALL(gPlacedThings, 0x1C, void (*)(VObject *))(gPlacedThings);
     }
-    VCALL(D_0044F260, 0x20, void (*)(VObject *))(D_0044F260);
+    VCALL(gPlacedThings, 0x20, void (*)(VObject *))(gPlacedThings);
     if (AT(g, SG_CONTROL, u8) == 0) {
         AT(gCharPlayer, 0x30, s32) = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
     } else {
@@ -739,7 +739,7 @@ void func_0039D310(Scene *g) {
             AT(gCharPartner, 0x34, s32) = -1;
         }
     }
-    snd = D_0044E560;
+    snd = gSound;
     VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 0, 0);
     VCALL(snd, 0x7C, void (*)(VObject *, s32, s32))(snd, 1, 0);
     func_002D6100((u8 *)g + 0xF6E200);
@@ -783,7 +783,7 @@ void func_0039BAE0(Scene *g, s32 set, u8 a, s32 b) {
     }
 }
 
-extern VObject *D_0044E4D0;   /* the event system (its second base) */
+extern VObject *gEvents;   /* the event system (its second base) */
 extern void func_00175DE0(Progress *p);
 extern void func_002F0500(void *o);
 extern void func_002A7720(void *o);
@@ -808,8 +808,8 @@ void func_0039CDC0(Scene *g) {
         func_002A7720((u8 *)g + 0xA20);
     }
     room = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
-    rooms = D_0044E568;
-    ev = D_0044E4D0;
+    rooms = gRooms;
+    ev = gEvents;
     for (k = 0; k < 8; k++) {
         u8 *z = (u8 *)g + 0x1010 + k * 6;
         u32 area;
@@ -857,7 +857,7 @@ void func_003A0060(Scene *g) {
     if (!(u8)Progress_TestFlag(prog, 8) && !(u8)Progress_TestFlag(prog, 0x2A)) {
         func_0021C840(D_0045D1F0, 0x32, 0);
     }
-    VCALL((VObject *)D_0044E4C8, 0x34, void (*)(VObject *))((VObject *)D_0044E4C8);
+    VCALL((VObject *)gLights, 0x34, void (*)(VObject *))((VObject *)gLights);
     if (ptmf_test(sub)) {
         ptmf_scall(g, sub);
     }
@@ -865,8 +865,8 @@ void func_003A0060(Scene *g) {
 
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
 extern const PTMF D_0044C800, D_0044C810, D_0044C820, D_0044C830;   /* sub-states: menus */
-extern void *D_0044E558, *D_0044E960;
-extern void *D_0044E958;        /* the movie playing */
+extern void *gDoors, *gSceneTable;
+extern void *gMovie;        /* the movie playing */
 extern s8 D_0047E360;           /* the pad: 0 = not connected */
 extern VObject *D_00456DF0;
 extern void func_002E26C0(void *o, s32 room);
@@ -931,7 +931,7 @@ static void clamp01(f32 *v) {
 
 /* every scene gets the save callback (+0x4) and is told (+0x14) */
 static inline void scenes_to_save(void) {
-    u8 *scenes = D_0044E960;
+    u8 *scenes = gSceneTable;
     s32 i;
 
     for (i = 0; i < 4; i++) {
@@ -1063,7 +1063,7 @@ void func_0039EAB0(Scene *g) {
             }
             func_002E26C0((u8 *)g + 0x706480, AT(g, 0xF6CD20, u8));
             AT(g, 0xF6CD20, u8) = 0xFF;
-            VCALL(D_0044E558, 0x5C, void (*)(void *))(D_0044E558);
+            VCALL(gDoors, 0x5C, void (*)(void *))(gDoors);
             func_0011FF30(rooms, AT(g, 0xF6C1B0, s32));
             AT(g, 0xF6C1B0, s32) ^= 1;
             func_0039D310(g);
@@ -1096,8 +1096,8 @@ void func_0039EAB0(Scene *g) {
         if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
             scenes_to_save();
             VCALL(loader, 0x1C, void (*)(VObject *))(loader);
-            AT(D_0044E978, 0x4, s32) = 2;
-            AT(D_0044E978, 0x10, s32) = 1;
+            AT(gSystemData, 0x4, s32) = 2;
+            AT(gSystemData, 0x10, s32) = 1;
         }
         return;
     }
@@ -1141,9 +1141,9 @@ void func_0039EAB0(Scene *g) {
     }
     if (AT(g, 0x1158, f32) != AT(g, 0x115C, f32)) {
         AT(g, 0x115C, f32) = AT(g, 0x1158, f32);
-        AT(D_0044E980, 0x118, f32) = AT(g, 0x1158, f32);
-        clamp01(&AT(D_0044E980, 0x118, f32));
-        func_002D1FD0(D_0044E980);
+        AT(gAdx, 0x118, f32) = AT(g, 0x1158, f32);
+        clamp01(&AT(gAdx, 0x118, f32));
+        func_002D1FD0(gAdx);
     }
 
     if (!(u8)Progress_TestFlag(prog, 8)) {
@@ -1159,7 +1159,7 @@ void func_0039EAB0(Scene *g) {
         func_00267160((u8 *)g + 0xF6CD30);
         func_002D61E0((u8 *)g + 0xF6E200);
         if (!(u8)Progress_TestFlag(prog, 0xF) && !camdir_busy(g)) {
-            if (!(u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0)) {
+            if (!(u8)VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents)) {
                 func_002EF480((u8 *)g + 0x7F8, 1.0f);
             }
             func_002F0340((u8 *)g + 0x7F8, 0);
@@ -1179,39 +1179,39 @@ void func_0039EAB0(Scene *g) {
     if (Progress_TestFlag(prog, 0xC)) {
         VObject *snd;
 
-        VCALL(D_0044E7A8, 0x10, void (*)(VObject *))(D_0044E7A8);
+        VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
         VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
         ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C800);
         menu = 1;
-        snd = D_0044E560;
+        snd = gSound;
         VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
-        AT(D_0044E980, 0x120, f32) = 1.0f;
-        clamp01(&AT(D_0044E980, 0x120, f32));
-        func_002D1FD0(D_0044E980);
+        AT(gAdx, 0x120, f32) = 1.0f;
+        clamp01(&AT(gAdx, 0x120, f32));
+        func_002D1FD0(gAdx);
         if (D_00456DF0 != NULL) {
             VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, 1.0f);
         }
-        if (D_0044E958 != NULL) {
-            AT(D_0044E958, 0x1D4, f32) = 1.0f;
-            clamp01(&AT(D_0044E958, 0x1D4, f32));
-            func_002B6340(D_0044E958);
+        if (gMovie != NULL) {
+            AT(gMovie, 0x1D4, f32) = 1.0f;
+            clamp01(&AT(gMovie, 0x1D4, f32));
+            func_002B6340(gMovie);
         }
         VCALL(snd, 0x9C, void (*)(VObject *))(snd);
-        VCALL(D_0044E970, 0x8, void (*)(void *, f32, s32, s32, s32))(D_0044E970, 1.0f, 0xFF, 0, 0);
+        VCALL(gMusic, 0x8, void (*)(void *, f32, s32, s32, s32))(gMusic, 1.0f, 0xFF, 0, 0);
     }
     if (!(u8)Progress_TestFlag(prog, 8) && Progress_TestFlag(prog, 6) && !menu) {
         if (camdir_busy(g) && !(u8)Progress_TestFlag(prog, 0x19)) {
             if ((*flags & 0xF) == 0 && AT(g, 0x44, s32) == 0 &&
-                !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && D_0044E958 != NULL) {
-                VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+                !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie != NULL) {
+                VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
                 func_002F60B0((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
                 func_002F02F0((u8 *)g + 0x7F8);
                 menu = 1;
                 ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C810);
             }
-        } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && D_0044E958 == NULL &&
+        } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie == NULL &&
                    !(u8)Progress_TestFlag(prog, 0x19)) {
-            VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+            VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
             func_002F60B0((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
             func_002F02F0((u8 *)g + 0x7F8);
             menu = 1;
@@ -1219,7 +1219,7 @@ void func_0039EAB0(Scene *g) {
         }
     }
     if (Progress_TestFlag(prog, 4) && !menu) {
-        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 1);
+        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
         ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C830);
     }
     Progress_ClearFlag(prog, 0xC);
@@ -1247,11 +1247,11 @@ extern s32 func_00177620(Progress *p);   /* who is controlled (u8): 2 = Hewie */
 
 /* show (event +0x3C) or hide (+0x40) the action markers 0x800A..0x800D */
 static void prompt_show(s32 id) {
-    VCALL(D_0044E4D0, 0x3C, void (*)(VObject *, s32))(D_0044E4D0, id);
+    VCALL(gEvents, 0x3C, void (*)(VObject *, s32))(gEvents, id);
 }
 
 static void prompt_hide_all(void) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
 
     VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800A);
     VCALL(ev, 0x40, void (*)(VObject *, s32))(ev, 0x800B);
@@ -1318,7 +1318,7 @@ void func_0039C880(Scene *g) {
                 changed = 0;
             }
         } else if (AT(cur, 0x0, s32) == 2) {
-            VObject *rooms = D_0044E568;
+            VObject *rooms = gRooms;
             u16 a = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(cur, 0x18, s32), AT(cur, 0x8, u8));
             u16 b = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(last, 0x18, s32), AT(last, 0x8, u8));
 
@@ -1395,9 +1395,9 @@ void func_0039BB60(Scene *g) {
     s32 stalker = 0, chasing = 0, creature = 0, near = 0;
     s32 room, sroom = -1, i;
 
-    if (D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0) {
+    if (gCharSlot2 != NULL && AT(gCharSlot2, 0x28, u8) != 0) {
         stalker = 1;
-        chasing = AT(D_0044F808, 0xC4, s32) == 2;
+        chasing = AT(gCharSlot2, 0xC4, s32) == 2;
     }
     if (alert == 0xFF && !stalker) {
         func_00177630(prog, 2);
@@ -1420,7 +1420,7 @@ void func_0039BB60(Scene *g) {
         if (stalker) {
             sroom = AT(gCharPursuer, 0x30, s32);
             if (sroom != room) {
-                VObject *rooms = D_0044E568;
+                VObject *rooms = gRooms;
 
                 /* (as the original: any exit not leading to the stalker's room counts) */
                 for (i = 0; i < 8; i++) {
@@ -1432,7 +1432,7 @@ void func_0039BB60(Scene *g) {
             }
         }
         for (i = 0; i < 10; i++) {
-            VObject *c = AT(D_0044F258, i * 4, VObject *);
+            VObject *c = AT(gCreatures, i * 4, VObject *);
 
             if (c != NULL && (u8)VCALL(c, 0x3C, s32 (*)(VObject *, u32))(c, (u8)i) == 1 &&
                 AT(c, 0x30, s32) == room) {
@@ -1510,7 +1510,7 @@ extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's st
  * 0 / 1, up to 400, ending at -1) */
 void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 d;
     s32 r;
 
@@ -1530,8 +1530,8 @@ void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
 /* get the room behind exit `exit` of the current one ready: loaded into the other room slot
  * (+0x73F240, current slot +0xF6C1B0) unless it is there already */
 void func_0039D070(Scene *g, s32 exit) {
-    s32 room = VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, s32))(
-        D_0044E568, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
+    s32 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, s32))(
+        gRooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
     u8 other;
 
     if (room & 0x80000000) {
@@ -1552,14 +1552,14 @@ extern void func_001205A0(void *rooms, u8 slot);
  * other side (rooms +0x14): the event script's "exit taken" (event +0x702), which the next
  * room's entry script uses to place her */
 u8 func_0039D120(Scene *g, u8 exit) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u8 other = AT(g, 0xF6C1B0, s32) == 0;
     s32 next = AT(g, 0x73F240 + other * 4, s32);
     s32 room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(
         rooms, AT(g, 0x73F240 + AT(g, 0xF6C1B0, s32) * 4, s32), exit);
 
     if (!(u8)Progress_TestFlag((Progress *)((u8 *)g + SG_PROGRESS), 0x27)) {
-        VObject *snd = D_0044E560;
+        VObject *snd = gSound;
 
         VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
         VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
@@ -1594,14 +1594,14 @@ extern void *func_002E2330(u32 size, void *place);   /* placement new */
 extern void *func_0038C8D0(void *m);    /* a creature's extra part */
 extern void func_00110878(u8 *out);     /* the date and time (Sony libcdvd clock) */
 extern void func_003851B0(void *sub, u8 *save);
-extern VObject *D_0044F260;
+extern VObject *gPlacedThings;
 extern void *D_00469C20[], *D_00469C60[], *D_00474080[], *D_0046FAA0[];
 
 #define SG_ROOM(g) VCALL((VObject *)(g), 0xA4, s32 (*)(Scene *))(g)
 
 /* every door with a side in room `room` unlocked / locked */
 static void doors_of_room(Scene *g, s32 room, s32 (*set)(Progress *, u32)) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 d;
 
     for (d = 0; d < 0x190; d++) {
@@ -1627,7 +1627,7 @@ void func_0039C7A0(Scene *g, s32 room) {
 /* room `room`'s exits all closed to `kind`'s side (lock bits 4..7 of the door states: kind 0
    bit 0, 1 bit 1, 2..5 bit 2, others none) */
 s32 func_0039C4C0(Scene *g, s32 room, u32 kind) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 side = 0, exit;
 
     switch (kind & 0xFF) {
@@ -1673,7 +1673,7 @@ static s32 in_list(const s32 *list, u32 n, s32 room) {
 /* +0xF4: the rooms within two open doors of `room` (-1: the current one): `room` first, then
    each new one; the rest of the 65 entries -1; how many */
 u32 func_0039C040(Scene *g, s32 *list, s32 room) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 n = 1, i, j;
 
     if (list == NULL) {
@@ -1750,7 +1750,7 @@ void *func_0039B280(void *o) {
     return creature_init(o, D_0046FAA0);
 }
 
-/* a placed character (D_0044F258) of the creature class in slot `k`, its model too for
+/* a placed character (gCreatures) of the creature class in slot `k`, its model too for
  * slots 7..9; its memory block (NULL: none) */
 static inline __attribute__((always_inline)) u8 *creature_new(u8 *cr, u32 k, s32 other) {
     u8 *mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
@@ -1799,7 +1799,7 @@ void func_0039AEA0(Scene *g, u32 room, s32 tri, s32 a3, u32 flags, s32 kind, s32
             return;
         }
         if (busy == 0) {
-            mem = creature_new(D_0044F258, k & 0xFF, 1);
+            mem = creature_new(gCreatures, k & 0xFF, 1);
         }
     } else if (which == -1) {
         s32 busy;
@@ -1819,10 +1819,10 @@ void func_0039AEA0(Scene *g, u32 room, s32 tri, s32 a3, u32 flags, s32 kind, s32
             return;
         }
         if (busy == 0) {
-            mem = creature_new(D_0044F258, k & 0xFF, 0);
+            mem = creature_new(gCreatures, k & 0xFF, 0);
         }
     } else {
-        u8 *cr = D_0044F258;
+        u8 *cr = gCreatures;
         u8 *o;
 
         mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
@@ -1854,8 +1854,8 @@ void func_0039B2D0(Scene *g) {
     u8 alt = AT(g, 0x105344E, u8) & 0x80;
     u8 *count = &AT(g, 0x105344D, u8);
     VObject *placed = (VObject *)((u8 *)g + 0x706480);
-    VObject *rooms = D_0044E568;
-    u8 *pool = D_0044F258;   /* (its pool's vtable at +0x28) */
+    VObject *rooms = gRooms;
+    u8 *pool = gCreatures;   /* (its pool's vtable at +0x28) */
     s32 i;
 
     if (*count >= (alt ? 4 : 7)) {
@@ -1922,14 +1922,14 @@ void func_0039BAC0(Scene *g) {
     AT(g, 0x73EEE0, u8) = 1;
 }
 
-/* save the game into the resident data (D_0044E978): save slot `slot`'s header (+0x70, 0x18
+/* save the game into the resident data (gSystemData): save slot `slot`'s header (+0x70, 0x18
  * each: room, the sub screen's +0x30, a flag of +0x70, the date, +0x1004..+0x1007) and the
  * snapshot +0x190 (room, entry, Fiona's triangle / +0xE8 / +0xEC / position / heading, the six
  * characters' kinds and activity, the progress flags +0x50, the rooms' +0x1010 (13 words), the
  * sub screen's +0x18F0 and its own part (func_003851B0)), after the partner / stalker / placed
- * things / D_0044F260 save their state */
+ * things / gPlacedThings save their state */
 void func_0039B800(Scene *g, u32 slot) {
-    u8 *rd = D_0044E978;
+    u8 *rd = gSystemData;
     u8 *h = rd + 0x70 + (slot & 0xFF) * 0x18;
     u8 *s = rd + 0x190;
     VObject *sub = (VObject *)((u8 *)g + 0xF87240);
@@ -1962,14 +1962,14 @@ void func_0039B800(Scene *g, u32 slot) {
     sceVu0CopyVector((f32 *)(s + 0x30), (f32 *)(gCharPlayer + 0x10));
     sceVu0CopyVector((f32 *)(s + 0x40), (f32 *)(gCharPlayer + 0x50));
     VCALL((VObject *)gCharPartner, 0x6C, void (*)(void *))(gCharPartner);
-    if (D_0044F808 != NULL) {
-        VCALL((VObject *)D_0044F808, 0x6C, void (*)(void *))(D_0044F808);
+    if (gCharSlot2 != NULL) {
+        VCALL((VObject *)gCharSlot2, 0x6C, void (*)(void *))(gCharSlot2);
     }
     VCALL_AT(placed, 0x28, 0x1C, void (*)(VObject *))(placed);
-    VCALL(D_0044F260, 0x18, void (*)(VObject *))(D_0044F260);
+    VCALL(gPlacedThings, 0x18, void (*)(VObject *))(gPlacedThings);
     Progress_ClearFlag(&AT(g, SG_PROGRESS, Progress), 0x18);
     func_002A7C70((u8 *)g + 0x48, s + 0x50);
-    w = VCALL(D_0044E568, 0x7C, const s32 *(*)(VObject *))(D_0044E568);
+    w = VCALL(gRooms, 0x7C, const s32 *(*)(VObject *))(gRooms);
     for (i = 0; i < 13; i++) {
         AT(s, 0x1010 + i * 4, s32) = w[i];
     }
@@ -1987,7 +1987,7 @@ extern void func_002F3910(void *fader);
 extern void func_002F0260(void *panic, u32 stage);
 extern s32 func_00178A30(Progress *p, u32 d);
 extern s32 func_001773A0(Progress *p, u32 slot, u8 quick);
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* the frozen world drawn (rooms, progress - `chars`: 0 unless flag 0x17, 1 with the placed
  * things unless 0x17 without 0x24, 2 both always - effects, panic, the event's message, the
@@ -2044,12 +2044,12 @@ void func_0039DF10(Scene *g) {
             if (VCALL(loader, 0x24, s32 (*)(VObject *))(loader) != 2) {
                 scenes_to_save();
                 VCALL(loader, 0x1C, void (*)(VObject *))(loader);
-                AT(D_0044E978, 0x4, s32) = 2;
-                AT(D_0044E978, 0x10, s32) = 1;
+                AT(gSystemData, 0x4, s32) = 2;
+                AT(gSystemData, 0x10, s32) = 1;
             }
             return;
         }
-        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
         to_play(g, &D_0044C860);
     }
     Progress_ClearFlag(prog, 6);
@@ -2113,7 +2113,7 @@ void func_0039D990(Scene *g) {
     }
     func_002F6050((u8 *)g + 0x73EBA0);
     if (Progress_TestFlag(prog, 6)) {
-        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
         func_0039BB60(g);
         to_play(g, &D_0044C870);
     }
@@ -2136,13 +2136,13 @@ void func_0039E7D0(Scene *g) {
     if (AT(g, 0xF88938, u8) != 0 && !(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 2, 1);
     } else {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
         VCALL((u8 *)g + 0x6FC258, 0x20, void (*)(void *))((u8 *)g + 0x6FC258);
     }
     SubScreen_Update((SubScreen *)((u8 *)g + 0xF87240));
     func_002A7630((u8 *)g + 0x1004);
     if (Progress_TestFlag(prog, 4)) {
-        VCALL(D_0044E7A8, 0x2C, void (*)(VObject *, s32))(D_0044E7A8, 0);
+        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
         to_play(g, &D_0044C840);
     }
     Progress_ClearFlag(prog, 4);
@@ -2184,14 +2184,14 @@ void func_0039E380(Scene *g) {
         }
         scenes_to_save();
         VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
-        AT(D_0044E978, 0x4, s32) = AT(g, 0x73EB40, u8) == 2 ? 5 : 2;
-        AT(D_0044E978, 0x10, s32) = 0;
+        AT(gSystemData, 0x4, s32) = AT(g, 0x73EB40, u8) == 2 ? 5 : 2;
+        AT(gSystemData, 0x10, s32) = 0;
         return;
     }
     VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
     Progress_SetFlag(prog, 8);
     AT(g, 0x1FBF01, u8) = 0;
-    VCALL((VObject *)D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, -1.0f);
+    VCALL((VObject *)gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, -1.0f);
     func_002F0260((u8 *)g + 0x7F8, 0);
     func_00178A30(prog, 0x10C);
     VCALL(g, 0xE8, void (*)(Scene *, s32, s32, s32))(g, VCALL(g, 0xA4, s32 (*)(Scene *))(g), 1, 0);
@@ -2319,7 +2319,7 @@ extern void func_002D2330(void *bgm);
 extern void func_0031E0B0(void *o);
 extern void func_00267140(void *o);
 extern void func_0017D1B0(void *o);
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* clear the 17 words at +0x2718 */
 void func_00179E60(u8 *o) {
@@ -2347,8 +2347,8 @@ void SceneGame_OnSoftReset(u8 *g) {
     if (VCALL(gFileLoader, 0x24, s32 (*)(void *))(gFileLoader) != 3) {
         return;
     }
-    VCALL(D_0044E7A8, 0x10, void (*)(VObject *))(D_0044E7A8);
-    snd = D_0044E560;
+    VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
+    snd = gSound;
     VCALL(snd, 0x8C, void (*)(VObject *))(snd);
     VCALL(snd, 0xC, void (*)(VObject *))(snd);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
@@ -2363,21 +2363,21 @@ void SceneGame_OnSoftReset(u8 *g) {
     func_00120980(g + 0x73EE80);
     func_001F9D20(g + 0xF6C1C0);
     func_001766D0(g + 0x40);
-    sc = AT(D_0044E960, 4, u8 *);
+    sc = AT(gSceneTable, 4, u8 *);
     if (sc != NULL) {
         ptmf_set(&AT(sc, 4, PTMF), &D_0044C598);
-        sc = AT(D_0044E960, 4, u8 *);
+        sc = AT(gSceneTable, 4, u8 *);
         VCALL(sc, 0x14, void (*)(void *))(sc);
     }
-    AT(VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0), 0x1C, u8) = 0;
+    AT(VCALL(gRenderer, 0x2C, u8 *(*)(VObject *))(gRenderer), 0x1C, u8) = 0;
     func_002E31D0(g + 0x1053424);
-    bgm = (u8 *)D_0044E980;
+    bgm = (u8 *)gAdx;
     func_002D2330(bgm);
     VCALL((VObject *)(g + 0x6FC380), 0x24, void (*)(VObject *))((VObject *)(g + 0x6FC380));
     func_00267140(g + 0xF6CD30);
     func_0031E0B0(g + 0x1053480);
     VCALL(g, 0xFC, void (*)(void *))(g);
-    snd = D_0044E560;
+    snd = gSound;
     VCALL(snd, 0x94, void (*)(VObject *, s32))(snd, 0xFF);
     VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
     {
@@ -2490,7 +2490,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     D_0045D1F0 = NULL;
     AT(g, 0x1053424, void **) = D_0046A110;
     AT(g, 0x1053424, void **) = D_0046A100;
-    D_0044E970 = NULL;
+    gMusic = NULL;
     AT(g, 0xF87240, void **) = D_0047A790;
     BootCard_dtor(g + 0x102FD00, -1);
     TextObj_dtor(g + 0x101EBC0, -1);
@@ -2499,14 +2499,14 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     SubScreenBase_dtor(g + 0xF87240, 0);
     AT(g, 0xF7E200, void **) = D_0046A1C0;
     AT(g, 0xF7E200, void **) = D_004699E0;
-    D_0044E578 = NULL;
+    gEffects = NULL;
     AT(g, 0xF6E130, void **) = D_004699C0;
     AT(g, 0xF6E130, void **) = D_004699E0;
-    D_0044E4C0 = NULL;
+    gRoomEffects = NULL;
     AT(g, 0xF6CC14, void **) = D_0046C660;
     AT(g, 0xF6CC10, void **) = D_0046C668;
     AT(g, 0xF6CC10, void **) = D_0046C6F0;
-    D_0044E4F8 = NULL;
+    gCamDirector = NULL;
     AT(g, 0xF6CBDC, s32) = 0;
     AT(g, 0xF6CBE8, s32) = 0;
     AT(g, 0xF6CC00, f32) = 6.0f;
@@ -2515,7 +2515,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     }
     AT(g, 0xF6C1C0, void **) = D_0046B300;
     AT(g, 0xF6C1C0, void **) = D_0046B350;
-    D_0044E4C8 = NULL;
+    gLights = NULL;
     AT(g, 0xF6AFB0, void **) = D_0046B3A0;
     AT(g, 0xF6AFBC, void **) = D_0046B3B8;
     func_001002C0(g + 0xF6BBA0, func_001FB400, 0x30, 0x20);
@@ -2527,7 +2527,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_0020C120(g + 0xF6AFB0, 0);
     AT(g, 0xF6A940, void **) = D_0046C520;
     AT(g, 0xF6A940, void **) = D_0046C530;
-    D_0044E580 = NULL;
+    gRoutePlanner = NULL;
     AT(g, 0xF29740, void **) = D_0046ABB0;
     AT(g, 0xF29740, void **) = D_0046AC00;
     gSceneGameF29740 = NULL;

@@ -15,8 +15,8 @@ extern s32 func_00118278(const char *a, const char *b);             /* strcmp */
 extern char *func_001183C0(char *dst, const char *src);             /* strcpy */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_0044F7F0[];   /* "." (the root) */
-extern VObject *D_0044F7F8;       /* the system object */
-extern VObject *D_0044E560;       /* the sound driver */
+extern VObject *gSystem;       /* the system object */
+extern VObject *gSound;       /* the sound driver */
 
 /* init: 256 empty request slots, the root's listing, the folder slots' listing buffers */
 void func_0016C530(u8 *l) {
@@ -152,7 +152,7 @@ static inline void Loader_AddDir(u8 *l, VObject *sys, const char *dir) {
 
 /* Register all data folders: the stages ST_000..ST_108, then the rest. */
 void func_00169680(u8 *l) {
-    VObject *sys = D_0044F7F8;
+    VObject *sys = gSystem;
     char name[0x100];
     u32 i;
 
@@ -325,7 +325,7 @@ static inline void Loader_Retire(u8 *l, LoadReq *q) {
 /* Per-frame tick: advance the request at the read index (open, read, wait, hand sound data to
  * the sound driver: +0x4C / +0x54 / +0x50 / +0x5C by kind, +0x70 = driver busy). */
 void func_0016BFB0(u8 *l) {
-    VObject *drv = D_0044E560;
+    VObject *drv = gSound;
     LoadReq *q;
     s32 n, st;
 

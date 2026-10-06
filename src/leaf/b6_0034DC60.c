@@ -25,7 +25,7 @@ extern u8 D_00462EB0[];
 extern u8 D_00462ED0[];
 extern u8 D_00462EF0[];
 extern u8 D_00462F10[];
-extern void *D_0044E4F0;
+extern void *gRenderer;
 extern void *gFileLoader;
 
 void *func_0034DC60(void) {

@@ -8,7 +8,7 @@
 #include "game.h"
 #include "progress.h"
 
-extern VObject *D_0044E4D0;   /* the events */
+extern VObject *gEvents;   /* the events */
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* the door's state (u8) */
 
 /* character `c` plays event `ev` (who: 0 Fiona, 1 Hewie): its state 5 (0, ev) */
@@ -31,7 +31,7 @@ static inline s32 item_room_spot(Progress *p, s32 room, s32 spot) {
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != room) {
         return 0;
     }
-    return item_at_spot(D_0044E4D0, gCharPlayer, spot);
+    return item_at_spot(gEvents, gCharPlayer, spot);
 }
 
 /* laid on the altar (spot 0x1B of room 0xC0): the events' +0x30 (1, the item's id), event 0x14,
@@ -42,7 +42,7 @@ static inline s32 item_offer(Progress *p, void *o) {
     if (!item_room_spot(p, 0xC0, 0x1B)) {
         return 0;
     }
-    ev_mgr = D_0044E4D0;
+    ev_mgr = gEvents;
     VCALL(ev_mgr, 0x30, void (*)(VObject *, s32, s32))(ev_mgr, 1, AT(o, 0x4, s32));
     item_event(ev_mgr, 0, 0x14, gCharPlayer);
     Progress_SetFlag(p, 0x18);
@@ -63,7 +63,7 @@ static inline s32 item_door_route(Progress *p, u32 door, u32 route) {
 
 /* Fiona's event `ev`, then flag 0x18; 4 */
 static inline s32 item_event_flag(Progress *p, s32 ev) {
-    item_event(D_0044E4D0, 0, ev, gCharPlayer);
+    item_event(gEvents, 0, ev, gCharPlayer);
     Progress_SetFlag(p, 0x18);
     return 4;
 }

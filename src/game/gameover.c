@@ -51,16 +51,16 @@ extern const PTMF D_0041A1C0;   /* func_002F0BB0 */
 extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *gFileLoader;
-extern void *D_0044E958;        /* the movie playing */
-extern u8 *D_0044E980;          /* the music player */
-extern VObject *D_0044E970;     /* the music: +0x8 play (track, 0, 0, volume) */
+extern void *gMovie;        /* the movie playing */
+extern u8 *gAdx;          /* the music player */
+extern VObject *gMusic;     /* the music: +0x8 play (track, 0, 0, volume) */
 extern VObject *D_00456DF0;
-extern VObject *D_0044E4F8;     /* the camera director */
-extern VObject *D_0044E560;     /* the sound driver */
-extern VObject *D_0044E4F0;     /* the renderer */
-extern VObject *D_0044E4E8;     /* the texture cache */
-extern u8 *D_0044E4C0;          /* the room's effects */
-extern u8 *D_0044E578;          /* the effect manager */
+extern VObject *gCamDirector;     /* the camera director */
+extern VObject *gSound;     /* the sound driver */
+extern VObject *gRenderer;     /* the renderer */
+extern VObject *gTexCache;     /* the texture cache */
+extern u8 *gRoomEffects;          /* the room's effects */
+extern u8 *gEffects;          /* the effect manager */
 extern void *D_0046D750[];      /* a screen tint */
 extern Character *gCharacters[];
 extern void *func_00266C40(u8 *fx, s32 n);
@@ -92,14 +92,14 @@ void func_002F0940(GameOver *o, s16 *shot) {
     u8 *f = AT(shot, 0x4, u8 *) + shot[1] * ((AT(shot, 0x8, u8) ^ 1) * shot[0]) * 4;
 
     if (AT(shot, 0x9, u8) != 0) {
-        VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, f, 0xC0000, shot[0], shot[1], 6);
+        VCALL(gRenderer, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(gRenderer, f, 0xC0000, shot[0], shot[1], 6);
     } else {
-        VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, f, 0xC0000, shot[0], shot[1],
+        VCALL(gRenderer, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(gRenderer, f, 0xC0000, shot[0], shot[1],
                                                                                 0x2B);
         glr_vram_draw(0xC0000, 0x2C);
     }
-    if (D_0044E4E8 != NULL) {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    if (gTexCache != NULL) {
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     }
 }
 #else
@@ -108,17 +108,17 @@ void func_002F0940(GameOver *o, s16 *shot);
 
 /* the music player at full volume and started */
 static void bgm_full(void) {
-    AT(D_0044E980, 0x118, f32) = 1.0f;
-    func_002D1FD0(D_0044E980);
+    AT(gAdx, 0x118, f32) = 1.0f;
+    func_002D1FD0(gAdx);
 }
 
 static void play_music(s32 track) {
-    VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, track, 0, 0, 1.0f);
+    VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, track, 0, 0, 1.0f);
 }
 
 static void movie_stop(void) {
-    if (D_0044E958 != NULL) {
-        VCALL((VObject *)D_0044E958, 0x14, void (*)(VObject *))((VObject *)D_0044E958);
+    if (gMovie != NULL) {
+        VCALL((VObject *)gMovie, 0x14, void (*)(VObject *))((VObject *)gMovie);
     }
 }
 
@@ -132,7 +132,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
         return;
     }
     if (*slot != NULL) {
-        u8 *fx2 = D_0044E4C0;
+        u8 *fx2 = gRoomEffects;
 
         VCALL((VObject *)(fx2 + 0x1400), 0x14, void (*)(VObject *, void *))((VObject *)(fx2 + 0x1400), *slot);
         AT(fx2, 0x1438 + n * 4, VObject *) = NULL;
@@ -152,7 +152,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
 
 /* the two tints to fade from where they are: 0x1F to purple, 0x1D to clear */
 static void tints_start(GameOver *o) {
-    u8 *fx = D_0044E4C0;
+    u8 *fx = gRoomEffects;
 
     tint_get(fx, 0x1F, &o->tint);
     o->from[0] = AT(o->tint, 0x10, u32);
@@ -200,15 +200,15 @@ static void tints_step(GameOver *o, s32 fade) {
     o->timer = was - 1;
     if (was == 0) {
         func_001768B0(gProgress, D_0045E2E0, 6);
-        AT(D_0044E958, 0x1C4, u8) = 1;
+        AT(gMovie, 0x1C4, u8) = 1;
         o->step++;
     }
 }
 
 /* the movie's end: tint 0x1F to drift to blue over a minute */
 static void tint_drift_start(GameOver *o) {
-    if (func_002B64F0(D_0044E958) < 0) {
-        u8 *fx = D_0044E4C0;
+    if (func_002B64F0(gMovie) < 0) {
+        u8 *fx = gRoomEffects;
 
         o->timer = 1800;
         tint_get(fx, 0x1F, &o->tint);
@@ -235,7 +235,7 @@ static void tint_drift(GameOver *o) {
 }
 
 static void movie_wait(GameOver *o) {
-    void *m = D_0044E958;
+    void *m = gMovie;
 
     if (func_002B6640(m) > 0) {
         AT(m, 0x1BC, u8) = 1;
@@ -254,8 +254,8 @@ static void to_black(GameOver *o) {
     if (a >= 0x80) {
         a = 0x7F;
     }
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
-    if (o->timer == 30 && func_002D20D0(D_0044E980) != 0) {
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
+    if (o->timer == 30 && func_002D20D0(gAdx) != 0) {
         Progress_SetFlag(gProgress, 8);
         movie_stop();
         o->step++;
@@ -264,10 +264,10 @@ static void to_black(GameOver *o) {
 
 /* black; once the movie is gone, done (flag 0xC) */
 static void black(GameOver *o) {
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, 0x7F000000, -1, 0, 0x30, -1);
-    if (D_0044E958 == NULL) {
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, 0x7F000000, -1, 0, 0x30, -1);
+    if (gMovie == NULL) {
         Progress_SetFlag(gProgress, 0xC);
-        VCALL(D_0044E560, 0xC, void (*)(VObject *))(D_0044E560);
+        VCALL(gSound, 0xC, void (*)(VObject *))(gSound);
     }
 }
 
@@ -287,24 +287,24 @@ static void game_over(GameOver *o, s32 kind) {
         return;
     case 1:
         func_002F02F0(PANIC(gProgress));
-        VCALL(D_0044E4F8, 0x3C, void (*)(VObject *))(D_0044E4F8);
+        VCALL(gCamDirector, 0x3C, void (*)(VObject *))(gCamDirector);
         for (i = 0; i < 6; i++) {
             if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
                 AT(gCharacters[i], 0x29, u8) = 1;
             }
         }
-        func_002D6000(D_0044E578, 1);
+        func_002D6000(gEffects, 1);
         o->step++;
         /* fallthrough */
     case 2:
-        VCALL(D_0044E4F0, 0x60, void (*)(VObject *, s32))(D_0044E4F0, 0);
-        if (D_0044E958 == NULL) {
+        VCALL(gRenderer, 0x60, void (*)(VObject *, s32))(gRenderer, 0);
+        if (gMovie == NULL) {
             o->timer = 0x40;
             o->step++;
         }
         break;
     case 3:
-        VCALL(D_0044E4F0, 0x60, void (*)(VObject *, s32))(D_0044E4F0, (0x40 - o->timer) & 0xFF);
+        VCALL(gRenderer, 0x60, void (*)(VObject *, s32))(gRenderer, (0x40 - o->timer) & 0xFF);
         if (--o->timer == 0) {
             bgm_full();
             p = gProgress;
@@ -337,7 +337,7 @@ static void game_over(GameOver *o, s32 kind) {
     case 4:
         if (--o->timer == 0) {
             if (kind == 1) {
-                VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0x39, 5);
+                VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0x39, 5);
             }
             tints_start(o);
             func_002EF480(PANIC(gProgress), 1.0f);
@@ -408,7 +408,7 @@ void func_002F2D30(GameOver *o) {
         o->step++;
         break;
     case 2:
-        if (D_0044E958 == NULL) {
+        if (gMovie == NULL) {
             o->timer = 60;
             o->step++;
         }
@@ -488,8 +488,8 @@ void func_002F3710(GameOver *o) {
     }
     o->step = 0;
     o->hasMovie = 0;
-    if (D_0044E958 != NULL) {
-        o->hasMovie = VCALL((VObject *)D_0044E958, 0x18, u8 (*)(VObject *, s16 *))((VObject *)D_0044E958, &o->frameW);
+    if (gMovie != NULL) {
+        o->hasMovie = VCALL((VObject *)gMovie, 0x18, u8 (*)(VObject *, s16 *))((VObject *)gMovie, &o->frameW);
     }
     o->drawMovie = 0;
     if (o->hasMovie != 0) {

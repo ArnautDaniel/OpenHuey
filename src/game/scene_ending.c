@@ -47,12 +47,12 @@ extern void *D_0046D7D0[], *D_0046A0D0[];   /* the message object, its base */
 extern void *D_0046A110[], *D_0046A100[];   /* the BGM controller, its base */
 extern void *D_0046ECC0[];          /* SceneMovie */
 extern void *gBootMessage;
-extern void *D_0044E970;            /* the BGM controller */
-extern void *D_0044E980;            /* the ADX sound system */
-extern void *D_0044E960;            /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *D_0044E958;            /* the movie playing */
-extern u8 *D_0044E978;              /* the system data */
-extern VObject *D_0044E4F0;         /* the renderer */
+extern void *gMusic;            /* the BGM controller */
+extern void *gAdx;            /* the ADX sound system */
+extern void *gSceneTable;            /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *gMovie;            /* the movie playing */
+extern u8 *gSystemData;              /* the system data */
+extern VObject *gRenderer;         /* the renderer */
 extern VObject *gFileLoader;
 extern u8 D_0047B350;               /* the message language set */
 extern u8 *D_01991EC4;              /* the message text */
@@ -95,7 +95,7 @@ static inline u32 msg_width(Task *t, s32 id) {
     return w & 0xFFFF;
 }
 
-#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
+#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
 #define LOADER_LOAD(name, dst) VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(gFileLoader, name, dst)
 
 void func_00372050(SceneEnding *s, u8 alpha);
@@ -119,13 +119,13 @@ SceneEnding *func_00371E10(SceneEnding *s, s32 flags) {
 
         s->base.vtbl = D_0047A330;
         func_002E31D0(bgm);
-        func_002D2330(D_0044E980);
+        func_002D2330(gAdx);
         if (bgm != NULL) {
             AT(bgm, 0, void **) = D_0046A110;
             if (bgm != NULL) {
                 AT(bgm, 0, void **) = D_0046A100;
                 if (bgm != NULL) {
-                    D_0044E970 = NULL;
+                    gMusic = NULL;
                 }
             }
         }
@@ -192,7 +192,7 @@ void func_00372230(SceneEnding *s) {
     msg = gBootMessage;
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
-    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+    VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
     func_0026BC00(END_MSG(s));
     s->base.request = SCENE_REQ_FINISH;
 }
@@ -204,8 +204,8 @@ void func_00372330(SceneEnding *s) {
     if (END_SUB(s)->open) {
         return;
     }
-    AT(D_0044E978, 0x4, s32) = 2;
-    AT(D_0044E978, 0x10, s32) = 0;
+    AT(gSystemData, 0x4, s32) = 2;
+    AT(gSystemData, 0x10, s32) = 0;
     VCALL(s, 0x14, void (*)(SceneEnding *))(s);
 }
 
@@ -214,7 +214,7 @@ void func_00372330(SceneEnding *s) {
 static inline void ending_picture(SceneEnding *s) {
     VObject *msg;
 
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     msg = gBootMessage;
     VCALL(msg, 0x20, void (*)(VObject *))(msg);
     END_PIC_SLOT(s) = VCALL(msg, 0x24, s32 (*)(VObject *, s32, s32))(msg, 6, 0);
@@ -222,7 +222,7 @@ static inline void ending_picture(SceneEnding *s) {
         END_PIC_TEX(s) = VCALL(msg, 0x28, u8 *(*)(VObject *, s32, s32))(msg, 6, 0);
         if (END_PIC_SLOT(s) & 0x80000000) {
             END_PIC_SLOT(s) &= 0x7FFFFFFF;
-            VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, END_PIC_SLOT(s),
+            VCALL(gRenderer, 0x44, s32 (*)(VObject *, s32, void *, s32))(gRenderer, END_PIC_SLOT(s),
                                                                           END_PIC_TEX(s), 0);
         }
     }
@@ -237,7 +237,7 @@ static inline void ending_fade_to_save(SceneEnding *s) {
         s->picAlpha -= 2;
         return;
     }
-    VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, 0xFF, 0, 0, 1.0f);
+    VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0xFF, 0, 0, 1.0f);
     END_SUB(s)->mode = SUB_MODE_SAVE_9;
     Task_Close(&s->task);
     ptmf_set_fn(END_SEQ(s), func_00372330);
@@ -388,7 +388,7 @@ static inline s32 bit_test(u32 *bits, s32 n) {
  * from highlighted; a button, then the unlocks (the system data's +0x24 bits, func_00372690),
  * the title's message (func_003723A0) or the fade to the save */
 void func_00372A90(SceneEnding *s) {
-    u8 *sys = D_0044E978;
+    u8 *sys = gSystemData;
     u8 *st = sys + 0x190;
     char buf[12];
     u8 a;
@@ -735,7 +735,7 @@ static inline s32 ending_title(SceneEnding *s, u8 *st) {
 /* the results' setup: the sub screen and message object reset, the ending's picture and
  * MSG_END loaded, the dog level and type worked out, the results music (0x33); then func_00372A90 */
 void func_003738C0(SceneEnding *s) {
-    u8 *st = D_0044E978 + 0x190;
+    u8 *st = gSystemData + 0x190;
     VObject *msg;
     VObject *snd;
 
@@ -761,7 +761,7 @@ void func_003738C0(SceneEnding *s) {
     LOADER_LOAD(D_004638C0, END_TEXT(s));
     D_01991EC4 = END_TEXT(s);
     LOADER_LOAD(D_004638E0, END_FONT(s));
-    VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, END_FONT(s), 0x15);
+    VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, END_FONT(s), 0x15);
     D_0047B350 = 1;
     s->dogLevel = ending_dog_level(st);
     s->title = ending_title(s, st);
@@ -769,11 +769,11 @@ void func_003738C0(SceneEnding *s) {
     s->picAlpha = 0;
     s->textAlpha = 0;
     s->news = 0;
-    snd = D_0044E560;
+    snd = gSound;
     VCALL(snd, 0xA0, void (*)(VObject *))(snd);
     VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
     {
-        f32 *v = &AT(D_0044E980, 0x120, f32);
+        f32 *v = &AT(gAdx, 0x120, f32);
 
         *v = 1.0f;
         if (*v < 0.0f) {
@@ -783,8 +783,8 @@ void func_003738C0(SceneEnding *s) {
             *v = 1.0f;
         }
     }
-    func_002D1FD0(D_0044E980);
-    VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, 0x33, 0, 0, 1.0f);
+    func_002D1FD0(gAdx);
+    VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0x33, 0, 0, 1.0f);
     ptmf_set_fn(END_SEQ(s), func_00372A90);
 }
 
@@ -801,7 +801,7 @@ void func_00373E50(SceneEnding *s) {
 /* state: fade the staff roll out (sound and picture, 1/30 a frame; at 0 its scene is
  * finished); once it's gone, the results (func_003738C0) */
 void func_00373EB0(SceneEnding *s) {
-    u8 *m = D_0044E958;
+    u8 *m = gMovie;
     f32 l;
 
     if (m == NULL) {
@@ -834,7 +834,7 @@ void func_00373EB0(SceneEnding *s) {
             *v = 1.0f;
         }
     }
-    m = D_0044E958;
+    m = gMovie;
     func_002B6340(m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - END_VOLUME(s)));
@@ -842,8 +842,8 @@ void func_00373EB0(SceneEnding *s) {
         if (a >= 0x80) {
             a = 0x7F;
         }
-        VCALL(D_0044E4F0, 0x7C, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32,
-                                         s32))(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1,
+        VCALL(gRenderer, 0x7C, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32,
+                                         s32))(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1,
                                                0, 0x30, -1);
     }
 }
@@ -852,10 +852,10 @@ void func_00373EB0(SceneEnding *s) {
 void func_003741A0(SceneEnding *s) {
     s32 skip = 0;
 
-    if ((D_0047E37C & PAD_START) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
+    if ((D_0047E37C & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
         skip = 1;
     }
-    if (D_0044E958 != NULL && !skip) {
+    if (gMovie != NULL && !skip) {
         return;
     }
     ptmf_set_fn(&s->base.state, func_00373EB0);
@@ -863,7 +863,7 @@ void func_003741A0(SceneEnding *s) {
 
 /* state: start the staff roll as scene 1 at full volume */
 void func_00374260(SceneEnding *s) {
-    void *table = D_0044E960;
+    void *table = gSceneTable;
     VObject *heap = (VObject *)((u8 *)table + 0x10D9040);
     Scene *movie;
     void *mem;
@@ -892,7 +892,7 @@ void func_00374260(SceneEnding *s) {
         ok = 0;
     }
     if (ok) {
-        func_002B6D10(D_0044E958, D_004638F8, 1, 0);
+        func_002B6D10(gMovie, D_004638F8, 1, 0);
     }
     ptmf_set_fn(&s->base.state, func_003741A0);
 }

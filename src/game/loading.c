@@ -13,9 +13,9 @@
 extern void *D_00469D00[];
 #include "task.h"
 
-extern VObject *D_0044E4E8;   /* the texture cache */
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gTexCache;   /* the texture cache */
+extern VObject *gCamera;   /* the camera */
+extern VObject *gRenderer;   /* the renderer */
 extern void *D_0046D7A0[];
 extern f32 func_002E2D00(f32 x);
 extern void func_0026B180(void *o, u32 rgba, s32 a, s32 b);
@@ -24,7 +24,7 @@ extern void func_0026B180(void *o, u32 rgba, s32 a, s32 b);
  * turning (its rotation from the frame count) drawn in layers 1 and 0x26, the screen dimmed, and
  * the box for the "Now Loading" message (0x808B) */
 void func_0033E2A0(u8 *o, s32 frame) {
-    VObject *tc = D_0044E4E8, *cam = D_0044E4B8, *r;
+    VObject *tc = gTexCache, *cam = gCamera, *r;
     u8 dim[0x10] __attribute__((aligned(16)));
     Task t;
     s32 box[13];
@@ -63,7 +63,7 @@ void func_0033E2A0(u8 *o, s32 frame) {
     AT(o, 0x68, f32) = 0.0f;
     AT(o, 0x6C, f32) = 0.0f;
     AT(o, 0x70, s32) = 0;
-    r = D_0044E4F0;
+    r = gRenderer;
     VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, o, 1, 0);
     AT(o, 0x70, s32) = 1;
     VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, o, 0x26, 0);
@@ -101,8 +101,8 @@ void func_0033E2A0(u8 *o, s32 frame) {
     AT(dim, 0x0, void **) = D_00469D00;
 }
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
-extern VObject *D_0044E978;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
+extern VObject *gVram;   /* the VRAM manager */
+extern VObject *gSystemData;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
 extern u8 D_003AC3F0[];       /* DMA chain: the static model microprogram (MPG) */
 
 #define PI 0x1.921fb6p+1f
@@ -168,7 +168,7 @@ u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa) {
  * of group 0x10, its parts chained, each turned and moved relative to the previous (palette:
  * the part's +0x4). */
 s32 func_0033D9F0(u8 *o) {
-    VObject *tc = D_0044E4E8, *cam;
+    VObject *tc = gTexCache, *cam;
     f32 world[4][4] __attribute__((aligned(16)));
     f32 view[4][4] __attribute__((aligned(16)));
     f32 rel[4][4] __attribute__((aligned(16)));
@@ -183,7 +183,7 @@ s32 func_0033D9F0(u8 *o) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(D_0044E978, 0x1C, u8 *(*)(VObject *))(D_0044E978);
+    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))(gSystemData);
     if (AT(model, 0x0, s32) <= 0) {
         return 1;
     }
@@ -193,7 +193,7 @@ s32 func_0033D9F0(u8 *o) {
     if (count == 0) {
         return 1;
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     do {
         u8 *next;
 

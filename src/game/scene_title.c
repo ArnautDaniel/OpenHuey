@@ -19,10 +19,10 @@ extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *D_004699C0[], *D_0046A
 extern void *D_0046C790[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
-extern void *D_0044E968;            /* the title scene */
-extern void *D_0044E970;
-extern void *D_0044E980;            /* the ADX sound system */
-extern void *D_0044E988, *D_0044E990;
+extern void *gSceneTitle;            /* the title scene */
+extern void *gMusic;
+extern void *gAdx;            /* the ADX sound system */
+extern void *gItems, *gSubPool;
 extern void *gBootMessage;
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);   /* __construct_array */
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
@@ -49,13 +49,13 @@ void *PoolEntry_dtor(void *e, s32 flags) {
     return e;
 }
 
-/* the sub screen's base: a pool of 192 entries (global D_0044E990) and its list */
+/* the sub screen's base: a pool of 192 entries (global gSubPool) and its list */
 void *SubScreenBase_ctor(SubScreen *w) {
     u8 *pool = w->pool;
 
-    D_0044E988 = w;
+    gItems = w;
     w->vtbl = D_0046A090;
-    D_0044E990 = pool;
+    gSubPool = pool;
     AT(pool, 0x0, void **) = D_0046A078;
     func_00100340(pool + 8, PoolEntry_ctor, PoolEntry_dtor, 0x18, 0xC0);
     AT(pool, 0x1208, void **) = D_004699E0;
@@ -85,7 +85,7 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
 
     t->base.vtbl = Scene_vtable;
     ptmf_set(&t->base.state, &sSceneEntryState);
-    D_0044E968 = t;
+    gSceneTitle = t;
     gBootMessage = t->msg;
     t->base.vtbl = D_0046A040;
     AT(t->msg, 0, void **) = D_0046D7D0;
@@ -97,19 +97,19 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     Task_ctor(&w->text);
     TextObj_ctor(w->textObj);
     BootCard_ctor(&w->card);
-    D_0044E970 = &t->bgm;
+    gMusic = &t->bgm;
     t->bgm.vtbl = D_0046A110;
     t->unk11DA80 = 0;
     t->loaded = 0;
     t->returnTo = 0;
     t->extras = 0;
     t->seq = sGameStateNull;
-    func_002D2370(D_0044E980, t->bgmWork);
+    func_002D2370(gAdx, t->bgmWork);
     func_002E34D0(&t->bgm);
     return t;
 }
 
-extern u8 *D_0044E978;          /* the system data */
+extern u8 *gSystemData;          /* the system data */
 extern u8 D_0047B350;           /* the language */
 extern void func_0026BCC0(void *msg);
 extern void SubScreen_Start(void *sub);
@@ -119,7 +119,7 @@ void SceneTitle_StateStart(SceneTitle *t);
 /* +0x10 entry: reset the message object and the sub screen, apply the options, then the title
  * sequence (SceneTitle_StateStart) */
 void SceneTitle_StateEntry(SceneTitle *t) {
-    u8 *sys = D_0044E978;
+    u8 *sys = gSystemData;
     PTMF s = {0, -1, {(void *)SceneTitle_StateStart}};
 
     t->timer = 0;
@@ -177,8 +177,8 @@ void SceneTitle_StateTitle(SceneTitle *t) {
     func_002E3200(&t->bgm);
 }
 
-extern void *D_0044E960;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *D_0044E958;          /* the movie playing */
+extern void *gSceneTable;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *gMovie;          /* the movie playing */
 extern void *D_0046ECC0[];        /* SceneMovie */
 extern const char D_0044E940[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
 extern void *__nw__FUiPv(u32 size, void *p);
@@ -187,11 +187,11 @@ extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
 extern void func_002B6340(void *movie);
 void SceneTitle_StateAttract(SceneTitle *t);
 
-#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
+#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
 
 /* start movie `name` as scene 1 at the title's movie volume (+0x140CCC, reset to 1) */
 static inline void title_movie_start(SceneTitle *t, const char *name) {
-    void *table = D_0044E960;
+    void *table = gSceneTable;
     VObject *heap = (VObject *)((u8 *)table + 0x10D9040);
     Scene *movie;
     void *mem;
@@ -222,7 +222,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         ok = 0;
     }
     if (ok) {
-        u8 *m = D_0044E958;
+        u8 *m = gMovie;
         f32 *v = &AT(m, 0x1D4, f32);
 
         func_002B6D10(m, name, 1, 0);
@@ -260,10 +260,10 @@ void SceneTitle_StateAttractFade(SceneTitle *t);
 
 /* wait for the movie (Start, once it shows, skips it), then state `next` */
 static inline void title_movie_wait(SceneTitle *t, void (*next)(SceneTitle *)) {
-    if ((D_0047E37C & PAD_START) && D_0044E958 != NULL && AT(D_0044E958, 0x1B4, u8)) {
+    if ((D_0047E37C & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
         t->movieSkipped = 1;
     }
-    if (D_0044E958 != NULL && !t->movieSkipped) {
+    if (gMovie != NULL && !t->movieSkipped) {
         return;
     }
     ptmf_set_fn(&t->base.state, next);
@@ -281,7 +281,7 @@ void SceneTitle_StateOpening(SceneTitle *t) {
     title_movie_wait(t, SceneTitle_StateOpeningFade);
 }
 
-extern VObject *D_0044E4F0;      /* the renderer */
+extern VObject *gRenderer;      /* the renderer */
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 
 /* the renderer's +0x7C: a rectangle (x, y, w, h; colour; layer ...) */
@@ -290,7 +290,7 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 /* fade the movie out (sound and picture, 1/30 a frame; at 0 its scene is finished); 0 once
  * it's gone */
 static inline s32 title_movie_fade(SceneTitle *t) {
-    u8 *m = D_0044E958;
+    u8 *m = gMovie;
     f32 *level = &t->movieVolume;
     f32 l;
 
@@ -322,7 +322,7 @@ static inline s32 title_movie_fade(SceneTitle *t) {
             *v = 1.0f;
         }
     }
-    m = D_0044E958;
+    m = gMovie;
     func_002B6340(m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - *level));
@@ -330,7 +330,7 @@ static inline s32 title_movie_fade(SceneTitle *t) {
         if (a >= 0x80) {
             a = 0x7F;
         }
-        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
+        VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
     }
     return 1;
 }
@@ -347,8 +347,8 @@ void SceneTitle_StateAttractFade(SceneTitle *t) {
  * mode) */
 void SceneTitle_StateOpeningFade(SceneTitle *t) {
     if (!title_movie_fade(t)) {
-        AT(D_0044E978, 0x4, s32) = 3;
-        AT(D_0044E978, 0x10, s32) = t->next == 5 ? 0x4000002A : 0x2A;
+        AT(gSystemData, 0x4, s32) = 3;
+        AT(gSystemData, 0x10, s32) = t->next == 5 ? 0x4000002A : 0x2A;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
     }
 }
@@ -396,12 +396,12 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
     VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, t->titleTex);
     VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, t->titleTex, 0);
     LOADER_LOAD(D_0044E8E0, t->backImage);
-    snd = D_0044E560;
+    snd = gSound;
     t->loaded = 1;
     VCALL(snd, 0xA0, void (*)(VObject *))(snd);
     VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
     {
-        f32 *v = &AT(D_0044E980, 0x120, f32);
+        f32 *v = &AT(gAdx, 0x120, f32);
 
         *v = 1.0f;
         if (*v < 0.0f) {
@@ -410,13 +410,13 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002D1FD0(D_0044E980);
+        func_002D1FD0(gAdx);
     }
     load_bank_part(snd, D_0044E900, 0x4C);
     load_bank_part(snd, D_0044E910, 0x50);
     load_bank_part(snd, D_0044E930, 0x58);
     {
-        VObject *s = D_0044E560;
+        VObject *s = gSound;
 
         VCALL(s, 0x60, void (*)(VObject *, s32))(s, 7);
         VCALL(s, 0x7C, void (*)(VObject *, s32, s32))(s, 1, 0);
@@ -425,7 +425,7 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
         VObject *s;
 
         t->anim = 0;
-        s = D_0044E560;
+        s = gSound;
         Sound_Play(s, 0, 7);
         if ((s8)VCALL(s, 0x6C, s32 (*)(VObject *))(s) != 0) {
             Sound_Play(snd, 1, 7);
@@ -481,7 +481,7 @@ void SceneTitle_SeqFadeIn(SceneTitle *t) {
     }
 }
 
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* the title picture's two textures: their VRAM slots (+0x11DA84 / +0x11DA88; bit 31 just
  * assigned) and entries (+0x11DA8C / +0x11DA90) */
@@ -499,15 +499,15 @@ static inline s32 title_texture(SceneTitle *t, VObject *msg, s32 i) {
         return 1;
     }
     TITLE_TEX_SLOT(i) &= 0x7FFFFFFF;
-    return (u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(
-        D_0044E4F0, TITLE_TEX_SLOT(i), TITLE_TEX(i), 0);
+    return (u8)VCALL(gRenderer, 0x44, s32 (*)(VObject *, s32, void *, s32))(
+        gRenderer, TITLE_TEX_SLOT(i), TITLE_TEX(i), 0);
 }
 
 /* draw the title background (TITLE_BACK.BIN, 640 x 448) after loading the title textures */
 void SceneTitle_PrepareBackground(SceneTitle *t) {
     VObject *msg;
 
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     msg = gBootMessage;
     VCALL(msg, 0x20, void (*)(VObject *))(msg);
     if (!title_texture(t, msg, 0)) {
@@ -516,11 +516,11 @@ void SceneTitle_PrepareBackground(SceneTitle *t) {
     if (!title_texture(t, msg, 1)) {
         return;
     }
-    VCALL(D_0044E4F0, 0x4C, s32 (*)(VObject *, void *, s32, s32, s32))(
-        D_0044E4F0, t->backImage, 0x280, 0x1C0, 0);
+    VCALL(gRenderer, 0x4C, s32 (*)(VObject *, void *, s32, s32, s32))(
+        gRenderer, t->backImage, 0x280, 0x1C0, 0);
 }
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *gVram;   /* the VRAM manager */
 
 #ifdef HG_NATIVE
 #include "gl2d.h"
@@ -596,7 +596,7 @@ void SceneTitle_SeqPressStart(SceneTitle *t) {
     if ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START)) {
         ptmf_set_fn(&t->seq, SceneTitle_SeqToMenu);
         t->timer = 0;
-        snd = D_0044E560;
+        snd = gSound;
         Sound_Play(snd, 2, 7);
         if ((s8)VCALL(snd, 0x6C, s32 (*)(VObject *))(snd) != 0) {
             Sound_Play(snd, 3, 7);
@@ -732,7 +732,7 @@ void SceneTitle_SeqLoadGame(SceneTitle *t);
 void SceneTitle_SeqOptions(SceneTitle *t);
 
 #define BGM_WANT(track, pause, restart, level) \
-    VCALL(D_0044E970, 0x8, void (*)(void *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, level)
+    VCALL(gMusic, 0x8, void (*)(void *, s32, s32, s32, f32))(gMusic, track, pause, restart, level)
 
 
 /* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
@@ -793,7 +793,7 @@ void SceneTitle_SeqMenu(SceneTitle *t) {
             t->next = 6;
             break;
         default: {
-            VObject *snd = D_0044E560;
+            VObject *snd = gSound;
 
             t->next = 2;
             Sound_Play(snd, 0, 6);
@@ -873,7 +873,7 @@ void SceneTitle_StateNewGame(SceneTitle *t);
 void SceneTitle_SeqLeave(SceneTitle *t) {
     VObject *snd;
 
-    if (!(u8)func_002D20D0(D_0044E980)) {
+    if (!(u8)func_002D20D0(gAdx)) {
         return;
     }
     if (t->loaded) {
@@ -883,7 +883,7 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
         VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
         t->loaded = 0;
     }
-    snd = D_0044E560;
+    snd = gSound;
     VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0xF000);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 7);
     switch (t->next) {
@@ -897,8 +897,8 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
         ptmf_set_fn(&t->base.state, SceneTitle_StateNewGame);
         break;
     case 3:
-        AT(D_0044E978, 0x4, s32) = 3;
-        AT(D_0044E978, 0x10, s32) = -1;
+        AT(gSystemData, 0x4, s32) = 3;
+        AT(gSystemData, 0x10, s32) = -1;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     case 4:
@@ -907,8 +907,8 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
         ptmf_set_fn(&t->base.state, SceneTitle_StateNewGame);
         break;
     case 6:
-        AT(D_0044E978, 0x4, s32) = 3;
-        AT(D_0044E978, 0x10, s32) = 0x37;
+        AT(gSystemData, 0x4, s32) = 3;
+        AT(gSystemData, 0x10, s32) = 0x37;
         VCALL(t, 0x14, void (*)(SceneTitle *))(t);
         break;
     }
@@ -925,7 +925,7 @@ void SceneTitle_Finish(SceneTitle *t) {
         ptmf_set(&s->state, &sSceneFinish);
         VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
     }
-    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+    VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
     func_0026BC00(t->msg);
     t->base.request = SCENE_REQ_FINISH;
 }
@@ -941,7 +941,7 @@ extern void *D_0046A100[], *D_0046A0D0[];
 /* the text object: release (its loads, its textures: group 0x28) */
 void TextObj_Release(u8 *o) {
     VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, 0x6000000);
-    VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x28);
+    VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x28);
     AT(o, 0x108, s32) = -1;
     AT(o, 0x10C, u8) = 0xFF;
     AT(o, 0x10E, u8) = 0xFF;
@@ -977,11 +977,11 @@ static inline void Pool_Destroy(u8 *pool) {
     }
     func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
     if (pool != NULL) {
-        D_0044E990 = NULL;
+        gSubPool = NULL;
     }
 }
 
-/* the entry pool (D_0044E990): destructor */
+/* the entry pool (gSubPool): destructor */
 void *func_00130920(u8 *pool, s32 flags) {
     if (pool != NULL) {
         Pool_Destroy(pool);
@@ -1002,7 +1002,7 @@ void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
             Pool_Destroy(pool);
         }
         if (w != NULL) {
-            D_0044E988 = NULL;
+            gItems = NULL;
         }
         if ((s16)flags > 0) {
             func_00100490(w);
@@ -1019,13 +1019,13 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
 
         t->base.vtbl = D_0046A040;
         func_002E31D0(&t->bgm);
-        func_002D2330(D_0044E980);
+        func_002D2330(gAdx);
         if (&t->bgm != NULL) {
             t->bgm.vtbl = D_0046A110;
             if (&t->bgm != NULL) {
                 t->bgm.vtbl = D_0046A100;
                 if (&t->bgm != NULL) {
-                    D_0044E970 = NULL;
+                    gMusic = NULL;
                 }
             }
         }
@@ -1053,7 +1053,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
             }
         }
         if (&t->returnTo != NULL) {   /* (MW tests the address of the next base) */
-            D_0044E968 = NULL;
+            gSceneTitle = NULL;
         }
         if (t != NULL) {
             t->base.vtbl = Scene_vtable;
@@ -1125,7 +1125,7 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
 /* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
 
 extern void *D_0047A330[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *D_004699C0[], *D_004699E0[];
-extern void *D_0044E980;
+extern void *gAdx;
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 static inline void task_end_child(Task *t) {
@@ -1136,7 +1136,7 @@ static inline void task_end_child(Task *t) {
 }
 
 /* the sub screen (D_0047A790): its load / save screens, text object and two text tasks, then
- * the base (D_0046A090): the pool's entries, the globals D_0044E990 / D_0044E988 cleared */
+ * the base (D_0046A090): the pool's entries, the globals gSubPool / gItems cleared */
 void *func_002D0110(SubScreen *w, s32 flags) {
     if (w != NULL) {
         u8 *o = (u8 *)w;
@@ -1154,8 +1154,8 @@ void *func_002D0110(SubScreen *w, s32 flags) {
         AT(o, 0x1210, void **) = D_004699C0;
         AT(o, 0x1210, void **) = D_004699E0;
         func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
-        D_0044E990 = NULL;
-        D_0044E988 = NULL;
+        gSubPool = NULL;
+        gItems = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -1181,10 +1181,10 @@ void *Scene5_ctor(u8 *s) {
     BootCard_ctor(&w->card);
     gBootMessage = s + 0xA9180;
     AT(s, 0xA9180, void **) = D_0046D7D0;
-    D_0044E970 = s + 0x1174E4;
+    gMusic = s + 0x1174E4;
     AT(s, 0x1174E4, void **) = D_0046A110;
     AT(s, 0x117500, PTMF) = sGameStateNull;
-    func_002D2370(D_0044E980, s + 0xF4300);
+    func_002D2370(gAdx, s + 0xF4300);
     func_002E34D0(s + 0x1174E4);
     return s;
 }
@@ -1208,7 +1208,7 @@ void func_0012E270(SceneTitle *t) {
     if (a >= 0x80) {
         a = 0x7F;
     }
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
     SceneTitle_DrawPicture(t, f);
     SceneTitle_DrawLogo(t, f, 1.0f);
     SceneTitle_DrawPressStart(t, f);

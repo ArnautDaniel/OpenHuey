@@ -22,8 +22,8 @@ extern const PTMF16 sSceneBootSteps[8];    /* boot steps, run in order */
 
 extern VObject *gFileLoader;  /* +0x34 Load(name, dest), +0xC LoadAsync?(name, dest, flags) */
 extern VObject *gBootMessage; /* = &SceneBoot.msg while the boot scene exists */
-extern VObject *D_0044E978;   /* global object, type unknown (+0x1C/+0x20 return resident buffers) */
-extern VObject *D_0044E4E8;   /* global object, type unknown (+0x10 upload(buf, n), +0x18 per frame) */
+extern VObject *gSystemData;   /* global object, type unknown (+0x1C/+0x20 return resident buffers) */
+extern VObject *gTexCache;   /* global object, type unknown (+0x10 upload(buf, n), +0x18 per frame) */
 
 extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
 extern void func_0026BCC0(void *msg);
@@ -114,11 +114,11 @@ void SceneBoot_StateLoadSystem(SceneBoot *boot) {
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(loader, sErrMesTex, boot->errMesTex);
     VCALL(gBootMessage, 0x8, void (*)(VObject *, s32, void *))(gBootMessage, 6, boot->errMesTex);
-    res = D_0044E978;
+    res = gSystemData;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sGameFixTex, VCALL(res, 0x20, void *(*)(VObject *))(res));
-    VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(
-        D_0044E4E8, VCALL(res, 0x20, void *(*)(VObject *))(res), 0x10);
+    VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
+        gTexCache, VCALL(res, 0x20, void *(*)(VObject *))(res), 0x10);
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sGameFixGfm, VCALL(res, 0x1C, void *(*)(VObject *))(res));
     VCALL(loader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(loader, sLogoCri, boot->logoCri, 0x10000000, 0);
@@ -152,7 +152,7 @@ void SceneBoot_StateSequence(SceneBoot *boot) {
         boot->stepTimer = 0;
         boot->step++;
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(&boot->msg, 0x20, void (*)(VObject *))(&boot->msg);
     if (!ptmf_test(&steps[boot->step])) {
         Scene_SetState(&boot->base, &sSceneBootStateDone);
@@ -166,8 +166,8 @@ void SceneBoot_StateDone(SceneBoot *boot) {
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
     func_0026BC00(&boot->msg);
-    ((s32 *)D_0044E978)[1] = 2;
-    ((s32 *)D_0044E978)[4] = 2;
+    ((s32 *)gSystemData)[1] = 2;
+    ((s32 *)gSystemData)[4] = 2;
     VCALL(boot, 0x14, void (*)(SceneBoot *))(boot);
 }
 
@@ -177,8 +177,8 @@ extern s8 D_0047E360;          /* 0 = (no controller?): boot steps then wait for
 extern u8 D_0047B350;
 extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
 extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
-extern VObject *D_0044E4F0;    /* GS packet / texture manager: +0x10 alloc(kind, qwords), +0x44 upload? */
-extern VObject *D_0044E9A0;    /* +0x28 builds a TEX0 register value */
+extern VObject *gRenderer;    /* GS packet / texture manager: +0x10 alloc(kind, qwords), +0x44 upload? */
+extern VObject *gVram;    /* +0x28 builds a TEX0 register value */
 
 static const char sMsgSubBin[] = "SUBSCR\\MSG_SUB.BIN";
 static const char sMsgBaseBin[] = "SUBSCR\\MSG_BASE.BIN";
@@ -186,7 +186,7 @@ static const char sMsgBaseTex[] = "SUBSCR\\MSG_BASE.TEX";
 
 /* Load the subtitle message file into the resident buffer. */
 void func_0037EC00(SceneBoot *boot) {
-    VObject *res = D_0044E978;
+    VObject *res = gSystemData;
 
     VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
         gFileLoader, sMsgSubBin, VCALL(res, 0x14, void *(*)(VObject *))(res));
@@ -200,7 +200,7 @@ void func_0037EC00(SceneBoot *boot) {
  * if there's none (or it can't be made resident) */
 static u8 *BootSprite_Image(s32 line, s32 prio) {
     VObject *msg = gBootMessage;
-    VObject *gs = D_0044E4F0;
+    VObject *gs = gRenderer;
     s32 id = VCALL(msg, 0x24, s32 (*)(VObject *, s32, s32))(msg, 6, line);
     u8 *img;
 
@@ -269,15 +269,15 @@ u32 func_0037FEF0(SceneBoot *boot) {
         return 1;
     }
     boot->stepFlag = 0;
-    res = D_0044E978;
+    res = gSystemData;
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseBin, VCALL(res, 0xC, void *(*)(VObject *))(res));
     D_01991EC0 = VCALL(res, 0xC, void *(*)(VObject *))(res);
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(
         loader, sMsgBaseTex, VCALL(res, 0x10, void *(*)(VObject *))(res));
-    VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(
-        D_0044E4E8, VCALL(res, 0x10, void *(*)(VObject *))(res), 0x14);
+    VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
+        gTexCache, VCALL(res, 0x10, void *(*)(VObject *))(res), 0x14);
     func_0037EC00(boot);
     D_0047B350 = 2;
     return 0;
@@ -337,7 +337,7 @@ u32 func_0037FC60(SceneBoot *boot) {
     if (boot->stepTimer == 0 && VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) != 3) {
         return 1;
     }
-    gs = D_0044E4F0;
+    gs = gRenderer;
     scr = VCALL(gs, 0x2C, BootScreen *(*)(VObject *))(gs);
     if (boot->stepTimer == 0) {
         VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
@@ -364,7 +364,7 @@ u32 func_0037FAC0(SceneBoot *boot) {
     if (VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) != 3) {
         return 1;
     }
-    gs = D_0044E4F0;
+    gs = gRenderer;
     scr = VCALL(gs, 0x2C, BootScreen *(*)(VObject *))(gs);
     if (boot->stepTimer == 0) {
         scr->color = 0;
@@ -381,8 +381,8 @@ u32 func_0037FAC0(SceneBoot *boot) {
     return 1;
 }
 
-extern void *D_0044E960;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *D_0044E958;          /* the movie playing (Movie, src/game/movie.c) */
+extern void *gSceneTable;          /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *gMovie;          /* the movie playing (Movie, src/game/movie.c) */
 extern void *D_0046ECC0[];        /* SceneMovie */
 extern void *__nw__FUiPv(u32 size, void *p);   /* placement new */
 extern void *func_002B70D0(void *movie);       /* Movie constructor */
@@ -391,7 +391,7 @@ extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
 static const char sCapcomSfd[] = "CAPCOM.SFD";
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 
-#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)D_0044E960 + 4 + (i) * 4))
+#define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
 
 /* Boot step: the Capcom logo movie, as scene 1, until it's over (Start skips it). */
 u32 func_0037F7D0(SceneBoot *boot) {
@@ -400,7 +400,7 @@ u32 func_0037F7D0(SceneBoot *boot) {
     s32 ok;
 
     if (boot->stepTimer != 0) {
-        if (D_0044E958 != NULL && !(D_0047E37C & 8)) {
+        if (gMovie != NULL && !(D_0047E37C & 8)) {
             return 1;
         }
         movie = SCENE_TABLE_SCENE(1);
@@ -411,7 +411,7 @@ u32 func_0037F7D0(SceneBoot *boot) {
         return 0;
     }
     {
-        VObject *heap = (VObject *)((u8 *)D_0044E960 + 0x10D9040);
+        VObject *heap = (VObject *)((u8 *)gSceneTable + 0x10D9040);
 
         mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x600200);
     }
@@ -436,7 +436,7 @@ u32 func_0037F7D0(SceneBoot *boot) {
         ok = 0;
     }
     if (ok) {
-        func_002B6D10(D_0044E958, sCapcomSfd, 1, 0);
+        func_002B6D10(gMovie, sCapcomSfd, 1, 0);
     }
     boot->stepTimer++;
     return 1;
@@ -505,7 +505,7 @@ u32 func_00380050(SceneBoot *boot) {
             gFileLoader, sProgTex, BOOT_IMAGE_67C40(boot));
         VCALL(gBootMessage, 0x10, void (*)(VObject *, s32, void *, s32))(
             gBootMessage, 6, BOOT_IMAGE_67C40(boot), 0);
-        gs = D_0044E4F0;
+        gs = gRenderer;
         boot->savedVideoMode = VCALL(gs, 0x28, u32 (*)(VObject *))(gs);
         if ((D_0047E374 & PAD_TRIANGLE) && (D_0047E374 & PAD_CROSS)) {
             boot->stepTimer = 1;
@@ -529,7 +529,7 @@ u32 func_00380050(SceneBoot *boot) {
         }
         boot->countdown = 300;
         boot->stepTimer = 3;
-        VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, VIDEO_MODE_480P);
+        VCALL(gRenderer, 0x24, void (*)(VObject *, u32))(gRenderer, VIDEO_MODE_480P);
         break;
     case 3:
         /* ask: keep this mode? */
@@ -540,7 +540,7 @@ u32 func_00380050(SceneBoot *boot) {
     case 4:
         if (boot->countdown != 0 && --boot->countdown == 0) {
             /* timed out: back to the old mode, ask again */
-            VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
+            VCALL(gRenderer, 0x24, void (*)(VObject *, u32))(gRenderer, boot->savedVideoMode);
             boot->stepTimer = 1;
         }
         if (busy || ask->mode) {
@@ -549,7 +549,7 @@ u32 func_00380050(SceneBoot *boot) {
         }
         if (ask->answer != 0) {
             /* answered no: back to the old mode, ask again */
-            VCALL(D_0044E4F0, 0x24, void (*)(VObject *, u32))(D_0044E4F0, boot->savedVideoMode);
+            VCALL(gRenderer, 0x24, void (*)(VObject *, u32))(gRenderer, boot->savedVideoMode);
             boot->stepTimer = 1;
             break;
         }
@@ -584,7 +584,7 @@ u32 func_00380050(SceneBoot *boot) {
         }
     }
     func_002CF390(&boot->unkC75D0Vtbl, (u32)(busy ? 0x5F : 0) << 24);
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, &boot->unkC75D0Vtbl, 0x31, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, &boot->unkC75D0Vtbl, 0x31, 0);
     if (boot->stepTimer != 0 && ask->mode) {
         func_0037F2E0(boot);
     }
@@ -602,7 +602,7 @@ extern void func_00323510(u8 *o, u8 row, u8 v, s32 a);
 extern void func_003230B0(u8 *o, u8 k, u8 v);
 extern s32 func_00322970(u8 *o);
 extern void func_00261090(u8 *items, s32 id, s32 n);    /* an item added (n of it) */
-extern VObject *D_0044E988;                             /* the item manager */
+extern VObject *gItems;                             /* the item manager */
 extern const u8 D_00460A00[22];
 extern const char D_00463AB0[];                         /* its count's format */
 extern const PTMF D_0044AE10, D_0044AE20;
@@ -637,7 +637,7 @@ void func_0037ED50(u8 *o) {
             s32 x;
 
             if ((s8)o[0x152] == 0) {
-                Sound_Play(D_0044E560, 3, 6);
+                Sound_Play(gSound, 3, 6);
                 o[0x152] = 1;
             }
             id = o[0x14C] << 24 | o[0x14D] << 16 | o[0x14E] << 8 | o[0x14F];
@@ -655,7 +655,7 @@ void func_0037ED50(u8 *o) {
     }
     if ((flags & 0x80) && (D_0047E36C & MENU_CONFIRM)) {
         if (id != -1) {
-            func_00261090((u8 *)D_0044E988 + 8, id, o[0x14B]);
+            func_00261090((u8 *)gItems + 8, id, o[0x14B]);
         }
         for (i = 0; i < 0x40; i++) {
             if (i != 0x38) {

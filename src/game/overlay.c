@@ -16,8 +16,8 @@
 
 #define V(p, off) ((f32 *)((u8 *)(p) + (off)))
 
-extern void *D_0044E4B8;   /* camera */
-extern void *D_0044E4F0;   /* renderer */
+extern void *gCamera;   /* camera */
+extern void *gRenderer;   /* renderer */
 extern u64 func_002B71D0(s32);
 
 /* the rectangle's corners: x, y (0 / 1: 512 units from the 0x700 origin), kick */
@@ -65,7 +65,7 @@ s32 func_002CF8C0(void *ov) {
     if (AT(ov, 0x24, s32) != AT(ov, 0x10, s32)) {
         AT(ov, 0x8, u64) = func_002B71D0(0);
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x24, void (*)(void *, f32 *))(cam, V(ov, 0x70));
     VCALL(cam, 0xA4, void (*)(void *, f32 *))(cam, V(ov, 0x80));
     VCALL(cam, 0xA0, void (*)(void *, f32 *))(cam, V(ov, 0x90));
@@ -83,7 +83,7 @@ s32 func_002CF8C0(void *ov) {
 /* the screen bloom (vtable D_0046D7A0; its draw func_002699D0): colour `rgba`, subtracted when
  * `sub`, drawn in renderer layer `layer`; the renderer's glow pass (+0x58) runs this frame too */
 void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 sub) {
-    VObject *r = (VObject *)D_0044E4F0;
+    VObject *r = (VObject *)gRenderer;
 
     AT(o, 0x8, u32) = rgba;
     AT(o, 0xC, s32) = sub;

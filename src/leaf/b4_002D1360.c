@@ -17,9 +17,9 @@ static inline f32 B4_FLT(u32 bits) {
 
 extern u8 D_00469D00[], D_0046C770[];
 extern u8 D_0046A9B0[];
-extern void *D_0044F258;
+extern void *gCreatures;
 extern u8 D_0046FC00[], D_004699E0[], D_004699C0[];
-extern void *D_0044F260;
+extern void *gPlacedThings;
 extern u8 D_0046F5C0[], D_004699E0[], D_004699C0[];
 extern void *gBootMessage;
 extern u8 D_0046D7D0[];
@@ -63,7 +63,7 @@ void *func_002D1490(u8 *p) {
     u8 *a = p + 0xDC40;
     u8 *b = p + 0xF630;
 
-    D_0044F258 = p;
+    gCreatures = p;
     F(p, 0x28, void *) = D_0046FC00;
     F(a, 0x0, void *) = D_004699E0;
     F(a, 0x4, u32) = 0;
@@ -85,7 +85,7 @@ void *func_002D1490(u8 *p) {
 void *func_002D1510(u8 *p) {
     u8 *a = p + 0xA040;
 
-    D_0044F260 = p;
+    gPlacedThings = p;
     F(p, 0x0, void *) = D_0046F5C0;
     F(a, 0x0, void *) = D_004699E0;
     F(a, 0x4, u32) = 0;

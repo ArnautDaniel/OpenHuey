@@ -41,11 +41,11 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 extern Character *gCharPlayer;    /* Fiona */
 extern Character *gCharPartner;   /* Hewie */
 extern VObject *gRandom;       /* random numbers */
-extern VObject *D_0044E558;       /* doors */
-extern VObject *D_0044E568;       /* rooms */
-extern VObject *D_0044E4D0;       /* room objects */
-extern VObject *D_0044E7A8;       /* controller vibration */
-extern void *D_0044E570;          /* nav mesh */
+extern VObject *gDoors;       /* doors */
+extern VObject *gRooms;       /* rooms */
+extern VObject *gEvents;       /* room objects */
+extern VObject *gScreenFade;       /* controller vibration */
+extern void *gNavMesh;          /* nav mesh */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 

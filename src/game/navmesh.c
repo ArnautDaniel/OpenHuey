@@ -1,4 +1,4 @@
-/* The nav mesh (room manager +0x3E0, D_0044E570): the room's walkable triangles (PAC section
+/* The nav mesh (room manager +0x3E0, gNavMesh): the room's walkable triangles (PAC section
  * 0) with their flags (section 16), section 1, and the door regions (pairs of triangles with a
  * door group in their flags). */
 #include "common.h"
@@ -607,7 +607,7 @@ extern void *D_0046A9D0[], *D_0046AA40[];
 extern void func_00100490(void *p);   /* operator delete */
 
 /* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
- * base (D_0046AA40, clearing D_0044E570) */
+ * base (D_0046AA40, clearing gNavMesh) */
 void *func_00179F60(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046A9D0;
@@ -620,7 +620,7 @@ void *func_00179F60(u8 *o, s32 flags) {
             AT(o, 0x10, s32) = 0;
         }
         AT(o, 0x0, void **) = D_0046AA40;
-        D_0044E570 = NULL;
+        gNavMesh = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

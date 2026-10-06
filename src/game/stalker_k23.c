@@ -7,7 +7,7 @@
 #include "progress.h"
 #include "texcache.h"
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern void func_001267F0(Character *c, s32 v);
 
 /* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),
@@ -25,7 +25,7 @@ void func_0031F3E0(Pursuer *p, s32 exit) {
         pr = gProgress;
         func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
         func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(D_0044E568, 0x28, s32 (*)(VObject *, s32))(D_0044E568, exit), 0, 0);
+        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
 }
@@ -66,7 +66,7 @@ void func_0031F560(Pursuer *p) {
         }
         break;
     }
-    r = D_0044E4F0;
+    r = gRenderer;
     VCALL(r, 0x64, void (*)(VObject *, u32, s32))(r, (u8)(u32)PU(p, 0x17CC, f32) << 24 | 0x808080, 0);
     if (!PU(p, 0x17C8, u8)) {
         VCALL(r, 0x6C, void (*)(VObject *))(r);
@@ -199,8 +199,8 @@ void func_00320000(Pursuer *p) {
         VCALL(p, 0x80, void (*)(Pursuer *))(p);
     }
     if (p->c.unk152C == 0x11) {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
-        cam = D_0044E4B8;
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
+        cam = gCamera;
         VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
         VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
         VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
@@ -209,7 +209,7 @@ void func_00320000(Pursuer *p) {
     m = p->c.motion;
     VCALL(m, 0x38, void (*)(void *, s32, u32, s32))(m, p->c.unk152C, p->c.a.navTri, 0);
     if (p->c.unk152C == 0x11) {
-        VCALL(D_0044E4B8, 0x14, void (*)(VObject *))(D_0044E4B8);
+        VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
     }
 }
 

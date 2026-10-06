@@ -5,8 +5,8 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E568;   /* room manager: +0x80 GetRoomOrigin(room, out) -> bool */
-extern VObject *D_0044E560;   /* sound manager */
+extern VObject *gRooms;   /* room manager: +0x80 GetRoomOrigin(room, out) -> bool */
+extern VObject *gSound;   /* sound manager */
 extern VObject *gProgress;    /* +0xC current room */
 extern VObject *gFileLoader;  /* +0x28 load state(file id): 2 = done */
 
@@ -15,7 +15,7 @@ extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 ar
 /* Position relative to the current room: pos + origin(own room) - origin(current room).
  * False if either room is unknown. */
 s32 func_00122B50(Actor *a, f32 *out) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     sceVu0FVECTOR own, cur;
 
     if (!(VCALL(rooms, 0x80, u32 (*)(VObject *, s32, f32 *))(rooms, a->room, own) & 0xFF)) {
@@ -35,7 +35,7 @@ void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *po
     if (a->unk2C == 1) {
         return;
     }
-    func_002FF650(D_0044E560, id, arg2, pos != NULL ? pos : a->pos, arg3, arg4);
+    func_002FF650(gSound, id, arg2, pos != NULL ? pos : a->pos, arg3, arg4);
 }
 
 #define NAV_REACHED ((u32)-1)
@@ -69,7 +69,7 @@ static inline s32 NavTri_CornerAt(NavTri *t, const f32 *p) {
 
 /* The neighbour of `tri` (not blocked by `mask`) that has a corner at `p`, or -1. */
 u32 func_00122E80(void *self, u32 tri, const f32 *p, u32 mask) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     sceVu0FVECTOR tmp;
     NavTri *t;
     s32 i;
@@ -96,7 +96,7 @@ u32 func_00122E80(void *self, u32 tri, const f32 *p, u32 mask) {
  * triangles whose flags match `mask`. Returns the blocking triangle, or NAV_REACHED,
  * NAV_BLOCKED (left the mesh), NAV_STUCK (ended in another triangle), NAV_FAIL. */
 u32 func_00123080(void *self, u32 from, u32 to, const f32 *fromPos, const f32 *toPos, u32 mask) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     u32 cur, toAlt;
 
     if (from >= nm->numTris || to >= nm->numTris) {
@@ -158,7 +158,7 @@ s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *po
     if (r == NAV_BLOCKED) {
         return 0;
     }
-    if (r != NAV_STUCK && (mask & NavMesh_TriFlags(D_0044E570, r))) {
+    if (r != NAV_STUCK && (mask & NavMesh_TriFlags(gNavMesh, r))) {
         return 0;
     }
     r2 = func_00123080(self, triB, triA, posB, posA, walk);
@@ -171,20 +171,20 @@ s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *po
     if (r2 == NAV_BLOCKED) {
         return 0;
     }
-    return (mask & NavMesh_TriFlags(D_0044E570, r2)) ? 0 : 1;
+    return (mask & NavMesh_TriFlags(gNavMesh, r2)) ? 0 : 1;
 }
 
 #define NAV_NO_STAND 0x80001     /* triangle flags where nothing may stand */
 
-extern VObject *D_0044E558;      /* +0x2C(i, arg) -> bool, 8 entries */
+extern VObject *gDoors;      /* +0x2C(i, arg) -> bool, 8 entries */
 extern u32 func_00177BF0(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
 extern u32 func_00177A20(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
 
-/* Is triangle `tri` free: standable, and not claimed by any of D_0044E558's 8 entries or the
+/* Is triangle `tri` free: standable, and not claimed by any of gDoors's 8 entries or the
  * nav mesh's extra regions (vtable +0x50)? (The flags read goes through a NULL triangle for an
  * out-of-range index, like the original.) */
 s32 func_00123470(void *self, u32 tri, s32 arg) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     VObject *obj;
     u32 n;
     u8 i;
@@ -192,7 +192,7 @@ s32 func_00123470(void *self, u32 tri, s32 arg) {
     if (NavMesh_Tri(nm, tri)->flags & NAV_NO_STAND) {
         return 0;
     }
-    obj = D_0044E558;
+    obj = gDoors;
     for (i = 0; i < 8; i++) {
         if ((VCALL(obj, 0x2C, u32 (*)(VObject *, u32, s32))(obj, i, arg) & 0xFF) == 1) {
             return 0;
@@ -209,7 +209,7 @@ s32 func_00123470(void *self, u32 tri, s32 arg) {
 
 /* Same test for an actor's current triangle, using the progress flags for its slot. */
 s32 func_001235C0(void *self, Actor *a) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     VObject *prog;
     u32 n;
     u8 i;
@@ -240,7 +240,7 @@ u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out) {
     sceVu0FVECTOR d, base, target, cur;
     u32 tri;
 
-    if (!(door >= 0 && (u32)door < D_0044E570->numDoors)) {
+    if (!(door >= 0 && (u32)door < gNavMesh->numDoors)) {
         return NAV_NONE;
     }
     if (side < 0 || side >= 2) {
@@ -254,7 +254,7 @@ u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out) {
         d[2] = -(ofs[2] - 5.0f);
     }
     sceVu0UnitMatrix(m);
-    nm = D_0044E570;
+    nm = gNavMesh;
     sceVu0RotMatrixY(m, m, VCALL(nm, 0x58, f32 (*)(NavMesh *, s32, s32))(nm, door, side));
     sceVu0ApplyMatrix(d, m, d);
     tri = VCALL(nm, 0x5C, u32 (*)(NavMesh *, s32, s32, f32 *))(nm, door, side, base);
@@ -283,7 +283,7 @@ s32 func_00123960(Actor *a, s32 door, s32 side) {
     sceVu0FMATRIX m;
     sceVu0FVECTOR fwd, dir;
 
-    if (!(door >= 0 && (u32)door < D_0044E570->numDoors)) {
+    if (!(door >= 0 && (u32)door < gNavMesh->numDoors)) {
         return 0;
     }
     if (side < 0 || side >= 2) {
@@ -294,7 +294,7 @@ s32 func_00123960(Actor *a, s32 door, s32 side) {
     dir[2] = 1.0f;
     sceVu0ApplyMatrix(fwd, a->rot, dir);
     sceVu0UnitMatrix(m);
-    sceVu0RotMatrixY(m, m, VCALL(D_0044E570, 0x58, f32 (*)(NavMesh *, s32, s32))(D_0044E570, door, side));
+    sceVu0RotMatrixY(m, m, VCALL(gNavMesh, 0x58, f32 (*)(NavMesh *, s32, s32))(gNavMesh, door, side));
     sceVu0ApplyMatrix(dir, m, dir);
     return !(sceVu0InnerProduct(fwd, dir) <= 0.0f);
 }
@@ -317,7 +317,7 @@ f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 di
     *(s32 *)&d[1] = 0;
     sceVu0ApplyMatrix(d, m, d);
     sceVu0AddVector(target, pos, d);
-    nm = D_0044E570;
+    nm = gNavMesh;
     for (;;) {
         /* +0x24: like +0x20, also returns the exit point */
         s32 e = VCALL(nm, 0x24, s32 (*)(NavMesh *, u32, f32 *, const f32 *, const f32 *))(
@@ -343,7 +343,7 @@ s32 func_00123C60(Actor *a, s32 room, const f32 *pos) {
     sceVu0FVECTOR origin, da, dp;
     f32 la;
 
-    VCALL(D_0044E568, 0x30, void (*)(VObject *, s32, f32 *))(D_0044E568, room, origin);
+    VCALL(gRooms, 0x30, void (*)(VObject *, s32, f32 *))(gRooms, room, origin);
     sceVu0SubVector(da, a->pos, origin);
     sceVu0SubVector(dp, pos, origin);
     la = sceVu0InnerProduct(da, da);
@@ -362,7 +362,7 @@ void func_00123D10(Actor *a) {
 /* Triangle containing `p`, found by walking from the actor's triangle toward it; -1 if the
  * walk leaves the mesh or passes a corner. */
 u32 func_00123D20(Actor *a, const f32 *p) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     u32 tri = a->navTri;
 
     for (;;) {
@@ -384,7 +384,7 @@ u32 func_00123D20(Actor *a, const f32 *p) {
 /* Same, and put `p` on the mesh: its height from the triangle (vtable +0x14), or the actor's
  * height if it isn't on the mesh. */
 u32 func_00123E20(Actor *a, f32 *p) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     u32 tri = a->navTri;
 
     for (;;) {
@@ -423,7 +423,7 @@ u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mas
     if (mask == NAV_NONE) {
         mask = a->navMask;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     for (;;) {
         s32 e = NavMesh_Exit(nm, tri, from, target);
 
@@ -444,7 +444,7 @@ u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mas
 static inline void Actor_PlaceAt(Actor *a, u32 tri, const f32 *target) {
     a->navTri = tri;
     sceVu0CopyVector(a->pos, target);
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, a->navTri, a->pos);
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, a->navTri, a->pos);
 }
 
 /* Push this actor out of `other`'s collision cylinder. If the straight push is blocked, try
@@ -559,7 +559,7 @@ void func_00124720(Actor *a, const f32 *delta) {
     sceVu0CopyVector(to, a->pos);
     to[0] += delta[0];
     to[2] += delta[2];
-    tri = NavMesh_Slide(D_0044E570, a->navTri, out, a->pos, to, 0);
+    tri = NavMesh_Slide(gNavMesh, a->navTri, out, a->pos, to, 0);
     if (tri != NAV_NONE) {
         a->navTri = tri;
         a->pos[0] = out[0];
@@ -576,7 +576,7 @@ void func_001247E0(Actor *a, const f32 *delta) {
     sceVu0CopyVector(to, a->pos);
     to[0] += delta[0];
     to[2] += delta[2];
-    tri = NavMesh_Slide(D_0044E570, a->navTri, out, a->pos, to, a->navMask);
+    tri = NavMesh_Slide(gNavMesh, a->navTri, out, a->pos, to, a->navMask);
     if (tri != NAV_NONE) {
         a->navTri = tri;
         sceVu0CopyVector(a->pos, out);
@@ -619,7 +619,7 @@ f32 func_00124530(Actor *a, f32 target, f32 step) {
 }
 
 extern VObject *gRandom;      /* random numbers: +0x18 / +0x1C -> f32 in 0..1 */
-extern VObject *D_0044E4D0;      /* +0x10(point, id, tri) -> bool: point taken by room object `id` */
+extern VObject *gEvents;      /* +0x10(point, id, tri) -> bool: point taken by room object `id` */
 
 /* Teleport to a random free triangle of the current room's mesh (only if the actor is in the
  * current room). `kind` selects the area flags: 0 -> 0x100000, 1 -> 0x200000, else both;
@@ -639,11 +639,11 @@ void func_00124890(Actor *a, s32 kind) {
     } else {
         area = 0x300000;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     rng = gRandom;
     n = nm->numTris;
-    rooms = D_0044E568;
-    objs = D_0044E4D0;
+    rooms = gRooms;
+    objs = gEvents;
     for (;;) {
         sceVu0FVECTOR center;
         u32 tri, flags;
@@ -688,7 +688,7 @@ extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
  * to `pos` (which must lie in the triangle; it is put on the surface), else to the triangle's
  * centre. 0, or -1 if the triangle is invalid, blocked or doesn't contain `pos`. */
 s32 func_00124B80(Actor *a, u32 tri, const f32 *heading, f32 *pos) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
 
     a->prevNavTri = tri;
     a->navTri = tri;
@@ -854,7 +854,7 @@ void func_00124F20(Character *c, u32 door) {
     if (room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress) || c->a.navTri == NAV_NONE) {
         return;
     }
-    area = NavMesh_TriFlags(D_0044E570, c->a.navTri) & 0x300000;   /* (off the mesh: the PS2 reads address 0x3C) */
+    area = NavMesh_TriFlags(gNavMesh, c->a.navTri) & 0x300000;   /* (off the mesh: the PS2 reads address 0x3C) */
     side = -1;
     if (area == 0 || area == 0x200000) {
         side = 0;
@@ -863,10 +863,10 @@ void func_00124F20(Character *c, u32 door) {
     }
     pick = 0xFF;
     if (side != -1) {
-        if (c->door != 0xFF && side == Room_ExitSide(D_0044E568, room, c->door)) {
+        if (c->door != 0xFF && side == Room_ExitSide(gRooms, room, c->door)) {
             return;
         }
-        rooms = D_0044E568;
+        rooms = gRooms;
         for (i = 0; i < 8; i++) {
             if (i != c->door && side == Room_ExitSide(rooms, c->a.room, i)) {
                 pick = i;
@@ -884,7 +884,7 @@ void func_00124F20(Character *c, u32 door) {
         return;
     }
     if (c->door != 0xFF) {
-        rooms = D_0044E568;
+        rooms = gRooms;
         /* (the original compares the low byte with 0xFFFF: always true) */
         if ((Room_ExitId(rooms, c->a.room, c->door) & 0xFF) != 0xFFFF) {
             goalTri = Room_ExitPos(rooms, c->door, goal);
@@ -893,7 +893,7 @@ void func_00124F20(Character *c, u32 door) {
             }
         }
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     pick = 0xFF;
     planner = gSceneGameF29740;
     for (i = 0; i < 8; i++) {
@@ -923,7 +923,7 @@ void func_00124F20(Character *c, u32 door) {
     c->door = pick;
 }
 
-extern VObject *D_0044E4F0;   /* GS manager: +0x70 set screen fade colour (RGBA, A in the top byte) */
+extern VObject *gRenderer;   /* GS manager: +0x70 set screen fade colour (RGBA, A in the top byte) */
 
 /* vtable +0x80: screen fade by how far the character is past the boundary of the first region
  * flagged for its slot (progress flag bit 0): alpha 0..128 over half the boundary length. */
@@ -943,13 +943,13 @@ void func_001254B0(Character *c) {
         c->unk152C = 10;
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, i, a);
     VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, i, b);
     sceVu0SubVector(fwd, b, a);
     *(s32 *)&fwd[1] = 0;
     sceVu0Normalize(fwd, fwd);
-    objs = D_0044E4D0;
+    objs = gEvents;
     VCALL(objs, 0x24, void (*)(VObject *, u32, f32 *, f32 *, f32 *))(objs, i, p0, p1, p2);
     sceVu0SubVector(e, p1, p0);
     *(s32 *)&e[1] = 0;
@@ -980,7 +980,7 @@ void func_001254B0(Character *c) {
         }
         color = (alpha << 24) | 0x808080;
     }
-    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, color);
+    VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, color);
 }
 
 /* Path length from the character to `goal` (in triangle `goalTri`), avoiding triangles with
@@ -1185,8 +1185,8 @@ void **func_00126220(void **obj, s32 flags) {
  * (byte 1 of gProgress +0xFD0 + 6*i gets bit `slot`). */
 void func_00126270(Character *c) {
     u8 *prog = (u8 *)gProgress;
-    VObject *rooms = D_0044E568;
-    VObject *objs = D_0044E4D0;
+    VObject *rooms = gRooms;
+    VObject *objs = gEvents;
     u32 i;
 
     for (i = 0; i < 8; i++, prog += 6) {
@@ -1243,7 +1243,7 @@ extern void func_002FF600(VObject *snd, s32, s32, s32, s32, s32);
 
 /* Forward to the sound manager. */
 void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
-    func_002FF600(D_0044E560, a1, a2, a3, a4, a5);
+    func_002FF600(gSound, a1, a2, a3, a4, a5);
 }
 
 void func_001267F0(Character *c, s32 v) {
@@ -1324,16 +1324,16 @@ f32 func_00126E40(Character *c) {
     return Character_PathRemaining(c);
 }
 
-extern VObject *D_0044E580;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
+extern VObject *gRoutePlanner;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
 
-/* Forward to D_0044E580 +0xC (the route planner) with the character's buffers at +0x148C and
+/* Forward to gRoutePlanner +0xC (the route planner) with the character's buffers at +0x148C and
    +0x138C after the first three arguments. */
 s32 func_00126F30(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
-    return VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32, s32, s32))(
-        D_0044E580, a1, a2, a3, c->unk148C, c->unk138C, a4, a5, a6, a7);
+    return VCALL(gRoutePlanner, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32, s32, s32))(
+        gRoutePlanner, a1, a2, a3, c->unk148C, c->unk138C, a4, a5, a6, a7);
 }
 
-/* Route request to D_0044E580 +0xC toward `target`; side -1: the side of the current exit
+/* Route request to gRoutePlanner +0xC toward `target`; side -1: the side of the current exit
  * (room manager +0x50 with 1), if any. Result kept in unk1384. */
 s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4) {
     s32 useExit = 0;
@@ -1342,11 +1342,11 @@ s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4) 
     if (side == -1) {
         useExit = 1;
         if (c->door != 0xFF) {
-            side = VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, c->a.room, c->door, 1);
+            side = VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1);
         }
     }
-    c->unk1384 = VCALL(D_0044E580, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
-        D_0044E580, c->a.room, target, c->a.slot, c->unk148C, c->unk138C, useExit, side);
+    c->unk1384 = VCALL(gRoutePlanner, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
+        gRoutePlanner, c->a.room, target, c->a.slot, c->unk148C, c->unk138C, useExit, side);
     return c->unk1384;
 }
 
@@ -1438,7 +1438,7 @@ s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step) {
     }
     r = VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(
         gSceneGameF29740, triOut, posOut, c->unk128, c->unk124, c->unk12C, step);
-    if (NavMesh_Tri(D_0044E570, *triOut)->flags & c->a.navMask) {
+    if (NavMesh_Tri(gNavMesh, *triOut)->flags & c->a.navMask) {
         *triOut = c->a.navTri;
         sceVu0CopyVector(posOut, c->a.pos);
         return c->unk124;
@@ -1469,7 +1469,7 @@ s32 func_001274E0(Character *c, f32 speed) {
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, yaw);
     }
-    if (NavMesh_Tri(D_0044E570, tri)->flags & c->a.navMask) {
+    if (NavMesh_Tri(gNavMesh, tri)->flags & c->a.navMask) {
         c->unk128 = c->unk124;
         return 0;
     }
@@ -1550,7 +1550,7 @@ void func_00125E10(Character *c, f32 *pos, s32 big) {
     if (tri == NAV_NONE) {
         return;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     flags = NavMesh_Tri(nm, tri)->flags;
     if ((flags & 0x2008000) != 0x2008000) {
         return;
@@ -1564,7 +1564,7 @@ void func_00125E10(Character *c, f32 *pos, s32 big) {
     rp.rgba[3] = 0x30;
     rp.pos[1] = rp.pos[1] + 0x1.99999ap-4f /* 0.1 */;
     rp.size = big ? 0x1.99999ap-3f /* 0.2 */ : 0x1.333334p-3f /* 0.15 */;
-    mgr = D_0044E578;
+    mgr = gEffects;
     func_002D6090(mgr, Effect_New(mgr, 0x40, Ripple_Init), &rp);
 
     sceVu0CopyVector(sp.pos, pos);
@@ -1629,8 +1629,8 @@ s32 func_001264D0(Character *c, f32 *out) {
     if (next >= 400) {
         return 0;
     }
-    rooms = D_0044E568;
-    if (rooms == NULL || D_0044E558 == NULL) {
+    rooms = gRooms;
+    if (rooms == NULL || gDoors == NULL) {
         return 0;
     }
     prog = gProgress;
@@ -1654,7 +1654,7 @@ s32 func_001264D0(Character *c, f32 *out) {
         return 0;
     }
     if (out != NULL) {
-        rooms = D_0044E568;
+        rooms = gRooms;
         VCALL(rooms, 0x30, void (*)(VObject *, s32, f32 *))(rooms, exit, a);
         VCALL(rooms, 0x34, void (*)(VObject *, s32, f32 *))(rooms, exit, b);
         sceVu0SubVector(out, a, b);
@@ -1676,10 +1676,10 @@ s32 func_001264D0(Character *c, f32 *out) {
  * The chosen event is copied to `heard` (heardSlot 0xFF: none). */
 void func_001269C0(Character *c) {
     VObject *prog = gProgress;
-    VObject *rooms = D_0044E568;
-    NavMesh *nm = D_0044E570;
-    VObject *doors = D_0044E558;
-    VObject *router = D_0044E580;
+    VObject *rooms = gRooms;
+    NavMesh *nm = gNavMesh;
+    VObject *doors = gDoors;
+    VObject *router = gRoutePlanner;
     NoiseEvent *ev = NOISE_EVENTS(prog);
     s32 i;
     u32 exit = 0;

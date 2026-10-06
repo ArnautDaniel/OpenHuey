@@ -1,14 +1,14 @@
 /* On-screen messages (gBootMessage, vtable 0x46D7D0, SceneBoot's boot->msg...): 7 slots, each a
  * set of message textures (a .TEX file) shown one at a time on the renderer's layer 10.
  * Slot kinds (table D_003EA970): 1/2 = textures uploaded to VRAM (VRAM manager +0x5C),
- * 3 = a texture group of the slots object D_0044E4E8. */
+ * 3 = a texture group of the slots object gTexCache. */
 #include "common.h"
 #include "game.h"
 
 
-extern VObject *D_0044E4F0;   /* the renderer */
-extern VObject *D_0044E9A0;   /* the VRAM manager */
-extern VObject *D_0044E4E8;   /* texture groups (Game +0x14E8C90) */
+extern VObject *gRenderer;   /* the renderer */
+extern VObject *gVram;   /* the VRAM manager */
+extern VObject *gTexCache;   /* texture groups (Game +0x14E8C90) */
 extern const u8 D_003EA970[]; /* per slot: kind, group, ? */
 extern const u8 D_003EA971[];
 
@@ -42,7 +42,7 @@ static inline void Message_Reset(u8 *m) {
         AT(s, 0x8, s32) = 0;
         AT(s, 0x5, s8) = i;
     }
-    AT(m, 0x104, s32) = VCALL(D_0044E4F0, 0x3C, s32 (*)(VObject *, s32))(D_0044E4F0, 10);
+    AT(m, 0x104, s32) = VCALL(gRenderer, 0x3C, s32 (*)(VObject *, s32))(gRenderer, 10);
     AT(m, 0x100, u8) = 0xFF;
 }
 
@@ -72,7 +72,7 @@ static inline s32 MsgSlot_Upload(MsgSlot *s, u32 *tex, s32 first) {
     s->tex = tex;
     s->count = *s->tex;
     s->group = -1;
-    v = D_0044E9A0;
+    v = gVram;
     for (i = 0; i < s->count; i++) {
         u8 *e = (u8 *)s->tex + 0x10 + i * 0x10;
 
@@ -169,7 +169,7 @@ s32 func_0026BB00(u8 *m, s32 i, u32 *tex) {
         s->tex = tex;
         s->count = *s->tex;
         s->group = D_003EA971[s->index * 3];
-        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, u32 *, s32))(D_0044E4E8, tex, s->group);
+        VCALL(gTexCache, 0x10, void (*)(VObject *, u32 *, s32))(gTexCache, tex, s->group);
         return 1;
     }
     return 0;
@@ -199,7 +199,7 @@ void func_0026B9C0(u8 *m, s32 i) {
 
     switch (s->kind) {
     case 1:
-        v = D_0044E9A0;
+        v = gVram;
         for (j = 0; j < s->count; j++) {
             if (s->vram[j] != -1) {
                 VCALL(v, 0x1C, void (*)(VObject *, s32))(v, s->vram[j]);
@@ -208,7 +208,7 @@ void func_0026B9C0(u8 *m, s32 i) {
         MsgSlot_Clear(s);
         break;
     case 3:
-        VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, s->group);
+        VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, s->group);
         MsgSlot_Clear(s);
         break;
     }
@@ -280,7 +280,7 @@ s32 func_0026B860(u8 *m, s32 i, s32 sel, s32 unused) {
     case 1:
         return s->vram[sel];
     case 3:
-        return VCALL(D_0044E4E8, 0x8, s32 (*)(VObject *, s32, s32, s32))(D_0044E4E8, sel, s->group, s->cur);
+        return VCALL(gTexCache, 0x8, s32 (*)(VObject *, s32, s32, s32))(gTexCache, sel, s->group, s->cur);
     }
     return r;
 }

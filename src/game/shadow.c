@@ -26,10 +26,10 @@
 extern f32 *func_0017CE80(void *skeleton, s32 bone);   /* bone node */
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
-extern VObject *D_0044E570;   /* the nav mesh: +0x14 the floor height at a point on a triangle */
-extern VObject *D_0044E4C8;   /* the lights */
-extern VObject *D_0044E4F0;   /* the renderer */
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gNavMesh;   /* the nav mesh: +0x14 the floor height at a point on a triangle */
+extern VObject *gLights;   /* the lights */
+extern VObject *gRenderer;   /* the renderer */
+extern VObject *gCamera;   /* the camera */
 
 /* queue shadow `s` of its model's bone `bone` (on nav triangle `tri`, the light offset `light`,
  * the model's layer `layer`) for each light that casts it there, if the lights allow a shadow
@@ -42,23 +42,23 @@ void func_001F3530(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
 
     AT(s, 0x2D0, f32 *) = func_0017CE80(AT(s, 0xC, void *), bone);
     sceVu0CopyVector(p, AT(s, 0x2D0, f32 *) + 12);
-    if (D_0044E570 != NULL) {
-        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, tri, p);
+    if (gNavMesh != NULL) {
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, tri, p);
     } else {
         p[1] = 0.0f;
     }
     sceVu0CopyVector(q, AT(s, 0x2D0, f32 *) + 12);
     q[1] = p[1];
-    if ((u8)VCALL(D_0044E4C8, 0x2C, s32 (*)(VObject *, s32, f32 *))(D_0044E4C8, tri, q) != 1) {
+    if ((u8)VCALL(gLights, 0x2C, s32 (*)(VObject *, s32, f32 *))(gLights, tri, q) != 1) {
         return;
     }
     sceVu0CopyVector((f32 *)(s + 0x2C0), light);
     AT(s, 0x2DC, s32) = layer;
-    VCALL(D_0044E4C8, 0x14, void (*)(VObject *, f32 *, s32, s32 *))(D_0044E4C8, AT(s, 0x2D0, f32 *) + 12, tri, idx);
+    VCALL(gLights, 0x14, void (*)(VObject *, f32 *, s32, s32 *))(gLights, AT(s, 0x2D0, f32 *) + 12, tri, idx);
     for (i = 0; i < 3; i++) {
         if (idx[i] >= 0) {
             AT(s, 0x2D8, s32) = idx[i];
-            VCALL(D_0044E4F0, 0xC, void (*)(VObject *, u8 *, s32, s32))(D_0044E4F0, s, 6, 0);
+            VCALL(gRenderer, 0xC, void (*)(VObject *, u8 *, s32, s32))(gRenderer, s, 6, 0);
         }
     }
 }
@@ -164,7 +164,7 @@ extern void glr_shadow_cancel(void);
 /* a projected point (1/16 pixels around 2048, Z) in clip space: as the camera's clip matrix
  * makes it (Z from zMin .. zMax to -1 .. 1) */
 static void shadow_ndc(const s32 *p, f32 *out) {
-    f32 zMin = AT(D_0044E4B8, 0x18, f32), zMax = AT(D_0044E4B8, 0x1C, f32);
+    f32 zMin = AT(gCamera, 0x18, f32), zMax = AT(gCamera, 0x1C, f32);
 
     out[0] = ((f32)p[0] / 16.0f - 2048.0f) / 2047.0f;
     out[1] = ((f32)p[1] / 16.0f - 2048.0f) / 2047.0f;
@@ -195,7 +195,7 @@ s32 func_001FA0E0(VObject *l, s32 *p0, s32 *p1, s32 *p2, s32 *p3, s32 flip) {
  * light (5 above it) by its length and again by 1/5 of it, counting the other way. 0 (no
  * shadow) if one is partly out of view */
 s32 func_001F2060(u8 *s) {
-    VObject *lights = D_0044E4C8, *cam = D_0044E4B8;
+    VObject *lights = gLights, *cam = gCamera;
     s32 n = VCALL(lights, 0x40, s32 (*)(VObject *))(lights);
     f32 scr[4][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
@@ -276,7 +276,7 @@ s32 func_001F2060(u8 *s) {
  * tinted layers; then the bone boxes' volumes and the blockers', and the colour where they
  * count. 0: nothing drawn */
 s32 func_001F2B80(u8 *s) {
-    VObject *lights = D_0044E4C8, *cam = D_0044E4B8;
+    VObject *lights = gLights, *cam = gCamera;
     f32 rec[12] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     f32 scr[4][4] __attribute__((aligned(16)));
@@ -315,12 +315,12 @@ s32 func_001F2B80(u8 *s) {
     }
     switch (AT(s, 0x2DC, s32)) {   /* the tinted layers dim it as they dim the screen */
     case 0x11:
-        a = a * (VCALL(D_0044E4F0, 0x68, u32 (*)(VObject *))(D_0044E4F0) >> 25) >> 7;
+        a = a * (VCALL(gRenderer, 0x68, u32 (*)(VObject *))(gRenderer) >> 25) >> 7;
         break;
     case 0x0F:
     case 0x23:
     case 0x1A: {
-        u32 t = VCALL(D_0044E4F0, 0x74, u32 (*)(VObject *))(D_0044E4F0) >> 24;
+        u32 t = VCALL(gRenderer, 0x74, u32 (*)(VObject *))(gRenderer) >> 24;
 
         if (t < 0x80) {
             a = a * t >> 7;
@@ -419,13 +419,13 @@ s32 func_001F2B80(u8 *s) {
  * D_003EC080, its normal at +4), +0x60 the light (5 above it), +0x70 how far the box goes ---- */
 
 extern f32 D_003EC080[][4], D_003EC0C0[4], D_003EC0D0[4], D_003EC130[4];
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* the shadow from light `l`: 1 if there is one (not out of the light's reach), with its
  * strength (the light's, its falloff at the doorway, the angle it meets the door, the scene's
  * brightness) */
 s32 func_002786D0(u8 *o, s32 l) {
-    VObject *lights = D_0044E4C8;
+    VObject *lights = gLights;
     f32 rec[12] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
@@ -487,7 +487,7 @@ s32 func_002786D0(u8 *o, s32 l) {
  * layer 6 when func_002786D0 finds one. (The original makes the +0x2C call without setting its
  * arguments: they are this function's own tri and pos, still in their registers.) */
 void func_00278D60(u8 *o, u32 tri, f32 *pos, f32 *rot) {
-    VObject *lights = D_0044E4C8;
+    VObject *lights = gLights;
     s32 l[3];
     s32 i;
 
@@ -496,7 +496,7 @@ void func_00278D60(u8 *o, u32 tri, f32 *pos, f32 *rot) {
     }
     VCALL(lights, 0x14, void (*)(VObject *, f32 *, u32, s32 *))(lights, pos, tri, l);
     for (i = 0; i < 3; i++) {
-        VObject *r = D_0044E4F0;
+        VObject *r = gRenderer;
 
         if (l[i] < 0) {
             continue;
@@ -589,7 +589,7 @@ static void door_shadow_side(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
 /* +0xC draw (layer 6): the box's sides into the shadow buffer (page 0x180, 256 x 224) as
  * gouraud strips with OpenGL; 0 if it is partly out of view */
 s32 func_002789B0(u8 *o) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 p[8][4] __attribute__((aligned(16)));
     s32 s[8][4] __attribute__((aligned(16)));
 

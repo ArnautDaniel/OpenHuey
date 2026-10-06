@@ -105,7 +105,7 @@ void func_0020C660(Pursuer *p, s32 exit) {
     case 0x28:
     case 0xD:
         VCALL(p, 0xF0, void (*)(Pursuer *, s32))(p, exit);
-        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(D_0044E568, 0x28, s32 (*)(VObject *, s32))(D_0044E568, exit), 0, 0);
+        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
 }
@@ -432,7 +432,7 @@ void func_003461A0(Pursuer *p, s32 exit) {
     case 0x28:
     case 0xD:
         VCALL(p, 0xF0, void (*)(Pursuer *, s32))(p, exit);
-        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(D_0044E568, 0x28, s32 (*)(VObject *, s32))(D_0044E568, exit), 0, 0);
+        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
 }

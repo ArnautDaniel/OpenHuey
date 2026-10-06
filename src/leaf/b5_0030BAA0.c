@@ -42,7 +42,7 @@ extern u8 D_00425520[];
 extern u8 D_004258D0[];
 extern u8 D_004259B0[];
 extern void *D_00426760[];
-extern void *D_0044E560;
+extern void *gSound;
 extern void *D_0047AD20[];
 extern void *D_0047AD24[];
 extern void *D_0047AD28[];
@@ -133,7 +133,7 @@ f32 func_0030CBC0(void) {
 }
 
 s32 func_0030CF80(void *self) {
-    return VCALL(D_0044E560, 0x10, s32 (*)(void *, s32, s32))(D_0044E560, 0, 0x400000);
+    return VCALL(gSound, 0x10, s32 (*)(void *, s32, s32))(gSound, 0, 0x400000);
 }
 
 void func_0030D2A0(u8 *self) {

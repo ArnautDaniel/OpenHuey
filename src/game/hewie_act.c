@@ -14,8 +14,8 @@ extern Character *gCharPursuer;
 extern Character *gCharacters[6];
 extern Progress *gProgress;
 extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
-extern VObject *D_0044E568;   /* the rooms */
-extern void *D_0044E570;      /* the walk mesh */
+extern VObject *gRooms;   /* the rooms */
+extern void *gNavMesh;      /* the walk mesh */
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
@@ -116,8 +116,8 @@ static inline u32 tri_flags(Hewie *h) {
     u32 t = HW(h, 0x34, u32);
     u8 *tri = NULL;
 
-    if (t < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        tri = AT(D_0044E570, 0x4, u8 *) + t * 0x50;
+    if (t < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        tri = AT(gNavMesh, 0x4, u8 *) + t * 0x50;
     }
     return tri != NULL ? AT(tri, 0x3C, u32) : 0;   /* (the original reads address 0x3C) */
 }
@@ -133,7 +133,7 @@ static inline void path_clear(Hewie *h) {
 /* the door he takes: the path's next door (+0x138C) and its distance */
 static inline void door_from_path(Hewie *h) {
     HW(h, 0x14C0, u16) = HW(h, 0x138C, u16);
-    HW(h, 0x14C4, f32) = (f32)VCALL(D_0044E568, 0x38, s32 (*)(VObject *, u32, s32))(D_0044E568, HW(h, 0x138C, u16),
+    HW(h, 0x14C4, f32) = (f32)VCALL(gRooms, 0x38, s32 (*)(VObject *, u32, s32))(gRooms, HW(h, 0x138C, u16),
                                                                                       h->c.a.room);
 }
 
@@ -179,7 +179,7 @@ static inline void to_place(Hewie *h, u32 place) {
 
     MODE(h) = 0;
     HW(h, 0x100, s32) = place;
-    HW(h, 0xF36B4, s32) = VCALL(D_0044E568, 0x30, s32 (*)(VObject *, u32, f32 *))(D_0044E568, place, at);
+    HW(h, 0xF36B4, s32) = VCALL(gRooms, 0x30, s32 (*)(VObject *, u32, f32 *))(gRooms, place, at);
     HW(h, 0xF36B8, s32) = 0;
     HW(h, 0xF36BC, s32) = func_001382F0(h);
     sceVu0CopyVector((f32 *)((u8 *)h + 0xF36E0), at);
@@ -675,16 +675,16 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
 
         for (n = 0; n < 8; n++) {
             u8 e = exit_random(h, &seen);
-            u16 door = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e);
+            u16 door = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e);
 
             if (door == 0xFFFF) {
                 continue;
             }
-            if ((VCALL(D_0044E568, 0x74, u32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e) & 0xFF) != 1
+            if ((VCALL(gRooms, 0x74, u32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e) & 0xFF) != 1
                 || !exit_open(h, e)) {
                 continue;
             }
-            if (func_00126F80(&h->c, VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e), -1,
+            if (func_00126F80(&h->c, VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e), -1,
                               HEWIE_SIDE(h), -1) <= 0) {
                 path_clear(h);
                 continue;
@@ -706,9 +706,9 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         s32 ok = 0;
 
         if (HW(h, 0xF3590, u8) == 1) {
-            u8 e = VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, HW(h, 0x14C0, u16), h->c.a.room);
+            u8 e = VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, HW(h, 0x14C0, u16), h->c.a.room);
 
-            if (e != 0xFF && VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e)
+            if (e != 0xFF && VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e)
                                  == HW(h, 0xF3594, s32)) {
                 ok = 1;
             }
@@ -752,13 +752,13 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
                 u8 e = exit_random(h, &seen);
                 s32 room;
 
-                if ((VCALL(D_0044E568, 0x74, u32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e) & 0xFF) != 1) {
+                if ((VCALL(gRooms, 0x74, u32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e) & 0xFF) != 1) {
                     continue;
                 }
                 if (!exit_open(h, e)) {
                     continue;
                 }
-                room = VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, e);
+                room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, e);
                 if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p) && func_00126F80(&h->c, room, -1, HEWIE_SIDE(h), -1) == 1) {
                     door_from_path(h);
                     MODE(h) = 6;
@@ -1095,7 +1095,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         HW(h, 0xC0, s32) = 8;
         AT(HW(h, 0x1380, void *), 0x40, s32) = HW(h, 0xC0, s32);
         anim(h, 4);
-        if (func_0013EE40(h, VCALL(D_0044E568, 0x30, s32 (*)(VObject *, u8, f32 *))(D_0044E568, (u8)HW(h, 0xF36B4, s32), at),
+        if (func_0013EE40(h, VCALL(gRooms, 0x30, s32 (*)(VObject *, u8, f32 *))(gRooms, (u8)HW(h, 0xF36B4, s32), at),
                           at, 0, 1) != 0) {
             HW(h, 0x124, s32) = HW(h, 0x128, s32);
         }
@@ -1302,7 +1302,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
                     f32 at[4] __attribute__((aligned(16)));
 
                     HW(h, 0x100, s32) = place;
-                    HW(h, 0xF36B4, s32) = VCALL(D_0044E568, 0x30, s32 (*)(VObject *, u32, f32 *))(D_0044E568, place, at);
+                    HW(h, 0xF36B4, s32) = VCALL(gRooms, 0x30, s32 (*)(VObject *, u32, f32 *))(gRooms, place, at);
                     HW(h, 0xF36BC, s32) = 0;
                     sceVu0CopyVector((f32 *)((u8 *)h + 0xF36E0), at);
                     HW(h, 0x124, s32) = HW(h, 0x128, s32);
@@ -1410,7 +1410,7 @@ void func_00130AF0(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         HW(h, 0x2B, s8) = 1;
         HW(h, 0x2D, u8) = 1;
-        VCALL(D_0044E568, 0x34, void (*)(VObject *, u8, void *))(D_0044E568, (u8)HW(h, 0xF36B4, s32), (u8 *)h + 0xF36E0);
+        VCALL(gRooms, 0x34, void (*)(VObject *, u8, void *))(gRooms, (u8)HW(h, 0xF36B4, s32), (u8 *)h + 0xF36E0);
         CMD(h) = 0;
         STATE(h, func_00146AE0);
         break;

@@ -6,7 +6,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E988;   /* the item manager */
+extern VObject *gItems;   /* the item manager */
 extern u8 *gCharPlayer;
 extern void func_002EF580(u8 *o);
 extern void func_002EFBE0(u8 *o);
@@ -64,7 +64,7 @@ void func_002F0500(u8 *o) {
         }
         d = d * scale;
         a = a * scale;
-        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1)) {
+        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1)) {
         case 0x86:
         case 0x87:
             b = b * 1.25f;
@@ -116,7 +116,7 @@ void func_002F0500(u8 *o) {
     AT(o, 0x18, f32) = 0.0f;
 }
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern void func_00122C20(u8 *c, s32 a, s32 b, s32 c2, s32 d, s32 e);
 extern void func_002EF2B0(u8 *o);
 
@@ -135,7 +135,7 @@ void func_002EF580(u8 *o) {
     if (AT(o, 0x30, s32) != 0) {
         AT(o, 0x30, s32)--;
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
     switch (AT(o, 0x0, u8)) {
     case 0:
@@ -410,7 +410,7 @@ void func_002F0260(u8 *o, u32 stage) {
 
 /* on pausing: the camera's shake off, +0x38 = 0x80 */
 void func_002F02F0(u8 *o) {
-    VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.0f);
+    VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.0f);
     AT(o, 0x38, s32) = 0x80;
 }
 
@@ -436,8 +436,8 @@ void func_002EFA50(u8 *o, f32 amount) {
     if (amount < 0.0f) {
         return;
     }
-    if (D_0044E988 != NULL) {
-        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1)) {
+    if (gItems != NULL) {
+        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1)) {
         case 0x87:
             amount *= 0.75f;
             break;
@@ -453,7 +453,7 @@ void func_002EFB70(u8 *o, f32 amount) {
     fright(o, amount);
 }
 
-extern VObject *D_0044E7A8;   /* the screen fades */
+extern VObject *gScreenFade;   /* the screen fades */
 extern const u8 D_0041A040[], D_0041A050[], D_0041A060[], D_0041A070[], D_0041A080[], D_0041A090[];
 
 /* while the screen's effect is full (+0x34 1): Fiona's breath (sound 0x29, pitched by the
@@ -471,6 +471,6 @@ void func_002EF2B0(u8 *o) {
         return;
     }
     func_00122C20(gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
-    VCALL(D_0044E7A8, 0x20, void (*)(VObject *, const u8 *, const u8 *))(D_0044E7A8, stage == 5 ? D_0041A090 : NULL,
+    VCALL(gScreenFade, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gScreenFade, stage == 5 ? D_0041A090 : NULL,
                                                                           sTint[stage - 1]);
 }

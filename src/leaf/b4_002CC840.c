@@ -21,7 +21,7 @@ extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *D_0044FE10, *D_00456E00, *D_0044E568, *D_0044E570;
+extern void *gCutscene, *D_00456E00, *gRooms, *gNavMesh;
 
 /* tail call to virtual slot 0x8 */
 s32 func_002CC840(void *self) {
@@ -86,14 +86,14 @@ s32 func_002CCDE0(void) {
     if (!item_room_spot(p, 0x1C, 9)) {
         return 0;
     }
-    ev_mgr = D_0044E4D0;
+    ev_mgr = gEvents;
     item_event(ev_mgr, 0, 0, gCharPlayer);
     Progress_SetFlag(p, 0x18);
     return 4;
 }
 
 extern void func_00261090(void *list, s32 a, s32 b);
-extern u8 *D_0044E988;   /* the items */
+extern u8 *gItems;   /* the items */
 
 /* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, func_00261090
    (2, 1)) and Progress +0x84 bit 31 is set */
@@ -104,7 +104,7 @@ s32 func_002CCED0(void *o) {
         }
         return 0;
     }
-    func_00261090(D_0044E988 + 8, 2, 1);
+    func_00261090(gItems + 8, 2, 1);
     AT(gProgress, 0x84, u32) |= 0x80000000;
     return 2;
 }
@@ -124,7 +124,7 @@ s32 func_002CD1D0(void) {
         return 0;
     }
     Progress_SetFlag(p, 0x18);
-    item_event(D_0044E4D0, 0, 5, gCharPlayer);
+    item_event(gEvents, 0, 5, gCharPlayer);
     return 4;
 }
 
@@ -136,7 +136,7 @@ s32 func_002CD340(void) {
     if (!item_room_spot(p, 4, 0xC)) {
         return 0;
     }
-    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    item_event(gEvents, 0, 4, gCharPlayer);
     Progress_SetFlag(p, 0x18);
     return 4;
 }

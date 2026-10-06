@@ -236,7 +236,7 @@ void func_00350810(VObject *o, const u8 *params) {
     VCALL(o, 0x10, s32 (*)(VObject *))(o);
 }
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* fill draw object `d` from `p` and queue it with the renderer (+0xC, layer 0x19) */
 void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
@@ -251,7 +251,7 @@ void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
     d->p.angle[2] = p->angle[2];
     d->p.model = p->model;
     d->p.rgba = p->rgba;
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, ModelDraw *, s32, s32))(D_0044E4F0, d, 0x19, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, ModelDraw *, s32, s32))(gRenderer, d, 0x19, 0);
 }
 
 /* ---- class D_00477E10 (room 0x55, 0x18 bytes): a light caustic like D_00478BC0's, over the
@@ -604,8 +604,8 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
                       u64 tex0, u32 prim);
 extern void glr_caustic_begin(void);
 extern void glr_caustic_glow(s32 aref);
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gCamera;   /* the camera */
+extern VObject *gTexCache;   /* the texture cache */
 extern f32 func_002E2D00(f32 angle);   /* wrap an angle into -pi..pi */
 extern f32 func_0031C058(f32 x);       /* cosf */
 extern f32 func_0031C248(f32 x);       /* sinf */
@@ -622,8 +622,8 @@ extern f32 func_0031C248(f32 x);       /* sinf */
  * blurred (4 diagonal taps at 1/2) and added back at 1/2 - the caustic's glow. On PC glr does
  * the passes; 0 = nothing linked into the layer. */
 s32 func_0034E9E0(u8 *d) {
-    VObject *cam = D_0044E4B8;
-    const void *tex = VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(d, 0x20, s32), 0);
+    VObject *cam = gCamera;
+    const void *tex = VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, AT(d, 0x20, s32), 0);
     f32 size = AT(d, 0x24, f32), half = 0.5f * size, cell = 0.125f * size, phase = AT(d, 0x28, f32);
     s32 g;
 
@@ -685,8 +685,8 @@ s32 func_0034E9E0(u8 *d) {
 #include "effectmgr.h"
 
 extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
-extern VObject *D_0044E560;   /* the sound driver */
-extern void *D_0044E570;      /* the nav mesh: +0x3C the triangle under a point, +0x14 the floor height in one */
+extern VObject *gSound;   /* the sound driver */
+extern void *gNavMesh;      /* the nav mesh: +0x3C the triangle under a point, +0x14 the floor height in one */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* +0x8 destructor (the quad drawer at +0x610 inlined) */
@@ -729,7 +729,7 @@ void func_00353330(u8 *o, s32 i) {
     AT(p, 0x2C, s32) = 0;
     AT(o, 0x648 + i * 4, f32) = 1.5f + RND();
 #undef RND
-    nav = (VObject *)D_0044E570;
+    nav = (VObject *)gNavMesh;
     AT(o, 0x690 + i * 4, s32) = VCALL(nav, 0x3C, s32 (*)(VObject *, f32 *, s32))(nav, (f32 *)(p + 0x10), 0);
 }
 
@@ -768,14 +768,14 @@ static void spray_init(void **obj) {
  * first drop also with sound 2..4 of bank 6) and starts again */
 s32 func_00353520(u8 *o) {
     VObject *rng = gRandom;
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     VObject *nav;
     VObject *snd;
     s32 i, k;
 
     AT(o, 0x688, s32) ^= 1;
-    nav = (VObject *)D_0044E570;
-    snd = D_0044E560;
+    nav = (VObject *)gNavMesh;
+    snd = gSound;
     for (i = 0; i < 16; i++) {
         u32 buf = AT(o, 0x688, u32);
         u32 *dst = &AT(o, 0x10 + buf * 0x300 + i * 0x30, u32);
@@ -1441,7 +1441,7 @@ extern f32 func_002E2BC0(const f32 *v);                 /* heading of v */
 extern void func_002E2C10(f32 *out, f32 angle);         /* the unit vector of a heading */
 extern void func_002E2CA0(f32 *out, f32 *v, f32 angle); /* v turned about y */
 extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
-extern VObject *D_0044E4F8;   /* the camera director's interface: +0x38 a cut is on */
+extern VObject *gCamDirector;   /* the camera director's interface: +0x38 a cut is on */
 
 /* +0x8 destructor */
 void *func_002B8E70(void *o, s32 flags) {
@@ -1676,8 +1676,8 @@ void func_002B9010(u8 *o) {
         return;
     }
     rng = gRandom;
-    cam = D_0044E4F8;
-    mgr = D_0044E578;
+    cam = gCamDirector;
+    mgr = gEffects;
     for (i = 0; i < (u8)(u32)AT(o, 0x8C, f32); i++) {
         f32 m[4][4] __attribute__((aligned(16)));
         f32 v[4] __attribute__((aligned(16)));
@@ -2077,7 +2077,7 @@ void func_0033CFD0(u8 *o) {
  * next of four, if the bank is loaded), off (90..345); while on, the sound is kept going and a
  * new ripple starts; then its ripples move */
 s32 func_0033D2C0(u8 *o) {
-    VObject *snd = D_0044E560;
+    VObject *snd = gSound;
     VObject *rng = gRandom;
     s32 k, j;
 
@@ -2322,7 +2322,7 @@ s32 func_00378650(u8 *o) {
 }
 
 #ifdef HG_NATIVE
-extern VObject *D_0044E978;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
+extern VObject *gSystemData;   /* the game: +0x1C its fixed models (GAME_FIX.GFM) */
 #include <stdint.h>
 
 extern u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa);   /* loading.c */
@@ -2331,7 +2331,7 @@ extern u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa);   /* lo
  * +0x34) at +0x10 turned by +0x20; its later parts each turned and moved further by their
  * own +0x30 / +0x40. 0 when the texture isn't loaded. */
 s32 func_0033B560(u8 *d) {
-    VObject *tc = D_0044E4E8;
+    VObject *tc = gTexCache;
     f32 m[4][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
     f32 rot[4] __attribute__((aligned(16)));
@@ -2343,7 +2343,7 @@ s32 func_0033B560(u8 *d) {
         return 0;
     }
     texh = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, 2, 0x10);
-    model = VCALL(D_0044E978, 0x1C, u8 *(*)(VObject *))(D_0044E978);
+    model = VCALL(gSystemData, 0x1C, u8 *(*)(VObject *))(gSystemData);
     off = AT(model, AT(d, 0x30, s32) * 4, s32);
     if (off <= 0) {
         return 1;
@@ -2364,7 +2364,7 @@ s32 func_0033B560(u8 *d) {
             sceVu0AddVector(trans, trans, (f32 *)(part + 0x40));
         }
         sceVu0TransMatrix(m, m, trans);
-        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+        VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
         sceVu0MulMatrix(clip, clip, m);
         part = gl_gfm_part(part, clip, texh, AT(part, 0x4, s32) + AT(d, 0x34, s32));
         part = (u8 *)(((uintptr_t)part + 15) & ~(uintptr_t)15);
@@ -2381,7 +2381,7 @@ void func_0033BCB0(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 laye
     sceVu0CopyVector((f32 *)(d + 0x20), rot);
     AT(d, 0x30, s32) = a;
     AT(d, 0x34, s32) = b;
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, layer, 0);
 }
 
 /* ---- D_0047A310 (0x10C8 bytes): rising embers over a fire - 16 small ones (records +0x910 +
@@ -2689,7 +2689,7 @@ void func_0035B5C0(u8 *o, u8 *c) {
 
 /* +0x14 draw (not while the effects are paused) */
 void func_0035B6A0(u8 *o) {
-    if (func_002D6010(D_0044E578) == 0) {
+    if (func_002D6010(gEffects) == 0) {
         AT(o, 0x620, QuadRec *) = WISPS_REC(o, AT(o, 0x6CC, s32), 0);
         func_002E56C0(o + 0x610);
     }

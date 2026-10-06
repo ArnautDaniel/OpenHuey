@@ -3,22 +3,22 @@
  * and generated from it (2026-10-05). */
 #include "common.h"
 
-extern void *D_0044E4B8;
-extern void *D_0044E4C8;
-extern void *D_0044E4E8;
-extern void *D_0044E4F0;
-extern void *D_0044E4F8;
-extern void *D_0044E560;
-extern void *D_0044E570;
-extern void *D_0044E7A8;
-extern void *D_0044E978;
-extern void *D_0044E980;
-extern void *D_0044E9A0;
-extern void *D_0044F7F8;
-extern void *D_0044FE10;
-extern void *D_0044FEB0;
-extern void *D_0044FEF8;
-extern void *D_0044FF00;
+extern void *gCamera;
+extern void *gLights;
+extern void *gTexCache;
+extern void *gRenderer;
+extern void *gCamDirector;
+extern void *gSound;
+extern void *gNavMesh;
+extern void *gScreenFade;
+extern void *gSystemData;
+extern void *gAdx;
+extern void *gVram;
+extern void *gSystem;
+extern void *gCutscene;
+extern void *gPad;
+extern void *gMovieLib;
+extern void *gMemCard;
 extern void *D_00456DE8;
 extern void *D_004699E0[];
 extern void *D_00469B40[];
@@ -103,7 +103,7 @@ void *func_00120EF0(u8 *o, s32 flags) {
 void *func_00122AD0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00469B40;
-        D_0044E4B8 = NULL;
+        gCamera = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -115,7 +115,7 @@ void *func_00122AD0(u8 *o, s32 flags) {
 void *func_0017CDD0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AA40;
-        D_0044E570 = NULL;
+        gNavMesh = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -140,7 +140,7 @@ void *func_001AAE10(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AC50;
         AT(o, 0x0, void **) = D_0046ACF0;
-        D_0044E4F0 = NULL;
+        gRenderer = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -152,7 +152,7 @@ void *func_001AAE10(u8 *o, s32 flags) {
 void *func_001BC090(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ACF0;
-        D_0044E4F0 = NULL;
+        gRenderer = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -175,7 +175,7 @@ void *func_001BC320(u8 *o, s32 flags) {
 void *func_001BE730(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ADD0;
-        D_0044FEB0 = NULL;
+        gPad = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -203,7 +203,7 @@ void *func_001BECA0(u8 *o, s32 flags) {
 void *func_001BF220(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE10;
-        D_0044F7F8 = NULL;
+        gSystem = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -215,7 +215,7 @@ void *func_001BF220(u8 *o, s32 flags) {
 void *func_001BF280(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE30;
-        D_0044E7A8 = NULL;
+        gScreenFade = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -227,7 +227,7 @@ void *func_001BF280(u8 *o, s32 flags) {
 void *func_001BF2E0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE60;
-        D_0044FF00 = NULL;
+        gMemCard = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -242,7 +242,7 @@ void *func_001BF5F0(u8 *o, s32 flags) {
         AT(o, 0x4, s32) = 0;
         AT(o, 0x8, s32) = 0;
         AT(o, 0xC, s32) = 0;
-        D_0044E980 = NULL;
+        gAdx = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -255,7 +255,7 @@ void *func_001BF660(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AED0;
         AT(o, 0x4, u8) = 0;
-        D_0044FEF8 = NULL;
+        gMovieLib = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -267,7 +267,7 @@ void *func_001BF660(u8 *o, s32 flags) {
 void *func_001BF7A0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF20;
-        D_0044E9A0 = NULL;
+        gVram = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -279,7 +279,7 @@ void *func_001BF7A0(u8 *o, s32 flags) {
 void *func_001BF800(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF90;
-        D_0044E560 = NULL;
+        gSound = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -292,7 +292,7 @@ void *func_001BF880(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B050;
         AT(o, 0x0, void **) = D_0046AF20;
-        D_0044E9A0 = NULL;
+        gVram = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -306,7 +306,7 @@ void *func_001F4590(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B1D0;
         AT(o, 0x0, void **) = D_0046B1F0;
-        D_0044E4E8 = NULL;
+        gTexCache = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -318,7 +318,7 @@ void *func_001F4590(u8 *o, s32 flags) {
 void *func_001FB0F0(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B350;
-        D_0044E4C8 = NULL;
+        gLights = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -392,7 +392,7 @@ void *func_0020D9C0(u8 *o, s32 flags) {
 void *func_0020DB40(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046BEE0;
-        D_0044E978 = NULL;
+        gSystemData = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -404,7 +404,7 @@ void *func_0020DB40(u8 *o, s32 flags) {
 void *func_00225620(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C6F0;
-        D_0044E4F8 = NULL;
+        gCamDirector = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -591,7 +591,7 @@ void *func_002D0C70(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ED30;
         AT(o, 0x0, void **) = D_0046BB20;
-        D_0044FE10 = NULL;
+        gCutscene = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

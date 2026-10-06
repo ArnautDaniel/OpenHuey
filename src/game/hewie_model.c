@@ -391,7 +391,7 @@ void func_001F8650(u8 *m, u8 *a, f32 ahead, f32 behind) {
     f32 p[4] __attribute__((aligned(16)));
 
     sceVu0CopyVector(floor, (f32 *)(a + 0x10));
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
     sceVu0CopyMatrix(mtx, (f32 (*)[4])(a + 0x60));
     sceVu0CopyVector(mtx[3], (f32 *)(a + 0x10));   /* at his position */
     AT(m, 0x80C, f32) = 1.0f;
@@ -424,7 +424,7 @@ f32 func_001F8910(u8 *m, u8 *a, f32 ahead, f32 behind) {
     f32 d[4] __attribute__((aligned(16)));
 
     sceVu0CopyVector(floor, (f32 *)(a + 0x10));
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
     sceVu0CopyMatrix(mtx, (f32 (*)[4])(a + 0x60));
     sceVu0CopyVector(mtx[3], (f32 *)(a + 0x10));   /* at his position */
     AT(m, 0x80C, f32) = 1.0f;

@@ -1,4 +1,4 @@
-/* Camera (Game +0x14D9B00, global D_0044E4B8, vtable D_00469A60; base vtable D_00469B40). The
+/* Camera (Game +0x14D9B00, global gCamera, vtable D_00469A60; base vtable D_00469B40). The
  * view comes from an eye and a target point; matrices are built by the larger methods. */
 #include "common.h"
 #include "game.h"
@@ -53,7 +53,7 @@ typedef struct CameraSet {
 
 extern void *D_00469A60[];
 extern void *D_00469B40[];
-extern Camera *D_0044E4B8;
+extern Camera *gCamera;
 extern void func_00100490(void *p);   /* operator delete */
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
@@ -64,7 +64,7 @@ Camera *func_001218A0(Camera *c, s32 flags) {
         if (c != NULL) {
             c->vtbl = D_00469B40;
             if (c != NULL) {
-                D_0044E4B8 = NULL;
+                gCamera = NULL;
             }
         }
         if ((s16)flags > 0) {

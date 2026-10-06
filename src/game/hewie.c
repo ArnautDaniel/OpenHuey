@@ -64,7 +64,7 @@ extern void func_00130AF0(Hewie *h, s32 action, s32 arg);
 
 extern s32 func_001235C0(Actor *a, Actor *b);
 extern u32 func_00177620(Progress *p);          /* u8 */
-extern VObject *D_0044E4F8;
+extern VObject *gCamDirector;
 
 /* Group of his current animation (0 idle .. 0xE, 0xF other). */
 s32 func_001669A0(Hewie *h) {
@@ -107,7 +107,7 @@ s32 func_001669A0(Hewie *h) {
 }
 
 /* Adjust a requested action to his situation: down (no health) -> 0x52 (and progress +0xFB6
- * counts up, max 10000); while blocked (D_0044E4F8 +0x38) or with progress flags 0x13 / 0x2B
+ * counts up, max 10000); while blocked (gCamDirector +0x38) or with progress flags 0x13 / 0x2B
  * set his attack-type actions become waiting ones; then substitutions by his condition
  * (+0xC4), mode (+0xF35C0) and flags. In the special mode the action is kept. */
 s32 func_0013B2C0(Hewie *h, s32 act) {
@@ -136,7 +136,7 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
             }
         }
     }
-    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+    if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
         switch (act) {
         case 0x24: case 0x25:
             act = 5;
@@ -228,7 +228,7 @@ extern VObject *gSceneGameF29740;   /* path planner */
 
 /* Triangles on opposite sides of a divided room (flags 0x100000 / 0x200000). */
 static inline s32 Hewie_OtherSide(Hewie *h, u32 tri) {
-    return NavMesh_AcrossDivider(D_0044E570, tri, h->c.a.navTri);
+    return NavMesh_AcrossDivider(gNavMesh, tri, h->c.a.navTri);
 }
 
 /* Plan a path to `pos` on `tri` (not across the room's divider); 1 if one was found. */
@@ -552,7 +552,7 @@ s32 func_0015FA20(Hewie *h, s32 damage) {
 }
 
 extern void func_001F6AF0(void *motion);
-extern NavMesh *D_0044E570;
+extern NavMesh *gNavMesh;
 
 /* vtable +0x48: apply the animation to the model; while enabled, take his position from the
  * root bone (and find his room and nav-mesh triangle). */
@@ -569,13 +569,13 @@ void func_00167AF0(Hewie *h) {
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     h->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     sceVu0CopyVector(h->c.a.pos, func_0017CE80(MOTION_SKELETON(h->c.motion), 0) + 12);
-    h->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, h->c.a.pos, 0);
+    h->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(gNavMesh, h->c.a.pos, 0);
 }
 
 extern s32 func_00143D20(Hewie *h);
 extern void func_00124890(Actor *a, s32 side);
-extern VObject *D_0044E568;   /* rooms */
-extern VObject *D_0044E4D0;   /* room objects */
+extern VObject *gRooms;   /* rooms */
+extern VObject *gEvents;   /* room objects */
 
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
@@ -585,9 +585,9 @@ void func_00166CE0(Hewie *h) {
     Progress *p = gProgress;
 
     if (*((u8 *)p + 0x1FBEC1) != 0) {
-        HEWIE_SIDE(h) = VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, h->c.a.room, h->c.door, 0);
+        HEWIE_SIDE(h) = VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, h->c.a.room, h->c.door, 0);
         VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
-        VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+        VCALL(gEvents, 0x2C, void (*)(VObject *, Hewie *))(gEvents, h);
         return;
     }
     func_00143D20(h);
@@ -854,7 +854,7 @@ s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
 extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
 extern f32 func_002E2D00(f32 angle);                  /* angle wrapped to -pi..pi */
 extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
-extern VObject *D_0044E558;                           /* doors: +0x40(door) -> usable */
+extern VObject *gDoors;                           /* doors: +0x40(door) -> usable */
 
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
  * `door`)? For kinds 1..4, if he stands idle facing roughly towards the caller (within 3pi/8),
@@ -885,7 +885,7 @@ s32 func_00165A40(Hewie *h, u32 kind, s32 slot, u32 door) {
     if (k != 5) {
         return 1;
     }
-    return (VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, door & 0xFF) & 0xFF) ? 1 : 0;
+    return (VCALL(gDoors, 0x40, u32 (*)(VObject *, u32))(gDoors, door & 0xFF) & 0xFF) ? 1 : 0;
 }
 
 extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
@@ -931,7 +931,7 @@ s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
         return 0;
     }
     r = Hewie_PlaceDefault(h, tri);
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Hewie *))(gEvents, h);
     if (h->c.a.navTri == NAV_NONE) {
         h->c.a.pos[0] = 0.0f;
         h->c.a.pos[1] = 0.0f;
@@ -1844,10 +1844,10 @@ void func_00144940(Hewie *h, s32 door, f32 *out) {
     f32 yaw;
     s32 side;
 
-    if (!(VCALL(D_0044E558, 0x40, u32 (*)(VObject *, s32))(D_0044E558, door) & 0xFF)) {
+    if (!(VCALL(gDoors, 0x40, u32 (*)(VObject *, s32))(gDoors, door) & 0xFF)) {
         return;
     }
-    doors = D_0044E558;
+    doors = gDoors;
     yaw = VCALL(doors, 0x3C, f32 (*)(VObject *, s32))(doors, door);
     side = VCALL(doors, 0x18, s32 (*)(VObject *, s32, f32 *))(doors, door, h->c.a.pos);
     VCALL(doors, 0x44, void (*)(VObject *, s32))(doors, door);
@@ -2028,11 +2028,11 @@ s32 func_0013AAE0(Hewie *h, s32 exit) {
     s32 room;
 
     HW(h, 0xF368A, u8) = 0;
-    d = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, h->c.a.room, exit) & 0xFF;
+    d = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, h->c.a.room, exit) & 0xFF;
     if (d == 0xFF) {
         return -1;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     h->c.a.room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, exit);
     HEWIE_SIDE(h) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, h->c.a.room, d, 0);
     h->c.door = d;
@@ -2098,7 +2098,7 @@ void func_001515E0(Hewie *h) {
 /* Off the walkable part of the mesh: push back towards his spot (0.4 a frame) and turn to it;
  * back on it: default action. */
 void func_00146AE0(Hewie *h) {
-    NavTri *t = NavMesh_Tri(D_0044E570, h->c.a.navTri);
+    NavTri *t = NavMesh_Tri(gNavMesh, h->c.a.navTri);
 
     if (!(t->flags & HEWIE_NAV_MASK)) {
         h->c.a.unk2D = 0;
@@ -2282,7 +2282,7 @@ void func_0014A790(Hewie *h) {
     sceVu0ApplyMatrix(root, h->c.a.rot, root);
     func_001247E0(&h->c.a, root);
     HW(h, 0xF3558, u8) = 1;
-    VCALL(D_0044E570, 0xC, void (*)(NavMesh *, s32, f32 *))(D_0044E570, h->c.unk104[0], (f32 *)h->c.unk110);
+    VCALL(gNavMesh, 0xC, void (*)(NavMesh *, s32, f32 *))(gNavMesh, h->c.unk104[0], (f32 *)h->c.unk110);
     r = func_00127140(&h->c, 0, h->c.unk104[0], (f32 *)h->c.unk110);
     if (r > 0) {
         r = func_001270F0(&h->c);
@@ -2526,7 +2526,7 @@ void func_00159DC0(Hewie *h) {
 /* Idle: on a plain triangle pick a random idle action 0x18..0x1C, not the last one (+0xF357C). */
 void func_00140B00(Hewie *h) {
     static const s32 idles[5] = { 0x18, 0x19, 0x1C, 0x1A, 0x1B };
-    NavTri *t = NavMesh_Tri(D_0044E570, h->c.a.navTri);
+    NavTri *t = NavMesh_Tri(gNavMesh, h->c.a.navTri);
     s32 act = 0x18;
     s32 r;
 
@@ -2754,7 +2754,7 @@ void func_00153B00(Hewie *h) {
     }
     h->c.a.unk2B = 0;
     h->c.a.unk2D = 0;
-    rooms = D_0044E568;
+    rooms = gRooms;
     if (!(VCALL(rooms, 0x70, u32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) & 0xFF)
         && VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, HW(h, 0xF36B4, u8)) != -1
         && func_0013AAE0(h, HW(h, 0xF36B4, u8)) == 0) {
@@ -2934,7 +2934,7 @@ s32 func_00138890(Hewie *h, s32 kind, f32 *yawOut, f32 *posOut) {
     off[1] = 0.0f;
     off[2] = D_003B12A0[kind][1];
     off[3] = 1.0f;
-    nm = D_0044E570;
+    nm = gNavMesh;
     for (deg = 0; deg <= 180; deg += 10) {
         ang = F_PI * (f32)deg;
         for (side = 0;; side++) {
@@ -3008,7 +3008,7 @@ void func_00157770(Hewie *h) {
 /* ---- Hewie under the player's control (gProgress +0x1FBEC1): his movement input, as
  * Fiona's (fiona.c func_00187650) ---- */
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern void func_002E3190(sceVu0FMATRIX m, f32 yaw);
 extern void func_002E2DA0(f32 *out, sceVu0FMATRIX m, const f32 *v);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
@@ -3052,10 +3052,10 @@ void func_00136900(Hewie *h) {
     e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
     sceVu0Normalize(n, e);
     cut = HW(h, HMOVE_MODE, u8) == 3;
-    if (!cut && VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8) != -1) {
-        s32 prev = VCALL(D_0044E4B8, 0x90, s32 (*)(VObject *))(D_0044E4B8);
+    if (!cut && VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera) != -1) {
+        s32 prev = VCALL(gCamera, 0x90, s32 (*)(VObject *))(gCamera);
 
-        cut = prev != VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8);
+        cut = prev != VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera);
     }
     if (cut) {
         HW(h, HMOVE_MODE, u8) = 0;
@@ -3102,7 +3102,7 @@ void func_00136900(Hewie *h) {
             if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
                 HW(h, HMOVE_MODE, u8) = 2;
                 HW(h, 0xF379C, u32) = 0x3C0EFA35;   /* 0.5 degrees */
-                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
         func_002E2DA0(v, rot, n);
@@ -3143,14 +3143,14 @@ void func_00136900(Hewie *h) {
         sceVu0ApplyMatrix(&HW(h, HMOVE_DIR, f32), h->c.a.rot, v);
         break;
     case 0:
-        func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+        func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         func_002E2DA0(v, rot, n);
         func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
     }
     sceVu0CopyVector(&HW(h, HMOVE_STICK, f32), e);
     if (HW(h, HMOVE_MODE, u8) == 0) {
-        HW(h, HMOVE_CAMYAW, f32) = VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8);
+        HW(h, HMOVE_CAMYAW, f32) = VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera);
     }
     if (HW(h, HMOVE_MODE, u8) != 2) {
         sceVu0CopyVector(&HW(h, HMOVE_LAST, f32), n);
@@ -3276,7 +3276,7 @@ s32 func_00137020(Hewie *h) {
 
 /* ---- whom to go for ---- */
 
-extern Character **D_0044F258;   /* the creatures (10 slots) */
+extern Character **gCreatures;   /* the creatures (10 slots) */
 
 /* the one he goes for: the pursuer when it holds Fiona (her mode 4, sub 9) and he can reach
  * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
@@ -3296,7 +3296,7 @@ Character *func_001379C0(Hewie *h) {
     }
     if (in_his_room(h, gCharPlayer) && gCharPlayer->moveMode == 4 && gCharPlayer->moveSub == 0x12) {
         for (i = 7; i < 10; i++) {
-            Character *c = D_0044F258[i];
+            Character *c = gCreatures[i];
 
             if (in_his_room(h, c) && c->moveMode == 8 && (u8)func_0013C1E0(h, c->a.navTri, c->a.pos) == 1) {
                 return c;
@@ -3307,7 +3307,7 @@ Character *func_001379C0(Hewie *h) {
         return gCharPursuer;
     }
     for (i = 0; i < 10; i++) {
-        Character *c = D_0044F258[i];
+        Character *c = gCreatures[i];
         f32 d;
 
         if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 || c->a.unkC4 == 2 ||
@@ -3337,7 +3337,7 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
         sceVu0CopyVector(at, func_0017CE80(AT(h->c.motion, 0x810, void *), bone) + 12);
     }
     for (i = 0; i < 10; i++) {
-        Character *c = D_0044F258[i];
+        Character *c = gCreatures[i];
 
         if (!in_his_room(h, c) || (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) != 1 ||
             (done & (1 << c->a.slot))) {
@@ -3440,7 +3440,7 @@ s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
     return 1;
 }
 
-extern VObject *D_0044F260;   /* the placed things (+0xC: entry i of 128) */
+extern VObject *gPlacedThings;   /* the placed things (+0xC: entry i of 128) */
 #define F_PI_2 0x1.921fb6p+0f   /* 0x3FC90FDB */
 
 /* Fiona's angle to a point, |wrapped| (from her heading) */
@@ -3456,7 +3456,7 @@ u8 *func_00139460(Hewie *h) {
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
-        u8 *t = VCALL(D_0044F260, 0xC, u8 *(*)(VObject *, s32))(D_0044F260, i);
+        u8 *t = VCALL(gPlacedThings, 0xC, u8 *(*)(VObject *, s32))(gPlacedThings, i);
 
         if (t == NULL || AT(t, 0x20, s32) != 0) {
             continue;
@@ -3666,7 +3666,7 @@ void func_0013A650(Hewie *h) {
     if (((u8)func_001F4770(h->c.motion, 0, 0, 1) & 0x10) && anim == 0x1001 &&
         (u8)VCALL(gProgress, 0x50, s32 (*)(Progress *))(gProgress) == 1 &&
         h->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) &&
-        (NavMesh_Tri(D_0044E570, h->c.a.navTri)->flags & 0x02008000) == 0x02008000) {
+        (NavMesh_Tri(gNavMesh, h->c.a.navTri)->flags & 0x02008000) == 0x02008000) {
         func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
         if (h->c.a.room == 7 || h->c.a.room == 0x106) {
             func_00125E10(&h->c, h->c.a.pos, 1);
@@ -3674,7 +3674,7 @@ void func_0013A650(Hewie *h) {
     }
 }
 
-extern VObject *D_0044E558;   /* the doors */
+extern VObject *gDoors;   /* the doors */
 extern const s16 D_003B127E[];   /* by how often Fiona hit him (+0xF35C4): the 1-in-16 he sulks */
 
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* u8 flags */
@@ -3710,7 +3710,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
         }
         VCALL(&h->c.a, 0x94, void (*)(Hewie *, s32))(h, hit[2] == 0 ? hit[3] * 2 : hit[3]);
     } else {
-        if (!(u8)VCALL(D_0044E558, 0x40, s32 (*)(VObject *, u8))(D_0044E558, ((u8 *)hit)[0x10])) {
+        if (!(u8)VCALL(gDoors, 0x40, s32 (*)(VObject *, u8))(gDoors, ((u8 *)hit)[0x10])) {
             return 0;
         }
         VCALL(&h->c.a, 0x94, void (*)(Hewie *, s32))(h, hit[3]);
@@ -3754,7 +3754,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
         h->c.unk100 = h->c.state[2];
         HW(h, 0xF36B4, s32) = h->c.state[4];
         p = gProgress;
-        yaw = VCALL(D_0044E558, 0x3C, f32 (*)(VObject *, u8))(D_0044E558, HW(h, 0xF36B4, u8));
+        yaw = VCALL(gDoors, 0x3C, f32 (*)(VObject *, u8))(gDoors, HW(h, 0xF36B4, u8));
         if (!((u8)func_00177BF0(p, HW(h, 0xF36B4, u8), (u8)h->c.unk100) & 0x10)) {
             AT(h, 0x2B, u8) = 1;
             hewie_want(h, 0x6B, 0);
@@ -3763,7 +3763,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
                    (u8)func_00178300(p, h->c.a.room, HW(h, 0xF36B4, u8), AT(h, 0x20, u8))) {
             yaw += F_PI;
             hewie_want(h, 0x6C, 0);
-        } else if (!(NavMesh_Tri(D_0044E570, h->c.a.navTri)->flags & 0x20000)) {
+        } else if (!(NavMesh_Tri(gNavMesh, h->c.a.navTri)->flags & 0x20000)) {
             yaw += F_PI_2;
             hewie_want(h, 0x6B, 0);
         }
@@ -3829,7 +3829,7 @@ s32 func_0013BA50(Hewie *h) {
     p = gProgress;
     cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     for (e = 0; e < 8; e++) {
-        if (VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, u32))(D_0044E568, cur, e) == h->c.a.room) {
+        if (VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, cur, e) == h->c.a.room) {
             next = 1;
             break;
         }
@@ -3927,7 +3927,7 @@ void func_0013C7D0(Hewie *h) {
     }
     p = gProgress;
     for (i = 0; i < 10; i++) {
-        Character *c = D_0044F258[i];
+        Character *c = gCreatures[i];
 
         if (in_his_room(h, c) && (u8)VCALL(&c->a, 0x3C, s32 (*)(void *, u32))(c, i & 0xFF) == 1) {
             hostile = 1;
@@ -3989,9 +3989,9 @@ u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
     if (!in_his_room(h, from)) {
         return 0xFF;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     p = gProgress;
-    doors = D_0044E558;
+    doors = gDoors;
     for (e = 0; e < 8; e = (e + 1) & 0xFF) {
         u32 door;
         s32 near = 0;
@@ -4219,7 +4219,7 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
         if (HW(h, 0xF366D, u8) != 2 || (exit = HW(h, 0xF3670, u8)) == 0xFF) {
             return -1;
         }
-        rooms = D_0044E568;
+        rooms = gRooms;
         if (!(u8)VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, exit)) {
             return -1;
         }
@@ -4969,7 +4969,7 @@ void func_00143840(Hewie *h) {
         }
     }
     if (gCharPursuer != NULL && gCharPursuer->a.active == 1 && !in_his_room(h, gCharPursuer)) {
-        VObject *rooms = D_0044E568;
+        VObject *rooms = gRooms;
         u32 e;
 
         away = 1;
@@ -5016,7 +5016,7 @@ static void arrive_anim(Hewie *h) {
 static void arrived(Hewie *h) {
     sceVu0FVECTOR v;
 
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Hewie *))(D_0044E4D0, h);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Hewie *))(gEvents, h);
     if (h->c.a.navTri == NAV_NONE) {
         h->c.a.pos[0] = 0.0f;
         h->c.a.pos[1] = 0.0f;
@@ -5056,7 +5056,7 @@ s32 func_00143D20(Hewie *h) {
         MOTION_PTR(h->c.motion, 0x858) = NULL;
         MOTION_PTR(h->c.motion, 0x854) = NULL;
         h->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
-        rooms = D_0044E568;
+        rooms = gRooms;
         HEWIE_SIDE(h) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, h->c.a.room,
                                                                               HW(h, 0xF36B4, u8), 0);
         h->c.door = HW(h, 0xF36B4, u8);
@@ -5098,10 +5098,10 @@ s32 func_00143D20(Hewie *h) {
             HW(h, 0xF36F0, s32) = HEWIE_ACTION(h) == 0x39 ? 0x202 : h->c.a.unkC4 == 1 ? 0x206 : 0x201;
             if (h->c.a.navTri != NAV_NONE) {
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-                if (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & h->c.a.navMask) {
+                if (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & h->c.a.navMask) {
                     func_00124890(&h->c.a, HEWIE_SIDE(h));
                 } else {
-                    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+                    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, h->c.a.pos);
                     Hewie_PlaceAt(h, h->c.a.navTri, &h->c.a.angle[1], h->c.a.pos);
                 }
                 placed = 1;
@@ -5156,7 +5156,7 @@ s32 func_00143D20(Hewie *h) {
             }
         }
         if (!placed) {
-            tri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, h->c.door, at);
+            tri = VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, h->c.door, at);
             ang = 2.0f * (0x1.921fb6p+1f /* pi */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)) -
                   0x1.921fb6p+1f;
             if (tri == NAV_NONE || Hewie_PlaceAt(h, tri, &ang, at) == -1) {
@@ -5192,7 +5192,7 @@ extern s32 func_00178980(Progress *p, s32 room, s32 exit);
  * spot +0xF36E0 from func_00144940), or within 16 of its far point (kind 1, bits 0x10 and 8
  * or doors +0x6C) and that brings him farther from it; -1 none */
 s32 func_00144B30(Hewie *h) {
-    VObject *doors = D_0044E558;
+    VObject *doors = gDoors;
     Progress *p = gProgress;
     s32 kind = -1;
     u32 e;
@@ -5233,7 +5233,7 @@ s32 func_00144B30(Hewie *h) {
                 return 1;
             }
             /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-            if ((k & 8) && (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x20000)) {
+            if ((k & 8) && (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x20000)) {
                 kind = (k & 0x10) ? 1 : 0;
                 break;
             }
@@ -5276,7 +5276,7 @@ s32 func_00144B30(Hewie *h) {
 
 /* ---- footsteps ---- */
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 
 /* his feet: each foot (motion +0x64, feet 0..3) that touches down this frame leaves a print in
  * rooms 7, 0xD1 and 0x106 (at its bone, deep when walking group 8) and makes a step sound by the
@@ -5295,7 +5295,7 @@ void func_00145080(Hewie *h) {
     if (h->c.a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p) || h->c.a.navTri == NAV_NONE) {
         return;
     }
-    if ((u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 1) {
+    if ((u8)VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 1) {
         return;
     }
     if ((u8)Progress_TestFlag(p, 8) == 1) {
@@ -5327,7 +5327,7 @@ void func_00145080(Hewie *h) {
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     snd = 0x10;
     type = 5;
-    switch (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x02018000) {
+    switch (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x02018000) {
     case 0x8000:
         snd = 0x14;
         break;
@@ -5341,7 +5341,7 @@ void func_00145080(Hewie *h) {
         snd = 0x78;
         break;
     case 0x2008000:
-        if ((u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, 6) == 1) {
+        if ((u8)VCALL(gSound, 0xA4, s32 (*)(VObject *, s32))(gSound, 6) == 1) {
             snd = 0x18;
             type = 6;
         }
@@ -5371,7 +5371,7 @@ extern const f32 D_003B1D60[2][4];   /* offsets in front of a door, per side */
 static s32 free_at(Hewie *h, u32 *tri, f32 *p) {
     *tri = func_00123E20(&gCharPlayer->a, p);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-    return *tri != NAV_NONE && !(NavMesh_TriFlags(D_0044E570, *tri) & h->c.a.navMask);
+    return *tri != NAV_NONE && !(NavMesh_TriFlags(gNavMesh, *tri) & h->c.a.navMask);
 }
 
 /* where to go for Fiona's command `cmd` (the point in `out`, its triangle returned): to her
@@ -5397,10 +5397,10 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
     if (cmd != 0x64) {
         u32 hers;
 
-        mine = NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x300000;
-        hers = NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x300000;
+        mine = NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x300000;
+        hers = NavMesh_TriFlags(gNavMesh, gCharPlayer->a.navTri) & 0x300000;
         if ((mine == 0x100000 && hers == 0x200000) || (mine == 0x200000 && hers == 0x100000)) {
-            n = D_0044E570->numDoors;
+            n = gNavMesh->numDoors;
             found = NAV_NONE;
             for (i = 0; i < 8; i++) {
                 off[i >> 2][i & 3] = D_003B1D60[i >> 2][i & 3];
@@ -5408,7 +5408,7 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
             for (i = 0; i < n; i = (i + 1) & 0xFF) {
                 for (j = 0; j < 2; j++) {
                     tri = func_00123710(h, i & 0xFF, j, off[j], p);
-                    if ((NavMesh_TriFlags(D_0044E570, tri) & 0x300000) == mine) {
+                    if ((NavMesh_TriFlags(gNavMesh, tri) & 0x300000) == mine) {
                         if (found == NAV_NONE) {
                             found = tri;
                             sceVu0CopyVector(best, p);
@@ -5844,7 +5844,7 @@ void func_001476C0(Hewie *h) {
         return;
     }
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-    if (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1) {
+    if (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1) {
         hewie_want(h, 0, 0);
         return;
     }
@@ -6029,7 +6029,7 @@ extern const PTMF D_003B1D10;
 /* knocked down (pose 10): out of time (+0xF355C) he is left at 1 health, moving 1. Hidden
  * (+0x29): following his path, back to the default action unless down. Else, once down, in a
  * progress state that allows it (+0x1FBEC1, or bit 0x8000 of +0x30) and with no cutscene
- * (D_0044E4F8 +0x38) nor room objects holding him (+0x50) nor progress flag 0x2C, request
+ * (gCamDirector +0x38) nor room objects holding him (+0x50) nor progress flag 0x2C, request
  * +0x73EB00 (1, or 3 outside +0x1FBEC1) and set flag 0xC; otherwise left at 1 health. Slides
  * with the root motion (navigation mask 0x80001 lifted); while he has health, behaviour
  * D_003B1D10 */
@@ -6058,8 +6058,8 @@ void func_001489D0(Hewie *h) {
         Progress *p = gProgress;
 
         if (*((u8 *)p + 0x1FBEC1) == 1 || (AT(p, 0x30, u32) & 0x8000) != 0) {
-            if (!(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) &&
-                !(u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) && !(u8)Progress_TestFlag(p, 0x2C)) {
+            if (!(u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) &&
+                !(u8)VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) && !(u8)Progress_TestFlag(p, 0x2C)) {
                 AT(p, 0x73EB00, u8) = *((u8 *)p + 0x1FBEC1) == 1 ? 1 : 3;
                 Progress_SetFlag(p, 0xC);
             } else {
@@ -6678,7 +6678,7 @@ void func_0014C480(Hewie *h) {
     if (!(func_00177BF0(p, (u8)h->c.unk100, (u8)h->c.a.slot) & 0xFF & 1)) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, (u8)h->c.unk100, door);
     sceVu0SubVector(c, &HW(h, 0xF36E0, f32), door);
     sceVu0SubVector(b, h->c.a.pos, door);
@@ -7295,7 +7295,7 @@ void func_00150930(Hewie *h) {
 
         h->c.a.navTri = h->c.unk104[0];
         sceVu0CopyVector(h->c.a.pos, &HW(h, 0xF36E0, f32));
-        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, h->c.a.pos);
         a = HW(h, 0xF36CC, f32);
         h->c.a.angle[1] = a;
         sceVu0UnitMatrix(h->c.a.rot);
@@ -7394,7 +7394,7 @@ void func_00151190(Hewie *h) {
     func_002E2DD0(at, m, v);
     tri = func_00123D20(&gCharPlayer->a, at);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-    if (tri == NAV_NONE || (NavMesh_TriFlags(D_0044E570, tri) & 0x29020008)) {
+    if (tri == NAV_NONE || (NavMesh_TriFlags(gNavMesh, tri) & 0x29020008)) {
         tri = gCharPlayer->a.navTri;
         sceVu0CopyVector(at, gCharPlayer->a.pos);
     }
@@ -7466,11 +7466,11 @@ void func_00151D10(Hewie *h) {
     }
     func_00141C00(h, 8);
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-    if (!(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
+    if (!(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
         hewie_want(h, 0, 0);
         return;
     }
-    VCALL(D_0044E570, 0x2C, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+    VCALL(gNavMesh, 0x2C, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, n);
     if (n[1] == 1.0f) {
         hewie_want(h, 0, 0);
         return;
@@ -7859,7 +7859,7 @@ void func_00154860(Hewie *h) {
     func_00141C00(h, 7);
     step = run_turn(h);
     turn_toward(h, a, step);
-    nm = D_0044E570;
+    nm = gNavMesh;
     /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
     if (NavMesh_TriFlags(nm, h->c.a.navTri) & 0x20000) {
         h->c.a.unk2B = 1;
@@ -7876,7 +7876,7 @@ void func_00154860(Hewie *h) {
     if (!(NavMesh_TriFlags(nm, h->c.a.navTri) & 0x20000)) {
         h->c.a.unk2B = 0;
         if (HW(h, 0xF36B8, s32) == 0 ||
-            (u8)VCALL(D_0044E568, 0x70, s32 (*)(VObject *, s32, u32))(D_0044E568, h->c.a.room, HW(h, 0xF36B4, u8)) == 1) {
+            (u8)VCALL(gRooms, 0x70, s32 (*)(VObject *, s32, u32))(gRooms, h->c.a.room, HW(h, 0xF36B4, u8)) == 1) {
             hewie_want(h, 0, 0);
             return;
         }
@@ -7932,7 +7932,7 @@ void func_00155000(Hewie *h) {
     if ((u8)arrived_ != 1) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     h->c.door = VCALL(rooms, 0x3C, u8 (*)(VObject *, u32, s32))(rooms, h->c.unk14C0, h->c.a.room);
     exit = h->c.door;
     if (exit == 0xFF) {
@@ -7954,7 +7954,7 @@ void func_00155000(Hewie *h) {
         HW(h, 0xF3590, u8) = 0;
         func_0013AAE0(h, exit);
         if (h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
-            rooms = D_0044E568;
+            rooms = gRooms;
             tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, h->c.door, p0);
             VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, h->c.door, p1);
             sceVu0SubVector(d, p1, p0);
@@ -8054,7 +8054,7 @@ void func_00155D00(Hewie *h) {
     HW(h, 0xF36C8, f32) -= 0.5f;
     h->c.a.pos[1] = HW(h, 0xF36CC, f32);
     sceVu0CopyVector(g, h->c.a.pos);
-    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, g);
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, g);
     if (h->c.a.pos[1] < g[1]) {
         if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
             func_002DDED0(h->c.motion, 0x1E03, -1);
@@ -8182,7 +8182,7 @@ void func_00155FF0(Hewie *h) {
         }
     }
     sceVu0CopyVector(g, h->c.a.pos);
-    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, g);
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, g);
     if (h->c.a.pos[1] < g[1]) {
         h->c.a.pos[1] = g[1];
         if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
@@ -8263,7 +8263,7 @@ void func_001569C0(Hewie *h) {
                 return;
             }
             /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-            if ((NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1) || (NavMesh_TriFlags(D_0044E570, tri) & 1)) {
+            if ((NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1) || (NavMesh_TriFlags(gNavMesh, tri) & 1)) {
                 hewie_want(h, 0x6D, 0);
                 return;
             }
@@ -8357,7 +8357,7 @@ void func_00157480(Hewie *h) {
             if ((u8)VCALL(p, 0x50, s32 (*)(Progress *))(p) == 1 &&
                 h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-                (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x02008000) == 0x02008000) {
+                (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x02008000) == 0x02008000) {
                 func_00122C20(&h->c.a, 0x1E, 6, 0, 0, NULL);
                 if (h->c.a.room == 7 || h->c.a.room == 0x106) {
                     func_00125E10(&h->c, h->c.a.pos, 1);
@@ -8705,7 +8705,7 @@ void func_00159040(Hewie *h) {
         func_00122C20(&h->c.a, 0x6B, 5, 0, 0, NULL);
         h->c.a.navTri = h->c.unk104[1];
         sceVu0CopyVector(h->c.a.pos, h->c.unk110);
-        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, h->c.a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, h->c.a.pos);
         a = HW(h, 0xF36CC, f32);
         h->c.a.angle[1] = a;
         sceVu0UnitMatrix(h->c.a.rot);
@@ -9013,7 +9013,7 @@ void func_0015A720(Hewie *h) {
     if (!(func_00177BF0(p, (u8)h->c.unk100, (u8)h->c.a.slot) & 0xFF & 1)) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, (u8)h->c.unk100, door);
     sceVu0SubVector(c, &HW(h, 0xF36E0, f32), door);
     sceVu0SubVector(b, h->c.a.pos, door);
@@ -9925,8 +9925,8 @@ void func_00161500(Hewie *h) {
     g = func_001669A0(h);
     if ((g == 3 || g == 2 || g == 1 || g == 0) && HEWIE_ACTION(h) != 0x6E &&
         /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-        (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
-        VCALL(D_0044E570, 0x2C, void (*)(void *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+        (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
+        VCALL(gNavMesh, 0x2C, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, n);
         if (n[1] != 1.0f) {
             n[1] = 0.0f;
             sceVu0Normalize(dir, n);
@@ -10051,7 +10051,7 @@ s32 func_00164830(Hewie *h) {
             if (!(u8)func_00177620(p) && (h->c.moveMode == 0 || h->c.moveMode == 0xC) &&
                 (HW(h, 0xF356C, u32) & 0x80000008) == 8 &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
-                !(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 0x80001) && in_his_room(h, gCharPlayer) &&
+                !(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x80001) && in_his_room(h, gCharPlayer) &&
                 func_00124490(&h->c.a, gCharPlayer->a.pos) < 30.0f &&
                 func_00124480(&h->c.a, gCharPlayer->a.pos, 0x60088) == gCharPlayer->a.navTri) {
                 f32 yaw;
@@ -10239,7 +10239,7 @@ void func_00166DF0(Hewie *h, s32 exit) {
         if (HEWIE_ACTION(h) != 0x84) {
             h->c.a.unk2D = 0;
         }
-        h->c.door = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, h->c.a.room, exit);
+        h->c.door = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, h->c.a.room, exit);
         HW(h, 0xF3710, u8) = 3;
         return;
     }
@@ -10257,22 +10257,22 @@ void func_00166DF0(Hewie *h, s32 exit) {
     h->c.a.unk2B = 0;
     h->c.a.navMask = 0x29020008;
     if (HEWIE_ACTION(h) == 0x65) {
-        h->c.a.navTri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, s32, f32 *))(D_0044E568, HW(h, 0xF36B4, u8), h->c.a.pos);
+        h->c.a.navTri = VCALL(gRooms, 0x34, u32 (*)(VObject *, s32, f32 *))(gRooms, HW(h, 0xF36B4, u8), h->c.a.pos);
     }
     if (HEWIE_ACTION(h) == 0x66) {
-        h->c.a.navTri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, s32, f32 *))(D_0044E568, HW(h, 0xF36B4, u8), h->c.a.pos);
+        h->c.a.navTri = VCALL(gRooms, 0x30, u32 (*)(VObject *, s32, f32 *))(gRooms, HW(h, 0xF36B4, u8), h->c.a.pos);
     }
     for (i = 0; i < 13; i++) {
         h->c.unk148C[i] = 0;
     }
     HW(h, 0xF3590, u8) = 0;
     HW(h, 0xF3583, u8) = 1;
-    if (x != 0xFF && exit_reachable(h, D_0044E568, exit, at)) {
+    if (x != 0xFF && exit_reachable(h, gRooms, exit, at)) {
         HW(h, 0xF3583, u8) = 0;
         HW(h, 0xF3590, u8) = 1;
     }
     if (HW(h, 0xF3583, u8) == 1) {
-        rooms = D_0044E568;
+        rooms = gRooms;
         for (e = 0; e < 8; e++) {
             if (e != x &&
                 (VCALL(rooms, 0x74, u32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, e) & 0xFF) == 1 &&
@@ -10297,12 +10297,12 @@ void func_00166DF0(Hewie *h, s32 exit) {
     }
     if (HW(h, 0xF3590, u8) == 1) {
         if ((func_00123C60(&h->c.a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
-            HW(h, 0xF36B4, s32) = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, h->c.a.room, exit) & 0xFF;
+            HW(h, 0xF36B4, s32) = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, h->c.a.room, exit) & 0xFF;
             HEWIE_ACTION(h) = 0x88;
             return;
         }
         /* nearer the door than the exit spot: skip the waypoints short of it */
-        rooms = D_0044E568;
+        rooms = gRooms;
         h->c.unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, s32))(rooms, h->c.a.room, exit);
         VCALL(rooms, 0x30, u32 (*)(VObject *, s32, f32 *))(rooms, exit, door);
         sceVu0SubVector(d0, h->c.a.pos, door);
@@ -10385,7 +10385,7 @@ void func_00167BC0(Hewie *h) {
         if (func_00177870(p, SLOT_U8(h)) & 0xFF) {
             func_00164830(h);
         } else {
-            if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+            if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) != 0) {
                 func_00161500(h);
             } else if (*((u8 *)p + 0x1FBEC1) == 0) {
                 func_00161860(h);
@@ -10395,7 +10395,7 @@ void func_00167BC0(Hewie *h) {
                 if (h->c.a.unkC4 == 2 && h->c.hp == 0 && HEWIE_ACTION(h) == 0x83) {
                     func_00130AF0(h, 0x52, 0);
                 }
-                doors = D_0044E558;
+                doors = gDoors;
                 for (i = 0; i < 8; i++) {
                     if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, i) & 0xFF) == 1 &&
                         !(VCALL(doors, 0x30, u32 (*)(VObject *, u32))(doors, i) & 0xFF) &&
@@ -10446,7 +10446,7 @@ void func_001635B0(Hewie *h) {
     case 0:
         break;
     case 4:
-        if (!(NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & HEWIE_NAV_MASK) && func_0013AC20(h, h->c.state) == 0) {
+        if (!(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & HEWIE_NAV_MASK) && func_0013AC20(h, h->c.state) == 0) {
             VCALL(h, 0x90, void (*)(Hewie *))(h);
             h->c.state[0] = 0;
             return;
@@ -10876,10 +10876,10 @@ void func_00161860(Hewie *h) {
 
     /* settled on a slope (triangle flag 1) facing down it: lie down across (0x6E) */
     g = func_001669A0(h);
-    if ((u32)g <= 3 && HEWIE_ACTION(h) != 0x6E && (NavMesh_TriFlags(D_0044E570, h->c.a.navTri) & 1)) {
+    if ((u32)g <= 3 && HEWIE_ACTION(h) != 0x6E && (NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 1)) {
         sceVu0FVECTOR n, dir, fwd;
 
-        VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, h->c.a.navTri, n);
+        VCALL(gNavMesh, 0x2C, void (*)(NavMesh *, u32, f32 *))(gNavMesh, h->c.a.navTri, n);
         if (n[1] != 1.0f) {
             *(s32 *)&n[1] = 0;
             sceVu0Normalize(dir, n);
@@ -10900,7 +10900,7 @@ void func_00161860(Hewie *h) {
             return;
         }
         for (i = 0; i < 10; i++) {
-            Character *c = D_0044F258[i];
+            Character *c = gCreatures[i];
 
             if (in_his_room(h, c) && (VCALL(c, 0x3C, u32 (*)(Character *, u32))(c, i & 0xFF) & 0xFF) == 1 &&
                 behind(h, c)) {

@@ -4,7 +4,7 @@
 /* Music (src/game/bgm.c). */
 #include "common.h"
 
-/* The music controller (global D_0044E970, in the title and the game scenes): plays a track of
+/* The music controller (global gMusic, in the title and the game scenes): plays a track of
  * the table, fading it in and out. Vtable +0x8 want(track, pause, restart, level). */
 typedef struct BgmCtl {
     /* 0x00 */ void **vtbl;

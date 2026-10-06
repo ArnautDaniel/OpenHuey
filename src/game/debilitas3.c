@@ -117,7 +117,7 @@ void func_002CEE50(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0));
     }
@@ -380,7 +380,7 @@ void func_002CE6C0(Pursuer *p) {
         end[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
         tri = func_00124480(&p->c.a, end, p->c.a.navMask);
         if (tri == AT(p, 0x120 + p->c.unk124 * 0xC, u32)) {
-            VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, end);
+            VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, tri, end);
             sceVu0SubVector(d, p->target->a.pos, end);
             d[3] = 0.0f;
             left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
@@ -610,7 +610,7 @@ void func_00330790(Pursuer *p) {
         end[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
         tri = func_00124480(&p->c.a, end, p->c.a.navMask);
         if (tri == AT(p, 0x120 + p->c.unk124 * 0xC, u32)) {
-            VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, end);
+            VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, tri, end);
             sceVu0SubVector(d, p->target->a.pos, end);
             d[3] = 0.0f;
             left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
@@ -719,7 +719,7 @@ void func_00330F60(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0));
     }

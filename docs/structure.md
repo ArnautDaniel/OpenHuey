@@ -95,11 +95,11 @@ Vtables (Metrowerks, +0x8 dtor): base `0x469C20` -> `0x469C60` (14 entries, code
   planning through `gSceneGameF29740` (request at +0x1330, waypoints at +0x12C), room exit
   choice (+0x14D4), hearing of noise events (gProgress +0x778, 4 x 0x10, one per slot;
   threshold +0x152A, result +0x14D5..), water footstep effects, state blocks (+0x14E8, +0x1508).
-- **Nav mesh** (`include/navmesh.h`, `D_0044E570`): 0x50-byte triangles (corners, neighbours,
+- **Nav mesh** (`include/navmesh.h`, `gNavMesh`): 0x50-byte triangles (corners, neighbours,
   flags), doors (count +0x14) with two sides; vtable +0x20/+0x24 segment exit test, +0x40 slide.
-- Other managers used: `D_0044E568` rooms (exits 0..7 per room), `D_0044E558` doors,
-  `D_0044E4D0` room objects, `D_0044E550` random numbers, `D_0044E578` effects
-  (0x400 slots), `D_0044E4F0` GS manager (platform), `D_0044E560` sound.
+- Other managers used: `gRooms` rooms (exits 0..7 per room), `gDoors` doors,
+  `gEvents` room objects, `D_0044E550` random numbers, `gEffects` effects
+  (0x400 slots), `gRenderer` GS manager (platform), `gSound` sound.
 
 ### Fiona (`src/game/fiona.c`, `include/fiona.h`)
 

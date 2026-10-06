@@ -7,7 +7,7 @@
 #include "pursuer.h"
 
 extern void func_002E56C0(u8 *quad);
-extern VObject *D_0044E558;   /* the doors */
+extern VObject *gDoors;   /* the doors */
 extern VObject *gFileLoader;
 
 /* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (D_0042E3E0, D_0043F098, D_0043F8B8, D_004400C8): the timer at
@@ -30,7 +30,7 @@ s32 func_0034AAE0(void) {
 
 /* room 0x91 (D_00436CA0): door 0's +0x68 (0) */
 s32 func_00341AD0(void) {
-    VCALL(D_0044E558, 0x68, void (*)(VObject *, s32, s32))(D_0044E558, 0, 0);
+    VCALL(gDoors, 0x68, void (*)(VObject *, s32, s32))(gDoors, 0, 0);
     return 1;
 }
 

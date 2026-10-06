@@ -213,7 +213,7 @@ void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0));
     }
@@ -347,7 +347,7 @@ s32 func_00128090(Pursuer *p) {
             if (func_00217510(p) != 0) {
                 f32 pos[4];
 
-                VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, e->tri, pos);
+                VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, e->tri, pos);
                 VCALL(p, 0xAC, void (*)(Pursuer *, s32, f32 *, s32))(p, e->tri, pos, D_003AFAE0[i].room);
             }
             return 1;
@@ -382,7 +382,7 @@ void func_00129B30(Pursuer *p) {
 
         for (;;) {
             if ((VCALL(p, 0xE8, s32 (*)(Pursuer *))(p) & 0xFF) == 1) {
-                PU(p, 0x17B0, u8) = VCALL(D_0044E568, 0x3C, u32 (*)(VObject *, u32, s32))(D_0044E568, PU(p, 0x138C, u16), p->c.a.room);
+                PU(p, 0x17B0, u8) = VCALL(gRooms, 0x3C, u32 (*)(VObject *, u32, s32))(gRooms, PU(p, 0x138C, u16), p->c.a.room);
                 break;
             }
             if (retried) {
@@ -476,7 +476,7 @@ void func_00129570(Pursuer *p) {
         end[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
         tri = func_00124480(&p->c.a, end, p->c.a.navMask);
         if (tri == AT(p, 0x120 + p->c.unk124 * 0xC, u32)) {
-            VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, end);
+            VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, tri, end);
             sceVu0SubVector(d, p->target->a.pos, end);
             d[3] = 0.0f;
             left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
@@ -652,7 +652,7 @@ void func_00129DB0(Pursuer *p) {
             }
             break;
         }
-        rooms = D_0044E568;
+        rooms = gRooms;
         VCALL(rooms, 0x30, void (*)(VObject *, u32, f32 *))(rooms, PU(p, 0x17B0, u8), door);
         onMesh = func_00124480(&p->c.a, door, -1) != (u32)-1;
         a = func_00123C60(&p->c.a, PU(p, 0x17B0, u8), (f32 *)((u8 *)p + 0x15B0)) & 0xFF;

@@ -218,7 +218,7 @@ s32 func_0019A450(Fiona *f, f32 *out) {
     }
 }
 
-extern VObject *D_0044E558;   /* doors: +0x40(door) -> usable */
+extern VObject *gDoors;   /* doors: +0x40(door) -> usable */
 
 /* Can she start interaction `kind` now (with character `otherSlot`, 0xFF = none; door `door`
  * for kind 5)? Depends on what she is doing (moveMode/moveSub). */
@@ -227,7 +227,7 @@ s32 func_0019A670(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
 
     kind &= 0xFF;
     if (kind == 5) {
-        if (!(VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, door & 0xFF) & 0xFF)) {
+        if (!(VCALL(gDoors, 0x40, u32 (*)(VObject *, u32))(gDoors, door & 0xFF) & 0xFF)) {
             return 0;
         }
     } else if (otherSlot != 0xFF) {
@@ -333,7 +333,7 @@ void func_001A4340(Fiona *f) {
 }
 
 extern void func_001F6AF0(void *motion);
-extern VObject *D_0044FE10;
+extern VObject *gCutscene;
 
 /* vtable +0x48: follow the animation (cutscene): position from the root bone, room from
  * progress, triangle from the mesh. */
@@ -349,19 +349,19 @@ void func_001A3000(Fiona *f) {
         return;
     }
     func_001F6AF0(f->c.motion);
-    if (VCALL(D_0044FE10, 0x54, s32 (*)(VObject *, s32, s32))(D_0044FE10, 0, 0) > 0) {
+    if (VCALL(gCutscene, 0x54, s32 (*)(VObject *, s32, s32))(gCutscene, 0, 0) > 0) {
         MOTION_U8(f->c.motion, 0x850) = 1;
     }
     VCALL(f->c.motion, 0x3C, void (*)(void *))(f->c.motion);
     f->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     sceVu0CopyVector(f->c.a.pos, func_0017CE80(MOTION_SKELETON(f->c.motion), 0) + 12);
-    f->c.a.navTri = VCALL(D_0044E570, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(D_0044E570, f->c.a.pos, 0);
+    f->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(gNavMesh, f->c.a.pos, 0);
 }
 
 extern void func_00126360(Character *c);
 extern void func_00187650(Fiona *f);
 extern void func_001792C0(Progress *p, s32);
-extern VObject *D_0044E4F8;
+extern VObject *gCamDirector;
 
 /* vtable +0x90: full stop - movement, interaction and the related progress flags. */
 void func_0019D190(Fiona *f) {
@@ -385,17 +385,17 @@ void func_0019D190(Fiona *f) {
     FI(f, 0x1AD5A4, s32) = 0;
     FI(f, 0x1AD5A8, s32) = 0;
     FI(f, 0x1AD5AC, s32) = 0;
-    VCALL(D_0044E4F8, 0x30, void (*)(VObject *, s32))(D_0044E4F8, 0);
+    VCALL(gCamDirector, 0x30, void (*)(VObject *, s32))(gCamDirector, 0);
     Progress_ClearFlag(p, 0x17);
 }
 
-extern VObject *D_0044E988;   /* +0x10 current area id (0x89: special) */
-extern VObject *D_0044E4F0;   /* GS manager: +0x70 screen fade colour */
+extern VObject *gItems;   /* +0x10 current area id (0x89: special) */
+extern VObject *gRenderer;   /* GS manager: +0x70 screen fade colour */
 
 #define AREA_SPECIAL 0x89
 
 static inline void Fiona_Fade(Fiona *f) {
-    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, 0x808080 | ((u32)FI(f, 0x1AD62C, u16) << 24));
+    VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, 0x808080 | ((u32)FI(f, 0x1AD62C, u16) << 24));
 }
 
 /* vtable +0x2C: choose the screen mode (unk152C) for this frame and pass it to the animation. */
@@ -409,11 +409,11 @@ void func_001A38E0(Fiona *f) {
         }
     } else {
         s = f->c.unk152C;
-        if (s != 0x17 && s != 0x1E && D_0044E4F8 != NULL
-            && !(VCALL(D_0044E4F8, 0x38, u32 (*)(VObject *))(D_0044E4F8) & 0xFF)) {
+        if (s != 0x17 && s != 0x1E && gCamDirector != NULL
+            && !(VCALL(gCamDirector, 0x38, u32 (*)(VObject *))(gCamDirector) & 0xFF)) {
             if (f->c.unkE4 == 1) {
                 f->c.unk152C = 0xA;
-            } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *))(D_0044E988) == AREA_SPECIAL) {
+            } else if (VCALL(gItems, 0x10, s32 (*)(VObject *))(gItems) == AREA_SPECIAL) {
                 if (FI(f, 0x1AD62C, u16) == 0) {
                     f->c.unk152C = 0x1C;
                 } else {
@@ -451,10 +451,10 @@ void func_001A3EE0(Fiona *f) {
     VCALL(f->c.motion, 0xC, void (*)(void *))(f->c.motion);
     f->c.a.unkD1 = 1;
     MOTION_U8(f->c.motion, 0x24) = f->c.msgSlot;
-    VCALL(D_0044E558, 0x4C, void (*)(VObject *, s32))(D_0044E558, 0);
+    VCALL(gDoors, 0x4C, void (*)(VObject *, s32))(gDoors, 0);
     MOTION_PTR(f->c.motion, 0x4D4) = (u8 *)f + 0x1AA540;
     func_00182FC0(f);
-    if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_SPECIAL) {
+    if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == AREA_SPECIAL) {
         f->c.unkE4 = 0;
         FI(f, 0x1AD62C, u16) = 0;
         f->unk1AD630 = 1;
@@ -501,7 +501,7 @@ void func_001A4110(Fiona *f) {
     Fiona_Load(f, loader, VCALL(f->c.motion, 0xA0, void *(*)(void *, u32))(f->c.motion, costume), (u8 *)f + 0x1540);
     FI(f, 0x1AD544, void *) = func_001776B0(p, 0);
     Fiona_Load(f, loader, VCALL(f->c.motion, 0xA8, void *(*)(void *))(f->c.motion), FI(f, 0x1AD544, void *));
-    Fiona_Load(f, loader, sFionaMotion, VCALL(D_0044E558, 0x48, void *(*)(VObject *, s32))(D_0044E558, 0));
+    Fiona_Load(f, loader, sFionaMotion, VCALL(gDoors, 0x48, void *(*)(VObject *, s32))(gDoors, 0));
     Fiona_Load(f, loader, VCALL(f->c.motion, 0xA4, void *(*)(void *, u32))(f->c.motion, costume), (u8 *)f + 0x1AA540);
 }
 
@@ -771,7 +771,7 @@ s32 func_0019A2B0(Fiona *f) {
     return 1;
 }
 
-extern VObject *D_0044E7A8;   /* sound effects: +0x18(?, id, ?) */
+extern VObject *gScreenFade;   /* sound effects: +0x18(?, id, ?) */
 extern void func_00182E80(Fiona *f);
 extern const PTMF D_003B27E8;
 
@@ -783,7 +783,7 @@ void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
     }
     f->c.moveMode = 4;
     f->c.moveSub = 0xA;
-    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
     f->c.unk100 = arg & 0xFF;
     if ((flag & 0xFF) == 1) {
         func_00182E80(f);
@@ -819,7 +819,7 @@ void func_00199ED0(Fiona *f) {
 extern s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin);
 extern s32 func_00188280(Fiona *f, s32, f32 reach);
 extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
-extern VObject *D_0044FE08;   /* pushable objects: +0x30 blocked(id, dir), +0x3C/+0x1C/+0x20/+0x28 move */
+extern VObject *gObstacles;   /* pushable objects: +0x30 blocked(id, dir), +0x3C/+0x1C/+0x20/+0x28 move */
 extern const PTMF D_003B2808;  /* push: let go */
 extern const PTMF D_003B2818;  /* push: moving */
 extern const PTMF D_003B2828;  /* push: stop straining */
@@ -875,14 +875,14 @@ void func_001998F0(Fiona *f) {
         return;
     }
     if (FIONA_PUSH_OBJ(f) == -1
-        || VCALL(D_0044FE08, 0x30, s32 (*)(VObject *, s32, f32 *))(D_0044FE08, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) != 0) {
+        || VCALL(gObstacles, 0x30, s32 (*)(VObject *, s32, f32 *))(gObstacles, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) != 0) {
         /* it won't move: strain */
         FI(f, 0x1AD5D2, u8) = 1;
         func_002DDE20(f->c.motion, 0x1203, -1);
         return;
     }
     {
-        VObject *objs = D_0044FE08;
+        VObject *objs = gObstacles;
 
         VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
         VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
@@ -925,10 +925,10 @@ void func_001991E0(Fiona *f) {
     if ((*(s32 *)((u8 *)MOTION_PTR(m, 0x6A4) + 0x18) & 0x20) != 0) {
         /* step event */
         if (anim == 0x1201) {
-            VCALL(D_0044FE08, 0x2C, void (*)(VObject *, s32))(D_0044FE08, FIONA_PUSH_OBJ(f));
+            VCALL(gObstacles, 0x2C, void (*)(VObject *, s32))(gObstacles, FIONA_PUSH_OBJ(f));
         }
         if (!(sceVu0InnerProduct(FIONA_STICK(f), (f32 *)((u8 *)f + 0x1AD550)) <= 0x1.333334p-1f /* 0.6 */)) {
-            VObject *objs = D_0044FE08;
+            VObject *objs = gObstacles;
             s32 ok = -1;
 
             if (objs != NULL && f->c.moveMode == 0
@@ -942,13 +942,13 @@ void func_001991E0(Fiona *f) {
                 sceVu0ApplyMatrix(v, f->c.a.rot, v);
                 sceVu0AddVector(target, f->c.a.prevPos, v);
                 tri = func_00124480(&f->c.a, target, 0);
-                if (tri != NAV_NONE && (NavMesh_Tri(D_0044E570, tri)->flags & NAV_PUSHABLE)) {
+                if (tri != NAV_NONE && (NavMesh_Tri(gNavMesh, tri)->flags & NAV_PUSHABLE)) {
                     ok = 0;
                 }
             }
             if (ok == 0
                 && VCALL(objs, 0x30, s32 (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) == 0) {
-                objs = D_0044FE08;
+                objs = gObstacles;
                 VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
                 VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
                 VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
@@ -966,12 +966,12 @@ void func_001991E0(Fiona *f) {
         FI(f, 0x1AD5D2, u8) = 1;
     }
     if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x40, 0x10);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x40, 0x10);
     }
 }
 
-extern VObject *D_0044E568;      /* rooms */
-extern VObject *D_0044E4D0;      /* room objects: +0x2C(chr) */
+extern VObject *gRooms;      /* rooms */
+extern VObject *gEvents;      /* room objects: +0x2C(chr) */
 extern s32 func_00122B50(Actor *a, f32 *out);
 extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
 extern void func_00126270(Character *c);
@@ -995,7 +995,7 @@ void func_0019AF20(Fiona *f) {
 
     if (*((u8 *)p + 0x1FBEC1) == 0) {
         FI(f, 0x1AD5FC, u8) = 0;
-        VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Fiona *))(D_0044E4D0, f);
+        VCALL(gEvents, 0x2C, void (*)(VObject *, Fiona *))(gEvents, f);
         return;
     }
     if ((u32)((Progress_GetVar(p, 0x26) & 0xFF) - 6) < 2) {
@@ -1004,7 +1004,7 @@ void func_0019AF20(Fiona *f) {
     if (FI(f, 0x1AD718, u8) == 1) {
         /* coming in through a door */
         f->c.a.room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-        rooms = D_0044E568;
+        rooms = gRooms;
         f->c.door = Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room);
         if (FI(f, 0x1AD6C0, s32) == 0) {
             f->c.a.navTri = Room_ExitPosIn(rooms, f->c.door, f->c.a.pos);
@@ -1028,15 +1028,15 @@ void func_0019AF20(Fiona *f) {
         }
     }
     if (!ok) {
-        f->c.a.navTri = Room_ExitPosIn(D_0044E568, f->c.door, f->c.a.pos);
+        f->c.a.navTri = Room_ExitPosIn(gRooms, f->c.door, f->c.a.pos);
         if (Fiona_Place(f, f->c.a.navTri, f->c.a.pos) == 0) {
             ok = 1;
         }
     }
     if (!ok) {
-        func_00124890(&f->c.a, VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, f->c.a.room, f->c.door, 0));
+        func_00124890(&f->c.a, VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, f->c.a.room, f->c.door, 0));
     }
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Fiona *))(D_0044E4D0, f);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Fiona *))(gEvents, f);
     if (f->c.a.navTri == NAV_NONE) {
         f->c.a.pos[0] = 0.0f;
         f->c.a.pos[1] = 0.0f;
@@ -1083,7 +1083,7 @@ void func_0019AF20(Fiona *f) {
         u32 exit, tri;
         f32 step;
 
-        rooms = D_0044E568;
+        rooms = gRooms;
         exit = Room_DoorTo(rooms, FIONA_ROUTE0(f), f->c.a.room) & 0xFF;
         if (exit == 0xFF) {
             return;
@@ -1133,7 +1133,7 @@ void func_001A1CA0(Fiona *f) {
             f->c.unkE4 = 1;
             FIONA_FADE_T(f) = 0;
         }
-    } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) != AREA_SPECIAL
+    } else if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) != AREA_SPECIAL
                || (Progress_TestFlag(p, 0xA) & 0xFF) != 1) {
         f->unk1AD630 = 0;
         FIONA_FADE_T(f) = 0;
@@ -1284,7 +1284,7 @@ s32 func_001A12B0(Fiona *f) {
     o = gCharacters[func_00177850(q, SLOT_U8(f)) & 0xFF];
     kind = func_00177830(q, SLOT_U8(f)) & 0xFF;
     type = func_00177810(q, SLOT_U8(f)) & 0xFF;
-    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0 && !(Progress_TestFlag(p, 8) & 0xFF)
+    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && !(Progress_TestFlag(p, 8) & 0xFF)
         && o != NULL && o->a.active == 1 && o->a.disabled == 0) {
         if (kind == 1) {
             if (f->c.moveMode == 0) {
@@ -1711,7 +1711,7 @@ void func_001A3110(Fiona *f) {
     }
 }
 
-extern VObject *D_0044E4B8;   /* camera: +0x68 heading */
+extern VObject *gCamera;   /* camera: +0x68 heading */
 extern void func_002E3190(sceVu0FMATRIX out, f32 angle);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
@@ -1731,10 +1731,10 @@ void func_0019B4F0(Fiona *f, s32 door) {
             VCALL(f, 0x90, void (*)(Fiona *))(f);
             Fiona_ToIdle(f);
         }
-        f->c.door = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door);
+        f->c.door = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, f->c.a.room, door);
         ROOMLOG("fiona leaves room %d by exit %d (door %d) -> room %d exit %d, at (%.1f %.1f %.1f)", f->c.a.room,
-                door, VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door) & 0xFFFF,
-                VCALL(D_0044E568, 0x18, s32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door), f->c.door,
+                door, VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, s32))(gRooms, f->c.a.room, door) & 0xFFFF,
+                VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, s32))(gRooms, f->c.a.room, door), f->c.door,
                 f->c.a.pos[0], f->c.a.pos[1], f->c.a.pos[2]);
         FI(f, 0x1AD5F0, s32) = 150;
         f->unk1AD588 = 0;
@@ -1748,7 +1748,7 @@ void func_0019B4F0(Fiona *f, s32 door) {
             sceVu0FVECTOR v;
             f32 h;
 
-            func_002E3190(m, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+            func_002E3190(m, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             func_002E2DA0(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
             func_0010E640(v, v, -1.0f);
             h = func_0031C5C0(v[0], v[2]);
@@ -1801,7 +1801,7 @@ void func_0019B4F0(Fiona *f, s32 door) {
         f->c.unk124 = f->c.unk128;
         *(f32 *)&f->c.unk14C4 = -1.0f;
         if (d != 0xFF) {
-            rooms = D_0044E568;
+            rooms = gRooms;
             target = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, f->c.a.room, door);
             if (func_00180D60(f, Room_ExitPosIn(rooms, door, pos), pos, 1) == 0) {
                 through = 1;
@@ -1810,7 +1810,7 @@ void func_0019B4F0(Fiona *f, s32 door) {
         if (!through && d != 0xFF) {
             s32 side, tgt2;
 
-            rooms = D_0044E568;
+            rooms = gRooms;
             tgt2 = VCALL(rooms, 0x58, s32 (*)(VObject *, s32, s32, s32))(rooms, f->c.a.room, door, 0);
             side = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, f->c.door, 0);
             if (func_00126F80(&f->c, target, tgt2, side, -1) != -1
@@ -1819,7 +1819,7 @@ void func_0019B4F0(Fiona *f, s32 door) {
             }
         }
         if (through == 1) {
-            FIONA_ROUTE0(f) = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, f->c.a.room, door);
+            FIONA_ROUTE0(f) = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, s32))(gRooms, f->c.a.room, door);
             if ((func_00123C60(&f->c.a, door, gCharPartner->a.pos) & 0xFF) == 1) {
                 FI(f, 0x1AD718, u8) = 1;
                 FI(f, 0x1AD6C0, s32) = 0;
@@ -1827,7 +1827,7 @@ void func_0019B4F0(Fiona *f, s32 door) {
                 sceVu0FVECTOR a, b, da, db;
                 f32 la;
 
-                rooms = D_0044E568;
+                rooms = gRooms;
                 Room_ExitPosOut(rooms, door, a);
                 Room_ExitPosIn(rooms, door, b);
                 sceVu0SubVector(da, f->c.a.pos, a);
@@ -1870,7 +1870,7 @@ void func_0019F8A0(Fiona *f) {
         u32 tri = f->c.a.navTri;
 
         if (tri != NAV_NONE
-            && (f->c.state[1] == 5 || !(NavMesh_Tri(D_0044E570, tri)->flags & FIONA_NAV_MASK))
+            && (f->c.state[1] == 5 || !(NavMesh_Tri(gNavMesh, tri)->flags & FIONA_NAV_MASK))
             && func_00182340(f, f->c.state) == 0) {
             VCALL(f, 0x90, void (*)(Fiona *))(f);
             func_00124F20(&f->c, 0xFF);
@@ -1903,7 +1903,7 @@ void func_0019F8A0(Fiona *f) {
         break;
     case 3:
     case 4:
-        f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+        f->c.unk104[0] = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, *(u8 *)&f->c.unk100, f->c.a.pos);
         f->c.unk104[1] = 0;
         f->unk1AD580 = 3;
         f->c.moveMode = 2;
@@ -2090,7 +2090,7 @@ void func_001A1FD0(Fiona *f) {
                 /* nothing */
             } else if (g == 2) {
                 /* running */
-                if (D_0044E988 == NULL || VCALL(D_0044E988, 0x10, s32 (*)(VObject *))(D_0044E988) != 0x8C) {
+                if (gItems == NULL || VCALL(gItems, 0x10, s32 (*)(VObject *))(gItems) != 0x8C) {
                     func_00181010(f, (func_00177620(p) & 0xFF) == 2 ? 0x1.111112p-4f /* 1/15 */
                                                                      : 0x1.7e4b18p-5f /* 0x3D3F258C */);
                 }
@@ -2129,7 +2129,7 @@ void func_001A1FD0(Fiona *f) {
             f->c.unkE4 = 1;
             FIONA_FADE_T(f) = 0;
         }
-    } else if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == AREA_SPECIAL
+    } else if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == AREA_SPECIAL
                && f->c.moveMode == 0 && f->c.moveSub == 0) {
         if (f->unk1AD630 == 0) {
             if (f->c.unkE4 == 1 && ++FIONA_FADE_T(f) == 60) {
@@ -2355,7 +2355,7 @@ extern void func_001779F0(Progress *p, u32 item, u32 slot);   /* mark item seen 
 extern const PTMF D_003B25C8, D_003B25D8, D_003B25E8, D_003B25F8, D_003B2608, D_003B2618;
 extern const PTMF D_003B2628, D_003B2638, D_003B2648, D_003B2658, D_003B2668, D_003B2678;
 extern const PTMF D_003B2688;
-extern VObject *D_0044E568;   /* rooms */
+extern VObject *gRooms;   /* rooms */
 
 /* +0x1AD71C mood request (9 = asked by Hewie's command), +0x1AD720 its argument;
  * +0x1AD724 the period counter of the +0x1AD719 alternation. */
@@ -2413,7 +2413,7 @@ void func_001A0370(Fiona *f) {
             }
             f->c.unk100 = st[2];
             f->c.moveSub = (st[1] == 0) ? 0x15 : 0x14;
-            f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+            f->c.unk104[0] = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, *(u8 *)&f->c.unk100, f->c.a.pos);
             f->targetParam = 0;
             Actor_SetState(&f->c.a, &D_003B25F8);
             f->unk1AD580 = 9;
@@ -2430,13 +2430,13 @@ void func_001A0370(Fiona *f) {
             }
             f->c.unk100 = st[2];
             f->c.moveSub = (st[1] == 0) ? 0x15 : 0x14;
-            rooms = D_0044E568;
+            rooms = gRooms;
             if ((VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, f->c.a.room, *(u8 *)&f->c.unk100) & 0xFF) == 1) {
                 VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, *(u8 *)&f->c.unk100, at);
             } else {
                 sceVu0CopyVector(at, f->c.a.pos);
             }
-            f->c.unk104[0] = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, at);
+            f->c.unk104[0] = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, *(u8 *)&f->c.unk100, at);
             f->c.unk104[1] = 0;
             f->targetParam = 0;
             Actor_SetState(&f->c.a, &D_003B2608);
@@ -2500,7 +2500,7 @@ void func_001A0370(Fiona *f) {
                 Actor_SetState(&f->c.a, &D_003B2658);
                 break;
             case 0x21: {
-                NavTri *t = NavMesh_Tri(D_0044E570, f->c.a.navTri);
+                NavTri *t = NavMesh_Tri(gNavMesh, f->c.a.navTri);
 
                 f->target = (st[2] == 0xFF) ? NULL : gCharacters[st[2]];
                 f->c.moveMode = 0xB;
@@ -2584,7 +2584,7 @@ extern u32 func_00177BF0(Progress *p, u32 i, u32 slot);         /* u8 flags */
 
 /* Exit triangle flags that rule an exit out from side `side` of the room. */
 static inline s32 Fiona_WrongSide(s32 side, u32 tri) {
-    u32 fl = NavMesh_Tri(D_0044E570, tri)->flags & 0x300000;
+    u32 fl = NavMesh_Tri(gNavMesh, tri)->flags & 0x300000;
 
     return (side == 0 && fl == 0x100000) || (side == 1 && fl == 0x200000);
 }
@@ -2705,7 +2705,7 @@ void func_0019D4E0(Fiona *f) {
             s32 pr = gCharPursuer->a.room;
             s32 ps, fs;
 
-            rooms = D_0044E568;
+            rooms = gRooms;
             ps = Room_Side(rooms, pr, gCharPursuer->door);
             fs = Room_Side(rooms, f->c.a.room, f->c.door);
             if (func_00126F80(&f->c, pr, ps, fs, 1) != -1) {
@@ -2816,7 +2816,7 @@ void func_0019D4E0(Fiona *f) {
         break;
 
     case 3:
-        rooms = D_0044E568;
+        rooms = gRooms;
         if (FIONA_EXIT(f) != 0xFF) {
             tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
             if (func_00180D60(f, tri, at, 0) != 0) {
@@ -2922,7 +2922,7 @@ void func_0019D4E0(Fiona *f) {
         break;
 
     case 5: case 7:
-        rooms = D_0044E568;
+        rooms = gRooms;
         if (FIONA_EXIT(f) != 0xFF) {
             tri = Room_ExitPosIn(rooms, FIONA_EXIT(f), at);
             if (func_00180D60(f, tri, at, 0) != 0) {
@@ -2992,7 +2992,7 @@ void func_0019D4E0(Fiona *f) {
 
     case 4: case 6: case 8:
         /* at / through the exit */
-        rooms = D_0044E568;
+        rooms = gRooms;
         if (FIONA_EXIT2(f) == 0xFF) {
             tri = Room_ExitPosOut(rooms, FIONA_EXIT(f), at);
             if (func_00180D60(f, tri, at, 0) != 0) {
@@ -3014,7 +3014,7 @@ void func_0019D4E0(Fiona *f) {
                 for (i = 0; i < 13; i++) {
                     f->c.unk148C[i] = 0;
                 }
-                rooms = D_0044E568;
+                rooms = gRooms;
                 f->c.a.room = Room_ExitTo(rooms, f->c.a.room, FIONA_EXIT(f));
                 f->c.door = door;
                 f->c.a.navTri = NAV_NONE;
@@ -3041,7 +3041,7 @@ void func_0019D4E0(Fiona *f) {
             FIONA_MOOD(f) = 0;
             break;
         }
-        rooms = D_0044E568;
+        rooms = gRooms;
         side = Room_Side(rooms, f->c.a.room, f->c.door);
         if (Room_Exit78(rooms, f->c.a.room, FIONA_EXIT(f)) != 1 || Room_Exit70(rooms, f->c.a.room, FIONA_EXIT(f)) != 0
             || (func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF)) {
@@ -3078,8 +3078,8 @@ void func_0019D4E0(Fiona *f) {
     }
 }
 
-extern VObject *D_0044E558;   /* the doors */
-extern VObject *D_0044E568;   /* the rooms */
+extern VObject *gDoors;   /* the doors */
+extern VObject *gRooms;   /* the rooms */
 extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);
 extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);
 extern void func_001779C0(Progress *p, s32 door, s32 slot);
@@ -3089,7 +3089,7 @@ extern void func_001779C0(Progress *p, s32 door, s32 slot);
 #define DOOR_SET(d, slot, door, side, v) VCALL(d, slot, void (*)(VObject *, s32, s32, s32))(d, door, side, v)
 #define ROOM_DOOR_LINK(r, room, door) VCALL(r, 0x10, s32 (*)(VObject *, s32, s32))(r, room, door)
 
-extern u8 *D_0044F258;   /* the creatures: 10 slots */
+extern u8 *gCreatures;   /* the creatures: 10 slots */
 
 #define FI_HEWIE_NEAR(f) FI(f, 0x1AD5D5, u8)   /* 1: Hewie is with Fiona */
 
@@ -3116,7 +3116,7 @@ s32 func_00184700(Fiona *f) {
     }
     if (who == 1) {
         for (i = 0; i < 10; i++) {
-            Actor *c = AT(D_0044F258, i * 4, Actor *);
+            Actor *c = AT(gCreatures, i * 4, Actor *);
             f32 d[4] __attribute__((aligned(16)));
             u32 tri;
 
@@ -3219,30 +3219,30 @@ void func_00184BF0(Fiona *f) {
     if (AT(c, 0x108, s32) == 0) {
         return;
     }
-    doors = D_0044E558;
+    doors = gDoors;
     if (!DOOR_ISOPEN(doors, AT(c, 0x100, u8))) {
         if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
-            && (u16)ROOM_DOOR_LINK(D_0044E568, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
+            && (u16)ROOM_DOOR_LINK(gRooms, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
             func_00178C10(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
         }
-        doors = D_0044E558;
+        doors = gDoors;
         DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 0, 0x60000);
         DOOR_SET(doors, 0x1C, AT(c, 0x100, u8), 1, 0x60000);
     } else {
         if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
-            && (u16)ROOM_DOOR_LINK(D_0044E568, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
+            && (u16)ROOM_DOOR_LINK(gRooms, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
             func_00178A90(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
         }
-        doors = D_0044E558;
+        doors = gDoors;
         DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 1, 0x60000);
         DOOR_SET(doors, 0x1C, AT(c, 0x100, u8), 0, 0x60000);
     }
 }
 
-/* show the model parts for what she has equipped (D_0044E988 +0x10: equipment slots 1 and 3;
+/* show the model parts for what she has equipped (gItems +0x10: equipment slots 1 and 3;
  * items 0x86..0x89 -> part variants 1..4, else 0; items 0x8A..0x8D -> 6..9, else 5) */
 void func_00182FC0(Fiona *f) {
-    VObject *equip = D_0044E988;
+    VObject *equip = gItems;
     void *m = f->c.motion;
 
     switch (VCALL(equip, 0x10, s32 (*)(VObject *, s32))(equip, 1)) {
@@ -3367,7 +3367,7 @@ void func_001855F0(Fiona *f, s32 blend) {
  * scales it: 0x8A less gain, 0x8B less gain and more loss, 0x8C no gain and double loss,
  * 0x8D none */
 void func_00181010(Fiona *f, f32 d) {
-    VObject *items = (VObject *)D_0044E988;
+    VObject *items = (VObject *)gItems;
     f32 v;
 
     if (items != NULL) {
@@ -3459,10 +3459,10 @@ void func_00187650(Fiona *f) {
     e[2] += (f32)(s32)(((D_0047E374 >> 6) & 1) - ((D_0047E374 >> 4) & 1));
     sceVu0Normalize(n, e);
     cut = FI(f, FMOVE_MODE, u8) == 3;
-    if (!cut && VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8) != -1) {
-        s32 prev = VCALL(D_0044E4B8, 0x90, s32 (*)(VObject *))(D_0044E4B8);
+    if (!cut && VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera) != -1) {
+        s32 prev = VCALL(gCamera, 0x90, s32 (*)(VObject *))(gCamera);
 
-        cut = prev != VCALL(D_0044E4B8, 0x94, s32 (*)(VObject *))(D_0044E4B8);
+        cut = prev != VCALL(gCamera, 0x94, s32 (*)(VObject *))(gCamera);
     }
     if (cut) {
         /* a camera cut: face the move direction and lock the controls to the old camera */
@@ -3477,7 +3477,7 @@ void func_00187650(Fiona *f) {
             if (!((n[0] <= 0.0f ? -n[0] : n[0]) <= 0.5f) || !((n[2] <= 0.0f ? -n[2] : n[2]) <= 0.5f)) {
                 FI(f, FMOVE_LOCK, s16) = 3;
                 FI(f, FMOVE_MODE, u8) = 1;
-                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
                 func_002E2DA0(v, rot, n);
                 func_0010E640(v, v, -1.0f);
                 FI(f, FMOVE_HEADING, f32) = func_0031C5C0(v[0], v[2]);
@@ -3521,7 +3521,7 @@ void func_00187650(Fiona *f) {
             if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
                 FI(f, FMOVE_MODE, u8) = 2;
                 FI(f, 0x1AD5B4, u32) = 0x3C0EFA35;   /* 0.5 degrees */
-                func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
         func_002E2DA0(v, rot, n);
@@ -3562,14 +3562,14 @@ void func_00187650(Fiona *f) {
         sceVu0ApplyMatrix(&FI(f, FMOVE_DIR, f32), f->c.a.rot, v);
         break;
     case 0:
-        func_002E3190(rot, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+        func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         func_002E2DA0(v, rot, n);
         func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
     }
     sceVu0CopyVector(&FI(f, FMOVE_STICK, f32), e);
     if (FI(f, FMOVE_MODE, u8) == 0) {
-        FI(f, FMOVE_CAMYAW, f32) = VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8);
+        FI(f, FMOVE_CAMYAW, f32) = VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera);
     }
     if (FI(f, FMOVE_MODE, u8) != 2) {
         sceVu0CopyVector(&FI(f, FMOVE_LAST, f32), n);
@@ -3951,7 +3951,7 @@ extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *ou
 extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
 extern void func_00125E10(Character *c, f32 *pos, s32 big);
 extern f32 D_003B2478, D_003B247C;   /* the ladder's foot offset (x, z) */
-extern VObject *D_0044E560;         /* the sound system */
+extern VObject *gSound;         /* the sound system */
 
 #define FSTEP_LEFT  0x1AD5D0   /* u8: left foot down last frame */
 #define FSTEP_RIGHT 0x1AD5D1   /* u8: right foot down last frame */
@@ -3988,7 +3988,7 @@ void func_001869D0(Fiona *f) {
     if (f->c.a.disabled == 1 || f->c.a.navTri == (u32)-1) {
         return;
     }
-    if ((u8)VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 1) {
+    if ((u8)VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 1) {
         return;
     }
     p = gProgress;
@@ -4024,7 +4024,7 @@ void func_001869D0(Fiona *f) {
     sceVu0CopyVector(m[3], f->c.a.pos);
     func_002E2DD0(foot, m, step == 1 ? left : right);
     tri = func_00123E20(&f->c.a, foot);
-    nm = D_0044E570;
+    nm = gNavMesh;
     t = step_tri(nm, tri != (u32)-1 ? tri : f->c.a.navTri);
     room = f->c.a.room;
     if (room == 7 || room == 0xD1 || room == 0x106) {
@@ -4090,7 +4090,7 @@ void func_001869D0(Fiona *f) {
     base = AT(gProgress, 0x1FBEC0, u8) != 0 ? 0x15 : 0;
     switch (flags & 0x2018000) {
     case 0x2008000:
-        if ((u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, 6) == 1) {
+        if ((u8)VCALL(gSound, 0xA4, s32 (*)(VObject *, s32))(gSound, 6) == 1) {
             base = 0x10;
             bank = 6;
         } else {
@@ -4121,7 +4121,7 @@ void func_001869D0(Fiona *f) {
         x = 1.0f;
     }
     vol = (u32)(2.0f * x) & 0x7F;
-    if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x80) {
+    if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x80) {
         func_00122C20(&f->c.a, base, bank, -0x30, (s8)vol, NULL);
         noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 5 : 1;
     } else {
@@ -4150,11 +4150,11 @@ static void push_probe_point(Fiona *f, f32 side, f32 reach, f32 *out) {
  * or into a triangle blocked for her (+0xC0) - and the floor 2 to each side ahead must be
  * pushable (NAV_PUSHABLE). Then she faces square to the wall (the push direction +0x1AD570,
  * the side of the wall she is on) and, with `pick`, takes the lowest object both sides share
- * (D_0044FE08 +0x24: the objects on a triangle, as bits) as +0x1AD560 (else -1). 0, or -1 when
+ * (gObstacles +0x24: the objects on a triangle, as bits) as +0x1AD560 (else -1). 0, or -1 when
  * there is nothing to push. */
 s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
     static const union { u32 u; f32 f; } kHalfPi = {0x3FC90FDB}, kPi = {0x40490FDB};
-    VObject *objs = D_0044FE08;
+    VObject *objs = gObstacles;
     NavMesh *nm;
     NavTri *t;
     f32 at[4] __attribute__((aligned(16)));
@@ -4172,7 +4172,7 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
         return -1;
     }
     push_probe_point(f, 0.0f, reach, at);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = AT(f, 0x34, u32);
     for (;;) {
         from = tri;
@@ -4679,7 +4679,7 @@ void func_0018F870(Fiona *f) {
             if (FI(f, 0x1AD5D4, u8) == 1) {
                 if (FI(f, 0x1AD5D5, u8) == 0) {
                     if (f->c.door != 0xFF && FI(f, 0x1AD5F0, s32) != 0) {
-                        VCALL(D_0044E568, 0x30, void (*)(VObject *, u8, f32 *))(D_0044E568, f->c.door, tmp);
+                        VCALL(gRooms, 0x30, void (*)(VObject *, u8, f32 *))(gRooms, f->c.door, tmp);
                     }
                 } else if (fiona_in_sight(f, gCharPartner)) {
                     FI(f, 0x1AD664, Character *) = gCharPartner;
@@ -4691,7 +4691,7 @@ void func_0018F870(Fiona *f) {
             if (FI(f, 0x1AD5D4, u8) == 1) {
                 if (FI(f, 0x1AD5D5, u8) != 1) {
                     if (f->c.door != 0xFF && FI(f, 0x1AD5F0, s32) != 0) {
-                        VCALL(D_0044E568, 0x30, void (*)(VObject *, u8, f32 *))(D_0044E568, f->c.door, tmp);
+                        VCALL(gRooms, 0x30, void (*)(VObject *, u8, f32 *))(gRooms, f->c.door, tmp);
                     }
                 } else {
                     FI(f, 0x1AD664, Character *) = gCharPartner;
@@ -4741,7 +4741,7 @@ extern void func_002EFA50(u8 *panic, f32 amount);           /* a fright (less wi
 extern const PTMF D_003B2DD8, D_003B2DE8, D_003B2DF8, D_003B2E08, D_003B2E18, D_003B2E28, D_003B2E38;
 extern const PTMF D_003B2E48, D_003B2E58, D_003B2E68, D_003B2E78, D_003B2E88;
 
-#define CHARM_ITEM 0x88   /* worn (the item manager D_0044E988 +0x10, slot 1), she cannot be caught */
+#define CHARM_ITEM 0x88   /* worn (the item manager gItems +0x10, slot 1), she cannot be caught */
 
 /* the reaction for request `req` (the state block's [1]), -1: none. While an event runs or
  * progress flag 8 is set, none; a request about character [2] needs it present. 0xD falls
@@ -4755,7 +4755,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
     u32 i;
     s32 n;
 
-    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) != 0) {
+    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) != 0) {
         return -1;
     }
     p = gProgress;
@@ -4763,7 +4763,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         return -1;
     }
     if (req == 5) {
-        if (!(VCALL(D_0044E558, 0x40, u32 (*)(VObject *, u32))(D_0044E558, (u8)f->c.state[4]) & 0xFF)) {
+        if (!(VCALL(gDoors, 0x40, u32 (*)(VObject *, u32))(gDoors, (u8)f->c.state[4]) & 0xFF)) {
             return -1;
         }
     } else if (f->c.state[2] != 0xFF) {
@@ -4789,7 +4789,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         if (m == 3 && f->c.moveSub == 7) {
             return 8;
         }
-        if (NavMesh_TriFlags(D_0044E570, f->c.a.navTri) & 0x80003) {   /* (off the mesh: address 0x3C) */
+        if (NavMesh_TriFlags(gNavMesh, f->c.a.navTri) & 0x80003) {   /* (off the mesh: address 0x3C) */
             return req == 1 ? 0xC : 0xD;
         }
         for (i = 0; i < 8; i = (i + 1) & 0xFF) {
@@ -4797,7 +4797,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
                 return req == 1 ? 0xC : 0xD;
             }
         }
-        n = D_0044E570->numDoors;
+        n = gNavMesh->numDoors;
         for (i = 0; (s32)i < n; i++) {
             if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
                 return req == 1 ? 0xC : 0xD;
@@ -4815,7 +4815,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         return -1;
     case 3:
         if (m == 4 && f->c.moveSub == 0x10) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xFF, 0x10);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xFF, 0x10);
             return -1;
         }
         return 0x10;
@@ -4828,7 +4828,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         if (m == 4 || m == 0xA || (m == 0 && f->unk1AD580 == 0xF)) {
             return -1;
         }
-        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
+        if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
             return 0x20;
         }
         if (m == 3 && f->c.moveSub == 7) {
@@ -4864,7 +4864,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     }
     p = gProgress;
     func_002EFA50((u8 *)p + 0x7B8, *(f32 *)&st[5]);
-    if (kind == 0x20 && D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
+    if (kind == 0x20 && gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
         return -1;
     }
     f->targetParam = 0;
@@ -4876,15 +4876,15 @@ s32 func_00182340(Fiona *f, s32 *st) {
     f->unk1AD580 = 0xA;
     f->c.moveMode = 4;
     f->c.moveSub = kind;
-    VCALL(D_0044E560, 0x10, void (*)(VObject *, s32, s32, s32))(D_0044E560, 0, 0x800000, 4);
+    VCALL(gSound, 0x10, void (*)(VObject *, s32, s32, s32))(gSound, 0, 0x800000, 4);
     switch (kind) {
     case 0x13: {
         NavMesh *nav;
         u32 i;
         s32 n;
 
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xA0, 8);
-        nav = D_0044E570;
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xA0, 8);
+        nav = gNavMesh;
         f->c.a.unk2A = 0;
         FI(f, 0x1AD6C0, s32) = 1;
         if (NavMesh_TriFlags(nav, f->c.a.navTri) & 0x80003) {
@@ -4923,7 +4923,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     case 0xD:
     case 0xE:
     case 0xF:
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, kind != 0xE && kind != 0xC ? 0xA0 : 0x80, 8);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, kind != 0xE && kind != 0xC ? 0xA0 : 0x80, 8);
         if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
             func_00177630(p, 1);
         }
@@ -4934,14 +4934,14 @@ s32 func_00182340(Fiona *f, s32 *st) {
         Actor_SetState(&f->c.a, &D_003B2E68);
         break;
     case 0xB:
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
         func_00177630(p, 1);
         f->c.a.unk2A = 1;
         f->c.unk104[0] = st[4];
         Actor_SetState(&f->c.a, &D_003B2E58);
         break;
     case 0xA:
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
         if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
             func_00177630(p, 1);
         }
@@ -4972,13 +4972,13 @@ s32 func_00182340(Fiona *f, s32 *st) {
     case 0x10:
         f->c.a.unk2D = 0;
         Progress_SetFlag(p, 0x2B);
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xFF, 0x10);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xFF, 0x10);
         f->c.a.unk2A = 0;
         FI(f, 0x1AD6CC, s32) = 0;
         Actor_SetState(&f->c.a, &D_003B2E08);
         break;
     case 0x20:
-        if (D_0044E988 != NULL && VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 1) == CHARM_ITEM) {
+        if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
             return -1;
         }
         if (st[4] != 5) {
@@ -4991,7 +4991,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
                 f->target = gCharPursuer;
                 break;
             case 1:
-                if (NavMesh_TriFlags(D_0044E570, f->c.a.navTri) & 0x80001) {
+                if (NavMesh_TriFlags(gNavMesh, f->c.a.navTri) & 0x80001) {
                     f->c.unk104[0] = 3;
                 } else {
                     f32 h = func_001244D0(&f->c.a, gCharPursuer->a.pos);
@@ -5015,12 +5015,12 @@ s32 func_00182340(Fiona *f, s32 *st) {
             }
             Actor_SetState(&f->c.a, &D_003B2DF8);
         } else if ((func_001235C0(f, &f->c.a) & 0xFF) == 1) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
             f->c.unk100 = 0xFF;
             f->c.a.unk2A = 1;
             Actor_SetState(&f->c.a, &D_003B2DD8);
         } else {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x80, 8);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x80, 8);
             f->c.unk100 = 2;
             f->c.a.unk2A = 0;
             f->c.moveSub = 0xC;
@@ -5090,7 +5090,7 @@ extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *ou
  * holding her, set +0x1AD5FC) */
 void func_00194230(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x80, 8);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x80, 8);
         func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
         switch (f->c.unk104[0]) {
         case 4:
@@ -5179,7 +5179,7 @@ void func_00183400(Fiona *f) {
     f32 a, aa, step, yaw;
 
     VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, mv);
-    nav = D_0044E570;
+    nav = gNavMesh;
     tri = f->c.a.navTri;
     for (;;) {
         wall = tri;
@@ -5403,7 +5403,7 @@ void func_00190FA0(Fiona *f) {
 
     f->c.a.unk2A = 1;
     FI(f, 0x1AD5BC, u8) = 0;
-    a = VCALL(D_0044E558, 0x3C, f32 (*)(VObject *, u32))(D_0044E558, (u8)f->c.unk104[0]);
+    a = VCALL(gDoors, 0x3C, f32 (*)(VObject *, u32))(gDoors, (u8)f->c.unk104[0]);
     p = gProgress;
     if (!(func_00177BF0(p, (u8)f->c.unk104[0], (u8)f->c.a.slot) & 0xFF & 0x10)) {
         a = func_002E2D00(kPi.f + a);
@@ -5674,7 +5674,7 @@ void func_00193C60(Fiona *f) {
     f->c.a.unk2A = 0;
     f->c.a.navTri = FI(f, 0x1AD6C8, u32);
     sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
-    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xD0, 0xC);
+    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
     if (FI(f, 0x1AD6C4, s32) == 0) {
         func_00181180(f, 0x7D, 5, 0, 0);
         Actor_SetState(&f->c.a, &D_003B29B8);
@@ -5765,7 +5765,7 @@ void func_0018BCC0(Fiona *f) {
                 s32 i;
 
                 for (i = 7; i < 10; i++) {
-                    Character *c = AT(D_0044F258, i * 4, Character *);
+                    Character *c = AT(gCreatures, i * 4, Character *);
 
                     if (c != NULL && c->a.active == 1 && f->c.a.room == c->a.room && c->moveMode == 8) {
                         held = 1;
@@ -5887,7 +5887,7 @@ extern const PTMF D_003B29E8;
 void func_00193900(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-        u32 n = D_0044E570->numDoors;
+        u32 n = gNavMesh->numDoors;
         u32 i = 0;
 
         if (n != 0) {
@@ -5943,7 +5943,7 @@ static inline __attribute__((always_inline)) void led_arrive(Fiona *f) {
 
     f->c.a.navTri = f->c.unk104[0];
     sceVu0CopyVector(f->c.a.pos, f->c.unk110);
-    VCALL((VObject *)D_0044E570, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)D_0044E570, f->c.a.navTri, f->c.a.pos);
+    VCALL((VObject *)gNavMesh, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)gNavMesh, f->c.a.navTri, f->c.a.pos);
     yaw = FI(f, 0x1AD6D8, f32);
     f->c.a.angle[1] = yaw;
     sceVu0UnitMatrix(f->c.a.rot);
@@ -5997,7 +5997,7 @@ void func_00192F70(Fiona *f) {
         return;
     }
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
     }
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
@@ -6064,7 +6064,7 @@ void func_00192CE0(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B2A28);
     }
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
     }
     func_00125A10(&f->c);
 }
@@ -6088,7 +6088,7 @@ void func_00192800(Fiona *f) {
 
     f->c.a.unk2A = 1;
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x60, 8);
+        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
     }
     FI(f, 0x1AD5BC, u8) = 0;
     c = gCharacters[f->c.unk100];
@@ -6196,8 +6196,8 @@ extern const PTMF D_003B28B8, D_003B28C8, D_003B28D8, D_003B28E8;
 
 /* the door's spot for `kind`: position into pos, facing (y) into dir[1]; its nav tri, or -1 */
 static inline s32 door_spot(Fiona *f, f32 *pos, f32 *dir) {
-    return VCALL(D_0044E558, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
-        D_0044E558, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), pos, dir, 0);
+    return VCALL(gDoors, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
+        gDoors, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), pos, dir, 0);
 }
 
 /* walk to the spot (tri, at; facing yaw) and then go on in `next` */
@@ -6207,7 +6207,7 @@ static inline __attribute__((always_inline)) void door_walk(Fiona *f, s32 tri, f
     FI(f, 0x1AD650, s32) = 0;
     FI(f, 0x1AD634, s32) = tri;
     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), at);
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, s32, f32 *))(gNavMesh, tri, (f32 *)((u8 *)f + 0x1AD640));
     f->savedYaw = yaw;
     Actor_SetState(&f->c.a, next);
 }
@@ -6264,7 +6264,7 @@ void func_00197640(Fiona *f) {
             }
             p = gProgress;
             Progress_ClearFlag(p, 0x2B);
-            doors = D_0044E558;
+            doors = gDoors;
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             func_00178A90(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
@@ -6307,7 +6307,7 @@ void func_00197640(Fiona *f) {
             }
             p = gProgress;
             Progress_ClearFlag(p, 0x2B);
-            doors = D_0044E558;
+            doors = gDoors;
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
             func_00178C10(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
@@ -6629,7 +6629,7 @@ step:
         if (tri == (u32)-1) {
             return -1;
         }
-        nm = (u8 *)D_0044E570;
+        nm = (u8 *)gNavMesh;
         fl = 0;   /* (the original reads a NULL record for a triangle out of range) */
         if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
             fl = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
@@ -6735,9 +6735,9 @@ void func_00196FC0(Fiona *f) {
     }
     f->c.unk104[1] = 1;
     if (f->c.moveSub == 0x14) {
-        VCALL(D_0044E558, 0x1C, void (*)(VObject *, u32, s32, s32))(D_0044E558, *(u8 *)&f->c.unk100, 1, 0x20000);
+        VCALL(gDoors, 0x1C, void (*)(VObject *, u32, s32, s32))(gDoors, *(u8 *)&f->c.unk100, 1, 0x20000);
     } else {
-        VCALL(D_0044E558, 0x1C, void (*)(VObject *, u32, s32, s32))(D_0044E558, *(u8 *)&f->c.unk100, 0, 0x20000);
+        VCALL(gDoors, 0x1C, void (*)(VObject *, u32, s32, s32))(gDoors, *(u8 *)&f->c.unk100, 0, 0x20000);
     }
     func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
     f->c.a.unk2B = 1;
@@ -6752,8 +6752,8 @@ void func_00196EF0(Fiona *f) {
     if (!door_anim_done(f)) {
         return;
     }
-    VCALL(D_0044E558, 0xC, void (*)(VObject *, u32, s32, s32, s32))(
-        D_0044E558, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), f->c.a.slot, 0);
+    VCALL(gDoors, 0xC, void (*)(VObject *, u32, s32, s32, s32))(
+        gDoors, *(u8 *)&f->c.unk100, FI(f, 0x1AD6C8, s32), f->c.a.slot, 0);
     Actor_SetState(&f->c.a, &D_003B2908);
 }
 
@@ -6772,7 +6772,7 @@ void func_00196C20(Fiona *f) {
         f->c.a.unk2A = 0;
         f->c.a.unk2B = 0;
         AT(f, 0xC0, u32) = 0x28020018;
-        doors = D_0044E558;
+        doors = gDoors;
         if (f->c.moveSub == 0x14) {
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
@@ -6787,13 +6787,13 @@ void func_00196C20(Fiona *f) {
         door_give_up(f, p);
     }
     func_00125A10(&f->c);
-    r = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, *(u8 *)&f->c.unk100, f->c.a.pos);
+    r = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, *(u8 *)&f->c.unk100, f->c.a.pos);
     if (f->c.unk104[0] != r) {
         f->c.a.unk2D = 1;
         return;
     }
     {
-        u8 *nm = (u8 *)D_0044E570;
+        u8 *nm = (u8 *)gNavMesh;
         u32 i = f->c.a.navTri;
         u32 fl = 0;   /* (the original reads it through a NULL record - address 0x3C - for a
                        * triangle out of range; 0 here) */
@@ -6816,7 +6816,7 @@ void func_00196660(Fiona *f) {
     if (door_anim_done(f)) {
         f->c.a.navTri = FI(f, 0x1AD634, s32);
         sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD640));
-        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.a.navTri, f->c.a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(NavMesh *, s32, f32 *))(gNavMesh, f->c.a.navTri, f->c.a.pos);
         yaw = FI(f, 0x1AD65C, f32);
         f->c.a.angle[1] = yaw;
         sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
@@ -6892,7 +6892,7 @@ void func_00196A90(Fiona *f) {
     }
     f->c.a.unk2A = 1;
     VCALL(f, 0x8C, void (*)(Fiona *))(f);
-    VCALL(D_0044E4D0, 0x1C, void (*)(VObject *, u32, u8 *))(D_0044E4D0, *(u8 *)&f->c.a.slot, D_003B2450);
+    VCALL(gEvents, 0x1C, void (*)(VObject *, u32, u8 *))(gEvents, *(u8 *)&f->c.a.slot, D_003B2450);
     f->c.unkF4 = 7;
     f->c.unk104[0] = FI(f, 0x1AD6CC, s32);
 }
@@ -6913,7 +6913,7 @@ void func_0018A120(Fiona *f) {
 
         f->c.a.navTri = f->c.unk100;
         sceVu0CopyVector(f->c.a.pos, f->c.unk110);
-        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.a.navTri, f->c.a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(NavMesh *, s32, f32 *))(gNavMesh, f->c.a.navTri, f->c.a.pos);
         yaw = *(f32 *)&f->c.unk104[2];
         f->c.a.angle[1] = yaw;
         sceVu0UnitMatrix((f32 (*)[4])((u8 *)f + 0x60));
@@ -6949,7 +6949,7 @@ void func_0018A860(Fiona *f) {
     FI(f, 0x1AD650, s32) = 0;
     FI(f, 0x1AD634, s32) = tri;
     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), f->c.unk110);
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, s32, f32 *))(gNavMesh, tri, (f32 *)((u8 *)f + 0x1AD640));
     f->savedYaw = yaw;
     Actor_SetState(&f->c.a, &D_003B2DB8);
 }
@@ -7023,7 +7023,7 @@ void func_0018A950(Fiona *f) {
 void func_0018AC60(Fiona *f) {
     s32 n;
 
-    VCALL(D_0044E570, 0xC, void (*)(NavMesh *, s32, f32 *))(D_0044E570, f->c.unk104[0], f->c.unk110);
+    VCALL(gNavMesh, 0xC, void (*)(NavMesh *, s32, f32 *))(gNavMesh, f->c.unk104[0], f->c.unk110);
     n = func_00127140(&f->c, 0, f->c.unk104[0], f->c.unk110);
     if (n > 0) {
         n = func_001270F0(&f->c);
@@ -7167,7 +7167,7 @@ void func_0017FD50(Fiona *f, s32 kind, Character *c) {
         hp.big = 0.0f;
         HitEffect_Spawn(&hp);
     } else if (kind == 0) {
-        mgr = D_0044E578;
+        mgr = gEffects;
         func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), c->a.pos);
     }
 }
@@ -7190,7 +7190,7 @@ extern const PTMF D_003B2E98;   /* entering through a door */
 static inline __attribute__((always_inline)) void fiona_show(Fiona *f) {
     f32 at[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};   /* (an out-parameter) */
 
-    VCALL(D_0044E4D0, 0x2C, void (*)(VObject *, Fiona *))(D_0044E4D0, f);
+    VCALL(gEvents, 0x2C, void (*)(VObject *, Fiona *))(gEvents, f);
     if (f->c.a.navTri == (u32)-1) {
         AT(f, 0x10, s32) = 0;
         AT(f, 0x14, s32) = 0;
@@ -7247,7 +7247,7 @@ void func_001800E0(Fiona *f) {
             if (k < speed) {
                 speed = 0.0f + k + 0.75f * (1.0f - k);
             }
-            if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3) != 0x8C) {
+            if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3) != 0x8C) {
                 if ((func_00177620(p) & 0xFF) == 2) {
                     func_00181010(f, kFearFast.f);
                 } else {
@@ -7281,7 +7281,7 @@ void func_001800E0(Fiona *f) {
             return;
         }
         FI(f, 0x1AD6C0, s32) = 1;
-        rooms = D_0044E568;
+        rooms = gRooms;
         f->c.a.room = VCALL(rooms, 0x1C, s32 (*)(VObject *, u32, s32))(rooms, LINK(f), f->c.a.room);
         f->c.door = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, LINK(f), f->c.a.room);
         FI(f, 0x1AD73C, s32) = 0;
@@ -7330,13 +7330,13 @@ void func_001800E0(Fiona *f) {
             u32 tri;
 
             VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, f->c.door, at);
-            dbl = VCALL(D_0044E558, 0x18, s32 (*)(VObject *, u32, f32 *))(D_0044E558, f->c.door, at);
+            dbl = VCALL(gDoors, 0x18, s32 (*)(VObject *, u32, f32 *))(gDoors, f->c.door, at);
             if ((FI(f, 0x1AD584, s32) & 2) || (func_00177620(p) & 0xFF) == 2) {
                 kind = dbl ? 6 : 4;
             } else {
                 kind = dbl ? 2 : 0;
             }
-            doors = D_0044E558;
+            doors = gDoors;
             tri = VCALL(doors, 0x14, u32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
                 doors, f->c.door, kind, spot, dir, 0);
             VCALL(f, 0x28, void (*)(Fiona *, u32, f32 *, f32 *))(f, tri, &dir[1], spot);
@@ -7360,7 +7360,7 @@ void func_001800E0(Fiona *f) {
         u8 found = 0, tried = 0;
 
         f->c.unk124 = f->c.unk128;
-        rooms = D_0044E568;
+        rooms = gRooms;
         cur = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, f->c.door, 0);
         if (FI(f, 0x1AD5D6, u8) == 1) {
             s32 pr = gCharPursuer->a.room;
@@ -7433,7 +7433,7 @@ void func_001800E0(Fiona *f) {
             if (VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, f->c.a.room, j, 0) != cur) {
                 continue;
             }
-            rooms = D_0044E568;
+            rooms = gRooms;
             LINK(f) = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, f->c.a.room, j);
             f->c.unk14C0 = LINK(f);
             LINK_LEFT(f) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, LINK(f), f->c.a.room);
@@ -7453,8 +7453,8 @@ extern void func_00125E10(Character *c, f32 *pos, s32 big);
 void func_00180E90(Fiona *f, f32 amount) {
     f32 v;
 
-    if (D_0044E988 != NULL) {
-        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3)) {
+    if (gItems != NULL) {
+        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3)) {
         case 0x8D:
             break;
         case 0x8C:
@@ -7510,7 +7510,7 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
 
         VCALL(f->c.motion, 0x60, void (*)(void *, f32 *))(f->c.motion, mouth);
         tri = f->c.a.navTri;
-        nm = (u8 *)D_0044E570;
+        nm = (u8 *)gNavMesh;
         do {
             s32 side;
             u8 *rec;
@@ -7544,7 +7544,7 @@ void func_00181180(Fiona *f, s32 id, s32 a2, s32 a3, s32 a4) {
  * whose height span (+-reach) holds pos.y and whose radius + reach holds it. Each one not
  * already in request 7 takes it; the slots hit */
 u32 func_001813D0(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
-    Character **list = (Character **)D_0044F258;
+    Character **list = (Character **)gCreatures;
     u32 mask = 0;
     s32 i;
 
@@ -7655,7 +7655,7 @@ static inline __attribute__((always_inline)) f32 fiona_abs_wrap(f32 t) {
 static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *doors, u32 i, s32 pulled) {
     f->c.unk14D0 = 5;
     func_001F6E30(f->c.motion);
-    VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0x90, 8);
+    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x90, 8);
     VCALL(doors, 0x68, void (*)(VObject *, u32, s32))(doors, i, pulled);
 }
 
@@ -7666,9 +7666,9 @@ static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *d
 s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB},
                                          kQuarterPi = {0x3F490FDB};
-    VObject *doors = D_0044E558;
+    VObject *doors = gDoors;
     Progress *p = gProgress;
-    u8 *nm = (u8 *)D_0044E570;
+    u8 *nm = (u8 *)gNavMesh;
     u8 who = 0;
     u8 i;
 
@@ -7698,7 +7698,7 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
                 u16 region;
 
                 door_slam(f, doors, i, 0);
-                region = VCALL(D_0044E568, 0x10, s32 (*)(VObject *, s32, u32))(D_0044E568, f->c.a.room, i);
+                region = VCALL(gRooms, 0x10, s32 (*)(VObject *, s32, u32))(gRooms, f->c.a.room, i);
                 who = 0;
                 if (FI(f, 0x1AD5D5, u8) == 1 && (func_00177BF0(p, i, 1) & 0x14) == 0x14) {
                     who |= 2;
@@ -7759,8 +7759,8 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
 /* her panic's recovery delay (FI 0x1AD5F8) back to 1800 frames - with accessory 0x8C never,
  * 0x8B half the time, 0x8A three times in four */
 void func_00182E80(Fiona *f) {
-    if (D_0044E988 != NULL) {
-        switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3)) {
+    if (gItems != NULL) {
+        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3)) {
         case 0x8D:
             break;
         case 0x8C:
@@ -8085,7 +8085,7 @@ void func_0018C540(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2D28);
 }
 
-extern VObject *D_0044F260;   /* the placed things */
+extern VObject *gPlacedThings;   /* the placed things */
 
 /* her hand: where the thing leaves it (motion +0x78 the bone) */
 static inline __attribute__((always_inline)) void fiona_hand(Fiona *f, f32 *out) {
@@ -8116,7 +8116,7 @@ void func_0018C660(Fiona *f) {
         if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
             break;
         }
-        things = D_0044F260;
+        things = gPlacedThings;
         if (things == NULL) {
             break;
         }
@@ -8161,7 +8161,7 @@ void func_0018C660(Fiona *f) {
         if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
             break;
         }
-        things = D_0044F260;
+        things = gPlacedThings;
         if (things == NULL) {
             break;
         }
@@ -8548,7 +8548,7 @@ void func_0018F180(Fiona *f) {
     FI(f, 0x1AD650, s32) = 0;
     FI(f, 0x1AD634, s32) = tri;
     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD640), f->c.unk110);
-    VCALL(D_0044E570, 0x14, void (*)(NavMesh *, s32, f32 *))(D_0044E570, tri, (f32 *)((u8 *)f + 0x1AD640));
+    VCALL(gNavMesh, 0x14, void (*)(NavMesh *, s32, f32 *))(gNavMesh, tri, (f32 *)((u8 *)f + 0x1AD640));
     f->savedYaw = yaw;
     Actor_SetState(&f->c.a, &D_003B2C48);
 }
@@ -8639,7 +8639,7 @@ void func_001943D0(Fiona *f) {
 
     if (hit != 0 || FI(f, 0x1AD6C8, s32) != 0) {
         if ((hit & 4) || FI(f, 0x1AD6C8, s32) != 0) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 0, 0xC0, 0xC);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xC0, 0xC);
         }
         if (hit & 2) {
             AT(p, 0xFB6, s16) = AT(p, 0xFB6, s16) + 3;
@@ -8745,7 +8745,7 @@ static inline __attribute__((always_inline)) void shove_effects(Fiona *f, u8 hit
     if (hit & 4) {
         func_0017FD50(f, kind, gCharPursuer);
     }
-    list = (Character **)D_0044F258;
+    list = (Character **)gCreatures;
     for (i = 0; i < 10; i++, list++) {
         if (FI(f, 0x1AD6C8, s32) & (1 << i)) {
             func_0017FD50(f, kind, *list);
@@ -8902,8 +8902,8 @@ void func_00196350(Fiona *f) {
     f32 dir[4] __attribute__((aligned(16)));
     s32 tri;
 
-    FI(f, 0x1AD6C0, s32) = VCALL(D_0044E558, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
-        D_0044E558, *(u8 *)&f->c.unk100, f->c.unk104[0] == 0 ? 0 : 2, at, dir, 0);
+    FI(f, 0x1AD6C0, s32) = VCALL(gDoors, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(
+        gDoors, *(u8 *)&f->c.unk100, f->c.unk104[0] == 0 ? 0 : 2, at, dir, 0);
     tri = FI(f, 0x1AD6C0, s32);
     door_walk(f, tri, at, dir[1], &D_003B2948);
 }
@@ -9008,7 +9008,7 @@ void func_00198C50(Fiona *f) {
         door_give_up(f, p);
         return;
     }
-    nm = (VObject *)D_0044E570;
+    nm = (VObject *)gNavMesh;
     yaw = VCALL(nm, 0x58, f32 (*)(VObject *, s32, s32))(nm, f->c.unk100, f->c.unk104[0]);
     tri = FI(f, 0x1AD6C0, s32);
     f->c.unk124 = f->c.unk128;
@@ -9026,7 +9026,7 @@ extern const PTMF D_003B2868, D_003B2878, D_003B2888, D_003B2898, D_003B28A8;
 
 /* the ladder's foot (0) or top (1) end point (nav +0x5C) */
 static inline __attribute__((always_inline)) void ladder_end(Fiona *f, s32 top, f32 *out) {
-    VCALL((VObject *)D_0044E570, 0x5C, void (*)(VObject *, s32, s32, f32 *))((VObject *)D_0044E570, f->c.unk100, top, out);
+    VCALL((VObject *)gNavMesh, 0x5C, void (*)(VObject *, s32, s32, f32 *))((VObject *)gNavMesh, f->c.unk100, top, out);
 }
 
 /* D_003B2858: on the ladder (moves 0x700..0x709: 0x701 / 0x705 rungs down / up, 0x702 / 0x706
@@ -9291,7 +9291,7 @@ void func_00194FC0(Fiona *f) {
         return;
     }
     if (v == 7 && !(FI(f, 0x1AD6D4, f32) <= 0.0f)) {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 none = 0;
 
         FI(f, 0x1AD6D4, f32) = -1.0f;
@@ -9360,8 +9360,8 @@ void func_00194FC0(Fiona *f) {
         if (v == 7) {
             dmg = 0xA;
             kind = 2;
-            if (D_0044E988 != NULL) {
-                if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x83 &&
+            if (gItems != NULL) {
+                if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x83 &&
                     fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                     dmg = 0x64;
                     FI(f, 0x1AD6D0, f32) = -1.0f;
@@ -9373,8 +9373,8 @@ void func_00194FC0(Fiona *f) {
         } else if (v == 6) {
             dmg = 5;
             kind = 1;
-            if (D_0044E988 != NULL) {
-                if (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0) == 0x83 &&
+            if (gItems != NULL) {
+                if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x83 &&
                     fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                     dmg = 0x32;
                     FI(f, 0x1AD6D0, f32) = -1.0f;
@@ -9386,8 +9386,8 @@ void func_00194FC0(Fiona *f) {
         } else {
             dmg = 1;
             kind = 1;
-            if (D_0044E988 != NULL) {
-                switch (VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 0)) {
+            if (gItems != NULL) {
+                switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0)) {
                 case 0x83:
                     if (fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                         kind = 2;
@@ -9426,7 +9426,7 @@ void func_00194FC0(Fiona *f) {
 s32 func_00180D60(Fiona *f, u32 tri, f32 *pos, s32 run) {
     s32 r;
 
-    if (NavMesh_AcrossDivider(D_0044E570, tri, f->c.a.navTri)) {
+    if (NavMesh_AcrossDivider(gNavMesh, tri, f->c.a.navTri)) {
         return -1;
     }
     r = func_00127140(&f->c, 0, tri, pos);

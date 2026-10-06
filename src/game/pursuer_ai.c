@@ -6,8 +6,8 @@
 #include "sce/libvu0.h"
 
 extern VObject *gRandom;   /* random numbers */
-extern VObject *D_0044E558;   /* doors */
-extern VObject *D_0044E568;   /* rooms */
+extern VObject *gDoors;   /* doors */
+extern VObject *gRooms;   /* rooms */
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
 
@@ -117,16 +117,16 @@ void func_00212540(Pursuer *p) {
 
 /* shut / open door `door` (doors vtable +0x1C) */
 s32 func_00212DC0(Pursuer *p, s32 door) {
-    return VCALL(D_0044E558, 0x1C, s32 (*)(VObject *, s32, s32, s32))(D_0044E558, door, 0, 0x60000);
+    return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 0, 0x60000);
 }
 
 s32 func_00212DE0(Pursuer *p, s32 door) {
-    return VCALL(D_0044E558, 0x1C, s32 (*)(VObject *, s32, s32, s32))(D_0044E558, door, 1, 0x60000);
+    return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 1, 0x60000);
 }
 
 /* the room's side behind the exit the pursuer heads for (rooms vtable +0x50) */
 s32 func_00217340(Pursuer *p) {
-    return VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, p->c.a.room, p->c.door, 1);
+    return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, p->c.a.room, p->c.door, 1);
 }
 
 /* vtable +0xC8: reacting to a noise */
@@ -143,15 +143,15 @@ u32 func_00219450(Pursuer *p) {
 
 extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
-extern VObject *D_0044E4D0;       /* room objects */
-extern void *D_0044E570;          /* nav mesh */
+extern VObject *gEvents;       /* room objects */
+extern void *gNavMesh;          /* nav mesh */
 extern VObject *gSceneGameF29740; /* path planner */
 
 
 /* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
    triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
 u32 func_00211B00(Pursuer *p, u32 tri) {
-    VObject *nav = D_0044E570;
+    VObject *nav = gNavMesh;
     VObject *planner;
     PathRequest q = { 0 };
     u8 *t = NULL;
@@ -193,7 +193,7 @@ void func_00211C80(Pursuer *p, s32 a2) {
 
 /* door `door` shut, the other side ... (doors +0x20 / +0x1C, progress) */
 void func_00212CA0(Pursuer *p, u32 door) {
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
     Progress *pr;
 
     VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
@@ -203,7 +203,7 @@ void func_00212CA0(Pursuer *p, u32 door) {
 }
 
 void func_00212D30(Pursuer *p, u32 door) {
-    VObject *d = D_0044E558;
+    VObject *d = gDoors;
     Progress *pr;
 
     VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
@@ -258,8 +258,8 @@ void func_00213E30(Pursuer *p) {
 s32 func_00214A90(Pursuer *p, u32 tri) {
     u32 flags;
 
-    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
     } else {
         flags = 0;
     }
@@ -268,7 +268,7 @@ s32 func_00214A90(Pursuer *p, u32 tri) {
 
 /* plan a path to the room object behind the exit the pursuer heads for */
 s32 func_00214AF0(Pursuer *p) {
-    VObject *o = VCALL(D_0044E4D0, 0x64, VObject *(*)(VObject *))(D_0044E4D0);
+    VObject *o = VCALL(gEvents, 0x64, VObject *(*)(VObject *))(gEvents);
     s32 *t = VCALL(o, 0x3C, s32 *(*)(VObject *))(o);
 
     if (t != NULL) {
@@ -291,7 +291,7 @@ s32 func_00217260(Pursuer *p) {
 
     if (PU(p, 0x1594, s32) == room) {
         if (PU(p, 0x1598, s32) != -1) {
-            s32 side = VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, room, p->c.door, 1);
+            s32 side = VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, room, p->c.door, 1);
 
             if (side != -1) {
                 return side == PU(p, 0x1598, s32);
@@ -305,7 +305,7 @@ s32 func_00217260(Pursuer *p) {
 /* the side of character `c`'s room behind its exit, -1 without one */
 s32 func_002172F0(Pursuer *p, Character *c) {
     if (c != NULL) {
-        return VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, c->a.room, c->door, 1);
+        return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1);
     }
     return -1;
 }
@@ -362,7 +362,7 @@ s32 func_00218C20(Pursuer *p, u32 tri) {
         PU(p, 0x1620, u8) = 0;
     }
     n = PU(p, 0x1621, u8);
-    if (n < 8 && tri < AT(D_0044E570, 0x8, u32)) {
+    if (n < 8 && tri < AT(gNavMesh, 0x8, u32)) {
         PU(p, 0x15E0 + n * 8, u32) = tri;
         PU(p, 0x1621, u8)++;
         return 1;
@@ -376,7 +376,7 @@ void func_00218E70(Pursuer *p) {
 
     if (i < PU(p, 0x1621, u8)) {
         PU(p, 0x15A4, s32) = PU(p, 0x15E0 + i * 8, s32);
-        VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *, Pursuer *))(D_0044E570, PU(p, 0x15E0 + PU(p, 0x1620, u8) * 8, s32), (f32 *)((u8 *)p + 0x15B0), p);
+        VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *, Pursuer *))(gNavMesh, PU(p, 0x15E0 + PU(p, 0x1620, u8) * 8, s32), (f32 *)((u8 *)p + 0x15B0), p);
     }
 }
 
@@ -438,7 +438,7 @@ void func_00179620(Pursuer *p) {
 
 /* path length from node `a` to node `b` of `room`, through the room's table (-1 none) */
 f32 func_00211F70(Pursuer *p, s32 room, u32 a, u32 b) {
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, b, room);
     f32 d;
 
@@ -458,7 +458,7 @@ f32 func_00211F70(Pursuer *p, s32 room, u32 a, u32 b) {
 
 /* is `pos` of room `room` where the room's spawn point is, and reachable? */
 s32 func_00212190(Pursuer *p, s32 room) {
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     u32 tri = VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, room, a);
@@ -477,7 +477,7 @@ s32 func_002131A0(void) {
         s32 i;
 
         for (i = 0; (u32)i < 5; i++) {
-            s32 valid = i >= 0 && (u32)i < AT(D_0044E570, 0x14, u32);
+            s32 valid = i >= 0 && (u32)i < AT(gNavMesh, 0x14, u32);
 
             if ((valid & 0xFF) == 1 && (func_00177A20(pr, i & 0xFF, 0) & 0xFF & 1)) {
                 return i;
@@ -492,8 +492,8 @@ f32 func_00213C60(Pursuer *p, u32 tri, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
     u32 flags;
 
-    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
     } else {
         flags = 0;
     }
@@ -518,7 +518,7 @@ f32 func_00213D40(Pursuer *p, Character *c) {
         return -1.0f;
     }
     tri = c->a.navTri;
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, tri, c->a.pos) == 4) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, v);
         if (tri == func_00124480(&p->c.a, v, p->c.a.navMask)) {
@@ -604,7 +604,7 @@ f32 func_00214B90(Pursuer *p, u32 tri, const f32 *pos) {
     if (pos != NULL) {
         sceVu0CopyVector(v, pos);
     } else {
-        VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, tri, v);
+        VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, tri, v);
     }
     if (func_00127140(&p->c, 0, tri, v) <= 0) {
         return -1.0f;
@@ -624,7 +624,7 @@ s32 func_00217370(Pursuer *p, Character *c) {
     s32 room = p->c.a.room;
 
     if (room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
         s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, p->c.door, 1);
         s32 b = -1;
 
@@ -649,7 +649,7 @@ s32 func_00217460(Pursuer *p, s32 slot) {
     if (room == p->c.a.room) {
         return 1;
     }
-    rm = D_0044E568;
+    rm = gRooms;
     for (i = 0; i < 8; i = (i + 1) & 0xFF) {
         if (room == VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i)) {
             return 1;
@@ -687,8 +687,8 @@ s32 func_00217ED0(Pursuer *p, f32 angle, f32 dist) {
     if (tri != (u32)-1) {
         u32 flags;
 
-        if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-            flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+        if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+            flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
         } else {
             flags = 0;
         }
@@ -766,7 +766,7 @@ s32 func_00218B60(Pursuer *p) {
 /* head for the room / side next to Hewie's (exit `exit` of his room); else keep the goal */
 void func_00218C90(Pursuer *p, u32 exit) {
     Character *h = gCharPartner;
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, h->a.room, exit);
     s32 side = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, h->a.room, exit) & 0xFF, 1);
 
@@ -781,7 +781,7 @@ void func_00218C90(Pursuer *p, u32 exit) {
 /* the same next to Fiona's room */
 void func_00218D80(Pursuer *p, u32 exit) {
     Character *f = gCharPlayer;
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, f->a.room, exit);
     s32 side = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, f->a.room, exit) & 0xFF, 1);
 
@@ -809,7 +809,7 @@ s32 func_00211CF0(Pursuer *p, s32 exit) {
         func_00178750(pr, p->c.a.room, exit);
         /* fallthrough */
     case 4:
-        if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, s32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
+        if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, s32))(gRooms, p->c.a.room, exit) & 0xFF)) {
             return 1;
         }
         /* fallthrough */
@@ -823,7 +823,7 @@ s32 func_00211CF0(Pursuer *p, s32 exit) {
 
 /* path length between the room nodes of `a` and `b` (rooms +0x10 / +0x38), -1 none */
 f32 func_00212060(Pursuer *p, s32 room, s32 a, s32 b) {
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     u32 na = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, a) & 0xFFFF;
     u32 nb = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, b) & 0xFFFF;
     s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, nb, room);
@@ -845,7 +845,7 @@ f32 func_00212060(Pursuer *p, s32 room, s32 a, s32 b) {
 
 /* coming into room `room`: is Fiona at the spawn point there (+0x1624)? */
 void func_00212240(Pursuer *p, s32 room) {
-    VObject *rm = D_0044E568;
+    VObject *rm = gRooms;
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
 
@@ -871,14 +871,14 @@ f32 func_00212730(Pursuer *p, s32 exit) {
     f32 b[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
 
-    if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, s32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
-        VObject *rm = D_0044E568;
-        void *nm = D_0044E570;
+    if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, s32))(gRooms, p->c.a.room, exit) & 0xFF)) {
+        VObject *rm = gRooms;
+        void *nm = gNavMesh;
 
         VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x24, s32 (*)(VObject *, s32))(rm, exit), a);
         VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x28, s32 (*)(VObject *, s32))(rm, exit), b);
     } else {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
 
         VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, exit, a);
         VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, exit, b);
@@ -905,7 +905,7 @@ void func_00213B60(Pursuer *p, u32 mask) {
     if (tri != (u32)-1) {
         f32 r;
 
-        VCALL(D_0044E570, 0x40, void (*)(void *, u32, f32 *, f32 *, f32 *, u32))(D_0044E570, p->c.a.navTri, b, p->c.a.pos, a, mask);
+        VCALL(gNavMesh, 0x40, void (*)(void *, u32, f32 *, f32 *, f32 *, u32))(gNavMesh, p->c.a.navTri, b, p->c.a.pos, a, mask);
         r = func_002E2D00(p->c.a.angle[1] + func_002E2D00(func_001244D0(&p->c.a, b) - h));
         p->c.a.angle[1] = r;
         sceVu0UnitMatrix(p->c.a.rot);
@@ -1150,7 +1150,7 @@ void func_00219310(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         PU(p, 0x15A4, u32) = tri;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, tri, pos) == 3) {
         sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), pos);
     } else {
@@ -1169,7 +1169,7 @@ void func_00219310(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
 u32 func_00214940(Pursuer *p) {
     if (p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         VObject *rnd = gRandom;
-        s32 last = AT(D_0044E570, 0x8, s32) - 1;
+        s32 last = AT(gNavMesh, 0x8, s32) - 1;
         s32 n = last + 1;
 
         for (;;) {
@@ -1177,8 +1177,8 @@ u32 func_00214940(Pursuer *p) {
             u32 flags;
 
             tri = last > 0 ? (s32)((f32)n * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) : 0;
-            if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-                flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+            if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
             } else {
                 flags = 0;
             }
@@ -1198,7 +1198,7 @@ s32 func_00217110(Pursuer *p, const f32 *pos) {
     u32 tri = func_00124480(&p->c.a, pos, 0);
 
     if (tri == (u32)-1) {
-        void *nm = D_0044E570;
+        void *nm = gNavMesh;
         u32 t = p->c.a.navTri;
 
         for (;;) {
@@ -1295,8 +1295,8 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
         if (tri != (u32)-1) {
             u32 flags;
 
-            if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-                flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+            if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
             } else {
                 flags = 0;
             }
@@ -1426,7 +1426,7 @@ u32 func_00211E00(Pursuer *p, s32 exit) {
     if ((func_001785B0(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 3;
     }
-    rm = D_0044E568;
+    rm = gRooms;
     if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF)) {
         return 4;
     }
@@ -1454,7 +1454,7 @@ u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
     if (tri == (u32)-1) {
         return -1;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
         flags = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
     } else {
@@ -1467,7 +1467,7 @@ u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
         return -3;
     }
     for (i = 0; i < 8; i++) {
-        if (((VCALL(D_0044E558, 0x2C, s32 (*)(VObject *, u32, f32 *))(D_0044E558, i & 0xFF, w) != 0) ^ 1) == 0) {
+        if (((VCALL(gDoors, 0x2C, s32 (*)(VObject *, u32, f32 *))(gDoors, i & 0xFF, w) != 0) ^ 1) == 0) {
             return -4;
         }
     }
@@ -1542,7 +1542,7 @@ s32 func_002134E0(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
         tri = p->c.a.navTri;
         sceVu0CopyVector(from, p->c.a.pos);
     }
-    d = D_0044E558;
+    d = gDoors;
     pl = gSceneGameF29740;
     side = 0;
     p->c.pathReq->unk0 = 0;
@@ -1580,7 +1580,7 @@ s32 func_00212FE0(Pursuer *p, s32 side) {
     }
     for (i = 0; i < 5; i++) {
         u32 retry = either & 0xFF;
-        s32 valid = (s32)i >= 0 && i < AT(D_0044E570, 0x14, u32);
+        s32 valid = (s32)i >= 0 && i < AT(gNavMesh, 0x14, u32);
 
         if ((valid & 0xFF) != 1) {
             continue;
@@ -1622,7 +1622,7 @@ s32 func_00216960(Pursuer *p, Character *c) {
     if (c == NULL) {
         c = p->target;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, c->a.navTri, c->a.pos) == 4) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, c->a.navTri, v);
     } else {
@@ -1662,7 +1662,7 @@ f32 func_00212550(Pursuer *p, u32 exit) {
         u32 i, found = 0xFF;
 
         if (gCharPlayer->moveMode == 2) {
-            VObject *dd = D_0044E558;
+            VObject *dd = gDoors;
             Progress *pr = gProgress;
 
             for (i = 0; i < 8; i++) {
@@ -1678,10 +1678,10 @@ f32 func_00212550(Pursuer *p, u32 exit) {
             return 10.0f;
         }
     }
-    if (!(VCALL(D_0044E568, 0x78, s32 (*)(VObject *, s32, u32))(D_0044E568, p->c.a.room, exit) & 0xFF)) {
+    if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, exit) & 0xFF)) {
         return 10.0f;
     }
-    d = D_0044E558;
+    d = gDoors;
     side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, exit, gCharPlayer->a.pos);
     if (side == -1) {
         return 10.0f;
@@ -1701,7 +1701,7 @@ void func_00219100(Pursuer *p) {
     s32 other = 0;
 
     if (p->c.a.room == f->a.room && p->c.door < 8 && (f->door & 0xFF) < 8) {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
         s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
 
         if (a != -1) {
@@ -1716,7 +1716,7 @@ void func_00219100(Pursuer *p) {
         }
     }
     if (other != 0) {
-        side = f != NULL ? VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, f->a.room, f->door, 1) : -1;
+        side = f != NULL ? VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, f->a.room, f->door, 1) : -1;
     } else {
         if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
             side = -1;
@@ -1724,7 +1724,7 @@ void func_00219100(Pursuer *p) {
         if (f->moveMode == 0) {
             sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), f->a.pos);
         } else {
-            VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, f->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+            VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, f->a.navTri, (f32 *)((u8 *)p + 0x15B0));
         }
         PU(p, 0x15A4, s32) = f->a.navTri;
     }
@@ -1749,7 +1749,7 @@ u32 func_00212A80(Pursuer *p, u32 skip) {
     for (i = 0; i < 8; i++) {
         list[i] = D_0047A930[i];
     }
-    rm = D_0044E568;
+    rm = gRooms;
     for (i = 0; i < 8; i = (i + 1) & 0xFF) {
         if ((i & 0xFF) == (skip & 0xFF)) {
             continue;
@@ -1778,8 +1778,8 @@ u32 func_00212A80(Pursuer *p, u32 skip) {
 
 /* a door of the played room the pursuer must deal with on its way (0xFF none) */
 u32 func_00212850(Pursuer *p) {
-    VObject *rm = D_0044E568;
-    VObject *d = D_0044E558;
+    VObject *rm = gRooms;
+    VObject *d = gDoors;
     Progress *pr = gProgress;
     u32 i;
 
@@ -1802,8 +1802,8 @@ u32 func_00212850(Pursuer *p) {
             if (st & 8) {
                 u32 tri = p->c.a.navTri, flags;
 
-                if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-                    flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+                if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                    flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
                 } else {
                     flags = 0;
                 }
@@ -1829,7 +1829,7 @@ void func_00218ED0(Pursuer *p, Character *c) {
         c = p->target;
     }
     if (p->c.a.room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
-        VObject *rm = D_0044E568;
+        VObject *rm = gRooms;
         s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
 
         if (a != -1) {
@@ -1844,7 +1844,7 @@ void func_00218ED0(Pursuer *p, Character *c) {
         }
     }
     if (other != 0) {
-        side = c != NULL ? VCALL(D_0044E568, 0x50, s32 (*)(VObject *, s32, u32, s32))(D_0044E568, c->a.room, c->door, 1) : -1;
+        side = c != NULL ? VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1) : -1;
     } else {
         s32 room = c->a.room;
 
@@ -1855,7 +1855,7 @@ void func_00218ED0(Pursuer *p, Character *c) {
             if (c->moveMode == 0) {
                 sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), c->a.pos);
             } else {
-                VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, c->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+                VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, c->a.navTri, (f32 *)((u8 *)p + 0x15B0));
             }
             PU(p, 0x15A4, s32) = c->a.navTri;
         }
@@ -1946,7 +1946,7 @@ static f32 Npc_DistanceTo(Pursuer *p, Character *c, f32 *v) {
     if (p->c.a.room != c->a.room) {
         return -1.0f;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = c->a.navTri;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, tri, c->a.pos) == 4) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, v);
@@ -2003,8 +2003,8 @@ s32 func_00213690(Pursuer *p, s32 tri) {
     u32 fallback = 0xFF;
     u32 i;
 
-    VCALL(D_0044E570, 0xC, void (*)(void *, s32, f32 *))(D_0044E570, tri, v);
-    rm = D_0044E568;
+    VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, tri, v);
+    rm = gRooms;
     pr = gProgress;
     for (i = 0; i < 8; i++) {
         s32 t;
@@ -2058,7 +2058,7 @@ void func_00213270(Pursuer *p, u32 door) {
     if ((door & 0xFF) == 0xFF) {
         door = (u8)p->c.unk100;
     }
-    d = D_0044E558;
+    d = gDoors;
     if (VCALL(d, 0x28, s32 (*)(VObject *, u32))(d, door) == 0) {
         Progress *pr;
 
@@ -2078,8 +2078,8 @@ void func_00213270(Pursuer *p, u32 door) {
     p->c.a.unk2D = 0;
     p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
     tri = p->c.a.navTri;
-    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
     } else {
         flags = 0;
     }
@@ -2125,7 +2125,7 @@ s32 func_00214620(Pursuer *p, s32 unused) {
     last = AT(p, 0x120 + p->c.unk124 * 0xC, s32);
     w[0] = AT(p, 0x124 + p->c.unk124 * 0xC, f32);
     w[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
-    VCALL(D_0044E570, 0x14, void (*)(void *, s32, f32 *))(D_0044E570, last, w);
+    VCALL(gNavMesh, 0x14, void (*)(void *, s32, f32 *))(gNavMesh, last, w);
     if (sceVu0InnerProduct(p->c.a.pos, pos) == 0.0f && last == (s32)func_00124480(&p->c.a, w, 0x20008)) {
         d = func_002E2D00(func_001244D0(&p->c.a, w) - p->c.a.angle[1]);
     } else {
@@ -2152,7 +2152,7 @@ s32 func_002138F0(Pursuer *p, s32 tri) {
     f32 at[4] __attribute__((aligned(16)));
     f32 ofs[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
-    void *nm = D_0044E570;
+    void *nm = gNavMesh;
     VObject *pl;
     s32 below, s, other;
     u32 i;
@@ -2212,7 +2212,7 @@ s32 func_002138F0(Pursuer *p, s32 tri) {
 /* the walkable point nearest to triangle `tri` / `pos` for the pursuer: from a door it may
  * block, through the walk mesh to the first free triangle (a bit inside it) */
 u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
-    void *nm = D_0044E570;
+    void *nm = gNavMesh;
     u32 flags;
 
     if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
@@ -2221,8 +2221,8 @@ u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
         flags = 0;
     }
     if (p->c.a.navMask & flags) {
-        VObject *rm = D_0044E568;
-        VObject *d = D_0044E558;
+        VObject *rm = gRooms;
+        VObject *d = gDoors;
         u32 t = tri, i;
 
         for (i = 0; i < 8; i = (i + 1) & 0xFF) {
@@ -2302,7 +2302,7 @@ s32 func_00218430(Pursuer *p, Character *c) {
     } else {
         mask = 0x40080;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, ctri, c->a.pos) == 4) {
         VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, ctri, at);
     } else {
@@ -2399,8 +2399,8 @@ static s32 Npc_PathClear(Pursuer *p, f32 dist) {
             return 0;
         }
     }
-    if (tri < AT(D_0044E570, 0x8, u32) && AT(D_0044E570, 0x4, u8 *) != NULL) {
-        flags = AT(AT(D_0044E570, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
     } else {
         flags = NAV_BAD_TRI_FLAGS;
     }

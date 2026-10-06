@@ -22,9 +22,9 @@ extern u16 D_0044B010[][2];     /* box position presets */
 extern u8 D_0047B140[];         /* frames per glyph, by speed */
 extern u8 D_0047B144[];         /* the choice cursor glyph */
 extern u8 D_0047B148[];         /* the page arrow glyph */
-extern void *D_0044E4E8;        /* texture cache */
-extern void *D_0044E4F0;        /* renderer */
-extern void *D_0044E9A0;        /* VRAM manager */
+extern void *gTexCache;        /* texture cache */
+extern void *gRenderer;        /* renderer */
+extern void *gVram;        /* VRAM manager */
 
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vsnprintf */
@@ -48,9 +48,9 @@ void Task_BeginDraw(Task *t);
 s32 TextCursor_Step(Task *t, TextCursor *c);
 
 #define TEXCACHE_SLOT(sel, group) \
-    VCALL(D_0044E4E8, 0x8, s32 (*)(void *, s32, s32))(D_0044E4E8, sel, group)
+    VCALL(gTexCache, 0x8, s32 (*)(void *, s32, s32))(gTexCache, sel, group)
 #define TEXCACHE_TEX(sel, group) \
-    VCALL(D_0044E4E8, 0xC, u8 *(*)(void *, s32, s32))(D_0044E4E8, sel, group)
+    VCALL(gTexCache, 0xC, u8 *(*)(void *, s32, s32))(gTexCache, sel, group)
 
 /* a window-coordinate XYZ2 value (12.4 fixed point), farthest depth */
 #define XYZ(x, y) ((u64)(u32)((x) << 4) | ((u64)(u32)((y) << 4) << 16) | 0xFFFFFFFF00000000ULL)

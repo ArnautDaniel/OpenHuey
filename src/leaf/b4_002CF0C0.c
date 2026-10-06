@@ -21,7 +21,7 @@ extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *D_0044FE10, *D_0044E4D0, *D_00456E00, *D_0044E568, *D_0044E570;
+extern void *gCutscene, *gEvents, *D_00456E00, *gRooms, *gNavMesh;
 
 void func_002CF0C0(u8 *p, s32 v) { F(p, 0x1660, s32) = v != 0 ? v : 900; }
 void func_002CF0E0(u8 *p) { F(p, 0x1660, s32) = 600; }
@@ -47,7 +47,7 @@ void *func_002D0FE0(u8 *p) {
 }
 
 void *func_002D1000(u8 *p) {
-    D_0044FE10 = p;
+    gCutscene = p;
     F(p, 0x0, void *) = D_0046ED30;
     return p;
 }
@@ -68,7 +68,7 @@ void *func_002D1040(u8 *p) {
 }
 
 void *func_002D1080(u8 *p) {
-    D_0044E4D0 = p;
+    gEvents = p;
     F(p, 0x0, void *) = D_0046BAA0;
     return p;
 }
@@ -115,7 +115,7 @@ void *func_002D1260(u8 *p) {
 }
 
 void *func_002D12C0(u8 *p) {
-    D_0044E568 = p;
+    gRooms = p;
     F(p, 0x0, void *) = D_0046C3E0;
     return p;
 }
@@ -123,7 +123,7 @@ void *func_002D12C0(u8 *p) {
 void *func_002D12E0(u8 *p) {
     s32 i;
 
-    D_0044E570 = p;
+    gNavMesh = p;
     F(p, 0x0, void *) = D_0046A9D0;
     for (i = 0x4; i <= 0x18; i += 4) {
         F(p, i, u32) = 0;

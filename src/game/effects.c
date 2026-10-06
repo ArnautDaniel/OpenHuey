@@ -6,7 +6,7 @@
 #include "game.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 
 static u32 rd32(const u8 *p) {
     return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
@@ -71,7 +71,7 @@ void func_002BB030(u8 *e, const u8 *d) {
     if (d == NULL) {
         return;
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     AT(e, 0x10, u32) = rd32(d);
     AT(e, 0x14, u32) = rd32(d + 4);
     AT(e, 0x18, u32) = rd32(d + 8);
@@ -105,7 +105,7 @@ void func_002C6540(u8 *e, const f32 *d) {
 }
 
 
-extern VObject *D_0044FE10;    /* +0x80: the character in slot i (0xFF none) */
+extern VObject *gCutscene;    /* +0x80: the character in slot i (0xFF none) */
 extern void *gCharacters[6];
 extern void func_001267F0(void *c, s32 light);
 extern s32 func_00126800(void *c);
@@ -116,7 +116,7 @@ void func_002BB280(u8 *o) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
-        u32 k = D_0044FE10 != NULL ? (u8)VCALL(D_0044FE10, 0x80, s32 (*)(VObject *, s32))(D_0044FE10, i & 0xFF) : (u8)i;
+        u32 k = gCutscene != NULL ? (u8)VCALL(gCutscene, 0x80, s32 (*)(VObject *, s32))(gCutscene, i & 0xFF) : (u8)i;
         s32 group = (i << 16) | 0xB;
 
         if (k == 0xFF || gCharacters[k] == NULL) {
@@ -189,7 +189,7 @@ void func_002BB1A0(u8 *o) {
 }
 
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* a fog drawer: colours, range, queued with the renderer in `layer` */
 void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
@@ -199,7 +199,7 @@ void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
     AT(d, 0xC, u32) = c1;
     AT(d, 0x10, f32) = a;
     AT(d, 0x14, f32) = b;
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, layer, 0);
 }
 
 
@@ -247,14 +247,14 @@ void func_00269940(void *d, u32 rgba, s32 which, s32 arg) {
     AT(d, 0x8, u32) = rgba;
     AT(d, 0xC, s32) = which;
     AT(d, 0x10, s32) = arg;
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, 0x20, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, 0x20, 0);
 }
 
 
 /* hand a drawer to the renderer (+0xC) in its layer (+0x20); one flagged +0x32 bit 7 then
  * also has the renderer run +0x58 */
 void func_002E56C0(u8 *d) {
-    VObject *r = D_0044E4F0;
+    VObject *r = gRenderer;
 
     VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, d, AT(d, 0x20, s32), 0);
     if (AT(d, 0x32, u8) & 0x80) {
@@ -266,8 +266,8 @@ void func_002E56C0(u8 *d) {
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *D_0044E4E8;   /* the texture cache */
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gTexCache;   /* the texture cache */
+extern VObject *gCamera;   /* the camera */
 
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
@@ -285,8 +285,8 @@ extern VObject *D_0044E4B8;   /* the camera */
  * passed to the renderer as TEX0's CSA).
  * Billboards face the camera: x from its up x direction, y the direction x that. */
 static s32 gl_sprites(u8 *d, s32 glow) {
-    VObject *cam = D_0044E4B8;
-    const void *tex = VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(d, 0x34, s8),
+    VObject *cam = gCamera;
+    const void *tex = VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, AT(d, 0x34, s8),
                                                                               AT(d, 0x35, s8));
     s16 cells[64][2];
     f32 corner[4][4] __attribute__((aligned(16)));
@@ -421,7 +421,7 @@ s32 func_002E5660(u8 *d) {
 
 
 extern void *D_0046EC60[];      /* the effect 0x1C kind */
-extern VObject *D_0044E4C0;     /* the room effects */
+extern VObject *gRoomEffects;     /* the room effects */
 extern void *func_00266C40(void *fx, s32 k);       /* effect slot k */
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void func_002670F0(void *fx, s32 k);        /* remove effect k */
@@ -441,7 +441,7 @@ void func_002241C0(u8 *o, s32 on) {
             return;
         }
         AT(o, 0x164, u8) = 0;
-        fx = (u8 *)D_0044E4C0;
+        fx = (u8 *)gRoomEffects;
         if (AT(fx, 0x14A8, void *) != NULL) {
             VCALL(fx + 0x1400, 0x14, void (*)(void *, void *))(fx + 0x1400, AT(fx, 0x14A8, void *));
             AT(fx, 0x14A8, void *) = NULL;
@@ -458,7 +458,7 @@ void func_002241C0(u8 *o, s32 on) {
         func_00266C70(fx, 0x1C, o + 0x154);
         return;
     }
-    fx = (u8 *)D_0044E4C0;
+    fx = (u8 *)gRoomEffects;
     e = func_00266C40(fx, 0x1C);
     if (e != NULL) {
         AT(o, 0x164, u8) = 1;
@@ -1073,7 +1073,7 @@ void func_002E9150(u8 *e, u8 *arg) {
         p.pos[2] = AT(e, 0x28, f32);
         p.pos[3] = 1.0f;
         p.kind = 1;
-        mgr = D_0044E578;
+        mgr = gEffects;
         slot = Effect_New(mgr, 0x220, spark_init);
         func_002D6090(mgr, slot, &p);
         slot = Effect_New(mgr, 0x220, spark_init);
@@ -1136,7 +1136,7 @@ void func_002E9150(u8 *e, u8 *arg) {
         if (AT(e, 0x78, s32) != 1) {
             return;
         }
-        mgr = D_0044E578;
+        mgr = gEffects;
         slot = Effect_New(mgr, 0x220, spark_init);
         p.pos[0] = AT(e, 0x20, f32);
         p.pos[1] = 2.0f + AT(e, 0x24, f32);
@@ -1230,7 +1230,7 @@ extern void *D_0046EC80[];
 /* hand a depth-band drawer (`d`: +0x8 .. +0x14 a, from, to, b) to the renderer (layer 0x21)
  * unless the band covers all of the camera's depth range (+0xCC near, +0xD0 far) */
 void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
 
     if (from <= VCALL(cam, 0xCC, f32 (*)(VObject *))(cam) && !(to < VCALL(cam, 0xD0, f32 (*)(VObject *))(cam))) {
         return;
@@ -1239,7 +1239,7 @@ void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b) {
     AT(d, 0xC, f32) = from;
     AT(d, 0x10, f32) = to;
     AT(d, 0x14, f32) = b;
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, u8 *, s32, s32))(D_0044E4F0, d, 0x21, 0);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, u8 *, s32, s32))(gRenderer, d, 0x21, 0);
 }
 
 /* D_0046EC60 +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
@@ -1266,16 +1266,16 @@ void func_00319B10(void) {
  * (+0x14, func_00317D40) renders the characters and creatures above it again from the
  * camera reflected in its plane ---- */
 
-extern u8 *D_0044F258;   /* the creature manager: its list of 10 at +0x0 */
+extern u8 *gCreatures;   /* the creature manager: its list of 10 at +0x0 */
 extern void *gCharPlayer;
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern f32 *func_0017CE80(void *skel, s32 bone);
 
 /* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
  * screen position lies within the quad's screen bounds widened by mx / my (my shifted by half
  * when the quad mirrors top to bottom, +0x18) */
 static s32 refl_near_quad(u8 *e, f32 *pos, f32 mx, f32 my) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 clip[4][4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -1338,7 +1338,7 @@ s32 func_00317920(u8 *e, s32 i) {
 /* creature `i` (shown) is to be reflected, unless Fiona's +0xE2 is set: creatures 7.. by their
  * model's root bone (margins 5 x 10), the rest by their position 10 up (5 x 15) */
 s32 func_003175B0(u8 *e, s32 i) {
-    u8 *o = ((u8 **)D_0044F258)[i];
+    u8 *o = ((u8 **)gCreatures)[i];
     f32 pos[4] __attribute__((aligned(16)));
     f32 my;
 
@@ -1367,7 +1367,7 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
                       u64 tex0, u32 prim);
 extern s32 func_00126800(void *c);            /* a character's draw layer (+0x152C) */
 extern void func_001267F0(void *c, s32 layer);
-extern VObject *D_0044E4F8;
+extern VObject *gCamDirector;
 #define GLR_PRIM_MASK 0x100000u
 
 typedef struct ReflCamera {   /* camera +0x88's set (CameraSet) */
@@ -1385,7 +1385,7 @@ static void refl_mask_quad(const f32 *q) {
     u32 rgba[4] = {0x80808080, 0x80808080, 0x80808080, 0x80808080};
     s32 k;
 
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (k = 0; k < 4; k++) {
         sceVu0CopyVector(xyzw[k], (f32 *)q + k * 4);
         AT(&xyzw[k][3], 0, u32) = k < 2 ? 0x8000 : 0;
@@ -1400,7 +1400,7 @@ static s32 refl_quad_in_view(const f32 *q) {
     f32 v[4] __attribute__((aligned(16)));
     s32 k;
 
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (k = 0; k < 4; k++) {
         sceVu0ApplyMatrix(v, clip, (f32 *)q + k * 4);
         if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
@@ -1452,7 +1452,7 @@ static void refl_mid(f32 *out, const f32 *a, const f32 *b) {
  * quad (or the screen, +0x10) at strength +0x14, mirrored per +0x18 (layer 0x18); kinds with
  * +0x1C add side panels (func_00316DE0) */
 void func_00317D40(u8 *e) {
-    VObject *cam = D_0044E4B8, *tc = D_0044E4E8;
+    VObject *cam = gCamera, *tc = gTexCache;
     f32 *q = (f32 *)(e + 0x50);
     f32 scr[4][4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
@@ -1511,7 +1511,7 @@ void func_00317D40(u8 *e) {
     VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, saved.eye);
     VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, saved.target);
     saved.fov = VCALL(cam, 0x64, f32 (*)(VObject *))(cam);
-    saved.unk24 = VCALL(D_0044E4F8, 0x24, s32 (*)(VObject *))(D_0044E4F8);
+    saved.unk24 = VCALL(gCamDirector, 0x24, s32 (*)(VObject *))(gCamDirector);
     mirrored = saved;
     d = sceVu0InnerProduct(n, q);
     t = sceVu0InnerProduct(n, saved.eye) - d;
@@ -1553,7 +1553,7 @@ void func_00317D40(u8 *e) {
         }
     }
     for (i = 0; i < 10; i++) {
-        u8 *o = ((u8 **)D_0044F258)[i];
+        u8 *o = ((u8 **)gCreatures)[i];
 
         if ((u8)func_003175B0(e, i) == 1) {
             s32 layer;
@@ -1610,7 +1610,7 @@ void func_00317C70(u8 *e, u8 *arg) {
     AT(e, 0x14, s32) = AT(arg, 0x44, u8);
     AT(e, 0x1C, u32) = AT(arg, 0x44, u32) & 0xF0000000;
     AT(e, 0x18, s32) = AT(arg, 0x48, s32);
-    VCALL(D_0044E4F0, 0x8C, void (*)(VObject *, s32))(D_0044E4F0, AT(e, 0x18, s32));
+    VCALL(gRenderer, 0x8C, void (*)(VObject *, s32))(gRenderer, AT(e, 0x18, s32));
 }
 
 /* ---- D_004795A0 (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
@@ -1678,7 +1678,7 @@ void func_003582D0(u8 *e) {
         p[10 + i][2] = 20.0f * func_0031C058(a);
         p[10 + i][3] = 1.0f;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (i = 0; i < 26; i++) {
         f32 v[4] __attribute__((aligned(16)));
 
@@ -1856,7 +1856,7 @@ s32 func_00352700(u8 *o) {
         AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(*ang);
         AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(*ang);
     }
-    if ((AT(o, 0x214, s32) & 0x8000) && func_00266C40(D_0044E4C0, 0) == NULL) {
+    if ((AT(o, 0x214, s32) & 0x8000) && func_00266C40(gRoomEffects, 0) == NULL) {
         done = 1;
     }
     return done != 1;
@@ -2310,15 +2310,15 @@ static const u8 kShardFace[6][4] = {
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *D_0044E9A0;   /* the VRAM manager */
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gVram;   /* the VRAM manager */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* the shards as textured boxes, drawn with OpenGL (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
  * size fb+0x8 / fb+0xC, colour fb+0x10; `n` shards `stride` bytes apart from +0x10; `kind` 1: dead ones
  * skipped, 2: the falling stones - waiting ones skipped, the rest blended at their alpha faded in from
  * 10 to 20 away from the camera); a shard with a corner off screen is skipped */
 static inline void shards_draw(u8 *e, u32 fb, s32 n, u32 stride, s32 kind) {
-    VObject *tc = D_0044E4E8, *cam;
+    VObject *tc = gTexCache, *cam;
     u8 *tex;
     u32 slot;
     u64 tex0;
@@ -2334,13 +2334,13 @@ static inline void shards_draw(u8 *e, u32 fb, s32 n, u32 stride, s32 kind) {
     tex = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, AT(e, fb + 0x14, s32), 0);
     if (slot & 0x80000000) {
         slot &= 0x7FFFFFFF;
-        if (!(VCALL(D_0044E4F0, 0x44, u32 (*)(VObject *, u32, u8 *, s32))(D_0044E4F0, slot, tex, 1) & 0xFF)) {
+        if (!(VCALL(gRenderer, 0x44, u32 (*)(VObject *, u32, u8 *, s32))(gRenderer, slot, tex, 1) & 0xFF)) {
             return;
         }
     }
-    tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
+    tex0 = VCALL(gVram, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(gVram, slot, tex[0],
                                                                               AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x44, void (*)(VObject *, f32 (*)[4]))(cam, screen);
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, clip);
     if (kind == 2) {
@@ -2588,7 +2588,7 @@ s32 func_0035EF70(u8 *e) {
  * floors that allow it and fade out on the ground, then start over. +0x1C14 .. +0x1C20 the
  * texture's cell and size, +0x1C24 the colour, +0x1C28 the texture ---- */
 
-extern VObject *D_0044E570;   /* the nav mesh */
+extern VObject *gNavMesh;   /* the nav mesh */
 
 /* (re)start piece `s`: on a random nav triangle's centre (its floor kept), at the drop height,
  * a random box (0.6 / -0.4 by the corner's signs, less 0.2 x random), size 0.1..0.5, a random
@@ -2610,9 +2610,9 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
     s->vel[1] = 0.0f;
     s->vel[2] = 0.0f;
     s->vel[3] = 0.0f;
-    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, eye);
     rnd = gRandom;
-    nav = D_0044E570;
+    nav = gNavMesh;
     tri = (u32)((f32)AT(nav, 0x8, s32) * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
     VCALL(nav, 0xC, void (*)(VObject *, u32, f32 *))(nav, tri, s->pos);
     s->floor = s->pos[1];
@@ -2757,7 +2757,7 @@ s32 func_00363130(u8 *e) {
  * and the mark is done (+0x78). +0x74 the model ---- */
 
 extern void *gCharPlayer;
-extern u8 *D_0044F808;   /* character slot 2 (the stalker) */
+extern u8 *gCharSlot2;   /* character slot 2 (the stalker) */
 extern void *D_00479800[];
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 extern void func_002E56C0(u8 *quad);
@@ -2805,7 +2805,7 @@ void func_0035A290(u8 *o, s32 *arg) {
     } else if (gProgress == NULL) {
         AT(o, 0x78, u8) = 1;
     } else if (arg[0] != 0) {
-        AT(o, 0x74, u32) = AT(D_0044F808, 0xF0, u32);
+        AT(o, 0x74, u32) = AT(gCharSlot2, 0xF0, u32);
     } else {
         AT(o, 0x74, s32) = 0;
     }
@@ -2850,7 +2850,7 @@ s32 func_0035AD40(u8 *o) {
     if (AT(o, 0x70, s32) > 0) {
         return 1;
     }
-    mgr = D_0044E578;
+    mgr = gEffects;
     func_002D6090(mgr, Effect_New(mgr, 0x6E0, mark_smoke_init), AT(o, 0x74, void *));
     return 0;
 }
@@ -2875,7 +2875,7 @@ void func_0035A4F0(u8 *o) {
     f32 c[4] __attribute__((aligned(16)));
     s32 k;
 
-    if (func_002D6010(D_0044E578) != 0 || AT(o, 0x78, u8) == 1) {
+    if (func_002D6010(gEffects) != 0 || AT(o, 0x78, u8) == 1) {
         return;
     }
     rec.rgba[0] = 0x80;
@@ -2925,7 +2925,7 @@ void func_0035A4F0(u8 *o) {
     func_002E56C0((u8 *)&d);
     d.vtbl = D_00469D00;
 
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     sceVu0ApplyMatrix(c, clip, (f32 *)(o + 0x50));
     if (!(c[0] <= c[3]) || c[0] < -c[3] || !(c[1] <= c[3]) || c[1] < -c[3] || !(c[2] <= c[3]) || c[2] < -c[3]) {
         return;
@@ -3396,7 +3396,7 @@ void func_002FD150(u8 *e) {
  * fainter within 64 of the camera ---- */
 
 extern f32 func_0031C248(f32 x);   /* sinf */
-extern VObject *D_0044E4F8;         /* the camera director */
+extern VObject *gCamDirector;         /* the camera director */
 extern f32 func_0031C058(f32 x);   /* cosf */
 
 /* +0xC set up: the drawer's settings (one 32 x 32 cell at (32, 64), blended 0x40, layer 0x19,
@@ -3438,7 +3438,7 @@ void func_0037B370(u8 *e, u8 *arg) {
         return;
     }
     r = ONE_REC(e, AT(e, 0xB8, s32));
-    fog = func_00266C40(D_0044E4C0, 0x1D);
+    fog = func_00266C40(gRoomEffects, 0x1D);
     if (fog != NULL) {
         u32 c = AT(fog, 0x14, u32);
 
@@ -3517,7 +3517,7 @@ s32 func_0037B710(u8 *e) {
         }
     }
     r->rgba[3] = AT(e, 0xB4, s32);
-    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, eye);
     dy = r->pos[1] - eye[1];
     dx = r->pos[0] - eye[0];
     dz = r->pos[2] - eye[2];
@@ -3533,7 +3533,7 @@ void func_0037B680(u8 *e) {
     if (AT(e, 0xBC, u8) == 1) {
         return;
     }
-    if ((u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 1) {
+    if ((u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 1) {
         return;
     }
     AT(e, 0x80, QuadRec *) = ONE_REC(e, AT(e, 0xB8, s32));
@@ -3585,7 +3585,7 @@ void func_0037BA00(u8 *e, f32 *arg) {
     sceVu0CopyVector((f32 *)(e + 0x30), arg);
     AT(e, 0x40, f32) = func_002E2D00(0x1.921fb6p+1f * arg[4] / 180.0f);
     rnd = gRandom;
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (i = 0; i < 8; i++) {
         AT(e, 0x4 + i * 4, s32) = (s32)(300.0f * burst_rnd(rnd));
         if (i < 6) {
@@ -3605,7 +3605,7 @@ s32 func_0037BCA0(u8 *e) {
     if (AT(e, 0x44, u8) == 1) {
         return 0;
     }
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (i = 0; i < 8; i++) {
         if (AT(e, 0x4 + i * 4, s32) != 0) {
             AT(e, 0x4 + i * 4, s32)--;
@@ -3789,7 +3789,7 @@ void func_0037D4E0(u8 *e) {
                           u64 tex0, u32 prim);
     extern u32 func_002D6010(u8 *mgr);   /* the effects are paused */
 
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
     if (AT(e, 0x668, s32) != 0) {
@@ -3805,7 +3805,7 @@ void func_0037D4E0(u8 *e) {
         f32 tw = 1.0f, th = 1.0f;
 
         if (slot != -1) {
-            tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
+            tex0 = VCALL(gVram, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(gVram, slot, tex[0],
                                                                                       AT(tex, 4, u16), AT(tex, 6, u16),
                                                                                       tex[1]);
             tw = AT(tex, 4, u16);
@@ -3825,7 +3825,7 @@ void func_0037D4E0(u8 *e) {
             st[i][1] = (out ? 86.5f : 70.5f) / th;
             AT(rgba[i], 0, u32) = out ? 0 : lit;
         }
-        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+        VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
         glr_strip(&clip[0][0], 34, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, tex0,
                   0xC | (tex != NULL ? 0x10 : 0) | 0x40 | 0x10000 | 0x20000);
     }
@@ -3975,7 +3975,7 @@ s32 func_003747D0(u8 *e) {
 
 /* +0x14 draw the current buffer, unless the effects are paused or both are gone */
 void func_00374750(u8 *e) {
-    if (func_002D6010(D_0044E578) == 0 && AT(e, 0x12C, u8) == 0) {
+    if (func_002D6010(gEffects) == 0 && AT(e, 0x12C, u8) == 0) {
         AT(e, 0xE0, QuadRec *) = SPARK2_REC(e, AT(e, 0x128, s32), 0);
         func_002E56C0(e + 0xD0);
     }
@@ -4245,14 +4245,14 @@ static void swarm_axis(f32 *pos, f32 *v, f32 *a, f32 centre) {
 /* +0x10 update: flip the buffers; each speck carried over, now and then (1 in 10) a new
  * heading, moved, turned at random, its alpha by the camera's distance */
 s32 func_002FDD70(u8 *e) {
-    extern VObject *D_0044E4B8;
+    extern VObject *gCamera;
     f32 cam[4] __attribute__((aligned(16)));
     VObject *rnd;
     f32 dx, dy, dz, d2;
     s32 shift, i, k;
 
     AT(e, 0x7F4, s32) ^= 1;
-    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, cam);
+    VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, cam);
     dy = AT(e, 0x7E4, f32) - cam[1];
     dx = AT(e, 0x7E0, f32) - cam[0];
     dz = AT(e, 0x7E8, f32) - cam[2];
@@ -4494,7 +4494,7 @@ void func_002FEBD0(u8 *e) {
  * none - no floor) half of them leave a splat (D_00472BF0) ---- */
 
 extern void *D_00470F30[], *D_00472BF0[];
-extern VObject *D_0044E570;   /* the nav mesh: +0xC a triangle's centre */
+extern VObject *gNavMesh;   /* the nav mesh: +0xC a triangle's centre */
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define BLOOD_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
@@ -4575,7 +4575,7 @@ void func_002FF760(u8 *e, u8 *arg) {
 
 /* +0x14 draw the current buffer, unless the effects are paused or all are gone */
 void func_002FFC70(u8 *e) {
-    if (func_002D6010(D_0044E578) == 0 && AT(e, 0xE58, u8) == 0) {
+    if (func_002D6010(gEffects) == 0 && AT(e, 0xE58, u8) == 0) {
         AT(e, 0xC20, QuadRec *) = BLOOD_REC(e, AT(e, 0xE50, s32), 0);
         func_002E56C0(e + 0xC10);
     }
@@ -4606,9 +4606,9 @@ s32 func_002FFCF0(u8 *e) {
         return 0;
     }
     AT(e, 0xE58, u8) = 1;
-    nm = D_0044E570;
+    nm = gNavMesh;
     rnd = gRandom;
-    mgr = D_0044E578;
+    mgr = gEffects;
     AT(e, 0xE50, s32) ^= 1;
     for (i = 0; i < 32; i++) {
         u32 *src = (u32 *)BLOOD_REC(e, AT(e, 0xE50, s32) ^ 1, i);
@@ -4984,7 +4984,7 @@ void func_00361340(u8 *o) {
         p[i * 2 + 1][2] = AT(o, 0x18, f32) - r2 * c;
         p[i * 2 + 1][3] = 1.0f;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (i = 0; i < 32; i++) {
         f32 v[4] __attribute__((aligned(16)));
 
@@ -5180,7 +5180,7 @@ void func_003608A0(u8 *o) {
  * (-226, -100) from y 30 into water at 0. Each lands as a spray (and the single one with a
  * ring) and starts over after a random wait ---- */
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
 /* the ring's start parameters (D_00479AE0) */
@@ -5232,16 +5232,16 @@ void func_0035F640(u8 *o, s32 i) {
     r->frame = 0;
     AT(o, 0x588 + i * 4, f32) = 1.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x5C4 + i * 4, s32) = (s32)(k60.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
-    AT(o, 0x5FC + i * 4, s32) = VCALL(D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(D_0044E570, r->pos, 0);
+    AT(o, 0x5FC + i * 4, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))(gNavMesh, r->pos, 0);
 }
 
 /* +0x10 update: flip the buffers; each drop carried over, waiting, or falling until under its
  * floor (none: below 0, restarted quietly): there a spray of 16 (and a drip sound, one of three
  * in turn, if the driver has room), and it starts over */
 s32 func_0035F9E0(u8 *o) {
-    VObject *nav = D_0044E570;
-    u8 *mgr = D_0044E578;
-    VObject *snd = D_0044E560;
+    VObject *nav = gNavMesh;
+    u8 *mgr = gEffects;
+    VObject *snd = gSound;
     f32 g[4] __attribute__((aligned(16)));
     s32 i, k;
 
@@ -5381,7 +5381,7 @@ s32 func_00360100(u8 *o) {
         rp.rgba[2] = 0x40;
         rp.rgba[3] = 0x30;
         rp.size = 0x1.333334p-3f;     /* 0.15 */
-        mgr = D_0044E578;
+        mgr = gEffects;
         func_002D6090(mgr, Effect_New(mgr, 0x40, ring_init), &rp);
         sceVu0CopyVector(sp.pos, r->pos);
         sp.pos[1] = 0x1.99999ap-4f;
@@ -5471,7 +5471,7 @@ void func_00355A30(u8 *o, const u8 *params) {
     AT(o, 0x10, s32) = AT(params, 0xC, s32);
     AT(o, 0x14, s32) = AT(params, 0x10, s32);
     AT(o, 0x18, s32) = AT(params, 0x14, s32);
-    VCALL(D_0044E4F0, 0x8C, void (*)(VObject *, s32))(D_0044E4F0, 0);
+    VCALL(gRenderer, 0x8C, void (*)(VObject *, s32))(gRenderer, 0);
 }
 
 #ifdef HG_NATIVE
@@ -5534,7 +5534,7 @@ void func_0035CA60(u8 *o) {
     if (AT(o, 0x4, u8) == 1) {
         return;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (i = 0; i < 4; i++) {
         f32 v[4] __attribute__((aligned(16)));
 
@@ -5672,7 +5672,7 @@ void func_00316280(u8 *e, u8 *arg) {
     splat_corner(e, 0x100, 2.0f, -2.0f);
     splat_corner(e, 0x110, -2.0f, 2.0f);
     splat_corner(e, 0x120, 2.0f, 2.0f);
-    nm = (u8 *)D_0044E570;
+    nm = (u8 *)gNavMesh;
     t = VCALL((VObject *)nm, 0x40, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, s32))(
         (VObject *)nm, tri, out, at, r->pos, 0);
     if (t == (u32)-1) {
@@ -5692,7 +5692,7 @@ void func_00316280(u8 *e, u8 *arg) {
     }
     sceVu0UnitMatrix((f32 (*)[4])(e + 0xB0));
     sceVu0CopyVector(r->pos, out);
-    nm = (u8 *)D_0044E570;
+    nm = (u8 *)gNavMesh;
     VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, t, r->pos);
     VCALL((VObject *)nm, 0x2C, void (*)(VObject *, u32, f32 *))((VObject *)nm, t, (f32 *)(e + 0xC0));
     sceVu0CopyVector(out, (f32 *)(e + 0xC0));
@@ -5768,9 +5768,9 @@ s32 func_003166B0(u8 *e) {
  *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
 
 extern void *D_00479E50[];
-extern u8 *D_0044F810;   /* character slot 0 */
-extern u8 *D_0044F808;   /* character slot 2 (the stalker) */
-extern VObject *D_0044E4F8;   /* the camera director */
+extern u8 *gCharSlot4;   /* character slot 0 */
+extern u8 *gCharSlot2;   /* character slot 2 (the stalker) */
+extern VObject *gCamDirector;   /* the camera director */
 extern f32 func_002E2D00(f32 angle);
 
 static void marker_spark_init(void **obj) {
@@ -5983,10 +5983,10 @@ extern s32 func_002D6020(u8 *mgr, s32 slot);   /* a slot's effect state (3: ende
 
 /* the spark's shared checks: none outside cutscenes with no stalker; gone with its marker */
 static inline s32 spark_live(u8 *o) {
-    if (D_0044F808 == NULL && (u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
+    if (gCharSlot2 == NULL && (u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0) {
         return -1;
     }
-    if (func_002D6020(D_0044E578, AT(o, 0x14C, s32)) == 3) {
+    if (func_002D6020(gEffects, AT(o, 0x14C, s32)) == 3) {
         AT(o, 0x16C, u8) = 1;
     }
     return 0;
@@ -5994,7 +5994,7 @@ static inline s32 spark_live(u8 *o) {
 
 /* +0x14 draw (not while paused): placed at the bone if due, the flare then the glow */
 void func_00366910(u8 *o) {
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
     if (spark_live(o) < 0) {
@@ -6123,7 +6123,7 @@ void func_003012B0(u8 *o, s32 flag) {
     prm.from = AT(o, 0xC, u32);
     prm.flag = (f32)flag;
     prm.second = (f32)AT(o, 0x1E, u8);
-    mgr = D_0044E578;
+    mgr = gEffects;
     if (AT(o, 0x1E, u8) == 0) {
         slot = spark_new(mgr, AT(o, 0xC, s32));
         k = (u32)rnd_int() % 27;
@@ -6172,7 +6172,7 @@ void func_003012B0(u8 *o, s32 flag) {
         slot = spark_new(mgr, AT(o, 0xC, s32));
         k = (rnd_int() & 3) + 2;
         prm.size = AT(o, 0x8, f32);
-        prm.follow = AT(D_0044F810, 0xF0, u32);
+        prm.follow = AT(gCharSlot4, 0xF0, u32);
         prm.scale = 1.0f;
         prm.kind = k;
         func_002D6090(mgr, slot, &prm);
@@ -6219,7 +6219,7 @@ void func_00301D40(u8 *o, s32 *prm) {
         s32 i;
 
         if (f == 0 && gProgress != NULL) {
-            f = AT(D_0044F808, 0xF0, u32);
+            f = AT(gCharSlot2, 0xF0, u32);
         }
         AT(o, 0x4, u32) = f;
         AT(o, 0x8, s32) = prm[2];
@@ -6241,7 +6241,7 @@ s32 func_003039A0(u8 *o) {
     f32 r, v;
     u32 a, c;
 
-    if (D_0044F808 == NULL && (u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
+    if (gCharSlot2 == NULL && (u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0) {
         return 0;
     }
     if (AT(o, 0x1C, u8) == 1) {
@@ -6260,7 +6260,7 @@ s32 func_003039A0(u8 *o) {
     if (!(AT(o, 0x8, f32) <= 1.5f)) {
         c = 0x80004080;
     }
-    VCALL(D_0044E4F0, 0x78, void (*)(VObject *, u32))(D_0044E4F0, c);
+    VCALL(gRenderer, 0x78, void (*)(VObject *, u32))(gRenderer, c);
     r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x18, f32) = AT(o, 0x18, f32) + 0x1.921fb6p+1f /* pi */ * (45.0f * r) / 180.0f;
     AT(o, 0x18, f32) = func_002E2D00(AT(o, 0x18, f32));
@@ -6301,24 +6301,24 @@ void func_00301E70(u8 *o) {
     f32 f[3], r[3], n, sx, sy, scale, z;
     f32 size;
 
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
-    if (D_0044F808 == NULL && !(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+    if (gCharSlot2 == NULL && !(u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
         return;
     }
     if (AT(o, 0x10, s32) == 3) {
         AT(o, 0x10, s32) = 1;
     }
-    if (D_0044F808 != NULL && AT(o, 0x4, u8 *) == AT(D_0044F808, 0xF0, u8 *) && AT(D_0044F808, 0x29, u8) == 1) {
+    if (gCharSlot2 != NULL && AT(o, 0x4, u8 *) == AT(gCharSlot2, 0xF0, u8 *) && AT(gCharSlot2, 0x29, u8) == 1) {
         AT(o, 0x10, s32) = 3;
-        if (VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress) == AT(D_0044F808, 0x30, s32)) {
+        if (VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress) == AT(gCharSlot2, 0x30, s32)) {
             return;
         }
         AT(o, 0x1C, u8) = 1;
     }
-    if (D_0044F808 != NULL && !(u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)
-        && AT(D_0044F808, 0x28, u8) == 0) {
+    if (gCharSlot2 != NULL && !(u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)
+        && AT(gCharSlot2, 0x28, u8) == 0) {
         AT(o, 0x10, s32) = 3;
         AT(o, 0x1C, u8) = 1;
     }
@@ -6327,7 +6327,7 @@ void func_00301E70(u8 *o) {
     }
     sceVu0CopyVector(c, func_0017CE80(AT(AT(o, 0x4, u8 *), 0x810, void *), 0) + 12);
     c[3] = 1.0f;
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);
     sceVu0ApplyMatrix(q, m, c);
     z = q[3];
@@ -6974,7 +6974,7 @@ void func_003693A0(u8 *o) {
 s32 func_003693F0(u8 *o) {
     s32 i, k;
 
-    if (AT(gCharPursuer, 0x153C, u8) != 0xC && VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+    if (AT(gCharPursuer, 0x153C, u8) != 0xC && VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
         AT(o, 0x1C50, u8) = 1;
         AT(o, 0x1C51, u8) = 0;
         return 0;
@@ -7142,7 +7142,7 @@ s32 func_00369B10(u8 *o) {
     u8 done = 1;
     s32 i, k;
 
-    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+    if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
         AT(o, 0x20D0, u8) = 1;
         return 0;
     }

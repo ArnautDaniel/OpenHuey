@@ -28,7 +28,7 @@ void func_0031E150(u8 *o) {
 }
 
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *gVram;   /* the VRAM manager */
 
 #ifdef HG_NATIVE
 #include "gl2d.h"
@@ -48,7 +48,7 @@ void func_0031D9C0(u8 *o, s32 x, s32 y, s32 part, s32 alpha) {
     if (TexCache_Resident(0, 0x2D, 0x33, &tex) == -1) {
         return;
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     gl2d_sprite(0x33, sx, sy, sx + e[2], sy + e[3], tex, e[0], e[1], e[0] + e[2], e[1] + e[3], 0x80808080, e[4],
                 gl2d_blend(((u64)(u8)alpha << 32) | kAlpha[e[5] & 3]));
 }
@@ -64,7 +64,7 @@ void func_0031DE10(u8 *o) {
     if (f == 0xFF) {
         return;
     }
-    tc = D_0044E4E8;
+    tc = gTexCache;
     if (TexCache_Resident(0, 0x2D, 0x30, &tex) == -1) {
         return;
     }

@@ -410,8 +410,8 @@ u32 func_0037A980(void *o, s32 i) { return ((u32 *)D_0047B130)[i]; }   /* D_0047
 
 extern Character *gCharacters[];
 extern Character *gCharPursuer;
-extern VObject *D_0044E4B8;   /* the camera: +0xD4 (pos) on screen */
-extern VObject *D_0044E4D0;   /* the events: +0x30 (var, value), +0x34 (var), +0x5C (n) */
+extern VObject *gCamera;   /* the camera: +0xD4 (pos) on screen */
+extern VObject *gEvents;   /* the events: +0x30 (var, value), +0x34 (var), +0x5C (n) */
 extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void func_00125960(Character *c);
 extern f32 func_002E2D00(f32 a);
@@ -421,7 +421,7 @@ s32 func_002E5880(void) {
     Character *p = gCharPursuer;
 
     if (p != NULL && p->a.active != 0 &&
-        (p->unkE8 == 0 || p->unkE8 == 1 || !(VCALL(D_0044E4B8, 0xD4, u32 (*)(VObject *, f32 *))(D_0044E4B8, p->a.pos) & 0xFF))) {
+        (p->unkE8 == 0 || p->unkE8 == 1 || !(VCALL(gCamera, 0xD4, u32 (*)(VObject *, f32 *))(gCamera, p->a.pos) & 0xFF))) {
         return 1;
     }
     return 0;
@@ -441,7 +441,7 @@ s32 func_002E5950(void *self, Character *c, u8 *cmd) {
         c->unkF4 = 0;
         break;
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         a = 0x1.921fb6p+1f /* pi */ - 0x1.99999ap-4f /* 0.1 */ * (f32)(u32)VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2);
         if (a <= 0x1.91eb86p+0f /* 1.57 */) {
             a = 0x1.91eb86p+0f;
@@ -451,7 +451,7 @@ s32 func_002E5950(void *self, Character *c, u8 *cmd) {
         c->a.angle[1] = a;
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, a);
-        ev = D_0044E4D0;
+        ev = gEvents;
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 2, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2) + 2);
         break;
     case 2:
@@ -459,7 +459,7 @@ s32 func_002E5950(void *self, Character *c, u8 *cmd) {
         break;
     }
     if (!(who->a.pos[0] <= -84.0f)) {
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, 1);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 1, 1);
     }
     return 1;
 }
@@ -474,7 +474,7 @@ extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const 
  * swings for 20 frames (+0x38) and the first toggles event flag 3 with a sound (Fiona's 1 /
  * 2); 2 a swing step: +0x30 on by 36 degrees, its tilt +0x10 = (1 + sin) degrees in radians */
 static inline __attribute__((always_inline)) s32 swing_three_by(VObject *self, u8 *cmd, s32 byIndex) {
-    VObject *objs = D_00456DF8, *ev = D_0044E4D0;
+    VObject *objs = D_00456DF8, *ev = gEvents;
     s32 i;
 
     for (i = 0; i < 3; i++) {
@@ -583,12 +583,12 @@ static void effect_4480_init(void **obj) {
 }
 
 s32 func_002E6E20(void) {
-    Effect_New(D_0044E578, 0xC0, effect_C0_init);
+    Effect_New(gEffects, 0xC0, effect_C0_init);
     return 1;
 }
 
 s32 func_002E7020(void) {
-    Effect_New(D_0044E578, 0x10, effect_10_init);
+    Effect_New(gEffects, 0x10, effect_10_init);
     return 1;
 }
 
@@ -662,16 +662,16 @@ s32 func_002E7A00(void) {
  * effect is removed */
 s32 func_002E7A50(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0x4480, effect_4480_init);
+        s32 slot = Effect_New(gEffects, 0x4480, effect_4480_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
     } else {
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
     }
     return 1;
 }
 
-extern VObject *D_0044E988;   /* the items: +0x8 the list */
+extern VObject *gItems;   /* the items: +0x8 the list */
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern void func_00261090(void *list, s32 item, s32 n);   /* given */
 
@@ -688,7 +688,7 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0: {
-        u8 *items = (u8 *)D_0044E988 + 8;
+        u8 *items = (u8 *)gItems + 8;
         s32 a = 1 - (func_00260CF0(items, 0x91) & 0xFF);
         s32 b;
 
@@ -700,21 +700,21 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
             b = 0;
         }
         if ((a | b) != 0) {
-            ev = D_0044E4D0;
+            ev = gEvents;
             VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, (b << 8) | a);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
         }
         break;
     }
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         got = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 0);
         if (got & 0xFF) {
-            func_00261090((u8 *)D_0044E988 + 8, 0x91, got & 0xFF);
+            func_00261090((u8 *)gItems + 8, 0x91, got & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
         }
         if (got & 0xFF00) {
-            func_00261090((u8 *)D_0044E988 + 8, 0x92, (got >> 8) & 0xFF);
+            func_00261090((u8 *)gItems + 8, 0x92, (got >> 8) & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 1);
         }
         break;
@@ -722,8 +722,8 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern u8 *D_0044E4C0;        /* the room's effects */
-extern VObject *D_0044FE10;   /* the cutscene director: +0x34 its frame */
+extern u8 *gRoomEffects;        /* the room's effects */
+extern VObject *gCutscene;   /* the cutscene director: +0x34 its frame */
 extern void *D_0046EC60[], *D_00472F60[];   /* a depth range, a lit quad */
 extern void *func_002672F0(u32 size, void *place);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
@@ -772,8 +772,8 @@ s32 func_002FF0A0(void *self, void *a1, u8 *cmd) {
 /* the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40
  * / 80 on by 0.4 a frame, up to 41 / 61 / 80 / 120 */
 s32 func_002FF130(void) {
-    u8 *fx = D_0044E4C0;
-    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 1260);
+    u8 *fx = gRoomEffects;
+    f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 1260);
     f32 r[4] __attribute__((aligned(16)));
     f32 d;
 
@@ -815,10 +815,10 @@ static inline __attribute__((always_inline)) s32 lit_quad_in(s32 n, u8 *cmd, con
     s32 i;
 
     if (cmd[3] == 1) {
-        func_002670F0(D_0044E4C0, n);
+        func_002670F0(gRoomEffects, n);
         return 1;
     }
-    fx = D_0044E4C0;
+    fx = gRoomEffects;
     room_effect_new(fx, n, D_00472F60);
     for (i = 0; i < 16; i++) {
         q[i] = corners[i];
@@ -859,7 +859,7 @@ static void room2a_effect_init(void **obj) {
 
 /* room 0x2A: its effect (D_00474000) started at (220, 0, -100) */
 s32 func_002B12D0(void) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x900, room2a_effect_init);
     f32 at[4] __attribute__((aligned(16)));
 
@@ -872,8 +872,8 @@ s32 func_002B12D0(void) {
 }
 
 extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
-extern VObject *D_0044F260;   /* the placed things */
-extern u8 *D_0044F808;        /* the stalker in play */
+extern VObject *gPlacedThings;   /* the placed things */
+extern u8 *gCharSlot2;        /* the stalker in play */
 extern s32 func_0029A710(void *p);
 extern s32 func_00177620(Progress *p);
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
@@ -885,13 +885,13 @@ s32 func_002B0E20(void) {
 
 /* no thing of kind 3 lies about */
 s32 func_002B0F60(void) {
-    return VCALL(D_0044F260, 0x10, void *(*)(VObject *, s32, s32))(D_0044F260, 3, 0) == NULL;
+    return VCALL(gPlacedThings, 0x10, void *(*)(VObject *, s32, s32))(gPlacedThings, 3, 0) == NULL;
 }
 
 /* the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2:
  * in this room, whether the camera sees it; elsewhere 1 */
 s32 func_002B0FA0(void) {
-    u8 *s = D_0044F808;
+    u8 *s = gCharSlot2;
     Progress *p;
     u8 k;
 
@@ -907,7 +907,7 @@ s32 func_002B0FA0(void) {
         return 0;
     }
     if (AT(s, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
-        return VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, (f32 *)(s + 0x10));
+        return VCALL(gCamera, 0xD4, s32 (*)(VObject *, f32 *))(gCamera, (f32 *)(s + 0x10));
     }
     return 1;
 }
@@ -918,7 +918,7 @@ static void effect_14_init(void **obj) {
 
 /* the 0x14-byte effect (D_00478BC0) started with the command's parameters (from byte 3) */
 s32 func_002B11D0(void *self, void *a1, u8 *cmd) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
 
     func_002D6090(mgr, Effect_New(mgr, 0x14, effect_14_init), cmd + 3);
     return 1;
@@ -974,7 +974,7 @@ static void motes_init(void **obj) {
 
 /* the rising motes started */
 s32 func_002B02D0(void) {
-    Effect_New(D_0044E578, 0x3860, motes_init);
+    Effect_New(gEffects, 0x3860, motes_init);
     return 1;
 }
 
@@ -1133,7 +1133,7 @@ static void effect_6cf0_init(void **obj) {
 
 /* the effect D_00479580 (three quad drawers) started with parameter 0 */
 s32 func_002B26F0(void) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x6CF0, effect_6cf0_init);
     s32 arg = 0;
 
@@ -1152,13 +1152,13 @@ static void effect_1a60_init(void **obj) {
 s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0: {
-        s32 slot = Effect_New(D_0044E578, 0x1A60, effect_1a60_init);
+        s32 slot = Effect_New(gEffects, 0x1A60, effect_1a60_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
         break;
     }
     case 1:
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
         break;
     }
     return 1;
@@ -1505,12 +1505,12 @@ void func_00374E50(u8 *o) {
     if (AT(o, 0x6F0, u8) == 1) {
         return;
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     if (TexCache_Resident(8, 0, 0x19, &tex) == -1) {
         in = 0;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (i = 0; i < 6; i++) {
         f32 v[4] __attribute__((aligned(16)));
 
@@ -1550,7 +1550,7 @@ void func_00374E50(u8 *o) {
     AT(o, 0x620, u8 *) = o + AT(o, 0x6EC, s32) * 0x300 + 0x10;
     func_002E56C0(o + 0x610);
     if (AT(o, 0x6F1, u8) == 1) {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
         VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
         glr_haze(AT(o, 0x6E0, f32), 2.0f * func_0031C248(AT(o, 0x6E4, f32)));
     }
@@ -1566,7 +1566,7 @@ void func_00376990(u8 *o) {
     }
     AT(o, 0x1820, u8 *) = HAZE2_REC(o, AT(o, 0x1A54, s32), 0);
     func_002E56C0(o + 0x1810);
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     glr_haze_fix(AT(o, 0x1A48, f32), 2.0f * func_0031C248(AT(o, 0x1A4C, f32)), 0x60);
 }
@@ -1587,22 +1587,22 @@ s32 func_003114C0(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        slot = Effect_New(D_0044E578, 0x700, shaft_init);
+        slot = Effect_New(gEffects, 0x700, shaft_init);
         AT(&arg[0], 0, f32) = 30.0f;
         AT(&arg[1], 0, f32) = 0.0f;
         AT(&arg[2], 0, f32) = 70.0f;
         AT(&arg[3], 0, f32) = 1.0f;
         arg[4] = 0;
-        func_002D6090(D_0044E578, slot, arg);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 3, slot);
+        func_002D6090(gEffects, slot, arg);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 3, slot);
         break;
     case 1:
         arg[4] = 1;
-        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 3), arg);
+        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
         break;
     case 2:
         arg[4] = 2;
-        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 3), arg);
+        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
         break;
     default:
         return 1;
@@ -1787,7 +1787,7 @@ s32 func_003116B0(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         func_00311140(D_01991210, 2, 3, 7, 0x1E0, D_019912D0, 25.0f, 0.0f, 40.0f);
-        Effect_New(D_0044E578, 4, glint_init);
+        Effect_New(gEffects, 4, glint_init);
         return 1;
     case 1:
         swim_step(0x14, D_01991210);
@@ -1842,7 +1842,7 @@ void func_00377B70(void) {
     s32 rec[12] __attribute__((aligned(16)));
     u8 *ch;
 
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
     ch = (u8 *)gCharacters[func_001770D0(gProgress, 0x14) & 0xFF];
@@ -1893,8 +1893,8 @@ void func_00377CB0(void) {
 /* the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
  * the far two on by 1 a frame up to 80 / 140 */
 s32 func_002B2BF0(void) {
-    u8 *fx = D_0044E4C0;
-    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 1156);
+    u8 *fx = gRoomEffects;
+    f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 1156);
     f32 r[4] __attribute__((aligned(16)));
 
     room_effect_new(fx, 0x1C, D_0046EC60);
@@ -1923,7 +1923,7 @@ s32 func_002B2D50(void *self, void *a1, u8 *cmd) {
 }
 
 extern const char *const D_00403964;   /* "movechair_3" */
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 extern f32 func_0031C4C0(f32 x);   /* asinf */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
@@ -1961,7 +1961,7 @@ s32 func_002B0640(void *self, void *a1, u8 *cmd) {
         }
         break;
     case 1:
-        snd = D_0044E560;
+        snd = gSound;
         for (i = 0; i < 3; i++) {
             u8 *c = chairs[i];
 
@@ -1987,7 +1987,7 @@ s32 func_002B0640(void *self, void *a1, u8 *cmd) {
         break;
     case 2:
     case 3:
-        snd = D_0044E560;
+        snd = gSound;
         for (i = 0; i < 3; i++) {
             u8 *c = chairs[i];
             f32 a;
@@ -2015,7 +2015,7 @@ extern void *D_00472390[];   /* a 0xC0-byte effect */
  * and a swing step (+0x30 on by 36 degrees, the tilt +0x10 (1 + sin) degrees in radians) */
 static inline __attribute__((always_inline)) s32 hangers_swing(VObject *self, u8 *cmd, s32 base, s32 n, f32 push,
                                                               s32 root, s32 flag, s32 sndOn, s32 sndOff) {
-    VObject *objs = D_00456DF8, *ev = D_0044E4D0;
+    VObject *objs = D_00456DF8, *ev = gEvents;
     f32 d[4] __attribute__((aligned(16)));
     s32 i;
 
@@ -2093,7 +2093,7 @@ static void effect_c0b_init(void **obj) {
  * byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it drifts 0.5
  * a frame in x and falls 0.05 x n(n+1)/2, gone below -10 */
 s32 func_002B1D50(void *self, void *a1, u8 *cmd) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     f32 p[4] __attribute__((aligned(16)));
 
     switch (cmd[3]) {
@@ -2102,7 +2102,7 @@ s32 func_002B1D50(void *self, void *a1, u8 *cmd) {
         s32 slot;
 
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, 0);
-        mgr = D_0044E578;
+        mgr = gEffects;
         slot = Effect_New(mgr, 0xC0, effect_c0b_init);
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, slot);
         p[1] = 3.0f;
@@ -2121,11 +2121,11 @@ s32 func_002B1D50(void *self, void *a1, u8 *cmd) {
         p[3] = 1.0f;
         p[1] = 3.0f - 0x1.99999ap-5f /* 0.05 */ * (f32)((n * (n + 1)) >> 1);
         if (!(p[1] <= -10.0f)) {
-            func_002D6090(D_0044E578, slot, p);
+            func_002D6090(gEffects, slot, p);
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 0, n);
             return 2;
         }
-        func_002D6090(D_0044E578, slot, NULL);
+        func_002D6090(gEffects, slot, NULL);
         break;
     }
     }
@@ -2203,8 +2203,8 @@ s32 func_002AC600(void *a0, void *a1, u8 *arg) {
     return 1;
 }
 
-extern VObject *D_0044E988;   /* the item manager */
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gItems;   /* the item manager */
+extern VObject *gSound;   /* the sound driver */
 extern s32 func_001788F0(Progress *p, u32 door);
 
 /* door be16 cmd[3..4]: func_001788F0 */
@@ -2217,8 +2217,8 @@ static inline s32 item238_sound(u32 bit) {
     Progress *p = gProgress;
 
     if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & bit) &&
-        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x238) != 0) {
-        VCALL(D_0044E560, 0x14, void (*)(VObject *, u32, u32))(D_0044E560, 0xC, 5);
+        VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, 0x238) != 0) {
+        VCALL(gSound, 0x14, void (*)(VObject *, u32, u32))(gSound, 0xC, 5);
     }
     return 1;
 }
@@ -2234,12 +2234,12 @@ s32 func_002B4970(void) {   /* progress flag 0x650 */
 extern void *D_0046F5F0[], *D_0046EA40[], *D_00476BF0[];
 
 s32 func_002AD550(void) {   /* room effect 0 (D_0046F5F0) */
-    room_effect_new(D_0044E4C0, 0, D_0046F5F0);
+    room_effect_new(gRoomEffects, 0, D_0046F5F0);
     return 1;
 }
 
 s32 func_002AF730(void) {   /* room effect 1 (D_0046EA40) */
-    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    room_effect_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }
 
@@ -2248,7 +2248,7 @@ static inline void effect476bf0_init(void **o) {
 }
 
 s32 func_002B4BE0(void) {   /* a scene effect (D_00476BF0, 0x6E0 bytes) */
-    Effect_New(D_0044E578, 0x6E0, effect476bf0_init);
+    Effect_New(gEffects, 0x6E0, effect476bf0_init);
     return 1;
 }
 
@@ -2271,7 +2271,7 @@ s32 func_002A94C0(void *self, void *a1, u8 *cmd) {
     case 1:
         AT(o, 0x24, f32) = AT(o, 0x24, f32) + 0.25f;
         if (!(AT(o, 0x24, f32) < kTop.f)) {
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 2);
+            VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 2);
             AT(o, 0x24, f32) = kTop.f;
         }
         break;
@@ -2295,12 +2295,12 @@ static inline s32 var_fade(const char *name, s32 var, u8 *cmd) {
         return 1;
     }
     if (cmd[3] == 0) {
-        if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, var) == 0) {
+        if (VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, var) == 0) {
             AT(o, 0x24, f32) = 1.0f;
         } else {
             AT(o, 0x24, f32) = 0.0f;
         }
-    } else if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, var) == 0) {
+    } else if (VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, var) == 0) {
         AT(o, 0x24, f32) = AT(o, 0x24, f32) + kStep.f;
         if (!(AT(o, 0x24, f32) <= 1.0f)) {
             AT(o, 0x24, f32) = 1.0f;
@@ -2326,7 +2326,7 @@ static inline void smoke_init(void **o) {
 }
 
 s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
-    Effect_New(D_0044E578, 0x1C60, smoke_init);
+    Effect_New(gEffects, 0x1C60, smoke_init);
     return 1;
 }
 
@@ -2348,11 +2348,11 @@ static inline void effect476bd0_init(void **o) {
  * slot's effect removed */
 s32 func_002B4310(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0x36C0, effect476bd0_init);
+        s32 slot = Effect_New(gEffects, 0x36C0, effect476bd0_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
     } else {
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0));
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
     }
     return 1;
 }
@@ -2375,7 +2375,7 @@ s32 func_002AED60(void *self, void *a1, u8 *cmd) {
             at[0] = -85.0f;
             at[1] = 30.0f;
             at[2] = 90.0f;
-            func_002FF650(D_0044E560, 0x40000001, 6, at, 0, 0);
+            func_002FF650(gSound, 0x40000001, 6, at, 0, 0);
         }
         AT(o, 0x14, f32) = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
         if (!(AT(o, 0x14, f32) <= kPi.f)) {
@@ -2389,7 +2389,7 @@ s32 func_002AED60(void *self, void *a1, u8 *cmd) {
  * event flag i is set, else back up 0.2 to 0; byte 3 0 all reset */
 s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD}, kLow = {0xBF333333};
-    VObject *objs = D_00456DF8, *ev = D_0044E4D0, *snd = D_0044E560;
+    VObject *objs = D_00456DF8, *ev = gEvents, *snd = gSound;
     s32 i;
 
     for (i = 0; i < 4; i++) {
@@ -2427,7 +2427,7 @@ extern const char *D_0047AAB8[], *D_00409940, *D_0040B508, *D_003FCB00[];   /* r
  * (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn */
 s32 func_002AE1B0(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    VObject *objs = D_00456DF8, *snd = D_0044E560;
+    VObject *objs = D_00456DF8, *snd = gSound;
     f32 at[4] __attribute__((aligned(16)));
     s32 i;
 
@@ -2472,7 +2472,7 @@ static inline __attribute__((always_inline)) s32 var0_anim(u8 *cmd, const char *
     if (o == NULL) {
         return 1;
     }
-    v = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    v = VCALL(gEvents, 0x34, u32 (*)(VObject *, s32))(gEvents, 0);
     switch (cmd[3]) {
     case 0:
         if (v < 0xC) {
@@ -2568,7 +2568,7 @@ s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
 extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC4, *D_003FA078;   /* room object names */
 extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 D_0047E364;   /* menu buttons, repeating */
-extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern VObject *gCamDirector;   /* the camera director's interface */
 extern VObject *gRandom;   /* random numbers */
 
 /* a dial `o` on progress var `var` (0..6, 30 degrees each, from `off`): byte 3 of `step` 0 set
@@ -2586,7 +2586,7 @@ static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 
         break;
     case 1:
         if (((D_0047E36C >> 4) & 1) | ((D_0047E36C >> 5) & 1)) {
-            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 0);
+            VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 0);
         } else {
             Progress *p = gProgress;
             u8 v = Progress_GetVar(p, var);
@@ -2600,7 +2600,7 @@ static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 
             }
             if (v != (u8)Progress_GetVar(p, var)) {
                 AT(p, 0x9C + var, u8) = v;
-                VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+                VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
             }
         }
         break;
@@ -2613,7 +2613,7 @@ static inline __attribute__((always_inline)) s32 dial_step(u32 step, u8 *o, u32 
         } else if (d < -1.0f) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) + kDeg.f;
         } else {
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
+            VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 1);
         }
         break;
     }
@@ -2682,13 +2682,13 @@ s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
 
                 AT(o, 0x30, f32) = -1.0f;
                 AT(p, 0x7C, u32) &= 0xFFFEFFFF;
-                if ((u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *, Progress *))(D_0044E4F8, p) == 0) {
+                if ((u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *, Progress *))(gCamDirector, p) == 0) {
                     f32 at[4] __attribute__((aligned(16)));
 
                     at[1] = 30.0f;
                     at[2] = 30.0f;
                     at[0] = 0.0f;
-                    func_002FF650(D_0044E560, 2, 6, at, 0, 0);
+                    func_002FF650(gSound, 2, 6, at, 0, 0);
                 }
             }
             AT(o, 0x24, f32) = kShut.f;
@@ -2777,7 +2777,7 @@ s32 func_002A9740(void *self, void *a1, u8 *cmd) {
     }
     AT(o, 0x18, f32) = kPi.f * deg / 180.0f;
     if (dust != 0) {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x720, dust_init);
         struct {
             f32 pos[4];
@@ -2822,7 +2822,7 @@ static inline s32 var0_obj_anim(const char *name, u8 *cmd) {
     if (o == NULL) {
         return 1;
     }
-    v = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    v = VCALL(gEvents, 0x34, u32 (*)(VObject *, s32))(gEvents, 0);
     switch (cmd[3]) {
     case 0:
         var0_frame(o, v, 0x2B, 0x36, 11.0f, 0);
@@ -2867,7 +2867,7 @@ extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
  * wait */
 s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kStep = {0x3D8EFA35};
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     u32 sel = (u8)VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
     VObject *objs = D_00456DF8;
     const char **name = &D_00410F38[sel];
@@ -2934,7 +2934,7 @@ s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
             AT(o, 0x14, f32) = func_002E2D00(kPi.f * (f32)(s32)(v * 90) / 180.0f);
             if ((u8)Progress_GetVar(q, D_0047B254[0]) == 1 && (u8)Progress_GetVar(p, D_0047B254[1]) == 0 &&
                 (u8)Progress_GetVar(p, D_0047B254[2]) == 2) {
-                VObject *e = D_0044E4D0;
+                VObject *e = gEvents;
 
                 VCALL(e, 0x60, void (*)(VObject *, s32))(e, 2);
                 VCALL(e, 0x5C, void (*)(VObject *, s32))(e, 4);
@@ -2950,10 +2950,10 @@ s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern void *D_0044E570;   /* nav mesh */
+extern void *gNavMesh;   /* nav mesh */
 /* room 54 step (D_00428040): find the nav mesh's door regions again */
 s32 func_0030FA60(void) {
-    VObject *nav = (VObject *)D_0044E570;
+    VObject *nav = (VObject *)gNavMesh;
 
     VCALL(nav, 0x4C, void (*)(VObject *))(nav);
     return 1;
@@ -2976,7 +2976,7 @@ static void effect_79400_init(void **obj) {
  * lays a floor quad (effect 0x1B: 60 x 60 at height 45), else the 0x6D0-byte effect D_00479400
  * is made too */
 s32 func_00305FB0(void *self, void *a1, u8 *cmd) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x18, effect_77E10_init);
     s32 on;
 
@@ -2985,7 +2985,7 @@ s32 func_00305FB0(void *self, void *a1, u8 *cmd) {
         u32 q[20] __attribute__((aligned(16)));
 
         on = 0;
-        fx = D_0044E4C0;
+        fx = gRoomEffects;
         room_effect_new(fx, 0x1B, D_00472F60);
         q[0] = 0x41F00000;   /* (30, 45, -30) */
         q[1] = 0x42340000;
@@ -3031,16 +3031,16 @@ static void effect_77AC0_init(void **obj) {
  * byte 3), its slot kept in event variable byte 3 + 3; else that effect is sent 0xFF (stop) */
 s32 func_00300A20(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x1BC0, effect_77AC0_init);
 
         func_002D6090(mgr, slot, cmd + 3);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, (cmd[3] + 3) & 0xFF, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, (cmd[3] + 3) & 0xFF, slot);
     } else {
-        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, (cmd[3] + 3) & 0xFF);
+        s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, (cmd[3] + 3) & 0xFF);
         u8 stop = 0xFF;
 
-        func_002D6090(D_0044E578, slot, &stop);
+        func_002D6090(gEffects, slot, &stop);
     }
     return 1;
 }
@@ -3081,12 +3081,12 @@ extern void *D_0046EA40[];
 
 /* rooms 0x31 / 0x32 (D_0042A0B8, D_0042C298): the room's effect 1 made anew as D_0046EA40 */
 s32 func_0031E510(void) {
-    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    room_effect_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }
 
 s32 func_00321590(void) {
-    room_effect_new(D_0044E4C0, 1, D_0046EA40);
+    room_effect_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }
 
@@ -3210,16 +3210,16 @@ static void effect_70A70_init(void **obj) {
  * in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1 */
 s32 func_002A91F0(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0xE60, effect_70A70_init);
+        s32 slot = Effect_New(gEffects, 0xE60, effect_70A70_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
     } else if (cmd[3] == 1) {
-        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
         s32 arg = 0;
 
-        func_002D6090(D_0044E578, slot, &arg);
+        func_002D6090(gEffects, slot, &arg);
     } else {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0xE60, effect_70A70_init);
         s32 arg = 1;
 
@@ -3258,7 +3258,7 @@ s32 func_002AA600(VObject *self, void *a1, u8 *cmd) {
         t = AT(o, 0x3C, f32) + __builtin_sqrtf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
         AT(o, 0x3C, f32) = t;
         if (!(t <= 5.0f)) {
-            VObject *ev = D_0044E4D0;
+            VObject *ev = gEvents;
 
             AT(o, 0x38, f32) = 20.0f;
             AT(o, 0x3C, f32) = 0.0f;
@@ -3300,7 +3300,7 @@ static void effect_78BE0_init(void **obj) {
 
 /* room 0x4E (D_0040B4F8): the 0x10-byte effect D_00478BE0 made */
 s32 func_002B3AA0(void) {
-    Effect_New(D_0044E578, 0x10, effect_78BE0_init);
+    Effect_New(gEffects, 0x10, effect_78BE0_init);
     return 1;
 }
 
@@ -3376,13 +3376,13 @@ extern void *func_00266C40(u8 *fx, s32 n);   /* the room's effect n */
 
 /* room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1 */
 s32 func_002ADB10(void) {
-    u8 *e = func_00266C40(D_0044E4C0, 1);
+    u8 *e = func_00266C40(gRoomEffects, 1);
     f32 at[4] __attribute__((aligned(16)));
 
     at[0] = AT(e, 0x20, f32);
     at[1] = AT(e, 0x24, f32);
     at[2] = AT(e, 0x28, f32);
-    func_002FF650(D_0044E560, 0xC0000000, 6, at, 0, 0);
+    func_002FF650(gSound, 0xC0000000, 6, at, 0, 0);
     return 1;
 }
 
@@ -3418,7 +3418,7 @@ s32 func_00320FF0(void *self, void *a1, u8 *cmd) {
         AT(&arg.drop, 0, u32) = 0xBDCCCCCD;   /* -0.1 */
         AT(&arg.size, 0, u32) = 0x3FE66666;   /* 1.8 */
         arg.strength = 1.0f;
-        fx = D_0044E4C0;
+        fx = gRoomEffects;
         arg.obj = o;
         arg.kind = 2;
         arg.alpha = 0xFF;
@@ -3455,7 +3455,7 @@ extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
  * (a sound each bounce) until slower than 0.2 (+0x74 set: landed; 1), else still going (2) */
 s32 func_00308C20(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kBounce = {0xBE99999A};   /* -0.3 */
-    u8 *e = func_00266C40(D_0044E4C0, 0);
+    u8 *e = func_00266C40(gRoomEffects, 0);
     f32 v, y;
 
     switch (cmd[3]) {
@@ -3483,7 +3483,7 @@ s32 func_00308C20(void *self, void *a1, u8 *cmd) {
         AT(e, 0x24, f32) = 0x1.666666p-1f;
         D_0047B280 = v * kBounce.f;
         sceVu0CopyVector(at, (f32 *)(e + 0x20));
-        func_002FF650(D_0044E560, 0, 6, at, 0, 0);
+        func_002FF650(gSound, 0, 6, at, 0, 0);
         if (D_0047B280 < 0x1.99999ap-3f /* 0.2 */) {
             AT(e, 0x74, s32) = 1;
             return 1;
@@ -3504,7 +3504,7 @@ s32 func_00344180(void *self, void *a1, u8 *cmd) {
     if (o == NULL) {
         return 1;
     }
-    n = VCALL(D_0044E4D0, 0x34, u32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    n = VCALL(gEvents, 0x34, u32 (*)(VObject *, s32))(gEvents, 0);
     switch (cmd[3]) {
     case 0:
         if (n < 0xC) {
@@ -3561,7 +3561,7 @@ s32 func_00344390(void *self, void *a1, u8 *cmd) {
 s32 func_0030F4E0(VObject *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *objs = D_00456DF8;
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 i;
 
     for (i = 0; i < 2; i++) {
@@ -3635,11 +3635,11 @@ static void effect_79890_init(void **obj) {
  * variable 2); else that one is ended */
 s32 func_0030F350(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 8, effect_79890_init);
+        s32 slot = Effect_New(gEffects, 8, effect_79890_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 2, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 2, slot);
     } else {
-        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 2), NULL);
+        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 2), NULL);
     }
     return 1;
 }
@@ -3659,18 +3659,18 @@ s32 func_003106E0(void *self, void *a1, u8 *cmd) {
     VObject *ev;
 
     if (cmd[3] == 1) {
-        func_002670F0(D_0044E4C0, 0x1B);
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1));
+        func_002670F0(gRoomEffects, 0x1B);
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 1));
         return 1;
     }
     if (cmd[3] == 0) {
         s32 slot;
 
-        room_effect_new(D_0044E4C0, 0x1B, D_00472F60);
-        slot = Effect_New(D_0044E578, 0x10, effect_795A0_init);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 1, slot);
+        room_effect_new(gRoomEffects, 0x1B, D_00472F60);
+        slot = Effect_New(gEffects, 0x10, effect_795A0_init);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 1, slot);
     }
-    ev = D_0044E4D0;
+    ev = gEvents;
     q[16] = 0;
     q[0] = 0x41200000;   /* (10, -0.2, -10) */
     q[8] = 0x41200000;
@@ -3708,9 +3708,9 @@ s32 func_003106E0(void *self, void *a1, u8 *cmd) {
     }
     q[18] = 0x3F800000;
     q[17] = q[19];
-    func_00266C70(D_0044E4C0, 0x1B, q);
+    func_00266C70(gRoomEffects, 0x1B, q);
     if (q[19] != 0) {
-        func_002D6090(D_0044E578, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1), &q[19]);
+        func_002D6090(gEffects, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1), &q[19]);
     }
     return 1;
 }
@@ -3749,7 +3749,7 @@ s32 func_00343A00(void *self, void *a1, u8 *cmd) {
         break;
     }
     case 1: {
-        VObject *ev = D_0044E4D0;
+        VObject *ev = gEvents;
         u8 old = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
         u8 sel = old;
 
@@ -3778,7 +3778,7 @@ s32 func_00343A00(void *self, void *a1, u8 *cmd) {
             if ((o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00438700[sel + 3])) != NULL) {
                 AT(o, 0x0, u8) = 0;
             }
-            ev = D_0044E4D0;
+            ev = gEvents;
             VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, sel);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 6);
         } else {
@@ -3800,7 +3800,7 @@ s32 func_00343A00(void *self, void *a1, u8 *cmd) {
         break;
     }
     case 2: {
-        VObject *ev = D_0044E4D0;
+        VObject *ev = gEvents;
         u8 sel = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
         VObject *objs = D_00456DF8;
         u8 *o1 = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00438700[sel]);
@@ -3828,7 +3828,7 @@ s32 func_00343A00(void *self, void *a1, u8 *cmd) {
             AT(o1, 0x14, f32) = a;
             if ((u8)Progress_GetVar(p, D_0047AE80[0]) == 1 && (u8)Progress_GetVar(p4, D_0047AE80[1]) == 0 &&
                 (u8)Progress_GetVar(p4, D_0047AE80[2]) == 2) {
-                VObject *e = D_0044E4D0;
+                VObject *e = gEvents;
 
                 VCALL(e, 0x60, void (*)(VObject *, s32))(e, 2);
                 VCALL(e, 0x5C, void (*)(VObject *, s32))(e, 4);
@@ -3875,7 +3875,7 @@ static inline s32 glow4_spot(u8 *cmd, u32 first) {
     u8 k = cmd[3];
 
     if (cmd[4] == 0) {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x80, glow4_init);
         s32 p[8] __attribute__((aligned(16)));
 
@@ -3907,9 +3907,9 @@ static inline s32 glow4_spot(u8 *cmd, u32 first) {
         }
         AT(&p[7], 0, f32) = 30.0f;
         func_002D6090(mgr, slot, p);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, k, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, k, slot);
     } else {
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, k));
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, k));
     }
     return 1;
 }
@@ -3929,7 +3929,7 @@ s32 func_002B4280(void) {
     AT(o, 0x14, f32) = y;
     if (y <= kLow.f) {
         AT(o, 0x14, f32) = kLow.f;
-        VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 6);
+        VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 6);
     }
     return 1;
 }
@@ -3949,7 +3949,7 @@ static inline u8 *room_obj(const char *name) {
 
 /* nav triangle `i`'s record, or NULL */
 static inline u8 *nav_tri(u32 i) {
-    u8 *nm = (u8 *)D_0044E570;
+    u8 *nm = (u8 *)gNavMesh;
 
     return (i < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) ? AT(nm, 0x4, u8 *) + i * 0x50 : NULL;
 }
@@ -3961,14 +3961,14 @@ s32 func_002AE4E0(void *self, void *a1, u8 *cmd) {
     if (o == NULL) {
         return 0;
     }
-    VCALL(D_0044E4D0, 0x6C, void (*)(VObject *, u8, f32 *, f32, f32))(D_0044E4D0, cmd[4], (f32 *)(o + 0x20), 5.0f,
+    VCALL(gEvents, 0x6C, void (*)(VObject *, u8, f32 *, f32, f32))(gEvents, cmd[4], (f32 *)(o + 0x20), 5.0f,
                                                                        5.0f);
     return 1;
 }
 
 /* room 0x20 (D_003FF0E8): the character's script value is at least be32 bytes 3..6 */
 s32 func_002AE570(void *self, u8 *chr, u8 *cmd) {
-    u32 v = VCALL(D_0044E4D0, 0x38, u32 (*)(VObject *, s32))(D_0044E4D0, chr[0x153C]) & 0xFFFF;
+    u32 v = VCALL(gEvents, 0x38, u32 (*)(VObject *, s32))(gEvents, chr[0x153C]) & 0xFFFF;
 
     return !(v < ((u32)cmd[3] << 24 | (u32)cmd[4] << 16 | (u32)cmd[5] << 8 | cmd[6]));
 }
@@ -4004,8 +4004,8 @@ s32 func_002AE5E0(void) {
     v[0] = 0.0f;
     v[1] = 1.0f;
     sceVu0ApplyMatrix((f32 *)(o + 0x30), m, v);
-    AT(o, 0x3C, s32) = VCALL((VObject *)D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(
-        (VObject *)D_0044E570, (f32 *)(o + 0x20), 0);
+    AT(o, 0x3C, s32) = VCALL((VObject *)gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))(
+        (VObject *)gNavMesh, (f32 *)(o + 0x20), 0);
     return 1;
 }
 
@@ -4041,7 +4041,7 @@ s32 func_002AE830(void) {
     if (o == NULL) {
         return 1;
     }
-    slot = Effect_New(D_0044E578, 0x720, dust_cloud_init);
+    slot = Effect_New(gEffects, 0x720, dust_cloud_init);
     prm.pos[0] = AT(o, 0x20, f32);
     prm.pos[1] = AT(o, 0x24, f32);
     prm.pos[2] = AT(o, 0x28, f32);
@@ -4051,7 +4051,7 @@ s32 func_002AE830(void) {
     prm.c = 0x50;
     prm.b = 0x50;
     prm.a = 0x50;
-    func_002D6090(D_0044E578, slot, &prm);
+    func_002D6090(gEffects, slot, &prm);
     return 1;
 }
 
@@ -4076,7 +4076,7 @@ s32 func_002AE9C0(void *self) {
     if (tri & 0x80000000) {   /* landed */
         t = nav_tri(tri & 0x7FFFFFFF);
         if (t == NULL || (AT(t, 0x3C, u32) & 0x20020008)) {
-            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+            VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
         }
         return 1;
     }
@@ -4085,7 +4085,7 @@ s32 func_002AE9C0(void *self) {
     g[3] = 1.0f;
     g[2] = 0.0f;
     sceVu0AddVector((f32 *)(o + 0x30), g, (f32 *)(o + 0x30));
-    VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+    VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
     a.vtbl = D_00469C20;
     a.slot = 0x0FFFFFFF;
     a.flags24 = 0x1000000;
@@ -4094,7 +4094,7 @@ s32 func_002AE9C0(void *self) {
     a.navTri = tri;
     sceVu0CopyVector(a.pos, (f32 *)(o + 0x20));
     func_001247E0(&a, (f32 *)(o + 0x30));
-    nm = (u8 *)D_0044E570;
+    nm = (u8 *)gNavMesh;
     VCALL((VObject *)nm, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)nm, a.navTri, a.pos);
     y += AT(o, 0x34, f32);
     sceVu0CopyVector((f32 *)(o + 0x20), a.pos);
@@ -4113,19 +4113,19 @@ s32 func_002AE9C0(void *self) {
             AT(o, 0x14, f32) = r - 0x1.921fb6p+2f /* 2 pi */;
         }
     } else {
-        VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 7);
+        VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 7);
         AT(o, 0x38, f32) = 0.0f;
         AT(o, 0x34, f32) = 0.0f;
         AT(o, 0x30, f32) = 0.0f;
         t = (a.navTri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) ? AT(nm, 0x4, u8 *) + a.navTri * 0x50 : NULL;
         if (t == NULL || (AT(t, 0x3C, u32) & 0x20020008)) {
-            VCALL(D_0044E4D0, 0x60, void (*)(VObject *, s32))(D_0044E4D0, 1);
+            VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
         }
         if (t != NULL && (AT(t, 0x3C, u32) & 0x2018000) != 0x10000) {
             func_002AE830();
         }
         AT(o, 0x3C, u32) |= 0x80000000;
-        VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 1);
+        VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 1);
     }
     a.vtbl = D_00469C20;
     return 1;
@@ -4255,7 +4255,7 @@ s32 func_002AFB50(void) {
     if (acc & 0xF) {
         return 0;
     }
-    c = D_0044F808;
+    c = gCharSlot2;
     if (c == NULL || AT(c, 0x28, u8) == 1) {
         return 0;
     }
@@ -4295,11 +4295,11 @@ static inline void obj_effect(u8 *o, u32 f) {
         u8 *o;
         u32 f;
     } prm;
-    s32 slot = Effect_New(D_0044E578, 0x10, effect_479ac0_init);
+    s32 slot = Effect_New(gEffects, 0x10, effect_479ac0_init);
 
     prm.f = f;
     prm.o = o;
-    func_002D6090(D_0044E578, slot, &prm);
+    func_002D6090(gEffects, slot, &prm);
 }
 
 /* the effect D_00479AC0 (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
@@ -4354,7 +4354,7 @@ void func_00360BF0(u8 *o) {
         sceVu0AddVector(pt[k], (f32 *)(obj + 0x20), v);
         pt[k][3] = 1.0f;
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);
     for (k = 0; k < n; k++) {
         sceVu0ApplyMatrix(v, m, pt[k]);
@@ -4456,11 +4456,11 @@ s32 func_002A9CE0(void *self, void *a1, u8 *cmd) {
             prm.z = 1000.0f;
             prm.b = 0x60;
             prm.o = o;
-            room_effect_new(D_0044E4C0, 0x1B, D_00479560);
-            func_00266C70(D_0044E4C0, 0x1B, &prm);
+            room_effect_new(gRoomEffects, 0x1B, D_00479560);
+            func_00266C70(gRoomEffects, 0x1B, &prm);
         }
     } else {
-        func_002670F0(D_0044E4C0, 0x1B);
+        func_002670F0(gRoomEffects, 0x1B);
     }
     return 1;
 }
@@ -4497,14 +4497,14 @@ s32 func_002AA380(void) {
 
 /* room 0x08 (D_003F31F0): the stalker is there but not about */
 s32 func_002AA580(void) {
-    u8 *c = D_0044F808;
+    u8 *c = gCharSlot2;
 
     return c != NULL && AT(c, 0x28, u8) == 0;
 }
 
 /* room 0x08 (D_003F31C0): the cutscene director's +0x6C 3 (byte 3 0) or 2 */
 s32 func_002AA8C0(void *self, void *a1, u8 *cmd) {
-    VCALL(D_0044FE10, 0x6C, void (*)(VObject *, s32))(D_0044FE10, cmd[3] == 0 ? 3 : 2);
+    VCALL(gCutscene, 0x6C, void (*)(VObject *, s32))(gCutscene, cmd[3] == 0 ? 3 : 2);
     return 1;
 }
 
@@ -4581,19 +4581,19 @@ s32 func_002AB300(void *self, void *a1, u8 *cmd) {
 /* room 0x0C (D_003F5418): the screen darkened as the cutscene runs past frame 0x4AE (32 a
  * frame, up to 0x80) */
 s32 func_002AB510(void) {
-    u32 a = (u32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x4AE) << 5;
+    u32 a = (u32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x4AE) << 5;
 
     if (a > 0x80) {
         a = 0x80;
     }
-    func_001B9000(D_0044E4F0, a << 24);
+    func_001B9000(gRenderer, a << 24);
     return 1;
 }
 
 /* room 0x0C (D_003F5408): script variable byte 3 down by the player's hit (byte 4: 1 from the
  * weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0 */
 s32 func_002AB580(void *self, void *a1, u8 *cmd) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[3]);
     s32 k;
 
@@ -4615,18 +4615,18 @@ s32 func_002AB580(void *self, void *a1, u8 *cmd) {
 /* room 0x0C (D_003F53F8): room effect 0x1C (a depth range) widening with the cutscene from frame
  * 0x2D0: near 1 + 1.5 t (at most 46), far 64.4 + 1.7 t (at most 116.5) */
 s32 func_002AB660(void) {
-    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x2D0);
+    f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x2D0);
     f32 r[4];
     f32 v;
 
-    room_effect_new(D_0044E4C0, 0x1C, D_0046EC60);
+    room_effect_new(gRoomEffects, 0x1C, D_0046EC60);
     v = 1.0f + 1.5f * t;
     r[0] = v <= 46.0f ? v : 46.0f;
     r[1] = v <= 46.0f ? v : 46.0f;
     v = 0x1.019999ap+6f /* 64.4 */ + 0x1.b33334p+0f /* 1.7 */ * t;
     r[2] = v <= 116.5f ? v : 116.5f;
     r[3] = v <= 116.5f ? v : 116.5f;
-    func_00266C70(D_0044E4C0, 0x1C, r);
+    func_00266C70(gRoomEffects, 0x1C, r);
     return 1;
 }
 
@@ -4662,7 +4662,7 @@ static void effect_471060_init(void **obj) {
 
 /* room 0x0F (D_003F6F08): an effect (D_00471060, 0x840 bytes) with its box */
 s32 func_002ABC20(void) {
-    s32 slot = Effect_New(D_0044E578, 0x840, effect_471060_init);
+    s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
     f32 prm[9];
 
     prm[1] = 140.0f;
@@ -4674,7 +4674,7 @@ s32 func_002ABC20(void) {
     prm[8] = 0.0f;
     prm[5] = 110.0f;
     prm[7] = -90.0f;
-    func_002D6090(D_0044E578, slot, prm);
+    func_002D6090(gEffects, slot, prm);
     return 1;
 }
 
@@ -4700,7 +4700,7 @@ s32 func_002ABD50(void) {
 
 /* room 0x10 (D_003F78F8): the stalker is there, not about, in mode 2, 6 or 7 */
 s32 func_002AC040(void) {
-    u8 *c = D_0044F808;
+    u8 *c = gCharSlot2;
     u8 k;
 
     if (c == NULL || AT(c, 0x28, u8) != 0) {
@@ -4728,12 +4728,12 @@ static void smoke_puffs_init(void **obj) {
  * variable 0; else that slot started */
 s32 func_002AC370(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0x1C60, smoke_puffs_init);
+        s32 slot = Effect_New(gEffects, 0x1C60, smoke_puffs_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
     } else {
-        func_002D6090(D_0044E578,
-                      VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0), NULL);
+        func_002D6090(gEffects,
+                      VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0), NULL);
     }
     return 1;
 }
@@ -4747,9 +4747,9 @@ extern const char *const D_004123E8;     /* room 0x5D's lever */
 extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
 extern s32 D_0047B250;                   /* room 0x4C: what the player has done so far */
 extern void *D_00476BB0[], *D_00472370[];
-extern u8 *D_0044F258;                   /* the creatures: 7 pointers; +0x28 vtable */
+extern u8 *gCreatures;                   /* the creatures: 7 pointers; +0x28 vtable */
 extern VObject *D_00456E00;
-extern VObject *D_0044E558;              /* the doors */
+extern VObject *gDoors;              /* the doors */
 extern VObject *gRandom;              /* random numbers */
 extern void func_0025F810(u8 *o);
 extern f32 func_00124490(void *a, f32 *p);
@@ -4758,7 +4758,7 @@ extern s32 func_00183190(void *f);
 /* room effect 0x1F's colour pulsing with script variable `var` (0..0x60 round): three channels
  * a third of the way apart, each 8 x (distance from the middle - 16), then the rest */
 static inline __attribute__((always_inline)) void colour_pulse(s32 var, u8 c3, u8 c4, u8 c5, u8 c6, u8 c7) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, var);
     u8 c[9];
     s32 k;
@@ -4779,7 +4779,7 @@ static inline __attribute__((always_inline)) void colour_pulse(s32 var, u8 c3, u
     c[5] = c5;
     c[6] = c6;
     c[8] = 0;
-    func_00266C70(D_0044E4C0, 0x1F, c);
+    func_00266C70(gRoomEffects, 0x1F, c);
     v++;
     if ((u32)v > 0x60) {
         v = 0;
@@ -4836,24 +4836,24 @@ s32 func_002AD2F0(void) {
 /* room 0x1C (D_003FD338): room effect 0x1C (a depth range) with the cutscene from frame 0x14A:
  * near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230) */
 s32 func_002ADB70(void) {
-    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 0x14A);
+    f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x14A);
     f32 r[4];
     f32 v;
 
-    room_effect_new(D_0044E4C0, 0x1C, D_0046EC60);
+    room_effect_new(gRoomEffects, 0x1C, D_0046EC60);
     r[0] = 1.0f;
     v = 1.0f + 0x1.6666660000000p+0f /* 1.4 */ * t;
     r[1] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;
     r[2] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;
     v = 0x1.84cccc0000000p+5f /* 48.6 */ + 4.0f * t;
     r[3] = v <= 230.0f ? v : 230.0f;
-    func_00266C70(D_0044E4C0, 0x1C, r);
+    func_00266C70(gRoomEffects, 0x1C, r);
     return 1;
 }
 
 /* room 0x1D (D_003FD990): door 0's +0x74 (0, or -0.08 by byte 3) */
 s32 func_002ADEE0(void *self, void *a1, u8 *cmd) {
-    VCALL(D_0044E558, 0x74, void (*)(VObject *, s32, f32))(D_0044E558, 0, cmd[3] == 0 ? 0.0f : -0x1.47ae140000000p-4f /* 0.08 */);
+    VCALL(gDoors, 0x74, void (*)(VObject *, s32, f32))(gDoors, 0, cmd[3] == 0 ? 0.0f : -0x1.47ae140000000p-4f /* 0.08 */);
     return 1;
 }
 
@@ -4861,7 +4861,7 @@ s32 func_002ADEE0(void *self, void *a1, u8 *cmd) {
 s32 func_002ADF40(void) {
     s32 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3;
 
-    VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, r + 2);
+    VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, r + 2);
     return 1;
 }
 
@@ -4883,7 +4883,7 @@ s32 func_002B3720(void *self, void *a1, u8 *cmd) {
     case 1:
         D_0047B250 += func_00183190(gCharPlayer);
         if (D_0047B250 >= 0x23) {
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 0x13);
+            VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 0x13);
         }
         break;
     }
@@ -4899,7 +4899,7 @@ static void effect_476bb0_init(void **obj) {
 
 /* room 0x4F (D_0040C0F8): an effect (D_00476BB0, 0x7460 bytes), not started */
 s32 func_002B4480(void) {
-    Effect_New(D_0044E578, 0x7460, effect_476bb0_init);
+    Effect_New(gEffects, 0x7460, effect_476bb0_init);
     return 1;
 }
 
@@ -4924,7 +4924,7 @@ s32 func_002B4570(void *self, void *a1, u8 *cmd) {
         AT(o, 0x10, f32) = a;
         if (a <= -0x1.4ccccc0000000p-1f /* 0.65 */) {
             AT(o, 0x10, f32) = -0x1.4ccccc0000000p-1f /* 0.65 */;
-            VCALL(D_0044E4D0, 0x5C, void (*)(VObject *, s32))(D_0044E4D0, 3);
+            VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 3);
         }
         break;
     }
@@ -4934,16 +4934,16 @@ s32 func_002B4570(void *self, void *a1, u8 *cmd) {
 /* room 0x51 (D_0040E340): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves */
 s32 func_002B49F0(void *self, void *a1, u8 *cmd) {
     if (cmd[3] != 0) {
-        return VCALL(D_0044E558, 0x30, s32 (*)(VObject *, s32))(D_0044E558, 0) != 0 ? 1 : 2;
+        return VCALL(gDoors, 0x30, s32 (*)(VObject *, s32))(gDoors, 0) != 0 ? 1 : 2;
     }
-    VCALL(D_0044E558, 0xC, void (*)(VObject *, s32, s32, s32, s32))(D_0044E558, 0, 1, 0, 0);
+    VCALL(gDoors, 0xC, void (*)(VObject *, s32, s32, s32, s32))(gDoors, 0, 1, 0, 0);
     return 1;
 }
 
 /* room 0x56 (D_0040F468): creatures 7..9 in the current room on a live triangle D_00456E00
  * says yes to: +0x10, then the creature list's +0x28 */
 s32 func_002B4DE0(void) {
-    u8 *list = D_0044F258;
+    u8 *list = gCreatures;
     Progress *g = gProgress;
     VObject *chk = D_00456E00;
     s32 k;
@@ -4987,7 +4987,7 @@ s32 func_002B59E0(void) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
-        Character *c = AT(D_0044F258, i * 4, Character *);
+        Character *c = AT(gCreatures, i * 4, Character *);
         f32 dz, dx;
 
         if (c == NULL) {
@@ -5006,7 +5006,7 @@ s32 func_002B59E0(void) {
             {
                 /* (Effect_New, with the heap's +0x10 handed the loop index in a2 as the
                    original leaves it there - unused) */
-                u8 *mgr = D_0044E578;
+                u8 *mgr = gEffects;
                 void *mem = VCALL(EFFECT_HEAP(mgr), 0x10, void *(*)(VObject *, u32, s32))(EFFECT_HEAP(mgr), 0x4A0, i);
                 s32 j;
 
@@ -5040,7 +5040,7 @@ s32 func_002B59E0(void) {
                 prm.col[3] = 0x60;
                 prm.col[2] = 0x30;
             }
-            func_002D6090(D_0044E578, slot, &prm);
+            func_002D6090(gEffects, slot, &prm);
             func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
             return 1;
         }
@@ -5057,7 +5057,7 @@ s32 func_002B5C30(void *self, void *a1, u8 *cmd) {
     if (o == NULL) {
         return 1;
     }
-    v = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    v = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
     switch (cmd[3]) {
     case 0:
         v = v < 0x2B ? 0x2B : v;
@@ -5147,7 +5147,7 @@ s32 func_003002E0(void *self, u8 *chr, u8 *cmd) {
 /* room 0x66 (D_0041F5A0): in the eight letters of script variables 0 and 1, from the place in
  * variable 2: the next 'L' / 'R' - matched by byte 3 (0 'L', else 'R') is stepped over (1) */
 s32 func_003003C0(void *self, void *a1, u8 *cmd) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 w[2];
     u8 *b = (u8 *)w;
     u32 i;
@@ -5201,17 +5201,17 @@ static void fire_init(void **obj) {
  * variable 8; else that fire put out (-1) */
 s32 func_00300650(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0x1C60, fire_init);
+        s32 slot = Effect_New(gEffects, 0x1C60, fire_init);
         s32 prm[4] = {0, 0, 0, 0};   /* (zeroed past the two words, as the original's stack) */
 
         prm[0] = cmd[3];
         prm[1] = 1;
-        func_002D6090(D_0044E578, slot, prm);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 8, slot);
+        func_002D6090(gEffects, slot, prm);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 8, slot);
     } else {
         s32 off[4] = {-1, 0, 0, 0};
 
-        func_002D6090(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 8), off);
+        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 8), off);
     }
     return 1;
 }
@@ -5225,24 +5225,24 @@ s32 func_003007E0(void *self, void *a1, u8 *cmd) {
     c->a.pos[1] = y;
     if (y <= -0x1.99999a0000000p-3f /* 0.2 */) {
         if (y < -24.0f) {
-            VObject *ev = D_0044E4D0;
+            VObject *ev = gEvents;
             s32 s = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
 
             if (s >= 0) {
                 s32 off[4] = {-1, 0, 0, 0};
 
-                func_002D6090(D_0044E578, s, off);
+                func_002D6090(gEffects, s, off);
                 VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, -1);
             }
         }
     } else {
-        s32 slot = Effect_New(D_0044E578, 0x1C60, fire_init);
+        s32 slot = Effect_New(gEffects, 0x1C60, fire_init);
         s32 prm[4] = {0, 0, 0, 0};   /* (zeroed past the two words, as the original's stack) */
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 7, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 7, slot);
         prm[0] = cmd[3];
         prm[1] = 0;
-        func_002D6090(D_0044E578, slot, prm);
+        func_002D6090(gEffects, slot, prm);
     }
     return c->a.pos[1] < -25.0f ? 1 : 2;
 }
@@ -5257,7 +5257,7 @@ s32 func_00308D70(void *self, void *a1, u8 *cmd) {
         AT(o, 0x30, f32) = 0.0f;
         AT(o, 0x34, u32) = 0x3C23D70A;   /* 0.01 */
         if (cmd[4] == 0) {
-            func_002FF650(D_0044E560, 7, 6, (f32 *)(o + 0x20), 0, 0);
+            func_002FF650(gSound, 7, 6, (f32 *)(o + 0x20), 0, 0);
         }
         return 1;
     }
@@ -5324,7 +5324,7 @@ s32 func_0030F1A0(void) {
 
 /* room 0x48 (D_00426840): the creatures (10) in play in the current room: the list's +0x2C */
 s32 func_0030F1F0(void) {
-    u8 *list = D_0044F258;
+    u8 *list = gCreatures;
     Progress *g = gProgress;
     s32 i;
 
@@ -5392,7 +5392,7 @@ extern s32 D_0047B2E8;
 
 /* as func_002E6E20 */
 s32 func_0036E1E0(void) {
-    Effect_New(D_0044E578, 0xC0, effect_C0_init);
+    Effect_New(gEffects, 0xC0, effect_C0_init);
     return 1;
 }
 
@@ -5413,7 +5413,7 @@ s32 func_0036EDD0(void *self, void *a1, u8 *cmd) {
 
 /* as func_002E7020 */
 s32 func_0036F5C0(void) {
-    Effect_New(D_0044E578, 0x10, effect_10_init);
+    Effect_New(gEffects, 0x10, effect_10_init);
     return 1;
 }
 
@@ -5471,19 +5471,19 @@ static void effect_479a60_init(void **obj) {
 
 /* an effect D_0047A410 (8 bytes), not started */
 s32 func_0034B6E0(void) {
-    Effect_New(D_0044E578, 0x8, effect_47a410_init);
+    Effect_New(gEffects, 0x8, effect_47a410_init);
     return 1;
 }
 
 /* an effect D_00479A60 (0x640 bytes, its quad drawer at +0x550), not started */
 s32 func_0032DF20(void) {
-    Effect_New(D_0044E578, 0x640, effect_479a60_init);
+    Effect_New(gEffects, 0x640, effect_479a60_init);
     return 1;
 }
 
 /* (as func_002ABC20) an effect D_00471060 with its box */
 s32 func_0032DDF0(void) {
-    s32 slot = Effect_New(D_0044E578, 0x840, effect_471060_init);
+    s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
     f32 prm[9];
 
     prm[1] = -33.0f;
@@ -5495,7 +5495,7 @@ s32 func_0032DDF0(void) {
     prm[8] = 0.0f;
     prm[5] = 100.0f;
     prm[7] = -180.0f;
-    func_002D6090(D_0044E578, slot, prm);
+    func_002D6090(gEffects, slot, prm);
     return 1;
 }
 
@@ -5544,11 +5544,11 @@ static void effect_7A3F0_init(void **obj) {
    else that one is ended (func_002D6170) */
 s32 func_00339F00(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        s32 slot = Effect_New(D_0044E578, 0x10, effect_7A3F0_init);
+        s32 slot = Effect_New(gEffects, 0x10, effect_7A3F0_init);
 
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 9, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 9, slot);
     } else {
-        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 9));
+        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 9));
     }
     return 1;
 }
@@ -5576,7 +5576,7 @@ static void effect_7a430_init(void **obj) {
 
 /* (as func_002B11D0) the 0xD40-byte effect D_004799D0 started with byte 3 */
 s32 func_0033A0B0(void *self, void *a1, u8 *cmd) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     u8 b = cmd[3];
 
     func_002D6090(mgr, Effect_New(mgr, 0xD40, effect_799d0_init), &b);
@@ -5585,7 +5585,7 @@ s32 func_0033A0B0(void *self, void *a1, u8 *cmd) {
 
 /* (as func_002B11D0) the 0x14-byte effect D_0047A430 started with byte 3 as a word */
 s32 func_0034A250(void *self, void *a1, u8 *cmd) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 w = cmd[3];
 
     func_002D6090(mgr, Effect_New(mgr, 0x14, effect_7a430_init), &w);
@@ -5604,18 +5604,18 @@ static void effect_1c60_init(void **obj) {
 s32 func_00342A30(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0: {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x1C60, effect_1c60_init);
 
         func_002D6090(mgr, slot, (void *)1);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
         break;
     }
     case 1: {
-        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
 
         if (slot != -1) {
-            func_002D6090(D_0044E578, slot, NULL);
+            func_002D6090(gEffects, slot, NULL);
         }
         break;
     }
@@ -5644,7 +5644,7 @@ s32 func_0033A040(void *self, void *a1, u8 *cmd) {
 
 /* script variable byte 3 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0 */
 static inline s32 var_down_by_hit(u8 *cmd) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[3]);
     s32 k = AT(gCharPlayer, 0xFC, s32) == 0x1A ? 1 : 5;
 
@@ -5732,7 +5732,7 @@ void func_00358CA0(u8 *o) {
     for (k = 0; k < 9; k++) {
         pt[k][3] = 1.0f;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     for (k = 0; k < 9; k++) {
         f32 v[4] __attribute__((aligned(16)));
 
@@ -5762,15 +5762,15 @@ void func_00358CA0(u8 *o) {
  * slot kept in event variable byte 3 + 2; else that effect is ended */
 s32 func_003104D0(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 8, effect_795C0_init);
 
         func_002D6090(mgr, slot, cmd + 3);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, (cmd[3] + 2) & 0xFF, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, (cmd[3] + 2) & 0xFF, slot);
     } else {
-        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, (cmd[3] + 2) & 0xFF);
+        s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, (cmd[3] + 2) & 0xFF);
 
-        func_002D6170(D_0044E578, slot);
+        func_002D6170(gEffects, slot);
     }
     return 1;
 }
@@ -5779,8 +5779,8 @@ s32 func_003104D0(void *self, void *a1, u8 *cmd) {
  * up to 21 / 80 + 0.7 a frame up to 120 / 160 */
 s32 func_003420A0(void) {
     static const union { u32 u; f32 f; } kNear = {0x3E999999}, kFar = {0x3F333333};
-    u8 *fx = D_0044E4C0;
-    f32 t = (f32)(VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 825);
+    u8 *fx = gRoomEffects;
+    f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 825);
     f32 r[4] __attribute__((aligned(16)));
 
     room_effect_new(fx, 0x1C, D_0046EC60);
@@ -5824,7 +5824,7 @@ static inline s32 clock_draw(char *buf, const char *full) {
     VObject *ev;
 
     if (p[0xFC4] > 0) {
-        ev = D_0044E4D0;
+        ev = gEvents;
         VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
             ev, 0x1AF, 0x18B, 0, full, 0x80, 0x30, 0x10, 0x15);
         p[0xFC4] = 1;
@@ -5836,7 +5836,7 @@ static inline s32 clock_draw(char *buf, const char *full) {
     buf[3] = p[0xFC6] / 10 + '0';
     buf[5] = 0;
     buf[4] = p[0xFC6] % 10 + '0';
-    ev = D_0044E4D0;
+    ev = gEvents;
     VCALL(ev, 0x78, void (*)(VObject *, s32, s32, s32, const char *, s32, s32, s32, s32))(
         ev, 0x1AF, 0x18B, 0, buf, 0x80, 0x30, 0x10, 0x15);
     return 1;
@@ -5872,8 +5872,8 @@ static inline s32 slam_shake(void) {
     if (gCharPursuer == NULL || AT(gCharPursuer, 0x153C, u8) != 0xA) {
         return 1;
     }
-    if (func_0030BB70(D_0044F808) != 0) {
-        VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+    if (func_0030BB70(gCharSlot2) != 0) {
+        VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
     }
     return 1;
 }
@@ -5906,7 +5906,7 @@ static inline s32 clock_start(void) {
 
     p[0x1FBEC1] = 1;
     func_00136620(gCharPartner);
-    VCALL(D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, 14.0f);
+    VCALL(gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, 14.0f);
     func_002A76E0(p + 0xFC4);
     return 1;
 }
@@ -5914,7 +5914,7 @@ static inline s32 clock_start(void) {
 /* the countdown off, the camera director +0x40 (-1) */
 static inline s32 clock_stop(void) {
     AT(gProgress, 0x1FBEC1, u8) = 0;
-    VCALL(D_0044E4F8, 0x40, void (*)(VObject *, f32))(D_0044E4F8, -1.0f);
+    VCALL(gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, -1.0f);
     return 1;
 }
 
@@ -5949,7 +5949,7 @@ s32 func_0034AB40(void) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400F0[0]);
 
     if (o != NULL) {
-        func_002FF650(D_0044E560, 3, 6, (f32 *)(o + 0x20), 0, 0);
+        func_002FF650(gSound, 3, 6, (f32 *)(o + 0x20), 0, 0);
     }
     return 1;
 }
@@ -5998,7 +5998,7 @@ void func_00370090(u8 *o, s32 *m) {
 
 /* the placed things of kind 9 / 10 (+0x20) all reset (+0x28) */
 s32 func_00342230(void) {
-    VObject *list = D_0044F260;
+    VObject *list = gPlacedThings;
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -6017,19 +6017,19 @@ s32 func_0032DD70(void *self, void *a1, u8 *cmd) {
     s32 a = 0x80;
 
     if (cmd[3] != 0) {
-        a = 0x80 - ((VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 120) << 4);
+        a = 0x80 - ((VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 120) << 4);
         if (a < 0) {
             a = 0;
         }
     }
-    VCALL(D_0044E4F0, 0x90, s32 (*)(VObject *, u32))(D_0044E4F0, a << 24);
+    VCALL(gRenderer, 0x90, s32 (*)(VObject *, u32))(gRenderer, a << 24);
     return 1;
 }
 
 /* the countdown clock (+0xFC4..+0xFC6) saved in script variables 0..2 */
 static inline s32 clock_save(void) {
     u8 *p = (u8 *)gProgress;
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
 
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, p[0xFC4]);
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, p[0xFC5]);
@@ -6049,7 +6049,7 @@ s32 func_00340E90(void) {
     if (AT(gCharPursuer, 0xE8, s32) == 3) {
         return 1;
     }
-    if ((u8)VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, void *))(D_0044E4B8, (u8 *)gCharPursuer + 0x10) == 0) {
+    if ((u8)VCALL(gCamera, 0xD4, s32 (*)(VObject *, void *))(gCamera, (u8 *)gCharPursuer + 0x10) == 0) {
         return 1;
     }
     return 0;
@@ -6057,7 +6057,7 @@ s32 func_00340E90(void) {
 
 /* script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0 */
 s32 func_00341A40(void) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
 
     v -= AT(gCharPlayer, 0xFC, s32) == 0x1A ? 1 : 5;
@@ -6077,7 +6077,7 @@ extern void glr_haze2(f32 phase, f32 size);
  * / 16, a = +0x4 + 90 degrees a column), over the screen by an alpha ramp (0x20 at the edges,
  * 0x60 in the middle) at half, in layer 0x2A */
 void func_00370100(u8 *o) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
 
     if (AT(o, 0x11, u8) == 1) {
         return;
@@ -6097,7 +6097,7 @@ void func_00370100(u8 *o) {
             return;
         }
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     glr_haze2(AT(o, 0x4, f32), AT(o, 0x8, f32));
 }
@@ -6118,7 +6118,7 @@ void func_00371030(u8 *o) {
 
 /* script variables 7 / 8 (the player's spot) in 151..269 / 171..219 */
 s32 func_00339E30(void) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     u16 x = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
     u16 z = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
 
@@ -6157,7 +6157,7 @@ s32 func_003422B0(void *self, void *a1, u8 *cmd) {
 /* the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
  * their timer (+0xE4) to 300000 */
 s32 func_0033FA60(void) {
-    VObject *list = D_0044F260, *ev = D_0044E4D0;
+    VObject *list = gPlacedThings, *ev = gEvents;
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -6188,10 +6188,10 @@ s32 func_0033FB40(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 2, AT(gCharPartner, 0x14C8, s32));
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 2, AT(gCharPartner, 0x14C8, s32));
         break;
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         if (VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 2) == 0) {
             AT(gCharPartner, 0x14C8, s32) = 10;
         } else {
@@ -6210,12 +6210,12 @@ s32 func_00342500(void) {
         return 1;
     }
     if (AT(gCharPursuer, 0x153C, u8) == 0xA) {
-        if (func_0030BB70(D_0044F808) != 0) {
-            VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+        if (func_0030BB70(gCharSlot2) != 0) {
+            VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     } else if (AT(gCharPursuer, 0x153C, u8) == 0x27) {
-        if (func_00365850(D_0044F808) != 0) {
-            VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+        if (func_00365850(gCharSlot2) != 0) {
+            VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     }
     return 1;
@@ -6230,16 +6230,16 @@ s32 func_00340C50(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, -90);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, -90);
         return 1;
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         a = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0) + 10;
         if (a >= 0) {
             a = 0;
         }
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, a);
-        VCALL(D_0044E558, 0x74, void (*)(VObject *, s32, f32))(D_0044E558, 0, kPi.f * (f32)a / 180.0f);
+        VCALL(gDoors, 0x74, void (*)(VObject *, s32, f32))(gDoors, 0, kPi.f * (f32)a / 180.0f);
         return a < 0 ? 2 : 1;
     }
     return 1;
@@ -6331,11 +6331,11 @@ extern const char *D_00437D48[];   /* room objects 10..15 */
 /* the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
  * script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set */
 s32 func_003428D0(void) {
-    VObject *ev = D_0044E4D0, *list, *objs;
+    VObject *ev = gEvents, *list, *objs;
     s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     s32 i;
 
-    list = D_0044F260;
+    list = gPlacedThings;
     for (i = 0; i < 0x80; i++) {
         u8 *o = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, i);
 
@@ -6379,7 +6379,7 @@ s32 func_003102E0(void *self, void *a1, u8 *cmd) {
         AT(m, 0x9E8, s32) = 0;
         return 1;
     }
-    ev = D_0044E4D0;
+    ev = gEvents;
     v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     a = kN02.f + k02.f * (f32)v / 60.0f;
     b = k02.f + k01.f * (f32)v / 60.0f;
@@ -6463,7 +6463,7 @@ extern const char *D_00437D40[];   /* room objects 8, 9 */
  * 5 holds, else lowered back (up 0.4 a call to 0.7) */
 s32 func_00342370(void) {
     static const union { u32 u; f32 f; } kDown = {0x3E4CCCCD}, kTop = {0x3F333333}, kUp = {0x3ECCCCCD};
-    VObject *objs = D_00456DF8, *ev = D_0044E4D0;
+    VObject *objs = D_00456DF8, *ev = gEvents;
     s32 k;
 
     for (k = 8; k < 10; k++) {
@@ -6515,15 +6515,15 @@ s32 func_00341EF0(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        slot = Effect_New(D_0044E578, 0x14, effect_7A2F0_init);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 10, slot);
+        slot = Effect_New(gEffects, 0x14, effect_7A2F0_init);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 10, slot);
         break;
     case 1:
     case 2:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 10);
+        slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 10);
         msg[0] = (f32)cmd[4];
         msg[1] = (f32)(cmd[3] - 1);
-        func_002D6090(D_0044E578, slot, msg);
+        func_002D6090(gEffects, slot, msg);
         break;
     }
     return 1;
@@ -6544,7 +6544,7 @@ s32 func_003413C0(void *self, void *a1, u8 *cmd) {
         AT(gCharPlayer, 0x1AD714, s32) = 0;
         break;
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[4]);
         n = func_00183190(gCharPlayer);
         if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
@@ -6578,13 +6578,13 @@ s32 func_0033A980(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         AT(gCharPartner, 0xE4, u8) = 0;
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, u32))(D_0044E4D0, 1, 0x808080);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, u32))(gEvents, 1, 0x808080);
         func_001267F0(gCharPartner, 0xF);
         return 1;
     case 1:
-        ev = D_0044E4D0;
+        ev = gEvents;
         c = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
-        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, c);
+        VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, c);
         if (c != 0x80808080) {
             AT(gCharPartner, 0xE4, u8) = 0;
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c + 0x10000000);
@@ -6595,13 +6595,13 @@ s32 func_0033A980(void *self, void *a1, u8 *cmd) {
         return 1;
     case 2:
         AT(gCharPartner, 0xE4, u8) = 0;
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, u32))(D_0044E4D0, 1, 0x80808080);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, u32))(gEvents, 1, 0x80808080);
         func_001267F0(gCharPartner, 0xF);
         return 1;
     case 3:
-        ev = D_0044E4D0;
+        ev = gEvents;
         c = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
-        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, c);
+        VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, c);
         if (c != 0x808080) {
             AT(gCharPartner, 0xE4, u8) = 0;
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 1, c - 0x10000000);
@@ -6642,7 +6642,7 @@ s32 func_0036A590(u8 *o) {
         }
     }
     rnd = gRandom;
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (i = 0; i < 10; i++) {
         s32 *t = &AT(o, 0x4 + i * 4, s32);
 
@@ -6686,7 +6686,7 @@ static inline void grey_send(u8 *mgr, GreyMsg *m, s16 spot, f32 b, f32 c, f32 d)
 }
 
 static inline s32 grey_three(f32 a, const s16 *spot, const f32 *b, const f32 *c, const f32 *d) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     GreyMsg m;
     s32 i;
 
@@ -6729,7 +6729,7 @@ s32 func_00343180(void) {
 /* the clock frozen: while event flag 1 (+0x58) is set, the time saved in script variables
  * (clock_save: 0 time up -> "59:59", 1 / 2 minutes / seconds) instead of the running one */
 static inline s32 clock_draw_saved(char *buf, const char *full) {
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     u32 t;
 
     if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 1) == 0) {
@@ -6740,7 +6740,7 @@ static inline s32 clock_draw_saved(char *buf, const char *full) {
             ev, 0x1AF, 0x18B, 0, full, 0x80, 0x30, 0x10, 0x15);
         return 1;
     }
-    ev = D_0044E4D0;
+    ev = gEvents;
     buf[0] = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1) / 10 + '0';
     t = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 1);
     buf[2] = ':';
@@ -6771,7 +6771,7 @@ static inline s32 ee_ftoi(f32 v) {
  * cleared); other bytes light 0x11 and the fade off (+0x64) */
 s32 func_0032E010(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k0 = {0x40028F5C}, k1 = {0x4020A3D7}, k2 = {0x40B23D71};
-    u32 t = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+    u32 t = VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene);
     s32 a;
 
     switch (cmd[3]) {
@@ -6788,20 +6788,20 @@ s32 func_0032E010(void *self, void *a1, u8 *cmd) {
         a = ee_ftoi(k2.f * (f32)(1203 - t));
         break;
     default:
-        func_001267F0(D_0044F808, 0x11);
-        VCALL(D_0044E4F0, 0x64, void (*)(VObject *, u32, s32))(D_0044E4F0, 0x808080, 0);
+        func_001267F0(gCharSlot2, 0x11);
+        VCALL(gRenderer, 0x64, void (*)(VObject *, u32, s32))(gRenderer, 0x808080, 0);
         return 1;
     }
     if (a >= 0x80) {
-        func_001267F0(D_0044F808, 0xA);
+        func_001267F0(gCharSlot2, 0xA);
         return 1;
     }
     if (a < 0) {
         a = 0;
     }
-    AT(D_0044F808, 0xE4, u8) = 0;
-    func_001267F0(D_0044F808, 0x23);
-    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, (u32)a << 24 | 0x808080);
+    AT(gCharSlot2, 0xE4, u8) = 0;
+    func_001267F0(gCharSlot2, 0x23);
+    VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, (u32)a << 24 | 0x808080);
     return 1;
 }
 
@@ -6810,7 +6810,7 @@ s32 func_0032E010(void *self, void *a1, u8 *cmd) {
  * (+0x64) */
 s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k2 = {0x40328F5C}, k3 = {0x4088A3D7};
-    u32 t = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+    u32 t = VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene);
     u32 a, s = 0;
 
     switch (cmd[3]) {
@@ -6820,21 +6820,21 @@ s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
         if (a > 0x80) {
             a = 0x80;
         }
-        AT(D_0044F808, 0xE4, u8) = 0;
-        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, a << 24 | 0x808080);
-        func_001267F0(D_0044F808, cmd[3] == 2 ? 0x23 : 0xF);
+        AT(gCharSlot2, 0xE4, u8) = 0;
+        VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, a << 24 | 0x808080);
+        func_001267F0(gCharSlot2, cmd[3] == 2 ? 0x23 : 0xF);
         return 1;
     case 1:
         s = 0xFF;
         break;
     }
     if (s >= 0xFF) {
-        func_001267F0(D_0044F808, 0xA);
+        func_001267F0(gCharSlot2, 0xA);
         s = 0xFF;
     } else {
-        func_001267F0(D_0044F808, 0x11);
+        func_001267F0(gCharSlot2, 0x11);
     }
-    VCALL(D_0044E4F0, 0x64, void (*)(VObject *, u32, s32))(D_0044E4F0, s << 24 | 0x808080, 0);
+    VCALL(gRenderer, 0x64, void (*)(VObject *, u32, s32))(gRenderer, s << 24 | 0x808080, 0);
     return 1;
 }
 
@@ -6859,15 +6859,15 @@ s32 func_00341C30(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
     case 1:
-        mgr = D_0044E578;
+        mgr = gEffects;
         slot = Effect_New(mgr, 0x10D0, effect_7A310_init);
         arg = cmd[3] == 0;
         func_002D6090(mgr, slot, &arg);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 11, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 11, slot);
         break;
     case 2:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 11);
-        func_002D6090(D_0044E578, slot, NULL);
+        slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 11);
+        func_002D6090(gEffects, slot, NULL);
         break;
     }
     return 1;
@@ -6892,16 +6892,16 @@ s32 func_003425D0(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
     case 1:
-        mgr = D_0044E578;
+        mgr = gEffects;
         slot = Effect_New(mgr, 0x20E0, effect_79F70_init);
         func_002D6090(mgr, slot, &arg);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, cmd[3] + 2, slot);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, cmd[3] + 2, slot);
         break;
     case 2:
     case 3:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, cmd[3]);
+        slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, cmd[3]);
         if (slot != -1) {
-            func_002D6090(D_0044E578, slot, NULL);
+            func_002D6090(gEffects, slot, NULL);
         }
         break;
     }
@@ -6929,7 +6929,7 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
     u8 var = 11 - k, idx = 8 - k;   /* (k 0 / past 8: unset on the PS2) */
     u32 name = k + 1;
     u8 on = cmd[3];
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
     s32 slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, var);
     u8 *o;
     struct {
@@ -6941,7 +6941,7 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
         if (on == 0) {
             return 1;
         }
-        slot = Effect_New(D_0044E578, 0x10, effect_79870_init);
+        slot = Effect_New(gEffects, 0x10, effect_79870_init);
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, var, slot);
     }
     o = obj_named(D_00441140[name]);
@@ -6950,9 +6950,9 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
     msg.on = on;
     msg.pad = 0;
     msg.obj = o;
-    func_002D6090(D_0044E578, slot, &msg);
-    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0 && on != 0) {
-        func_002FF650(D_0044E560, 1, 6, (f32 *)(o + 0x20), 0, 0);
+    func_002D6090(gEffects, slot, &msg);
+    if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0 && on != 0) {
+        func_002FF650(gSound, 1, 6, (f32 *)(o + 0x20), 0, 0);
     }
     return 1;
 }
@@ -7039,7 +7039,7 @@ s32 func_003434A0(void *self, void *a1, u8 *cmd) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
-    ev = D_0044E4D0;
+    ev = gEvents;
     for (k = 4; k < 6; k++) {
         u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D30[k - 4]);
         s32 state = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, k == 4 ? 4 : 5);
@@ -7097,7 +7097,7 @@ static void effect_79F30_init(void **obj) {
  * little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect D_00479F30 on it */
 s32 func_00342BC0(void) {
     static const union { u32 u; f32 f; } kStep = {0x3FA0D97C}, kJit = {0x3F80ADFD}, kHalf = {0x3F00ADFD};
-    VObject *list = D_0044F260, *ev, *rnd;
+    VObject *list = gPlacedThings, *ev, *rnd;
     u8 *t;
     s32 n, k;
     f32 a;
@@ -7114,7 +7114,7 @@ s32 func_00342BC0(void) {
     }
     VCALL((VObject *)t, 0xC, void (*)(VObject *))((VObject *)t);
     AT(t, 0x28, u8) = 1;
-    ev = D_0044E4D0;
+    ev = gEvents;
     n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1);
     one[0] = 1.0f;
     one[1] = 1.0f;
@@ -7138,7 +7138,7 @@ s32 func_00342BC0(void) {
         k -= 5;
     }
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, k);
-    func_002D6090(D_0044E578, Effect_New(D_0044E578, 0xE60, effect_79F30_init), t);
+    func_002D6090(gEffects, Effect_New(gEffects, 0xE60, effect_79F30_init), t);
     return 1;
 }
 
@@ -7148,7 +7148,7 @@ s32 func_00342BC0(void) {
  * the nav mesh (+0x3C) */
 s32 func_00342E80(void) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
-    VObject *ev = D_0044E4D0, *rnd, *list, *objs, *nav;
+    VObject *ev = gEvents, *rnd, *list, *objs, *nav;
     s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     s32 cnt, i;
 
@@ -7160,9 +7160,9 @@ s32 func_00342E80(void) {
     if (6 - n < cnt) {
         cnt = 6 - n;
     }
-    list = D_0044F260;
+    list = gPlacedThings;
     objs = D_00456DF8;
-    nav = (VObject *)D_0044E570;
+    nav = (VObject *)gNavMesh;
     for (i = 0; i < cnt; i++) {
         u8 *t = VCALL(list, 0x8, u8 *(*)(VObject *, s32))(list, 9);
         s32 k, tri;
@@ -7219,7 +7219,7 @@ static inline void swing_to(u8 *o, f32 a) {
     pos[0] = -45.0f * func_0031C058(AT(o, 0x14, f32));
     pos[2] = -45.0f * -func_0031C248(AT(o, 0x14, f32));
     pos[3] = 1.0f;
-    func_002FF650(D_0044E560, 0x80000002, 6, pos, 0, 0);
+    func_002FF650(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
 /* byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120 frames,
@@ -7232,7 +7232,7 @@ s32 func_0034A6A0(void *self, void *a1, u8 *cmd) {
     if (o == NULL) {
         return 1;
     }
-    t = (f32)(u32)VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) / 120.0f;
+    t = (f32)(u32)VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0) / 120.0f;
     switch (cmd[3]) {
     case 0:
         AT(o, 0x14, s32) = 0;
@@ -7264,7 +7264,7 @@ static inline void swing_to2(u8 *o, f32 a) {
     pos[0] = 45.0f * func_0031C248(AT(o, 0x14, f32));
     pos[3] = 1.0f;
     pos[2] = 45.0f * func_0031C058(AT(o, 0x14, f32));
-    func_002FF650(D_0044E560, 0x80000002, 6, pos, 0, 0);
+    func_002FF650(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
 /* (as func_0034A6A0, the room object named D_004400E0, opening to -pi/2) */
@@ -7276,7 +7276,7 @@ s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
     if (o == NULL) {
         return 1;
     }
-    t = (f32)(u32)VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) / 120.0f;
+    t = (f32)(u32)VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0) / 120.0f;
     switch (cmd[3]) {
     case 0:
         AT(o, 0x14, s32) = 0;
@@ -7299,7 +7299,7 @@ s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
 /* ---- the marker effect D_00470F90 (effects.c) on character slot 3, its slot in script variable
  * 0, its size eased by variable 1 ---- */
 extern void *D_00470F90[];
-extern u8 *D_0044F80C, *D_0044F810;   /* character slots 3 / 0 */
+extern u8 *gCharSlot3, *gCharSlot4;   /* character slots 3 / 0 */
 
 static void effect_70F90_init(void **obj) {
     obj[0] = D_00470F90;
@@ -7307,9 +7307,9 @@ static void effect_70F90_init(void **obj) {
 
 /* the marker's message { state, the model it follows, size, from slot } to the one in var 0 */
 static inline s32 marker_send(s32 *msg) {
-    s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
 
-    func_002D6090(D_0044E578, slot, msg);
+    func_002D6090(gEffects, slot, msg);
     return 1;
 }
 
@@ -7324,18 +7324,18 @@ s32 func_00340230(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        func_001267F0(D_0044F80C, 0x14);
-        func_001267F0(D_0044F810, 0x14);
-        slot = Effect_New(D_0044E578, 0x20, effect_70F90_init);
-        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        func_001267F0(gCharSlot3, 0x14);
+        func_001267F0(gCharSlot4, 0x14);
+        slot = Effect_New(gEffects, 0x20, effect_70F90_init);
+        VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
         /* fall through */
     case 1:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+        slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
         msg[0] = 6;
-        msg[1] = AT(D_0044F80C, 0xF0, s32);
+        msg[1] = AT(gCharSlot3, 0xF0, s32);
         msg[2] = 0x3F800000;   /* 1 */
         msg[3] = slot;
-        func_002D6090(D_0044E578, slot, msg);
+        func_002D6090(gEffects, slot, msg);
         return 1;
     case 2:
         msg[0] = 2;
@@ -7349,7 +7349,7 @@ s32 func_00340230(void *self, void *a1, u8 *cmd) {
         return marker_send(msg);
     case 5:
     case 7:
-        ev = D_0044E4D0;
+        ev = gEvents;
         slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
         msg[0] = 4;
         v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1) - 1;
@@ -7362,7 +7362,7 @@ s32 func_00340230(void *self, void *a1, u8 *cmd) {
         } else {
             AT(&msg[1], 0, f32) = (f32)v / k334.f;
         }
-        func_002D6090(D_0044E578, slot, msg);
+        func_002D6090(gEffects, slot, msg);
         return 1;
     case 6:
         msg[0] = 4;
@@ -7414,25 +7414,25 @@ s32 func_0033A470(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        slot = Effect_New(D_0044E578, 0xC, effect_798B0_init);
-        ev = D_0044E4D0;
+        slot = Effect_New(gEffects, 0xC, effect_798B0_init);
+        ev = gEvents;
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, slot);
         pos[0] = 0xF6;
         pos[1] = 0xF2;
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
-        func_002D6090(D_0044E578, slot, pos);
+        func_002D6090(gEffects, slot, pos);
         return 1;
     case 1:
         break;
     case 2:
-        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 6);
-        func_002D6090(D_0044E578, slot, NULL);
+        slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 6);
+        func_002D6090(gEffects, slot, NULL);
         return 1;
     default:
         return 1;
     }
-    ev = D_0044E4D0;
+    ev = gEvents;
     slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     pos[0] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
     pos[1] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
@@ -7469,7 +7469,7 @@ s32 func_0033A470(void *self, void *a1, u8 *cmd) {
     }
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
-    func_002D6090(D_0044E578, slot, pos);
+    func_002D6090(gEffects, slot, pos);
     if (D_0047E36C & MENU_CONFIRM) {
         VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 4);
         return 1;
@@ -7547,7 +7547,7 @@ s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
     l = VCALL(m, 0x64, s32 (*)(VObject *, s32, s32))(m, 0, 0);
     m = c->motion;
     r = VCALL(m, 0x64, s32 (*)(VObject *, s32, s32))(m, 1, 0);
-    ev = D_0044E4D0;
+    ev = gEvents;
     wasL = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 5);
     wasR = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 6);
     if (AT(c->motion, 0x550, f32) <= 0.0f && ((!wasL && l) || (!wasR && r))) {
@@ -7555,7 +7555,7 @@ s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
     }
     fl = func_002DD420(c->motion, posL, 0, 0.0f, 1.0f);
     fr = func_002DD420(c->motion, posR, 1, 0.0f, 1.0f);
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (k = 0; k < 2; k++) {
         if (AT(c->motion, 0x550, f32) <= 0.0f && !wasL && fl) {
             mud_puff(mgr, c, posL, k);
@@ -7623,7 +7623,7 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
         break;
     case 1:
     case 2:
-        ev = D_0044E4D0;
+        ev = gEvents;
         for (k = 0; k < 4; k++) {
             u32 at = cmd[4] == 1 ? 0x20 : 0x28;
             f32 stop = D_00428010[g * 2 + (cmd[4] == 1 ? 0 : 1)];
@@ -7642,7 +7642,7 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
         }
         o = obj_named(D_00428050[g * 4 + 2]);
         if (cmd[4] == 1) {
-            mgr = D_0044E578;
+            mgr = gEffects;
             slot = Effect_New(mgr, 0x720, dust_cloud_init);
             v = 6.0f + AT(o, 0x20, f32);
             block_dust(mgr, slot, v, AT(o, 0x24, f32), AT(o, 0x28, f32) + 25.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f));
@@ -7654,7 +7654,7 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
                 a = 12.0f;
                 b = 17.0f;
             }
-            mgr = D_0044E578;
+            mgr = gEffects;
             slot = Effect_New(mgr, 0x720, dust_cloud_init);
             v = AT(o, 0x20, f32) + a * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
             block_dust(mgr, slot, v, AT(o, 0x24, f32), AT(o, 0x28, f32) + b);
@@ -7666,11 +7666,11 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
 
         o = obj_named(D_00428050[g * 4]);
         sceVu0CopyVector(pos, (f32 *)(o + 0x20));
-        func_002FF650(D_0044E560, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
+        func_002FF650(gSound, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
         break;
     }
     case 5: {
-        VObject *list = D_0044F260, *rm = D_00456E00;
+        VObject *list = gPlacedThings, *rm = D_00456E00;
 
         for (k = 0; k < 0x80; k++) {
             u8 *t = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, k);

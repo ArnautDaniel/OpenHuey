@@ -900,7 +900,7 @@ static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
     if (VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) != room) {
         return 0;
     }
-    ev_mgr = D_0044E4D0;
+    ev_mgr = gEvents;
     if (!item_at_spot(ev_mgr, gCharPlayer, spot)) {
         return 0;
     }
@@ -963,7 +963,7 @@ static s32 use_at_door(s32 room, u32 door, s32 ev) {
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != room || !item_door_open(p, door)) {
         return 0;
     }
-    item_event(D_0044E4D0, 0, ev, gCharPlayer);
+    item_event(gEvents, 0, ev, gCharPlayer);
     Progress_SetFlag(p, 0x18);
     return 4;
 }
@@ -985,7 +985,7 @@ s32 func_0032CD30(void *o) {
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != 0x25 || (AT(p, 0x20, u32) & 0x800000) || !item_door_open(p, 1)) {
         return 0;
     }
-    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    item_event(gEvents, 0, 4, gCharPlayer);
     Progress_SetFlag(p, 0x18);
     return 4;
 }
@@ -998,12 +998,12 @@ s32 func_00351B40(void *o) {
         return 0;
     }
     Progress_SetFlag(p, 0x18);
-    item_event(D_0044E4D0, 0, 4, gCharPlayer);
+    item_event(gEvents, 0, 4, gCharPlayer);
     return 4;
 }
 
-extern VObject *D_0044E988;   /* the items */
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gItems;   /* the items */
+extern VObject *gSound;   /* the sound driver */
 
 /* no use here: unless Progress +0x30 bit 0x8000, while item `id` is held, a sound (bank 0xC,
    5); else nothing */
@@ -1011,10 +1011,10 @@ static s32 use_sound_only(s32 need_24_4, s32 id) {
     Progress *p = gProgress;
 
     if ((AT(p, 0x30, u32) & 0x8000) || (need_24_4 && !(AT(p, 0x24, u32) & 4)) ||
-        VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, id) == 0) {
+        VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, id) == 0) {
         return 0;
     }
-    VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+    VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
     return 8;
 }
 
@@ -1029,7 +1029,7 @@ s32 func_002EEC00(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 6 && item_door_open(p, 0)) {
-        item_event(D_0044E4D0, 0, 1, gCharPlayer);
+        item_event(gEvents, 0, 1, gCharPlayer);
         Progress_SetFlag(p, 0x18);
         return 4;
     }
@@ -1041,8 +1041,8 @@ static s32 use_route8_or_offer(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && func_00178610(p, 8) != 0 &&
-        item_at_spot(D_0044E4D0, gCharPlayer, 0x11)) {
-        item_event(D_0044E4D0, 0, 0x16, gCharPlayer);
+        item_at_spot(gEvents, gCharPlayer, 0x11)) {
+        item_event(gEvents, 0, 0x16, gCharPlayer);
         return 4;
     }
     return item_offer(p, o);
@@ -1063,7 +1063,7 @@ s32 func_00303CD0(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x14 && item_door_open(p, 1)) {
-        item_event(D_0044E4D0, 0, 4, gCharPlayer);
+        item_event(gEvents, 0, 4, gCharPlayer);
         Progress_SetFlag(p, 0x18);
         return 4;
     }
@@ -1077,7 +1077,7 @@ static s32 use_room_c7(void) {
     if (!item_room_spot(p, 0xC7, 0xB)) {
         return 0;
     }
-    item_event(D_0044E4D0, 0, (AT(p, 0x2C, u32) & 0x4000) ? 0x10 : 3, gCharPlayer);
+    item_event(gEvents, 0, (AT(p, 0x2C, u32) & 0x4000) ? 0x10 : 3, gCharPlayer);
     return 4;
 }
 
@@ -1160,11 +1160,11 @@ static s32 place_item(void *o, const ItemSlot *t, s32 n) {
         if (t->room == 0x40 && (AT(p, 0x2C, u32) & 0x20)) {
             continue;
         }
-        if (!item_at_spot(D_0044E4D0, gCharPlayer, t->spot)) {
+        if (!item_at_spot(gEvents, gCharPlayer, t->spot)) {
             continue;
         }
         if (t->mode >= 0) {
-            VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, t->mode, AT(o, 0x4, s32));
+            VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, t->mode, AT(o, 0x4, s32));
         }
         return item_event_flag(p, t->ev);
     }
@@ -1229,7 +1229,7 @@ static s32 place_statue(void *o, const ItemPedestal *t) {
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x54) {
         for (i = 0; i < 3; i++, t++) {
-            if (!(AT(p, 0x28, u32) & t->taken) && item_at_spot(D_0044E4D0, gCharPlayer, t->spot)) {
+            if (!(AT(p, 0x28, u32) & t->taken) && item_at_spot(gEvents, gCharPlayer, t->spot)) {
                 return item_event_flag(p, t->ev);
             }
         }
@@ -1274,7 +1274,7 @@ extern f32 func_00124490(void *a, const f32 *p);   /* distance */
  * Progress +0x30 bit 0x8000) while Hewie is in the room being played and item 0x27F is held */
 s32 func_003445D0(void *o) {
     Progress *p = gProgress;
-    VObject *ev_mgr = D_0044E4D0;
+    VObject *ev_mgr = gEvents;
     s32 r;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x52) {
@@ -1297,8 +1297,8 @@ s32 func_003445D0(void *o) {
         s32 room = AT(gCharPartner, 0x30, s32);
 
         if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
-            VCALL(D_0044E988, 0xC, s32 (*)(VObject *, s32))(D_0044E988, 0x27F) != 0) {
-            VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0xC, 5);
+            VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, 0x27F) != 0) {
+            VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
             return 8;
         }
     }
@@ -1334,7 +1334,7 @@ void func_0035BC30(u8 *o, const u8 *m) {
     AT(o, 0x8, s32) = 0;
 }
 
-extern VObject *D_0044E4F8;   /* the camera director */
+extern VObject *gCamDirector;   /* the camera director */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* the room-object glow (vtable D_00479870, made by func_0034B210) +0x10 update: 0 while unset
@@ -1355,9 +1355,9 @@ s32 func_0035C8C0(u8 *o) {
         o[4] -= 2;
         if (o[4] == 0) {
             o[5] = 0xFF;
-            VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, o[6], -1);
-            if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
-                func_002FF650(D_0044E560, 2, 6, (f32 *)(AT(o, 0xC, u8 *) + 0x20), 0, 0);
+            VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, o[6], -1);
+            if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0) {
+                func_002FF650(gSound, 2, 6, (f32 *)(AT(o, 0xC, u8 *) + 0x20), 0, 0);
             }
             return 0;
         }
@@ -1415,7 +1415,7 @@ static inline void item_progress_bit(Progress *p, s32 bit) {
  * elsewhere 0 */
 s32 func_002D27E0(VObject *it) {
     Progress *p = gProgress;
-    VObject *ev = D_0044E4D0;
+    VObject *ev = gEvents;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x23 && item_at_spot(ev, gCharPlayer, 3)) {
         item_event(ev, 0, 5, gCharPlayer);
@@ -1570,7 +1570,7 @@ s32 func_002D27E0(VObject *it) {
 #include "gl2d.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern void *D_0046D7A0[], *D_00469D00[];
 extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 extern f32 func_0031C058(f32 x);   /* cosf */
@@ -1609,7 +1609,7 @@ void func_0035BCA0(u8 *o) {
     c[2] = AT(obj, 0x28, f32);
     c[3] = 1.0f;
     r = o[5] < 8 ? kRadius[o[5]].f : 0.0f;
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
 
     /* the disc: the middle, then 16 points round it */
     sceVu0CopyVector(pt[0], c);

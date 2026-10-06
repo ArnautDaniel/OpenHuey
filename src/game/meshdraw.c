@@ -3,14 +3,14 @@
 #include "game.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E4F0;   /* the renderer */
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gRenderer;   /* the renderer */
+extern VObject *gCamera;   /* the camera */
 
 #ifdef HG_NATIVE
 /* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;
@@ -51,7 +51,7 @@ s32 func_0025E2B0(u8 *o) {
         return 0;
     }
     if (mesh[0] != -1) {
-        cam = D_0044E4B8;
+        cam = gCamera;
         do {
             s32 newTex = 0;
             u32 w, kind5 = 0;
@@ -102,7 +102,7 @@ s32 func_0025E2B0(u8 *o) {
                 sGlMvp[i][3] = b[i][3];
             }
             sGlTex0 = newTex ? AT(o, 0x10, u64) : 0;
-            sGlTex = newTex ? VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, AT(o, 0x80, s32), 0)
+            sGlTex = newTex ? VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, AT(o, 0x80, s32), 0)
                             : NULL;
             sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6 | (AT(o, 0x18, s32) == 4 ? sGlKindPrim : kind5);
             if (AT(o, 0x4, s32) == 1) {
@@ -124,7 +124,7 @@ extern void func_0025C770(f32 *q, f32 (*m)[4]);            /* its matrix */
  * then that point swung back about y -> +0x40 + 16 * which (the edge planes for culling) */
 void func_0025DB10(u8 *o, s32 which) {
     static const union { u32 u; f32 f; } k13 = {0x3FA66666};
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 eye[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
@@ -351,7 +351,7 @@ void func_0025D970(u8 *o) {
     f32 cx = AT(o, 0x40, f32), cz = AT(o, 0x48, f32), dx = AT(o, 0x50, f32), dz = AT(o, 0x58, f32);
     u8 sides = 0, back = 0;
 
-    VCALL(D_0044E4B8, 0x24, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    VCALL(gCamera, 0x24, void (*)(VObject *, f32 *))(gCamera, eye);
     if (!(side_of(eye[0], eye[2], ax, az, px, pz) <= 0.0f)) {
         sides++;
     }
@@ -381,7 +381,7 @@ void func_0025D970(u8 *o) {
  * facing the eye) */
 void func_0025D560(u8 *o) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, k033 = {0x3EA8F5C3};
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 ofs[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
     f32 up[4] __attribute__((aligned(16)));
@@ -417,7 +417,7 @@ void func_0025D560(u8 *o) {
     if (AT(o, 0x88, u16) == 2) {
         mesh_face_eye(o, cam, 1);
     } else if (AT(o, 0x88, u16) == 4) {
-        mesh_face_eye(o, D_0044E4B8, 0);
+        mesh_face_eye(o, gCamera, 0);
     }
 }
 
@@ -452,7 +452,7 @@ static void obj_mvp(u8 *o, f32 scale, f32 (*mvp)[4]) {
     sceVu0RotMatrixY(world, world, AT(o, 0x24, f32));
     sceVu0RotMatrixZ(world, world, AT(o, 0x28, f32));
     sceVu0TransMatrix(world, world, (f32 *)(o + 0x10));
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, mvp);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, mvp);
     sceVu0MulMatrix(mvp, mvp, world);
 }
 
@@ -461,7 +461,7 @@ static void obj_strip(u8 *o, f32 (*mvp)[4], s32 n, const f32 *xyzw, const f32 *s
     s32 tex = AT(model, 0x44, s32);
 
     glr_strip(&mvp[0][0], n, xyzw, st, rgba,
-              tex == -1 ? NULL : VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, tex, 0),
+              tex == -1 ? NULL : VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, tex, 0),
               tex == -1 ? 0 : func_002B71D0(tex), 0xC | (tex != -1 ? 0x10 : 0) | (AT(o, 0x40, u8) & 1 ? 0x40 : 0));
 }
 
@@ -592,7 +592,7 @@ static void gl_placed_object(u8 *o) {
  * ends it. The object stands at +0x70 turned by +0x80. Mode +0x68 1 (the lit layout) isn't
  * read yet. */
 s32 func_0025F0A0(u8 *o) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 t[4][4] __attribute__((aligned(16)));
     f32 r[4][4] __attribute__((aligned(16)));
     f32 w[4][4] __attribute__((aligned(16)));
@@ -639,7 +639,7 @@ s32 func_0025F0A0(u8 *o) {
         xyz = rgba + n * 4 + ((n & 3) == 3 ? 4 : (n & 3) == 2 ? 8 : (n & 3) == 1 ? 0xC : 0);
         if (g == 0 || (AT(o, 0x90 + (g >> 5) * 4, u32) & (1u << (g & 0x1F)))) {
             glr_strip(&mvp[0][0], n, (const f32 *)xyz, (const f32 *)st, rgba,
-                      tex == -1 ? NULL : VCALL(D_0044E4E8, 0xC, void *(*)(VObject *, s32, s32))(D_0044E4E8, tex, 0),
+                      tex == -1 ? NULL : VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, tex, 0),
                       tex == -1 ? 0 : func_002B71D0(tex), (tex != -1 ? 0x10 : 0) | 0xC | (flags & 0xFF) << 6);
         }
         mesh = (s32 *)(xyz + n * 16);
@@ -765,7 +765,7 @@ void func_0025C8C0(u8 *o) {
     u8 type = ent[2];
 
     if (type == 1 || type == 3 || type == 4 || type == 6) {
-        VObject *cam = D_0044E4B8;
+        VObject *cam = gCamera;
         f32 m[4][4] __attribute__((aligned(16)));
         f32 b[4][4] __attribute__((aligned(16)));
 

@@ -1,4 +1,4 @@
-/* Walkable-area triangle mesh used for movement and line-of-walk tests (global D_0044E570). */
+/* Walkable-area triangle mesh used for movement and line-of-walk tests (global gNavMesh). */
 #ifndef NAVMESH_H
 #define NAVMESH_H
 
@@ -19,7 +19,7 @@ typedef struct NavMesh {
     /* 0x14 */ u32 numDoors;      /* door regions: +0x50 occupied?(i), +0x58 angle(i, side), +0x5C pos(i, side, out) -> tri */
 } NavMesh;
 
-extern NavMesh *D_0044E570;
+extern NavMesh *gNavMesh;
 
 #define NAV_NONE 0xFFFFFFFFu
 

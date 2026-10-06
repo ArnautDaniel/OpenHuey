@@ -2705,7 +2705,7 @@ void func_00210E00(u8 *m, u8 *a, f32 back, f32 front) {
         f32 v[4] __attribute__((aligned(16)));
         f32 ny, k;
 
-        VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), n);
+        VCALL(gNavMesh, 0x2C, void (*)(NavMesh *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), n);
         ny = n[1];
         func_001F6370(m, v, 0.0f);
         k = v[2] * (ny * ny);
@@ -2778,7 +2778,7 @@ void func_002DC710(u8 *m, f32 *p, u8 *a) {
     if (tri == (u32)-1) {
         return;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     t = NavMesh_Tri(nm, tri);
     for (;;) {
         s32 e = VCALL(nm, 0x24, s32 (*)(NavMesh *, u32, f32 *, f32 *, f32 *))(nm, tri, hit, (f32 *)(a + 0x10), p);
@@ -3556,7 +3556,7 @@ f32 func_002DD980(u8 *m, u8 *a) {
     if (!(AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 4)) {
         return 1.0f;
     }
-    VCALL(D_0044E570, 0x2C, void (*)(NavMesh *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), n);
+    VCALL(gNavMesh, 0x2C, void (*)(NavMesh *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), n);
     if (n[1] < 1.0f) {
         k = n[1] * n[1];
         n[1] = 0.0f;
@@ -4567,9 +4567,9 @@ void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b) {
 
 
 extern VObject *gBootMessage;   /* (also the characters' texture sets: +0x24 slot, +0x28 entry) */
-extern VObject *D_0044E4E8;     /* the texture cache */
-extern VObject *D_0044E4F0;     /* the renderer */
-extern VObject *D_0044E4B8;     /* the camera */
+extern VObject *gTexCache;     /* the texture cache */
+extern VObject *gRenderer;     /* the renderer */
+extern VObject *gCamera;     /* the camera */
 extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
 
 #ifdef HG_NATIVE
@@ -4602,7 +4602,7 @@ static ModelBuf sMb;
  * 4th colour row is the ambient. A vertex at world P with normal N gets
  *   min(ambient + sum_i colour_i * max(dir_i.N^, 0) * max(1 + falloff_i * (dir_i.P - dir_i.L_i), 0), 128)
  * (0x80 = 1.0 against the texture), alpha 127. */
-extern VObject *D_0044E4C8;   /* the scene's lights */
+extern VObject *gLights;   /* the scene's lights */
 static f32 sLDir[4][4] __attribute__((aligned(16)));
 static f32 sLCol[4][4] __attribute__((aligned(16)));
 static f32 sLFall[4];
@@ -4610,8 +4610,8 @@ static f32 sLFall[4];
 static void light_setup(u8 *m) {
     f32 *root = func_0017CE80(AT(m, 0x18, void *), AT(m, 0x2C, s32));
 
-    VCALL(D_0044E4C8, 0x10, void (*)(VObject *, f32 *, s32, f32 (*)[4], f32 (*)[4], f32 *, f32 (*)[4]))(
-        D_0044E4C8, root != NULL ? root + 12 : NULL, AT(m, 0x28, s32), sLDir, sLCol, sLFall, NULL);
+    VCALL(gLights, 0x10, void (*)(VObject *, f32 *, s32, f32 (*)[4], f32 (*)[4], f32 *, f32 (*)[4]))(
+        gLights, root != NULL ? root + 12 : NULL, AT(m, 0x28, s32), sLDir, sLCol, sLFall, NULL);
     {
         static s32 sDbg = -1, sN;
 
@@ -4620,7 +4620,7 @@ static void light_setup(u8 *m) {
         }
         if (sDbg && (sN++ % 120) == 0) {
             fprintf(stderr, "light: model %p tri %d bone %d lights %d amb %.1f %.1f %.1f\n", (void *)m, AT(m, 0x28, s32),
-                    AT(m, 0x2C, s32), AT(D_0044E4C8, 0x10, s32), sLCol[3][0], sLCol[3][1], sLCol[3][2]);
+                    AT(m, 0x2C, s32), AT(gLights, 0x10, s32), sLCol[3][0], sLCol[3][1], sLCol[3][2]);
             fprintf(stderr, "  col0 %.1f %.1f %.1f col1 %.1f %.1f %.1f col2 %.1f %.1f %.1f fall %.4f %.4f %.4f\n",
                     sLCol[0][0], sLCol[0][1], sLCol[0][2], sLCol[1][0], sLCol[1][1], sLCol[1][2], sLCol[2][0],
                     sLCol[2][1], sLCol[2][2], sLFall[0], sLFall[1], sLFall[2]);
@@ -4911,7 +4911,7 @@ static void gl_draw_model(u8 *m) {
     if (AT(m, 0x4C0, u8 *) == NULL || AT(m, 0x810, u8 *) == NULL) {
         return;
     }
-    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     light_setup(m);
     gl_skinned_parts(m, &clip[0][0]);
     gl_rigid_parts(m, &clip[0][0]);
@@ -4984,14 +4984,14 @@ void func_002DD040(u8 *m, s32 anim) {
     AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
 }
 
-extern VObject *D_0044FE10;   /* the cutscene director */
+extern VObject *gCutscene;   /* the cutscene director */
 
 /* the motion's time (+0x6A4 +0) = how far cutscene frame `frame` is into its shot (director
    +0x20), shared by the three blend channels' time pointers (+0x704, 0x60 apart) */
 void func_002DD090(u8 *m, s32 frame) {
     s32 i;
 
-    *AT(m, 0x6A4, f32 *) = (f32)VCALL(D_0044FE10, 0x20, s32 (*)(VObject *, s32))(D_0044FE10, frame);
+    *AT(m, 0x6A4, f32 *) = (f32)VCALL(gCutscene, 0x20, s32 (*)(VObject *, s32))(gCutscene, frame);
     for (i = 0; i < 3; i++) {
         f32 *t = AT(m, 0x704 + i * 0x60, f32 *);
 

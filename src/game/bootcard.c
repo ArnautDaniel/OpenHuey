@@ -15,7 +15,7 @@
 
 #define AT32(p, off) AT(p, off, s32)
 
-extern MemCard *D_0044FF00;
+extern MemCard *gMemCard;
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
 extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
@@ -60,7 +60,7 @@ static inline s32 sys_valid(SysData *s) {
 }
 
 void BootCard_Check(BootCard *b) {
-    MemCard *mc = D_0044FF00;
+    MemCard *mc = gMemCard;
     s32 st;
 
     if (b->state < 0) {
@@ -242,7 +242,7 @@ BootCard *BootCard_dtor(BootCard *b, s32 flags) {
 
 /* ---- the save-data screen (the sub screen's load page; mode 6) ---- */
 
-extern void *D_0044E978;    /* the system data */
+extern void *gSystemData;    /* the system data */
 extern void SaveScreen_DrawPart(BootCard *b, s32 part);
 void SaveScreen_DrawList(BootCard *b);
 void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);
@@ -256,12 +256,12 @@ void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);
 
 /* the save screen is set up on the system data, with two work buffers */
 void SaveScreen_Init(BootCard *b, void *buf0, void *buf1) {
-    b->sys = (SysData *)((u8 *)D_0044E978 + 0x20);
+    b->sys = (SysData *)((u8 *)gSystemData + 0x20);
     b->buf0 = buf0;
     b->buf1 = buf1;
 }
 
-extern VObject *D_0044E9A0;   /* the VRAM manager */
+extern VObject *gVram;   /* the VRAM manager */
 
 /* the save screen's parts (texture group 0x19): texture, CLUT (0x80: blend with the alpha
  * channel as is), u, v, w, h, x, y, screen w, h */
@@ -441,7 +441,7 @@ static inline s32 save_valid(u8 *d) {
  * system data; 5 choosing the save; 6 / 7 reading it; 100 / 101 a message, then back to 1;
  * 150 loaded (-2 once its message is closed); 200 a question; 300 cancelled (-1). */
 void SaveScreen_Load(BootCard *b) {
-    MemCard *mc = D_0044FF00;
+    MemCard *mc = gMemCard;
     u8 flags = 1;
     s32 st;
     u32 pad;
@@ -722,7 +722,7 @@ void func_002BD6A0(BootCard *b) {
     SAVE_HEADER(b->sys, b->cursor)[8] = 0;
     VCALL(gProgress, 0x70, void (*)(Progress *, u8))(gProgress, b->cursor);
     b->sys->flags = b->cursor;
-    AT(D_0044E978, 0x2C, u32) |= 0x100000;
+    AT(gSystemData, 0x2C, u32) |= 0x100000;
     sys_resum(b->sys);
     h = SAVE_HEADER(b->sys, b->cursor);
     AT32(h, 0) = bytes_sum(h, 0x18);
@@ -774,7 +774,7 @@ void func_002BD8C0(BootCard *b) {
  * header sum spoiled (D_0047ABF8), the save, its header; 18 done; 50 "which card"; 100 / 101 a message, then back to 1; 150
  * saved; 200 "quit?"; 300 cancelled / finished (-1) */
 void func_002BDAB0(BootCard *b) {
-    MemCard *mc = D_0044FF00;
+    MemCard *mc = gMemCard;
     u8 flags = 0;
     s32 st;
     u32 pad;
@@ -786,7 +786,7 @@ void func_002BDAB0(BootCard *b) {
     case 0: {
         VObject *ld = gFileLoader;
 
-        AT(D_0044E978, 0xC, u8) = 0;
+        AT(gSystemData, 0xC, u8) = 0;
         b->port = 0;
         VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D220, b->buf0);
         VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D230, b->buf1);
@@ -989,7 +989,7 @@ void func_002BDAB0(BootCard *b) {
             b->state++;
         } else {
             Task_OpenAt(&b->task, 0x3A, (u8)b->hidden);
-            Sound_Play(D_0044E560, 0xD, SE_BANK_MENU);
+            Sound_Play(gSound, 0xD, SE_BANK_MENU);
             b->state = 150;
         }
         break;
@@ -1125,7 +1125,7 @@ void func_002BDAB0(BootCard *b) {
             break;
         case 18:
             Task_OpenAt(&b->task, 0x3A, (u8)b->hidden);
-            Sound_Play(D_0044E560, 0xD, SE_BANK_MENU);
+            Sound_Play(gSound, 0xD, SE_BANK_MENU);
             b->state = 150;
             goto done;
         }
@@ -1167,7 +1167,7 @@ void func_002BDAB0(BootCard *b) {
         b->state = b->task.answer == 0 ? 300 : 1;
         break;
     default:
-        AT(D_0044E978, 0xC, u8) = 1;
+        AT(gSystemData, 0xC, u8) = 1;
         Task_Close(&b->task);
         b->state = -1;
         break;

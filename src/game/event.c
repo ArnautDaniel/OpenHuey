@@ -1,4 +1,4 @@
-/* The event script system (SceneGame +0xF6AFB0, D_0044E4D0): runs the rooms' event scripts.
+/* The event script system (SceneGame +0xF6AFB0, gEvents): runs the rooms' event scripts.
  * +0x120 holds one handler object per room (0x110 rooms); its vtable gives the room's scripts
  * for each phase (+0xC entering, +0x10.. +0x20 other phases). */
 #include "common.h"
@@ -108,7 +108,7 @@ void *func_002A8970(u32 size, void *place) {
     return place;
 }
 
-/* (D_0044E4D0) +0xC the room's event script (PAC section 2) */
+/* (gEvents) +0xC the room's event script (PAC section 2) */
 void func_00209840(u8 *ev, void *script) {
     AT(ev, 0x10, void *) = script;
 }
@@ -116,9 +116,9 @@ void func_00209840(u8 *ev, void *script) {
 #include "progress.h"
 #include "task.h"
 
-extern VObject *D_0044E560;   /* the sound driver */
-extern VObject *D_0044E988;   /* the item manager */
-extern VObject *D_0044E970;
+extern VObject *gSound;   /* the sound driver */
+extern VObject *gItems;   /* the item manager */
+extern VObject *gMusic;
 extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 and 1 */
 extern void func_00121890(u8 *ev, u8 *script);   /* start a script */
 extern void func_00121730(u8 *ev);   /* a control op (0xF0..) */
@@ -168,7 +168,7 @@ void func_00209390(u8 *ev, u8 phase) {
 
         AT(ev, 0x560, s32) = VCALL(p, 0xC, s32 (*)(Progress *))(p);
         AT(p, 0xDC + (AT(ev, 0x560, s32) >> 5) * 4, u32) |= 1 << (AT(ev, 0x560, s32) & 0x1F);
-        VCALL(D_0044E560, 0x7C, void (*)(VObject *, s32, s32))(D_0044E560, 1, 0);
+        VCALL(gSound, 0x7C, void (*)(VObject *, s32, s32))(gSound, 1, 0);
         for (i = 0; i < 32; i++) {
             AT(ev, 0x810 + i * 4, s32) = 0;
         }
@@ -180,8 +180,8 @@ void func_00209390(u8 *ev, u8 phase) {
         for (i = 0; i < 17; i++) {
             AT(ev, 0x564 + i * 0x18, s32) = 0;
         }
-        VCALL(D_0044E988, 0x28, void (*)(VObject *))(D_0044E988);
-        VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, 0xFF, 0, 0, 1.0f);
+        VCALL(gItems, 0x28, void (*)(VObject *))(gItems);
+        VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0xFF, 0, 0, 1.0f);
         AT(ev, 0x80C, s32) = 0;
         o = EV_ROOM(ev);
         script = VCALL(o, 0xC, u8 *(*)(VObject *))(o);
@@ -248,7 +248,7 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
     VCALL(ev, 0xE4, void (*)(VObject *, s32, u8 *))(ev, slot, script);
 }
 
-extern VObject *D_0044E568;   /* the rooms: +0x48 (room, entry) the event area of an entry */
+extern VObject *gRooms;   /* the rooms: +0x48 (room, entry) the event area of an entry */
 
 /* +0xE8 the middle of the event area room entry `k` leads to (the room table +0x48 of the
  * current room; its line +0x10 -> +0x30 halved, the height +0x14), w 1, into `out`. 0: no
@@ -261,8 +261,8 @@ s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
     if (tbl == NULL) {
         return 0;
     }
-    area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(
-               D_0044E568, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), k) & 0xFFFF;
+    area = VCALL(gRooms, 0x48, u32 (*)(VObject *, s32, s32))(
+               gRooms, VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), k) & 0xFFFF;
     if (area == 0xFFFF) {
         return 0;
     }
@@ -364,7 +364,7 @@ void func_00209060(VObject *ev, u8 *c) {
     AT(ev, 0x701, u8) = 0;
 }
 
-extern VObject *D_0044E570;   /* the nav mesh */
+extern VObject *gNavMesh;   /* the nav mesh */
 
 /* +0xD8 whether `pos` (on nav triangle `tri`) is inside area `area` of the room's event data
  * (+0x10: area offsets; a type 1 area is 4 corners (x, z at +0x10.., 0x10 apart) and a
@@ -393,8 +393,8 @@ s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
         }
     }
     sceVu0CopyVector(at, (f32 *)pos);
-    if (VCALL(D_0044E570, 0x10, s32 (*)(VObject *, s32, f32 *))(D_0044E570, tri, at) == 3) {
-        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, tri, at);
+    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))(gNavMesh, tri, at) == 3) {
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, tri, at);
     }
     if (inside != 4) {
         return 0;
@@ -450,8 +450,8 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
         }
     }
     sceVu0CopyVector(at, (f32 *)(c + 0x10));
-    if (VCALL(D_0044E570, 0x10, s32 (*)(VObject *, s32, f32 *))(D_0044E570, AT(c, 0x34, s32), at) == 3) {
-        VCALL(D_0044E570, 0x14, void (*)(VObject *, s32, f32 *))(D_0044E570, AT(c, 0x34, s32), at);
+    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))(gNavMesh, AT(c, 0x34, s32), at) == 3) {
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, AT(c, 0x34, s32), at);
     }
     if (inside != 4) {
         return 0;
@@ -563,7 +563,7 @@ s32 func_001FB1B0(u8 *ev, s32 n) {
 }
 
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* draw the event's screen fade (+0x20) in renderer layer `layer` */
 void func_001FBA20(u8 *ev, s32 layer) {
@@ -573,7 +573,7 @@ void func_001FBA20(u8 *ev, s32 layer) {
     (void)layer;
     glr_overlay(AT(ev, 0x20 + 0xF8, u32));
 #else
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, void *))(D_0044E4F0, ev + 0x20, layer, NULL);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, void *))(gRenderer, ev + 0x20, layer, NULL);
 #endif
 }
 
@@ -595,7 +595,7 @@ void func_001FBA80(u8 *ev, u32 rgba, s32 layer) {
         glr_overlay(AT(ev, 0x20 + 0xF8, u32));
     }
 #else
-    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, void *))(D_0044E4F0, ev + 0x20, layer, NULL);
+    VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, void *))(gRenderer, ev + 0x20, layer, NULL);
 #endif
 }
 
@@ -690,7 +690,7 @@ s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
     return 1;
 }
 
-extern VObject *D_0044E568;   /* the rooms */
+extern VObject *gRooms;   /* the rooms */
 
 /* the room's point `n` (the table +0x10, by the rooms' +0x48 index for the current room):
  * three vectors (+0x10 / +0x20 / +0x30); 0 if none */
@@ -702,8 +702,8 @@ s32 func_001FBB10(u8 *ev, s32 n, f32 *a, f32 *b, f32 *c) {
     if (tab == NULL) {
         return 0;
     }
-    i = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(
-        D_0044E568, VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress), n) & 0xFFFF;
+    i = VCALL(gRooms, 0x48, u32 (*)(VObject *, s32, s32))(
+        gRooms, VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress), n) & 0xFFFF;
     if (i == 0xFFFF) {
         return 0;
     }
@@ -729,7 +729,7 @@ s32 func_001FB520(void *ev, s32 room) {
 
 extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046BA80[], *D_0046BAA0[];
-extern VObject *D_0044E4D0;   /* the events */
+extern VObject *gEvents;   /* the events */
 
 /* destructor of class D_0046BA80 */
 void *func_0020C120(void **o, s32 flags) {
@@ -746,7 +746,7 @@ void *func_0020C120(void **o, s32 flags) {
 void *func_0020C170(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046BAA0;
-        D_0044E4D0 = NULL;
+        gEvents = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -754,10 +754,10 @@ void *func_0020C170(void **o, s32 flags) {
     return o;
 }
 
-extern u8 *D_0044F808;        /* character slot 2 (the stalker) */
+extern u8 *gCharSlot2;        /* character slot 2 (the stalker) */
 extern VObject *gRandom;   /* random numbers */
 extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
-extern VObject *D_0044FE10;   /* the cutscene director */
+extern VObject *gCutscene;   /* the cutscene director */
 extern void *func_001FB3B0(void *, s32);
 extern void *func_001FB400(void *, s32);
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
@@ -773,7 +773,7 @@ u8 *func_001FB250(u8 *o, s32 flags) {
     func_001002C0(o + 0xBF0, func_001FB400, 0x30, 0x20);
     AT(o, 0x938, void **) = D_0046ED30;
     AT(o, 0x938, void **) = D_0046BB20;
-    D_0044FE10 = NULL;
+    gCutscene = NULL;
     if (AT(o, 0x784, void *) != NULL) {
         Task_dtor(AT(o, 0x784, void *), 1);
         AT(o, 0x784, void *) = NULL;
@@ -782,7 +782,7 @@ u8 *func_001FB250(u8 *o, s32 flags) {
     AT(o, 0x20, void **) = D_0046F350;
     AT(o, 0x20, void **) = D_00469D00;
     AT(o, 0xC, void **) = D_0046BAA0;
-    D_0044E4D0 = NULL;
+    gEvents = NULL;
     AT(o, 0x0, void **) = D_0046BA80;
     if ((s16)flags > 0) {
         func_00100490(o);
@@ -810,12 +810,12 @@ void func_001FB5F0(void) {
     AT(p, 0xBB, u8)++;
     AT(p, 0xBC, u8) = (u32)VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) % 0x4F;
     k = AT(p, 0xBC, u8);
-    c = D_0044F808;
+    c = gCharSlot2;
     if (c != NULL && AT(c, 0x28, u8) != 0 && AT(c, 0x30, u32) >= 0x100 && AT(c, 0x30, u32) < 0x106) {
         r = VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g);
         VCALL((VObject *)c, 0x64, void (*)(VObject *, s32, s32, s32))((VObject *)c, r == 0x109 ? 0x10A : 0x109, -1, 2);
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     for (r = 0; r < 6; r++) {
         for (i = 0; i < 3; i++) {
             for (j = 0; j < 4; j++) {

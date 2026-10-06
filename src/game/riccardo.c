@@ -52,7 +52,7 @@ void func_002D7D20(Pursuer *p, s32 exit) {
         pr = gProgress;
         func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
         func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(D_0044E568, 0x28, s32 (*)(VObject *, s32))(D_0044E568, exit), 0, 0);
+        VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
 }
@@ -616,7 +616,7 @@ static inline void Riccardo_Behaviour(Pursuer *p, const PTMF *away, const PTMF *
         }
     } else if (next != -2) {
         if (next == 0x1C) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 0x1E);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 0x1E);
         }
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
     }
@@ -666,7 +666,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         void *nav;
 
         func_00211A90(&p->c.a, 1000.0f, ahead);
-        nav = D_0044E570;
+        nav = gNavMesh;
         for (;;) {
             u8 *t = tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL ? AT(nav, 0x4, u8 *) + tri * 0x50 : NULL;
             s32 edge;
@@ -714,7 +714,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         if (tri == (u32)-1) {
             return 0;
         }
-        VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, tri, out);
+        VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, tri, out);
         return 1;
     }
 }
@@ -741,7 +741,7 @@ typedef struct {
 
 /* a debris cloud where a blow hits the floor */
 static void Riccardo_Debris(const f32 *at) {
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0xF70, Debris_Init);
     DebrisParams dp;
 
@@ -764,7 +764,7 @@ void func_002DBD70(Pursuer *p) {
     if (!(func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
         return;
     }
-    mgr = D_0044E578;
+    mgr = gEffects;
     func_002D6090(mgr, Effect_New(mgr, 0x80, Impact_Init), jolt);
     func_002A8440((u8 *)gProgress + 0x798, 0x40, p->c.a.room, p->c.a.navTri, 0xFFFF);
     switch (MOTION_ANIM(p)) {
@@ -884,7 +884,7 @@ static inline s32 Riccardo_OutOfLine(Pursuer *p, const f32 *at, const f32 *pt) {
 }
 
 /* state: his blow at Fiona. At the hit key he aims (+0x100 bits) if he may go for her, sees her
-   in front within 30 degrees: 4 at her, 1 at a room object within 50 of her (D_0044E4D0 vtable
+   in front within 30 degrees: 4 at her, 1 at a room object within 50 of her (gEvents vtable
    +0x68) further than 20 from him, 2 at Hewie likewise. At the key the object takes the blow
    (its point to +0x1770) unless she or Hewie is in the way; Hewie takes it if he's in the way
    (func_002D8840: a hit of kind 2, else debris); then her: if she's lower than his waist the
@@ -917,7 +917,7 @@ void func_002D9500(Pursuer *p) {
                 f32 d[4] __attribute__((aligned(16)));
 
                 p->c.unk100 = 4;
-                if (VCALL(D_0044E4D0, 0x68, s32 (*)(VObject *, f32 *, f32 *))(D_0044E4D0, fiona, obj) != 0) {
+                if (VCALL(gEvents, 0x68, s32 (*)(VObject *, f32 *, f32 *))(gEvents, fiona, obj) != 0) {
                     sceVu0SubVector(d, fiona, obj);
                     d[3] = 0.0f;
                     if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < 50.0f && !(func_00124490(&p->c.a, obj) <= 20.0f)) {
@@ -1349,7 +1349,7 @@ void func_0034CDC0(Pursuer *p) {
     Riccardo_Behaviour(p, &D_00442908, &D_00442918, func_0034BFF0, 0);
 }
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 extern f32 func_0031C058(f32 x);   /* cosf */
 extern f32 func_0031C248(f32 x);   /* sinf */
 extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];
@@ -1410,9 +1410,9 @@ void func_0034D320(Pursuer *p) {
     Stalker_ThinkTimers(p);
     alpha = (u8)(u32)(80.0f + 80.0f * func_0031C248(PU(p, 0x17C4, f32)));
     if ((s32)alpha < 80) {
-        VCALL(D_0044E4F0, 0x6C, void (*)(VObject *))(D_0044E4F0);
+        VCALL(gRenderer, 0x6C, void (*)(VObject *))(gRenderer);
     }
-    r = D_0044E4F0;
+    r = gRenderer;
     VCALL(r, 0x64, void (*)(VObject *, u32, s32))(r, alpha << 24 | 0x808080, 0);
     if (PU(p, 0x17C8, s32) != 0) {
         PU(p, 0x17C4, f32) = 0x1.921fb6p+0f;   /* pi / 2 */
@@ -1429,8 +1429,8 @@ void func_0034D320(Pursuer *p) {
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
 
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gCamera;   /* the camera */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* vtable +0x2C: the draw (as func_00320000, always shown) */
 void func_0034D840(Pursuer *p) {
@@ -1445,8 +1445,8 @@ void func_0034D840(Pursuer *p) {
         VCALL(p, 0x80, void (*)(Pursuer *))(p);
     }
     if (p->c.unk152C == 0x11) {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
-        cam = D_0044E4B8;
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
+        cam = gCamera;
         VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
         VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
         VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
@@ -1455,7 +1455,7 @@ void func_0034D840(Pursuer *p) {
     m = p->c.motion;
     VCALL(m, 0x38, void (*)(void *, s32, u32, s32))(m, p->c.unk152C, p->c.a.navTri, 0);
     if (p->c.unk152C == 0x11) {
-        VCALL(D_0044E4B8, 0x14, void (*)(VObject *))(D_0044E4B8);
+        VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
     }
 }
 

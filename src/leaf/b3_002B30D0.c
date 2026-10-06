@@ -51,11 +51,11 @@ u32 func_002B30E0(void *self, s32 i) {
     return D_00409938[i];
 }
 
-extern u8 *D_0044F258;
+extern u8 *gCreatures;
 
 /* 1 unless the object at +0x18 exists and its byte +0x28 is 1. */
 s32 func_002B3130(void) {
-    u8 *p = *(u8 **)(D_0044F258 + 0x18);
+    u8 *p = *(u8 **)(gCreatures + 0x18);
 
     return !(p != NULL && p[0x28] == 1);
 }

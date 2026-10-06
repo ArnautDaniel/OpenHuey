@@ -9,7 +9,7 @@
 #include "progress.h"
 #include "ptmf.h"
 
-extern VObject *D_0044E568;   /* the rooms (+0x10 the door at an exit, +0x44 a door's flags) */
+extern VObject *gRooms;   /* the rooms (+0x10 the door at an exit, +0x44 a door's flags) */
 extern void func_002A8440(void *noise, s32 level, s32 room, u32 tri, s32 exitId);   /* make a noise */
 
 #define CMD(p, k) ((u8 *)(p) + 0x10B0 + (k) * 0xC)
@@ -142,12 +142,12 @@ void func_00178070(Progress *p, u32 slot, s32 a2, s32 a3, s32 a4, s32 a5, f32 f)
 
 /* the door at exit `exit` of room `room` */
 static inline u16 door_at(s32 room, s32 exit) {
-    return VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, s32))(D_0044E568, room, exit);
+    return VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, s32))(gRooms, room, exit);
 }
 
 /* is door `d` always open (the rooms' flag bit 0) */
 static inline s32 door_fixed(u16 d) {
-    return (u8)VCALL(D_0044E568, 0x44, s32 (*)(VObject *, u32))(D_0044E568, d) & 1;
+    return (u8)VCALL(gRooms, 0x44, s32 (*)(VObject *, u32))(gRooms, d) & 1;
 }
 
 /* let go of the held door at exit `exit` (clears bit 2 too): 1 if it was held */

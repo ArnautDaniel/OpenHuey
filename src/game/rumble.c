@@ -1,4 +1,4 @@
-/* Controller rumble (system +0x300, vtable 0x46F4F0, global D_0044E7A8): five channels, each
+/* Controller rumble (system +0x300, vtable 0x46F4F0, global gScreenFade): five channels, each
  * with a small-motor value A (on: 1.0 in 16.16) and a large-motor strength B (0..255 in 16.16)
  * held for a number of frames; channel 4 can also follow two command lists. Each frame the
  * strongest values go to the pad manager (system +0x40, +0xC). */
@@ -38,14 +38,14 @@ _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 #define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
 
 extern void *D_0046F4F0[], *D_0046AE30[];
-extern Rumble *D_0044E7A8;      /* the fader */
-extern VObject *D_0044FEB0;    /* the pad manager (system +0x40) */
+extern Rumble *gScreenFade;      /* the fader */
+extern VObject *gPad;    /* the pad manager (system +0x40) */
 extern void func_00100490(void *p);   /* operator delete */
 
 /* constructor: register, reset (vtable +0xC) */
 void *func_002D4630(Rumble *f) {
     f->vtbl = D_0046F4F0;
-    D_0044E7A8 = f;
+    gScreenFade = f;
     RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
     return f;
 }
@@ -55,7 +55,7 @@ Rumble *func_0020DF90(Rumble *f, s32 flags) {
     if (f != NULL) {
         f->vtbl = D_0046F4F0;
         f->vtbl = D_0046AE30;
-        D_0044E7A8 = NULL;
+        gScreenFade = NULL;
         if ((s16)flags > 0) {
             func_00100490(f);
         }
@@ -171,7 +171,7 @@ s32 func_002D3FA0(Rumble *f) {
 void func_002D4020(Rumble *f, s32 on) {
     f->enabled = on;
     if (!(u8)on) {
-        VCALL(D_0044FEB0, 0xC, void (*)(VObject *, s32, s32, s32))(D_0044FEB0, 0, 0, 0);
+        VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
     }
 }
 
@@ -179,7 +179,7 @@ void func_002D4020(Rumble *f, s32 on) {
 void func_002D3FC0(Rumble *f, s32 v) {
     f->unk5 = v;
     if ((u8)v == 1) {
-        VCALL(D_0044FEB0, 0xC, void (*)(VObject *, s32, s32, s32))(D_0044FEB0, 0, 0, 0);
+        VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
     }
 }
 
@@ -266,5 +266,5 @@ void func_002D42A0(Rumble *f) {
         v = Rumble_StepList(f, &c->timeB, &c->stepB, &c->valueB, &f->listB, &f->posB, 1);
         maxB = maxB < v ? v : maxB;
     }
-    VCALL(D_0044FEB0, 0xC, void (*)(VObject *, s32, s32, s32))(D_0044FEB0, 0, (maxA >> 16) & 0xFF, (maxB >> 16) & 0xFF);
+    VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, (maxA >> 16) & 0xFF, (maxB >> 16) & 0xFF);
 }

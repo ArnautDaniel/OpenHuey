@@ -1,5 +1,5 @@
 /* The sound driver object (system +0x395D40, vtable D_0046BF20; its sound interface at +4,
- * vtable D_0046BF2C, is the global D_0044E560): banks of sounds loaded into the IOP sound
+ * vtable D_0046BF2C, is the global gSound): banks of sounds loaded into the IOP sound
  * driver, sound effects (2D, or placed in 3D from the block at +0x10), sequences, volumes and
  * the output mode. It talks to SNDDRV.IRX through the EE sound library (snd_lib.c).
  *
@@ -28,7 +28,7 @@ extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
 extern u8 D_003D8990[8][2];    /* the positioned sounds: bank, sound - 0x18 */
 extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memory addresses */
 extern VObject *gFileLoader;
-extern VObject *D_0044E560;
+extern VObject *gSound;
 extern Progress *gProgress;
 
 #define BANK(d, k) ((d) + 0x84 + (k) * 0x10)
@@ -818,7 +818,7 @@ u8 *func_0020E000(u8 *d, s32 flags) {
         if (d + 4 != NULL) {
             AT(d, 0x4, void **) = D_0046AF90;
             if (d + 4 != NULL) {
-                D_0044E560 = NULL;
+                gSound = NULL;
             }
         }
         if (d != NULL) {
@@ -831,7 +831,7 @@ u8 *func_0020E000(u8 *d, s32 flags) {
     return d;
 }
 
-/* ---- the sound interface (at +4, D_0044E560): each method the driver's ---- */
+/* ---- the sound interface (at +4, gSound): each method the driver's ---- */
 
 #define THUNK(name, ret, target, params, args) \
     ret name params { return target args; }

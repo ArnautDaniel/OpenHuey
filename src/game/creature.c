@@ -1,4 +1,4 @@
-/* The creatures (character slots 7..9, 0x1600 bytes; their manager is D_0044F258): Character
+/* The creatures (character slots 7..9, 0x1600 bytes; their manager is gCreatures): Character
  * with their own block at +0x1540. Two classes: D_0046FAA0 (here) and D_00474080, both on the
  * creature base D_0046FB50. Their state is kept across rooms in Progress +0x878 (36 bytes per
  * slot, func_002DE840). */
@@ -140,7 +140,7 @@ void func_002E1340(Character *c) {
 extern Character *gCharacters[];
 extern Character *gCharPlayer;
 extern VObject *gRandom;   /* random numbers: +0x10 an integer */
-extern VObject *D_0044E568;   /* the rooms */
+extern VObject *gRooms;   /* the rooms */
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
 
 /* per kind (+0x1571): +0x8 a byte, +0x0 a float, +0x6 a short */
@@ -224,7 +224,7 @@ void func_002DEA80(Character *c, s32 a1, s32 a2) {
         return;
     }
     for (n = 0; n < c->unk1384; n++) {
-        VObject *rooms = D_0044E568;
+        VObject *rooms = gRooms;
         u16 door = AT(c->unk138C, n * 2, u16);
 
         AT(&c->unk14C4, 0, f32) += (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, door, a1);
@@ -249,11 +249,11 @@ s32 func_002DF760(Character *c, s32 exit) {
     u32 d;
     s32 i;
 
-    d = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, c->a.room, exit) & 0xFF;
+    d = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, c->a.room, exit) & 0xFF;
     if (d == 0xFF) {
         return -1;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     c->a.room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, c->a.room, exit);
     AT(k, 0xC, s32) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, c->a.room, d, 0);
     AT(k, 0x9, u8) = d;
@@ -274,7 +274,7 @@ static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32
     u8 *k = CR(c);
     s32 r, i;
 
-    if (NavMesh_AcrossDivider(D_0044E570, tri, c->a.navTri)) {
+    if (NavMesh_AcrossDivider(gNavMesh, tri, c->a.navTri)) {
         return -1;
     }
     if (AT(k, busy, u8) == 0) {
@@ -338,7 +338,7 @@ void func_002DF470(Character *c, u32 tri) {
     if (!(AT(k, 0x88, u16) & 1)) {
         return;
     }
-    if ((VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
+    if ((VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
         AT(k, 0x84, u8) = 0;
         func_002DF760(c, (u8)c->unk100);
     }
@@ -398,8 +398,8 @@ s32 func_002DFF70(Character *c) {
     return creature_close_in(c, t);
 }
 
-extern VObject *D_0044E4D0;   /* the events: +0x10 (pos, spot, -1) a position at event spot */
-extern VObject *D_0044E558;   /* the doors */
+extern VObject *gEvents;   /* the events: +0x10 (pos, spot, -1) a position at event spot */
+extern VObject *gDoors;   /* the doors */
 
 /* placed at a random triangle of its room (only in the room being played) on its level
  * `level` (0 / 1: flag 0x100000 / 0x200000 free; -1 / 2: not both; flag 8 never), away from
@@ -427,10 +427,10 @@ void func_002DE540(Character *c, s32 level) {
         break;
     }
     rnd = gRandom;
-    nm = D_0044E570;
-    rooms = D_0044E568;
+    nm = gNavMesh;
+    rooms = gRooms;
     n = nm->numTris;
-    ev_mgr = D_0044E4D0;
+    ev_mgr = gEvents;
     for (;;) {
         f32 pos[4] __attribute__((aligned(16)));
         u32 flags, d;
@@ -470,7 +470,7 @@ void func_002DE540(Character *c, s32 level) {
  * door's spot; if it was ahead of the plan it snaps onto the next step (+0x84 1) */
 void func_002DF5B0(Character *c) {
     u8 *k = CR(c);
-    VObject *doors = D_0044E558, *rooms = D_0044E568;
+    VObject *doors = gDoors, *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     u32 d, t;
@@ -635,7 +635,7 @@ void func_002DF180(Character *c) {
         return;
     }
     func_00177FA0(gProgress, c->a.pos, 1, 0xD, 0, 0, 0.0f);
-    mgr = D_0044E578;
+    mgr = gEffects;
     slot = Effect_New(mgr, 0x4A0, vanish_init);
     sceVu0CopyVector(fx.pos, c->a.pos);
     fx.pos[1] = 12.0f + c->a.pos[1] + AT(k, 0x14, f32);
@@ -651,7 +651,7 @@ void func_002DF180(Character *c) {
         fx.rgba[1] = 0x30;
     }
     func_002D6090(mgr, slot, &fx);
-    if (gCharPlayer->unkE2 == 0 && c->a.disabled == 0 && VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) == 0) {
+    if (gCharPlayer->unkE2 == 0 && c->a.disabled == 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0) {
         func_00122C20(&c->a, 0x8B, 5, 0, 0, NULL);
     }
     AT(k, 0x37, u8) = 1;
@@ -669,11 +669,11 @@ extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 /* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
 static void creature_at_doors(Character *c, u32 doors) {
     u8 *k = CR(c);
-    VObject *rooms = D_0044E568, *ev_mgr;
+    VObject *rooms = gRooms, *ev_mgr;
     s32 cur = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     u32 i;
 
-    ev_mgr = D_0044E4D0;
+    ev_mgr = gEvents;
     for (i = 0; i < 8; i++) {
         u32 door;
 
@@ -724,7 +724,7 @@ void func_002DFA50(Character *c) {
     if (arrived != 1) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room) & 0xFF;
     if (!(func_00178980(p, c->a.room, exit) & 0xFF)) {
         c->unk148C[c->unk14C0 >> 5] |= 1 << (c->unk14C0 & 0x1F);
@@ -752,8 +752,8 @@ void func_002DFA50(Character *c) {
         f32 yaw;
         u32 tri;
 
-        tri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), at);
-        VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x9, u8), in);
+        tri = VCALL(gRooms, 0x30, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x9, u8), at);
+        VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x9, u8), in);
         sceVu0SubVector(d, in, at);
         yaw = func_0031C5C0(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
@@ -811,7 +811,7 @@ extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
  * (func_002DF470) with the door as its exit (+0x100) and its spot as the target (+0xB0) */
 void func_002E01C0(Character *c) {
     u8 *k = CR(c);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
     f32 spot[4] __attribute__((aligned(16)));
     u32 tri;
@@ -847,7 +847,7 @@ static inline __attribute__((always_inline)) void creature_route(Character *c, u
         return;
     }
     c->unk14C0 = AT(c->unk138C, 0, u16);
-    AT(&c->unk14C4, 0, f32) = (f32)VCALL(D_0044E568, 0x38, s32 (*)(VObject *, u32, s32))(D_0044E568, AT(c->unk138C, 0, u16), c->a.room);
+    AT(&c->unk14C4, 0, f32) = (f32)VCALL(gRooms, 0x38, s32 (*)(VObject *, u32, s32))(gRooms, AT(c->unk138C, 0, u16), c->a.room);
 }
 
 void func_002E02B0(Character *c) {
@@ -871,7 +871,7 @@ void func_002E0390(Character *c) {
     room = c->a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && AT(k, 0x2F, u8) == 0) {
         t = func_002DFF70(c);
-        if (t == -1 && (NavMesh_TriFlags(D_0044E570, c->a.navTri) & 0x20000)) {
+        if (t == -1 && (NavMesh_TriFlags(gNavMesh, c->a.navTri) & 0x20000)) {
             AT(k, 0x20, s16) = AT(k, 0x6, s16);
         }
     }
@@ -920,10 +920,10 @@ s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
 static void creature_back_on_mesh(Character *c) {
     u32 tri = c->a.navTri;
 
-    if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
+    if (NavMesh_TriFlags(gNavMesh, tri) & c->a.navMask) {
         func_002DE540(c, AT(CR(c), 0xC, s32));
     } else {
-        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, c->a.pos);
         VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
     }
     creature_at_doors(c, 0x8A);
@@ -1043,7 +1043,7 @@ static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at)
  * nearer the door than the exit's spot; if she is, it stays out (+0x10 0) */
 void func_002E0FE0(Character *c, u32 exit) {
     u8 *k = CR(c);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
     s32 room, i;
     u32 x, e;
@@ -1085,7 +1085,7 @@ void func_002E0FE0(Character *c, u32 exit) {
         f32 d0[4] __attribute__((aligned(16)));
         f32 d1[4] __attribute__((aligned(16)));
 
-        rooms = D_0044E568;
+        rooms = gRooms;
         c->unk14C0 = VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
         VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exit, door);
         sceVu0SubVector(d0, c->a.pos, door);
@@ -1119,7 +1119,7 @@ void func_002DEC30(Character *c) {
         AT(k, 0x9B, s8) += 1;
         if (c->unk128 >= c->unk124) {
             VObject *rnd = gRandom;
-            NavMesh *nm = D_0044E570;
+            NavMesh *nm = gNavMesh;
             s32 i;
 
             for (i = 0; i < 17; i++) {
@@ -1213,7 +1213,7 @@ void func_002E06E0(Character *c) {
     if (AT(k, 0x2E, u8) == 0) {
         if (c->a.navTri != NAV_NONE && AT(k, 0x9B, s8) == 0) {
             AT(k, 0x9B, s8) += 1;
-            VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, c->a.navTri, c->a.pos);
+            VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, c->a.navTri, c->a.pos);
         }
         ptmf_set(&c->a.state, &D_00416760);
         return;
@@ -1240,7 +1240,7 @@ void func_002E06E0(Character *c) {
         if (!(func_00178980(p, c->a.room, AT(k, 0x85, u8)) & 0xFF)) {
             AT(k, 0x84, u8) = 2;
             c->a.unk2B = 0;
-        } else if ((VCALL(D_0044E558, 0x30, u32 (*)(VObject *, u32))(D_0044E558, AT(k, 0x85, u8)) & 0xFF) == 1 &&
+        } else if ((VCALL(gDoors, 0x30, u32 (*)(VObject *, u32))(gDoors, AT(k, 0x85, u8)) & 0xFF) == 1 &&
                    (AT(k, 0x88, u16) & 1)) {
             AT(k, 0x84, u8) = 0;
         }
@@ -1266,7 +1266,7 @@ void func_002E06E0(Character *c) {
 }
 
 extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
-extern VObject *D_0044E988;                            /* the items */
+extern VObject *gItems;                            /* the items */
 extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
 
 /* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
@@ -1297,7 +1297,7 @@ void func_002E1380(Character *c) {
     }
     p = gProgress;
     creature_at_doors(c, 0x8A);
-    AT(k, 0x9C, s8) = VCALL(D_0044E988, 0x10, s32 (*)(VObject *, s32))(D_0044E988, 3) == 0x8D;
+    AT(k, 0x9C, s8) = VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3) == 0x8D;
     func_002E06E0(c);
     if (AT(k, 0x37, s8) == 0) {
         func_002DEFA0(c);
@@ -1491,7 +1491,7 @@ void func_002E19F0(Character *c) {
     }
 }
 
-/* ---- the creature manager (D_0044F258; vtable D_0046FC00 at +0x28): a list of 10 at +0x0,
+/* ---- the creature manager (gCreatures; vtable D_0046FC00 at +0x28): a list of 10 at +0x0,
  * its models at +0xF630, its objects' heap at +0xDC40 ---- */
 
 #define CREATURES(m) ((Character **)(m))
@@ -1757,7 +1757,7 @@ void func_003120D0(u8 *o, const u8 *params) {
 /* +0x14 draw (unless the effects are paused): the glow (cell (0, 0x60), 15 frames), then the
  * sparks (cell (0x60, 0x40)) */
 void func_00312450(u8 *o) {
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
     AT(o, 0x394, s16) = 1;
@@ -1858,7 +1858,7 @@ s32 func_00312510(u8 *o) {
     return 1;
 }
 
-extern u8 *D_0044F258;   /* the creatures: 10 slots */
+extern u8 *gCreatures;   /* the creatures: 10 slots */
 
 /* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
  * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;
@@ -1868,7 +1868,7 @@ s32 func_002B4030(void) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
-        Character *c = AT(D_0044F258, i * 4, Character *);
+        Character *c = AT(gCreatures, i * 4, Character *);
         u8 *mgr;
         s32 slot;
         f32 dz, dx;
@@ -1885,7 +1885,7 @@ s32 func_002B4030(void) {
         if (!(dz * dz + dx * dx < 16.0f)) {
             continue;
         }
-        mgr = D_0044E578;
+        mgr = gEffects;
         c->a.active = 0;
         slot = Effect_New(mgr, 0x4A0, vanish_init);
         sceVu0CopyVector(fx.pos, c->a.pos);
@@ -2021,12 +2021,12 @@ void func_00312D90(u8 *o) {
 
 extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
-extern u8 *D_0044F808;   /* the character in slot 2 (the stalker) */
+extern u8 *gCharSlot2;   /* the character in slot 2 (the stalker) */
 extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
-#define STRAND_BONE(o, i) (func_0017CE80(AT(AT(D_0044F808, 0xF0, u8 *), 0x810, void *), (i)) + 12)
+#define STRAND_BONE(o, i) (func_0017CE80(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
 
 /* +0x8 destructor (the quad drawer's inlined) */
 u8 *func_00313030(u8 *o, s32 flags) {
@@ -2182,7 +2182,7 @@ void func_003136C0(u8 *o) {
     f32 h, len;
     s32 k;
 
-    if (func_002D6010(D_0044E578) != 0 || AT(o, 0x21C, u8) == 1) {
+    if (func_002D6010(gEffects) != 0 || AT(o, 0x21C, u8) == 1) {
         return;
     }
     len = AT(o, 0x20C, f32);
@@ -2335,7 +2335,7 @@ s32 func_00313980(u8 *o) {
             }
             alpha = AT(STRAND_SEG(o, idx), 0xC0, s32);
             if (alpha >= 0x21) {
-                u8 *mgr = D_0044E578;
+                u8 *mgr = gEffects;
                 s32 slot = Effect_New(mgr, 0xF70, DropSplash_Init);
                 s32 p[8] __attribute__((aligned(16)));
                 f32 f = (f32)alpha / 128.0f;
@@ -2439,7 +2439,7 @@ void func_003142F0(u8 *o, s32 *arg) {
 /* the droplets drawn (unless the effects are paused), and on the first frame a flash (2 x 2) of
  * colour r, g, b at the point */
 static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
-    if (func_002D6010(D_0044E578) != 0) {
+    if (func_002D6010(gEffects) != 0) {
         return;
     }
     AT(o, 0xC20, QuadRec *) = DROP_REC(o, AT(o, 0xF60, s32), 0);
@@ -2698,7 +2698,7 @@ extern void func_003250D0(Character *c, u32 tri);
    (+0x30 of its block) as the target */
 void func_00329270(Character *c) {
     u8 *k = CR(c);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
     f32 spot[4] __attribute__((aligned(16)));
     u32 tri;
@@ -2795,7 +2795,7 @@ void func_003250D0(Character *c, u32 tri) {
     if (!(AT(k, 0x4C, u16) & 1)) {
         return;
     }
-    if ((VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
+    if ((VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
         AT(k, 0x65, u8) = 0;
         func_00325410(c, (u8)c->unk100);
     }
@@ -2804,7 +2804,7 @@ void func_003250D0(Character *c, u32 tri) {
 /* (as func_002DF5B0, its door permissions at +0x1590) head for the first usable door */
 void func_00325220(Character *c) {
     u8 *k = CR(c);
-    VObject *doors = D_0044E558, *rooms = D_0044E568;
+    VObject *doors = gDoors, *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     u32 d, t;
@@ -2847,11 +2847,11 @@ s32 func_00325410(Character *c, s32 exit) {
     u32 d;
     s32 i;
 
-    d = VCALL(D_0044E568, 0x14, u32 (*)(VObject *, s32, s32))(D_0044E568, c->a.room, exit) & 0xFF;
+    d = VCALL(gRooms, 0x14, u32 (*)(VObject *, s32, s32))(gRooms, c->a.room, exit) & 0xFF;
     if (d == 0xFF) {
         return -1;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     c->a.room = VCALL(rooms, 0x18, s32 (*)(VObject *, s32, s32))(rooms, c->a.room, exit);
     AT(k, 0x0, s32) = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, c->a.room, d, 0);
     AT(k, 0x63, u8) = d;
@@ -2882,7 +2882,7 @@ void func_00324FA0(Character *c, s32 a1, s32 a2) {
         return;
     }
     for (n = 0; n < c->unk1384; n++) {
-        VObject *rooms = D_0044E568;
+        VObject *rooms = gRooms;
         u16 door = AT(c->unk138C, n * 2, u16);
 
         AT(&c->unk14C4, 0, f32) += (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, door, a1);
@@ -2911,17 +2911,17 @@ s32 func_00325B60(Character *c) {
         return 0;
     }
     tri = c->a.navTri;
-    if (NavMesh_TriFlags(D_0044E570, tri) & c->a.navMask) {
+    if (NavMesh_TriFlags(gNavMesh, tri) & c->a.navMask) {
         func_00124890(&c->a, AT(k, 0x0, s32));
     } else {
-        VCALL(D_0044E570, 0x14, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, c->a.pos);
+        VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, c->a.pos);
         VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
     }
     creature_at_doors(c, 0x50);
     return 0;
 }
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 extern f32 func_002E2D00(f32 angle);
 
 /* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
@@ -2953,13 +2953,13 @@ void func_003247D0(Character *c) {
         c->unk152C = 0xA;
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     VCALL(rooms, 0x2C, void (*)(VObject *, u32, f32 *))(rooms, d, a);
     VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, d, b);
     sceVu0SubVector(face, b, a);
     *(s32 *)&face[1] = 0;
     sceVu0Normalize(face, face);
-    ev = D_0044E4D0;
+    ev = gEvents;
     VCALL(ev, 0x24, void (*)(VObject *, u32, f32 *, f32 *, f32 *))(ev, d, p0, p1, p2);
     sceVu0SubVector(e, p1, p0);
     *(s32 *)&e[1] = 0;
@@ -2988,7 +2988,7 @@ void func_003247D0(Character *c) {
         }
         col = col << 24 | 0x808080;
     }
-    VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, col);
+    VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, col);
 }
 
 /* from save slot `slot` (gProgress +0x878, 0x24 each) when in use (+0x12): its timers,
@@ -3104,7 +3104,7 @@ void func_003257B0(Character *c) {
     if (arrived != 1) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room) & 0xFF;
     AT(k, 0x63, u8) = exit;
     if (exit == 0xFF) {
@@ -3135,8 +3135,8 @@ void func_003257B0(Character *c) {
         f32 yaw;
         u32 tri;
 
-        tri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x63, u8), at);
-        VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x63, u8), in);
+        tri = VCALL(gRooms, 0x30, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x63, u8), at);
+        VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, AT(k, 0x63, u8), in);
         sceVu0SubVector(d, in, at);
         yaw = func_0031C5C0(d[0], d[2]);
         VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
@@ -3341,7 +3341,7 @@ void func_00326680(Character *c) {
     cr19_root_move(c);
     func_0032B080(c, gCharPlayer->a.pos);
     AT(k, 0x40, s16)++;
-    if (!NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+    if (!NavMesh_AcrossDivider(gNavMesh, gCharPlayer->a.navTri, c->a.navTri)) {
         cr19_reset(c);
         return;
     }
@@ -3374,7 +3374,7 @@ void func_00326680(Character *c) {
 /* a door of the room it may use (+0x1590 by slot) whose way isn't shut for kind 2 (state bit
    4): state 5 */
 void func_00326950(Character *c) {
-    VObject *doors = D_0044E558;
+    VObject *doors = gDoors;
     Progress *p = gProgress;
     u32 d;
 
@@ -3402,7 +3402,7 @@ void func_00326AF0(Character *c) {
         cr19_reset(c);
         return;
     }
-    if (NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+    if (NavMesh_AcrossDivider(gNavMesh, gCharPlayer->a.navTri, c->a.navTri)) {
         cr19_enter(c, 0x12);
         return;
     }
@@ -3465,7 +3465,7 @@ void func_00327030(Character *c) {
         } else if (c->a.room == 0x8F) {
             tri = 0xE;
         }
-        VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, tri, at);
+        VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, at);
         if (func_003255C0(c, tri, at, 0) != 0) {
             return;
         }
@@ -3544,7 +3544,7 @@ void func_00327540(Character *c) {
 
 /* state: Fiona on a triangle it may not stand on - its approach at 5; else back to state 0 */
 void func_003277C0(Character *c) {
-    if (NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x4020028) {
+    if (NavMesh_TriFlags(gNavMesh, gCharPlayer->a.navTri) & 0x4020028) {
         func_00326130(c, 5.0f);
         return;
     }
@@ -3707,7 +3707,7 @@ void func_00327DD0(Character *c) {
             if (tri == NAV_NONE) {
                 return;
             }
-            if (NavMesh_TriFlags(D_0044E570, tri) & 0x4020038) {
+            if (NavMesh_TriFlags(gNavMesh, tri) & 0x4020038) {
                 return;
             }
             if (func_003255C0(c, tri, at, 0) != 0) {
@@ -3968,7 +3968,7 @@ void func_0032BEB0(Character *c) {
 /* its model's data from the creature manager's file (+0x24: offsets at +0x4.. to its parts),
    its kind (+0x20) into +0x1528 and the model; the model set up (+0xC) */
 void func_0032BF00(Character *c) {
-    VObject *mgr = (VObject *)D_0044F258;
+    VObject *mgr = (VObject *)gCreatures;
     u8 *d = VCALL_AT(mgr, 0x28, 0x24, u8 *(*)(VObject *))(mgr);
     u8 *m = c->motion;
 
@@ -4058,7 +4058,7 @@ void func_0032AF00(Character *c) {
     if (c->a.disabled == 1 || c->a.navTri == NAV_NONE) {
         return;
     }
-    if ((VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 1) {
+    if ((VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) & 0xFF) == 1) {
         return;
     }
     if ((Progress_TestFlag(gProgress, 8) & 0xFF) == 1) {
@@ -4078,7 +4078,7 @@ void func_0032AF00(Character *c) {
     AT(k, 0x73, u8) = right;
 }
 
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* +0x2C draw, once out (+0x6E: and its trip begun, +0x6F) or not resting (+0x4A): lit
    (+0xE4: its light +0x80 unless layer 0x17), else on layer 0xF faded by +0x71 (0x80 at most;
@@ -4103,11 +4103,11 @@ void func_0032BD90(Character *c) {
         if (a > 0x80) {
             a = 0x80;
         }
-        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, a << 24 | 0x808080);
+        VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, a << 24 | 0x808080);
     } else {
         c->unk152C = 0xA;
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(c->motion, 0x38, void (*)(void *, s32, u32, s32))(c->motion, c->unk152C, c->a.navTri, 0);
 }
 
@@ -4225,7 +4225,7 @@ void func_0032A550(Character *c) {
         p = gProgress;
         if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && c->a.navTri != NAV_NONE && AT(k, 0x6C, u8) == 0) {
             AT(k, 0x6C, u8)++;
-            VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, c->a.navTri, c->a.pos);
+            VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, c->a.navTri, c->a.pos);
         }
         Actor_SetState(&c->a, &D_0042C600);
         return;
@@ -4255,7 +4255,7 @@ void func_0032A550(Character *c) {
         if (!(func_00178980(p, c->a.room, AT(k, 0x66, u8)) & 0xFF)) {
             AT(k, 0x65, u8) = 2;
             c->a.unk2B = 0;
-        } else if ((VCALL(D_0044E558, 0x30, u32 (*)(VObject *, u32))(D_0044E558, AT(k, 0x66, u8)) & 0xFF) == 1 &&
+        } else if ((VCALL(gDoors, 0x30, u32 (*)(VObject *, u32))(gDoors, AT(k, 0x66, u8)) & 0xFF) == 1 &&
                    (AT(k, 0x4C, u16) & 1)) {
             AT(k, 0x65, u8) = 0;
         }
@@ -4290,7 +4290,7 @@ extern void func_002E2310(Character *c);
    onto its plan when that is no further from the door than it is */
 void func_0032AAF0(Character *c, u32 exit) {
     u8 *k = CR(c);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     Progress *p;
     f32 at[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -4356,7 +4356,7 @@ void func_0032AAF0(Character *c, u32 exit) {
     if (AT(k, 0x61, u8) != 1) {
         return;
     }
-    rooms = D_0044E568;
+    rooms = gRooms;
     c->unk14C0 = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
     VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exit, door);
     {
@@ -4510,7 +4510,7 @@ void func_0032B210(Character *c, u8 st) {
                 c->unk152C = 0xF;
                 AT(k, 0x71, u8) = 0xFF;
             }
-            mgr = D_0044E578;
+            mgr = gEffects;
             slot = Effect_New(mgr, 0x2920, Cr19Gone_Init);
             sp.pos[0] = c->a.pos[0];
             sp.pos[1] = c->a.pos[1];
@@ -4614,7 +4614,7 @@ void func_00329440(Character *c) {
             return;
         }
     }
-    doors = D_0044E558;
+    doors = gDoors;
     for (d = 0; d < 8; d = (d + 1) & 0xFF) {
         if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, d) & 0xFF) != 1) {
             continue;
@@ -4628,7 +4628,7 @@ void func_00329440(Character *c) {
         cr19_enter(c, 0x11);
         return;
     }
-    if (NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+    if (NavMesh_AcrossDivider(gNavMesh, gCharPlayer->a.navTri, c->a.navTri)) {
         cr19_enter(c, 0x12);
         return;
     }
@@ -4662,7 +4662,7 @@ void func_00329440(Character *c) {
             if (gCharPlayer->a.navTri == NAV_NONE) {
                 return;
             }
-            if (NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x4020028) {
+            if (NavMesh_TriFlags(gNavMesh, gCharPlayer->a.navTri) & 0x4020028) {
                 cr19_enter(c, 0xA);
                 return;
             }
@@ -4822,7 +4822,7 @@ void func_003597B0(u8 *o, u8 *arg) {
 
 /* +0x14 draw (not while the effects are paused): the bubbles, then the drops */
 void func_00359980(u8 *o) {
-    if (func_002D6010(D_0044E578) == 0) {
+    if (func_002D6010(gEffects) == 0) {
         AT(o, 0x2420, QuadRec *) = GONE_BUBBLE(o, AT(o, 0x2910, s32), 0);
         func_002E56C0(o + 0x2410);
         AT(o, 0x2458, QuadRec *) = GONE_DROP(o, AT(o, 0x2910, s32), 0);
@@ -4860,7 +4860,7 @@ s32 func_00359A00(u8 *o) {
             s32 tri;
             u8 one;
         } sp __attribute__((aligned(16)));
-        u8 *mgr = D_0044E578;
+        u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x140, gone_splat_init);
 
         sp.pos[0] = AT(o, 0x2480, f32);

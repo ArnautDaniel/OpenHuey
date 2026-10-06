@@ -89,7 +89,7 @@ void func_001A49E0(void *pl, u8 *s, u8 *req) {
     if (AT(req, 0x4, s32) != 5 && AT(req, 0x4, s32) != 4 && AT(req, 0x4, s32) != 3) {
         return;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     n = nm->numTris;
     node = s + 0x44;
     switch (AT(req, 0x8, s32)) {
@@ -161,7 +161,7 @@ s32 func_001A8040(void *pl, u8 *s) {
     AT(s, 0x0, s32)++;
     cur = AT(s, 0xC044, u8 *);
     n = AT(s, 0x40, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -218,7 +218,7 @@ s32 func_001A7C30(void *pl, u8 *s) {
     AT(s, 0x0, s32)++;
     cur = AT(s, 0xC044, u8 *);
     n = AT(s, 0x40, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -286,7 +286,7 @@ s32 func_001A5750(void *pl, u8 *s) {
 
     AT(s, 0x0, s32)++;
     cur = AT(s, 0x10044, u8 *);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -393,7 +393,7 @@ s32 func_001A5BB0(void *pl, u8 *s) {
     cur = AT(s, 0x10044, u8 *);
     open = AT(s, 0x40, s16);
     deferred = AT(s, 0x42, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     AT(cur, 0x0, u16) |= 1;
     depth = AT(cur, 0x2, s16) + 1;
@@ -549,7 +549,7 @@ s32 func_001A6D70(void *pl, u8 *s) {
     AT(s, 0x0, s32)++;
     cur = OPEN(s, 0);
     n = AT(s, 0x40, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -730,7 +730,7 @@ s32 func_001A4CC0(void *pl, u8 *s) {
     AT(s, 0x0, s32)++;
     cur = OPEN(s, 0);
     n = AT(s, 0x40, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         AT(s, 0x10048, u8 *) = NULL;
@@ -819,7 +819,7 @@ s32 func_001A7320(void *pl, u8 *s) {
     AT(s, 0x0, s32)++;
     cur = OPEN(s, 0);
     n = AT(s, 0x40, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -891,7 +891,7 @@ s32 func_001A6260(void *pl, u8 *s) {
     cur = OPEN(s, 0);
     n = AT(s, 0x40, s16);
     c = AT(s, 0x42, s16);
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri = NavMesh_Tri(nm, NODE_INDEX(s, cur));
     if (tri == NULL) {
         return -1;
@@ -991,7 +991,7 @@ void func_001A9D20(u8 *pl, u8 *s) {
     t = NODE_INDEX(s, AT(s, 0x10048, u8 *));
     if (t != AT(s, 0x8, u32)) {
         AT(s, 0x8, u32) = t;
-        tri_centre(D_0044E570, t, (f32 *)(s + 0x30));
+        tri_centre(gNavMesh, t, (f32 *)(s + 0x30));
     }
 }
 
@@ -1037,7 +1037,7 @@ s32 func_001A95F0(u8 *pl, u8 *s) {
     goal = AT(s, 0x8, u32);
     AT(pl, 0x40194, s32) = 0;
     sceVu0CopyVector(from, (f32 *)(s + 0x20));
-    nm = D_0044E570;
+    nm = gNavMesh;
     for (;;) {
         u32 t;
 
@@ -1239,7 +1239,7 @@ s32 func_001A85E0(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32
             break;
         }
         if (i == n - 1) {
-            nm = D_0044E570;
+            nm = gNavMesh;
             *tri = AT(e, 0x0, u32);
             pos[0] = AT(e, 0x4, f32);
             pos[2] = AT(e, 0x8, f32);
@@ -1254,7 +1254,7 @@ s32 func_001A85E0(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32
     sceVu0Normalize(d, d);
     func_0010E640(d, d, dist);
     sceVu0AddVector(q, p, d);
-    nm = D_0044E570;
+    nm = gNavMesh;
     for (t = cur;;) {
         s32 r = VCALL((VObject *)nm, 0x20, s32 (*)(VObject *, u32, f32 *, f32 *))((VObject *)nm, t, p, q);
 
@@ -1326,9 +1326,9 @@ s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
         to[0] = AT(s, 0x30, f32);
         to[2] = AT(s, 0x38, f32);
     } else {
-        tri_centre(D_0044E570, p[0], to);
+        tri_centre(gNavMesh, p[0], to);
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     r = edge_cross(nm, t, cross, from, to);
     for (;;) {
         if (i != at) {   /* on to the next target */
@@ -1433,7 +1433,7 @@ s32 func_001A8DC0(u8 *pl, s32 id, u8 *out) {
     }
     p = &AT(pl, 0x41198, u16);
     sceVu0CopyVector(a, (f32 *)(s + 0x20));
-    nm = D_0044E570;
+    nm = gNavMesh;
     tri_centre(nm, p[1], b);
     tri_centre(nm, p[2], c);
     sceVu0SubVector(d1, b, a);
@@ -1616,7 +1616,7 @@ s32 func_001AA040(u8 *pl, u8 *req, s32 id) {
     if (AT(req, 0x4, s32) < 0 || AT(req, 0x4, s32) >= 8) {
         return -1;
     }
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (VCALL((VObject *)nm, 0x10, s32 (*)(VObject *, s32, f32 *))((VObject *)nm, AT(req, 0xC, s32),
                                                                    (f32 *)(req + 0x10)) == 4) {
         return -1;
@@ -1723,7 +1723,7 @@ s32 func_001AA720(u8 *pl, s32 id) {
 /* +0x34 cut search `id`'s path back past the triangles with flags `mask` at its end: the goal
  * becomes the first one left (its centre) */
 void func_001AA790(u8 *pl, s32 id, u32 mask) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     u8 *s, *end, *n;
     u32 t;
 
@@ -1771,7 +1771,7 @@ f32 func_001AA910(u8 *pl, s32 id) {
     s = SEARCH(pl, id);
     sceVu0CopyVector(p, (f32 *)(s + 0x20));
     for (i = 1; i < AT(pl, 0x40194, s32) - 1; i++) {
-        tri_centre(D_0044E570, AT(pl, 0x41198 + i * 2, u16), c);
+        tri_centre(gNavMesh, AT(pl, 0x41198 + i * 2, u16), c);
         d[1] = 0.0f;
         d[0] = p[0] - c[0];
         d[2] = p[2] - c[2];
@@ -1794,7 +1794,7 @@ s32 func_001AAAE0(u8 *pl, s32 id, f32 *centre) {
         if (AT(s, 0x10048, u8 *) != NULL) {
             u32 t = NODE_INDEX(s, AT(s, 0x10048, u8 *));
 
-            tri_centre(D_0044E570, t, centre);
+            tri_centre(gNavMesh, t, centre);
             return t;
         }
     }

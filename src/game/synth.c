@@ -22,7 +22,7 @@
 #include "texcache.h"
 
 extern void *D_00474020[];
-extern VObject *D_0044E988;   /* the item manager */
+extern VObject *gItems;   /* the item manager */
 extern VObject *gRandom;   /* random numbers: +0x18 / +0x1C -> 0..1 */
 extern u8 D_0047B350;
 extern void func_00322560(void *p);                 /* delete (the sub screen's pool) */
@@ -40,7 +40,7 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 /* a sprite from the synthesizer's texture (4 of group 0x19), layer 0x30 */
 static inline void sy_rect(s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, u32 rgba, s32 tex, s32 group, s32 clut) {
-    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, x, y, w, h, u, v, w, h, rgba, tex, group, 0x30, clut);
+    VCALL(gRenderer, 0x7C, RectFn)(gRenderer, x, y, w, h, u, v, w, h, rgba, tex, group, 0x30, clut);
 }
 
 /* 128 x `f` clamped to 0x80, as the alpha byte of a grey colour */
@@ -104,7 +104,7 @@ void *func_00322C40(u8 *o, s32 flags) {
 
 /* the six materials' counts (items 0x70..0x75) into +0x118..; any at all */
 s32 func_00322970(u8 *o) {
-    u8 *items = (u8 *)D_0044E988 + 8;
+    u8 *items = (u8 *)gItems + 8;
     s32 any = 0, i;
 
     for (i = 0; i < 6; i++) {
@@ -246,7 +246,7 @@ void func_00324410(u8 *o) {
     s8 m = func_00322580(o);
 
     if (m >= 0) {
-        func_00260BB0((u8 *)D_0044E988 + 8, m + 0x70);
+        func_00260BB0((u8 *)gItems + 8, m + 0x70);
         o[0x11E] = m;
         o[0x11F] = 0;
         SY_STEP(o) = -1;
@@ -393,7 +393,7 @@ static inline void sy_reel_step(u8 *o) {
 static void sy_finish(u8 *o) {
     s32 c, res, total, size, n;
 
-    VCALL(D_0044E560, 0x18, void (*)(VObject *, s32, s32))(D_0044E560, 1, 6);   /* the roll's sound stopped */
+    VCALL(gSound, 0x18, void (*)(VObject *, s32, s32))(gSound, 1, 6);   /* the roll's sound stopped */
     o[0x145] = 0;
     o[0x146] = 0;
     o[0x147] = 0;
@@ -437,7 +437,7 @@ static void sy_finish(u8 *o) {
         if (n == 0) {
             o[0x14A] = -1;
         } else {
-            u8 *items = (u8 *)D_0044E988 + 8;
+            u8 *items = (u8 *)gItems + 8;
             s32 list[8], k = 0, j, id;
 
             for (j = 0; j < 8; j++) {
@@ -495,7 +495,7 @@ void func_00323A70(u8 *o) {
         if (!found) {
             o[0x120] = 5;
         }
-        Sound_Play(D_0044E560, 1, 6);
+        Sound_Play(gSound, 1, 6);
     }
     if (o[0x11F] & 4) {   /* a row stopping */
         s8 c = o[0x12C];
@@ -559,7 +559,7 @@ void func_00323A70(u8 *o) {
                 }
             }
             if ((D_0047E36C & MENU_CONFIRM) || (s8)o[0x12E] == 8) {
-                Sound_Play(D_0044E560, 2, 6);
+                Sound_Play(gSound, 2, 6);
                 o[0x11F] |= 4;
             }
         }

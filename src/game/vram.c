@@ -1,4 +1,4 @@
-/* VRAM / texture manager (system +0x30CF40, vtable 0x46B050, global D_0044E9A0): hands out
+/* VRAM / texture manager (system +0x30CF40, vtable 0x46B050, global gVram): hands out
  * areas of the PS2's 4 MB of video memory (the renderer's layers, textures, CLUTs). */
 #include "common.h"
 #include "game.h"

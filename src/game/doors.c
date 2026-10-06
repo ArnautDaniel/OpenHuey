@@ -1,4 +1,4 @@
-/* The doors of the room (D_0044E558, vtable D_0046C540; set up in scene_game_members.c): up to 8
+/* The doors of the room (gDoors, vtable D_0046C540; set up in scene_game_members.c): up to 8
  * of 0x210 bytes from +0x10, defined by PAC section 7 (+0x4: 8 offsets, 0 = none). Offsets here
  * are from the manager (`DOOR(d, i)`), i.e. 0x10 past the door's own:
  *   +0x18 its nav triangle, +0x20 / +0x30 points (+0x30 where it stands), +0x44 its turn now,
@@ -12,10 +12,10 @@
 #include "actor.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E558;   /* the doors */
-extern VObject *D_0044E568;   /* the rooms: +0x10 (room, exit) the door id */
-extern VObject *D_0044E570;   /* the nav mesh */
-extern VObject *D_0044E4D0;   /* the events */
+extern VObject *gDoors;   /* the doors */
+extern VObject *gRooms;   /* the rooms: +0x10 (room, exit) the door id */
+extern VObject *gNavMesh;   /* the nav mesh */
+extern VObject *gEvents;   /* the events */
 extern Character *gCharacters[];
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
@@ -93,7 +93,7 @@ void *func_00221890(u8 *d, s32 flags) {
         AT(d, 0x0, void **) = D_0046C540;
         func_001002C0(d + 0x10, (void *(*)(void *, s32))func_00221920, 0x210, 8);
         AT(d, 0x0, void **) = D_0046C5D0;
-        D_0044E558 = NULL;
+        gDoors = NULL;
         if ((s16)flags > 0) {
             func_00100490(d);
         }
@@ -105,7 +105,7 @@ void *func_00221890(u8 *d, s32 flags) {
 void *func_00223D80(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046C5D0;
-        D_0044E558 = NULL;
+        gDoors = NULL;
         if ((s16)flags > 0) {
             func_00100490(d);
         }
@@ -190,7 +190,7 @@ s32 func_002231A0(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf) {
         tri = AT(e, 0x18, u32);
         sceVu0CopyVector(from, (f32 *)(e + 0x30));
         if (nm == NULL) {
-            nm = D_0044E570;
+            nm = gNavMesh;
         }
         if (door_walk(nm, &tri, from, to)) {
             sceVu0CopyVector(out, to);
@@ -327,7 +327,7 @@ s32 func_00222A60(VObject *d, u32 i, const f32 *off, f32 *out) {
     }
     e = DOOR(d, i);
     a = AT(e, 0x54, f32);
-    if (!(VCALL(D_0044E4D0, 0x20, u32 (*)(VObject *, u32, f32 *))(D_0044E4D0, i, side) & 0xFF)) {
+    if (!(VCALL(gEvents, 0x20, u32 (*)(VObject *, u32, f32 *))(gEvents, i, side) & 0xFF)) {
         return -1;
     }
     if (VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, i, side) == 0) {
@@ -337,7 +337,7 @@ s32 func_00222A60(VObject *d, u32 i, const f32 *off, f32 *out) {
     func_002E2DD0(to, m, off);
     tri = AT(e, 0x18, u32);
     sceVu0CopyVector(from, (f32 *)(e + 0x30));
-    nm = D_0044E570;
+    nm = gNavMesh;
     if (!door_walk(nm, &tri, from, to)) {
         return -1;
     }
@@ -378,7 +378,7 @@ s32 func_00222D00(VObject *d, u32 i, f32 *out) {
  * progress (+0x60) */
 void func_00222960(VObject *d) {
     s32 room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
-    VObject *doors = D_0044E558, *rooms = D_0044E568;
+    VObject *doors = gDoors, *rooms = gRooms;
     u32 i;
 
     for (i = 0; i < 8; i++) {
@@ -500,7 +500,7 @@ void func_002238F0(VObject *d) {
 
 /* ---- a door sound and the noise it makes ---- */
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
 
@@ -511,7 +511,7 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
     s32 slot, loud = 0, room;
     u32 door;
 
-    func_002FF650(D_0044E560, id & 0xFFFF, 5, (f32 *)(e + 0x10), 0, 0);
+    func_002FF650(gSound, id & 0xFFFF, 5, (f32 *)(e + 0x10), 0, 0);
     switch (AT(e, 0x6C, s32)) {
     case 2: slot = 2; break;
     case 1: slot = 1; break;
@@ -529,14 +529,14 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
         break;
     }
     p = gProgress;
-    door = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(e, 0x4, u8)) & 0xFFFF;
+    door = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(e, 0x4, u8)) & 0xFFFF;
     room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     func_002A8440((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
 }
 
 
-/* ---- the route planner (D_0044E580, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first
- * search from room to room through the doors (D_0044E568's links), up to 128 steps:
+/* ---- the route planner (gRoutePlanner, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first
+ * search from room to room through the doors (gRooms's links), up to 128 steps:
  *   +0x4 from, +0x8 to, +0xC the door wanted at the end (-1: any), +0x10 the side the doors
  *   must open from, +0x14 rooms to avoid (bits, NULL none), +0x18 where the route goes (door
  *   ids, u16; NULL none), +0x1C / +0x1E the queue's head / tail, +0x20 the most steps (-1 no
@@ -545,7 +545,7 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
  *   rooms seen (bits) ---- */
 
 extern void *D_0046C520[], *D_0046C530[];
-extern VObject *D_0044E580;
+extern VObject *gRoutePlanner;
 extern s32 func_00178610(Progress *p, u32 d);   /* the door is locked (u8) */
 extern s32 func_00178200(Progress *p, u32 d, s32 side);   /* it opens from that side (u8) */
 
@@ -558,7 +558,7 @@ typedef struct RouteStep {
  * openable from the right side; with +0x24 0 / 1, only through the door matching it); -1 when
  * the queue is full */
 s32 func_002206F0(u8 *rp, s32 room) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     Progress *p = gProgress;
     u32 i;
 
@@ -676,7 +676,7 @@ void *func_00220680(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C520;
         AT(o, 0x0, void **) = D_0046C530;
-        D_0044E580 = NULL;
+        gRoutePlanner = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -688,7 +688,7 @@ void *func_00220680(void *o, s32 flags) {
 void *func_00220CB0(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C530;
-        D_0044E580 = NULL;
+        gRoutePlanner = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

@@ -1,14 +1,14 @@
 /* The camera director (SceneGame +0xF6CBB0, second vtable at +0x64): drives the camera
- * (D_0044E4B8) through the room's camera setups. */
+ * (gCamera) through the room's camera setups. */
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 
 /* reset for a new room: reset the camera, no setup selected, default light direction */
 void func_00225550(u8 *d) {
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
 
     VCALL(cam, 0xC, void (*)(VObject *))(cam);
     VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
@@ -33,7 +33,7 @@ void func_00225550(u8 *d) {
     ((void (*)(u8 *))AT(AT(d, 0x64, u8 *), 0x78, void *))(d);
 }
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 extern const PTMF D_003E5240;  /* { 0, -1, func_00224770 } */
 extern const PTMF D_003E5250;  /* { 0, -1, func_00224740 } */
 
@@ -52,7 +52,7 @@ void func_00224330(u8 *d) {
     AT(d, 0xF4, u8) = 1;
     AT(d, 0x7C, s32) = -1;
     AT(d, 0x78, s32) = -1;
-    VCALL(D_0044E4F0, 0x5C, s32 (*)(VObject *))(D_0044E4F0);
+    VCALL(gRenderer, 0x5C, s32 (*)(VObject *))(gRenderer);
 }
 
 /* vt+0x78 (the default mode) */
@@ -61,10 +61,10 @@ void func_00224380(u8 *d) {
     AT(d, 0xF4, u8) = 0;
     AT(d, 0x7C, s32) = -1;
     AT(d, 0x78, s32) = -1;
-    VCALL(D_0044E4F0, 0x5C, s32 (*)(VObject *))(D_0044E4F0);
+    VCALL(gRenderer, 0x5C, s32 (*)(VObject *))(gRenderer);
 }
 
-/* (the director's interface, D_0044E4F8) +0xC follow `target` (its position, +0x10) with an
+/* (the director's interface, gCamDirector) +0xC follow `target` (its position, +0x10) with an
  * offset (x, y, z) */
 void func_002246F0(u8 *f, u8 *target, f32 x, f32 y, f32 z) {
     AT(f, 0xB0, u8 *) = target;
@@ -109,8 +109,8 @@ void func_002252B0(u8 *d, s32 target) {
 
     AT(d, 0x7C, s32) = -1;
     AT(d, 0x78, s32) = -1;
-    VCALL(D_0044E4F0, 0x5C, s32 (*)(VObject *))(D_0044E4F0);
-    cam = D_0044E4B8;
+    VCALL(gRenderer, 0x5C, s32 (*)(VObject *))(gRenderer);
+    cam = gCamera;
     VCALL(cam, 0xB0, void (*)(VObject *, f32))(cam, 1.0f);
     VCALL(cam, 0xB4, void (*)(VObject *, f32))(cam, 2000.0f);
     VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
@@ -135,7 +135,7 @@ void func_002252B0(u8 *d, s32 target) {
             func_00219E10(d, AT(d, 0x70, s32), 1.0f);
             func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
             func_00219D70(d, v, 0.0f);
-            cam = D_0044E4B8;
+            cam = gCamera;
             VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
             func_00219CD0(d, v, 0.0f);
             VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
@@ -151,19 +151,19 @@ void func_002252B0(u8 *d, s32 target) {
  * to +0x84): with no setup (+0x70) the free camera on its target, else setup's position at
  * t 0 */
 void func_002251C0(u8 *d) {
-    VCALL(D_0044E4F0, 0x5C, s32 (*)(VObject *))(D_0044E4F0);
+    VCALL(gRenderer, 0x5C, s32 (*)(VObject *))(gRenderer);
     AT(d, 0x90, s32) = 0x3C;
     AT(d, 0x8C, u8) = 0x80;
     AT(d, 0x80, f32) = AT(d, 0x84, f32);
     if (AT(d, 0x70, s32) == -1) {
-        VObject *cam = D_0044E4B8;
+        VObject *cam = gCamera;
 
         VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
         VCALL(cam, 0x2C, void (*)(VObject *, void *))(cam, d + 0xA0);
         func_002243D0(d, 100);
         return;
     }
-    VCALL(D_0044E4B8, 0x70, void (*)(VObject *, f32))(D_0044E4B8, 0.0f);
+    VCALL(gCamera, 0x70, void (*)(VObject *, f32))(gCamera, 0.0f);
     func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
 }
 
@@ -405,7 +405,7 @@ void func_00224EE0(u8 *d) {
             func_0025F6A0(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
         }
         func_00219D70(d, v, 0.0f);
-        cam = D_0044E4B8;
+        cam = gCamera;
         VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
         func_00219CD0(d, v, 0.0f);
         VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
@@ -487,7 +487,7 @@ void func_00224C60(u8 *d) {
     }
     if (AT(d, 0xB0, u8 *) != NULL && AT(d, 0xB4, u8 *) != AT(d, 0xB0, u8 *)) {
         if (AT(d, 0x70, s32) == -1) {
-            cam = D_0044E4B8;
+            cam = gCamera;
             far = (u8)VCALL(cam, 0xD4, s32 (*)(VObject *, u8 *))(cam, AT(d, 0xB0, u8 *) + 0x10);
         } else {
             f32 span = (f32)AT(d, 0x18, s32);
@@ -505,7 +505,7 @@ void func_00224C60(u8 *d) {
     }
     if (AT(d, 0x78, s32) != AT(d, 0x6C, s32) || far) {
         changed = 1;
-        cam = D_0044E4B8;
+        cam = gCamera;
         VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
         VCALL(cam, 0x2C, void (*)(VObject *, void *))(cam, d + 0xA0);
         AT(d, 0x80, f32) = AT(d, 0x84, f32) = VCALL(cam, 0x64, f32 (*)(VObject *))(cam);
@@ -526,7 +526,7 @@ void func_00224C60(u8 *d) {
         }
     }
     if (changed) {
-        VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+        VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
     }
 }
 
@@ -534,7 +534,7 @@ void func_00224C60(u8 *d) {
 /* each frame: the director's mode (+0xE8, a member function), then the camera's update */
 void func_00224C20(u8 *d) {
     ptmf_scall(d, &AT(d, 0xE8, PTMF));
-    VCALL(D_0044E4B8, 0x14, void (*)(VObject *))(D_0044E4B8);
+    VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
 }
 
 
@@ -573,7 +573,7 @@ void func_00224770(u8 *d) {
                 sceVu0CopyVector((f32 *)(d + 0x120), (f32 *)(t + 0x10));
                 sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0xC0), (f32 *)(d + 0x120));
                 sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0x130), (f32 *)(d + 0x120));
-                VCALL(D_0044E4F0, 0x5C, void (*)(VObject *))(D_0044E4F0);
+                VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
             }
             func_00223F70((f32 *)(d + 0x100));
         } else {
@@ -584,12 +584,12 @@ void func_00224770(u8 *d) {
             }
             if (AT(d, 0x70, s32) != -1) {
                 func_00219D70(d, v, 0.0f);
-                cam = D_0044E4B8;
+                cam = gCamera;
                 VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
                 func_00219CD0(d, v, 0.0f);
                 VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
             }
-            VCALL(D_0044E4B8, 0x5C, void (*)(VObject *, f32))(D_0044E4B8, AT(d, 0x80, f32));
+            VCALL(gCamera, 0x5C, void (*)(VObject *, f32))(gCamera, AT(d, 0x80, f32));
         }
     } else {
         sceVu0FMATRIX m;
@@ -598,7 +598,7 @@ void func_00224770(u8 *d) {
         if (AT(d, 0xB0, u8 *) == NULL) {
             if (AT(d, 0x70, s32) != -1) {
                 func_00219D70(d, v, 0.0f);
-                VCALL(D_0044E4B8, 0x28, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, v[0], v[1], v[2]);
+                VCALL(gCamera, 0x28, void (*)(VObject *, f32, f32, f32))(gCamera, v[0], v[1], v[2]);
             }
         } else {
             sceVu0CopyVector(v, (f32 *)(AT(d, 0xB0, u8 *) + 0x10));
@@ -613,7 +613,7 @@ void func_00224770(u8 *d) {
                     AT(d, 0xE4, f32) = AT(d, 0xE4, f32) - 360.0f;
                 }
             }
-            VCALL(D_0044E4B8, 0x28, void (*)(VObject *, f32, f32, f32))(D_0044E4B8, v[0], v[1], v[2]);
+            VCALL(gCamera, 0x28, void (*)(VObject *, f32, f32, f32))(gCamera, v[0], v[1], v[2]);
         }
         AT(d, 0xE4, f32) = AT(d, 0xE4, f32) + 3.0f * D_0047E410;
         AT(d, 0xE0, f32) = AT(d, 0xE0, f32) + 3.0f * D_0047E418;
@@ -631,7 +631,7 @@ void func_00224770(u8 *d) {
         sceVu0ApplyMatrix(w, m, (f32 *)(d + 0xD0));
         sceVu0ScaleVector(w, w, AT(d, 0xE0, f32));
         sceVu0AddVector(w, v, w);
-        cam = D_0044E4B8;
+        cam = gCamera;
         VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, w[0], w[1], w[2]);
         VCALL(cam, 0x5C, void (*)(VObject *, f32))(cam, kFov.f);
     }
@@ -658,7 +658,7 @@ void func_002243D0(u8 *o, s32 rate) {
     } else {
         sceVu0CopyVector(t, (f32 *)(o + 0xA0));
     }
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, eye);
     VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, d);
     sceVu0SubVector(d, d, eye);
@@ -684,18 +684,18 @@ void func_002243D0(u8 *o, s32 rate) {
 
 extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
-extern void *D_0044E4F8;
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044FE10;   /* the cutscene director */
+extern void *gCamDirector;
+extern VObject *gCamera;   /* the camera */
+extern VObject *gCutscene;   /* the cutscene director */
 
-/* destructor: its two vtables (+0x64, +0x60), the global D_0044E4F8 cleared, its state reset
+/* destructor: its two vtables (+0x64, +0x60), the global gCamDirector cleared, its state reset
  * (+0x2C / +0x38 0, +0x50 6, the spline +0x8..+0x20 cleared) */
 void *func_00223E40(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x64, void **) = D_0046C660;
         AT(d, 0x60, void **) = D_0046C668;
         AT(d, 0x60, void **) = D_0046C6F0;
-        D_0044E4F8 = NULL;
+        gCamDirector = NULL;
         AT(d, 0x2C, s32) = 0;
         AT(d, 0x38, s32) = 0;
         AT(d, 0x50, f32) = 6.0f;
@@ -716,7 +716,7 @@ void *func_00223E40(u8 *d, s32 flags) {
 /* on to the next of the camera's set-ups (+0x6C, wrapping at the camera's +0x80 count); no
  * path (+0x70 -1), +0xB0 0 */
 void func_00223F00(u8 *d) {
-    u32 n = VCALL(D_0044E4B8, 0x80, u32 (*)(VObject *))(D_0044E4B8);
+    u32 n = VCALL(gCamera, 0x80, u32 (*)(VObject *))(gCamera);
 
     AT(d, 0x6C, u32) += 1;
     if (!(AT(d, 0x6C, u32) < n)) {
@@ -756,7 +756,7 @@ void func_00223F70(f32 *p) {
     sceVu0RotMatrixY(m, m, 0x1.921fb6p+1f /* pi */ * yaw / 180.0f);
     sceVu0ApplyMatrix(v, m, v);
     sceVu0ScaleVector(v, v, p[0]);
-    cam = D_0044E4B8;
+    cam = gCamera;
     VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, p[8], p[9], p[10]);
     sceVu0AddVector(v, p + 8, v);
     VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
@@ -795,5 +795,5 @@ void func_002246B0(u8 *d, f32 u) {
 void func_00224740(u8 *d) {
     AT(d, 0x78, s32) = AT(d, 0x6C, s32);
     AT(d, 0x7C, s32) = AT(d, 0x70, s32);
-    VCALL(D_0044FE10, 0x64, void (*)(VObject *))(D_0044FE10);
+    VCALL(gCutscene, 0x64, void (*)(VObject *))(gCutscene);
 }

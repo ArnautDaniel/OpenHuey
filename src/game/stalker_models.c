@@ -1665,7 +1665,7 @@ void func_0030E340(u8 *m, f32 *out) {
 }
 
 extern void func_002DC710(u8 *m, f32 *p, u8 *a);   /* drop a point onto the floor */
-extern void *D_0044E570;
+extern void *gNavMesh;
 
 /* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
 static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {
@@ -1689,7 +1689,7 @@ f32 func_0030E3D0(u8 *m, u8 *a) {
     s32 level;
 
     sceVu0CopyVector(floor, (f32 *)(a + 0x10));
-    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
     sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
     sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
     AT(m, 0x80C, f32) = 1.0f;
@@ -1804,7 +1804,7 @@ void func_0030E7F0(u8 *m, u8 *a, f32 front, f32 back) {
     s32 level;
 
     sceVu0CopyVector(floor, (f32 *)(a + 0x10));
-    VCALL(D_0044E570, 0x14, void (*)(void *, u32, f32 *))(D_0044E570, AT(a, 0x34, u32), floor);
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
     sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
     sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
     AT(m, 0x80C, f32) = 1.0f;
@@ -1919,7 +1919,7 @@ void func_0030EDF0(u8 *m) {
 
 extern void *D_00472700[];
 extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 extern void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b);
 
 /* +0x8: destructor */
@@ -1963,7 +1963,7 @@ void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
         AT(m, 0xA2, u8) |= 2;
         AT(m, 0x4B0, u32) &= ~kForm;
     }
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     func_002DDAC0(m, layer, a, b);
 }
 

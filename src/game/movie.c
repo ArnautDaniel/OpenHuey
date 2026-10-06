@@ -1,5 +1,5 @@
 /* Movies (CRI Sofdec .SFD): the player library wrapper (ADX sound system +0x7C44, global
- * D_0044FEF8, vtable D_0046C740) and the movie scene. The mwPly* calls are CRI's library
+ * gMovieLib, vtable D_0046C740) and the movie scene. The mwPly* calls are CRI's library
  * (native/platform/sofdec.c on PC). */
 #include "common.h"
 #include "ptmf.h"
@@ -18,7 +18,7 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 
 extern void *D_0046C740[];
 extern void *D_0046AED0[];
-extern MovieLib *D_0044FEF8;
+extern MovieLib *gMovieLib;
 extern void func_00100490(void *p);   /* operator delete */
 extern void func_00115D20(void *p, s32 c, u32 n);   /* memset */
 extern void mwPlyInitSfdFx(void *prm);
@@ -34,7 +34,7 @@ MovieLib *func_0020E740(MovieLib *lib, s32 flags) {
             lib->vtbl = D_0046AED0;
             lib->unk4 = 0;
             if (lib != NULL) {
-                D_0044FEF8 = NULL;
+                gMovieLib = NULL;
             }
         }
         if ((s16)flags > 0) {
@@ -142,12 +142,12 @@ _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 extern void *Scene_vtable[];
 extern void *D_0046EA60[];       /* Movie */
 extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
-extern Movie *D_0044E958;        /* the movie playing */
-extern u8 *D_0044E978;           /* +0x38: the master volume */
+extern Movie *gMovie;        /* the movie playing */
+extern u8 *gSystemData;           /* +0x38: the master volume */
 extern u8 *gProgress;            /* +0x9F0: the movie volume option */
 extern u8 *D_0045D1F0;
 extern VObject *gFileLoader;
-extern VObject *D_0044E4F0;      /* renderer */
+extern VObject *gRenderer;      /* renderer */
 extern void func_0011F9A0(void *p);           /* delete (scene heap) */
 extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
 extern void func_00114FD0(void *p);           /* free */
@@ -201,7 +201,7 @@ static inline s32 movie_level(Movie *m) {
 extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
 extern void func_002672E0(void *p);   /* delete (effects' heap) */
 extern void func_002E56C0(u8 *quad);
-extern VObject *D_0044E9A0;
+extern VObject *gVram;
 
 /* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
@@ -209,10 +209,10 @@ extern VObject *D_0044E9A0;
 extern void glr_todo(const char *what);
 
 u64 func_0021E410(u8 *mv, s32 page) {
-    VObject *r = D_0044E4F0;
+    VObject *r = gRenderer;
     s32 buf = VCALL(r, 0x38, s32 (*)(VObject *))(r);
 
-    VCALL(D_0044E9A0, 0x38, s32 (*)(VObject *, s32))(D_0044E9A0, buf);
+    VCALL(gVram, 0x38, s32 (*)(VObject *, s32))(gVram, buf);
     if (!(u8)VCALL(r, 0x94, s32 (*)(VObject *, s32, s32, s32, s32))(r, buf, mv[0] != 0 ? 4 : 3, page, 0)) {
         return (u64)-1;
     }
@@ -399,8 +399,8 @@ void func_002B64A0(Movie *m) {
 
 /* +0x20 draw the frame (full screen, layer 3) */
 void func_002B64B0(Movie *m) {
-    VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
-        D_0044E4F0, m->frame, 0x88000, m->frameW, m->frameH, 3);
+    VCALL(gRenderer, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
+        gRenderer, m->frame, 0x88000, m->frameW, m->frameH, 3);
 }
 
 /* the frame shown, -1 none */
@@ -471,7 +471,7 @@ static inline void movie_retry(Movie *m) {
 /* the renderer told the screen is the movie's (unless it keeps its own) */
 static inline void movie_take_screen(Movie *m) {
     if (!m->keepRenderer) {
-        AT(VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0), 0x1C, u8) = 1;
+        AT(VCALL(gRenderer, 0x2C, u8 *(*)(VObject *))(gRenderer), 0x1C, u8) = 1;
     }
 }
 
@@ -609,7 +609,7 @@ void func_002B6E50(Movie *m) {
 
 /* +0x10 entry: a player with its own work buffer, then start */
 void func_002B6E70(Movie *m) {
-    MovieLib *lib = D_0044FEF8;
+    MovieLib *lib = gMovieLib;
     s32 size;
 
     VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, 0x200, 0x1C0, 0x11, 0);
@@ -623,7 +623,7 @@ void func_002B6E70(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    lib = D_0044FEF8;
+    lib = gMovieLib;
     VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, m->work);
     m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
     if (m->ply == NULL) {
@@ -638,7 +638,7 @@ Movie *func_002B6FC0(Movie *m, s32 flags) {
     if (m != NULL) {
         m->base.vtbl = D_0046EA60;
         if (!m->keepRenderer) {
-            AT(VCALL(D_0044E4F0, 0x2C, u8 *(*)(VObject *))(D_0044E4F0), 0x1C, u8) = 0;
+            AT(VCALL(gRenderer, 0x2C, u8 *(*)(VObject *))(gRenderer), 0x1C, u8) = 0;
         }
         if (m->ply != NULL) {
             VCALL(m->ply, 0x14, void (*)(VObject *))(m->ply);
@@ -655,7 +655,7 @@ Movie *func_002B6FC0(Movie *m, s32 flags) {
             m->frames = NULL;
         }
         if (&m->ply != NULL) {
-            D_0044E958 = NULL;
+            gMovie = NULL;
         }
         if (m != NULL) {
             m->base.vtbl = Scene_vtable;
@@ -671,7 +671,7 @@ Movie *func_002B6FC0(Movie *m, s32 flags) {
 Movie *func_002B70D0(Movie *m) {
     m->base.vtbl = Scene_vtable;
     Movie_SetState(m, &sMovieEntry);
-    D_0044E958 = m;
+    gMovie = m;
     m->base.vtbl = D_0046EA60;
     m->work = NULL;
     m->ply = NULL;
@@ -680,7 +680,7 @@ Movie *func_002B70D0(Movie *m) {
     m->time = 0;
     m->shownFrame = -1;
     m->frames = NULL;
-    m->volume[2] = *(f32 *)(D_0044E978 + 0x38);
+    m->volume[2] = *(f32 *)(gSystemData + 0x38);
     if (gProgress != NULL) {
         m->volume[3] = *(f32 *)(gProgress + 0x9F0);
     } else {
@@ -708,14 +708,14 @@ Movie *func_002C8C10(Movie *m, s32 flags) {
 
 /* +0x10 entry */
 void func_002C8C70(Movie *m) {
-    MovieLib *lib = D_0044FEF8;
+    MovieLib *lib = gMovieLib;
 
     VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, 0x200, 0x1C0, 0x11, 0);
     if (VCALL(lib, 0x20, s32 (*)(MovieLib *))(lib) == 0) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    lib = D_0044FEF8;
+    lib = gMovieLib;
     VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, (u8 *)m + 0x200);
     m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
     if (m->ply == NULL) {
@@ -760,7 +760,7 @@ void func_002FECD0(Movie *m) {
 
 /* +0x10 entry: a 256 x 224 player with its own work buffer, then start */
 void func_002FED30(Movie *m) {
-    MovieLib *lib = D_0044FEF8;
+    MovieLib *lib = gMovieLib;
     s32 size;
 
     VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, 0x100, 0xE0, 0x31, 1);
@@ -774,7 +774,7 @@ void func_002FED30(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    lib = D_0044FEF8;
+    lib = gMovieLib;
     VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, m->work);
     m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
     if (m->ply == NULL) {
@@ -793,7 +793,7 @@ void func_002FED30(Movie *m) {
 
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
 extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 extern void *func_00115B68(void *d, const void *s, u32 n);   /* memcpy */
 extern s32 Progress_TestFlag(void *p, u32 id);
 #ifdef HG_NATIVE
@@ -820,7 +820,7 @@ static inline __attribute__((always_inline)) Movie *movie_dtor(Movie *m, s32 fla
  * + `at`, then start */
 static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s32 h, s32 k, s32 f, u32 at,
                                                               s32 setting, const PTMF *start) {
-    MovieLib *lib = D_0044FEF8;
+    MovieLib *lib = gMovieLib;
     s32 size;
 
     VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, w, h, k, f);
@@ -834,7 +834,7 @@ static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    lib = D_0044FEF8;
+    lib = gMovieLib;
     VCALL(lib, 0x10, void (*)(MovieLib *, void *))(lib, m->work);
     m->ply = VCALL(lib, 0x18, VObject *(*)(MovieLib *))(lib);
     if (m->ply == NULL) {
@@ -873,8 +873,8 @@ static inline __attribute__((always_inline)) void movie_take(Movie *m, u32 size,
 
 /* the last frame written into VRAM 0xC0000, h rows, on layer `layer` */
 static inline __attribute__((always_inline)) void movie_send(Movie *m, u32 size, s32 h, s32 layer) {
-    VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
-        D_0044E4F0, (u8 *)m->frames + (m->frameBuf ^ 1) * size, 0xC0000, m->frameW, h, layer);
+    VCALL(gRenderer, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
+        gRenderer, (u8 *)m->frames + (m->frameBuf ^ 1) * size, 0xC0000, m->frameW, h, layer);
 }
 
 #ifdef HG_NATIVE
@@ -893,8 +893,8 @@ static inline void movie_sprite(s32 layer, u64 prim, u32 xy0) {
 #endif
 
 static inline void texcache_done(void) {
-    if (D_0044E4E8 != NULL) {
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    if (gTexCache != NULL) {
+        VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     }
 }
 

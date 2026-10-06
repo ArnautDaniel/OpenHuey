@@ -11,7 +11,7 @@ extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
 extern s32 func_001770D0(Progress *p, s32 id);
 extern u8 D_003D72C0[];   /* the conditions' lengths */
-extern u8 *D_0044E978;    /* resident data (+0x24: flags kept across games) */
+extern u8 *gSystemData;    /* resident data (+0x24: flags kept across games) */
 
 #define PC(ev) AT(ev, 0x4, u8 *)
 
@@ -46,29 +46,29 @@ extern VObject *gRandom;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
-extern u8 *D_0044F808;                        /* the stalker in play */
-extern VObject *D_0044E568;                   /* the rooms */
-extern VObject *D_0044E560;                   /* the sound driver */
+extern u8 *gCharSlot2;                        /* the stalker in play */
+extern VObject *gRooms;                   /* the rooms */
+extern VObject *gSound;                   /* the sound driver */
 extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
 extern s32 func_00178610(Progress *p, u32 door);
 extern s32 func_001667C0(u8 *h);
 extern u32 func_00260540(void *items);
-extern VObject *D_0044E4F8;   /* the camera director's interface */
-extern VObject *D_0044E988;   /* the item manager */
-extern VObject *D_0044FE08;   /* the obstacles */
-extern VObject *D_0044FE10;   /* the cutscene director */
+extern VObject *gCamDirector;   /* the camera director's interface */
+extern VObject *gItems;   /* the item manager */
+extern VObject *gObstacles;   /* the obstacles */
+extern VObject *gCutscene;   /* the cutscene director */
 extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
 extern s32 func_0013D4A0(u8 *h, s32 n);
 extern s32 func_00139060(u8 *h);
 extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flags (u8) */
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern VObject *D_0044E4B8;   /* the camera */
-extern VObject *D_0044E558;   /* the doors */
-extern NavMesh *D_0044E570;   /* the nav mesh */
-extern u8 *D_0044F258;        /* the placed characters */
+extern VObject *gCamera;   /* the camera */
+extern VObject *gDoors;   /* the doors */
+extern NavMesh *gNavMesh;   /* the nav mesh */
+extern u8 *gCreatures;        /* the placed characters */
 extern s32 func_001235C0(u8 *a, u8 *c);
-extern void *D_0044E980;
+extern void *gAdx;
 extern s32 func_002D2120(void *o);
 extern s32 func_002D20D0(void *o);
 extern VObject *gFileLoader;
@@ -77,7 +77,7 @@ extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;
 extern s32 func_00125D80(u8 *c);
 extern u8 *gCharPursuer;
-extern void *D_0044E958;      /* the movie playing */
+extern void *gMovie;      /* the movie playing */
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -112,7 +112,7 @@ s32 func_001FC760(VObject *ev) {
     case 0x60: {   /* resident flag set */
         u32 f = be16(pc + 1);
 
-        r = (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+        r = (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
         break;
     }
     case 0x04:   /* the exit taken (event +0x702) */
@@ -262,7 +262,7 @@ s32 func_001FC760(VObject *ev) {
             if (AT(c, 0xE0, u8) != 0 || (AT(c, 0xF8, s32) != 0 && AT(c, 0xF8, s32) != 0xA)) {
                 break;
             }
-            area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(D_0044E568, AT(ev, 0x560, s32), pc[1]);
+            area = VCALL(gRooms, 0x48, u32 (*)(VObject *, s32, s32))(gRooms, AT(ev, 0x560, s32), pc[1]);
             if ((u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)((u8 *)gCharPlayer + 0x10),
                                                                           area & 0xFFFF, -1) != 1) {
                 break;
@@ -276,7 +276,7 @@ s32 func_001FC760(VObject *ev) {
                 break;
             }
             tri = AT(c, 0x34, s32);
-            area = VCALL(D_0044E568, 0x48, u32 (*)(VObject *, s32, s32))(D_0044E568, AT(ev, 0x560, s32), pc[1]);
+            area = VCALL(gRooms, 0x48, u32 (*)(VObject *, s32, s32))(gRooms, AT(ev, 0x560, s32), pc[1]);
             if ((u8)VCALL(ev, 0xD8, s32 (*)(VObject *, f32 *, u32, s32))(ev, (f32 *)((u8 *)gCharPartner + 0x10),
                                                                           area & 0xFFFF, tri) != 1) {
                 break;
@@ -291,7 +291,7 @@ s32 func_001FC760(VObject *ev) {
         r = pc[1] == (u8)VCALL(p, 0x64, s32 (*)(Progress *))(p);
         break;
     case 0x2D:     /* sound pc[1] (+0xA4) */
-        r = (u8)VCALL(D_0044E560, 0xA4, s32 (*)(VObject *, s32))(D_0044E560, pc[1]);
+        r = (u8)VCALL(gSound, 0xA4, s32 (*)(VObject *, s32))(gSound, pc[1]);
         break;
     case 0x27: {   /* character pc[1] (in this room) faces point (s16 x, s16 z), within pc[6] degrees */
         u8 *c = cond_char(p, pc[1]);
@@ -311,8 +311,8 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x3C:     /* the stalker (in play, in this room) has +0x153C pc[1] */
-        r = D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(D_0044F808, 0x30, s32) &&
-            pc[1] == AT(D_0044F808, 0x153C, u8);
+        r = gCharSlot2 != NULL && AT(gCharSlot2, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(gCharSlot2, 0x30, s32) &&
+            pc[1] == AT(gCharSlot2, 0x153C, u8);
         break;
     case 0x36: {   /* as 0x35 with where the character was (+0x40) */
         u8 *c = cond_char(p, pc[1]);
@@ -359,8 +359,8 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x4B:     /* the stalker is active and its +0x10C says so */
-        if (D_0044F808 != NULL && AT(D_0044F808, 0x28, u8) != 0 &&
-            VCALL((VObject *)D_0044F808, 0x10C, s32 (*)(VObject *))((VObject *)D_0044F808) != 0) {
+        if (gCharSlot2 != NULL && AT(gCharSlot2, 0x28, u8) != 0 &&
+            VCALL((VObject *)gCharSlot2, 0x10C, s32 (*)(VObject *))((VObject *)gCharSlot2) != 0) {
             r = 1;
         }
         break;
@@ -389,7 +389,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x0C:   /* door be16 pc[1..2]: not the rooms' +0x60 */
-        if ((u8)VCALL(D_0044E568, 0x60, s32 (*)(VObject *, u32))(D_0044E568, be16(pc + 1)) == 0) {
+        if ((u8)VCALL(gRooms, 0x60, s32 (*)(VObject *, u32))(gRooms, be16(pc + 1)) == 0) {
             r = 1;
         }
         break;
@@ -414,10 +414,10 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x2C:   /* the director's +0x2C */
-        r = VCALL(D_0044E4F8, 0x2C, s32 (*)(VObject *))(D_0044E4F8);
+        r = VCALL(gCamDirector, 0x2C, s32 (*)(VObject *))(gCamDirector);
         break;
     case 0x2F:   /* the item manager's func_00260540 under 10 */
-        r = func_00260540((u8 *)D_0044E988 + 0x8) < 10;
+        r = func_00260540((u8 *)gItems + 0x8) < 10;
         break;
     case 0x11: {   /* the room's +0x2C test pc[1] (with the context's character and the pc) */
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
@@ -454,7 +454,7 @@ s32 func_001FC760(VObject *ev) {
     case 0x20: {   /* the cutscene director's +0x2C is pc[1] */
         s32 v = PC(ev)[1];
 
-        if (v == VCALL(D_0044FE10, 0x2C, s32 (*)(VObject *))(D_0044FE10)) {
+        if (v == VCALL(gCutscene, 0x2C, s32 (*)(VObject *))(gCutscene)) {
             r = 1;
         }
         break;
@@ -467,7 +467,7 @@ s32 func_001FC760(VObject *ev) {
     case 0x25: {   /* the camera director's +0x24 is (signed) pc[1] */
         s32 v = (s8)PC(ev)[1];
 
-        if (v == VCALL(D_0044E4F8, 0x24, s32 (*)(VObject *))(D_0044E4F8)) {
+        if (v == VCALL(gCamDirector, 0x24, s32 (*)(VObject *))(gCamDirector)) {
             r = 1;
         }
         break;
@@ -478,7 +478,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x28:   /* obstacle pc[1]: +0x34 (be16 pc[2..3]) */
-        if ((u8)VCALL(D_0044FE08, 0x34, s32 (*)(VObject *, s32, u32))(D_0044FE08, pc[1], be16(pc + 2)) == 1) {
+        if ((u8)VCALL(gObstacles, 0x34, s32 (*)(VObject *, s32, u32))(gObstacles, pc[1], be16(pc + 2)) == 1) {
             r = 1;
         }
         break;
@@ -494,7 +494,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x38: {   /* the cutscene director's +0x34 reached be16 pc[1..2] */
-        s32 v = VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10);
+        s32 v = VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene);
 
         if (!(v < (s32)be16(pc + 1))) {
             r = 1;
@@ -503,7 +503,7 @@ s32 func_001FC760(VObject *ev) {
     }
     case 0x39: {   /* at least pc[2] of this script's item pc[1] */
         s32 id = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[1]);
-        u32 n = (u8)func_00260CF0((u8 *)D_0044E988 + 0x8, id);
+        u32 n = (u8)func_00260CF0((u8 *)gItems + 0x8, id);
 
         if (!((s32)n < (s32)PC(ev)[2])) {
             r = 1;
@@ -511,12 +511,12 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x3A:
-        if (VCALL(D_0044FE10, 0x54, s32 (*)(VObject *, s32, s32))(D_0044FE10, pc[1], 0) > 0) {
+        if (VCALL(gCutscene, 0x54, s32 (*)(VObject *, s32, s32))(gCutscene, pc[1], 0) > 0) {
             r = 1;
         }
         break;
     case 0x4A: {   /* the cutscene director's +0x1C of its +0x34 is pc[1] */
-        VObject *d = D_0044FE10;
+        VObject *d = gCutscene;
         s32 v = PC(ev)[1];
         s32 k = VCALL(d, 0x34, s32 (*)(VObject *))(d);
 
@@ -526,7 +526,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x40:
-        r = VCALL(D_0044FE10, 0x68, s32 (*)(VObject *))(D_0044FE10);
+        r = VCALL(gCutscene, 0x68, s32 (*)(VObject *))(gCutscene);
         break;
     case 0x42:   /* Hewie (in the scene)'s +0xF3598 is 1 */
         if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && AT(gCharPartner, 0xF3598, s32) == 1) {
@@ -550,7 +550,7 @@ s32 func_001FC760(VObject *ev) {
             r = 1;
             break;
         }
-        r = VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, (f32 *)(c + 0x10));
+        r = VCALL(gCamera, 0xD4, s32 (*)(VObject *, f32 *))(gCamera, (f32 *)(c + 0x10));
         break;
     }
     case 0x46: {   /* progress flag (variable pc[1]) set */
@@ -609,7 +609,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x57:   /* a movie is playing */
-        r = D_0044E958 != NULL;
+        r = gMovie != NULL;
         break;
     case 0x59:   /* Fiona's +0x1AD630 */
         r = AT(gCharPlayer, 0x1AD630, u8);
@@ -661,7 +661,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x3B: {   /* the cutscene director's +0x58 (pc[1]) passed pc[2] within its +0x54 step */
-        VObject *d = D_0044FE10;
+        VObject *d = gCutscene;
         s32 n = (s8)VCALL(d, 0x54, s32 (*)(VObject *, s32, s32))(d, pc[1], 0);
 
         if (n > 0) {
@@ -715,11 +715,11 @@ s32 func_001FC760(VObject *ev) {
         u8 *c = cond_char(p, pc[1]);
 
         if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
-            u32 k = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, be16(PC(ev) + 2),
+            u32 k = (u8)VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, be16(PC(ev) + 2),
                                                                              AT(ev, 0x560, s32));
 
             if (k != 0xFF &&
-                VCALL(D_0044E558, 0x18, s32 (*)(VObject *, s32, f32 *))(D_0044E558, k, (f32 *)(c + 0x10)) == 0) {
+                VCALL(gDoors, 0x18, s32 (*)(VObject *, s32, f32 *))(gDoors, k, (f32 *)(c + 0x10)) == 0) {
                 r = 1;
             }
         }
@@ -732,7 +732,7 @@ s32 func_001FC760(VObject *ev) {
             s32 room = AT(c, 0x30, s32);
 
             if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room && AT(c, 0x34, s32) != -1 &&
-                (NavMesh_TriFlags(D_0044E570, AT(c, 0x34, u32)) & be32(PC(ev) + 2))) {
+                (NavMesh_TriFlags(gNavMesh, AT(c, 0x34, u32)) & be32(PC(ev) + 2))) {
                 r = 1;
             }
         }
@@ -745,7 +745,7 @@ s32 func_001FC760(VObject *ev) {
         v[1] = (f32)(s16)be16(PC(ev) + 3);
         v[3] = 1.0f;
         v[2] = (f32)(s16)be16(PC(ev) + 5);
-        r = VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, f32 *))(D_0044E4B8, v);
+        r = VCALL(gCamera, 0xD4, s32 (*)(VObject *, f32 *))(gCamera, v);
         break;
     }
     case 0x50: {   /* character pc[1] (in the scene, this room): func_001235C0 */
@@ -757,7 +757,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x53: {   /* one of the 10 placed characters (in the scene, this room) is in state pc[1] */
-        u8 *pl = D_0044F258;
+        u8 *pl = gCreatures;
         s32 i;
 
         for (i = 0; i < 10; i++) {
@@ -774,15 +774,15 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     }
-    case 0x5C:   /* D_0044E980: pc[1] 0 func_002D2120, else func_002D20D0 (none: 1) */
+    case 0x5C:   /* gAdx: pc[1] 0 func_002D2120, else func_002D20D0 (none: 1) */
         if (pc[1] == 0) {
-            r = D_0044E980 != NULL ? func_002D2120(D_0044E980) : 1;
+            r = gAdx != NULL ? func_002D2120(gAdx) : 1;
         } else {
-            r = D_0044E980 != NULL ? func_002D20D0(D_0044E980) : 1;
+            r = gAdx != NULL ? func_002D20D0(gAdx) : 1;
         }
         break;
     case 0x5E:   /* the item manager's +0x3C (be16 pc[1..2]) */
-        r = VCALL(D_0044E988, 0x3C, s32 (*)(VObject *, u32))(D_0044E988, be16(pc + 1));
+        r = VCALL(gItems, 0x3C, s32 (*)(VObject *, u32))(gItems, be16(pc + 1));
         break;
     case 0x5F: {   /* progress variables pc[1] and pc[2] are equal */
         Progress *g = gProgress;
@@ -852,7 +852,7 @@ s32 func_001FC760(VObject *ev) {
         u8 *c0 = *AT(ev, 0x6FC, u8 **);
 
         if (c0 != NULL && AT(c0, 0x28, u8) != 0) {
-            u8 **pl = (u8 **)D_0044F258;
+            u8 **pl = (u8 **)gCreatures;
             s32 i;
 
             for (i = 7; i < 10; i++) {
@@ -941,7 +941,7 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
     }
     n[0] = n[1] = n[2] = n[3] = 0;
     sceVu0CopyVector(cur, (f32 *)(c + 0x10));
-    nm = D_0044E570;
+    nm = gNavMesh;
     VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, AT(c, 0x34, u32), cur);
     sceVu0CopyVector(prev, (f32 *)(c + 0x40));
     VCALL(nm, 0x14, void (*)(NavMesh *, u32, f32 *))(nm, AT(c, 0x38, u32), prev);

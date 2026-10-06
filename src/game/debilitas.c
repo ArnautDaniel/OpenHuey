@@ -222,9 +222,9 @@ void func_0012C030(Pursuer *p) {
 
 /* a nav triangle's flags (+0x3C), 0 for none */
 static inline u32 Debilitas_TriFlags(u32 tri) {
-    u8 *tris = AT(D_0044E570, 0x4, u8 *);
+    u8 *tris = AT(gNavMesh, 0x4, u8 *);
 
-    return tri < AT(D_0044E570, 0x8, u32) && tris != NULL ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
+    return tri < AT(gNavMesh, 0x8, u32) && tris != NULL ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
 }
 
 extern const PTMF D_003AFFA0;
@@ -233,7 +233,7 @@ extern const PTMF D_003AFFA0;
    the same floor level as his (flags 0x300000; not both), at least 20 units away; then walk
    there (state func_00128FC0, at most 60 frames). None: give up (+0x16EF) */
 void func_001291C0(Pursuer *p) {
-    void *nav = D_0044E570;
+    void *nav = gNavMesh;
     u32 n;
     u32 i;
 
@@ -345,7 +345,7 @@ void func_0012B490(Pursuer *p) {
         }
     } else if (next != -2) {
         if (next == 0x1C) {
-            VCALL(D_0044E7A8, 0x18, void (*)(VObject *, s32, s32, s32))(D_0044E7A8, 3, 0x80, 0x1E);
+            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 0x1E);
         }
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
     }

@@ -29,13 +29,13 @@
 #include "progress.h"
 #include "ptmf.h"
 
-extern VObject *D_0044E560;   /* the sound driver */
-extern u8 *D_0044E978;        /* +0x38: the music volume */
+extern VObject *gSound;   /* the sound driver */
+extern u8 *gSystemData;        /* +0x38: the music volume */
 extern Progress *gProgress;
 extern u8 *gCharPursuer;
-extern u8 *D_0044F808;        /* the character in slot 2 */
+extern u8 *gCharSlot2;        /* the character in slot 2 */
 extern u8 *gCharPlayer;
-extern VObject *D_0044E4D0;   /* the room objects */
+extern VObject *gEvents;   /* the room objects */
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
 extern const PTMF D_004128A0;   /* func_002C25F0: a track volume fade */
@@ -61,7 +61,7 @@ static inline void midi(u32 k, u8 st, u8 d1, u8 d2, u32 ch) {
     m[0] = d2;
     m[1] = d1;
     m[2] = st;
-    VCALL(D_0044E560, 0x30, void (*)(VObject *, u32, u8 *, u32))(D_0044E560, k, m, ch);
+    VCALL(gSound, 0x30, void (*)(VObject *, u32, u8 *, u32))(gSound, k, m, ch);
 }
 
 /* track volume `v` (0..255) as the driver gets it */
@@ -70,7 +70,7 @@ static inline u8 vol_out(u8 *d, u32 v) {
 }
 
 static inline void send_volume(u8 *d, u32 k) {
-    VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, vol_out(d, f2u(AT(TRACK(d, k), 0x100, f32)) & 0xFF));
+    VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, f2u(AT(TRACK(d, k), 0x100, f32)) & 0xFF));
 }
 
 static inline void send_volumes(u8 *d) {
@@ -85,7 +85,7 @@ static inline void send_volumes(u8 *d) {
 static inline void track_zero(u8 *d, u32 k) {
     if (f2u(AT(TRACK(d, k), 0x100, f32)) & 0xFF) {
         AT(TRACK(d, k), 0x100, f32) = 0.0f;
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, vol_out(d, 0) & 0xFF);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, 0) & 0xFF);
     }
 }
 
@@ -93,8 +93,8 @@ static inline void track_zero(u8 *d, u32 k) {
 static inline void track_mute(u8 *d, u32 k) {
     if (AT(TRACK(d, k), 0x10C, u8) == 0) {
         AT(TRACK(d, k), 0x10C, u8) = 1;
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, vol_out(d, 0) & 0xFF);
-        VCALL(D_0044E560, 0x28, void (*)(VObject *, u32, u32))(D_0044E560, k, 0);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, 0) & 0xFF);
+        VCALL(gSound, 0x28, void (*)(VObject *, u32, u32))(gSound, k, 0);
     }
 }
 
@@ -102,7 +102,7 @@ static inline void track_mute(u8 *d, u32 k) {
 static inline void track_unmute(u8 *d, u32 k) {
     if (AT(TRACK(d, k), 0x10C, u8) == 1) {
         AT(TRACK(d, k), 0x10C, u8) = 0;
-        VCALL(D_0044E560, 0x28, void (*)(VObject *, u32, u32))(D_0044E560, k, 1);
+        VCALL(gSound, 0x28, void (*)(VObject *, u32, u32))(gSound, k, 1);
         AT(d, 0xA39, u8) = 1;
     }
 }
@@ -156,7 +156,7 @@ void func_002C25F0(u8 *d) {
 
         if (v != (f2u(AT(t, 0x100, f32)) & 0xFF)) {
             AT(t, 0x100, f32) = (f32)v;
-            VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32, f32 *))(D_0044E560, k, vol_out(d, v) & 0xFF,
+            VCALL(gSound, 0x34, void (*)(VObject *, u32, u32, f32 *))(gSound, k, vol_out(d, v) & 0xFF,
                                                                           (f32 *)(t + 0x100));
         }
         if (AT(CUR(d), 0x14, s32) == 0) {
@@ -176,7 +176,7 @@ void func_002C25F0(u8 *d) {
             u8 now = f2u(AT(t, 0x100, f32)) & 0xFF;
 
             if (was != now) {
-                VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32, f32 *))(D_0044E560, k, vol_out(d, now) & 0xFF,
+                VCALL(gSound, 0x34, void (*)(VObject *, u32, u32, f32 *))(gSound, k, vol_out(d, now) & 0xFF,
                                                                               (f32 *)(t + 0x100));
             }
         }
@@ -237,7 +237,7 @@ void func_002C1F80(u8 *d) {
         f = (f <= 255.0f ? f : 255.0f) < 20.0f ? 20.0f : (f <= 255.0f ? f : 255.0f);
         AT(t, 0x104, f32) = f;
         if (was != (f2u(AT(t, 0x104, f32)) & 0xFF)) {
-            VCALL(D_0044E560, 0x3C, void (*)(VObject *, u32, u32, u32, f32 *))(D_0044E560, k, v, was, (f32 *)(t + 0x104));
+            VCALL(gSound, 0x3C, void (*)(VObject *, u32, u32, u32, f32 *))(gSound, k, v, was, (f32 *)(t + 0x104));
         }
         AT(CUR(d), 0x25, u8) = 1;
         return;
@@ -253,7 +253,7 @@ void func_002C1F80(u8 *d) {
         o = v * AT(t, 0x108, f32);
         o = (o <= 255.0f ? o : 255.0f) < 20.0f ? 20.0f : (o <= 255.0f ? o : 255.0f);
         if (was != (f2u(v) & 0xFF)) {
-            VCALL(D_0044E560, 0x3C, void (*)(VObject *, u32, u32, u32, f32 *))(D_0044E560, k, f2u(o) & 0xFF & 0xFF, was,
+            VCALL(gSound, 0x3C, void (*)(VObject *, u32, u32, u32, f32 *))(gSound, k, f2u(o) & 0xFF & 0xFF, was,
                                                                                (f32 *)(t + 0x104));
         }
     }
@@ -470,17 +470,17 @@ u8 func_002C1980(u8 *d) {
     u8 i = 0;
     f32 *tbl;
 
-    if (D_0044F808 == NULL) {
+    if (gCharSlot2 == NULL) {
         return 0xFF;
     }
     tbl = AT(d, 0x18, f32 *);
-    if (AT(D_0044F808, 0x30, s32) == AT(gCharPlayer, 0x30, s32)) {
-        f32 dist = AT(D_0044F808, 0x1588, f32);
+    if (AT(gCharSlot2, 0x30, s32) == AT(gCharPlayer, 0x30, s32)) {
+        f32 dist = AT(gCharSlot2, 0x1588, f32);
 
         extern f32 func_00124490(void *a, f32 *p);
 
         if (dist < 0.0f) {
-            dist = func_00124490(D_0044F808, (f32 *)(gCharPlayer + 0x10));
+            dist = func_00124490(gCharSlot2, (f32 *)(gCharPlayer + 0x10));
         }
         while (!(tbl[i * 2] <= 0.0f) && !(dist < tbl[i * 2])) {
             i = (i + 1) & 0xFF;
@@ -508,7 +508,7 @@ s32 func_002C1760(u8 *d, u32 k) {
     if ((f2u(AT(t, 0x100, f32)) & 0xFF) == v) {
         if (v != (f2u(AT(t, 0x100, f32)) & 0xFF)) {
             AT(t, 0x100, f32) = (f32)v;
-            VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, vol_out(d, v) & 0xFF);
+            VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, v) & 0xFF);
         }
     } else {
         func_002C2A70(d, k, v, 2.5f);
@@ -550,13 +550,13 @@ void func_002C3760(u8 *d, u32 k) {
     u8 ch;
 
     if (AT(t, 0x10C, u8) != 1) {
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, vol_out(d, f2u(AT(t, 0x100, f32)) & 0xFF) & 0xFF);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, vol_out(d, f2u(AT(t, 0x100, f32)) & 0xFF) & 0xFF);
     } else {
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, k, f2u((AT(d, 0x8, f32) * (AT(d, 0x4, f32) * (AT(d, 0xC, f32) * 0.0f))) / 255.0f) & 0xFF);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, k, f2u((AT(d, 0x8, f32) * (AT(d, 0x4, f32) * (AT(d, 0xC, f32) * 0.0f))) / 255.0f) & 0xFF);
     }
     v = AT(t, 0x104, f32) * AT(t, 0x108, f32);
     v = (v <= 255.0f ? v : 255.0f) < 20.0f ? 20.0f : (v <= 255.0f ? v : 255.0f);
-    VCALL(D_0044E560, 0x3C, void (*)(VObject *, u32, u32))(D_0044E560, k, f2u(v) & 0xFF);
+    VCALL(gSound, 0x3C, void (*)(VObject *, u32, u32))(gSound, k, f2u(v) & 0xFF);
     for (ch = 0; ch < 0x10; ch = (ch + 1) & 0xFF) {
         u8 *e = t + ch * 0x10;
         f32 b = AT(t, 0x108, f32) * AT(e, 0x4, f32);
@@ -564,9 +564,9 @@ void func_002C3760(u8 *d, u32 k) {
         b = (b <= 127.0f ? b : 127.0f) < 0.0f ? 0.0f : (b <= 127.0f ? b : 127.0f);
         midi(k, 0xE0, 0, f2u(b) & 0xFF, ch);
         if (AT(e, 0xC, u8) != 1) {
-            VCALL(D_0044E560, 0x38, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, ch, f2u(AT(e, 0x0, f32)) & 0xFF);
+            VCALL(gSound, 0x38, void (*)(VObject *, u32, u32, u32))(gSound, k, ch, f2u(AT(e, 0x0, f32)) & 0xFF);
         } else {
-            VCALL(D_0044E560, 0x38, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, ch, 0);
+            VCALL(gSound, 0x38, void (*)(VObject *, u32, u32, u32))(gSound, k, ch, 0);
         }
         midi(k, 0xB0, 0xA, f2u(AT(e, 0x8, f32)) & 0xFF, ch);
     }
@@ -664,7 +664,7 @@ void func_002C5FF0(u8 *d) {
     AT(d, 0xA39, u8) = 0;
     AT(d, 0x15, u8) = 0xFF;
     AT(d, 0x31, u8) = 0xFF;
-    AT(d, 0x4, f32) = AT(D_0044E978, 0x38, f32);
+    AT(d, 0x4, f32) = AT(gSystemData, 0x38, f32);
     if (gProgress != NULL) {
         AT(d, 0x8, f32) = AT(gProgress, 0x9F0, f32);
     } else {
@@ -799,7 +799,7 @@ void func_002C04D0(u8 *d) {
 
     AT(d, 0x30, u8) = 8;
     midi(0, 0xB0, 0x78, 0, 0xFF);
-    VCALL(D_0044E560, 0x24, void (*)(VObject *, u32, u32))(D_0044E560, 0, 1);
+    VCALL(gSound, 0x24, void (*)(VObject *, u32, u32))(gSound, 0, 1);
     func_002C3760(d, 0);
     func_002C2CD0(d, 1, 1, 0);
     func_002C2CD0(d, 2, 1, 0);
@@ -850,7 +850,7 @@ void func_002C0720(u8 *d, s32 now) {
     AT(CHAN(d, 3, 0), 0x4, f32) = b;
     midi(3, 0xE0, 0, f2u(b) & 0xFF, 0);
     midi(3, 0xB0, 0x78, 0, 0xFF);
-    VCALL(D_0044E560, 0x24, void (*)(VObject *, u32, u32))(D_0044E560, 3, 1);
+    VCALL(gSound, 0x24, void (*)(VObject *, u32, u32))(gSound, 3, 1);
     func_002C2CD0(d, 3, frames, vol & 0xFF);
 }
 
@@ -897,7 +897,7 @@ void func_002C0A30(u8 *d) {
     Progress *p;
     s32 seen = 0;
 
-    if (VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) != 0) {
+    if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) != 0) {
         return;
     }
     p = gProgress;
@@ -1020,11 +1020,11 @@ void func_002C4600(u8 *d) {
     send_volumes(d);
     if ((f2u(AT(TRACK(d, 1), 0x100, f32)) & 0xFF) != 0xFF) {
         AT(TRACK(d, 1), 0x100, f32) = 255.0f;
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, 1, vol_out(d, 0xFF) & 0xFF);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, 1, vol_out(d, 0xFF) & 0xFF);
     }
     if ((f2u(AT(TRACK(d, 2), 0x100, f32)) & 0xFF) != 0xFF) {
         AT(TRACK(d, 2), 0x100, f32) = 255.0f;
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, u32, u32))(D_0044E560, 2, vol_out(d, 0xFF) & 0xFF);
+        VCALL(gSound, 0x34, void (*)(VObject *, u32, u32))(gSound, 2, vol_out(d, 0xFF) & 0xFF);
     }
     track_zero(d, 3);
     track_zero(d, 0);
@@ -1040,7 +1040,7 @@ void func_002C4600(u8 *d) {
         f = (f <= 255.0f ? f : 255.0f) < 20.0f ? 20.0f : (f <= 255.0f ? f : 255.0f);
         AT(t, 0x104, f32) = f;
         if (was != (f2u(f) & 0xFF)) {
-            VCALL(D_0044E560, 0x3C, void (*)(VObject *, u32, u32))(D_0044E560, k, sv);
+            VCALL(gSound, 0x3C, void (*)(VObject *, u32, u32))(gSound, k, sv);
         }
         for (ch = 0; ch < 0x10; ch++) {
             u8 *e = CHAN(d, k, ch);
@@ -1056,7 +1056,7 @@ void func_002C4600(u8 *d) {
             midi(k, 0xE0, 0, f2u(AT(e, 0x4, f32)) & 0xFF, ch);
             v = AT(d, 0x1C, u8 *)[k * 0x10 + ch];
             chan_set(d, k, ch, v, 0x0);
-            VCALL(D_0044E560, 0x38, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, ch, f2u(AT(e, 0x0, f32)) & 0xFF);
+            VCALL(gSound, 0x38, void (*)(VObject *, u32, u32, u32))(gSound, k, ch, f2u(AT(e, 0x0, f32)) & 0xFF);
         }
     }
     track_mute(d, 3);
@@ -1088,14 +1088,14 @@ void func_002C5980(u8 *d) {
     case 2:
         for (k = 0; k < 4; k++) {
             if (AT(TRACK(d, k), 0x10D, u8) != 1) {
-                VCALL(D_0044E560, 0x1C, void (*)(VObject *, u32, u32, u32))(D_0044E560, k, 0, 0);
+                VCALL(gSound, 0x1C, void (*)(VObject *, u32, u32, u32))(gSound, k, 0, 0);
                 AT(TRACK(d, k), 0x10D, u8) = 1;
             }
         }
         AT(d, 0x15, u8) = 3;
         break;
     case 3:
-        drv = D_0044E560;
+        drv = gSound;
         for (k = 0; k < 4; k++) {
             VCALL(drv, 0x24, void (*)(VObject *, u32, u32))(drv, k, 1);
         }
@@ -1117,13 +1117,13 @@ void func_002C5BD0(u8 *d) {
     s32 i, k, ch;
 
     for (k = 0; k < 4; k++) {
-        loading |= VCALL(D_0044E560, 0x74, s32 (*)(VObject *, s32))(D_0044E560, k) & 0xFF;
+        loading |= VCALL(gSound, 0x74, s32 (*)(VObject *, s32))(gSound, k) & 0xFF;
     }
     for (k = 0; k < 4; k++) {
         if (loading) {
-            VCALL(D_0044E560, 0x84, void (*)(VObject *, s32))(D_0044E560, k);
+            VCALL(gSound, 0x84, void (*)(VObject *, s32))(gSound, k);
         } else {
-            VCALL(D_0044E560, 0x64, void (*)(VObject *, s32))(D_0044E560, k);
+            VCALL(gSound, 0x64, void (*)(VObject *, s32))(gSound, k);
         }
     }
     for (i = 0; i < 0x18; i++) {
@@ -1163,16 +1163,16 @@ s32 func_002C5E80(u8 *d) {
     s32 k;
 
     for (k = 0; k < 4; k++) {
-        loading |= VCALL(D_0044E560, 0x74, s32 (*)(VObject *, s32))(D_0044E560, k) & 0xFF;
+        loading |= VCALL(gSound, 0x74, s32 (*)(VObject *, s32))(gSound, k) & 0xFF;
     }
     if (loading) {
         return 1;
     }
     for (k = 0; k < 4; k++) {
-        VCALL(D_0044E560, 0x60, void (*)(VObject *, s32))(D_0044E560, k);
+        VCALL(gSound, 0x60, void (*)(VObject *, s32))(gSound, k);
     }
     for (k = 0; k < 4; k++) {
-        VCALL(D_0044E560, 0x34, void (*)(VObject *, s32, s32))(D_0044E560, k, 0);
+        VCALL(gSound, 0x34, void (*)(VObject *, s32, s32))(gSound, k, 0);
     }
     return 0;
 }
@@ -1222,12 +1222,12 @@ static inline void stage_load(u8 *d, const char *const *files) {
     u8 *p = (u8 *)gProgress;
 
     AT(d, 0x15, u8) = 0;
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[0], 0, 0, p + 0x16C0);
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[1], 0, 1, p + 0x36C0);
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[2], 1, 1, p + 0x56C0);
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[3], 2, 1, p + 0x76C0);
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[4], 3, 1, p + 0x96C0);
-    VCALL(D_0044E560, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(D_0044E560, files[5], 0, 3, p + 0xB6C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[0], 0, 0, p + 0x16C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[1], 0, 1, p + 0x36C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[2], 1, 1, p + 0x56C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[3], 2, 1, p + 0x76C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[4], 3, 1, p + 0x96C0);
+    VCALL(gSound, 0x80, void (*)(VObject *, const char *, u32, u32, void *))(gSound, files[5], 0, 3, p + 0xB6C0);
 }
 
 /* the chase seen (subclass +0x5C): state 6, the chase's sequence volume to `vol`, the listed

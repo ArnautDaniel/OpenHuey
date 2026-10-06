@@ -6,13 +6,13 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *gCamera;   /* the camera */
 extern u8 D_0041D820[];       /* the 3D distance curves */
 
 /* fill the 3D block for a sound at `pos` */
 void func_002FF4B0(VObject *snd, f32 *pos) {
     u8 *b = VCALL(snd, 0xBC, u8 *(*)(VObject *))(snd);
-    VObject *cam = D_0044E4B8;
+    VObject *cam = gCamera;
     f32 m[4][4] __attribute__((aligned(16)));
     s32 i;
 

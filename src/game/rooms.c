@@ -1,4 +1,4 @@
-/* The rooms (global D_0044E568): the per-room state of the house (exits, doors, ...), kept
+/* The rooms (global gRooms): the per-room state of the house (exits, doors, ...), kept
  * across rooms and saved with the game. */
 #include "common.h"
 #include "game.h"
@@ -224,14 +224,14 @@ s32 func_0021BEB0(VObject *r, s32 room, s32 exit) {
 /* ---- the door table (D_003DCFC0: two sides {room, exit, tri at +4} 6 bytes apart, flags +0xC)
  * and the room table (D_003D8BC0: per room 8 exits {3 triangles, camera area}, 0x40 bytes) ---- */
 
-extern VObject *D_0044E558;   /* the doors */
+extern VObject *gDoors;   /* the doors */
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
 extern f32 func_002E2D00(f32 angle);
 extern f32 func_002E2BC0(const f32 *v);   /* heading of v */
 extern s32 func_00178840(Progress *p, s32 room, s32 exit);
 extern void *D_0046C480[], *D_0046C3E0[];
-extern VObject *D_0044E568;   /* the rooms (this) */
+extern VObject *gRooms;   /* the rooms (this) */
 extern void func_00100490(void *o);   /* operator delete */
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
@@ -304,7 +304,7 @@ s32 func_0021C550(VObject *r, u32 d, u32 room) {
 /* an exit's triangle `which` (doors +0x50.. +0x58 for the room's real door, else the room
  * table's) */
 static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
-    VObject *doors = D_0044E558;
+    VObject *doors = gDoors;
     f32 tmp[4] __attribute__((aligned(16)));
     s32 t;
 
@@ -318,7 +318,7 @@ static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
     }
     t = ROOM_EXIT(VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), exit, which * 2);
     if (pos != NULL) {
-        VCALL((VObject *)D_0044E570, 0xC, void (*)(VObject *, s32, f32 *))((VObject *)D_0044E570, t, pos);
+        VCALL((VObject *)gNavMesh, 0xC, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, t, pos);
     }
     ROOMLOG("exit point %d (%d) of room %d: room table -> tri %d (%.1f %.1f %.1f)", exit, which,
             VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress), t, pos ? pos[0] : 0.0, pos ? pos[1] : 0.0,
@@ -562,8 +562,8 @@ f32 func_0021B3E0(VObject *r, u32 exit) {
     if (VCALL(r, 0x70, s32 (*)(VObject *, s32, u32))(r, room, exit)) {
         return 0.0f;
     }
-    if (VCALL(D_0044E558, 0x40, s32 (*)(VObject *, u32))(D_0044E558, exit)) {
-        doors = D_0044E558;
+    if (VCALL(gDoors, 0x40, s32 (*)(VObject *, u32))(gDoors, exit)) {
+        doors = gDoors;
         h = VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, exit);
         if (VCALL(doors, 0x18, s32 (*)(VObject *, u32, f32 *))(doors, exit, a) == 1) {
             static const union { u32 u; f32 f; } kPi = {0x40490FDB};
@@ -586,7 +586,7 @@ VObject *func_0021B0F0(VObject *r, s32 flags) {
     }
     r->vtbl = D_0046C3E0;
     r->vtbl = D_0046C480;
-    D_0044E568 = NULL;
+    gRooms = NULL;
     if ((s16)flags > 0) {
         func_00100490(r);
     }
@@ -599,7 +599,7 @@ VObject *func_0021C7E0(VObject *r, s32 flags) {
         return r;
     }
     r->vtbl = D_0046C480;
-    D_0044E568 = NULL;
+    gRooms = NULL;
     if ((s16)flags > 0) {
         func_00100490(r);
     }
@@ -754,7 +754,7 @@ static void square_centre(NavMesh *nm, u32 a, u32 b, f32 *out) {
 /* move the square (*a, *b) one square along `dir`: from its centre 5 units along dir through
  * the mesh until two new triangles are crossed; -1 (unchanged) at an edge of the mesh */
 s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
     u32 ta = *a, tb = *b, cur;
     f32 from[4] __attribute__((aligned(16)));
     f32 to[4] __attribute__((aligned(16)));
@@ -817,28 +817,28 @@ static inline __attribute__((always_inline)) s32 sq_visit(s32 mode, struct sq_ct
 
     switch (mode) {
     case SQ_BLOCK:
-        NavMesh_Tri(D_0044E570, a)->flags |= 0x20400000;
-        NavMesh_Tri(D_0044E570, b)->flags |= 0x20400000;
+        NavMesh_Tri(gNavMesh, a)->flags |= 0x20400000;
+        NavMesh_Tri(gNavMesh, b)->flags |= 0x20400000;
         break;
     case SQ_UNBLOCK:
-        NavMesh_Tri(D_0044E570, a)->flags &= 0xDFBFFFFF;
-        NavMesh_Tri(D_0044E570, b)->flags &= 0xDFBFFFFF;
+        NavMesh_Tri(gNavMesh, a)->flags &= 0xDFBFFFFF;
+        NavMesh_Tri(gNavMesh, b)->flags &= 0xDFBFFFFF;
         break;
     case SQ_TEST: {
-        u32 fa = NavMesh_Tri(D_0044E570, a)->flags;
-        u32 fb = NavMesh_Tri(D_0044E570, b)->flags;
+        u32 fa = NavMesh_Tri(gNavMesh, a)->flags;
+        u32 fb = NavMesh_Tri(gNavMesh, b)->flags;
 
         c->any = c->any | fa | fb;
         c->all = c->all & fa & fb;
         break;
     }
     case SQ_FLAG:
-        NavMesh_Tri(D_0044E570, a)->flags |= corner ? 0x20000000 : 0x20800000;
-        NavMesh_Tri(D_0044E570, b)->flags |= corner ? 0x20000000 : 0x20800000;
+        NavMesh_Tri(gNavMesh, a)->flags |= corner ? 0x20000000 : 0x20800000;
+        NavMesh_Tri(gNavMesh, b)->flags |= corner ? 0x20000000 : 0x20800000;
         break;
     case SQ_UNFLAG:
-        NavMesh_Tri(D_0044E570, a)->flags &= 0xDF7FFFFF;
-        NavMesh_Tri(D_0044E570, b)->flags &= 0xDF7FFFFF;
+        NavMesh_Tri(gNavMesh, a)->flags &= 0xDF7FFFFF;
+        NavMesh_Tri(gNavMesh, b)->flags &= 0xDF7FFFFF;
         break;
     case SQ_FIND:
         if (!corner && (a == c->tri[0] || b == c->tri[0])) {
@@ -1091,7 +1091,7 @@ static inline __attribute__((always_inline)) void obstacle_moved(u8 *o) {
     AT(o, 0x5C, u32) = NAV_NONE;
     AT(o, 0x60, u32) = NAV_NONE;
     func_0017E0B0(o);
-    square_centre(D_0044E570, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
+    square_centre(gNavMesh, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
     AT(o, 0x4C, f32) = 1.0f;
     AT(o, 0x10, s32) = AT(o, 0x14, s32);
 }
@@ -1100,7 +1100,7 @@ void func_0017D370(u8 *o) {
     obstacle_moved(o);
 }
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
 
@@ -1114,7 +1114,7 @@ void func_0017FA60(u8 *o) {
     if (AT(o, 0x10, s32) == 6) {
         Progress *p;
 
-        func_002FF650(D_0044E560, 0, 6, (f32 *)(o + 0x40), 0, 0);
+        func_002FF650(gSound, 0, 6, (f32 *)(o + 0x40), 0, 0);
         p = gProgress;
         func_002A8440((u8 *)p + 0x778, 0x1F, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(o, 0x54, s32), 0xFFFF);
     }
@@ -1132,7 +1132,7 @@ void func_0017FA60(u8 *o) {
 /* placed: the centre of the reference square, then the parts' squares, blocked (no move) and
  * settled (func_0017EA30) */
 void func_0017F8F0(u8 *o) {
-    NavMesh *nm = D_0044E570;
+    NavMesh *nm = gNavMesh;
 
     square_centre(nm, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
     AT(o, 0x4C, f32) = 1.0f;
@@ -1141,13 +1141,13 @@ void func_0017F8F0(u8 *o) {
     func_0017EA30(o, NULL);
 }
 
-/* ---- the obstacles (D_0044FE08, room manager +0x9380, vtable D_0046C320): 5 things in the
+/* ---- the obstacles (gObstacles, room manager +0x9380, vtable D_0046C320): 5 things in the
  * room that can be pushed about (+0x10, 0xB0 each; the room object "oshi0n" is each one's
  * model, +0x50), their moves (OBSTACLE.MTN at +0x380: count, then offsets), the 5 saved
  * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
 
 extern void *D_0046C320[], *D_0046C380[];
-extern VObject *D_0044FE08;
+extern VObject *gObstacles;
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
@@ -1182,7 +1182,7 @@ void *func_0021A2E0(u8 *l, s32 flags) {
         AT(l, 0x0, void **) = D_0046C320;
         func_001002C0(l + 0x10, func_0021A370, 0xB0, 5);
         AT(l, 0x0, void **) = D_0046C380;
-        D_0044FE08 = NULL;
+        gObstacles = NULL;
         if ((s16)flags > 0) {
             func_00100490(l);
         }
@@ -1194,7 +1194,7 @@ void *func_0021A2E0(u8 *l, s32 flags) {
 void *func_0021B090(void *l, s32 flags) {
     if (l != NULL) {
         AT(l, 0x0, void **) = D_0046C380;
-        D_0044FE08 = NULL;
+        gObstacles = NULL;
         if ((s16)flags > 0) {
             func_00100490(l);
         }

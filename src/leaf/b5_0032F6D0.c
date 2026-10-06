@@ -216,7 +216,7 @@ extern void func_00138AD0(void *h, s32 mode, s32 time);
 /* use: composure +25, she drinks (event 0x8D) */
 s32 func_00331A90(void) {
     item_composure(25.0f);
-    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -231,7 +231,7 @@ s32 func_00331BF0(void *self, void *dest) {
 /* use: composure +100 */
 s32 func_00331C20(void) {
     item_composure(100.0f);
-    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -247,7 +247,7 @@ s32 func_00331D70(void *self, void *dest) {
 s32 func_00331DA0(void) {
     F32(gProgress, 0x9E8) = 2.0f;
     S32(gProgress, 0x9EC) = 1800;
-    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -258,7 +258,7 @@ s32 func_00331EE0(void) {
     }
     S32(gProgress, 0x9F8) = 1800;
     S32(gProgress, 0x9F4) = 1800;
-    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -266,7 +266,7 @@ s32 func_00331EE0(void) {
 s32 func_00332030(void) {
     item_composure(-50.0f);
     F32(gProgress, 0x7D8) += 50.0f;
-    item_event(D_0044E4D0, 0, 0x8D, gCharPlayer);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
@@ -278,7 +278,7 @@ s32 func_003324A0(void *o) {
     if (item_hewie_heal(20)) {
         item_trust(-1);
     }
-    return item_give_hewie(D_0044E4D0, 0x8F);
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* use: Hewie heals 100; trust -1 */
@@ -288,7 +288,7 @@ s32 func_003326D0(void *o) {
     }
     item_hewie_heal(100);
     item_trust(-1);
-    return item_give_hewie(D_0044E4D0, 0x8F);
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* use: Hewie's +0x94 (50); trust +3 */
@@ -298,7 +298,7 @@ s32 func_003328E0(void *o) {
     }
     VCALL(gCharPartner, 0x94, void (*)(u8 *, s32))(gCharPartner, 50);
     item_trust(3);
-    return item_give_hewie(D_0044E4D0, 0x90);
+    return item_give_hewie(gEvents, 0x90);
 }
 
 /* use: as func_003324A0 */
@@ -309,7 +309,7 @@ s32 func_00332AD0(void *o) {
     if (item_hewie_heal(20)) {
         item_trust(-1);
     }
-    return item_give_hewie(D_0044E4D0, 0x8F);
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* use: as func_003326D0 */
@@ -319,7 +319,7 @@ s32 func_00332D10(void *o) {
     }
     item_hewie_heal(100);
     item_trust(-1);
-    return item_give_hewie(D_0044E4D0, 0x8F);
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* use: Hewie waits (func_00138AD0 mode 3, 450 frames; Progress +0xA10 too); trust +20 */
@@ -330,7 +330,7 @@ s32 func_00332F30(void *o) {
     func_00138AD0(gCharPartner, 3, 450);
     S32(gProgress, 0xA10) = 450;
     item_trust(20);
-    return item_give_hewie(D_0044E4D0, 0x91);
+    return item_give_hewie(gEvents, 0x91);
 }
 
 /* use: Hewie's health 1 (back on his feet); trust +3 */
@@ -340,5 +340,5 @@ s32 func_00333120(void *o) {
     }
     S32(gCharPartner, 0x14C8) = 1;
     item_trust(3);
-    return item_give_hewie(D_0044E4D0, 0x90);
+    return item_give_hewie(gEvents, 0x90);
 }

@@ -140,7 +140,7 @@ extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen
 extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
 extern Scene *Scene5_ctor(void *mem);     /* mode 5: the ending */
 extern void func_001779B0(void *obj, s32 param);
-extern VObject *D_0044E968; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
+extern VObject *gSceneTitle; /* global object, type unknown (+0x14 gets the mode parameter in mode 2) */
 extern void *gProgress;     /* include/progress.h */
 
 static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
@@ -175,7 +175,7 @@ void Game_StartNextScene(Game *game) {
         break;
     case 2:
         Game_NewScene(game, 0x140D00, SceneTitle_ctor, 0);
-        *(s32 *)((u8 *)D_0044E968 + 0x14) = game->modeParam;
+        *(s32 *)((u8 *)gSceneTitle + 0x14) = game->modeParam;
         game->softResetEnabled = 0;
         break;
     case 3:
@@ -194,7 +194,7 @@ void Game_StartNextScene(Game *game) {
 }
 
 extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
-extern VObject *D_0044E560;                 /* the sound driver */
+extern VObject *gSound;                 /* the sound driver */
 extern void *func_00114DA8(u32 align, u32 size);   /* memalign */
 extern void func_00114FD0(void *p);                /* free */
 
@@ -208,7 +208,7 @@ static inline void Game_LoadSoundFile(VObject *loader, const char *name, s32 met
 
     if (size != 0 && (buf = func_00114DA8(0x40, size)) != NULL) {
         LOADER_LOAD(loader, name, buf);
-        VCALL(D_0044E560, method, void (*)(VObject *, s32, void *, u32))(D_0044E560, 5, buf, size);
+        VCALL(gSound, method, void (*)(VObject *, s32, void *, u32))(gSound, 5, buf, size);
         func_00114FD0(buf);
     }
 }
@@ -221,7 +221,7 @@ void func_002CFA10(Game *game) {
     Game_LoadSoundFile(loader, D_0045D7C0, 0x4C);
     Game_LoadSoundFile(loader, D_0045D7D0, 0x50);
     Game_LoadSoundFile(loader, D_0045D7E0, 0x58);
-    VCALL(D_0044E560, 0x60, void (*)(VObject *, s32))(D_0044E560, 5);
+    VCALL(gSound, 0x60, void (*)(VObject *, s32))(gSound, 5);
 }
 
 extern void func_002A7AA0(u8 *o);
@@ -245,7 +245,7 @@ void func_002BFB20(void *obj) {
     *(s32 *)(d + 0x4C) = 0;
 }
 
-extern VObject *D_0044E4F0;   /* the renderer */
+extern VObject *gRenderer;   /* the renderer */
 
 /* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
  * from the renderer, +4 on, +8 = 1.0. */
@@ -253,8 +253,8 @@ void func_002A7AA0(u8 *o) {
     VObject *r;
     u8 *disp;
 
-    o[0] = VCALL(D_0044E560, 0x6C, s32 (*)(VObject *))(D_0044E560);
-    r = D_0044E4F0;
+    o[0] = VCALL(gSound, 0x6C, s32 (*)(VObject *))(gSound);
+    r = gRenderer;
     o[1] = VCALL(r, 0x28, u8 (*)(VObject *))(r);
     disp = VCALL(r, 0x2C, u8 *(*)(VObject *))(r);
     o[2] = (s8)disp[0x1F];
@@ -280,7 +280,7 @@ extern void func_00100490(void *p);   /* operator delete */
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *D_00469D00[], *D_0046ECF0[], *D_0046F390[];
 extern void *D_0046FC00[], *D_004699C0[], *D_004699E0[], *D_0046A980[];
-extern void *D_00456DE8, *D_00456DF8, *D_0044F258;
+extern void *D_00456DE8, *D_00456DF8, *gCreatures;
 
 /* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
  * D_00456DE8) */
@@ -331,7 +331,7 @@ void *func_002D0D60(u8 *o, s32 flags) {
 
 /* (possibly dead code: nothing in the game references it) */
 /* destructor (vtable at +0x28, D_0046FC00): members at +0xF630 / +0xDC40, then the base
- * (D_0046A980, clearing D_0044F258) */
+ * (D_0046A980, clearing gCreatures) */
 /* (possibly dead code: nothing in the game references it) */
 void *func_002D0DF0(u8 *o, s32 flags) {
     if (o != NULL) {
@@ -341,7 +341,7 @@ void *func_002D0DF0(u8 *o, s32 flags) {
         AT(o, 0xDC40, void **) = D_004699C0;
         AT(o, 0xDC40, void **) = D_004699E0;
         AT(o, 0x28, void **) = D_0046A980;
-        D_0044F258 = NULL;
+        gCreatures = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -352,9 +352,9 @@ void *func_002D0DF0(u8 *o, s32 flags) {
 /* ---- the game's destructor (2026-10-05) ---- */
 
 extern void *D_0046ADB0[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
-extern void *D_0044FEB0;
+extern void *gPad;
 
-/* Game +0x69B00's destructor: its vtables (and its +0x18 member's), D_0044FEB0 cleared */
+/* Game +0x69B00's destructor: its vtables (and its +0x18 member's), gPad cleared */
 void *func_001BE150(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
@@ -363,7 +363,7 @@ void *func_001BE150(u8 *o, s32 flags) {
     AT(o, 0x18, void **) = D_0046ADC4;
     AT(o, 0x18, void **) = D_0046AD88;
     AT(o, 0x0, void **) = D_0046ADD0;
-    D_0044FEB0 = NULL;
+    gPad = NULL;
     if ((s16)flags > 0) {
         func_00100490(o);
     }
@@ -372,7 +372,7 @@ void *func_001BE150(u8 *o, s32 flags) {
 
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
-extern void *D_0044E978, *D_0044E960, *D_0044E4B8, *D_004562A8, *D_004562B0;
+extern void *gSystemData, *gSceneTable, *gCamera, *D_004562A8, *D_004562B0;
 extern void *func_001F4590(u8 *, s32), *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
 extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
 extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);
@@ -402,7 +402,7 @@ void *Game_dtor(u8 *g, s32 flags) {
 
     AT(g, 0x14D9B00, void **) = D_00469A60;
     AT(g, 0x14D9B00, void **) = D_00469B40;
-    D_0044E4B8 = NULL;
+    gCamera = NULL;
 
     AT(g, 0x400A00, void **) = D_0046BF08;
     for (i = 0; i < 4; i++) {
@@ -420,7 +420,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     }
     AT(g, 0x14D9A40, void **) = D_0046A1C0;
     AT(g, 0x14D9A40, void **) = D_004699E0;
-    D_0044E960 = NULL;
+    gSceneTable = NULL;
 
     func_001A4850(g + 0x400000, -1);
 
@@ -437,7 +437,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     func_001BF220(g + 0x69AC0, 0);
 
     AT(g, 0x0, void **) = D_0046BEE0;
-    D_0044E978 = NULL;
+    gSystemData = NULL;
     if ((s16)flags > 0) {
         func_00100490(g);
     }

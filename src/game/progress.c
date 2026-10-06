@@ -7,7 +7,7 @@
 #include "sce/libvu0.h"
 #include "task.h"
 
-extern VObject *D_0044E568; /* the rooms (+0x10: the current room) */
+extern VObject *gRooms; /* the rooms (+0x10: the current room) */
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
     if (id >= PROGRESS_NUM_FLAGS) {
@@ -58,7 +58,7 @@ s32 Progress_IsBitClear(Progress *p, s32 id) {
 
 /* the door at exit `exit` of room `room` (rooms +0x10) has state bit 0 */
 s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit) {
-    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit) & 0xFFFF;
+    u32 d = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, room, exit) & 0xFFFF;
 
     return (p->roomFlags[d] & 1) != 0;
 }
@@ -68,7 +68,7 @@ void func_001779B0(Progress *p, s32 entry) {
     AT(p, 0x6FC214, s32) = entry;
 }
 
-extern VObject *D_0044E560;   /* the sound driver */
+extern VObject *gSound;   /* the sound driver */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 static const char sBankHd[] = "D_%01X000.HD";
 static const char sBankSdt[] = "D_%01X000.SDT";
@@ -83,7 +83,7 @@ void func_0016D350(Progress *p, s32 set) {
     if (set != 0 && set != 1) {
         return;
     }
-    snd = D_0044E560;
+    snd = gSound;
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 4);
     func_0026EDD0(name, sizeof(name), sBankHd, set);
     prog = (u8 *)gProgress;
@@ -190,7 +190,7 @@ void func_001765D0(Progress *p) {
     }
 }
 
-extern VObject *D_0044E4F8;   /* the camera director's interface */
+extern VObject *gCamDirector;   /* the camera director's interface */
 
 extern u8 *gCharPlayer;
 
@@ -198,7 +198,7 @@ extern u8 *gCharPlayer;
  * current room (vt+0xC); 0xFF: follow nothing; otherwise follow the player (index 0).
  * Returns who it follows (0xFF: nobody). */
 u8 func_00179170(Progress *p, u8 idx) {
-    VObject *dir = D_0044E4F8;
+    VObject *dir = gCamDirector;
     s32 ok = 1;
     u8 *c;
 
@@ -227,7 +227,7 @@ u8 func_00179170(Progress *p, u8 idx) {
 
 /* point the camera director at character `idx` (+0x1130: the one it settled on) */
 void func_001792C0(Progress *p, u8 idx) {
-    VObject *dir = D_0044E4F8;
+    VObject *dir = gCamDirector;
     u8 *c;
 
     if (dir == NULL) {
@@ -238,7 +238,7 @@ void func_001792C0(Progress *p, u8 idx) {
         VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, NULL, 0.0f, 0.0f, 0.0f);
         return;
     }
-    dir = D_0044E4F8;
+    dir = gCamDirector;
     c = (u8 *)gCharacters[AT(p, 0x1130, u8)];
 #ifdef HG_NATIVE
     if (c == NULL) {   /* (a character the PC build leaves out, e.g. HG_NOPARTNER) */
@@ -255,7 +255,7 @@ extern char D_0044F860[], D_0044F880[], D_0044F8A0[];   /* ST_%03X\ST1_%03X.HD /
 /* the room's sound bank (ST_xxx\ST1_xxx.HD / .SDT / .BD) into sound bank 6 */
 void func_0016D480(Progress *p, s32 room) {
     char name[0x100];
-    VObject *snd = D_0044E560;
+    VObject *snd = gSound;
     u8 *prog;
 
     VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
@@ -270,7 +270,7 @@ void func_0016D480(Progress *p, s32 room) {
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
 }
 
-extern u8 *D_0044F808;   /* the stalker in play */
+extern u8 *gCharSlot2;   /* the stalker in play */
 
 /* the gCharacters index of the character with script id `id` (0xFE: the stalker, slot 2;
  * 0xFF / not found: 0xFF) */
@@ -301,7 +301,7 @@ s32 func_001770D0(Progress *p, s32 id) {
         return 0xFF;
     }
     if (id == 0xFE) {
-        return D_0044F808 != NULL ? 2 : 0xFF;
+        return gCharSlot2 != NULL ? 2 : 0xFF;
     }
     for (i = 0; i < 6; i++) {
         if (gCharacters[i] != NULL && AT(gCharacters[i], 0x153C, u8) == id) {
@@ -319,7 +319,7 @@ s32 func_00177620(Progress *p) {
 /* the camera setup (a, b) of character slot `slot` (0xFF: the camera director's own; other
  * characters only in the current room, else none) */
 void func_001793A0(Progress *p, u8 slot, s32 a, s32 b) {
-    VObject *dir = D_0044E4F8;
+    VObject *dir = gCamDirector;
     u8 *c;
 
     if (slot == 0xFF) {
@@ -353,17 +353,17 @@ s32 func_00177200(Progress *p, u32 slot) {
 
 /* ---- the doors' states (+0x124, a word per door: bit 1, bit 2, bit 3 = unlocked) ---- */
 
-extern VObject *D_0044E558;   /* the doors */
+extern VObject *gDoors;   /* the doors */
 
 #define DOOR_STATE(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)
 
 /* refresh door `d` if it is in the current room */
 static void door_refresh(Progress *p, u32 d) {
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-    u8 k = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, u32, s32))(D_0044E568, d, room);
+    u8 k = (u8)VCALL(gRooms, 0x3C, s32 (*)(VObject *, u32, s32))(gRooms, d, room);
 
     if (k != 0xFF) {
-        VCALL(D_0044E558, 0x80, void (*)(VObject *, s32))(D_0044E558, k);
+        VCALL(gDoors, 0x80, void (*)(VObject *, s32))(gDoors, k);
     }
 }
 
@@ -408,14 +408,14 @@ s32 func_00178200(Progress *p, u32 d, u32 side) {
 
 /* can the door at exit `exit` of room `room` be passed from side `side` (func_00178200) */
 s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side) {
-    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit);
+    u32 d = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, room, exit);
 
     return door_passable(p, d, side);
 }
 
 /* is the door at exit `exit` of room `room` unlocked */
 s32 func_001785B0(Progress *p, s32 room, u32 exit) {
-    u32 d = VCALL(D_0044E568, 0x10, u32 (*)(VObject *, s32, u32))(D_0044E568, room, exit);
+    u32 d = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, room, exit);
 
     return (DOOR_STATE(p, d) >> 3) & 1;
 }
@@ -439,7 +439,7 @@ s32 func_00178A30(Progress *p, u32 d) {
     return 1;
 }
 
-extern VObject *D_0044E570;   /* the nav mesh */
+extern VObject *gNavMesh;   /* the nav mesh */
 
 /* whether character c counts for the room's occupancy tests */
 static s32 occupant(u8 *c, s32 room) {
@@ -451,7 +451,7 @@ static s32 occupant(u8 *c, s32 room) {
  * side) */
 void func_00175DE0(Progress *p) {
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-    VObject *doors = D_0044E558;
+    VObject *doors = gDoors;
     VObject *nav;
     u32 k, d;
     s32 i;
@@ -489,7 +489,7 @@ void func_00175DE0(Progress *p) {
             }
         }
     }
-    nav = D_0044E570;
+    nav = gNavMesh;
     for (d = 0; d < 5; d++) {
         u8 *q = (u8 *)p + 0x1000 + d * 4;
 
@@ -551,7 +551,7 @@ static u32 door_state(Progress *p, VObject *rooms, u32 k) {
  * thing), from the exits they are at and the door regions they are in */
 void func_00175430(Progress *p) {
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     Progress *gp = gProgress;
     s32 i;
 
@@ -1002,8 +1002,8 @@ void func_001739A0(Progress *p) {
 extern s32 func_0019A2B0(u8 *c);   /* the player can be controlled (u8) */
 extern void func_0019A420(u8 *c, s32, s32);
 extern u32 D_0047E37C;
-extern VObject *D_0044E4D0;
-extern VObject *D_0044E988;        /* the sub screen (items) */
+extern VObject *gEvents;
+extern VObject *gItems;        /* the sub screen (items) */
 
 static void act_copy(u8 *dst, const u8 *src) {
     AT(dst, 0x0, s32) = AT(src, 0x0, s32);
@@ -1063,12 +1063,12 @@ void func_00174920(Progress *p) {
             taken = 1;
             break;
         case 5:
-            VCALL(D_0044E4D0, 0x18, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, AT(b, 0x113C, u8));
+            VCALL(gEvents, 0x18, void (*)(VObject *, s32, s32))(gEvents, 0, AT(b, 0x113C, u8));
             player_take_action(b, 0x1134);
             taken = 1;
             break;
         case (s32)0x80000005: {
-            VObject *ev = D_0044E4D0;
+            VObject *ev = gEvents;
 
             if (ev != NULL) {
                 func_0019A420(gCharPlayer, 2, 0x1E);
@@ -1100,7 +1100,7 @@ void func_00174920(Progress *p) {
         player_take_action(b, 0x1154);
     }
     if ((D_0047E37C & 0x1000) && !noAct) {
-        VObject *sub = D_0044E988;
+        VObject *sub = gItems;
         s32 item = VCALL(sub, 0x14, s32 (*)(VObject *))(sub);
         s32 n = VCALL(sub, 0x18, s32 (*)(VObject *))(sub);
 
@@ -1137,7 +1137,7 @@ void func_00176440(Progress *p) {
  * while +0xE2); otherwise, unless the world is paused (+0x8 bit 0x800000), the first 3 slots
  * move (+0x30) - only in the current room while +0x8 bit 0x1000000 or the director asks */
 void func_001762B0(Progress *p) {
-    VObject *dir = D_0044E4F8;
+    VObject *dir = gCamDirector;
     u32 i;
 
 #ifdef HG_NATIVE
@@ -1188,7 +1188,7 @@ s32 func_00177870(Progress *p, u32 k) {
 }
 
 
-extern VObject *D_0044E4E8;   /* the texture cache */
+extern VObject *gTexCache;   /* the texture cache */
 
 /* the characters, drawn each frame (texture cache +0x18 and +0x6FC218 (+0x20) reset first):
  * each active and visible one draws (+0x2C); while the world is stopped (+0x8 bit 0x800000)
@@ -1206,7 +1206,7 @@ void func_00176160(Progress *p) {
         }
     }
 #endif
-    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL((u8 *)p + 0x6FC218, 0x20, void (*)(void *))((u8 *)p + 0x6FC218);
     for (i = 0; i < 6; i++) {
         if (gCharacters[i] == NULL) {
@@ -1250,10 +1250,10 @@ s32 func_00177670(Progress *p, s32 n) {
 
 /* +0x64 the stalker's alert (+0x16C8 of the active stalker; 0xFF: no stalker in play) */
 s32 func_001770A0(Progress *p) {
-    if (D_0044F808 == NULL || AT(D_0044F808, 0x28, u8) == 0) {
+    if (gCharSlot2 == NULL || AT(gCharSlot2, 0x28, u8) == 0) {
         return 0xFF;
     }
-    return AT(D_0044F808, 0x16C8, u8);
+    return AT(gCharSlot2, 0x16C8, u8);
 }
 
 
@@ -1317,10 +1317,10 @@ void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
     } else {
         *w = (*w & ~0xF0u) | ((((*w >> 4) & 0xF) & ~bit) & 0xF) << 4;
     }
-    r = (u8)VCALL(D_0044E568, 0x3C, s32 (*)(VObject *, s32, s32))(D_0044E568, door,
+    r = (u8)VCALL(gRooms, 0x3C, s32 (*)(VObject *, s32, s32))(gRooms, door,
                                                                  VCALL(p, 0xC, s32 (*)(Progress *))(p));
     if (r != 0xFF) {
-        VCALL(D_0044E558, 0x80, void (*)(VObject *, u32))(D_0044E558, r);
+        VCALL(gDoors, 0x80, void (*)(VObject *, u32))(gDoors, r);
     }
 }
 
@@ -1330,7 +1330,7 @@ void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
 s32 func_001788F0(Progress *p, u32 door) {
     u32 w;
 
-    if ((u8)VCALL(D_0044E568, 0x44, s32 (*)(VObject *, u32))(D_0044E568, door) & 1) {
+    if ((u8)VCALL(gRooms, 0x44, s32 (*)(VObject *, u32))(gRooms, door) & 1) {
         return 1;
     }
     w = AT(p, 0x124 + (door & 0xFFFF) * 4, u32);
@@ -1343,7 +1343,7 @@ s32 func_001788F0(Progress *p, u32 door) {
 
 /* is the door at exit `exit` of room `room` open (as func_001788F0) */
 s32 func_00178980(Progress *p, s32 room, s32 exit) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 door = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, s32))(rooms, room, exit);
     u32 w;
 
@@ -1517,7 +1517,7 @@ void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b
 /* the door being used (the rooms' +0x10), unless the rooms say otherwise (+0x44 bit 0): when
    not unlocked (bit 3) but bit 0 set, set bit 2 for it and clear bit 0; 1 if it did */
 s32 func_00178660(Progress *p) {
-    VObject *rooms = D_0044E568;
+    VObject *rooms = gRooms;
     u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *))(rooms) & 0xFFFF;
     u32 *s;
 
@@ -1562,8 +1562,8 @@ void func_00176720(Progress *p) {
 
 /* ---- movies ---- */
 
-extern void *D_0044E960;   /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
-extern void *D_0044E958;   /* the movie playing */
+extern void *gSceneTable;   /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
+extern void *gMovie;   /* the movie playing */
 extern void *__nw__FUiPv(u32 size, void *p);
 extern void *func_002B70D0(void *movie);
 extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
@@ -1575,7 +1575,7 @@ extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046E
 s32 func_001768B0(Progress *p, const char *path, u32 kind) {
     static void **const sClass[7] = { D_00470E80, D_0046EAB0, D_0046EAE0, D_0046EB10, D_0046EC30, D_0046EC90,
                                       D_00474F80 };
-    u8 *table = D_0044E960;
+    u8 *table = gSceneTable;
     VObject *heap = (VObject *)(table + 0x10D9040);
     u32 size = (kind & 0xFF) == 4 ? 0x1E8 : 0x1E0;
     void *mem = VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size);
@@ -1599,7 +1599,7 @@ s32 func_001768B0(Progress *p, const char *path, u32 kind) {
     movie->request = SCENE_REQ_RUN;
     movie->status = 0;
     movie->waitFrames = 0;
-    func_002B6D10(D_0044E958, path, 0, 1);
+    func_002B6D10(gMovie, path, 0, 1);
     return 1;
 }
 
@@ -1702,7 +1702,7 @@ extern void func_00100490(void *p);
 extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
 extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
 extern void *D_004699C0[], *D_004699E0[];
-extern void *D_0044F258, *D_0044F260, *gBootMessage;
+extern void *gCreatures, *gPlacedThings, *gBootMessage;
 
 #define VT(o, off) AT(o, off, void **)
 
@@ -1747,24 +1747,24 @@ void *func_0016C8A0(Progress *p, s32 flags) {
     if (b + 0x73EB00 != NULL) {
         VT(b, 0x73EB4C) = D_0046A9B0;
     }
-    if (b + 0x706440 != NULL) {   /* the creatures (D_0044F258) */
+    if (b + 0x706440 != NULL) {   /* the creatures (gCreatures) */
         VT(b, 0x706468) = D_0046FC00;
         ListHead_Destroy(b + 0x715A70);
         ListHead_Destroy(b + 0x714080);
         if (b + 0x706440 != NULL) {
             VT(b, 0x706468) = D_0046A980;
             if (b + 0x706440 != NULL) {
-                D_0044F258 = NULL;
+                gCreatures = NULL;
             }
         }
     }
-    if (b + 0x6FC340 != NULL) {   /* D_0044F260 */
+    if (b + 0x6FC340 != NULL) {   /* gPlacedThings */
         VT(b, 0x6FC340) = D_0046F5C0;
         ListHead_Destroy(b + 0x706380);
         if (b + 0x6FC340 != NULL) {
             VT(b, 0x6FC340) = D_0046A950;
             if (b + 0x6FC340 != NULL) {
-                D_0044F260 = NULL;
+                gPlacedThings = NULL;
             }
         }
     }

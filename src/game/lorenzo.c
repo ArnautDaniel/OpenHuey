@@ -420,7 +420,7 @@ void func_00309680(Pursuer *p) {
     dp.b = 0x50;
     dp.g = 0x50;
     dp.r = 0x50;
-    mgr = D_0044E578;
+    mgr = gEffects;
     rnd = gRandom;
     for (i = 0; i < 8; i++) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
@@ -475,7 +475,7 @@ void func_00309890(Pursuer *p) {
     sp.one = 1.0f;
     sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
     rnd = gRandom;
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (i = 0; i < 7; i++) {
         s32 slot;
 
@@ -608,7 +608,7 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
         f32 pos[4];
         s32 kind;
     } sk __attribute__((aligned(16)));
-    u8 *mgr = D_0044E578;
+    u8 *mgr = gEffects;
     s32 slot;
     u32 k, tri;
 
@@ -620,7 +620,7 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     func_002D6090(mgr, slot, &sk);
     k = func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF;
     if (k != 0xFF) {
-        p->c.a.navTri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, k, p->c.a.pos);
+        p->c.a.navTri = VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, k, p->c.a.pos);
     }
     PU(p, 0x1624, s32) = 15;
     sceVu0CopyVector(t, p->target->a.pos);
@@ -714,7 +714,7 @@ void func_0030A210(Pursuer *p) {
             PU(p, 0x1764, s32) = 12;
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
-        mgr = D_0044E578;
+        mgr = gEffects;
         func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
@@ -744,7 +744,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
     if (func_00214A90(p, p->c.a.navTri) != 0) {
         p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
         if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
-            VCALL(D_0044E570, 0xC, void (*)(void *, u32, f32 *))(D_0044E570, p->c.a.navTri, p->c.a.pos);
+            VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, p->c.a.navTri, p->c.a.pos);
         } else {
             func_00124890(&p->c.a, -1);
             p->c.a.disabled = 1;
@@ -813,7 +813,7 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
         p->c.a.unk2D = 0;
         p->c.moveMode = 8;
         p->c.moveSub = 0x1C;
-        mgr = D_0044E578;
+        mgr = gEffects;
         p->c.unkE8 = p->target->unkE8;
         p->c.unkEC = p->target->unkEC;
         slot = Effect_New(mgr, 0x700, Sink_Init);
@@ -892,7 +892,7 @@ void func_0030B240(Pursuer *p) {
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
     func_00297B40(p, 0x1305, 1);
-    mgr = D_0044E578;
+    mgr = gEffects;
     p->c.a.disabled = 0;
     p->c.a.unk2D = 0;
     p->c.unkE8 = p->target->unkE8;
@@ -1015,7 +1015,7 @@ static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
     s32 slot, arg[4] __attribute__((aligned(16)));
 
     PU(p, 0x17C0, u8) = 1;
-    mgr = D_0044E578;
+    mgr = gEffects;
     slot = Effect_New(mgr, 0x20, k12_mark_init);
     arg[0] = 1;
     arg[1] = 0;
@@ -1252,7 +1252,7 @@ void func_003636D0(Pursuer *p) {
     dp.b = 0x50;
     dp.g = 0x50;
     dp.r = 0x50;
-    mgr = D_0044E578;
+    mgr = gEffects;
     rnd = gRandom;
     for (i = 0; i < 8; i++) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
@@ -1295,7 +1295,7 @@ void func_003638E0(Pursuer *p) {
     sp.one = 1.0f;
     sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
     rnd = gRandom;
-    mgr = D_0044E578;
+    mgr = gEffects;
     for (i = 0; i < 7; i++) {
         s32 slot;
 
@@ -1343,7 +1343,7 @@ void func_00363FA0(Pursuer *p) {
             PU(p, 0x1764, s32) = 12;
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
-        mgr = D_0044E578;
+        mgr = gEffects;
         func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
@@ -1438,7 +1438,7 @@ void func_00364FF0(Pursuer *p) {
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
     func_00297B40(p, 0x1305, 1);
-    mgr = D_0044E578;
+    mgr = gEffects;
     p->c.a.disabled = 0;
     p->c.a.unk2D = 0;
     p->c.unkE8 = p->target->unkE8;
