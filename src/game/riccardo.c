@@ -404,7 +404,7 @@ void func_002DA4C0(Pursuer *p) {
         return;
     }
     chance = (AT(gProgress, 0x30, u32) & 0x8000) ? D_004156E0 : D_004156C0;
-    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     PU(p, 0x1624, s32) = 0;
     while (PU(p, 0x1624, s32) < 6 && !(roll <= chance[PU(p, 0x1624, s32)])) {
         PU(p, 0x1624, s32)++;
@@ -429,7 +429,7 @@ void func_002D7E20(Pursuer *p, Character *who) {
         }
         hp.kind = who == gCharPlayer ? 0 : 1;
         wm = who->motion;
-        switch ((u32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) {
+        switch ((u32)(4.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))) {
         case 0:
             bone = VCALL(wm, 0x84, s32 (*)(void *))(wm);
             break;
@@ -509,7 +509,7 @@ s32 func_002D8840(Pursuer *p, Character *who) {
     } else {
         any = 0.0f;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     if (!(100.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) < any)) {
         return 0xFF;
     }
@@ -542,10 +542,10 @@ void func_002DA120(Pursuer *p) {
 
     if (p->target != gCharPartner) {
         if (!(func_002175B0(&p->c.a, &p->target->a) & 0xFF)) {
-            p->c.unk104[0] = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= 50.0f ? 9 : 8;
+            p->c.unk104[0] = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= 50.0f ? 9 : 8;
             PU(p, 0x1624, s32) = 1;
         } else {
-            p->c.unk104[0] = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= 50.0f ? 0 : 3;
+            p->c.unk104[0] = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= 50.0f ? 0 : 3;
         }
     } else if (func_002175B0(&p->c.a, &p->target->a) & 0xFF) {
         p->c.unk104[0] = 1;
@@ -596,7 +596,7 @@ static inline void Riccardo_Behaviour(Pursuer *p, const PTMF *away, const PTMF *
     }
     next = PU(p, 0x1758, s32);
     if (next == -1) {
-        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         Character *t;
 
         if (!(PU(p, 0x1588, f32) <= 100.0f)) {
@@ -844,7 +844,7 @@ void func_002D8DF0(Pursuer *p) {
                     }
                     break;
                 case 4:
-                    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 75.0f) {
+                    if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 75.0f) {
                         stun = -0x8000;
                     }
                     break;
@@ -870,7 +870,7 @@ void func_002D8DF0(Pursuer *p) {
         func_002D8AC0(p);
     }
     if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
-        100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 50.0f) {
+        100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         func_0029D410(p, 0x15, 7, 0, 0, NULL);
     }
     func_00125A10(&p->c);
@@ -996,7 +996,7 @@ void func_002D9500(Pursuer *p) {
                     }
                     break;
                 case 4:
-                    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 75.0f) {
+                    if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 75.0f) {
                         stun = -0x8000;
                     }
                     break;
@@ -1017,7 +1017,7 @@ end:
         func_002D8AC0(p);
     }
     if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
-        100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 50.0f) {
+        100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         if (p->c.unk104[0] == 0) {
             func_0029D410(p, 0x22, 7, 0, 0, NULL);
         } else if (p->c.unk104[0] == 3) {
@@ -1050,7 +1050,7 @@ extern u8 D_0047AC38[];
 /* the threat-level chance of a lunge (attack table 0xA); 1 when he lunges */
 static inline s32 Riccardo_Lunge(Pursuer *p, u8 *tbl) {
     u32 chance = func_00297290(p, (f32 *)tbl, 1);
-    f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
 
     if (roll < (f32)chance) {
         VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
@@ -1068,7 +1068,7 @@ static s32 Riccardo_StrikeOrWait(Pursuer *p, u8 *tbl) {
     if (Riccardo_Lunge(p, tbl)) {
         return 1;
     }
-    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     Riccardo_Seen(p);   /* the original asks, then backs or holds off the same either way */
     Riccardo_BackOrHold(p, roll);
     return 0;
@@ -1132,7 +1132,7 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 3);
             }
         }
-        roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         if (PU(p, 0x1588, f32) < 0.0f) {
             if (func_00284440(p) & 0xFF) {
                 break;
@@ -1420,7 +1420,7 @@ void func_0034D320(Pursuer *p) {
             PU(p, 0x17C8, s32)--;
         }
     } else {
-        f32 rnd = VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 rnd = VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         f32 step = 4.0f * func_0031C058(PU(p, 0x17C4, f32)) + 10.0f * rnd;
 
         PU(p, 0x17C4, f32) = func_002E2D00(PU(p, 0x17C4, f32) + 0x1.921fb6p+1f * step / 180.0f);

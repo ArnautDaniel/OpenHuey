@@ -139,7 +139,7 @@ void func_002E1340(Character *c) {
 
 extern Character *gCharacters[];
 extern Character *gCharPlayer;
-extern VObject *D_0044E550;   /* random numbers: +0x10 an integer */
+extern VObject *gRandom;   /* random numbers: +0x10 an integer */
 extern VObject *D_0044E568;   /* the rooms */
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
 
@@ -156,7 +156,7 @@ extern const CreatureKind D_004164F0[];
 
 /* its rest time (+0x80) when it isn't out (+0x82): 1800 .. 7200 frames */
 static inline void creature_rest(u8 *k) {
-    AT(k, 0x80, s16) = ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) + 1) * 1800;
+    AT(k, 0x80, s16) = ((VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) + 1) * 1800;
 }
 
 /* +0xA0 set up: mode `mode` (+0xC), kind `kind` (+0x31) with its table entry, strength
@@ -426,7 +426,7 @@ void func_002DE540(Character *c, s32 level) {
         mask = 0x300000;
         break;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     nm = D_0044E570;
     rooms = D_0044E568;
     n = nm->numTris;
@@ -558,7 +558,7 @@ void func_002DEFA0(Character *c) {
     if (c->a.disabled) {
         return;
     }
-    AT(k, 0x33, u8) = VCALL(D_0044E550, 0x14, s32 (*)(VObject *))(D_0044E550) & 0x1F;
+    AT(k, 0x33, u8) = VCALL(gRandom, 0x14, s32 (*)(VObject *))(gRandom) & 0x1F;
     if (AT(k, 0x34, u8) == 0) {
         if (AT(k, 0x33, u8) == 0) {
             AT(k, 0x34, u8) = 1;
@@ -971,7 +971,7 @@ void func_002E2030(Character *c) {
     c->pathReq->unk4 = 6;
     c->pathReq->mask = 0x40080;
     c->motion = NULL;
-    AT(k, 0x31, u8) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(k, 0x31, u8) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xF;
     AT(k, 0x4, s16) = 0;
     t = &D_004164F0[AT(k, 0x31, u8)];
     AT(k, 0x8, u8) = t->b;
@@ -1118,7 +1118,7 @@ void func_002DEC30(Character *c) {
     if (AT(k, 0x9B, s8) == 1) {
         AT(k, 0x9B, s8) += 1;
         if (c->unk128 >= c->unk124) {
-            VObject *rnd = D_0044E550;
+            VObject *rnd = gRandom;
             NavMesh *nm = D_0044E570;
             s32 i;
 
@@ -1688,7 +1688,7 @@ void func_003128E0(u8 *o) {
     AT(o, 0x3A4, u8) = 1;
     AT(o, 0x3A5, u8) = 0x10;
     AT(o, 0x3A6, u8) = 0xFF;
-    rng = D_0044E550;
+    rng = gRandom;
     AT(VANISH_GLOW(o), 0x20, f32) = 5.0f;
     AT(VANISH_GLOW(o), 0x24, f32) = AT(VANISH_GLOW(o), 0x20, f32);
     AT(VANISH_GLOW(o), 0x28, s32) = 0;
@@ -1729,7 +1729,7 @@ void func_003120D0(u8 *o, const u8 *params) {
     AT(g, 0x8, s32) = params[0x12];
     AT(g, 0xC, s32) = params[0x13];
     sceVu0CopyVector((f32 *)(g + 0x10), (f32 *)params);
-    rng = D_0044E550;
+    rng = gRandom;
     for (i = 0; i < 8; i++) {
         u8 *p = VANISH_SPARK(o, i);
         u32 dark = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F;
@@ -1797,7 +1797,7 @@ s32 func_00312510(u8 *o) {
         AT(g, 0xC, s32) = 0;
         AT(o, 0x494, u8) |= 1;
     }
-    rng = D_0044E550;
+    rng = gRandom;
     for (i = 0; i < 8; i++) {
         u32 buf = AT(o, 0x3A8, u32);
         u32 *dst = &AT(o, 0x70 + buf * 0x180 + i * 0x30, u32);
@@ -1971,7 +1971,7 @@ s32 func_00312C60(u8 *o) {
         AT(r, 0x2C, s32) += 1;
         if (!(AT(r, 0x2C, s32) < AT(o, 0xA3, s8))) {
             AT(r, 0x2C, s32) = 0;
-            AT(r, 0x28, f32) = k2Pi.f * (VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) - 0.5f);
+            AT(r, 0x28, f32) = k2Pi.f * (VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) - 0.5f);
         }
     }
     return 1;
@@ -2009,7 +2009,7 @@ void func_00312D90(u8 *o) {
     AT(r, 0xC, s32) = 0x40;
     AT(r, 0x20, f32) = kSize.f;
     AT(r, 0x24, f32) = AT(r, 0x20, f32);
-    AT(r, 0x28, f32) = k2Pi.f * (VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) - 0.5f);
+    AT(r, 0x28, f32) = k2Pi.f * (VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) - 0.5f);
     AT(r, 0x2C, s32) = 0;
 }
 
@@ -2100,7 +2100,7 @@ void func_003130C0(u8 *o, s32 *arg) {
     }
     AT(o, 0x218, s32) = arg[1];
     if (AT(o, 0x218, s32) == 2) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         AT(r, 0x0, s32) = 0x80;
         AT(r, 0x4, s32) = 0x80;
         AT(r, 0x8, s32) = 0x80;
@@ -2108,18 +2108,18 @@ void func_003130C0(u8 *o, s32 *arg) {
     } else if (AT(o, 0x218, s32) == 1) {
         AT(r, 0x0, s32) = 0x80;
         AT(r, 0x4, s32) = 0x64;
-        rnd = D_0044E550;
+        rnd = gRandom;
         AT(r, 0x8, s32) = 0;
         AT(o, 0x20C, f32) = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     } else {
         AT(r, 0x0, s32) = 0x40;
         AT(r, 0x4, s32) = 0x20;
         AT(r, 0x8, s32) = 0x80;
-        rnd = D_0044E550;
+        rnd = gRandom;
         AT(o, 0x20C, f32) = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     }
     AT(o, 0x210, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 7) * 5;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0xC0, s32) = 0;
     AT(o, 0x110, s32) = 0;
     AT(o, 0x160, s32) = 0;
@@ -2276,7 +2276,7 @@ s32 func_00313980(u8 *o) {
             sceVu0ScaleVector(v, prev[0], AT(o, 0x20C, f32));
             sceVu0TransMatrix((f32 (*)[4])(STRAND_SEG(o, AT(o, 0x200, s32)) + 0x80),
                               (f32 (*)[4])(STRAND_SEG(o, AT(o, 0x200, s32)) + 0x80), v);
-            k = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF) + 0x70;
+            k = (VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xF) + 0x70;
             AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xC0, s32) = k;
             AT(o, 0x204, s32) += 1;
             if (!(AT(o, 0x204, s32) < 4)) {
@@ -2311,7 +2311,7 @@ s32 func_00313980(u8 *o) {
             }
         }
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (k = 0; k < 4; k++) {
         s = STRAND_SEG(o, k);
         if (AT(s, 0xC0, s32) <= 0) {
@@ -2403,7 +2403,7 @@ void func_003142F0(u8 *o, s32 *arg) {
     r = clamp_colour(arg[0]);
     g = clamp_colour(arg[1]);
     b = clamp_colour(arg[2]);
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0xC50, f32) = ((f32 *)arg)[3];
     AT(o, 0xC54, f32) = ((f32 *)arg)[4];
     AT(o, 0xC58, f32) = ((f32 *)arg)[5];
@@ -2500,7 +2500,7 @@ s32 func_00314700(u8 *o) {
         return 0;
     }
     AT(o, 0xF64, u8) = 1;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0xF60, s32) ^= 1;
     for (i = 0; i < 32; i++) {
         QuadRec *q;
@@ -2565,7 +2565,7 @@ void func_0037BF10(u8 *o, s32 *arg) {
     r = clamp_colour(arg[0]);
     g = clamp_colour(arg[1]);
     b = clamp_colour(arg[2]);
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0xC50, f32) = ((f32 *)arg)[3];
     AT(o, 0xC54, f32) = ((f32 *)arg)[4];
     AT(o, 0xC58, f32) = ((f32 *)arg)[5];
@@ -2614,7 +2614,7 @@ s32 func_0037C310(u8 *o) {
         return 0;
     }
     AT(o, 0xF64, u8) = 1;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0xF60, s32) ^= 1;
     for (i = 0; i < 32; i++) {
         QuadRec *q;
@@ -2753,7 +2753,7 @@ static inline void cr19_settle(Character *c) {
     if (!(AT(k, 0x6B, u8) & 0x80)) {
         AT(k, 0x6B, u8) = 0;
     }
-    AT(k, 0x42, s16) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 0xF) % 3 * 150 + 150;
+    AT(k, 0x42, s16) = (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 0xF) % 3 * 150 + 150;
     AT(k, 0x3C, s32) = 0;
     AT(k, 0x38, s32) = 0;
     AT(k, 0x34, s32) = 0;
@@ -2877,7 +2877,7 @@ void func_00324FA0(Character *c, s32 a1, s32 a2) {
     VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, 2);
     AT(k, 0x6F, u8) = 0;
     AT(k, 0x6E, u8) = 1;
-    AT(k, 0x4A, s16) = ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) + 1) * 1800;
+    AT(k, 0x4A, s16) = ((VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) + 1) * 1800;
     if (func_00126F80(c, gCharPlayer->a.room, -1, AT(k, 0x0, s32), -1) == -1) {
         return;
     }
@@ -3015,7 +3015,7 @@ void func_00324AE0(Character *c, s32 slot) {
     sceVu0UnitMatrix(c->a.rot);
     sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
     if (AT(k, 0x6E, u8) != 0) {
-        AT(k, 0x4A, s16) = ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) + 1) * 1800;
+        AT(k, 0x4A, s16) = ((VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) + 1) * 1800;
     }
 }
 
@@ -3179,7 +3179,7 @@ void func_0032B080(Character *c, f32 *pos);
    triangle (17 tries); its triangle (+0x20) */
 u32 func_00325EC0(Character *c, f32 dist) {
     u8 *k = CR(c);
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     f32 tbl[17];
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -3304,7 +3304,7 @@ void func_00326130(Character *c, f32 dist) {
             return;
         }
         if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
-            s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+            s8 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 1;
 
             if (r == 0) {
                 AT(k, 0x69, u8) = 1;
@@ -3897,7 +3897,7 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
     if (!(AT(k, 0x6B, u8) & 0x40)) {
         AT(k, 0x69, u8) = 5;
     } else {
-        s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+        s8 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 1;
 
         if (r == 0) {
             AT(k, 0x69, u8) = 7;
@@ -4393,7 +4393,7 @@ void func_0032C040(Character *c) {
     c->a.unk2A = 1;
     c->a.unk2D = 0;
     c->a.navMask = 0x4020028;
-    rnd = D_0044E550;
+    rnd = gRandom;
     c->pathReq->unk4 = 6;
     c->pathReq->mask = c->a.navMask;
     AT(k, 0x6D, u8) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF) % 3 | 0x80;
@@ -4682,7 +4682,7 @@ void func_00329440(Character *c) {
         return;
     }
     {
-        s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+        s8 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 1;
 
         if (r == 0) {
             AT(k, 0x69, u8) = 0;
@@ -4713,7 +4713,7 @@ extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 void func_003592E0(u8 *o, s32 i, s32 t) {
     static const union { u32 u; f32 f; } k4 = {0x40800000}, k001 = {0x3C23D70A}, k360 = {0x43B40000},
                                          kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = GONE_DROP(o, AT(o, 0x2910, s32), i);
     f32 dx, dz, *v = (f32 *)(o + 0x2790 + i * 0xC);
 
@@ -4741,7 +4741,7 @@ void func_003592E0(u8 *o, s32 i, s32 t) {
 void func_00359570(u8 *o, s32 i) {
     static const union { u32 u; f32 f; } k6 = {0x40C00000}, k003 = {0x3CF5C28F}, k360 = {0x43B40000},
                                          kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
     f32 s = r->w, dx, dz, *v = (f32 *)(o + 0x2490 + i * 0xC);
 
@@ -4777,7 +4777,7 @@ void func_003597B0(u8 *o, u8 *arg) {
     if (AT(o, 0x2918, s32) == -1) {
         return;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 64; i++) {
         QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
         f32 *v = (f32 *)(o + 0x2490 + i * 0xC);
@@ -4871,7 +4871,7 @@ s32 func_00359A00(u8 *o) {
         sp.one = 1;
         func_002D6090(mgr, slot, &sp);
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 64; i++) {
         QuadRec *r;
         f32 *v = (f32 *)(o + 0x2490 + i * 0xC);

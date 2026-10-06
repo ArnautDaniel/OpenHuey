@@ -1,4 +1,4 @@
-/* Random number generator (Mersenne Twister; vtable around 0x46AB60, global D_0044E550). */
+/* Random number generator (Mersenne Twister; vtable around 0x46AB60, global gRandom). */
 #include "common.h"
 #include "game.h"
 
@@ -23,12 +23,12 @@ u64 func_001A43D0(VObject *rng) {
 }
 
 extern void *D_0046AB50[];
-extern VObject *D_0044E550;   /* the random number generator */
+extern VObject *gRandom;   /* the random number generator */
 
 /* constructor: register, seed (vtable +0xC) */
 VObject *func_001A48C0(VObject *rng, s32 seed) {
     rng->vtbl = D_0046AB50;
-    D_0044E550 = rng;
+    gRandom = rng;
     VCALL(rng, 0xC, void (*)(VObject *, s32))(rng, seed);
     return rng;
 }
@@ -118,7 +118,7 @@ VObject *func_001A4850(VObject *r, s32 flags) {
     if (r != NULL) {
         r->vtbl = D_0046AB50;
         r->vtbl = D_0046AB80;
-        D_0044E550 = NULL;
+        gRandom = NULL;
         if ((s16)flags > 0) {
             func_00100490(r);
         }
@@ -127,7 +127,7 @@ VObject *func_001A4850(VObject *r, s32 flags) {
 }
 
 extern void *D_0046AB80[];
-extern VObject *D_0044E550;
+extern VObject *gRandom;
 extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 destructor (the global goes) */
@@ -135,7 +135,7 @@ void *func_001A4910(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AB80;
         if (o != NULL) {
-            D_0044E550 = NULL;
+            gRandom = NULL;
         }
         if ((s16)flags > 0) {
             func_00100490(o);

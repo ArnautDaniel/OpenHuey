@@ -53,9 +53,9 @@ extern void func_001B7ED0(u8 *r);
 extern void func_001B79F0(u8 *r);
 extern void func_001B7370(u8 *r);
 extern void func_001B71E0(u8 *r);
-extern VObject *D_0044E550;   /* random number generator */
+extern VObject *gRandom;   /* random number generator */
 
-#define RNG_REAL1() VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)
+#define RNG_REAL1() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* Set up the graphics for video mode `mode` (2: 448 lines), then a table of 16 random
  * (x, y, ..., angle) entries (renderer +0x304C0C). */
@@ -780,7 +780,7 @@ u32 func_001B8890(void *r, s32 i) {
 
 /* palette entry: a random grey */
 u32 func_001B88C0(void) {
-    return grey_rgba(VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF, 0x80000000);
+    return grey_rgba(VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xFF, 0x80000000);
 }
 
 /* +0x64 (and others): the layer-0x11 / special colours */
@@ -842,7 +842,7 @@ extern f32 func_0031C248(f32 x);   /* sinf */
  * kept to x0 -56..24, y0 -150..0, x1 / y1 32..64 */
 void func_001B9D50(u8 *r) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     f32 *e = (f32 *)(r + 0x304C0C);
     u32 i;
 

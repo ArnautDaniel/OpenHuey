@@ -713,3 +713,4 @@ func_00120EF0 = 0x00120EF0; // type:func
 func_00122AD0 = 0x00122AD0; // type:func
 func_0036F8D0 = 0x0036F8D0; // type:func
 func_0036FC90 = 0x0036FC90; // type:func
+gRandom = 0x0044E550;

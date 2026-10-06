@@ -23,7 +23,7 @@
 
 extern void *D_00474020[];
 extern VObject *D_0044E988;   /* the item manager */
-extern VObject *D_0044E550;   /* random numbers: +0x18 / +0x1C -> 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x18 / +0x1C -> 0..1 */
 extern u8 D_0047B350;
 extern void func_00322560(void *p);                 /* delete (the sub screen's pool) */
 extern u32 func_00260CF0(void *items, s32 id);      /* how many of an item */
@@ -375,7 +375,7 @@ extern const s8 D_00460A18[][4];       /* the amounts by how many symbols matche
 #define SY_REEL(o, pos) D_00460430[(s8)(o)[0x12A]][(s8)(pos)]
 
 /* RNG +0x18 / +0x1C: a random 0..1 */
-#define SY_RAND(k) VCALL(D_0044E550, k, f32 (*)(VObject *))(D_0044E550)
+#define SY_RAND(k) VCALL(gRandom, k, f32 (*)(VObject *))(gRandom)
 
 /* the reel steps on (every 5 frames, round its 35 symbols) */
 static inline void sy_reel_step(u8 *o) {

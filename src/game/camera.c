@@ -308,12 +308,12 @@ void func_00122810(Camera *c) {
     c->unk294 = c->unk29C;
 }
 
-extern VObject *D_0044E550;               /* random numbers: +0x18 -> 0..1 */
+extern VObject *gRandom;               /* random numbers: +0x18 -> 0..1 */
 extern f32 func_0031C338(f32 x);         /* tanf */
 extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);
 extern void func_0025C770(const f32 *q, f32 (*m)[4]);
 
-#define RAND01() VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)
+#define RAND01() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* +0x18 the world-to-view matrix `out`: the direction to the target (+0x70), the screen
  * distance for the field of view (+0x8 = 1.4 / tan(fov / 2)), the eye shaken by +0x4 at random

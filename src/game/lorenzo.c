@@ -421,7 +421,7 @@ void func_00309680(Pursuer *p) {
     dp.g = 0x50;
     dp.r = 0x50;
     mgr = D_0044E578;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 8; i++) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
 
@@ -474,7 +474,7 @@ void func_00309890(Pursuer *p) {
     }
     sp.one = 1.0f;
     sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
-    rnd = D_0044E550;
+    rnd = gRandom;
     mgr = D_0044E578;
     for (i = 0; i < 7; i++) {
         s32 slot;
@@ -572,7 +572,7 @@ void func_0030A650(Pursuer *p) {
             hit = (hit | 2) & 0xFF;
         }
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
-            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+            s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
@@ -708,7 +708,7 @@ void func_0030A210(Pursuer *p) {
         u8 *mgr;
 
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
-            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+            s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
@@ -765,7 +765,7 @@ static inline void Lorenzo2b_Sweep(Pursuer *p) {
 
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             u8 *e = PU(p, 0x171C, u8 *) + 0x48;
-            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+            s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
@@ -1253,7 +1253,7 @@ void func_003636D0(Pursuer *p) {
     dp.g = 0x50;
     dp.r = 0x50;
     mgr = D_0044E578;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 8; i++) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
 
@@ -1294,7 +1294,7 @@ void func_003638E0(Pursuer *p) {
     }
     sp.one = 1.0f;
     sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
-    rnd = D_0044E550;
+    rnd = gRandom;
     mgr = D_0044E578;
     for (i = 0; i < 7; i++) {
         s32 slot;
@@ -1337,7 +1337,7 @@ void func_00363FA0(Pursuer *p) {
         u8 *mgr;
 
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
-            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+            s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;

@@ -42,7 +42,7 @@ extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
 extern s32 func_00176D80(Progress *p, s32 item);
 extern s32 func_00176DD0(Progress *p, u32 button, u32 how);   /* pad button held / pressed */
 extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
-extern VObject *D_0044E550;   /* random numbers: +0x18 -> 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
@@ -218,7 +218,7 @@ s32 func_001FC760(VObject *ev) {
         if (!(pct < 100.0f)) {
             r = 1;
         } else if (!(pct <= 0.0f)) {
-            r = 100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) < pct;
+            r = 100.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) < pct;
         }
         break;
     }

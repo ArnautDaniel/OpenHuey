@@ -19,7 +19,7 @@ extern const PTMF sGameStateNull;
 extern const PTMF D_0044C7A0;   /* stored at +0x1053450 */
 extern const PTMF D_0044C7B0;   /* next state */
 
-extern VObject *D_0044E550;
+extern VObject *gRandom;
 extern VObject *D_0044E560;
 extern VObject *D_0044E7A8;
 extern VObject *D_0044E4B8;
@@ -85,7 +85,7 @@ void SceneGame_StateEntry(Scene *game) {
     Progress *prog = &AT(game, SG_PROGRESS, Progress);
     void *fiona = (u8 *)game + SG_FIONA;
     void *partner = (u8 *)game + SG_PARTNER;
-    VObject *obj550 = D_0044E550;
+    VObject *obj550 = gRandom;
     u8 *save = (u8 *)D_0044E978 + 0x190;
     void *obj980;
     VObject *obj560;
@@ -1706,7 +1706,7 @@ u32 func_0039C040(Scene *g, s32 *list, s32 room) {
 
 /* a random one of n things: (u8)(n x the random 0..1, +0x1C) */
 static u32 pick(u32 n) {
-    f32 r = VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    f32 r = VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
 
     return (u8)(u32)((f32)n * r);
 }

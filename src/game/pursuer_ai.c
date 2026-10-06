@@ -5,7 +5,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E550;   /* random numbers */
+extern VObject *gRandom;   /* random numbers */
 extern VObject *D_0044E558;   /* doors */
 extern VObject *D_0044E568;   /* rooms */
 
@@ -1168,7 +1168,7 @@ void func_00219310(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
  * 0x200000... ); -1 if the pursuer is elsewhere */
 u32 func_00214940(Pursuer *p) {
     if (p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-        VObject *rnd = D_0044E550;
+        VObject *rnd = gRandom;
         s32 last = AT(D_0044E570, 0x8, s32) - 1;
         s32 n = last + 1;
 
@@ -1771,7 +1771,7 @@ u32 func_00212A80(Pursuer *p, u32 skip) {
         if ((n & 0xFF) == 1) {
             return list[0];
         }
-        return list[(u32)((f32)n * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))];
+        return list[(u32)((f32)n * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))];
     }
     return skip;
 }

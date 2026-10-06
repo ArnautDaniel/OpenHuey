@@ -203,7 +203,7 @@ void func_0032D3E0(u8 *self, s32 a, f32 x, f32 y) {
  * runs off to; +0x16A8 / +0x16A9 its feet down last frame. D_01991600: who it watches ---- */
 
 extern u8 *gCharPlayer, *gCharPartner, *gCharPursuer;
-extern void *D_0044E550;   /* random numbers */
+extern void *gRandom;   /* random numbers */
 extern u8 D_01991600[];
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 extern f32 func_002E2BC0(const f32 *v);   /* heading of v */
@@ -224,7 +224,7 @@ extern f32 sceVu0InnerProduct(const f32 *a, const f32 *b);
 #define CUR_ROOM() VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress)
 
 static f32 animal_rnd(void) {
-    return VCALL(D_0044E550, 0x20, f32 (*)(void *))(D_0044E550);
+    return VCALL(gRandom, 0x20, f32 (*)(void *))(gRandom);
 }
 
 /* the squared distance to the nearest of Fiona, Hewie and the pursuer (those two when active

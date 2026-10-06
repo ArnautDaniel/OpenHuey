@@ -1174,7 +1174,7 @@ s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
 #include "texcache.h"
 
 extern void *D_0047A370[], *D_0046F580[];
-extern VObject *D_0044E550;   /* random numbers */
+extern VObject *gRandom;   /* random numbers */
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 extern f32 func_0031C058(f32 x);   /* cosf */
@@ -1211,7 +1211,7 @@ void func_00374BC0(u8 *o, s32 i) {
     if (AT(o, 0x6F0, u8) == 1) {
         return;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x660 + i * 4, f32) = 0x1.99999ap-4f /* 0.1 */ + 0x1.99999ap-3f /* 0.2 */ * shaft_rnd(rnd);
     AT(o, 0x6A0 + i * 4, f32) = 0x1.921fb6p+2f /* 2 pi */ * (shaft_rnd(rnd) - 0.5f);
     r = SHAFT_REC(o, i);
@@ -1271,7 +1271,7 @@ s32 func_00376200(u8 *o) {
     if (!(t <= 4096.0f)) {
         AT(o, 0x6E8, s32) = (s32)(t - 4096.0f);
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 16; i++) {
         s32 cur = AT(o, 0x6EC, s32);
         u32 *dst = (u32 *)(o + cur * 0x300 + i * 0x30 + 0x10);
@@ -1300,7 +1300,7 @@ s32 func_00376200(u8 *o) {
         }
     }
     if (AT(o, 0x6F1, u8) == 1) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         t = AT(o, 0x6E0, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
         AT(o, 0x6E0, f32) = t;
         AT(o, 0x6E0, f32) = func_002E2D00(t);
@@ -1314,7 +1314,7 @@ s32 func_00376200(u8 *o) {
 /* +0xC set up: a random scroll; the motes' drawer: layer 0x19, texture group 0x10 cell
  * (0x1A0, 0x40) 32 x 32 of 512 x 256, additive, 5 frames; the haze at random phases */
 void func_003765B0(u8 *o) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
 
     AT(o, 0x6EC, s32) = 0;
     AT(o, 0x6F0, u8) = 0;
@@ -1360,7 +1360,7 @@ void func_003767C0(u8 *o, s32 i) {
     if (AT(o, 0x1A58, u8) == 1) {
         return;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x1848 + i * 4, f32) = 0.0f + kTenth.f + kFifth.f * shaft_rnd(rnd);
     AT(o, 0x1948 + i * 4, f32) = kTwoPi.f * (shaft_rnd(rnd) - 0.5f);
     r = HAZE2_REC(o, AT(o, 0x1A54, s32), i);
@@ -1407,7 +1407,7 @@ void func_00377970(u8 *o) {
         func_003767C0(o, i);
         AT(HAZE2_REC(o, AT(o, 0x1A54, s32), i), 0xC, s32) = 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x1A48, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
     AT(o, 0x1A4C, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
 }
@@ -1424,7 +1424,7 @@ s32 func_00377590(u8 *o) {
     if (AT(o, 0x1A58, u8) == 1) {
         return 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x1A54, s32) ^= 1;
     AT(o, 0x1A50, s32)++;
     for (i = 0; i < 64; i++) {
@@ -1462,7 +1462,7 @@ s32 func_00377590(u8 *o) {
             }
         }
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     t = AT(o, 0x1A48, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
     AT(o, 0x1A48, f32) = t;
     AT(o, 0x1A48, f32) = func_002E2D00(t);
@@ -1722,7 +1722,7 @@ void func_00311140(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox,
     s16 *p = pts;
     s32 x, y, z, n;
 
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (x = 0; x < nx; x++) {
         for (y = 0; y < ny; y++) {
             for (z = 0; z < nz; z++) {
@@ -1736,7 +1736,7 @@ void func_00311140(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox,
     AT(st, 0x18, s32) = nz * (nx * ny);
     AT(st, 0x28, s16 *) = pts;
     if (AT(st, 0x18, s32) > 0) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (n = 0; n < AT(st, 0x18, s32); n++) {
             s32 i = (s32)(30.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd));
             s16 *a = pts + i * 3, *b, t;
@@ -2569,7 +2569,7 @@ extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC
 extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 D_0047E364;   /* menu buttons, repeating */
 extern VObject *D_0044E4F8;   /* the camera director's interface */
-extern VObject *D_0044E550;   /* random numbers */
+extern VObject *gRandom;   /* random numbers */
 
 /* a dial `o` on progress var `var` (0..6, 30 degrees each, from `off`): byte 3 of `step` 0 set
  * to it (`hide` also clears its +0), 1 turned by left / right (event +0x60 1 when changed, 0 when
@@ -2711,7 +2711,7 @@ s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
             AT(o, 0x34, f32) = -1.0f;
             AT(o, 0x24, f32) = AT(o, 0x24, f32) + k01.f;
         }
-        v = (0.0f + AT(o, 0x24, f32)) + k01.f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v = (0.0f + AT(o, 0x24, f32)) + k01.f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         AT(o, 0x24, f32) = v;
         if (v <= 0.0f) {
             return 2;
@@ -4750,7 +4750,7 @@ extern void *D_00476BB0[], *D_00472370[];
 extern u8 *D_0044F258;                   /* the creatures: 7 pointers; +0x28 vtable */
 extern VObject *D_00456E00;
 extern VObject *D_0044E558;              /* the doors */
-extern VObject *D_0044E550;              /* random numbers */
+extern VObject *gRandom;              /* random numbers */
 extern void func_0025F810(u8 *o);
 extern f32 func_00124490(void *a, f32 *p);
 extern s32 func_00183190(void *f);
@@ -4859,7 +4859,7 @@ s32 func_002ADEE0(void *self, void *a1, u8 *cmd) {
 
 /* room 0x1D (D_003FD980): script variable 0 = 2 .. 5 at random */
 s32 func_002ADF40(void) {
-    s32 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3;
+    s32 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3;
 
     VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, r + 2);
     return 1;
@@ -5974,7 +5974,7 @@ void func_0036A7F0(u8 *o) {
 
     AT(o, 0x34, u8) = 0;
     AT(o, 0x30, s32) = -1;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 10; i++) {
         AT(o, 0x4 + i * 4, s32) = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF;
     }
@@ -6109,7 +6109,7 @@ void func_00371030(u8 *o) {
     f32 r;
 
     AT(o, 0x11, u8) = 0;
-    r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    r = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
     AT(o, 0x4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
     AT(o, 0x8, u32) = 0x40000000;   /* 2 */
     AT(o, 0xC, u32) = 0x40000000;
@@ -6254,7 +6254,7 @@ s32 func_00370F00(u8 *o) {
     if (AT(o, 0x11, u8) == 1) {
         return 0;
     }
-    r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    r = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
     AT(o, 0x4, f32) = AT(o, 0x4, f32) + kPi.f * (50.0f + 20.0f * r) / 180.0f;
     AT(o, 0x4, f32) = func_002E2D00(AT(o, 0x4, f32));
     if (AT(o, 0x8, f32) != AT(o, 0xC, f32)) {
@@ -6548,7 +6548,7 @@ s32 func_003413C0(void *self, void *a1, u8 *cmd) {
         v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[4]);
         n = func_00183190(gCharPlayer);
         if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
-            if (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 1) {
+            if (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 1) {
                 func_00122C20(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);
                 VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[6], 45);
             } else {
@@ -6641,7 +6641,7 @@ s32 func_0036A590(u8 *o) {
             return 0;
         }
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     mgr = D_0044E578;
     for (i = 0; i < 10; i++) {
         s32 *t = &AT(o, 0x4 + i * 4, s32);
@@ -6991,7 +6991,7 @@ s32 func_0033FC10(void *self, void *a1, u8 *cmd) {
             AT(w, 0x10, f32) = AT(w, 0x10, f32) - k2Pi.f;
         } while (!(AT(w, 0x10, f32) <= kPi.f));
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(w, 0x24, f32) = k51.f + k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     AT(b, 0x20, f32) = AT(b, 0x20, f32) + AT(b, 0x30, f32);
     AT(b, 0x24, f32) = -3.0f + k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
@@ -7120,7 +7120,7 @@ s32 func_00342BC0(void) {
     one[1] = 1.0f;
     one[2] = 1.0f;
     one[3] = 1.0f;
-    rnd = D_0044E550;
+    rnd = gRandom;
     a = kJit.f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd) + kStep.f * (f32)n;
     a = func_002E2D00(a - kHalf.f);
     rot[0] = 0.0f;
@@ -7155,7 +7155,7 @@ s32 func_00342E80(void) {
     if (n >= 6) {
         return 1;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     cnt = (s32)(3.0f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd)) + 1;
     if (6 - n < cnt) {
         cnt = 6 - n;
@@ -7636,7 +7636,7 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
                 VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0);
             }
         }
-        rnd = D_0044E550;
+        rnd = gRandom;
         if (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) {
             break;
         }

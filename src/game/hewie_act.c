@@ -13,11 +13,11 @@ extern Character *gCharPlayer;
 extern Character *gCharPursuer;
 extern Character *gCharacters[6];
 extern Progress *gProgress;
-extern VObject *D_0044E550;   /* random numbers: +0x1C -> 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
 extern VObject *D_0044E568;   /* the rooms */
 extern void *D_0044E570;      /* the walk mesh */
 
-#define RNG01() VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)
+#define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
 extern s32 func_0013B2C0(Hewie *h, s32 act);
 extern s32 func_00137650(Hewie *h, void *other);

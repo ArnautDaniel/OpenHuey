@@ -3,7 +3,7 @@
 #include "game.h"
 #include "sce/libvu0.h"
 
-extern VObject *D_0044E550;   /* the random number generator */
+extern VObject *gRandom;   /* the random number generator */
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
@@ -25,7 +25,7 @@ u8 *func_00321910(u8 *o, s32 flags) {
 
 /* (class D_00474000, room 0x2A) +0xC reset: a random delay (0x5A..0x79) and its settings */
 void func_00322430(u8 *o) {
-    AT(o, 0x8EC, s32) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 0x1F) + 0x5A;
+    AT(o, 0x8EC, s32) = (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 0x1F) + 0x5A;
     AT(o, 0x8F0, s32) = 0;
     AT(o, 0x8F4, s32) = 0;
     AT(o, 0x8F8, u8) = 0;
@@ -74,7 +74,7 @@ void func_00321D20(u8 *o, f32 *params) {
     AT(o, 0x654, f32) = 2.125f;
     AT(o, 0x658, f32) = kZ.f;
     AT(o, 0x65C, f32) = 1.0f;
-    rng = D_0044E550;
+    rng = gRandom;
     for (i = 0; i < 16; i++) {
         u8 *e;
         f32 r;
@@ -94,7 +94,7 @@ void func_00321D20(u8 *o, f32 *params) {
 void func_003219A0(u8 *o, s32 i) {
     static const F32Bits k02 = {0x3E4CCCCD}, k005 = {0x3D4CCCCD}, k001 = {0x3C23D70A},
                          kM005 = {0xBD4CCCCD}, kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     u8 *p = o + AT(o, 0x8F4, s32) * 0x300 + i * 0x30 + 0x10;
     s32 k;
 
@@ -126,7 +126,7 @@ void func_003219A0(u8 *o, s32 i) {
 /* (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
 void func_00350A10(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -275,7 +275,7 @@ u8 *func_003474E0(u8 *o, s32 flags) {
 /* +0xC reset: three random angles in -pi..pi */
 void func_003477A0(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -328,7 +328,7 @@ u8 *func_00350B30(u8 *o, s32 flags) {
 /* +0xC reset: three random angles in -pi..pi */
 void func_00350D40(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -412,7 +412,7 @@ void func_00378050(u8 *o) {
 
 /* +0xC reset: a random turn */
 void func_00378470(u8 *o) {
-    f32 r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    f32 r = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
 
     AT(o, 0x4, f32) = 0x1.921fb6p+1f * (360.0f * (r - 0.5f)) / 180.0f;
 }
@@ -503,7 +503,7 @@ void func_00347540(VObject *o, const s32 *params) {
 }
 
 
-extern VObject *D_0044E550;   /* random numbers: +0x10 an integer */
+extern VObject *gRandom;   /* random numbers: +0x10 an integer */
 
 /* +0x10 each frame (returns 0 once every particle has left): 16 particles, double-buffered
  * (+0x10, 0x300 per buffer, 0x30 each), drift by their velocity (+0x820) plus a wind
@@ -520,7 +520,7 @@ s32 func_00321FE0(u8 *o) {
     AT(o, 0x8F8, u8) = 1;
     AT(o, 0x8F4, s32) ^= 1;
     if (--AT(o, 0x8EC, s32) == 0) {
-        AT(o, 0x8EC, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0x3F;
+        AT(o, 0x8EC, s32) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0x3F;
         AT(o, 0x8F0, s32) = (AT(o, 0x8F0, s32) + 1) & 3;
     }
     if (AT(o, 0x8F0, s32) == 1) {
@@ -710,7 +710,7 @@ u8 *func_003532A0(u8 *o, s32 flags) {
  * turned at random, falling 1.5..2.5 a frame */
 void func_00353330(u8 *o, s32 i) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     u8 *p = DROP(o, i);
     VObject *nav;
 
@@ -767,7 +767,7 @@ static void spray_init(void **obj) {
 /* +0x10 update: swap buffers, carry each drop over and drop it; a landed one splashes (the
  * first drop also with sound 2..4 of bank 6) and starts again */
 s32 func_00353520(u8 *o) {
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     u8 *mgr = D_0044E578;
     VObject *nav;
     VObject *snd;
@@ -952,7 +952,7 @@ void func_00345490(u8 *o, s32 i, s32 again) {
             return;
         }
     }
-    rng = D_0044E550;
+    rng = gRandom;
     p = SMOKE_PUFF(o, i);
     AT(p, 0x0, s32) = 0x80;
     AT(p, 0x4, s32) = 0x80;
@@ -965,7 +965,7 @@ void func_00345490(u8 *o, s32 i, s32 again) {
         AT(p, 0xC, s32) = (s32)((f32)AT(p, 0xC, s32) * (1.0f - up));
         AT(p, 0x20, f32) = AT(p, 0x20, f32) + 1.5f * up;
     }
-    rng = D_0044E550;
+    rng = gRandom;
 #define RND(o) VCALL(rng, o, f32 (*)(VObject *))(rng)
     k = AT(o, 0x1BB8, s32);
     f = AT(o, 0x1AB0 + i * 4, f32) * (1.0f + (f32)((k == 4) * 5));
@@ -997,7 +997,7 @@ void func_00345A00(u8 *o) {
 s32 func_00345A60(u8 *o) {
     static const F32Bits k001 = {0x3C23D70A}, k02 = {0x3E4CCCCD}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB},
                          k2Pi = {0x40C90FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 i, k, n;
 
     AT(o, 0x1BB0, s32) ^= 1;
@@ -1136,7 +1136,7 @@ void func_00358200(u8 *o) {
 void func_00357630(u8 *o, s32 i, s32 again) {
     static const F32Bits k004 = {0x3D23D70A}, kX = {0xC311999A}, kZ = {0x40E9999A}, k003 = {0x3CF5C28F},
                          k007 = {0x3D8F5C29}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     u8 *p = FIRE_REC(o, 0x10, i);
     s32 age = 0;
 
@@ -1154,7 +1154,7 @@ void func_00357630(u8 *o, s32 i, s32 again) {
         }
         AT(p, 0x20, f32) = AT(p, 0x24, f32) = 1.5f + k004.f * (f32)age;
     }
-    rng = D_0044E550;
+    rng = gRandom;
 #define RND() VCALL(rng, 0x18, f32 (*)(VObject *))(rng)
     AT(p, 0x10, f32) = kX.f + 4.0f * (RND() - 0.5f);
     AT(p, 0x14, f32) = 35.0f + (f32)age;
@@ -1173,7 +1173,7 @@ void func_00357630(u8 *o, s32 i, s32 again) {
 void func_003571B0(u8 *o, s32 i, s32 again) {
     static const F32Bits k07 = {0x3F333333}, k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k001 = {0x3C23D70A},
                          kM0025 = {0xBCCCCCCD}, k005 = {0x3D4CCCCD}, k03 = {0x3E99999A}, kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     f32 *drift = &AT(o, 0x66E8 + i * 4, f32);
     f32 *rise = &AT(o, 0x68E8 + i * 4, f32);
     f32 *head;
@@ -1206,7 +1206,7 @@ void func_003571B0(u8 *o, s32 i, s32 again) {
         }
     }
     head = &AT(o, 0x6AE8 + i * 4, f32);
-    rng = D_0044E550;
+    rng = gRandom;
     c = func_0031C058(*head);
     AT(p, 0x10, f32) = (-135.0f + (f32)age) + 4.0f * (RND() - 0.5f) + k01.f * c;
     AT(p, 0x14, f32) = (9.5f + (f32)age) + 2.0f * (RND() - 0.5f);
@@ -1235,7 +1235,7 @@ s32 func_00357BF0(u8 *o) {
     AT(o, 0x6CE8, s32) ^= 1;
     alive = AT(o, 0x6CEC, s32) != 0;
     if (AT(o, 0x6CEC, s32) == 0) {
-        rng = D_0044E550;
+        rng = gRandom;
         for (i = 0; i < 128; i++) {
             u32 buf = AT(o, 0x6CE8, u32);
             u32 *dst = &AT(o, 0x10 + buf * 0x1800 + i * 0x30, u32);
@@ -1268,7 +1268,7 @@ s32 func_00357BF0(u8 *o) {
         }
         AT(o, 0x601C, s32) = AT(o, 0x601C, s32) == 0x30 ? 0x38 : 0x30;
     }
-    rng = D_0044E550;
+    rng = gRandom;
     for (i = 0; i < 32; i++) {
         u32 buf = AT(o, 0x6CE8, u32);
         u32 *dst = &AT(o, 0x3010 + buf * 0x1800 + i * 0x30, u32);
@@ -1495,7 +1495,7 @@ void func_002B9F40(u8 *o) {
     AT(o, 0x30, s32) = 0;
     AT(o, 0x34, s32) = 0;
     AT(o, 0x38, s32) = 0;
-    rng = D_0044E550;
+    rng = gRandom;
     AT(o, 0x3C, s32) = 0;
 #define RND() VCALL(rng, 0x20, f32 (*)(VObject *))(rng)
     for (k = 0; k < 3; k++) {
@@ -1534,7 +1534,7 @@ void func_002B9B00(u8 *o) {
     } else if (!(dd <= 0.0f)) {
         sceVu0CopyVector((f32 *)(o + 0x10), (f32 *)(o + 0x30));
     }
-    rng = D_0044E550;
+    rng = gRandom;
 #define RND() VCALL(rng, 0x20, f32 (*)(VObject *))(rng)
     a = kPi.f * (10.0f * RND() - 5.0f) / 180.0f;
     t = AT(o, 0x40, f32) + a;
@@ -1553,7 +1553,7 @@ void func_002B9B00(u8 *o) {
         AT(o, 0x44, f32) = t;
         AT(o, 0x44, f32) = func_002E2D00(t);
     }
-    rng = D_0044E550;
+    rng = gRandom;
     speed = k04.f + k04.f * RND();
     func_002E2C10(v, AT(o, 0x44, f32));
     sceVu0ScaleVector(v, v, speed);
@@ -1675,7 +1675,7 @@ void func_002B9010(u8 *o) {
     if ((u8)(u32)AT(o, 0x8C, f32) <= 0) {
         return;
     }
-    rng = D_0044E550;
+    rng = gRandom;
     cam = D_0044E4F8;
     mgr = D_0044E578;
     for (i = 0; i < (u8)(u32)AT(o, 0x8C, f32); i++) {
@@ -1774,7 +1774,7 @@ u8 *func_0033C480(u8 *o, s32 flags) {
  * (more the higher), turned at random, rising 0.5..1.5 a frame */
 void func_0033C540(u8 *o, s32 i, s32 again) {
     static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     u8 *p = SMOKE2_PUFF(o, i);
     f32 up = 0.0f;
 
@@ -1795,7 +1795,7 @@ void func_0033C540(u8 *o, s32 i, s32 again) {
         AT(p, 0x20, f32) = AT(p, 0x20, f32) + 2.5f * up;
     }
     AT(p, 0x10, u32) = 0x421A0000;   /* 38.5 */
-    rng = D_0044E550;
+    rng = gRandom;
     AT(p, 0x14, f32) = 50.0f * up;
     AT(p, 0x18, f32) = -10.0f;
     AT(p, 0x1C, f32) = 1.0f;
@@ -1820,7 +1820,7 @@ void func_0033C7D0(u8 *o) {
  * too, starting again once faded; the glow flickers (alpha 0x38 / 0x40) */
 s32 func_0033C830(u8 *o) {
     static const F32Bits k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kX = {0x42193333};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 i, k;
 
     AT(o, 0x36B0, s32) ^= 1;
@@ -1963,7 +1963,7 @@ static inline __attribute__((always_inline)) void ripple_reset(u8 *o, s32 k, s32
 void func_0033CD20(u8 *o, s32 k) {
     static const F32Bits kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k005 = {0x3D4CCCCD};
     f32 *spot = &AT(o, 0x34 + k * 0x10, f32);
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 j;
 
     for (j = 0; j < 16; j++) {
@@ -2078,7 +2078,7 @@ void func_0033CFD0(u8 *o) {
  * new ripple starts; then its ripples move */
 s32 func_0033D2C0(u8 *o) {
     VObject *snd = D_0044E560;
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k, j;
 
     for (k = 0; k < 5; k++) {
@@ -2116,7 +2116,7 @@ s32 func_0033D2C0(u8 *o) {
 /* +0xC set up: the five spots on or off at random, their ripples reset; a running one is run
  * on 64 frames */
 void func_0033D4B0(u8 *o) {
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k, j, n;
 
     AT(o, 0x6D4, s32) = 0;
@@ -2199,7 +2199,7 @@ s32 func_00377DD0(u8 *o) {
 /* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
 void func_00377ED0(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -2212,7 +2212,7 @@ void func_00377ED0(u8 *o) {
 /* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
 void func_003781F0(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -2225,7 +2225,7 @@ void func_003781F0(u8 *o) {
 /* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
 void func_00378750(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -2419,10 +2419,10 @@ void func_00371180(u8 *o, s32 i, s32 fresh) {
     r->rgba[2] = 0x80;
     r->rgba[3] = 0x80;
     if (!fresh) {
-        y = k5.f * rnd18(D_0044E550);
+        y = k5.f * rnd18(gRandom);
         r->rgba[3] = (s32)(k02.f * ((f32)r->rgba[3] * (5.0f - y)));
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[0] = k20.f * (rnd18(rnd) - 0.5f);
     r->pos[1] = y - 4.0f;
     r->pos[2] = k20.f * (rnd18(rnd) - 0.5f);
@@ -2453,14 +2453,14 @@ void func_00371400(u8 *o, s32 i, s32 fresh) {
     r->rgba[1] = 0x80;
     r->rgba[2] = 0x80;
     r->rgba[3] = 0x40;
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->w = 10.0f + 3.0f * rnd18(rnd);
     if (!fresh) {
         y = k25.f * rnd18(rnd);
         r->rgba[3] = (s32)(k004.f * ((f32)r->rgba[3] * (25.0f - y)));
         r->w = r->w - 0.5f * y;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[0] = k10.f * (rnd18(rnd) - 0.5f);
     r->pos[1] = y - 16.0f;
     r->pos[2] = k10.f * (rnd18(rnd) - 0.5f);
@@ -2564,7 +2564,7 @@ s32 func_00371900(u8 *o) {
     }
     AT(o, 0x10C0, s32) ^= 1;
     if (AT(o, 0x10C5, u8) == 1) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (i = 0; i < 24; i++) {
             u32 *src = (u32 *)FLAME_REC(o, AT(o, 0x10C0, s32) ^ 1, i);
             u32 *dst = (u32 *)FLAME_REC(o, AT(o, 0x10C0, s32), i);
@@ -2594,7 +2594,7 @@ s32 func_00371900(u8 *o) {
             }
         }
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 16; i++) {
         u32 *src = (u32 *)EMBER_REC(o, AT(o, 0x10C0, s32) ^ 1, i);
         u32 *dst = (u32 *)EMBER_REC(o, AT(o, 0x10C0, s32), i);
@@ -2636,7 +2636,7 @@ extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 void func_0035B450(u8 *o, s32 i, f32 *p) {
     static const union { u32 u; f32 f; } k003 = {0x3CF5C28F};   /* 0.03, multiplied first */
     QuadRec *r = WISPS_REC(o, AT(o, 0x6CC, s32), i);
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
 
     r->rgba[0] = 0x80;
     r->rgba[1] = 0x80;
@@ -2700,7 +2700,7 @@ void func_0035B6A0(u8 *o) {
  * 0..1 on the even frames. The first 16 frames one more is restarted at the source, shown. 0
  * once none shows */
 s32 func_0035B700(u8 *o) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     u8 done = 1;
     s32 i, k;
 
@@ -2756,7 +2756,7 @@ void func_0035BA60(u8 *o) {
     AT(o, 0x62C, f32) = -0.5f;
     AT(o, 0x630, s32) = 0x19;
     AT(o, 0x634, s16) = 0x10;
-    AT(o, 0x636, s16) = (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 1) << 5;
+    AT(o, 0x636, s16) = (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 1) << 5;
     AT(o, 0x638, s16) = 0x40;
     AT(o, 0x63A, s16) = 0x20;
     AT(o, 0x63C, s16) = 0x20;

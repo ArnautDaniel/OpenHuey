@@ -203,8 +203,8 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
     return act;
 }
 
-extern VObject *D_0044E550;   /* random numbers: +0x1C -> 0..1 */
-#define RNG01() VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)
+extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
+#define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
 /* One chance in `n`: sets +0xF3586. */
 void func_00138DE0(Hewie *h, s32 n) {
@@ -2261,7 +2261,7 @@ static inline s32 Hewie_Roll(Hewie *h, VObject *rng, s32 kind, s8 t, u32 resultO
 }
 
 void func_001396B0(Hewie *h) {
-    VObject *rng = D_0044E550;
+    VObject *rng = gRandom;
 
     if (!Hewie_Roll(h, rng, 3, HW(h, 0xF3693, s8), 0xF369F)) {
         Hewie_Roll(h, rng, 4, HW(h, 0xF3694, s8), 0xF36A0);
@@ -3369,7 +3369,7 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
     return hit;
 }
 
-extern VObject *D_0044E550;   /* random numbers: +0x1C 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x1C 0..1 */
 
 /* whether he dares go for the character in `slot`: from trust level 2, a 1-in-16 roll under
    his level + 1 + his feeling for its kind (+0xF367C.. / 5, at most 8) */
@@ -3397,7 +3397,7 @@ u32 func_00138460(Hewie *h, s32 slot) {
     if (n >= 9) {
         n = 8;
     }
-    return (s32)(16.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < n + HW(h, 0xF35CC, s16) + 1;
+    return (s32)(16.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < n + HW(h, 0xF35CC, s16) + 1;
 }
 
 /* praised (`praise` 1) or scolded for what he just did (+0xF36A4, when it is still +0xF36A8):
@@ -3728,7 +3728,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
         h->c.unk100 = hit[2];
         if (h->c.unk100 != 0xFF) {
             if (h->c.unk100 != 0) {
-                if (VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+                if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
                     func_00166150(h, (Character *)gCharacters[h->c.unk100], -1);
                 }
                 HW(h, 0xF35C4, s32) = 0;
@@ -3740,7 +3740,7 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
                     HW(h, 0xF35C4, s32) = 6;
                 }
                 HW(h, 0xF35C8, s32) = 300;
-                if ((s16)(s32)(16.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) <
+                if ((s16)(s32)(16.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) <
                     D_003B127E[HW(h, 0xF35C4, s32)]) {
                     HW(h, 0xF36B0, s32) = 0xFF;
                     func_00138AD0(h, 3, -1);
@@ -3804,7 +3804,7 @@ s32 func_0013BA50(Hewie *h) {
     }
     HW(h, 0xF368A, u8) = 1;
     HW(h, 0xF35B0, s16) = 900;
-    rng = D_0044E550;
+    rng = gRandom;
     roll = (s16)(s32)(100.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng));
     for (o = D_003B1290[0], sum = 0;; o += 2) {
         sum = (s16)(sum + o[1]);
@@ -3913,7 +3913,7 @@ void func_0013C7D0(Hewie *h) {
     if (in_his_room(h, gCharPursuer) && gCharPursuer->moveMode != 3 && gCharPursuer->moveMode != 4 &&
         ((u8)Progress_TestFlag(gProgress, 9) == 1 || (u8)Progress_TestFlag(gProgress, 0xA) == 1)) {
         s32 chance = D_003B1240[HW(h, 0xF35CC, s16)];
-        s8 r = (s8)(s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+        s8 r = (s8)(s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
 
         if (chance < 0) {
             chance = 0;
@@ -3956,7 +3956,7 @@ void func_0013C7D0(Hewie *h) {
             e = ((Progress_GetVar(p, 0x27) & 0xFF) != 1 ? D_003B0A90 : D_003B0E20)[i];
         }
     }
-    roll = (s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    roll = (s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
     for (sum = 0;; e += 0xC) {
         sum += e[4 + HW(h, 0xF35CC, s16)];
         if (roll < sum) {
@@ -4106,12 +4106,12 @@ void func_0013E680(Hewie *h) {
         hewie_want(h, 0x36, 0);
         return;
     }
-    if (h->c.a.unkC4 == 1 && VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+    if (h->c.a.unkC4 == 1 && VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
         HW(h, 0xF3560, s32) = D_003B13D0[HW(h, 0xF35CC, s16)];
         hewie_want(h, 0x2F, 0);
         return;
     }
-    roll = (s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    roll = (s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
     p = gProgress;
     for (sum = 0, e = D_003B11B0;; e += 0xC) {
         s32 act = *(const s32 *)e;
@@ -4170,7 +4170,7 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
         if (h->c.a.unkC4 == 1 || HW(h, 0xF3598, s32) != 0 || (u32)HW(h, 0xF35C0, s32) > 2) {
             return -1;
         }
-        if (HW(h, 0xF3688, s16) != 0 || VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+        if (HW(h, 0xF3688, s16) != 0 || VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
             return -5;
         }
         return -1;
@@ -4178,7 +4178,7 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
         if (h->c.a.unkC4 == 1 || HW(h, 0xF3598, s32) != 0 || (u32)HW(h, 0xF35C0, s32) > 1 || h->c.hp < 0x50) {
             return -1;
         }
-        if (HW(h, 0xF3688, s16) != 0 || VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+        if (HW(h, 0xF3688, s16) != 0 || VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
             return -4;
         }
         return -1;
@@ -5157,7 +5157,7 @@ s32 func_00143D20(Hewie *h) {
         }
         if (!placed) {
             tri = VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, h->c.door, at);
-            ang = 2.0f * (0x1.921fb6p+1f /* pi */ * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)) -
+            ang = 2.0f * (0x1.921fb6p+1f /* pi */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)) -
                   0x1.921fb6p+1f;
             if (tri == NAV_NONE || Hewie_PlaceAt(h, tri, &ang, at) == -1) {
                 func_00124890(&h->c.a, HEWIE_SIDE(h));
@@ -5586,7 +5586,7 @@ void func_00146130(Hewie *h) {
             if (HW(h, 0xF360C, s32) == 0) {
                 f32 r;
 
-                rng = D_0044E550;
+                rng = gRandom;
                 HW(h, 0xF360C, s32) = (s32)((mode == 1 ? 90.0f : 60.0f) * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)) + 20;
                 HW(h, 0xF3614, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (0x1.99999a0000000p-4f /* 0.1 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.99999a0000000p-5f /* 0.05 */);
                 if (AT(h->c.motion, 0x858, f32) < 0.0f) {
@@ -5606,7 +5606,7 @@ void func_00146130(Hewie *h) {
             if (HW(h, 0xF360C, s32) != 0) {
                 HW(h, 0xF360C, s32) -= 1;
             } else {
-                rng = D_0044E550;
+                rng = gRandom;
                 HW(h, 0xF360C, s32) = (s32)(128.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng)) + 20;
                 HW(h, 0xF3614, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (-0x1.99999a0000000p-3f /* 0.2 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng));
                 HW(h, 0xF3618, f32) = 0x1.921fb60000000p+1f /* 3.1415927 */ * (0x1.99999a0000000p-3f /* 0.2 */ * VCALL(rng, 0x18, f32 (*)(VObject *))(rng) - 0x1.99999a0000000p-4f /* 0.1 */);
@@ -7037,7 +7037,7 @@ void func_0014EE20(Hewie *h) {
 
     if (o == NULL || o->active == 0 || o->unk2A == 1) {
         HW(h, 0xF36B8, s32) = 0;
-        if (Hewie_Roll(h, D_0044E550, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
+        if (Hewie_Roll(h, gRandom, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
             HW(h, 0xF36B4, s32) = 2;
             Hewie_SetBehaviour(h, &D_003B1A48);
         } else {
@@ -7050,7 +7050,7 @@ void func_0014EE20(Hewie *h) {
     speed = __builtin_sqrtf(sceVu0InnerProduct(v, v));
     if (speed < 0.5f && func_0013EE40(h, o->navTri, o->pos, 0, 1) != 0) {
         HW(h, 0xF36B8, s32) = 0;
-        if (Hewie_Roll(h, D_0044E550, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
+        if (Hewie_Roll(h, gRandom, 5, HW(h, 0xF3695, s8), 0xF36A1)) {
             HW(h, 0xF36B4, s32) = 2;
             Hewie_SetBehaviour(h, &D_003B1A68);
         } else {

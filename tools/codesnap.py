@@ -222,8 +222,79 @@ def add(out: dict, funcs: dict) -> None:
         out.setdefault(name, []).extend(bodies)
 
 
-def digest(snap: dict) -> dict:
-    return {k: sorted(hashlib.sha1(b.encode()).hexdigest() for b in v) for k, v in snap.items()}
+SP_SLOT = re.compile(r"(-?\d+)\((\$sp|\$fp|%esp|%ebp)\)")
+SP_ADDR = re.compile(r"(addiu \$\d+,\$sp,)(-?\d+)|(leal )(-?\d+)(\(%esp\))")
+
+
+# registers whose choice carries no ABI meaning, renamed within their class in order of use:
+# MIPS callee-saved / plain temporaries (EABI args are $4-$11, results $2/$3; floats: args
+# $f12-$f19, result $f0); x86 callee-saved (cdecl args are on the stack)
+REG_CLASSES = [
+    ["$%d" % r for r in (16, 17, 18, 19, 20, 21, 22, 23)] + ["$fp"],
+    ["$%d" % r for r in (12, 13, 14, 15, 24, 25)],
+    ["$f%d" % r for r in range(1, 12)],
+    ["$f%d" % r for r in range(20, 32)],
+]
+X86_FAMILIES = {"ebx": ["%ebx", "%bx", "%bl", "%bh"], "esi": ["%esi", "%si"], "edi": ["%edi", "%di"],
+                "ebp": ["%ebp", "%bp"]}
+SAVE_RE = re.compile(r"^(sd|sq|ld|lq|sw|lw|swc1|lwc1|sdc1|ldc1) (\$(?:1[6-9]|2[0-3]|fp|31|f2\d|f3[01])),-?\d+\(\$sp\)$"
+                     r"|^(pushl|popl) (%ebx|%esi|%edi|%ebp)$")
+REG_TOKEN = re.compile(r"\$(?:f\d+|\d+|fp)\b|%[a-z]+")
+
+
+def loose(body: str) -> str:
+    """the body with its stack slots and its free register choices numbered in the order used;
+    the saves / restores of callee-saved registers become one line (the set saved)"""
+    saved_set = set()
+    kept = []
+    for t in body.split("\n"):
+        m = SAVE_RE.match(t)
+        if m:
+            saved_set.add(m.group(2) or m.group(4))
+            continue
+        kept.append(t)
+    body = "\n".join(kept)
+    order = {}
+
+    def slot(off: str) -> str:
+        if off not in order:
+            order[off] = "S%d" % len(order)
+        return order[off]
+
+    body = SP_SLOT.sub(lambda m: slot(m.group(1)) + "(" + m.group(2) + ")", body)
+    body = SP_ADDR.sub(lambda m: (m.group(1) + slot(m.group(2))) if m.group(1) else (m.group(3) + slot(m.group(4)) + m.group(5)), body)
+    cls = {}
+    for i, c in enumerate(REG_CLASSES):
+        for r in c:
+            cls[r] = ("m%d" % i, r)
+    for fam, regs in X86_FAMILIES.items():
+        for k, r in enumerate(regs):
+            cls[r] = ("x", fam, k)
+    seen = {}
+
+    def reg(m) -> str:
+        r = m.group(0)
+        c = cls.get(r)
+        if c is None:
+            return r
+        if c[0] == "x":
+            fam, k = c[1], c[2]
+            key = ("x", fam)
+            if key not in seen:
+                seen[key] = "R%d" % sum(1 for q in seen if q[0] == "x")
+            return seen[key] + "." + str(k)
+        key = (c[0], r)
+        if key not in seen:
+            seen[key] = c[0] + "_%d" % sum(1 for q in seen if q[0] == c[0])
+        return seen[key]
+
+    body = REG_TOKEN.sub(reg, body)
+    saves = sorted(REG_TOKEN.sub(reg, r) for r in saved_set)
+    return body + "\nsaves " + ",".join(saves)
+
+
+def digest(snap: dict, f=lambda b: b) -> dict:
+    return {k: sorted(hashlib.sha1(f(b).encode()).hexdigest() for b in v) for k, v in snap.items()}
 
 
 def main() -> None:
@@ -235,7 +306,8 @@ def main() -> None:
         canon = load_canon()
         for kind, fn in (("ps2", ps2_snap), ("native", native_snap)):
             snap = fn(canon)
-            (d / f"{kind}.json").write_text(json.dumps({"digest": digest(snap), "text": snap}))
+            (d / f"{kind}.json").write_text(json.dumps({"digest": digest(snap), "loose": digest(snap, loose),
+                                                        "text": snap}))
             print(f"{kind}: {len(snap)} functions")
     elif sys.argv[1] == "compare":
         bad = 0
@@ -245,7 +317,10 @@ def main() -> None:
             da, db = a["digest"], b["digest"]
             gone = sorted(set(da) - set(db))
             new = sorted(set(db) - set(da))
-            changed = sorted(k for k in set(da) & set(db) if da[k] != db[k])
+            la, lb = a["loose"], b["loose"]
+            both = set(da) & set(db)
+            changed = sorted(k for k in both if la[k] != lb[k])
+            slots = sorted(k for k in both if da[k] != db[k] and la[k] == lb[k])
             for k in gone:
                 print(f"{kind}: gone {k}")
             for k in new:
@@ -253,7 +328,8 @@ def main() -> None:
             for k in changed:
                 print(f"{kind}: changed {k}")
             bad += len(gone) + len(new) + len(changed)
-            print(f"{kind}: {len(da)} -> {len(db)} functions, {len(changed)} changed, {len(gone)} gone, {len(new)} new")
+            print(f"{kind}: {len(da)} -> {len(db)} functions, {len(changed)} changed, {len(gone)} gone, "
+                  f"{len(new)} new ({len(slots)} differ only in stack slots: {' '.join(slots[:8])})")
         sys.exit(1 if bad else 0)
     else:
         sys.exit(__doc__)

@@ -533,7 +533,7 @@ void func_002CF3A0(u8 *f, s32 kind) {
  * rests) */
 
 extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
-extern VObject *D_0044E550;   /* random numbers: +0x10 an integer, +0x18 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x10 an integer, +0x18 0..1 */
 extern void func_002672E0(void *p);   /* delete (effects' heap) */
 
 /* +0x8 destructor */
@@ -563,7 +563,7 @@ void func_002E7C10(u8 *e, f32 *arg) {
     }
     sceVu0CopyVector((f32 *)(e + 0x20), arg);
     AT(e, 0x78, s32) = AT(arg, 0x10, s32);
-    AT(e, 0x74, s32) = sprite_rest(e, D_0044E550);
+    AT(e, 0x74, s32) = sprite_rest(e, gRandom);
 }
 
 /* hand a quad drawer (D_0046FC30) made from an effect's settings (+0x40..+0x6E) to the
@@ -632,7 +632,7 @@ void func_002E7DF0(u8 *e) {
         return;
     }
     AT(e, 0x3C, s32) = 0;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(e, 0x38, f32) = kTwoPi.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     AT(e, 0x74, s32) = sprite_rest(e, rnd);
 }
@@ -651,7 +651,7 @@ void func_002E7F60(u8 *e) {
     AT(e, 0x30, f32) = 0x1.99999a0000000p+0f /* 1.6 */;
     AT(e, 0x34, f32) = 0x1.99999a0000000p+0f /* 1.6 */;
     AT(e, 0x38, f32) = 0.0f;
-    AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(e, 0x3C, s32) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xF;
     AT(e, 0x40, s64) = -1;
     AT(e, 0x48, u8 *) = e + 0x10;
     AT(e, 0x4C, s32) = 0;
@@ -726,7 +726,7 @@ void func_002E80F0(u8 *e, u8 *arg) {
     AT(e, 0x70C, s32) = AT(arg, 0x20, s32);
     switch (AT(e, 0x714, s32)) {
     case 1:
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (i = 0; i < 16; i++) {
             f32 dx, dz, s;
 
@@ -755,7 +755,7 @@ void func_002E80F0(u8 *e, u8 *arg) {
     case 2: {
         f32 spread = 0x1.47ae140000000p-7f /* 0.01 */ * (f32)AT(e, 0x70C, s32);
 
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (i = 0; i < 16; i++) {
             f32 dx, dy, dz;
 
@@ -811,7 +811,7 @@ void func_002E80F0(u8 *e, u8 *arg) {
             alpha = 0x80;
             tall = 1.0f;
         }
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (i = 0; i < 16; i++) {
             f32 dx, up, dz, s;
 
@@ -841,7 +841,7 @@ void func_002E80F0(u8 *e, u8 *arg) {
         break;
     }
     default:
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (i = 0; i < 16; i++) {
             f32 dx, dy, dz;
 
@@ -908,7 +908,7 @@ static void burst_fade(QuadRec *r, VObject *rnd, s32 extra) {
 /* +0x10 update: flip the buffers, carrying each sprite over and moving it; 0 when all have
  * gone */
 s32 func_002E8830(u8 *e) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 done = 1;
     s32 i;
 
@@ -1002,7 +1002,7 @@ void func_002E9040(u8 *e) {
     AT(e, 0x62C, s32) = 0;
     AT(e, 0x630, s32) = 0x19;
     AT(e, 0x634, s16) = 0x10;
-    AT(e, 0x636, s16) = (burst_int(D_0044E550) & 1) << 5;
+    AT(e, 0x636, s16) = (burst_int(gRandom) & 1) << 5;
     AT(e, 0x638, s16) = 0x40;
     AT(e, 0x63A, s16) = 0x20;
     AT(e, 0x63C, s16) = 0x20;
@@ -1109,7 +1109,7 @@ void func_002E9150(u8 *e, u8 *arg) {
         AT(e, 0x30, f32) = 1.0f;
         AT(e, 0x34, f32) = 2.0f;
         AT(e, 0x38, f32) = 0.0f;
-        AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+        AT(e, 0x3C, s32) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xF;
         AT(e, 0x40, s64) = -1;
         AT(e, 0x48, u8 *) = e + 0x10;
         AT(e, 0x4C, s32) = 0;
@@ -1149,7 +1149,7 @@ void func_002E9150(u8 *e, u8 *arg) {
     AT(e, 0x30, f32) = 0.25f;
     AT(e, 0x34, f32) = 1.0f;
     AT(e, 0x38, f32) = 0.0f;
-    AT(e, 0x3C, s32) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xF;
+    AT(e, 0x3C, s32) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xF;
     AT(e, 0x40, s64) = -1;
     AT(e, 0x48, u8 *) = e + 0x10;
     AT(e, 0x4C, s32) = 0;
@@ -1739,7 +1739,7 @@ u8 *func_003521F0(u8 *o, s32 flags) {
 void func_00352280(u8 *o, s32 i, s32 again) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A},
         k025 = {0x3E800000}, kM0025 = {0xBCCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     u8 *r = o + AT(o, 0x210, s32) * 0xC0 + i * 0x30 + 0x10;
     f32 *speed = (f32 *)(o + 0x1E0 + i * 4);
     s32 up = 0;
@@ -1749,7 +1749,7 @@ void func_00352280(u8 *o, s32 i, s32 again) {
     } else {
         *speed = k001.f + k025.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x1F0 + i * 4, f32) = (kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f))) / 180.0f;
     AT(o, 0x200 + i * 4, f32) = 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(r, 0x0, s32) = 0x80;
@@ -1757,7 +1757,7 @@ void func_00352280(u8 *o, s32 i, s32 again) {
     AT(r, 0x8, s32) = 0x10;
     AT(r, 0xC, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
     if (!again) {
-        up = (s32)VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+        up = (s32)VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
         AT(r, 0xC, s32) = AT(r, 0xC, s32) - (s32)(128.0f * (f32)up);
         if (AT(r, 0xC, s32) < 0) {
             AT(r, 0xC, s32) = 0;
@@ -1771,7 +1771,7 @@ void func_00352280(u8 *o, s32 i, s32 again) {
     AT(r, 0x14, f32) = AT(o, 0x1D4, f32) + (f32)up;
     AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(AT(o, 0x1F0 + i * 4, f32));
     AT(r, 0x1C, f32) = 1.0f;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(r, 0x20, f32) = k02.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(r, 0x24, f32) = AT(r, 0x20, f32);
     AT(r, 0x28, f32) = (kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f))) / 180.0f;
@@ -1812,7 +1812,7 @@ void func_003526D0(u8 *o) {
 s32 func_00352700(u8 *o) {
     static const union { u32 u; f32 f; } k002 = {0x3CA3D70A}, k004 = {0x3D23D70A}, kSlow = {0xBC75C28F},
         k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 done = 1, i, k;
 
     AT(o, 0x210, s32) ^= 1;
@@ -1889,7 +1889,7 @@ u8 *func_002D63F0(u8 *o, s32 flags) {
 void func_002D6480(u8 *o, s32 i, s32 again) {
     static const union { u32 u; f32 f; } k11 = {0x3F8CCCCD}, kZ = {0xBFB33333}, k04 = {0x3ECCCCCD},
         kSpread = {0x3CF5C28F}, kRise = {0x3D8F5C29}, kRiseVar = {0x3DCCCCCD};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     u8 *r = o + AT(o, 0x1C50, s32) * 0xC00 + i * 0x30 + 0x10;
     u8 *v;
     s32 k = 0;
@@ -1907,7 +1907,7 @@ void func_002D6480(u8 *o, s32 i, s32 again) {
         }
     }
     AT(r, 0x14, f32) = 13.0f + (f32)k;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(r, 0x18, f32) = kZ.f + k11.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     AT(r, 0x1C, f32) = 1.0f;
     AT(r, 0x20, f32) = k04.f;
@@ -2004,7 +2004,7 @@ void func_002D6920(u8 *o) {
  * and sinking 0.01..0.11 a frame; not `again` (the first round): at a random alpha and fade */
 void func_0033BE90(u8 *o, s32 i, s32 again) {
     static const union { u32 u; f32 f; } k16 = {0x41800000}, k50 = {0x42480000}, k005 = {0x3D4CCCCD};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = DUST_REC(o, AT(o, 0x7450, s32), i);
     f32 *v = DUST_VEL(o, i);
     f32 h, x;
@@ -2028,7 +2028,7 @@ void func_0033BE90(u8 *o, s32 i, s32 again) {
     v[2] = k005.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     DUST_FADE(o, i) = 0;
     if (!again) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         r->rgba[3] = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x1F;
         DUST_FADE(o, i) = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x80000000;
     }
@@ -2145,7 +2145,7 @@ typedef struct Shard {
 _Static_assert(sizeof(Shard) == 0xE0, "Shard");
 
 #define SHARD(e, i) ((Shard *)((u8 *)(e) + 0x10) + (i))
-#define SHARD_RND() VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550)
+#define SHARD_RND() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* +0x8 destructor */
 u8 *func_002E9B00(u8 *e, s32 flags) {
@@ -2171,7 +2171,7 @@ void func_002E9B60(u8 *e, s32 i) {
     static const s8 sx[8] = {1, -1, 1, -1, 1, -1, 1, -1};
     static const s8 sy[8] = {1, 1, -1, -1, 1, 1, -1, -1};
     static const s8 sz[8] = {1, 1, 1, 1, -1, -1, -1, -1};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     Shard *s = SHARD(e, i);
     s16 kind;
     f32 dot;
@@ -2203,7 +2203,7 @@ void func_002E9B60(u8 *e, s32 i) {
     }
     s->alive = 1;
     if ((u32)(AT(e, 0xE38, s16) - 2) < 2) {
-        rnd = D_0044E550;
+        rnd = gRandom;
         for (k = 0; k < 3; k++) {
             s->scale[k] = 0.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
         }
@@ -2215,7 +2215,7 @@ void func_002E9B60(u8 *e, s32 i) {
 
     /* the box's lopsidedness against its size sets how hard it is thrown up */
     kind = AT(e, 0xE38, s16);
-    rnd = D_0044E550;
+    rnd = gRandom;
     s->vel[0] = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
     if (kind == 0 || kind == 3) {
         s->vel[0] = 0x1.99999ap-2f /* 0.4 */ * s->vel[0];
@@ -2452,7 +2452,7 @@ void func_0035D840(u8 *e, s32 i) {
     static const s8 sx[8] = {1, -1, 1, -1, 1, -1, 1, -1};
     static const s8 sy[8] = {1, 1, 1, 1, -1, -1, -1, -1};
     static const s8 sz[8] = {1, 1, -1, -1, 1, 1, -1, -1};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     Shard *s = DEBRIS(e, i);
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -2472,7 +2472,7 @@ void func_0035D840(u8 *e, s32 i) {
         s->scale[1] *= k01.f;
         s->scale[2] *= k01.f;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (k = 0; k < 3; k++) {
         s->rot[k] = kPi.f - 2.0f * (kPi.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
     }
@@ -2611,7 +2611,7 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
     s->vel[2] = 0.0f;
     s->vel[3] = 0.0f;
     VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
-    rnd = D_0044E550;
+    rnd = gRandom;
     nav = D_0044E570;
     tri = (u32)((f32)AT(nav, 0x8, s32) * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
     VCALL(nav, 0xC, void (*)(VObject *, u32, f32 *))(nav, tri, s->pos);
@@ -2622,7 +2622,7 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
             f32 h;
 
             s->delay = 0;
-            rnd = D_0044E550;
+            rnd = gRandom;
             h = AT(e, 0x1C10, f32) - s->floor;
             s->pos[1] = s->pos[1] - h * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
             s->vel[1] = -1.0f - 2.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
@@ -2638,7 +2638,7 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
 
         s->bounce = !(fl & 0x10000000);
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (k = 0; k < 8; k++) {
         s->corner[k][0] = (sx[k] > 0 ? 0x1.333334p-1f : -0x1.99999ap-2f) - 0x1.99999ap-3f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
         s->corner[k][1] = (sy[k] > 0 ? 0x1.333334p-1f : -0x1.99999ap-2f) - 0x1.99999ap-3f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
@@ -2690,7 +2690,7 @@ void func_003624A0(u8 *e) {
 s32 func_00363130(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k005 = {0x3D4CCCCD},
                                           k02 = {0x3E4CCCCD};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 i, k;
 
     for (i = 0; i < 32; i++) {
@@ -2983,7 +2983,7 @@ u8 *func_002F9210(u8 *o, s32 flags) {
 /* mote i anew: at the bottom (again), or at first somewhere up the column, bigger and fainter
  * the higher */
 void func_002F92A0(u8 *e, s32 i, s32 again) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = MOTE_REC(e, AT(e, 0x3850, s32), i);
     f32 *v = MOTE_VEL(e, i);
     s32 up = 0;
@@ -3004,7 +3004,7 @@ void func_002F92A0(u8 *e, s32 i, s32 again) {
         r->w = 1.0f + 0x1.47ae140000000p-5f /* 0.04 */ * (f32)up;
         r->h = r->w;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[1] = 70.0f + (f32)up;
     r->pos[2] = 35.0f + 4.0f * (burst_rnd(rnd) - 0.5f);
     r->pos[3] = 1.0f;
@@ -3117,7 +3117,7 @@ u8 *func_002F9810(u8 *o, s32 flags) {
 /* spark i anew: at the bottom (again), or at first somewhere up, fainter and slower the
  * higher */
 void func_002F98A0(u8 *e, s32 i, s32 again) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     f32 *v = SPARK_VEL(e, i);
     QuadRec *r;
     s32 up = 0;
@@ -3310,7 +3310,7 @@ void func_002FCE50(u8 *e, u8 *arg) {
     r->pos[1] = AT(arg, 0x14, f32);
     r->pos[2] = AT(arg, 0x18, f32);
     r->pos[3] = 1.0f;
-    s = 0x1.99999a0000000p-3f /* 0.2 */ + 0x1.99999a0000000p-3f /* 0.2 */ * burst_rnd(D_0044E550);
+    s = 0x1.99999a0000000p-3f /* 0.2 */ + 0x1.99999a0000000p-3f /* 0.2 */ * burst_rnd(gRandom);
     r->w = s;
     r->h = s;
     r->turn = 0.0f;
@@ -3348,7 +3348,7 @@ s32 func_002FCF70(u8 *e) {
         VObject *rnd;
 
         AT(e, 0xBC, u8) = 0;
-        rnd = D_0044E550;
+        rnd = gRandom;
         r->rgba[3] -= burst_int(rnd) & 3;
         if (r->rgba[3] < 0) {
             r->rgba[3] = 0;
@@ -3452,7 +3452,7 @@ void func_0037B370(u8 *e, u8 *arg) {
     }
     r->rgba[3] = 0;
     sceVu0CopyVector(r->pos, (f32 *)arg);
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[0] = r->pos[0] + 10.0f * (burst_rnd(rnd) - 0.5f);
     r->pos[2] = r->pos[2] + 10.0f * (burst_rnd(rnd) - 0.5f);
     r->w = 10.0f + 10.0f * burst_rnd(rnd);
@@ -3503,7 +3503,7 @@ s32 func_0037B710(u8 *e) {
     r->pos[2] = r->pos[2] + AT(e, 0xAC, f32);
     if (AT(e, 0xB0, s32) != 0) {
         if (AT(e, 0xB4, s32) < 0x40) {
-            AT(e, 0xB4, s32) += burst_int(D_0044E550) & 1;
+            AT(e, 0xB4, s32) += burst_int(gRandom) & 1;
             if (AT(e, 0xB4, s32) >= 0x41) {
                 AT(e, 0xB4, s32) = 0x40;
             }
@@ -3511,7 +3511,7 @@ s32 func_0037B710(u8 *e) {
             AT(e, 0xB0, s32)--;
         }
     } else {
-        AT(e, 0xB4, s32) -= burst_int(D_0044E550) & 1;
+        AT(e, 0xB4, s32) -= burst_int(gRandom) & 1;
         if (AT(e, 0xB4, s32) <= 0) {
             return 0;
         }
@@ -3584,7 +3584,7 @@ void func_0037BA00(u8 *e, f32 *arg) {
     }
     sceVu0CopyVector((f32 *)(e + 0x30), arg);
     AT(e, 0x40, f32) = func_002E2D00(0x1.921fb6p+1f * arg[4] / 180.0f);
-    rnd = D_0044E550;
+    rnd = gRandom;
     mgr = D_0044E578;
     for (i = 0; i < 8; i++) {
         AT(e, 0x4 + i * 4, s32) = (s32)(300.0f * burst_rnd(rnd));
@@ -3672,7 +3672,7 @@ void func_0037D130(u8 *e, f32 *arg) {
         AT(e, 0x654, f32) = AT(e, 0x654, f32) + 5.0f;
         AT(e, 0x664, f32) = 4.0f;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 16; i++) {
         QuadRec *r = RING_REC(e, AT(e, 0x6F0, s32), i);
 
@@ -3743,7 +3743,7 @@ s32 func_0037DD20(u8 *e) {
     if (AT(e, 0x668, s32) < 0) {
         AT(e, 0x668, s32) = 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 16; i++) {
         u32 *src = (u32 *)RING_REC(e, AT(e, 0x6F0, s32) ^ 1, i);
         u32 *dst = (u32 *)RING_REC(e, AT(e, 0x6F0, s32), i);
@@ -3892,7 +3892,7 @@ void func_003744B0(u8 *e, f32 *arg) {
     if (AT(e, 0x124, s32) == 0) {
         AT(e, 0x124, s32) = 1;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     up = kTenth.f * arg[4];
     for (i = 0; i < 2; i++) {
         QuadRec *r = SPARK2_REC(e, AT(e, 0x128, s32), i);
@@ -3929,7 +3929,7 @@ s32 func_003747D0(u8 *e) {
     if (AT(e, 0x12C, u8) == 1) {
         return 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(e, 0x128, s32) ^= 1;
     AT(e, 0x12C, u8) = 1;
     for (i = 0; i < 2; i++) {
@@ -4009,7 +4009,7 @@ u8 *func_002FD1D0(u8 *o, s32 flags) {
 /* puff i anew: at the bottom (again), or at first somewhere up, bigger and fainter the
  * higher */
 void func_002FD260(u8 *e, s32 i, s32 again) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = PUFF_REC(e, AT(e, 0x1C50, s32), i);
     f32 *v = PUFF_VEL(e, i);
     s32 up = 0;
@@ -4028,7 +4028,7 @@ void func_002FD260(u8 *e, s32 i, s32 again) {
         }
         r->w = r->w * (f32)up;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[1] = 11.0f + (f32)up;
     r->pos[2] = 22.5f + 0x1.19999a0000000p+0f /* 1.1 */ * (burst_rnd(rnd) - 0.5f);
     r->pos[3] = 1.0f;
@@ -4194,7 +4194,7 @@ void func_002FD8B0(u8 *e, u8 *arg) {
     g0 = AT(arg, 0x18, s32) - 8;
     b0 = AT(arg, 0x1C, s32) - 8;
     a0 = AT(arg, 0x20, s32) - 4;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < AT(e, 0x634, s16); i++) {
         QuadRec *r = SWARM_REC(e, AT(e, 0x7F4, s32), i);
         u8 *alpha = e + 0x7C8 + i;
@@ -4264,7 +4264,7 @@ s32 func_002FDD70(u8 *e) {
     } else {
         shift = 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < AT(e, 0x634, s16); i++) {
         u32 *src = (u32 *)SWARM_REC(e, AT(e, 0x7F4, s32) ^ 1, i);
         u32 *dst = (u32 *)SWARM_REC(e, AT(e, 0x7F4, s32), i);
@@ -4364,7 +4364,7 @@ void func_002FE340(u8 *e, f32 *arg) {
     g0 = AT(arg, 0x1C, s32) - 8;
     b0 = AT(arg, 0x20, s32) - 8;
     a0 = AT(arg, 0x24, s32) - 4;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < AT(e, 0x3F4, s16); i++) {
         QuadRec *r = SPLASH_REC(e, AT(e, 0x4D8, s32), i);
         f32 *v = SPLASH_VEL(e, i), *d = SPLASH_DRAG(e, i);
@@ -4423,7 +4423,7 @@ s32 func_002FE830(u8 *e) {
         return 0;
     }
     AT(e, 0x4DC, u8) = 1;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < AT(e, 0x3F4, s16); i++) {
         u32 *src = (u32 *)SPLASH_REC(e, AT(e, 0x4D8, s32) ^ 1, i);
         u32 *dst = (u32 *)SPLASH_REC(e, AT(e, 0x4D8, s32), i);
@@ -4542,7 +4542,7 @@ void func_002FF760(u8 *e, u8 *arg) {
     }
     AT(e, 0xE54, s32) = tri;
     heavy = AT(arg, 0x14, s32) != 0;
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 32; i++) {
         QuadRec *r = BLOOD_REC(e, AT(e, 0xE50, s32), i);
         f32 *v = BLOOD_VEL(e, i);
@@ -4607,7 +4607,7 @@ s32 func_002FFCF0(u8 *e) {
     }
     AT(e, 0xE58, u8) = 1;
     nm = D_0044E570;
-    rnd = D_0044E550;
+    rnd = gRandom;
     mgr = D_0044E578;
     AT(e, 0xE50, s32) ^= 1;
     for (i = 0; i < 32; i++) {
@@ -4718,7 +4718,7 @@ void func_00305DD0(u8 *o) {
     AT(o, 0x3C, s32) = 0;
     AT(o, 0x40, f32) = AT(o, 0x38, f32);
     AT(o, 0x44, f32) = AT(o, 0x3C, f32);
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x48, f32) = 0.5f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     AT(o, 0x4C, f32) = 0.5f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
     AT(o, 0x50, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1) * 30 + 1;
@@ -4766,11 +4766,11 @@ s32 func_003059C0(u8 *o) {
     cx = AT(o, 0x38, f32);
     tx = AT(o, 0x40, f32);
     if (tx == cx && AT(o, 0x44, f32) == AT(o, 0x3C, f32)) {
-        VObject *r1 = D_0044E550;
+        VObject *r1 = gRandom;
 
         if (!(VCALL(r1, 0x10, s32 (*)(VObject *))(r1) & 7)) {
             if (AT(o, 0x40, f32) == 0.0f && AT(o, 0x44, f32) == 0.0f) {
-                VObject *r = D_0044E550;
+                VObject *r = gRandom;
 
                 AT(o, 0x40, f32) = 2.0f * AT(o, 0x30, f32) * (VCALL(r, 0x18, f32 (*)(VObject *))(r) - 0.5f);
                 AT(o, 0x44, f32) = 2.0f * AT(o, 0x34, f32) * (VCALL(r, 0x18, f32 (*)(VObject *))(r) - 0.5f);
@@ -4781,7 +4781,7 @@ s32 func_003059C0(u8 *o) {
             AT(o, 0x48, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(o, 0x40, f32) - AT(o, 0x38, f32));
             AT(o, 0x4C, f32) = 0x1.99999a0000000p-4f /* 0.1 */ * (AT(o, 0x44, f32) - AT(o, 0x3C, f32));
         } else {
-            VObject *r = D_0044E550;
+            VObject *r = gRandom;
 
             AT(o, 0x50, s32) = (VCALL(r, 0x10, s32 (*)(VObject *))(r) & 1) * 30 + 1;
             if (VCALL(r, 0x10, s32 (*)(VObject *))(r) & 1) {
@@ -4804,7 +4804,7 @@ s32 func_003059C0(u8 *o) {
         wander_axis(o, 0x3C, 0x44, 0x4C, 0x34);
     }
     if (AT(o, 0x40, f32) == AT(o, 0x38, f32) && AT(o, 0x44, f32) == AT(o, 0x3C, f32)) {
-        AT(o, 0x50, s32) = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) * 30 + 1;
+        AT(o, 0x50, s32) = (VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) * 30 + 1;
     }
     return 1;
 }
@@ -5093,7 +5093,7 @@ void func_00360570(u8 *o, const SprayParams *sp) {
     if (AT(o, 0x710, s32) <= 0) {
         return;
     }
-    rng = D_0044E550;
+    rng = gRandom;
     jitter = k03.f * share;
     for (i = 0; i < AT(o, 0x710, s32); i++) {
         u8 *p = SPRAY_DROP(o, i);
@@ -5221,7 +5221,7 @@ void func_0035F640(u8 *o, s32 i) {
     r->rgba[1] = 0x20;
     r->rgba[2] = 0x20;
     r->rgba[3] = 0x70;
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->pos[0] = (20.0f + x) - 40.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
     r->pos[1] = 40.0f;
     r->pos[2] = (20.0f + z) - 40.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
@@ -5334,7 +5334,7 @@ void func_0035FDD0(u8 *o) {
  * 30..120 frames */
 void func_0035FF30(u8 *o) {
     static const union { u32 u; f32 f; } k360 = {0x43B40000}, kPi = {0x40490FDB}, k90 = {0x42B40000};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = DRIP_REC(o, AT(o, 0xAC, s32));
 
     r->rgba[0] = 0x20;
@@ -5657,7 +5657,7 @@ void func_00316280(u8 *e, u8 *arg) {
         r->rgba[0] = 0x20;
         r->rgba[1] = 0;
         r->rgba[2] = 0;
-        r->rgba[3] = (VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0x1F) + 0x20;
+        r->rgba[3] = (VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0x1F) + 0x20;
     }
     r->pos[0] = at[0];
     r->pos[1] = at[1];
@@ -5739,11 +5739,11 @@ s32 func_003166B0(u8 *e) {
 
         AT(e, 0x138, u8) = 0;
         if (AT(e, 0x139, u8) != 0) {
-            if ((VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3) == 1) {
+            if ((VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3) == 1) {
                 r->rgba[3] -= 1;
             }
         } else {
-            r->rgba[3] -= VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 3;
+            r->rgba[3] -= VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3;
         }
         if (r->rgba[3] < 0) {
             r->rgba[3] = 0;
@@ -5817,7 +5817,7 @@ typedef struct SparkPrm {
 } SparkPrm;
 
 static s32 rnd_int(void) {
-    return VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550);
+    return VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom);
 }
 
 /* ---- the spark itself (D_00479E50, 0x170 bytes): two quads - a glow (records +0x10 / +0x40,
@@ -5855,7 +5855,7 @@ void func_00366000(u8 *o) {
     if (!AT(o, 0x16E, u8)) {
         return;
     }
-    k = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    k = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
     spark_flicker(SPARK_GLOW(o, AT(o, 0x168, s32)), (f32 *)(o + 0x150), k);
     spark_flicker(SPARK_FLARE(o, AT(o, 0x168, s32)), (f32 *)(o + 0x15C), k);
 }
@@ -5899,7 +5899,7 @@ void func_00366270(u8 *o, SparkPrm *arg) {
     }
     AT(o, 0x14C, u32) = arg->from;
     if (size <= 0x1.f5c290p-2f) {   /* 0.49 */
-        rnd = D_0044E550;
+        rnd = gRandom;
         r = SPARK_GLOW(o, AT(o, 0x168, s32));
         spark_white(r, 0x40);
         r->w = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
@@ -5940,7 +5940,7 @@ void func_00366270(u8 *o, SparkPrm *arg) {
         if (size < 1.0f) {
             r->rgba[3] = (s32)((f32)r->rgba[3] * size);
         }
-        rnd = D_0044E550;
+        rnd = gRandom;
         r->w = 0.5f + 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
         r->h = r->w;
         spark_turn(r, rnd);
@@ -5952,7 +5952,7 @@ void func_00366270(u8 *o, SparkPrm *arg) {
         if (size < 1.0f) {
             r->rgba[3] = (s32)((f32)r->rgba[3] * size);
         }
-        rnd = D_0044E550;
+        rnd = gRandom;
         r->w = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
         r->h = r->w;
         spark_turn(r, rnd);
@@ -6016,7 +6016,7 @@ void func_00366910(u8 *o) {
  * glow drifts), moved, faded by 2 + up to 7 / size and darkened by 1 / size; out once black */
 static inline void spark_step(u8 *o, QuadRec *r, const f32 *v, f32 grow) {
     static const union { u32 u; f32 f; } k3 = {0x40400000}, kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
 
     AT(o, 0x16C, u8) = 0;
     r->w = r->w + grow * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
@@ -6247,7 +6247,7 @@ s32 func_003039A0(u8 *o) {
     if (AT(o, 0x1C, u8) == 1) {
         return 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     r = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.921fb6p+1f /* pi */ * (10.0f * r) / 180.0f;
     AT(o, 0x14, f32) = func_002E2D00(AT(o, 0x14, f32));
@@ -6378,7 +6378,7 @@ extern void func_002E56C0(u8 *quad);
 /* +0xC: each fleck at x -2..2 drifting out (by up to 0.05 x), forward 0.1..0.3, white, size
  * 0.4..0.8 by 0.4..0.8 */
 void func_003069B0(u8 *o) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 i;
 
     for (i = 0; i < 64; i++) {
@@ -6405,7 +6405,7 @@ void func_003069B0(u8 *o) {
 /* +0x10: each fleck drifts (nudged now and then by up to 0.05 each way); out of the area it
  * fades 0x30 a frame. 0 once all are gone */
 s32 func_003067B0(u8 *o) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 any = 0;
     s32 i;
 
@@ -6619,7 +6619,7 @@ u8 *func_0037C5A0(u8 *o, s32 flags) {
  * by 2 x `spread` */
 void func_0037C630(u8 *e, s32 i, s32 spread) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* 0.1: multiplied first, as the EE did */
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = ASH_REC(e, ASH_BUF(e), i);
     s32 k;
 
@@ -6674,7 +6674,7 @@ void func_0037C9E0(u8 *e) {
  * +0x3043; then up to three dead ones back */
 s32 func_0037CB90(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kNegPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     s32 i, k, n;
 
     if (AT(e, 0x4474, u8) == 1) {
@@ -6801,7 +6801,7 @@ void func_00368C40(u8 *o, s32 i, s32 stagger) {
     r->pos[1] += 2.0f;
     r->w = 3.0f;
     r->h = 3.0f;
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->turn = kPi.f * (k180.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) / 180.0f;
     r->frame = 0;
     v = PUFF_VEL(o, i);
@@ -6937,7 +6937,7 @@ void func_00369200(u8 *o, s32 i, s32 stagger) {
     r->pos[3] = 1.0f;
     r->w = 20.0f;
     r->h = 20.0f;
-    rnd = D_0044E550;
+    rnd = gRandom;
     r->turn = kPi.f * (k180.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) / 180.0f;
     r->frame = 0;
     v = WISP_VEL(o, i);
@@ -7066,7 +7066,7 @@ void func_00369720(u8 *o, s32 i, s32 side, s32 delayed) {
     static const union { u32 u; f32 f; } k180 = {0x43340000}, kPi = {0x40490FDB};   /* multiplied first */
     f32 m[4][4] __attribute__((aligned(16)));
     f32 off[4] __attribute__((aligned(16)));
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     QuadRec *r = SPRAY_REC(o, AT(o, 0x20D8, s32), i);
     f32 *v, *a, ang;
 
@@ -7088,9 +7088,9 @@ void func_00369720(u8 *o, s32 i, s32 side, s32 delayed) {
         r->pos[0] = -75.0f;
         r->pos[1] = 14.0f;
         r->pos[2] = 0.0f;
-        v[0] = 4.0f + VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[0] = 4.0f + VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         v[1] = -0.5f;
-        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         a[0] = -0x1.333334p-3f;   /* -0.15 */
         a[1] = 0x1.99999ap-4f;    /* 0.1 */
         a[2] = 0.0f;
@@ -7098,9 +7098,9 @@ void func_00369720(u8 *o, s32 i, s32 side, s32 delayed) {
         r->pos[0] = 75.0f;
         r->pos[1] = 14.0f;
         r->pos[2] = 0.0f;
-        v[0] = -4.0f - VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[0] = -4.0f - VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         v[1] = -0.5f;
-        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         a[0] = 0x1.333334p-3f;
         a[1] = 0x1.99999ap-4f;
         a[2] = 0.0f;
@@ -7247,7 +7247,7 @@ void func_0034E170(u8 *o, s32 i, s32 hidden) {
         r->rgba[1] = 0x2B;
         r->rgba[2] = 0x1E;
         r->rgba[3] = hidden ? 0 : 0x10;
-        rnd = D_0044E550;
+        rnd = gRandom;
         a = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
         b = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
         c = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
@@ -7268,7 +7268,7 @@ void func_0034E170(u8 *o, s32 i, s32 hidden) {
         r->rgba[1] = 0x30;
         r->rgba[2] = 0x1A;
         r->rgba[3] = hidden ? 0 : 0x10;
-        rnd = D_0044E550;
+        rnd = gRandom;
         a = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
         b = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
         c = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f;
@@ -7314,7 +7314,7 @@ void func_0034E500(u8 *o, s32 *arg) {
  * a degree, rising, fading in by up to 7 (to 0x60 small / 0x40 big, then marked) and out by up
  * to 7 (big: 3); unless put out, one hidden flame a frame restarted. 0 once none shows */
 s32 func_0034E620(u8 *o) {
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     u8 done = 1;
     s32 i, k;
 

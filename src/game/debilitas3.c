@@ -327,7 +327,7 @@ void func_002CE100(Pursuer *p) {
         return;
     }
     {
-        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
 
         func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
@@ -559,7 +559,7 @@ void func_003301D0(Pursuer *p) {
         return;
     }
     {
-        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
 
         func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));

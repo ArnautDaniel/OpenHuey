@@ -73,7 +73,7 @@ extern s32 func_00177260(Progress *p, s32 slot);
 extern void func_00177300(Progress *p, s32 slot);
 extern void *D_0044F80C;      /* the character in slot 3 */
 extern VObject *gFileLoader;
-extern VObject *D_0044E550;   /* random numbers */
+extern VObject *gRandom;   /* random numbers */
 extern VObject *D_00456DE8;
 extern void func_002F0260(void *panic, u32 stage);
 extern void func_0019A0D0(u8 *f, s32 who, s32 on);
@@ -573,7 +573,7 @@ static void cmd_gift(VObject *ev, Progress *p) {
     s32 item;
 
     if (AT(p, 0x874, u8) != 0) {
-        if (!(100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) < 10.0f)) {
+        if (!(100.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) < 10.0f)) {
             if (D_0044F808 != NULL) {
                 AT(D_0044F808, 0x1664, s32) = 0;
             }

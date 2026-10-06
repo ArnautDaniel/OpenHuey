@@ -1046,7 +1046,7 @@ void func_003154B0(u8 *o) {
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
 extern void *D_00472840[], *D_00479500[], *D_00476B50[];
-extern VObject *D_0044E550;
+extern VObject *gRandom;
 extern void func_00355940(u8 *o);   /* D_00479500 +0x30 */
 extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
 extern void func_003546B0(u8 *o);
@@ -1172,7 +1172,7 @@ static inline void thing_setup(u8 *o, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f, 
     AT(o, 0x12A, s16) = e;
     AT(o, 0x12C, s16) = f;
     AT(o, 0x12E, s16) = g;
-    AT(o, 0x132, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
+    AT(o, 0x132, u16) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xFF;
 }
 
 /* +0xC set up */
@@ -2050,7 +2050,7 @@ void func_0036A980(u8 *o, f32 *arg) {
     p[2] = arg[2];
     p[3] = 1.0f;
     sceVu0CopyVector(q, p);
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 16; i++) {
         r = o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30;
         burst_rec(r, -1);
@@ -2210,7 +2210,7 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         return 0;
     }
     AT(o, b->done, u8) = 1;
-    rnd = D_0044E550;
+    rnd = gRandom;
     CUR ^= 1;
     for (i = 0; i < b->nPiece; i++) {
         f32 a;
@@ -2363,7 +2363,7 @@ void func_0032E950(u8 *o, f32 *arg) {
     if (arg == NULL) {
         return;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     x = arg[0];
     y = 1.0f + arg[1];
     z = arg[2];
@@ -2490,7 +2490,7 @@ void func_0036BDE0(u8 *o, f32 *arg) {
         AT(r, 0x28, s32) = 0;
         AT(r, 0x2C, s32) = 0;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     for (i = 0; i < 32; i++) {
         r = o + 0x10 + AT(o, 0x22BC, s32) * 0x600 + i * 0x30;
         burst_rec7f(r, 0x14, -1);
@@ -2763,7 +2763,7 @@ void func_003344A0(u8 *o) {
     } else {
         AT(o, 0x122, u16) = 0xFFFF;
     }
-    AT(o, 0x124, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
+    AT(o, 0x124, u16) = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xFF;
 }
 
 extern const s8 D_0047B018[6];
@@ -2947,7 +2947,7 @@ s32 func_00354910(u8 *o) {
         }
         return 1;
     }
-    if ((s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < AT(o, 0x122, u16)) {
+    if ((s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < AT(o, 0x122, u16)) {
         return 2;
     }
     return 1;
@@ -2967,7 +2967,7 @@ void func_00354C90(u8 *o) {
     void (*noise)(Progress *, const f32 *, u32, u32, u32, s32, f32) =
         (void (*)(Progress *, const f32 *, u32, u32, u32, s32, f32))func_00177FA0;
 
-    if ((s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < AT(o, 0x124, u16)) {
+    if ((s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < AT(o, 0x124, u16)) {
         noise(gProgress, (f32 *)(o + 0x10), 4, AT(o, 0x12E, u8), AT(o, 0x126, u16), -0x8000, 0.0f);
     } else {
         noise(gProgress, (f32 *)(o + 0x10), 4, AT(o, 0x12E, u8), AT(o, 0x126, u16), 0, 0.0f);
@@ -3360,7 +3360,7 @@ void func_0036D3F0(u8 *o, f32 *arg) {
     if (arg == NULL) {
         return;
     }
-    rnd = D_0044E550;
+    rnd = gRandom;
     x = arg[0];
     y = 1.0f + arg[1];
     z = arg[2];
@@ -3408,7 +3408,7 @@ s32 func_0036D720(u8 *o) {
     }
     AT(o, 0x794, u8) = 1;
     nav = D_0044E570;
-    rnd = D_0044E550;
+    rnd = gRandom;
     AT(o, 0x790, s32) ^= 1;
     for (i = 0; i < 16; i++) {
         u8 *r;

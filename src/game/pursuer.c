@@ -67,7 +67,7 @@ extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
 extern VObject *gBootMessage;     /* message display */
 extern VObject *gFileLoader;
-extern VObject *D_0044E550;       /* random numbers */
+extern VObject *gRandom;       /* random numbers */
 extern VObject *D_0044E558;       /* doors */
 extern VObject *D_0044E568;       /* rooms */
 extern void *D_0044E570;          /* nav mesh */
@@ -482,7 +482,7 @@ void func_0028A9E0(Pursuer *p) {
 
 /* +0x16E0 plus a random 0..3600 frames */
 s32 func_0029CE50(Pursuer *p) {
-    f32 r = 3600.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    f32 r = 3600.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
 
     return PU(p, 0x16E0, s32) + (u32)r;
 }
@@ -1384,7 +1384,7 @@ s32 func_00297160(Pursuer *p) {
             chance = t[4];
             rise = t[5];
         }
-        if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= chance + PU(p, 0x16C0, f32)) {
+        if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= chance + PU(p, 0x16C0, f32)) {
             PU(p, 0x16BC, s32) = 0;
             PU(p, 0x16C0, f32) = 0.0f;
         } else {
@@ -1841,7 +1841,7 @@ void func_00283AE0(Pursuer *p) {
     u32 i;
 
     VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, AT(gProgress, 0x7B8, u8) >= 4 ? 7 : 6);
-    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     for (i = 0;; i = (i + 1) & 0xFF) {
         e = PU(p, 0x1718, u8 *) + (i & 0xFF) * 0xC;
         if (roll <= AT(e, 0x8, f32)) {
@@ -2375,7 +2375,7 @@ void func_0027E5D0(Pursuer *p, s32 n) {
             }
         }
         for (i = 0; i < count; i = (i + 1) & 0xFF) {
-            VObject *rnd = D_0044E550;
+            VObject *rnd = gRandom;
             u32 np = npts & 0xFF;
 
             if (PU(p, 0x1738, u32) >= np) {
@@ -2974,7 +2974,7 @@ void func_00289050(Pursuer *p) {
  * else 0x21), noise if it's locked */
 void func_0027CEF0(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
-    VObject *rnd = D_0044E550;
+    VObject *rnd = gRandom;
     VObject *rm = D_0044E568;
     s16 sound;
     u32 exit;
@@ -3056,7 +3056,7 @@ void func_0027D5B0(Pursuer *p) {
     if (Progress_TestFlag(pr, 9) == 0) {
         switch (PU(p, 0x16C8, u8)) {
         case 0:
-            func_001272B0(&p->c, 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550));
+            func_001272B0(&p->c, 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom));
             break;
         case 2:
         case 3:
@@ -3732,7 +3732,7 @@ void func_0029D7F0(Pursuer *p) {
 
 /* vtable +0x130: pick from the attack table +0x1718 ({kind, value, chance}) */
 void func_00283C50(Pursuer *p) {
-    f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     u8 *e;
     s32 kind;
     u32 i;
@@ -4583,7 +4583,7 @@ void func_0029B5C0(Pursuer *p) {
         VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, (s8)VCALL(rm, 0x14, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, PU(p, 0x17B0, u8)), pos);
         if (p->c.hp > 0) {
             snd = 0x1D;
-            PU(p, 0x1664, s32) = (s32)(30.0f * (3.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550))) + 60;
+            PU(p, 0x1664, s32) = (s32)(30.0f * (3.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom))) + 60;
         } else {
             VCALL(p, 0x2CC, void (*)(Pursuer *))(p);
             PU(p, 0x1790, s32) = 0;
@@ -4997,7 +4997,7 @@ void func_0027D260(Pursuer *p) {
         if (Progress_TestFlag(gProgress, 9) == 0) {
             switch (PU(p, 0x16C8, u8)) {
             case 0:
-                *(f32 *)&p->c.unk14C4 -= 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+                *(f32 *)&p->c.unk14C4 -= 1.0f + 0x1.99999a0000000p-3f /* 0.2 */ * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
                 /* fallthrough */
             case 2:
             case 3:
@@ -5193,10 +5193,10 @@ void func_0027E790(Pursuer *p) {
 
     switch (PU(p, 0x16C8, u8)) {
     case 2:
-        n = (((u32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF & 0xFF) + 2) & 0xFF;
+        n = (((u32)(4.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF & 0xFF) + 2) & 0xFF;
         break;
     case 3:
-        n = (((u32)(2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF & 0xFF) + 1) & 0xFF;
+        n = (((u32)(2.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF & 0xFF) + 1) & 0xFF;
         break;
     default:
         n = 0xFF;
@@ -5528,9 +5528,9 @@ void func_0028FF30(Pursuer *p) {
 static u32 Pursuer_SearchStops(Pursuer *p) {
     switch (PU(p, 0x16C8, u8)) {
     case 2:
-        return (((u32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF & 0xFF) + 2) & 0xFF;
+        return (((u32)(4.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF & 0xFF) + 2) & 0xFF;
     case 3:
-        return (((u32)(2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF & 0xFF) + 1) & 0xFF;
+        return (((u32)(2.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF & 0xFF) + 1) & 0xFF;
     default:
         return 0xFF;
     }
@@ -5676,7 +5676,7 @@ void func_002961D0(Pursuer *p) {
         }
         if (strike) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-        } else if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x0, f32)) {
+        } else if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x0, f32)) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
             PU(p, 0x162C, s32) = AT(e, 0x4, s32);
         } else {
@@ -6552,7 +6552,7 @@ void func_002804B0(Pursuer *p) {
             /* a random wait over the room's (up to 8) entries */
             while (t[n] != -1 && ++n < 8) {
             }
-            PU(p, 0x1738, u32) = (u32)((f32)n * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+            PU(p, 0x1738, u32) = (u32)((f32)n * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
         }
     }
     rooms = D_0044E568;
@@ -7474,7 +7474,7 @@ void func_0028B340(Pursuer *p) {
                 hit = (hit | (~PU(p, 0x1760, u8) & (func_002179F0(p, (s32)other, AT(e, 0xC, f32)) & 0xFF) & 0xFF)) & 0xFF;
             }
             if (hit & 0xFF) {
-                s16 crit = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+                s16 crit = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
                 func_00178070(pr, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), crit, AT(e, 0x14, f32));
                 PU(p, 0x1764, s32) = AT(e, 0x20, s32);
@@ -7735,10 +7735,10 @@ void func_002983C0(Pursuer *p) {
             /* how many search stops to have left: 2..5 heading for something, 1..2 searching */
             switch (PU(p, 0x16C8, u8)) {
             case 2:
-                n = (((u32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF) + 2) & 0xFF;
+                n = (((u32)(4.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF) + 2) & 0xFF;
                 break;
             case 3:
-                n = (((u32)(2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) & 0xFF) + 1) & 0xFF;
+                n = (((u32)(2.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) & 0xFF) + 1) & 0xFF;
                 break;
             default:
                 n = 0xFF;
@@ -8000,7 +8000,7 @@ static void Pursuer_Strike(Pursuer *p, u8 *e) {
         hit = (hit | (~PU(p, 0x1760, u8) & (func_002179F0(p, (s32)other, AT(e, 0xC, f32)) & 0xFF) & 0xFF)) & 0xFF;
     }
     if (hit & 0xFF) {
-        s16 crit = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+        s16 crit = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
         func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), crit, AT(e, 0x14, f32));
         PU(p, 0x1764, s32) = AT(e, 0x20, s32);
@@ -8087,7 +8087,7 @@ void func_00286170(Pursuer *p) {
         f32 chance = PU(p, 0x1634, f32) * PU(p, 0x16E8, f32) +
                      25.0f * ((f32)PU(p, 0x16BC, u32) / (f32)PU(p, 0x16DC, u32));
 
-        if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= chance) {
+        if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= chance) {
             u8 slot = PU(p, 0x153C, u8);
 
             PU(p, 0x1628, s32) = 1;
@@ -8946,7 +8946,7 @@ void func_002948E0(Pursuer *p) {
 
 /* back off (action 5) or hold off (6) for the entry's time, by its chance in percent */
 static void Pursuer_HoldOff(Pursuer *p, const u8 *e) {
-    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x0, f32)) {
+    if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x0, f32)) {
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
         PU(p, 0x162C, s32) = AT(e, 0x4, s32);
     } else {
@@ -10294,7 +10294,7 @@ static s32 Pursuer_RandomWait(Pursuer *p) {
     if (t == NULL) {
         return 0;
     }
-    r = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    r = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     for (i = 0;; i = (i + 1) & 0xFF) {
         u8 *e = t + (i & 0xFF) * 8;
 

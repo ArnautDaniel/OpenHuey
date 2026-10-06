@@ -618,7 +618,7 @@ f32 func_00124530(Actor *a, f32 target, f32 step) {
     return (rest <= 0.0f) ? -rest : rest;
 }
 
-extern VObject *D_0044E550;      /* random numbers: +0x18 / +0x1C -> f32 in 0..1 */
+extern VObject *gRandom;      /* random numbers: +0x18 / +0x1C -> f32 in 0..1 */
 extern VObject *D_0044E4D0;      /* +0x10(point, id, tri) -> bool: point taken by room object `id` */
 
 /* Teleport to a random free triangle of the current room's mesh (only if the actor is in the
@@ -640,7 +640,7 @@ void func_00124890(Actor *a, s32 kind) {
         area = 0x300000;
     }
     nm = D_0044E570;
-    rng = D_0044E550;
+    rng = gRandom;
     n = nm->numTris;
     rooms = D_0044E568;
     objs = D_0044E4D0;

@@ -2456,7 +2456,7 @@ void func_002EC3C0(u8 *o, s32 sec) {
     AT(o, 0x4, u32) = AT(o, 0x4, u32) >= AT(o, 0x4, u32) - d ? AT(o, 0x4, u32) - d : 0;
 }
 
-extern VObject *D_0044E550;    /* random numbers: +0x18 / +0x1C -> 0..1 */
+extern VObject *gRandom;    /* random numbers: +0x18 / +0x1C -> 0..1 */
 extern void *func_00114FA8(u32 size);   /* malloc */
 extern void func_00114FD0(void *p);     /* free */
 extern s32 func_00126F30(void *c, s32 from, s32 to, s32 a3, s32 a4, s32 fromPt, s32 toPt, s32 mode);   /* a route (>= 0) */
@@ -2512,7 +2512,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
         func_00114FD0(list);
         return 0;
     }
-    i = (u8)(u32)((f32)m * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+    i = (u8)(u32)((f32)m * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
     pu = gCharPursuer;
     pl = gCharPlayer;
     from = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, AT(pl, 0x30, s32), AT(pl, 0x14D4, u8), 1);
@@ -2575,7 +2575,7 @@ s32 func_002EC170(u8 *o) {
         }
         return 0;
     }
-    k = (u8)(u32)(3.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550));
+    k = (u8)(u32)(3.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom));
     do {
         switch (k++) {
         case 0:
@@ -3269,7 +3269,7 @@ void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
 }
 
 
-extern VObject *D_0044E550;    /* random numbers: +0x18 -> 0..1 */
+extern VObject *gRandom;    /* random numbers: +0x18 -> 0..1 */
 extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
 extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
 extern s32 func_001788F0(void *p, u32 door);   /* a door is open (u8) */
@@ -3324,7 +3324,7 @@ void func_002EC4F0(u8 *o, u8 *n) {
         }
         roll = 0;
         if (t[0] != 0) {
-            if (t[0] == 100 || 100.0f * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) <= (f32)t[0]) {
+            if (t[0] == 100 || 100.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) <= (f32)t[0]) {
                 roll = 1;
             }
         }
@@ -3342,7 +3342,7 @@ void func_002EC4F0(u8 *o, u8 *n) {
         return;
     }
     if (t[1] != 0 &&
-        (100.0f - (f32)t[0]) * VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550) <= (f32)t[1]) {
+        (100.0f - (f32)t[0]) * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) <= (f32)t[1]) {
         func_00177630(p, 6);
         return;
     }

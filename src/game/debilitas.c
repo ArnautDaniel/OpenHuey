@@ -246,7 +246,7 @@ void func_001291C0(Pursuer *p) {
         u32 flags;
 
         if ((s32)(n - 1) > 0) {
-            tri = (s32)((f32)(s32)n * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+            tri = (s32)((f32)(s32)n * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
         }
         flags = Debilitas_TriFlags(tri);
         if ((flags & p->c.a.navMask) != 0) {
@@ -310,7 +310,7 @@ void func_0012B490(Pursuer *p) {
     }
     next = PU(p, 0x1758, s32);
     if (next == -1) {
-        f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         Character *t = p->target;
         u8 *tbl;
 
@@ -387,12 +387,12 @@ static s32 Debilitas_StrikeOrWait(Pursuer *p) {
     u32 chance = func_00297290(p, D_003AF4B0, 3);
     f32 roll;
 
-    if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < (f32)chance) {
+    if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < (f32)chance) {
         VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
         func_00283C50(p);
         return 1;
     }
-    roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
     if (!Debilitas_Seen(p)) {
         Debilitas_BackOrHold(p, roll, PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32) ? 1 : 0);
     } else {
@@ -475,7 +475,7 @@ void func_0012A4C0(Pursuer *p) {
         if ((PU(p, 0x1780, u32) + 1) % 90 == 0) {
             u32 chance = func_00297290(p, D_003AF4B0, 3);
 
-            if (100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= (f32)chance) {
+            if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= (f32)chance) {
                 VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
                 func_00283C50(p);
                 return;
@@ -489,7 +489,7 @@ void func_0012A4C0(Pursuer *p) {
                 VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 3);
             }
         }
-        roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         if (PU(p, 0x1588, f32) < 0.0f) {
             if (func_00284440(p) & 0xFF) {
                 break;

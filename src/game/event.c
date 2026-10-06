@@ -755,7 +755,7 @@ void *func_0020C170(void **o, s32 flags) {
 }
 
 extern u8 *D_0044F808;        /* character slot 2 (the stalker) */
-extern VObject *D_0044E550;   /* random numbers */
+extern VObject *gRandom;   /* random numbers */
 extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
 extern VObject *D_0044FE10;   /* the cutscene director */
 extern void *func_001FB3B0(void *, s32);
@@ -808,7 +808,7 @@ void func_001FB5F0(void) {
     }
     p = (u8 *)gProgress;
     AT(p, 0xBB, u8)++;
-    AT(p, 0xBC, u8) = (u32)VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) % 0x4F;
+    AT(p, 0xBC, u8) = (u32)VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) % 0x4F;
     k = AT(p, 0xBC, u8);
     c = D_0044F808;
     if (c != NULL && AT(c, 0x28, u8) != 0 && AT(c, 0x30, u32) >= 0x100 && AT(c, 0x30, u32) < 0x106) {

@@ -102,7 +102,7 @@ void func_0019AB40(Fiona *f) {
 }
 
 extern void func_00125CC0(Character *c);
-extern VObject *D_0044E550;   /* random numbers: +0x1C -> 0..1 */
+extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
 
 /* vtable +0x5C: activate (Character part), then reset her own state; two timers get random
  * lengths (300 + 330 * r frames, 300 + 30 * int(20 * r)). */
@@ -145,7 +145,7 @@ void func_0019AC70(Fiona *f) {
     f->unk1AD62E = 0;
     FI(f, 0x1AD5D8, u8) = 0;
     FI(f, 0x1AD719, u8) = 0;
-    rng = D_0044E550;
+    rng = gRandom;
     FI(f, 0x1AD728, s32) = (s32)(30.0f * (11.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng))) + 300;
     FI(f, 0x1AD724, s32) = FI(f, 0x1AD728, s32);
     t = (s32)(20.0f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng));
@@ -1017,7 +1017,7 @@ void func_0019AF20(Fiona *f) {
         /* not in the room being played: out of the game until she comes in */
         f->c.a.disabled = 1;
         FI(f, 0x1AD73C, f32) = 0.0f;
-        FI(f, 0x1AD738, s32) = (s32)(30.0f * (2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) + 90;
+        FI(f, 0x1AD738, s32) = (s32)(30.0f * (2.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))) + 90;
         return;
     }
     f->c.a.disabled = 0;
@@ -1170,7 +1170,7 @@ void func_001A1CA0(Fiona *f) {
     }
 }
 
-#define RNG01() VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)
+#define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 #define HEWIE_ACTION(c) (*(s32 *)((u8 *)(c) + 0xF3564))
 
 /* Timers: an alternating period (+0x1AD719 flips when +0x1AD724 runs out; random lengths),
@@ -2177,7 +2177,7 @@ extern const PTMF D_003B27C8;          /* start pushing */
  * (`g` is passed to the random call only because the original leaves it in $a2 there; the
  * callee ignores it - it keeps the differential test's argument check exact.) */
 static inline void Fiona_Exhausted(Fiona *f, s32 g) {
-    FI(f, 0x1AD5E8, s32) = (s32)(3.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *, s32, s32))(D_0044E550, 0, g)) * 30 + 120;
+    FI(f, 0x1AD5E8, s32) = (s32)(3.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *, s32, s32))(gRandom, 0, g)) * 30 + 120;
     f->unk1AD580 = 0xF;
     func_002DDED0(f->c.motion, 0x207, -1);
 }
@@ -4566,7 +4566,7 @@ extern const PTMF D_003B2C18;
  * 1 or 0xC02) */
 void func_00184570(Fiona *f) {
     if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
-        if (VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.5f) {
+        if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.5f) {
             func_002DDED0(f->c.motion, 1, -1);
         } else {
             func_002DDED0(f->c.motion, 0xC02, -1);
@@ -6001,7 +6001,7 @@ void func_00192F70(Fiona *f) {
     }
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
-            VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+            VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
             func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
         }
         led_arrive(f);
@@ -6124,7 +6124,7 @@ void func_00192800(Fiona *f) {
             } else {
                 func_002DDE20(f->c.motion, 0x1401, -1);
                 if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
-                    VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.25f) {
+                    VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
                     func_00122C20(&f->c.a, 0x38, 5, 0, 0, NULL);
                 }
             }
@@ -7144,7 +7144,7 @@ void func_0017FD50(Fiona *f, s32 kind, Character *c) {
         f32 at[4] __attribute__((aligned(16)));
         s32 bone;
 
-        switch ((s32)(4.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) {
+        switch ((s32)(4.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))) {
         case 0:
             bone = VCALL(c->motion, 0x84, s32 (*)(void *))(c->motion);
             break;
@@ -7286,7 +7286,7 @@ void func_001800E0(Fiona *f) {
         f->c.door = VCALL(rooms, 0x3C, s32 (*)(VObject *, u32, s32))(rooms, LINK(f), f->c.a.room);
         FI(f, 0x1AD73C, s32) = 0;
         FI(f, 0x1AD738, s32) =
-            (s32)(30.0f * (2.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550))) + 90;
+            (s32)(30.0f * (2.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))) + 90;
         if (f->c.a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
             /* another room out of sight: a shut door is opened, unless she can't (wait) */
             f->c.a.navTri = (u32)-1;
@@ -7382,7 +7382,7 @@ void func_001800E0(Fiona *f) {
         }
         if (!(FI(f, 0x1AD71C, s32) == 0xE && found != 0)) {
             if (FI(f, 0x1AD719, u8) != 0) {
-                if (VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.5f) {
+                if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.5f) {
                     FI(f, 0x1AD71C, s32) = 0xC;
                 } else {
                     FI(f, 0x1AD71C, s32) = 0xD;
@@ -7418,7 +7418,7 @@ void func_001800E0(Fiona *f) {
             return;
         }
         while (tried != 0xFF) {
-            u8 j = (u8)(u32)(8.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550));
+            u8 j = (u8)(u32)(8.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
 
             if (tried & (1 << j)) {
                 continue;
@@ -7624,7 +7624,7 @@ s32 func_00181650(Fiona *f) {
     } else {
         k = 5;
     }
-    if ((s8)(s32)(100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550)) < D_0047A908[k]) {
+    if ((s8)(s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < D_0047A908[k]) {
         return 1;
     }
     return 0;
@@ -7766,12 +7766,12 @@ void func_00182E80(Fiona *f) {
         case 0x8C:
             return;
         case 0x8B:
-            if (!(VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.5f)) {
+            if (!(VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.5f)) {
                 return;
             }
             break;
         case 0x8A:
-            if (!(VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < 0.75f)) {
+            if (!(VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.75f)) {
                 return;
             }
             break;
@@ -7788,7 +7788,7 @@ static inline void fiona_voice(Fiona *f, s32 id) {
 }
 
 static inline f32 fiona_rnd(void) {
-    return VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+    return VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
 }
 
 /* her line for an order (moveSub 0x2C: 0x31..0x33 by the game mode, heard as a noise unless
@@ -9229,7 +9229,7 @@ static void strike_mark_init(void **obj) {
 
 /* a chance out of 1 */
 static inline __attribute__((always_inline)) s32 fiona_chance(f32 c) {
-    return VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) < c;
+    return VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < c;
 }
 
 /* D_003B2968: her strike (the progress var 0x26: 6 / 7 the two special forms). Hits taken back
