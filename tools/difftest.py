@@ -89,6 +89,8 @@ OUT_BUFFER_ARGS = {0x0026EDD0: 4, 0x0026ED98: 4,   # snprintf / vsnprintf (buf, 
 VARIADIC_FIRST = {0x00380B80: 7, 0x00384730: 11, 0x00384800: 9, 0x0026EDD0: 7}
 CALL_ALIAS: dict[int, int] = {}  # C address -> original address of the file's other game functions
 C_ENTRIES: set[int] = set()      # entry points of the C file's functions
+C_TO_ORIG: dict[int, int] = {}  # a C function's address -> the original's of the same name (a call into the
+#   C build's own copy, e.g. through a table, counts as a call to the original function)
 C_ALL_ENTRIES: set[int] = set()  # ... including static helpers (a computed jump to one is a tail call
                                  # through a random pointer, not a jump inside the function)
 HELPER_RANGES: list[tuple[int, int]] = []
@@ -473,6 +475,7 @@ class CPU:
 
     # -- calls
     def stub_call(self, target: int, kind: str) -> None:
+        target = C_TO_ORIG.get(target, target)
         ints, floats = callee_args(self.rom, target)
         # pointers into the frame compare as "a stack pointer": layouts differ between compilers
         # all argument values the callee might read, plus which ones this version set for the
@@ -1725,6 +1728,11 @@ def build_c(src: Path, workdir: Path) -> tuple[list[tuple[int, bytes]], dict[str
             if parts[1] == "T":
                 funcs[parts[2]] = addr
     C_ALL_ENTRIES.update(INLINE_ADDRS)
+    C_TO_ORIG.clear()
+    orig = {n: v for n, v, _, _, t in game_symbols() if t == "STT_FUNC" and IMAGE_LO <= v < IMAGE_HI}
+    for n, a in funcs.items():
+        if n in orig:
+            C_TO_ORIG[a] = orig[n]
     with open(elf, "rb") as f:
         text = ELFFile(f).get_section_by_name(".text")
         # the whole .text counts as "the function": static helpers GCC didn't inline are part of it
