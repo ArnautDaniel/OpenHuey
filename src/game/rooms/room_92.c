@@ -421,7 +421,7 @@ s32 Room92_Cmd03(void) {
     off[2] = 1.5f + 0.5f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);
     off[3] = 1.0f;
     sceVu0ApplyMatrix(front, m, off);
-    func_00120F90(t, 0x3B, one, rot, front);
+    Thing_Place(t, 0x3B, one, rot, front);
     k = n + 2;
     if (k >= 5) {
         k -= 5;

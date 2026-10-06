@@ -59,7 +59,7 @@ void CreatureB_Cleanup(Character *c);
 
 s32 Effect737D0_Update(void);
 void CreatureB_Vt88(void);
-void func_0032A0D0(void);
+void CreatureB_StateNone(void);
 
 extern u8 D_0042C6A0[];
 extern u8 D_0042C6E0[];
@@ -199,11 +199,13 @@ void CreatureBase_Setup(Character *c) {
 }
 
 /* operator delete for objects put in place (nothing to free) */
-void func_002E2320(void *p) {
+/* 0x002E2320 */
+void Creature_delete(void *p) {
 }
 
 /* placement new */
-void *func_002E2330(u32 size, void *place) {
+/* 0x002E2330 */
+void *Creature_new(u32 size, void *place) {
     return place;
 }
 
@@ -224,7 +226,7 @@ Character *CreatureA_dtor(Character *c, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_002E2320(c);
+            Creature_delete(c);
         }
     }
     return c;
@@ -255,7 +257,8 @@ void CreatureA_ActionState(Character *c) {   /* +0x84 */
 void CreatureA_Vt88(Character *c) {   /* +0x88 */
 }
 
-void func_002E0510(Character *c) {   /* a state with nothing to do */
+/* 0x002E0510 */
+void CreatureA_StateNone(Character *c) {   /* a state with nothing to do */
 }
 
 /* +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
@@ -388,7 +391,8 @@ extern VObject *gSceneGameF29740;   /* the path planner */
 /* go through exit `exit` into the next room (off screen): its room, side (+0xC) and door
  * (+0x9); off the mesh, moving through the door (+0xFC 0x17), out of play; +0x8A.. cleared.
  * -1: no such exit */
-s32 func_002DF760(Character *c, s32 exit) {
+/* 0x002DF760 */
+s32 CreatureA_ThroughExit(Character *c, s32 exit) {
     u8 *k = CR(c);
     VObject *rooms;
     u32 d;
@@ -448,14 +452,16 @@ static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32
     return -1;
 }
 
-s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
+/* 0x002DF860 */
+s32 CreatureA_Path(Character *c, u32 tri, const f32 *goal, s32 direct) {
     return creature_path(c, tri, goal, direct, 0x2B);
 }
 
 /* on the way to `tri`: while not there (its target +0xB0 not on it) the path ahead is looked
  * at (12 steps and 1; unused); a door on the way (+0x88 bit 0) with an exit +0x100 is gone
  * through */
-void func_002DF470(Character *c, u32 tri) {
+/* 0x002DF470 */
+void CreatureA_OnTheWay(Character *c, u32 tri) {
     u8 *k = CR(c);
 
     if (tri != Actor_TriTo(&c->a, c->a.unkB0, NAV_NONE)) {
@@ -480,7 +486,7 @@ void func_002DF470(Character *c, u32 tri) {
     }
     if ((VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
         AT(k, 0x84, u8) = 0;
-        func_002DF760(c, (u8)c->unk100);
+        CreatureA_ThroughExit(c, (u8)c->unk100);
     }
 }
 
@@ -504,7 +510,8 @@ static s32 creature_close_in(Character *c, u32 t) {
 /* when it can walk straight at Fiona (her triangle reachable; +0x8 set: only from hers), it
  * drops its path and does; on another level (height) it gives up after +0x30 tries while
  * close (+0x24 under 2) unless on her triangle (+0x2F). Her triangle, -1 if not. */
-s32 func_002DFF70(Character *c) {
+/* 0x002DFF70 */
+s32 CreatureA_StraightAtFiona(Character *c) {
     u8 *k = CR(c);
     u32 t;
 
@@ -541,7 +548,8 @@ s32 func_002DFF70(Character *c) {
 /* placed at a random triangle of its room (only in the room being played) on its level
  * `level` (0 / 1: flag 0x100000 / 0x200000 free; -1 / 2: not both; flag 8 never), away from
  * the room's doors' event spots */
-void func_002DE540(Character *c, s32 level) {
+/* 0x002DE540 */
+void CreatureA_PlaceRandom(Character *c, s32 level) {
     u32 mask, tri;
     s32 room = c->a.room;
     VObject *rnd, *rooms, *ev_mgr;
@@ -629,7 +637,8 @@ void CreatureA_Save(u8 *p, s32 slot, u32 v) {
 /* the first door of the room (doors +0x40) it may use (+0x15CA[door] bit of its slot), that
  * isn't locked (+0x30 (1, 0)): headed for (+0x85 the door, +0x88 1), its path planned to the
  * door's spot; if it was ahead of the plan it snaps onto the next step (+0x84 1) */
-void func_002DF5B0(Character *c) {
+/* 0x002DF5B0 */
+void CreatureA_FirstDoor(Character *c) {
     u8 *k = CR(c);
     VObject *doors = gDoors, *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
@@ -650,7 +659,7 @@ void func_002DF5B0(Character *c) {
             AT(k, 0x85, u8) = d;
             AT(k, 0x88, u16) = may;
             c->a.unk2B = 1;
-            if (func_002DF860(c, VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x85, u8), at), at, 0) != 0) {
+            if (CreatureA_Path(c, VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x85, u8), at), at, 0) != 0) {
                 c->unk124 = c->unk128;
             }
             if (c->unk128 < c->unk124) {
@@ -669,7 +678,8 @@ void func_002DF5B0(Character *c) {
  * (+0x82): its rest runs down; done and still elsewhere, it comes back (+0x2E). Else it comes
  * for her (+0x2E) once she is in reach (her triangle seen, within +0x4) - kind 0x24 after 61
  * frames (+0x9D) - or right away with no reach */
-void func_002E0520(Character *c) {
+/* 0x002E0520 */
+void CreatureA_FionaDistance(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     s32 room = c->a.room;
@@ -713,7 +723,8 @@ void func_002E0520(Character *c) {
 /* in play, a bobbing motion: height offset +0x14 (kept within -10..5) moved by +0x18, itself
  * by +0x1C, which turns over every +0x32 frames (+0x28); now and then (1 in 32) a short burst
  * (+0x34: 5-frame turns at speed 0.08 for 10 frames, then back) */
-void func_002DEFA0(Character *c) {
+/* 0x002DEFA0 */
+void CreatureA_Bob(Character *c) {
     u8 *k = CR(c);
 
     if (c->a.disabled) {
@@ -778,7 +789,8 @@ static void vanish_init(void **o) {
  * sees it (Actor_Touching), a noise (kind 0xD) is made, it vanishes in a glow (12 above it, red
  * for kinds 0x12.. but 0x24, else blue) with a sound (0x8B) when not in an event, and its
  * vanishing state starts (+0x37, +0x29 set, the motion +0x18 / +0x1C stopped) */
-void func_002DF180(Character *c) {
+/* 0x002DF180 */
+void CreatureA_Seen(Character *c) {
     u8 *k = CR(c);
     u8 *mgr;
     s32 slot;
@@ -845,7 +857,8 @@ static void creature_at_doors(Character *c, u32 doors) {
  * being played at the exit's spot, facing in, noting the doors whose event spot it stands on
  * (+0x8A) - else the next leg's distance; a closed way is marked (+0x148C bit) and the trip
  * ends (+0x86) */
-void func_002DFA50(Character *c) {
+/* 0x002DFA50 */
+void CreatureA_Travel(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     VObject *rooms;
@@ -896,7 +909,7 @@ void func_002DFA50(Character *c) {
         return;
     }
     AT(k, 0xB, u8) = 0;
-    func_002DF760(c, exit);
+    CreatureA_ThroughExit(c, exit);
     if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         f32 at[4] __attribute__((aligned(16)));
         f32 in[4] __attribute__((aligned(16)));
@@ -921,7 +934,8 @@ void func_002DFA50(Character *c) {
  * (+0x6) a fade (+0x2C, 8 a frame) and it is gone. Seen: it sinks (+0x1C, 0.1 faster each
  * frame) to 12 below, fades, then leaves a noise (red ones: noise 3 here; others a level
  * 0x80 noise at its place) and is gone (inactive, its path dropped) */
-void func_002DFE10(Character *c) {
+/* 0x002DFE10 */
+void CreatureA_StateVanish(Character *c) {
     u8 *k = CR(c);
 
     if (AT(c, 0x1577, s8) == 0) {
@@ -956,8 +970,9 @@ void func_002DFE10(Character *c) {
 }
 
 /* state: to the door it chose (+0x85): its spot asked of the planner; on the way there
- * (func_002DF470) with the door as its exit (+0x100) and its spot as the target (+0xB0) */
-void func_002E01C0(Character *c) {
+ * (CreatureA_OnTheWay) with the door as its exit (+0x100) and its spot as the target (+0xB0) */
+/* 0x002E01C0 */
+void CreatureA_StateToDoor(Character *c) {
     u8 *k = CR(c);
     VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
@@ -975,7 +990,7 @@ void func_002E01C0(Character *c) {
     tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x85, u8), spot);
     sceVu0CopyVector(c->a.unkB0, spot);
     c->unk124 = c->unk128;
-    func_002DF470(c, tri);
+    CreatureA_OnTheWay(c, tri);
 }
 
 /* state: travelling: at the end of its doors (+0x1388) and not at a door, a new trip to the
@@ -998,14 +1013,16 @@ static inline __attribute__((always_inline)) void creature_route(Character *c, u
     AT(&c->unk14C4, 0, f32) = (f32)VCALL(gRooms, 0x38, s32 (*)(VObject *, u32, s32))(gRooms, AT(c->unk138C, 0, u16), c->a.room);
 }
 
-void func_002E02B0(Character *c) {
+/* 0x002E02B0 */
+void CreatureA_StateRoute(Character *c) {
     creature_route(c, 0xB, 0xC);
 }
 
 /* state: after Fiona (unless she is in mode 3): in her room, unless given up (+0x2F), straight
- * at her when it can (func_002DFF70) - not on a 0x20000 triangle, where it gives up at once
+ * at her when it can (CreatureA_StraightAtFiona) - not on a 0x20000 triangle, where it gives up at once
  * (its time +0x20 to the kind's +0x6); otherwise along a path to her triangle */
-void func_002E0390(Character *c) {
+/* 0x002E0390 */
+void CreatureA_StateAfterFiona(Character *c) {
     u8 *k = CR(c);
     s32 t = -1;
     s32 room;
@@ -1016,7 +1033,7 @@ void func_002E0390(Character *c) {
     }
     room = c->a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && AT(k, 0x2F, u8) == 0) {
-        t = func_002DFF70(c);
+        t = CreatureA_StraightAtFiona(c);
         if (t == -1 && (NavMesh_TriFlags(gNavMesh, c->a.navTri) & 0x20000)) {
             AT(k, 0x20, s16) = AT(k, 0x6, s16);
         }
@@ -1028,7 +1045,7 @@ void func_002E0390(Character *c) {
         if (gCharPlayer->a.navTri == NAV_NONE) {
             return;
         }
-        if (func_002DF860(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
+        if (CreatureA_Path(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
             return;
         }
     }
@@ -1066,7 +1083,7 @@ static void creature_back_on_mesh(Character *c) {
     u32 tri = c->a.navTri;
 
     if (NavMesh_TriFlags(gNavMesh, tri) & c->a.navMask) {
-        func_002DE540(c, AT(CR(c), 0xC, s32));
+        CreatureA_PlaceRandom(c, AT(CR(c), 0xC, s32));
     } else {
         VCALL(gNavMesh, 0x14, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, c->a.pos);
         VCALL(c, 0x28, s32 (*)(Character *, u32, f32 *, f32 *))(c, c->a.navTri, &c->a.angle[1], c->a.pos);
@@ -1092,7 +1109,7 @@ void CreatureA_EnterRoom(Character *c) {
     room = c->a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         if (c->a.navTri == NAV_NONE) {
-            func_002DE540(c, AT(k, 0xC, s32));
+            CreatureA_PlaceRandom(c, AT(k, 0xC, s32));
         }
         c->a.disabled = 0;
     } else {
@@ -1190,7 +1207,7 @@ static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at)
     if (side != VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, c->a.room, e, 0) && side != 2) {
         return 0;
     }
-    return func_002DF860(c, VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, e, at), at, 1) == 0;
+    return CreatureA_Path(c, VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, e, at), at, 1) == 0;
 }
 
 /* +0x34 Fiona left by exit `exit` (+0xA its door): in the room being played it follows - by
@@ -1260,7 +1277,8 @@ extern const f32 D_004167A0[17];   /* turns: 0, then +-0.39 .. +-3.14 */
  * a random step of the last try, on a triangle of the mesh other than its own that isn't
  * blocked (0x04020028) - up to 17 tries (a blocked one sets +0x9B back to 1) - and it walks
  * there; no spot, or the path or the walk ends: +0x9B 1 again */
-void func_002DEC30(Character *c) {
+/* 0x002DEC30 */
+void CreatureA_StateHangAbout(Character *c) {
     u8 *k = CR(c);
     f32 goal[4] __attribute__((aligned(16)));
     f32 turn = 0.0f;
@@ -1320,7 +1338,7 @@ void func_002DEC30(Character *c) {
         AT(k, 0x9B, s8) = 1;
         return;
     }
-    if (c->unk128 >= c->unk124 && func_002DF860(c, AT(k, 0x44, u32), goal, 0) != 0) {
+    if (c->unk128 >= c->unk124 && CreatureA_Path(c, AT(k, 0x44, u32), goal, 0) != 0) {
         AT(k, 0x9B, s8) = 1;
         return;
     }
@@ -1336,12 +1354,13 @@ extern const PTMF D_00416700, D_00416710, D_00416720, D_00416730, D_00416740, D_
 /* +0x30's thinking: in the room being played (in play) - not come yet: idle (on its triangle's
  * centre the first time); come: its time runs (+0x20), on her level it hasn't given up (+0x2F);
  * when she can't be reached (flag 9, her mode 3) about her (+0xF8 2) unless it did that
- * (+0x9C); she hidden (+0x2D, +0xE0): idle; else for a door (func_002DF5B0) - a closed way
+ * (+0x9C); she hidden (+0x2D, +0xE0): idle; else for a door (CreatureA_FirstDoor) - a closed way
  * (Progress_ExitOpen) ends that (+0x84 2), an opened one when it should open it (+0x88) does
  * (+0x84 0) - by +0x84: 0 after her (from afar, +0x9C, only within 40; else idle with its path
  * dropped), 1 waiting at the door, 2 to the door. Elsewhere: out of play, travelling once it
  * has come, else idle */
-void func_002E06E0(Character *c) {
+/* 0x002E06E0 */
+void CreatureA_Think(Character *c) {
     u8 *k = CR(c);
     Progress *p;
     s32 room;
@@ -1349,7 +1368,7 @@ void func_002E06E0(Character *c) {
     if (AT(c, 0x1569, u8) != 0) {
         return;
     }
-    func_002E0520(c);
+    CreatureA_FionaDistance(c);
     room = c->a.room;
     p = gProgress;
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
@@ -1389,7 +1408,7 @@ void func_002E06E0(Character *c) {
     }
     c->moveMode = 0;
     if (AT(k, 0x86, u8) == 0) {
-        func_002DF5B0(c);
+        CreatureA_FirstDoor(c);
     }
     if (AT(k, 0x84, u8) == 1) {
         if (!(Progress_ExitOpen(p, c->a.room, AT(k, 0x85, u8)) & 0xFF)) {
@@ -1424,7 +1443,7 @@ extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
 
 /* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
  * its doors noted, +0x9C whether Fiona holds item 0x8D (equipment slot 3); thinking
- * (func_002E06E0), bobbing unless seen (+0x37), being seen (outside events, or in her room
+ * (CreatureA_Think), bobbing unless seen (+0x37), being seen (outside events, or in her room
  * unless she is busy); then by its state: not come - idle (holding 0x8D: out of play or in
  * place); in play - once its time is up gone with a sound (0x8C, +0x29), else waiting; out of
  * play - when its time is up gone, travelling (out, +0x10 0) or, back in the room being
@@ -1452,17 +1471,17 @@ void CreatureA_Frame(Character *c) {
     p = gProgress;
     creature_at_doors(c, 0x8A);
     AT(k, 0x9C, s8) = VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3) == 0x8D;
-    func_002E06E0(c);
+    CreatureA_Think(c);
     if (AT(k, 0x37, s8) == 0) {
-        func_002DEFA0(c);
+        CreatureA_Bob(c);
     }
     if (Progress_TestFlag(p, 0x18) == 0) {
-        func_002DF180(c);
+        CreatureA_Seen(c);
     } else {
         s32 room = c->a.room;
 
         if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && gCharPlayer->unkE0 == 0) {
-            func_002DF180(c);
+            CreatureA_Seen(c);
         }
     }
     if (AT(k, 0x2E, u8) == 0) {
@@ -1495,7 +1514,7 @@ void CreatureA_Frame(Character *c) {
             travel = 0;
         }
         if (travel) {
-            func_002DFA50(c);
+            CreatureA_Travel(c);
         }
     }
     ptmf_scall(c, &c->a.state);
@@ -1738,7 +1757,8 @@ void Creatures_SendAfterFiona(u8 *m, s32 a1, s32 a2, s32 i, s32 a4) {
 }
 
 /* Fiona left by exit `exit`: every creature up hears it (+0x34) */
-void func_002E26C0(u8 *m, s32 exit) {
+/* 0x002E26C0 */
+void Creatures_FionaLeft(u8 *m, s32 exit) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -1751,7 +1771,8 @@ void func_002E26C0(u8 *m, s32 exit) {
 }
 
 /* every creature up: its +0x40 (1) */
-void func_002E2740(u8 *m) {
+/* 0x002E2740 */
+void Creatures_Call40(u8 *m) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -1765,7 +1786,8 @@ void func_002E2740(u8 *m) {
 
 /* a pending message (+0x38681 set, its id +0x38680) shown */
 /* (possibly dead code: nothing in the game references it) */
-void func_002E27B0(u8 *m) {
+/* 0x002E27B0 */
+void Creatures_ShowMessage(u8 *m) {
     if (AT(m, 0x38681, u8) != 0) {
         VCALL(gBootMessage, 0xC, void (*)(VObject *, u32))(gBootMessage, AT(m, 0x38680, u8));
     }
@@ -1773,7 +1795,8 @@ void func_002E27B0(u8 *m) {
 }
 
 /* all of them removed (each one's +0x10 first; the manager's +0x28) */
-void func_002E2920(u8 *m) {
+/* 0x002E2920 */
+void Creatures_RemoveAll(u8 *m) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -2015,7 +2038,8 @@ s32 CreatureVanish_Update(u8 *o) {
 /* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
  * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;
  * none, 0 */
-s32 func_002B4030(void) {
+/* 0x002B4030 */
+s32 Room4F_CreatureVanish(void) {
     static const union { u32 u; f32 f; } kX = {0xC20ECCCD};
     s32 i;
 
@@ -2903,7 +2927,7 @@ Character *CreatureB_dtor(Character *c, s32 flags) {
             }
         }
         if ((s16)flags > 0) {
-            func_002E2320(c);
+            Creature_delete(c);
         }
     }
     return c;
@@ -2932,13 +2956,15 @@ s32 CreatureB_Place(Character *c, u32 tri, const f32 *heading, f32 *pos) {
 
 /* ---- the same in the other creature classes, whose own block is laid out differently ---- */
 
-/* (as func_002DF860; its request flag at +0x64) */
-s32 func_003255C0(Character *c, u32 tri, const f32 *goal, s32 direct) {
+/* (as CreatureA_Path; its request flag at +0x64) */
+/* 0x003255C0 */
+s32 CreatureB_Path(Character *c, u32 tri, const f32 *goal, s32 direct) {
     return creature_path(c, tri, goal, direct, 0x64);
 }
 
-/* (as func_002E02B0; +0x61 / +0x0) */
-void func_00329360(Character *c) {
+/* (as CreatureA_StateRoute; +0x61 / +0x0) */
+/* 0x00329360 */
+void CreatureB_StateRoute(Character *c) {
     creature_route(c, 0x61, 0x0);
 }
 
@@ -2948,11 +2974,12 @@ s32 CreatureB_PlaceInRoom(Character *c, s32 room, u32 tri, s32 mode) {
     return creature_place(c, room, tri, mode, 0x0, 0x50);
 }
 
-extern void func_003250D0(Character *c, u32 tri);
+extern void CreatureB_OnTheWay(Character *c, u32 tri);
 
-/* (as func_002E01C0) the other class's: to the door it chose (+0x66 of its block), its spot
+/* (as CreatureA_StateToDoor) the other class's: to the door it chose (+0x66 of its block), its spot
    (+0x30 of its block) as the target */
-void func_00329270(Character *c) {
+/* 0x00329270 */
+void CreatureB_StateToDoor(Character *c) {
     u8 *k = CR(c);
     VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
@@ -2970,7 +2997,7 @@ void func_00329270(Character *c) {
     tri = VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x66, u8), spot);
     sceVu0CopyVector((f32 *)(k + 0x30), spot);
     c->unk124 = c->unk128;
-    func_003250D0(c, tri);
+    CreatureB_OnTheWay(c, tri);
 }
 
 /* ---- the room creature of kind 0x19 (vtable D_00474130; code 0x3247D0..0x32C240). Its own
@@ -2979,7 +3006,7 @@ void func_00329270(Character *c) {
    flag, +0x63 the door it went by, +0x64 the planner request, +0x65 snapped, +0x66 the door it
    chose, +0x6B flags, bit 0x80 kept). It walks by its animation's root motion. ---- */
 
-s32 func_00325410(Character *c, s32 exit);
+s32 CreatureB_ThroughExit(Character *c, s32 exit);
 
 /* the step this frame: the root motion forward (+z), not backwards */
 static inline f32 cr19_stride(Character *c) {
@@ -3026,9 +3053,10 @@ static inline void cr19_reset(Character *c) {
     cr19_enter(c, 0);
 }
 
-/* (as func_002DF470) on the way to `tri`: while not there the path ahead is looked at (one
+/* (as CreatureA_OnTheWay) on the way to `tri`: while not there the path ahead is looked at (one
    stride; unused); a door on the way (+0x4C bit 0) with an exit +0x100 is gone through */
-void func_003250D0(Character *c, u32 tri) {
+/* 0x003250D0 */
+void CreatureB_OnTheWay(Character *c, u32 tri) {
     u8 *k = CR(c);
 
     if (tri != Actor_TriTo(&c->a, (f32 *)(k + 0x30), NAV_NONE)) {
@@ -3051,12 +3079,13 @@ void func_003250D0(Character *c, u32 tri) {
     }
     if ((VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, c->a.room, (u8)c->unk100) & 0xFFFF) != 0xFFFF) {
         AT(k, 0x65, u8) = 0;
-        func_00325410(c, (u8)c->unk100);
+        CreatureB_ThroughExit(c, (u8)c->unk100);
     }
 }
 
-/* (as func_002DF5B0, its door permissions at +0x1590) head for the first usable door */
-void func_00325220(Character *c) {
+/* (as CreatureA_FirstDoor, its door permissions at +0x1590) head for the first usable door */
+/* 0x00325220 */
+void CreatureB_HeadForDoor(Character *c) {
     u8 *k = CR(c);
     VObject *doors = gDoors, *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
@@ -3077,7 +3106,7 @@ void func_00325220(Character *c) {
             AT(k, 0x66, u8) = d;
             AT(k, 0x4C, u16) = may;
             c->a.unk2B = 1;
-            if (func_003255C0(c, VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x66, u8), at), at, 0) != 0) {
+            if (CreatureB_Path(c, VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, AT(k, 0x66, u8), at), at, 0) != 0) {
                 c->unk124 = c->unk128;
             }
             if (c->unk128 < c->unk124) {
@@ -3092,10 +3121,11 @@ void func_00325220(Character *c) {
     }
 }
 
-/* (as func_002DF760) go through exit `exit` into the next room: its room, side (+0x0) and
+/* (as CreatureA_ThroughExit) go through exit `exit` into the next room: its room, side (+0x0) and
    door (+0x63); off the mesh, out of play; its doors cleared; then reset - stopped, speed 0.7,
    a wait of 150 / 300 / 450 (+0x42), no target. -1: no such exit */
-s32 func_00325410(Character *c, s32 exit) {
+/* 0x00325410 */
+s32 CreatureB_ThroughExit(Character *c, s32 exit) {
     u8 *k = CR(c);
     VObject *rooms;
     u32 d;
@@ -3146,7 +3176,8 @@ void CreatureB_ComeAfterFiona(Character *c, s32 a1, s32 a2) {
 /* (as CreatureA_EnterRoom) the room entered, by its state +0x8: 2 - reset to 0; 1 - in the room
    being played, back on its triangle (or somewhere on its level) with its doors noted (+0x50).
    1 unless state 1 */
-s32 func_00325B60(Character *c) {
+/* 0x00325B60 */
+s32 CreatureB_RoomEntered(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     u32 tri;
@@ -3248,7 +3279,8 @@ void CreatureB_DrawLight(Character *c) {
 
 /* from save slot `slot` (gProgress +0x878, 0x24 each) when in use (+0x12): its timers,
    strength x10, out and its flags, kind, state, heading (+0x1C), +0x28; a rest time when out */
-void func_00324AE0(Character *c, s32 slot) {
+/* 0x00324AE0 */
+void CreatureB_Load(Character *c, s32 slot) {
     u8 *s = (u8 *)gProgress + slot * 0x24 + 0x878;
     u8 *k = CR(c);
     f32 h;
@@ -3324,7 +3356,7 @@ void CreatureB_SetupKind(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 st
     sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
     AT(k, 0x48, s16) = (s16)str * 10;
     if (slot != -1) {
-        func_00324AE0(c, slot);
+        CreatureB_Load(c, slot);
         if (AT(k, 0x69, u8) == 2) {
             cr19_reset(c);
         }
@@ -3347,13 +3379,14 @@ void CreatureB_SetupKind(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 st
     VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, mode);
 }
 
-/* (as func_002DFA50) travelling (unless in an event, flag 0x18): off screen the distance to
+/* (as CreatureA_Travel) travelling (unless in an event, flag 0x18): off screen the distance to
    the next door (+0x14C4) runs down by 0.35; at a door (+0x61) it walks the path at 0.35. On
    arriving at the door (+0x14C0): if the way is open (Progress_ExitOpen, Progress_ExitPassable kind 2)
    and the door isn't shut, through it - into the room being played at the exit's spot facing
    in, its doors noted (+0x50) - else the next leg's distance; a closed way is marked (+0x148C
    bit), the trip ends (+0x68), and without the kind-2 way its state +0x8 is 2 */
-void func_003257B0(Character *c) {
+/* 0x003257B0 */
+void CreatureB_Travel(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     VObject *rooms;
@@ -3402,7 +3435,7 @@ void func_003257B0(Character *c) {
         return;
     }
     AT(k, 0x61, u8) = 0;
-    func_00325410(c, exit);
+    CreatureB_ThroughExit(c, exit);
     if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         f32 at[4] __attribute__((aligned(16)));
         f32 in[4] __attribute__((aligned(16)));
@@ -3448,12 +3481,13 @@ void CreatureB_ActionState(Character *c) {
 }
 
 extern const f32 D_0042C650[17];   /* turns */
-void func_0032B080(Character *c, f32 *pos);
+void CreatureB_TurnToward(Character *c, f32 *pos);
 
 /* a target (+0x30) near Fiona: out to her side (alternately right / left, `dist` + 0..15 away,
    turned by a random table turn after the first), until one is on the mesh off its own
    triangle (17 tries); its triangle (+0x20) */
-u32 func_00325EC0(Character *c, f32 dist) {
+/* 0x00325EC0 */
+u32 CreatureB_TargetNearFiona(Character *c, f32 dist) {
     u8 *k = CR(c);
     VObject *rnd = gRandom;
     f32 tbl[17];
@@ -3485,7 +3519,7 @@ u32 func_00325EC0(Character *c, f32 dist) {
         sceVu0RotMatrixY(m, m, yaw);
         sceVu0ApplyMatrix(d, m, v);
         sceVu0AddVector((f32 *)(k + 0x30), gCharPlayer->a.pos, d);
-        func_0032B080(c, (f32 *)(k + 0x30));
+        CreatureB_TurnToward(c, (f32 *)(k + 0x30));
         yaw = tbl[VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF];
         AT(k, 0x20, u32) = Actor_TriOf(&gCharPlayer->a, (f32 *)(k + 0x30));
         if (Actor_TriTo(&c->a, (f32 *)(k + 0x30), c->pathReq->mask) != NAV_NONE && c->a.navTri != AT(k, 0x20, u32)) {
@@ -3504,7 +3538,8 @@ u32 func_00325EC0(Character *c, f32 dist) {
    (a fresh path when the last is done; none: back to 1) - when Fiona is caught (+0x1AD630)
    and it touches the first character, state 3 unless held (+0x6B bit 0x80) or she is in move
    8; 4 turn to Fiona, and at the end of its animation settle in state 0 or 1 (random), move 2 */
-void func_00326130(Character *c, f32 dist) {
+/* 0x00326130 */
+void CreatureB_Approach(Character *c, f32 dist) {
     u8 *k = CR(c);
     f32 h;
 
@@ -3521,7 +3556,7 @@ void func_00326130(Character *c, f32 dist) {
         if (c->unk128 < c->unk124) {
             return;
         }
-        if (func_00325EC0(c, AT(k, 0x1C, f32)) != NAV_NONE) {
+        if (CreatureB_TargetNearFiona(c, AT(k, 0x1C, f32)) != NAV_NONE) {
             return;
         }
         AT(k, 0x6C, u8) = 1;
@@ -3532,7 +3567,7 @@ void func_00326130(Character *c, f32 dist) {
         if (CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f /* 30 degrees */) {
             AT(k, 0x6C, u8)++;
         } else {
-            func_0032B080(c, (f32 *)(k + 0x30));
+            CreatureB_TurnToward(c, (f32 *)(k + 0x30));
         }
         return;
     case 3:
@@ -3561,7 +3596,7 @@ void func_00326130(Character *c, f32 dist) {
             }
         }
         if (!(c->unk128 < c->unk124)) {
-            if (func_003255C0(c, AT(k, 0x20, u32), (f32 *)(k + 0x30), 0) != 0) {
+            if (CreatureB_Path(c, AT(k, 0x20, u32), (f32 *)(k + 0x30), 0) != 0) {
                 AT(k, 0x6C, u8) = 1;
                 return;
             }
@@ -3573,7 +3608,7 @@ void func_00326130(Character *c, f32 dist) {
     case 4:
         h = Actor_HeadingTo(&c->a, gCharPlayer->a.pos);
         if (!(CR19_TURN_LEFT(c, h) < 0x1.0c1524p-1f)) {
-            func_0032B080(c, gCharPlayer->a.pos);
+            CreatureB_TurnToward(c, gCharPlayer->a.pos);
             return;
         }
         if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
@@ -3605,11 +3640,12 @@ static inline void cr19_root_move(Character *c) {
 /* state: held off - it moves by its animation, facing Fiona; when she is no longer across the
    room's divider from it, back to state 0. Otherwise it alternates idles 0 and 0x1C00 (+0x6C)
    every 90 frames (+0x40, +0x60 started) */
-void func_00326680(Character *c) {
+/* 0x00326680 */
+void CreatureB_StateHeldOff(Character *c) {
     u8 *k = CR(c);
 
     cr19_root_move(c);
-    func_0032B080(c, gCharPlayer->a.pos);
+    CreatureB_TurnToward(c, gCharPlayer->a.pos);
     AT(k, 0x40, s16)++;
     if (!NavMesh_AcrossDivider(gNavMesh, gCharPlayer->a.navTri, c->a.navTri)) {
         cr19_reset(c);
@@ -3643,7 +3679,8 @@ void func_00326680(Character *c) {
 
 /* a door of the room it may use (+0x1590 by slot) whose way isn't shut for kind 2 (state bit
    4): state 5 */
-void func_00326950(Character *c) {
+/* 0x00326950 */
+void CreatureB_StateDoor(Character *c) {
     VObject *doors = gDoors;
     Progress *p = gProgress;
     u32 d;
@@ -3665,7 +3702,8 @@ void func_00326950(Character *c) {
 
 /* state: Fiona in sight (Actor_CanWalkBetween) - back to state 0; across the room's divider from her
    - state 0x12; else its approach at 10 */
-void func_00326AF0(Character *c) {
+/* 0x00326AF0 */
+void CreatureB_StateFionaInSight(Character *c) {
     if ((Actor_CanWalkBetween(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF) == 1) {
         cr19_reset(c);
         return;
@@ -3674,12 +3712,13 @@ void func_00326AF0(Character *c) {
         cr19_enter(c, 0x12);
         return;
     }
-    func_00326130(c, 10.0f);
+    CreatureB_Approach(c, 10.0f);
 }
 
 /* by the progress: flag 9 - state 9 in move 2; flag 10, or Fiona free (+0x2D, +0xE0 clear) -
    state 5 */
-void func_00326DA0(Character *c) {
+/* 0x00326DA0 */
+void CreatureB_StateByProgress(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
 
@@ -3707,14 +3746,15 @@ static inline void cr19_face_fiona(Character *c) {
     if (CR19_TURN_LEFT(c, h) < 0x1.6571860p-2f /* 20 degrees */) {
         cr19_enter(c, 5);
     } else {
-        func_0032B080(c, gCharPlayer->a.pos);
+        CreatureB_TurnToward(c, gCharPlayer->a.pos);
     }
 }
 
 /* by step +0x6C: 0 walk (out of contact, +0x2D) to its spot - triangle 0xE in room 0x8F, in
    room 0x91 0xD0 / 0x9F for kinds 8 / 9 (^ 0x80) - and on arriving block 0x4020028 again;
    1 turn to Fiona (state 5) */
-void func_00327030(Character *c) {
+/* 0x00327030 */
+void CreatureB_StateWalkSpot(Character *c) {
     u8 *k = CR(c);
     f32 at[4] __attribute__((aligned(16)));
     u32 tri = 0;   /* (the original's register was left as it came in other rooms) */
@@ -3734,7 +3774,7 @@ void func_00327030(Character *c) {
             tri = 0xE;
         }
         VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, tri, at);
-        if (func_003255C0(c, tri, at, 0) != 0) {
+        if (CreatureB_Path(c, tri, at, 0) != 0) {
             return;
         }
         if (Character_FollowWaypointsBlocked(c, cr19_stride(c)) != 0) {
@@ -3752,24 +3792,27 @@ void func_00327030(Character *c) {
 }
 
 /* state: turn to Fiona (then state 5) */
-void func_003272E0(Character *c) {
+/* 0x003272E0 */
+void CreatureB_StateTurnToFiona(Character *c) {
     cr19_face_fiona(c);
 }
 
 /* state: with Fiona caught (+0x1AD630) its approach at 20, else state 5 */
-void func_00327450(Character *c) {
+/* 0x00327450 */
+void CreatureB_StateFionaCaught(Character *c) {
     if (AT(gCharPlayer, 0x1AD630, u8) == 0) {
         cr19_enter(c, 5);
         return;
     }
-    func_00326130(c, 20.0f);
+    CreatureB_Approach(c, 20.0f);
 }
 
 /* state: knocked down, by step +0x60: 0 animation 0x1001 while its fall +0x28 runs down
    (+0x2C, 0.085 faster each frame), then a thud (sound 5); 1 after its animation and 32
    frames; 2 animation 0x1800; 3 getting up (a sound at frame 34, moved by its animation), at
    its end back in contact in state 5 */
-void func_00327540(Character *c) {
+/* 0x00327540 */
+void CreatureB_StateKnockedDown(Character *c) {
     u8 *k = CR(c);
 
     switch (AT(k, 0x60, u8)) {
@@ -3810,27 +3853,30 @@ void func_00327540(Character *c) {
 }
 
 /* state: Fiona on a triangle it may not stand on - its approach at 5; else back to state 0 */
-void func_003277C0(Character *c) {
+/* 0x003277C0 */
+void CreatureB_StateFionaOffMesh(Character *c) {
     if (NavMesh_TriFlags(gNavMesh, gCharPlayer->a.navTri) & 0x4020028) {
-        func_00326130(c, 5.0f);
+        CreatureB_Approach(c, 5.0f);
         return;
     }
     cr19_reset(c);
 }
 
 /* state: with progress flag 9 its approach at 20, else back to state 0 */
-void func_003278F0(Character *c) {
+/* 0x003278F0 */
+void CreatureB_StateFlag9(Character *c) {
     if (Progress_TestFlag(gProgress, 9) != 0) {
-        func_00326130(c, 20.0f);
+        CreatureB_Approach(c, 20.0f);
         return;
     }
     cr19_reset(c);
 }
 
-/* (as func_002DFF70) when it can walk straight at `goal` on Fiona's triangle, it drops its
+/* (as CreatureA_StraightAtFiona) when it can walk straight at `goal` on Fiona's triangle, it drops its
    path and does (by its root motion) unless within 2 (+0x24); on another level it gives up
    (+0x6A) after 30 tries close by (+0xC) unless on her triangle. Her triangle, -1 if not */
-s32 func_003279F0(Character *c, f32 *goal) {
+/* 0x003279F0 */
+s32 CreatureB_StraightAt(Character *c, f32 *goal) {
     u8 *k = CR(c);
     u32 t = Actor_TriTo(&c->a, goal, c->pathReq->mask);
 
@@ -3867,7 +3913,8 @@ s32 func_003279F0(Character *c, f32 *goal) {
 
 /* state: leaving - moved by its animation; out of contact it is gone at once; at frame 65 a
    sound (0xA), at its animation's end gone; its fade +0x71 runs down by 2 (to 0 under 10) */
-void func_00327B70(Character *c) {
+/* 0x00327B70 */
+void CreatureB_StateLeaving(Character *c) {
     u8 *k = CR(c);
     u8 f;
 
@@ -3895,11 +3942,12 @@ void func_00327B70(Character *c) {
 
 /* state: with progress flag 9, or Fiona in move 4 / 3, its approach at 10; else its flags
    cleared and state 5 */
-void func_00327CA0(Character *c) {
+/* 0x00327CA0 */
+void CreatureB_StateApproach10(Character *c) {
     u8 *k = CR(c);
 
     if (Progress_TestFlag(gProgress, 9) != 0 || AT(gCharPlayer, 0xF8, s32) == 4 || AT(gCharPlayer, 0xF8, s32) == 3) {
-        func_00326130(c, 10.0f);
+        CreatureB_Approach(c, 10.0f);
         return;
     }
     AT(k, 0x6B, u8) = 0;
@@ -3916,7 +3964,8 @@ extern const f32 D_0042C610[4][4];   /* where it grabs from, around Fiona */
    end sounds 9 and 4, animation 0x1901. 2: sounds every 35 / 70 frames; released - animation
    0x1902, the threat up 75, a noise. 3: moved by its animation; at its end out of contact,
    held (+0x6B bit 0x80) in state 4, move 4 */
-void func_00327DD0(Character *c) {
+/* 0x00327DD0 */
+void CreatureB_StateGrab(Character *c) {
     u8 *k = CR(c);
     f32 tbl[4][4] __attribute__((aligned(16)));
     f32 off[4] __attribute__((aligned(16)));
@@ -3973,7 +4022,7 @@ void func_00327DD0(Character *c) {
             if (NavMesh_TriFlags(gNavMesh, tri) & 0x4020038) {
                 return;
             }
-            if (func_003255C0(c, tri, at, 0) != 0) {
+            if (CreatureB_Path(c, tri, at, 0) != 0) {
                 return;
             }
         }
@@ -4042,7 +4091,8 @@ void func_00327DD0(Character *c) {
    and sound 3. 1: out of contact; at its end, with no strength left (+0x14C8) held in state 4,
    else 30 frames. 2: animation 0x1800. 3: getting up (a sound at frame 34), at its end back in
    contact in state 0xD */
-void func_003284F0(Character *c) {
+/* 0x003284F0 */
+void CreatureB_StateHit(Character *c) {
     u8 *k = CR(c);
     f32 h = 0.0f;   /* (other hit sources leave the original's register as it was) */
 
@@ -4123,7 +4173,7 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
     u8 *k = CR(c);
 
     cr19_root_move(c);
-    func_0032B080(c, gCharPlayer->a.pos);
+    CreatureB_TurnToward(c, gCharPlayer->a.pos);
     if (sound && AT(k, 0x40, s16) % 44 == 0) {
         Actor_PlaySound(&c->a, 2, 5, 0, 0, NULL);
     }
@@ -4171,22 +4221,24 @@ static inline void cr19_watch(Character *c, s32 sound, u8 other) {
     cr19_settle(c);
 }
 
-void func_00328960(Character *c) {
+/* 0x00328960 */
+void CreatureB_StateWatch1(Character *c) {
     cr19_watch(c, 1, 0);
 }
 
-void func_00328E00(Character *c) {
+/* 0x00328E00 */
+void CreatureB_StateWatch0(Character *c) {
     cr19_watch(c, 0, 1);
 }
 
-/* +0x38 the room is entered (func_00325B60); in the room being played it is in play (off the
+/* +0x38 the room is entered (CreatureB_RoomEntered); in the room being played it is in play (off the
    mesh: somewhere on its level, state 0), else not */
 /* 0x0032AA50 */
 void CreatureB_EnterRoom(Character *c) {
     u8 *k = CR(c);
     s32 room;
 
-    func_00325B60(c);
+    CreatureB_RoomEntered(c);
     room = c->a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         if (c->a.navTri == NAV_NONE) {
@@ -4257,7 +4309,8 @@ void CreatureB_Cleanup(Character *c) {
    rate) and its sway +0x14 grows by 14 x that; once the turn is done (Actor_TurnToward 0) the
    phase mirrors past 90 and +0x18 is 8. (At 180 and over - never, as it restarts - it would
    snap to the heading.) */
-void func_0032B080(Character *c, f32 *at) {
+/* 0x0032B080 */
+void CreatureB_TurnToward(Character *c, f32 *at) {
     static const union { u32 u; f32 f; } k14deg = {0x3E7A35DE}, kPi = {0x40490FDB};
     u8 *k = CR(c);
     f32 s, r, h, ph;
@@ -4293,7 +4346,8 @@ void func_0032B080(Character *c, f32 *at) {
 /* 1 when it notices someone: Fiona reachable on her triangle within `fiona` of its sight
    (+0x48); Hewie up in its room, reachable on his, within 30 at `hewie` (>= 0); an action 4 on
    it (not in move 4); or no sight at all */
-s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
+/* 0x0032A0E0 */
+s32 CreatureB_Notices(Character *c, f32 fiona, f32 hewie) {
     u8 *k = CR(c);
     Character *h;
 
@@ -4313,7 +4367,8 @@ s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
 
 /* its footsteps while walking (animation 0x200), in play: sounds 6 / 7 as each foot comes
    down (+0x73 / +0x72 last frame's) */
-void func_0032AF00(Character *c) {
+/* 0x0032AF00 */
+void CreatureB_Footsteps(Character *c) {
     u8 *k = CR(c);
     f32 l[4] __attribute__((aligned(16)));
     f32 r[4] __attribute__((aligned(16)));
@@ -4374,23 +4429,23 @@ void CreatureB_Draw(Character *c) {
     VCALL(c->motion, 0x38, void (*)(void *, s32, u32, s32))(c->motion, c->unk152C, c->a.navTri, 0);
 }
 
-void func_0032A550(Character *c);
-void func_0032B210(Character *c, u8 st);
+void CreatureB_States(Character *c);
+void CreatureB_SetState(Character *c, u8 st);
 
-/* +0x30 its frame: doors noted (+0x50), func_0032A550; out on a trip (+0x6F): out of contact
+/* +0x30 its frame: doors noted (+0x50), CreatureB_States; out on a trip (+0x6F): out of contact
    it travels (unless held, +0x6B bit 0x80, and when the room entry allows), in play turned by
-   its animation with +0x84, footsteps and its state's choice (func_0032B210 with +0x62); then
+   its animation with +0x84, footsteps and its state's choice (CreatureB_SetState with +0x62); then
    its state (+0xA0) and the model (+0x40) */
 /* 0x0032BB50 */
 void CreatureB_Frame(Character *c) {
     u8 *k = CR(c);
 
     creature_at_doors(c, 0x50);
-    func_0032A550(c);
+    CreatureB_States(c);
     if (AT(k, 0x6F, u8) != 0) {
         if (c->a.disabled != 0) {
-            if (!(AT(k, 0x6B, u8) & 0x80) && func_00325B60(c) != 0) {
-                func_003257B0(c);
+            if (!(AT(k, 0x6B, u8) & 0x80) && CreatureB_RoomEntered(c) != 0) {
+                CreatureB_Travel(c);
             }
         } else {
             f32 h = Angle_Wrap(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
@@ -4399,8 +4454,8 @@ void CreatureB_Frame(Character *c) {
             sceVu0UnitMatrix(c->a.rot);
             sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
             VCALL(c, 0x84, void (*)(Character *))(c);
-            func_0032AF00(c);
-            func_0032B210(c, AT(k, 0x62, u8));
+            CreatureB_Footsteps(c);
+            CreatureB_SetState(c, AT(k, 0x62, u8));
         }
     }
     ptmf_scall(c, &c->a.state);
@@ -4408,11 +4463,12 @@ void CreatureB_Frame(Character *c) {
 }
 
 /* per frame, in the room being played: how far Fiona (+0x24) and Hewie are (across the floor).
-   Not out (+0x6E): resting (+0x28 0) it notices them (func_0032A0E0) - a sound, out on its
+   Not out (+0x6E): resting (+0x28 0) it notices them (CreatureB_Notices) - a sound, out on its
    trip (+0x6F) in state 0xD (0xE for kinds 8 / 9); else (still settling) out of contact until
    the trip, which starts once it notices Fiona. Out: its rest +0x4A runs down, and done
    elsewhere it starts its trip */
-void func_0032A260(Character *c) {
+/* 0x0032A260 */
+void CreatureB_Distances(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     f32 hd = 0.0f;
@@ -4432,7 +4488,7 @@ void func_0032A260(Character *c) {
         }
         if (AT(k, 0x6E, u8) == 0) {
             if (AT(k, 0x28, f32) == 0.0f) {
-                if ((func_0032A0E0(c, AT(k, 0x24, f32), hd) & 0xFF) == 1 && AT(k, 0x6F, u8) == 0) {
+                if ((CreatureB_Notices(c, AT(k, 0x24, f32), hd) & 0xFF) == 1 && AT(k, 0x6F, u8) == 0) {
                     u32 kk;
 
                     Actor_PlaySound(&c->a, 1, 5, 0, 0, NULL);
@@ -4450,7 +4506,7 @@ void func_0032A260(Character *c) {
                 if (AT(k, 0x6F, u8) == 0) {
                     c->a.unk2D = 1;
                 }
-                if ((func_0032A0E0(c, AT(k, 0x24, f32), -1.0f) & 0xFF) == 1) {
+                if ((CreatureB_Notices(c, AT(k, 0x24, f32), -1.0f) & 0xFF) == 1) {
                     AT(k, 0x6F, u8) = 1;
                 }
             }
@@ -4480,11 +4536,12 @@ extern const PTMF D_0042C5E0, D_0042C5F0, D_0042C600;
    shut - 6. Elsewhere out of contact, timed out it is held (+0x6B bit 0x80): its state
    D_0042C5E0, held D_0042C5F0. Not on its trip: placed on its triangle once in the room being
    played, state D_0042C600 */
-void func_0032A550(Character *c) {
+/* 0x0032A550 */
+void CreatureB_States(Character *c) {
     u8 *k = CR(c);
     Progress *p;
 
-    func_0032A260(c);
+    CreatureB_Distances(c);
     if (AT(k, 0x6F, u8) == 0) {
         p = gProgress;
         if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && c->a.navTri != NAV_NONE && AT(k, 0x6C, u8) == 0) {
@@ -4513,7 +4570,7 @@ void func_0032A550(Character *c) {
     }
     c->a.disabled = 0;
     if (AT(k, 0x68, u8) == 0) {
-        func_00325220(c);
+        CreatureB_HeadForDoor(c);
     }
     if (AT(k, 0x65, u8) == 1) {
         if (!(Progress_ExitOpen(p, c->a.room, AT(k, 0x66, u8)) & 0xFF)) {
@@ -4588,7 +4645,7 @@ void CreatureB_FionaLeft(Character *c, u32 exit) {
     if (e != 0xFF) {
         u32 tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, exit, at);
 
-        if (func_003255C0(c, tri, at, 1) == 0) {
+        if (CreatureB_Path(c, tri, at, 1) == 0) {
             AT(k, 0x70, u8) = 0;
             AT(k, 0x61, u8) = 1;
         }
@@ -4604,7 +4661,7 @@ void CreatureB_FionaLeft(Character *c, u32 exit) {
                 continue;
             }
             tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, d, at);
-            if (func_003255C0(c, tri, at, 1) == 0) {
+            if (CreatureB_Path(c, tri, at, 1) == 0) {
                 AT(k, 0x70, u8) = 0;
                 break;
             }
@@ -4773,7 +4830,8 @@ static inline void cr19_first(Character *c, s32 anim) {
 /* its state for the choice `st` (+0x62): the state function (+0xA0), with the state's first
    animation. State 4 (leaving): out of contact; on its first frame animation 0x1801, faded
    from 0xFF on layer 0xF unless already lit there, and its going effect at it */
-void func_0032B210(Character *c, u8 st) {
+/* 0x0032B210 */
+void CreatureB_SetState(Character *c, u8 st) {
     u8 *k = CR(c);
 
     switch (st) {
@@ -4887,12 +4945,13 @@ static inline void cr19_enter_move(Character *c, u8 st, s32 move) {
 /* state: after Fiona. Progress flag 9 - state 9 (move 2); Fiona caught - 0xC (move 2); Fiona out
    of contact or busy (+0x2D / +0xE0) without flag 10 - 0xF; a door it may use shut for kind 2
    - 0x11; across the room's divider from her - 0x12. Else facing her: her in move 4 / 3 -
-   state 7 (+0x6B bit 0x40). It walks straight at her when it can (func_003279F0, unless given
+   state 7 (+0x6B bit 0x40). It walks straight at her when it can (CreatureB_StraightAt, unless given
    up, +0x6A); during an event (flag 0x18) elsewhere or with her busy - 9. Within 10 and on her
    triangle (not in state 3, held, or her move 8) it grabs (state 3). Without a straight way it
    walks its path to her (re-planned when done; her triangle blocked - 0xA; unplannable and out
    of sight - 0x10). At 40..80 from her, every +0x42 frames it settles in state 0 or 1 */
-void func_00329440(Character *c) {
+/* 0x00329440 */
+void CreatureB_StateAfterFiona(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     VObject *doors;
@@ -4932,7 +4991,7 @@ void func_00329440(Character *c) {
         return;
     }
     AT(k, 0x68, u8) = 0;
-    func_0032B080(c, gCharPlayer->a.pos);
+    CreatureB_TurnToward(c, gCharPlayer->a.pos);
     if (AT(gCharPlayer, 0xF8, s32) == 4 || AT(gCharPlayer, 0xF8, s32) == 3) {
         AT(k, 0x6B, u8) |= 0x40;
         cr19_enter(c, 7);
@@ -4941,7 +5000,7 @@ void func_00329440(Character *c) {
     AT(k, 0x40, s16)++;
     t = -1;
     if (AT(k, 0x6A, u8) == 0) {
-        t = func_003279F0(c, gCharPlayer->a.pos);
+        t = CreatureB_StraightAt(c, gCharPlayer->a.pos);
     }
     if (Progress_TestFlag(p, 0x18) != 0) {
         if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p) || AT(gCharPlayer, 0xE0, u8) != 0) {
@@ -4965,7 +5024,7 @@ void func_00329440(Character *c) {
                 cr19_enter(c, 0xA);
                 return;
             }
-            if (func_003255C0(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
+            if (CreatureB_Path(c, gCharPlayer->a.navTri, gCharPlayer->a.pos, 0) != 0) {
                 if (!(Actor_CanWalkBetween(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
                     cr19_enter(c, 0x10);
                 }
@@ -4994,7 +5053,8 @@ void func_00329440(Character *c) {
     cr19_settle(c);
 }
 
-void func_0032A0D0(void) {
+/* 0x0032A0D0 */
+void CreatureB_StateNone(void) {
 }
 
 /* ---- D_004795E0 (0x2920 bytes, Cr19Gone_Init): what the kind-0x19 creature leaves when it
@@ -5011,7 +5071,8 @@ extern void *D_00472BF0[];
 
 /* drop `i` thrown up from within 2 of the spot (lower the later, frame `t`), 2.5..3 big,
  * flying outward and up, faster the later */
-void func_003592E0(u8 *o, s32 i, s32 t) {
+/* 0x003592E0 */
+void Cr19Bubbles_Drop(u8 *o, s32 i, s32 t) {
     static const union { u32 u; f32 f; } k4 = {0x40800000}, k001 = {0x3C23D70A}, k360 = {0x43B40000},
                                          kPi = {0x40490FDB};   /* multiplied first */
     VObject *rnd = gRandom;
@@ -5039,7 +5100,8 @@ void func_003592E0(u8 *o, s32 i, s32 t) {
 
 /* bubble `i` (re)started within 3 x its size of the spot, two sizes up, drifting out and
  * rising 0.03..0.06 */
-void func_00359570(u8 *o, s32 i) {
+/* 0x00359570 */
+void Cr19Bubbles_Bubble(u8 *o, s32 i) {
     static const union { u32 u; f32 f; } k6 = {0x40C00000}, k003 = {0x3CF5C28F}, k360 = {0x43B40000},
                                          kPi = {0x40490FDB};   /* multiplied first */
     VObject *rnd = gRandom;
@@ -5231,7 +5293,7 @@ s32 Cr19Bubbles_Update(u8 *o) {
                 }
             }
             r->h = r->w;
-            func_00359570(o, i);
+            Cr19Bubbles_Bubble(o, i);
             n++;
             done = 0;
             if (n >= 4) {
@@ -5282,7 +5344,7 @@ s32 Cr19Bubbles_Update(u8 *o) {
     }
     for (i = 0; i < 32; i++) {
         if (GONE_DROP(o, AT(o, 0x2910, s32), i)->rgba[3] == 0 && (u32)AT(o, 0x2914, s32) < 150) {
-            func_003592E0(o, i, AT(o, 0x2914, s32));
+            Cr19Bubbles_Drop(o, i, AT(o, 0x2914, s32));
             done = 0;
             break;
         }

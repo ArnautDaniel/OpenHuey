@@ -1562,7 +1562,7 @@ void Progress_ResetParts(Progress *p) {
 
     Message_ClearAll((VObject *)((u8 *)p + 0x6FC218));
     VCALL(o, 0x24, void (*)(VObject *))(o);
-    func_002E2920((u8 *)p + 0x706440);
+    Creatures_RemoveAll((u8 *)p + 0x706440);
 }
 
 /* ---- movies ---- */

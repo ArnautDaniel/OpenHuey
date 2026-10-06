@@ -727,7 +727,7 @@ void SceneGame_EnterRoom(Scene *g) {
                 continue;
             }
             mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
-            o = func_002E2330(0x1600, mem);
+            o = Creature_new(0x1600, mem);
             if (o != NULL) {
                 o = (i < 7) ? CreatureA_ctor(o) : CreatureB_ctor(o);
             }
@@ -1050,7 +1050,7 @@ void SceneGame_SubPlay(Scene *g) {
                     AT(gCharacters[i], 0xE8, s32) = -1;
                 }
             }
-            func_002E26C0((u8 *)g + 0x706480, AT(g, 0xF6CD20, u8));
+            Creatures_FionaLeft((u8 *)g + 0x706480, AT(g, 0xF6CD20, u8));
             AT(g, 0xF6CD20, u8) = 0xFF;
             VCALL(gDoors, 0x5C, void (*)(void *))(gDoors);
             ((void (*)(void *, s32))RoomMgr_Leave)(rooms, AT(g, 0xF6C1B0, s32));
@@ -1072,7 +1072,7 @@ void SceneGame_SubPlay(Scene *g) {
                     VCALL(gCharacters[i], 0x40, void (*)(void *))(gCharacters[i]);
                 }
             }
-            func_002E2740((u8 *)g + 0x706480);
+            Creatures_Call40((u8 *)g + 0x706480);
             Events_RunPhase((u8 *)ev, 3);
             CamDirector_Update(cam);
             *flags |= 1;
@@ -1728,7 +1728,7 @@ void *CreatureA_ctor(void *o) {
  * slots 7..9; its memory block (NULL: none) */
 static inline __attribute__((always_inline)) u8 *creature_new(u8 *cr, u32 k, s32 other) {
     u8 *mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
-    u8 *o = func_002E2330(0x1600, mem);
+    u8 *o = Creature_new(0x1600, mem);
 
     if (o != NULL) {
         o = other ? CreatureB_ctor(o) : CreatureA_ctor(o);
@@ -1801,7 +1801,7 @@ void SceneGame_PlaceCreature(Scene *g, u32 room, s32 tri, s32 a3, u32 flags, s32
         u8 *o;
 
         mem = ((u8 *(*)(u8 *, s32))AT(AT(cr, 0x28, u8 *), 0x8, void *))(cr, 0x1600);
-        o = func_002E2330(0x1600, mem);
+        o = Creature_new(0x1600, mem);
         if (o != NULL) {
             o = CreatureA_ctor(o);
         }
@@ -1870,7 +1870,7 @@ void SceneGame_RoomCreatures(Scene *g) {
         }
         k = pick(m);
         mem = VCALL_AT(pool, 0x28, 0x8, void *(*)(void *, u32))(pool, 0x1600);
-        o = func_002E2330(0x1600, mem);
+        o = Creature_new(0x1600, mem);
         if (o != NULL) {
             o = alt ? CreatureB_ctor(o) : CreatureA_ctor(o);
         }
@@ -2433,7 +2433,7 @@ void SceneGame_OnSoftReset(u8 *g) {
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 2);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 1);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 0);
-    func_002E27B0(g + 0x706480);
+    Creatures_ShowMessage(g + 0x706480);
     Progress_ResetParts((Progress *)(g + 0x40));
     RoomMgr_Clear(g + 0x73EE80);
     Lights_ReleaseVram(g + 0xF6C1C0);
@@ -2825,7 +2825,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     Obj46A9C0_dtor(g + 0x73EBA0, -1);
     Obj46A9B0_dtor(g + 0x73EB40, -1);
     Creatures_dtor(g + 0x706480, -1);
-    func_002D0EE0(g + 0x6FC380, -1);
+    PlacedThings_Destroy(g + 0x6FC380, -1);
     Message_dtor(g + 0x6FC258, -1);
     Heap_dtor((Heap *)(g + 0x6FBF40), -1);
     NoVtable_dtor(g + 0x48, -1);

@@ -16,8 +16,8 @@ typedef struct B0_Pool {
 } B0_Pool;
 
 /* placed.c */
-extern void *func_00120D60(B0_Pool *p, u32 i);   /* the pool's object i (NULL if free) */
-extern void *func_002D0EE0(u8 *m, s32 flags);
-extern void func_00120F90(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front);
+extern void *BlockPool_ElemAt(B0_Pool *p, u32 i);   /* the pool's object i (NULL if free) */
+extern void *PlacedThings_Destroy(u8 *m, s32 flags);
+extern void Thing_Place(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front);
 
 #endif /* PLACED_H */

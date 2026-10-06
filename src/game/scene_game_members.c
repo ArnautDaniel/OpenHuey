@@ -3050,7 +3050,7 @@ void PlacedThings_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
-        VObject *a = func_00120D60((B0_Pool *)(o + 0xA040), i);
+        VObject *a = BlockPool_ElemAt((B0_Pool *)(o + 0xA040), i);
 
         if (a == NULL) {
             continue;
@@ -3249,7 +3249,7 @@ void PlacedThings_Draw(u8 *o) {
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     room = VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress);
     for (i = 0; i < 0x80; i++) {
-        VObject *a = func_00120D60((B0_Pool *)(o + 0xA040), i);
+        VObject *a = BlockPool_ElemAt((B0_Pool *)(o + 0xA040), i);
 
         if (a != NULL && AT(a, 0x28, u8) == 1 && AT(a, 0x30, s32) == room) {
             VCALL(a, 0x2C, void (*)(VObject *))(a);

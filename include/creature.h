@@ -5,10 +5,10 @@
 #include "common.h"
 
 /* creature.c */
-extern void *func_002E2330(u32 size, void *place);   /* placement new */
-extern void func_002E26C0(u8 *m, s32 exit);
-extern void func_002E2740(u8 *m);
-extern void func_002E27B0(u8 *m);
-extern void func_002E2920(u8 *m);
+extern void *Creature_new(u32 size, void *place);   /* placement new */
+extern void Creatures_FionaLeft(u8 *m, s32 exit);
+extern void Creatures_Call40(u8 *m);
+extern void Creatures_ShowMessage(u8 *m);
+extern void Creatures_RemoveAll(u8 *m);
 
 #endif /* CREATURE_H */
