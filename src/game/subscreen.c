@@ -3693,3 +3693,120 @@ void func_0038FBE0(SubScreen *s) {
         }
     }
 }
+
+/* ---- the extras menu ---- */
+
+#define EXTRA_COUNT(s) SUB_PAGE(s, 0x6, u8)   /* the entries (page[0..]: which ones, 0..5) */
+#define EXTRA_CUR(s) SUB_PAGE(s, 0x7, u8)
+
+/* state: the extras menu (kind 0x80) - up / down round the entries; the frames (one longer
+ * per entry past three); for the entry under the cursor its picture (the extras' frame for 0;
+ * the difficulties' (1..4) with their three best times) and its note; cancel leaves (var
+ * 0x2E none), confirm on a difficulty or the last entry picks it (var 0x2E: 0..3, 0xFF) */
+void func_003894F0(SubScreen *s) {
+    Task *t = &s->text;
+    s32 i;
+    u8 e;
+
+    if (D_0047E36C & MENU_UP) {
+        Sound_PlaySE(SE_CURSOR);
+        if (EXTRA_CUR(s) == 0) {
+            EXTRA_CUR(s) = EXTRA_COUNT(s) - 1;
+        } else {
+            EXTRA_CUR(s) = EXTRA_CUR(s) - 1;
+        }
+    } else if (D_0047E36C & MENU_DOWN) {
+        Sound_PlaySE(SE_CURSOR);
+        EXTRA_CUR(s) = EXTRA_CUR(s) + 1;
+        if (EXTRA_CUR(s) == EXTRA_COUNT(s)) {
+            EXTRA_CUR(s) = 0;
+        }
+    }
+    SubScreen_DrawPart(s, 0x40, 0x10, 0x1D, 0x80, 1);
+    SubScreen_DrawPart(s, 0, 0x40, 0x20, 0x80, 1);
+    SubScreen_DrawPart(s, 0, 0x70, 0x21, 0x80, 1);
+    SubScreen_DrawPart(s, 0, 0x90, 0x21, 0x80, 1);
+    SubScreen_DrawPart(s, 0, 0xB0, 0x21, 0x80, 1);
+    switch (EXTRA_COUNT(s)) {
+    case 4:
+        SubScreen_DrawPart(s, 0, 0xD0, 0x22, 0x80, 1);
+        break;
+    case 5:
+        SubScreen_DrawPart(s, 0, 0xD0, 0x21, 0x80, 1);
+        SubScreen_DrawPart(s, 0, 0xF0, 0x22, 0x80, 1);
+        break;
+    case 6:
+        SubScreen_DrawPart(s, 0, 0xD0, 0x21, 0x80, 1);
+        SubScreen_DrawPart(s, 0, 0xF0, 0x21, 0x80, 1);
+        SubScreen_DrawPart(s, 0, 0x110, 0x22, 0x80, 1);
+        break;
+    }
+    e = SUB_PAGE(s, EXTRA_CUR(s), u8);
+    if (e == 0) {
+        SubScreen_DrawPart(s, 0x160, 0x40, 0x23, 0x80, 1);
+        SubScreen_DrawPart(s, 0xC0, 0x40, 0x24, 0x80, 1);
+        for (i = 0; i < 6; i++) {
+            SubScreen_DrawPart(s, 0x160, 0x80 + i * 0x20, 0x25, 0x80, 1);
+        }
+        SubScreen_DrawPart(s, 0x160, 0x140, 0x27, 0x80, 1);
+        for (i = 0; i < 6; i++) {
+            SubScreen_DrawPart(s, 0xC0, 0x80 + i * 0x20, 0x26, 0x80, 1);
+        }
+        SubScreen_DrawPart(s, 0xC0, 0x140, 0x28, 0x80, 1);
+        SubScreen_DrawPart(s, 0x160, 0x150, 0x29, 0x80, 1);
+        SubScreen_DrawPart(s, 0xC0, 0x150, 0x2A, 0x80, 1);
+    } else if (e < 5) {
+        SubScreen_DrawPart(s, 0xC0, 0x40, e == 1 || e == 3 ? 0x1E : 0x1F, 0x80, 1);
+        SubScreen_DrawPart(s, 0xC0, 0x140, 0x20, 0x80, 1);
+        SubScreen_DrawPart(s, 0xC0, 0x170, 0x21, 0x80, 1);
+        SubScreen_DrawPart(s, 0xC0, 0x190, 0x22, 0x80, 1);
+        Task_PrintfEx(t, 0xE0, 0x15A, 0, 0x80, 0x33, D_00464018);
+        Task_PrintfEx(t, 0xE0, 0x172, 0, 0x80, 0x33, D_00464020);
+        Task_PrintfEx(t, 0xE0, 0x18A, 0, 0x80, 0x33, D_00464028);
+    }
+    for (i = 0; i < EXTRA_COUNT(s); i++) {
+        u8 k = SUB_PAGE(s, i, u8);
+
+        if (k < 6) {
+            Task_ShowText(t, 0x20, 0x68 + i * 0x20, EXTRA_CUR(s) == i ? 2 : 0, Task_MessageText(t, 0x60 + k), 0x80,
+                          0x33, 0x10, 0x15);
+        }
+    }
+    e = SUB_PAGE(s, EXTRA_CUR(s), u8);
+    if (e == 0) {
+        Task_ShowText(t, 0xE0, 0x68, 0, Task_MessageText(t, 0x66), 0x80, 0x33, 0x10, 0x15);
+    } else if (e < 5) {
+        Task_ShowText(t, 0xE0, 0x70, 0, Task_MessageText(t, 0x66 + e), 0x80, 0x33, 0x10, 0x15);
+    }
+    e = SUB_PAGE(s, EXTRA_CUR(s), u8);
+    if (e >= 1 && e <= 4) {
+        u8 *rec = (u8 *)D_0044E978 + (e - 1) * 12;
+
+        for (i = 0; i < 3; i++, rec += 4) {
+            u8 m = rec[0x3C], sec = rec[0x3D], f = rec[0x3E];
+
+            if (m == 99 && sec == 59 && f == 59) {
+                Task_PrintfEx(t, 0x121, 0x15A + i * 0x18, 0, 0x80, 0x33, D_00464040);
+            } else {
+                Task_PrintfEx(t, 0x124, 0x15A + i * 0x18, 0, 0x80, 0x33, D_00464030, sec, f);
+            }
+        }
+    }
+    if (!s->fading) {
+        if (D_0047E36C & MENU_CANCEL) {
+            Sound_PlaySE(SE_CANCEL);
+            Progress_SetFlag(gProgress, 4);
+            Progress_SetVar(gProgress, 0x2E, 0xFF);
+        } else if (D_0047E36C & MENU_CONFIRM) {
+            e = SUB_PAGE(s, EXTRA_CUR(s), u8);
+            if (e >= 1 && e <= 5) {
+                Progress *p;
+
+                Sound_PlaySE(SE_DECIDE);
+                p = gProgress;
+                Progress_SetFlag(p, 4);
+                Progress_SetVar(p, 0x2E, e == 5 ? 0xFF : e - 1);
+            }
+        }
+    }
+}
