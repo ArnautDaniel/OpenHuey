@@ -1,6 +1,5 @@
 /* Window and presentation: an SDL3 window with an OpenGL 4.6 core context; every vblank the
- * renderer (glr.c) draws the last complete frame - the software GS frame underneath, the GL
- * strips over it - and it is shown scaled to the window.
+ * renderer (glr.c) draws the last complete frame and it is shown scaled to the window.
  *
  *   HG_HEADLESS=1   a hidden window (tests): nothing shown, frames can still be dumped
  *   HG_DUMP=dir     write every 30th frame as dir/frame_NNNNN.ppm
@@ -13,10 +12,7 @@
 #include <SDL3/SDL.h>
 
 #include "glr.h"
-#include "gs_local.h"
 
-#define MAXW 1024
-#define MAXH 1024
 #define OUTW 640
 #define OUTH 448
 
@@ -24,7 +20,6 @@ static SDL_Window *sWindow;
 static SDL_GLContext sContext;
 static int sHeadless = -1;
 static int sGl;
-static uint32_t sPixels[MAXW * MAXH];
 static uint32_t sOut[OUTW * OUTH];
 unsigned hg_video_frame;
 
@@ -81,20 +76,10 @@ static void dump(void) {
 /* one vblank: show the last complete frame, handle window events */
 void hg_frame(void) {
     SDL_Event e;
-    int w = 0, h = 0, ww = 0, wh = 0;
+    int ww = 0, wh = 0;
 
     if (sHeadless < 0) {
         video_init();
-    }
-    gs_display(sPixels, MAXW, MAXH, &w, &h);
-    if (getenv("HG_GSDEBUG") && hg_video_frame % 60 == 0) {
-        extern unsigned gs_stat_prims, gs_stat_pixels, gs_stat_written;
-        extern void vu1_stats(long *runs, long *pairs);
-        long runs, pairs;
-
-        vu1_stats(&runs, &pairs);
-        fprintf(stderr, "frame %u: %u prim kicks, %u pixels, %u written; VU1 %ld runs, %ld instructions\n",
-                hg_video_frame, gs_stat_prims, gs_stat_pixels, gs_stat_written, runs, pairs);
     }
     if (sGl) {
         if (!sHeadless) {
@@ -105,7 +90,7 @@ void hg_frame(void) {
 
             hg_options_draw();
         }
-        glr_present(sPixels, MAXW, w, h, ww, wh);
+        glr_present(ww, wh);
         dump();
         if (!sHeadless) {
             SDL_GL_SwapWindow(sWindow);

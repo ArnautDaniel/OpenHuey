@@ -1,6 +1,5 @@
-/* The PC renderer (OpenGL 3.3 core): the game's draw paths hand it their data here instead of
- * building PS2 VU1/GS packets. The software GS frame (still used by 2D paths not ported yet) is
- * shown underneath. */
+/* The PC renderer (OpenGL 3.3 core): the game's draw paths, 3D and 2D, hand it their data here
+ * instead of building PS2 VU1/GS packets; it draws the whole frame. */
 #ifndef GLR_H
 #define GLR_H
 
@@ -151,7 +150,7 @@ void glr_menu(const char *const *lines, int n, int sel);
 
 /* platform side (video.c) */
 int glr_init(void);                                    /* after the GL context exists */
-void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH);
+void glr_present(int outW, int outH);                  /* the frame drawn, shown at outW x outH */
 void glr_read_pixels(uint32_t *out, int w, int h);     /* the last presented frame, top-down RGBA */
 
 #endif

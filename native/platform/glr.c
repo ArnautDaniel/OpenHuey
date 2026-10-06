@@ -522,10 +522,10 @@ static int sScale = 1, sWantScale = 1;
 #define GLR_GLOW_W 128   /* the renderer's work buffer (frame page 0x1F0) */
 #define GLR_GLOW_H 112
 
-static GLuint sMeshProg, sQuadProg, sFillProg, sVao, sQuadVao, sVbo;
+static GLuint sMeshProg, sFillProg, sVao, sQuadVao, sVbo;
 static GLint sFillLoc;
 static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFbaLoc;
-static GLuint sFbo, sColor, sDepth, sViewDepth, sGsTex;   /* sViewDepth: each pixel's view depth */
+static GLuint sFbo, sColor, sDepth, sViewDepth;   /* sViewDepth: each pixel's view depth */
 /* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
  * scratch buffer its fade goes through (A) */
 static GLuint sGlowFbo, sGlowB, sGlowDepth, sGlowAFbo, sGlowA, sPostProg;
@@ -545,7 +545,6 @@ static GLuint sShadowCol, sShadowDS, sShadowFbo;
 static GLuint sDump, sDumpFbo;
 static GLuint sTintHalf, sTintHalfFbo;
 static GLuint sSoft, sSoftFbo;   /* layer 0x1C: its draws at 256 x 256 */   /* a fading layer's background: the screen halved before it */
-static int sGsW, sGsH;
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -600,7 +599,7 @@ static const char *kMeshFs =
     "    oDepth = vDepth;\n"
     "}\n";
 
-/* a full-screen triangle pair from gl_VertexID, showing the software GS frame */
+/* a full-screen triangle pair from gl_VertexID */
 static const char *kQuadVs =
     "#version 460 core\n"
     "out vec2 vUv;\n"
@@ -608,15 +607,6 @@ static const char *kQuadVs =
     "    vec2 p = vec2((gl_VertexID & 1) != 0 ? 1.0 : -1.0, (gl_VertexID & 2) != 0 ? 1.0 : -1.0);\n"
     "    vUv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5);\n"
     "    gl_Position = vec4(p, 0.0, 1.0);\n"
-    "}\n";
-
-static const char *kQuadFs =
-    "#version 460 core\n"
-    "in vec2 vUv;\n"
-    "uniform sampler2D uTex;\n"
-    "out vec4 oColor;\n"
-    "void main() {\n"
-    "    oColor = vec4(texture(uTex, vUv).rgb, 0.0);\n"
     "}\n";
 
 /* The post passes, in the GS's 8-bit arithmetic (colours 0..255, sprites modulated by their
@@ -1424,7 +1414,6 @@ int glr_init(void) {
     sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
     sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
     sFbaLoc = p_glGetUniformLocation(sMeshProg, "uFba");
-    sQuadProg = program(kQuadVs, kQuadFs);
     sFillProg = program(kQuadVs, kFillFs);
     sFillLoc = p_glGetUniformLocation(sFillProg, "uColor");
 
@@ -1523,24 +1512,6 @@ static void post(int mode, GLuint fbo, int w, int h, GLuint t0, GLuint t1) {
     p_glBindTextureUnit(0, t0);
     p_glBindTextureUnit(1, t1);
     p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-/* the software GS frame as a texture (re-created when its size changes) */
-static void upload_gs(const uint32_t *px, int pitch, int w, int h) {
-    if (w != sGsW || h != sGsH) {
-        if (sGsTex) {
-            p_glDeleteTextures(1, &sGsTex);
-        }
-        p_glCreateTextures(GL_TEXTURE_2D, 1, &sGsTex);
-        p_glTextureStorage2D(sGsTex, 1, GL_RGBA8, w, h);
-        p_glTextureParameteri(sGsTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        p_glTextureParameteri(sGsTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        sGsW = w;
-        sGsH = h;
-    }
-    p_glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
-    p_glTextureSubImage2D(sGsTex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, px);
-    p_glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 }
 
 static void run_post(const GlrDraw *d);
@@ -1963,7 +1934,7 @@ static void run_post(const GlrDraw *d) {
     p_glDisable(GL_BLEND);
 }
 
-void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, int outH) {
+void glr_present(int outW, int outH) {
     static const float kBlack[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     static const float kFar = 1.0f;
     static const float kFarView[4] = {1e30f, 0.0f, 0.0f, 0.0f};   /* nothing drawn: beyond the fog */
@@ -1998,16 +1969,6 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
     p_glClearNamedFramebufferfv(sFbo, GL_DEPTH, 0, &kFar);
     p_glClearNamedFramebufferfv(sFbo, GL_COLOR, 1, kFarView);
     p_glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);   /* only the strips write it */
-
-    /* underneath: what the software GS drew (2D paths not ported yet) */
-    if (w > 0 && h > 0) {
-        upload_gs(gsPixels, pitch, w, h);
-        p_glDisable(GL_DEPTH_TEST);
-        p_glUseProgram(sQuadProg);
-        p_glBindTextureUnit(0, sGsTex);
-        p_glBindVertexArray(sQuadVao);
-        p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
 
     if (getenv("HG_GLDEBUG")) {
         static unsigned n;

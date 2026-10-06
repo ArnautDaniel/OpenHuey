@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 /* Sony SDK functions (libgraph, libdma, libkernl...) the game calls, replaced on PC. */
 
@@ -8,39 +9,24 @@ static unsigned sDmaRegs[10][0x40];
 
 unsigned func_0010D3B8(unsigned i) { return i < 10 ? (unsigned)sDmaRegs[i] : 0; }
 
-static int dma_channel(const void *chan) {
-    int i;
+/* The GS and DMA side: on PC everything is drawn with OpenGL (glr.c) as the game asks for it,
+ * so the packets the game still sends - the frame's display / drawing environments and its
+ * clear and copy, VRAM image transfers - have nothing left to do. */
 
-    for (i = 0; i < 10; i++) {
-        if (chan == sDmaRegs[i]) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-#include "gs_local.h"
-
-/* sceDmaSend(chan, tag): walk the chain now (CHCR bit 6: VIF codes in the tags) */
+/* sceDmaSend(chan, tag) */
 void func_0010D6E8(void *chan, void *tag) {
-    int c = dma_channel(chan);
-
-    if (c == 1 || c == 2) {
-        dma_send(c, (unsigned)tag, (((unsigned *)chan)[0] >> 6) & 1);
-    }
+    (void)chan;
+    (void)tag;
 }
 
-/* sceGsPutDispEnv(disp): PMODE, SMODE2, DISPFB2, DISPLAY2, BGCOLOR */
+/* sceGsPutDispEnv(disp) */
 void func_0010C440(unsigned long long *disp) {
-    if (getenv("HG_GSDEBUG")) {
-        fprintf(stderr, "PutDispEnv %llx %llx %llx %llx\n", disp[0], disp[1], disp[2], disp[3]);
-    }
-    gs_set_display(disp[0], disp[1], disp[2], disp[3], disp[4]);
+    (void)disp;
 }
 
-/* sceGsPutDrawEnv(packet): a GIF tag and its A+D data */
+/* sceGsPutDrawEnv(packet) */
 void sceGsPutDrawEnv(unsigned long long *giftag) {
-    gs_gif(giftag, 1 + (unsigned)(giftag[0] & 0x7FFF) * (unsigned)((giftag[0] >> 60) ? (giftag[0] >> 60) : 16));
+    (void)giftag;
 }
 
 /* sceGsSyncPath: everything is done immediately on PC */
@@ -115,11 +101,9 @@ int sceGsSetDefLoadImage(void *lp, short dbp, short dbw, short dpsm, short x, sh
     return 0;
 }
 
-/* sceGsExecLoadImage: send the packet, then the image */
+/* sceGsExecLoadImage */
 int sceGsExecLoadImage(void *lp, const void *src) {
-    const uint64_t *q = lp;
-
-    gs_gif(q, 6);
-    gs_gif(src, (uint32_t)(q[10] & 0x7FFF));
+    (void)lp;
+    (void)src;
     return 0;
 }
