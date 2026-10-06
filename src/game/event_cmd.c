@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "ptmf.h"
 
 extern u8 D_0047B350;         /* the message language set */
 extern VObject *D_00456E00;
@@ -108,6 +109,10 @@ extern void func_00200B00(VObject *ev);
 #define EV_WAIT(ev) AT(ev, 0x700, u8)
 #define EV_JUMPED(ev) AT(ev, 0x701, u8)
 #define SG_CONTROL 0x1FBEC1   /* from the progress (SceneGame +0x40): 0 Fiona is controlled */
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002CF6F0(u8 *p);
 
 static inline u32 be16(const u8 *p) {
     return (p[0] << 8 | p[1]) & 0xFFFF;
@@ -317,7 +322,6 @@ extern VObject *D_00456DF0;       /* the music */
 extern void *D_003D6A40[];        /* the fades' steps by kind */
 extern s32 func_002D2120(u8 *o);
 extern void func_002D20A0(u8 *o);
-extern void func_002CF6F0(u8 *fade);
 extern void func_002CF3A0(u8 *fade, s32 kind);   /* jump a fade to its end */
 extern void func_001771A0(Progress *p, s32 who);
 void func_001FBE00(VObject *ev, s32 prio, void *step);
@@ -1988,6 +1992,12 @@ void func_002029B0(VObject *ev) {
     }
 }
 
+void func_002CF6F0(u8 *p) {
+    F(p, 0x18, u32) = 0;
+    F(p, 0x1C, u32) = 0;
+    p[0x20] = 0;
+}
+
 /* the commands' lengths (0: 3 + the byte at +2: commands 0x22 and 0x33 carry a string) */
 static const u8 sCmdLength[0xDB] = {
     2, 2, 4, 3, 3, 4, 1, 3, 1, 1, 4, 6, 16, 1, 6, 1,   /* 00 */
@@ -2033,7 +2043,6 @@ void func_001FF9E0(VObject *ev) {
         PC(ev) = PC(ev) + sCmdLength[pc[0]];
     }
 }
-
 
 /* pi as the original's constant (ee-gcc rounds the literal 3.1415927f down) */
 static const union {
@@ -2577,8 +2586,6 @@ s32 func_001FBF70(VObject *ev, s32 id) {
     return x - 0xF1 + 7;
 }
 
-
-
 /* a step context reset: its character `c`, no script, counters and marks cleared, id 0xFF */
 void func_001FBAE0(VObject *ev, u8 *s, s32 c) {
     AT(s, 0x0, s32) = c;
@@ -2624,7 +2631,6 @@ void func_001FBE90(VObject *ev, s32 id, s32 script) {
     AT(s, 0x4, u8 *) = pc;
 }
 
-
 /* music commands: 0x6A sub-op pc[1] on the music (D_00456DF0): 0 +0x38 fade (pc[2], pc[3]),
  * 1 +0x40, 2 +0xC then +0x1C, 3 wait while +0x10 says it isn't ready, 4 +0x18, 5 +0x4C; 0x6B
  * the progress' +0x48 with pc[1]; 0x6C its +0x4C */
@@ -2669,7 +2675,6 @@ void func_001FFC70(VObject *ev) {
         break;
     }
 }
-
 
 /* ---- Hewie (opcodes 0x39 0x3F 0x63 0x77 0x78 0x7A 0x85 0xAF 0xB0 0xBB 0xBD 0xC3..0xC6 0xD0) ---- */
 
@@ -2963,8 +2968,6 @@ void func_001FFE00(VObject *ev) {
     }
     }
 }
-
-
 
 /* start a step `step` (with `prio`) in the event's step slot for `prio` (func_001FBF70) (+0x564, 0x18 each:
  * +0 -1, +4 the step, +0x13 its priority, the rest cleared); nothing for NULL */

@@ -19,6 +19,7 @@
 #include "game.h"
 #include "navmesh.h"
 #include "sce/libvu0.h"
+#include "ptmf.h"
 
 extern f32 *func_0017CE80(void *skel, s32 bone);                 /* a bone's matrix */
 extern void func_0010E5F0(f32 *out, const f32 *v);                /* copy x, y, z */
@@ -48,6 +49,11 @@ extern u8 D_003D5F90[];
 static const s32 sFootBones[4] = { 0xB, 0xF, 0x17, 0x1C };
 
 /* ---- destructors ---- */
+
+extern u8 D_00456EB0[];
+extern u8 D_00456F70[];
+void *func_0020BF70(void);
+void *func_0020C110(void);
 
 static void HewieModel_Destroy(u8 *m, s32 flags) {
     AT(m, 0x0, void **) = D_0046B240;
@@ -103,6 +109,10 @@ u8 *func_0020BEF0(u8 *m, s32 k) {
     return NULL;
 }
 
+void *func_0020BF70(void) {
+    return D_00456F70;
+}
+
 /* (vtable D_0046B9B0's) the same for the other model */
 u8 *func_0020C090(u8 *m, s32 k) {
     switch (k) {
@@ -113,6 +123,10 @@ u8 *func_0020C090(u8 *m, s32 k) {
     case 4: return D_00456E10;
     }
     return NULL;
+}
+
+void *func_0020C110(void) {
+    return D_00456EB0;
 }
 
 /* ---- small methods ---- */

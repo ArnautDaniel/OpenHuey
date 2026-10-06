@@ -23,6 +23,8 @@
 #include "ptmf.h"
 #include "sndlib.h"
 #include "globals.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 extern u32 D_01970D40[8];      /* the call arguments */
 extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
@@ -34,6 +36,21 @@ extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memo
 #define LOADED(d, k) AT(BANK(d, k), 0xD, u8)
 #define BANK_TYPE(d, k) AT(BANK(d, k), 0xC, u8)
 
+extern void *D_0046AF90[];
+extern void func_00100490(void *p);
+void *func_001BF800(u8 *o, s32 flags);
+
+/* destructor (vtable D_0046AF90) */
+void *func_001BF800(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AF90;
+        gSound = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 /* a volume 0..1 as 0..255 / 0..127 (float to int as the EE converts) */
 static inline u32 vol_byte(f32 v) {
     return v >= 2147483648.0f ? ((s32)(v - 2147483648.0f) | 0x80000000) : (u32)(s32)v;

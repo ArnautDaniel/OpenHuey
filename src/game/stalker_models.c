@@ -7,10 +7,15 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "progress.h"
+#include "actor.h"
+#include "pursuer.h"
 
 extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
 
 /* ---- the model base class's trivial methods ---- */
+
+void func_00320C70(u8 *m);
 
 /* +0x1C / +0x20 / +0x24 / +0x2C / +0x30 / +0x14 / +0x3C / +0x4C / +0x50 / +0x54 / +0x60:
    nothing */
@@ -156,8 +161,8 @@ void func_00210DF0(u8 *m) {
 extern void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading);
 
 /* +0x40: the model matrix from the actor's position and heading */
-void func_002DCDD0(u8 *m, u8 *actor) {
-    func_002E3040((f32 (*)[4])(m + 0x7D0), (f32 *)(actor + 0x10), AT(actor, 0x54, f32));
+void func_002DCDD0(u8 *m, void *actor, f32 a, f32 b) {
+    func_002E3040((f32 (*)[4])(m + 0x7D0), (f32 *)((u8 *)actor + 0x10), AT(actor, 0x54, f32));
 }
 
 extern void func_001F7AC0(u8 *m);
@@ -2273,6 +2278,13 @@ void func_00320A60(u8 *m) {
     func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
 }
 
+/* a model's +0x850 on, then func_00320A60 and func_003206A0 */
+void func_00320C70(u8 *m) {
+    AT(m, 0x850, u8) = 1;
+    func_00320A60(m);
+    func_003206A0(m);
+}
+
 extern void *D_00473BD0[];
 extern void *func_0016FB00(void *e, s32 flags);
 
@@ -2321,8 +2333,6 @@ void func_00320CB0(u8 *m) {
     func_002EE840(m + 0x10A0);
     AT(m, 0x850, u8) = 0;
 }
-
-extern void func_00320C70(u8 *m);
 
 /* +0xC: once loaded (as func_002F6CE0) */
 void func_00320D70(u8 *m) {

@@ -4,6 +4,9 @@
 #include "input.h"
 #include "globals.h"
 #include "progress.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 extern void func_001136E8(s32 status);         /* exit() */
 extern s32 func_0037E1F0(s32 *result);         /* load the embedded IOP module, *result = its status */
@@ -12,13 +15,41 @@ extern void func_001F44D0(void *obj);           /* init Game.unk14E8C90 */
 extern void func_001F4100(void *obj);           /* shut down Game.unk14E8C90 */
 extern void func_002BFB20(void *obj);           /* init Game.unk20 */
 
-
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
 extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
 extern const PTMF sGameStateNull;     /* all zero: ends Game_Run */
 extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
+void func_00120530(void *p, s32 a, s32 b);
+
+extern void *D_00456DE8;
+extern void *D_00469D00[];
+extern void *D_0046B1D0[];
+extern void *D_0046B1F0[];
+extern void *D_0046BEE0[];
+extern void *D_0046D770[];
+extern void *D_0046F3D0[];
+extern void func_00100490(void *p);
+void *func_001F4590(u8 *o, s32 flags);
+void *func_0020DB40(u8 *o, s32 flags);
+void *func_00267500(u8 *o, s32 flags);
+void *func_002D0C10(u8 *o, s32 flags);
+
+s32 func_002C8D90(u8 *self);
+s32 func_002C9470(void *self);
+
+u32 func_002E2340(u8 *p);
+void *func_002E2350(u8 *p);
+u32 func_002E25F0(u8 *p, u32 i);
+s32 func_002E2610(u8 *p, s32 a1, s32 a2, s32 a3);
+s32 func_002E2630(u8 *p, s32 a1, s32 a2, s32 a3);
+
+void func_00120530(void *p, s32 a, s32 b) {
+    FLD(p, 0x4, s32) = a;
+    FLD(p, 0x8, s32) = b;
+}
 void Game_Init(Game *game) {
     s32 result;
     s32 ret;
@@ -43,8 +74,38 @@ void Game_Run(Game *game) {
     }
 }
 
+u32 func_002E2340(u8 *p) { return p[0x38680]; }
+
+void *func_002E2350(u8 *p) { return p + 0xF680; }
+
+u32 func_002E25F0(u8 *p, u32 i) { return ((u32 *)p)[(u8)i]; }
+
+/* tail call: member at +0xF630, virtual slot 0x10, with 0x890 */
+s32 func_002E2610(u8 *p, s32 a1, s32 a2, s32 a3) {
+    u8 *m = p + 0xF630;
+    return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, 0x890, a2, a3);
+}
+
+/* tail call: member at +0xDC40, virtual slot 0x10 */
+s32 func_002E2630(u8 *p, s32 a1, s32 a2, s32 a3) {
+    u8 *m = p + 0xDC40;
+    return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, a1, a2, a3);
+}
+
 void Game_SetState(Game *game, const PTMF *state) {
     game->state = *state;
+}
+
+/* destructor (vtable D_0046D770) */
+void *func_00267500(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D770;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 static inline Scene *Game_GetScene(Game *game, s32 i) {
@@ -243,6 +304,16 @@ void func_002BFB20(void *obj) {
     *(s32 *)(d + 0x4C) = 0;
 }
 
+s32 func_002C8D90(u8 *self) {
+    s32 *v = *(s32 **)(self + 0x4);
+
+    return v[0] + v[1] + v[2] + v[3];
+}
+
+/* Tail call to this->vfunc_0x8() */
+s32 func_002C9470(void *self) {
+    return VCALL(self, 0x8, s32 (*)(void *))(self);
+}
 
 /* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
  * from the renderer, +4 on, +8 = 1.0. */
@@ -288,6 +359,18 @@ void *func_002D0B60(u8 *o, s32 flags) {
             Task_dtor(AT(o, 0x110C4, void *), 1);
             AT(o, 0x110C4, void *) = NULL;
         }
+        AT(o, 0x0, void **) = D_0046F3D0;
+        D_00456DE8 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046F3D0) */
+void *func_002D0C10(u8 *o, s32 flags) {
+    if (o != NULL) {
         AT(o, 0x0, void **) = D_0046F3D0;
         D_00456DE8 = NULL;
         if ((s16)flags > 0) {
@@ -366,10 +449,36 @@ void *func_001BE150(u8 *o, s32 flags) {
     return o;
 }
 
+/* destructor (vtable D_0046B1D0) */
+/* (possibly dead code: nothing in the game references it) */
+void *func_001F4590(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046B1D0;
+        AT(o, 0x0, void **) = D_0046B1F0;
+        gTexCache = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046BEE0) */
+void *func_0020DB40(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046BEE0;
+        gSystemData = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
 extern void *D_004562A8, *D_004562B0;
-extern void *func_001F4590(u8 *, s32), *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
+extern void *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
 extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
 extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);
 extern void *func_001BF880(u8 *, s32), *func_001BF6C0(void *, s32), *func_001AAE10(u8 *, s32);

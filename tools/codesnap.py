@@ -3,6 +3,12 @@
 
     tools/codesnap.py snap DIR           # write DIR/ps2.json and DIR/native.json
     tools/codesnap.py compare OLD NEW    # list functions whose code changed
+    tools/codesnap.py snap DIR --isolated [--root TREE]
+
+--isolated compiles both targets here with inlining and GCC's interprocedural optimizations
+off, so each function's code depends only on its own body and the declarations it sees:
+moving functions between files (which lets GCC inline or specialise them differently) then
+compares equal. --root snapshots another checkout (e.g. a `git worktree` of the last commit).
 
 PS2: GCC's assembly as the ninja build leaves it (build/src/**/*.c.o.s - run ninja first).
 Native: the host compiler with the PC build's flags (-S, no -g), run here (3 at a time).
@@ -16,7 +22,7 @@ renaming symbols or renumbering labels doesn't count as a change:
     (func_XXXXXXXX / D_XXXXXXXX), so a renamed function or global still compares equal;
   - GCC's numbered suffixes of local statics (kPi.3) are dropped.
 Functions are keyed by their canonical name; same-named statics in several files compare as
-a sorted list.
+the set of their distinct bodies.
 """
 import concurrent.futures
 import hashlib
@@ -121,7 +127,8 @@ def parse(text: str, canon: dict) -> dict:
             t = lines[k].strip()
             if re.match(r"^[A-Za-z_$.][\w$.]*:", t) or t.startswith((".section", ".text", ".data", ".bss",
                                                                        ".rdata", ".previous", ".type", ".globl",
-                                                                       ".local", ".comm", ".align", ".p2align")):
+                                                                       ".local", ".comm", ".align", ".p2align",
+                                                                       ".ident")):
                 break
             body.append(t)
             k += 1
@@ -191,6 +198,40 @@ def ps2_snap(canon: dict) -> dict:
     return out
 
 
+ISOLATE = ("-fno-inline -fno-inline-small-functions -fno-inline-functions -fno-inline-functions-called-once "
+           "-fno-partial-inlining -fno-ipa-sra -fno-ipa-cp -fno-ipa-icf -fno-ipa-ra -fno-ipa-pure-const "
+           "-fno-ipa-reference -fno-ipa-reference-addressable -fno-ipa-modref -fno-ipa-vrp -fno-ipa-bit-cp "
+           "-fno-ipa-stack-alignment").split()
+PS2_GCC = "tools/ps2dev/ps2dev/ee/bin/mips64r5900el-ps2-elf-gcc"
+
+
+def c_sources(root: Path) -> list:
+    return sorted(p for p in (root / "src").rglob("*.c"))
+
+
+def compile_all(cmds: list, root: Path, canon: dict) -> dict:
+    out = {}
+    with concurrent.futures.ThreadPoolExecutor(3) as ex:
+        for text in ex.map(native_one, [(c, s, root) for c, s in cmds]):
+            add(out, parse(text, canon))
+    return out
+
+
+def ps2_isolated(canon: dict, root: Path) -> dict:
+    # configure.py's CFLAGS: a parenthesised run of string literals
+    block = re.search(r"^CFLAGS = \((.*?)^\)", (ROOT / "configure.py").read_text(), re.M | re.S).group(1)
+    flags = " ".join(re.findall(r'^\s*"(.*)"\s*$', block, re.M)).split()
+    cmd = [str(ROOT / PS2_GCC), "-S", "-o", "-"] + flags + ISOLATE
+    return compile_all([(cmd, s) for s in c_sources(root)], root, canon)
+
+
+def native_isolated(canon: dict, root: Path) -> dict:
+    # non-PIC: a call into the same file would otherwise skip the PLT and differ
+    cmd = [a.replace(str(ROOT), str(root)) for a in native_cmd()] + ISOLATE + ["-fno-pic", "-fno-pie"]
+    srcs = [p for d in ("src/game", "src/leaf", "src/sdk") for p in sorted((root / d).glob("*.c"))]
+    return compile_all([(cmd, s) for s in srcs], root, canon)
+
+
 def native_cmd() -> list:
     txt = (ROOT / NATIVE_FLAGS).read_text()
     get = lambda k: re.search(r"^" + k + r" = (.*)$", txt, re.M).group(1)
@@ -200,8 +241,8 @@ def native_cmd() -> list:
 
 
 def native_one(args):
-    cmd, src = args
-    r = subprocess.run(cmd + [str(src)], capture_output=True, text=True, cwd=ROOT)
+    cmd, src = args[:2]
+    r = subprocess.run(cmd + [str(src)], capture_output=True, text=True, cwd=args[2] if len(args) > 2 else ROOT)
     if r.returncode != 0:
         sys.exit(f"native compile failed: {src}\n{r.stderr[:2000]}")
     return r.stdout
@@ -294,7 +335,8 @@ def loose(body: str) -> str:
 
 
 def digest(snap: dict, f=lambda b: b) -> dict:
-    return {k: sorted(hashlib.sha1(f(b).encode()).hexdigest() for b in v) for k, v in snap.items()}
+    # a static helper copied into several files counts once per distinct body
+    return {k: sorted(set(hashlib.sha1(f(b).encode()).hexdigest() for b in v)) for k, v in snap.items()}
 
 
 def main() -> None:
@@ -304,7 +346,12 @@ def main() -> None:
         d = Path(sys.argv[2])
         d.mkdir(parents=True, exist_ok=True)
         canon = load_canon()
-        for kind, fn in (("ps2", ps2_snap), ("native", native_snap)):
+        root = Path(sys.argv[sys.argv.index("--root") + 1]).resolve() if "--root" in sys.argv else ROOT
+        if "--isolated" in sys.argv:
+            kinds = (("ps2", lambda c: ps2_isolated(c, root)), ("native", lambda c: native_isolated(c, root)))
+        else:
+            kinds = (("ps2", ps2_snap), ("native", native_snap))
+        for kind, fn in kinds:
             snap = fn(canon)
             (d / f"{kind}.json").write_text(json.dumps({"digest": digest(snap), "loose": digest(snap, loose),
                                                         "text": snap}))

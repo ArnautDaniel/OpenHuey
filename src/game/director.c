@@ -42,8 +42,6 @@ extern u8 func_00177160(Progress *p, u32 slot);    /* active */
 extern s32 func_001771A0(Progress *p, u32 slot);   /* make active */
 extern void func_0016D050(Progress *p, s32 slot);  /* its cutscene motion buffer */
 extern void func_0016CF50(Progress *p, s32 slot);  /* ... given back */
-extern s32 func_002CC5A0(u8 *d, s32 actor);        /* actor -> character kind */
-extern void func_002CBFF0(u8 *d, s32 rec);         /* reset the slots of a record */
 extern void func_001F4910(u8 *m);                  /* a model's motion reset */
 extern void func_002DD040(u8 *m, s32 anim);
 extern void func_002DD090(u8 *m, s32 frame);   /* its motion at the frame */
@@ -74,6 +72,13 @@ extern void func_002670F0(u8 *fx, s32 n);          /* effect slot n gone */
 #define LENGTH(d) VCALL((VObject *)(d), 0x28, s32 (*)(u8 *))(d)
 #define SIGNALS(d, f) VCALL((VObject *)(d), 0x4C, u16 (*)(u8 *, s32))(d, f)
 #define SIGNALED(d, bit, at) VCALL((VObject *)(d), 0x54, s32 (*)(u8 *, s32, s16 *))(d, bit, at)
+
+static const s8 b3_CC5A0_map[26] = {
+    -1, 0, 1, 2, 3, 4, 9, 10, 11, 12, 8, 13, 18, 14, 15, 16, 17, 19, 23, 24, 25, 29, 30, 31, 32, 38,
+};
+
+void func_002CBFF0(u8 *self, s32 idx);
+s32 func_002CC5A0(void *self, u32 id);
 
 /* a shot part: base + offset, 0 none */
 static u8 *shot_part(u8 *base, u32 off) {
@@ -207,6 +212,41 @@ s32 func_002C9690(u8 *d) {
 /* +0x8 the state run */
 void func_002CBFE0(u8 *d) {
     ptmf_scall(d, &AT(d, 0x2A0, PTMF));
+}
+
+/* Resets the slots whose bits are set in the mask record `idx` (12-byte records at self->0x18):
+ * bits of +0x24 select one of 32 12-byte slots at +0x80 (slot 0 is self+0x20 itself),
+ * bits of bytes +0x28/+0x29 clear the words at +0x24/+0x44. */
+void func_002CBFF0(u8 *self, s32 idx) {
+    s32 i;
+
+    for (i = 0; i < 32; i++) {
+        u8 *slot = self + 0x80 + i * 12;
+
+        if (slot[0] == 0 && i != 0) {
+            continue;
+        }
+        if ((*(u32 *)(*(u8 **)(self + 0x18) + idx * 12 + 0x24) & (1 << i)) && (u32)i < 26) {
+            if (i == 0) {
+                *(u32 *)(self + 0x20) = 0;
+            } else {
+                u8 *obj = *(u8 **)(slot + 8);
+
+                *(u32 *)(*(u8 **)(obj + 0xF0) + 0x4C8) = 0;
+                (*(u8 **)(slot + 8))[0xE0] = 0;
+            }
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        if ((*(u8 **)(self + 0x18))[idx * 12 + 0x28] & (1 << i)) {
+            *(u32 *)(self + 0x24 + i * 4) = 0;
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        if ((*(u8 **)(self + 0x18))[idx * 12 + 0x29] & (1 << i)) {
+            *(u32 *)(self + 0x44 + i * 4) = 0;
+        }
+    }
 }
 
 /* the slot of character kind `kind`, or of one of its variants */
@@ -507,7 +547,6 @@ void func_002CAB90(u8 *d) {
     zero[0] = zero[1] = zero[2] = 0.0f;
     VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, zero, 0.0f);
 }
-
 
 /* each frame playing: the shots streamed - past the end (unless +0x204) over; a buffer
  * loaded; a new shot swaps buffers; the playing one's shot loaded: it starts (the other
@@ -825,6 +864,14 @@ void func_002CC130(u8 *d, s32 b, s32 rec) {
             }
         }
     }
+}
+
+/* Maps an id (0..25) to another id; -1 when out of range. */
+s32 func_002CC5A0(void *self, u32 id) {
+    if (id >= 26) {
+        return -1;
+    }
+    return b3_CC5A0_map[id];
 }
 
 /* ---- shots by frame: the script's shot i spans frames +0x2C .. +0x2E (+ i x 12), the

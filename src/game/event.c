@@ -7,6 +7,8 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "item.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -90,6 +92,27 @@ static const struct {
     {0x109, D_0046FE40}, {0x10A, D_0046FE80}, {0x10B, D_0046FEC0},
 };
 
+extern f32 D_00412900;
+extern f32 D_00412904;
+extern f32 D_00412908;
+void func_002C94E0(u8 *self, u32 a);
+s32 func_002C95D0(u8 *self);
+void func_002C95F0(u8 *self, u32 a);
+
+void func_002C9620(u8 *self);
+s32 func_002C9630(u8 *self);
+s32 func_002C9660(u8 *self, s32 i);
+s32 func_002C9680(u8 *self, s32 i);
+void func_002C96F0(u8 *self, s32 i);
+void func_002C9710(u8 *self, s32 i);
+void func_002CC830(u8 *self, u32 a, u32 b);
+
+extern u8 D_00412910[], D_00412914[], D_00412918[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+s32 func_002CC840(void *self);
+void func_002CC850(u8 *p);
+
 /* install the room handlers (+0x120: 0x110 4-byte handler objects; each gets its room's
  * vtable) */
 void func_00209850(u8 *ev) {
@@ -109,6 +132,90 @@ void func_00209850(u8 *ev) {
 /* placement new */
 void *func_002A8970(u32 size, void *place) {
     return place;
+}
+
+void func_002C94E0(u8 *self, u32 a) {
+    *(u32 *)(self + 0x14) = a;
+    *(f32 *)(self + 0x2A0) = D_00412900;
+    *(f32 *)(self + 0x2A4) = D_00412904;
+    *(f32 *)(self + 0x2A8) = D_00412908;
+    self[0x204] = 0;
+}
+
+s32 func_002C95D0(u8 *self) {
+    u16 *p = *(u16 **)(self + 0x18);
+
+    if (p == NULL) {
+        return -1;
+    }
+    return *p;
+}
+
+void func_002C95F0(u8 *self, u32 a) {
+    *(u32 *)(self + 0x10) = *(u32 *)(self + 0xC);
+    *(u32 *)(self + 0xC) = a;
+}
+
+void func_002C9620(u8 *self) {
+    self[0x205] = 1;
+}
+
+/* Entries of 12 bytes at +0x6C, current index at +0x64. */
+s32 func_002C9630(u8 *self) {
+    s32 i = *(s32 *)(self + 0x64);
+
+    return *(s32 *)(self + 0x6C + i * 12) == 3;
+}
+
+/* Returns an s8. */
+s32 func_002C9660(u8 *self, s32 i) {
+    return (s8)(((s8 *)self)[0x206 + i] - 1);
+}
+
+/* Returns an s16. */
+s32 func_002C9680(u8 *self, s32 i) {
+    return *(s16 *)(self + 0x216 + i * 2);
+}
+
+void func_002C96F0(u8 *self, s32 i) {
+    self[0x82 + i * 12] = 1;
+}
+
+void func_002C9710(u8 *self, s32 i) {
+    self[0x83 + i * 12] = 1;
+}
+
+void func_002CC830(u8 *self, u32 a, u32 b) {
+    *(u32 *)(self + 0x18) = a;
+    *(u32 *)(self + 0x1C) = b;
+}
+
+/* tail call to virtual slot 0x8 */
+s32 func_002CC840(void *self) {
+    return VCALL(self, 0x8, s32 (*)(void *))(self);
+}
+
+void func_002CC850(u8 *p) {
+    s32 i;
+
+    F(p, 0x18, u32) = 0;
+    F(p, 0x20, u32) = 0;
+    F(p, 0x1C, u32) = 0;
+    for (i = 0; i < 32; i++) {
+        u8 *e = p + 0x80 + i * 12;
+        e[0] = 0;
+        e[1] = 0;
+        e[4] = 0;
+        F(e, 8, u32) = 0;
+    }
+    for (i = 0x44; i <= 0x60; i += 4) {
+        F(p, i, u32) = 0;
+    }
+    F(p, 0x2A0, f32) = *(f32 *)D_00412910;
+    F(p, 0x2A4, f32) = *(f32 *)D_00412914;
+    F(p, 0x2A8, f32) = *(f32 *)D_00412918;
+    p[0x204] = 0;
+    p[0x4] = 0;
 }
 
 /* (gEvents) +0xC the room's event script (PAC section 2) */
@@ -248,7 +355,6 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
     VCALL(ev, 0xE4, void (*)(VObject *, s32, u8 *))(ev, slot, script);
 }
 
-
 /* +0xE8 the middle of the event area room entry `k` leads to (the room table +0x48 of the
  * current room; its line +0x10 -> +0x30 halved, the height +0x14), w 1, into `out`. 0: no
  * areas, or the entry has none */
@@ -272,7 +378,6 @@ s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
     out[3] = 1.0f;
     return 1;
 }
-
 
 /* +0xE4 give character slot `slot` the script `script` (its context at +0x564 + (slot + 1) *
  * 0x18: the character, the pc, its id at +0x13); NULL: nothing */
@@ -361,7 +466,6 @@ void func_00209060(VObject *ev, u8 *c) {
     AT(ev, 0x6FC, void *) = saved;
     AT(ev, 0x701, u8) = 0;
 }
-
 
 /* +0xD8 whether `pos` (on nav triangle `tri`) is inside area `area` of the room's event data
  * (+0x10: area offsets; a type 1 area is 4 corners (x, z at +0x10.., 0x10 apart) and a
@@ -460,7 +564,6 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
     return 1;
 }
 
-
 /* each frame: the characters' running scripts (17 slots at +0x564, each the context a script
  * runs with: the character (-1: none needed), pc, depth +0x10, frame count +0x14), until one
  * waits (+0x700). A character that is no longer in a special state (+0xE0 clear, action not 5)
@@ -517,13 +620,11 @@ u8 *func_00209800(VObject *room) {
     return NULL;
 }
 
-
 /* vtable +0x50 (second base): a scene is playing (+0x11F3, cleared each frame by the
  * character script runner) */
 s32 func_001FBA10(u8 *ev) {
     return AT(ev, 0x11F3, u8);
 }
-
 
 /* +0x40 (second base): close the message window if it shows message `id` (0xFFFF: any) */
 void func_001FB1F0(u8 *ev, u32 id) {
@@ -532,7 +633,6 @@ void func_001FB1F0(u8 *ev, u32 id) {
         Task_Close((Task *)(ev + 0x708));
     }
 }
-
 
 /* +0x34 script variable n (+0x810) */
 s32 func_00209020(u8 *ev, s32 n) {
@@ -558,8 +658,6 @@ void func_001FB190(u8 *ev, s32 n) {
 s32 func_001FB1B0(u8 *ev, s32 n) {
     return (AT(ev, 0x890, u32) & (1u << (n & 0xFF))) != 0;
 }
-
-
 
 /* draw the event's screen fade (+0x20) in renderer layer `layer` */
 void func_001FBA20(u8 *ev, s32 layer) {
@@ -685,7 +783,6 @@ s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
     }
     return 1;
 }
-
 
 /* the room's point `n` (the table +0x10, by the rooms' +0x48 index for the current room):
  * three vectors (+0x10 / +0x20 / +0x30); 0 if none */

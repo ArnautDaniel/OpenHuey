@@ -5,6 +5,9 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "progress.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 typedef struct Camera {
     /* 0x000 */ void **vtbl;
@@ -57,6 +60,12 @@ extern void *D_00469B40[];
 extern void func_00100490(void *p);   /* operator delete */
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+s32 func_00121B40(void *p, f32 a, f32 b);
+
+void *func_00122AD0(u8 *o, s32 flags);
+
 /* +0x8 */
 Camera *func_001218A0(Camera *c, s32 flags) {
     if (c != NULL) {
@@ -102,6 +111,18 @@ void func_00122A30(Camera *c) {
     c->zMin = 0.0f;
     c->zMax = 65536.0f;
     VCALL(c, 0x78, void (*)(Camera *, s32 *))(c, NULL);
+}
+
+/* destructor (vtable D_00469B40) */
+void *func_00122AD0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00469B40;
+        gCamera = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 /* +0x10 reset */
@@ -255,6 +276,40 @@ s32 func_00121C50(Camera *c, f32 d) {
 void func_00121B30(Camera *c, f32 a, f32 b) {
     c->unk28 = a;
     c->unk2C = b;
+}
+
+/* Copy the translation column of a matrix (rows at +0xC4) into a vec4 (w = 0). */
+s32 func_00121B40(void *p, f32 a, f32 b) {
+    f32 f10, fc, d, lo, hi;
+    s32 n;
+
+    if (a == b) {
+        return 0;
+    }
+    f10 = FLD(p, 0x10, f32);
+    fc = FLD(p, 0xC, f32);
+    if (f10 == b) {
+        n = 0;
+    } else {
+        n = (s32)(((a * (f10 - b)) / f10) / (b - a)) + 1;
+    }
+    d = b - a;
+    lo = 65536.0f * ((f32)n - ((a * (f10 - b)) / f10) / d);
+    hi = 65536.0f * ((f32)n + ((a * (b - fc)) / fc) / d);
+    if (lo < 0.0f || !(lo <= 16777215.0f)) {
+        return 0;
+    }
+    if (hi < 0.0f || !(hi <= 16777215.0f)) {
+        return 0;
+    }
+    if (hi - lo < 65536.0f) {
+        return 0;
+    }
+    FLD(p, 0x18, f32) = lo;
+    FLD(p, 0x1C, f32) = hi;
+    FLD(p, 0x28, f32) = a;
+    FLD(p, 0x2C, f32) = b;
+    return 1;
 }
 
 void func_001219D0(Camera *c, f32 x, f32 y) {
@@ -425,8 +480,6 @@ void func_00121D90(Camera *c, u32 n, CameraSet *out) {
         return;
     }
 }
-
-
 
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 

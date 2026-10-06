@@ -9,13 +9,205 @@
 #include "input.h"
 #include "globals.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "pursuer.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
-extern void *func_0016F740(void *p);
-extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
 extern void *func_001F7E40(void *, s32);
-extern void *func_001706F0(void *);
 void *func_0016FC80(void *e, s32 flags);
+
+extern void *D_004702B0[];
+extern void *D_00470390[];
+extern void *D_004703A0[];
+extern void *D_004703D0[];
+extern void *D_00470440[];
+extern void *D_00470460[];
+extern void *D_00470700[];
+extern void *D_00472350[];
+extern void *D_00472C10[];
+extern void *D_004737F0[];
+extern void *D_00473810[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *func_0016F740(u8 *p);
+void *func_0016FAE0(u8 *p);
+void *func_0016FB60(u8 *p);
+void *func_0016FB80(u8 *p);
+void *func_0016FB90(u8 *p);
+void *func_0016FC10(u8 *p);
+void *func_00170460(u8 *p);
+void *func_00170650(u8 *p);
+void *func_00170670(u8 *p);
+void *func_001706F0(u8 *p);
+void *func_00170A30(u8 *p);
+void *func_00170D10(u8 *p);
+void *func_00170F10(u8 *p);
+void *func_00170F90(u8 *p);
+
+extern void *D_0046D730[];
+extern void *D_0046D7B0[];
+extern void *D_0046EB40[];
+extern void *D_0046F580[];
+extern void *D_0047A6F0[];
+extern void func_002672E0(void *p);
+extern void func_002D63B0(void *p);
+void *func_0026B1E0(u8 *o, s32 flags);
+void *func_002BAFD0(u8 *o, s32 flags);
+void *func_0037B9A0(u8 *o, s32 flags);
+
+void func_002DCA50(void *self, u32 *out);
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002DCF10(u8 *p, f32 step);
+f32 func_002DD970(void);
+f32 func_002DDAB0(void);
+
+extern u8 D_0045E4C0[];
+extern u8 D_0045E4E0[];
+extern u8 D_00463320[];
+extern u8 D_00463340[];
+void *func_002F6DC0(void);
+void *func_002F6DD0(void);
+void *func_0035AFE0(void);
+void *func_0035AFF0(void);
+
+extern u8 D_00424250[];
+extern u8 D_00424490[];
+extern u8 D_004246C0[];
+#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
+
+void func_0030D2A0(u8 *self);
+void func_0030DC20(u8 *self);
+void func_0030E2E0(u8 *self);
+
+extern u8 D_00429C10[];
+void func_003140A0(u8 *self);
+
+extern u8 D_0042AED0[];
+void func_00320500(u8 *self);
+void func_00320520(u8 *self);
+
+s32 func_0035B010(void);
+s32 func_0035B020(void);
+s32 func_0035B030(void);
+s32 func_0035B040(void);
+s32 func_0035B050(void);
+s32 func_00353E10(void);
+s32 func_00353E20(void);
+s32 func_00353E30(void);
+s32 func_00353E40(void);
+s32 func_00353E50(void);
+void func_0037BC90(void);
+void func_0033E730(void);
+s32 func_00336F80(void);
+s32 func_00336F90(void);
+s32 func_00336FA0(void);
+s32 func_00336FB0(void);
+s32 func_00336FC0(void);
+void func_00320510(void);
+s32 func_00320530(void);
+s32 func_00320540(void);
+s32 func_00320550(void);
+s32 func_00320560(void);
+s32 func_00320570(void);
+s32 func_00320580(void);
+s32 func_0032C5F0(void);
+s32 func_0032C600(void);
+s32 func_0032C610(void);
+s32 func_0032C620(void);
+s32 func_00349940(void);
+s32 func_00349950(void);
+s32 func_00349960(void);
+s32 func_00349970(void);
+s32 func_00349980(void);
+
+extern u8 D_0042C730[];
+void func_0032C5E0(u8 *self);
+
+extern u8 D_0042F270[];
+extern u8 D_0042F380[];
+extern u8 D_00461140[];
+extern u8 D_00461160[];
+extern u8 D_00461180[];
+extern u8 D_004611A0[];
+extern u8 D_004611C0[];
+extern u8 D_004611E0[];
+extern u8 D_00461200[];
+extern u8 D_00461240[];
+extern u8 D_00461260[];
+extern u8 D_00461280[];
+extern u8 D_004612A0[];
+extern u8 D_004612C0[];
+extern u8 D_004612E0[];
+extern u8 D_00461300[];
+extern u8 D_00461320[];
+extern u8 D_00461340[];
+extern u8 D_00461380[];
+extern u8 D_004613A0[];
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+void *func_00336F00(void);
+void *func_00336F10(void);
+u32 func_00336F20(void);
+void func_00336F30(u8 *self, s32 on);
+void func_00336F70(u8 *self, f32 x, f32 y, f32 z);
+void func_00336FD0(u8 *self, f32 x, f32 y, f32 z);
+void *func_003376D0(void *self, u32 i);
+void func_00337E00(u8 *self);
+void *func_00337F70(void);
+void *func_00337F80(void);
+u32 func_00337F90(void);
+void func_00337FA0(u8 *self, s32 on);
+void func_00338030(u8 *self, f32 x, f32 y, f32 z);
+void *func_00338560(void *self, u32 i);
+void func_00338C00(u8 *self);
+
+extern u32 D_00462870[];
+extern u32 D_00462890[];
+extern u8 D_0043EA80[];
+extern u8 D_00462670[], D_00462690[], D_004626B0[], D_004626D0[], D_004626F0[], D_00462710[], D_00462730[];
+extern u8 D_00462770[], D_00462790[], D_004627B0[], D_004627D0[], D_004627F0[], D_00462810[], D_00462830[];
+void *func_003498D0(void);
+void *func_003498E0(void);
+s32 func_003498F0(void);
+void func_00349900(u8 *p, u32 b, f32 f);
+void func_00349910(u8 *p, f32 x, f32 y, f32 z);
+void func_00349920(u8 *p);
+void func_00349930(u8 *p);
+void *func_00349990(void *self, u32 i);
+void *func_00349A20(void *self, u32 i);
+void func_0034A120(u8 *p);
+
+extern u8 D_004631C0[], D_004631E0[];
+extern u8 D_00462FC0[], D_00462FE0[], D_00463000[], D_00463020[], D_00463040[], D_00463060[], D_00463080[];
+extern u8 D_004630C0[], D_004630E0[], D_00463100[], D_00463120[], D_00463140[], D_00463160[], D_00463180[];
+extern u8 D_00443E20[];
+extern u8 D_00463220[], D_00463240[], D_00463260[], D_00463280[], D_004632A0[], D_004632C0[], D_004632E0[];
+#define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
+
+#define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
+
+#define B7_F(p, off)  (*(f32 *)((u8 *)(p) + (off)))
+
+void *func_00353DB0(void);
+void *func_00353DC0(void);
+s32 func_00353DD0(void);
+void func_00353DE0(u8 *p, f32 x, f32 y, f32 z);
+void func_00353DF0(u8 *p);
+void func_00353E00(u8 *p);
+void *func_00353E60(void *self, u32 i);
+void *func_00353EF0(void *self, u32 i);
+void func_003544A0(u8 *p);
+void *func_0035B060(void *self, u32 i);
+
+s32 func_0035B000(void);
+void func_0037BE70(u8 *o);
 
 /* placement new (models) */
 void *func_002DC6E0(u32 size, void *p) {
@@ -266,10 +458,7 @@ void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
 extern void *D_0046B8F0[], *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[], *D_004703A0[],
     *D_00470440[], *D_004703D0[], *D_00470620[];
 extern void *func_001702F0(void *, s32);
-extern void *func_00170670(void *);
-extern void *func_00170460(void *);
 extern void *func_00170080(void *, s32);
-extern void *func_0016FC10(void *);
 void *func_0016FBB0(void *e, s32 flags);
 void *func_00208E90(void *p);
 
@@ -431,12 +620,7 @@ void func_003A0F90(Progress *p, u32 slot) {
 
 extern void *D_0046C160[], *D_0046B0E0[], *D_00470620[], *D_00472BD0[];
 extern void *func_00208E30(void *, s32);
-extern void *func_0016FB80(void *);
-extern void *func_00170670(void *);
-extern void *func_0016FC10(void *);
 void *func_0016FBB0(void *e, s32 flags);
-extern void *func_0016FB90(void *);
-extern void *func_00170650(void *);
 
 /* the human characters' model base: the model, two of 0x60 at +0x8D0 / +0x930, kind +0x9A0 */
 void *func_00170690(u8 *m, s32 kind) {
@@ -447,6 +631,11 @@ void *func_00170690(u8 *m, s32 kind) {
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     return m;
+}
+
+void *func_001706F0(u8 *p) {
+    FLD(p, 0x58, void **) = D_0046B0D0;
+    return p;
 }
 
 /* an element of Fiona's model's first array (0x50 bytes) */
@@ -532,7 +721,6 @@ void func_003A1720(Progress *p, u32 slot) {
 
 extern void *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[];
 extern void *func_001702F0(void *, s32);
-extern void *func_00170460(void *);
 extern void *func_00170080(void *, s32);
 extern void *func_002089D0(void *);
 extern void *func_00208970(void *, s32);
@@ -668,7 +856,6 @@ extern void func_002EE840(u8 *springs);
 extern const char D_0045E3C0[], D_0045E3E0[], D_0045E400[], D_0045E420[], D_0045E440[],
     D_0045E460[], D_0045E480[];   /* "O_FIN\FIN_00n.PCK" */
 extern u8 D_0041A4B0[], D_0041A4C0[], D_0041A4D0[], D_0041A4E0[], D_0041A4F0[];
-extern f32 *func_0017CE80(void *skeleton, s32 bone); /* bone node */
 extern void func_001F1FD0(u8 *m);
 extern void *D_00470440[], *D_004703B0[], *D_004703D0[];
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
@@ -1009,6 +1196,83 @@ void *func_003497E0(void *p, s32 flags) {
     return m;
 }
 
+void *func_003498D0(void) {
+    return D_00462870;
+}
+
+void *func_003498E0(void) {
+    return D_00462890;
+}
+
+s32 func_003498F0(void) {
+    return 0x41000;
+}
+
+void func_00349900(u8 *p, u32 b, f32 f) {
+    *(f32 *)(p + 0xD1C) = f;
+    p[0xD20] = (u8)b;
+}
+
+void func_00349910(u8 *p, f32 x, f32 y, f32 z) {
+    *(f32 *)(p + 0xD90) = x;
+    *(f32 *)(p + 0xD94) = y;
+    *(f32 *)(p + 0xD98) = z;
+}
+
+void func_00349920(u8 *p) {
+    p[0xCA] |= 2;
+}
+
+void func_00349930(u8 *p) {
+    p[0xCA] &= ~2;
+}
+
+s32 func_00349940(void) {
+    return 0x3;
+}
+
+s32 func_00349950(void) {
+    return 0x7;
+}
+
+s32 func_00349960(void) {
+    return 0xF;
+}
+
+s32 func_00349970(void) {
+    return 0x1F;
+}
+
+s32 func_00349980(void) {
+    return 0xA;
+}
+
+void *func_00349990(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462670;
+    case 1: return D_00462690;
+    case 2: return D_004626B0;
+    case 3: return D_004626D0;
+    case 4: return D_004626F0;
+    case 5: return D_00462710;
+    case 6: return D_00462730;
+    }
+    return NULL;
+}
+
+void *func_00349A20(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462770;
+    case 1: return D_00462790;
+    case 2: return D_004627B0;
+    case 3: return D_004627D0;
+    case 4: return D_004627F0;
+    case 5: return D_00462810;
+    case 6: return D_00462830;
+    }
+    return NULL;
+}
+
 /* the one-node set +0xDA0: node +0xD40 on bone 0xC */
 void func_00349AB0(u8 *m) {
     u8 *node = m + 0xD40;
@@ -1159,6 +1423,11 @@ void func_00349FF0(u8 *m) {
         AT(m, sStiff[i] + 1, u8) = 0x80;
     }
     VCALL(m, 0x2C, void (*)(u8 *))(m);
+}
+
+void func_0034A120(u8 *p) {
+    *(u16 *)(p + 0x840) = 0x10;
+    *(void **)(p + 0x844) = D_0043EA80;
 }
 
 extern void func_001F7AC0(u8 *m);
@@ -1330,7 +1599,6 @@ void func_002DE0A0(u8 *m) {
 
 extern void *D_004562A8;
 extern u8 *func_0017D000(void *pool, s32 nBones);   /* allocate a skeleton */
-extern f32 *func_0017CE80(void *skeleton, s32 bone); /* bone node */
 extern s32 func_0017CE60(u8 *node, f32 *parent);
 extern void func_001F4910(u8 *m);
 
@@ -1451,6 +1719,22 @@ extern u8 D_0041A500[];
 void func_002F8430(u8 *m, s32 slot) {
     AT(m, 0x840, s16) = 16;
     AT(m, 0x844, u8 *) = D_0041A500;
+}
+
+void func_0030D2A0(u8 *self) {
+    PTR(self, 0x874) = D_00424250;
+}
+
+void func_0030DC20(u8 *self) {
+    PTR(self, 0x874) = D_00424490;
+}
+
+void func_0030E2E0(u8 *self) {
+    PTR(self, 0x874) = D_004246C0;
+}
+
+void func_003140A0(u8 *self) {
+    PTR(self, 0x874) = D_00429C10;
 }
 
 /* empty character hook (vt+0xC4 of the base) */
@@ -1704,7 +1988,6 @@ void func_002F7B90(u8 *m) {
     AT(m, 0x17D0, f32) = 1.0f;
 }
 
-extern s32 func_001F4710(u8 *m, s32 anim);   /* the animation's index in the table +0x874 (-1) */
 extern void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
 
 /* the motion back to the default speeds (+0x87C / +0x880) from the start, its flags +0x85C /
@@ -2168,7 +2451,6 @@ void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
     }
 }
 
-
 /* the position of the model's reference bone (+0x8B0, in the skeleton +0x810): its matrix's
  * translation row */
 void func_001F1DE0(u8 *m, f32 *out) {
@@ -2177,12 +2459,10 @@ void func_001F1DE0(u8 *m, f32 *out) {
     sceVu0CopyVector(out, (f32 *)(mtx + 0x30));
 }
 
-
 /* motion: clear flag 0x40 of the current track (+0x6A4, flags +0x18) */
 void func_001F6E10(u8 *m) {
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x40;
 }
-
 
 /* ---- stick gestures: each recognizer arms once the stick is centred (under 0.4) and fires
    when it is then pushed fully (over 0.99) in its direction (the angle from func_0031C5C0:
@@ -2265,7 +2545,6 @@ s32 func_001F1B90(u8 *g, f32 *stick) {
     return r;
 }
 
-
 extern void func_001F36B0(void *track, f32 *out, f32 t);   /* sample a track: out[4..7] = translation */
 
 /* the root translation of slot `slot`'s animation `k` (0, 1: the layer) at its time + dt
@@ -2339,7 +2618,6 @@ void func_001F6370(u8 *m, f32 *out, f32 dt) {
         sceVu0InterVector(out, prev, cur, AT(m, 0x550, f32));
     }
 }
-
 
 static const union { u32 u; f32 f; } kTrkRot = {0x38C90FDB},   /* 2 pi / 65536 */
     kTrkUnit = {0x38000100},                                  /* ~1 / 32767 */
@@ -2497,7 +2775,6 @@ void func_001F36B0(void *track, f32 *out, f32 t) {
     }
 }
 
-
 /* the current slot's root rotation (track 0, y) at its time + dt, scaled by its weight;
  * 0 without an animation */
 f32 func_001F6140(u8 *m, f32 dt) {
@@ -2524,7 +2801,6 @@ f32 func_001F6140(u8 *m, f32 dt) {
     func_001F36B0(track, tmp, t);
     return AT(s, 0x574, f32) * tmp[1];
 }
-
 
 /* the event flags of layer `layer`'s motion at its current frame + `dt` frames (m +0x4D4: per
  * motion of the library +0x4C4, one byte per frame); wrapped into the motion when `loop` and
@@ -2578,7 +2854,6 @@ s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
     }
     return bytes[t];
 }
-
 
 extern void func_001F5F70(u8 *m, f32 *out, void *trkA, void *trkB, f32 ta, f32 tb, f32 w);   /* a bone's position */
 extern void func_0010E610(f32 *out, const f32 *a, const f32 *b, f32 t);   /* xyz lerp, w of a */
@@ -2644,7 +2919,6 @@ s32 func_002DD420(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
     return contact[left] > 0.0f;
 }
 
-
 /* a bone's channel blended between two tracks: track A at ta and B at tb, out = B * w +
  * A * (1 - w) (xyz; format 2 tracks have a second vector at out + 0x10); with only one track,
  * that one (the original takes the second vector from A even when only B exists) */
@@ -2680,7 +2954,6 @@ void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, 
         }
     }
 }
-
 
 extern u32 func_002DD860(void *motion, s32 left, f32 t);   /* foot planted (u8) */
 extern void func_002DC710(u8 *m, f32 *p, u8 *a);          /* drop a point onto the floor */
@@ -2763,7 +3036,6 @@ void func_00210E00(u8 *m, u8 *a, f32 back, f32 front) {
     AT(m, 0x8C0, f32) = AT(m, 0x804, f32);
 }
 
-
 /* put point p on the floor: walk the nav mesh from the character's triangle towards it
  * (vtable +0x24: the edge crossed, 3 inside, 4 lost); in a triangle the mesh gives its height
  * (+0x14); at a wall (no neighbour, or a marked one (+0x18 bit 0x80) blocked by the
@@ -2809,7 +3081,6 @@ void func_002DC710(u8 *m, f32 *p, u8 *a) {
     sceVu0Normalize(d, d);
     p[1] = AT(a, 0x14, f32) + d[1] * len;
 }
-
 
 extern s32 D_004157A0[];   /* hand poses: per pose 5 key frames { s32, s32, f32 } */
 
@@ -2882,7 +3153,6 @@ void func_002DCB40(u8 *m) {
     }
 }
 
-
 extern f32 D_00415B60[14];   /* the eyelids through a blink */
 
 /* the eyes, each frame: a blink plays the eyelid curve over 14 frames (+0x870 counts, both
@@ -2902,6 +3172,12 @@ void func_002DC960(u8 *m) {
     AT(m, 0x870, s32)++;
 }
 
+void func_002DCA50(void *self, u32 *out) {
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+}
 
 extern void func_001F4F40(u8 *m);
 extern void func_001F4D70(u8 *m);
@@ -2987,7 +3263,6 @@ void func_001F6AF0(u8 *m) {
     func_001F5130(m);
 }
 
-
 /* the current track's extra channels at its time: four (+0x68, 8 bytes apart) into +0x58..,
  * two (+0x88) into the hand poses +0x38 / +0x48 */
 void func_001F4F40(u8 *m) {
@@ -3008,7 +3283,6 @@ void func_001F4F40(u8 *m) {
         }
     }
 }
-
 
 /* the length of an animation, in frames */
 static f32 anim_frames(u8 *anim) {
@@ -3132,7 +3406,6 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
     return big;
 }
 
-
 extern void func_002E2E00(void *mat, f32 *rot, const f32 *trans);   /* bone matrix */
 extern void func_0025C630(f32 *q, f32 *axis, f32 (*m)[4]);   /* rotation matrix to axis + angle */
 extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* quaternion of a rotation */
@@ -3229,7 +3502,6 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
     }
 }
 
-
 /* wrap an angle into -pi..pi (in place) */
 static void wrap_pi(f32 *a) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
@@ -3258,7 +3530,6 @@ void func_002E2E00(void *mat, f32 *rot, const f32 *trans) {
     sceVu0RotMatrixZ(m, m, rot[2]);
     sceVu0TransMatrix(m, m, (f32 *)trans);
 }
-
 
 /* the bone with id `id` in a bone list { +0x4 first (next +0x48, id +0x40), +0x8 count } */
 static u8 *bone_find(u8 *list, s32 id) {
@@ -3316,7 +3587,6 @@ void func_001F5D70(u8 *m, void *skel) {
     }
 }
 
-
 /* +0x14 per posed bone (the look-at): bone +0x8B0 is turned by -+0x854 about X and half of
  * +0x858 about Y in its own frame, bone +0x8B4 by half of +0x858 about Y about its own
  * position */
@@ -3340,11 +3610,9 @@ void func_002117C0(u8 *m, s32 i, f32 (*b)[4], void *local) {
     }
 }
 
-
 /* (does nothing) */
 void func_001F1ED0(void) {
 }
-
 
 /* frames in an animation */
 static s32 anim_len(void *anim) {
@@ -3467,7 +3735,6 @@ void func_001F5130(u8 *m) {
     }
 }
 
-
 extern void func_00211530(u8 *m, f32 *right, f32 *left, f32 height);   /* bend the legs to the feet */
 
 /* a foot bone's position (row 3 of its matrix) into `out`; with the slope weight `k` < 1 its
@@ -3543,7 +3810,6 @@ void func_00211190(u8 *m, s32 on, u8 *a) {
     AT(m, 0x8C4, f32) = k;
 }
 
-
 /* +0x44 how much of the feet's height to keep on a slope (track flag 4; else 1): 1 - (1 -
  * ny^2) x |the actor's facing (+0x60 matrix) along the floor's downhill direction|, where ny
  * is the up part of the floor normal under it (+0x34) */
@@ -3578,6 +3844,7 @@ f32 func_002DD980(u8 *m, u8 *a) {
     return k;
 }
 
+f32 func_002DDAB0(void) { return 0.0f; }
 
 /* +0x64 is foot `foot` (channel of the contact track +0x50) down `ofs` frames from now in the
  * current slot's animation (the time wrapped into it) */
@@ -3607,6 +3874,30 @@ s32 func_002DCDE0(u8 *m, s32 foot, s32 ofs) {
     return !(c[foot] <= 0.0f);
 }
 
+/* Moves the two floats at +0x854/+0x858 toward 0 by |step|. */
+void func_002DCF10(u8 *p, f32 step) {
+    f32 v, a;
+
+    if (step <= 0.0f) step = -step;
+    v = F(p, 0x854, f32);
+    a = v <= 0.0f ? -v : v;
+    if (a <= step) {
+        F(p, 0x854, f32) = 0.0f;
+    } else if (v <= 0.0f) {
+        F(p, 0x854, f32) += step;
+    } else {
+        F(p, 0x854, f32) -= step;
+    }
+    v = F(p, 0x858, f32);
+    a = v <= 0.0f ? -v : v;
+    if (a <= step) {
+        F(p, 0x858, f32) = 0.0f;
+    } else if (v <= 0.0f) {
+        F(p, 0x858, f32) += step;
+    } else {
+        F(p, 0x858, f32) -= step;
+    }
+}
 
 /* set up a two-bone IK solver: chain root / middle / end of `skel`, the two bone lengths, -1 */
 extern void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend);
@@ -3660,7 +3951,6 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
     sceVu0AddVector(b + 12, b + 12, dl);
 }
 
-
 /* set up a two-bone IK solver { +0x0 root position, +0x10 middle, +0x20 end (the target), +0x40
  * lengths and bend, +0x4C / +0x50 / +0x54 the chain's nodes }: from the bones root / mid / end
  * of `skel` */
@@ -3679,7 +3969,6 @@ void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32
     AT(ik, 0x44, f32) = len2;
     AT(ik, 0x48, f32) = bend;
 }
-
 
 extern s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend);   /* 0: solved */
 extern void func_001F0F40(u8 *ik);   /* turn the chain's bones to the solution */
@@ -3705,7 +3994,6 @@ void func_001F0E50(u8 *ik) {
     }
     func_001F0F40(ik);
 }
-
 
 /* place the middle joint `mid` of a two-bone chain (lengths len1, len2) from `root` towards
  * `end`, bent to the side of `pole` x direction (scaled by `bend`); 1 when `end` is out of
@@ -3736,7 +4024,6 @@ s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f3
     mid[2] = root[2] + a * d[2] + h * side[2];
     return out;
 }
-
 
 /* a bone's matrix aimed from `from` to `to`: X along it, Z from the pole (+0x30) made square
  * to it, Y = Z x X, all unit, at `from` */
@@ -3815,7 +4102,6 @@ void func_001F0AF0(u8 *ik) {
     ik_turn((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20));
     sceVu0CopyVector(AT(ik, 0x54, f32 *) + 12, (f32 *)(ik + 0x20));
 }
-
 
 /* ---- the three-bone IK solver (vtable D_0046B0C0, derived from the two-bone one; 0x90 bytes):
  * a dog's leg - root +0x0, knee +0x10, hock +0x60, foot +0x20 (the target), the bend
@@ -4014,7 +4300,6 @@ void func_001F0250(u8 *ik) {
     sceVu0CopyVector(footAt, (f32 *)(ik + 0x20));
 }
 
-
 extern void func_002EE8A0(u8 *springs);   /* begin a step */
 extern void func_002EE900(u8 *springs);   /* one step */
 extern void func_002EE840(u8 *springs);   /* finish */
@@ -4097,7 +4382,6 @@ void func_002EE840(u8 *s) {
     }
 }
 
-
 /* +0xC of a point fixed to a bone: its position (+0x0) is the bone (+0x28) of the model's
  * skeleton applied to its offset (+0x10) */
 void func_002EE570(u8 *p, u8 *model) {
@@ -4106,7 +4390,6 @@ void func_002EE570(u8 *p, u8 *model) {
     sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(model, 0x810, void *), AT(p, 0x28, s32)));
     sceVu0ApplyMatrix((f32 *)p, m, (f32 *)(p + 0x10));
 }
-
 
 extern f32 func_0031C3C0(f32 x);   /* acosf */
 extern f32 func_0031C248(f32 x);   /* sinf */
@@ -4172,6 +4455,60 @@ void func_00315F00(u8 *l, u8 *s) {
     sceVu0AddVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), d);
 }
 
+void func_00320500(u8 *self) {
+    self[0xB6] |= 2;
+}
+
+void func_00320510(void) {
+}
+
+void func_00320520(u8 *self) {
+    PTR(self, 0x874) = D_0042AED0;
+}
+
+s32 func_00320530(void) {
+    return 0x2D;
+}
+
+s32 func_00320540(void) {
+    return 0x2C;
+}
+
+s32 func_00320550(void) {
+    return 0x3;
+}
+
+s32 func_00320560(void) {
+    return 0x7;
+}
+
+s32 func_00320570(void) {
+    return 0x1E;
+}
+
+s32 func_00320580(void) {
+    return 0x28;
+}
+
+void func_0032C5E0(u8 *self) {
+    PTR(self, 0x874) = D_0042C730;
+}
+
+s32 func_0032C5F0(void) {
+    return 0x3;
+}
+
+s32 func_0032C600(void) {
+    return 0x6;
+}
+
+s32 func_0032C610(void) {
+    return 0xB;
+}
+
+s32 func_0032C620(void) {
+    return 0xE;
+}
 
 /* +0x10 step of a point hanging from a bone (+0x24) { +0x0 position, +0x10 velocity, +0x40
  * length } in system `s` (+0x0 force, subtracted; +0x10 damping): moved, then kept at its
@@ -4213,7 +4550,6 @@ void func_002EE970(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
-
 /* +0x10 step of a free hanging point { +0x0 position, +0x10 velocity, +0x20 anchored to a bone
  * (+0x24) else the point +0x2C, +0x40 length } in system `s` (+0x0 force, +0x10 damping, +0x18
  * the colliders, +0x20 / +0x1C a floor height): pushed by each collider (+0x8, strength 1) and
@@ -4247,7 +4583,6 @@ void func_002ECE50(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
-
 
 /* +0x10 step of a costume hanging point (the class at 0x475CA0) { +0x0 position, +0x10
  * velocity, +0x20 anchored to a bone (+0x24) else the point +0x2C, +0x40 length, +0x44 rigid,
@@ -4428,6 +4763,25 @@ void func_0036A1C0(u8 *p, u8 *s) {
     sceVu0CopyVector(a + 12, anchor);
 }
 
+/* destructor (vtable D_0047A6F0) */
+void *func_0037B9A0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0047A6F0;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+void func_0037BC90(void) {
+}
+
+void func_0037BE70(u8 *o) {
+    AT(o, 0x44, u8) = 0;
+}
+
 /* +0x8 a sphere collider { +0x0 centre, +0x20 radius, +0x24 falloff }: the push `out` on the
  * point `at` (strength `k`): inside the sphere its offset from the centre x (1 - distance x
  * falloff) x k, else none */
@@ -4446,7 +4800,6 @@ void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
     out[1] = 0.0f;
     out[0] = 0.0f;
 }
-
 
 /* +0x10 step of a point sprung to a bone (+0x24) { +0x0 position, +0x10 velocity, +0x40
  * stiffness } in system `s` (+0x10 damping): pulled to the bone, damped, moved, then flattened
@@ -4491,6 +4844,13 @@ void func_002EEDA0(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
+void *func_002F6DC0(void) {
+    return D_0045E4C0;
+}
+
+void *func_002F6DD0(void) {
+    return D_0045E4E0;
+}
 
 /* +0x14 of a hanging point: its anchor bone (+0x24) is aimed at it - X from the anchor to the
  * point, Y the hanging bone's (+0x44) side axis (+0x48), made square, at the anchor */
@@ -4513,7 +4873,6 @@ void func_00315E00(u8 *p, u8 *s) {
     sceVu0Normalize(a + 8, a + 8);
     sceVu0CopyVector(a + 12, anchor);
 }
-
 
 /* +0x14 of a chained point: its bone (+0x24) is aimed at it - X from the anchor (the bone's own
  * position, or the point it hangs from, +0x2C) to the point, keeping the Y axis of the anchor's
@@ -4542,7 +4901,6 @@ void func_002EE710(u8 *p, u8 *s) {
     sceVu0CopyVector(a + 12, anchor);
 }
 
-
 /* +0x14 of a sprung point: its bone (+0x24) moves to it, its axes scaled by +0x50 / +0x54 /
  * +0x58 */
 void func_002EED20(u8 *p, u8 *s) {
@@ -4554,7 +4912,6 @@ void func_002EED20(u8 *p, u8 *s) {
     sceVu0CopyVector(b + 12, (f32 *)p);
 }
 
-
 extern void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light);   /* queue the model's drawing */
 
 /* draw the model in `layer` (a, b: the character's draw parameters) with its light (+0x6C) */
@@ -4564,7 +4921,6 @@ void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b) {
     VCALL(m, 0x6C, void (*)(u8 *, f32 *))(m, light);
     func_001F6870(m, layer, a, b, light);
 }
-
 
 extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
 
@@ -4899,7 +5255,6 @@ static void gl_morph_parts(u8 *m, const f32 *mvp) {
     }
 }
 
-
 static void gl_draw_model(u8 *m) {
     f32 clip[4][4] __attribute__((aligned(16)));
 
@@ -4937,14 +5292,11 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
 }
 #endif
 
-
 /* `m` = a turn of `a` about Y */
 void func_002E3190(f32 (*m)[4], f32 a) {
     sceVu0UnitMatrix(m);
     sceVu0RotMatrixY(m, m, a);
 }
-
-
 
 /* reset the play state before a new animation (as func_002DDE20): +0x85C / +0x85D off, the
  * speeds +0x38 / +0x3C and +0x48 / +0x4C from the defaults +0x87C / +0x880, +0x40 / +0x50 zero */
@@ -4978,7 +5330,6 @@ void func_002DD040(u8 *m, s32 anim) {
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x10;
     AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
 }
-
 
 /* the motion's time (+0x6A4 +0) = how far cutscene frame `frame` is into its shot (director
    +0x20), shared by the three blend channels' time pointers (+0x704, 0x60 apart) */
@@ -5035,7 +5386,6 @@ void func_002DD110(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
     }
 }
 
-
 /* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
  * previous slot's animation (+0x6A8; the time wrapped into it) */
 u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
@@ -5063,6 +5413,8 @@ u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
     }
     return !(c[foot] <= 0.0f);
 }
+
+f32 func_002DD970(void) { return 1.0f; }
 
 /* ---- the stalkers' and event characters' models (built by the loaders func_0016F420 ..
  * func_00170FB0 for func_00171160) ---- */
@@ -5098,6 +5450,11 @@ void *func_0016F9E0(u8 *m, s32 flags) {
     return HumanModel_Destroy(m, flags);
 }
 
+void *func_0016FAE0(u8 *p) {
+    FLD(p, 0x30, void **) = D_00470390;
+    return p;
+}
+
 /* destructors of the model's parts and array elements: the element's vtable (at +0 or +0x30)
    back to its base, then (flags > 0) delete */
 static inline void *Part_Destroy(u8 *e, s32 at, void **vt, void **base, s32 flags) {
@@ -5117,6 +5474,14 @@ void *func_0016F680(void *e, s32 flags) {
 
 void *func_0016F6E0(void *e, s32 flags) {
     return Part_Destroy(e, 0x0, D_0046ADA0, D_00469D00, flags);
+}
+
+void *func_0016F740(u8 *p) {
+    FLD(p, 0x0, void **) = D_00469D00;
+    FLD(p, 0x4, s32) = -1;
+    FLD(p, 0x0, void **) = D_0046B1C0;
+    FLD(p, 0x2E0, s32) = 0;
+    return p;
 }
 
 void *func_0016F990(void *e, s32 flags) {
@@ -5155,8 +5520,29 @@ void *func_0016FBB0(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_004702B0, D_004703B0, flags);
 }
 
+void *func_0016FC10(u8 *p) {
+    FLD(p, 0x30, void **) = D_004702B0;
+    return p;
+}
+
 void *func_0016FB00(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00473810, D_004703B0, flags);
+}
+
+void *func_0016FB60(u8 *p) {
+    FLD(p, 0x30, void **) = D_00473810;
+    return p;
+}
+
+void *func_0016FB80(u8 *p) {
+    FLD(p, 0x34, s32) = 0;
+    FLD(p, 0x30, s32) = 0;
+    return p;
+}
+
+void *func_0016FB90(u8 *p) {
+    FLD(p, 0x30, void **) = D_004703A0;
+    return p;
 }
 
 void *func_00170080(void *e, s32 flags) {
@@ -5175,16 +5561,36 @@ void *func_001709D0(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00472350, D_004703B0, flags);
 }
 
+void *func_00170A30(u8 *p) {
+    FLD(p, 0x30, void **) = D_00472350;
+    return p;
+}
+
 void *func_00170CB0(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_004737F0, D_004703B0, flags);
+}
+
+void *func_00170D10(u8 *p) {
+    FLD(p, 0x30, void **) = D_004737F0;
+    return p;
 }
 
 void *func_00170EB0(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00470460, D_004703B0, flags);
 }
 
+void *func_00170F10(u8 *p) {
+    FLD(p, 0x30, void **) = D_00470460;
+    return p;
+}
+
 void *func_00170F30(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00472C10, D_004703B0, flags);
+}
+
+void *func_00170F90(u8 *p) {
+    FLD(p, 0x30, void **) = D_00472C10;
+    return p;
 }
 
 /* the base model's destructor (vtable D_0046B210 down to its parts) */
@@ -5213,6 +5619,11 @@ void *func_00170350(void *p, s32 flags) {
         HumanModel_Destroy(m, flags);
     }
     return m;
+}
+
+void *func_00170460(u8 *p) {
+    FLD(p, 0x30, void **) = D_00470700;
+    return p;
 }
 
 /* ---- Fiona's model in the clothes left on the bed (vtable D_00476F50, the D_00470540 layout
@@ -5245,6 +5656,9 @@ void *func_0033E620(void *p, s32 flags) {
         }
     }
     return m;
+}
+
+void func_0033E730(void) {
 }
 
 extern void func_001F1FE0(u8 *m);
@@ -5283,7 +5697,6 @@ void func_0033E740(u8 *m) {
 }
 
 extern void *D_00470540[], *D_004703A0[];
-extern void *func_00170460(void *);
 extern void *func_00170080(void *, s32);
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
@@ -5352,12 +5765,6 @@ static inline u8 *Model_New(Progress *p, u32 size) {
 extern void *D_00474460[], *D_00473BD0[], *D_00476F50[], *D_0046F9E0[], *D_00479740[],
     *D_00472700[], *D_00471CE0[], *D_00471DA0[], *D_00471C20[], *D_00470480[], *D_004702D0[],
     *D_0046C0A0[];
-extern void *func_0016FB60(void *);
-extern void *func_0016FAE0(void *);
-extern void *func_00170A30(void *);
-extern void *func_00170D10(void *);
-extern void *func_00170F90(void *);
-extern void *func_00170F10(void *);
 
 extern void *D_0046C160[];   /* the base with two parts at +0x8D0 / +0x930 */
 
@@ -5598,6 +6005,16 @@ void func_00170510(Progress *p, u32 slot) {
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
+void *func_00170650(u8 *p) {
+    FLD(p, 0x30, void **) = D_00470440;
+    return p;
+}
+
+void *func_00170670(u8 *p) {
+    FLD(p, 0x30, void **) = D_004703D0;
+    return p;
+}
+
 /* the plain model (vtable D_0046F9E0): most event characters */
 void func_00170710(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);
@@ -5773,6 +6190,30 @@ f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
     sceVu0SubVector(r, (f32 *)c, p);
     r[3] = 0.0f;
     return ee_sqrtf(sceVu0InnerProduct(r, r));
+}
+
+/* destructor (vtable D_0046D7B0) */
+void *func_0026B1E0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D7B0;
+        AT(o, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046EB40) */
+void *func_002BAFD0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EB40;
+        AT(o, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
@@ -6068,6 +6509,58 @@ void *func_00336DB0(u8 *m, s32 flags) {
     return costume_dtor(m, flags, D_00475AE0, 0xC, 0xDA0);
 }
 
+void *func_00336F00(void) {
+    return D_00461240;
+}
+
+void *func_00336F10(void) {
+    return D_00461260;
+}
+
+u32 func_00336F20(void) {
+    return 0x41000;
+}
+
+void func_00336F30(u8 *self, s32 on) {
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        self[0x167C + i * 0x50] = on != 0;
+    }
+}
+
+void func_00336F70(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0x1720) = x;
+    F32(self, 0x1724) = y;
+    F32(self, 0x1728) = z;
+}
+
+s32 func_00336F80(void) {
+    return 0x3;
+}
+
+s32 func_00336F90(void) {
+    return 0x7;
+}
+
+s32 func_00336FA0(void) {
+    return 0x1C;
+}
+
+s32 func_00336FB0(void) {
+    return 0x3B;
+}
+
+s32 func_00336FC0(void) {
+    return 0x17;
+}
+
+void func_00336FD0(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0xE90) = x;
+    F32(self, 0xE94) = y;
+    F32(self, 0xE98) = z;
+}
+
 void func_00336FE0(u8 *m) {
     costume_hang3(m, 0xDA0, 0, D_0042F370, D_0042F360, D_0047ADC8, D_0047B284, 24.0f);
 }
@@ -6120,6 +6613,19 @@ void func_00337430(u8 *m) {
     costume_hang16(m, 0xDA0, 0, D_0042F300, D_0042F2C0, D_0042F340, D_0042F350, 0x3F060A92 /* pi / 6 */);
 }
 
+void *func_003376D0(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00461140;
+    case 1: return D_00461160;
+    case 2: return D_00461180;
+    case 3: return D_004611A0;
+    case 4: return D_004611C0;
+    case 5: return D_004611E0;
+    case 6: return D_00461200;
+    }
+    return NULL;
+}
+
 /* her springs, then a reset (+0x850) */
 void func_00337A80(u8 *m) {
     func_00337820(m);
@@ -6161,6 +6667,11 @@ void func_00337CF0(u8 *m) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;
     }
+}
+
+void func_00337E00(u8 *self) {
+    S16(self, 0x840) = 16;
+    PTR(self, 0x844) = D_0042F270;
 }
 
 /* ---- Fiona's costume 7 (D_00479420, built by func_00208420): four spring sets - +0xB40 five
@@ -6206,6 +6717,68 @@ void *func_00353C90(u8 *m, s32 flags) {
         }
     }
     return m;
+}
+
+void *func_00353DB0(void) { return D_004631C0; }
+
+void *func_00353DC0(void) { return D_004631E0; }
+
+s32 func_00353DD0(void) { return 0x41000; }
+
+void func_00353DE0(u8 *p, f32 x, f32 y, f32 z) {
+    B7_F(p, 0xBD0) = x;
+    B7_F(p, 0xBD4) = y;
+    B7_F(p, 0xBD8) = z;
+}
+
+void func_00353DF0(u8 *p) { B7_B(p, 0xDE) |= 2; }
+
+void func_00353E00(u8 *p) { B7_B(p, 0xDE) &= ~2; }
+
+s32 func_00353E10(void) {
+    return 0x3;
+}
+
+s32 func_00353E20(void) {
+    return 0x7;
+}
+
+s32 func_00353E30(void) {
+    return 0x11;
+}
+
+s32 func_00353E40(void) {
+    return 0x21;
+}
+
+s32 func_00353E50(void) {
+    return 0xA;
+}
+
+void *func_00353E60(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462FC0;
+    case 1: return D_00462FE0;
+    case 2: return D_00463000;
+    case 3: return D_00463020;
+    case 4: return D_00463040;
+    case 5: return D_00463060;
+    case 6: return D_00463080;
+    }
+    return NULL;
+}
+
+void *func_00353EF0(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_004630C0;
+    case 1: return D_004630E0;
+    case 2: return D_00463100;
+    case 3: return D_00463120;
+    case 4: return D_00463140;
+    case 5: return D_00463160;
+    case 6: return D_00463180;
+    }
+    return NULL;
 }
 
 void func_00353F80(u8 *m) {
@@ -6292,9 +6865,34 @@ void func_003543C0(u8 *m) {
     VCALL(m, 0x2C, void (*)(u8 *))(m);
 }
 
+void func_003544A0(u8 *p) {
+    B7_H(p, 0x840) = 0x10;
+    *(void **)(p + 0x844) = D_00443E20;
+}
+
 /* costume 3 */
 void *func_00337E20(u8 *m, s32 flags) {
     return costume_dtor(m, flags, D_00475BC0, 8, 0xC60);
+}
+
+void *func_00337F70(void) {
+    return D_00461380;
+}
+
+void *func_00337F80(void) {
+    return D_004613A0;
+}
+
+u32 func_00337F90(void) {
+    return 0x41000;
+}
+
+void func_00337FA0(u8 *self, s32 on) {
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        self[0x153C + i * 0x50] = on != 0;
+    }
 }
 
 /* +0x84..+0x94: part roles */
@@ -6304,12 +6902,31 @@ s32 func_00338000(void) { return 0x18; }
 s32 func_00338010(void) { return 0x37; }
 s32 func_00338020(void) { return 0x13; }
 
+void func_00338030(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0xD50) = x;
+    F32(self, 0xD54) = y;
+    F32(self, 0xD58) = z;
+}
+
 void func_00338040(u8 *m) {
     costume_hang3(m, 0xC60, -4, D_0042F460, D_0042F450, D_0047ADCC, D_0047B288, 20.0f);
 }
 
 void func_003382C0(u8 *m) {
     costume_hang16(m, 0xC60, -4, D_0042F3F0, D_0042F3B0, D_0042F430, D_0042F440, 0x3F1C61AB /* 35 degrees */);
+}
+
+void *func_00338560(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00461280;
+    case 1: return D_004612A0;
+    case 2: return D_004612C0;
+    case 3: return D_004612E0;
+    case 4: return D_00461300;
+    case 5: return D_00461320;
+    case 6: return D_00461340;
+    }
+    return NULL;
 }
 
 /* the one-node set +0xD60, node +0xD00 on bone 0x15 (as func_00337760) */
@@ -6397,6 +7014,11 @@ void func_00338AF0(u8 *m) {
     }
 }
 
+void func_00338C00(u8 *self) {
+    S16(self, 0x840) = 16;
+    PTR(self, 0x844) = D_0042F380;
+}
+
 /* Fiona's costume 8 model's destructor (vtable D_00479660, then the kind base, then delete) */
 void *func_0035AF70(void *p, s32 flags) {
     u8 *m = p;
@@ -6410,4 +7032,50 @@ void *func_0035AF70(void *p, s32 flags) {
         }
     }
     return m;
+}
+
+void *func_0035AFE0(void) {
+    return D_00463320;
+}
+
+void *func_0035AFF0(void) {
+    return D_00463340;
+}
+
+s32 func_0035B000(void) {
+    return 0x41000;
+}
+
+s32 func_0035B010(void) {
+    return 0x3;
+}
+
+s32 func_0035B020(void) {
+    return 0x7;
+}
+
+s32 func_0035B030(void) {
+    return 0xE;
+}
+
+s32 func_0035B040(void) {
+    return 0x18;
+}
+
+s32 func_0035B050(void) {
+    return 0xB;
+}
+
+/* (as func_00353EF0) */
+void *func_0035B060(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00463220;
+    case 1: return D_00463240;
+    case 2: return D_00463260;
+    case 3: return D_00463280;
+    case 4: return D_004632A0;
+    case 5: return D_004632C0;
+    case 6: return D_004632E0;
+    }
+    return NULL;
 }

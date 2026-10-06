@@ -5,7 +5,8 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
-
+#include "ptmf.h"
+#include "actor.h"
 
 #define LOADER_DIRS 208
 #define LOADER_DIR_NAME(l, i) ((char *)(l) + 0x12810 + (i) * 0x104)
@@ -16,6 +17,10 @@ extern s32 func_00118278(const char *a, const char *b);             /* strcmp */
 extern char *func_001183C0(char *dst, const char *src);             /* strcpy */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_0044F7F0[];   /* "." (the root) */
+
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_001695D0(u8 *p);
 
 /* init: 256 empty request slots, the root's listing, the folder slots' listing buffers */
 void func_0016C530(u8 *l) {
@@ -204,6 +209,43 @@ void func_001694D0(u8 *q, const char *path) {
     }
 }
 
+/* Store the parameters, then tail-call virtual +0xC (Reset) with them. */
+/* LZSS decompression: +0x18 source (4-byte header), +0x1C destination.
+ * Flag bit 1 = literal byte, 0 = 16-bit back-reference (len = low 4 bits + 2,
+ * distance = high 12 bits); a zero reference ends the stream. */
+void func_001695D0(u8 *p) {
+    u8 *src = FLD(p, 0x18, u8 *) + 4;
+    u8 *dst = FLD(p, 0x1C, u8 *);
+    u32 bits = 1;
+    u32 flags = 0;
+
+    for (;;) {
+        bits--;
+        flags >>= 1;
+        if (bits == 0) {
+            flags = *src++;
+            bits = 8;
+        }
+        if (flags & 1) {
+            *dst++ = *src++;
+        } else {
+            u32 w = src[0] | (src[1] << 8);
+            u32 dist, len;
+
+            src += 2;
+            if (w == 0) {
+                return;
+            }
+            len = (w & 0xF) + 2;
+            dist = w >> 4;
+            do {
+                *dst = *(dst - dist);
+                dst++;
+            } while (--len != 0);
+        }
+    }
+}
+
 /* +0x2C size of file `path` in sectors (0: not found) */
 s32 func_00169450(VObject *l, const char *path) {
     u8 *q = func_00100660(0x128);
@@ -297,7 +339,6 @@ _Static_assert(sizeof(LoadReq) == 0x128, "LoadReq");
 #define LOADER_RD(l) AT(l, 0x12804, u8)
 #define LOADER_WR(l) AT(l, 0x12805, u8)
 
-extern void func_001695D0(LoadReq *q);
 extern void ADXF_StopNw(void *f);
 
 static inline void LoadReq_Clear(LoadReq *q) {
@@ -376,7 +417,7 @@ void func_0016BFB0(u8 *l) {
             }
             if (q->notify != 0 && q->size != 0) {
                 if (q->kind == 0) {
-                    func_001695D0(q);
+                    func_001695D0((u8 *)q);
                 } else {
                     if ((VCALL(drv, 0x70, s32 (*)(VObject *, s32))(drv, q->bank) & 0xFF) == 1) {
                         return;

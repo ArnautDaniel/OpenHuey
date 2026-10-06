@@ -7,8 +7,37 @@
 #include "progress.h"
 #include "texcache.h"
 #include "globals.h"
+#include "game.h"
+#include "actor.h"
+#include "ptmf.h"
 
 extern void func_001267F0(Character *c, s32 v);
+
+void func_0031FBE0(Pursuer *p);
+
+s32 func_0031FBF0(void);
+s32 func_0031FC00(void);
+
+extern u8 D_0042A2C0[];
+extern u8 D_0042A300[];
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+f32 func_0031FC10(void);
+f32 func_0031FC20(void);
+f32 func_0031FC30(void);
+s32 func_0031FC40(u8 *self);
+void *func_00320190(void);
 
 /* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),
    while opening or attacking it: use and damage it and change room through it (vtable +0x28) */
@@ -142,6 +171,50 @@ void func_0031FB80(Pursuer *p) {
     func_0028D6E0(p);
 }
 
+/* +0x17C4 / +0x17C8 = 150, then func_002927D0 */
+void func_0031FBE0(Pursuer *p) {
+    PU(p, 0x17C4, s32) = 0x96;
+    func_002927D0(p);
+}
+
+s32 func_0031FBF0(void) {
+    return 0x11;
+}
+
+s32 func_0031FC00(void) {
+    return 0x10;
+}
+
+f32 func_0031FC10(void) {
+    return 1e+01f;
+}
+
+f32 func_0031FC20(void) {
+    return 3e+01f;
+}
+
+f32 func_0031FC30(void) {
+    return 12.0f;
+}
+
+s32 func_0031FC40(u8 *self) {
+    f32 d;
+
+    if (S32(self, 0xC4) == 1) {
+        return 0x203;
+    }
+    if (S32(self, 0x16B8) == 2) {
+        return 0x205;
+    }
+    if (self[0x1544] != 0 && PTR(self, 0x1540) == gCharPlayer) {
+        d = F32(self, 0x1588);
+        if (d < 100.0f && !(d <= 0.0f)) {
+            return 0x206;
+        }
+    }
+    return 0x201;
+}
+
 /* vtable +0x30: its frame update: the stalkers' (Stalker_ThinkStart / Stalker_ThinkEnd) with
    the tint (func_0031F6E0) before the model and stance */
 void func_0031FCE0(Pursuer *p) {
@@ -211,6 +284,10 @@ void func_00320000(Pursuer *p) {
     if (p->c.unk152C == 0x11) {
         VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
     }
+}
+
+void *func_00320190(void) {
+    return b5_prog_flag8000() ? D_0042A300 : D_0042A2C0;
 }
 
 extern u8 D_0042A380[], D_0042A4D0[], D_0042A4E0[], D_0042A770[], D_0042A7A0[], D_0042AAD0[],

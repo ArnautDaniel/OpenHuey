@@ -2,6 +2,23 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
+#include "ptmf.h"
+#include "progress.h"
+#include "actor.h"
+
+extern void *D_0046C790[], *D_0046F430[];
+extern void *D_0046D5F0[];
+typedef struct ItemObj {
+    void *vtbl;
+    s32 id;
+    u8 flag;
+    u64 data; /* +0x10 */
+} ItemObj;
+
+ItemObj *func_00263220(ItemObj *self);
+ItemObj *func_00264060(ItemObj *self, s32 id);
+
+void func_002D3A60(u8 *p, const u8 *src);
 
 /* +0x10: the item in equipment slot `slot` (+0x15E0[slot], its +0xC; -1: empty slot) */
 s32 func_00260690(u8 *items, u8 slot) {
@@ -95,7 +112,6 @@ u32 func_00260CF0(u8 *o, s32 id) {
  * (+0x1208) ---- */
 
 typedef void *(*ItemCtor)(void *self);
-extern void *func_00263220(void *self);
 extern void *func_002632B0(void *self);
 extern void *func_002632E0(void *self);
 extern void *func_00263310(void *self);
@@ -198,7 +214,6 @@ extern void *func_00264840(void *self);
 extern void *func_00264870(void *self);
 extern void *func_002648A0(void *self);
 extern void *func_002648D0(void *self);
-extern void *func_00264060(void *self, s32 id);
 extern void *func_0025FF00(u32 size, void *mem);   /* placement new */
 
 static ItemCtor const kItemCtors[0xAD] = {
@@ -304,7 +319,7 @@ static ItemCtor const kItemCtors[0xAD] = {
     [0xA9] = func_00263310,
     [0xAA] = func_002632E0,
     [0xAB] = func_002632B0,
-    [0xAC] = func_00263220,
+    [0xAC] = (void *(*)(void *))func_00263220,
 };
 
 /* give n of item id: added to one already held if that kind stacks (+0x18), else made in the
@@ -354,6 +369,34 @@ void *func_00261090(u8 *items, u32 id, s32 n) {
     return o;
 }
 
+ItemObj *func_00263220(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xAC;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D5F0;
+    return self;
+}
+
+/* item 0x3F's class takes its id as an argument; func_00261090 calls it without one, so the id
+ * is whatever a1 held: the object's own address (see there) */
+ItemObj *func_00264060(ItemObj *self, s32 id) {
+    self->vtbl = D_0046C790;
+    self->id = id;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046F430;
+    return self;
+}
+
+void func_002D3A60(u8 *p, const u8 *src) {
+    u32 i;
+
+    for (i = 0; i < 8; i++) {
+        p[0x10 + i] = src[i];
+    }
+}
+
 /* item `i` of list `l`'s +0x20 (0 for an empty place) */
 s32 func_002604E0(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
@@ -395,8 +438,6 @@ void func_00260170(u8 *o, s32 id, s32 arg) {
         }
     }
 }
-
-extern void func_002D3A60(u8 *p, const u8 *src);
 
 /* a new item 0x3F (one) set from `src` (func_002D3A60); the item, NULL if none */
 void *func_00261040(u8 *items, const u8 *src) {

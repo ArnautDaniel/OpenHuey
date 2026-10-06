@@ -13,6 +13,7 @@
 #include "gs.h"
 #include "texcache.h"
 #include "globals.h"
+#include "ptmf.h"
 
 #define AT32(p, off) AT(p, off, s32)
 
@@ -31,6 +32,9 @@ static const char sSlots12[] = "1,2";
 #define MSG_NO_ROOM 0x12   /* in slot(s) %s */
 #define MSG_NO_DATA 0x16
 #define MSG_LOADED 0x17
+
+extern u8 D_00463A50[];
+void *func_0037E3F0(void);
 
 static inline void sys_copy(SysData *d, const SysData *s) {
     s32 i;
@@ -225,6 +229,10 @@ BootCard *BootCard_ctor(BootCard *b) {
     return b;
 }
 
+void *func_0037E3F0(void) {
+    return D_00463A50;
+}
+
 /* destructor */
 BootCard *BootCard_dtor(BootCard *b, s32 flags) {
     if (b != NULL) {
@@ -259,7 +267,6 @@ void SaveScreen_Init(BootCard *b, void *buf0, void *buf1) {
     b->buf0 = buf0;
     b->buf1 = buf1;
 }
-
 
 /* the save screen's parts (texture group 0x19): texture, CLUT (0x80: blend with the alpha
  * channel as is), u, v, w, h, x, y, screen w, h */
@@ -654,7 +661,6 @@ void SaveScreen_Load(BootCard *b) {
 
 #include "progress.h"
 
-extern const char *func_0037E3F0(void);   /* the game data file's name */
 extern void func_002A76E0(u8 *p);         /* four bytes cleared */
 extern void func_002A8060(u8 *p);         /* a fresh save's progress */
 extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */

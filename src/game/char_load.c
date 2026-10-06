@@ -5,13 +5,13 @@
 #include "game.h"
 #include "progress.h"
 #include "actor.h"
+#include "ptmf.h"
+
+void *func_001727C0(void *p, s32 arg);
 
 extern void *func_00124E50(u32 size, void *mem);   /* placement new */
-extern s32 Characters_Register(void *self, u32 slot, void *obj);
 extern void func_0016D180(Progress *p, s32 slot);
 
-/* the kinds' constructors (b0_001727C0.c) and model loaders (model.c) */
-extern void *func_001727C0(void *obj, s32 slot);
 extern void *func_00172910(void *obj, s32 slot);
 extern void *func_00172960(void *obj, s32 slot);
 extern void *func_001729B0(void *obj, s32 slot);
@@ -117,6 +117,27 @@ static const u8 sReady[0x28] = {
 extern void hg_skipped(const char *what);   /* native/platform/skip.c */
 #endif
 
+extern void *D_00469C20[];
+extern void *D_00469C60[];
+extern void *D_0046D810[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+s32 Characters_Register(void *self, u32 kind, void *obj);
+void *func_00171090(u8 *p, u32 id, s32 arg);
+
+extern void *D_00478FF0[];
+static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
+    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x1380, s32) = 0;
+    FLD(p, 0x153C, u8) = (u8)id;
+    FLD(p, 0x0, void **) = vtbl;
+    return p;
+}
+
+
 /* load character kind `id` into slot 2: 1 when it's there; 0 when slot 2 is taken, the kind has
    no character or the heap is full */
 u8 func_00171160(Progress *p, u32 id) {
@@ -158,6 +179,10 @@ u8 func_00171160(Progress *p, u32 id) {
     return 1;
 }
 
+void *func_001727C0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x26, arg, D_00478FF0);
+}
+
 /* the character in `slot` gets its data buffers: their sizes (vtable +0xFC, seven) as one
  * block from the scene heap (+0x166C; +0x1668 set), split in order to +0x1670, +0x1678,
  * +0x1674, (none for the fourth, though its size is counted), +0x167C, +0x1680, +0x1684; an
@@ -191,7 +216,25 @@ void func_0016D180(Progress *p, s32 slot) {
     }
 }
 
-extern void *func_00171090(void *obj, s32 kind, s32 slot);   /* the event character (D_0046D810) */
+s32 Characters_Register(void *self, u32 kind, void *obj) {
+    if (kind < 6 && gCharacters[kind] == NULL) {
+        gCharacters[kind] = obj;
+        FLD(gCharacters[kind], 0x20, u32) = kind;
+        switch (kind) {
+        case 0:
+            gCharPlayer = obj;
+            break;
+        case 1:
+            gCharPartner = obj;
+            break;
+        case 2:
+            gCharPursuer = obj;
+            break;
+        }
+        return 1;
+    }
+    return 0;
+}
 
 /* load character kind `id` as an event character into `slot` (3..5, free): 0x17C0 bytes from
    the scene heap, its kind's model; 1 when it's there, 0 when not (no character for that kind:
@@ -223,4 +266,16 @@ s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
     k->model(p, slot);
     AT(obj, 0x1668, u8) = 0;
     return 1;
+}
+
+/* Room object constructor: base 0x469C20 -> 0x469C60 -> 0x46D810; id at +0x153C. */
+void *func_00171090(u8 *p, u32 id, s32 arg) {
+    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x1380, s32) = 0;
+    p[0x153C] = (u8)id;
+    FLD(p, 0x0, void **) = D_0046D810;
+    return p;
 }

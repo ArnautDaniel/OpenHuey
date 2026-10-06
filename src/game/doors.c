@@ -13,6 +13,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "memcard.h"
 
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
@@ -30,6 +31,8 @@ extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);   /* door i
 #define DOOR(d, i) ((u8 *)(d) + ((i) & 0xFF) * 0x210)
 #define PI_F 0x1.921fb6p+1f
 #define TWO_PI_F 0x1.921fb6p+2f
+
+void *func_0025E950(u8 *o, s32 flags);
 
 /* door i is defined (section 7 has its entry) */
 static s32 door_present(VObject *d, u32 i) {
@@ -494,7 +497,6 @@ void func_002238F0(VObject *d) {
     AT(d, 0x4, u8 *) = NULL;
 }
 
-
 /* ---- a door sound and the noise it makes ---- */
 
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
@@ -529,7 +531,6 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
     room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     func_002A8440((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
 }
-
 
 /* ---- the route planner (gRoutePlanner, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first
  * search from room to room through the doors (gRooms's links), up to 128 steps:
@@ -698,4 +699,17 @@ void func_00223DE0(u8 *o, f32 v) {
         return;
     }
     AT(o, 0x50, f32) = v;
+}
+
+/* destructor (vtable D_0046C780) */
+void *func_0025E950(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046C780;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }

@@ -5,9 +5,38 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "memcard.h"
-
+#include "actor.h"
+#include "navmesh.h"
+#include "progress.h"
 
 extern void *D_0046BEE0[];
+
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+s32 func_0016B420(u8 *p);
+s32 func_0016B470(u8 *p, s32 kind);
+s32 func_0016B510(u8 *p);
+
+extern void *D_0046AC50[];
+extern void *D_0046ACF0[];
+extern void *D_0046AD88[];
+extern void *D_0046ADD0[];
+extern void *D_0046AE10[];
+extern void *D_0046AF20[];
+extern void *D_0046B050[];
+extern void func_00100490(void *p);
+void *func_001AAE10(u8 *o, s32 flags);
+void *func_001BC090(u8 *o, s32 flags);
+void *func_001BC320(u8 *o, s32 flags);
+void *func_001BE730(u8 *o, s32 flags);
+void *func_001BECA0(u8 *o, s32 flags);
+void *func_001BF220(u8 *o, s32 flags);
+void *func_001BF7A0(u8 *o, s32 flags);
+void *func_001BF880(u8 *o, s32 flags);
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002D4680(void *self, u8 *p);
 
 /* Game's base class constructor. */
 void *func_0020E7F0(Game *game) {
@@ -17,6 +46,35 @@ void *func_0020E7F0(Game *game) {
     game->softResetEnabled = 0;
     game->modeParam = 0;
     return game;
+}
+
+/* Starts a 16.16 fade of channel i from `from` to `to` over `frames` (12 bits) frames. */
+/* The original null-checks the address of each member (inlined constructors). */
+void func_002D4680(void *self, u8 *p) {
+    u32 a = (u32)p;
+    s32 i;
+
+    p[0] = 0;
+    if (a + 0x4 != 0) F(p, 0x4, u16) = 0;
+    if (a + 0x8 != 0) F(p, 0x8, u16) = 0;
+    if (a + 0xC != 0) F(p, 0xC, u16) = 0;
+    if (a + 0x14 != 0) F(p, 0x14, u16) = 0;
+    if (a + 0x18 != 0) F(p, 0x18, u16) = 0;
+    if (a + 0x1C != 0) F(p, 0x1C, u16) = 0;
+    if (a + 0x20 != 0) F(p, 0x20, u16) = 0;
+    if (a + 0x24 != 0) {
+        for (i = 0; i < 16; i++) {
+            p[0x24 + i] = 0;
+        }
+    }
+    F(p, 0x50, u32) = 0;
+    F(p, 0x40, u32) = 0;
+    F(p, 0x54, u32) = 0;
+    F(p, 0x44, u32) = 0;
+    F(p, 0x58, u32) = 0;
+    F(p, 0x48, u32) = 0;
+    F(p, 0x5C, u32) = 0;
+    F(p, 0x4C, u32) = 0;
 }
 
 /* Element constructors for two arrays in the +0x395D40 object. */
@@ -48,11 +106,9 @@ extern u8 D_0047E360[], D_0047E3C0[16], D_0047E3D0[16];
 extern const PTMF sGameStateNull;
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
-extern void func_002D4680(void *obj, void *arg);
 extern void *func_002D4630(void *f);   /* rumble constructor (rumble.c) */
 extern void func_001B80C0(u8 *r);
-extern void func_00100340(void *array, void *(*ctor)(void *), void (*dtor)(void *, s32), u32 size, u32 count);   /* __construct_array */
-extern void func_001BECA0(void *, s32);   /* the element destructors */
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 count);   /* __construct_array */
 void *func_001BEC10(u8 *, s32);
 
 /* System object constructor. */
@@ -157,6 +213,29 @@ void func_001B80C0(u8 *r) {
     AT(r, 0x304DDC, s32) = 0;
 }
 
+/* destructor (vtable D_0046ACF0) */
+void *func_001BC090(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046ACF0;
+        gRenderer = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046AD88) */
+void *func_001BC320(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AD88;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 /* Heap (vtable 0x46A1C0) setup: memory, size, block table, block count; then its init (+0xC). */
 void func_00169260(VObject *h, void *base, u32 size, void *blocks, s32 count) {
     AT(h, 0x4, void *) = base;
@@ -164,6 +243,48 @@ void func_00169260(VObject *h, void *base, u32 size, void *blocks, s32 count) {
     AT(h, 0xC, void *) = blocks;
     AT(h, 0x10, s32) = count;
     VCALL(h, 0xC, void (*)(VObject *, void *, u32, void *, s32))(h, base, size, blocks, count);
+}
+
+/* Entries of 0x128 bytes; +0x12804 current index, +0x12805 end index. */
+s32 func_0016B420(u8 *p) {
+    s32 v = FLD(p + p[0x12804] * 0x128, 0x8, s32);
+
+    return v == 6 || v == 7;
+}
+
+s32 func_0016B470(u8 *p, s32 kind) {
+    u8 end = p[0x12805];
+    u8 i = p[0x12804];
+
+    if (i == end) {
+        return 3;
+    }
+    for (; i != end; i++) {
+        if (FLD(p + i * 0x128, 0x18, s32) == kind) {
+            return 2;
+        }
+    }
+    return 3;
+}
+
+s32 func_0016B510(u8 *p) {
+    if (p[0x12804] == p[0x12805]) {
+        return 3;
+    }
+    return 2;
+}
+
+/* destructor (vtable D_0046AC50) */
+void *func_001AAE10(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AC50;
+        AT(o, 0x0, void **) = D_0046ACF0;
+        gRenderer = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 extern void *D_0046BF08[], *D_004699E0[], *D_0046A1C0[];
@@ -335,6 +456,43 @@ void func_001BF080(u8 *s) {
     func_00169680(s + 0x319900);
 }
 
+/* destructor (vtable D_0046AE10) */
+void *func_001BF220(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AE10;
+        gSystem = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046AF20) */
+void *func_001BF7A0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AF20;
+        gVram = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046B050) */
+void *func_001BF880(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046B050;
+        AT(o, 0x0, void **) = D_0046AF20;
+        gVram = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 extern void func_001B87D0(void *renderer);
 extern void func_001B8750(void *renderer);
 extern void func_001B86A0(void *renderer);
@@ -386,6 +544,18 @@ void func_001BE480(u8 *pads) {
     func_001EF9D0();
 }
 
+/* destructor (vtable D_0046ADD0) */
+void *func_001BE730(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046ADD0;
+        gPad = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 extern void func_00274640(u32 addr);   /* free IOP memory */
 extern void func_00100490(void *p);   /* operator delete */
 
@@ -409,6 +579,22 @@ void *func_001BEC10(u8 *e, s32 flags) {
         func_00100490(e);
     }
     return e;
+}
+
+/* destructor (vtable ?) */
+void *func_001BECA0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x0, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0x14, s32) = 0;
+        AT(o, 0x10, u8) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046ACF0[];

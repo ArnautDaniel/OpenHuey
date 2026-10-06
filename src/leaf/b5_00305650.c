@@ -9,11 +9,6 @@
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 #define B5_PI 0x1.921fb60000000p+1f /* 3.14159274 */ /* 0x40490FDB */
-/* writes {x, 0, z} */
-#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
-/* gFileLoader vtable +0xC: start loading file `name` into `dest` (flags 0x4000000) */
-#define FILE_LOAD_ASYNC(name, dest) \
-    VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, void *, u32, s32))(gFileLoader, name, dest, 0x4000000, 0)
 
 extern u8 D_00420B40[];
 extern u8 D_00420B80[];
@@ -38,37 +33,13 @@ extern u8 D_00421FC0[];
 extern void *D_004222D0[];
 extern u8 D_00422320[];
 extern u8 D_00422360[];
-extern u8 D_00422380[];
 extern u8 D_004223A0[];
-extern u8 D_004223C0[];
 extern u8 D_004223E0[];
-extern u8 D_004224C0[];
-extern u8 D_0045EC50[];
-extern u8 D_0045EC70[];
-extern u8 D_0045EC90[];
-extern u8 D_0045ECB0[];
-extern u8 D_0045ECD0[];
 extern void *D_0047AD08[];
 
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
-}
-
-/* Copies a light/pose record when its type field (src[0]) is 0; angles are given in degrees. */
-void func_00305650(u8 *self, f32 *src) {
-    if (src != NULL && src[0] == 0.0f) {
-        F32(self, 0x10) = src[1];
-        F32(self, 0x14) = src[2];
-        F32(self, 0x18) = src[3];
-        F32(self, 0x1C) = 1.0f;
-        F32(self, 0x30) = src[4] - 1.0f;
-        F32(self, 0x34) = src[5] - 1.0f;
-        F32(self, 0x20) = (B5_PI * src[6]) / 180.0f;
-        F32(self, 0x24) = (B5_PI * src[7]) / 180.0f;
-        F32(self, 0x28) = (B5_PI * src[8]) / 180.0f;
-        F32(self, 0x2C) = 0.0f;
-    }
 }
 
 void *func_00305EF0(void) {
@@ -112,26 +83,6 @@ void func_003062F0(u8 *self, f32 *src) {
         F32(self, 0x28) = (B5_PI * src[8]) / 180.0f;
         F32(self, 0x2C) = 0.0f;
     }
-}
-
-s32 func_00306B90(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC50, dest);
-}
-
-s32 func_003071A0(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC70, dest);
-}
-
-s32 func_003077B0(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC90, dest);
-}
-
-s32 func_00307DC0(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045ECB0, dest);
-}
-
-s32 func_003083D0(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045ECD0, dest);
 }
 
 void *func_003089F0(void) {
@@ -210,37 +161,6 @@ void *func_00308FD0(void) {
     return D_004223E0;
 }
 
-void *func_00309410(void) {
-    return b5_prog_flag8000() ? D_004223C0 : D_00422380;
-}
-
 void *func_00309450(void) {
     return b5_prog_flag8000() ? D_004223A0 : D_00422360;
-}
-
-void *func_003095A0(void) {
-    return D_004224C0;
-}
-
-void func_003095B0(void *self, s32 id, f32 *out) {
-    switch (id) {
-    case 10:
-    case 11:
-        B5_SET3(out, 0x1.2d566c0000000p+0f /* 1.1771 */, 0x1.3a28f60000000p+3f /* 9.8175 */);
-        break;
-    case 12:
-    case 13:
-        B5_SET3(out, 0x1.e8587a0000000p-1f /* 0.9538 */, 0x1.abdcc60000000p+3f /* 13.3707 */);
-        break;
-    case 14:
-        B5_SET3(out, -0x1.25a8580000000p+0f /* 1.1471 */, -0x1.42a64c0000000p+1f /* 2.5207 */);
-        break;
-    case 15:
-        B5_SET3(out, -0x1.2f4f0e0000000p-3f /* 0.1481 */, -0x1.fd1eb80000000p+1f /* 3.9775 */);
-        break;
-    }
-}
-
-void func_00309670(u8 *self) {
-    self[0x16EE] = 1;
 }

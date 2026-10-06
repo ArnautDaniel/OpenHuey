@@ -21,10 +21,11 @@
 #include "sound.h"
 #include "texcache.h"
 #include "globals.h"
+#include "progress.h"
+#include "actor.h"
 
 extern void *D_00474020[];
 extern u8 D_0047B350;
-extern void func_00322560(void *p);                 /* delete (the sub screen's pool) */
 extern u32 func_00260CF0(void *items, s32 id);      /* how many of an item */
 extern s32 func_00260BB0(void *items, s32 id);      /* one of an item used */
 extern const char D_00460408[];                     /* the count's format */
@@ -36,6 +37,14 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 #define SY_TASK(o) ((Task *)((o) + 0x14))
 #define SY_STEP(o) AT(o, 0x10, s32)
 #define SY_STATE(o) ((PTMF *)((o) + 0x4))
+
+void func_00322560(void *o);
+void func_00322A00(void);
+void func_00322B70(void);
+void func_003244C0(void);
+
+void func_00322A60(u8 *self);
+void func_00322B30(u8 *self);
 
 /* a sprite from the synthesizer's texture (4 of group 0x19), layer 0x30 */
 static inline void sy_rect(s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, u32 rgba, s32 tex, s32 group, s32 clut) {
@@ -65,12 +74,24 @@ void *func_003224F0(u8 *o) {
     return o;
 }
 
+void func_00322560(void *o) {
+}
+
 /* base +0x10: each frame, its state */
 void func_00322A10(u8 *o) {
     D_0047B350 = 1;
     if (ptmf_test(SY_STATE(o))) {
         ptmf_scall(o, SY_STATE(o));
     }
+}
+
+void func_00322A60(u8 *self) {
+    s32 i;
+
+    for (i = 0; i < 0x40; i++) {
+        ((volatile u8 *)self)[0x118 + i] = 0xFF;
+    }
+    self[0x158] = 0;
 }
 
 /* a subclass's +0x8: destroy as the base (its task too), freed when `flags` > 0 */
@@ -96,6 +117,15 @@ void *func_00322AA0(u8 *o, s32 flags) {
     return sy_dtor(o, D_00474040, flags);
 }
 
+void func_00322B30(u8 *self) {
+    if ((D_0047E36C >> 5) & 1) {
+        self[0x158] = 1;
+    }
+}
+
+void func_00322B70(void) {
+}
+
 /* the slot machine +0x8 */
 void *func_00322C40(u8 *o, s32 flags) {
     return sy_dtor(o, D_00474060, flags);
@@ -113,6 +143,9 @@ s32 func_00322970(u8 *o) {
         any = any || n != 0;
     }
     return any;
+}
+
+void func_00322A00(void) {
 }
 
 /* the pot +0xC: started - the counts taken, its state D_0042C410 */
@@ -251,6 +284,9 @@ void func_00324410(u8 *o) {
         SY_STEP(o) = -1;
         ptmf_set(SY_STATE(o), &D_0042C440);
     }
+}
+
+void func_003244C0(void) {
 }
 
 /* the found item's step: the panel over the rows fading in (3 frames) and out (12; then bit 0,

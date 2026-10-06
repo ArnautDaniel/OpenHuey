@@ -14,7 +14,9 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
-
+#include "pursuer.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 extern VObject *D_00456DF0;
 extern void *D_0046C790[];      /* a pool entry */
@@ -29,9 +31,50 @@ void SubScreen_Open(SubScreen *s);
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
 
+extern void *func_00261090(u8 *items, u32 id, s32 n);
+extern void *func_0016FCD0(u8 *m);
+extern void *D_00472700[];
+extern const u8 D_0044BF10[];
+s32 func_00260130(void *pool);
+u32 func_002605F0(u8 *o, u8 row);
+void *func_00261000(u8 *items, u32 id, u64 *data);
+s32 func_0038A2C0(void *o, u32 i);   /* (a u8) */
+void *func_0038C890(u8 *m);
+u32 func_003941C0(u8 *o);
+
+extern void *D_0046EC80[];
+void *func_002C65C0(u8 *o, s32 flags);
+
 /* placement new (pool entries) */
 void *func_0025FF00(u32 size, void *p) {
     return p;
+}
+
+/* the file loader's +0x28 (0x4000000) is 2 */
+s32 func_00260130(void *pool) {
+    return VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x4000000) == 2;
+}
+
+/* the first free (0) of the 64 words in row `row` (0x100 bytes from +0x12E0); 64 if none */
+u32 func_002605F0(u8 *o, u8 row) {
+    u32 i;
+
+    for (i = 0; i < 0x40; i++) {
+        if (AT(o, 0x12E0 + row * 0x100 + i * 4, s32) == 0) {
+            break;
+        }
+    }
+    return i;
+}
+
+/* an item `id` (one, func_00261090) with its 8 bytes at +0x10 */
+void *func_00261000(u8 *items, u32 id, u64 *data) {
+    u8 *it = func_00261090(items, id, 1);
+
+    if (it != NULL) {
+        AT(it, 0x10, u64) = *data;
+    }
+    return it;
 }
 
 /* the entries' pool: the first 64 entries constructed again, the tables cleared, the block
@@ -58,6 +101,18 @@ void SubPool_Reset(u8 *pool) {
         AT(pool, 0x15E0 + i * 4, s32) = 0;
     }
     func_00120EC0(pool + 0x1208, pool + 8, 0x18, 0xC0, pool + 0x1220);
+}
+
+/* destructor (vtable D_0046EC80) */
+void *func_002C65C0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EC80;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 /* start: load the textures, reset */
@@ -194,7 +249,6 @@ static const char sGalMusic[] = "SUBSCR\\GAL_MUSIC.TEX";
 static const char sGalArt[] = "SUBSCR\\GAL_ART.TEX";
 static const char sArtLen[] = "SUBSCR\\ART00.LEN";
 static const char sGalType[] = "SUBSCR\\GAL_TYPE.TEX";
-
 
 static void sub_load(SubScreen *s, const char *name, void *dst) {
     VObject *ld = gFileLoader;
@@ -451,8 +505,6 @@ extern void *D_00469D00[];       /* its base */
 extern void func_002CF390(void *ov, u32 rgba);
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
 
-
-
 /* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
 extern u16 D_0044C160[][7];
 /* a movable part (SUBBASE.TEX, group 0x18): u, v, w, h, screen w, h, CLUT, texture, blending
@@ -608,8 +660,6 @@ void SubScreen_TakeOver(SubScreen *s) {
     s->unkA8DDE = 1;
 }
 
-
-
 void Options_StateLayout(SubScreen *s);
 void Options_StateVibration(SubScreen *s);
 void Options_StateSound(SubScreen *s);
@@ -618,7 +668,6 @@ void Options_StatePosition(SubScreen *s);
 void Options_StateDefaults(SubScreen *s);
 void func_00394260(SubScreen *s);
 void Options_Draw(SubScreen *s, s32 editing);
-
 
 /* in-game, not in a special scene (gProgress +0x1FBEC1) */
 static s32 sub_ingame_menu(SubScreen *s) {
@@ -673,12 +722,23 @@ void Options_StateList(SubScreen *s) {
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x82), 0x80, 0x30, 0x10, 0x15);
 }
 
+/* the first free (0) of the 128 halfwords from +0x15F8; 128 if none */
+u32 func_003941C0(u8 *o) {
+    u32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        if (AT(o, 0x15F8 + i * 2, u16) == 0) {
+            break;
+        }
+    }
+    return i;
+}
+
 extern u16 D_0044B570[2][4][7];   /* [special scene][controller layout]: the action names */
 extern u16 D_0044B558[5];         /* the options' rows (y) */
 
 static const char sPosX[] = "X : %d";
 static const char sPosY[] = "Y : %d";
-
 
 /* one line of text in the options' text task */
 static void opt_text(SubScreen *s, s32 x, s32 y, s32 color, s32 id) {
@@ -842,7 +902,6 @@ void SubScreen_DrawFadeOut(SubScreen *s) {
     }
 }
 
-
 /* draw state: fade the menu back in (once the background texture is loaded); at the end the
  * screen is closed (in game: Progress flag 4) and the next update opens it again
  * (SubScreen_Open) */
@@ -954,7 +1013,6 @@ void Options_StateLayout(SubScreen *s) {
 
 /* the vibration's on / off: the actuator's +0x28 */
 #define VIB_ENABLE(o, on) VCALL(o, 0x28, void (*)(VObject *, s32))(o, on)
-
 
 /* editing the vibration: left / right toggle it (turning it on buzzes the pad) */
 void Options_StateVibration(SubScreen *s) {
@@ -1161,7 +1219,6 @@ void Options_StateDefaults(SubScreen *s) {
     ptmf_set_fn(&s->state, Options_StateList);
 }
 
-
 /* add `id` to the list at +0x15F8 (128 u16, 0-terminated): 1 if added, 0 if already there or
  * the list is full */
 s32 func_00394200(SubScreen *s, u32 id) {
@@ -1179,7 +1236,6 @@ s32 func_00394200(SubScreen *s, u32 id) {
     }
     return 0;
 }
-
 
 /* +0x24 the in-game tab, drawn each gameplay frame: base parts 0xC (at y 0x60) and 0xB (at y
  * 0x8C) slide in from the left (state 2) as page[0x15C] grows to 0x40, stay (3) and slide out
@@ -1206,8 +1262,6 @@ void func_00384CE0(SubScreen *s) {
 /* ---- text helpers left (2026-10-05); the sub-screen's text task at +0x97868 ---- */
 
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
-extern s32 func_0038A2C0(void *s, u32 k);   /* (a u8) */
-extern s32 func_003941C0(u8 *o);   /* the file's entries (+0x15F8) */
 extern const char D_00463A60[];
 
 #define SUB_TEXT(s) ((Task *)((u8 *)(s) + 0x97868))
@@ -1253,7 +1307,6 @@ void func_00384C20(u8 *o) {
 
 /* ---- the in-game menu's item page ---- */
 
-extern u32 func_002605F0(u8 *items, u8 l);                    /* how many items list `l` holds */
 extern s32 func_00260420(u8 *items, u8 l, u8 i);              /* an item's kind (-1 none) */
 extern s32 func_00260480(u8 *items, u8 l, u8 i);              /* an item's id (-1 none) */
 extern void func_00260250(u8 *items, u8 l, u8 i, void *arg);   /* start using it */
@@ -1669,7 +1722,6 @@ void func_00386000(SubScreen *s) {
     }
 }
 
-extern void *func_00261000(u8 *items, u32 id, u64 *data);   /* an item added, with its data */
 extern void func_00260840(u8 *items, u8 l, u8 i);            /* equip it */
 
 /* the menu's state from a save `save`: the three lists' items (ids +0x1068, 0xFFFF none; their
@@ -1789,7 +1841,6 @@ void func_00394E40(SubScreen *s) {
 }
 
 extern void func_00260170(u8 *items, s32 id, void *arg);
-extern s32 func_00260130(u8 *items);
 
 #define SUB_SLIDE(s) ((s)->page[0x15C])   /* the tab's slide, 0..0x40 by 4 */
 
@@ -1890,7 +1941,6 @@ void func_00395000(SubScreen *s) {
 
 /* ---- the galleries ---- */
 
-extern void func_002DDED0(u8 *m, s32 anim, s32 variant);                     /* play a motion */
 extern void func_002DE030(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);   /* blended in */
 extern s32 *D_0044BE90[];   /* per entry: its motion */
 
@@ -2038,7 +2088,6 @@ void func_00397AB0(SubScreen *s) {
 }
 
 /* ---- the clear results ---- */
-
 
 /* the results page set up: the ending's flag noted (system data +0x2C bit 18 / 19 by the
  * difficulty, progress var 0x2E 0 / 1; page[2] set when new), the play time (59:59 at most)
@@ -3046,7 +3095,7 @@ extern void *func_00208420(u8 *m, s32 kind), *func_002084D0(u8 *m, s32 kind);
 extern void *func_00208210(u8 *m, u8 kind), *func_00208180(u8 *m, u8 kind), *func_002080D0(u8 *m, u8 kind);
 extern void *func_0038D4D0(u8 *m), *func_0038D160(u8 *m), *func_0038CEE0(u8 *m), *func_0038CC90(u8 *m);
 extern void *func_0038CB60(u8 *m), *func_0038C9E0(u8 *m), *func_0038C960(u8 *m), *func_0038C910(u8 *m);
-extern void *func_0016F4B0(u8 *m), *func_0038C8D0(void *o), *func_0038C890(u8 *m);
+extern void *func_0016F4B0(u8 *m), *func_0038C8D0(void *o);
 
 /* the gallery's model `k` made in the work memory (+0xA8DFC): its class by the entry, the
  * loaded .PCK's parts hooked up (+0x4C0 / +0x4D0 / +0x4CC / +0x4C4), its textures as texture
@@ -3101,6 +3150,13 @@ u8 *func_0038C160(SubScreen *s, u8 k) {
     } else if (k == 0xC || k == 0xB) {
         VCALL(m, 0x34, void (*)(u8 *, s32))(m, 0);
     }
+    return m;
+}
+
+/* model classes D_00472700 / D_00474460 over the plain one (func_0016FCD0) */
+void *func_0038C890(u8 *m) {
+    func_0016FCD0(m);
+    AT(m, 0x0, void **) = D_00472700;
     return m;
 }
 
@@ -3797,14 +3853,14 @@ void func_003894F0(SubScreen *s) {
     }
 }
 
+s32 func_0038A2C0(void *o, u32 i) {
+    return D_0044BF10[i];
+}
+
 /* ---- the model gallery ---- */
 
-extern u8 D_0044BF10[];   /* per entry: its motions */
 extern void *D_0046EB40[], *D_0046D7B0[];
 extern void func_00267160(void *fx);
-extern void func_002DCB40(u8 *m);
-extern void func_002DC960(u8 *m);
-extern void func_001F6AF0(u8 *m);
 extern const PTMF D_0044B9D0, D_0044B9E0;
 
 #define GALLERY_STEP(s) SUB_PAGE(s, 0x2, u8)   /* 0 fading in, 1 shown, 2..4 the help, 5 leaving */

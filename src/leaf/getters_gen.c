@@ -4,15 +4,6 @@
 #include "common.h"
 #include "ptmf.h"
 
-extern u8 D_003C5D90[];
-extern u8 D_003C6348[];
-extern u8 D_003C6450[];
-extern u8 D_003D5B80[];
-extern u8 D_003D73B0[];
-extern u8 D_003E5268[];
-extern u8 D_003E5270[];
-extern u8 D_003E88D0[];
-extern u8 D_003E9F18[];
 extern u8 D_003ED800[];
 extern u8 D_003ED960[];
 extern u8 D_003ED9E0[];
@@ -241,9 +232,6 @@ extern u8 D_00417310[];
 extern u8 D_00417320[];
 extern u8 D_00417420[];
 extern u8 D_004174A0[];
-extern u8 D_00419DD0[];
-extern u8 D_00419E10[];
-extern u8 D_0041A5F0[];
 extern u8 D_0041B020[];
 extern u8 D_0041B080[];
 extern u8 D_0041B100[];
@@ -254,8 +242,6 @@ extern u8 D_0041B270[];
 extern u8 D_0041B370[];
 extern u8 D_0041B450[];
 extern u8 D_0041B560[];
-extern u8 D_0041B5F0[];
-extern u8 D_0041BE40[];
 extern u8 D_0041C390[];
 extern u8 D_0041C3E0[];
 extern u8 D_0041C420[];
@@ -293,10 +279,6 @@ extern u8 D_004295A0[];
 extern u8 D_00429620[];
 extern u8 D_00429640[];
 extern u8 D_00429700[];
-extern u8 D_004297C0[];
-extern u8 D_00429800[];
-extern u8 D_0042C870[];
-extern u8 D_0042C8B0[];
 extern u8 D_004314B0[];
 extern u8 D_004315E0[];
 extern u8 D_00431750[];
@@ -323,7 +305,6 @@ extern u8 D_00444710[];
 extern u8 D_00444750[];
 extern u8 D_004447C0[];
 extern void *D_00444830[];
-extern u8 D_00444B10[];
 extern u8 D_00445BC0[];
 extern u8 D_00445C20[];
 extern u8 D_00445C70[];
@@ -440,31 +421,6 @@ extern u8 D_0044A3C0[];
 extern u8 D_0044A470[];
 extern void *D_0044A928[];
 extern u8 D_0044A990[];
-extern u8 D_0044C898[];
-extern u8 D_0044C900[];
-extern u8 D_0044CAC0[];
-extern u8 D_0044DAB0[];
-extern u8 D_00451318[];
-extern u8 D_004555C8[];
-extern u8 D_00455870[];
-extern u8 D_00455C38[];
-extern u8 D_00455DD8[];
-extern u8 D_00455E18[];
-extern u8 D_00456EB0[];
-extern u8 D_00456F70[];
-extern u8 D_004574B8[];
-extern u8 D_00457558[];
-extern u8 D_004575C0[];
-extern u8 D_00457ED0[];
-extern u8 D_00459930[];
-extern u8 D_00459F60[];
-extern u8 D_0045A4D8[];
-extern u8 D_0045A6E0[];
-extern u8 D_0045E4C0[];
-extern u8 D_0045E4E0[];
-extern u8 D_00463320[];
-extern u8 D_00463340[];
-extern u8 D_00463A50[];
 extern void *D_0047A9A8[];
 extern void *D_0047AA38[];
 extern u8 D_0047AB90[];
@@ -476,9 +432,6 @@ extern u8 D_0047AD44[];
 extern u8 D_0047AD48[];
 extern u8 D_0047AD50[];
 extern u8 D_0047AD58[];
-extern u8 D_0047E878[];
-extern u8 D_01989558[];
-extern PTMF D_01990700[];
 extern PTMF D_01990718[];
 extern PTMF D_01990730[];
 extern PTMF D_01990760[];
@@ -531,7 +484,6 @@ extern PTMF D_01990CB0[];
 extern PTMF D_01990CC8[];
 extern PTMF D_01990CE0[];
 extern PTMF D_01990D10[];
-extern PTMF D_01990D40[];
 extern PTMF D_01990D70[];
 extern PTMF D_01990D80[];
 extern PTMF D_01990D90[];
@@ -654,86 +606,6 @@ extern PTMF D_01991E38[];
 extern PTMF D_01991E48[];
 extern PTMF D_01991E60[];
 extern PTMF D_01991E90[];
-
-void *func_00100540(void) {
-    return D_0044C898;
-}
-
-void *func_00100650(void) {
-    return D_0044C900;
-}
-
-void *func_00102310(void) {
-    return D_0044CAC0;
-}
-
-void *func_00114B90(void) {
-    return D_0044DAB0;
-}
-
-void *func_001795E0(void) {
-    return D_004297C0;
-}
-
-void *func_001795F0(void) {
-    return D_00429800;
-}
-
-void *func_00179A90(void) {
-    return D_0042C870;
-}
-
-void *func_00179AA0(void) {
-    return D_0042C8B0;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_001CEC50(void) {
-    return D_00451318;
-}
-
-void *func_001D6E40(void) {
-    return D_0047E878;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_001DC580(void) {
-    return D_003C5D90;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_001DE030(void) {
-    return D_003C6348;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_001DE0A8(void) {
-    return D_003C6450;
-}
-
-void *func_001E61D0(void) {
-    return D_004555C8;
-}
-
-void *func_001E8138(void) {
-    return D_00455870;
-}
-
-void *func_001EB650(void) {
-    return D_00455C38;
-}
-
-void *func_001ED190(void) {
-    return D_00455DD8;
-}
-
-void *func_001ED1D0(void) {
-    return D_003D5B80;
-}
-
-void *func_001EDFF0(void) {
-    return D_00455E18;
-}
 
 void *func_0020B0F0(void) {
     return D_0047AC58;
@@ -1131,78 +1003,6 @@ void *func_0020BDD0(void) {
     return D_003EEDD8;
 }
 
-void *func_0020BF70(void) {
-    return D_00456F70;
-}
-
-void *func_0020C110(void) {
-    return D_00456EB0;
-}
-
-void *func_0020C4C0(void) {
-    return D_003D73B0;
-}
-
-void *func_00226810(void) {
-    return D_003E5268;
-}
-
-void *func_0022A6F8(void) {
-    return D_003E5270;
-}
-
-void *func_00230B48(void) {
-    return D_004574B8;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_00233720(void) {
-    return D_00457558;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_00236B70(void) {
-    return D_004575C0;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_0023AA68(void) {
-    return D_00457ED0;
-}
-
-void *func_0023AA78(void) {
-    return D_003E88D0;
-}
-
-void *func_0023FFA0(void) {
-    return D_003E9F18;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_00246A80(void) {
-    return D_00459930;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_002577D8(void) {
-    return D_00459F60;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_00259EE8(void) {
-    return D_0045A4D8;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_0025B828(void) {
-    return D_0045A6E0;
-}
-
-/* (possibly dead code: nothing in the game references it) */
-void *func_0026EFF0(void) {
-    return D_01989558;
-}
-
 void *func_002A89E0(void) {
     return D_003ED800;
 }
@@ -1238,11 +1038,6 @@ void *func_002A8A60(void *self, s32 i) {
 /* (self->*D_01990718[i])(a, b) */
 s32 func_002A8A80(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990718[i & 0xFF], a, b);
-}
-
-/* (self->*D_01990700[i])(a, b) */
-s32 func_002A8AC0(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990700[i & 0xFF], a, b);
 }
 
 void *func_002A8E60(void) {
@@ -2180,11 +1975,6 @@ s32 func_002B4000(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D70[i & 0xFF], a, b);
 }
 
-/* (self->*D_01990D40[i])(a, b) */
-s32 func_002B4250(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
-}
-
 /* (self->*D_01990D80[i])(a, b) */
 s32 func_002B4790(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D80[i & 0xFF], a, b);
@@ -2318,34 +2108,6 @@ s32 func_002E79D0(void *self, u32 i, s32 a, s32 b) {
 /* (self->*D_01990F68[i])(a, b) */
 s32 func_002E7A20(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990F68[i & 0xFF], a, b);
-}
-
-void *func_002ECC90(void) {
-    return D_00419DD0;
-}
-
-void *func_002ECCA0(void) {
-    return D_00419E10;
-}
-
-void *func_002F6DC0(void) {
-    return D_0045E4C0;
-}
-
-void *func_002F6DD0(void) {
-    return D_0045E4E0;
-}
-
-void *func_002F8930(void) {
-    return D_0041A5F0;
-}
-
-void *func_002FA1C0(void) {
-    return D_0041B5F0;
-}
-
-void *func_002FA320(void) {
-    return D_0041BE40;
 }
 
 void *func_002FCBA0(void) {
@@ -2665,14 +2427,6 @@ s32 func_00352F20(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A48[i & 0xFF], a, b);
 }
 
-void *func_0035AFE0(void) {
-    return D_00463320;
-}
-
-void *func_0035AFF0(void) {
-    return D_00463340;
-}
-
 void *func_0035D200(void) {
     return D_00444170;
 }
@@ -2771,10 +2525,6 @@ void *func_0035D700(void *self, s32 i) {
 /* (self->*D_01991A88[i])(a, b) */
 s32 func_0035D720(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A88[i & 0xFF], a, b);
-}
-
-void *func_00363600(void) {
-    return D_00444B10;
 }
 
 void *func_0036A360(void) {
@@ -3445,11 +3195,6 @@ s32 func_0037AC60(void *self, u32 i, s32 a, s32 b) {
 s32 func_0037ACB0(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991E60[i & 0xFF], a, b);
 }
-
-void *func_0037E3F0(void) {
-    return D_00463A50;
-}
-
 
 extern u8 D_0047ACB4[];
 

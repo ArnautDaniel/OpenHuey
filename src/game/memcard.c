@@ -9,7 +9,8 @@
 #include "common.h"
 #include "memcard.h"
 #include "ptmf.h"
-
+#include "globals.h"
+#include "navmesh.h"
 
 extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
 extern void func_00100490(void *p);   /* operator delete */
@@ -22,6 +23,19 @@ extern void func_00225C40(MemCard *mc);   /* read */
 extern void func_00225860(MemCard *mc);
 extern void func_00225770(MemCard *mc);
 
+void *func_001BF2E0(u8 *o, s32 flags);
+
+/* destructor (vtable D_0046AE60) */
+void *func_001BF2E0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AE60;
+        gMemCard = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 static inline void request(MemCard *mc, s32 port, void (*state)(MemCard *)) {
     PTMF s = {0, -1, {(void *)state}};
 

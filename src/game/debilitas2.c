@@ -85,6 +85,9 @@
 
 #define DEBILITAS_GIVE_UP_HITS 80
 #include "debilitas_body.inc"
+#include "ptmf.h"
+
+void *func_002FA320(void);
 
 /* vtable +0x9C: where he stands by a door, by side 0..3 (local offsets; as Debilitas) */
 void func_002FA1D0(Pursuer *p, s32 side, f32 *out) {
@@ -140,6 +143,10 @@ void func_002FA270(Pursuer *p, s32 kind, f32 *out) {
     out[0] = x;
     AT(out, 0x4, s32) = 0;
     out[2] = z;
+}
+
+void *func_002FA320(void) {
+    return D_0041BE40;
 }
 
 /* vtable +0x200: done at the door at once */

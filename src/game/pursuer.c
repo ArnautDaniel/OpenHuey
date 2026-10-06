@@ -6,12 +6,231 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "game.h"
+#include "item.h"
 
+extern u8 D_003EC3E0[]; /* table of 28-byte entries */
+extern u8 D_003AF1F0[];
+extern u8 D_003AF230[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
+s32 func_00124ED0(void *p, s32 n);
+void func_00127B20(void *p, u32 id);
+void func_00127B90(void *p);
+void func_00127BA0(void *p);
+f32 func_00127BD0(void);
+f32 func_00127BE0(void);
+f32 func_00127BF0(void);
+void func_00127C10(void *p, s32 on);
+s32 func_00127C30(void *p);
+
+extern void *D_00477790[];
+extern void *D_00476C10[];
+extern void *D_004767D0[];
+extern void *D_004764A0[];
+extern void *D_00476120[];
+extern void *D_00475DB0[];
+extern void *D_00474C10[];
+extern void *D_00474130[];
+extern void *D_00473CD0[];
+extern void *D_00478770[];
+extern void *D_004738A0[];
+extern void *D_0046A620[];
+extern void *D_00474560[];
+extern void *D_00474890[];
+extern void *D_004734A0[];
+extern void *D_00473110[];
+extern void *D_00472C30[];
+extern void *D_004728A0[];
+extern void *D_0046A2F0[];
+extern void *D_004723B0[];
+extern void *D_00472020[];
+extern void *D_0046FF80[];
+extern void *D_004718F0[];
+extern void *D_00470720[];
+extern void *D_00479B20[];
+extern void *D_004715C0[];
+extern void *D_00471290[];
+extern void *D_0046F6B0[];
+extern void *D_00478160[];
+extern void *D_00477E30[];
+extern void *D_00477AE0[];
+extern void *D_0046BBB0[];
+extern void *D_00474FD0[];
+extern void *D_0046F020[];
+extern void *D_00470A90[];
+extern void *D_00469D10[];
+extern u8 D_00419DD0[];
+extern u8 D_00419E10[];
+extern u8 D_004297C0[];
+extern u8 D_00429800[];
+extern u8 D_0042C870[];
+extern u8 D_0042C8B0[];
+void *func_001795E0(void);
+void *func_001795F0(void);
+void *func_00179A90(void);
+void *func_00179AA0(void);
+void *func_002ECC90(void);
+void *func_002ECCA0(void);
+
+extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *func_002CF180(void);
+
+extern u8 D_00414820[], D_004147E0[];
+
+extern u8 D_00422380[];
+extern u8 D_004223C0[];
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+extern u8 D_00422460[];
+extern u8 D_004224A0[];
+static inline s32 b5_prog_flag8000(void);
+
+extern u8 D_00429C50[];
+void *func_00315C40(void);
+
+extern u8 D_00429C90[];
+extern u8 D_00429CE0[];
+extern u8 D_00429D20[];
+extern u8 D_0042A2E0[];
+extern u8 D_0042A320[];
+void *func_00315C50(void);
+void *func_00316BC0(void);
+void *func_00316BD0(void);
+static inline s32 b5_prog_flag8000(void);
+
+extern void *D_0046D730[];
+extern void *D_0046F580[];
+extern void *D_00472F60[];
+extern void *D_00479FF0[];
+extern void func_002672E0(void *p);
+extern void func_002D63B0(void *p);
+void *func_00316D80(u8 *o, s32 flags);
+void *func_0036A4D0(u8 *o, s32 flags);
+
+extern const char *const D_0042C358;
+extern const PTMF D_0042C8F0;
+extern u8 D_0042E460[];
+extern u8 D_0042E4A0[];
+static inline s32 b5_prog_flag8000(void);
+
+extern u8 D_0043B6C0[], D_0043B680[];
+extern u8 D_0043CDA0[], D_0043CD60[];
+
+extern u8 D_0043DC30[], D_0043DBF0[];
+
+extern u8 D_00441830[], D_004417F0[];
+
+void func_0036A580(void);
+
+/* in play: func_00124890(-1) */
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* the action 5 taken (+0x14E8): in play +0x8C, the state st, +0x114 1; the action cleared */
+static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((u8)func_00217510(p) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), st);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
+    Progress *g = gProgress;
+
+    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+        func_001777D0(g, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+void func_0032C830(Pursuer *p);
+void func_0032C880(Pursuer *p);
+s32 func_0032C950(Pursuer *p);
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
+    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x1380, s32) = 0;
+    FLD(p, 0x153C, u8) = (u8)id;
+    FLD(p, 0x0, void **) = vtbl;
+    return p;
+}
+
+void *func_00172910(void *p, s32 arg);
+void *func_00172960(void *p, s32 arg);
+void *func_001729B0(void *p, s32 arg);
+void *func_00172A00(void *p, s32 arg);
+void *func_00172A50(void *p, s32 arg);
+void *func_00172AA0(void *p, s32 arg);
+void *func_00172AF0(void *p, s32 arg);
+void *func_00172B40(void *p, s32 arg);
+void *func_00172B90(void *p, s32 arg);
+void *func_00172BE0(void *p, s32 arg);
+void *func_00172C30(void *p, s32 arg);
+void *func_00172C80(void *p, u32 id, u32 arg);
+void *func_00172DE0(void *p, s32 arg, u32 id);
+void *func_00172E20(void *p, s32 arg);
+void *func_00172E70(void *p, s32 arg);
+void *func_00172EC0(void *p, s32 arg);
+void *func_00172F10(void *p, s32 arg);
+void *func_00172F60(void *p, s32 arg);
+void *func_00172FB0(void *p, u32 id, u32 arg);
+void *func_00173110(void *p, s32 arg, u32 id);
+void *func_00173150(void *p, s32 arg);
+void *func_001731A0(void *p, s32 arg);
+void *func_001731F0(void *p, s32 arg);
+void *func_00173240(void *p, s32 arg);
+void *func_00173290(void *p, s32 arg);
+void *func_001732E0(void *p, s32 arg);
+void *func_00173330(void *p, s32 arg);
+void *func_00173380(void *p, s32 arg);
+void *func_001733D0(void *p, s32 arg);
+void *func_00173420(void *p, s32 arg);
+void *func_00173470(void *p, s32 arg);
+void *func_001734C0(void *p, s32 arg);
+void *func_00173510(void *p, s32 arg);
+void *func_00173560(void *p, s32 arg);
+void *func_001735B0(void *p, s32 arg);
+void *func_00173600(void *p, s32 arg);
+
+/* Count down the timer at +0x14C8 by |n|; 1 (and clamp to 0) when it runs out. */
+s32 func_00124ED0(void *p, s32 n) {
+    if (n <= 0) {
+        n = -n;
+    }
+    FLD(p, 0x14C8, s32) -= n;
+    if (FLD(p, 0x14C8, s32) > 0) {
+        return 0;
+    }
+    FLD(p, 0x14C8, s32) = 0;
+    return 1;
+}
 /* nothing */
 void func_00283EE0(Pursuer *p) {
 }
-
 
 /* a character's step (base) */
 void func_002992F0(Pursuer *p) {
@@ -35,12 +254,10 @@ void func_0029CE40(Pursuer *p, s32 a1, s32 *out) {
     out[2] = 0;
 }
 
-
 /* vtable +0x58: deactivate (Character part) */
 void func_0029E600(Pursuer *p) {
     func_00125D40(&p->c);
 }
-
 
 /* vtable +0x24 */
 void func_0029EAA0(Pursuer *p) {
@@ -62,9 +279,6 @@ void func_0028ED20(Pursuer *p) {
 }
 
 /* ---- batch 2 ---- */
-
-
-
 
 /* nav triangle +0x179C, if valid */
 void func_0027E5A0(Pursuer *p, u32 tri) {
@@ -579,7 +793,6 @@ void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
 
 extern void *D_003EC8E0;
 
-
 /* the defaults of every pursuer (radius, height, hp 100, hearing, timers) */
 void func_0029FB20(Pursuer *p) {
     p->c.a.radius = 5.0f;
@@ -863,6 +1076,46 @@ void func_002CF0F0(Pursuer *p) {
     }
 }
 
+u8 *func_002CF140(Pursuer *p) {
+    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413530 : D_004134F0;
+}
+
+void *func_002CF180(void) {
+    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413510 : D_004134D0;
+}
+
+u8 *func_002DC460(Pursuer *p) {
+    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414820 : D_004147E0;
+}
+
+/* Moves the floats at +0x854/+0x858 toward (tx, ty) by at most |sx|/|sy|. */
+void func_002DD310(u8 *p, f32 tx, f32 ty, f32 sx, f32 sy) {
+    f32 v, d;
+
+    if (sx <= 0.0f) sx = -sx;
+    v = F(p, 0x854, f32);
+    d = tx - v;
+    if (d <= 0.0f) d = -d;
+    if (d <= sx) {
+        F(p, 0x854, f32) = tx;
+    } else if (tx <= v) {
+        F(p, 0x854, f32) -= sx;
+    } else {
+        F(p, 0x854, f32) += sx;
+    }
+    if (sy <= 0.0f) sy = -sy;
+    v = F(p, 0x858, f32);
+    d = ty - v;
+    if (d <= 0.0f) d = -d;
+    if (d <= sy) {
+        F(p, 0x858, f32) = ty;
+    } else if (ty <= v) {
+        F(p, 0x858, f32) -= sy;
+    } else {
+        F(p, 0x858, f32) += sy;
+    }
+}
+
 /* the chase towards the target: by path, or straight at it once on its triangle */
 void func_00290810(Pursuer *p) {
     if (PU(p, 0x1590, f32) < 0.0f) {
@@ -1041,7 +1294,6 @@ void func_00296ED0(Pursuer *p) {
 extern void *D_0046A620[], *D_00474560[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
     D_003ECF00;
-
 
 /* vtable +0x40 (via +0x84 first): blocking flags (8 = held at a door), then +0x110 / +0x40 */
 void func_0029E390(Pursuer *p) {
@@ -1227,7 +1479,6 @@ static void Pursuer_HitReact(Pursuer *p) {
 void func_00288030(Pursuer *p) {
     Pursuer_HitReact(p);
 }
-
 
 void func_0028A540(Pursuer *p) {
     PU(p, 0x16EC, u8) = 0;
@@ -1457,12 +1708,19 @@ Pursuer *func_00179970(Pursuer *p, s32 flags) {
     return p;
 }
 
+void *func_00179A90(void) {
+    return D_0042C870;
+}
+
+void *func_00179AA0(void) {
+    return D_0042C8B0;
+}
+
 /* ---- batch 5 ---- */
 
 extern const PTMF D_003ECF50, D_003ECFC0, D_003ECF10, D_003ECF90, D_003ECCD0, D_003ED090, D_003ED0A0,
     D_003ECDB0;
 extern void *D_0046D810[];
-
 
 /* vtable +0x8: destructor (Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model is
  * freed for slots 3..5 */
@@ -1474,6 +1732,54 @@ Pursuer *func_00172810(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_00172910(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x21, arg, D_00477790);
+}
+
+void *func_00172960(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x20, arg, D_00476C10);
+}
+
+void *func_001729B0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1F, arg, D_004767D0);
+}
+
+void *func_00172A00(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1E, arg, D_004764A0);
+}
+
+void *func_00172A50(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1D, arg, D_00476120);
+}
+
+void *func_00172AA0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1C, arg, D_00475DB0);
+}
+
+void *func_00172AF0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1A, arg, D_00474C10);
+}
+
+void *func_00172B40(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x19, arg, D_00474130);
+}
+
+void *func_00172B90(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x18, arg, D_00473CD0);
+}
+
+void *func_00172BE0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x25, arg, D_00478770);
+}
+
+void *func_00172C30(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x17, arg, D_004738A0);
+}
+
+void *func_00172C80(void *p, u32 id, u32 arg) {
+    return b0_RoomCtor(p, id, (u8)arg, D_0046A620);
 }
 
 /* vtable +0x1F8: open the door at exit +0x17B0 and step through */
@@ -1820,8 +2126,6 @@ void func_00291600(Pursuer *p) {
 
 extern const PTMF D_003ED360, D_003ED100, D_003ED2A0, D_003ED1F0, D_003ECF70, D_003ECD60, D_003ECB80,
     D_003ECE40;
-
-
 
 /* the attack: pick one from the table +0x1718 ({kind, value, chance} by a 0..100 roll) */
 void func_00283AE0(Pursuer *p) {
@@ -3193,7 +3497,7 @@ s32 func_0029D180(Pursuer *p, s32 room, s32 tri, u32 side) {
     VObject *rm;
     u32 i;
 
-    func_00125BA0(&p->c);
+    ((void (*)(Character *))func_00125BA0)(&p->c);   /* the original passes only the character */
     p->c.a.room = room;
     rm = gRooms;
     if (side < 2) {
@@ -4239,7 +4543,6 @@ void func_00285B10(Pursuer *p) {
 
 extern const PTMF D_003ECA30, D_003ECA40, D_003ECA50, D_003ECF60, D_003EC9B0, D_003ECA60, D_003ECA70,
     D_003ECA80;
-
 
 /* vtable +0x2C4: start searching (in the played room: the route cleared to one stop) */
 void func_0029AC50(Pursuer *p) {
@@ -7237,7 +7540,6 @@ void func_00288970(Pursuer *p) {
         func_00125A10(&p->c);
     }
 }
-
 
 /* Fiona seen again: back to the chase (mode 0) if she's in reach, else follow (mode 1) */
 static void Pursuer_Resight(Pursuer *p) {
@@ -10460,8 +10762,30 @@ void func_00127A40(Pursuer *p, u32 kind) {
     PU(p, 0x15A0, u8) = 1;
 }
 
+void func_00127B20(void *p, u32 id) {
+    u8 *e;
+
+    FLD(p, 0x1758, u32) = id;
+    if (id & 0x1000) {
+        e = FLD(p, 0x1714, u8 *) + (id & 0xFFF) * 28;
+    } else {
+        e = D_003EC3E0 + id * 28;
+    }
+    FLD(p, 0x175C, s32) = FLD(e, 0xC, s32);
+    FLD(p, 0xF8, s32) = FLD(e, 0x10, s32);
+    FLD(p, 0xFC, s32) = FLD(e, 0x14, s32);
+}
+
 /* vtable +0x190: nothing */
 void func_00127B80(Pursuer *p) {
+}
+
+void func_00127B90(void *p) {
+    FLD(p, 0x1660, s32) = FLD(p, 0x16D4, s32);
+}
+
+void func_00127BA0(void *p) {
+    FLD(p, 0x1664, s32) = FLD(p, 0x16D0, s32);
 }
 
 /* vtable +0x2D0 / +0x2D4 */
@@ -10473,9 +10797,36 @@ s32 func_00127BC0(Pursuer *p) {
     return PU(p, 0x16E4, s32);
 }
 
+f32 func_00127BD0(void) {
+    return 10.0f;
+}
+
+f32 func_00127BE0(void) {
+    return 5.0f;
+}
+
+f32 func_00127BF0(void) {
+    return 20.0f;
+}
+
 /* vtable +0x318 */
 s32 func_00127C00(Pursuer *p) {
     return 0;
+}
+
+void func_00127C10(void *p, s32 on) {
+    FLD(p, 0x16B8, s32) = on ? 2 : 0;
+}
+
+s32 func_00127C30(void *p) {
+    return FLD(p, 0x20, s32) == 2;
+}
+
+u8 *func_0012BFB0(Pursuer *p) {
+    if (FLD(gProgress, 0x30, u32) & 0x8000) {
+        return D_003AF230;
+    }
+    return D_003AF1F0;
 }
 
 /* ---- the room character of id 8 (vtable 0x46FF80; built by func_001731A0): a Pursuer that
@@ -10496,6 +10847,14 @@ Pursuer *func_002ECB80(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_002ECC90(void) {
+    return D_00419DD0;
+}
+
+void *func_002ECCA0(void) {
+    return D_00419E10;
 }
 
 /* vtable +0xF4: setup (the Pursuer's) */
@@ -10590,6 +10949,14 @@ Pursuer *func_00315B30(Pursuer *p, s32 flags) {
     return p;
 }
 
+void *func_00315C40(void) {
+    return D_00429C50;
+}
+
+void *func_00315C50(void) {
+    return D_00429C90;
+}
+
 /* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
 void func_00315C70(Pursuer *p) {
     if (func_00217510(p) != 0) {
@@ -10640,6 +11007,14 @@ Pursuer *func_00316AB0(Pursuer *p, s32 flags) {
     return p;
 }
 
+void *func_00316BC0(void) {
+    return D_00429CE0;
+}
+
+void *func_00316BD0(void) {
+    return D_00429D20;
+}
+
 /* +0x38 a frame: back on the mesh (func_00124890) when func_00217510 says so */
 void func_00316BF0(Pursuer *p) {
     if (func_00217510(p) != 0) {
@@ -10673,6 +11048,63 @@ s32 func_00316D10(Pursuer *p) {
     return -1;
 }
 
+/* destructor (vtable D_00472F60) */
+void *func_00316D80(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00472F60;
+        AT(o, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+u8 *func_00320150(Pursuer *p) {
+    return b5_prog_flag8000() ? D_0042A320 : D_0042A2E0;
+}
+
+void func_0032C830(Pursuer *p) { creature_inplay(p); }
+
+void func_0032C880(Pursuer *p) { creature_act5(p, &D_0042C8F0); }
+
+s32 func_0032C950(Pursuer *p) { return creature_slot_done(p); }
+
+u8 *func_00331200(Pursuer *p) {
+    return b5_prog_flag8000() ? D_0042E4A0 : D_0042E460;
+}
+
+u8 *func_00347290(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6C0 : D_0043B680;
+}
+
+u8 *func_00348620(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CDA0 : D_0043CD60;
+}
+
+u8 *func_003495B0(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC30 : D_0043DBF0;
+}
+
+u8 *func_0034D980(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
+}
+
+/* destructor (vtable D_00479FF0) */
+void *func_0036A4D0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00479FF0;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
+void func_0036A580(void) {
+}
+
 /* ---- two more pursuer-kind destructors and two empty methods (2026-10-05) ---- */
 
 extern void *D_00474560[], *D_004723B0[];
@@ -10687,6 +11119,34 @@ Pursuer *func_00172CD0(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_00172DE0(void *p, s32 arg, u32 id) {
+    return b0_RoomCtor(p, id, arg, D_00474560);
+}
+
+void *func_00172E20(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x14, arg, D_00474890);
+}
+
+void *func_00172E70(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x13, arg, D_004734A0);
+}
+
+void *func_00172EC0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x12, arg, D_00473110);
+}
+
+void *func_00172F10(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x11, arg, D_00472C30);
+}
+
+void *func_00172F60(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x10, arg, D_004728A0);
+}
+
+void *func_00172FB0(void *p, u32 id, u32 arg) {
+    return b0_RoomCtor(p, id, (u8)arg, D_0046A2F0);
 }
 
 extern void *D_0046A2F0[];
@@ -10704,6 +11164,14 @@ Pursuer *func_001794C0(Pursuer *p, s32 flags) {
     return p;
 }
 
+void *func_001795E0(void) {
+    return D_004297C0;
+}
+
+void *func_001795F0(void) {
+    return D_00429800;
+}
+
 /* vtable +0x8 of D_004723B0 (kind 14) */
 Pursuer *func_00173000(Pursuer *p, s32 flags) {
     if (p != NULL) {
@@ -10714,6 +11182,74 @@ Pursuer *func_00173000(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_00173110(void *p, s32 arg, u32 id) {
+    return b0_RoomCtor(p, id, arg, D_004723B0);
+}
+
+void *func_00173150(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xD, arg, D_00472020);
+}
+
+void *func_001731A0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x8, arg, D_0046FF80);
+}
+
+void *func_001731F0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xC, arg, D_004718F0);
+}
+
+void *func_00173240(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xB, arg, D_00470720);
+}
+
+void *func_00173290(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x27, arg, D_00479B20);
+}
+
+void *func_001732E0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xA, arg, D_004715C0);
+}
+
+void *func_00173330(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x9, arg, D_00471290);
+}
+
+void *func_00173380(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x4, arg, D_0046F6B0);
+}
+
+void *func_001733D0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x24, arg, D_00478160);
+}
+
+void *func_00173420(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x23, arg, D_00477E30);
+}
+
+void *func_00173470(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x22, arg, D_00477AE0);
+}
+
+void *func_001734C0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x3, arg, D_0046BBB0);
+}
+
+void *func_00173510(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x1B, arg, D_00474FD0);
+}
+
+void *func_00173560(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x7, arg, D_0046F020);
+}
+
+void *func_001735B0(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x6, arg, D_00470A90);
+}
+
+void *func_00173600(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x2, arg, D_00469D10);
 }
 
 void func_00173650(void) {
@@ -10805,6 +11341,14 @@ void func_00309350(Pursuer *p) {
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
     }
     VCALL(p, 0x40, void (*)(Pursuer *))(p);
+}
+
+u8 *func_00309410(Pursuer *p) {
+    return b5_prog_flag8000() ? D_004223C0 : D_00422380;
+}
+
+u8 *func_0030C1B0(Pursuer *p) {
+    return b5_prog_flag8000() ? D_004224A0 : D_00422460;
 }
 
 /* in play: func_00124890(-1) */

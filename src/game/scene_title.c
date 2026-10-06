@@ -8,8 +8,9 @@
 #include "input.h"
 #include "sound.h"
 #include "globals.h"
-
-
+#include "progress.h"
+#include "actor.h"
+#include "pursuer.h"
 
 extern void *Scene_vtable[];
 extern void *D_0046A040[];          /* SceneTitle */
@@ -20,11 +21,20 @@ extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *D_004699C0[], *D_0046A
 extern void *D_0046C790[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
-extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);   /* __construct_array */
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);   /* __construct_array */
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void func_002D2370(void *bgm, void *work);
-extern void func_002E34D0(void *obj);
 extern void *BootCard_ctor(void *card);   /* BootCard constructor */
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002E34D0(u8 *p);
+
+extern s32 func_00303E60(u8 *o, s32 a1);
+s32 func_00384C50(u8 *g, s32 a1);
+s32 func_00384C60(u8 *g);
+void func_00384C70(u8 *g, s32 n);
+s32 func_00384CB0(u8 *g, s32 n);
 
 /* a pool entry: constructor / destructor */
 void *PoolEntry_ctor(void *e) {
@@ -101,8 +111,17 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     t->extras = 0;
     t->seq = sGameStateNull;
     func_002D2370(gAdx, t->bgmWork);
-    func_002E34D0(&t->bgm);
+    func_002E34D0((u8 *)&t->bgm);
     return t;
+}
+
+void func_002E34D0(u8 *p) {
+    p[0x5] = 0xFF;
+    p[0x4] = 0xFF;
+    F(p, 0x8, u32) = 0;
+    F(p, 0x10, f32) = 1.0f;
+    F(p, 0xC, u32) = 0;
+    F(p, 0x14, u32) = 0;
 }
 
 extern u8 D_0047B350;           /* the language */
@@ -435,7 +454,6 @@ void SceneTitle_DrawPicture(SceneTitle *t, f32 alpha);
 void SceneTitle_DrawLogo(SceneTitle *t, f32 alpha, f32 scale);
 void SceneTitle_DrawRect(SceneTitle *t, s32 u, s32 v, s32 w, s32 h, s32 x, s32 y, s32 clut, s32 fix, f32 alpha);
 
-
 /* the title fading in over 150 frames: the picture, then (from frame 90) the logo coming in
  * from large; then the menu (SceneTitle_SeqPressStart) */
 void SceneTitle_SeqFadeIn(SceneTitle *t) {
@@ -471,7 +489,6 @@ void SceneTitle_SeqFadeIn(SceneTitle *t) {
         ptmf_set_fn(&t->seq, SceneTitle_SeqPressStart);
     }
 }
-
 
 /* the title picture's two textures: their VRAM slots (+0x11DA84 / +0x11DA88; bit 31 just
  * assigned) and entries (+0x11DA8C / +0x11DA90) */
@@ -509,7 +526,6 @@ void SceneTitle_PrepareBackground(SceneTitle *t) {
     VCALL(gRenderer, 0x4C, s32 (*)(VObject *, void *, s32, s32, s32))(
         gRenderer, t->backImage, 0x280, 0x1C0, 0);
 }
-
 
 #ifdef HG_NATIVE
 #include "gl2d.h"
@@ -564,6 +580,24 @@ void SceneTitle_DrawPressStart(SceneTitle *t, f32 alpha) {
 /* the pulsing part of it */
 void SceneTitle_DrawPressStartGlow(SceneTitle *t, f32 alpha) {
     SceneTitle_DrawRect(t, 0, 0xA0, 0xC0, 0x20, 0xA0, 0x130, 3, 0, alpha);
+}
+
+/* (the scene) its part +0x97980's func_00303E60 */
+s32 func_00384C50(u8 *g, s32 a1) {
+    return func_00303E60(g + 0x97980, a1);
+}
+
+s32 func_00384C60(u8 *g) {
+    return AT(g, 0x97A8F, s8);
+}
+
+/* bit n of the scene's 0x97740 bitmap set / tested */
+void func_00384C70(u8 *g, s32 n) {
+    AT(g, 0x97740 + (n >> 5) * 4, u32) |= 1u << (n & 0x1F);
+}
+
+s32 func_00384CB0(u8 *g, s32 n) {
+    return (AT(g, 0x97740 + (n >> 5) * 4, u32) & (1u << (n & 0x1F))) != 0;
 }
 
 void SceneTitle_SeqToMenu(SceneTitle *t);
@@ -722,7 +756,6 @@ void SceneTitle_SeqOptions(SceneTitle *t);
 
 #define BGM_WANT(track, pause, restart, level) \
     VCALL(gMusic, 0x8, void (*)(void *, s32, s32, s32, f32))(gMusic, track, pause, restart, level)
-
 
 /* the main menu: up / down choose (wrapping), cancel goes back to the title, confirm or Start
  * takes the entry; 900 idle frames: the attract movie */
@@ -1077,8 +1110,6 @@ void SceneTitle_StateDemoFade(SceneTitle *t) {
         ptmf_set_fn(&t->seq, SceneTitle_SeqLoad);
     }
 }
-
-
 
 /* state: the options screen (over the menu); back to the menu when it closes */
 void SceneTitle_SeqOptions(SceneTitle *t) {

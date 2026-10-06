@@ -5,7 +5,10 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "progress.h"
-
+#include "memcard.h"
+#include "navmesh.h"
+#include "actor.h"
+#include "pursuer.h"
 
 typedef struct MovieLib {
     /* 0x00 */ void **vtbl;
@@ -27,6 +30,86 @@ extern s32 mwPlyCalcWorkCprmSfd(void *cprm);
 extern void func_0023AE40(void);       /* mwPlyFinishSfdFx */
 extern void *func_00238BF0(void *cprm);   /* mwPlyCreateSofdec */
 
+void *func_001BF660(u8 *o, s32 flags);
+
+extern s32 D_003E5260, D_003E5264;
+extern void *D_01976F98;
+extern const u8 D_004573C0[];
+extern s64 D_003EA900;   /* the timer's rate (ticks a second) */
+extern s64 func_0011CE88(s64 a, s64 b);   /* __divdi3 */
+void func_00226790(s32 v);
+s32 func_002267A0(void);
+void func_002267B0(s32 v);
+s32 func_002267C0(void);
+void func_00226820(s32 v);
+s32 func_00226848(void);
+void func_002267D0(void);
+s64 func_0025C2F8(s64 ticks);
+f32 func_0025C320(s32 ticks);
+f32 func_0025C360(s32 ticks);
+f32 func_0025C3A0(s32 ticks);
+void func_0025C3D0(s64 rate);
+void func_0025C3E0(u8 *s);
+void func_0025C400(u8 *s, s64 v);
+
+void func_00226808(void);
+void func_00226868(void);
+void func_00226870(void);
+void func_00226878(void);
+void func_00226880(void);
+void func_00226888(void);
+void func_00226890(void);
+void func_00226898(void);
+void func_002268A0(void);
+void func_002268A8(void);
+void func_002268B0(void);
+void func_002268B8(void);
+
+extern u8 D_003E5268[];
+extern u8 D_003E5270[];
+extern u8 D_003E88D0[];
+extern u8 D_003E9F18[];
+extern u8 D_004574B8[];
+extern u8 D_00457558[];
+extern u8 D_004575C0[];
+extern u8 D_00457ED0[];
+extern u8 D_00459930[];
+extern u8 D_00459F60[];
+extern u8 D_0045A4D8[];
+extern u8 D_0045A6E0[];
+void *func_00226810(void);
+void *func_0022A6F8(void);
+void *func_00230B48(void);
+void *func_00233720(void);
+void *func_00236B70(void);
+void *func_0023AA68(void);
+void *func_0023AA78(void);
+void *func_0023FFA0(void);
+void *func_00246A80(void);
+void *func_002577D8(void);
+void *func_00259EE8(void);
+void *func_0025B828(void);
+
+void func_002B6130(u8 *self, u8 *src);
+
+extern u8 *D_0045D1F0;
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002D7710(u8 *p, const u8 *src);
+void func_002D78F0(u8 *p);
+
+/* destructor (vtable D_0046AED0) */
+void *func_001BF660(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AED0;
+        AT(o, 0x4, u8) = 0;
+        gMovieLib = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 /* +0x8 */
 MovieLib *func_0020E740(MovieLib *lib, s32 flags) {
     if (lib != NULL) {
@@ -64,6 +147,195 @@ void func_002266F0(MovieLib *lib) {
     CPRM(lib, 0x3C, s32) = 3;
     CPRM(lib, 0x44, s32) = 0;
     CPRM(lib, 0x40, void *) = NULL;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226790(s32 v) {
+    D_003E5260 = v;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+s32 func_002267A0(void) {
+    return D_003E5260;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_002267B0(s32 v) {
+    D_003E5264 = v;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+s32 func_002267C0(void) {
+    return D_003E5264;
+}
+
+/* D_01976F98 = D_004573C0, func_00226810's value 0, then 0x80 */
+/* (possibly dead code: nothing in the game references it) */
+void func_002267D0(void) {
+    D_01976F98 = (void *)D_004573C0;
+    AT(func_00226810(), 0x0, s32) = 0;
+    func_00226820(0x80);
+}
+
+void func_00226808(void) {
+}
+
+void *func_00226810(void) {
+    return D_003E5268;
+}
+
+/* the value behind func_00226810 set / read */
+void func_00226820(s32 v) {
+    AT(func_00226810(), 0x0, s32) = v;
+}
+
+s32 func_00226848(void) {
+    return AT(func_00226810(), 0x0, s32);
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226868(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226870(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226878(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226880(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226888(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226890(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_00226898(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_002268A0(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_002268A8(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_002268B0(void) {
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_002268B8(void) {
+}
+
+void *func_0022A6F8(void) {
+    return D_003E5270;
+}
+
+void *func_00230B48(void) {
+    return D_004574B8;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_00233720(void) {
+    return D_00457558;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_00236B70(void) {
+    return D_004575C0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_0023AA68(void) {
+    return D_00457ED0;
+}
+
+void *func_0023AA78(void) {
+    return D_003E88D0;
+}
+
+void *func_0023FFA0(void) {
+    return D_003E9F18;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_00246A80(void) {
+    return D_00459930;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_002577D8(void) {
+    return D_00459F60;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_00259EE8(void) {
+    return D_0045A4D8;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_0025B828(void) {
+    return D_0045A6E0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+s64 func_0025C2F8(s64 ticks) {
+    return func_0011CE88(ticks, D_003EA900);
+}
+
+/* in microseconds, milliseconds, seconds */
+/* (possibly dead code: nothing in the game references it) */
+f32 func_0025C320(s32 ticks) {
+    return (f32)ticks * 1000000.0f / (f32)(s32)D_003EA900;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+f32 func_0025C360(s32 ticks) {
+    return (f32)ticks * 1000.0f / (f32)(s32)D_003EA900;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+f32 func_0025C3A0(s32 ticks) {
+    return (f32)ticks / (f32)(s32)D_003EA900;
+}
+
+void func_0025C3D0(s64 rate) {
+    D_003EA900 = rate;
+}
+
+/* a measure: { sum, min, max, count } cleared / one more value */
+/* (possibly dead code: nothing in the game references it) */
+void func_0025C3E0(u8 *s) {
+    AT(s, 0x18, s32) = 0;
+    AT(s, 0x8, s64) = (s64)((u64)-1 >> 1);
+    AT(s, 0x0, s64) = 0;
+    AT(s, 0x10, s64) = 0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void func_0025C400(u8 *s, s64 v) {
+    s64 lo = AT(s, 0x8, s64), hi = AT(s, 0x10, s64);
+
+    if (hi < v) {
+        hi = v;
+    }
+    if (v < lo) {
+        lo = v;
+    }
+    AT(s, 0x18, s32)++;
+    AT(s, 0x0, s64) += v;
+    AT(s, 0x8, s64) = lo;
+    AT(s, 0x10, s64) = hi;
 }
 
 /* +0x10 the work buffer (NULL: keep) */
@@ -189,7 +461,6 @@ static inline s32 movie_level(Movie *m) {
     return db;
 }
 
-
 /* ---- D_0046EA40 (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
  * a quad on the screen's corners textured with the movie's current frame (func_0021E410) while
  * +0x10 (set by +0x18); its +0xC is func_002B6310 ---- */
@@ -230,6 +501,10 @@ void *func_002B60D0(void *o, s32 flags) {
         }
     }
     return o;
+}
+
+void func_002B6130(u8 *self, u8 *src) {
+    *(u32 *)(self + 0x10) = *src;
 }
 
 /* +0x10 update: the movie flag from the game mode (gProgress +0x54) */
@@ -342,9 +617,16 @@ void *func_002D76B0(void *o, s32 flags) {
     return o;
 }
 
+void func_002D7710(u8 *p, const u8 *src) { F(p, 0x10, u32) = *src; }
+
 /* +0x10 update */
 void func_002D78B0(void) {
     *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
+}
+
+void func_002D78F0(u8 *p) {
+    *D_0045D1F0 = 0;
+    F(p, 0x10, u32) = 0;
 }
 
 /* +0x14 draw: the screen at x 20.8 .. 22.96, z 7.73 .. 9.80, y 9.80 .. 12.05 */

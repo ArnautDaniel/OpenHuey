@@ -1,12 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
 
-/* Field access by byte offset into objects whose layout is not yet known. */
-#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
-#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
-#define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
-#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
-
 extern void *D_00426860[];
 extern u8 D_00426890[];
 extern u8 D_004268B0[];
@@ -41,8 +35,6 @@ extern void *D_00429540[];
 extern u8 D_00429580[];
 extern u8 D_00429730[];
 extern u8 D_00429770[];
-extern u8 D_00429C10[];
-extern u8 D_00429C50[];
 
 void *func_0030F140(void) {
     return D_00426890;
@@ -180,57 +172,4 @@ void *func_00311AC0(void) {
     return D_00429770;
 }
 
-void func_003140A0(u8 *self) {
-    PTR(self, 0x874) = D_00429C10;
-}
-
-void func_00314910(u8 *self) {
-    S32(self, 0xF60) = 0;
-    self[0xF64] = 0;
-    S64(self, 0xC18) = -1;
-    S32(self, 0xC24) = 0;
-    S32(self, 0xC28) = 0;
-    S32(self, 0xC2C) = 0;
-    S32(self, 0xC30) = 25;
-    S16(self, 0xC34) = 0x20;
-    S16(self, 0xC36) = 0x6C;
-    S16(self, 0xC38) = 0x4C;
-    S16(self, 0xC3A) = 8;
-    S16(self, 0xC3C) = 8;
-    S16(self, 0xC3E) = 0x200;
-    S16(self, 0xC40) = 0x100;
-    self[0xC42] = 0x40;
-    self[0xC43] = 1;
-    self[0xC44] = 1;
-    self[0xC45] = 0x10;
-    self[0xC46] = 0xFF;
-}
-
-void *func_00315C40(void) {
-    return D_00429C50;
-}
-
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-
-/* as func_00314910 */
-void func_0037C520(u8 *self) {
-    S32(self, 0xF60) = 0;
-    self[0xF64] = 0;
-    S64(self, 0xC18) = -1;
-    S32(self, 0xC24) = 0;
-    S32(self, 0xC28) = 0;
-    S32(self, 0xC2C) = 0;
-    S32(self, 0xC30) = 25;
-    S16(self, 0xC34) = 0x20;
-    S16(self, 0xC36) = 0x6C;
-    S16(self, 0xC38) = 0x4C;
-    S16(self, 0xC3A) = 8;
-    S16(self, 0xC3C) = 8;
-    S16(self, 0xC3E) = 0x200;
-    S16(self, 0xC40) = 0x100;
-    self[0xC42] = 0x40;
-    self[0xC43] = 1;
-    self[0xC44] = 1;
-    self[0xC45] = 0x10;
-    self[0xC46] = 0xFF;
-}

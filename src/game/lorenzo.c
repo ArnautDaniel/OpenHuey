@@ -8,8 +8,78 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "game.h"
 
 extern void *D_00470720[];
+
+extern u8 D_0041A5F0[];
+void *func_002F8930(void);
+
+extern void *D_0046F580[];
+extern void *D_00470F90[];
+extern void func_002D63B0(void *p);
+void *func_00301250(u8 *o, s32 flags);
+
+extern u8 D_004224C0[];
+/* writes {x, 0, z} */
+#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
+
+void *func_003095A0(void);
+void func_003095B0(void *self, s32 id, f32 *out);
+void func_00309670(u8 *self);
+
+extern u8 D_00422440[];
+extern u8 D_00422480[];
+extern u8 D_00423020[];
+extern u8 D_00423070[];
+extern u8 D_004238B0[];
+extern u8 D_00423900[];
+extern u8 D_00423950[];
+extern u8 D_00423970[];
+extern u8 D_00423990[];
+extern u8 D_004239E0[];
+extern u8 D_00423B30[];
+extern u8 D_00423B70[];
+extern u8 D_019910C8[];
+extern u8 D_019910D8[];
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
+
+void func_003636C0(u8 *o);
+f32 func_003659B0(void);
+f32 func_003659C0(void);
+void func_00365CD0(Pursuer *p);
+
+s32 func_003658D0(void);
+s32 func_003658E0(void);
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+void func_0030BAA0(u8 *self, s32 alt);
+f32 func_0030BC60(void);
+f32 func_0030BCA0(void);
+f32 func_0030BCE0(void);
+f32 func_0030BD20(u8 *self);
+f32 func_0030BDA0(u8 *self);
+void *func_0030C1F0(void);
+void *func_0030C4F0(void);
+void *func_0030C500(void);
+void func_0030C510(u8 *self);
+f32 func_0030CBB0(void);
+f32 func_0030CBC0(void);
+s32 func_0030CF80(void *self);
+f32 func_003658F0(void);
+f32 func_00365930(void);
+f32 func_00365970(void);
 
 /* vtable +0x8: destructor */
 Pursuer *func_002F8820(Pursuer *p, s32 flags) {
@@ -23,6 +93,10 @@ Pursuer *func_002F8820(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_002F8930(void) {
+    return D_0041A5F0;
 }
 
 /* vtable +0xA0: his turn rate, 2 degrees */
@@ -200,6 +274,18 @@ void func_002F9080(Pursuer *p) {
     PU(p, 0x16A0, f32) = -8.0f;
 }
 
+/* destructor (vtable D_00470F90) */
+void *func_00301250(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00470F90;
+        AT(o, 0x0, void **) = D_0046F580;
+        if ((s16)flags > 0) {
+            func_002D63B0(o);
+        }
+    }
+    return o;
+}
+
 /* ---- the second Lorenzo (kind 10, vtable 0x4715C0; code 0x309490..0x30C3E0): a strong one
    (250 hp, 400 when gProgress+0x30 bit 0x8000) with a mode 2 (+0x16B8) from threat level 1 ---- */
 
@@ -219,9 +305,36 @@ Pursuer *func_00309490(Pursuer *p, s32 flags) {
     return p;
 }
 
+void *func_003095A0(void) {
+    return D_004224C0;
+}
+
+void func_003095B0(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 10:
+    case 11:
+        B5_SET3(out, 0x1.2d566c0000000p+0f /* 1.1771 */, 0x1.3a28f60000000p+3f /* 9.8175 */);
+        break;
+    case 12:
+    case 13:
+        B5_SET3(out, 0x1.e8587a0000000p-1f /* 0.9538 */, 0x1.abdcc60000000p+3f /* 13.3707 */);
+        break;
+    case 14:
+        B5_SET3(out, -0x1.25a8580000000p+0f /* 1.1471 */, -0x1.42a64c0000000p+1f /* 2.5207 */);
+        break;
+    case 15:
+        B5_SET3(out, -0x1.2f4f0e0000000p-3f /* 0.1481 */, -0x1.fd1eb80000000p+1f /* 3.9775 */);
+        break;
+    }
+}
+
 /* vtable +0x10C: never (0) */
 s32 func_00309660(Pursuer *p) {
     return 0;
+}
+
+void func_00309670(u8 *self) {
+    self[0x16EE] = 1;
 }
 
 /* vtable +0x138: the hit points of an attack entry; his grab 0xE01 is at Fiona herself */
@@ -299,6 +412,32 @@ s32 func_0030BC50(Pursuer *p) {
     return 9;
 }
 
+f32 func_0030BC60(void) {
+    return b5_prog_flag8000() ? 45.0f : 2e+01f;
+}
+
+f32 func_0030BCA0(void) {
+    return b5_prog_flag8000() ? 8.0f : 5.0f;
+}
+
+f32 func_0030BCE0(void) {
+    return b5_prog_flag8000() ? 3e+01f : 1e+01f;
+}
+
+f32 func_0030BD20(u8 *self) {
+    if (b5_prog_flag8000()) {
+        return S32(self, 0x16B8) == 2 ? 18.0f : 40.0f;
+    }
+    return S32(self, 0x16B8) == 2 ? 18.0f : 70.0f;
+}
+
+f32 func_0030BDA0(u8 *self) {
+    if (b5_prog_flag8000()) {
+        return S32(self, 0x16B8) == 2 ? 12.0f : 30.0f;
+    }
+    return S32(self, 0x16B8) == 2 ? 12.0f : 60.0f;
+}
+
 void func_00309890(Pursuer *p);
 void func_00309680(Pursuer *p);
 
@@ -342,6 +481,10 @@ void func_0030BE20(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+void *func_0030C1F0(void) {
+    return b5_prog_flag8000() ? D_00422480 : D_00422440;
 }
 
 extern u8 D_00422500[], D_00422650[], D_00422690[], D_004226F0[], D_00422880[], D_00422A10[],
@@ -969,6 +1112,30 @@ void func_0030B840(Pursuer *p) {
     Lorenzo2_SinkBehind(p);
 }
 
+void func_0030BAA0(u8 *self, s32 alt) {
+    if (b5_prog_flag8000()) {
+        if (alt) {
+            S32(self, 0x16B8) = 2;
+            PTR(self, 0x1730) = D_00423900;
+            PTR(self, 0x1748) = D_019910D8;
+            PTR(self, 0x1740) = D_00423970;
+            PTR(self, 0x173C) = D_004239E0;
+        } else {
+            S32(self, 0x16B8) = 0;
+            PTR(self, 0x1730) = D_004238B0;
+            PTR(self, 0x1748) = D_019910C8;
+            PTR(self, 0x1740) = D_00423950;
+            PTR(self, 0x173C) = D_00423990;
+        }
+    } else if (alt) {
+        S32(self, 0x16B8) = 2;
+        PTR(self, 0x1730) = D_00423070;
+    } else {
+        S32(self, 0x16B8) = 0;
+        PTR(self, 0x1730) = D_00423020;
+    }
+}
+
 /* ---- character kind 12 (vtable D_004718F0): a pursuer with his own tables and update ---- */
 
 extern void *D_004718F0[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[], *D_00470F90[];
@@ -1006,6 +1173,18 @@ Pursuer *func_0030C3E0(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_0030C4F0(void) {
+    return D_00423B30;
+}
+
+void *func_0030C500(void) {
+    return D_00423B70;
+}
+
+void func_0030C510(u8 *self) {
+    self[0x16EE] = 1;
 }
 
 static void k12_mark_init(void **obj) {
@@ -1089,6 +1268,14 @@ s32 func_0030CB40(Pursuer *p) {
     return -1;
 }
 
+f32 func_0030CBB0(void) {
+    return 18.0f;
+}
+
+f32 func_0030CBC0(void) {
+    return 14.0f;
+}
+
 /* vtable +0x58: the marker off, then the Pursuer's */
 void func_0030CBD0(Pursuer *p) {
     PU(p, 0x17C0, u8) = 0;
@@ -1153,6 +1340,10 @@ void func_0030CBE0(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+s32 func_0030CF80(void *self) {
+    return VCALL(gSound, 0x10, s32 (*)(void *, s32, s32))(gSound, 0, 0x400000);
 }
 
 /* vtable +0xF4: his setup over the Pursuer's: tables (two sets by gProgress+0x30 bit 0x8000),
@@ -1233,6 +1424,10 @@ void func_00363610(void *self, s32 id, f32 *out) {
         out[2] = -0x1.fd1eb80000000p+1f;  /* -3.9775 */
         break;
     }
+}
+
+void func_003636C0(u8 *o) {
+    AT(o, 0x16EE, u8) = 1;
 }
 
 /* (as func_00309680)  his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
@@ -1373,6 +1568,37 @@ s32 func_00365850(Pursuer *p) {
         return 0;
     }
     return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
+}
+
+s32 func_003658D0(void) {
+    return 0xA;
+}
+
+s32 func_003658E0(void) {
+    return 0x9;
+}
+
+/* as func_0030BC60 */
+f32 func_003658F0(void) {
+    return b5_prog_flag8000() ? 45.0f : 2e+01f;
+}
+
+/* as func_0030BCA0 */
+f32 func_00365930(void) {
+    return b5_prog_flag8000() ? 8.0f : 5.0f;
+}
+
+/* as func_0030BCE0 */
+f32 func_00365970(void) {
+    return b5_prog_flag8000() ? 3e+01f : 1e+01f;
+}
+
+f32 func_003659B0(void) {
+    return 18.0f;
+}
+
+f32 func_003659C0(void) {
+    return 12.0f;
 }
 
 /* (as func_002F9000)  his model files (func_0029F8C0 for kind 11) */
@@ -1696,4 +1922,10 @@ void func_003659D0(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+/* func_0029E520, then +0x31C (1) */
+void func_00365CD0(Pursuer *p) {
+    func_0029E520(p);
+    VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 1);
 }

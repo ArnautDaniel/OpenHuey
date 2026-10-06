@@ -4,8 +4,14 @@
 #include "common.h"
 #include "game.h"
 #include "navmesh.h"
+#include "globals.h"
+#include "memcard.h"
 
 #define MESH_SIZE 0x50
+
+extern void *D_0046AA40[];
+extern void func_00100490(void *p);
+void *func_0017CDD0(u8 *o, s32 flags);
 
 /* take the room's meshes (`meshes`: count, then entries from +0x10; their bounds get the
  * float low bit cleared), the per-mesh flag bytes (`flags`, may be NULL: bit 0 -> mesh flag
@@ -48,6 +54,18 @@ s32 func_0017CC00(u8 *set, u8 *meshes, u8 *sec1, u8 *flags) {
         AT(set, 0xC, u8 *) = sec1 + 0x10;
     }
     return AT(set, 0x8, u32);
+}
+
+/* destructor (vtable D_0046AA40) */
+void *func_0017CDD0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AA40;
+        gNavMesh = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 #include "sce/libvu0.h"
@@ -192,7 +210,6 @@ s32 func_0017B540(NavMesh *nm, s32 d, const f32 *pos) {
     return 0;
 }
 
-
 /* walk from `from` in triangle `tri` towards `to`: crossing edges into the neighbours (vtable
  * +0x20: the edge left by, 3 still inside, 4 lost - then +0x64 finds the triangle under it);
  * at a wall (no neighbour, or one blocked by `mask`) the target slides along it (+0x28) and
@@ -248,7 +265,6 @@ s32 func_0017C050(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) 
     return cur;
 }
 
-
 extern s32 func_0017AE80(NavTri *t, f32 *from, f32 *to);   /* the edge the segment leaves by */
 
 /* vtable +0x20: which edge of triangle `i` the step from -> to leaves by (3: stays inside),
@@ -259,7 +275,6 @@ s32 func_0017C750(NavMesh *nm, u32 i, f32 *from, f32 *to) {
     }
     return 4;
 }
-
 
 /* which edge of triangle `t` (in x/z) the step from -> to leaves it by: 0..2, 3 if `to` is
  * inside, 4 if it is outside but the step crosses no edge */
@@ -310,7 +325,6 @@ s32 func_0017AE80(NavTri *t, f32 *from, f32 *to) {
     }
     return inside == tested ? 3 : 4;
 }
-
 
 extern s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to);
 
@@ -389,7 +403,6 @@ s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to) {
     return inside == tested ? 3 : 4;
 }
 
-
 /* +0x2C triangle `i`'s unit normal into `n` (w 1), (0, 1, 0) for a bad index */
 void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
     f32 a[4] __attribute__((aligned(16)));
@@ -417,8 +430,6 @@ void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
     n[3] = 1.0f;
 }
 
-
-
 u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to);
 
 /* +0x28 slide: for the step `from` -> `to` in triangle `i`, `out` = `to` pulled back inside
@@ -429,7 +440,6 @@ u32 func_0017C690(NavMesh *nm, u32 i, f32 *out, const f32 *from, const f32 *to) 
     }
     return func_0017A940(&nm->tris[i], out, from, to);
 }
-
 
 /* the step `from` -> `to` in triangle `t`: the edge it leaves by (func_0017AE80; 3 inside), and
  * then `out` - `to` pulled back over that edge along its inward normal (1.1x the overshoot,

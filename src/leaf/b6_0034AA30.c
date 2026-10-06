@@ -32,8 +32,6 @@ extern u32 D_0047AF14[];
 extern u32 D_0047AF18[];
 extern u32 D_0047AF38[];
 extern u32 D_0047AF3C[];
-extern u8 D_00441810[], D_004417D0[];
-extern u8 D_00441830[], D_004417F0[];
 
 void *func_0034AA30(void) {
     return D_0043FA80;
@@ -167,42 +165,4 @@ void func_0034B970(void *self, s32 i, f32 *out) {
     case 14: out[0] = -0x1.25a858p+0f /* -1.1471 */; out[1] = 0.0f; out[2] = -0x1.42a64cp+1f /* -2.5207 */; break;
     case 15: out[0] = -0x1.4fdf3cp-2f /* -0.328 */; out[1] = 0.0f; out[2] = -0x1.324a8cp+1f /* -2.3929 */; break;
     }
-}
-
-f32 func_0034D250(void) {
-    return 7.0f;
-}
-
-f32 func_0034D260(void) {
-    return 2e+01f;
-}
-
-f32 func_0034D270(void) {
-    return 12.0f;
-}
-
-s32 func_0034D280(u8 *p) {
-    f32 d;
-
-    if (*(s32 *)(p + 0xC4) == 1) {
-        return 0x203;
-    }
-    if (*(s32 *)(p + 0x16B8) == 2) {
-        return 0x205;
-    }
-    if (p[0x1544] != 0 && *(s32 *)(p + 0x1540) == (s32)gCharPlayer) {
-        d = *(f32 *)(p + 0x1588);
-        if (d < 100.0f && !(d <= 0.0f)) {
-            return 0x206;
-        }
-    }
-    return 0x201;
-}
-
-void *func_0034D980(void) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
-}
-
-void *func_0034D9C0(void) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
 }

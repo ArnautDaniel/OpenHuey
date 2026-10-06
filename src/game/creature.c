@@ -8,6 +8,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "pursuer.h"
 
 extern void *D_0046FAA0[], *D_0046FB50[], *D_00469C60[], *D_00469C20[];
 extern void func_00124DA0(Actor *a);
@@ -18,6 +19,125 @@ extern void func_00125CC0(Character *c);
 #define CR(c) ((u8 *)(c) + 0x1540)   /* the creature's own block */
 
 /* ---- the creature base (D_0046FB50): defaults ---- */
+
+extern PTMF D_01990D40[];
+s32 func_002B4250(void *self, u32 i, s32 a, s32 b);
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void func_002DE510(u8 *p, s32 a1, u32 v);
+s32 func_002DE830(u8 *p);
+void func_002DE840(u8 *p, s32 slot, u32 v);
+void *func_002E2220(u8 *p);
+
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
+
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+#define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
+
+void func_00314910(u8 *self);
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+void func_0031E920(u8 *self, u8 *src);
+void func_0031E9A0(u8 *self);
+
+extern void func_002E56C0(u8 *quad);
+void func_0031E980(u8 *o);
+void func_0032A890(Character *c);
+void func_0032C000(Character *c);
+
+s32 func_0031E990(void);
+void func_00325D60(void);
+void func_0032A0D0(void);
+
+extern u8 D_0042C6A0[];
+extern u8 D_0042C6E0[];
+void func_00324790(u8 *self, s32 unused, u32 v);
+s32 func_003247C0(u8 *self);
+void func_00324C00(u8 *self, s32 slot, u32 b12);
+void *func_0032C350(void);
+void *func_0032C360(void);
+
+extern const char *const D_0042C358;
+extern void *D_00474130[];
+extern const PTMF D_0042C720;
+#define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
+
+#define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
+
+#define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
+
+#define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
+
+void func_0035A170(u8 *p);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+/* in play: func_00124890(-1) */
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* the action 5 taken (+0x14E8): in play +0x8C, the state st, +0x114 1; the action cleared */
+static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((u8)func_00217510(p) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), st);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
+    Progress *g = gProgress;
+
+    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+        func_001777D0(g, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+Character *func_0032C240(Character *c, s32 flags);
+void func_0032C380(Pursuer *p);
+void func_0032C3D0(Pursuer *p);
+s32 func_0032C4A0(Pursuer *p);
 
 void func_002E2260(Character *c) {   /* +0xA8 */
 }
@@ -89,6 +209,10 @@ Character *func_002DE490(Character *c, s32 flags) {
         }
     }
     return c;
+}
+
+void func_002DE510(u8 *p, s32 a1, u32 v) {
+    F(p, 0x154C, s32) = v < 3 ? (s32)v : -1;
 }
 
 void func_002E2020(Character *c) {   /* +0x10 */
@@ -307,7 +431,6 @@ s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
 extern u32 func_00124480(Actor *a, const f32 *p, u32 mask);
 extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
-extern void func_001247E0(Actor *a, const f32 *delta);
 
 /* on the way to `tri`: while not there (its target +0xB0 not on it) the path ahead is looked
  * at (12 steps and 1; unused); a door on the way (+0x88 bit 0) with an exit +0x100 is gone
@@ -395,7 +518,6 @@ s32 func_002DFF70(Character *c) {
     return creature_close_in(c, t);
 }
 
-
 /* placed at a random triangle of its room (only in the room being played) on its level
  * `level` (0 / 1: flag 0x100000 / 0x200000 free; -1 / 2: not both; flag 8 never), away from
  * the room's doors' event spots */
@@ -458,6 +580,28 @@ void func_002DE540(Character *c, s32 level) {
         }
     }
     VCALL(c, 0x28, void (*)(Character *, u32, s32, s32))(c, tri, 0, 0);
+}
+
+s32 func_002DE830(u8 *p) { return p[0x156E] != 0; }
+
+/* Saves this object's state into a 36-byte slot of the progress block (+0x878). */
+void func_002DE840(u8 *p, s32 slot, u32 v) {
+    u8 *e = (u8 *)gProgress + slot * 36;
+
+    F(e, 0x878, u32) = F(p, 0x30, u32);
+    F(e, 0x87C, u32) = F(p, 0x154C, u32);
+    F(e, 0x880, u32) = F(p, 0x34, u32);
+    F(e, 0x884, s16) = F(p, 0x1560, s16);
+    e[0x886] = p[0x1571];
+    e[0x887] = F(p, 0x1544, s16) / 10;
+    e[0x888] = p[0x15C2];
+    e[0x889] = p[0x156E];
+    e[0x88A] = (u8)v;
+    e[0x88B] = p[0x15C7];
+    e[0x88C] = p[0x15DA];
+    F(e, 0x890, u32) = 0;
+    F(e, 0x894, u32) = 0;
+    F(e, 0x898, u32) = 0;
 }
 
 /* the first door of the room (doors +0x40) it may use (+0x15CA[door] bit of its slot), that
@@ -600,7 +744,6 @@ void func_002DEFA0(Character *c) {
 extern s32 func_00125D80(Character *c);
 extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);
 extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
-extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
 extern void *D_00472370[];
 extern const PTMF D_00416790;   /* vanishing */
 
@@ -656,9 +799,7 @@ void func_002DF180(Character *c) {
     ptmf_set(&c->a.state, &D_00416790);
 }
 
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* u8: the way through is open */
 extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);
-extern s32 func_001272B0(Character *c, f32 speed);
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
 /* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
@@ -884,7 +1025,6 @@ void func_002E0390(Character *c) {
     func_001274E0(c, AT(k, 0x0, f32));
 }
 
-extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
 
 /* +0x64 put in room `room` on triangle `tri`, mode `mode` (+0xC): (the Character's +0x64,
  * func_00125BA0) in the room being played placed there (+0x28; its result) and its doors
@@ -1017,6 +1157,16 @@ void func_002E2030(Character *c) {
     AT(k, 0x9B, u8) = 0;
     AT(k, 0x9C, u8) = 0;
     VCALL(c, 0x5C, void (*)(Character *))(c);
+}
+
+/* Inlined destructor chain: resets the vtable to each base class in turn. */
+void *func_002E2220(u8 *p) {
+    if (p != NULL) {
+        *(void *volatile *)p = D_0046FB50;
+        *(void *volatile *)p = D_00469C60;
+        *(void *volatile *)p = D_00469C20;
+    }
+    return p;
 }
 
 extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
@@ -1342,7 +1492,6 @@ void func_002E1380(Character *c) {
     VCALL(c, 0x40, void (*)(Character *))(c);
 }
 
-extern void func_002E56C0(void *drawer);   /* hand a quad drawer to the renderer */
 
 /* +0x2C draw, once it has come (or, out, when its rest is over): six glows - its core (cell
  * 0x40, white), its colour (red for kinds 0x12.. but 0x24, else blue; size 2.5 + +0x40), three
@@ -1480,7 +1629,7 @@ void func_002E19F0(Character *c) {
         } else {
             q.palette = -1;
         }
-        func_002E56C0(&q);
+        func_002E56C0((u8 *)&q);
         q.vtbl = D_00469D00;
     }
 }
@@ -1598,7 +1747,6 @@ void func_002E2740(u8 *m) {
         }
     }
 }
-
 
 /* a pending message (+0x38681 set, its id +0x38680) shown */
 /* (possibly dead code: nothing in the game references it) */
@@ -1851,7 +1999,6 @@ s32 func_00312510(u8 *o) {
     return 1;
 }
 
-
 /* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
  * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;
  * none, 0 */
@@ -1898,6 +2045,11 @@ s32 func_002B4030(void) {
         return 1;
     }
     return 0;
+}
+
+/* (self->*D_01990D40[i])(a, b) */
+s32 func_002B4250(void *self, u32 i, s32 a, s32 b) {
+    return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
 }
 
 /* ---- class D_00472390: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
@@ -2013,7 +2165,6 @@ void func_00312D90(u8 *o) {
 
 extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
-extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
@@ -2345,7 +2496,6 @@ s32 func_00313980(u8 *o) {
     return 1;
 }
 
-
 /* ---- D_004727C0 (0xF68 bytes): the strand's drop splash, 32 droplets in two buffers of quad
  * records (+0x10 + 0x600 x the current one +0xF60), each with a velocity (+0xC60) and a pull
  * against it (+0xDE0, 12 bytes each); the quad drawer at +0xC10, the splash point at +0xC50
@@ -2468,7 +2618,7 @@ static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
         q.texId = 1;
         q.texGroup = 0x10;
         q.palette = -1;
-        func_002E56C0(&q);
+        func_002E56C0((u8 *)&q);
         AT(o, 0xC5C, f32) = 0.0f;
         q.vtbl = D_00469D00;
     }
@@ -2522,6 +2672,28 @@ s32 func_00314700(u8 *o) {
     return 1;
 }
 
+void func_00314910(u8 *self) {
+    S32(self, 0xF60) = 0;
+    self[0xF64] = 0;
+    S64(self, 0xC18) = -1;
+    S32(self, 0xC24) = 0;
+    S32(self, 0xC28) = 0;
+    S32(self, 0xC2C) = 0;
+    S32(self, 0xC30) = 25;
+    S16(self, 0xC34) = 0x20;
+    S16(self, 0xC36) = 0x6C;
+    S16(self, 0xC38) = 0x4C;
+    S16(self, 0xC3A) = 8;
+    S16(self, 0xC3C) = 8;
+    S16(self, 0xC3E) = 0x200;
+    S16(self, 0xC40) = 0x100;
+    self[0xC42] = 0x40;
+    self[0xC43] = 1;
+    self[0xC44] = 1;
+    self[0xC45] = 0x10;
+    self[0xC46] = 0xFF;
+}
+
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *D_004737D0[];
 extern void *D_00474080[];
@@ -2539,6 +2711,50 @@ u8 *func_0031E890(u8 *o, s32 flags) {
         func_002D63B0(o);
     }
     return o;
+}
+
+void func_0031E920(u8 *self, u8 *src) {
+    U32(self, 0x10) = U32(src, 0x0);
+    U32(self, 0x14) = U32(src, 0x4);
+    U32(self, 0x18) = U32(src, 0x8);
+    U32(self, 0x1C) = U32(src, 0xC);
+    F32(self, 0x20) = F32(src, 0x10);
+    F32(self, 0x24) = F32(src, 0x14);
+    F32(self, 0x28) = F32(src, 0x18);
+    F32(self, 0x2C) = 1.0f;
+    F32(self, 0x30) = F32(src, 0x1C);
+    F32(self, 0x34) = F32(src, 0x1C);
+    S32(self, 0x38) = 0;
+    S32(self, 0x3C) = 0;
+}
+
+/* its quad drawer (+0x40) on its one record (+0x10), drawn */
+void func_0031E980(u8 *o) {
+    AT(o, 0x50, u8 *) = o + 0x10;
+    func_002E56C0(o + 0x40);
+}
+
+s32 func_0031E990(void) {
+    return 0x1;
+}
+
+void func_0031E9A0(u8 *self) {
+    S64(self, 0x48) = -1;
+    S32(self, 0x58) = 0;
+    S32(self, 0x5C) = 0;
+    S32(self, 0x60) = 25;
+    S16(self, 0x64) = 1;
+    S16(self, 0x66) = 0xA0;
+    S16(self, 0x68) = 0x40;
+    S16(self, 0x6A) = 0x20;
+    S16(self, 0x6C) = 0x20;
+    S16(self, 0x6E) = 0x200;
+    S16(self, 0x70) = 0x100;
+    self[0x72] = 0x40;
+    self[0x73] = 1;
+    self[0x74] = 1;
+    self[0x75] = 0x10;
+    self[0x76] = 0xFF;
 }
 
 /* (class D_0047A710, as func_003142F0)  +0x18 start (arg: colour 0..127 x3, position): every
@@ -2656,6 +2872,14 @@ Character *func_00324710(Character *c, s32 flags) {
     return c;
 }
 
+void func_00324790(u8 *self, s32 unused, u32 v) {
+    S32(self, 0x1540) = v < 3 ? (s32)v : -1;
+}
+
+s32 func_003247C0(u8 *self) {
+    return self[0x15AF] != 0;
+}
+
 /* (as func_002E19A0)  +0x28 put on triangle `tri` (func_00125AD0), remembering it as the previous one and the
    position (+0x38 / +0x40) */
 s32 func_0032BD40(Character *c, u32 tri, const f32 *heading, f32 *pos) {
@@ -2714,7 +2938,6 @@ void func_00329270(Character *c) {
    flag, +0x63 the door it went by, +0x64 the planner request, +0x65 snapped, +0x66 the door it
    chose, +0x6B flags, bit 0x80 kept). It walks by its animation's root motion. ---- */
 
-extern void func_001F6370(void *motion, f32 *out, f32 dt);   /* the animation's root motion */
 extern void func_00127060(Character *c);
 s32 func_00325410(Character *c, s32 exit);
 
@@ -2912,6 +3135,9 @@ s32 func_00325B60(Character *c) {
     return 0;
 }
 
+void func_00325D60(void) {
+}
+
 extern f32 func_002E2D00(f32 angle);
 
 /* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
@@ -3009,6 +3235,26 @@ void func_00324AE0(Character *c, s32 slot) {
     }
 }
 
+/* Saves this enemy's state into gProgress slot `slot` (36-byte records at +0x878). */
+void func_00324C00(u8 *self, s32 slot, u32 b12) {
+    u8 *rec = (u8 *)gProgress + 0x878 + slot * 36;
+
+    U32(rec, 0x0) = U32(self, 0x30);
+    U32(rec, 0x4) = U32(self, 0x1540);
+    U32(rec, 0x8) = U32(self, 0x34);
+    S16(rec, 0xC) = S16(self, 0x1584);
+    rec[0xE] = self[0x15AD];
+    rec[0xF] = (u8)(S16(self, 0x1588) / 10);
+    rec[0x10] = self[0x15AE];
+    rec[0x11] = self[0x15AF];
+    rec[0x12] = self[0x15A9] == 4 ? 0 : (u8)b12;
+    rec[0x13] = self[0x15B0];
+    rec[0x14] = self[0x15A2];
+    U32(rec, 0x18) = U32(self, 0x14C8);
+    F32(rec, 0x1C) = F32(self, 0x54);
+    F32(rec, 0x20) = F32(self, 0x1568);
+}
+
 extern const u8 D_0042C460[];   /* per kind (^ 0x80): s32, s16 */
 
 /* +0xA0 set up: mode `mode` (+0x0), kind `kind` (+0x6D) with its table entry, heading `deg`,
@@ -3060,7 +3306,6 @@ void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32
     VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, mode);
 }
 
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, s32 slot);
 
 /* (as func_002DFA50) travelling (unless in an event, flag 0x18): off screen the distance to
    the next door (+0x14C4) runs down by 0.35; at a door (+0x61) it walks the path at 0.35. On
@@ -3309,7 +3554,6 @@ void func_00326130(Character *c, f32 dist) {
     }
 }
 
-extern void func_002DDED0(void *motion, s32 anim, s32 variant);
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);
 
 /* moved this frame by its animation's root motion (turned with it) */
@@ -3383,7 +3627,6 @@ void func_00326950(Character *c) {
     }
 }
 
-extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
 
 /* state: Fiona in sight (func_00122C90) - back to state 0; across the room's divider from her
    - state 0x12; else its approach at 10 */
@@ -3486,7 +3729,6 @@ void func_00327450(Character *c) {
     }
     func_00326130(c, 20.0f);
 }
-
 
 /* state: knocked down, by step +0x60: 0 animation 0x1001 while its fall +0x28 runs down
    (+0x2C, 0.085 faster each frame), then a thud (sound 5); 1 after its animation and 32
@@ -3631,7 +3873,6 @@ void func_00327CA0(Character *c) {
 
 extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);
 extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
-extern f32 func_00124530(Actor *a, f32 target, f32 step);
 extern void func_002EF9E0(void *threat, f32 amount);
 extern const f32 D_0042C610[4][4];   /* where it grabs from, around Fiona */
 
@@ -3762,7 +4003,6 @@ void func_00327DD0(Character *c) {
         return;
     }
 }
-
 
 /* state: hit, by step +0x60 (moved by its animation except at 1). 0: its reaction (+0x94 with
    the hit's +0x14F4), facing where the hit came from (+0x14F0: 0 Fiona, 1 Hewie, 0xFF the
@@ -3927,8 +4167,6 @@ void func_0032AA50(Character *c) {
     }
 }
 
-extern void func_002DCDD0(void *m, Character *c, f32 lift, f32 b);
-extern void func_001F6AF0(void *m);
 
 /* +0x40 its model matrix (raised by +0x28 in state 0xB) unless out of contact, then the
    model's update */
@@ -3970,6 +4208,12 @@ void func_0032BF00(Character *c) {
     VCALL(c->motion, 0xC, void (*)(void *))(c->motion);
     AT(c, 0xD1, u8) = 1;
     AT(c->motion, 0x24, u8) = AT(c, 0x1528, u8);
+}
+
+/* +0x20, then func_002E2300 */
+void func_0032C000(Character *c) {
+    VCALL(c, 0x20, void (*)(Character *))(c);
+    func_002E2300(c);
 }
 
 extern f32 func_0031C248(f32 x);   /* sinf */
@@ -4033,7 +4277,6 @@ s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
     return AT(k, 0x48, s16) == 0;
 }
 
-extern u32 func_002DD420(void *motion, f32 *out, s32 left, f32 dt, f32 zscale);   /* foot on the ground (u8) */
 extern f32 func_001F6140(void *motion, f32 t);   /* root rotation (yaw delta) */
 
 /* its footsteps while walking (animation 0x200), in play: sounds 6 / 7 as each foot comes
@@ -4066,7 +4309,6 @@ void func_0032AF00(Character *c) {
     AT(k, 0x72, u8) = left;
     AT(k, 0x73, u8) = right;
 }
-
 
 /* +0x2C draw, once out (+0x6E: and its trip begun, +0x6F) or not resting (+0x4A): lit
    (+0xE4: its light +0x80 unless layer 0x17), else on layer 0xF faded by +0x71 (0x80 at most;
@@ -4268,6 +4510,16 @@ void func_0032A550(Character *c) {
     }
 }
 
+/* (a creature class) func_00125CC0, its own block +0x61 0, +0x63 0xFF, mode 2 */
+void func_0032A890(Character *c) {
+    u8 *k = (u8 *)c + 0x1540;
+
+    func_00125CC0(c);
+    AT(k, 0x61, u8) = 0;
+    AT(k, 0x63, u8) = 0xFF;
+    AT(k, 0x0, s32) = 2;
+}
+
 extern void func_002E2310(Character *c);
 
 /* head for exit `exit` (+0x67 its door): in the room being played, its closed ways forgotten;
@@ -4432,6 +4684,22 @@ void func_0032C040(Character *c) {
     func_002DDED0(c->motion, 0, -1);
     AT(k, 0x69, u8) = 0;
 }
+
+Character *func_0032C240(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474130); }
+
+void *func_0032C350(void) {
+    return D_0042C6A0;
+}
+
+void *func_0032C360(void) {
+    return D_0042C6E0;
+}
+
+void func_0032C380(Pursuer *p) { creature_inplay(p); }
+
+void func_0032C3D0(Pursuer *p) { creature_act5(p, &D_0042C720); }
+
+s32 func_0032C4A0(Pursuer *p) { return creature_slot_done(p); }
 
 extern const PTMF D_0042C4B0, D_0042C4C0, D_0042C4D0, D_0042C4E0, D_0042C4F0, D_0042C500, D_0042C510,
     D_0042C520, D_0042C530, D_0042C540, D_0042C550, D_0042C560, D_0042C570, D_0042C580, D_0042C590,
@@ -4681,6 +4949,9 @@ void func_00329440(Character *c) {
     AT(c, 0xF8, s32) = 0;
     func_00127060(c);
     cr19_settle(c);
+}
+
+void func_0032A0D0(void) {
 }
 
 /* ---- D_004795E0 (0x2920 bytes, Cr19Gone_Init): what the kind-0x19 creature leaves when it
@@ -4972,4 +5243,44 @@ s32 func_00359A00(u8 *o) {
         }
     }
     return done == 1 ? 0 : 1;
+}
+
+/* Initialises two render setting blocks at +0x2418 and +0x2450. */
+void func_0035A170(u8 *p) {
+    B7_W(p, 0x2910) = 0;
+    B7_W(p, 0x2914) = 0;
+    B7_D(p, 0x2418) = -1;
+    B7_W(p, 0x2424) = 0;
+    B7_W(p, 0x2428) = 0;
+    B7_W(p, 0x242C) = 0;
+    B7_W(p, 0x2430) = 0x19;
+    B7_H(p, 0x2434) = 0x40;
+    B7_H(p, 0x2436) = 0x1A0;
+    B7_H(p, 0x2438) = 0x40;
+    B7_H(p, 0x243A) = 0x20;
+    B7_H(p, 0x243C) = 0x20;
+    B7_H(p, 0x243E) = 0x200;
+    B7_H(p, 0x2440) = 0x100;
+    B7_B(p, 0x2442) = 0;
+    B7_B(p, 0x2443) = 1;
+    B7_B(p, 0x2444) = 1;
+    B7_B(p, 0x2445) = 0x10;
+    B7_B(p, 0x2446) = 2;
+    B7_D(p, 0x2450) = -1;
+    B7_W(p, 0x245C) = 0;
+    B7_W(p, 0x2460) = 0;
+    B7_W(p, 0x2464) = 0;
+    B7_W(p, 0x2468) = 0x19;
+    B7_H(p, 0x246C) = 0x20;
+    B7_H(p, 0x246E) = 0;
+    B7_H(p, 0x2470) = 0x40;
+    B7_H(p, 0x2472) = 0x20;
+    B7_H(p, 0x2474) = 0x20;
+    B7_H(p, 0x2476) = 0x200;
+    B7_H(p, 0x2478) = 0x100;
+    B7_B(p, 0x247A) = 0;
+    B7_B(p, 0x247B) = 1;
+    B7_B(p, 0x247C) = 1;
+    B7_B(p, 0x247D) = 0x10;
+    B7_B(p, 0x247E) = 0xFF;
 }

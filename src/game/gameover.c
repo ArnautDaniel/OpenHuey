@@ -15,6 +15,8 @@
 #include "input.h"
 #include "actor.h"
 #include "globals.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 typedef struct GameOver {
     /* 0x00 */ u8 mode;
@@ -57,7 +59,6 @@ extern void *func_00266C40(u8 *fx, s32 n);
 extern void *func_002672F0(u32 size, void *place);
 extern void func_002EF480(u8 *fade, f32 t);
 extern void func_002F02F0(u8 *panic);
-extern void func_002D6000(u8 *mgr, u32 v);
 extern void func_002D1FD0(u8 *bgm);
 extern s32 func_002D20D0(u8 *bgm);
 extern void func_001768B0(Progress *p, const char *name, s32 arg);
@@ -68,6 +69,25 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 #define PANIC(p) ((u8 *)(p) + 0x7B8)
 
+extern void *D_0046D730[];
+extern void func_002672E0(void *p);
+void *func_00267310(u8 *o, s32 flags);
+
+void func_002D6000(u8 *p, u32 v);
+
+/* destructor (vtable D_0046D750) */
+void *func_00267310(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D750;
+        AT(o, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
+
+void func_002D6000(u8 *p, u32 v) { p[0x19034] = (u8)v; }
 /* (SceneGame +0x73EB40) its state at +0x50 back to D_0041A150 */
 void func_002F39B0(u8 *o) {
     AT(o, 0x50, PTMF) = D_0041A150;

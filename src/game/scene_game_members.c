@@ -6,16 +6,30 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
+#include "memcard.h"
+#include "ptmf.h"
 
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
-extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
 extern void *D_0046C320[], *D_0046ECF0[], *D_0046C540[];
 extern void *D_00456DF8;
 extern void *func_0021A370(void *, s32);
-extern void *func_002D11C0(void *);
 extern void *func_002D0CE0(void *, s32);
-extern void *func_002D1260(void *);
 extern void *func_00221920(void *, s32);
+
+extern void *D_0046AEC0[];
+extern void func_00100490(void *p);
+void *func_001BF5F0(u8 *o, s32 flags);
+
+extern PTMF D_01990700[];
+s32 func_002A8AC0(void *self, u32 i, s32 a, s32 b);
+
+extern void *D_00469D00[];
+extern u8 D_0046D770[], D_0046C780[], D_0046D800[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *func_002D11C0(u8 *p);
+void *func_002D1260(u8 *p);
 
 /* (a base-class constructor that does nothing) */
 void *func_002D15B0(void *p) {
@@ -104,12 +118,38 @@ void *func_002D1160(u8 *p) {
     return p;
 }
 
+void *func_002D11C0(u8 *p) {
+    F(p, 0x40, void *) = D_00469D00;
+    F(p, 0x44, s32) = -1;
+    F(p, 0x40, void *) = D_0046D770;
+    F(p, 0xA0, u32) = 0;
+    F(p, 0x98, u32) = 0;
+    F(p, 0x9C, u32) = 0;
+    return p;
+}
+
 /* the doors: 8 of 0x210 bytes (vtable D_0046C540, global gDoors) */
 void *func_002D1200(u8 *p) {
     AT(p, 0x0, void **) = D_0046C540;
     gDoors = (VObject *)p;
     func_00100340(p + 0x10, func_002D1260, func_00221920, 0x210, 8);
     AT(p, 0x4, s32) = 0;
+    return p;
+}
+
+void *func_002D1260(u8 *p) {
+    F(p, 0x80, void *) = D_00469D00;
+    F(p, 0x84, s32) = -1;
+    F(p, 0x80, void *) = D_0046C780;
+    F(p, 0x120, u32) = 0;
+    F(p, 0x124, u32) = 0;
+    F(p, 0xE4, s32) = -1;
+    F(p, 0x128, u32) = 0;
+    p[0xE0] = 0;
+    F(p, 0xE8, u32) = 0;
+    F(p, 0x190, void *) = D_00469D00;
+    F(p, 0x194, s32) = -1;
+    F(p, 0x190, void *) = D_0046D800;
     return p;
 }
 
@@ -438,8 +478,6 @@ void *func_00221E70(u8 *d, s32 i) {
 
 /* ---- SceneGame +0xF6C1C0 (vtable D_0046B300, global gLights): the scene's lights (16, set
  * through +0x20; an ambient colour at +0x10) and two VRAM areas (+0x320 / +0x324) ---- */
-
-
 
 /* clip-space point c inside the view volume (|x|, |y|, |z| within w) */
 static s32 clip_inside(const f32 *c) {
@@ -981,7 +1019,6 @@ void func_001AABC0(u8 *o) {
     AT(o, 0x4, s32) = 0;
 }
 
-
 /* SceneGame +0xF6CD30: reset its pool of 32 0xA0-byte entries and the 32 slots +0x1438 */
 void func_00267250(u8 *o) {
     s32 i;
@@ -1033,7 +1070,6 @@ s32 func_00120660(u8 *rm, s32 slot) {
     ptmf_scall_1(rm, done, slot);
     return 1;
 }
-
 
 /* SceneGame +0x706480: hook its message data (+0x27680) up to message slot 6 (result at
  * +0x38681) */
@@ -1482,7 +1518,6 @@ void func_0025F810(u8 *o) {
     AT(o, 0x24, f32) = AT(def, 0x24, f32);
     AT(o, 0x28, f32) = AT(def, 0x28, f32);
 }
-
 
 /* start animation `id` of the object (+0x94 its data from the placed objects' +0x1C, played
    by +0x98 from the start) */
@@ -1995,9 +2030,13 @@ s32 func_002A8AB0(void) {
     return 0;
 }
 
+/* (self->*D_01990700[i])(a, b) */
+s32 func_002A8AC0(void *self, u32 i, s32 a, s32 b) {
+    return ptmf_scall_r2(self, &D_01990700[i & 0xFF], a, b);
+}
+
 /* ---- room manager +0x9360 (D_00456E00): the room's triangle groups (PAC section 14: count,
  * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
-
 
 /* set (`clear` 0) or clear (1) flag bits `bits` on the triangles of group `g` (-1: no group) */
 s32 func_002A8730(u8 *o, s32 clear, u32 g, u32 bits) {
@@ -2704,7 +2743,6 @@ void func_002A84E0(u8 *r) {
     AT(r, 0x8, s32) = 0;
 }
 
-
 extern void *func_00266C40(void *effects, s32 kind);   /* the effect of a kind, if any */
 extern void func_002239C0(void *doors);
 extern void func_0021AC10(void *o);
@@ -2775,7 +2813,6 @@ void func_0011FB20(u8 *rm, s32 slot) {
     VCALL(rm + 0x6740, 0x24, void (*)(void *))(rm + 0x6740);
 }
 
-
 /* the creatures, each frame (10 slots): an active one moves (+0x30) unless the player is in a
  * special state; an inactive one gets +0x10, then the manager's +0x28 (its vtable at +0x28)
  * for its slot */
@@ -2798,7 +2835,6 @@ void func_002E2A60(u8 *o) {
         }
     }
 }
-
 
 extern void func_00223A90(void *doors);
 extern void func_0021AFD0(void *o);
@@ -2832,7 +2868,6 @@ void func_0011FEB0(u8 *rm) {
     AT(rm, 0x8B, u8) = VCALL(gProgress, 0x54, s32 (*)(void *))(gProgress);
 }
 
-
 extern void func_00221300(u8 *door);
 
 /* the doors, each frame: each of the 8 with a definition (+0x4 table) updates */
@@ -2852,7 +2887,6 @@ void func_00223A90(void *d) {
     }
 }
 
-
 extern void func_0025FA50(u8 *obj);
 
 /* +0x28 the placed objects, each frame: every active one (bit set in +0xC, 64 slots of 0xB0
@@ -2866,7 +2900,6 @@ void func_002C8DC0(u8 *o) {
         }
     }
 }
-
 
 extern void func_001F36B0(void *track, f32 *out, f32 t);
 
@@ -2896,7 +2929,6 @@ void func_0025FA50(u8 *obj) {
     }
 }
 
-
 /* the play time { hours, minutes, seconds, frames (30 a second) }, each frame; it stops at
  * 99:59:59 */
 void func_002A7630(u8 *t) {
@@ -2917,7 +2949,6 @@ void func_002A7630(u8 *t) {
     t[1] = 0;
     t[0]++;
 }
-
 
 extern VObject *func_00120D60(void *pool, s32 i);   /* the pool's object i (NULL if free) */
 
@@ -2943,7 +2974,6 @@ void func_002D75C0(u8 *o) {
     }
 }
 
-
 /* the effects, each frame: each of the 32 at +0x1438 updates (+0x10) */
 void func_002671F0(u8 *o) {
     s32 i;
@@ -2956,7 +2986,6 @@ void func_002671F0(u8 *o) {
         }
     }
 }
-
 
 extern s32 func_002CC5A0(u8 *o, s32 group);
 extern s32 func_002C9930(u8 *o, u32 k);
@@ -2991,7 +3020,6 @@ s32 func_002C9730(u8 *o, s32 i) {
     return (u8)func_002C9930(o, (u8)func_002CC5A0(o, list[i & 0xFF]));
 }
 
-
 /* the effects, each frame: each live one (0x400 slots at +0x18034) runs (+0x10); a finished
  * one goes back to the heap (+0x10000, +0x14) */
 void func_002D6280(u8 *mgr) {
@@ -3008,7 +3036,6 @@ void func_002D6280(u8 *mgr) {
     }
 }
 
-
 /* the effect in slot k (of 32 at +0x1438), NULL past the end */
 void *func_00266C40(void *effects, s32 k) {
     u8 *o = effects;
@@ -3018,7 +3045,6 @@ void *func_00266C40(void *effects, s32 k) {
     }
     return AT(o, 0x1438 + k * 4, void *);
 }
-
 
 extern void func_00220E80(u8 *door);
 
@@ -3038,7 +3064,6 @@ void func_002239C0(void *d) {
         }
     }
 }
-
 
 extern void func_0025FB10(u8 *obj, s32 layer);
 
@@ -3070,7 +3095,6 @@ void func_002C8E50(u8 *o) {
     }
 }
 
-
 /* draw a placed object in pass `layer` (layer by its name +0x70: "g_..." 0x26, "a_..." 0x19
  * (alpha, +0x80 set), others 1): its model (+0x40) takes its position and rotation */
 void func_0025FB10(u8 *obj, s32 layer) {
@@ -3099,7 +3123,6 @@ void func_0025FB10(u8 *obj, s32 layer) {
     }
 }
 
-
 /* the creatures, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first):
  * each active, visible one (+0x2C), unless the player is in a special state */
 void func_002E29A0(u8 *o) {
@@ -3119,7 +3142,6 @@ void func_002E29A0(u8 *o) {
     }
 }
 
-
 /* the dynamic actors, drawn each frame (texture cache and gBootMessage reset first): each
  * active one in the current room (+0x2C) */
 void func_002D74E0(u8 *o) {
@@ -3137,7 +3159,6 @@ void func_002D74E0(u8 *o) {
     }
 }
 
-
 /* the effects, drawn each frame (texture cache and gBootMessage reset first): each of the 32
  * (+0x14) */
 void func_00267160(u8 *o) {
@@ -3153,7 +3174,6 @@ void func_00267160(u8 *o) {
         }
     }
 }
-
 
 /* the effects, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first): each
  * live one of the 0x400 slots at +0x18034 draws (+0x14) */
@@ -3171,7 +3191,6 @@ void func_002D61E0(u8 *mgr) {
     }
 }
 
-
 /* the screen fade's level (+0x34), clamped to 0..1 */
 void func_002EF480(u8 *fade, f32 t) {
     if (t < 0.0f) {
@@ -3181,7 +3200,6 @@ void func_002EF480(u8 *fade, f32 t) {
     }
     AT(fade, 0x34, f32) = t;
 }
-
 
 extern void *D_0045D1F0;   /* the screen overlay (Scene +0x105344C) */
 extern void func_0021E1B0(void *ov);
@@ -3230,7 +3248,6 @@ void func_002F0340(u8 *fade, s32 mode) {
     }
 }
 
-
 /* a noise for the pursuer to hear (the loudest this frame wins): loudness `loud` (u8), in room
  * `room`, at triangle `tri` - or at door `door` (0xFFFF: none) */
 void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
@@ -3247,7 +3264,6 @@ void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
         AT(n, 0xC, u16) = 0xFFFF;
     }
 }
-
 
 extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
 extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
@@ -3329,7 +3345,6 @@ void func_002EC4F0(u8 *o, u8 *n) {
         func_00177630(p, 6);
     }
 }
-
 
 extern void func_00220D10(u8 *door, s32 sound, s32 arg);   /* a door sound */
 extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);   /* door is open */
@@ -3520,7 +3535,6 @@ void func_00221880(u8 *door) {
     AT(door, 0x5C, s32) = 0;
     AT(door, 0x60, s32) = 0;
 }
-
 
 extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* that door is open (u8) */
 
@@ -3760,6 +3774,21 @@ void func_001AAC60(u8 *o) {
     func_001C8478();
     func_001C8648(D_0044FE18);
     RemoveIntcHandler(3, AT(o, 0x12C, s32));
+}
+
+/* destructor (vtable D_0046AEC0) */
+void *func_001BF5F0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AEC0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        gAdx = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 /* destructor (D_0046AF00): its members at +0x7C44 (D_0046AED0, clearing gMovieLib) and +0x124

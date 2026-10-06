@@ -5,10 +5,109 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
-
+#include "ptmf.h"
+#include "progress.h"
+#include "pursuer.h"
+#include "memcard.h"
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
+
+extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void func_00124E40(Actor *a);
+extern const char *const D_0042C358;
+extern void *D_00476C10[];
+extern const PTMF D_00430A90;
+extern void *D_00477AE0[];
+extern void *D_00477E30[];
+extern u8 D_00430A10[];
+extern u8 D_00430A50[];
+void *func_0033D7D0(void);
+void *func_0033D7E0(void);
+
+extern u32 D_0043B6E0[];
+extern u32 D_0043CDC0[];
+void func_00345E20(u8 *p);
+void *func_00346000(void);
+void func_00346050(void *self, s32 i, f32 *out);
+void func_003460F0(void *self, s32 i, f32 *out);
+s32 func_003476A0(f32 *a);
+void *func_003479E0(void);
+
+s32 func_00345FF0(void);
+s32 func_003479D0(void);
+
+void func_00346010(Pursuer *p);
+
+extern void *D_00478B70[];
+void *func_00347640(u8 *o, s32 flags);
+
+s32 func_00350C40(f32 *a);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+/* in play: func_00124890(-1) */
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* the action 5 taken (+0x14E8): in play +0x8C, the state st, +0x114 1; the action cleared */
+static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((u8)func_00217510(p) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), st);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
+    Progress *g = gProgress;
+
+    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+        func_001777D0(g, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+Character *func_0033D6C0(Character *c, s32 flags);
+void func_0033D800(Pursuer *p);
+void func_0033D850(Pursuer *p);
+s32 func_0033D920(Pursuer *p);
+Character *func_00345EE0(Character *c, s32 flags);
+Character *func_003478C0(Character *c, s32 flags);
 
 /* (class D_00474000, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
 u8 *func_00321910(u8 *o, s32 flags) {
@@ -238,7 +337,6 @@ void func_00350810(VObject *o, const u8 *params) {
     VCALL(o, 0x10, s32 (*)(VObject *))(o);
 }
 
-
 /* fill draw object `d` from `p` and queue it with the renderer (+0xC, layer 0x19) */
 void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
     d->p.pos[0] = p->pos[0];
@@ -286,6 +384,16 @@ void func_003477A0(u8 *o) {
     }
 }
 
+Character *func_003478C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477E30); }
+
+s32 func_003479D0(void) {
+    return 0x23;
+}
+
+void *func_003479E0(void) {
+    return D_0043CDC0;
+}
+
 /* +0x14 draw */
 void func_003475A0(u8 *o) {
     ModelDraw d __attribute__((aligned(16)));
@@ -306,6 +414,35 @@ void func_003475A0(u8 *o) {
     d.vtbl = D_00478B70;
     func_00350660(&d, &p);
     d.vtbl = D_00469D00;
+}
+
+/* destructor (vtable D_00478B70) */
+void *func_00347640(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00478B70;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* Advances three angles (+0x4 by 0.5 deg, +0x8 by 0.1 deg, +0xC by -0.1 deg), wrapped to [-pi, pi]. */
+s32 func_003476A0(f32 *a) {
+    a[1] += 0x1.1df46ap-7f /* 0.008726646 */;
+    if (!(a[1] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
+        a[1] -= 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    a[2] += 0x1.c98712p-10f /* 0.0017453294 */;
+    if (!(a[2] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
+        a[2] -= 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    a[3] -= 0x1.c98712p-10f /* 0.0017453294 */;
+    if (a[3] < -0x1.921fb6p+1f /* -3.1415927 */) {
+        a[3] += 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    return 1;
 }
 
 /* ---- class D_00478BE0 (room 0x4E, 0x10 bytes): a light caustic (texture 8, 120 across) at
@@ -360,6 +497,22 @@ void func_00350B90(u8 *o) {
     d.vtbl = D_00478B70;
     func_00350660(&d, &p);
     d.vtbl = D_00469D00;
+}
+
+s32 func_00350C40(f32 *a) {
+    a[1] += 0x1.1df46ap-7f /* 0.008726646 */;
+    if (!(a[1] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
+        a[1] -= 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    a[2] += 0x1.c98712p-10f /* 0.0017453294 */;
+    if (!(a[2] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
+        a[2] -= 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    a[3] -= 0x1.c98712p-10f /* 0.0017453294 */;
+    if (a[3] < -0x1.921fb6p+1f /* -3.1415927 */) {
+        a[3] += 0x1.921fb6p+2f /* 6.2831855 */;
+    }
+    return 1;
 }
 
 /* (as func_00350B90)  +0x14 draw: model 0x30 */
@@ -503,8 +656,6 @@ void func_00347540(VObject *o, const s32 *params) {
     VCALL(o, 0x10, s32 (*)(VObject *))(o);
 }
 
-
-
 /* +0x10 each frame (returns 0 once every particle has left): 16 particles, double-buffered
  * (+0x10, 0x300 per buffer, 0x30 each), drift by their velocity (+0x820) plus a wind
  * (+0x8E0..) whose phase (+0x8F0) changes at random; they spin (+0x660 by +0x760 degrees),
@@ -571,7 +722,6 @@ s32 func_00321FE0(u8 *o) {
     return 1;
 }
 
-
 extern void func_002E56C0(u8 *quad);   /* draw a textured quad (corners +0x14, record +0x10) */
 
 /* +0x14 draw: each of the 16 particles is a unit quad in the xz plane turned by its spin
@@ -597,7 +747,6 @@ void func_00321E30(u8 *o) {
         func_002E56C0(o + 0x610);
     }
 }
-
 
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
@@ -1047,6 +1196,70 @@ s32 func_00345A60(u8 *o) {
     return 1;
 }
 
+void func_00345E20(u8 *p) {
+    s32 i;
+
+    *(s32 *)(p + 0x1BB0) = 0;
+    p[0x1BBC] = 0;
+    *(f32 *)(p + 0x1BB4) = 1.0f;
+    *(s64 *)(p + 0x1848) = -1;
+    *(s32 *)(p + 0x1854) = 0;
+    *(s32 *)(p + 0x1858) = 0;
+    *(s32 *)(p + 0x185C) = 0;
+    *(s32 *)(p + 0x1860) = 0x19;
+    *(u16 *)(p + 0x1864) = 0x40;
+    *(u16 *)(p + 0x1866) = 0x180;
+    *(u16 *)(p + 0x1868) = 0x80;
+    *(u16 *)(p + 0x186A) = 0x20;
+    *(u16 *)(p + 0x186C) = 0x20;
+    *(u16 *)(p + 0x186E) = 0x200;
+    *(u16 *)(p + 0x1870) = 0x100;
+    p[0x1872] = 0x40;
+    p[0x1873] = 1;
+    p[0x1874] = 1;
+    p[0x1875] = 0x10;
+    p[0x1876] = 6;
+    for (i = 0; i < 64; i++) {
+        ((f32 *)(p + 0x1AB0))[i] = 1.0f;
+    }
+}
+
+Character *func_00345EE0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477AE0); }
+
+s32 func_00345FF0(void) {
+    return 0x22;
+}
+
+void *func_00346000(void) {
+    return D_0043B6E0;
+}
+
+/* (a pursuer class) func_0029F120, then its model's +0x34 (1) */
+void func_00346010(Pursuer *p) {
+    func_0029F120(p);
+    VCALL(p->c.motion, 0x34, void (*)(void *, s32))(p->c.motion, 1);
+}
+
+/* Writes a position {0, 0, z} for index 0..3. */
+void func_00346050(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
+    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
+    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.bdc432p+2f /* -6.9651 */; break;
+    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.ce0418p+2f /* 7.219 */; break;
+    }
+}
+
+/* Writes a position {x, 0, z} for index 10..15. */
+void func_003460F0(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
+    case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
+    case 14: out[0] = -0x1.5f06f6p-3f /* -0.1714 */; out[1] = 0.0f; out[2] = -0x1.8f6fd2p+1f /* -3.1206 */; break;
+    case 15: out[0] = 0x1.9a0276p-2f /* 0.4004 */; out[1] = 0.0f; out[2] = -0x1.792d78p+1f /* -2.9467 */; break;
+    }
+}
+
 /* +0x18 start: a byte < 0 makes it die down; else spot (byte & 0xF) * 2: 64 puffs and the glow
  * (pinkish white, 20 across, 12 up at the spot; texture group 0x10, cell (0xA0, 0x40)) */
 void func_003458A0(u8 *o, const s8 *params) {
@@ -1433,9 +1646,7 @@ void func_00357940(u8 *o, const s32 *params) {
 extern void *D_0046EA90[], *D_0046D730[], *D_00470E00[];
 extern void func_002672E0(void *p);   /* delete (the effects' heap) */
 extern f32 func_002E2D00(f32 angle);                     /* wrapped into -pi..pi */
-extern f32 func_002E2BC0(const f32 *v);                 /* heading of v */
 extern void func_002E2C10(f32 *out, f32 angle);         /* the unit vector of a heading */
-extern void func_002E2CA0(f32 *out, f32 *v, f32 angle); /* v turned about y */
 extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
 
 /* +0x8 destructor */
@@ -2136,6 +2347,22 @@ void func_0033D4B0(u8 *o) {
     }
 }
 
+Character *func_0033D6C0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476C10); }
+
+void *func_0033D7D0(void) {
+    return D_00430A10;
+}
+
+void *func_0033D7E0(void) {
+    return D_00430A50;
+}
+
+void func_0033D800(Pursuer *p) { creature_inplay(p); }
+
+void func_0033D850(Pursuer *p) { creature_act5(p, &D_00430A90); }
+
+s32 func_0033D920(Pursuer *p) { return creature_slot_done(p); }
+
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *D_00479800[];
 extern void *D_0047A050[];
@@ -2620,7 +2847,6 @@ s32 func_00371900(u8 *o) {
  * +0x648 (x, z), the quad drawer at +0x610; each fades in to 0x10, then out on the even
  * frames ---- */
 
-extern f32 *func_0017CE80(void *skel, s32 bone);
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define WISPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x300) + (i))

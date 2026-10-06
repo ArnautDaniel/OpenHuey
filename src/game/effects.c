@@ -8,7 +8,102 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "memcard.h"
+#include "ptmf.h"
+#include "pursuer.h"
 
+void func_002E56C0(u8 *d);
+
+extern void *D_0046D730[];
+extern void *D_0046D790[];
+extern void *D_0046D7A0[];
+extern void *D_0046EB60[];
+extern void *D_0046EC60[];
+extern void func_00100490(void *p);
+extern void func_002672E0(void *p);
+void *func_00267480(u8 *o, s32 flags);
+void *func_00269970(u8 *o, s32 flags);
+void *func_002BB220(u8 *o, s32 flags);
+void *func_002C64E0(u8 *o, s32 flags);
+
+u32 func_002D6010(u8 *p);
+
+extern u8 D_0041B5F0[];
+extern u8 D_00444B10[];
+void *func_002FA1C0(void);
+void *func_00363600(void);
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+#define B5_PI 0x1.921fb60000000p+1f /* 3.14159274 */ /* 0x40490FDB */
+
+void func_00305650(u8 *self, f32 *src);
+
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+void func_003168E0(u8 *self);
+
+void func_0034E960(u8 *p);
+
+#define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
+
+#define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
+
+#define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
+
+#define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
+
+void func_00352A70(u8 *p);
+void func_00358270(u8 *p, s32 *src);
+s32 func_00358B30(u8 *p);
+void func_00358C10(u8 *p);
+
+extern void *D_00479B20[];
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
+
+#define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
+
+void func_0037C520(u8 *self);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+Character *func_003634F0(Character *c, s32 flags);
+
+/* an effect's quad drawer (at `drawer`) given the current one of its records (`size` apart from
+ * +0x10, the index at `idx`), and drawn */
+static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u32 idx, u32 size) {
+    AT(o, drawer + 0x10, u8 *) = o + AT(o, idx, s32) * size + 0x10;
+    func_002E56C0(o + drawer);
+}
+
+void func_003600D0(u8 *o);
+void func_00368E80(u8 *o);
+void func_00369AE0(u8 *o);
 
 static u32 rd32(const u8 *p) {
     return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
@@ -106,7 +201,6 @@ void func_002C6540(u8 *e, const f32 *d) {
     AT(e, 0x5C, f32) = d[3];
 }
 
-
 extern void func_001267F0(void *c, s32 light);
 extern s32 func_00126800(void *c);
 
@@ -129,7 +223,6 @@ void func_002BB280(u8 *o) {
         }
     }
 }
-
 
 /* +0x10 each frame: a pulsing colour (+0x10 RGBA, direction +0x30): modes 3 / 4 a grey
  * breathing between 0x20 and 0x80, mode 2 red and alpha between 0x80 and 0xC0 */
@@ -167,11 +260,9 @@ void func_0026B350(u8 *o) {
     }
 }
 
-
 /* +0x10 for effects that don't change */
 void func_002674E0(u8 *o) {
 }
-
 
 extern void *D_0046EB60[], *D_00469D00[];
 extern void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b);
@@ -188,7 +279,17 @@ void func_002BB1A0(u8 *o) {
     AT(drawer, 0x0, void **) = D_00469D00;
 }
 
-
+/* destructor (vtable D_0046EB60) */
+void *func_002BB220(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EB60;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 
 /* a fog drawer: colours, range, queued with the renderer in `layer` */
 void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
@@ -201,6 +302,17 @@ void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
     VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, layer, 0);
 }
 
+/* destructor (vtable D_0046EC60) */
+void *func_002C64E0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046EC60;
+        AT(o, 0x0, void **) = D_0046D730;
+        if ((s16)flags > 0) {
+            func_002672E0(o);
+        }
+    }
+    return o;
+}
 
 extern void *D_0046D7A0[];
 extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
@@ -217,7 +329,6 @@ void func_0026B2C0(u8 *o) {
     }
     AT(drawer, 0x0, void **) = D_00469D00;
 }
-
 
 extern void *D_0046D790[];
 extern void func_00269940(void *drawer, u32 rgba, s32 which, s32 arg);
@@ -238,7 +349,17 @@ void func_002673E0(u8 *o) {
     AT(drawer, 0x0, void **) = D_00469D00;
 }
 
-
+/* destructor (vtable D_0046D790) */
+void *func_00267480(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D790;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 
 /* set a screen-colour drawer's colour, layer and argument and hand it to the renderer (+0xC,
  * priority 0x20) */
@@ -249,6 +370,17 @@ void func_00269940(void *d, u32 rgba, s32 which, s32 arg) {
     VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, 0x20, 0);
 }
 
+/* destructor (vtable D_0046D7A0) */
+void *func_00269970(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D7A0;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 
 /* hand a drawer to the renderer (+0xC) in its layer (+0x20); one flagged +0x32 bit 7 then
  * also has the renderer run +0x58 */
@@ -260,7 +392,6 @@ void func_002E56C0(u8 *d) {
         VCALL(r, 0x58, void (*)(VObject *))(r);
     }
 }
-
 
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
@@ -416,7 +547,6 @@ s32 func_002E5660(u8 *d) {
     return (u8)func_002E4760(d);
 }
 
-
 extern void *D_0046EC60[];      /* the effect 0x1C kind */
 extern void *func_00266C40(void *fx, s32 k);       /* effect slot k */
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
@@ -465,7 +595,6 @@ void func_002241C0(u8 *o, s32 on) {
         func_002670F0(fx, 0x1C);
     }
 }
-
 
 #include "progress.h"
 
@@ -521,6 +650,7 @@ void func_002CF3A0(u8 *f, s32 kind) {
     AT(f, 0x20, u8)++;
 }
 
+u32 func_002D6010(u8 *p) { return p[0x19034]; }
 
 /* ---- room effect D_0046FF00 (event command 0x7F): a flickering animated sprite ----
  * +0x10 its quad record { RGBA (4 x s32), position (+0x20), size +0x30 / +0x34, rotation +0x38,
@@ -668,7 +798,6 @@ void func_002E7F60(u8 *e) {
     AT(e, 0x70, s8) = 1;
     AT(e, 0x74, s32) = 0;
 }
-
 
 /* ---- room effect D_0046FF20 (0x718 bytes): a burst of 16 sprites in two buffers of quad
  * records (+0x10 + 0x300 x the current one +0x710), their velocities at +0x648 (12 each),
@@ -1010,7 +1139,6 @@ void func_002E9040(u8 *e) {
     AT(e, 0x646, s8) = -1;
 }
 
-
 /* ---- room effect D_0046FF40 (event command 0x86): a flame; kind (+0x78) 0 a candle (32
  * frames: a loop, then a flare / snuff played on command), others a 16-frame fire (kind 4 is
  * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (D_00479320)
@@ -1261,7 +1389,6 @@ void func_00319B10(void) {
  * (+0x14, func_00317D40) renders the characters and creatures above it again from the
  * camera reflected in its plane ---- */
 
-extern f32 *func_0017CE80(void *skel, s32 bone);
 
 /* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
  * screen position lies within the quad's screen bounds widened by mx / my (my shifted by half
@@ -1624,7 +1751,16 @@ u8 *func_00358210(u8 *e, s32 flags) {
     return e;
 }
 
-
+void func_00358270(u8 *p, s32 *src) {
+    if (src == NULL) {
+        B7_W(p, 0x4) = 0;
+        return;
+    }
+    if (*src != B7_W(p, 0x4)) {
+        B7_W(p, 0x4) = *src;
+        B7_W(p, 0xC) = (B7_W(p, 0x4) == 0x80) ? 2 : 0;
+    }
+}
 
 #ifdef HG_NATIVE
 extern void glr_layer(s32 layer);
@@ -1700,6 +1836,40 @@ void func_003582D0(u8 *e) {
     glr_layer(-1);
 }
 #endif
+
+/* Fade step: +4 speed, +8 value, +C state (0 up to +4, 1 down to 30, 2 up to 56, 0xFF done). */
+s32 func_00358B30(u8 *p) {
+    switch (B7_W(p, 0xC)) {
+    case 0:
+        B7_W(p, 0x8) += B7_W(p, 0x4) >> 4;
+        if (B7_W(p, 0x4) < B7_W(p, 0x8)) {
+            B7_W(p, 0x8) = B7_W(p, 0x4);
+            B7_W(p, 0xC) = 1;
+        }
+        break;
+    case 1:
+        B7_W(p, 0x8) -= B7_W(p, 0x4) >> 4;
+        if (B7_W(p, 0x8) < 0x1E) {
+            B7_W(p, 0x8) = 0x1E;
+            B7_W(p, 0xC) = 0xFF;
+        }
+        break;
+    case 2:
+        B7_W(p, 0x8) += B7_W(p, 0x4) >> 5;
+        if (B7_W(p, 0x8) >= 0x38) {
+            B7_W(p, 0x8) = 0x38;
+            B7_W(p, 0xC) = 0xFF;
+        }
+        break;
+    }
+    return 1;
+}
+
+void func_00358C10(u8 *p) {
+    B7_W(p, 0x4) = 0;
+    B7_W(p, 0x8) = 0;
+    B7_W(p, 0xC) = 0;
+}
 
 /* ---- D_00479320 (0x218 bytes): 4 wisps rising and swirling about a point (+0x1D0), in two
  * buffers of sprite instances (+0x10 + 0xC0 x the current one +0x210; 0x30 each), per wisp a
@@ -1851,6 +2021,29 @@ s32 func_00352700(u8 *o) {
         done = 1;
     }
     return done != 1;
+}
+
+/* Initialises a render/texture setting block at +0x198. */
+void func_00352A70(u8 *p) {
+    B7_W(p, 0x210) = 0;
+    B7_W(p, 0x214) = 0;
+    B7_D(p, 0x198) = -1;
+    B7_W(p, 0x1A4) = 0;
+    B7_W(p, 0x1A8) = 0;
+    B7_W(p, 0x1AC) = 0;
+    B7_W(p, 0x1B0) = 0x19;
+    B7_H(p, 0x1B4) = 4;
+    B7_H(p, 0x1B6) = 0x6C;
+    B7_H(p, 0x1B8) = 0x4C;
+    B7_H(p, 0x1BA) = 8;
+    B7_H(p, 0x1BC) = 8;
+    B7_H(p, 0x1BE) = 0x200;
+    B7_H(p, 0x1C0) = 0x100;
+    B7_B(p, 0x1C2) = 0x40;
+    B7_B(p, 0x1C3) = 1;
+    B7_B(p, 0x1C4) = 1;
+    B7_B(p, 0x1C5) = 0x10;
+    B7_B(p, 0x1C6) = 0xFF;
 }
 
 /* ---- D_0046F5A0 (0x1C60 bytes; room 0x24): rising smoke, 64 particles in two buffers of
@@ -2570,13 +2763,11 @@ s32 func_0035EF70(u8 *e) {
     return on != 0;
 }
 
-
 /* ---- D_00479B00 (0x1C30 bytes): falling stones - 32 pieces (Shards, 0xE0 apart from +0x10)
  * dropped from a height (+0x1C10) onto random floor triangles, each after its own wait, some
  * already partway down at the start; they tumble, fall (the bigger the faster), bounce once off
  * floors that allow it and fade out on the ground, then start over. +0x1C14 .. +0x1C20 the
  * texture's cell and size, +0x1C24 the colour, +0x1C28 the texture ---- */
-
 
 /* (re)start piece `s`: on a random nav triangle's centre (its floor kept), at the drop height,
  * a random box (0.6 / -0.4 by the corner's signs, less 0.2 x random), size 0.1..0.5, a random
@@ -2737,6 +2928,11 @@ s32 func_00363130(u8 *e) {
     return 1;
 }
 
+Character *func_003634F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00479B20); }
+
+void *func_00363600(void) {
+    return D_00444B10;
+}
 
 /* ---- D_00479600 (0x80 bytes): a strike's mark - between two points of a model (+0x50 from
  * its bone +0x98, +0x60 from its bone +0x9C; none: two points by Fiona's bone 0x23), a frame
@@ -2745,7 +2941,6 @@ s32 func_00363130(u8 *e) {
  * and the mark is done (+0x78). +0x74 the model ---- */
 
 extern void *D_00479800[];
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 extern void func_002E56C0(u8 *quad);
 
 /* the two points: the model's bones, or Fiona's bone 0x23 at (-3.5, 0, 1) and (-1, 0, 1) */
@@ -2940,7 +3135,6 @@ void func_0035A4F0(u8 *o) {
 }
 #endif
 
-
 /* ---- D_00470A50 (0x3858 bytes): 128 motes rising from around (0, 70, 35), in two buffers of
  * quad records (+0x10 + 0x1800 x the current one +0x3850), their velocities at +0x3050 (16
  * each), drawn by the quad drawer at +0x3010; a mote is renewed past height 130 or, counted on
@@ -3073,7 +3267,6 @@ void func_002F9750(u8 *e) {
         func_002F92A0(e, i, 0);
     }
 }
-
 
 /* ---- D_00470A70 (0xE58 bytes): 32 orange sparks drifting up from around (276.5, 6, -145.9),
  * in two buffers of quad records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50
@@ -3255,6 +3448,9 @@ void func_002F9FF0(u8 *e) {
     }
 }
 
+void *func_002FA1C0(void) {
+    return D_0041B5F0;
+}
 
 /* ---- D_00470E00 (0xC0 bytes): one sprite (+0x10 + 0x30 x the current one +0xB8), slowly
  * growing and sinking, with its velocity at +0xA8 and the quad drawer at +0x70; each update
@@ -3375,7 +3571,6 @@ void func_002FD150(u8 *e) {
     AT(e, 0xA5, s8) = 0x10;
     AT(e, 0xA6, s8) = -1;
 }
-
 
 /* ---- D_0047A6D0 (as D_00470E00): one dust mote in the fog's colour, drifting along a heading
  * (+0xA8 / +0xAC), fading in to 0x40 over its life (+0xB0) and out again (+0xB4 its alpha),
@@ -3826,8 +4021,6 @@ void func_0037D4E0(u8 *e) {
 
 #define SPARK2_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x60) + (i))
 
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
-
 /* +0xC set up: the drawer's settings (a 32 x 32 cell at (0x180, 0x80), blended 0x40, layer
  * 0x19, palette 9) */
 void func_00374AA0(u8 *e) {
@@ -4109,7 +4302,6 @@ void func_002FD760(u8 *e) {
     }
 }
 
-
 /* ---- D_00470E40 (0x7F8 bytes): a swarm of up to 16 specks (+0x634) buzzing about a centre
  * (+0x7E0) within a spread (+0x7F0), in two buffers of quad records (+0x10 + 0x300 x the
  * current one +0x7F4), velocities at +0x648 and their pulls back to the centre at +0x708 (12
@@ -4293,7 +4485,6 @@ void func_002FE230(u8 *e) {
     AT(e, 0x646, s8) = 2;
 }
 
-
 /* ---- D_00470E60 (0x4E0 bytes): a splash - up to 10 specks (+0x3F4) thrown up and away from
  * a character (the pursuer, the partner or Fiona), in two buffers of quad records (+0x10 +
  * 0x1E0 x the current one +0x4D8), velocities at +0x408 (12 each) and their sideways drags at
@@ -4470,14 +4661,12 @@ void func_002FEBD0(u8 *e) {
     AT(e, 0x406, s8) = 2;
 }
 
-
 /* ---- D_00470F30 (0xE60 bytes): a spray of blood - 32 dark red drops, in two buffers of quad
  * records (+0x10 + 0x600 x the current one +0xE50), velocities at +0xC50 (16 each), the quad
  * drawer at +0xC10; they shrink and fall, and on the floor of their nav triangle (+0xE54, -1:
  * none - no floor) half of them leave a splat (D_00472BF0) ---- */
 
 extern void *D_00470F30[], *D_00472BF0[];
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define BLOOD_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
 #define BLOOD_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
@@ -4690,6 +4879,22 @@ void *func_003055F0(void *o, s32 flags) {
         }
     }
     return o;
+}
+
+/* Copies a light/pose record when its type field (src[0]) is 0; angles are given in degrees. */
+void func_00305650(u8 *self, f32 *src) {
+    if (src != NULL && src[0] == 0.0f) {
+        F32(self, 0x10) = src[1];
+        F32(self, 0x14) = src[2];
+        F32(self, 0x18) = src[3];
+        F32(self, 0x1C) = 1.0f;
+        F32(self, 0x30) = src[4] - 1.0f;
+        F32(self, 0x34) = src[5] - 1.0f;
+        F32(self, 0x20) = (B5_PI * src[6]) / 180.0f;
+        F32(self, 0x24) = (B5_PI * src[7]) / 180.0f;
+        F32(self, 0x28) = (B5_PI * src[8]) / 180.0f;
+        F32(self, 0x2C) = 0.0f;
+    }
 }
 
 /* +0xC set up: at its place, a random step (-0.25..0.25), waiting 1 or 31 frames */
@@ -5334,6 +5539,10 @@ void func_0035FF30(u8 *o) {
     AT(o, 0xB0, s32) = (s32)(k90.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 30;
 }
 
+void func_003600D0(u8 *o) {
+    quad_step(o, 0x70, 0xAC, 0x30);
+}
+
 /* +0x10 update: flip the buffers; the drop waiting or falling; once below 0 a ring and a
  * single droplet where it hit (at 0.1), and it starts over */
 s32 func_00360100(u8 *o) {
@@ -5410,7 +5619,6 @@ void func_00360460(u8 *o) {
     AT(o, 0xA6, s8) = -1;
     func_0035FF30(o);
 }
-
 
 /* ---- D_00479560 (room effect 0x1A of room 0x32): the mirror fragment's reflection - the
  * placed object +0x10 ("a_fragment0"), its kind +0x14 and alpha +0x18, size / drop / strength
@@ -5544,7 +5752,6 @@ void func_0035CA60(u8 *o) {
     glr_layer(-1);
 }
 #endif
-
 
 /* ---- D_00472BF0 (0x140 bytes): a splat on the floor - one quad (two buffers of a record at
  * +0x10 + 0x30 x the current one +0x134) drawn as four corners (+0xF0..+0x120, the drawer at
@@ -5741,6 +5948,11 @@ s32 func_003166B0(u8 *e) {
         sceVu0ApplyMatrix((f32 *)(e + 0x120), (f32 (*)[4])(e + 0xB0), (f32 *)(e + 0x120));
     }
     return 1;
+}
+
+void func_003168E0(u8 *self) {
+    S32(self, 0x134) = 0;
+    self[0x138] = 0;
 }
 
 /* ---- the marker effect D_00470F90 (Lorenzo's, room 0x66's): a flickering glow with sparks.
@@ -6569,6 +6781,29 @@ u8 *func_0037BE80(u8 *o, s32 flags) {
     return o;
 }
 
+/* as func_00314910 */
+void func_0037C520(u8 *self) {
+    S32(self, 0xF60) = 0;
+    self[0xF64] = 0;
+    S64(self, 0xC18) = -1;
+    S32(self, 0xC24) = 0;
+    S32(self, 0xC28) = 0;
+    S32(self, 0xC2C) = 0;
+    S32(self, 0xC30) = 25;
+    S16(self, 0xC34) = 0x20;
+    S16(self, 0xC36) = 0x6C;
+    S16(self, 0xC38) = 0x4C;
+    S16(self, 0xC3A) = 8;
+    S16(self, 0xC3C) = 8;
+    S16(self, 0xC3E) = 0x200;
+    S16(self, 0xC40) = 0x100;
+    self[0xC42] = 0x40;
+    self[0xC43] = 1;
+    self[0xC44] = 1;
+    self[0xC45] = 0x10;
+    self[0xC46] = 0xFF;
+}
+
 /* (as func_002F9210)  +0x8 destructor (the quad drawer's inlined) */
 u8 *func_0037C5A0(u8 *o, s32 flags) {
     if (o == NULL) {
@@ -6801,6 +7036,10 @@ void func_00368E10(u8 *o, u8 *src) {
     for (i = 0; i < 32; i++) {
         func_00368C40(o, i, 1);
     }
+}
+
+void func_00368E80(u8 *o) {
+    quad_step(o, 0xC10, 0xE58, 0x600);
 }
 
 /* +0x10 update: flip the buffers; each puff carried over, fading (a faded one restarts while
@@ -7113,6 +7352,10 @@ void func_00369A60(u8 *o, u8 *arg) {
     AT(o, 0x20D0, u8) = 0;
 }
 
+void func_00369AE0(u8 *o) {
+    quad_step(o, 0x1810, 0x20D8, 0xC00);
+}
+
 /* +0x10 update (gone at once in a cutscene): flip the buffers; each spark carried over, a
  * held one counting down to its start, a shown one fading (restarted when out, while on),
  * growing by 0.5, turning 10 degrees, pulled and moved; 0 once off and all faded */
@@ -7354,6 +7597,28 @@ s32 func_0034E620(u8 *o) {
         }
     }
     return done != 1;
+}
+
+void func_0034E960(u8 *p) {
+    *(s32 *)(p + 0x1C50) = 0;
+    p[0x1C5C] = 0;
+    *(s64 *)(p + 0x1818) = -1;
+    *(s32 *)(p + 0x1824) = 0;
+    *(s32 *)(p + 0x1828) = 0;
+    *(s32 *)(p + 0x182C) = 0;
+    *(s32 *)(p + 0x1830) = 0x19;
+    *(u16 *)(p + 0x1834) = 0x40;
+    *(u16 *)(p + 0x1836) = 0x20;
+    *(u16 *)(p + 0x1838) = 0x40;
+    *(u16 *)(p + 0x183A) = 0x20;
+    *(u16 *)(p + 0x183C) = 0x20;
+    *(u16 *)(p + 0x183E) = 0x200;
+    *(u16 *)(p + 0x1840) = 0x100;
+    p[0x1842] = 0;
+    p[0x1843] = 1;
+    p[0x1844] = 1;
+    p[0x1845] = 0x10;
+    p[0x1846] = 0xFF;
 }
 
 /* (as func_002D6700)  +0x14 draw: the current buffer through the quad drawer */

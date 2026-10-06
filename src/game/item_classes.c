@@ -8,10 +8,561 @@
 #include "globals.h"
 #include "progress.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "pursuer.h"
+
+s32 func_0025FF10(void *o);
 
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */
 extern void *D_0046C7E0[], *D_0046C830[], *D_0046C880[], *D_0046C8D0[], *D_0046C920[], *D_0046C970[], *D_0046C9C0[], *D_0046CA10[], *D_0046CA60[], *D_0046CAB0[], *D_0046CB00[], *D_0046CB50[], *D_0046CBA0[], *D_0046CBF0[], *D_0046CC40[], *D_0046CC90[], *D_0046CCE0[], *D_0046CD30[], *D_0046CD80[], *D_0046CDD0[], *D_0046CE20[], *D_0046CE70[], *D_0046CEC0[], *D_0046CF10[], *D_0046CF60[], *D_0046CFB0[], *D_0046D000[], *D_0046D050[], *D_0046D0A0[], *D_0046D0F0[], *D_0046D140[], *D_0046D190[], *D_0046D1E0[], *D_0046D230[], *D_0046D280[], *D_0046D2D0[], *D_0046D320[], *D_0046D370[], *D_0046D3C0[], *D_0046D410[], *D_0046D460[], *D_0046D4B0[], *D_0046D500[], *D_0046D550[], *D_0046D5A0[], *D_0046D5F0[], *D_0046D640[], *D_0046D690[], *D_0046D6E0[], *D_0046EE40[], *D_0046EE90[], *D_0046EEE0[], *D_0046EF30[], *D_0046EF80[], *D_0046EFD0[], *D_0046F430[], *D_0046F610[], *D_0046F660[], *D_004703F0[], *D_00470FB0[], *D_00471080[], *D_004710D0[], *D_00471120[], *D_00471170[], *D_004711C0[], *D_00472F80[], *D_00472FD0[], *D_00473020[], *D_00473070[], *D_004730C0[], *D_00474BC0[], *D_00475300[], *D_00475350[], *D_004753A0[], *D_004753F0[], *D_00475440[], *D_00475490[], *D_004754E0[], *D_00475530[], *D_00475580[], *D_004755D0[], *D_00475620[], *D_00475670[], *D_004756C0[], *D_00475710[], *D_00475760[], *D_004757B0[], *D_00475800[], *D_00475850[], *D_00475CC0[], *D_00475D10[], *D_00475D60[], *D_00476450[], *D_00476B00[], *D_00476B60[], *D_00477030[], *D_00477080[], *D_004770D0[], *D_00477120[], *D_00477170[], *D_004775C0[], *D_00478C80[], *D_00478CD0[], *D_00478D20[], *D_00478D70[], *D_00478DC0[], *D_00478E10[], *D_00478E60[], *D_00478EB0[], *D_00478F00[], *D_00478F50[], *D_00478FA0[], *D_00479820[];
+
+typedef struct ItemObj {
+    void *vtbl;
+    s32 id;
+    u8 flag;
+    u64 data; /* +0x10 */
+} ItemObj;
+
+ItemObj *func_002632B0(ItemObj *self);
+ItemObj *func_002632E0(ItemObj *self);
+ItemObj *func_00263310(ItemObj *self);
+ItemObj *func_00263340(ItemObj *self);
+ItemObj *func_00263370(ItemObj *self);
+ItemObj *func_002633A0(ItemObj *self);
+ItemObj *func_002633D0(ItemObj *self);
+ItemObj *func_00263400(ItemObj *self);
+ItemObj *func_00263430(ItemObj *self);
+ItemObj *func_00263460(ItemObj *self);
+ItemObj *func_00263490(ItemObj *self);
+ItemObj *func_002634C0(ItemObj *self);
+ItemObj *func_002634F0(ItemObj *self);
+ItemObj *func_00263580(ItemObj *self);
+ItemObj *func_002635B0(ItemObj *self);
+ItemObj *func_002635E0(ItemObj *self);
+ItemObj *func_00263610(ItemObj *self);
+ItemObj *func_00263640(ItemObj *self);
+ItemObj *func_00263670(ItemObj *self);
+ItemObj *func_002636A0(ItemObj *self);
+ItemObj *func_002636D0(ItemObj *self);
+ItemObj *func_00263700(ItemObj *self);
+ItemObj *func_00263790(ItemObj *self);
+ItemObj *func_002637C0(ItemObj *self);
+ItemObj *func_002637F0(ItemObj *self);
+ItemObj *func_00263820(ItemObj *self);
+ItemObj *func_002638B0(ItemObj *self);
+ItemObj *func_002638E0(ItemObj *self);
+ItemObj *func_00263910(ItemObj *self);
+ItemObj *func_00263940(ItemObj *self);
+ItemObj *func_002639D0(ItemObj *self);
+ItemObj *func_00263A00(ItemObj *self);
+ItemObj *func_00263A30(ItemObj *self);
+ItemObj *func_00263A60(ItemObj *self);
+ItemObj *func_00263AF0(ItemObj *self);
+ItemObj *func_00263B20(ItemObj *self);
+ItemObj *func_00263B50(ItemObj *self);
+ItemObj *func_00263B80(ItemObj *self);
+ItemObj *func_00263BB0(ItemObj *self);
+ItemObj *func_00263BE0(ItemObj *self);
+ItemObj *func_00263C70(ItemObj *self);
+ItemObj *func_00263CA0(ItemObj *self);
+ItemObj *func_00263CD0(ItemObj *self);
+ItemObj *func_00263D00(ItemObj *self);
+ItemObj *func_00263D30(ItemObj *self);
+ItemObj *func_00263D60(ItemObj *self);
+ItemObj *func_00263D90(ItemObj *self);
+ItemObj *func_00263E20(ItemObj *self);
+ItemObj *func_00263E50(ItemObj *self);
+ItemObj *func_00263E80(ItemObj *self);
+ItemObj *func_00263EB0(ItemObj *self);
+ItemObj *func_00263EE0(ItemObj *self);
+ItemObj *func_00263F10(ItemObj *self);
+ItemObj *func_00263F40(ItemObj *self);
+ItemObj *func_00263F70(ItemObj *self);
+ItemObj *func_00263FA0(ItemObj *self);
+ItemObj *func_00263FD0(ItemObj *self);
+ItemObj *func_00264000(ItemObj *self);
+ItemObj *func_00264030(ItemObj *self);
+ItemObj *func_00264090(ItemObj *self);
+ItemObj *func_00264120(ItemObj *self);
+ItemObj *func_00264150(ItemObj *self);
+ItemObj *func_00264180(ItemObj *self);
+ItemObj *func_002641B0(ItemObj *self);
+ItemObj *func_002641E0(ItemObj *self);
+ItemObj *func_00264210(ItemObj *self);
+ItemObj *func_00264240(ItemObj *self);
+ItemObj *func_00264270(ItemObj *self);
+ItemObj *func_002642A0(ItemObj *self);
+ItemObj *func_002642D0(ItemObj *self);
+ItemObj *func_00264300(ItemObj *self);
+ItemObj *func_00264330(ItemObj *self);
+ItemObj *func_00264360(ItemObj *self);
+ItemObj *func_00264390(ItemObj *self);
+ItemObj *func_002643C0(ItemObj *self);
+ItemObj *func_002643F0(ItemObj *self);
+ItemObj *func_00264420(ItemObj *self);
+ItemObj *func_00264450(ItemObj *self);
+ItemObj *func_00264480(ItemObj *self);
+ItemObj *func_002644B0(ItemObj *self);
+ItemObj *func_002644E0(ItemObj *self);
+ItemObj *func_00264510(ItemObj *self);
+ItemObj *func_00264540(ItemObj *self);
+ItemObj *func_00264570(ItemObj *self);
+ItemObj *func_002645A0(ItemObj *self);
+
+extern char D_0045A7E0[]; /* file name */
+extern char D_0045A800[]; /* file name */
+extern char D_0045A820[]; /* file name */
+extern char D_0045A840[]; /* file name */
+extern char D_0045A860[]; /* file name */
+extern char D_0045A880[]; /* file name */
+extern char D_0045A9C0[]; /* file name */
+extern char D_0045A9E0[]; /* file name */
+extern char D_0045AA00[]; /* file name */
+extern char D_0045AA20[]; /* file name */
+extern char D_0045AB60[]; /* file name */
+extern char D_0045AB80[]; /* file name */
+extern char D_0045ABA0[]; /* file name */
+extern char D_0045ABC0[]; /* file name */
+extern char D_0045ABE0[]; /* file name */
+extern char D_0045AC00[]; /* file name */
+extern char D_0045AC20[]; /* file name */
+extern char D_0045AC40[]; /* file name */
+extern char D_0045AC60[]; /* file name */
+extern char D_0045AC80[]; /* file name */
+typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flags, s32 arg);
+
+typedef struct B2_Obj {
+    void *vtbl;
+    s32 id;
+    u8 flag;
+    u64 data; /* +0x10 */
+} B2_Obj;
+
+B2_Obj *func_002645D0(B2_Obj *self);
+B2_Obj *func_00264600(B2_Obj *self);
+B2_Obj *func_00264630(B2_Obj *self);
+B2_Obj *func_00264660(B2_Obj *self);
+B2_Obj *func_00264690(B2_Obj *self);
+B2_Obj *func_002646C0(B2_Obj *self);
+B2_Obj *func_002646F0(B2_Obj *self);
+B2_Obj *func_00264720(B2_Obj *self);
+B2_Obj *func_00264750(B2_Obj *self);
+B2_Obj *func_00264780(B2_Obj *self);
+B2_Obj *func_002647B0(B2_Obj *self);
+B2_Obj *func_002647E0(B2_Obj *self);
+B2_Obj *func_00264810(B2_Obj *self);
+B2_Obj *func_00264840(B2_Obj *self);
+B2_Obj *func_00264870(B2_Obj *self);
+B2_Obj *func_002648A0(B2_Obj *self);
+B2_Obj *func_002648D0(B2_Obj *self);
+s32 func_00264C10(void *self, void *dest);
+s32 func_00264E90(void *self, void *dest);
+s32 func_00264FE0(void *self, void *dest);
+s32 func_002650D0(void *self, void *dest);
+s32 func_00265180(void *self, void *dest);
+s32 func_00265230(void *self, void *dest);
+s32 func_002652E0(void *self, void *dest);
+s32 func_00265390(void *self, void *dest);
+s32 func_00265440(void *self, void *dest);
+s32 func_00265520(void *self, void *dest);
+s32 func_002655D0(void *self, void *dest);
+s32 func_00265680(void *self, void *dest);
+s32 func_00265730(void *self, void *dest);
+s32 func_00265810(void *self, void *dest);
+s32 func_002658C0(void *self, void *dest);
+s32 func_00265970(void *self, void *dest);
+s32 func_00265A20(void *self, void *dest);
+s32 func_00265B00(void *self, void *dest);
+s32 func_00265BB0(void *self, void *dest);
+s32 func_00265C60(void *self, void *dest);
+
+extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
+extern u8 D_00413550[];
+extern void func_00261090(void *list, s32 a, s32 b);
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+/* gFileLoader->vfunc_0xC(name, arg, 0x4000000, 0) */
+#define LOAD(name, arg) \
+    VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, s32, s32, s32))(gFileLoader, name, arg, 0x4000000, 0)
+
+s32 func_002CCC40(void *self, s32 a);
+s32 func_002CCDB0(void *self, s32 a);
+s32 func_002CCDE0(void);
+s32 func_002CCED0(void *o);
+s32 func_002CD000(void *self, s32 a);
+s32 func_002CD030(void *o);
+s32 func_002CD1A0(void *self, s32 a);
+s32 func_002CD1D0(void);
+s32 func_002CD310(void *self, s32 a);
+s32 func_002CD340(void);
+s32 func_002CD490(void *self, s32 a);
+s32 func_002CD4C0(void);
+void *func_002CD5F0(void);
+void func_002CD600(void *self, s32 id, u32 *out);
+void func_002CD6A0(void *self, s32 id, u32 *out);
+void func_002CD750(u8 *p);
+
+extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void func_00124E40(Actor *a);
+extern const char *const D_0042C358;
+extern void *D_0046F020[];
+extern void *D_00473110[];
+extern const PTMF D_00429DF0;
+extern void *D_00474C10[];
+extern const PTMF D_0042CA10;
+extern void *D_00475DB0[];
+extern const PTMF D_0042F4F0;
+extern void *D_004764A0[];
+extern const PTMF D_00430930;
+extern void *D_004767D0[];
+extern const PTMF D_004309C0;
+extern void *D_00478FF0[];
+extern const PTMF D_00443550;
+void func_002CD760(void);
+void func_002CD770(void);
+void func_002CD780(void);
+void func_002CD790(void);
+s32 func_002CD7A0(void);
+
+extern char D_0045D890[];
+extern char D_0045D9E0[];
+extern char D_0045DA00[];
+/* gFileLoader->vfunc_0xC(name, dest, 0x4000000, 0): start loading a file */
+#define LOAD_002D1360(name, dest) \
+    VCALL(gFileLoader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(gFileLoader, name, dest, 0x4000000, 0)
+
+s32 func_002D3A20(void *self, void *dest);
+s32 func_002D7980(void *self, void *dest);
+s32 func_002D7A30(void *self, void *dest);
+
+extern u8 D_0045EC50[];
+extern u8 D_0045EC70[];
+extern u8 D_0045EC90[];
+extern u8 D_0045ECB0[];
+extern u8 D_0045ECD0[];
+/* gFileLoader vtable +0xC: start loading file `name` into `dest` (flags 0x4000000) */
+#define FILE_LOAD_ASYNC(name, dest) \
+    VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, void *, u32, s32))(gFileLoader, name, dest, 0x4000000, 0)
+
+s32 func_00306B90(void *self, void *dest);
+s32 func_003071A0(void *self, void *dest);
+s32 func_003077B0(void *self, void *dest);
+s32 func_00307DC0(void *self, void *dest);
+s32 func_003083D0(void *self, void *dest);
+
+extern u8 D_00429D70[];
+extern u8 D_00429DB0[];
+extern u8 D_0045FE20[];
+extern u8 D_0045FE40[];
+extern u8 D_0045FE60[];
+extern u8 D_0045FE80[];
+extern u8 D_0045FEA0[];
+s32 func_0031CB10(void *self, void *dest);
+s32 func_0031CDE0(void *self, void *dest);
+s32 func_0031D020(void *self, void *dest);
+s32 func_0031D180(void *self, void *dest);
+s32 func_0031D600(void *self, void *dest);
+void *func_0031D800(void);
+void *func_0031D810(void);
+
+extern u8 D_0042C990[];
+extern u8 D_0042C9D0[];
+extern u8 D_0042CA20[];
+extern u8 D_0042CB60[];
+extern u8 D_0042CC00[];
+extern u8 D_0042D0C0[];
+extern void *D_0042E310[];
+extern void *D_0042E3F0[];
+extern u8 D_0042E410[];
+extern u8 D_0042E4C0[];
+extern u8 D_00460BE0[];
+extern u8 D_01991600[];
+extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
+
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+#define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
+
+#define CHAR_POS(c) ((f32 *)((u8 *)(c) + 0x10))
+
+#define CHAR_ON(c) (*((u8 *)(c) + 0x28))
+
+#define CHAR_ROOM(c) S32(c, 0x30)
+
+#define CUR_ROOM() VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress)
+
+extern u8 D_00460F00[];
+extern u8 D_00460F20[];
+extern u8 D_00460F40[];
+extern u8 D_00460F60[];
+extern u8 D_00460F80[];
+extern u8 D_00460FA0[];
+extern u8 D_00460FC0[];
+extern void func_00138AD0(void *h, s32 mode, s32 time);
+extern u8 D_00460FE0[];
+extern u8 D_00461000[];
+extern u8 D_00461020[];
+extern u8 D_00461040[];
+extern u8 D_00461060[];
+extern u8 D_00461080[];
+extern u8 D_004610A0[];
+extern u8 D_004610C0[];
+extern u8 D_004610E0[];
+extern u8 D_00461100[];
+extern u8 D_00461120[];
+extern u8 D_004613C0[];
+extern u8 D_0042F470[];
+extern u8 D_0042F4B0[];
+extern u8 D_004308B0[];
+extern u8 D_004308F0[];
+extern u8 D_00430940[];
+extern u8 D_00430980[];
+extern u8 D_004613E0[];
+extern u8 D_00461400[];
+extern u8 D_00461580[];
+extern u8 D_00461660[];
+extern u8 D_004616C0[];
+extern u8 D_004616E0[];
+extern u8 D_00461700[];
+extern u8 D_00461720[];
+extern u8 D_00461740[];
+s32 func_00339320(void *self, void *dest);
+s32 func_003396D0(void *self, void *dest);
+void *func_00339B20(void);
+void *func_00339B30(void);
+s32 func_0033AEE0(void *self, void *dest);
+void *func_0033B030(void);
+void *func_0033B040(void);
+void *func_0033B300(void);
+void *func_0033B310(void);
+s32 func_0033B4C0(void *o);
+s32 func_0033BDC0(void *self, void *dest);
+s32 func_0033E8D0(void *self, void *dest);
+s32 func_0033EA40(void *self, void *dest);
+s32 func_0033EBB0(void *self, void *dest);
+s32 func_0033ED20(void *self, void *dest);
+s32 func_0033EE90(void *self, void *dest);
+
+extern u8 D_00461CC0[];
+s32 func_003445A0(void *self, void *dest);
+
+extern u8 D_00462DF0[];
+extern u8 D_00462E10[];
+extern u8 D_00462E30[];
+extern u8 D_00462E50[];
+extern u8 D_00462E70[];
+extern u8 D_00462E90[];
+extern u8 D_00462EB0[];
+extern u8 D_00462ED0[];
+extern u8 D_00462EF0[];
+extern u8 D_00462F10[];
+s32 func_00351120(void *self, void *dest);
+s32 func_00351150(void);
+s32 func_003511E0(void *self, void *dest);
+s32 func_00351210(void);
+s32 func_003512A0(void *self, void *dest);
+s32 func_003512D0(void);
+s32 func_00351360(void *self, void *dest);
+s32 func_00351520(void *self, void *dest);
+s32 func_003516E0(void *self, void *dest);
+s32 func_00351840(void *self, void *dest);
+s32 func_003518F0(void *self, void *dest);
+s32 func_00351B10(void *self, void *dest);
+s32 func_00351C90(void *self, void *dest);
+s32 func_00351CC0(void);
+
+extern char D_00462F30[];
+extern u8 D_004434D0[], D_00443510[];
+s32 func_00351D50(void *self, void *dest);
+void *func_00352030(void);
+void *func_00352040(void);
+
+/* gCharPlayer +0x1AD5F4: f32 clamped to 0..100; +0x1AD5F8: s32 clamped to 0..1800 */
+static inline void b5_adjust_meters(f32 df, s32 di) {
+    u8 *g = (u8 *)gCharPlayer;
+    f32 f = F32(g, 0x1AD5F4) + df;
+
+    F32(g, 0x1AD5F4) = f;
+    if (f < 0.0f) {
+        F32(g, 0x1AD5F4) = 0.0f;
+    } else if (!(f <= 100.0f)) {
+        F32(g, 0x1AD5F4) = 100.0f;
+    }
+    S32(g, 0x1AD5F8) += di;
+    if (S32(g, 0x1AD5F8) < 0) {
+        S32(g, 0x1AD5F8) = 0;
+    } else if (S32(g, 0x1AD5F8) > 1800) {
+        S32(g, 0x1AD5F8) = 1800;
+    }
+}
+
+u32 func_00331E90(void);
+s32 func_00331EB0(void *self, void *dest);
+u32 func_00331FE0(void);
+s32 func_00332000(void *self, void *dest);
+u32 func_00332190(void);
+s32 func_003321B0(void *self, void *dest);
+s32 func_003321E0(void);
+u32 func_00332350(void);
+s32 func_00332370(void *self, void *dest);
+s32 func_003323A0(void);
+s32 func_00332470(void *self, void *dest);
+s32 func_003326A0(void *self, void *dest);
+s32 func_003328B0(void *self, void *dest);
+u32 func_00332A80(void);
+s32 func_00332AA0(void *self, void *dest);
+u32 func_00332CC0(void);
+s32 func_00332CE0(void *self, void *dest);
+u32 func_00332EE0(void);
+s32 func_00332F00(void *self, void *dest);
+u32 func_003330D0(void);
+s32 func_003330F0(void *self, void *dest);
+s32 func_00338F70(void *self, void *dest);
+
+/* gProgress +0x7E0 += d; +0x7D0 += d - (+0x7D4) unless that is negative */
+static inline void b5_add_7E0(f32 d) {
+    u8 *p = (u8 *)gProgress;
+    f32 r;
+
+    F32(p, 0x7E0) += d;
+    r = d - F32(p, 0x7D4);
+    if (!(r < 0.0f)) {
+        F32(p, 0x7D0) += r;
+    }
+}
+
+#define B5_HANDY(o) (VCALL(o, 0x40, s32 (*)(void *))(o) & 0xFF)
+
+u32 func_003314C0(void);
+s32 func_003314E0(void *self, void *dest);
+s32 func_00331510(void);
+u32 func_00331660(void);
+s32 func_00331680(void *self, void *dest);
+s32 func_003316B0(void);
+u32 func_00331800(void);
+s32 func_00331820(void *self, void *dest);
+s32 func_00331850(void);
+u32 func_00331920(void);
+s32 func_00331940(void *self, void *dest);
+s32 func_00331970(void);
+u32 func_00331A40(void);
+s32 func_00331A60(void *self, void *dest);
+s32 func_00331A90(void);
+u32 func_00331BD0(void);
+s32 func_00331BF0(void *self, void *dest);
+s32 func_00331C20(void);
+u32 func_00331D50(void);
+s32 func_00331D70(void *self, void *dest);
+s32 func_00331DA0(void);
+s32 func_00331EE0(void);
+s32 func_00332030(void);
+s32 func_003324A0(void *o);
+s32 func_003326D0(void *o);
+s32 func_003328E0(void *o);
+s32 func_00332AD0(void *o);
+s32 func_00332D10(void *o);
+s32 func_00332F30(void *o);
+s32 func_00333120(void *o);
+
+static f32 animal_rnd(void) {
+    return VCALL(gRandom, 0x20, f32 (*)(void *))(gRandom);
+}
+
+s32 func_0032CD00(void *self, void *dest);
+void *func_0032CF10(void);
+void *func_0032CF20(void);
+f32 func_0032CF40(u8 *self, f32 *out);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+/* in play: func_00124890(-1) */
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
+    if (func_00217510(p) != 0) {
+        func_00124890(&p->c.a, -1);
+    }
+}
+
+/* the action 5 taken (+0x14E8): in play +0x8C, the state st, +0x114 1; the action cleared */
+static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st) {
+    if (PU(p, 0x14E8, s32) != 5) {
+        return;
+    }
+    if ((u8)func_00217510(p) != 0) {
+        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
+        ptmf_set(&PU(p, 0x174C, PTMF), st);
+        PU(p, 0x1758, s32) = -1;
+        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
+    }
+    PU(p, 0x14E8, s32) = 0;
+    PU(p, 0x14EC, s32) = 0;
+}
+
+/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
+    Progress *g = gProgress;
+
+    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+        func_001777D0(g, *(u8 *)&p->c.a.slot);
+    }
+    return -1;
+}
+
+Character *func_002CD4E0(Character *c, s32 flags);
+Character *func_0031D6F0(Character *c, s32 flags);
+void func_0031D830(Pursuer *p);
+void func_0031D880(Pursuer *p);
+s32 func_0031D950(Pursuer *p);
+Character *func_0032CE00(Character *c, s32 flags);
+void func_0032DA60(Pursuer *p);
+void func_0032DAB0(Pursuer *p);
+s32 func_0032DB80(Pursuer *p);
+Character *func_00339A10(Character *c, s32 flags);
+void func_00339B50(Pursuer *p);
+void func_00339BA0(Pursuer *p);
+s32 func_00339C70(Pursuer *p);
+Character *func_0033AF20(Character *c, s32 flags);
+void func_0033B060(Pursuer *p);
+void func_0033B0B0(Pursuer *p);
+s32 func_0033B180(Pursuer *p);
+Character *func_0033B1F0(Character *c, s32 flags);
+void func_0033B330(Pursuer *p);
+void func_0033B380(Pursuer *p);
+s32 func_0033B450(Pursuer *p);
+Character *func_00351F20(Character *c, s32 flags);
+void func_00352060(Pursuer *p);
+void func_003520B0(Pursuer *p);
+s32 func_00352180(Pursuer *p);
 
 /* a middle class: its vtable, then the pool entry's */
 static inline void *item_dtor2(void *o, s32 flags, void **own) {
@@ -47,38 +598,1028 @@ static inline void *item_dtor3(void *o, s32 flags, void **own, void **mid) {
 /* the middle classes */
 
 void *func_002640C0(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C8D0); }
+
+ItemObj *func_00264120(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x29;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00479820;
+    return self;
+}
+
+ItemObj *func_00264150(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x28;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478FA0;
+    return self;
+}
+
+ItemObj *func_00264180(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x27;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478F50;
+    return self;
+}
+
+ItemObj *func_002641B0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x26;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478F00;
+    return self;
+}
+
+ItemObj *func_002641E0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x25;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478EB0;
+    return self;
+}
+
+ItemObj *func_00264210(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x24;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478E60;
+    return self;
+}
+
+ItemObj *func_00264240(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x23;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478E10;
+    return self;
+}
+
+ItemObj *func_00264270(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x22;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478DC0;
+    return self;
+}
+
+ItemObj *func_002642A0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x21;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478D70;
+    return self;
+}
+
+ItemObj *func_002642D0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x20;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478D20;
+    return self;
+}
+
+ItemObj *func_00264300(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1F;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478CD0;
+    return self;
+}
+
+ItemObj *func_00264330(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1E;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00478C80;
+    return self;
+}
+
+ItemObj *func_00264360(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1D;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004775C0;
+    return self;
+}
+
+ItemObj *func_00264390(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1C;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00477170;
+    return self;
+}
+
+ItemObj *func_002643C0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1B;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00477120;
+    return self;
+}
+
+ItemObj *func_002643F0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1A;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004770D0;
+    return self;
+}
+
+ItemObj *func_00264420(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x19;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00477080;
+    return self;
+}
+
+ItemObj *func_00264450(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x18;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00477030;
+    return self;
+}
+
+ItemObj *func_00264480(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x17;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475D60;
+    return self;
+}
+
+ItemObj *func_002644B0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x16;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475D10;
+    return self;
+}
+
+ItemObj *func_002644E0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x15;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475CC0;
+    return self;
+}
+
+ItemObj *func_00264510(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x14;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00474BC0;
+    return self;
+}
+
+ItemObj *func_00264540(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x13;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046C830;
+    return self;
+}
+
+ItemObj *func_00264570(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x12;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046C7E0;
+    return self;
+}
+
+ItemObj *func_002645A0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x11;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004730C0;
+    return self;
+}
+
+B2_Obj *func_002645D0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x10;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00473070;
+    return self;
+}
+
+B2_Obj *func_00264600(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xF;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00473020;
+    return self;
+}
+
+B2_Obj *func_00264630(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xE;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00472FD0;
+    return self;
+}
+
+B2_Obj *func_00264660(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xD;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00472F80;
+    return self;
+}
+
+B2_Obj *func_00264690(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xC;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004711C0;
+    return self;
+}
+
+B2_Obj *func_002646C0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xB;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00471170;
+    return self;
+}
+
+B2_Obj *func_002646F0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00471120;
+    return self;
+}
+
+B2_Obj *func_00264720(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x9;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004710D0;
+    return self;
+}
+
+B2_Obj *func_00264750(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x8;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00471080;
+    return self;
+}
+
+B2_Obj *func_00264780(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x7;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00470FB0;
+    return self;
+}
+
+B2_Obj *func_002647B0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x6;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004703F0;
+    return self;
+}
+
+B2_Obj *func_002647E0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x5;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EFD0;
+    return self;
+}
+
+B2_Obj *func_00264810(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x4;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EF80;
+    return self;
+}
+
+B2_Obj *func_00264840(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x3;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EF30;
+    return self;
+}
+
+B2_Obj *func_00264870(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x2;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EEE0;
+    return self;
+}
+
+B2_Obj *func_002648A0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x1;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EE90;
+    return self;
+}
+
+B2_Obj *func_002648D0(B2_Obj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046EE40;
+    return self;
+}
 void *func_00263DC0(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C920); }
+
+ItemObj *func_00263E20(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x4B;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004755D0;
+    return self;
+}
+
+ItemObj *func_00263E50(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x4A;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475580;
+    return self;
+}
+
+ItemObj *func_00263E80(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x49;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475530;
+    return self;
+}
+
+ItemObj *func_00263EB0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x48;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004754E0;
+    return self;
+}
+
+ItemObj *func_00263EE0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x47;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475490;
+    return self;
+}
+
+ItemObj *func_00263F10(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x46;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475440;
+    return self;
+}
+
+ItemObj *func_00263F40(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x45;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004753F0;
+    return self;
+}
+
+ItemObj *func_00263F70(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x44;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004753A0;
+    return self;
+}
+
+ItemObj *func_00263FA0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x43;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475350;
+    return self;
+}
+
+ItemObj *func_00263FD0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x42;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475300;
+    return self;
+}
+
+ItemObj *func_00264000(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x41;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D6E0;
+    return self;
+}
+
+ItemObj *func_00264030(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x40;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D690;
+    return self;
+}
+
+ItemObj *func_00264090(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x3E;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046C880;
+    return self;
+}
 void *func_00263A90(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CB50); }
+
+ItemObj *func_00263AF0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x74;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CAB0;
+    return self;
+}
+
+ItemObj *func_00263B20(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x73;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CA60;
+    return self;
+}
+
+ItemObj *func_00263B50(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x72;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CA10;
+    return self;
+}
+
+ItemObj *func_00263B80(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x71;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046C9C0;
+    return self;
+}
+
+ItemObj *func_00263BB0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x70;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046C970;
+    return self;
+}
+
+ItemObj *func_00263BE0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x66;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475850;
+    return self;
+}
 void *func_00263970(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CCE0); }
+
+ItemObj *func_002639D0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x82;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CC40;
+    return self;
+}
+
+ItemObj *func_00263A00(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x81;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CBF0;
+    return self;
+}
+
+ItemObj *func_00263A30(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x80;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CBA0;
+    return self;
+}
+
+ItemObj *func_00263A60(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x75;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CB00;
+    return self;
+}
 void *func_00263850(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CE70); }
+
+ItemObj *func_002638B0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x88;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CDD0;
+    return self;
+}
+
+ItemObj *func_002638E0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x87;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CD80;
+    return self;
+}
+
+ItemObj *func_00263910(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x86;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CD30;
+    return self;
+}
+
+ItemObj *func_00263940(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x83;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CC90;
+    return self;
+}
 void *func_00263730(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D000); }
+
+ItemObj *func_00263790(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x8C;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CF60;
+    return self;
+}
+
+ItemObj *func_002637C0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x8B;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CF10;
+    return self;
+}
+
+ItemObj *func_002637F0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x8A;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CEC0;
+    return self;
+}
+
+ItemObj *func_00263820(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x89;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CE20;
+    return self;
+}
 void *func_00263520(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D320); }
+
+ItemObj *func_00263580(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x98;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D280;
+    return self;
+}
+
+ItemObj *func_002635B0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x97;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D230;
+    return self;
+}
+
+ItemObj *func_002635E0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x95;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D1E0;
+    return self;
+}
+
+ItemObj *func_00263610(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x94;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D190;
+    return self;
+}
+
+ItemObj *func_00263640(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x93;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D140;
+    return self;
+}
+
+ItemObj *func_00263670(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x92;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D0F0;
+    return self;
+}
+
+ItemObj *func_002636A0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x91;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D0A0;
+    return self;
+}
+
+ItemObj *func_002636D0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x90;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D050;
+    return self;
+}
+
+ItemObj *func_00263700(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x8D;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046CFB0;
+    return self;
+}
 void *func_00263250(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D640); }
+
+ItemObj *func_002632B0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xAB;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D5A0;
+    return self;
+}
+
+ItemObj *func_002632E0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xAA;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D550;
+    return self;
+}
+
+ItemObj *func_00263310(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA9;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D500;
+    return self;
+}
+
+ItemObj *func_00263340(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA8;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D4B0;
+    return self;
+}
+
+ItemObj *func_00263370(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA7;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D460;
+    return self;
+}
+
+ItemObj *func_002633A0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA6;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D410;
+    return self;
+}
+
+ItemObj *func_002633D0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA5;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D3C0;
+    return self;
+}
+
+ItemObj *func_00263400(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA4;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D370;
+    return self;
+}
+
+ItemObj *func_00263430(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA3;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00476B60;
+    return self;
+}
+
+ItemObj *func_00263460(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA2;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00476450;
+    return self;
+}
+
+ItemObj *func_00263490(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA1;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046F660;
+    return self;
+}
+
+ItemObj *func_002634C0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0xA0;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046F610;
+    return self;
+}
+
+ItemObj *func_002634F0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x9B;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_0046D2D0;
+    return self;
+}
 void *func_002D2750(void *o, s32 flags) { return item_dtor2(o, flags, D_0046F430); }
 void *func_00263C10(void *o, s32 flags) { return item_dtor2(o, flags, D_00476B00); }
+
+ItemObj *func_00263C70(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x65;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475800;
+    return self;
+}
+
+ItemObj *func_00263CA0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x64;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004757B0;
+    return self;
+}
+
+ItemObj *func_00263CD0(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x63;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475760;
+    return self;
+}
+
+ItemObj *func_00263D00(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x62;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475710;
+    return self;
+}
+
+ItemObj *func_00263D30(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x61;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_004756C0;
+    return self;
+}
+
+ItemObj *func_00263D60(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x60;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475670;
+    return self;
+}
+
+ItemObj *func_00263D90(ItemObj *self) {
+    self->vtbl = D_0046C790;
+    self->id = 0x4C;
+    self->flag = 0;
+    self->data = 0;
+    self->vtbl = D_00475620;
+    return self;
+}
 
 /* the items */
 void *func_002649F0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C7E0, D_0046C8D0); }
 void *func_00264C70(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C830, D_0046C8D0); }
 void *func_00264EC0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C880, D_0046C8D0); }
 void *func_00264F70(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C970, D_0046CB50); }
+
+s32 func_00264FE0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A880, dest, 0x4000000, 0);
+}
 void *func_00265060(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C9C0, D_0046CB50); }
+
+s32 func_002650D0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A860, dest, 0x4000000, 0);
+}
 void *func_00265110(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA10, D_0046CB50); }
+
+s32 func_00265180(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A840, dest, 0x4000000, 0);
+}
 void *func_002651C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA60, D_0046CB50); }
+
+s32 func_00265230(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A820, dest, 0x4000000, 0);
+}
 void *func_00265270(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CAB0, D_0046CB50); }
+
+s32 func_002652E0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A800, dest, 0x4000000, 0);
+}
 void *func_00265320(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CB00, D_0046CB50); }
+
+s32 func_00265390(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A7E0, dest, 0x4000000, 0);
+}
 void *func_002653D0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBA0, D_0046CCE0); }
+
+s32 func_00265440(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC40, dest, 0x4000000, 0);
+}
 void *func_002654B0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBF0, D_0046CCE0); }
+
+s32 func_00265520(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC20, dest, 0x4000000, 0);
+}
 void *func_00265560(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC40, D_0046CCE0); }
+
+s32 func_002655D0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC00, dest, 0x4000000, 0);
+}
 void *func_00265610(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC90, D_0046CCE0); }
+
+s32 func_00265680(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABE0, dest, 0x4000000, 0);
+}
 void *func_002656C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD30, D_0046CE70); }
+
+s32 func_00265730(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABC0, dest, 0x4000000, 0);
+}
 void *func_002657A0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD80, D_0046CE70); }
+
+s32 func_00265810(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABA0, dest, 0x4000000, 0);
+}
 void *func_00265850(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CDD0, D_0046CE70); }
+
+s32 func_002658C0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB80, dest, 0x4000000, 0);
+}
 void *func_00265900(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CE20, D_0046CE70); }
+
+s32 func_00265970(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB60, dest, 0x4000000, 0);
+}
 void *func_002659B0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CEC0, D_0046D000); }
+
+s32 func_00265A20(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA20, dest, 0x4000000, 0);
+}
 void *func_00265A90(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF10, D_0046D000); }
+
+s32 func_00265B00(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA00, dest, 0x4000000, 0);
+}
 void *func_00265B40(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF60, D_0046D000); }
+
+s32 func_00265BB0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9E0, dest, 0x4000000, 0);
+}
 void *func_00265BF0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CFB0, D_0046D000); }
+
+s32 func_00265C60(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9C0, dest, 0x4000000, 0);
+}
 void *func_00265CA0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D050, D_0046D320); }
 void *func_00265D80(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0A0, D_0046D320); }
 void *func_00265E30(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0F0, D_0046D320); }
@@ -100,49 +1641,273 @@ void *func_00266920(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D5F0
 void *func_002669D0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D690, D_0046C920); }
 void *func_00266B60(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D6E0, D_0046C920); }
 void *func_002CCBD0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE40, D_0046C8D0); }
+
+s32 func_002CCC40(void *self, s32 a) { return LOAD(D_0045D4A0, a); }
 void *func_002CCD30(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE90, D_0046C8D0); }
 void *func_002CCF90(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EEE0, D_0046C8D0); }
+
+s32 func_002CD000(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
+
+/* use: on the altar */
+s32 func_002CD030(void *o) {
+    return item_offer(gProgress, o);
+}
 void *func_002CD130(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF30, D_0046C8D0); }
+
+s32 func_002CD1A0(void *self, s32 a) { return LOAD(D_0045D500, a); }
+
+/* use: at spot 5 of room 0x22: flag 0x18, event 5 */
+s32 func_002CD1D0(void) {
+    Progress *p = gProgress;
+
+    if (!item_room_spot(p, 0x22, 5)) {
+        return 0;
+    }
+    Progress_SetFlag(p, 0x18);
+    item_event(gEvents, 0, 5, gCharPlayer);
+    return 4;
+}
 void *func_002CD2A0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF80, D_0046C8D0); }
+
+s32 func_002CD310(void *self, s32 a) { return LOAD(D_0045D520, a); }
+
+/* use: at spot 0xC of room 4: event 4, flag 0x18 */
+s32 func_002CD340(void) {
+    Progress *p = gProgress;
+
+    if (!item_room_spot(p, 4, 0xC)) {
+        return 0;
+    }
+    item_event(gEvents, 0, 4, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
 void *func_002CD420(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EFD0, D_0046C8D0); }
+
+s32 func_002CD490(void *self, s32 a) { return LOAD(D_0045D540, a); }
+
+s32 func_002CD4C0(void) {
+    F(gProgress, 0x84, u32) |= 0x400000;
+    return 2;
+}
+
+Character *func_002CD4E0(Character *c, s32 flags) { return creature_dtor(c, flags, D_0046F020); }
+
+void *func_002CD5F0(void) { return D_00413550; }
+
+void func_002CD600(void *self, s32 id, u32 *out) {
+    u32 z;
+
+    switch (id) {
+    case 1: z = 0x41266666; break;
+    case 3: z = 0xC0EE17C2; break;
+    case 0: z = 0xC0C6C49C; break;
+    case 2: z = 0x40C93B64; break;
+    default: return;
+    }
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = z;
+}
+
+void func_002CD6A0(void *self, s32 id, u32 *out) {
+    u32 x, z;
+
+    switch (id) {
+    case 10: case 11: x = 0x3F717C1C; z = 0x413403B0; break;
+    case 12: case 13: x = 0x400B2B02; z = 0x4170AB9F; break;
+    case 14: x = 0xBFCE4C30; z = 0xC08AF007; break;
+    case 15: x = 0x3C95182B; z = 0xBF801A37; break;
+    default: return;
+    }
+    out[0] = x;
+    out[1] = 0;
+    out[2] = z;
+}
+
+void func_002CD750(u8 *p) { p[0x16EE] = 1; }
+
+void func_002CD760(void) {
+}
+
+void func_002CD770(void) {
+}
+
+void func_002CD780(void) {
+}
+
+void func_002CD790(void) {
+}
+
+s32 func_002CD7A0(void) {
+    return 0;
+}
 void *func_002D7910(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F610, D_0046D640); }
+
+s32 func_002D7980(void *self, void *dest) { return LOAD_002D1360(D_0045D9E0, dest); }
 void *func_002D79C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F660, D_0046D640); }
+
+s32 func_002D7A30(void *self, void *dest) { return LOAD_002D1360(D_0045DA00, dest); }
 void *func_002EEB60(void *o, s32 flags) { return item_dtor3(o, flags, D_004703F0, D_0046C8D0); }
 void *func_00303C30(void *o, s32 flags) { return item_dtor3(o, flags, D_00470FB0, D_0046C8D0); }
 void *func_00306B20(void *o, s32 flags) { return item_dtor3(o, flags, D_00471080, D_0046C8D0); }
+
+s32 func_00306B90(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045EC50, dest);
+}
 void *func_00307130(void *o, s32 flags) { return item_dtor3(o, flags, D_004710D0, D_0046C8D0); }
+
+s32 func_003071A0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045EC70, dest);
+}
 void *func_00307740(void *o, s32 flags) { return item_dtor3(o, flags, D_00471120, D_0046C8D0); }
+
+s32 func_003077B0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045EC90, dest);
+}
 void *func_00307D50(void *o, s32 flags) { return item_dtor3(o, flags, D_00471170, D_0046C8D0); }
+
+s32 func_00307DC0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045ECB0, dest);
+}
 void *func_00308360(void *o, s32 flags) { return item_dtor3(o, flags, D_004711C0, D_0046C8D0); }
+
+s32 func_003083D0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045ECD0, dest);
+}
 void *func_0031CAA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00472F80, D_0046C8D0); }
+
+s32 func_0031CB10(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045FE20, dest);
+}
 void *func_0031CD70(void *o, s32 flags) { return item_dtor3(o, flags, D_00472FD0, D_0046C8D0); }
+
+s32 func_0031CDE0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045FE40, dest);
+}
 void *func_0031CFB0(void *o, s32 flags) { return item_dtor3(o, flags, D_00473020, D_0046C8D0); }
+
+s32 func_0031D020(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045FE60, dest);
+}
 void *func_0031D110(void *o, s32 flags) { return item_dtor3(o, flags, D_00473070, D_0046C8D0); }
+
+s32 func_0031D180(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045FE80, dest);
+}
 void *func_0031D590(void *o, s32 flags) { return item_dtor3(o, flags, D_004730C0, D_0046C8D0); }
+
+s32 func_0031D600(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_0045FEA0, dest);
+}
 void *func_0032CC90(void *o, s32 flags) { return item_dtor3(o, flags, D_00474BC0, D_0046C8D0); }
+
+s32 func_0032CD00(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460BE0, dest);
+}
 void *func_00331450(void *o, s32 flags) { return item_dtor3(o, flags, D_00475300, D_0046C920); }
+
+u32 func_003314C0(void) {
+    return 0x80000005;
+}
 void *func_003315F0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475350, D_0046C920); }
+
+u32 func_00331660(void) {
+    return 0x80000005;
+}
 void *func_00331790(void *o, s32 flags) { return item_dtor3(o, flags, D_004753A0, D_0046C920); }
+
+u32 func_00331800(void) {
+    return 0x80000005;
+}
 void *func_003318B0(void *o, s32 flags) { return item_dtor3(o, flags, D_004753F0, D_0046C920); }
+
+u32 func_00331920(void) {
+    return 0x80000005;
+}
 void *func_003319D0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475440, D_0046C920); }
+
+u32 func_00331A40(void) {
+    return 0x80000005;
+}
 void *func_00331B60(void *o, s32 flags) { return item_dtor3(o, flags, D_00475490, D_0046C920); }
+
+u32 func_00331BD0(void) {
+    return 0x80000005;
+}
 void *func_00331CE0(void *o, s32 flags) { return item_dtor3(o, flags, D_004754E0, D_0046C920); }
+
+u32 func_00331D50(void) {
+    return 0x80000005;
+}
 void *func_00331E20(void *o, s32 flags) { return item_dtor3(o, flags, D_00475530, D_0046C920); }
+
+u32 func_00331E90(void) {
+    return 0x80000005;
+}
 void *func_00331F70(void *o, s32 flags) { return item_dtor3(o, flags, D_00475580, D_0046C920); }
+
+u32 func_00331FE0(void) {
+    return 0x80000005;
+}
 void *func_00332120(void *o, s32 flags) { return item_dtor3(o, flags, D_004755D0, D_0046C920); }
+
+u32 func_00332190(void) {
+    return 0x80000005;
+}
 void *func_003322E0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475620, D_0046C920); }
+
+u32 func_00332350(void) {
+    return 0x80000005;
+}
 void *func_003323C0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475670, D_00476B00); }
 void *func_00332620(void *o, s32 flags) { return item_dtor3(o, flags, D_004756C0, D_00476B00); }
 void *func_00332830(void *o, s32 flags) { return item_dtor3(o, flags, D_00475710, D_00476B00); }
 void *func_00332A10(void *o, s32 flags) { return item_dtor3(o, flags, D_00475760, D_00476B00); }
+
+u32 func_00332A80(void) {
+    return 0x80000005;
+}
 void *func_00332C50(void *o, s32 flags) { return item_dtor3(o, flags, D_004757B0, D_00476B00); }
+
+u32 func_00332CC0(void) {
+    return 0x80000005;
+}
 void *func_00332E70(void *o, s32 flags) { return item_dtor3(o, flags, D_00475800, D_00476B00); }
+
+u32 func_00332EE0(void) {
+    return 0x80000005;
+}
 void *func_00333060(void *o, s32 flags) { return item_dtor3(o, flags, D_00475850, D_00476B00); }
+
+u32 func_003330D0(void) {
+    return 0x80000005;
+}
 void *func_00338F00(void *o, s32 flags) { return item_dtor3(o, flags, D_00475CC0, D_0046C8D0); }
+
+s32 func_00338F70(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004613C0, dest);
+}
 void *func_003392B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D10, D_0046C8D0); }
+
+s32 func_00339320(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004613E0, dest);
+}
 void *func_00339660(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D60, D_0046C8D0); }
+
+s32 func_003396D0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461400, dest);
+}
 void *func_0033AE70(void *o, s32 flags) { return item_dtor3(o, flags, D_00476450, D_0046D640); }
+
+s32 func_0033AEE0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461580, dest);
+}
 void *func_0033BD50(void *o, s32 flags) { return item_dtor3(o, flags, D_00476B60, D_0046D640); }
+
+s32 func_0033BDC0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461660, dest);
+}
 void *func_0033E850(void *o, s32 flags) { return item_dtor3(o, flags, D_00477030, D_0046C8D0); }
 void *func_0033E9C0(void *o, s32 flags) { return item_dtor3(o, flags, D_00477080, D_0046C8D0); }
 void *func_0033EB30(void *o, s32 flags) { return item_dtor3(o, flags, D_004770D0, D_0046C8D0); }
@@ -150,16 +1915,84 @@ void *func_0033ECA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00477120
 void *func_0033EE10(void *o, s32 flags) { return item_dtor3(o, flags, D_00477170, D_0046C8D0); }
 void *func_00344520(void *o, s32 flags) { return item_dtor3(o, flags, D_004775C0, D_0046C8D0); }
 void *func_003510B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478C80, D_0046C8D0); }
+
+s32 func_00351120(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462DF0, dest, 0x4000000, 0);
+}
+
+s32 func_00351150(void) {
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x800000;
+    return 2;
+}
 void *func_00351170(void *o, s32 flags) { return item_dtor3(o, flags, D_00478CD0, D_0046C8D0); }
+
+s32 func_003511E0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E10, dest, 0x4000000, 0);
+}
+
+s32 func_00351210(void) {
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x1000000;
+    return 2;
+}
 void *func_00351230(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D20, D_0046C8D0); }
+
+s32 func_003512A0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E30, dest, 0x4000000, 0);
+}
+
+s32 func_003512D0(void) {
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x2000000;
+    return 2;
+}
 void *func_003512F0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D70, D_0046C8D0); }
+
+s32 func_00351360(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E50, dest, 0x4000000, 0);
+}
 void *func_003514B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478DC0, D_0046C8D0); }
+
+s32 func_00351520(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E70, dest, 0x4000000, 0);
+}
 void *func_00351670(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E10, D_0046C8D0); }
+
+s32 func_003516E0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E90, dest, 0x4000000, 0);
+}
 void *func_003517D0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E60, D_0046C8D0); }
+
+s32 func_00351840(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EB0, dest, 0x4000000, 0);
+}
 void *func_00351880(void *o, s32 flags) { return item_dtor3(o, flags, D_00478EB0, D_0046C8D0); }
+
+s32 func_003518F0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462ED0, dest, 0x4000000, 0);
+}
 void *func_00351AA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F00, D_0046C8D0); }
+
+s32 func_00351B10(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EF0, dest, 0x4000000, 0);
+}
 void *func_00351C20(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F50, D_0046C8D0); }
+
+s32 func_00351C90(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462F10, dest, 0x4000000, 0);
+}
+
+s32 func_00351CC0(void) {
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x4000000;
+    return 2;
+}
 void *func_00351CE0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478FA0, D_0046C8D0); }
+
+/* Starts loading a file named D_00462F30 into dest. */
+s32 func_00351D50(void *self, void *dest) {
+    void *loader = gFileLoader;
+
+    return VCALL(loader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(loader, D_00462F30, dest,
+                                                                              0x4000000, 0);
+}
 void *func_0035BB20(void *o, s32 flags) { return item_dtor3(o, flags, D_00479820, D_0046C8D0); }
 
 /* ---- the small methods (the base pool entry's and the items' own) ----
@@ -530,6 +2363,39 @@ s32 func_002CCDA0(void *o) {
     return 0x2;
 }
 
+s32 func_002CCDB0(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
+
+/* use: unless Progress +0x1C bit 0x80, at spot 9 of room 0x1C: event 0, flag 0x18 */
+s32 func_002CCDE0(void) {
+    Progress *p = gProgress;
+    VObject *ev_mgr;
+
+    if (AT(p, 0x1C, u32) & 0x80) {
+        return 0;
+    }
+    if (!item_room_spot(p, 0x1C, 9)) {
+        return 0;
+    }
+    ev_mgr = gEvents;
+    item_event(ev_mgr, 0, 0, gCharPlayer);
+    Progress_SetFlag(p, 0x18);
+    return 4;
+}
+
+/* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, func_00261090
+   (2, 1)) and Progress +0x84 bit 31 is set */
+s32 func_002CCED0(void *o) {
+    if (AT(o, 0x10, u32) < 9001) {
+        if (AT(o, 0x4, s32) != -1 && (VCALL(o, 0x18, s32 (*)(void *))(o) & 0xFF) == 2 && AT(o, 0x10, u32) != (u32)-1) {
+            AT(o, 0x10, u32) += 1;
+        }
+        return 0;
+    }
+    func_00261090((u8 *)gSubScreen + 8, 2, 1);
+    AT(gProgress, 0x84, u32) |= 0x80000000;
+    return 2;
+}
+
 /* +0x10 (D_0046F430) */
 s32 func_002D27B0(void *o) {
     return 0x1;
@@ -560,9 +2426,27 @@ s32 func_003314D0(void *o) {
     return 0x130;
 }
 
+s32 func_003314E0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460F00, dest);
+}
+
+s32 func_00331510(void) {
+    item_meters(-25.0f, -450);
+    return 1;
+}
+
 /* +0x1C (D_00475350) */
 s32 func_00331670(void *o) {
     return 0x140;
+}
+
+s32 func_00331680(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460F20, dest);
+}
+
+s32 func_003316B0(void) {
+    item_meters(-100.0f, -1800);
+    return 1;
 }
 
 /* +0x1C (D_004753A0) */
@@ -570,9 +2454,27 @@ s32 func_00331810(void *o) {
     return 0x150;
 }
 
+s32 func_00331820(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460F40, dest);
+}
+
+s32 func_00331850(void) {
+    b5_add_7E0(25.0f);
+    return 1;
+}
+
 /* +0x1C (D_004753F0) */
 s32 func_00331930(void *o) {
     return 0x160;
+}
+
+s32 func_00331940(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460F60, dest);
+}
+
+s32 func_00331970(void) {
+    b5_add_7E0(100.0f);
+    return 1;
 }
 
 /* +0x1C (D_00475440) */
@@ -580,9 +2482,31 @@ s32 func_00331A50(void *o) {
     return 0x170;
 }
 
+s32 func_00331A60(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460F80, dest);
+}
+
+/* use: composure +25, she drinks (event 0x8D) */
+s32 func_00331A90(void) {
+    item_composure(25.0f);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
+    return 5;
+}
+
 /* +0x1C (D_00475490) */
 s32 func_00331BE0(void *o) {
     return 0x180;
+}
+
+s32 func_00331BF0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460FA0, dest);
+}
+
+/* use: composure +100 */
+s32 func_00331C20(void) {
+    item_composure(100.0f);
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
+    return 5;
 }
 
 /* +0x1C (D_004754E0) */
@@ -590,9 +2514,36 @@ s32 func_00331D60(void *o) {
     return 0x190;
 }
 
+s32 func_00331D70(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460FC0, dest);
+}
+
+/* use: Progress +0x9E8 2.0 for 1800 frames (+0x9EC) */
+s32 func_00331DA0(void) {
+    F32(gProgress, 0x9E8) = 2.0f;
+    S32(gProgress, 0x9EC) = 1800;
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
+    return 5;
+}
+
 /* +0x1C (D_00475530) */
 s32 func_00331EA0(void *o) {
     return 0x1A0;
+}
+
+s32 func_00331EB0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00460FE0, dest);
+}
+
+/* use: unless it still runs, Progress +0x9F4 / +0x9F8 1800 frames */
+s32 func_00331EE0(void) {
+    if (S32(gProgress, 0x9F4) != 0) {
+        return 0;
+    }
+    S32(gProgress, 0x9F8) = 1800;
+    S32(gProgress, 0x9F4) = 1800;
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
+    return 5;
 }
 
 /* +0x1C (D_00475580) */
@@ -600,14 +2551,51 @@ s32 func_00331FF0(void *o) {
     return 0x1B0;
 }
 
+s32 func_00332000(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461000, dest);
+}
+
+/* use: composure -50, Progress +0x7D8 +50 */
+s32 func_00332030(void) {
+    item_composure(-50.0f);
+    F32(gProgress, 0x7D8) += 50.0f;
+    item_event(gEvents, 0, 0x8D, gCharPlayer);
+    return 5;
+}
+
 /* +0x1C (D_004755D0) */
 s32 func_003321A0(void *o) {
     return 0x1C0;
 }
 
+s32 func_003321B0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461020, dest);
+}
+
+s32 func_003321E0(void) {
+    u8 *p;
+
+    b5_adjust_meters(-100.0f, -1800);
+    p = (u8 *)gProgress;
+    S32(p, 0x9FC) = 0;
+    S32(p, 0xA00) = 1800;
+    F32(p, 0xA04) = 3.0f;
+    S32(p, 0xA08) = 1800;
+    return 1;
+}
+
 /* +0x1C (D_00475620) */
 s32 func_00332360(void *o) {
     return 0x1E0;
+}
+
+s32 func_00332370(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461040, dest);
+}
+
+s32 func_003323A0(void) {
+    S32((u8 *)gProgress, 0xA0C) = 1800;
+    return 1;
 }
 
 /* +0x1C (D_00475670) */
@@ -630,9 +2618,38 @@ s32 func_00332460(void *o) {
     return 0x1;
 }
 
+s32 func_00332470(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461060, dest);
+}
+
+/* use: Hewie heals 20; already full, he trusts her a little less */
+s32 func_003324A0(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    if (item_hewie_heal(20)) {
+        item_trust(-1);
+    }
+    return item_give_hewie(gEvents, 0x8F);
+}
+
 /* +0x1C (D_004756C0) */
 s32 func_00332690(void *o) {
     return 0x220;
+}
+
+s32 func_003326A0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461080, dest);
+}
+
+/* use: Hewie heals 100; trust -1 */
+s32 func_003326D0(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    item_hewie_heal(100);
+    item_trust(-1);
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* +0x1C (D_00475710) */
@@ -640,9 +2657,38 @@ s32 func_003328A0(void *o) {
     return 0x230;
 }
 
+s32 func_003328B0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004610A0, dest);
+}
+
+/* use: Hewie's +0x94 (50); trust +3 */
+s32 func_003328E0(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    VCALL(gCharPartner, 0x94, void (*)(u8 *, s32))((u8 *)gCharPartner, 50);
+    item_trust(3);
+    return item_give_hewie(gEvents, 0x90);
+}
+
 /* +0x1C (D_00475760) */
 s32 func_00332A90(void *o) {
     return 0x240;
+}
+
+s32 func_00332AA0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004610C0, dest);
+}
+
+/* use: as func_003324A0 */
+s32 func_00332AD0(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    if (item_hewie_heal(20)) {
+        item_trust(-1);
+    }
+    return item_give_hewie(gEvents, 0x8F);
 }
 
 /* +0x1C (D_004757B0) */
@@ -650,9 +2696,38 @@ s32 func_00332CD0(void *o) {
     return 0x250;
 }
 
+s32 func_00332CE0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004610E0, dest);
+}
+
+/* use: as func_003326D0 */
+s32 func_00332D10(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    item_hewie_heal(100);
+    item_trust(-1);
+    return item_give_hewie(gEvents, 0x8F);
+}
+
 /* +0x1C (D_00475800) */
 s32 func_00332EF0(void *o) {
     return 0x260;
+}
+
+s32 func_00332F00(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461100, dest);
+}
+
+/* use: Hewie waits (func_00138AD0 mode 3, 450 frames; Progress +0xA10 too); trust +20 */
+s32 func_00332F30(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    func_00138AD0(gCharPartner, 3, 450);
+    S32(gProgress, 0xA10) = 450;
+    item_trust(20);
+    return item_give_hewie(gEvents, 0x91);
 }
 
 /* +0x1C (D_00475850) */
@@ -660,9 +2735,70 @@ s32 func_003330E0(void *o) {
     return 0x270;
 }
 
+s32 func_003330F0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461120, dest);
+}
+
+/* use: Hewie's health 1 (back on his feet); trust +3 */
+s32 func_00333120(void *o) {
+    if (!B5_HANDY(o)) {
+        return 0;
+    }
+    S32(gCharPartner, 0x14C8) = 1;
+    item_trust(3);
+    return item_give_hewie(gEvents, 0x90);
+}
+
 /* +0x3C (D_00476450) */
 s32 func_0033AF10(void *o) {
     return 0;
+}
+
+Character *func_0033AF20(Character *c, s32 flags) { return creature_dtor(c, flags, D_004764A0); }
+
+void *func_0033B030(void) {
+    return D_004308B0;
+}
+
+void *func_0033B040(void) {
+    return D_004308F0;
+}
+
+void func_0033B060(Pursuer *p) { creature_inplay(p); }
+
+void func_0033B0B0(Pursuer *p) { creature_act5(p, &D_00430930); }
+
+s32 func_0033B180(Pursuer *p) { return creature_slot_done(p); }
+
+Character *func_0033B1F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_004767D0); }
+
+void *func_0033B300(void) {
+    return D_00430940;
+}
+
+void *func_0033B310(void) {
+    return D_00430980;
+}
+
+void func_0033B330(Pursuer *p) { creature_inplay(p); }
+
+void func_0033B380(Pursuer *p) { creature_act5(p, &D_004309C0); }
+
+s32 func_0033B450(Pursuer *p) { return creature_slot_done(p); }
+
+/* +0x40: Hewie is at hand - he can be reached (func_0025FF10), within 20 and his triangle is
+   the one Fiona finds his position on */
+s32 func_0033B4C0(void *o) {
+    u32 tri;
+
+    if ((func_0025FF10(o) & 0xFF) != 1) {
+        return 0;
+    }
+    if (!(func_00124490((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10)) < 20.0f)) {
+        return 0;
+    }
+    tri = *(u32 *)((u8 *)gCharPartner + 0x34);
+    return func_00124480((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10), 0x20008) == tri;
 }
 
 /* +0x3C (D_00476B60) */
@@ -675,9 +2811,17 @@ s32 func_0033E8C0(void *o) {
     return 0x5;
 }
 
+s32 func_0033E8D0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004616C0, dest);
+}
+
 /* +0x14 (D_00477080) */
 s32 func_0033EA30(void *o) {
     return 0x5;
+}
+
+s32 func_0033EA40(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_004616E0, dest);
 }
 
 /* +0x14 (D_004770D0) */
@@ -685,9 +2829,17 @@ s32 func_0033EBA0(void *o) {
     return 0x5;
 }
 
+s32 func_0033EBB0(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461700, dest);
+}
+
 /* +0x14 (D_00477120) */
 s32 func_0033ED10(void *o) {
     return 0x5;
+}
+
+s32 func_0033ED20(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461720, dest);
 }
 
 /* +0x14 (D_00477170) */
@@ -695,9 +2847,17 @@ s32 func_0033EE80(void *o) {
     return 0x5;
 }
 
+s32 func_0033EE90(void *self, void *dest) {
+    return FILE_LOAD_ASYNC(D_00461740, dest);
+}
+
 /* +0x14 (D_004775C0) */
 s32 func_00344590(void *o) {
     return 0x5;
+}
+
+s32 func_003445A0(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00461CC0, dest, 0x4000000, 0);
 }
 
 /* +0x3C (D_00478E60) */
@@ -710,9 +2870,7 @@ s32 func_0035BBC0(void *o) {
     return 0;
 }
 
-
 /* ---- +0x28: start loading the item's picture into `dst` ---- */
-
 
 #define ITEM_LOAD(name, dst) \
     VCALL(gFileLoader, 0xC, s32 (*)(VObject *, const char *, s32, s32, s32))(gFileLoader, name, dst, 0x4000000, 0)
@@ -894,7 +3052,6 @@ s32 func_0025FF10(void *o) {
  * Returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
  * started (Fiona's state 5). */
 
-
 /* used at event spot `spot` of room `room` while Fiona stands in it: event `ev` */
 static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
     VObject *ev_mgr;
@@ -980,6 +3137,22 @@ s32 func_0031D630(void *o) {
     return use_at_door(0x55, 4, 2);
 }
 
+Character *func_0031D6F0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473110); }
+
+void *func_0031D800(void) {
+    return D_00429D70;
+}
+
+void *func_0031D810(void) {
+    return D_00429DB0;
+}
+
+void func_0031D830(Pursuer *p) { creature_inplay(p); }
+
+void func_0031D880(Pursuer *p) { creature_act5(p, &D_00429DF0); }
+
+s32 func_0031D950(Pursuer *p) { return creature_slot_done(p); }
+
 /* D_00474BC0: at door 1 of room 0x25 unless Progress +0x20 bit 0x800000, event 4 */
 s32 func_0032CD30(void *o) {
     Progress *p = gProgress;
@@ -992,6 +3165,294 @@ s32 func_0032CD30(void *o) {
     return 4;
 }
 
+Character *func_0032CE00(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474C10); }
+
+void *func_0032CF10(void) {
+    return D_0042C990;
+}
+
+void *func_0032CF20(void) {
+    return D_0042C9D0;
+}
+
+/* the squared distance to the nearest of Fiona, Hewie and the pursuer (those two when active
+ * and in the room), whose position goes into out */
+f32 func_0032CF40(u8 *self, f32 *out) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 pf[4] __attribute__((aligned(16)));
+    f32 ph[4] __attribute__((aligned(16)));
+    f32 pp[4] __attribute__((aligned(16)));
+    f32 df, dh, dp;
+
+    sceVu0SubVector(d, CHAR_POS(self), CHAR_POS(gCharPlayer));
+    df = sceVu0InnerProduct(d, d);
+    sceVu0CopyVector(pf, CHAR_POS(gCharPlayer));
+#ifdef HG_NATIVE
+    if (gCharPartner != NULL && CHAR_ON(gCharPartner) && CHAR_ROOM(gCharPartner) == CUR_ROOM()) {   /* (no Hewie: HG_NOPARTNER) */
+#else
+    if (CHAR_ON(gCharPartner) && CHAR_ROOM(gCharPartner) == CUR_ROOM()) {
+#endif
+        sceVu0SubVector(d, CHAR_POS(self), CHAR_POS(gCharPartner));
+        dh = sceVu0InnerProduct(d, d);
+        sceVu0CopyVector(ph, CHAR_POS(gCharPartner));
+    } else {
+        dh = 1.0e8f;
+    }
+    if (gCharPursuer != NULL && CHAR_ON(gCharPursuer) && CHAR_ROOM(gCharPursuer) == CUR_ROOM()) {
+        sceVu0SubVector(d, CHAR_POS(self), CHAR_POS(gCharPursuer));
+        dp = sceVu0InnerProduct(d, d);
+        sceVu0CopyVector(pp, CHAR_POS(gCharPursuer));
+    } else {
+        dp = 1.0e8f;
+    }
+    sceVu0CopyVector(out, pf);
+    if (!(df <= dh)) {
+        sceVu0CopyVector(out, ph);
+        df = dh;
+    }
+    if (!(df <= dp)) {
+        sceVu0CopyVector(out, pp);
+        df = dp;
+    }
+    return df;
+}
+
+/* turn 0.3 of the way towards (x, z) */
+static inline __attribute__((always_inline)) void animal_face(u8 *self, f32 x, f32 z) {
+    static const union { u32 u; f32 f; } k03 = {0x3E99999A};
+    f32 t[4] __attribute__((aligned(16)));
+    f32 a, d;
+
+    t[0] = x;
+    t[1] = 0.0f;
+    t[2] = z;
+    t[3] = 1.0f;
+    sceVu0SubVector(t, t, CHAR_POS(self));
+    a = func_002E2D00(func_002E2BC0(t));
+    d = func_002E2D00(a - func_002E2D00(F32(self, 0x54)));
+    F32(self, 0x54) = func_002E2D00(0.0f + F32(self, 0x54) + k03.f * d);
+}
+
+#define ANIMAL_CLIP_DONE(self) ((S32(PTR(PTR(self, 0xF0), 0x6A4), 0x18) & 0x20) != 0)
+
+static inline void animal_go(u8 *self, s32 state) {
+    S32(self, 0x1624) = state;
+    S32(self, 0x1628) = 1;
+}
+
+/* a frame of its behaviour: 0 grazing (turned to whoever it watches, 1..2 s), 1 looking up, 4
+ * turning home (5 frames), 5 going back to grazing; 2 alert (someone within 30: meant to face
+ * away from them, but the original takes the point's y for its z), 3 running off (within 20) to +0x163C / +0x1640 - 1 once there (its sound
+ * +0x1630 + 1 played) */
+s32 func_0032D430(u8 *self) {
+    static const union { u32 u; f32 f; } k08 = {0x3F4CCCCD};
+    f32 who[4] __attribute__((aligned(16)));
+    f32 d = func_0032CF40(self, who);
+
+    if (S32(self, 0x1624) != 3 && d < 400.0f) {
+        animal_go(self, 3);
+    }
+    if (S32(self, 0x1624) != 3 && S32(self, 0x1624) != 2 && d < 900.0f) {
+        animal_go(self, 2);
+    }
+    switch (S32(self, 0x1624)) {
+    case 0:
+        if (S32(self, 0x1628) != 0) {
+            func_002DE030(PTR(self, 0xF0), 0x9000, 1, -1, 5.0f);
+            S32(self, 0x162C) = (s32)(60.0f * (1.0f + animal_rnd()));
+            S32(self, 0x1628) = 0;
+        }
+        animal_face(self, F32(D_01991600, 0), F32(D_01991600, 8));
+        S32(self, 0x162C) -= 1;
+        if (S32(self, 0x162C) < 0) {
+            if (d <= 2500.0f || !(animal_rnd() < k08.f)) {
+                S32(self, 0x1624) = 1;
+            } else {
+                S32(self, 0x1624) = 4;
+            }
+            S32(self, 0x1628) = 1;
+            S32(self, 0x162C) = 0;
+        }
+        break;
+    case 1:
+        if (S32(self, 0x1628) != 0) {
+            func_002DE030(PTR(self, 0xF0), 0x9001, 1, -1, 5.0f);
+            S32(self, 0x1628) = 0;
+        }
+        if (ANIMAL_CLIP_DONE(self) && animal_rnd() < 0.5f) {
+            animal_go(self, 0);
+        }
+        break;
+    case 4:
+        if (S32(self, 0x1628) != 0) {
+            S32(self, 0x162C) = 5;
+            S32(self, 0x1628) = 0;
+        }
+        animal_face(self, F32(self, 0x1634), F32(self, 0x1638));
+        if (--S32(self, 0x162C) < 0) {
+            animal_go(self, 5);
+        }
+        break;
+    case 5:
+        if (S32(self, 0x1628) != 0) {
+            func_002DE030(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
+            S32(self, 0x1628) = 0;
+        }
+        if (ANIMAL_CLIP_DONE(self)) {
+            animal_go(self, 0);
+        }
+        break;
+    case 2: {
+        f32 away[4] __attribute__((aligned(16)));
+
+        if (S32(self, 0x1628) != 0) {
+            func_002DE030(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
+            S32(self, 0x1628) = 0;
+            func_0032CF40(self, (f32 *)D_01991600);
+        }
+        sceVu0SubVector(away, CHAR_POS(self), (f32 *)D_01991600);
+        sceVu0ScaleVector(away, away, 100.0f);
+        sceVu0AddVector(away, away, CHAR_POS(self));
+        animal_face(self, away[0], away[1]);   /* (sic: y for z - the game's own slip) */
+        if (ANIMAL_CLIP_DONE(self)) {
+            animal_go(self, 0);
+        }
+        break;
+    }
+    case 3: {
+        f32 dz, dx;
+
+        if (S32(self, 0x1628) != 0) {
+            func_002DE030(PTR(self, 0xF0), 0x9003, 1, -1, 5.0f);
+            S32(self, 0x1628) = 0;
+        }
+        animal_face(self, F32(self, 0x163C), F32(self, 0x1640));
+        dz = F32(self, 0x1640) - F32(self, 0x18);
+        dx = F32(self, 0x163C) - F32(self, 0x10);
+        if (dz * dz + dx * dx < 1.0f) {
+            func_00122C20((Actor *)self, S32(self, 0x1630) + 1, 6, 0, 0, NULL);
+            return 1;
+        }
+        break;
+    }
+    }
+    return 0;
+}
+
+/* a frame of it (func_0032D430) moved by its animation's root motion, a footstep sound
+ * (+0x1630, unless -1) as either foot comes down; 1 once it has run off */
+static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
+    f32 d[4] __attribute__((aligned(16)));
+    void *m;
+    u8 done = func_0032D430(self) & 0xFF;
+    u8 l, r;
+
+    func_001F6370(PTR(self, 0xF0), d, 0.0f);
+    func_00125900((Character *)self);
+    sceVu0ApplyMatrix(d, (f32 (*)[4])(self + 0x60), d);
+    sceVu0AddVector(CHAR_POS(self), CHAR_POS(self), d);
+    m = PTR(self, 0xF0);
+    l = VCALL(m, 0x64, s32 (*)(void *, s32, s32))(m, 1, 0) & 0xFF;
+    m = PTR(self, 0xF0);
+    r = VCALL(m, 0x64, s32 (*)(void *, s32, s32))(m, 0, 0) & 0xFF;
+    if (((l == 1 && self[0x16A8] == 0) || (r == 1 && self[0x16A9] == 0)) && S32(self, 0x1630) != -1) {
+        func_00122C20((Actor *)self, S32(self, 0x1630), 6, 0, 0, NULL);
+    }
+    self[0x16A8] = l;
+    self[0x16A9] = r;
+    return done;
+}
+
+/* the two animals' copies (started by func_0032D270 / func_0032D3E0) */
+s32 func_0032D150(u8 *self) {
+    return animal_step(self);
+}
+
+s32 func_0032D2C0(u8 *self) {
+    return animal_step(self);
+}
+
+void *func_0032DC50(void) {
+    return D_0042CA20;
+}
+
+void *func_0032DC60(void) {
+    return D_0042CB60;
+}
+
+void *func_0032DC70(void) {
+    return D_0042CC00;
+}
+
+void *func_0032DC80(void) {
+    return D_0042D0C0;
+}
+
+void *func_0032DC90(void *self, s32 i) {
+    return D_0042E310[i];
+}
+
+void *func_0032DCB0(void) {
+    return D_0042E410;
+}
+
+void *func_0032DCC0(void *self, s32 i) {
+    return D_0042E3F0[i];
+}
+
+void func_0032F4E0(u8 *self) {
+    S32(self, 0xFC8) = 0;
+    self[0xFCC] = 0;
+    S32(self, 0xFC0) = 0;
+    S32(self, 0xFC4) = 0;
+
+    S64(self, 0xC18) = -1;
+    S32(self, 0xC24) = 0;
+    S32(self, 0xC28) = 0;
+    S32(self, 0xC2C) = 0;
+    S32(self, 0xC30) = 25;
+    S16(self, 0xC34) = 0x10;
+    S16(self, 0xC36) = 0x20;
+    S16(self, 0xC38) = 0x40;
+    S16(self, 0xC3A) = 0x20;
+    S16(self, 0xC3C) = 0x20;
+    S16(self, 0xC3E) = 0x200;
+    S16(self, 0xC40) = 0x100;
+    self[0xC42] = 0x40;
+    self[0xC43] = 1;
+    self[0xC44] = 1;
+    self[0xC45] = 0x10;
+    self[0xC46] = 0xFF;
+
+    S64(self, 0xC50) = -1;
+    S32(self, 0xC5C) = 0;
+    S32(self, 0xC60) = 0;
+    S32(self, 0xC64) = 0;
+    S32(self, 0xC68) = 25;
+    S16(self, 0xC6C) = 0x10;
+    S16(self, 0xC6E) = 0xE;
+    S16(self, 0xC70) = 0x6E;
+    S16(self, 0xC72) = 4;
+    S16(self, 0xC74) = 4;
+    S16(self, 0xC76) = 0x200;
+    S16(self, 0xC78) = 0x100;
+    self[0xC7A] = 0x40;
+    self[0xC7B] = 1;
+    self[0xC7C] = 1;
+    self[0xC7D] = 0x10;
+    self[0xC7E] = 0xFF;
+}
+
+void *func_0032F6C0(void) {
+    return D_0042E4C0;
+}
+
+void func_0032DA60(Pursuer *p) { creature_inplay(p); }
+
+void func_0032DAB0(Pursuer *p) { creature_act5(p, &D_0042CA10); }
+
+s32 func_0032DB80(Pursuer *p) { return creature_slot_done(p); }
+
 /* D_00478F00: at spot 3 of room 0x92: flag 0x18, event 4 */
 s32 func_00351B40(void *o) {
     Progress *p = gProgress;
@@ -1003,7 +3464,6 @@ s32 func_00351B40(void *o) {
     item_event(gEvents, 0, 4, gCharPlayer);
     return 4;
 }
-
 
 /* no use here: unless Progress +0x30 bit 0x8000, while item `id` is held, a sound (bank 0xC,
    5); else nothing */
@@ -1053,9 +3513,17 @@ s32 func_00264A60(void *o) {
     return use_route8_or_offer(o);
 }
 
+s32 func_00264C10(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC80, dest, 0x4000000, 0);
+}
+
 /* D_0046C830 */
 s32 func_00264CE0(void *o) {
     return use_route8_or_offer(o);
+}
+
+s32 func_00264E90(void *self, void *dest) {
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC60, dest, 0x4000000, 0);
 }
 
 /* D_00470FB0: at open door 1 of room 0x14: event 4, flag 0x18; else on the altar */
@@ -1124,6 +3592,18 @@ s32 func_00351D80(void *o) {
     }
     return item_offer(p, o);
 }
+
+Character *func_00351F20(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478FF0); }
+
+void *func_00352030(void) { return D_004434D0; }
+
+void *func_00352040(void) { return D_00443510; }
+
+void func_00352060(Pursuer *p) { creature_inplay(p); }
+
+void func_003520B0(Pursuer *p) { creature_act5(p, &D_00443550); }
+
+s32 func_00352180(Pursuer *p) { return creature_slot_done(p); }
 
 /* D_00472F80: in room 0x4B, at open door 2 with route 0x51: event 1; door 3 with route 0x52:
    event 3; else on the altar */
@@ -1258,6 +3738,22 @@ s32 func_00339700(void *o) {
     return place_statue(o, t);
 }
 
+Character *func_00339A10(Character *c, s32 flags) { return creature_dtor(c, flags, D_00475DB0); }
+
+void *func_00339B20(void) {
+    return D_0042F470;
+}
+
+void *func_00339B30(void) {
+    return D_0042F4B0;
+}
+
+void func_00339B50(Pursuer *p) { creature_inplay(p); }
+
+void func_00339BA0(Pursuer *p) { creature_act5(p, &D_0042F4F0); }
+
+s32 func_00339C70(Pursuer *p) { return creature_slot_done(p); }
+
 /* D_00473070: the medallions' slots without the altar */
 s32 func_0031D1B0(void *o) {
     static const ItemSlot t[5] = {
@@ -1267,7 +3763,6 @@ s32 func_0031D1B0(void *o) {
     return place_item(o, t, 5);
 }
 
-extern f32 func_00124490(void *a, const f32 *p);   /* distance */
 
 /* D_004775C0: in room 0x52 with Hewie at hand (+0x40), up and within 20, Fiona not busy
  * (+0xE8): event 0xB; else on the altar; else the sound while item 0x239 is held, or (with
@@ -1281,7 +3776,7 @@ s32 func_003445D0(void *o) {
         u8 *h = (u8 *)gCharPartner;
 
         if (VCALL(o, 0x40, s32 (*)(void *))(o) != 0 && AT(h, 0xC4, s32) != 2 && AT(gCharPlayer, 0xE8, s32) == 0 &&
-            func_00124490(gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
+            func_00124490((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f) {
             item_event(ev_mgr, 0, 0xB, gCharPlayer);
             return 4;
         }
@@ -1371,7 +3866,6 @@ s32 func_0035C8C0(u8 *o) {
 
 extern const char D_0045D818[], D_0045D820[], D_0045D828[], D_0045D838[], D_0045D840[], D_0045D848[],
     D_0045D850[], D_0045D858[], D_0045D860[], D_0045D870[], D_0045D878[], D_0045D880[];
-extern f32 func_00124490(void *a, const f32 *pos);   /* distance */
 
 /* the word item `it` carries (vtable +0x20) is `w` (the first 8 letters) */
 static inline s32 item_named(VObject *it, const char *w) {
@@ -1506,7 +4000,7 @@ s32 func_002D27E0(VObject *it) {
 
             if (h != NULL && AT(h, 0x28, u8) == 1 && AT(h, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 AT(h, 0xC4, s32) != 2 &&
-                (item_at_spot(ev, gCharPlayer, 0xA) || func_00124490(gCharPlayer, (f32 *)(h + 0x10)) < 20.0f)) {
+                (item_at_spot(ev, gCharPlayer, 0xA) || func_00124490((Actor *)gCharPlayer, (f32 *)(h + 0x10)) < 20.0f)) {
                 item_event(ev, 0, 5, gCharPlayer);
                 Progress_SetFlag(p, 0x18);
                 if (!given) {
@@ -1564,6 +4058,8 @@ s32 func_002D27E0(VObject *it) {
     }
     return 0;
 }
+
+s32 func_002D3A20(void *self, void *dest) { return LOAD_002D1360(D_0045D890, dest); }
 
 #ifdef HG_NATIVE
 #include "gl2d.h"

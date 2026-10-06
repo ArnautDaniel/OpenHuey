@@ -5,7 +5,7 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
-
+#include "ptmf.h"
 
 extern const u8 D_003EA970[]; /* per slot: kind, group, ? */
 extern const u8 D_003EA971[];
@@ -24,6 +24,9 @@ typedef struct MsgSlot {
 #define MSG_SLOT(m, i) ((MsgSlot *)((u8 *)(m) + 4) + (u8)(i))
 #define MSG_LAYER(m) AT(m, 0x104, s32)
 #define MSG_LAST(m) AT(m, 0x100, u8)
+
+extern u8 D_01989558[];
+void *func_0026EFF0(void);
 
 static inline void Message_Reset(u8 *m) {
     s8 i;
@@ -47,6 +50,11 @@ static inline void Message_Reset(u8 *m) {
 /* init */
 void func_0026BCC0(u8 *m) {
     Message_Reset(m);
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_0026EFF0(void) {
+    return D_01989558;
 }
 
 /* clear all slots (+0xC), then init */

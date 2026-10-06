@@ -11,8 +11,10 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "memcard.h"
+#include "pursuer.h"
+#include "item.h"
 
-extern void *func_00120D60(void *pool, u32 i);   /* BlockPool: block i if in use */
 extern void *func_00121370(u32 size, void *place);   /* placement new */
 extern void *D_00469C20[];   /* Actor */
 extern void *D_0046F5C0[], *D_00469A00[], *D_004699C0[], *D_004699E0[], *D_0046A950[];
@@ -25,6 +27,90 @@ extern void func_00121360(void *p);   /* delete (the pool's: nothing) */
 #define SAVED(p) ((u8 *)(p) + 0xA14)
 #define NUM_SAVED 60
 
+/* Fixed-size pool: +0x4 base, +0xC element size, +0x10 count, +0x14 in-use flags. */
+typedef struct B0_Pool {
+    u32 unk0;
+    u8 *base;
+    u32 unk8;
+    u32 elemSize;
+    u32 count;
+    u8 *used;
+} B0_Pool;
+
+void *func_00120D60(B0_Pool *p, u32 i);
+void *func_00120F40(void *p);
+void *func_00122B30(void *p);
+
+s32 func_002D7430(u8 *p, s32 a1, s32 a2, s32 a3);
+
+extern void *D_00476B50[];
+void *func_003156A0(u8 *o, s32 flags);
+
+extern void *D_0046D810[], *D_0046C220[], *D_00469C60[];
+extern void func_00124E40(Actor *a);
+extern void *D_00474FD0[];
+/* writes {x, 0, z} */
+#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
+
+void func_0032F6D0(void *self, s32 id, f32 *out);
+void func_0032F770(void *self, s32 id, f32 *out);
+void func_0032F820(u8 *self);
+
+void func_0032F830(void);
+void func_0032F840(void);
+void func_0032F850(void);
+void func_0032F860(void);
+s32 func_0032F870(void);
+void func_00355950(void);
+void func_00367E90(void);
+
+void func_00355940(u8 *o);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+Character *func_0032F5B0(Character *c, s32 flags);
+
+void *func_00120D60(B0_Pool *p, u32 i) {
+    if (i < p->count && p->used[i] != 0) {
+        return p->base + i * p->elemSize;
+    }
+    return NULL;
+}
+
+/* Free an element by address. */
+/* Allocate an element of the given size. */
+/* Constructor: base vtable, then derived vtable. */
+void *func_00120F40(void *p) {
+    if (p != NULL) {
+        *(void **)p = D_00469A00;
+        *(void **)p = D_00469C20;
+    }
+    return p;
+}
 /* kinds kept with the save */
 static s32 kept_kind(u32 k) {
     switch (k) {
@@ -36,7 +122,7 @@ static s32 kept_kind(u32 k) {
 
 /* the active thing in block i (NULL: none or out of range) */
 static u8 *placed_active(u8 *m, s32 i) {
-    u8 *t = func_00120D60(POOL(m), i);
+    u8 *t = func_00120D60((B0_Pool *)POOL(m), i);
 
     if (t != NULL && AT(t, 0x28, u8) == 1) {
         return t;
@@ -208,11 +294,17 @@ void *func_002D73D0(u8 *m, s32 i) {
     if (i < 0 || i >= 0x80) {
         return NULL;
     }
-    t = func_00120D60(POOL(m), i);
+    t = func_00120D60((B0_Pool *)POOL(m), i);
     if (t == NULL || AT(t, 0x28, u8) == 0) {
         return NULL;
     }
     return t;
+}
+
+/* tail call: member at +0xA040, virtual slot 0x10 */
+s32 func_002D7430(u8 *p, s32 a1, s32 a2, s32 a3) {
+    u8 *m = p + 0xA040;
+    return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, a1, a2, a3);
 }
 
 /* +0x24 everything gone */
@@ -220,7 +312,7 @@ void func_002D7450(u8 *m) {
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
-        VObject *t = func_00120D60(POOL(m), i);
+        VObject *t = func_00120D60((B0_Pool *)POOL(m), i);
 
         if (t != NULL) {
             VCALL((VObject *)POOL(m), 0x14, void (*)(VObject *, void *))((VObject *)POOL(m), t);
@@ -250,7 +342,6 @@ void func_002D69E0(u8 *mgr) {
     }
 }
 
-
 /* ---- kind 0: the ball (vtable D_0046F520), which Fiona throws to train Hewie. +0xB0 its
  * velocity, +0x100 gravity, +0x104 how hard slopes push it, +0x110 its colour (RGBA, 1.0 =
  * full), +0x120 fading out, +0xE0 its motion (0 flying, 1 rolling, 2 dropping through a hole,
@@ -268,8 +359,6 @@ extern void func_002E56C0(u8 *drawer);
 extern void func_00121300(u8 *a);   /* Actor +0xC */
 extern void func_00121220(u8 *a);   /* Actor +0x30 */
 s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
-extern void func_001247E0(u8 *a, const f32 *delta);   /* moved on the nav mesh */
-extern void func_00122C20(u8 *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);   /* a sound */
 
 #define BALL_VEL(b) ((f32 *)((b) + 0xB0))
 #define BALL_POS(b) ((f32 *)((b) + 0x10))
@@ -427,7 +516,7 @@ void func_002D54D0(u8 *b) {
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0(b, v);
+    func_001247E0((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -545,7 +634,7 @@ landed:
     AT(b, 0x34, u32) = tri;
     sceVu0CopyVector(BALL_POS(b), out);
     if (bounced) {
-        func_00122C20(b, 0x7C, 5, 0, 0, NULL);
+        func_00122C20((Actor *)b, 0x7C, 5, 0, 0, NULL);
     }
 }
 
@@ -787,6 +876,16 @@ void func_00121300(u8 *o) {
     AT(o, 0xE1, u8) = 0;
 }
 
+/* Count 32-byte records up to a -1 terminator. */
+/* Move the point at +0x50 and translate +0x40 by the same delta. */
+/* Move the point at +0x40 and translate +0x50 by the same delta. */
+/* Tail call of virtual function 0xC (arguments passed through). */
+void *func_00122B30(void *p) {
+    if (p != NULL) {
+        *(void **)p = D_00469C20;
+    }
+    return p;
+}
 
 /* ---- kind 1 (D_004727E0): like the ball (kind 0) it flies, falls and is kicked, but it can't
  * bounce - whatever it hits, or a pursuer walking into it, bursts it in a purple splash ---- */
@@ -826,7 +925,7 @@ static inline void drop_splash(u8 *o, f32 *at, s32 r, s32 g, s32 b, f32 size) {
     sp.pos[2] = at[2];
     sp.size = size;
     func_002D6090(mgr, slot, &sp);
-    func_00122C20(o, 0x8D, 5, 0, 0, NULL);
+    func_00122C20((Actor *)o, 0x8D, 5, 0, 0, NULL);
 }
 
 /* burst at `at`: a purple drop splash (size 1) and its sound */
@@ -1038,12 +1137,10 @@ void func_003154B0(u8 *o) {
     AT(o, 0x120, u16) = 0;
 }
 
-
 /* ---- kind 2 (D_00472840, over the shared thing class D_00479500): set down at a random turn;
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
 extern void *D_00472840[], *D_00479500[], *D_00476B50[];
-extern void func_00355940(u8 *o);   /* D_00479500 +0x30 */
 extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
 extern void func_003546B0(u8 *o);
 extern s32 func_00354910(u8 *o);
@@ -1092,10 +1189,22 @@ void func_003155C0(u8 *o) {
     turned_model(o, 1, 0, 1);
 }
 
+/* destructor (vtable D_00476B50) */
+void *func_003156A0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00476B50;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 static inline __attribute__((always_inline)) void kind2_burst(u8 *o, u32 size, void (*init)(void **)) {
     u8 *mgr;
 
-    func_00122C20(o, 0x8E, 5, 0, 0, NULL);
+    func_00122C20((Actor *)o, 0x8E, 5, 0, 0, NULL);
     mgr = gEffects;
     func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
 }
@@ -1142,7 +1251,7 @@ static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, v
         func_00354AF0(o);
         return;
     }
-    func_00122C20(o, 0x8E, 5, 0, 0, NULL);
+    func_00122C20((Actor *)o, 0x8E, 5, 0, 0, NULL);
     if (b != 0) {
         func_00354C90(o);
     }
@@ -1251,7 +1360,7 @@ void func_003674C0(u8 *b) {
     if (AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0(b, v);
+    func_001247E0((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -1293,6 +1402,9 @@ void *func_00367E20(void *o, s32 flags) {
     return o;
 }
 
+void func_00367E90(void) {
+}
+
 /* (as func_002D54D0)  the rolling state: moved on the nav mesh, slowed by friction (0.03 x the slope's flatness)
  * and pushed down the slope */
 static inline __attribute__((always_inline)) void ball_roll(u8 *b, s32 check) {
@@ -1305,7 +1417,7 @@ static inline __attribute__((always_inline)) void ball_roll(u8 *b, s32 check) {
     if (check && AT(b, 0x28, u8) == 0) {
         return;
     }
-    func_001247E0(b, v);
+    func_001247E0((Actor *)b, v);
     nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
@@ -1666,6 +1778,15 @@ void func_00355780(u8 *b) {
             AT(b, 0x28, u8) = 0;
         }
     }
+}
+
+/* +0xE8 counted, then func_00121220 */
+void func_00355940(u8 *o) {
+    AT(o, 0xE8, s32)++;
+    func_00121220(o);
+}
+
+void func_00355950(void) {
 }
 
 /* (as func_002D5A50)  +0x4C the motion state for this frame (none outside the current room), and the fade */
@@ -2140,14 +2261,12 @@ void func_0036A980(u8 *o, f32 *arg) {
     sceVu0Normalize((f32 *)(o + 0xF40), (f32 *)(o + 0xF40));
 }
 
-
 /* a nav triangle's flags (+0x3C of its 0x50 bytes; 0 past the count +0x8 or with no table +0x4) */
 static inline u32 nav_tri_flags(VObject *nav, u32 tri) {
     u8 *tris = AT(nav, 0x4, u8 *);
 
     return (tri < AT(nav, 0x8, u32) && tris != NULL) ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
 }
-extern void func_002E2CA0(f32 *out, f32 *v, f32 angle);   /* v turned about y */
 
 /* a quad record carried over from the other frame buffer (12 words) */
 static inline void rec_copy(u8 *dst, const u8 *src) {
@@ -2430,6 +2549,64 @@ s32 func_0032EF30(u8 *o) {
     return burst_update(o, &kC);
 }
 
+Character *func_0032F5B0(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474FD0); }
+
+void func_0032F6D0(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 1:
+        B5_SET3(out, 0.0f, 0x1.4ccccc0000000p+3f /* 10.4 */);
+        break;
+    case 3:
+        B5_SET3(out, 0.0f, -0x1.dc2f840000000p+2f /* 7.4404 */);
+        break;
+    case 0:
+        B5_SET3(out, 0.0f, -0x1.8d89380000000p+2f /* 6.2115 */);
+        break;
+    case 2:
+        B5_SET3(out, 0.0f, 0x1.9276c80000000p+2f /* 6.2885 */);
+        break;
+    }
+}
+
+void func_0032F770(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 10:
+    case 11:
+        B5_SET3(out, 0x1.e2f8380000000p-1f /* 0.9433 */, 0x1.6807600000000p+3f /* 11.2509 */);
+        break;
+    case 12:
+    case 13:
+        B5_SET3(out, 0x1.1656040000000p+1f /* 2.1745 */, 0x1.e1573e0000000p+3f /* 15.0419 */);
+        break;
+    case 14:
+        B5_SET3(out, -0x1.9c98600000000p+0f /* 1.6117 */, -0x1.15e00e0000000p+2f /* 4.3418 */);
+        break;
+    case 15:
+        B5_SET3(out, 0x1.2a30560000000p-6f /* 0.0182 */, -0x1.00346e0000000p+0f /* 1.0008 */);
+        break;
+    }
+}
+
+void func_0032F820(u8 *self) {
+    self[0x16EE] = 1;
+}
+
+void func_0032F830(void) {
+}
+
+void func_0032F840(void) {
+}
+
+void func_0032F850(void) {
+}
+
+void func_0032F860(void) {
+}
+
+s32 func_0032F870(void) {
+    return 0;
+}
+
 extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
 
 /* +0x18 start (arg: the point): three points across the view from it (offsets D_004469A8..),
@@ -2612,12 +2789,7 @@ void func_00335820(u8 *o) {
 
 extern VObject *gSceneGameF29740;
 extern VObject *D_00456DF8;          /* the room objects */
-extern s32 func_002187D0(void *p, u32 tri, const f32 *pos);
-extern f32 func_001257B0(void *c, u32 goalTri, const f32 *goal, u32 mask);
-extern s32 func_0029A850(void *p);
-extern void func_0027E5A0(void *p, u32 tri);
 extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
-extern f32 func_00124490(void *a, const f32 *pos);
 
 /* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
    from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
@@ -2661,22 +2833,22 @@ void func_003332B0(u8 *o) {
     default:
         return;
     }
-    if (!(func_002187D0(s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
+    if (!(func_002187D0((Pursuer *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
         return;
     }
-    if (func_001257B0(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
+    if (func_001257B0((Character *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
         return;
     }
     if (AT(s, 0x16C9, u8) != 4) {
         func_002A8440((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
         return;
     }
-    if (func_0029A850(s) != 0) {
+    if (func_0029A850((Pursuer *)s) != 0) {
         return;
     }
     VCALL(s, 0xAC, void (*)(void *, u32, f32 *, s32))(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1);
-    func_0027E5A0(s, AT(o, 0x34, u32));
-    if (func_00124490(o, (f32 *)(s + 0x10)) < 10.0f) {
+    func_0027E5A0((Pursuer *)s, AT(o, 0x34, u32));
+    if (func_00124490((Actor *)o, (f32 *)(s + 0x10)) < 10.0f) {
         AT(o, 0x28, u8) = 0;
         return;
     }
@@ -2821,7 +2993,6 @@ void func_00368150(u8 *o) {
 
 #include "charaction.h"
 
-extern f32 func_001244D0(void *a, const f32 *pos);
 
 /* actor c (feet cy, top ctop) and the span oy..otop overlap */
 static inline s32 thing_spans(f32 cy, f32 ctop, f32 oy, f32 otop) {
@@ -2903,7 +3074,7 @@ void func_003546B0(u8 *o) {
         act.a = 1;
         act.b = 0xFF;
         act.c = AT(o, 0x126, u16);
-        act.e = func_001244D0(c, (f32 *)(o + 0x10));
+        act.e = func_001244D0((Actor *)c, (f32 *)(o + 0x10));
         act.f = 0;
         act.g = 0;
         act.h = 0;
@@ -3123,7 +3294,6 @@ void func_003688D0(u8 *o) {
 }
 
 extern u32 func_001788F0(Progress *p, u32 door);    /* u8 */
-extern u32 func_00122B50(u8 *o, f32 *out);          /* u8: where its sound is heard from */
 extern void *D_0047A050[];
 
 /* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
@@ -3167,7 +3337,7 @@ void func_00335DE0(u8 *o) {
     if (AT(o, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         u8 *mgr;
 
-        func_00122C20(o, 0, 5, 0, 0, NULL);
+        func_00122C20((Actor *)o, 0, 5, 0, 0, NULL);
         tri = AT(o, 0x34, u32);
         rooms = gRooms;
         for (d = 0; d < 8; d = (d + 1) & 0xFF) {
@@ -3198,8 +3368,8 @@ void func_00335DE0(u8 *o) {
         if ((func_001788F0(p, door) & 0xFF) == 1) {
             f32 at[4] __attribute__((aligned(16)));
 
-            if ((func_00122B50(o, at) & 0xFF) == 1) {
-                func_00122C20(o, 0, 5, 0, 0, at);
+            if ((func_00122B50((Actor *)o, at) & 0xFF) == 1) {
+                func_00122C20((Actor *)o, 0, 5, 0, 0, at);
             }
         }
     }
@@ -3327,7 +3497,7 @@ landed:
     AT(b, 0x34, u32) = tri;
     sceVu0CopyVector(BALL_POS(b), out);
     if (bounced && AT(b, 0x13E, u16) == 0) {
-        func_00122C20(b, 0x7C, 5, 0, 0, NULL);
+        func_00122C20((Actor *)b, 0x7C, 5, 0, 0, NULL);
     }
 }
 

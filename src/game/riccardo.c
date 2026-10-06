@@ -9,8 +9,34 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "game.h"
 
 extern void *D_0046F6B0[];
+
+extern u8 D_00414840[];
+extern u8 D_00414800[], D_004147C0[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *func_002D7B80(void);
+void func_002D7B90(void *self, s32 id, u32 *out);
+void func_002D7C30(void *self, s32 id, u32 *out);
+f32 func_002DB970(void);
+f32 func_002DB980(void);
+s32 func_002DBA10(u8 *p);
+void *func_002DC4A0(void);
+
+void func_0034BFE0(Pursuer *p);
+
+s32 func_0034D230(void);
+s32 func_0034D240(void);
+
+extern u8 D_00441810[], D_004417D0[];
+f32 func_0034D250(void);
+f32 func_0034D260(void);
+f32 func_0034D270(void);
+s32 func_0034D280(u8 *p);
+void *func_0034D9C0(void);
 
 /* 0x46F69C: nothing (0) */
 s32 func_002D7A60(void) {
@@ -29,6 +55,38 @@ Pursuer *func_002D7A70(Pursuer *p, s32 flags) {
         }
     }
     return p;
+}
+
+void *func_002D7B80(void) { return D_00414840; }
+
+void func_002D7B90(void *self, s32 id, u32 *out) {
+    u32 z;
+
+    switch (id) {
+    case 1: z = 0x40F24DD3; break;
+    case 3: z = 0xC0DC710D; break;
+    case 0: z = 0xC0AA0903; break;
+    case 2: z = 0x40FDFD8B; break;
+    default: return;
+    }
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = z;
+}
+
+void func_002D7C30(void *self, s32 id, u32 *out) {
+    u32 x, z;
+
+    switch (id) {
+    case 10: case 11: x = 0xBD1F559B; z = 0x41267A78; break;
+    case 12: case 13: x = 0x3F3B295F; z = 0x41540419; break;
+    case 14: x = 0xBF92D42C; z = 0xC0215326; break;
+    case 15: x = 0xBEA7EF9E; z = 0xC0192546; break;
+    default: return;
+    }
+    out[0] = x;
+    out[1] = 0;
+    out[2] = z;
 }
 
 /* vtable +0x200: done at the door unless it has a side (+0x104), then the Pursuer's */
@@ -150,6 +208,10 @@ s32 func_002DB960(Pursuer *p) {
     return 0x10;
 }
 
+f32 func_002DB970(void) { return 20.0f; }
+
+f32 func_002DB980(void) { return 12.0f; }
+
 /* vtable +0x320: the Pursuer's choice (func_00297B00), but 1 for 0 / 3 unless +0xE0 is set */
 s32 func_002DB990(Pursuer *p) {
     s32 r = func_00297B00(p);
@@ -165,6 +227,21 @@ s32 func_002DB9E0(Pursuer *p) {
     s32 r = func_00297AC0(p);
 
     return r == 0x204 ? 0x200 : r;
+}
+
+s32 func_002DBA10(u8 *p) {
+    f32 d;
+
+    if (F(p, 0xC4, s32) == 1) {
+        return 0x203;
+    }
+    if (p[0x1544] != 0 && F(p, 0x1540, s32) == (s32)gCharPlayer) {
+        d = F(p, 0x1588, f32);
+        if (d < 100.0f && !(d <= 0.0f)) {
+            return 0x206;
+        }
+    }
+    return 0x201;
 }
 
 void func_002D7E20(Pursuer *p, Character *who);
@@ -215,6 +292,10 @@ void func_002DC070(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+void *func_002DC4A0(void) {
+    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414800 : D_004147C0;
 }
 
 extern u8 D_004148A0[], D_004148E0[], D_00414A30[], D_00414A40[], D_00414CD0[], D_00414D00[],
@@ -1301,6 +1382,44 @@ void func_0034D120(Pursuer *p) {
     func_0034CDC0(p);
 }
 
+s32 func_0034D230(void) {
+    return 0x11;
+}
+
+s32 func_0034D240(void) {
+    return 0x10;
+}
+
+f32 func_0034D250(void) {
+    return 7.0f;
+}
+
+f32 func_0034D260(void) {
+    return 2e+01f;
+}
+
+f32 func_0034D270(void) {
+    return 12.0f;
+}
+
+s32 func_0034D280(u8 *p) {
+    f32 d;
+
+    if (*(s32 *)(p + 0xC4) == 1) {
+        return 0x203;
+    }
+    if (*(s32 *)(p + 0x16B8) == 2) {
+        return 0x205;
+    }
+    if (p[0x1544] != 0 && *(s32 *)(p + 0x1540) == (s32)gCharPlayer) {
+        d = *(f32 *)(p + 0x1588);
+        if (d < 100.0f && !(d <= 0.0f)) {
+            return 0x206;
+        }
+    }
+    return 0x201;
+}
+
 /* ---- his other class (code 0x34BA20..0x34DBF0): his behaviour with its own tables, a
    breathing tint while on screen (+0x17C4 phase, +0x17C8 hold), layer 0x11, and seen-by-Fiona
    alerts (+0x16C4) ---- */
@@ -1343,6 +1462,11 @@ void func_0034BA60(Pursuer *p, s8 situation) {
     s32 alert = p->c.a.unkC4 == 1;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables2[alt][alert][situation] : sAttackTables2[alt][0][0];
+}
+
+void func_0034BFE0(Pursuer *p) {
+    PU(p, 0x17C8, s32) = 0x96;
+    func_002927D0(p);
 }
 
 extern const PTMF D_00442908, D_00442918;
@@ -1431,7 +1555,6 @@ void func_0034D320(Pursuer *p) {
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
 
-
 /* vtable +0x2C: the draw (as func_00320000, always shown) */
 void func_0034D840(Pursuer *p) {
     f32 mtx[4][4] __attribute__((aligned(16)));
@@ -1457,6 +1580,10 @@ void func_0034D840(Pursuer *p) {
     if (p->c.unk152C == 0x11) {
         VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
     }
+}
+
+void *func_0034D9C0(void) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
 }
 
 extern u8 D_00441890[], D_004419E0[], D_00441C70[], D_00441CA0[], D_004421A0[], D_004421F0[],

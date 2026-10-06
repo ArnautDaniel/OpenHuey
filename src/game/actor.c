@@ -6,9 +6,28 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "progress.h"
-
+#include "ptmf.h"
 
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+static void b4_clear_dca70(u8 *p) {
+    s32 i;
+
+    F(p, 0x38, u32) = 0;
+    F(p, 0x3C, u32) = 0;
+    F(p, 0x40, u32) = 0;
+    F(p, 0x48, u32) = 0;
+    F(p, 0x4C, u32) = 0;
+    F(p, 0x50, u32) = 0;
+    for (i = 0; i < 16; i++) {
+        F(p, 0x58 + i * 4, u32) = 0;
+    }
+    F(p, 0x870, u32) = 0;
+}
+
+void func_002DCAE0(u8 *p);
 
 /* Position relative to the current room: pos + origin(own room) - origin(current room).
  * False if either room is unknown. */
@@ -615,7 +634,6 @@ f32 func_00124530(Actor *a, f32 target, f32 step) {
     return (rest <= 0.0f) ? -rest : rest;
 }
 
-
 /* Teleport to a random free triangle of the current room's mesh (only if the actor is in the
  * current room). `kind` selects the area flags: 0 -> 0x100000, 1 -> 0x200000, else both;
  * for -1 and 2 the triangle must have them, otherwise it must not. Placed via vtable +0x28. */
@@ -917,7 +935,6 @@ void func_00124F20(Character *c, u32 door) {
     }
     c->door = pick;
 }
-
 
 /* vtable +0x80: screen fade by how far the character is past the boundary of the first region
  * flagged for its slot (progress flag bit 0): alpha 0..128 over half the boundary length. */
@@ -1274,8 +1291,6 @@ void func_00126810(Character *c) {
     VCALL(c->motion, 0x68, void (*)(void *))(c->motion);
 }
 
-extern void func_002DCAE0(void *motion);
-
 /* Disable the character (vtable +0x60 first). */
 void func_00126910(Character *c) {
     s32 s;
@@ -1317,7 +1332,6 @@ static inline f32 Character_PathRemaining(Character *c) {
 f32 func_00126E40(Character *c) {
     return Character_PathRemaining(c);
 }
-
 
 /* Forward to gRoutePlanner +0xC (the route planner) with the character's buffers at +0x148C and
    +0x138C after the first three arguments. */
@@ -1500,11 +1514,15 @@ void func_00127660(Character *c) {
     c->heardSlot = 0xFF;
 }
 
+void func_002DCAE0(u8 *p) {
+    b4_clear_dca70(p);
+    p[0x30] = 1;
+}
+
 #include "effectmgr.h"
 
 extern void *D_00479AE0[];   /* ripple effect vtable */
 extern void *D_00479AA0[];   /* splash particle effect vtable */
-
 
 typedef struct RippleParams {
     f32 pos[4] __attribute__((aligned(16)));

@@ -23,6 +23,8 @@
 #include "navmesh.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
+#include "memcard.h"
 
 extern void *D_0046ABB0[], *D_0046AC00[];
 extern VObject *gSceneGameF29740;
@@ -33,6 +35,8 @@ extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
 #define SEARCH(pl, i) ((u8 *)(pl) + 0x10 + (i) * 0x10060)
 #define NODE(s, t) ((s) + 0x44 + (t) * 0x18)
 #define NODE_INDEX(s, n) ((u32)((u8 *)(n) - ((s) + 0x44)) / 0x18)
+
+void *func_001AABD0(u8 *o, s32 flags);
 
 /* a search's step: (planner->*step)(search) */
 static inline s32 search_step(u8 *pl, u8 *s) {
@@ -1799,4 +1803,16 @@ s32 func_001AAAE0(u8 *pl, s32 id, f32 *centre) {
         }
     }
     return -1;
+}
+
+/* destructor (vtable D_0046AC00) */
+void *func_001AABD0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AC00;
+        gSceneGameF29740 = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }

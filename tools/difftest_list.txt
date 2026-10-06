@@ -29,137 +29,137 @@ src/game/scene_game.c SceneGame_StateEntry --pre=a0+0x6FC254=0x29..0x38
 src/game/collision.c func_0017CA80
 
 # leaf functions (round 1, 2026-10-01)
-src/leaf/b0_00120530.c func_00120530
-src/leaf/b0_00120530.c func_00120D60
-src/leaf/b0_00120530.c func_00120F40
-src/leaf/b0_00120530.c func_00121B40
-src/leaf/b0_00120530.c func_00122B30
-src/leaf/b0_00120530.c func_00124ED0
-src/leaf/b0_00120530.c func_00126EC0
-src/leaf/b0_00120530.c func_001278C0
-src/leaf/b0_00120530.c func_001278D0
-src/leaf/b0_00120530.c func_00127970
-src/leaf/b0_00120530.c func_00127A20
-src/leaf/b0_00120530.c func_00127A30
-src/leaf/b0_00120530.c func_00127B20
-src/leaf/b0_00120530.c func_00127B90
-src/leaf/b0_00120530.c func_00127BA0
-src/leaf/b0_00120530.c func_00127BD0
-src/leaf/b0_00120530.c func_00127BE0
-src/leaf/b0_00120530.c func_00127BF0
-src/leaf/b0_00120530.c func_00127C10
-src/leaf/b0_00120530.c func_00127C30
-src/leaf/b0_00120530.c func_0012BE50
-src/leaf/b0_00120530.c func_0012BE80
-src/leaf/b0_00120530.c func_0012BEA0
-src/leaf/b0_00120530.c func_0012BEC0
-src/leaf/b0_00120530.c func_0012BED0
-src/leaf/b0_00120530.c func_0012BEE0
-src/leaf/b0_00120530.c func_0012BEF0
-src/leaf/b0_00120530.c func_0012BF00
-src/leaf/b0_00120530.c func_0012BF10
-src/leaf/b0_00120530.c func_0012BF30
-src/leaf/b0_00120530.c func_0012BF40
-src/leaf/b0_00120530.c func_0012BF60
-src/leaf/b0_00120530.c func_0012BF80
-src/leaf/b0_00120530.c func_0012BFA0
-src/leaf/b0_00120530.c func_0012BFB0
-src/leaf/b0_00120530.c func_0012BFF0
-src/leaf/b0_00130A40.c func_001695D0
-src/leaf/b0_00130A40.c func_0016B420
-src/leaf/b0_00130A40.c func_0016B470
-src/leaf/b0_00130A40.c func_0016B510
+src/game/game.c func_00120530
+src/game/placed.c func_00120D60
+src/game/placed.c func_00120F40
+src/game/camera.c func_00121B40
+src/game/placed.c func_00122B30
+src/game/pursuer.c func_00124ED0
+src/game/fiona.c func_00126EC0
+src/game/debilitas.c func_001278C0
+src/game/debilitas.c func_001278D0
+src/game/debilitas.c func_00127970
+src/game/debilitas.c func_00127A20
+src/game/debilitas.c func_00127A30
+src/game/pursuer.c func_00127B20
+src/game/pursuer.c func_00127B90
+src/game/pursuer.c func_00127BA0
+src/game/pursuer.c func_00127BD0
+src/game/pursuer.c func_00127BE0
+src/game/pursuer.c func_00127BF0
+src/game/pursuer.c func_00127C10
+src/game/pursuer.c func_00127C30
+src/game/debilitas.c func_0012BE50
+src/game/debilitas.c func_0012BE80
+src/game/debilitas.c func_0012BEA0
+src/game/debilitas.c func_0012BEC0
+src/game/debilitas.c func_0012BED0
+src/game/debilitas.c func_0012BEE0
+src/game/debilitas.c func_0012BEF0
+src/game/debilitas.c func_0012BF00
+src/game/debilitas.c func_0012BF10
+src/game/debilitas.c func_0012BF30
+src/game/debilitas.c func_0012BF40
+src/game/debilitas.c func_0012BF60
+src/game/debilitas.c func_0012BF80
+src/game/debilitas.c func_0012BFA0
+src/game/pursuer.c func_0012BFB0
+src/game/debilitas.c func_0012BFF0
+src/game/loader.c func_001695D0
+src/game/system.c func_0016B420
+src/game/system.c func_0016B470
+src/game/system.c func_0016B510
 src/leaf/b0_00130A40.c func_0016CD30
-src/leaf/b0_00130A40.c Characters_Register
-src/leaf/b0_00130A40.c func_0016F740
-src/leaf/b0_00130A40.c func_0016FAE0
-src/leaf/b0_00130A40.c func_0016FB60
-src/leaf/b0_00130A40.c func_0016FB80
-src/leaf/b0_00130A40.c func_0016FB90
-src/leaf/b0_00130A40.c func_0016FC10
-src/leaf/b0_00130A40.c func_00170460
-src/leaf/b0_00130A40.c func_00170650
-src/leaf/b0_00130A40.c func_00170670
-src/leaf/b0_00130A40.c func_001706F0
-src/leaf/b0_00130A40.c func_00170A30
-src/leaf/b0_00130A40.c func_00170D10
-src/leaf/b0_00130A40.c func_00170F10
-src/leaf/b0_00130A40.c func_00170F90
-src/leaf/b0_00130A40.c func_00171090
-src/leaf/b0_001727C0.c func_001727C0
-src/leaf/b0_001727C0.c func_00172910
-src/leaf/b0_001727C0.c func_00172960
-src/leaf/b0_001727C0.c func_001729B0
-src/leaf/b0_001727C0.c func_00172A00
-src/leaf/b0_001727C0.c func_00172A50
-src/leaf/b0_001727C0.c func_00172AA0
-src/leaf/b0_001727C0.c func_00172AF0
-src/leaf/b0_001727C0.c func_00172B40
-src/leaf/b0_001727C0.c func_00172B90
-src/leaf/b0_001727C0.c func_00172BE0
-src/leaf/b0_001727C0.c func_00172C30
-src/leaf/b0_001727C0.c func_00172C80
-src/leaf/b0_001727C0.c func_00172DE0
-src/leaf/b0_001727C0.c func_00172E20
-src/leaf/b0_001727C0.c func_00172E70
-src/leaf/b0_001727C0.c func_00172EC0
-src/leaf/b0_001727C0.c func_00172F10
-src/leaf/b0_001727C0.c func_00172F60
-src/leaf/b0_001727C0.c func_00172FB0
-src/leaf/b0_001727C0.c func_00173110
-src/leaf/b0_001727C0.c func_00173150
-src/leaf/b0_001727C0.c func_001731A0
-src/leaf/b0_001727C0.c func_001731F0
-src/leaf/b0_001727C0.c func_00173240
-src/leaf/b0_001727C0.c func_00173290
-src/leaf/b0_001727C0.c func_001732E0
-src/leaf/b0_001727C0.c func_00173330
-src/leaf/b0_001727C0.c func_00173380
-src/leaf/b0_001727C0.c func_001733D0
-src/leaf/b0_001727C0.c func_00173420
-src/leaf/b0_001727C0.c func_00173470
-src/leaf/b0_001727C0.c func_001734C0
-src/leaf/b0_001727C0.c func_00173510
-src/leaf/b0_001727C0.c func_00173560
-src/leaf/b0_001727C0.c func_001735B0
-src/leaf/b0_001727C0.c func_00173600
-src/leaf/b2_002645D0.c func_002645D0
-src/leaf/b2_002645D0.c func_00264600
-src/leaf/b2_002645D0.c func_00264630
-src/leaf/b2_002645D0.c func_00264660
-src/leaf/b2_002645D0.c func_00264690
-src/leaf/b2_002645D0.c func_002646C0
-src/leaf/b2_002645D0.c func_002646F0
-src/leaf/b2_002645D0.c func_00264720
-src/leaf/b2_002645D0.c func_00264750
-src/leaf/b2_002645D0.c func_00264780
-src/leaf/b2_002645D0.c func_002647B0
-src/leaf/b2_002645D0.c func_002647E0
-src/leaf/b2_002645D0.c func_00264810
-src/leaf/b2_002645D0.c func_00264840
-src/leaf/b2_002645D0.c func_00264870
-src/leaf/b2_002645D0.c func_002648A0
-src/leaf/b2_002645D0.c func_002648D0
-src/leaf/b2_002645D0.c func_00264C10
-src/leaf/b2_002645D0.c func_00264E90
-src/leaf/b2_002645D0.c func_00264FE0
-src/leaf/b2_002645D0.c func_002650D0
-src/leaf/b2_002645D0.c func_00265180
-src/leaf/b2_002645D0.c func_00265230
-src/leaf/b2_002645D0.c func_002652E0
-src/leaf/b2_002645D0.c func_00265390
-src/leaf/b2_002645D0.c func_00265440
-src/leaf/b2_002645D0.c func_00265520
-src/leaf/b2_002645D0.c func_002655D0
-src/leaf/b2_002645D0.c func_00265680
-src/leaf/b2_002645D0.c func_00265730
-src/leaf/b2_002645D0.c func_00265810
-src/leaf/b2_002645D0.c func_002658C0
-src/leaf/b2_002645D0.c func_00265970
-src/leaf/b2_002645D0.c func_00265A20
-src/leaf/b2_002645D0.c func_00265B00
-src/leaf/b2_002645D0.c func_00265BB0
-src/leaf/b2_002645D0.c func_00265C60
+src/game/char_load.c Characters_Register
+src/game/model.c func_0016F740
+src/game/model.c func_0016FAE0
+src/game/model.c func_0016FB60
+src/game/model.c func_0016FB80
+src/game/model.c func_0016FB90
+src/game/model.c func_0016FC10
+src/game/model.c func_00170460
+src/game/model.c func_00170650
+src/game/model.c func_00170670
+src/game/model.c func_001706F0
+src/game/model.c func_00170A30
+src/game/model.c func_00170D10
+src/game/model.c func_00170F10
+src/game/model.c func_00170F90
+src/game/char_load.c func_00171090
+src/game/char_load.c func_001727C0
+src/game/pursuer.c func_00172910
+src/game/pursuer.c func_00172960
+src/game/pursuer.c func_001729B0
+src/game/pursuer.c func_00172A00
+src/game/pursuer.c func_00172A50
+src/game/pursuer.c func_00172AA0
+src/game/pursuer.c func_00172AF0
+src/game/pursuer.c func_00172B40
+src/game/pursuer.c func_00172B90
+src/game/pursuer.c func_00172BE0
+src/game/pursuer.c func_00172C30
+src/game/pursuer.c func_00172C80
+src/game/pursuer.c func_00172DE0
+src/game/pursuer.c func_00172E20
+src/game/pursuer.c func_00172E70
+src/game/pursuer.c func_00172EC0
+src/game/pursuer.c func_00172F10
+src/game/pursuer.c func_00172F60
+src/game/pursuer.c func_00172FB0
+src/game/pursuer.c func_00173110
+src/game/pursuer.c func_00173150
+src/game/pursuer.c func_001731A0
+src/game/pursuer.c func_001731F0
+src/game/pursuer.c func_00173240
+src/game/pursuer.c func_00173290
+src/game/pursuer.c func_001732E0
+src/game/pursuer.c func_00173330
+src/game/pursuer.c func_00173380
+src/game/pursuer.c func_001733D0
+src/game/pursuer.c func_00173420
+src/game/pursuer.c func_00173470
+src/game/pursuer.c func_001734C0
+src/game/pursuer.c func_00173510
+src/game/pursuer.c func_00173560
+src/game/pursuer.c func_001735B0
+src/game/pursuer.c func_00173600
+src/game/item_classes.c func_002645D0
+src/game/item_classes.c func_00264600
+src/game/item_classes.c func_00264630
+src/game/item_classes.c func_00264660
+src/game/item_classes.c func_00264690
+src/game/item_classes.c func_002646C0
+src/game/item_classes.c func_002646F0
+src/game/item_classes.c func_00264720
+src/game/item_classes.c func_00264750
+src/game/item_classes.c func_00264780
+src/game/item_classes.c func_002647B0
+src/game/item_classes.c func_002647E0
+src/game/item_classes.c func_00264810
+src/game/item_classes.c func_00264840
+src/game/item_classes.c func_00264870
+src/game/item_classes.c func_002648A0
+src/game/item_classes.c func_002648D0
+src/game/item_classes.c func_00264C10
+src/game/item_classes.c func_00264E90
+src/game/item_classes.c func_00264FE0
+src/game/item_classes.c func_002650D0
+src/game/item_classes.c func_00265180
+src/game/item_classes.c func_00265230
+src/game/item_classes.c func_002652E0
+src/game/item_classes.c func_00265390
+src/game/item_classes.c func_00265440
+src/game/item_classes.c func_00265520
+src/game/item_classes.c func_002655D0
+src/game/item_classes.c func_00265680
+src/game/item_classes.c func_00265730
+src/game/item_classes.c func_00265810
+src/game/item_classes.c func_002658C0
+src/game/item_classes.c func_00265970
+src/game/item_classes.c func_00265A20
+src/game/item_classes.c func_00265B00
+src/game/item_classes.c func_00265BB0
+src/game/item_classes.c func_00265C60
 src/leaf/b3_002ADA90.c func_002ADA90
 src/leaf/b3_002ADA90.c func_002ADAB0
 src/leaf/b3_002ADA90.c func_002ADAC0
@@ -418,29 +418,29 @@ src/leaf/b3_002B5330.c func_002B5F10
 src/leaf/b3_002B5330.c func_002B5F20
 src/leaf/b3_002B5330.c func_002B5F40
 src/leaf/b3_002B5330.c func_002B5F50
-src/leaf/b3_002B5330.c func_002B6130
+src/game/movie.c func_002B6130
 src/leaf/b3_002B5330.c func_002BA220
 src/leaf/b3_002B5330.c func_002BA6E0
-src/leaf/b3_002B5330.c func_002BFE40
-src/leaf/b3_002B5330.c func_002C0700
-src/leaf/b3_002B5330.c func_002C0710
+src/game/music.c func_002BFE40
+src/game/music.c func_002C0700
+src/game/music.c func_002C0710
 src/leaf/b3_002B5330.c func_002C6250
-src/leaf/b3_002B5330.c func_002C8D90
-src/leaf/b3_002B5330.c func_002C9470
-src/leaf/b3_002B5330.c func_002C94E0
-src/leaf/b3_002B5330.c func_002C95D0
-src/leaf/b3_002B5330.c func_002C95F0
-src/leaf/b3_002C9620.c func_002C9620
-src/leaf/b3_002C9620.c func_002C9630
-src/leaf/b3_002C9620.c func_002C9660
-src/leaf/b3_002C9620.c func_002C9680
-src/leaf/b3_002C9620.c func_002C96F0
-src/leaf/b3_002C9620.c func_002C9710
-src/leaf/b3_002C9620.c func_002CBFF0
-src/leaf/b3_002C9620.c func_002CC5A0
-src/leaf/b3_002C9620.c func_002CC830
-src/leaf/b4_002CC840.c func_002CC840
-src/leaf/b4_002CC840.c func_002CC850
+src/game/game.c func_002C8D90
+src/game/game.c func_002C9470
+src/game/event.c func_002C94E0
+src/game/event.c func_002C95D0
+src/game/event.c func_002C95F0
+src/game/event.c func_002C9620
+src/game/event.c func_002C9630
+src/game/event.c func_002C9660
+src/game/event.c func_002C9680
+src/game/event.c func_002C96F0
+src/game/event.c func_002C9710
+src/game/director.c func_002CBFF0
+src/game/director.c func_002CC5A0
+src/game/event.c func_002CC830
+src/game/event.c func_002CC840
+src/game/event.c func_002CC850
 src/leaf/b4_002CC840.c func_002CC9B0
 src/leaf/b4_002CC840.c func_002CC9C0
 src/leaf/b4_002CC840.c func_002CC9D0
@@ -457,95 +457,95 @@ src/leaf/b4_002CC840.c func_002CCB30
 src/leaf/b4_002CC840.c func_002CCB40
 src/leaf/b4_002CC840.c func_002CCB60
 src/leaf/b4_002CC840.c func_002CCB70
-src/leaf/b4_002CC840.c func_002CCC40
-src/leaf/b4_002CC840.c func_002CCDB0
-src/leaf/b4_002CC840.c func_002CD000
-src/leaf/b4_002CC840.c func_002CD1A0
-src/leaf/b4_002CC840.c func_002CD310
-src/leaf/b4_002CC840.c func_002CD490
-src/leaf/b4_002CC840.c func_002CD4C0
-src/leaf/b4_002CC840.c func_002CD5F0
-src/leaf/b4_002CC840.c func_002CD600
-src/leaf/b4_002CC840.c func_002CD6A0
-src/leaf/b4_002CC840.c func_002CD750
-src/leaf/b4_002CC840.c func_002CEF90
-src/leaf/b4_002CC840.c func_002CEFC0
-src/leaf/b4_002CC840.c func_002CEFE0
-src/leaf/b4_002CC840.c func_002CF000
-src/leaf/b4_002CC840.c func_002CF010
-src/leaf/b4_002CC840.c func_002CF020
-src/leaf/b4_002CC840.c func_002CF030
-src/leaf/b4_002CC840.c func_002CF040
-src/leaf/b4_002CC840.c func_002CF050
-src/leaf/b4_002CC840.c func_002CF070
-src/leaf/b4_002CC840.c func_002CF080
-src/leaf/b4_002CC840.c func_002CF0A0
-src/leaf/b4_002CF0C0.c func_002CF0C0
-src/leaf/b4_002CF0C0.c func_002CF0E0
-src/leaf/b4_002CF0C0.c func_002CF140
-src/leaf/b4_002CF0C0.c func_002CF180
-src/leaf/b4_002CF0C0.c func_002CF6F0
+src/game/item_classes.c func_002CCC40
+src/game/item_classes.c func_002CCDB0
+src/game/item_classes.c func_002CD000
+src/game/item_classes.c func_002CD1A0
+src/game/item_classes.c func_002CD310
+src/game/item_classes.c func_002CD490
+src/game/item_classes.c func_002CD4C0
+src/game/item_classes.c func_002CD5F0
+src/game/item_classes.c func_002CD600
+src/game/item_classes.c func_002CD6A0
+src/game/item_classes.c func_002CD750
+src/game/debilitas3.c func_002CEF90
+src/game/debilitas3.c func_002CEFC0
+src/game/debilitas3.c func_002CEFE0
+src/game/debilitas3.c func_002CF000
+src/game/debilitas3.c func_002CF010
+src/game/debilitas3.c func_002CF020
+src/game/debilitas3.c func_002CF030
+src/game/debilitas3.c func_002CF040
+src/game/debilitas3.c func_002CF050
+src/game/debilitas3.c func_002CF070
+src/game/debilitas3.c func_002CF080
+src/game/debilitas3.c func_002CF0A0
+src/game/debilitas3.c func_002CF0C0
+src/game/debilitas3.c func_002CF0E0
+src/game/pursuer.c func_002CF140
+src/game/pursuer.c func_002CF180
+src/game/event_cmd.c func_002CF6F0
 src/game/game.c func_002CF9F0
 src/game/game.c func_002CFA00
-src/leaf/b4_002CF0C0.c func_002D0FE0
-src/leaf/b4_002CF0C0.c func_002D1000
-src/leaf/b4_002CF0C0.c func_002D1020
-src/leaf/b4_002CF0C0.c func_002D1040
-src/leaf/b4_002CF0C0.c func_002D1080
-src/leaf/b4_002CF0C0.c func_002D10A0
-src/leaf/b4_002CF0C0.c func_002D1130
-src/leaf/b4_002CF0C0.c func_002D11C0
-src/leaf/b4_002CF0C0.c func_002D1260
-src/leaf/b4_002CF0C0.c func_002D12C0
-src/leaf/b4_002CF0C0.c func_002D12E0
-src/leaf/b4_002CF0C0.c func_002D1320
-src/leaf/b4_002D1360.c func_002D1360
-src/leaf/b4_002D1360.c func_002D1470
-src/leaf/b4_002D1360.c func_002D1490
-src/leaf/b4_002D1360.c func_002D1510
-src/leaf/b4_002D1360.c func_002D1560
-src/leaf/b4_002D1360.c func_002D1580
-src/leaf/b4_002D1360.c func_002D15C0
+src/game/scene_game.c func_002D0FE0
+src/game/scene_game.c func_002D1000
+src/game/scene_game.c func_002D1020
+src/game/scene_game.c func_002D1040
+src/game/scene_game.c func_002D1080
+src/game/scene_game.c func_002D10A0
+src/game/scene_game.c func_002D1130
+src/game/scene_game_members.c func_002D11C0
+src/game/scene_game_members.c func_002D1260
+src/game/scene_game.c func_002D12C0
+src/game/scene_game.c func_002D12E0
+src/game/scene_game.c func_002D1320
+src/game/scene_game.c func_002D1360
+src/game/scene_game.c func_002D1470
+src/game/scene_game.c func_002D1490
+src/game/scene_game.c func_002D1510
+src/game/scene_game.c func_002D1560
+src/game/scene_game.c func_002D1580
+src/game/scene_game.c func_002D15C0
 src/leaf/b4_002D1360.c func_002D2560
 src/leaf/b4_002D1360.c func_002D2570
 src/leaf/b4_002D1360.c func_002D2580
 src/leaf/b4_002D1360.c func_002D25A0
 src/leaf/b4_002D1360.c func_002D25C0
-src/leaf/b4_002D1360.c func_002D3A20
-src/leaf/b4_002D1360.c func_002D3A60
-src/leaf/b4_002D1360.c func_002D4680
-src/leaf/b4_002D1360.c func_002D6000
-src/leaf/b4_002D1360.c func_002D6010
-src/leaf/b4_002D1360.c func_002D7430
-src/leaf/b4_002D1360.c func_002D7710
-src/leaf/b4_002D1360.c func_002D78F0
-src/leaf/b4_002D1360.c func_002D7980
-src/leaf/b4_002D1360.c func_002D7A30
-src/leaf/b4_002D1360.c func_002D7B80
-src/leaf/b4_002D1360.c func_002D7B90
-src/leaf/b4_002D1360.c func_002D7C30
-src/leaf/b4_002D1360.c func_002DB970
-src/leaf/b4_002D1360.c func_002DB980
-src/leaf/b4_002D1360.c func_002DBA10
-src/leaf/b4_002D1360.c func_002DC460
-src/leaf/b4_002D1360.c func_002DC4A0
-src/leaf/b4_002D1360.c func_002DCA50
-src/leaf/b4_002DCA70.c func_002DCAE0
-src/leaf/b4_002DCA70.c func_002DCF10
-src/leaf/b4_002DCA70.c func_002DD310
-src/leaf/b4_002DCA70.c func_002DD970
-src/leaf/b4_002DCA70.c func_002DDAB0
-src/leaf/b4_002DCA70.c func_002DE510
-src/leaf/b4_002DCA70.c func_002DE830
-src/leaf/b4_002DCA70.c func_002DE840
-src/leaf/b4_002DCA70.c func_002E2220
-src/leaf/b4_002DCA70.c func_002E2340
-src/leaf/b4_002DCA70.c func_002E2350
-src/leaf/b4_002DCA70.c func_002E25F0
-src/leaf/b4_002DCA70.c func_002E2610 --seed=2
-src/leaf/b4_002DCA70.c func_002E2630
-src/leaf/b4_002DCA70.c func_002E2D00
-src/leaf/b4_002DCA70.c func_002E34D0
+src/game/item_classes.c func_002D3A20
+src/game/items.c func_002D3A60
+src/game/system.c func_002D4680
+src/game/gameover.c func_002D6000
+src/game/effects.c func_002D6010
+src/game/placed.c func_002D7430
+src/game/movie.c func_002D7710
+src/game/movie.c func_002D78F0
+src/game/item_classes.c func_002D7980
+src/game/item_classes.c func_002D7A30
+src/game/riccardo.c func_002D7B80
+src/game/riccardo.c func_002D7B90
+src/game/riccardo.c func_002D7C30
+src/game/riccardo.c func_002DB970
+src/game/riccardo.c func_002DB980
+src/game/riccardo.c func_002DBA10
+src/game/pursuer.c func_002DC460
+src/game/riccardo.c func_002DC4A0
+src/game/model.c func_002DCA50
+src/game/actor.c func_002DCAE0
+src/game/model.c func_002DCF10
+src/game/pursuer.c func_002DD310
+src/game/model.c func_002DD970
+src/game/model.c func_002DDAB0
+src/game/creature.c func_002DE510
+src/game/creature.c func_002DE830
+src/game/creature.c func_002DE840
+src/game/creature.c func_002E2220
+src/game/game.c func_002E2340
+src/game/game.c func_002E2350
+src/game/game.c func_002E25F0
+src/game/game.c func_002E2610 --seed=2
+src/game/game.c func_002E2630
+src/game/hewie.c func_002E2D00
+src/game/scene_title.c func_002E34D0
 src/leaf/b4_002DCA70.c func_002E57A0
 src/leaf/b4_002DCA70.c func_002E57B0
 src/leaf/b4_002DCA70.c func_002E57C0
@@ -622,7 +622,7 @@ src/leaf/b4_002E7300.c func_002E7970
 src/leaf/b4_002E7300.c func_002E7980
 src/leaf/b4_002E7300.c func_002E79A0
 src/leaf/b4_002E7300.c func_002E79B0
-src/leaf/b5_00305650.c func_00305650
+src/game/effects.c func_00305650
 src/leaf/b5_00305650.c func_00305EF0
 src/leaf/b5_00305650.c func_00305F00
 src/leaf/b5_00305650.c func_00305F10
@@ -631,11 +631,11 @@ src/leaf/b5_00305650.c func_00305F30
 src/leaf/b5_00305650.c func_00305F50
 src/leaf/b5_00305650.c func_00305F60
 src/leaf/b5_00305650.c func_003062F0
-src/leaf/b5_00305650.c func_00306B90
-src/leaf/b5_00305650.c func_003071A0
-src/leaf/b5_00305650.c func_003077B0
-src/leaf/b5_00305650.c func_00307DC0
-src/leaf/b5_00305650.c func_003083D0
+src/game/item_classes.c func_00306B90
+src/game/item_classes.c func_003071A0
+src/game/item_classes.c func_003077B0
+src/game/item_classes.c func_00307DC0
+src/game/item_classes.c func_003083D0
 src/leaf/b5_00305650.c func_003089F0
 src/leaf/b5_00305650.c func_00308A00
 src/leaf/b5_00305650.c func_00308A10
@@ -654,28 +654,28 @@ src/leaf/b5_00305650.c func_00308BA0
 src/leaf/b5_00305650.c func_00308BC0
 src/leaf/b5_00305650.c func_00308BD0
 src/leaf/b5_00305650.c func_00308FD0
-src/leaf/b5_00305650.c func_00309410
+src/game/pursuer.c func_00309410
 src/leaf/b5_00305650.c func_00309450
-src/leaf/b5_00305650.c func_003095A0
-src/leaf/b5_00305650.c func_003095B0
-src/leaf/b5_00305650.c func_00309670
-src/leaf/b5_0030BAA0.c func_0030BAA0
-src/leaf/b5_0030BAA0.c func_0030BC60
-src/leaf/b5_0030BAA0.c func_0030BCA0
-src/leaf/b5_0030BAA0.c func_0030BCE0
-src/leaf/b5_0030BAA0.c func_0030BD20
-src/leaf/b5_0030BAA0.c func_0030BDA0
-src/leaf/b5_0030BAA0.c func_0030C1B0
-src/leaf/b5_0030BAA0.c func_0030C1F0
-src/leaf/b5_0030BAA0.c func_0030C4F0
-src/leaf/b5_0030BAA0.c func_0030C500
-src/leaf/b5_0030BAA0.c func_0030C510
-src/leaf/b5_0030BAA0.c func_0030CBB0
-src/leaf/b5_0030BAA0.c func_0030CBC0
-src/leaf/b5_0030BAA0.c func_0030CF80
-src/leaf/b5_0030BAA0.c func_0030D2A0
-src/leaf/b5_0030BAA0.c func_0030DC20
-src/leaf/b5_0030BAA0.c func_0030E2E0
+src/game/lorenzo.c func_003095A0
+src/game/lorenzo.c func_003095B0
+src/game/lorenzo.c func_00309670
+src/game/lorenzo.c func_0030BAA0
+src/game/lorenzo.c func_0030BC60
+src/game/lorenzo.c func_0030BCA0
+src/game/lorenzo.c func_0030BCE0
+src/game/lorenzo.c func_0030BD20
+src/game/lorenzo.c func_0030BDA0
+src/game/pursuer.c func_0030C1B0
+src/game/lorenzo.c func_0030C1F0
+src/game/lorenzo.c func_0030C4F0
+src/game/lorenzo.c func_0030C500
+src/game/lorenzo.c func_0030C510
+src/game/lorenzo.c func_0030CBB0
+src/game/lorenzo.c func_0030CBC0
+src/game/lorenzo.c func_0030CF80
+src/game/model.c func_0030D2A0
+src/game/model.c func_0030DC20
+src/game/model.c func_0030E2E0
 src/leaf/b5_0030BAA0.c func_0030EEF0
 src/leaf/b5_0030BAA0.c func_0030EF00
 src/leaf/b5_0030BAA0.c func_0030EF10
@@ -730,24 +730,24 @@ src/leaf/b5_0030F140.c func_00310B00
 src/leaf/b5_0030F140.c func_00310B10
 src/leaf/b5_0030F140.c func_00311AB0
 src/leaf/b5_0030F140.c func_00311AC0
-src/leaf/b5_0030F140.c func_003140A0
-src/leaf/b5_0030F140.c func_00314910
-src/leaf/b5_0030F140.c func_00315C40
-src/leaf/b5_00315C50.c func_00315C50
-src/leaf/b5_00315C50.c func_003168E0
-src/leaf/b5_00315C50.c func_00316BC0
-src/leaf/b5_00315C50.c func_00316BD0
-src/leaf/b5_00315C50.c func_0031CB10
-src/leaf/b5_00315C50.c func_0031CDE0
-src/leaf/b5_00315C50.c func_0031D020
-src/leaf/b5_00315C50.c func_0031D180
-src/leaf/b5_00315C50.c func_0031D600
-src/leaf/b5_00315C50.c func_0031D800
-src/leaf/b5_00315C50.c func_0031D810
-src/leaf/b5_00315C50.c func_0031DDF0
-src/leaf/b5_00315C50.c func_0031E0B0
-src/leaf/b5_00315C50.c func_0031E0D0
-src/leaf/b5_00315C50.c func_0031E130
+src/game/model.c func_003140A0
+src/game/creature.c func_00314910
+src/game/pursuer.c func_00315C40
+src/game/pursuer.c func_00315C50
+src/game/effects.c func_003168E0
+src/game/pursuer.c func_00316BC0
+src/game/pursuer.c func_00316BD0
+src/game/item_classes.c func_0031CB10
+src/game/item_classes.c func_0031CDE0
+src/game/item_classes.c func_0031D020
+src/game/item_classes.c func_0031D180
+src/game/item_classes.c func_0031D600
+src/game/item_classes.c func_0031D800
+src/game/item_classes.c func_0031D810
+src/game/scene_game.c func_0031DDF0
+src/game/scene_game.c func_0031E0B0
+src/game/scene_game.c func_0031E0D0
+src/game/scene_game.c func_0031E130
 src/leaf/b5_00315C50.c func_0031E220
 src/leaf/b5_00315C50.c func_0031E230
 src/leaf/b5_00315C50.c func_0031E240
@@ -755,19 +755,19 @@ src/leaf/b5_00315C50.c func_0031E250
 src/leaf/b5_00315C50.c func_0031E270
 src/leaf/b5_00315C50.c func_0031E6D0
 src/leaf/b5_00315C50.c func_0031E6E0
-src/leaf/b5_00315C50.c func_0031E920
-src/leaf/b5_00315C50.c func_0031E9A0
-src/leaf/b5_00315C50.c func_0031F220
-src/leaf/b5_00315C50.c func_0031F290
-src/leaf/b5_00315C50.c func_0031F330
-src/leaf/b5_00315C50.c func_0031FC10
-src/leaf/b5_00315C50.c func_0031FC20
-src/leaf/b5_00315C50.c func_0031FC30
-src/leaf/b5_00315C50.c func_0031FC40
-src/leaf/b5_00315C50.c func_00320150
-src/leaf/b5_00315C50.c func_00320190
-src/leaf/b5_00315C50.c func_00320500
-src/leaf/b5_00315C50.c func_00320520
+src/game/creature.c func_0031E920
+src/game/creature.c func_0031E9A0
+src/game/music.c func_0031F220
+src/game/music.c func_0031F290
+src/game/music.c func_0031F330
+src/game/stalker_k23.c func_0031FC10
+src/game/stalker_k23.c func_0031FC20
+src/game/stalker_k23.c func_0031FC30
+src/game/stalker_k23.c func_0031FC40
+src/game/pursuer.c func_00320150
+src/game/stalker_k23.c func_00320190
+src/game/model.c func_00320500
+src/game/model.c func_00320520
 src/leaf/b5_00315C50.c func_00320EB0
 src/leaf/b5_00315C50.c func_00320EC0
 src/leaf/b5_00320ED0.c func_00320ED0
@@ -777,14 +777,14 @@ src/leaf/b5_00320ED0.c func_00320F10
 src/leaf/b5_00320ED0.c func_00320F20
 src/leaf/b5_00320ED0.c func_00321750
 src/leaf/b5_00320ED0.c func_00321760
-src/leaf/b5_00320ED0.c func_00322A60
-src/leaf/b5_00320ED0.c func_00322B30
-src/leaf/b5_00320ED0.c func_00324790
-src/leaf/b5_00320ED0.c func_003247C0
-src/leaf/b5_00320ED0.c func_00324C00
-src/leaf/b5_00320ED0.c func_0032C350
-src/leaf/b5_00320ED0.c func_0032C360
-src/leaf/b5_00320ED0.c func_0032C5E0
+src/game/synth.c func_00322A60
+src/game/synth.c func_00322B30
+src/game/creature.c func_00324790
+src/game/creature.c func_003247C0
+src/game/creature.c func_00324C00
+src/game/creature.c func_0032C350
+src/game/creature.c func_0032C360
+src/game/model.c func_0032C5E0
 src/leaf/b5_00320ED0.c func_0032C6F0
 src/leaf/b5_00320ED0.c func_0032C700
 src/leaf/b5_00320ED0.c func_0032C710
@@ -793,9 +793,9 @@ src/leaf/b5_00320ED0.c func_0032C740
 src/leaf/b5_00320ED0.c func_0032C750
 src/leaf/b5_00320ED0.c func_0032CAD0
 src/leaf/b5_00320ED0.c func_0032CAE0
-src/leaf/b5_00320ED0.c func_0032CD00
-src/leaf/b5_00320ED0.c func_0032CF10
-src/leaf/b5_00320ED0.c func_0032CF20
+src/game/item_classes.c func_0032CD00
+src/game/item_classes.c func_0032CF10
+src/game/item_classes.c func_0032CF20
 src/leaf/b5_00320ED0.c func_0032D270
 src/leaf/b5_00320ED0.c func_0032D3E0
 src/leaf/b5_00320ED0.c func_0032DC50
@@ -807,84 +807,84 @@ src/leaf/b5_00320ED0.c func_0032DCB0
 src/leaf/b5_00320ED0.c func_0032DCC0
 src/leaf/b5_00320ED0.c func_0032F4E0
 src/leaf/b5_00320ED0.c func_0032F6C0
-src/leaf/b5_0032F6D0.c func_0032F6D0
-src/leaf/b5_0032F6D0.c func_0032F770
-src/leaf/b5_0032F6D0.c func_0032F820
-src/leaf/b5_0032F6D0.c func_003310A0
-src/leaf/b5_0032F6D0.c func_003310D0
-src/leaf/b5_0032F6D0.c func_003310F0
-src/leaf/b5_0032F6D0.c func_00331110
-src/leaf/b5_0032F6D0.c func_00331120
-src/leaf/b5_0032F6D0.c func_00331130
-src/leaf/b5_0032F6D0.c func_00331140
-src/leaf/b5_0032F6D0.c func_00331150
-src/leaf/b5_0032F6D0.c func_00331160
-src/leaf/b5_0032F6D0.c func_00331180
-src/leaf/b5_0032F6D0.c func_00331190
-src/leaf/b5_0032F6D0.c func_003311B0
-src/leaf/b5_0032F6D0.c func_003311D0
-src/leaf/b5_0032F6D0.c func_003311F0
-src/leaf/b5_0032F6D0.c func_00331200
-src/leaf/b5_0032F6D0.c func_00331240
-src/leaf/b5_0032F6D0.c func_003314C0
-src/leaf/b5_0032F6D0.c func_003314E0
-src/leaf/b5_0032F6D0.c func_00331510
-src/leaf/b5_0032F6D0.c func_00331660
-src/leaf/b5_0032F6D0.c func_00331680
-src/leaf/b5_0032F6D0.c func_003316B0
-src/leaf/b5_0032F6D0.c func_00331800
-src/leaf/b5_0032F6D0.c func_00331820
-src/leaf/b5_0032F6D0.c func_00331850
-src/leaf/b5_0032F6D0.c func_00331920
-src/leaf/b5_0032F6D0.c func_00331940
-src/leaf/b5_0032F6D0.c func_00331970
-src/leaf/b5_0032F6D0.c func_00331A40
-src/leaf/b5_0032F6D0.c func_00331A60
-src/leaf/b5_0032F6D0.c func_00331BD0
-src/leaf/b5_0032F6D0.c func_00331BF0
-src/leaf/b5_0032F6D0.c func_00331D50
-src/leaf/b5_0032F6D0.c func_00331D70
-src/leaf/b5_00331E90.c func_00331E90
-src/leaf/b5_00331E90.c func_00331EB0
-src/leaf/b5_00331E90.c func_00331FE0
-src/leaf/b5_00331E90.c func_00332000
-src/leaf/b5_00331E90.c func_00332190
-src/leaf/b5_00331E90.c func_003321B0
-src/leaf/b5_00331E90.c func_003321E0
-src/leaf/b5_00331E90.c func_00332350
-src/leaf/b5_00331E90.c func_00332370
-src/leaf/b5_00331E90.c func_003323A0
-src/leaf/b5_00331E90.c func_00332470
-src/leaf/b5_00331E90.c func_003326A0
-src/leaf/b5_00331E90.c func_003328B0
-src/leaf/b5_00331E90.c func_00332A80
-src/leaf/b5_00331E90.c func_00332AA0
-src/leaf/b5_00331E90.c func_00332CC0
-src/leaf/b5_00331E90.c func_00332CE0
-src/leaf/b5_00331E90.c func_00332EE0
-src/leaf/b5_00331E90.c func_00332F00
-src/leaf/b5_00331E90.c func_003330D0
-src/leaf/b5_00331E90.c func_003330F0
-src/leaf/b5_00331E90.c func_00336F00
-src/leaf/b5_00331E90.c func_00336F10
-src/leaf/b5_00331E90.c func_00336F20
-src/leaf/b5_00331E90.c func_00336F30
-src/leaf/b5_00331E90.c func_00336F70
-src/leaf/b5_00331E90.c func_00336FD0
-src/leaf/b5_00331E90.c func_003376D0
-src/leaf/b5_00331E90.c func_00337E00
-src/leaf/b5_00331E90.c func_00337F70
-src/leaf/b5_00331E90.c func_00337F80
-src/leaf/b5_00331E90.c func_00337F90
-src/leaf/b5_00331E90.c func_00337FA0
-src/leaf/b5_00331E90.c func_00338030
-src/leaf/b5_00331E90.c func_00338560
-src/leaf/b5_00331E90.c func_00338C00
-src/leaf/b5_00331E90.c func_00338F70
-src/leaf/b5_00339320.c func_00339320
-src/leaf/b5_00339320.c func_003396D0
-src/leaf/b5_00339320.c func_00339B20
-src/leaf/b5_00339320.c func_00339B30
+src/game/placed.c func_0032F6D0
+src/game/placed.c func_0032F770
+src/game/placed.c func_0032F820
+src/game/debilitas3.c func_003310A0
+src/game/debilitas3.c func_003310D0
+src/game/debilitas3.c func_003310F0
+src/game/debilitas3.c func_00331110
+src/game/debilitas3.c func_00331120
+src/game/debilitas3.c func_00331130
+src/game/debilitas3.c func_00331140
+src/game/debilitas3.c func_00331150
+src/game/debilitas3.c func_00331160
+src/game/debilitas3.c func_00331180
+src/game/debilitas3.c func_00331190
+src/game/debilitas3.c func_003311B0
+src/game/debilitas3.c func_003311D0
+src/game/debilitas3.c func_003311F0
+src/game/pursuer.c func_00331200
+src/game/debilitas3.c func_00331240
+src/game/item_classes.c func_003314C0
+src/game/item_classes.c func_003314E0
+src/game/item_classes.c func_00331510
+src/game/item_classes.c func_00331660
+src/game/item_classes.c func_00331680
+src/game/item_classes.c func_003316B0
+src/game/item_classes.c func_00331800
+src/game/item_classes.c func_00331820
+src/game/item_classes.c func_00331850
+src/game/item_classes.c func_00331920
+src/game/item_classes.c func_00331940
+src/game/item_classes.c func_00331970
+src/game/item_classes.c func_00331A40
+src/game/item_classes.c func_00331A60
+src/game/item_classes.c func_00331BD0
+src/game/item_classes.c func_00331BF0
+src/game/item_classes.c func_00331D50
+src/game/item_classes.c func_00331D70
+src/game/item_classes.c func_00331E90
+src/game/item_classes.c func_00331EB0
+src/game/item_classes.c func_00331FE0
+src/game/item_classes.c func_00332000
+src/game/item_classes.c func_00332190
+src/game/item_classes.c func_003321B0
+src/game/item_classes.c func_003321E0
+src/game/item_classes.c func_00332350
+src/game/item_classes.c func_00332370
+src/game/item_classes.c func_003323A0
+src/game/item_classes.c func_00332470
+src/game/item_classes.c func_003326A0
+src/game/item_classes.c func_003328B0
+src/game/item_classes.c func_00332A80
+src/game/item_classes.c func_00332AA0
+src/game/item_classes.c func_00332CC0
+src/game/item_classes.c func_00332CE0
+src/game/item_classes.c func_00332EE0
+src/game/item_classes.c func_00332F00
+src/game/item_classes.c func_003330D0
+src/game/item_classes.c func_003330F0
+src/game/model.c func_00336F00
+src/game/model.c func_00336F10
+src/game/model.c func_00336F20
+src/game/model.c func_00336F30
+src/game/model.c func_00336F70
+src/game/model.c func_00336FD0
+src/game/model.c func_003376D0
+src/game/model.c func_00337E00
+src/game/model.c func_00337F70
+src/game/model.c func_00337F80
+src/game/model.c func_00337F90
+src/game/model.c func_00337FA0
+src/game/model.c func_00338030
+src/game/model.c func_00338560
+src/game/model.c func_00338C00
+src/game/item_classes.c func_00338F70
+src/game/item_classes.c func_00339320
+src/game/item_classes.c func_003396D0
+src/game/item_classes.c func_00339B20
+src/game/item_classes.c func_00339B30
 src/leaf/b5_00339320.c func_00339D40
 src/leaf/b5_00339320.c func_00339D50
 src/leaf/b5_00339320.c func_00339D60
@@ -895,19 +895,19 @@ src/leaf/b5_00339320.c func_00339DA0
 src/leaf/b5_00339320.c func_00339DD0
 src/leaf/b5_00339320.c func_0033ACB0
 src/leaf/b5_00339320.c func_0033ACC0
-src/leaf/b5_00339320.c func_0033AEE0
-src/leaf/b5_00339320.c func_0033B030
-src/leaf/b5_00339320.c func_0033B040
-src/leaf/b5_00339320.c func_0033B300
-src/leaf/b5_00339320.c func_0033B310
-src/leaf/b5_00339320.c func_0033BDC0
-src/leaf/b5_00339320.c func_0033D7D0
-src/leaf/b5_00339320.c func_0033D7E0
-src/leaf/b5_00339320.c func_0033E8D0
-src/leaf/b5_00339320.c func_0033EA40
-src/leaf/b5_00339320.c func_0033EBB0
-src/leaf/b5_00339320.c func_0033ED20
-src/leaf/b5_00339320.c func_0033EE90
+src/game/item_classes.c func_0033AEE0
+src/game/item_classes.c func_0033B030
+src/game/item_classes.c func_0033B040
+src/game/item_classes.c func_0033B300
+src/game/item_classes.c func_0033B310
+src/game/item_classes.c func_0033BDC0
+src/game/props.c func_0033D7D0
+src/game/props.c func_0033D7E0
+src/game/item_classes.c func_0033E8D0
+src/game/item_classes.c func_0033EA40
+src/game/item_classes.c func_0033EBB0
+src/game/item_classes.c func_0033ED20
+src/game/item_classes.c func_0033EE90
 src/leaf/b5_00339320.c func_0033EFE0
 src/leaf/b5_00339320.c func_0033EFF0
 src/leaf/b5_00339320.c func_0033F000
@@ -1022,7 +1022,7 @@ src/leaf/b6_00340E40.c func_003440F0
 src/leaf/b6_00340E40.c func_00344100
 src/leaf/b6_00340E40.c func_00344120
 src/leaf/b6_00340E40.c func_00344130
-src/leaf/b6_00340E40.c func_003445A0
+src/game/item_classes.c func_003445A0
 src/leaf/b6_003448D0.c func_003448D0
 src/leaf/b6_003448D0.c func_003448E0
 src/leaf/b6_003448D0.c func_003448F0
@@ -1074,43 +1074,43 @@ src/leaf/b6_00344F10.c func_003450D0
 src/leaf/b6_00344F10.c func_003450E0
 src/leaf/b6_00344F10.c func_00345210
 src/leaf/b6_00344F10.c func_00345220
-src/leaf/b6_00344F10.c func_00345E20
-src/leaf/b6_00344F10.c func_00346000
-src/leaf/b6_00344F10.c func_00346050
-src/leaf/b6_00344F10.c func_003460F0
-src/leaf/b6_00344F10.c func_00346E10
-src/leaf/b6_00344F10.c func_00346F20
-src/leaf/b6_00344F10.c func_00346F30
-src/leaf/b6_00344F10.c func_00346F40
-src/leaf/b6_00344F10.c func_00347290
-src/leaf/b6_00344F10.c func_003472D0
-src/leaf/b6_00344F10.c func_003476A0
-src/leaf/b6_00344F10.c func_003479E0
-src/leaf/b6_00344F10.c func_00347A30
-src/leaf/b6_00344F10.c func_00347AD0
-src/leaf/b6_00344F10.c func_00348300
-src/leaf/b6_00344F10.c func_00348310
-src/leaf/b6_00344F10.c func_00348320
-src/leaf/b6_00344F10.c func_00348620
-src/leaf/b6_00344F10.c func_00348660
-src/leaf/b6_00344F10.c func_00348970
-src/leaf/b6_00344F10.c func_003489C0
-src/leaf/b6_00344F10.c func_00348A60
-src/leaf/b6_00344F10.c func_00349290
-src/leaf/b6_003492A0.c func_003492A0
-src/leaf/b6_003492A0.c func_003492B0
-src/leaf/b6_003492A0.c func_003495B0
-src/leaf/b6_003492A0.c func_003495F0
-src/leaf/b6_003492A0.c func_003498D0
-src/leaf/b6_003492A0.c func_003498E0
-src/leaf/b6_003492A0.c func_003498F0
-src/leaf/b6_003492A0.c func_00349900
-src/leaf/b6_003492A0.c func_00349910
-src/leaf/b6_003492A0.c func_00349920
-src/leaf/b6_003492A0.c func_00349930
-src/leaf/b6_003492A0.c func_00349990
-src/leaf/b6_003492A0.c func_00349A20
-src/leaf/b6_003492A0.c func_0034A120
+src/game/props.c func_00345E20
+src/game/props.c func_00346000
+src/game/props.c func_00346050
+src/game/props.c func_003460F0
+src/game/daniella.c func_00346E10
+src/game/daniella.c func_00346F20
+src/game/daniella.c func_00346F30
+src/game/daniella.c func_00346F40
+src/game/pursuer.c func_00347290
+src/game/daniella.c func_003472D0
+src/game/props.c func_003476A0
+src/game/props.c func_003479E0
+src/game/daniella.c func_00347A30
+src/game/daniella.c func_00347AD0
+src/game/daniella.c func_00348300
+src/game/daniella.c func_00348310
+src/game/daniella.c func_00348320
+src/game/pursuer.c func_00348620
+src/game/daniella.c func_00348660
+src/game/daniella.c func_00348970
+src/game/daniella.c func_003489C0
+src/game/daniella.c func_00348A60
+src/game/daniella.c func_00349290
+src/game/daniella.c func_003492A0
+src/game/daniella.c func_003492B0
+src/game/pursuer.c func_003495B0
+src/game/daniella.c func_003495F0
+src/game/model.c func_003498D0
+src/game/model.c func_003498E0
+src/game/model.c func_003498F0
+src/game/model.c func_00349900
+src/game/model.c func_00349910
+src/game/model.c func_00349920
+src/game/model.c func_00349930
+src/game/model.c func_00349990
+src/game/model.c func_00349A20
+src/game/model.c func_0034A120
 src/leaf/b6_003492A0.c func_0034A1A0
 src/leaf/b6_003492A0.c func_0034A1B0
 src/leaf/b6_003492A0.c func_0034A1C0
@@ -1165,20 +1165,20 @@ src/leaf/b6_0034AA30.c func_0034B690
 src/leaf/b6_0034AA30.c func_0034B8C0
 src/leaf/b6_0034AA30.c func_0034B8D0
 src/leaf/b6_0034AA30.c func_0034B970
-src/leaf/b6_0034AA30.c func_0034D250
-src/leaf/b6_0034AA30.c func_0034D260
-src/leaf/b6_0034AA30.c func_0034D270
-src/leaf/b6_0034AA30.c func_0034D280
-src/leaf/b6_0034AA30.c func_0034D980
-src/leaf/b6_0034AA30.c func_0034D9C0
+src/game/riccardo.c func_0034D250
+src/game/riccardo.c func_0034D260
+src/game/riccardo.c func_0034D270
+src/game/riccardo.c func_0034D280
+src/game/pursuer.c func_0034D980
+src/game/riccardo.c func_0034D9C0
 src/leaf/b6_0034DC60.c func_0034DC60
 src/leaf/b6_0034DC60.c func_0034DC80
 src/leaf/b6_0034DC60.c func_0034DCA0
-src/leaf/b6_0034DC60.c func_0034E960
+src/game/effects.c func_0034E960
 src/leaf/b6_0034DC60.c func_00350750
 src/leaf/b6_0034DC60.c func_00350770
 src/leaf/b6_0034DC60.c func_00350790
-src/leaf/b6_0034DC60.c func_00350C40
+src/game/props.c func_00350C40
 src/leaf/b6_0034DC60.c func_00350ED0
 src/leaf/b6_0034DC60.c func_00350EE0
 src/leaf/b6_0034DC60.c func_00350F00
@@ -1186,24 +1186,24 @@ src/leaf/b6_0034DC60.c func_00350F20
 src/leaf/b6_0034DC60.c func_00351060
 src/leaf/b6_0034DC60.c func_00351070
 src/leaf/b6_0034DC60.c func_00351090
-src/leaf/b6_0034DC60.c func_00351120
-src/leaf/b6_0034DC60.c func_00351150
-src/leaf/b6_0034DC60.c func_003511E0
-src/leaf/b6_0034DC60.c func_00351210
-src/leaf/b6_0034DC60.c func_003512A0
-src/leaf/b6_0034DC60.c func_003512D0
-src/leaf/b6_0034DC60.c func_00351360
-src/leaf/b6_0034DC60.c func_00351520
-src/leaf/b6_0034DC60.c func_003516E0
-src/leaf/b6_0034DC60.c func_00351840
-src/leaf/b6_0034DC60.c func_003518F0
-src/leaf/b6_0034DC60.c func_00351B10
-src/leaf/b6_0034DC60.c func_00351C90
-src/leaf/b6_0034DC60.c func_00351CC0
-src/leaf/b7_00351D50.c func_00351D50
-src/leaf/b7_00351D50.c func_00352030
-src/leaf/b7_00351D50.c func_00352040
-src/leaf/b7_00351D50.c func_00352A70
+src/game/item_classes.c func_00351120
+src/game/item_classes.c func_00351150
+src/game/item_classes.c func_003511E0
+src/game/item_classes.c func_00351210
+src/game/item_classes.c func_003512A0
+src/game/item_classes.c func_003512D0
+src/game/item_classes.c func_00351360
+src/game/item_classes.c func_00351520
+src/game/item_classes.c func_003516E0
+src/game/item_classes.c func_00351840
+src/game/item_classes.c func_003518F0
+src/game/item_classes.c func_00351B10
+src/game/item_classes.c func_00351C90
+src/game/item_classes.c func_00351CC0
+src/game/item_classes.c func_00351D50
+src/game/item_classes.c func_00352030
+src/game/item_classes.c func_00352040
+src/game/effects.c func_00352A70
 src/leaf/b7_00351D50.c func_00352B60
 src/leaf/b7_00351D50.c func_00352B70
 src/leaf/b7_00351D50.c func_00352B90
@@ -1221,23 +1221,23 @@ src/leaf/b7_00351D50.c func_00352EC0
 src/leaf/b7_00351D50.c func_00352ED0
 src/leaf/b7_00351D50.c func_00352EF0
 src/leaf/b7_00351D50.c func_00352F00
-src/leaf/b7_00351D50.c func_00353DB0
-src/leaf/b7_00351D50.c func_00353DC0
-src/leaf/b7_00351D50.c func_00353DD0
-src/leaf/b7_00351D50.c func_00353DE0
-src/leaf/b7_00351D50.c func_00353DF0
-src/leaf/b7_00351D50.c func_00353E00
-src/leaf/b7_00351D50.c func_00353E60
-src/leaf/b7_00351D50.c func_00353EF0
-src/leaf/b7_00351D50.c func_003544A0
-src/leaf/b7_00351D50.c func_00358270
-src/leaf/b7_00351D50.c func_00358B30
-src/leaf/b7_00351D50.c func_00358C10
+src/game/model.c func_00353DB0
+src/game/model.c func_00353DC0
+src/game/model.c func_00353DD0
+src/game/model.c func_00353DE0
+src/game/model.c func_00353DF0
+src/game/model.c func_00353E00
+src/game/model.c func_00353E60
+src/game/model.c func_00353EF0
+src/game/model.c func_003544A0
+src/game/effects.c func_00358270
+src/game/effects.c func_00358B30
+src/game/effects.c func_00358C10
 src/leaf/b7_00351D50.c func_00358C80
 src/leaf/b7_00351D50.c func_00359200
 src/leaf/b7_00351D50.c func_00359210
-src/leaf/b7_00351D50.c func_0035A170
-src/leaf/b7_00351D50.c func_0035AE90
+src/game/creature.c func_0035A170
+src/game/fiona.c func_0035AE90
 src/leaf/b7_00351D50.c func_0035AF20
 src/leaf/b7_00351D50.c func_0035AF30
 
@@ -4484,26 +4484,26 @@ src/game/item_classes.c func_0033EBE0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --p
 src/game/item_classes.c func_0033ED50 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
 src/game/item_classes.c func_0033EEC0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
 src/game/item_classes.c func_00351710 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0xC7 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/leaf/b5_0032F6D0.c func_00331A90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00331C20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00331DA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00331EE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00332030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_003326D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_003328E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00332AD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00332D10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00333120 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9990..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_0032F6D0.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9980..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/leaf/b5_00339320.c func_0033B4C0 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B500034=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-fret=10.0 --stub-fret=30.0 --runs=200
-src/leaf/b4_002CC840.c func_002CCDE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x1C
-src/leaf/b4_002CC840.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0xC0
-src/leaf/b4_002CC840.c func_002CD1D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x22
-src/leaf/b4_002CC840.c func_002CD340 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=4
-src/leaf/b4_002CC840.c func_002CCED0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=8998..9003 --pre=@0x44E4D8=0x0B700000..0x0B700000 --stub-ret=2 --stub-ret=1 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00331A90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00331C20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00331DA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00331EE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00332030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_003326D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_003328E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00332AD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00332D10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00333120 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9990..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9980..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c func_0033B4C0 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B500034=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-fret=10.0 --stub-fret=30.0 --runs=200
+src/game/item_classes.c func_002CCDE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x1C
+src/game/item_classes.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0xC0
+src/game/item_classes.c func_002CD1D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x22
+src/game/item_classes.c func_002CD340 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=4
+src/game/item_classes.c func_002CCED0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=8998..9003 --pre=@0x44E4D8=0x0B700000..0x0B700000 --stub-ret=2 --stub-ret=1 --stub-ret-prob=1 --runs=200
 src/game/item_classes.c func_00266A80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
 src/game/item_classes.c func_00266C10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
 src/game/item_classes.c func_0031D050 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x4F --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
@@ -4518,7 +4518,7 @@ src/game/item_classes.c func_00264CE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x4
 src/game/item_classes.c func_00303CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x14
 src/game/item_classes.c func_00351390 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0xC7
 src/game/item_classes.c func_00351550 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0xC7
-src/leaf/b4_002CC840.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
+src/game/item_classes.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
 src/game/item_classes.c func_00351920 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x82 --stub-ret=0x8C
 src/game/item_classes.c func_00351D80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
 src/game/item_classes.c func_0031CB40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x4B
@@ -4596,8 +4596,8 @@ src/game/creature.c func_002E2740 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0
 src/game/creature.c func_002E27B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38680=bytes:??00 --runs=50
 src/game/creature.c func_002E27B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x38680=bytes:??01 --runs=50
 src/game/creature.c func_002E2920 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0B100000..0x0B100000 --pre=a0+0x4=0..0 --pre=a0+0x8=0x0B120000..0x0B120000 --pre=a0+0x1C=0x0B170000..0x0B170000 --pre=a0+0x20=0..0 --pre=a0+0x24=0x0B190000..0x0B190000 --pre=@0x0B100028:u8=0..1 --pre=@0x0B120028:u8=0..1 --pre=@0x0B170028:u8=0..1 --pre=@0x0B190028:u8=0..1 --pre=@0x0B1700F0=0..1 --runs=50
-src/leaf/b4_002DCA70.c func_002E2DA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
-src/leaf/b4_002DCA70.c func_002E2DD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
+src/game/fiona.c func_002E2DA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
+src/game/hewie.c func_002E2DD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --runs=200
 src/game/room_handlers.c func_00209200 --runs=10
 src/game/room_handlers.c func_002097E0 --runs=10
 src/game/room_handlers.c func_002097F0 --runs=10
@@ -5663,7 +5663,7 @@ src/game/room_handlers.c func_00377CA0 --runs=5
 src/game/room_handlers.c func_00377CB0 --runs=5
 src/game/fiona.c func_00197640 --pre=a0=0x09000000..0x09000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0004C4=0..1 --pre=a0+0xE0:u8=0..1 --pre=a0+0x104=0..1 --pre=a0+0x1AD584=0..3 --pre=@0x44E558=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046C540..0x0046C540 --pre=@0x44E570=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4D8=0x0A000000..0x0A000000 --outparam-at=0x002231A0:4:16 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x10 --stub-ret-prob=1 --runs=300 --pre=a0+0xFC=0x14..0x15
 src/game/fiona.c func_00180D60 --pre=a0=0x09000000..0x09000000 --pre=@0x44E570=0x0B200000..0x0B200000 --pre=@0x0B200008=4..4 --pre=@0x0B200004=0x0B300000..0x0B300000 --pre=a1=0..5 --pre=a0+0x34=0..5 --pre=@0x0B30003C=0x0..0x300000 --pre=@0x0B30008C=0x0..0x300000 --pre=@0x0B3000DC=0x0..0x300000 --pre=@0x0B30012C=0x0..0x300000 --pre=@0x3C=0..0 --pre=a3=0..1 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
-src/leaf/b5_00320ED0.c func_0032CF40 --pre=a0=0x09000000..0x09000000 --pre=a1=0x0B300000..0x0B300000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
+src/game/item_classes.c func_0032CF40 --pre=a0=0x09000000..0x09000000 --pre=a1=0x0B300000..0x0B300000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
 src/leaf/b5_00320ED0.c func_0032D430 --pre=a0=0x09000000..0x09000000 --pre=a0+0x10=0x40000000..0x42000000 --pre=a0+0x18=0x40000000..0x42000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0006A4=0x0B010000..0x0B010000 --pre=a0+0x1624=0..6 --pre=a0+0x1628=0..1 --pre=a0+0x162C=-1..3 --pre=a0+0x163C=0x40000000..0x42000000 --pre=a0+0x1640=0x40000000..0x42000000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.9 --stub-fret=1.0 --stub-fret=600.0 --stub-fret=1200.0 --stub-fret=3000.0 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=800
 src/leaf/b5_00320ED0.c func_0032D2C0 --pre=a0=0x09000000..0x09000000 --pre=a0+0x10=0x40000000..0x42000000 --pre=a0+0x18=0x40000000..0x42000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0006A4=0x0B010000..0x0B010000 --pre=a0+0x1624=0..6 --pre=a0+0x16A8:u8=0..1 --pre=a0+0x16A9:u8=0..1 --pre=a0+0x1630=-1..1 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.9 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
 src/game/scene_game_members.c func_002D63B0 --runs=5
@@ -5673,160 +5673,160 @@ src/game/props.c func_00322570 --runs=20
 src/game/scene_game_members.c func_002D6170 --pre=a0=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=a1=-2..0x401 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --runs=200
 src/leaf/b5_00320ED0.c func_0032D150 --pre=a0=0x09000000..0x09000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=a0+0x16A8:u8=0..1 --pre=a0+0x16A9:u8=0..1 --pre=a0+0x1630=-1..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=200
 src/game/model.c func_002DD110 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=a3=0x0B200010..0x0B200010 --pre=a0+0x860=0x3F000000..0x41000000 --pre=a0+0x864=0x3F000000..0x41000000 --pre=a0+0x868=0x3F000000..0x41000000 --pre=a0+0x7E0=0x3E000000..0x3F800000 --pre=a0+0x7E4=0x3E000000..0x3F800000 --pre=a0+0x7F0=0xBF000000..0x3F800000 --pre=a0+0x7F8=0x3E000000..0x3F800000 --stub-fret=0.5 --stub-fret=-0.5 --stub-ret-prob=1 --runs=300
-src/leaf/item_ctors.c func_00263220 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002632B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002632E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263310 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263340 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263370 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002633A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002633D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263400 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263430 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263460 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263490 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002634C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002634F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263580 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002635B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002635E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263610 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263640 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263670 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002636A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002636D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263700 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263790 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002637C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002637F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263820 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002638B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002638E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263910 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263940 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002639D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263A00 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263A30 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263A60 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263AF0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263B20 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263B50 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263B80 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263BB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263BE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263C70 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263CA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263CD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263D00 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263D30 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263D60 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263D90 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263E20 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263E50 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263E80 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263EB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263EE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263F10 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263F40 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263F70 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263FA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00263FD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264000 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264030 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264090 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264120 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264150 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264180 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002641B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002641E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264210 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264240 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264270 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002642A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002642D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264300 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264330 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264360 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264390 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002643C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002643F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264420 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264450 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264480 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002644B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002644E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264510 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264540 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264570 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_002645A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/item_ctors.c func_00264060 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/items.c func_00263220 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002632B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002632E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263310 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263340 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263370 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002633A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002633D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263400 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263430 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263460 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263490 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002634C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002634F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263580 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002635B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002635E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263610 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263640 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263670 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002636A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002636D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263700 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263790 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002637C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002637F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263820 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002638B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002638E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263910 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263940 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002639D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263A00 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263A30 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263A60 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263AF0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263B20 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263B50 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263B80 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263BB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263BE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263C70 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263CA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263CD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263D00 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263D30 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263D60 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263D90 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263E20 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263E50 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263E80 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263EB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263EE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263F10 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263F40 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263F70 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263FA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00263FD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264000 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264030 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264090 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264120 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264150 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264180 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002641B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002641E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264210 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264240 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264270 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002642A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002642D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264300 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264330 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264360 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264390 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002643C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002643F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264420 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264450 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264480 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002644B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002644E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264510 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264540 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_00264570 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c func_002645A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/items.c func_00264060 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/items.c func_00261090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x3E --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600
 src/game/items.c func_00261090 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x40..0xB0 --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600
 src/game/hewie_model.c func_0020BEF0 --pre=a1=-1..6 --runs=60
 src/game/hewie_model.c func_0020C090 --pre=a1=-1..6 --runs=60
 src/game/event.c func_0020C120 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=60
 src/game/event.c func_0020C170 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=60
-src/leaf/dtors_gen.c func_00120EF0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00122AD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0017CDD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001AABD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001AAE10 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BC090 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BC320 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BE730 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BECA0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF280 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF2E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF5F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF660 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF7A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF800 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001BF880 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001F4590 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_001FB0F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_00120EF0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/camera.c func_00122AD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/navmesh.c func_0017CDD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/pathplan.c func_001AABD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001AAE10 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BC090 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BC320 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BE730 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BECA0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BF220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/rumble.c func_001BF280 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/memcard.c func_001BF2E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game_members.c func_001BF5F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/movie.c func_001BF660 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BF7A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/snd_driver.c func_001BF800 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c func_001BF880 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_001F4590 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_001FB0F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_001FB400 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0020D8D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0020D920 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0020D970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0020D9C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0020DB40 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00225620 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0025C850 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0025E950 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00267310 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00267480 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00267500 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00268110 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00269970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0026B1E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002BAFD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002BB220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002C64E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002C65C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002D00A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002D0C10 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_002D0C70 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00301250 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c func_0020D8D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c func_0020D920 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c func_0020D970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/daniella.c func_0020D9C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_0020DB40 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_00225620 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_0025C850 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/doors.c func_0025E950 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/gameover.c func_00267310 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c func_00267480 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_00267500 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_00268110 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c func_00269970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/model.c func_0026B1E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/model.c func_002BAFD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c func_002BB220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c func_002C64E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/subscreen.c func_002C65C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_002D00A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c func_002D0C10 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_002D0C70 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/lorenzo.c func_00301250 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00306290 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_003156A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00316D80 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0033D990 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_00347640 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/placed.c func_003156A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/pursuer.c func_00316D80 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/scene_game.c func_0033D990 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/props.c func_00347640 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00358C20 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0035A230 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/fiona.c func_0035A230 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_0035BBD0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_0035CE40 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_0035D7E0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00360B60 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00361940 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0036A4D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/pursuer.c func_0036A4D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00370030 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00377CC0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00377FF0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_00378310 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/leaf/dtors_gen.c func_003784F0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/leaf/dtors_gen.c func_0037B9A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/model.c func_0037B9A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game_members.c func_0011FF20 --runs=5
 src/game/scene_game_members.c func_00120F70 --runs=5
 src/game/scene_game_members.c func_00267300 --runs=5
@@ -6240,9 +6240,9 @@ src/leaf/creature_gen.c func_00321640 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0
 src/leaf/creature_gen.c func_00321780 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/creature_gen.c func_003217D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
 src/leaf/creature_gen.c func_003218A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0032C830 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0032C880 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0032C950 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/pursuer.c func_0032C830 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/pursuer.c func_0032C880 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/pursuer.c func_0032C950 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
 src/leaf/creature_gen.c func_0032C9C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
 src/leaf/creature_gen.c func_0032CB00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/creature_gen.c func_0032CB50 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
@@ -6257,45 +6257,45 @@ src/leaf/creature_gen.c func_00345240 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0
 src/leaf/creature_gen.c func_00345290 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
 src/leaf/creature_gen.c func_00345360 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
 src/leaf/creature_gen.c func_0034B7B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0032C240 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0032C380 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0032C3D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0032C4A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0033D6C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0033D800 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0033D850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0033D920 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_00345EE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_003478C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_00348850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_003634F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_002CD4E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0031D6F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0031D830 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0031D880 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0031D950 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0032CE00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0032DA60 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0032DAB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0032DB80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_00339A10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_00339B50 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_00339BA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_00339C70 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0033AF20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0033B060 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0033B0B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0033B180 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0033B1F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0033B330 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_0033B380 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_0033B450 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_00351F20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_00352060 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
-src/leaf/creature_gen.c func_003520B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
-src/leaf/creature_gen.c func_00352180 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
-src/leaf/creature_gen.c func_0031F110 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
-src/leaf/creature_gen.c func_0032F5B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/creature.c func_0032C240 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/creature.c func_0032C380 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/creature.c func_0032C3D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/creature.c func_0032C4A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/props.c func_0033D6C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/props.c func_0033D800 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/props.c func_0033D850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/props.c func_0033D920 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/props.c func_00345EE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/props.c func_003478C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/daniella.c func_00348850 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/effects.c func_003634F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_002CD4E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_0031D6F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_0031D830 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_0031D880 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_0031D950 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/item_classes.c func_0032CE00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_0032DA60 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_0032DAB0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_0032DB80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/item_classes.c func_00339A10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_00339B50 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_00339BA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_00339C70 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/item_classes.c func_0033AF20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_0033B060 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_0033B0B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_0033B180 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/item_classes.c func_0033B1F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_0033B330 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_0033B380 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_0033B450 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/item_classes.c func_00351F20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/item_classes.c func_00352060 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=10
+src/game/item_classes.c func_003520B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0x14E8=4..5 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --runs=30
+src/game/item_classes.c func_00352180 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --runs=15
+src/game/music.c func_0031F110 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
+src/game/placed.c func_0032F5B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=40
 src/game/creature.c func_0031E890 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/riccardo.c func_0034BA20 --pre=a0+0x104=0..1 --runs=30
 src/game/model.c func_0035B0F0 --pre=a0=0x0B000000..0x0B000000 --runs=50
@@ -6321,7 +6321,7 @@ src/game/room_handlers.c func_00378EC0 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B
 src/game/effects.c func_0037B2E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/effects.c func_0037BE80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/creature.c func_0037C310 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF60=0..1 --pre=a0+0xF64:u8=0..1  --pre=a0+0x1C=-2..3 --pre=a0+0x61C=-2..3 --pre=a0+0xC64=0xBC800000..0x3C800000 --pre=a0+0xDE4=0xBC000000..0x3C000000 --pre=a0+0x4C=-2..3 --pre=a0+0x64C=-2..3 --pre=a0+0xC70=0xBC800000..0x3C800000 --pre=a0+0xDF0=0xBC000000..0x3C000000 --pre=a0+0x7C=-2..3 --pre=a0+0x67C=-2..3 --pre=a0+0xC7C=0xBC800000..0x3C800000 --pre=a0+0xDFC=0xBC000000..0x3C000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0x13 --stub-ret=0x7F --stub-ret-prob=1 --runs=200
-src/leaf/b5_0030F140.c func_0037C520 
+src/game/effects.c func_0037C520 
 src/game/effects.c func_0037C5A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/props.c func_0037D0A0 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=100
 src/game/creature.c func_00324710 --pre=a0=0..0 --runs=10
@@ -6340,9 +6340,9 @@ src/game/lorenzo.c func_00363BF0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=a1=0
 src/game/lorenzo.c func_00363FA0 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=a0+0x1540=0x0A500000..0x0A500000 --pre=a0+0x171C=0x0A400000..0x0A400000 --pre=a0+0x1760:u8=0..3 --pre=@0x44E578=0x0A700000..0x0A700000 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --stub-ret=0 --stub-ret=2 --stub-ret=3 --stub-ret=0x0A800000 --stub-fret=0.1 --stub-fret=0.9 --runs=250
 src/game/lorenzo.c func_00364F90 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --runs=30
 src/game/lorenzo.c func_00365850 --pre=a0+0x28:u8=0..1 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A00055C=0x2300..0x2301 --stub-ret=0 --stub-ret=1 --stub-ret=0x20 --runs=100
-src/leaf/b5_0030BAA0.c func_003658F0 
-src/leaf/b5_0030BAA0.c func_00365930 
-src/leaf/b5_0030BAA0.c func_00365970 
+src/game/lorenzo.c func_003658F0 
+src/game/lorenzo.c func_00365930 
+src/game/lorenzo.c func_00365970 
 src/game/lorenzo.c func_00365D10 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/lorenzo.c func_00365D50 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/placed.c func_003671B0 --pre=a0=0x0B000000..0x0B000001 --pre=a1=0..2 --runs=50
@@ -6420,13 +6420,13 @@ src/game/lorenzo.c func_00365D90 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0
 src/game/stalker_models.c func_003203B0 --pre=a0=0..0x09000000 --pre=a1=-1..2 --runs=40
 src/leaf/tiny_gen.c func_00344FB0 --runs=3
 src/leaf/tiny_gen.c func_00344FF0 --runs=3
-src/leaf/tiny_gen.c func_0035B010 --runs=3
-src/leaf/tiny_gen.c func_0035B020 --runs=3
-src/leaf/tiny_gen.c func_0035B030 --runs=3
-src/leaf/tiny_gen.c func_0035B040 --runs=3
-src/leaf/tiny_gen.c func_0035B050 --runs=3
+src/game/model.c func_0035B010 --runs=3
+src/game/model.c func_0035B020 --runs=3
+src/game/model.c func_0035B030 --runs=3
+src/game/model.c func_0035B040 --runs=3
+src/game/model.c func_0035B050 --runs=3
 src/leaf/tiny_gen.c func_0035F0F0 --runs=3
-src/leaf/tiny_gen.c func_0036A580 --runs=3
+src/game/pursuer.c func_0036A580 --runs=3
 src/leaf/tiny_gen.c func_0036DB40 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/leaf/tiny_gen.c func_0036E040 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/leaf/tiny_gen.c func_0036E3B0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
@@ -6447,149 +6447,149 @@ src/leaf/tiny_gen.c func_0037A400 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@
 src/leaf/tiny_gen.c func_0037A730 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/leaf/tiny_gen.c func_0037A9E0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
 src/leaf/tiny_gen.c func_0037AC90 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=a1=0..9 --pre=a2=0..9 --pre=a3=0..9 --stub-ret=0 --stub-ret=7 --runs=10
-src/leaf/tiny_gen.c func_00322560 --runs=3
-src/leaf/tiny_gen.c func_00322A00 --runs=3
-src/leaf/tiny_gen.c func_00322B70 --runs=3
-src/leaf/tiny_gen.c func_003244C0 --runs=3
-src/leaf/tiny_gen.c func_0032F830 --runs=3
-src/leaf/tiny_gen.c func_0032F840 --runs=3
-src/leaf/tiny_gen.c func_0032F850 --runs=3
-src/leaf/tiny_gen.c func_0032F860 --runs=3
-src/leaf/tiny_gen.c func_0032F870 --runs=3
-src/leaf/tiny_gen.c func_003310B0 --runs=3
-src/leaf/tiny_gen.c func_003310C0 --runs=3
-src/leaf/tiny_gen.c func_00331440 --runs=3
-src/leaf/tiny_gen.c func_00345FF0 --runs=3
-src/leaf/tiny_gen.c func_003479D0 --runs=3
-src/leaf/tiny_gen.c func_00353E10 --runs=3
-src/leaf/tiny_gen.c func_00353E20 --runs=3
-src/leaf/tiny_gen.c func_00353E30 --runs=3
-src/leaf/tiny_gen.c func_00353E40 --runs=3
-src/leaf/tiny_gen.c func_00353E50 --runs=3
+src/game/synth.c func_00322560 --runs=3
+src/game/synth.c func_00322A00 --runs=3
+src/game/synth.c func_00322B70 --runs=3
+src/game/synth.c func_003244C0 --runs=3
+src/game/placed.c func_0032F830 --runs=3
+src/game/placed.c func_0032F840 --runs=3
+src/game/placed.c func_0032F850 --runs=3
+src/game/placed.c func_0032F860 --runs=3
+src/game/placed.c func_0032F870 --runs=3
+src/game/debilitas3.c func_003310B0 --runs=3
+src/game/debilitas3.c func_003310C0 --runs=3
+src/game/debilitas3.c func_00331440 --runs=3
+src/game/props.c func_00345FF0 --runs=3
+src/game/props.c func_003479D0 --runs=3
+src/game/model.c func_00353E10 --runs=3
+src/game/model.c func_00353E20 --runs=3
+src/game/model.c func_00353E30 --runs=3
+src/game/model.c func_00353E40 --runs=3
+src/game/model.c func_00353E50 --runs=3
 src/leaf/tiny_gen.c func_003634E0 --runs=3
-src/leaf/tiny_gen.c func_0037BC90 --runs=3
-src/leaf/tiny_gen.c func_002CD760 --runs=3
-src/leaf/tiny_gen.c func_002CD770 --runs=3
-src/leaf/tiny_gen.c func_002CD780 --runs=3
-src/leaf/tiny_gen.c func_002CD790 --runs=3
-src/leaf/tiny_gen.c func_002CD7A0 --runs=3
-src/leaf/tiny_gen.c func_002CEFA0 --runs=3
-src/leaf/tiny_gen.c func_002CEFB0 --runs=3
-src/leaf/tiny_gen.c func_002CF380 --runs=3
-src/leaf/tiny_gen.c func_0033E730 --runs=3
-src/leaf/tiny_gen.c func_00226808 --runs=3
-src/leaf/tiny_gen.c func_00226868 --runs=3
-src/leaf/tiny_gen.c func_00226870 --runs=3
-src/leaf/tiny_gen.c func_00226878 --runs=3
-src/leaf/tiny_gen.c func_00226880 --runs=3
-src/leaf/tiny_gen.c func_00226888 --runs=3
-src/leaf/tiny_gen.c func_00226890 --runs=3
-src/leaf/tiny_gen.c func_00226898 --runs=3
-src/leaf/tiny_gen.c func_002268A0 --runs=3
-src/leaf/tiny_gen.c func_002268A8 --runs=3
-src/leaf/tiny_gen.c func_002268B0 --runs=3
-src/leaf/tiny_gen.c func_002268B8 --runs=3
-src/leaf/tiny_gen.c func_0031FBF0 --runs=3
-src/leaf/tiny_gen.c func_0031FC00 --runs=3
-src/leaf/tiny_gen.c func_0031E990 --runs=3
-src/leaf/tiny_gen.c func_00325D60 --runs=3
-src/leaf/tiny_gen.c func_0032A0D0 --runs=3
-src/leaf/tiny_gen.c func_00336F80 --runs=3
-src/leaf/tiny_gen.c func_00336F90 --runs=3
-src/leaf/tiny_gen.c func_00336FA0 --runs=3
-src/leaf/tiny_gen.c func_00336FB0 --runs=3
-src/leaf/tiny_gen.c func_00336FC0 --runs=3
-src/leaf/tiny_gen.c func_00355950 --runs=3
-src/leaf/tiny_gen.c func_00367E90 --runs=3
-src/leaf/tiny_gen.c func_00320510 --runs=3
-src/leaf/tiny_gen.c func_00320530 --runs=3
-src/leaf/tiny_gen.c func_00320540 --runs=3
-src/leaf/tiny_gen.c func_00320550 --runs=3
-src/leaf/tiny_gen.c func_00320560 --runs=3
-src/leaf/tiny_gen.c func_00320570 --runs=3
-src/leaf/tiny_gen.c func_00320580 --runs=3
-src/leaf/tiny_gen.c func_0032C5F0 --runs=3
-src/leaf/tiny_gen.c func_0032C600 --runs=3
-src/leaf/tiny_gen.c func_0032C610 --runs=3
-src/leaf/tiny_gen.c func_0032C620 --runs=3
-src/leaf/tiny_gen.c func_00346F00 --runs=3
-src/leaf/tiny_gen.c func_00346F10 --runs=3
-src/leaf/tiny_gen.c func_003482E0 --runs=3
-src/leaf/tiny_gen.c func_003482F0 --runs=3
-src/leaf/tiny_gen.c func_00348960 --runs=3
-src/leaf/tiny_gen.c func_00349270 --runs=3
-src/leaf/tiny_gen.c func_00349280 --runs=3
-src/leaf/tiny_gen.c func_00349940 --runs=3
-src/leaf/tiny_gen.c func_00349950 --runs=3
-src/leaf/tiny_gen.c func_00349960 --runs=3
-src/leaf/tiny_gen.c func_00349970 --runs=3
-src/leaf/tiny_gen.c func_00349980 --runs=3
-src/leaf/tiny_gen.c func_0034D230 --runs=3
-src/leaf/tiny_gen.c func_0034D240 --runs=3
-src/leaf/tiny_gen.c func_003658D0 --runs=3
-src/leaf/tiny_gen.c func_003658E0 --runs=3
+src/game/model.c func_0037BC90 --runs=3
+src/game/item_classes.c func_002CD760 --runs=3
+src/game/item_classes.c func_002CD770 --runs=3
+src/game/item_classes.c func_002CD780 --runs=3
+src/game/item_classes.c func_002CD790 --runs=3
+src/game/item_classes.c func_002CD7A0 --runs=3
+src/game/debilitas3.c func_002CEFA0 --runs=3
+src/game/debilitas3.c func_002CEFB0 --runs=3
+src/game/debilitas3.c func_002CF380 --runs=3
+src/game/model.c func_0033E730 --runs=3
+src/game/movie.c func_00226808 --runs=3
+src/game/movie.c func_00226868 --runs=3
+src/game/movie.c func_00226870 --runs=3
+src/game/movie.c func_00226878 --runs=3
+src/game/movie.c func_00226880 --runs=3
+src/game/movie.c func_00226888 --runs=3
+src/game/movie.c func_00226890 --runs=3
+src/game/movie.c func_00226898 --runs=3
+src/game/movie.c func_002268A0 --runs=3
+src/game/movie.c func_002268A8 --runs=3
+src/game/movie.c func_002268B0 --runs=3
+src/game/movie.c func_002268B8 --runs=3
+src/game/stalker_k23.c func_0031FBF0 --runs=3
+src/game/stalker_k23.c func_0031FC00 --runs=3
+src/game/creature.c func_0031E990 --runs=3
+src/game/creature.c func_00325D60 --runs=3
+src/game/creature.c func_0032A0D0 --runs=3
+src/game/model.c func_00336F80 --runs=3
+src/game/model.c func_00336F90 --runs=3
+src/game/model.c func_00336FA0 --runs=3
+src/game/model.c func_00336FB0 --runs=3
+src/game/model.c func_00336FC0 --runs=3
+src/game/placed.c func_00355950 --runs=3
+src/game/placed.c func_00367E90 --runs=3
+src/game/model.c func_00320510 --runs=3
+src/game/model.c func_00320530 --runs=3
+src/game/model.c func_00320540 --runs=3
+src/game/model.c func_00320550 --runs=3
+src/game/model.c func_00320560 --runs=3
+src/game/model.c func_00320570 --runs=3
+src/game/model.c func_00320580 --runs=3
+src/game/model.c func_0032C5F0 --runs=3
+src/game/model.c func_0032C600 --runs=3
+src/game/model.c func_0032C610 --runs=3
+src/game/model.c func_0032C620 --runs=3
+src/game/daniella.c func_00346F00 --runs=3
+src/game/daniella.c func_00346F10 --runs=3
+src/game/daniella.c func_003482E0 --runs=3
+src/game/daniella.c func_003482F0 --runs=3
+src/game/daniella.c func_00348960 --runs=3
+src/game/daniella.c func_00349270 --runs=3
+src/game/daniella.c func_00349280 --runs=3
+src/game/model.c func_00349940 --runs=3
+src/game/model.c func_00349950 --runs=3
+src/game/model.c func_00349960 --runs=3
+src/game/model.c func_00349970 --runs=3
+src/game/model.c func_00349980 --runs=3
+src/game/riccardo.c func_0034D230 --runs=3
+src/game/riccardo.c func_0034D240 --runs=3
+src/game/lorenzo.c func_003658D0 --runs=3
+src/game/lorenzo.c func_003658E0 --runs=3
 src/leaf/small_hand.c func_0032DD10 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/small_hand.c func_0034A490 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/small_hand.c func_0034A5F0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/small_hand.c func_0034AAE0 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --stub-ret=0 --stub-ret=1 --runs=10
 src/leaf/small_hand.c func_00341AD0 --pre=@0x44E558=0x0BC00000..0x0BC00000 --pre=@0x0BC00000=0x0046C540..0x0046C540 --runs=5
-src/leaf/small_hand.c func_0035B000 --runs=3
-src/leaf/small_hand.c func_00330D10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x175C=0x1000..0x1001 --stub-ret=7 --runs=20
-src/leaf/small_hand.c func_00346010 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=5
+src/game/model.c func_0035B000 --runs=3
+src/game/debilitas3.c func_00330D10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x175C=0x1000..0x1001 --stub-ret=7 --runs=20
+src/game/props.c func_00346010 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=5
 src/leaf/small_hand.c func_0033C110 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x7450=0..1 --runs=10
 src/leaf/small_hand.c func_0035F9B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x5C0=0..1 --runs=10
-src/leaf/small_hand.c func_003600D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xAC=0..1 --runs=10
-src/leaf/small_hand.c func_00368E80 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE58=0..1 --runs=10
-src/leaf/small_hand.c func_00369AE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20D8=0..1 --runs=10
+src/game/effects.c func_003600D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xAC=0..1 --runs=10
+src/game/effects.c func_00368E80 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE58=0..1 --runs=10
+src/game/effects.c func_00369AE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20D8=0..1 --runs=10
 src/leaf/small_hand.c func_0035CEA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
 src/leaf/small_hand.c func_0035D180 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4:u8=0..2 --runs=10
 src/leaf/small_hand.c func_0035D190 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/leaf/small_hand.c func_00360BC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
 src/leaf/small_hand.c func_00361220 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=3..6 --runs=20
 src/leaf/small_hand.c func_00361250 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_003636C0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/lorenzo.c func_003636C0 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/leaf/small_hand.c func_00371E00 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/leaf/small_hand.c func_00378550 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --runs=20
-src/leaf/small_hand.c func_0037BE70 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_00260130 --pre=@0x44E4E0=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AF00..0x0046AF00 --stub-ret=1 --stub-ret=2 --runs=10
-src/leaf/small_hand.c func_002605F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a0+0x12E0=0..1 --pre=a0+0x12E4=0..1 --pre=a0+0x13E0=0..1 --runs=30
-src/leaf/small_hand.c func_00261000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..9 --pre=a2=0x0B100000..0x0B100000 --stub-ret=0 --stub-ret=0x0B400000 --runs=20
+src/game/model.c func_0037BE70 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/subscreen.c func_00260130 --pre=@0x44E4E0=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046AF00..0x0046AF00 --stub-ret=1 --stub-ret=2 --runs=10
+src/game/subscreen.c func_002605F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a0+0x12E0=0..1 --pre=a0+0x12E4=0..1 --pre=a0+0x13E0=0..1 --runs=30
+src/game/subscreen.c func_00261000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..9 --pre=a2=0x0B100000..0x0B100000 --stub-ret=0 --stub-ret=0x0B400000 --runs=20
 src/leaf/small_hand.c func_0035C9E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_00384C50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-3..3 --stub-ret=0 --stub-ret=5 --runs=10
-src/leaf/small_hand.c func_00384C60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x97A8F:u8=0..255 --runs=10
-src/leaf/small_hand.c func_00384C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --runs=30
-src/leaf/small_hand.c func_00384CB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --pre=a0+0x97740=0..0xFFFF --pre=a0+0x97744=0..0xFFFF --runs=30
-src/leaf/small_hand.c func_0038A2C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..20 --runs=10
-src/leaf/small_hand.c func_0038C890 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/small_hand.c func_0038C8D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/leaf/small_hand.c func_003941C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x15F8:u16=0..1 --pre=a0+0x15FA:u16=0..1 --runs=20
-src/leaf/small_hand.c func_00226790 --pre=a0=-5..5 --runs=5
-src/leaf/small_hand.c func_002267A0 --runs=3
-src/leaf/small_hand.c func_002267B0 --pre=a0=-5..5 --runs=5
-src/leaf/small_hand.c func_002267C0 --runs=3
-src/leaf/small_hand.c func_00226820 --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
-src/leaf/small_hand.c func_00226848 --stub-ret=0x0B400000 --runs=5
-src/leaf/small_hand.c func_002267D0 --stub-ret=0x0B400000 --runs=5
-src/leaf/small_hand.c func_0025C2F8 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/leaf/small_hand.c func_0025C320 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/leaf/small_hand.c func_0025C360 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/leaf/small_hand.c func_0025C3A0 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/leaf/small_hand.c func_0025C3D0 --pre=a0=0..2000000 --runs=5
-src/leaf/small_hand.c func_0025C3E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_0025C400 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
-src/leaf/small_hand.c func_0031F230 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_0031F260 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_0031FBE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_0034BFE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_0031E980 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_0032A890 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_0032C000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
-src/leaf/small_hand.c func_00355940 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_00320C70 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/leaf/small_hand.c func_00348980 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=3
-src/leaf/small_hand.c func_003659B0 --runs=3
-src/leaf/small_hand.c func_003659C0 --runs=3
-src/leaf/small_hand.c func_00365CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/scene_title.c func_00384C50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-3..3 --stub-ret=0 --stub-ret=5 --runs=10
+src/game/scene_title.c func_00384C60 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x97A8F:u8=0..255 --runs=10
+src/game/scene_title.c func_00384C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --runs=30
+src/game/scene_title.c func_00384CB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..70 --pre=a0+0x97740=0..0xFFFF --pre=a0+0x97744=0..0xFFFF --runs=30
+src/game/subscreen.c func_0038A2C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..20 --runs=10
+src/game/subscreen.c func_0038C890 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/scene_game.c func_0038C8D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/subscreen.c func_003941C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x15F8:u16=0..1 --pre=a0+0x15FA:u16=0..1 --runs=20
+src/game/movie.c func_00226790 --pre=a0=-5..5 --runs=5
+src/game/movie.c func_002267A0 --runs=3
+src/game/movie.c func_002267B0 --pre=a0=-5..5 --runs=5
+src/game/movie.c func_002267C0 --runs=3
+src/game/movie.c func_00226820 --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
+src/game/movie.c func_00226848 --stub-ret=0x0B400000 --runs=5
+src/game/movie.c func_002267D0 --stub-ret=0x0B400000 --runs=5
+src/game/movie.c func_0025C2F8 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c func_0025C320 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c func_0025C360 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c func_0025C3A0 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
+src/game/movie.c func_0025C3D0 --pre=a0=0..2000000 --runs=5
+src/game/movie.c func_0025C3E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/movie.c func_0025C400 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
+src/game/music.c func_0031F230 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/music.c func_0031F260 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/stalker_k23.c func_0031FBE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/riccardo.c func_0034BFE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/creature.c func_0031E980 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/creature.c func_0032A890 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/creature.c func_0032C000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
+src/game/placed.c func_00355940 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/stalker_models.c func_00320C70 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/daniella.c func_00348980 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00470620..0x00470620 --runs=3
+src/game/lorenzo.c func_003659B0 --runs=3
+src/game/lorenzo.c func_003659C0 --runs=3
+src/game/lorenzo.c func_00365CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
 src/game/stalker_k23.c func_0031F3E0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --pre=a0+0x175C=0xB..0x2A --pre=@0x44E568=0x0B300000..0x0B300000 --pre=@0x0B300000=0x46C3E0..0x46C3E0 --stub-ret=0 --stub-ret=1 --runs=150
 src/game/stalker_k23.c func_0031F4E0 --pre=a0=0x09000000..0x09000000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x0A1FBEC1:u8=0..1 --runs=30
 src/game/stalker_k23.c func_0031F560 --pre=a0=0x09000000..0x09000000 --pre=a0+0x17D0:u8=0..4 --pre=a0+0x17C8:u8=0..1 --pre=@0x44E4F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x46AC50..0x46AC50 --runs=150
@@ -6786,7 +6786,7 @@ src/game/placed.c func_003688D0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28:u8
 src/game/placed.c func_00335DE0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28:u8=0..1 --pre=a0+0x30=0..1 --pre=@0x44E4F8=0x0B100000..0x0B100000 --pre=@0x44E4D0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046B3B8..0x0046B3B8 --pre=@0x44E568=0x0BA10000..0x0BA10000 --pre=@0x0BA10000=0x0046C3E0..0x0046C3E0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x0B600000 --stub-ret-prob=0.5 --runs=800
 src/game/placed.c func_00333AD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28:u8=0..1 --pre=a0+0x10=0x40000000..0x40400000 --pre=a0+0x14=0x40000000..0x40400000 --pre=a0+0x18=0x40000000..0x40400000 --pre=a0+0xB0=0xBF000000..0xBF800000 --pre=a0+0xB4=0x3F000000..0x3F800000 --pre=a0+0xB8=0x3E000000..0x3F800000 --pre=a0+0x100=0xBE000000..0xBE100000 --pre=a0+0x104=0x3F000000..0x3F800000 --pre=a0+0x34=0..20 --pre=a0+0xE0:u8=0..1 --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046A9D0..0x0046A9D0 --pre=@0x0B900004=0..0x0BA00000 --pre=@0x0B900008=0..40 --outparam-at=0x0017BD60:2:16 --outparam-at=0x0017BD60:5:16 --outparam-at=0x0017C050:2:16 --outparam-at=0x0017C550:2:16 --stub-ret=-1 --stub-ret=3 --stub-ret=0x80000003 --stub-ret=0x40000002 --stub-fret=0.2 --stub-fret=0.9 --runs=400 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --pre=a0+0x13E:u16=0..1 --stub-ret=0x0B600000
 src/game/placed.c func_00333AD0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x28:u8=0..1 --pre=a0+0x10=0x40000000..0x40400000 --pre=a0+0x14=0x40000000..0x40400000 --pre=a0+0x18=0x40000000..0x40400000 --pre=a0+0xB0=0xBF000000..0xBF800000 --pre=a0+0xB4=0x3F000000..0x3F800000 --pre=a0+0xB8=0x3E000000..0x3F800000 --pre=a0+0x100=0xBE000000..0xBE100000 --pre=a0+0x104=0x3F000000..0x3F800000 --pre=a0+0x34=0..20 --pre=a0+0xE0:u8=0..1 --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046A9D0..0x0046A9D0 --pre=@0x0B900004=0..0x0BA00000 --pre=@0x0B900008=0..40 --outparam-at=0x0017BD60:2:16 --outparam-at=0x0017BD60:5:16 --outparam-at=0x0017C050:2:16 --outparam-at=0x0017C550:2:16 --stub-ret=-1 --stub-ret=3 --stub-ret=0x80000003 --stub-ret=0x40000002 --stub-fret=0.2 --stub-fret=0.9 --runs=400 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --pre=a0+0x13E:u16=0..1 --stub-ret=0x0B600000 --stub-ret=0x80000005 --stub-ret=1
-src/leaf/b7_00351D50.c func_0035B060 --pre=a1=0..8 --runs=40
+src/game/model.c func_0035B060 --pre=a1=0..8 --runs=40
 src/leaf/b4_002E7300.c func_0036FC90 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B7010D4:u8=0x1F..0x20 --pre=@0x0B7010D8=0xD6..0xD9 --pre=@0x0B7010E4:u8=0x1F..0x20 --pre=@0x0B7010E8=0xD6..0xD9 --runs=100
 src/leaf/b4_002E7300.c func_0036F8D0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B7010D4:u8=0x1F..0x20 --pre=@0x0B7010D8=0xD6..0xD9 --pre=@0x0B7010E4:u8=0x1F..0x20 --pre=@0x0B7010E8=0xD6..0xD9 --runs=100
 src/game/room_handlers.c func_002AC790 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..6 --pre=@0x456DF8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046ECF0..0x0046ECF0 --pre=@0x44E4D0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046B3B8..0x0046B3B8 --stub-ret=0x0B200000 --stub-ret=0xB --stub-ret=0xC --stub-ret=0x10 --stub-ret=0x2B --stub-ret=0x30 --stub-ret=0 --runs=300

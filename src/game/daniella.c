@@ -8,8 +8,85 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "navmesh.h"
+#include "game.h"
 
 extern void *D_0046BBB0[];
+
+extern u8 D_003D73B0[];
+void *func_0020C4C0(void);
+
+void *func_0020D8D0(u8 *o, s32 flags);
+void *func_0020D920(u8 *o, s32 flags);
+void *func_0020D970(u8 *o, s32 flags);
+void *func_0020D9C0(u8 *o, s32 flags);
+
+extern u32 D_0043DC50[];
+extern u8 D_0043B6A0[], D_0043B660[];
+extern u8 D_0043C260[], D_0043C348[], D_0043C2D0[], D_0043C210[], D_0043C338[], D_0043C2B0[];
+extern u8 D_0043CC20[], D_0043CD08[], D_0043CC90[], D_0043CBD0[], D_0043CCF8[], D_0043CC70[];
+extern u8 D_0043CD80[], D_0043CD40[];
+void func_00346E10(u8 *p, s32 alt);
+f32 func_00346F20(void);
+f32 func_00346F30(void);
+f32 func_00346F40(void);
+void *func_003472D0(void);
+void func_00347A30(void *self, s32 i, f32 *out);
+void func_00347AD0(void *self, s32 i, f32 *out);
+f32 func_00348300(void);
+f32 func_00348310(void);
+f32 func_00348320(void);
+void *func_00348660(void);
+void *func_00348970(void);
+void func_003489C0(void *self, s32 i, f32 *out);
+void func_00348A60(void *self, s32 i, f32 *out);
+f32 func_00349290(void);
+
+s32 func_00346F00(void);
+s32 func_00346F10(void);
+s32 func_003482E0(void);
+s32 func_003482F0(void);
+s32 func_00348960(void);
+s32 func_00349270(void);
+s32 func_00349280(void);
+
+extern void *D_00478160[];
+void func_00348980(Pursuer *p);
+
+extern u8 D_0043DC10[], D_0043DBD0[];
+f32 func_003492A0(void);
+f32 func_003492B0(void);
+void *func_003495F0(void);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+Character *func_00348850(Character *c, s32 flags);
 
 /* vtable +0x8: destructor */
 Pursuer *func_0020C3A0(Pursuer *p, s32 flags) {
@@ -28,6 +105,10 @@ Pursuer *func_0020C3A0(Pursuer *p, s32 flags) {
 /* vtable +0x32C: her character kind */
 s32 func_0020C4B0(Pursuer *p) {
     return 3;
+}
+
+void *func_0020C4C0(void) {
+    return D_003D73B0;
 }
 
 /* vtable +0x1C: the model files loaded (func_0029F120), then motion vtable +0x34 */
@@ -417,6 +498,57 @@ void func_0020D6A0(Pursuer *p) {
     VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
 }
 
+/* destructor (vtable ?) */
+void *func_0020D8D0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, s32) = 0;
+        AT(o, 0x4, s32) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable ?) */
+void *func_0020D920(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x44, s32) = 0;
+        AT(o, 0x48, s32) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable ?) */
+void *func_0020D970(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, s32) = 0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable ?) */
+void *func_0020D9C0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x10, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void func_00346330(Pursuer *p);
 extern void func_00347B80(Pursuer *p);
@@ -478,6 +610,24 @@ void func_003479F0(Pursuer *p) {
     VCALL(m, 0x34, void (*)(void *, s32))(m, 0);
 }
 
+void func_00347A30(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
+    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
+    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.bdc432p+2f /* -6.9651 */; break;
+    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.ce0418p+2f /* 7.219 */; break;
+    }
+}
+
+void func_00347AD0(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
+    case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
+    case 14: out[0] = -0x1.5f06f6p-3f /* -0.1714 */; out[1] = 0.0f; out[2] = -0x1.8f6fd2p+1f /* -3.1206 */; break;
+    case 15: out[0] = 0x1.9a0276p-2f /* 0.4004 */; out[1] = 0.0f; out[2] = -0x1.792d78p+1f /* -2.9467 */; break;
+    }
+}
+
 /* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_00347B80) when a cry is heard or her animation
    reaches its effect key (0x20) */
@@ -508,6 +658,10 @@ void func_00348330(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
+void *func_00348660(void) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
+}
+
 /* (as func_0020D330)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
    senses step; on screen the hit effect (func_00348B10) when a cry is heard or her animation
    reaches its effect key (0x20) */
@@ -536,6 +690,10 @@ void func_003492C0(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+void *func_003495F0(void) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC10 : D_0043DBD0;
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
@@ -835,12 +993,65 @@ void func_00346DB0(Pursuer *p) {
     func_0028D6E0(p);
 }
 
+/* Picks one of four table sets depending on story flag 0x8000 (gProgress+0x30) and `alt`. */
+void func_00346E10(u8 *p, s32 alt) {
+    if (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) {
+        if (alt) {
+            *(s32 *)(p + 0x16B8) = 2;
+            *(void **)(p + 0x1730) = D_0043CC20;
+            *(void **)(p + 0x1748) = D_0043CD08;
+            *(void **)(p + 0x1740) = D_0043CC90;
+        } else {
+            *(s32 *)(p + 0x16B8) = 0;
+            *(void **)(p + 0x1730) = D_0043CBD0;
+            *(void **)(p + 0x1748) = D_0043CCF8;
+            *(void **)(p + 0x1740) = D_0043CC70;
+        }
+    } else {
+        if (alt) {
+            *(s32 *)(p + 0x16B8) = 2;
+            *(void **)(p + 0x1730) = D_0043C260;
+            *(void **)(p + 0x1748) = D_0043C348;
+            *(void **)(p + 0x1740) = D_0043C2D0;
+        } else {
+            *(s32 *)(p + 0x16B8) = 0;
+            *(void **)(p + 0x1730) = D_0043C210;
+            *(void **)(p + 0x1748) = D_0043C338;
+            *(void **)(p + 0x1740) = D_0043C2B0;
+        }
+    }
+}
+
+s32 func_00346F00(void) {
+    return 0xC;
+}
+
+s32 func_00346F10(void) {
+    return 0xB;
+}
+
+f32 func_00346F20(void) {
+    return 15.0f;
+}
+
+f32 func_00346F30(void) {
+    return 5.0f;
+}
+
+f32 func_00346F40(void) {
+    return 12.0f;
+}
+
 /* the first: vtable +0x5C: the Pursuer's reset; in the ending the Hewie bite tolerance is 80 */
 void func_00347240(Pursuer *p) {
     func_0029E520(p);
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
         PU(p, 0x16DC, s32) = 80;
     }
+}
+
+void *func_003472D0(void) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6A0 : D_0043B660;
 }
 
 extern u8 D_0043B700[], D_0043B840[], D_0043B860[], D_0043BA40[], D_0043BA70[], D_0043C210[],
@@ -923,6 +1134,26 @@ void func_00348020(Pursuer *p, s8 situation) {
     PU(p, 0x1718, u8 *) = sAttackTables2[alt][(u32)situation < 17 ? situation : 0];
 }
 
+s32 func_003482E0(void) {
+    return 0xC;
+}
+
+s32 func_003482F0(void) {
+    return 0xB;
+}
+
+f32 func_00348300(void) {
+    return 15.0f;
+}
+
+f32 func_00348310(void) {
+    return 5.0f;
+}
+
+f32 func_00348320(void) {
+    return 12.0f;
+}
+
 extern u8 D_0043CDE0[], D_0043CF20[], D_0043D100[], D_0043D130[], D_0043D5E0[], D_0043D630[],
     D_0043D650[], D_0043D698[], D_0043DAE0[], D_0043DB30[], D_0043DB50[], D_0043DB98[],
     D_0047AEE0[];
@@ -974,6 +1205,40 @@ void func_003486A0(Pursuer *p) {
     PU(p, 0x16A0, f32) = 1.5f;
 }
 
+Character *func_00348850(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478160); }
+
+s32 func_00348960(void) {
+    return 0x24;
+}
+
+void *func_00348970(void) {
+    return D_0043DC50;
+}
+
+/* (as func_00346010) */
+void func_00348980(Pursuer *p) {
+    func_0029F120(p);
+    VCALL(p->c.motion, 0x34, void (*)(void *, s32))(p->c.motion, 1);
+}
+
+void func_003489C0(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
+    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
+    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.bdc432p+2f /* -6.9651 */; break;
+    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.ce0418p+2f /* 7.219 */; break;
+    }
+}
+
+void func_00348A60(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
+    case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
+    case 14: out[0] = -0x1.5f06f6p-3f /* -0.1714 */; out[1] = 0.0f; out[2] = -0x1.8f6fd2p+1f /* -3.1206 */; break;
+    case 15: out[0] = 0x1.9a0276p-2f /* 0.4004 */; out[1] = 0.0f; out[2] = -0x1.792d78p+1f /* -2.9467 */; break;
+    }
+}
+
 extern u8 D_0043E010[], D_0043E090[], D_0043E100[], D_0043E160[], D_0043E1A0[], D_0043E200[],
     D_0043E250[], D_0043E2B0[], D_0043E310[], D_0043E340[], D_0043E360[], D_0043E3A0[],
     D_0043E3C0[], D_0043E3F0[], D_0043E420[], D_0043E450[], D_0043E460[], D_0043E540[],
@@ -996,6 +1261,26 @@ void func_00348FB0(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = sAttackTables3[alt][(u32)situation < 17 ? situation : 0];
+}
+
+s32 func_00349270(void) {
+    return 0xC;
+}
+
+s32 func_00349280(void) {
+    return 0xB;
+}
+
+f32 func_00349290(void) {
+    return 15.0f;
+}
+
+f32 func_003492A0(void) {
+    return 5.0f;
+}
+
+f32 func_003492B0(void) {
+    return 12.0f;
 }
 
 extern u8 D_0043DC70[], D_0043DDB0[], D_0043DF90[], D_0043DFC0[], D_0043E470[], D_0043E4C0[],

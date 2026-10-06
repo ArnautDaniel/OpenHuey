@@ -3,7 +3,7 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
-
+#include "ptmf.h"
 
 /* allocation entry (0x12 bytes, 64 at +0x98) */
 typedef struct VramEntry {
@@ -18,6 +18,29 @@ typedef struct VramEntry {
     /* 0x0E */ s16 cregion;  /* CLUT region (page from 0xFC000) */
     /* 0x10 */ s16 cslot;    /* slot in the region */
 } VramEntry;
+
+extern u8 D_003C5D90[];
+extern u8 D_003C6348[];
+extern u8 D_003C6450[];
+extern u8 D_003D5B80[];
+extern u8 D_00451318[];
+extern u8 D_004555C8[];
+extern u8 D_00455870[];
+extern u8 D_00455C38[];
+extern u8 D_00455DD8[];
+extern u8 D_00455E18[];
+extern u8 D_0047E878[];
+void *func_001CEC50(void);
+void *func_001D6E40(void);
+void *func_001DC580(void);
+void *func_001DE030(void);
+void *func_001DE0A8(void);
+void *func_001E61D0(void);
+void *func_001E8138(void);
+void *func_001EB650(void);
+void *func_001ED190(void);
+void *func_001ED1D0(void);
+void *func_001EDFF0(void);
 
 /* +0xC init: 8 free regions, 64 empty entries */
 void func_001C2970(u8 *v) {
@@ -47,6 +70,54 @@ void func_001C2970(u8 *v) {
         e->cslot = 0;
     }
     AT(v, 0x518, s32) = 0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_001CEC50(void) {
+    return D_00451318;
+}
+
+void *func_001D6E40(void) {
+    return D_0047E878;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_001DC580(void) {
+    return D_003C5D90;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_001DE030(void) {
+    return D_003C6348;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+void *func_001DE0A8(void) {
+    return D_003C6450;
+}
+
+void *func_001E61D0(void) {
+    return D_004555C8;
+}
+
+void *func_001E8138(void) {
+    return D_00455870;
+}
+
+void *func_001EB650(void) {
+    return D_00455C38;
+}
+
+void *func_001ED190(void) {
+    return D_00455DD8;
+}
+
+void *func_001ED1D0(void) {
+    return D_003D5B80;
+}
+
+void *func_001EDFF0(void) {
+    return D_00455E18;
 }
 
 /* CLUT region (8 at +4): CLUT format (0xFF: free), which slots are taken, how many, of how many

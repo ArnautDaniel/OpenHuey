@@ -38,7 +38,6 @@ extern u32 D_00438CC0[];
 extern u32 D_00438CF8[];
 extern u32 D_00438D10[];
 extern u32 D_0047AE78[];
-extern u8 D_00461CC0[];
 
 u32 func_00340E40(void *self, s32 i) {
     return D_004365C0[i];
@@ -182,8 +181,4 @@ void *func_00344120(void) {
 
 u32 func_00344130(void *self, s32 i) {
     return D_00438CF8[i];
-}
-
-s32 func_003445A0(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00461CC0, dest, 0x4000000, 0);
 }

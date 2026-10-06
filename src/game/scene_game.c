@@ -4,6 +4,9 @@
 #include "navmesh.h"
 #include "progress.h"
 #include "globals.h"
+#include "memcard.h"
+#include "ptmf.h"
+#include "pursuer.h"
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
 
@@ -52,6 +55,80 @@ extern void func_003A10B0(Progress *, u32);
 extern void func_003A1020(Progress *, u32);
 extern void func_003A0F90(Progress *, u32);
 
+extern void *D_004699E0[];
+extern void *D_00469D00[];
+extern void *D_0046A0D0[];
+extern void *D_0046B350[];
+extern void *D_0046BB20[];
+extern void *D_0046C6F0[];
+extern void *D_0046C770[];
+extern void *D_0046D780[];
+extern void *D_0046D7D0[];
+extern void *D_0046ED30[];
+extern void *D_00476F40[];
+extern void func_00100490(void *p);
+void *func_00120EF0(u8 *o, s32 flags);
+void *func_001FB0F0(u8 *o, s32 flags);
+void *func_00225620(u8 *o, s32 flags);
+void *func_0025C850(u8 *o, s32 flags);
+void *func_00268110(u8 *o, s32 flags);
+void *func_002D00A0(u8 *o, s32 flags);
+void *func_002D0C70(u8 *o, s32 flags);
+void *func_0033D990(u8 *o, s32 flags);
+
+extern u8 D_0046BA68[], D_0046DB80[];
+extern void *D_0046F350[];
+extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[];
+extern u8 D_0046C3E0[];
+extern void *D_0046A9D0[];
+extern void *D_00456E00;
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *func_002D0FE0(u8 *p);
+void *func_002D1000(u8 *p);
+void *func_002D1020(u8 *p);
+void *func_002D1040(u8 *p);
+void *func_002D1080(u8 *p);
+void *func_002D10A0(u8 *p);
+void *func_002D1130(u8 *p);
+void *func_002D12C0(u8 *p);
+void *func_002D12E0(u8 *p);
+void *func_002D1320(u8 *p);
+
+extern void *D_0046A9B0[];
+extern u8 D_0046FC00[];
+extern u8 D_0046F5C0[];
+extern void *D_004699C0[];
+extern void *D_0046A1C0[];
+void *func_002D1360(u8 *p);
+void *func_002D1470(u8 *p);
+void *func_002D1490(u8 *p);
+void *func_002D1510(u8 *p);
+void *func_002D1560(u8 *p);
+void *func_002D1580(u8 *p);
+void *func_002D15C0(u8 *p);
+
+#define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
+
+void func_0031DDF0(u8 *self, u32 id);
+s32 func_0031E0B0(void *self);
+void func_0031E0D0(u8 *self);
+s32 func_0031E130(u8 *self);
+
+extern void *func_0016FCD0(u8 *m);
+extern void *D_00474460[];
+void *func_0038C8D0(u8 *m);
+
+/* destructor (vtable D_004699E0) */
+void *func_00120EF0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_004699E0;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 static inline void Scene_SetState(Scene *scene, const PTMF *state) {
     ptmf_set(&scene->state, state);
 }
@@ -213,32 +290,15 @@ extern const PTMF sSceneEntryState;
 extern void *gSceneGameF29740;
 extern void *D_0045D1F0, *D_00456DE8;
 
-extern void func_002D15C0(void *);
 extern void func_002D15B0(void *);
-extern void func_002D1580(void *);
-extern void func_002D1560(void *);
-extern void func_002D1510(void *);
-extern void func_002D1490(void *);
-extern void func_002D1470(void *);
 extern void func_002D13B0(void *);
 extern void func_00169260(void *, void *, u32, void *, s32);
-extern void func_002D1360(void *);
-extern void func_002D1320(void *);
-extern void func_002D12E0(void *);
-extern void func_002D12C0(void *);
 extern void func_002D1200(void *);
 extern void func_002D1160(void *);
-extern void func_002D1130(void *);
 extern void func_002D10C0(void *);
-extern void func_002D10A0(void *);
-extern void func_002D1080(void *);
-extern void func_002D1040(void *);
-extern void *func_002D1020(void *);
 extern void *func_001FB3B0(void *, s32);
-extern void func_002D1000(void *);
-extern void *func_002D0FE0(void *);
 extern void *func_001FB400(void *, s32);
-extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
 extern void *SubScreenBase_ctor(SubScreen *w);
 extern void *TextObj_ctor(void *o);
 extern BootCard *BootCard_ctor(BootCard *b);
@@ -382,6 +442,20 @@ Scene *SceneGame_ctor(Scene *g) {
     return g;
 }
 
+/* destructor (vtable D_0046ED30) */
+/* (possibly dead code: nothing in the game references it) */
+void *func_002D0C70(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046ED30;
+        AT(o, 0x0, void **) = D_0046BB20;
+        gCutscene = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
 /* vtable +0xC: count the frame (+0x73EE40), then the scene's request / state machine */
 void SceneGame_Update(Scene *g, s32 arg) {
     AT(g, 0x73EE40, s32)++;
@@ -419,7 +493,6 @@ void func_003A06E0(Scene *g) {
     }
     func_003A0160(g);
 }
-
 
 extern s32 func_001764C0(Progress *p);
 extern void SubScreen_Start(SubScreen *s);
@@ -509,7 +582,6 @@ void func_0039AD90(Scene *g) {
 }
 
 extern s32 func_00120660(void *rooms, s32 slot);   /* room slot still loading */
-extern void func_0031E130(void *o);
 extern void func_002E2820(void *o);
 
 /* room-load state 2: wait for the room (and the loader) to finish; on a loaded game, also
@@ -590,7 +662,6 @@ extern void *func_002E2330(u32 size, void *place);   /* placement new */
 extern void *func_0039B280(void *o);   /* creature constructors: slots 0..6 */
 extern void *func_0039B230(void *o);   /* slots 7..9 */
 extern void *func_002DC6E0(u32 size, void *place);
-extern void *func_0038C8D0(void *o);
 
 #define SG_CONTROL 0x1FBF01   /* u8: 0 Fiona is controlled, else Hewie */
 #define SG_ROOMFLAG 0x1FBF00
@@ -866,7 +937,6 @@ extern void func_00174920(Progress *p);
 extern void func_00174270(Progress *p);
 extern void func_00209210(void *ev);
 extern s32 func_00179170(Progress *p, s32 c);
-extern void func_0031E0D0(void *o);
 extern void func_0031DE10(void *o);
 extern void func_00176440(Progress *p);
 extern void func_001762B0(Progress *p);
@@ -1213,7 +1283,6 @@ void func_0039EAB0(Scene *g) {
     }
 }
 
-
 /* Progress +0x54: an event camera is running and the event does not hide the room's alpha
  * parts (event +0xC0) */
 s32 func_0039A7C0(Scene *g) {
@@ -1224,7 +1293,6 @@ s32 func_0039A7C0(Scene *g) {
     }
     return (u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev) == 0;
 }
-
 
 extern s32 func_00177620(Progress *p);   /* who is controlled (u8): 2 = Hewie */
 
@@ -1356,7 +1424,6 @@ void func_0039C880(Scene *g) {
     AT(last, 0x1E, u16) = AT(cur, 0x1E, u16);
 }
 
-
 extern void func_00177630(Progress *p, s32 n);   /* set condition bit n */
 extern s32 func_00177670(Progress *p, s32 n);    /* condition bit n */
 
@@ -1485,7 +1552,6 @@ void func_0039BB60(Scene *g) {
     }
 }
 
-
 extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's state */
 
 /* set the state (a, b) of every door with a side in room `room` (the rooms' doors, +0x6C side
@@ -1506,8 +1572,6 @@ void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
         }
     }
 }
-
-
 
 /* get the room behind exit `exit` of the current one ready: loaded into the other room slot
  * (+0x73F240, current slot +0xF6C1B0) unless it is there already */
@@ -1561,19 +1625,15 @@ u8 func_0039D120(Scene *g, u8 exit) {
     return in;
 }
 
-
 /* ---- doors, nearby rooms, the creatures, the save snapshot ---- */
 
 #include "sce/libvu0.h"
 
 extern s32 func_00178450(Progress *p, u32 d);   /* unlock door d */
 extern s32 func_00178500(Progress *p, u32 d);   /* lock door d */
-extern s32 func_001785B0(Progress *p, s32 room, u32 exit);   /* the door there: state bit 0 (u8) */
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);   /* passable from that side (u8) */
 extern void *func_00114FA8(u32 size);   /* malloc */
 extern void func_00114FD0(void *p);     /* free */
 extern void *func_002E2330(u32 size, void *place);   /* placement new */
-extern void *func_0038C8D0(void *m);    /* a creature's extra part */
 extern void func_00110878(u8 *out);     /* the date and time (Sony libcdvd clock) */
 extern void func_003851B0(void *sub, u8 *save);
 extern void *D_00469C20[], *D_00469C60[], *D_00474080[], *D_0046FAA0[];
@@ -1958,7 +2018,6 @@ void func_0039B800(Scene *g, u32 slot) {
     func_003851B0(sub, s);
 }
 
-
 /* ---- the menu sub-states (+0x1053440): each draws the world as it stands (frozen) under its
  * screen and goes back to play (func_0039EAB0) when done ---- */
 
@@ -2296,7 +2355,6 @@ extern void func_001F9D20(void *o);
 extern void func_001766D0(void *p);
 extern void func_002E31D0(void *bgmctl);
 extern void func_002D2330(void *bgm);
-extern void func_0031E0B0(void *o);
 extern void func_00267140(void *o);
 extern void func_0017D1B0(void *o);
 
@@ -2309,6 +2367,70 @@ void func_00179E60(u8 *o) {
     for (i = 0; i < 15; i++) {
         AT(o, 0x2720 + i * 4, s32) = 0;
     }
+}
+
+/* destructor (vtable D_0046B350) */
+void *func_001FB0F0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046B350;
+        gLights = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046C6F0) */
+void *func_00225620(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046C6F0;
+        gCamDirector = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046C770) */
+void *func_0025C850(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046C770;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046D780) */
+void *func_00268110(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D780;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046D7D0) */
+/* (possibly dead code: nothing in the game references it) */
+void *func_002D00A0(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046D7D0;
+        AT(o, 0x0, void **) = D_0046A0D0;
+        gBootMessage = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 /* (vtable) a soft reset: once the other room file is in and the loader is idle (3), the sounds
@@ -2392,7 +2514,6 @@ extern void *TextObj_dtor(void *o, s32 flags);
 extern void *SubScreenBase_dtor(void *w, s32 flags);
 extern void *func_001FB400(void *o, s32 flags);
 extern void *func_001FB3B0(void *o, s32 flags);
-extern void *func_002D0C70(void *o, s32 flags);
 extern void *func_0016CC40(void *o, s32 flags);
 extern void *func_0020C170(void *o, s32 flags);
 extern void *func_0020C120(void *o, s32 flags);
@@ -2401,15 +2522,11 @@ extern void *func_002A8520(void *o, s32 flags);
 extern void *func_002D0D60(void *o, s32 flags);
 extern void *func_00221890(void *o, s32 flags);
 extern void *func_0021B0F0(void *o, s32 flags);
-extern void *func_00268110(void *o, s32 flags);
-extern void *func_0025C850(void *o, s32 flags);
 extern void *func_002D0DF0(void *o, s32 flags);
 extern void *func_002D0EE0(void *o, s32 flags);
-extern void *func_002D00A0(void *o, s32 flags);
 extern void *func_00168C20(void *o, s32 flags);
 extern void *func_0020E820(void *o, s32 flags);
 extern void *func_00179F60(void *o, s32 flags);   /* the nav mesh's destructor (navmesh.c) */
-
 
 /* (D_0046A9C0): its quad drawer (+0x120) and its task's child (+0x88) */
 void *func_00179B10(u8 *o, s32 flags) {
@@ -2448,6 +2565,202 @@ void *func_002D0F90(void *o, s32 flags) {
         }
     }
     return o;
+}
+
+void *func_002D0FE0(u8 *p) {
+    F(p, 0x0, void *) = D_0046BA68;
+    p[0x4] = 0;
+    return p;
+}
+
+void *func_002D1000(u8 *p) {
+    gCutscene = (VObject *)p;
+    F(p, 0x0, void *) = D_0046ED30;
+    return p;
+}
+
+void *func_002D1020(u8 *p) {
+    F(p, 0x0, void *) = D_0046DB80;
+    return p;
+}
+
+void *func_002D1040(u8 *p) {
+    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x4, s32) = -1;
+    F(p, 0x0, void *) = D_0046F350;
+    F(p, 0x24, u32) = 0;
+    F(p, 0x10, s32) = -1;
+    p[0x14] = 0;
+    return p;
+}
+
+void *func_002D1080(u8 *p) {
+    gEvents = (VObject *)p;
+    F(p, 0x0, void *) = D_0046BAA0;
+    return p;
+}
+
+void *func_002D10A0(u8 *p) {
+    F(p, 0x0, void *) = D_0046BA80;
+    F(p, 0x4, u32) = 0;
+    p[0x8] = 0;
+    return p;
+}
+
+void *func_002D1130(u8 *p) {
+    D_00456E00 = p;
+    F(p, 0x0, void *) = D_0046DB40;
+    F(p, 0x4, u32) = 0;
+    F(p, 0x8, u32) = 0;
+    return p;
+}
+
+void *func_002D12C0(u8 *p) {
+    gRooms = (VObject *)p;
+    F(p, 0x0, void *) = D_0046C3E0;
+    return p;
+}
+
+void *func_002D12E0(u8 *p) {
+    s32 i;
+
+    gNavMesh = (NavMesh *)p;
+    F(p, 0x0, void *) = D_0046A9D0;
+    for (i = 0x4; i <= 0x18; i += 4) {
+        F(p, i, u32) = 0;
+    }
+    return p;
+}
+
+void *func_002D1320(u8 *p) {
+    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x4, s32) = -1;
+    F(p, 0x0, void *) = D_0046D780;
+    F(p, 0x20, u32) = 0;
+    F(p, 0x24, u32) = 0;
+    F(p, 0x18, s32) = -1;
+    return p;
+}
+
+void *func_002D1360(u8 *p) {
+    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x4, s32) = -1;
+    F(p, 0x0, void *) = D_0046C770;
+    F(p, 0x7C, u32) = 0;
+    F(p, 0x80, u32) = 0;
+    F(p, 0x64, s32) = -1;
+    p[0x84] = 0;
+    p[0x60] = 0;
+    F(p, 0x68, u32) = 0;
+    p[0x85] = 0;
+    return p;
+}
+
+void *func_002D1470(u8 *p) {
+    F(p, 0x4C, void *) = D_0046A9B0;
+    return p;
+}
+
+void *func_002D1490(u8 *p) {
+    u8 *a = p + 0xDC40;
+    u8 *b = p + 0xF630;
+
+    gCreatures = p;
+    F(p, 0x28, void *) = D_0046FC00;
+    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x4, u32) = 0;
+    F(a, 0x8, u32) = 0;
+    F(a, 0x0, void *) = D_004699C0;
+    F(a, 0xC, u32) = 0;
+    F(a, 0x10, u32) = 0;
+    F(a, 0x14, u32) = 0;
+    F(b, 0x0, void *) = D_004699E0;
+    F(b, 0x4, u32) = 0;
+    F(b, 0x8, u32) = 0;
+    F(b, 0x0, void *) = D_004699C0;
+    F(b, 0xC, u32) = 0;
+    F(b, 0x10, u32) = 0;
+    F(b, 0x14, u32) = 0;
+    return p;
+}
+
+void *func_002D1510(u8 *p) {
+    u8 *a = p + 0xA040;
+
+    gPlacedThings = (VObject *)p;
+    F(p, 0x0, void *) = D_0046F5C0;
+    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x4, u32) = 0;
+    F(a, 0x8, u32) = 0;
+    F(a, 0x0, void *) = D_004699C0;
+    F(a, 0xC, u32) = 0;
+    F(a, 0x10, u32) = 0;
+    F(a, 0x14, u32) = 0;
+    return p;
+}
+
+void *func_002D1560(u8 *p) {
+    gBootMessage = (VObject *)p;
+    F(p, 0x0, void *) = D_0046D7D0;
+    return p;
+}
+
+void *func_002D1580(u8 *p) {
+    F(p, 0x0, void *) = D_004699E0;
+    F(p, 0x4, u32) = 0;
+    F(p, 0x8, u32) = 0;
+    F(p, 0x0, void *) = D_0046A1C0;
+    F(p, 0xC, u32) = 0;
+    F(p, 0x10, u32) = 0;
+    return p;
+}
+
+/* Progress constructor: registers the global instance. */
+void *func_002D15C0(u8 *p) {
+    gProgress = (Progress *)p;
+    return p;
+}
+
+void func_0031DDF0(u8 *self, u32 id) {
+    self[0x11040] = (u8)id;
+    S32(self, 0x11044) = 30;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+s32 func_0031E0B0(void *self) {
+    return VCALL(gTexCache, 0x14, s32 (*)(void *, s32))(gTexCache, 0x2D);
+}
+
+/* Count down the timer set by func_0031DDF0; id 0xFF = none. */
+void func_0031E0D0(u8 *self) {
+    if (self[0x11040] != 0xFF) {
+        S32(self, 0x11044) -= 1;
+        if (S32(self, 0x11044) == 0) {
+            self[0x11040] = 0xFF;
+        }
+    }
+}
+
+s32 func_0031E130(u8 *self) {
+    return VCALL(gTexCache, 0x10, s32 (*)(void *, void *, s32))(gTexCache, self + 0x40, 0x2D);
+}
+
+/* destructor (vtable D_00476F40) */
+void *func_0033D990(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_00476F40;
+        AT(o, 0x0, void **) = D_00469D00;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+void *func_0038C8D0(u8 *m) {
+    func_0016FCD0(m);
+    AT(m, 0x0, void **) = D_00474460;
+    return m;
 }
 
 /* destructor: the members torn down in reverse (task manager +0x1053480, BGM +0x1053424, the sub

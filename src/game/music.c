@@ -30,6 +30,7 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "actor.h"
+#include "pursuer.h"
 
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
@@ -43,6 +44,52 @@ extern void *D_0046EB70[], *D_0046EBE0[];
 #define CHAN(d, k, c) (TRACK(d, k) + ((c) & 0xFF) * 0x10)
 #define CUE(d, i) ((u8 *)(d) + 0x474 + (i) * 0x28)
 #define CUR(d) AT(d, 0x834, u8 *)
+
+void func_002BFE40(u8 *self);
+void func_002C0700(u8 *self);
+void func_002C0710(u8 *self);
+
+extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void func_00124E40(Actor *a);
+extern void *D_004738A0[];
+extern u8 D_0042A340[];
+/* writes {x, 0, z} */
+#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
+
+void *func_0031F220(void);
+void func_0031F290(void *self, s32 id, f32 *out);
+void func_0031F330(void *self, s32 id, f32 *out);
+
+void func_0031F230(Pursuer *p);
+void func_0031F260(Pursuer *p);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = D_0046D810;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = D_0046C220;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = D_00469C60;
+        c->a.vtbl = D_00469C20;
+        if ((s16)flags > 0) {
+            func_00124E40(&c->a);
+        }
+    }
+    return c;
+}
+
+Character *func_0031F110(Character *c, s32 flags);
 
 /* (the EE's float -> unsigned conversion) */
 static inline u32 f2u(f32 f) {
@@ -472,10 +519,9 @@ u8 func_002C1980(u8 *d) {
     if (AT(gCharSlot2, 0x30, s32) == AT(gCharPlayer, 0x30, s32)) {
         f32 dist = AT(gCharSlot2, 0x1588, f32);
 
-        extern f32 func_00124490(void *a, f32 *p);
 
         if (dist < 0.0f) {
-            dist = func_00124490(gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
+            dist = func_00124490((Actor *)gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
         }
         while (!(tbl[i * 2] <= 0.0f) && !(dist < tbl[i * 2])) {
             i = (i + 1) & 0xFF;
@@ -569,7 +615,7 @@ void func_002C3760(u8 *d, u32 k) {
 
 /* ---- life ---- */
 
-extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
+extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
 extern void func_001002C0(void *block, void *(*dtor)(void *, s32), u32 size, u32 n);
 extern void func_00100490(void *p);   /* operator delete */
 extern f32 func_0031C6E8(f32 x);      /* logf */
@@ -719,6 +765,10 @@ void func_002BFE30(u8 *d) {
     AT(d, 0xA38, u8) = 0;
 }
 
+void func_002BFE40(u8 *self) {
+    self[0xA38] = 1;
+}
+
 /* +0x28..+0x34 */
 f32 func_002C0150(u8 *d) {
     return AT(d, 0x4, f32);
@@ -804,6 +854,14 @@ void func_002C04D0(u8 *d) {
         AT(CHAN(d, 0, ch), 0xC, u8) = 1;
         midi(0, 0xB0, 7, 0, ch);
     }
+}
+
+void func_002C0700(u8 *self) {
+    self[0x30] = 5;
+}
+
+void func_002C0710(u8 *self) {
+    self[0x30] = 5;
 }
 
 /* +0x54 the chase begins (`now`: at once): track 3 (the chase) from its start at the chase
@@ -1342,6 +1400,59 @@ void func_0031EFF0(u8 *d) {
     static const char *const sFiles[6] = {D_0045FFC0, D_0045FFD8, D_0045FFF0, D_00460010, D_00460030, D_00460040};
 
     stage_load(d, sFiles);
+}
+
+Character *func_0031F110(Character *c, s32 flags) { return creature_dtor(c, flags, D_004738A0); }
+
+void *func_0031F220(void) {
+    return D_0042A340;
+}
+
+/* (pursuer classes) their func_002990E0 / func_00299080 with +0x17C8 on / off */
+void func_0031F230(Pursuer *p) {
+    func_002990E0(p);
+    PU(p, 0x17C8, u8) = 1;
+}
+
+void func_0031F260(Pursuer *p) {
+    func_00299080(p);
+    PU(p, 0x17C8, u8) = 0;
+}
+
+void func_0031F290(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 1:
+        B5_SET3(out, 0.0f, 0x1.e49ba60000000p+2f /* 7.572 */);
+        break;
+    case 3:
+        B5_SET3(out, 0.0f, -0x1.b8e21a0000000p+2f /* 6.8888 */);
+        break;
+    case 0:
+        B5_SET3(out, 0.0f, -0x1.5412060000000p+2f /* 5.3136 */);
+        break;
+    case 2:
+        B5_SET3(out, 0.0f, 0x1.fbfb160000000p+2f /* 7.9372 */);
+        break;
+    }
+}
+
+void func_0031F330(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 10:
+    case 11:
+        B5_SET3(out, -0x1.3eab360000000p-5f /* 0.0389 */, 0x1.4cf4f00000000p+3f /* 10.4049 */);
+        break;
+    case 12:
+    case 13:
+        B5_SET3(out, 0x1.7652be0000000p-1f /* 0.7311 */, 0x1.a808320000000p+3f /* 13.251 */);
+        break;
+    case 14:
+        B5_SET3(out, -0x1.25a8580000000p+0f /* 1.1471 */, -0x1.42a64c0000000p+1f /* 2.5207 */);
+        break;
+    case 15:
+        B5_SET3(out, -0x1.4fdf3c0000000p-2f /* 0.328 */, -0x1.324a8c0000000p+1f /* 2.3929 */);
+        break;
+    }
 }
 
 void func_0031EE70(u8 *d, s32 now) {

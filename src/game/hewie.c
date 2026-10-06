@@ -6,7 +6,7 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
-
+#include "ptmf.h"
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
 #define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
@@ -16,6 +16,16 @@ extern void *D_0046A120[];   /* Hewie vtable */
 extern void *D_00469C60[];   /* Character vtable */
 extern void *D_00469C20[];   /* Actor base vtable */
 extern void func_00124E40(Actor *a);
+
+/* float from its bit pattern */
+static inline f32 B4_FLT(u32 bits) {
+    union { u32 u; f32 f; } c;
+    c.u = bits;
+    return c.f;
+}
+
+f32 func_002E2D00(f32 a);
+void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
 
 /* vtable +0x8: destructor (nothing to free: he lives inside the scene). */
 Hewie *func_00130A70(Hewie *h, s32 flags) {
@@ -257,8 +267,6 @@ s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep) {
     r = direct ? func_001270A0(&h->c) : func_001270F0(&h->c);
     return -(r < 0);
 }
-
-
 
 #define HEWIE_MODE(h) HW(h, 0xF35C0, s32)        /* 0 normal, 1..3 (timed by +0xF35BE) */
 
@@ -508,7 +516,6 @@ void func_0015FBE0(Hewie *h) {
     Progress_ClearFlag(gProgress, 0xB);
 }
 
-
 /* vtable +0x78: left the room being played during action 0x38 -> default action. */
 void func_0015FB30(Hewie *h) {
     s32 room = h->c.a.room;
@@ -518,7 +525,6 @@ void func_0015FB30(Hewie *h) {
     }
     func_00138AD0(h, 0, -1);
 }
-
 
 /* vtable +0x94: take `damage` (difficulty 1: x1.5); returns 1 when he is down (difficulty 2:
  * never, he keeps 1). */
@@ -567,7 +573,6 @@ void func_00167AF0(Hewie *h) {
 
 extern s32 func_00143D20(Hewie *h);
 extern void func_00124890(Actor *a, s32 side);
-
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
  * side if he has no triangle yet); in the special mode: note his side, hand him to the
@@ -793,6 +798,31 @@ void func_00168A10(Hewie *h) {
     HW(h, 0xF36AC, s32) = 0;
 }
 
+/* Wraps an angle into [-pi, pi]. */
+f32 func_002E2D00(f32 a) {
+    const f32 pi = B4_FLT(0x40490FDB);
+    const f32 twopi = B4_FLT(0x40C90FDB);
+
+    while (!(a <= pi)) {
+        a -= twopi;
+    }
+    while (a < -pi) {
+        a += twopi;
+    }
+    return a;
+}
+
+/* out.xyz = m x v (v as a point: plus m's translation row; w 0 as above) */
+void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
+    f32 x = v[0], y = v[1], z = v[2];
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        out[i] = m[0][i] * x + m[1][i] * y + m[2][i] * z + m[3][i];
+    }
+    *(s32 *)&out[3] = 0;
+}
+
 extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
 extern void func_002DDE20(void *motion, s32 set, s32 variant);
 extern void func_001F1D60(void *obj);
@@ -842,7 +872,6 @@ s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
 }
 
 extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
-extern f32 func_002E2D00(f32 angle);                  /* angle wrapped to -pi..pi */
 extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
 
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
@@ -939,7 +968,6 @@ s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
     func_00126270(&h->c);
     return r;
 }
-
 
 extern f32 func_00124490(Actor *a, const f32 *p);          /* distance to a point */
 extern s32 func_001F1B90(void *input, void *pad);
@@ -1822,7 +1850,6 @@ void func_00157360(Hewie *h) {
 }
 
 extern void func_002E3130(sceVu0FMATRIX out, const f32 *pos, f32 angle);
-extern void func_002E2DD0(f32 *out, sceVu0FMATRIX m, const f32 *v);
 
 /* A point 24 units out from door `door` on his side of it (if the door is usable). */
 void func_00144940(Hewie *h, s32 door, f32 *out) {
@@ -1895,7 +1922,6 @@ void func_00140050(Hewie *h) {
         Hewie_Start(h, 5);
     }
 }
-
 
 void func_0014DE70(Hewie *h) {
     if (HW(h, 0xF3604, s32) != 4) {
@@ -2760,7 +2786,6 @@ void func_00153B00(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-
 /* His idle overlay (ear / tail?) animation by +0xF3648: 2 always 0x2001, 1 0x2000 (hurt 0x2002);
  * 0: (hurt 0x2002) alternate 0x2000 / 0x2001 after a random wait (+0xF364C, 300..2100 frames). */
 void func_0013FA40(Hewie *h) {
@@ -3264,7 +3289,6 @@ s32 func_00137020(Hewie *h) {
 
 /* ---- whom to go for ---- */
 
-
 /* the one he goes for: the pursuer when it holds Fiona (her mode 4, sub 9) and he can reach
  * it; a creature (slots 7..9, mode 8) holding her (sub 0x12) he can reach; else the pursuer
  * if he can reach it (not while it moves 3); else the nearest hostile creature (+0x3C) he can
@@ -3355,7 +3379,6 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
     }
     return hit;
 }
-
 
 /* whether he dares go for the character in `slot`: from trust level 2, a 1-in-16 roll under
    his level + 1 + his feeling for its kind (+0xF367C.. / 5, at most 8) */
@@ -5259,7 +5282,6 @@ s32 func_00144B30(Hewie *h) {
 }
 
 /* ---- footsteps ---- */
-
 
 /* his feet: each foot (motion +0x64, feet 0..3) that touches down this frame leaves a print in
  * rooms 7, 0xD1 and 0x106 (at its bone, deep when walking group 8) and makes a step sound by the
@@ -10314,7 +10336,6 @@ void func_00166DF0(Hewie *h, s32 exit) {
         hewie_want(h, HW(h, 0xF3598, s32) == 0 ? 0x2C : 0, 0);
     }
 }
-
 
 void func_00161860(Hewie *h);
 extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);

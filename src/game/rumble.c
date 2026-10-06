@@ -5,6 +5,8 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
+#include "memcard.h"
+#include "navmesh.h"
 
 typedef struct RumbleChannel {
     /* 0x00 */ s16 timeA;
@@ -41,6 +43,19 @@ _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 extern void *D_0046F4F0[], *D_0046AE30[];
 extern void func_00100490(void *p);   /* operator delete */
 
+void *func_001BF280(u8 *o, s32 flags);
+
+/* destructor (vtable D_0046AE30) */
+void *func_001BF280(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AE30;
+        gRumble = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
 /* constructor: register, reset (vtable +0xC) */
 void *func_002D4630(Rumble *f) {
     f->vtbl = D_0046F4F0;
