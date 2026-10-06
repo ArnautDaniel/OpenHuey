@@ -2351,3 +2351,43 @@ void func_00398100(SubScreen *s) {
     }
     dof.vtbl = D_00469D00;
 }
+
+extern const PTMF D_0044C0D8;
+
+/* state: the entry list - up / down through the group (0..7, 8..10, round), left / right /
+ * next / previous to the other group, confirm opens the entry (D_0044C080's message, state
+ * D_0044C0D8), cancel closes; then the list, the help line and the arrows */
+void func_00386150(SubScreen *s) {
+    s32 b, x;
+    u8 alpha;
+
+    if (!s->fading) {
+        u32 pad = D_0047E36C;
+        u8 *k = &SUB_PAGE(s, 0x0, u8);
+
+        if (pad & MENU_CONFIRM) {
+            Task_Open(&s->ask, D_0044C080[*k][2]);
+            ptmf_set(&s->state, &D_0044C0D8);
+            Sound_PlaySE(SE_DECIDE);
+        } else if (pad & MENU_UP) {
+            *k = *k == 0 ? 7 : *k == 8 ? 10 : *k - 1;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_DOWN) {
+            *k = *k == 7 ? 0 : *k == 10 ? 8 : *k + 1;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & (MENU_LEFT | MENU_RIGHT | MENU_PREV | MENU_NEXT)) {
+            *k = *k < 8 ? 8 : 0;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_CANCEL) {
+            s->close = 1;
+        }
+    }
+    func_00385C30(s);
+    Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
+    x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
+    Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
+    b = 0x80 - ((s->frame << 2) & 0xFF);
+    alpha = b > 0 ? b : -b;
+    SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+    SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+}
