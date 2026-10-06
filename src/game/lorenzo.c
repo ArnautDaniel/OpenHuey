@@ -1204,6 +1204,34 @@ extern u8 D_00444AB0[];
 extern u8 D_00444AD0[];
 extern u8 D_00444A90[];
 
+/* (as func_003095B0)  vtable +0x2D8: the point (x, 0, z) for spot `id` 10..15 (others untouched) */
+void func_00363610(void *self, s32 id, f32 *out) {
+    switch (id) {
+    case 10:
+    case 11:
+        out[0] = 0x1.2d566c0000000p+0f;   /* 1.1771 */
+        out[1] = 0.0f;
+        out[2] = 0x1.3a28f60000000p+3f;   /* 9.8175 */
+        break;
+    case 12:
+    case 13:
+        out[0] = 0x1.e8587a0000000p-1f;   /* 0.9538 */
+        out[1] = 0.0f;
+        out[2] = 0x1.abdcc60000000p+3f;   /* 13.3707 */
+        break;
+    case 14:
+        out[0] = -0x1.25a8580000000p+0f;  /* -1.1471 */
+        out[1] = 0.0f;
+        out[2] = -0x1.42a64c0000000p+1f;  /* -2.5207 */
+        break;
+    case 15:
+        out[0] = -0x1.2f4f0e0000000p-3f;  /* -0.1481 */
+        out[1] = 0.0f;
+        out[2] = -0x1.fd1eb80000000p+1f;  /* -3.9775 */
+        break;
+    }
+}
+
 /* (as func_00309680)  his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
    hand (bone 0x32) */
 void func_003636D0(Pursuer *p) {
