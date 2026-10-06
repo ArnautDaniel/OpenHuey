@@ -3796,3 +3796,67 @@ void func_003284F0(Character *c) {
         return;
     }
 }
+
+/* watching Fiona (moved by its animation, facing her; sound 2 every 44 frames when `sound`),
+   deciding every 150 frames (+0x40): with progress flag 9 state 9, with her caught state 0xC,
+   out of her sight state 0x10 (all move 2 but the last); in sight, every 90 frames state 5 -
+   or with +0x6B bit 0x40 state 7 / `other` by a coin */
+static inline void cr19_watch(Character *c, s32 sound, u8 other) {
+    u8 *k = CR(c);
+
+    cr19_root_move(c);
+    func_0032B080(c, gCharPlayer->a.pos);
+    if (sound && AT(k, 0x40, s16) % 44 == 0) {
+        func_00122C20(&c->a, 2, 5, 0, 0, NULL);
+    }
+    AT(k, 0x40, s16)++;
+    if (Progress_TestFlag(gProgress, 9) != 0) {
+        if ((u32)AT(k, 0x40, s16) % 150 == 0) {
+            AT(k, 0x69, u8) = 9;
+            AT(c, 0xF8, s32) = 2;
+            func_00127060(c);
+            cr19_settle(c);
+        }
+        return;
+    }
+    if (AT(gCharPlayer, 0x1AD630, u8) == 1) {
+        if ((u32)AT(k, 0x40, s16) % 150 == 0) {
+            AT(k, 0x69, u8) = 0xC;
+            AT(c, 0xF8, s32) = 2;
+            func_00127060(c);
+            cr19_settle(c);
+        }
+        return;
+    }
+    if (!(func_00122C90(c, c->a.navTri, gCharPlayer->a.navTri, c->a.pos, gCharPlayer->a.pos, 0) & 0xFF)) {
+        if ((u32)AT(k, 0x40, s16) % 150 == 0) {
+            cr19_enter(c, 0x10);
+        }
+        return;
+    }
+    if ((u32)AT(k, 0x40, s16) % 90 != 0) {
+        return;
+    }
+    if (!(AT(k, 0x6B, u8) & 0x40)) {
+        AT(k, 0x69, u8) = 5;
+    } else {
+        s8 r = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 1;
+
+        if (r == 0) {
+            AT(k, 0x69, u8) = 7;
+        } else if (r == 1) {
+            AT(k, 0x69, u8) = other;
+        }
+    }
+    AT(c, 0xF8, s32) = 0;
+    func_00127060(c);
+    cr19_settle(c);
+}
+
+void func_00328960(Character *c) {
+    cr19_watch(c, 1, 0);
+}
+
+void func_00328E00(Character *c) {
+    cr19_watch(c, 0, 1);
+}
