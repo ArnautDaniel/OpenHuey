@@ -1098,6 +1098,23 @@ u32 func_001B8860(void *r, u32 i, u32 *limit) {
     return 0x80C0C0C0;
 }
 
+/* palette generator 2: entry i of the ramp from colour c[1] (index 0) to c[0] (index 255), each
+ * channel rounded, alpha halved */
+static inline u32 ramp_ch(f32 t, f32 u, u32 a, u32 b) {
+    return (u32)(0.5f + (u * (f32)b + t * (f32)a));
+}
+
+u32 func_001B8910(void *r, u32 i, const u32 *c) {
+    f32 t = (f32)i / 255.0f;
+    f32 u = 1.0f - t;
+    u32 g, rb;
+
+    g = ramp_ch(t, u, (c[0] >> 8) & 0xFF, (c[1] >> 8) & 0xFF) << 8;
+    rb = g | ramp_ch(t, u, c[0] & 0xFF, c[1] & 0xFF);
+    rb |= ramp_ch(t, u, (c[0] >> 16) & 0xFF, (c[1] >> 16) & 0xFF) << 16;
+    return (ramp_ch(t, u, c[0] >> 24, c[1] >> 24) >> 1) << 24 | rb;
+}
+
 /* palette entry i: the grey ((2i + 5)(i + 1)) & 0xFF */
 u32 func_001B8890(void *r, s32 i) {
     return grey_rgba(((i * 2 + 5) * (i + 1)) & 0xFF, 0x80000000);
