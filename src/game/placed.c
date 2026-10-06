@@ -2347,3 +2347,16 @@ void func_00367BC0(u8 *o) {
     }
     thing_kick_up(o, 0x1.333334p-1f);
 }
+
+/* 1 when the pursuer stands on it (half a unit high) */
+s32 func_00367EA0(u8 *o) {
+    u8 *p = (u8 *)gCharPursuer;
+
+    if (p == NULL || AT(p, 0x28, u8) != 1 || AT(p, 0x29, u8) != 0) {
+        return 0;
+    }
+    if (!thing_spans(AT(p, 0x14, f32), AT(p, 0x14, f32) + AT(p, 0xCC, f32), AT(o, 0x14, f32), 0.5f + AT(o, 0x14, f32))) {
+        return 0;
+    }
+    return thing_near(p, o, AT(p, 0xC8, f32));
+}
