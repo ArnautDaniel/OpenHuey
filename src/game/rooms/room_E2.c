@@ -1,12 +1,12 @@
-/* Room 0xE2: its event handler class (vtable D_0047A4D0, see sRooms in event.c),
+/* Room 0xE2: its event handler class (vtable RoomE2_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0047A4D0[];
+extern void *RoomBase_vtable[];
+extern void *RoomE2_vtable[];
 extern u8 D_0047B0D4[], D_0047B0DC[];
 extern char D_0047B308[];
 extern const char D_00463938[];
@@ -20,7 +20,7 @@ extern PTMF D_01991D48[];
 extern PTMF D_01991D58[];
 
 /* 0x00379290 */
-void *RoomE2_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A4D0, D_0046DB80); }
+void *RoomE2_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomE2_vtable, RoomBase_vtable); }
 
 /* 0x003792F0 */
 void *RoomE2_EnterScript(void) {
@@ -38,7 +38,7 @@ void *RoomE2_Phase1Script(void) {
 }
 
 /* 0x00379320 */
-void *RoomE2_Phase2Script(void *o) { return D_0047B0D4; }   /* D_0047A4D0 +0x14 */
+void *RoomE2_Phase2Script(void *o) { return D_0047B0D4; }   /* RoomE2_vtable +0x14 */
 
 /* 0x00379330 */
 void *RoomE2_Phase3Script(void) {
@@ -46,7 +46,7 @@ void *RoomE2_Phase3Script(void) {
 }
 
 /* 0x00379340 */
-u32 RoomE2_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B0DC)[i]; }   /* D_0047A4D0 +0x24 */
+u32 RoomE2_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B0DC)[i]; }   /* RoomE2_vtable +0x24 */
 
 /* 0x00379360 */
 void *RoomE2_Table38(void) {

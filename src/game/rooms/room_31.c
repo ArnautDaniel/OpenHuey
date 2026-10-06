@@ -1,4 +1,4 @@
-/* Room 0x31: its event handler class (vtable D_00473460, see sRooms in event.c),
+/* Room 0x31: its event handler class (vtable Room31_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,9 +6,9 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00473460[];
-extern void *D_0046EA40[];
+extern void *RoomBase_vtable[];
+extern void *Room31_vtable[];
+extern void *TvScreenA_vtable[];
 
 extern u8 D_00429E40[];
 extern u8 D_00429E60[];
@@ -19,7 +19,7 @@ extern void *D_0042A0E0[];
 extern PTMF D_01991570[];
 
 /* 0x0031E1C0 */
-void *Room31_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00473460, D_0046DB80); }
+void *Room31_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room31_vtable, RoomBase_vtable); }
 
 /* 0x0031E220 */
 void *Room31_EnterScript(void) {
@@ -68,9 +68,9 @@ s32 Room31_Fan(void) {
     return 1;
 }
 
-/* rooms 0x31 / 0x32 (D_0042A0B8, D_0042C298): the room's effect 1 made anew as D_0046EA40 */
+/* rooms 0x31 / 0x32 (D_0042A0B8, D_0042C298): the room's effect 1 made anew as TvScreenA_vtable */
 /* 0x0031E510 */
 s32 Room31_RoomEffect(void) {
-    room_effect_slot_new(gRoomEffects, 1, D_0046EA40);
+    room_effect_slot_new(gRoomEffects, 1, TvScreenA_vtable);
     return 1;
 }

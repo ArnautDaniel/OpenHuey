@@ -1,4 +1,4 @@
-/* Room 0x30: its event handler class (vtable D_0046EE00, see sRooms in event.c),
+/* Room 0x30: its event handler class (vtable Room30_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "item.h"
 #include "pursuer.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046EE00[];
+extern void *RoomBase_vtable[];
+extern void *Room30_vtable[];
 
 extern u8 D_00412EA0[], D_00412F00[], D_00412FB0[], D_00413160[], D_004131A0[];
 extern void *D_00413490[];
@@ -18,7 +18,7 @@ extern void *D_0047AC00[];
 extern PTMF D_01990E48[];
 
 /* 0x002CCA90 */
-void *Room30_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046EE00, D_0046DB80); }
+void *Room30_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room30_vtable, RoomBase_vtable); }
 
 /* 0x002CCAF0 */
 void *Room30_EnterScript(void) { return D_00412EA0; }

@@ -6,13 +6,13 @@
 #include "heap.h"
 #include "msl.h"
 
-extern void *D_0046A1C0[], *D_004699E0[];
+extern void *Heap_vtable[], *D_004699E0[];
 
 /* +0x8 destructor */
 /* 0x00168C20 */
 Heap *Heap_dtor(Heap *h, s32 flags) {
     if (h != NULL) {
-        h->vtbl = D_0046A1C0;
+        h->vtbl = Heap_vtable;
         h->vtbl = D_004699E0;
         if ((s16)flags > 0) {
             func_00100490(h);
@@ -169,17 +169,17 @@ void Heap_Free(Heap *h, u8 *addr) {
 void SceneHeap_delete(void *p) {
 }
 
-/* ---- fixed-size block pool (vtable D_004699C0; base D_004699E0): n blocks of one size,
+/* ---- fixed-size block pool (vtable BlockPool_vtable; base D_004699E0): n blocks of one size,
  * a used flag each ---- */
 
-extern void *D_004699C0[];
+extern void *BlockPool_vtable[];
 extern void *D_004699E0[];
 
 /* +0x8 */
 /* 0x00120D00 */
 BlockPool *BlockPool_dtor(BlockPool *p, s32 flags) {
     if (p != NULL) {
-        p->vtbl = D_004699C0;
+        p->vtbl = BlockPool_vtable;
         if (p != NULL) {
             p->vtbl = D_004699E0;
         }

@@ -18,13 +18,13 @@
 #include "skeleton.h"
 #include "stalker_progress.h"
 
-extern void *D_00470720[];
+extern void *Lorenzo_vtable[];
 
 extern u8 D_0041A5F0[];
 void *Lorenzo_MotionFiles(void);
 
-extern void *D_0046F580[];
-extern void *D_00470F90[];
+extern void *EffectBase_vtable[];
+extern void *Marker_vtable[];
 void *Obj470F90_dtor(u8 *o, s32 flags);
 
 extern u8 D_004224C0[];
@@ -90,7 +90,7 @@ f32 Kind39_FrightSeen(void);
 /* 0x002F8820 */
 Pursuer *Lorenzo_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_00470720;
+        p->c.a.vtbl = Lorenzo_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }
@@ -292,12 +292,12 @@ void Lorenzo_Setup(Pursuer *p) {
     PU(p, 0x16A0, f32) = -8.0f;
 }
 
-/* destructor (vtable D_00470F90) */
+/* destructor (vtable Marker_vtable) */
 /* 0x00301250 */
 void *Obj470F90_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00470F90;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = Marker_vtable;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -308,13 +308,13 @@ void *Obj470F90_dtor(u8 *o, s32 flags) {
 /* ---- the second Lorenzo (kind 10, vtable 0x4715C0; code 0x309490..0x30C3E0): a strong one
    (250 hp, 400 when gProgress+0x30 bit 0x8000) with a mode 2 (+0x16B8) from threat level 1 ---- */
 
-extern void *D_004715C0[];
+extern void *Lorenzo2_vtable[];
 
 /* vtable +0x8: destructor */
 /* 0x00309490 */
 Pursuer *Lorenzo2_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_004715C0;
+        p->c.a.vtbl = Lorenzo2_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }
@@ -575,9 +575,9 @@ extern void *D_0046FF20[];
 
 static inline void Dust_Init(void **obj) {
     obj[0] = D_0046FF20;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* his slam 0x2301: at its key (2), eight grey dust clouds of random size (320..640) at his
@@ -616,9 +616,9 @@ extern void *D_0047A350[];
 
 static inline void Spark_Init(void **obj) {
     obj[0] = D_0047A350;
-    obj[0xD0 / 4] = D_00469D00;
+    obj[0xD0 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xD4 / 4] = -1;
-    obj[0xD0 / 4] = D_0046FC30;
+    obj[0xD0 / 4] = QuadDrawer_vtable;
 }
 
 extern const f32 D_00423AC0[7][4];
@@ -774,9 +774,9 @@ extern void *D_0047A750[];
 
 static inline void Sink_Init(void **obj) {
     obj[0] = D_0047A750;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 extern const PTMF D_00423A88;
@@ -874,9 +874,9 @@ static inline void Burst_Init(void **obj) {
 
     obj[0] = D_0047A010;
     for (k = 0; k < 4; k++) {
-        obj[(0xB50 + k * 0x38) / 4] = D_00469D00;
+        obj[(0xB50 + k * 0x38) / 4] = Helper469D00_vtable;
         ((s32 *)obj)[(0xB54 + k * 0x38) / 4] = -1;
-        obj[(0xB50 + k * 0x38) / 4] = D_0046FC30;
+        obj[(0xB50 + k * 0x38) / 4] = QuadDrawer_vtable;
     }
 }
 
@@ -1183,9 +1183,9 @@ void Lorenzo2_SetRage(u8 *self, s32 alt) {
     }
 }
 
-/* ---- character kind 12 (vtable D_004718F0): a pursuer with his own tables and update ---- */
+/* ---- character kind 12 (vtable Kind12_vtable): a pursuer with his own tables and update ---- */
 
-extern void *D_004718F0[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[], *D_00470F90[];
+extern void *Kind12_vtable[], *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[], *Marker_vtable[];
 extern u8 D_00423D90[], D_00423DB0[], D_00423DE0[], D_00423DF8[], D_00423E10[], D_00423E38[],
     D_00423E50[], D_00423E70[], D_00423E88[], D_00423E98[], D_00423EB0[], D_00423EC8[],
     D_00423EE0[], D_00423F00[], D_00423F20[], D_00423F38[], D_00423F48[];
@@ -1200,8 +1200,8 @@ extern u8 D_00423CF0[], D_00423D60[], D_00423D80[], D_00423BB0[], D_00423CE0[], 
 /* 0x0030C3E0 */
 Pursuer *Kind12_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_004718F0;
-        p->c.a.vtbl = D_0046D810;
+        p->c.a.vtbl = Kind12_vtable;
+        p->c.a.vtbl = Pursuer_vtable;
         VCALL(p, 0x10, void (*)(Pursuer *))(p);
         if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
             void **m = p->c.motion;
@@ -1211,10 +1211,10 @@ Pursuer *Kind12_dtor(Pursuer *p, s32 flags) {
                 p->c.motion = NULL;
             }
         }
-        p->c.a.vtbl = D_0046C220;
+        p->c.a.vtbl = NPC_vtable;
         VCALL(p, 0x10, void (*)(Pursuer *))(p);
-        p->c.a.vtbl = D_00469C60;
-        p->c.a.vtbl = D_00469C20;
+        p->c.a.vtbl = Character_vtable;
+        p->c.a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
         }
@@ -1238,10 +1238,10 @@ void Kind12_ExitDone(u8 *self) {
 }
 
 static void k12_mark_init(void **obj) {
-    obj[0] = D_00470F90;
+    obj[0] = Marker_vtable;
 }
 
-/* the marker effect D_00470F90 over him ({1, 0, 1, its slot}) */
+/* the marker effect Marker_vtable over him ({1, 0, 1, its slot}) */
 static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
     u8 *mgr;
     s32 slot, arg[4] __attribute__((aligned(16)));
@@ -1939,7 +1939,7 @@ void Kind39_Setup(Pursuer *p) {
     PU(p, 0x16A0, f32) = -8.0f;
 }
 
-/* ---- the other class (vtable D_00479B20; code 0x363CE0..0x365AD0): its own tables, sweep and
+/* ---- the other class (vtable Kind39_vtable; code 0x363CE0..0x365AD0): its own tables, sweep and
    frame update ---- */
 
 extern u8 D_004450C0[], D_00445140[], D_004451A0[], D_00445200[], D_00445230[], D_00445290[],

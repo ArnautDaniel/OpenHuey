@@ -1,4 +1,4 @@
-/* The sound driver object (system +0x395D40, vtable D_0046BF20; its sound interface at +4,
+/* The sound driver object (system +0x395D40, vtable SndDriver_vtable; its sound interface at +4,
  * vtable D_0046BF2C, is the global gSound): banks of sounds loaded into the IOP sound
  * driver, sound effects (2D, or placed in 3D from the block at +0x10), sequences, volumes and
  * the output mode. It talks to SNDDRV.IRX through the EE sound library (snd_lib.c).
@@ -863,13 +863,13 @@ void SndDriver_Start(u8 *d) {
     SndLib_Call(0x360002, NULL);
 }
 
-extern void *D_0046BF20[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];
+extern void *SndDriver_vtable[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];
 
 /* destructor */
 /* 0x0020E000 */
 u8 *SndDriver_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
-        AT(d, 0x0, void **) = D_0046BF20;
+        AT(d, 0x0, void **) = SndDriver_vtable;
         AT(d, 0x4, void **) = D_0046BF2C;
         func_001002C0(d + 0x108, (void * (*)(void *, s32))func_001BECA0, 0x18, 8);
         func_001002C0(d + 0x84, (void * (*)(void *, s32))IopBuffers_dtor, 0x10, 8);

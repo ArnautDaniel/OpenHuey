@@ -1,4 +1,4 @@
-/* Room 0x26: its event handler class (vtable D_0046E400, see sRooms in event.c),
+/* Room 0x26: its event handler class (vtable Room26_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E400[];
+extern void *RoomBase_vtable[];
+extern void *Room26_vtable[];
 extern u8 D_00402D50[];
 extern u8 D_00402E10[];
 extern u8 D_00402EC0[];
@@ -32,7 +32,7 @@ static void chair_creak(VObject *snd, u32 id, f32 *pos, s32 vol) {
 }
 
 /* 0x002B03C0 */
-void *Room26_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E400, D_0046DB80); }
+void *Room26_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room26_vtable, RoomBase_vtable); }
 
 /* 0x002B0420 */
 void *Room26_EnterScript(void) {

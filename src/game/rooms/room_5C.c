@@ -1,4 +1,4 @@
-/* Room 0x5C: its event handler class (vtable D_0046E9C0, see sRooms in event.c),
+/* Room 0x5C: its event handler class (vtable Room5C_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "scene_game_members.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E9C0[];
+extern void *RoomBase_vtable[];
+extern void *Room5C_vtable[];
 extern void *D_00472370[];
 extern u8 D_00410F70[];
 extern u8 D_00410FB0[];
@@ -26,13 +26,13 @@ extern PTMF D_01990E08[];
 
 static void effect_472370_init(void **obj) {
     obj[0] = D_00472370;
-    obj[0x370 / 4] = D_00469D00;
+    obj[0x370 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x374 / 4] = -1;
-    obj[0x370 / 4] = D_0046FC30;
+    obj[0x370 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002B58B0 */
-void *Room5C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E9C0, D_0046DB80); }
+void *Room5C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5C_vtable, RoomBase_vtable); }
 
 /* 0x002B5910 */
 void *Room5C_EnterScript(void) {

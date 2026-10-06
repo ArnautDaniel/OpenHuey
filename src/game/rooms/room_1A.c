@@ -1,13 +1,13 @@
-/* Room 0x1A: its event handler class (vtable D_0046E100, see sRooms in event.c),
+/* Room 0x1A: its event handler class (vtable Room1A_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E100[];
-extern void *D_0046F5F0[];
+extern void *RoomBase_vtable[];
+extern void *Room1A_vtable[];
+extern void *TvScreenB_vtable[];
 
 extern u8 D_003FC060[];
 extern u8 D_003FC0A0[];
@@ -20,7 +20,7 @@ extern u8 D_003FC690[];
 extern PTMF D_01990960[];
 
 /* 0x002AD420 */
-void *Room1A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E100, D_0046DB80); }
+void *Room1A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1A_vtable, RoomBase_vtable); }
 
 /* 0x002AD480 */
 void *Room1A_EnterScript(void) {
@@ -69,8 +69,8 @@ s32 Room1A_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x002AD550 */
-s32 Room1A_Cmd01(void) {   /* room effect 0 (D_0046F5F0) */
-    room_effect_slot_new(gRoomEffects, 0, D_0046F5F0);
+s32 Room1A_Cmd01(void) {   /* room effect 0 (TvScreenB_vtable) */
+    room_effect_slot_new(gRoomEffects, 0, TvScreenB_vtable);
     return 1;
 }
 

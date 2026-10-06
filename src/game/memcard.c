@@ -1,4 +1,4 @@
-/* Memory card manager (system +0x390, global gMemCard, vtable D_0046AE90; base D_0046AE60).
+/* Memory card manager (system +0x390, global gMemCard, vtable MemCard_vtable; base D_0046AE60).
  * Requests (one at a time) store their parameters and a state; the per-frame tick runs the
  * state until it sets the status (+0x4, -1 while busy). The states talk to the card through
  * libmc and are platform code (native/platform/memcard.c on PC).
@@ -14,7 +14,7 @@
 #include "msl.h"
 #include "sce/libmc.h"
 
-extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
+extern void *MemCard_vtable[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
 
 /* the states (libmc) */
 
@@ -45,7 +45,7 @@ static inline void request(MemCard *mc, s32 port, void (*state)(MemCard *)) {
 /* 0x001BF550 */
 MemCard *MemCard_dtor(MemCard *mc, s32 flags) {
     if (mc != NULL) {
-        mc->vtbl = D_0046AE90;
+        mc->vtbl = MemCard_vtable;
         mc->subVtbl = D_0046AEB4;
         if (&mc->subVtbl != NULL) {
             mc->subVtbl = D_0046AD88;

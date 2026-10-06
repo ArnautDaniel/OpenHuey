@@ -280,7 +280,7 @@ void BgmCtl_StopNow(BgmCtl *c) {
     }
 }
 
-extern void *D_0046A110[];   /* BgmCtl */
+extern void *BgmCtl_vtable[];   /* BgmCtl */
 extern void *D_0046A100[];   /* its base */
 
 /* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start
@@ -301,7 +301,7 @@ void BgmCtl_Want(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
 /* 0x001309D0 */
 BgmCtl *BgmCtl_dtor(BgmCtl *c, s32 flags) {
     if (c != NULL) {
-        c->vtbl = D_0046A110;
+        c->vtbl = BgmCtl_vtable;
         if (c != NULL) {
             c->vtbl = D_0046A100;
             if (c != NULL) {

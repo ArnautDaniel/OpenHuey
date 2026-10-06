@@ -1,4 +1,4 @@
-/* Room 0x8C: its event handler class (vtable D_00477380, see sRooms in event.c),
+/* Room 0x8C: its event handler class (vtable Room8C_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477380[];
+extern void *RoomBase_vtable[];
+extern void *Room8C_vtable[];
 extern u8 D_0047AE50[];
 extern const char *D_00434888;
 extern const char *D_00434890, *D_00434894;
@@ -25,7 +25,7 @@ extern u32 D_004348D0[];
 extern PTMF D_01991720[];
 
 /* 0x0033F930 */
-void *Room8C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477380, D_0046DB80); }
+void *Room8C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8C_vtable, RoomBase_vtable); }
 
 /* 0x0033F990 */
 void *Room8C_EnterScript(void) {
@@ -48,7 +48,7 @@ void *Room8C_Phase2Script(void) {
 }
 
 /* 0x0033F9D0 */
-void *Room8C_Phase5Script(void *o) { return D_0047AE50; }   /* D_00477380 +0x20 */
+void *Room8C_Phase5Script(void *o) { return D_0047AE50; }   /* Room8C_vtable +0x20 */
 
 /* 0x0033F9E0 */
 u32 Room8C_ActionScript(void *self, s32 i) {

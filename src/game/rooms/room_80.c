@@ -1,4 +1,4 @@
-/* Room 0x80: its event handler class (vtable D_00478570, see sRooms in event.c),
+/* Room 0x80: its event handler class (vtable Room80_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "memcard.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_00478570[];
+extern void *RoomBase_vtable[];
+extern void *Room80_vtable[];
 extern void *D_0047A430[];
 extern u32 D_0043EA90[];
 extern u32 D_0043EAE0[];
@@ -18,7 +18,7 @@ extern u32 D_0043EC20[];
 extern u32 D_0047AEF0[];
 extern u32 D_0047AEF4[];
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_01991968[];
 
@@ -27,7 +27,7 @@ static void effect_7a430_init(void **obj) {
 }
 
 /* 0x0034A140 */
-void *Room80_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00478570, D_0046DB80); }
+void *Room80_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room80_vtable, RoomBase_vtable); }
 
 /* 0x0034A1A0 */
 void *Room80_EnterScript(void) {
@@ -80,7 +80,7 @@ s32 Room80_Cmd00(void *self, void *a1, u8 *cmd) {
 void *BackdropModel2_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A430;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

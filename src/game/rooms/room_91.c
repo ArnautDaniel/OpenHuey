@@ -1,4 +1,4 @@
-/* Room 0x91: its event handler class (vtable D_00477480, see sRooms in event.c),
+/* Room 0x91: its event handler class (vtable Room91_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477480[];
+extern void *RoomBase_vtable[];
+extern void *Room91_vtable[];
 
 extern u32 D_00436600[];
 extern u32 D_00436690[];
@@ -20,7 +20,7 @@ extern u32 D_00436CE0[];
 extern PTMF D_019917F0[];
 
 /* 0x00341580 */
-void *Room91_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477480, D_0046DB80); }
+void *Room91_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room91_vtable, RoomBase_vtable); }
 
 /* 0x003415E0 */
 void *Room91_EnterScript(void) {

@@ -1014,11 +1014,11 @@ void EventCmd_Run(VObject *ev) {
     case 0x32:   /* sound channel pc[1]'s volume (+0x7C) */
         VCALL(gSound, 0x7C, void (*)(VObject *, s32, s32))(gSound, pc[1], be16(pc + 2) & 0xFFFF);
         break;
-    case 0x86:   /* room effect pc[1] (32) made anew (a D_0046FF40 effect) at (3 x be32 / 1000),
+    case 0x86:   /* room effect pc[1] (32) made anew (a EvEffect86_vtable effect) at (3 x be32 / 1000),
                   * kind pc[14] */
         room_effect_new(ev, (u8 * (*)(u8 *))EvEffect86_Init, 1);
         break;
-    case 0x7F:   /* the same with a D_0046FF00 effect, no kind */
+    case 0x7F:   /* the same with a EvEffect7F_vtable effect, no kind */
         room_effect_new(ev, (u8 * (*)(u8 *))EvEffect7F_Init, 0);
         break;
     case 0x26:   /* script variable pc[1] (+0x810) = be32 */

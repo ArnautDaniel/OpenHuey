@@ -1,4 +1,4 @@
-/* Room 0x69: its event handler class (vtable D_00477540, see sRooms in event.c),
+/* Room 0x69: its event handler class (vtable Room69_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "hewie.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477540[];
+extern void *RoomBase_vtable[];
+extern void *Room69_vtable[];
 extern u8 D_0047AE7C[];
 extern u8 D_0047AE80[];                  /* the dials' progress variables (0x18..0x1A) */
 extern u32 D_00437E50[];
@@ -29,7 +29,7 @@ static inline __attribute__((always_inline)) f32 dial_angle(Progress *p, s32 k) 
 }
 
 /* 0x003438C0 */
-void *Room69_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477540, D_0046DB80); }
+void *Room69_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room69_vtable, RoomBase_vtable); }
 
 /* 0x00343920 */
 void *Room69_EnterScript(void) {
@@ -52,7 +52,7 @@ void *Room69_Phase2Script(void) {
 }
 
 /* 0x00343960 */
-void *Room69_Phase5Script(void *o) { return D_0047AE7C; }   /* D_00477540 +0x20 */
+void *Room69_Phase5Script(void *o) { return D_0047AE7C; }   /* Room69_vtable +0x20 */
 
 /* 0x00343970 */
 void *Room69_Phase3Script(void) {

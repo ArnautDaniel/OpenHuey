@@ -1,5 +1,5 @@
 /* The stage music director (scene +0x1064600, 0xA3C bytes, global D_00456DF0; base vtable
- * D_0046EB70, one subclass per stage set up by SceneGame_MusicDirector). It plays the stage's music on
+ * MusicDir_vtable, one subclass per stage set up by SceneGame_MusicDirector). It plays the stage's music on
  * the sound driver's four sequence banks (0..3, an SQ each over the stage's HD/BD bank) and
  * mixes them live: each track's volume and sequence volume, and per MIDI channel a volume,
  * pitch bend and pan, sent as MIDI (driver +0x30: command 0x23). Fades run as "cues" (a
@@ -40,7 +40,7 @@ extern const PTMF D_004128A0;   /* MusicDir_TrackFade: a track volume fade */
 extern const PTMF D_00412890;   /* MusicDir_GlobalFade: the global volume fade */
 extern const PTMF D_004128B0;   /* MusicDir_SeqFade: a sequence volume fade */
 extern const PTMF D_004128C0;   /* MusicDir_BendFade: a channel bend fade */
-extern void *D_0046EB70[], *D_0046EBE0[];
+extern void *MusicDir_vtable[], *D_0046EBE0[];
 
 #define TRACK(d, k) ((u8 *)(d) + 0x34 + ((k) & 0xFF) * 0x110)
 #define CHAN(d, k, c) (TRACK(d, k) + ((c) & 0xFF) * 0x10)
@@ -51,8 +51,8 @@ void MusicDir_Hold(u8 *self);
 void MusicDir_Seen(u8 *self);
 void MusicDir_Lost(u8 *self);
 
-extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern void *D_004738A0[];
+extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
+extern void *TintStalker_vtable[];
 extern u8 D_0042A340[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
@@ -69,7 +69,7 @@ void TintStalker_Enable(Pursuer *p);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -79,10 +79,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -752,7 +752,7 @@ void *MusicDirBase_dtor(u8 *d, s32 flags) {
 static inline void director_dtor(u8 *d) {
     u8 k;
 
-    AT(d, 0x0, void **) = D_0046EB70;
+    AT(d, 0x0, void **) = MusicDir_vtable;
     for (k = 0; k < 4; k++) {
         midi(k, 0xB0, 0x78, 0, 0xFF);
     }
@@ -1275,7 +1275,7 @@ s32 MusicDir_BanksIn(u8 *d) {
 
 /* ---- the stages ---- */
 
-extern void *D_0046F480[], *D_00473830[], *D_00478AE0[], *D_004799F0[];
+extern void *MusicStage1_vtable[], *MusicStage2_vtable[], *MusicStage3_vtable[], *MusicStage4_vtable[];
 extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], D_0047AC28[], D_00414780[];
 extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], D_0047AD68[], D_0042A2B0[];
 extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], D_0047AF68[], D_00442D50[];
@@ -1284,7 +1284,7 @@ extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], D_0047AFF8[], 
 /* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
 /* 0x0039A8E0 */
 void SceneGame_MusicDirector(u8 *scene, u32 stage) {
-    static void **const sVtbl[4] = {D_0046F480, D_00473830, D_00478AE0, D_004799F0};
+    static void **const sVtbl[4] = {MusicStage1_vtable, MusicStage2_vtable, MusicStage3_vtable, MusicStage4_vtable};
     static u8 *const sTables[4][6] = {
         {D_00414650, D_004146C0, D_00414700, D_00414740, D_0047AC28, D_00414780},
         {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, D_0047AD68, D_0042A2B0},
@@ -1301,7 +1301,7 @@ void SceneGame_MusicDirector(u8 *scene, u32 stage) {
     d = MusicDir_new(0xA3C, scene + 0x1064600);
     if (d != NULL) {
         D_00456DF0 = d;
-        AT(d, 0x0, void **) = D_0046EB70;
+        AT(d, 0x0, void **) = MusicDir_vtable;
         func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
         func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
         MusicDir_Setup(d);
@@ -1373,7 +1373,7 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
 
         AT(d, 0x0, void **) = vt;
         if (d != NULL) {
-            AT(d, 0x0, void **) = D_0046EB70;
+            AT(d, 0x0, void **) = MusicDir_vtable;
             for (k = 0; k < 4; k++) {
                 MusicDir_NotesOff(d, k);
             }
@@ -1393,13 +1393,13 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
     return d;
 }
 
-/* stage 1 (D_0046F480) */
+/* stage 1 (MusicStage1_vtable) */
 
 extern const char D_0045D8B0[], D_0045D8C8[], D_0045D8E0[], D_0045D900[], D_0045D920[], D_0045D930[];
 
 /* 0x002D3A90 */
 void *MusicStage1_dtor(u8 *d, s32 flags) {
-    return stage_dtor(d, flags, D_0046F480);
+    return stage_dtor(d, flags, MusicStage1_vtable);
 }
 
 /* 0x002D3E80 */
@@ -1437,13 +1437,13 @@ void MusicStage1_StageChans(u8 *d) {
     }
 }
 
-/* stage 2 (D_00473830) */
+/* stage 2 (MusicStage2_vtable) */
 
 extern const char D_0045FFC0[], D_0045FFD8[], D_0045FFF0[], D_00460010[], D_00460030[], D_00460040[];
 
 /* 0x0031ED70 */
 void *MusicStage2_dtor(u8 *d, s32 flags) {
-    return stage_dtor(d, flags, D_00473830);
+    return stage_dtor(d, flags, MusicStage2_vtable);
 }
 
 /* 0x0031EFF0 */
@@ -1454,7 +1454,7 @@ void MusicStage2_Load(u8 *d) {
 }
 
 /* 0x0031F110 */
-Character *TintStalker_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004738A0); }
+Character *TintStalker_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, TintStalker_vtable); }
 
 /* 0x0031F220 */
 void *TintStalker_MotionFiles(void) {
@@ -1530,13 +1530,13 @@ void MusicStage2_Lost(u8 *d, s32 now) {
 void MusicStage2_StageChans(u8 *d) {
 }
 
-/* stage 3 (D_00478AE0) */
+/* stage 3 (MusicStage3_vtable) */
 
 extern const char D_00462CD0[], D_00462CE8[], D_00462D00[], D_00462D20[], D_00462D40[], D_00462D50[];
 
 /* 0x0034DCC0 */
 void *MusicStage3_dtor(u8 *d, s32 flags) {
-    return stage_dtor(d, flags, D_00478AE0);
+    return stage_dtor(d, flags, MusicStage3_vtable);
 }
 
 /* 0x0034DFC0 */
@@ -1568,13 +1568,13 @@ void MusicStage3_StageChans(u8 *d) {
     stage_chans(d, sA, 2, (AT(gProgress, 0x2C, u32) & 0x200) != 0);
 }
 
-/* stage 4 (D_004799F0) */
+/* stage 4 (MusicStage4_vtable) */
 
 extern const char D_004633C0[], D_004633D8[], D_004633F0[], D_00463410[], D_00463430[], D_00463440[];
 
 /* 0x0035F100 */
 void *MusicStage4_dtor(u8 *d, s32 flags) {
-    return stage_dtor(d, flags, D_004799F0);
+    return stage_dtor(d, flags, MusicStage4_vtable);
 }
 
 /* 0x0035F490 */

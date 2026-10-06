@@ -1,4 +1,4 @@
-/* Room 0x1F: its event handler class (vtable D_0046E240, see sRooms in event.c),
+/* Room 0x1F: its event handler class (vtable Room1F_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "snd_place.h"
 #include "msl.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E240[];
+extern void *RoomBase_vtable[];
+extern void *Room1F_vtable[];
 extern const char *D_0047AAB8[];
 
 extern u8 D_003FE300[];
@@ -22,7 +22,7 @@ extern u8 D_003FE450[];
 extern PTMF D_019909D8[];
 
 /* 0x002AE090 */
-void *Room1F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E240, D_0046DB80); }
+void *Room1F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1F_vtable, RoomBase_vtable); }
 
 /* 0x002AE0F0 */
 void *Room1F_EnterScript(void) {

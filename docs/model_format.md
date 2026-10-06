@@ -60,7 +60,7 @@ From looking at the converted models; names with `?` are guesses.
 | `HEW_000.TEX` | model vtbl +0xA8 (0x1F7F00) | textures, by the mesh parts' texture id |
 | `HEW_1xx.MTN` | | extra motion banks (same format as the PCK's motion bank) |
 
-Hewie's model class: vtable `D_0046B240`, 0xB90 bytes at Character +0xF0, built by
+Hewie's model class: vtable `DogModel_vtable`, 0xB90 bytes at Character +0xF0, built by
 `CharLoad_PartnerModel` (base `ModelBase_ctor`). Fiona's loader `Fiona_LoadFiles` (vtbl +0x14) shows the
 load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 

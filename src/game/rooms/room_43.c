@@ -1,4 +1,4 @@
-/* Room 0x43: its event handler class (vtable D_0046E5C0, see sRooms in event.c),
+/* Room 0x43: its event handler class (vtable Room43_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E5C0[];
+extern void *RoomBase_vtable[];
+extern void *Room43_vtable[];
 extern u8 D_0047AB3C[];
 extern void *D_00479580[];
 extern u8 D_00407AE0[];
@@ -21,19 +21,19 @@ extern PTMF D_01990C58[];
 
 static void effect_6cf0_init(void **obj) {
     obj[0] = D_00479580;
-    obj[0x6040 / 4] = D_00469D00;
+    obj[0x6040 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x6044 / 4] = -1;
-    obj[0x6040 / 4] = D_0046FC30;
-    obj[0x6078 / 4] = D_00469D00;
+    obj[0x6040 / 4] = QuadDrawer_vtable;
+    obj[0x6078 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x607C / 4] = -1;
-    obj[0x6078 / 4] = D_0046FC30;
-    obj[0x60B0 / 4] = D_00469D00;
+    obj[0x6078 / 4] = QuadDrawer_vtable;
+    obj[0x60B0 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x60B4 / 4] = -1;
-    obj[0x60B0 / 4] = D_0046FC30;
+    obj[0x60B0 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002B25E0 */
-void *Room43_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E5C0, D_0046DB80); }
+void *Room43_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room43_vtable, RoomBase_vtable); }
 
 /* 0x002B2640 */
 void *Room43_EnterScript(void) {
@@ -56,7 +56,7 @@ void *Room43_Phase2Script(void) {
 }
 
 /* 0x002B2680 */
-void *Room43_Phase5Script(void *o) { return D_0047AB3C; }   /* D_0046E5C0 +0x20 */
+void *Room43_Phase5Script(void *o) { return D_0047AB3C; }   /* Room43_vtable +0x20 */
 
 /* 0x002B2690 */
 u32 Room43_ActionScript(void *self, s32 i) {

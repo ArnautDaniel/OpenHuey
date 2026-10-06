@@ -1,4 +1,4 @@
-/* Room 0x32: its event handler class (vtable D_00473C90, see sRooms in event.c),
+/* Room 0x32: its event handler class (vtable Room32_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -11,10 +11,10 @@ extern const char *const D_0042C358;
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00473C90[];
-extern void *D_0046EA40[];
-extern void *D_00479560[];
+extern void *RoomBase_vtable[];
+extern void *Room32_vtable[];
+extern void *TvScreenA_vtable[];
+extern void *MirrorFragment_vtable[];
 
 extern u8 D_0042B0B0[];
 extern u8 D_0042B160[];
@@ -28,7 +28,7 @@ extern u8 D_0042C360[];
 extern PTMF D_019915A0[];
 
 /* 0x00320E50 */
-void *Room32_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00473C90, D_0046DB80); }
+void *Room32_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room32_vtable, RoomBase_vtable); }
 
 /* 0x00320EB0 */
 void *Room32_EnterScript(void) {
@@ -85,7 +85,7 @@ s32 Room32_Cmd05(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x32 (D_0042C2D8): byte 3 0..3 the lit quad (room effect 0x1A) as room 0x21's; 4 and up
- * the mirror fragment's reflection (room effect 0x1A, D_00479560) on the object "a_fragment0":
+ * the mirror fragment's reflection (room effect 0x1A, MirrorFragment_vtable) on the object "a_fragment0":
  * 1.8 across, -0.1 down, strength 1, kind 2, alpha 0xFF */
 /* 0x00320FF0 */
 s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
@@ -110,7 +110,7 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
         arg.obj = o;
         arg.kind = 2;
         arg.alpha = 0xFF;
-        room_effect_slot_new(fx, 0x1A, D_00479560);
+        room_effect_slot_new(fx, 0x1A, MirrorFragment_vtable);
         RoomEffects_Send(fx, 0x1A, &arg);
     }
     return 1;
@@ -148,6 +148,6 @@ s32 Room32_Cmd01(void) {
 
 /* 0x00321590 */
 s32 Room32_Cmd00(void) {
-    room_effect_slot_new(gRoomEffects, 1, D_0046EA40);
+    room_effect_slot_new(gRoomEffects, 1, TvScreenA_vtable);
     return 1;
 }

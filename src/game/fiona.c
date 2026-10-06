@@ -30,7 +30,7 @@ extern const PTMF D_003B25B8;      /* idle state (while unkE0 is set) */
 
 u32 func_00126EC0(void *p);
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 extern void *D_00479600[];
 void *StrikeMark_dtor(u8 *o, s32 flags);
 
@@ -3262,7 +3262,7 @@ void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v) {
 void *StrikeMark_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479600;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

@@ -1,4 +1,4 @@
-/* Room 0x18: its event handler class (vtable D_0046E080, see sRooms in event.c),
+/* Room 0x18: its event handler class (vtable Room18_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E080[];
+extern void *RoomBase_vtable[];
+extern void *Room18_vtable[];
 extern u8 D_0047AA40[];
 
 extern u8 D_003FAA20[];
@@ -21,7 +21,7 @@ extern u8 D_003FB390[];
 extern PTMF D_01990940[];
 
 /* 0x002AD020 */
-void *Room18_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E080, D_0046DB80); }
+void *Room18_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room18_vtable, RoomBase_vtable); }
 
 /* 0x002AD080 */
 void *Room18_EnterScript(void) {
@@ -49,7 +49,7 @@ void *Room18_Phase3Script(void) {
 }
 
 /* 0x002AD0D0 */
-void *Room18_Phase5Script(void *o) { return D_0047AA40; }   /* D_0046E080 +0x20 */
+void *Room18_Phase5Script(void *o) { return D_0047AA40; }   /* Room18_vtable +0x20 */
 
 /* 0x002AD0E0 */
 void *Room18_ActionScript(void *self, s32 i) {

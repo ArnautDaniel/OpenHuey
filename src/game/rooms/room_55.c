@@ -1,4 +1,4 @@
-/* Room 0x55: its event handler class (vtable D_00471020, see sRooms in event.c),
+/* Room 0x55: its event handler class (vtable Room55_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_00471020[];
+extern void *RoomBase_vtable[];
+extern void *Room55_vtable[];
 extern void *D_00477E10[], *D_00479400[];
 extern u8 D_00420B40[];
 extern u8 D_00420B80[];
@@ -26,13 +26,13 @@ static void effect_77E10_init(void **obj) {
 
 static void effect_79400_init(void **obj) {
     obj[0] = D_00479400;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x00305E90 */
-void *Room55_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471020, D_0046DB80); }
+void *Room55_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room55_vtable, RoomBase_vtable); }
 
 /* 0x00305EF0 */
 void *Room55_EnterScript(void) {
@@ -90,7 +90,7 @@ s32 Room55_Effect(void *self, void *a1, u8 *cmd) {
 
         on = 0;
         fx = gRoomEffects;
-        room_effect_slot_new(fx, 0x1B, D_00472F60);
+        room_effect_slot_new(fx, 0x1B, Reflection_vtable);
         q[0] = 0x41F00000;   /* (30, 45, -30) */
         q[1] = 0x42340000;
         q[2] = 0xC1F00000;

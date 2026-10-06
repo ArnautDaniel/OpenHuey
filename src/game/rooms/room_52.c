@@ -1,4 +1,4 @@
-/* Room 0x52: its event handler class (vtable D_0046E840, see sRooms in event.c),
+/* Room 0x52: its event handler class (vtable Room52_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E840[];
+extern void *RoomBase_vtable[];
+extern void *Room52_vtable[];
 extern void *D_00476BF0[];
 extern u8 D_0040E3B0[];
 extern u8 D_0040E480[];
@@ -25,7 +25,7 @@ static inline void effect476bf0_init(void **o) {
 }
 
 /* 0x002B4A70 */
-void *Room52_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E840, D_0046DB80); }
+void *Room52_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room52_vtable, RoomBase_vtable); }
 
 /* 0x002B4AD0 */
 void *Room52_EnterScript(void) {

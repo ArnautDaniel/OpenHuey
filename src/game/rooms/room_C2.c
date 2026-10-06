@@ -1,4 +1,4 @@
-/* Room 0xC2: its event handler class (vtable D_004785F0, see sRooms in event.c),
+/* Room 0xC2: its event handler class (vtable RoomC2_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -10,8 +10,8 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void *D_0046DB80[];
-extern void *D_004785F0[];
+extern void *RoomBase_vtable[];
+extern void *RoomC2_vtable[];
 extern u8 D_0047AF04[];
 extern const char *D_0043F8D0;
 extern u32 D_0043F0C0[];
@@ -39,7 +39,7 @@ static inline void swing_to(u8 *o, f32 a) {
 }
 
 /* 0x0034A4C0 */
-void *RoomC2_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004785F0, D_0046DB80); }
+void *RoomC2_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC2_vtable, RoomBase_vtable); }
 
 /* 0x0034A520 */
 void *RoomC2_EnterScript(void) {
@@ -72,7 +72,7 @@ u32 RoomC2_ActionScript(void *self, s32 i) {
 }
 
 /* 0x0034A590 */
-void *RoomC2_Table38(void *o) { return D_0047AF04; }   /* D_004785F0 +0x38 */
+void *RoomC2_Table38(void *o) { return D_0047AF04; }   /* RoomC2_vtable +0x38 */
 
 /* 0x0034A5A0 */
 u32 RoomC2_ObjectName(void *self, s32 i) {

@@ -1,12 +1,12 @@
-/* Room 0x6B: its event handler class (vtable D_00477610, see sRooms in event.c),
+/* Room 0x6B: its event handler class (vtable Room6B_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477610[];
+extern void *RoomBase_vtable[];
+extern void *Room6B_vtable[];
 extern u8 D_0047AE84[];
 
 extern u32 D_00438D30[];
@@ -18,7 +18,7 @@ extern u32 D_00439150[];
 extern u32 D_0047AE90[];
 
 /* 0x00344870 */
-void *Room6B_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477610, D_0046DB80); }
+void *Room6B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room6B_vtable, RoomBase_vtable); }
 
 /* 0x003448D0 */
 void *Room6B_EnterScript(void) {
@@ -41,7 +41,7 @@ void *Room6B_Phase2Script(void) {
 }
 
 /* 0x00344910 */
-void *Room6B_Phase5Script(void *o) { return D_0047AE84; }   /* D_00477610 +0x20 */
+void *Room6B_Phase5Script(void *o) { return D_0047AE84; }   /* Room6B_vtable +0x20 */
 
 /* 0x00344920 */
 u32 Room6B_ActionScript(void *self, s32 i) {

@@ -1,4 +1,4 @@
-/* Room 0xC1: its event handler class (vtable D_004785B0, see sRooms in event.c),
+/* Room 0xC1: its event handler class (vtable RoomC1_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "ptmf.h"
 #include "stalker_progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_004785B0[];
+extern void *RoomBase_vtable[];
+extern void *RoomC1_vtable[];
 
 extern u32 D_0043EC80[];
 extern u32 D_0043ECC0[];
@@ -21,7 +21,7 @@ extern u32 D_0047AF00[];
 extern PTMF D_01991978[];
 
 /* 0x0034A360 */
-void *RoomC1_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004785B0, D_0046DB80); }
+void *RoomC1_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC1_vtable, RoomBase_vtable); }
 
 /* 0x0034A3C0 */
 void *RoomC1_EnterScript(void) {

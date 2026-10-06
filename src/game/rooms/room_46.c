@@ -1,4 +1,4 @@
-/* Room 0x46: its event handler class (vtable D_0046FC40, see sRooms in event.c),
+/* Room 0x46: its event handler class (vtable Room46_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -10,8 +10,8 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046FC40[];
+extern void *RoomBase_vtable[];
+extern void *Room46_vtable[];
 extern u8 D_0047AC40[];
 
 extern u8 D_00416A50[];
@@ -27,7 +27,7 @@ extern PTMF D_01990E78[];
 extern PTMF D_01990E88[];
 
 /* 0x002E5740 */
-void *Room46_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FC40, D_0046DB80); }
+void *Room46_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room46_vtable, RoomBase_vtable); }
 
 /* 0x002E57A0 */
 void *Room46_EnterScript(void) { return D_00416A50; }
@@ -45,7 +45,7 @@ void *Room46_Phase2Script(void) { return D_00416D60; }
 void *Room46_Phase3Script(void) { return D_00416DB0; }
 
 /* 0x002E57F0 */
-void *Room46_Phase5Script(void *o) { return D_0047AC40; }   /* D_0046FC40 +0x20 */
+void *Room46_Phase5Script(void *o) { return D_0047AC40; }   /* Room46_vtable +0x20 */
 
 /* 0x002E5800 */
 void *Room46_ActionScript(void *self, s32 i) { return D_00417120[i]; }

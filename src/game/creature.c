@@ -1,6 +1,6 @@
 /* The creatures (character slots 7..9, 0x1600 bytes; their manager is gCreatures): Character
- * with their own block at +0x1540. Two classes: D_0046FAA0 (here) and D_00474080, both on the
- * creature base D_0046FB50. Their state is kept across rooms in Progress +0x878 (36 bytes per
+ * with their own block at +0x1540. Two classes: CreatureA_vtable (here) and CreatureB_vtable, both on the
+ * creature base CreatureBase_vtable. Their state is kept across rooms in Progress +0x878 (36 bytes per
  * slot, CreatureA_Save). */
 #include "common.h"
 #include "game.h"
@@ -21,11 +21,11 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void *D_0046FAA0[], *D_0046FB50[], *D_00469C60[], *D_00469C20[];
+extern void *CreatureA_vtable[], *CreatureBase_vtable[], *Character_vtable[], *Actor_vtable[];
 
 #define CR(c) ((u8 *)(c) + 0x1540)   /* the creature's own block */
 
-/* ---- the creature base (D_0046FB50): defaults ---- */
+/* ---- the creature base (CreatureBase_vtable): defaults ---- */
 
 extern PTMF D_01990D40[];
 s32 Room4F_Command(void *self, u32 i, s32 a, s32 b);
@@ -70,7 +70,7 @@ void *Kind25_ModelFiles(void);
 void *Kind25_MotionFiles(void);
 
 extern const char *const D_0042C358;
-extern void *D_00474130[];
+extern void *Kind25_vtable[];
 extern const PTMF D_0042C720;
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
@@ -87,7 +87,7 @@ void Cr19Bubbles_Start(u8 *p);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -97,10 +97,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -209,19 +209,19 @@ void *Creature_new(u32 size, void *place) {
     return place;
 }
 
-/* ---- the creature (D_0046FAA0) ---- */
+/* ---- the creature (CreatureA_vtable) ---- */
 
 /* +0x8 destructor */
 /* 0x002DE490 */
 Character *CreatureA_dtor(Character *c, s32 flags) {
     if (c != NULL) {
-        AT(c, 0x0, void **) = D_0046FAA0;
+        AT(c, 0x0, void **) = CreatureA_vtable;
         if (c != NULL) {
-            AT(c, 0x0, void **) = D_0046FB50;
+            AT(c, 0x0, void **) = CreatureBase_vtable;
             if (c != NULL) {
-                AT(c, 0x0, void **) = D_00469C60;
+                AT(c, 0x0, void **) = Character_vtable;
                 if (c != NULL) {
-                    AT(c, 0x0, void **) = D_00469C20;
+                    AT(c, 0x0, void **) = Actor_vtable;
                 }
             }
         }
@@ -780,9 +780,9 @@ extern const PTMF D_00416790;   /* vanishing */
 /* its vanishing effect (0x4A0 bytes, vtable D_00472370; its quad drawer at +0x370) */
 static void vanish_init(void **o) {
     o[0] = D_00472370;
-    o[0x370 / 4] = D_00469D00;
+    o[0x370 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x374 / 4] = -1;
-    o[0x370 / 4] = D_0046FC30;
+    o[0x370 / 4] = QuadDrawer_vtable;
 }
 
 /* seen: once it has come (+0x2E) and Fiona isn't hidden (+0x2D) or busy (Character_Held) and
@@ -1192,9 +1192,9 @@ void CreatureA_Setup(Character *c) {
 /* 0x002E2220 */
 void *CreatureBase_dtor(u8 *p) {
     if (p != NULL) {
-        *(void *volatile *)p = D_0046FB50;
-        *(void *volatile *)p = D_00469C60;
-        *(void *volatile *)p = D_00469C20;
+        *(void *volatile *)p = CreatureBase_vtable;
+        *(void *volatile *)p = Character_vtable;
+        *(void *volatile *)p = Actor_vtable;
     }
     return p;
 }
@@ -1621,7 +1621,7 @@ void CreatureA_Draw(Character *c) {
         r.frame = 0;
         q.a = -1;
         q.tex = (u64)-1;
-        q.vtbl = D_0046FC30;
+        q.vtbl = QuadDrawer_vtable;
         q.rec = &r;
         *(s32 *)&q.cx = 0;
         *(s32 *)&q.cy = 0;
@@ -1659,11 +1659,11 @@ void CreatureA_Draw(Character *c) {
             q.palette = -1;
         }
         Drawer_Submit((u8 *)&q);
-        q.vtbl = D_00469D00;
+        q.vtbl = Helper469D00_vtable;
     }
 }
 
-/* ---- the creature manager (gCreatures; vtable D_0046FC00 at +0x28): a list of 10 at +0x0,
+/* ---- the creature manager (gCreatures; vtable Creatures_vtable at +0x28): a list of 10 at +0x0,
  * its models at +0xF630, its objects' heap at +0xDC40 ---- */
 
 #define CREATURES(m) ((Character **)(m))
@@ -1815,7 +1815,7 @@ void Creatures_RemoveAll(u8 *m) {
  * fade (+0x470); +0x3B0.. each spark's velocity, +0x490 the frame, +0x494 bits 1 / 2 / 4 the
  * glow done / sparks shrunk / faded (all: it ends). Drawn by the quad drawer at +0x370 ---- */
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 /* soft-float doubles as raw bit patterns */
 
 #define VANISH_GLOW(o) ((o) + AT(o, 0x3A8, s32) * 0x30 + 0x10)
@@ -1828,9 +1828,9 @@ u8 *CreatureVanish_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00472370;
-    AT(o, 0x370, void **) = D_0046FC30;
-    AT(o, 0x370, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x370, void **) = QuadDrawer_vtable;
+    AT(o, 0x370, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2105,9 +2105,9 @@ u8 *LoopingSprite_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00472390;
-    AT(o, 0x70, void **) = D_0046FC30;
-    AT(o, 0x70, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x70, void **) = QuadDrawer_vtable;
+    AT(o, 0x70, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2219,9 +2219,9 @@ u8 *Effect726E0_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_004726E0;
-    AT(o, 0x40, void **) = D_0046FC30;
-    AT(o, 0x40, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x40, void **) = QuadDrawer_vtable;
+    AT(o, 0x40, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2559,9 +2559,9 @@ u8 *StrandSplash_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_004727C0;
-    AT(o, 0xC10, void **) = D_0046FC30;
-    AT(o, 0xC10, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0xC10, void **) = QuadDrawer_vtable;
+    AT(o, 0xC10, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2647,7 +2647,7 @@ static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
         r.h = 2.0f;
         r.turn = 0.0f;
         r.frame = 0;
-        q.vtbl = D_0046FC30;
+        q.vtbl = QuadDrawer_vtable;
         q.a = -1;
         q.tex = -1;
         q.rec = &r;
@@ -2669,7 +2669,7 @@ static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
         q.palette = -1;
         Drawer_Submit((u8 *)&q);
         AT(o, 0xC5C, f32) = 0.0f;
-        q.vtbl = D_00469D00;
+        q.vtbl = Helper469D00_vtable;
     }
 }
 
@@ -2748,7 +2748,7 @@ void StrandSplash_Start(u8 *self) {
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *D_004737D0[];
-extern void *D_00474080[];
+extern void *CreatureB_vtable[];
 
 /* (as Effect726E0_dtor)  +0x8 destructor (the quad drawer's inlined) */
 /* 0x0031E890 */
@@ -2757,9 +2757,9 @@ u8 *Effect737D0_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_004737D0;
-    AT(o, 0x40, void **) = D_0046FC30;
-    AT(o, 0x40, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x40, void **) = QuadDrawer_vtable;
+    AT(o, 0x40, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2916,13 +2916,13 @@ s32 DropletFlash_Update(u8 *o) {
 /* 0x00324710 */
 Character *CreatureB_dtor(Character *c, s32 flags) {
     if (c != NULL) {
-        AT(c, 0x0, void **) = D_00474080;
+        AT(c, 0x0, void **) = CreatureB_vtable;
         if (c != NULL) {
-            AT(c, 0x0, void **) = D_0046FB50;
+            AT(c, 0x0, void **) = CreatureBase_vtable;
             if (c != NULL) {
-                AT(c, 0x0, void **) = D_00469C60;
+                AT(c, 0x0, void **) = Character_vtable;
                 if (c != NULL) {
-                    AT(c, 0x0, void **) = D_00469C20;
+                    AT(c, 0x0, void **) = Actor_vtable;
                 }
             }
         }
@@ -3000,7 +3000,7 @@ void CreatureB_StateToDoor(Character *c) {
     CreatureB_OnTheWay(c, tri);
 }
 
-/* ---- the room creature of kind 0x19 (vtable D_00474130; code 0x3247D0..0x32C240). Its own
+/* ---- the room creature of kind 0x19 (vtable Kind25_vtable; code 0x3247D0..0x32C240). Its own
    block (CR): +0x0 the side it came in by, +0x4 a speed, +0x30 its target, +0x40 / +0x42
    timers, +0x4C the may-use flag, +0x50 its 8 doors, +0x60.. state bytes (+0x61 the route
    flag, +0x63 the door it went by, +0x64 the planner request, +0x65 snapped, +0x66 the door it
@@ -4780,7 +4780,7 @@ void CreatureB_Setup(Character *c) {
 }
 
 /* 0x0032C240 */
-Character *Kind25_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474130); }
+Character *Kind25_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind25_vtable); }
 
 /* 0x0032C350 */
 void *Kind25_ModelFiles(void) {
@@ -4809,12 +4809,12 @@ extern void *D_004795E0[];
 /* the effect it leaves when it goes (0x2920 bytes, D_004795E0, two quad drawers at +0x2410) */
 static inline void Cr19Gone_Init(void **obj) {
     obj[0] = D_004795E0;
-    obj[0x2410 / 4] = D_00469D00;
+    obj[0x2410 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x2414 / 4] = -1;
-    obj[0x2410 / 4] = D_0046FC30;
-    obj[0x2448 / 4] = D_00469D00;
+    obj[0x2410 / 4] = QuadDrawer_vtable;
+    obj[0x2448 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x244C / 4] = -1;
-    obj[0x2448 / 4] = D_0046FC30;
+    obj[0x2448 / 4] = QuadDrawer_vtable;
 }
 
 /* on the first frame of a state (+0x60 0): animation `anim` */
@@ -5197,9 +5197,9 @@ void Cr19Bubbles_Draw(u8 *o) {
 
 static void gone_splat_init(void **obj) {
     obj[0] = D_00472BF0;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x10 update: flip the buffers, count the frame (at 100 the splat); each bubble showing

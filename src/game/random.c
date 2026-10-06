@@ -21,12 +21,12 @@ u64 Random_Res53(VObject *rng) {
     return func_0011F208(func_0011F148(x, func_00100230(b)), DBL_2POWM53);
 }
 
-extern void *D_0046AB50[];
+extern void *Random_vtable[];
 
 /* constructor: register, seed (vtable +0xC) */
 /* 0x001A48C0 */
 VObject *Random_ctor(VObject *rng, s32 seed) {
-    rng->vtbl = D_0046AB50;
+    rng->vtbl = Random_vtable;
     gRandom = rng;
     VCALL(rng, 0xC, void (*)(VObject *, s32))(rng, seed);
     return rng;
@@ -122,7 +122,7 @@ extern void *D_0046AB80[];
 /* 0x001A4850 */
 VObject *Random_dtor(VObject *r, s32 flags) {
     if (r != NULL) {
-        r->vtbl = D_0046AB50;
+        r->vtbl = Random_vtable;
         r->vtbl = D_0046AB80;
         gRandom = NULL;
         if ((s16)flags > 0) {

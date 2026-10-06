@@ -1,5 +1,5 @@
 /* The stalkers' models (the character model classes their loaders build, model.c), and the
- * trivial methods of the model base class (vtable D_0046F9E0) that natively were still stubs.
+ * trivial methods of the model base class (vtable Model_vtable) that natively were still stubs.
  * The models' secondary motion (springs for hanging parts) works as Fiona's (model.c). */
 #include "common.h"
 #include "game.h"
@@ -218,16 +218,16 @@ void HumanModel_Frame(u8 *m) {
     Model_Frame(m);
 }
 
-/* ---- Debilitas's model (vtable D_0046C0A0, 0xBA0 bytes: kinds 2 / 6 / 7 / 27): four hanging
+/* ---- Debilitas's model (vtable DebilitasModel_vtable, 0xBA0 bytes: kinds 2 / 6 / 7 / 27): four hanging
    points at +0x9A0 (0x50 each) on a spring system +0xAE0 with two collision spheres +0xB20 ---- */
 
-extern void *D_0046C0A0[];
+extern void *DebilitasModel_vtable[];
 
 /* +0x8: destructor */
 /* 0x002108F0 */
 void *DebilitasModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_0046C0A0;
+        AT(m, 0x0, void **) = DebilitasModel_vtable;
         func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         HumanModel_Destroy(m, flags);
     }
@@ -447,7 +447,7 @@ void Mtx_Model(f32 (*mtx)[4], const f32 *pos, f32 heading) {
     sceVu0TransMatrix(mtx, mtx, pos);
 }
 
-/* the parts' base (vtable D_004703B0; 0x40 / 0x50 / 0x70 parts, the vtable at +0x30): +0x8 reset,
+/* the parts' base (vtable SpringPartBase_vtable; 0x40 / 0x50 / 0x70 parts, the vtable at +0x30): +0x8 reset,
    +0xC / +0x10 nothing */
 /* 0x002EE6D0 */
 void SpringPart_Reset(u8 *e) {
@@ -576,22 +576,22 @@ static inline void Part_Hold(u8 *p, const f32 *at, const f32 *prev) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, (f32 *)prev);
 }
 
-/* ---- Daniella's model (vtable D_004702D0, 0x1580 bytes: kinds 3 / 34..36). Her hair: two
+/* ---- Daniella's model (vtable DaniellaModel_vtable, 0x1580 bytes: kinds 3 / 34..36). Her hair: two
    strands of five (+0xDE0, 0x70 each) on the set +0x9A0, kept off her back by five capsules
    (+0x1240) whose shape follows her pose (+0x1578); six hanging parts (+0xAA0) on the set
    +0x9E0; one part (+0x1470) on +0xA20; two (+0x14D0) on +0xA60 ---- */
 
-extern void *D_004702D0[];
-extern void *D_00470440[], *D_004703B0[];
+extern void *DaniellaModel_vtable[];
+extern void *SprungPoint_vtable[], *SpringPartBase_vtable[];
 
 /* +0x8: destructor */
 /* 0x002ECFD0 */
 void *DaniellaModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_004702D0;
+        AT(m, 0x0, void **) = DaniellaModel_vtable;
         func_001002C0(m + 0x14D0, BoneHangPoint_dtor, 0x50, 2);
-        AT(m, 0x14A0, void **) = D_00470440;
-        AT(m, 0x14A0, void **) = D_004703B0;
+        AT(m, 0x14A0, void **) = SprungPoint_vtable;
+        AT(m, 0x14A0, void **) = SpringPartBase_vtable;
         func_001002C0(m + 0xDE0, HairPoint_dtor, 0x70, 0xA);
         func_001002C0(m + 0xAA0, HangingPart_dtor, 0x50, 6);
         HumanModel_Destroy(m, flags);
@@ -1109,18 +1109,18 @@ void Capsule_Update(u8 *cap, u8 *m) {
     sceVu0ApplyMatrix((f32 *)(cap + 0x40), mtx, (f32 *)(cap + 0x50));
 }
 
-/* ---- Riccardo's model (vtable D_00470480, 0x1490 bytes: kind 4): twelve 0x60 parts
+/* ---- Riccardo's model (vtable RiccardoModel_vtable, 0x1490 bytes: kind 4): twelve 0x60 parts
    (+0xC20, pairs: the second and third pair of each six hang off the first) on the set
    +0x10A0 with five capsules (+0x10E0); four parts (+0x9A0) on +0xBE0 with four spheres
    (+0xAE0); four (+0x1310) on +0x1450 ---- */
 
-extern void *D_00470480[];
+extern void *RiccardoModel_vtable[];
 
 /* +0x8: destructor */
 /* 0x002F61E0 */
 void *RiccardoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00470480;
+        AT(m, 0x0, void **) = RiccardoModel_vtable;
         func_001002C0(m + 0x1310, Part50_dtor, 0x50, 4);
         func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
         func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
@@ -1426,17 +1426,17 @@ void Part50_Step(u8 *p, u8 *set) {
     Part_Hold(p, at, prev);
 }
 
-/* ---- the second Lorenzo's model (vtable D_00471CE0, 0x1160 bytes: kinds 10 / 39): 24 swaying
+/* ---- the second Lorenzo's model (vtable Lorenzo2Model_vtable, 0x1160 bytes: kinds 10 / 39): 24 swaying
    points (+0x9A0, 0x50 each; vtable D_00472350) on the set +0x1120 - six groups of four (bones
    6..9, 0x16..0x19, 0xA..0xD, 0x1A..0x1D, 0xE..0x11, 0x1E..0x21), as Fiona's (model.c) ---- */
 
-extern void *D_00471CE0[];
+extern void *Lorenzo2Model_vtable[];
 
 /* +0x8: destructor */
 /* 0x0030DAF0 */
 void *Lorenzo2Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00471CE0;
+        AT(m, 0x0, void **) = Lorenzo2Model_vtable;
         func_001002C0(m + 0x9A0, SwayPointB_dtor, 0x50, 0x18);
         HumanModel_Destroy(m, flags);
     }
@@ -1698,25 +1698,25 @@ void Mtx_TurnTwo(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
     sceVu0MulMatrix(out, r, out);
 }
 
-/* ---- Lorenzo's model (vtable D_00471DA0, 0xD00 bytes: kind 11; the plain model base). It
+/* ---- Lorenzo's model (vtable LorenzoModel_vtable, 0xD00 bytes: kind 11; the plain model base). It
    sits on two frames fitted to the floor - +0x7D0 from a point behind him to him, +0xC70 from
    him to a point ahead - as a two-axle chair would (probably his wheelchair); six points
    (+0x890) on the set +0xCC0 with eight spheres (+0xA70) ---- */
 
-extern void *D_00471DA0[];
+extern void *LorenzoModel_vtable[];
 
 /* +0x8: destructor */
 /* 0x0030E1F0 */
 void *LorenzoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00471DA0;
+        AT(m, 0x0, void **) = LorenzoModel_vtable;
         func_001002C0(m + 0x890, HangPoint_dtor, 0x50, 6);
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }
@@ -2020,24 +2020,24 @@ void LorenzoModel_Loaded(u8 *m) {
     }
 }
 
-/* ---- kinds 14 / 15's model (vtable D_00472700, 0x890 bytes: the plain model base). Its
+/* ---- kinds 14 / 15's model (vtable Kind14Model_vtable, 0x890 bytes: the plain model base). Its
    animations 0x9000 / 0x9001 (+0x4DC) show the second form: parts 0x9E / 0xA0 instead of 0xA2
    and flags 4 / 0x40 / 0x200 / 0x400 / 0x10000 / 0x80000 of +0x4B0 ---- */
 
-extern void *D_00472700[];
-extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
+extern void *Kind14Model_vtable[];
+extern void *Model_vtable[], *ModelBase_vtable[], *D_0046B1C0[], *Helper469D00_vtable[], *D_0046ADA0[];
 
 /* +0x8: destructor */
 /* 0x00313FD0 */
 void *Kind14Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00472700;
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = Kind14Model_vtable;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }
@@ -2076,29 +2076,29 @@ void Kind14Model_Draw(u8 *m, s32 layer, s32 a, s32 b) {
     Model_Draw(m, layer, a, b);
 }
 
-/* ---- character kind 9's model (vtable D_00471C20): six hanging points (+0x9A0, bones
+/* ---- character kind 9's model (vtable Kind09Model_vtable): six hanging points (+0x9A0, bones
  * 0x2F..0x34) on the spring set +0xD00 with six collision spheres (+0xB80), and six strands of
  * four (+0xD40, 0x50 each) on the spring set +0x14C0 ---- */
 
-extern void *D_00471C20[], *D_0046C160[], *D_0046B0D0[];
+extern void *Kind09Model_vtable[], *HumanModel_vtable[], *IK2_vtable[];
 extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
 
 /* +0x8 destructor */
 /* 0x0030D150 */
 void *Kind09Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00471C20;
+        AT(m, 0x0, void **) = Kind09Model_vtable;
         func_001002C0(m + 0xD40, SwayPointB_dtor, 0x50, 0x18);
         func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 6);
-        AT(m, 0x0, void **) = D_0046C160;
-        AT(m, 0x988, void **) = D_0046B0D0;
-        AT(m, 0x928, void **) = D_0046B0D0;
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = HumanModel_vtable;
+        AT(m, 0x988, void **) = IK2_vtable;
+        AT(m, 0x928, void **) = IK2_vtable;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }
@@ -2282,19 +2282,19 @@ void Kind09Model_Loaded(u8 *m) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern void *D_00474460[];
+extern void *Kind33Model_vtable[];
 
 /* (as Kind14Model_dtor)  +0x8: destructor */
 /* 0x0032C510 */
 void *Kind33Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00474460;
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = Kind33Model_vtable;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }
@@ -2401,25 +2401,25 @@ void Kind23Model_Springs(u8 *m) {
     Kind23Model_Parts10A0(m);
 }
 
-extern void *D_00473BD0[];
+extern void *Kind23Model_vtable[];
 
 /* (as Kind09Model_dtor) another model's destructor: twelve 0x60 nodes at +0xC20, four 0x50 at
  * +0x9A0 */
 /* 0x003203B0 */
 void *Kind23Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_00473BD0;
+        AT(m, 0x0, void **) = Kind23Model_vtable;
         func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
         func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
-        AT(m, 0x0, void **) = D_0046C160;
-        AT(m, 0x988, void **) = D_0046B0D0;
-        AT(m, 0x928, void **) = D_0046B0D0;
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = HumanModel_vtable;
+        AT(m, 0x988, void **) = IK2_vtable;
+        AT(m, 0x928, void **) = IK2_vtable;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }
@@ -2428,7 +2428,7 @@ void *Kind23Model_dtor(u8 *m, s32 flags) {
 }
 
 /* ---- the rest of the model class at 0x320590 (copies of func_002F6xxx) and the one with
-   vtable D_00474460 ---- */
+   vtable Kind33Model_vtable ---- */
 
 /* +0x3C: the springs a frame (as RiccardoModel_Vt3C, two sets) */
 /* 0x00320CB0 */
@@ -2482,7 +2482,7 @@ void Kind23Model_Loaded(u8 *m) {
     }
 }
 
-/* D_00474460 +0x40: the model matrix from the actor's position raised by `lift`, and heading
+/* Kind33Model_vtable +0x40: the model matrix from the actor's position raised by `lift`, and heading
    (as Model_BodyFrames) */
 /* 0x0032C630 */
 void Kind33Model_BodyFrames(u8 *m, u8 *actor, f32 lift) {

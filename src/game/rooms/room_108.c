@@ -1,4 +1,4 @@
-/* Room 0x108: its event handler class (vtable D_0046FE00, see sRooms in event.c),
+/* Room 0x108: its event handler class (vtable Room108_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046FE00[];
+extern void *RoomBase_vtable[];
+extern void *Room108_vtable[];
 extern const char *D_004193A8, *D_004193AC;
 
 extern u8 D_00418DC0[];
@@ -24,7 +24,7 @@ extern void *D_004193A0[];
 extern PTMF D_01990F18[];
 
 /* 0x002E7220 */
-void *Room108_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE00, D_0046DB80); }
+void *Room108_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room108_vtable, RoomBase_vtable); }
 
 /* 0x002E7280 */
 void *Room108_EnterScript(void) { return D_00418DC0; }

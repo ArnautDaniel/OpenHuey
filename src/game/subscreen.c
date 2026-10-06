@@ -1,4 +1,4 @@
-/* The sub screen: the menu system of the title and of the in-game menus (vtable D_0047A790, at
+/* The sub screen: the menu system of the title and of the in-game menus (vtable SubScreen_vtable, at
  * SceneTitle +0x74A80; code 0x384C00..0x3A0000). Its textures are SUBSCR\SUBBASE.TEX and
  * SUBSCR\SUBBACK.TEX. */
 #include "common.h"
@@ -35,7 +35,7 @@
 #include "msl.h"
 
 extern VObject *D_00456DF0;
-extern void *D_0046C790[];      /* a pool entry */
+extern void *PoolEntry_vtable[];      /* a pool entry */
 
 void SubScreen_StateItems(SubScreen *s);
 void SubScreen_DrawLoadWait(SubScreen *s);
@@ -44,7 +44,7 @@ void SubScreen_Open(SubScreen *s);
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
 
-extern void *D_00472700[];
+extern void *Kind14Model_vtable[];
 extern const u8 D_0044BF10[];
 s32 SubScreen_LoaderIdle(void *pool);
 u32 Items_FirstFree(u8 *o, u8 row);
@@ -101,7 +101,7 @@ void SubPool_Reset(u8 *pool) {
         u8 *e = SubPool_new(0x18, pool + 8 + i * 0x18);
 
         if (e != NULL) {
-            AT(e, 0x0, void **) = D_0046C790;
+            AT(e, 0x0, void **) = PoolEntry_vtable;
             AT(e, 0x4, s32) = -1;
             AT(e, 0x8, u8) = 0;
             AT(e, 0x10, s64) = 0;
@@ -123,7 +123,7 @@ void SubPool_Reset(u8 *pool) {
 void *Obj46EC80_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EC80;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -230,9 +230,9 @@ void SubScreen_SetLayout(SubScreen *s, s32 type) {
 
 void Costumes_Setup(SubScreen *s);
 void Results_Setup(SubScreen *s);
-extern void *D_00474020[];       /* the 0x15C helper's base vtable */
-extern void *D_00474040[];
-extern void *D_00474060[];
+extern void *SynthBase_vtable[];       /* the 0x15C helper's base vtable */
+extern void *SynthPot_vtable[];
+extern void *SlotMachine_vtable[];
 
 void Options_StateList(SubScreen *s);
 void SubScreen_StateSave(SubScreen *s);
@@ -292,7 +292,7 @@ static void sub_new_slots(SubScreen *s, void **vtbl) {
     u8 *p = SynthBase_new(0x15C, s->page);
 
     if (p != NULL) {
-        AT(p, 0, void **) = D_00474020;
+        AT(p, 0, void **) = SynthBase_vtable;
         Task_Construct((Task *)(p + 0x14));
         VCALL((VObject *)p, 0xC, void (*)(VObject *))((VObject *)p);
         AT(p, 0, void **) = vtbl;
@@ -344,7 +344,7 @@ void SubScreen_Open(SubScreen *s) {
     case 3:
         sub_free_vram();
         sub_load(s, sSynSlot, s->pageTex);
-        sub_new_slots(s, D_00474060);
+        sub_new_slots(s, SlotMachine_vtable);
         s->kind = 0x86;
         ptmf_set_fn(&s->state, SubScreen_StatePageObject);
         sub_se();
@@ -352,7 +352,7 @@ void SubScreen_Open(SubScreen *s) {
     case 4:
         sub_free_vram();
         sub_load(s, sSynSlot, s->pageTex);
-        sub_new_slots(s, D_00474040);
+        sub_new_slots(s, SynthPot_vtable);
         s->kind = 0x87;
         ptmf_set_fn(&s->state, SubScreen_StatePageObject);
         sub_se();
@@ -512,8 +512,8 @@ void SubScreen_DrawLoadWait(SubScreen *s) {
 
 extern s8 D_0044C120[][4];       /* per screen kind: up to 4 panels to draw while fading */
 extern u8 D_0047B350;
-extern void *D_0046F350[];       /* overlay vtable */
-extern void *D_00469D00[];       /* its base */
+extern void *Overlay_vtable[];       /* overlay vtable */
+extern void *Helper469D00_vtable[];       /* its base */
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
 
 /* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
@@ -571,13 +571,13 @@ static void sub_draw_fade(SubScreen *s) {
         u8 ov[0x100] __attribute__((aligned(16)));
 
         AT(ov, 0x24, s32) = 0;
-        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x0, void **) = Overlay_vtable;
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
-        AT(ov, 0x0, void **) = D_00469D00;
+        AT(ov, 0x0, void **) = Helper469D00_vtable;
     } else {
         u8 alpha = s->fade;
 
@@ -2034,7 +2034,7 @@ void SubScreen_StateThrowAsk(SubScreen *s) {
 
 /* ---- the screen's frame ---- */
 
-extern void *D_0046F350[], *D_0046EC80[], *D_00469D00[];
+extern void *Overlay_vtable[], *D_0046EC80[], *Helper469D00_vtable[];
 extern const PTMF D_0044B1C0;
 
 /* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
@@ -2056,14 +2056,14 @@ void SubScreen_StateRun(SubScreen *s) {
     if (s->kind & 0x80) {
         u8 ov[0x100] __attribute__((aligned(16)));
 
-        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x0, void **) = Overlay_vtable;
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
         Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
-        AT(ov, 0x0, void **) = D_00469D00;
+        AT(ov, 0x0, void **) = Helper469D00_vtable;
     } else {
         u8 alpha = s->fade;
 
@@ -2091,7 +2091,7 @@ void SubScreen_StateRun(SubScreen *s) {
             Sound_PlaySE(SE_CLOSE);
         }
     }
-    dof.vtbl = D_00469D00;
+    dof.vtbl = Helper469D00_vtable;
 }
 
 /* ---- the clear results ---- */
@@ -2294,14 +2294,14 @@ static void sub_fade_back(SubScreen *s) {
         u8 ov[0x100] __attribute__((aligned(16)));
 
         AT(ov, 0x8, s32) = 0;   /* not set by the original either (its stack there was clear) */
-        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x0, void **) = Overlay_vtable;
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
         Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
-        AT(ov, 0x0, void **) = D_00469D00;
+        AT(ov, 0x0, void **) = Helper469D00_vtable;
     } else {
         u8 alpha = s->fade;
 
@@ -2365,7 +2365,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
     dof.vtbl = D_0046EC80;
     DepthBand_Queue((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
     sub_fade_sound(f);
-    dof.vtbl = D_00469D00;
+    dof.vtbl = Helper469D00_vtable;
 }
 
 /* draw: opening - once the textures are loaded the fade runs up to 0x40 (sound going down);
@@ -2404,7 +2404,7 @@ void SubScreen_DrawOpening(SubScreen *s) {
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);
     }
-    dof.vtbl = D_00469D00;
+    dof.vtbl = Helper469D00_vtable;
 }
 
 extern const PTMF D_0044C0D8;
@@ -2860,7 +2860,7 @@ void Gallery_StatePicture(SubScreen *s) {
 
 /* ---- the model gallery's start ---- */
 
-extern void *D_0046D750[];
+extern void *Tint_vtable[];
 extern const PTMF D_0044B9B0;
 
 /* keep room effect `k` (its 0x90 bytes from +0x10) in `save` and remove it */
@@ -2879,7 +2879,7 @@ static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
  * progress +0x16C0) and they loaded (func_0038D620), the renderer reset (+0x1C), state
  * D_0044B9B0; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
  * +0x7C, the room effects 0x1D..0x1F kept (+0xA8E40..) and removed, effect 0x1F made anew (a
- * D_0046D750) and started. The extras list under a darkening overlay or the panels */
+ * Tint_vtable) and started. The extras list under a darkening overlay or the panels */
 /* 0x0038BC70 */
 void Gallery_StateModelChosen(SubScreen *s) {
     if (s->fade < 0x80) {
@@ -2935,7 +2935,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
                 u8 *e = RoomEffects_new(0xA0, mem);
 
                 if (e != NULL) {
-                    AT(e, 0x0, void **) = D_0046D750;
+                    AT(e, 0x0, void **) = Tint_vtable;
                 }
                 *slot = e;
                 VCALL(*slot, 0xC, void (*)(void *))(*slot);
@@ -3162,11 +3162,11 @@ u8 *Gallery_MakeModel(SubScreen *s, u8 k) {
     return m;
 }
 
-/* model classes D_00472700 / D_00474460 over the plain one (HumanModel_BaseCtor) */
+/* model classes Kind14Model_vtable / Kind33Model_vtable over the plain one (HumanModel_BaseCtor) */
 /* 0x0038C890 */
 void *Kind14Model_ctor(u8 *m) {
     HumanModel_BaseCtor(m);
-    AT(m, 0x0, void **) = D_00472700;
+    AT(m, 0x0, void **) = Kind14Model_vtable;
     return m;
 }
 
@@ -3873,7 +3873,7 @@ s32 SubScreen_EntryMotions(void *o, u32 i) {
 
 /* ---- the model gallery ---- */
 
-extern void *D_0046EB40[], *D_0046D7B0[];
+extern void *Fog_vtable[], *ScreenBlend_vtable[];
 extern const PTMF D_0044B9D0, D_0044B9E0;
 
 #define GALLERY_STEP(s) SUB_PAGE(s, 0x2, u8)   /* 0 fading in, 1 shown, 2..4 the help, 5 leaving */
@@ -3953,11 +3953,11 @@ static void gallery_leave(SubScreen *s) {
     VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, NULL, 0.0f);
     fx = gRoomEffects;
     RoomEffects_Release(fx, 0x1F);
-    gallery_effect_new(gRoomEffects, &AT(fx, 0x14B4, VObject *), D_0046D750);
+    gallery_effect_new(gRoomEffects, &AT(fx, 0x14B4, VObject *), Tint_vtable);
     gallery_effect_back(gRoomEffects, 0x1F, (u8 *)s + 0xA8E40);
-    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14AC, VObject *), D_0046EB40);
+    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14AC, VObject *), Fog_vtable);
     gallery_effect_back(gRoomEffects, 0x1D, (u8 *)s + 0xA8ED0);
-    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14B0, VObject *), D_0046D7B0);
+    gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14B0, VObject *), ScreenBlend_vtable);
     gallery_effect_back(fx, 0x1E, (u8 *)s + 0xA8F60);
     s->fading = 1;
     s->fade = 0x80;

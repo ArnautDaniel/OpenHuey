@@ -1,4 +1,4 @@
-/* Room 0x61: its event handler class (vtable D_00471FE0, see sRooms in event.c),
+/* Room 0x61: its event handler class (vtable Room61_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -19,9 +19,9 @@ f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw);
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00471FE0[];
-extern void *D_0047A370[], *D_0046F580[];
+extern void *RoomBase_vtable[];
+extern void *Room61_vtable[];
+extern void *D_0047A370[], *EffectBase_vtable[];
 extern u8 D_01991210[], D_01991250[], D_01991290[];   /* the three paths */
 extern s16 D_019912D0[], D_019913D0[], D_01991490[];   /* their points */
 extern void *D_0047A3B0[];
@@ -54,9 +54,9 @@ extern PTMF D_01991550[];
  * its slot in event var 3; 1 its haze on, 2 off */
 static void shaft_init(void **obj) {
     obj[0] = D_0047A370;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 #define PATH_PT(st, i) (AT(st, 0x28, s16 *) + (i) * 3)
@@ -92,7 +92,7 @@ static void glint_init(void **obj) {
 #endif
 
 /* 0x00310A30 */
-void *Room61_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471FE0, D_0046DB80); }
+void *Room61_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room61_vtable, RoomBase_vtable); }
 
 /* 0x00310A90 */
 void *Room61_EnterScript(void) {
@@ -338,9 +338,9 @@ u8 *LightShaft_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A370;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -573,7 +573,7 @@ void **Glint_dtor(void **o, s32 flags) {
         return o;
     }
     o[0] = D_0047A3B0;
-    o[0] = D_0046F580;
+    o[0] = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -611,7 +611,7 @@ void Glint_Draw(void) {
     AT(&rec[8], 0, f32) = 1.0f;
     AT(&rec[9], 0, f32) = 1.0f;
     q.a = -1;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.k[4] = -1;
     q.tex = -1;
     q.c = 0;
@@ -633,7 +633,7 @@ void Glint_Draw(void) {
     rec[10] = 0;
     rec[11] = 0;
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* +0x10 update */

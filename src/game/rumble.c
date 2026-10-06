@@ -14,7 +14,7 @@ _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 
 #define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
 
-extern void *D_0046F4F0[], *D_0046AE30[];
+extern void *Rumble_vtable[], *D_0046AE30[];
 
 void *RumbleBase_dtor(u8 *o, s32 flags);
 
@@ -33,7 +33,7 @@ void *RumbleBase_dtor(u8 *o, s32 flags) {
 /* constructor: register, reset (vtable +0xC) */
 /* 0x002D4630 */
 void *Rumble_ctor(Rumble *f) {
-    f->vtbl = D_0046F4F0;
+    f->vtbl = Rumble_vtable;
     gRumble = (VObject *)f;
     RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
     return f;
@@ -43,7 +43,7 @@ void *Rumble_ctor(Rumble *f) {
 /* 0x0020DF90 */
 Rumble *Rumble_dtor(Rumble *f, s32 flags) {
     if (f != NULL) {
-        f->vtbl = D_0046F4F0;
+        f->vtbl = Rumble_vtable;
         f->vtbl = D_0046AE30;
         gRumble = NULL;
         if ((s16)flags > 0) {

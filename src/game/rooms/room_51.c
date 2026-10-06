@@ -1,4 +1,4 @@
-/* Room 0x51: its event handler class (vtable D_0046E800, see sRooms in event.c),
+/* Room 0x51: its event handler class (vtable Room51_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E800[];
+extern void *RoomBase_vtable[];
+extern void *Room51_vtable[];
 extern u8 D_0047AB98[];
 
 extern u8 D_0040CF40[];
@@ -21,7 +21,7 @@ extern u32 D_0040E360[];
 extern PTMF D_01990D90[];
 
 /* 0x002B4840 */
-void *Room51_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E800, D_0046DB80); }
+void *Room51_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room51_vtable, RoomBase_vtable); }
 
 /* 0x002B48A0 */
 void *Room51_EnterScript(void) {
@@ -44,7 +44,7 @@ void *Room51_Phase2Script(void) {
 }
 
 /* 0x002B48E0 */
-void *Room51_Phase5Script(void *o) { return D_0047AB98; }   /* D_0046E800 +0x20 */
+void *Room51_Phase5Script(void *o) { return D_0047AB98; }   /* Room51_vtable +0x20 */
 
 /* 0x002B48F0 */
 u32 Room51_ActionScript(void *self, s32 i) {

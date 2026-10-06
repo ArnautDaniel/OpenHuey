@@ -1,4 +1,4 @@
-/* Room 0x60: its event handler class (vtable D_00471FA0, see sRooms in event.c),
+/* Room 0x60: its event handler class (vtable Room60_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -14,8 +14,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_00471FA0[];
+extern void *RoomBase_vtable[];
+extern void *Room60_vtable[];
 extern void *D_004795A0[];
 extern void *D_004795C0[];
 extern u8 D_004280A0[];
@@ -29,7 +29,7 @@ extern u8 D_004291A0[];
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_019911C0[];
 
@@ -45,7 +45,7 @@ static void effect_795C0_init(void **obj) {
 #endif
 
 /* 0x00310170 */
-void *Room60_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471FA0, D_0046DB80); }
+void *Room60_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room60_vtable, RoomBase_vtable); }
 
 /* 0x003101D0 */
 void *Room60_EnterScript(void) {
@@ -196,7 +196,7 @@ s32 Room60_Cmd00(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot;
 
-        room_effect_slot_new(gRoomEffects, 0x1B, D_00472F60);
+        room_effect_slot_new(gRoomEffects, 0x1B, Reflection_vtable);
         slot = Effect_New(gEffects, 0x10, effect_795A0_init);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 1, slot);
     }
@@ -255,7 +255,7 @@ void *Room60_ObjectName(void *self, s32 i) {
 void *Room60Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004795C0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

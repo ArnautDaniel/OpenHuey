@@ -1,4 +1,4 @@
-/* Room 0xE0: its event handler class (vtable D_0047A450, see sRooms in event.c),
+/* Room 0xE0: its event handler class (vtable RoomE0_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "actor.h"
 
-extern void *D_0046DB80[];
-extern void *D_0047A450[];
+extern void *RoomBase_vtable[];
+extern void *RoomE0_vtable[];
 extern u8 D_0047B0B0[], D_0047B0C0[];
 extern char D_0047B2F8[];
 extern const char D_00463928[];
@@ -24,7 +24,7 @@ extern PTMF D_01991CD0[];
 extern PTMF D_01991D18[];
 
 /* 0x00378870 */
-void *RoomE0_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A450, D_0046DB80); }
+void *RoomE0_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomE0_vtable, RoomBase_vtable); }
 
 /* 0x003788D0 */
 void *RoomE0_EnterScript(void) {
@@ -42,7 +42,7 @@ void *RoomE0_Phase1Script(void) {
 }
 
 /* 0x00378900 */
-void *RoomE0_Phase2Script(void *o) { return D_0047B0B0; }   /* D_0047A450 +0x14 */
+void *RoomE0_Phase2Script(void *o) { return D_0047B0B0; }   /* RoomE0_vtable +0x14 */
 
 /* 0x00378910 */
 void *RoomE0_Phase3Script(void) {
@@ -65,7 +65,7 @@ void *RoomE0_Table38(void) {
 }
 
 /* 0x00378960 */
-u32 RoomE0_ObjectName(void *o, s32 i) { return ((u32 *)D_0047B0C0)[i]; }   /* D_0047A450 +0x34 */
+u32 RoomE0_ObjectName(void *o, s32 i) { return ((u32 *)D_0047B0C0)[i]; }   /* RoomE0_vtable +0x34 */
 
 /* (self->*D_01991D18[i])(a, b) */
 /* 0x00378980 */

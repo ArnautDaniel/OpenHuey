@@ -55,7 +55,7 @@
 #define D_003B0010 D_0041C360
 #define D_003B0020 D_0041C370
 #define D_003B0030 D_0041C380
-#define D_00469D10 D_00470A90
+#define Debilitas_vtable Debilitas2_vtable
 #define Debilitas_dtor func_002FA0B0
 #define Debilitas_SlowWalkAnim func_002FA340
 #define Debilitas_AttackTable func_002FA380

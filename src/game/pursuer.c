@@ -44,42 +44,42 @@ f32 Pursuer_ThreatAmount(void);
 void Pursuer_SetRage(void *p, s32 on);
 s32 Pursuer_IsBusy(void *p);
 
-extern void *D_00477790[];
-extern void *D_00476C10[];
-extern void *D_004767D0[];
-extern void *D_004764A0[];
-extern void *D_00476120[];
-extern void *D_00475DB0[];
-extern void *D_00474C10[];
-extern void *D_00474130[];
-extern void *D_00473CD0[];
-extern void *D_00478770[];
-extern void *D_004738A0[];
-extern void *D_0046A620[];
-extern void *D_00474560[];
-extern void *D_00474890[];
-extern void *D_004734A0[];
-extern void *D_00473110[];
-extern void *D_00472C30[];
-extern void *D_004728A0[];
-extern void *D_0046A2F0[];
-extern void *D_004723B0[];
-extern void *D_00472020[];
-extern void *D_0046FF80[];
-extern void *D_004718F0[];
-extern void *D_00470720[];
-extern void *D_00479B20[];
-extern void *D_004715C0[];
-extern void *D_00471290[];
-extern void *D_0046F6B0[];
-extern void *D_00478160[];
-extern void *D_00477E30[];
-extern void *D_00477AE0[];
-extern void *D_0046BBB0[];
-extern void *D_00474FD0[];
-extern void *D_0046F020[];
-extern void *D_00470A90[];
-extern void *D_00469D10[];
+extern void *Kind33_vtable[];
+extern void *Kind32_vtable[];
+extern void *Kind31_vtable[];
+extern void *Kind30_vtable[];
+extern void *Kind29_vtable[];
+extern void *Kind28_vtable[];
+extern void *Kind26_vtable[];
+extern void *Kind25_vtable[];
+extern void *Kind24_vtable[];
+extern void *Kind37_vtable[];
+extern void *TintStalker_vtable[];
+extern void *Kind22_vtable[];
+extern void *Kind21_vtable[];
+extern void *Kind20_vtable[];
+extern void *Kind19_vtable[];
+extern void *Kind18_vtable[];
+extern void *Kind17_vtable[];
+extern void *Kind16_vtable[];
+extern void *Kind15_vtable[];
+extern void *Kind14_vtable[];
+extern void *Kind13_vtable[];
+extern void *Kind08_vtable[];
+extern void *Kind12_vtable[];
+extern void *Lorenzo_vtable[];
+extern void *Kind39_vtable[];
+extern void *Lorenzo2_vtable[];
+extern void *Kind09_vtable[];
+extern void *Riccardo_vtable[];
+extern void *Kind36_vtable[];
+extern void *Kind35_vtable[];
+extern void *Kind34_vtable[];
+extern void *Daniella_vtable[];
+extern void *Kind27_vtable[];
+extern void *Debilitas3_vtable[];
+extern void *Debilitas2_vtable[];
+extern void *Debilitas_vtable[];
 extern u8 D_00419DD0[];
 extern u8 D_00419E10[];
 extern u8 D_004297C0[];
@@ -122,8 +122,8 @@ void *Kind17_MotionFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
 extern void *D_0046D730[];
-extern void *D_0046F580[];
-extern void *D_00472F60[];
+extern void *EffectBase_vtable[];
+extern void *Reflection_vtable[];
 extern void *D_00479FF0[];
 void *Obj472F60_dtor(u8 *o, s32 flags);
 void *Effect79FF0_dtor(u8 *o, s32 flags);
@@ -196,7 +196,7 @@ extern const PTMF D_0043B630;
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -206,10 +206,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -245,9 +245,9 @@ static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p);
 
 static void strand_init(void **obj) {
     obj[0] = D_004726E0;
-    obj[0x40 / 4] = D_00469D00;
+    obj[0x40 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x44 / 4] = -1;
-    obj[0x40 / 4] = D_0046FC30;
+    obj[0x40 / 4] = QuadDrawer_vtable;
 }
 
 Character *Kind09_dtor(Character *c, s32 flags);
@@ -299,10 +299,10 @@ static inline s32 b5_prog_flag8000(void) {
 }
 
 static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
-    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x0, void **) = Actor_vtable;
     FLD(p, 0x20, s32) = arg;
     FLD(p, 0x24, s32) = 0x2000000;
-    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x0, void **) = Character_vtable;
     FLD(p, 0x1380, s32) = 0;
     FLD(p, 0x153C, u8) = (u8)id;
     FLD(p, 0x0, void **) = vtbl;
@@ -559,7 +559,7 @@ s32 Pursuer_LoadMessage(Pursuer *p) {
 }
 
 extern void *D_0046D800[];
-extern void *D_00469D00[];
+extern void *Helper469D00_vtable[];
 
 /* destructor of a small object (vtables 0x46D800 -> 0x469D00) */
 /* 0x00278490 */
@@ -567,7 +567,7 @@ void **SmallObj46D800_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
         *obj = D_0046D800;
         if (obj != NULL) {
-            *obj = D_00469D00;
+            *obj = Helper469D00_vtable;
         }
         if ((s16)flags > 0) {
             func_00100490(obj);
@@ -1232,7 +1232,7 @@ void Pursuer_Activate(Pursuer *p) {
     Character_Activate(&p->c);
 }
 
-/* the D_0046F020 stalker's +0x5C reset: the base one, and its +0x16DC 0x10 while the countdown
+/* the Debilitas3_vtable stalker's +0x5C reset: the base one, and its +0x16DC 0x10 while the countdown
  * runs (progress +0x1FBEC1) */
 /* 0x002CF0F0 */
 void Debilitas3_Activate(Pursuer *p) {
@@ -1469,7 +1469,7 @@ void Pursuer_Behaviour25C(Pursuer *p) {
 
 /* ---- batch 4 ---- */
 
-extern void *D_0046A620[], *D_00474560[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void *Kind22_vtable[], *Kind21_vtable[], *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
 extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
     D_003ECF00;
 
@@ -1869,11 +1869,11 @@ void Pursuer_PlaceModel(Pursuer *p) {
 /* 0x00179970 */
 Pursuer *Kind22_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046A620;
+        p->c.a.vtbl = Kind22_vtable;
         if (p != NULL) {
-            p->c.a.vtbl = D_00474560;
+            p->c.a.vtbl = Kind21_vtable;
             if (p != NULL) {
-                p->c.a.vtbl = D_0046D810;
+                p->c.a.vtbl = Pursuer_vtable;
                 VCALL(p, 0x10, void (*)(Pursuer *))(p);
                 if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
                     void **m = p->c.motion;
@@ -1886,12 +1886,12 @@ Pursuer *Kind22_dtor(Pursuer *p, s32 flags) {
                     }
                 }
                 if (p != NULL) {
-                    p->c.a.vtbl = D_0046C220;
+                    p->c.a.vtbl = NPC_vtable;
                     VCALL(p, 0x10, void (*)(Pursuer *))(p);
                     if (p != NULL) {
-                        p->c.a.vtbl = D_00469C60;
+                        p->c.a.vtbl = Character_vtable;
                         if (p != NULL) {
-                            p->c.a.vtbl = D_00469C20;
+                            p->c.a.vtbl = Actor_vtable;
                         }
                     }
                 }
@@ -1918,7 +1918,7 @@ void *Kind21_MotionFiles(void) {
 
 extern const PTMF D_003ECF50, D_003ECFC0, D_003ECF10, D_003ECF90, D_003ECCD0, D_003ED090, D_003ED0A0,
     D_003ECDB0;
-extern void *D_0046D810[];
+extern void *Pursuer_vtable[];
 
 /* vtable +0x8: destructor (Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model is
  * freed for slots 3..5 */
@@ -1935,62 +1935,62 @@ Pursuer *Pursuer_dtor(Pursuer *p, s32 flags) {
 
 /* 0x00172910 */
 void *Kind33_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x21, arg, D_00477790);
+    return b0_RoomCtor(p, 0x21, arg, Kind33_vtable);
 }
 
 /* 0x00172960 */
 void *Kind32_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x20, arg, D_00476C10);
+    return b0_RoomCtor(p, 0x20, arg, Kind32_vtable);
 }
 
 /* 0x001729B0 */
 void *Kind31_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1F, arg, D_004767D0);
+    return b0_RoomCtor(p, 0x1F, arg, Kind31_vtable);
 }
 
 /* 0x00172A00 */
 void *Kind30_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1E, arg, D_004764A0);
+    return b0_RoomCtor(p, 0x1E, arg, Kind30_vtable);
 }
 
 /* 0x00172A50 */
 void *Kind29_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1D, arg, D_00476120);
+    return b0_RoomCtor(p, 0x1D, arg, Kind29_vtable);
 }
 
 /* 0x00172AA0 */
 void *Kind28_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1C, arg, D_00475DB0);
+    return b0_RoomCtor(p, 0x1C, arg, Kind28_vtable);
 }
 
 /* 0x00172AF0 */
 void *Kind26_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1A, arg, D_00474C10);
+    return b0_RoomCtor(p, 0x1A, arg, Kind26_vtable);
 }
 
 /* 0x00172B40 */
 void *Kind25_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x19, arg, D_00474130);
+    return b0_RoomCtor(p, 0x19, arg, Kind25_vtable);
 }
 
 /* 0x00172B90 */
 void *Kind24_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x18, arg, D_00473CD0);
+    return b0_RoomCtor(p, 0x18, arg, Kind24_vtable);
 }
 
 /* 0x00172BE0 */
 void *Kind37_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x25, arg, D_00478770);
+    return b0_RoomCtor(p, 0x25, arg, Kind37_vtable);
 }
 
 /* 0x00172C30 */
 void *TintStalker_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x17, arg, D_004738A0);
+    return b0_RoomCtor(p, 0x17, arg, TintStalker_vtable);
 }
 
 /* 0x00172C80 */
 void *Kind22_ctor(void *p, u32 id, u32 arg) {
-    return b0_RoomCtor(p, id, (u8)arg, D_0046A620);
+    return b0_RoomCtor(p, id, (u8)arg, Kind22_vtable);
 }
 
 /* vtable +0x1F8: open the door at exit +0x17B0 and step through */
@@ -11204,14 +11204,14 @@ u8 *Debilitas_ModelFileTable(Pursuer *p) {
 /* ---- the room character of id 8 (vtable 0x46FF80; built by Kind08_ctor): a Pursuer that
  * mostly keeps the Pursuer's own behaviour ---- */
 
-extern void *D_0046FF80[];
+extern void *Kind08_vtable[];
 extern const PTMF D_00419E50;   /* its behaviour after a reset */
 
 /* vtable +0x8: destructor */
 /* 0x002ECB80 */
 Pursuer *Kind08_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046FF80;
+        p->c.a.vtbl = Kind08_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }
@@ -11277,8 +11277,8 @@ s32 Kind08_GrabOrder(Pursuer *p) {
 /* 0x00308EC0 */
 Character *Kind09_dtor(Character *c, s32 flags) {
     if (c != NULL) {
-        c->a.vtbl = D_00471290;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Kind09_vtable;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -11288,10 +11288,10 @@ Character *Kind09_dtor(Character *c, s32 flags) {
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -11324,7 +11324,7 @@ void Kind09_BehaviourSearch(Character *c) {
     }
 }
 
-/* ---- character kind 14 (vtable D_004723B0, the pursuer base with three of its own) ---- */
+/* ---- character kind 14 (vtable Kind14_vtable, the pursuer base with three of its own) ---- */
 
 extern const PTMF D_00429840;
 
@@ -11364,16 +11364,16 @@ s32 Kind14_GrabOrder(Pursuer *p) {
     return -1;
 }
 
-/* ---- character kind 0x10 (vtable D_004728A0, the pursuer base with four of its own) ---- */
+/* ---- character kind 0x10 (vtable Kind16_vtable, the pursuer base with four of its own) ---- */
 
-extern void *D_004728A0[];
+extern void *Kind16_vtable[];
 extern const PTMF D_00429CD0;
 
 /* +0x8 destructor */
 /* 0x00315B30 */
 Pursuer *Kind16_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_004728A0;
+        p->c.a.vtbl = Kind16_vtable;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
@@ -11428,16 +11428,16 @@ s32 Kind16_GrabOrder(Pursuer *p) {
     return -1;
 }
 
-/* ---- character kind 0x11 (vtable D_00472C30, the pursuer base with four of its own) ---- */
+/* ---- character kind 0x11 (vtable Kind17_vtable, the pursuer base with four of its own) ---- */
 
-extern void *D_00472C30[];
+extern void *Kind17_vtable[];
 extern const PTMF D_00429D60;
 
 /* +0x8 destructor */
 /* 0x00316AB0 */
 Pursuer *Kind17_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_00472C30;
+        p->c.a.vtbl = Kind17_vtable;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
@@ -11492,11 +11492,11 @@ s32 Kind17_GrabOrder(Pursuer *p) {
     return -1;
 }
 
-/* destructor (vtable D_00472F60) */
+/* destructor (vtable Reflection_vtable) */
 /* 0x00316D80 */
 void *Obj472F60_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00472F60;
+        AT(o, 0x0, void **) = Reflection_vtable;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -11506,7 +11506,7 @@ void *Obj472F60_dtor(u8 *o, s32 flags) {
 }
 
 /* 0x0031E5C0 */
-Character *Kind19_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_004734A0); }
+Character *Kind19_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind19_vtable); }
 
 /* 0x0031E6D0 */
 void *Kind19_ModelFiles(void) {
@@ -11533,7 +11533,7 @@ u8 *TintStalker_ModelFileTable(Pursuer *p) {
 }
 
 /* 0x00321640 */
-Character *Kind24_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00473CD0); }
+Character *Kind24_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind24_vtable); }
 
 /* 0x00321750 */
 void *Kind24_ModelFiles(void) {
@@ -11564,7 +11564,7 @@ void Kind21_EventState(Pursuer *p) { creature_act5(p, &D_0042C8F0); }
 s32 Kind21_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* 0x0032C9C0 */
-Character *Kind20_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474890); }
+Character *Kind20_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind20_vtable); }
 
 /* 0x0032CAD0 */
 void *Kind20_ModelFiles(void) {
@@ -11591,7 +11591,7 @@ u8 *Kind27_ModelFileTable(Pursuer *p) {
 }
 
 /* 0x0033ABA0 */
-Character *Kind29_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476120); }
+Character *Kind29_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind29_vtable); }
 
 /* 0x0033ACB0 */
 void *Kind29_ModelFiles(void) {
@@ -11613,7 +11613,7 @@ void Kind29_EventState(Pursuer *p) { creature_act5(p, &D_004308A0); }
 s32 Kind29_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* 0x00345100 */
-Character *Kind33_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477790); }
+Character *Kind33_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind33_vtable); }
 
 /* 0x00345210 */
 void *Kind33_ModelFiles(void) {
@@ -11650,7 +11650,7 @@ u8 *Kind36_ModelFileTable(Pursuer *p) {
 }
 
 /* 0x0034B7B0 */
-Character *Kind37_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478770); }
+Character *Kind37_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind37_vtable); }
 
 /* 0x0034B8C0 */
 void *Kind37_MotionFiles(void) {
@@ -11687,7 +11687,7 @@ u8 *Kind37_ModelFileTable(Pursuer *p) {
 void *Effect79FF0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479FF0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -11695,7 +11695,7 @@ void *Effect79FF0_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* D_00479FB0 effect message: none sets +0x34 (done); else +0x2C its word 0, and below 2 in word 1
+/* Room37_vtable effect message: none sets +0x34 (done); else +0x2C its word 0, and below 2 in word 1
  * +0x30 30 */
 /* 0x0036A530 */
 void Effect79FF0_SetParams(u8 *o, s32 *m) {
@@ -11713,7 +11713,7 @@ void Effect79FF0_SetParams(u8 *o, s32 *m) {
 void Effect79FF0_Draw(void) {
 }
 
-/* D_00479FB0's update: while the pursuer is in state 4 / action 0x11 (and not stopped, +0x34,
+/* Room37_vtable's update: while the pursuer is in state 4 / action 0x11 (and not stopped, +0x34,
  * nor its delay +0x30 run out) each of its ten timers (+0x4..) counts down; at most one at 0 a
  * frame restarts (10..41) and lets a strand (kind = the pursuer's, +0x2C) drip */
 /* 0x0036A590 */
@@ -11770,13 +11770,13 @@ void Effect79FF0_Start(u8 *o) {
 
 /* ---- two more pursuer-kind destructors and two empty methods (2026-10-05) ---- */
 
-extern void *D_00474560[], *D_004723B0[];
+extern void *Kind21_vtable[], *Kind14_vtable[];
 
-/* vtable +0x8 of D_00474560 (kind 0x15's second class): its vtable, then the base's */
+/* vtable +0x8 of Kind21_vtable (kind 0x15's second class): its vtable, then the base's */
 /* 0x00172CD0 */
 Pursuer *Kind21_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_00474560;
+        p->c.a.vtbl = Kind21_vtable;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
@@ -11787,47 +11787,47 @@ Pursuer *Kind21_dtor(Pursuer *p, s32 flags) {
 
 /* 0x00172DE0 */
 void *Kind21_ctor(void *p, s32 arg, u32 id) {
-    return b0_RoomCtor(p, id, arg, D_00474560);
+    return b0_RoomCtor(p, id, arg, Kind21_vtable);
 }
 
 /* 0x00172E20 */
 void *Kind20_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x14, arg, D_00474890);
+    return b0_RoomCtor(p, 0x14, arg, Kind20_vtable);
 }
 
 /* 0x00172E70 */
 void *Kind19_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x13, arg, D_004734A0);
+    return b0_RoomCtor(p, 0x13, arg, Kind19_vtable);
 }
 
 /* 0x00172EC0 */
 void *Kind18_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x12, arg, D_00473110);
+    return b0_RoomCtor(p, 0x12, arg, Kind18_vtable);
 }
 
 /* 0x00172F10 */
 void *Kind17_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x11, arg, D_00472C30);
+    return b0_RoomCtor(p, 0x11, arg, Kind17_vtable);
 }
 
 /* 0x00172F60 */
 void *Kind16_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x10, arg, D_004728A0);
+    return b0_RoomCtor(p, 0x10, arg, Kind16_vtable);
 }
 
 /* 0x00172FB0 */
 void *Kind15_ctor(void *p, u32 id, u32 arg) {
-    return b0_RoomCtor(p, id, (u8)arg, D_0046A2F0);
+    return b0_RoomCtor(p, id, (u8)arg, Kind15_vtable);
 }
 
-extern void *D_0046A2F0[];
+extern void *Kind15_vtable[];
 
-/* vtable +0x8 of D_0046A2F0 (derived from kind 14) */
+/* vtable +0x8 of Kind15_vtable (derived from kind 14) */
 /* 0x001794C0 */
 Pursuer *Kind15_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046A2F0;
-        p->c.a.vtbl = D_004723B0;
+        p->c.a.vtbl = Kind15_vtable;
+        p->c.a.vtbl = Kind14_vtable;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
@@ -11846,11 +11846,11 @@ void *Kind14_MotionFiles(void) {
     return D_00429800;
 }
 
-/* vtable +0x8 of D_004723B0 (kind 14) */
+/* vtable +0x8 of Kind14_vtable (kind 14) */
 /* 0x00173000 */
 Pursuer *Kind14_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_004723B0;
+        p->c.a.vtbl = Kind14_vtable;
         Pursuer_DestroyBase(p);
         if ((s16)flags > 0) {
             Actor_Destroy(&p->c.a);
@@ -11861,87 +11861,87 @@ Pursuer *Kind14_dtor(Pursuer *p, s32 flags) {
 
 /* 0x00173110 */
 void *Kind14_ctor(void *p, s32 arg, u32 id) {
-    return b0_RoomCtor(p, id, arg, D_004723B0);
+    return b0_RoomCtor(p, id, arg, Kind14_vtable);
 }
 
 /* 0x00173150 */
 void *Kind13_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xD, arg, D_00472020);
+    return b0_RoomCtor(p, 0xD, arg, Kind13_vtable);
 }
 
 /* 0x001731A0 */
 void *Kind08_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x8, arg, D_0046FF80);
+    return b0_RoomCtor(p, 0x8, arg, Kind08_vtable);
 }
 
 /* 0x001731F0 */
 void *Kind12_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xC, arg, D_004718F0);
+    return b0_RoomCtor(p, 0xC, arg, Kind12_vtable);
 }
 
 /* 0x00173240 */
 void *Lorenzo_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xB, arg, D_00470720);
+    return b0_RoomCtor(p, 0xB, arg, Lorenzo_vtable);
 }
 
 /* 0x00173290 */
 void *Kind39_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x27, arg, D_00479B20);
+    return b0_RoomCtor(p, 0x27, arg, Kind39_vtable);
 }
 
 /* 0x001732E0 */
 void *Lorenzo2_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xA, arg, D_004715C0);
+    return b0_RoomCtor(p, 0xA, arg, Lorenzo2_vtable);
 }
 
 /* 0x00173330 */
 void *Kind09_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x9, arg, D_00471290);
+    return b0_RoomCtor(p, 0x9, arg, Kind09_vtable);
 }
 
 /* 0x00173380 */
 void *Riccardo_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x4, arg, D_0046F6B0);
+    return b0_RoomCtor(p, 0x4, arg, Riccardo_vtable);
 }
 
 /* 0x001733D0 */
 void *Kind36_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x24, arg, D_00478160);
+    return b0_RoomCtor(p, 0x24, arg, Kind36_vtable);
 }
 
 /* 0x00173420 */
 void *Kind35_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x23, arg, D_00477E30);
+    return b0_RoomCtor(p, 0x23, arg, Kind35_vtable);
 }
 
 /* 0x00173470 */
 void *Kind34_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x22, arg, D_00477AE0);
+    return b0_RoomCtor(p, 0x22, arg, Kind34_vtable);
 }
 
 /* 0x001734C0 */
 void *Daniella_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x3, arg, D_0046BBB0);
+    return b0_RoomCtor(p, 0x3, arg, Daniella_vtable);
 }
 
 /* 0x00173510 */
 void *Kind27_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1B, arg, D_00474FD0);
+    return b0_RoomCtor(p, 0x1B, arg, Kind27_vtable);
 }
 
 /* 0x00173560 */
 void *Debilitas3_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x7, arg, D_0046F020);
+    return b0_RoomCtor(p, 0x7, arg, Debilitas3_vtable);
 }
 
 /* 0x001735B0 */
 void *Debilitas2_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x6, arg, D_00470A90);
+    return b0_RoomCtor(p, 0x6, arg, Debilitas2_vtable);
 }
 
 /* 0x00173600 */
 void *Debilitas_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x2, arg, D_00469D10);
+    return b0_RoomCtor(p, 0x2, arg, Debilitas_vtable);
 }
 
 /* 0x00173650 */
@@ -12061,7 +12061,7 @@ u8 *Lorenzo2_ModelFileTable(Pursuer *p) {
 }
 
 /* 0x003119A0 */
-Character *Kind13_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00472020); }
+Character *Kind13_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind13_vtable); }
 
 /* 0x00311AB0 */
 void *Kind13_ModelFiles(void) {

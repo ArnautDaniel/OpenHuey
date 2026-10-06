@@ -249,7 +249,7 @@ s32 Rooms_ExitDoorFlags(VObject *r, s32 room, s32 exit) {
 
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
-extern void *D_0046C480[], *D_0046C3E0[];
+extern void *D_0046C480[], *Rooms_vtable[];
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
 #define ROOM_EXIT(room, exit, off) AT(D_003D8BC0, (room) * 0x40 + ((exit) & 0xFF) * 8 + (off), s16)
@@ -626,7 +626,7 @@ VObject *Rooms_dtor(VObject *r, s32 flags) {
     if (r == NULL) {
         return r;
     }
-    r->vtbl = D_0046C3E0;
+    r->vtbl = Rooms_vtable;
     r->vtbl = D_0046C480;
     gRooms = NULL;
     if ((s16)flags > 0) {
@@ -1192,12 +1192,12 @@ void Obstacle_Placed(u8 *o) {
     Obstacle_MarkRing(o, NULL);
 }
 
-/* ---- the obstacles (gObstacles, room manager +0x9380, vtable D_0046C320): 5 things in the
+/* ---- the obstacles (gObstacles, room manager +0x9380, vtable Obstacles_vtable): 5 things in the
  * room that can be pushed about (+0x10, 0xB0 each; the room object "oshi0n" is each one's
  * model, +0x50), their moves (OBSTACLE.MTN at +0x380: count, then offsets), the 5 saved
  * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
 
-extern void *D_0046C320[], *D_0046C380[];
+extern void *Obstacles_vtable[], *D_0046C380[];
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
@@ -1230,7 +1230,7 @@ void *Obstacle_dtor(void *o, s32 flags) {
 /* 0x0021A2E0 */
 void *Obstacles_dtor(u8 *l, s32 flags) {
     if (l != NULL) {
-        AT(l, 0x0, void **) = D_0046C320;
+        AT(l, 0x0, void **) = Obstacles_vtable;
         func_001002C0(l + 0x10, Obstacle_dtor, 0xB0, 5);
         AT(l, 0x0, void **) = D_0046C380;
         gObstacles = NULL;
@@ -1482,15 +1482,15 @@ void Obstacles_Pos(u8 *l, s32 i, f32 *out) {
     }
 }
 
-extern void *Fiona_vtable[], *D_00469C60[], *D_00469C20[];
+extern void *Fiona_vtable[], *Character_vtable[], *Actor_vtable[];
 
 /* Fiona's class destructor (Fiona -> 0x469C60 -> Actor) */
 /* 0x0017FCD0 */
 void *Fiona_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = Fiona_vtable;
-        o[0] = D_00469C60;
-        o[0] = D_00469C20;
+        o[0] = Character_vtable;
+        o[0] = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy((Actor *)o);
         }

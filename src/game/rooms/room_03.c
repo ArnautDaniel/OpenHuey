@@ -1,4 +1,4 @@
-/* Room 0x03: its event handler class (vtable D_0046DC40, see sRooms in event.c),
+/* Room 0x03: its event handler class (vtable Room03_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DC40[];
+extern void *RoomBase_vtable[];
+extern void *Room03_vtable[];
 extern const char *D_003F0DC4;
 extern void *D_0046FF20[];
 extern u8 D_003F0450[];
@@ -24,13 +24,13 @@ extern PTMF D_01990780[];
 
 static inline void dust_init(void **o) {
     o[0] = D_0046FF20;
-    o[0x610 / 4] = D_00469D00;
+    o[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x614 / 4] = -1;
-    o[0x610 / 4] = D_0046FC30;
+    o[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002A9600 */
-void *Room03_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC40, D_0046DB80); }
+void *Room03_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room03_vtable, RoomBase_vtable); }
 
 /* 0x002A9660 */
 void *Room03_EnterScript(void) {

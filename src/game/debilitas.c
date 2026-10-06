@@ -26,7 +26,7 @@
 
 /* the destructor of the motion player subclass (vtable 0x46F9E0) the stalkers' models use: two
  * embedded parts at +0x10 and +0x1D0 */
-extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_0046ADA0[], *D_00469D00[];
+extern void *Model_vtable[], *ModelBase_vtable[], *D_0046B1C0[], *D_0046ADA0[], *Helper469D00_vtable[];
 
 extern u8 D_003AF250[];
 extern u8 D_003AF1D0[];
@@ -57,22 +57,22 @@ void *Debilitas_ModelFiles(void);
 /* 0x00127800 */
 void *Model_dtor(void **m, s32 flags) {
     if (m != NULL) {
-        m[0] = D_0046F9E0;
+        m[0] = Model_vtable;
         if (m != NULL) {
             void **a = (void **)((u8 *)m + 0x1D0);
             void **b = (void **)((u8 *)m + 0x10);
 
-            m[0] = D_0046B210;
+            m[0] = ModelBase_vtable;
             if (a != NULL) {
                 *a = D_0046B1C0;
                 if (a != NULL) {
-                    *a = D_00469D00;
+                    *a = Helper469D00_vtable;
                 }
             }
             if (b != NULL) {
                 *b = D_0046ADA0;
                 if (b != NULL) {
-                    *b = D_00469D00;
+                    *b = Helper469D00_vtable;
                 }
             }
         }

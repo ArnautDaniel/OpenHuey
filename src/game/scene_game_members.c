@@ -31,7 +31,7 @@
 #include "sce/eekernel.h"
 #include "sce/intc.h"
 
-extern void *D_0046C320[], *D_0046ECF0[], *D_0046C540[];
+extern void *Obstacles_vtable[], *PlacedObjects_vtable[], *Doors_vtable[];
 extern void *D_00456DF8;
 
 extern void *D_0046AEC0[];
@@ -40,7 +40,7 @@ void *Obj46AEC0_dtor(u8 *o, s32 flags);
 extern PTMF D_01990700[];
 s32 Room00_Command(void *self, u32 i, s32 a, s32 b);
 
-extern void *D_00469D00[];
+extern void *Helper469D00_vtable[];
 extern u8 D_0046D770[], D_0046C780[], D_0046D800[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -126,26 +126,26 @@ void Doors_Reset(u8 *p) {
     AT(p, 0x50CC, s32) = 0;
 }
 
-/* a manager of 5 objects of 0xB0 bytes (vtable D_0046C320, global gObstacles) */
+/* a manager of 5 objects of 0xB0 bytes (vtable Obstacles_vtable, global gObstacles) */
 /* 0x002D10C0 */
 void *Obstacles_ctor(u8 *p) {
-    AT(p, 0x0, void **) = D_0046C320;
+    AT(p, 0x0, void **) = Obstacles_vtable;
     gObstacles = (VObject *)p;
     func_00100340(p + 0x10, Elem_ctorNoop, Obstacle_dtor, 0xB0, 5);
     return p;
 }
 
-/* a manager of 64 objects of 0xB0 bytes (vtable D_0046ECF0, global D_00456DF8) */
+/* a manager of 64 objects of 0xB0 bytes (vtable PlacedObjects_vtable, global D_00456DF8) */
 /* 0x002D1160 */
 void *PlacedObjects_ctor(u8 *p) {
-    AT(p, 0x0, void **) = D_0046ECF0;
+    AT(p, 0x0, void **) = PlacedObjects_vtable;
     D_00456DF8 = p;
     func_00100340(p + 0x20, func_002D11C0, QuadEntry_dtor, 0xB0, 0x40);
     return p;
 }
 
 void *func_002D11C0(u8 *p) {
-    F(p, 0x40, void *) = D_00469D00;
+    F(p, 0x40, void *) = Helper469D00_vtable;
     F(p, 0x44, s32) = -1;
     F(p, 0x40, void *) = D_0046D770;
     F(p, 0xA0, u32) = 0;
@@ -154,10 +154,10 @@ void *func_002D11C0(u8 *p) {
     return p;
 }
 
-/* the doors: 8 of 0x210 bytes (vtable D_0046C540, global gDoors) */
+/* the doors: 8 of 0x210 bytes (vtable Doors_vtable, global gDoors) */
 /* 0x002D1200 */
 void *Doors_ctor(u8 *p) {
-    AT(p, 0x0, void **) = D_0046C540;
+    AT(p, 0x0, void **) = Doors_vtable;
     gDoors = (VObject *)p;
     func_00100340(p + 0x10, func_002D1260, Door_dtor, 0x210, 8);
     AT(p, 0x4, s32) = 0;
@@ -165,7 +165,7 @@ void *Doors_ctor(u8 *p) {
 }
 
 void *func_002D1260(u8 *p) {
-    F(p, 0x80, void *) = D_00469D00;
+    F(p, 0x80, void *) = Helper469D00_vtable;
     F(p, 0x84, s32) = -1;
     F(p, 0x80, void *) = D_0046C780;
     F(p, 0x120, u32) = 0;
@@ -174,7 +174,7 @@ void *func_002D1260(u8 *p) {
     F(p, 0x128, u32) = 0;
     p[0xE0] = 0;
     F(p, 0xE8, u32) = 0;
-    F(p, 0x190, void *) = D_00469D00;
+    F(p, 0x190, void *) = Helper469D00_vtable;
     F(p, 0x194, s32) = -1;
     F(p, 0x190, void *) = D_0046D800;
     return p;
@@ -386,17 +386,17 @@ void RoomMgr_Clear(u8 *m) {
 
 #include "task.h"
 
-extern void *D_0046A9C0[], *D_00469D00[], *D_0046F350[];
+extern void *D_0046A9C0[], *Helper469D00_vtable[], *Overlay_vtable[];
 
 /* a message object with its own dimming overlay (vtable D_0046A9C0): a Task at +0xC, the
- * overlay (D_0046F350) at +0x120 */
+ * overlay (Overlay_vtable) at +0x120 */
 /* 0x002D13B0 */
 void *DimMessage_ctor(u8 *p) {
     AT(p, 0x0, void **) = D_0046A9C0;
     Task_Construct((Task *)(p + 0xC));
-    AT(p, 0x120, void **) = D_00469D00;
+    AT(p, 0x120, void **) = Helper469D00_vtable;
     AT(p, 0x124, s32) = -1;
-    AT(p, 0x120, void **) = D_0046F350;
+    AT(p, 0x120, void **) = Overlay_vtable;
     AT(p, 0x144, s32) = 0;
     AT(p, 0x130, s32) = -1;
     AT(p, 0x134, u8) = 0;
@@ -468,7 +468,7 @@ void PlacedObject_Clear(u8 *e) {
     Triple_Set(e + 0x98, 0, 0, 0);
 }
 
-/* the manager of 64 (D_0046ECF0) +0x8: clear them all */
+/* the manager of 64 (PlacedObjects_vtable) +0x8: clear them all */
 /* 0x002C9480 */
 void PlacedObjects_ClearAll(u8 *p) {
     s32 i;
@@ -510,7 +510,7 @@ void *Doors_DataBuffer(u8 *d, s32 i) {
     return d + (i << 13) + 0x10C0;
 }
 
-/* ---- SceneGame +0xF6C1C0 (vtable D_0046B300, global gLights): the scene's lights (16, set
+/* ---- SceneGame +0xF6C1C0 (vtable Lights_vtable, global gLights): the scene's lights (16, set
  * through +0x20; an ambient colour at +0x10) and two VRAM areas (+0x320 / +0x324) ---- */
 
 /* clip-space point c inside the view volume (|x|, |y|, |z| within w) */
@@ -646,13 +646,13 @@ void Lights_ExtraLightI(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
     }
 }
 
-extern void *D_0046B300[], *D_0046B350[];
+extern void *Lights_vtable[], *D_0046B350[];
 
 /* +0x8: destructor (the global goes) */
 /* 0x001F9640 */
 void *Lights_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046B300;
+        AT(o, 0x0, void **) = Lights_vtable;
         AT(o, 0x0, void **) = D_0046B350;
         gLights = NULL;
         if ((s16)flags > 0) {
@@ -1598,7 +1598,7 @@ void PlacedObject_StartAnim(u8 *o, s32 id) {
     }
 }
 
-extern void *D_0046D750[], *D_0046D7B0[], *D_0046EB40[], *D_0046EC60[];   /* the 4 effect classes */
+extern void *Tint_vtable[], *ScreenBlend_vtable[], *Fog_vtable[], *DepthRange_vtable[];   /* the 4 effect classes */
 
 /* (re)create effect `slot` of class `vtbl` from the pool (+0x1400) */
 static s32 effect_create(u8 *o, s32 slot, void **vtbl) {
@@ -1633,10 +1633,10 @@ void RoomEffects_TakeRoom(u8 *o, u8 *sec) {
     void **classes[4];
     s32 k;
 
-    classes[0] = D_0046D750;
-    classes[1] = D_0046D7B0;
-    classes[2] = D_0046EB40;
-    classes[3] = D_0046EC60;
+    classes[0] = Tint_vtable;
+    classes[1] = ScreenBlend_vtable;
+    classes[2] = Fog_vtable;
+    classes[3] = DepthRange_vtable;
     if (sec == NULL) {
         VCALL(gCamera, 0xC0, void (*)(VObject *, f32, f32))(gCamera, 20.0f, 1000.0f);
         return;
@@ -2160,7 +2160,7 @@ s32 NavGroups_ClearGroup(u8 *o, u32 g, u32 bits) {
     return NavGroups_SetFlags(o, 1, g, bits);
 }
 
-extern void *D_0046DB40[], *D_0046DB60[];
+extern void *NavGroups_vtable[], *D_0046DB60[];
 extern VObject *D_00456E00;
 
 /* the nav mesh triangle t's flag word (NULL->flags, as the original, past the end) */
@@ -2215,7 +2215,7 @@ s32 NavGroups_Holds(u8 *o, u32 t, u32 g) {
 /* 0x002A8520 */
 void *NavGroups_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046DB40;
+        AT(o, 0x0, void **) = NavGroups_vtable;
         AT(o, 0x0, void **) = D_0046DB60;
         D_00456E00 = NULL;
         if ((s16)flags > 0) {
@@ -3839,7 +3839,7 @@ void Renderer_Call5C(void) {
 }
 
 extern u8 D_0044FE18[];
-extern void *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046AED0[], *D_0046AD88[], *D_0046AEC0[];
+extern void *D_0046AF00[], *D_0046AF0C[], *MovieLib_vtable[], *D_0046AED0[], *D_0046AD88[], *D_0046AEC0[];
 
 /* start loading file slot k (+0x3C0) unless it already is (bit 31): the loader +0x14, the slot
  * marked, its callback (+0x3C8, a PTMF each) back to none */
@@ -3904,7 +3904,7 @@ void *MovieSys_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF00;
         AT(o, 0x124, void **) = D_0046AF0C;
-        AT(o, 0x7C44, void **) = D_0046C740;
+        AT(o, 0x7C44, void **) = MovieLib_vtable;
         AT(o, 0x7C44, void **) = D_0046AED0;
         AT(o, 0x7C48, u8) = 0;
         gMovieLib = NULL;
@@ -3936,7 +3936,7 @@ s32 EffectMgr_Query(u8 *o, s32 slot) {
     return VCALL(e, 0x1C, s32 (*)(void *))(e);
 }
 
-extern void *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
+extern void *D_0046BF08[], *Heap_vtable[], *D_004699E0[];
 
 /* the scene table's destructor (D_0046BF08): its four scenes handed back to the scene heap
  * (+0x10D9040, +0x14) and destroyed, the heap's vtables, gSceneTable cleared */
@@ -3961,7 +3961,7 @@ void *SceneTable_dtor(u8 *t, s32 flags) {
             *slot = NULL;
         }
     }
-    AT(t, 0x10D9040, void **) = D_0046A1C0;
+    AT(t, 0x10D9040, void **) = Heap_vtable;
     AT(t, 0x10D9040, void **) = D_004699E0;
     gSceneTable = NULL;
     if ((s16)flags > 0) {

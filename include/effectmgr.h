@@ -41,7 +41,7 @@ static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
 
 /* ---- the hit effect (0xE60 bytes, vtable 0x470F30, its part at +0xC10) the stalkers and Hewie
    leave where a blow lands ---- */
-extern void *D_00470F30[], *D_00469D00[], *D_0046FC30[];
+extern void *D_00470F30[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
 
 typedef struct {
     f32 pos[4];
@@ -51,9 +51,9 @@ typedef struct {
 
 static inline void HitEffect_Init(void **obj) {
     obj[0] = D_00470F30;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
 static inline void HitEffect_Spawn(HitEffectParams *hp) {
@@ -68,9 +68,9 @@ extern void *D_004727C0[];
 
 static inline void DropSplash_Init(void **obj) {
     obj[0] = D_004727C0;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
 /* ---- the burst (0xFD0 bytes, vtable D_00474FB0; two quad drawers) a kind-2 thing or a shoved
@@ -79,15 +79,15 @@ extern void *D_00474FB0[];
 
 static inline void ShoveBurst_Init(void **obj) {
     obj[0] = D_00474FB0;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
-    obj[0xC48 / 4] = D_00469D00;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
+    obj[0xC48 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC4C / 4] = -1;
-    obj[0xC48 / 4] = D_0046FC30;
+    obj[0xC48 / 4] = QuadDrawer_vtable;
 }
 
-/* a quad (sprite) drawer (vtable D_0046FC30) handed to the renderer for one frame by
+/* a quad (sprite) drawer (vtable QuadDrawer_vtable) handed to the renderer for one frame by
    Drawer_Submit; see gl_sprites in effects.c for its fields */
 typedef struct QuadDrawer {
     /* 0x00 */ void **vtbl;

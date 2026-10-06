@@ -1,4 +1,4 @@
-/* Room 0x2D: its event handler class (vtable D_0046E540, see sRooms in event.c),
+/* Room 0x2D: its event handler class (vtable Room2D_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -10,8 +10,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E540[];
+extern void *RoomBase_vtable[];
+extern void *Room2D_vtable[];
 extern void *D_00472390[];   /* a 0xC0-byte effect */
 extern u8 D_00405AC0[];
 extern u8 D_00405B80[];
@@ -26,13 +26,13 @@ extern PTMF D_01990C38[];
 
 static void effect_c0b_init(void **obj) {
     obj[0] = D_00472390;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002B1790 */
-void *Room2D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E540, D_0046DB80); }
+void *Room2D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2D_vtable, RoomBase_vtable); }
 
 /* 0x002B17F0 */
 void *Room2D_EnterScript(void) {

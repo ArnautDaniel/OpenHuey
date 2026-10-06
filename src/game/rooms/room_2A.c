@@ -1,4 +1,4 @@
-/* Room 0x2A: its event handler class (vtable D_0046E4C0, see sRooms in event.c),
+/* Room 0x2A: its event handler class (vtable Room2A_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E4C0[];
+extern void *RoomBase_vtable[];
+extern void *Room2A_vtable[];
 extern void *D_00474000[];   /* the room 0x2A effect (props.c) */
 extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
 extern u8 D_00404740[];
@@ -24,9 +24,9 @@ extern PTMF D_01990BD0[];
 
 static void room2a_effect_init(void **obj) {
     obj[0] = D_00474000;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_14_init(void **obj) {
@@ -34,7 +34,7 @@ static void effect_14_init(void **obj) {
 }
 
 /* 0x002B10A0 */
-void *Room2A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E4C0, D_0046DB80); }
+void *Room2A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2A_vtable, RoomBase_vtable); }
 
 /* 0x002B1100 */
 void *Room2A_EnterScript(void) {

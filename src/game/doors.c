@@ -1,4 +1,4 @@
-/* The doors of the room (gDoors, vtable D_0046C540; set up in scene_game_members.c): up to 8
+/* The doors of the room (gDoors, vtable Doors_vtable; set up in scene_game_members.c): up to 8
  * of 0x210 bytes from +0x10, defined by PAC section 7 (+0x4: 8 offsets, 0 = none). Offsets here
  * are from the manager (`DOOR(d, i)`), i.e. 0x10 past the door's own:
  *   +0x18 its nav triangle, +0x20 / +0x30 points (+0x30 where it stands), +0x44 its turn now,
@@ -22,7 +22,7 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
+extern void *Doors_vtable[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *Helper469D00_vtable[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
 
 #define DOOR(d, i) ((u8 *)(d) + ((i) & 0xFF) * 0x210)
@@ -74,10 +74,10 @@ static s32 door_walk(VObject *nm, u32 *tri, f32 *from, f32 *to) {
 void *Door_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x190, void **) = D_0046D800;
-        AT(e, 0x190, void **) = D_00469D00;
+        AT(e, 0x190, void **) = Helper469D00_vtable;
         AT(e, 0x80, void **) = D_0046C780;
         AT(e, 0x88, s32) = 0;
-        AT(e, 0x80, void **) = D_00469D00;
+        AT(e, 0x80, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(e);
         }
@@ -89,7 +89,7 @@ void *Door_dtor(u8 *e, s32 flags) {
 /* 0x00221890 */
 void *Doors_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
-        AT(d, 0x0, void **) = D_0046C540;
+        AT(d, 0x0, void **) = Doors_vtable;
         func_001002C0(d + 0x10, (void *(*)(void *, s32))Door_dtor, 0x210, 8);
         AT(d, 0x0, void **) = D_0046C5D0;
         gDoors = NULL;
@@ -553,7 +553,7 @@ void Door_PlaySound(u8 *e, s32 id, s32 how) {
     Noise_Make((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
 }
 
-/* ---- the route planner (gRoutePlanner, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first
+/* ---- the route planner (gRoutePlanner, SceneGame +0xF6A940, vtable RoutePlanner_vtable): a breadth-first
  * search from room to room through the doors (gRooms's links), up to 128 steps:
  *   +0x4 from, +0x8 to, +0xC the door wanted at the end (-1: any), +0x10 the side the doors
  *   must open from, +0x14 rooms to avoid (bits, NULL none), +0x18 where the route goes (door
@@ -562,7 +562,7 @@ void Door_PlaySound(u8 *e, s32 id, s32 how) {
  *   each: door, room, door on the far side, depth, from), +0x62C the step looked at, +0x630
  *   rooms seen (bits) ---- */
 
-extern void *D_0046C520[], *D_0046C530[];
+extern void *RoutePlanner_vtable[], *D_0046C530[];
 
 typedef struct RouteStep {
     u16 door, room, far, depth;
@@ -693,7 +693,7 @@ s32 RoutePlanner_FindRoute(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *
 /* 0x00220680 */
 void *RoutePlanner_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046C520;
+        AT(o, 0x0, void **) = RoutePlanner_vtable;
         AT(o, 0x0, void **) = D_0046C530;
         gRoutePlanner = NULL;
         if ((s16)flags > 0) {
@@ -716,7 +716,7 @@ void *RoutePlannerBase_dtor(void *o, s32 flags) {
     return o;
 }
 
-/* (D_0046C668) +0x50 = v, 6 if below 0 */
+/* (CamDirector_vtable) +0x50 = v, 6 if below 0 */
 /* 0x00223DE0 */
 void CamDirector_Set50(u8 *o, f32 v) {
     if (v < 0.0f) {
@@ -732,7 +732,7 @@ void *PlacedMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C780;
         AT(o, 0x8, s32) = 0;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

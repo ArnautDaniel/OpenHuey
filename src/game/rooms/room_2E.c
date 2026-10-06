@@ -1,4 +1,4 @@
-/* Room 0x2E: its event handler class (vtable D_00470EF0, see sRooms in event.c),
+/* Room 0x2E: its event handler class (vtable Room2E_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,10 +8,10 @@
 #include "progress.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_00470EF0[];
+extern void *RoomBase_vtable[];
+extern void *Room2E_vtable[];
 extern u8 D_0047ACC4[];
-extern void *D_0046EC60[];
+extern void *DepthRange_vtable[];
 
 extern u8 D_0041D2E0[];
 extern u8 D_0041D330[];
@@ -22,7 +22,7 @@ extern void *D_0041D808[];
 extern PTMF D_01990FF0[];
 
 /* 0x002FEF80 */
-void *Room2E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470EF0, D_0046DB80); }
+void *Room2E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2E_vtable, RoomBase_vtable); }
 
 /* 0x002FEFE0 */
 void *Room2E_EnterScript(void) {
@@ -40,7 +40,7 @@ void *Room2E_Phase1Script(void) {
 }
 
 /* 0x002FF010 */
-void *Room2E_Phase2Script(void *o) { return D_0047ACC4; }   /* D_00470EF0 +0x14 */
+void *Room2E_Phase2Script(void *o) { return D_0047ACC4; }   /* Room2E_vtable +0x14 */
 
 /* 0x002FF020 */
 void *Room2E_Phase5Script(void) {
@@ -91,7 +91,7 @@ s32 Room2E_Cmd03(void) {
     f32 r[4] __attribute__((aligned(16)));
     f32 d;
 
-    room_effect_slot_new(fx, 0x1C, D_0046EC60);
+    room_effect_slot_new(fx, 0x1C, DepthRange_vtable);
     d = 0x1.999998p-2f /* 0.4 */ * t;
     r[0] = 1.0f + d;
     if (!(r[0] <= 41.0f)) {

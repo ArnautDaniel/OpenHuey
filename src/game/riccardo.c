@@ -22,7 +22,7 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void *D_0046F6B0[];
+extern void *Riccardo_vtable[];
 
 extern u8 D_00414840[];
 extern u8 D_00414800[], D_004147C0[];
@@ -58,7 +58,7 @@ s32 ItemA1_Use(void) {
 /* 0x002D7A70 */
 Pursuer *Riccardo_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046F6B0;
+        p->c.a.vtbl = Riccardo_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }
@@ -845,9 +845,9 @@ static inline void Impact_Init(void **obj) {
 
 static inline void Debris_Init(void **obj) {
     obj[0] = D_0047A710;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
 typedef struct {

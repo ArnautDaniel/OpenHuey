@@ -2,7 +2,7 @@
 #define SUBSCREEN_H
 
 /* The sub screen: the menu screens over the title and in game - options, load / save, the
- * in-game menu pages and the extras galleries (vtable D_0047A790; code 0x384C00..0x3A0000).
+ * in-game menu pages and the extras galleries (vtable SubScreen_vtable; code 0x384C00..0x3A0000).
  * One object, at SceneTitle +0x74A80 and in SceneGame. See src/game/subscreen.c. */
 #include "common.h"
 #include "ptmf.h"

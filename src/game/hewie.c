@@ -23,9 +23,9 @@
 #define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
 #define SLOT_U8(h) (*(u8 *)&(h)->c.a.slot)
 
-extern void *D_0046A120[];   /* Hewie vtable */
-extern void *D_00469C60[];   /* Character vtable */
-extern void *D_00469C20[];   /* Actor base vtable */
+extern void *Hewie_vtable[];   /* Hewie vtable */
+extern void *Character_vtable[];   /* Character vtable */
+extern void *Actor_vtable[];   /* Actor base vtable */
 
 /* float from its bit pattern */
 static inline f32 B4_FLT(u32 bits) {
@@ -38,9 +38,9 @@ static inline f32 B4_FLT(u32 bits) {
 /* 0x00130A70 */
 Hewie *Hewie_dtor(Hewie *h, s32 flags) {
     if (h != NULL) {
-        h->c.a.vtbl = D_0046A120;
-        h->c.a.vtbl = D_00469C60;
-        h->c.a.vtbl = D_00469C20;
+        h->c.a.vtbl = Hewie_vtable;
+        h->c.a.vtbl = Character_vtable;
+        h->c.a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&h->c.a);
         }

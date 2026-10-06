@@ -16,11 +16,11 @@
 
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
-extern void *D_0046D7D0[];   /* vtable of SceneBoot.msg */
+extern void *Message_vtable[];   /* vtable of SceneBoot.msg */
 extern void *D_0046A0D0[];   /* base vtable of SceneBoot.msg */
 extern void *D_0046A058[];   /* vtable of SceneBoot.card */
-extern void *D_0046F350[];   /* vtable of SceneBoot.unkC75D0 */
-extern void *D_00469D00[];   /* base vtable of SceneBoot.unkC75D0 */
+extern void *Overlay_vtable[];   /* vtable of SceneBoot.unkC75D0 */
+extern void *Helper469D00_vtable[];   /* base vtable of SceneBoot.unkC75D0 */
 
 extern const PTMF sSceneEntryState;   /* virtual: vtable +0x10 */
 extern const PTMF sTaskIdleState;     /* { 0, -1, Task_StateIdle } */
@@ -56,7 +56,7 @@ SceneBoot *SceneBoot_ctor(SceneBoot *boot) {
     boot->base.vtbl = SceneBoot_vtable;
 
     gBootMessage = &boot->msg;
-    boot->msg.vtbl = D_0046D7D0;
+    boot->msg.vtbl = Message_vtable;
     for (i = 0; i < 3; i++) {
         Task_Init(&boot->tasks[i]);
     }
@@ -65,9 +65,9 @@ SceneBoot *SceneBoot_ctor(SceneBoot *boot) {
     Task_Init(&boot->card.task);
     boot->card.state = -1;
 
-    boot->unkC75D0Vtbl = D_00469D00;
+    boot->unkC75D0Vtbl = Helper469D00_vtable;
     boot->unkC75D4 = -1;
-    boot->unkC75D0Vtbl = D_0046F350;
+    boot->unkC75D0Vtbl = Overlay_vtable;
     boot->unkC75F4 = 0;
     boot->unkC75E0 = -1;
     boot->unkC75E4 = 0;
@@ -81,8 +81,8 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
         return boot;
     }
     boot->base.vtbl = SceneBoot_vtable;
-    boot->unkC75D0Vtbl = D_0046F350;
-    boot->unkC75D0Vtbl = D_00469D00;
+    boot->unkC75D0Vtbl = Overlay_vtable;
+    boot->unkC75D0Vtbl = Helper469D00_vtable;
     boot->card.vtbl = D_0046A058;
     Task_dtor(&boot->card.task, -1);
     for (i = 2; i >= 0; i--) {
@@ -91,7 +91,7 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
             boot->tasks[i].child = NULL;
         }
     }
-    boot->msg.vtbl = D_0046D7D0;
+    boot->msg.vtbl = Message_vtable;
     boot->msg.vtbl = D_0046A0D0;
     gBootMessage = NULL;
     boot->base.vtbl = Scene_vtable;
@@ -387,7 +387,7 @@ u32 SceneBoot_StepDolby(SceneBoot *boot) {
     return 1;
 }
 
-extern void *D_0046ECC0[];        /* SceneMovie */
+extern void *MovieScene_vtable[];        /* SceneMovie */
 
 static const char sCapcomSfd[] = "CAPCOM.SFD";
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
@@ -421,7 +421,7 @@ u32 SceneBoot_StepCapcom(SceneBoot *boot) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
             Movie_ctor((Movie *)movie);
-            movie->vtbl = D_0046ECC0;
+            movie->vtbl = MovieScene_vtable;
         }
         SCENE_TABLE_SCENE(1) = movie;
         SCENE_TABLE_SCENE(1)->slot = 1;

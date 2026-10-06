@@ -1,4 +1,4 @@
-/* Room 0x62: its event handler class (vtable D_00471250, see sRooms in event.c),
+/* Room 0x62: its event handler class (vtable Room62_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -10,8 +10,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_00471250[];
+extern void *RoomBase_vtable[];
+extern void *Room62_vtable[];
 extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
 
 extern u8 D_00421C60[];
@@ -25,7 +25,7 @@ extern u8 D_00422320[];
 extern PTMF D_019910B0[];
 
 /* 0x00308AF0 */
-void *Room62_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471250, D_0046DB80); }
+void *Room62_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room62_vtable, RoomBase_vtable); }
 
 /* 0x00308B50 */
 void *Room62_EnterScript(void) {

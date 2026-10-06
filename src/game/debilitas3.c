@@ -1,4 +1,4 @@
-/* The third Debilitas class (kind 7, vtable D_0046F020; code 0x2CD7A0..0x2CF3xx): a Pursuer
+/* The third Debilitas class (kind 7, vtable Debilitas3_vtable; code 0x2CD7A0..0x2CF3xx): a Pursuer
  * with Debilitas's model and its own behaviour, used where the countdown runs (its reset gives
  * +0x16DC 0x10 while progress +0x1FBEC1 is set, pursuer.c Debilitas3_Activate). See debilitas.c. */
 #include "common.h"
@@ -577,9 +577,9 @@ extern u8 D_0042E9D0[], D_0042EA00[], D_0042EA30[], D_0042EA70[], D_0042EAA0[], 
     D_0042EB40[], D_0042EB70[], D_0042EBB0[], D_0042EBC0[], D_0042EC00[], D_0042EC20[], D_0042EC50[],
     D_0042ECA0[], D_0042ECC8[], D_0042ECD8[], D_0042EDC0[], D_0042EE10[], D_0042EE60[], D_0042EEB0[],
     D_0042EEE0[], D_0042EF10[], D_0042EF20[], D_0042EF60[], D_0042EF80[], D_0042EFC8[], D_0042EFE0[],
-    D_0042F020[], D_0042F040[], D_0042F080[], D_0042F0C0[], D_0042F0E8[], D_0042F0F8[], D_00474FD0[];
+    D_0042F020[], D_0042F040[], D_0042F080[], D_0042F0C0[], D_0042F0E8[], D_0042F0F8[], Kind27_vtable[];
 
-/* the D_00474FD0 Debilitas's attack tables for each situation 0..16; the second set when gProgress+0x30 bit 0x8000 */
+/* the Kind27_vtable Debilitas's attack tables for each situation 0..16; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTablesD[2][17] = {
     { D_0042E9D0, D_0042EA30, D_0042EA00, D_0042EA70, D_0042EAA0, D_0042EAE0, D_0042EB10,
       D_0042EB40, D_0042EB70, D_0042EBB0, D_0042EBC0, D_0042EC00, D_0042EC20, D_0042EC50,
@@ -981,7 +981,7 @@ extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], D_0042EDA8[], 
 extern u8 D_0042E940[], D_0042E980[], D_0042E5B0[], D_0042E710[], D_0047ADC0[];
 extern const PTMF D_0042E540;
 
-/* (as Debilitas3_Setup) the D_00474FD0 Debilitas's vtable +0xF4: its setup over the Pursuer's -
+/* (as Debilitas3_Setup) the Kind27_vtable Debilitas's vtable +0xF4: its setup over the Pursuer's -
  * its tables and stats (165 hp and +0x16E8 18 when gProgress+0x30 bit 0x8000 is set, else 110
  * hp and 12; Hewie bite tolerance 30) */
 /* 0x00331280 */

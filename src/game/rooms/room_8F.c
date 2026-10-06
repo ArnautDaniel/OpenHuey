@@ -1,4 +1,4 @@
-/* Room 0x8F: its event handler class (vtable D_00477440, see sRooms in event.c),
+/* Room 0x8F: its event handler class (vtable Room8F_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "fiona.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477440[];
+extern void *RoomBase_vtable[];
+extern void *Room8F_vtable[];
 extern const char *D_004365E4, *D_004365E8;
 
 extern u32 D_00435990[];
@@ -27,7 +27,7 @@ extern PTMF D_019917B0[];
 extern PTMF D_019917E0[];
 
 /* 0x00340D60 */
-void *Room8F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477440, D_0046DB80); }
+void *Room8F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8F_vtable, RoomBase_vtable); }
 
 /* 0x00340DC0 */
 void *Room8F_EnterScript(void) {

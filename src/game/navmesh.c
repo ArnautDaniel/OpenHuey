@@ -629,14 +629,14 @@ f32 NavMesh_HeightOver(NavMesh *nm, u32 t, const f32 *p) {
     return sceVu0InnerProduct(a, n);
 }
 
-extern void *D_0046A9D0[], *D_0046AA40[];
+extern void *NavMesh_vtable[], *D_0046AA40[];
 
-/* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
+/* the nav mesh (NavMesh_vtable): its two tables (+0x4 / +0xC, with their counts) let go, then the
  * base (D_0046AA40, clearing gNavMesh) */
 /* 0x00179F60 */
 void *NavMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046A9D0;
+        AT(o, 0x0, void **) = NavMesh_vtable;
         if (AT(o, 0x4, void *) != NULL) {
             AT(o, 0x4, void *) = NULL;
             AT(o, 0x8, s32) = 0;

@@ -24,14 +24,14 @@
 #endif
 #include "msl.h"
 
-extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
+extern void *D_00474000[], *QuadDrawer_vtable[], *Helper469D00_vtable[], *EffectBase_vtable[];
 
-extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
 extern const char *const D_0042C358;
-extern void *D_00476C10[];
+extern void *Kind32_vtable[];
 extern const PTMF D_00430A90;
-extern void *D_00477AE0[];
-extern void *D_00477E30[];
+extern void *Kind34_vtable[];
+extern void *Kind35_vtable[];
 extern u8 D_00430A10[];
 extern u8 D_00430A50[];
 void *Kind32_ModelFiles(void);
@@ -72,7 +72,7 @@ void Embers_Start(u8 *o);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -82,10 +82,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -139,9 +139,9 @@ u8 *Room2AWisps_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00474000;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -269,14 +269,14 @@ void Effect78BC0_Start(u8 *o) {
 /* ---- class D_00478BC0 (room 0x2A, 0x14 bytes): a model turning on three axes; +0x4/+0x8/+0xC
  * the angles, +0x10 the model (0x2C or 0x30) ---- */
 
-extern void *D_00478BC0[], *D_0046F580[], *D_00478B70[], *D_00469D00[];
+extern void *D_00478BC0[], *EffectBase_vtable[], *D_00478B70[], *Helper469D00_vtable[];
 
 /* +0x8 destructor */
 /* 0x003507B0 */
 u8 *Effect78BC0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478BC0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -356,7 +356,7 @@ void Effect78BC0_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* +0x18 start: model 0x30 (params[0] 0) or 0x2C, then a first update */
@@ -397,7 +397,7 @@ extern void *D_00477E10[];
 u8 *Room55Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00477E10;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -420,7 +420,7 @@ void Room55Effect_Start(u8 *o) {
 }
 
 /* 0x003478C0 */
-Character *Kind35_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477E30); }
+Character *Kind35_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind35_vtable); }
 
 /* 0x003479D0 */
 s32 Kind35_Kind(void) {
@@ -452,7 +452,7 @@ void Room55Effect_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* destructor (vtable D_00478B70) */
@@ -460,7 +460,7 @@ void Room55Effect_Draw(u8 *o) {
 void *Caustic_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478B70;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -497,7 +497,7 @@ extern void *D_00478BE0[];
 u8 *Room4EEffect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478BE0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -540,7 +540,7 @@ void Room4EEffect_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* 0x00350C40 */
@@ -581,7 +581,7 @@ void Effect7A3D0_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* (class D_0047A3F0)  +0x14 draw: model 0x2A at (0, 30.1, 0), 3750 across, its turns +0x4..,
@@ -606,7 +606,7 @@ void BackdropModel_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* ---- class D_0047A410: model 0x2C turning slowly about y at (400, 27.1, -125) ---- */
@@ -652,7 +652,7 @@ void TurningModel_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* (class D_0047A430)  +0x14 draw, dimmed to 0x40 at height 27.1: with +0x10 model 0x2A at (0, 50),
@@ -686,7 +686,7 @@ void BackdropModel2_Draw(u8 *o) {
     d.slot = -1;
     d.vtbl = D_00478B70;
     ModelDraw_Queue(&d, &p);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* +0x18 start: params[0] 0 at height 45.1 (threshold 0x60), else -5.9 (0x58); then a first
@@ -886,9 +886,9 @@ u8 *FallingDrops_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479400;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -952,9 +952,9 @@ static void splash_init(void **obj) {
 
 static void spray_init(void **obj) {
     obj[0] = D_00479AA0;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x10 update: swap buffers, carry each drop over and drop it; a landed one splashes (the
@@ -1109,11 +1109,11 @@ u8 *Room66Effect_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00477AC0;
-    AT(o, 0x1878, void **) = D_0046FC30;
-    AT(o, 0x1878, void **) = D_00469D00;
-    AT(o, 0x1840, void **) = D_0046FC30;
-    AT(o, 0x1840, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1878, void **) = QuadDrawer_vtable;
+    AT(o, 0x1878, void **) = Helper469D00_vtable;
+    AT(o, 0x1840, void **) = QuadDrawer_vtable;
+    AT(o, 0x1840, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -1278,7 +1278,7 @@ void Room66Effect_Start(u8 *p) {
 }
 
 /* 0x00345EE0 */
-Character *Kind34_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00477AE0); }
+Character *Kind34_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind34_vtable); }
 
 /* 0x00345FF0 */
 s32 Kind34_Kind(void) {
@@ -1384,13 +1384,13 @@ u8 *BigFire_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479580;
-    AT(o, 0x60B0, void **) = D_0046FC30;
-    AT(o, 0x60B0, void **) = D_00469D00;
-    AT(o, 0x6078, void **) = D_0046FC30;
-    AT(o, 0x6078, void **) = D_00469D00;
-    AT(o, 0x6040, void **) = D_0046FC30;
-    AT(o, 0x6040, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x60B0, void **) = QuadDrawer_vtable;
+    AT(o, 0x60B0, void **) = Helper469D00_vtable;
+    AT(o, 0x6078, void **) = QuadDrawer_vtable;
+    AT(o, 0x6078, void **) = Helper469D00_vtable;
+    AT(o, 0x6040, void **) = QuadDrawer_vtable;
+    AT(o, 0x6040, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -1892,7 +1892,7 @@ void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     q.a = -1;
     q.layer = 1;
     q.tex = (u64)-1;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.count = 1;
     q.frames = 1;
     q.cx = 0.0f;
@@ -1923,14 +1923,14 @@ void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     sceVu0ScaleVector(c[1], c[1], size);
     sceVu0ScaleVector(c[3], c[3], size);
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 static void dust_init(void **obj) {
     obj[0] = D_00470E00;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x14 draw: butterfly i (sign by its parity, phases scaled by i(i+1)) flies its circle about
@@ -2036,11 +2036,11 @@ u8 *SpiralSmoke_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00476BD0;
-    AT(o, 0x3078, void **) = D_0046FC30;
-    AT(o, 0x3078, void **) = D_00469D00;
-    AT(o, 0x3040, void **) = D_0046FC30;
-    AT(o, 0x3040, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x3078, void **) = QuadDrawer_vtable;
+    AT(o, 0x3078, void **) = Helper469D00_vtable;
+    AT(o, 0x3040, void **) = QuadDrawer_vtable;
+    AT(o, 0x3040, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2220,7 +2220,7 @@ extern f32 D_004309D0[];   /* the five spots (x, y, z) */
 u8 *Drips_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00476BF0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -2289,7 +2289,7 @@ void Drips_Draw(u8 *o) {
     r.w = 1.0f;
     r.h = 1.0f;
     r.pos[3] = 1.0f;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     r.pos[0] = 0.0f;
     q.tex = (u64)-1;
     r.pos[1] = 0.0f;
@@ -2353,7 +2353,7 @@ void Drips_Draw(u8 *o) {
             Drawer_Submit((u8 *)&q);
         }
     }
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* +0x10 update: each spot's switch counts down - turning on (90 frames) starts its sound (the
@@ -2427,7 +2427,7 @@ void Drips_Start(u8 *o) {
 }
 
 /* 0x0033D6C0 */
-Character *Kind32_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00476C10); }
+Character *Kind32_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind32_vtable); }
 
 /* 0x0033D7D0 */
 void *Kind32_ModelFiles(void) {
@@ -2460,9 +2460,9 @@ u8 *BoneSmoke_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479800;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2476,9 +2476,9 @@ u8 *ThingPuff_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A050;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2555,9 +2555,9 @@ u8 *LightRing_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A750;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2573,9 +2573,9 @@ static inline __attribute__((always_inline)) u8 *fx_dtor1(u8 *o, s32 flags, void
         return o;
     }
     AT(o, 0x0, void **) = vt;
-    AT(o, d0, void **) = D_0046FC30;
-    AT(o, d0, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, d0, void **) = QuadDrawer_vtable;
+    AT(o, d0, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2587,11 +2587,11 @@ static inline __attribute__((always_inline)) u8 *fx_dtor2(u8 *o, s32 flags, void
         return o;
     }
     AT(o, 0x0, void **) = vt;
-    AT(o, d1, void **) = D_0046FC30;
-    AT(o, d1, void **) = D_00469D00;
-    AT(o, d0, void **) = D_0046FC30;
-    AT(o, d0, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, d1, void **) = QuadDrawer_vtable;
+    AT(o, d1, void **) = Helper469D00_vtable;
+    AT(o, d0, void **) = QuadDrawer_vtable;
+    AT(o, d0, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }

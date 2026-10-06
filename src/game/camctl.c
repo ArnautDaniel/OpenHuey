@@ -689,9 +689,9 @@ void CamDirector_KeepInView(u8 *o, s32 rate) {
     VCALL(cam, 0x3C, void (*)(VObject *, f32, f32))(cam, 0.0f, b * (f32)rate / 100.0f);
 }
 
-/* ---- the camera director's (D_0046C668 at +0x60) small methods (2026-10-05) ---- */
+/* ---- the camera director's (CamDirector_vtable at +0x60) small methods (2026-10-05) ---- */
 
-extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
+extern void *D_0046C660[], *CamDirector_vtable[], *D_0046C6F0[];
 
 /* destructor: its two vtables (+0x64, +0x60), the global gCamDirector cleared, its state reset
  * (+0x2C / +0x38 0, +0x50 6, the spline +0x8..+0x20 cleared) */
@@ -699,7 +699,7 @@ extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
 void *CamDirector_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x64, void **) = D_0046C660;
-        AT(d, 0x60, void **) = D_0046C668;
+        AT(d, 0x60, void **) = CamDirector_vtable;
         AT(d, 0x60, void **) = D_0046C6F0;
         gCamDirector = NULL;
         AT(d, 0x2C, s32) = 0;

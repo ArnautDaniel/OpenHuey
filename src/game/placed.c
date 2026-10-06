@@ -1,4 +1,4 @@
-/* The placed things (gPlacedThings, Progress +0x6FC340, vtable D_0046F5C0): up to 128 actors of
+/* The placed things (gPlacedThings, Progress +0x6FC340, vtable PlacedThings_vtable): up to 128 actors of
  * 0x140 bytes in a block pool (+0xA040) - the items lying about in the rooms, of kinds 0..10.
  * Each: +0x20 kind, +0x28 active, +0x30 room, +0x34 nav triangle, +0x10 position, +0xE4 age.
  * Kinds 0, 2, 3, 5, 7 and 8 are kept with the save (Progress +0xA14: 60 entries of { kind,
@@ -24,10 +24,10 @@
 #include "stalker_math.h"
 #include "msl.h"
 
-extern void *D_00469C20[];   /* Actor */
-extern void *D_0046F5C0[], *D_00469A00[], *D_004699C0[], *D_004699E0[], *D_0046A950[];
-extern void *D_0046F520[], *D_004727E0[], *D_00472840[], *D_004758A0[], *D_00475A80[], *D_00475960[],
-    *D_00475900[], *D_004759C0[], *D_00475A20[], *D_00479E70[], *D_00479ED0[], *D_00479500[];
+extern void *Actor_vtable[];   /* Actor */
+extern void *PlacedThings_vtable[], *Thing_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A950[];
+extern void *Ball_vtable[], *Thing01_vtable[], *Thing02_vtable[], *Thing03_vtable[], *Thing04_vtable[], *Thing05_vtable[],
+    *Thing06_vtable[], *Thing07_vtable[], *Thing08_vtable[], *Thing09_vtable[], *Thing10_vtable[], *ThingShared_vtable[];
 
 #define POOL(m) ((m) + 0xA040)
 #define SAVED(p) ((u8 *)(p) + 0xA14)
@@ -41,8 +41,8 @@ s32 PlacedThings_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3);
 extern void *D_00476B50[];
 void *FixModelDraw_dtor(u8 *o, s32 flags);
 
-extern void *D_0046D810[], *D_0046C220[], *D_00469C60[];
-extern void *D_00474FD0[];
+extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[];
+extern void *Kind27_vtable[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
 
@@ -65,7 +65,7 @@ void ThingShared_Frame(u8 *o);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -75,10 +75,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -102,8 +102,8 @@ void *BlockPool_ElemAt(B0_Pool *p, u32 i) {
 /* 0x00120F40 */
 void *Thing_dtor(void *p) {
     if (p != NULL) {
-        *(void **)p = D_00469A00;
-        *(void **)p = D_00469C20;
+        *(void **)p = Thing_vtable;
+        *(void **)p = Actor_vtable;
     }
     return p;
 }
@@ -131,8 +131,8 @@ static u8 *placed_active(u8 *m, s32 i) {
 /* 0x002D0EE0 */
 void *PlacedThings_Destroy(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_0046F5C0;
-        AT(m, 0xA040, void **) = D_004699C0;
+        AT(m, 0x0, void **) = PlacedThings_vtable;
+        AT(m, 0xA040, void **) = BlockPool_vtable;
         AT(m, 0xA040, void **) = D_004699E0;
         AT(m, 0x0, void **) = D_0046A950;
         gPlacedThings = NULL;
@@ -147,8 +147,8 @@ void *PlacedThings_Destroy(u8 *m, s32 flags) {
 /* 0x002D6B00 */
 void *PlacedThings_New(u8 *m, u32 kind) {
     static void **const sClass[11] = {
-        D_0046F520, D_004727E0, D_00472840, D_004758A0, D_00475A80, D_00475960,
-        D_00475900, D_004759C0, D_00475A20, D_00479E70, D_00479ED0,
+        Ball_vtable, Thing01_vtable, Thing02_vtable, Thing03_vtable, Thing04_vtable, Thing05_vtable,
+        Thing06_vtable, Thing07_vtable, Thing08_vtable, Thing09_vtable, Thing10_vtable,
     };
     void *mem;
     u8 *t;
@@ -162,7 +162,7 @@ void *PlacedThings_New(u8 *m, u32 kind) {
     }
     t = ActorPool_new(0x140, mem);
     if (t != NULL) {
-        AT(t, 0x0, void **) = D_00469C20;
+        AT(t, 0x0, void **) = Actor_vtable;
         AT(t, 0x20, u32) = kind;
         AT(t, 0x24, u32) = 0x01000000;
         AT(t, 0x0, void **) = sClass[kind];
@@ -170,13 +170,13 @@ void *PlacedThings_New(u8 *m, u32 kind) {
     return mem;
 }
 
-/* the destructor of a thing (D_00479500) */
+/* the destructor of a thing (ThingShared_vtable) */
 /* 0x002D6F60 */
 void *ThingShared_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479500;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = ThingShared_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -350,7 +350,7 @@ void PlacedThings_PlaceKept(u8 *mgr) {
     }
 }
 
-/* ---- kind 0: the ball (vtable D_0046F520), which Fiona throws to train Hewie. +0xB0 its
+/* ---- kind 0: the ball (vtable Ball_vtable), which Fiona throws to train Hewie. +0xB0 its
  * velocity, +0x100 gravity, +0x104 how hard slopes push it, +0x110 its colour (RGBA, 1.0 =
  * full), +0x120 fading out, +0xE0 its motion (0 flying, 1 rolling, 2 dropping through a hole,
  * +0xE8 the frames of it), +0xE1 kicked this contact. It lasts 3 minutes (+0xE4); when it goes
@@ -360,7 +360,7 @@ void PlacedThings_PlaceKept(u8 *mgr) {
 
 extern const PTMF sGameStateNull;
 extern const PTMF D_00414790, D_004147A0, D_004147B0;   /* +0x50 (virtual), Ball_StateRolling, Ball_StateDropping */
-extern void *D_0046FC30[], *D_00469D00[];
+extern void *QuadDrawer_vtable[], *Helper469D00_vtable[];
 extern void Thing_Setup(u8 *a);   /* Actor +0xC */
 extern void Thing_Frame(u8 *a);   /* Actor +0x30 */
 s32 Thing_PutDown(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
@@ -393,7 +393,7 @@ static void ball_drop(u8 *b) {
 /* 0x002D5F40 */
 void *Ball_dtor(u8 *b, s32 flags) {
     if (b != NULL) {
-        AT(b, 0x0, void **) = D_0046F520;
+        AT(b, 0x0, void **) = Ball_vtable;
         if (gSubScreen != NULL) {
             u8 *items = (u8 *)gSubScreen + 8;
 
@@ -401,8 +401,8 @@ void *Ball_dtor(u8 *b, s32 flags) {
                 Items_Give(items, 0x90, 1);
             }
         }
-        AT(b, 0x0, void **) = D_00469A00;
-        AT(b, 0x0, void **) = D_00469C20;
+        AT(b, 0x0, void **) = Thing_vtable;
+        AT(b, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(b);
         }
@@ -441,7 +441,7 @@ void Ball_Draw(u8 *b) {
     AT(&r.w, 0, u32) = 0x3F2CCCCD;
     AT(&r.h, 0, u32) = 0x3F2CCCCD;
     q.a = -1;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.texId = 1;
     r.pos[1] = r.pos[1] + 1.0f;
     q.tex = (u64)-1;
@@ -461,7 +461,7 @@ void Ball_Draw(u8 *b) {
     q.flags = 0;
     q.palette = 2;
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* the ball bounced at `at` (off the surface with normal n): its velocity mirrored and slowed
@@ -784,7 +784,7 @@ void Ball_Frame(u8 *b) {
     thing_kick(b);
 }
 
-/* ---- the things' base class (D_00469A00, over the actor): +0x10 position, +0x34 nav tri,
+/* ---- the things' base class (Thing_vtable, over the actor): +0x10 position, +0x34 nav tri,
  * +0x50 turn (angles), +0xB0 a point in front, +0xEC / +0xF0 its two sizes, +0xE4 its age
  * (frames; -1 kept) ---- */
 
@@ -905,24 +905,24 @@ void Thing_Setup(u8 *o) {
 /* 0x00122B30 */
 void *Actor_dtor(void *p) {
     if (p != NULL) {
-        *(void **)p = D_00469C20;
+        *(void **)p = Actor_vtable;
     }
     return p;
 }
 
-/* ---- kind 1 (D_004727E0): like the ball (kind 0) it flies, falls and is kicked, but it can't
+/* ---- kind 1 (Thing01_vtable): like the ball (kind 0) it flies, falls and is kicked, but it can't
  * bounce - whatever it hits, or a pursuer walking into it, bursts it in a purple splash ---- */
 
-extern void *D_004727E0[];
+extern void *Thing01_vtable[];
 extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), Thing01_StateDropping */
 
 /* +0x8 destructor */
 /* 0x00314990 */
 void *Thing01_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004727E0;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing01_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -972,7 +972,7 @@ static inline void half_sprite(u8 *o, f32 kr, f32 kg, f32 kb) {
     r.h = 0.5f;
     r.turn = 0.0f;
     r.frame = 0;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.a = -1;
     q.tex = (u64)-1;
     q.rec = &r;
@@ -993,7 +993,7 @@ static inline void half_sprite(u8 *o, f32 kr, f32 kg, f32 kb) {
     q.texGroup = 0x10;
     q.palette = -1;
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* +0x2C draw: a half-size sprite in its colour */
@@ -1169,11 +1169,11 @@ void Thing01_Setup(u8 *o) {
     AT(o, 0x120, u16) = 0;
 }
 
-/* ---- kind 2 (D_00472840, over the shared thing class D_00479500): set down at a random turn;
+/* ---- kind 2 (Thing02_vtable, over the shared thing class ThingShared_vtable): set down at a random turn;
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
-extern void *D_00472840[], *D_00479500[], *D_00476B50[];
-extern void ThingShared_Setup(u8 *o);   /* D_00479500 +0xC */
+extern void *Thing02_vtable[], *ThingShared_vtable[], *D_00476B50[];
+extern void ThingShared_Setup(u8 *o);   /* ThingShared_vtable +0xC */
 extern void ThingShared_ReachStalkers(u8 *o);
 extern s32 ThingShared_Armed(u8 *o);
 extern void ThingShared_Noise(u8 *o);
@@ -1185,10 +1185,10 @@ extern void ThingShared_Kick(u8 *o);
 /* 0x00315540 */
 void *Thing02_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00472840;
-        AT(o, 0x0, void **) = D_00479500;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing02_vtable;
+        AT(o, 0x0, void **) = ThingShared_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1213,7 +1213,7 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     d.vtbl = D_00476B50;
     d.a = -1;
     ModelDraw_Fill((u8 *)&d, BALL_POS(o), rot, a, b, c);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* +0x2C draw */
@@ -1227,7 +1227,7 @@ void Thing02_Draw(u8 *o) {
 void *FixModelDraw_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00476B50;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -1322,12 +1322,12 @@ void Thing02_Setup(u8 *o) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern void *D_00479E70[];
-extern void *D_00479ED0[];
-extern void *D_00475900[];
+extern void *Thing09_vtable[];
+extern void *Thing10_vtable[];
+extern void *Thing06_vtable[];
 extern void Thing06_Burst(u8 *o, f32 *at);
-extern void *D_004759C0[];
-extern void *D_00475A20[];
+extern void *Thing07_vtable[];
+extern void *Thing08_vtable[];
 extern void Thing04_Burst(u8 *o, f32 *at);
 
 /* (as Ball_Bounce)  the ball bounced at `at` (off the surface with normal n): its velocity mirrored and slowed
@@ -1373,13 +1373,13 @@ void Thing02_StateDropping(u8 *o) {
     }
 }
 
-/* (as ThingShared_dtor)  the destructor of a thing (D_00479E70) */
+/* (as ThingShared_dtor)  the destructor of a thing (Thing09_vtable) */
 /* 0x003671B0 */
 void *Thing09_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479E70;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing09_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1429,13 +1429,13 @@ void Thing09_StateRolling(u8 *b) {
     sceVu0AddVector(v, n, v);
 }
 
-/* (as ThingShared_dtor)  the destructor of a thing (D_00479ED0) */
+/* (as ThingShared_dtor)  the destructor of a thing (Thing10_vtable) */
 /* 0x00367E20 */
 void *Thing10_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479ED0;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing10_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1508,13 +1508,13 @@ void Thing10_Setup(u8 *b) {
     AT(b, 0x120, u16) = 0;
 }
 
-/* (as ThingShared_dtor)  the destructor of a thing (D_004758A0) */
+/* (as ThingShared_dtor)  the destructor of a thing (Thing03_vtable) */
 /* 0x00333240 */
 void *Thing03_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004758A0;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing03_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1545,13 +1545,13 @@ s32 Thing03_LandTri(u8 *b, u8 *a, f32 *to) {
     return thing_step_tri(b, a, to);
 }
 
-/* (as ThingShared_dtor)  the destructor of a thing (D_00475900) */
+/* (as ThingShared_dtor)  the destructor of a thing (Thing06_vtable) */
 /* 0x00334560 */
 void *Thing06_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00475900;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing06_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1654,10 +1654,10 @@ void Thing06_Setup(u8 *o) {
 /* 0x00335100 */
 void *Thing05_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00475960;
-        AT(o, 0x0, void **) = D_00479500;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing05_vtable;
+        AT(o, 0x0, void **) = ThingShared_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1669,10 +1669,10 @@ void *Thing05_dtor(u8 *o, s32 flags) {
 /* 0x003356C0 */
 void *Thing07_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_004759C0;
-        AT(o, 0x0, void **) = D_00479500;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing07_vtable;
+        AT(o, 0x0, void **) = ThingShared_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1684,10 +1684,10 @@ void *Thing07_dtor(u8 *o, s32 flags) {
 /* 0x00335C80 */
 void *Thing08_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00475A20;
-        AT(o, 0x0, void **) = D_00479500;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing08_vtable;
+        AT(o, 0x0, void **) = ThingShared_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1695,13 +1695,13 @@ void *Thing08_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as ThingShared_dtor)  the destructor of a thing (D_00475A80) */
+/* (as ThingShared_dtor)  the destructor of a thing (Thing04_vtable) */
 /* 0x00336220 */
 void *Thing04_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00475A80;
-        AT(o, 0x0, void **) = D_00469A00;
-        AT(o, 0x0, void **) = D_00469C20;
+        AT(o, 0x0, void **) = Thing04_vtable;
+        AT(o, 0x0, void **) = Thing_vtable;
+        AT(o, 0x0, void **) = Actor_vtable;
         if ((s16)flags > 0) {
             ActorPool_delete(o);
         }
@@ -1983,10 +1983,10 @@ s32 Thing09_Bounce(u8 *b, f32 *to, f32 *at, f32 *n) {
     return ball_bounce(b, to, at, n, 0x1.99999ap-2f /* 0.4 */);
 }
 
-/* ---- the shared thing class (D_00479500) and the other kinds over it (code 0x333000..0x337800):
+/* ---- the shared thing class (ThingShared_vtable) and the other kinds over it (code 0x333000..0x337800):
    their settings, splashes, sprites and models through the helpers above ---- */
 
-/* D_00479500 +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room,
+/* ThingShared_vtable +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room,
    white */
 /* 0x00355960 */
 void ThingShared_Setup(u8 *o) {
@@ -2103,15 +2103,15 @@ static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
 
     obj[0] = vtbl;
     for (i = 0; i < 4; i++) {
-        obj[(at + i * 0x38) / 4] = D_00469D00;
+        obj[(at + i * 0x38) / 4] = Helper469D00_vtable;
         ((s32 *)obj)[(at + i * 0x38 + 4) / 4] = -1;
-        obj[(at + i * 0x38) / 4] = D_0046FC30;
+        obj[(at + i * 0x38) / 4] = QuadDrawer_vtable;
     }
 }
 
 /* their destructors: the four drawers back down to the drawer base (last first), then the
    effect base, then (flags > 0) delete */
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
     s32 i;
@@ -2122,11 +2122,11 @@ static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
             u8 *e = o + at + i * 0x38;
 
             if (e != NULL) {
-                AT(e, 0x0, void **) = D_0046FC30;
-                AT(e, 0x0, void **) = D_00469D00;
+                AT(e, 0x0, void **) = QuadDrawer_vtable;
+                AT(e, 0x0, void **) = Helper469D00_vtable;
             }
         }
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -2648,7 +2648,7 @@ s32 ThingBurst_Update(u8 *o) {
 }
 
 /* 0x0032F5B0 */
-Character *Kind27_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00474FD0); }
+Character *Kind27_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind27_vtable); }
 
 /* 0x0032F6D0 */
 void Kind27_DoorOffset(void *self, s32 id, f32 *out) {
@@ -3020,7 +3020,7 @@ void Thing03_Draw(u8 *o) {
     } else {
         ModelDraw_Fill((u8 *)&d, pos, rot, 2, 0, 1);
     }
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
 /* +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room, white, the
@@ -3106,7 +3106,7 @@ void Thing10_StateFalling(u8 *o) {
     }
 }
 
-/* ---- the shared thing class (D_00479500, code 0x3544C0..0x355960): who it touches, when it
+/* ---- the shared thing class (ThingShared_vtable, code 0x3544C0..0x355960): who it touches, when it
    goes off, Fiona's kick, its noise ---- */
 
 #include "charaction.h"
@@ -3425,9 +3425,9 @@ extern void *D_0047A050[];
 /* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
 static inline void Burst1_Init(void **obj) {
     obj[0] = D_0047A050;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x30 each frame, while the game runs: the shared checks (ThingShared_Armed) set it off - in the
@@ -3509,9 +3509,9 @@ extern void *D_0046FF20[];
 /* its puff (0x720 bytes, D_0046FF20, a quad drawer at +0x610) */
 static inline void Puff_Init(void **obj) {
     obj[0] = D_0046FF20;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* (as ball_fly) +0x50 the flying state of this kind: always active; into a hole it settles

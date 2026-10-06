@@ -1,12 +1,12 @@
-/* Room 0x24: its event handler class (vtable D_0046E380, see sRooms in event.c),
+/* Room 0x24: its event handler class (vtable Room24_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E380[];
+extern void *RoomBase_vtable[];
+extern void *Room24_vtable[];
 extern u8 D_0047AB10[];
 
 extern u8 D_00401890[];
@@ -20,7 +20,7 @@ extern u32 D_004022F0[];
 extern PTMF D_01990B10[];
 
 /* 0x002AFC30 */
-void *Room24_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E380, D_0046DB80); }
+void *Room24_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room24_vtable, RoomBase_vtable); }
 
 /* 0x002AFC90 */
 void *Room24_EnterScript(void) {
@@ -43,7 +43,7 @@ void *Room24_Phase2Script(void) {
 }
 
 /* 0x002AFCD0 */
-void *Room24_Phase5Script(void *o) { return D_0047AB10; }   /* D_0046E380 +0x20 */
+void *Room24_Phase5Script(void *o) { return D_0047AB10; }   /* Room24_vtable +0x20 */
 
 /* 0x002AFCE0 */
 u32 Room24_ActionScript(void *self, s32 i) {

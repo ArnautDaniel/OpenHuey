@@ -1,4 +1,4 @@
-/* Room 0x12: its event handler class (vtable D_0046DF80, see sRooms in event.c),
+/* Room 0x12: its event handler class (vtable Room12_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DF80[];
+extern void *RoomBase_vtable[];
+extern void *Room12_vtable[];
 extern void *D_00470E20[];
 extern u8 D_003F8200[];
 extern u8 D_003F8350[];
@@ -24,13 +24,13 @@ extern PTMF D_019908F0[];
 
 static void smoke_puffs_init(void **obj) {
     obj[0] = D_00470E20;
-    obj[0x1810 / 4] = D_00469D00;
+    obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
+    obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002AC190 */
-void *Room12_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF80, D_0046DB80); }
+void *Room12_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room12_vtable, RoomBase_vtable); }
 
 /* 0x002AC1F0 */
 void *Room12_EnterScript(void) {

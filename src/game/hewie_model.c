@@ -1,5 +1,5 @@
-/* Hewie's model (vtable D_0046B240, 0xB90 bytes, built by CharLoad_PartnerModel in model.c; two
- * subclasses D_0046B8F0 / D_0046B9B0 differ only in their destructors). On top of the model
+/* Hewie's model (vtable DogModel_vtable, 0xB90 bytes, built by CharLoad_PartnerModel in model.c; two
+ * subclasses DogModelA_vtable / DogModelB_vtable differ only in their destructors). On top of the model
  * base it fits his body to the floor as a dog stands - a back frame +0x7D0 from a point behind
  * him to his position, a front frame +0xB40 from his position to a point ahead - and plants
  * his four feet with IK: the front legs on three-bone solvers (+0x960, +0x9F0), the hind legs
@@ -26,8 +26,8 @@
 #include "stalker_models.h"
 #include "msl.h"
 
-extern void *D_00469D00[], *D_0046ADA0[], *D_0046B1C0[], *D_0046B210[], *D_0046F9E0[];
-extern void *D_0046B240[], *D_0046B8F0[], *D_0046B9B0[];
+extern void *Helper469D00_vtable[], *D_0046ADA0[], *D_0046B1C0[], *ModelBase_vtable[], *Model_vtable[];
+extern void *DogModel_vtable[], *DogModelA_vtable[], *DogModelB_vtable[];
 extern u8 D_003D5F90[];
 
 #define SKEL(m) AT(m, 0x810, void *)
@@ -45,15 +45,15 @@ void *DogModelA_Table(void);
 void *DogModelB_Table(void);
 
 static void HewieModel_Destroy(u8 *m, s32 flags) {
-    AT(m, 0x0, void **) = D_0046B240;
+    AT(m, 0x0, void **) = DogModel_vtable;
     func_001002C0(m + 0xA80, IK2_Destroy, 0x60, 2);
     func_001002C0(m + 0x960, IK3_Destroy, 0x90, 2);
-    AT(m, 0x0, void **) = D_0046F9E0;
-    AT(m, 0x0, void **) = D_0046B210;
+    AT(m, 0x0, void **) = Model_vtable;
+    AT(m, 0x0, void **) = ModelBase_vtable;
     AT(m, 0x1D0, void **) = D_0046B1C0;
-    AT(m, 0x1D0, void **) = D_00469D00;
+    AT(m, 0x1D0, void **) = Helper469D00_vtable;
     AT(m, 0x10, void **) = D_0046ADA0;
-    AT(m, 0x10, void **) = D_00469D00;
+    AT(m, 0x10, void **) = Helper469D00_vtable;
     if ((s16)flags > 0) {
         StalkerModel_delete(m);
     }
@@ -71,7 +71,7 @@ void *DogModel_dtor(u8 *m, s32 flags) {
 /* 0x0020BDE0 */
 void *DogModelA_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_0046B8F0;
+        AT(m, 0x0, void **) = DogModelA_vtable;
         HewieModel_Destroy(m, flags);
     }
     return m;
@@ -80,7 +80,7 @@ void *DogModelA_dtor(u8 *m, s32 flags) {
 /* 0x0020BF80 */
 void *DogModelB_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_0046B9B0;
+        AT(m, 0x0, void **) = DogModelB_vtable;
         HewieModel_Destroy(m, flags);
     }
     return m;
@@ -89,7 +89,7 @@ void *DogModelB_dtor(u8 *m, s32 flags) {
 extern u8 D_00456ED0[], D_00456EF0[], D_00456F10[], D_00456F30[], D_00456F50[];
 extern u8 D_00456E10[], D_00456E30[], D_00456E50[], D_00456E70[], D_00456E90[];
 
-/* (vtable D_0046B8F0 +0xA0) its table for kind k (0..4), NULL for others */
+/* (vtable DogModelA_vtable +0xA0) its table for kind k (0..4), NULL for others */
 /* 0x0020BEF0 */
 u8 *DogModelA_KindTable(u8 *m, s32 k) {
     switch (k) {
@@ -107,7 +107,7 @@ void *DogModelA_Table(void) {
     return D_00456F70;
 }
 
-/* (vtable D_0046B9B0's) the same for the other model */
+/* (vtable DogModelB_vtable's) the same for the other model */
 /* 0x0020C090 */
 u8 *DogModelB_KindTable(u8 *m, s32 k) {
     switch (k) {

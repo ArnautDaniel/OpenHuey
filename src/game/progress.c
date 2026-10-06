@@ -1567,15 +1567,15 @@ void Progress_ResetParts(Progress *p) {
 
 /* ---- movies ---- */
 
-extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[],
-    *D_00470E80[];
+extern void *MovieBlended_vtable[], *MovieOpaque_vtable[], *MovieHalf_vtable[], *MovieCopied_vtable[], *MovieAdded_vtable[], *MovieSmall_vtable[],
+    *MovieOwnBuf_vtable[];
 
 /* play movie `path` as scene 0, as movie class `kind` (1..6; others the plain one): 1 if it
    started */
 /* 0x001768B0 */
 s32 Progress_PlayMovie(Progress *p, const char *path, u32 kind) {
-    static void **const sClass[7] = { D_00470E80, D_0046EAB0, D_0046EAE0, D_0046EB10, D_0046EC30, D_0046EC90,
-                                      D_00474F80 };
+    static void **const sClass[7] = { MovieOwnBuf_vtable, MovieBlended_vtable, MovieOpaque_vtable, MovieHalf_vtable, MovieCopied_vtable, MovieAdded_vtable,
+                                      MovieSmall_vtable };
     u8 *table = gSceneTable;
     VObject *heap = (VObject *)(table + 0x10D9040);
     u32 size = (kind & 0xFF) == 4 ? 0x1E8 : 0x1E0;
@@ -1714,16 +1714,16 @@ void Progress_CutsceneSlotDone(Progress *p, s32 slot) {
     }
 }
 
-extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
-extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
-extern void *D_004699C0[], *D_004699E0[];
+extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *Creatures_vtable[], *D_0046A980[];
+extern void *PlacedThings_vtable[], *D_0046A950[], *Message_vtable[], *D_0046A0D0[], *Heap_vtable[];
+extern void *BlockPool_vtable[], *D_004699E0[];
 
 #define VT(o, off) AT(o, off, void **)
 
-/* a list head (vtables D_004699E0 -> D_004699C0): destructor body */
+/* a list head (vtables D_004699E0 -> BlockPool_vtable): destructor body */
 static inline void ListHead_Destroy(u8 *o) {
     if (o != NULL) {
-        VT(o, 0) = D_004699C0;
+        VT(o, 0) = BlockPool_vtable;
         if (o != NULL) {
             VT(o, 0) = D_004699E0;
         }
@@ -1763,7 +1763,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         VT(b, 0x73EB4C) = D_0046A9B0;
     }
     if (b + 0x706440 != NULL) {   /* the creatures (gCreatures) */
-        VT(b, 0x706468) = D_0046FC00;
+        VT(b, 0x706468) = Creatures_vtable;
         ListHead_Destroy(b + 0x715A70);
         ListHead_Destroy(b + 0x714080);
         if (b + 0x706440 != NULL) {
@@ -1774,7 +1774,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         }
     }
     if (b + 0x6FC340 != NULL) {   /* gPlacedThings */
-        VT(b, 0x6FC340) = D_0046F5C0;
+        VT(b, 0x6FC340) = PlacedThings_vtable;
         ListHead_Destroy(b + 0x706380);
         if (b + 0x6FC340 != NULL) {
             VT(b, 0x6FC340) = D_0046A950;
@@ -1784,7 +1784,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         }
     }
     if (b + 0x6FC218 != NULL) {   /* the boot message */
-        VT(b, 0x6FC218) = D_0046D7D0;
+        VT(b, 0x6FC218) = Message_vtable;
         if (b + 0x6FC218 != NULL) {
             VT(b, 0x6FC218) = D_0046A0D0;
             if (b + 0x6FC218 != NULL) {
@@ -1793,7 +1793,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         }
     }
     if (b + 0x6FBF00 != NULL) {
-        VT(b, 0x6FBF00) = D_0046A1C0;
+        VT(b, 0x6FBF00) = Heap_vtable;
         if (b + 0x6FBF00 != NULL) {
             VT(b, 0x6FBF00) = D_004699E0;
         }
@@ -1827,15 +1827,15 @@ void ProgressBase_Slot84(Progress *p) {}            /* +0x84 */
 /* 0x0016CD10 */
 s32 ProgressBase_Slot88(Progress *p) { return 0; }   /* +0x88 */
 
-/* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
+/* the object at +0x73EC80: destructor (its base, vtable Helper469D00_vtable) */
 /* 0x0016CC40 */
 void *Progress73EC80_dtor(void *o, s32 flags) {
-    extern void *D_0046F350[], *D_00469D00[];
+    extern void *Overlay_vtable[], *Helper469D00_vtable[];
 
     if (o != NULL) {
-        VT(o, 0) = D_0046F350;
+        VT(o, 0) = Overlay_vtable;
         if (o != NULL) {
-            VT(o, 0) = D_00469D00;
+            VT(o, 0) = Helper469D00_vtable;
         }
         if ((s16)flags > 0) {
             func_00100490(o);

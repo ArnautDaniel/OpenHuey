@@ -1,4 +1,4 @@
-/* Room 0x0F: its event handler class (vtable D_0046DEC0, see sRooms in event.c),
+/* Room 0x0F: its event handler class (vtable Room0F_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DEC0[];
+extern void *RoomBase_vtable[];
+extern void *Room0F_vtable[];
 extern const char *D_003F6F64;
 extern u8 D_003F5EC0[];
 extern u8 D_003F5FC0[];
@@ -32,7 +32,7 @@ static inline void obj_unturn(const char *name) {
 }
 
 /* 0x002AB9F0 */
-void *Room0F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DEC0, D_0046DB80); }
+void *Room0F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room0F_vtable, RoomBase_vtable); }
 
 /* 0x002ABA50 */
 void *Room0F_EnterScript(void) {

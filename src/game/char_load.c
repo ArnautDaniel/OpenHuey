@@ -67,19 +67,19 @@ static const u8 sReady[0x28] = {
 extern void hg_skipped(const char *what);   /* native/platform/skip.c */
 #endif
 
-extern void *D_00469C20[];
-extern void *D_00469C60[];
-extern void *D_0046D810[];
+extern void *Actor_vtable[];
+extern void *Character_vtable[];
+extern void *Pursuer_vtable[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Pursuer_ctor(u8 *p, u32 id, s32 arg);
 
-extern void *D_00478FF0[];
+extern void *Kind38_vtable[];
 static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
-    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x0, void **) = Actor_vtable;
     FLD(p, 0x20, s32) = arg;
     FLD(p, 0x24, s32) = 0x2000000;
-    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x0, void **) = Character_vtable;
     FLD(p, 0x1380, s32) = 0;
     FLD(p, 0x153C, u8) = (u8)id;
     FLD(p, 0x0, void **) = vtbl;
@@ -130,7 +130,7 @@ s32 CharLoad_Partner(Progress *p, u32 id) {   /* (a u8) */
 
 /* 0x001727C0 */
 void *Kind38_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x26, arg, D_00478FF0);
+    return b0_RoomCtor(p, 0x26, arg, Kind38_vtable);
 }
 
 /* the character in `slot` gets its data buffers: their sizes (vtable +0xFC, seven) as one
@@ -223,12 +223,12 @@ s32 CharLoad_EventChar(Progress *p, u32 id, u32 slot) {
 /* Room object constructor: base 0x469C20 -> 0x469C60 -> 0x46D810; id at +0x153C. */
 /* 0x00171090 */
 void *Pursuer_ctor(u8 *p, u32 id, s32 arg) {
-    FLD(p, 0x0, void **) = D_00469C20;
+    FLD(p, 0x0, void **) = Actor_vtable;
     FLD(p, 0x20, s32) = arg;
     FLD(p, 0x24, s32) = 0x2000000;
-    FLD(p, 0x0, void **) = D_00469C60;
+    FLD(p, 0x0, void **) = Character_vtable;
     FLD(p, 0x1380, s32) = 0;
     p[0x153C] = (u8)id;
-    FLD(p, 0x0, void **) = D_0046D810;
+    FLD(p, 0x0, void **) = Pursuer_vtable;
     return p;
 }

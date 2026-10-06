@@ -1,4 +1,4 @@
-/* Room 0x25: its event handler class (vtable D_0046E3C0, see sRooms in event.c),
+/* Room 0x25: its event handler class (vtable Room25_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E3C0[];
+extern void *RoomBase_vtable[];
+extern void *Room25_vtable[];
 extern void *D_00470A50[];   /* the rising motes */
 extern u8 D_00402330[];
 extern u8 D_00402420[];
@@ -24,13 +24,13 @@ extern PTMF D_01990B48[];
 
 static void motes_init(void **obj) {
     obj[0] = D_00470A50;
-    obj[0x3010 / 4] = D_00469D00;
+    obj[0x3010 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x3014 / 4] = -1;
-    obj[0x3010 / 4] = D_0046FC30;
+    obj[0x3010 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002B00F0 */
-void *Room25_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E3C0, D_0046DB80); }
+void *Room25_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room25_vtable, RoomBase_vtable); }
 
 /* 0x002B0150 */
 void *Room25_EnterScript(void) {

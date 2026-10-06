@@ -1,4 +1,4 @@
-/* Room 0x29: its event handler class (vtable D_0046E480, see sRooms in event.c),
+/* Room 0x29: its event handler class (vtable Room29_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E480[];
+extern void *RoomBase_vtable[];
+extern void *Room29_vtable[];
 
 extern u8 D_00403F90[];
 extern u8 D_00404040[];
@@ -22,7 +22,7 @@ extern u32 D_00404710[];
 extern PTMF D_01990BB0[];
 
 /* 0x002B0E30 */
-void *Room29_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E480, D_0046DB80); }
+void *Room29_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room29_vtable, RoomBase_vtable); }
 
 /* 0x002B0E90 */
 void *Room29_EnterScript(void) {

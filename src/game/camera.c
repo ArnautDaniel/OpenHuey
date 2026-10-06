@@ -1,4 +1,4 @@
-/* Camera (Game +0x14D9B00, global gCamera, vtable D_00469A60; base vtable D_00469B40). The
+/* Camera (Game +0x14D9B00, global gCamera, vtable Camera_vtable; base vtable D_00469B40). The
  * view comes from an eye and a target point; matrices are built by the larger methods. */
 #include "common.h"
 #include "game.h"
@@ -58,7 +58,7 @@ typedef struct CameraSet {
     /* 0x24 */ s32 unk24;
 } CameraSet;
 
-extern void *D_00469A60[];
+extern void *Camera_vtable[];
 extern void *D_00469B40[];
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -71,7 +71,7 @@ void *CameraBase_dtor(u8 *o, s32 flags);
 /* 0x001218A0 */
 Camera *Camera_dtor(Camera *c, s32 flags) {
     if (c != NULL) {
-        c->vtbl = D_00469A60;
+        c->vtbl = Camera_vtable;
         if (c != NULL) {
             c->vtbl = D_00469B40;
             if (c != NULL) {

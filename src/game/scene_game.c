@@ -66,15 +66,15 @@ extern void *D_004562A8;
  * Probably costumes; each takes the character's player index. */
 
 extern void *D_004699E0[];
-extern void *D_00469D00[];
+extern void *Helper469D00_vtable[];
 extern void *D_0046A0D0[];
 extern void *D_0046B350[];
 extern void *D_0046BB20[];
 extern void *D_0046C6F0[];
 extern void *D_0046C770[];
 extern void *D_0046D780[];
-extern void *D_0046D7D0[];
-extern void *D_0046ED30[];
+extern void *Message_vtable[];
+extern void *Cutscene_vtable[];
 extern void *D_00476F40[];
 void *SceneTableBase_dtor(u8 *o, s32 flags);
 void *Obj46B350_dtor(u8 *o, s32 flags);
@@ -85,11 +85,11 @@ void *Message_dtor(u8 *o, s32 flags);
 void *Cutscene_dtor(u8 *o, s32 flags);
 void *LoadingEmblem_dtor(u8 *o, s32 flags);
 
-extern void *D_0046BA68[], *D_0046DB80[];
-extern void *D_0046F350[];
-extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[];
-extern u8 D_0046C3E0[];
-extern void *D_0046A9D0[];
+extern void *D_0046BA68[], *RoomBase_vtable[];
+extern void *Overlay_vtable[];
+extern u8 D_0046BAA0[], D_0046BA80[], NavGroups_vtable[];
+extern u8 Rooms_vtable[];
+extern void *NavMesh_vtable[];
 extern void *D_00456E00;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -105,10 +105,10 @@ void *func_002D12E0(u8 *p);
 void *func_002D1320(u8 *p);
 
 extern void *D_0046A9B0[];
-extern u8 D_0046FC00[];
-extern u8 D_0046F5C0[];
-extern void *D_004699C0[];
-extern void *D_0046A1C0[];
+extern u8 Creatures_vtable[];
+extern u8 PlacedThings_vtable[];
+extern void *BlockPool_vtable[];
+extern void *Heap_vtable[];
 void *func_002D1360(u8 *p);
 void *Obj46A9B0_ctor(u8 *p);
 void *func_002D1490(u8 *p);
@@ -124,7 +124,7 @@ s32 AvoidPrompt_Unload(void *self);
 void AvoidPrompt_Tick(u8 *self);
 s32 AvoidPrompt_Upload(u8 *self);
 
-extern void *D_00474460[];
+extern void *Kind33Model_vtable[];
 
 s32 RoomBase_CharEnterScript(void *o);
 s32 RoomBase_EnterScript(void *o);
@@ -289,13 +289,13 @@ void SceneGame_StateEntry(Scene *game) {
 
 extern void *Scene_vtable[], *SceneGame_vtable[], *Progress_vtable[], *Fiona_vtable[];
 extern void *D_0047A7E8[];          /* SceneGame's second base (Progress) */
-extern void *D_00469C20[], *D_00469C60[];   /* Actor, Character */
-extern void *D_0046A120[];          /* the partner (Hewie) */
-extern void *D_0046ABB0[], *D_0046C520[], *D_0046B3A0[], *D_0046B3B8[], *D_0046B300[];
-extern void *D_0046C6F0[], *D_0046C660[], *D_0046C668[];
-extern void *D_004699E0[], *D_004699C0[], *D_0046A1C0[];
-extern void *D_0047A790[];          /* the sub screen */
-extern void *D_0046A110[];          /* the music controller */
+extern void *Actor_vtable[], *Character_vtable[];   /* Actor, Character */
+extern void *Hewie_vtable[];          /* the partner (Hewie) */
+extern void *PathPlan_vtable[], *RoutePlanner_vtable[], *Events_vtable[], *D_0046B3B8[], *Lights_vtable[];
+extern void *D_0046C6F0[], *D_0046C660[], *CamDirector_vtable[];
+extern void *D_004699E0[], *BlockPool_vtable[], *Heap_vtable[];
+extern void *SubScreen_vtable[];          /* the sub screen */
+extern void *BgmCtl_vtable[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
 extern void *gSceneGameF29740;
@@ -303,10 +303,10 @@ extern void *D_0045D1F0, *D_00456DE8;
 
 /* the characters' common construction (Actor, then Character) */
 static inline void Character_Construct(Character *c, s32 slot) {
-    c->a.vtbl = D_00469C20;
+    c->a.vtbl = Actor_vtable;
     c->a.slot = slot;
     c->a.flags24 = 0x2000000;
-    c->a.vtbl = D_00469C60;
+    c->a.vtbl = Character_vtable;
     c->pathReq = NULL;
 }
 
@@ -358,15 +358,15 @@ Scene *SceneGame_ctor(Scene *g) {
     Character_Construct(c, 1);
     gSceneGameF29740 = (u8 *)g + 0xF29740;
     c->unk153C = 1;
-    c->a.vtbl = D_0046A120;
-    AT(g, 0xF29740, void **) = D_0046ABB0;
+    c->a.vtbl = Hewie_vtable;
+    AT(g, 0xF29740, void **) = PathPlan_vtable;
     gRoutePlanner = (VObject *)((u8 *)g + 0xF6A940);
-    AT(g, 0xF6A940, void **) = D_0046C520;
+    AT(g, 0xF6A940, void **) = RoutePlanner_vtable;
 
     o = (u8 *)g + 0xF6AFB0;
     func_002D10A0(o);
     Events_ctor(o + 0xC);
-    AT(o, 0x0, void **) = D_0046B3A0;
+    AT(o, 0x0, void **) = Events_vtable;
     AT(o, 0xC, void **) = D_0046B3B8;
     func_002D1040(o + 0x20);
     func_00100340(o + 0x120, RoomBase_ctor, RoomBase_dtor, 4, 0x110);
@@ -381,7 +381,7 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x6FC, s32) = 0;
 
     o = (u8 *)g + 0xF6C1C0;
-    AT(o, 0x0, void **) = D_0046B300;
+    AT(o, 0x0, void **) = Lights_vtable;
     AT(o, 0x320, s32) = -1;
     AT(o, 0x324, s32) = -1;
 
@@ -398,7 +398,7 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x50, f32) = 6.0f;
     AT(o, 0x60, void **) = D_0046C6F0;
     AT(o, 0x64, void **) = D_0046C660;
-    AT(o, 0x60, void **) = D_0046C668;
+    AT(o, 0x60, void **) = CamDirector_vtable;
     gCamDirector = (VObject *)(o + 0x60);
 
     o = (u8 *)g + 0xF6CD30;
@@ -406,7 +406,7 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x1404, s32) = 0;
     gRoomEffects = o;
     AT(o, 0x1408, s32) = 0;
-    AT(o, 0x1400, void **) = D_004699C0;
+    AT(o, 0x1400, void **) = BlockPool_vtable;
     AT(o, 0x140C, s32) = 0;
     gEffects = (u8 *)g + 0xF6E200;   /* a sub-heap (its header after its 64 KB) */
     AT(o, 0x1410, s32) = 0;
@@ -415,14 +415,14 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x10000, void **) = D_004699E0;
     AT(o, 0x10004, s32) = 0;
     AT(o, 0x10008, s32) = 0;
-    AT(o, 0x10000, void **) = D_0046A1C0;
+    AT(o, 0x10000, void **) = Heap_vtable;
     AT(o, 0x1000C, s32) = 0;
     AT(o, 0x10010, s32) = 0;
 
     /* the sub screen (the in-game menu) */
     sub = (SubScreen *)((u8 *)g + 0xF87240);
     SubScreenBase_ctor(sub);
-    sub->vtbl = D_0047A790;
+    sub->vtbl = SubScreen_vtable;
     Task_ctor(&sub->ask);
     Task_ctor(&sub->text);
     TextObj_ctor(sub->textObj);
@@ -430,7 +430,7 @@ Scene *SceneGame_ctor(Scene *g) {
 
     /* the music controller */
     gMusic = (VObject *)((u8 *)g + 0x1053424);
-    AT(g, 0x1053424, void **) = D_0046A110;
+    AT(g, 0x1053424, void **) = BgmCtl_vtable;
     D_0045D1F0 = (u8 *)g + 0x105344C;
 
     o = (u8 *)g + 0x1053480;
@@ -440,12 +440,12 @@ Scene *SceneGame_ctor(Scene *g) {
     return g;
 }
 
-/* destructor (vtable D_0046ED30) */
+/* destructor (vtable Cutscene_vtable) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0C70 */
 void *Cutscene_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046ED30;
+        AT(o, 0x0, void **) = Cutscene_vtable;
         AT(o, 0x0, void **) = D_0046BB20;
         gCutscene = NULL;
         if ((s16)flags > 0) {
@@ -463,7 +463,7 @@ void SceneGame_Update(Scene *g, s32 arg) {
 
 #include "input.h"
 
-extern void *D_00476F40[], *D_00469D00[];
+extern void *D_00476F40[], *Helper469D00_vtable[];
 extern void SceneGame_RoomIn(Scene *g);
 
 /* the frame counted (twice while a button is held): it feeds the random numbers, seeded here */
@@ -477,7 +477,7 @@ static inline void rng_tick(Scene *g) {
     AT(rng, 0x0, void **) = D_00476F40;
     AT(rng, 0x4, s32) = -1;
     Loading_DrawFrame(rng, AT(g, 0x1065040, s32));
-    AT(rng, 0x0, void **) = D_00469D00;
+    AT(rng, 0x0, void **) = Helper469D00_vtable;
 }
 
 /* state, every frame: count the frame (twice while a button is pressed: it feeds the random
@@ -1562,7 +1562,7 @@ u8 SceneGame_LeaveRoom(Scene *g, u8 exit) {
 
 #include "sce/libvu0.h"
 
-extern void *D_00469C20[], *D_00469C60[], *D_00474080[], *D_0046FAA0[];
+extern void *Actor_vtable[], *Character_vtable[], *CreatureB_vtable[], *CreatureA_vtable[];
 
 #define SG_ROOM(g) VCALL((VObject *)(g), 0xA4, s32 (*)(Scene *))(g)
 
@@ -1704,10 +1704,10 @@ s32 SceneGame_RandomRoomNear(Scene *g, s32 room) {
 
 /* the creatures' two classes (0x1600 bytes on the event character base) */
 static void *creature_init(u8 *o, void **vtbl) {
-    AT(o, 0x0, void **) = D_00469C20;
+    AT(o, 0x0, void **) = Actor_vtable;
     AT(o, 0x20, s32) = 0x0FFFFFFF;
     AT(o, 0x24, s32) = 0x02000000;
-    AT(o, 0x0, void **) = D_00469C60;
+    AT(o, 0x0, void **) = Character_vtable;
     AT(o, 0x1380, s32) = 0;
     AT(o, 0x153C, u8) = 0;
     AT(o, 0x0, void **) = vtbl;
@@ -1716,12 +1716,12 @@ static void *creature_init(u8 *o, void **vtbl) {
 
 /* 0x0039B230 */
 void *CreatureB_ctor(void *o) {
-    return creature_init(o, D_00474080);
+    return creature_init(o, CreatureB_vtable);
 }
 
 /* 0x0039B280 */
 void *CreatureA_ctor(void *o) {
-    return creature_init(o, D_0046FAA0);
+    return creature_init(o, CreatureA_vtable);
 }
 
 /* a placed character (gCreatures) of the creature class in slot `k`, its model too for
@@ -2316,11 +2316,11 @@ void *Obj46B350_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* the base (D_0046DB80): destructor */
+/* the base (RoomBase_vtable): destructor */
 /* 0x001FB3B0 */
 void *RoomBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046DB80;
+        AT(o, 0x0, void **) = RoomBase_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2370,7 +2370,7 @@ void *RoomMeshes_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C770;
         AT(o, 0x8, s32) = 0;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2384,7 +2384,7 @@ void *Obj46D780_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D780;
         AT(o, 0x8, s32) = 0;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2392,12 +2392,12 @@ void *Obj46D780_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable D_0046D7D0) */
+/* destructor (vtable Message_vtable) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D00A0 */
 void *Message_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046D7D0;
+        AT(o, 0x0, void **) = Message_vtable;
         AT(o, 0x0, void **) = D_0046A0D0;
         gBootMessage = NULL;
         if ((s16)flags > 0) {
@@ -2474,19 +2474,19 @@ void SceneGame_OnSoftReset(u8 *g) {
 
 /* ---- SceneGame's destructor and the member destructors it needs (2026-10-05) ---- */
 
-extern void *D_0046A9D0[], *D_0046AA40[], *D_0046A9C0[], *D_0046F350[], *D_00469D00[], *D_0046A9B0[];
-extern void *D_00473440[], *D_0046A110[], *D_0046A100[], *D_0047A790[], *D_0046A1C0[], *D_004699E0[];
-extern void *D_004699C0[], *D_0046C660[], *D_0046C668[], *D_0046C6F0[], *D_0046B300[], *D_0046B350[];
-extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046C520[], *D_0046C530[], *D_0046ABB0[], *D_0046AC00[];
-extern void *D_0046A120[], *D_00469C60[], *D_00469C20[];
+extern void *NavMesh_vtable[], *D_0046AA40[], *D_0046A9C0[], *Overlay_vtable[], *Helper469D00_vtable[], *D_0046A9B0[];
+extern void *D_00473440[], *BgmCtl_vtable[], *D_0046A100[], *SubScreen_vtable[], *Heap_vtable[], *D_004699E0[];
+extern void *BlockPool_vtable[], *D_0046C660[], *CamDirector_vtable[], *D_0046C6F0[], *Lights_vtable[], *D_0046B350[];
+extern void *Events_vtable[], *D_0046B3B8[], *RoutePlanner_vtable[], *D_0046C530[], *PathPlan_vtable[], *D_0046AC00[];
+extern void *Hewie_vtable[], *Character_vtable[], *Actor_vtable[];
 
 /* (D_0046A9C0): its quad drawer (+0x120) and its task's child (+0x88) */
 /* 0x00179B10 */
 void *Obj46A9C0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046A9C0;
-        AT(o, 0x120, void **) = D_0046F350;
-        AT(o, 0x120, void **) = D_00469D00;
+        AT(o, 0x120, void **) = Overlay_vtable;
+        AT(o, 0x120, void **) = Helper469D00_vtable;
         if (AT(o, 0x88, void *) != NULL) {
             Task_dtor(AT(o, 0x88, Task *), 1);
             AT(o, 0x88, void *) = NULL;
@@ -2532,20 +2532,20 @@ void *Obj46BA68_ctor(u8 *p) {
 /* 0x002D1000 */
 void *Cutscene_ctor(u8 *p) {
     gCutscene = (VObject *)p;
-    F(p, 0x0, void *) = D_0046ED30;
+    F(p, 0x0, void *) = Cutscene_vtable;
     return p;
 }
 
 /* 0x002D1020 */
 void *RoomBase_ctor(u8 *p) {
-    F(p, 0x0, void *) = D_0046DB80;
+    F(p, 0x0, void *) = RoomBase_vtable;
     return p;
 }
 
 void *func_002D1040(u8 *p) {
-    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
-    F(p, 0x0, void *) = D_0046F350;
+    F(p, 0x0, void *) = Overlay_vtable;
     F(p, 0x24, u32) = 0;
     F(p, 0x10, s32) = -1;
     p[0x14] = 0;
@@ -2568,7 +2568,7 @@ void *func_002D10A0(u8 *p) {
 
 void *func_002D1130(u8 *p) {
     D_00456E00 = p;
-    F(p, 0x0, void *) = D_0046DB40;
+    F(p, 0x0, void *) = NavGroups_vtable;
     F(p, 0x4, u32) = 0;
     F(p, 0x8, u32) = 0;
     return p;
@@ -2577,7 +2577,7 @@ void *func_002D1130(u8 *p) {
 /* 0x002D12C0 */
 void *Rooms_ctor(u8 *p) {
     gRooms = (VObject *)p;
-    F(p, 0x0, void *) = D_0046C3E0;
+    F(p, 0x0, void *) = Rooms_vtable;
     return p;
 }
 
@@ -2585,7 +2585,7 @@ void *func_002D12E0(u8 *p) {
     s32 i;
 
     gNavMesh = (NavMesh *)p;
-    F(p, 0x0, void *) = D_0046A9D0;
+    F(p, 0x0, void *) = NavMesh_vtable;
     for (i = 0x4; i <= 0x18; i += 4) {
         F(p, i, u32) = 0;
     }
@@ -2593,7 +2593,7 @@ void *func_002D12E0(u8 *p) {
 }
 
 void *func_002D1320(u8 *p) {
-    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
     F(p, 0x0, void *) = D_0046D780;
     F(p, 0x20, u32) = 0;
@@ -2603,7 +2603,7 @@ void *func_002D1320(u8 *p) {
 }
 
 void *func_002D1360(u8 *p) {
-    F(p, 0x0, void *) = D_00469D00;
+    F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
     F(p, 0x0, void *) = D_0046C770;
     F(p, 0x7C, u32) = 0;
@@ -2627,18 +2627,18 @@ void *func_002D1490(u8 *p) {
     u8 *b = p + 0xF630;
 
     gCreatures = p;
-    F(p, 0x28, void *) = D_0046FC00;
+    F(p, 0x28, void *) = Creatures_vtable;
     F(a, 0x0, void *) = D_004699E0;
     F(a, 0x4, u32) = 0;
     F(a, 0x8, u32) = 0;
-    F(a, 0x0, void *) = D_004699C0;
+    F(a, 0x0, void *) = BlockPool_vtable;
     F(a, 0xC, u32) = 0;
     F(a, 0x10, u32) = 0;
     F(a, 0x14, u32) = 0;
     F(b, 0x0, void *) = D_004699E0;
     F(b, 0x4, u32) = 0;
     F(b, 0x8, u32) = 0;
-    F(b, 0x0, void *) = D_004699C0;
+    F(b, 0x0, void *) = BlockPool_vtable;
     F(b, 0xC, u32) = 0;
     F(b, 0x10, u32) = 0;
     F(b, 0x14, u32) = 0;
@@ -2649,11 +2649,11 @@ void *func_002D1510(u8 *p) {
     u8 *a = p + 0xA040;
 
     gPlacedThings = (VObject *)p;
-    F(p, 0x0, void *) = D_0046F5C0;
+    F(p, 0x0, void *) = PlacedThings_vtable;
     F(a, 0x0, void *) = D_004699E0;
     F(a, 0x4, u32) = 0;
     F(a, 0x8, u32) = 0;
-    F(a, 0x0, void *) = D_004699C0;
+    F(a, 0x0, void *) = BlockPool_vtable;
     F(a, 0xC, u32) = 0;
     F(a, 0x10, u32) = 0;
     F(a, 0x14, u32) = 0;
@@ -2663,7 +2663,7 @@ void *func_002D1510(u8 *p) {
 /* 0x002D1560 */
 void *Message_ctor(u8 *p) {
     gBootMessage = (VObject *)p;
-    F(p, 0x0, void *) = D_0046D7D0;
+    F(p, 0x0, void *) = Message_vtable;
     return p;
 }
 
@@ -2671,7 +2671,7 @@ void *func_002D1580(u8 *p) {
     F(p, 0x0, void *) = D_004699E0;
     F(p, 0x4, u32) = 0;
     F(p, 0x8, u32) = 0;
-    F(p, 0x0, void *) = D_0046A1C0;
+    F(p, 0x0, void *) = Heap_vtable;
     F(p, 0xC, u32) = 0;
     F(p, 0x10, u32) = 0;
     return p;
@@ -2717,7 +2717,7 @@ s32 AvoidPrompt_Upload(u8 *self) {
 void *LoadingEmblem_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00476F40;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2728,7 +2728,7 @@ void *LoadingEmblem_dtor(u8 *o, s32 flags) {
 /* 0x0038C8D0 */
 void *Kind33Model_ctor(u8 *m) {
     HumanModel_BaseCtor(m);
-    AT(m, 0x0, void **) = D_00474460;
+    AT(m, 0x0, void **) = Kind33Model_vtable;
     return m;
 }
 
@@ -2749,23 +2749,23 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     Task_dtor((Task *)(g + 0x10644C8), -1);
     AvoidPromptBase_dtor(g + 0x1053480, 0);
     D_0045D1F0 = NULL;
-    AT(g, 0x1053424, void **) = D_0046A110;
+    AT(g, 0x1053424, void **) = BgmCtl_vtable;
     AT(g, 0x1053424, void **) = D_0046A100;
     gMusic = NULL;
-    AT(g, 0xF87240, void **) = D_0047A790;
+    AT(g, 0xF87240, void **) = SubScreen_vtable;
     BootCard_dtor((BootCard *)(g + 0x102FD00), -1);
     TextObj_dtor(g + 0x101EBC0, -1);
     Task_dtor((Task *)(g + 0x101EAA8), -1);
     Task_dtor((Task *)(g + 0x101E9A4), -1);
     SubScreenBase_dtor((SubScreen *)(g + 0xF87240), 0);
-    AT(g, 0xF7E200, void **) = D_0046A1C0;
+    AT(g, 0xF7E200, void **) = Heap_vtable;
     AT(g, 0xF7E200, void **) = D_004699E0;
     gEffects = NULL;
-    AT(g, 0xF6E130, void **) = D_004699C0;
+    AT(g, 0xF6E130, void **) = BlockPool_vtable;
     AT(g, 0xF6E130, void **) = D_004699E0;
     gRoomEffects = NULL;
     AT(g, 0xF6CC14, void **) = D_0046C660;
-    AT(g, 0xF6CC10, void **) = D_0046C668;
+    AT(g, 0xF6CC10, void **) = CamDirector_vtable;
     AT(g, 0xF6CC10, void **) = D_0046C6F0;
     gCamDirector = NULL;
     AT(g, 0xF6CBDC, s32) = 0;
@@ -2774,10 +2774,10 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     for (i = 0; i < 7; i++) {
         AT(g, 0xF6CBB8 + i * 4, s32) = 0;
     }
-    AT(g, 0xF6C1C0, void **) = D_0046B300;
+    AT(g, 0xF6C1C0, void **) = Lights_vtable;
     AT(g, 0xF6C1C0, void **) = D_0046B350;
     gLights = NULL;
-    AT(g, 0xF6AFB0, void **) = D_0046B3A0;
+    AT(g, 0xF6AFB0, void **) = Events_vtable;
     AT(g, 0xF6AFBC, void **) = D_0046B3B8;
     func_001002C0(g + 0xF6BBA0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
     Cutscene_dtor(g + 0xF6B8E8, -1);
@@ -2786,18 +2786,18 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     Progress73EC80_dtor(g + 0xF6AFD0, -1);
     EventsBase_dtor((void **)(g + 0xF6AFBC), 0);
     Obj46BA80_dtor((void **)(g + 0xF6AFB0), 0);
-    AT(g, 0xF6A940, void **) = D_0046C520;
+    AT(g, 0xF6A940, void **) = RoutePlanner_vtable;
     AT(g, 0xF6A940, void **) = D_0046C530;
     gRoutePlanner = NULL;
-    AT(g, 0xF29740, void **) = D_0046ABB0;
+    AT(g, 0xF29740, void **) = PathPlan_vtable;
     AT(g, 0xF29740, void **) = D_0046AC00;
     gSceneGameF29740 = NULL;
-    AT(g, 0xE35F80, void **) = D_0046A120;
-    AT(g, 0xE35F80, void **) = D_00469C60;
-    AT(g, 0xE35F80, void **) = D_00469C20;
+    AT(g, 0xE35F80, void **) = Hewie_vtable;
+    AT(g, 0xE35F80, void **) = Character_vtable;
+    AT(g, 0xE35F80, void **) = Actor_vtable;
     AT(g, 0xC88840, void **) = Fiona_vtable;
-    AT(g, 0xC88840, void **) = D_00469C60;
-    AT(g, 0xC88840, void **) = D_00469C20;
+    AT(g, 0xC88840, void **) = Character_vtable;
+    AT(g, 0xC88840, void **) = Actor_vtable;
     RoomMgr_Clear(g + 0x73EE80);
     Obstacles_dtor(g + 0x748200, -1);
     NavGroups_dtor(g + 0x7481E0, -1);

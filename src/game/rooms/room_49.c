@@ -1,4 +1,4 @@
-/* Room 0x49: its event handler class (vtable D_0046E640, see sRooms in event.c),
+/* Room 0x49: its event handler class (vtable Room49_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,9 +7,9 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E640[];
-extern void *D_0046EC60[];
+extern void *RoomBase_vtable[];
+extern void *Room49_vtable[];
+extern void *DepthRange_vtable[];
 extern void *D_0047A390[];
 extern u8 D_00407F30[];
 extern u8 D_00407F80[];
@@ -23,13 +23,13 @@ extern PTMF D_01990C80[];
 
 static void effect_1a60_init(void **obj) {
     obj[0] = D_0047A390;
-    obj[0x1810 / 4] = D_00469D00;
+    obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
+    obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002B2960 */
-void *Room49_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E640, D_0046DB80); }
+void *Room49_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room49_vtable, RoomBase_vtable); }
 
 /* 0x002B29C0 */
 void *Room49_EnterScript(void) {
@@ -97,7 +97,7 @@ s32 Room49_Cmd01(void) {
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 1156);
     f32 r[4] __attribute__((aligned(16)));
 
-    room_effect_slot_new(fx, 0x1C, D_0046EC60);
+    room_effect_slot_new(fx, 0x1C, DepthRange_vtable);
     r[0] = 1.0f;
     r[1] = 1.0f;
     r[2] = 40.0f + t;

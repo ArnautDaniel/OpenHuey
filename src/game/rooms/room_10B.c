@@ -1,4 +1,4 @@
-/* Room 0x10B: its event handler class (vtable D_0046FEC0, see sRooms in event.c),
+/* Room 0x10B: its event handler class (vtable Room10B_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046FEC0[];
+extern void *RoomBase_vtable[];
+extern void *Room10B_vtable[];
 extern void *D_0047A730[];
 extern u8 D_00419A80[];
 extern u8 D_00419AA0[];
@@ -23,13 +23,13 @@ extern PTMF D_01990F78[];
 
 static void effect_4480_init(void **obj) {
     obj[0] = D_0047A730;
-    obj[0x3010 / 4] = D_00469D00;
+    obj[0x3010 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x3014 / 4] = -1;
-    obj[0x3010 / 4] = D_0046FC30;
+    obj[0x3010 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002E78E0 */
-void *Room10B_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FEC0, D_0046DB80); }
+void *Room10B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room10B_vtable, RoomBase_vtable); }
 
 /* 0x002E7940 */
 void *Room10B_EnterScript(void) { return D_00419A80; }

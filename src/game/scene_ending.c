@@ -1,7 +1,7 @@
 /* Mode 5 scene: the ending. The staff roll (STAFF_ROLL.SFD) as scene 1, then the results
  * screen: the ending's picture (SYSTEM\ENDING_A..D.TEX), the play record (MSG_END) with a
  * dog level and a type, the extras it unlocks, and the clear-data save (the sub screen's
- * mode 9). Built by Scene5_ctor (scene_title.c), 0x117540 bytes, vtable D_0047A330. */
+ * mode 9). Built by Scene5_ctor (scene_title.c), 0x117540 bytes, vtable SceneEnding_vtable. */
 #include <stdarg.h>
 #include "common.h"
 #include "game.h"
@@ -50,11 +50,11 @@ _Static_assert(__builtin_offsetof(SceneEnding, task) == 0x48, "SceneEnding.task"
 #define END_VOLUME(s)   AT(s, 0x11750C, f32)        /* the staff roll's volume */
 
 extern void *Scene_vtable[];
-extern void *D_0047A330[];          /* SceneEnding */
-extern void *D_0047A790[];          /* the sub screen */
-extern void *D_0046D7D0[], *D_0046A0D0[];   /* the message object, its base */
-extern void *D_0046A110[], *D_0046A100[];   /* the BGM controller, its base */
-extern void *D_0046ECC0[];          /* SceneMovie */
+extern void *SceneEnding_vtable[];          /* SceneEnding */
+extern void *SubScreen_vtable[];          /* the sub screen */
+extern void *Message_vtable[], *D_0046A0D0[];   /* the message object, its base */
+extern void *BgmCtl_vtable[], *D_0046A100[];   /* the BGM controller, its base */
+extern void *MovieScene_vtable[];          /* SceneMovie */
 extern u8 D_0047B350;               /* the message language set */
 extern u8 *D_01991EC4;              /* the message text */
 extern const char D_004638F8[];     /* "STAFF_ROLL.SFD" */
@@ -101,11 +101,11 @@ SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
         SubScreen *w = END_SUB(s);
         Task *task = &s->task;
 
-        s->base.vtbl = D_0047A330;
+        s->base.vtbl = SceneEnding_vtable;
         BgmCtl_StopNow((BgmCtl *)bgm);
         Bgm_Release(gAdx);
         if (bgm != NULL) {
-            AT(bgm, 0, void **) = D_0046A110;
+            AT(bgm, 0, void **) = BgmCtl_vtable;
             if (bgm != NULL) {
                 AT(bgm, 0, void **) = D_0046A100;
                 if (bgm != NULL) {
@@ -114,7 +114,7 @@ SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
             }
         }
         if (msg != NULL) {
-            AT(msg, 0, void **) = D_0046D7D0;
+            AT(msg, 0, void **) = Message_vtable;
             if (msg != NULL) {
                 AT(msg, 0, void **) = D_0046A0D0;
                 if (msg != NULL) {
@@ -123,7 +123,7 @@ SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
             }
         }
         if (w != NULL) {
-            w->vtbl = D_0047A790;
+            w->vtbl = SubScreen_vtable;
             BootCard_dtor(&w->card, -1);
             TextObj_dtor(w->textObj, -1);
             Task_dtor(&w->text, -1);
@@ -871,7 +871,7 @@ void SceneEnding_StateStart(SceneEnding *s) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
             Movie_ctor((Movie *)movie);
-            movie->vtbl = D_0046ECC0;
+            movie->vtbl = MovieScene_vtable;
         }
         SCENE_TABLE_SCENE(1) = movie;
         SCENE_TABLE_SCENE(1)->slot = 1;

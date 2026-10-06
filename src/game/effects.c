@@ -1,6 +1,6 @@
 /* The room's effects (made by SceneGame +0xF6CD30 from PAC section 13; 0xA0-byte objects):
- *   D_0046D750 a screen tint, D_0046D7B0 a screen blend, D_0046EB40 the fog (also sets the
- *   camera's depth range), D_0046EC60 a depth range.
+ *   Tint_vtable a screen tint, ScreenBlend_vtable a screen blend, Fog_vtable the fog (also sets the
+ *   camera's depth range), DepthRange_vtable a depth range.
  * Vtable: +0xC reset, +0x18 set from the room data (unaligned little-endian words). */
 #include "common.h"
 #include "game.h"
@@ -29,9 +29,9 @@
 
 extern void *D_0046D730[];
 extern void *D_0046D790[];
-extern void *D_0046D7A0[];
+extern void *Bloom_vtable[];
 extern void *D_0046EB60[];
-extern void *D_0046EC60[];
+extern void *DepthRange_vtable[];
 void *TintDrawer_dtor(u8 *o, s32 flags);
 void *Bloom_dtor(u8 *o, s32 flags);
 void *FogDrawer_dtor(u8 *o, s32 flags);
@@ -67,7 +67,7 @@ void FloorGlow_SetParams(u8 *p, s32 *src);
 s32 FloorGlow_Update(u8 *p);
 void FloorGlow_Start(u8 *p);
 
-extern void *D_00479B20[];
+extern void *Kind39_vtable[];
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
 
@@ -95,7 +95,7 @@ void Room49Effect_Draw(u8 *o);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -105,10 +105,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -296,7 +296,7 @@ void ScreenBlend_Update(u8 *o) {
 void Tint_Update(u8 *o) {
 }
 
-extern void *D_0046EB60[], *D_00469D00[];
+extern void *D_0046EB60[], *Helper469D00_vtable[];
 extern void FogDrawer_Queue(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b);
 
 /* +0x14 draw (the fog): a temporary drawer object paints its colours (+0x10, +0x14) over the
@@ -309,7 +309,7 @@ void Fog_Draw(u8 *o) {
     AT(drawer, 0x4, s32) = -1;
     FogDrawer_Queue(drawer, AT(o, 0x10, u32), AT(o, 0x14, u32), AT(o, 0x1C, s32) != 0 ? 9 : 0x21,
                   AT(o, 0x50, f32), AT(o, 0x54, f32));
-    AT(drawer, 0x0, void **) = D_00469D00;
+    AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
 /* destructor (vtable D_0046EB60) */
@@ -317,7 +317,7 @@ void Fog_Draw(u8 *o) {
 void *FogDrawer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EB60;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -337,11 +337,11 @@ void FogDrawer_Queue(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
     VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, layer, 0);
 }
 
-/* destructor (vtable D_0046EC60) */
+/* destructor (vtable DepthRange_vtable) */
 /* 0x002C64E0 */
 void *DepthRange_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046EC60;
+        AT(o, 0x0, void **) = DepthRange_vtable;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -350,7 +350,7 @@ void *DepthRange_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-extern void *D_0046D7A0[];
+extern void *Bloom_vtable[];
 
 /* +0x14 draw (a screen bloom): when its colour (+0x10) has alpha, a temporary bloom drawer
  * (Bloom_Start) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
@@ -358,12 +358,12 @@ extern void *D_0046D7A0[];
 void ScreenBlend_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
-    AT(drawer, 0x0, void **) = D_0046D7A0;
+    AT(drawer, 0x0, void **) = Bloom_vtable;
     AT(drawer, 0x4, s32) = -1;
     if (AT(o, 0x10, u32) & 0xFF000000) {
         Bloom_Start(drawer, AT(o, 0x10, u32), 0x28, AT(o, 0x14, s32) == 1 || AT(o, 0x14, s32) == 4);
     }
-    AT(drawer, 0x0, void **) = D_00469D00;
+    AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
 extern void *D_0046D790[];
@@ -383,7 +383,7 @@ void Tint_Draw(u8 *o) {
     if (AT(o, 0x14, u32) & 0xFF000000) {
         ColourDrawer_Queue(drawer, AT(o, 0x14, u32), 1, AT(o, 0x18, s32));
     }
-    AT(drawer, 0x0, void **) = D_00469D00;
+    AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
 /* destructor (vtable D_0046D790) */
@@ -391,7 +391,7 @@ void Tint_Draw(u8 *o) {
 void *TintDrawer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D790;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -409,12 +409,12 @@ void ColourDrawer_Queue(void *d, u32 rgba, s32 which, s32 arg) {
     VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, d, 0x20, 0);
 }
 
-/* destructor (vtable D_0046D7A0) */
+/* destructor (vtable Bloom_vtable) */
 /* 0x00269970 */
 void *Bloom_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046D7A0;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Bloom_vtable;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -589,10 +589,10 @@ s32 QuadDrawer_Start(u8 *d) {
     return (u8)GlSprites_Plain(d);
 }
 
-extern void *D_0046EC60[];      /* the effect 0x1C kind */
+extern void *DepthRange_vtable[];      /* the effect 0x1C kind */
 
 /* hold (`on`) or give back screen effect 0x1C (+0x69): held, its colour (+0x50..+0x5C) is
- * kept at +0x154 and the effect removed; given back, a new one (D_0046EC60, from the effects'
+ * kept at +0x154 and the effect removed; given back, a new one (DepthRange_vtable, from the effects'
  * heap +0x1400, at +0x14A8) is started with that colour */
 /* 0x002241C0 */
 void CamDirector_HoldEffect1C(u8 *o, s32 on) {
@@ -615,7 +615,7 @@ void CamDirector_HoldEffect1C(u8 *o, s32 on) {
         if (mem != NULL) {
             e = RoomEffects_new(0xA0, mem);
             if (e != NULL) {
-                AT(e, 0x0, void **) = D_0046EC60;
+                AT(e, 0x0, void **) = DepthRange_vtable;
             }
             AT(fx, 0x14A8, u8 *) = e;
             VCALL(AT(fx, 0x14A8, u8 *), 0xC, void (*)(u8 *))(AT(fx, 0x14A8, u8 *));
@@ -691,19 +691,19 @@ void ScreenFade_Step(u8 *f, s32 kind) {
 /* 0x002D6010 */
 u32 SceneGame_GetByte19034(u8 *p) { return p[0x19034]; }
 
-/* ---- room effect D_0046FF00 (event command 0x7F): a flickering animated sprite ----
+/* ---- room effect EvEffect7F_vtable (event command 0x7F): a flickering animated sprite ----
  * +0x10 its quad record { RGBA (4 x s32), position (+0x20), size +0x30 / +0x34, rotation +0x38,
  * frame +0x3C }, +0x40 the quad drawer's settings (texture, layer +0x58, frame strip +0x5C..,
  * frame count +0x6B), +0x70 frame timer, +0x74 rest before the next run, +0x78 slow (long
  * rests) */
 
-extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
+extern void *EvEffect7F_vtable[], *D_0046D730[], *QuadDrawer_vtable[];
 
 /* +0x8 destructor */
 /* 0x002E7BB0 */
 u8 *EvEffect7F_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x0, void **) = D_0046FF00;
+        AT(e, 0x0, void **) = EvEffect7F_vtable;
         AT(e, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
             RoomEffects_delete(e);
@@ -731,7 +731,7 @@ void EvEffect7F_SetParams(u8 *e, f32 *arg) {
     AT(e, 0x74, s32) = sprite_rest(e, gRandom);
 }
 
-/* hand a quad drawer (D_0046FC30) made from an effect's settings (+0x40..+0x6E) to the
+/* hand a quad drawer (QuadDrawer_vtable) made from an effect's settings (+0x40..+0x6E) to the
  * renderer */
 static void fx_quad_submit(u8 *e) {
     struct {
@@ -747,7 +747,7 @@ static void fx_quad_submit(u8 *e) {
     } q __attribute__((aligned(8)));
 
     q.a = -1;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.tex = AT(e, 0x40, u64);
     q.rec = AT(e, 0x48, u8 *);
     q.b = AT(e, 0x4C, s32);
@@ -767,7 +767,7 @@ static void fx_quad_submit(u8 *e) {
     q.k[3] = AT(e, 0x6D, s8);
     q.k[4] = AT(e, 0x6E, s8);
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* +0x14 draw, unless resting */
@@ -851,7 +851,7 @@ void EvEffect7F_Start(u8 *e) {
 
 #include "effectmgr.h"
 
-extern void *D_0046FF20[], *D_0046F580[];
+extern void *D_0046FF20[], *EffectBase_vtable[];
 
 #define BURST_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
 #define BURST_VEL(e, i) ((f32 *)((e) + 0x648) + (i) * 3)
@@ -863,9 +863,9 @@ u8 *SpriteBurst_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0046FF20;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -1186,21 +1186,21 @@ void SpriteBurst_Start(u8 *e) {
     AT(e, 0x646, s8) = -1;
 }
 
-/* ---- room effect D_0046FF40 (event command 0x86): a flame; kind (+0x78) 0 a candle (32
+/* ---- room effect EvEffect86_vtable (event command 0x86): a flame; kind (+0x78) 0 a candle (32
  * frames: a loop, then a flare / snuff played on command), others a 16-frame fire (kind 4 is
  * kind 1 drawn differently, kind 3 another blend) of which kind 1 throws a spark (D_00479320)
  * above it; commanded (+0x74 1 / 2) the fire throws two / four sparks and the candle plays its
  * second half (2: shrinking away) ----
- * the record and drawer settings as D_0046FF00's */
+ * the record and drawer settings as EvEffect7F_vtable's */
 
-extern void *D_0046FF40[], *D_00479320[];
+extern void *EvEffect86_vtable[], *D_00479320[];
 #include "effectmgr.h"
 
 /* +0x8 destructor */
 /* 0x002E90F0 */
 u8 *EvEffect86_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x0, void **) = D_0046FF40;
+        AT(e, 0x0, void **) = EvEffect86_vtable;
         AT(e, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
             RoomEffects_delete(e);
@@ -1212,9 +1212,9 @@ u8 *EvEffect86_dtor(u8 *e, s32 flags) {
 /* a spark: its quad drawer embedded at +0x190 */
 static void spark_init(void **obj) {
     obj[0] = D_00479320;
-    obj[0x190 / 4] = D_00469D00;
+    obj[0x190 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x194 / 4] = -1;
-    obj[0x190 / 4] = D_0046FC30;
+    obj[0x190 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x18 start (arg { position, +0x10 the command, +0x14 the kind }) */
@@ -1396,7 +1396,7 @@ void EvEffect86_Start(u8 *e) {
     AT(e, 0x7C, s32) = -1;
 }
 
-/* D_0046EC60 +0x10: nothing */
+/* DepthRange_vtable +0x10: nothing */
 /* 0x002C6620 */
 void DepthRange_Update(void) {
 }
@@ -1419,7 +1419,7 @@ void DepthBand_Queue(u8 *d, f32 a, f32 from, f32 to, f32 b) {
     VCALL(gRenderer, 0xC, void (*)(VObject *, u8 *, s32, s32))(gRenderer, d, 0x21, 0);
 }
 
-/* D_0046EC60 +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
+/* DepthRange_vtable +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
 /* 0x002C6570 */
 void DepthRange_Draw(u8 *e) {
     struct {
@@ -1431,15 +1431,15 @@ void DepthRange_Draw(u8 *e) {
     d.a = -1;
     d.vtbl = D_0046EC80;
     DepthBand_Queue((u8 *)&d, AT(e, 0x50, f32), AT(e, 0x54, f32), AT(e, 0x58, f32), AT(e, 0x5C, f32));
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 }
 
-/* D_00472F60 +0xC set up: nothing */
+/* Reflection_vtable +0xC set up: nothing */
 /* 0x00319B10 */
 void Reflection_Start(void) {
 }
 
-/* ---- room effect D_00472F60 (room 0x60's floor effect 0x1B): a reflecting floor quad
+/* ---- room effect Reflection_vtable (room 0x60's floor effect 0x1B): a reflecting floor quad
  * (corners +0x50..+0x8C) of strength +0x14 (0 off); +0x10 the reflection covers the screen
  * rather than the quad, +0x18 it mirrors top to bottom rather than left to right. Its draw
  * (+0x14, Reflection_Draw) renders the characters and creatures above it again from the
@@ -1787,14 +1787,14 @@ void Reflection_SetParams(u8 *e, u8 *arg) {
  * slowly up to 0x38 (2); 0xFF done (its +0xC / +0x10 / +0x18 in src/leaf/b7_00351D50.c). Its
  * draw (+0x14, FloorGlow_Draw) is the light's glow ---- */
 
-extern void *D_004795A0[], *D_0046F580[];
+extern void *D_004795A0[], *EffectBase_vtable[];
 
 /* +0x8 destructor */
 /* 0x00358210 */
 u8 *FloorGlow_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_004795A0;
-        AT(e, 0x0, void **) = D_0046F580;
+        AT(e, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(e);
         }
@@ -1938,9 +1938,9 @@ u8 *Wisps_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479320;
-    AT(o, 0x190, void **) = D_0046FC30;
-    AT(o, 0x190, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x190, void **) = QuadDrawer_vtable;
+    AT(o, 0x190, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2118,9 +2118,9 @@ u8 *RisingSmoke_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0046F5A0;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -2373,7 +2373,7 @@ s32 EffectBase_Query(void) {
  * that tumble, fall and bounce on its height until they settle; kind (+0xE38) 0 / 3 a gentle
  * spray, 2 / 3 bigger, slower turning pieces thrown higher, 4 thrown down ---- */
 
-extern void *D_0046FF60[], *D_0046F580[];
+extern void *D_0046FF60[], *EffectBase_vtable[];
 
 typedef struct Shard {
     /* 0x00 */ f32 corner[8][4];   /* a random box: the signs of x, y, z by corner */
@@ -2404,7 +2404,7 @@ u8 *Effect6FF60_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_0046FF60;
         if (e != NULL) {
-            AT(e, 0x0, void **) = D_0046F580;
+            AT(e, 0x0, void **) = EffectBase_vtable;
         }
         if ((s16)flags > 0) {
             EffectMgr_free(e);
@@ -3008,7 +3008,7 @@ s32 Effect79B00_Update(u8 *e) {
 }
 
 /* 0x003634F0 */
-Character *Kind39_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00479B20); }
+Character *Kind39_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind39_vtable); }
 
 /* 0x00363600 */
 void *Kind39_MotionFiles(void) {
@@ -3096,9 +3096,9 @@ void StrikeMark_SetParams(u8 *o, s32 *arg) {
 
 static inline void mark_smoke_init(void **obj) {
     obj[0] = D_00479800;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x10 update: 0 once done; after the wait the smoke from the model, and done */
@@ -3151,7 +3151,7 @@ void StrikeMark_Draw(u8 *o) {
     rec.h = 1.0f;
     rec.turn = 0.0f;
     rec.frame = 0;
-    d.vtbl = D_0046FC30;
+    d.vtbl = QuadDrawer_vtable;
     d.a = -1;
     d.tex = (u64)-1;
     d.rec = &rec;
@@ -3187,7 +3187,7 @@ void StrikeMark_Draw(u8 *o) {
         sceVu0ApplyMatrix(corner[k], (f32 (*)[4])(o + 0x10), kStreakX[k]);
     }
     Drawer_Submit((u8 *)&d);
-    d.vtbl = D_00469D00;
+    d.vtbl = Helper469D00_vtable;
 
     VCALL(gCamera, 0x48, void (*)(VObject *, f32 (*)[4]))(gCamera, clip);
     sceVu0ApplyMatrix(c, clip, (f32 *)(o + 0x50));
@@ -3235,9 +3235,9 @@ u8 *RisingMotes_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470A50;
-    AT(o, 0x3010, void **) = D_0046FC30;
-    AT(o, 0x3010, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x3010, void **) = QuadDrawer_vtable;
+    AT(o, 0x3010, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -3373,9 +3373,9 @@ u8 *OrangeSparks_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470A70;
-    AT(o, 0xC10, void **) = D_0046FC30;
-    AT(o, 0xC10, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0xC10, void **) = QuadDrawer_vtable;
+    AT(o, 0xC10, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -3562,9 +3562,9 @@ u8 *SinkingSprite_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470E00;
-    AT(o, 0x70, void **) = D_0046FC30;
-    AT(o, 0x70, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x70, void **) = QuadDrawer_vtable;
+    AT(o, 0x70, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -3835,9 +3835,9 @@ typedef struct {
 
 static inline void Mote_Init(void **obj) {
     obj[0] = D_0047A6D0;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 /* a mote started at the source */
@@ -4286,9 +4286,9 @@ u8 *SmokePuffs_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470E20;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -4437,9 +4437,9 @@ u8 *SpeckSwarm_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470E40;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -4625,9 +4625,9 @@ u8 *Splash_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470E60;
-    AT(o, 0x3D0, void **) = D_0046FC30;
-    AT(o, 0x3D0, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x3D0, void **) = QuadDrawer_vtable;
+    AT(o, 0x3D0, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -4804,9 +4804,9 @@ u8 *BloodSpray_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00470F30;
-    AT(o, 0xC10, void **) = D_0046FC30;
-    AT(o, 0xC10, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0xC10, void **) = QuadDrawer_vtable;
+    AT(o, 0xC10, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -4883,9 +4883,9 @@ void BloodSpray_Draw(u8 *e) {
 
 static void splat_init(void **obj) {
     obj[0] = D_00472BF0;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 /* +0x10 update (0 once all are gone): flip the buffers; each live drop carried over,
@@ -5003,7 +5003,7 @@ void *Effect71000_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00471000;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046F580;
+            AT(o, 0x0, void **) = EffectBase_vtable;
         }
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -5198,7 +5198,7 @@ void Effect71000_Draw(u8 *o) {
     q.tex = (u64)-1;
     q.cellX = 0x40;
     q.cellW = 0x40;
-    q.vtbl = D_0046FC30;
+    q.vtbl = QuadDrawer_vtable;
     q.cellH = 0x40;
     q.rec = &r;
     q.frames = 1;
@@ -5214,7 +5214,7 @@ void Effect71000_Draw(u8 *o) {
     q.texId = 0;
     q.texGroup = 0x10;
     Drawer_Submit((u8 *)&q);
-    q.vtbl = D_00469D00;
+    q.vtbl = Helper469D00_vtable;
 }
 
 /* ---- D_00479AE0 (0x40 bytes): a splash ring on water - a flat ring at +0x10 (16 sides, 0.2
@@ -5230,7 +5230,7 @@ void *SplashRing_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479AE0;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046F580;
+            AT(o, 0x0, void **) = EffectBase_vtable;
         }
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -5367,9 +5367,9 @@ u8 *DropletSpray_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479AA0;
-    AT(o, 0x610, void **) = D_0046FC30;
-    AT(o, 0x610, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x610, void **) = QuadDrawer_vtable;
+    AT(o, 0x610, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -5521,9 +5521,9 @@ static inline void ring_init(void **obj) {
 
 static inline void spray_init(void **obj) {
     obj[0] = D_00479AA0;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 #define DRIPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x2A0) + (i))
@@ -5766,17 +5766,17 @@ void OneDrip_Start(u8 *o) {
     OneDrip_Drop(o);
 }
 
-/* ---- D_00479560 (room effect 0x1A of room 0x32): the mirror fragment's reflection - the
+/* ---- MirrorFragment_vtable (room effect 0x1A of room 0x32): the mirror fragment's reflection - the
  * placed object +0x10 ("a_fragment0"), its kind +0x14 and alpha +0x18, size / drop / strength
  * +0x50.. ---- */
 
-extern void *D_00479560[];
+extern void *MirrorFragment_vtable[];
 
 /* +0x8 destructor */
 /* 0x003559D0 */
 void *MirrorFragment_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00479560;
+        AT(o, 0x0, void **) = MirrorFragment_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = D_0046D730;
         }
@@ -5834,7 +5834,7 @@ void *WallShadow_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479890;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046F580;
+            AT(o, 0x0, void **) = EffectBase_vtable;
         }
         if ((s16)flags > 0) {
             EffectMgr_free(o);
@@ -5921,9 +5921,9 @@ u8 *FloorSplat_dtor(u8 *e, s32 flags) {
         return e;
     }
     AT(e, 0x0, void **) = D_00472BF0;
-    AT(e, 0x70, void **) = D_0046FC30;
-    AT(e, 0x70, void **) = D_00469D00;
-    AT(e, 0x0, void **) = D_0046F580;
+    AT(e, 0x70, void **) = QuadDrawer_vtable;
+    AT(e, 0x70, void **) = Helper469D00_vtable;
+    AT(e, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(e);
     }
@@ -6114,7 +6114,7 @@ void FloorSplat_Start(u8 *self) {
     self[0x138] = 0;
 }
 
-/* ---- the marker effect D_00470F90 (Lorenzo's, room 0x66's): a flickering glow with sparks.
+/* ---- the marker effect Marker_vtable (Lorenzo's, room 0x66's): a flickering glow with sparks.
  *   +0x4 what it follows (a model)   +0x8 its size (1.5 and over: a fixed glow colour)
  *   +0xC a slot to look for room from   +0x10 its state (1 on, 2 ending, 3 ended, 4 resized)
  *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
@@ -6123,12 +6123,12 @@ extern void *D_00479E50[];
 
 static void marker_spark_init(void **obj) {
     obj[0] = D_00479E50;
-    obj[0xD0 / 4] = D_00469D00;
+    obj[0xD0 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xD4 / 4] = -1;
-    obj[0xD0 / 4] = D_0046FC30;
-    obj[0x108 / 4] = D_00469D00;
+    obj[0xD0 / 4] = QuadDrawer_vtable;
+    obj[0x108 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x10C / 4] = -1;
-    obj[0x108 / 4] = D_0046FC30;
+    obj[0x108 / 4] = QuadDrawer_vtable;
 }
 
 /* a spark (D_00479E50, 0x170 bytes) in the first free slot from `from` (-1: from 0); -1 if none */
@@ -6795,7 +6795,7 @@ s32 DriftingFlecks_Update(u8 *o) {
 }
 
 /* +0x14: each fleck a unit quad scaled by its size, turned along its drift, at its place in
- * the area, drawn by a quad drawer (D_0046FC30) */
+ * the area, drawn by a quad drawer (QuadDrawer_vtable) */
 /* 0x003063A0 */
 void DriftingFlecks_Draw(u8 *o) {
     s32 i;
@@ -6869,7 +6869,7 @@ void DriftingFlecks_Draw(u8 *o) {
         AT(q, 0x4, s32) = -1;
         AT(q, 0x8, s32) = -1;
         AT(q, 0xC, s32) = -1;
-        AT(q, 0x0, void **) = D_0046FC30;
+        AT(q, 0x0, void **) = QuadDrawer_vtable;
         AT(q, 0x10, void *) = &rec;
         AT(q, 0x14, void *) = c;
         AT(q, 0x20, s32) = 0x19;
@@ -6887,7 +6887,7 @@ void DriftingFlecks_Draw(u8 *o) {
         AT(q, 0x36, u8) = 2;
         AT(q, 0x34, u8) = 0;
         Drawer_Submit(q);
-        AT(q, 0x0, void **) = D_00469D00;
+        AT(q, 0x0, void **) = Helper469D00_vtable;
     }
 }
 
@@ -6909,9 +6909,9 @@ u8 *Room49Effect_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A390;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7067,9 +7067,9 @@ u8 *DustMote_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A6D0;
-    AT(o, 0x70, void **) = D_0046FC30;
-    AT(o, 0x70, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x70, void **) = QuadDrawer_vtable;
+    AT(o, 0x70, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7083,9 +7083,9 @@ u8 *DropletFlash_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A710;
-    AT(o, 0xC10, void **) = D_0046FC30;
-    AT(o, 0xC10, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0xC10, void **) = QuadDrawer_vtable;
+    AT(o, 0xC10, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7123,9 +7123,9 @@ u8 *AshFlakes_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_0047A730;
-    AT(o, 0x3010, void **) = D_0046FC30;
-    AT(o, 0x3010, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x3010, void **) = QuadDrawer_vtable;
+    AT(o, 0x3010, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7296,9 +7296,9 @@ u8 *SmokeTrail_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479F30;
-    AT(o, 0xC10, void **) = D_0046FC30;
-    AT(o, 0xC10, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0xC10, void **) = QuadDrawer_vtable;
+    AT(o, 0xC10, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7440,9 +7440,9 @@ u8 *WispColumn_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479F50;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7587,9 +7587,9 @@ u8 *SparkSpray_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479F70;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7768,9 +7768,9 @@ u8 *Fire_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00478B50;
-    AT(o, 0x1810, void **) = D_0046FC30;
-    AT(o, 0x1810, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x1810, void **) = QuadDrawer_vtable;
+    AT(o, 0x1810, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }
@@ -7975,9 +7975,9 @@ u8 *OneDrip_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = D_00479A80;
-    AT(o, 0x70, void **) = D_0046FC30;
-    AT(o, 0x70, void **) = D_00469D00;
-    AT(o, 0x0, void **) = D_0046F580;
+    AT(o, 0x70, void **) = QuadDrawer_vtable;
+    AT(o, 0x70, void **) = Helper469D00_vtable;
+    AT(o, 0x0, void **) = EffectBase_vtable;
     if ((s16)flags > 0) {
         EffectMgr_free(o);
     }

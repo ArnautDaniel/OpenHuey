@@ -834,15 +834,15 @@ void *Actor_new(void *a, void *b) {
     return b;
 }
 
-extern void *D_00469C20[];   /* Actor base vtable */
-extern void *D_00469C60[];   /* Actor vtable */
+extern void *Actor_vtable[];   /* Actor base vtable */
+extern void *Character_vtable[];   /* Actor vtable */
 
 /* vtable +0x8 (0x469C60): destructor. Actors live inside their scene, so "delete" does nothing. */
 /* 0x00124E60 */
 Actor *Character_dtor(Actor *a, s32 flags) {
     if (a != NULL) {
-        a->vtbl = D_00469C60;
-        a->vtbl = D_00469C20;
+        a->vtbl = Character_vtable;
+        a->vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(a);
         }
@@ -1201,16 +1201,16 @@ s32 Character_Held(Character *c) {
     return 0;
 }
 
-extern void *D_0046FC30[];
-extern void *D_00469D00[];
-extern void *D_0046F580[];
+extern void *QuadDrawer_vtable[];
+extern void *Helper469D00_vtable[];
+extern void *EffectBase_vtable[];
 
 /* Destructors of small helper objects (vtables 0x46FC30 -> 0x469D00, 0x469D00, 0x46F580). */
 /* 0x00126170 */
 void **Helper46FC30_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
-        *obj = D_0046FC30;
-        *obj = D_00469D00;
+        *obj = QuadDrawer_vtable;
+        *obj = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(obj);
         }
@@ -1221,7 +1221,7 @@ void **Helper46FC30_dtor(void **obj, s32 flags) {
 /* 0x001261D0 */
 void **Helper469D00_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
-        *obj = D_00469D00;
+        *obj = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(obj);
         }
@@ -1232,7 +1232,7 @@ void **Helper469D00_dtor(void **obj, s32 flags) {
 /* 0x00126220 */
 void **EffectBase_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
-        *obj = D_0046F580;
+        *obj = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(obj);
         }
@@ -1612,9 +1612,9 @@ static inline void Ripple_Init(void **obj) {
 
 static inline void Splash_Init(void **obj) {
     obj[0] = D_00479AA0;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 /* Footstep in water: if `pos` (reached from the character) is on a water triangle (flags

@@ -1,6 +1,6 @@
 /* The item synthesizer (the sub screen's modes 3 and 4, "SUBSCR\SYNSLOT"): a 0x15C-byte page
- * object at +0xA8C80 of the sub screen (subscreen.c sub_new_slots), base class D_00474020 with
- * the pot (mode 4, D_00474040) and the slot machine (mode 3, D_00474060). Fiona picks one of
+ * object at +0xA8C80 of the sub screen (subscreen.c sub_new_slots), base class SynthBase_vtable with
+ * the pot (mode 4, SynthPot_vtable) and the slot machine (mode 3, SlotMachine_vtable). Fiona picks one of
  * six materials, the machine rolls ten rows of symbols; matching pairs among 22 cells (or the
  * wild symbol 5) count up four kinds of symbol, which pick the item made.
  *
@@ -26,7 +26,7 @@
 #include "items.h"
 #include "synth.h"
 
-extern void *D_00474020[];
+extern void *SynthBase_vtable[];
 extern u8 D_0047B350;
 extern const char D_00460408[];                     /* the count's format */
 extern const char D_00460410[];                     /* "ITEM SYNTHESIZER(POT)" */
@@ -65,7 +65,7 @@ static inline u32 sy_alpha(f32 f, u32 add) {
 /* 0x003224F0 */
 void *SynthBase_Destroy(u8 *o) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00474020;
+        AT(o, 0x0, void **) = SynthBase_vtable;
         VCALL(o, 0x14, void (*)(u8 *))(o);
         if ((Task *)(o + 0x14) != NULL && SY_TASK(o)->child != NULL) {
             Task_dtor(SY_TASK(o)->child, 1);
@@ -101,7 +101,7 @@ static inline void *sy_dtor(u8 *o, void **vtbl, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = vtbl;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_00474020;
+            AT(o, 0x0, void **) = SynthBase_vtable;
             VCALL(o, 0x14, void (*)(u8 *))(o);
             Task_dtor(SY_TASK(o), -1);
         }
@@ -112,12 +112,12 @@ static inline void *sy_dtor(u8 *o, void **vtbl, s32 flags) {
     return o;
 }
 
-extern void *D_00474040[], *D_00474060[];
+extern void *SynthPot_vtable[], *SlotMachine_vtable[];
 
 /* the pot +0x8 */
 /* 0x00322AA0 */
 void *SynthPot_dtor(u8 *o, s32 flags) {
-    return sy_dtor(o, D_00474040, flags);
+    return sy_dtor(o, SynthPot_vtable, flags);
 }
 
 /* 0x00322B30 */
@@ -133,7 +133,7 @@ void func_00322B70(void) {
 /* the slot machine +0x8 */
 /* 0x00322C40 */
 void *SlotMachine_dtor(u8 *o, s32 flags) {
-    return sy_dtor(o, D_00474060, flags);
+    return sy_dtor(o, SlotMachine_vtable, flags);
 }
 
 /* the six materials' counts (items 0x70..0x75) into +0x118..; any at all */

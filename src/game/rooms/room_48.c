@@ -1,4 +1,4 @@
-/* Room 0x48: its event handler class (vtable D_00471EE0, see sRooms in event.c),
+/* Room 0x48: its event handler class (vtable Room48_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -11,8 +11,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_00471EE0[];
+extern void *RoomBase_vtable[];
+extern void *Room48_vtable[];
 extern void *D_00479890[];
 extern u8 D_004252D0[];
 extern u8 D_00425460[];
@@ -32,7 +32,7 @@ static void effect_79890_init(void **obj) {
 }
 
 /* 0x0030F070 */
-void *Room48_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471EE0, D_0046DB80); }
+void *Room48_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room48_vtable, RoomBase_vtable); }
 
 /* 0x0030F0D0 */
 void *Room48_EnterScript(void) {

@@ -1,4 +1,4 @@
-/* Room 0x23: its event handler class (vtable D_0046E340, see sRooms in event.c),
+/* Room 0x23: its event handler class (vtable Room23_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "progress.h"
 #include "stalker_progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E340[];
+extern void *RoomBase_vtable[];
+extern void *Room23_vtable[];
 
 extern u8 D_004010A0[];
 extern u8 D_004010E0[];
@@ -23,7 +23,7 @@ extern PTMF D_01990AD8[];
 extern PTMF D_01990AF0[];
 
 /* 0x002AF8E0 */
-void *Room23_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E340, D_0046DB80); }
+void *Room23_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room23_vtable, RoomBase_vtable); }
 
 /* 0x002AF940 */
 void *Room23_EnterScript(void) {

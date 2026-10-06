@@ -5,8 +5,8 @@
 #include "common.h"
 #include "stalker_models.h"
 
-extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046C160[],
-    *D_0046B0D0[], *D_0046B1C0[];
+extern void *Helper469D00_vtable[], *D_0046ADA0[], *ModelBase_vtable[], *Model_vtable[], *HumanModel_vtable[],
+    *IK2_vtable[], *D_0046B1C0[];
 
 typedef struct Progress Progress;
 
@@ -34,8 +34,8 @@ extern void *Costume3Model_ctor(u8 *m);
 extern void *Costume2Model_ctor(u8 *m);
 extern void *FionaModel_ctor(u8 *m);
 extern void CharLoad_DogModelB(Progress *p, u32 slot);
-extern void *EvEffect7F_Init(void *p);   /* a D_0046FF00 effect */
-extern void *EvEffect86_Init(void *p);   /* a D_0046FF40 effect */
+extern void *EvEffect7F_Init(void *p);   /* a EvEffect7F_vtable effect */
+extern void *EvEffect86_Init(void *p);   /* a EvEffect86_vtable effect */
 extern void CharLoad_FionaModel(Progress *p, u32 slot);
 extern void CharLoad_FionaClothes(Progress *p, u32 slot);
 extern void CharLoad_DogModelA(Progress *p, u32 slot);
@@ -118,15 +118,15 @@ extern f32 Vec_LineDistance(const f32 *a, const f32 *b, const f32 *c);   /* pt's
 /* the human model base's destruction: back down its vtables, then (flags > 0) delete */
 static inline void *HumanModel_Destroy(u8 *m, s32 flags) {
     if (m != NULL) {
-        AT(m, 0x0, void **) = D_0046C160;
-        AT(m, 0x988, void **) = D_0046B0D0;
-        AT(m, 0x928, void **) = D_0046B0D0;
-        AT(m, 0x0, void **) = D_0046F9E0;
-        AT(m, 0x0, void **) = D_0046B210;
+        AT(m, 0x0, void **) = HumanModel_vtable;
+        AT(m, 0x988, void **) = IK2_vtable;
+        AT(m, 0x928, void **) = IK2_vtable;
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
         AT(m, 0x1D0, void **) = D_0046B1C0;
-        AT(m, 0x1D0, void **) = D_00469D00;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
         AT(m, 0x10, void **) = D_0046ADA0;
-        AT(m, 0x10, void **) = D_00469D00;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
         }

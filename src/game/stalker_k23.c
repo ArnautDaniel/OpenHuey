@@ -1,4 +1,4 @@
-/* The pursuer kind 23 class (vtable D_004738A0): a stalker drawn with a screen tint that fades
+/* The pursuer kind 23 class (vtable TintStalker_vtable): a stalker drawn with a screen tint that fades
  * in while it is on screen (+0x17C4 delay, +0x17C8 shown, +0x17CC alpha, +0x17D0 fade state:
  * 1 in, 2 out, 3 hold). Its other methods are in src/leaf (b5_00315C50.c, small_hand.c,
  * tiny_gen.c, creature_gen.c). */

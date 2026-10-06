@@ -1099,18 +1099,18 @@ s32 NPC_FionaInReach(Pursuer *p) {
 
 /* ---- batch 5 ---- */
 
-extern void *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
 
 /* vtable +0x8: NPC destructor (-> Character) */
 /* 0x001710D0 */
 Pursuer *NPC_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046C220;
+        p->c.a.vtbl = NPC_vtable;
         VCALL(p, 0x10, void (*)(Pursuer *))(p);
         if (p != NULL) {
-            p->c.a.vtbl = D_00469C60;
+            p->c.a.vtbl = Character_vtable;
             if (p != NULL) {
-                p->c.a.vtbl = D_00469C20;
+                p->c.a.vtbl = Actor_vtable;
             }
         }
         if ((s16)flags > 0) {

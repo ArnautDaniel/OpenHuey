@@ -1,4 +1,4 @@
-/* Room 0x92: its event handler class (vtable D_004774C0, see sRooms in event.c),
+/* Room 0x92: its event handler class (vtable Room92_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -17,9 +17,9 @@
 #endif
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_004774C0[];
-extern void *D_0046EC60[];
+extern void *RoomBase_vtable[];
+extern void *Room92_vtable[];
+extern void *DepthRange_vtable[];
 extern void *D_00479F50[];
 extern const char *D_00437D48[];   /* room objects 10..15 */
 extern const char *D_00437D40[];   /* room objects 8, 9 */
@@ -36,15 +36,15 @@ extern u32 D_00437140[];
 extern u32 D_00437BF0[];
 extern u32 D_00437D20[];
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_01991820[];
 
 static void effect_1c60_init(void **obj) {
     obj[0] = D_00479F50;
-    obj[0x1810 / 4] = D_00469D00;
+    obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
+    obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_7A2F0_init(void **obj) {
@@ -53,33 +53,33 @@ static void effect_7A2F0_init(void **obj) {
 
 static void effect_7A310_init(void **obj) {
     obj[0] = D_0047A310;
-    obj[0xF10 / 4] = D_00469D00;
+    obj[0xF10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xF14 / 4] = -1;
-    obj[0xF10 / 4] = D_0046FC30;
-    obj[0xF48 / 4] = D_00469D00;
+    obj[0xF10 / 4] = QuadDrawer_vtable;
+    obj[0xF48 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xF4C / 4] = -1;
-    obj[0xF48 / 4] = D_0046FC30;
+    obj[0xF48 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_79F70_init(void **obj) {
     obj[0] = D_00479F70;
-    obj[0x1810 / 4] = D_00469D00;
+    obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
+    obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 static void effect_79F30_init(void **obj) {
     obj[0] = D_00479F30;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
 #ifdef HG_NATIVE
 #endif
 
 /* 0x00341B10 */
-void *Room92_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004774C0, D_0046DB80); }
+void *Room92_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room92_vtable, RoomBase_vtable); }
 
 /* 0x00341B70 */
 void *Room92_EnterScript(void) {
@@ -178,7 +178,7 @@ s32 Room92_Cmd11(void) {
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 825);
     f32 r[4] __attribute__((aligned(16)));
 
-    room_effect_slot_new(fx, 0x1C, D_0046EC60);
+    room_effect_slot_new(fx, 0x1C, DepthRange_vtable);
     r[0] = 1.0f;
     r[1] = 1.0f + kNear.f * t;
     if (!(r[1] <= 21.0f)) {
@@ -577,7 +577,7 @@ s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
 void *Room92Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A2F0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

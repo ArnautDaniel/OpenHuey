@@ -1,4 +1,4 @@
-/* Room 0xC5: its event handler class (vtable D_004786B0, see sRooms in event.c),
+/* Room 0xC5: its event handler class (vtable RoomC5_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "scene_game_members.h"
 #include "snd_place.h"
 
-extern void *D_0046DB80[];
-extern void *D_004786B0[];
+extern void *RoomBase_vtable[];
+extern void *RoomC5_vtable[];
 extern u8 D_0047AF20[], D_0047AF28[];
 extern void *D_00479870[];
 extern const char *D_00441140[];   /* room objects 0..9 */
@@ -20,7 +20,7 @@ extern u32 D_00440250[];
 extern u32 D_00440E00[];
 extern u32 D_00441110[];
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_019919F8[];
 
@@ -29,7 +29,7 @@ static void effect_79870_init(void **obj) {
 }
 
 /* 0x0034B0E0 */
-void *RoomC5_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004786B0, D_0046DB80); }
+void *RoomC5_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC5_vtable, RoomBase_vtable); }
 
 /* 0x0034B140 */
 void *RoomC5_EnterScript(void) {
@@ -52,7 +52,7 @@ void *RoomC5_Phase2Script(void) {
 }
 
 /* 0x0034B180 */
-void *RoomC5_Phase5Script(void *o) { return D_0047AF20; }   /* D_004786B0 +0x20 */
+void *RoomC5_Phase5Script(void *o) { return D_0047AF20; }   /* RoomC5_vtable +0x20 */
 
 /* 0x0034B190 */
 u32 RoomC5_ActionScript(void *self, s32 i) {
@@ -60,7 +60,7 @@ u32 RoomC5_ActionScript(void *self, s32 i) {
 }
 
 /* 0x0034B1B0 */
-void *RoomC5_Table38(void *o) { return D_0047AF28; }   /* D_004786B0 +0x38 */
+void *RoomC5_Table38(void *o) { return D_0047AF28; }   /* RoomC5_vtable +0x38 */
 
 /* 0x0034B1C0 */
 u32 RoomC5_ObjectName(void *self, s32 i) {
@@ -116,7 +116,7 @@ s32 RoomC5_Cmd00(void *self, void *a1, u8 *cmd) {
 void *ObjectGlow_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479870;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

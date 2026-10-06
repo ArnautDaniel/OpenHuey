@@ -1,4 +1,4 @@
-/* The path planner (SceneGame +0xF29740, gSceneGameF29740, vtable D_0046ABB0): A* over the
+/* The path planner (SceneGame +0xF29740, gSceneGameF29740, vtable PathPlan_vtable): A* over the
  * nav mesh's triangles for the characters (Hewie, the stalkers, the event characters).
  *
  * Four searches (+0x10, 0x10060 bytes each; +0x4 the mask of the ones in use, search 3 the one
@@ -27,7 +27,7 @@
 #include "memcard.h"
 #include "msl.h"
 
-extern void *D_0046ABB0[], *D_0046AC00[];
+extern void *PathPlan_vtable[], *D_0046AC00[];
 extern VObject *gSceneGameF29740;
 extern const u32 D_003B2EA8[];   /* the step functions (PTMFs, 16-byte aligned) by request kind 0..7; 8: at the goal */
 
@@ -68,7 +68,7 @@ static inline void tri_centre(NavMesh *nm, u32 t, f32 *out) {
 /* 0x001A4970 */
 void *PathPlan_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046ABB0;
+        AT(o, 0x0, void **) = PathPlan_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = D_0046AC00;
             if (o != NULL) {

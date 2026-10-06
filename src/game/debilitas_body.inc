@@ -13,14 +13,14 @@
  * first class's symbols; debilitas2.c renames them to its own before including this. Each class
  * sets DEBILITAS_GIVE_UP_HITS. */
 
-extern void *D_00469D10[];
+extern void *Debilitas_vtable[];
 void Debilitas_StateBlow(Pursuer *p);
 
 /* vtable +0x8: destructor */
 /* 0x001276F0 */
 Pursuer *Debilitas_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_00469D10;
+        p->c.a.vtbl = Debilitas_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }

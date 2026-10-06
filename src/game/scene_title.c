@@ -25,11 +25,11 @@
 
 extern void *Scene_vtable[];
 extern void *D_0046A040[];          /* SceneTitle */
-extern void *D_0046D7D0[];          /* the message object */
-extern void *D_0047A790[];          /* the title work */
-extern void *D_0046A110[];
-extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *D_004699C0[], *D_0046A068[];
-extern void *D_0046C790[];          /* a pool entry */
+extern void *Message_vtable[];          /* the message object */
+extern void *SubScreen_vtable[];          /* the title work */
+extern void *BgmCtl_vtable[];
+extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *BlockPool_vtable[], *D_0046A068[];
+extern void *PoolEntry_vtable[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
 
@@ -42,7 +42,7 @@ s32 SubScreen_TestBit(u8 *g, s32 n);
 
 /* a pool entry: constructor / destructor */
 void *PoolEntry_ctor(void *e) {
-    AT(e, 0x0, void **) = D_0046C790;
+    AT(e, 0x0, void **) = PoolEntry_vtable;
     AT(e, 0x4, s32) = -1;
     AT(e, 0x8, u8) = 0;
     AT(e, 0x10, s64) = 0;
@@ -51,7 +51,7 @@ void *PoolEntry_ctor(void *e) {
 
 void *PoolEntry_dtor(void *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x0, void **) = D_0046C790;
+        AT(e, 0x0, void **) = PoolEntry_vtable;
         if ((s16)flags > 0) {
             SubPool_delete(e);
         }
@@ -71,7 +71,7 @@ void *SubScreenBase_ctor(SubScreen *w) {
     AT(pool, 0x1208, void **) = D_004699E0;
     AT(pool, 0x120C, s32) = 0;
     AT(pool, 0x1210, s32) = 0;
-    AT(pool, 0x1208, void **) = D_004699C0;
+    AT(pool, 0x1208, void **) = BlockPool_vtable;
     AT(pool, 0x1214, s32) = 0;
     AT(pool, 0x1218, s32) = 0;
     AT(pool, 0x121C, s32) = 0;
@@ -98,17 +98,17 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     gSceneTitle = t;
     gBootMessage = (VObject *)t->msg;
     t->base.vtbl = D_0046A040;
-    AT(t->msg, 0, void **) = D_0046D7D0;
+    AT(t->msg, 0, void **) = Message_vtable;
     Task_Construct(&t->task);
     w = &t->sub;
     SubScreenBase_ctor(w);
-    w->vtbl = D_0047A790;
+    w->vtbl = SubScreen_vtable;
     Task_ctor(&w->ask);
     Task_ctor(&w->text);
     TextObj_ctor(w->textObj);
     BootCard_ctor(&w->card);
     gMusic = (VObject *)&t->bgm;
-    t->bgm.vtbl = D_0046A110;
+    t->bgm.vtbl = BgmCtl_vtable;
     t->unk11DA80 = 0;
     t->loaded = 0;
     t->returnTo = 0;
@@ -190,7 +190,7 @@ void SceneTitle_StateTitle(SceneTitle *t) {
     BgmCtl_Update(&t->bgm);
 }
 
-extern void *D_0046ECC0[];        /* SceneMovie */
+extern void *MovieScene_vtable[];        /* SceneMovie */
 extern const char D_0044E940[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
 void SceneTitle_StateAttract(SceneTitle *t);
 
@@ -212,7 +212,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
             Movie_ctor((Movie *)movie);
-            movie->vtbl = D_0046ECC0;
+            movie->vtbl = MovieScene_vtable;
         }
         SCENE_TABLE_SCENE(1) = movie;
         SCENE_TABLE_SCENE(1)->slot = 1;
@@ -979,7 +979,7 @@ void *TextObj_dtor(u8 *o, s32 flags) {
 static inline void Pool_Destroy(u8 *pool) {
     AT(pool, 0x0, void **) = D_0046A078;
     if (pool + 0x1208 != NULL) {
-        AT(pool, 0x1208, void **) = D_004699C0;
+        AT(pool, 0x1208, void **) = BlockPool_vtable;
         if (pool + 0x1208 != NULL) {
             AT(pool, 0x1208, void **) = D_004699E0;
         }
@@ -1031,7 +1031,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
         BgmCtl_StopNow(&t->bgm);
         Bgm_Release(gAdx);
         if (&t->bgm != NULL) {
-            t->bgm.vtbl = D_0046A110;
+            t->bgm.vtbl = BgmCtl_vtable;
             if (&t->bgm != NULL) {
                 t->bgm.vtbl = D_0046A100;
                 if (&t->bgm != NULL) {
@@ -1041,7 +1041,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
         }
         w = &t->sub;
         if (w != NULL) {
-            w->vtbl = D_0047A790;
+            w->vtbl = SubScreen_vtable;
             BootCard_dtor(&w->card, -1);
             TextObj_dtor(w->textObj, -1);
             Task_dtor(&w->text, -1);
@@ -1054,7 +1054,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
             task->child = NULL;
         }
         if (t->msg != NULL) {
-            AT(t->msg, 0, void **) = D_0046D7D0;
+            AT(t->msg, 0, void **) = Message_vtable;
             if (t->msg != NULL) {
                 AT(t->msg, 0, void **) = D_0046A0D0;
                 if (t->msg != NULL) {
@@ -1132,7 +1132,7 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
 
 /* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
 
-extern void *D_0047A330[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *D_004699C0[], *D_004699E0[];
+extern void *SceneEnding_vtable[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *BlockPool_vtable[], *D_004699E0[];
 
 static inline void task_end_child(Task *t) {
     if (t != NULL && t->child != NULL) {
@@ -1141,14 +1141,14 @@ static inline void task_end_child(Task *t) {
     }
 }
 
-/* the sub screen (D_0047A790): its load / save screens, text object and two text tasks, then
+/* the sub screen (SubScreen_vtable): its load / save screens, text object and two text tasks, then
  * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
 /* 0x002D0110 */
 void *SubScreen_dtor(SubScreen *w, s32 flags) {
     if (w != NULL) {
         u8 *o = (u8 *)w;
 
-        w->vtbl = D_0047A790;
+        w->vtbl = SubScreen_vtable;
         AT(o, 0xA8AC0, void **) = D_0046A058;
         Task_dtor((Task *)(o + 0xA8AD8), -1);
         AT(o, 0x97980, void **) = D_0046A068;
@@ -1158,7 +1158,7 @@ void *SubScreen_dtor(SubScreen *w, s32 flags) {
         task_end_child(&w->ask);
         w->vtbl = D_0046A090;
         AT(o, 0x8, void **) = D_0046A078;
-        AT(o, 0x1210, void **) = D_004699C0;
+        AT(o, 0x1210, void **) = BlockPool_vtable;
         AT(o, 0x1210, void **) = D_004699E0;
         func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
         gSubPool = NULL;
@@ -1170,7 +1170,7 @@ void *SubScreen_dtor(SubScreen *w, s32 flags) {
     return w;
 }
 
-/* scene mode 5, the ending (0x117540 bytes; vtable D_0047A330, scene_ending.c): the sub screen
+/* scene mode 5, the ending (0x117540 bytes; vtable SceneEnding_vtable, scene_ending.c): the sub screen
  * (+0x180) for the clear-data save, the message object (+0xA9180), the BGM (+0x1174E4) and a
  * task (+0x48) */
 void *Scene5_ctor(u8 *s) {
@@ -1178,18 +1178,18 @@ void *Scene5_ctor(u8 *s) {
 
     AT(s, 0x0, void **) = Scene_vtable;
     ptmf_set((PTMF *)(s + 0x4), &sSceneEntryState);
-    AT(s, 0x0, void **) = D_0047A330;
+    AT(s, 0x0, void **) = SceneEnding_vtable;
     Task_Construct((Task *)(s + 0x48));
     SubScreenBase_ctor(w);
-    w->vtbl = D_0047A790;
+    w->vtbl = SubScreen_vtable;
     Task_ctor(&w->ask);
     Task_ctor(&w->text);
     TextObj_ctor(w->textObj);
     BootCard_ctor(&w->card);
     gBootMessage = (VObject *)(s + 0xA9180);
-    AT(s, 0xA9180, void **) = D_0046D7D0;
+    AT(s, 0xA9180, void **) = Message_vtable;
     gMusic = (VObject *)(s + 0x1174E4);
-    AT(s, 0x1174E4, void **) = D_0046A110;
+    AT(s, 0x1174E4, void **) = BgmCtl_vtable;
     AT(s, 0x117500, PTMF) = sGameStateNull;
     Bgm_Init(gAdx, s + 0xF4300);
     BgmCtl_ctor(s + 0x1174E4);

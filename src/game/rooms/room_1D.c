@@ -1,4 +1,4 @@
-/* Room 0x1D: its event handler class (vtable D_0046E1C0, see sRooms in event.c),
+/* Room 0x1D: its event handler class (vtable Room1D_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E1C0[];
+extern void *RoomBase_vtable[];
+extern void *Room1D_vtable[];
 extern u8 D_0047AA80[];
 
 extern u8 D_003FD370[];
@@ -23,7 +23,7 @@ extern PTMF D_019909B0[];
 extern PTMF D_019909C8[];
 
 /* 0x002ADD10 */
-void *Room1D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E1C0, D_0046DB80); }
+void *Room1D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1D_vtable, RoomBase_vtable); }
 
 /* 0x002ADD70 */
 void *Room1D_EnterScript(void) {
@@ -56,7 +56,7 @@ void *Room1D_Phase3Script(void) {
 }
 
 /* 0x002ADDE0 */
-void *Room1D_Phase5Script(void *o) { return D_0047AA80; }   /* D_0046E1C0 +0x20 */
+void *Room1D_Phase5Script(void *o) { return D_0047AA80; }   /* Room1D_vtable +0x20 */
 
 /* 0x002ADDF0 */
 void *Room1D_Table38(void) {

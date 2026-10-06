@@ -17,10 +17,10 @@
 #include <stdlib.h>
 #endif
 
-extern void *D_00469D00[];
+extern void *Helper469D00_vtable[];
 #include "task.h"
 
-extern void *D_0046D7A0[];
+extern void *Bloom_vtable[];
 
 /* the loading screen, frame `frame`: the camera at a fixed spot, the emblem (`o`, a model object)
  * turning (its rotation from the frame count) drawn in layers 1 and 0x26, the screen dimmed, and
@@ -71,7 +71,7 @@ void Loading_DrawFrame(u8 *o, s32 frame) {
     AT(o, 0x70, s32) = 1;
     VCALL(r, 0xC, void (*)(VObject *, void *, s32, s32))(r, o, 0x26, 0);
 
-    AT(dim, 0x0, void **) = D_0046D7A0;
+    AT(dim, 0x0, void **) = Bloom_vtable;
     AT(dim, 0x4, s32) = -1;
     Bloom_Start(dim, 0x5A623C32, 0x28, 0);
     VCALL(tc, 0x18, void (*)(VObject *))(tc);
@@ -101,7 +101,7 @@ void Loading_DrawFrame(u8 *o, s32 frame) {
         Task_dtor(t.child, 1);
         t.child = NULL;
     }
-    AT(dim, 0x0, void **) = D_00469D00;
+    AT(dim, 0x0, void **) = Helper469D00_vtable;
 }
 
 extern u8 D_003AC3F0[];       /* DMA chain: the static model microprogram (MPG) */

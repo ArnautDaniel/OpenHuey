@@ -1,4 +1,4 @@
-/* Room 0xD5: its event handler class (vtable D_0047A1B0, see sRooms in event.c),
+/* Room 0xD5: its event handler class (vtable RoomD5_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0047A1B0[];
+extern void *RoomBase_vtable[];
+extern void *RoomD5_vtable[];
 extern s32 Kind26_MoveDone(Character *c);
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern s32 D_0047B2C0;
@@ -26,7 +26,7 @@ extern PTMF D_01991B90[];
 extern PTMF D_01991BB8[];
 
 /* 0x0036EA80 */
-void *RoomD5_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A1B0, D_0046DB80); }
+void *RoomD5_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomD5_vtable, RoomBase_vtable); }
 
 /* 0x0036EAE0 */
 void *RoomD5_EnterScript(void) {

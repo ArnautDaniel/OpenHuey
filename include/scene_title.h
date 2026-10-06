@@ -27,7 +27,7 @@ typedef struct SceneTitle {
     /* 0x000021 */ s8 cursor;           /* the main menu's entry */
     /* 0x000022 */ u8 movieSkipped;
     /* 0x000023 */ u8 pad23;
-    /* 0x000024 */ u8 msg[0x11C];       /* the message object (vtable D_0046D7D0, gBootMessage) */
+    /* 0x000024 */ u8 msg[0x11C];       /* the message object (vtable Message_vtable, gBootMessage) */
     /* 0x000140 */ u8 titleTex[0x51000];    /* SYSTEM\TITLE.TEX */
     /* 0x051140 */ u8 backImage[0x23800];   /* SYSTEM\TITLE_BACK.BIN, the background picture */
     /* 0x074940 */ u8 loaded;           /* the title's files are loaded */

@@ -1,4 +1,4 @@
-/* Room 0x04: its event handler class (vtable D_0046DC80, see sRooms in event.c),
+/* Room 0x04: its event handler class (vtable Room04_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,10 +7,10 @@
 #include "ptmf.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DC80[];
+extern void *RoomBase_vtable[];
+extern void *Room04_vtable[];
 extern const char *D_003F17B8, *D_003F17C8;
-extern void *D_00479560[];
+extern void *MirrorFragment_vtable[];
 
 extern u8 D_003F0DF0[];
 extern u8 D_003F0E80[];
@@ -22,7 +22,7 @@ extern u8 D_003F17F0[];
 extern PTMF D_019907A0[];
 
 /* 0x002A9A50 */
-void *Room04_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC80, D_0046DB80); }
+void *Room04_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room04_vtable, RoomBase_vtable); }
 
 /* 0x002A9AB0 */
 void *Room04_EnterScript(void) {
@@ -82,7 +82,7 @@ s32 Room04_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x04 (D_003F1790): byte 3 0: room effect 0x1B (D_00479560) on its object, a box (640,
+/* room 0x04 (D_003F1790): byte 3 0: room effect 0x1B (MirrorFragment_vtable) on its object, a box (640,
  * -560, 1000, 0, 0x60); else the effect gone */
 /* 0x002A9CE0 */
 s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -102,7 +102,7 @@ s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
             prm.z = 1000.0f;
             prm.b = 0x60;
             prm.o = o;
-            room_effect_slot_new(gRoomEffects, 0x1B, D_00479560);
+            room_effect_slot_new(gRoomEffects, 0x1B, MirrorFragment_vtable);
             RoomEffects_Send(gRoomEffects, 0x1B, &prm);
         }
     } else {

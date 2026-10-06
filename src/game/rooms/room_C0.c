@@ -1,4 +1,4 @@
-/* Room 0xC0: its event handler class (vtable D_00474F40, see sRooms in event.c),
+/* Room 0xC0: its event handler class (vtable RoomC0_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -11,8 +11,8 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_00474F40[];
+extern void *RoomBase_vtable[];
+extern void *RoomC0_vtable[];
 extern void *D_00479A60[];
 extern const char *D_0042E408;
 extern PTMF D_01991610[];
@@ -20,9 +20,9 @@ extern PTMF D_01991650[];
 
 static void effect_479a60_init(void **obj) {
     obj[0] = D_00479A60;
-    obj[0x550 / 4] = D_00469D00;
+    obj[0x550 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x554 / 4] = -1;
-    obj[0x550 / 4] = D_0046FC30;
+    obj[0x550 / 4] = QuadDrawer_vtable;
 }
 
 /* the EE's float to int: past the top it holds at 0x7FFFFFFF */
@@ -31,7 +31,7 @@ static inline s32 ee_ftoi(f32 v) {
 }
 
 /* 0x0032DBF0 */
-void *RoomC0_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00474F40, D_0046DB80); }
+void *RoomC0_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC0_vtable, RoomBase_vtable); }
 
 /* (self->*D_01991650[i])(a, b) */
 /* 0x0032DCE0 */

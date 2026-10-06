@@ -9,8 +9,8 @@
 #include "items.h"
 #include "subscreen.h"
 
-extern void *D_0046C790[], *D_0046F430[];
-extern void *D_0046D5F0[];
+extern void *PoolEntry_vtable[], *ItemClassF430_vtable[];
+extern void *ItemAC_vtable[];
 
 ItemObj *ItemAC_ctor(ItemObj *self);
 ItemObj *Item3F_ctor(ItemObj *self, s32 id);
@@ -270,11 +270,11 @@ void *Items_Give(u8 *items, u32 id, s32 n) {
 
 /* 0x00263220 */
 ItemObj *ItemAC_ctor(ItemObj *self) {
-    self->vtbl = D_0046C790;
+    self->vtbl = PoolEntry_vtable;
     self->id = 0xAC;
     self->flag = 0;
     self->data = 0;
-    self->vtbl = D_0046D5F0;
+    self->vtbl = ItemAC_vtable;
     return self;
 }
 
@@ -282,11 +282,11 @@ ItemObj *ItemAC_ctor(ItemObj *self) {
  * is whatever a1 held: the object's own address (see there) */
 /* 0x00264060 */
 ItemObj *Item3F_ctor(ItemObj *self, s32 id) {
-    self->vtbl = D_0046C790;
+    self->vtbl = PoolEntry_vtable;
     self->id = id;
     self->flag = 0;
     self->data = 0;
-    self->vtbl = D_0046F430;
+    self->vtbl = ItemClassF430_vtable;
     return self;
 }
 
@@ -395,7 +395,7 @@ s32 Items_EquipState(u8 *items, u8 l, u8 i) {
     return eq == *e ? 1 : 2;
 }
 
-extern void *D_0046C790[];   /* a pool entry */
+extern void *PoolEntry_vtable[];   /* a pool entry */
 
 /* item `it` taken out: off any equipment slot, out of its list (the rest moved up), destroyed
  * back to a bare pool entry and returned to the pool (+0x1208 vtable +0x14) */
@@ -442,7 +442,7 @@ void Items_Remove(u8 *items, VObject *it) {
         u8 *b = SubPool_new(0x18, it);
 
         if (b != NULL) {
-            AT(b, 0x0, void **) = D_0046C790;
+            AT(b, 0x0, void **) = PoolEntry_vtable;
             AT(b, 0x4, s32) = -1;
             AT(b, 0x8, u8) = 0;
             AT(b, 0x10, u64) = 0;

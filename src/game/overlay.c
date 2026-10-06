@@ -1,5 +1,5 @@
 /* Overlay: a full-screen colour rectangle drawn in a renderer layer (the boot scene dims the
- * screen behind its dialogs with one). vtable D_0046F350: +0x8 dtor, +0xC draw.
+ * screen behind its dialogs with one). vtable Overlay_vtable: +0x8 dtor, +0xC draw.
  *
  *   +0x08 u64  stamp (TexCache_Tex0, refreshed when +0x24 changes)
  *   +0x10 s32  +0x24 when the stamp was taken
@@ -82,7 +82,7 @@ s32 Overlay_Draw(void *ov) {
     return 1;
 }
 
-/* the screen bloom (vtable D_0046D7A0; its draw Bloom_Draw): colour `rgba`, subtracted when
+/* the screen bloom (vtable Bloom_vtable; its draw Bloom_Draw): colour `rgba`, subtracted when
  * `sub`, drawn in renderer layer `layer`; the renderer's glow pass (+0x58) runs this frame too */
 /* 0x0026B180 */
 void Bloom_Start(u8 *o, u32 rgba, s32 layer, s32 sub) {

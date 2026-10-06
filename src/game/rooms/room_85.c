@@ -1,12 +1,12 @@
-/* Room 0x85: its event handler class (vtable D_00477280, see sRooms in event.c),
+/* Room 0x85: its event handler class (vtable Room85_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477280[];
+extern void *RoomBase_vtable[];
+extern void *Room85_vtable[];
 extern u8 D_0047AE30[];
 
 extern u32 D_00432700[];
@@ -19,7 +19,7 @@ extern u32 D_0047AE28[];
 extern PTMF D_019916E8[];
 
 /* 0x0033F340 */
-void *Room85_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477280, D_0046DB80); }
+void *Room85_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room85_vtable, RoomBase_vtable); }
 
 /* 0x0033F3A0 */
 void *Room85_EnterScript(void) {
@@ -47,7 +47,7 @@ u32 Room85_ActionScript(void *self, s32 i) {
 }
 
 /* 0x0033F400 */
-void *Room85_Table38(void *o) { return D_0047AE30; }   /* D_00477280 +0x38 */
+void *Room85_Table38(void *o) { return D_0047AE30; }   /* Room85_vtable +0x38 */
 
 /* 0x0033F410 */
 u32 Room85_ObjectName(void *self, s32 i) {

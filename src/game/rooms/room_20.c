@@ -1,4 +1,4 @@
-/* Room 0x20: its event handler class (vtable D_0046E280, see sRooms in event.c),
+/* Room 0x20: its event handler class (vtable Room20_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -12,10 +12,10 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E280[];
+extern void *RoomBase_vtable[];
+extern void *Room20_vtable[];
 extern const char *D_003FF110[];
-extern void *D_00469C20[];   /* Actor base vtable */
+extern void *Actor_vtable[];   /* Actor base vtable */
 extern u8 D_003FE460[];
 extern u8 D_003FE540[];
 extern u8 D_003FE680[];
@@ -37,7 +37,7 @@ static inline u8 *nav_tri(u32 i) {
 }
 
 /* 0x002AE390 */
-void *Room20_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E280, D_0046DB80); }
+void *Room20_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room20_vtable, RoomBase_vtable); }
 
 /* 0x002AE3F0 */
 void *Room20_EnterScript(void) {
@@ -232,7 +232,7 @@ s32 Room20_Cmd03(void *self) {
     g[2] = 0.0f;
     sceVu0AddVector((f32 *)(o + 0x30), g, (f32 *)(o + 0x30));
     VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
-    a.vtbl = D_00469C20;
+    a.vtbl = Actor_vtable;
     a.slot = 0x0FFFFFFF;
     a.flags24 = 0x1000000;
     y = AT(o, 0x24, f32);
@@ -246,7 +246,7 @@ s32 Room20_Cmd03(void *self) {
     sceVu0CopyVector((f32 *)(o + 0x20), a.pos);
     AT(o, 0x3C, u32) = a.navTri;
     if (a.navTri == (u32)-1) {
-        a.vtbl = D_00469C20;
+        a.vtbl = Actor_vtable;
         return 1;
     }
     if (!(y <= a.pos[1])) {
@@ -273,7 +273,7 @@ s32 Room20_Cmd03(void *self) {
         AT(o, 0x3C, u32) |= 0x80000000;
         VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 1);
     }
-    a.vtbl = D_00469C20;
+    a.vtbl = Actor_vtable;
     return 1;
 }
 

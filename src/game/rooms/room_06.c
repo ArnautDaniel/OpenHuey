@@ -1,4 +1,4 @@
-/* Room 0x06: its event handler class (vtable D_0046DCC0, see sRooms in event.c),
+/* Room 0x06: its event handler class (vtable Room06_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DCC0[];
+extern void *RoomBase_vtable[];
+extern void *Room06_vtable[];
 extern const f32 D_003F2180[4][4];   /* room 0x06: where its four objects go */
 extern const char D_0047A9A0[7];     /* room 0x06: the first object's name (its 6th letter counts on) */
 
@@ -23,7 +23,7 @@ extern void *D_003F21D0[];
 extern PTMF D_019907D0[];
 
 /* 0x002AA250 */
-void *Room06_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DCC0, D_0046DB80); }
+void *Room06_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room06_vtable, RoomBase_vtable); }
 
 /* 0x002AA2B0 */
 void *Room06_EnterScript(void) {

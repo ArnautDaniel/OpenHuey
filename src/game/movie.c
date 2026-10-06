@@ -1,5 +1,5 @@
 /* Movies (CRI Sofdec .SFD): the player library wrapper (ADX sound system +0x7C44, global
- * gMovieLib, vtable D_0046C740) and the movie scene. The mwPly* calls are CRI's library
+ * gMovieLib, vtable MovieLib_vtable) and the movie scene. The mwPly* calls are CRI's library
  * (native/platform/sofdec.c on PC). */
 #include "common.h"
 #include "ptmf.h"
@@ -33,7 +33,7 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 
 #define CPRM(lib, off, type) (*(type *)((lib)->create + (off) - 0x28))
 
-extern void *D_0046C740[];
+extern void *MovieLib_vtable[];
 extern void *D_0046AED0[];
 
 void *MovieLibBase_dtor(u8 *o, s32 flags);
@@ -120,7 +120,7 @@ void *MovieLibBase_dtor(u8 *o, s32 flags) {
 /* 0x0020E740 */
 MovieLib *MovieLib_dtor(MovieLib *lib, s32 flags) {
     if (lib != NULL) {
-        lib->vtbl = D_0046C740;
+        lib->vtbl = MovieLib_vtable;
         if (lib != NULL) {
             lib->vtbl = D_0046AED0;
             lib->unk4 = 0;
@@ -399,8 +399,8 @@ _Static_assert(__builtin_offsetof(Movie, name) == 0xA8, "Movie.name");
 _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 
 extern void *Scene_vtable[];
-extern void *D_0046EA60[];       /* Movie */
-extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
+extern void *Movie_vtable[];       /* Movie */
+extern void *MovieScene_vtable[];       /* SceneMovie (the boot logo) */
 extern u8 *D_0045D1F0;
 
 void Movie_Finish(Movie *m);
@@ -435,11 +435,11 @@ static inline s32 movie_level(Movie *m) {
     return db;
 }
 
-/* ---- D_0046EA40 (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
+/* ---- TvScreenA_vtable (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
  * a quad on the screen's corners textured with the movie's current frame (func_0021E410) while
  * +0x10 (set by +0x18); its +0xC is TvScreenA_Start ---- */
 
-extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
+extern void *TvScreenA_vtable[], *D_0046D730[], *QuadDrawer_vtable[], *Helper469D00_vtable[];
 
 /* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
@@ -464,7 +464,7 @@ u64 func_0021E410(u8 *mv, s32 page);
 /* 0x002B60D0 */
 void *TvScreenA_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046EA40;
+        AT(o, 0x0, void **) = TvScreenA_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = D_0046D730;
         }
@@ -526,7 +526,7 @@ static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1,
         c[10] = z0;
         r.pos[3] = 1.0f;
         r.w = 1.0f;
-        q.vtbl = D_0046FC30;
+        q.vtbl = QuadDrawer_vtable;
         r.h = 1.0f;
         q.rec = &r;
         c[3] = 0x3F800000;
@@ -563,7 +563,7 @@ static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1,
         q.texId = 0;
         q.texGroup = 0;
         Drawer_Submit((u8 *)&q);
-        q.vtbl = D_00469D00;
+        q.vtbl = Helper469D00_vtable;
     }
     *D_0045D1F0 = 1;
 }
@@ -574,15 +574,15 @@ void TvScreenA_Draw(u8 *o) {
     tv_draw(o, 0xC0274A23, 0xBDF93DD9, 0x408C872B, 0x400401A3, 0x40B93A93, 0x40F0D014);
 }
 
-/* ---- D_0046F5F0: another TV (as D_0046EA40; its +0xC TvScreenB_Start, +0x18 TvScreenB_SetParams) ---- */
+/* ---- TvScreenB_vtable: another TV (as TvScreenA_vtable; its +0xC TvScreenB_Start, +0x18 TvScreenB_SetParams) ---- */
 
-extern void *D_0046F5F0[];
+extern void *TvScreenB_vtable[];
 
 /* +0x8 destructor */
 /* 0x002D76B0 */
 void *TvScreenB_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046F5F0;
+        AT(o, 0x0, void **) = TvScreenB_vtable;
         if (o != NULL) {
             AT(o, 0x0, void **) = D_0046D730;
         }
@@ -910,7 +910,7 @@ void Movie_Entry(Movie *m) {
 /* 0x002B6FC0 */
 Movie *Movie_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
-        m->base.vtbl = D_0046EA60;
+        m->base.vtbl = Movie_vtable;
         if (!m->keepRenderer) {
             AT(VCALL(gRenderer, 0x2C, u8 *(*)(VObject *))(gRenderer), 0x1C, u8) = 0;
         }
@@ -947,7 +947,7 @@ Movie *Movie_ctor(Movie *m) {
     m->base.vtbl = Scene_vtable;
     Movie_SetState(m, &sMovieEntry);
     gMovie = m;
-    m->base.vtbl = D_0046EA60;
+    m->base.vtbl = Movie_vtable;
     m->work = NULL;
     m->ply = NULL;
     m->name[0] = 0;
@@ -973,7 +973,7 @@ Movie *Movie_ctor(Movie *m) {
 /* 0x002C8C10 */
 Movie *MovieScene_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
-        m->base.vtbl = D_0046ECC0;
+        m->base.vtbl = MovieScene_vtable;
         Movie_dtor(m, 0);
         if ((s16)flags > 0) {
             SceneHeap_delete(m);
@@ -1002,17 +1002,17 @@ void MovieScene_Entry(Movie *m) {
     Movie_SetStateFn(m, Movie_StateStart);
 }
 
-/* ---- movie class 0 (D_00470E80): a movie shown on something in the game - decoded at 256 x
+/* ---- movie class 0 (MovieOwnBuf_vtable): a movie shown on something in the game - decoded at 256 x
  * 224 into two frames in progress memory (+0xCA6C0, 0x38000 each), drawn by the game itself ---- */
 
-extern void *D_00470E80[];
+extern void *MovieOwnBuf_vtable[];
 extern const PTMF D_0041CA80;   /* Movie_StateStart */
 
 /* +0x8 (the frames aren't its own) */
 /* 0x002FEC50 */
 Movie *MovieOwnBuf_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
-        m->base.vtbl = D_00470E80;
+        m->base.vtbl = MovieOwnBuf_vtable;
         m->frames = NULL;
         Movie_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -1069,7 +1069,7 @@ void MovieOwnBuf_Entry(Movie *m) {
  * whoever shows the movie (the game over screen, GameOver_DrawMovieFrame): w, h, the frames, the frame
  * written next, plain - and returns `loop`. ---- */
 
-extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
+extern void *MovieBlended_vtable[], *MovieOpaque_vtable[], *MovieHalf_vtable[], *MovieCopied_vtable[], *MovieAdded_vtable[], *MovieSmall_vtable[];
 extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* Movie_StateStart */
 #ifdef HG_NATIVE
 #define MOVIE_UNCACHED(p) ((void *)(p))
@@ -1171,12 +1171,12 @@ static inline void texcache_done(void) {
     }
 }
 
-/* ---- class 1 (D_0046EAB0): 256 x 224, over the screen by its alpha ---- */
+/* ---- class 1 (MovieBlended_vtable): 256 x 224, over the screen by its alpha ---- */
 
 /* +0x8 */
 /* 0x002BA1B0 */
 Movie *MovieBlended_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_0046EAB0);
+    return movie_dtor(m, flags, MovieBlended_vtable);
 }
 
 /* +0x10 */
@@ -1207,13 +1207,13 @@ void MovieBlended_Draw(Movie *m) {
 }
 #endif
 
-/* ---- class 2 (D_0046EAE0): 512 x 224 frames; put over the screen, opaque, only while
+/* ---- class 2 (MovieOpaque_vtable): 512 x 224 frames; put over the screen, opaque, only while
  * progress flag 0x29 ---- */
 
 /* +0x8 */
 /* 0x002BA670 */
 Movie *MovieOpaque_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_0046EAE0);
+    return movie_dtor(m, flags, MovieOpaque_vtable);
 }
 
 /* +0x10 */
@@ -1247,13 +1247,13 @@ void MovieOpaque_Draw(Movie *m) {
 }
 #endif
 
-/* ---- class 3 (D_0046EB10): 256 x 448 decoded, half of it shown (layer 3), over the screen
+/* ---- class 3 (MovieHalf_vtable): 256 x 448 decoded, half of it shown (layer 3), over the screen
  * by its alpha (layer 4) ---- */
 
 /* +0x8 */
 /* 0x002BAB50 */
 Movie *MovieHalf_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_0046EB10);
+    return movie_dtor(m, flags, MovieHalf_vtable);
 }
 
 /* +0x10 */
@@ -1278,12 +1278,12 @@ void MovieHalf_Draw(Movie *m) {
 }
 #endif
 
-/* ---- class 4 (D_0046EC30): 256 x 224, plain (layer 6) ---- */
+/* ---- class 4 (MovieCopied_vtable): 256 x 224, plain (layer 6) ---- */
 
 /* +0x8 */
 /* 0x002C61E0 */
 Movie *MovieCopied_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_0046EC30);
+    return movie_dtor(m, flags, MovieCopied_vtable);
 }
 
 /* +0x10 */
@@ -1312,12 +1312,12 @@ void MovieCopied_Draw(Movie *m) {
     texcache_done();
 }
 
-/* ---- class 5 (D_0046EC90): as class 4 but over the screen with ALPHA 0x2A ---- */
+/* ---- class 5 (MovieAdded_vtable): as class 4 but over the screen with ALPHA 0x2A ---- */
 
 /* +0x8 */
 /* 0x002C87C0 */
 Movie *MovieAdded_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_0046EC90);
+    return movie_dtor(m, flags, MovieAdded_vtable);
 }
 
 /* +0x10 */
@@ -1344,13 +1344,13 @@ void MovieAdded_Draw(Movie *m) {
 }
 #endif
 
-/* ---- class 6 (D_00474F80): a 256 x 64 strip at screen (128, 176) .. (512, 272) (layers 0x2D /
+/* ---- class 6 (MovieSmall_vtable): a 256 x 64 strip at screen (128, 176) .. (512, 272) (layers 0x2D /
  * 0x2E) ---- */
 
 /* +0x8 */
 /* 0x0032E430 */
 Movie *MovieSmall_dtor(Movie *m, s32 flags) {
-    return movie_dtor(m, flags, D_00474F80);
+    return movie_dtor(m, flags, MovieSmall_vtable);
 }
 
 /* +0x10 */

@@ -1,4 +1,4 @@
-/* Room 0x2B: its event handler class (vtable D_0046E500, see sRooms in event.c),
+/* Room 0x2B: its event handler class (vtable Room2B_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E500[];
+extern void *RoomBase_vtable[];
+extern void *Room2B_vtable[];
 extern s32 Kind26_MoveDoneB(Character *c);
 
 extern u8 D_00405640[];
@@ -27,7 +27,7 @@ void Kind26_MoveToB(u8 *self, s32 a, f32 x, f32 y);
 extern PTMF D_01990C00[];
 
 /* 0x002B1600 */
-void *Room2B_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E500, D_0046DB80); }
+void *Room2B_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2B_vtable, RoomBase_vtable); }
 
 /* 0x002B1660 */
 void *Room2B_EnterScript(void) {

@@ -1,4 +1,4 @@
-/* Room 0x19: its event handler class (vtable D_0046E0C0, see sRooms in event.c),
+/* Room 0x19: its event handler class (vtable Room19_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "actor.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E0C0[];
+extern void *RoomBase_vtable[];
+extern void *Room19_vtable[];
 
 extern u8 D_003FB3B0[];
 extern u8 D_003FB420[];
@@ -22,7 +22,7 @@ extern u8 D_003FC040[];
 extern PTMF D_01990950[];
 
 /* 0x002AD1C0 */
-void *Room19_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E0C0, D_0046DB80); }
+void *Room19_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room19_vtable, RoomBase_vtable); }
 
 /* 0x002AD220 */
 void *Room19_EnterScript(void) {

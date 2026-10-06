@@ -1,4 +1,4 @@
-/* Room 0x02: its event handler class (vtable D_0046DC00, see sRooms in event.c),
+/* Room 0x02: its event handler class (vtable Room02_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "scene_game_members.h"
 #include "msl.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046DC00[];
+extern void *RoomBase_vtable[];
+extern void *Room02_vtable[];
 extern const char *D_003F0404;
 extern void *D_00470A70[];
 extern u8 D_003EEDF0[];
@@ -28,13 +28,13 @@ extern PTMF D_01990760[];
 
 static void effect_70A70_init(void **obj) {
     obj[0] = D_00470A70;
-    obj[0xC10 / 4] = D_00469D00;
+    obj[0xC10 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0xC14 / 4] = -1;
-    obj[0xC10 / 4] = D_0046FC30;
+    obj[0xC10 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002A8E00 */
-void *Room02_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC00, D_0046DB80); }
+void *Room02_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room02_vtable, RoomBase_vtable); }
 
 /* 0x002A8E60 */
 void *Room02_EnterScript(void) {

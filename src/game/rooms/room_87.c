@@ -1,12 +1,12 @@
-/* Room 0x87: its event handler class (vtable D_004772C0, see sRooms in event.c),
+/* Room 0x87: its event handler class (vtable Room87_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_004772C0[];
+extern void *RoomBase_vtable[];
+extern void *Room87_vtable[];
 extern u8 D_0047AE38[];
 
 extern u32 D_00432B10[];
@@ -18,7 +18,7 @@ extern u32 D_00432C80[];
 extern PTMF D_019916F8[];
 
 /* 0x0033F4F0 */
-void *Room87_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004772C0, D_0046DB80); }
+void *Room87_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room87_vtable, RoomBase_vtable); }
 
 /* 0x0033F550 */
 void *Room87_EnterScript(void) {
@@ -41,7 +41,7 @@ void *Room87_Phase2Script(void) {
 }
 
 /* 0x0033F590 */
-void *Room87_Phase5Script(void *o) { return D_0047AE38; }   /* D_004772C0 +0x20 */
+void *Room87_Phase5Script(void *o) { return D_0047AE38; }   /* Room87_vtable +0x20 */
 
 /* 0x0033F5A0 */
 u32 Room87_ActionScript(void *self, s32 i) {

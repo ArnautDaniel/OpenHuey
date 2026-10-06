@@ -1,4 +1,4 @@
-/* Room 0x37: its event handler class (vtable D_00479FB0, see sRooms in event.c),
+/* Room 0x37: its event handler class (vtable Room37_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00479FB0[];
+extern void *RoomBase_vtable[];
+extern void *Room37_vtable[];
 extern u8 D_0047B028[];
 extern const char *D_0047B02C;   /* "fan" (room 0x37) */
 
@@ -20,7 +20,7 @@ extern void *D_00446960[];
 extern PTMF D_01991AB0[];
 
 /* 0x0036A300 */
-void *Room37_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00479FB0, D_0046DB80); }
+void *Room37_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room37_vtable, RoomBase_vtable); }
 
 /* 0x0036A360 */
 void *Room37_EnterScript(void) {
@@ -69,4 +69,4 @@ s32 Room37_Fan(void) {
 }
 
 /* 0x0036A4B0 */
-u32 Room37_ObjectName(void *o, s32 i) { return ((u32 *)D_0047B028)[i]; }   /* D_00479FB0 +0x34 */
+u32 Room37_ObjectName(void *o, s32 i) { return ((u32 *)D_0047B028)[i]; }   /* Room37_vtable +0x34 */

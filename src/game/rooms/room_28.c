@@ -1,4 +1,4 @@
-/* Room 0x28: its event handler class (vtable D_0046E440, see sRooms in event.c),
+/* Room 0x28: its event handler class (vtable Room28_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "ptmf.h"
 #include "pursuer.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E440[];
+extern void *RoomBase_vtable[];
+extern void *Room28_vtable[];
 
 extern u8 D_00403980[];
 extern u8 D_004039B0[];
@@ -21,7 +21,7 @@ extern u32 D_0047AB34[];
 extern PTMF D_01990B98[];
 
 /* 0x002B0CF0 */
-void *Room28_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E440, D_0046DB80); }
+void *Room28_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room28_vtable, RoomBase_vtable); }
 
 /* 0x002B0D50 */
 void *Room28_EnterScript(void) {

@@ -1,4 +1,4 @@
-/* Room 0x2F: its event handler class (vtable D_0046EDC0, see sRooms in event.c),
+/* Room 0x2F: its event handler class (vtable Room2F_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "item.h"
 #include "pursuer.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046EDC0[];
+extern void *RoomBase_vtable[];
+extern void *Room2F_vtable[];
 
 extern u8 D_00412950[], D_004129A0[], D_00412A30[], D_00412B60[], D_00412B90[];
 extern void *D_00412E60[];
@@ -18,7 +18,7 @@ extern void *D_0047ABFC[];
 extern PTMF D_01990E38[];
 
 /* 0x002CC950 */
-void *Room2F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046EDC0, D_0046DB80); }
+void *Room2F_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room2F_vtable, RoomBase_vtable); }
 
 /* 0x002CC9B0 */
 void *Room2F_EnterScript(void) { return D_00412950; }

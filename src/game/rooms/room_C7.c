@@ -1,4 +1,4 @@
-/* Room 0xC7: its event handler class (vtable D_004760E0, see sRooms in event.c),
+/* Room 0xC7: its event handler class (vtable RoomC7_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -12,8 +12,8 @@
 #include "scene_game_members.h"
 #include "sce/libvu0.h"
 
-extern void *D_0046DB80[];
-extern void *D_004760E0[];
+extern void *RoomBase_vtable[];
+extern void *RoomC7_vtable[];
 extern u8 D_0047ADF8[];
 extern void *D_0047A3F0[];
 extern void *D_004799D0[];
@@ -28,7 +28,7 @@ extern u8 D_0042F9C0[];
 extern void *D_00430700[];
 extern void *D_004307F0[];
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_01991660[];
 extern PTMF D_019916C0[];
@@ -52,7 +52,7 @@ static void effect_798B0_init(void **obj) {
 #endif
 
 /* 0x00339CE0 */
-void *RoomC7_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004760E0, D_0046DB80); }
+void *RoomC7_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC7_vtable, RoomBase_vtable); }
 
 /* 0x00339D40 */
 void *RoomC7_EnterScript(void) {
@@ -90,7 +90,7 @@ void *RoomC7_ActionScript(void *self, s32 i) {
 }
 
 /* 0x00339DC0 */
-void *RoomC7_Table38(void *o) { return D_0047ADF8; }   /* D_004760E0 +0x38 */
+void *RoomC7_Table38(void *o) { return D_0047ADF8; }   /* RoomC7_vtable +0x38 */
 
 /* 0x00339DD0 */
 void *RoomC7_ObjectName(void *self, s32 i) {
@@ -332,7 +332,7 @@ s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
 void *RoomC7Cursor_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004798B0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -390,7 +390,7 @@ void RoomC7Cursor_Start(u8 *o) {
 void *Debris_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004799D0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -407,7 +407,7 @@ void Debris_Start(void) {
 void *BackdropModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A3F0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

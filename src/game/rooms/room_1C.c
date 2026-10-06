@@ -1,4 +1,4 @@
-/* Room 0x1C: its event handler class (vtable D_0046E180, see sRooms in event.c),
+/* Room 0x1C: its event handler class (vtable Room1C_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,9 +8,9 @@
 #include "scene_game_members.h"
 #include "snd_place.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E180[];
-extern void *D_0046EC60[];
+extern void *RoomBase_vtable[];
+extern void *Room1C_vtable[];
+extern void *DepthRange_vtable[];
 
 extern u32 D_003FD310[];
 extern u8 D_003FD360[];
@@ -23,7 +23,7 @@ extern u8 D_003FCD70[];
 extern PTMF D_01990990[];
 
 /* 0x002AD9F0 */
-void *Room1C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E180, D_0046DB80); }
+void *Room1C_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room1C_vtable, RoomBase_vtable); }
 
 /* 0x002ADA50 */
 void *Room1C_EnterScript(void) {
@@ -87,7 +87,7 @@ s32 Room1C_Cmd00(void) {
     f32 r[4];
     f32 v;
 
-    room_effect_slot_new(gRoomEffects, 0x1C, D_0046EC60);
+    room_effect_slot_new(gRoomEffects, 0x1C, DepthRange_vtable);
     r[0] = 1.0f;
     v = 1.0f + 0x1.6666660000000p+0f /* 1.4 */ * t;
     r[1] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;

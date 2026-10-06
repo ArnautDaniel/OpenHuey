@@ -1,4 +1,4 @@
-/* Room 0xD9: its event handler class (vtable D_0047A2B0, see sRooms in event.c),
+/* Room 0xD9: its event handler class (vtable RoomD9_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "ptmf.h"
 #include "actor.h"
 
-extern void *D_0046DB80[];
-extern void *D_0047A2B0[];
+extern void *RoomBase_vtable[];
+extern void *RoomD9_vtable[];
 extern u8 D_0047B0A8[];
 extern char D_0047B2F0[];
 extern const char D_00463738[];
@@ -21,7 +21,7 @@ extern PTMF D_01991C90[];
 extern PTMF D_01991CB8[];
 
 /* 0x0036FCF0 */
-void *RoomD9_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A2B0, D_0046DB80); }
+void *RoomD9_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomD9_vtable, RoomBase_vtable); }
 
 /* 0x0036FD50 */
 void *RoomD9_EnterScript(void) {
@@ -44,7 +44,7 @@ void *RoomD9_Phase3Script(void) {
 }
 
 /* 0x0036FD90 */
-u32 RoomD9_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B0A8)[i]; }   /* D_0047A2B0 +0x24 */
+u32 RoomD9_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B0A8)[i]; }   /* RoomD9_vtable +0x24 */
 
 /* 0x0036FDB0 */
 void *RoomD9_Table38(void) {

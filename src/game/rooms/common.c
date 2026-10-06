@@ -1,5 +1,5 @@
 /* The rooms' event handler classes (the 4-byte objects of the events object, +0x120: one per
- * room, see sRooms in event.c; base D_0046DB80): their destructors and small table getters.
+ * room, see sRooms in event.c; base RoomBase_vtable): their destructors and small table getters.
  * Each room's class gives the event system the room's data tables (by slot, see the vtables). */
 #include "common.h"
 #include "globals.h"
@@ -29,7 +29,7 @@ void DriftingFlecks_SetParams(u8 *self, f32 *src);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 extern void *D_00471060[];
 extern void *D_00479AC0[];
 extern void *D_00479B00[];
@@ -117,7 +117,7 @@ void Room_EmptyHook(void) {
 void *DriftingFlecks_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00471060;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -182,13 +182,13 @@ extern const char *const D_00403964;   /* "movechair_3" */
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
 extern const char *const D_003F99B8[];   /* { "kousi" } */
 
-extern void *D_0046F5A0[], *D_00469D00[], *D_0046FC30[];
+extern void *D_0046F5A0[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
 
 static inline void smoke_init(void **o) {
     o[0] = D_0046F5A0;
-    o[0x1810 / 4] = D_00469D00;
+    o[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)o)[0x1814 / 4] = -1;
-    o[0x1810 / 4] = D_0046FC30;
+    o[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 /* 0x002AFE90 */
@@ -291,7 +291,7 @@ extern void *D_00479AC0[], *D_00471060[], *D_00470E20[];
  * count, then the points) */
 extern const s8 *D_00444A70[];
 extern const f32 D_00444980[12][3];
-extern void *D_0046D7A0[], *D_00469D00[];
+extern void *Bloom_vtable[], *Helper469D00_vtable[];
 #ifdef HG_NATIVE
 
 /* +0x14 draw: when all of the shape is in view, the screen brightened (Bloom_Start,
@@ -340,7 +340,7 @@ void WindowFlash_Draw(u8 *o) {
             return;
         }
     }
-    AT(drawer, 0x0, void **) = D_0046D7A0;
+    AT(drawer, 0x0, void **) = Bloom_vtable;
     AT(drawer, 0x4, s32) = -1;
     Bloom_Start(drawer, 0x80808080, 0x28, 0);
     {
@@ -362,7 +362,7 @@ void WindowFlash_Draw(u8 *o) {
         }
         glr_layer(-1);
     }
-    AT(drawer, 0x0, void **) = D_00469D00;
+    AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 #endif
 
@@ -386,7 +386,7 @@ void WindowFlash_Start(u8 *o) {
 void *Effect79B00_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479B00;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -403,7 +403,7 @@ void Effect79B00_Start(void) {
 void *Effect7A3D0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A3D0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }
@@ -431,7 +431,7 @@ s32 Room24_ColourPulse(void) {
 
 extern const char *const D_0047AD08[];   /* room 0x62's objects */
 
-/* ---- creature class D_00471290 (a pursuer-like character) ---- */
+/* ---- creature class Kind09_vtable (a pursuer-like character) ---- */
 
 /* ---- rooms 0x48 / 0x60 ---- */
 
@@ -588,7 +588,7 @@ void Kind26_MoveTo(u8 *self, s32 a, f32 x, f32 y) {
 void *WindowFlash_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479AC0;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

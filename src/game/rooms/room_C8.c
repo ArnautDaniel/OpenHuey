@@ -1,4 +1,4 @@
-/* Room 0xC8: its event handler class (vtable D_00478730, see sRooms in event.c),
+/* Room 0xC8: its event handler class (vtable RoomC8_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "memcard.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_00478730[];
+extern void *RoomBase_vtable[];
+extern void *RoomC8_vtable[];
 extern u8 D_0047AF40[];
 extern void *D_0047A410[];
 extern u32 D_00441520[];
@@ -19,7 +19,7 @@ extern u32 D_004416A0[];
 extern u32 D_004417A8[];
 extern u32 D_0047AF3C[];
 
-extern void *D_0046F580[];
+extern void *EffectBase_vtable[];
 
 extern PTMF D_01991A08[];
 
@@ -28,7 +28,7 @@ static void effect_47a410_init(void **obj) {
 }
 
 /* 0x0034B5C0 */
-void *RoomC8_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00478730, D_0046DB80); }
+void *RoomC8_dtor(void *o, s32 flags) { return room_dtor(o, flags, RoomC8_vtable, RoomBase_vtable); }
 
 /* 0x0034B620 */
 void *RoomC8_EnterScript(void) {
@@ -56,7 +56,7 @@ u32 RoomC8_ActionScript(void *self, s32 i) {
 }
 
 /* 0x0034B680 */
-void *RoomC8_Table38(void *o) { return D_0047AF40; }   /* D_00478730 +0x38 */
+void *RoomC8_Table38(void *o) { return D_0047AF40; }   /* RoomC8_vtable +0x38 */
 
 /* 0x0034B690 */
 u32 RoomC8_ObjectName(void *self, s32 i) {
@@ -81,7 +81,7 @@ s32 RoomC8_Cmd00(void) {
 void *TurningModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A410;
-        AT(o, 0x0, void **) = D_0046F580;
+        AT(o, 0x0, void **) = EffectBase_vtable;
         if ((s16)flags > 0) {
             EffectMgr_free(o);
         }

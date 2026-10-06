@@ -1,4 +1,4 @@
-/* Room 0x4E: its event handler class (vtable D_0046E740, see sRooms in event.c),
+/* Room 0x4E: its event handler class (vtable Room4E_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E740[];
+extern void *RoomBase_vtable[];
+extern void *Room4E_vtable[];
 extern const char *D_0040B508;
 extern void *D_00478BE0[];
 extern u8 D_0040AE90[];
@@ -26,7 +26,7 @@ static void effect_78BE0_init(void **obj) {
 }
 
 /* 0x002B3970 */
-void *Room4E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E740, D_0046DB80); }
+void *Room4E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room4E_vtable, RoomBase_vtable); }
 
 /* 0x002B39D0 */
 void *Room4E_EnterScript(void) {

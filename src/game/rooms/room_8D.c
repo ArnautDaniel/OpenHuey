@@ -1,4 +1,4 @@
-/* Room 0x8D: its event handler class (vtable D_004773C0, see sRooms in event.c),
+/* Room 0x8D: its event handler class (vtable Room8D_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,11 +8,11 @@
 #include "actor.h"
 #include "scene_game_members.h"
 
-extern void *D_0046DB80[];
-extern void *D_004773C0[];
-/* ---- the marker effect D_00470F90 (effects.c) on character slot 3, its slot in script variable
+extern void *RoomBase_vtable[];
+extern void *Room8D_vtable[];
+/* ---- the marker effect Marker_vtable (effects.c) on character slot 3, its slot in script variable
  * 0, its size eased by variable 1 ---- */
-extern void *D_00470F90[];
+extern void *Marker_vtable[];
 extern u32 D_004348E0[];
 extern u32 D_00434940[];
 extern u32 D_00434A00[];
@@ -26,7 +26,7 @@ extern u32 D_0047AE58[];
 extern PTMF D_01991760[];
 
 static void effect_70F90_init(void **obj) {
-    obj[0] = D_00470F90;
+    obj[0] = Marker_vtable;
 }
 
 /* the marker's message { state, the model it follows, size, from slot } to the one in var 0 */
@@ -38,7 +38,7 @@ static inline s32 marker_send(s32 *msg) {
 }
 
 /* 0x00340060 */
-void *Room8D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004773C0, D_0046DB80); }
+void *Room8D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8D_vtable, RoomBase_vtable); }
 
 /* 0x003400C0 */
 void *Room8D_EnterScript(void) {

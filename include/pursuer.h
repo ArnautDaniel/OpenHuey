@@ -42,7 +42,7 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 
 /* the game's characters and managers the pursuer code uses */
 
-extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
+extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
 
 /* The flags of an out-of-range nav triangle: the original takes the record pointer as NULL and
  * reads +0x3C anyway, i.e. a word of low kernel memory on the PS2. Kept for the difftest build;
@@ -362,7 +362,7 @@ extern u8 *Lorenzo2_ModelFileTable(Pursuer *p);
 /* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
  * and runs this inline): vtable +0x10 cleanup at each level, the model freed for slots 3..5. */
 static inline void Pursuer_DestroyBase(Pursuer *p) {
-    p->c.a.vtbl = D_0046D810;
+    p->c.a.vtbl = Pursuer_vtable;
     VCALL(p, 0x10, void (*)(Pursuer *))(p);
     if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
         void **m = p->c.motion;
@@ -375,12 +375,12 @@ static inline void Pursuer_DestroyBase(Pursuer *p) {
         }
     }
     if (p != NULL) {
-        p->c.a.vtbl = D_0046C220;
+        p->c.a.vtbl = NPC_vtable;
         VCALL(p, 0x10, void (*)(Pursuer *))(p);
         if (p != NULL) {
-            p->c.a.vtbl = D_00469C60;
+            p->c.a.vtbl = Character_vtable;
             if (p != NULL) {
-                p->c.a.vtbl = D_00469C20;
+                p->c.a.vtbl = Actor_vtable;
             }
         }
     }

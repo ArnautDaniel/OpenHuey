@@ -36,8 +36,8 @@ extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 void PlacedObjects_SetPair(void *p, s32 a, s32 b);
 
 extern void *D_00456DE8;
-extern void *D_00469D00[];
-extern void *D_0046B1D0[];
+extern void *Helper469D00_vtable[];
+extern void *TexCache_vtable[];
 extern void *D_0046B1F0[];
 extern void *D_0046BEE0[];
 extern void *D_0046D770[];
@@ -116,7 +116,7 @@ void Game_SetState(Game *game, const PTMF *state) {
 void *PlacedModelBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D770;
-        AT(o, 0x0, void **) = D_00469D00;
+        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -363,8 +363,8 @@ u8 *Game_Resident38AC0(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: 
 
 /* ---- destructors left (2026-10-05) ---- */
 
-extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *D_00469D00[], *D_0046ECF0[], *D_0046F390[];
-extern void *D_0046FC00[], *D_004699C0[], *D_004699E0[], *D_0046A980[];
+extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *Helper469D00_vtable[], *PlacedObjects_vtable[], *D_0046F390[];
+extern void *Creatures_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A980[];
 extern void *D_00456DE8, *D_00456DF8;
 
 /* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
@@ -404,7 +404,7 @@ void *AvoidPromptBase_dtor(u8 *o, s32 flags) {
 void *QuadEntry_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x40, void **) = D_0046D770;
-        AT(o, 0x40, void **) = D_00469D00;
+        AT(o, 0x40, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -413,13 +413,13 @@ void *QuadEntry_dtor(u8 *o, s32 flags) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-/* destructor (D_0046ECF0): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
+/* destructor (PlacedObjects_vtable): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
  * clearing D_00456DF8) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0D60 */
 void *PlacedThings_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046ECF0;
+        AT(o, 0x0, void **) = PlacedObjects_vtable;
         func_001002C0(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
         AT(o, 0x0, void **) = D_0046F390;
         D_00456DF8 = NULL;
@@ -431,16 +431,16 @@ void *PlacedThings_dtor(u8 *o, s32 flags) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-/* destructor (vtable at +0x28, D_0046FC00): members at +0xF630 / +0xDC40, then the base
+/* destructor (vtable at +0x28, Creatures_vtable): members at +0xF630 / +0xDC40, then the base
  * (D_0046A980, clearing gCreatures) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0DF0 */
 void *Creatures_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x28, void **) = D_0046FC00;
-        AT(o, 0xF630, void **) = D_004699C0;
+        AT(o, 0x28, void **) = Creatures_vtable;
+        AT(o, 0xF630, void **) = BlockPool_vtable;
         AT(o, 0xF630, void **) = D_004699E0;
-        AT(o, 0xDC40, void **) = D_004699C0;
+        AT(o, 0xDC40, void **) = BlockPool_vtable;
         AT(o, 0xDC40, void **) = D_004699E0;
         AT(o, 0x28, void **) = D_0046A980;
         gCreatures = NULL;
@@ -453,7 +453,7 @@ void *Creatures_dtor(u8 *o, s32 flags) {
 
 /* ---- the game's destructor (2026-10-05) ---- */
 
-extern void *D_0046ADB0[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
+extern void *Pads_vtable[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
 
 /* Game +0x69B00's destructor: its vtables (and its +0x18 member's), gPad cleared */
 /* 0x001BE150 */
@@ -461,7 +461,7 @@ void *Pads_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
-    AT(o, 0x0, void **) = D_0046ADB0;
+    AT(o, 0x0, void **) = Pads_vtable;
     AT(o, 0x18, void **) = D_0046ADC4;
     AT(o, 0x18, void **) = D_0046AD88;
     AT(o, 0x0, void **) = D_0046ADD0;
@@ -472,12 +472,12 @@ void *Pads_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable D_0046B1D0) */
+/* destructor (vtable TexCache_vtable) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x001F4590 */
 void *TexCache_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046B1D0;
+        AT(o, 0x0, void **) = TexCache_vtable;
         AT(o, 0x0, void **) = D_0046B1F0;
         gTexCache = NULL;
         if ((s16)flags > 0) {
@@ -500,8 +500,8 @@ void *Obj46BEE0_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
-extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
+extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *Heap_vtable[], *D_004699E0[];
+extern void *Camera_vtable[], *D_00469B40[], *System_vtable[];
 extern void *D_004562A8, *D_004562B0;
 
 /* the members torn down in reverse: the +0x14E8C90 table, the two pools, the camera, the scene
@@ -524,7 +524,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     func_001002C0(g + 0x14D9DD0, (void *(*)(void *, s32))func_0020D970, 0xC, 0x40);
     D_004562B0 = NULL;
 
-    AT(g, 0x14D9B00, void **) = D_00469A60;
+    AT(g, 0x14D9B00, void **) = Camera_vtable;
     AT(g, 0x14D9B00, void **) = D_00469B40;
     gCamera = NULL;
 
@@ -542,13 +542,13 @@ void *Game_dtor(u8 *g, s32 flags) {
             *slot = NULL;
         }
     }
-    AT(g, 0x14D9A40, void **) = D_0046A1C0;
+    AT(g, 0x14D9A40, void **) = Heap_vtable;
     AT(g, 0x14D9A40, void **) = D_004699E0;
     gSceneTable = NULL;
 
     Random_dtor((VObject *)(g + 0x400000), -1);
 
-    AT(g, 0x69AC0, void **) = D_0046ADF0;
+    AT(g, 0x69AC0, void **) = System_vtable;
     SndDriver_dtor(g + 0x3FF800, -1);
     Loader_dtor((VObject *)(g + 0x3833C0), -1);
     Vram_dtor(g + 0x376A00, -1);

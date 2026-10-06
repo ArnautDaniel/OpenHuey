@@ -20,7 +20,7 @@
 #include "stalker_progress.h"
 #include "msl.h"
 
-extern void *D_0046BBB0[];
+extern void *Daniella_vtable[];
 
 extern u8 D_003D73B0[];
 void *Daniella_MotionFiles(void);
@@ -54,7 +54,7 @@ s32 Kind36_Kind(void);
 s32 Kind36_AttackAnimB(void);
 s32 Kind36_AttackAnimA(void);
 
-extern void *D_00478160[];
+extern void *Kind36_vtable[];
 void Kind36_FilesLoaded(Pursuer *p);
 
 extern u8 D_0043DC10[], D_0043DBD0[];
@@ -67,7 +67,7 @@ void *Kind36_ModelFiles(void);
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
     if (c != NULL) {
         c->a.vtbl = vt;
-        c->a.vtbl = D_0046D810;
+        c->a.vtbl = Pursuer_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
         if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
             void **m = c->motion;
@@ -77,10 +77,10 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
                 c->motion = NULL;
             }
         }
-        c->a.vtbl = D_0046C220;
+        c->a.vtbl = NPC_vtable;
         VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = D_00469C60;
-        c->a.vtbl = D_00469C20;
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
         if ((s16)flags > 0) {
             Actor_Destroy(&c->a);
         }
@@ -94,7 +94,7 @@ Character *Kind36_dtor(Character *c, s32 flags);
 /* 0x0020C3A0 */
 Pursuer *Daniella_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
-        p->c.a.vtbl = D_0046BBB0;
+        p->c.a.vtbl = Daniella_vtable;
         if (p != NULL) {
             Pursuer_DestroyBase(p);
         }
@@ -1263,7 +1263,7 @@ void Kind35_Setup(Pursuer *p) {
 }
 
 /* 0x00348850 */
-Character *Kind36_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, D_00478160); }
+Character *Kind36_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind36_vtable); }
 
 /* 0x00348960 */
 s32 Kind36_Kind(void) {

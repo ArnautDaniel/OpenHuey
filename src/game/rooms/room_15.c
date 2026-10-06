@@ -1,4 +1,4 @@
-/* Room 0x15: its event handler class (vtable D_0046E040, see sRooms in event.c),
+/* Room 0x15: its event handler class (vtable Room15_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -8,8 +8,8 @@
 #include "progress.h"
 #include "snd_place.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E040[];
+extern void *RoomBase_vtable[];
+extern void *Room15_vtable[];
 extern const char *D_003FA760;
 
 extern u8 D_003FA090[];
@@ -24,7 +24,7 @@ extern PTMF D_01990920[];
 extern PTMF D_01990930[];
 
 /* 0x002ACB60 */
-void *Room15_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E040, D_0046DB80); }
+void *Room15_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room15_vtable, RoomBase_vtable); }
 
 /* 0x002ACBC0 */
 void *Room15_EnterScript(void) {

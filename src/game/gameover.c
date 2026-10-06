@@ -39,7 +39,7 @@ extern const PTMF D_0041A1C0;   /* GameOver_StateSpecial */
 extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *D_00456DF0;
-extern void *D_0046D750[];      /* a screen tint */
+extern void *Tint_vtable[];      /* a screen tint */
 
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
 
@@ -50,11 +50,11 @@ void *GameOverBase_dtor(u8 *o, s32 flags);
 
 void SceneGame_SetByte19034(u8 *p, u32 v);
 
-/* destructor (vtable D_0046D750) */
+/* destructor (vtable Tint_vtable) */
 /* 0x00267310 */
 void *GameOverBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046D750;
+        AT(o, 0x0, void **) = Tint_vtable;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -130,7 +130,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
         VObject *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
-            e->vtbl = D_0046D750;
+            e->vtbl = Tint_vtable;
         }
         *slot = e;
         VCALL(*slot, 0xC, void (*)(VObject *))(*slot);

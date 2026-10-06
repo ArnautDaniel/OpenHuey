@@ -1,4 +1,4 @@
-/* Room 0x8E: its event handler class (vtable D_00477400, see sRooms in event.c),
+/* Room 0x8E: its event handler class (vtable Room8E_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "msl.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477400[];
+extern void *RoomBase_vtable[];
+extern void *Room8E_vtable[];
 extern const char *D_00435978;
 
 extern u32 D_00435050[];
@@ -21,7 +21,7 @@ extern u32 D_00435970[];
 extern PTMF D_01991790[];
 
 /* 0x003409C0 */
-void *Room8E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477400, D_0046DB80); }
+void *Room8E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room8E_vtable, RoomBase_vtable); }
 
 /* 0x00340A20 */
 void *Room8E_EnterScript(void) {

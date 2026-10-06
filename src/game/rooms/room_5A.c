@@ -1,4 +1,4 @@
-/* Room 0x5A: its event handler class (vtable D_0046E980, see sRooms in event.c),
+/* Room 0x5A: its event handler class (vtable Room5A_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -9,8 +9,8 @@
 #include "hewie.h"
 #include "progress.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E980[];
+extern void *RoomBase_vtable[];
+extern void *Room5A_vtable[];
 extern u8 D_0047ABE0[];
 extern const char *D_00410F38[];   /* the three dials' object names */
 extern u8 D_0047B254[3];           /* their progress vars */
@@ -26,10 +26,10 @@ extern u8 D_00410F50[];
 extern PTMF D_01990DE8[];
 
 /* 0x002B5280 */
-void *Room5A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E980, D_0046DB80); }
+void *Room5A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room5A_vtable, RoomBase_vtable); }
 
 /* 0x002B52E0 */
-void *Room5A_EnterScript(void *o) { return D_0047ABE0; }   /* D_0046E980 +0xC */
+void *Room5A_EnterScript(void *o) { return D_0047ABE0; }   /* Room5A_vtable +0xC */
 
 /* 0x002B52F0 */
 void *Room5A_CharEnterScript(void) {

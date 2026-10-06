@@ -1,4 +1,4 @@
-/* Room 0x6D: its event handler class (vtable D_00477690, see sRooms in event.c),
+/* Room 0x6D: its event handler class (vtable Room6D_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00477690[];
+extern void *RoomBase_vtable[];
+extern void *Room6D_vtable[];
 
 extern u32 D_00439B10[];
 extern u32 D_00439C00[];
@@ -21,7 +21,7 @@ extern u32 D_0047AEB0[];
 extern PTMF D_01991930[];
 
 /* 0x00344B90 */
-void *Room6D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477690, D_0046DB80); }
+void *Room6D_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room6D_vtable, RoomBase_vtable); }
 
 /* 0x00344BF0 */
 void *Room6D_EnterScript(void) {

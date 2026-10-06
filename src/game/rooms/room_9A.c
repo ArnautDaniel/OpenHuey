@@ -1,12 +1,12 @@
-/* Room 0x9A: its event handler class (vtable D_00479380, see sRooms in event.c),
+/* Room 0x9A: its event handler class (vtable Room9A_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_00479380[];
+extern void *RoomBase_vtable[];
+extern void *Room9A_vtable[];
 extern u8 D_0047AFB0[], D_0047AFB8[];
 
 extern u8 D_00443740[], D_004437C0[];
@@ -16,10 +16,10 @@ extern u8 D_00443860[];
 extern PTMF D_01991A38[];
 
 /* 0x00352C90 */
-void *Room9A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00479380, D_0046DB80); }
+void *Room9A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room9A_vtable, RoomBase_vtable); }
 
 /* 0x00352CF0 */
-void *Room9A_EnterScript(void *o) { return D_0047AFB0; }   /* D_00479380 +0xC */
+void *Room9A_EnterScript(void *o) { return D_0047AFB0; }   /* Room9A_vtable +0xC */
 
 /* 0x00352D00 */
 void *Room9A_CharEnterScript(void) { return D_00443740; }
@@ -28,7 +28,7 @@ void *Room9A_CharEnterScript(void) { return D_00443740; }
 void *Room9A_Phase1Script(void) { return D_004437C0; }
 
 /* 0x00352D20 */
-void *Room9A_Phase2Script(void *o) { return D_0047AFB8; }   /* D_00479380 +0x14 */
+void *Room9A_Phase2Script(void *o) { return D_0047AFB8; }   /* Room9A_vtable +0x14 */
 
 /* 0x00352D30 */
 void *Room9A_ActionScript(void *self, s32 i) { return D_0047AFBC[i]; }

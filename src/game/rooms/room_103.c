@@ -1,12 +1,12 @@
-/* Room 0x103: its event handler class (vtable D_0046FCC0, see sRooms in event.c),
+/* Room 0x103: its event handler class (vtable Room103_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046FCC0[];
+extern void *RoomBase_vtable[];
+extern void *Room103_vtable[];
 
 extern u8 D_00417840[];
 extern u8 D_00417850[];
@@ -20,7 +20,7 @@ extern void *D_00417BB0[];
 extern PTMF D_01990EA8[];
 
 /* 0x002E5FB0 */
-void *Room103_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FCC0, D_0046DB80); }
+void *Room103_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room103_vtable, RoomBase_vtable); }
 
 /* 0x002E6010 */
 void *Room103_EnterScript(void) { return D_00417840; }

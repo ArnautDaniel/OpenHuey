@@ -21,7 +21,7 @@
 #include "msl.h"
 
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
-extern void *D_00472F60[];
+extern void *Reflection_vtable[];
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
 extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
 extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "movechair_2" */
@@ -68,8 +68,8 @@ extern void *D_00479B00[];
 extern void *D_00471060[];
 extern void *D_00479AC0[];
 extern void *D_0046FF20[];
-extern void *D_00469D00[];
-extern void *D_0046FC30[];
+extern void *Helper469D00_vtable[];
+extern void *QuadDrawer_vtable[];
 extern void *D_004737D0[];
 extern void *D_0047A3D0[];
 extern void *D_00479A80[];
@@ -196,7 +196,7 @@ static inline __attribute__((always_inline)) s32 lit_quad_in(s32 n, u8 *cmd, con
         return 1;
     }
     fx = gRoomEffects;
-    room_effect_slot_new(fx, n, D_00472F60);
+    room_effect_slot_new(fx, n, Reflection_vtable);
     for (i = 0; i < 16; i++) {
         q[i] = corners[i];
     }
@@ -494,9 +494,9 @@ static inline __attribute__((always_inline)) void fan_turn(const char *name) {
 
 static __attribute__((unused)) void glow4_init(void **obj) {
     obj[0] = D_004737D0;
-    obj[0x40 / 4] = D_00469D00;
+    obj[0x40 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x44 / 4] = -1;
-    obj[0x40 / 4] = D_0046FC30;
+    obj[0x40 / 4] = QuadDrawer_vtable;
 }
 
 /* byte 4 0: the effect D_004737D0 (grey, 0x18, size 30) at one of four spots by byte 3 (-332 /
@@ -749,9 +749,9 @@ static __attribute__((unused)) s32 swing_three(VObject *self, u8 *cmd) {
 
 static __attribute__((unused)) void effect_C0_init(void **obj) {
     obj[0] = D_00479A80;
-    obj[0x70 / 4] = D_00469D00;
+    obj[0x70 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = D_0046FC30;
+    obj[0x70 / 4] = QuadDrawer_vtable;
 }
 
 static __attribute__((unused)) void effect_10_init(void **obj) {
@@ -800,9 +800,9 @@ static const u32 sQuadDoor[16] = {
 
 static __attribute__((unused)) void dust_cloud_init(void **obj) {
     obj[0] = D_0046FF20;
-    obj[0x610 / 4] = D_00469D00;
+    obj[0x610 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x614 / 4] = -1;
-    obj[0x610 / 4] = D_0046FC30;
+    obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
 static __attribute__((unused)) void effect_471060_init(void **obj) {

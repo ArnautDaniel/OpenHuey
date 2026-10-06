@@ -1,4 +1,4 @@
-/* The cutscene director (vtable D_0046ED30, global gCutscene, constructed by Cutscene_ctor).
+/* The cutscene director (vtable Cutscene_vtable, global gCutscene, constructed by Cutscene_ctor).
  * A cutscene ("name" +0x14) is a script (progress +0x16C0, +0x18 here), a per-frame signal
  * table (progress +0x26C0, +0x1C) and light / effect cues (progress +0x66C0), loaded at the
  * start, then a series of shots streamed in turn into two buffers (progress +0xA6C0 +
@@ -39,7 +39,7 @@
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
-extern void *D_0046EB40[], *D_0046EC60[];   /* effect classes for slots 0x1D / 0x1C */
+extern void *Fog_vtable[], *DepthRange_vtable[];   /* effect classes for slots 0x1D / 0x1C */
 
 void Cutscene_ReleaseActors(u8 *d);
 void Cutscene_Cast(u8 *d);
@@ -410,7 +410,7 @@ void Cutscene_Cues(u8 *d) {
     fx = gRoomEffects;
     RoomEffects_Release(fx, 0x1C);
     if (AT(d, 0x238, u8)) {
-        effect_need(fx, 0x1D, D_0046EB40);
+        effect_need(fx, 0x1D, Fog_vtable);
         RoomEffects_Send(fx, 0x1D, d + 0x248);
     } else {
         RoomEffects_Release(fx, 0x1D);
@@ -439,11 +439,11 @@ void Cutscene_Cues(u8 *d) {
             }
             break;
         case 1:
-            effect_need(fx, 0x1C, D_0046EC60);
+            effect_need(fx, 0x1C, DepthRange_vtable);
             RoomEffects_Send(fx, 0x1C, c + 0x10);
             break;
         case 2:
-            effect_need(fx, 0x1D, D_0046EB40);
+            effect_need(fx, 0x1D, Fog_vtable);
             RoomEffects_Send(fx, 0x1D, c + 0x10);
             break;
         }
@@ -543,13 +543,13 @@ void Cutscene_End(u8 *d) {
     VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
     fx = gRoomEffects;
     if (AT(d, 0x238, u8)) {
-        effect_need(fx, 0x1D, D_0046EB40);
+        effect_need(fx, 0x1D, Fog_vtable);
         RoomEffects_Send(fx, 0x1D, d + 0x248);
     } else {
         RoomEffects_Release(fx, 0x1D);
     }
     if (AT(d, 0x268, u8)) {
-        effect_need(fx, 0x1C, D_0046EC60);
+        effect_need(fx, 0x1C, DepthRange_vtable);
         RoomEffects_Send(fx, 0x1C, d + 0x278);
     } else {
         RoomEffects_Release(fx, 0x1C);

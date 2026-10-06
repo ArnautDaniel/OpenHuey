@@ -1,4 +1,4 @@
-/* Room 0x107: its event handler class (vtable D_0046FDC0, see sRooms in event.c),
+/* Room 0x107: its event handler class (vtable Room107_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046FDC0[];
+extern void *RoomBase_vtable[];
+extern void *Room107_vtable[];
 extern u8 D_0047AC78[];
 extern s32 D_0047B274;
 
@@ -24,7 +24,7 @@ extern PTMF D_01990EE8[];
 extern PTMF D_01990F00[];
 
 /* 0x002E6F10 */
-void *Room107_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FDC0, D_0046DB80); }
+void *Room107_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room107_vtable, RoomBase_vtable); }
 
 /* 0x002E6F70 */
 void *Room107_EnterScript(void) { return D_00418AF0; }
@@ -39,7 +39,7 @@ void *Room107_Phase1Script(void) { return D_00418BA0; }
 void *Room107_Phase2Script(void) { return D_00418BF0; }
 
 /* 0x002E6FB0 */
-void *Room107_Phase5Script(void *o) { return D_0047AC78; }   /* D_0046FDC0 +0x20 */
+void *Room107_Phase5Script(void *o) { return D_0047AC78; }   /* Room107_vtable +0x20 */
 
 /* 0x002E6FC0 */
 void *Room107_ActionScript(void *self, s32 i) { return D_00418D70[i]; }

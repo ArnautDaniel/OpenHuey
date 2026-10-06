@@ -1,12 +1,12 @@
-/* Room 0x6E: its event handler class (vtable D_004776D0, see sRooms in event.c),
+/* Room 0x6E: its event handler class (vtable Room6E_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_004776D0[];
+extern void *RoomBase_vtable[];
+extern void *Room6E_vtable[];
 
 extern u32 D_0043A120[];
 extern u32 D_0043A1A0[];
@@ -18,7 +18,7 @@ extern u32 D_0043A8B0[];
 extern u32 D_0043A8D0[];
 
 /* 0x00344D80 */
-void *Room6E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004776D0, D_0046DB80); }
+void *Room6E_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room6E_vtable, RoomBase_vtable); }
 
 /* 0x00344DE0 */
 void *Room6E_EnterScript(void) {

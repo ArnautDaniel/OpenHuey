@@ -546,7 +546,7 @@ s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     return id;
 }
 
-extern void *D_0046A1E0[], *D_0046A220[];
+extern void *Loader_vtable[], *D_0046A220[];
 
 /* the request in progress: stopped (with or without waiting) or, before it reads, dropped */
 static void LoadReq_Cancel(LoadReq *q, s32 wait) {
@@ -679,7 +679,7 @@ void *LoaderBase_dtor(VObject *l, s32 flags) {
 /* 0x00169280 */
 void *Loader_dtor(VObject *l, s32 flags) {
     if (l != NULL) {
-        *(void ***)l = D_0046A1E0;
+        *(void ***)l = Loader_vtable;
         if (l != NULL) {
             LoaderBase_Destroy(l);
         }

@@ -1,4 +1,4 @@
-/* Room 0x27: its event handler class (vtable D_00470DC0, see sRooms in event.c),
+/* Room 0x27: its event handler class (vtable Room27_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -7,8 +7,8 @@
 #include "ptmf.h"
 #include "items.h"
 
-extern void *D_0046DB80[];
-extern void *D_00470DC0[];
+extern void *RoomBase_vtable[];
+extern void *Room27_vtable[];
 extern u8 D_0047ACB0[];
 
 extern u8 D_0041C390[];
@@ -18,7 +18,7 @@ extern void *D_0041CA40[];
 extern PTMF D_01990FD8[];
 
 /* 0x002FCB40 */
-void *Room27_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470DC0, D_0046DB80); }
+void *Room27_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room27_vtable, RoomBase_vtable); }
 
 /* 0x002FCBA0 */
 void *Room27_EnterScript(void) {
@@ -26,7 +26,7 @@ void *Room27_EnterScript(void) {
 }
 
 /* 0x002FCBB0 */
-void *Room27_CharEnterScript(void *o) { return D_0047ACB0; }   /* D_00470DC0 +0x30 */
+void *Room27_CharEnterScript(void *o) { return D_0047ACB0; }   /* Room27_vtable +0x30 */
 
 /* 0x002FCBC0 */
 void *Room27_Phase1Script(void) {

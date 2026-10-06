@@ -1,12 +1,12 @@
-/* Room 0x4A: its event handler class (vtable D_0046E680, see sRooms in event.c),
+/* Room 0x4A: its event handler class (vtable Room4A_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 
-extern void *D_0046DB80[];
-extern void *D_0046E680[];
+extern void *RoomBase_vtable[];
+extern void *Room4A_vtable[];
 
 extern u8 D_004086A0[];
 extern u8 D_00408700[];
@@ -18,7 +18,7 @@ extern u8 D_00408B78[];
 extern u32 D_00408B68[];
 
 /* 0x002B2EF0 */
-void *Room4A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E680, D_0046DB80); }
+void *Room4A_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room4A_vtable, RoomBase_vtable); }
 
 /* 0x002B2F50 */
 void *Room4A_EnterScript(void) {

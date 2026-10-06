@@ -1,4 +1,4 @@
-/* Room 0x66: its event handler class (vtable D_00470F50, see sRooms in event.c),
+/* Room 0x66: its event handler class (vtable Room66_vtable, see sRooms in event.c),
  * the tables its getters give the event system, and the room's hooks
  * (commands, conditions, objects and effects). */
 #include "common.h"
@@ -11,8 +11,8 @@
 #include "scene_game_members.h"
 #include "stalker_math.h"
 
-extern void *D_0046DB80[];
-extern void *D_00470F50[];
+extern void *RoomBase_vtable[];
+extern void *Room66_vtable[];
 extern u8 D_0047ACC8[], D_0047ACE0[];
 extern void *D_00477AC0[];
 extern void *D_00478B50[];
@@ -28,19 +28,19 @@ extern PTMF D_01991070[];
 
 static void effect_77AC0_init(void **obj) {
     obj[0] = D_00477AC0;
-    obj[0x1840 / 4] = D_00469D00;
+    obj[0x1840 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1844 / 4] = -1;
-    obj[0x1840 / 4] = D_0046FC30;
-    obj[0x1878 / 4] = D_00469D00;
+    obj[0x1840 / 4] = QuadDrawer_vtable;
+    obj[0x1878 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x187C / 4] = -1;
-    obj[0x1878 / 4] = D_0046FC30;
+    obj[0x1878 / 4] = QuadDrawer_vtable;
 }
 
 static void fire_init(void **obj) {
     obj[0] = D_00478B50;
-    obj[0x1810 / 4] = D_00469D00;
+    obj[0x1810 / 4] = Helper469D00_vtable;
     ((s32 *)obj)[0x1814 / 4] = -1;
-    obj[0x1810 / 4] = D_0046FC30;
+    obj[0x1810 / 4] = QuadDrawer_vtable;
 }
 
 /* two brown puffs (D_0046FF20 dust, colour 0x46 / 0x34 / 0x29, alpha 0x20) at the foot, the
@@ -70,7 +70,7 @@ static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
 }
 
 /* 0x003001B0 */
-void *Room66_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470F50, D_0046DB80); }
+void *Room66_dtor(void *o, s32 flags) { return room_dtor(o, flags, Room66_vtable, RoomBase_vtable); }
 
 /* 0x00300210 */
 void *Room66_EnterScript(void) {
@@ -93,7 +93,7 @@ void *Room66_Phase2Script(void) {
 }
 
 /* 0x00300250 */
-void *Room66_Phase5Script(void *o) { return D_0047ACC8; }   /* D_00470F50 +0x20 */
+void *Room66_Phase5Script(void *o) { return D_0047ACC8; }   /* Room66_vtable +0x20 */
 
 /* 0x00300260 */
 void *Room66_ActionScript(void *self, s32 i) {
@@ -106,7 +106,7 @@ void *Room66_Table38(void) {
 }
 
 /* 0x00300290 */
-u32 Room66_ObjectName(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* D_00470F50 +0x34 */
+u32 Room66_ObjectName(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* Room66_vtable +0x34 */
 
 /* (self->*D_01991070[i])(a, b) */
 /* 0x003002B0 */
