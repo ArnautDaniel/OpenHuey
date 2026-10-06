@@ -863,6 +863,15 @@ void func_0029E520(Pursuer *p) {
     func_00125CC0(&p->c);
 }
 
+/* the D_0046F020 stalker's +0x5C reset: the base one, and its +0x16DC 0x10 while the countdown
+ * runs (progress +0x1FBEC1) */
+void func_002CF0F0(Pursuer *p) {
+    func_0029E520(p);
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        AT(p, 0x16DC, s32) = 0x10;
+    }
+}
+
 /* the chase towards the target: by path, or straight at it once on its triangle */
 void func_00290810(Pursuer *p) {
     if (PU(p, 0x1590, f32) < 0.0f) {

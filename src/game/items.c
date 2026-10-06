@@ -394,3 +394,25 @@ void func_00260170(u8 *o, s32 id, s32 arg) {
         }
     }
 }
+
+extern void func_002D3A60(u8 *p, const u8 *src);
+
+/* a new item 0x3F (one) set from `src` (func_002D3A60); the item, NULL if none */
+void *func_00261040(u8 *items, const u8 *src) {
+    u8 *it = func_00261090(items, 0x3F, 1);
+
+    if (it != NULL) {
+        func_002D3A60(it, src);
+    }
+    return it;
+}
+
+/* item `i` of list `l` equipped: into its kind's slot (D_003EA918, +0x15E0) if it has one */
+void func_00260840(u8 *items, u8 l, u8 i) {
+    VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+
+    if (k >= 0) {
+        AT(items, 0x15E0 + k * 4, VObject *) = *e;
+    }
+}

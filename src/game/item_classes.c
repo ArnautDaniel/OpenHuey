@@ -1304,3 +1304,55 @@ s32 func_003445D0(void *o) {
     }
     return 0;
 }
+
+/* free the file loader's 0x4000000 area if it is in state 2 */
+void func_002600C0(void) {
+    VObject *ld = gFileLoader;
+
+    if (VCALL(ld, 0x28, s32 (*)(VObject *, s32))(ld, 0x4000000) == 2) {
+        VCALL(ld, 0x14, void (*)(VObject *, s32))(ld, 0x4000000);
+    }
+}
+
+/* an item's +0x18 set from a message { kind (0xFF: none), sub, byte 2, pad, word }: +0x4 0 when
+ * unset (+0x5 0xFF), +0x7 the kind, +0x5 the sub (0xFF without a kind), +0x6, +0xC; +0x8 0 */
+void func_0035BC30(u8 *o, const u8 *m) {
+    if (m == NULL) {
+        return;
+    }
+    if (o[5] == 0xFF) {
+        o[4] = 0;
+    }
+    o[7] = m[0];
+    if (o[7] == 0xFF) {
+        o[5] = 0xFF;
+    } else {
+        o[5] = m[1];
+    }
+    o[6] = m[2];
+    AT(o, 0xC, s32) = AT(m, 0x4, s32);
+    AT(o, 0x8, s32) = 0;
+}
+
+/* progress +0x84 bits 22..26 as bits 0..4 */
+u8 func_00303F00(void) {
+    u32 b = AT(gProgress, 0x84, u32);
+    u8 v = 0;
+
+    if (b & 0x400000) {
+        v |= 1;
+    }
+    if (b & 0x800000) {
+        v |= 2;
+    }
+    if (b & 0x1000000) {
+        v |= 4;
+    }
+    if (b & 0x2000000) {
+        v |= 8;
+    }
+    if (b & 0x4000000) {
+        v |= 0x10;
+    }
+    return v;
+}
