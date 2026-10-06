@@ -833,14 +833,16 @@ extern PTMF D_01991E78;
 extern PTMF D_01991E84;
 extern PTMF D_01991E90;
 
-void func_00464860(void) {
+/* 0x00464860 */
+void Sinit_Debilitas(void) {
     D_003AF2D0 = D_003AF290;
     D_003AF2EC = D_003AF2A0;
     D_003AF308 = D_003AF2B0;
     D_003AF324 = D_003AF2C0;
 }
 
-void func_00464920(void) {
+/* 0x00464920 */
+void Sinit_Renderer(void) {
     D_0047E300 = D_003B2F68;
     D_0047E30C = D_003B2F78;
     D_0047E318 = D_003B2F88;
@@ -850,7 +852,8 @@ void func_00464920(void) {
     D_0047E348 = D_003B2FC8;
 }
 
-void func_00464B80(void) {
+/* 0x00464B80 */
+void Sinit_Pursuer(void) {
     D_003EC3E0 = D_003EC140;
     D_003EC3FC = D_003EC150;
     D_003EC418 = D_003EC160;
@@ -901,13 +904,15 @@ void func_00464B80(void) {
     D_0045B3B8 = D_003EC8C8;
 }
 
-void func_00465470(void) {
+/* 0x00465470 */
+void Sinit_SceneGameMembers(void) {
     D_01990700 = D_003EE710;
     D_0199070C = D_003EE720;
     D_01990718 = D_003EE730;
 }
 
-void func_004654F0(void) {
+/* 0x004654F0 */
+void Sinit_Room02(void) {
     D_01990730 = D_003F0378;
     D_0199073C = D_003F0388;
     D_01990748 = D_003F0398;
@@ -916,50 +921,59 @@ void func_004654F0(void) {
     D_0199076C = D_003F03C8;
 }
 
-void func_00465600(void) {
+/* 0x00465600 */
+void Sinit_Room03(void) {
     D_01990780 = D_003F0D90;
     D_0199078C = D_003F0DA0;
 }
 
-void func_00465660(void) {
+/* 0x00465660 */
+void Sinit_Room04(void) {
     D_019907A0 = D_003F1770;
     D_019907AC = D_003F1780;
     D_019907B8 = D_003F1790;
     D_019907C4 = D_003F17A0;
 }
 
-void func_00465720(void) {
+/* 0x00465720 */
+void Sinit_Room06(void) {
     D_019907D0 = D_003F21C0;
 }
 
-void func_00465750(void) {
+/* 0x00465750 */
+void Sinit_Room08(void) {
     D_019907E0 = D_003F31C0;
     D_019907EC = D_003F31D0;
     D_01990800 = D_003F31E0;
     D_0199080C = D_003F31F0;
 }
 
-void func_00465800(void) {
+/* 0x00465800 */
+void Sinit_Room09(void) {
     D_01990818 = D_003F3C50;
 }
 
-void func_00465830(void) {
+/* 0x00465830 */
+void Sinit_Room0A(void) {
     D_01990830 = D_003F4378;
     D_0199083C = D_003F4388;
 }
 
-void func_00465890(void) {
+/* 0x00465890 */
+void Sinit_Room0B(void) {
     D_01990848 = D_003F4640;
 }
 
-void func_004658C0(void) {
+/* 0x004658C0 */
+void Sinit_Room0C(void) {
     D_01990860 = D_003F53F8;
     D_0199086C = D_003F5408;
     D_01990878 = D_003F5418;
     D_01990884 = D_003F5428;
 }
 
-void func_00465980(void) {
+/* 0x00465980 */
+void Sinit_Room0F(void) {
     D_01990890 = D_003F6EE8;
     D_0199089C = D_003F6EF8;
     D_019908A8 = D_003F6F08;
@@ -967,61 +981,74 @@ void func_00465980(void) {
     D_019908C0 = D_003F6F28;
 }
 
-void func_00465A70(void) {
+/* 0x00465A70 */
+void Sinit_Room10(void) {
     D_019908D0 = D_003F78F8;
 }
 
-void func_00465AA0(void) {
+/* 0x00465AA0 */
+void Sinit_Room12(void) {
     D_019908E0 = D_003F9150;
     D_019908F0 = D_003F9160;
 }
 
-void func_00465AF0(void) {
+/* 0x00465AF0 */
+void Sinit_Room13(void) {
     D_01990900 = D_003F99A0;
 }
 
-void func_00465B20(void) {
+/* 0x00465B20 */
+void Sinit_Room14(void) {
     D_01990910 = D_003FA060;
 }
 
-void func_00465B50(void) {
+/* 0x00465B50 */
+void Sinit_Room15(void) {
     D_01990920 = D_003FA728;
     D_01990930 = D_003FA738;
 }
 
-void func_00465BA0(void) {
+/* 0x00465BA0 */
+void Sinit_Room18(void) {
     D_01990940 = D_003FB358;
 }
 
-void func_00465BD0(void) {
+/* 0x00465BD0 */
+void Sinit_Room19(void) {
     D_01990950 = D_003FC010;
 }
 
-void func_00465C00(void) {
+/* 0x00465C00 */
+void Sinit_Room1A(void) {
     D_01990960 = D_003FC658;
     D_0199096C = D_003FC668;
 }
 
-void func_00465C60(void) {
+/* 0x00465C60 */
+void Sinit_Room1B(void) {
     D_01990978 = D_003FCAF0;
 }
 
-void func_00465C90(void) {
+/* 0x00465C90 */
+void Sinit_Room1C(void) {
     D_01990990 = D_003FD338;
     D_0199099C = D_003FD348;
 }
 
-void func_00465CF0(void) {
+/* 0x00465CF0 */
+void Sinit_Room1D(void) {
     D_019909B0 = D_003FD980;
     D_019909BC = D_003FD990;
     D_019909C8 = D_003FD9A0;
 }
 
-void func_00465D70(void) {
+/* 0x00465D70 */
+void Sinit_Room1F(void) {
     D_019909D8 = D_003FE440;
 }
 
-void func_00465DA0(void) {
+/* 0x00465DA0 */
+void Sinit_Room20(void) {
     D_019909F0 = D_003FF078;
     D_019909FC = D_003FF088;
     D_01990A08 = D_003FF098;
@@ -1033,7 +1060,8 @@ void func_00465DA0(void) {
     D_01990A58 = D_003FF0F8;
 }
 
-void func_00465F40(void) {
+/* 0x00465F40 */
+void Sinit_Room21(void) {
     D_01990A70 = D_00400B80;
     D_01990A7C = D_00400B90;
     D_01990A88 = D_00400BA0;
@@ -1044,94 +1072,111 @@ void func_00465F40(void) {
     D_01990AC8 = D_00400BF0;
 }
 
-void func_004660B0(void) {
+/* 0x004660B0 */
+void Sinit_Room23(void) {
     D_01990AD8 = D_00401828;
     D_01990AF0 = D_00401838;
     D_01990AFC = D_00401848;
 }
 
-void func_00466130(void) {
+/* 0x00466130 */
+void Sinit_Room24(void) {
     D_01990B10 = D_004022C0;
     D_01990B1C = D_004022D0;
     D_01990B28 = D_004022E0;
 }
 
-void func_004661C0(void) {
+/* 0x004661C0 */
+void Sinit_Room25(void) {
     D_01990B38 = D_00402D08;
     D_01990B48 = D_00402D18;
 }
 
-void func_00466210(void) {
+/* 0x00466210 */
+void Sinit_Room26(void) {
     D_01990B58 = D_00403900;
     D_01990B70 = D_00403910;
     D_01990B7C = D_00403920;
     D_01990B88 = D_00403930;
 }
 
-void func_004662C0(void) {
+/* 0x004662C0 */
+void Sinit_Room28(void) {
     D_01990B98 = D_00403F68;
 }
 
-void func_004662F0(void) {
+/* 0x004662F0 */
+void Sinit_Room29(void) {
     D_01990BB0 = D_004046E8;
     D_01990BBC = D_004046F8;
 }
 
-void func_00466350(void) {
+/* 0x00466350 */
+void Sinit_Room2A(void) {
     D_01990BD0 = D_004055D0;
     D_01990BDC = D_004055E0;
     D_01990BE8 = D_004055F0;
     D_01990BF4 = D_00405600;
 }
 
-void func_00466410(void) {
+/* 0x00466410 */
+void Sinit_Room2B(void) {
     D_01990C00 = D_00405A90;
 }
 
-void func_00466440(void) {
+/* 0x00466440 */
+void Sinit_Room2D(void) {
     D_01990C10 = D_004064C8;
     D_01990C1C = D_004064D8;
     D_01990C28 = D_004064E8;
     D_01990C38 = D_004064F8;
 }
 
-void func_004664F0(void) {
+/* 0x004664F0 */
+void Sinit_Room40(void) {
     D_01990C48 = D_00407078;
 }
 
-void func_00466520(void) {
+/* 0x00466520 */
+void Sinit_Room43(void) {
     D_01990C58 = D_00407E38;
 }
 
-void func_00466550(void) {
+/* 0x00466550 */
+void Sinit_Room45(void) {
     D_01990C68 = D_00407F18;
 }
 
-void func_00466580(void) {
+/* 0x00466580 */
+void Sinit_Room49(void) {
     D_01990C80 = D_00408638;
     D_01990C8C = D_00408648;
     D_01990C98 = D_00408658;
 }
 
-void func_00466610(void) {
+/* 0x00466610 */
+void Sinit_Room4B(void) {
     D_01990CB0 = D_00409908;
     D_01990CBC = D_00409918;
     D_01990CC8 = D_00409928;
 }
 
-void func_00466690(void) {
+/* 0x00466690 */
+void Sinit_Room4C(void) {
     D_01990CE0 = D_0040ABE0;
     D_01990CEC = D_0040ABF0;
     D_01990CF8 = D_0040AC00;
 }
 
-void func_00466720(void) {
+/* 0x00466720 */
+void Sinit_Room4E(void) {
     D_01990D10 = D_0040B4D0;
     D_01990D1C = D_0040B4E0;
     D_01990D28 = D_0040B4F0;
 }
 
-void func_004667B0(void) {
+/* 0x004667B0 */
+void Sinit_Creature(void) {
     D_01990D40 = D_0040C0E8;
     D_01990D4C = D_0040C0F8;
     D_01990D58 = D_0040C108;
@@ -1139,124 +1184,150 @@ void func_004667B0(void) {
     D_01990D70 = D_0040C128;
 }
 
-void func_00466890(void) {
+/* 0x00466890 */
+void Sinit_Room50(void) {
     D_01990D80 = D_0040CF00;
 }
 
-void func_004668C0(void) {
+/* 0x004668C0 */
+void Sinit_Room51(void) {
     D_01990D90 = D_0040E340;
     D_01990D9C = D_0040E350;
 }
 
-void func_00466920(void) {
+/* 0x00466920 */
+void Sinit_Room52(void) {
     D_01990DA8 = D_0040ECC8;
     D_01990DB8 = D_0040ECD8;
 }
 
-void func_00466970(void) {
+/* 0x00466970 */
+void Sinit_Room56(void) {
     D_01990DC8 = D_0040F468;
 }
 
-void func_004669A0(void) {
+/* 0x004669A0 */
+void Sinit_Room59(void) {
     D_01990DD8 = D_00410B80;
 }
 
-void func_004669D0(void) {
+/* 0x004669D0 */
+void Sinit_Room5A(void) {
     D_01990DE8 = D_00410F28;
 }
 
-void func_00466A00(void) {
+/* 0x00466A00 */
+void Sinit_Room5C(void) {
     D_01990DF8 = D_00411B40;
     D_01990E08 = D_00411B50;
 }
 
-void func_00466A50(void) {
+/* 0x00466A50 */
+void Sinit_Room5D(void) {
     D_01990E20 = D_004123B0;
     D_01990E2C = D_004123C0;
 }
 
-void func_00466AB0(void) {
+/* 0x00466AB0 */
+void Sinit_Room2F(void) {
     D_01990E38 = D_00412E80;
 }
 
-void func_00466AE0(void) {
+/* 0x00466AE0 */
+void Sinit_Room30(void) {
     D_01990E48 = D_004134B0;
 }
 
-void func_00466B10(void) {
+/* 0x00466B10 */
+void Sinit_Debilitas3(void) {
     D_004135D0 = D_00413590;
     D_004135EC = D_004135A0;
     D_00413608 = D_004135B0;
     D_00413624 = D_004135C0;
 }
 
-void func_00466C30(void) {
+/* 0x00466C30 */
+void Sinit_Riccardo(void) {
     D_004148A0 = D_00414880;
     D_004148BC = D_00414890;
 }
 
-void func_00466C90(void) {
+/* 0x00466C90 */
+void Sinit_Room46(void) {
     D_01990E78 = D_00417148;
     D_01990E88 = D_00417158;
 }
 
-void func_00466CE0(void) {
+/* 0x00466CE0 */
+void Sinit_Room102(void) {
     D_01990E98 = D_00417810;
 }
 
-void func_00466D10(void) {
+/* 0x00466D10 */
+void Sinit_Room103(void) {
     D_01990EA8 = D_00417BA0;
 }
 
-void func_00466D40(void) {
+/* 0x00466D40 */
+void Sinit_Room104(void) {
     D_01990EB8 = D_00417F20;
 }
 
-void func_00466D70(void) {
+/* 0x00466D70 */
+void Sinit_Room105(void) {
     D_01990EC8 = D_004182A0;
 }
 
-void func_00466DA0(void) {
+/* 0x00466DA0 */
+void Sinit_Room106(void) {
     D_01990ED8 = D_00418AB8;
 }
 
-void func_00466DD0(void) {
+/* 0x00466DD0 */
+void Sinit_Room107(void) {
     D_01990EE8 = D_00418D80;
     D_01990F00 = D_00418D90;
     D_01990F0C = D_00418DA0;
 }
 
-void func_00466E50(void) {
+/* 0x00466E50 */
+void Sinit_Room108(void) {
     D_01990F18 = D_00419388;
 }
 
-void func_00466E80(void) {
+/* 0x00466E80 */
+void Sinit_Room109(void) {
     D_01990F30 = D_004196F0;
     D_01990F3C = D_00419700;
 }
 
-void func_00466EE0(void) {
+/* 0x00466EE0 */
+void Sinit_Room10A(void) {
     D_01990F48 = D_00419A40;
     D_01990F58 = D_00419A50;
 }
 
-void func_00466F30(void) {
+/* 0x00466F30 */
+void Sinit_Room10B(void) {
     D_01990F68 = D_00419D88;
     D_01990F78 = D_00419D98;
 }
 
-void func_00466F80(void) {
+/* 0x00466F80 */
+void Sinit_Debilitas2(void) {
     D_0041B670 = D_0041B630;
     D_0041B68C = D_0041B640;
     D_0041B6A8 = D_0041B650;
     D_0041B6C4 = D_0041B660;
 }
 
-void func_00467040(void) {
+/* 0x00467040 */
+void Sinit_Room27(void) {
     D_01990FD8 = D_0041CA70;
 }
 
-void func_00467070(void) {
+/* 0x00467070 */
+void Sinit_Room2E(void) {
     D_01990FF0 = D_0041D7B8;
     D_01990FFC = D_0041D7C8;
     D_01991008 = D_0041D7D8;
@@ -1264,7 +1335,8 @@ void func_00467070(void) {
     D_01991020 = D_0041D7F8;
 }
 
-void func_00467160(void) {
+/* 0x00467160 */
+void Sinit_Room66(void) {
     D_01991030 = D_0041F550;
     D_0199103C = D_0041F560;
     D_01991048 = D_0041F570;
@@ -1274,26 +1346,31 @@ void func_00467160(void) {
     D_0199107C = D_0041F5B0;
 }
 
-void func_004672A0(void) {
+/* 0x004672A0 */
+void Sinit_Room55(void) {
     D_01991088 = D_004210F0;
 }
 
-void func_004672D0(void) {
+/* 0x004672D0 */
+void Sinit_Room63(void) {
     D_01991098 = D_00421BE0;
 }
 
-void func_00467300(void) {
+/* 0x00467300 */
+void Sinit_Room62(void) {
     D_019910B0 = D_00422300;
     D_019910BC = D_00422310;
 }
 
-void func_00467360(void) {
+/* 0x00467360 */
+void Sinit_Lorenzo(void) {
     D_00422690 = D_00422660;
     D_004226AC = D_00422670;
     D_004226C8 = D_00422680;
 }
 
-void func_004673F0(void) {
+/* 0x004673F0 */
+void Sinit_Room48(void) {
     D_01991140 = D_004267F0;
     D_0199114C = D_00426800;
     D_01991158 = D_00426810;
@@ -1303,12 +1380,14 @@ void func_004673F0(void) {
     D_01991188 = D_00426850;
 }
 
-void func_00467530(void) {
+/* 0x00467530 */
+void Sinit_Room54(void) {
     D_019911A0 = D_00428028;
     D_019911AC = D_00428038;
 }
 
-void func_00467590(void) {
+/* 0x00467590 */
+void Sinit_Room60(void) {
     D_019911C0 = D_00429140;
     D_019911CC = D_00429150;
     D_019911D8 = D_00429160;
@@ -1317,18 +1396,21 @@ void func_00467590(void) {
     D_019911FC = D_00429190;
 }
 
-void func_004676B0(void) {
+/* 0x004676B0 */
+void Sinit_Room61(void) {
     D_01991550 = D_00429558;
     D_0199155C = D_00429568;
 }
 
-void func_00467710(void) {
+/* 0x00467710 */
+void Sinit_Room31(void) {
     D_01991570 = D_0042A0B0;
     D_0199157C = D_0042A0C0;
     D_01991588 = D_0042A0D0;
 }
 
-void func_004677A0(void) {
+/* 0x004677A0 */
+void Sinit_Room32(void) {
     D_019915A0 = D_0042C290;
     D_019915AC = D_0042C2A0;
     D_019915B8 = D_0042C2B0;
@@ -1337,11 +1419,13 @@ void func_004677A0(void) {
     D_019915DC = D_0042C2E0;
 }
 
-void func_004678C0(void) {
+/* 0x004678C0 */
+void Sinit_Room86(void) {
     D_019915E8 = D_0042C850;
 }
 
-void func_004678F0(void) {
+/* 0x004678F0 */
+void Sinit_RoomC0(void) {
     D_01991610 = D_0042E390;
     D_0199161C = D_0042E3A0;
     D_01991628 = D_0042E3B0;
@@ -1350,14 +1434,16 @@ void func_004678F0(void) {
     D_01991650 = D_0042E3E0;
 }
 
-void func_00467A00(void) {
+/* 0x00467A00 */
+void Sinit_Debilitas3_2(void) {
     D_0042E540 = D_0042E500;
     D_0042E55C = D_0042E510;
     D_0042E578 = D_0042E520;
     D_0042E594 = D_0042E530;
 }
 
-void func_00467AC0(void) {
+/* 0x00467AC0 */
+void Sinit_RoomC7(void) {
     D_01991660 = D_00430760;
     D_0199166C = D_00430770;
     D_01991678 = D_00430780;
@@ -1369,23 +1455,28 @@ void func_00467AC0(void) {
     D_019916CC = D_004307E0;
 }
 
-void func_00467C60(void) {
+/* 0x00467C60 */
+void Sinit_Room84(void) {
     D_019916D8 = D_004326B8;
 }
 
-void func_00467C90(void) {
+/* 0x00467C90 */
+void Sinit_Room85(void) {
     D_019916E8 = D_00432AF8;
 }
 
-void func_00467CC0(void) {
+/* 0x00467CC0 */
+void Sinit_Room87(void) {
     D_019916F8 = D_00432C90;
 }
 
-void func_00467CF0(void) {
+/* 0x00467CF0 */
+void Sinit_Room88(void) {
     D_01991708 = D_00433550;
 }
 
-void func_00467D20(void) {
+/* 0x00467D20 */
+void Sinit_Room8C(void) {
     D_01991720 = D_00434818;
     D_0199172C = D_00434828;
     D_01991738 = D_00434838;
@@ -1393,18 +1484,21 @@ void func_00467D20(void) {
     D_01991750 = D_00434858;
 }
 
-void func_00467E10(void) {
+/* 0x00467E10 */
+void Sinit_Room8D(void) {
     D_01991760 = D_00435008;
     D_0199176C = D_00435018;
     D_01991778 = D_00435028;
 }
 
-void func_00467EA0(void) {
+/* 0x00467EA0 */
+void Sinit_Room8E(void) {
     D_01991790 = D_00435950;
     D_0199179C = D_00435960;
 }
 
-void func_00467F00(void) {
+/* 0x00467F00 */
+void Sinit_Room8F(void) {
     D_019917B0 = D_00436568;
     D_019917BC = D_00436578;
     D_019917C8 = D_00436588;
@@ -1412,14 +1506,16 @@ void func_00467F00(void) {
     D_019917E0 = D_004365A8;
 }
 
-void func_00467FE0(void) {
+/* 0x00467FE0 */
+void Sinit_Room91(void) {
     D_019917F0 = D_00436CA0;
     D_019917FC = D_00436CB0;
     D_01991808 = D_00436CC0;
     D_01991814 = D_00436CD0;
 }
 
-void func_004680A0(void) {
+/* 0x004680A0 */
+void Sinit_Room92(void) {
     D_01991820 = D_00437C40;
     D_0199182C = D_00437C50;
     D_01991838 = D_00437C60;
@@ -1436,147 +1532,177 @@ void func_004680A0(void) {
     D_019918BC = D_00437D10;
 }
 
-void func_00468340(void) {
+/* 0x00468340 */
+void Sinit_Room97(void) {
     D_019918C8 = D_00437E30;
 }
 
-void func_00468370(void) {
+/* 0x00468370 */
+void Sinit_Room69(void) {
     D_019918D8 = D_004386F0;
 }
 
-void func_004683A0(void) {
+/* 0x004683A0 */
+void Sinit_Room6A(void) {
     D_019918F0 = D_00438CD8;
     D_019918FC = D_00438CE8;
 }
 
-void func_00468400(void) {
+/* 0x00468400 */
+void Sinit_Room6C(void) {
     D_01991910 = D_00439AD0;
     D_0199191C = D_00439AE0;
 }
 
-void func_00468460(void) {
+/* 0x00468460 */
+void Sinit_Room6D(void) {
     D_01991930 = D_0043A0B8;
     D_0199193C = D_0043A0C8;
 }
 
-void func_004684C0(void) {
+/* 0x004684C0 */
+void Sinit_Room6F(void) {
     D_01991948 = D_0043AFF0;
     D_01991958 = D_0043B000;
 }
 
-void func_00468510(void) {
+/* 0x00468510 */
+void Sinit_Room80(void) {
     D_01991968 = D_0043EC68;
 }
 
-void func_00468540(void) {
+/* 0x00468540 */
+void Sinit_RoomC1(void) {
     D_01991978 = D_0043F098;
 }
 
-void func_00468570(void) {
+/* 0x00468570 */
+void Sinit_RoomC2(void) {
     D_01991990 = D_0043F898;
     D_0199199C = D_0043F8A8;
     D_019919A8 = D_0043F8B8;
 }
 
-void func_004685F0(void) {
+/* 0x004685F0 */
+void Sinit_RoomC3(void) {
     D_019919C0 = D_00440098;
     D_019919CC = D_004400A8;
     D_019919D8 = D_004400B8;
     D_019919E8 = D_004400C8;
 }
 
-void func_004686A0(void) {
+/* 0x004686A0 */
+void Sinit_RoomC5(void) {
     D_019919F8 = D_00441128;
 }
 
-void func_004686D0(void) {
+/* 0x004686D0 */
+void Sinit_RoomC8(void) {
     D_01991A08 = D_004417B8;
 }
 
-void func_00468700(void) {
+/* 0x00468700 */
+void Sinit_Room98(void) {
     D_01991A18 = D_00443060;
 }
 
-void func_00468730(void) {
+/* 0x00468730 */
+void Sinit_Room99(void) {
     D_01991A28 = D_00443718;
 }
 
-void func_00468760(void) {
+/* 0x00468760 */
+void Sinit_Room9A(void) {
     D_01991A38 = D_00443850;
 }
 
-void func_00468790(void) {
+/* 0x00468790 */
+void Sinit_Room9B(void) {
     D_01991A48 = D_00443DF0;
 }
 
-void func_004687C0(void) {
+/* 0x004687C0 */
+void Sinit_Room93(void) {
     D_01991A58 = D_00444378;
 }
 
-void func_004687F0(void) {
+/* 0x004687F0 */
+void Sinit_Room94(void) {
     D_01991A68 = D_004444D0;
 }
 
-void func_00468820(void) {
+/* 0x00468820 */
+void Sinit_Room95(void) {
     D_01991A78 = D_004446C8;
 }
 
-void func_00468850(void) {
+/* 0x00468850 */
+void Sinit_Room96(void) {
     D_01991A88 = D_00444840;
 }
 
-void func_00468880(void) {
+/* 0x00468880 */
+void Sinit_Lorenzo_2(void) {
     D_00444CE0 = D_00444CB0;
     D_00444CFC = D_00444CC0;
     D_00444D18 = D_00444CD0;
 }
 
-void func_00468910(void) {
+/* 0x00468910 */
+void Sinit_Room37(void) {
     D_01991AB0 = D_00446998;
 }
 
-void func_00468940(void) {
+/* 0x00468940 */
+void Sinit_RoomD0(void) {
     D_01991AC0 = D_00446BA0;
     D_01991ACC = D_00446BB0;
     D_01991AD8 = D_00446BC0;
     D_01991AE8 = D_00446BD0;
 }
 
-void func_004689F0(void) {
+/* 0x004689F0 */
+void Sinit_RoomD1(void) {
     D_01991B00 = D_00446D08;
     D_01991B0C = D_00446D18;
     D_01991B18 = D_00446D28;
 }
 
-void func_00468A70(void) {
+/* 0x00468A70 */
+void Sinit_RoomD2(void) {
     D_01991B28 = D_00446EF8;
     D_01991B38 = D_00446F08;
 }
 
-void func_00468AC0(void) {
+/* 0x00468AC0 */
+void Sinit_RoomD3(void) {
     D_01991B48 = D_004470E8;
     D_01991B58 = D_004470F8;
 }
 
-void func_00468B10(void) {
+/* 0x00468B10 */
+void Sinit_RoomD4(void) {
     D_01991B68 = D_004472C8;
     D_01991B78 = D_004472D8;
 }
 
-void func_00468B60(void) {
+/* 0x00468B60 */
+void Sinit_RoomD5(void) {
     D_01991B90 = D_00447618;
     D_01991B9C = D_00447628;
     D_01991BA8 = D_00447638;
     D_01991BB8 = D_00447648;
 }
 
-void func_00468C10(void) {
+/* 0x00468C10 */
+void Sinit_RoomD6(void) {
     D_01991BD0 = D_00447A20;
     D_01991BDC = D_00447A30;
     D_01991BE8 = D_00447A40;
 }
 
-void func_00468C90(void) {
+/* 0x00468C90 */
+void Sinit_RoomD7(void) {
     D_01991C00 = D_00447B70;
     D_01991C0C = D_00447B80;
     D_01991C20 = D_00447B90;
@@ -1584,21 +1710,24 @@ void func_00468C90(void) {
     D_01991C38 = D_00447BB0;
 }
 
-void func_00468D70(void) {
+/* 0x00468D70 */
+void Sinit_RoomD8(void) {
     D_01991C50 = D_00447E20;
     D_01991C5C = D_00447E30;
     D_01991C70 = D_00447E40;
     D_01991C7C = D_00447E50;
 }
 
-void func_00468E20(void) {
+/* 0x00468E20 */
+void Sinit_RoomD9(void) {
     D_01991C90 = D_00447F88;
     D_01991C9C = D_00447F98;
     D_01991CA8 = D_00447FA8;
     D_01991CB8 = D_00447FB8;
 }
 
-void func_00468ED0(void) {
+/* 0x00468ED0 */
+void Sinit_RoomE0(void) {
     D_01991CD0 = D_004484F8;
     D_01991CDC = D_00448508;
     D_01991CE8 = D_00448518;
@@ -1608,50 +1737,59 @@ void func_00468ED0(void) {
     D_01991D18 = D_00448558;
 }
 
-void func_00469010(void) {
+/* 0x00469010 */
+void Sinit_RoomE1(void) {
     D_01991D28 = D_00448880;
     D_01991D38 = D_00448890;
 }
 
-void func_00469060(void) {
+/* 0x00469060 */
+void Sinit_RoomE2(void) {
     D_01991D48 = D_00448CE8;
     D_01991D58 = D_00448CF8;
 }
 
-void func_004690B0(void) {
+/* 0x004690B0 */
+void Sinit_RoomE3(void) {
     D_01991D68 = D_00449220;
     D_01991D78 = D_00449230;
 }
 
-void func_00469100(void) {
+/* 0x00469100 */
+void Sinit_RoomE4(void) {
     D_01991D90 = D_00449508;
     D_01991D9C = D_00449518;
     D_01991DA8 = D_00449528;
 }
 
-void func_00469180(void) {
+/* 0x00469180 */
+void Sinit_RoomE5(void) {
     D_01991DC0 = D_004498A8;
     D_01991DCC = D_004498B8;
     D_01991DD8 = D_004498C8;
 }
 
-void func_00469200(void) {
+/* 0x00469200 */
+void Sinit_RoomE6(void) {
     D_01991DF0 = D_00449A88;
     D_01991DFC = D_00449A98;
     D_01991E08 = D_00449AA8;
 }
 
-void func_00469280(void) {
+/* 0x00469280 */
+void Sinit_RoomE7(void) {
     D_01991E18 = D_00449EA0;
     D_01991E28 = D_00449EB0;
 }
 
-void func_004692D0(void) {
+/* 0x004692D0 */
+void Sinit_RoomE8(void) {
     D_01991E38 = D_0044A278;
     D_01991E48 = D_0044A288;
 }
 
-void func_00469320(void) {
+/* 0x00469320 */
+void Sinit_RoomE9(void) {
     D_01991E60 = D_0044A938;
     D_01991E6C = D_0044A948;
     D_01991E78 = D_0044A958;
