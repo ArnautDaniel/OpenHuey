@@ -5149,6 +5149,73 @@ void *func_00170350(void *p, s32 flags) {
     return m;
 }
 
+/* ---- Fiona's model in the clothes left on the bed (vtable D_00476F50, the D_00470540 layout
+ * with its parts destroyed one by one) ---- */
+
+extern void *D_00476F50[];
+
+/* +0x8 destructor */
+void *func_0033E620(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00476F50;
+        if (m != NULL) {
+            AT(m, 0x0, void **) = D_00470540;
+            func_0016F990(m + 0x1230, -1);
+            func_001702F0(m + 0x11E0, -1);
+            func_0016F990(m + 0x11A0, -1);
+            func_00170290(m + 0x1140, -1);
+            func_0016F990(m + 0x1100, -1);
+            func_001002C0(m + 0xE40, func_0016FBB0, 0x50, 4);
+            func_0016F990(m + 0xE00, -1);
+            func_001702F0(m + 0xDB0, -1);
+            func_0016F990(m + 0xD70, -1);
+            func_001002C0(m + 0x9B0, func_00170080, 0x50, 0xC);
+            func_00170350(m, 0);
+        }
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+extern void func_001F1FE0(u8 *m);
+extern void func_002F7620(u8 *m);
+extern void func_001F7AC0(u8 *m);
+
+/* +0xC loaded (as func_002F7920): the base setup, the parts' roles, her own setup, per-part draw
+ * settings for parts 0xA0..0xA8, 0xAE..0xB4 and 0xD2..0xD6 */
+void func_0033E750(u8 *m) {
+    static const u8 sParts[] = {0xA0, 0xA2, 0xA4, 0xA6, 0xA8, 0xAE, 0xB0, 0xB2, 0xB4, 0xD2, 0xD4, 0xD6};
+    s32 i;
+
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1E;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x2E;
+    AT(m, 0x8B0, s32) = 0x21;
+    AT(m, 0x8B4, s32) = 0x17;
+    func_002F7620(m);
+    for (i = 0; i < 12; i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* +0x10 */
+void func_0033E740(u8 *m) {
+    func_001F7AC0(m);
+}
+
 extern void *D_00470540[], *D_004703A0[];
 extern void *func_00170460(void *);
 extern void *func_00170080(void *, s32);
