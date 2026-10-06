@@ -46,3 +46,26 @@ void func_00114FD0(void *p) { free(p); }
 
 /* malloc (Sony libc: _malloc_r on the global reent) */
 void *func_00114FA8(unsigned size) { return malloc(size ? size : 1); }
+
+/* exit (Sony libc) */
+void func_001136E8(int status) {
+    exit(status);
+}
+
+/* the game's debug printf (MSL printf through its own console writer): shown with HG_GAMELOG */
+int func_0026EE88(const char *fmt, ...) {
+    static int on = -1;
+    va_list ap;
+    int n = 0;
+
+    if (on < 0) {
+        on = getenv("HG_GAMELOG") != NULL;
+    }
+    if (on) {
+        va_start(ap, fmt);
+        n = vfprintf(stderr, fmt, ap);
+        va_end(ap);
+        fputc('\n', stderr);
+    }
+    return n;
+}

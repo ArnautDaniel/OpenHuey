@@ -601,6 +601,17 @@ s32 func_00260420(u8 *items, u8 l, u8 i) {
     return VCALL(it, 0x10, s32 (*)(VObject *))(it);
 }
 
+/* item `i` of list `l`: what can be done with it (vtable +0x14: 1 use, 2 equip, 4 examine;
+ * 0x80000000 its note can change); 0 for an empty place */
+u32 func_002603C0(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return 0;
+    }
+    return VCALL(it, 0x14, u32 (*)(VObject *))(it);
+}
+
 /* item `i` of list `l`: its id (vtable +0xC); -1 for an empty place */
 s32 func_00260480(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);

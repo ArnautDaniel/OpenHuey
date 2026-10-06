@@ -107,3 +107,33 @@ int sceGsExecLoadImage(void *lp, const void *src) {
     (void)src;
     return 0;
 }
+
+/* sceCdReadClock(clock): the date and time now, in BCD - { status, second, minute, hour, 0,
+ * day, month, year (from 2000) } - as the save headers keep it */
+#include <time.h>
+
+static unsigned char bcd(int v) { return (unsigned char)(((v / 10) % 10) << 4 | (v % 10)); }
+
+int func_00110878(unsigned char *clock) {
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+    clock[0] = 0;
+    clock[1] = bcd(t->tm_sec);
+    clock[2] = bcd(t->tm_min);
+    clock[3] = bcd(t->tm_hour);
+    clock[4] = 0;
+    clock[5] = bcd(t->tm_mday);
+    clock[6] = bcd(t->tm_mon + 1);
+    clock[7] = bcd(t->tm_year % 100);
+    return 1;
+}
+
+/* SDK shutdown at the game scene's end (libsd / SIF RPC clients closed, their semaphores
+ * and the module freed): nothing on PC */
+void func_001CA850(void) {}
+void func_001C8478(void) {}
+void func_001C8648(void *p) { (void)p; }
+
+/* an SDK thread call made before interrupts are enabled again: nothing on PC */
+void func_001CC5B0(int a) { (void)a; }

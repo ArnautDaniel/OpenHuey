@@ -23,9 +23,9 @@ static u32 sGlKindPrim;    /* the kind-4 part's blending (func_0025C8C0): GLR_PR
 void func_0025C8C0(u8 *o);                 /* a kind-4 part's batch */
 extern void func_0025DB10(u8 *o, s32 which);
 extern u64 func_002B71D0(s32 tex);         /* TEX0 of a texture */
-extern void func_0025D970(u8 *o);
+void func_0025D970(u8 *o);
 extern void func_0025D560(u8 *o);
-extern s32 *func_0025DD80(u8 *o, s32 *batch);   /* write a batch's vertices: the next batch */
+s32 *func_0025DD80(u8 *o, s32 *batch);   /* the lit layout's batch writer: the next batch */
 extern s32 *func_0025E100(u8 *o, s32 *batch);
 
 
@@ -240,6 +240,51 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
     return (s32 *)(xyz + AT(o, 0x7C, s32) * 16);
 }
 
+#ifdef HG_NATIVE
+#include <stdlib.h>
+
+extern void glr_todo(const char *what);
+
+/* mode 1 (the lit layout) batch writer, with OpenGL: the vertex count (+0x7C; count & 3 the
+ * padding) locates its sections - texture coordinates (s, t, q floats), colours (two words a
+ * vertex, not decoded yet: drawn grey), positions (x, y, z, w with the GS flags) - drawn unless
+ * hidden as in mode 0. No surveyed room uses it. Returns the next batch. */
+s32 *func_0025DD80(u8 *o, s32 *batch) {
+    static f32 *st;
+    static u8 *rgba;
+    static s32 cap;
+    s32 n = AT(o, 0x7C, s32), i;
+    u8 *stq = (u8 *)batch;
+    u8 *col = stq + n * 12 + (n & 3) * 4;
+    u8 *xyz = col + n * 8 + ((n & 3) == 1 || (n & 3) == 3 ? 8 : 0);
+
+    if (n <= 0) {
+        AT(o, 0x64, s32) = AT(o, 0x80, s32);
+        return batch;
+    }
+    glr_todo("room mesh: the lit layout's colours (mode 1)");
+    if (AT(o, 0xD0, u8) == 0xFF) {
+        u8 g = AT(o, 0x8A, u8);
+
+        if ((g == 0 || (AT(o, 0x6C + (g >> 5) * 4, u32) & (1u << (g & 0x1F)))) && n > 0) {
+            if (n > cap) {
+                cap = n;
+                st = realloc(st, cap * 8);
+                rgba = realloc(rgba, cap * 4);
+            }
+            for (i = 0; i < n; i++) {
+                st[i * 2] = AT(stq, i * 12, f32);
+                st[i * 2 + 1] = AT(stq, i * 12 + 4, f32);
+                AT(rgba, i * 4, u32) = 0x80808080;
+            }
+            glr_strip(&sGlMvp[0][0], n, (const f32 *)xyz, st, rgba, sGlTex, sGlTex0, sGlPrim);
+        }
+    }
+    AT(o, 0x64, s32) = AT(o, 0x80, s32);
+    return (s32 *)(xyz + n * 16);
+}
+#endif
+
 /* a quadword copy done inline (lq / sq), not through libvu0 */
 static inline void vec_set(f32 *d, const f32 *s) {
     d[0] = s[0];
@@ -289,6 +334,46 @@ static void mesh_face_eye(u8 *o, VObject *cam, s32 upright) {
     sceVu0CopyVector(m[1], y);
     sceVu0CopyVector(m[3], (f32 *)(o + 0xC0));
     sceVu0CopyMatrix((f32 (*)[4])(o + 0x90), m);
+}
+
+/* the side of line a -> b that point p (x, z) is on (twice the signed area) */
+static inline f32 side_of(f32 ax, f32 az, f32 bx, f32 bz, f32 px, f32 pz) {
+    return ax * (bz - pz) + px * (az - bz) + bx * (pz - az);
+}
+
+/* a batch out of view: its place (+0xC0 / +0xC8) against the view's edges (func_0025DB10: the
+ * side points +0x20 / +0x30, swung back +0x40 / +0x50) seen from the eye - outside both side
+ * edges, or outside all three of the edges behind; +0xD0 0xFF hides it (else 0) */
+void func_0025D970(u8 *o) {
+    f32 eye[4] __attribute__((aligned(16)));
+    f32 px = AT(o, 0xC0, f32), pz = AT(o, 0xC8, f32);
+    f32 ax = AT(o, 0x20, f32), az = AT(o, 0x28, f32), bx = AT(o, 0x30, f32), bz = AT(o, 0x38, f32);
+    f32 cx = AT(o, 0x40, f32), cz = AT(o, 0x48, f32), dx = AT(o, 0x50, f32), dz = AT(o, 0x58, f32);
+    u8 sides = 0, back = 0;
+
+    VCALL(D_0044E4B8, 0x24, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    if (!(side_of(eye[0], eye[2], ax, az, px, pz) <= 0.0f)) {
+        sides++;
+    }
+    if (side_of(eye[0], eye[2], bx, bz, px, pz) < 0.0f) {
+        sides++;
+    }
+    if (!(side_of(cx, cz, ax, az, px, pz) <= 0.0f)) {
+        back++;
+    }
+    if (side_of(dx, dz, bx, bz, px, pz) < 0.0f) {
+        back++;
+    }
+    if (side_of(cx, cz, dx, dz, px, pz) < 0.0f) {
+        back++;
+    }
+    AT(o, 0xD0, u8) = 0;
+    if (back == 3) {
+        AT(o, 0xD0, u8) = 0xFF;
+    }
+    if (sides == 2) {
+        AT(o, 0xD0, u8) = 0xFF;
+    }
 }
 
 /* a batch's view-dependent placement: parallax (+0x86 = 2 / 4 / 8 / 16: moved sideways by
