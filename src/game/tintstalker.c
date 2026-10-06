@@ -379,21 +379,21 @@ void TintStalker_Tint(Pursuer *p) {
     TintStalker_Fade(p);
 }
 
-extern u8 D_0042A7F0[], D_0042A830[], D_0042A860[], D_0042A8A0[], D_0042A8D0[], D_0042A900[],
-    D_0042A930[], D_0042A960[], D_0042A990[], D_0042A9C0[], D_0042A9D0[], D_0042AA00[],
-    D_0042AA20[], D_0042AA50[], str_t_13[], D_0042AAA0[], str_r_8[], D_0042AAC0[];
-extern u8 D_0042ABA0[], D_0042ABE0[], D_0042AC20[], D_0042AC70[], D_0042ACA0[], D_0042ACD0[],
-    D_0042ACF0[], D_0042AD40[], D_0042AD80[], D_0042ADC0[], D_0042ADD0[], D_0042AE00[],
-    D_0042AE20[], D_0042AE50[], str_t_14[], D_0042AEA8[], str_r_9[];
+extern u8 TintStalker_Attack0_00[], TintStalker_Attack0_02[], TintStalker_Attack0_01[], TintStalker_Attack0_03[], TintStalker_Attack0_04[], TintStalker_Attack0_05[],
+    TintStalker_Attack0_06[], TintStalker_Attack0_07[], TintStalker_Attack0_08[], TintStalker_Attack0_09[], TintStalker_Attack0_10[], TintStalker_Attack0_11[],
+    TintStalker_Attack0_12[], TintStalker_Attack0_13[], str_t_13[], TintStalker_Attack0_14[], str_r_8[], D_0042AAC0[];
+extern u8 TintStalker_Attack1_00[], TintStalker_Attack1_02[], TintStalker_Attack1_01[], TintStalker_Attack1_03[], TintStalker_Attack1_04[], TintStalker_Attack1_05[],
+    TintStalker_Attack1_06[], TintStalker_Attack1_07[], TintStalker_Attack1_08[], TintStalker_Attack1_09[], TintStalker_Attack1_10[], TintStalker_Attack1_11[],
+    TintStalker_Attack1_12[], TintStalker_Attack1_13[], str_t_14[], TintStalker_Attack1_14[], str_r_9[];
 
 /* its attack tables for situations 0..16; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTables[2][17] = {
-    { D_0042A7F0, D_0042A860, D_0042A830, D_0042A8A0, D_0042A8D0, D_0042A900, D_0042A930,
-      D_0042A960, D_0042A990, D_0042A9C0, D_0042A9D0, D_0042AA00, D_0042AA20, D_0042AA50,
-      D_0042AAA0, str_r_8, str_t_13 },
-    { D_0042ABA0, D_0042AC20, D_0042ABE0, D_0042AC70, D_0042ACA0, D_0042ACD0, D_0042ACF0,
-      D_0042AD40, D_0042AD80, D_0042ADC0, D_0042ADD0, D_0042AE00, D_0042AE20, D_0042AE50,
-      D_0042AEA8, str_r_9, str_t_14 },
+    { TintStalker_Attack0_00, TintStalker_Attack0_01, TintStalker_Attack0_02, TintStalker_Attack0_03, TintStalker_Attack0_04, TintStalker_Attack0_05, TintStalker_Attack0_06,
+      TintStalker_Attack0_07, TintStalker_Attack0_08, TintStalker_Attack0_09, TintStalker_Attack0_10, TintStalker_Attack0_11, TintStalker_Attack0_12, TintStalker_Attack0_13,
+      TintStalker_Attack0_14, str_r_8, str_t_13 },
+    { TintStalker_Attack1_00, TintStalker_Attack1_01, TintStalker_Attack1_02, TintStalker_Attack1_03, TintStalker_Attack1_04, TintStalker_Attack1_05, TintStalker_Attack1_06,
+      TintStalker_Attack1_07, TintStalker_Attack1_08, TintStalker_Attack1_09, TintStalker_Attack1_10, TintStalker_Attack1_11, TintStalker_Attack1_12, TintStalker_Attack1_13,
+      TintStalker_Attack1_14, str_r_9, str_t_14 },
 };
 
 /* vtable +0x130: the attack table for a situation; in the ending situation 15 has its own */

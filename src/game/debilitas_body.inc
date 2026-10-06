@@ -441,22 +441,22 @@ void Debilitas_CarryOn(Pursuer *p) {
     }
 }
 
-extern u8 D_003AF780[], D_003AF7C0[], D_003AF800[], D_003AF840[], D_003AF880[], D_003AF8A0[],
-    D_003AF8C0[], D_003AF900[], D_003AF930[], D_003AF978[], D_003AF990[], D_003AF9D0[],
-    D_003AF9E0[], D_003AFA10[], D_003AFA40[], D_003AFA70[], D_003AFA80[];
-extern u8 D_003AFBA0[], D_003AFBF0[], D_003AFC40[], D_003AFC80[], D_003AFCB0[], D_003AFCF0[],
-    D_003AFD10[], D_003AFD50[], D_003AFD80[], D_003AFDC0[], D_003AFDD0[], D_003AFE00[],
-    D_003AFE10[], D_003AFE50[], str_t_2[], D_003AFED0[], D_003AFEE0[];
+extern u8 Debilitas_Attack0_00[], Debilitas_Attack0_02[], Debilitas_Attack0_01[], Debilitas_Attack0_03[], Debilitas_Attack0_04[], Debilitas_Attack0_05[],
+    Debilitas_Attack0_06[], Debilitas_Attack0_07[], Debilitas_Attack0_08[], Debilitas_Attack0_09[], Debilitas_Attack0_10[], Debilitas_Attack0_11[],
+    Debilitas_Attack0_12[], Debilitas_Attack0_13[], Debilitas_Attack0_16[], Debilitas_Attack0_14[], Debilitas_Attack0_15[];
+extern u8 Debilitas_Attack1_00[], Debilitas_Attack1_02[], Debilitas_Attack1_01[], Debilitas_Attack1_03[], Debilitas_Attack1_04[], Debilitas_Attack1_05[],
+    Debilitas_Attack1_06[], Debilitas_Attack1_07[], Debilitas_Attack1_08[], Debilitas_Attack1_09[], Debilitas_Attack1_10[], Debilitas_Attack1_11[],
+    Debilitas_Attack1_12[], Debilitas_Attack1_13[], str_t_2[], Debilitas_Attack1_14[], Debilitas_Attack1_15[];
 
 /* his attack tables ({kind, value, chance}, see Pursuer_PickFromTable) for each situation 0..16; the
    second set when gProgress+0x30 bit 0x8000 is set */
 static u8 *const sAttackTables[2][17] = {
-    { D_003AF780, D_003AF800, D_003AF7C0, D_003AF840, D_003AF880, D_003AF8A0, D_003AF8C0,
-      D_003AF900, D_003AF930, D_003AF978, D_003AF990, D_003AF9D0, D_003AF9E0, D_003AFA10,
-      D_003AFA70, D_003AFA80, D_003AFA40 },
-    { D_003AFBA0, D_003AFC40, D_003AFBF0, D_003AFC80, D_003AFCB0, D_003AFCF0, D_003AFD10,
-      D_003AFD50, D_003AFD80, D_003AFDC0, D_003AFDD0, D_003AFE00, D_003AFE10, D_003AFE50,
-      D_003AFED0, D_003AFEE0, str_t_2 },
+    { Debilitas_Attack0_00, Debilitas_Attack0_01, Debilitas_Attack0_02, Debilitas_Attack0_03, Debilitas_Attack0_04, Debilitas_Attack0_05, Debilitas_Attack0_06,
+      Debilitas_Attack0_07, Debilitas_Attack0_08, Debilitas_Attack0_09, Debilitas_Attack0_10, Debilitas_Attack0_11, Debilitas_Attack0_12, Debilitas_Attack0_13,
+      Debilitas_Attack0_14, Debilitas_Attack0_15, Debilitas_Attack0_16 },
+    { Debilitas_Attack1_00, Debilitas_Attack1_01, Debilitas_Attack1_02, Debilitas_Attack1_03, Debilitas_Attack1_04, Debilitas_Attack1_05, Debilitas_Attack1_06,
+      Debilitas_Attack1_07, Debilitas_Attack1_08, Debilitas_Attack1_09, Debilitas_Attack1_10, Debilitas_Attack1_11, Debilitas_Attack1_12, Debilitas_Attack1_13,
+      Debilitas_Attack1_14, Debilitas_Attack1_15, str_t_2 },
 };
 
 /* vtable +0x130: the attack table for a situation (the Pursuer has none) */

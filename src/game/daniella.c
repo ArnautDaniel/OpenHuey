@@ -498,36 +498,36 @@ void Daniella_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_003D8900);
 }
 
-extern u8 D_003D77B0[], D_003D7810[], D_003D7880[], D_003D78B0[], D_003D78E0[], D_003D7940[],
-    D_003D7970[], D_003D79C0[], D_003D7A20[], D_003D7A50[], D_003D7A70[], D_003D7AA0[],
-    D_003D7AC0[], D_003D7AF0[], str_t_3[], D_003D7B40[], str_r_2[];
-extern u8 D_003D7B60[], D_003D7BA0[], D_003D7BE0[], D_003D7C10[], D_003D7C40[], D_003D7C80[],
-    D_003D7CC0[], D_003D7D00[], D_003D7D40[], D_003D7D60[], D_003D7D80[], D_003D7DA8[],
-    D_003D7DC0[], D_003D7DF0[], D_003D7E10[], D_003D7E40[], D_003D7E50[];
-extern u8 D_003D7FB0[], D_003D8020[], D_003D8080[], D_003D80D0[], D_003D8100[], D_003D8160[],
-    D_003D8190[], D_003D81F0[], D_003D8250[], D_003D8280[], D_003D82A0[], D_003D82D0[],
-    D_003D8300[], D_003D8330[], str_t_4[], str_r_3[], str_r_4[];
-extern u8 D_003D83B0[], D_003D8410[], D_003D8470[], D_003D84D0[], D_003D8500[], D_003D8560[],
-    D_003D85B0[], D_003D8610[], D_003D8670[], D_003D86A0[], D_003D86C0[], D_003D86F0[],
-    D_003D8720[], D_003D8748[], D_003D8760[], D_003D8790[], D_003D87A0[];
+extern u8 Daniella_Attack00_00[], Daniella_Attack00_02[], Daniella_Attack00_01[], Daniella_Attack00_03[], Daniella_Attack00_04[], Daniella_Attack00_05[],
+    Daniella_Attack00_06[], Daniella_Attack00_07[], Daniella_Attack00_08[], Daniella_Attack00_09[], Daniella_Attack00_10[], Daniella_Attack00_11[],
+    Daniella_Attack00_12[], Daniella_Attack00_13[], str_t_3[], Daniella_Attack00_14[], str_r_2[];
+extern u8 Daniella_Attack01_00[], Daniella_Attack01_02[], Daniella_Attack01_01[], Daniella_Attack01_03[], Daniella_Attack01_04[], Daniella_Attack01_05[],
+    Daniella_Attack01_06[], Daniella_Attack01_07[], Daniella_Attack01_08[], Daniella_Attack01_09[], Daniella_Attack01_10[], Daniella_Attack01_11[],
+    Daniella_Attack01_12[], Daniella_Attack01_13[], Daniella_Attack01_16[], Daniella_Attack01_14[], Daniella_Attack01_15[];
+extern u8 Daniella_Attack10_00[], Daniella_Attack10_02[], Daniella_Attack10_01[], Daniella_Attack10_03[], Daniella_Attack10_04[], Daniella_Attack10_05[],
+    Daniella_Attack10_06[], Daniella_Attack10_07[], Daniella_Attack10_08[], Daniella_Attack10_09[], Daniella_Attack10_10[], Daniella_Attack10_11[],
+    Daniella_Attack10_12[], Daniella_Attack10_13[], str_t_4[], str_r_3[], str_r_4[];
+extern u8 Daniella_Attack11_00[], Daniella_Attack11_02[], Daniella_Attack11_01[], Daniella_Attack11_03[], Daniella_Attack11_04[], Daniella_Attack11_05[],
+    Daniella_Attack11_06[], Daniella_Attack11_07[], Daniella_Attack11_08[], Daniella_Attack11_09[], Daniella_Attack11_10[], Daniella_Attack11_11[],
+    Daniella_Attack11_12[], Daniella_Attack11_13[], Daniella_Attack11_16[], Daniella_Attack11_14[], Daniella_Attack11_15[];
 
 /* her attack tables for situations 0..16: [gProgress+0x30 bit 0x8000][mode 2 (+0x16B8)] */
 static u8 *const sAttackTables[2][2][17] = {
     {
-        { D_003D77B0, D_003D7880, D_003D7810, D_003D78B0, D_003D78E0, D_003D7940, D_003D7970,
-          D_003D79C0, D_003D7A20, D_003D7A50, D_003D7A70, D_003D7AA0, D_003D7AC0, D_003D7AF0,
-          D_003D7B40, str_r_2, str_t_3 },
-        { D_003D7B60, D_003D7BE0, D_003D7BA0, D_003D7C10, D_003D7C40, D_003D7C80, D_003D7CC0,
-          D_003D7D00, D_003D7D40, D_003D7D60, D_003D7D80, D_003D7DA8, D_003D7DC0, D_003D7DF0,
-          D_003D7E40, D_003D7E50, D_003D7E10 },
+        { Daniella_Attack00_00, Daniella_Attack00_01, Daniella_Attack00_02, Daniella_Attack00_03, Daniella_Attack00_04, Daniella_Attack00_05, Daniella_Attack00_06,
+          Daniella_Attack00_07, Daniella_Attack00_08, Daniella_Attack00_09, Daniella_Attack00_10, Daniella_Attack00_11, Daniella_Attack00_12, Daniella_Attack00_13,
+          Daniella_Attack00_14, str_r_2, str_t_3 },
+        { Daniella_Attack01_00, Daniella_Attack01_01, Daniella_Attack01_02, Daniella_Attack01_03, Daniella_Attack01_04, Daniella_Attack01_05, Daniella_Attack01_06,
+          Daniella_Attack01_07, Daniella_Attack01_08, Daniella_Attack01_09, Daniella_Attack01_10, Daniella_Attack01_11, Daniella_Attack01_12, Daniella_Attack01_13,
+          Daniella_Attack01_14, Daniella_Attack01_15, Daniella_Attack01_16 },
     },
     {
-        { D_003D7FB0, D_003D8080, D_003D8020, D_003D80D0, D_003D8100, D_003D8160, D_003D8190,
-          D_003D81F0, D_003D8250, D_003D8280, D_003D82A0, D_003D82D0, D_003D8300, D_003D8330,
+        { Daniella_Attack10_00, Daniella_Attack10_01, Daniella_Attack10_02, Daniella_Attack10_03, Daniella_Attack10_04, Daniella_Attack10_05, Daniella_Attack10_06,
+          Daniella_Attack10_07, Daniella_Attack10_08, Daniella_Attack10_09, Daniella_Attack10_10, Daniella_Attack10_11, Daniella_Attack10_12, Daniella_Attack10_13,
           str_r_3, str_r_4, str_t_4 },
-        { D_003D83B0, D_003D8470, D_003D8410, D_003D84D0, D_003D8500, D_003D8560, D_003D85B0,
-          D_003D8610, D_003D8670, D_003D86A0, D_003D86C0, D_003D86F0, D_003D8720, D_003D8748,
-          D_003D8790, D_003D87A0, D_003D8760 },
+        { Daniella_Attack11_00, Daniella_Attack11_01, Daniella_Attack11_02, Daniella_Attack11_03, Daniella_Attack11_04, Daniella_Attack11_05, Daniella_Attack11_06,
+          Daniella_Attack11_07, Daniella_Attack11_08, Daniella_Attack11_09, Daniella_Attack11_10, Daniella_Attack11_11, Daniella_Attack11_12, Daniella_Attack11_13,
+          Daniella_Attack11_14, Daniella_Attack11_15, Daniella_Attack11_16 },
     },
 };
 
@@ -1529,36 +1529,36 @@ void Kind36_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
     Daniella_HitPoints(p, e, a, b, D_0043EA60);
 }
 
-extern u8 D_0043BAC0[], D_0043BB30[], D_0043BBA0[], D_0043BC00[], D_0043BC30[], D_0043BC90[],
-    D_0043BCD0[], D_0043BD30[], D_0043BD90[], D_0043BDC0[], D_0043BDF0[], D_0043BE40[],
-    D_0043BE60[], D_0043BE90[], str_t_17[], str_r_10[], str_r_11[], D_0043BF10[],
-    D_0043BF50[], D_0043BF90[], D_0043BFC0[], D_0043BFF0[], D_0043C030[], D_0043C070[],
-    D_0043C0B0[], D_0043C0F0[], D_0043C110[], D_0043C130[], D_0043C158[], D_0043C170[],
-    D_0043C1A0[], D_0043C1C0[], D_0043C1F0[], D_0043C200[], D_0043C360[], D_0043C3D0[],
-    D_0043C440[], D_0043C4A0[], D_0043C4D0[], D_0043C530[], D_0043C560[], D_0043C5D0[],
-    D_0043C630[], D_0043C660[], D_0043C690[], D_0043C6E0[], D_0043C710[], D_0043C740[],
-    str_t_18[], D_0043C7A0[], D_0043C7B0[], D_0043C7D0[], D_0043C830[], D_0043C890[],
-    D_0043C8F0[], D_0043C920[], D_0043C980[], D_0043C9D0[], D_0043CA30[], D_0043CA90[],
-    D_0043CAC0[], D_0043CAE0[], D_0043CB10[], D_0043CB40[], D_0043CB68[], D_0043CB80[],
-    D_0043CBB0[], D_0043CBC0[];
+extern u8 Kind34_Attack00_00[], Kind34_Attack00_02[], Kind34_Attack00_01[], Kind34_Attack00_03[], Kind34_Attack00_04[], Kind34_Attack00_05[],
+    Kind34_Attack00_06[], Kind34_Attack00_07[], Kind34_Attack00_08[], Kind34_Attack00_09[], Kind34_Attack00_10[], Kind34_Attack00_11[],
+    Kind34_Attack00_12[], Kind34_Attack00_13[], str_t_17[], str_r_10[], str_r_11[], Kind34_Attack01_00[],
+    Kind34_Attack01_02[], Kind34_Attack01_01[], Kind34_Attack01_03[], Kind34_Attack01_04[], Kind34_Attack01_05[], Kind34_Attack01_06[],
+    Kind34_Attack01_07[], Kind34_Attack01_08[], Kind34_Attack01_09[], Kind34_Attack01_10[], Kind34_Attack01_11[], Kind34_Attack01_12[],
+    Kind34_Attack01_13[], Kind34_Attack01_16[], Kind34_Attack01_14[], Kind34_Attack01_15[], Kind34_Attack10_00[], Kind34_Attack10_02[],
+    Kind34_Attack10_01[], Kind34_Attack10_03[], Kind34_Attack10_04[], Kind34_Attack10_05[], Kind34_Attack10_06[], Kind34_Attack10_07[],
+    Kind34_Attack10_08[], Kind34_Attack10_09[], Kind34_Attack10_10[], Kind34_Attack10_11[], Kind34_Attack10_12[], Kind34_Attack10_13[],
+    str_t_18[], Kind34_Attack10_14[], Kind34_Attack10_15[], Kind34_Attack11_00[], Kind34_Attack11_02[], Kind34_Attack11_01[],
+    Kind34_Attack11_03[], Kind34_Attack11_04[], Kind34_Attack11_05[], Kind34_Attack11_06[], Kind34_Attack11_07[], Kind34_Attack11_08[],
+    Kind34_Attack11_09[], Kind34_Attack11_10[], Kind34_Attack11_11[], Kind34_Attack11_12[], Kind34_Attack11_13[], Kind34_Attack11_16[],
+    Kind34_Attack11_14[], Kind34_Attack11_15[];
 
 /* the first's attack tables: [gProgress+0x30 bit 0x8000][mode 2 (+0x16B8)] */
 static u8 *const sAttackTables1[2][2][17] = {
     {
-        { D_0043BAC0, D_0043BBA0, D_0043BB30, D_0043BC00, D_0043BC30, D_0043BC90, D_0043BCD0,
-          D_0043BD30, D_0043BD90, D_0043BDC0, D_0043BDF0, D_0043BE40, D_0043BE60, D_0043BE90,
+        { Kind34_Attack00_00, Kind34_Attack00_01, Kind34_Attack00_02, Kind34_Attack00_03, Kind34_Attack00_04, Kind34_Attack00_05, Kind34_Attack00_06,
+          Kind34_Attack00_07, Kind34_Attack00_08, Kind34_Attack00_09, Kind34_Attack00_10, Kind34_Attack00_11, Kind34_Attack00_12, Kind34_Attack00_13,
           str_r_10, str_r_11, str_t_17 },
-        { D_0043BF10, D_0043BF90, D_0043BF50, D_0043BFC0, D_0043BFF0, D_0043C030, D_0043C070,
-          D_0043C0B0, D_0043C0F0, D_0043C110, D_0043C130, D_0043C158, D_0043C170, D_0043C1A0,
-          D_0043C1F0, D_0043C200, D_0043C1C0 },
+        { Kind34_Attack01_00, Kind34_Attack01_01, Kind34_Attack01_02, Kind34_Attack01_03, Kind34_Attack01_04, Kind34_Attack01_05, Kind34_Attack01_06,
+          Kind34_Attack01_07, Kind34_Attack01_08, Kind34_Attack01_09, Kind34_Attack01_10, Kind34_Attack01_11, Kind34_Attack01_12, Kind34_Attack01_13,
+          Kind34_Attack01_14, Kind34_Attack01_15, Kind34_Attack01_16 },
     },
     {
-        { D_0043C360, D_0043C440, D_0043C3D0, D_0043C4A0, D_0043C4D0, D_0043C530, D_0043C560,
-          D_0043C5D0, D_0043C630, D_0043C660, D_0043C690, D_0043C6E0, D_0043C710, D_0043C740,
-          D_0043C7A0, D_0043C7B0, str_t_18 },
-        { D_0043C7D0, D_0043C890, D_0043C830, D_0043C8F0, D_0043C920, D_0043C980, D_0043C9D0,
-          D_0043CA30, D_0043CA90, D_0043CAC0, D_0043CAE0, D_0043CB10, D_0043CB40, D_0043CB68,
-          D_0043CBB0, D_0043CBC0, D_0043CB80 },
+        { Kind34_Attack10_00, Kind34_Attack10_01, Kind34_Attack10_02, Kind34_Attack10_03, Kind34_Attack10_04, Kind34_Attack10_05, Kind34_Attack10_06,
+          Kind34_Attack10_07, Kind34_Attack10_08, Kind34_Attack10_09, Kind34_Attack10_10, Kind34_Attack10_11, Kind34_Attack10_12, Kind34_Attack10_13,
+          Kind34_Attack10_14, Kind34_Attack10_15, str_t_18 },
+        { Kind34_Attack11_00, Kind34_Attack11_01, Kind34_Attack11_02, Kind34_Attack11_03, Kind34_Attack11_04, Kind34_Attack11_05, Kind34_Attack11_06,
+          Kind34_Attack11_07, Kind34_Attack11_08, Kind34_Attack11_09, Kind34_Attack11_10, Kind34_Attack11_11, Kind34_Attack11_12, Kind34_Attack11_13,
+          Kind34_Attack11_14, Kind34_Attack11_15, Kind34_Attack11_16 },
     },
 };
 
@@ -1570,11 +1570,11 @@ void Kind34_AttackTable(Pursuer *p, s8 situation) {
 
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
         if (situation == 15) {
-            PU(p, 0x1718, u8 *) = D_0043C200;
+            PU(p, 0x1718, u8 *) = Kind34_Attack01_15;
             return;
         }
         if (situation == 14) {
-            PU(p, 0x1718, u8 *) = D_0043C1F0;
+            PU(p, 0x1718, u8 *) = Kind34_Attack01_14;
             return;
         }
     }
@@ -1740,20 +1740,20 @@ void *Kind35_MotionFiles(void) {
     return D_0043CDC0;
 }
 
-extern u8 D_0043D180[], D_0043D200[], D_0043D270[], D_0043D2D0[], D_0043D310[], D_0043D370[],
-    D_0043D3C0[], D_0043D420[], D_0043D480[], D_0043D4B0[], D_0043D4D0[], D_0043D510[],
-    D_0043D530[], D_0043D560[], str_t_19[], str_r_12[], str_r_13[], D_0043D6B0[],
-    D_0043D710[], D_0043D770[], D_0043D7E0[], D_0043D820[], D_0043D880[], D_0043D8D0[],
-    D_0043D930[], D_0043D990[], D_0043D9C0[], D_0043D9E0[], D_0043DA10[], D_0043DA30[],
-    D_0043DA60[], str_t_20[], str_r_14[], str_r_15[];
+extern u8 Kind35_Attack0_00[], Kind35_Attack0_02[], Kind35_Attack0_01[], Kind35_Attack0_03[], Kind35_Attack0_04[], Kind35_Attack0_05[],
+    Kind35_Attack0_06[], Kind35_Attack0_07[], Kind35_Attack0_08[], Kind35_Attack0_09[], Kind35_Attack0_10[], Kind35_Attack0_11[],
+    Kind35_Attack0_12[], Kind35_Attack0_13[], str_t_19[], str_r_12[], str_r_13[], Kind35_Attack1_00[],
+    Kind35_Attack1_02[], Kind35_Attack1_01[], Kind35_Attack1_03[], Kind35_Attack1_04[], Kind35_Attack1_05[], Kind35_Attack1_06[],
+    Kind35_Attack1_07[], Kind35_Attack1_08[], Kind35_Attack1_09[], Kind35_Attack1_10[], Kind35_Attack1_11[], Kind35_Attack1_12[],
+    Kind35_Attack1_13[], str_t_20[], str_r_14[], str_r_15[];
 
 /* the second's attack tables; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTables2[2][17] = {
-    { D_0043D180, D_0043D270, D_0043D200, D_0043D2D0, D_0043D310, D_0043D370, D_0043D3C0,
-      D_0043D420, D_0043D480, D_0043D4B0, D_0043D4D0, D_0043D510, D_0043D530, D_0043D560,
+    { Kind35_Attack0_00, Kind35_Attack0_01, Kind35_Attack0_02, Kind35_Attack0_03, Kind35_Attack0_04, Kind35_Attack0_05, Kind35_Attack0_06,
+      Kind35_Attack0_07, Kind35_Attack0_08, Kind35_Attack0_09, Kind35_Attack0_10, Kind35_Attack0_11, Kind35_Attack0_12, Kind35_Attack0_13,
       str_r_12, str_r_13, str_t_19 },
-    { D_0043D6B0, D_0043D770, D_0043D710, D_0043D7E0, D_0043D820, D_0043D880, D_0043D8D0,
-      D_0043D930, D_0043D990, D_0043D9C0, D_0043D9E0, D_0043DA10, D_0043DA30, D_0043DA60,
+    { Kind35_Attack1_00, Kind35_Attack1_01, Kind35_Attack1_02, Kind35_Attack1_03, Kind35_Attack1_04, Kind35_Attack1_05, Kind35_Attack1_06,
+      Kind35_Attack1_07, Kind35_Attack1_08, Kind35_Attack1_09, Kind35_Attack1_10, Kind35_Attack1_11, Kind35_Attack1_12, Kind35_Attack1_13,
       str_r_14, str_r_15, str_t_20 },
 };
 
@@ -1882,20 +1882,20 @@ void Kind36_ActionOffsets(void *self, s32 i, f32 *out) {
     }
 }
 
-extern u8 D_0043E010[], D_0043E090[], D_0043E100[], D_0043E160[], D_0043E1A0[], D_0043E200[],
-    D_0043E250[], D_0043E2B0[], D_0043E310[], D_0043E340[], D_0043E360[], D_0043E3A0[],
-    D_0043E3C0[], D_0043E3F0[], str_t_21[], str_r_16[], str_r_17[], D_0043E540[],
-    D_0043E5C0[], D_0043E630[], D_0043E690[], D_0043E6D0[], D_0043E730[], D_0043E770[],
-    D_0043E7D0[], D_0043E830[], D_0043E860[], D_0043E880[], D_0043E8B0[], D_0043E8E0[],
-    D_0043E910[], str_t_22[], str_r_18[], str_r_19[];
+extern u8 Kind36_Attack0_00[], Kind36_Attack0_02[], Kind36_Attack0_01[], Kind36_Attack0_03[], Kind36_Attack0_04[], Kind36_Attack0_05[],
+    Kind36_Attack0_06[], Kind36_Attack0_07[], Kind36_Attack0_08[], Kind36_Attack0_09[], Kind36_Attack0_10[], Kind36_Attack0_11[],
+    Kind36_Attack0_12[], Kind36_Attack0_13[], str_t_21[], str_r_16[], str_r_17[], Kind36_Attack1_00[],
+    Kind36_Attack1_02[], Kind36_Attack1_01[], Kind36_Attack1_03[], Kind36_Attack1_04[], Kind36_Attack1_05[], Kind36_Attack1_06[],
+    Kind36_Attack1_07[], Kind36_Attack1_08[], Kind36_Attack1_09[], Kind36_Attack1_10[], Kind36_Attack1_11[], Kind36_Attack1_12[],
+    Kind36_Attack1_13[], str_t_22[], str_r_18[], str_r_19[];
 
 /* the third's attack tables */
 static u8 *const sAttackTables3[2][17] = {
-    { D_0043E010, D_0043E100, D_0043E090, D_0043E160, D_0043E1A0, D_0043E200, D_0043E250,
-      D_0043E2B0, D_0043E310, D_0043E340, D_0043E360, D_0043E3A0, D_0043E3C0, D_0043E3F0,
+    { Kind36_Attack0_00, Kind36_Attack0_01, Kind36_Attack0_02, Kind36_Attack0_03, Kind36_Attack0_04, Kind36_Attack0_05, Kind36_Attack0_06,
+      Kind36_Attack0_07, Kind36_Attack0_08, Kind36_Attack0_09, Kind36_Attack0_10, Kind36_Attack0_11, Kind36_Attack0_12, Kind36_Attack0_13,
       str_r_16, str_r_17, str_t_21 },
-    { D_0043E540, D_0043E630, D_0043E5C0, D_0043E690, D_0043E6D0, D_0043E730, D_0043E770,
-      D_0043E7D0, D_0043E830, D_0043E860, D_0043E880, D_0043E8B0, D_0043E8E0, D_0043E910,
+    { Kind36_Attack1_00, Kind36_Attack1_01, Kind36_Attack1_02, Kind36_Attack1_03, Kind36_Attack1_04, Kind36_Attack1_05, Kind36_Attack1_06,
+      Kind36_Attack1_07, Kind36_Attack1_08, Kind36_Attack1_09, Kind36_Attack1_10, Kind36_Attack1_11, Kind36_Attack1_12, Kind36_Attack1_13,
       str_r_18, str_r_19, str_t_22 },
 };
 
