@@ -50,6 +50,26 @@ static int parse_options(int argc, char **argv, Options *o) {
     return 1;
 }
 
+/* the game's executable, for the tables only it has: $HG_EXE, next to the data folder, in it,
+ * or the repository's baserom */
+static void load_world(World *w, const char *data) {
+    char path[1200];
+    const char *env = getenv("HG_EXE");
+
+    if (env != NULL && world_load(w, env)) {
+        return;
+    }
+    snprintf(path, sizeof(path), "%s/../SLUS_210.75", data);
+    if (world_load(w, path)) {
+        return;
+    }
+    snprintf(path, sizeof(path), "%s/SLUS_210.75", data);
+    if (world_load(w, path) || world_load(w, HG2_DEFAULT_EXE)) {
+        return;
+    }
+    fprintf(stderr, "hg2: no SLUS_210.75 found (set HG_EXE): rooms won't connect\n");
+}
+
 static int load_scripts(Forth *f) {
     const char *dir = getenv("HG2_SCRIPTS") != NULL ? getenv("HG2_SCRIPTS") : HG2_SCRIPT_DIR;
     char path[1024];
@@ -77,6 +97,11 @@ static void draw(Engine *e) {
     room_draw(&e->room, &vp);
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_draw(&e->actors[i], &vp);
+    }
+    if (e->hud[0] != 0) {
+        float scale = e->height >= 900 ? 3.0f : 2.0f;
+
+        render_text(16, (float)e->height - render_line_height(scale) - 16, scale, 0xF0E8C0FF, e->hud, (int)strlen(e->hud));
     }
     console_draw(&e->console, e->width, e->height);
     render_end();
@@ -115,6 +140,7 @@ int main(int argc, char **argv) {
     memset(e, 0, sizeof(*e));
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
+    load_world(&e->world, opt.data);
     e->forth = forth_new(4 << 20);
     forth_set_output(e->forth, console_output, &e->console);
     bind_engine(e->forth);

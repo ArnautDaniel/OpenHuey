@@ -99,6 +99,16 @@ Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, flo
     return p;
 }
 
+Vec3 navmesh_center(const NavMesh *n, int i) {
+    const NavTri *t;
+
+    if (i < 0 || i >= n->ntris) {
+        return vec3(0, 0, 0);
+    }
+    t = &n->tris[i];
+    return vec3_scale(vec3_add(vec3_add(t->v[0], t->v[1]), t->v[2]), 1.0f / 3.0f);
+}
+
 Vec3 navmesh_nearest(const NavMesh *n, Vec3 p) {
     int i;
     float best_d = 1e30f;

@@ -28,6 +28,8 @@ ctest --test-dir build/new-src      # the Forth test suite (and anything else un
 ```
 
 The data dir defaults to `../Haunting Ground (USA)/data` next to the repository, or `$HG_DATA`.
+The game's executable (`SLUS_210.75`, for the door and room tables) is looked for next to the data
+folder, in it, in `baserom/`, or at `$HG_EXE`.
 It builds as 64-bit (or 32-bit); it needs SDL3 and OpenGL 3.3.
 
 Keys (all defined in `scripts/`, not in C):
@@ -38,6 +40,7 @@ Keys (all defined in `scripts/`, not in C):
 | Tab | play as Fiona / free camera |
 | W A S D, Shift | walk (relative to the view), run - or fly the free camera |
 | Q E, arrows, right mouse | free camera: down / up, look around |
+| Space | at an exit: go through to the next room |
 | [ ] | the room's own camera setups |
 | PageUp / PageDown | the next / previous room |
 

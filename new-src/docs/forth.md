@@ -55,6 +55,10 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `nav-nearest` | `F: x y z -- x' y' z'` | the middle of the nearest nav triangle |
 | `room-group!` | `group flag --` | show or hide a group of the room mesh |
 | `.room` | | a summary |
+| `nav-tri`, `tri-center` | `F: x y z -- ` `-- tri`, `tri -- F: x y z` | nav triangles |
+| `exit-tri` | `exit which -- tri` | this room's exit triangles: 0 out, 1 in, 2 through |
+| `exit-leads` | `exit -- room exit'` | where an exit goes (-1 -1: nowhere) - the game's door table |
+| `hud` | `addr len --` | a line of text at the bottom of the screen (`0 0 hud` clears) |
 | `camera` | `-- addr` | with `cam.x cam.y cam.z cam.yaw cam.pitch cam.fov cam.near cam.far cam.up` (sf@ / sf!) |
 | `actor-load` | `addr len -- id` | `s" O_FIN/FIN_000" actor-load` |
 | `actor` | `id -- addr` | with `act.x act.y act.z act.yaw act.scale act.frame act.rate` (sf@) and `act.loop act.visible` (l@) |
@@ -74,7 +78,8 @@ Comments: `( ... )` and `\ to the end of the line`.
 
 `prelude.fs` (the language), then `game.fs`, which loads the rest with `script name.fs`:
 `vectors.fs` (float vectors, the camera's position and angles), `freecam.fs`, `views.fs` (the
-room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona).
+room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
+`doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game
 runs: redefine a word and the next tick uses it (words already compiled into others keep the

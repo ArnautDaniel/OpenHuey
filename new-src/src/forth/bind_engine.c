@@ -93,6 +93,41 @@ PRIM(p_nav_at) {   /* ( F: x y z climb -- [y'] ) ( -- flag ) on the nav mesh? an
         PUSH(0);
     }
 }
+PRIM(p_nav_tri) {   /* ( F: x y z -- ) ( -- tri | -1 ) the nav triangle under a point */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
+
+    PUSH(navmesh_find(&gEngine.room.nav, vec3(x, y, z), 4.0f, &h));
+}
+PRIM(p_tri_center) {   /* ( tri -- ) ( F: -- x y z ) */
+    Cell i = POP();
+    Vec3 c;
+
+    if (i < 0 || i >= gEngine.room.nav.ntris) {
+        forth_error(f, "tri-center: no nav triangle %ld", (long)i);
+    }
+    c = navmesh_center(&gEngine.room.nav, (int)i);
+    FPUSH(c.x); FPUSH(c.y); FPUSH(c.z);
+}
+
+/* ---- the house: exits and where they lead ---- */
+
+PRIM(p_exit_tri) {   /* ( exit which -- tri | -1 ) the current room's exit triangles: 0 out, 1 in, 2 through */
+    Cell which = POP(), exit = POP();
+
+    PUSH(world_exit_tri(&gEngine.world, gEngine.room.id, (int)exit, (int)which));
+}
+PRIM(p_exit_leads) {   /* ( exit -- room exit' | -1 -1 ) where an exit of this room goes */
+    Cell exit = POP();
+    int to_exit = -1, room = world_exit_leads(&gEngine.world, gEngine.room.id, (int)exit, &to_exit);
+
+    PUSH(room);
+    PUSH(room < 0 ? -1 : to_exit);
+}
+PRIM(p_hud) {   /* ( addr len -- ) the line at the bottom of the screen; 0 0 hud clears it */
+    Cell n = POP(), a = POP();
+
+    snprintf(gEngine.hud, sizeof(gEngine.hud), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+}
 PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
     const Room *r = &gEngine.room;
     int i, parts[MESH_PARTS] = {0};
@@ -333,7 +368,8 @@ void bind_engine(Forth *f) {
     } prims[] = {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
-        {"nav-tris", p_nav_tris}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},

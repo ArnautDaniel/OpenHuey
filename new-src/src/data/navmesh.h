@@ -29,6 +29,8 @@ int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height);
 /* move from p by (dx, dz), staying on the mesh with `radius` to spare ahead: sliding along
  * walls, following the floor */
 Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, float radius);
+/* the middle of triangle i */
+Vec3 navmesh_center(const NavMesh *n, int i);
 /* the middle of the triangle nearest p */
 Vec3 navmesh_nearest(const NavMesh *n, Vec3 p);
 

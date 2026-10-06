@@ -43,9 +43,12 @@ ticks (`wait`, `dt`).
   - `roommesh` - section 3, batches of triangle strips in batch-local space, flattened into room
     space triangle lists at load;
   - `navmesh` - section 0, where characters may stand (moves slide along its edges);
+  - `exe` - the game's executable, for the tables that live only there (read from the player's
+    copy at start-up, never stored in the repository);
   - `model` - character .PCK files (skeleton, skinned/rigid/morph parts, motion banks) and the
     pose (motion sampling, bone matrices).
-- `game/`: `room` (a loaded room: file, GPU mesh, textures, groups, floor query), `actor`
+- `game/`: `world` (how rooms connect: the door and room tables), `room` (a loaded room: file,
+  GPU mesh, textures, groups, floor query, nav mesh), `actor`
   (characters in the world), `camera`, `console`, `engine.h` (all the engine state in one struct).
 - `forth/`: `forth.c` (the language), `bind_engine.c` (the engine's words), `repl.c` (the
   standalone tool).
@@ -68,7 +71,7 @@ ticks (`wait`, `dt`).
   specially; the bloom mask, fog and the game's lights are not done.
 - Characters: no root motion, no blending between motions, the faces and hands in their rest
   shape; lighting is one fixed light.
-- Collision is the nav mesh only (no other characters, no door states); no doors, events,
-  items, sound.
+- Collision is the nav mesh only (no other characters). Exits all lead through (no locked
+  doors, no door animations, no transition effects); no events, items, sound.
 - The camera "director" is a stand-in (the nearest room setup); the game's real camera zones
   are in the room data and the decomp (`CamDirector_*`).
