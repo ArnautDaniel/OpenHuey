@@ -2189,3 +2189,43 @@ void func_0038B900(SubScreen *s) {
     }
     SUB_PAGE(s, 0x2, u8) = 0;
 }
+
+/* ---- the extras list ---- */
+
+/* the extras list (screen kind 0x8C): the language 1, the headings, the eight entries of the
+ * current one's group (titles 0x70 + entry, "???" until unlocked, func_0038DF90), the current
+ * one highlighted; the help line, the group number of 4 and the arrows blinking */
+void func_0038DBE0(SubScreen *s) {
+    u8 base;
+    u32 i;
+    s32 b, x;
+    u8 alpha;
+
+    s->kind = 0x8C;
+    sub_panels(s);
+    D_0047B350 = 1;
+    Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
+    base = SUB_PAGE(s, 0x0, u8) & ~7;
+    for (i = 0; i < 8; i++) {
+        u32 k = base + i;
+        u16 msg;
+        u8 color;
+
+        if (k >= 0x20) {
+            continue;
+        }
+        msg = func_0038DF90(s, k) ? (u16)(base + 0x70 + i) : 0x16E;
+        color = SUB_PAGE(s, 0x0, u8) == k ? 0x82 : 0x80;
+        Task_Printf(&s->text, 0x30, 0x5E + i * 35, color, D_00463FD0, k + 1);
+        Task_ShowText(&s->text, 0x58, 0x5E + i * 35, color, Task_MessageText(&s->text, msg), 0x80, 0x30, 0x10, 0x15);
+    }
+    Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
+    x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
+    Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, (base >> 3) + 1, 4);
+    b = 0x80 - ((s->frame << 2) & 0xFF);
+    alpha = b > 0 ? b : -b;
+    SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+    SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+}

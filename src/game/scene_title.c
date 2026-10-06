@@ -1217,3 +1217,45 @@ void func_0012E270(SceneTitle *t) {
         ptmf_set(&t->seq, &D_003B0250);
     }
 }
+
+/* the title menu at `alpha`: the language 2, the glow's phase on; with the files loaded the
+ * background and panel, the items (NEW GAME / LOAD GAME / OPTIONS, and the two extras once
+ * the game is finished) and the cursor's item lit by a pulsing added copy */
+void func_0012DA20(SceneTitle *t, f32 alpha) {
+    static const s16 kY[5] = {0x40, 0x70, 0xA0, 0xD0, 0x100};
+    f32 glow;
+    u8 sel;
+    s32 i;
+
+    D_0047B350 = 2;
+    t->anim = (t->anim + 5000) % 360000;
+    if (!t->loaded) {
+        return;
+    }
+    SceneTitle_PrepareBackground(t);
+    glow = 0.5f * (1.0f + func_0031C248(0x1.921fb6p+1f * (180.0f - (f32)t->anim / 1000.0f) / 180.0f));
+    sel = 1 << t->cursor;
+    SceneTitle_DrawBackImage(t, alpha, 0.0f);
+    SceneTitle_DrawMenuPanel(t, alpha, 1.0f);
+    for (i = 0; i < 3; i++) {
+        SceneTitle_DrawRect(t, 0, i * 0x20, 0xC0, 0x20, 0x20, kY[i], 1, 0, alpha);
+    }
+    if (t->extras) {
+        SceneTitle_DrawRect(t, 0, 0x60, 0xC0, 0x20, 0x20, kY[3], 1, 0, alpha);
+        SceneTitle_DrawRect(t, 0, 0x80, 0xC0, 0x20, 0x20, kY[4], 1, 0, alpha);
+    }
+    for (i = 0; i < 3; i++) {
+        if (sel & (1 << i)) {
+            SceneTitle_DrawRect(t, 0, i * 0x20, 0xC0, 0x20, 0x20, kY[i], 0, 1, glow * alpha);
+        }
+    }
+    if (!t->extras) {
+        return;
+    }
+    if (sel & 0x8) {
+        SceneTitle_DrawRect(t, 0, 0x60, 0xC0, 0x20, 0x20, kY[3], 0, 1, glow * alpha);
+    }
+    if (sel & 0x10) {
+        SceneTitle_DrawRect(t, 0, 0x80, 0xC0, 0x20, 0x20, kY[4], 0, 1, glow * alpha);
+    }
+}
