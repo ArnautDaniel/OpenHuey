@@ -4239,3 +4239,261 @@ void func_00386990(SubScreen *s) {
     }
 }
 #endif
+
+/* ---- the item's actions ---- */
+
+extern u32 func_002603C0(u8 *items, u8 l, u8 i);   /* its actions (1 use, 2 equip, 4 examine;
+                                                      0x80000000 its note can change) */
+extern void func_002607A0(u8 *items, u8 l, u8 i);  /* take it off */
+extern s32 func_00177620(Progress *p);             /* the chase: 0 none, 1 / 2 being chased */
+extern u8 *D_0044F808;                             /* the stalker in play */
+extern const char D_00464238[];                    /* the cursor */
+extern const PTMF D_0044B278, D_0044B288, D_0044B298, D_0044B2A8, D_0044B2B8, D_0044B2C8, D_0044B2D8,
+    D_0044B2E8, D_0044B2F8, D_0044B308, D_0044B318, D_0044B328;
+
+typedef struct {
+    u16 act;   /* the action's bit (0 back) */
+    u16 msg;   /* its name */
+} ItemAction;
+extern const ItemAction D_0044B260[6];   /* back, use, equip, examine, take off */
+
+#define SUB_ACTION(s) ((s)->padA8C54)   /* the action under the cursor */
+
+/* the item under the cursor: its id (and kind, `kind` given), its actions (`list`, back last;
+ * their count returned), its equipment status in `equip`, its word copied when it is the word
+ * plate (0x3F) and its name given to the questions (parameter 1) */
+static s32 item_actions(SubScreen *s, s32 *id, s32 *kind, u32 *acts, s8 *equip, u8 *list) {
+    u8 *items = s->pool;
+    s32 n = 0, b;
+
+    *id = func_00260480(items, SUB_LIST(s), SUB_CURSOR(s));
+    if (kind != NULL) {
+        *kind = func_00260420(items, SUB_LIST(s), SUB_CURSOR(s));
+    }
+    *acts = func_002603C0(items, SUB_LIST(s), SUB_CURSOR(s));
+    *equip = func_002606E0(items, SUB_LIST(s), SUB_CURSOR(s));
+    for (b = 0; b < 3; b++) {
+        if (*acts & (1 << b)) {
+            list[n++] = 1 << b;
+        }
+    }
+    list[n++] = 0;
+    if (*id == 0x3F) {
+        const u8 *w = (const u8 *)func_002604E0(items, SUB_LIST(s), SUB_CURSOR(s));
+        u32 i;
+
+        for (i = 0; i < 8; i++) {
+            s->unkA8C58[i] = w[i];
+        }
+    }
+    Msg_SetParamSystem(&s->ask, 1, *id & 0xFFFF);
+    return n;
+}
+
+/* the item can't be used now: in a chase (2), or with the stalker here in the room */
+static s32 item_usable(void) {
+    Progress *p = gProgress;
+    u8 *h = D_0044F808;
+
+    if ((u8)func_00177620(p) == 2) {
+        return 0;
+    }
+    if (h != NULL && AT(h, 0x28, u8) != 0 && AT(h, 0xE0, u8) == 0 &&
+        VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32)) {
+        return 0;
+    }
+    return 1;
+}
+
+/* the item under the cursor used (its use's result: 0 / 8 nothing happened, 4 the screen
+ * closes onto it, 1 (an item of kind 2) / 2 a message, else done) */
+static void item_use(SubScreen *s, s32 id, s32 kind) {
+    u8 r;
+
+    if ((u32)kind < 2 && !item_usable()) {
+        Task_Open(&s->ask, 0x54);
+        Sound_PlaySE(SE_BUZZER);
+        ptmf_set(&s->state, &D_0044B278);
+        return;
+    }
+    if (kind == 7) {
+        Task_Open(&s->ask, id & 0xFFFF);
+        ptmf_set(&s->state, &D_0044B288);
+        return;
+    }
+    r = func_00260DD0(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+    if (r == 0 || r == 8) {
+        Task_Open(&s->ask, 0x52);
+        if (!(r & 8)) {
+            Sound_PlaySE(SE_BUZZER);
+        }
+        ptmf_set(&s->state, &D_0044B298);
+    } else if (r & 4) {
+        VCALL(s, 0x38, void (*)(SubScreen *, s32))(s, id);
+        ptmf_set(&s->state, &D_0044B2A8);
+        if (!(r & 8)) {
+            Sound_PlaySE(SE_DECIDE);
+        }
+        s->close = 1;
+        s->quietClose = 1;
+    } else if (((r & 1) && kind == 2) || (r & 2)) {
+        VCALL(s, 0x38, void (*)(SubScreen *, s32))(s, id);
+        Task_Open(&s->ask, 0x55);
+        if (!(r & 8)) {
+            Sound_PlaySE(0x84);
+        }
+        ptmf_set(&s->state, &D_0044B2B8);
+    } else {
+        ptmf_set(&s->state, &D_0044B2C8);
+    }
+}
+
+/* state: the item's actions. Up / down round them; confirm: back (D_0044B318), examine (a
+ * question, D_0044B308), equip / take off (Fiona's costume changing; equipping where another
+ * is: a question naming it, D_0044B2F8) or use (item_use); next / previous step to the list's
+ * next / previous item (its picture loaded); cancel puts the cursor on back (D_0044B328).
+ * Then the list's panels and grid and, staying here: the picture (sliding in), the name,
+ * count and note, and the actions' box with the cursor */
+void func_00395630(SubScreen *s) {
+    u8 *items = s->pool;
+    Task *t = &s->text;
+    u8 list[4];
+    s32 stay = 1, redo = 0;
+    s32 id, kind, n, i;
+    u32 acts;
+    s8 equip;
+
+    n = item_actions(s, &id, &kind, &acts, &equip, list);
+    if (!s->fading) {
+        u32 pad = D_0047E36C;
+
+        if (pad & MENU_CONFIRM) {
+            switch (list[SUB_ACTION(s)]) {
+            case 0:
+                ptmf_set(&s->state, &D_0044B318);
+                Sound_PlaySE(SE_DECIDE);
+                break;
+            case 4:
+                Task_Open(&s->ask, 0x56);
+                Sound_PlaySE(SE_DECIDE);
+                ptmf_set(&s->state, &D_0044B308);
+                break;
+            case 2:
+                if (equip == 2) {
+                    s32 on = func_00260690(items, (u8)func_00260630(items, SUB_LIST(s), SUB_CURSOR(s)));
+
+                    Msg_SetParamSystem(&s->ask, 1, on & 0xFFFF);
+                    Task_Open(&s->ask, 0x5C);
+                    Sound_PlaySE(SE_DECIDE);
+                    ptmf_set(&s->state, &D_0044B2F8);
+                } else if (equip == 1) {
+                    func_002607A0(items, SUB_LIST(s), SUB_CURSOR(s));
+                    if (SUB_LIST(s) == 1) {
+                        func_00182FC0(gCharPlayer);
+                    }
+                    Sound_PlaySE(SE_DECIDE);
+                    ptmf_set(&s->state, &D_0044B2E8);
+                } else if (equip == 0) {
+                    func_00260840(items, SUB_LIST(s), SUB_CURSOR(s));
+                    if (SUB_LIST(s) == 1) {
+                        func_00182FC0(gCharPlayer);
+                    }
+                    Sound_PlaySE(SE_DECIDE);
+                    ptmf_set(&s->state, &D_0044B2D8);
+                }
+                break;
+            case 1:
+                item_use(s, id, kind);
+                break;
+            }
+            stay = 0;
+        } else if (pad & MENU_UP) {
+            if (SUB_ACTION(s) != 0) {
+                SUB_ACTION(s)--;
+            } else {
+                SUB_ACTION(s) = n - 1;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_DOWN) {
+            SUB_ACTION(s) = (SUB_ACTION(s) + 1) % n;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (D_0047E36C & (MENU_NEXT | MENU_PREV)) {
+            u8 old;
+
+            redo = 1;
+            SUB_ACTION(s) = 0;
+            old = SUB_CURSOR(s);
+            if (D_0047E36C & MENU_NEXT) {
+                SUB_CURSOR(s) = old + 1;
+                if (SUB_CURSOR(s) >= func_002605F0(items, SUB_LIST(s))) {
+                    SUB_CURSOR(s) = 0;
+                }
+            } else if (old != 0) {
+                SUB_CURSOR(s)--;
+            } else {
+                SUB_CURSOR(s) = func_002605F0(items, SUB_LIST(s)) - 1;
+            }
+            if (old != SUB_CURSOR(s)) {
+                s->page[0x15C] = 0;
+                func_002600C0();
+                func_00260250(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
+                Sound_PlaySE(SE_CURSOR);
+            }
+        } else if (D_0047E36C & MENU_CANCEL) {
+            SUB_ACTION(s) = n - 1;
+            ptmf_set(&s->state, &D_0044B328);
+            Sound_PlaySE(SE_CANCEL);
+        }
+    }
+    if (redo) {
+        n = item_actions(s, &id, NULL, &acts, &equip, list);
+    }
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    sub_panels(s);
+    func_003949B0(s, 1);
+    if (stay) {
+        char word[9];
+        s32 note;
+
+        SubScreen_DrawPart(s, 0x10, 0x30, 0xA, 0x80, 0);
+        if (func_00260130(items) == 0) {
+            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, (u8 *)s + 0x94F40, 0x27);
+            if (s->page[0x15C] < 0x40) {
+                s->page[0x15C] += 8;
+            }
+            SubScreen_DrawPart(s, 0x50, 0x70, 0xB, s->page[0x15C], 0);
+        }
+        for (i = 0; i < 8; i++) {
+            word[i] = s->unkA8C58[i];
+        }
+        word[8] = 0;
+        Msg_PrintfParam(t, 3, D_00464218, word);
+        Task_ShowText(t, 0x38, 0x49, 0x80, Task_MessageText(t, (u16)(id + 0x8100)), 0x80, 0x30, 0x10, 0x15);
+        if (func_00260360(items, SUB_LIST(s), SUB_CURSOR(s)) == 1) {
+            Task_Printf(t, 0xD2, 0x49, 0x80, D_00464230, func_00260300(items, SUB_LIST(s), SUB_CURSOR(s)));
+        }
+        Task_DrawBox(t, 0x100, 0x16E, 0x19C, 0x66, 0x60, 0x30);
+        note = id + 0x100;
+        if ((acts & 0x80000000) && !VCALL(s, 0x3C, s32 (*)(SubScreen *, s32))(s, id)) {
+            note = 0x13D;
+        }
+        Task_ShowText(t, 0x32, 0x142, 0, Task_MessageText(t, note & 0xFFFF), 0x80, 0x30, 0x10, 0x15);
+        Task_DrawBox(t, 0x1A9, n * 10 + 0xDD, 0x46, n * 20, 0x60, 0x30);
+        for (i = 0; i < n; i++) {
+            s32 k;
+
+            for (k = 0; k < 5 && D_0044B260[k].act != list[i]; k++) {
+            }
+            if (k == 2 && equip == 1) {
+                k = 4;
+            }
+            Task_ShowText(t, 0x190, 0xD8 + i * 0x14, 0, Task_MessageText(t, D_0044B260[k].msg), 0x80, 0x30, 0x10,
+                          0x15);
+        }
+        Task_Printf(t, 0x17C, SUB_ACTION(s) * 20 + 0xD8, 9, D_00464238);
+    }
+}
