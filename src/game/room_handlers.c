@@ -7120,3 +7120,99 @@ s32 func_0033A470(void *self, void *a1, u8 *cmd) {
     }
     return 2;
 }
+
+/* ---- room 66 (D_0041F558): footsteps in the mud - a character callback ---- */
+extern void func_00125900(Character *c);
+extern void func_00125A10(Character *c);
+extern u32 func_002DD420(void *motion, f32 *out, s32 left, f32 dt, f32 zscale);   /* foot on the ground (u8) */
+extern void func_002E2CA0(f32 *out, f32 *v, f32 angle);   /* v turned about y */
+
+/* two brown puffs (D_0046FF20 dust, colour 0x46 / 0x34 / 0x29, alpha 0x20) at the foot, the
+ * second 4 behind */
+static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
+    s32 slot = Effect_New(mgr, 0x720, dust_cloud_init);
+    f32 t[4] __attribute__((aligned(16)));
+    struct {
+        f32 pos[4];
+        s32 kind, a, b, c, d;
+    } prm __attribute__((aligned(16)));
+
+    if (k == 1) {
+        foot[2] -= 4.0f;
+    }
+    func_002E2CA0(t, foot, AT(c, 0x54, f32));
+    prm.pos[0] = AT(c, 0x10, f32) + t[0];
+    prm.pos[1] = AT(c, 0x14, f32) + t[1];
+    prm.pos[3] = 1.0f;
+    prm.a = 0x46;
+    prm.b = 0x34;
+    prm.c = 0x29;
+    prm.d = 0x20;
+    prm.pos[2] = AT(c, 0x18, f32) + t[2];
+    prm.kind = 2;
+    func_002D6090(mgr, slot, &prm);
+}
+
+/* byte 3 0: the character's +0xE1 / +0xF4 cleared; 1 / 2 / else func_00125A10 / func_00125960 /
+ * func_00125900, then: a foot (model +0x64) coming down while she stands (model +0x550 not above
+ * 0) steps (voice 4 on motion 0x201, else 3) and, each foot, puffs mud; event flags 5 / 6 keep
+ * which feet are down */
+s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
+    VObject *m, *ev;
+    u8 *mgr;
+    u8 l, r, wasL, wasR, fl, fr;
+    f32 posL[4] __attribute__((aligned(16)));
+    f32 posR[4] __attribute__((aligned(16)));
+    s32 k;
+
+    switch (cmd[3]) {
+    case 0:
+        AT(c, 0xE1, u8) = 0;
+        AT(c, 0xF4, s32) = 0;
+        break;
+    case 1:
+        func_00125A10(c);
+        break;
+    case 2:
+        func_00125960(c);
+        break;
+    default:
+        func_00125900(c);
+        break;
+    }
+    if (cmd[3] == 0) {
+        return 1;
+    }
+    m = c->motion;
+    l = VCALL(m, 0x64, s32 (*)(VObject *, s32, s32))(m, 0, 0);
+    m = c->motion;
+    r = VCALL(m, 0x64, s32 (*)(VObject *, s32, s32))(m, 1, 0);
+    ev = D_0044E4D0;
+    wasL = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 5);
+    wasR = VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 6);
+    if (AT(c->motion, 0x550, f32) <= 0.0f && ((!wasL && l) || (!wasR && r))) {
+        func_00122C20(&c->a, AT(c->motion, 0x55C, s32) == 0x201 ? 4 : 3, 6, 0, 0, NULL);
+    }
+    fl = func_002DD420(c->motion, posL, 0, 0.0f, 1.0f);
+    fr = func_002DD420(c->motion, posR, 1, 0.0f, 1.0f);
+    mgr = D_0044E578;
+    for (k = 0; k < 2; k++) {
+        if (AT(c->motion, 0x550, f32) <= 0.0f && !wasL && fl) {
+            mud_puff(mgr, c, posL, k);
+        }
+        if (AT(c->motion, 0x550, f32) <= 0.0f && !wasR && fr) {
+            mud_puff(mgr, c, posR, k);
+        }
+    }
+    if (l) {
+        VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 5);
+    } else {
+        VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 5);
+    }
+    if (r) {
+        VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 6);
+    } else {
+        VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 6);
+    }
+    return 1;
+}
