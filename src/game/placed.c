@@ -2360,3 +2360,78 @@ s32 func_00367EA0(u8 *o) {
     }
     return thing_near(p, o, AT(p, 0xC8, f32));
 }
+
+extern const PTMF D_0042F200, D_0042F210, D_0042F220;
+
+/* (as func_00368710) +0x4C the motion state for this frame (none outside the current room),
+   +0x13E 0xFF when it hasn't moved since last frame, and the fade */
+void func_00333FA0(u8 *b) {
+    f32 s;
+
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        AT(b, 0xA0, PTMF) = sGameStateNull;
+        return;
+    }
+    AT(b, 0x38, u32) = AT(b, 0x34, u32);
+    AT(b, 0x13E, u16) = 0;
+    s = AT(b, 0x18, f32) - AT(b, 0x48, f32) + ((AT(b, 0x10, f32) - AT(b, 0x40, f32)) + (AT(b, 0x14, f32) - AT(b, 0x44, f32)));
+    if (s <= 0.0f) {
+        s = -s;
+    }
+    if (0.0f == s) {
+        AT(b, 0x13E, u16) = 0xFF;
+    }
+    sceVu0CopyVector((f32 *)(b + 0x40), BALL_POS(b));
+    switch (AT(b, 0xE0, u8)) {
+    case 0:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F200);
+        break;
+    case 1:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F210);
+        break;
+    default:
+        ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F220);
+        break;
+    }
+    if (AT(b, 0x120, u16) != 0) {
+        AT(b, 0x11C, f32) = AT(b, 0x11C, f32) - 0x1.555556p-3f /* 1/6 */;
+        if (AT(b, 0x11C, f32) <= 0.0f) {
+            AT(b, 0x11C, f32) = 0.0f;
+            AT(b, 0x28, u8) = 0;
+        }
+    }
+}
+
+extern VObject *D_0044E560;   /* the sound driver */
+extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
+
+/* +0x30 each frame, while the game runs: gone after 7.5 s; Fiona's kick (0.4 up); the pursuer
+   standing on it sets it off (sound 4, a level-0x28 noise) */
+void func_003688D0(u8 *o) {
+    Progress *p;
+
+    func_00121220(o);
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+        return;
+    }
+    if ((VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 1) {
+        return;
+    }
+    p = gProgress;
+    if ((Progress_TestFlag(p, 8) & 0xFF) == 1) {
+        return;
+    }
+    if (AT(o, 0xE4, u32) >= 450) {
+        AT(o, 0x28, u8) = 0;
+        return;
+    }
+    thing_kick_up(o, 0x1.99999ap-2f);   /* 0.4 */
+    if (func_00367EA0(o) != 0) {
+        func_002FF650(D_0044E560, 4, 6, (f32 *)(o + 0x10), 0, 0);
+        func_00177FA0(p, (f32 *)(o + 0x10), 4, 2, 0x28, 0, 0.0f);
+        AT(o, 0x28, u8) = 0;
+    }
+}
