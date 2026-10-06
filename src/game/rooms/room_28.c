@@ -69,8 +69,8 @@ s32 Room28_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B98[i & 0xFF], a, b);
 }
 
-/* the pursuer's func_0029A710 */
+/* the pursuer's Pursuer_GrabHewieBehind */
 /* 0x002B0E20 */
 s32 Room28_Cond00(void) {
-    return func_0029A710((Pursuer *)gCharPursuer);
+    return Pursuer_GrabHewieBehind((Pursuer *)gCharPursuer);
 }

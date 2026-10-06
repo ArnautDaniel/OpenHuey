@@ -3853,7 +3853,7 @@ void Fiona_Head(Fiona *f) {
     dp = k01.f * dp;
     dy = k01.f * dy;
     turn = wrap_abs(f->c.a.angle[1] - FI(f, 0x1AD5B8, f32));
-    func_002DD310(f->c.motion, pitch, yaw, dp, dy + turn);
+    Motion_EaseTilt(f->c.motion, pitch, yaw, dp, dy + turn);
 }
 
 extern void Fiona_Voice(Fiona *f, s32 id, s32, s32, s32);   /* a voice */

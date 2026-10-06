@@ -2539,7 +2539,7 @@ static inline void summoner_take(u8 *o, u8 kind) {
     }
     if (AT(pu, 0x28, u8)) {
         AT(o, 0x8, s32) = AT(pu, 0x30, s32);
-        AT(o, 0x0, u32) = func_0029CE50((Pursuer *)pu) & 0x7FFFFFFF;
+        AT(o, 0x0, u32) = Pursuer_RandomDelay((Pursuer *)pu) & 0x7FFFFFFF;
         AT(o, 0xC, s32) = 0;
         AT(o, 0x11, u8) = kind;
     }
@@ -2630,7 +2630,7 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
         }
     }
     if (ok) {
-        func_0029CEE0((Pursuer *)pu, list[i], (AT(o, 0x0, u32) & 0x80000000) != 0, plan, to);
+        Pursuer_IntoRoomByEvent((Pursuer *)pu, list[i], (AT(o, 0x0, u32) & 0x80000000) != 0, plan, to);
     }
     func_00114FD0(list);
     return ok;
@@ -2667,7 +2667,7 @@ s32 Summoner_Offstage(u8 *o) {
         return 0;
     }
     if (!Progress_TestFlag(p, 1)) {
-        AT(o, 0x0, u32) = func_0029CE50((Pursuer *)pu);
+        AT(o, 0x0, u32) = Pursuer_RandomDelay((Pursuer *)pu);
         AT(o, 0xC, u32) = 0;
         Progress_SetFlag(p, 1);
     }
@@ -2706,7 +2706,7 @@ s32 Summoner_Offstage(u8 *o) {
 
 /* each frame with the pursuer in play: the cooldown runs down; its mode (+0x16C8) changed: the
  * wait restarts; Fiona in its room, or next door where it isn't hunting her (progress +0x64
- * not 4 or func_0029A8C0): likewise; else the wait counts up, and after 5 s hunting (+0xC4 2:
+ * not 4 or Pursuer_IsOwnRoom): likewise; else the wait counts up, and after 5 s hunting (+0xC4 2:
  * kind 2) or in mode 4 (kind 1), or with the cooldown over 3 s in mode 3 (kind 0), the
  * summoner takes it back. 1 if it did */
 /* 0x002EBED0 */
@@ -2739,7 +2739,7 @@ s32 Summoner_InPlay(u8 *o) {
         }
         for (e = 0; e < 8; e++) {
             if (ur == VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, pr, e & 0xFF) &&
-                ((u8)VCALL(gProgress, 0x64, s32 (*)(Progress *))(gProgress) != 4 || !func_0029A8C0((Pursuer *)pu, -1))) {
+                ((u8)VCALL(gProgress, 0x64, s32 (*)(Progress *))(gProgress) != 4 || !Pursuer_IsOwnRoom((Pursuer *)pu, -1))) {
                 AT(o, 0xC, u32) = 0;
                 return 0;
             }
@@ -2797,7 +2797,7 @@ void Summoner_RoomStart(u8 *o) {
         if ((u8)VCALL(p, 0x64, s32 (*)(Progress *))(p) != 4) {
             return;
         }
-        if (!func_0029A8C0((Pursuer *)pu, -1)) {
+        if (!Pursuer_IsOwnRoom((Pursuer *)pu, -1)) {
             return;
         }
         summoner_take(o, 1);

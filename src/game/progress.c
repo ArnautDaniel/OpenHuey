@@ -1423,7 +1423,7 @@ s32 Progress_RemoveChar(Progress *p, u32 slot, u8 quick) {
         return 0;
     }
     if (quick) {
-        func_0029F2C0((Pursuer *)c);
+        Pursuer_ReleaseModelFiles((Pursuer *)c);
     } else {
         VCALL(gCharacters[slot], 0x18, void (*)(VObject *))((VObject *)gCharacters[slot]);
     }

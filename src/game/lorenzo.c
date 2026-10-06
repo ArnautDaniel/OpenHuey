@@ -205,23 +205,23 @@ void Lorenzo_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -481,8 +481,8 @@ void Lorenzo2_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
         if (p->c.a.disabled != 0 && (PU(p, 0x175C, s32) == 0x10 || PU(p, 0x175C, s32) == 0x21)) {
             p->c.a.disabled = 0;
             p->c.a.unk2D = 0;
@@ -494,7 +494,7 @@ void Lorenzo2_Update(Pursuer *p) {
         } else if (AT(gProgress, 0x7B8, u8) != 0 && PU(p, 0x16C8, u8) == 0 && p->c.moveMode == 0) {
             VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 1);
         }
-        func_0029B4B0(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
@@ -502,15 +502,15 @@ void Lorenzo2_Update(Pursuer *p) {
         Lorenzo2_SlamDust(p);
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -689,7 +689,7 @@ extern const PTMF D_00423A38;
 
 /* animation 0x1303 in state `st` (D_00423A38: Lorenzo2_StateSink), run at once */
 static inline __attribute__((always_inline)) void Lorenzo2_SinkBehindAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
-    func_00297B40(p, 0x1303, 0);
+    Pursuer_PlayAnimIf(p, 0x1303, 0);
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
@@ -703,7 +703,7 @@ void Lorenzo2_StateSinkBehind(Pursuer *p) {
 /* is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
 /* 0x0030BB70 */
 s32 Lorenzo2_SlamImpact(Pursuer *p) {
-    if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
+    if (!p->c.a.active || Npc_InPlayedRoom(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
     return (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
@@ -715,7 +715,7 @@ extern const PTMF D_00423AA8;
    then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and Lorenzo2_StateGrab */
 /* 0x0030A4D0 */
 void Lorenzo2_StartGrab(Pursuer *p) {
-    if (!(func_00283870(p) & 0xFF)) {
+    if (!(Pursuer_MayGoForTarget(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -725,7 +725,7 @@ void Lorenzo2_StartGrab(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0xE01, 0);
+    Pursuer_PlayAnimIf(p, 0xE01, 0);
     p->c.unk104[0] = 0;
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         PU(p, 0x16F7, u8) = 1;
@@ -756,7 +756,7 @@ void Lorenzo2_StateSweep(Pursuer *p) {
             Actor_TriTo(&p->c.a, gCharPartner->a.pos, p->c.a.navMask) != (u32)-1) {
             hit = (hit | 2) & 0xFF;
         }
-        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+        if (Pursuer_MayGoForTarget(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
@@ -782,11 +782,11 @@ static inline void Sink_Init(void **obj) {
 extern const PTMF D_00423A88;
 
 /* state: sinking away (animation 0x1304). At its end (Lorenzo2_Sink) he heads under the floor
-   toward his target: a point along the path (func_00214890), or where he is when it's out of
+   toward his target: a point along the path (Npc_StepPath), or where he is when it's out of
    reach; state D_00423A88 (Lorenzo2_StateRise) */
 /* the end of a sinking: out of contact (+0x29 / +0x2D), the sink effect where he stood, moved
    to the exit of PursuerGroup_Find kind 9 if any, 15 frames underground (+0x1624); returns the
-   distance (func_00214B90) to his target's point `t` on the mesh */
+   distance (Npc_PathLength) to his target's point `t` on the mesh */
 static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     struct {
         f32 pos[4];
@@ -808,8 +808,8 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     }
     PU(p, 0x1624, s32) = 15;
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
-    return func_00214B90(p, tri, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
+    return Npc_PathLength(p, tri, t);
 }
 
 /* 0x0030AB80 */
@@ -828,7 +828,7 @@ void Lorenzo2_StateAB80(Pursuer *p) {
     } else {
         u32 out;
 
-        func_00214890(p, &out, p->c.unk110, d);
+        Npc_StepPath(p, &out, p->c.unk110, d);
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00423A88);
@@ -844,16 +844,16 @@ static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p
     u32 tri;
 
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
     if (Character_PathLength(&p->c, tri, t, -1) < 0.0f) {
         if (PU(p, 0x1788, s32) != 0) {
-            func_00297B40(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p), 0);
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p), 0);
         }
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
         return;
     }
-    func_00297B40(p, 0x1304, 0);
+    Pursuer_PlayAnimIf(p, 0x1304, 0);
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
@@ -881,7 +881,7 @@ static inline void Burst_Init(void **obj) {
 }
 
 /* state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
-   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
+   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; Npc_WhoReachable at the aimed
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
 /* 0x0030A210 */
@@ -891,10 +891,10 @@ void Lorenzo2_StateGrab(Pursuer *p) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
     } else if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
-        u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
+        u32 hit = Npc_WhoReachable(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
         u8 *mgr;
 
-        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+        if (Pursuer_MayGoForTarget(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
@@ -923,14 +923,14 @@ extern const PTMF D_00423A98;
    +0x110, 5 short of his target when that close), facing his target, in the sweep 0xE02
    (Lorenzo2_StateSweep) with the rising effect */
 /* travelling under the floor (+0x1624 frames left) through the mesh toward his goal
-   (func_00211B00), out of contact where it fails; 1 while travelling */
+   (Npc_TriIfStandable), out of contact where it fails; 1 while travelling */
 static inline s32 Lorenzo2_Underground(Pursuer *p) {
     if (PU(p, 0x1624, s32) <= 0) {
         return 0;
     }
-    if (func_00214A90(p, p->c.a.navTri) != 0) {
-        p->c.a.navTri = func_00211B00(p, p->c.a.navTri);
-        if (p->c.a.navTri != (u32)-1 && !(func_00214A90(p, p->c.a.navTri) & 0xFF)) {
+    if (Npc_TriBlocked(p, p->c.a.navTri) != 0) {
+        p->c.a.navTri = Npc_TriIfStandable(p, p->c.a.navTri);
+        if (p->c.a.navTri != (u32)-1 && !(Npc_TriBlocked(p, p->c.a.navTri) & 0xFF)) {
             VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, p->c.a.navTri, p->c.a.pos);
         } else {
             Actor_TeleportRandom(&p->c.a, -1);
@@ -943,14 +943,14 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
 }
 
 /* the sweep of the other class (Kind39_StateSweep): at its key (2) whoever it touches
-   (func_00217920) is hit (Relation_Request with attack entry 2, stunning by its +0x18 chance),
+   (Npc_WhoSeen) is hit (Relation_Request with attack entry 2, stunning by its +0x18 chance),
    once each (+0x1760); its end ends the step */
 static inline void Lorenzo2b_Sweep(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
     if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
-        u32 hit = func_00217920(p) & 0xFF;
+        u32 hit = Npc_WhoSeen(p) & 0xFF;
 
-        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+        if (Pursuer_MayGoForTarget(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             u8 *e = PU(p, 0x171C, u8 *) + 0x48;
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
@@ -981,8 +981,8 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
         f32 d, h;
         s32 slot;
 
-        tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
-        d = func_00214B90(p, tri, goal);
+        tri = Npc_NearestWalkable(p, p->c.unk104[0], p->c.unk110, goal);
+        d = Npc_PathLength(p, tri, goal);
         sceVu0SubVector(v, p->target->a.pos, goal);
         v[3] = 0.0f;
         if (__builtin_sqrtf(sceVu0InnerProduct(v, v)) < 5.0f) {
@@ -995,7 +995,7 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
         p->c.a.angle[1] = h;
         sceVu0UnitMatrix(p->c.a.rot);
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
-        func_00297B40(p, 0xE02, 1);
+        Pursuer_PlayAnimIf(p, 0xE02, 1);
         p->c.a.disabled = 0;
         p->c.a.unk2D = 0;
         p->c.moveMode = 8;
@@ -1031,13 +1031,13 @@ void Lorenzo2_StartStalkBelow(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
-    if (!(func_00283870(p) & 0xFF)) {
+    if (!(Pursuer_MayGoForTarget(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
     }
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
     if (Character_PathLength(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
@@ -1072,8 +1072,8 @@ void Lorenzo2_StateUnderFloor(Pursuer *p) {
     if (Lorenzo2_Underground(p)) {
         return;
     }
-    tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
-    d = func_00214B90(p, tri, goal);
+    tri = Npc_NearestWalkable(p, p->c.unk104[0], p->c.unk110, goal);
+    d = Npc_PathLength(p, tri, goal);
     if (!(d <= 0.0f)) {
         Character_WaypointAhead(&p->c, &p->c.a.navTri, p->c.a.pos, d);
     }
@@ -1081,7 +1081,7 @@ void Lorenzo2_StateUnderFloor(Pursuer *p) {
     p->c.a.angle[1] = h;
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
-    func_00297B40(p, 0x1305, 1);
+    Pursuer_PlayAnimIf(p, 0x1305, 1);
     mgr = gEffects;
     p->c.a.disabled = 0;
     p->c.a.unk2D = 0;
@@ -1116,7 +1116,7 @@ void Lorenzo2_StateSink(Pursuer *p) {
     } else {
         u32 out;
 
-        func_00214890(p, &out, p->c.unk110, d - 10.0f);
+        Npc_StepPath(p, &out, p->c.unk110, d - 10.0f);
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00423A48);
@@ -1135,10 +1135,10 @@ void Lorenzo2_StartSink(Pursuer *p) {
     f32 d;
 
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
     d = Character_PathLength(&p->c, tri, t, -1);
     if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
-        if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
+        if (d < 0.0f || !(Pursuer_MayGoForTarget(p) & 0xFF)) {
             p->c.unk104[0] = 0;
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         } else {
@@ -1256,11 +1256,11 @@ static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
     EffectMgr_Start(mgr, slot, arg);
 }
 
-/* vtable +0x38: Pursuer_ShowUp, then (when func_00217510 allows) the marker */
+/* vtable +0x38: Pursuer_ShowUp, then (when Npc_InPlayedRoom allows) the marker */
 /* 0x0030C520 */
 void Kind12_ShowUp(Pursuer *p) {
     Pursuer_ShowUp(p);
-    if (func_00217510(p) != 0) {
+    if (Npc_InPlayedRoom(p) != 0) {
         k12_mark(p);
     } else {
         PU(p, 0x17C0, u8) = 0;
@@ -1271,7 +1271,7 @@ void Kind12_ShowUp(Pursuer *p) {
 /* 0x0030C670 */
 void Kind12_EnterRoom(Pursuer *p) {
     Pursuer_EnterRoom(p);
-    if (func_00217510(p) != 0) {
+    if (Npc_InPlayedRoom(p) != 0) {
         k12_mark(p);
     } else {
         PU(p, 0x17C0, u8) = 0;
@@ -1300,7 +1300,7 @@ void Kind12_AttackTable(Pursuer *p, s8 situation) {
  * except in game modes 6 / 7; then Pursuer_EventState and back to full health */
 /* 0x0030CA80 */
 void Kind12_EventState(Pursuer *p) {
-    if (PU(p, 0x14E8, s32) == 4 && PU(p, 0x14F0, s32) == 0 && func_00283870(p) != 0) {
+    if (PU(p, 0x14E8, s32) == 4 && PU(p, 0x14F0, s32) == 0 && Pursuer_MayGoForTarget(p) != 0) {
         Progress *pr = gProgress;
         u8 mode = Progress_GetVar(pr, 0x26) & 0xFF;
 
@@ -1350,7 +1350,7 @@ void Kind12_Update(Pursuer *p) {
     VCALL(p, 0x84, void (*)(Pursuer *))(p);
     p->c.a.navMask = p->c.a.unk2B == 1 ? 8 : VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
     p->c.pathReq->mask = p->c.a.navMask;
-    func_00215D80(p);
+    Npc_SensesWatching(p);
     if (PU(p, 0x16F6, u8) == 1) {
         if (AT(gProgress, 0x1FBEC1, u8) == 0) {
             PU(p, 0x1544, u8) = p->c.a.room == gCharPlayer->a.room;
@@ -1359,7 +1359,7 @@ void Kind12_Update(Pursuer *p) {
             PU(p, 0x16C9, u8) = 5;
             PU(p, 0x16CA, u8) = 7;
         } else {
-            func_002177D0(p);
+            Npc_WhoAroundEnding(p);
         }
     } else {
         PU(p, 0x1544, u8) = 0;
@@ -1369,34 +1369,34 @@ void Kind12_Update(Pursuer *p) {
         PU(p, 0x16CC, u8) = 0;
     }
     VCALL(p, 0x120, void (*)(Pursuer *))(p);
-    func_00297C60(p);
+    Pursuer_MotionGroup(p);
     pr = gProgress;
     if (AT(pr, 0x1FBEC1, u8) == 0) {
         if (PU(p, 0x16C8, u8) != 0) {
-            func_0029B190(p);
+            Pursuer_GoForFionaStance0(p);
         }
         VCALL(p, 0x2BC, void (*)(Pursuer *))(p);
     }
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        if (func_00283870(p) != 0 && ((func_00217920(p) & 0xFF) & 1)) {
+        if (Pursuer_MayGoForTarget(p) != 0 && ((Npc_WhoSeen(p) & 0xFF) & 1)) {
             Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -1588,7 +1588,7 @@ void Kind39_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
 }
 
 /* (as Lorenzo2_StateGrab)  state: his grab. Until its aim key (frame 12, key 2) it follows the target (+0x110); at the
-   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; func_002179F0 at the aimed
+   hit key whoever is in reach of attack entry 3 (+0x171C +0x6C; Npc_WhoReachable at the aimed
    point) is hit, stunned by the entry's +0x18 chance, once each (+0x1760); the burst effect at
    the point (also to +0x1770). Its end ends the step */
 /* 0x00363FA0 */
@@ -1598,10 +1598,10 @@ void Kind39_StateGrab(Pursuer *p) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
     } else if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
-        u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
+        u32 hit = Npc_WhoReachable(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
         u8 *mgr;
 
-        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+        if (Pursuer_MayGoForTarget(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
             Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
@@ -1633,7 +1633,7 @@ void Kind39_StatePlayOut(Pursuer *p) {
 /* (as Lorenzo2_SlamImpact)  is his slam 0x2301 at its impact key (0x20) now (active and on screen) */
 /* 0x00365850 */
 s32 Kind39_SlamImpact(Pursuer *p) {
-    if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
+    if (!p->c.a.active || Npc_InPlayedRoom(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
     return (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
@@ -1713,7 +1713,7 @@ void Kind39_State4930(Pursuer *p) {
     } else {
         u32 out;
 
-        func_00214890(p, &out, p->c.unk110, d);
+        Npc_StepPath(p, &out, p->c.unk110, d);
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00445AB8);
@@ -1737,8 +1737,8 @@ void Kind39_StateUnderFloor(Pursuer *p) {
     if (Lorenzo2_Underground(p)) {
         return;
     }
-    tri = func_00216E00(p, p->c.unk104[0], p->c.unk110, goal);
-    d = func_00214B90(p, tri, goal);
+    tri = Npc_NearestWalkable(p, p->c.unk104[0], p->c.unk110, goal);
+    d = Npc_PathLength(p, tri, goal);
     if (!(d <= 0.0f)) {
         Character_WaypointAhead(&p->c, &p->c.a.navTri, p->c.a.pos, d);
     }
@@ -1746,7 +1746,7 @@ void Kind39_StateUnderFloor(Pursuer *p) {
     p->c.a.angle[1] = h;
     sceVu0UnitMatrix(p->c.a.rot);
     sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
-    func_00297B40(p, 0x1305, 1);
+    Pursuer_PlayAnimIf(p, 0x1305, 1);
     mgr = gEffects;
     p->c.a.disabled = 0;
     p->c.a.unk2D = 0;
@@ -1779,7 +1779,7 @@ void Kind39_StateSink(Pursuer *p) {
     } else {
         u32 out;
 
-        func_00214890(p, &out, p->c.unk110, d - 10.0f);
+        Npc_StepPath(p, &out, p->c.unk110, d - 10.0f);
         p->c.unk104[0] = out;
     }
     Actor_SetState(&p->c.a, &D_00445A78);
@@ -1810,13 +1810,13 @@ void Kind39_StartStalkBelow(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
     u32 tri;
 
-    if (!(func_00283870(p) & 0xFF)) {
+    if (!(Pursuer_MayGoForTarget(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
     }
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
     if (Character_PathLength(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
@@ -1840,10 +1840,10 @@ void Kind39_StartSink(Pursuer *p) {
     f32 d;
 
     sceVu0CopyVector(t, p->target->a.pos);
-    tri = func_00216E00(p, p->target->a.navTri, t, t);
+    tri = Npc_NearestWalkable(p, p->target->a.navTri, t, t);
     d = Character_PathLength(&p->c, tri, t, -1);
     if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
-        if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
+        if (d < 0.0f || !(Pursuer_MayGoForTarget(p) & 0xFF)) {
             p->c.unk104[0] = 0;
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         } else {
@@ -1869,7 +1869,7 @@ extern void Kind39_StateGrab(Pursuer *p);
 /* (as Lorenzo2_StartGrab) the other class's start of the grab */
 /* 0x00364260 */
 void Kind39_StartGrab(Pursuer *p) {
-    if (!(func_00283870(p) & 0xFF)) {
+    if (!(Pursuer_MayGoForTarget(p) & 0xFF)) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -1879,7 +1879,7 @@ void Kind39_StartGrab(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0xE01, 0);
+    Pursuer_PlayAnimIf(p, 0xE01, 0);
     p->c.unk104[0] = 0;
     if (AT(gProgress, 0x30, u32) & 0x8000) {
         PU(p, 0x16F7, u8) = 1;
@@ -1988,13 +1988,13 @@ void Kind39_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
         if (p->c.a.disabled != 0 && (PU(p, 0x175C, s32) == 0x10 || PU(p, 0x175C, s32) == 0x21)) {
             p->c.a.disabled = 0;
             p->c.a.unk2D = 0;
         }
-        func_0029B4B0(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
@@ -2002,15 +2002,15 @@ void Kind39_Update(Pursuer *p) {
         Kind39_SlamDust(p);
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }

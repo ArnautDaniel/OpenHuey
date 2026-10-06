@@ -103,9 +103,9 @@ s32 RoomC7_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019916C0[i & 0xFF], a, b);
 }
 
-/* a room callback: the pursuer's func_0029A710 */
+/* a room callback: the pursuer's Pursuer_GrabHewieBehind */
 /* 0x00339E20 */
-s32 RoomC7_Cond01(void) { return func_0029A710((Pursuer *)gCharPursuer); }
+s32 RoomC7_Cond01(void) { return Pursuer_GrabHewieBehind((Pursuer *)gCharPursuer); }
 
 /* script variables 7 / 8 (the player's spot) in 151..269 / 171..219 */
 /* 0x00339E30 */

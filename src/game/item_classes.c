@@ -400,7 +400,7 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
 
 /* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
-    if (func_00217510(p) != 0) {
+    if (Npc_InPlayedRoom(p) != 0) {
         Actor_TeleportRandom(&p->c.a, -1);
     }
 }
@@ -410,7 +410,7 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     if (PU(p, 0x14E8, s32) != 5) {
         return;
     }
-    if ((u8)func_00217510(p) != 0) {
+    if ((u8)Npc_InPlayedRoom(p) != 0) {
         VCALL(p, 0x8C, void (*)(Pursuer *))(p);
         ptmf_set(&PU(p, 0x174C, PTMF), st);
         PU(p, 0x1758, s32) = -1;

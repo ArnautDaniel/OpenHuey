@@ -2904,7 +2904,7 @@ extern VObject *D_00456DF8;          /* the room objects */
 /* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
    from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
    5). In Fiona's room, when he is searching (+0x16C8 1..3) and can reach it, he notices it
-   (a noise; at level 4 unless busy, func_0029A850, he goes for it and takes it when within 10
+   (a noise; at level 4 unless busy, Pursuer_ChasingHewie, he goes for it and takes it when within 10
    of it or of his path's end) */
 /* 0x003332B0 */
 void Thing03_StalkerCheck(u8 *o) {
@@ -2944,7 +2944,7 @@ void Thing03_StalkerCheck(u8 *o) {
     default:
         return;
     }
-    if (!(func_002187D0((Pursuer *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
+    if (!(Npc_SeesPoint((Pursuer *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
         return;
     }
     if (Character_PathLength((Character *)s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
@@ -2954,11 +2954,11 @@ void Thing03_StalkerCheck(u8 *o) {
         Noise_Make((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
         return;
     }
-    if (func_0029A850((Pursuer *)s) != 0) {
+    if (Pursuer_ChasingHewie((Pursuer *)s) != 0) {
         return;
     }
     VCALL(s, 0xAC, void (*)(void *, u32, f32 *, s32))(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1);
-    func_0027E5A0((Pursuer *)s, AT(o, 0x34, u32));
+    Pursuer_SetGoalTri((Pursuer *)s, AT(o, 0x34, u32));
     if (Actor_Distance((Actor *)o, (f32 *)(s + 0x10)) < 10.0f) {
         AT(o, 0x28, u8) = 0;
         return;

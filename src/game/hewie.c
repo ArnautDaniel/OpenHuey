@@ -5752,7 +5752,7 @@ void Hewie_TurnHead(Hewie *h) {
             ys += -Angle_Wrap(h->c.a.angle[1] - HW(h, 0xF354C, f32));
         }
     }
-    func_002DD310(h->c.motion, pitch, yaw, 0x1.3333340000000p-3f /* 0.15 */ * dp, ys);
+    Motion_EaseTilt(h->c.motion, pitch, yaw, 0x1.3333340000000p-3f /* 0.15 */ * dp, ys);
 }
 
 /* ---- telling Fiona ---- */

@@ -428,9 +428,9 @@ void Daniella_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        if (Pursuer_CryHeard(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Daniella_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -438,15 +438,15 @@ void Daniella_Update(Pursuer *p) {
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -603,9 +603,9 @@ void Kind34_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        if (Pursuer_CryHeard(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind34_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -613,15 +613,15 @@ void Kind34_Update(Pursuer *p) {
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -664,9 +664,9 @@ void Kind35_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        if (Pursuer_CryHeard(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind35_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -674,15 +674,15 @@ void Kind35_Update(Pursuer *p) {
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -700,9 +700,9 @@ void Kind36_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        if (Pursuer_CryHeard(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind36_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -710,15 +710,15 @@ void Kind36_Update(Pursuer *p) {
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }

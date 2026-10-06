@@ -134,7 +134,7 @@ s32 Pursuer_RoomSpots(Pursuer *p) {
 /* vtable +0xE8 */
 /* 0x00179960 */
 void NPC_PickDestination(Pursuer *p) {
-    func_00212400(p);
+    Npc_HeadRandomRoom(p);
 }
 
 /* ---- 0x211C80..0x219460 ---- */
@@ -145,16 +145,19 @@ void NPC_DoorBreak(Pursuer *p) {
 }
 
 /* shut / open door `door` (doors vtable +0x1C) */
-s32 func_00212DC0(Pursuer *p, s32 door) {
+/* 0x00212DC0 */
+s32 Npc_DoorShut(Pursuer *p, s32 door) {
     return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 0, 0x60000);
 }
 
-s32 func_00212DE0(Pursuer *p, s32 door) {
+/* 0x00212DE0 */
+s32 Npc_DoorShut2(Pursuer *p, s32 door) {
     return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 1, 0x60000);
 }
 
 /* the room's side behind the exit the pursuer heads for (rooms vtable +0x50) */
-s32 func_00217340(Pursuer *p) {
+/* 0x00217340 */
+s32 Npc_ExitSideBehind(Pursuer *p) {
     return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, p->c.a.room, p->c.door, 1);
 }
 
@@ -176,7 +179,8 @@ extern VObject *gSceneGameF29740; /* path planner */
 
 /* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
    triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
-u32 func_00211B00(Pursuer *p, u32 tri) {
+/* 0x00211B00 */
+u32 Npc_TriIfStandable(Pursuer *p, u32 tri) {
     VObject *nav = (VObject *)gNavMesh;
     VObject *planner;
     PathRequest q = { 0 };
@@ -219,7 +223,8 @@ void NPC_ExitArg(Pursuer *p, s32 a2) {
 }
 
 /* door `door` shut, the other side ... (doors +0x20 / +0x1C, progress) */
-void func_00212CA0(Pursuer *p, u32 door) {
+/* 0x00212CA0 */
+void Npc_DoorShutOther(Pursuer *p, u32 door) {
     VObject *d = gDoors;
     Progress *pr;
 
@@ -229,7 +234,8 @@ void func_00212CA0(Pursuer *p, u32 door) {
     DoorHold_Shut(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
 }
 
-void func_00212D30(Pursuer *p, u32 door) {
+/* 0x00212D30 */
+void Npc_DoorRelease(Pursuer *p, u32 door) {
     VObject *d = gDoors;
     Progress *pr;
 
@@ -240,7 +246,8 @@ void func_00212D30(Pursuer *p, u32 door) {
 }
 
 /* plan a path to the point beside door `door` (vtable +0x9C offset); 1 if +0xDC agrees */
-s32 func_00212F40(Pursuer *p, u32 door, u32 side) {
+/* 0x00212F40 */
+s32 Npc_PlanBesideDoor(Pursuer *p, u32 door, u32 side) {
     f32 ofs[4] __attribute__((aligned(16)));
 
     VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, side & 0xFF, ofs);
@@ -252,7 +259,8 @@ s32 func_00212F40(Pursuer *p, u32 door, u32 side) {
 }
 
 /* plan a path to triangle +0x15A4 / point +0x15B0; its length to +0x1590 (-1: none) */
-s32 func_00212360(Pursuer *p) {
+/* 0x00212360 */
+s32 Npc_PlanToGoal(Pursuer *p) {
     if (Character_PlanPathKind(&p->c, 0, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0)) <= 0) {
         return 0;
     }
@@ -267,7 +275,8 @@ s32 func_00212360(Pursuer *p) {
 }
 
 /* height of the bone vtable +0x80 of the model above its base (+0x804), at least 3 */
-void func_00213E30(Pursuer *p) {
+/* 0x00213E30 */
+void Npc_BoneHeight(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     u8 *m = p->c.motion;
     s32 bone = VCALL(m, 0x80, s32 (*)(void *))(m);
@@ -282,7 +291,8 @@ void func_00213E30(Pursuer *p) {
 }
 
 /* is nav triangle `tri` blocked for the pursuer? */
-s32 func_00214A90(Pursuer *p, u32 tri) {
+/* 0x00214A90 */
+s32 Npc_TriBlocked(Pursuer *p, u32 tri) {
     u32 flags;
 
     if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
@@ -294,7 +304,8 @@ s32 func_00214A90(Pursuer *p, u32 tri) {
 }
 
 /* plan a path to the room object behind the exit the pursuer heads for */
-s32 func_00214AF0(Pursuer *p) {
+/* 0x00214AF0 */
+s32 Npc_PlanToRoomObject(Pursuer *p) {
     VObject *o = VCALL(gEvents, 0x64, VObject *(*)(VObject *))(gEvents);
     s32 *t = VCALL(o, 0x3C, s32 *(*)(VObject *))(o);
 
@@ -313,7 +324,8 @@ s32 func_00214AF0(Pursuer *p) {
 }
 
 /* reached the room +0x1594 (and side +0x1598, -1 any)? */
-s32 func_00217260(Pursuer *p) {
+/* 0x00217260 */
+s32 Npc_ReachedRoom(Pursuer *p) {
     s32 room = p->c.a.room;
 
     if (PU(p, 0x1594, s32) == room) {
@@ -330,7 +342,8 @@ s32 func_00217260(Pursuer *p) {
 }
 
 /* the side of character `c`'s room behind its exit, -1 without one */
-s32 func_002172F0(Pursuer *p, Character *c) {
+/* 0x002172F0 */
+s32 Npc_CharSideBehind(Pursuer *p, Character *c) {
     if (c != NULL) {
         return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1);
     }
@@ -338,12 +351,14 @@ s32 func_002172F0(Pursuer *p, Character *c) {
 }
 
 /* in the room being played? */
-s32 func_00217510(Pursuer *p) {
+/* 0x00217510 */
+s32 Npc_InPlayedRoom(Pursuer *p) {
     return p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
 }
 
 /* is Fiona panicking (fear over 90, or her state 0xE)? */
-s32 func_00217560(void) {
+/* 0x00217560 */
+s32 Npc_FionaPanicking(void) {
     s32 r = 1;
 
     if (AT(gCharPlayer, 0x1AD5F4, f32) <= 90.0f) {
@@ -356,7 +371,8 @@ s32 func_00217560(void) {
 }
 
 /* is `b` on about the same floor as `a` (up to 15 above, 10 below)? */
-s32 func_002175B0(Actor *a, Actor *b) {
+/* 0x002175B0 */
+s32 Npc_SameFloor(Actor *a, Actor *b) {
     s32 r = 0;
 
     if (b->pos[1] <= a->pos[1] + 15.0f && !(b->pos[1] + 10.0f < a->pos[1])) {
@@ -366,7 +382,8 @@ s32 func_002175B0(Actor *a, Actor *b) {
 }
 
 /* the walkable triangle one height ahead (along the heading); 0 if none */
-s32 func_00217600(Pursuer *p) {
+/* 0x00217600 */
+s32 Npc_WalkableAhead(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     u32 tri;
 
@@ -381,7 +398,8 @@ s32 func_00217600(Pursuer *p) {
 }
 
 /* add nav triangle `tri` to the route list (+0x15E0, 8 entries of 8 bytes) */
-s32 func_00218C20(Pursuer *p, u32 tri) {
+/* 0x00218C20 */
+s32 Npc_RouteAdd(Pursuer *p, u32 tri) {
     u8 n;
 
     if (PU(p, 0x1621, u8) == 0xFF) {
@@ -398,7 +416,8 @@ s32 func_00218C20(Pursuer *p, u32 tri) {
 }
 
 /* aim at the current entry of the route list: triangle +0x15A4, its centre to +0x15B0 */
-void func_00218E70(Pursuer *p) {
+/* 0x00218E70 */
+void Npc_RouteAim(Pursuer *p) {
     u8 i = PU(p, 0x1620, u8);
 
     if (i < PU(p, 0x1621, u8)) {
@@ -446,15 +465,15 @@ void Pursuer_StandAnim(Pursuer *p) {
     case 1:
     case 2:
     case 4:
-        func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
+        Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
         break;
     case 3: {
         u8 j = PU(p, 0x16C9, u8);
 
         if (j != 0 && j != 2) {
-            func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
         } else {
-            func_00297B40(p, VCALL(p, 0x324, s32 (*)(Pursuer *, u32))(p, k), 0);
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x324, s32 (*)(Pursuer *, u32))(p, k), 0);
         }
         break;
     }
@@ -462,7 +481,8 @@ void Pursuer_StandAnim(Pursuer *p) {
 }
 
 /* path length from node `a` to node `b` of `room`, through the room's table (-1 none) */
-f32 func_00211F70(Pursuer *p, s32 room, u32 a, u32 b) {
+/* 0x00211F70 */
+f32 Npc_NodeDistance(Pursuer *p, s32 room, u32 a, u32 b) {
     VObject *rm = gRooms;
     s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, b, room);
     f32 d;
@@ -482,7 +502,8 @@ f32 func_00211F70(Pursuer *p, s32 room, u32 a, u32 b) {
 }
 
 /* is `pos` of room `room` where the room's spawn point is, and reachable? */
-s32 func_00212190(Pursuer *p, s32 room) {
+/* 0x00212190 */
+s32 Npc_AtSpawn(Pursuer *p, s32 room) {
     VObject *rm = gRooms;
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -496,7 +517,8 @@ s32 func_00212190(Pursuer *p, s32 room) {
 }
 
 /* the first open door (0..4) while Fiona is hiding (move mode 3), -1 none */
-s32 func_002131A0(void) {
+/* 0x002131A0 */
+s32 Npc_OpenDoorFionaHides(void) {
     if (gCharPlayer->moveMode == 3) {
         Progress *pr = gProgress;
         s32 i;
@@ -524,7 +546,7 @@ f32 NPC_PathLengthTo(Pursuer *p, u32 tri, const f32 *pos) {
         flags = 0;
     }
     if (p->c.a.navMask & flags) {
-        tri = func_00216E00(p, tri, pos, v);
+        tri = Npc_NearestWalkable(p, tri, pos, v);
     } else {
         sceVu0CopyVector(v, pos);
     }
@@ -535,7 +557,8 @@ f32 NPC_PathLengthTo(Pursuer *p, u32 tri, const f32 *pos) {
 }
 
 /* how far to character `c` on foot: straight if in sight on its triangle, else by path */
-f32 func_00213D40(Pursuer *p, Character *c) {
+/* 0x00213D40 */
+f32 Npc_FootDistance(Pursuer *p, Character *c) {
     f32 v[4] __attribute__((aligned(16)));
     void *nm;
     u32 tri;
@@ -556,7 +579,8 @@ f32 func_00213D40(Pursuer *p, Character *c) {
 
 /* which way to turn to face `heading`: 1 left beyond `a`, 0 right beyond -`a`, 0xFF within;
  * bit 1 when more than `b` off (if `b` >= `a`) */
-u32 func_00213EC0(Pursuer *p, f32 heading, f32 a, f32 b) {
+/* 0x00213EC0 */
+u32 Npc_TurnWay(Pursuer *p, f32 heading, f32 a, f32 b) {
     f32 d;
     u32 r;
 
@@ -588,7 +612,8 @@ u32 func_00213EC0(Pursuer *p, f32 heading, f32 a, f32 b) {
 }
 
 /* turn towards `heading` by at most `step`; the angle left */
-f32 func_002140A0(Pursuer *p, f32 heading, f32 step) {
+/* 0x002140A0 */
+f32 Npc_TurnToward(Pursuer *p, f32 heading, f32 step) {
     f32 cur = p->c.a.angle[1];
     f32 d = Angle_Wrap(heading - cur);
     f32 s = step <= 0.0f ? -step : step;
@@ -608,7 +633,8 @@ f32 func_002140A0(Pursuer *p, f32 heading, f32 step) {
 }
 
 /* step along the path; the stride from the animation's root motion if `step` <= 0 */
-s32 func_00214890(Pursuer *p, u32 *triOut, f32 *posOut, f32 step) {
+/* 0x00214890 */
+s32 Npc_StepPath(Pursuer *p, u32 *triOut, f32 *posOut, f32 step) {
     if (step <= 0.0f) {
         f32 v[4] __attribute__((aligned(16)));
         u8 *m;
@@ -624,7 +650,8 @@ s32 func_00214890(Pursuer *p, u32 *triOut, f32 *posOut, f32 step) {
 }
 
 /* path length to triangle `tri` / point `pos` (null: the triangle's centre), -1 none */
-f32 func_00214B90(Pursuer *p, u32 tri, const f32 *pos) {
+/* 0x00214B90 */
+f32 Npc_PathLength(Pursuer *p, u32 tri, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
 
     if (pos != NULL) {
@@ -646,7 +673,8 @@ f32 func_00214B90(Pursuer *p, u32 tri, const f32 *pos) {
 }
 
 /* are the pursuer and `c` in the same room but on different sides? */
-s32 func_00217370(Pursuer *p, Character *c) {
+/* 0x00217370 */
+s32 Npc_SameRoomOtherSide(Pursuer *p, Character *c) {
     s32 room = p->c.a.room;
 
     if (room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
@@ -667,7 +695,8 @@ s32 func_00217370(Pursuer *p, Character *c) {
 }
 
 /* is character `slot` in the pursuer's room or a neighbouring one? */
-s32 func_00217460(Pursuer *p, s32 slot) {
+/* 0x00217460 */
+s32 Npc_NearRoom(Pursuer *p, s32 slot) {
     s32 room = gCharacters[slot]->a.room;
     VObject *rm;
     u32 i;
@@ -685,7 +714,8 @@ s32 func_00217460(Pursuer *p, s32 slot) {
 }
 
 /* who can the pursuer see (bit per character slot 0..2)? */
-s32 func_00217920(Pursuer *p) {
+/* 0x00217920 */
+s32 Npc_WhoSeen(Pursuer *p) {
     s32 seen = 0;
     u32 i;
 
@@ -701,7 +731,8 @@ s32 func_00217920(Pursuer *p) {
 }
 
 /* is the point `dist` away in direction `angle` from the target's heading walkable? */
-s32 func_00217ED0(Pursuer *p, f32 angle, f32 dist) {
+/* 0x00217ED0 */
+s32 Npc_TargetSideWalkable(Pursuer *p, f32 angle, f32 dist) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     u32 tri;
@@ -726,13 +757,14 @@ s32 func_00217ED0(Pursuer *p, f32 angle, f32 dist) {
 }
 
 /* probe the 8 directions around Fiona, 20 units out (results to +0x1548) */
-void func_00218110(Pursuer *p) {
+/* 0x00218110 */
+void Npc_ProbeAroundFiona(Pursuer *p) {
     s32 i;
 
     for (i = 0; i < 8; i++) {
         f32 h = Actor_HeadingTo(&p->c.a, gCharPlayer->a.pos);
 
-        PU(p, 0x1548 + i * 4, s32) = func_00217D30(p, Angle_Wrap(0x1.921fb60000000p+2f /* 6.2831855 */ * (f32)i / 8.0f + h), 20.0f);
+        PU(p, 0x1548 + i * 4, s32) = Npc_TriAtDirection(p, Angle_Wrap(0x1.921fb60000000p+2f /* 6.2831855 */ * (f32)i / 8.0f + h), 20.0f);
     }
 }
 
@@ -741,7 +773,7 @@ void func_00218110(Pursuer *p) {
 s32 NPC_HewieInReach(Pursuer *p) {
     Character *h = gCharPartner;
 
-    if (func_00218430(p, h) != 0) {
+    if (Npc_SeesChar(p, h) != 0) {
         return 1;
     }
     if (!(Progress_TestFlag(gProgress, 0xB) & 0xFF)) {
@@ -763,7 +795,8 @@ s32 NPC_HewieInReach(Pursuer *p) {
 }
 
 /* drop the first route entry; the new current one, -1 none */
-s32 func_00218B60(Pursuer *p) {
+/* 0x00218B60 */
+s32 Npc_RouteDrop(Pursuer *p) {
     u8 n = PU(p, 0x1621, u8);
     u8 i;
 
@@ -825,10 +858,11 @@ void NPC_HeadNearFiona(Pursuer *p, u32 exit) {
 /* ---- batch 4 ---- */
 
 /* door / exit `exit`: what to do with it (vtable +0xF0 to go through); 2 / 1 / 0 */
-s32 func_00211CF0(Pursuer *p, s32 exit) {
+/* 0x00211CF0 */
+s32 Npc_ExitWhatToDo(Pursuer *p, s32 exit) {
     Progress *pr;
 
-    switch (func_00211E00(p, exit) & 0xFF) {
+    switch (Npc_ExitKind(p, exit) & 0xFF) {
     case 2:
         return 2;
     case 6:
@@ -850,7 +884,8 @@ s32 func_00211CF0(Pursuer *p, s32 exit) {
 }
 
 /* path length between the room nodes of `a` and `b` (rooms +0x10 / +0x38), -1 none */
-f32 func_00212060(Pursuer *p, s32 room, s32 a, s32 b) {
+/* 0x00212060 */
+f32 Npc_RoomNodeDistance(Pursuer *p, s32 room, s32 a, s32 b) {
     VObject *rm = gRooms;
     u32 na = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, a) & 0xFFFF;
     u32 nb = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, b) & 0xFFFF;
@@ -872,7 +907,8 @@ f32 func_00212060(Pursuer *p, s32 room, s32 a, s32 b) {
 }
 
 /* coming into room `room`: is Fiona at the spawn point there (+0x1624)? */
-void func_00212240(Pursuer *p, s32 room) {
+/* 0x00212240 */
+void Npc_FionaAtSpawn(Pursuer *p, s32 room) {
     VObject *rm = gRooms;
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -894,7 +930,8 @@ void func_00212240(Pursuer *p, s32 room) {
 }
 
 /* heading through exit `exit` (from its inner to its outer point) */
-f32 func_00212730(Pursuer *p, s32 exit) {
+/* 0x00212730 */
+f32 Npc_ExitHeading(Pursuer *p, s32 exit) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -916,7 +953,8 @@ f32 func_00212730(Pursuer *p, s32 exit) {
 }
 
 /* turn to the root motion's direction (rotated to the walk mesh slope through triangle +0x34) */
-void func_00213B60(Pursuer *p, u32 mask) {
+/* 0x00213B60 */
+void Npc_TurnToRootMotion(Pursuer *p, u32 mask) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     u8 *m;
@@ -941,8 +979,9 @@ void func_00213B60(Pursuer *p, u32 mask) {
     }
 }
 
-/* which way to turn to face point `pos` (see func_00213EC0) */
-u32 func_00213FA0(Pursuer *p, const f32 *pos, f32 a, f32 b) {
+/* which way to turn to face point `pos` (see Npc_TurnWay) */
+/* 0x00213FA0 */
+u32 Npc_TurnWayTo(Pursuer *p, const f32 *pos, f32 a, f32 b) {
     f32 heading = Actor_HeadingTo(&p->c.a, pos);
     f32 d;
     u32 r;
@@ -974,7 +1013,8 @@ u32 func_00213FA0(Pursuer *p, const f32 *pos, f32 a, f32 b) {
 }
 
 /* can an eye at `from` facing `heading` see `to`: within `range` and `half` an angle either side */
-s32 func_002181D0(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 range, f32 half) {
+/* 0x002181D0 */
+s32 Eye_CanSee(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 range, f32 half) {
     f32 d[4] __attribute__((aligned(16)));
     f32 dist, dx, dz, a;
 
@@ -998,7 +1038,8 @@ s32 func_002181D0(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 r
 }
 
 /* the same between two actors */
-s32 func_00218300(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f32 half) {
+/* 0x00218300 */
+s32 Eye_ActorSees(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f32 half) {
     f32 d[4] __attribute__((aligned(16)));
     f32 dist, dx, dz, a;
 
@@ -1033,7 +1074,7 @@ s32 NPC_FionaInReach(Pursuer *p) {
     if (AT(f, 0x1AD630, u8) != 0) {
         return 0;
     }
-    if (func_00218430(p, f) != 0) {
+    if (Npc_SeesChar(p, f) != 0) {
         return 1;
     }
     pr = gProgress;
@@ -1109,7 +1150,8 @@ void NPC_Reset(Pursuer *p) {
 }
 
 /* vtable +0xE8: head for a random other room (10 tries to avoid the played one) */
-s32 func_00212400(Pursuer *p) {
+/* 0x00212400 */
+s32 Npc_HeadRandomRoom(Pursuer *p) {
     Progress *pr = gProgress;
     u32 tries = 0;
 
@@ -1137,7 +1179,8 @@ s32 func_00212400(Pursuer *p) {
 
 /* plan a path to `pos` / triangle `tri` from the point beside door `door` (side 1 first, then 0);
  * the side that works, 0xFF none */
-u32 func_00212E00(Pursuer *p, u32 tri, const f32 *pos, u32 door) {
+/* 0x00212E00 */
+u32 Npc_PlanFromDoor(Pursuer *p, u32 tri, const f32 *pos, u32 door) {
     VObject *pl;
     u32 side = 1;
 
@@ -1198,7 +1241,8 @@ void NPC_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
 
 /* a random walkable triangle of the played room (not blocked, not flagged 0x100000 without
  * 0x200000... ); -1 if the pursuer is elsewhere */
-u32 func_00214940(Pursuer *p) {
+/* 0x00214940 */
+u32 Npc_RandomTri(Pursuer *p) {
     if (p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         VObject *rnd = gRandom;
         s32 last = AT(gNavMesh, 0x8, s32) - 1;
@@ -1226,7 +1270,8 @@ u32 func_00214940(Pursuer *p) {
 }
 
 /* can the pursuer walk straight to `pos` (over triangles without flag 0x4000)? */
-s32 func_00217110(Pursuer *p, const f32 *pos) {
+/* 0x00217110 */
+s32 Npc_CanWalkStraight(Pursuer *p, const f32 *pos) {
     u32 tri = Actor_TriTo(&p->c.a, pos, 0);
 
     if (tri == (u32)-1) {
@@ -1254,7 +1299,8 @@ s32 func_00217110(Pursuer *p, const f32 *pos) {
 }
 
 /* vtable +0x... : who's around (+0x1544 Fiona, +0x1545 Hewie, +0x1546 noise) */
-void func_00217680(Pursuer *p) {
+/* 0x00217680 */
+void Npc_WhoAround(Pursuer *p) {
     Progress *pr = gProgress;
     s32 room = p->c.a.room;
 
@@ -1263,7 +1309,7 @@ void func_00217680(Pursuer *p) {
         PU(p, 0x1545, u8) = 0;
     } else {
         PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
-        if (p->c.moveMode != 2 && (func_00212850(p) & 0xFF) != 0xFF) {
+        if (p->c.moveMode != 2 && (Npc_DoorOnWay(p) & 0xFF) != 0xFF) {
             PU(p, 0x1544, u8) = 1;
         } else if (p->c.a.room != gCharPlayer->a.room) {
             PU(p, 0x1544, u8) = 0;
@@ -1280,8 +1326,9 @@ void func_00217680(Pursuer *p) {
     VCALL(p, 0xCC, void (*)(Pursuer *))(p);
 }
 
-/* the same, unless the progress byte +0x1FBEC1 is set (then func_00217680) */
-void func_002177D0(Pursuer *p) {
+/* the same, unless the progress byte +0x1FBEC1 is set (then Npc_WhoAround) */
+/* 0x002177D0 */
+void Npc_WhoAroundEnding(Pursuer *p) {
     Progress *pr = gProgress;
 
     if (AT(pr, 0x1FBEC1, u8) == 0) {
@@ -1292,7 +1339,7 @@ void func_002177D0(Pursuer *p) {
             PU(p, 0x1545, u8) = 0;
         } else {
             PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
-            if (p->c.moveMode != 2 && (func_00212850(p) & 0xFF) != 0xFF) {
+            if (p->c.moveMode != 2 && (Npc_DoorOnWay(p) & 0xFF) != 0xFF) {
                 PU(p, 0x1544, u8) = 1;
             } else {
                 PU(p, 0x1544, u8) = VCALL(p, 0xC0, s32 (*)(Pursuer *))(p);
@@ -1307,11 +1354,12 @@ void func_002177D0(Pursuer *p) {
         VCALL(p, 0xCC, void (*)(Pursuer *))(p);
         return;
     }
-    func_00217680(p);
+    Npc_WhoAround(p);
 }
 
 /* is there room `dist` to the side of the target (90 degrees one way, then the other)? */
-s32 func_00217FC0(Pursuer *p, f32 dist) {
+/* 0x00217FC0 */
+s32 Npc_RoomToSide(Pursuer *p, f32 dist) {
     f32 a = 0x1.921fb60000000p+0f /* 1.5707964 */;
 
     for (;;) {
@@ -1354,7 +1402,7 @@ s32 NPC_PathLengthSpot(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
-    u32 tri = func_00216E00(p, PU(p, 0x15C4, u32), (f32 *)((u8 *)p + 0x15D0), v);
+    u32 tri = Npc_NearestWalkable(p, PU(p, 0x15C4, u32), (f32 *)((u8 *)p + 0x15D0), v);
     f32 len;
 
     if (tri == (u32)-1) {
@@ -1387,7 +1435,7 @@ s32 NPC_PathLengthGoal(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
-    u32 tri = func_00216E00(p, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0), v);
+    u32 tri = Npc_NearestWalkable(p, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0), v);
     f32 len;
 
     if (tri == (u32)-1) {
@@ -1416,7 +1464,8 @@ s32 NPC_PathLengthGoal(Pursuer *p) {
 
 /* can the pursuer see point `pos` (on triangle `tri`): in its view (+0x1580 range, +0x1584
  * angle, heading +0x1574) and nothing in the way? */
-s32 func_002187D0(Pursuer *p, u32 tri, const f32 *pos) {
+/* 0x002187D0 */
+s32 Npc_SeesPoint(Pursuer *p, u32 tri, const f32 *pos) {
     f32 half = PU(p, 0x1584, f32);
     f32 range = PU(p, 0x1580, f32);
     f32 heading = PU(p, 0x1574, f32);
@@ -1446,7 +1495,8 @@ s32 func_002187D0(Pursuer *p, u32 tri, const f32 *pos) {
 
 /* what is exit `exit` like for the pursuer: 2 its own way in, 3 closed to it, 4 open, 5 / 6
  * it must open it (6: from the other side) */
-u32 func_00211E00(Pursuer *p, s32 exit) {
+/* 0x00211E00 */
+u32 Npc_ExitKind(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
     VObject *rm;
 
@@ -1474,7 +1524,8 @@ u32 func_00211E00(Pursuer *p, s32 exit) {
 
 /* the triangle `dist` away in direction `heading`: -1 none, -2 blocked, -3 flag 1, -4 at a
  * door, -5 at a room point */
-u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
+/* 0x00217D30 */
+u32 Npc_TriAtDirection(Pursuer *p, f32 heading, f32 dist) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     void *nm;
@@ -1514,7 +1565,8 @@ u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
 
 /* who of the characters can the pursuer reach / see by the progress tables (+0x30 / +0x2C) and is
  * in front of it (within 90 degrees): a bit per slot */
-s32 func_002179F0(Pursuer *p, s32 a1, f32 f) {
+/* 0x002179F0 */
+s32 Npc_WhoReachable(Pursuer *p, s32 a1, f32 f) {
     Progress *pr = gProgress;
     s32 bits = 0;
     u32 i;
@@ -1537,7 +1589,8 @@ s32 func_002179F0(Pursuer *p, s32 a1, f32 f) {
     return bits;
 }
 
-s32 func_00217B90(Pursuer *p, s32 a1, f32 f) {
+/* 0x00217B90 */
+s32 Npc_WhoReachableBits(Pursuer *p, s32 a1, f32 f) {
     Progress *pr = gProgress;
     s32 bits = 0;
     u32 i;
@@ -1562,7 +1615,8 @@ s32 func_00217B90(Pursuer *p, s32 a1, f32 f) {
 
 /* plan a path from triangle `tri` / `pos` (-1: where the pursuer is) to door `door`, side 0 then
  * 2; the door's triangle (+0x104 side, +0x1568 heading, +0x110 point), -1 none */
-s32 func_002134E0(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
+/* 0x002134E0 */
+s32 Npc_PlanToDoor(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
     f32 from[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
@@ -1603,7 +1657,8 @@ s32 func_002134E0(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
 
 /* find a door (0..4) to go through, from side `side` (0 / 1, other values: either); door to
  * +0x100, side to +0x104 */
-s32 func_00212FE0(Pursuer *p, s32 side) {
+/* 0x00212FE0 */
+s32 Npc_FindDoor(Pursuer *p, s32 side) {
     s8 s = side;
     u32 either = (s != 1 && s != 0) ? 1 : 0;
     u32 i;
@@ -1662,7 +1717,7 @@ s32 NPC_PathLengthChar(Pursuer *p, Character *c) {
     } else {
         sceVu0CopyVector(v, c->a.pos);
     }
-    tri = func_00216E00(p, c->a.navTri, v, v);
+    tri = Npc_NearestWalkable(p, c->a.navTri, v, v);
     sceVu0CopyVector(w, v);
     if (Character_PlanPathKind(&p->c, 0, tri, w) <= 0) {
         len = -1.0f;
@@ -1687,7 +1742,8 @@ s32 NPC_PathLengthChar(Pursuer *p, Character *c) {
 
 /* the facing of door / exit `exit` seen from Fiona (10 if none): while Fiona hides, the first
  * door she can be behind */
-f32 func_00212550(Pursuer *p, u32 exit) {
+/* 0x00212550 */
+f32 Npc_DoorFacingFromFiona(Pursuer *p, u32 exit) {
     VObject *d;
     s8 side;
     f32 a;
@@ -1776,7 +1832,8 @@ void NPC_HeadForFiona(Pursuer *p) {
 extern u8 D_0047A930[8];   /* 0..7 */
 
 /* a random exit of the pursuer's side of the room it can use (not `skip`); `skip` if none */
-u32 func_00212A80(Pursuer *p, u32 skip) {
+/* 0x00212A80 */
+u32 Npc_RandomExit(Pursuer *p, u32 skip) {
     u8 list[8];
     VObject *rm;
     u32 n = 0, i;
@@ -1812,7 +1869,8 @@ u32 func_00212A80(Pursuer *p, u32 skip) {
 }
 
 /* a door of the played room the pursuer must deal with on its way (0xFF none) */
-u32 func_00212850(Pursuer *p) {
+/* 0x00212850 */
+u32 Npc_DoorOnWay(Pursuer *p) {
     VObject *rm = gRooms;
     VObject *d = gDoors;
     Progress *pr = gProgress;
@@ -1906,7 +1964,8 @@ void NPC_HeadFor(Pursuer *p, Character *c) {
 
 /* turn towards `pos` by `step` (the shorter way, or the animation's turn if past 120 degrees);
  * the angle left */
-f32 func_00214190(Pursuer *p, const f32 *pos, f32 step) {
+/* 0x00214190 */
+f32 Npc_TurnTowardPos(Pursuer *p, const f32 *pos, f32 step) {
     f32 h = Actor_HeadingTo(&p->c.a, pos);
     f32 d = h - p->c.a.angle[1];
     f32 r;
@@ -1941,7 +2000,8 @@ f32 func_00214190(Pursuer *p, const f32 *pos, f32 step) {
 }
 
 /* step towards `pos`: turn, then walk by the animation's stride (straight if within it) */
-s32 func_002143D0(Pursuer *p, const f32 *pos) {
+/* 0x002143D0 */
+s32 Npc_StepToward(Pursuer *p, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
     u8 *mo;
@@ -1957,13 +2017,13 @@ s32 func_002143D0(Pursuer *p, const f32 *pos) {
             d = -d;
         }
         if (d < 0x1.921fb60000000p+0f /* 1.5707964 */ && !(Actor_Distance(&p->c.a, pos) <= 10.0f)) {
-            func_00214190(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+            Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
             return Actor_Distance(&p->c.a, pos) < 1.0f;
         }
-        func_00214190(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
         return 0;
     }
-    func_00214190(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    Npc_TurnTowardPos(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     if (Actor_Distance(&p->c.a, pos) <= v[2] && Actor_TriTo(&p->c.a, pos, -1) != (u32)-1) {
         sceVu0SubVector(v, pos, p->c.a.pos);
     } else {
@@ -1993,7 +2053,8 @@ static f32 Npc_DistanceTo(Pursuer *p, Character *c, f32 *v) {
     return VCALL(p, 0xD4, f32 (*)(Pursuer *, u32, f32 *))(p, tri, c->a.pos);
 }
 
-void func_00214C70(Pursuer *p) {
+/* 0x00214C70 */
+void Npc_Senses2(Pursuer *p) {
     s32 room = p->c.a.room;
 
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
@@ -2008,8 +2069,9 @@ void func_00214C70(Pursuer *p) {
     }
 }
 
-/* the same, unless the progress byte +0x1FBEC1 is set (then func_00214C70) */
-void func_00214ED0(Pursuer *p) {
+/* the same, unless the progress byte +0x1FBEC1 is set (then Npc_Senses2) */
+/* 0x00214ED0 */
+void Npc_Senses2Ending(Pursuer *p) {
     if (AT(gProgress, 0x1FBEC1, u8) == 0) {
         s32 room = p->c.a.room;
 
@@ -2025,14 +2087,15 @@ void func_00214ED0(Pursuer *p) {
         }
         return;
     }
-    func_00214C70(p);
+    Npc_Senses2(p);
 }
 
 /* ---- batch 9 ---- */
 
 /* the exits of the room the pursuer could go through to reach triangle `tri`: door
  * +0x100, point beside it +0x15D0 (an exit it must open as a fallback) */
-s32 func_00213690(Pursuer *p, s32 tri) {
+/* 0x00213690 */
+s32 Npc_ExitsToTri(Pursuer *p, s32 tri) {
     f32 v[4] __attribute__((aligned(16)));
     VObject *rm;
     Progress *pr;
@@ -2054,16 +2117,16 @@ s32 func_00213690(Pursuer *p, s32 tri) {
         if ((Progress_ExitUnlocked(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1) {
             continue;
         }
-        t = func_002134E0(p, i & 0xFF, tri, v);
+        t = Npc_PlanToDoor(p, i & 0xFF, tri, v);
         if (t == -1) {
             if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) != 0 || (fallback & 0xFF) == 0xFF) {
-                if (func_002134E0(p, i & 0xFF, -1, NULL) != -1) {
+                if (Npc_PlanToDoor(p, i & 0xFF, -1, NULL) != -1) {
                     fallback = i & 0xFF;
                 }
             }
             continue;
         }
-        PU(p, 0x15C4, s32) = func_002134E0(p, i & 0xFF, -1, NULL);
+        PU(p, 0x15C4, s32) = Npc_PlanToDoor(p, i & 0xFF, -1, NULL);
         if (PU(p, 0x15C4, s32) != -1 && t != PU(p, 0x15C4, s32)) {
             p->c.unk100 = i;
             sceVu0CopyVector((f32 *)((u8 *)p + 0x15D0), p->c.unk110);
@@ -2077,7 +2140,7 @@ s32 func_00213690(Pursuer *p, s32 tri) {
         AT(p, 0x11C, s32) = 0;
     }
     if ((fallback & 0xFF) != 0xFF && VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, fallback) != 0) {
-        PU(p, 0x15C4, s32) = func_002134E0(p, fallback, -1, NULL);
+        PU(p, 0x15C4, s32) = Npc_PlanToDoor(p, fallback, -1, NULL);
         p->c.unk100 = fallback & 0xFF;
         sceVu0CopyVector((f32 *)((u8 *)p + 0x15D0), p->c.unk110);
         return 1;
@@ -2087,7 +2150,8 @@ s32 func_00213690(Pursuer *p, s32 tri) {
 
 /* leave door `door` (0xFF: +0x100): shut / open it behind, blocking flags back, and off its
  * triangle if that blocks the pursuer */
-void func_00213270(Pursuer *p, u32 door) {
+/* 0x00213270 */
+void Npc_LeaveDoor(Pursuer *p, u32 door) {
     VObject *d;
     u32 tri, flags;
 
@@ -2139,7 +2203,8 @@ void func_00213270(Pursuer *p, u32 door) {
 }
 
 /* walk the planned path one stride (the animation's); 1 at its end */
-s32 func_00214620(Pursuer *p, s32 unused) {
+/* 0x00214620 */
+s32 Npc_WalkPathStride(Pursuer *p, s32 unused) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w[4] __attribute__((aligned(16)));
     f32 pos[4] __attribute__((aligned(16)));
@@ -2172,9 +2237,9 @@ s32 func_00214620(Pursuer *p, s32 unused) {
     }
     if (!(d < 0x1.921fb60000000p-1f /* 0.7853982 */) &&
         !(VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(gSceneGameF29740, p->c.a.pos, p->c.unk128, p->c.unk124, p->c.unk12C) < 4.0f)) {
-        func_00214190(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     } else {
-        func_00214190(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnTowardPos(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
         p->c.a.navTri = tri;
         sceVu0CopyVector(p->c.a.pos, pos);
         p->c.unk128 = next;
@@ -2184,7 +2249,8 @@ s32 func_00214620(Pursuer *p, s32 unused) {
 
 /* can the pursuer get round to triangle `tri` through one of the doors (0..4), from the side
  * it is on? door +0x100, side +0x104, point +0x15D0 */
-s32 func_002138F0(Pursuer *p, s32 tri) {
+/* 0x002138F0 */
+s32 Npc_RoundThroughDoor(Pursuer *p, s32 tri) {
     f32 at[4] __attribute__((aligned(16)));
     f32 ofs[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
@@ -2247,7 +2313,8 @@ s32 func_002138F0(Pursuer *p, s32 tri) {
 
 /* the walkable point nearest to triangle `tri` / `pos` for the pursuer: from a door it may
  * block, through the walk mesh to the first free triangle (a bit inside it) */
-u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
+/* 0x00216E00 */
+u32 Npc_NearestWalkable(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
     void *nm = gNavMesh;
     u32 flags;
 
@@ -2271,7 +2338,7 @@ u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
             }
         }
         if (t == tri) {
-            t = func_00211B00(p, t);
+            t = Npc_TriIfStandable(p, t);
         }
         if (t != (u32)-1 && t < AT(nm, 0x8, u32)) {
             f32 c[4] __attribute__((aligned(16)));
@@ -2322,7 +2389,8 @@ u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
  * +0x1574) and in sight of her middle, or else of one of 9 points around the far side of her
  * body (her radius out, 22.5 degrees apart); sight is blocked by triangle flags 0x40080
  * (0x40088 with progress flag 9 or 0xA) */
-s32 func_00218430(Pursuer *p, Character *c) {
+/* 0x00218430 */
+s32 Npc_SeesChar(Pursuer *p, Character *c) {
     Progress *pr = gProgress;
     u32 ctri = c->a.navTri;
     u32 mask;
@@ -2555,23 +2623,25 @@ static s32 Npc_Senses(Pursuer *p, s32 fionaRoom) {
     return r;
 }
 
-s32 func_00215130(Pursuer *p) {
+/* 0x00215130 */
+s32 Npc_SensesFiona(Pursuer *p) {
     return Npc_Senses(p, 1);
 }
 
-/* the same, Fiona watched wherever she is; func_00215130 while the progress byte +0x1FBEC1 is set */
-s32 func_00215D80(Pursuer *p) {
+/* the same, Fiona watched wherever she is; Npc_SensesFiona while the progress byte +0x1FBEC1 is set */
+/* 0x00215D80 */
+s32 Npc_SensesWatching(Pursuer *p) {
     if (AT(gProgress, 0x1FBEC1, u8) != 0) {
-        return func_00215130(p);
+        return Npc_SensesFiona(p);
     }
     return Npc_Senses(p, 0);
 }
 
-/* vtable +0xEC: can the pursuer go through exit `exit`: 1 if func_00211E00 says 4, 5 or 6,
+/* vtable +0xEC: can the pursuer go through exit `exit`: 1 if Npc_ExitKind says 4, 5 or 6,
    2 if it says 2 (passed on as is), else 0 */
 /* 0x00127C40 */
 s32 NPC_CanUseExit(Pursuer *p, s32 exit) {
-    switch (func_00211E00(p, exit) & 0xFF) {
+    switch (Npc_ExitKind(p, exit) & 0xFF) {
     case 2:
         return 2;
     case 4:

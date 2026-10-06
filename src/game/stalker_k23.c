@@ -107,7 +107,7 @@ void TintStalker_Fade(Pursuer *p) {
 
 /* show the tint: held (3) while it is in state 2 (+0xC4), else fading in */
 static inline void k23_show(Pursuer *p) {
-    if (func_00217510(p) != 0) {
+    if (Npc_InPlayedRoom(p) != 0) {
         PU(p, 0x17C8, u8) = 1;
         PU(p, 0x17D0, s8) = p->c.a.unkC4 == 2 ? 3 : 1;
     }
@@ -118,7 +118,7 @@ static inline void k23_show(Pursuer *p) {
 /* 0x0031F6E0 */
 void TintStalker_Tint(Pursuer *p) {
     if (PU(p, 0x17C4, s32) != 0) {
-        if (func_00217510(p) != 0) {
+        if (Npc_InPlayedRoom(p) != 0) {
             if (!PU(p, 0x17C8, u8) || (p->c.a.unkC4 == 2 && PU(p, 0x17D0, s8) != 3)) {
                 k23_show(p);
             } else if (p->c.a.unkC4 != 2 && PU(p, 0x17D0, s8) == 3) {
@@ -129,8 +129,8 @@ void TintStalker_Tint(Pursuer *p) {
             PU(p, 0x17C4, s32)--;
         }
     }
-    if (PU(p, 0x17C4, s32) == 0 && func_00217510(p) != 0 && PU(p, 0x17C8, u8) == 1 &&
-        PU(p, 0x17D0, s8) != 2 && func_00217510(p) != 0) {
+    if (PU(p, 0x17C4, s32) == 0 && Npc_InPlayedRoom(p) != 0 && PU(p, 0x17C8, u8) == 1 &&
+        PU(p, 0x17D0, s8) != 2 && Npc_InPlayedRoom(p) != 0) {
         PU(p, 0x17D0, s8) = 2;
     }
     TintStalker_Fade(p);
@@ -235,23 +235,23 @@ void TintStalker_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkTimers(p);
     TintStalker_Tint(p);

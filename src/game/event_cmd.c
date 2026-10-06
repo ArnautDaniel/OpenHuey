@@ -262,7 +262,7 @@ extern void *D_003D6A40[];        /* the fades' steps by kind */
 void Event_StartStep(VObject *ev, s32 prio, void *step);
 
 /* event commands on a pursuer-type character (pc[1]; slots 2..5): 0x2A its +0x1660 = be32,
- * 0x2E be16 (0xFFFF: one step on in +0x1620, below +0x1621) to func_00218C20, 0x2F action
+ * 0x2E be16 (0xFFFF: one step on in +0x1620, below +0x1621) to Npc_RouteAdd, 0x2F action
  * pc[2] (0, 2, 3), 0x30 another, 0x3E put into room be16 (0xFFFF: its own) at be16 how pc[6]
  * (at most 2), 0x31 its +0x31C with pc[2] != 0 */
 /* 0x00200870 */
@@ -284,7 +284,7 @@ void EventCmd_Pursuer(VObject *ev) {
         u32 v = be16(pc + 2) & 0xFFFF;
 
         if (v != 0xFFFF) {
-            func_00218C20((Pursuer *)c, v);
+            Npc_RouteAdd((Pursuer *)c, v);
         } else if (AT(c, 0x1620, u8) + 1 < AT(c, 0x1621, u8)) {
             AT(c, 0x1620, u8) = AT(c, 0x1620, u8) + 1;
         }
@@ -293,18 +293,18 @@ void EventCmd_Pursuer(VObject *ev) {
     case 0x2F:
         switch (pc[2]) {
         case 0:
-            func_0029B190((Pursuer *)c);
+            Pursuer_GoForFionaStance0((Pursuer *)c);
             break;
         case 2:
-            func_0029AF20((Pursuer *)c);
+            Pursuer_ChaseFionaHere((Pursuer *)c);
             break;
         case 3:
-            func_0029AC50((Pursuer *)c);
+            Pursuer_StartSearch((Pursuer *)c);
             break;
         }
         break;
     case 0x30:
-        func_0029A940((Pursuer *)c);
+        Pursuer_KnockedDown((Pursuer *)c);
         break;
     case 0x3E: {
         s32 room;
@@ -800,7 +800,7 @@ void EventCmd_Run(VObject *ev) {
                 s32 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, AT(ev, 0x560, s32),
                                                                                 PC(ev)[3]);
 
-                func_0029EF80((Pursuer *)(gCharacters[PC(ev)[2]]), room);
+                Pursuer_LoadMotions((Pursuer *)(gCharacters[PC(ev)[2]]), room);
             }
         }
         break;
@@ -966,7 +966,7 @@ void EventCmd_Run(VObject *ev) {
             if ((u8)Progress_CharLoading(p, pc[2])) {
                 EV_WAIT(ev) = 1;
             } else {
-                func_0029F040((Pursuer *)(gCharacters[PC(ev)[1]]), PC(ev)[2]);
+                Pursuer_GiveMotionBanks((Pursuer *)(gCharacters[PC(ev)[1]]), PC(ev)[2]);
             }
         }
         break;

@@ -136,8 +136,8 @@ void Debilitas3_HeadFor(Pursuer *p, Character *c) {
         c = p->target;
     }
     side = PU(p, 0x1598, s32);
-    if (func_00217370(p, c) != 0) {
-        side = func_002172F0(p, c);
+    if (Npc_SameRoomOtherSide(p, c) != 0) {
+        side = Npc_CharSideBehind(p, c);
     } else {
         s32 room = c->a.room;
 
@@ -145,7 +145,7 @@ void Debilitas3_HeadFor(Pursuer *p, Character *c) {
             side = -1;
         }
         if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-            PU(p, 0x15A4, s32) = func_00216E00(p, c->a.navTri, c->a.pos, (f32 *)((u8 *)p + 0x15B0));
+            PU(p, 0x15A4, s32) = Npc_NearestWalkable(p, c->a.navTri, c->a.pos, (f32 *)((u8 *)p + 0x15B0));
         }
     }
     if (Character_Route(&p->c, c->a.room, side, -1, -1) >= 0) {
@@ -162,13 +162,13 @@ void Debilitas3_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
     s32 side = PU(p, 0x1598, s32);
 
-    if (func_00217370(p, f) != 0) {
-        side = func_002172F0(p, f);
+    if (Npc_SameRoomOtherSide(p, f) != 0) {
+        side = Npc_CharSideBehind(p, f);
     } else {
         if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
             side = -1;
         }
-        PU(p, 0x15A4, s32) = func_00216E00(p, f->a.navTri, f->a.pos, (f32 *)((u8 *)p + 0x15B0));
+        PU(p, 0x15A4, s32) = Npc_NearestWalkable(p, f->a.navTri, f->a.pos, (f32 *)((u8 *)p + 0x15B0));
     }
     if (Character_Route(&p->c, f->a.room, side, -1, -1) >= 0) {
         PU(p, 0x1594, s32) = f->a.room;
@@ -188,7 +188,7 @@ void Debilitas3_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
         room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     }
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-        PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
+        PU(p, 0x15A4, u32) = Npc_NearestWalkable(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
     }
     nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {
@@ -259,7 +259,7 @@ void Debilitas3_Timer10s(u8 *p) { F(p, 0x1660, s32) = 600; }
 /* 0x002CE050 */
 void Debilitas3_StateStun(Pursuer *p) {
     if (PU(p, 0x1788, s32) != 0x1000 && p->c.unk14D0 <= 0) {
-        func_00297B40(p, 0x1004, 1);
+        Pursuer_PlayAnimIf(p, 0x1004, 1);
     }
     if (((AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0)) {
         PU(p, 0x1770, s32) = 0;
@@ -288,7 +288,7 @@ static inline void Debilitas3_LungeEnd(Pursuer *p, const PTMF *attack) {
         PU(p, 0x1728, s32) = 8;
         Actor_SetState(&p->c.a, attack);
         p->c.moveMode = 8;
-        func_0028B970(p);
+        Pursuer_AttackNextStep(p);
     }
 }
 
@@ -308,7 +308,7 @@ void Debilitas3_StartLunge(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0x1306, 0);
+    Pursuer_PlayAnimIf(p, 0x1306, 0);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_004142D0);
     Debilitas3_LungeEnd(p, &D_004142E0);
@@ -386,7 +386,7 @@ void Debilitas3_StartGrab(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0xE06, 0);
+    Pursuer_PlayAnimIf(p, 0xE06, 0);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_004142F0);
     Debilitas3_Grab(p);
@@ -398,7 +398,7 @@ extern const PTMF D_004142A0;
 /* turning to Fiona; when the animation ends, the blow (state `st`, run at once: `blow`) */
 static inline void Debilitas3_TurnToFiona(Pursuer *p, const PTMF *st, void (*blow)(Pursuer *)) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
-        func_00297B40(p, 0x205, 0);
+        Pursuer_PlayAnimIf(p, 0x205, 0);
         p->c.moveSub = 0x1C;
         Actor_SetState(&p->c.a, st);
         blow(p);
@@ -409,7 +409,7 @@ static inline void Debilitas3_TurnToFiona(Pursuer *p, const PTMF *st, void (*blo
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
         f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
-        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnToward(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
 }
 
@@ -430,7 +430,7 @@ void Debilitas3_StartTurnToFiona(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0x1304, 0);
+    Pursuer_PlayAnimIf(p, 0x1304, 0);
     PU(p, 0x16F7, u8) = 1;
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00414290);
@@ -450,14 +450,14 @@ void Debilitas3_StateBlow(Pursuer *p) {
 
     sceVu0CopyVector(pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
     if (Actor_TriTo(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
-        func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
+        Pursuer_PlayAnimIf(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
         Actor_SetState(&p->c.a, &D_004142B0);
         return;
     }
     sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), pos);
-    hit = func_00217B90(p, AT(e, 0x4, s32), AT(e, 0xC, f32)) & 0xFF & ~PU(p, 0x1760, u8);
-    hit = (hit | (func_00217920(p) & 0xFF & ~PU(p, 0x1760, u8) & 0xFF)) & 0xFF;
+    hit = Npc_WhoReachableBits(p, AT(e, 0x4, s32), AT(e, 0xC, f32)) & 0xFF & ~PU(p, 0x1760, u8);
+    hit = (hit | (Npc_WhoSeen(p) & 0xFF & ~PU(p, 0x1760, u8) & 0xFF)) & 0xFF;
     if (hit == 0) {
         Character_RootMoveMasked(&p->c);
         return;
@@ -470,7 +470,7 @@ void Debilitas3_StateBlow(Pursuer *p) {
     }
     PU(p, 0x1764, s32) = 12;
     if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {
-        func_00297B40(p, 0x1004, 0);
+        Pursuer_PlayAnimIf(p, 0x1004, 0);
     }
     p->c.moveSub = 0;
     Actor_SetState(&p->c.a, &D_004142C0);
@@ -486,7 +486,7 @@ void Debilitas3_ChaseTarget(Pursuer *p) {
 
     if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
         VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, p->target);
-        if (p->c.a.room == p->target->a.room || !(func_00284440(p) & 0xFF)) {
+        if (p->c.a.room == p->target->a.room || !(Pursuer_TargetOutOfReach(p) & 0xFF)) {
             PU(p, 0x16EF, u8) = 1;
         }
         return;
@@ -495,11 +495,11 @@ void Debilitas3_ChaseTarget(Pursuer *p) {
         return;
     }
     t = p->target;
-    if (func_00214A90(p, t->a.navTri) == 0) {
+    if (Npc_TriBlocked(p, t->a.navTri) == 0) {
         u32 tri = p->target->a.navTri;
 
         if (Actor_TriTo(&p->c.a, p->target->a.pos, -1) == tri) {
-            func_002143D0(p, p->target->a.pos);
+            Npc_StepToward(p, p->target->a.pos);
             return;
         }
     } else {
@@ -522,12 +522,12 @@ void Debilitas3_ChaseTarget(Pursuer *p) {
             d[3] = 0.0f;
             left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
             if (Actor_Distance(&p->c.a, p->target->a.pos) - left <= 10.0f) {
-                func_002143D0(p, p->target->a.pos);
+                Npc_StepToward(p, p->target->a.pos);
                 return;
             }
         }
     }
-    func_00214620(p, p->c.unk128);
+    Npc_WalkPathStride(p, p->c.unk128);
 }
 
 /* vtable +0x30: his frame update - as Debilitas's Debilitas_Update (full think on screen, with a
@@ -537,10 +537,10 @@ void Debilitas3_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_00218110(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Npc_ProbeAroundFiona(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
@@ -548,20 +548,20 @@ void Debilitas3_Update(Pursuer *p) {
         if (PU(p, 0x17EC, u32) >= 90) {
             PU(p, 0x17EC, u32) = 0;
             if (p->c.moveMode == 0 && PU(p, 0x1788, s32) != 0x1300 && PU(p, 0x1788, s32) != 0x1600) {
-                func_0029D410(p, 0x2A, 7, 0, 0, NULL);
+                Pursuer_Sound(p, 0x2A, 7, 0, 0, NULL);
             }
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -611,7 +611,7 @@ void Kind27_StartGrab(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0xE06, 0);
+    Pursuer_PlayAnimIf(p, 0xE06, 0);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_0042F1E0);
     Debilitas3_Grab(p);
@@ -642,7 +642,7 @@ void Kind27_StartTurnToFiona(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0x1304, 0);
+    Pursuer_PlayAnimIf(p, 0x1304, 0);
     PU(p, 0x16F7, u8) = 1;
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_0042F180);
@@ -657,7 +657,7 @@ void Kind27_StartLunge(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0x1306, 0);
+    Pursuer_PlayAnimIf(p, 0x1306, 0);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_0042F1C0);
     Debilitas3_LungeEnd(p, &D_0042F1D0);
@@ -668,7 +668,7 @@ void Kind27_StartLunge(Pursuer *p) {
 /* 0x00330120 */
 void Kind27_StateStun(Pursuer *p) {
     if (PU(p, 0x1788, s32) != 0x1000 && p->c.unk14D0 <= 0) {
-        func_00297B40(p, 0x1004, 1);
+        Pursuer_PlayAnimIf(p, 0x1004, 1);
     }
     if (((AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0)) {
         PU(p, 0x1770, s32) = 0;
@@ -693,14 +693,14 @@ void Kind27_StateBlow(Pursuer *p) {
 
     sceVu0CopyVector(pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
     if (Actor_TriTo(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
-        func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
+        Pursuer_PlayAnimIf(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
         Actor_SetState(&p->c.a, &D_0042F1A0);
         return;
     }
     sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), pos);
-    hit = func_00217B90(p, AT(e, 0x4, s32), AT(e, 0xC, f32)) & 0xFF & ~PU(p, 0x1760, u8);
-    hit = (hit | (func_00217920(p) & 0xFF & ~PU(p, 0x1760, u8) & 0xFF)) & 0xFF;
+    hit = Npc_WhoReachableBits(p, AT(e, 0x4, s32), AT(e, 0xC, f32)) & 0xFF & ~PU(p, 0x1760, u8);
+    hit = (hit | (Npc_WhoSeen(p) & 0xFF & ~PU(p, 0x1760, u8) & 0xFF)) & 0xFF;
     if (hit == 0) {
         Character_RootMoveMasked(&p->c);
         return;
@@ -713,7 +713,7 @@ void Kind27_StateBlow(Pursuer *p) {
     }
     PU(p, 0x1764, s32) = 12;
     if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {
-        func_00297B40(p, 0x1004, 0);
+        Pursuer_PlayAnimIf(p, 0x1004, 0);
     }
     p->c.moveSub = 0;
     Actor_SetState(&p->c.a, &D_0042F1B0);
@@ -727,7 +727,7 @@ void Kind27_ChaseTarget(Pursuer *p) {
 
     if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
         VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, p->target);
-        if (p->c.a.room == p->target->a.room || !(func_00284440(p) & 0xFF)) {
+        if (p->c.a.room == p->target->a.room || !(Pursuer_TargetOutOfReach(p) & 0xFF)) {
             PU(p, 0x16EF, u8) = 1;
         }
         return;
@@ -736,11 +736,11 @@ void Kind27_ChaseTarget(Pursuer *p) {
         return;
     }
     t = p->target;
-    if (func_00214A90(p, t->a.navTri) == 0) {
+    if (Npc_TriBlocked(p, t->a.navTri) == 0) {
         u32 tri = p->target->a.navTri;
 
         if (Actor_TriTo(&p->c.a, p->target->a.pos, -1) == tri) {
-            func_002143D0(p, p->target->a.pos);
+            Npc_StepToward(p, p->target->a.pos);
             return;
         }
     } else {
@@ -763,12 +763,12 @@ void Kind27_ChaseTarget(Pursuer *p) {
             d[3] = 0.0f;
             left = __builtin_sqrtf(sceVu0InnerProduct(d, d));
             if (Actor_Distance(&p->c.a, p->target->a.pos) - left <= 10.0f) {
-                func_002143D0(p, p->target->a.pos);
+                Npc_StepToward(p, p->target->a.pos);
                 return;
             }
         }
     }
-    func_00214620(p, p->c.unk128);
+    Npc_WalkPathStride(p, p->c.unk128);
 }
 
 /* (as Debilitas3_Update)  vtable +0x30: his frame update - as Debilitas's Debilitas_Update (full think on screen, with a
@@ -778,10 +778,10 @@ void Kind27_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_00218110(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Npc_ProbeAroundFiona(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
@@ -789,20 +789,20 @@ void Kind27_Update(Pursuer *p) {
         if (PU(p, 0x17EC, u32) >= 90) {
             PU(p, 0x17EC, u32) = 0;
             if (p->c.moveMode == 0 && PU(p, 0x1788, s32) != 0x1300 && PU(p, 0x1788, s32) != 0x1600) {
-                func_0029D410(p, 0x2A, 7, 0, 0, NULL);
+                Pursuer_Sound(p, 0x2A, 7, 0, 0, NULL);
             }
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -826,8 +826,8 @@ void Kind27_HeadFor(Pursuer *p, Character *c) {
         c = p->target;
     }
     side = PU(p, 0x1598, s32);
-    if (func_00217370(p, c) != 0) {
-        side = func_002172F0(p, c);
+    if (Npc_SameRoomOtherSide(p, c) != 0) {
+        side = Npc_CharSideBehind(p, c);
     } else {
         s32 room = c->a.room;
 
@@ -835,7 +835,7 @@ void Kind27_HeadFor(Pursuer *p, Character *c) {
             side = -1;
         }
         if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-            PU(p, 0x15A4, s32) = func_00216E00(p, c->a.navTri, c->a.pos, (f32 *)((u8 *)p + 0x15B0));
+            PU(p, 0x15A4, s32) = Npc_NearestWalkable(p, c->a.navTri, c->a.pos, (f32 *)((u8 *)p + 0x15B0));
         }
     }
     if (Character_Route(&p->c, c->a.room, side, -1, -1) >= 0) {
@@ -852,13 +852,13 @@ void Kind27_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
     s32 side = PU(p, 0x1598, s32);
 
-    if (func_00217370(p, f) != 0) {
-        side = func_002172F0(p, f);
+    if (Npc_SameRoomOtherSide(p, f) != 0) {
+        side = Npc_CharSideBehind(p, f);
     } else {
         if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
             side = -1;
         }
-        PU(p, 0x15A4, s32) = func_00216E00(p, f->a.navTri, f->a.pos, (f32 *)((u8 *)p + 0x15B0));
+        PU(p, 0x15A4, s32) = Npc_NearestWalkable(p, f->a.navTri, f->a.pos, (f32 *)((u8 *)p + 0x15B0));
     }
     if (Character_Route(&p->c, f->a.room, side, -1, -1) >= 0) {
         PU(p, 0x1594, s32) = f->a.room;
@@ -878,7 +878,7 @@ void Kind27_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
         room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     }
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
-        PU(p, 0x15A4, u32) = func_00216E00(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
+        PU(p, 0x15A4, u32) = Npc_NearestWalkable(p, tri, pos, (f32 *)((u8 *)p + 0x15B0));
     }
     nm = gNavMesh;
     if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0)) != 3) {

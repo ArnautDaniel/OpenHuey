@@ -217,7 +217,7 @@ void Riccardo_SetRage(Pursuer *p, s32 on) {
         return;
     }
     PU(p, 0x16B8, s32) = 2;
-    func_0029D410(p, 0x26, 7, 0, 0, NULL);
+    Pursuer_Sound(p, 0x26, 7, 0, 0, NULL);
 }
 
 /* vtable +0x310 / +0x30C */
@@ -281,8 +281,8 @@ void Riccardo_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
         if (PU(p, 0x16B8, s32) == 2) {
             if (AT(gProgress, 0x7B8, u8) != 5) {
                 VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 0);
@@ -290,7 +290,7 @@ void Riccardo_Update(Pursuer *p) {
         } else if (AT(gProgress, 0x7B8, u8) == 5 && PU(p, 0x16C8, u8) == 0 && p->c.moveMode == 0) {
             VCALL(p, 0x31C, void (*)(Pursuer *, s32))(p, 1);
         }
-        switch (func_0029B4B0(p) & 0xFF) {
+        switch (Pursuer_CryHeard(p) & 0xFF) {
         case 1:
             Riccardo_CryHit(p, gCharPlayer);
             break;
@@ -303,19 +303,19 @@ void Riccardo_Update(Pursuer *p) {
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
         if (MOTION_ANIM(p) == 0x600 && (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1)) {
-            func_0029D410(p, 0x24, 5, 0, 0, NULL);
+            Pursuer_Sound(p, 0x24, 5, 0, 0, NULL);
         }
-        func_00213E30(p);
+        Npc_BoneHeight(p);
         Riccardo_Impact(p);
-        func_0029E210(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
 }
@@ -400,7 +400,7 @@ static inline void Riccardo_LungeEnd(Pursuer *p) {
         PU(p, 0x1728, s32) = 5;
         Actor_SetState(&p->c.a, &D_00415788);
         p->c.moveMode = 8;
-        func_0028B970(p);
+        Pursuer_AttackNextStep(p);
     }
 }
 
@@ -420,7 +420,7 @@ void Riccardo_StartLunge(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, 0x1300, 0);
+    Pursuer_PlayAnimIf(p, 0x1300, 0);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_00415778);
     Riccardo_LungeEnd(p);
@@ -437,7 +437,7 @@ void Riccardo_StateAfterBlow(Pursuer *p) {
     f32 a;
 
     PU(p, 0x1624, s32)--;
-    if (PU(p, 0x1624, s32) <= 0 || !(func_00283870(p) & 0xFF)) {
+    if (PU(p, 0x1624, s32) <= 0 || !(Pursuer_MayGoForTarget(p) & 0xFF)) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
         return;
@@ -474,7 +474,7 @@ extern const PTMF D_00415758;
    (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (Relation_Request kind 1 with the
    entry's damage); at the animation's end, on to the next (Riccardo_StateAfterBlow) */
 static inline void Riccardo_Blow(Pursuer *p) {
-    if ((Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
+    if ((Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) && Pursuer_MayGoForTarget(p) != 0) {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
 
         if (Actor_Distance(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
@@ -507,7 +507,7 @@ void Riccardo_StartFlurry(Pursuer *p) {
     const f32 *chance;
     f32 roll;
 
-    if (!(func_00283870(p) & 0xFF)) {
+    if (!(Pursuer_MayGoForTarget(p) & 0xFF)) {
         PU(p, 0x1624, s32) = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         p->c.unk104[0] = 0;
@@ -649,7 +649,7 @@ s32 Riccardo_AttackForDistance(Pursuer *p, Character *who) {
 
 extern const PTMF D_00415708, D_00415718, D_00415728;
 
-/* a blow of the flurry: on Fiona, in front of her (func_002175B0) entry 0 or 3, else from behind
+/* a blow of the flurry: on Fiona, in front of her (Npc_SameFloor) entry 0 or 3, else from behind
    8 or 9 (one blow only); on Hewie entry 1 if he's in front, else give up (action 0x13). A blow
    of kind 6 is struck at once (Riccardo_Blow); others first close in: on Hewie Riccardo_StateBlowHewie, on
    Fiona Riccardo_StateBlowFiona */
@@ -658,13 +658,13 @@ void Riccardo_FlurryBlow(Pursuer *p) {
     u8 *e;
 
     if (p->target != gCharPartner) {
-        if (!(func_002175B0(&p->c.a, &p->target->a) & 0xFF)) {
+        if (!(Npc_SameFloor(&p->c.a, &p->target->a) & 0xFF)) {
             p->c.unk104[0] = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= 50.0f ? 9 : 8;
             PU(p, 0x1624, s32) = 1;
         } else {
             p->c.unk104[0] = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= 50.0f ? 0 : 3;
         }
-    } else if (func_002175B0(&p->c.a, &p->target->a) & 0xFF) {
+    } else if (Npc_SameFloor(&p->c.a, &p->target->a) & 0xFF) {
         p->c.unk104[0] = 1;
     } else {
         PU(p, 0x1624, s32) = 0;
@@ -675,7 +675,7 @@ void Riccardo_FlurryBlow(Pursuer *p) {
         return;
     }
     e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
-    func_00297B40(p, AT(e, 0x0, s32), 0);
+    Pursuer_PlayAnimIf(p, AT(e, 0x0, s32), 0);
     p->c.unk100 = -1;
     if (AT(e, 0x10, u8) == 6) {
         Actor_SetState(&p->c.a, &D_00415708);
@@ -719,7 +719,7 @@ static inline void Riccardo_Behaviour(Pursuer *p, const PTMF *away, const PTMF *
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 6);
             PU(p, 0x162C, s32) = AT(PU(p, 0x1824, u8 *), 0xC, s32);
         } else if (t = p->target,
-                   (func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+1f /* 180 degrees */) & 0xFF) &&
+                   (Eye_ActorSees(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+1f /* 180 degrees */) & 0xFF) &&
                    PU(p, 0x1588, f32) <= PU(p, 0x17C0, f32)) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
             PU(p, 0x162C, s32) = 0;
@@ -919,8 +919,8 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
     if (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) {
         f32 a;
 
-        if (func_00283870(p) == 0 || PU(p, 0x1545, u8) != 1 ||
-            (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) != 1) {
+        if (Pursuer_MayGoForTarget(p) == 0 || PU(p, 0x1545, u8) != 1 ||
+            (Npc_SameFloor(&p->c.a, &gCharPartner->a) & 0xFF) != 1) {
             goto done;
         }
         if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, hewie) - p->c.a.angle[1]) <= 0.0f)) {
@@ -978,7 +978,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
         Character *t = gCharPartner != NULL ? gCharPartner : p->target;
         f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
-        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnToward(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         PU(p, 0x178C, s32) = 0;
@@ -988,7 +988,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
     }
     if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
         100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
-        func_0029D410(p, 0x15, 7, 0, 0, NULL);
+        Pursuer_Sound(p, 0x15, 7, 0, 0, NULL);
     }
     Character_RootMoveMasked(&p->c);
 }
@@ -1020,8 +1020,8 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
     if (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) {
         f32 a;
 
-        if (!(func_00283870(p) & 0xFF) || PU(p, 0x1544, u8) == 0 ||
-            !(func_002175B0(&p->c.a, &gCharPlayer->a) & 0xFF)) {
+        if (!(Pursuer_MayGoForTarget(p) & 0xFF) || PU(p, 0x1544, u8) == 0 ||
+            !(Npc_SameFloor(&p->c.a, &gCharPlayer->a) & 0xFF)) {
             p->c.unk100 = 0;
         } else {
             if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, fiona) - p->c.a.angle[1]) <= 0.0f)) {
@@ -1059,7 +1059,7 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
         Character *t = gCharPlayer != NULL ? gCharPlayer : p->target;
         f32 h = Actor_HeadingTo(&p->c.a, t->a.pos);
 
-        func_002140A0(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        Npc_TurnToward(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     } else {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
         f32 at[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1070,7 +1070,7 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
             if (tri == (u32)-1) {
                 tri = Actor_TriTo(&p->c.a, obj, 0);
             }
-            if (tri != (u32)-1 && func_002187D0(p, tri, obj) != 0 &&
+            if (tri != (u32)-1 && Npc_SeesPoint(p, tri, obj) != 0 &&
                 p->c.a.pos[1] - obj[1] < 10.0f && !(p->c.a.pos[1] - obj[1] <= -15.0f) &&
                 Riccardo_OutOfLine(p, obj, fiona) &&
                 (!(Vec_LineDistance(p->c.a.pos, obj, hewie) <= 4.0f) ||
@@ -1081,7 +1081,7 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
             }
         }
         if ((p->c.unk100 & 2) && PU(p, 0x1545, u8) == 1 &&
-            (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) == 1 && Riccardo_OutOfLine(p, hewie, fiona)) {
+            (Npc_SameFloor(&p->c.a, &gCharPartner->a) & 0xFF) == 1 && Riccardo_OutOfLine(p, hewie, fiona)) {
             if ((Riccardo_AttackForDistance(p, gCharPartner) & 0xFF) != 0xFF) {
                 Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
             } else if (Riccardo_BlowFloorPoint(p, at) & 0xFF) {
@@ -1137,9 +1137,9 @@ end:
     if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
         100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         if (p->c.unk104[0] == 0) {
-            func_0029D410(p, 0x22, 7, 0, 0, NULL);
+            Pursuer_Sound(p, 0x22, 7, 0, 0, NULL);
         } else if (p->c.unk104[0] == 3) {
-            func_0029D410(p, 0x23, 7, 0, 0, NULL);
+            Pursuer_Sound(p, 0x23, 7, 0, 0, NULL);
         }
     }
     Character_RootMoveMasked(&p->c);
@@ -1149,7 +1149,7 @@ end:
 static inline s32 Riccardo_Seen(Pursuer *p) {
     Character *t = p->target;
 
-    return func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+1f /* 180 degrees */) & 0xFF;
+    return Eye_ActorSees(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+1f /* 180 degrees */) & 0xFF;
 }
 
 /* back off (5) or hold off (6) by a roll against his table +0x1824 (+0x14 chance; +0 / +4 waits) */
@@ -1167,12 +1167,12 @@ extern u8 D_0047AC38[];
 
 /* the threat-level chance of a lunge (attack table 0xA); 1 when he lunges */
 static inline s32 Riccardo_Lunge(Pursuer *p, u8 *tbl) {
-    u32 chance = func_00297290(p, (f32 *)tbl, 1);
+    u32 chance = Pursuer_ThresholdEntry(p, (f32 *)tbl, 1);
     f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
 
     if (roll < (f32)chance) {
         VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
-        func_00283C50(p);
+        Pursuer_PickFromTable(p);
         return 1;
     }
     return 0;
@@ -1243,7 +1243,7 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
             return;
         }
         if (!((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF))) {
-            u32 dir = func_00213FA0(p, gCharPlayer->a.pos, 0x1.0c1524p+0f /* 60 degrees */, 0x1.4f1a6ep+1f /* 150 degrees */) & 0xFF;
+            u32 dir = Npc_TurnWayTo(p, gCharPlayer->a.pos, 0x1.0c1524p+0f /* 60 degrees */, 0x1.4f1a6ep+1f /* 150 degrees */) & 0xFF;
 
             if (dir != 0xFF) {
                 p->c.unk104[0] = dir;
@@ -1252,10 +1252,10 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
         }
         roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         if (PU(p, 0x1588, f32) < 0.0f) {
-            if (func_00284440(p) & 0xFF) {
+            if (Pursuer_TargetOutOfReach(p) & 0xFF) {
                 break;
             }
-            func_0029AF20(p);
+            Pursuer_ChaseFionaHere(p);
             return;
         }
         if (!Riccardo_Seen(p) || !(PU(p, 0x1588, f32) <= PU(p, 0x17C0, f32) + 20.0f)) {
@@ -1316,7 +1316,7 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
         break;
     }
     if (PURSUER_STEP_NEXT(p) == 1 && PU(p, 0x175C, s32) != 0x12) {
-        s32 d = func_002131A0();
+        s32 d = Npc_OpenDoorFionaHides();
 
         if (d != -1) {
             /* Fiona is hiding: go to the door */
@@ -1348,7 +1348,7 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
     if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
         return;
     }
-    if (near < func_002838E0(p) || near < 10.0f) {
+    if (near < Pursuer_GroundGained(p) || near < 10.0f) {
         f32 a;
 
         if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
@@ -1357,9 +1357,9 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
             a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
-            func_002175B0(&p->c.a, &p->target->a) != 0) {
-            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)func_00283EF0(p));
-            func_00283C50(p);
+            Npc_SameFloor(&p->c.a, &p->target->a) != 0) {
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)Pursuer_FionaState(p));
+            Pursuer_PickFromTable(p);
             PU(p, 0x162C, s32) = 0;
         }
     }
@@ -1536,23 +1536,23 @@ void Kind37_Update(Pursuer *p) {
     u32 alpha;
 
     Stalker_ThinkStart(p);
-    if (func_00217510(p) != 0) {
-        func_00296FC0(p);
-        func_0029B4B0(p);
+    if (Npc_InPlayedRoom(p) != 0) {
+        Pursuer_DoorNear(p);
+        Pursuer_CryHeard(p);
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
-            func_0029D4C0(p, -1);
+            Pursuer_AnimSounds(p, -1);
         }
-        func_00213E30(p);
-        func_0029E210(p);
+        Npc_BoneHeight(p);
+        Pursuer_KeepOnWalkable(p);
     } else {
         if (ptmf_test(st)) {
             ptmf_scall(p, st);
         }
-        func_0029D7F0(p);
+        Pursuer_FootstepsThroughWalls(p);
     }
     if (PU(p, 0x16C4, s32) < 100) {
         if (p->c.a.unkC4 == 1) {

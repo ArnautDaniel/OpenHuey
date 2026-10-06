@@ -176,12 +176,12 @@ void Debilitas_StunDown(Pursuer *p) {
 void Debilitas_StateLookWalk(Pursuer *p) {
     s32 arrived = 0;
 
-    func_002837C0(p, 0xFF);
+    Pursuer_RaiseThreat(p, 0xFF);
     if (PU(p, 0x1590, f32) < 0.0f) {
         PU(p, 0x16EF, u8) = 1;
     }
     if ((p->c.unk128 < p->c.unk124) == 1) {
-        arrived = func_00214620(p, p->c.unk128) & 0xFF;
+        arrived = Npc_WalkPathStride(p, p->c.unk128) & 0xFF;
     } else if (PU(p, 0x1590, f32) == 0.0f) {
         arrived = 1;
     } else {
@@ -307,7 +307,7 @@ void Debilitas_StateStartWalk(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
     Actor_SetState(&p->c.a, &D_003AFFB0);
     Debilitas_StateLookWalk(p);
@@ -324,14 +324,14 @@ void Debilitas_BehaviourRun(Pursuer *p) {
     }
     if (PU(p, 0x16B4, u8) == 1) {
         if (PU(p, 0x1788, s32) != 0x201) {
-            func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
         }
     } else if (PU(p, 0x16C8, u8) == 0 && PU(p, 0x1588, f32) < PU(p, 0x17E8, f32)) {
         if (PU(p, 0x1788, s32) != 0x200) {
-            func_00297B40(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
         }
     } else if (PU(p, 0x1788, s32) != 0x201) {
-        func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+        Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     }
 }
 
@@ -359,9 +359,9 @@ void Debilitas_StandAnim(Pursuer *p) {
         return;
     }
     if (slow) {
-        func_00297B40(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
+        Pursuer_PlayAnimIf(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p), 0);
     } else {
-        func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+        Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     }
 }
 
@@ -451,7 +451,7 @@ void Debilitas_StartWander(Pursuer *p) {
             continue;
         }
         VCALL(nav, 0xC, void (*)(void *, u32, f32 *))(nav, tri, pos);
-        if (func_00214B90(p, tri, pos) < 20.0f) {
+        if (Npc_PathLength(p, tri, pos) < 20.0f) {
             continue;
         }
         PU(p, 0x15A4, u32) = tri;
@@ -469,7 +469,7 @@ void Debilitas_StartWander(Pursuer *p) {
     if (Pursuer_WalkOn(p)) {
         return;
     }
-    func_00297B40(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
+    Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
     Actor_SetState(&p->c.a, &D_003AFFB0);
     Debilitas_StateLookWalk(p);
@@ -506,7 +506,7 @@ void Debilitas_Behaviour(Pursuer *p) {
         Character *t = p->target;
         u8 *tbl;
 
-        if (!(func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF)) {
+        if (!(Eye_ActorSees(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF)) {
             if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32))) {
                 if (roll <= AT(PU(p, 0x17F0, u8 *), 0x24, f32)) {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 5);
@@ -556,7 +556,7 @@ void Debilitas_Behaviour(Pursuer *p) {
 static inline s32 Debilitas_Seen(Pursuer *p) {
     Character *t = p->target;
 
-    return func_00218300(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF;
+    return Eye_ActorSees(p, &t->a, &p->c.a, t->a.angle[1], PU(p, 0x1580, f32), 0x1.921fb6p+0f /* 90 degrees */) & 0xFF;
 }
 
 /* back off (action 5) or hold off (6) by his table +0x17F0 entry `i` (0 unseen and far, 1 unseen
@@ -573,15 +573,15 @@ static void Debilitas_BackOrHold(Pursuer *p, f32 roll, s32 i) {
 
 extern f32 D_003AF4B0[];
 
-/* a waited-out back-off or hold-off: strike by the chance for the threat level (func_00297290 of
+/* a waited-out back-off or hold-off: strike by the chance for the threat level (Pursuer_ThresholdEntry of
    D_003AF4B0), else back or hold off again. 1 when he strikes */
 static s32 Debilitas_StrikeOrWait(Pursuer *p) {
-    u32 chance = func_00297290(p, D_003AF4B0, 3);
+    u32 chance = Pursuer_ThresholdEntry(p, D_003AF4B0, 3);
     f32 roll;
 
     if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < (f32)chance) {
         VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
-        func_00283C50(p);
+        Pursuer_PickFromTable(p);
         return 1;
     }
     roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
@@ -650,9 +650,9 @@ void Debilitas_Chase(Pursuer *p) {
         break;
     case 0x1D:
         if (!(PU(p, 0x1588, f32) <= PU(p, 0x17E4, f32)) ||
-            (func_00217ED0(p, 0x1.921fb6p+1f /* 180 degrees */, 2.0f) == 0 &&
-             func_00217ED0(p, 0x1.eb7c16p+0f /* 110 degrees */, 2.0f) == 0 &&
-             func_00217ED0(p, -0x1.eb7c16p+0f, 2.0f) == 0)) {
+            (Npc_TargetSideWalkable(p, 0x1.921fb6p+1f /* 180 degrees */, 2.0f) == 0 &&
+             Npc_TargetSideWalkable(p, 0x1.eb7c16p+0f /* 110 degrees */, 2.0f) == 0 &&
+             Npc_TargetSideWalkable(p, -0x1.eb7c16p+0f, 2.0f) == 0)) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
         }
         if (PU(p, 0x1588, f32) < 10.0f && !(PU(p, 0x1588, f32) <= 0.0f) && gCharPlayer->moveMode == 0 &&
@@ -666,16 +666,16 @@ void Debilitas_Chase(Pursuer *p) {
 
         /* every 90 frames, a lunge by the threat-level chance */
         if ((PU(p, 0x1780, u32) + 1) % 90 == 0) {
-            u32 chance = func_00297290(p, D_003AF4B0, 3);
+            u32 chance = Pursuer_ThresholdEntry(p, D_003AF4B0, 3);
 
             if (100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= (f32)chance) {
                 VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, 0xA);
-                func_00283C50(p);
+                Pursuer_PickFromTable(p);
                 return;
             }
         }
         if (!((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF))) {
-            u32 dir = func_00213FA0(p, gCharPlayer->a.pos, 0x1.0c1524p+0f /* 60 degrees */, 0x1.4f1a6ep+1f /* 150 degrees */) & 0xFF;
+            u32 dir = Npc_TurnWayTo(p, gCharPlayer->a.pos, 0x1.0c1524p+0f /* 60 degrees */, 0x1.4f1a6ep+1f /* 150 degrees */) & 0xFF;
 
             if (dir != 0xFF) {
                 p->c.unk104[0] = dir;
@@ -684,10 +684,10 @@ void Debilitas_Chase(Pursuer *p) {
         }
         roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         if (PU(p, 0x1588, f32) < 0.0f) {
-            if (func_00284440(p) & 0xFF) {
+            if (Pursuer_TargetOutOfReach(p) & 0xFF) {
                 break;
             }
-            func_0029AF20(p);
+            Pursuer_ChaseFionaHere(p);
             return;
         }
         if (!Debilitas_Seen(p)) {
@@ -750,7 +750,7 @@ void Debilitas_Chase(Pursuer *p) {
         break;
     }
     if (PURSUER_STEP_NEXT(p) == 1 && PU(p, 0x175C, s32) != 0x12) {
-        s32 d = func_002131A0();
+        s32 d = Npc_OpenDoorFionaHides();
 
         if (d != -1) {
             /* Fiona is hiding: go to the door */
@@ -782,7 +782,7 @@ void Debilitas_Chase(Pursuer *p) {
     if (!(near < VCALL(p, 0x2F4, f32 (*)(Pursuer *))(p)) || near < 0.0f) {
         return;
     }
-    if (near < func_002838E0(p) || near < 10.0f) {
+    if (near < Pursuer_GroundGained(p) || near < 10.0f) {
         f32 a;
 
         if (!(Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]) <= 0.0f)) {
@@ -791,9 +791,9 @@ void Debilitas_Chase(Pursuer *p) {
             a = -Angle_Wrap(Actor_HeadingTo(&p->c.a, p->target->a.pos) - p->c.a.angle[1]);
         }
         if (a < 0x1.921fb6p+1f * VCALL(p, 0x2EC, f32 (*)(Pursuer *))(p) / 180.0f &&
-            func_002175B0(&p->c.a, &p->target->a) != 0) {
-            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)func_00283EF0(p));
-            func_00283C50(p);
+            Npc_SameFloor(&p->c.a, &p->target->a) != 0) {
+            VCALL(p, 0x130, void (*)(Pursuer *, s32))(p, (s8)Pursuer_FionaState(p));
+            Pursuer_PickFromTable(p);
             PU(p, 0x162C, s32) = 0;
         }
     }
