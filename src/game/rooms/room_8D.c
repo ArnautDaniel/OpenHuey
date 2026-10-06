@@ -5,10 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "scene_game_members.h"
 
 extern void *D_0046DB80[];
 extern void *D_004773C0[];
-extern void func_001267F0(void *c, s32 light);
 /* ---- the marker effect D_00470F90 (effects.c) on character slot 3, its slot in script variable
  * 0, its size eased by variable 1 ---- */
 extern void *D_00470F90[];

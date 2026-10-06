@@ -14,30 +14,25 @@
 #include "memcard.h"
 #include "pursuer.h"
 #include "item.h"
+#include "effects.h"
+#include "items.h"
+#include "placed.h"
+#include "props.h"
+#include "pursuer_ai.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "stalker_math.h"
+#include "msl.h"
 
-extern void *func_00121370(u32 size, void *place);   /* placement new */
 extern void *D_00469C20[];   /* Actor */
 extern void *D_0046F5C0[], *D_00469A00[], *D_004699C0[], *D_004699E0[], *D_0046A950[];
 extern void *D_0046F520[], *D_004727E0[], *D_00472840[], *D_004758A0[], *D_00475A80[], *D_00475960[],
     *D_00475900[], *D_004759C0[], *D_00475A20[], *D_00479E70[], *D_00479ED0[], *D_00479500[];
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_00121360(void *p);   /* delete (the pool's: nothing) */
 
 #define POOL(m) ((m) + 0xA040)
 #define SAVED(p) ((u8 *)(p) + 0xA14)
 #define NUM_SAVED 60
 
-/* Fixed-size pool: +0x4 base, +0xC element size, +0x10 count, +0x14 in-use flags. */
-typedef struct B0_Pool {
-    u32 unk0;
-    u8 *base;
-    u32 unk8;
-    u32 elemSize;
-    u32 count;
-    u8 *used;
-} B0_Pool;
-
-void *func_00120D60(B0_Pool *p, u32 i);
 void *func_00120F40(void *p);
 void *func_00122B30(void *p);
 
@@ -47,7 +42,6 @@ extern void *D_00476B50[];
 void *func_003156A0(u8 *o, s32 flags);
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[];
-extern void func_00124E40(Actor *a);
 extern void *D_00474FD0[];
 /* writes {x, 0, z} */
 #define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
@@ -350,12 +344,9 @@ void func_002D69E0(u8 *mgr) {
 
 #include "effectmgr.h"
 
-extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern void func_00261090(void *list, s32 item, s32 n);   /* given */
 extern const PTMF sGameStateNull;
 extern const PTMF D_00414790, D_004147A0, D_004147B0;   /* +0x50 (virtual), func_002D54D0, func_002D5460 */
 extern void *D_0046FC30[], *D_00469D00[];
-extern void func_002E56C0(u8 *drawer);
 extern void func_00121300(u8 *a);   /* Actor +0xC */
 extern void func_00121220(u8 *a);   /* Actor +0x30 */
 s32 func_00121000(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 r, f32 h);   /* the base's +0x44 */
@@ -774,9 +765,7 @@ void func_002D5D10(u8 *b) {
 
 #include "ptmf.h"
 
-extern void func_00124DB0(void *a);   /* the actor's set-up */
 extern const PTMF D_003AF1B8;   /* a thing's resting state */
-extern void sceVu0RotMatrix(f32 (*out)[4], f32 (*m)[4], const f32 *rot);
 
 /* (possibly unused by the vtables) place it: nav tri, position, turn, front point */
 void func_00120F90(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front) {
@@ -863,7 +852,7 @@ void func_001212F0(void) {
 
 /* +0xC set up: the actor's, then sizes 0, its bounce (0, -0.2, 0, 1) at +0x100, not held */
 void func_00121300(u8 *o) {
-    func_00124DB0(o);
+    func_00124DB0((Actor *)o);
     AT(o, 0xF0, s32) = 0;
     AT(o, 0xEC, s32) = 0;
     AT(o, 0x100, s32) = 0;
@@ -892,7 +881,6 @@ void *func_00122B30(void *p) {
 
 extern void *D_004727E0[];
 extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), func_00314CE0 */
-extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
 
 /* +0x8 destructor */
 void *func_00314990(u8 *o, s32 flags) {
@@ -1148,7 +1136,6 @@ extern void func_00354C90(u8 *o);
 extern s32 func_003544C0(u8 *o);
 extern s32 func_00354D50(u8 *o);
 extern void func_00354AF0(u8 *o);
-extern void func_0033BCB0(void *drawer, f32 *pos, f32 *rot, s32 a, s32 b, s32 c);
 
 /* +0x8 destructor */
 void *func_00315540(u8 *o, s32 flags) {
@@ -1180,7 +1167,7 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     rot[2] = 0.0f;
     d.vtbl = D_00476B50;
     d.a = -1;
-    func_0033BCB0(&d, BALL_POS(o), rot, a, b, c);
+    func_0033BCB0((u8 *)&d, BALL_POS(o), rot, a, b, c);
     d.vtbl = D_00469D00;
 }
 
@@ -2021,7 +2008,6 @@ static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
 /* their destructors: the four drawers back down to the drawer base (last first), then the
    effect base, then (flags > 0) delete */
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
     s32 i;
@@ -2054,7 +2040,6 @@ u8 *func_0036BCC0(u8 *o, s32 flags) {
 
 /* their draws (unless the effects are paused): each drawer's record (+0x10) the current frame's
    (+0xFAC / +0x22BC) in its block, then drawn */
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u32 *stride) {
     s32 i;
@@ -2119,8 +2104,6 @@ void func_0036BB00(u8 *o) {
     burst_quad((QuadDrawer *)(o + 0xBF8), 0.0f, 1, 0xC0, 0x60, 0x20, 0x20, 0x43, 0);
     AT(o, 0xC0C, u8 *) = o + 0xF60;
 }
-
-extern u32 func_00123D20(void *a, const f32 *p);   /* the nav triangle under a point (actor.c) */
 
 /* a quad record (0x30 bytes): its cell 0x48 x 0x30 / 0x10 frames, alpha, position, size, turn */
 static inline void burst_rec(u8 *r, s32 alpha) {
@@ -2234,7 +2217,7 @@ void func_0036A980(u8 *o, f32 *arg) {
         AT(o, 0xF68 + i * 0x10, f32) = i & 2 ? 2.0f : -2.0f;
         AT(o, 0xF6C + i * 0x10, f32) = 1.0f;
     }
-    tri = func_00123D20(gCharPlayer, p);
+    tri = func_00123D20((Actor *)gCharPlayer, p);
     if (tri == (u32)-1) {
         return;
     }
@@ -2404,7 +2387,7 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, b->puffVel + 4 + i * 0xC, f32);
         AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, b->puffVel + 8 + i * 0xC, f32);
         AT(o, b->puffVel + 4 + i * 0xC, f32) = AT(o, b->puffVel + 4 + i * 0xC, f32) - AT(o, b->puffRate + i * 4, f32);
-        tri = func_00123D20(gCharPlayer, (f32 *)(r + 0x10));
+        tri = func_00123D20((Actor *)gCharPlayer, (f32 *)(r + 0x10));
         sceVu0CopyVector(g, (f32 *)(r + 0x10));
         VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
         if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
@@ -2729,7 +2712,7 @@ void func_0036BDE0(u8 *o, f32 *arg) {
             AT(corners, k * 0x10 + 8, f32) = k & 2 ? 2.0f : -2.0f;
             AT(corners, k * 0x10 + 0xC, f32) = 1.0f;
         }
-        tri = func_00123D20(gCharPlayer, q);
+        tri = func_00123D20((Actor *)gCharPlayer, q);
         if (tri == (u32)-1) {
             continue;
         }
@@ -2789,7 +2772,6 @@ void func_00335820(u8 *o) {
 
 extern VObject *gSceneGameF29740;
 extern VObject *D_00456DF8;          /* the room objects */
-extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
 
 /* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
    from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
@@ -2902,10 +2884,10 @@ void func_00333510(u8 *o) {
 
         VCALL(tc, 0x18, void (*)(VObject *))(tc);
         VCALL(gRenderer, 0x70, void (*)(VObject *, u32))(gRenderer, (u32)(8 - late) << 28 | 0x808080);
-        func_0033BCB0(&d, pos, rot, 2, 0, 0xF);
+        func_0033BCB0((u8 *)&d, pos, rot, 2, 0, 0xF);
         VCALL(tc, 0x18, void (*)(VObject *))(tc);
     } else {
-        func_0033BCB0(&d, pos, rot, 2, 0, 1);
+        func_0033BCB0((u8 *)&d, pos, rot, 2, 0, 1);
     }
     d.vtbl = D_00469D00;
 }
@@ -2992,7 +2974,6 @@ void func_00368150(u8 *o) {
    goes off, Fiona's kick, its noise ---- */
 
 #include "charaction.h"
-
 
 /* actor c (feet cy, top ctop) and the span oy..otop overlap */
 static inline s32 thing_spans(f32 cy, f32 ctop, f32 oy, f32 otop) {
@@ -3260,8 +3241,6 @@ void func_00333FA0(u8 *b) {
     }
 }
 
-extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
-
 /* +0x30 each frame, while the game runs: gone after 7.5 s; Fiona's kick (0.4 up); the pursuer
    standing on it sets it off (sound 4, a level-0x28 noise) */
 void func_003688D0(u8 *o) {
@@ -3293,7 +3272,6 @@ void func_003688D0(u8 *o) {
     }
 }
 
-extern u32 func_001788F0(Progress *p, u32 door);    /* u8 */
 extern void *D_0047A050[];
 
 /* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
@@ -3585,7 +3563,7 @@ s32 func_0036D720(u8 *o) {
         AT(r, 0x14, f32) = AT(r, 0x14, f32) + v[1];
         AT(r, 0x18, f32) = AT(r, 0x18, f32) + v[2];
         v[1] = v[1] - AT(o, 0x748 + i * 4, f32);
-        tri = func_00123D20(gCharPlayer, (f32 *)(r + 0x10));
+        tri = func_00123D20((Actor *)gCharPlayer, (f32 *)(r + 0x10));
         sceVu0CopyVector(g, (f32 *)(r + 0x10));
         VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
         if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {

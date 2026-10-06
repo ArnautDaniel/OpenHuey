@@ -3,6 +3,8 @@
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
+#include "progress.h"
+#include "scene_game_members.h"
 
 extern const char *const D_0042C358;
 
@@ -22,10 +24,6 @@ extern u8 D_0042B520[];
 extern void *D_0042C200[];
 extern void *D_0042C2F0[];
 extern u8 D_0042C360[];
-
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016CD30(Progress *p);
 
 extern PTMF D_019915A0[];
 
@@ -116,7 +114,7 @@ s32 func_003212A0(void *self, void *a1, u8 *cmd) {
     case 1:
         return func_0016CD60(gProgress, 3, 0) == 0 ? 2 : 1;
     }
-    func_0016CD30(gProgress);
+    ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;
 }
 

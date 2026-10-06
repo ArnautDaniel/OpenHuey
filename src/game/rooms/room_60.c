@@ -6,16 +6,16 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "memcard.h"
+#include "progress.h"
+#include "scene_game_members.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_00471FA0[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016CD30(Progress *p);
-extern void glr_layer(s32 layer);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 extern void *D_004795A0[];
 extern void *D_004795C0[];
 extern u8 D_004280A0[];
@@ -30,7 +30,6 @@ extern u8 D_004291A0[];
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 extern PTMF D_019911C0[];
 
@@ -162,7 +161,7 @@ s32 func_00310640(void *self, void *a1, u8 *cmd) {
     case 1:
         return func_0016CD60(gProgress, 0xFE, 0) == 0 ? 2 : 1;
     }
-    func_0016CD30(gProgress);
+    ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;
 }
 

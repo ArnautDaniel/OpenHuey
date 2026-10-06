@@ -12,7 +12,8 @@
 #include "sound.h"
 #include "gl2d.h"
 #include "globals.h"
-
+#include "libc.h"
+#include "msl.h"
 
 extern u8 *D_01991EC0[];        /* message tables, by language */
 extern char D_01991ED0[][32];   /* parameter strings (code 0x08) */
@@ -23,11 +24,6 @@ extern u16 D_0044B010[][2];     /* box position presets */
 extern u8 D_0047B140[];         /* frames per glyph, by speed */
 extern u8 D_0047B144[];         /* the choice cursor glyph */
 extern u8 D_0047B148[];         /* the page arrow glyph */
-
-extern void func_00100490(void *p);   /* operator delete */
-extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vsnprintf */
-extern f32 func_0031C058(f32 x);      /* cosf */
-extern f32 func_0031C248(f32 x);      /* sinf */
 
 void Task_DrawPage(Task *t);
 void Task_StateChild(Task *t);
@@ -147,8 +143,6 @@ Task *Task_dtor(Task *t, s32 flags) {
 s32 Task_LineHeight(Task *t) {
     return 25;
 }
-
-void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
 
 /* the box frame, a little larger than the text */
 void Task_BoxSize(Task *t) {
@@ -514,7 +508,7 @@ u16 Task_LineWidth(Task *t, TextCursor *src) {
 }
 
 /* width of a line of `text` at glyph width `glyphW` */
-u16 Text_LineWidth(Task *t, u8 *text, s32 glyphW) {
+u32 Text_LineWidth(Task *t, u8 *text, s32 glyphW) {   /* (a u16) */
     TextCursor c;
 
     t->glyphW = glyphW;

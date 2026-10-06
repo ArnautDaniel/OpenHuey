@@ -5,11 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
+#include "snd_place.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E040[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern const char *D_003FA760;
 
 extern u8 D_003FA090[];

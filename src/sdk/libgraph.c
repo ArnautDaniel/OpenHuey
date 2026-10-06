@@ -2,6 +2,8 @@
  * rather than reimplemented from documentation so the register values are exactly the PS2's;
  * the PC build uses them as they are. */
 #include "common.h"
+#include "sce/libgraph.h"
+#include "sce/eekernel.h"
 
 /* sceGsGParam: the video mode set by sceGsResetGraph */
 typedef struct GsGParam {
@@ -31,18 +33,6 @@ s32 func_0010C500(s32 psm, s32 w, s32 h) {
     }
     return (s16)(n << 1);
 }
-
-/* One drawing context's registers (sceGsDrawEnv1 / 2), as A+D pairs. */
-typedef struct GsDrawEnv {
-    u64 frame, frameAddr;
-    u64 zbuf, zbufAddr;
-    u64 xyoffset, xyoffsetAddr;
-    u64 scissor, scissorAddr;
-    u64 prmodecont, prmodecontAddr;
-    u64 colclamp, colclampAddr;
-    u64 dthe, dtheAddr;
-    u64 test, testAddr;
-} GsDrawEnv;
 
 static inline u64 GsDrawEnv_Zbuf(s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm) {
     u64 z = (u64)(s64)(s16)func_0010C500(psm, w, h) | (u64)(zpsm & 0xF) << 24;
@@ -109,9 +99,6 @@ s32 func_0010C7B0(u64 *c, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32 r, s32 g, s
     c[10] = (s16)ztest != 0 ? (u64)(((s16)ztest & 3) << 17) | 0x10000 : 0x30000;
     return 6;
 }
-
-extern void func_0010C440(void *disp);   /* sceGsPutDispEnv */
-extern void sceGsPutDrawEnv(void *giftag);
 
 /* sceGsSwapDBuff(db, field): show display environment `field`, send that buffer's drawing
  * environment (the sceGsDBuff layout: two display environments, then two GIF packets). */

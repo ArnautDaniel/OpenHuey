@@ -6,6 +6,12 @@
 #include "gs.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "hewie.h"
+#include "loading.h"
+#include "overlay.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 #ifdef HG_NATIVE
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,8 +21,6 @@ extern void *D_00469D00[];
 #include "task.h"
 
 extern void *D_0046D7A0[];
-extern f32 func_002E2D00(f32 x);
-extern void func_0026B180(void *o, u32 rgba, s32 a, s32 b);
 
 /* the loading screen, frame `frame`: the camera at a fixed spot, the emblem (`o`, a model object)
  * turning (its rotation from the frame count) drawn in layers 1 and 0x26, the screen dimmed, and

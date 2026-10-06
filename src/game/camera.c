@@ -8,6 +8,9 @@
 #include "progress.h"
 #include "memcard.h"
 #include "navmesh.h"
+#include "hewie.h"
+#include "quat.h"
+#include "msl.h"
 
 typedef struct Camera {
     /* 0x000 */ void **vtbl;
@@ -57,8 +60,6 @@ typedef struct CameraSet {
 
 extern void *D_00469A60[];
 extern void *D_00469B40[];
-extern void func_00100490(void *p);   /* operator delete */
-extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -363,10 +364,6 @@ void func_00122810(Camera *c) {
     c->unk294 = c->unk29C;
 }
 
-extern f32 func_0031C338(f32 x);         /* tanf */
-extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);
-extern void func_0025C770(const f32 *q, f32 (*m)[4]);
-
 #define RAND01() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* +0x18 the world-to-view matrix `out`: the direction to the target (+0x70), the screen
@@ -480,8 +477,6 @@ void func_00121D90(Camera *c, u32 n, CameraSet *out) {
         return;
     }
 }
-
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 
 /* +0x3C turn the view: the point looked at (+0x50) goes round the eye (+0x40) by `yaw` about Y,
  * then by `pitch` about the axis square to the up (+0x80) and the view */

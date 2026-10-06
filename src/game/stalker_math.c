@@ -4,8 +4,8 @@
 
 #include "common.h"
 #include "sce/libvu0.h"
-
-extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2f */
+#include "stalker_math.h"
+#include "msl.h"
 
 /* the unit vector of heading `angle` */
 void func_002E2C10(f32 *out, f32 angle) {
@@ -62,8 +62,6 @@ void func_00211A90(u8 *a, f32 dist, f32 *out) {
     sceVu0ScaleVector(d, d, dist);
     sceVu0AddVector(out, (f32 *)(a + 0x10), d);
 }
-
-extern f32 func_0031C3C0(f32 x);   /* acosf */
 
 /* rotation matrix `m` as axis + angle (q: x, y, z the axis, w the angle) */
 void func_0025C630(f32 *unused, f32 *q, f32 (*m)[4]) {

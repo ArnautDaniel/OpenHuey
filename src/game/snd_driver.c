@@ -25,6 +25,14 @@
 #include "globals.h"
 #include "memcard.h"
 #include "navmesh.h"
+#include "snd_driver.h"
+#include "snd_lib.h"
+#include "system.h"
+#include "cri/adx.h"
+#include "libc.h"
+#include "msl.h"
+#include "sce/iop.h"
+#include "sce/sif.h"
 
 extern u32 D_01970D40[8];      /* the call arguments */
 extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
@@ -37,7 +45,6 @@ extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memo
 #define BANK_TYPE(d, k) AT(BANK(d, k), 0xC, u8)
 
 extern void *D_0046AF90[];
-extern void func_00100490(void *p);
 void *func_001BF800(u8 *o, s32 flags);
 
 /* destructor (vtable D_0046AF90) */
@@ -260,8 +267,6 @@ s32 func_0020F000(u8 *d, u32 k) {
     return 1;
 }
 
-extern void func_001D4750(s32 mono);   /* ADX: mono output */
-
 /* the output mode (0 mono) */
 void func_0020F070(u8 *d, s8 mode) {
     AT(d, 0x104, s8) = mode;
@@ -296,7 +301,6 @@ void func_0020F0D0(u8 *d, u32 k) {
     LOADED(d, k) = 0;
 }
 
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_00457258[];   /* "DUMMY" */
 
 /* register bank `k` with the driver (reloaded if it was): its header, table / sequence and
@@ -454,9 +458,6 @@ void func_0020F6C0(u8 *d, u32 k, u32 src, u32 size) {
         BANK_TYPE(d, k) = 1;
     }
 }
-
-extern s32 func_0021F3D0(u8 *t, s32 size);
-extern void func_0021F4A0(s32 bank, u8 *t, s32 size, u16 *out);
 
 /* bank `k`'s sound table (`size` bytes at `src`) into IOP memory, its 3D curves kept */
 void func_0020F740(u8 *d, u32 k, u32 src, u32 size) {
@@ -740,12 +741,6 @@ void func_00210230(u8 *d) {
     }
 }
 
-extern s32 func_001BC0F0(void *iop, const char *name, s32 argc, const char *argv, s32 x);   /* load a module */
-extern s8 func_00220440(char *out, u8 *p);
-extern void func_00220150(s32 prio, s32 stack);
-extern void func_00220210(void);
-extern void func_00220270(void);
-extern void func_00220340(void);
 extern const char D_00457260[], D_00457270[], D_00457280[], D_00457290[];   /* the modules */
 extern char D_01970B10[0x100];   /* the driver's arguments */
 extern u8 D_01970C40[0x1C];      /* ... before formatting */
@@ -754,9 +749,9 @@ extern u8 D_01970C40[0x1C];      /* ... before formatting */
 void func_002102E0(u8 *d) {
     u32 i;
 
-    AT(d, 0x70, s32) = func_001BC0F0(d, D_00457260, 0, NULL, 0);
-    AT(d, 0x74, s32) = func_001BC0F0(d, D_00457270, 0, NULL, 0);
-    AT(d, 0x78, s32) = func_001BC0F0(d, D_00457280, 0, NULL, 0);
+    AT(d, 0x70, s32) = func_001BC0F0(d, D_00457260, 0, 0, 0);
+    AT(d, 0x74, s32) = func_001BC0F0(d, D_00457270, 0, 0, 0);
+    AT(d, 0x78, s32) = func_001BC0F0(d, D_00457280, 0, 0, 0);
     func_00220340();
     func_00220150(0xA, 0x2000);
     AT(D_01970C40, 0x0, s32) = -1;
@@ -769,7 +764,7 @@ void func_002102E0(u8 *d) {
     AT(D_01970C40, 0x16, s16) = 0x1B;
     AT(D_01970C40, 0x18, s16) = 0x17;
     AT(D_01970C40, 0x1A, s16) = 1;
-    AT(d, 0x7C, s32) = func_001BC0F0(d, D_00457290, func_00220440(D_01970B10, D_01970C40), D_01970B10, 0);
+    AT(d, 0x7C, s32) = func_001BC0F0(d, D_00457290, func_00220440(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
     func_00220270();
     func_00220210();
     D_01970D40[2] = 1;
@@ -818,18 +813,15 @@ void func_002102E0(u8 *d) {
     func_0021FB70(0x360002, NULL);
 }
 
-extern void func_001002C0(void *block, void (*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
-extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046BF20[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];
-extern void func_001BEC10(void *, s32), func_001BECA0(void *, s32);
 
 /* destructor */
 u8 *func_0020E000(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046BF20;
         AT(d, 0x4, void **) = D_0046BF2C;
-        func_001002C0(d + 0x108, func_001BECA0, 0x18, 8);
-        func_001002C0(d + 0x84, func_001BEC10, 0x10, 8);
+        func_001002C0(d + 0x108, (void * (*)(void *, s32))func_001BECA0, 0x18, 8);
+        func_001002C0(d + 0x84, (void * (*)(void *, s32))func_001BEC10, 0x10, 8);
         if (d + 4 != NULL) {
             AT(d, 0x4, void **) = D_0046AF90;
             if (d + 4 != NULL) {

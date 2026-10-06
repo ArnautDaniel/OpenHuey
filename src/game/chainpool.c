@@ -2,6 +2,7 @@
  * (12 bytes: ?, first entry, entry count) and 0x14-byte entries (+0x300), each with a use
  * bitmap (+0x2718 chains, +0x2720 entries). */
 #include "common.h"
+#include "chainpool.h"
 
 /* free everything */
 void func_00179EA0(u8 *pool) {

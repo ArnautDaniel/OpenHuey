@@ -30,7 +30,6 @@ static inline u32 gl2d_blend(u64 alpha) {
 
 /* an image the game sent to VRAM block `block` (renderer +0x48 / +0x4C), as a .TEX-style entry
  * for gl2d_sprite / glr_prim2d (NULL: none) */
-const u8 *gl2d_image(u32 block);
 
 /* `n` copies of colour `rgba` (0x80 = 1.0) */
 static inline void gl2d_colors(u8 *c, u32 rgba, s32 n) {

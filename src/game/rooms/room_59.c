@@ -5,10 +5,10 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E940[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 
 extern u8 D_00410070[];
 extern u8 D_004100B0[];

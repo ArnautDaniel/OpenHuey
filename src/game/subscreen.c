@@ -17,12 +17,25 @@
 #include "pursuer.h"
 #include "memcard.h"
 #include "navmesh.h"
+#include "bgm.h"
+#include "bootcard.h"
+#include "effects.h"
+#include "fiona.h"
+#include "heap.h"
+#include "hewie.h"
+#include "items.h"
+#include "model.h"
+#include "movie.h"
+#include "overlay.h"
+#include "props.h"
+#include "renderer.h"
+#include "scene_game.h"
+#include "scene_game_members.h"
+#include "libc.h"
+#include "msl.h"
 
 extern VObject *D_00456DF0;
 extern void *D_0046C790[];      /* a pool entry */
-extern void func_002B6340(void *movie);   /* apply the movie volume */
-extern void func_002D1FD0(void *bgm);     /* apply the music volume */
-extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);
 
 void func_00396900(SubScreen *s);
 void SubScreen_DrawLoadWait(SubScreen *s);
@@ -31,8 +44,6 @@ void SubScreen_Open(SubScreen *s);
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
 
-extern void *func_00261090(u8 *items, u32 id, s32 n);
-extern void *func_0016FCD0(u8 *m);
 extern void *D_00472700[];
 extern const u8 D_0044BF10[];
 s32 func_00260130(void *pool);
@@ -100,7 +111,7 @@ void SubPool_Reset(u8 *pool) {
     for (i = 0; i < 4; i++) {
         AT(pool, 0x15E0 + i * 4, s32) = 0;
     }
-    func_00120EC0(pool + 0x1208, pool + 8, 0x18, 0xC0, pool + 0x1220);
+    func_00120EC0((BlockPool *)(pool + 0x1208), pool + 8, 0x18, 0xC0, pool + 0x1220);
 }
 
 /* destructor (vtable D_0046EC80) */
@@ -201,7 +212,6 @@ void SubScreen_ApplyOptions(VObject *s) {
 extern u16 D_0044B5E0[][6][2];   /* per controller layout: 6 x (button, its name's message) */
 extern u8 D_0047E3C0[];          /* button mapping (+0xA: the six configurable actions) */
 extern u8 D_0047B150[6];         /* the name slot of each action */
-extern void Msg_SetName(void *self, s32 slot, s32 id);
 
 /* +0x34 apply controller layout `type`: map the six actions and name their buttons */
 void SubScreen_SetLayout(SubScreen *s, s32 type) {
@@ -213,9 +223,6 @@ void SubScreen_SetLayout(SubScreen *s, s32 type) {
     }
 }
 
-extern void *func_00322570(u32 size, void *p);   /* placement new */
-extern void func_00305380(void *p);
-extern void SaveScreen_Init(void *card, void *buf, void *buf2);
 void func_0038F7D0(SubScreen *s);
 void func_00388D30(SubScreen *s);
 extern void *D_00474020[];       /* the 0x15C helper's base vtable */
@@ -502,7 +509,6 @@ extern s8 D_0044C120[][4];       /* per screen kind: up to 4 panels to draw whil
 extern u8 D_0047B350;
 extern void *D_0046F350[];       /* overlay vtable */
 extern void *D_00469D00[];       /* its base */
-extern void func_002CF390(void *ov, u32 rgba);
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
 
 /* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
@@ -597,7 +603,7 @@ static void sub_set_volume(SubScreen *s, f32 vol) {
     if (!(AT(bgm, 0x114, f32) <= 1.0f)) {
         AT(bgm, 0x114, f32) = 1.0f;
     }
-    func_002D1FD0(bgm);
+    func_002D1FD0((Bgm *)bgm);
     if (D_00456DF0 != NULL) {
         VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, vol);
     }
@@ -931,9 +937,6 @@ void SubScreen_DrawFadeBack(SubScreen *s) {
     sub_set_volume(s, vol);
 }
 
-extern void SaveScreen_Draw(void *card, s32 arg);
-extern void SaveScreen_Load(void *card);
-
 /* state: the save-data screen (the card UI at +0xA8AC0) for loading; when it finishes
  * (+0xA8AC4 < 0) the screen closes */
 void SubScreen_StateLoad(SubScreen *s) {
@@ -1261,7 +1264,6 @@ void func_00384CE0(SubScreen *s) {
 
 /* ---- text helpers left (2026-10-05); the sub-screen's text task at +0x97868 ---- */
 
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_00463A60[];
 
 #define SUB_TEXT(s) ((Task *)((u8 *)(s) + 0x97868))
@@ -1298,8 +1300,6 @@ u8 func_0037E650(u8 *s) {
     return (u8)(((s32)func_003941C0(s) - 1) / 2);
 }
 
-extern void func_00260A60(void *items, s32 k);
-
 /* its items (+0x8) func_00260A60 with 2 */
 void func_00384C20(u8 *o) {
     func_00260A60(o + 0x8, 2);
@@ -1307,11 +1307,7 @@ void func_00384C20(u8 *o) {
 
 /* ---- the in-game menu's item page ---- */
 
-extern s32 func_00260420(u8 *items, u8 l, u8 i);              /* an item's kind (-1 none) */
-extern s32 func_00260480(u8 *items, u8 l, u8 i);              /* an item's id (-1 none) */
-extern void func_00260250(u8 *items, u8 l, u8 i, void *arg);   /* start using it */
 extern void func_002600C0(void);
-extern void func_0025FF80(u8 *items, u8 l);                    /* sort the list */
 extern void func_003949B0(SubScreen *s, s32 a);               /* the item grid */
 extern const PTMF D_0044B200, D_0044B210, D_0044B220, D_0044B230, D_0044B240, D_0044B250;
 
@@ -1411,10 +1407,6 @@ void func_00396900(SubScreen *s) {
                   0x10, 0x15);
 }
 
-extern s32 func_002604E0(u8 *items, u8 l, u8 i);   /* the item's word (+0x20) */
-extern s32 func_002606E0(u8 *items, u8 l, u8 i);   /* its equipment status: 1 equipped */
-extern s32 func_00260300(u8 *items, u8 l, u8 i);   /* how many */
-extern u8 func_00260360(u8 *items, u8 l, u8 i);    /* counted */
 extern const char D_00463FD8[];   /* "%2d/%2d" */
 extern const char D_00464218[];   /* "%s" */
 extern const char D_00464230[];   /* "x%2d" */
@@ -1475,7 +1467,6 @@ void func_003949B0(SubScreen *s, s32 a) {
 
 /* ---- the in-game menu's map page ---- */
 
-extern void func_00304F50(u8 *m);   /* the map, each frame */
 extern u8 func_00303F00(void);      /* the maps the player has (bits) */
 extern const PTMF D_0044B388, D_0044B398, D_0044B3A8, D_0044B3B8;
 
@@ -1583,8 +1574,6 @@ void func_00394260(SubScreen *s) {
 
 /* ---- costumes ---- */
 
-extern s32 func_00260690(u8 *items, u8 slot);   /* the item in equipment slot `slot` */
-
 /* the costume worn (equipment slot 2, items 0x90..0x9B) as 0..8; -1 none */
 s32 func_00385370(SubScreen *s) {
     static const s8 kIndex[12] = {0, 1, 2, 3, 4, 5, -1, 6, 7, -1, -1, 8};
@@ -1616,7 +1605,6 @@ void func_00385F60(SubScreen *s) {
 /* ---- page openings and states ---- */
 
 extern void func_00386550(SubScreen *s);
-extern void func_002BDAB0(BootCard *b);   /* the card screens' step */
 extern const PTMF D_0044C050;
 
 /* open the page: its start values (+4 / +6 0x100 / 0xE0, +9 set), fading in (step 0x10), set
@@ -1722,8 +1710,6 @@ void func_00386000(SubScreen *s) {
     }
 }
 
-extern void func_00260840(u8 *items, u8 l, u8 i);            /* equip it */
-
 /* the menu's state from a save `save`: the three lists' items (ids +0x1068, 0xFFFF none; their
  * data +0x11E8), the four equipped (+0x17E8: list << 8 | place), nine words (+0x1044, to
  * +0x97740) and the file's entries (+0x17F0, each given to vtable +0xC) */
@@ -1757,9 +1743,6 @@ void func_00385030(SubScreen *s, u8 *save) {
         }
     }
 }
-
-extern u64 *func_002602A0(u8 *items, u8 l, u8 i);   /* an item's data */
-extern s32 func_00260630(u8 *items, u8 l, u8 i);    /* its equipment slot */
 
 /* the menu's state into a save `save` (as func_00385030 reads it back) */
 void func_003851B0(SubScreen *s, u8 *save) {
@@ -1818,8 +1801,6 @@ void func_0038D620(SubScreen *s, u8 k) {
     }
 }
 
-extern u32 func_00260DD0(u8 *items, u8 l, u8 i);   /* use the item */
-extern void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
 extern const PTMF D_0044B378;
 
 /* state: the item page with a question up: its panels, the grid, a box and the question; once
@@ -1840,8 +1821,6 @@ void func_00394E40(SubScreen *s) {
     }
 }
 
-extern void func_00260170(u8 *items, s32 id, void *arg);
-
 #define SUB_SLIDE(s) ((s)->page[0x15C])   /* the tab's slide, 0..0x40 by 4 */
 
 /* +0x20 the in-game tab: `cmd` 0 the item `id` started (func_00260170), slide reset; 1 waiting
@@ -1857,7 +1836,7 @@ s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
     s->tab = cmd;
     switch (cmd) {
     case 0:
-        func_00260170(s->pool, id, (u8 *)s + 0x94F40);
+        func_00260170(s->pool, id, (s32)((u8 *)s + 0x94F40));
         SUB_SLIDE(s) = 0;
         s->unkA8DDE = 0;
         return 0;
@@ -1913,7 +1892,6 @@ void func_00395460(SubScreen *s) {
     }
 }
 
-extern void func_00182FC0(void *fiona);   /* her costume put on */
 extern const PTMF D_0044B368;
 
 /* state: "equip it?" - its list's panels, the grid and the question; once answered yes (+0x48
@@ -1933,7 +1911,7 @@ void func_00395000(SubScreen *s) {
     if (AT(&s->ask, 0x48, u8) == 0) {
         func_00260840(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
-            func_00182FC0(gCharPlayer);
+            func_00182FC0((Fiona *)gCharPlayer);
         }
     }
     ptmf_set(&s->state, &D_0044B368);
@@ -1941,7 +1919,6 @@ void func_00395000(SubScreen *s) {
 
 /* ---- the galleries ---- */
 
-extern void func_002DE030(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);   /* blended in */
 extern s32 *D_0044BE90[];   /* per entry: its motion */
 
 #define SUB_GALLERY_MODEL(s) AT(s, 0xA8DE8, u8 *)
@@ -1988,7 +1965,6 @@ void func_0038A740(SubScreen *s) {
     }
 }
 
-extern void func_00260B00(u8 *items, u8 l, u8 i);   /* one of it used */
 extern const PTMF D_0044B348, D_0044B358;
 
 /* state: "throw one away?" for an item with a word - its list's panels, the grid, the word and
@@ -2015,7 +1991,7 @@ void func_003951E0(SubScreen *s) {
     } else if (AT(&s->ask, 0x48, u8) == 0) {
         func_00260B00(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
-            func_00182FC0(gCharPlayer);
+            func_00182FC0((Fiona *)gCharPlayer);
         }
         Task_Open(&s->ask, 0x57);
         ptmf_set(&s->state, &D_0044B348);
@@ -2027,8 +2003,6 @@ void func_003951E0(SubScreen *s) {
 /* ---- the screen's frame ---- */
 
 extern void *D_0046F350[], *D_0046EC80[], *D_00469D00[];
-extern void func_002CF390(void *ov, u32 rgba);   /* an overlay's colour */
-extern void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b);   /* depth of field */
 extern const PTMF D_0044B1C0;
 
 /* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
@@ -2497,8 +2471,6 @@ void func_0038D7E0(SubScreen *s) {
 
 /* ---- the costume page ---- */
 
-extern s32 func_001364F0(void *c);
-
 /* the costume page set up: the costumes worn kept (progress vars 0x26 / 0x27 to 0x28 / 0x29);
  * Fiona's choices (page[0..5]: 0, 2, 3, 7, 6, 8 - the ones not unlocked marked 0x80, the
  * current one's place in page[7]) and Hewie's (page[8..10]: 0, 1, 2, its place in page[12];
@@ -2545,7 +2517,7 @@ void func_0038F7D0(SubScreen *s) {
         AT(gCharPartner, 0x28, u8) != 0) {
         u8 *h = (u8 *)gCharPartner;
 
-        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && func_001364F0(h)) {
+        if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == AT(h, 0x30, s32) && func_001364F0((Hewie *)h)) {
             VCALL(h, 0x90, void (*)(void *))(h);
             VCALL(h, 0x7C, void (*)(void *))(h);
         }
@@ -2675,7 +2647,6 @@ void func_0038A2E0(SubScreen *s) {
 /* ---- the music gallery ---- */
 
 extern u8 D_0044BF30[][6];   /* per track: its unlock flag (u16), title (u16), BGM number */
-extern s32 func_002D20D0(void *adx);   /* the stream is free */
 
 #define MUSIC_WANT(track, pause, restart) \
     VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, track, pause, restart, 1.0f)
@@ -2842,10 +2813,6 @@ void func_00387920(SubScreen *s) {
 
 /* ---- the model gallery's start ---- */
 
-extern u8 *func_00266C40(void *fx, s32 k);
-extern void func_002670F0(u8 *fx, s32 n);
-extern void *func_002672F0(u32 size, void *place);
-extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void *D_0046D750[];
 extern const PTMF D_0044B9B0;
 
@@ -3088,15 +3055,6 @@ void func_00388FF0(SubScreen *s) {
 
 /* ---- the model gallery's models ---- */
 
-extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
-extern void *func_001700E0(u8 *m, s32 kind);
-extern void *func_002089F0(u8 *m), *func_00208650(u8 *m), *func_002083D0(u8 *m);
-extern void *func_00208420(u8 *m, s32 kind), *func_002084D0(u8 *m, s32 kind);
-extern void *func_00208210(u8 *m, u8 kind), *func_00208180(u8 *m, u8 kind), *func_002080D0(u8 *m, u8 kind);
-extern void *func_0038D4D0(u8 *m), *func_0038D160(u8 *m), *func_0038CEE0(u8 *m), *func_0038CC90(u8 *m);
-extern void *func_0038CB60(u8 *m), *func_0038C9E0(u8 *m), *func_0038C960(u8 *m), *func_0038C910(u8 *m);
-extern void *func_0016F4B0(u8 *m), *func_0038C8D0(void *o);
-
 /* the gallery's model `k` made in the work memory (+0xA8DFC): its class by the entry, the
  * loaded .PCK's parts hooked up (+0x4C0 / +0x4D0 / +0x4CC / +0x4C4), its textures as texture
  * set 2 (+0xA8DF0, and +0xA8DF4 if any), the marker file (+0xA8DF8, model +0x4D4), set up
@@ -3168,8 +3126,6 @@ typedef struct WordKey {
 } WordKey;
 
 extern WordKey D_0044B640[3][10];
-extern s32 func_00260540(u8 *items);              /* the word plates held */
-extern void func_00261040(u8 *items, u8 *word);   /* a word plate added */
 extern const char D_00464210[];                    /* the plates left */
 
 #define SUB_WORD_CURSOR(s) ((s)->unkA8C57)          /* row << 4 | column */
@@ -3860,7 +3816,6 @@ s32 func_0038A2C0(void *o, u32 i) {
 /* ---- the model gallery ---- */
 
 extern void *D_0046EB40[], *D_0046D7B0[];
-extern void func_00267160(void *fx);
 extern const PTMF D_0044B9D0, D_0044B9E0;
 
 #define GALLERY_STEP(s) SUB_PAGE(s, 0x2, u8)   /* 0 fading in, 1 shown, 2..4 the help, 5 leaving */
@@ -4281,10 +4236,8 @@ void func_00386990(SubScreen *s) {
 
 /* ---- the item's actions ---- */
 
-extern u32 func_002603C0(u8 *items, u8 l, u8 i);   /* its actions (1 use, 2 equip, 4 examine;
+/* its actions (1 use, 2 equip, 4 examine;
                                                       0x80000000 its note can change) */
-extern void func_002607A0(u8 *items, u8 l, u8 i);  /* take it off */
-extern s32 func_00177620(Progress *p);             /* the chase: 0 none, 1 / 2 being chased */
 extern const char D_00464238[];                    /* the cursor */
 extern const PTMF D_0044B278, D_0044B288, D_0044B298, D_0044B2A8, D_0044B2B8, D_0044B2C8, D_0044B2D8,
     D_0044B2E8, D_0044B2F8, D_0044B308, D_0044B318, D_0044B328;
@@ -4427,14 +4380,14 @@ void func_00395630(SubScreen *s) {
                 } else if (equip == 1) {
                     func_002607A0(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
-                        func_00182FC0(gCharPlayer);
+                        func_00182FC0((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2E8);
                 } else if (equip == 0) {
                     func_00260840(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
-                        func_00182FC0(gCharPlayer);
+                        func_00182FC0((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2D8);

@@ -9,6 +9,18 @@
 #include "navmesh.h"
 #include "actor.h"
 #include "pursuer.h"
+#include "effects.h"
+#include "heap.h"
+#include "movie.h"
+#include "scene_game_members.h"
+#include "cri/adx.h"
+#include "cri/sofdec.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "libc.h"
+#include "msl.h"
+#include "sce/eekernel.h"
 
 typedef struct MovieLib {
     /* 0x00 */ void **vtbl;
@@ -23,12 +35,6 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 
 extern void *D_0046C740[];
 extern void *D_0046AED0[];
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_00115D20(void *p, s32 c, u32 n);   /* memset */
-extern void mwPlyInitSfdFx(void *prm);
-extern s32 mwPlyCalcWorkCprmSfd(void *cprm);
-extern void func_0023AE40(void);       /* mwPlyFinishSfdFx */
-extern void *func_00238BF0(void *cprm);   /* mwPlyCreateSofdec */
 
 void *func_001BF660(u8 *o, s32 flags);
 
@@ -36,7 +42,6 @@ extern s32 D_003E5260, D_003E5264;
 extern void *D_01976F98;
 extern const u8 D_004573C0[];
 extern s64 D_003EA900;   /* the timer's rate (ticks a second) */
-extern s64 func_0011CE88(s64 a, s64 b);   /* __divdi3 */
 void func_00226790(s32 v);
 s32 func_002267A0(void);
 void func_002267B0(s32 v);
@@ -379,36 +384,6 @@ s32 func_002265D0(MovieLib *lib) {
 
 #include "game.h"
 
-typedef struct Movie {
-    /* 0x000 */ Scene base;
-    /* 0x014 */ VObject *ply;        /* the player (mwPly handle, NULL: none) */
-    /* 0x018 */ u8 *frame;           /* the current frame: image, w at +0x20, h +0x24, no. +0x38 */
-    /* 0x01C */ u8 frm1C[0x20 - 0x1C];
-    /* 0x020 */ s32 frameW;
-    /* 0x024 */ s32 frameH;
-    /* 0x028 */ u8 frm28[0x38 - 0x28];
-    /* 0x038 */ s32 frameNo;
-    /* 0x03C */ u8 frm3C[0xA0 - 0x3C];
-    /* 0x0A0 */ u8 stat;             /* the player's status: 2 playing, 3 / 4 ended */
-    /* 0x0A1 */ u8 padA1[3];
-    /* 0x0A4 */ void *work;          /* the work buffer, when allocated */
-    /* 0x0A8 */ char name[0x100];    /* the file, empty: none */
-    /* 0x1A8 */ s32 dir;             /* its folder (loader handle), 0: current */
-    /* 0x1AC */ u8 keepRenderer;
-    /* 0x1AD */ u8 pad1AD[3];
-    /* 0x1B0 */ s32 time;
-    /* 0x1B4 */ u8 hasFrame;
-    /* 0x1B5 */ u8 frameBuf;        /* class 0: the frame written next (0 / 1) */
-    /* 0x1B6 */ u8 pad1B6[2];
-    /* 0x1B8 */ void *frames;        /* class 0: two 256 x 224 frames the movie is decoded into */
-    /* 0x1BC */ u8 mode;
-    /* 0x1BD */ u8 pad1BD[3];
-    /* 0x1C0 */ s32 shownFrame;      /* -1 none */
-    /* 0x1C4 */ u8 loop;
-    /* 0x1C5 */ u8 pad1C5[3];
-    /* 0x1C8 */ f32 volume[5];       /* multiplied together */
-} Movie;
-
 _Static_assert(__builtin_offsetof(Movie, name) == 0xA8, "Movie.name");
 _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 
@@ -416,18 +391,6 @@ extern void *Scene_vtable[];
 extern void *D_0046EA60[];       /* Movie */
 extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
 extern u8 *D_0045D1F0;
-extern void func_0011F9A0(void *p);           /* delete (scene heap) */
-extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
-extern void func_00114FD0(void *p);           /* free */
-extern char *func_001183C0(char *d, const char *s);   /* strcpy */
-extern char *func_00118978(char *d, const char *s, s32 n);   /* strncpy */
-extern f32 func_0031C830(f32 x);              /* log10f */
-extern void func_001E7430(s32 a, s32 dir);    /* CRI file system: the current folder */
-extern s32 func_0023C480(VObject *ply);       /* mwPly: playing time */
-extern void func_00239828(VObject *ply, void *frame);   /* mwPly: get the current frame */
-extern void func_0023A180(VObject *ply);      /* mwPly: release the current frame */
-extern s32 func_0023B4B0(VObject *ply);
-extern void func_0023CA88(VObject *ply, s32 mode);
 
 void func_002B6E50(Movie *m);
 void func_002B69B0(Movie *m);
@@ -466,13 +429,10 @@ static inline s32 movie_level(Movie *m) {
  * +0x10 (set by +0x18); its +0xC is func_002B6310 ---- */
 
 extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
-extern void func_002672E0(void *p);   /* delete (effects' heap) */
-extern void func_002E56C0(u8 *quad);
 
 /* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
 #ifdef HG_NATIVE
-extern void glr_todo(const char *what);
 
 u64 func_0021E410(u8 *mv, s32 page) {
     VObject *r = gRenderer;
@@ -1007,9 +967,6 @@ void func_002C8C70(Movie *m) {
 
 extern void *D_00470E80[];
 extern const PTMF D_0041CA80;   /* func_002B6BB0 */
-extern void func_0023E878(VObject *ply, u32 a, u32 b, s32 c);   /* Sofdec */
-extern void func_002410B0(VObject *ply, u8 **frame, void *dst);   /* the frame copied out */
-extern void FlushCache(s32 mode);
 
 /* +0x8 (the frames aren't its own) */
 Movie *func_002FEC50(Movie *m, s32 flags) {
@@ -1070,10 +1027,7 @@ void func_002FED30(Movie *m) {
 
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
 extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
-extern void *func_00115B68(void *d, const void *s, u32 n);   /* memcpy */
 #ifdef HG_NATIVE
-extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
-extern void glr_vram_blit(s32 layer);
 #define MOVIE_UNCACHED(p) ((void *)(p))
 #else
 #define MOVIE_UNCACHED(p) ((void *)((u32)(p) | 0x30000000))   /* uncached accelerated */

@@ -14,10 +14,10 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "overlay.h"
+#include "texcache.h"
 
 #define V(p, off) ((f32 *)((u8 *)(p) + (off)))
-
-extern u64 func_002B71D0(s32);
 
 /* the rectangle's corners: x, y (0 / 1: 512 units from the 0x700 origin), kick */
 extern s32 D_00414310[4][3];

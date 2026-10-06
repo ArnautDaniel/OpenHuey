@@ -5,15 +5,17 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "hewie.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E280[];
-extern f32 func_002E2D00(f32 a);
-extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2 */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern const char *D_003FF110[];
 extern void *D_00469C20[];   /* Actor base vtable */
-extern void func_001247E0(Actor *a, const f32 *delta);   /* moved on the nav mesh */
 extern u8 D_003FE460[];
 extern u8 D_003FE540[];
 extern u8 D_003FE680[];

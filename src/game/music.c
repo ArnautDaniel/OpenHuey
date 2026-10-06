@@ -31,6 +31,8 @@
 #include "globals.h"
 #include "actor.h"
 #include "pursuer.h"
+#include "music.h"
+#include "msl.h"
 
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
@@ -50,7 +52,6 @@ void func_002C0700(u8 *self);
 void func_002C0710(u8 *self);
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern void func_00124E40(Actor *a);
 extern void *D_004738A0[];
 extern u8 D_0042A340[];
 /* writes {x, 0, z} */
@@ -519,7 +520,6 @@ u8 func_002C1980(u8 *d) {
     if (AT(gCharSlot2, 0x30, s32) == AT(gCharPlayer, 0x30, s32)) {
         f32 dist = AT(gCharSlot2, 0x1588, f32);
 
-
         if (dist < 0.0f) {
             dist = func_00124490((Actor *)gCharSlot2, (f32 *)((u8 *)gCharPlayer + 0x10));
         }
@@ -614,11 +614,6 @@ void func_002C3760(u8 *d, u32 k) {
 }
 
 /* ---- life ---- */
-
-extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
-extern void func_001002C0(void *block, void *(*dtor)(void *, s32), u32 size, u32 n);
-extern void func_00100490(void *p);   /* operator delete */
-extern f32 func_0031C6E8(f32 x);      /* logf */
 
 /* placement new */
 void *func_002C01A0(u32 size, void *p) {
@@ -919,8 +914,6 @@ void func_002C3C50(u8 *d) {
     track_mute(d, 3);
     track_mute(d, 0);
 }
-
-extern s32 func_00177620(Progress *p);   /* the chase: 0 none, 1 / 2 being chased */
 
 /* back to calm: tracks 1 / 2 on (their fades dropped) */
 static inline void to_calm(u8 *d) {

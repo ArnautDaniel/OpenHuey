@@ -27,8 +27,12 @@ extern NavMesh *gNavMesh;
 /* PC: what an out-of-range triangle reads. The original reads the NULL record (PS2 low memory,
  * e.g. its flags at address 0x3C) without a check; that faults on PC, so it gets a blank record
  * instead: no corners, no neighbours, no flags (re-blanked on each use, as callers may write it) */
-extern NavTri *NavMesh_NullTri(void);
 #endif
+
+/* navmesh.c */
+extern s32 func_0017CC00(u8 *set, u8 *meshes, u8 *sec1, u8 *flags);
+extern void *func_00179F60(u8 *o, s32 flags);   /* the nav mesh's destructor (navmesh.c) */
+extern NavTri *NavMesh_NullTri(void);
 
 /* triangle `i`, or NULL if out of range (PC: a blank record) */
 static inline NavTri *NavMesh_Tri(NavMesh *nm, u32 i) {

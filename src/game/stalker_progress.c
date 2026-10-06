@@ -9,8 +9,8 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "globals.h"
-
-extern void func_002A8440(void *noise, s32 level, s32 room, u32 tri, s32 exitId);   /* make a noise */
+#include "scene_game_members.h"
+#include "stalker_progress.h"
 
 #define CMD(p, k) ((u8 *)(p) + 0x10B0 + (k) * 0xC)
 #define DOOR(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)

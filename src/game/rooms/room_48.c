@@ -5,12 +5,15 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "progress.h"
+#include "scene_game_members.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_00471EE0[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void *D_00479890[];
-extern void func_00124F20(void *c, s32 a);
 extern u8 D_004252D0[];
 extern u8 D_00425460[];
 extern u8 D_00425520[];

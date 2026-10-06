@@ -3,6 +3,7 @@
  * +0x14 the current segment, +0x18 the components. Values are cubic Bezier segments with the
  * control points value, value + out (+0x14) and next value + in (+0x2C). */
 #include "common.h"
+#include "spline.h"
 
 /* move to time u (if within the keys): *t = u, *seg = the segment holding it */
 void func_0025F6B0(u8 *s, f32 *t, s32 *seg, f32 u) {

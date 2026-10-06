@@ -68,6 +68,31 @@ _Static_assert(sizeof(Task) == 0x104, "Task size");
 
 extern const PTMF sTaskIdleState;   /* { 0, -1, Task_StateIdle } */
 
+/* task.c */
+extern Task *Task_dtor(Task *t, s32 flags);
+extern void Msg_SetName(void *self, s32 slot, s32 id);
+extern void Msg_SetParamSystem(void *self, s32 slot, s32 id);
+extern void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...);
+extern void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
+extern u32 Text_LineWidth(Task *t, u8 *text, s32 glyphW);   /* (a u16, masked here as the original does) */
+extern u16 Task_MessageWidth(Task *t, s32 id, s32 glyphW);
+extern void Task_StateIdle(Task *t);
+extern void Task_OpenDefault(Task *t);
+extern void Task_Close(Task *t);
+extern void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer);
+extern void Task_ShowText(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH);
+extern void Task_PrintfEx(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...);
+extern void Task_Printf(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...);
+extern void Task_ShowPrepared(Task *t);
+extern void Task_Prepare(Task *t, s32 id);
+extern void Task_OpenAt(Task *t, s32 id, s32 pos);
+extern void Task_Open(Task *t, s32 id);
+extern u8 *Task_MessageText(void *self, s32 id);
+extern void Task_Draw(Task *t);
+extern void Task_Update(Task *t);
+extern void Task_Run(Task *t);
+extern Task *Task_ctor(Task *t);   /* constructor */
+
 /* the constructor (Task_ctor), as the original inlines it into the owners' */
 static inline void Task_Construct(Task *t) {
     PTMF s = sTaskIdleState;
@@ -80,27 +105,5 @@ static inline void Task_Construct(Task *t) {
         t->state = s;
     }
 }
-
-Task *Task_dtor(Task *t, s32 flags);
-void Task_StateIdle(Task *t);
-Task *Task_ctor(Task *t);   /* constructor */
-void Task_OpenDefault(Task *t);
-void Task_Close(Task *t);
-void Task_ShowMessage(Task *t, s32 id, s32 color, s32 alpha, s32 layer);
-void Task_ShowText(Task *t, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH);
-void Task_PrintfEx(Task *t, s32 x, s32 y, s32 color, s32 alpha, s32 layer, const char *fmt, ...);
-void Task_Printf(Task *t, s32 x, s32 y, s32 color, const char *fmt, ...);
-void Task_ShowPrepared(Task *t);
-void Task_Prepare(Task *t, s32 id);
-void Task_OpenAt(Task *t, s32 id, s32 pos);
-void Task_Open(Task *t, s32 id);
-u8 *Task_MessageText(void *self, s32 id);
-u16 Task_MessageWidth(Task *t, s32 id, s32 glyphW);
-void Task_Draw(Task *t);
-void Task_Update(Task *t);
-void Task_Run(Task *t);
-void Msg_SetName(void *self, s32 slot, s32 id);
-void Msg_SetParamSystem(void *self, s32 slot, s32 id);
-void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...);
 
 #endif /* TASK_H */

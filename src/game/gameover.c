@@ -17,30 +17,15 @@
 #include "globals.h"
 #include "memcard.h"
 #include "navmesh.h"
+#include "bgm.h"
+#include "gameover.h"
+#include "movie.h"
+#include "panic.h"
+#include "scene_game_members.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
-typedef struct GameOver {
-    /* 0x00 */ u8 mode;
-    /* 0x01 */ u8 world;        /* the world drawn behind it */
-    /* 0x02 */ u8 step;
-    /* 0x03 */ u8 hasMovie;     /* the movie gave its frame (+0x8) */
-    /* 0x04 */ u8 drawMovie;
-    /* 0x05 */ u8 pad5[3];
-    /* 0x08 */ s16 frameW, frameH;
-    /* 0x0C */ u8 *frame;       /* two frames, the shown one +0x10 */
-    /* 0x10 */ u8 frameBuf;
-    /* 0x11 */ u8 framePlain;   /* drawn by the renderer only */
-    /* 0x12 */ u8 pad12[2];
-    /* 0x14 */ u32 timer;
-    /* 0x18 */ u32 from[2];     /* tint 0x1F's colours: from, to */
-    /* 0x20 */ u32 to[2];
-    /* 0x28 */ u8 *tint;        /* effect 0x1F */
-    /* 0x2C */ u8 *tint2;       /* effect 0x1D */
-    /* 0x30 */ u8 pad30[4];
-    /* 0x34 */ u32 from2[2];
-    /* 0x3C */ u32 to2[2];
-    /* 0x44 */ u8 pad44[0xC];
-    /* 0x50 */ PTMF state;
-} GameOver;
 _Static_assert(__builtin_offsetof(GameOver, state) == 0x50, "GameOver.state");
 
 extern const PTMF D_0041A150;   /* func_002F3710 */
@@ -55,22 +40,12 @@ extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *D_00456DF0;
 extern void *D_0046D750[];      /* a screen tint */
-extern void *func_00266C40(u8 *fx, s32 n);
-extern void *func_002672F0(u32 size, void *place);
-extern void func_002EF480(u8 *fade, f32 t);
-extern void func_002F02F0(u8 *panic);
-extern void func_002D1FD0(u8 *bgm);
-extern s32 func_002D20D0(u8 *bgm);
-extern void func_001768B0(Progress *p, const char *name, s32 arg);
-extern s32 func_002B6640(void *movie);
-extern s32 func_002B64F0(void *movie);
 
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
 
 #define PANIC(p) ((u8 *)(p) + 0x7B8)
 
 extern void *D_0046D730[];
-extern void func_002672E0(void *p);
 void *func_00267310(u8 *o, s32 flags);
 
 void func_002D6000(u8 *p, u32 v);
@@ -94,7 +69,6 @@ void func_002F39B0(u8 *o) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
 
 /* the movie's frame, full screen: the renderer takes it (layer 0x2B, or 6 when plain) and,
  * unless plain, it is drawn again over the screen by its alpha (layer 0x2C) */

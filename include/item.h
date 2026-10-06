@@ -9,8 +9,7 @@
 #include "progress.h"
 #include "globals.h"
 #include "actor.h"
-
-extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* the door's state (u8) */
+#include "stalker_progress.h"
 
 /* character `c` plays event `ev` (who: 0 Fiona, 1 Hewie): its state 5 (0, ev) */
 static inline void item_event(VObject *ev_mgr, s32 who, s32 ev, Character *c) {
@@ -24,7 +23,6 @@ static inline void item_event(VObject *ev_mgr, s32 who, s32 ev, Character *c) {
 static inline s32 item_at_spot(VObject *ev_mgr, Character *fiona, s32 spot) {
     return VCALL(ev_mgr, 0x10, s32 (*)(VObject *, u8 *, s32, s32))(ev_mgr, (u8 *)fiona + 0x10, spot, -1) != 0;
 }
-
 
 /* Fiona at event spot `spot` of room `room` */
 static inline s32 item_room_spot(Progress *p, s32 room, s32 spot) {
@@ -53,8 +51,6 @@ static inline s32 item_offer(Progress *p, void *o) {
 static inline s32 item_door_open(Progress *p, u32 door) {
     return func_00177BF0(p, door, 0) & 0xFF & 4;
 }
-
-extern u32 func_00178610(Progress *p, u32 route);
 
 /* door `door` open and route `route` taken */
 static inline s32 item_door_route(Progress *p, u32 door, u32 route) {

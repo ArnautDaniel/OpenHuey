@@ -25,12 +25,11 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "memcard.h"
+#include "msl.h"
 
 extern void *D_0046ABB0[], *D_0046AC00[];
 extern VObject *gSceneGameF29740;
 extern const u32 D_003B2EA8[];   /* the step functions (PTMFs, 16-byte aligned) by request kind 0..7; 8: at the goal */
-extern void func_00100490(void *p);                          /* operator delete */
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
 
 #define SEARCH(pl, i) ((u8 *)(pl) + 0x10 + (i) * 0x10060)
 #define NODE(s, t) ((s) + 0x44 + (t) * 0x18)

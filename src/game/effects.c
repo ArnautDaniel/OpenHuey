@@ -14,22 +14,28 @@
 #include "charaction.h"
 #include "input.h"
 #include "gl2d.h"
-
-void func_002E56C0(u8 *d);
+#include "effects.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "model.h"
+#include "overlay.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "snd_place.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
 
 extern void *D_0046D730[];
 extern void *D_0046D790[];
 extern void *D_0046D7A0[];
 extern void *D_0046EB60[];
 extern void *D_0046EC60[];
-extern void func_00100490(void *p);
-extern void func_002672E0(void *p);
 void *func_00267480(u8 *o, s32 flags);
 void *func_00269970(u8 *o, s32 flags);
 void *func_002BB220(u8 *o, s32 flags);
 void *func_002C64E0(u8 *o, s32 flags);
-
-u32 func_002D6010(u8 *p);
 
 extern u8 D_0041B5F0[];
 extern u8 D_00444B10[];
@@ -69,9 +75,7 @@ extern void *D_00479B20[];
 
 void func_0037C520(u8 *self);
 
-extern f32 func_0031C248(f32 x);   /* sinf */
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
-extern void glr_haze_fix(f32 phase, f32 sway, s32 fix);
 
 static f32 shaft_rnd(VObject *rnd) {
     return VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
@@ -221,9 +225,6 @@ void func_002C6540(u8 *e, const f32 *d) {
     AT(e, 0x5C, f32) = d[3];
 }
 
-extern void func_001267F0(void *c, s32 light);
-extern s32 func_00126800(void *c);
-
 /* +0x10 each frame: the characters this light is on (+0x20 per slot) get its light group
  * (slot << 16 | 0xB); the others it had go back to the default (0xA) */
 void func_002BB280(u8 *o) {
@@ -335,7 +336,6 @@ void *func_002C64E0(u8 *o, s32 flags) {
 }
 
 extern void *D_0046D7A0[];
-extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 
 /* +0x14 draw (a screen bloom): when its colour (+0x10) has alpha, a temporary bloom drawer
  * (func_0026B180) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
@@ -414,8 +414,6 @@ void func_002E56C0(u8 *d) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
@@ -568,10 +566,6 @@ s32 func_002E5660(u8 *d) {
 }
 
 extern void *D_0046EC60[];      /* the effect 0x1C kind */
-extern void *func_00266C40(void *fx, s32 k);       /* effect slot k */
-extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
-extern void func_002670F0(void *fx, s32 k);        /* remove effect k */
-extern void *func_002672F0(u32 size, void *place); /* placement new */
 
 /* hold (`on`) or give back screen effect 0x1C (+0x69): held, its colour (+0x50..+0x5C) is
  * kept at +0x154 and the effect removed; given back, a new one (D_0046EC60, from the effects'
@@ -617,8 +611,6 @@ void func_002241C0(u8 *o, s32 on) {
 }
 
 #include "progress.h"
-
-extern void func_002EF480(u8 *fade, f32 level);   /* the screen fade's level, 0..1 */
 
 /* a screen fade's frame (`kind`: 0 / 2 / 4 in, 1 / 3 / 5 out, 6 / 7 half way in / out): its
  * alpha from the rate (+0x18) times the frames so far (+0x20) - up to 128 (64 for 6 / 7) -
@@ -679,7 +671,6 @@ u32 func_002D6010(u8 *p) { return p[0x19034]; }
  * rests) */
 
 extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
-extern void func_002672E0(void *p);   /* delete (effects' heap) */
 
 /* +0x8 destructor */
 u8 *func_002E7BB0(u8 *e, s32 flags) {
@@ -829,7 +820,6 @@ void func_002E7F60(u8 *e) {
 #include "effectmgr.h"
 
 extern void *D_0046FF20[], *D_0046F580[];
-extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
 
 #define BURST_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
 #define BURST_VEL(e, i) ((f32 *)((e) + 0x648) + (i) * 3)
@@ -1494,17 +1484,7 @@ s32 func_003175B0(u8 *e, s32 i) {
     return refl_near_quad(e, pos, 5.0f, my);
 }
 
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
-
 #ifdef HG_NATIVE
-extern void glr_layer(s32 layer);
-extern void glr_mask_clear(void);
-extern void glr_refl(s32 prep, s32 fix, s32 flip, s32 masked, f32 dx);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
-extern s32 func_00126800(void *c);            /* a character's draw layer (+0x152C) */
-extern void func_001267F0(void *c, s32 layer);
 #define GLR_PRIM_MASK 0x100000u
 
 typedef struct ReflCamera {   /* camera +0x88's set (CameraSet) */
@@ -1679,13 +1659,13 @@ void func_00317D40(u8 *e) {
             u8 e4;
 
             VCALL(tc, 0x18, void (*)(VObject *))(tc);
-            layer = func_00126800(c);
-            func_001267F0(c, 0x17);
+            layer = func_00126800((Character *)c);
+            func_001267F0((Character *)c, 0x17);
             e4 = AT(c, 0xE4, u8);
             AT(c, 0xE4, u8) = 0;
             VCALL(c, 0x2C, void (*)(u8 *))(c);
             drawn = 1;
-            func_001267F0(c, layer);
+            func_001267F0((Character *)c, layer);
             AT(c, 0xE4, u8) = e4;
         }
     }
@@ -1696,11 +1676,11 @@ void func_00317D40(u8 *e) {
             s32 layer;
 
             VCALL(tc, 0x18, void (*)(VObject *))(tc);
-            layer = func_00126800(o);
-            func_001267F0(o, 0x17);
+            layer = func_00126800((Character *)o);
+            func_001267F0((Character *)o, 0x17);
             VCALL(o, 0x2C, void (*)(u8 *))(o);
             drawn = 1;
-            func_001267F0(o, layer);
+            func_001267F0((Character *)o, layer);
         }
     }
     VCALL(cam, 0x88, void (*)(VObject *, ReflCamera *))(cam, &saved);
@@ -1756,7 +1736,6 @@ void func_00317C70(u8 *e, u8 *arg) {
  * draw (+0x14, func_003582D0) is the light's glow ---- */
 
 extern void *D_004795A0[], *D_0046F580[];
-extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
 
 /* +0x8 destructor */
 u8 *func_00358210(u8 *e, s32 flags) {
@@ -1782,9 +1761,6 @@ void func_00358270(u8 *p, s32 *src) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_layer(s32 layer);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
 
@@ -2325,7 +2301,6 @@ s32 func_002D63D0(void) {
  * spray, 2 / 3 bigger, slower turning pieces thrown higher, 4 thrown down ---- */
 
 extern void *D_0046FF60[], *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 typedef struct Shard {
     /* 0x00 */ f32 corner[8][4];   /* a random box: the signs of x, y, z by corner */
@@ -2511,8 +2486,6 @@ static const u8 kShardFace[6][4] = {
 };
 
 #ifdef HG_NATIVE
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 
 /* the shards as textured boxes, drawn with OpenGL (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
  * size fb+0x8 / fb+0xC, colour fb+0x10; `n` shards `stride` bytes apart from +0x10; `kind` 1: dead ones
@@ -2960,7 +2933,6 @@ void *func_00363600(void) {
  * and the mark is done (+0x78). +0x74 the model ---- */
 
 extern void *D_00479800[];
-extern void func_002E56C0(u8 *quad);
 
 /* the two points: the model's bones, or Fiona's bone 0x23 at (-3.5, 0, 1) and (-1, 0, 1) */
 static inline void mark_points(u8 *o) {
@@ -3595,9 +3567,6 @@ void func_002FD150(u8 *e) {
  * (+0xA8 / +0xAC), fading in to 0x40 over its life (+0xB0) and out again (+0xB4 its alpha),
  * fainter within 64 of the camera ---- */
 
-extern f32 func_0031C248(f32 x);   /* sinf */
-extern f32 func_0031C058(f32 x);   /* cosf */
-
 /* +0xC set up: the drawer's settings (one 32 x 32 cell at (32, 64), blended 0x40, layer 0x19,
  * palette 2) */
 void func_0037B920(u8 *e) {
@@ -3743,7 +3712,6 @@ void func_0037B680(u8 *e) {
  * timers (+0x4) each starting a mote when it runs out (every 300 frames); stopped by +0x44 ---- */
 
 extern void *D_0047A6D0[];
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 
 /* a mote's start arguments */
 typedef struct {
@@ -4884,7 +4852,6 @@ void func_00300130(u8 *e) {
  * +0x4C its step (its facing too), +0x50 frames to wait ---- */
 
 extern void *D_00471000[];
-extern f32 func_0031BDB0(f32 x);   /* atanf */
 
 /* +0x8 destructor */
 void *func_003055F0(void *o, s32 flags) {
@@ -5222,10 +5189,6 @@ void func_00361340(u8 *o) {
  * 10 ---- */
 
 extern void *D_00479AA0[];
-extern f32 func_002E2D00(f32 angle);                       /* wrapped into -pi..pi */
-extern void func_002E3190(f32 (*m)[4], f32 angle);        /* turn about y */
-extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
-extern void func_002E56C0(u8 *quad);
 
 /* its start parameters: where, colour, how many; sizes, distances out, rise and outward
  * speeds as base + random * spread; the height above `pos` they start at and the gravity */
@@ -5385,8 +5348,6 @@ void func_003608A0(u8 *o) {
  * of room 0xC0's ceiling (y 40) to the floor under them, D_00479A80 (0xC0 bytes) one drop at
  * (-226, -100) from y 30 into water at 0. Each lands as a spray (and the single one with a
  * ring) and starts over after a random wait ---- */
-
-extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
 /* the ring's start parameters (D_00479AE0) */
 typedef struct RingParams {
@@ -5644,7 +5605,6 @@ void func_00360460(u8 *o) {
  * +0x50.. ---- */
 
 extern void *D_00479560[];
-extern void func_002672E0(void *p);   /* delete (the room effects' pool) */
 
 /* +0x8 destructor */
 void *func_003559D0(void *o, s32 flags) {
@@ -5683,7 +5643,6 @@ void func_00355A30(u8 *o, const u8 *params) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_todo(const char *what);
 
 /* +0x14 draw: the fragment's reflection pass (renderer +0x20.. / camera; not ported yet) */
 void func_00355AA0(u8 *o) {
@@ -5980,7 +5939,6 @@ void func_003168E0(u8 *self) {
  *   +0x14 / +0x18 two angles   +0x1C done   +0x1D on   +0x1E the second kind ---- */
 
 extern void *D_00479E50[];
-extern f32 func_002E2D00(f32 angle);
 
 static void marker_spark_init(void **obj) {
     obj[0] = D_00479E50;
@@ -6187,8 +6145,6 @@ void func_00366270(u8 *o, SparkPrm *arg) {
     AT(o, 0x134, s16) = 0x40;
     AT(o, 0x13E, s8) = 7;
 }
-
-extern s32 func_002D6020(u8 *mgr, s32 slot);   /* a slot's effect state (3: ended) */
 
 /* the spark's shared checks: none outside cutscenes with no stalker; gone with its marker */
 static inline s32 spark_live(u8 *o) {
@@ -6493,7 +6449,6 @@ void func_00303C10(u8 *o) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_marker(f32 x, f32 y, f32 z, f32 scale, f32 jitter, s32 fix);
 
 /* +0x14 draw (PC; the PS2 sends GS packets): attached to the stalker in slot 2 while it hides
  * (+0x29) it ends (state 3; done if it went to another room); a stalker idle with the camera
@@ -6580,9 +6535,6 @@ void func_00301E70(u8 *o) {
  * half width, +0x34 depth; placed at +0x10, turned by +0x20 ---- */
 
 #define FL(o, a, i) AT(o, (a) + (i) * 4, f32)
-
-extern f32 func_0031BDB0(f32 x);   /* atanf */
-extern void func_002E56C0(u8 *quad);
 
 /* +0xC: each fleck at x -2..2 drifting out (by up to 0.05 x), forward 0.1..0.3, white, size
  * 0.4..0.8 by 0.4..0.8 */

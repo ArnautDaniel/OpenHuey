@@ -6,6 +6,7 @@
  * +0x14 step over a condition. */
 #include "common.h"
 #include "game.h"
+#include "script.h"
 
 #define SC_PC(s) AT(s, 0x4, u8 *)
 #define SC_DEPTH(s) AT(s, 0x8, u8)

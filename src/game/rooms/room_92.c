@@ -6,16 +6,21 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "memcard.h"
+#include "hewie.h"
+#include "lorenzo.h"
+#include "model.h"
+#include "placed.h"
+#include "progress.h"
+#include "scene_game_members.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_004774C0[];
-extern f32 func_002E2D00(f32 a);
 extern void *D_0046EC60[];
-extern void func_002E3190(f32 (*m)[4], f32 angle);                 /* turn about y */
 extern void *D_00479F50[];
-extern void glr_haze2(f32 phase, f32 size);
-extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
-extern s32 func_00365850(void *p);   /* (lorenzo.c) his slam at its impact key, second form */
 extern const char *D_00437D48[];   /* room objects 10..15 */
 extern const char *D_00437D40[];   /* room objects 8, 9 */
 extern void *D_0047A2F0[];
@@ -23,7 +28,6 @@ extern void *D_0047A310[];
 extern void *D_00479F70[];
 extern const char *D_00437D30[];   /* room objects 4, 5 */
 extern void *D_00479F30[];
-extern void func_00120F90(void *o, u32 tri, f32 *pos, f32 *rot, f32 *front);
 extern u32 D_00436CF0[];
 extern u32 D_00436D70[];
 extern u32 D_00436DE0[];
@@ -33,7 +37,6 @@ extern u32 D_00437BF0[];
 extern u32 D_00437D20[];
 
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 extern PTMF D_01991820[];
 
@@ -272,7 +275,7 @@ s32 func_00342500(void) {
             VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     } else if (AT(gCharPursuer, 0x153C, u8) == 0x27) {
-        if (func_00365850(gCharSlot2) != 0) {
+        if (func_00365850((Pursuer *)gCharSlot2) != 0) {
             VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.5f);
         }
     }

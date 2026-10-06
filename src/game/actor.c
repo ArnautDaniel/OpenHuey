@@ -7,8 +7,12 @@
 #include "globals.h"
 #include "progress.h"
 #include "ptmf.h"
-
-extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
+#include "hewie.h"
+#include "model.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -193,9 +197,6 @@ s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *po
 
 #define NAV_NO_STAND 0x80001     /* triangle flags where nothing may stand */
 
-extern u32 func_00177BF0(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
-extern u32 func_00177A20(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
-
 /* Is triangle `tri` free: standable, and not claimed by any of gDoors's 8 entries or the
  * nav mesh's extra regions (vtable +0x50)? (The flags read goes through a NULL triangle for an
  * out-of-range index, like the original.) */
@@ -235,13 +236,13 @@ s32 func_001235C0(void *self, Actor *a) {
     }
     prog = (VObject *)gProgress;
     for (i = 0; i < 8; i++) {
-        if (func_00177BF0(prog, i, *(u8 *)&a->slot) & 0x20) {
+        if (func_00177BF0((Progress *)prog, i, *(u8 *)&a->slot) & 0x20) {
             return 0;
         }
     }
     n = nm->numDoors;
     for (i = 0; i < n; i++) {
-        if (func_00177A20(prog, i, *(u8 *)&a->slot) & 0x8) {
+        if (func_00177A20((Progress *)prog, i, *(u8 *)&a->slot) & 0x8) {
             return 0;
         }
     }
@@ -534,8 +535,6 @@ s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin) {
     return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) <= margin + r;
 }
 
-extern f32 func_0031C5C0(f32 x, f32 z);   /* float math library: heading of (x, z), atan2-like */
-
 /* Triangle containing `target` reached from the actor's position (see func_00124320). */
 u32 func_00124480(Actor *a, const f32 *target, u32 mask) {
     return func_00124320(a, target, a->navTri, a->pos, mask);
@@ -694,8 +693,6 @@ void func_00124890(Actor *a, s32 kind) {
         }
     }
 }
-
-extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
 
 /* vtable +0x28: place the actor in triangle `tri`, optionally turning to `*heading` and moving
  * to `pos` (which must lie in the triangle; it is put on the surface), else to the triangle's
@@ -946,7 +943,7 @@ void func_001254B0(Character *c) {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        if (func_00177BF0((VObject *)gProgress, i, *(u8 *)&c->a.slot) & 0x1) {
+        if (func_00177BF0((Progress *)((VObject *)gProgress), i, *(u8 *)&c->a.slot) & 0x1) {
             break;
         }
     }
@@ -1030,10 +1027,6 @@ s32 func_001258F0(Character *c) {
     return 0;
 }
 
-extern f32 func_001F6140(void *motion, f32 t);              /* root rotation (yaw delta) */
-extern void func_001F6370(void *motion, f32 *out, f32 t);   /* root translation */
-extern f32 func_002E2D00(f32 angle);                        /* angle wrapped to -pi..pi */
-
 /* Turn by the animation's root rotation. */
 static inline void Character_ApplyRootTurn(Character *c) {
     f32 yaw = func_002E2D00(c->a.angle[1] + func_001F6140(c->motion, 0.0f));
@@ -1082,8 +1075,6 @@ s32 func_00125AC0(Character *c) {
     return 1;
 }
 
-extern void func_002A8410(s32 *state);   /* reset a state block */
-
 /* Drop the current path. */
 static inline void Character_CancelPath(Character *c) {
     VCALL(gSceneGameF29740, 0x28, void (*)(VObject *, s32))(gSceneGameF29740, c->pathId);
@@ -1102,9 +1093,9 @@ s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     Character_CancelPath(c);
     c->unk14D0 = 0;
     if (c->state[0] != 5) {
-        func_002A8410(c->state);
+        func_002A8410((u8 *)c->state);
     }
-    func_002A8410(c->state2);
+    func_002A8410((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1130,14 +1121,12 @@ void func_00125BE0(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410(c->state);
-    func_002A8410(c->state2);
+    func_002A8410((u8 *)c->state);
+    func_002A8410((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
 }
-
-extern u32 func_00177770(VObject *prog, u32 slot);   /* returns u8 */
 
 /* Tracked character in a special state (4/5), or flagged by progress for its slot. */
 s32 func_00125D80(Character *c) {
@@ -1147,15 +1136,13 @@ s32 func_00125D80(Character *c) {
         if (s == 4 || s == 5) {
             return 1;
         }
-        if ((func_00177770((VObject *)gProgress, *(u8 *)&c->a.slot) & 0xFF) == 1) {
+        if ((func_00177770((Progress *)((VObject *)gProgress), *(u8 *)&c->a.slot) & 0xFF) == 1) {
             return 1;
         }
     }
     return 0;
 }
 
-extern void func_00100490(void *p);    /* operator delete */
-extern void func_002D63B0(void *p);    /* free from the scene heap? */
 extern void *D_0046FC30[];
 extern void *D_00469D00[];
 extern void *D_0046F580[];
@@ -1223,8 +1210,8 @@ void func_00126360(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410(c->state);
-    func_002A8410(c->state2);
+    func_002A8410((u8 *)c->state);
+    func_002A8410((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1235,8 +1222,6 @@ void func_00126360(Character *c) {
     c->a.unk2B = 0;
     c->unkE4 = 1;
 }
-
-extern void func_001F6E10(void *motion);
 
 void func_00126450(Character *c) {
     c->unk14D0 = 0;
@@ -1250,11 +1235,9 @@ void func_00126450(Character *c) {
 void func_001264B0(Character *c) {
 }
 
-extern void func_002FF600(VObject *snd, s32, s32, s32, s32, s32);
-
 /* Forward to the sound manager. */
 void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
-    func_002FF600(gSound, a1, a2, a3, a4, a5);
+    ((void (*)(VObject *, s32, s32, s32, s32, s32))func_002FF600)(gSound, a1, a2, a3, a4, a5);
 }
 
 void func_001267F0(Character *c, s32 v) {
@@ -1277,8 +1260,8 @@ void func_00126810(Character *c) {
     for (i = 0; i < 13; i++) {
         c->unk148C[i] = 0;
     }
-    func_002A8410(c->state);
-    func_002A8410(c->state2);
+    func_002A8410((u8 *)c->state);
+    func_002A8410((u8 *)c->state2);
     if (Character_Tracked(c)) {
         VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
@@ -1498,8 +1481,8 @@ void func_00127660(Character *c) {
     c->moveMode = 0;
     c->unk128 = 0;
     c->unk124 = 0;
-    func_002A8410(c->state);
-    func_002A8410(c->state2);
+    func_002A8410((u8 *)c->state);
+    func_002A8410((u8 *)c->state2);
     c->unkE0 = 0;
     c->unkE1 = 0;
     c->unkE2 = 0;
@@ -1606,8 +1589,6 @@ void func_00125E10(Character *c, f32 *pos, s32 big) {
     func_002D6090(mgr, Effect_New(mgr, 0x720, Splash_Init), &sp);
 }
 
-extern u32 func_001788F0(VObject *prog, u32 room);   /* returns u8 */
-
 /* Room the current route move leads to (0xFFFF: none). */
 static inline u32 Character_RouteRoom(Character *c) {
     if (c->moveMode == 6) {
@@ -1671,7 +1652,7 @@ s32 func_001264D0(Character *c, f32 *out) {
         sceVu0SubVector(out, a, b);
         out[3] = 1.0f;
         sceVu0Normalize(out, out);
-        sceVu0ScaleVector(out, out, dist + ((func_001788F0(prog, next) & 0xFF) ? 100.0f : 150.0f));
+        sceVu0ScaleVector(out, out, dist + ((func_001788F0((Progress *)prog, next) & 0xFF) ? 100.0f : 150.0f));
         sceVu0AddVector(out, out, a);
         out[3] = 1.0f;
     }
@@ -1769,7 +1750,7 @@ void func_001269C0(Character *c) {
                 }
             } else if (base < (n << 5)) {
                 loud = 0;
-            } else if (base < 0x41 && !(func_001788F0(prog, r.route[n - 1]) & 0xFF)) {
+            } else if (base < 0x41 && !(func_001788F0((Progress *)prog, r.route[n - 1]) & 0xFF)) {
                 loud = 0;
             }
         }

@@ -7,12 +7,23 @@
 #include "ptmf.h"
 #include "memcard.h"
 #include "navmesh.h"
+#include "daniella.h"
+#include "loader.h"
+#include "random.h"
+#include "rumble.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_game.h"
+#include "scene_game_members.h"
+#include "scene_title.h"
+#include "snd_driver.h"
+#include "system.h"
+#include "task.h"
+#include "libc.h"
+#include "msl.h"
+#include "sce/iop.h"
 
-extern void func_001136E8(s32 status);         /* exit() */
-extern s32 func_0037E1F0(s32 *result);         /* load the embedded IOP module, *result = its status */
 extern void func_002CFA10(Game *game);
-extern void func_001F44D0(void *obj);           /* init Game.unk14E8C90 */
-extern void func_001F4100(void *obj);           /* shut down Game.unk14E8C90 */
 extern void func_002BFB20(void *obj);           /* init Game.unk20 */
 
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
@@ -31,11 +42,9 @@ extern void *D_0046B1F0[];
 extern void *D_0046BEE0[];
 extern void *D_0046D770[];
 extern void *D_0046F3D0[];
-extern void func_00100490(void *p);
 void *func_001F4590(u8 *o, s32 flags);
 void *func_0020DB40(u8 *o, s32 flags);
 void *func_00267500(u8 *o, s32 flags);
-void *func_002D0C10(u8 *o, s32 flags);
 
 s32 func_002C8D90(u8 *self);
 s32 func_002C9470(void *self);
@@ -197,11 +206,6 @@ void Game_StateShutdown(Game *game) {
 }
 
 /* Scene constructors (placement: they construct in memory from the scene heap and return it). */
-extern Scene *SceneBoot_ctor(void *mem);  /* mode 1: memory card check, logos */
-extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen, menus */
-extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
-extern Scene *Scene5_ctor(void *mem);     /* mode 5: the ending */
-extern void func_001779B0(void *obj, s32 param);
 
 static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
     void *mem = VCALL(&game->sceneHeap, 0x10, void *(*)(VObject *, u32))(&game->sceneHeap, size);
@@ -230,21 +234,21 @@ void Game_StartNextScene(Game *game) {
     game->mode = game->nextMode;
     switch (game->nextMode) {
     case 1:
-        Game_NewScene(game, 0xC7700, SceneBoot_ctor, 0);
+        Game_NewScene(game, 0xC7700, (Scene * (*)(void *))SceneBoot_ctor, 0);
         game->softResetEnabled = 0;
         break;
     case 2:
-        Game_NewScene(game, 0x140D00, SceneTitle_ctor, 0);
+        Game_NewScene(game, 0x140D00, (Scene * (*)(void *))SceneTitle_ctor, 0);
         *(s32 *)((u8 *)gSceneTitle + 0x14) = game->modeParam;
         game->softResetEnabled = 0;
         break;
     case 3:
-        Game_NewScene(game, 0x1065080, SceneGame_ctor, 1);
+        Game_NewScene(game, 0x1065080, (Scene * (*)(void *))SceneGame_ctor, 1);
         func_001779B0(gProgress, game->modeParam);
         game->softResetEnabled = 1;
         break;
     case 5:
-        Game_NewScene(game, 0x117540, Scene5_ctor, 0);
+        Game_NewScene(game, 0x117540, (Scene * (*)(void *))Scene5_ctor, 0);
         game->softResetEnabled = 1;
         break;
     default:
@@ -254,8 +258,6 @@ void Game_StartNextScene(Game *game) {
 }
 
 extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
-extern void *func_00114DA8(u32 align, u32 size);   /* memalign */
-extern void func_00114FD0(void *p);                /* free */
 
 #define LOADER_SIZE(l, name) VCALL(l, 0x30, u32 (*)(VObject *, const char *))(l, name)
 #define LOADER_LOAD(l, name, dst) VCALL(l, 0x34, void (*)(VObject *, const char *, void *))(l, name, dst)
@@ -343,9 +345,6 @@ u8 *func_002CFA00(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: GAME_
 
 /* ---- destructors left (2026-10-05) ---- */
 
-extern void *Task_dtor(void *t, s32 flags);
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 extern void *D_00473440[], *D_0046F3D0[], *D_0046D770[], *D_00469D00[], *D_0046ECF0[], *D_0046F390[];
 extern void *D_0046FC00[], *D_004699C0[], *D_004699E0[], *D_0046A980[];
 extern void *D_00456DE8, *D_00456DF8;
@@ -478,12 +477,6 @@ void *func_0020DB40(u8 *o, s32 flags) {
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
 extern void *D_004562A8, *D_004562B0;
-extern void *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
-extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
-extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);
-extern void *func_001BF880(u8 *, s32), *func_001BF6C0(void *, s32), *func_001AAE10(u8 *, s32);
-extern void *func_001BF550(void *, s32), *func_0020DF90(void *, s32), *func_001BC320(u8 *, s32);
-extern void *func_001BF220(u8 *, s32);
 
 /* the members torn down in reverse: the +0x14E8C90 table, the two pools, the camera, the scene
  * table (+0x400A00, its scenes returned to the heap at +0x14D9A40), the rng, then the +0x69AC0
@@ -527,16 +520,16 @@ void *Game_dtor(u8 *g, s32 flags) {
     AT(g, 0x14D9A40, void **) = D_004699E0;
     gSceneTable = NULL;
 
-    func_001A4850(g + 0x400000, -1);
+    func_001A4850((VObject *)(g + 0x400000), -1);
 
     AT(g, 0x69AC0, void **) = D_0046ADF0;
     func_0020E000(g + 0x3FF800, -1);
-    func_00169280(g + 0x3833C0, -1);
+    func_00169280((VObject *)(g + 0x3833C0), -1);
     func_001BF880(g + 0x376A00, -1);
     func_001BF6C0(g + 0x36ED40, -1);
     func_001AAE10(g + 0x69F20, -1);
-    func_001BF550(g + 0x69E50, -1);
-    func_0020DF90(g + 0x69DC0, -1);
+    func_001BF550((MemCard *)(g + 0x69E50), -1);
+    func_0020DF90((Rumble *)(g + 0x69DC0), -1);
     func_001BE150(g + 0x69B00, -1);
     func_001BC320(g + 0x69AE0, -1);
     func_001BF220(g + 0x69AC0, 0);

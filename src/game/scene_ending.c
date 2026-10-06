@@ -12,6 +12,14 @@
 #include "input.h"
 #include "sound.h"
 #include "globals.h"
+#include "bgm.h"
+#include "bootcard.h"
+#include "heap.h"
+#include "message.h"
+#include "movie.h"
+#include "scene_title.h"
+#include "libc.h"
+#include "msl.h"
 
 typedef struct SceneEnding {
     /* 0x00 */ Scene base;
@@ -59,24 +67,6 @@ extern const char D_00463778[];     /* "%c" */
 extern const char D_00463780[];     /* "%d" */
 extern const char D_00463788[];     /* "%s%%" */
 
-extern void *__nw__FUiPv(u32 size, void *p);
-extern void *func_002B70D0(void *movie);
-extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
-extern void func_002B6340(void *movie);
-extern void func_002E31D0(void *bgmctl);
-extern void func_002E3200(void *bgmctl);
-extern void func_002D2330(void *bgm);
-extern void func_002D1FD0(void *bgm);
-extern void func_0026BC00(void *msg);
-extern void func_0026BCC0(void *msg);
-extern void func_0011F9A0(void *p);   /* operator delete (scene heap) */
-extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vsnprintf */
-extern void *BootCard_dtor(void *card, s32 flags);
-extern void *TextObj_dtor(u8 *o, s32 flags);
-extern void *SubScreenBase_dtor(SubScreen *w, s32 flags);
-extern void SubScreen_Start(SubScreen *s);
-extern u32 Text_LineWidth(Task *t, u8 *text, s32 glyphW);   /* (a u16, masked here as the original does) */
-
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 
 /* Task_MessageWidth's u16, masked as the original does (the empty asm keeps the mask: a
@@ -111,7 +101,7 @@ SceneEnding *func_00371E10(SceneEnding *s, s32 flags) {
         Task *task = &s->task;
 
         s->base.vtbl = D_0047A330;
-        func_002E31D0(bgm);
+        func_002E31D0((BgmCtl *)bgm);
         func_002D2330(gAdx);
         if (bgm != NULL) {
             AT(bgm, 0, void **) = D_0046A110;
@@ -186,7 +176,7 @@ void func_00372230(SceneEnding *s) {
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
     VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
-    func_0026BC00(END_MSG(s));
+    func_0026BC00((VObject *)END_MSG(s));
     s->base.request = SCENE_REQ_FINISH;
 }
 
@@ -788,7 +778,7 @@ void func_00373E50(SceneEnding *s) {
     if (ptmf_test(seq)) {
         ptmf_scall(s, seq);
     }
-    func_002E3200(END_BGM(s));
+    func_002E3200((BgmCtl *)END_BGM(s));
 }
 
 /* state: fade the staff roll out (sound and picture, 1/30 a frame; at 0 its scene is
@@ -828,7 +818,7 @@ void func_00373EB0(SceneEnding *s) {
         }
     }
     m = gMovie;
-    func_002B6340(m);
+    func_002B6340((Movie *)m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - END_VOLUME(s)));
 
@@ -867,7 +857,7 @@ void func_00374260(SceneEnding *s) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0(movie);
+            func_002B70D0((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;

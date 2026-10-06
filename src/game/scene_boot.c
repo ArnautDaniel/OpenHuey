@@ -4,6 +4,15 @@
 #include "scene_boot.h"
 #include "input.h"
 #include "globals.h"
+#include "bootcard.h"
+#include "heap.h"
+#include "items.h"
+#include "message.h"
+#include "movie.h"
+#include "overlay.h"
+#include "synth.h"
+#include "task.h"
+#include "msl.h"
 
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
@@ -20,11 +29,6 @@ extern const PTMF sSceneBootStateLoad;     /* -> SceneBoot_StateLoadSystem */
 extern const PTMF sSceneBootStateSequence; /* -> SceneBoot_StateSequence */
 extern const PTMF sSceneBootStateDone;     /* -> SceneBoot_StateDone */
 extern const PTMF16 sSceneBootSteps[8];    /* boot steps, run in order */
-
-
-extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
-extern void func_0026BCC0(void *msg);
-extern void func_0026BC00(VObject *msg);
 
 static const char sErrMesTex[] = "SYSTEM\\ERRMES.TEX";
 static const char sGameFixTex[] = "GAME_FIX.TEX";
@@ -107,7 +111,7 @@ void SceneBoot_StateLoadSystem(SceneBoot *boot) {
     VObject *loader;
     VObject *res;
 
-    func_0026BCC0(&boot->msg);
+    func_0026BCC0((u8 *)&boot->msg);
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(loader, sErrMesTex, boot->errMesTex);
     VCALL(gBootMessage, 0x8, void (*)(VObject *, s32, void *))(gBootMessage, 6, boot->errMesTex);
@@ -377,9 +381,6 @@ u32 func_0037FAC0(SceneBoot *boot) {
 }
 
 extern void *D_0046ECC0[];        /* SceneMovie */
-extern void *__nw__FUiPv(u32 size, void *p);   /* placement new */
-extern void *func_002B70D0(void *movie);       /* Movie constructor */
-extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
 
 static const char sCapcomSfd[] = "CAPCOM.SFD";
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
@@ -411,7 +412,7 @@ u32 func_0037F7D0(SceneBoot *boot) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0(movie);
+            func_002B70D0((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;
@@ -435,9 +436,6 @@ u32 func_0037F7D0(SceneBoot *boot) {
     return 1;
 }
 
-extern void SaveScreen_Init(BootCard *card, s32, s32);
-extern void BootCard_Check(BootCard *card);
-
 /* Boot step: run the object at +0xC7440 until it reports done (+0xC7444 < 0). */
 u32 func_0037FE50(SceneBoot *boot) {
     if (boot->stepTimer == 0) {
@@ -452,7 +450,6 @@ u32 func_0037FE50(SceneBoot *boot) {
     BootCard_Check(&boot->card);
     return 1;
 }
-
 
 /* Boot step (last): the caution screen, shown with tasks[0] until frame 0x3F. */
 u32 func_0037F980(SceneBoot *boot) {
@@ -476,8 +473,6 @@ u32 func_0037F980(SceneBoot *boot) {
 }
 
 #define VIDEO_MODE_480P 0x50
-
-extern void func_002CF390(void *obj, u32 alpha);
 
 static const char sProgTex[] = "SYSTEM\\PROG.TEX";
 static const char sCountFmt[] = "%d";
@@ -588,13 +583,6 @@ u32 func_00380050(SceneBoot *boot) {
 
 #include "sound.h"
 
-extern void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
-
-extern u8 func_00322CD0(u8 *o, s32 shown);              /* the screen's step: bit 0 up, bit 7 done */
-extern void func_00323510(u8 *o, u8 row, u8 v, s32 a);
-extern void func_003230B0(u8 *o, u8 k, u8 v);
-extern s32 func_00322970(u8 *o);
-extern void func_00261090(u8 *items, s32 id, s32 n);    /* an item added (n of it) */
 extern const u8 D_00460A00[22];
 extern const char D_00463AB0[];                         /* its count's format */
 extern const PTMF D_0044AE10, D_0044AE20;

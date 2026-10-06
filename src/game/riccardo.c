@@ -11,6 +11,16 @@
 #include "actor.h"
 #include "ptmf.h"
 #include "game.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "riccardo.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046F6B0[];
 
@@ -163,7 +173,6 @@ void func_002D8210(Pursuer *p, s8 situation) {
 }
 
 extern const PTMF D_00415670;
-void func_002DB480(Pursuer *p);
 
 /* vtable +0x264: the next behaviour; his own (func_002DB480) unless at threat level 5, then the
    Pursuer's */
@@ -243,9 +252,6 @@ s32 func_002DBA10(u8 *p) {
     }
     return 0x201;
 }
-
-void func_002D7E20(Pursuer *p, Character *who);
-void func_002DBD70(Pursuer *p);
 
 /* vtable +0x30: his frame update. On screen: into his rage at threat level 5 while chasing and
    idle (vtable +0x31C), out of it below; a cry heard from Fiona or Hewie makes him react
@@ -466,7 +472,6 @@ void func_002D8CB0(Pursuer *p) {
 
 extern const f32 D_004156C0[6], D_004156E0[6];
 extern const PTMF D_004156F8;
-void func_002DA120(Pursuer *p);
 
 /* start of a flurry: how many blows (+0x1624, 1..7) by a roll against his cumulative chances
    (D_004156C0, or D_004156E0 when gProgress+0x30 bit 0x8000); then func_002DA120. When he may
@@ -614,8 +619,6 @@ s32 func_002D8840(Pursuer *p, Character *who) {
 }
 
 extern const PTMF D_00415708, D_00415718, D_00415728;
-void func_002D8DF0(Pursuer *p);
-void func_002D9500(Pursuer *p);
 
 /* a blow of the flurry: on Fiona, in front of her (func_002175B0) entry 0 or 3, else from behind
    8 or 9 (one blow only); on Hewie entry 1 if he's in front, else give up (action 0x13). A blow
@@ -657,7 +660,6 @@ void func_002DA120(Pursuer *p) {
 }
 
 extern const PTMF D_00415680, D_00415690;
-void func_002DA6B0(Pursuer *p);
 
 /* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0).
    Otherwise the pending action (0x1C rumbles the pad), or: further than 100 hold off (6);
@@ -719,8 +721,6 @@ void func_002DB480(Pursuer *p) {
     Riccardo_Behaviour(p, &D_00415680, &D_00415690, func_002DA6B0, 1);
 }
 
-extern void func_00211A90(Actor *a, f32 dist, f32 *out);                       /* a point ahead */
-extern void func_00211A30(f32 *out, const f32 *from, f32 angle, f32 dist);   /* from + dir * dist */
 extern const f32 D_00415660[4];
 
 /* where the blow of his current animation hits the floor (into `out`; 0 if nowhere). His hammer
@@ -749,7 +749,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         f32 ahead[4] __attribute__((aligned(16)));
         void *nav;
 
-        func_00211A90(&p->c.a, 1000.0f, ahead);
+        func_00211A90((u8 *)&p->c.a, 1000.0f, ahead);
         nav = gNavMesh;
         for (;;) {
             u8 *t = tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL ? AT(nav, 0x4, u8 *) + tri * 0x50 : NULL;
@@ -868,7 +868,6 @@ void func_002DBD70(Pursuer *p) {
     }
 }
 
-extern f32 func_00211910(const f32 *from, const f32 *to, const f32 *pt);   /* pt's distance from the line */
 extern const PTMF D_00415748;
 
 /* state: his blow at Hewie. At the hit key, if he may go for him, hears him within 30, and Hewie
@@ -1476,8 +1475,6 @@ void func_0034CDC0(Pursuer *p) {
     Riccardo_Behaviour(p, &D_00442908, &D_00442918, func_0034BFF0, 0);
 }
 
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
 extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];
 
 /* vtable +0x30: its frame update: the stalkers' think; seen by Fiona enough (+0x16C4 >= 100) it
@@ -1588,7 +1585,6 @@ void *func_0034D9C0(void) {
 
 extern u8 D_00441890[], D_004419E0[], D_00441C70[], D_00441CA0[], D_004421A0[], D_004421F0[],
     D_00442230[], D_00442278[], D_00442290[], D_00442870[], D_004428C0[], D_0047AF48[];
-extern void func_001267F0(Character *c, s32 v);
 
 /* vtable +0xF4: its setup over the Pursuer's (func_0029FB20); its reach +0x17C0 is 30, the
    tint off, layer 0x11 */

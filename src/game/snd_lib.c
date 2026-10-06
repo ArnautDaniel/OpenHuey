@@ -4,8 +4,10 @@
  * placement of a sound (its volume left/right from where it is and how far). */
 #include "common.h"
 #include "sndlib.h"
-
-extern void func_00115D20(void *p, s32 c, u32 n);         /* memset */
+#include "snd_lib.h"
+#include "libc.h"
+#include "msl.h"
+#include "sce/sif.h"
 
 /* the RPC clients and the argument / result blocks */
 extern SifClient D_019756C0;   /* 0x77777777 */
@@ -34,8 +36,6 @@ f32 func_0021EAC0(f32 *a, f32 *b) {
 
     return __builtin_sqrtf(x * x + y * y + z * z);
 }
-
-extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2f */
 
 /* The sound's place: the block (driver +0x10, set by func_002FF4B0) holds its volume (+0x0,
  * 0..127), the distance scale (+0x4), the sound's position (+0x10), the listener's (+0x20),
@@ -500,9 +500,6 @@ typedef struct EeThread {
     s32 pad[3];
 } EeThread;
 
-extern s32 CreateSema(void *s);
-extern s32 CreateThread(void *t);
-extern s32 func_0026D2E0(s32 thread, void *arg);   /* StartThread */
 extern s32 D_0047B224;
 extern s32 D_01972680[3];      /* the semaphore's parameters */
 extern EeThread D_01971650;
@@ -567,9 +564,6 @@ void func_00220340(void) {
     func_00115D20(UNCACHED(D_01971640), 0, 0x10);
 }
 
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
-extern char *func_001183C0(char *d, const char *s);   /* strcpy */
-extern char *func_001180E8(const char *s, s32 c);     /* strchr */
 extern const char D_004572B0[];   /* "%x" (as the driver reads them) */
 extern const char D_004572B8[];   /* "%d" */
 

@@ -6,11 +6,12 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "memcard.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
 
 extern void *D_0046DB80[];
 extern void *D_004786B0[];
 extern u8 D_0047AF20[], D_0047AF28[];
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern void *D_00479870[];
 extern const char *D_00441140[];   /* room objects 0..9 */
 extern u32 D_004401B0[];
@@ -20,7 +21,6 @@ extern u32 D_00440E00[];
 extern u32 D_00441110[];
 
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 extern PTMF D_019919F8[];
 

@@ -6,14 +6,17 @@
 #include "input.h"
 #include "ptmf.h"
 #include "memcard.h"
+#include "actor.h"
+#include "progress.h"
+#include "pursuer.h"
+#include "scene_game_members.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_004760E0[];
 extern u8 D_0047ADF8[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void *D_0047A3F0[];
 extern void *D_004799D0[];
-extern void func_001267F0(void *c, s32 light);
 extern void *D_004798B0[];
 extern f32 D_0047E3A0[4];   /* left stick */
 extern u8 D_0042F500[];
@@ -25,10 +28,7 @@ extern u8 D_0042F9C0[];
 extern void *D_00430700[];
 extern void *D_004307F0[];
 
-extern s32 func_0029A710(Pursuer *p);
-
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 extern PTMF D_01991660[];
 extern PTMF D_019916C0[];

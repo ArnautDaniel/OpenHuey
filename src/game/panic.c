@@ -7,6 +7,8 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
+#include "panic.h"
+#include "stalker_progress.h"
 
 extern void func_002EF580(u8 *o);
 extern void func_002EFBE0(u8 *o);
@@ -17,7 +19,6 @@ typedef union {
 } F32Bits;
 
 #define PANIC_MAX 100.0f
-
 
 /* the per-frame update */
 void func_002F0500(u8 *o) {
@@ -116,7 +117,6 @@ void func_002F0500(u8 *o) {
     AT(o, 0x18, f32) = 0.0f;
 }
 
-extern void func_00122C20(u8 *c, s32 a, s32 b, s32 c2, s32 d, s32 e);
 extern void func_002EF2B0(u8 *o);
 
 /* the panic stage (+0x0: 0 calm, 1..3 by level 60 / 75 / 90, 4 panicking, 5 calming down),
@@ -158,7 +158,7 @@ void func_002EF580(u8 *o) {
             if (AT(gCharPlayer, 0xF8, s32) == 0 || AT(gCharPlayer, 0xF8, s32) == 3) {
                 Progress *p;
 
-                func_00122C20((u8 *)gCharPlayer, 0x42, 5, 0x40, 0, 0);
+                func_00122C20((Actor *)((u8 *)gCharPlayer), 0x42, 5, 0x40, 0, 0);
                 p = gProgress;
                 VCALL(p, 0x44, void (*)(Progress *, s32))(p, 1);
                 AT(o, 0x0, u8) = 4;
@@ -244,8 +244,6 @@ void func_002EF580(u8 *o) {
 
 extern f32 D_0041A0A0[];   /* fear per pursuer kind and distance band (5 per kind) */
 extern f32 D_0041A0F0[];   /* the same by height difference while both are on stairs (6) */
-extern s32 func_00177620(Progress *p);
-extern s32 func_00177A20(Progress *p, s32 a, s32 b);
 
 /* the pursuer kinds: 0 / 1 / 2 / 3 (-1: none that frightens) */
 static s32 pursuer_kind(u8 id) {
@@ -467,7 +465,7 @@ void func_002EF2B0(u8 *o) {
     if (stage < 1 || stage > 5) {
         return;
     }
-    func_00122C20((u8 *)gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
+    func_00122C20((Actor *)((u8 *)gCharPlayer), 0x29, 5, sPitch[stage - 1], 0, 0);
     VCALL(gRumble, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gRumble, stage == 5 ? D_0041A090 : NULL,
                                                                           sTint[stage - 1]);
 }

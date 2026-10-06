@@ -5,13 +5,12 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "fiona.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_00477440[];
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016CD30(Progress *p);
-extern s32 func_00183190(void *f);
 extern const char *D_004365E4, *D_004365E8;
 
 extern u32 D_00435990[];
@@ -107,7 +106,7 @@ s32 func_00341300(void *self, void *a1, u8 *cmd) {
     case 2:
         return func_0016CD60(gProgress, 0, 0) == 0 ? 2 : 1;
     }
-    func_0016CD30(gProgress);
+    ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;
 }
 
@@ -126,7 +125,7 @@ s32 func_003413C0(void *self, void *a1, u8 *cmd) {
     case 1:
         ev = gEvents;
         v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[4]);
-        n = func_00183190(gCharPlayer);
+        n = func_00183190((Fiona *)gCharPlayer);
         if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
             if (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 1) {
                 func_00122C20(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);

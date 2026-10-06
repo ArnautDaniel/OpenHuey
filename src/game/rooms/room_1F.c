@@ -5,10 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "snd_place.h"
+#include "msl.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E240[];
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern const char *D_0047AAB8[];
 
 extern u8 D_003FE300[];

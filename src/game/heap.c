@@ -3,24 +3,10 @@
  * bytes; freeing merges with free neighbours. */
 #include "common.h"
 #include "ptmf.h"
-
-typedef struct HeapBlock {
-    s32 used;
-    s32 id;
-    u8 *addr;
-    u32 size;
-} HeapBlock;
-
-typedef struct Heap {
-    void **vtbl;
-    u8 *base;
-    u32 size;
-    HeapBlock *blocks;
-    u32 count;
-} Heap;
+#include "heap.h"
+#include "msl.h"
 
 extern void *D_0046A1C0[], *D_004699E0[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 destructor */
 Heap *func_00168C20(Heap *h, s32 flags) {
@@ -181,18 +167,8 @@ void func_0011F9A0(void *p) {
 /* ---- fixed-size block pool (vtable D_004699C0; base D_004699E0): n blocks of one size,
  * a used flag each ---- */
 
-typedef struct BlockPool {
-    /* 0x00 */ void **vtbl;
-    /* 0x04 */ u8 *base;
-    /* 0x08 */ u32 total;    /* size * n */
-    /* 0x0C */ u32 size;
-    /* 0x10 */ u32 n;
-    /* 0x14 */ u8 *used;
-} BlockPool;
-
 extern void *D_004699C0[];
 extern void *D_004699E0[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 */
 BlockPool *func_00120D00(BlockPool *p, s32 flags) {

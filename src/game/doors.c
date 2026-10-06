@@ -14,19 +14,16 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "memcard.h"
+#include "doors.h"
+#include "hewie.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
-extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);   /* turned by angle about y, at pos */
-extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
-extern void func_002212D0(u8 *door);
-extern void func_00220D10(u8 *door, s32 sound, s32 arg);   /* a door sound */
-extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);
-extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);   /* door is open */
-extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);   /* door is shut */
 
 #define DOOR(d, i) ((u8 *)(d) + ((i) & 0xFF) * 0x210)
 #define PI_F 0x1.921fb6p+1f
@@ -499,9 +496,6 @@ void func_002238F0(VObject *d) {
 
 /* ---- a door sound and the noise it makes ---- */
 
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
-
 /* door `e` (its own +0x0) plays sound `id` and is heard as a noise by its opener's slot (+0x6C:
  * 0..2, else 3): `how` 1 / 2 quiet (15), 3 / 4 loud (95), else silent */
 void func_00220D10(u8 *e, s32 id, s32 how) {
@@ -542,8 +536,6 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
  *   rooms seen (bits) ---- */
 
 extern void *D_0046C520[], *D_0046C530[];
-extern s32 func_00178610(Progress *p, u32 d);   /* the door is locked (u8) */
-extern s32 func_00178200(Progress *p, u32 d, s32 side);   /* it opens from that side (u8) */
 
 typedef struct RouteStep {
     u16 door, room, far, depth;

@@ -12,11 +12,20 @@
 #include "ptmf.h"
 #include "memcard.h"
 #include "pursuer.h"
+#include "chainpool.h"
+#include "event_cmd.h"
+#include "quat.h"
+#include "scene_game_members.h"
+#include "shadow.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_models.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
-extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
-extern void *func_001F7E40(void *, s32);
-void *func_0016FC80(void *e, s32 flags);
 
 extern void *D_004702B0[];
 extern void *D_00470390[];
@@ -51,8 +60,6 @@ extern void *D_0046D7B0[];
 extern void *D_0046EB40[];
 extern void *D_0046F580[];
 extern void *D_0047A6F0[];
-extern void func_002672E0(void *p);
-extern void func_002D63B0(void *p);
 void *func_0026B1E0(u8 *o, s32 flags);
 void *func_002BAFD0(u8 *o, s32 flags);
 void *func_0037B9A0(u8 *o, s32 flags);
@@ -312,7 +319,6 @@ void func_003A10B0(Progress *p, u32 slot) {
 }
 
 extern void *D_0046B9B0[];
-extern void *func_0016FCD0(u8 *m);
 
 /* the dog model's constructor (the plain base by func_0016FCD0), kind `kind` (+0x890) */
 void *func_00208210(u8 *m, u8 kind) {
@@ -331,11 +337,7 @@ extern void *D_0047A6F0[], *D_0046FF20[], *D_00471000[], *D_00470E60[], *D_00470
     *D_0046D730[], *D_0046D7B0[], *D_0046B0E0[], *D_00479660[], *D_00479F90[], *D_004703B0[],
     *D_00475CA0[], *D_00472BD0[], *D_0046FF60[], *D_0046EC60[], *D_0046EA90[];
 extern void *D_00469D00[], *D_0046FC30[];
-extern void func_002672E0(void *p);   /* operator delete (the room effects' pool) */
-extern void func_00100490(void *p);   /* operator delete */
 extern void *func_0016FC30(u8 *m);
-extern s32 func_001FBF70(VObject *ev, s32 id);
-extern s32 func_001770D0(Progress *p, s32 id);
 
 void **func_00208070(void **o) {   /* event 0xD9 */
     o[0] = D_0047A6F0;
@@ -457,9 +459,7 @@ void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
 
 extern void *D_0046B8F0[], *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[], *D_004703A0[],
     *D_00470440[], *D_004703D0[], *D_00470620[];
-extern void *func_001702F0(void *, s32);
 extern void *func_00170080(void *, s32);
-void *func_0016FBB0(void *e, s32 flags);
 void *func_00208E90(void *p);
 
 /* the dog model's constructor on the full base (func_0016F4B0), kind `kind`, vtable `vtbl` */
@@ -620,7 +620,6 @@ void func_003A0F90(Progress *p, u32 slot) {
 
 extern void *D_0046C160[], *D_0046B0E0[], *D_00470620[], *D_00472BD0[];
 extern void *func_00208E30(void *, s32);
-void *func_0016FBB0(void *e, s32 flags);
 
 /* the human characters' model base: the model, two of 0x60 at +0x8D0 / +0x930, kind +0x9A0 */
 void *func_00170690(u8 *m, s32 kind) {
@@ -720,7 +719,6 @@ void func_003A1720(Progress *p, u32 slot) {
  * character `slot` +0xF0 ---- */
 
 extern void *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[];
-extern void *func_001702F0(void *, s32);
 extern void *func_00170080(void *, s32);
 extern void *func_002089D0(void *);
 extern void *func_00208970(void *, s32);
@@ -847,18 +845,12 @@ void func_003A15A0(Progress *p, u32 slot) {
  * +0x9B0, +0xE00 one node (+0xDB0), +0x1100 four hanging nodes (+0xE40) with six collision
  * spheres (+0xF80), +0x11A0 one node (+0x1140), +0x1230 one node (+0x11E0) ---- */
 
-extern void func_002EE960(u8 *set);
-extern void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r);
 extern void func_001F1FE0(u8 *m);
-extern void func_002EE8A0(u8 *springs);
-extern void func_002EE900(u8 *springs);
-extern void func_002EE840(u8 *springs);
 extern const char D_0045E3C0[], D_0045E3E0[], D_0045E400[], D_0045E420[], D_0045E440[],
     D_0045E460[], D_0045E480[];   /* "O_FIN\FIN_00n.PCK" */
 extern u8 D_0041A4B0[], D_0041A4C0[], D_0041A4D0[], D_0041A4E0[], D_0041A4F0[];
 extern void func_001F1FD0(u8 *m);
 extern void *D_00470440[], *D_004703B0[], *D_004703D0[];
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 void *func_0016F9E0(u8 *m, s32 flags);
 
 /* append a node to a spring set's node list (+0x30 head, +0x34 tail; the node's next +0x28,
@@ -1173,8 +1165,6 @@ void func_002F7920(u8 *m) {
  * (+0xB80), +0xDA0 one node (+0xD40) ---- */
 
 extern void *D_00478490[], *D_0046B0E0[];
-extern void *func_0016FBB0(void *e, s32 flags);
-extern void func_002DC6D0(void *p);
 
 /* +0x8 destructor */
 void *func_003497E0(void *p, s32 flags) {
@@ -1430,8 +1420,6 @@ void func_0034A120(u8 *p) {
     *(void **)(p + 0x844) = D_0043EA80;
 }
 
-extern void func_001F7AC0(u8 *m);
-
 /* Fiona's sheet model (D_00470620): +0x10 */
 void func_002F8320(u8 *m) {
     func_001F7AC0(m);
@@ -1461,7 +1449,6 @@ void *func_002F7A30(void *p, s32 flags) {
 /* ---- Fiona's model (vtable D_00470620): her files (the game starts with her in a sheet,
  * O_FIS) ---- */
 
-extern void sceVu0CopyVector(f32 *dst, const f32 *src);
 extern const char D_0045E520[];   /* "O_FIS\FIS_000.PCK" */
 extern const char D_0045E500[];   /* "O_FIN\FIN_000.MRK" */
 extern const char D_0045E540[];   /* "O_FIS\FIS_000.TEX" */
@@ -1561,8 +1548,6 @@ void func_002F8330(u8 *m) {
     }
 }
 
-extern void func_002118D0(u8 *m);
-
 /* character model setup common to Fiona and the partner: base setup, defaults, then the
  * class's own reset (vt+0xB8) and two slot inits (vt+0xC4, slots 0 and 5) */
 void func_001F1FE0(u8 *m) {
@@ -1576,8 +1561,6 @@ void func_001F1FE0(u8 *m) {
     ((void (*)(u8 *, s32))AT(AT(m, 0, u8 *), 0xC4, void *))(m, 0);
     ((void (*)(u8 *, s32))AT(AT(m, 0, u8 *), 0xC4, void *))(m, 5);
 }
-
-extern void func_002DE0A0(u8 *m);
 
 /* base setup, then the class's post-setup hook (vt+0x54) */
 void func_002118D0(u8 *m) {
@@ -1598,9 +1581,6 @@ void func_002DE0A0(u8 *m) {
 }
 
 extern void *D_004562A8;
-extern u8 *func_0017D000(void *pool, s32 nBones);   /* allocate a skeleton */
-extern s32 func_0017CE60(u8 *node, f32 *parent);
-extern void func_001F4910(u8 *m);
 
 /* build the model's skeleton from its bone table (+0x4C0: count, then 0x70-byte bones whose
  * +0x10 is the parent index, -1 for the root) */
@@ -1632,8 +1612,6 @@ void func_001F7C40(u8 *m) {
 }
 
 extern void *D_004562B0;
-extern void func_0017CED0(void *pool, u8 *skel);   /* free a skeleton */
-extern void func_00179BC0(void *pool, void *p);     /* free into D_004562B0 */
 
 /* reset the model's motion state: the two motion slots (+0x564, 0xA0 each; current +0x540,
  * next +0x544) and the three blend channels (+0x6B0, 0x60 each), freeing their skeletons and
@@ -1743,8 +1721,6 @@ void func_001F1F10(u8 *m, s32 slot) {
 
 /* ---- the human characters' model base (vtable D_0046B0E0): its own methods ---- */
 
-extern void func_002118C0(u8 *m);
-extern void func_002DCA70(u8 *m);
 extern const char D_00456150[], D_00456170[], D_00456190[], D_004561B0[], D_004561D0[],
     D_004561F0[], D_00456210[];   /* "O_FIN\FIN_00n.MRK" */
 
@@ -1790,7 +1766,6 @@ void func_001F1EE0(u8 *m) {
 }
 
 extern void func_002F7E90(u8 *m);
-extern void func_002EE960(u8 *p);
 extern void func_002F7C50(u8 *m);
 extern void func_002F7B90(u8 *m);
 
@@ -1886,8 +1861,6 @@ void func_002EE960(u8 *set) {
     AT(set, 0x30, s32) = 0;
     AT(set, 0x18, s32) = 0;
 }
-
-extern void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r);
 
 /* Fiona's second secondary-motion set (+0x1740): 4 nodes (+0x1480) on bones 0x39..0x3C, and
  * 6 collision spheres (+0x15C0, 0x40 each, chained by +0x2C from +0x1758) */
@@ -2366,9 +2339,6 @@ void func_001F5020(u8 *m, s32 i) {
     }
 }
 
-extern u8 *func_00179CD0(void *pool, s32 n);   /* allocate a chain of n entries */
-extern void func_001F40F0(u8 *key, s32 a, u8 *data, s32 b);
-
 /* set up a motion track of animation `anim`'s part `part` (1 the body, 2.. the 3 parts): a
  * chain of per-bone keys (*keys) and a skeleton (*skel), each bone with its index in the
  * model's bone table */
@@ -2389,7 +2359,7 @@ void func_001F4C10(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
         u8 *bones;
         s32 bone;
 
-        func_001F40F0(key + 4, AT(tracks, 0x4, s32), tracks + AT(tracks, 0x8, u32), AT(mot, 0x4, s32));
+        func_001F40F0(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(mot, 0x4, s32));
         bones = AT(m, 0x4C0, u8 *);
         bone = AT(bones, 0xC, u32) != 0 ? AT(bones + AT(bones, 0xC, u32) + AT(tracks, 0, u32), 1, s8) : 0;
         AT(key, 0x0, s32) = bone;
@@ -2427,7 +2397,7 @@ void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
         key = AT(*chain, 0x4, u8 *);
         tracks = evp + AT(evp, 0x8, u32);
         for (i = 0; i < AT(*chain, 0x8, s32); i++) {
-            func_001F40F0(key + 4, AT(tracks, 0x4, s32), tracks + AT(tracks, 0x8, u32), AT(evp, 0x4, s32));
+            func_001F40F0(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(evp, 0x4, s32));
             AT(key, 0x0, s32) = AT(tracks, 0, s32);
             key = AT(key, 0x10, u8 *);
             tracks += 0xC;
@@ -2516,7 +2486,6 @@ s32 func_001F1840(u8 *g, f32 len, f32 ang) {
 }
 
 extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (func_001F1AD0, func_001F1A10, ..) */
-extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2(x, z) */
 
 /* a stick gesture, each frame: the recognizers (5, state +0x14/+0x28 each) are fed the
  * stick's length and direction in turn until one reports a gesture (not -1); the rest are
@@ -2544,8 +2513,6 @@ s32 func_001F1B90(u8 *g, f32 *stick) {
     }
     return r;
 }
-
-extern void func_001F36B0(void *track, f32 *out, f32 t);   /* sample a track: out[4..7] = translation */
 
 /* the root translation of slot `slot`'s animation `k` (0, 1: the layer) at its time + dt
  * (wrapped into the animation), scaled by the slot's weight; 0 if it has none */
@@ -2856,7 +2823,6 @@ s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
 }
 
 extern void func_001F5F70(u8 *m, f32 *out, void *trkA, void *trkB, f32 ta, f32 tb, f32 w);   /* a bone's position */
-extern void func_0010E610(f32 *out, const f32 *a, const f32 *b, f32 t);   /* xyz lerp, w of a */
 
 /* `base` + dt * `speed`, wrapped into an animation of `anim`'s length (0 without one) */
 static f32 motion_time(u8 *anim, f32 base, f32 dt, f32 speed) {
@@ -2954,9 +2920,6 @@ void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, 
         }
     }
 }
-
-extern u32 func_002DD860(void *motion, s32 left, f32 t);   /* foot planted (u8) */
-extern void func_002DC710(u8 *m, f32 *p, u8 *a);          /* drop a point onto the floor */
 
 /* the model's height above the character's floor (+0x804, smoothed 3:1 with last frame's
  * +0x8C0 unless +0x990 asks for a jump), each frame from the character's matrix and position
@@ -3362,8 +3325,6 @@ void func_001F5850(u8 *m) {
     }
 }
 
-extern void func_0025C440(void *tmp, u8 *out, u8 *a, u8 *b, f32 t);   /* blend two bones */
-
 /* blend two bone lists { +0x4 first bone (next +0x48, id +0x40), +0x8 count }: the longer
  * one (by t, or the other by 1 - t) takes in each of its bones the other's bone with the same
  * id; returns the blended list (one missing: the other) */
@@ -3398,7 +3359,7 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
 
         for (k = 0; k < AT(small, 0x8, s32); k++, o = AT(o, 0x48, u8 *)) {
             if (AT(n, 0x40, s32) == AT(o, 0x40, s32)) {
-                func_0025C440(tmp, n, n, o, t);
+                func_0025C440(tmp, (f32 (*)[4])n, (f32 (*)[4])n, (f32 (*)[4])o, t);
                 break;
             }
         }
@@ -3407,9 +3368,6 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
 }
 
 extern void func_002E2E00(void *mat, f32 *rot, const f32 *trans);   /* bone matrix */
-extern void func_0025C630(f32 *q, f32 *axis, f32 (*m)[4]);   /* rotation matrix to axis + angle */
-extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* quaternion of a rotation */
-extern void func_0025C770(const f32 *q, f32 (*m)[4]);           /* its matrix */
 
 /* sample one track at `t` into the motion's rotation (+0x820) and translation (+0x830): kinds
  * 0 (rotation only: the bind translation), 2 / 7 (both), others (translation only: the bind
@@ -3900,7 +3858,6 @@ void func_002DCF10(u8 *p, f32 step) {
 }
 
 /* set up a two-bone IK solver: chain root / middle / end of `skel`, the two bone lengths, -1 */
-extern void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend);
 
 #define BIND_X(m, bone) AT(AT(m, 0x4C0, u8 *) + 0x10 + (bone) * 0x70, 0x20, f32)
 
@@ -4109,9 +4066,6 @@ void func_001F0AF0(u8 *ik) {
  * from the knee's to the hock's direction the lower leg points +0x7C, the leg's full reach
  * +0x80; bones +0x4C / +0x50 / +0x78 / +0x54 ---- */
 
-extern f32 func_0031C3C0(f32 x);   /* acosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
-
 /* out = a + b * s */
 static void ik_madd(f32 *out, const f32 *a, const f32 *b, f32 s) {
     out[0] = 0.0f + a[0] + b[0] * s;
@@ -4300,10 +4254,6 @@ void func_001F0250(u8 *ik) {
     sceVu0CopyVector(footAt, (f32 *)(ik + 0x20));
 }
 
-extern void func_002EE8A0(u8 *springs);   /* begin a step */
-extern void func_002EE900(u8 *springs);   /* one step */
-extern void func_002EE840(u8 *springs);   /* finish */
-
 /* the four spring systems (+0x13B0, +0x1440, +0x1740, +0x17E0), a frame: one step, or after a
  * reset (+0x850) - the 4 hanging points (+0x1480, 0x50 each) put back under their anchors (a
  * bone +0x24 when +0x20, else the point +0x2C) by their length (+0x40) along bone 0x35's
@@ -4390,9 +4340,6 @@ void func_002EE570(u8 *p, u8 *model) {
     sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(model, 0x810, void *), AT(p, 0x28, s32)));
     sceVu0ApplyMatrix((f32 *)p, m, (f32 *)(p + 0x10));
 }
-
-extern f32 func_0031C3C0(f32 x);   /* acosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
 
 /* +0x10 step of a hanging point (hair / cloth) { +0x0 position, +0x10 velocity, +0x20 anchored to
  * a bone (+0x24) else to the point +0x2C, +0x40 length, +0x44 the bone it hangs along, +0x48
@@ -4922,15 +4869,9 @@ void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b) {
     func_001F6870(m, layer, a, b, light);
 }
 
-extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
-
 #ifdef HG_NATIVE
 #include <stdio.h>
 #include <stdlib.h>
-
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
-extern void glr_todo(const char *what);
 
 /* ---- PC: a character model drawn with OpenGL (what the model drawer's VU1 packets do) ----
  *
@@ -5270,7 +5211,6 @@ static void gl_draw_model(u8 *m) {
 #endif
 
 #ifdef HG_NATIVE
-extern void glr_layer(s32 layer);   /* native/platform/glr.c */
 
 /* draw the model in `layer` (a, b: the character's draw parameters, kept at +0x28 / +0x2C;
  * layer 0x14 none), then its shadow volumes (+0x1D0, layer 6) unless +0x4D9 or in layers
@@ -5346,8 +5286,6 @@ void func_002DD090(u8 *m, s32 frame) {
     }
 }
 
-extern f32 func_0031C3C0(f32 x);   /* acosf */
-
 /* how the model (its frame +0x7D0: up +0x7E0, forward +0x7F0) has to look at `target` from its
  * eye (+0x860, in model space): the pitch (atan2 of the height over the level distance) and
  * the turn (the angle from forward on the level, negative to the left) */
@@ -5420,8 +5358,6 @@ f32 func_002DD970(void) { return 1.0f; }
  * func_00170FB0 for func_00171160) ---- */
 
 extern void *D_0046B1C0[], *D_0046B0D0[], *D_004703B0[];
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_002DC6D0(void *p);   /* model delete */
 
 /* the human characters' model base before its kind (vtable D_0046B210): drawing object, the
    +0x1D0 part, the model fields */
@@ -5663,7 +5599,6 @@ void func_0033E730(void) {
 
 extern void func_001F1FE0(u8 *m);
 extern void func_002F7620(u8 *m);
-extern void func_001F7AC0(u8 *m);
 
 /* +0xC loaded (as func_002F7920): the base setup, the parts' roles, her own setup, per-part draw
  * settings for parts 0xA0..0xA8, 0xAE..0xB4 and 0xD2..0xD6 */
@@ -5698,7 +5633,6 @@ void func_0033E740(u8 *m) {
 
 extern void *D_00470540[], *D_004703A0[];
 extern void *func_00170080(void *, s32);
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 /* a human event character's model (vtable D_00470540, 0x1270 bytes) of `kind`: twelve 0x50
    parts at +0x9B0, four at +0xE40, six 0x40 parts at +0xF80 and the single parts between */
@@ -6169,8 +6103,6 @@ void func_002DDB30(u8 *m, s32 anim) {
 
     func_001F7460(m, anim, AT(e, 0x4, u16), -1, (f32)AT(e, 0x0, s16));
 }
-
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 
 /* the distance of point `c` from the line through `a` and `b` */
 f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
@@ -6677,8 +6609,6 @@ void func_00337E00(u8 *self) {
 /* ---- Fiona's costume 7 (D_00479420, built by func_00208420): four spring sets - +0xB40 five
    anchored nodes (+0x9B0, bones 0x1A..0x1E), +0xBE0 / +0xC80 one node each (+0xB80 bone 0xC,
    +0xC20 bone 0xD), +0xD10 one node (+0xCC0, bone 0xE) ---- */
-
-extern void *func_001702F0(void *e, s32 flags);
 
 /* a one-node set (no gravity, damping 0.75), its node anchored on `bone` (0.9 long) */
 static inline void spring_one(u8 *m, u8 *set, u8 *node, s32 bone) {

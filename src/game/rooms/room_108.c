@@ -5,13 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046FE00[];
 extern const char *D_004193A8, *D_004193AC;
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016CD30(Progress *p);
 
 extern u8 D_00418DC0[];
 extern u8 D_00418E40[];
@@ -69,7 +67,7 @@ s32 func_002E7350(void *self, void *a1, u8 *cmd) {
                                                                        AT(p, 0x73EDC0, s32), 1);
         break;
     default:
-        func_0016CD30(gProgress);
+        ((void (*)(Progress *))func_0016CD30)(gProgress);
         VCALL(gBootMessage, 0x14, void (*)(VObject *, u32))(gBootMessage, gCharPartner->msgSlot);
         break;
     }

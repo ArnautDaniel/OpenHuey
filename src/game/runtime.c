@@ -1,6 +1,7 @@
 /* Metrowerks C++ runtime helpers. */
 #include "common.h"
 #include "ptmf.h"
+#include "runtime.h"
 
 extern u8 D_0044C898[];
 extern u8 D_0044C900[];

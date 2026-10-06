@@ -14,6 +14,20 @@
 #include "charaction.h"
 #include "input.h"
 #include "gl2d.h"
+#include "daniella.h"
+#include "debilitas2.h"
+#include "hewie.h"
+#include "lorenzo.h"
+#include "model.h"
+#include "panic.h"
+#include "pursuer_ai.h"
+#include "runtime.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_models.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern u8 D_003EC3E0[]; /* table of 28-byte entries */
 extern u8 D_003AF1F0[];
@@ -111,8 +125,6 @@ extern void *D_0046D730[];
 extern void *D_0046F580[];
 extern void *D_00472F60[];
 extern void *D_00479FF0[];
-extern void func_002672E0(void *p);
-extern void func_002D63B0(void *p);
 void *func_00316D80(u8 *o, s32 flags);
 void *func_0036A4D0(u8 *o, s32 flags);
 
@@ -296,43 +308,6 @@ static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
     FLD(p, 0x0, void **) = vtbl;
     return p;
 }
-
-void *func_00172910(void *p, s32 arg);
-void *func_00172960(void *p, s32 arg);
-void *func_001729B0(void *p, s32 arg);
-void *func_00172A00(void *p, s32 arg);
-void *func_00172A50(void *p, s32 arg);
-void *func_00172AA0(void *p, s32 arg);
-void *func_00172AF0(void *p, s32 arg);
-void *func_00172B40(void *p, s32 arg);
-void *func_00172B90(void *p, s32 arg);
-void *func_00172BE0(void *p, s32 arg);
-void *func_00172C30(void *p, s32 arg);
-void *func_00172C80(void *p, u32 id, u32 arg);
-void *func_00172DE0(void *p, s32 arg, u32 id);
-void *func_00172E20(void *p, s32 arg);
-void *func_00172E70(void *p, s32 arg);
-void *func_00172EC0(void *p, s32 arg);
-void *func_00172F10(void *p, s32 arg);
-void *func_00172F60(void *p, s32 arg);
-void *func_00172FB0(void *p, u32 id, u32 arg);
-void *func_00173110(void *p, s32 arg, u32 id);
-void *func_00173150(void *p, s32 arg);
-void *func_001731A0(void *p, s32 arg);
-void *func_001731F0(void *p, s32 arg);
-void *func_00173240(void *p, s32 arg);
-void *func_00173290(void *p, s32 arg);
-void *func_001732E0(void *p, s32 arg);
-void *func_00173330(void *p, s32 arg);
-void *func_00173380(void *p, s32 arg);
-void *func_001733D0(void *p, s32 arg);
-void *func_00173420(void *p, s32 arg);
-void *func_00173470(void *p, s32 arg);
-void *func_001734C0(void *p, s32 arg);
-void *func_00173510(void *p, s32 arg);
-void *func_00173560(void *p, s32 arg);
-void *func_001735B0(void *p, s32 arg);
-void *func_00173600(void *p, s32 arg);
 
 /* Count down the timer at +0x14C8 by |n|; 1 (and clamp to 0) when it runs out. */
 s32 func_00124ED0(void *p, s32 n) {
@@ -531,8 +506,8 @@ void func_002801B0(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
 
     if (func_00122B50(&p->c.a, pos) != 0) {
-        func_001264C0(&p->c, 0, pos);
-        func_001264C0(&p->c, 5, pos);
+        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 0, pos);
+        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 5, pos);
     }
 }
 
@@ -4180,7 +4155,7 @@ void func_00283C50(Pursuer *p) {
         break;
     case 0x14:
     case 0x15:
-        if (!(func_001235C0(p, gCharPlayer, i) & 0xFF)) {
+        if (!(((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, gCharPlayer, i) & 0xFF)) {
             VCALL(p, 0x134, void (*)(Pursuer *))(p);
             return;
         }
@@ -5041,7 +5016,7 @@ void func_0029A940(Pursuer *p) {
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x20);
     }
-    if (func_001235C0(p, (Character *)p, 0) != 0) {
+    if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0) {
         Pursuer_PlayAnimBlend(p, 0x1806);
     } else {
         Pursuer_PlayAnimBlend(p, 0x1802);
@@ -5549,7 +5524,7 @@ s32 func_0029C570(Pursuer *p) {
         func_001777D0(pr, *(u8 *)&p->c.a.slot);
         return -1;
     }
-    if (!(func_001235C0(p, (Character *)p, 0) & 0xFF)) {
+    if (!(((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) & 0xFF)) {
         func_001777D0(pr, *(u8 *)&p->c.a.slot);
         return -1;
     }
@@ -5559,7 +5534,7 @@ s32 func_0029C570(Pursuer *p) {
             f32 h;
             s32 tri = func_00285DE0(p, kind, &h, pos);
 
-            if (tri != -1 && (func_00123470(p, tri, pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+            if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
                 sceVu0CopyVector(c->unk110, pos);
                 AT(c, 0x10C, f32) = h;
                 c->unk104[1] = tri;
@@ -5573,7 +5548,7 @@ s32 func_0029C570(Pursuer *p) {
         f32 h;
         s32 tri = func_00285DE0(p, 0xF, &h, pos);
 
-        if (tri != -1 && (func_00123470(p, tri, pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+        if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
             sceVu0CopyVector(c->unk110, pos);
             AT(c, 0x10C, f32) = h;
             c->unk104[1] = tri;
@@ -5875,7 +5850,7 @@ s32 func_0029A710(Pursuer *p) {
         return 0;
     }
     tri = func_00285DE0(p, 0xF, &h, pos);
-    if (tri != -1 && (func_00123470(p, tri, pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
+    if (tri != -1 && (func_00123470(p, tri, (s32)pos) & 0xFF) == 1 && (u32)tri == func_00124480(&p->c.a, pos, 0x28020028)) {
         sceVu0CopyVector(gCharPartner->unk110, pos);
         AT(gCharPartner, 0x10C, f32) = h;
         gCharPartner->unk104[1] = tri;
@@ -6010,7 +5985,7 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
                     can = 1 & 0xFF;
                 }
                 if (can != 0) {
-                    if (func_001235C0(p, gCharPlayer, 0) != 0) {
+                    if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, gCharPlayer, 0) != 0) {
                         Actor_SetState(&p->c.a, hit);
                         func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, 9, 0, a5, 0.0f);
                         Actor_SetState(&p->c.a, after);
@@ -6171,7 +6146,7 @@ void func_002885B0(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     if (p->c.unk104[0] == 0x1709) {
         Pursuer_PlayAnimBlend(p, 0x1709);
-    } else if (func_001235C0(p, (Character *)p, 0) != 0 && func_00217600(p) != 0) {
+    } else if (((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 && func_00217600(p) != 0) {
         Pursuer_PlayAnim(p, 0x1804);
     } else {
         Pursuer_PlayAnim(p, 0x1800);
@@ -9872,12 +9847,12 @@ void func_002809E0(Pursuer *p) {
                     PU(p, 0x1664, s32) = 0;
                 } else if (PU(p, 0x17B4, s32) != 0) {
                     VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1F);
-                    Pursuer_PlayAnimBlend(p, func_001235C0(p, (Character *)p, 0) != 0 ? 0x1804 : 0x1800);
+                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 ? 0x1804 : 0x1800);
                     PU(p, 0x17B4, s32) = 0;
                 } else {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1F);
                     Actor_SetState(&p->c.a, &D_003ED410);
-                    Pursuer_PlayAnimBlend(p, func_001235C0(p, (Character *)p, 0) != 0 ? 0x1806 : 0x1802);
+                    Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))func_001235C0)(p, (Character *)p, 0) != 0 ? 0x1806 : 0x1802);
                 }
                 PU(p, 0x1761, u8) = 1;
                 func_0027EEA0(p);
@@ -9946,8 +9921,8 @@ void func_002809E0(Pursuer *p) {
         func_00126270(&p->c);
     }
     if (func_00122B50(&p->c.a, at) != 0) {
-        func_001264C0(&p->c, 0, at);
-        func_001264C0(&p->c, 5, at);
+        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 0, at);
+        ((void (*)(Character *, s32, f32 *))func_001264C0)(&p->c, 5, at);
     }
 }
 
@@ -10054,7 +10029,7 @@ void func_0029B8B0(Pursuer *p) {
             PU(p, 0x1790, s32) = 900;
             PU(p, 0x16F5, u8) = 1;
             if (p->c.state[2] == 1) {
-                func_00166150(gCharPartner, p, 1);
+                func_00166150((Hewie *)gCharPartner, (Character *)p, 1);
             }
         }
         {
@@ -10117,7 +10092,7 @@ void func_0029B8B0(Pursuer *p) {
             PU(p, 0x1758, s32) = -1;
             VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0x1F);
             if (p->c.state[2] == 1) {
-                func_00166150(gCharPartner, p, 3);
+                func_00166150((Hewie *)gCharPartner, (Character *)p, 3);
             }
         }
     }
@@ -10162,7 +10137,7 @@ void func_0029B8B0(Pursuer *p) {
         PU(p, 0x1790, s32) = 900;
         PU(p, 0x16F5, u8) = 1;
         if (p->c.state[2] == 1) {
-            func_00166150(gCharPartner, p, 1);
+            func_00166150((Hewie *)gCharPartner, (Character *)p, 1);
         }
     }
     switch (p->c.state[1]) {

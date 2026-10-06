@@ -5,12 +5,12 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E180[];
 extern void *D_0046EC60[];
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-extern void *func_00266C40(u8 *fx, s32 n);   /* the room's effect n */
 
 extern u32 D_003FD310[];
 extern u8 D_003FD360[];

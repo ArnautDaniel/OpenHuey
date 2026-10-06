@@ -7,8 +7,16 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
+#include "bgm.h"
+#include "event_cmd.h"
+#include "event_cond.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "items.h"
+#include "model.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
-extern s32 func_001770D0(Progress *p, s32 id);
 extern u8 D_003D72C0[];   /* the conditions' lengths */
 
 #define PC(ev) AT(ev, 0x4, u8 *)
@@ -32,34 +40,9 @@ void func_001FC700(VObject *ev) {
     }
 }
 
-extern f32 func_002E2D00(f32 angle);          /* wrapped into -pi..pi */
-extern f32 func_0031C5C0(f32 x, f32 z);       /* heading of (x, z) */
-s32 func_001FC390(VObject *ev, u8 *c, s32 area);
-extern s32 func_00177620(Progress *p);           /* the game mode */
-extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
-extern s32 func_00176D80(Progress *p, s32 item);
-extern s32 func_00176DD0(Progress *p, u32 button, u32 how);   /* pad button held / pressed */
-extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
-extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
-extern s32 func_00178610(Progress *p, u32 door);
-extern s32 func_001667C0(u8 *h);
-extern u32 func_00260540(void *items);
-extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
-extern s32 func_0013D4A0(u8 *h, s32 n);
-extern s32 func_00139060(u8 *h);
-extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flags (u8) */
-extern s32 func_001364F0(u8 *h);
-extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern s32 func_001235C0(u8 *a, u8 *c);
-extern s32 func_002D2120(void *o);
-extern s32 func_002D20D0(void *o);
-extern s32 func_00177260(Progress *p, s32 slot);
-extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;
-extern s32 func_00125D80(u8 *c);
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
@@ -189,7 +172,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x15:     /* an item: pc[1] bit 7 its own test, else counted against pc[2] */
         if (pc[1] & 0x80) {
-            r = (u8)func_00176D80(p, pc[1]);
+            r = (u8)((s32 (*)(Progress *, s32))func_00176D80)(p, pc[1]);
         } else {
             r = (u8)func_00176DD0(p, pc[1], pc[2]);
         }
@@ -216,7 +199,7 @@ s32 func_001FC760(VObject *ev) {
         u8 *b = cond_char(p, PC(ev)[2]);
 
         if (a != NULL && b != NULL &&
-            (u8)func_001241F0(a, b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
+            (u8)func_001241F0((Actor *)a, (Actor *)b, (f32)PC(ev)[3], (f32)PC(ev)[4]) == 1) {
             f32 ang = func_0031C5C0(AT(b, 0x10, f32) - AT(a, 0x10, f32), AT(b, 0x18, f32) - AT(a, 0x18, f32));
             f32 d;
 
@@ -325,7 +308,7 @@ s32 func_001FC760(VObject *ev) {
         r = (u8)func_002DE1C0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
         break;
     case 0x3D:     /* the player can be controlled and the progress state is below 4 */
-        r = (u8)func_0019A2B0((u8 *)gCharPlayer) == 1 && AT(p, 0x7B8, u8) < 4;
+        r = (u8)func_0019A2B0((Fiona *)((u8 *)gCharPlayer)) == 1 && AT(p, 0x7B8, u8) < 4;
         break;
     case 0x3F:     /* the player's action (+0x1AD580) is be32 pc[1..4] */
         r = AT(gCharPlayer, 0x1AD580, u32) == (u32)(pc[1] << 24 | pc[2] << 16 | pc[3] << 8 | pc[4]);
@@ -377,7 +360,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x0F:   /* Hewie (in the scene): func_001667C0 */
         if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0) {
-            r = func_001667C0((u8 *)gCharPartner);
+            r = func_001667C0((Hewie *)((u8 *)gCharPartner));
         }
         break;
     case 0x12:   /* the counter (+0x703) is pc[1] */
@@ -465,7 +448,7 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     case 0x31:   /* Hewie (in the scene): not func_0013D4A0 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0((u8 *)gCharPartner, 0) == 0) {
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && func_0013D4A0((Hewie *)((u8 *)gCharPartner), 0) == 0) {
             r = 1;
         }
         break;
@@ -554,7 +537,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x4C:   /* Hewie (in the scene): func_00139060 */
-        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060((u8 *)gCharPartner) == 1) {
+        if (gCharPartner != NULL && AT(gCharPartner, 0x28, u8) != 0 && (u8)func_00139060((Hewie *)((u8 *)gCharPartner)) == 1) {
             r = 1;
         }
         break;
@@ -598,7 +581,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x5A:   /* Hewie's func_001364F0 (no Hewie: 1) */
         if (gCharPartner != NULL) {
-            r = func_001364F0((u8 *)gCharPartner);
+            r = func_001364F0((Hewie *)((u8 *)gCharPartner));
         } else {
             r = 1;
         }
@@ -672,7 +655,7 @@ s32 func_001FC760(VObject *ev) {
 
             if (c != NULL && AT(c, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
                 AT(c, 0x2A, u8) == 0) {
-                r = func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+                r = func_001241F0((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
             }
         }
         break;
@@ -733,7 +716,7 @@ s32 func_001FC760(VObject *ev) {
     case 0x50: {   /* character pc[1] (in the scene, this room): func_001235C0 */
         u8 *c = cond_char(p, pc[1]);
 
-        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) && (u8)func_001235C0(c, c) == 1) {
+        if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32) && (u8)func_001235C0(c, (Actor *)c) == 1) {
             r = 1;
         }
         break;
@@ -803,10 +786,10 @@ s32 func_001FC760(VObject *ev) {
         c1 = cond_char(p, PC(ev)[1]);
         c2 = cond_char(p, PC(ev)[2]);
         if (i1 < 2 && i2 >= 2 && i2 < 6) {
-            if (c1 != NULL && c2 != NULL && AT(c2, 0x1544, u8) == 1 && func_00124490(c1, (f32 *)(c2 + 0x10)) <= lim) {
+            if (c1 != NULL && c2 != NULL && AT(c2, 0x1544, u8) == 1 && func_00124490((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
                 r = 1;
             }
-        } else if (c1 != NULL && c2 != NULL && func_00124490(c1, (f32 *)(c2 + 0x10)) <= lim) {
+        } else if (c1 != NULL && c2 != NULL && func_00124490((Actor *)c1, (f32 *)(c2 + 0x10)) <= lim) {
             r = 1;
         }
         break;
@@ -841,7 +824,7 @@ s32 func_001FC760(VObject *ev) {
                 u8 *c = pl[i];
 
                 if (c != NULL && AT(c, 0x28, u8) == 1 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
-                    (u8)func_001241F0(*AT(ev, 0x6FC, u8 **), c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
+                    (u8)func_001241F0((Actor *)(*AT(ev, 0x6FC, u8 **)), (Actor *)c, AT(c, 0xC8, f32), AT(c, 0xCC, f32)) == 1) {
                     r = 1;
                     break;
                 }
@@ -858,7 +841,7 @@ s32 func_001FC760(VObject *ev) {
 
             if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == room) {
                 r = 1;
-                if ((u8)func_00125D80((u8 *)gCharPursuer) == 1) {
+                if ((u8)func_00125D80((Character *)((u8 *)gCharPursuer)) == 1) {
                     r = 0;
                 } else if (AT(gCharPursuer, 0xF8, s32) == 8) {
                     if (AT(gCharPursuer, 0xFC, s32) == 0x18 || AT(gCharPursuer, 0xFC, s32) == 0x19) {
@@ -868,7 +851,7 @@ s32 func_001FC760(VObject *ev) {
                     if (AT(gCharPursuer, 0xFC, s32) == 9 || AT(gCharPursuer, 0xFC, s32) == 0xA) {
                         r = 0;
                     }
-                } else if ((u8)func_001235C0((u8 *)gCharPursuer, (u8 *)gCharPursuer) == 0) {
+                } else if ((u8)func_001235C0((u8 *)gCharPursuer, (Actor *)((u8 *)gCharPursuer)) == 0) {
                     r = 0;
                 }
             }
@@ -888,7 +871,6 @@ s32 func_001FC760(VObject *ev) {
     VCALL(ev, 0x14, void (*)(VObject *))(ev);
     return r;
 }
-
 
 /* which side of the line a -> b point p is on (2-D, x / z): 1 left or on, -1 right */
 static s32 line_side(const f32 *p, const f32 *a, const f32 *b) {
@@ -953,7 +935,6 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
     return 0;
 }
 
-
 /* is character `c` (active, in the current room) in zone `zone`: its point (+0x74) fully
  * inside (bits 1 and 2) */
 s32 func_002DE0F0(u8 *zone, u8 *c) {
@@ -996,7 +977,6 @@ s32 func_002DE1C0(u8 *zone, u8 *c) {
     }
     return 0;
 }
-
 
 /* a zone (on +0x4; a cylinder: centre +0x10, radius +0x20, height +0x24, either way up) against
  * a point `p` with radius `r` and height `h`: bit 1 they overlap in height, 4 it is within it in

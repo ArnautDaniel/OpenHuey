@@ -5,11 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E1C0[];
 extern u8 D_0047AA80[];
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
 
 extern u8 D_003FD370[];
 extern u8 D_003FD420[];

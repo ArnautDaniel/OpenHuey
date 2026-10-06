@@ -5,6 +5,7 @@
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
 #include "item.h"
+#include "pursuer.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046EDC0[];

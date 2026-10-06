@@ -8,6 +8,23 @@
 #include "actor.h"
 #include "navmesh.h"
 #include "progress.h"
+#include "daniella.h"
+#include "loader.h"
+#include "pad.h"
+#include "renderer.h"
+#include "rumble.h"
+#include "scene_game_members.h"
+#include "snd_driver.h"
+#include "system.h"
+#include "cri/adx.h"
+#include "libc.h"
+#include "msl.h"
+#include "sce/eekernel.h"
+#include "sce/intc.h"
+#include "sce/iop.h"
+#include "sce/libmc.h"
+#include "sce/libpad2.h"
+#include "sce/sif.h"
 
 extern void *D_0046BEE0[];
 
@@ -24,15 +41,9 @@ extern void *D_0046ADD0[];
 extern void *D_0046AE10[];
 extern void *D_0046AF20[];
 extern void *D_0046B050[];
-extern void func_00100490(void *p);
-void *func_001AAE10(u8 *o, s32 flags);
 void *func_001BC090(u8 *o, s32 flags);
-void *func_001BC320(u8 *o, s32 flags);
 void *func_001BE730(u8 *o, s32 flags);
-void *func_001BECA0(u8 *o, s32 flags);
-void *func_001BF220(u8 *o, s32 flags);
 void *func_001BF7A0(u8 *o, s32 flags);
-void *func_001BF880(u8 *o, s32 flags);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -105,11 +116,7 @@ extern void *D_0046BF20[], *D_0046BF2C[];
 extern u8 D_0047E360[], D_0047E3C0[16], D_0047E3D0[16];
 extern const PTMF sGameStateNull;
 
-extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
-extern void *func_002D4630(void *f);   /* rumble constructor (rumble.c) */
 extern void func_001B80C0(u8 *r);
-extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 count);   /* __construct_array */
-void *func_001BEC10(u8 *, s32);
 
 /* System object constructor. */
 void *func_0020E340(u8 *s) {
@@ -130,7 +137,7 @@ void *func_0020E340(u8 *s) {
     }
     AT(s, 0x40, void **) = D_0046ADB0;
     AT(s, 0x58, void **) = D_0046ADC4;
-    func_002D4630(s + 0x300);
+    func_002D4630((Rumble *)(s + 0x300));
 
     gMemCard = (MemCard *)(s + 0x390);
     AT(s, 0x390, void **) = D_0046AE90;
@@ -178,7 +185,6 @@ void *func_0020E340(u8 *s) {
     return s;
 }
 
-extern u32 func_0010D3B8(u32 i);   /* libgraph: parameter / address table entry i (0..9) */
 extern u32 _fbss;                 /* first word of .bss: libgraph table entry 2 */
 
 /* Renderer state (system +0x460) defaults: 640x512 display, draw buffers, colour 0x80808080. */
@@ -347,8 +353,6 @@ void *func_0020E180(void *e) {
 }
 
 extern void *D_004562B0, *D_004562A8;   /* the two pools */
-extern void func_0020D970(void *, s32), func_0020D9C0(void *, s32);
-extern void func_0020D8D0(void *, s32), func_0020D920(void *, s32);
 
 /* Game +0x14D9DD0: pool of 64 x 0xC and 462 x 0x14 entries. */
 void *func_0020E1A0(u8 *p) {
@@ -407,21 +411,8 @@ void func_001F44D0(u8 *o) {
 #include "ps2hw.h"
 
 extern const char D_0044FEB8[], D_0044FEC8[], D_0044FED8[], D_0044FEE8[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
-extern void func_001BC220(void *iop);                        /* IOP: reset, set up module loading */
-extern s32 func_001BC0F0(void *iop, const char *module, s32, s32, s32);   /* IOP: load a module */
-extern void func_0010D3E0(s32 mode);                          /* libgraph: reset */
-extern void func_001EE798(void);                              /* libdbc: init */
 extern void func_001AACD0(void *obj);
-extern void func_002102E0(void *obj);
-extern void func_001BE6A0(void *pads);
-extern void func_00226570(void *obj);
-extern void func_001B83D0(void *renderer, s32 n);
-extern void func_001B8250(void *renderer);
-extern s32 func_0026BE80(s32 cause, s32 (*handler)(s32), s32 next);   /* AddIntcHandler */
-extern s32 func_0026CCE8(s32 cause);                                   /* EnableIntc */
 extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank start / end handlers */
-extern void func_0016C530(void *loader);
-extern void func_00169680(void *loader);
 extern u8 D_0047B204, D_0047B208;   /* vblank start / end seen */
 extern u32 D_0047B20C;              /* vblank count */
 
@@ -493,16 +484,7 @@ void *func_001BF880(u8 *o, s32 flags) {
     return o;
 }
 
-extern void func_001B87D0(void *renderer);
-extern void func_001B8750(void *renderer);
-extern void func_001B86A0(void *renderer);
-extern void func_001B85B0(void *renderer);
-extern void func_00210230(void *drv);     /* sound driver tick */
 extern void func_001AACC0(void *snd);     /* ADX sound system tick */
-extern void func_0016BFB0(void *loader);  /* file loader tick */
-extern void func_002D42A0(void *fader);   /* fader tick */
-extern void func_001BE4B0(void *pads);    /* pad tick */
-extern void func_00226510(void *mc);      /* memory card tick */
 
 /* +0x10 end of frame: finish the renderer's frame, wait for the vblank (at least two since the
  * last frame: the game runs at 30 fps), restart the timers, send the frame, then tick the parts. */
@@ -528,15 +510,12 @@ void func_001BEEF0(u8 *s) {
     func_00210230(s + 0x395D40);
     func_001AACC0(s + 0x305280);
     func_0016BFB0(s + 0x319900);
-    func_002D42A0(s + 0x300);
+    func_002D42A0((Rumble *)(s + 0x300));
     func_001BE4B0(s + 0x40);
-    func_00226510(s + 0x390);
+    func_00226510((MemCard *)(s + 0x390));
 }
 
 /* ---- the rest of the system object (2026-10-05) ---- */
-
-extern void func_001EFB40(s32 socket);   /* scePad2DeleteSocket */
-extern void func_001EF9D0(void);         /* scePad2End */
 
 /* the pads (+0x40): close the socket, end the library */
 void func_001BE480(u8 *pads) {
@@ -555,9 +534,6 @@ void *func_001BE730(u8 *o, s32 flags) {
     }
     return o;
 }
-
-extern void func_00274640(u32 addr);   /* free IOP memory */
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x395D40 +0x84 element (8 x 0x10): two IOP buffers */
 void *func_001BEC10(u8 *e, s32 flags) {
@@ -599,7 +575,6 @@ void *func_001BECA0(u8 *o, s32 flags) {
 
 extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046ACF0[];
 extern void *D_0046AEC0[], *D_0046AED0[], *D_0046AE60[], *D_0046F4F0[], *D_0046AE30[];
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 /* destructor (vtable +0x8): the members in reverse, each with its vtable chain and global cleared */
 void *func_001BE7A0(u8 *s, s32 flags) {
@@ -670,14 +645,6 @@ void *func_001BE7A0(u8 *s, s32 flags) {
     return s;
 }
 
-extern void func_0026CC80(s32 cause);                 /* DisableIntc */
-extern s32 RemoveIntcHandler(s32 cause, s32 id);
-extern s32 func_00226560(void *mc);                   /* memory card: sceMcEnd */
-extern s32 func_001EEA38(void);
-extern void func_0016BF50(void *loader);
-extern void func_00210180(void *drv);
-extern void func_001AAC60(void *snd);
-
 /* +0x18 shutdown: the vblank handlers off, then each part's shutdown, then reset the GS */
 void func_001BEDD0(u8 *s) {
     func_0026CC80(2);
@@ -685,15 +652,13 @@ void func_001BEDD0(u8 *s) {
     RemoveIntcHandler(3, AT(s, 0x18, s32));
     RemoveIntcHandler(2, AT(s, 0x14, s32));
     func_001BE480(s + 0x40);
-    func_00226560(s + 0x390);
+    func_00226560((MemCard *)(s + 0x390));
     func_001EEA38();
     func_0016BF50(s + 0x319900);
     func_00210180(s + 0x395D40);
     func_001AAC60(s + 0x305280);
     func_0010D3E0(0);
 }
-
-extern void func_0023C310(void);   /* CRI middleware server */
 
 /* +0x14 frame without the vblank wait: finish and send the renderer's frame, tick the parts */
 void func_001BEE70(u8 *s) {
@@ -703,6 +668,6 @@ void func_001BEE70(u8 *s) {
     func_00210230(s + 0x395D40);
     func_001AACC0(s + 0x305280);
     func_0016BFB0(s + 0x319900);
-    func_002D42A0(s + 0x300);
+    func_002D42A0((Rumble *)(s + 0x300));
     func_001BE4B0(s + 0x40);
 }

@@ -5,15 +5,12 @@
 #include "ptmf.h"
 #include "progress.h"
 #include "actor.h"
+#include "item_classes.h"
+#include "items.h"
+#include "subscreen.h"
 
 extern void *D_0046C790[], *D_0046F430[];
 extern void *D_0046D5F0[];
-typedef struct ItemObj {
-    void *vtbl;
-    s32 id;
-    u8 flag;
-    u64 data; /* +0x10 */
-} ItemObj;
 
 ItemObj *func_00263220(ItemObj *self);
 ItemObj *func_00264060(ItemObj *self, s32 id);
@@ -112,213 +109,110 @@ u32 func_00260CF0(u8 *o, s32 id) {
  * (+0x1208) ---- */
 
 typedef void *(*ItemCtor)(void *self);
-extern void *func_002632B0(void *self);
-extern void *func_002632E0(void *self);
-extern void *func_00263310(void *self);
-extern void *func_00263340(void *self);
-extern void *func_00263370(void *self);
-extern void *func_002633A0(void *self);
-extern void *func_002633D0(void *self);
-extern void *func_00263400(void *self);
-extern void *func_00263430(void *self);
-extern void *func_00263460(void *self);
-extern void *func_00263490(void *self);
-extern void *func_002634C0(void *self);
-extern void *func_002634F0(void *self);
-extern void *func_00263580(void *self);
-extern void *func_002635B0(void *self);
-extern void *func_002635E0(void *self);
-extern void *func_00263610(void *self);
-extern void *func_00263640(void *self);
-extern void *func_00263670(void *self);
-extern void *func_002636A0(void *self);
-extern void *func_002636D0(void *self);
-extern void *func_00263700(void *self);
-extern void *func_00263790(void *self);
-extern void *func_002637C0(void *self);
-extern void *func_002637F0(void *self);
-extern void *func_00263820(void *self);
-extern void *func_002638B0(void *self);
-extern void *func_002638E0(void *self);
-extern void *func_00263910(void *self);
-extern void *func_00263940(void *self);
-extern void *func_002639D0(void *self);
-extern void *func_00263A00(void *self);
-extern void *func_00263A30(void *self);
-extern void *func_00263A60(void *self);
-extern void *func_00263AF0(void *self);
-extern void *func_00263B20(void *self);
-extern void *func_00263B50(void *self);
-extern void *func_00263B80(void *self);
-extern void *func_00263BB0(void *self);
-extern void *func_00263BE0(void *self);
-extern void *func_00263C70(void *self);
-extern void *func_00263CA0(void *self);
-extern void *func_00263CD0(void *self);
-extern void *func_00263D00(void *self);
-extern void *func_00263D30(void *self);
-extern void *func_00263D60(void *self);
-extern void *func_00263D90(void *self);
-extern void *func_00263E20(void *self);
-extern void *func_00263E50(void *self);
-extern void *func_00263E80(void *self);
-extern void *func_00263EB0(void *self);
-extern void *func_00263EE0(void *self);
-extern void *func_00263F10(void *self);
-extern void *func_00263F40(void *self);
-extern void *func_00263F70(void *self);
-extern void *func_00263FA0(void *self);
-extern void *func_00263FD0(void *self);
-extern void *func_00264000(void *self);
-extern void *func_00264030(void *self);
-extern void *func_00264090(void *self);
-extern void *func_00264120(void *self);
-extern void *func_00264150(void *self);
-extern void *func_00264180(void *self);
-extern void *func_002641B0(void *self);
-extern void *func_002641E0(void *self);
-extern void *func_00264210(void *self);
-extern void *func_00264240(void *self);
-extern void *func_00264270(void *self);
-extern void *func_002642A0(void *self);
-extern void *func_002642D0(void *self);
-extern void *func_00264300(void *self);
-extern void *func_00264330(void *self);
-extern void *func_00264360(void *self);
-extern void *func_00264390(void *self);
-extern void *func_002643C0(void *self);
-extern void *func_002643F0(void *self);
-extern void *func_00264420(void *self);
-extern void *func_00264450(void *self);
-extern void *func_00264480(void *self);
-extern void *func_002644B0(void *self);
-extern void *func_002644E0(void *self);
-extern void *func_00264510(void *self);
-extern void *func_00264540(void *self);
-extern void *func_00264570(void *self);
-extern void *func_002645A0(void *self);
-extern void *func_002645D0(void *self);
-extern void *func_00264600(void *self);
-extern void *func_00264630(void *self);
-extern void *func_00264660(void *self);
-extern void *func_00264690(void *self);
-extern void *func_002646C0(void *self);
-extern void *func_002646F0(void *self);
-extern void *func_00264720(void *self);
-extern void *func_00264750(void *self);
-extern void *func_00264780(void *self);
-extern void *func_002647B0(void *self);
-extern void *func_002647E0(void *self);
-extern void *func_00264810(void *self);
-extern void *func_00264840(void *self);
-extern void *func_00264870(void *self);
-extern void *func_002648A0(void *self);
-extern void *func_002648D0(void *self);
-extern void *func_0025FF00(u32 size, void *mem);   /* placement new */
 
 static ItemCtor const kItemCtors[0xAD] = {
-    [0x0] = func_002648D0,
-    [0x1] = func_002648A0,
-    [0x2] = func_00264870,
-    [0x3] = func_00264840,
-    [0x4] = func_00264810,
-    [0x5] = func_002647E0,
-    [0x6] = func_002647B0,
-    [0x7] = func_00264780,
-    [0x8] = func_00264750,
-    [0x9] = func_00264720,
-    [0xA] = func_002646F0,
-    [0xB] = func_002646C0,
-    [0xC] = func_00264690,
-    [0xD] = func_00264660,
-    [0xE] = func_00264630,
-    [0xF] = func_00264600,
-    [0x10] = func_002645D0,
-    [0x11] = func_002645A0,
-    [0x12] = func_00264570,
-    [0x13] = func_00264540,
-    [0x14] = func_00264510,
-    [0x15] = func_002644E0,
-    [0x16] = func_002644B0,
-    [0x17] = func_00264480,
-    [0x18] = func_00264450,
-    [0x19] = func_00264420,
-    [0x1A] = func_002643F0,
-    [0x1B] = func_002643C0,
-    [0x1C] = func_00264390,
-    [0x1D] = func_00264360,
-    [0x1E] = func_00264330,
-    [0x1F] = func_00264300,
-    [0x20] = func_002642D0,
-    [0x21] = func_002642A0,
-    [0x22] = func_00264270,
-    [0x23] = func_00264240,
-    [0x24] = func_00264210,
-    [0x25] = func_002641E0,
-    [0x26] = func_002641B0,
-    [0x27] = func_00264180,
-    [0x28] = func_00264150,
-    [0x29] = func_00264120,
-    [0x3E] = func_00264090,
-    [0x40] = func_00264030,
-    [0x41] = func_00264000,
-    [0x42] = func_00263FD0,
-    [0x43] = func_00263FA0,
-    [0x44] = func_00263F70,
-    [0x45] = func_00263F40,
-    [0x46] = func_00263F10,
-    [0x47] = func_00263EE0,
-    [0x48] = func_00263EB0,
-    [0x49] = func_00263E80,
-    [0x4A] = func_00263E50,
-    [0x4B] = func_00263E20,
-    [0x4C] = func_00263D90,
-    [0x60] = func_00263D60,
-    [0x61] = func_00263D30,
-    [0x62] = func_00263D00,
-    [0x63] = func_00263CD0,
-    [0x64] = func_00263CA0,
-    [0x65] = func_00263C70,
-    [0x66] = func_00263BE0,
-    [0x70] = func_00263BB0,
-    [0x71] = func_00263B80,
-    [0x72] = func_00263B50,
-    [0x73] = func_00263B20,
-    [0x74] = func_00263AF0,
-    [0x75] = func_00263A60,
-    [0x80] = func_00263A30,
-    [0x81] = func_00263A00,
-    [0x82] = func_002639D0,
-    [0x83] = func_00263940,
-    [0x86] = func_00263910,
-    [0x87] = func_002638E0,
-    [0x88] = func_002638B0,
-    [0x89] = func_00263820,
-    [0x8A] = func_002637F0,
-    [0x8B] = func_002637C0,
-    [0x8C] = func_00263790,
-    [0x8D] = func_00263700,
-    [0x90] = func_002636D0,
-    [0x91] = func_002636A0,
-    [0x92] = func_00263670,
-    [0x93] = func_00263640,
-    [0x94] = func_00263610,
-    [0x95] = func_002635E0,
-    [0x97] = func_002635B0,
-    [0x98] = func_00263580,
-    [0x9B] = func_002634F0,
-    [0xA0] = func_002634C0,
-    [0xA1] = func_00263490,
-    [0xA2] = func_00263460,
-    [0xA3] = func_00263430,
-    [0xA4] = func_00263400,
-    [0xA5] = func_002633D0,
-    [0xA6] = func_002633A0,
-    [0xA7] = func_00263370,
-    [0xA8] = func_00263340,
-    [0xA9] = func_00263310,
-    [0xAA] = func_002632E0,
-    [0xAB] = func_002632B0,
+    [0x0] = (void * (*)(void *))func_002648D0,
+    [0x1] = (void * (*)(void *))func_002648A0,
+    [0x2] = (void * (*)(void *))func_00264870,
+    [0x3] = (void * (*)(void *))func_00264840,
+    [0x4] = (void * (*)(void *))func_00264810,
+    [0x5] = (void * (*)(void *))func_002647E0,
+    [0x6] = (void * (*)(void *))func_002647B0,
+    [0x7] = (void * (*)(void *))func_00264780,
+    [0x8] = (void * (*)(void *))func_00264750,
+    [0x9] = (void * (*)(void *))func_00264720,
+    [0xA] = (void * (*)(void *))func_002646F0,
+    [0xB] = (void * (*)(void *))func_002646C0,
+    [0xC] = (void * (*)(void *))func_00264690,
+    [0xD] = (void * (*)(void *))func_00264660,
+    [0xE] = (void * (*)(void *))func_00264630,
+    [0xF] = (void * (*)(void *))func_00264600,
+    [0x10] = (void * (*)(void *))func_002645D0,
+    [0x11] = (void * (*)(void *))func_002645A0,
+    [0x12] = (void * (*)(void *))func_00264570,
+    [0x13] = (void * (*)(void *))func_00264540,
+    [0x14] = (void * (*)(void *))func_00264510,
+    [0x15] = (void * (*)(void *))func_002644E0,
+    [0x16] = (void * (*)(void *))func_002644B0,
+    [0x17] = (void * (*)(void *))func_00264480,
+    [0x18] = (void * (*)(void *))func_00264450,
+    [0x19] = (void * (*)(void *))func_00264420,
+    [0x1A] = (void * (*)(void *))func_002643F0,
+    [0x1B] = (void * (*)(void *))func_002643C0,
+    [0x1C] = (void * (*)(void *))func_00264390,
+    [0x1D] = (void * (*)(void *))func_00264360,
+    [0x1E] = (void * (*)(void *))func_00264330,
+    [0x1F] = (void * (*)(void *))func_00264300,
+    [0x20] = (void * (*)(void *))func_002642D0,
+    [0x21] = (void * (*)(void *))func_002642A0,
+    [0x22] = (void * (*)(void *))func_00264270,
+    [0x23] = (void * (*)(void *))func_00264240,
+    [0x24] = (void * (*)(void *))func_00264210,
+    [0x25] = (void * (*)(void *))func_002641E0,
+    [0x26] = (void * (*)(void *))func_002641B0,
+    [0x27] = (void * (*)(void *))func_00264180,
+    [0x28] = (void * (*)(void *))func_00264150,
+    [0x29] = (void * (*)(void *))func_00264120,
+    [0x3E] = (void * (*)(void *))func_00264090,
+    [0x40] = (void * (*)(void *))func_00264030,
+    [0x41] = (void * (*)(void *))func_00264000,
+    [0x42] = (void * (*)(void *))func_00263FD0,
+    [0x43] = (void * (*)(void *))func_00263FA0,
+    [0x44] = (void * (*)(void *))func_00263F70,
+    [0x45] = (void * (*)(void *))func_00263F40,
+    [0x46] = (void * (*)(void *))func_00263F10,
+    [0x47] = (void * (*)(void *))func_00263EE0,
+    [0x48] = (void * (*)(void *))func_00263EB0,
+    [0x49] = (void * (*)(void *))func_00263E80,
+    [0x4A] = (void * (*)(void *))func_00263E50,
+    [0x4B] = (void * (*)(void *))func_00263E20,
+    [0x4C] = (void * (*)(void *))func_00263D90,
+    [0x60] = (void * (*)(void *))func_00263D60,
+    [0x61] = (void * (*)(void *))func_00263D30,
+    [0x62] = (void * (*)(void *))func_00263D00,
+    [0x63] = (void * (*)(void *))func_00263CD0,
+    [0x64] = (void * (*)(void *))func_00263CA0,
+    [0x65] = (void * (*)(void *))func_00263C70,
+    [0x66] = (void * (*)(void *))func_00263BE0,
+    [0x70] = (void * (*)(void *))func_00263BB0,
+    [0x71] = (void * (*)(void *))func_00263B80,
+    [0x72] = (void * (*)(void *))func_00263B50,
+    [0x73] = (void * (*)(void *))func_00263B20,
+    [0x74] = (void * (*)(void *))func_00263AF0,
+    [0x75] = (void * (*)(void *))func_00263A60,
+    [0x80] = (void * (*)(void *))func_00263A30,
+    [0x81] = (void * (*)(void *))func_00263A00,
+    [0x82] = (void * (*)(void *))func_002639D0,
+    [0x83] = (void * (*)(void *))func_00263940,
+    [0x86] = (void * (*)(void *))func_00263910,
+    [0x87] = (void * (*)(void *))func_002638E0,
+    [0x88] = (void * (*)(void *))func_002638B0,
+    [0x89] = (void * (*)(void *))func_00263820,
+    [0x8A] = (void * (*)(void *))func_002637F0,
+    [0x8B] = (void * (*)(void *))func_002637C0,
+    [0x8C] = (void * (*)(void *))func_00263790,
+    [0x8D] = (void * (*)(void *))func_00263700,
+    [0x90] = (void * (*)(void *))func_002636D0,
+    [0x91] = (void * (*)(void *))func_002636A0,
+    [0x92] = (void * (*)(void *))func_00263670,
+    [0x93] = (void * (*)(void *))func_00263640,
+    [0x94] = (void * (*)(void *))func_00263610,
+    [0x95] = (void * (*)(void *))func_002635E0,
+    [0x97] = (void * (*)(void *))func_002635B0,
+    [0x98] = (void * (*)(void *))func_00263580,
+    [0x9B] = (void * (*)(void *))func_002634F0,
+    [0xA0] = (void * (*)(void *))func_002634C0,
+    [0xA1] = (void * (*)(void *))func_00263490,
+    [0xA2] = (void * (*)(void *))func_00263460,
+    [0xA3] = (void * (*)(void *))func_00263430,
+    [0xA4] = (void * (*)(void *))func_00263400,
+    [0xA5] = (void * (*)(void *))func_002633D0,
+    [0xA6] = (void * (*)(void *))func_002633A0,
+    [0xA7] = (void * (*)(void *))func_00263370,
+    [0xA8] = (void * (*)(void *))func_00263340,
+    [0xA9] = (void * (*)(void *))func_00263310,
+    [0xAA] = (void * (*)(void *))func_002632E0,
+    [0xAB] = (void * (*)(void *))func_002632B0,
     [0xAC] = (void *(*)(void *))func_00263220,
 };
 

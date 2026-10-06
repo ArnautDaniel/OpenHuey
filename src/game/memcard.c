@@ -11,17 +11,12 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "msl.h"
+#include "sce/libmc.h"
 
 extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* the states (libmc) */
-extern void func_00226220(MemCard *mc);   /* check */
-extern void func_00225F30(MemCard *mc);
-extern void func_00225950(MemCard *mc);   /* write */
-extern void func_00225C40(MemCard *mc);   /* read */
-extern void func_00225860(MemCard *mc);
-extern void func_00225770(MemCard *mc);
 
 void *func_001BF2E0(u8 *o, s32 flags);
 
@@ -108,8 +103,6 @@ void func_00226510(MemCard *mc) {
         ptmf_scall(mc, &mc->state);
     }
 }
-
-extern s32 func_00110B60(void);   /* sceMcEnd */
 
 /* shut the memory card library down (the mc argument is unused) */
 s32 func_00226560(MemCard *mc) {

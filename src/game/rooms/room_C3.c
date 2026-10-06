@@ -5,15 +5,15 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046DB80[];
 extern void *D_00478630[];
 extern u8 D_0047AF08[];
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern const char *D_004400F0[];
-extern void func_002A8410(void *o);         /* an action block reset */
-extern void func_002EF9E0(void *o, f32 v);
 extern const char *D_004400E0;
 extern u32 D_0043F8F0[];
 extern u32 D_0043F9F0[];
@@ -103,7 +103,7 @@ s32 func_0034ABB0(void) {
     if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0 || AT(gCharPlayer, 0xE0, u8) != 0) {
         return 1;
     }
-    func_002A8410(&act);
+    func_002A8410((u8 *)&act);
     act.state = 0xB;
     act.a = 0x21;
     act.b = 0xFF;

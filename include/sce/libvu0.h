@@ -31,4 +31,9 @@ void sceVu0RotMatrixZ(sceVu0FMATRIX out, sceVu0FMATRIX m, f32 angle);
 void sceVu0RotMatrix(sceVu0FMATRIX out, sceVu0FMATRIX m, const f32 *rot);   /* x, then y, then z */
 void sceVu0TransMatrix(sceVu0FMATRIX out, sceVu0FMATRIX m, const f32 *t);
 
+extern void func_0010E5F0(f32 *out, const f32 *v);   /* libvu0: copy x, y, z */
+extern void func_0010E610(f32 *out, const f32 *a, const f32 *b, f32 t);   /* xyz lerp, w of a */
+extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
+extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
+
 #endif

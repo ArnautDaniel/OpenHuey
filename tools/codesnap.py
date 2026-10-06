@@ -3,7 +3,7 @@
 
     tools/codesnap.py snap DIR           # write DIR/ps2.json and DIR/native.json
     tools/codesnap.py compare OLD NEW    # list functions whose code changed
-    tools/codesnap.py snap DIR --isolated [--root TREE]
+    tools/codesnap.py snap DIR --isolated [--root TREE] [--native]
 
 --isolated compiles both targets here with inlining and GCC's interprocedural optimizations
 off, so each function's code depends only on its own body and the declarations it sees:
@@ -351,6 +351,8 @@ def main() -> None:
             kinds = (("ps2", lambda c: ps2_isolated(c, root)), ("native", lambda c: native_isolated(c, root)))
         else:
             kinds = (("ps2", ps2_snap), ("native", native_snap))
+        if "--native" in sys.argv:
+            kinds = [k for k in kinds if k[0] == "native"]
         for kind, fn in kinds:
             snap = fn(canon)
             (d / f"{kind}.json").write_text(json.dumps({"digest": digest(snap), "loose": digest(snap, loose),
@@ -359,6 +361,8 @@ def main() -> None:
     elif sys.argv[1] == "compare":
         bad = 0
         for kind in ("ps2", "native"):
+            if not (Path(sys.argv[2]) / f"{kind}.json").exists() or not (Path(sys.argv[3]) / f"{kind}.json").exists():
+                continue
             a = json.loads((Path(sys.argv[2]) / f"{kind}.json").read_text())
             b = json.loads((Path(sys.argv[3]) / f"{kind}.json").read_text())
             da, db = a["digest"], b["digest"]

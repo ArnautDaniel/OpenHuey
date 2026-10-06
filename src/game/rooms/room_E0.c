@@ -5,11 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
 
 extern void *D_0046DB80[];
 extern void *D_0047A450[];
 extern u8 D_0047B0B0[], D_0047B0C0[];
-extern void func_00124F20(void *c, s32 a);
 extern char D_0047B2F8[];
 extern const char D_00463928[];
 

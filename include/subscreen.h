@@ -92,6 +92,14 @@ _Static_assert(__builtin_offsetof(SubScreen, open) == 0xA8DE5, "open");
 /* the page's work, by offset (its layout depends on the page) */
 #define SUB_PAGE(s, off, type) AT((s)->page, off, type)
 
-s32 SubScreen_Update(SubScreen *s);   /* per frame; returns showBehind */
+typedef struct VObject VObject;
+
+/* subscreen.c */
+extern void *func_0025FF00(u32 size, void *p);   /* placement new */
+extern void SubScreen_Start(SubScreen *s);
+extern void SubScreen_ApplyOptions(VObject *s);
+extern s32 SubScreen_Update(SubScreen *s);   /* per frame; returns showBehind */
+extern void func_00385030(SubScreen *s, u8 *save);
+extern void func_003851B0(SubScreen *s, u8 *save);
 
 #endif /* SUBSCREEN_H */

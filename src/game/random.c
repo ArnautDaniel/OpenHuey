@@ -2,13 +2,10 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
+#include "random.h"
+#include "msl.h"
 
 /* MW runtime soft-float doubles, as raw IEEE bit patterns in 64-bit registers. */
-extern u64 func_00100230(u32 x);             /* (double)x */
-extern u64 func_0011F208(u64 a, u64 b);      /* a * b */
-extern u64 func_0011F148(u64 a, u64 b);      /* a + b */
-extern u64 func_0011F458(u64 a, u64 b);      /* a / b */
-extern f32 func_0011F878(u64 a);             /* (float)a */
 
 #define DBL_2POW26 0x4190000000000000ULL     /* 67108864.0 */
 #define DBL_2POWM53 0x3CA0000000000000ULL    /* 1.0 / 9007199254740992.0 */
@@ -111,7 +108,6 @@ f32 func_001A4460(VObject *r) {
 }
 
 extern void *D_0046AB80[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 destructor */
 VObject *func_001A4850(VObject *r, s32 flags) {
@@ -127,7 +123,6 @@ VObject *func_001A4850(VObject *r, s32 flags) {
 }
 
 extern void *D_0046AB80[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 destructor (the global goes) */
 void *func_001A4910(void *o, s32 flags) {

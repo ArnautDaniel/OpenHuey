@@ -6,9 +6,14 @@
 #include "game.h"
 #include "globals.h"
 #include "actor.h"
-
-extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
-
+#include "renderer.h"
+#include "draw_leaves.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "libc.h"
+#include "msl.h"
+#include "sce/eekernel.h"
 
 /* +0x1C */
 void func_001BBB20(u8 *r) {
@@ -49,8 +54,6 @@ s32 func_001BB950(u8 *r, u32 i) {
     return -1;
 }
 
-extern void func_0010BFB0(void);                            /* libgraph: sceGsResetPath */
-extern void func_0010BE10(s32 inter, s32 mode, s32 ntsc, s32 ffmd);   /* libgraph: sceGsResetGraph */
 extern void func_001B7ED0(u8 *r);
 extern void func_001B79F0(u8 *r);
 extern void func_001B7370(u8 *r);
@@ -78,7 +81,6 @@ void func_001B83D0(u8 *r, s32 mode) {
         e[4] = 0x1.921fb6p+1f /* pi */ * (360.0f * (RNG_REAL1() - 0.5f)) / 180.0f;
     }
 }
-
 
 /* Allocate the renderer's VRAM (allocator +0x18: address, pixel format 0x13 = 8-bit indexed,
  * width, height): one 0xFF area (+0x304BE4) and 11 layers (+0x304BB8: 10 of 256x256 below
@@ -109,10 +111,7 @@ void func_001B8250(u8 *r) {
 
 #include "gs.h"
 
-extern void FlushCache(s32 mode);
 extern u32 *_fbss;   /* GIF DMA channel registers (sceDmaGetChan(2)) */
-extern void func_0010D6E8(u32 *chan, void *tag);           /* libdma: sceDmaSend */
-extern s32 func_0010D988(u32 *chan, s32 mode, s32 timeout);   /* libdma: sceDmaSync */
 
 #ifdef HG_NATIVE
 /* Clear all of VRAM (the original: 16 uploads of 256 KB of zeros): PC has no VRAM. */
@@ -120,12 +119,6 @@ void func_001B7ED0(u8 *r) {
     (void)r;
 }
 #endif
-
-extern void sceGsDefDispEnv(void *disp, s32 psm, s32 w, s32 h, s32 dx, s32 dy);
-extern s32 func_0010C5C8(void *env, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm);   /* sceGsSetDefDrawEnv */
-extern s32 func_0010D020(void *env, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm);   /* ... context 2 */
-extern s32 func_0010C7B0(void *clear, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32 r, s32 g, s32 b,
-                         s32 a, u32 z);                                            /* sceGsSetDefClear */
 
 /* set the 9-bit base field (FBP / ZBP) of a GS register to VRAM byte address `addr` */
 #define GS_SET_BASE(reg, addr) ((reg) = ((reg) & ~0x1FF) | (((addr) / 2048) & 0x1FF))
@@ -190,7 +183,6 @@ void func_001B7370(u8 *r) {
     }
 }
 
-extern s32 func_001B4F30(u8 *r);   /* layer 6 setup (u8: 0 = skip the packet) */
 extern s32 func_001B1E50(u8 *r);   /* layer 38 setup (u8) */
 
 #define REND_LAYER_TAIL(r, l) AT(r, 0x304A00 + REND_BUF(r) * 0xD4 + (l) * 4, u64 *)
@@ -226,15 +218,6 @@ u64 *func_001BBC20(u8 *r, s32 n, s32 layer) {
     AT(r, 0x304BA8, u8 *) += 16;
     return p;
 }
-
-extern s32 func_001B4330(u8 *r);
-extern s32 func_001B2160(u8 *r);
-extern s32 func_001B18E0(u8 *r);
-extern s32 func_001B0D40(u8 *r);
-extern s32 func_001AF3B0(u8 *r);
-extern s32 func_001AC0D0(u8 *r);
-extern s32 func_001AB960(u8 *r);
-extern s32 func_001AB3F0(u8 *r);
 
 /* Make layer `layer`'s state packet: for these layers, the first draw of a frame runs a setup
  * function that fills the layer before (layer - 1). If the setup fails, the arena is rolled
@@ -278,8 +261,6 @@ s32 func_001B5EC0(u8 *r, s32 layer) {
 }
 
 extern void func_001B6CD0(u8 *r, u64 *packet, void *arg);
-extern s32 func_001B1370(u8 *r);
-extern s32 func_001AAE80(u8 *r);
 
 /* +0xC draw `obj` into layer `layer` (0..52): its +0xC method writes its packets at the arena
  * cursor, which are then linked into the layer (layer 10 with `arg` goes through
@@ -457,8 +438,6 @@ void func_001BB990(u8 *r, s32 v) { AT(r, 0x304BF8, s32) = v; }
 /* +0x38 the renderer's own VRAM entry */
 s32 func_001BB980(u8 *r) { return AT(r, 0x304BE4, s32); }
 
-extern void func_0010D200(void *db, s32 field);   /* sceGsSwapDBuff */
-extern void sceGsSyncPath(s32 mode, s32 timeout);
 extern u64 D_0047D300[];   /* the frame's final packet: draw buffer -> display buffer */
 
 #define REND_VIF1_CHAN(r) AT(r, 0x304BB0, u32 *)
@@ -587,7 +566,6 @@ void func_001B9810(VObject *r, const s32 *b) {
         r, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]);
 }
 
-
 #define SX32(x) ((s64)(s32)(u32)(x))
 
 #ifdef HG_NATIVE
@@ -667,7 +645,6 @@ s32 func_001BA090(u8 *r) {
     return 1;
 }
 #endif
-
 
 #ifdef HG_NATIVE
 /* +0x58 the glow, once a frame (not after +0x5C's clear; layer 0x29): the 128 x 112 work
@@ -796,7 +773,6 @@ u32 func_001BA000(u8 *r) {
     return AT(r, 0x304D4C, u32);
 }
 
-
 /* the layer-0x11 tint (+0x304D4C) and its model (+0x304D50; none given: the slot-2 character's,
  * once the game runs) */
 void func_001BA010(u8 *r, u32 c, void *model) {
@@ -828,9 +804,6 @@ void func_001B9260(VObject *r, s32 *a) {
                             s32, s32, s32))(r, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
                                             a[11], a[12], a[13], a[14], a[15], a[16]);
 }
-
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
 
 /* +0x6C: the layer-0x11 flares (16 x { x0, y0, x1, y1, phase } at +0x304C0C) drift - each
  * phase turns by up to 2 degrees at random, its sine and cosine (halved) nudge the corners,

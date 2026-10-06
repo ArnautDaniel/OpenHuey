@@ -9,6 +9,12 @@
 #include "actor.h"
 #include "ptmf.h"
 #include "item.h"
+#include "event.h"
+#include "event_cmd.h"
+#include "overlay.h"
+#include "scene_game.h"
+#include "script.h"
+#include "msl.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -227,9 +233,6 @@ void func_00209840(u8 *ev, void *script) {
 #include "task.h"
 
 extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 and 1 */
-extern void func_00121890(u8 *ev, u8 *script);   /* start a script */
-extern void func_00121730(u8 *ev);   /* a control op (0xF0..) */
-extern void func_002029B0(u8 *ev);   /* a command */
 
 #define EV_ROOM(ev) ((VObject *)((ev) + 0x120 + AT(ev, 0x560, s32) * 4))
 
@@ -240,7 +243,7 @@ static void run_script(u8 *ev, u8 *script) {
         if (*AT(ev, 0x4, u8 *) >= 0xF0) {
             func_00121730(ev);
         } else {
-            func_002029B0(ev);
+            func_002029B0((VObject *)ev);
         }
     }
 }
@@ -404,7 +407,6 @@ void func_001FBCF0(VObject *ev, u8 slot, u8 *script) {
 }
 
 extern u8 D_003D6C10[];   /* the script run instead while progress flag 0x26 is set */
-extern void func_00201B90(VObject *ev);   /* a character script command */
 
 /* run the room's script for character `c` entering it (the room handler's +0x30; nothing if it
  * has none or c isn't in this room), in its own context, then resume the current script */
@@ -671,8 +673,6 @@ void func_001FBA20(u8 *ev, s32 layer) {
 #endif
 }
 
-extern void func_002CF390(void *ov, u32 rgba);
-
 /* set the event's screen fade (+0x20) colour (a second entry point inside func_001FBA20's block) */
 void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
     func_002CF390(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
@@ -734,8 +734,6 @@ s32 func_001FB560(u8 *ev, u32 id) {
     }
     return -1;
 }
-
-extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
 
 /* point `i` of the 32 at +0xBF4 (0x30 each: +0 on, +1 flags, +0xC position, w 1, +0x1C / +0x20
  * two values) set */
@@ -819,7 +817,6 @@ s32 func_001FB520(void *ev, s32 room) {
     return room;
 }
 
-extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046BA80[], *D_0046BAA0[];
 
 /* destructor of class D_0046BA80 */
@@ -846,9 +843,6 @@ void *func_0020C170(void **o, s32 flags) {
 }
 
 extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
-extern void *func_001FB3B0(void *, s32);
-extern void *func_001FB400(void *, s32);
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 /* +0x8 the events' destructor: its 32 points, the cutscene director (+0x938), the message
  * window (+0x708), the rooms' handlers (+0x120), the fade (+0x20), then its bases */
@@ -858,7 +852,7 @@ u8 *func_001FB250(u8 *o, s32 flags) {
     }
     AT(o, 0x0, void **) = D_0046B3A0;
     AT(o, 0xC, void **) = D_0046B3B8;
-    func_001002C0(o + 0xBF0, func_001FB400, 0x30, 0x20);
+    func_001002C0(o + 0xBF0, (void * (*)(void *, s32))func_001FB400, 0x30, 0x20);
     AT(o, 0x938, void **) = D_0046ED30;
     AT(o, 0x938, void **) = D_0046BB20;
     gCutscene = NULL;

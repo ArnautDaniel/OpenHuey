@@ -8,10 +8,18 @@
 #include "ptmf.h"
 #include "memcard.h"
 #include "pursuer.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "model.h"
+#include "overlay.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
-void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3);
 
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 
@@ -21,14 +29,11 @@ void func_003062F0(u8 *self, f32 *src);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
-void func_0032D270(u8 *self, s32 a, f32 x, f32 y);
-
 extern void *D_0046F580[];
 extern void *D_00471060[];
 extern void *D_00479AC0[];
 extern void *D_00479B00[];
 extern void *D_0047A3D0[];
-extern void func_002D63B0(void *p);
 void *func_00306290(u8 *o, s32 flags);
 void *func_00360B60(u8 *o, s32 flags);
 void *func_00361940(u8 *o, s32 flags);
@@ -85,9 +90,6 @@ s32 func_002A8960(void *o) {   /* +0x24 */
 #include "progress.h"
 #include "sce/libvu0.h"
 
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern f32 func_002E2D00(f32 a);
-
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
 
 /* ---- more hooks: effects spawned into the effect manager, Fiona nudged, a partner's line ---- */
@@ -127,8 +129,6 @@ void func_003062F0(u8 *self, f32 *src) {
     }
 }
 
-extern void *func_002672F0(u32 size, void *place);
-
 #include "effectmgr.h"
 
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
@@ -147,9 +147,6 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
 
 #include "texcache.h"
 
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
-extern f32 func_0031C058(f32 x);   /* cosf */
-
 /* ---- class D_0047A390 (0x1A60 bytes), the haze of effect 0x1A60 (func_002B2A80): as the light
  * shaft's motes and haze without the beam - 64 motes (records +0x10 + 0xC00 x the current one
  * +0x1A54, the quad drawer at +0x1810) from (-60, 0, -60 + 0.4 x the frames counted at
@@ -157,9 +154,6 @@ extern f32 func_0031C058(f32 x);   /* cosf */
  * +0x1A4C), over the screen at 0x60; stopped by +0x1A58 ---- */
 
 #ifdef HG_NATIVE
-extern void glr_layer(s32 layer);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 
 #endif
 
@@ -172,7 +166,6 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
 /* ---- class D_0047A3B0 (4 bytes): a glint on character 0x14 (its bone 6) ---- */
 
 extern const char *const D_00403964;   /* "movechair_3" */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
 extern const char *const D_003F99B8[];   /* { "kousi" } */
@@ -191,11 +184,7 @@ s32 func_002AFE90(void) {   /* the rising smoke (D_0046F5A0, 0x1C60 bytes) */
     return 1;
 }
 
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-
 extern void *D_0046FF20[];
-
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 
 /* room 54 step (D_00428040): find the nav mesh's door regions again */
 s32 func_0030FA60(void) {
@@ -208,7 +197,6 @@ s32 func_0030FA60(void) {
 extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38, *const D_0042C354;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
 
 extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* "jimen", "kama", "sumi" */
-extern f32 func_0031C058(f32 x);   /* cosf */
 
 /* room 0x24 (D_004022C8): the kiln's ground, kiln and charcoal glow - byte 3 0 sets them up
  * (+0x74 0, +0x78 1, glow +0x7C 0, phase +0x30 -pi), else the glow pulses (0.5 + cos(phase) /
@@ -288,14 +276,8 @@ extern void *D_00479AC0[], *D_00471060[], *D_00470E20[];
  * count, then the points) */
 extern const s8 *D_00444A70[];
 extern const f32 D_00444980[12][3];
-extern void func_002E3190(f32 (*m)[4], f32 angle);                 /* turn about y */
-extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
-extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 extern void *D_0046D7A0[], *D_00469D00[];
 #ifdef HG_NATIVE
-extern void glr_layer(s32 layer);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 
 /* +0x14 draw: when all of the shape is in view, the screen brightened (func_0026B180,
  * 0x80808080 in layer 0x28) and the shape added in white into layer 0x26 (the bloom's mask;
@@ -447,8 +429,6 @@ extern const char *const D_00429130;
 
 /* ---- three 0x1C30-byte effects D_00479B00 (grey 0x303030) at once, each told its spot ---- */
 extern void *D_00479B00[];
-
-extern void func_002E3190(f32 (*m)[4], f32 angle);   /* turn about y */
 
 #include "input.h"
 

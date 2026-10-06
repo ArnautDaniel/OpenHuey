@@ -5,6 +5,8 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_00477380[];

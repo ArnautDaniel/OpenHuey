@@ -10,8 +10,11 @@
 #include "progress.h"
 #include "actor.h"
 #include "pursuer.h"
-
-extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
+#include "chainpool.h"
+#include "quat.h"
+#include "skeleton.h"
+#include "stalker_models.h"
+#include "msl.h"
 
 /* ---- the model base class's trivial methods ---- */
 
@@ -165,8 +168,6 @@ void func_002DCDD0(u8 *m, void *actor, f32 a, f32 b) {
     func_002E3040((f32 (*)[4])(m + 0x7D0), (f32 *)((u8 *)actor + 0x10), AT(actor, 0x54, f32));
 }
 
-extern void func_001F7AC0(u8 *m);
-
 /* +0x10 of the base: func_001F7AC0, no secondary-motion table */
 void func_002DE070(u8 *m) {
     func_001F7AC0(m);
@@ -182,8 +183,6 @@ void func_002118C0(u8 *m) {
    points at +0x9A0 (0x50 each) on a spring system +0xAE0 with two collision spheres +0xB20 ---- */
 
 extern void *D_0046C0A0[];
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
-extern void *func_0016FBB0(void *e, s32 flags);
 
 /* +0x8: destructor */
 void *func_002108F0(u8 *m, s32 flags) {
@@ -223,13 +222,6 @@ s32 func_00210A50(u8 *m) {
 s32 func_00210A60(u8 *m) {
     return 0x1C;
 }
-
-extern void func_002EE960(u8 *set);
-extern void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r);
-extern void func_002EE8A0(u8 *s);
-extern void func_002EE900(u8 *s);
-extern void func_002EE840(u8 *s);
-extern void func_002118D0(u8 *m);
 
 /* his four hanging points (+0x9A0, 0x50 each, bones 10..13, the last two hanging from the first)
    on the spring system +0xAE0, and its two collision spheres on bone 2 */
@@ -347,8 +339,6 @@ void func_00210C50(u8 *m) {
 
 extern void *D_004562A8;   /* the skeleton pool */
 extern void *D_004562B0;   /* the chain pool (motion buffers) */
-extern void func_0017CED0(void *pool, u8 *skel);   /* free a skeleton */
-extern void func_00179BC0(void *pool, void *p);     /* free into D_004562B0 */
 
 /* release the model's skeleton (+0x810) and the skeletons and buffers of its two motion slots
    (+0x564) and three blend channels (+0x6B0), and clear the slots' key lists */
@@ -535,9 +525,6 @@ static inline void Part_Hold(u8 *p, const f32 *at, const f32 *prev) {
    +0x9E0; one part (+0x1470) on +0xA20; two (+0x14D0) on +0xA60 ---- */
 
 extern void *D_004702D0[];
-extern void *func_001702F0(void *e, s32 flags);
-extern void *func_00170EB0(void *e, s32 flags);
-extern void *func_00170F30(void *e, s32 flags);
 extern void *D_00470440[], *D_004703B0[];
 
 /* +0x8: destructor */
@@ -936,8 +923,6 @@ void func_002EE220(u8 *cap, f32 *out, const f32 *pt, f32 k) {
    partner point in the other strand +0x44 (side +0x48), the anchor last frame +0x50, its
    stiffness +0x60 ---- */
 
-extern void sceVu0OuterProduct(f32 *out, const f32 *a, const f32 *b);
-
 /* +0x14: its bone's matrix from the point: X toward the point, Y toward the partner, at the
    anchor */
 void func_002EEF90(u8 *pt, u8 *set) {
@@ -1033,8 +1018,6 @@ void func_003168F0(u8 *p, u8 *set) {
     Part_Hold(p, at, prev);
 }
 
-extern void sceVu0ApplyMatrix(f32 *out, f32 (*m)[4], const f32 *v);
-
 /* the capsule's +0xC: its ends from their bones */
 void func_002EE4B0(u8 *cap, u8 *m) {
     f32 mtx[4][4] __attribute__((aligned(16)));
@@ -1051,8 +1034,6 @@ void func_002EE4B0(u8 *cap, u8 *m) {
    (+0xAE0); four (+0x1310) on +0x1450 ---- */
 
 extern void *D_00470480[];
-extern void *func_00170CB0(void *e, s32 flags);
-extern void *func_0016FB00(void *e, s32 flags);
 
 /* +0x8: destructor */
 void *func_002F61E0(u8 *m, s32 flags) {
@@ -1349,7 +1330,6 @@ void func_0031EA10(u8 *p, u8 *set) {
    6..9, 0x16..0x19, 0xA..0xD, 0x1A..0x1D, 0xE..0x11, 0x1E..0x21), as Fiona's (model.c) ---- */
 
 extern void *D_00471CE0[];
-extern void *func_001709D0(void *e, s32 flags);
 
 /* +0x8: destructor */
 void *func_0030DAF0(u8 *m, s32 flags) {
@@ -1465,9 +1445,6 @@ void func_0030E0F0(u8 *m) {
    code): +0x24 the bone it moves, +0x44 the bone it hangs from, +0x48 that bone's local
    "outward" axis, +0x40 its length, +0x4C how far (radians) it may swing off that bone's X ---- */
 
-extern f32 func_0031C3C0(f32 x);   /* acosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
-
 static inline void SwayPoint_Step(u8 *p, u8 *set) {
     f32 at[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
@@ -1565,10 +1542,6 @@ void func_002F8450(u8 *p, u8 *set) {
 }
 
 /* ---- matrices of the model base used by Lorenzo's ---- */
-
-extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);   /* axis-angle quaternion */
-extern void func_0025C770(const f32 *q, f32 (*m)[4]);             /* quaternion matrix */
-extern void func_0010E5F0(f32 *out, const f32 *v);                /* copy x, y, z */
 
 /* a frame from bone matrix `b` keeping its Z axis (flipped to face `up`'s side) with Y = `up` */
 void func_001F93E0(f32 (*out)[4], f32 (*b)[4], const f32 *up) {
@@ -1670,8 +1643,6 @@ f32 func_0030E3C0(u8 *m) {
 void func_0030E340(u8 *m, f32 *out) {
     sceVu0CopyVector(out, func_0017CE80(AT(m, 0x810, u8 *), 0x13) + 12);
 }
-
-extern void func_002DC710(u8 *m, f32 *p, u8 *a);   /* drop a point onto the floor */
 
 /* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
 static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {
@@ -1893,8 +1864,6 @@ void func_0030EDE0(u8 *m) {
     func_001F7AC0(m);
 }
 
-extern void func_002DE0A0(u8 *m);
-
 /* +0xC: once loaded: the plain model's setup, his points, per-part draw settings */
 void func_0030EDF0(u8 *m) {
     func_002DE0A0(m);
@@ -1925,7 +1894,6 @@ void func_0030EDF0(u8 *m) {
 
 extern void *D_00472700[];
 extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
-extern void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b);
 
 /* +0x8: destructor */
 void *func_00313FD0(u8 *m, s32 flags) {
@@ -1978,8 +1946,6 @@ void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
 
 extern void *D_00471C20[], *D_0046C160[], *D_0046B0D0[];
 extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
-extern void *func_001709D0(void *e, s32 flags);
-extern void *func_0016FBB0(void *e, s32 flags);
 
 /* +0x8 destructor */
 void *func_0030D150(u8 *m, s32 flags) {
@@ -2286,7 +2252,6 @@ void func_00320C70(u8 *m) {
 }
 
 extern void *D_00473BD0[];
-extern void *func_0016FB00(void *e, s32 flags);
 
 /* (as func_0030D150) another model's destructor: twelve 0x60 nodes at +0xC20, four 0x50 at
  * +0x9A0 */

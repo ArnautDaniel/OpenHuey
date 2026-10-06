@@ -7,41 +7,14 @@
 #include "globals.h"
 #include "memcard.h"
 #include "navmesh.h"
-
-typedef struct RumbleChannel {
-    /* 0x00 */ s16 timeA;
-    /* 0x04 */ s32 stepA;
-    /* 0x08 */ s32 valueA;   /* 0 or 1.0 (0x10000) */
-    /* 0x0C */ s16 timeB;
-    /* 0x10 */ s32 stepB;
-    /* 0x14 */ s32 valueB;   /* 0..255 (<< 16) */
-} RumbleChannel;
-
-/* A command list entry: cmd & 0xF000 == 0: set channel 4 (b0, b1, frames = cmd & 0xFFF);
- * 0x4000: jump to entry cmd & 0xFFF; any other high bits: end. */
-typedef struct RumbleCmd {
-    u8 b0;
-    u8 b1;
-    u16 cmd;
-} RumbleCmd;
-
-typedef struct Rumble {
-    /* 0x00 */ void **vtbl;
-    /* 0x04 */ u8 enabled;
-    /* 0x05 */ u8 unk5;
-    /* 0x08 */ RumbleChannel ch[5];
-    /* 0x80 */ const RumbleCmd *listB;
-    /* 0x84 */ const RumbleCmd *listA;
-    /* 0x88 */ s32 posB;
-    /* 0x8C */ s32 posA;
-} Rumble;
+#include "rumble.h"
+#include "msl.h"
 
 _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 
 #define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
 
 extern void *D_0046F4F0[], *D_0046AE30[];
-extern void func_00100490(void *p);   /* operator delete */
 
 void *func_001BF280(u8 *o, s32 flags);
 

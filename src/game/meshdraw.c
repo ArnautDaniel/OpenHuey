@@ -3,12 +3,16 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
-
+#include "hewie.h"
+#include "meshdraw.h"
+#include "quat.h"
+#include "texcache.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 #ifdef HG_NATIVE
 /* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;
@@ -20,12 +24,10 @@ static u32 sGlKindPrim;    /* the kind-4 part's blending (func_0025C8C0): GLR_PR
 
 void func_0025C8C0(u8 *o);                 /* a kind-4 part's batch */
 extern void func_0025DB10(u8 *o, s32 which);
-extern u64 func_002B71D0(s32 tex);         /* TEX0 of a texture */
 void func_0025D970(u8 *o);
 extern void func_0025D560(u8 *o);
 s32 *func_0025DD80(u8 *o, s32 *batch);   /* the lit layout's batch writer: the next batch */
 extern s32 *func_0025E100(u8 *o, s32 *batch);
-
 
 #ifdef HG_NATIVE
 /* vtable +0xC of a mesh (the room's parts, +0x8; part kind +0x18), drawn with OpenGL. Per batch
@@ -113,9 +115,6 @@ s32 func_0025E2B0(u8 *o) {
     return 1;
 }
 #endif
-
-extern void func_0025C6F0(f32 *q, f32 *axis, f32 angle);   /* rotation about an axis */
-extern void func_0025C770(f32 *q, f32 (*m)[4]);            /* its matrix */
 
 /* the view's side edge `which` (0 left, 1 right): the camera's direction (+0xA0) turned about
  * its up axis (+0xA4) by fov / 1.3, at the look-at distance from the eye -> +0x20 + 16 * which;
@@ -240,8 +239,6 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
 
 #ifdef HG_NATIVE
 #include <stdlib.h>
-
-extern void glr_todo(const char *what);
 
 /* mode 1 (the lit layout) batch writer, with OpenGL: the vertex count (+0x7C; count & 3 the
  * padding) locates its sections - texture coordinates (s, t, q floats), colours (two words a
@@ -419,10 +416,6 @@ void func_0025D560(u8 *o) {
     }
 }
 
-
-extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
-
-
 extern void func_00267D60(u8 *o);
 extern void func_00267AB0(u8 *o);
 extern void func_002677C0(u8 *o);
@@ -430,8 +423,6 @@ extern void func_00267560(u8 *o);
 
 #ifdef HG_NATIVE
 #include <stdlib.h>
-
-extern void glr_todo(const char *what);
 
 /* ---- PC: placed objects' models with OpenGL (what func_00267560 .. func_00267D60 send) ----
  *
@@ -673,7 +664,6 @@ s32 func_00268090(u8 *o) {
     }
     return 1;
 }
-
 
 /* a kind-4 batch's texture coordinates, a flip book: its entry (+0xD8 + 7 x +0xD4: frames,
  * frame time, type (2: stop on the last frame), frame, timer, u step, v step in 1/256) steps a

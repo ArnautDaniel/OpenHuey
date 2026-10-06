@@ -5,11 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "scene_game_members.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E080[];
 extern u8 D_0047AA40[];
-extern void func_0025F810(u8 *o);
 
 extern u8 D_003FAA20[];
 extern u8 D_003FAAA0[];

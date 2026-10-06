@@ -4,11 +4,11 @@
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
+#include "actor.h"
 
 extern void *D_0046DB80[];
 extern void *D_0047A2B0[];
 extern u8 D_0047B0A8[];
-extern void func_00124F20(void *c, s32 a);
 extern char D_0047B2F0[];
 extern const char D_00463738[];
 

@@ -10,8 +10,8 @@
 #include "game.h"
 #include "actor.h"
 #include "ptmf.h"
-
-extern void func_001267F0(Character *c, s32 v);
+#include "pursuer_ai.h"
+#include "stalker_progress.h"
 
 void func_0031FBE0(Pursuer *p);
 

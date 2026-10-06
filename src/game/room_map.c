@@ -7,6 +7,13 @@
 #include "navmesh.h"
 #include "globals.h"
 #include "actor.h"
+#include "hewie.h"
+#include "room_map.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
 void func_0021C760(VObject *rooms, const s32 *saved) {
@@ -227,11 +234,7 @@ s32 func_0021BEB0(VObject *r, s32 room, s32 exit) {
 
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
-extern f32 func_002E2D00(f32 angle);
-extern f32 func_002E2BC0(const f32 *v);   /* heading of v */
-extern s32 func_00178840(Progress *p, s32 room, s32 exit);
 extern void *D_0046C480[], *D_0046C3E0[];
-extern void func_00100490(void *o);   /* operator delete */
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
 #define ROOM_EXIT(room, exit, off) AT(D_003D8BC0, (room) * 0x40 + ((exit) & 0xFF) * 8 + (off), s16)
@@ -605,7 +608,6 @@ VObject *func_0021C7E0(VObject *r, s32 flags) {
     return r;
 }
 
-
 extern void func_0017FA60(u8 *o);
 
 /* the obstacles, each frame: each of the 5 (0xB0 apart) that is active moves */
@@ -619,7 +621,6 @@ void func_0021AFD0(void *list) {
         }
     }
 }
-
 
 /* the obstacles' models follow them, each frame: each active one's position (+0x40) moved by
  * its offset (+0x4 x, +0x8 z) goes to its model (+0x50, at +0x20) */
@@ -640,9 +641,7 @@ void func_0021AC10(void *list) {
     }
 }
 
-
 extern s32 D_0047B24C;   /* frames left of the move below */
-extern s32 func_001770D0(Progress *p, s32 id);
 
 /* a room 0x2A handler step (the script's command 0x22, arguments `arg`): arg[3] 0 starts it
  * (90 frames); then each frame event character 0xF rises 0.5 and moves 2 along z, the script
@@ -670,13 +669,11 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
     return 2;
 }
 
-
 /* ---- an obstacle (0xB0 bytes, in the obstacles' list below): it covers pairs of nav
  * triangles (a "square"), +0x64 parts (up to 3, from +0x68, 0x18 each: the square's two
  * triangles, then steps along x / z from the reference square and its size in squares x, z);
  * +0x40 its centre (w +0x4C), +0x50 the model, +0x54 / +0x58 the reference square ---- */
 
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
 void func_0017EA30(u8 *o, const f32 *dir);
 s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir);
 
@@ -1098,9 +1095,6 @@ void func_0017D370(u8 *o) {
     obstacle_moved(o);
 }
 
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
-
 /* a frame of a move: at step 6 its scraping sound and a noise (0x1F) at its square; each step
  * moves the centre by the direction (+0x20) times the move's step (+0x30 table); at the last
  * step the move is done */
@@ -1148,7 +1142,6 @@ extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
 extern void func_0017E260(u8 *o, const f32 *dir);
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 #define OBST(l, i) ((u8 *)(l) + 0x10 + (i) * 0xB0)
 
@@ -1410,7 +1403,6 @@ void func_0021A3C0(u8 *l, s32 i, f32 *out) {
 }
 
 extern void *Fiona_vtable[], *D_00469C60[], *D_00469C20[];
-extern void func_00124E40(void *a);
 
 /* Fiona's class destructor (Fiona -> 0x469C60 -> Actor) */
 void *func_0017FCD0(void **o, s32 flags) {
@@ -1419,7 +1411,7 @@ void *func_0017FCD0(void **o, s32 flags) {
         o[0] = D_00469C60;
         o[0] = D_00469C20;
         if ((s16)flags > 0) {
-            func_00124E40(o);
+            func_00124E40((Actor *)o);
         }
     }
     return o;

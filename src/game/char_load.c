@@ -6,61 +6,11 @@
 #include "progress.h"
 #include "actor.h"
 #include "ptmf.h"
+#include "char_load.h"
+#include "model.h"
+#include "pursuer.h"
 
 void *func_001727C0(void *p, s32 arg);
-
-extern void *func_00124E50(u32 size, void *mem);   /* placement new */
-extern void func_0016D180(Progress *p, s32 slot);
-
-extern void *func_00172910(void *obj, s32 slot);
-extern void *func_00172960(void *obj, s32 slot);
-extern void *func_001729B0(void *obj, s32 slot);
-extern void *func_00172A00(void *obj, s32 slot);
-extern void *func_00172A50(void *obj, s32 slot);
-extern void *func_00172AA0(void *obj, s32 slot);
-extern void *func_00172AF0(void *obj, s32 slot);
-extern void *func_00172B40(void *obj, s32 slot);
-extern void *func_00172B90(void *obj, s32 slot);
-extern void *func_00172BE0(void *obj, s32 slot);
-extern void *func_00172C30(void *obj, s32 slot);
-extern void *func_00172C80(void *obj, s32 slot);
-extern void *func_00172DE0(void *obj, s32 slot);
-extern void *func_00172E20(void *obj, s32 slot);
-extern void *func_00172E70(void *obj, s32 slot);
-extern void *func_00172EC0(void *obj, s32 slot);
-extern void *func_00172F10(void *obj, s32 slot);
-extern void *func_00172F60(void *obj, s32 slot);
-extern void *func_00172FB0(void *obj, s32 slot);
-extern void *func_00173110(void *obj, s32 slot);
-extern void *func_00173150(void *obj, s32 slot);
-extern void *func_001731A0(void *obj, s32 slot);
-extern void *func_001731F0(void *obj, s32 slot);
-extern void *func_00173240(void *obj, s32 slot);
-extern void *func_00173290(void *obj, s32 slot);
-extern void *func_001732E0(void *obj, s32 slot);
-extern void *func_00173330(void *obj, s32 slot);
-extern void *func_00173380(void *obj, s32 slot);
-extern void *func_001733D0(void *obj, s32 slot);
-extern void *func_00173420(void *obj, s32 slot);
-extern void *func_00173470(void *obj, s32 slot);
-extern void *func_001734C0(void *obj, s32 slot);
-extern void *func_00173510(void *obj, s32 slot);
-extern void *func_00173560(void *obj, s32 slot);
-extern void *func_001735B0(void *obj, s32 slot);
-extern void *func_00173600(void *obj, s32 slot);
-extern void func_0016F420(Progress *p, u32 slot);
-extern void func_0016F860(Progress *p, u32 slot);
-extern void func_0016FEC0(Progress *p, u32 slot);
-extern void func_00170480(Progress *p, u32 slot);
-extern void func_00170510(Progress *p, u32 slot);
-extern void func_00170710(Progress *p, u32 slot);
-extern void func_001707A0(Progress *p, u32 slot);
-extern void func_00170830(Progress *p, u32 slot);
-extern void func_00170910(Progress *p, u32 slot);
-extern void func_00170A50(Progress *p, u32 slot);
-extern void func_00170B60(Progress *p, u32 slot);
-extern void func_00170D30(Progress *p, u32 slot);
-extern void func_00170FB0(Progress *p, u32 slot);
 
 typedef struct {
     u32 size;
@@ -81,15 +31,15 @@ static const CharKind sKinds[0x28] = {
     [11] = { 0x1800, func_00173240, func_00170830 },   /* Lorenzo */
     [12] = { 0x1840, func_001731F0, func_001707A0 },
     [13] = { 0x1800, func_00173150, func_00170510 },
-    [14] = { 0x1800, func_00173110, func_00170480, 1 },
-    [15] = { 0x1800, func_00172FB0, func_00170480, 1 },
+    [14] = { 0x1800, (void * (*)(void *, s32))func_00173110, func_00170480, 1 },
+    [15] = { 0x1800, (void * (*)(void *, s32))func_00172FB0, func_00170480, 1 },
     [16] = { 0x1800, func_00172F60, func_00170710 },
     [17] = { 0x1800, func_00172F10, func_00170710 },
     [18] = { 0x1800, func_00172EC0, func_0016FEC0 },
     [19] = { 0x1800, func_00172E70, func_00170710 },
     [20] = { 0x1800, func_00172E20, func_00170710 },
-    [21] = { 0x1800, func_00172DE0, func_00170710, 1 },
-    [22] = { 0x1800, func_00172C80, func_00170710, 1 },
+    [21] = { 0x1800, (void * (*)(void *, s32))func_00172DE0, func_00170710, 1 },
+    [22] = { 0x1800, (void * (*)(void *, s32))func_00172C80, func_00170710, 1 },
     [23] = { 0x1840, func_00172C30, func_0016F860 },
     [24] = { 0x1800, func_00172B90, func_00170710 },
     [25] = { 0x1800, func_00172B40, func_00170710 },
@@ -122,7 +72,6 @@ extern void *D_00469C60[];
 extern void *D_0046D810[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 Characters_Register(void *self, u32 kind, void *obj);
 void *func_00171090(u8 *p, u32 id, s32 arg);
 
 extern void *D_00478FF0[];
@@ -137,10 +86,9 @@ static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
     return p;
 }
 
-
 /* load character kind `id` into slot 2: 1 when it's there; 0 when slot 2 is taken, the kind has
    no character or the heap is full */
-u8 func_00171160(Progress *p, u32 id) {
+s32 func_00171160(Progress *p, u32 id) {   /* (a u8) */
     const CharKind *k;
     VObject *heap;
     void *mem;
@@ -165,7 +113,7 @@ u8 func_00171160(Progress *p, u32 id) {
     if (mem == NULL) {
         return 0;
     }
-    obj = func_00124E50(k->size, mem);
+    obj = func_00124E50((void *)k->size, mem);
     if (obj != NULL) {
         if (k->withKind) {
             obj = ((void *(*)(void *, s32, s32))k->ctor)(obj, 2, id);
@@ -258,7 +206,7 @@ s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
     if (mem == NULL) {
         return 0;
     }
-    obj = func_00124E50(0x17C0, mem);
+    obj = func_00124E50((void *)0x17C0, mem);
     if (obj != NULL) {
         obj = func_00171090(obj, id, slot);
     }

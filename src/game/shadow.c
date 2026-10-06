@@ -24,10 +24,11 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "navmesh.h"
-
-extern f32 *func_0017CE80(void *skeleton, s32 bone);   /* bone node */
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
-extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
+#include "shadow.h"
+#include "skeleton.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 /* queue shadow `s` of its model's bone `bone` (on nav triangle `tri`, the light offset `light`,
  * the model's layer `layer`) for each light that casts it there, if the lights allow a shadow
@@ -154,10 +155,6 @@ s32 func_001F2560(u8 *s, f32 (*scr)[4], f32 (*clip)[4], f32 *v) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_shadow_begin(void);
-extern void glr_shadow_quad(const f32 *xyz, s32 inc);
-extern void glr_shadow_fill(f32 x0, f32 y0, f32 x1, f32 y1, u32 rgba);
-extern void glr_shadow_cancel(void);
 
 /* a projected point (1/16 pixels around 2048, Z) in clip space: as the camera's clip matrix
  * makes it (Z from zMin .. zMax to -1 .. 1) */
@@ -555,8 +552,6 @@ static inline __attribute__((always_inline)) void door_shadow_project(VObject *c
 }
 
 #ifdef HG_NATIVE
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
 
 /* PC: one side of the box, as the PS2 draws it, a gouraud strip into layer 6's buffer */
 static void door_shadow_side(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {

@@ -6,11 +6,12 @@
 #include "input.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "hewie.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E980[];
 extern u8 D_0047ABE0[];
-extern f32 func_002E2D00(f32 a);
 extern const char *D_00410F38[];   /* the three dials' object names */
 extern u8 D_0047B254[3];           /* their progress vars */
 

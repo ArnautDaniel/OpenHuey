@@ -4,6 +4,8 @@
 #include "game.h"
 #include "globals.h"
 #include "ptmf.h"
+#include "msl.h"
+#include "sce/eekernel.h"
 
 /* allocation entry (0x12 bytes, 64 at +0x98) */
 typedef struct VramEntry {
@@ -666,9 +668,6 @@ s32 func_001C0020(VObject *v, u8 *tex, u32 n) {
     return VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10 + n * 0x10), 0);
 }
 
-extern void *func_00100550(u32 size);   /* malloc */
-extern void func_00100470(void *p);     /* free */
-
 /* +0x50 / +0x4C load .TEX file `name` (into a buffer of whole sectors, 64-byte aligned) and
  * allocate its first texture through +0x5C, upper bits or not; the entry, -1 if none */
 static inline s32 vram_load_tex(VObject *v, const char *name, s32 upper) {
@@ -783,10 +782,6 @@ u64 func_001C0E80(u8 *v, s32 id, u32 csa) {
     return VCALL(v, 0x34, u64 (*)(u8 *, s32, u32, s32, s32))(v, id, csa, (u16)e->psm, (u16)e->cpsm);
 }
 
-extern void sceGsSetDefLoadImage(void *lp, s16 dbp, s16 dbw, s16 dpsm, s16 x, s16 y, s16 w, s16 h);
-extern void sceGsExecLoadImage(void *lp, const void *src);
-extern void sceGsSyncPath(s32 mode, s32 timeout);
-extern void FlushCache(s32 mode);
 extern u8 D_003B3040[][2];   /* where CLUT n goes in a CLUT block, 16-colour CLUTs (x, y) */
 extern u8 D_003B3050[][2];   /* ... 256-colour (psm 2) */
 

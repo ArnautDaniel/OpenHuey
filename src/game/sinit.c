@@ -4,6 +4,9 @@
 #include <string.h>
 #include "common.h"
 #include "ptmf.h"
+#include "random.h"
+#include "system.h"
+#include "msl.h"
 
 extern const PTMF D_003AF290;
 extern const PTMF D_003AF2A0;
@@ -1706,9 +1709,6 @@ void func_004644D0(void) {
 
 /* MSL runtime (C++ library, replaced on PC): iostream init objects and the atexit-style list
  * of global objects to destroy. */
-extern void func_00102D80(void *obj);                              /* construct an iostream init object */
-extern void func_001032F0(void *obj);                              /* construct another one */
-extern void func_00100AB0(void *obj, void (*dtor)(void *, s32), void *link);  /* __register_global_object */
 extern void func_001030B0(void *, s32), func_00103620(void *, s32);                      /* their destructors */
 
 static inline void Sinit_Iostreams(void *a, void *alink, void *b, void *blink) {
@@ -1725,16 +1725,6 @@ extern u8 D_0047B348[], D_0047B34C[], D_01991EA0[], D_01991EB0[];
 extern Game gGame;
 extern void *Game_vtable[];
 extern const PTMF D_003D8920;    /* Game's first state */
-extern void *Game_dtor(u8 *, s32);
-extern void func_0020E7F0(Game *game);           /* base class constructor */
-extern void func_0020E340(void *obj);            /* Game.unk69AC0 */
-extern VObject *func_001A48C0(VObject *rng, s32 seed);  /* random number generator (Game +0x400000) */
-extern void *func_0020E280(u8 *t);               /* scene table (+0x400A00) */
-extern void *func_0020E260(VObject *o);          /* +0x14D9B00 */
-extern void *func_0020E1A0(u8 *p);               /* object pool (+0x14D9DD0) */
-extern void *func_0020E110(u8 *p);               /* object pool (+0x14DC530) */
-extern void *func_001F4600(u8 *o);               /* Game.unk14E8C90 */
-extern void Game_SetState(Game *game, const PTMF *state);
 
 /* gGame's constructor. */
 void func_00464A70(void) {
@@ -1743,7 +1733,7 @@ void func_00464A70(void) {
     Sinit_Iostreams(D_0047B210, D_004879C8, D_0047B214, D_004879D8);
     func_0020E7F0(&gGame);
     gGame.vtbl = Game_vtable;
-    func_0020E340(&gGame.unk69AC0);
+    func_0020E340((u8 *)&gGame.unk69AC0);
     func_001A48C0((VObject *)(g + 0x400000), 0x1571);
     func_0020E280(g + 0x400A00);
     func_0020E260((VObject *)(g + 0x14D9B00));

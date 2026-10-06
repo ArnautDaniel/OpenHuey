@@ -5,11 +5,13 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "scene_game_members.h"
+#include "snd_place.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_00471250[];
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-extern void *func_00266C40(u8 *fx, s32 n);   /* the room's effect n */
 extern f32 D_0047B280;   /* room 0x62: the dropped thing's fall speed */
 
 extern u8 D_00421C60[];

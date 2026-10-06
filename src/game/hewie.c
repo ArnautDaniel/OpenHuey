@@ -7,6 +7,17 @@
 #include "globals.h"
 #include "actor.h"
 #include "ptmf.h"
+#include "fiona.h"
+#include "hewie_act.h"
+#include "model.h"
+#include "pursuer.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_models.h"
+#include "stalker_progress.h"
+#include "libc.h"
+#include "msl.h"
 
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
 #define MOTION_ANIM(m) (*(s32 *)((u8 *)(m) + 0x55C))
@@ -15,7 +26,6 @@
 extern void *D_0046A120[];   /* Hewie vtable */
 extern void *D_00469C60[];   /* Character vtable */
 extern void *D_00469C20[];   /* Actor base vtable */
-extern void func_00124E40(Actor *a);
 
 /* float from its bit pattern */
 static inline f32 B4_FLT(u32 bits) {
@@ -23,9 +33,6 @@ static inline f32 B4_FLT(u32 bits) {
     c.u = bits;
     return c.f;
 }
-
-f32 func_002E2D00(f32 a);
-void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
 
 /* vtable +0x8: destructor (nothing to free: he lives inside the scene). */
 Hewie *func_00130A70(Hewie *h, s32 flags) {
@@ -44,8 +51,6 @@ Hewie *func_00130A70(Hewie *h, s32 flags) {
 void func_00168A00(Hewie *h) {
 }
 
-extern void func_00125D40(Character *c);
-
 /* vtable +0x58: deactivate (Character part only). */
 void func_00166140(Hewie *h) {
     func_00125D40(&h->c);
@@ -56,20 +61,11 @@ s32 func_00130AE0(Hewie *h) {
     return 1;
 }
 
-extern void func_00126910(Character *c);
-extern void func_00126810(Character *c);
-
 /* vtable +0x4C: disable (as Character), animation paused. */
 void func_00165CD0(Hewie *h) {
     func_00126910(&h->c);
     MOTION_U8(h->c.motion, 0x4D8) = 1;
 }
-
-extern void func_00125BE0(Character *c);
-extern void func_00130AF0(Hewie *h, s32 action, s32 arg);
-
-extern s32 func_001235C0(Actor *a, Actor *b);
-extern u32 func_00177620(Progress *p);          /* u8 */
 
 /* Group of his current animation (0 idle .. 0xE, 0xF other). */
 s32 func_001669A0(Hewie *h) {
@@ -225,9 +221,6 @@ void func_00138E60(Hewie *h, s32 amount) {
     }
 }
 
-extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
-extern s32 func_001270A0(Character *c);
-extern s32 func_001270F0(Character *c);
 extern VObject *gSceneGameF29740;   /* path planner */
 
 /* Triangles on opposite sides of a divided room (flags 0x100000 / 0x200000). */
@@ -411,8 +404,6 @@ void func_00165D00(Hewie *h) {
     func_00130AF0(h, 0, 0);
 }
 
-extern void func_00127650(Character *c);
-
 /* vtable +0x24: save the previous frame's state. */
 void func_00168360(Hewie *h) {
     func_00127650(&h->c);
@@ -489,8 +480,6 @@ void func_0013D1F0(Hewie *h, s32 add) {
 
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
-extern f32 *func_0017CE80(void *skeleton, s32 bone);        /* bone matrix */
-
 /* vtable +0x74: during action 0x23 with animation 0x1E01, his head bone's position (returns 1). */
 s32 func_0013D420(Hewie *h, f32 *out) {
     if (HEWIE_ACTION(h) != 0x23) {
@@ -502,8 +491,6 @@ s32 func_0013D420(Hewie *h, f32 *out) {
     sceVu0CopyVector(out, func_0017CE80(MOTION_SKELETON(h->c.motion), 0x1F) + 12);
     return 1;
 }
-
-extern void func_00126360(Character *c);
 
 /* vtable +0x90: reset (Character part), clear his action state. */
 void func_0015FBE0(Hewie *h) {
@@ -551,8 +538,6 @@ s32 func_0015FA20(Hewie *h, s32 damage) {
     return 1;
 }
 
-extern void func_001F6AF0(void *motion);
-
 /* vtable +0x48: apply the animation to the model; while enabled, take his position from the
  * root bone (and find his room and nav-mesh triangle). */
 void func_00167AF0(Hewie *h) {
@@ -572,7 +557,6 @@ void func_00167AF0(Hewie *h) {
 }
 
 extern s32 func_00143D20(Hewie *h);
-extern void func_00124890(Actor *a, s32 side);
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
  * side if he has no triangle yet); in the special mode: note his side, hand him to the
@@ -621,8 +605,6 @@ void func_00168700(Hewie *h) {
     MOTION_PTR(h->c.motion, 0x4D4) = HEWIE_MRK(h);
 }
 
-extern void *func_001776B0(Progress *p, s32);
-
 /* LoadAsync(name, dest) for his files, tagged with his file id. */
 #define Hewie_Load(h, loader, name, dest) \
     VCALL(loader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))( \
@@ -655,8 +637,6 @@ void func_00168830(Hewie *h) {
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA4, void *(*)(void *, u32))(h->c.motion, costume), HEWIE_MRK(h));
 }
 
-extern void func_002DCDD0(void *motion, Hewie *h, f32, f32);
-
 /* vtable +0x40: animation update in the room being played: ground fit (off the nav mesh: plain),
  * advance; then (still on the mesh) the animation events. */
 void func_00167620(Hewie *h) {
@@ -678,8 +658,6 @@ void func_00167620(Hewie *h) {
         VCALL(h->c.motion, 0x4C, void (*)(void *, s32, Hewie *))(h->c.motion, 1, h);
     }
 }
-
-extern void func_00126450(Character *c);
 
 #define Character_ToIdle(c) VCALL(c, 0x7C, void (*)(Character *))(c)
 
@@ -758,8 +736,6 @@ void func_00165890(Hewie *h) {
     PSAVE(p, 0x838, u8) = h->c.door;
 }
 
-extern void func_00127660(Character *c);
-
 /* vtable +0xC: initialise (Character part, then his own state). */
 void func_00168A10(Hewie *h) {
     func_00127660(&h->c);
@@ -823,10 +799,6 @@ void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v) {
     *(s32 *)&out[3] = 0;
 }
 
-extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
-extern void func_002DDE20(void *motion, s32 set, s32 variant);
-extern void func_001F1D60(void *obj);
-
 /* vtable +0x28: place him (as Character) on triangle `tri`; (in play) his default animation;
  * reset his per-placement state. Returns the placement result. */
 s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
@@ -871,7 +843,6 @@ s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     return r;
 }
 
-extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
 extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
 
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
@@ -906,13 +877,7 @@ s32 func_00165A40(Hewie *h, u32 kind, s32 slot, u32 door) {
     return (VCALL(gDoors, 0x40, u32 (*)(VObject *, u32))(gDoors, door & 0xFF) & 0xFF) ? 1 : 0;
 }
 
-extern s32 func_00125BA0(Character *c, s32 room, s32 a2, s32 a3);
-extern void func_00124F20(Character *c, u32 door);
-extern void func_002DDED0(void *motion, s32 anim, s32 arg);
-extern s32 func_00122B50(Actor *a, f32 *out);
-extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
 extern void func_00143840(Hewie *h);
-extern void func_00126270(Character *c);
 
 #define Hewie_Place(h, tri) VCALL(h, 0x28, s32 (*)(Hewie *, u32, const f32 *, f32 *))(h, tri, NULL, NULL)
 
@@ -969,14 +934,7 @@ s32 func_00166530(Hewie *h, s32 room, u32 tri, s32 side) {
     return r;
 }
 
-extern f32 func_00124490(Actor *a, const f32 *p);          /* distance to a point */
-extern s32 func_001F1B90(void *input, void *pad);
 extern u8 D_0047E3B0[];                                   /* pad state */
-extern f32 func_001F6140(void *motion, f32 t);            /* animation turn this frame */
-extern void func_001F6370(void *motion, f32 *out, f32 t); /* animation root motion this frame */
-extern void func_001247E0(Actor *a, const f32 *delta);
-extern u32 func_00177870(Progress *p, u32 slot);          /* joint action pending (u8) */
-extern void func_001777D0(Progress *p, u32 slot);         /* cancelled */
 extern void func_00146130(Hewie *h);
 extern void func_0013A650(Hewie *h);
 extern void func_00145080(Hewie *h);
@@ -1046,7 +1004,7 @@ void func_00167760(Hewie *h) {
     VCALL(h, 0x88, void (*)(Hewie *))(h);
     p = gProgress;
     if (*((u8 *)p + 0x1FBEC1) == 1) {
-        HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, D_0047E3B0);
+        HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
     }
     HW(h, 0xF3558, u8) = 0;
     HW(h, 0xF3582, u8) = 1;
@@ -1064,7 +1022,6 @@ void func_00167760(Hewie *h) {
     func_00145080(h);
 }
 
-extern void func_00125CC0(Character *c);
 extern const s32 D_003B1350[];   /* by +0xF35CC (normal) */
 extern const s32 D_003B1370[];   /* by +0xF35CC (difficulty 1) */
 extern const PTMF D_003B02B0;    /* idle state */
@@ -1151,9 +1108,6 @@ void func_00136620(Hewie *h) {
     Hewie_StartScene(h, gProgress);
 }
 
-extern void func_002A8440(void *noise, s32 level, s32 room, u32 tri, s32 exitId);
-extern void func_00122C20(Actor *a, s32 sound, s32, s32, s32, void *);
-
 #define HEWIE_LAST_SOUND(h) HW(h, 0xF35A4, s32)
 #define HEWIE_SOUND_T(h) HW(h, 0xF35A8, s16)      /* frames since then (up to 3000) */
 
@@ -1197,8 +1151,6 @@ void func_0013A430(Hewie *h, s32 snd) {
     HEWIE_LAST_SOUND(h) = snd;
     HEWIE_SOUND_T(h) = 0;
 }
-
-extern f32 func_00123A70(Actor *a, u32 tri, const f32 *pos, u32 mask, f32 angle, f32 dist);
 
 #define F_PI 0x1.921fb6p+1f   /* 0x40490FDB */
 
@@ -1257,9 +1209,6 @@ f32 func_00137720(Hewie *h, f32 yaw, f32 dist, s32 from, s32 to, s32 step) {
     }
     return result;
 }
-
-extern s32 func_00177670(Progress *p, s32 n);
-extern void func_002DDC60(void *motion, s32 anim, s32 blend, s32);
 
 /* Start his standing animation (0 normal, 3 / 4 / 5 by progress state and mode, 6 in condition
  * 1, 4 during actions 8 / 0xA) unless it is already playing; `blend` -1: cut. */
@@ -1474,8 +1423,6 @@ void func_0014B860(Hewie *h) {
         Hewie_ToDefault(h);
     }
 }
-
-extern u32 func_00177770(Progress *p, s32 n);   /* u8 */
 
 /* Free to take a command: idle, a command queued (+0xF356C > 0), nothing pending. */
 static inline s32 Hewie_FreeForCommand(Hewie *h) {
@@ -1849,8 +1796,6 @@ void func_00157360(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-extern void func_002E3130(sceVu0FMATRIX out, const f32 *pos, f32 angle);
-
 /* A point 24 units out from door `door` on his side of it (if the door is usable). */
 void func_00144940(Hewie *h, s32 door, f32 *out) {
     VObject *doors;
@@ -1877,8 +1822,6 @@ void func_00144940(Hewie *h, s32 door, f32 *out) {
     func_002E3130(m, at, yaw);
     func_002E2DD0(out, m, off);
 }
-
-extern s32 func_00125D80(Character *c);
 
 /* 1 unless he is with Fiona's party in the room being played and cannot reach her. */
 static inline s32 fiona_reachable(Hewie *h) {
@@ -1979,7 +1922,6 @@ void func_0015F760(Hewie *h) {
 }
 
 extern const PTMF D_003B1D30;
-extern void func_0013E680(Hewie *h);
 extern u32 D_0047E37C;     /* pad buttons */
 extern u32 D_0047E374;     /* pad buttons (d-pad bits 4..7) */
 extern f32 D_0047E3A0[4];  /* left stick */
@@ -2154,8 +2096,6 @@ s32 func_001382F0(Hewie *h) {
     return (r < 5) ? 0 : (r < 15) ? 1 : 2;
 }
 
-extern void func_002DDB30(void *motion, s32 anim);
-
 /* His secondary (overlay) animation by +0xF3640: 0x1F00 / 0x1F01 / 0x1F02; 3: change at random
  * every 30..450 frames. */
 void func_0013FC70(Hewie *h) {
@@ -2228,8 +2168,6 @@ s32 func_00139060(Hewie *h) {
     }
     return 1;
 }
-
-extern u32 func_00124480(Actor *a, const f32 *target, u32 mask);
 
 void func_0015F8A0(Hewie *h) {
     s32 room = h->c.a.room;
@@ -2425,8 +2363,6 @@ void func_00150290(Hewie *h) {
     }
 }
 
-extern s32 func_00177890(Progress *p, s32 a, s32 b, u8 from, u8 to, s32 c, f32 d);   /* u8 */
-
 /* Behaviour: target the pursuer if he's here and reachable. */
 void func_00150450(Hewie *h) {
     if (Hewie_CharHere(h, gCharPursuer) == 1) {
@@ -2439,8 +2375,6 @@ void func_00150450(Hewie *h) {
     Hewie_ToDefault(h);
 }
 
-extern f32 func_0031C248(f32 x);   /* sinf */
-extern f32 func_00124530(Actor *a, f32 target, f32 step);
 extern const PTMF D_003B1C90, D_003B1CA0, D_003B1CB0, D_003B19C8;
 
 /* Behaviour: once stopped, turn to heading unk10C: snap if within 1 degree, else start the
@@ -2641,7 +2575,6 @@ void func_00151B10(Hewie *h) {
     Hewie_SetBehaviour(h, &D_003B1988);
 }
 
-extern void func_002DD110(void *motion, const f32 *target, f32 *a, f32 *turn);
 extern const PTMF D_003B1AB8, D_003B1AC8, D_003B1AD8;
 
 /* Behaviour: follow the moving character +0xF368C (gone: D_003B1AB8; elsewhere on the mesh:
@@ -2692,8 +2625,6 @@ void func_00150720(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-extern void func_001F6240(void *motion, f32 *out, f32 t);   /* root motion (variant) */
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern const PTMF D_003B1C40;
 
 /* Behaviour: turn to heading unk10C (10 degrees a frame; against the animation's turn
@@ -2739,8 +2670,6 @@ void func_0014B8F0(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
 }
 
-extern void func_002E3190(f32 (*out)[4], f32 angle);
-extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
 extern const PTMF D_003B1928;
 
 /* Behaviour: move +0xF36C8 along heading +0xF36C4 (+0xF36CC a frame). Done: unless in action
@@ -2929,8 +2858,6 @@ void func_0015F0A0(Hewie *h) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
 
-extern u32 func_00123D20(Actor *a, const f32 *p);
-extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
 extern const f32 D_003B12A0[][2];   /* offsets (x, z) from him, by kind */
 
 /* Find a spot at offset `kind` around him, turning 0, +-10, ... +-180 degrees: on the walkable
@@ -3021,11 +2948,6 @@ void func_00157770(Hewie *h) {
 
 /* ---- Hewie under the player's control (gProgress +0x1FBEC1): his movement input, as
  * Fiona's (fiona.c func_00187650) ---- */
-
-extern void func_002E3190(sceVu0FMATRIX m, f32 yaw);
-extern void func_002E2DA0(f32 *out, sceVu0FMATRIX m, const f32 *v);
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
-extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
 #define HMOVE_DIR    0xF3700   /* vec: where to move (world, unit or 0) */
 #define HMOVE_MODE   0xF3710   /* u8: 0 free, 1 camera-locked, 2 held, 3 reset */
@@ -3177,7 +3099,6 @@ void func_00136900(Hewie *h) {
 
 extern s32 func_0013E2D0(Hewie *h, s32 cmd);   /* the action for a command (-1 none, -2..-5 special) */
 extern s32 func_0013D580(Hewie *h, s32 act);
-extern s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *posB, u32 mask);
 extern u8 *func_00139460(Hewie *h);
 
 /* action `act` with argument `arg` unless his situation turns it into another (then that one,
@@ -3504,10 +3425,6 @@ s32 func_00139A70(Hewie *h) {
     return kind == 3 || kind == 34 || kind == 35 || kind == 36 || kind == 11 ? 2 : 1;
 }
 
-extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);   /* along the path (its next point) */
-
-extern void func_001247E0(Actor *a, const f32 *move);
-
 /* the animation's stride this frame (its root motion's z by the model's speed (+0x48)), at
    least 0 */
 static f32 stride(Hewie *h, f32 *v) {
@@ -3606,9 +3523,6 @@ void func_0013A1C0(Hewie *h, s32 hard) {
     }
 }
 
-extern s32 func_001F4770(void *model, s32 a, s32 b, s32 c);   /* the animation's event bits this frame (u8) */
-extern void func_00125E10(Character *c, const f32 *pos, s32 n);
-
 /* his sounds by his animation (+0x55C): the yelps and whimpers (4 0x6F, 9 0x70 when +0xF3585,
  * 5 0x58, 6 / 7 / 0x206 0x59) at once; the others on the animation's sound event (bit 0):
  * barks and growls (barking during actions 0xA / 0xB / 0x7B also makes a noise others hear),
@@ -3683,10 +3597,6 @@ void func_0013A650(Hewie *h) {
 }
 
 extern const s16 D_003B127E[];   /* by how often Fiona hit him (+0xF35C4): the 1-in-16 he sulks */
-
-extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* u8 flags */
-extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
 
 /* a blow `hit` (a character's state block: +0x4 how, +0x8 by whom, +0xC damage, +0x10 the
  * door): down (+0xC4 2) he only goes limp (action 0x74) unless it is 6; held (+0xF8 4) only
@@ -3783,8 +3693,6 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
 }
 
 extern const s16 D_003B1290[][2];   /* the scuffle's outcomes: {outcome, percent} */
-extern void func_00178070(Progress *p, u32 slot, s32 a, s32 b, u32 damage, s32 frames, f32 f);
-extern s32 func_00122B50(Actor *a, f32 *out);   /* a point to sound from (u8) */
 
 /* a scuffle with the pursuer while it hunts in his room (its mode 1..3, not caught +0xE0, once
  * per meeting +0xF368A, not within 900 frames +0xF35B0, him not down): an outcome by chance
@@ -3974,10 +3882,6 @@ void func_0013C7D0(Hewie *h) {
 }
 
 /* ---- where to run ---- */
-
-extern s32 func_001788F0(Progress *p, u32 door);
-extern s32 func_00178610(Progress *p, u32 d);
-extern s32 func_00178200(Progress *p, u32 d, u32 side);
 
 /* the exit of his room to flee from `from` by: exits whose door is open and passable from his
  * side (and from `from`'s too if `both`), nearest first, those within 20 of `from` last; the
@@ -4250,9 +4154,6 @@ s32 func_0013EFB0(Hewie *h, f32 *out) {
 }
 
 /* ---- how far by path ---- */
-
-extern void *func_00114FA8(u32 size);   /* malloc */
-extern void func_00114FD0(void *p);     /* free */
 
 /* the walking distance from him to c: planned over the mesh (blocked by flags 0x29020008), -1
  * if c isn't in his room, the room isn't the one played on the mesh, or no path */
@@ -4946,8 +4847,6 @@ void func_001431F0(Hewie *h) {
 
 /* ---- noticing the pursuer ---- */
 
-extern void func_00177630(Progress *p, s32 n);
-
 /* what he is alert to (+0xF366D, with +0xF3670): 1 the pursuer itself when within 200 in front
  * of him (125 degrees either side) with nothing between; 2 an exit of his room leading to the
  * pursuer's room; 3 the noise he heard from slot 2 (the pursuer); else nothing (an exit or the
@@ -5189,10 +5088,6 @@ s32 func_00143D20(Hewie *h) {
 
 /* ---- a door to use ---- */
 
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
-extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);
-
 /* the first door of the room he can use (into +0xF36B4): 1 one he can pass that is open (for a
  * plain door) and not locked. Else, stopping at the first door with special access (state bits
  * 4 / 8 / 0x10): 0 when he is at its level (within 5) and within 5 in front of it (kind 0,
@@ -5367,9 +5262,6 @@ void func_00145080(Hewie *h) {
 
 /* ---- where to be by Fiona ---- */
 
-extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *out);
-extern u32 func_00123E20(Actor *a, f32 *p);
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* scale x, y, z */
 extern const f32 D_003B1D60[2][4];   /* offsets in front of a door, per side */
 
 /* a free point (not blocked for him) by Fiona: the point p, if its triangle is free */
@@ -5516,8 +5408,6 @@ u32 func_00145610(Hewie *h, s32 cmd, f32 *out) {
 }
 
 /* ---- where he looks ---- */
-
-extern void func_002DD310(void *motion, f32 pitch, f32 yaw, f32 pspeed, f32 yspeed);
 
 /* the head (motion +0x60) of character c, or its position without a motion */
 static void head_of(Character *c, f32 *out) {
@@ -6326,8 +6216,6 @@ void func_0014A340(Hewie *h) {
 
 /* ---- walking to a spot and settling ---- */
 
-extern f32 func_0031C248(f32 x);   /* sinf */
-
 /* |wrap(+0x10C - his heading)| as the original takes it (twice, 0 becomes -0) */
 static f32 off_heading(Hewie *h) {
     if (!(func_002E2D00(HW(h, 0x10C, f32) - h->c.a.angle[1]) <= 0.0f)) {
@@ -6445,7 +6333,6 @@ void func_0014A920(Hewie *h) {
 
 /* ---- setting off for a spot ---- */
 
-extern s32 func_001270F0(Character *c);
 extern const PTMF D_003B1C60, D_003B1C70;
 
 /* move by his root motion this frame (level, scaled to the ground) */
@@ -6700,7 +6587,6 @@ void func_0014C480(Hewie *h) {
 
 /* ---- holding the pursuer off ---- */
 
-extern f32 func_001257B0(Character *c, u32 tri, const f32 *pos, u32 mask);   /* walking distance */
 extern const PTMF D_003B1BE8;
 
 /* standing guard while the pursuer hunts in his room (flags 9 / 0xA; else the default action):
@@ -7206,7 +7092,6 @@ void func_0014F600(Hewie *h) {
 /* ---- taking off at the pursuer ---- */
 
 extern const PTMF D_003B1A28;
-extern void func_002DE030(void *m, s32 anim, u32 flags, s32 variant, f32 blend);
 
 /* the take-off of the leap at the pursuer (in his room; else the default action): once not
  * blending, the leap animation 0x2218 blended over the frames left (+0xF36B4) and behaviour
@@ -7228,7 +7113,6 @@ void func_0014FC70(Hewie *h) {
 
 /* ---- launching the leap at the pursuer ---- */
 
-extern s32 func_0026EE88(const char *fmt, ...);   /* printf */
 extern const char D_0044F180[];                   /* "Dog New Hide Attack -> No Route" */
 extern const PTMF D_003B1A18;
 
@@ -7893,7 +7777,6 @@ void func_00154860(Hewie *h) {
 
 /* ---- travelling between rooms ---- */
 
-extern s32 func_001272B0(Character *c, f32 speed);
 extern const PTMF D_003B1918;
 
 /* on his way to door +0x14C0 (actions 0x35 / 0x39 and the like): along his path when it is
@@ -9687,7 +9570,6 @@ void func_0015F2E0(Hewie *h) {
 
 /* ---- obedience over time ---- */
 
-extern void func_001817C0(Character *c, s32 n);
 extern const s32 D_003B1390[8], D_003B13B0[8];   /* waiting time by trust (normal / difficulty 1) */
 
 /* his obedience timer (+0xF359C) runs down; waiting (+0xF3598) close to Fiona (within 30, in his
@@ -9705,7 +9587,7 @@ void func_0015FE30(Hewie *h) {
                 HW(h, 0xF35A0, s16) += 1;
                 if ((u32)HW(h, 0xF35A0, s16) >= 91) {
                     HW(h, 0xF35A0, s16) = 0;
-                    func_001817C0(gCharPlayer, 0x10);
+                    func_001817C0((Fiona *)gCharPlayer, 0x10);
                 }
             } else {
                 HW(h, 0xF35A0, s16) = 0;
@@ -9968,15 +9850,6 @@ void func_00161500(Hewie *h) {
 
 /* ---- put in a room by a placement ---- */
 
-/* A placement: room, side, triangle (... +0x38 the exit he came by). */
-typedef struct HewiePlacement {
-    /* 0x00 */ s32 room;
-    /* 0x04 */ s32 side;
-    /* 0x08 */ u32 tri;
-    /* 0x0C */ u8 pad0C[0x2C];
-    /* 0x38 */ u8 exit;
-} HewiePlacement;
-
 /* put him where `pl` says (as func_00166530): in the room being played (or under direct control,
  * +0x1FBEC1) placed facing as he was (head straight, standing), his door the placement's exit,
  * the default action; in the room being played also settled in (arrived). Elsewhere he only
@@ -10005,12 +9878,6 @@ s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
 }
 
 /* ---- joint actions with Fiona ---- */
-
-extern u32 func_00177850(Progress *p, u32 slot);   /* its partner's slot (u8) */
-extern u32 func_00177830(Progress *p, u32 slot);   /* its kind (u8) */
-extern u32 func_00177810(Progress *p, u32 slot);   /* its event type (u8) */
-extern void func_001777F0(Progress *p, u32 slot);  /* accepted */
-extern void func_001777D0(Progress *p, u32 slot);  /* cancelled */
 
 /* his second state block set to (kind, a) (the original copies a local whose last fields are
  * never set) */
@@ -10214,8 +10081,6 @@ void func_00164DD0(Hewie *h) {
     }
 }
 
-extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
-
 /* can he get to exit `e` from where he is: the exit is on his side (or he is on both) and a path
    to its spot (left in `at`) exists */
 static s32 exit_reachable(Hewie *h, VObject *rooms, s32 e, f32 *at) {
@@ -10338,7 +10203,6 @@ void func_00166DF0(Hewie *h, s32 exit) {
 }
 
 void func_00161860(Hewie *h);
-extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);
 
 /* Per-frame update in the normal game (frame counter in func_00164DD0): how close Fiona is, his
  * surroundings, then - unless he is out of play - joint actions, the director (+0x38 busy:
@@ -10410,7 +10274,7 @@ void func_00167BC0(Hewie *h) {
                 }
             }
             if (*((u8 *)p + 0x1FBEC1) == 1) {
-                HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, D_0047E3B0);
+                HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
             }
             ptmf_scall(h, &h->c.a.state);
             ptmf_scall(h, HEWIE_STATE(h));

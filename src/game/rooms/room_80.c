@@ -6,6 +6,7 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "memcard.h"
+#include "scene_game_members.h"
 
 extern void *D_0046DB80[];
 extern void *D_00478570[];
@@ -18,7 +19,6 @@ extern u32 D_0047AEF0[];
 extern u32 D_0047AEF4[];
 
 extern void *D_0046F580[];
-extern void func_002D63B0(void *p);
 
 extern PTMF D_01991968[];
 

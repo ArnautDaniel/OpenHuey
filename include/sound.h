@@ -6,7 +6,6 @@
 #include "game.h"
 #include "globals.h"
 
-
 /* banks */
 #define SE_BANK_MENU 5    /* the system / menu sounds */
 

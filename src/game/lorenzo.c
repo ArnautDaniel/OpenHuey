@@ -11,6 +11,12 @@
 #include "ptmf.h"
 #include "memcard.h"
 #include "game.h"
+#include "lorenzo.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "stalker_progress.h"
 
 extern void *D_00470720[];
 
@@ -19,7 +25,6 @@ void *func_002F8930(void);
 
 extern void *D_0046F580[];
 extern void *D_00470F90[];
-extern void func_002D63B0(void *p);
 void *func_00301250(u8 *o, s32 flags);
 
 extern u8 D_004224C0[];
@@ -438,9 +443,6 @@ f32 func_0030BDA0(u8 *self) {
     return S32(self, 0x16B8) == 2 ? 12.0f : 60.0f;
 }
 
-void func_00309890(Pursuer *p);
-void func_00309680(Pursuer *p);
-
 /* vtable +0x30: his frame update. On screen: back in contact (+0x29 / +0x2D cleared) once in
    action 0x10 or 0x21; mode 2 on from threat level 1 while chasing and idle, off at level 0; the
    cries heard, the behaviour step, func_00309890 and func_00309680, stance and voice. Off
@@ -649,7 +651,6 @@ void func_0030B1E0(Pursuer *p) {
 }
 
 extern const PTMF D_00423A38;
-void func_0030B540(Pursuer *p);
 
 /* animation 0x1303 in state `st` (D_00423A38: func_0030B540), run at once */
 static inline __attribute__((always_inline)) void Lorenzo2_SinkBehindAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
@@ -672,7 +673,6 @@ s32 func_0030BB70(Pursuer *p) {
 }
 
 extern const PTMF D_00423AA8;
-void func_0030A210(Pursuer *p);
 
 /* start of his grab: action 0x17 instead when he may not go for his target; finish the walk,
    then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and func_0030A210 */
@@ -741,7 +741,6 @@ static inline void Sink_Init(void **obj) {
 }
 
 extern const PTMF D_00423A88;
-void func_0030A850(Pursuer *p);
 
 /* state: sinking away (animation 0x1304). At its end (Lorenzo2_Sink) he heads under the floor
    toward his target: a point along the path (func_00214890), or where he is when it's out of
@@ -1146,7 +1145,6 @@ extern u8 D_00423FE0[], D_00424010[], D_00424040[], D_00424060[], D_00424080[], 
     D_004240C0[], D_004240F0[], D_00424108[], D_00424118[], D_00424130[], D_00424158[],
     D_00424170[], D_00424190[], D_004241B0[], D_004241C8[], D_004241D8[];
 extern u8 D_004241F0[], D_00423FB0[], D_019910F0[], D_00424238[], D_00423F60[], D_00423FD0[];
-extern void func_001267F0(Character *c, s32 n);
 extern u8 D_00423CF0[], D_00423D60[], D_00423D80[], D_00423BB0[], D_00423CE0[], D_0047AD18[];
 
 /* vtable +0x8: destructor (0x4718F0 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the

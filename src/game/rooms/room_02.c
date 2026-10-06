@@ -5,12 +5,14 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "panic.h"
+#include "scene_game_members.h"
+#include "msl.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046DC00[];
 extern const char *D_003F0404;
 extern void *D_00470A70[];
-extern void func_002EFB70(u8 *panic, f32 amount);
 extern u8 D_003EEDF0[];
 extern u8 D_003EEF70[];
 extern u8 D_003EF0D0[];

@@ -6,11 +6,12 @@
 #include "navmesh.h"
 #include "globals.h"
 #include "memcard.h"
+#include "libc.h"
+#include "msl.h"
 
 #define MESH_SIZE 0x50
 
 extern void *D_0046AA40[];
-extern void func_00100490(void *p);
 void *func_0017CDD0(u8 *o, s32 flags);
 
 /* take the room's meshes (`meshes`: count, then entries from +0x10; their bounds get the
@@ -69,9 +70,6 @@ void *func_0017CDD0(u8 *o, s32 flags) {
 }
 
 #include "sce/libvu0.h"
-
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
-extern f32 func_0031C5C0(f32 x, f32 z);                      /* heading of (x, z) */
 
 #define TRI(set, i) (AT(set, 0x4, u8 *) + (i) * MESH_SIZE)
 #define LINK(set, g) ((set) + 0x20 + (g) * 0x30)
@@ -614,7 +612,6 @@ f32 func_0017C410(NavMesh *nm, u32 t, const f32 *p) {
 }
 
 extern void *D_0046A9D0[], *D_0046AA40[];
-extern void func_00100490(void *p);   /* operator delete */
 
 /* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
  * base (D_0046AA40, clearing gNavMesh) */
@@ -703,8 +700,6 @@ f32 func_0017C550(NavMesh *nm, u32 i, f32 *out) {
     out[3] = 1.0f;
     return 0.0f;
 }
-
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 
 /* is p over the triangle (seen from above: on the inner side of all three edges)? 3 if so,
  * else 4 */
@@ -938,9 +933,6 @@ s32 func_0017B380(NavMesh *nm, s32 i, u32 tri, f32 *p) {
     }
     return -1;
 }
-
-extern void *func_00114FA8(u32 size);   /* malloc */
-extern void func_00114FD0(void *p);     /* free */
 
 /* the mesh's outer edges (+0xC, +0x10 of them, 16 bytes each: the triangle, -, its two corners) */
 #define NAV_EDGE(nm, i) ((u32 *)(AT(nm, 0xC, u8 *) + (i) * 0x10))

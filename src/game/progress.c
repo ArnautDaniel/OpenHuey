@@ -9,7 +9,17 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
-
+#include "char_load.h"
+#include "creature.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "message.h"
+#include "movie.h"
+#include "pursuer.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "libc.h"
+#include "msl.h"
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
     if (id >= PROGRESS_NUM_FLAGS) {
@@ -70,7 +80,6 @@ void func_001779B0(Progress *p, s32 entry) {
     AT(p, 0x6FC214, s32) = entry;
 }
 
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 static const char sBankHd[] = "D_%01X000.HD";
 static const char sBankSdt[] = "D_%01X000.SDT";
 static const char sBankBd[] = "D_%01X000.BD";
@@ -95,7 +104,6 @@ void func_0016D350(Progress *p, s32 set) {
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 4, 3, prog + 0x1CCEC0);
 }
 
-
 /* every character: vtable +0xC (start) */
 void func_00176650(Progress *p) {
     u32 i;
@@ -106,9 +114,6 @@ void func_00176650(Progress *p) {
         }
     }
 }
-
-extern void func_002A84C0(u8 *e);
-extern void func_002A8500(u8 *e);
 
 /* character slot `k` (0..2) starts afresh: its relations to the others (+0x10B0, 3 x 12 bytes;
  * its own marked 2) and the others' (+0x1014, 3 x 16 bytes) that involve it are reset */
@@ -154,14 +159,12 @@ void *func_001776B0(Progress *p, u8 k) {
     return NULL;
 }
 
-extern s32 func_00124D40(void *c);   /* a character still loading */
-
 /* is any character still loading? */
 s32 func_001764C0(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
-        u8 busy = (i < 6 && gCharacters[i] != NULL) ? (u8)func_00124D40(gCharacters[i]) : 0;
+        u8 busy = (i < 6 && gCharacters[i] != NULL) ? (u8)func_00124D40((Actor *)gCharacters[i]) : 0;
 
         if (busy == 1) {
             return 1;
@@ -190,12 +193,10 @@ void func_001765D0(Progress *p) {
     }
 }
 
-
-
 /* make the camera director follow character `idx`, 10 above its origin, if it is in the
  * current room (vt+0xC); 0xFF: follow nothing; otherwise follow the player (index 0).
  * Returns who it follows (0xFF: nobody). */
-u8 func_00179170(Progress *p, u8 idx) {
+s32 func_00179170(Progress *p, u8 idx) {   /* (a u8) */
     VObject *dir = gCamDirector;
     s32 ok = 1;
     u8 *c;
@@ -267,7 +268,6 @@ void func_0016D480(Progress *p, s32 room) {
     func_0026EDD0(name, sizeof(name), D_0044F8A0, room & ~7, room);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
 }
-
 
 /* the gCharacters index of the character with script id `id` (0xFE: the stalker, slot 2;
  * 0xFF / not found: 0xFF) */
@@ -349,7 +349,6 @@ s32 func_00177200(Progress *p, u32 slot) {
 }
 
 /* ---- the doors' states (+0x124, a word per door: bit 1, bit 2, bit 3 = unlocked) ---- */
-
 
 #define DOOR_STATE(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)
 
@@ -435,7 +434,6 @@ s32 func_00178A30(Progress *p, u32 d) {
     return 1;
 }
 
-
 /* whether character c counts for the room's occupancy tests */
 static s32 occupant(u8 *c, s32 room) {
     return c != NULL && room == AT(c, 0x30, s32) && AT(c, 0x28, u8) == 1 && !AT(c, 0x29, u8);
@@ -517,9 +515,6 @@ void func_00175DE0(Progress *p) {
         }
     }
 }
-
-extern void func_002A8410(void *o);
-extern s32 func_00123960(void *c, s32 d, s32 side);
 
 /* a character's (mask) state at exit e (+0xFD0 + k * 6): bit 0 e[1], 1 e[2], 2 e[0], 3 e[3],
  * 4 e[4], 5 e[5] */
@@ -665,14 +660,14 @@ void func_00175430(Progress *p) {
                 if (q[2] & mask) rf |= 4;
                 if (q[3] & mask) rf |= 8;
                 if ((u32)(q[2] & sel) == (u32)(1 << i)) {
-                    if (i == 0 && !(u8)func_00123960(gCharacters[i], d, 0)) {
+                    if (i == 0 && !(u8)func_00123960((Actor *)gCharacters[i], d, 0)) {
                         continue;
                     }
                     AT(blk, 0x0, u32) = 3;
                     AT(blk, 0x4, s32) = 0;
                     AT(blk, 0x8, u32) = d;
                 } else if ((u32)(q[1] & sel) == (u32)(1 << i)) {
-                    if (i == 0 && !(u8)func_00123960(gCharacters[i], d, 1)) {
+                    if (i == 0 && !(u8)func_00123960((Actor *)gCharacters[i], d, 1)) {
                         continue;
                     }
                     AT(blk, 0x0, u32) = 3;
@@ -693,9 +688,6 @@ void func_00175430(Progress *p) {
     }
 }
 
-extern void func_002EC4F0(void *o, void *timer);
-extern void func_002A84A0(void *timer);
-
 /* each frame: the pursuer request (+0x778) is handled; the 4 requests (+0x778, 0x10 each) are
  * kept as last frame's (+0x10D4) and cleared */
 void func_001776F0(Progress *p) {
@@ -713,7 +705,6 @@ void func_001776F0(Progress *p) {
         func_002A84A0(t + 0x778);
     }
 }
-
 
 #include "charaction.h"
 
@@ -777,8 +768,6 @@ void func_00173670(Progress *p) {
         }
     }
 }
-
-extern s32 func_00125D80(void *c);   /* the character can't take part (u8) */
 
 /* character slot k is free for slot i's kind-9 command: neither has a pending command nor is
  * another's target (+0x10B0 entries) */
@@ -958,8 +947,6 @@ clear:
     }
 }
 
-extern void func_002A84E0(u8 *r);
-
 /* the characters' own requests (+0x1050, 32 bytes per slot: kind, u16, s16, f32): an active,
  * free character takes action 4 for it (no partner: 0xFF). The requests are cleared. */
 void func_001739A0(Progress *p) {
@@ -994,8 +981,6 @@ void func_001739A0(Progress *p) {
     }
 }
 
-extern s32 func_0019A2B0(u8 *c);   /* the player can be controlled (u8) */
-extern void func_0019A420(u8 *c, s32, s32);
 extern u32 D_0047E37C;
 
 static void act_copy(u8 *dst, const u8 *src) {
@@ -1034,7 +1019,7 @@ void func_00174920(Progress *p) {
         return;
     }
     pl = (u8 *)gCharPlayer;
-    if (!(u8)func_0019A2B0(pl)) {
+    if (!(u8)func_0019A2B0((Fiona *)pl)) {
         return;
     }
     if ((u8)func_00125D80(gCharPlayer) == 1 || AT(b, 0x4, s32) != 0) {
@@ -1064,7 +1049,7 @@ void func_00174920(Progress *p) {
             VObject *ev = gEvents;
 
             if (ev != NULL) {
-                func_0019A420((u8 *)gCharPlayer, 2, 0x1E);
+                func_0019A420((Fiona *)((u8 *)gCharPlayer), 2, 0x1E);
                 VCALL(ev, 0x3C, void (*)(VObject *, s32))(ev, AT(b, 0x1152, u16));
             }
             break;
@@ -1112,7 +1097,6 @@ void func_00174920(Progress *p) {
     }
 }
 
-
 /* every character: vtable +0x24 (the frame's thinking) */
 void func_00176440(Progress *p) {
     u32 i;
@@ -1123,8 +1107,6 @@ void func_00176440(Progress *p) {
         }
     }
 }
-
-
 
 /* the characters' frame: one in a special state (+0xE0) runs its handler (+0x44, or +0x48
  * while +0xE2); otherwise, unless the world is paused (+0x8 bit 0x800000), the first 3 slots
@@ -1174,13 +1156,10 @@ void func_001762B0(Progress *p) {
     }
 }
 
-
 /* character slot k has a pending relation command (+0x10B0) */
 s32 func_00177870(Progress *p, u32 k) {
     return AT(p, 0x10B0 + (k & 0xFF) * 0xC, u8) != 0;
 }
-
-
 
 /* the characters, drawn each frame (texture cache +0x18 and +0x6FC218 (+0x20) reset first):
  * each active and visible one draws (+0x2C); while the world is stopped (+0x8 bit 0x800000)
@@ -1220,7 +1199,6 @@ void func_00176160(Progress *p) {
     }
 }
 
-
 /* set condition bit `n` (0..6) of +0x14 */
 void func_00177630(Progress *p, s32 n) {
     n &= 0xFF;
@@ -1228,7 +1206,6 @@ void func_00177630(Progress *p, s32 n) {
         AT(p, 0x14, u32) |= 1u << n;
     }
 }
-
 
 /* condition bit `n` (0..6) of +0x14 */
 s32 func_00177670(Progress *p, s32 n) {
@@ -1239,7 +1216,6 @@ s32 func_00177670(Progress *p, s32 n) {
     return 0;
 }
 
-
 /* +0x64 the stalker's alert (+0x16C8 of the active stalker; 0xFF: no stalker in play) */
 s32 func_001770A0(Progress *p) {
     if (gCharSlot2 == NULL || AT(gCharSlot2, 0x28, u8) == 0) {
@@ -1247,7 +1223,6 @@ s32 func_001770A0(Progress *p) {
     }
     return AT(gCharSlot2, 0x16C8, u8);
 }
-
 
 /* is `id` one of the three linked entries (+0x10B0, 0xC each: +0 on, +2 the partner's id):
  * entry `id` is on, or some entry names it */
@@ -1266,10 +1241,6 @@ s32 func_00177770(Progress *p, s32 id) {
     return 0;
 }
 
-
-extern s32 func_0016D6D0(Progress *p, u32 id, u32 slot);   /* load event character id into slot */
-extern void func_0016D180(Progress *p, s32 slot);
-
 /* load event character `id` into `slot` and, when it came, set it up (func_0016D180); 1 if
  * loaded */
 s32 func_0016D670(Progress *p, u32 id, u32 slot) {
@@ -1280,7 +1251,6 @@ s32 func_0016D670(Progress *p, u32 id, u32 slot) {
     }
     return ok;
 }
-
 
 /* lock (`on`) or unlock door `door` for kind `kind` (0: bit 1, 1: bit 2, 2..5: bit 4 of the
  * door's lock bits, +0x124 + door x 4 bits 4..7), then let the door object know (+0x80) when
@@ -1316,7 +1286,6 @@ void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
     }
 }
 
-
 /* is door `door` open: the rooms say so (+0x44 bit 0), or its state bits (+0x124 + door x 4)
  * have bit 1 without bit 3 */
 s32 func_001788F0(Progress *p, u32 door) {
@@ -1331,7 +1300,6 @@ s32 func_001788F0(Progress *p, u32 door) {
     }
     return (w & 2) != 0;
 }
-
 
 /* is the door at exit `exit` of room `room` open (as func_001788F0) */
 s32 func_00178980(Progress *p, s32 room, s32 exit) {
@@ -1349,12 +1317,7 @@ s32 func_00178980(Progress *p, s32 room, s32 exit) {
     return (w & 2) != 0;
 }
 
-
-
-
 /* ---- the characters by slot (gCharacters, 6) ---- */
-
-extern void func_0029F2C0(void *c);   /* a character's quick unload (keeps its model) */
 
 #define SLOT_CHAR(slot) ((slot) < 6 ? (VObject *)gCharacters[slot] : NULL)
 
@@ -1369,7 +1332,7 @@ u8 func_00177160(Progress *p, u32 slot) {
 s32 func_00177260(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
-    return c != NULL ? func_00124D40(c) : 0;
+    return c != NULL ? func_00124D40((Actor *)c) : 0;
 }
 
 /* character `slot`: vtable +0x14 / +0x1C / +0xC */
@@ -1409,7 +1372,7 @@ s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
         return 0;
     }
     if (quick) {
-        func_0029F2C0(c);
+        func_0029F2C0((Pursuer *)c);
     } else {
         VCALL(gCharacters[slot], 0x18, void (*)(VObject *))((VObject *)gCharacters[slot]);
     }
@@ -1477,8 +1440,6 @@ s32 func_00177DB0(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
     return __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0])) < margin + AT(cb, 0xC8, f32);
 }
 
-extern f32 *func_0017CE80(void *skel, s32 bone);   /* a bone's matrix */
-
 /* vtable +0x30 at bone `bone` of character `slot`'s model */
 void func_00177F00(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
     f32 at[4] __attribute__((aligned(16)));
@@ -1524,8 +1485,6 @@ s32 func_00178660(Progress *p) {
     return 1;
 }
 
-extern s32 func_00183190(void *c, s32 on);
-
 /* Fiona: flag +0x1AD710 on, +0x1AD714 cleared, then func_00183190(1) (u8 result) */
 s32 func_00176D80(Progress *p) {
     u8 *f = (u8 *)gCharPlayer;
@@ -1535,27 +1494,21 @@ s32 func_00176D80(Progress *p) {
     }
     AT(f, 0x1AD710, u8) = 1;
     AT(f, 0x1AD714, s32) = 0;
-    return func_00183190(f, 1) != 0;
+    return ((s32 (*)(void *, s32))func_00183190)(f, 1) != 0;
 }
-
-extern void func_0026BC00(void *o);
-extern void func_002E2920(void *o);
 
 /* the parts at +0x6FC218 (func_0026BC00), +0x6FC340 (vtable +0x24) and +0x706440 */
 /* (possibly dead code: nothing in the game references it) */
 void func_00176720(Progress *p) {
     VObject *o = (VObject *)((u8 *)p + 0x6FC340);
 
-    func_0026BC00((u8 *)p + 0x6FC218);
+    func_0026BC00((VObject *)((u8 *)p + 0x6FC218));
     VCALL(o, 0x24, void (*)(VObject *))(o);
     func_002E2920((u8 *)p + 0x706440);
 }
 
 /* ---- movies ---- */
 
-extern void *__nw__FUiPv(u32 size, void *p);
-extern void *func_002B70D0(void *movie);
-extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[],
     *D_00470E80[];
 
@@ -1576,7 +1529,7 @@ s32 func_001768B0(Progress *p, const char *path, u32 kind) {
     }
     movie = __nw__FUiPv(size, mem);
     if (movie != NULL) {
-        func_002B70D0(movie);
+        func_002B70D0((Movie *)movie);
         movie->vtbl = sClass[kind <= 6 ? kind : 0];
     }
     AT(table, 0x4, Scene *) = movie;
@@ -1685,9 +1638,6 @@ void func_0016CF50(Progress *p, s32 slot) {
     }
 }
 
-extern void func_00176780(Progress *p);
-extern void *func_0016CC40(void *o, s32 flags);
-extern void func_00100490(void *p);
 extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
 extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
 extern void *D_004699C0[], *D_004699E0[];
@@ -1714,7 +1664,7 @@ void *func_0016C8A0(Progress *p, s32 flags) {
         return p;
     }
     VT(b, 0) = Progress_vtable;
-    func_00176780(p);
+    func_00176780((u8 *)p);
     for (i = 2; i < 6; i++) {
         if (gCharacters[i] != NULL) {
             VObject *c;
@@ -1791,7 +1741,6 @@ s32 func_0016CCC0(Progress *p) { return 1; }   /* +0x7C */
 void func_0016CD20(Progress *p) {}            /* +0x84 */
 s32 func_0016CD10(Progress *p) { return 0; }   /* +0x88 */
 
-
 /* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
 void *func_0016CC40(void *o, s32 flags) {
     extern void *D_0046F350[], *D_00469D00[];
@@ -1858,7 +1807,6 @@ void func_0016D2F0(Progress *p, s32 i) {
 }
 
 /* ---- Hewie's commands ---- */
-extern s32 func_00138FD0(void *h);   /* Hewie listening (hewie.c) */
 
 /* the command in progress +`at` (state, a; b cleared) given to Hewie unless he is held (action
  * state 7), and kept in its slot of the queue (+0x6FAF20 on) */
@@ -1889,7 +1837,7 @@ static inline void hewie_order(u8 *p, u32 at, s32 state, s32 a) {
 void func_00174270(Progress *p) {
     u8 *b = (u8 *)p;
 
-    if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)func_00138FD0(gCharPartner) == 0
+    if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)func_00138FD0((Hewie *)gCharPartner) == 0
         || AT(b, 0x4, s32) != 0) {
         return;
     }

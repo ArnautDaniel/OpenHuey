@@ -3,6 +3,16 @@
  * (commands, conditions, objects and effects). */
 #include "common.h"
 #include "game/rooms/rooms.h"
+#include "effects.h"
+#include "hewie.h"
+#include "progress.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
+#include "sce/libvu0.h"
 
 f32 func_00310C90(u8 *st, f32 *at, f32 yaw);
 
@@ -11,22 +21,10 @@ f32 func_00310C90(u8 *st, f32 *at, f32 yaw);
 
 extern void *D_0046DB80[];
 extern void *D_00471FE0[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern f32 func_002E2D00(f32 a);
 extern void *D_0047A370[], *D_0046F580[];
-extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern void func_002E56C0(u8 *quad);
-extern void glr_layer(s32 layer);
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
-extern void glr_haze(f32 phase, f32 sway);
 extern u8 D_01991210[], D_01991250[], D_01991290[];   /* the three paths */
 extern s16 D_019912D0[], D_019913D0[], D_01991490[];   /* their points */
-extern f32 func_0031C5C0(f32 x, f32 z);   /* atan2 */
 extern void *D_0047A3B0[];
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
-extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
 
 #define SHAFT_REC(o, i) ((o) + AT(o, 0x6EC, s32) * 0x300 + (i) * 0x30 + 0x10)
 

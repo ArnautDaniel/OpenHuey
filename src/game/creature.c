@@ -9,12 +9,19 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "pursuer.h"
+#include "creature.h"
+#include "effects.h"
+#include "hewie.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_models.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046FAA0[], *D_0046FB50[], *D_00469C60[], *D_00469C20[];
-extern void func_00124DA0(Actor *a);
-extern void func_00127660(Character *c);
-extern s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos);
-extern void func_00125CC0(Character *c);
 
 #define CR(c) ((u8 *)(c) + 0x1540)   /* the creature's own block */
 
@@ -46,7 +53,6 @@ void func_00314910(u8 *self);
 void func_0031E920(u8 *self, u8 *src);
 void func_0031E9A0(u8 *self);
 
-extern void func_002E56C0(u8 *quad);
 void func_0031E980(u8 *o);
 void func_0032A890(Character *c);
 void func_0032C000(Character *c);
@@ -262,8 +268,6 @@ void func_002E1340(Character *c) {
     sceVu0CopyVector(v, c->a.pos);
 }
 
-extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
-
 /* per kind (+0x1571): +0x8 a byte, +0x0 a float, +0x6 a short */
 typedef struct CreatureKind {
     u8 b;
@@ -356,10 +360,6 @@ void func_002DEA80(Character *c, s32 a1, s32 a2) {
 #include "navmesh.h"
 
 extern VObject *gSceneGameF29740;   /* the path planner */
-extern s32 func_00127200(Character *c, s32 kind, u32 goalTri, const f32 *goal, s32 opt);
-extern void func_00127060(Character *c);
-extern s32 func_001270A0(Character *c);
-extern s32 func_001270F0(Character *c);
 
 /* go through exit `exit` into the next room (off screen): its room, side (+0xC) and door
  * (+0x9); off the mesh, moving through the door (+0xFC 0x17), out of play; +0x8A.. cleared.
@@ -427,10 +427,6 @@ static inline __attribute__((always_inline)) s32 creature_path(Character *c, u32
 s32 func_002DF860(Character *c, u32 tri, const f32 *goal, s32 direct) {
     return creature_path(c, tri, goal, direct, 0x2B);
 }
-
-extern u32 func_00124480(Actor *a, const f32 *p, u32 mask);
-extern s32 func_001273D0(Character *c, u32 *triOut, f32 *posOut, f32 step);
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 
 /* on the way to `tri`: while not there (its target +0xB0 not on it) the path ahead is looked
  * at (12 steps and 1; unused); a door on the way (+0x88 bit 0) with an exit +0x100 is gone
@@ -741,9 +737,6 @@ void func_002DEFA0(Character *c) {
 #include "ptmf.h"
 #include "effectmgr.h"
 
-extern s32 func_00125D80(Character *c);
-extern s32 func_001241F0(Actor *a, Actor *b, f32 x, f32 y);
-extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
 extern void *D_00472370[];
 extern const PTMF D_00416790;   /* vanishing */
 
@@ -798,9 +791,6 @@ void func_002DF180(Character *c) {
     AT(k, 0x1C, s32) = 0;
     ptmf_set(&c->a.state, &D_00416790);
 }
-
-extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);
-extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
 /* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
 static void creature_at_doors(Character *c, u32 doors) {
@@ -901,8 +891,6 @@ void func_002DFA50(Character *c) {
     }
 }
 
-extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
-
 /* state: vanishing (D_00416790). Not seen (+0x37 0): once its time (+0x20) reaches the kind's
  * (+0x6) a fade (+0x2C, 8 a frame) and it is gone. Seen: it sinks (+0x1C, 0.1 faster each
  * frame) to 12 below, fades, then leaves a noise (red ones: noise 3 here; others a level
@@ -940,8 +928,6 @@ void func_002DFE10(Character *c) {
     c->a.active = 0;
     func_00127060(c);
 }
-
-extern s32 func_00127140(Character *c, s32 kind, u32 goalTri, const f32 *goal);
 
 /* state: to the door it chose (+0x85): its spot asked of the planner; on the way there
  * (func_002DF470) with the door as its exit (+0x100) and its spot as the target (+0xB0) */
@@ -990,8 +976,6 @@ void func_002E02B0(Character *c) {
     creature_route(c, 0xB, 0xC);
 }
 
-extern s32 func_001274E0(Character *c, f32 speed);
-
 /* state: after Fiona (unless she is in mode 3): in her room, unless given up (+0x2F), straight
  * at her when it can (func_002DFF70) - not on a 0x20000 triangle, where it gives up at once
  * (its time +0x20 to the kind's +0x6); otherwise along a path to her triangle */
@@ -1024,7 +1008,6 @@ void func_002E0390(Character *c) {
     }
     func_001274E0(c, AT(k, 0x0, f32));
 }
-
 
 /* +0x64 put in room `room` on triangle `tri`, mode `mode` (+0xC): (the Character's +0x64,
  * func_00125BA0) in the room being played placed there (+0x28; its result) and its doors
@@ -1169,8 +1152,6 @@ void *func_002E2220(u8 *p) {
     return p;
 }
 
-extern s32 func_00123C60(Actor *a, s32 room, const f32 *pos);
-
 /* it can head for exit `e` of its room: on its side (or it is on both, 2) with a path to the
  * exit's spot (left in `at`) */
 static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at) {
@@ -1241,7 +1222,6 @@ void func_002E0FE0(Character *c, u32 exit) {
     }
 }
 
-extern u32 func_00123D20(Actor *a, const f32 *p);
 extern const f32 D_004167A0[17];   /* turns: 0, then +-0.39 .. +-3.14 */
 
 /* state: hanging about Fiona while she can't be reached (D_00416700). First its path is
@@ -1318,7 +1298,6 @@ void func_002DEC30(Character *c) {
     }
 }
 
-extern s32 Progress_TestFlag(Progress *p, u32 id);
 extern const PTMF D_00416700, D_00416710, D_00416720, D_00416730, D_00416740, D_00416750, D_00416760,
     D_00416770, D_00416780;   /* its states: about Fiona, idle, after her, idle, at the door, to the
                                  door, idle, travelling, idle */
@@ -1410,7 +1389,6 @@ void func_002E06E0(Character *c) {
     }
 }
 
-extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
 extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
 
 /* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
@@ -1491,7 +1469,6 @@ void func_002E1380(Character *c) {
     ptmf_scall(c, &c->a.state);
     VCALL(c, 0x40, void (*)(Character *))(c);
 }
-
 
 /* +0x2C draw, once it has come (or, out, when its rest is over): six glows - its core (cell
  * 0x40, white), its colour (red for kinds 0x12.. but 0x24, else blue; size 2.5 + +0x40), three
@@ -1778,14 +1755,7 @@ void func_002E2920(u8 *m) {
  * glow done / sparks shrunk / faded (all: it ends). Drawn by the quad drawer at +0x370 ---- */
 
 extern void *D_0046F580[];
-extern void func_002D63B0(void *o);   /* free (the effects' heap) */
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 /* soft-float doubles as raw bit patterns */
-extern u64 func_0011ED78(f32 x);             /* (double)x */
-extern u64 func_0011F208(u64 a, u64 b);      /* a * b */
-extern u64 func_0011F148(u64 a, u64 b);      /* a + b */
-extern u64 func_0011F458(u64 a, u64 b);      /* a / b */
-extern f32 func_0011F878(u64 a);             /* (float)a */
 
 #define VANISH_GLOW(o) ((o) + AT(o, 0x3A8, s32) * 0x30 + 0x10)
 #define VANISH_SPARK(o, i) ((o) + AT(o, 0x3A8, s32) * 0x180 + (i) * 0x30 + 0x70)
@@ -2165,7 +2135,6 @@ void func_00312D90(u8 *o) {
 
 extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
 #define STRAND_BONE(o, i) (func_0017CE80(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
@@ -2938,7 +2907,6 @@ void func_00329270(Character *c) {
    flag, +0x63 the door it went by, +0x64 the planner request, +0x65 snapped, +0x66 the door it
    chose, +0x6B flags, bit 0x80 kept). It walks by its animation's root motion. ---- */
 
-extern void func_00127060(Character *c);
 s32 func_00325410(Character *c, s32 exit);
 
 /* the step this frame: the root motion forward (+z), not backwards */
@@ -3080,8 +3048,6 @@ s32 func_00325410(Character *c, s32 exit) {
     return 0;
 }
 
-extern void func_00124890(Actor *a, s32 kind);
-
 /* (as func_002DEA80) +0x9C set up to come after Fiona: out (+0x6E, +0x6F cleared) with a rest
    time (+0x4A, 1800 .. 7200), a path to her room and its length through its doors */
 void func_00324FA0(Character *c, s32 a1, s32 a2) {
@@ -3137,8 +3103,6 @@ s32 func_00325B60(Character *c) {
 
 void func_00325D60(void) {
 }
-
-extern f32 func_002E2D00(f32 angle);
 
 /* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
    alpha grows as it stands further inside from the door's event plane (the plane's normal
@@ -3306,7 +3270,6 @@ void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32
     VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, mode);
 }
 
-
 /* (as func_002DFA50) travelling (unless in an event, flag 0x18): off screen the distance to
    the next door (+0x14C4) runs down by 0.35; at a door (+0x61) it walks the path at 0.35. On
    arriving at the door (+0x14C0): if the way is open (func_00178980, func_00178300 kind 2)
@@ -3454,9 +3417,6 @@ u32 func_00325EC0(Character *c, f32 dist) {
     return AT(k, 0x20, u32);
 }
 
-extern s32 func_001274E0(Character *c, f32 step);
-extern f32 func_001244D0(Actor *a, const f32 *p);
-
 /* how far c must still turn to face heading `h` (both ways the same) */
 #define CR19_TURN_LEFT(c, h) \
     (func_002E2D00((h) - (c)->a.angle[1]) <= 0.0f ? -func_002E2D00((h) - (c)->a.angle[1]) : func_002E2D00((h) - (c)->a.angle[1]))
@@ -3554,8 +3514,6 @@ void func_00326130(Character *c, f32 dist) {
     }
 }
 
-extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);
-
 /* moved this frame by its animation's root motion (turned with it) */
 static inline void cr19_root_move(Character *c) {
     f32 v[4] __attribute__((aligned(16)));
@@ -3626,7 +3584,6 @@ void func_00326950(Character *c) {
         return;
     }
 }
-
 
 /* state: Fiona in sight (func_00122C90) - back to state 0; across the room's divider from her
    - state 0x12; else its approach at 10 */
@@ -3871,9 +3828,6 @@ void func_00327CA0(Character *c) {
     cr19_enter(c, 5);
 }
 
-extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);
-extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
-extern void func_002EF9E0(void *threat, f32 amount);
 extern const f32 D_0042C610[4][4];   /* where it grabs from, around Fiona */
 
 /* state: its grab of Fiona, by step +0x60. 0: while she can be grabbed (+0x68 0xC), a spot
@@ -4167,7 +4121,6 @@ void func_0032AA50(Character *c) {
     }
 }
 
-
 /* +0x40 its model matrix (raised by +0x28 in state 0xB) unless out of contact, then the
    model's update */
 void func_0032AE80(Character *c) {
@@ -4215,8 +4168,6 @@ void func_0032C000(Character *c) {
     VCALL(c, 0x20, void (*)(Character *))(c);
     func_002E2300(c);
 }
-
-extern f32 func_0031C248(f32 x);   /* sinf */
 
 /* turn toward `at` (+0x10C) unless its model is busy (+0x550 > 0): the turn's phase +0x10
    restarts at 34 degrees (+0x18 4), a step of 14 degrees x sin(phase) (the model's +0x1C its
@@ -4276,8 +4227,6 @@ s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
     }
     return AT(k, 0x48, s16) == 0;
 }
-
-extern f32 func_001F6140(void *motion, f32 t);   /* root rotation (yaw delta) */
 
 /* its footsteps while walking (animation 0x200), in play: sounds 6 / 7 as each foot comes
    down (+0x73 / +0x72 last frame's) */
@@ -4961,7 +4910,6 @@ void func_0032A0D0(void) {
  * its frames; at frame 100 a splat (D_00472BF0) on the spot ---- */
 
 extern void *D_00472BF0[];
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define GONE_BUBBLE(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
 #define GONE_DROP(o, buf, i) ((QuadRec *)((o) + 0x1810 + (buf) * 0x600) + (i))

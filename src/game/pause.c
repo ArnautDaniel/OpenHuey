@@ -16,11 +16,12 @@
 #include "ptmf.h"
 #include "task.h"
 #include "globals.h"
+#include "bgm.h"
+#include "movie.h"
+#include "overlay.h"
+#include "pause.h"
 
 extern VObject *D_00456DF0;   /* the music director */
-extern void func_002D1FD0(void *mix);
-extern void func_002B6340(void *movie);
-extern void func_002CF390(u8 *rect, u32 colour);
 
 /* the states */
 extern const PTMF D_0041A1D0, D_0041A1E0, D_0041A1F0, D_0041A200, D_0041A210, D_0041A220, D_0041A230,

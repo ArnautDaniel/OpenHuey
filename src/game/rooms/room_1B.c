@@ -5,6 +5,7 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "msl.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E140[];

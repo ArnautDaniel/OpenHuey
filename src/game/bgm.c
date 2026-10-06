@@ -5,27 +5,11 @@
 #include "game.h"
 #include "ptmf.h"
 #include "globals.h"
-
-
-typedef struct Bgm {
-    /* 0x000 */ void **vtbl;
-    /* 0x004 */ void *work;      /* the stream's work buffer (0x231E4 bytes), NULL: none */
-    /* 0x008 */ void *adxt;      /* the stream (ADXT handle) */
-    /* 0x00C */ s32 dir;       /* the track's folder (loader handle), 0: current */
-    /* 0x010 */ char name[0x100]; /* the track, empty: none */
-    /* 0x110 */ f32 volume[5];   /* multiplied together; [3] the master volume */
-} Bgm;
+#include "cri/adx.h"
+#include "libc.h"
+#include "msl.h"
 
 _Static_assert(__builtin_offsetof(Bgm, volume) == 0x110, "Bgm.volume");
-
-extern void ADXT_Destroy(void *adxt);
-extern void *ADXT_Create(s32 maxch, void *work, s32 size);
-extern void ADXT_SetReloadSct(void *adxt, s32 n);
-extern void ADXT_SetOutVol(void *adxt, s32 vol);
-extern void ADXT_SetOutPan(void *adxt, s32 ch, s32 pan);
-extern void ADXT_SetLpFlg(void *adxt, s32 on);
-extern void ADXT_SetWaitPlayStart(void *adxt, s32 on);
-extern void func_001D4750(s32 mono);   /* ADX: mono output */
 
 /* Set up the music stream on work buffer `work` (NULL: none): looping, stereo or mono as the
  * sound settings say, full volume. */
@@ -74,8 +58,6 @@ void func_002D2370(Bgm *b, void *work) {
     b->volume[0] = 1.0f;
 }
 
-extern f32 func_0031C830(f32 x);   /* log10f */
-
 /* apply the volume (0.1 dB, -99.9 dB for silence) while the stream is on */
 void func_002D1FD0(Bgm *b) {
     f32 v = b->volume[4] * (b->volume[2] * (b->volume[1] * (b->volume[0] * b->volume[3])));
@@ -96,16 +78,6 @@ void func_002D1FD0(Bgm *b) {
         ADXT_SetOutVol(b->adxt, db);
     }
 }
-
-extern void ADXT_Stop(void *adxt);
-extern void ADXT_Pause(void *adxt, s32 on);
-extern s32 ADXT_GetStat(void *adxt);
-extern s32 ADXT_IsReadyPlayStart(void *adxt);
-extern s32 func_001D3E20(void *adxt);               /* ADX: still playing */
-extern void func_001D4A20(void *adxt, char *name);  /* ADXT_StartFname */
-extern void func_001E7430(s32 a, s32 dir);          /* CRI file system: the current folder */
-extern char *func_001183C0(char *d, const char *s);   /* strcpy */
-extern char *func_00118978(char *d, const char *s, s32 n);   /* strncpy */
 
 #define ADXT_STAT_PLAYEND 6
 
@@ -300,7 +272,6 @@ void func_002E31D0(BgmCtl *c) {
 
 extern void *D_0046A110[];   /* BgmCtl */
 extern void *D_0046A100[];   /* its base */
-extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start
  * even if it's the one playing; `pause`: start it paused */

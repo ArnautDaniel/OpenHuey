@@ -5,13 +5,14 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "snd_place.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046DB80[];
 extern void *D_004785F0[];
 extern u8 D_0047AF04[];
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
-extern void func_00124F20(void *c, s32 a);
 extern const char *D_0043F8D0;
 extern u32 D_0043F0C0[];
 extern u32 D_0043F1A0[];

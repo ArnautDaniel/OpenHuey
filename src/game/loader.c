@@ -7,15 +7,15 @@
 #include "globals.h"
 #include "ptmf.h"
 #include "actor.h"
+#include "loader.h"
+#include "cri/crifs.h"
+#include "libc.h"
+#include "msl.h"
 
 #define LOADER_DIRS 208
 #define LOADER_DIR_NAME(l, i) ((char *)(l) + 0x12810 + (i) * 0x104)
 #define LOADER_DIR_LIST(l, i) ((u8 *)(l) + 0x25BC0 + (i) * 0x6A8)
 
-extern s32 func_001E7380(const char *dir, void *list, s32 max);   /* ROFS_LoadDir (s16: 0 = done) */
-extern s32 func_00118278(const char *a, const char *b);             /* strcmp */
-extern char *func_001183C0(char *dst, const char *src);             /* strcpy */
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_0044F7F0[];   /* "." (the root) */
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -173,16 +173,6 @@ void func_00169680(u8 *l) {
 #define REQ_DIR(q) AT(q, 0xC, void *)
 #define REQ_NAME(q) ((char *)(q) + 0x20)
 
-extern char *func_00118978(char *dst, const char *src, u32 n);   /* strncpy */
-extern void *func_00100660(u32 size);                          /* operator new */
-extern void func_00100490(void *p);                            /* operator delete */
-extern void *func_001C9438(const char *name, void *dir);         /* ADXF open in a folder */
-extern void func_001C9800(void *f);                              /* ADXF close */
-extern s32 func_001CA0B8(void *f);                               /* ADXF file size (sectors) */
-extern void ADXF_Seek(void *f, s32 pos, s32 type);
-extern s32 ADXF_ReadNw(void *f, s32 nsct, u32 buf);
-extern s32 ADXF_GetStat(void *f);
-
 #define ADXF_STAT_READEND 3
 #define ADXF_STAT_ERROR 4
 
@@ -338,8 +328,6 @@ _Static_assert(sizeof(LoadReq) == 0x128, "LoadReq");
 #define LOADER_REQ(l, i) ((LoadReq *)((u8 *)(l) + 4) + (u8)(i))
 #define LOADER_RD(l) AT(l, 0x12804, u8)
 #define LOADER_WR(l) AT(l, 0x12805, u8)
-
-extern void ADXF_StopNw(void *f);
 
 static inline void LoadReq_Clear(LoadReq *q) {
     *(volatile s32 *)&q->state = 0;   /* (also when it already is: the PS2 code stores it) */
@@ -547,7 +535,6 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     return id;
 }
 
-extern void ADXF_Stop(void *f);
 extern void *D_0046A1E0[], *D_0046A220[];
 
 /* the request in progress: stopped (with or without waiting) or, before it reads, dropped */

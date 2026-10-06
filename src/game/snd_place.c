@@ -6,6 +6,7 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "snd_place.h"
 
 extern u8 D_0041D820[];       /* the 3D distance curves */
 

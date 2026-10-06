@@ -5,13 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
+#include "stalker_progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E340[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016CD30(Progress *p);
 
 extern u8 D_004010A0[];
 extern u8 D_004010E0[];
@@ -69,7 +67,7 @@ s32 func_002AFA00(void *self, void *a1, u8 *cmd) {
     case 1:
         return func_0016CD60(gProgress, 3, 0) == 0 ? 2 : 1;
     }
-    func_0016CD30(gProgress);
+    ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;
 }
 

@@ -5,11 +5,14 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "renderer.h"
+#include "scene_game_members.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046DE00[];
 extern void *D_0046EC60[];
-extern s32 func_001B9000(VObject *r, u32 rgba);
 
 extern u8 D_003F4650[];
 extern u8 D_003F46E0[];

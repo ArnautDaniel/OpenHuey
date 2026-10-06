@@ -5,18 +5,18 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "model.h"
+#include "progress.h"
+#include "scene_game_members.h"
+#include "stalker_math.h"
 
 extern void *D_0046DB80[];
 extern void *D_00470F50[];
 extern u8 D_0047ACC8[], D_0047ACE0[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern void func_00125960(Character *c);
 extern void *D_00477AC0[];
 extern void *D_00478B50[];
 /* ---- room 66 (D_0041F558): footsteps in the mud - a character callback ---- */
-extern void func_00125900(Character *c);
-extern void func_00125A10(Character *c);
-extern void func_002E2CA0(f32 *out, f32 *v, f32 angle);   /* v turned about y */
 extern u8 D_0041E110[];
 extern u8 D_0041E260[];
 extern u8 D_0041E360[];

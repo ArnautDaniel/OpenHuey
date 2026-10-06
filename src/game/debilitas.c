@@ -14,15 +14,19 @@
 #include "ptmf.h"
 
 /* his functions defined further down */
-void func_0012B490(Pursuer *p);
 
 #define DEBILITAS_GIVE_UP_HITS 20
 #include "debilitas_body.inc"
+#include "debilitas.h"
+#include "hewie.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "stalker_models.h"
+#include "stalker_progress.h"
 
 /* the destructor of the motion player subclass (vtable 0x46F9E0) the stalkers' models use: two
  * embedded parts at +0x10 and +0x1D0 */
 extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_0046ADA0[], *D_00469D00[];
-extern void func_002DC6D0(void *p);   /* operator delete */
 
 extern u8 D_003AF250[];
 extern u8 D_003AF1D0[];
@@ -442,7 +446,6 @@ void func_001291C0(Pursuer *p) {
 }
 
 extern const PTMF D_003AFF00, D_003AFF10, D_003AFF20;
-void func_0012A4C0(Pursuer *p);
 
 /* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0). Otherwise
    the pending action (0x1C rumbles the pad), or by a 0..100 roll against his table +0x17F0:

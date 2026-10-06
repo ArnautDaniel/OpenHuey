@@ -11,63 +11,13 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
-
+#include "hewie_act.h"
+#include "model.h"
+#include "msl.h"
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
-extern s32 func_0013B2C0(Hewie *h, s32 act);
-extern s32 func_00137650(Hewie *h, void *other);
-extern void *func_001379C0(Hewie *h);
-extern s32 func_001382F0(Hewie *h);
-extern u8 func_0013CDC0(Hewie *h, Character *from, s32 both);
-extern s32 func_0013EE40(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 keep);
-extern void func_0013E680(Hewie *h);
-extern void func_0013A430(Hewie *h, s32 snd);
-extern void func_00139840(Hewie *h);
-extern void func_00138AD0(Hewie *h, s32 mode, s32 time);
-extern void func_00140B00(Hewie *h);
-extern void func_001407C0(Hewie *h);
-extern void func_001404E0(Hewie *h);
-extern void func_00140190(Hewie *h);
-extern void func_00140050(Hewie *h);
-extern void func_00143550(Hewie *h, s32 blend);
-extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
-extern s32 func_00122B50(Actor *a, f32 *out);
-extern void func_00122C20(Actor *a, s32 id, s32 b, s32 c, s32 d, f32 *dir);
-extern f32 func_00124490(Actor *a, const f32 *p);
-extern f32 func_001244D0(Actor *a, const f32 *p);
-extern f32 func_002E2D00(f32 a);   /* an angle into -pi..pi */
-extern f32 func_0031C5C0(f32 x, f32 z);
-extern void func_002DDED0(void *motion, s32 anim, s32 variant);
-extern void func_002DDC60(void *motion, s32 anim, s32 blend, s32 variant);
-extern void func_002DDBA0(void *motion, s32 anim, s32 blend);
-extern void func_002DD110(void *motion, f32 *ref, f32 *dist, f32 *angle);
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
-extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);
-
 /* his behaviours */
-extern void func_0014B590(Hewie *), func_0015F8A0(Hewie *), func_0015F760(Hewie *), func_0015F0A0(Hewie *);
-extern void func_0015F750(Hewie *), func_0015BB20(Hewie *), func_0015F2E0(Hewie *), func_0015ECC0(Hewie *);
-extern void func_0015E3A0(Hewie *), func_0015E880(Hewie *), func_0015DF40(Hewie *), func_0015DB60(Hewie *);
-extern void func_0015CCA0(Hewie *), func_0015C1E0(Hewie *), func_0015BD90(Hewie *), func_0014B190(Hewie *);
-extern void func_00153350(Hewie *), func_0015B660(Hewie *), func_0015B130(Hewie *), func_0015AE10(Hewie *);
-extern void func_001531F0(Hewie *), func_0015A460(Hewie *), func_001569C0(Hewie *), func_0015A720(Hewie *);
-extern void func_001558F0(Hewie *), func_001557B0(Hewie *), func_00155670(Hewie *), func_00155000(Hewie *);
-extern void func_00154E60(Hewie *), func_00154E40(Hewie *), func_00154DC0(Hewie *), func_00154DB0(Hewie *);
-extern void func_00154D50(Hewie *), func_00154D40(Hewie *), func_0014B4D0(Hewie *), func_0014A790(Hewie *);
-extern void func_0014A180(Hewie *), func_00149DD0(Hewie *), func_001499F0(Hewie *), func_00149370(Hewie *);
-extern void func_00149270(Hewie *), func_001489D0(Hewie *), func_001480C0(Hewie *), func_001480B0(Hewie *);
-extern void func_00154860(Hewie *), func_001545A0(Hewie *), func_00154150(Hewie *), func_00153B00(Hewie *);
-extern void func_00153700(Hewie *), func_00152D60(Hewie *), func_00151D10(Hewie *), func_00151B10(Hewie *);
-extern void func_001517C0(Hewie *), func_00151740(Hewie *), func_00151190(Hewie *), func_001506A0(Hewie *);
-extern void func_00150610(Hewie *), func_00150450(Hewie *), func_0014F5B0(Hewie *), func_0014F5A0(Hewie *);
-extern void func_0014EE20(Hewie *), func_0014EC10(Hewie *), func_0014EB40(Hewie *), func_0014DFB0(Hewie *);
-extern void func_0014DE70(Hewie *), func_0014DA50(Hewie *), func_0014C210(Hewie *), func_0014BE80(Hewie *);
-extern void func_0014B780(Hewie *), func_00153D20(Hewie *), func_00147B90(Hewie *), func_00147580(Hewie *);
-extern void func_001470C0(Hewie *), func_00146AE0(Hewie *), func_001476C0(Hewie *);
-
-void func_00130AF0(Hewie *h, s32 act, s32 arg);
 
 #define STATE(h, fn) ptmf_set_fn(HEWIE_STATE(h), (void *)(fn))
 #define TARGET(h) HW(h, 0xF3544, Character *)

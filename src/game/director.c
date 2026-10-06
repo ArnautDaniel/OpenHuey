@@ -30,31 +30,20 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
+#include "director.h"
+#include "hewie.h"
+#include "model.h"
+#include "scene_game_members.h"
+#include "libc.h"
 
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
 extern void *D_0046EB40[], *D_0046EC60[];   /* effect classes for slots 0x1D / 0x1C */
 
-extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern u8 func_00177160(Progress *p, u32 slot);    /* active */
-extern s32 func_001771A0(Progress *p, u32 slot);   /* make active */
-extern void func_0016D050(Progress *p, s32 slot);  /* its cutscene motion buffer */
-extern void func_0016CF50(Progress *p, s32 slot);  /* ... given back */
-extern void func_001F4910(u8 *m);                  /* a model's motion reset */
-extern void func_002DD040(u8 *m, s32 anim);
-extern void func_002DD090(u8 *m, s32 frame);   /* its motion at the frame */
-extern void *func_00266C40(u8 *fx, s32 n);         /* effect slot n */
-extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
-extern void *func_002672F0(u32 size, void *place);
-extern f32 func_002E2D00(f32 angle);               /* wrap an angle */
-
-u32 func_002C9930(u8 *d, s32 kind);
 void func_002CBBE0(u8 *d);
 void func_002CBD10(u8 *d);
 void func_002CC130(u8 *d, s32 b, s32 rec);
-extern void func_002670F0(u8 *fx, s32 n);          /* effect slot n gone */
 
 #define SCRIPT(d) AT(d, 0x18, u8 *)
 #define REC(d, r) (SCRIPT(d) + (r) * 12)     /* fields at +0x24 / +0x28 / +0x29 */
@@ -78,7 +67,6 @@ static const s8 b3_CC5A0_map[26] = {
 };
 
 void func_002CBFF0(u8 *self, s32 idx);
-s32 func_002CC5A0(void *self, u32 id);
 
 /* a shot part: base + offset, 0 none */
 static u8 *shot_part(u8 *base, u32 off) {

@@ -12,16 +12,18 @@
 #include "memcard.h"
 #include "navmesh.h"
 #include "game.h"
+#include "daniella.h"
+#include "fiona.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "skeleton.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 extern void *D_0046BBB0[];
 
 extern u8 D_003D73B0[];
 void *func_0020C4C0(void);
-
-void *func_0020D8D0(u8 *o, s32 flags);
-void *func_0020D920(u8 *o, s32 flags);
-void *func_0020D970(u8 *o, s32 flags);
-void *func_0020D9C0(u8 *o, s32 flags);
 
 extern u32 D_0043DC50[];
 extern u8 D_0043B6A0[], D_0043B660[];

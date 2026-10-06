@@ -4,7 +4,7 @@
 #include "game.h"
 #include "ptmf.h"
 #include "globals.h"
-
+#include "texcache.h"
 
 typedef struct TexEntry {
     /* 0x0 */ u8 *tex;     /* the texture's .TEX entry */
@@ -147,7 +147,6 @@ void func_001F44A0(TexCache *c) {
         c->e[i].layer = -1;
     }
 }
-
 
 /* TEX0 to draw cached texture `sel` (group 0) with, uploading it first when its VRAM slot was
  * just (re)assigned. 0 if there's no such texture. */

@@ -7,10 +7,16 @@
 #include "globals.h"
 #include "navmesh.h"
 #include "actor.h"
-
+#include "fiona.h"
+#include "hewie.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "skeleton.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#include "msl.h"
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
-
 
 void func_00179600(Pursuer *p) {
     func_0029FB20(p);
@@ -103,7 +109,6 @@ s32 func_00179950(Pursuer *p) {
     return 0;
 }
 
-
 /* vtable +0xE8 */
 void func_00179960(Pursuer *p) {
     func_00212400(p);
@@ -142,7 +147,6 @@ u32 func_00219450(Pursuer *p) {
 /* ---- batch 2 ---- */
 
 extern VObject *gSceneGameF29740; /* path planner */
-
 
 /* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
    triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
@@ -346,7 +350,7 @@ s32 func_00217600(Pursuer *p) {
     if (tri == (u32)-1) {
         return 0;
     }
-    return func_00123470(p, tri, v);
+    return func_00123470(p, tri, (s32)v);
 }
 
 /* add nav triangle `tri` to the route list (+0x15E0, 8 entries of 8 bytes) */
@@ -377,8 +381,6 @@ void func_00218E70(Pursuer *p) {
 }
 
 /* ---- batch 3 ---- */
-
-
 
 /* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */
 void func_00179780(Pursuer *p, s32 side, f32 *out) {
@@ -788,7 +790,6 @@ void func_00218D80(Pursuer *p, u32 exit) {
 }
 
 /* ---- batch 4 ---- */
-
 
 /* door / exit `exit`: what to do with it (vtable +0xF0 to go through); 2 / 1 / 0 */
 s32 func_00211CF0(Pursuer *p, s32 exit) {
@@ -1309,7 +1310,6 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
 }
 
 /* ---- batch 6 ---- */
-
 
 /* path length to the nearest walkable point of triangle +0x15C4 / point +0x15D0 (+0x1590) */
 s32 func_00216B20(Pursuer *p) {

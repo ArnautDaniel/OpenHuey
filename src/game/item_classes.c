@@ -10,105 +10,25 @@
 #include "actor.h"
 #include "ptmf.h"
 #include "pursuer.h"
+#include "hewie.h"
+#include "item_classes.h"
+#include "items.h"
+#include "model.h"
+#include "overlay.h"
+#include "pursuer_ai.h"
+#include "snd_place.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
+#include "sce/libvu0.h"
 
 s32 func_0025FF10(void *o);
 
-extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */
 extern void *D_0046C7E0[], *D_0046C830[], *D_0046C880[], *D_0046C8D0[], *D_0046C920[], *D_0046C970[], *D_0046C9C0[], *D_0046CA10[], *D_0046CA60[], *D_0046CAB0[], *D_0046CB00[], *D_0046CB50[], *D_0046CBA0[], *D_0046CBF0[], *D_0046CC40[], *D_0046CC90[], *D_0046CCE0[], *D_0046CD30[], *D_0046CD80[], *D_0046CDD0[], *D_0046CE20[], *D_0046CE70[], *D_0046CEC0[], *D_0046CF10[], *D_0046CF60[], *D_0046CFB0[], *D_0046D000[], *D_0046D050[], *D_0046D0A0[], *D_0046D0F0[], *D_0046D140[], *D_0046D190[], *D_0046D1E0[], *D_0046D230[], *D_0046D280[], *D_0046D2D0[], *D_0046D320[], *D_0046D370[], *D_0046D3C0[], *D_0046D410[], *D_0046D460[], *D_0046D4B0[], *D_0046D500[], *D_0046D550[], *D_0046D5A0[], *D_0046D5F0[], *D_0046D640[], *D_0046D690[], *D_0046D6E0[], *D_0046EE40[], *D_0046EE90[], *D_0046EEE0[], *D_0046EF30[], *D_0046EF80[], *D_0046EFD0[], *D_0046F430[], *D_0046F610[], *D_0046F660[], *D_004703F0[], *D_00470FB0[], *D_00471080[], *D_004710D0[], *D_00471120[], *D_00471170[], *D_004711C0[], *D_00472F80[], *D_00472FD0[], *D_00473020[], *D_00473070[], *D_004730C0[], *D_00474BC0[], *D_00475300[], *D_00475350[], *D_004753A0[], *D_004753F0[], *D_00475440[], *D_00475490[], *D_004754E0[], *D_00475530[], *D_00475580[], *D_004755D0[], *D_00475620[], *D_00475670[], *D_004756C0[], *D_00475710[], *D_00475760[], *D_004757B0[], *D_00475800[], *D_00475850[], *D_00475CC0[], *D_00475D10[], *D_00475D60[], *D_00476450[], *D_00476B00[], *D_00476B60[], *D_00477030[], *D_00477080[], *D_004770D0[], *D_00477120[], *D_00477170[], *D_004775C0[], *D_00478C80[], *D_00478CD0[], *D_00478D20[], *D_00478D70[], *D_00478DC0[], *D_00478E10[], *D_00478E60[], *D_00478EB0[], *D_00478F00[], *D_00478F50[], *D_00478FA0[], *D_00479820[];
-
-typedef struct ItemObj {
-    void *vtbl;
-    s32 id;
-    u8 flag;
-    u64 data; /* +0x10 */
-} ItemObj;
-
-ItemObj *func_002632B0(ItemObj *self);
-ItemObj *func_002632E0(ItemObj *self);
-ItemObj *func_00263310(ItemObj *self);
-ItemObj *func_00263340(ItemObj *self);
-ItemObj *func_00263370(ItemObj *self);
-ItemObj *func_002633A0(ItemObj *self);
-ItemObj *func_002633D0(ItemObj *self);
-ItemObj *func_00263400(ItemObj *self);
-ItemObj *func_00263430(ItemObj *self);
-ItemObj *func_00263460(ItemObj *self);
-ItemObj *func_00263490(ItemObj *self);
-ItemObj *func_002634C0(ItemObj *self);
-ItemObj *func_002634F0(ItemObj *self);
-ItemObj *func_00263580(ItemObj *self);
-ItemObj *func_002635B0(ItemObj *self);
-ItemObj *func_002635E0(ItemObj *self);
-ItemObj *func_00263610(ItemObj *self);
-ItemObj *func_00263640(ItemObj *self);
-ItemObj *func_00263670(ItemObj *self);
-ItemObj *func_002636A0(ItemObj *self);
-ItemObj *func_002636D0(ItemObj *self);
-ItemObj *func_00263700(ItemObj *self);
-ItemObj *func_00263790(ItemObj *self);
-ItemObj *func_002637C0(ItemObj *self);
-ItemObj *func_002637F0(ItemObj *self);
-ItemObj *func_00263820(ItemObj *self);
-ItemObj *func_002638B0(ItemObj *self);
-ItemObj *func_002638E0(ItemObj *self);
-ItemObj *func_00263910(ItemObj *self);
-ItemObj *func_00263940(ItemObj *self);
-ItemObj *func_002639D0(ItemObj *self);
-ItemObj *func_00263A00(ItemObj *self);
-ItemObj *func_00263A30(ItemObj *self);
-ItemObj *func_00263A60(ItemObj *self);
-ItemObj *func_00263AF0(ItemObj *self);
-ItemObj *func_00263B20(ItemObj *self);
-ItemObj *func_00263B50(ItemObj *self);
-ItemObj *func_00263B80(ItemObj *self);
-ItemObj *func_00263BB0(ItemObj *self);
-ItemObj *func_00263BE0(ItemObj *self);
-ItemObj *func_00263C70(ItemObj *self);
-ItemObj *func_00263CA0(ItemObj *self);
-ItemObj *func_00263CD0(ItemObj *self);
-ItemObj *func_00263D00(ItemObj *self);
-ItemObj *func_00263D30(ItemObj *self);
-ItemObj *func_00263D60(ItemObj *self);
-ItemObj *func_00263D90(ItemObj *self);
-ItemObj *func_00263E20(ItemObj *self);
-ItemObj *func_00263E50(ItemObj *self);
-ItemObj *func_00263E80(ItemObj *self);
-ItemObj *func_00263EB0(ItemObj *self);
-ItemObj *func_00263EE0(ItemObj *self);
-ItemObj *func_00263F10(ItemObj *self);
-ItemObj *func_00263F40(ItemObj *self);
-ItemObj *func_00263F70(ItemObj *self);
-ItemObj *func_00263FA0(ItemObj *self);
-ItemObj *func_00263FD0(ItemObj *self);
-ItemObj *func_00264000(ItemObj *self);
-ItemObj *func_00264030(ItemObj *self);
-ItemObj *func_00264090(ItemObj *self);
-ItemObj *func_00264120(ItemObj *self);
-ItemObj *func_00264150(ItemObj *self);
-ItemObj *func_00264180(ItemObj *self);
-ItemObj *func_002641B0(ItemObj *self);
-ItemObj *func_002641E0(ItemObj *self);
-ItemObj *func_00264210(ItemObj *self);
-ItemObj *func_00264240(ItemObj *self);
-ItemObj *func_00264270(ItemObj *self);
-ItemObj *func_002642A0(ItemObj *self);
-ItemObj *func_002642D0(ItemObj *self);
-ItemObj *func_00264300(ItemObj *self);
-ItemObj *func_00264330(ItemObj *self);
-ItemObj *func_00264360(ItemObj *self);
-ItemObj *func_00264390(ItemObj *self);
-ItemObj *func_002643C0(ItemObj *self);
-ItemObj *func_002643F0(ItemObj *self);
-ItemObj *func_00264420(ItemObj *self);
-ItemObj *func_00264450(ItemObj *self);
-ItemObj *func_00264480(ItemObj *self);
-ItemObj *func_002644B0(ItemObj *self);
-ItemObj *func_002644E0(ItemObj *self);
-ItemObj *func_00264510(ItemObj *self);
-ItemObj *func_00264540(ItemObj *self);
-ItemObj *func_00264570(ItemObj *self);
-ItemObj *func_002645A0(ItemObj *self);
 
 extern char D_0045A7E0[]; /* file name */
 extern char D_0045A800[]; /* file name */
@@ -132,30 +52,6 @@ extern char D_0045AC60[]; /* file name */
 extern char D_0045AC80[]; /* file name */
 typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flags, s32 arg);
 
-typedef struct B2_Obj {
-    void *vtbl;
-    s32 id;
-    u8 flag;
-    u64 data; /* +0x10 */
-} B2_Obj;
-
-B2_Obj *func_002645D0(B2_Obj *self);
-B2_Obj *func_00264600(B2_Obj *self);
-B2_Obj *func_00264630(B2_Obj *self);
-B2_Obj *func_00264660(B2_Obj *self);
-B2_Obj *func_00264690(B2_Obj *self);
-B2_Obj *func_002646C0(B2_Obj *self);
-B2_Obj *func_002646F0(B2_Obj *self);
-B2_Obj *func_00264720(B2_Obj *self);
-B2_Obj *func_00264750(B2_Obj *self);
-B2_Obj *func_00264780(B2_Obj *self);
-B2_Obj *func_002647B0(B2_Obj *self);
-B2_Obj *func_002647E0(B2_Obj *self);
-B2_Obj *func_00264810(B2_Obj *self);
-B2_Obj *func_00264840(B2_Obj *self);
-B2_Obj *func_00264870(B2_Obj *self);
-B2_Obj *func_002648A0(B2_Obj *self);
-B2_Obj *func_002648D0(B2_Obj *self);
 s32 func_00264C10(void *self, void *dest);
 s32 func_00264E90(void *self, void *dest);
 s32 func_00264FE0(void *self, void *dest);
@@ -179,7 +75,6 @@ s32 func_00265C60(void *self, void *dest);
 
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
 extern u8 D_00413550[];
-extern void func_00261090(void *list, s32 a, s32 b);
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 /* gFileLoader->vfunc_0xC(name, arg, 0x4000000, 0) */
@@ -204,7 +99,6 @@ void func_002CD6A0(void *self, s32 id, u32 *out);
 void func_002CD750(u8 *p);
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern void func_00124E40(Actor *a);
 extern const char *const D_0042C358;
 extern void *D_0046F020[];
 extern void *D_00473110[];
@@ -278,7 +172,6 @@ extern u8 D_0042E410[];
 extern u8 D_0042E4C0[];
 extern u8 D_00460BE0[];
 extern u8 D_01991600[];
-extern void func_002DE030(void *motion, s32 anim, s32 blend, s32 loop, f32 speed);
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
 
@@ -305,7 +198,6 @@ extern u8 D_00460F60[];
 extern u8 D_00460F80[];
 extern u8 D_00460FA0[];
 extern u8 D_00460FC0[];
-extern void func_00138AD0(void *h, s32 mode, s32 time);
 extern u8 D_00460FE0[];
 extern u8 D_00461000[];
 extern u8 D_00461020[];
@@ -2724,7 +2616,7 @@ s32 func_00332F30(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
-    func_00138AD0(gCharPartner, 3, 450);
+    func_00138AD0((Hewie *)gCharPartner, 3, 450);
     S32(gProgress, 0xA10) = 450;
     item_trust(20);
     return item_give_hewie(gEvents, 0x91);
@@ -3038,12 +2930,10 @@ s32 func_0025FE70(void *o) {
     return 0;
 }
 
-extern s32 func_00138EC0(void *partner);
-
 /* +0x40 the partner's func_00138EC0 (0 without one) */
 s32 func_0025FF10(void *o) {
     if (gCharPartner != NULL) {
-        return func_00138EC0(gCharPartner);
+        return func_00138EC0((Hewie *)gCharPartner);
     }
     return 0;
 }
@@ -3763,7 +3653,6 @@ s32 func_0031D1B0(void *o) {
     return place_item(o, t, 5);
 }
 
-
 /* D_004775C0: in room 0x52 with Hewie at hand (+0x40), up and within 20, Fiona not busy
  * (+0xE8): event 0xB; else on the altar; else the sound while item 0x239 is held, or (with
  * Progress +0x30 bit 0x8000) while Hewie is in the room being played and item 0x27F is held */
@@ -4066,7 +3955,6 @@ s32 func_002D3A20(void *self, void *dest) { return LOAD_002D1360(D_0045D890, des
 #include "sce/libvu0.h"
 
 extern void *D_0046D7A0[], *D_00469D00[];
-extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 extern f32 func_0031C058(f32 x);   /* cosf */
 extern f32 func_0031C248(f32 x);   /* sinf */
 

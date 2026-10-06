@@ -20,22 +20,11 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 #include "ptmf.h"
-
-extern f32 *func_0017CE80(void *skel, s32 bone);                 /* a bone's matrix */
-extern void func_0010E5F0(f32 *out, const f32 *v);                /* copy x, y, z */
-extern void func_002DC710(u8 *m, f32 *p, u8 *a);                  /* drop a point onto the floor */
-extern void func_001F36B0(void *track, f32 *out, f32 t);          /* sample a track */
-extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);    /* rotation about an axis */
-extern void func_0025C770(f32 *q, f32 (*m)[4]);                   /* its matrix */
-extern void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f32 len1, f32 len2,
-                          f32 len3, f32 bend1, f32 bend2, f32 reach);
-extern void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend);
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
-extern void *func_0016FC80(void *e, s32 flags);
-extern void *func_001F7E40(void *e, s32 flags);
-extern void func_002DC6D0(void *p);
-extern void func_002DE070(u8 *m);
-extern void func_002DE0A0(u8 *m);
+#include "model.h"
+#include "quat.h"
+#include "skeleton.h"
+#include "stalker_models.h"
+#include "msl.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B1C0[], *D_0046B210[], *D_0046F9E0[];
 extern void *D_0046B240[], *D_0046B8F0[], *D_0046B9B0[];

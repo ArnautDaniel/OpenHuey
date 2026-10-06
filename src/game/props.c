@@ -9,12 +9,24 @@
 #include "progress.h"
 #include "pursuer.h"
 #include "memcard.h"
+#include "effects.h"
+#include "hewie.h"
+#include "loading.h"
+#include "props.h"
+#include "pursuer_ai.h"
+#include "scene_game_members.h"
+#include "skeleton.h"
+#include "snd_place.h"
+#include "stalker_math.h"
+#include "stalker_progress.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+#include "msl.h"
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
-extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
-extern void func_00124E40(Actor *a);
 extern const char *const D_0042C358;
 extern void *D_00476C10[];
 extern const PTMF D_00430A90;
@@ -44,7 +56,6 @@ void *func_00347640(u8 *o, s32 flags);
 
 s32 func_00350C40(f32 *a);
 
-extern void func_002E56C0(u8 *quad);
 /* an effect's quad drawer (at `drawer`) given the current one of its records (`size` apart from
  * +0x10, the index at `idx`), and drawn */
 static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u32 idx, u32 size) {
@@ -253,7 +264,6 @@ void func_00350A10(u8 *o) {
  * the angles, +0x10 the model (0x2C or 0x30) ---- */
 
 extern void *D_00478BC0[], *D_0046F580[], *D_00478B70[], *D_00469D00[];
-extern void func_002D63B0(void *o);         /* delete from the effect heap */
 
 /* +0x8 destructor */
 u8 *func_003507B0(u8 *o, s32 flags) {
@@ -734,8 +744,6 @@ s32 func_00321FE0(u8 *o) {
     return 1;
 }
 
-extern void func_002E56C0(u8 *quad);   /* draw a textured quad (corners +0x14, record +0x10) */
-
 /* +0x14 draw: each of the 16 particles is a unit quad in the xz plane turned by its spin
  * (+0x660), drawn by the quad drawer (+0x610) from the current buffer's record */
 void func_00321E30(u8 *o) {
@@ -761,13 +769,6 @@ void func_00321E30(u8 *o) {
 }
 
 #ifdef HG_NATIVE
-extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
-                      u64 tex0, u32 prim);
-extern void glr_caustic_begin(void);
-extern void glr_caustic_glow(s32 aref);
-extern f32 func_002E2D00(f32 angle);   /* wrap an angle into -pi..pi */
-extern f32 func_0031C058(f32 x);       /* cosf */
-extern f32 func_0031C248(f32 x);       /* sinf */
 
 #define GLR_PRIM_NOZW 0x20000u
 #define GLR_PRIM_FIX(f) (0x80000u | (u32)(f) << 24)   /* blend Cs * f / 128 + Cd */
@@ -844,7 +845,6 @@ s32 func_0034E9E0(u8 *d) {
 #include "effectmgr.h"
 
 extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* +0x8 destructor (the quad drawer at +0x610 inlined) */
 u8 *func_003532A0(u8 *o, s32 flags) {
@@ -1061,8 +1061,6 @@ void func_00353BD0(u8 *o) {
 
 extern void *D_00477AC0[];
 extern f32 D_0043B640[], D_0043B644[];   /* the spots: x, z (read as pairs) */
-extern f32 func_0031C058(f32 x);   /* cosf */
-extern f32 func_0031C248(f32 x);   /* sinf */
 
 #define SMOKE_PUFF(o, i) ((o) + AT(o, 0x1BB0, s32) * 0xC00 + (i) * 0x30 + 0x10)
 
@@ -1656,9 +1654,6 @@ void func_00357940(u8 *o, const s32 *params) {
  * the swarm has moved (+0x88 the tilt last dusted) ---- */
 
 extern void *D_0046EA90[], *D_0046D730[], *D_00470E00[];
-extern void func_002672E0(void *p);   /* delete (the effects' heap) */
-extern f32 func_002E2D00(f32 angle);                     /* wrapped into -pi..pi */
-extern void func_002E2C10(f32 *out, f32 angle);         /* the unit vector of a heading */
 extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
 
 /* +0x8 destructor */
@@ -2148,7 +2143,6 @@ void func_0033CB40(u8 *o) {
 
 extern void *D_00476BF0[];
 extern f32 D_004309D0[];   /* the five spots (x, y, z) */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 #define DRIP_P(o, k, j, off) AT((o) + (k) * 0x40 + (j) * 4, (off), f32)
 #define DRIP_LIFE(o, k, j) AT((o) + (k) * 0x40 + (j) * 4, 0x1C0, s32)
@@ -2566,8 +2560,6 @@ s32 func_00378650(u8 *o) {
 #ifdef HG_NATIVE
 #include <stdint.h>
 
-extern u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa);   /* loading.c */
-
 /* +0xC draw: GAME_FIX.GFM model +0x30 (texture 2 of group 0x10, palettes the parts' +0x4 plus
  * +0x34) at +0x10 turned by +0x20; its later parts each turned and moved further by their
  * own +0x30 / +0x40. 0 when the texture isn't loaded. */
@@ -2871,8 +2863,6 @@ void func_00371E00(u8 *o) {
  * two buffers of quad records (+0x10 + 0x300 x the current one +0x6CC), sideways drifts at
  * +0x648 (x, z), the quad drawer at +0x610; each fades in to 0x10, then out on the even
  * frames ---- */
-
-extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define WISPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x300) + (i))
 

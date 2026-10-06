@@ -82,17 +82,19 @@ GAME_OFFSET_CHECK(resetHoldFrames, 0x14E8FBC);
 
 extern Game gGame;
 
-void Game_Run(Game *game);
-void Game_Init(Game *game);
-void Game_SetState(Game *game, const PTMF *state);
-void Game_StateMain(Game *game);
-void Game_StateShutdown(Game *game);
-void Game_StartNextScene(Game *game);
+typedef struct PTMF PTMF;
 
-void Scene_SetSlot(Scene *scene, u32 slot); /* u8 */
-void Scene_Activate(Scene *scene);
-Scene *Scene_dtor(Scene *scene, s32 flags);
-void Scene_Update(Scene *scene, s32 arg);
-void Scene_OnSoftReset(Scene *scene);
+/* game.c */
+extern void Game_Init(Game *game);
+extern void Game_Run(Game *game);
+extern void Game_SetState(Game *game, const PTMF *state);
+extern void Game_StateMain(Game *game);
+extern void Game_StateShutdown(Game *game);
+extern void Game_StartNextScene(Game *game);
+extern void *func_002D0C10(u8 *o, s32 flags);
+extern void *func_002D0CE0(u8 *o, s32 flags);
+extern void *func_002D0D60(u8 *o, s32 flags);
+extern void *func_002D0DF0(u8 *o, s32 flags);
+extern void *Game_dtor(u8 *g, s32 flags);
 
 #endif /* GAME_H */

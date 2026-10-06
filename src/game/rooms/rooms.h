@@ -15,20 +15,17 @@
 #include "texcache.h"
 #include "charaction.h"
 #include "pursuer.h"
+#include "hewie.h"
+#include "lorenzo.h"
+#include "scene_game_members.h"
+#include "msl.h"
 
-extern void func_00100490(void *p);   /* operator delete */
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (id) the object */
-extern f32 func_0031C248(f32 x);   /* sinf */
-extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
-extern void func_002D6170(u8 *mgr, s32 slot);
 extern void *D_00472F60[];
-extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
-extern void func_002670F0(u8 *fx, s32 n);   /* effect slot n gone */
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
 extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
 extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "movechair_2" */
 extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* "sara_l", "sara_r", "tenbin" */
-extern f32 func_0031C248(f32 x);   /* sinf */
 extern const char *const D_00403964;   /* "movechair_3" */
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
 extern const char *const D_003F99B8[];   /* { "kousi" } */
@@ -57,13 +54,9 @@ extern const char *const D_004123E8;     /* room 0x5D's lever */
 extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
 extern const char *const D_0047AD08[];   /* room 0x62's objects */
 extern const char *const D_00429130;
-extern f32 func_0031C248(f32 x);   /* sinf */
 /* ---- the slam shake: frame hooks of Lorenzo's (kind 0xA) rooms shake the camera (+0x6C, 0.5)
  * when his slam lands ---- */
 /* ---- the countdown's start / stop hooks ---- */
-extern void func_00136620(void *h);   /* Hewie restarted (hewie.c) */
-extern void func_002A76E0(u8 *p);     /* four bytes cleared */
-
 
 typedef struct GreyMsg {
     f32 a, b, c, d, e;
@@ -78,10 +71,12 @@ extern void *D_0046FF20[];
 extern void *D_00469D00[];
 extern void *D_0046FC30[];
 extern void *D_004737D0[];
-extern void *func_002672F0(u32 size, void *place);
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void *D_0047A3D0[];
 extern void *D_00479A80[];
+
+/* common.c */
+extern void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3);
+extern void func_0032D270(u8 *self, s32 a, f32 x, f32 y);
 
 /* a room's class: its vtable, then the base's */
 static inline void *room_dtor(void *o, s32 flags, void **own, void **base) {
@@ -670,7 +665,7 @@ static inline s32 clock_start(void) {
     u8 *p = (u8 *)gProgress;
 
     p[0x1FBEC1] = 1;
-    func_00136620(gCharPartner);
+    func_00136620((Hewie *)gCharPartner);
     VCALL(gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, 14.0f);
     func_002A76E0(p + 0xFC4);
     return 1;

@@ -7,6 +7,8 @@
 #include "game.h"
 #include "globals.h"
 
+/* texcache.c */
+extern u64 func_002B71D0(s32 sel);   /* TEX0 of a texture */
 
 /* The VRAM slot of texture `id` of `group` and its header (*tex), uploading it into renderer
  * layer `layer` first if it isn't resident (slot bit 31); -1 if it isn't cached or the upload

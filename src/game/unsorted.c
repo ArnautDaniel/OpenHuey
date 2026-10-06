@@ -5,6 +5,7 @@
 #include "gs.h"
 #include "texcache.h"
 #include "globals.h"
+#include "unsorted.h"
 
 /* clear bit `bit` of the mask at +4 (-1: none) */
 void func_001AAB80(u8 *p, s32 bit) {
@@ -17,7 +18,6 @@ s32 func_0017FD40(void *p) {
     return 1;
 }
 
-
 static const char sAvoidTex[] = "SYSTEM\\AVOID.TEX";
 
 /* (SceneGame +0x1053480, global D_00456DE8) for a new room: load SYSTEM\AVOID.TEX, reset */
@@ -26,8 +26,6 @@ void func_0031E150(u8 *o) {
     AT(o, 0x11040, u8) = 0xFF;
     AT(o, 0x11044, s32) = 0;
 }
-
-
 
 #ifdef HG_NATIVE
 #include "gl2d.h"

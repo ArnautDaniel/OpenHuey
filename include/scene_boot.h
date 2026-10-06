@@ -5,7 +5,6 @@
 #include "game.h"
 #include "task.h"
 
-
 /* The system data kept on the memory card (0x50 bytes, the options). */
 typedef struct SysData {
     /* 0x00 */ u32 sum;        /* of bytes 0x04..0x4F */
@@ -67,5 +66,8 @@ _Static_assert(__builtin_offsetof(SceneBoot, logoCri) == 0x21440, "logoCri");
 _Static_assert(__builtin_offsetof(SceneBoot, card) == 0xC7440, "card");
 _Static_assert(__builtin_offsetof(SceneBoot, unkC75F4) == 0xC75F4, "unkC75F4");
 _Static_assert(sizeof(SceneBoot) == 0xC7700, "SceneBoot size");
+
+/* scene_boot.c */
+extern SceneBoot *SceneBoot_ctor(SceneBoot *boot);   /* mode 1: memory card check, logos */
 
 #endif /* SCENE_BOOT_H */

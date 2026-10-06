@@ -23,11 +23,11 @@
 #include "globals.h"
 #include "progress.h"
 #include "actor.h"
+#include "items.h"
+#include "synth.h"
 
 extern void *D_00474020[];
 extern u8 D_0047B350;
-extern u32 func_00260CF0(void *items, s32 id);      /* how many of an item */
-extern s32 func_00260BB0(void *items, s32 id);      /* one of an item used */
 extern const char D_00460408[];                     /* the count's format */
 extern const char D_00460410[];                     /* "ITEM SYNTHESIZER(POT)" */
 extern const PTMF D_0042C410, D_0042C420, D_0042C430, D_0042C440, D_0042C450;
@@ -395,8 +395,6 @@ s32 func_00323890(u8 *o) {
 }
 
 /* draws: a row's symbol and a cell's (GL) */
-void func_00323510(u8 *o, u8 row, u8 v, s32 a);
-void func_003230B0(u8 *o, u8 k, u8 v);
 
 extern const u8 D_00460430[][35];      /* the reels */
 extern const u8 D_004605C0[][11];      /* per material: the reels' chances (%) */

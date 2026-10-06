@@ -11,6 +11,10 @@
 #include "ptmf.h"
 #include "item.h"
 #include "game.h"
+#include "model.h"
+#include "pursuer_ai.h"
+#include "skeleton.h"
+#include "stalker_progress.h"
 
 extern u8 D_004137B0[], D_00414220[], D_00414270[], D_00413E10[], D_00413E60[], D_00413E80[], D_00413EC8[];
 extern u8 D_004139D0[], D_00413A10[], D_00413640[], D_004137A0[], D_0047AC08[];

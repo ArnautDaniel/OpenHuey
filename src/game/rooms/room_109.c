@@ -5,13 +5,12 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046FE40[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern s32 D_0047B278;
 extern s32 func_0032D150(Character *c);
-extern void func_0032D270(Character *c, s32 a, f32 x, f32 y);
 
 extern u8 D_004193D0[];
 extern u8 D_00419400[];
@@ -49,7 +48,7 @@ s32 func_002E7600(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
 
     if (cmd[3] == 0) {
-        func_0032D270(c, 2, -6.0f, 257.0f);
+        func_0032D270((u8 *)c, 2, -6.0f, 257.0f);
         return 1;
     }
     return func_0032D150(c) == 0 ? 2 : 1;

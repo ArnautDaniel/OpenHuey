@@ -4,7 +4,10 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
-
+#include "camctl.h"
+#include "hewie.h"
+#include "spline.h"
+#include "msl.h"
 
 /* reset for a new room: reset the camera, no setup selected, default light direction */
 void func_00225550(u8 *d) {
@@ -89,11 +92,9 @@ s32 func_00223E20(u8 *d) {
     return AT(d, 0xF4, u8);
 }
 
-extern f32 func_0031C058(f32 x);
 extern void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t);
 extern void func_00219E10(u8 *d, s32 setup, f32 t);
 extern f32 func_002197A0(u8 *d, s32 mode, f32 t);
-extern void func_0025F6A0(void *o, f32 v);
 extern void func_00219D70(u8 *d, f32 *out, f32 t);   /* the look-at point at t */
 extern void func_00219CD0(u8 *d, f32 *out, f32 t);   /* the eye at t */
 extern void func_002243D0(u8 *d, s32 n);
@@ -145,7 +146,6 @@ void func_002252B0(u8 *d, s32 target) {
     }
 }
 
-
 /* the camera director restarted (renderer +0x5C; +0x8C 0x80, +0x90 60, the field of view back
  * to +0x84): with no setup (+0x70) the free camera on its target, else setup's position at
  * t 0 */
@@ -183,9 +183,6 @@ void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t) {
     }
     func_00219E10(d, setup, t);
 }
-
-extern f32 func_0025F580(void *spline, s32 comp, f32 u);       /* evaluate component comp at u */
-extern void func_0025F7A0(void *spline, s32 n, s32 dims, f32 *keys);
 
 /* setup `setup` of the room's camera data: its spline (keys after the header and the earlier
  * setups' keys) into +0x8, the lengths of its two paths (components 0..2 +0x28, 3..5 +0x24,
@@ -244,7 +241,6 @@ void func_00219E10(u8 *d, s32 setup, f32 t) {
     AT(d, 0x4, f32) = kSpeed.f / (AT(d, 0x28, f32) / 100.0f);
     func_0025F6A0(d + 8, t);
 }
-
 
 /* the point of the target to keep in view: its position (+0x38) + offset (+0x40) */
 
@@ -411,7 +407,6 @@ void func_00224EE0(u8 *d) {
     }
 }
 
-
 /* move along the camera path from time `from` (below 1: the current time +0x8) towards `to`,
  * by the distance the look-at point (components 3..5) covers between them, measured in steps
  * of +0x0 and scaled by +0x50 / +0x24; clamped to `to` and the path's range +0x14..+0x18 */
@@ -469,7 +464,6 @@ f32 func_00219530(u8 *d, f32 to, f32 from) {
     }
     return res;
 }
-
 
 /* each frame: when the camera set (+0x6C, last applied +0x78) changes or the target (+0xB0,
  * last +0xB4) left the view (no setup: the camera's test +0xD4; else its path time differs
@@ -529,13 +523,11 @@ void func_00224C60(u8 *d) {
     }
 }
 
-
 /* each frame: the director's mode (+0xE8, a member function), then the camera's update */
 void func_00224C20(u8 *d) {
     ptmf_scall(d, &AT(d, 0xE8, PTMF));
     VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
 }
-
 
 extern f32 D_0047E410, D_0047E418;   /* the right stick, x and y (-1..1) */
 void func_00223F70(f32 *p);           /* the event camera's frame */
@@ -638,9 +630,6 @@ void func_00224770(u8 *d) {
     AT(d, 0x150, u8) = AT(d, 0x69, u8);
 }
 
-
-extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
-extern f32 func_002E2D00(f32 angle);     /* wrapped into -pi..pi */
 /* keep the target in view: the director's target (a character +0xB0's position plus +0xC0, else
  * the point +0xA0) against where the camera looks (+0x2C) from its eye (+0x20); beyond 5 degrees
  * up / down or 10 across, the camera turns (+0x3C) `rate` percent of the rest of the way */
@@ -681,7 +670,6 @@ void func_002243D0(u8 *o, s32 rate) {
 
 /* ---- the camera director's (D_0046C668 at +0x60) small methods (2026-10-05) ---- */
 
-extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
 
 /* destructor: its two vtables (+0x64, +0x60), the global gCamDirector cleared, its state reset

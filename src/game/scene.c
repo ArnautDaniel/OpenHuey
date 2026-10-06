@@ -1,6 +1,7 @@
 /* Scene: base of the game modes owned by Game (see Game_StartNextScene). */
 #include "common.h"
 #include "game.h"
+#include "scene.h"
 
 extern void *Scene_vtable[];
 

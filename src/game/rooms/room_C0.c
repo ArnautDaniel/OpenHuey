@@ -5,12 +5,16 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "actor.h"
+#include "scene_game_members.h"
+#include "stalker_progress.h"
+#include "msl.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_00474F40[];
 extern void *D_00479A60[];
 extern const char *D_0042E408;
-extern void func_001267F0(void *c, s32 light);
 extern PTMF D_01991610[];
 extern PTMF D_01991650[];
 

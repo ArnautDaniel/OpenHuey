@@ -14,10 +14,12 @@
 #include "texcache.h"
 #include "globals.h"
 #include "ptmf.h"
+#include "bootcard.h"
+#include "scene_game_members.h"
+#include "msl.h"
 
 #define AT32(p, off) AT(p, off, s32)
 
-extern void func_00100490(void *p);   /* operator delete */
 extern s32 D_0047B258[2];   /* check status per slot */
 extern s32 D_0047B260;      /* slot 1's status; 9: its data couldn't be read */
 
@@ -661,8 +663,6 @@ void SaveScreen_Load(BootCard *b) {
 
 #include "progress.h"
 
-extern void func_002A76E0(u8 *p);         /* four bytes cleared */
-extern void func_002A8060(u8 *p);         /* a fresh save's progress */
 extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */
 extern s32 D_0047B264;                    /* the last check's status */
 extern s32 D_0047B268;                    /* the empty saves written so far */

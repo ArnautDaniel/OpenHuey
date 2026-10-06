@@ -1,8 +1,7 @@
 /* Quaternions (x, y, z, w). */
 #include "common.h"
-
-extern f32 func_0031C248(f32 x);   /* sinf */
-extern f32 func_0031C058(f32 x);   /* cosf */
+#include "quat.h"
+#include "msl.h"
 
 /* the rotation by `angle` about the unit `axis` */
 void func_0025C6F0(f32 *q, const f32 *axis, f32 angle) {
@@ -34,10 +33,7 @@ void func_0025C770(const f32 *q, f32 (*m)[4]) {
     m[3][3] = 1.0f;
 }
 
-
 #include "sce/libvu0.h"
-
-extern f32 func_0031C3C0(f32 x);   /* acosf */
 
 /* blend bone matrix `a` towards `b` by `t` into `out`: the rotation from a to b as an axis and
  * angle, turned by t of it (the quaternion left in `q`), the positions mixed */

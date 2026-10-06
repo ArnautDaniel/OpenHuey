@@ -86,6 +86,7 @@
 #define DEBILITAS_GIVE_UP_HITS 80
 #include "debilitas_body.inc"
 #include "ptmf.h"
+#include "debilitas2.h"
 
 void *func_002FA320(void);
 

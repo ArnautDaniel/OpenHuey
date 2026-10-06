@@ -5,14 +5,15 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "fiona.h"
+#include "progress.h"
+#include "snd_place.h"
+#include "sce/libvu0.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E700[];
-extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern const char *D_0040AC10[];
 extern s32 D_0047B250;                   /* room 0x4C: what the player has done so far */
-extern s32 func_00183190(void *f);
 
 extern u8 D_00409980[];
 extern u8 D_00409A80[];
@@ -90,7 +91,7 @@ s32 func_002B3720(void *self, void *a1, u8 *cmd) {
         AT(gCharPlayer, 0x1AD714, s32) = 0;
         break;
     case 1:
-        D_0047B250 += func_00183190(gCharPlayer);
+        D_0047B250 += func_00183190((Fiona *)gCharPlayer);
         if (D_0047B250 >= 0x23) {
             VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 0x13);
         }

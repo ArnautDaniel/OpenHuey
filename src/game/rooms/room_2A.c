@@ -5,6 +5,7 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "scene_game_members.h"
 
 extern void *D_0046DB80[];
 extern void *D_0046E4C0[];

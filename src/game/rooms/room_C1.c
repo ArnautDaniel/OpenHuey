@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
+#include "stalker_progress.h"
 
 extern void *D_0046DB80[];
 extern void *D_004785B0[];

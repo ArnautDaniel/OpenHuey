@@ -6,6 +6,7 @@
 #include "game.h"
 #include "globals.h"
 #include "ptmf.h"
+#include "message.h"
 
 extern const u8 D_003EA970[]; /* per slot: kind, group, ? */
 extern const u8 D_003EA971[];

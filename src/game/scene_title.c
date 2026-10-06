@@ -11,6 +11,17 @@
 #include "progress.h"
 #include "actor.h"
 #include "pursuer.h"
+#include "bgm.h"
+#include "bootcard.h"
+#include "heap.h"
+#include "item_classes.h"
+#include "message.h"
+#include "movie.h"
+#include "renderer.h"
+#include "scene_game_members.h"
+#include "subscreen.h"
+#include "libc.h"
+#include "msl.h"
 
 extern void *Scene_vtable[];
 extern void *D_0046A040[];          /* SceneTitle */
@@ -21,16 +32,9 @@ extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *D_004699C0[], *D_0046A
 extern void *D_0046C790[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
-extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);   /* __construct_array */
-extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
-extern void func_002D2370(void *bgm, void *work);
-extern void *BootCard_ctor(void *card);   /* BootCard constructor */
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002E34D0(u8 *p);
-
-extern s32 func_00303E60(u8 *o, s32 a1);
 s32 func_00384C50(u8 *g, s32 a1);
 s32 func_00384C60(u8 *g);
 void func_00384C70(u8 *g, s32 n);
@@ -125,9 +129,6 @@ void func_002E34D0(u8 *p) {
 }
 
 extern u8 D_0047B350;           /* the language */
-extern void func_0026BCC0(void *msg);
-extern void SubScreen_Start(void *sub);
-extern void SubScreen_ApplyOptions(void *sub);
 void SceneTitle_StateStart(SceneTitle *t);
 
 /* +0x10 entry: reset the message object and the sub screen, apply the options, then the title
@@ -146,7 +147,7 @@ void SceneTitle_StateEntry(SceneTitle *t) {
     t->movieSkipped = 0;
     func_0026BCC0(t->msg);
     SubScreen_Start(&t->sub);
-    SubScreen_ApplyOptions(&t->sub);
+    SubScreen_ApplyOptions((VObject *)&t->sub);
     D_0047B350 = 2;
     t->extras = 0;
     if (AT(sys, 0x24, u32) & 1) {
@@ -177,8 +178,6 @@ void SceneTitle_StateStart(SceneTitle *t) {
     ptmf_set_fn(&t->seq, SceneTitle_SeqLoad);
 }
 
-extern void func_002E3200(void *obj);
-
 /* state: the title; run the title's own sequence (its state at +0x140CC0), then the
  * +0x140CA4 object */
 void SceneTitle_StateTitle(SceneTitle *t) {
@@ -192,10 +191,6 @@ void SceneTitle_StateTitle(SceneTitle *t) {
 
 extern void *D_0046ECC0[];        /* SceneMovie */
 extern const char D_0044E940[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
-extern void *__nw__FUiPv(u32 size, void *p);
-extern void *func_002B70D0(void *movie);
-extern void func_002B6D10(void *movie, const char *path, s32 mode, s32 keep);
-extern void func_002B6340(void *movie);
 void SceneTitle_StateAttract(SceneTitle *t);
 
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
@@ -215,7 +210,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0(movie);
+            func_002B70D0((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;
@@ -236,7 +231,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         u8 *m = gMovie;
         f32 *v = &AT(m, 0x1D4, f32);
 
-        func_002B6D10(m, name, 1, 0);
+        func_002B6D10((Movie *)m, name, 1, 0);
         *v = t->movieVolume;
         if (*v < 0.0f) {
             *v = 0.0f;
@@ -244,7 +239,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002B6340(m);
+        func_002B6340((Movie *)m);
     }
 }
 
@@ -333,7 +328,7 @@ static inline s32 title_movie_fade(SceneTitle *t) {
         }
     }
     m = gMovie;
-    func_002B6340(m);
+    func_002B6340((Movie *)m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - *level));
 
@@ -363,9 +358,6 @@ void SceneTitle_StateOpeningFade(SceneTitle *t) {
     }
 }
 
-extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
-extern void func_00114FD0(void *p);                /* free */
-extern void func_002D1FD0(void *bgm);
 extern const char D_0044E8C0[];   /* "SYSTEM\\TITLE.TEX" */
 extern const char D_0044E8E0[];   /* "SYSTEM\\TITLE_BACK.BIN" */
 extern const char D_0044E900[];   /* "SYSTEM\\TITLE.HD" */
@@ -448,7 +440,6 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
     ptmf_set_fn(&t->seq, SceneTitle_SeqPressStart);
 }
 
-extern f32 func_0031C248(f32 x);   /* sinf */
 void SceneTitle_PrepareBackground(SceneTitle *t);
 void SceneTitle_DrawPicture(SceneTitle *t, f32 alpha);
 void SceneTitle_DrawLogo(SceneTitle *t, f32 alpha, f32 scale);
@@ -584,7 +575,7 @@ void SceneTitle_DrawPressStartGlow(SceneTitle *t, f32 alpha) {
 
 /* (the scene) its part +0x97980's func_00303E60 */
 s32 func_00384C50(u8 *g, s32 a1) {
-    return func_00303E60(g + 0x97980, a1);
+    return ((s32 (*)(u8 *, s32))func_00303E60)(g + 0x97980, a1);   /* (void: v0 as it was left) */
 }
 
 s32 func_00384C60(u8 *g) {
@@ -885,7 +876,6 @@ void SceneTitle_DrawMenu(SceneTitle *t, f32 alpha) {
     Task_Run(&t->task);
 }
 
-extern s32 func_002D20D0(void *bgm);
 void SceneTitle_StateDemoStart(SceneTitle *t);
 void SceneTitle_StateNewGame(SceneTitle *t);
 
@@ -936,8 +926,6 @@ void SceneTitle_SeqLeave(SceneTitle *t) {
     }
 }
 
-extern void func_0026BC00(void *msg);
-
 /* +0x14 finish: end the movie scene, drop the sub screen's textures (group 0x19), reset the
  * message object, ask to be finished */
 void SceneTitle_Finish(SceneTitle *t) {
@@ -948,16 +936,10 @@ void SceneTitle_Finish(SceneTitle *t) {
         VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
     }
     VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
-    func_0026BC00(t->msg);
+    func_0026BC00((VObject *)t->msg);
     t->base.request = SCENE_REQ_FINISH;
 }
 
-extern void func_00100490(void *p);   /* operator delete */
-extern void func_0011F9A0(void *p);   /* operator delete (scene heap) */
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
-extern void func_002E31D0(void *bgmctl);
-extern void func_002D2330(void *bgm);
-extern void *BootCard_dtor(void *card, s32 flags);   /* BootCard destructor */
 extern void *D_0046A100[], *D_0046A0D0[];
 
 /* the text object: release (its loads, its textures: group 0x28) */
@@ -1145,7 +1127,6 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
 /* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
 
 extern void *D_0047A330[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *D_004699C0[], *D_004699E0[];
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 static inline void task_end_child(Task *t) {
     if (t != NULL && t->child != NULL) {

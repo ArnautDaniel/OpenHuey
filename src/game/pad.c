@@ -3,11 +3,11 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
+#include "pad.h"
+#include "sce/iop.h"
+#include "sce/libpad2.h"
+#include "sce/libvu0.h"
 
-
-extern s32 func_001EF990(s32 mode);                 /* libpad2: init */
-extern s32 func_001EFA38(s32 port, void *buffer);   /* libpad2: create a socket for port, DMA buffer */
-extern s32 func_001BC0F0(void *iop, const char *module, s32, s32, s32);   /* IOP: load a module */
 extern const char D_0044FEA0[];                     /* pad IOP module */
 
 /* init: libpad2, its IOP module, a socket for port 0 */
@@ -33,11 +33,6 @@ void func_001BE6A0(u8 *pads) {
 #define PAD_PHASE(p) AT(p, 0xC, s32)
 #define PAD_ACTCOUNT(p) AT(p, 0x244, s32)
 
-extern s32 func_001EFD40(s32 socket);                 /* libpad2: state (1 = ready) */
-extern s32 func_001EFC70(s32 socket, void *profile);  /* libpad2: button profile */
-extern s32 func_001EFB98(s32 socket, void *data);     /* libpad2: read */
-extern s32 func_002D25D8(s32 socket, void *mask);     /* actuators (libdbc): count, mask */
-extern void func_002D2658(s32 socket, s32 count, void *mask, s32 bytes, void *data);   /* set actuators (libdbc) */
 void func_002D4780(u8 *pads);   /* input state from the pad data (below) */
 
 /* +0xC set the motors of port `port` (only port 0): small on / off, large strength */
@@ -172,8 +167,6 @@ _Static_assert(sizeof(InputState) == 0x60, "InputState");
 extern InputState D_0047E360;
 extern const u8 D_0047E3C0[16];   /* button map */
 extern const u8 D_0047E3D0[16];   /* analog map */
-extern void sceVu0Normalize(f32 *out, f32 *v);
-extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 
 #define BIT(v, n) (((v) >> (n)) & 1)
 #define SETBIT(w, n, b) ((w) = ((w) & ~(1u << (n))) | ((u32)((b) & 1) << (n)))

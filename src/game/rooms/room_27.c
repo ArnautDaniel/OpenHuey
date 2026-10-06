@@ -5,12 +5,11 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
+#include "items.h"
 
 extern void *D_0046DB80[];
 extern void *D_00470DC0[];
 extern u8 D_0047ACB0[];
-extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern void func_00261090(void *list, s32 item, s32 n);   /* given */
 
 extern u8 D_0041C390[];
 extern u8 D_0041C3E0[];

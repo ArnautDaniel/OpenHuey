@@ -43,4 +43,9 @@ enum {
     MC_NO_CARD = 4,
 };
 
+/* memcard.c */
+extern MemCard *func_001BF550(MemCard *mc, s32 flags);
+extern void func_00226510(MemCard *mc);   /* memory card tick */
+extern s32 func_00226560(MemCard *mc);   /* memory card: sceMcEnd */
+
 #endif /* MEMCARD_H */
