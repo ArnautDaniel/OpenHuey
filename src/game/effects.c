@@ -5037,6 +5037,298 @@ static s32 rnd_int(void) {
     return VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550);
 }
 
+/* ---- the spark itself (D_00479E50, 0x170 bytes): two quads - a glow (records +0x10 / +0x40,
+ * drawer +0xD0, velocity +0x150) and a flare (records +0x70 / +0xA0, drawer +0x108, velocity
+ * +0x15C), the current frame +0x168; at a bone (+0x144) of a model (+0x140), size +0x148, the
+ * marker's slot +0x14C; +0x16C gone, +0x16D placed at the bone again next frame, +0x16E
+ * flickering ---- */
+
+#define SPARK_GLOW(o, buf) ((QuadRec *)((o) + 0x10 + (buf) * 0x30))
+#define SPARK_FLARE(o, buf) ((QuadRec *)((o) + 0x70 + (buf) * 0x30))
+
+/* one quad of a spark flickered by `k`: its colour scaled, thrown 20 x its velocity x k, grown
+ * by k */
+static inline void spark_flicker(QuadRec *r, const f32 *v, f32 k) {
+    r->rgba[0] = (s32)((f32)r->rgba[0] * k);
+    r->rgba[1] = (s32)((f32)r->rgba[1] * k);
+    r->rgba[2] = (s32)((f32)r->rgba[2] * k);
+    r->rgba[3] = (s32)((f32)r->rgba[3] * k);
+    r->pos[0] = r->pos[0] + 20.0f * (v[0] * k);
+    r->pos[1] = r->pos[1] + 20.0f * (v[1] * k);
+    r->pos[2] = r->pos[2] + 20.0f * (v[2] * k);
+    r->w = r->w + k;
+    r->h = r->w;
+}
+
+/* both quads moved to the bone; flickering: by a random amount */
+void func_00366000(u8 *o) {
+    f32 p[4] __attribute__((aligned(16)));
+    f32 k;
+
+    AT(o, 0x16D, u8) = 0;
+    sceVu0CopyVector(p, func_0017CE80(AT(AT(o, 0x140, u8 *), 0x810, void *), AT(o, 0x144, s32)) + 12);
+    sceVu0CopyVector(SPARK_GLOW(o, AT(o, 0x168, s32))->pos, p);
+    sceVu0CopyVector(SPARK_FLARE(o, AT(o, 0x168, s32))->pos, p);
+    if (!AT(o, 0x16E, u8)) {
+        return;
+    }
+    k = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    spark_flicker(SPARK_GLOW(o, AT(o, 0x168, s32)), (f32 *)(o + 0x150), k);
+    spark_flicker(SPARK_FLARE(o, AT(o, 0x168, s32)), (f32 *)(o + 0x15C), k);
+}
+
+/* a random turn (-pi..pi) and the first frame */
+static inline void spark_turn(QuadRec *r, VObject *rnd) {
+    static const union { u32 u; f32 f; } k360 = {0x43B40000}, kPi = {0x40490FDB};   /* multiplied first */
+
+    r->turn = kPi.f * (k360.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+    r->frame = 0;
+}
+
+static inline void spark_white(QuadRec *r, s32 alpha) {
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = alpha;
+}
+
+/* +0x18 start: arg (SparkPrm) { size, model, bone, scale, the marker's slot, flickering, other
+ * cells }: a size 0.49 or under gives a small glow and a tiny rising flare (cell (192, 64),
+ * palette 3), else a glow and a flare dimmed under size 1; other cells: (320, 160) 64 x 64,
+ * palette 7. None: gone */
+void func_00366270(u8 *o, SparkPrm *arg) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k04 = {0x3ECCCCCD};   /* multiplied first */
+    VObject *rnd;
+    QuadRec *r;
+    f32 size;
+
+    if (arg == NULL) {
+        AT(o, 0x16C, u8) = 1;
+        return;
+    }
+    size = arg->size;
+    AT(o, 0x16D, u8) = 1;
+    AT(o, 0x140, u32) = arg->follow;
+    AT(o, 0x144, s32) = arg->kind;
+    AT(o, 0x148, f32) = arg->scale * size;
+    if (AT(o, 0x148, f32) < 0x1.99999ap-4f) {
+        AT(o, 0x148, f32) = 0x1.99999ap-4f;   /* 0.1 */
+    }
+    AT(o, 0x14C, u32) = arg->from;
+    if (size <= 0x1.f5c290p-2f) {   /* 0.49 */
+        rnd = D_0044E550;
+        r = SPARK_GLOW(o, AT(o, 0x168, s32));
+        spark_white(r, 0x40);
+        r->w = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->h = r->w;
+        spark_turn(r, rnd);
+        AT(o, 0x150, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x154, u32) = 0x3DCCCCCD;   /* 0.1 */
+        AT(o, 0x158, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x110, s64) = -1;
+        AT(o, 0x11C, s32) = 0;
+        AT(o, 0x120, s32) = 0;
+        AT(o, 0x124, s32) = 0;
+        AT(o, 0x128, s32) = 0x19;
+        AT(o, 0x12C, s16) = 1;
+        AT(o, 0x12E, s16) = 0xC0;
+        AT(o, 0x130, s16) = 0x40;
+        AT(o, 0x132, s16) = 0x20;
+        AT(o, 0x134, s16) = 0x20;
+        AT(o, 0x136, s16) = 0x200;
+        AT(o, 0x138, s16) = 0x100;
+        AT(o, 0x13A, s8) = 0;
+        AT(o, 0x13B, s8) = 1;
+        AT(o, 0x13C, s8) = 1;
+        AT(o, 0x13D, s8) = 0x10;
+        AT(o, 0x13E, s8) = 3;
+        r = SPARK_FLARE(o, AT(o, 0x168, s32));
+        spark_white(r, 0x80);
+        r->w = 0x1.99999ap-3f + 0x1.99999ap-3f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);   /* 0.2 + 0.2 x */
+        r->h = r->w;
+        spark_turn(r, rnd);
+        AT(o, 0x15C, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x160, f32) = k04.f * (0.5f - AT(o, 0x148, f32));
+        AT(o, 0x164, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x148, f32) = 1.0f;
+    } else {
+        r = SPARK_GLOW(o, AT(o, 0x168, s32));
+        spark_white(r, 0x80);
+        if (size < 1.0f) {
+            r->rgba[3] = (s32)((f32)r->rgba[3] * size);
+        }
+        rnd = D_0044E550;
+        r->w = 0.5f + 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->h = r->w;
+        spark_turn(r, rnd);
+        AT(o, 0x150, f32) = k02.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x154, f32) = 0.25f;
+        AT(o, 0x158, f32) = k02.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        r = SPARK_FLARE(o, AT(o, 0x168, s32));
+        spark_white(r, 0x80);
+        if (size < 1.0f) {
+            r->rgba[3] = (s32)((f32)r->rgba[3] * size);
+        }
+        rnd = D_0044E550;
+        r->w = 1.0f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        r->h = r->w;
+        spark_turn(r, rnd);
+        AT(o, 0x15C, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x160, u32) = 0x3DCCCCCD;   /* 0.1 */
+        AT(o, 0x164, f32) = k01.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    }
+    AT(o, 0x16E, u8) = AT(arg, 0x14, u32) != 0;   /* (the float's bits) */
+    if (arg->second == 0.0f) {
+        return;
+    }
+    AT(o, 0xF6, s16) = 0x140;
+    AT(o, 0xF8, s16) = 0xA0;
+    AT(o, 0xFA, s16) = 0x40;
+    AT(o, 0xFC, s16) = 0x40;
+    AT(o, 0x106, s8) = 7;
+    if (size <= 0x1.f5c290p-2f) {
+        return;
+    }
+    AT(o, 0x12E, s16) = 0x140;
+    AT(o, 0x130, s16) = 0xA0;
+    AT(o, 0x132, s16) = 0x40;
+    AT(o, 0x134, s16) = 0x40;
+    AT(o, 0x13E, s8) = 7;
+}
+
+extern s32 func_002D6020(u8 *mgr, s32 slot);   /* a slot's effect state (3: ended) */
+
+/* the spark's shared checks: none outside cutscenes with no stalker; gone with its marker */
+static inline s32 spark_live(u8 *o) {
+    if (D_0044F808 == NULL && (u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
+        return -1;
+    }
+    if (func_002D6020(D_0044E578, AT(o, 0x14C, s32)) == 3) {
+        AT(o, 0x16C, u8) = 1;
+    }
+    return 0;
+}
+
+/* +0x14 draw (not while paused): placed at the bone if due, the flare then the glow */
+void func_00366910(u8 *o) {
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    if (spark_live(o) < 0) {
+        return;
+    }
+    if (AT(o, 0x16C, u8)) {
+        return;
+    }
+    if (AT(o, 0x16D, u8) == 1) {
+        func_00366000(o);
+    }
+    AT(o, 0x118, QuadRec *) = SPARK_FLARE(o, AT(o, 0x168, s32));
+    func_002E56C0(o + 0x108);
+    AT(o, 0xE0, QuadRec *) = SPARK_GLOW(o, AT(o, 0x168, s32));
+    func_002E56C0(o + 0xD0);
+}
+
+/* one quad's step while it shows: grown by up to `grow`, turned up to 3 degrees (the way the
+ * glow drifts), moved, faded by 2 + up to 7 / size and darkened by 1 / size; out once black */
+static inline void spark_step(u8 *o, QuadRec *r, const f32 *v, f32 grow) {
+    static const union { u32 u; f32 f; } k3 = {0x40400000}, kPi = {0x40490FDB};   /* multiplied first */
+    VObject *rnd = D_0044E550;
+
+    AT(o, 0x16C, u8) = 0;
+    r->w = r->w + grow * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    r->h = r->w;
+    if (!(AT(o, 0x150, f32) <= 0.0f)) {
+        r->turn = r->turn + kPi.f * (k3.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
+    } else {
+        r->turn = r->turn - kPi.f * (k3.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
+    }
+    r->pos[0] = r->pos[0] + v[0];
+    r->pos[1] = r->pos[1] + v[1];
+    r->pos[2] = r->pos[2] + v[2];
+    r->rgba[3] = r->rgba[3] - ((s32)((f32)(VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) / AT(o, 0x148, f32)) + 2);
+    if (r->rgba[3] < 0) {
+        r->rgba[3] = 0;
+    }
+    r->rgba[0] = r->rgba[0] - (s32)(1.0f / AT(o, 0x148, f32));
+    if (r->rgba[0] < 0) {
+        r->rgba[0] = 0;
+    }
+    r->rgba[1] = r->rgba[1] - (s32)(1.0f / AT(o, 0x148, f32));
+    if (r->rgba[1] < 0) {
+        r->rgba[1] = 0;
+    }
+    r->rgba[2] = r->rgba[2] - (s32)(1.0f / AT(o, 0x148, f32));
+    if (r->rgba[2] < 0) {
+        r->rgba[2] = 0;
+    }
+    if (r->rgba[0] + r->rgba[1] + r->rgba[2] == 0) {
+        r->rgba[3] = 0;
+    }
+}
+
+/* +0x10 update: placed at the bone if due; flip the frames, each quad carried over and
+ * stepped while it shows (the glow growing up to 0.1, the flare 0.2); 0 once both are out */
+s32 func_00366A30(u8 *o) {
+    s32 k;
+
+    if (spark_live(o) < 0) {
+        return 0;
+    }
+    if (AT(o, 0x16C, u8) == 1) {
+        return 0;
+    }
+    if (AT(o, 0x16D, u8) == 1) {
+        func_00366000(o);
+    }
+    AT(o, 0x168, s32) ^= 1;
+    AT(o, 0x16C, u8) = 1;
+    for (k = 0; k < 12; k++) {
+        ((u32 *)SPARK_GLOW(o, AT(o, 0x168, s32)))[k] = ((u32 *)SPARK_GLOW(o, AT(o, 0x168, s32) ^ 1))[k];
+    }
+    if (SPARK_GLOW(o, AT(o, 0x168, s32))->rgba[3] > 0) {
+        spark_step(o, SPARK_GLOW(o, AT(o, 0x168, s32)), (f32 *)(o + 0x150), 0x1.99999ap-4f);
+    }
+    for (k = 0; k < 12; k++) {
+        ((u32 *)SPARK_FLARE(o, AT(o, 0x168, s32)))[k] = ((u32 *)SPARK_FLARE(o, AT(o, 0x168, s32) ^ 1))[k];
+    }
+    if (SPARK_FLARE(o, AT(o, 0x168, s32))->rgba[3] > 0) {
+        spark_step(o, SPARK_FLARE(o, AT(o, 0x168, s32)), (f32 *)(o + 0x15C), 0x1.99999ap-3f);
+    }
+    return 1;
+}
+
+/* a spark drawer's settings: one quad of a 32 x 32 cell at (384, 128), blended, palette 6,
+ * layer 0x19 */
+static inline void spark_drawer(u8 *d) {
+    AT(d, 0x8, s64) = -1;
+    AT(d, 0x14, s32) = 0;
+    AT(d, 0x18, s32) = 0;
+    AT(d, 0x1C, s32) = 0;
+    AT(d, 0x20, s32) = 0x19;
+    AT(d, 0x24, s16) = 1;
+    AT(d, 0x26, s16) = 0x180;
+    AT(d, 0x28, s16) = 0x80;
+    AT(d, 0x2A, s16) = 0x20;
+    AT(d, 0x2C, s16) = 0x20;
+    AT(d, 0x2E, s16) = 0x200;
+    AT(d, 0x30, s16) = 0x100;
+    AT(d, 0x32, s8) = 0x40;
+    AT(d, 0x33, s8) = 1;
+    AT(d, 0x34, s8) = 1;
+    AT(d, 0x35, s8) = 0x10;
+    AT(d, 0x36, s8) = 6;
+}
+
+/* +0xC set up: frame 0, both drawers */
+void func_003670E0(u8 *o) {
+    AT(o, 0x168, s32) = 0;
+    AT(o, 0x16C, u8) = 0;
+    AT(o, 0x16D, u8) = 0;
+    spark_drawer(o + 0xD0);
+    spark_drawer(o + 0x108);
+}
+
 /* the marker's sparks: one of 27 kinds and two more of some kinds (the second kind: other
  * kinds, and now and then one on Fiona) */
 void func_003012B0(u8 *o, s32 flag) {
