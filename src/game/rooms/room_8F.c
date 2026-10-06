@@ -108,18 +108,18 @@ s32 Room8F_Cmd02(void) {
     return grey_three(50.0f, spot, b, c, d);
 }
 
-/* byte 3: 0 / 1 a named progress call; 2 waits (2) for func_0016CD60(0, 0); else func_0016CD30 */
+/* byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(0, 0); else func_0016CD30 */
 /* 0x00341300 */
 s32 Room8F_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        func_0016CEC0(gProgress, D_004365E4);
+        Progress_LoadSpeech(gProgress, D_004365E4);
         return 1;
     case 1:
-        func_0016CEC0(gProgress, D_004365E8);
+        Progress_LoadSpeech(gProgress, D_004365E8);
         return 1;
     case 2:
-        return func_0016CD60(gProgress, 0, 0) == 0 ? 2 : 1;
+        return Progress_Speak(gProgress, 0, 0) == 0 ? 2 : 1;
     }
     ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;

@@ -39,13 +39,13 @@ f32 TintStalker_ReachHewie(void);
 s32 TintStalker_SlowWalkAnim(u8 *self);
 void *TintStalker_Table(void);
 
-/* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),
+/* vtable +0xE4: at a door it breaks (Progress_ExitOpen), outside the ending (gProgress+0x1FBEC1),
    while opening or attacking it: use and damage it and change room through it (vtable +0x28) */
 /* 0x0031F3E0 */
 void TintStalker_BreakDoor(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
-    if (!(func_00178980(pr, p->c.a.room, exit) & 0xFF) || AT(pr, 0x1FBEC1, u8) != 0) {
+    if (!(Progress_ExitOpen(pr, p->c.a.room, exit) & 0xFF) || AT(pr, 0x1FBEC1, u8) != 0) {
         return;
     }
     switch (PU(p, 0x175C, s32)) {

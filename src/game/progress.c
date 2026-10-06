@@ -76,7 +76,8 @@ s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit) {
 }
 
 /* how the game scene starts: the room (bits 0x40000000: the extra mode) */
-void func_001779B0(Progress *p, s32 entry) {
+/* 0x001779B0 */
+void Progress_SetStartEntry(Progress *p, s32 entry) {
     AT(p, 0x6FC214, s32) = entry;
 }
 
@@ -85,7 +86,8 @@ static const char sBankSdt[] = "D_%01X000.SDT";
 static const char sBankBd[] = "D_%01X000.BD";
 
 /* the sound bank of set `set` (0 or 1: D_n000.HD / .SDT / .BD) into sound bank 4 */
-void func_0016D350(Progress *p, s32 set) {
+/* 0x0016D350 */
+void Progress_LoadSoundSet(Progress *p, s32 set) {
     char name[0x100];
     VObject *snd;
     u8 *prog;
@@ -105,7 +107,8 @@ void func_0016D350(Progress *p, s32 set) {
 }
 
 /* every character: vtable +0xC (start) */
-void func_00176650(Progress *p) {
+/* 0x00176650 */
+void Progress_StartChars(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
@@ -117,7 +120,8 @@ void func_00176650(Progress *p) {
 
 /* character slot `k` (0..2) starts afresh: its relations to the others (+0x10B0, 3 x 12 bytes;
  * its own marked 2) and the others' (+0x1014, 3 x 16 bytes) that involve it are reset */
-void func_00177CC0(Progress *p, u8 k) {
+/* 0x00177CC0 */
+void Progress_SlotAfresh(Progress *p, u8 k) {
     u8 *b = (u8 *)p;
     s32 i;
     u32 mask;
@@ -138,7 +142,8 @@ void func_00177CC0(Progress *p, u8 k) {
 }
 
 /* every character: vtable +0x14 (load) */
-void func_00176550(Progress *p) {
+/* 0x00176550 */
+void Progress_LoadChars(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
@@ -149,7 +154,8 @@ void func_00176550(Progress *p) {
 }
 
 /* the resident load buffer of character `k`: only the player's (+0x16C0) */
-void *func_001776B0(Progress *p, u8 k) {
+/* 0x001776B0 */
+void *Progress_CharLoadBuffer(Progress *p, u8 k) {
     if (k == 1) {
         return NULL;
     }
@@ -160,7 +166,8 @@ void *func_001776B0(Progress *p, u8 k) {
 }
 
 /* is any character still loading? */
-s32 func_001764C0(Progress *p) {
+/* 0x001764C0 */
+s32 Progress_AnyLoading(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
@@ -174,7 +181,8 @@ s32 func_001764C0(Progress *p) {
 }
 
 /* activate character `i` (vtable +0x5C); 0 if there is none */
-s32 func_001771A0(Progress *p, u32 i) {
+/* 0x001771A0 */
+s32 Progress_ActivateChar(Progress *p, u32 i) {
     if (i < 6 && gCharacters[i] != NULL) {
         VCALL(gCharacters[i], 0x5C, void (*)(VObject *))((VObject *)gCharacters[i]);
         return 1;
@@ -183,7 +191,8 @@ s32 func_001771A0(Progress *p, u32 i) {
 }
 
 /* every character: vtable +0x1C (enter the room) */
-void func_001765D0(Progress *p) {
+/* 0x001765D0 */
+void Progress_CharsEnterRoom(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
@@ -196,7 +205,8 @@ void func_001765D0(Progress *p) {
 /* make the camera director follow character `idx`, 10 above its origin, if it is in the
  * current room (vt+0xC); 0xFF: follow nothing; otherwise follow the player (index 0).
  * Returns who it follows (0xFF: nobody). */
-s32 func_00179170(Progress *p, u8 idx) {   /* (a u8) */
+/* 0x00179170 */
+s32 Progress_CameraFollow(Progress *p, u8 idx) {   /* (a u8) */
     VObject *dir = gCamDirector;
     s32 ok = 1;
     u8 *c;
@@ -225,14 +235,15 @@ s32 func_00179170(Progress *p, u8 idx) {   /* (a u8) */
 }
 
 /* point the camera director at character `idx` (+0x1130: the one it settled on) */
-void func_001792C0(Progress *p, u8 idx) {
+/* 0x001792C0 */
+void Progress_CameraOn(Progress *p, u8 idx) {
     VObject *dir = gCamDirector;
     u8 *c;
 
     if (dir == NULL) {
         return;
     }
-    AT(p, 0x1130, u8) = func_00179170(p, idx);
+    AT(p, 0x1130, u8) = Progress_CameraFollow(p, idx);
     if (AT(p, 0x1130, u8) == 0xFF) {
         VCALL(dir, 0xC, void (*)(VObject *, void *, f32, f32, f32))(dir, NULL, 0.0f, 0.0f, 0.0f);
         return;
@@ -252,7 +263,8 @@ void func_001792C0(Progress *p, u8 idx) {
 extern char D_0044F860[], D_0044F880[], D_0044F8A0[];   /* ST_%03X\ST1_%03X.HD / .SDT / .BD */
 
 /* the room's sound bank (ST_xxx\ST1_xxx.HD / .SDT / .BD) into sound bank 6 */
-void func_0016D480(Progress *p, s32 room) {
+/* 0x0016D480 */
+void Progress_LoadRoomSounds(Progress *p, s32 room) {
     char name[0x100];
     VObject *snd = gSound;
     u8 *prog;
@@ -273,7 +285,8 @@ void func_0016D480(Progress *p, s32 room) {
  * 0xFF / not found: 0xFF) */
 /* event condition: the pad button `which` (0 circle, 1 square, 2 L1, 3 triangle, 4 R1, 5 cross,
  * 6 start) is held (`how` bit 0) or was pressed this frame (bit 1) */
-s32 func_00176DD0(Progress *p, u32 which, u32 how) {
+/* 0x00176DD0 */
+s32 Progress_PadCondition(Progress *p, u32 which, u32 how) {
     static const u16 buttons[7] = {PAD_CIRCLE, PAD_SQUARE, PAD_L1, PAD_TRIANGLE, PAD_R1, PAD_CROSS, PAD_START};
     u32 b;
 
@@ -290,7 +303,8 @@ s32 func_00176DD0(Progress *p, u32 which, u32 how) {
     return 0;
 }
 
-s32 func_001770D0(Progress *p, s32 id) {
+/* 0x001770D0 */
+s32 Progress_SlotOfId(Progress *p, s32 id) {
     s32 i;
 
     id &= 0xFF;
@@ -309,13 +323,15 @@ s32 func_001770D0(Progress *p, s32 id) {
 }
 
 /* the game mode byte (+0x10; 2: the alternative idle set) */
-s32 func_00177620(Progress *p) {
+/* 0x00177620 */
+s32 Progress_GameMode(Progress *p) {
     return AT(p, 0x10, u8);
 }
 
 /* the camera setup (a, b) of character slot `slot` (0xFF: the camera director's own; other
  * characters only in the current room, else none) */
-void func_001793A0(Progress *p, u8 slot, s32 a, s32 b) {
+/* 0x001793A0 */
+void Progress_CameraSetup(Progress *p, u8 slot, s32 a, s32 b) {
     VObject *dir = gCamDirector;
     u8 *c;
 
@@ -340,7 +356,8 @@ void func_001793A0(Progress *p, u8 slot, s32 a, s32 b) {
 }
 
 /* character slot `slot`'s +0x58 (1: done, 0: no such character) */
-s32 func_00177200(Progress *p, u32 slot) {
+/* 0x00177200 */
+s32 Progress_CharDone(Progress *p, u32 slot) {
     if (slot < 6 && gCharacters[slot] != NULL) {
         VCALL(gCharacters[slot], 0x58, void (*)(VObject *, u32))((VObject *)gCharacters[slot], slot);
         return 1;
@@ -363,14 +380,16 @@ static void door_refresh(Progress *p, u32 d) {
 }
 
 /* unlock door d */
-s32 func_00178450(Progress *p, u32 d) {
+/* 0x00178450 */
+s32 Progress_UnlockDoor(Progress *p, u32 d) {
     DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~8) | 8;
     door_refresh(p, d);
     return 1;
 }
 
 /* lock door d */
-s32 func_00178500(Progress *p, u32 d) {
+/* 0x00178500 */
+s32 Progress_LockDoor(Progress *p, u32 d) {
     DOOR_STATE(p, d) = DOOR_STATE(p, d) & ~8;
     door_refresh(p, d);
     return 1;
@@ -397,39 +416,46 @@ static s32 door_passable(Progress *p, u32 d, u32 side) {
     return 0;
 }
 
-s32 func_00178200(Progress *p, u32 d, u32 side) {
+/* 0x00178200 */
+s32 Progress_DoorPassable(Progress *p, u32 d, u32 side) {
     return door_passable(p, d, side);
 }
 
-/* can the door at exit `exit` of room `room` be passed from side `side` (func_00178200) */
-s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side) {
+/* can the door at exit `exit` of room `room` be passed from side `side` (Progress_DoorPassable) */
+/* 0x00178300 */
+s32 Progress_ExitPassable(Progress *p, s32 room, u32 exit, u32 side) {
     u32 d = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, room, exit);
 
     return door_passable(p, d, side);
 }
 
 /* is the door at exit `exit` of room `room` unlocked */
-s32 func_001785B0(Progress *p, s32 room, u32 exit) {
+/* 0x001785B0 */
+s32 Progress_ExitUnlocked(Progress *p, s32 room, u32 exit) {
     u32 d = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, room, exit);
 
     return (DOOR_STATE(p, d) >> 3) & 1;
 }
 
 /* is door d unlocked */
-s32 func_00178610(Progress *p, u32 d) {
+/* 0x00178610 */
+s32 Progress_DoorUnlocked(Progress *p, u32 d) {
     return (DOOR_STATE(p, d) >> 3) & 1;
 }
 
-void func_00178630(Progress *p, u32 d) {
+/* 0x00178630 */
+void Progress_DoorSetBit2(Progress *p, u32 d) {
     DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~4) | 4;
 }
 
-s32 func_00178A60(Progress *p, u32 d) {
+/* 0x00178A60 */
+s32 Progress_DoorSetBit1(Progress *p, u32 d) {
     DOOR_STATE(p, d) = (DOOR_STATE(p, d) & ~2) | 2;
     return 1;
 }
 
-s32 func_00178A30(Progress *p, u32 d) {
+/* 0x00178A30 */
+s32 Progress_DoorClearBit1(Progress *p, u32 d) {
     DOOR_STATE(p, d) = DOOR_STATE(p, d) & ~2;
     return 1;
 }
@@ -442,7 +468,8 @@ static s32 occupant(u8 *c, s32 room) {
 /* which characters are where: per exit k (+0xFD0 + k * 6: +5 at the door, +0 at its front, +3
  * may pass, +4 in its way) and per nav door region d (+0x1000 + d * 4: +3 inside, +2 / +1 the
  * side) */
-void func_00175DE0(Progress *p) {
+/* 0x00175DE0 */
+void Progress_WhoIsWhere(Progress *p) {
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     VObject *doors = gDoors;
     VObject *nav;
@@ -539,7 +566,8 @@ static u32 door_state(Progress *p, VObject *rooms, u32 k) {
 /* the characters' requests from where they stand (per character slot, +0x1134 + i * 0xE0: +0
  * the request: 2 through an exit (0x80000002 locked), 3 a door region, 0x80000004 a scene
  * thing), from the exits they are at and the door regions they are in */
-void func_00175430(Progress *p) {
+/* 0x00175430 */
+void Progress_CharRequests(Progress *p) {
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     VObject *rooms = gRooms;
     Progress *gp = gProgress;
@@ -690,7 +718,8 @@ void func_00175430(Progress *p) {
 
 /* each frame: the pursuer request (+0x778) is handled; the 4 requests (+0x778, 0x10 each) are
  * kept as last frame's (+0x10D4) and cleared */
-void func_001776F0(Progress *p) {
+/* 0x001776F0 */
+void Progress_PursuerRequest(Progress *p) {
     u8 *t = (u8 *)p;
     s32 i;
 
@@ -717,7 +746,8 @@ static void char_set_action_ool(u8 *c, const CharAction *act) {
  * other slot, arg, s32, f32): kind 1 sub 1 starts a relation on the other's +0x1014 entry;
  * sub 2 (either kind) holds the other character (action state 7); kind 2 sub 1 releases the
  * own character, restoring its saved action. The entry is then cleared. */
-void func_00173670(Progress *p) {
+/* 0x00173670 */
+void Progress_RelationChanges(Progress *p) {
     u8 *b = (u8 *)p;
     CharAction act;
     s32 i;
@@ -790,7 +820,8 @@ static s32 rel_slot_free(u8 *b, s32 k) {
  * slot 1, not while +0xC bit 0x2000), then asked (vtable +0x68); accepting ones take action 4
  * or, kind 9, queue a command for both (+0x10B0); requests of kind 9/10 nobody took hold their
  * requester (action 7). The requests are cleared. */
-void func_00173B60(Progress *p) {
+/* 0x00173B60 */
+void Progress_ResolveRelations(Progress *p) {
     u8 *b = (u8 *)p;
     u8 owner[3];
     CharAction act;
@@ -949,7 +980,8 @@ clear:
 
 /* the characters' own requests (+0x1050, 32 bytes per slot: kind, u16, s16, f32): an active,
  * free character takes action 4 for it (no partner: 0xFF). The requests are cleared. */
-void func_001739A0(Progress *p) {
+/* 0x001739A0 */
+void Progress_OwnRequests(Progress *p) {
     u8 *b = (u8 *)p;
     CharAction act;
     u32 i;
@@ -1009,7 +1041,8 @@ static void player_take_action(u8 *b, s32 off) {
  * action +0x1134 (0x80000000..2: becomes 2; 5: the event check first; 0x80000005: an event
  * call; 0x80000003/4, 0: none), 0x8000 action 8, 0x1000 the selected item (action 0xE),
  * 0x800 action 0xB */
-void func_00174920(Progress *p) {
+/* 0x00174920 */
+void Progress_PlayerButtons(Progress *p) {
     u8 *b = (u8 *)p;
     u8 *pl;
     s32 noAct;
@@ -1098,7 +1131,8 @@ void func_00174920(Progress *p) {
 }
 
 /* every character: vtable +0x24 (the frame's thinking) */
-void func_00176440(Progress *p) {
+/* 0x00176440 */
+void Progress_CharsThink(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
@@ -1111,7 +1145,8 @@ void func_00176440(Progress *p) {
 /* the characters' frame: one in a special state (+0xE0) runs its handler (+0x44, or +0x48
  * while +0xE2); otherwise, unless the world is paused (+0x8 bit 0x800000), the first 3 slots
  * move (+0x30) - only in the current room while +0x8 bit 0x1000000 or the director asks */
-void func_001762B0(Progress *p) {
+/* 0x001762B0 */
+void Progress_CharsFrame(Progress *p) {
     VObject *dir = gCamDirector;
     u32 i;
 
@@ -1157,7 +1192,8 @@ void func_001762B0(Progress *p) {
 }
 
 /* character slot k has a pending relation command (+0x10B0) */
-s32 func_00177870(Progress *p, u32 k) {
+/* 0x00177870 */
+s32 Progress_HasRelationCmd(Progress *p, u32 k) {
     return AT(p, 0x10B0 + (k & 0xFF) * 0xC, u8) != 0;
 }
 
@@ -1165,7 +1201,8 @@ s32 func_00177870(Progress *p, u32 k) {
  * each active and visible one draws (+0x2C); while the world is stopped (+0x8 bit 0x800000)
  * only with +0xC bit 0x10, and only those in the current room while +0x8 bit 0x1000000 -
  * except characters in a special state (+0xE0) */
-void func_00176160(Progress *p) {
+/* 0x00176160 */
+void Progress_DrawChars(Progress *p) {
     u32 i;
 
 #ifdef HG_NATIVE
@@ -1200,7 +1237,8 @@ void func_00176160(Progress *p) {
 }
 
 /* set condition bit `n` (0..6) of +0x14 */
-void func_00177630(Progress *p, s32 n) {
+/* 0x00177630 */
+void Progress_SetCondBit(Progress *p, s32 n) {
     n &= 0xFF;
     if (n < 7) {
         AT(p, 0x14, u32) |= 1u << n;
@@ -1208,7 +1246,8 @@ void func_00177630(Progress *p, s32 n) {
 }
 
 /* condition bit `n` (0..6) of +0x14 */
-s32 func_00177670(Progress *p, s32 n) {
+/* 0x00177670 */
+s32 Progress_CondBit(Progress *p, s32 n) {
     n &= 0xFF;
     if (n < 7) {
         return (AT(p, 0x14, u32) & (1u << n)) != 0;
@@ -1217,7 +1256,8 @@ s32 func_00177670(Progress *p, s32 n) {
 }
 
 /* +0x64 the stalker's alert (+0x16C8 of the active stalker; 0xFF: no stalker in play) */
-s32 func_001770A0(Progress *p) {
+/* 0x001770A0 */
+s32 Progress_StalkerAlert(Progress *p) {
     if (gCharSlot2 == NULL || AT(gCharSlot2, 0x28, u8) == 0) {
         return 0xFF;
     }
@@ -1226,7 +1266,8 @@ s32 func_001770A0(Progress *p) {
 
 /* is `id` one of the three linked entries (+0x10B0, 0xC each: +0 on, +2 the partner's id):
  * entry `id` is on, or some entry names it */
-s32 func_00177770(Progress *p, s32 id) {
+/* 0x00177770 */
+s32 Progress_IsLinked(Progress *p, s32 id) {
     s32 i;
 
     id &= 0xFF;
@@ -1243,7 +1284,8 @@ s32 func_00177770(Progress *p, s32 id) {
 
 /* load event character `id` into `slot` and, when it came, set it up (CharLoad_Buffers); 1 if
  * loaded */
-s32 func_0016D670(Progress *p, u32 id, u32 slot) {
+/* 0x0016D670 */
+s32 Progress_LoadEventChar(Progress *p, u32 id, u32 slot) {
     u32 ok = (u8)CharLoad_EventChar(p, id, slot);
 
     if (ok) {
@@ -1255,7 +1297,8 @@ s32 func_0016D670(Progress *p, u32 id, u32 slot) {
 /* lock (`on`) or unlock door `door` for kind `kind` (0: bit 1, 1: bit 2, 2..5: bit 4 of the
  * door's lock bits, +0x124 + door x 4 bits 4..7), then let the door object know (+0x80) when
  * it's in this room (rooms +0x3C) */
-void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
+/* 0x001780C0 */
+void Progress_LockDoorFor(Progress *p, s32 door, s32 kind, s32 on) {
     u32 bit, *w;
     u32 r;
 
@@ -1288,7 +1331,8 @@ void func_001780C0(Progress *p, s32 door, s32 kind, s32 on) {
 
 /* is door `door` open: the rooms say so (+0x44 bit 0), or its state bits (+0x124 + door x 4)
  * have bit 1 without bit 3 */
-s32 func_001788F0(Progress *p, u32 door) {
+/* 0x001788F0 */
+s32 Progress_DoorOpen(Progress *p, u32 door) {
     u32 w;
 
     if ((u8)VCALL(gRooms, 0x44, s32 (*)(VObject *, u32))(gRooms, door) & 1) {
@@ -1301,8 +1345,9 @@ s32 func_001788F0(Progress *p, u32 door) {
     return (w & 2) != 0;
 }
 
-/* is the door at exit `exit` of room `room` open (as func_001788F0) */
-s32 func_00178980(Progress *p, s32 room, s32 exit) {
+/* is the door at exit `exit` of room `room` open (as Progress_DoorOpen) */
+/* 0x00178980 */
+s32 Progress_ExitOpen(Progress *p, s32 room, s32 exit) {
     VObject *rooms = gRooms;
     u32 door = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, s32))(rooms, room, exit);
     u32 w;
@@ -1322,21 +1367,24 @@ s32 func_00178980(Progress *p, s32 room, s32 exit) {
 #define SLOT_CHAR(slot) ((slot) < 6 ? (VObject *)gCharacters[slot] : NULL)
 
 /* character `slot` active (+0x28) */
-u8 func_00177160(Progress *p, u32 slot) {
+/* 0x00177160 */
+u8 Progress_CharActive(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
     return c != NULL ? AT(c, 0x28, u8) : 0;
 }
 
 /* character `slot` still loading */
-s32 func_00177260(Progress *p, u32 slot) {
+/* 0x00177260 */
+s32 Progress_CharLoading(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
     return c != NULL ? func_00124D40((Actor *)c) : 0;
 }
 
 /* character `slot`: vtable +0x14 / +0x1C / +0xC */
-void func_001772B0(Progress *p, u32 slot) {
+/* 0x001772B0 */
+void Progress_CharLoad(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
     if (c != NULL) {
@@ -1344,7 +1392,8 @@ void func_001772B0(Progress *p, u32 slot) {
     }
 }
 
-void func_00177300(Progress *p, u32 slot) {
+/* 0x00177300 */
+void Progress_CharStart2(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
     if (c != NULL) {
@@ -1352,7 +1401,8 @@ void func_00177300(Progress *p, u32 slot) {
     }
 }
 
-void func_00177350(Progress *p, u32 slot) {
+/* 0x00177350 */
+void Progress_CharStart3(Progress *p, u32 slot) {
     VObject *c = SLOT_CHAR(slot);
 
     if (c != NULL) {
@@ -1364,7 +1414,8 @@ void func_00177350(Progress *p, u32 slot) {
  * +0x10, forget it as player / partner / pursuer; its model back to the scene heap; a loaded
  * character (2..5) also gives back its data buffers (+0x166C) and is destroyed. 1 when there
  * was one */
-s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
+/* 0x001773A0 */
+s32 Progress_RemoveChar(Progress *p, u32 slot, u8 quick) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
     VObject *c = SLOT_CHAR(slot);
 
@@ -1409,18 +1460,20 @@ s32 func_001773A0(Progress *p, u32 slot, u8 quick) {
 
 /* remove all the characters (the slow way) */
 /* (possibly dead code: nothing in the game references it) */
-void func_001766D0(Progress *p) {
+/* 0x001766D0 */
+void Progress_RemoveAll(Progress *p) {
     u32 i;
 
     for (i = 0; i < 6; i++) {
-        func_001773A0(p, i, 0);
+        Progress_RemoveChar(p, i, 0);
     }
 }
 
 /* character `a` near character `b` (both active and not hidden (+0x29 = 1), a != b) at `pos`:
  * pos's height within b's (+0x14 .. +0xCC higher, widened by `margin`) and its distance across
  * within b's radius (+0xC8) + margin */
-s32 func_00177DB0(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
+/* 0x00177DB0 */
+s32 Progress_CharNear(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
     f32 d[4] __attribute__((aligned(16)));
     VObject *cb;
     f32 y;
@@ -1441,7 +1494,8 @@ s32 func_00177DB0(Progress *p, u32 a, const f32 *pos, u32 b, f32 margin) {
 }
 
 /* vtable +0x30 at bone `bone` of character `slot`'s model */
-void func_00177F00(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
+/* 0x00177F00 */
+void Progress_CharBoneCall(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
     f32 at[4] __attribute__((aligned(16)));
     u8 *model = AT(gCharacters[slot & 0xFF], 0xF0, u8 *);
 
@@ -1451,7 +1505,8 @@ void func_00177F00(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
 
 /* the three noise slots (+0x1050, 0x20 each) picked by the bits of `which`: a free one gets
    `pos`, `kind`, two values and `f` */
-void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f) {
+/* 0x00177FA0 */
+void Progress_Noise(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f) {
     u8 *e = (u8 *)p;
     u32 i;
 
@@ -1468,7 +1523,8 @@ void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b
 
 /* the door being used (the rooms' +0x10), unless the rooms say otherwise (+0x44 bit 0): when
    not unlocked (bit 3) but bit 0 set, set bit 2 for it and clear bit 0; 1 if it did */
-s32 func_00178660(Progress *p) {
+/* 0x00178660 */
+s32 Progress_UseDoor(Progress *p) {
     VObject *rooms = gRooms;
     u32 d = VCALL(rooms, 0x10, u32 (*)(VObject *))(rooms) & 0xFFFF;
     u32 *s;
@@ -1486,7 +1542,8 @@ s32 func_00178660(Progress *p) {
 }
 
 /* Fiona: flag +0x1AD710 on, +0x1AD714 cleared, then func_00183190(1) (u8 result) */
-s32 func_00176D80(Progress *p) {
+/* 0x00176D80 */
+s32 Progress_FionaFlag(Progress *p) {
     u8 *f = (u8 *)gCharPlayer;
 
     if (f == NULL) {
@@ -1499,7 +1556,8 @@ s32 func_00176D80(Progress *p) {
 
 /* the parts at +0x6FC218 (Message_ClearAll), +0x6FC340 (vtable +0x24) and +0x706440 */
 /* (possibly dead code: nothing in the game references it) */
-void func_00176720(Progress *p) {
+/* 0x00176720 */
+void Progress_ResetParts(Progress *p) {
     VObject *o = (VObject *)((u8 *)p + 0x6FC340);
 
     Message_ClearAll((VObject *)((u8 *)p + 0x6FC218));
@@ -1514,7 +1572,8 @@ extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046E
 
 /* play movie `path` as scene 0, as movie class `kind` (1..6; others the plain one): 1 if it
    started */
-s32 func_001768B0(Progress *p, const char *path, u32 kind) {
+/* 0x001768B0 */
+s32 Progress_PlayMovie(Progress *p, const char *path, u32 kind) {
     static void **const sClass[7] = { D_00470E80, D_0046EAB0, D_0046EAE0, D_0046EB10, D_0046EC30, D_0046EC90,
                                       D_00474F80 };
     u8 *table = gSceneTable;
@@ -1603,7 +1662,8 @@ s32 func_001780A0(Progress *p) {
  * (+0xAC whether, +0xB0 how big), the others' (+0x1688) their data size +0x1C (vtable +0xFC);
  * Hewie none ---- */
 
-void func_0016D050(Progress *p, s32 slot) {
+/* 0x0016D050 */
+void Progress_CutsceneSlot(Progress *p, s32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
     u8 *c = (u8 *)gCharacters[slot];
 
@@ -1623,7 +1683,8 @@ void func_0016D050(Progress *p, s32 slot) {
     }
 }
 
-void func_0016CF50(Progress *p, s32 slot) {
+/* 0x0016CF50 */
+void Progress_CutsceneSlotDone(Progress *p, s32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
     u8 *c = (u8 *)gCharacters[slot];
 
@@ -1656,7 +1717,8 @@ static inline void ListHead_Destroy(u8 *o) {
 
 /* Progress: destructor - the characters in slots 2..5 (their models unloaded by +0x6FBF00
  * +0x14, then deleted), then its parts in reverse order of construction */
-void *func_0016C8A0(Progress *p, s32 flags) {
+/* 0x0016C8A0 */
+void *Progress_dtor(Progress *p, s32 flags) {
     u8 *b = (u8 *)p;
     s32 i;
 
@@ -1679,7 +1741,7 @@ void *func_0016C8A0(Progress *p, s32 flags) {
     }
     if (b + 0x73EB60 != NULL) {
         VT(b, 0x73EB60) = D_0046A9C0;
-        func_0016CC40(b + 0x73EC80, -1);
+        Progress73EC80_dtor(b + 0x73EC80, -1);
         Task_dtor((Task *)(b + 0x73EB6C), -1);
     }
     if (b + 0x73EB00 != NULL) {
@@ -1742,7 +1804,8 @@ void func_0016CD20(Progress *p) {}            /* +0x84 */
 s32 func_0016CD10(Progress *p) { return 0; }   /* +0x88 */
 
 /* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
-void *func_0016CC40(void *o, s32 flags) {
+/* 0x0016CC40 */
+void *Progress73EC80_dtor(void *o, s32 flags) {
     extern void *D_0046F350[], *D_00469D00[];
 
     if (o != NULL) {
@@ -1759,7 +1822,8 @@ void *func_0016CC40(void *o, s32 flags) {
 
 /* start loading the speech file `name` into a fresh 0x41000 buffer (+0x73EDC0, from the memory
    manager +0x6FBF00) */
-void func_0016CEC0(Progress *p, const char *name) {
+/* 0x0016CEC0 */
+void Progress_LoadSpeech(Progress *p, const char *name) {
     u8 *b = (u8 *)p;
 
     AT(b, 0x73EDC0, void *) = VCALL(b + 0x6FBF00, 0x10, void *(*)(void *, u32))(b + 0x6FBF00, 0x41000);
@@ -1769,7 +1833,8 @@ void func_0016CEC0(Progress *p, const char *name) {
 
 /* once it has loaded, character `who` (+0x153C; 0xFE the third slot, 0xFF none) speaks it:
    the boot message object +0x14 / +0x10 with the character's voice (+0x1528). 0: not loaded. */
-s32 func_0016CD60(Progress *p, s32 who, s32 arg) {
+/* 0x0016CD60 */
+s32 Progress_Speak(Progress *p, s32 who, s32 arg) {
     VObject *msg;
     VObject *c;
     u32 i, slot;
@@ -1799,7 +1864,8 @@ s32 func_0016CD60(Progress *p, s32 who, s32 arg) {
 }
 
 /* unload character slot `i`'s model (+0xF0) through the memory manager (+0x6FBF00 +0x14) */
-void func_0016D2F0(Progress *p, s32 i) {
+/* 0x0016D2F0 */
+void Progress_UnloadModel(Progress *p, s32 i) {
     u8 *mm = (u8 *)p + 0x6FBF00;
 
     VCALL(mm, 0x14, void (*)(void *, void *))(mm, AT(gCharacters[i], 0xF0, void *));
@@ -1834,7 +1900,8 @@ static inline void hewie_order(u8 *p, u32 at, s32 state, s32 a) {
 
 /* the command buttons pressed this frame (while Hewie is about and listening, and nothing holds
  * them, +0x4): R1 action 0xB / 0, L1 0xB / 2, square 8, circle 0xB / 1 */
-void func_00174270(Progress *p) {
+/* 0x00174270 */
+void Progress_CommandButtons(Progress *p) {
     u8 *b = (u8 *)p;
 
     if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)func_00138FD0((Hewie *)gCharPartner) == 0

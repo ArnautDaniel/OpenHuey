@@ -130,11 +130,11 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
+/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
-    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
         SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -765,7 +765,7 @@ void func_002DF180(Character *c) {
         (func_00125D80(gCharPlayer) & 0xFF) || (func_001241F0(&c->a, &gCharPlayer->a, 0.0f, 0.0f) & 0xFF) != 1) {
         return;
     }
-    func_00177FA0(gProgress, c->a.pos, 1, 0xD, 0, 0, 0.0f);
+    Progress_Noise(gProgress, c->a.pos, 1, 0xD, 0, 0, 0.0f);
     mgr = gEffects;
     slot = Effect_New(mgr, 0x4A0, vanish_init);
     sceVu0CopyVector(fx.pos, c->a.pos);
@@ -815,7 +815,7 @@ static void creature_at_doors(Character *c, u32 doors) {
 /* travelling (unless in an event, flag 0x18): off screen the distance to the next door
  * (+0x14C4) runs down by its speed (2/3 of it with company, +0x2A); at a door (+0xB) it walks
  * the path at half speed. On arriving at the door (+0x14C0): if the way through is open
- * (func_00178980) and the door isn't shut (Progress_CurRoomFlag), through it - into the room
+ * (Progress_ExitOpen) and the door isn't shut (Progress_CurRoomFlag), through it - into the room
  * being played at the exit's spot, facing in, noting the doors whose event spot it stands on
  * (+0x8A) - else the next leg's distance; a closed way is marked (+0x148C bit) and the trip
  * ends (+0x86) */
@@ -852,7 +852,7 @@ void func_002DFA50(Character *c) {
     }
     rooms = gRooms;
     exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room) & 0xFF;
-    if (!(func_00178980(p, c->a.room, exit) & 0xFF)) {
+    if (!(Progress_ExitOpen(p, c->a.room, exit) & 0xFF)) {
         c->unk148C[c->unk14C0 >> 5] |= 1 << (c->unk14C0 & 0x1F);
         AT(k, 0xB, u8) = 0;
         c->a.navTri = NAV_NONE;
@@ -921,7 +921,7 @@ void func_002DFE10(Character *c) {
         return;
     }
     if (AT(k, 0x31, u8) >= 0x12 && AT(k, 0x31, u8) != 0x24) {
-        func_00177FA0(gProgress, c->a.pos, 1, 3, 0, 0, 0.0f);
+        Progress_Noise(gProgress, c->a.pos, 1, 3, 0, 0, 0.0f);
     } else {
         func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
     }
@@ -1306,7 +1306,7 @@ extern const PTMF D_00416700, D_00416710, D_00416720, D_00416730, D_00416740, D_
  * centre the first time); come: its time runs (+0x20), on her level it hasn't given up (+0x2F);
  * when she can't be reached (flag 9, her mode 3) about her (+0xF8 2) unless it did that
  * (+0x9C); she hidden (+0x2D, +0xE0): idle; else for a door (func_002DF5B0) - a closed way
- * (func_00178980) ends that (+0x84 2), an opened one when it should open it (+0x88) does
+ * (Progress_ExitOpen) ends that (+0x84 2), an opened one when it should open it (+0x88) does
  * (+0x84 0) - by +0x84: 0 after her (from afar, +0x9C, only within 40; else idle with its path
  * dropped), 1 waiting at the door, 2 to the door. Elsewhere: out of play, travelling once it
  * has come, else idle */
@@ -1361,7 +1361,7 @@ void func_002E06E0(Character *c) {
         func_002DF5B0(c);
     }
     if (AT(k, 0x84, u8) == 1) {
-        if (!(func_00178980(p, c->a.room, AT(k, 0x85, u8)) & 0xFF)) {
+        if (!(Progress_ExitOpen(p, c->a.room, AT(k, 0x85, u8)) & 0xFF)) {
             AT(k, 0x84, u8) = 2;
             c->a.unk2B = 0;
         } else if ((VCALL(gDoors, 0x30, u32 (*)(VObject *, u32))(gDoors, AT(k, 0x85, u8)) & 0xFF) == 1 &&
@@ -3301,7 +3301,7 @@ void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32
 
 /* (as func_002DFA50) travelling (unless in an event, flag 0x18): off screen the distance to
    the next door (+0x14C4) runs down by 0.35; at a door (+0x61) it walks the path at 0.35. On
-   arriving at the door (+0x14C0): if the way is open (func_00178980, func_00178300 kind 2)
+   arriving at the door (+0x14C0): if the way is open (Progress_ExitOpen, Progress_ExitPassable kind 2)
    and the door isn't shut, through it - into the room being played at the exit's spot facing
    in, its doors noted (+0x50) - else the next leg's distance; a closed way is marked (+0x148C
    bit), the trip ends (+0x68), and without the kind-2 way its state +0x8 is 2 */
@@ -3342,13 +3342,13 @@ void func_003257B0(Character *c) {
     if ((Progress_CurRoomFlag(p, c->a.room, exit) & 0xFF) == 1) {
         return;
     }
-    if (!(func_00178980(p, c->a.room, exit) & 0xFF) || !(func_00178300(p, c->a.room, exit, 2) & 0xFF)) {
+    if (!(Progress_ExitOpen(p, c->a.room, exit) & 0xFF) || !(Progress_ExitPassable(p, c->a.room, exit, 2) & 0xFF)) {
         c->unk148C[c->unk14C0 >> 5] |= 1 << (c->unk14C0 & 0x1F);
         AT(k, 0x61, u8) = 0;
         c->a.navTri = NAV_NONE;
         c->unk1388 = c->unk1384;
         AT(k, 0x68, u8) = 1;
-        if (!(func_00178300(p, c->a.room, exit, 2) & 0xFF)) {
+        if (!(Progress_ExitPassable(p, c->a.room, exit, 2) & 0xFF)) {
             AT(k, 0x8, s32) = 2;
         }
         return;
@@ -3930,7 +3930,7 @@ void func_00327DD0(Character *c) {
         }
         AT(c, 0xF8, s32) = 8;
         if (func_001274E0(c, cr19_stride(c)) != 0) {
-            func_00177FA0(gProgress, c->a.pos, 1, 0xC, 0, 0, 0.0f);
+            Progress_Noise(gProgress, c->a.pos, 1, 0xC, 0, 0, 0.0f);
             return;
         }
         if (AT(gCharPlayer, 0xF8, s32) != 4 || AT(gCharPlayer, 0xFC, s32) != 0x12) {
@@ -4460,7 +4460,7 @@ void func_0032A550(Character *c) {
         func_00325220(c);
     }
     if (AT(k, 0x65, u8) == 1) {
-        if (!(func_00178980(p, c->a.room, AT(k, 0x66, u8)) & 0xFF)) {
+        if (!(Progress_ExitOpen(p, c->a.room, AT(k, 0x66, u8)) & 0xFF)) {
             AT(k, 0x65, u8) = 2;
             c->a.unk2B = 0;
         } else if ((VCALL(gDoors, 0x30, u32 (*)(VObject *, u32))(gDoors, AT(k, 0x66, u8)) & 0xFF) == 1 &&
@@ -4542,7 +4542,7 @@ void func_0032AAF0(Character *c, u32 exit) {
             if ((VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, d) & 0xFF) != 1) {
                 continue;
             }
-            if ((func_00178980(p, c->a.room, d) & 0xFF) != 1) {
+            if ((Progress_ExitOpen(p, c->a.room, d) & 0xFF) != 1) {
                 continue;
             }
             tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, d, at);

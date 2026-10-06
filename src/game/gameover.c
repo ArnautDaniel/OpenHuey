@@ -187,7 +187,7 @@ static void tints_step(GameOver *o, s32 fade) {
     was = o->timer;
     o->timer = was - 1;
     if (was == 0) {
-        func_001768B0(gProgress, D_0045E2E0, 6);
+        Progress_PlayMovie(gProgress, D_0045E2E0, 6);
         AT(gMovie, 0x1C4, u8) = 1;
         o->step++;
     }

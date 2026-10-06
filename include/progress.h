@@ -35,67 +35,67 @@ extern void Progress_SetVar(Progress *p, u32 id, u32 value);   /* u8 id, u8 valu
 extern void Progress_IncVar(Progress *p, u32 id);
 extern s32 Progress_IsBitClear(Progress *p, s32 id);
 extern s32 Progress_CurRoomFlag(Progress *p, s32 room, u32 exit);   /* door at that exit: state bit 0 */
-extern void func_001779B0(Progress *p, s32 entry);
-extern void func_0016D350(Progress *p, s32 set);
-extern void func_00176650(Progress *p);
-extern void func_00176550(Progress *p);
-extern void *func_001776B0(Progress *p, u8 k);
-extern s32 func_001764C0(Progress *p);
-extern s32 func_001771A0(Progress *p, u32 i);   /* make active */
-extern void func_001765D0(Progress *p);
-extern s32 func_00179170(Progress *p, u8 idx);   /* (a u8: callers mask) */
-extern void func_001792C0(Progress *p, u8 idx);
-extern void func_0016D480(Progress *p, s32 room);
-extern s32 func_00176DD0(Progress *p, u32 which, u32 how);   /* pad button held / pressed */
-extern s32 func_001770D0(Progress *p, s32 id);   /* the slot of character kind (0xFF) */
-extern s32 func_00177620(Progress *p);   /* the game mode */
-extern void func_001793A0(Progress *p, u8 slot, s32 a, s32 b);
-extern s32 func_00177200(Progress *p, u32 slot);
-extern s32 func_00178450(Progress *p, u32 d);   /* unlock door d */
-extern s32 func_00178500(Progress *p, u32 d);   /* lock door d */
-extern s32 func_00178200(Progress *p, u32 d, u32 side);   /* it opens from that side (u8) */
-extern s32 func_00178300(Progress *p, s32 room, u32 exit, u32 side);
-extern s32 func_001785B0(Progress *p, s32 room, u32 exit);
-extern s32 func_00178610(Progress *p, u32 d);   /* the door is locked (u8) */
-extern void func_00178630(Progress *p, u32 d);
-extern s32 func_00178A60(Progress *p, u32 d);
-extern s32 func_00178A30(Progress *p, u32 d);
-extern void func_00175DE0(Progress *p);
-extern void func_00175430(Progress *p);
-extern void func_001776F0(Progress *p);
-extern void func_00173670(Progress *p);
-extern void func_00173B60(Progress *p);
-extern void func_001739A0(Progress *p);
-extern void func_00174920(Progress *p);
-extern void func_00176440(Progress *p);
-extern void func_001762B0(Progress *p);
-extern s32 func_00177870(Progress *p, u32 k);   /* joint action pending (u8) */
-extern void func_00176160(Progress *p);
-extern void func_00177630(Progress *p, s32 n);   /* set condition bit n */
-extern s32 func_00177670(Progress *p, s32 n);   /* condition bit n */
-extern s32 func_00177770(Progress *p, s32 id);   /* returns u8 */
-extern s32 func_0016D670(Progress *p, u32 id, u32 slot);
-extern void func_001780C0(Progress *p, s32 door, s32 kind, s32 on);   /* a door's state */
-extern s32 func_001788F0(Progress *p, u32 door);   /* returns u8 */
-extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
-extern u8 func_00177160(Progress *p, u32 slot);   /* active */
-extern s32 func_00177260(Progress *p, u32 slot);
-extern void func_001772B0(Progress *p, u32 slot);
-extern void func_00177300(Progress *p, u32 slot);
-extern void func_00177350(Progress *p, u32 slot);
-extern s32 func_001773A0(Progress *p, u32 slot, u8 quick);
-extern void func_001766D0(Progress *p);
-extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
-extern s32 func_00178660(Progress *p);
-extern s32 func_00176D80(Progress *p);
-extern void func_00176720(Progress *p);
-extern s32 func_001768B0(Progress *p, const char *path, u32 kind);
-extern void func_0016D050(Progress *p, s32 slot);   /* its cutscene motion buffer */
-extern void func_0016CF50(Progress *p, s32 slot);   /* ... given back */
-extern void *func_0016CC40(void *o, s32 flags);
-extern void func_0016CEC0(Progress *p, const char *name);
-extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
-extern void func_0016D2F0(Progress *p, s32 i);
-extern void func_00174270(Progress *p);
+extern void Progress_SetStartEntry(Progress *p, s32 entry);
+extern void Progress_LoadSoundSet(Progress *p, s32 set);
+extern void Progress_StartChars(Progress *p);
+extern void Progress_LoadChars(Progress *p);
+extern void *Progress_CharLoadBuffer(Progress *p, u8 k);
+extern s32 Progress_AnyLoading(Progress *p);
+extern s32 Progress_ActivateChar(Progress *p, u32 i);   /* make active */
+extern void Progress_CharsEnterRoom(Progress *p);
+extern s32 Progress_CameraFollow(Progress *p, u8 idx);   /* (a u8: callers mask) */
+extern void Progress_CameraOn(Progress *p, u8 idx);
+extern void Progress_LoadRoomSounds(Progress *p, s32 room);
+extern s32 Progress_PadCondition(Progress *p, u32 which, u32 how);   /* pad button held / pressed */
+extern s32 Progress_SlotOfId(Progress *p, s32 id);   /* the slot of character kind (0xFF) */
+extern s32 Progress_GameMode(Progress *p);   /* the game mode */
+extern void Progress_CameraSetup(Progress *p, u8 slot, s32 a, s32 b);
+extern s32 Progress_CharDone(Progress *p, u32 slot);
+extern s32 Progress_UnlockDoor(Progress *p, u32 d);   /* unlock door d */
+extern s32 Progress_LockDoor(Progress *p, u32 d);   /* lock door d */
+extern s32 Progress_DoorPassable(Progress *p, u32 d, u32 side);   /* it opens from that side (u8) */
+extern s32 Progress_ExitPassable(Progress *p, s32 room, u32 exit, u32 side);
+extern s32 Progress_ExitUnlocked(Progress *p, s32 room, u32 exit);
+extern s32 Progress_DoorUnlocked(Progress *p, u32 d);   /* the door is locked (u8) */
+extern void Progress_DoorSetBit2(Progress *p, u32 d);
+extern s32 Progress_DoorSetBit1(Progress *p, u32 d);
+extern s32 Progress_DoorClearBit1(Progress *p, u32 d);
+extern void Progress_WhoIsWhere(Progress *p);
+extern void Progress_CharRequests(Progress *p);
+extern void Progress_PursuerRequest(Progress *p);
+extern void Progress_RelationChanges(Progress *p);
+extern void Progress_ResolveRelations(Progress *p);
+extern void Progress_OwnRequests(Progress *p);
+extern void Progress_PlayerButtons(Progress *p);
+extern void Progress_CharsThink(Progress *p);
+extern void Progress_CharsFrame(Progress *p);
+extern s32 Progress_HasRelationCmd(Progress *p, u32 k);   /* joint action pending (u8) */
+extern void Progress_DrawChars(Progress *p);
+extern void Progress_SetCondBit(Progress *p, s32 n);   /* set condition bit n */
+extern s32 Progress_CondBit(Progress *p, s32 n);   /* condition bit n */
+extern s32 Progress_IsLinked(Progress *p, s32 id);   /* returns u8 */
+extern s32 Progress_LoadEventChar(Progress *p, u32 id, u32 slot);
+extern void Progress_LockDoorFor(Progress *p, s32 door, s32 kind, s32 on);   /* a door's state */
+extern s32 Progress_DoorOpen(Progress *p, u32 door);   /* returns u8 */
+extern s32 Progress_ExitOpen(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
+extern u8 Progress_CharActive(Progress *p, u32 slot);   /* active */
+extern s32 Progress_CharLoading(Progress *p, u32 slot);
+extern void Progress_CharLoad(Progress *p, u32 slot);
+extern void Progress_CharStart2(Progress *p, u32 slot);
+extern void Progress_CharStart3(Progress *p, u32 slot);
+extern s32 Progress_RemoveChar(Progress *p, u32 slot, u8 quick);
+extern void Progress_RemoveAll(Progress *p);
+extern void Progress_Noise(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
+extern s32 Progress_UseDoor(Progress *p);
+extern s32 Progress_FionaFlag(Progress *p);
+extern void Progress_ResetParts(Progress *p);
+extern s32 Progress_PlayMovie(Progress *p, const char *path, u32 kind);
+extern void Progress_CutsceneSlot(Progress *p, s32 slot);   /* its cutscene motion buffer */
+extern void Progress_CutsceneSlotDone(Progress *p, s32 slot);   /* ... given back */
+extern void *Progress73EC80_dtor(void *o, s32 flags);
+extern void Progress_LoadSpeech(Progress *p, const char *name);
+extern s32 Progress_Speak(Progress *p, s32 who, s32 arg);
+extern void Progress_UnloadModel(Progress *p, s32 i);
+extern void Progress_CommandButtons(Progress *p);
 
 #endif /* PROGRESS_H */

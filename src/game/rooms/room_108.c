@@ -56,7 +56,7 @@ s32 Room108_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990F18[i & 0xFF], a, b);
 }
 
-/* byte 3: 0 / 1 a named progress call; 2 waits (2) for func_0016CD60(1, 0), then the partner's
+/* byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
  * message slot shows progress +0x73EDC0; else func_0016CD30 and the slot is closed */
 /* 0x002E7350 */
 s32 Room108_Cmd00(void *self, void *a1, u8 *cmd) {
@@ -64,14 +64,14 @@ s32 Room108_Cmd00(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        func_0016CEC0(gProgress, D_004193A8);
+        Progress_LoadSpeech(gProgress, D_004193A8);
         break;
     case 1:
-        func_0016CEC0(gProgress, D_004193AC);
+        Progress_LoadSpeech(gProgress, D_004193AC);
         break;
     case 2:
         p = gProgress;
-        if (func_0016CD60(p, 1, 0) == 0) {
+        if (Progress_Speak(p, 1, 0) == 0) {
             return 2;
         }
         VCALL(gBootMessage, 0x10, void (*)(VObject *, u32, s32, s32))(gBootMessage, gCharPartner->msgSlot,

@@ -47,7 +47,7 @@ extern VObject *D_00456E00;
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
 static u8 *cond_char(Progress *p, s32 id) {
-    u8 i = (u8)func_001770D0(p, id);
+    u8 i = (u8)Progress_SlotOfId(p, id);
     u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
 
     return c != NULL && AT(c, 0x28, u8) == 1 ? c : NULL;
@@ -87,7 +87,7 @@ s32 EventCond_Eval(VObject *ev) {
         break;
     case 0x17:   /* the script's character is pc[1] (0xFE: the stalker, if active) */
         if (pc[1] == 0xFE) {
-            u8 i = (u8)func_001770D0(p, 0xFE);
+            u8 i = (u8)Progress_SlotOfId(p, 0xFE);
             u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
             u8 id;
 
@@ -95,7 +95,7 @@ s32 EventCond_Eval(VObject *ev) {
                 break;
             }
             id = AT(*AT(ev, 0x6FC, u8 **), 0x153C, u8);
-            i = (u8)func_001770D0(p, 0xFE);
+            i = (u8)Progress_SlotOfId(p, 0xFE);
             c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
             if (c == NULL || AT(c, 0x28, u8) != 1) {
                 c = NULL;
@@ -106,7 +106,7 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     case 0x16: {   /* character pc[1] is active and in this room */
-        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 i = (u8)Progress_SlotOfId(p, pc[1]);
         u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
 
         r = c != NULL && AT(c, 0x28, u8) && AT(c, 0x30, s32) == AT(ev, 0x560, s32);
@@ -163,7 +163,7 @@ s32 EventCond_Eval(VObject *ev) {
         break;
     }
     case 0x0D:     /* the game mode is pc[1] */
-        r = pc[1] == (u8)func_00177620(p);
+        r = pc[1] == (u8)Progress_GameMode(p);
         break;
     case 0x0E:     /* 0xF0..0xFA: that step slot runs; else character pc[1] is held (+0xE0) */
         if (pc[1] >= 0xF0 && pc[1] < 0xFB) {
@@ -174,9 +174,9 @@ s32 EventCond_Eval(VObject *ev) {
         break;
     case 0x15:     /* an item: pc[1] bit 7 its own test, else counted against pc[2] */
         if (pc[1] & 0x80) {
-            r = (u8)((s32 (*)(Progress *, s32))func_00176D80)(p, pc[1]);
+            r = (u8)((s32 (*)(Progress *, s32))Progress_FionaFlag)(p, pc[1]);
         } else {
-            r = (u8)func_00176DD0(p, pc[1], pc[2]);
+            r = (u8)Progress_PadCondition(p, pc[1], pc[2]);
         }
         break;
     case 0x1C: {   /* a pc[1] percent chance */
@@ -249,7 +249,7 @@ s32 EventCond_Eval(VObject *ev) {
                 break;
             }
         }
-        if ((u8)func_00178980(p, AT(ev, 0x560, s32), PC(ev)[1]) != 1) {
+        if ((u8)Progress_ExitOpen(p, AT(ev, 0x560, s32), PC(ev)[1]) != 1) {
             break;
         }
         r = (u8)Progress_CurRoomFlag(p, AT(ev, 0x560, s32), PC(ev)[1]) != 1;
@@ -346,12 +346,12 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     case 0x0A:   /* the door at exit pc[1] of this room is open */
-        if ((u8)func_00178980(p, AT(ev, 0x560, s32), pc[1]) == 1) {
+        if ((u8)Progress_ExitOpen(p, AT(ev, 0x560, s32), pc[1]) == 1) {
             r = 1;
         }
         break;
-    case 0x0B:   /* door be16 pc[1..2]: func_00178610 */
-        if ((u8)func_00178610(p, be16(pc + 1)) == 1) {
+    case 0x0B:   /* door be16 pc[1..2]: Progress_DoorUnlocked */
+        if ((u8)Progress_DoorUnlocked(p, be16(pc + 1)) == 1) {
             r = 1;
         }
         break;
@@ -398,7 +398,7 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     case 0x18: {   /* character pc[1]: PursuerGroup_Fields (pc[2]) has bit 4 */
-        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 i = (u8)Progress_SlotOfId(p, pc[1]);
 
         if (i != 0xFF && ((u8)PursuerGroup_Fields(p, PC(ev)[2], i) & 4)) {
             r = 1;
@@ -501,7 +501,7 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     case 0x45: {   /* character pc[1] is out of sight: absent, not in the scene or this room, or off the camera (+0xD4) */
-        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 i = (u8)Progress_SlotOfId(p, pc[1]);
         u8 *c;
 
         if (i == 0xFF) {
@@ -570,7 +570,7 @@ s32 EventCond_Eval(VObject *ev) {
         }
         break;
     case 0x56: {   /* character pc[1] is at a motion event */
-        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
+        u8 *c = (u8 *)(gCharacters[(u8)Progress_SlotOfId(p, pc[1])]);
 
         r = (AT(AT(AT(c, 0xF0, u8 *), 0x6A4, u8 *), 0x18, s32) & 0x20) != 0;
         break;
@@ -652,7 +652,7 @@ s32 EventCond_Eval(VObject *ev) {
         u8 *c0 = *AT(ev, 0x6FC, u8 **);
 
         if (c0 != NULL && AT(c0, 0x28, u8) != 0) {
-            u8 i = (u8)func_001770D0(p, pc[1]);
+            u8 i = (u8)Progress_SlotOfId(p, pc[1]);
             u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
 
             if (c != NULL && AT(c, 0x28, u8) != 0 && AT(ev, 0x560, s32) == AT(c, 0x30, s32) &&
@@ -766,18 +766,18 @@ s32 EventCond_Eval(VObject *ev) {
     case 0x62:   /* the file loader's +0x38 */
         r = VCALL(gFileLoader, 0x38, s32 (*)(VObject *))(gFileLoader);
         break;
-    case 0x63: {   /* character pc[2] is slot pc[1], there, and func_00177260 says yes */
-        u32 i = (u8)func_001770D0(p, pc[2]);
+    case 0x63: {   /* character pc[2] is slot pc[1], there, and Progress_CharLoading says yes */
+        u32 i = (u8)Progress_SlotOfId(p, pc[2]);
 
-        if (i != 0xFF && i == PC(ev)[1] && gCharacters[i] != NULL && func_00177260(p, i) == 0) {
+        if (i != 0xFF && i == PC(ev)[1] && gCharacters[i] != NULL && Progress_CharLoading(p, i) == 0) {
             r = 1;
         }
         break;
     }
     case 0x23: {   /* characters pc[1] and pc[2] (in the scene) within be32 pc[3..6]; Fiona or Hewie to a
                     * stalker only while the stalker's +0x1544 is set */
-        u8 i1 = (u8)func_001770D0(p, pc[1]);
-        u8 i2 = (u8)func_001770D0(p, PC(ev)[2]);
+        u8 i1 = (u8)Progress_SlotOfId(p, pc[1]);
+        u8 i2 = (u8)Progress_SlotOfId(p, PC(ev)[2]);
         u32 d = be32(PC(ev) + 3);
         f32 lim = (f32)d;
         u8 *c1, *c2;

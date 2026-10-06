@@ -121,10 +121,10 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
 s32 Room32_Cmd03(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        func_0016CEC0(gProgress, D_0042C358);
+        Progress_LoadSpeech(gProgress, D_0042C358);
         return 1;
     case 1:
-        return func_0016CD60(gProgress, 3, 0) == 0 ? 2 : 1;
+        return Progress_Speak(gProgress, 3, 0) == 0 ? 2 : 1;
     }
     ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;

@@ -115,11 +115,11 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
+/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
-    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
         SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;

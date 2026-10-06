@@ -55,7 +55,7 @@ s32 Room109_Cmd01(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B278
  * func_0032D150 says done */
 /* 0x002E7600 */
 s32 Room109_Cmd00(void *self, void *a1, u8 *cmd) {
-    Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
+    Character *c = gCharacters[Progress_SlotOfId(gProgress, 0x1A) & 0xFF];
 
     if (cmd[3] == 0) {
         func_0032D270((u8 *)c, 2, -6.0f, 257.0f);

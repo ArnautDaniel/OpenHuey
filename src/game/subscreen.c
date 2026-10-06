@@ -4286,7 +4286,7 @@ static s32 item_usable(void) {
     Progress *p = gProgress;
     u8 *h = (u8 *)gCharSlot2;
 
-    if ((u8)func_00177620(p) == 2) {
+    if ((u8)Progress_GameMode(p) == 2) {
         return 0;
     }
     if (h != NULL && AT(h, 0x28, u8) != 0 && AT(h, 0xE0, u8) == 0 &&

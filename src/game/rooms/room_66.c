@@ -190,7 +190,7 @@ s32 func_00300650(void *self, void *a1, u8 *cmd) {
 /* room 0x66 (D_0041F570): character 8 sinks 0.1 a frame: a fire (kind byte 3) as it starts
  * (slot in variable 7), put out below -24; done (1) below -25, else wait (2) */
 s32 func_003007E0(void *self, void *a1, u8 *cmd) {
-    Character *c = gCharacters[(u8)func_001770D0(gProgress, 8)];
+    Character *c = gCharacters[(u8)Progress_SlotOfId(gProgress, 8)];
     f32 y = c->a.pos[1] - 0x1.99999a0000000p-4f /* 0.1 */;
 
     c->a.pos[1] = y;

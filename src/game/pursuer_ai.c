@@ -884,7 +884,7 @@ void func_00212240(Pursuer *p, s32 room) {
         if (func_00124480(&p->c.a, a, -1) != (u32)-1) {
             p->c.unk124 = p->c.unk128;
         }
-        if (!(func_00178300(gProgress, p->c.a.room, room, *(u8 *)&p->c.a.slot) & 0xFF)) {
+        if (!(Progress_ExitPassable(gProgress, p->c.a.room, room, *(u8 *)&p->c.a.slot) & 0xFF)) {
             return;
         }
         if ((func_00123C60(&p->c.a, room, gCharPlayer->a.pos) & 0xFF) == 1) {
@@ -1453,17 +1453,17 @@ u32 func_00211E00(Pursuer *p, s32 exit) {
     if ((Progress_CurRoomFlag(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 2;
     }
-    if (!(func_00178300(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot) & 0xFF)) {
+    if (!(Progress_ExitPassable(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot) & 0xFF)) {
         return 3;
     }
-    if ((func_001785B0(pr, p->c.a.room, exit) & 0xFF) == 1) {
+    if ((Progress_ExitUnlocked(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 3;
     }
     rm = gRooms;
     if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF)) {
         return 4;
     }
-    if ((func_00178980(pr, p->c.a.room, exit) & 0xFF) == 1) {
+    if ((Progress_ExitOpen(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 4;
     }
     if ((DoorHold_Usable(pr, p->c.a.room, exit) & 0xFF) == 1) {
@@ -2048,10 +2048,10 @@ s32 func_00213690(Pursuer *p, s32 tri) {
         if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) & 0xFF)) {
             continue;
         }
-        if ((func_00178980(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1 && !(Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) & 0xFF)) {
+        if ((Progress_ExitOpen(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1 && !(Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) & 0xFF)) {
             continue;
         }
-        if ((func_001785B0(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1) {
+        if ((Progress_ExitUnlocked(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1) {
             continue;
         }
         t = func_002134E0(p, i & 0xFF, tri, v);

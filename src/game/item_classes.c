@@ -420,11 +420,11 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
+/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
-    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
         SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -3902,11 +3902,11 @@ s32 func_002EEC00(void *o) {
     return use_sound_only(1, 0x232);
 }
 
-/* at spot 0x11 of room 0xF once route 8 is open (func_00178610): event 0x16; else on the altar */
+/* at spot 0x11 of room 0xF once route 8 is open (Progress_DoorUnlocked): event 0x16; else on the altar */
 static s32 use_route8_or_offer(void *o) {
     Progress *p = gProgress;
 
-    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && func_00178610(p, 8) != 0 &&
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && Progress_DoorUnlocked(p, 8) != 0 &&
         item_at_spot(gEvents, gCharPlayer, 0x11)) {
         item_event(gEvents, 0, 0x16, gCharPlayer);
         return 4;
@@ -4347,7 +4347,7 @@ s32 func_002D27E0(VObject *it) {
         }
         return 6;
     }
-    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && func_00178610(p, 8) != 0 &&
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && Progress_DoorUnlocked(p, 8) != 0 &&
         item_at_spot(ev, gCharPlayer, 0x11)) {
         if (item_named(it, D_0045D840)) {
             item_event(ev, 0, 0x14, gCharPlayer);

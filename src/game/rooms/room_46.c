@@ -83,7 +83,7 @@ s32 Room46_Command(void *self, u32 i, s32 a, s32 b) {
  * (pi - 0.1 x event var 2, at least 1.57; at the limit event +0x5C(3)) and var 2 goes up by 2,
  * 2 func_00125960; then while character kind 0x21 is right of x -84, event var 1 = 1 */
 s32 func_002E5950(void *self, Character *c, u8 *cmd) {
-    Character *who = gCharacters[func_001770D0(gProgress, 0x21) & 0xFF];
+    Character *who = gCharacters[Progress_SlotOfId(gProgress, 0x21) & 0xFF];
     VObject *ev;
     f32 a;
 

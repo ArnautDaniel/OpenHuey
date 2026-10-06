@@ -16,7 +16,8 @@
 #include "msl.h"
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
-void func_0021C760(VObject *rooms, const s32 *saved) {
+/* 0x0021C760 */
+void Rooms_SetState(VObject *rooms, const s32 *saved) {
     s32 i;
 
     if (saved != NULL) {
@@ -48,7 +49,8 @@ extern DoorDef D_003DCFC0[];
 
 /* +0x90 rebuild which door each room's exits lead through (0xFFFF none), from the door table,
  * leaving out the doors +0x60 says are closed off */
-void func_0021B2B0(VObject *r) {
+/* 0x0021B2B0 */
+void Rooms_Rebuild(VObject *r) {
     s32 i, k;
     u16 d;
 
@@ -77,7 +79,8 @@ void func_0021B2B0(VObject *r) {
 }
 
 /* +0x60 is door `d` closed off (bit d of the 13 saved words at +4; 400 doors)? */
-s32 func_0021B160(VObject *r, u16 d) {
+/* 0x0021B160 */
+s32 Rooms_DoorClosedOff(VObject *r, u16 d) {
     if (d >= 400) {
         return 0;
     }
@@ -87,37 +90,42 @@ s32 func_0021B160(VObject *r, u16 d) {
 extern char D_004572A0[];   /* "OBSTACLE.MTN" */
 
 /* start loading the obstacles' motions (OBSTACLE.MTN) into +0x380 */
-void func_0021AF90(VObject *rooms) {
+/* 0x0021AF90 */
+void Obstacles_LoadMotions(VObject *rooms) {
     VCALL(gFileLoader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
         gFileLoader, D_004572A0, (u8 *)rooms + 0x380, 0x10000000, 0);
 }
 
-extern void func_0017FC80(u8 *o);
+extern void Obstacle_Reset(u8 *o);
 
 /* reset the 5 obstacles (+0x10, 0xB0 each) */
-void func_0021B040(u8 *rooms) {
+/* 0x0021B040 */
+void Obstacles_Reset(u8 *rooms) {
     s32 i;
 
     for (i = 0; i < 5; i++) {
-        func_0017FC80(rooms + 0x10 + i * 0xB0);
+        Obstacle_Reset(rooms + 0x10 + i * 0xB0);
     }
 }
 
 /* an obstacle released (nothing to do) */
-void func_0017FA50(u8 *o) {
+/* 0x0017FA50 */
+void Obstacle_Release(u8 *o) {
 }
 
 /* the 5 obstacles released */
-void func_0021ABC0(u8 *list) {
+/* 0x0021ABC0 */
+void Obstacles_Release(u8 *list) {
     s32 i;
 
     for (i = 0; i < 5; i++) {
-        func_0017FA50(list + 0x10 + i * 0xB0);
+        Obstacle_Release(list + 0x10 + i * 0xB0);
     }
 }
 
 /* reset an obstacle */
-void func_0017FC80(u8 *o) {
+/* 0x0017FC80 */
+void Obstacle_Reset(u8 *o) {
     AT(o, 0x0, u8) = 0;
     AT(o, 0x1, u8) = 0;
     AT(o, 0x54, s32) = -1;
@@ -135,7 +143,8 @@ void func_0017FC80(u8 *o) {
 }
 
 /* +0x3C the exit of room `room` that door `d` is (0xFF: not in that room, or closed off) */
-s32 func_0021BEF0(VObject *r, u32 d, u32 room) {
+/* 0x0021BEF0 */
+s32 Rooms_DoorExit(VObject *r, u32 d, u32 room) {
     DoorDef *def;
 
     if ((d & 0xFFFF) >= 400) {
@@ -155,7 +164,8 @@ s32 func_0021BEF0(VObject *r, u32 d, u32 room) {
 }
 
 /* +0x64 close off door d */
-void func_0021B1C0(VObject *r, u16 d) {
+/* 0x0021B1C0 */
+void Rooms_CloseOff(VObject *r, u16 d) {
     if (d >= 400) {
         return;
     }
@@ -163,7 +173,8 @@ void func_0021B1C0(VObject *r, u16 d) {
 }
 
 /* +0x68 open door d again */
-void func_0021B210(VObject *r, u16 d) {
+/* 0x0021B210 */
+void Rooms_Reopen(VObject *r, u16 d) {
     if (d >= 400) {
         return;
     }
@@ -173,7 +184,8 @@ void func_0021B210(VObject *r, u16 d) {
 extern u8 D_003D8BC6[];   /* the room table (0x40 bytes per room, 8 entries of 8 bytes), at +6 */
 
 /* +0x48 the camera area of entry `k` of room `room` (0xFFFF: none) */
-u32 func_0021BE00(VObject *r, u32 room, u32 k) {
+/* 0x0021BE00 */
+u32 Rooms_CameraArea(VObject *r, u32 room, u32 k) {
     if (room >= 0x110) {
         return 0xFFFF;
     }
@@ -182,7 +194,8 @@ u32 func_0021BE00(VObject *r, u32 room, u32 k) {
 
 /* the door state flag of exit `exit` of room `room` as seen from its side (side 1: flag 0x10,
  * side 2: 0x8); `checked`: only for doors with the side's check flag (0x40 / 0x80). -1: none */
-s32 func_0021BC60(VObject *r, u32 room, u32 exit, s32 checked) {
+/* 0x0021BC60 */
+s32 Rooms_ExitSideFlag(VObject *r, u32 room, u32 exit, s32 checked) {
     DoorDef *def;
     u32 d;
     s32 s;
@@ -212,7 +225,8 @@ s32 func_0021BC60(VObject *r, u32 room, u32 exit, s32 checked) {
 
 /* whether exit `exit` of room `room` leads to another room (+0x40 flag 0x20: no; +0x18 the
  * room it leads to) */
-s32 func_0021B820(VObject *r, s32 room, s32 exit) {
+/* 0x0021B820 */
+s32 Rooms_ExitLeads(VObject *r, s32 room, s32 exit) {
     s32 to;
 
     if ((u8)VCALL(r, 0x40, s32 (*)(VObject *, s32, s32))(r, room, exit) & 0x20) {
@@ -223,7 +237,8 @@ s32 func_0021B820(VObject *r, s32 room, s32 exit) {
 }
 
 /* +0x40 the door flags of exit `exit` of room `room` (+0x10 the door, then +0x44) */
-s32 func_0021BEB0(VObject *r, s32 room, s32 exit) {
+/* 0x0021BEB0 */
+s32 Rooms_ExitDoorFlags(VObject *r, s32 room, s32 exit) {
     u32 d = VCALL(r, 0x10, u32 (*)(VObject *, s32, s32))(r, room, exit);
 
     return VCALL(r, 0x44, s32 (*)(VObject *, u32))(r, d);
@@ -244,12 +259,14 @@ static s32 door_closed(VObject *r, u32 d) {
 }
 
 /* +0x10 the door at exit `exit` of room `room` (0xFFFF: none) */
-u32 func_0021C740(VObject *r, s32 room, u32 exit) {
+/* 0x0021C740 */
+u32 Rooms_ExitDoor(VObject *r, s32 room, u32 exit) {
     return ROOM_EXIT_DOOR(r, room, exit & 0xFF);
 }
 
 /* +0x14 the exit on the other side of that door (0xFF: none) */
-s32 func_0021C6A0(VObject *r, u32 room, u32 exit) {
+/* 0x0021C6A0 */
+s32 Rooms_OtherExit(VObject *r, u32 room, u32 exit) {
     u32 d;
     s32 s;
 
@@ -269,7 +286,8 @@ s32 func_0021C6A0(VObject *r, u32 room, u32 exit) {
 }
 
 /* +0x18 the room on the other side (-1: none) */
-s32 func_0021C610(VObject *r, u32 room, u32 exit) {
+/* 0x0021C610 */
+s32 Rooms_OtherRoom(VObject *r, u32 room, u32 exit) {
     u32 d;
     s32 s;
 
@@ -289,7 +307,8 @@ s32 func_0021C610(VObject *r, u32 room, u32 exit) {
 }
 
 /* +0x1C the room door d leads to from `room` (-1: none or closed off) */
-s32 func_0021C550(VObject *r, u32 d, u32 room) {
+/* 0x0021C550 */
+s32 Rooms_DoorLeadsTo(VObject *r, u32 d, u32 room) {
     s32 s;
 
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
@@ -329,33 +348,40 @@ static s32 exit_tri(u32 exit, s32 which, f32 *pos) {
 }
 
 /* +0x20 / +0x24 / +0x28 exit triangles (outside, inside, through) */
-s32 func_0021C490(VObject *r, u32 exit) {
+/* 0x0021C490 */
+s32 Rooms_ExitTriOut(VObject *r, u32 exit) {
     return exit_tri(exit, 0, NULL);
 }
 
-s32 func_0021C3D0(VObject *r, u32 exit) {
+/* 0x0021C3D0 */
+s32 Rooms_ExitTriIn(VObject *r, u32 exit) {
     return exit_tri(exit, 1, NULL);
 }
 
-s32 func_0021C310(VObject *r, u32 exit) {
+/* 0x0021C310 */
+s32 Rooms_ExitTriThrough(VObject *r, u32 exit) {
     return exit_tri(exit, 2, NULL);
 }
 
 /* +0x2C / +0x30 / +0x34 the same with the point (the triangle's centre for table ones) */
-s32 func_0021C230(VObject *r, u32 exit, f32 *pos) {
+/* 0x0021C230 */
+s32 Rooms_ExitPointOut(VObject *r, u32 exit, f32 *pos) {
     return exit_tri(exit, 0, pos);
 }
 
-s32 func_0021C150(VObject *r, u32 exit, f32 *pos) {
+/* 0x0021C150 */
+s32 Rooms_ExitPointIn(VObject *r, u32 exit, f32 *pos) {
     return exit_tri(exit, 1, pos);
 }
 
-s32 func_0021C070(VObject *r, u32 exit, f32 *pos) {
+/* 0x0021C070 */
+s32 Rooms_ExitPointThrough(VObject *r, u32 exit, f32 *pos) {
     return exit_tri(exit, 2, pos);
 }
 
 /* +0x38 door d's triangle on `room`'s side (-1: none) */
-s32 func_0021BFB0(VObject *r, u32 d, u32 room) {
+/* 0x0021BFB0 */
+s32 Rooms_DoorTri(VObject *r, u32 d, u32 room) {
     s32 s;
 
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
@@ -370,7 +396,8 @@ s32 func_0021BFB0(VObject *r, u32 d, u32 room) {
 }
 
 /* +0x44 door d's flags (0xFF: none) */
-s32 func_0021BE40(VObject *r, u32 d) {
+/* 0x0021BE40 */
+s32 Rooms_DoorFlags(VObject *r, u32 d) {
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
         return 0xFF;
     }
@@ -378,7 +405,8 @@ s32 func_0021BE40(VObject *r, u32 d) {
 }
 
 /* +0x4C whether exit `exit` of `room` has its side's flag (side 1: 2, side 2: 4) */
-s32 func_0021BD50(VObject *r, u32 room, u32 exit) {
+/* 0x0021BD50 */
+s32 Rooms_ExitHasSideFlag(VObject *r, u32 room, u32 exit) {
     u32 d;
     s32 s;
 
@@ -410,7 +438,8 @@ static s32 side_flag(u32 flags, s32 s, s32 checked, u32 f0, u32 c0, u32 f1, u32 
 }
 
 /* +0x54 door d seen from `room`'s side (0x10 / 0x8, checks 0x40 / 0x80); -1: none */
-s32 func_0021BB20(VObject *r, u32 d, u32 room, s32 checked) {
+/* 0x0021BB20 */
+s32 Rooms_DoorFromSide(VObject *r, u32 d, u32 room, s32 checked) {
     s32 s, v;
 
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
@@ -426,7 +455,8 @@ s32 func_0021BB20(VObject *r, u32 d, u32 room, s32 checked) {
 }
 
 /* +0x58 exit `exit` of `room` seen from the other side (0x8 / 0x10, checks 0x80 / 0x40) */
-s32 func_0021BA30(VObject *r, u32 room, u32 exit, s32 checked) {
+/* 0x0021BA30 */
+s32 Rooms_ExitFromOther(VObject *r, u32 room, u32 exit, s32 checked) {
     u32 d;
     s32 s, v;
 
@@ -447,7 +477,8 @@ s32 func_0021BA30(VObject *r, u32 room, u32 exit, s32 checked) {
 }
 
 /* +0x5C door d from the other side of `room`'s */
-s32 func_0021B8F0(VObject *r, u32 d, u32 room, s32 checked) {
+/* 0x0021B8F0 */
+s32 Rooms_DoorFromOther(VObject *r, u32 d, u32 room, s32 checked) {
     s32 s, v;
 
     if ((d & 0xFFFF) >= 400 || door_closed(r, d)) {
@@ -463,27 +494,32 @@ s32 func_0021B8F0(VObject *r, u32 d, u32 room, s32 checked) {
 }
 
 /* +0x6C the room of door d's side s */
-u32 func_0021B270(VObject *r, u32 d, u32 s) {
+/* 0x0021B270 */
+u32 Rooms_DoorSideRoom(VObject *r, u32 d, u32 s) {
     return AT(DOOR_SIDE(&D_003DCFC0[d & 0xFFFF], s & 0xFF), 0, u16);
 }
 
 /* +0x70 whether the exit leads back into the same room */
-s32 func_0021B8B0(VObject *r, s32 room, s32 exit) {
+/* 0x0021B8B0 */
+s32 Rooms_ExitLoops(VObject *r, s32 room, s32 exit) {
     return VCALL(r, 0x18, s32 (*)(VObject *, s32, s32))(r, room, exit) == room;
 }
 
 /* +0x78 whether the exit's door is not locked (flag 1) */
-s32 func_0021B7E0(VObject *r, s32 room, s32 exit) {
+/* 0x0021B7E0 */
+s32 Rooms_ExitNotLocked(VObject *r, s32 room, s32 exit) {
     return !((u8)VCALL(r, 0x40, s32 (*)(VObject *, s32, s32))(r, room, exit) & 1);
 }
 
 /* +0x7C the saved state */
-u8 *func_0021B2A0(VObject *r) {
+/* 0x0021B2A0 */
+u8 *Rooms_SavedState(VObject *r) {
     return (u8 *)r + 4;
 }
 
 /* +0x80 room's centre (0: no room) */
-s32 func_0021B750(VObject *r, u32 room, f32 *out) {
+/* 0x0021B750 */
+s32 Rooms_Centre(VObject *r, u32 room, f32 *out) {
     out[2] = 0.0f;
     out[1] = 0.0f;
     out[0] = 0.0f;
@@ -499,7 +535,8 @@ s32 func_0021B750(VObject *r, u32 room, f32 *out) {
 }
 
 /* +0x84 the distance between two rooms' centres */
-f32 func_0021B6A0(VObject *r, s32 a, s32 b) {
+/* 0x0021B6A0 */
+f32 Rooms_Distance(VObject *r, s32 a, s32 b) {
     f32 p[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
 
@@ -514,7 +551,8 @@ f32 func_0021B6A0(VObject *r, s32 a, s32 b) {
 }
 
 /* +0x88 how many different rooms `room`'s open exits lead to (other than `except`) */
-s32 func_0021B540(VObject *r, s32 room, s32 except) {
+/* 0x0021B540 */
+s32 Rooms_NeighbourCount(VObject *r, s32 room, s32 except) {
     Progress *p;
     s32 to[8];
     u8 n = 0;
@@ -552,7 +590,8 @@ s32 func_0021B540(VObject *r, s32 room, s32 except) {
 }
 
 /* +0x8C the heading through exit `exit` (into the room); 0: none / back into this room */
-f32 func_0021B3E0(VObject *r, u32 exit) {
+/* 0x0021B3E0 */
+f32 Rooms_ExitHeading(VObject *r, u32 exit) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -582,7 +621,8 @@ f32 func_0021B3E0(VObject *r, u32 exit) {
 }
 
 /* +0x8 destructor */
-VObject *func_0021B0F0(VObject *r, s32 flags) {
+/* 0x0021B0F0 */
+VObject *Rooms_dtor(VObject *r, s32 flags) {
     if (r == NULL) {
         return r;
     }
@@ -596,7 +636,8 @@ VObject *func_0021B0F0(VObject *r, s32 flags) {
 }
 
 /* the base's destructor (+0xA8) */
-VObject *func_0021C7E0(VObject *r, s32 flags) {
+/* 0x0021C7E0 */
+VObject *RoomsBase_dtor(VObject *r, s32 flags) {
     if (r == NULL) {
         return r;
     }
@@ -608,23 +649,25 @@ VObject *func_0021C7E0(VObject *r, s32 flags) {
     return r;
 }
 
-extern void func_0017FA60(u8 *o);
+extern void Obstacle_MoveFrame(u8 *o);
 
 /* the obstacles, each frame: each of the 5 (0xB0 apart) that is active moves */
-void func_0021AFD0(void *list) {
+/* 0x0021AFD0 */
+void Obstacles_Update(void *list) {
     u8 *o = (u8 *)list + 0x10;
     s32 i;
 
     for (i = 0; i < 5; i++, o += 0xB0) {
         if (AT(o, 0x0, u8) == 1) {
-            func_0017FA60(o);
+            Obstacle_MoveFrame(o);
         }
     }
 }
 
 /* the obstacles' models follow them, each frame: each active one's position (+0x40) moved by
  * its offset (+0x4 x, +0x8 z) goes to its model (+0x50, at +0x20) */
-void func_0021AC10(void *list) {
+/* 0x0021AC10 */
+void Obstacles_ModelsFollow(void *list) {
     u8 *o = (u8 *)list + 0x10;
     s32 i;
 
@@ -646,7 +689,8 @@ extern s32 D_0047B24C;   /* frames left of the move below */
 /* a room 0x2A handler step (the script's command 0x22, arguments `arg`): arg[3] 0 starts it
  * (90 frames); then each frame event character 0xF rises 0.5 and moves 2 along z, the script
  * waiting (2) until the frames are up (1) */
-s32 func_002B1400(void *room, s32 n, const u8 *arg) {
+/* 0x002B1400 */
+s32 Room2A_HandlerStep(void *room, s32 n, const u8 *arg) {
     u8 *c;
     u8 i;
 
@@ -657,7 +701,7 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
     if (--D_0047B24C == 0) {
         return 1;
     }
-    i = (u8)func_001770D0(gProgress, 0xF);
+    i = (u8)Progress_SlotOfId(gProgress, 0xF);
 #ifdef HG_NATIVE
     if (i >= 6 || gCharacters[i] == NULL) {
         return 2;   /* (not loaded on the PC build yet) */
@@ -674,12 +718,13 @@ s32 func_002B1400(void *room, s32 n, const u8 *arg) {
  * triangles, then steps along x / z from the reference square and its size in squares x, z);
  * +0x40 its centre (w +0x4C), +0x50 the model, +0x54 / +0x58 the reference square ---- */
 
-void func_0017EA30(u8 *o, const f32 *dir);
-s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir);
+void Obstacle_MarkRing(u8 *o, const f32 *dir);
+s32 Obstacle_StepSquare(u8 *o, u32 *a, u32 *b, const f32 *dir);
 
 /* a part: `dx` / `dz` squares from the reference square, `w` x `d` squares in size; -1 when
  * full (3) */
-s32 func_0017E060(u8 *o, s32 dx, s32 dz, s32 w, s32 d) {
+/* 0x0017E060 */
+s32 Obstacle_AddPart(u8 *o, s32 dx, s32 dz, s32 w, s32 d) {
     u8 *part;
 
     if (AT(o, 0x64, s32) >= 3) {
@@ -695,7 +740,8 @@ s32 func_0017E060(u8 *o, s32 dx, s32 dz, s32 w, s32 d) {
 }
 
 /* each part's square: stepped from the reference square |dx| times along +-x, |dz| along +-z */
-void func_0017E0B0(u8 *o) {
+/* 0x0017E0B0 */
+void Obstacle_PartSquares(u8 *o) {
     s32 i, k, n;
     u8 *part = o + 0x68;
 
@@ -717,14 +763,14 @@ void func_0017E0B0(u8 *o) {
             n = -n;
         }
         for (k = 0; k < n; k++) {
-            func_0017F660(o, &a, &b, sx);
+            Obstacle_StepSquare(o, &a, &b, sx);
         }
         n = AT(part, 0xC, s32);
         if (n <= 0) {
             n = -n;
         }
         for (k = 0; k < n; k++) {
-            func_0017F660(o, &a, &b, sz);
+            Obstacle_StepSquare(o, &a, &b, sz);
         }
         AT(part, 0x0, u32) = a;
         AT(part, 0x4, u32) = b;
@@ -748,7 +794,8 @@ static void square_centre(NavMesh *nm, u32 a, u32 b, f32 *out) {
 
 /* move the square (*a, *b) one square along `dir`: from its centre 5 units along dir through
  * the mesh until two new triangles are crossed; -1 (unchanged) at an edge of the mesh */
-s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
+/* 0x0017F660 */
+s32 Obstacle_StepSquare(u8 *o, u32 *a, u32 *b, const f32 *dir) {
     NavMesh *nm = gNavMesh;
     u32 ta = *a, tb = *b, cur;
     f32 from[4] __attribute__((aligned(16)));
@@ -868,15 +915,15 @@ static inline __attribute__((always_inline)) void part_area(u8 *o, const u8 *par
     a = AT(part, 0x0, u32);
     b = AT(part, 0x4, u32);
     if (dir != NULL) {
-        func_0017F660(o, &a, &b, dir);
-        func_0017F660(o, &a, &b, dir);
+        Obstacle_StepSquare(o, &a, &b, dir);
+        Obstacle_StepSquare(o, &a, &b, dir);
     }
     for (z = 0; z < AT(part, 0x14, s32); z++) {
         for (x = 0; x < AT(part, 0x10, s32); x++) {
             sq_visit(mode, c, a, b, 0);
-            func_0017F660(o, &a, &b, sx);
+            Obstacle_StepSquare(o, &a, &b, sx);
         }
-        func_0017F660(o, &a, &b, sz);
+        Obstacle_StepSquare(o, &a, &b, sz);
     }
 }
 
@@ -894,15 +941,15 @@ static inline __attribute__((always_inline)) s32 part_ring(u8 *o, const u8 *part
     sz[0] = 0.0f;
     sx[2] = 0.0f;
     sz[1] = 0.0f;
-    func_0017F660(o, &a, &b, sx);
-    func_0017F660(o, &a, &b, sz);
+    Obstacle_StepSquare(o, &a, &b, sx);
+    Obstacle_StepSquare(o, &a, &b, sz);
     for (side = 0; side < 4; side++) {
         f32 *d = (side & 1) ? sz : sx;
         s32 n = AT(part, (side & 1) ? 0x14 : 0x10, s32);
 
         d[(side & 1) ? 2 : 0] = side < 2 ? 1.0f : -1.0f;
         for (k = 0; k < n; k++) {
-            func_0017F660(o, &a, &b, d);
+            Obstacle_StepSquare(o, &a, &b, d);
             if (sq_visit(mode, c, a, b, 0)) {
                 return 1;
             }
@@ -910,7 +957,7 @@ static inline __attribute__((always_inline)) s32 part_ring(u8 *o, const u8 *part
         if (mode == SQ_FIND && side == 3) {   /* (the search leaves out the last corner) */
             break;
         }
-        func_0017F660(o, &a, &b, d);
+        Obstacle_StepSquare(o, &a, &b, d);
         if (sq_visit(mode, c, a, b, 1)) {
             return 1;
         }
@@ -920,7 +967,8 @@ static inline __attribute__((always_inline)) s32 part_ring(u8 *o, const u8 *part
 
 /* triangle `tri` is on the ring around one of the parts (moved two squares along `dir`, if
  * any): 0; else -1 */
-s32 func_0017DD60(u8 *o, u32 tri, const f32 *dir) {
+/* 0x0017DD60 */
+s32 Obstacle_OnRing(u8 *o, u32 tri, const f32 *dir) {
     struct sq_ctx c;
     u8 *part = o + 0x68;
     s32 i;
@@ -930,8 +978,8 @@ s32 func_0017DD60(u8 *o, u32 tri, const f32 *dir) {
         u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
 
         if (dir != NULL) {
-            func_0017F660(o, &a, &b, dir);
-            func_0017F660(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
         }
         if (part_ring(o, part, a, b, SQ_FIND, &c)) {
             return 0;
@@ -941,7 +989,8 @@ s32 func_0017DD60(u8 *o, u32 tri, const f32 *dir) {
 }
 
 /* block the triangles under each part (flags |= 0x20400000), moved two squares along `dir` */
-void func_0017F430(u8 *o, const f32 *dir) {
+/* 0x0017F430 */
+void Obstacle_Block(u8 *o, const f32 *dir) {
     s32 i;
 
     for (i = 0; i < AT(o, 0x64, s32); i++) {
@@ -950,7 +999,8 @@ void func_0017F430(u8 *o, const f32 *dir) {
 }
 
 /* ... and unblock them */
-void func_0017F1F0(u8 *o, const f32 *dir) {
+/* 0x0017F1F0 */
+void Obstacle_Unblock(u8 *o, const f32 *dir) {
     s32 i;
 
     for (i = 0; i < AT(o, 0x64, s32); i++) {
@@ -960,7 +1010,8 @@ void func_0017F1F0(u8 *o, const f32 *dir) {
 
 /* mark the ring of squares around each part (moved two squares along `dir`, if any): its
  * sides 0x20800000, its corners 0x20000000 */
-void func_0017EA30(u8 *o, const f32 *dir) {
+/* 0x0017EA30 */
+void Obstacle_MarkRing(u8 *o, const f32 *dir) {
     u8 *part = o + 0x68;
     s32 i;
 
@@ -968,15 +1019,16 @@ void func_0017EA30(u8 *o, const f32 *dir) {
         u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
 
         if (dir != NULL) {
-            func_0017F660(o, &a, &b, dir);
-            func_0017F660(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
         }
         part_ring(o, part, a, b, SQ_FLAG, NULL);
     }
 }
 
 /* ... and unmark them (sides and corners alike) */
-void func_0017E260(u8 *o, const f32 *dir) {
+/* 0x0017E260 */
+void Obstacle_UnmarkRing(u8 *o, const f32 *dir) {
     u8 *part = o + 0x68;
     s32 i;
 
@@ -984,8 +1036,8 @@ void func_0017E260(u8 *o, const f32 *dir) {
         u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
 
         if (dir != NULL) {
-            func_0017F660(o, &a, &b, dir);
-            func_0017F660(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
         }
         part_ring(o, part, a, b, SQ_UNFLAG, NULL);
     }
@@ -993,7 +1045,8 @@ void func_0017E260(u8 *o, const f32 *dir) {
 
 /* the area the parts would cover two squares along `dir` is free: none of its triangles has
  * a flag of `forbid`, and all have one of `need` (0; else -1) */
-s32 func_0017D580(u8 *o, u32 forbid, u32 need, const f32 *dir) {
+/* 0x0017D580 */
+s32 Obstacle_AreaFree(u8 *o, u32 forbid, u32 need, const f32 *dir) {
     struct sq_ctx c;
     s32 i;
 
@@ -1010,7 +1063,8 @@ s32 func_0017D580(u8 *o, u32 forbid, u32 need, const f32 *dir) {
 
 /* no other character (slots 1..5, in the scene and not +0x29) stands on the ring around the
  * parts moved one or two squares along `dir`: -1; else 0 */
-s32 func_0017D7F0(u8 *o, const f32 *dir) {
+/* 0x0017D7F0 */
+s32 Obstacle_RingClear(u8 *o, const f32 *dir) {
     struct sq_ctx c;
     u8 *part = o + 0x68;
     s32 i, pass;
@@ -1027,9 +1081,9 @@ s32 func_0017D7F0(u8 *o, const f32 *dir) {
         for (pass = 0; pass < 2; pass++) {
             u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
 
-            func_0017F660(o, &a, &b, dir);
+            Obstacle_StepSquare(o, &a, &b, dir);
             if (pass == 0) {
-                func_0017F660(o, &a, &b, dir);
+                Obstacle_StepSquare(o, &a, &b, dir);
             }
             if (part_ring(o, part, a, b, SQ_CHARS, &c)) {
                 return 0;
@@ -1041,17 +1095,18 @@ s32 func_0017D7F0(u8 *o, const f32 *dir) {
 
 /* can it be pushed along `dir`: nobody in the way, and (with its own blocks lifted) the place
  * is walkable floor (0x100) without 0x440080 */
-s32 func_0017D4E0(u8 *o, const f32 *dir) {
+/* 0x0017D4E0 */
+s32 Obstacle_CanPush(u8 *o, const f32 *dir) {
     s32 ok = 0;
 
-    if (func_0017D7F0(o, dir) == 0) {
+    if (Obstacle_RingClear(o, dir) == 0) {
         return -1;
     }
-    func_0017F1F0(o, NULL);
-    if (func_0017D580(o, 0x440080, 0x100, dir) == 0) {
+    Obstacle_Unblock(o, NULL);
+    if (Obstacle_AreaFree(o, 0x440080, 0x100, dir) == 0) {
         ok = 1;
     }
-    func_0017F430(o, NULL);
+    Obstacle_Block(o, NULL);
     if ((u8)ok == 1) {
         return 0;
     }
@@ -1059,17 +1114,19 @@ s32 func_0017D4E0(u8 *o, const f32 *dir) {
 }
 
 /* the target square: the reference square two squares along `dir` (+0x5C / +0x60) */
-void func_0017D290(u8 *o, const f32 *dir) {
+/* 0x0017D290 */
+void Obstacle_SetTarget(u8 *o, const f32 *dir) {
     u32 a = AT(o, 0x54, u32), b = AT(o, 0x58, u32);
 
-    func_0017F660(o, &a, &b, dir);
-    func_0017F660(o, &a, &b, dir);
+    Obstacle_StepSquare(o, &a, &b, dir);
+    Obstacle_StepSquare(o, &a, &b, dir);
     AT(o, 0x5C, u32) = a;
     AT(o, 0x60, u32) = b;
 }
 
 /* triangle `t` is the obstacle's square (the target one on the last step of a move) */
-s32 func_0017D300(u8 *o, u32 t) {
+/* 0x0017D300 */
+s32 Obstacle_IsSquare(u8 *o, u32 t) {
     if (AT(o, 0x10, s32) == AT(o, 0x14, s32) - 1) {
         return AT(o, 0x5C, u32) == t || AT(o, 0x60, u32) == t;
     }
@@ -1085,20 +1142,22 @@ static inline __attribute__((always_inline)) void obstacle_moved(u8 *o) {
     AT(o, 0x58, u32) = AT(o, 0x60, u32);
     AT(o, 0x5C, u32) = NAV_NONE;
     AT(o, 0x60, u32) = NAV_NONE;
-    func_0017E0B0(o);
+    Obstacle_PartSquares(o);
     square_centre(gNavMesh, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
     AT(o, 0x4C, f32) = 1.0f;
     AT(o, 0x10, s32) = AT(o, 0x14, s32);
 }
 
-void func_0017D370(u8 *o) {
+/* 0x0017D370 */
+void Obstacle_Moved(u8 *o) {
     obstacle_moved(o);
 }
 
 /* a frame of a move: at step 6 its scraping sound and a noise (0x1F) at its square; each step
  * moves the centre by the direction (+0x20) times the move's step (+0x30 table); at the last
  * step the move is done */
-void func_0017FA60(u8 *o) {
+/* 0x0017FA60 */
+void Obstacle_MoveFrame(u8 *o) {
     if (AT(o, 0x10, s32) == AT(o, 0x14, s32)) {
         return;
     }
@@ -1121,15 +1180,16 @@ void func_0017FA60(u8 *o) {
 }
 
 /* placed: the centre of the reference square, then the parts' squares, blocked (no move) and
- * settled (func_0017EA30) */
-void func_0017F8F0(u8 *o) {
+ * settled (Obstacle_MarkRing) */
+/* 0x0017F8F0 */
+void Obstacle_Placed(u8 *o) {
     NavMesh *nm = gNavMesh;
 
     square_centre(nm, AT(o, 0x54, u32), AT(o, 0x58, u32), (f32 *)(o + 0x40));
     AT(o, 0x4C, f32) = 1.0f;
-    func_0017E0B0(o);
-    func_0017F430(o, NULL);
-    func_0017EA30(o, NULL);
+    Obstacle_PartSquares(o);
+    Obstacle_Block(o, NULL);
+    Obstacle_MarkRing(o, NULL);
 }
 
 /* ---- the obstacles (gObstacles, room manager +0x9380, vtable D_0046C320): 5 things in the
@@ -1141,7 +1201,7 @@ extern void *D_0046C320[], *D_0046C380[];
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
-extern void func_0017E260(u8 *o, const f32 *dir);
+extern void Obstacle_UnmarkRing(u8 *o, const f32 *dir);
 
 #define OBST(l, i) ((u8 *)(l) + 0x10 + (i) * 0xB0)
 
@@ -1158,7 +1218,8 @@ static u8 *obstacle_model(const char *base, u32 n) {
 }
 
 /* an obstacle's destructor */
-void *func_0021A370(void *o, s32 flags) {
+/* 0x0021A370 */
+void *Obstacle_dtor(void *o, s32 flags) {
     if (o != NULL && (s16)flags > 0) {
         func_00100490(o);
     }
@@ -1166,10 +1227,11 @@ void *func_0021A370(void *o, s32 flags) {
 }
 
 /* +0x8 destructor */
-void *func_0021A2E0(u8 *l, s32 flags) {
+/* 0x0021A2E0 */
+void *Obstacles_dtor(u8 *l, s32 flags) {
     if (l != NULL) {
         AT(l, 0x0, void **) = D_0046C320;
-        func_001002C0(l + 0x10, func_0021A370, 0xB0, 5);
+        func_001002C0(l + 0x10, Obstacle_dtor, 0xB0, 5);
         AT(l, 0x0, void **) = D_0046C380;
         gObstacles = NULL;
         if ((s16)flags > 0) {
@@ -1180,7 +1242,8 @@ void *func_0021A2E0(u8 *l, s32 flags) {
 }
 
 /* the base's destructor */
-void *func_0021B090(void *l, s32 flags) {
+/* 0x0021B090 */
+void *ObstaclesBase_dtor(void *l, s32 flags) {
     if (l != NULL) {
         AT(l, 0x0, void **) = D_0046C380;
         gObstacles = NULL;
@@ -1218,71 +1281,77 @@ static void obstacle_make(u8 *l, s32 i, u32 n, s32 kind, const char *base, s32 a
     }
     part = def + 0xC;
     for (k = 0; k < AT(def, 0x8, s32); k++, part += 0x10) {
-        func_0017E060(o, AT(part, 0x0, s32), AT(part, 0x4, s32), AT(part, 0x8, s32), AT(part, 0xC, s32));
+        Obstacle_AddPart(o, AT(part, 0x0, s32), AT(part, 0x4, s32), AT(part, 0x8, s32), AT(part, 0xC, s32));
     }
-    func_0017F8F0(o);
+    Obstacle_Placed(o);
 }
 
 /* +0x10 obstacle i (model "oshi0n", `kind`) placed at (a, b) */
-void func_0021AE30(u8 *l, s32 i, u32 n, s32 kind, s32 a, s32 b) {
+/* 0x0021AE30 */
+void Obstacles_PlaceAt(u8 *l, s32 i, u32 n, s32 kind, s32 a, s32 b) {
     if (i < 5) {
         obstacle_make(l, i, n, kind, D_0047A940, a, b, 0);
     }
 }
 
 /* +0x14 the same, at its saved place */
-void func_0021ACD0(u8 *l, s32 i, u32 n, s32 kind) {
+/* 0x0021ACD0 */
+void Obstacles_PlaceSaved(u8 *l, s32 i, u32 n, s32 kind) {
     if (i < 5) {
         obstacle_make(l, i, n, kind, D_0047A948, 0, 0, 1);
     }
 }
 
-/* +0x18 / +0x1C obstacle i pushed (func_0017F430 + func_0017EA30) / pulled (func_0017F1F0 +
- * func_0017E260) by `a`; -1 for none */
-s32 func_0021AB30(u8 *l, s32 i, const f32 *a) {
+/* +0x18 / +0x1C obstacle i pushed (Obstacle_Block + Obstacle_MarkRing) / pulled (Obstacle_Unblock +
+ * Obstacle_UnmarkRing) by `a`; -1 for none */
+/* 0x0021AB30 */
+s32 Obstacles_Push(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
         return -1;
     }
-    func_0017F430(o, a);
-    func_0017EA30(o, a);
+    Obstacle_Block(o, a);
+    Obstacle_MarkRing(o, a);
     return 0;
 }
 
-s32 func_0021AAA0(u8 *l, s32 i, const f32 *a) {
+/* 0x0021AAA0 */
+s32 Obstacles_Pull(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
         return -1;
     }
-    func_0017F1F0(o, a);
-    func_0017E260(o, a);
+    Obstacle_Unblock(o, a);
+    Obstacle_UnmarkRing(o, a);
     return 0;
 }
 
-/* +0x20 the other active obstacles settle (func_0017EA30(0)); obstacle i pushed by `a` */
-void func_0021A9D0(u8 *l, s32 i, const f32 *a) {
+/* +0x20 the other active obstacles settle (Obstacle_MarkRing(0)); obstacle i pushed by `a` */
+/* 0x0021A9D0 */
+void Obstacles_Settle(u8 *l, s32 i, const f32 *a) {
     s32 k;
 
     for (k = 0; k < 5; k++) {
         if (AT(OBST(l, k), 0x0, u8) == 1 && k != i) {
-            func_0017EA30(OBST(l, k), NULL);
+            Obstacle_MarkRing(OBST(l, k), NULL);
         }
     }
     if (AT(OBST(l, i), 0x0, u8) == 1) {
-        func_0017F430(OBST(l, i), a);
-        func_0017EA30(OBST(l, i), a);
+        Obstacle_Block(OBST(l, i), a);
+        Obstacle_MarkRing(OBST(l, i), a);
     }
 }
 
 /* +0x24 which active obstacles have triangle `a` on the ring round them (bit per obstacle) */
-u32 func_0021A930(u8 *l, s32 a) {
+/* 0x0021A930 */
+u32 Obstacles_RingMask(u8 *l, s32 a) {
     u32 mask = 0;
     s32 k;
 
     for (k = 0; k < 5; k++) {
-        if (AT(OBST(l, k), 0x0, u8) == 1 && func_0017DD60(OBST(l, k), a, NULL) == 0) {
+        if (AT(OBST(l, k), 0x0, u8) == 1 && Obstacle_OnRing(OBST(l, k), a, NULL) == 0) {
             mask |= 1 << k;
         }
     }
@@ -1290,7 +1359,8 @@ u32 func_0021A930(u8 *l, s32 a) {
 }
 
 /* +0x28 obstacle i starts move `mv` of OBSTACLE.MTN from `at` */
-s32 func_0021A850(u8 *l, s32 i, s32 mv, const f32 *at) {
+/* 0x0021A850 */
+s32 Obstacles_StartMove(u8 *l, s32 i, s32 mv, const f32 *at) {
     u8 *o, *rec;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0 || mv < 0 || (u32)mv >= AT(l, 0x380, u32)) {
@@ -1305,60 +1375,67 @@ s32 func_0021A850(u8 *l, s32 i, s32 mv, const f32 *at) {
     return 0;
 }
 
-/* +0x2C obstacle i: func_0017D370 */
-s32 func_0021A7E0(u8 *l, s32 i) {
+/* +0x2C obstacle i: Obstacle_Moved */
+/* 0x0021A7E0 */
+s32 Obstacles_Moved(u8 *l, s32 i) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
         return -1;
     }
-    func_0017D370(o);
+    Obstacle_Moved(o);
     return 0;
 }
 
-/* +0x30 obstacle i (not stopped, +0x1): func_0017D4E0(a); -1 otherwise */
-s32 func_0021A760(u8 *l, s32 i, const f32 *a) {
+/* +0x30 obstacle i (not stopped, +0x1): Obstacle_CanPush(a); -1 otherwise */
+/* 0x0021A760 */
+s32 Obstacles_CanPush(u8 *l, s32 i, const f32 *a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0 || AT(o, 0x1, u8) == 1) {
         return -1;
     }
-    return func_0017D4E0(o, a);
+    return Obstacle_CanPush(o, a);
 }
 
-/* +0x34 obstacle i: func_0017D300(a) (0 for none) */
-s32 func_0021A6F0(u8 *l, s32 i, u32 a) {
+/* +0x34 obstacle i: Obstacle_IsSquare(a) (0 for none) */
+/* 0x0021A6F0 */
+s32 Obstacles_IsSquare(u8 *l, s32 i, u32 a) {
     u8 *o;
 
     if (i < 0 || i >= 5 || AT(o = OBST(l, i), 0x0, u8) == 0) {
         return 0;
     }
-    return func_0017D300(o, a);
+    return Obstacle_IsSquare(o, a);
 }
 
 /* +0x38 obstacle i stopped */
-void func_0021A690(u8 *l, s32 i) {
+/* 0x0021A690 */
+void Obstacles_Stop(u8 *l, s32 i) {
     if (i >= 0 && i < 5 && AT(OBST(l, i), 0x0, u8) != 0) {
         AT(OBST(l, i), 0x1, u8) = 1;
     }
 }
 
-/* +0x3C obstacle i: func_0017D290(a) */
-void func_0021A630(u8 *l, s32 i, const f32 *a) {
+/* +0x3C obstacle i: Obstacle_SetTarget(a) */
+/* 0x0021A630 */
+void Obstacles_SetTarget(u8 *l, s32 i, const f32 *a) {
     if (i >= 0 && i < 5 && AT(OBST(l, i), 0x0, u8) != 0) {
-        func_0017D290(OBST(l, i), a);
+        Obstacle_SetTarget(OBST(l, i), a);
     }
 }
 
 /* +0x40 obstacle i's saved place set / +0x44 taken from it now (+0x54 / +0x58) */
-void func_0021A600(u8 *l, s32 i, s32 a, s32 b) {
+/* 0x0021A600 */
+void Obstacles_SetSaved(u8 *l, s32 i, s32 a, s32 b) {
     if (i >= 0 && i < 5) {
         AT(l, 0x580 + i * 8, s32) = a;
         AT(l, 0x584 + i * 8, s32) = b;
     }
 }
 
-void func_0021A5B0(u8 *l, s32 i) {
+/* 0x0021A5B0 */
+void Obstacles_TakeSaved(u8 *l, s32 i) {
     if (i >= 0 && i < 5) {
         AT(l, 0x580 + i * 8, s32) = AT(OBST(l, i), 0x54, s32);
         AT(l, 0x584 + i * 8, s32) = AT(OBST(l, i), 0x58, s32);
@@ -1366,7 +1443,8 @@ void func_0021A5B0(u8 *l, s32 i) {
 }
 
 /* +0x48 obstacle i's spot (+0x5B0) kept: where it stands (+0x40, moved by its offset) */
-void func_0021A510(u8 *l, s32 i) {
+/* 0x0021A510 */
+void Obstacles_KeepSpot(u8 *l, s32 i) {
     if (i >= 0 && i < 5) {
         f32 *s = &AT(l, 0x5B0 + i * 0x10, f32);
         u8 *o = OBST(l, i);
@@ -1378,7 +1456,8 @@ void func_0021A510(u8 *l, s32 i) {
 }
 
 /* +0x4C the model of obstacle i ("oshi0n") back at its kept spot */
-void func_0021A440(u8 *l, s32 i, u32 n) {
+/* 0x0021A440 */
+void Obstacles_ModelBack(u8 *l, s32 i, u32 n) {
     u8 *m;
 
     if (i < 0 || i >= 5) {
@@ -1392,7 +1471,8 @@ void func_0021A440(u8 *l, s32 i, u32 n) {
 }
 
 /* +0x50 where obstacle i stands (+0x40, moved by its offset) */
-void func_0021A3C0(u8 *l, s32 i, f32 *out) {
+/* 0x0021A3C0 */
+void Obstacles_Pos(u8 *l, s32 i, f32 *out) {
     if (i >= 0 && i < 5) {
         u8 *o = OBST(l, i);
 

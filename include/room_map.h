@@ -7,12 +7,12 @@
 typedef struct VObject VObject;
 
 /* room_map.c */
-extern void func_0021B040(u8 *rooms);
-extern void func_0021ABC0(u8 *list);   /* the obstacles released */
-extern VObject *func_0021B0F0(VObject *r, s32 flags);
-extern void func_0021AFD0(void *list);
-extern void func_0021AC10(void *list);
-extern void *func_0021A370(void *o, s32 flags);
-extern void *func_0021A2E0(u8 *l, s32 flags);
+extern void Obstacles_Reset(u8 *rooms);
+extern void Obstacles_Release(u8 *list);   /* the obstacles released */
+extern VObject *Rooms_dtor(VObject *r, s32 flags);
+extern void Obstacles_Update(void *list);
+extern void Obstacles_ModelsFollow(void *list);
+extern void *Obstacle_dtor(void *o, s32 flags);
+extern void *Obstacles_dtor(u8 *l, s32 flags);
 
 #endif /* ROOM_MAP_H */

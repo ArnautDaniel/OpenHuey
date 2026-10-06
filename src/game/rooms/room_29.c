@@ -92,7 +92,7 @@ s32 Room29_Cond00(void) {
         return 0;
     }
     p = gProgress;
-    if ((func_00177620(p) & 0xFF) != 2) {
+    if ((Progress_GameMode(p) & 0xFF) != 2) {
         return 0;
     }
     if (AT(s, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {

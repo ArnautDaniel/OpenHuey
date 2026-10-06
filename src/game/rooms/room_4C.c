@@ -72,7 +72,7 @@ s32 Room4C_Command(void *self, u32 i, s32 a, s32 b) {
  * 3 is 0, else lose it */
 /* 0x002B3660 */
 s32 Room4C_Cmd02(void *self, void *a1, u8 *cmd) {
-    u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, 0x11) & 0xFF];
+    u8 *c = (u8 *)gCharacters[Progress_SlotOfId(gProgress, 0x11) & 0xFF];
 
 #ifdef HG_NATIVE
     if (c == NULL) {   /* character 0x11 absent (the PS2 writes through junk) */

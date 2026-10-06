@@ -61,10 +61,10 @@ Members (from `SceneGame_ctor`):
 +0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `func_003A04A0`: room
 load, returns 1 while busy), else the gameplay tick `func_003A0160`:
 
-1. `CamDirector_NewRoom(+0xF6CBB0)`, `func_001792C0(Progress, 0)`, `func_0039D310(game)` (416 insns:
+1. `CamDirector_NewRoom(+0xF6CBB0)`, `Progress_CameraOn(Progress, 0)`, `func_0039D310(game)` (416 insns:
    events, items, camera? - calls Progress flags, `func_00124F20(gCharPlayer, ...)`)
 2. **characters**: vtable +0x38 (per-frame update) on `gCharacters[0..2]` whose byte +0x28 == 1
-3. `func_002E2650(+0x706480)`, game vtable +0xDC, `func_00175430(Progress)` (620 insns),
+3. `func_002E2650(+0x706480)`, game vtable +0xDC, `Progress_CharRequests(Progress)` (620 insns),
    `CamDirector_RoomStart(+0xF6CBB0, ...)` (camera/collision?)
 
 ## Characters

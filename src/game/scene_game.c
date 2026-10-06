@@ -247,9 +247,9 @@ void SceneGame_StateEntry(Scene *game) {
         CharLoad_Partner(prog, save[0x1A]);
     }
 
-    func_0016D350(prog, (Progress_TestFlag(prog, 3) & 0xFF) == 1);
-    func_00176650(prog);
-    func_00176550(prog);
+    Progress_LoadSoundSet(prog, (Progress_TestFlag(prog, 3) & 0xFF) == 1);
+    Progress_StartChars(prog);
+    Progress_LoadChars(prog);
     func_001F9D90((u8 *)game + 0xF6C1C0);
     obj980 = gAdx;
     Bgm_Init(obj980, (u8 *)game + 0x1030240);
@@ -502,14 +502,14 @@ s32 func_003A04A0(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
     s32 i;
 
-    if (func_001764C0(prog)) {
+    if (Progress_AnyLoading(prog)) {
         return 1;
     }
     SubScreen_Start((SubScreen *)((u8 *)g + 0xF87240));
     GameOver_Reset((u8 *)g + 0x73EB40);
     AvoidPrompt_Load((u8 *)g + 0x1053480);
     if (AT(g, 0xF6CD28, u8) != 1) {
-        func_001771A0(prog, 1);
+        Progress_ActivateChar(prog, 1);
         VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, NULL);
     } else {
         u8 *save = (u8 *)gSystemData + 0x190;
@@ -518,8 +518,8 @@ s32 func_003A04A0(Scene *g) {
         func_00385030((SubScreen *)((u8 *)g + 0xF87240), save);
         VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, save + 0x1010);
     }
-    func_001771A0(prog, 0);
-    func_001765D0(prog);
+    Progress_ActivateChar(prog, 0);
+    Progress_CharsEnterRoom(prog);
     VCALL(gObstacles, 0xC, void (*)(VObject *))(gObstacles);
     func_00209850((u8 *)g + 0xF6AFB0);
     func_0039AD90(g);
@@ -597,7 +597,7 @@ void func_003A0160(Scene *g) {
     AT(g, 0x44, s32) = 0;
     AT(g, 0x73EE40, s32) = 0;
     CamDirector_NewRoom((u8 *)g + 0xF6CBB0);
-    func_001792C0(prog, 0);
+    Progress_CameraOn(prog, 0);
     func_0039D310(g);
     if (AT(g, 0xF6CD28, u8) == 1) {
         VObject *sub = (VObject *)((u8 *)g + 0xF87240);
@@ -611,7 +611,7 @@ void func_003A0160(Scene *g) {
     }
     func_002E2650((u8 *)g + 0x706480);
     VCALL(g, 0xDC, void (*)(Scene *))(g);
-    func_00175430(prog);
+    Progress_CharRequests(prog);
     CamDirector_RoomStart((u8 *)g + 0xF6CBB0, AT(g, 0x74881C, s32));
     if (!(AT(g, 0xF6CD28, u8) & 0x80)) {
         func_00124F20((Character *)((u8 *)gCharPlayer), 0xFF);
@@ -696,7 +696,7 @@ void func_0039D310(Scene *g) {
         func_00165510((Hewie *)((u8 *)gCharPartner), AT(cs, 0xC, s32));
         if (gCharSlot2 != NULL) {
             if (AT(save, 0x20, u8)) {
-                func_001771A0(prog, 2);
+                Progress_ActivateChar(prog, 2);
             }
             VCALL(gCharSlot2, 0x70, void (*)(void *))(gCharSlot2);
             stalker = (u8 *)gCharSlot2;
@@ -816,7 +816,7 @@ void func_0039CDC0(Scene *g) {
     u32 k;
     s32 i;
 
-    func_00175DE0(prog);
+    Progress_WhoIsWhere(prog);
     if (!((s32 (*)(u8 *))AT(AT(dir, 0x64, u8 *), 0x6C, void *))(dir)) {
         if (!(u8)Progress_TestFlag(prog, 0xF)) {
             Panic_Update((u8 *)g + 0x7F8);
@@ -972,26 +972,26 @@ void func_0039EAB0(Scene *g) {
             Progress_SetFlag(prog, 6);
         }
         *flags &= ~1;
-        func_001776F0(prog);
+        Progress_PursuerRequest(prog);
         CamDirector_Ease(cam);
         VCALL(g, 0xDC, void (*)(Scene *))(g);
         func_00209390((u8 *)ev, 1);
-        func_00173670(prog);
-        func_00173B60(prog);
-        func_001739A0(prog);
-        func_00175430(prog);
+        Progress_RelationChanges(prog);
+        Progress_ResolveRelations(prog);
+        Progress_OwnRequests(prog);
+        Progress_CharRequests(prog);
         func_00209390((u8 *)ev, 2);
         if (!(u8)Progress_TestFlag(prog, 0x12)) {
             if (AT(g, SG_CONTROL, u8) == 0) {
-                func_00174920(prog);
+                Progress_PlayerButtons(prog);
             } else {
-                func_00174270(prog);
+                Progress_CommandButtons(prog);
             }
         }
         if (!((*flags >> 3) & 1)) {
             func_00209210(ev);
         }
-        AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
+        AT(g, 0x1170, u8) = Progress_CameraFollow(prog, AT(g, 0x1170, u8));
         if (AT(g, 0x1170, u8) != 0xFF) {
             u8 *c = (u8 *)gCharacters[AT(g, 0x1170, u8)];
 
@@ -1047,9 +1047,9 @@ void func_0039EAB0(Scene *g) {
             }
             func_002E2650((u8 *)g + 0x706480);
             VCALL(g, 0xDC, void (*)(Scene *))(g);
-            func_00175430(prog);
+            Progress_CharRequests(prog);
             CamDirector_RoomStart(cam, AT(g, 0x74881C, s32));
-            func_001792C0(prog, AT(g, 0x1170, u8));
+            Progress_CameraOn(prog, AT(g, 0x1170, u8));
             for (i = 0; i < 6; i++) {
                 if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
                     VCALL(gCharacters[i], 0x40, void (*)(void *))(gCharacters[i]);
@@ -1080,8 +1080,8 @@ void func_0039EAB0(Scene *g) {
     }
     if ((*flags & 0xF) == 0) {
         if (((*flags >> 4) & 0x3F) == 0) {
-            func_00176440(prog);
-            func_001762B0(prog);
+            Progress_CharsThink(prog);
+            Progress_CharsFrame(prog);
         }
         if (!Progress_TestFlag(prog, 0x17) && !camdir_busy(g)) {
             func_002E2A60((u8 *)g + 0x706480);
@@ -1121,7 +1121,7 @@ void func_0039EAB0(Scene *g) {
     if (!(u8)Progress_TestFlag(prog, 8)) {
         func_0011FB20(rooms, AT(g, 0xF6C1B0, s32));
         if (!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)) {
-            func_00176160(prog);
+            Progress_DrawChars(prog);
         }
         if ((!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)) && !camdir_busy(g)) {
             func_002E29A0((u8 *)g + 0x706480);
@@ -1319,7 +1319,7 @@ void func_0039C880(Scene *g) {
             blink = 1;
         }
         if (changed || blink) {
-            prompt_show((u8)func_00177620(prog) == 2 ? 0x800D : 0x800A);
+            prompt_show((u8)Progress_GameMode(prog) == 2 ? 0x800D : 0x800A);
         }
         break;
     }
@@ -1363,10 +1363,10 @@ void func_0039BB60(Scene *g) {
         chasing = AT(gCharSlot2, 0xC4, s32) == 2;
     }
     if (alert == 0xFF && !stalker) {
-        func_00177630(prog, 2);
+        Progress_SetCondBit(prog, 2);
     }
     if (chasing) {
-        func_00177630(prog, 3);
+        Progress_SetCondBit(prog, 3);
     }
     CHASE_LAST(g) = CHASE_STATE(g);
     if (Progress_TestFlag(prog, 0x1B)) {
@@ -1413,20 +1413,20 @@ void func_0039BB60(Scene *g) {
                     CHASE_STATE(g) = 1;
                     CHASE_TIMER(g) = 0x1C2;
                 } else if (CHASE_TIMER(g) == 0) {
-                    if (!func_00177670(prog, 2) || creature == 1 || func_00177670(prog, 6)) {
+                    if (!Progress_CondBit(prog, 2) || creature == 1 || Progress_CondBit(prog, 6)) {
                         CHASE_STATE(g) = 1;
                         CHASE_TIMER(g) = 0x1C2;
                     }
                 }
                 break;
             case 1:
-                if (func_00177670(prog, 6) || Progress_TestFlag(prog, 0x22)) {
+                if (Progress_CondBit(prog, 6) || Progress_TestFlag(prog, 0x22)) {
                     CHASE_TIMER(g) += 0x96;
                     if (CHASE_TIMER(g) > 0x1C2) {
                         CHASE_TIMER(g) = 0x1C2;
                     }
                 }
-                if (func_00177670(prog, 2) && !creature) {
+                if (Progress_CondBit(prog, 2) && !creature) {
                     if (CHASE_TIMER(g) == 0) {
                         CHASE_STATE(g) = 0;
                         CHASE_TIMER(g) = 0x1E;
@@ -1438,7 +1438,7 @@ void func_0039BB60(Scene *g) {
                 }
                 break;
             case 2:
-                if (func_00177670(prog, 2)) {
+                if (Progress_CondBit(prog, 2)) {
                     CHASE_STATE(g) = Progress_TestFlag(prog, 0x22) || creature ? 1 : 0;
                     CHASE_TIMER(g) = 0x1E;
                 } else if ((u32)(alert - 3) < 2 && near) {
@@ -1459,10 +1459,10 @@ void func_0039BB60(Scene *g) {
     if (CHASE_LAST(g) != CHASE_STATE(g)) {
         CHASE_PREV(g) = CHASE_LAST(g);
     }
-    i = (u8)func_00177670(prog, 1);
+    i = (u8)Progress_CondBit(prog, 1);
     AT(g, 0x54, s32) = 0;
     if (i && CHASE_STATE(g) == 0) {
-        func_00177630(prog, 6);
+        Progress_SetCondBit(prog, 6);
     }
 }
 
@@ -1480,7 +1480,7 @@ void func_0039C5C0(Scene *g, s32 room, s32 a, s32 b) {
             return;
         }
         if (r == room || VCALL(rooms, 0x6C, s32 (*)(VObject *, u32, s32))(rooms, d & 0xFFFF, 1) == room) {
-            func_001780C0(prog, d & 0xFFFF, a, b);
+            Progress_LockDoorFor(prog, d & 0xFFFF, a, b);
         }
     }
 }
@@ -1561,11 +1561,11 @@ static void doors_of_room(Scene *g, s32 room, s32 (*set)(Progress *, u32)) {
 }
 
 void func_0039C6C0(Scene *g, s32 room) {
-    doors_of_room(g, room, func_00178450);
+    doors_of_room(g, room, Progress_UnlockDoor);
 }
 
 void func_0039C7A0(Scene *g, s32 room) {
-    doors_of_room(g, room, func_00178500);
+    doors_of_room(g, room, Progress_LockDoor);
 }
 
 /* room `room`'s exits all closed to `kind`'s side (lock bits 4..7 of the door states: kind 0
@@ -1599,8 +1599,8 @@ s32 func_0039C4C0(Scene *g, s32 room, u32 kind) {
 static s32 exit_open(Scene *g, s32 room, u32 exit) {
     Progress *p = &AT(g, SG_PROGRESS, Progress);
 
-    return (u8)func_001785B0(p, room, exit) != 1 && (u8)func_00178300(p, room, exit, 0) &&
-           (u8)func_00178300(p, room, exit, 1) && (u8)func_00178300(p, room, exit, 2);
+    return (u8)Progress_ExitUnlocked(p, room, exit) != 1 && (u8)Progress_ExitPassable(p, room, exit, 0) &&
+           (u8)Progress_ExitPassable(p, room, exit, 1) && (u8)Progress_ExitPassable(p, room, exit, 2);
 }
 
 static s32 in_list(const s32 *list, u32 n, s32 room) {
@@ -1935,10 +1935,10 @@ static void frozen_draw(Scene *g, s32 chars, s32 sub) {
 
     func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
     if (chars == 2 || (chars == 1 && (!Progress_TestFlag(prog, 0x17) || Progress_TestFlag(prog, 0x24)))) {
-        func_00176160(prog);
+        Progress_DrawChars(prog);
         func_002E29A0((u8 *)g + 0x706480);
     } else if (chars == 0 && !Progress_TestFlag(prog, 0x17)) {
-        func_00176160(prog);
+        Progress_DrawChars(prog);
     }
     func_002D74E0((u8 *)g + 0x6FC380);
     func_0039C880(g);
@@ -2001,17 +2001,17 @@ void func_0039D990(Scene *g) {
     u32 *flags = &AT(g, SG_FRAMEFLAGS, u32);
     s32 i;
 
-    func_001776F0(prog);
+    Progress_PursuerRequest(prog);
     CamDirector_Ease(cam);
     VCALL(g, 0xDC, void (*)(Scene *))(g);
     func_00209390((u8 *)ev, 1);
-    func_00173670(prog);
-    func_00173B60(prog);
-    func_001739A0(prog);
-    func_00175430(prog);
+    Progress_RelationChanges(prog);
+    Progress_ResolveRelations(prog);
+    Progress_OwnRequests(prog);
+    Progress_CharRequests(prog);
     func_00209390((u8 *)ev, 2);
     func_00209210(ev);
-    AT(g, 0x1170, u8) = func_00179170(prog, AT(g, 0x1170, u8));
+    AT(g, 0x1170, u8) = Progress_CameraFollow(prog, AT(g, 0x1170, u8));
     if (AT(g, 0x1170, u8) != 0xFF) {
         u8 *c = (u8 *)gCharacters[AT(g, 0x1170, u8)];
 
@@ -2026,8 +2026,8 @@ void func_0039D990(Scene *g) {
     }
     CamDirector_Update(cam);
     if (((*flags >> 4) & 0x3F) == 0) {
-        func_00176440(prog);
-        func_001762B0(prog);
+        Progress_CharsThink(prog);
+        Progress_CharsFrame(prog);
     }
     func_0011FEB0((u8 *)g + 0x73EE80);
     if (((*flags >> 4) & 0x3F) == 0) {
@@ -2104,7 +2104,7 @@ void func_0039E380(Scene *g) {
         func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
         func_00267160((u8 *)g + 0xF6CD30);
         func_002D61E0((u8 *)g + 0xF6E200);
-        func_00176160(prog);
+        Progress_DrawChars(prog);
         func_002E29A0((u8 *)g + 0x706480);
         func_002F0340((u8 *)g + 0x7F8, 0);
     }
@@ -2130,10 +2130,10 @@ void func_0039E380(Scene *g) {
     AT(g, 0x1FBF01, u8) = 0;
     VCALL((VObject *)gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, -1.0f);
     Panic_SetStage((u8 *)g + 0x7F8, 0);
-    func_00178A30(prog, 0x10C);
+    Progress_DoorClearBit1(prog, 0x10C);
     VCALL(g, 0xE8, void (*)(Scene *, s32, s32, s32))(g, VCALL(g, 0xA4, s32 (*)(Scene *))(g), 1, 0);
     VCALL((VObject *)gCharPartner, 0x64, void (*)(void *, s32, s32, s32))(gCharPartner, 0x37, -1, 0);
-    func_001773A0(prog, 2, 0);
+    Progress_RemoveChar(prog, 2, 0);
     VCALL(g, 0xB0, void (*)(Scene *, s32))(g, 0x37);
     AT(g, 0x44, s32) = 1;
     AT(g, 0xF6B6B2, u8) = 0x81;
@@ -2381,10 +2381,10 @@ void SceneGame_OnSoftReset(u8 *g) {
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 1);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 0);
     func_002E27B0(g + 0x706480);
-    func_00176720((Progress *)(g + 0x40));
+    Progress_ResetParts((Progress *)(g + 0x40));
     func_00120980(g + 0x73EE80);
     func_001F9D20(g + 0xF6C1C0);
-    func_001766D0((Progress *)(g + 0x40));
+    Progress_RemoveAll((Progress *)(g + 0x40));
     sc = AT(gSceneTable, 4, u8 *);
     if (sc != NULL) {
         ptmf_set(&AT(sc, 4, PTMF), &D_0044C598);
@@ -2713,7 +2713,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_002D0C70(g + 0xF6B8E8, -1);
     Task_dtor((Task *)(g + 0xF6B6B8), -1);
     func_001002C0(g + 0xF6B0D0, RoomBase_dtor, 4, 0x110);
-    func_0016CC40(g + 0xF6AFD0, -1);
+    Progress73EC80_dtor(g + 0xF6AFD0, -1);
     func_0020C170((void **)(g + 0xF6AFBC), 0);
     func_0020C120((void **)(g + 0xF6AFB0), 0);
     AT(g, 0xF6A940, void **) = D_0046C520;
@@ -2729,11 +2729,11 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     AT(g, 0xC88840, void **) = D_00469C60;
     AT(g, 0xC88840, void **) = D_00469C20;
     func_00120980(g + 0x73EE80);
-    func_0021A2E0(g + 0x748200, -1);
+    Obstacles_dtor(g + 0x748200, -1);
     func_002A8520(g + 0x7481E0, -1);
     PlacedThings_dtor(g + 0x7455C0, -1);
     Doors_dtor(g + 0x7404C0, -1);
-    func_0021B0F0((VObject *)(g + 0x73F370), -1);
+    Rooms_dtor((VObject *)(g + 0x73F370), -1);
     NavMesh_dtor(g + 0x73F260, -1);
     func_00268110(g + 0x73F1C0, -1);
     func_0025C850(g + 0x73EE80, -1);

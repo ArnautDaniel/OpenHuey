@@ -3,7 +3,7 @@
  * the sound driver's four sequence banks (0..3, an SQ each over the stage's HD/BD bank) and
  * mixes them live: each track's volume and sequence volume, and per MIDI channel a volume,
  * pitch bend and pan, sent as MIDI (driver +0x30: command 0x23). Fades run as "cues" (a
- * member function called each frame). Its state (+0x30) follows the chase (func_00177620),
+ * member function called each frame). Its state (+0x30) follows the chase (Progress_GameMode),
  * the panic level (progress +0x7B8) and whether the pursuer sees Fiona. The tracks: 0 the
  * panic (PANIC.SQ), 1 / 2 the calm music's two parts (Sn_NORMALA / B), 3 the chase. States:
  *   0 start (the calm parts fade in, the others out); 1 calm; 2 calm fading out (being
@@ -962,20 +962,20 @@ void func_002C0A30(u8 *d) {
         func_002C2CD0(d, 2, 0x5A, 0xFF);
         break;
     case 1:
-        if ((func_00177620(p) & 0xFF) == 1) {
+        if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
             func_002C2CD0(d, 1, 0x5A, 0);
             func_002C2CD0(d, 2, 0x5A, 0);
-        } else if ((func_00177620(p) & 0xFF) == 2) {
+        } else if ((Progress_GameMode(p) & 0xFF) == 2) {
             to_chase(d, 3);
         } else if (AT(p, 0x7B8, u8) == 4) {
             to_panic(d);
         }
         break;
     case 2:
-        if (!(func_00177620(p) & 0xFF)) {
+        if (!(Progress_GameMode(p) & 0xFF)) {
             to_calm(d);
-        } else if ((func_00177620(p) & 0xFF) == 2) {
+        } else if ((Progress_GameMode(p) & 0xFF) == 2) {
             to_chase(d, 3);
         } else if (AT(p, 0x7B8, u8) == 4) {
             to_panic(d);
@@ -988,9 +988,9 @@ void func_002C0A30(u8 *d) {
         VCALL(d, 0x54, void (*)(u8 *, s32))(d, 0);
         break;
     case 5:
-        if (!(func_00177620(p) & 0xFF)) {
+        if (!(Progress_GameMode(p) & 0xFF)) {
             to_calm(d);
-        } else if ((func_00177620(p) & 0xFF) == 1) {
+        } else if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
             func_002C2CD0(d, 3, 0x5A, 0);
         } else if (seen) {
@@ -1003,9 +1003,9 @@ void func_002C0A30(u8 *d) {
         }
         break;
     case 6:
-        if (!(func_00177620(p) & 0xFF)) {
+        if (!(Progress_GameMode(p) & 0xFF)) {
             to_calm(d);
-        } else if ((func_00177620(p) & 0xFF) == 1) {
+        } else if ((Progress_GameMode(p) & 0xFF) == 1) {
             AT(d, 0x30, u8) = 2;
             func_002C2CD0(d, 3, 0x5A, 0);
         } else if (!seen) {
@@ -1024,10 +1024,10 @@ void func_002C0A30(u8 *d) {
         /* fall through */
     case 9:
         if (AT(p, 0x7B8, u8) < 4) {
-            if (!(func_00177620(p) & 0xFF)) {
+            if (!(Progress_GameMode(p) & 0xFF)) {
                 to_calm(d);
-            } else if ((func_00177620(p) & 0xFF) != 1) {
-                if ((func_00177620(p) & 0xFF) == 2) {
+            } else if ((Progress_GameMode(p) & 0xFF) != 1) {
+                if ((Progress_GameMode(p) & 0xFF) == 2) {
                     to_chase(d, 4);
                 }
             } else {

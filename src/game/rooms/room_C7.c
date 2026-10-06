@@ -140,7 +140,7 @@ s32 RoomC7_Cmd06(void *self, void *a1, u8 *cmd) {
 /* (as Room23_Cmd00)  the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02 */
 /* 0x0033A040 */
 s32 RoomC7_Cmd05(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xB)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xB)]->motion;
 
     if (cmd[3] == 1) {
         AT(m, 0xCC8, s32) = 0;

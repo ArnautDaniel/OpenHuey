@@ -75,7 +75,7 @@ s32 Room15_Condition(void *self, u32 i, s32 a, s32 b) {
 /* room 0x15 (D_003FA738): Hewie is about in room 0xF in state 0x2F or 0x52 */
 /* 0x002ACC90 */
 s32 Room15_Cond00(void) {
-    Character *c = gCharacters[(u8)func_001770D0(gProgress, 1)];
+    Character *c = gCharacters[(u8)Progress_SlotOfId(gProgress, 1)];
     s32 s;
 
     if (c == NULL || c->a.active == 0 || AT(c, 0x30, s32) != 0xF) {

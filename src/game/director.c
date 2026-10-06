@@ -255,7 +255,7 @@ u32 Cutscene_KindSlot(u8 *d, s32 kind) {
         { 2, 6, 7, 0x1B }, { 3, 0x22, 0x23, 0x24 }, { 10, 0x27, -1, -1 }, { 23, 0x17, 0x25, -1 },
     };
     Progress *p = gProgress;
-    u32 s = (u8)func_001770D0(p, kind & 0xFF);
+    u32 s = (u8)Progress_SlotOfId(p, kind & 0xFF);
     u32 i, j;
 
     if (s != 0xFF) {
@@ -266,7 +266,7 @@ u32 Cutscene_KindSlot(u8 *d, s32 kind) {
             continue;
         }
         for (j = 1; j < 4 && sAlt[i][j] != -1 && s == 0xFF; j++) {
-            s = (u8)func_001770D0(p, sAlt[i][j]);
+            s = (u8)Progress_SlotOfId(p, sAlt[i][j]);
         }
     }
     return s;
@@ -535,7 +535,7 @@ void Cutscene_End(u8 *d) {
         }
         s = actor_slot(d, i);
         if (s != 0xFF) {
-            func_0016CF50(gProgress, s);
+            Progress_CutsceneSlotDone(gProgress, s);
         }
     }
     Cutscene_ReleaseActors(d);
@@ -694,7 +694,7 @@ void Cutscene_StateScript(u8 *d) {
             }
             s = actor_slot(d, i);
             if (s != 0xFF) {
-                func_0016D050(gProgress, s);
+                Progress_CutsceneSlot(gProgress, s);
                 VCALL(gCharacters[s], 0x54, void (*)(VObject *))((VObject *)gCharacters[s]);
             }
         }
@@ -794,13 +794,13 @@ void Cutscene_Cast(u8 *d) {
             continue;
         }
         if (s[2] != 0) {
-            func_0016CF50(p, k);
+            Progress_CutsceneSlotDone(p, k);
             continue;
         }
         SLOT_CHAR(s) = (u8 *)gCharacters[k];
         if ((u32)(i - 1) < 25) {
-            if (!func_00177160(p, k)) {
-                func_001771A0(p, k);
+            if (!Progress_CharActive(p, k)) {
+                Progress_ActivateChar(p, k);
             }
             s[0] = 1;
         }

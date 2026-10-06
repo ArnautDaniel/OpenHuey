@@ -73,7 +73,7 @@ static inline s32 be32(const u8 *p) {
 
 /* the character with script id `id` (NULL: none) */
 static u8 *char_by_id(Progress *p, s32 id) {
-    u8 i = (u8)func_001770D0(p, id);
+    u8 i = (u8)Progress_SlotOfId(p, id);
 
     return i != 0xFF ? (u8 *)gCharacters[i] : NULL;
 }
@@ -89,10 +89,10 @@ static void cmd_exit(VObject *ev, Progress *p, const u8 *pc) {
     }
     if (AT(p, SG_CONTROL, u8) == 0) {
         state = AT(gCharPlayer, 0xF8, s32);
-        if ((u8)func_001785B0(p, AT(ev, 0x560, s32), pc[1]) == 1) {
+        if ((u8)Progress_ExitUnlocked(p, AT(ev, 0x560, s32), pc[1]) == 1) {
             return;
         }
-        if ((u8)func_00178300(p, AT(ev, 0x560, s32), PC(ev)[1], 0) == 0) {
+        if ((u8)Progress_ExitPassable(p, AT(ev, 0x560, s32), PC(ev)[1], 0) == 0) {
             return;
         }
         if (state != 0 && state != 10) {
@@ -100,10 +100,10 @@ static void cmd_exit(VObject *ev, Progress *p, const u8 *pc) {
         }
     } else {
         state = AT(gCharPartner, 0xF8, s32);
-        if ((u8)func_001785B0(p, AT(ev, 0x560, s32), pc[1]) == 1) {
+        if ((u8)Progress_ExitUnlocked(p, AT(ev, 0x560, s32), pc[1]) == 1) {
             return;
         }
-        if ((u8)func_00178300(p, AT(ev, 0x560, s32), PC(ev)[1], 1) == 0) {
+        if ((u8)Progress_ExitPassable(p, AT(ev, 0x560, s32), PC(ev)[1], 1) == 0) {
             return;
         }
         if (state != 0) {
@@ -123,7 +123,7 @@ static void char_script_action(VObject *ev, Progress *p, s32 now) {
     AT(c, 0x14EC, s32) = now;
     AT(c, 0x14F0, s32) = act;
     pc = PC(ev);
-    VCALL(ev, 0xE0, void (*)(VObject *, s32, s32))(ev, func_001770D0(p, pc[2]), pc[3]);
+    VCALL(ev, 0xE0, void (*)(VObject *, s32, s32))(ev, Progress_SlotOfId(p, pc[2]), pc[3]);
 }
 
 /* 0x05 / 0x92: start a character's scripted action (0x92 with operand 1: at once) */
@@ -168,7 +168,7 @@ static void cmd_action_end(VObject *ev, Progress *p, const u8 *pc) {
         AT(ev, 0x564 + k * 0x18, s32) = 0;
         return;
     }
-    i = (u8)func_001770D0(p, pc[1]);
+    i = (u8)Progress_SlotOfId(p, pc[1]);
     if (i != 0xFF) {
         AT(ev, 0x57C + i * 0x18, s32) = 0;
     }
@@ -208,7 +208,7 @@ static void cmd_scene_change(VObject *ev, Progress *p, const u8 *pc) {
     switch (pc[3]) {
     case 0:
         if (!late) {
-            if ((u8)func_00177620(p) == 2) {
+            if ((u8)Progress_GameMode(p) == 2) {
                 set_pending_ending(p);
             } else {
                 ok = 1;
@@ -268,7 +268,7 @@ void Event_StartStep(VObject *ev, s32 prio, void *step);
 /* 0x00200870 */
 void EventCmd_Pursuer(VObject *ev) {
     Progress *p = gProgress;
-    u8 i = func_001770D0(p, PC(ev)[1]);
+    u8 i = Progress_SlotOfId(p, PC(ev)[1]);
     u8 *c = i >= 2 && i < 6 ? (u8 *)gCharacters[i] : NULL;
     const u8 *pc;
 
@@ -309,7 +309,7 @@ void EventCmd_Pursuer(VObject *ev) {
     case 0x3E: {
         s32 room;
 
-        func_00177200(p, i);
+        Progress_CharDone(p, i);
         pc = PC(ev);
         room = be16(pc + 2) & 0xFFFF;
         if (room == 0xFFFF) {
@@ -520,7 +520,7 @@ static void cmd_gift(VObject *ev, Progress *p) {
 
 /* (0xB8) the character with script id `id` while it is in the scene (+0x28 1), else NULL */
 static u8 *char_present(Progress *p, s32 id) {
-    u8 i = (u8)func_001770D0(p, id);
+    u8 i = (u8)Progress_SlotOfId(p, id);
     u8 *c = i != 0xFF ? (u8 *)gCharacters[i] : NULL;
 
     if (c == NULL || AT(c, 0x28, u8) != 1) {
@@ -688,24 +688,24 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     case 0xA8:
-        func_0016D480(p, AT(ev, 0x560, s32));
+        Progress_LoadRoomSounds(p, AT(ev, 0x560, s32));
         break;
     case 0x36:
-        func_001793A0(p, (u8)func_001770D0(p, pc[1]), (s8)PC(ev)[2], (s8)PC(ev)[3]);
+        Progress_CameraSetup(p, (u8)Progress_SlotOfId(p, pc[1]), (s8)PC(ev)[2], (s8)PC(ev)[3]);
         break;
     case 0x28: {   /* camera follows character pc[1] (0xFF: nobody) */
-        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 i = (u8)Progress_SlotOfId(p, pc[1]);
 
         if (pc[1] == 0xFF || i != 0xFF) {
-            func_001792C0(p, i);
+            Progress_CameraOn(p, i);
         }
         break;
     }
     case 0x14:
-        if ((u8)func_001770D0(p, pc[1]) == 2) {
+        if ((u8)Progress_SlotOfId(p, pc[1]) == 2) {
             func_002EC470((u8 *)p + 0x764, 0);
         } else {
-            func_00177200(p, (u8)func_001770D0(p, PC(ev)[1]));
+            Progress_CharDone(p, (u8)Progress_SlotOfId(p, PC(ev)[1]));
         }
         break;
     case 0x41:
@@ -786,16 +786,16 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x11:   /* bring in character pc[1] as the partner (slot 2) */
         if ((u8)CharLoad_Partner(p, pc[1]) == 1) {
-            func_00177350(p, 2);
-            func_001772B0(p, 2);
+            Progress_CharStart3(p, 2);
+            Progress_CharLoad(p, 2);
             func_002ECB50((u8 *)p + 0x764);
         }
         break;
     case 0x12:   /* bring in character pc[1] in slot pc[2], placed at exit pc[3] of this room (0xFF: as is) */
-        if ((u8)func_0016D670(p, pc[1], pc[2]) == 1) {
-            func_00177350(p, PC(ev)[2]);
+        if ((u8)Progress_LoadEventChar(p, pc[1], pc[2]) == 1) {
+            Progress_CharStart3(p, PC(ev)[2]);
             if (PC(ev)[3] == 0xFF) {
-                func_001772B0(p, PC(ev)[2]);
+                Progress_CharLoad(p, PC(ev)[2]);
             } else {
                 s32 room = VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, AT(ev, 0x560, s32),
                                                                                 PC(ev)[3]);
@@ -808,10 +808,10 @@ void EventCmd_Run(VObject *ev) {
         u8 *c = (u8 *)(gCharacters[pc[1]]);
 
         if (c != NULL && AT(c, 0xD0, u8) == 0 && AT(c, 0xD1, u8) == 0) {
-            if ((u8)func_00177260(p, pc[1])) {
+            if ((u8)Progress_CharLoading(p, pc[1])) {
                 EV_WAIT(ev) = 1;
             } else {
-                func_00177300(p, PC(ev)[1]);
+                Progress_CharStart2(p, PC(ev)[1]);
                 if (PC(ev)[1] == 2) {
                     AT(p, 0x875, u8) = 0;
                 }
@@ -821,11 +821,11 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0xB9:   /* bring in character pc[1] in slot pc[2] (second kind) */
         if ((u8)CharLoad_EventChar(p, pc[1], pc[2]) == 1) {
-            func_00177350(p, PC(ev)[2]);
+            Progress_CharStart3(p, PC(ev)[2]);
         }
         break;
     case 0x3C: {   /* the progress' +0x24 for character pc[1]: value be16 pc[2..3], pc[4] */
-        u8 who = (u8)func_001770D0(p, pc[1]);
+        u8 who = (u8)Progress_SlotOfId(p, pc[1]);
 
         VCALL(p, 0x24, void (*)(Progress *, u32, u32, u32))(p, (u16)be16(PC(ev) + 2), who, PC(ev)[4]);
         break;
@@ -920,8 +920,8 @@ void EventCmd_Run(VObject *ev) {
             EV_WAIT(ev) = 1;
         }
         break;
-    case 0x15:   /* the progress' character pc[1] (+ func_001771A0) */
-        func_001771A0(p, (u8)func_001770D0(p, pc[1]));
+    case 0x15:   /* the progress' character pc[1] (+ Progress_ActivateChar) */
+        Progress_ActivateChar(p, (u8)Progress_SlotOfId(p, pc[1]));
         break;
     case 0x23:   /* mark the loop point (just after this) in the script (+0x6FC: +0x8, its +0x11 = +0x8) */
         AT(AT(ev, 0x6FC, u8 *), 0x8, u8 *) = (u8 *)pc + 1;
@@ -933,10 +933,10 @@ void EventCmd_Run(VObject *ev) {
         EV_JUMPED(ev) = 1;
         break;
     case 0x9D: {   /* character pc[1] plays animation be16 pc[2..3] (blend pc[4], speed pc[5]), held */
-        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
+        u8 *c = (u8 *)(gCharacters[(u8)Progress_SlotOfId(p, pc[1])]);
 
 #ifdef HG_NATIVE
-        if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
+        if ((u8)Progress_SlotOfId(p, pc[1]) >= 6 || c == NULL) {
             break;   /* (a character the PC build doesn't load yet) */
         }
 #endif
@@ -948,10 +948,10 @@ void EventCmd_Run(VObject *ev) {
         break;
     }
     case 0x9E: {   /* wait for character pc[1]'s animation to come round (track flag 0x20) */
-        u8 *c = (u8 *)(gCharacters[(u8)func_001770D0(p, pc[1])]);
+        u8 *c = (u8 *)(gCharacters[(u8)Progress_SlotOfId(p, pc[1])]);
 
 #ifdef HG_NATIVE
-        if ((u8)func_001770D0(p, pc[1]) >= 6 || c == NULL) {
+        if ((u8)Progress_SlotOfId(p, pc[1]) >= 6 || c == NULL) {
             EV_WAIT(ev) = 1;   /* (not loaded in the PC build yet: its script idles) */
             break;
         }
@@ -963,7 +963,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0xBA:   /* hand the character in slot pc[1] to slot pc[2] (wait while that is taken) */
         if (gCharacters[pc[1]] != NULL) {
-            if ((u8)func_00177260(p, pc[2])) {
+            if ((u8)Progress_CharLoading(p, pc[2])) {
                 EV_WAIT(ev) = 1;
             } else {
                 func_0029F040((Pursuer *)(gCharacters[PC(ev)[1]]), PC(ev)[2]);
@@ -1291,7 +1291,7 @@ void EventCmd_Run(VObject *ev) {
         break;
     case 0x96: {   /* Fiona's func_0019A420 for character pc[1], be32 pc[2..5] (not > 0: 30) */
         u8 *f = (u8 *)gCharPlayer;
-        s32 i = (u8)func_001770D0(p, pc[1]);
+        s32 i = (u8)Progress_SlotOfId(p, pc[1]);
         s32 n;
 
         pc = PC(ev);
@@ -1306,15 +1306,15 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     }
-    case 0x98: {   /* character slot pc[1] in (wait while func_00177260 says no) */
+    case 0x98: {   /* character slot pc[1] in (wait while Progress_CharLoading says no) */
         s32 i = pc[1];
 
-        if ((u8)func_00177260(p, i) != 0) {
+        if ((u8)Progress_CharLoading(p, i) != 0) {
             EV_WAIT(ev) = 1;
         } else {
             AT(gCharacters[i], 0x28, u8) = 1;
             AT(gCharPlayer, 0x28, u8) = 1;
-            func_00177300(p, i);
+            Progress_CharStart2(p, i);
         }
         break;
     }
@@ -1342,7 +1342,7 @@ void EventCmd_Run(VObject *ev) {
             EV_WAIT(ev) = 1;
             break;
         }
-        switch ((u8)func_001770D0(p, PC(ev)[1])) {
+        switch ((u8)Progress_SlotOfId(p, PC(ev)[1])) {
         case 0:
             if (gCharPlayer != NULL) {
                 AT(AT(gCharPlayer, 0xF0, u8 *), 0x4C8, u8 *) = (u8 *)p + 0x16C0;
@@ -1368,7 +1368,7 @@ void EventCmd_Run(VObject *ev) {
     case 0xB2: {
         u8 *f = (u8 *)gCharPlayer;
 
-        func_0019A0D0((Fiona *)f, func_001770D0(p, pc[1]), pc[2] != 0);
+        func_0019A0D0((Fiona *)f, Progress_SlotOfId(p, pc[1]), pc[2] != 0);
         break;
     }
     case 0xB4:
@@ -1399,14 +1399,14 @@ void EventCmd_Run(VObject *ev) {
         break;
     }
     case 0xC1:
-        func_0016D350(p, pc[1]);
+        Progress_LoadSoundSet(p, pc[1]);
         break;
     case 0xC2: {   /* door be16 pc[2..3]'s state for character pc[1]: pc[4] */
-        s32 i = (u8)func_001770D0(p, pc[1]);
+        s32 i = (u8)Progress_SlotOfId(p, pc[1]);
 
         if (i != 0xFF) {
             pc = PC(ev);
-            func_001780C0(p, be16(pc + 2), i, pc[4]);
+            Progress_LockDoorFor(p, be16(pc + 2), i, pc[4]);
         }
         break;
     }
@@ -1422,7 +1422,7 @@ void EventCmd_Run(VObject *ev) {
                   * model: 0 +0x2C, 1 +0x30, 2 +0x34 (pc[3]), 4 func_002ED260 (pc[3]) */
         if (pc[1] != 3) {
             u8 *c = NULL;
-            u32 i = (u8)func_001770D0(p, pc[2]);
+            u32 i = (u8)Progress_SlotOfId(p, pc[2]);
 
             if (i >= 2 && i < 6) {
                 c = (u8 *)gCharacters[i];
@@ -1495,7 +1495,7 @@ void EventCmd_Run(VObject *ev) {
     case 0xA6: {   /* load the room's file pc[2] into character pc[1]'s model buffer */
         u8 *buf;
 
-        switch ((u8)func_001770D0(p, pc[1])) {
+        switch ((u8)Progress_SlotOfId(p, pc[1])) {
         case 0:
             buf = (u8 *)p + 0x16C0;
             break;
@@ -1671,15 +1671,15 @@ void EventCmd_Run(VObject *ev) {
         if (k != 0xFF) {
             VCALL(gDoors, 0x60, void (*)(VObject *, s32, s32))(gDoors, AT(ev, 0x560, s32), k);
         }
-        if (func_001788F0(p, be16(PC(ev) + 3))) {
-            func_00178A60(p, be16(PC(ev) + 1));
+        if (Progress_DoorOpen(p, be16(PC(ev) + 3))) {
+            Progress_DoorSetBit1(p, be16(PC(ev) + 1));
         } else {
-            func_00178A30(p, be16(PC(ev) + 1));
+            Progress_DoorClearBit1(p, be16(PC(ev) + 1));
         }
-        if (func_00178610(p, be16(PC(ev) + 3))) {
-            func_00178450(p, be16(PC(ev) + 1));
+        if (Progress_DoorUnlocked(p, be16(PC(ev) + 3))) {
+            Progress_UnlockDoor(p, be16(PC(ev) + 1));
         } else {
-            func_00178500(p, be16(PC(ev) + 1));
+            Progress_LockDoor(p, be16(PC(ev) + 1));
         }
         if (VCALL(rooms, 0x60, s32 (*)(VObject *, u32))(rooms, be16(PC(ev) + 3))) {
             VCALL(rooms, 0x64, void (*)(VObject *, u32))(rooms, be16(PC(ev) + 1));
@@ -1690,7 +1690,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0xB7:   /* Hewie out, his model swapped for kind pc[1] (0..2), back in but not in the scene */
         VCALL((VObject *)gCharPartner, 0x20, void (*)(VObject *))((VObject *)gCharPartner);
-        func_0016D2F0(p, 1);
+        Progress_UnloadModel(p, 1);
         switch (PC(ev)[1]) {
         case 0:
             AT(gCharacters[1], 0xF0, void *) = partner_model(p, 0);
@@ -1813,7 +1813,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x97:   /* Fiona out, her model swapped for costume pc[1], back in but not in the scene */
         VCALL((VObject *)gCharPlayer, 0x20, void (*)(VObject *))((VObject *)gCharPlayer);
-        func_0016D2F0(p, 0);
+        Progress_UnloadModel(p, 0);
         fiona_model(p, PC(ev)[1]);
         VCALL((VObject *)gCharPlayer, 0x14, void (*)(VObject *))((VObject *)gCharPlayer);
         AT(gCharPlayer, 0x28, u8) = 0;
@@ -1878,9 +1878,9 @@ void EventCmd_Run(VObject *ev) {
         func_002D6090(mgr, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
         break;
     }
-    case 0x40:   /* character slot pc[1]'s step context cleared; func_001773A0 (pc[1], pc[2]) */
+    case 0x40:   /* character slot pc[1]'s step context cleared; Progress_RemoveChar (pc[1], pc[2]) */
         Event_StepReset(ev, (u8 *)ev + 0x564 + (pc[1] + 1) * 0x18, 0);
-        func_001773A0(p, PC(ev)[1], PC(ev)[2]);
+        Progress_RemoveChar(p, PC(ev)[1], PC(ev)[2]);
         break;
     case 0x80:   /* room effect pc[1] gone */
         func_002670F0(gRoomEffects, pc[1]);
@@ -2157,22 +2157,22 @@ void EventCmd_Flags(VObject *ev) {
         VCALL(gRooms, 0x64, void (*)(VObject *, u32))(gRooms, n);
         /* fallthrough */
     case 0x04:
-        func_00178450(p, be16(PC(ev) + 2));
+        Progress_UnlockDoor(p, be16(PC(ev) + 2));
         break;
     case 0x07:
         VCALL(gRooms, 0x68, void (*)(VObject *, u32))(gRooms, n);
         /* fallthrough */
     case 0x05:
-        func_00178500(p, be16(PC(ev) + 2));
+        Progress_LockDoor(p, be16(PC(ev) + 2));
         break;
     case 0x06:
-        func_00178630(p, n);
+        Progress_DoorSetBit2(p, n);
         break;
     case 0x09:
-        func_00178A60(p, n);
+        Progress_DoorSetBit1(p, n);
         break;
     case 0x0A:
-        func_00178A30(p, n);
+        Progress_DoorClearBit1(p, n);
         break;
     case 0x0B:   /* a message parameter */
         Msg_SetParamSystem((u8 *)ev + 0x708, 0,
@@ -2360,7 +2360,7 @@ void Event_RunScript(VObject *ev) {
             AT(c, 0x100, s32) = 0xFF;
             CHAR_ACT(c, 0xC);
         } else {
-            u8 i = (u8)func_001770D0(p, pc[1]);
+            u8 i = (u8)Progress_SlotOfId(p, pc[1]);
 
             if (i < 6) {
                 AT(c, 0x100, s32) = i;
@@ -2377,7 +2377,7 @@ void Event_RunScript(VObject *ev) {
         CHAR_ACT(c, 0xD);
         break;
     case 0x42: {   /* turn to character pc[1] */
-        u8 i = (u8)func_001770D0(p, pc[1]);
+        u8 i = (u8)Progress_SlotOfId(p, pc[1]);
 
         if (i < 6) {
             AT(c, 0x100, s32) = i;
@@ -2727,7 +2727,7 @@ void EventCmd_Hewie(VObject *ev) {
         }
         break;
     case 0xC6: {
-        u32 k = (u8)func_001770D0(gProgress, pc[1]);
+        u32 k = (u8)Progress_SlotOfId(gProgress, pc[1]);
         u8 *c = k != 0xFF ? (u8 *)gCharacters[k] : NULL;
 
         if (c == NULL || AT(c, 0x28, u8) == 0 || AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
@@ -2785,7 +2785,7 @@ void EventCmd_Movie(VObject *ev) {
     case 0x60:
         EV_RESULT(ev) = 0;
         pc = PC(ev);
-        func_001768B0(gProgress, room_string(ev, pc[1]), pc[2]);
+        Progress_PlayMovie(gProgress, room_string(ev, pc[1]), pc[2]);
         return;
     case 0x61:
         for (i = 0; i < 6; i++) {

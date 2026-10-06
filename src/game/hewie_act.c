@@ -100,8 +100,8 @@ static inline s32 exit_random(Hewie *h, u8 *seen) {
 static inline s32 exit_open(Hewie *h, u32 e) {
     Progress *p = gProgress;
 
-    return (func_00178980(p, h->c.a.room, e) & 0xFF) == 1 && !(func_001785B0(p, h->c.a.room, e) & 0xFF)
-        && (func_00178300(p, h->c.a.room, e, HW(h, 0x20, u8)) & 0xFF) == 1;
+    return (Progress_ExitOpen(p, h->c.a.room, e) & 0xFF) == 1 && !(Progress_ExitUnlocked(p, h->c.a.room, e) & 0xFF)
+        && (Progress_ExitPassable(p, h->c.a.room, e, HW(h, 0x20, u8)) & 0xFF) == 1;
 }
 
 /* his chasing settings: turn speed +0xF36C8 from his speed choice */

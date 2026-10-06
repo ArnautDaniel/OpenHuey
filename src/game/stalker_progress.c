@@ -272,7 +272,7 @@ s32 DoorHold_Open(Progress *p, s32 room, s32 exit, u32 slot) {
 }
 
 /* take hold of the door at exit `exit` from side `side` (0xFF any; else its lock sides as
-   func_00178200): 0 if now held by the caller, 1 if it can't be (fixed, locked that side or
+   Progress_DoorPassable): 0 if now held by the caller, 1 if it can't be (fixed, locked that side or
    already held) */
 /* 0x00178DB0 */
 u32 DoorHold_Take(Progress *p, s32 room, s32 exit, u32 side) {

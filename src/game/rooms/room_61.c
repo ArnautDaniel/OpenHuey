@@ -70,7 +70,7 @@ static void path_point(f32 *out, u8 *st, s32 i) {
 
 /* character `kind` one frame along path `st`, turned to its heading */
 static void swim_step(s32 kind, u8 *st) {
-    u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, kind) & 0xFF];
+    u8 *c = (u8 *)gCharacters[Progress_SlotOfId(gProgress, kind) & 0xFF];
     f32 yaw;
 
 #ifdef HG_NATIVE
@@ -596,7 +596,7 @@ void Glint_Draw(void) {
     if (func_002D6010(gEffects) != 0) {
         return;
     }
-    ch = (u8 *)gCharacters[func_001770D0(gProgress, 0x14) & 0xFF];
+    ch = (u8 *)gCharacters[Progress_SlotOfId(gProgress, 0x14) & 0xFF];
 #ifdef HG_NATIVE
     if (ch == NULL) {   /* absent (the PS2 reads through junk) */
         return;

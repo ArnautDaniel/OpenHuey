@@ -1019,7 +1019,7 @@ void func_002FED30(Movie *m) {
     Movie_SetState(m, &D_0041CA80);
 }
 
-/* ---- movie classes 1..6 (func_001768B0's `kind`): movies the game draws itself, decoded into
+/* ---- movie classes 1..6 (Progress_PlayMovie's `kind`): movies the game draws itself, decoded into
  * two frames (+0x1B8, `frameBuf` the one written next). Each frame drawn is sent to VRAM 0xC0000
  * and most put it on the screen as a sprite. Their +0x18 fills in a frame description for
  * whoever shows the movie (the game over screen, GameOver_DrawMovieFrame): w, h, the frames, the frame

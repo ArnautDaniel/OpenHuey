@@ -54,7 +54,7 @@ static inline s32 item_door_open(Progress *p, u32 door) {
 
 /* door `door` open and route `route` taken */
 static inline s32 item_door_route(Progress *p, u32 door, u32 route) {
-    return item_door_open(p, door) && func_00178610(p, route) != 0;
+    return item_door_open(p, door) && Progress_DoorUnlocked(p, route) != 0;
 }
 
 /* Fiona's event `ev`, then flag 0x18; 4 */

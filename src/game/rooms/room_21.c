@@ -97,7 +97,7 @@ s32 Room21_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 0x21 (D_00400BE0): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */
 /* 0x002AF1D0 */
 s32 Room21_Cmd06(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 3)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 3)]->motion;
 
     switch (cmd[3]) {
     case 1:

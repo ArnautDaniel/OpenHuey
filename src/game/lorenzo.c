@@ -1300,7 +1300,7 @@ void Kind12_EventState(Pursuer *p) {
 s32 Kind12_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;

@@ -188,7 +188,7 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
             }
             break;
         case 0xE:
-            if ((func_00177620(p) & 0xFF) == 2) {
+            if ((Progress_GameMode(p) & 0xFF) == 2) {
                 act = 0xF;
             }
             break;
@@ -200,7 +200,7 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
     if (HW(h, 0xF35C0, s32) == 1 && act == 0xC) {
         act = 0x16;
     }
-    if (HW(h, 0xF3620, u8) == 1 && (act == 5 || act == 4 || act == 1) && !(func_00177620(p) & 0xFF)) {
+    if (HW(h, 0xF3620, u8) == 1 && (act == 5 || act == 4 || act == 1) && !(Progress_GameMode(p) & 0xFF)) {
         act = 0x81;
     }
     if (HW(h, 0xF3588, u8) == 1) {
@@ -650,7 +650,7 @@ void Hewie_LoadFiles(Hewie *h) {
     }
     loader = gFileLoader;
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA0, void *(*)(void *, u32))(h->c.motion, costume), (u8 *)h + 0x1540);
-    HEWIE_MSG(h) = func_001776B0(p, 0);
+    HEWIE_MSG(h) = Progress_CharLoadBuffer(p, 0);
     HEWIE_MSG(h) = (u8 *)HEWIE_MSG(h) + 0x80000;
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA8, void *(*)(void *))(h->c.motion), HEWIE_MSG(h));
     Hewie_Load(h, loader, VCALL(h->c.motion, 0xA4, void *(*)(void *, u32))(h->c.motion, costume), HEWIE_MRK(h));
@@ -1041,7 +1041,7 @@ void Hewie_Think(Hewie *h) {
     if (!h->c.a.disabled && !HW(h, 0xF3558, u8)) {
         root_motion(h);
     }
-    if ((func_00177870(p, SLOT_U8(h)) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(p, SLOT_U8(h)) & 0xFF) == 1) {
         SlotCmd_Cancel(p, SLOT_U8(h));
     }
     func_00146130(h);
@@ -1248,15 +1248,15 @@ void func_00143550(Hewie *h, s32 blend) {
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     p = gProgress;
     cur = MOTION_ANIM(h->c.motion);
-    if ((func_00177620(p) & 0xFF) == 2 && HEWIE_MODE(h) == 3) {
+    if ((Progress_GameMode(p) & 0xFF) == 2 && HEWIE_MODE(h) == 3) {
         a = 4;
     } else if (h->c.a.unkC4 == 1) {
         a = 6;
-    } else if ((func_00177620(p) & 0xFF) == 2 && HEWIE_MODE(h) == 2) {
+    } else if ((Progress_GameMode(p) & 0xFF) == 2 && HEWIE_MODE(h) == 2) {
         a = 5;
-    } else if ((func_00177620(p) & 0xFF) && func_00177670(p, 4)) {
+    } else if ((Progress_GameMode(p) & 0xFF) && Progress_CondBit(p, 4)) {
         a = 4;
-    } else if (func_00177620(p) & 0xFF) {
+    } else if (Progress_GameMode(p) & 0xFF) {
         a = 3;
     } else if (HEWIE_ACTION(h) == 8 || HEWIE_ACTION(h) == 0xA) {
         a = 4;
@@ -1457,7 +1457,7 @@ void func_0014B860(Hewie *h) {
 /* Free to take a command: idle, a command queued (+0xF356C > 0), nothing pending. */
 static inline s32 Hewie_FreeForCommand(Hewie *h) {
     if (!h->c.unkE0 && h->c.moveMode == 0 && HW(h, 0xF356C, s32) != 0 && !(HW(h, 0xF356C, s32) & 0x80000000)
-        && !(func_00177770(gProgress, 1) & 0xFF) && h->c.state[0] == 0) {
+        && !(Progress_IsLinked(gProgress, 1) & 0xFF) && h->c.state[0] == 0) {
         return 1;
     }
     return 0;
@@ -1683,7 +1683,7 @@ void func_0014B590(Hewie *h) {
 }
 
 void func_00149DD0(Hewie *h) {
-    if (!(func_00177620(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
+    if (!(Progress_GameMode(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
         if (func_00140CD0(h, 3) == 0) {
             func_001431F0(h);
             Hewie_SetBehaviour(h, &D_003B1CD0);
@@ -1697,7 +1697,7 @@ void func_00149DD0(Hewie *h) {
 extern const PTMF D_003B1958, D_003B1948, D_003B1D00;
 
 void func_00153350(Hewie *h) {
-    if (!(func_00177620(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
+    if (!(Progress_GameMode(gProgress) & 0xFF) && h->c.a.unkC4 != 1) {
         if (func_00140CD0(h, 3) == 0) {
             func_001431F0(h);
             Hewie_SetBehaviour(h, &D_003B1958);
@@ -1715,7 +1715,7 @@ void func_00149EC0(Hewie *h) {
         return;
     }
     if (MOTION_ANIM(h->c.motion) == 0x1300) {
-        if (!(func_00177620(gProgress) & 0xFF)) {
+        if (!(Progress_GameMode(gProgress) & 0xFF)) {
             func_002DDC60(h->c.motion, 0, 5, -1);
         } else {
             func_002DDC60(h->c.motion, 3, 5, -1);
@@ -1802,7 +1802,7 @@ s32 func_00138EC0(Hewie *h) {
     if (h->c.a.unkC4 != 2 && (HW(h, 0xF356C, s32) == 0 || (HW(h, 0xF356C, s32) & 0x80000000))) {
         return 0;
     }
-    if ((func_00177770(p, 1) & 0xFF) || h->c.state[0] != 0) {
+    if ((Progress_IsLinked(p, 1) & 0xFF) || h->c.state[0] != 0) {
         return 0;
     }
     return 1;
@@ -2053,7 +2053,7 @@ void func_00143400(Hewie *h) {
         Hewie_PlayIfNot(h, cur, 0x206);
     } else if (HEWIE_MODE(h) == 2) {
         Hewie_PlayIfNot(h, cur, 0x200);
-    } else if ((func_00177620(gProgress) & 0xFF) == 1) {
+    } else if ((Progress_GameMode(gProgress) & 0xFF) == 1) {
         Hewie_PlayIfNot(h, cur, 0x205);
     } else {
         Hewie_PlayIfNot(h, cur, 0x200);
@@ -2115,12 +2115,12 @@ s32 func_001382F0(Hewie *h) {
     Progress *p = gProgress;
 
     if ((Progress_GetVar(p, 0x27) & 0xFF) == 1) {
-        if (!(func_00177620(p) & 0xFF)) {
+        if (!(Progress_GameMode(p) & 0xFF)) {
             return (r < 8) ? 0 : (r < 13) ? 1 : 2;
         }
         return (r < 5) ? 0 : (r < 13) ? 1 : 2;
     }
-    if (!(func_00177620(p) & 0xFF)) {
+    if (!(Progress_GameMode(p) & 0xFF)) {
         return (r < 10) ? 0 : (r < 15) ? 1 : 2;
     }
     return (r < 5) ? 0 : (r < 15) ? 1 : 2;
@@ -2193,7 +2193,7 @@ void func_0015D320(Hewie *h) {
 s32 func_00139060(Hewie *h) {
     if ((Hewie_WithChar(h, gCharPlayer) & 0xFF) != 1 || h->c.unkE0 || h->c.moveMode != 0 || HEWIE_MODE(h) == 3
         || HW(h, 0xF356C, s32) == 0 || (HW(h, 0xF356C, s32) & 0x80000000)
-        || (func_00177770(gProgress, 1) & 0xFF) || h->c.state[0] != 0) {
+        || (Progress_IsLinked(gProgress, 1) & 0xFF) || h->c.state[0] != 0) {
         return 0;
     }
     return 1;
@@ -2434,7 +2434,7 @@ void func_0014A180(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1C90);
         return;
     }
-    if (!(func_00177620(gProgress) & 0xFF)) {
+    if (!(Progress_GameMode(gProgress) & 0xFF)) {
         func_002DDED0(h->c.motion, 0x1300, 0);
     } else {
         func_002DDED0(h->c.motion, 0x1300, 3);
@@ -2576,7 +2576,7 @@ void func_001517C0(Hewie *h) {
     }
     if (HW(h, 0xF3598, s32) != 0) {
         Hewie_ToDefault(h);
-    } else if (!(func_00177620(gProgress) & 0xFF)) {
+    } else if (!(Progress_GameMode(gProgress) & 0xFF)) {
         Hewie_Start(h, 0xC);
     } else {
         Hewie_Start(h, 0xE);
@@ -3181,7 +3181,7 @@ s32 func_00137020(Hewie *h) {
         HW(h, 0xF3684, s16) = 0;
     }
     if (HW(h, 0xF3578, s32) == 0x23 && HW(h, 0xF3598, s32) == 0 && HW(h, 0xF358C, s32) != 1 &&
-        !(u8)func_00177620(gProgress) && HW(h, 0xF368C, s32) == 0 &&
+        !(u8)Progress_GameMode(gProgress) && HW(h, 0xF368C, s32) == 0 &&
         (u8)func_00122C90(h, h->c.a.navTri, gCharPlayer->a.navTri, h->c.a.pos, gCharPlayer->a.pos, 0) == 1) {
         HW(h, 0xF368C, u8 *) = func_00139460(h);
         if (HW(h, 0xF368C, s32) != 0) {
@@ -3706,8 +3706,8 @@ s32 func_0013AC20(Hewie *h, s32 *hit) {
             AT(h, 0x2B, u8) = 1;
             hewie_want(h, 0x6B, 0);
         } else if (((u8)PursuerGroup_Fields(p, HW(h, 0xF36B4, u8), AT(h, 0x20, u8)) & 8) &&
-                   (u8)func_001785B0(p, h->c.a.room, HW(h, 0xF36B4, u8)) != 1 &&
-                   (u8)func_00178300(p, h->c.a.room, HW(h, 0xF36B4, u8), AT(h, 0x20, u8))) {
+                   (u8)Progress_ExitUnlocked(p, h->c.a.room, HW(h, 0xF36B4, u8)) != 1 &&
+                   (u8)Progress_ExitPassable(p, h->c.a.room, HW(h, 0xF36B4, u8), AT(h, 0x20, u8))) {
             yaw += F_PI;
             hewie_want(h, 0x6C, 0);
         } else if (!(NavMesh_Tri(gNavMesh, h->c.a.navTri)->flags & 0x20000)) {
@@ -3879,7 +3879,7 @@ void func_0013C7D0(Hewie *h) {
             break;
         }
     }
-    mode = (u8)func_00177620(p);
+    mode = (u8)Progress_GameMode(p);
     if (HW(h, 0xF3598, s32) == 0) {
         if (hostile) {
             e = D_003B0850[func_0013E920(h, 2)];
@@ -3942,9 +3942,9 @@ u8 func_0013CDC0(Hewie *h, Character *from, s32 both) {
             continue;
         }
         door = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) & 0xFFFF;
-        if ((u8)func_001788F0(p, door) != 1 || (u8)func_00178610(p, door) ||
-            (u8)func_00178200(p, door, (u8)h->c.a.slot) != 1 ||
-            ((u8)both && (u8)func_00178200(p, door, (u8)from->a.slot) != 1)) {
+        if ((u8)Progress_DoorOpen(p, door) != 1 || (u8)Progress_DoorUnlocked(p, door) ||
+            (u8)Progress_DoorPassable(p, door, (u8)h->c.a.slot) != 1 ||
+            ((u8)both && (u8)Progress_DoorPassable(p, door, (u8)from->a.slot) != 1)) {
             continue;
         }
         VCALL(doors, 0x34, void (*)(VObject *, u32, f32 *))(doors, e, at);
@@ -4006,7 +4006,7 @@ s32 func_0013E920(Hewie *h, u32 kind) {
     Progress *p;
 
     if ((u8)kind == 0xFF) {
-        kind = func_00177620(gProgress);
+        kind = Progress_GameMode(gProgress);
     }
     if ((u8)kind != 2) {
         return player_band(h);
@@ -4060,7 +4060,7 @@ void func_0013E680(Hewie *h) {
 
         sum += e[4 + HW(h, 0xF35CC, s16)];
         if (HW(h, 0xF3598, s32) != 0) {
-            switch ((u8)func_00177620(p)) {
+            switch ((u8)Progress_GameMode(p)) {
             case 0: favoured = 0x32; break;
             case 1: favoured = 0x2E; break;
             case 2: break;
@@ -4130,7 +4130,7 @@ s32 func_0013E2D0(Hewie *h, s32 cmd) {
     if (take) {
         return cmd;
     }
-    if ((u8)func_00177620(gProgress)) {
+    if ((u8)Progress_GameMode(gProgress)) {
         return -1;
     }
     take = func_001669A0(h);
@@ -4240,7 +4240,7 @@ extern void func_0013F470(Hewie *h);
 /* set his overlay modes for his animation and mood, restarting a mode's timers when it changes
  * to 3 (head), 0 (ears) or 4 / 6 (tail), and run the overlays */
 void func_0013FDE0(Hewie *h) {
-    const HewieOverlays *e = !(u8)func_00177620(gProgress) ? D_003B13F0 : D_003B1580;
+    const HewieOverlays *e = !(u8)Progress_GameMode(gProgress) ? D_003B13F0 : D_003B1580;
     s32 head = HW(h, 0xF3640, s32), ears = HW(h, 0xF3648, s32), tail = HW(h, 0xF3654, s32);
     s32 m;
 
@@ -4374,7 +4374,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
     case 0x26:
         if (!h->c.a.disabled) {
             p = gProgress;
-            if (!(u8)func_00177620(p)) {
+            if (!(u8)Progress_GameMode(p)) {
                 took = 1;
                 hewie_want(h, 0x1D, 0x2B);
             }
@@ -4385,11 +4385,11 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
         if (!h->c.a.disabled) {
             p = gProgress;
             took = 1;
-            if (!(u8)func_00177620(p)) {
+            if (!(u8)Progress_GameMode(p)) {
                 s32 a = HW(h, 0xF3564, s32);
 
                 hewie_want(h, 0x1D, a == 3 || a == 2 || a == 1 || a == 5 || a == 4 ? 0x29 : 0x27);
-            } else if ((u8)func_00177620(p) == 2) {
+            } else if ((u8)Progress_GameMode(p) == 2) {
                 hewie_want(h, 0x1D, 0x7A);
             } else {
                 hewie_want(h, 0x1D, 7);
@@ -4412,7 +4412,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
         }
         p = gProgress;
         took = 1;
-        hewie_want(h, 0x1D, !(u8)func_00177620(p) ? 0xD : 0xE);
+        hewie_want(h, 0x1D, !(u8)Progress_GameMode(p) ? 0xD : 0xE);
         obeys(h);
         break;
     case 0x2D:
@@ -4428,7 +4428,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
     case 0x23:
         if (!h->c.a.disabled) {
             p = gProgress;
-            if (!(u8)func_00177620(p) && HW(h, 0xF368C, s32) == 0) {
+            if (!(u8)Progress_GameMode(p) && HW(h, 0xF368C, s32) == 0) {
                 HW(h, 0xF368C, u8 *) = func_00139460(h);
                 if (HW(h, 0xF368C, s32) != 0) {
                     hewie_want(h, 0x1D, 0x78);
@@ -4443,7 +4443,7 @@ s32 func_0013D580(Hewie *h, s32 cmd) {
             h->c.unk110[2] = 0x1.4f8b58p-17f /* 1e-5 */ * (f32)h->c.state[3];
             h->c.unk110[3] = 1.0f;
             took = 1;
-            if (!(u8)func_00177620(p)) {
+            if (!(u8)Progress_GameMode(p)) {
                 hewie_want(h, 0x1D, 0x63);
             } else {
                 hewie_want(h, 0x63, 0);
@@ -4863,7 +4863,7 @@ void func_001431F0(Hewie *h) {
     s32 cur = MOTION_ANIM(h->c.motion);
     s32 g;
 
-    if (!(u8)func_00177620(gProgress) && HEWIE_ACTION(h) != 0xA && HEWIE_ACTION(h) != 0xB) {
+    if (!(u8)Progress_GameMode(gProgress) && HEWIE_ACTION(h) != 0xA && HEWIE_ACTION(h) != 0xB) {
         if (h->c.a.unkC4 == 1) {
             play_again(h, cur, 0x1B05);
             return;
@@ -4880,7 +4880,7 @@ void func_001431F0(Hewie *h) {
 /* what he is alert to (+0xF366D, with +0xF3670): 1 the pursuer itself when within 200 in front
  * of him (125 degrees either side) with nothing between; 2 an exit of his room leading to the
  * pursuer's room; 3 the noise he heard from slot 2 (the pursuer); else nothing (an exit or the
- * pursuer gone). Each but the last tells the game (func_00177630 4) */
+ * pursuer gone). Each but the last tells the game (Progress_SetCondBit 4) */
 void func_00143840(Hewie *h) {
     s32 away = 0;
 
@@ -4900,7 +4900,7 @@ void func_00143840(Hewie *h) {
             (u8)func_00122C90(h, h->c.a.navTri, gCharPursuer->a.navTri, h->c.a.pos, gCharPursuer->a.pos, 0) == 1) {
             HW(h, 0xF366D, u8) = 1;
             HW(h, 0xF3670, s32) = gCharPursuer->a.slot;
-            func_00177630(gProgress, 4);
+            Progress_SetCondBit(gProgress, 4);
             return;
         }
     }
@@ -4914,7 +4914,7 @@ void func_00143840(Hewie *h) {
                 VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, h->c.a.room, e) == gCharPursuer->a.room) {
                 HW(h, 0xF366D, u8) = 2;
                 HW(h, 0xF3670, s32) = e & 0xFF;
-                func_00177630(gProgress, 4);
+                Progress_SetCondBit(gProgress, 4);
                 return;
             }
         }
@@ -4922,7 +4922,7 @@ void func_00143840(Hewie *h) {
     if (h->c.heardSlot == 2) {
         HW(h, 0xF366D, u8) = 3;
         HW(h, 0xF3670, s32) = 2;
-        func_00177630(gProgress, 4);
+        Progress_SetCondBit(gProgress, 4);
     } else if (HW(h, 0xF366D, u8) == 2 || away == 1) {
         HW(h, 0xF366D, u8) = 0;
     }
@@ -5142,8 +5142,8 @@ s32 func_00144B30(Hewie *h) {
         k = (u8)PursuerGroup_Fields(p, e, (u8)h->c.a.slot);
         if (!(u8)VCALL(doors, 0x30, s32 (*)(VObject *, u32))(doors, e)) {
             if ((k & 1) &&
-                (u8)func_00178300(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
-                !(u8)func_001785B0(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
+                (u8)Progress_ExitPassable(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
+                !(u8)Progress_ExitUnlocked(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
                 HW(h, 0xF36B4, s32) = e & 0xFF;
                 return 1;
             }
@@ -5158,9 +5158,9 @@ s32 func_00144B30(Hewie *h) {
             }
         } else {
             if ((k & 1) &&
-                (u8)func_00178300(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
-                !(u8)func_001785B0(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e) &&
-                !(u8)func_00178980(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
+                (u8)Progress_ExitPassable(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e, 1) == 1 &&
+                !(u8)Progress_ExitUnlocked(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e) &&
+                !(u8)Progress_ExitOpen(p, VCALL(p, 0xC, s32 (*)(Progress *))(p), e)) {
                 HW(h, 0xF36B4, s32) = e & 0xFF;
                 return 1;
             }
@@ -5650,7 +5650,7 @@ void func_00146C50(Hewie *h) {
         Progress *p = gProgress;
 
         for (e = 0; e < 8; e = (e + 1) & 0xFF) {
-            if ((PursuerGroup_Fields(p, e, (u8)h->c.a.slot) & 0xFF & 4) && !(u8)func_00178980(p, h->c.a.room, e)) {
+            if ((PursuerGroup_Fields(p, e, (u8)h->c.a.slot) & 0xFF & 4) && !(u8)Progress_ExitOpen(p, h->c.a.room, e)) {
                 told = 1;
                 post_state(gCharPlayer, 0xD, 0, e & 0xFF);
             }
@@ -5694,7 +5694,7 @@ void func_001470C0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     p = gProgress;
-    if (!(u8)func_00177620(p) && h->c.a.unkC4 != 1) {
+    if (!(u8)Progress_GameMode(p) && h->c.a.unkC4 != 1) {
         if (func_00140CD0(h, 3) == 0) {
             bark_noise(h, p);
             func_001431F0(h);
@@ -6026,7 +6026,7 @@ void func_00148D00(Hewie *h) {
     Progress *p = gProgress;
     s32 spoiled;
 
-    if (!(u8)func_00177620(p) && HEWIE_ACTION(h) == 0x4A && AT(gCharPlayer, 0x1AD6B8, s32) == 3 &&
+    if (!(u8)Progress_GameMode(p) && HEWIE_ACTION(h) == 0x4A && AT(gCharPlayer, 0x1AD6B8, s32) == 3 &&
         MOTION_ANIM(h->c.motion) == 0x1D01) {
         HW(h, 0xF36B8, s32) = 2;
     }
@@ -6298,7 +6298,7 @@ void func_0014A920(Hewie *h) {
         }
         left = func_00124530(&h->c.a, HW(h, 0x10C, f32), step);
         if (left == 0.0f && AT(h->c.motion, 0x550, f32) <= 0.0f) {
-            func_002DDC60(h->c.motion, !(u8)func_00177620(gProgress) ? 0 : 3, 5, -1);
+            func_002DDC60(h->c.motion, !(u8)Progress_GameMode(gProgress) ? 0 : 3, 5, -1);
         }
         mv = 0.25f;
     } else {
@@ -6355,7 +6355,7 @@ void func_0014A920(Hewie *h) {
             }
             HW(h, 0xF36C4, f32) = r;
             HW(h, 0xF36B4, s32) = 1;
-            func_002DDED0(h->c.motion, 0x1300, !(u8)func_00177620(gProgress) ? 0 : 3);
+            func_002DDED0(h->c.motion, 0x1300, !(u8)Progress_GameMode(gProgress) ? 0 : 3);
             AT(MOTION_PTR(h->c.motion, 0x6A4), 0x1C, f32) = 1.0f;
         }
     }
@@ -6591,7 +6591,7 @@ void func_0014C480(Hewie *h) {
     }
     func_00141C00(h, 9);
     if (!there) {
-        if (!(u8)func_00139DE0(h) && (u8)func_00177620(p)) {
+        if (!(u8)func_00139DE0(h) && (u8)Progress_GameMode(p)) {
             func_00141C00(h, 8);
         }
     } else {
@@ -7867,8 +7867,8 @@ void func_00155000(Hewie *h) {
     if ((u8)Progress_CurRoomFlag(p, h->c.a.room, exit) == 1) {
         return;
     }
-    if ((u8)func_00178980(p, h->c.a.room, exit) && (u8)func_001785B0(p, h->c.a.room, exit) != 1 &&
-        (u8)func_00178300(p, h->c.a.room, exit, AT(h, 0x20, u8))) {
+    if ((u8)Progress_ExitOpen(p, h->c.a.room, exit) && (u8)Progress_ExitUnlocked(p, h->c.a.room, exit) != 1 &&
+        (u8)Progress_ExitPassable(p, h->c.a.room, exit, AT(h, 0x20, u8))) {
         HW(h, 0xF3590, u8) = 0;
         func_0013AAE0(h, exit);
         if (h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
@@ -9682,7 +9682,7 @@ static void mode_behaviour(Hewie *h, u32 own) {
         return;
     }
     p = gProgress;
-    mode = (u8)func_00177620(p);
+    mode = (u8)Progress_GameMode(p);
     if (mode == own) {
         if (HW(h, 0xF3559, u8) == 1) {
             if (!h->c.a.disabled) {
@@ -9805,7 +9805,7 @@ void func_00161070(Hewie *h) {
         HW(h, 0xF3583, u8) = 0;
         hewie_want(h, 0x2C, 0);
     }
-    if ((HW(h, 0xF356C, u32) & 0x80000040) == 0x40 && func_00177670(p, 1) != 0) {
+    if ((HW(h, 0xF356C, u32) & 0x80000040) == 0x40 && Progress_CondBit(p, 1) != 0) {
         HW(h, 0xF3559, u8) = 1;
         return;
     }
@@ -9922,7 +9922,7 @@ static void post_state2(Character *c, s32 kind, s32 a) {
     c->state2[7] = 0;
 }
 
-/* take up the joint action the game has queued for him (func_00177870), with Fiona: 0 if
+/* take up the joint action the game has queued for him (Progress_HasRelationCmd), with Fiona: 0 if
  * accepted (his second state block (0xC, its type)), -1 if none or cancelled. Out of her reach
  * (+0xE0): cancelled. Only kind 2. Types 0 / 2 / 4 (her starting it): calm, standing or already
  * in it (moves 0 / 0xC), listening (+0xF356C bit 3), on open ground, her within 30 in his room
@@ -9934,7 +9934,7 @@ s32 func_00164830(Hewie *h) {
     Progress *q;
     u32 kind, type;
 
-    if ((u8)func_00177870(p, AT(h, 0x20, u8)) != 1) {
+    if ((u8)Progress_HasRelationCmd(p, AT(h, 0x20, u8)) != 1) {
         return -1;
     }
     if (h->c.unkE0 == 1) {
@@ -9950,7 +9950,7 @@ s32 func_00164830(Hewie *h) {
         case 0:
         case 2:
         case 4:
-            if (!(u8)func_00177620(p) && (h->c.moveMode == 0 || h->c.moveMode == 0xC) &&
+            if (!(u8)Progress_GameMode(p) && (h->c.moveMode == 0 || h->c.moveMode == 0xC) &&
                 (HW(h, 0xF356C, u32) & 0x80000008) == 8 &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
                 !(NavMesh_TriFlags(gNavMesh, h->c.a.navTri) & 0x80001) && in_his_room(h, gCharPlayer) &&
@@ -10282,7 +10282,7 @@ void Hewie_Update(Hewie *h) {
         HW(h, 0xF3558, u8) = 0;
         HW(h, 0xF3582, u8) = 1;
         p = gProgress;
-        if (func_00177870(p, SLOT_U8(h)) & 0xFF) {
+        if (Progress_HasRelationCmd(p, SLOT_U8(h)) & 0xFF) {
             func_00164830(h);
         } else {
             if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) != 0) {
@@ -10562,7 +10562,7 @@ void Hewie_StateBlock(Hewie *h) {
         return;
     }
     if (h->c.unkE0 == 0 && h->c.moveMode == 0 && HW(h, 0xF356C, u32) != 0 && !(HW(h, 0xF356C, u32) & 0x80000000) &&
-        !(func_00177770(p, 1) & 0xFF) && h->c.state[0] == 0) {
+        !(Progress_IsLinked(p, 1) & 0xFF) && h->c.state[0] == 0) {
         Hewie_SetAction(h, 0x85, 0);
     }
 }
@@ -10729,7 +10729,7 @@ void func_00161860(Hewie *h) {
     }
     p = gProgress;
     HW(h, 0xF3580, u8) = held;
-    if ((func_00177620(p) & 0xFF) != 2 && HW(h, 0xF366C, u8) == 0 && HW(h, 0xF366D, u8) != 0 &&
+    if ((Progress_GameMode(p) & 0xFF) != 2 && HW(h, 0xF366C, u8) == 0 && HW(h, 0xF366D, u8) != 0 &&
         HEWIE_ACTION(h) != 0x76) {
         hewie_want(h, 0x14, 0);
         return;
@@ -10744,7 +10744,7 @@ void func_00161860(Hewie *h) {
 
     /* the creature he follows: lost once it stops, else after it while it is ahead (within 120
        degrees) and he is on its triangle */
-    if (func_00177620(p) & 0xFF) {
+    if (Progress_GameMode(p) & 0xFF) {
         HW(h, 0xF368C, Character *) = NULL;
     } else {
         t = HW(h, 0xF368C, Character *);

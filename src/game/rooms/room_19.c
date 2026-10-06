@@ -86,7 +86,7 @@ s32 Room19_Cond00(void) {
         return 0;
     }
     g = gProgress;
-    if ((u8)func_00177620(g) != 2) {
+    if ((u8)Progress_GameMode(g) != 2) {
         return 0;
     }
     if (AT(s, 0x30, s32) != VCALL((VObject *)g, 0xC, s32 (*)(VObject *))((VObject *)g)) {

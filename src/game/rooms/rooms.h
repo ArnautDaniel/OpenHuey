@@ -770,7 +770,7 @@ static __attribute__((unused)) s32 room_nudge(s32 *count, u8 *cmd, f32 dx) {
     if (--*count == 0) {
         return 1;
     }
-    c = gCharacters[func_001770D0(gProgress, 0xE) & 0xFF];
+    c = gCharacters[Progress_SlotOfId(gProgress, 0xE) & 0xFF];
     AT(c, 0x14, f32) = AT(c, 0x14, f32) + dx;
     AT(c, 0x18, f32) = AT(c, 0x18, f32) + 3.0f;
     return 2;

@@ -78,7 +78,7 @@ s32 Room1D_Cond00(void) {
         return 0;
     }
     p = gProgress;
-    if (Progress_CurRoomFlag(p, 0x1D, 0) != 0 || func_00178980(p, 0x1D, 0) != 0) {
+    if (Progress_CurRoomFlag(p, 0x1D, 0) != 0 || Progress_ExitOpen(p, 0x1D, 0) != 0) {
         return 0;
     }
     return 1;

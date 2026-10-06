@@ -183,11 +183,11 @@ void Daniella_ActionOffsets(Pursuer *p, s32 kind, f32 *out) {
     out[2] = z;
 }
 
-/* vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
+/* vtable +0xE4: at a door she breaks (Progress_ExitOpen) while opening or attacking it: mark it
    (vtable +0xF0) and change room through it (vtable +0x28) */
 /* 0x0020C660 */
 void Daniella_DoorBreak(Pursuer *p, s32 exit) {
-    if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
+    if (!(Progress_ExitOpen(gProgress, p->c.a.room, exit) & 0xFF)) {
         return;
     }
     switch (PU(p, 0x175C, s32)) {
@@ -574,11 +574,11 @@ extern void func_00346330(Pursuer *p);
 extern void func_00347B80(Pursuer *p);
 extern void func_00348B10(Pursuer *p);
 
-/* (as Daniella_DoorBreak)  vtable +0xE4: at a door she breaks (func_00178980) while opening or attacking it: mark it
+/* (as Daniella_DoorBreak)  vtable +0xE4: at a door she breaks (Progress_ExitOpen) while opening or attacking it: mark it
    (vtable +0xF0) and change room through it (vtable +0x28) */
 /* 0x003461A0 */
 void Kind34_DoorBreak(Pursuer *p, s32 exit) {
-    if (!(func_00178980(gProgress, p->c.a.room, exit) & 0xFF)) {
+    if (!(Progress_ExitOpen(gProgress, p->c.a.room, exit) & 0xFF)) {
         return;
     }
     switch (PU(p, 0x175C, s32)) {

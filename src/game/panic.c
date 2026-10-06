@@ -287,7 +287,7 @@ void Panic_FearInputs(u8 *o) {
     f32 dy, d;
     s32 kind, band;
 
-    if ((u8)func_00177620(p) == 0) {
+    if ((u8)Progress_GameMode(p) == 0) {
         AT(o, 0x2C, f32) = AT(o, 0x2C, f32) + kCalm0.f;
     } else if (AT(gCharPlayer, 0xF8, s32) == 0 && AT(gCharPlayer, 0xFC, s32) == 0) {
         AT(o, 0x2C, f32) = AT(o, 0x2C, f32) + kCalm.f;

@@ -594,8 +594,8 @@ s32 RoutePlanner_QueueDoors(u8 *rp, s32 room) {
         if (*seen & m) {
             continue;
         }
-        if (!(AT(rp, 0x14, u32 *) != NULL && (m & AT(rp, 0x14, u32 *)[d >> 5])) && !(func_00178610(p, d) & 0xFF) &&
-            (func_00178200(p, d, AT(rp, 0x10, u8)) & 0xFF) == 1) {
+        if (!(AT(rp, 0x14, u32 *) != NULL && (m & AT(rp, 0x14, u32 *)[d >> 5])) && !(Progress_DoorUnlocked(p, d) & 0xFF) &&
+            (Progress_DoorPassable(p, d, AT(rp, 0x10, u8)) & 0xFF) == 1) {
             s16 n = AT(rp, 0x1E, s16)++;
             RouteStep *s = (RouteStep *)(rp + 0x2C) + n;
 

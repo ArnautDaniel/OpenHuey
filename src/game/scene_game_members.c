@@ -123,7 +123,7 @@ void func_00223D60(u8 *p) {
 void *func_002D10C0(u8 *p) {
     AT(p, 0x0, void **) = D_0046C320;
     gObstacles = (VObject *)p;
-    func_00100340(p + 0x10, func_002D1120, func_0021A370, 0xB0, 5);
+    func_00100340(p + 0x10, func_002D1120, Obstacle_dtor, 0xB0, 5);
     return p;
 }
 
@@ -1169,7 +1169,7 @@ void func_0011FFB0(u8 *rm, s32 slot) {
     VCALL(o, 0x10, void (*)(VObject *, void *, void *))(o, ROOM_SEC(rm, 0x99B0), ROOM_SEC(rm, 0x99B8));
     VCALL(o, 0x14, void (*)(VObject *))(o);
     func_00266CD0((u8 *)gRoomEffects, room_section(pac, 13));
-    func_0021B040(rm + 0x9380);
+    Obstacles_Reset(rm + 0x9380);
     VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
 }
 
@@ -2163,13 +2163,13 @@ void func_002220C0(VObject *doors, s32 exit) {
         return;
     }
     VCALL(doors, 0x20, void (*)(VObject *, s32, s32, u32))(doors, exit, 0, 0x5000000);
-    if ((u8)func_00178610(p, d) == 1) {
+    if ((u8)Progress_DoorUnlocked(p, d) == 1) {
         flags = 0x5000000;
     } else {
-        if (!(u8)func_00178200(p, d, 1)) {
+        if (!(u8)Progress_DoorPassable(p, d, 1)) {
             flags = 0x1000000;
         }
-        if (!(u8)func_00178200(p, d, 2)) {
+        if (!(u8)Progress_DoorPassable(p, d, 2)) {
             flags |= 0x4000000;
         }
     }
@@ -2425,7 +2425,7 @@ extern s32 func_002EC170(u8 *o);
 extern s32 func_002EBED0(u8 *o);
 
 /* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
-   kind `kind`, waited 0); then progress slot refresh (func_00177200) */
+   kind `kind`, waited 0); then progress slot refresh (Progress_CharDone) */
 static inline void summoner_take(u8 *o, u8 kind) {
     u8 *pu = (u8 *)gCharPursuer;
 
@@ -2438,7 +2438,7 @@ static inline void summoner_take(u8 *o, u8 kind) {
         AT(o, 0xC, s32) = 0;
         AT(o, 0x11, u8) = kind;
     }
-    func_00177200(gProgress, AT(pu, 0x20, u32));
+    Progress_CharDone(gProgress, AT(pu, 0x20, u32));
 }
 
 void func_002EC470(u8 *o, u8 kind) {
@@ -2782,7 +2782,7 @@ void func_0011FB20(u8 *rm, s32 slot) {
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, rm + 0x340, 1, 0);
     }
     func_002239C0(rm + 0x1640);
-    func_0021AC10(rm + 0x9380);
+    Obstacles_ModelsFollow(rm + 0x9380);
     VCALL(rm + 0x6740, 0x24, void (*)(void *))(rm + 0x6740);
 }
 
@@ -2819,7 +2819,7 @@ void func_0011FF30(u8 *rm) {
     VObject *tc;
 
     Doors_Release((VObject *)(rm + 0x1640));
-    func_0021ABC0(rm + 0x9380);
+    Obstacles_Release(rm + 0x9380);
     VCALL((VObject *)(rm + 0x6740), 0x20, void (*)(VObject *))((VObject *)(rm + 0x6740));
     func_00267080((u8 *)gRoomEffects);
     tc = gTexCache;
@@ -2833,7 +2833,7 @@ void func_0011FEB0(u8 *rm) {
     if (AT(rm, 0x998C, u8 *) != NULL) {
         func_00223A90(rm + 0x1640);
     }
-    func_0021AFD0(rm + 0x9380);
+    Obstacles_Update(rm + 0x9380);
     VCALL(rm + 0x6740, 0x28, void (*)(void *))(rm + 0x6740);
     AT(rm, 0x8B, u8) = VCALL(gProgress, 0x54, s32 (*)(void *))(gProgress);
 }
@@ -3252,7 +3252,7 @@ void func_002EC4F0(u8 *o, u8 *n) {
     rooms = gRooms;
     for (i = 0; i < 8; i++) {
         d = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(n, 0x4, s32), i & 0xFF);
-        if (d < 0x190 && (u8)func_001788F0(p, d) == 1) {
+        if (d < 0x190 && (u8)Progress_DoorOpen(p, d) == 1) {
             open = 1;
             break;
         }
@@ -3295,11 +3295,11 @@ void func_002EC4F0(u8 *o, u8 *n) {
     }
     if (t[1] != 0 &&
         (100.0f - (f32)t[0]) * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) <= (f32)t[1]) {
-        func_00177630(p, 6);
+        Progress_SetCondBit(p, 6);
         return;
     }
-    if ((u8)func_00177620(p) == 1 && t[0] + t[1] != 0) {
-        func_00177630(p, 6);
+    if ((u8)Progress_GameMode(p) == 1 && t[0] + t[1] != 0) {
+        Progress_SetCondBit(p, 6);
     }
 }
 
@@ -3504,7 +3504,7 @@ void func_00222230(VObject *o) {
 
         if ((u8)VCALL(doors, 0x40, s32 (*)(VObject *, u32))(doors, i & 0xFF) == 1 &&
             (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, room, i & 0xFF) != 0xFFFF) {
-            if ((u8)func_00178980(p, room, i & 0xFF) == 1) {
+            if ((u8)Progress_ExitOpen(p, room, i & 0xFF) == 1) {
                 AT(e, 0x64, f32) = -90.0f;
                 AT(e, 0x34, f32) = AT(e, 0x44, f32) + -kHalfPi.f;
                 if (AT(e, 0x34, f32) < -kPi.f) {

@@ -120,7 +120,7 @@ s32 Room48_Cmd04(void) {
 /* room 0x48 (D_00426820): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0 */
 /* 0x0030F2E0 */
 s32 Room48_Cmd03(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {
         AT(m, 0x9E8, u32) = 0xBE19999A;
@@ -147,7 +147,7 @@ s32 Room48_Cmd02(void *self, void *a1, u8 *cmd) {
 /* room 0x48 (D_00426800): character 0x26's +0xE4 cleared */
 /* 0x0030F490 */
 s32 Room48_Cmd01(void) {
-    AT(gCharacters[(u8)func_001770D0(gProgress, 0x26)], 0xE4, u8) = 0;
+    AT(gCharacters[(u8)Progress_SlotOfId(gProgress, 0x26)], 0xE4, u8) = 0;
     return 1;
 }
 

@@ -244,7 +244,7 @@ void Game_StartNextScene(Game *game) {
         break;
     case 3:
         Game_NewScene(game, 0x1065080, (Scene * (*)(void *))SceneGame_ctor, 1);
-        func_001779B0(gProgress, game->modeParam);
+        Progress_SetStartEntry(gProgress, game->modeParam);
         game->softResetEnabled = 1;
         break;
     case 5:

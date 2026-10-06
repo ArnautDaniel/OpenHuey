@@ -1161,7 +1161,7 @@ s32 func_00125D80(Character *c) {
         if (s == 4 || s == 5) {
             return 1;
         }
-        if ((func_00177770((Progress *)((VObject *)gProgress), *(u8 *)&c->a.slot) & 0xFF) == 1) {
+        if ((Progress_IsLinked((Progress *)((VObject *)gProgress), *(u8 *)&c->a.slot) & 0xFF) == 1) {
             return 1;
         }
     }
@@ -1687,7 +1687,7 @@ s32 func_001264D0(Character *c, f32 *out) {
         sceVu0SubVector(out, a, b);
         out[3] = 1.0f;
         sceVu0Normalize(out, out);
-        sceVu0ScaleVector(out, out, dist + ((func_001788F0((Progress *)prog, next) & 0xFF) ? 100.0f : 150.0f));
+        sceVu0ScaleVector(out, out, dist + ((Progress_DoorOpen((Progress *)prog, next) & 0xFF) ? 100.0f : 150.0f));
         sceVu0AddVector(out, out, a);
         out[3] = 1.0f;
     }
@@ -1785,7 +1785,7 @@ void func_001269C0(Character *c) {
                 }
             } else if (base < (n << 5)) {
                 loud = 0;
-            } else if (base < 0x41 && !(func_001788F0((Progress *)prog, r.route[n - 1]) & 0xFF)) {
+            } else if (base < 0x41 && !(Progress_DoorOpen((Progress *)prog, r.route[n - 1]) & 0xFF)) {
                 loud = 0;
             }
         }

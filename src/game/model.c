@@ -599,7 +599,7 @@ u32 func_00208F80(VObject *ev, s32 id) {
         i = (u8)Event_CharSlot(ev, id);
         return AT(ev, 0x578 + i * 0x18, u16);
     }
-    i = (u8)func_001770D0(gProgress, id);
+    i = (u8)Progress_SlotOfId(gProgress, id);
     if (i < 6) {
         return AT(ev, 0x590 + i * 0x18, u16);
     }

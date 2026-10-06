@@ -103,7 +103,7 @@ s32 Room60_Cmd05(void *self, void *a1, u8 *cmd) {
 s32 Room60_Cmd04(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, kN02 = {0xBE4CCCCD}, k01 = {0x3DCCCCCE},
                                           k03 = {0x3E99999A};
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;
     VObject *ev;
     s32 v;
     f32 a, b;
@@ -134,7 +134,7 @@ s32 Room60_Cmd04(void *self, void *a1, u8 *cmd) {
 /* room 0x60 (D_00429170): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0 */
 /* 0x00310450 */
 s32 Room60_Cmd03(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {
         AT(m, 0x9FC, f32) = 0x1.99999a0000000p-2f /* 0.4 */;
@@ -170,10 +170,10 @@ s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
 s32 Room60_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        func_0016CEC0(gProgress, D_00429130);
+        Progress_LoadSpeech(gProgress, D_00429130);
         return 1;
     case 1:
-        return func_0016CD60(gProgress, 0xFE, 0) == 0 ? 2 : 1;
+        return Progress_Speak(gProgress, 0xFE, 0) == 0 ? 2 : 1;
     }
     ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;

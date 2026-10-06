@@ -69,10 +69,10 @@ s32 Room2B_Command(void *self, u32 i, s32 a, s32 b) {
  * func_0032D2C0 says done */
 /* 0x002B1700 */
 s32 Room2B_Cmd00(void *self, void *a1, u8 *cmd) {
-    Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
+    Character *c = gCharacters[Progress_SlotOfId(gProgress, 0x1A) & 0xFF];
 
 #ifdef HG_NATIVE
-    if ((func_001770D0(gProgress, 0x1A) & 0xFF) >= 6 || c == NULL) {   /* (the PS2 writes through junk) */
+    if ((Progress_SlotOfId(gProgress, 0x1A) & 0xFF) >= 6 || c == NULL) {   /* (the PS2 writes through junk) */
         return 1;
     }
 #endif

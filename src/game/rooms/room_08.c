@@ -87,10 +87,10 @@ s32 Room08_Cond01(void) {
     return c != NULL && AT(c, 0x28, u8) == 0;
 }
 
-/* door be16 cmd[3..4]: func_001788F0 */
+/* door be16 cmd[3..4]: Progress_DoorOpen */
 /* 0x002AA5B0 */
 s32 Room08_Cond00(void *self, void *a1, u8 *cmd) {
-    return func_001788F0(gProgress, (cmd[3] << 8 | cmd[4]) & 0xFFFF);
+    return Progress_DoorOpen(gProgress, (cmd[3] << 8 | cmd[4]) & 0xFFFF);
 }
 
 /* (self->*D_019907E0[i])(a, b) */

@@ -79,7 +79,7 @@ s32 Room2D_Condition(void *self, u32 i, s32 a, s32 b) {
  * 160) (others: what the caller left) */
 /* 0x002B18B0 */
 s32 Room2D_Cond00(void *self, void *a1, u8 *cmd) {
-    Character *h = gCharacters[func_001770D0(gProgress, 1) & 0xFF];
+    Character *h = gCharacters[Progress_SlotOfId(gProgress, 1) & 0xFF];
     f32 dx = 0.0f, dz = 0.0f;
 
     if (h == NULL || AT(h, 0x28, u8) == 0 || AT(h, 0xF3564, s32) != 0x7F) {

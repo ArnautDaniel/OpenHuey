@@ -66,7 +66,7 @@ s32 Room2E_Command(void *self, u32 i, s32 a, s32 b) {
 /* the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05 */
 /* 0x002FF0A0 */
 s32 Room2E_Cmd04(void *self, void *a1, u8 *cmd) {
-    u8 *m = AT(gCharacters[func_001770D0(gProgress, 0xFE) & 0xFF], 0xF0, u8 *);
+    u8 *m = AT(gCharacters[Progress_SlotOfId(gProgress, 0xFE) & 0xFF], 0xF0, u8 *);
 
     switch (cmd[3]) {
     case 0:

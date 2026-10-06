@@ -67,7 +67,7 @@ s32 Room59_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 0x59 (D_00410B80): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0 */
 /* 0x002B5210 */
 s32 Room59_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {
         AT(m, 0x9E0, f32) = 0x1.99999a0000000p-4f /* 0.1 */;

@@ -72,10 +72,10 @@ s32 Room23_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        func_0016CEC0(gProgress, D_0040187C);
+        Progress_LoadSpeech(gProgress, D_0040187C);
         return 1;
     case 1:
-        return func_0016CD60(gProgress, 3, 0) == 0 ? 2 : 1;
+        return Progress_Speak(gProgress, 3, 0) == 0 ? 2 : 1;
     }
     ((void (*)(Progress *))func_0016CD30)(gProgress);
     return 1;
@@ -84,7 +84,7 @@ s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
 /* room 0x23 (D_00401838): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2 */
 /* 0x002AFAA0 */
 s32 Room23_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 3)]->motion;
+    u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 3)]->motion;
 
     if (cmd[3] == 1) {
         AT(m, 0x9A0, f32) = 0.0f;

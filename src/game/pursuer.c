@@ -279,11 +279,11 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
+/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
-    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
         SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -2551,7 +2551,7 @@ void func_002871E0(Pursuer *p) {
     st = PursuerGroup_Fields(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
     VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
     if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
-        func_00178300(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
+        Progress_ExitPassable(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
         p->c.a.unk2B = 1;
     } else {
@@ -2804,13 +2804,13 @@ void Pursuer_DoorGoThrough(Pursuer *p) {
     switch (p->c.unk104[0]) {
     case 1:
     case 3:
-        if (!(func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
+        if (!(Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             goto fail;
         }
         break;
     case 0:
     case 2:
-        if (func_00178980(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
+        if (Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
             goto fail;
         }
         break;
@@ -3121,7 +3121,7 @@ void Pursuer_DoorFacing(Pursuer *p) {
             (PursuerGroup_Fields(pr, (u8)p->c.unk100, 0) & 0xFF & 4)) {
             Pursuer_PlayAnim(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p));
         } else {
-            if (func_00178980(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
+            if (Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
                 PURSUER_STEP_DONE(p) = 1;
                 return;
             }
@@ -3306,7 +3306,7 @@ void Pursuer_DoorLineUp(Pursuer *p) {
         PU(p, 0x16EF, u8) = 1;
         return;
     }
-    if ((func_00178980(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
+    if ((Progress_ExitOpen(gProgress, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
         p->c.unk104[0] = (r != 0 ? 3 : 1) & 0xFFFF;
     } else {
         p->c.unk104[0] = (r != 0 ? 2 : 0) & 0xFFFF;
@@ -4474,7 +4474,7 @@ void Pursuer_EventOver(Pursuer *p, s32 exit) {
         if ((Progress_CurRoomFlag(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
             if (PU(p, 0x175C, s32) == 0xF) {
                 func_00212D30(p, (u8)p->c.unk100);
-            } else if ((func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
+            } else if ((Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
                 func_00212CA0(p, (u8)p->c.unk100);
             } else {
                 func_00212D30(p, (u8)p->c.unk100);
@@ -4654,7 +4654,7 @@ void Pursuer_DoorBarge(Pursuer *p) {
         return;
     }
     pr = gProgress;
-    if ((func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
+    if ((Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
         p->c.unk104[0] = (r != 0 ? 3 : 1) & 0xFFFF;
         p->c.moveSub = 0x15;
     } else {
@@ -5271,7 +5271,7 @@ void func_00287620(Pursuer *p) {
     st = PursuerGroup_Fields(pr, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) & 0xFF;
     VCALL(gDoors, 0x38, void (*)(VObject *, u32, f32 *))(gDoors, (u8)p->c.unk100, v);
     if ((func_00124490(&p->c.a, v) < 9.0f || (st & 0xFF & 9)) &&
-        func_00178300(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
+        Progress_ExitPassable(pr, p->c.a.room, (u8)p->c.unk100, *(u8 *)&p->c.a.slot) != 0) {
         Pursuer_PlayAnimBlend(p, 0x1004);
         PU(p, 0x1634, f32) = func_00212550(p, (u8)p->c.unk100);
         p->c.a.unk2B = 1;
@@ -5639,7 +5639,7 @@ s32 Pursuer_GrabOrder(Pursuer *p) {
     u32 who, how, kind;
     Character *c;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) != 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) != 1) {
         return -1;
     }
     if (func_00217510(p) == 0) {
@@ -7133,7 +7133,7 @@ void Pursuer_EnterRoom(Pursuer *p) {
     if ((VCALL(gDoors, 0x40, s32 (*)(VObject *, u32))(gDoors, p->c.door) & 0xFF) == 1) {
         Progress *pr = gProgress;
 
-        if (func_00178980(pr, p->c.a.room, p->c.door) & 0xFF) {
+        if (Progress_ExitOpen(pr, p->c.a.room, p->c.door) & 0xFF) {
             u8 k = PU(p, 0x16C9, u8);
 
             if ((u32)(PU(p, 0x16C8, u8) - 2) < 2 && k != 4 && k != 1 && k != 5) {
@@ -7522,14 +7522,14 @@ void Pursuer_DoorOpen(Pursuer *p) {
     switch (kind) {
     case 0:
     case 2:
-        if (func_00178980(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
+        if (Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) != 0) {
             Pursuer_DropDoor(p);
             return;
         }
         break;
     case 1:
     case 3:
-        if (!(func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
+        if (!(Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF)) {
             Pursuer_DropDoor(p);
             return;
         }
@@ -7546,7 +7546,7 @@ void Pursuer_DoorOpen(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     PU(p, 0x15C0, u8) = 0xFF;
     p->c.moveMode = 2;
-    if ((func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
+    if ((Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
         p->c.moveSub = 0x15;
         func_00212DC0(p, (u8)p->c.unk100);
     } else {
@@ -9377,7 +9377,7 @@ void Pursuer_BehaviourHewie(Pursuer *p) {
             VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, gCharPartner);
             PU(p, 0x16EF, u8) = 0;
             PURSUER_STEP_DONE(p) = 0;
-        } else if (PU(p, 0x16EF, u8) == 1 || !(func_00178980(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
+        } else if (PU(p, 0x16EF, u8) == 1 || !(Progress_ExitOpen(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
             PU(p, 0x16ED, u8) = 1;
             PU(p, 0x16EF, u8) = 0;
             PURSUER_STEP_DONE(p) = 0;
@@ -9882,7 +9882,7 @@ void Pursuer_BehaviourDoors(Pursuer *p) {
 
         PU(p, 0x16F3, u8) = 0;
         PU(p, 0x16ED, u8) = 0;
-        if (PU(p, 0x175C, s32) == 0xF && (pr = gProgress, !(func_00178980(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF))) {
+        if (PU(p, 0x175C, s32) == 0xF && (pr = gProgress, !(Progress_ExitOpen(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF))) {
             /* in the doorway with the door shut */
             if (!(func_00217260(p) & 0xFF)) {
                 u8 want = PU(p, 0x17B0, u8);
@@ -10372,7 +10372,7 @@ void Pursuer_BehaviourFollow(Pursuer *p) {
             VCALL(p, 0xB4, void (*)(Pursuer *, Character *))(p, gCharPlayer);
             PU(p, 0x16EF, u8) = 0;
             PURSUER_STEP_DONE(p) = 0;
-        } else if (PU(p, 0x16EF, u8) == 1 || !(func_00178980(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
+        } else if (PU(p, 0x16EF, u8) == 1 || !(Progress_ExitOpen(pr, p->c.a.room, PU(p, 0x17B0, u8)) & 0xFF)) {
             PU(p, 0x16ED, u8) = 1;
             PU(p, 0x16EF, u8) = 0;
             PURSUER_STEP_DONE(p) = 0;
@@ -10548,7 +10548,7 @@ static void Pursuer_FinishCrossing(Pursuer *p) {
             /* finish going through the door */
             if (PU(p, 0x175C, s32) == 0xF) {
                 func_00212D30(p, (u8)p->c.unk100);
-            } else if ((func_00178980(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
+            } else if ((Progress_ExitOpen(pr, p->c.a.room, (u8)p->c.unk100) & 0xFF) == 1) {
                 func_00212CA0(p, (u8)p->c.unk100);
             } else {
                 func_00212D30(p, (u8)p->c.unk100);
@@ -11161,7 +11161,7 @@ void Kind08_EventState(Pursuer *p) {
 s32 func_002ECDE0(Pursuer *p) {
     Progress *pr = gProgress;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -11248,12 +11248,12 @@ void Kind14_EventState(Pursuer *p) {
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
+/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
 /* 0x00312FC0 */
 s32 Kind14_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -11312,12 +11312,12 @@ void Kind16_EventState(Pursuer *p) {
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
+/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
 /* 0x00315D90 */
 s32 Kind16_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -11376,12 +11376,12 @@ void Kind17_EventState(Pursuer *p) {
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (func_00177870); -1 */
+/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
 /* 0x00316D10 */
 s32 Kind17_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
-    if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
+    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
         SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;
@@ -11890,11 +11890,11 @@ void Kind13_EventState(Pursuer *p) {
     act5(p, &D_004297B0);
 }
 
-/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
+/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
-    if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
+    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
         SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;

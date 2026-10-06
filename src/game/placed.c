@@ -1095,7 +1095,7 @@ static inline __attribute__((always_inline)) void thing_stomped(u8 *o, s16 a, s1
         if (!(AT(o, 0x14, f32) <= y - 1.0f) && AT(o, 0x14, f32) < top) {
             sceVu0SubVector(d, (f32 *)(c + 0x10), BALL_POS(o));
             if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 1.0f + AT(c, 0xC8, f32)) {
-                func_00177FA0(p, BALL_POS(o), 4, 7, a, b, 0.0f);
+                Progress_Noise(p, BALL_POS(o), 4, 7, a, b, 0.0f);
                 burst(o, BALL_POS(o));
                 AT(o, 0x28, u8) = 0;
             }
@@ -3132,7 +3132,7 @@ void func_00354AF0(u8 *o) {
 void func_00354C90(u8 *o) {
     /* the loudness goes as the u16 it is (the callee takes its low half) */
     void (*noise)(Progress *, const f32 *, u32, u32, u32, s32, f32) =
-        (void (*)(Progress *, const f32 *, u32, u32, u32, s32, f32))func_00177FA0;
+        (void (*)(Progress *, const f32 *, u32, u32, u32, s32, f32))Progress_Noise;
 
     if ((s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < AT(o, 0x124, u16)) {
         noise(gProgress, (f32 *)(o + 0x10), 4, AT(o, 0x12E, u8), AT(o, 0x126, u16), -0x8000, 0.0f);
@@ -3290,7 +3290,7 @@ void func_003688D0(u8 *o) {
     thing_kick_up(o, 0x1.99999ap-2f);   /* 0.4 */
     if (func_00367EA0(o) != 0) {
         Sound_PlayBankAt(gSound, 4, 6, (f32 *)(o + 0x10), 0, 0);
-        func_00177FA0(p, (f32 *)(o + 0x10), 4, 2, 0x28, 0, 0.0f);
+        Progress_Noise(p, (f32 *)(o + 0x10), 4, 2, 0x28, 0, 0.0f);
         AT(o, 0x28, u8) = 0;
     }
 }
@@ -3366,7 +3366,7 @@ void func_00335DE0(u8 *o) {
     if ((d & 0xFF) != 8) {
         u32 door = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, AT(o, 0x30, s32), d) & 0xFFFF;
 
-        if ((func_001788F0(p, door) & 0xFF) == 1) {
+        if ((Progress_DoorOpen(p, door) & 0xFF) == 1) {
             f32 at[4] __attribute__((aligned(16)));
 
             if ((func_00122B50((Actor *)o, at) & 0xFF) == 1) {

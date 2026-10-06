@@ -233,7 +233,7 @@ s32 Room92_Cmd09(void *self, void *a1, u8 *cmd) {
         which = (u32)(unsigned long)a1;   /* never set on the PS2: the register still holds a1 */
         break;
     }
-    func_00177FA0(gProgress, pos, which & 0xFF, 2, 5, 0, 10.0f);
+    Progress_Noise(gProgress, pos, which & 0xFF, 2, 5, 0, 10.0f);
     return 1;
 }
 
