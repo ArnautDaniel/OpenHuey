@@ -461,7 +461,7 @@ void func_002D54D0(u8 *b) {
  * walls / floors with their normal); it bounces off what it hits (a bounce sound once), comes
  * to roll on floors and gentle slopes, and drops through holes. Off the mesh, it tries once
  * more the other way (0.8 back), then falls to the floor (+0x40) */
-void func_002D56D0(u8 *b) {
+static inline __attribute__((always_inline)) void ball_fly(u8 *b, s32 check, s32 (*wall)(u8 *, f32 *, f32 *, f32 *), s32 sound) {
     f32 *v = BALL_VEL(b);
     f32 to[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
@@ -471,7 +471,7 @@ void func_002D56D0(u8 *b) {
     s32 bounced = 0, again = 0;
     u32 tri, prev, hit;
 
-    if (AT(b, 0x28, u8) == 0) {
+    if (check && AT(b, 0x28, u8) == 0) {
         return;
     }
     sceVu0AddVector(v, (f32 *)(b + 0x100), v);
@@ -502,7 +502,7 @@ void func_002D56D0(u8 *b) {
                 ball_drop(b);
                 return;
             }
-            if (!func_002D5290(b, to, out, n)) {
+            if (!wall(b, to, out, n)) {
                 VCALL(nm, 0x14, void (*)(VObject *, u32, f32 *))(nm, AT(b, 0x34, u32), BALL_POS(b));
                 AT(b, 0xE0, u8) = 1;
                 return;
@@ -522,7 +522,7 @@ void func_002D56D0(u8 *b) {
             if (AT(b, 0xE0, u8) == 1) {
                 goto landed;
             }
-            bounced = 1;
+            bounced = sound;
         }
         if (again) {
             break;
@@ -548,6 +548,10 @@ landed:
     if (bounced) {
         func_00122C20(b, 0x7C, 5, 0, 0, NULL);
     }
+}
+
+void func_002D56D0(u8 *b) {
+    ball_fly(b, 1, func_002D5290, 1);
 }
 
 /* +0x4C the motion state for this frame (none outside the current room), and the fade */
@@ -969,7 +973,7 @@ s32 func_00315100(u8 *o, u8 *a, f32 *to) {
 /* +0x30 each frame, while the game runs (not in a cutscene, not paused by the events, not
  * progress flags 8 / 0x20) and it is in the current room: a pursuer standing over it (within
  * his radius + 1, his height span +-1) bursts it (an alert to the progress); then Fiona's kick */
-void func_003151A0(u8 *o) {
+static inline __attribute__((always_inline)) void thing_stomped(u8 *o, s16 a, s16 b, void (*burst)(u8 *, f32 *)) {
     Progress *p;
     u8 *c;
     f32 d[4] __attribute__((aligned(16)));
@@ -1002,13 +1006,17 @@ void func_003151A0(u8 *o) {
         if (!(AT(o, 0x14, f32) <= y - 1.0f) && AT(o, 0x14, f32) < top) {
             sceVu0SubVector(d, (f32 *)(c + 0x10), BALL_POS(o));
             if (__builtin_sqrtf(d[2] * d[2] + d[0] * d[0]) < 1.0f + AT(c, 0xC8, f32)) {
-                func_00177FA0(p, BALL_POS(o), 4, 7, 5, 4, 0.0f);
-                func_00314A00(o, BALL_POS(o));
+                func_00177FA0(p, BALL_POS(o), 4, 7, a, b, 0.0f);
+                burst(o, BALL_POS(o));
                 AT(o, 0x28, u8) = 0;
             }
         }
     }
     thing_kick(o);
+}
+
+void func_003151A0(u8 *o) {
+    thing_stomped(o, 5, 4, func_00314A00);
 }
 
 /* +0xC set up: falling (-0.1), blocked by nav flags 0x20020008, in the current room, white */
@@ -1084,18 +1092,18 @@ void func_003155C0(u8 *o) {
     turned_model(o, 1, 0, 1);
 }
 
-static inline __attribute__((always_inline)) void kind2_burst(u8 *o) {
+static inline __attribute__((always_inline)) void kind2_burst(u8 *o, u32 size, void (*init)(void **)) {
     u8 *mgr;
 
     func_00122C20(o, 0x8E, 5, 0, 0, NULL);
     mgr = D_0044E578;
-    func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), o + 0x10);
+    func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
 }
 
 /* +0x30 each frame, while the game runs: the shared checks (func_00354910: 1 / 2 set off -
  * the burst only in the current room; else func_003544C0 / func_00354D50 set it off, or it
  * waits, func_00354AF0) */
-void func_00315700(u8 *o) {
+static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, void (*init)(void **)) {
     Progress *p;
     s32 r, a, b;
 
@@ -1120,7 +1128,7 @@ void func_00315700(u8 *o) {
             func_00354C90(o);
         }
         if (AT(o, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
-            kind2_burst(o);
+            kind2_burst(o, size, init);
         }
         AT(o, 0x28, u8) = 0;
         return;
@@ -1141,9 +1149,13 @@ void func_00315700(u8 *o) {
     {
         u8 *mgr = D_0044E578;
 
-        func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), o + 0x10);
+        func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
     }
     AT(o, 0x28, u8) = 0;
+}
+
+void func_00315700(u8 *o) {
+    thing_watch(o, 0xFD0, ShoveBurst_Init);
 }
 
 /* the shared class's set up, its settings (+0x122..+0x12E), a random turn */
@@ -1283,14 +1295,14 @@ void *func_00367E20(void *o, s32 flags) {
 
 /* (as func_002D54D0)  the rolling state: moved on the nav mesh, slowed by friction (0.03 x the slope's flatness)
  * and pushed down the slope */
-void func_003681D0(u8 *b) {
+static inline __attribute__((always_inline)) void ball_roll(u8 *b, s32 check) {
     VObject *nm;
     f32 *v = BALL_VEL(b);
     f32 fr[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
     f32 c, flat, vx, vy, vz, k;
 
-    if (AT(b, 0x28, u8) == 0) {
+    if (check && AT(b, 0x28, u8) == 0) {
         return;
     }
     func_001247E0(b, v);
@@ -1320,6 +1332,10 @@ void func_003681D0(u8 *b) {
     }
     sceVu0ScaleVector(n, n, k);
     sceVu0AddVector(v, n, v);
+}
+
+void func_003681D0(u8 *b) {
+    ball_roll(b, 1);
 }
 
 /* (as func_002D5ED0)  +0xC set up: blocked by nav flags 0x20020008, in the current room, white, flying */
@@ -1833,4 +1849,66 @@ void func_00335740(u8 *o) {
 
 void func_00335D00(u8 *o) {
     turned_model(o, 3, 0, 1);
+}
+
+/* ---- more of the same in the other kinds: the flying / rolling states without the active
+   check or the bounce sound, the stomped and watched checks with their own bursts ---- */
+
+void func_00355410(u8 *b) {
+    ball_fly(b, 0, func_00354FF0, 1);
+}
+
+void func_003676C0(u8 *b) {
+    ball_fly(b, 1, func_003672A0, 0);
+}
+
+void func_003683D0(u8 *b) {
+    ball_fly(b, 1, func_00367F80, 0);
+}
+
+void func_003338E0(u8 *b) {
+    ball_roll(b, 0);
+}
+
+void func_00355220(u8 *b) {
+    ball_roll(b, 0);
+}
+
+void func_00334D60(u8 *o) {
+    thing_stomped(o, 0x14, 8, func_003345D0);
+}
+
+void func_00336A10(u8 *o) {
+    thing_stomped(o, 0xA, 6, func_00336290);
+}
+
+/* bursts of four quad drawers (0xFC0 bytes, D_0047A010, drawers from +0xB50; 0x22D0 bytes,
+   D_0047A030, drawers from +0x1A50) */
+extern void *D_0047A010[], *D_0047A030[];
+
+static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
+    s32 i;
+
+    obj[0] = vtbl;
+    for (i = 0; i < 4; i++) {
+        obj[(at + i * 0x38) / 4] = D_00469D00;
+        ((s32 *)obj)[(at + i * 0x38 + 4) / 4] = -1;
+        obj[(at + i * 0x38) / 4] = D_0046FC30;
+    }
+}
+
+static inline void Burst4A_Init(void **obj) {
+    Burst4_Init(obj, D_0047A010, 0xB50);
+}
+
+static inline void Burst4B_Init(void **obj) {
+    Burst4_Init(obj, D_0047A030, 0x1A50);
+}
+
+void func_00335260(u8 *o) {
+    thing_watch(o, 0xFC0, Burst4A_Init);
+}
+
+void func_00335820(u8 *o) {
+    thing_watch(o, 0x22D0, Burst4B_Init);
 }
