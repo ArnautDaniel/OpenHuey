@@ -4085,3 +4085,140 @@ void func_0032BB50(Character *c) {
     ptmf_scall(c, &c->a.state);
     VCALL(c, 0x40, void (*)(Character *))(c);
 }
+
+/* per frame, in the room being played: how far Fiona (+0x24) and Hewie are (across the floor).
+   Not out (+0x6E): resting (+0x28 0) it notices them (func_0032A0E0) - a sound, out on its
+   trip (+0x6F) in state 0xD (0xE for kinds 8 / 9); else (still settling) out of contact until
+   the trip, which starts once it notices Fiona. Out: its rest +0x4A runs down, and done
+   elsewhere it starts its trip */
+void func_0032A260(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    f32 hd = 0.0f;
+
+    if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        f32 d[4] __attribute__((aligned(16)));
+        Character *h;
+
+        sceVu0SubVector(d, c->a.pos, gCharPlayer->a.pos);
+        AT(k, 0x24, f32) = __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+        h = gCharPartner;
+        if (h != NULL && gCharPartner->a.active == 1 && c->a.room == gCharPartner->a.room) {
+            f32 e[4] __attribute__((aligned(16)));
+
+            sceVu0SubVector(e, c->a.pos, gCharPartner->a.pos);
+            hd = __builtin_sqrtf(e[2] * e[2] + e[0] * e[0]);
+        }
+        if (AT(k, 0x6E, u8) == 0) {
+            if (AT(k, 0x28, f32) == 0.0f) {
+                if ((func_0032A0E0(c, AT(k, 0x24, f32), hd) & 0xFF) == 1 && AT(k, 0x6F, u8) == 0) {
+                    u32 kk;
+
+                    func_00122C20(&c->a, 1, 5, 0, 0, NULL);
+                    AT(k, 0x6F, u8) = 1;
+                    AT(k, 0x69, u8) = 0xD;
+                    kk = AT(k, 0x6D, u8) ^ 0x80;
+                    if (kk == 9 || kk == 8) {
+                        AT(k, 0x69, u8) = 0xE;
+                    }
+                    AT(c, 0xF8, s32) = 0;
+                    func_00127060(c);
+                    cr19_settle(c);
+                }
+            } else {
+                if (AT(k, 0x6F, u8) == 0) {
+                    c->a.unk2D = 1;
+                }
+                if ((func_0032A0E0(c, AT(k, 0x24, f32), -1.0f) & 0xFF) == 1) {
+                    AT(k, 0x6F, u8) = 1;
+                }
+            }
+        }
+    }
+    if (AT(k, 0x6E, u8) == 0) {
+        return;
+    }
+    if (AT(k, 0x4A, s16) > 0) {
+        AT(k, 0x4A, s16)--;
+    }
+    if (AT(k, 0x4A, s16) > 0) {
+        return;
+    }
+    AT(k, 0x4A, s16) = 0;
+    if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        AT(k, 0x6F, u8) = 1;
+    }
+}
+
+extern const PTMF D_0042C5E0, D_0042C5F0, D_0042C600;
+
+/* its states by the frame: on its trip (+0x6F) its time out +0x44 grows to +0x46; in the room
+   being played in contact, a door chosen when not done (+0x68); a chosen door (+0x65 1) that
+   isn't open (state 2, +0x2B cleared) or is now passed (+0x4C) cleared; a different height
+   from Fiona keeps +0x6A; then by the door: none - its state +0x69 into +0x62, chosen - 8,
+   shut - 6. Elsewhere out of contact, timed out it is held (+0x6B bit 0x80): its state
+   D_0042C5E0, held D_0042C5F0. Not on its trip: placed on its triangle once in the room being
+   played, state D_0042C600 */
+void func_0032A550(Character *c) {
+    u8 *k = CR(c);
+    Progress *p;
+
+    func_0032A260(c);
+    if (AT(k, 0x6F, u8) == 0) {
+        p = gProgress;
+        if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && c->a.navTri != NAV_NONE && AT(k, 0x6C, u8) == 0) {
+            AT(k, 0x6C, u8)++;
+            VCALL(D_0044E570, 0xC, void (*)(NavMesh *, u32, f32 *))(D_0044E570, c->a.navTri, c->a.pos);
+        }
+        Actor_SetState(&c->a, &D_0042C600);
+        return;
+    }
+    AT(k, 0x44, s16)++;
+    if (!(AT(k, 0x44, s16) < AT(k, 0x46, s16))) {
+        AT(k, 0x44, s16) = AT(k, 0x46, s16);
+    }
+    p = gProgress;
+    if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        c->a.disabled = 1;
+        if (!(AT(k, 0x44, s16) < AT(k, 0x46, s16))) {
+            AT(k, 0x6B, u8) |= 0x80;
+        }
+        if (!(AT(k, 0x6B, u8) & 0x80)) {
+            Actor_SetState(&c->a, &D_0042C5E0);
+        } else {
+            Actor_SetState(&c->a, &D_0042C5F0);
+        }
+        return;
+    }
+    c->a.disabled = 0;
+    if (AT(k, 0x68, u8) == 0) {
+        func_00325220(c);
+    }
+    if (AT(k, 0x65, u8) == 1) {
+        if (!(func_00178980(p, c->a.room, AT(k, 0x66, u8)) & 0xFF)) {
+            AT(k, 0x65, u8) = 2;
+            c->a.unk2B = 0;
+        } else if ((VCALL(D_0044E558, 0x30, u32 (*)(VObject *, u32))(D_0044E558, AT(k, 0x66, u8)) & 0xFF) == 1 &&
+                   (AT(k, 0x4C, u16) & 1)) {
+            AT(k, 0x65, u8) = 0;
+        }
+    }
+    if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p) || gCharPlayer->a.pos[1] == c->a.pos[1]) {
+        AT(k, 0x6A, u8) = 0;
+    }
+    switch (AT(k, 0x65, u8)) {
+    case 0:
+        if (AT(k, 0x69, u8) != AT(k, 0x62, u8)) {
+            AT(k, 0x62, u8) = AT(k, 0x69, u8);
+        }
+        break;
+    case 1:
+        AT(k, 0x69, u8) = 8;
+        AT(k, 0x62, u8) = 8;
+        break;
+    case 2:
+        AT(k, 0x69, u8) = 6;
+        AT(k, 0x62, u8) = 6;
+        break;
+    }
+}
