@@ -1869,3 +1869,53 @@ void func_0016D2F0(Progress *p, s32 i) {
     VCALL(mm, 0x14, void (*)(void *, void *))(mm, AT(gCharacters[i], 0xF0, void *));
     AT(gCharacters[i], 0xF0, void *) = NULL;
 }
+
+/* ---- Hewie's commands ---- */
+extern s32 func_00138FD0(void *h);   /* Hewie listening (hewie.c) */
+
+/* the command in progress +`at` (state, a; b cleared) given to Hewie unless he is held (action
+ * state 7), and kept in its slot of the queue (+0x6FAF20 on) */
+static inline void hewie_order(u8 *p, u32 at, s32 state, s32 a) {
+    CharAction *act = (CharAction *)(p + at);
+    CharAction *q = (CharAction *)(p + 0x6FAF20 + at);
+
+    act->state = state;
+    act->a = a;
+    act->b = 0;
+    if (AT(gCharPartner, 0x14E8, s32) != 7) {
+        char_set_action(gCharPartner, act);
+    }
+    q->state = act->state;
+    q->a = act->a;
+    q->b = act->b;
+    q->c = act->c;
+    q->d = act->d;
+    q->e = act->e;
+    q->f = act->f;
+    q->g = act->g;
+    q->h = act->h;
+    q->i = act->i;
+}
+
+/* the command buttons pressed this frame (while Hewie is about and listening, and nothing holds
+ * them, +0x4): R1 action 0xB / 0, L1 0xB / 2, square 8, circle 0xB / 1 */
+void func_00174270(Progress *p) {
+    u8 *b = (u8 *)p;
+
+    if (gCharPartner == NULL || AT(gCharPartner, 0x28, u8) == 0 || (u8)func_00138FD0(gCharPartner) == 0
+        || AT(b, 0x4, s32) != 0) {
+        return;
+    }
+    if (D_0047E37C & PAD_R1) {
+        hewie_order(b, 0x1294, 0xB, 0);
+    }
+    if (D_0047E37C & PAD_L1) {
+        hewie_order(b, 0x1254, 0xB, 2);
+    }
+    if (D_0047E37C & PAD_SQUARE) {
+        hewie_order(b, 0x1234, 8, 0);
+    }
+    if (D_0047E37C & PAD_CIRCLE) {
+        hewie_order(b, 0x1214, 0xB, 1);
+    }
+}
