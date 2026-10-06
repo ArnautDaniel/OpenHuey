@@ -1859,13 +1859,14 @@ extern void *D_00472390[];   /* a 0xC0-byte effect */
  * degrees), by byte 3: 0 at rest; 1 Fiona's movement pushes them (her step's length) - past 5
  * they swing for 20 frames, and the first toggles event flag 3 with a sound (Fiona's 1 / 2) -
  * and a swing step (+0x30 on by 36 degrees, the tilt +0x10 (1 + sin) degrees in radians) */
-s32 func_002B1A00(VObject *self, void *a1, u8 *cmd) {
+static inline __attribute__((always_inline)) s32 hangers_swing(VObject *self, u8 *cmd, s32 base, s32 n, f32 push,
+                                                              s32 root, s32 flag, s32 sndOn, s32 sndOff) {
     VObject *objs = D_00456DF8, *ev = D_0044E4D0;
     f32 d[4] __attribute__((aligned(16)));
     s32 i;
 
-    for (i = 0; i < 2; i++) {
-        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, s32))(objs, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, i + 4));
+    for (i = 0; i < n; i++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, s32))(objs, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, i + base));
 
         if (o == NULL) {
             continue;
@@ -1881,17 +1882,21 @@ s32 func_002B1A00(VObject *self, void *a1, u8 *cmd) {
             if (gCharPlayer != NULL) {
                 sceVu0CopyVector(d, gCharPlayer->a.prevPos);
                 sceVu0SubVector(d, gCharPlayer->a.pos, d);
-                AT(o, 0x3C, f32) = AT(o, 0x3C, f32) + hook_sqrt(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
-                if (!(AT(o, 0x3C, f32) <= 5.0f)) {
+                if (root) {
+                    AT(o, 0x3C, f32) = AT(o, 0x3C, f32) + hook_sqrt(d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+                } else {
+                    AT(o, 0x3C, f32) = AT(o, 0x3C, f32) + (d[1] * d[1] + d[0] * d[0] + d[2] * d[2]);
+                }
+                if (!(AT(o, 0x3C, f32) <= push)) {
                     AT(o, 0x38, f32) = 20.0f;
                     AT(o, 0x3C, f32) = 0.0f;
                     if (i == 0) {
-                        if ((VCALL(ev, 0x58, u32 (*)(VObject *, s32))(ev, 3) & 0xFF) == 1) {
-                            VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(&gCharPlayer->a, 1, 6, 0, 0, NULL);
+                        if ((VCALL(ev, 0x58, u32 (*)(VObject *, s32))(ev, flag) & 0xFF) == 1) {
+                            VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, flag);
+                            func_00122C20(&gCharPlayer->a, sndOn, 6, 0, 0, NULL);
                         } else {
-                            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 3);
-                            func_00122C20(&gCharPlayer->a, 2, 6, 0, 0, NULL);
+                            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, flag);
+                            func_00122C20(&gCharPlayer->a, sndOff, 6, 0, 0, NULL);
                         }
                     }
                 }
@@ -1917,6 +1922,10 @@ s32 func_002B1A00(VObject *self, void *a1, u8 *cmd) {
         }
     }
     return 1;
+}
+
+s32 func_002B1A00(VObject *self, void *a1, u8 *cmd) {
+    return hangers_swing(self, cmd, 4, 2, 5.0f, 1, 3, 1, 2);
 }
 
 static void effect_c0b_init(void **obj) {
@@ -2124,20 +2133,20 @@ s32 func_002A94C0(void *self, void *a1, u8 *cmd) {
 
 /* the room object D_003F6F64's +0x24 toward 1 (event variable 0 unset) or 0 (set): byte 3 0 at
  * once, else by 0.2 a step */
-s32 func_002ABDD0(void *self, void *a1, u8 *cmd) {
+static inline s32 var_fade(const char *name, s32 var, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD};   /* 0.2 */
-    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F6F64);
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
 
     if (o == NULL) {
         return 1;
     }
     if (cmd[3] == 0) {
-        if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) == 0) {
+        if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, var) == 0) {
             AT(o, 0x24, f32) = 1.0f;
         } else {
             AT(o, 0x24, f32) = 0.0f;
         }
-    } else if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) == 0) {
+    } else if (VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, var) == 0) {
         AT(o, 0x24, f32) = AT(o, 0x24, f32) + kStep.f;
         if (!(AT(o, 0x24, f32) <= 1.0f)) {
             AT(o, 0x24, f32) = 1.0f;
@@ -2149,6 +2158,10 @@ s32 func_002ABDD0(void *self, void *a1, u8 *cmd) {
         }
     }
     return 1;
+}
+
+s32 func_002ABDD0(void *self, void *a1, u8 *cmd) {
+    return var_fade(D_003F6F64, 0, cmd);
 }
 
 static inline void smoke_init(void **o) {
@@ -3703,7 +3716,7 @@ static void glow4_init(void **obj) {
 
 /* byte 4 0: the effect D_004737D0 (grey, 0x18, size 30) at one of four spots by byte 3 (-332 /
  * -368, 100.8, -12 / 55 / 165 / 165), its slot in event var byte 3; else that effect removed */
-s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
+static inline s32 glow4_spot(u8 *cmd, u32 first) {
     static const union { u32 u; f32 f; } kY = {0x42C9999A};   /* 100.8 */
     u8 k = cmd[3];
 
@@ -3716,7 +3729,7 @@ s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
         p[1] = 0x80;
         p[2] = 0x80;
         p[3] = 0x18;
-        switch (k) {
+        switch ((u32)(k - first)) {
         case 0:
             AT(&p[4], 0, f32) = -332.0f;
             AT(&p[5], 0, f32) = kY.f;
@@ -3745,6 +3758,10 @@ s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
         func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, k));
     }
     return 1;
+}
+
+s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
+    return glow4_spot(cmd, 0);
 }
 
 extern const char *const D_0040C160;   /* an object's name */
@@ -5263,4 +5280,46 @@ extern const char *D_0047B0FC;   /* a room object's name */
 /* (as func_002AC790) the same for the room object D_0047B0FC */
 s32 func_00379F00(void *self, void *a1, u8 *cmd) {
     return var0_obj_anim(D_0047B0FC, cmd);
+}
+
+extern const char *D_00449540;   /* a room object's name */
+
+/* (as func_002ABDD0) the room object D_00449540 by event variable 2 */
+s32 func_00379AF0(void *self, void *a1, u8 *cmd) {
+    return var_fade(D_00449540, 2, cmd);
+}
+
+/* (as func_00378D20) the window quad lit with flags 0x40 */
+s32 func_0031E2C0(void *self, void *a1, u8 *cmd) {
+    return lit_quad(cmd, sQuadWindow, 0x40);
+}
+
+extern void *D_0047A3F0[];
+
+static void effect_7A3F0_init(void **obj) {
+    obj[0] = D_0047A3F0;
+}
+
+/* (as func_0030F350) byte 3 0 starts the effect D_0047A3F0 (its slot in event variable 9);
+   else that one is ended (func_002D6170) */
+s32 func_00339F00(void *self, void *a1, u8 *cmd) {
+    if (cmd[3] == 0) {
+        s32 slot = Effect_New(D_0044E578, 0x10, effect_7A3F0_init);
+
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 9, slot);
+    } else {
+        func_002D6170(D_0044E578, VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 9));
+    }
+    return 1;
+}
+
+/* (as func_002A8BA0) the same four spots for bytes 3..6 */
+s32 func_0037AFB0(void *self, void *a1, u8 *cmd) {
+    return glow4_spot(cmd, 3);
+}
+
+/* (as func_002B1A00) three hanging things (+0x34 0..2), pushed by the square of Fiona's step
+   past 1, event flag 4 with sounds 4 / 5 */
+s32 func_00352F50(VObject *self, void *a1, u8 *cmd) {
+    return hangers_swing(self, cmd, 0, 3, 1.0f, 0, 4, 4, 5);
 }
