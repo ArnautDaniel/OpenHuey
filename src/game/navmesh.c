@@ -1070,3 +1070,18 @@ s32 func_0017BD60(NavMesh *nm, u32 tri, f32 *out, f32 *from, f32 *to, f32 *norma
         }
     }
 }
+
+#ifdef HG_NATIVE
+#include <string.h>
+
+/* (see NavMesh_Tri) the blank record an out-of-range triangle reads on PC */
+NavTri *NavMesh_NullTri(void) {
+    static NavTri blank;
+
+    memset(&blank, 0, sizeof(blank));
+    blank.adj[0] = NAV_NONE;
+    blank.adj[1] = NAV_NONE;
+    blank.adj[2] = NAV_NONE;
+    return &blank;
+}
+#endif

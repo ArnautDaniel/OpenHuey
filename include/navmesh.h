@@ -23,9 +23,20 @@ extern NavMesh *D_0044E570;
 
 #define NAV_NONE 0xFFFFFFFFu
 
-/* triangle `i`, or NULL if out of range */
+#ifdef HG_NATIVE
+/* PC: what an out-of-range triangle reads. The original reads the NULL record (PS2 low memory,
+ * e.g. its flags at address 0x3C) without a check; that faults on PC, so it gets a blank record
+ * instead: no corners, no neighbours, no flags (re-blanked on each use, as callers may write it) */
+extern NavTri *NavMesh_NullTri(void);
+#endif
+
+/* triangle `i`, or NULL if out of range (PC: a blank record) */
 static inline NavTri *NavMesh_Tri(NavMesh *nm, u32 i) {
+#ifdef HG_NATIVE
+    return (i < nm->numTris && nm->tris != NULL) ? &nm->tris[i] : NavMesh_NullTri();
+#else
     return (i < nm->numTris && nm->tris != NULL) ? &nm->tris[i] : NULL;
+#endif
 }
 
 /* flags of triangle `i` (0 if out of range) */
