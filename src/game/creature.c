@@ -3715,3 +3715,84 @@ void func_00327DD0(Character *c) {
         return;
     }
 }
+
+extern Character *gCharPartner;   /* Hewie */
+
+/* state: hit, by step +0x60 (moved by its animation except at 1). 0: its reaction (+0x94 with
+   the hit's +0x14F4), facing where the hit came from (+0x14F0: 0 Fiona, 1 Hewie, 0xFF the
+   heading +0x14FC) - animation 0x1001 from the front (within 90 degrees), 0x1000 from behind -
+   and sound 3. 1: out of contact; at its end, with no strength left (+0x14C8) held in state 4,
+   else 30 frames. 2: animation 0x1800. 3: getting up (a sound at frame 34), at its end back in
+   contact in state 0xD */
+void func_003284F0(Character *c) {
+    u8 *k = CR(c);
+    f32 h = 0.0f;   /* (other hit sources leave the original's register as it was) */
+
+    if (AT(k, 0x60, u8) != 1) {
+        cr19_root_move(c);
+    }
+    switch (AT(k, 0x60, u8)) {
+    case 0:
+        VCALL(c, 0x94, void (*)(Character *, s32))(c, AT(c, 0x14F4, s32));
+        switch (AT(c, 0x14F0, s32)) {
+        case 0xFF:
+            h = AT(c, 0x14FC, f32);
+            break;
+        case 1:
+            h = func_001244D0(&c->a, gCharPartner->a.pos);
+            break;
+        case 0:
+            h = func_001244D0(&c->a, gCharPlayer->a.pos);
+            break;
+        }
+        if (CR19_TURN_LEFT(c, h) < 0x1.921fb6p+0f) {
+            func_002DDED0(c->motion, 0x1001, -1);
+        } else {
+            func_002DDED0(c->motion, 0x1000, -1);
+        }
+        func_00122C20(&c->a, 3, 5, 0, 0, NULL);
+        AT(k, 0x60, u8)++;
+        return;
+    case 1: {
+        f32 z[4] __attribute__((aligned(16)));
+
+        c->a.unk2D = 1;
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
+            cr19_root_move(c);
+            return;
+        }
+        z[2] = 0.0f;
+        z[1] = 0.0f;
+        z[0] = 0.0f;
+        func_001247E0(&c->a, z);
+        if (AT(c, 0x14C8, s32) <= 0) {
+            AT(k, 0x69, u8) = 4;
+            AT(k, 0x6B, u8) |= 0x80;
+            AT(c, 0xF8, s32) = 4;
+            func_00127060(c);
+            cr19_settle(c);
+            return;
+        }
+        if ((u32)AT(k, 0x40, s16)++ < 30) {
+            return;
+        }
+        AT(k, 0x60, u8)++;
+        return;
+    }
+    case 2:
+        AT(k, 0x40, s16) = 0;
+        func_002DDED0(c->motion, 0x1800, -1);
+        AT(k, 0x60, u8)++;
+        return;
+    case 3:
+        if (++AT(k, 0x40, s16) == 0x22) {
+            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+        }
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) == 0) {
+            return;
+        }
+        c->a.unk2D = 0;
+        cr19_enter(c, 0xD);
+        return;
+    }
+}
