@@ -1334,6 +1334,42 @@ void func_0035BC30(u8 *o, const u8 *m) {
     AT(o, 0x8, s32) = 0;
 }
 
+extern VObject *D_0044E4F8;   /* the camera director */
+extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+
+/* the room-object glow (vtable D_00479870, made by func_0034B210) +0x10 update: 0 while unset
+ * (+0x5 0xFF). On (+0x7) it fades in (+0x4 up to 0x40 by 2), off it fades out; at 0 it is unset,
+ * frees its script variable (+0x6, events +0x30) and plays sound 6 at the object (+0xC, +0x20)
+ * unless the camera director's +0x38 is set - all 0. Its phase +0x8 runs 0..45 by 2 a frame */
+s32 func_0035C8C0(u8 *o) {
+    f32 t;
+
+    if (o[5] == 0xFF) {
+        return 0;
+    }
+    if (o[7] != 0) {
+        if (o[4] != 0x40) {
+            o[4] += 2;
+        }
+    } else {
+        o[4] -= 2;
+        if (o[4] == 0) {
+            o[5] = 0xFF;
+            VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, o[6], -1);
+            if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0) {
+                func_002FF650(D_0044E560, 2, 6, (f32 *)(AT(o, 0xC, u8 *) + 0x20), 0, 0);
+            }
+            return 0;
+        }
+    }
+    t = AT(o, 0x8, f32) + 2.0f;
+    AT(o, 0x8, f32) = t;
+    if (!(t < 45.0f)) {
+        AT(o, 0x8, f32) = t - 45.0f;
+    }
+    return 1;
+}
+
 /* progress +0x84 bits 22..26 as bits 0..4 */
 u8 func_00303F00(void) {
     u32 b = AT(gProgress, 0x84, u32);
