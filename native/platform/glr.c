@@ -354,6 +354,16 @@ void glr_haze(float phase, float sway) {
     d->mvp[3] = 0.0f;   /* over the screen at 0x48 */
 }
 
+/* as glr_haze, over the screen at `fix` / 128 (D_0047A390's, func_00376990: 0x60) */
+void glr_haze_fix(float phase, float sway, int fix) {
+    GlrDraw *d = put_post(POST_HAZE, 0x2A, (uint32_t)fix, 0);
+
+    d->mvp[0] = phase;
+    d->mvp[1] = sway;
+    d->mvp[2] = 2.0f;
+    d->mvp[3] = 0.0f;
+}
+
 /* the heat haze effect D_0047A2F0 (func_00370100, layer 0x2A): as room 0x61's with the waves'
  * base strength `size` and no sway, over the screen by a horizontal alpha ramp (0x20 at the
  * edges, 0x60 in the middle, halved) */
@@ -1838,10 +1848,10 @@ static void run_post(const GlrDraw *d) {
         break;
     }
     case POST_HAZE:   /* func_00374E50: the screen halved, blended half with itself in 33 wavering
-                       * columns, then that over the screen at 0x48 / 128 */
+                       * columns, then that over the screen at 0x48 / 128 (or the draw's own) */
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        p_glProgramUniform1f(sPostProg, sPostFixLoc, 72.0f);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, rgba != 0 ? (float)(int32_t)rgba : 72.0f);
         p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
         p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[2], d->mvp[3], 0.0f, 0.0f);
         post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);

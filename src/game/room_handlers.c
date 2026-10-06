@@ -1341,6 +1341,137 @@ void func_003765B0(u8 *o) {
     AT(o, 0x6E4, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
 }
 
+/* ---- class D_0047A390 (0x1A60 bytes), the haze of effect 0x1A60 (func_002B2A80): as the light
+ * shaft's motes and haze without the beam - 64 motes (records +0x10 + 0xC00 x the current one
+ * +0x1A54, the quad drawer at +0x1810) from (-60, 0, -60 + 0.4 x the frames counted at
+ * +0x1A50), rising (+0x1848) and wobbling (+0x1948); the haze always on (phases +0x1A48 /
+ * +0x1A4C), over the screen at 0x60; stopped by +0x1A58 ---- */
+
+#define HAZE2_REC(o, buf, i) ((o) + (buf) * 0xC00 + (i) * 0x30 + 0x10)
+
+/* mote i (re)started: rising 0.1 .. 0.3 a frame, grey, alpha 0x40 .. 0x7F, at the start (its
+ * depth moving on with the frames), sized 3/4 of its rise, a random turn */
+void func_003767C0(u8 *o, s32 i) {
+    static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD},
+        kTwoPi = {0x40C90FDB}, kThreeQuarters = {0x3F400000};
+    VObject *rnd;
+    u8 *r;
+
+    if (AT(o, 0x1A58, u8) == 1) {
+        return;
+    }
+    rnd = D_0044E550;
+    AT(o, 0x1848 + i * 4, f32) = 0.0f + kTenth.f + kFifth.f * shaft_rnd(rnd);
+    AT(o, 0x1948 + i * 4, f32) = kTwoPi.f * (shaft_rnd(rnd) - 0.5f);
+    r = HAZE2_REC(o, AT(o, 0x1A54, s32), i);
+    AT(r, 0x0, s32) = 0x80;
+    AT(r, 0x4, s32) = 0x80;
+    AT(r, 0x8, s32) = 0x80;
+    AT(r, 0xC, s32) = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
+    AT(r, 0x10, f32) = -60.0f;
+    AT(r, 0x14, f32) = 0.0f;
+    AT(r, 0x18, f32) = 0.0f + -60.0f + kTwoFifths.f * (f32)AT(o, 0x1A50, s32);
+    AT(r, 0x1C, f32) = 1.0f;
+    AT(r, 0x20, f32) = AT(r, 0x24, f32) = kThreeQuarters.f * AT(o, 0x1848 + i * 4, f32);
+    AT(r, 0x28, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+    AT(r, 0x2C, s32) = 0;
+}
+
+/* +0xC set up: the motes' drawer (layer 0x19, texture group 0x40 cell (0x1A0, 0x40) 32 x 32 of
+ * 512 x 256, 5 frames), every mote started hidden, the haze at random phases */
+void func_00377970(u8 *o) {
+    VObject *rnd;
+    s32 i;
+
+    AT(o, 0x1A58, u8) = 0;
+    AT(o, 0x1A54, s32) = 0;
+    AT(o, 0x1A50, s32) = 0;
+    AT(o, 0x1818, s64) = -1;
+    AT(o, 0x1824, s32) = 0;
+    AT(o, 0x1828, s32) = 0;
+    AT(o, 0x182C, s32) = 0;
+    AT(o, 0x1830, s32) = 0x19;
+    AT(o, 0x1834, s16) = 0x40;
+    AT(o, 0x1836, s16) = 0x1A0;
+    AT(o, 0x1838, s16) = 0x40;
+    AT(o, 0x183A, s16) = 0x20;
+    AT(o, 0x183C, s16) = 0x20;
+    AT(o, 0x183E, s16) = 0x200;
+    AT(o, 0x1840, s16) = 0x100;
+    AT(o, 0x1842, s8) = 0x40;
+    AT(o, 0x1843, s8) = 1;
+    AT(o, 0x1844, s8) = 1;
+    AT(o, 0x1845, s8) = 0x10;
+    AT(o, 0x1846, s8) = 5;
+    for (i = 0; i < 64; i++) {
+        func_003767C0(o, i);
+        AT(HAZE2_REC(o, AT(o, 0x1A54, s32), i), 0xC, s32) = 0;
+    }
+    rnd = D_0044E550;
+    AT(o, 0x1A48, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
+    AT(o, 0x1A4C, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
+}
+
+/* +0x10 update: the buffers swapped, the frames counted; each mote turns, wobbles 0.1 about its
+ * angle and rises, fading by 0 or 1 on every other frame (to 0); one frame in 8 each one gone
+ * comes back one time in 16. The haze's phases on by 3 .. 5 and 1 .. 3 degrees */
+s32 func_00377590(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kTenth = {0x3DCCCCCD};
+    VObject *rnd;
+    f32 t;
+    s32 i, k;
+
+    if (AT(o, 0x1A58, u8) == 1) {
+        return 0;
+    }
+    rnd = D_0044E550;
+    AT(o, 0x1A54, s32) ^= 1;
+    AT(o, 0x1A50, s32)++;
+    for (i = 0; i < 64; i++) {
+        s32 cur = AT(o, 0x1A54, s32);
+        u32 *dst = (u32 *)HAZE2_REC(o, cur, i);
+        u32 *src = (u32 *)HAZE2_REC(o, cur ^ 1, i);
+        u8 *r;
+        f32 a;
+
+        for (k = 0; k < 12; k++) {
+            *dst++ = *src++;
+        }
+        r = HAZE2_REC(o, AT(o, 0x1A54, s32), i);
+        AT(r, 0x28, f32) = AT(r, 0x28, f32) + 0.5f * (kPi.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd) / 180.0f);
+        a = AT(o, 0x1948 + i * 4, f32) + kPi.f * (90.0f * shaft_rnd(rnd)) / 180.0f;
+        AT(o, 0x1948 + i * 4, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x1948 + i * 4, f32) = a - k2Pi.f;
+        }
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + kTenth.f * func_0031C248(AT(o, 0x1948 + i * 4, f32));
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0x1848 + i * 4, f32);
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + kTenth.f * func_0031C058(AT(o, 0x1948 + i * 4, f32));
+        if (AT(o, 0x1A54, s32) == 0) {
+            AT(r, 0xC, s32) = AT(r, 0xC, s32) - (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 1);
+            if (AT(r, 0xC, s32) < 0) {
+                AT(r, 0xC, s32) = 0;
+            }
+        }
+    }
+    if ((VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 7) == 0) {
+        for (i = 0; i < 64; i++) {
+            if (AT(HAZE2_REC(o, AT(o, 0x1A54, s32), i), 0xC, s32) == 0 &&
+                (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0xF) == 0) {
+                func_003767C0(o, i);
+            }
+        }
+    }
+    rnd = D_0044E550;
+    t = AT(o, 0x1A48, f32) + kPi.f * (3.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
+    AT(o, 0x1A48, f32) = t;
+    AT(o, 0x1A48, f32) = func_002E2D00(t);
+    t = AT(o, 0x1A4C, f32) + kPi.f * (1.0f + 2.0f * shaft_rnd(rnd)) / 180.0f;
+    AT(o, 0x1A4C, f32) = t;
+    AT(o, 0x1A4C, f32) = func_002E2D00(t);
+    return 1;
+}
+
 #ifdef HG_NATIVE
 extern void glr_layer(s32 layer);
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
@@ -1423,6 +1554,21 @@ void func_00374E50(u8 *o) {
         VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
         glr_haze(AT(o, 0x6E0, f32), 2.0f * func_0031C248(AT(o, 0x6E4, f32)));
     }
+}
+
+extern void glr_haze_fix(f32 phase, f32 sway, s32 fix);
+
+/* D_0047A390's +0x14 draw (PC; the PS2 sends GS packets): unless stopped, the motes, then the
+ * haze as room 0x61's (phases +0x1A48 / +0x1A4C) over the screen at 0x60 */
+void func_00376990(u8 *o) {
+    if (AT(o, 0x1A58, u8) == 1) {
+        return;
+    }
+    AT(o, 0x1820, u8 *) = HAZE2_REC(o, AT(o, 0x1A54, s32), 0);
+    func_002E56C0(o + 0x1810);
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    glr_haze_fix(AT(o, 0x1A48, f32), 2.0f * func_0031C248(AT(o, 0x1A4C, f32)), 0x60);
 }
 #endif
 

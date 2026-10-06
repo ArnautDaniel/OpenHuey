@@ -81,6 +81,7 @@ void glr_screen2(uint32_t rgba, int contrast, int blur);
 void glr_vignette(int strength, int offset);
 /* room 0x61's haze over the screen (func_00374E50) */
 void glr_haze(float phase, float sway);
+void glr_haze_fix(float phase, float sway, int fix);
 void glr_haze2(float phase, float size);
 void glr_marker(float x, float y, float z, float scale, float jitter, int fix);
 void glr_negative(void);
