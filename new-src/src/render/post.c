@@ -27,6 +27,7 @@ typedef struct Targets {
     GLuint fbo, color, mask, depth;      /* the resolved scene: textures (mask: the bloom mask) */
     int half_w, half_h;
     GLuint soft_fbo[2], soft[2];         /* the screen at half size, then blurred */
+    GLuint dof_fbo, dof;                 /* ... and blurred more: the depth of field */
     GLuint glow_fbo[2], glow[2];         /* the bloom mask's areas at half size, then blurred */
     int ao_w, ao_h;
     GLuint ao_fbo[2], ao[2];             /* raw, blurred */
@@ -176,6 +177,8 @@ static const char *kCompositeFs =
     "layout(location = 17) uniform vec4 u_tint_glow;\n"   /* the room's tint (a: its strength) */
     "layout(location = 18) uniform vec4 u_tint_contrast;\n"
     "layout(location = 19) uniform vec4 u_room_bloom;\n"   /* the room's bloom (a: signed strength) */
+    "layout(location = 20) uniform vec4 u_dof;\n"   /* the room's depth of field (x > y: off) */
+    "layout(binding = 7) uniform sampler2D u_dof_blur;\n"
     "out vec4 o_color;\n"
     "vec3 soft_shoulder(vec3 x) {\n"   /* the identity up to 0.8, then easing into 1 */
     "    vec3 over = max(x - 0.8, 0.0);\n"
@@ -195,6 +198,13 @@ static const char *kCompositeFs =
     "    c *= mix(1.0, ao * ao, u_ao_strength);\n"
     "    float d = texture(u_depth, v_uv).r;\n"
     "    float z = u_proj.w / (d * 2.0 - 1.0 + u_proj.z);\n"   /* the distance along the view */
+    /* the room's depth of field: blurred near (to dof.y), sharp, blurred far (from dof.z to dof.w) */
+    "    if (u_dof.x <= u_dof.y) {\n"
+    "        float zz = d < 1.0 ? z : 1e9;\n"
+    "        float near = 1.0 - smoothstep(u_dof.x, u_dof.y, zz);\n"
+    "        float far = u_dof.w > u_dof.z ? smoothstep(u_dof.z, u_dof.w, zz) : step(u_dof.z, zz);\n"
+    "        c = mix(c, texture(u_dof_blur, v_uv).rgb, clamp(max(near, far), 0.0, 1.0));\n"
+    "    }\n"
     /* the room's own look, on display values as the PS2 had them: tint, fog, bloom */
     "    vec3 s = pow(max(c, 0.0), vec3(1.0 / 2.2));\n"
     "    vec3 soft = 3.0 * pow(max(texture(u_soft, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
@@ -279,6 +289,8 @@ static void free_targets(void) {
     glDeleteTextures(1, &T.color);
     glDeleteTextures(1, &T.mask);
     glDeleteFramebuffers(2, T.soft_fbo);
+    glDeleteFramebuffers(1, &T.dof_fbo);
+    glDeleteTextures(1, &T.dof);
     glDeleteTextures(2, T.soft);
     glDeleteFramebuffers(2, T.glow_fbo);
     glDeleteTextures(2, T.glow);
@@ -333,6 +345,10 @@ static void make_targets(int w, int h, int msaa) {
         T.soft[i] = texture2d(GL_RGBA16F, T.half_w, T.half_h);
         T.soft_fbo[i] = framebuffer(T.soft[i], 0);
         T.glow[i] = texture2d(GL_RGBA16F, T.half_w, T.half_h);
+        if (i == 0) {
+            T.dof = texture2d(GL_RGBA16F, T.half_w, T.half_h);
+            T.dof_fbo = framebuffer(T.dof, 0);
+        }
         T.glow_fbo[i] = framebuffer(T.glow[i], 0);
     }
     for (i = 0; i < BLOOM_LEVELS; i++) {
@@ -432,6 +448,14 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     fullscreen(T.soft_fbo[0], T.half_w, T.half_h, sDownProg);
     bind(0, T.soft[0], sLinear);
     fullscreen(T.soft_fbo[1], T.half_w, T.half_h, sUpProg);
+    if (s->room_dof && gRoomLook.has_dof) {   /* two more tent passes: about the game's 8 */
+        bind(0, T.soft[1], sLinear);
+        fullscreen(T.dof_fbo, T.half_w, T.half_h, sUpProg);
+        bind(0, T.dof, sLinear);
+        fullscreen(T.soft_fbo[0], T.half_w, T.half_h, sUpProg);
+        bind(0, T.soft[0], sLinear);
+        fullscreen(T.dof_fbo, T.half_w, T.half_h, sUpProg);
+    }
     glProgramUniform1i(sDownProg, 2, 1);
     bind(0, T.color, sLinear);
     bind(1, T.mask, sLinear);
@@ -482,6 +506,12 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     bind(4, T.soft[1], sLinear);
     bind(5, T.glow[0], sLinear);
     bind(6, T.mask, sLinear);
+    bind(7, T.dof, sLinear);
+    if (s->room_dof && gRoomLook.has_dof) {
+        glProgramUniform4f(sCompositeProg, 20, gRoomLook.dof[0], gRoomLook.dof[1], gRoomLook.dof[2], gRoomLook.dof[3]);
+    } else {
+        glProgramUniform4f(sCompositeProg, 20, 1.0f, 0.0f, 0.0f, 0.0f);
+    }
     {
         const RoomLook *l = &gRoomLook;
         int fog = s->room_fog && l->has_fog, tint = s->room_tint && l->has_tint, bloom = s->room_bloom && l->has_bloom;
@@ -499,7 +529,7 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     }
     glUseProgram(sCompositeProg);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    for (i = 0; i < 7; i++) {
+    for (i = 0; i < 8; i++) {
         bind((GLuint)i, 0, 0);
     }
     glBindVertexArray(0);

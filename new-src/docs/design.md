@@ -48,7 +48,12 @@ draw     room mesh, actors (skinned on the CPU, contact shadows) into the HDR sc
 - Characters are lit like the game lights them: the room's ambient plus the three brightest of
   its lights reaching their nav triangle (PAC section 4, `room_lights_at`), per pixel, with a rim.
   The strongest casts a shadow map (one 1024 layer of a depth array per character, 3 x 3 PCF)
-  onto the room, fading a few sizes away. Shadow passes run before the scene each frame.
+  onto the room and the characters (each other and themselves, the lookup moved out along the
+  normal against self-shadowing acne), fading a few sizes away.
+- The room's depth of field (section 13's fourth entry: blurred nearer than a, sharp b..c,
+  blurred again by d) mixes a blurred half-size copy of the scene in by view depth.
+- The room's look changes at run time: the bloom's pulsing colour modes tick in C, and scripts
+  reach every value (`room-look look.*`, look.fs). Shadow passes run before the scene each frame.
 - Every setting is a field of `RenderSettings` (render.h), reached from Forth as `gfx gfx.*`;
   `graphics.fs` has the presets, the F1 menu, and saving (the settings written out as a Forth
   script in the player's folder, read back at start-up).
@@ -97,10 +102,10 @@ ticks (`wait`, `dt`).
 
 ## Known gaps (the first pass)
 
-- Rooms: the depth-of-field effect (PAC section 13's fourth entry) is not done; the room effects
-  that scripts change at run time (pulsing colours, events' fog) are not either.
+- Rooms: no event scripts yet, so nothing changes a room's look on its own beyond the pulsing
+  bloom colours; scripts can (look.fs: fields, fade-fog, room-look-reset).
 - Characters: no root motion, no blending between motions, the faces and hands in their rest
-  shape; characters don't shadow each other or themselves.
+  shape.
 - Collision is the nav mesh only (no other characters). Exits all lead through (no locked
   doors, no door animations, no transition effects); no events, items, sound.
 - The camera "director" is a stand-in (the nearest room setup); the game's real camera zones

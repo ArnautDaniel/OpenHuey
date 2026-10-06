@@ -39,6 +39,8 @@ typedef struct Room {
 int room_exists(int id);
 /* load room `id` in place of the current one; 0 if it can't be read */
 int room_load(Room *r, int id);
+/* the room's own look again, as its file has it (after scripts changed it) */
+void room_reset_look(Room *r);
 void room_free(Room *r);
 /* a tick: the room's flip books step */
 void room_tick(Room *r);

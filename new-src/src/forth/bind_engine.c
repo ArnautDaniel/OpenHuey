@@ -400,6 +400,8 @@ PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
 }
 
 PRIM(p_gfx) { PUSH(&gRender); }
+PRIM(p_look) { PUSH(&gRoomLook); }   /* ( -- addr ) the room's look, as it is now */
+PRIM(p_look_reset) { room_reset_look(&gEngine.room); }   /* back to the room file's */
 
 /* ---- files: the player's own folder, and writing Forth's output into a file ---- */
 
@@ -497,6 +499,7 @@ void engine_tick(Engine *e) {
         actor_tick(&e->actors[i]);
     }
     room_tick(&e->room);
+    render_look_tick();
 }
 
 void engine_draw_2d(Engine *e) {
@@ -532,7 +535,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},
@@ -602,6 +605,21 @@ void bind_engine(Forth *f) {
     field(f, "gfx.rim", offsetof(RenderSettings, rim));
     field(f, "gfx.debug", offsetof(RenderSettings, debug));
     field(f, "gfx.room-fog", offsetof(RenderSettings, room_fog));
+    field(f, "gfx.room-dof", offsetof(RenderSettings, room_dof));
+    /* the room's look (render.h RoomLook): flags 32-bit, colours 4 floats r g b a, distances floats */
+    field(f, "look.fog", offsetof(RoomLook, has_fog));
+    field(f, "look.fog-near-color", offsetof(RoomLook, fog_near_color));
+    field(f, "look.fog-far-color", offsetof(RoomLook, fog_far_color));
+    field(f, "look.fog-near", offsetof(RoomLook, fog_near));
+    field(f, "look.fog-far", offsetof(RoomLook, fog_far));
+    field(f, "look.tint", offsetof(RoomLook, has_tint));
+    field(f, "look.tint-glow", offsetof(RoomLook, tint_glow));
+    field(f, "look.tint-contrast", offsetof(RoomLook, tint_contrast));
+    field(f, "look.bloom", offsetof(RoomLook, has_bloom));
+    field(f, "look.bloom-color", offsetof(RoomLook, bloom));
+    field(f, "look.bloom-mode", offsetof(RoomLook, bloom_mode));
+    field(f, "look.dof", offsetof(RoomLook, has_dof));
+    field(f, "look.dof-range", offsetof(RoomLook, dof));
     field(f, "gfx.room-lights", offsetof(RenderSettings, room_lights));
     field(f, "gfx.character-light", offsetof(RenderSettings, character_light));
     field(f, "gfx.shadow-maps", offsetof(RenderSettings, shadow_maps));

@@ -98,6 +98,7 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `screenshot` | `addr len --` | save the next frame as a PNG |
 | `console!` | `flag --` | open or close the console |
 | `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug gfx.room-fog gfx.room-tint gfx.room-bloom gfx.room-lights gfx.shadow-maps` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim gfx.character-light gfx.shadow-strength` (sf@ sf!) |
+| `room-look`, `room-look-reset` | `-- addr` | the room's look now (`look.fog look.tint look.bloom look.dof look.bloom-mode` l@, `look.fog-near look.fog-far` sf@, `look.fog-near-color look.fog-far-color look.tint-glow look.tint-contrast look.bloom-color look.dof-range`: 4 floats); back to the file's |
 | `on-draw`, `off-draw` | `xt --` | run a word every frame to draw 2D |
 | `pen-color`, `pen-scale` | `rgba --`, `n --` | colour (0xRRGGBBAA) and text size for the drawing words |
 | `draw-text`, `draw-rect` | `addr len x y --`, `x y w h --` | in window pixels from the top left |
@@ -115,7 +116,7 @@ rest; each file is a vocabulary of the same name - `state` (shared flags), `keys
 `vectors.fs` (float vectors, the camera's position and angles), `freecam.fs`, `views.fs` (the
 room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
 `doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them),
-`hewie.fs` (Hewie keeps up with her: trots, runs, stands watching; arrives at her side in a new
+`look.fs` (changing a room's look: `fog-range`, `fog-colors`, `fade-fog` - a task), `hewie.fs` (Hewie keeps up with her: trots, runs, stands watching; arrives at her side in a new
 room), `graphics.fs` (presets, the F1 menu - a small menu system in Forth - and saving them).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game

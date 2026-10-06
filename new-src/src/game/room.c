@@ -52,10 +52,19 @@ static uint32_t word(const uint8_t *p) {
     return x;
 }
 
-/* the room's look: PAC section 13 - offsets (from the section) at +0x8 the tint (two colours,
+/* the room's look: PAC section 13 - offsets (from the section) at +0x14 the depth of field
+ * (four view distances), +0x8 the tint (two colours,
  * a mode byte: not 0 = not blurred), +0xC the screen blend (a colour, a mode byte: 1 / 4
  * subtract, 2 / 3 / 4 fixed colours), +0x10 the fog (near and far colours, near and far
  * distances) (src/game/effects.c Tint_SetParams, ScreenBlend_SetParams, Fog_SetParams) */
+static void load_look(Room *r);
+
+void room_reset_look(Room *r) {
+    if (r->id >= 0) {
+        load_look(r);
+    }
+}
+
 static void load_look(Room *r) {
     size_t size;
     const uint8_t *sec = pac_section(&r->pac, PAC_EFFECTS, &size);
@@ -82,6 +91,7 @@ static void load_look(Room *r) {
         l->has_bloom = 1;
         colour(c, 128.0f, 256.0f, l->bloom);
         l->bloom_subtract = mode == 1 || mode == 4;
+        l->bloom_mode = mode;
     }
     if (word(sec + 0x10) != 0 && word(sec + 0x10) + 16 <= size) {
         const uint8_t *d = sec + word(sec + 0x10);
@@ -93,6 +103,10 @@ static void load_look(Room *r) {
         memcpy(range, d + 8, 8);
         l->fog_near = range[0];
         l->fog_far = range[1];
+    }
+    if (word(sec + 0x14) != 0 && word(sec + 0x14) + 16 <= size) {   /* (DepthRange_SetParams) */
+        l->has_dof = 1;
+        memcpy(l->dof, sec + word(sec + 0x14), 16);
     }
 }
 

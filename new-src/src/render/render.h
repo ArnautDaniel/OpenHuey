@@ -63,6 +63,7 @@ typedef struct RenderSettings {
     int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
     int32_t room_tint;
     int32_t room_bloom;
+    int32_t room_dof;        /* the room's depth of field */
     int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (white 1500 away),
                               * 4 the bloom mask */
 } RenderSettings;
@@ -83,7 +84,15 @@ typedef struct RoomLook {
     int32_t has_bloom;
     float bloom[4];                              /* the masked areas' glow */
     int32_t bloom_subtract;
+    int32_t bloom_mode;                          /* 2 3 4: the colour pulses (render_look_tick) */
+    int32_t bloom_phase;
+    int32_t has_dof;
+    float dof[4];                                /* depth of field: blurred nearer than [0], sharp
+                                                  * from [1] to [2], blurred again by [3] */
 } RoomLook;
+
+/* a tick of the room's look: the pulsing bloom colours (src/game/effects.c ScreenBlend_Update) */
+void render_look_tick(void);
 
 extern RoomLook gRoomLook;
 

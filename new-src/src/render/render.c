@@ -19,11 +19,45 @@ RenderSettings gRender = {
     .shadows = 1,
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
     .rim = 0.35f,
-    .room_fog = 1, .room_tint = 1, .room_bloom = 1,
+    .room_fog = 1, .room_tint = 1, .room_bloom = 1, .room_dof = 1,
     .room_lights = 1, .character_light = 2.0f, .shadow_maps = 1, .shadow_strength = 0.7f,
 };
 
 RoomLook gRoomLook;
+
+/* modes 3 / 4: a grey breathing between 0x20 and 0x80; mode 2: red with alpha between 0x80 and
+ * 0xC0 - a step of 1 (or 0x10) each tick, turning at the ends */
+void render_look_tick(void) {
+    RoomLook *l = &gRoomLook;
+    float step, lo, hi, *x;
+
+    if (!l->has_bloom || l->bloom_mode < 2 || l->bloom_mode > 4) {
+        return;
+    }
+    if (l->bloom_mode == 2) {
+        x = &l->bloom[3];   /* the alpha (red stays) */
+        step = 16.0f / 256.0f;
+        lo = 128.0f / 256.0f;
+        hi = 192.0f / 256.0f;
+    } else {
+        x = &l->bloom[0];   /* the grey, all of it */
+        step = 1.0f / 128.0f;
+        lo = 32.0f / 128.0f;
+        hi = 1.0f;
+    }
+    *x += l->bloom_phase ? -step : step;
+    if (*x >= hi) {
+        *x = hi;
+        l->bloom_phase = 1;
+    } else if (*x <= lo) {
+        *x = lo;
+        l->bloom_phase = 0;
+    }
+    if (l->bloom_mode != 2) {
+        l->bloom[1] = l->bloom[2] = l->bloom[0];
+        l->bloom[3] = l->bloom[0] / 2.0f;   /* (its alpha moves with it: 0x20 .. 0x80) */
+    }
+}
 
 /* ---- the scene's shader ----
  * Fixed locations: u_mvp 0, u_use_tex 1, u_solid_tex 2, u_lit 3, u_coverage 4, u_light_dir 5,
@@ -115,7 +149,10 @@ static const char *kMeshFs =
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
     "        for (int i = 0; i < 4; i++) {\n"
     "            if (i >= u_nshadows) break;\n"
-    "            vec4 lp = u_shadow_vp[i] * vec4(v_pos, 1.0);\n"
+    /* (characters receive too - each other's shadows and their own: the point is moved out along
+     * the surface's normal first so a surface doesn't shadow itself) */
+    "            vec3 at = u_lit != 0 ? v_pos + normalize(v_normal) * 0.35 : v_pos;\n"
+    "            vec4 lp = u_shadow_vp[i] * vec4(at, 1.0);\n"
     "            if (lp.w <= 0.0) continue;\n"
     "            vec3 q = lp.xyz / lp.w * 0.5 + 0.5;\n"
     "            if (any(lessThan(q, vec3(0.0))) || any(greaterThan(q, vec3(1.0)))) continue;\n"
@@ -589,7 +626,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
         glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
         glProgramUniform1i(R.mesh_prog, U_COVERAGE, coverage);
-        glProgramUniform1i(R.mesh_prog, U_RECEIVE, !x->lit && !x->mask);
+        glProgramUniform1i(R.mesh_prog, U_RECEIVE, !x->mask);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
         if (x->mask) {

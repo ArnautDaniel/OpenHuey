@@ -16,7 +16,7 @@ PRIVATE>
 : look-original
     1 ['] gfx.msaa int!  1 ['] gfx.aspect int!
     ['] gfx.room-lights on  ['] gfx.shadow-maps on   \ (the game lit and shadowed its characters too)
-    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on
+    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
     0 ['] gfx.tonemap int!  0e ['] gfx.vignette float!  0e ['] gfx.grain float!
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
@@ -24,7 +24,7 @@ PRIVATE>
 \ the original's look, cleaned up and deepened: the default
 : look-enhanced
     4 ['] gfx.msaa int!  0 ['] gfx.aspect int!
-    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on
+    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao on  0.9e ['] gfx.ssao-strength float!  20e ['] gfx.ssao-radius float!
     ['] gfx.bloom on  0.9e ['] gfx.bloom-threshold float!  0.12e ['] gfx.bloom-strength float!
     ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
@@ -136,6 +136,7 @@ s" Texture filter"  ' gfx.anisotropy number 1000 16000 1000 item
 s" Room's own fog"   ' gfx.room-fog flag 0 1 0 item
 s" Room's own tint"  ' gfx.room-tint flag 0 1 0 item
 s" Room's own bloom" ' gfx.room-bloom flag 0 1 0 item
+s" Room's depth of field" ' gfx.room-dof flag 0 1 0 item
 s" Ambient occlusion" ' gfx.ssao flag 0 1 0 item
 s"   strength"      ' gfx.ssao-strength number 0 1000 100 item
 s"   radius"        ' gfx.ssao-radius number 4000 60000 2000 item
