@@ -79,7 +79,7 @@ load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 ### Resource 0: skeleton
 
 `u32 bones, u32 meshTable, u32 rigidTable, u32 boneByteTable` (offsets from resource 0), then
-`bones` records of 0x70 bytes at +0x10 (`func_001F7C40` links them into the skeleton at
+`bones` records of 0x70 bytes at +0x10 (`ModelBase_Loaded` links them into the skeleton at
 model +0x810):
 
 | Offset | What |

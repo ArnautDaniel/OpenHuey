@@ -76,10 +76,10 @@ extern u8 D_0045E4C0[];
 extern u8 D_0045E4E0[];
 extern u8 D_00463320[];
 extern u8 D_00463340[];
-void *func_002F6DC0(void);
-void *func_002F6DD0(void);
-void *func_0035AFE0(void);
-void *func_0035AFF0(void);
+void *EventHumanModel_Textures(void);
+void *EventHumanModel_Textures2(void);
+void *Costume8Model_Textures(void);
+void *Costume8Model_Textures2(void);
 
 extern u8 D_00424250[];
 extern u8 D_00424490[];
@@ -97,23 +97,23 @@ extern u8 D_0042AED0[];
 void Kind23Model_Vt2C(u8 *self);
 void Kind23Model_SecondaryMotion(u8 *self);
 
-s32 func_0035B010(void);
-s32 func_0035B020(void);
-s32 func_0035B030(void);
-s32 func_0035B040(void);
-s32 func_0035B050(void);
-s32 func_00353E10(void);
-s32 func_00353E20(void);
-s32 func_00353E30(void);
-s32 func_00353E40(void);
-s32 func_00353E50(void);
+s32 Costume8Model_Part0(void);
+s32 Costume8Model_Part1(void);
+s32 Costume8Model_Part2(void);
+s32 Costume8Model_Part3(void);
+s32 Costume8Model_Part4(void);
+s32 Costume7Model_Part0(void);
+s32 Costume7Model_Part1(void);
+s32 Costume7Model_Part2(void);
+s32 Costume7Model_Part3(void);
+s32 Costume7Model_Part4(void);
 void DustMoteSource_Draw(void);
-void func_0033E730(void);
-s32 func_00336F80(void);
-s32 func_00336F90(void);
-s32 func_00336FA0(void);
-s32 func_00336FB0(void);
-s32 func_00336FC0(void);
+void Kind18Model_ShowParts(void);
+s32 Costume2Model_Part0(void);
+s32 Costume2Model_Part1(void);
+s32 Costume2Model_Part2(void);
+s32 Costume2Model_Part3(void);
+s32 Costume2Model_Part4(void);
 void Kind23Model_Vt30(void);
 s32 Kind23Model_Vt98(void);
 s32 Kind23Model_Vt9C(void);
@@ -125,11 +125,11 @@ s32 Kind33Model_Part0(void);
 s32 Kind33Model_Part1(void);
 s32 Kind33Model_Part2(void);
 s32 Kind33Model_Part3(void);
-s32 func_00349940(void);
-s32 func_00349950(void);
-s32 func_00349960(void);
-s32 func_00349970(void);
-s32 func_00349980(void);
+s32 Costume6Model_Part0(void);
+s32 Costume6Model_Part1(void);
+s32 Costume6Model_Part2(void);
+s32 Costume6Model_Part3(void);
+s32 Costume6Model_Part4(void);
 
 extern u8 D_0042C730[];
 void Kind33Model_SecondaryMotion(u8 *self);
@@ -159,37 +159,37 @@ extern u8 D_004613A0[];
 
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 
-void *func_00336F00(void);
-void *func_00336F10(void);
-u32 func_00336F20(void);
-void func_00336F30(u8 *self, s32 on);
-void func_00336F70(u8 *self, f32 x, f32 y, f32 z);
-void func_00336FD0(u8 *self, f32 x, f32 y, f32 z);
-void *func_003376D0(void *self, u32 i);
-void func_00337E00(u8 *self);
-void *func_00337F70(void);
-void *func_00337F80(void);
-u32 func_00337F90(void);
-void func_00337FA0(u8 *self, s32 on);
-void func_00338030(u8 *self, f32 x, f32 y, f32 z);
-void *func_00338560(void *self, u32 i);
-void func_00338C00(u8 *self);
+void *Costume2Model_Textures(void);
+void *Costume2Model_Textures2(void);
+u32 Costume2Model_BufferSize(void);
+void Costume2Model_VtCC(u8 *self, s32 on);
+void Costume2Model_VtD0(u8 *self, f32 x, f32 y, f32 z);
+void Costume2Model_SetPoint(u8 *self, f32 x, f32 y, f32 z);
+void *Costume2Model_ModelFile(void *self, u32 i);
+void Costume2Model_MotionTable(u8 *self);
+void *Costume3Model_Textures(void);
+void *Costume3Model_Textures2(void);
+u32 Costume3Model_BufferSize(void);
+void Costume3Model_VtCC(u8 *self, s32 on);
+void Costume3Model_SetPoint(u8 *self, f32 x, f32 y, f32 z);
+void *Costume3Model_ModelFile(void *self, u32 i);
+void Costume3Model_MotionTable(u8 *self);
 
 extern u32 D_00462870[];
 extern u32 D_00462890[];
 extern u8 D_0043EA80[];
 extern u8 D_00462670[], D_00462690[], D_004626B0[], D_004626D0[], D_004626F0[], D_00462710[], D_00462730[];
 extern u8 D_00462770[], D_00462790[], D_004627B0[], D_004627D0[], D_004627F0[], D_00462810[], D_00462830[];
-void *func_003498D0(void);
-void *func_003498E0(void);
-s32 func_003498F0(void);
-void func_00349900(u8 *p, u32 b, f32 f);
-void func_00349910(u8 *p, f32 x, f32 y, f32 z);
-void func_00349920(u8 *p);
-void func_00349930(u8 *p);
-void *func_00349990(void *self, u32 i);
-void *func_00349A20(void *self, u32 i);
-void func_0034A120(u8 *p);
+void *Costume6Model_Textures(void);
+void *Costume6Model_Textures2(void);
+s32 Costume6Model_BufferSize(void);
+void Costume6Model_SetFlag(u8 *p, u32 b, f32 f);
+void Costume6Model_SetPoint(u8 *p, f32 x, f32 y, f32 z);
+void Costume6Model_Vt2C(u8 *p);
+void Costume6Model_Vt30(u8 *p);
+void *Costume6Model_MarkerFile(void *self, u32 i);
+void *Costume6Model_ModelFile(void *self, u32 i);
+void Costume6Model_MotionTable(u8 *p);
 
 extern u8 D_004631C0[], D_004631E0[];
 extern u8 D_00462FC0[], D_00462FE0[], D_00463000[], D_00463020[], D_00463040[], D_00463060[], D_00463080[];
@@ -202,18 +202,18 @@ extern u8 D_00463220[], D_00463240[], D_00463260[], D_00463280[], D_004632A0[], 
 
 #define B7_F(p, off)  (*(f32 *)((u8 *)(p) + (off)))
 
-void *func_00353DB0(void);
-void *func_00353DC0(void);
-s32 func_00353DD0(void);
-void func_00353DE0(u8 *p, f32 x, f32 y, f32 z);
-void func_00353DF0(u8 *p);
-void func_00353E00(u8 *p);
-void *func_00353E60(void *self, u32 i);
-void *func_00353EF0(void *self, u32 i);
-void func_003544A0(u8 *p);
-void *func_0035B060(void *self, u32 i);
+void *Costume7Model_Textures(void);
+void *Costume7Model_Textures2(void);
+s32 Costume7Model_BufferSize(void);
+void Costume7Model_SetPoint(u8 *p, f32 x, f32 y, f32 z);
+void Costume7Model_Vt2C(u8 *p);
+void Costume7Model_Vt30(u8 *p);
+void *Costume7Model_MarkerFile(void *self, u32 i);
+void *Costume7Model_ModelFile(void *self, u32 i);
+void Costume7Model_MotionTable(u8 *p);
+void *Costume8Model_ModelFile(void *self, u32 i);
 
-s32 func_0035B000(void);
+s32 Costume8Model_BufferSize(void);
 void DustMoteSource_Start(u8 *o);
 
 /* placement new (models) */
@@ -845,11 +845,11 @@ void func_003A15A0(Progress *p, u32 slot) {
  * +0x9B0, +0xE00 one node (+0xDB0), +0x1100 four hanging nodes (+0xE40) with six collision
  * spheres (+0xF80), +0x11A0 one node (+0x1140), +0x1230 one node (+0x11E0) ---- */
 
-extern void func_001F1FE0(u8 *m);
+extern void CharModel_Loaded(u8 *m);
 extern const char D_0045E3C0[], D_0045E3E0[], D_0045E400[], D_0045E420[], D_0045E440[],
     D_0045E460[], D_0045E480[];   /* "O_FIN\FIN_00n.PCK" */
 extern u8 D_0041A4B0[], D_0041A4C0[], D_0041A4D0[], D_0041A4E0[], D_0041A4F0[];
-extern void func_001F1FD0(u8 *m);
+extern void CharModel_Frame(u8 *m);
 extern void *D_00470440[], *D_004703B0[], *D_004703D0[];
 void *HumanModel_dtor(u8 *m, s32 flags);
 
@@ -881,39 +881,49 @@ static inline void spring_set(u8 *set, u32 g, u32 damping, u8 *owner) {
 }
 
 /* +0x84..+0x94: part roles */
-s32 func_002F6E10(void) { return 3; }
-s32 func_002F6E20(void) { return 7; }
-s32 func_002F6E30(void) { return 0x1C; }
-s32 func_002F6E40(void) { return 0x2C; }
-s32 func_002F6E50(void) { return 0x17; }
+/* 0x002F6E10 */
+s32 EventHumanModel_Part0(void) { return 3; }
+/* 0x002F6E20 */
+s32 EventHumanModel_Part1(void) { return 7; }
+/* 0x002F6E30 */
+s32 EventHumanModel_Part2(void) { return 0x1C; }
+/* 0x002F6E40 */
+s32 EventHumanModel_Part3(void) { return 0x2C; }
+/* 0x002F6E50 */
+s32 EventHumanModel_Part4(void) { return 0x17; }
 
 /* +0xB0 the model file's buffer size */
-u32 func_002F6DE0(void) {
+/* 0x002F6DE0 */
+u32 EventHumanModel_BufferSize(void) {
     return 0x41000;
 }
 
 /* +0xBC */
-void func_002F6DF0(u8 *m, s32 on, f32 x) {
+/* 0x002F6DF0 */
+void EventHumanModel_SetFlag(u8 *m, s32 on, f32 x) {
     AT(m, 0x111C, f32) = x;
     AT(m, 0x1120, u8) = on;
 }
 
 /* +0xC0 the point at +0x1190 */
-void func_002F6E00(u8 *m, f32 x, f32 y, f32 z) {
+/* 0x002F6E00 */
+void EventHumanModel_SetPoint(u8 *m, f32 x, f32 y, f32 z) {
     AT(m, 0x1190, f32) = x;
     AT(m, 0x1194, f32) = y;
     AT(m, 0x1198, f32) = z;
 }
 
 /* +0xB8: 16 entries of the table D_0041A4B0 (+0x840 count, +0x844 table) */
-void func_002F7A10(u8 *m) {
+/* 0x002F7A10 */
+void EventHumanModel_MotionTable(u8 *m) {
     AT(m, 0x840, s16) = 16;
     AT(m, 0x844, u8 *) = D_0041A4B0;
 }
 
 /* +0xC4 which of the swappable parts show (part flag 2 hides): 0..4 one of the four at
  * +0xD8 / +0xE0 / +0xE2 / +0xDA (0 none), 5..9 one set of the eight at +0x9E.. */
-void func_002F6E60(u8 *m, s32 look) {
+/* 0x002F6E60 */
+void EventHumanModel_ShowParts(u8 *m, s32 look) {
     u32 k = look & 0xFF;
 
     if (k < 5) {
@@ -956,7 +966,8 @@ void func_002F6E60(u8 *m, s32 look) {
 }
 
 /* +0xA0 the model file of costume `n` */
-const char *func_002F7030(void *m, u32 n) {
+/* 0x002F7030 */
+const char *EventHumanModel_ModelFile(void *m, u32 n) {
     switch (n) {
     case 0: return D_0045E3C0;
     case 1: return D_0045E3E0;
@@ -1085,8 +1096,9 @@ void func_002F7620(u8 *m) {
 
 /* the five spring sets, a frame: one step, or after a reset (+0x850) the 4 hanging nodes
  * (+0xE40) put back under their anchors by their length (+0x40) along bone 0x21's Z axis, at
- * rest - 30 steps to settle (as Fiona's sheet model, func_002F81A0) */
-void func_002F7780(u8 *o) {
+ * rest - 30 steps to settle (as Fiona's sheet model, FionaModel_Springs) */
+/* 0x002F7780 */
+void EventHumanModel_Springs(u8 *o) {
     static const u16 sSets[5] = {0xD70, 0xE00, 0x1100, 0x11A0, 0x1230};
     f32 down[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -1129,16 +1141,18 @@ void func_002F7780(u8 *o) {
 }
 
 /* +0x10 */
-void func_002F7910(u8 *m) {
-    func_001F1FD0(m);
+/* 0x002F7910 */
+void EventHumanModel_Frame(u8 *m) {
+    CharModel_Frame(m);
 }
 
 /* +0xC loaded: the base setup, the parts' roles, her own setup, per-part draw settings */
-void func_002F7920(u8 *m) {
+/* 0x002F7920 */
+void EventHumanModel_Loaded(u8 *m) {
     static const u8 sParts[] = {0x9C, 0xA8, 0xAA, 0xAC, 0xB2, 0xB4, 0xB6, 0xB8, 0xE4, 0xE6, 0xE8};
     s32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1167,7 +1181,8 @@ void func_002F7920(u8 *m) {
 extern void *D_00478490[], *D_0046B0E0[];
 
 /* +0x8 destructor */
-void *func_003497E0(void *p, s32 flags) {
+/* 0x003497E0 */
+void *Costume6Model_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -1186,58 +1201,71 @@ void *func_003497E0(void *p, s32 flags) {
     return m;
 }
 
-void *func_003498D0(void) {
+/* 0x003498D0 */
+void *Costume6Model_Textures(void) {
     return D_00462870;
 }
 
-void *func_003498E0(void) {
+/* 0x003498E0 */
+void *Costume6Model_Textures2(void) {
     return D_00462890;
 }
 
-s32 func_003498F0(void) {
+/* 0x003498F0 */
+s32 Costume6Model_BufferSize(void) {
     return 0x41000;
 }
 
-void func_00349900(u8 *p, u32 b, f32 f) {
+/* 0x00349900 */
+void Costume6Model_SetFlag(u8 *p, u32 b, f32 f) {
     *(f32 *)(p + 0xD1C) = f;
     p[0xD20] = (u8)b;
 }
 
-void func_00349910(u8 *p, f32 x, f32 y, f32 z) {
+/* 0x00349910 */
+void Costume6Model_SetPoint(u8 *p, f32 x, f32 y, f32 z) {
     *(f32 *)(p + 0xD90) = x;
     *(f32 *)(p + 0xD94) = y;
     *(f32 *)(p + 0xD98) = z;
 }
 
-void func_00349920(u8 *p) {
+/* 0x00349920 */
+void Costume6Model_Vt2C(u8 *p) {
     p[0xCA] |= 2;
 }
 
-void func_00349930(u8 *p) {
+/* 0x00349930 */
+void Costume6Model_Vt30(u8 *p) {
     p[0xCA] &= ~2;
 }
 
-s32 func_00349940(void) {
+/* 0x00349940 */
+s32 Costume6Model_Part0(void) {
     return 0x3;
 }
 
-s32 func_00349950(void) {
+/* 0x00349950 */
+s32 Costume6Model_Part1(void) {
     return 0x7;
 }
 
-s32 func_00349960(void) {
+/* 0x00349960 */
+s32 Costume6Model_Part2(void) {
     return 0xF;
 }
 
-s32 func_00349970(void) {
+/* 0x00349970 */
+s32 Costume6Model_Part3(void) {
     return 0x1F;
 }
 
-s32 func_00349980(void) {
+/* 0x00349980 */
+s32 Costume6Model_Part4(void) {
     return 0xA;
 }
 
-void *func_00349990(void *self, u32 i) {
+/* 0x00349990 */
+void *Costume6Model_MarkerFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462670;
     case 1: return D_00462690;
@@ -1250,7 +1278,8 @@ void *func_00349990(void *self, u32 i) {
     return NULL;
 }
 
-void *func_00349A20(void *self, u32 i) {
+/* 0x00349A20 */
+void *Costume6Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462770;
     case 1: return D_00462790;
@@ -1341,8 +1370,9 @@ void func_00349DB0(u8 *m) {
 
 /* +0x3C: the three spring sets a frame: one step, or after a reset (+0x850) the 4 hanging
  * nodes (+0xA40) put back under their anchors along bone 0x14's Z axis, 30 steps to settle
- * (as func_002F7780) */
-void func_00349E80(u8 *o) {
+ * (as EventHumanModel_Springs) */
+/* 0x00349E80 */
+void Costume6Model_Springs(u8 *o) {
     f32 down[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1385,12 +1415,13 @@ void func_00349E80(u8 *o) {
 
 /* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings, then
  * +0x2C */
-void func_00349FF0(u8 *m) {
+/* 0x00349FF0 */
+void Costume6Model_Loaded(u8 *m) {
     static const u8 sLoose[] = {0x98, 0x9A, 0x9C, 0xAE, 0xB0, 0xCC};
     static const u8 sStiff[] = {0x9E, 0xA0, 0xA2, 0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xC8, 0xCE, 0xD0};
     u32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1415,18 +1446,21 @@ void func_00349FF0(u8 *m) {
     VCALL(m, 0x2C, void (*)(u8 *))(m);
 }
 
-void func_0034A120(u8 *p) {
+/* 0x0034A120 */
+void Costume6Model_MotionTable(u8 *p) {
     *(u16 *)(p + 0x840) = 0x10;
     *(void **)(p + 0x844) = D_0043EA80;
 }
 
 /* Fiona's sheet model (D_00470620): +0x10 */
-void func_002F8320(u8 *m) {
+/* 0x002F8320 */
+void FionaModel_Frame(u8 *m) {
     Model_Release(m);
 }
 
 /* Fiona's sheet model (D_00470620): +0x8 destructor */
-void *func_002F7A30(void *p, s32 flags) {
+/* 0x002F7A30 */
+void *FionaModel_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -1455,32 +1489,38 @@ extern const char D_0045E540[];   /* "O_FIS\FIS_000.TEX" */
 extern const char D_0045E560[];   /* "O_FIS\FIS_200.TEX" (the names are returned as such) */
 
 /* +0xA0 the model file */
-const char *func_002F7B80(void) {
+/* 0x002F7B80 */
+const char *FionaModel_ModelFile(void) {
     return D_0045E520;
 }
 
 /* +0xA4 the marker file */
-const char *func_002F7B70(void) {
+/* 0x002F7B70 */
+const char *FionaModel_MarkerFile(void) {
     return D_0045E500;
 }
 
 /* +0xA8 the textures */
-const char *func_002F7B30(void) {
+/* 0x002F7B30 */
+const char *FionaModel_Textures(void) {
     return D_0045E540;
 }
 
 /* +0xAC the second texture set */
-const char *func_002F7B40(void) {
+/* 0x002F7B40 */
+const char *FionaModel_Textures2(void) {
     return D_0045E560;
 }
 
 /* +0xB0 the model file's buffer size */
-u32 func_002F7B50(void) {
+/* 0x002F7B50 */
+u32 FionaModel_BufferSize(void) {
     return 0x41000;
 }
 
 /* +0xC8 set the vector at +0x1740 */
-void func_002F7B60(u8 *m, const f32 *v) {
+/* 0x002F7B60 */
+void FionaModel_SetVector(u8 *m, const f32 *v) {
     sceVu0CopyVector((f32 *)(m + 0x1740), v);
 }
 
@@ -1522,16 +1562,17 @@ const char *DogModel_Textures(void) {
     return D_00456400;
 }
 
-extern void func_001F1FE0(u8 *m);
+extern void CharModel_Loaded(u8 *m);
 extern void func_002F80D0(u8 *m);
 
 /* Fiona's model, once loaded: the base setup, the parts' roles (+0x890..: which mesh part is
  * which), her own setup, and per-part draw settings (4, 0x40) */
-void func_002F8330(u8 *m) {
+/* 0x002F8330 */
+void FionaModel_Loaded(u8 *m) {
     static const u8 sParts[] = {0x98, 0x9A, 0x9C, 0x9E, 0xA0, 0xA2, 0xA6, 0xA8, 0xAA, 0xC0, 0xC2, 0xC4};
     s32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1553,7 +1594,8 @@ void func_002F8330(u8 *m) {
 
 /* character model setup common to Fiona and the partner: base setup, defaults, then the
  * class's own reset (vt+0xB8) and two slot inits (vt+0xC4, slots 0 and 5) */
-void func_001F1FE0(u8 *m) {
+/* 0x001F1FE0 */
+void CharModel_Loaded(u8 *m) {
     HumanModel_Loaded(m);
     AT(m, 0x87C, s32) = 1;
     AT(m, 0x880, s32) = 1;
@@ -1572,11 +1614,11 @@ void HumanModel_Loaded(u8 *m) {
     ((void (*)(u8 *))AT(AT(m, 0, u8 *), 0x54, void *))(m);
 }
 
-extern void func_001F7C40(u8 *m);
+extern void ModelBase_Loaded(u8 *m);
 
 /* 0x002DE0A0 */
 void Model_Loaded(u8 *m) {
-    func_001F7C40(m);
+    ModelBase_Loaded(m);
     AT(m, 0x87C, s32) = 0;
     AT(m, 0x880, s32) = 0;
     AT(m, 0x854, s32) = 0;
@@ -1589,7 +1631,8 @@ extern void *D_004562A8;
 
 /* build the model's skeleton from its bone table (+0x4C0: count, then 0x70-byte bones whose
  * +0x10 is the parent index, -1 for the root) */
-void func_001F7C40(u8 *m) {
+/* 0x001F7C40 */
+void ModelBase_Loaded(u8 *m) {
     u8 *skel;
     u8 *node;
     u8 *bone;
@@ -1686,7 +1729,8 @@ void func_001F4910(u8 *m) {
 extern u8 D_003D5CC0[];
 
 /* vt+0xB8: the character's table at +0x874 */
-void func_001F1D90(u8 *m) {
+/* 0x001F1D90 */
+void CharModel_SecondaryMotion(u8 *m) {
     AT(m, 0x874, u8 *) = D_003D5CC0;
 }
 
@@ -1700,7 +1744,8 @@ void HumanModel_FeetUp(u8 *m, s32 slot) {
 extern u8 D_0041A500[];
 
 /* Fiona's vt+0xC4: 16 entries of the table D_0041A500 (+0x840 count, +0x844 table) */
-void func_002F8430(u8 *m, s32 slot) {
+/* 0x002F8430 */
+void FionaModel_MotionTable(u8 *m, s32 slot) {
     AT(m, 0x840, s16) = 16;
     AT(m, 0x844, u8 *) = D_0041A500;
 }
@@ -1726,7 +1771,8 @@ void Kind14Model_SecondaryMotion(u8 *self) {
 }
 
 /* empty character hook (vt+0xC4 of the base) */
-void func_001F1F10(u8 *m, s32 slot) {
+/* 0x001F1F10 */
+void CharModel_ShowParts(u8 *m, s32 slot) {
 }
 
 /* ---- the human characters' model base (vtable D_0046B0E0): its own methods ---- */
@@ -1735,18 +1781,21 @@ extern const char D_00456150[], D_00456170[], D_00456190[], D_004561B0[], D_0045
     D_004561F0[], D_00456210[];   /* "O_FIN\FIN_00n.MRK" */
 
 /* +0x10 */
-void func_001F1FD0(u8 *m) {
+/* 0x001F1FD0 */
+void CharModel_Frame(u8 *m) {
     HumanModel_Frame(m);
 }
 
 /* +0x68: Model_ClearDraw, then +0x2C */
-void func_001F1DA0(u8 *m) {
+/* 0x001F1DA0 */
+void CharModel_ClearDraw(u8 *m) {
     Model_ClearDraw(m);
     VCALL(m, 0x2C, void (*)(u8 *))(m);
 }
 
 /* +0xA4 the marker file of kind `n` (0..6) */
-const char *func_001F1F30(void *m, s32 n) {
+/* 0x001F1F30 */
+const char *CharModel_MarkerFile(void *m, s32 n) {
     switch (n) {
     case 0: return D_00456150;
     case 1: return D_00456170;
@@ -1760,19 +1809,24 @@ const char *func_001F1F30(void *m, s32 n) {
 }
 
 /* empty hooks: +0xBC, +0xC0, +0xC8, +0xCC, +0xD0 */
-void func_001F1FC0(u8 *m) {
+/* 0x001F1FC0 */
+void CharModel_SetFlag(u8 *m) {
 }
 
-void func_001F1F20(u8 *m) {
+/* 0x001F1F20 */
+void CharModel_SetPoint(u8 *m) {
 }
 
-void func_001F1F00(u8 *m) {
+/* 0x001F1F00 */
+void CharModel_SetVector(u8 *m) {
 }
 
-void func_001F1EF0(u8 *m) {
+/* 0x001F1EF0 */
+void CharModel_VtCC(u8 *m) {
 }
 
-void func_001F1EE0(u8 *m) {
+/* 0x001F1EE0 */
+void CharModel_VtD0(u8 *m) {
 }
 
 extern void func_002F7E90(u8 *m);
@@ -3953,7 +4007,8 @@ extern void func_001F0F40(u8 *ik);   /* turn the chain's bones to the solution *
 /* +0x8 solve: from the chain root's position (and its Z axis as the bend direction, +0x30),
  * place the middle joint for the end target; a target out of reach is pulled in to the
  * chain's full length along its direction; then the bones follow */
-void func_001F0E50(u8 *ik) {
+/* 0x001F0E50 */
+void IK2_dtor(u8 *ik) {
     f32 d[4] __attribute__((aligned(16)));
     f32 len;
 
@@ -4049,7 +4104,8 @@ static inline void ik_turn(f32 (*m)[4], const f32 *from, const f32 *to) {
  * in the plane of the root's Z, the knee kept on the side it is bent to now; a target out of
  * reach is pulled in; then the root and middle bones turn to the joints and the end bone is
  * moved onto the target */
-void func_001F0AF0(u8 *ik) {
+/* 0x001F0AF0 */
+void IK2_Loaded(u8 *ik) {
     f32 d[4] __attribute__((aligned(16)));
     f32 z[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -4230,7 +4286,8 @@ void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f
 }
 
 /* +0x8 solve with the current lower-leg blend */
-void func_001F0450(u8 *ik) {
+/* 0x001F0450 */
+void IK3_dtor(u8 *ik) {
     func_001F0600(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30),
                   AT(ik, 0x40, f32), AT(ik, 0x44, f32), AT(ik, 0x70, f32), AT(ik, 0x48, f32), AT(ik, 0x74, f32),
                   AT(ik, 0x7C, f32));
@@ -4243,7 +4300,8 @@ void func_001F0450(u8 *ik) {
  * root square to the bend direction, with the hock-to-foot distance from that axis as the
  * lower leg, and moved back out along it; then the bones follow and the foot bone goes onto
  * the target */
-void func_001F0250(u8 *ik) {
+/* 0x001F0250 */
+void IK3_Loaded(u8 *ik) {
     f32 kneeAt[4] __attribute__((aligned(16)));
     f32 hockAt[4] __attribute__((aligned(16)));
     f32 flat[4] __attribute__((aligned(16)));
@@ -4278,7 +4336,8 @@ void func_001F0250(u8 *ik) {
  * reset (+0x850) - the 4 hanging points (+0x1480, 0x50 each) put back under their anchors (a
  * bone +0x24 when +0x20, else the point +0x2C) by their length (+0x40) along bone 0x35's
  * Z axis, at rest - 30 steps to settle */
-void func_002F81A0(u8 *o) {
+/* 0x002F81A0 */
+void FionaModel_Springs(u8 *o) {
     f32 down[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -4354,7 +4413,8 @@ void func_002EE840(u8 *s) {
 
 /* +0xC of a point fixed to a bone: its position (+0x0) is the bone (+0x28) of the model's
  * skeleton applied to its offset (+0x10) */
-void func_002EE570(u8 *p, u8 *model) {
+/* 0x002EE570 */
+void BonePoint_Loaded(u8 *p, u8 *model) {
     f32 m[4][4] __attribute__((aligned(16)));
 
     sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(model, 0x810, void *), AT(p, 0x28, s32)));
@@ -4367,7 +4427,8 @@ void func_002EE570(u8 *p, u8 *model) {
  * along the hanging bone's X axis, damped, moved; then kept at its length from the anchor,
  * within the cone around that axis and off the back of the plane of the axis and the side
  * axis, its velocity following the corrections */
-void func_00315F00(u8 *l, u8 *s) {
+/* 0x00315F00 */
+void HairPoint2_Frame(u8 *l, u8 *s) {
     f32 anchor[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -4495,7 +4556,8 @@ s32 Kind33Model_Part3(void) {
  * length } in system `s` (+0x0 force, subtracted; +0x10 damping): moved, then kept at its
  * length from the bone, on the front side of the bone's Y axis and within 30 degrees of its X
  * axis; its velocity is how far it went */
-void func_002EE970(u8 *p, u8 *s) {
+/* 0x002EE970 */
+void BoneHangPoint_Frame(u8 *p, u8 *s) {
     static const union { u32 u; f32 f; } kCone = {0x3F060A92};   /* 30 degrees */
     f32 m[4][4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
@@ -4536,7 +4598,8 @@ void func_002EE970(u8 *p, u8 *s) {
  * the colliders, +0x20 / +0x1C a floor height): pushed by each collider (+0x8, strength 1) and
  * up off the floor, damped, moved, then kept at its length from the anchor; its velocity is
  * how far it went */
-void func_002ECE50(u8 *p, u8 *s) {
+/* 0x002ECE50 */
+void HangPoint_Frame(u8 *p, u8 *s) {
     f32 prev[4] __attribute__((aligned(16)));
     f32 anchor[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -4568,10 +4631,11 @@ void func_002ECE50(u8 *p, u8 *s) {
 /* +0x10 step of a costume hanging point (the class at 0x475CA0) { +0x0 position, +0x10
  * velocity, +0x20 anchored to a bone (+0x24) else the point +0x2C, +0x40 length, +0x44 rigid,
  * +0x48 swing limit }. A rigid one continues the line from its parent's anchor through its
- * parent (+0x2C). Otherwise as func_002ECE50 (without the floor), then turned back within its
+ * parent (+0x2C). Otherwise as HangPoint_Frame (without the floor), then turned back within its
  * swing limit of the bone's X axis. The limit is tested on the length-scaled offset, and the
  * offset is scaled by the length again after (both as in the original; the lengths are short) */
-void func_00338C20(u8 *p, u8 *s) {
+/* 0x00338C20 */
+void CostumeHangPoint_Frame(u8 *p, u8 *s) {
     f32 axis[4] __attribute__((aligned(16)));
     f32 anchor[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
@@ -4629,11 +4693,12 @@ void func_00338C20(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
 }
 
-/* +0x10 step of a hanging point of the class at 0x479F90: as func_00338C20, but also blown
+/* +0x10 step of a hanging point of the class at 0x479F90: as CostumeHangPoint_Frame, but also blown
  * by the system's wind (+0x0, a point in the space of bone +0xC, a float): pushed 0.2 along
  * the direction from the point's root bone (its own +0x24 if anchored to a bone, else its
  * parent's, or the grandparent's) to the wind point */
-void func_00369DF0(u8 *p, u8 *s) {
+/* 0x00369DF0 */
+void WindHangPoint_Frame(u8 *p, u8 *s) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 axis[4] __attribute__((aligned(16)));
     f32 anchor[4] __attribute__((aligned(16)));
@@ -4711,19 +4776,20 @@ void func_00369DF0(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
-void func_002EE710(u8 *p, u8 *s);
+void SpringPartBase_AdjustBone(u8 *p, u8 *s);
 
-/* +0x14 of a hanging point of the class at 0x479F90: unless +0x4C, first as func_002EE710;
+/* +0x14 of a hanging point of the class at 0x479F90: unless +0x4C, first as SpringPartBase_AdjustBone;
  * then its bone (+0x24) aimed at it - X from the anchor to the point, keeping the Z axis of
  * the anchor's bone, made square, at the anchor */
-void func_0036A1C0(u8 *p, u8 *s) {
+/* 0x0036A1C0 */
+void WindHangPoint_AdjustBone(u8 *p, u8 *s) {
     f32 *a;
     f32 anchor[4] __attribute__((aligned(16)));
     f32 x[4] __attribute__((aligned(16)));
     f32 z[4] __attribute__((aligned(16)));
 
     if (AT(p, 0x4C, u8) == 0) {
-        func_002EE710(p, s);
+        SpringPartBase_AdjustBone(p, s);
     }
     a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     if (AT(p, 0x20, u8) != 0) {
@@ -4769,7 +4835,8 @@ void DustMoteSource_Start(u8 *o) {
 /* +0x8 a sphere collider { +0x0 centre, +0x20 radius, +0x24 falloff }: the push `out` on the
  * point `at` (strength `k`): inside the sphere its offset from the centre x (1 - distance x
  * falloff) x k, else none */
-void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
+/* 0x002EE5C0 */
+void BonePoint_dtor(u8 *c, f32 *out, f32 *at, f32 k) {
     f32 d[4] __attribute__((aligned(16)));
     f32 dd = 0.0f;
 
@@ -4788,7 +4855,8 @@ void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
 /* +0x10 step of a point sprung to a bone (+0x24) { +0x0 position, +0x10 velocity, +0x40
  * stiffness } in system `s` (+0x10 damping): pulled to the bone, damped, moved, then flattened
  * into the bone's X / Y plane and kept within -0.2..0.2 along X and -0.2..0.3 along Y of it */
-void func_002EEDA0(u8 *p, u8 *s) {
+/* 0x002EEDA0 */
+void SprungPoint_Frame(u8 *p, u8 *s) {
     static const union { u32 u; f32 f; } k03 = {0x3E99999A}, k02 = {0x3E4CCCCD}, kn02 = {0xBE4CCCCD};
     f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     f32 prev[4] __attribute__((aligned(16)));
@@ -4828,17 +4896,20 @@ void func_002EEDA0(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
-void *func_002F6DC0(void) {
+/* 0x002F6DC0 */
+void *EventHumanModel_Textures(void) {
     return D_0045E4C0;
 }
 
-void *func_002F6DD0(void) {
+/* 0x002F6DD0 */
+void *EventHumanModel_Textures2(void) {
     return D_0045E4E0;
 }
 
 /* +0x14 of a hanging point: its anchor bone (+0x24) is aimed at it - X from the anchor to the
  * point, Y the hanging bone's (+0x44) side axis (+0x48), made square, at the anchor */
-void func_00315E00(u8 *p, u8 *s) {
+/* 0x00315E00 */
+void HairPoint2_AdjustBone(u8 *p, u8 *s) {
     f32 *a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x44, s32));
     f32 anchor[4] __attribute__((aligned(16)));
@@ -4861,7 +4932,8 @@ void func_00315E00(u8 *p, u8 *s) {
 /* +0x14 of a chained point: its bone (+0x24) is aimed at it - X from the anchor (the bone's own
  * position, or the point it hangs from, +0x2C) to the point, keeping the Y axis of the anchor's
  * bone, made square, at the anchor */
-void func_002EE710(u8 *p, u8 *s) {
+/* 0x002EE710 */
+void SpringPartBase_AdjustBone(u8 *p, u8 *s) {
     f32 *a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     f32 anchor[4] __attribute__((aligned(16)));
     f32 x[4] __attribute__((aligned(16)));
@@ -4887,7 +4959,8 @@ void func_002EE710(u8 *p, u8 *s) {
 
 /* +0x14 of a sprung point: its bone (+0x24) moves to it, its axes scaled by +0x50 / +0x54 /
  * +0x58 */
-void func_002EED20(u8 *p, u8 *s) {
+/* 0x002EED20 */
+void SprungPoint_AdjustBone(u8 *p, u8 *s) {
     f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
 
     sceVu0ScaleVector(b, b, AT(p, 0x50, f32));
@@ -5570,7 +5643,8 @@ void *func_00170F90(u8 *p) {
 }
 
 /* the base model's destructor (vtable D_0046B210 down to its parts) */
-void *func_0016F5D0(void *p, s32 flags) {
+/* 0x0016F5D0 */
+void *ModelBase_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -5587,7 +5661,8 @@ void *func_0016F5D0(void *p, s32 flags) {
 }
 
 /* the human-with-kind model's destructor (vtable D_0046B0E0, then the human base) */
-void *func_00170350(void *p, s32 flags) {
+/* 0x00170350 */
+void *CharModel_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -5608,7 +5683,8 @@ void *func_00170460(u8 *p) {
 extern void *D_00476F50[];
 
 /* +0x8 destructor */
-void *func_0033E620(void *p, s32 flags) {
+/* 0x0033E620 */
+void *Kind18Model_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -5625,7 +5701,7 @@ void *func_0033E620(void *p, s32 flags) {
             func_001702F0(m + 0xDB0, -1);
             func_0016F990(m + 0xD70, -1);
             func_001002C0(m + 0x9B0, func_00170080, 0x50, 0xC);
-            func_00170350(m, 0);
+            CharModel_dtor(m, 0);
         }
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
@@ -5634,19 +5710,21 @@ void *func_0033E620(void *p, s32 flags) {
     return m;
 }
 
-void func_0033E730(void) {
+/* 0x0033E730 */
+void Kind18Model_ShowParts(void) {
 }
 
-extern void func_001F1FE0(u8 *m);
+extern void CharModel_Loaded(u8 *m);
 extern void func_002F7620(u8 *m);
 
-/* +0xC loaded (as func_002F7920): the base setup, the parts' roles, her own setup, per-part draw
+/* +0xC loaded (as EventHumanModel_Loaded): the base setup, the parts' roles, her own setup, per-part draw
  * settings for parts 0xA0..0xA8, 0xAE..0xB4 and 0xD2..0xD6 */
-void func_0033E750(u8 *m) {
+/* 0x0033E750 */
+void Kind18Model_Loaded(u8 *m) {
     static const u8 sParts[] = {0xA0, 0xA2, 0xA4, 0xA6, 0xA8, 0xAE, 0xB0, 0xB2, 0xB4, 0xD2, 0xD4, 0xD6};
     s32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -5667,7 +5745,8 @@ void func_0033E750(u8 *m) {
 }
 
 /* +0x10 */
-void func_0033E740(u8 *m) {
+/* 0x0033E740 */
+void Kind18Model_Frame(u8 *m) {
     Model_Release(m);
 }
 
@@ -5705,7 +5784,8 @@ void *func_001700E0(u8 *m, s32 kind) {
 }
 
 /* its destructor */
-void *func_0016FF50(void *p, s32 flags) {
+/* 0x0016FF50 */
+void *EventHumanModel_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -6208,8 +6288,9 @@ extern u8 D_0042F290[];
 extern u8 D_0042F2A0[];
 extern u8 D_0042F2B0[];
 
-/* (as func_002F7A10)  +0xB8: 16 entries of the table D_00443FA0 (+0x840 count, +0x844 table) */
-void func_0035B0F0(u8 *m) {
+/* (as EventHumanModel_MotionTable)  +0xB8: 16 entries of the table D_00443FA0 (+0x840 count, +0x844 table) */
+/* 0x0035B0F0 */
+void Costume8Model_MotionTable(u8 *m) {
     AT(m, 0x840, s16) = 16;
     AT(m, 0x844, u8 *) = D_00443FA0;
 }
@@ -6220,8 +6301,9 @@ extern u8 D_00443FB0[];
 
 /* +0xC loaded (vtable at 0x479660): the base setup and the parts' roles; part 0xBE drawn
    with 0x40 */
-void func_0035B120(u8 *m) {
-    func_001F1FE0(m);
+/* 0x0035B120 */
+void Costume8Model_Loaded(u8 *m) {
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -6278,7 +6360,7 @@ void Kind12Model_Loaded(u8 *m) {
     AT(m, 0x858, s32) = 0;
 }
 
-/* (as func_00170350)  the human-with-kind model's destructor (vtable D_00479740, then the human base) */
+/* (as CharModel_dtor)  the human-with-kind model's destructor (vtable D_00479740, then the human base) */
 /* 0x0035B1B0 */
 void *Kind12Model_dtor(void *p, s32 flags) {
     u8 *m = p;
@@ -6497,23 +6579,28 @@ void func_00337760(u8 *m);
 void func_003385F0(u8 *m);
 
 /* costume 2 */
-void *func_00336DB0(u8 *m, s32 flags) {
+/* 0x00336DB0 */
+void *Costume2Model_dtor(u8 *m, s32 flags) {
     return costume_dtor(m, flags, D_00475AE0, 0xC, 0xDA0);
 }
 
-void *func_00336F00(void) {
+/* 0x00336F00 */
+void *Costume2Model_Textures(void) {
     return D_00461240;
 }
 
-void *func_00336F10(void) {
+/* 0x00336F10 */
+void *Costume2Model_Textures2(void) {
     return D_00461260;
 }
 
-u32 func_00336F20(void) {
+/* 0x00336F20 */
+u32 Costume2Model_BufferSize(void) {
     return 0x41000;
 }
 
-void func_00336F30(u8 *self, s32 on) {
+/* 0x00336F30 */
+void Costume2Model_VtCC(u8 *self, s32 on) {
     s32 i;
 
     for (i = 0; i < 3; i++) {
@@ -6521,33 +6608,40 @@ void func_00336F30(u8 *self, s32 on) {
     }
 }
 
-void func_00336F70(u8 *self, f32 x, f32 y, f32 z) {
+/* 0x00336F70 */
+void Costume2Model_VtD0(u8 *self, f32 x, f32 y, f32 z) {
     F32(self, 0x1720) = x;
     F32(self, 0x1724) = y;
     F32(self, 0x1728) = z;
 }
 
-s32 func_00336F80(void) {
+/* 0x00336F80 */
+s32 Costume2Model_Part0(void) {
     return 0x3;
 }
 
-s32 func_00336F90(void) {
+/* 0x00336F90 */
+s32 Costume2Model_Part1(void) {
     return 0x7;
 }
 
-s32 func_00336FA0(void) {
+/* 0x00336FA0 */
+s32 Costume2Model_Part2(void) {
     return 0x1C;
 }
 
-s32 func_00336FB0(void) {
+/* 0x00336FB0 */
+s32 Costume2Model_Part3(void) {
     return 0x3B;
 }
 
-s32 func_00336FC0(void) {
+/* 0x00336FC0 */
+s32 Costume2Model_Part4(void) {
     return 0x17;
 }
 
-void func_00336FD0(u8 *self, f32 x, f32 y, f32 z) {
+/* 0x00336FD0 */
+void Costume2Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
     F32(self, 0xE90) = x;
     F32(self, 0xE94) = y;
     F32(self, 0xE98) = z;
@@ -6557,9 +6651,10 @@ void func_00336FE0(u8 *m) {
     costume_hang3(m, 0xDA0, 0, D_0042F370, D_0042F360, D_0047ADC8, D_0047B284, 24.0f);
 }
 
-/* +0xC4 which of the swappable parts show (part flag 2 hides; as func_002F6E60): 0..4 one of
+/* +0xC4 which of the swappable parts show (part flag 2 hides; as EventHumanModel_ShowParts): 0..4 one of
    +0xEE / +0xF6 / +0xF8 / +0xF0, 5..9 one set of the eight at +0x9A.. */
-void func_00337260(u8 *m, s32 look) {
+/* 0x00337260 */
+void Costume2Model_ShowParts(u8 *m, s32 look) {
     u32 k = look & 0xFF;
 
     if (k < 5) {
@@ -6605,7 +6700,8 @@ void func_00337430(u8 *m) {
     costume_hang16(m, 0xDA0, 0, D_0042F300, D_0042F2C0, D_0042F340, D_0042F350, 0x3F060A92 /* pi / 6 */);
 }
 
-void *func_003376D0(void *self, u32 i) {
+/* 0x003376D0 */
+void *Costume2Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00461140;
     case 1: return D_00461160;
@@ -6630,16 +6726,18 @@ void func_00337A80(u8 *m) {
 }
 
 /* +0x3C */
-void func_00337BE0(u8 *m) {
+/* 0x00337BE0 */
+void Costume2Model_Springs(u8 *m) {
     costume_frame(m, 0xDA0);
 }
 
 /* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings */
-void func_00337CF0(u8 *m) {
+/* 0x00337CF0 */
+void Costume2Model_Loaded(u8 *m) {
     static const u8 sParts[] = {0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xAE, 0xB4, 0xB6, 0xB8, 0xBA, 0xFA, 0xFC, 0xFE};
     u32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -6661,7 +6759,8 @@ void func_00337CF0(u8 *m) {
     }
 }
 
-void func_00337E00(u8 *self) {
+/* 0x00337E00 */
+void Costume2Model_MotionTable(u8 *self) {
     S16(self, 0x840) = 16;
     PTR(self, 0x844) = D_0042F270;
 }
@@ -6690,7 +6789,8 @@ static inline void spring_one(u8 *m, u8 *set, u8 *node, s32 bone) {
 }
 
 /* +0x8 destructor */
-void *func_00353C90(u8 *m, s32 flags) {
+/* 0x00353C90 */
+void *Costume7Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00479420;
         AT(m, 0xCF0, void **) = D_004703D0;
@@ -6709,43 +6809,55 @@ void *func_00353C90(u8 *m, s32 flags) {
     return m;
 }
 
-void *func_00353DB0(void) { return D_004631C0; }
+/* 0x00353DB0 */
+void *Costume7Model_Textures(void) { return D_004631C0; }
 
-void *func_00353DC0(void) { return D_004631E0; }
+/* 0x00353DC0 */
+void *Costume7Model_Textures2(void) { return D_004631E0; }
 
-s32 func_00353DD0(void) { return 0x41000; }
+/* 0x00353DD0 */
+s32 Costume7Model_BufferSize(void) { return 0x41000; }
 
-void func_00353DE0(u8 *p, f32 x, f32 y, f32 z) {
+/* 0x00353DE0 */
+void Costume7Model_SetPoint(u8 *p, f32 x, f32 y, f32 z) {
     B7_F(p, 0xBD0) = x;
     B7_F(p, 0xBD4) = y;
     B7_F(p, 0xBD8) = z;
 }
 
-void func_00353DF0(u8 *p) { B7_B(p, 0xDE) |= 2; }
+/* 0x00353DF0 */
+void Costume7Model_Vt2C(u8 *p) { B7_B(p, 0xDE) |= 2; }
 
-void func_00353E00(u8 *p) { B7_B(p, 0xDE) &= ~2; }
+/* 0x00353E00 */
+void Costume7Model_Vt30(u8 *p) { B7_B(p, 0xDE) &= ~2; }
 
-s32 func_00353E10(void) {
+/* 0x00353E10 */
+s32 Costume7Model_Part0(void) {
     return 0x3;
 }
 
-s32 func_00353E20(void) {
+/* 0x00353E20 */
+s32 Costume7Model_Part1(void) {
     return 0x7;
 }
 
-s32 func_00353E30(void) {
+/* 0x00353E30 */
+s32 Costume7Model_Part2(void) {
     return 0x11;
 }
 
-s32 func_00353E40(void) {
+/* 0x00353E40 */
+s32 Costume7Model_Part3(void) {
     return 0x21;
 }
 
-s32 func_00353E50(void) {
+/* 0x00353E50 */
+s32 Costume7Model_Part4(void) {
     return 0xA;
 }
 
-void *func_00353E60(void *self, u32 i) {
+/* 0x00353E60 */
+void *Costume7Model_MarkerFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462FC0;
     case 1: return D_00462FE0;
@@ -6758,7 +6870,8 @@ void *func_00353E60(void *self, u32 i) {
     return NULL;
 }
 
-void *func_00353EF0(void *self, u32 i) {
+/* 0x00353EF0 */
+void *Costume7Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_004630C0;
     case 1: return D_004630E0;
@@ -6808,7 +6921,8 @@ void func_00354210(u8 *m) {
 }
 
 /* +0x3C: the four sets a frame: one step, or 30 to settle after a reset */
-void func_003542E0(u8 *m) {
+/* 0x003542E0 */
+void Costume7Model_Springs(u8 *m) {
     s32 n = AT(m, 0x850, u8) ? 30 : 1;
     s32 i;
 
@@ -6830,11 +6944,12 @@ void func_003542E0(u8 *m) {
 }
 
 /* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings, +0x2C */
-void func_003543C0(u8 *m) {
+/* 0x003543C0 */
+void Costume7Model_Loaded(u8 *m) {
     static const u8 sParts[] = {0xA8, 0xAA, 0xAC, 0xAE, 0xB0, 0xB2, 0xE0};
     u32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -6855,29 +6970,35 @@ void func_003543C0(u8 *m) {
     VCALL(m, 0x2C, void (*)(u8 *))(m);
 }
 
-void func_003544A0(u8 *p) {
+/* 0x003544A0 */
+void Costume7Model_MotionTable(u8 *p) {
     B7_H(p, 0x840) = 0x10;
     *(void **)(p + 0x844) = D_00443E20;
 }
 
 /* costume 3 */
-void *func_00337E20(u8 *m, s32 flags) {
+/* 0x00337E20 */
+void *Costume3Model_dtor(u8 *m, s32 flags) {
     return costume_dtor(m, flags, D_00475BC0, 8, 0xC60);
 }
 
-void *func_00337F70(void) {
+/* 0x00337F70 */
+void *Costume3Model_Textures(void) {
     return D_00461380;
 }
 
-void *func_00337F80(void) {
+/* 0x00337F80 */
+void *Costume3Model_Textures2(void) {
     return D_004613A0;
 }
 
-u32 func_00337F90(void) {
+/* 0x00337F90 */
+u32 Costume3Model_BufferSize(void) {
     return 0x41000;
 }
 
-void func_00337FA0(u8 *self, s32 on) {
+/* 0x00337FA0 */
+void Costume3Model_VtCC(u8 *self, s32 on) {
     s32 i;
 
     for (i = 0; i < 3; i++) {
@@ -6886,13 +7007,19 @@ void func_00337FA0(u8 *self, s32 on) {
 }
 
 /* +0x84..+0x94: part roles */
-s32 func_00337FE0(void) { return 3; }
-s32 func_00337FF0(void) { return 7; }
-s32 func_00338000(void) { return 0x18; }
-s32 func_00338010(void) { return 0x37; }
-s32 func_00338020(void) { return 0x13; }
+/* 0x00337FE0 */
+s32 Costume3Model_Part0(void) { return 3; }
+/* 0x00337FF0 */
+s32 Costume3Model_Part1(void) { return 7; }
+/* 0x00338000 */
+s32 Costume3Model_Part2(void) { return 0x18; }
+/* 0x00338010 */
+s32 Costume3Model_Part3(void) { return 0x37; }
+/* 0x00338020 */
+s32 Costume3Model_Part4(void) { return 0x13; }
 
-void func_00338030(u8 *self, f32 x, f32 y, f32 z) {
+/* 0x00338030 */
+void Costume3Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
     F32(self, 0xD50) = x;
     F32(self, 0xD54) = y;
     F32(self, 0xD58) = z;
@@ -6906,7 +7033,8 @@ void func_003382C0(u8 *m) {
     costume_hang16(m, 0xC60, -4, D_0042F3F0, D_0042F3B0, D_0042F430, D_0042F440, 0x3F1C61AB /* 35 degrees */);
 }
 
-void *func_00338560(void *self, u32 i) {
+/* 0x00338560 */
+void *Costume3Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00461280;
     case 1: return D_004612A0;
@@ -6976,15 +7104,17 @@ void func_00338880(u8 *m) {
     AT(m, 0x850, u8) = 1;
 }
 
-void func_003389E0(u8 *m) {
+/* 0x003389E0 */
+void Costume3Model_Springs(u8 *m) {
     costume_frame(m, 0xC60);
 }
 
-void func_00338AF0(u8 *m) {
+/* 0x00338AF0 */
+void Costume3Model_Loaded(u8 *m) {
     static const u8 sParts[] = {0x9C, 0x9E, 0xA0, 0xA2, 0xB2, 0xB4, 0xB6, 0xB8, 0xBA, 0xBC, 0xE4, 0xE6, 0xE8, 0xEA};
     u32 i;
 
-    func_001F1FE0(m);
+    CharModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -7004,13 +7134,15 @@ void func_00338AF0(u8 *m) {
     }
 }
 
-void func_00338C00(u8 *self) {
+/* 0x00338C00 */
+void Costume3Model_MotionTable(u8 *self) {
     S16(self, 0x840) = 16;
     PTR(self, 0x844) = D_0042F380;
 }
 
 /* Fiona's costume 8 model's destructor (vtable D_00479660, then the kind base, then delete) */
-void *func_0035AF70(void *p, s32 flags) {
+/* 0x0035AF70 */
+void *Costume8Model_dtor(void *p, s32 flags) {
     u8 *m = p;
 
     if (m != NULL) {
@@ -7024,40 +7156,49 @@ void *func_0035AF70(void *p, s32 flags) {
     return m;
 }
 
-void *func_0035AFE0(void) {
+/* 0x0035AFE0 */
+void *Costume8Model_Textures(void) {
     return D_00463320;
 }
 
-void *func_0035AFF0(void) {
+/* 0x0035AFF0 */
+void *Costume8Model_Textures2(void) {
     return D_00463340;
 }
 
-s32 func_0035B000(void) {
+/* 0x0035B000 */
+s32 Costume8Model_BufferSize(void) {
     return 0x41000;
 }
 
-s32 func_0035B010(void) {
+/* 0x0035B010 */
+s32 Costume8Model_Part0(void) {
     return 0x3;
 }
 
-s32 func_0035B020(void) {
+/* 0x0035B020 */
+s32 Costume8Model_Part1(void) {
     return 0x7;
 }
 
-s32 func_0035B030(void) {
+/* 0x0035B030 */
+s32 Costume8Model_Part2(void) {
     return 0xE;
 }
 
-s32 func_0035B040(void) {
+/* 0x0035B040 */
+s32 Costume8Model_Part3(void) {
     return 0x18;
 }
 
-s32 func_0035B050(void) {
+/* 0x0035B050 */
+s32 Costume8Model_Part4(void) {
     return 0xB;
 }
 
-/* (as func_00353EF0) */
-void *func_0035B060(void *self, u32 i) {
+/* (as Costume7Model_ModelFile) */
+/* 0x0035B060 */
+void *Costume8Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00463220;
     case 1: return D_00463240;
