@@ -6106,3 +6106,18 @@ void func_00338AF0(u8 *m) {
         AT(m, sParts[i] + 1, u8) = 0x40;
     }
 }
+
+/* Fiona's costume 8 model's destructor (vtable D_00479660, then the kind base, then delete) */
+void *func_0035AF70(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = D_00479660;
+        AT(m, 0x0, void **) = D_0046B0E0;
+        func_0016F9E0(m, 0);
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}

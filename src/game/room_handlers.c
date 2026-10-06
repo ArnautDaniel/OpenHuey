@@ -5397,3 +5397,53 @@ extern Character *gCharacters[];
 s32 func_0036F150(VObject *self, void *a1, u8 *cmd) {
     return swing_three_by(self, cmd, 1);
 }
+
+/* (as func_002AFAA0)  the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02 */
+s32 func_0033A040(void *self, void *a1, u8 *cmd) {
+    u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xB)]->motion;
+
+    if (cmd[3] == 1) {
+        AT(m, 0xCC8, s32) = 0;
+    } else {
+        AT(m, 0xCC8, u32) = 0xBCA3D70A;   /* -0.02 */
+    }
+    return 1;
+}
+
+/* script variable byte 3 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0 */
+static inline s32 var_down_by_hit(u8 *cmd) {
+    VObject *ev = D_0044E4D0;
+    s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[3]);
+    s32 k = AT(gCharPlayer, 0xFC, s32) == 0x1A ? 1 : 5;
+
+    if (k > 0) {
+        v -= k;
+        if (v < 0) {
+            v = 0;
+        }
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[3], v);
+    }
+    return 1;
+}
+
+/* (as func_002AB580, the player only) */
+s32 func_0033A8E0(void *self, void *a1, u8 *cmd) {
+    return var_down_by_hit(cmd);
+}
+
+/* (as func_0033A8E0) */
+s32 func_0033FFC0(void *self, void *a1, u8 *cmd) {
+    return var_down_by_hit(cmd);
+}
+
+/* the player's model tint: white (byte 3 0) or blue halved */
+s32 func_00320F70(void *self, void *a1, u8 *cmd) {
+    VObject *m = gCharPlayer->motion;
+
+    if (cmd[3] == 0) {
+        VCALL(m, 0xC0, void (*)(VObject *, f32, f32, f32))(m, 1.0f, 1.0f, 1.0f);
+    } else {
+        VCALL(m, 0xC0, void (*)(VObject *, f32, f32, f32))(m, 1.0f, 1.0f, 0.5f);
+    }
+    return 1;
+}
