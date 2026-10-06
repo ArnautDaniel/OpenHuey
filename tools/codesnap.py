@@ -228,7 +228,7 @@ def ps2_isolated(canon: dict, root: Path) -> dict:
 def native_isolated(canon: dict, root: Path) -> dict:
     # non-PIC: a call into the same file would otherwise skip the PLT and differ
     cmd = [a.replace(str(ROOT), str(root)) for a in native_cmd()] + ISOLATE + ["-fno-pic", "-fno-pie"]
-    srcs = [p for d in ("src/game", "src/leaf", "src/sdk") for p in sorted((root / d).glob("*.c"))]
+    srcs = [p for d in ("src/game", "src/game/rooms", "src/sdk") for p in sorted((root / d).glob("*.c"))]
     return compile_all([(cmd, s) for s in srcs], root, canon)
 
 
@@ -250,7 +250,7 @@ def native_one(args):
 
 def native_snap(canon: dict) -> dict:
     cmd = native_cmd()
-    srcs = sorted(p for d in ("src/game", "src/leaf", "src/sdk") for p in (ROOT / d).glob("*.c"))
+    srcs = sorted(p for d in ("src/game", "src/game/rooms", "src/sdk") for p in (ROOT / d).glob("*.c"))
     out = {}
     with concurrent.futures.ThreadPoolExecutor(3) as ex:
         for text in ex.map(native_one, [(cmd, s) for s in srcs]):

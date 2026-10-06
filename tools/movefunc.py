@@ -8,11 +8,14 @@ For each function: its definition (and the comment block right above it) leaves 
 file. Into the destination go, as needed and not there already:
   - the file-local definitions it uses (macros, typedefs, structs, static functions and
     variables, static inline helpers), recursively, in their source order;
-  - the extern declarations / prototypes of the symbols it uses.
-The function is placed by address among the destination's functions (the original's layout);
-the support items go before the first moved function that needs them. A local definition the
-destination has under the same name with different text is a conflict: reported, nothing
-moves. A source file left without functions is deleted; the difftest list follows the moves.
+  - the source's #includes, and the extern declarations / prototypes of the symbols it uses
+    (not those the destination's headers already declare);
+  - the #if conditions it sat under (e.g. #ifdef HG_NATIVE), around each moved item.
+The function is placed by address among the destination's functions (the original's layout),
+outside #if blocks; the support items go before the destination's first function. A local
+definition the destination has under the same name with different text is carried renamed
+(NAME_<source suffix>). A destination prototype of a moved function gives way to the
+definition's. A source file left without functions is deleted; the difftest list follows.
 """
 import re
 import sys
@@ -299,7 +302,7 @@ def main():
         # only what the destination declares before its first function counts: a moved
         # function may land anywhere above a later declaration
         first = next((k for k, x in enumerate(d_items) if x.kind in ("func", "sfunc")), len(d_items))
-        d_hdr = header_decls(d_items)
+        d_hdr = header_decls(d_items, here=(ROOT / dst).parent)
         d_decl = declared(d_items[:first]) | set(d_hdr)
         d_def_top = defined_names(d_items[:first])
         # what to carry: closure over local definitions
@@ -353,10 +356,12 @@ def main():
         for it in moving + carried_local:
             uses |= it.uses()
         decls = []
+        got = set()
         for it in s_items:
             if it.kind != "decl":
                 continue
-            wanted = [nm for nm in it.names if nm in uses and nm not in d_decl and nm not in d_def]
+            wanted = [nm for nm in it.names if nm in uses and nm not in d_decl and nm not in d_def and nm not in got]
+            got.update(wanted)
             if wanted:
                 if len(it.names) == len(wanted):
                     decls.append(it.full())
@@ -375,7 +380,11 @@ def main():
             if it.names[0] in d_hdr:
                 print(f"header: {dst} {it.names[0]}: {' '.join(prototype(it.text).split())}  vs  {' '.join(strip_comments(d_hdr[it.names[0]]).split())}")
         d_incs = set(x.text.strip() for x in includes_of(d_items))
-        incs = [x.text for x in includes_of(s_items) if x.text.strip() not in d_incs]
+        incs = []
+        for x in includes_of(s_items):
+            if x.text.strip() not in d_incs:
+                d_incs.add(x.text.strip())
+                incs.append(x.text)
         if check:
             print(f"{src} -> {dst}: {', '.join(funcs)}")
             for x in incs:
@@ -385,12 +394,16 @@ def main():
             for d in decls:
                 print("    + " + d.strip().replace("\n", " ")[:110])
             continue
+        # what sat under #if blocks in the source keeps its conditions
+        g = guards(s_items)
+        moving_out = [guarded(it, g.get(id(it))) for it in moving]
+        carried_out = [guarded(it, g.get(id(it))) for it in carried_local]
         # remove from the source
         s_new = [it for it in s_items if it not in moving]
         # drop local items no longer used by anything left
         edits[src] = prune_unused(s_new)
         # insert into the destination
-        edits[dst] = insert(drop_decls(d_items, set(funcs)), moving, carried_local, decls, incs, protos)
+        edits[dst] = insert(drop_decls(d_items, set(funcs)), moving_out, carried_out, decls, incs, protos)
     if problems:
         print("\n".join(problems))
         sys.exit(1)
@@ -492,7 +505,7 @@ def prune_unused(items):
 _hdr_cache = {}
 
 
-def header_decls(items, seen=None):
+def header_decls(items, seen=None, here=None):
     """names declared by the headers a file includes (recursively), -> declaration text"""
     out = {}
     seen = set() if seen is None else seen
@@ -500,7 +513,7 @@ def header_decls(items, seen=None):
         m = re.search(r'#include\s+"([^"]+)"', it.text)
         if not m:
             continue
-        for base in (ROOT / "include", ROOT / "src"):
+        for base in ([here] if here else []) + [ROOT / "include", ROOT / "src"]:
             h = base / m.group(1)
             if h.is_file():
                 break
@@ -516,8 +529,40 @@ def header_decls(items, seen=None):
             if x.kind == "decl":
                 for n in x.names:
                     out.setdefault(n, x.text)
-        out.update({k: v for k, v in header_decls(its, seen).items() if k not in out})
+        out.update({k: v for k, v in header_decls(its, seen, h.parent).items() if k not in out})
     return out
+
+
+def guards(items):
+    """item -> the #if conditions it sits under, as directives that reopen them"""
+    stack, out = [], {}
+    for it in items:
+        if it.kind == "pp":
+            t = it.text.lstrip()
+            m = re.match(r"#\s*(ifdef|ifndef|if)\b\s*(.*)", t)
+            if m:
+                c = m.group(2).split("\n")[0].strip()
+                cond = {"ifdef": f"defined({c})", "ifndef": f"!defined({c})"}.get(m.group(1), f"({c})")
+                stack.append(cond)
+            elif re.match(r"#\s*else\b", t) and stack:
+                stack[-1] = f"!({stack[-1]})"
+            elif re.match(r"#\s*endif\b", t) and stack:
+                stack.pop()
+            continue
+        if stack:
+            out[id(it)] = list(stack)
+    return out
+
+
+def guarded(it, conds):
+    """a copy of a moved item wrapped in the #if conditions it had in its source"""
+    if not conds:
+        return it
+    head = "".join(f"#if {c}\n" for c in conds)
+    tail = "#endif\n" * len(conds)
+    head = re.sub(r"#if defined\((\w+)\)\n", r"#ifdef \1\n", head)
+    text = it.text if it.text.endswith("\n") else it.text + "\n"
+    return Item(it.kind, text + tail, it.names, head + it.lead)
 
 
 def drop_decls(items, names):
@@ -583,7 +628,8 @@ def insert(d_items, moving, carried, decls, incs=(), protos=()):
                 while pos < len(items) and depth[pos - 1] > 0:
                     pos += 1
             else:
-                fs = [i for i, x in enumerate(items) if x.kind in ("func", "sfunc")]
+                # before the first function with an address (carried helpers stay above)
+                fs = [i for i, x in enumerate(items) if x.kind in ("func", "sfunc") and addr_of(x.names[0]) is not None]
                 pos = fs[0] if fs else len(items)
         if pos is None:
             pos = len(items)

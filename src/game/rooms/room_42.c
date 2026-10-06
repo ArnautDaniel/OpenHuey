@@ -1,0 +1,42 @@
+/* Room 0x42: its event handler class (vtable D_0046B770, see sRooms in event.c),
+ * the tables its getters give the event system, and the room's hooks
+ * (commands, conditions, objects and effects). */
+#include "common.h"
+#include "game/rooms/rooms.h"
+#include "ptmf.h"
+
+extern void *D_0046B770[];
+extern void *D_0046DB80[];
+
+extern u8 D_004070F0[];
+extern u8 D_00407300[];
+extern u8 D_00407340[];
+extern u8 D_00407430[];
+extern void *D_00407A80[];
+extern u8 D_00407AC0[];
+
+void *func_0020B8A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B770, D_0046DB80); }
+
+void *func_0020B900(void) {
+    return D_004070F0;
+}
+
+void *func_0020B910(void) {
+    return D_00407300;
+}
+
+void *func_0020B920(void) {
+    return D_00407340;
+}
+
+void *func_0020B930(void) {
+    return D_00407430;
+}
+
+void *func_0020B940(void *self, s32 i) {
+    return D_00407A80[i];
+}
+
+void *func_0020B960(void) {
+    return D_00407AC0;
+}

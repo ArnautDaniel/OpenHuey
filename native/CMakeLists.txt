@@ -43,7 +43,7 @@ add_custom_command(
     COMMENT "Generating native data and stubs"
     VERBATIM)
 
-file(GLOB GAME_C CONFIGURE_DEPENDS ${ROOT}/src/game/*.c ${ROOT}/src/leaf/*.c ${ROOT}/src/sdk/*.c)
+file(GLOB GAME_C CONFIGURE_DEPENDS ${ROOT}/src/game/*.c ${ROOT}/src/game/rooms/*.c ${ROOT}/src/sdk/*.c)
 file(GLOB PLATFORM_C CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/platform/*.c)
 
 add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S ${GAME_C} ${PLATFORM_C})

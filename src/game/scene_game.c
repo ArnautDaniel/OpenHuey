@@ -7,6 +7,10 @@
 #include "memcard.h"
 #include "ptmf.h"
 #include "pursuer.h"
+#include "effectmgr.h"
+#include "texcache.h"
+#include "charaction.h"
+#include "gl2d.h"
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
 
@@ -76,7 +80,7 @@ void *func_002D00A0(u8 *o, s32 flags);
 void *func_002D0C70(u8 *o, s32 flags);
 void *func_0033D990(u8 *o, s32 flags);
 
-extern u8 D_0046BA68[], D_0046DB80[];
+extern void *D_0046BA68[], *D_0046DB80[];
 extern void *D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[];
 extern u8 D_0046C3E0[];
@@ -118,6 +122,12 @@ s32 func_0031E130(u8 *self);
 extern void *func_0016FCD0(u8 *m);
 extern void *D_00474460[];
 void *func_0038C8D0(u8 *m);
+
+void *func_001FB3B0(void *o, s32 flags);
+s32 func_00209200(void *o);
+s32 func_00209830(void *o);
+
+void *func_001FB400(u8 *o, s32 flags);
 
 /* destructor (vtable D_004699E0) */
 void *func_00120EF0(u8 *o, s32 flags) {
@@ -296,8 +306,6 @@ extern void func_00169260(void *, void *, u32, void *, s32);
 extern void func_002D1200(void *);
 extern void func_002D1160(void *);
 extern void func_002D10C0(void *);
-extern void *func_001FB3B0(void *, s32);
-extern void *func_001FB400(void *, s32);
 extern void func_00100340(void *array, void *ctor, void *dtor, u32 size, u32 n);
 extern void *SubScreenBase_ctor(SubScreen *w);
 extern void *TextObj_ctor(void *o);
@@ -2381,6 +2389,37 @@ void *func_001FB0F0(u8 *o, s32 flags) {
     return o;
 }
 
+/* the base (D_0046DB80): destructor */
+void *func_001FB3B0(void *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046DB80;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046BA68) */
+void *func_001FB400(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046BA68;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* the base's defaults: nothing (0) */
+s32 func_00209200(void *o) {   /* +0x30 */
+    return 0;
+}
+
+s32 func_00209830(void *o) {   /* +0xC */
+    return 0;
+}
+
 /* destructor (vtable D_0046C6F0) */
 void *func_00225620(u8 *o, s32 flags) {
     if (o != NULL) {
@@ -2502,7 +2541,7 @@ void SceneGame_OnSoftReset(u8 *g) {
 
 extern void func_00100490(void *p);   /* operator delete */
 extern void func_0011F9A0(void *p);   /* operator delete (the scene heap) */
-extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
+extern void func_001002C0(void *array, void *dtor, u32 size, u32 n);   /* __destroy_arr */
 extern void *D_0046A9D0[], *D_0046AA40[], *D_0046A9C0[], *D_0046F350[], *D_00469D00[], *D_0046A9B0[];
 extern void *D_00473440[], *D_0046A110[], *D_0046A100[], *D_0047A790[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_004699C0[], *D_0046C660[], *D_0046C668[], *D_0046C6F0[], *D_0046B300[], *D_0046B350[];
@@ -2512,8 +2551,6 @@ extern void *func_002D0C10(void *o, s32 flags);
 extern void *BootCard_dtor(void *card, s32 flags);
 extern void *TextObj_dtor(void *o, s32 flags);
 extern void *SubScreenBase_dtor(void *w, s32 flags);
-extern void *func_001FB400(void *o, s32 flags);
-extern void *func_001FB3B0(void *o, s32 flags);
 extern void *func_0016CC40(void *o, s32 flags);
 extern void *func_0020C170(void *o, s32 flags);
 extern void *func_0020C120(void *o, s32 flags);

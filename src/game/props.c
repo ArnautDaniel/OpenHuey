@@ -44,6 +44,18 @@ void *func_00347640(u8 *o, s32 flags);
 
 s32 func_00350C40(f32 *a);
 
+extern void func_002E56C0(u8 *quad);
+/* an effect's quad drawer (at `drawer`) given the current one of its records (`size` apart from
+ * +0x10, the index at `idx`), and drawn */
+static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u32 idx, u32 size) {
+    AT(o, drawer + 0x10, u8 *) = o + AT(o, idx, s32) * size + 0x10;
+    func_002E56C0(o + drawer);
+}
+
+void func_0033C110(u8 *o);
+void func_0035F9B0(u8 *o);
+void func_00371E00(u8 *o);
+
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
@@ -2526,12 +2538,20 @@ u8 *func_0033BE00(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_00476BB0, 0x6010);
 }
 
+void func_0033C110(u8 *o) {
+    quad_step(o, 0x6010, 0x7450, 0x3000);
+}
+
 u8 *func_0032E890(u8 *o, s32 flags) {
     return fx_dtor2(o, flags, D_00474FB0, 0xC10, 0xC48);
 }
 
 u8 *func_0035F5B0(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_00479A60, 0x550);
+}
+
+void func_0035F9B0(u8 *o) {
+    quad_step(o, 0x550, 0x5C0, 0x2A0);
 }
 
 /* (as func_00350910, slower) */
@@ -2839,6 +2859,11 @@ s32 func_00371900(u8 *o) {
         }
     }
     return 1;
+}
+
+void func_00371E00(u8 *o) {
+    AT(o, 0x10C0, s32) = 0;
+    AT(o, 0x10C4, u8) = 0;
 }
 
 /* ---- D_00479800 (room 0x2A): 16 wisps of smoke rising from a character's bone (+0x6C8; none:
