@@ -3273,3 +3273,138 @@ void func_003908B0(SubScreen *s) {
     SubScreen_DrawPart(s, 0x180, 0x140, 0xD, 0x80, 0);
     Task_Printf(&s->text, 0x198, 0x148, 0, D_00464210, 10 - func_00260540(s->pool));
 }
+
+/* ---- the movie list ---- */
+
+extern const u8 D_0044B730[];     /* each movie's seen flag */
+extern const char D_00464208[];   /* "%3d" */
+
+#define MOVIE_COUNT 0x6E
+
+typedef void (*MovieRectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
+
+/* movie `i` was seen (or everything is open) */
+static s32 movie_seen(s32 i) {
+    u32 *flags = &AT(D_0044E978, 0x24, u32);
+    u8 f;
+
+    if (flags[0] & 0x200000) {
+        return 1;
+    }
+    f = D_0044B730[i];
+    return (flags[f >> 5] & (1 << (f & 0x1F))) != 0;
+}
+
+/* The movie list (kind 0x8B), 8 a page: up / down round the page, left / right (prev / next)
+ * turn it; cancel ends (flag 4, var 0x2B the cursor, 0x2A none), confirm on a seen movie ends
+ * playing it (var 0x2A). Its panels, the titles ("???" unseen), the page count, the blinking
+ * arrows and the cursor's thumbnail beside the list. */
+void func_0038E0C0(SubScreen *s) {
+    Task *t = &s->text;
+    s32 base, i;
+
+    if (!s->fading) {
+        u8 cur = s->page[0];
+        u32 pad = D_0047E36C;
+
+        base = (cur >> 3) * 8;
+        if (pad & MENU_UP) {
+            s->page[0] = cur - 1;
+            if ((s8)s->page[0] < base) {
+                s->page[0] = base + 7;
+            }
+            if (s->page[0] >= MOVIE_COUNT) {
+                s->page[0] = MOVIE_COUNT - 1;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_DOWN) {
+            s->page[0] = s->page[0] + 1;
+            if (base + 7 < s->page[0]) {
+                s->page[0] = base;
+            }
+            if (s->page[0] >= MOVIE_COUNT) {
+                s->page[0] = base;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & (MENU_LEFT | MENU_PREV)) {
+            s->page[0] -= 8;
+            if ((s8)s->page[0] < 0) {
+                s->page[0] = MOVIE_COUNT - 1;
+            }
+            s->page[0] = (s->page[0] >> 3) * 8;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & (MENU_RIGHT | MENU_NEXT)) {
+            s->page[0] += 8;
+            s->page[0] = (s->page[0] >> 3) * 8;
+            if (s->page[0] >= MOVIE_COUNT) {
+                s->page[0] = 0;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_CANCEL) {
+            Progress *p = gProgress;
+
+            Progress_SetFlag(p, 4);
+            Progress_SetVar(p, 0x2B, s->page[0]);
+            Progress_SetVar(p, 0x2A, 0xFF);
+        } else if (pad & MENU_CONFIRM) {
+            if (cur < MOVIE_COUNT && movie_seen(cur)) {
+                Progress *p = gProgress;
+
+                Progress_SetFlag(p, 4);
+                Progress_SetVar(p, 0x2B, s->page[0]);
+                Progress_SetVar(p, 0x2A, s->page[0]);
+                Sound_PlaySE(SE_DECIDE);
+                s->quietClose = 1;
+            } else {
+                Sound_PlaySE(SE_BUZZER);
+            }
+        }
+    }
+
+    s->kind = 0x8B;
+    sub_panels(s);
+    D_0047B350 = 1;
+    Task_ShowText(t, 0x30, 0x3B, 0x80, Task_MessageText(t, 0xF), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(t, 0x58, 0x3B, 0x80, Task_MessageText(t, 0x10), 0x80, 0x30, 0x10, 0x15);
+    base = (s->page[0] >> 3) * 8;
+    for (i = 0; i < 8; i++) {
+        s32 n = base + i, y = 0x5E + i * 0x23;
+        u16 id;
+        u8 color;
+
+        if (n >= MOVIE_COUNT) {
+            continue;
+        }
+        id = movie_seen(n) ? (u16)(base + 0x100 + i) : 0x16E;
+        color = s->page[0] == n ? 0x82 : 0x80;
+        Task_Printf(t, 0x30, y, color, D_00464208, n + 1);
+        Task_ShowText(t, 0x58, y, color, Task_MessageText(t, id), 0x80, 0x30, 0x10, 0x15);
+    }
+    Task_ShowText(t, 0x46, 0x186, 0x80, Task_MessageText(t, 0x12), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(t, (u16)(Task_MessageWidth(t, 0x12, 0x10) + 0x56), 0x186, 0x80, Task_MessageText(t, 0x13), 0x80,
+                  0x30, 0x10, 0x15);
+    Task_Printf(t, 0x186, 0x176, 0x80, D_00463FD8, base / 8 + 1, 0xE);
+    {
+        s32 b = 0x80 - ((s->frame << 2) & 0xFF);
+        u8 alpha = b > 0 ? b : -b;
+
+        SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+        SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+    }
+    if (s->page[0] < MOVIE_COUNT) {
+        if (movie_seen(s->page[0])) {
+            VObject *tc = D_0044E4E8;
+            u8 *thumbs = (u8 *)gProgress + 0x16C0;
+
+            VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, thumbs + ((u32 *)thumbs)[s->page[0] + 1], 0x27);
+            VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0, 0, 0x70, 0x60, 0x80808080,
+                                                 0, 0x27, 0x30, -1);
+            VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x27);
+        } else {
+            VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0x10, 0, 0x70, 0x60, 0x80808080,
+                                                 0, 0x1B, 0x30, 1);
+        }
+    }
+    VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
+                                         0x30, 0);
+}
