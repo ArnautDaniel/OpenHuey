@@ -7,64 +7,70 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* ---- shaders ---- */
+/* ---- shaders ----
+ * Uniforms and samplers have fixed locations and bindings in the GLSL, so nothing is looked up:
+ * the mesh shader's u_mvp is location 0, u_use_tex 1, u_solid_tex 2, its texture unit 0; the
+ * 2D shader's projection is location 0, the font unit 0. */
+
+enum { U_MVP = 0, U_USE_TEX = 1, U_SOLID_TEX = 2 };
+enum { U_PROJ = 0 };
 
 static const char *kMeshVs =
     "#version 460 core\n"
-    "layout(location = 0) in vec3 aPos;\n"
-    "layout(location = 1) in vec2 aSt;\n"
-    "layout(location = 2) in vec4 aCol;\n"
-    "uniform mat4 uMvp;\n"
-    "out vec2 vSt;\n"
-    "out vec4 vCol;\n"
+    "layout(location = 0) in vec3 a_pos;\n"
+    "layout(location = 1) in vec2 a_st;\n"
+    "layout(location = 2) in vec4 a_col;\n"
+    "layout(location = 0) uniform mat4 u_mvp;\n"
+    "out vec2 v_st;\n"
+    "out vec4 v_col;\n"
     "void main() {\n"
-    "    gl_Position = uMvp * vec4(aPos, 1.0);\n"
-    "    vSt = aSt;\n"
-    "    vCol = aCol * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
+    "    gl_Position = u_mvp * vec4(a_pos, 1.0);\n"
+    "    v_st = a_st;\n"
+    "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
     "}\n";
 
 /* the GS's modulate: texel times vertex colour; texels with no alpha are dropped */
 static const char *kMeshFs =
     "#version 460 core\n"
-    "in vec2 vSt;\n"
-    "in vec4 vCol;\n"
-    "uniform sampler2D uTex;\n"
-    "uniform int uUseTex;\n"
-    "uniform int uSolidTex;\n"   /* the texture's alpha is not transparency */
-    "out vec4 oColor;\n"
+    "in vec2 v_st;\n"
+    "in vec4 v_col;\n"
+    "layout(binding = 0) uniform sampler2D u_tex;\n"
+    "layout(location = 1) uniform int u_use_tex;\n"
+    "layout(location = 2) uniform int u_solid_tex;\n"   /* the texture's alpha is not transparency */
+    "out vec4 o_color;\n"
     "void main() {\n"
-    "    vec4 c = vCol;\n"
-    "    if (uUseTex != 0) {\n"
-    "        vec4 t = texture(uTex, vSt);\n"
-    "        if (uSolidTex != 0) t.a = 1.0;\n"
+    "    vec4 c = v_col;\n"
+    "    if (u_use_tex != 0) {\n"
+    "        vec4 t = texture(u_tex, v_st);\n"
+    "        if (u_solid_tex != 0) t.a = 1.0;\n"
     "        c *= t;\n"
     "        if (c.a < 1.0 / 255.0) discard;\n"
     "    }\n"
-    "    oColor = clamp(c, 0.0, 1.0);\n"
+    "    o_color = clamp(c, 0.0, 1.0);\n"
     "}\n";
 
 static const char *k2dVs =
     "#version 460 core\n"
-    "layout(location = 0) in vec2 aPos;\n"
-    "layout(location = 1) in vec2 aUv;\n"
-    "layout(location = 2) in vec4 aCol;\n"
-    "uniform mat4 uProj;\n"
-    "out vec2 vUv;\n"
-    "out vec4 vCol;\n"
+    "layout(location = 0) in vec2 a_pos;\n"
+    "layout(location = 1) in vec2 a_uv;\n"
+    "layout(location = 2) in vec4 a_col;\n"
+    "layout(location = 0) uniform mat4 u_proj;\n"
+    "out vec2 v_uv;\n"
+    "out vec4 v_col;\n"
     "void main() {\n"
-    "    gl_Position = uProj * vec4(aPos, 0.0, 1.0);\n"
-    "    vUv = aUv;\n"
-    "    vCol = aCol;\n"
+    "    gl_Position = u_proj * vec4(a_pos, 0.0, 1.0);\n"
+    "    v_uv = a_uv;\n"
+    "    v_col = a_col;\n"
     "}\n";
 
 static const char *k2dFs =   /* the font is a coverage mask */
     "#version 460 core\n"
-    "in vec2 vUv;\n"
-    "in vec4 vCol;\n"
-    "uniform sampler2D uFont;\n"
-    "out vec4 oColor;\n"
+    "in vec2 v_uv;\n"
+    "in vec4 v_col;\n"
+    "layout(binding = 0) uniform sampler2D u_font;\n"
+    "out vec4 o_color;\n"
     "void main() {\n"
-    "    oColor = vec4(vCol.rgb, vCol.a * texture(uFont, vUv).r);\n"
+    "    o_color = vec4(v_col.rgb, v_col.a * texture(u_font, v_uv).r);\n"
     "}\n";
 
 static GLuint shader(GLenum type, const char *src) {
@@ -97,6 +103,8 @@ static GLuint program(const char *vs, const char *fs) {
         glGetProgramInfoLog(p, sizeof(log), NULL, log);
         fprintf(stderr, "render: program: %s\n", log);
     }
+    glDetachShader(p, v);
+    glDetachShader(p, f);
     glDeleteShader(v);
     glDeleteShader(f);
     return p;
@@ -111,9 +119,7 @@ typedef struct Vertex2d {
 
 static struct {
     GLuint mesh_prog;
-    GLint mesh_mvp, mesh_use_tex, mesh_solid_tex;
     GLuint prog2d, vao2d, vbo2d, font;
-    GLint proj2d;
     Vertex2d *v2d;
     int n2d, cap2d;
     int w, h;
@@ -121,7 +127,34 @@ static struct {
 
 #define FONT_CELL_W 6
 #define FONT_CELL_H 8
-#define FONT_ATLAS_W (FONT_COUNT * FONT_CELL_W)
+#define FONT_ATLAS_W (FONT_COUNT * FONT_CELL_W)   /* 576: rows stay 4-byte aligned */
+
+/* a vertex array; its attributes read buffer binding 0 (attached with glVertexArrayVertexBuffer) */
+static GLuint vertex_array(void) {
+    GLuint vao;
+
+    glCreateVertexArrays(1, &vao);
+    return vao;
+}
+
+static void attribute(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized, GLuint offset) {
+    glEnableVertexArrayAttrib(vao, index);
+    glVertexArrayAttribFormat(vao, index, size, type, normalized, offset);
+    glVertexArrayAttribBinding(vao, index, 0);
+}
+
+static GLuint texture(GLenum format, int w, int h, GLenum data_format, const void *data, GLint filter, GLint wrap) {
+    GLuint t;
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &t);
+    glTextureStorage2D(t, 1, format, w, h);
+    glTextureSubImage2D(t, 0, 0, 0, w, h, data_format, GL_UNSIGNED_BYTE, data);
+    glTextureParameteri(t, GL_TEXTURE_MIN_FILTER, filter);
+    glTextureParameteri(t, GL_TEXTURE_MAG_FILTER, filter);
+    glTextureParameteri(t, GL_TEXTURE_WRAP_S, wrap);
+    glTextureParameteri(t, GL_TEXTURE_WRAP_T, wrap);
+    return t;
+}
 
 static void make_font(void) {
     static uint8_t px[FONT_CELL_H][FONT_ATLAS_W];
@@ -134,40 +167,19 @@ static void make_font(void) {
             }
         }
     }
-    glGenTextures(1, &R.font);
-    glBindTexture(GL_TEXTURE_2D, R.font);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, FONT_ATLAS_W, FONT_CELL_H, 0, GL_RED, GL_UNSIGNED_BYTE, px);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    R.font = texture(GL_R8, FONT_ATLAS_W, FONT_CELL_H, GL_RED, px, GL_NEAREST, GL_CLAMP_TO_EDGE);
 }
 
 int render_init(void) {
     R.mesh_prog = program(kMeshVs, kMeshFs);
-    R.mesh_mvp = glGetUniformLocation(R.mesh_prog, "uMvp");
-    R.mesh_use_tex = glGetUniformLocation(R.mesh_prog, "uUseTex");
-    R.mesh_solid_tex = glGetUniformLocation(R.mesh_prog, "uSolidTex");
-    glUseProgram(R.mesh_prog);
-    glUniform1i(glGetUniformLocation(R.mesh_prog, "uTex"), 0);
-
     R.prog2d = program(k2dVs, k2dFs);
-    R.proj2d = glGetUniformLocation(R.prog2d, "uProj");
-    glUseProgram(R.prog2d);
-    glUniform1i(glGetUniformLocation(R.prog2d, "uFont"), 0);
-    glGenVertexArrays(1, &R.vao2d);
-    glGenBuffers(1, &R.vbo2d);
-    glBindVertexArray(R.vao2d);
-    glBindBuffer(GL_ARRAY_BUFFER, R.vbo2d);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2d), (void *)offsetof(Vertex2d, x));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2d), (void *)offsetof(Vertex2d, u));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex2d), (void *)offsetof(Vertex2d, rgba));
-    glBindVertexArray(0);
+
+    glCreateBuffers(1, &R.vbo2d);
+    R.vao2d = vertex_array();
+    attribute(R.vao2d, 0, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex2d, x));
+    attribute(R.vao2d, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex2d, u));
+    attribute(R.vao2d, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(Vertex2d, rgba));
+    glVertexArrayVertexBuffer(R.vao2d, 0, R.vbo2d, 0, sizeof(Vertex2d));
     make_font();
     return 1;
 }
@@ -180,13 +192,16 @@ void render_shutdown(void) {
 /* ---- frames ---- */
 
 void render_begin(int w, int h, Vec3 clear) {
+    const float colour[4] = {clear.x, clear.y, clear.z, 1.0f};
+    const float depth = 1.0f;
+
     R.w = w;
     R.h = h;
     R.n2d = 0;
     glViewport(0, 0, w, h);
-    glClearColor(clear.x, clear.y, clear.z, 1.0f);
     glDepthMask(GL_TRUE);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearNamedFramebufferfv(0, GL_COLOR, 0, colour);
+    glClearNamedFramebufferfv(0, GL_DEPTH, 0, &depth);
 }
 
 static void flush_2d(void) {
@@ -195,17 +210,15 @@ static void flush_2d(void) {
     if (R.n2d == 0) {
         return;
     }
+    glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glProgramUniformMatrix4fv(R.prog2d, U_PROJ, 1, GL_FALSE, proj.m);
     glUseProgram(R.prog2d);
-    glUniformMatrix4fv(R.proj2d, 1, GL_FALSE, proj.m);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, R.font);
+    glBindTextureUnit(0, R.font);
     glBindVertexArray(R.vao2d);
-    glBindBuffer(GL_ARRAY_BUFFER, R.vbo2d);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, R.n2d);
     glBindVertexArray(0);
     R.n2d = 0;
@@ -218,16 +231,7 @@ void render_end(void) {
 /* ---- textures ---- */
 
 GpuTexture render_texture(const uint8_t *rgba, int w, int h) {
-    GLuint t;
-
-    glGenTextures(1, &t);
-    glBindTexture(GL_TEXTURE_2D, t);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    return t;
+    return texture(GL_RGBA8, w, h, GL_RGBA, rgba, GL_LINEAR, GL_REPEAT);
 }
 
 void render_texture_free(GpuTexture t) {
@@ -238,29 +242,29 @@ void render_texture_free(GpuTexture t) {
 
 /* ---- meshes ---- */
 
+static void mesh_arrays(GpuMesh *g) {
+    g->vao = vertex_array();
+    attribute(g->vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, x));
+    attribute(g->vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, s));
+    attribute(g->vao, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(MeshVertex, rgba));
+    glVertexArrayVertexBuffer(g->vao, 0, g->vbo, 0, sizeof(MeshVertex));
+}
+
+/* a mesh that never changes: immutable storage */
 void render_mesh_upload(GpuMesh *g, const MeshVertex *v, int n) {
-    glGenVertexArrays(1, &g->vao);
-    glGenBuffers(1, &g->vbo);
-    glBindVertexArray(g->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g->vbo);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)((size_t)n * sizeof(MeshVertex)), v, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void *)offsetof(MeshVertex, x));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void *)offsetof(MeshVertex, s));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MeshVertex), (void *)offsetof(MeshVertex, rgba));
-    glBindVertexArray(0);
+    glCreateBuffers(1, &g->vbo);
+    glNamedBufferStorage(g->vbo, (GLsizeiptr)((size_t)n * sizeof(MeshVertex)), v, 0);
+    mesh_arrays(g);
     g->nv = n;
 }
 
+/* a mesh refilled every frame (skinned characters): storage that can be replaced */
 void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n) {
     if (g->vao == 0) {
-        render_mesh_upload(g, v, n);
-        return;
+        glCreateBuffers(1, &g->vbo);
+        mesh_arrays(g);
     }
-    glBindBuffer(GL_ARRAY_BUFFER, g->vbo);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)((size_t)n * sizeof(MeshVertex)), v, GL_STREAM_DRAW);
+    glNamedBufferData(g->vbo, (GLsizeiptr)((size_t)n * sizeof(MeshVertex)), v, GL_STREAM_DRAW);
     g->nv = n;
 }
 
@@ -282,13 +286,12 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_CULL_FACE);
+    glProgramUniformMatrix4fv(R.mesh_prog, U_MVP, 1, GL_FALSE, mvp->m);
     glUseProgram(R.mesh_prog);
-    glUniformMatrix4fv(R.mesh_mvp, 1, GL_FALSE, mvp->m);
-    glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(g->vao);
     for (i = 0; i < nd; i++) {
         const MeshDraw *x = &d[i];
-        int tex = x->texture >= 0 && x->texture < ntextures ? (int)textures[x->texture] : 0;
+        GLuint tex = x->texture >= 0 && x->texture < ntextures ? textures[x->texture] : 0;
 
         if (x->group != 0 && !(groups[x->group >> 5] >> (x->group & 31) & 1)) {
             continue;
@@ -300,9 +303,9 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
             glDisable(GL_BLEND);
         }
         glDepthMask(x->no_zwrite ? GL_FALSE : GL_TRUE);
-        glUniform1i(R.mesh_use_tex, tex != 0);
-        glUniform1i(R.mesh_solid_tex, x->solid_tex);
-        glBindTexture(GL_TEXTURE_2D, (GLuint)tex);
+        glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
+        glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
+        glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
     }
     glBindVertexArray(0);
@@ -414,7 +417,7 @@ static void chunk(FILE *fp, const char *type, const uint8_t *data, size_t n) {
 int render_screenshot(const char *path) {
     int w = R.w, h = R.h, y;
     size_t row = (size_t)w * 3 + 1, raw_n = row * (size_t)h, blocks = (raw_n + 65534) / 65535;
-    uint8_t *px = malloc((size_t)w * h * 3), *raw = malloc(raw_n), *z = malloc(raw_n + blocks * 5 + 6);
+    uint8_t *px = malloc((size_t)w * h * 4), *raw = malloc(raw_n), *z = malloc(raw_n + blocks * 5 + 6);
     uint8_t ihdr[13];
     uint32_t a = 1, b = 0;
     size_t i, zn = 0;
@@ -429,11 +432,16 @@ int render_screenshot(const char *path) {
         }
         return 0;
     }
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, px);
+    glReadnPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLsizei)((size_t)w * h * 4), px);
     for (y = 0; y < h; y++) {   /* GL's rows go up; PNG's go down */
-        raw[(size_t)y * row] = 0;
-        memcpy(raw + (size_t)y * row + 1, px + (size_t)(h - 1 - y) * w * 3, (size_t)w * 3);
+        const uint8_t *src = px + (size_t)(h - 1 - y) * w * 4;
+        uint8_t *dst = raw + (size_t)y * row;
+        int x;
+
+        dst[0] = 0;   /* (no filter) */
+        for (x = 0; x < w; x++) {
+            memcpy(dst + 1 + x * 3, src + x * 4, 3);
+        }
     }
     z[zn++] = 0x78;
     z[zn++] = 0x01;

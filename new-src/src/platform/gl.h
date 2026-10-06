@@ -5,37 +5,43 @@
 
 #include <SDL3/SDL_opengl.h>
 
-/* every GL function used beyond 1.1: X(type, name) */
-#define GL_FUNCTIONS(X)                                              \
-    X(PFNGLCREATESHADERPROC, glCreateShader)                         \
-    X(PFNGLSHADERSOURCEPROC, glShaderSource)                         \
-    X(PFNGLCOMPILESHADERPROC, glCompileShader)                       \
-    X(PFNGLGETSHADERIVPROC, glGetShaderiv)                           \
-    X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog)                 \
-    X(PFNGLDELETESHADERPROC, glDeleteShader)                         \
-    X(PFNGLCREATEPROGRAMPROC, glCreateProgram)                       \
-    X(PFNGLATTACHSHADERPROC, glAttachShader)                         \
-    X(PFNGLLINKPROGRAMPROC, glLinkProgram)                           \
-    X(PFNGLGETPROGRAMIVPROC, glGetProgramiv)                         \
-    X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog)               \
-    X(PFNGLUSEPROGRAMPROC, glUseProgram)                             \
-    X(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation)             \
-    X(PFNGLUNIFORM1IPROC, glUniform1i)                               \
-    X(PFNGLUNIFORM1FPROC, glUniform1f)                               \
-    X(PFNGLUNIFORM4FPROC, glUniform4f)                               \
-    X(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv)                 \
-    X(PFNGLGENBUFFERSPROC, glGenBuffers)                             \
-    X(PFNGLBINDBUFFERPROC, glBindBuffer)                             \
-    X(PFNGLBUFFERDATAPROC, glBufferData)                             \
-    X(PFNGLDELETEBUFFERSPROC, glDeleteBuffers)                       \
-    X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays)                   \
-    X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray)                   \
-    X(PFNGLDELETEVERTEXARRAYSPROC, glDeleteVertexArrays)             \
-    X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray)   \
-    X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer)           \
-    X(PFNGLACTIVETEXTUREPROC, glActiveTexture)                       \
-    X(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate)               \
-    X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap)                     \
+/* every GL function used beyond 1.1 (the rest - glEnable, glDrawArrays, glDepthMask... - come
+ * from libGL itself): X(type, name). The objects are made and changed by name, OpenGL 4.5 style
+ * (direct state access): glCreate*, glNamed*, glTexture*, glVertexArray*, glProgramUniform*. */
+#define GL_FUNCTIONS(X) \
+    X(PFNGLCREATESHADERPROC, glCreateShader)                           \
+    X(PFNGLSHADERSOURCEPROC, glShaderSource)                           \
+    X(PFNGLCOMPILESHADERPROC, glCompileShader)                         \
+    X(PFNGLGETSHADERIVPROC, glGetShaderiv)                             \
+    X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog)                   \
+    X(PFNGLDELETESHADERPROC, glDeleteShader)                           \
+    X(PFNGLCREATEPROGRAMPROC, glCreateProgram)                         \
+    X(PFNGLATTACHSHADERPROC, glAttachShader)                           \
+    X(PFNGLDETACHSHADERPROC, glDetachShader)                           \
+    X(PFNGLLINKPROGRAMPROC, glLinkProgram)                             \
+    X(PFNGLGETPROGRAMIVPROC, glGetProgramiv)                           \
+    X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog)                 \
+    X(PFNGLUSEPROGRAMPROC, glUseProgram)                               \
+    X(PFNGLPROGRAMUNIFORM1IPROC, glProgramUniform1i)                   \
+    X(PFNGLPROGRAMUNIFORMMATRIX4FVPROC, glProgramUniformMatrix4fv)     \
+    X(PFNGLCREATEBUFFERSPROC, glCreateBuffers)                         \
+    X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage)               \
+    X(PFNGLNAMEDBUFFERDATAPROC, glNamedBufferData)                     \
+    X(PFNGLDELETEBUFFERSPROC, glDeleteBuffers)                         \
+    X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays)               \
+    X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib)     \
+    X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat)     \
+    X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding)   \
+    X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer)     \
+    X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray)                     \
+    X(PFNGLDELETEVERTEXARRAYSPROC, glDeleteVertexArrays)               \
+    X(PFNGLCREATETEXTURESPROC, glCreateTextures)                       \
+    X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D)                   \
+    X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D)                 \
+    X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri)                 \
+    X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit)                     \
+    X(PFNGLCLEARNAMEDFRAMEBUFFERFVPROC, glClearNamedFramebufferfv)     \
+    X(PFNGLREADNPIXELSPROC, glReadnPixels)                             \
     X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)
 
 #define GL_DECLARE(type, name) extern type p_##name;
@@ -50,27 +56,31 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glDeleteShader p_glDeleteShader
 #define glCreateProgram p_glCreateProgram
 #define glAttachShader p_glAttachShader
+#define glDetachShader p_glDetachShader
 #define glLinkProgram p_glLinkProgram
 #define glGetProgramiv p_glGetProgramiv
 #define glGetProgramInfoLog p_glGetProgramInfoLog
 #define glUseProgram p_glUseProgram
-#define glGetUniformLocation p_glGetUniformLocation
-#define glUniform1i p_glUniform1i
-#define glUniform1f p_glUniform1f
-#define glUniform4f p_glUniform4f
-#define glUniformMatrix4fv p_glUniformMatrix4fv
-#define glGenBuffers p_glGenBuffers
-#define glBindBuffer p_glBindBuffer
-#define glBufferData p_glBufferData
+#define glProgramUniform1i p_glProgramUniform1i
+#define glProgramUniformMatrix4fv p_glProgramUniformMatrix4fv
+#define glCreateBuffers p_glCreateBuffers
+#define glNamedBufferStorage p_glNamedBufferStorage
+#define glNamedBufferData p_glNamedBufferData
 #define glDeleteBuffers p_glDeleteBuffers
-#define glGenVertexArrays p_glGenVertexArrays
+#define glCreateVertexArrays p_glCreateVertexArrays
+#define glEnableVertexArrayAttrib p_glEnableVertexArrayAttrib
+#define glVertexArrayAttribFormat p_glVertexArrayAttribFormat
+#define glVertexArrayAttribBinding p_glVertexArrayAttribBinding
+#define glVertexArrayVertexBuffer p_glVertexArrayVertexBuffer
 #define glBindVertexArray p_glBindVertexArray
 #define glDeleteVertexArrays p_glDeleteVertexArrays
-#define glEnableVertexAttribArray p_glEnableVertexAttribArray
-#define glVertexAttribPointer p_glVertexAttribPointer
-#define glActiveTexture p_glActiveTexture
-#define glBlendFuncSeparate p_glBlendFuncSeparate
-#define glGenerateMipmap p_glGenerateMipmap
+#define glCreateTextures p_glCreateTextures
+#define glTextureStorage2D p_glTextureStorage2D
+#define glTextureSubImage2D p_glTextureSubImage2D
+#define glTextureParameteri p_glTextureParameteri
+#define glBindTextureUnit p_glBindTextureUnit
+#define glClearNamedFramebufferfv p_glClearNamedFramebufferfv
+#define glReadnPixels p_glReadnPixels
 #define glDebugMessageCallback p_glDebugMessageCallback
 
 /* load the pointers (a GL context must be current); 0 if one is missing */

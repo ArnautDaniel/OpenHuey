@@ -34,8 +34,11 @@ ticks (`wait`, `dt`).
 - `core/`: `files` (the data folder: `ST_000/ST_003.PAC`; DOS paths work), `mathx.h` (Vec3, Mat4
   column-major).
 - `platform/`: SDL3 window + GL 4.6 core context (`platform.c`), the GL function loader (`gl.c`).
-- `render/`: one mesh shader (the PS2's colour model: texel times vertex colour, 0x80 = 1.0), 2D
-  text and rectangles, PNG screenshots. Draws are described by `MeshDraw` (texture, blending,
+- `render/`: OpenGL 4.5+ style throughout - objects made and changed by name (direct state
+  access: `glCreate*`, `glNamedBuffer*`, `glTexture*`, `glVertexArray*`, `glProgramUniform*`),
+  immutable storage for what never changes, fixed uniform locations and sampler bindings in the
+  GLSL (`#version 460 core`). One mesh shader (the PS2's colour model: texel times vertex colour,
+  0x80 = 1.0), 2D text and rectangles, PNG screenshots. Draws are described by `MeshDraw` (texture, blending,
   depth writes, visibility group).
 - `data/`: the formats, parsed into plain arrays with every offset checked:
   - `pac` - a room file's 17 sections;
