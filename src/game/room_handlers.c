@@ -5691,3 +5691,126 @@ void func_00370090(u8 *o, s32 *m) {
         AT(o, 0x10, u8) = 1;
     }
 }
+
+/* the placed things of kind 9 / 10 (+0x20) all reset (+0x28) */
+s32 func_00342230(void) {
+    VObject *list = D_0044F260;
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        u8 *o = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, i);
+
+        if (o != NULL && (u32)(AT(o, 0x20, s32) - 9) < 2) {
+            AT(o, 0x28, u8) = 0;
+        }
+    }
+    return 1;
+}
+
+/* the screen fade (renderer +0x90): byte 3 0 full 0x80; else clearing from cutscene frame 120
+ * (16 a frame) */
+s32 func_0032DD70(void *self, void *a1, u8 *cmd) {
+    s32 a = 0x80;
+
+    if (cmd[3] != 0) {
+        a = 0x80 - ((VCALL(D_0044FE10, 0x34, s32 (*)(VObject *))(D_0044FE10) - 120) << 4);
+        if (a < 0) {
+            a = 0;
+        }
+    }
+    VCALL(D_0044E4F0, 0x90, s32 (*)(VObject *, u32))(D_0044E4F0, a << 24);
+    return 1;
+}
+
+/* the countdown clock (+0xFC4..+0xFC6) saved in script variables 0..2 */
+static inline s32 clock_save(void) {
+    u8 *p = (u8 *)gProgress;
+    VObject *ev = D_0044E4D0;
+
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, p[0xFC4]);
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, p[0xFC5]);
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 2, p[0xFC6]);
+    return 1;
+}
+
+s32 func_0036DE60(void) { return clock_save(); }
+s32 func_0037B210(void) { return clock_save(); }
+
+/* the pursuer is active and out of view: state 3 (+0xE8), or the camera's on-screen test
+ * (+0xD4) fails */
+s32 func_00340E90(void) {
+    if (gCharPursuer == NULL || AT(gCharPursuer, 0x28, u8) == 0) {
+        return 0;
+    }
+    if (AT(gCharPursuer, 0xE8, s32) == 3) {
+        return 1;
+    }
+    if ((u8)VCALL(D_0044E4B8, 0xD4, s32 (*)(VObject *, void *))(D_0044E4B8, (u8 *)gCharPursuer + 0x10) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+/* script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0 */
+s32 func_00341A40(void) {
+    VObject *ev = D_0044E4D0;
+    s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
+
+    v -= AT(gCharPlayer, 0xFC, s32) == 0x1A ? 1 : 5;
+    if (v < 0) {
+        v = 0;
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, v);
+    return 1;
+}
+
+/* an effect set up: +0x4 a random angle (-pi..pi), +0x8 / +0xC 2, +0x10 on, +0x11 off */
+void func_00371030(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 r;
+
+    AT(o, 0x11, u8) = 0;
+    r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    AT(o, 0x4, f32) = kPi.f * (360.0f * (r - 0.5f)) / 180.0f;
+    AT(o, 0x8, u32) = 0x40000000;   /* 2 */
+    AT(o, 0xC, u32) = 0x40000000;
+    AT(o, 0x10, u8) = 1;
+}
+
+/* script variables 7 / 8 (the player's spot) in 151..269 / 171..219 */
+s32 func_00339E30(void) {
+    VObject *ev = D_0044E4D0;
+    u16 x = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
+    u16 z = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
+
+    return x >= 0x97 && x < 0x10E && z >= 0xAB && z < 0xDC;
+}
+
+extern void func_00177FA0(Progress *p, const f32 *pos, u32 which, u8 kind, s16 a, s16 b, f32 f);
+
+/* a noise at (-70 or 70 by byte 3, 14, 0): byte 4 0 / 1 / 2 kind 1 / 2 / 4 */
+s32 func_003422B0(void *self, void *a1, u8 *cmd) {
+    f32 pos[4] __attribute__((aligned(16)));
+    u32 which;
+
+    pos[0] = cmd[3] == 0 ? -70.0f : 70.0f;
+    pos[1] = 14.0f;
+    pos[2] = 0.0f;
+    pos[3] = 1.0f;
+    switch (cmd[4]) {
+    case 2:
+        which = 4;
+        break;
+    case 1:
+        which = 2;
+        break;
+    case 0:
+        which = 1;
+        break;
+    default:
+        which = (u32)(unsigned long)a1;   /* never set on the PS2: the register still holds a1 */
+        break;
+    }
+    func_00177FA0(gProgress, pos, which & 0xFF, 2, 5, 0, 10.0f);
+    return 1;
+}
