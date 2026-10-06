@@ -5,10 +5,10 @@
 #include "common.h"
 
 /* camctl.c */
-extern void func_00225550(u8 *d);
-extern void func_002252B0(u8 *d, s32 target);
-extern void func_00224EE0(u8 *d);
-extern void func_00224C60(u8 *d);
-extern void func_00224C20(u8 *d);
+extern void CamDirector_NewRoom(u8 *d);
+extern void CamDirector_RoomStart(u8 *d, s32 target);
+extern void CamDirector_Ease(u8 *d);
+extern void CamDirector_Track(u8 *d);
+extern void CamDirector_Update(u8 *d);
 
 #endif /* CAMCTL_H */

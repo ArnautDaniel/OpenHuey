@@ -78,9 +78,9 @@ u32 func_002605F0(u8 *o, u8 row) {
     return i;
 }
 
-/* an item `id` (one, func_00261090) with its 8 bytes at +0x10 */
+/* an item `id` (one, Items_Give) with its 8 bytes at +0x10 */
 void *func_00261000(u8 *items, u32 id, u64 *data) {
-    u8 *it = func_00261090(items, id, 1);
+    u8 *it = Items_Give(items, id, 1);
 
     if (it != NULL) {
         AT(it, 0x10, u64) = *data;
@@ -1300,9 +1300,9 @@ u8 func_0037E650(u8 *s) {
     return (u8)(((s32)func_003941C0(s) - 1) / 2);
 }
 
-/* its items (+0x8) func_00260A60 with 2 */
+/* its items (+0x8) Items_UseEquipped with 2 */
 void func_00384C20(u8 *o) {
-    func_00260A60(o + 0x8, 2);
+    Items_UseEquipped(o + 0x8, 2);
 }
 
 /* ---- the in-game menu's item page ---- */
@@ -1331,15 +1331,15 @@ void func_00396900(SubScreen *s) {
         u8 old = c;
 
         if (pad & MENU_CONFIRM) {
-            if (func_00260480(items, SUB_LIST(s), SUB_CURSOR(s)) != -1) {
-                if (func_00260420(items, SUB_LIST(s), SUB_CURSOR(s)) == 7) {
-                    Task_Open(&s->ask, func_00260480(items, SUB_LIST(s), SUB_CURSOR(s)) & 0xFFFF);
+            if (Items_Id(items, SUB_LIST(s), SUB_CURSOR(s)) != -1) {
+                if (Items_Kind(items, SUB_LIST(s), SUB_CURSOR(s)) == 7) {
+                    Task_Open(&s->ask, Items_Id(items, SUB_LIST(s), SUB_CURSOR(s)) & 0xFFFF);
                     ptmf_set(&s->state, &D_0044B200);
                 } else {
                     s->padA8C54 = 0;
                     s->page[0x15C] = 0;
                     func_002600C0();
-                    func_00260250(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
+                    Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
                     ptmf_set(&s->state, &D_0044B210);
                 }
                 Sound_PlaySE(SE_DECIDE);
@@ -1361,7 +1361,7 @@ void func_00396900(SubScreen *s) {
                 *cur += 8;
             }
         } else if (SUB_LIST(s) == 1 && (pad & MENU_DEFAULT)) {
-            func_0025FF80(items, SUB_LIST(s));
+            Items_Sort(items, SUB_LIST(s));
             Sound_PlaySE(SE_DECIDE);
         } else if (D_0047E36C & MENU_NEXT) {
             if (SUB_LIST(s) < 2) {
@@ -1435,15 +1435,15 @@ void func_003949B0(SubScreen *s, s32 a) {
     }
     for (i = 0; i < 16; i++) {
         u8 k = i + (SUB_CURSOR(s) >> 4) * 16;
-        s32 id = func_00260480(items, SUB_LIST(s), k);
-        u8 color = (s8)func_002606E0(items, SUB_LIST(s), k) == 1 ? 0x82 : 0x80;
+        s32 id = Items_Id(items, SUB_LIST(s), k);
+        u8 color = (s8)Items_EquipState(items, SUB_LIST(s), k) == 1 ? 0x82 : 0x80;
 
         if (id != -1) {
             s32 x = (i / 8) * 0xDA, y = (i % 8) * 35;
 
-            SubScreen_DrawPart(s, (u16)(x + 0x20), (u16)(y + 0x5E), (u8)func_00260420(items, SUB_LIST(s), k), 0x80, 0);
+            SubScreen_DrawPart(s, (u16)(x + 0x20), (u16)(y + 0x5E), (u8)Items_Kind(items, SUB_LIST(s), k), 0x80, 0);
             if (id == 0x3F) {
-                const u8 *w = (const u8 *)func_002604E0(items, SUB_LIST(s), k);
+                const u8 *w = (const u8 *)Items_Field20(items, SUB_LIST(s), k);
                 char name[9];
                 s32 j;
 
@@ -1455,8 +1455,8 @@ void func_003949B0(SubScreen *s, s32 a) {
             }
             Task_ShowText(&s->text, x + 0x46, y + 0x64, color, Task_MessageText(&s->text, (id + 0x8100) & 0xFFFF), 0x80,
                           0x30, 0x10, 0x15);
-            if (func_00260360(items, SUB_LIST(s), k) == 1) {
-                Task_Printf(&s->text, x + 0xDE, y + 0x64, color, D_00464230, func_00260300(items, SUB_LIST(s), k));
+            if (Items_IsCounted(items, SUB_LIST(s), k) == 1) {
+                Task_Printf(&s->text, x + 0xDE, y + 0x64, color, D_00464230, Items_HowMany(items, SUB_LIST(s), k));
             }
         }
         if (SUB_CURSOR(s) % 16 == i) {
@@ -1577,7 +1577,7 @@ void func_00394260(SubScreen *s) {
 /* the costume worn (equipment slot 2, items 0x90..0x9B) as 0..8; -1 none */
 s32 func_00385370(SubScreen *s) {
     static const s8 kIndex[12] = {0, 1, 2, 3, 4, 5, -1, 6, 7, -1, -1, 8};
-    u32 k = func_00260690(s->pool, 2) - 0x90;
+    u32 k = Items_Equipped(s->pool, 2) - 0x90;
 
     return k < 12 ? kIndex[k] : -1;
 }
@@ -1585,7 +1585,7 @@ s32 func_00385370(SubScreen *s) {
 /* the costume worn as its model variant 0x31..0x33; 0 none */
 s32 func_00385410(SubScreen *s) {
     static const u8 kModel[12] = {0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0, 0x32, 0x33, 0, 0, 0x33};
-    u32 k = func_00260690(s->pool, 2) - 0x90;
+    u32 k = Items_Equipped(s->pool, 2) - 0x90;
 
     return k < 12 ? kModel[k] : 0;
 }
@@ -1729,7 +1729,7 @@ void func_00385030(SubScreen *s, u8 *save) {
         u16 v = AT(save, 0x17E8 + i * 2, u16);
 
         if (v != 0xFFFF) {
-            func_00260840(s->pool, (v >> 8) & 0xFF, v & 0xFF);
+            Items_Equip(s->pool, (v >> 8) & 0xFF, v & 0xFF);
         }
     }
     for (i = 0; i < 9; i++) {
@@ -1753,11 +1753,11 @@ void func_003851B0(SubScreen *s, u8 *save) {
     }
     for (l = 0; l < 3; l++) {
         for (i = 0; i < 0x40; i++) {
-            AT(save, 0x1068 + l * 0x80 + i * 2, u16) = func_00260480(s->pool, l, i);
+            AT(save, 0x1068 + l * 0x80 + i * 2, u16) = Items_Id(s->pool, l, i);
             if (AT(save, 0x1068 + l * 0x80 + i * 2, u16) != 0xFFFF) {
-                AT(save, 0x11E8 + l * 0x200 + i * 8, u64) = *func_002602A0(s->pool, l, i);
-                if ((s8)func_002606E0(s->pool, l, i) == 1) {
-                    AT(save, 0x17E8 + func_00260630(s->pool, l, i) * 2, u16) = (u8)l << 8 | (u8)i;
+                AT(save, 0x11E8 + l * 0x200 + i * 8, u64) = *Items_Data(s->pool, l, i);
+                if ((s8)Items_EquipState(s->pool, l, i) == 1) {
+                    AT(save, 0x17E8 + Items_KindSlot(s->pool, l, i) * 2, u16) = (u8)l << 8 | (u8)i;
                 }
             }
         }
@@ -1804,7 +1804,7 @@ void func_0038D620(SubScreen *s, u8 k) {
 extern const PTMF D_0044B378;
 
 /* state: the item page with a question up: its panels, the grid, a box and the question; once
- * answered, the item under the cursor is used (func_00260DD0), D_0044B378 */
+ * answered, the item under the cursor is used (Items_Use), D_0044B378 */
 void func_00394E40(SubScreen *s) {
     if (SUB_LIST(s) == 0) {
         s->kind = 0;
@@ -1816,14 +1816,14 @@ void func_00394E40(SubScreen *s) {
     Task_DrawBox(&s->text, 0x100, 0xE0, 0x1A0, 0x160, 0x60, 0x30);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
-        func_00260DD0(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        Items_Use(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         ptmf_set(&s->state, &D_0044B378);
     }
 }
 
 #define SUB_SLIDE(s) ((s)->page[0x15C])   /* the tab's slide, 0..0x40 by 4 */
 
-/* +0x20 the in-game tab: `cmd` 0 the item `id` started (func_00260170), slide reset; 1 waiting
+/* +0x20 the in-game tab: `cmd` 0 the item `id` started (Items_Notify), slide reset; 1 waiting
  * for it (when it is done, the menu's textures made resident again); 2 sliding in, 3 shown, 4
  * sliding out (at the end the screen takes over, +0x28). 1 while it moves; nothing (0) while
  * +0xA8DDE is set */
@@ -1836,7 +1836,7 @@ s32 func_00384E60(SubScreen *s, u8 cmd, s32 id) {
     s->tab = cmd;
     switch (cmd) {
     case 0:
-        func_00260170(s->pool, id, (s32)((u8 *)s + 0x94F40));
+        Items_Notify(s->pool, id, (s32)((u8 *)s + 0x94F40));
         SUB_SLIDE(s) = 0;
         s->unkA8DDE = 0;
         return 0;
@@ -1909,7 +1909,7 @@ void func_00395000(SubScreen *s) {
         return;
     }
     if (AT(&s->ask, 0x48, u8) == 0) {
-        func_00260840(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        Items_Equip(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
             func_00182FC0((Fiona *)gCharPlayer);
         }
@@ -1989,7 +1989,7 @@ void func_003951E0(SubScreen *s) {
     if (AT(&s->ask, 0x10, u8) != 0) {
         Task_Run(&s->ask);
     } else if (AT(&s->ask, 0x48, u8) == 0) {
-        func_00260B00(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        Items_UseOne(s->pool, SUB_LIST(s), SUB_CURSOR(s));
         if (SUB_LIST(s) == 1) {
             func_00182FC0((Fiona *)gCharPlayer);
         }
@@ -3183,12 +3183,12 @@ void func_003908B0(SubScreen *s) {
             u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
 
             if (c == '@') {
-                if ((u32)func_00260540(s->pool) < 10) {
+                if ((u32)Items_CountItem3F(s->pool) < 10) {
                     if (SUB_WORD_LEN(s) != 0) {
                         Progress *p;
                         char word[9];
 
-                        func_00261040(s->pool, SUB_WORD(s));
+                        Items_NewItem3F(s->pool, SUB_WORD(s));
                         for (i = 0; i < 8; i++) {
                             word[i] = SUB_WORD(s)[i];
                         }
@@ -3269,7 +3269,7 @@ void func_003908B0(SubScreen *s) {
     }
     SubScreen_DrawPart(s, WORD_KEY(SUB_WORD_CURSOR(s)).x, WORD_KEY(SUB_WORD_CURSOR(s)).y, 0xE, 0x40, 0);
     SubScreen_DrawPart(s, 0x180, 0x140, 0xD, 0x80, 0);
-    Task_Printf(&s->text, 0x198, 0x148, 0, D_00464210, 10 - func_00260540(s->pool));
+    Task_Printf(&s->text, 0x198, 0x148, 0, D_00464210, 10 - Items_CountItem3F(s->pool));
 }
 
 /* ---- the movie list ---- */
@@ -4257,12 +4257,12 @@ static s32 item_actions(SubScreen *s, s32 *id, s32 *kind, u32 *acts, s8 *equip, 
     u8 *items = s->pool;
     s32 n = 0, b;
 
-    *id = func_00260480(items, SUB_LIST(s), SUB_CURSOR(s));
+    *id = Items_Id(items, SUB_LIST(s), SUB_CURSOR(s));
     if (kind != NULL) {
-        *kind = func_00260420(items, SUB_LIST(s), SUB_CURSOR(s));
+        *kind = Items_Kind(items, SUB_LIST(s), SUB_CURSOR(s));
     }
-    *acts = func_002603C0(items, SUB_LIST(s), SUB_CURSOR(s));
-    *equip = func_002606E0(items, SUB_LIST(s), SUB_CURSOR(s));
+    *acts = Items_Actions(items, SUB_LIST(s), SUB_CURSOR(s));
+    *equip = Items_EquipState(items, SUB_LIST(s), SUB_CURSOR(s));
     for (b = 0; b < 3; b++) {
         if (*acts & (1 << b)) {
             list[n++] = 1 << b;
@@ -4270,7 +4270,7 @@ static s32 item_actions(SubScreen *s, s32 *id, s32 *kind, u32 *acts, s8 *equip, 
     }
     list[n++] = 0;
     if (*id == 0x3F) {
-        const u8 *w = (const u8 *)func_002604E0(items, SUB_LIST(s), SUB_CURSOR(s));
+        const u8 *w = (const u8 *)Items_Field20(items, SUB_LIST(s), SUB_CURSOR(s));
         u32 i;
 
         for (i = 0; i < 8; i++) {
@@ -4312,7 +4312,7 @@ static void item_use(SubScreen *s, s32 id, s32 kind) {
         ptmf_set(&s->state, &D_0044B288);
         return;
     }
-    r = func_00260DD0(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+    r = Items_Use(s->pool, SUB_LIST(s), SUB_CURSOR(s));
     if (r == 0 || r == 8) {
         Task_Open(&s->ask, 0x52);
         if (!(r & 8)) {
@@ -4371,21 +4371,21 @@ void func_00395630(SubScreen *s) {
                 break;
             case 2:
                 if (equip == 2) {
-                    s32 on = func_00260690(items, (u8)func_00260630(items, SUB_LIST(s), SUB_CURSOR(s)));
+                    s32 on = Items_Equipped(items, (u8)Items_KindSlot(items, SUB_LIST(s), SUB_CURSOR(s)));
 
                     Msg_SetParamSystem(&s->ask, 1, on & 0xFFFF);
                     Task_Open(&s->ask, 0x5C);
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2F8);
                 } else if (equip == 1) {
-                    func_002607A0(items, SUB_LIST(s), SUB_CURSOR(s));
+                    Items_Unequip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
                         func_00182FC0((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
                     ptmf_set(&s->state, &D_0044B2E8);
                 } else if (equip == 0) {
-                    func_00260840(items, SUB_LIST(s), SUB_CURSOR(s));
+                    Items_Equip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
                         func_00182FC0((Fiona *)gCharPlayer);
                     }
@@ -4427,7 +4427,7 @@ void func_00395630(SubScreen *s) {
             if (old != SUB_CURSOR(s)) {
                 s->page[0x15C] = 0;
                 func_002600C0();
-                func_00260250(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
+                Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
                 Sound_PlaySE(SE_CURSOR);
             }
         } else if (D_0047E36C & MENU_CANCEL) {
@@ -4464,8 +4464,8 @@ void func_00395630(SubScreen *s) {
         word[8] = 0;
         Msg_PrintfParam(t, 3, D_00464218, word);
         Task_ShowText(t, 0x38, 0x49, 0x80, Task_MessageText(t, (u16)(id + 0x8100)), 0x80, 0x30, 0x10, 0x15);
-        if (func_00260360(items, SUB_LIST(s), SUB_CURSOR(s)) == 1) {
-            Task_Printf(t, 0xD2, 0x49, 0x80, D_00464230, func_00260300(items, SUB_LIST(s), SUB_CURSOR(s)));
+        if (Items_IsCounted(items, SUB_LIST(s), SUB_CURSOR(s)) == 1) {
+            Task_Printf(t, 0xD2, 0x49, 0x80, D_00464230, Items_HowMany(items, SUB_LIST(s), SUB_CURSOR(s)));
         }
         Task_DrawBox(t, 0x100, 0x16E, 0x19C, 0x66, 0x60, 0x30);
         note = id + 0x100;

@@ -12,12 +12,13 @@
 #define MESH_SIZE 0x50
 
 extern void *D_0046AA40[];
-void *func_0017CDD0(u8 *o, s32 flags);
+void *NavMeshBase_dtor(u8 *o, s32 flags);
 
 /* take the room's meshes (`meshes`: count, then entries from +0x10; their bounds get the
  * float low bit cleared), the per-mesh flag bytes (`flags`, may be NULL: bit 0 -> mesh flag
  * 0x4000, bit 1 -> 0x80000) and section `sec1`. Returns the mesh count (-1: no meshes). */
-s32 func_0017CC00(u8 *set, u8 *meshes, u8 *sec1, u8 *flags) {
+/* 0x0017CC00 */
+s32 NavMeshSet_Take(u8 *set, u8 *meshes, u8 *sec1, u8 *flags) {
     u32 i, k;
     u8 *f;
 
@@ -58,7 +59,8 @@ s32 func_0017CC00(u8 *set, u8 *meshes, u8 *sec1, u8 *flags) {
 }
 
 /* destructor (vtable D_0046AA40) */
-void *func_0017CDD0(u8 *o, s32 flags) {
+/* 0x0017CDD0 */
+void *NavMeshBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AA40;
         gNavMesh = NULL;
@@ -78,7 +80,8 @@ void *func_0017CDD0(u8 *o, s32 flags) {
  * higher one first; up to 5 links at +0x20, 0x30 each). For each side of a link: the edge
  * facing the other triangle (vt+0x20), its midpoint (+0x10 / +0x20) and the heading across
  * it (+0x8 / +0xC). +0x14: the number of links. */
-void func_0017B660(u8 *set) {
+/* 0x0017B660 */
+void NavMesh_FindDoorRegions(u8 *set) {
     f32 centre[2][4] __attribute__((aligned(16)));
     f32 edge[4] __attribute__((aligned(16)));
     f32 tmp[4] __attribute__((aligned(16)));
@@ -150,7 +153,8 @@ void func_0017B660(u8 *set) {
 }
 
 /* +0xC the centre of triangle `i` (w 1) */
-void func_0017CB60(NavMesh *nm, u32 i, f32 *out) {
+/* 0x0017CB60 */
+void NavMesh_TriCentre(NavMesh *nm, u32 i, f32 *out) {
     f32 (*v)[4];
 
     if (i >= nm->numTris || nm->tris == NULL) {
@@ -164,7 +168,8 @@ void func_0017CB60(NavMesh *nm, u32 i, f32 *out) {
 }
 
 /* +0x14 put pos onto triangle i's plane (its y from x, z) */
-void func_0017C9D0(NavMesh *nm, u32 i, f32 *pos) {
+/* 0x0017C9D0 */
+void NavMesh_OntoPlane(NavMesh *nm, u32 i, f32 *pos) {
     f32 (*v)[4];
     f32 e1x, e1y, e1z, e2x, e2y, e2z, nx, ny, nz;
 
@@ -186,7 +191,8 @@ void func_0017C9D0(NavMesh *nm, u32 i, f32 *pos) {
 
 /* +0x50 whether `pos` is at door region d (within 5 vertically and 20 across of either side's
  * edge midpoint) */
-s32 func_0017B540(NavMesh *nm, s32 d, const f32 *pos) {
+/* 0x0017B540 */
+s32 NavMesh_AtDoorRegion(NavMesh *nm, s32 d, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
     s32 s;
 
@@ -213,7 +219,8 @@ s32 func_0017B540(NavMesh *nm, s32 d, const f32 *pos) {
  * at a wall (no neighbour, or one blocked by `mask`) the target slides along it (+0x28) and
  * the walk restarts, at most 4 times, then it is clamped to the wall (+0x24). The end point
  * (`out`, height fixed by +0x14) and its triangle (-1: off the mesh) */
-s32 func_0017C050(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) {
+/* 0x0017C050 */
+s32 NavMesh_Walk(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) {
     f32 p[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
     s32 cur = tri, prev;
@@ -263,20 +270,22 @@ s32 func_0017C050(NavMesh *nm, s32 tri, f32 *out, f32 *from, f32 *to, u32 mask) 
     return cur;
 }
 
-extern s32 func_0017AE80(NavTri *t, f32 *from, f32 *to);   /* the edge the segment leaves by */
+extern s32 NavTri_ExitEdge(NavTri *t, f32 *from, f32 *to);   /* the edge the segment leaves by */
 
 /* vtable +0x20: which edge of triangle `i` the step from -> to leaves by (3: stays inside),
  * 4 for no such triangle */
-s32 func_0017C750(NavMesh *nm, u32 i, f32 *from, f32 *to) {
+/* 0x0017C750 */
+s32 NavMesh_ExitEdge(NavMesh *nm, u32 i, f32 *from, f32 *to) {
     if (i < nm->numTris && nm->tris != NULL) {
-        return func_0017AE80(&nm->tris[i], from, to);
+        return NavTri_ExitEdge(&nm->tris[i], from, to);
     }
     return 4;
 }
 
 /* which edge of triangle `t` (in x/z) the step from -> to leaves it by: 0..2, 3 if `to` is
  * inside, 4 if it is outside but the step crosses no edge */
-s32 func_0017AE80(NavTri *t, f32 *from, f32 *to) {
+/* 0x0017AE80 */
+s32 NavTri_ExitEdge(NavTri *t, f32 *from, f32 *to) {
     f32 x2 = to[0], z2 = to[2];
     u32 inside = 0, tested = 0;
     u32 e;
@@ -324,21 +333,23 @@ s32 func_0017AE80(NavTri *t, f32 *from, f32 *to) {
     return inside == tested ? 3 : 4;
 }
 
-extern s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to);
+extern s32 NavTri_ExitEdgeHit(NavTri *t, f32 *hit, f32 *from, f32 *to);
 
 /* vtable +0x24: as +0x20 (the edge of triangle `i` the step from -> to leaves by), also
  * giving where it crosses (`hit`); 4 for no such triangle */
-s32 func_0017C6F0(NavMesh *nm, u32 i, f32 *hit, f32 *from, f32 *to) {
+/* 0x0017C6F0 */
+s32 NavMesh_ExitEdgeHit(NavMesh *nm, u32 i, f32 *hit, f32 *from, f32 *to) {
     if (i < nm->numTris && nm->tris != NULL) {
-        return func_0017ABB0(&nm->tris[i], hit, from, to);
+        return NavTri_ExitEdgeHit(&nm->tris[i], hit, from, to);
     }
     return 4;
 }
 
-/* as func_0017AE80 (the edge of triangle `t` the step from -> to leaves by; 3 inside, 4
+/* as NavTri_ExitEdge (the edge of triangle `t` the step from -> to leaves by; 3 inside, 4
  * outside crossing nothing), also giving the crossing point `hit` with its height on the
  * triangle's plane */
-s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to) {
+/* 0x0017ABB0 */
+s32 NavTri_ExitEdgeHit(NavTri *t, f32 *hit, f32 *from, f32 *to) {
     f32 x2 = to[0], z2 = to[2];
     u32 inside = 0, tested = 0;
     u32 e;
@@ -402,7 +413,8 @@ s32 func_0017ABB0(NavTri *t, f32 *hit, f32 *from, f32 *to) {
 }
 
 /* +0x2C triangle `i`'s unit normal into `n` (w 1), (0, 1, 0) for a bad index */
-void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
+/* 0x0017C5C0 */
+void NavMesh_TriNormal(NavMesh *nm, u32 i, f32 *n) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     NavTri *t;
@@ -428,22 +440,24 @@ void func_0017C5C0(NavMesh *nm, u32 i, f32 *n) {
     n[3] = 1.0f;
 }
 
-u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to);
+u32 NavTri_Slide(NavTri *t, f32 *out, const f32 *from, const f32 *to);
 
 /* +0x28 slide: for the step `from` -> `to` in triangle `i`, `out` = `to` pulled back inside
- * over the edge it leaves by (func_0017A940); the edge then (3: inside), 4 for a bad index */
-u32 func_0017C690(NavMesh *nm, u32 i, f32 *out, const f32 *from, const f32 *to) {
+ * over the edge it leaves by (NavTri_Slide); the edge then (3: inside), 4 for a bad index */
+/* 0x0017C690 */
+u32 NavMesh_SlideIn(NavMesh *nm, u32 i, f32 *out, const f32 *from, const f32 *to) {
     if (i >= nm->numTris || nm->tris == NULL) {
         return 4;
     }
-    return func_0017A940(&nm->tris[i], out, from, to);
+    return NavTri_Slide(&nm->tris[i], out, from, to);
 }
 
-/* the step `from` -> `to` in triangle `t`: the edge it leaves by (func_0017AE80; 3 inside), and
+/* the step `from` -> `to` in triangle `t`: the edge it leaves by (NavTri_ExitEdge; 3 inside), and
  * then `out` - `to` pulled back over that edge along its inward normal (1.1x the overshoot,
  * 0.05 more each try, up to 8, until it is inside), on the triangle's plane (w 1) - and the edge
  * test again for `from` -> `out` */
-u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
+/* 0x0017A940 */
+u32 NavTri_Slide(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
     static const union { u32 u; f32 f; } k11 = {0x3F8CCCCD}, k005 = {0x3D4CCCCD};
     f32 e[4] __attribute__((aligned(16)));
     f32 c[4] __attribute__((aligned(16)));
@@ -453,7 +467,7 @@ u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
     s32 i;
     f32 over, s, nx, ny, nz;
 
-    k = func_0017AE80(t, (f32 *)from, (f32 *)to);
+    k = NavTri_ExitEdge(t, (f32 *)from, (f32 *)to);
     if (k >= 3) {
         return k;
     }
@@ -487,12 +501,13 @@ u32 func_0017A940(NavTri *t, f32 *out, const f32 *from, const f32 *to) {
     ny = (t->v[1][2] - t->v[0][2]) * (t->v[2][0] - t->v[0][0]) - (t->v[2][2] - t->v[0][2]) * (t->v[1][0] - t->v[0][0]);
     out[1] = t->v[0][1] - ((out[2] - t->v[0][2]) * nz + (out[0] - t->v[0][0]) * nx) / ny;
     out[3] = 1.0f;
-    return func_0017AE80(t, (f32 *)from, out);
+    return NavTri_ExitEdge(t, (f32 *)from, out);
 }
 
 /* +0x68: the neighbour of triangle t holding point p (not blocked by `mask`; +0x10 == 3:
  * inside), or -1 */
-u32 func_0017B060(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
+/* 0x0017B060 */
+u32 NavMesh_NeighbourAt(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
     s32 k;
 
     for (k = 0; k < 3; k++) {
@@ -514,7 +529,8 @@ u32 func_0017B060(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
 /* the triangle holding point p (horizontally), searched from triangle t: t itself when it is
  * not blocked by `mask` (+0x10 == 3: inside), then +0x68 around t, around each neighbour of t
  * and around each of their neighbours; -1 if none */
-u32 func_0017B160(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
+/* 0x0017B160 */
+u32 NavMesh_FindFrom(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
     u32 (*near)(NavMesh *, u32, const f32 *, u32) = (u32 (*)(NavMesh *, u32, const f32 *, u32))nm->vtbl[0x68 / 4];
     u32 r;
     s32 k, j;
@@ -558,7 +574,8 @@ u32 func_0017B160(NavMesh *nm, u32 t, const f32 *p, u32 mask) {
 /* +0xC the triangle under (or over) point p: of those (not blocked by `mask`) holding it
  * horizontally (+0x10 == 3), the one whose height (+0x38) is nearest - at once if within
  * 0.001; -1 if none */
-u32 func_0017C2A0(NavMesh *nm, const f32 *p, u32 mask) {
+/* 0x0017C2A0 */
+u32 NavMesh_FindTri(NavMesh *nm, const f32 *p, u32 mask) {
     static const union { u32 u; f32 f; } kEps = {0x3A83126F};
     f32 (*height)(NavMesh *, u32, const f32 *) = (f32 (*)(NavMesh *, u32, const f32 *))nm->vtbl[0x38 / 4];
     u32 best = NAV_NONE, t;
@@ -589,7 +606,8 @@ u32 func_0017C2A0(NavMesh *nm, const f32 *p, u32 mask) {
 
 /* +0x38 point p's height over triangle t's plane (along its unit normal, v1 - v0 x v2 - v0);
  * 4 for no such triangle */
-f32 func_0017C410(NavMesh *nm, u32 t, const f32 *p) {
+/* 0x0017C410 */
+f32 NavMesh_HeightOver(NavMesh *nm, u32 t, const f32 *p) {
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
@@ -615,7 +633,8 @@ extern void *D_0046A9D0[], *D_0046AA40[];
 
 /* the nav mesh (D_0046A9D0): its two tables (+0x4 / +0xC, with their counts) let go, then the
  * base (D_0046AA40, clearing gNavMesh) */
-void *func_00179F60(u8 *o, s32 flags) {
+/* 0x00179F60 */
+void *NavMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046A9D0;
         if (AT(o, 0x4, void *) != NULL) {
@@ -645,7 +664,8 @@ static inline s32 nav_door_ok(NavMesh *nm, s32 i) {
 }
 
 /* +0x54 door region i's triangle on side s (0 / 1); -1 if none */
-s32 func_0017A010(NavMesh *nm, s32 i, s32 s) {
+/* 0x0017A010 */
+s32 NavMesh_DoorTri(NavMesh *nm, s32 i, s32 s) {
     if (!(nav_door_ok(nm, i) & 0xFF)) {
         return -1;
     }
@@ -656,7 +676,8 @@ s32 func_0017A010(NavMesh *nm, s32 i, s32 s) {
 }
 
 /* +0x58 its facing on side s; 0 if none */
-f32 func_0017A090(NavMesh *nm, s32 i, s32 s) {
+/* 0x0017A090 */
+f32 NavMesh_DoorFacing(NavMesh *nm, s32 i, s32 s) {
     if (!(nav_door_ok(nm, i) & 0xFF)) {
         return 0.0f;
     }
@@ -667,7 +688,8 @@ f32 func_0017A090(NavMesh *nm, s32 i, s32 s) {
 }
 
 /* +0x5C its spot on side s into out; the triangle, -1 if none */
-s32 func_0017A110(NavMesh *nm, s32 i, s32 s, f32 *out) {
+/* 0x0017A110 */
+s32 NavMesh_DoorSpot(NavMesh *nm, s32 i, s32 s, f32 *out) {
     if (!(nav_door_ok(nm, i) & 0xFF)) {
         return -1;
     }
@@ -678,21 +700,23 @@ s32 func_0017A110(NavMesh *nm, s32 i, s32 s, f32 *out) {
     return AT(NAV_DOOR(nm, i), s * 4, s32);
 }
 
-extern s32 func_0017A1D0(NavTri *t, f32 *out, f32 *p0, f32 *p1);
-extern f32 func_0017A6D0(NavTri *t, f32 *out);
+extern s32 NavTri_SegmentHit(NavTri *t, f32 *out, f32 *p0, f32 *p1);
+extern f32 NavTri_Slope(NavTri *t, f32 *out);
 
-/* +0x34 where segment p0 -> p1 meets triangle i (func_0017A1D0); 4 if there is no such triangle */
-s32 func_0017C4F0(NavMesh *nm, u32 i, f32 *out, f32 *p0, f32 *p1) {
+/* +0x34 where segment p0 -> p1 meets triangle i (NavTri_SegmentHit); 4 if there is no such triangle */
+/* 0x0017C4F0 */
+s32 NavMesh_SegmentHit(NavMesh *nm, u32 i, f32 *out, f32 *p0, f32 *p1) {
     if (i < nm->numTris && nm->tris != NULL) {
-        return func_0017A1D0(&nm->tris[i], out, p0, p1);
+        return NavTri_SegmentHit(&nm->tris[i], out, p0, p1);
     }
     return 4;
 }
 
-/* +0x30 triangle i's slope (func_0017A6D0, the way down into out); none: out (0, 0, 0, 1), 0 */
-f32 func_0017C550(NavMesh *nm, u32 i, f32 *out) {
+/* +0x30 triangle i's slope (NavTri_Slope, the way down into out); none: out (0, 0, 0, 1), 0 */
+/* 0x0017C550 */
+f32 NavMesh_TriSlope(NavMesh *nm, u32 i, f32 *out) {
     if (i < nm->numTris && nm->tris != NULL) {
-        return func_0017A6D0(&nm->tris[i], out);
+        return NavTri_Slope(&nm->tris[i], out);
     }
     out[0] = 0.0f;
     out[1] = 0.0f;
@@ -736,7 +760,8 @@ static inline __attribute__((always_inline)) f32 nav_tri_height(NavTri *t, const
  * triangle, else 4 (also for a zero segment or a crossing outside it). A segment along the
  * plane, or starting on it, is taken where the plane's height matches the far / near end
  * (the height looked up at v0 - p0, as the original does) */
-s32 func_0017A1D0(NavTri *t, f32 *out, f32 *p0, f32 *p1) {
+/* 0x0017A1D0 */
+s32 NavTri_SegmentHit(NavTri *t, f32 *out, f32 *p0, f32 *p1) {
     f32 e1[4] __attribute__((aligned(16)));
     f32 e2[4] __attribute__((aligned(16)));
     f32 n[4] __attribute__((aligned(16)));
@@ -790,7 +815,8 @@ s32 func_0017A1D0(NavTri *t, f32 *out, f32 *p0, f32 *p1) {
 }
 
 /* the triangle's slope: the sine of its steepness, and (out) the way down, scaled by it */
-f32 func_0017A6D0(NavTri *t, f32 *out) {
+/* 0x0017A6D0 */
+f32 NavTri_Slope(NavTri *t, f32 *out) {
     f32 c[4] __attribute__((aligned(16)));
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -858,7 +884,8 @@ static inline __attribute__((always_inline)) f32 nav_plane_y(NavTri *t, const f3
 
 /* +0x1C put p on triangle i (p[1]): its highest corner if it is a step / ledge (flags & 3),
  * else its plane's height at p */
-void func_0017C7B0(NavMesh *nm, u32 i, f32 *p) {
+/* 0x0017C7B0 */
+void NavMesh_PutOnHigh(NavMesh *nm, u32 i, f32 *p) {
     NavTri *t;
 
     if (!(i < nm->numTris) || nm->tris == NULL) {
@@ -875,7 +902,8 @@ void func_0017C7B0(NavMesh *nm, u32 i, f32 *p) {
 }
 
 /* +0x18 the same with its lowest corner */
-void func_0017C8C0(NavMesh *nm, u32 i, f32 *p) {
+/* 0x0017C8C0 */
+void NavMesh_PutOnLow(NavMesh *nm, u32 i, f32 *p) {
     NavTri *t;
 
     if (!(i < nm->numTris) || nm->tris == NULL) {
@@ -894,7 +922,8 @@ void func_0017C8C0(NavMesh *nm, u32 i, f32 *p) {
 /* +0x60 which side (0 / 1) of door region i p is at: within 5 in height and 12 across of that
  * side's spot, with a straight walk over the mesh from triangle tri to it (+0x20 step by step
  * across edges) ending on the spot's triangle; -1 if neither */
-s32 func_0017B380(NavMesh *nm, s32 i, u32 tri, f32 *p) {
+/* 0x0017B380 */
+s32 NavMesh_DoorSide(NavMesh *nm, s32 i, u32 tri, f32 *p) {
     u8 *door;
     s32 s;
 
@@ -940,7 +969,8 @@ s32 func_0017B380(NavMesh *nm, s32 i, u32 tri, f32 *p) {
 /* +0x48 the outer edge the step p -> q goes out through (seen from above: p inside it, q
  * outside, the crossing within both); of several, the one whose triangle's height under the
  * crossing is closest below p. -1 if none */
-s32 func_0017B9B0(NavMesh *nm, f32 *p, f32 *q) {
+/* 0x0017B9B0 */
+s32 NavMesh_OuterEdge(NavMesh *nm, f32 *p, f32 *q) {
     s32 best = -1;
     u32 *cand = func_00114FA8(AT(nm, 0x10, u32) * 4);
     u32 n = 0, i;
@@ -986,7 +1016,7 @@ s32 func_0017B9B0(NavMesh *nm, f32 *p, f32 *q) {
         NavTri *t = &nm->tris[NAV_EDGE(nm, cand[i])[0]];
         f32 y;
 
-        func_0017ABB0(t, hit, p, q);
+        NavTri_ExitEdgeHit(t, hit, p, q);
         y = nav_plane_y(t, hit);
         hit[1] = y;
         if (p[1] < y) {
@@ -1010,7 +1040,8 @@ s32 func_0017B9B0(NavMesh *nm, f32 *p, f32 *q) {
  *     else -1
  *   it hits a wall (a blocked edge): where on the edge's wall (the edge and 100 below it) into
  *     out, the wall's normal; the last triangle | 0x40000000 */
-s32 func_0017BD60(NavMesh *nm, u32 tri, f32 *out, f32 *from, f32 *to, f32 *normal, u32 mask) {
+/* 0x0017BD60 */
+s32 NavMesh_Follow(NavMesh *nm, u32 tri, f32 *out, f32 *from, f32 *to, f32 *normal, u32 mask) {
     f32 end[4] __attribute__((aligned(16)));
     f32 hit[4] __attribute__((aligned(16)));
 
@@ -1056,7 +1087,7 @@ s32 func_0017BD60(NavMesh *nm, u32 tri, f32 *out, f32 *from, f32 *to, f32 *norma
             sceVu0CopyVector(wall.v[1], t->v[k]);
             sceVu0CopyVector(wall.v[2], t->v[k]);
             wall.v[2][1] = wall.v[2][1] - 100.0f;
-            func_0017A1D0(&wall, out, from, end);
+            NavTri_SegmentHit(&wall, out, from, end);
             normal[0] = 0.0f;
             normal[1] = 0.0f;
             normal[2] = 1.0f;

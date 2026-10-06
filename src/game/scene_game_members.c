@@ -131,7 +131,7 @@ void *func_002D10C0(u8 *p) {
 void *func_002D1160(u8 *p) {
     AT(p, 0x0, void **) = D_0046ECF0;
     D_00456DF8 = p;
-    func_00100340(p + 0x20, func_002D11C0, func_002D0CE0, 0xB0, 0x40);
+    func_00100340(p + 0x20, func_002D11C0, QuadEntry_dtor, 0xB0, 0x40);
     return p;
 }
 
@@ -1043,7 +1043,7 @@ void func_002672E0(void *p) {
 void func_002D6330(u8 *o) {
     u32 i;
 
-    func_00169260((VObject *)(o + 0x10000), o, 0x10000, o + 0x10014, 0x802);
+    Heap_Setup((VObject *)(o + 0x10000), o, 0x10000, o + 0x10014, 0x802);
     for (i = 0; i < 0x400; i++) {
         AT(o, 0x18034 + i * 4, s32) = 0;
     }
@@ -1114,7 +1114,7 @@ void func_0011FFB0(u8 *rm, s32 slot) {
         ROOM_SEC(rm, 0x9984) = room_section(pac, 1);
         ROOM_SEC(rm, 0x99BC) = room_section(pac, 16);
         if (ROOM_SEC(rm, 0x9984) != NULL) {
-            func_0017CC00(rm + 0x3E0, ROOM_SEC(rm, 0x9980), ROOM_SEC(rm, 0x9984),
+            NavMeshSet_Take(rm + 0x3E0, ROOM_SEC(rm, 0x9980), ROOM_SEC(rm, 0x9984),
                           ROOM_SEC(rm, 0x99BC));
         }
         o = (VObject *)(rm + 0x3E0);
@@ -2954,7 +2954,7 @@ void func_002671F0(u8 *o) {
 
 /* +0x80 the group for slot `i`: groups 1 and 2 and those (3..31) any entry of the table +0x18
  * ({u16 count at +2}, masks every 12 bytes from +0x24) uses, in order; looked up through
- * func_002CC5A0 and func_002C9930. Without the director's +0x38 or a table: i itself */
+ * Cutscene_MapId and Cutscene_KindSlot. Without the director's +0x38 or a table: i itself */
 s32 func_002C9730(u8 *o, s32 i) {
     s32 list[32];
     s32 n = 0, b;
@@ -2979,7 +2979,7 @@ s32 func_002C9730(u8 *o, s32 i) {
             list[n++] = b;
         }
     }
-    return (u8)func_002C9930(o, (u8)func_002CC5A0(o, list[i & 0xFF]));
+    return (u8)Cutscene_KindSlot(o, (u8)Cutscene_MapId(o, list[i & 0xFF]));
 }
 
 /* the effects, each frame: each live one (0x400 slots at +0x18034) runs (+0x10); a finished

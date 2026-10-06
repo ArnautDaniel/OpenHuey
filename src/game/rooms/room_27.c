@@ -52,13 +52,13 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0: {
         u8 *items = (u8 *)gSubScreen + 8;
-        s32 a = 1 - (func_00260CF0(items, 0x91) & 0xFF);
+        s32 a = 1 - (Items_Count(items, 0x91) & 0xFF);
         s32 b;
 
         if (a < 0) {
             a = 0;
         }
-        b = 1 - (func_00260CF0(items, 0x92) & 0xFF);
+        b = 1 - (Items_Count(items, 0x92) & 0xFF);
         if (b < 0) {
             b = 0;
         }
@@ -73,11 +73,11 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
         ev = gEvents;
         got = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 0);
         if (got & 0xFF) {
-            func_00261090((u8 *)gSubScreen + 8, 0x91, got & 0xFF);
+            Items_Give((u8 *)gSubScreen + 8, 0x91, got & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
         }
         if (got & 0xFF00) {
-            func_00261090((u8 *)gSubScreen + 8, 0x92, (got >> 8) & 0xFF);
+            Items_Give((u8 *)gSubScreen + 8, 0x92, (got >> 8) & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 1);
         }
         break;

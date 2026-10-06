@@ -1731,14 +1731,14 @@ void func_00464A70(void) {
     u8 *g = (u8 *)&gGame;
 
     Sinit_Iostreams(D_0047B210, D_004879C8, D_0047B214, D_004879D8);
-    func_0020E7F0(&gGame);
+    GameBase_ctor(&gGame);
     gGame.vtbl = Game_vtable;
-    func_0020E340((u8 *)&gGame.unk69AC0);
+    System_ctor((u8 *)&gGame.unk69AC0);
     Random_ctor((VObject *)(g + 0x400000), 0x1571);
-    func_0020E280(g + 0x400A00);
-    func_0020E260((VObject *)(g + 0x14D9B00));
-    func_0020E1A0(g + 0x14D9DD0);
-    func_0020E110(g + 0x14DC530);
+    SceneTable_ctor(g + 0x400A00);
+    Camera_ctor((VObject *)(g + 0x14D9B00));
+    SmallPool_ctor(g + 0x14D9DD0);
+    BigPool_ctor(g + 0x14DC530);
     func_001F4600(gGame.unk14E8C90);
     Game_SetState(&gGame, &D_003D8920);
     func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);

@@ -44,7 +44,7 @@ void func_00322B70(void);
 void func_003244C0(void);
 
 void func_00322A60(u8 *self);
-void func_00322B30(u8 *self);
+void SynthPot_StateDebug(u8 *self);
 
 /* a sprite from the synthesizer's texture (4 of group 0x19), layer 0x30 */
 static inline void sy_rect(s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, u32 rgba, s32 tex, s32 group, s32 clut) {
@@ -62,7 +62,8 @@ static inline u32 sy_alpha(f32 f, u32 add) {
 }
 
 /* base +0x8: destroy (the task's window freed); the object returned, not freed */
-void *func_003224F0(u8 *o) {
+/* 0x003224F0 */
+void *SynthBase_Destroy(u8 *o) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00474020;
         VCALL(o, 0x14, void (*)(u8 *))(o);
@@ -78,7 +79,8 @@ void func_00322560(void *o) {
 }
 
 /* base +0x10: each frame, its state */
-void func_00322A10(u8 *o) {
+/* 0x00322A10 */
+void SynthBase_Update(u8 *o) {
     D_0047B350 = 1;
     if (ptmf_test(SY_STATE(o))) {
         ptmf_scall(o, SY_STATE(o));
@@ -113,11 +115,13 @@ static inline void *sy_dtor(u8 *o, void **vtbl, s32 flags) {
 extern void *D_00474040[], *D_00474060[];
 
 /* the pot +0x8 */
-void *func_00322AA0(u8 *o, s32 flags) {
+/* 0x00322AA0 */
+void *SynthPot_dtor(u8 *o, s32 flags) {
     return sy_dtor(o, D_00474040, flags);
 }
 
-void func_00322B30(u8 *self) {
+/* 0x00322B30 */
+void SynthPot_StateDebug(u8 *self) {
     if ((D_0047E36C >> 5) & 1) {
         self[0x158] = 1;
     }
@@ -127,17 +131,19 @@ void func_00322B70(void) {
 }
 
 /* the slot machine +0x8 */
-void *func_00322C40(u8 *o, s32 flags) {
+/* 0x00322C40 */
+void *SlotMachine_dtor(u8 *o, s32 flags) {
     return sy_dtor(o, D_00474060, flags);
 }
 
 /* the six materials' counts (items 0x70..0x75) into +0x118..; any at all */
-s32 func_00322970(u8 *o) {
+/* 0x00322970 */
+s32 Synth_CountMaterials(u8 *o) {
     u8 *items = (u8 *)gSubScreen + 8;
     s32 any = 0, i;
 
     for (i = 0; i < 6; i++) {
-        s8 n = func_00260CF0(items, i + 0x70);
+        s8 n = Items_Count(items, i + 0x70);
 
         o[0x118 + i] = n;
         any = any || n != 0;
@@ -149,24 +155,27 @@ void func_00322A00(void) {
 }
 
 /* the pot +0xC: started - the counts taken, its state D_0042C410 */
-void func_00322BD0(u8 *o) {
+/* 0x00322BD0 */
+void SynthPot_Start(u8 *o) {
     SY_STEP(o) = 0;
-    func_00322970(o);
+    Synth_CountMaterials(o);
     ptmf_set(SY_STATE(o), &D_0042C410);
 }
 
 /* the pot +0x10: its title (a debug line), then as the base */
-void func_00322B80(u8 *o) {
+/* 0x00322B80 */
+void SynthPot_Update(u8 *o) {
     Task_Printf(SY_TASK(o), 0x32, 0x32, 0x80, D_00460410);
-    func_00322A10(o);
+    SynthBase_Update(o);
 }
 
 /* the slot machine +0xC: started - the counts taken; the material list (D_0042C420) or, with
  * none, "nothing to use" (D_0042C430) */
-void func_00324650(u8 *o) {
+/* 0x00324650 */
+void SlotMachine_Start(u8 *o) {
     SY_STEP(o) = 0;
     o[0x150] = 0;
-    if (func_00322970(o)) {
+    if (Synth_CountMaterials(o)) {
         ptmf_set(SY_STATE(o), &D_0042C420);
     } else {
         ptmf_set(SY_STATE(o), &D_0042C430);
@@ -175,11 +184,12 @@ void func_00324650(u8 *o) {
 
 /* the slot machine +0x10: as the base, then the start prompt blinking (alpha 0x40..0x80 over
  * 60 frames) */
-void func_003244D0(u8 *o) {
+/* 0x003244D0 */
+void SlotMachine_Update(u8 *o) {
     s32 t;
     f32 f;
 
-    func_00322A10(o);
+    SynthBase_Update(o);
     o[0x150]++;
     if ((u32)(s8)o[0x150] >= 0x3C) {
         o[0x150] = 0;
@@ -201,7 +211,8 @@ void func_003244D0(u8 *o) {
 }
 
 /* state: "nothing to put in" - message 3; cancel or confirm leaves */
-void func_00323040(u8 *o) {
+/* 0x00323040 */
+void SlotMachine_StateNothing(u8 *o) {
     Task_Open(SY_TASK(o), 3);
     Task_Run(SY_TASK(o));
     if (D_0047E36C & (MENU_CANCEL | MENU_CONFIRM)) {
@@ -212,7 +223,8 @@ void func_00323040(u8 *o) {
 /* the material list: a frame as long as the materials there are, each with its count, the
  * cursor (+0x10) round them; message 2 while choosing. Confirm on one there is: its place
  * (0..5), cancel: "leave"; -1 for none chosen (or no materials) */
-s8 func_00322580(u8 *o) {
+/* 0x00322580 */
+s8 SlotMachine_MaterialList(u8 *o) {
     Task *t = SY_TASK(o);
     s32 n = 0, last, i, k, y, old;
     s32 sel = -1;
@@ -274,11 +286,12 @@ s8 func_00322580(u8 *o) {
 }
 
 /* state: choosing the material; once chosen, one of it used, the rolling begins (D_0042C440) */
-void func_00324410(u8 *o) {
-    s8 m = func_00322580(o);
+/* 0x00324410 */
+void SlotMachine_StateChoose(u8 *o) {
+    s8 m = SlotMachine_MaterialList(o);
 
     if (m >= 0) {
-        func_00260BB0((u8 *)gSubScreen + 8, m + 0x70);
+        Items_UseId((u8 *)gSubScreen + 8, m + 0x70);
         o[0x11E] = m;
         o[0x11F] = 0;
         SY_STEP(o) = -1;
@@ -292,7 +305,8 @@ void func_003244C0(void) {
 /* the found item's step: the panel over the rows fading in (3 frames) and out (12; then bit 0,
  * "up"); when `shown`, the item's panel after it, fading out from frame 9 (then bit 7, "done"
  * - and with nothing shown, done as soon as up); counted to 50 */
-u8 func_00322CD0(u8 *o, s32 shown) {
+/* 0x00322CD0 */
+u8 ItemFound_Step(u8 *o, s32 shown) {
     s32 t = (s8)o[0x151], d;
     u8 flags = 0;
     f32 f;
@@ -334,7 +348,8 @@ u8 func_00322CD0(u8 *o, s32 shown) {
 
 /* the result for the four symbols' counts (+0x145..): the more symbols and kinds the better
  * (0 best); -1 for none */
-s32 func_00323890(u8 *o) {
+/* 0x00323890 */
+s32 SlotMachine_Result(u8 *o) {
     s32 a = (s8)o[0x145], b = (s8)o[0x146], c = (s8)o[0x147], d = (s8)o[0x148];
     s32 kinds = (a > 0) + (b > 0) + (c > 0) + (d > 0);
     s32 total = a + b + c + d;
@@ -450,7 +465,7 @@ static void sy_finish(u8 *o) {
             o[0x145 + v]++;
         }
     }
-    o[0x14A] = res = func_00323890(o);
+    o[0x14A] = res = SlotMachine_Result(o);
     if ((s8)res >= 0) {
         total = (s8)o[0x145] + (s8)o[0x146] + (s8)o[0x147] + (s8)o[0x148];
         size = -1;
@@ -478,7 +493,7 @@ static void sy_finish(u8 *o) {
                 if (id == -1) {
                     continue;
                 }
-                if ((u32)id >= 0x80 && (u32)id < 0x90 && (u8)func_00260CF0(items, id)) {
+                if ((u32)id >= 0x80 && (u32)id < 0x90 && (u8)Items_Count(items, id)) {
                     continue;
                 }
                 list[k++] = id;
@@ -508,7 +523,8 @@ static void sy_finish(u8 *o) {
  * place, spun (a symbol every 5 frames, speeding through 8 levels every 31) until confirm or
  * the top speed stops it, easing onto the next symbol; after the ninth, sy_finish. The rows
  * drawn (the rolling one with the next symbol coming in) and message 0x10 */
-void func_00323A70(u8 *o) {
+/* 0x00323A70 */
+void SlotMachine_StateRoll(u8 *o) {
     s32 r;
 
     if (SY_STEP(o) < 0) {
@@ -601,11 +617,11 @@ void func_00323A70(u8 *o) {
         s8 v = o[0x120 + r];
 
         if (v >= 0) {
-            func_00323510(o, r, v, 0);
+            SlotMachine_DrawRow(o, r, v, 0);
         } else if (r == SY_STEP(o) + 1) {
             s8 c;
 
-            func_00323510(o, r, SY_REEL(o, o[0x12B]), 0);
+            SlotMachine_DrawRow(o, r, SY_REEL(o, o[0x12B]), 0);
             c = o[0x12C];
             if (c != 0) {
                 u8 next = (s8)o[0x12B] + 1;
@@ -614,7 +630,7 @@ void func_00323A70(u8 *o) {
                     next = 0;
                 }
                 if (SY_REEL(o, next) != SY_REEL(o, o[0x12B])) {
-                    func_00323510(o, r, SY_REEL(o, next), (u8)c);
+                    SlotMachine_DrawRow(o, r, SY_REEL(o, next), (u8)c);
                 }
             }
         }
@@ -635,7 +651,8 @@ static s32 sy_clut(u8 v) {
 
 /* row `row`'s symbol `v` (32 x 32 at D_004608F0 + 16, the texture's column 0x60 + 64 x `a`: `a`
  * the frame of it sliding in), with OpenGL */
-void func_00323510(u8 *o, u8 row, u8 v, s32 a) {
+/* 0x00323510 */
+void SlotMachine_DrawRow(u8 *o, u8 row, u8 v, s32 a) {
     extern const s16 D_004608F0[][2];
     u8 *tex;
     s32 x = D_004608F0[row][0] + 0x10, y = D_004608F0[row][1] + 0x10, u = (u8)a * 64 + 0x60;
@@ -647,7 +664,8 @@ void func_00323510(u8 *o, u8 row, u8 v, s32 a) {
 }
 
 /* cell `k`'s symbol `v` (D_00460920: its texels u, v, w, h, place x, y and flips), with OpenGL */
-void func_003230B0(u8 *o, u8 k, u8 v) {
+/* 0x003230B0 */
+void SlotMachine_DrawCell(u8 *o, u8 k, u8 v) {
     extern const u8 D_00460920[][10];
     const u8 *e = D_00460920[k];
     s32 w = e[2], h = e[3], x0, x1, y0, y1;

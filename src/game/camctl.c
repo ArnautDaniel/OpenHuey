@@ -10,7 +10,8 @@
 #include "msl.h"
 
 /* reset for a new room: reset the camera, no setup selected, default light direction */
-void func_00225550(u8 *d) {
+/* 0x00225550 */
+void CamDirector_NewRoom(u8 *d) {
     VObject *cam = gCamera;
 
     VCALL(cam, 0xC, void (*)(VObject *))(cam);
@@ -36,11 +37,12 @@ void func_00225550(u8 *d) {
     ((void (*)(u8 *))AT(AT(d, 0x64, u8 *), 0x78, void *))(d);
 }
 
-extern const PTMF D_003E5240;  /* { 0, -1, func_00224770 } */
-extern const PTMF D_003E5250;  /* { 0, -1, func_00224740 } */
+extern const PTMF D_003E5240;  /* { 0, -1, CamDirector_ModeNormal } */
+extern const PTMF D_003E5250;  /* { 0, -1, CamDirector_Remember } */
 
 /* vt+0x24 the current camera setup (+0x6C); -1 in the free mode (+0xF4) */
-s32 func_00224300(u8 *d) {
+/* 0x00224300 */
+s32 CamDirector_Setup(u8 *d) {
     if (AT(d, 0xF4, u8) == 1) {
         return -1;
     }
@@ -49,7 +51,8 @@ s32 func_00224300(u8 *d) {
 
 /* two modes of the director (update state +0xE8, flag +0xF4); both clear the renderer's
  * work area (+0x5C) */
-void func_00224330(u8 *d) {
+/* 0x00224330 */
+void CamDirector_ModeEvent(u8 *d) {
     AT(d, 0xE8, PTMF) = D_003E5250;
     AT(d, 0xF4, u8) = 1;
     AT(d, 0x7C, s32) = -1;
@@ -58,7 +61,8 @@ void func_00224330(u8 *d) {
 }
 
 /* vt+0x78 (the default mode) */
-void func_00224380(u8 *d) {
+/* 0x00224380 */
+void CamDirector_ModeDefault(u8 *d) {
     AT(d, 0xE8, PTMF) = D_003E5240;
     AT(d, 0xF4, u8) = 0;
     AT(d, 0x7C, s32) = -1;
@@ -68,7 +72,8 @@ void func_00224380(u8 *d) {
 
 /* (the director's interface, gCamDirector) +0xC follow `target` (its position, +0x10) with an
  * offset (x, y, z) */
-void func_002246F0(u8 *f, u8 *target, f32 x, f32 y, f32 z) {
+/* 0x002246F0 */
+void CamDirector_Follow(u8 *f, u8 *target, f32 x, f32 y, f32 z) {
     AT(f, 0xB0, u8 *) = target;
     AT(f, 0xC0, f32) = x;
     AT(f, 0xC4, f32) = y;
@@ -82,27 +87,30 @@ void func_002246F0(u8 *f, u8 *target, f32 x, f32 y, f32 z) {
 }
 
 /* (interface) +0x28 the camera setup to use (+0x6C, +0x70) */
-void func_00223E30(u8 *f, s32 a, s32 b) {
+/* 0x00223E30 */
+void CamDirector_SetSetup(u8 *f, s32 a, s32 b) {
     AT(f, 0x6C, s32) = a;
     AT(f, 0x70, s32) = b;
 }
 
 /* +0x6C the mode flag +0xF4 */
-s32 func_00223E20(u8 *d) {
+/* 0x00223E20 */
+s32 CamDirector_FreeMode(u8 *d) {
     return AT(d, 0xF4, u8);
 }
 
-extern void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t);
-extern void func_00219E10(u8 *d, s32 setup, f32 t);
-extern f32 func_002197A0(u8 *d, s32 mode, f32 t);
-extern void func_00219D70(u8 *d, f32 *out, f32 t);   /* the look-at point at t */
-extern void func_00219CD0(u8 *d, f32 *out, f32 t);   /* the eye at t */
-extern void func_002243D0(u8 *d, s32 n);
+extern void CamDirector_TakeData(u8 *d, s32 *data, s32 setup, f32 t);
+extern void CamDirector_LoadSetup(u8 *d, s32 setup, f32 t);
+extern f32 CamPath_Nearest(u8 *d, s32 mode, f32 t);
+extern void CamPath_LookAt(u8 *d, f32 *out, f32 t);   /* the look-at point at t */
+extern void CamPath_Eye(u8 *d, f32 *out, f32 t);   /* the eye at t */
+extern void CamDirector_KeepInView(u8 *d, s32 n);
 
 /* the room's camera at the start of play: the camera's range, its view angle (+0x84) and the
  * director's angle limits (+0x88, +0x80); with the room's camera data (PAC section 6): take it
  * and put the camera at the current setup's (+0x70) eye and look-at point; no setup: pick one */
-void func_002252B0(u8 *d, s32 target) {
+/* 0x002252B0 */
+void CamDirector_RoomStart(u8 *d, s32 target) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k02 = {0x3E4CCCCD};
     VObject *cam;
     f32 fovDeg, limDeg;
@@ -123,7 +131,7 @@ void func_002252B0(u8 *d, s32 target) {
     AT(d, 0x8C, u8) = 0;
     AT(d, 0x90, s32) = 0;
     if (target != 0) {
-        func_0021A290(d, (s32 *)target, 0, 1.0f);
+        CamDirector_TakeData(d, (s32 *)target, 0, 1.0f);
         AT(d, 0x38, u8 *) = AT(d, 0xB0, u8 *) + 0x10;
         AT(d, 0x40, f32) = AT(d, 0xC0, f32);
         AT(d, 0x44, f32) = AT(d, 0xC4, f32);
@@ -132,24 +140,25 @@ void func_002252B0(u8 *d, s32 target) {
         if (AT(d, 0x70, s32) != -1) {
             f32 v[4];
 
-            func_00219E10(d, AT(d, 0x70, s32), 1.0f);
-            Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
-            func_00219D70(d, v, 0.0f);
+            CamDirector_LoadSetup(d, AT(d, 0x70, s32), 1.0f);
+            Spline_Seek(d + 8, CamPath_Nearest(d, 2, 0.0f));
+            CamPath_LookAt(d, v, 0.0f);
             cam = gCamera;
             VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
-            func_00219CD0(d, v, 0.0f);
+            CamPath_Eye(d, v, 0.0f);
             VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
         }
     }
     if (AT(d, 0x70, s32) == -1) {
-        func_002243D0(d, 100);
+        CamDirector_KeepInView(d, 100);
     }
 }
 
 /* the camera director restarted (renderer +0x5C; +0x8C 0x80, +0x90 60, the field of view back
  * to +0x84): with no setup (+0x70) the free camera on its target, else setup's position at
  * t 0 */
-void func_002251C0(u8 *d) {
+/* 0x002251C0 */
+void CamDirector_Restart(u8 *d) {
     VCALL(gRenderer, 0x5C, s32 (*)(VObject *))(gRenderer);
     AT(d, 0x90, s32) = 0x3C;
     AT(d, 0x8C, u8) = 0x80;
@@ -159,20 +168,22 @@ void func_002251C0(u8 *d) {
 
         VCALL(cam, 0x8C, void (*)(VObject *, s32))(cam, AT(d, 0x6C, s32));
         VCALL(cam, 0x2C, void (*)(VObject *, void *))(cam, d + 0xA0);
-        func_002243D0(d, 100);
+        CamDirector_KeepInView(d, 100);
         return;
     }
     VCALL(gCamera, 0x70, void (*)(VObject *, f32))(gCamera, 0.0f);
-    Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
+    Spline_Seek(d + 8, CamPath_Nearest(d, 2, 0.0f));
 }
 
 /* the setup changed since it was taken (+0x78 / +0x7C against +0x6C / +0x70) */
-s32 func_00224650(u8 *d) {
+/* 0x00224650 */
+s32 CamDirector_SetupChanged(u8 *d) {
     return !(AT(d, 0x78, s32) == AT(d, 0x6C, s32) && AT(d, 0x7C, s32) == AT(d, 0x70, s32));
 }
 
 /* take the room's camera data (count first; none or empty: no data), then setup `setup` at t */
-void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t) {
+/* 0x0021A290 */
+void CamDirector_TakeData(u8 *d, s32 *data, s32 setup, f32 t) {
     AT(d, 0x2C, s32 *) = data;
     if (data == NULL) {
         return;
@@ -181,13 +192,14 @@ void func_0021A290(u8 *d, s32 *data, s32 setup, f32 t) {
     if (AT(d, 0x30, s32) <= 0) {
         AT(d, 0x2C, s32) = 0;
     }
-    func_00219E10(d, setup, t);
+    CamDirector_LoadSetup(d, setup, t);
 }
 
 /* setup `setup` of the room's camera data: its spline (keys after the header and the earlier
  * setups' keys) into +0x8, the lengths of its two paths (components 0..2 +0x28, 3..5 +0x24,
  * sampled at whole steps up to +0x18) and the speeds along them (+0x4, +0x0), then go to t */
-void func_00219E10(u8 *d, s32 setup, f32 t) {
+/* 0x00219E10 */
+void CamDirector_LoadSetup(u8 *d, s32 setup, f32 t) {
     static const union { u32 u; f32 f; } kSpeed = {0x3E47AE14};   /* 0.195f */
     f32 a[2][4], b[2][4];
     s32 *data = AT(d, 0x2C, s32 *);
@@ -247,7 +259,8 @@ void func_00219E10(u8 *d, s32 setup, f32 t) {
 /* the time along the look-at path (components 3..5) nearest the target point, by horizontal
  * distance (mode 0), height difference (1) or distance (2): the nearest key, then steps of
  * +0x0 around it; -1: no path / target */
-f32 func_002197A0(u8 *d, s32 mode, f32 t) {
+/* 0x002197A0 */
+f32 CamPath_Nearest(u8 *d, s32 mode, f32 t) {
     f32 p[4] __attribute__((aligned(16)));
     f32 bestHd = -1.0f, bestDy = -1.0f, bestD = -1.0f, best = -1.0f;
     f32 *keys;
@@ -340,7 +353,8 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
 }
 
 /* the camera path's look-at point (components 3..5) at time t (below 1: the current time) */
-void func_00219D70(u8 *d, f32 *out, f32 t) {
+/* 0x00219D70 */
+void CamPath_LookAt(u8 *d, f32 *out, f32 t) {
     f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
 
     out[0] = Spline_Eval(d + 8, 3, u);
@@ -350,7 +364,8 @@ void func_00219D70(u8 *d, f32 *out, f32 t) {
 }
 
 /* the camera path's eye (components 0..2) at time t (below 1: the current time) */
-void func_00219CD0(u8 *d, f32 *out, f32 t) {
+/* 0x00219CD0 */
+void CamPath_Eye(u8 *d, f32 *out, f32 t) {
     f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
 
     out[0] = Spline_Eval(d + 8, 0, u);
@@ -359,13 +374,14 @@ void func_00219CD0(u8 *d, f32 *out, f32 t) {
     out[3] = 1.0f;
 }
 
-extern f32 func_00219530(u8 *d, f32 t, f32 u);
+extern f32 CamPath_Move(u8 *d, f32 t, f32 u);
 
 /* each frame (not while an event drives it, +0xF4 / +0x69): the view angle +0x80 eases in over
  * 60 frames (+0x90) and back out after a cut (+0x8C counts down; 0x80: settled); the camera
  * follows the current setup (+0x70) along its path (+0xB0: from the player's nearest point),
  * else a setup is chosen */
-void func_00224EE0(u8 *d) {
+/* 0x00224EE0 */
+void CamDirector_Ease(u8 *d) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     f32 fovDeg, limDeg, deg;
     u8 cut = AT(d, 0x8C, u8);
@@ -391,18 +407,18 @@ void func_00224EE0(u8 *d) {
         AT(d, 0x80, f32) = kPi.f * deg / 180.0f;
     }
     if (AT(d, 0x70, s32) == -1) {
-        func_002243D0(d, 10);
+        CamDirector_KeepInView(d, 10);
     } else {
         VObject *cam;
         f32 v[3];
 
         if (AT(d, 0xB0, s32) != 0) {
-            Spline_Seek(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+            Spline_Seek(d + 8, CamPath_Move(d, CamPath_Nearest(d, 2, 0.0f), 0.0f));
         }
-        func_00219D70(d, v, 0.0f);
+        CamPath_LookAt(d, v, 0.0f);
         cam = gCamera;
         VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
-        func_00219CD0(d, v, 0.0f);
+        CamPath_Eye(d, v, 0.0f);
         VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
     }
 }
@@ -410,7 +426,8 @@ void func_00224EE0(u8 *d) {
 /* move along the camera path from time `from` (below 1: the current time +0x8) towards `to`,
  * by the distance the look-at point (components 3..5) covers between them, measured in steps
  * of +0x0 and scaled by +0x50 / +0x24; clamped to `to` and the path's range +0x14..+0x18 */
-f32 func_00219530(u8 *d, f32 to, f32 from) {
+/* 0x00219530 */
+f32 CamPath_Move(u8 *d, f32 to, f32 from) {
     f32 pts[2][4];
     f32 dir, t, end, len = 0.0f, res;
     s32 cur = 1;
@@ -470,7 +487,8 @@ f32 func_00219530(u8 *d, f32 to, f32 from) {
  * from the current one by more than 35 units), the camera takes the set and the view angle
  * resets; when the setup (+0x70, last +0x7C) changes or on such a jump, the camera path is
  * set up again and put at the target's nearest point; the renderer is told (+0x5C) */
-void func_00224C60(u8 *d) {
+/* 0x00224C60 */
+void CamDirector_Track(u8 *d) {
     VObject *cam;
     s32 far = 0;
     s32 changed = 0;
@@ -485,7 +503,7 @@ void func_00224C60(u8 *d) {
         } else {
             f32 span = (f32)AT(d, 0x18, s32);
             f32 cur = AT(d, 0x8, f32);
-            f32 t = func_002197A0(d, 2, 0.0f);
+            f32 t = CamPath_Nearest(d, 2, 0.0f);
             f32 diff = cur / span - t / span;
 
             if (diff <= 0.0f) {
@@ -505,15 +523,15 @@ void func_00224C60(u8 *d) {
         AT(d, 0x8C, u8) = 0x80;
         AT(d, 0x90, s32) = 0;
         if (AT(d, 0x70, s32) == -1) {
-            func_002243D0(d, 100);
+            CamDirector_KeepInView(d, 100);
         }
     }
     if (AT(d, 0x70, s32) != -1 && (AT(d, 0x7C, s32) != AT(d, 0x70, s32) || far)) {
         changed = 1;
-        func_00219E10(d, AT(d, 0x70, s32), 1.0f);
+        CamDirector_LoadSetup(d, AT(d, 0x70, s32), 1.0f);
         if (AT(d, 0xB0, u8 *) != NULL) {
-            Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
-            Spline_Seek(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+            Spline_Seek(d + 8, CamPath_Nearest(d, 2, 0.0f));
+            Spline_Seek(d + 8, CamPath_Move(d, CamPath_Nearest(d, 2, 0.0f), 0.0f));
         } else {
             Spline_Seek(d + 8, 1.0f);
         }
@@ -524,20 +542,22 @@ void func_00224C60(u8 *d) {
 }
 
 /* each frame: the director's mode (+0xE8, a member function), then the camera's update */
-void func_00224C20(u8 *d) {
+/* 0x00224C20 */
+void CamDirector_Update(u8 *d) {
     ptmf_scall(d, &AT(d, 0xE8, PTMF));
     VCALL(gCamera, 0x14, void (*)(VObject *))(gCamera);
 }
 
 extern f32 D_0047E410, D_0047E418;   /* the right stick, x and y (-1..1) */
-void func_00223F70(f32 *p);           /* the event camera's frame */
+void EventCam_Frame(f32 *p);           /* the event camera's frame */
 
 /* the director's normal mode (+0xE8), each frame. The free camera (+0x68, e.g. debug):
  * orbits the target (+0xB0) with the right stick (yaw +0xE4 in degrees, distance +0xE0 >= 5).
  * An event camera (+0x69): started on the target the first frame, then run. Otherwise the
  * camera follows the current setup's path. The last set / setup / target are kept
  * (+0x78 / +0x7C / +0xB4) for the switch test; changing mode forces it. */
-void func_00224770(u8 *d) {
+/* 0x00224770 */
+void CamDirector_ModeNormal(u8 *d) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kFov = {0x3F860A92};
     VObject *cam;
     f32 v[4] __attribute__((aligned(16)));
@@ -549,7 +569,7 @@ void func_00224770(u8 *d) {
         if (AT(d, 0x74, u8) != AT(d, 0x68, u8)) {
             AT(d, 0x7C, s32) = -1;
             AT(d, 0x78, s32) = -1;
-            func_00224C60(d);
+            CamDirector_Track(d);
         }
         if (AT(d, 0xB0, u8 *) == NULL) {
             AT(d, 0x69, u8) = 0;
@@ -566,18 +586,18 @@ void func_00224770(u8 *d) {
                 sceVu0AddVector((f32 *)(d + 0x120), (f32 *)(d + 0x130), (f32 *)(d + 0x120));
                 VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
             }
-            func_00223F70((f32 *)(d + 0x100));
+            EventCam_Frame((f32 *)(d + 0x100));
         } else {
             if (AT(d, 0x150, u8) != AT(d, 0x69, u8)) {
                 AT(d, 0x7C, s32) = -1;
                 AT(d, 0x78, s32) = -1;
-                func_00224C60(d);
+                CamDirector_Track(d);
             }
             if (AT(d, 0x70, s32) != -1) {
-                func_00219D70(d, v, 0.0f);
+                CamPath_LookAt(d, v, 0.0f);
                 cam = gCamera;
                 VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
-                func_00219CD0(d, v, 0.0f);
+                CamPath_Eye(d, v, 0.0f);
                 VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
             }
             VCALL(gCamera, 0x5C, void (*)(VObject *, f32))(gCamera, AT(d, 0x80, f32));
@@ -588,7 +608,7 @@ void func_00224770(u8 *d) {
 
         if (AT(d, 0xB0, u8 *) == NULL) {
             if (AT(d, 0x70, s32) != -1) {
-                func_00219D70(d, v, 0.0f);
+                CamPath_LookAt(d, v, 0.0f);
                 VCALL(gCamera, 0x28, void (*)(VObject *, f32, f32, f32))(gCamera, v[0], v[1], v[2]);
             }
         } else {
@@ -633,7 +653,8 @@ void func_00224770(u8 *d) {
 /* keep the target in view: the director's target (a character +0xB0's position plus +0xC0, else
  * the point +0xA0) against where the camera looks (+0x2C) from its eye (+0x20); beyond 5 degrees
  * up / down or 10 across, the camera turns (+0x3C) `rate` percent of the rest of the way */
-void func_002243D0(u8 *o, s32 rate) {
+/* 0x002243D0 */
+void CamDirector_KeepInView(u8 *o, s32 rate) {
     static const union { u32 u; f32 f; } k5deg = {0x3DB2B8C3}, k10deg = {0x3E32B8C3};
     VObject *cam;
     f32 t[4] __attribute__((aligned(16)));
@@ -674,7 +695,8 @@ extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
 
 /* destructor: its two vtables (+0x64, +0x60), the global gCamDirector cleared, its state reset
  * (+0x2C / +0x38 0, +0x50 6, the spline +0x8..+0x20 cleared) */
-void *func_00223E40(u8 *d, s32 flags) {
+/* 0x00223E40 */
+void *CamDirector_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x64, void **) = D_0046C660;
         AT(d, 0x60, void **) = D_0046C668;
@@ -699,7 +721,8 @@ void *func_00223E40(u8 *d, s32 flags) {
 
 /* on to the next of the camera's set-ups (+0x6C, wrapping at the camera's +0x80 count); no
  * path (+0x70 -1), +0xB0 0 */
-void func_00223F00(u8 *d) {
+/* 0x00223F00 */
+void CamDirector_NextSetup(u8 *d) {
     u32 n = VCALL(gCamera, 0x80, u32 (*)(VObject *))(gCamera);
 
     AT(d, 0x6C, u32) += 1;
@@ -721,10 +744,11 @@ static inline f32 camdeg_wrap(f32 a) {
     return a;
 }
 
-/* the event camera's frame (its block at the director's +0x100, set by func_00224190): the
+/* the event camera's frame (its block at the director's +0x100, set by EventCam_Set): the
  * camera on an orbit - p[0] the distance, pitch p[1] + p[3] and yaw p[2] + p[4] (in
  * degrees) from the point p + 0x20 looked at; a 60 degree view */
-void func_00223F70(f32 *p) {
+/* 0x00223F70 */
+void EventCam_Frame(f32 *p) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 pitch = camdeg_wrap(p[1] + p[3]);
@@ -749,7 +773,8 @@ void func_00223F70(f32 *p) {
 
 /* set the event camera's block (+0x100): distance, pitch, the yaw +0x110, and the vector
  * +0x130 = (0, e, 0, 1) */
-void func_00224190(u8 *d, f32 a, f32 b, f32 c, f32 e) {
+/* 0x00224190 */
+void EventCam_Set(u8 *d, f32 a, f32 b, f32 c, f32 e) {
     AT(d, 0x100, f32) = a;
     AT(d, 0x104, f32) = b;
     AT(d, 0x110, f32) = c;
@@ -760,7 +785,8 @@ void func_00224190(u8 *d, f32 a, f32 b, f32 c, f32 e) {
 }
 
 /* the path's length (+0x8), -1 with no path (+0x70) */
-f32 func_00224680(u8 *d) {
+/* 0x00224680 */
+f32 CamDirector_PathLength(u8 *d) {
     if (AT(d, 0x70, s32) == -1) {
         return -1.0f;
     }
@@ -768,7 +794,8 @@ f32 func_00224680(u8 *d) {
 }
 
 /* the path (+0x8) to u, if there is one */
-void func_002246B0(u8 *d, f32 u) {
+/* 0x002246B0 */
+void CamDirector_PathSeek(u8 *d, f32 u) {
     if (AT(d, 0x70, s32) != -1) {
         Spline_Seek(d + 0x8, u);
     }
@@ -776,7 +803,8 @@ void func_002246B0(u8 *d, f32 u) {
 
 /* remember the set-up and path (+0x6C / +0x70 into +0x78 / +0x7C), then the cutscene
  * director's letterbox (+0x64) */
-void func_00224740(u8 *d) {
+/* 0x00224740 */
+void CamDirector_Remember(u8 *d) {
     AT(d, 0x78, s32) = AT(d, 0x6C, s32);
     AT(d, 0x7C, s32) = AT(d, 0x70, s32);
     VCALL(gCutscene, 0x64, void (*)(VObject *))(gCutscene);

@@ -382,8 +382,8 @@ void *func_002D5F40(u8 *b, s32 flags) {
         if (gSubScreen != NULL) {
             u8 *items = (u8 *)gSubScreen + 8;
 
-            if (!(func_00260CF0(items, 0x90) & 0xFF)) {
-                func_00261090(items, 0x90, 1);
+            if (!(Items_Count(items, 0x90) & 0xFF)) {
+                Items_Give(items, 0x90, 1);
             }
         }
         AT(b, 0x0, void **) = D_00469A00;

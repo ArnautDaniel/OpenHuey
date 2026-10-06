@@ -30,8 +30,8 @@ extern NavMesh *gNavMesh;
 #endif
 
 /* navmesh.c */
-extern s32 func_0017CC00(u8 *set, u8 *meshes, u8 *sec1, u8 *flags);
-extern void *func_00179F60(u8 *o, s32 flags);   /* the nav mesh's destructor (navmesh.c) */
+extern s32 NavMeshSet_Take(u8 *set, u8 *meshes, u8 *sec1, u8 *flags);
+extern void *NavMesh_dtor(u8 *o, s32 flags);   /* the nav mesh's destructor (navmesh.c) */
 extern NavTri *NavMesh_NullTri(void);
 
 /* triangle `i`, or NULL if out of range (PC: a blank record) */

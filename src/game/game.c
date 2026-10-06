@@ -23,8 +23,8 @@
 #include "msl.h"
 #include "sce/iop.h"
 
-extern void func_002CFA10(Game *game);
-extern void func_002BFB20(void *obj);           /* init Game.unk20 */
+extern void Game_LoadCommonSounds(Game *game);
+extern void Records_Reset(void *obj);           /* init Game.unk20 */
 
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
 extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
@@ -42,7 +42,7 @@ extern void *D_0046B1F0[];
 extern void *D_0046BEE0[];
 extern void *D_0046D770[];
 extern void *D_0046F3D0[];
-void *func_001F4590(u8 *o, s32 flags);
+void *TexCache_dtor(u8 *o, s32 flags);
 void *func_0020DB40(u8 *o, s32 flags);
 void *func_00267500(u8 *o, s32 flags);
 
@@ -68,9 +68,9 @@ void Game_Init(Game *game) {
     if (ret >= 0 && result != 0) {
         func_001136E8(0);
     }
-    func_002CFA10(game);
-    func_001F44D0(game->unk14E8C90);
-    func_002BFB20(game->unk20);
+    Game_LoadCommonSounds(game);
+    Slots_Init(game->unk14E8C90);
+    Records_Reset(game->unk20);
     game->nextMode = 1;
     game->modeParam = 0;
     game->resetHoldFrames = 0;
@@ -275,7 +275,8 @@ static inline void Game_LoadSoundFile(VObject *loader, const char *name, s32 met
 }
 
 /* Load the common sound bank C_0000 (header, sequence data, wave data) into the sound driver. */
-void func_002CFA10(Game *game) {
+/* 0x002CFA10 */
+void Game_LoadCommonSounds(Game *game) {
     VObject *loader = gFileLoader;
 
     (void)game;
@@ -285,10 +286,11 @@ void func_002CFA10(Game *game) {
     VCALL(gSound, 0x60, void (*)(VObject *, s32))(gSound, 5);
 }
 
-extern void func_002A7AA0(u8 *o);
+extern void Options_Defaults(u8 *o);
 
 /* Game.unk20 (records / options?): reset; 12 times at 99:59:59 */
-void func_002BFB20(void *obj) {
+/* 0x002BFB20 */
+void Records_Reset(void *obj) {
     u8 *d = obj;
     s32 i;
 
@@ -296,7 +298,7 @@ void func_002BFB20(void *obj) {
     *(s32 *)(d + 0x4) = 0;
     *(s32 *)(d + 0x8) = 0;
     *(s32 *)(d + 0xC) = 0;
-    func_002A7AA0(d + 0x10);
+    Options_Defaults(d + 0x10);
     for (i = 0; i < 12; i++) {
         d[0x1C + i * 4] = 99;
         d[0x1D + i * 4] = 59;
@@ -319,7 +321,8 @@ s32 func_002C9470(void *self) {
 
 /* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
  * from the renderer, +4 on, +8 = 1.0. */
-void func_002A7AA0(u8 *o) {
+/* 0x002A7AA0 */
+void Options_Defaults(u8 *o) {
     VObject *r;
     u8 *disp;
 
@@ -336,12 +339,18 @@ void func_002A7AA0(u8 *o) {
 }
 
 /* Game vtable +0xC..+0x20: resident buffers inside the Game (in Game.unk20) */
-u8 *func_0037E310(Game *game) { return (u8 *)game + 0x1AC0; }    /* +0xC: message base (MSG_BASE.BIN) */
-u8 *func_0037E300(Game *game) { return (u8 *)game + 0x2AC0; }    /* +0x10: MSG_BASE.TEX */
-u8 *func_0037E2F0(Game *game) { return (u8 *)game + 0xB2C0; }    /* +0x14: MSG_SUB.BIN */
-u8 *func_002CF9E0(Game *game) { return (u8 *)game + 0x102C0; }   /* +0x18 */
-u8 *func_002CF9F0(Game *game) { return (u8 *)game + 0x312C0; }   /* +0x1C: GAME_FIX.GFM */
-u8 *func_002CFA00(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: GAME_FIX.TEX */
+/* 0x0037E310 */
+u8 *Game_Resident1AC0(Game *game) { return (u8 *)game + 0x1AC0; }    /* +0xC: message base (MSG_BASE.BIN) */
+/* 0x0037E300 */
+u8 *Game_Resident2AC0(Game *game) { return (u8 *)game + 0x2AC0; }    /* +0x10: MSG_BASE.TEX */
+/* 0x0037E2F0 */
+u8 *Game_ResidentB2C0(Game *game) { return (u8 *)game + 0xB2C0; }    /* +0x14: MSG_SUB.BIN */
+/* 0x002CF9E0 */
+u8 *Game_Resident102C0(Game *game) { return (u8 *)game + 0x102C0; }   /* +0x18 */
+/* 0x002CF9F0 */
+u8 *Game_Resident312C0(Game *game) { return (u8 *)game + 0x312C0; }   /* +0x1C: GAME_FIX.GFM */
+/* 0x002CFA00 */
+u8 *Game_Resident38AC0(Game *game) { return (u8 *)game + 0x38AC0; }   /* +0x20: GAME_FIX.TEX */
 
 /* ---- destructors left (2026-10-05) ---- */
 
@@ -351,7 +360,8 @@ extern void *D_00456DE8, *D_00456DF8;
 
 /* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
  * D_00456DE8) */
-void *func_002D0B60(u8 *o, s32 flags) {
+/* 0x002D0B60 */
+void *AvoidPrompt_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00473440;
         if (AT(o, 0x110C4, void *) != NULL) {
@@ -368,7 +378,8 @@ void *func_002D0B60(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046F3D0) */
-void *func_002D0C10(u8 *o, s32 flags) {
+/* 0x002D0C10 */
+void *AvoidPromptBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046F3D0;
         D_00456DE8 = NULL;
@@ -380,7 +391,8 @@ void *func_002D0C10(u8 *o, s32 flags) {
 }
 
 /* destructor of an entry holding a quad drawer at +0x40 */
-void *func_002D0CE0(u8 *o, s32 flags) {
+/* 0x002D0CE0 */
+void *QuadEntry_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x40, void **) = D_0046D770;
         AT(o, 0x40, void **) = D_00469D00;
@@ -395,10 +407,11 @@ void *func_002D0CE0(u8 *o, s32 flags) {
 /* destructor (D_0046ECF0): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
  * clearing D_00456DF8) */
 /* (possibly dead code: nothing in the game references it) */
-void *func_002D0D60(u8 *o, s32 flags) {
+/* 0x002D0D60 */
+void *PlacedThings_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ECF0;
-        func_001002C0(o + 0x20, (void *(*)(void *, s32))func_002D0CE0, 0xB0, 0x40);
+        func_001002C0(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
         AT(o, 0x0, void **) = D_0046F390;
         D_00456DF8 = NULL;
         if ((s16)flags > 0) {
@@ -412,7 +425,8 @@ void *func_002D0D60(u8 *o, s32 flags) {
 /* destructor (vtable at +0x28, D_0046FC00): members at +0xF630 / +0xDC40, then the base
  * (D_0046A980, clearing gCreatures) */
 /* (possibly dead code: nothing in the game references it) */
-void *func_002D0DF0(u8 *o, s32 flags) {
+/* 0x002D0DF0 */
+void *Creatures_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x28, void **) = D_0046FC00;
         AT(o, 0xF630, void **) = D_004699C0;
@@ -433,7 +447,8 @@ void *func_002D0DF0(u8 *o, s32 flags) {
 extern void *D_0046ADB0[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
 
 /* Game +0x69B00's destructor: its vtables (and its +0x18 member's), gPad cleared */
-void *func_001BE150(u8 *o, s32 flags) {
+/* 0x001BE150 */
+void *Pads_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -450,7 +465,8 @@ void *func_001BE150(u8 *o, s32 flags) {
 
 /* destructor (vtable D_0046B1D0) */
 /* (possibly dead code: nothing in the game references it) */
-void *func_001F4590(u8 *o, s32 flags) {
+/* 0x001F4590 */
+void *TexCache_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B1D0;
         AT(o, 0x0, void **) = D_0046B1F0;
@@ -488,7 +504,7 @@ void *Game_dtor(u8 *g, s32 flags) {
         return g;
     }
     AT(g, 0x0, void **) = Game_vtable;
-    func_001F4590(g + 0x14E8C90, -1);
+    TexCache_dtor(g + 0x14E8C90, -1);
 
     func_001002C0(g + 0x14DC6B0, (void *(*)(void *, s32))func_0020D920, 0x50, 0x278);
     func_001002C0(g + 0x14DC530, (void *(*)(void *, s32))func_0020D8D0, 0xC, 0x20);
@@ -530,7 +546,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     func_001AAE10(g + 0x69F20, -1);
     MemCard_dtor((MemCard *)(g + 0x69E50), -1);
     Rumble_dtor((Rumble *)(g + 0x69DC0), -1);
-    func_001BE150(g + 0x69B00, -1);
+    Pads_dtor(g + 0x69B00, -1);
     func_001BC320(g + 0x69AE0, -1);
     func_001BF220(g + 0x69AC0, 0);
 

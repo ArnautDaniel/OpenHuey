@@ -13,12 +13,13 @@ extern void *D_0046C790[], *D_0046F430[];
 extern void *D_0046D5F0[];
 
 ItemObj *func_00263220(ItemObj *self);
-ItemObj *func_00264060(ItemObj *self, s32 id);
+ItemObj *Item3F_ctor(ItemObj *self, s32 id);
 
-void func_002D3A60(u8 *p, const u8 *src);
+void Item3F_Set(u8 *p, const u8 *src);
 
 /* +0x10: the item in equipment slot `slot` (+0x15E0[slot], its +0xC; -1: empty slot) */
-s32 func_00260690(u8 *items, u8 slot) {
+/* 0x00260690 */
+s32 Items_Equipped(u8 *items, u8 slot) {
     VObject *e = AT(items, 0x15E0 + slot * 4, VObject *);
 
     if (e == NULL) {
@@ -27,7 +28,7 @@ s32 func_00260690(u8 *items, u8 slot) {
     return VCALL(e, 0xC, s32 (*)(VObject *))(e);
 }
 
-extern void func_002608D0(u8 *o, VObject *it);   /* remove an entry */
+extern void Items_Remove(u8 *o, VObject *it);   /* remove an entry */
 
 /* entry `i` of list `l`: one tick (+0x30) while it is set (+0x18) and has 2 or more left
    (+0x34), otherwise it is removed */
@@ -40,13 +41,14 @@ static void item_use(u8 *o, u32 l, u32 i) {
     if ((u8)VCALL(it, 0x18, s32 (*)(VObject *))(it) == 1 && !(VCALL(it, 0x34, u32 (*)(VObject *))(it) < 2)) {
         VCALL(it, 0x30, void (*)(VObject *))(it);
     } else {
-        func_002608D0(o, it);
+        Items_Remove(o, it);
     }
 }
 
 /* each frame: the 3 lists of up to 64 entries (+0x12E0, 0x100 apart, ending at the first
  * empty slot): each one in use (+0x38 bits 0..1) is used (item_use) */
-void func_00260EC0(u8 *o) {
+/* 0x00260EC0 */
+void Items_Update(u8 *o) {
     u32 l, i;
 
     for (l = 0; l < 3; l++) {
@@ -65,7 +67,8 @@ void func_00260EC0(u8 *o) {
 }
 
 /* use item `id` (+0xC) wherever it is in the lists: 1 if it was there */
-s32 func_00260BB0(u8 *o, s32 id) {
+/* 0x00260BB0 */
+s32 Items_UseId(u8 *o, s32 id) {
     u32 l, i;
 
     for (l = 0; l < 3; l++) {
@@ -85,7 +88,8 @@ s32 func_00260BB0(u8 *o, s32 id) {
 }
 
 /* how many of item `id` (+0x34) the lists hold: 0 if none */
-u32 func_00260CF0(u8 *o, s32 id) {
+/* 0x00260CF0 */
+u32 Items_Count(u8 *o, s32 id) {
     u32 l, i;
 
     for (l = 0; l < 3; l++) {
@@ -104,7 +108,7 @@ u32 func_00260CF0(u8 *o, s32 id) {
     return 0;
 }
 
-/* ---- giving an item (func_00261090): the inventory's three groups (ids under 0x40, under 0xA0,
+/* ---- giving an item (Items_Give): the inventory's three groups (ids under 0x40, under 0xA0,
  * the rest) of 64 slots each (+0x12E0 + group * 0x100); objects 0x18 bytes from its pool
  * (+0x1208) ---- */
 
@@ -219,7 +223,8 @@ static ItemCtor const kItemCtors[0xAD] = {
 /* give n of item id: added to one already held if that kind stacks (+0x18), else made in the
  * group's first free slot with its count set (+0x2C, n - 1). The item, or NULL if it wouldn't
  * take them or the group is full */
-void *func_00261090(u8 *items, u32 id, s32 n) {
+/* 0x00261090 */
+void *Items_Give(u8 *items, u32 id, s32 n) {
     u8 *grp = items + (id < 0x40 ? 0 : id < 0xA0 ? 1 : 2) * 0x100;
     void *o;
     u32 i;
@@ -246,7 +251,7 @@ void *func_00261090(u8 *items, u32 id, s32 n) {
 
             if (p != NULL) {
                 if (id == 0x3F) {
-                    func_00264060(p, (s32)o);   /* (sic: no id passed - a1 still the object) */
+                    Item3F_ctor(p, (s32)o);   /* (sic: no id passed - a1 still the object) */
                 } else {
                     kItemCtors[id](p);
                 }
@@ -272,9 +277,10 @@ ItemObj *func_00263220(ItemObj *self) {
     return self;
 }
 
-/* item 0x3F's class takes its id as an argument; func_00261090 calls it without one, so the id
+/* item 0x3F's class takes its id as an argument; Items_Give calls it without one, so the id
  * is whatever a1 held: the object's own address (see there) */
-ItemObj *func_00264060(ItemObj *self, s32 id) {
+/* 0x00264060 */
+ItemObj *Item3F_ctor(ItemObj *self, s32 id) {
     self->vtbl = D_0046C790;
     self->id = id;
     self->flag = 0;
@@ -283,7 +289,8 @@ ItemObj *func_00264060(ItemObj *self, s32 id) {
     return self;
 }
 
-void func_002D3A60(u8 *p, const u8 *src) {
+/* 0x002D3A60 */
+void Item3F_Set(u8 *p, const u8 *src) {
     u32 i;
 
     for (i = 0; i < 8; i++) {
@@ -292,7 +299,8 @@ void func_002D3A60(u8 *p, const u8 *src) {
 }
 
 /* item `i` of list `l`'s +0x20 (0 for an empty place) */
-s32 func_002604E0(u8 *items, u8 l, u8 i) {
+/* 0x002604E0 */
+s32 Items_Field20(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -304,7 +312,8 @@ s32 func_002604E0(u8 *items, u8 l, u8 i) {
 extern const s8 D_003EA918[];   /* by item kind (+0x10) */
 
 /* item `i` of list `l`: D_003EA918 of its kind (+0x10); -1 for an empty place */
-s32 func_00260630(u8 *items, u8 l, u8 i) {
+/* 0x00260630 */
+s32 Items_KindSlot(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -314,7 +323,8 @@ s32 func_00260630(u8 *items, u8 l, u8 i) {
 }
 
 /* item `id` (+0xC) in the lists: its +0x28 with `arg` */
-void func_00260170(u8 *o, s32 id, s32 arg) {
+/* 0x00260170 */
+void Items_Notify(u8 *o, s32 id, s32 arg) {
     u32 l, i;
 
     for (l = 0; l < 3; l++) {
@@ -333,18 +343,20 @@ void func_00260170(u8 *o, s32 id, s32 arg) {
     }
 }
 
-/* a new item 0x3F (one) set from `src` (func_002D3A60); the item, NULL if none */
-void *func_00261040(u8 *items, const u8 *src) {
-    u8 *it = func_00261090(items, 0x3F, 1);
+/* a new item 0x3F (one) set from `src` (Item3F_Set); the item, NULL if none */
+/* 0x00261040 */
+void *Items_NewItem3F(u8 *items, const u8 *src) {
+    u8 *it = Items_Give(items, 0x3F, 1);
 
     if (it != NULL) {
-        func_002D3A60(it, src);
+        Item3F_Set(it, src);
     }
     return it;
 }
 
 /* item `i` of list `l` equipped: into its kind's slot (D_003EA918, +0x15E0) if it has one */
-void func_00260840(u8 *items, u8 l, u8 i) {
+/* 0x00260840 */
+void Items_Equip(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
     s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
 
@@ -354,7 +366,8 @@ void func_00260840(u8 *items, u8 l, u8 i) {
 }
 
 /* item `i` of list `l` unequipped: its kind's slot (+0x15E0) cleared if it holds it */
-void func_002607A0(u8 *items, u8 l, u8 i) {
+/* 0x002607A0 */
+void Items_Unequip(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
     s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
 
@@ -365,7 +378,8 @@ void func_002607A0(u8 *items, u8 l, u8 i) {
 
 /* item `i` of list `l`'s equipment: -1 its kind has no slot (or no item), 0 the slot is empty,
  * 1 it is the one equipped, 2 another is */
-s32 func_002606E0(u8 *items, u8 l, u8 i) {
+/* 0x002606E0 */
+s32 Items_EquipState(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
     s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
     VObject *eq;
@@ -384,7 +398,8 @@ extern void *D_0046C790[];   /* a pool entry */
 
 /* item `it` taken out: off any equipment slot, out of its list (the rest moved up), destroyed
  * back to a bare pool entry and returned to the pool (+0x1208 vtable +0x14) */
-void func_002608D0(u8 *items, VObject *it) {
+/* 0x002608D0 */
+void Items_Remove(u8 *items, VObject *it) {
     u32 g, i;
     s32 found;
 
@@ -435,20 +450,21 @@ void func_002608D0(u8 *items, VObject *it) {
     VCALL(items + 0x1208, 0x14, void (*)(void *, VObject *))(items + 0x1208, it);
 }
 
-extern void func_002608D0(u8 *items, VObject *it);   /* an item taken out of the lists */
+extern void Items_Remove(u8 *items, VObject *it);   /* an item taken out of the lists */
 
 /* one of item `it` used: a counted one (+0x18 1) with 2 or more (+0x34) loses one (+0x30), else
- * it goes (func_002608D0) */
+ * it goes (Items_Remove) */
 static inline void item_use_one(u8 *items, VObject *it) {
     if ((u8)VCALL(it, 0x18, s32 (*)(VObject *))(it) == 1 && VCALL(it, 0x34, u32 (*)(VObject *))(it) >= 2) {
         VCALL(it, 0x30, void (*)(VObject *))(it);
     } else {
-        func_002608D0(items, it);
+        Items_Remove(items, it);
     }
 }
 
 /* the item in equipment slot `slot` used once */
-void func_00260A60(u8 *items, u8 slot) {
+/* 0x00260A60 */
+void Items_UseEquipped(u8 *items, u8 slot) {
     VObject *it = AT(items, 0x15E0 + slot * 4, VObject *);
 
     if (it != NULL) {
@@ -464,7 +480,8 @@ static __attribute__((noinline)) void item_use_one_at(u8 *items, u32 l, u32 i, V
 }
 
 /* item `i` of list `l` used once */
-void func_00260B00(u8 *items, u8 l, u8 i) {
+/* 0x00260B00 */
+void Items_UseOne(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it != NULL) {
@@ -474,7 +491,8 @@ void func_00260B00(u8 *items, u8 l, u8 i) {
 
 /* item `i` of list `l` used (vtable +0x3C, its result returned); when that gives bit 0 or 1,
  * one of it is spent */
-u32 func_00260DD0(u8 *items, u8 l, u8 i) {
+/* 0x00260DD0 */
+u32 Items_Use(u8 *items, u8 l, u8 i) {
     VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
     u32 r = 0;
 
@@ -488,7 +506,8 @@ u32 func_00260DD0(u8 *items, u8 l, u8 i) {
 }
 
 /* list `l` sorted by vtable +0x1C (a bubble sort up to its first empty place) */
-void func_0025FF80(u8 *items, u8 l) {
+/* 0x0025FF80 */
+void Items_Sort(u8 *items, u8 l) {
     u8 *grp = items + l * 0x100;
     u32 n, pass, j;
 
@@ -519,7 +538,8 @@ void func_0025FF80(u8 *items, u8 l) {
 }
 
 /* item `i` of list `l` started being used (vtable +0x28, with `arg`) */
-void func_00260250(u8 *items, u8 l, u8 i, void *arg) {
+/* 0x00260250 */
+void Items_StartUse(u8 *items, u8 l, u8 i, void *arg) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it != NULL) {
@@ -528,7 +548,8 @@ void func_00260250(u8 *items, u8 l, u8 i, void *arg) {
 }
 
 /* item `i` of list `l`: its kind (vtable +0x10); -1 for an empty place */
-s32 func_00260420(u8 *items, u8 l, u8 i) {
+/* 0x00260420 */
+s32 Items_Kind(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -539,7 +560,8 @@ s32 func_00260420(u8 *items, u8 l, u8 i) {
 
 /* item `i` of list `l`: what can be done with it (vtable +0x14: 1 use, 2 equip, 4 examine;
  * 0x80000000 its note can change); 0 for an empty place */
-u32 func_002603C0(u8 *items, u8 l, u8 i) {
+/* 0x002603C0 */
+u32 Items_Actions(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -549,7 +571,8 @@ u32 func_002603C0(u8 *items, u8 l, u8 i) {
 }
 
 /* item `i` of list `l`: its id (vtable +0xC); -1 for an empty place */
-s32 func_00260480(u8 *items, u8 l, u8 i) {
+/* 0x00260480 */
+s32 Items_Id(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -559,7 +582,8 @@ s32 func_00260480(u8 *items, u8 l, u8 i) {
 }
 
 /* item `i` of list `l`: how many (vtable +0x34; 0 for an empty place) */
-s32 func_00260300(u8 *items, u8 l, u8 i) {
+/* 0x00260300 */
+s32 Items_HowMany(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -569,7 +593,8 @@ s32 func_00260300(u8 *items, u8 l, u8 i) {
 }
 
 /* item `i` of list `l`: is it counted (vtable +0x18; 0 for an empty place) */
-u8 func_00260360(u8 *items, u8 l, u8 i) {
+/* 0x00260360 */
+u8 Items_IsCounted(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -579,7 +604,8 @@ u8 func_00260360(u8 *items, u8 l, u8 i) {
 }
 
 /* item `i` of list `l`: its 8 bytes of data (vtable +0x24; NULL for an empty place) */
-u64 *func_002602A0(u8 *items, u8 l, u8 i) {
+/* 0x002602A0 */
+u64 *Items_Data(u8 *items, u8 l, u8 i) {
     VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
 
     if (it == NULL) {
@@ -589,7 +615,8 @@ u64 *func_002602A0(u8 *items, u8 l, u8 i) {
 }
 
 /* how many items 0x3F the lists hold */
-s32 func_00260540(u8 *items) {
+/* 0x00260540 */
+s32 Items_CountItem3F(u8 *items) {
     u32 l, i;
     s32 n = 0;
 

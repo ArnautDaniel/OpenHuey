@@ -41,9 +41,9 @@ extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
 extern void *D_0046EB40[], *D_0046EC60[];   /* effect classes for slots 0x1D / 0x1C */
 
-void func_002CBBE0(u8 *d);
-void func_002CBD10(u8 *d);
-void func_002CC130(u8 *d, s32 b, s32 rec);
+void Cutscene_ReleaseActors(u8 *d);
+void Cutscene_Cast(u8 *d);
+void Cutscene_StartShot(u8 *d, s32 b, s32 rec);
 
 #define SCRIPT(d) AT(d, 0x18, u8 *)
 #define REC(d, r) (SCRIPT(d) + (r) * 12)     /* fields at +0x24 / +0x28 / +0x29 */
@@ -66,7 +66,7 @@ static const s8 b3_CC5A0_map[26] = {
     -1, 0, 1, 2, 3, 4, 9, 10, 11, 12, 8, 13, 18, 14, 15, 16, 17, 19, 23, 24, 25, 29, 30, 31, 32, 38,
 };
 
-void func_002CBFF0(u8 *self, s32 idx);
+void Cutscene_ResetSlots(u8 *self, s32 idx);
 
 /* a shot part: base + offset, 0 none */
 static u8 *shot_part(u8 *base, u32 off) {
@@ -107,7 +107,7 @@ static u8 *group_object(s32 *list, s32 i) {
 
 /* actor i's character kind, and that character's slot (0xFF none) */
 static u32 actor_slot(u8 *d, s32 i) {
-    return func_002C9930(d, func_002CC5A0(d, i));
+    return Cutscene_KindSlot(d, Cutscene_MapId(d, i));
 }
 
 #define NAME(d) AT(d, 0x14, const char *)
@@ -153,59 +153,70 @@ static void effect_need(u8 *fx, s32 n, void **vtbl) {
 /* ---- small methods ---- */
 
 /* +0x34 status */
-s32 func_002C9510(u8 *d) {
+/* 0x002C9510 */
+s32 Cutscene_Status(u8 *d) {
     return AT(d, 0x200, s32);
 }
 
 /* +0x3C status cleared */
-void func_002CBFD0(u8 *d) {
+/* 0x002CBFD0 */
+void Cutscene_ClearStatus(u8 *d) {
     AT(d, 0x200, s32) = 0;
 }
 
 /* +0x8C the next event run */
-void func_002C9520(u8 *d) {
+/* 0x002C9520 */
+void Cutscene_NextEvent(u8 *d) {
     VCALL((VObject *)d, 0x30, void (*)(u8 *, s32))(d, AT(d, 0x8, s32));
     AT(d, 0x8, s32)++;
 }
 
 /* this frame's signal 2 */
-s32 func_002C9560(u8 *d) {
+/* 0x002C9560 */
+s32 Cutscene_Signal2(u8 *d) {
     return (SIGNALS(d, FRAME(d)) & 4) != 0;
 }
 
 /* this frame's signals 3..4 */
-s32 func_002C9590(u8 *d) {
+/* 0x002C9590 */
+s32 Cutscene_Signals34(u8 *d) {
     return (u8)VCALL((VObject *)d, 0x50, s32 (*)(u8 *, s32, s32, s32))(d, FRAME(d), 3, 4);
 }
 
-void func_002C95C0(u8 *d, u8 v) {
+/* 0x002C95C0 */
+void Cutscene_SetLetterboxOff(u8 *d, u8 v) {
     AT(d, 0x4, u8) = v;
 }
 
-s32 func_002C9600(u8 *d) {
+/* 0x002C9600 */
+s32 Cutscene_Frame(u8 *d) {
     return FRAME(d);
 }
 
-void func_002C9610(u8 *d, u8 v) {
+/* 0x002C9610 */
+void Cutscene_SetHold(u8 *d, u8 v) {
     AT(d, 0x204, u8) = v;
 }
 
 /* the frame passed 17 before the end */
-s32 func_002C9690(u8 *d) {
+/* 0x002C9690 */
+s32 Cutscene_NearEnd(u8 *d) {
     s32 f = LENGTH(d) - 0x11;
 
     return LAST(d) < f && FRAME(d) >= f;
 }
 
 /* +0x8 the state run */
-void func_002CBFE0(u8 *d) {
+/* 0x002CBFE0 */
+void Cutscene_RunState(u8 *d) {
     ptmf_scall(d, &AT(d, 0x2A0, PTMF));
 }
 
 /* Resets the slots whose bits are set in the mask record `idx` (12-byte records at self->0x18):
  * bits of +0x24 select one of 32 12-byte slots at +0x80 (slot 0 is self+0x20 itself),
  * bits of bytes +0x28/+0x29 clear the words at +0x24/+0x44. */
-void func_002CBFF0(u8 *self, s32 idx) {
+/* 0x002CBFF0 */
+void Cutscene_ResetSlots(u8 *self, s32 idx) {
     s32 i;
 
     for (i = 0; i < 32; i++) {
@@ -238,7 +249,8 @@ void func_002CBFF0(u8 *self, s32 idx) {
 }
 
 /* the slot of character kind `kind`, or of one of its variants */
-u32 func_002C9930(u8 *d, s32 kind) {
+/* 0x002C9930 */
+u32 Cutscene_KindSlot(u8 *d, s32 kind) {
     static const s8 sAlt[][4] = {
         { 2, 6, 7, 0x1B }, { 3, 0x22, 0x23, 0x24 }, { 10, 0x27, -1, -1 }, { 23, 0x17, 0x25, -1 },
     };
@@ -261,7 +273,8 @@ u32 func_002C9930(u8 *d, s32 kind) {
 }
 
 /* frame f's signals lo..hi as bits from 0 */
-u16 func_002C9A80(u8 *d, s32 f, s8 lo, s8 hi) {
+/* 0x002C9A80 */
+u16 Cutscene_SignalBits(u8 *d, s32 f, s8 lo, s8 hi) {
     u16 out = 0;
     s32 i;
 
@@ -275,7 +288,8 @@ u16 func_002C9A80(u8 *d, s32 f, s8 lo, s8 hi) {
 
 /* +0x54: how often signal `bit` came since last frame (through this one); *at the last
    frame it came at */
-s32 func_002C9B50(u8 *d, s32 bit, s16 *at) {
+/* 0x002C9B50 */
+s32 Cutscene_SignalCount(u8 *d, s32 bit, s16 *at) {
     s32 n = 0;
     s16 f;
 
@@ -291,7 +305,8 @@ s32 func_002C9B50(u8 *d, s32 bit, s16 *at) {
 }
 
 /* +0x4C: frame f's signal bits */
-u16 func_002C9C10(u8 *d, s32 f) {
+/* 0x002C9C10 */
+u16 Cutscene_FrameSignals(u8 *d, s32 f) {
     if (f < 0 || f >= LENGTH(d)) {
         return 0;
     }
@@ -304,7 +319,8 @@ u16 func_002C9C10(u8 *d, s32 f) {
 #include "gl2d.h"
 
 /* the letterbox: two black bars (layer 0x30), 56 pixels at the top and bottom, unless +0x4 */
-void func_002C9EA0(u8 *d) {
+/* 0x002C9EA0 */
+void Cutscene_Letterbox(u8 *d) {
     if (AT(d, 0x4, u8)) {
         return;
     }
@@ -312,11 +328,12 @@ void func_002C9EA0(u8 *d) {
     gl2d_sprite(0x30, 0, 392, 512, 448, NULL, 0, 0, 0, 0, 0x80000000, 0, 0);
 }
 #else
-void func_002C9EA0(u8 *d);
+void Cutscene_Letterbox(u8 *d);
 #endif
 
 /* the object groups the script animates put back as they were defined */
-void func_002C9C80(u8 *d) {
+/* 0x002C9C80 */
+void Cutscene_RestoreGroups(u8 *d) {
     u8 groups = script_groups(d);
     s32 k, i;
 
@@ -345,7 +362,8 @@ void func_002C9C80(u8 *d) {
 
 /* this frame's keys of the shot's object groups (+0x44: a count, then 0x1C-byte entries named
    at +0xC with their keys at +8: 0x18 bytes, angles and a position) */
-void func_002C9FB0(u8 *d) {
+/* 0x002C9FB0 */
+void Cutscene_GroupKeys(u8 *d) {
     s32 k;
 
     for (k = 0; k < 8; k++) {
@@ -378,7 +396,8 @@ void func_002C9FB0(u8 *d) {
  * cues from +0x10, for record +0x2: type +0x1 - 0 the lights (colour +0x10, ambient +0x14,
  * their parameters; a second colour +0x24 if any), 1 / 2 effect slot 0x1C / 0x1D fed +0x10);
  * slot 0x1D otherwise as at the start (+0x238) */
-void func_002CA130(u8 *d) {
+/* 0x002CA130 */
+void Cutscene_Cues(u8 *d) {
     f32 col[4] __attribute__((aligned(16))) = { 0 };
     f32 amb[4] __attribute__((aligned(16))) = { 0 };
     VObject *lights = gLights;
@@ -433,7 +452,8 @@ void func_002CA130(u8 *d) {
 
 /* this frame's camera key, when the camera is in the shot: position, target, two values
    (camera +0x1C, +0x28, +0x5C, +0x70) */
-void func_002CA790(u8 *d) {
+/* 0x002CA790 */
+void Cutscene_CameraKey(u8 *d) {
     f32 *k;
 
     if (!(AT(REC(d, REC_AT(d, FRAME(d))), 0x24, u32) & 1)) {
@@ -449,14 +469,15 @@ void func_002CA790(u8 *d) {
 /* +0x14 each frame playing: a flash at signal 0, the camera, the doors, the object groups,
  * the actors' motions, lights and effects, the two fades (+0x70 / +0x74: only on a new frame,
  * 0x2D0 frames; reset on a held frame), the signals counted */
-void func_002CA8C0(u8 *d) {
+/* 0x002CA8C0 */
+void Cutscene_Update(u8 *d) {
     u32 a, b;
     s32 i;
 
     if (SIGNALED(d, 0, NULL) > 0) {
         VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
     }
-    func_002CA790(d);
+    Cutscene_CameraKey(d);
     for (i = 0; i < 8; i++) {
         if (AT(REC(d, REC_AT(d, FRAME(d))), 0x28, u8) & (1 << i)) {
             u8 *keys = AT(d, 0x24 + i * 4, u8 *) + 0x20;
@@ -465,7 +486,7 @@ void func_002CA8C0(u8 *d) {
                                                                    AT(keys + KEY_AT(d, FRAME(d)) * 12, 0x4, f32));
         }
     }
-    func_002C9FB0(d);
+    Cutscene_GroupKeys(d);
     for (i = 1; i < 0x20; i++) {
         u8 *s = SLOT(d, i);
 
@@ -473,7 +494,7 @@ void func_002CA8C0(u8 *d) {
             func_002DD090(AT(SLOT_CHAR(s), 0xF0, u8 *), FRAME(d));
         }
     }
-    func_002CA130(d);
+    Cutscene_Cues(d);
     a = (u8)VCALL((VObject *)d, 0x70, s32 (*)(u8 *))(d);
     b = (u8)VCALL((VObject *)d, 0x74, s32 (*)(u8 *))(d);
     if (LAST(d) != FRAME(d)) {
@@ -498,13 +519,14 @@ void func_002CA8C0(u8 *d) {
 /* +0x48 the end: the last record's slots reset, the object groups back, the actors' cutscene
  * motion buffers given back, the actors released, the fades off, the effects as at the start,
  * the lights' ambient off */
-void func_002CAB90(u8 *d) {
+/* 0x002CAB90 */
+void Cutscene_End(u8 *d) {
     f32 zero[4] __attribute__((aligned(16)));
     u8 *fx;
     s32 i;
 
-    func_002CBFF0(d, REC_AT(d, LENGTH(d) - 1));
-    func_002C9C80(d);
+    Cutscene_ResetSlots(d, REC_AT(d, LENGTH(d) - 1));
+    Cutscene_RestoreGroups(d);
     for (i = 1; i < 0x20; i++) {
         u32 s;
 
@@ -516,7 +538,7 @@ void func_002CAB90(u8 *d) {
             func_0016CF50(gProgress, s);
         }
     }
-    func_002CBBE0(d);
+    Cutscene_ReleaseActors(d);
     VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
     VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
     fx = gRoomEffects;
@@ -540,7 +562,8 @@ void func_002CAB90(u8 *d) {
  * loaded; a new shot swaps buffers; the playing one's shot loaded: it starts (the other
  * freed); not yet: wait (status 4), starting its load if it isn't loading; the other buffer
  * preloads the next shot (+0x24); on a cut, the renderer +0x1C */
-void func_002CAFB0(u8 *d) {
+/* 0x002CAFB0 */
+void Cutscene_StatePlaying(u8 *d) {
     s32 b;
 
     AT(d, 0x200, s32) = 3;
@@ -560,7 +583,7 @@ void func_002CAFB0(u8 *d) {
     b = AT(d, 0x64, s32);
     if (AT(BUF(d, b), 0x4, s32) == 2 && AT(BUF(d, b), 0x0, s32) == REC_AT(d, FRAME(d))) {
         AT(BUF(d, b), 0x4, s32) = 3;
-        func_002CC130(d, AT(d, 0x64, s32), AT(BUF(d, AT(d, 0x64, s32)), 0x0, s32));
+        Cutscene_StartShot(d, AT(d, 0x64, s32), AT(BUF(d, AT(d, 0x64, s32)), 0x0, s32));
         AT(BUF(d, AT(d, 0x64, s32) ^ 1), 0x4, s32) = 0;
         AT(BUF(d, AT(d, 0x64, s32) ^ 1), 0x0, s32) = -1;
     } else if (AT(BUF(d, b), 0x4, s32) != 0 && AT(BUF(d, b), 0x0, s32) == REC_AT(d, FRAME(d))) {
@@ -603,7 +626,8 @@ void func_002CAFB0(u8 *d) {
 /* state: the first shot loading - loaded: ready (status 2); with +0x205 it starts at once:
  * the actors cast, the camera director told (+0x14), effect slots 0x1D / 0x1C's parameters
  * kept, the fades from 0, status 3 */
-void func_002CB500(u8 *d) {
+/* 0x002CB500 */
+void Cutscene_StateFirstShot(u8 *d) {
     u8 *fx, *e;
 
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, s32))(gFileLoader, AT(BUF(d, AT(d, 0x64, s32)), 0x8, s32)) != 3) {
@@ -616,7 +640,7 @@ void func_002CB500(u8 *d) {
     }
     AT(BUF(d, AT(d, 0x64, s32)), 0x4, s32) = 2;
     AT(d, 0x2A0, PTMF) = D_00412940;
-    func_002CBD10(d);
+    Cutscene_Cast(d);
     if (gCamDirector != NULL) {
         VCALL(gCamDirector, 0x14, void (*)(VObject *))(gCamDirector);
     }
@@ -657,7 +681,8 @@ void func_002CB500(u8 *d) {
 
 /* state: the script loading - loaded: the actors (not Hewie's slot 2, not left alone) get
  * their cutscene motion buffers (and +0x54), shot 0 starts loading, then the first-shot state */
-void func_002CB6C0(u8 *d) {
+/* 0x002CB6C0 */
+void Cutscene_StateScript(u8 *d) {
     s32 i;
 
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, s32))(gFileLoader, 0x10000000) == 3) {
@@ -685,7 +710,8 @@ void func_002CB6C0(u8 *d) {
 /* +0x10 start the cutscene named +0x14: frames before the start, the buffers free (handles
  * 0x07000000 / 1), the signals cleared; the script, signal table and cues loading (handle
  * 0x10000000) and given to the director (+0x18); the slots' +2 / +3 cleared; status loading */
-void func_002CB9A0(u8 *d) {
+/* 0x002CB9A0 */
+void Cutscene_Start(u8 *d) {
     u8 *p = (u8 *)gProgress;
     char file[0x20];
     s32 i;
@@ -722,7 +748,8 @@ void func_002CB9A0(u8 *d) {
 
 /* the actors released: each back to how it was (shown +0xE0 from +4's 0x80, active +0x29 from
  * its 1), +0x50, the model hook off (+0x30, unless +3), its motion reset */
-void func_002CBBE0(u8 *d) {
+/* 0x002CBBE0 */
+void Cutscene_ReleaseActors(u8 *d) {
     s32 i;
 
     for (i = 1; i < 0x20; i++) {
@@ -747,7 +774,8 @@ void func_002CBBE0(u8 *d) {
 /* the cast: each actor in the script gets its character (left-alone ones: their motion
  * buffer back instead); actors 1..25 are made active and taken (+0); its state before kept
  * (+4), +0x4C, the model hook on (+0x2C, unless +3) */
-void func_002CBD10(u8 *d) {
+/* 0x002CBD10 */
+void Cutscene_Cast(u8 *d) {
     Progress *p = gProgress;
     s32 i;
 
@@ -761,7 +789,7 @@ void func_002CBD10(u8 *d) {
         if (!((1 << i) & script_actors(d))) {
             continue;
         }
-        k = func_002C9930(d, func_002CC5A0(d, i) & 0xFF);
+        k = Cutscene_KindSlot(d, Cutscene_MapId(d, i) & 0xFF);
         if (k == 0xFF) {
             continue;
         }
@@ -793,7 +821,8 @@ void func_002CBD10(u8 *d) {
  * actor in it (1..25) driven by its keys (hidden flag off, animated, motion reset, keys
  * +0x4C8, shown, animation 0x8000 from outside), those out of it back to their own motion;
  * the doors' keys; the object groups in it shown with their keys, the others hidden */
-void func_002CC130(u8 *d, s32 b, s32 rec) {
+/* 0x002CC130 */
+void Cutscene_StartShot(u8 *d, s32 b, s32 rec) {
     u8 *shot = SHOT(b);
     u8 groups;
     s32 i, k;
@@ -855,7 +884,8 @@ void func_002CC130(u8 *d, s32 b, s32 rec) {
 }
 
 /* Maps an id (0..25) to another id; -1 when out of range. */
-s32 func_002CC5A0(void *self, u32 id) {
+/* 0x002CC5A0 */
+s32 Cutscene_MapId(void *self, u32 id) {
     if (id >= 26) {
         return -1;
     }
@@ -866,7 +896,8 @@ s32 func_002CC5A0(void *self, u32 id) {
  * script's length +0x0, its shot count +0x2 ---- */
 
 /* +0x1C the shot frame `t` falls in (wrapped into the script's length), -1 if none */
-s32 func_002CC760(u8 *d, s32 t) {
+/* 0x002CC760 */
+s32 Cutscene_ShotAt(u8 *d, s32 t) {
     u8 *s;
     s32 i, n;
 
@@ -893,7 +924,8 @@ s32 func_002CC760(u8 *d, s32 t) {
 }
 
 /* +0x20 how far frame `t` is into its shot, -1 if in none */
-s32 func_002CC6F0(VObject *d, s32 t) {
+/* 0x002CC6F0 */
+s32 Cutscene_IntoShot(VObject *d, s32 t) {
     s32 i = VCALL(d, 0x1C, s32 (*)(VObject *, s32))(d, t);
 
     if (i < 0) {
@@ -903,7 +935,8 @@ s32 func_002CC6F0(VObject *d, s32 t) {
 }
 
 /* +0x24 the shot after frame `t`'s (wrapping), -1 if in none */
-s32 func_002CC6A0(VObject *d, s32 t) {
+/* 0x002CC6A0 */
+s32 Cutscene_NextShot(VObject *d, s32 t) {
     s32 i = VCALL(d, 0x1C, s32 (*)(VObject *, s32))(d, t);
 
     if (i >= 0) {

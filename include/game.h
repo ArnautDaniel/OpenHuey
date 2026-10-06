@@ -91,10 +91,10 @@ extern void Game_SetState(Game *game, const PTMF *state);
 extern void Game_StateMain(Game *game);
 extern void Game_StateShutdown(Game *game);
 extern void Game_StartNextScene(Game *game);
-extern void *func_002D0C10(u8 *o, s32 flags);
-extern void *func_002D0CE0(u8 *o, s32 flags);
-extern void *func_002D0D60(u8 *o, s32 flags);
-extern void *func_002D0DF0(u8 *o, s32 flags);
+extern void *AvoidPromptBase_dtor(u8 *o, s32 flags);
+extern void *QuadEntry_dtor(u8 *o, s32 flags);
+extern void *PlacedThings_dtor(u8 *o, s32 flags);
+extern void *Creatures_dtor(u8 *o, s32 flags);
 extern void *Game_dtor(u8 *g, s32 flags);
 
 #endif /* GAME_H */

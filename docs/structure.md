@@ -18,7 +18,7 @@ at the end. See `src/game/game.c`, `include/game.h`.
 | +0x400A00 | scene table object; `scenes[4]` at +0x400A04 |
 | +0x14D9A40 | scene heap (vtable 0x46A1C0: +0x10 alloc, +0x14 free) |
 | +0x14D9DD0, +0x14DC530 | object pools (462x0x14 + 64x0xC; 632x0x50 + 32x0xC) |
-| +0x14E8C90 | sub-object, init `func_001F44D0`, shutdown `func_001F4100` |
+| +0x14E8C90 | sub-object, init `Slots_Init`, shutdown `func_001F4100` |
 
 ## Scenes (game modes) - `Game_StartNextScene`
 
@@ -61,11 +61,11 @@ Members (from `SceneGame_ctor`):
 +0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `func_003A04A0`: room
 load, returns 1 while busy), else the gameplay tick `func_003A0160`:
 
-1. `func_00225550(+0xF6CBB0)`, `func_001792C0(Progress, 0)`, `func_0039D310(game)` (416 insns:
+1. `CamDirector_NewRoom(+0xF6CBB0)`, `func_001792C0(Progress, 0)`, `func_0039D310(game)` (416 insns:
    events, items, camera? - calls Progress flags, `func_00124F20(gCharPlayer, ...)`)
 2. **characters**: vtable +0x38 (per-frame update) on `gCharacters[0..2]` whose byte +0x28 == 1
 3. `func_002E2650(+0x706480)`, game vtable +0xDC, `func_00175430(Progress)` (620 insns),
-   `func_002252B0(+0xF6CBB0, ...)` (camera/collision?)
+   `CamDirector_RoomStart(+0xF6CBB0, ...)` (camera/collision?)
 
 ## Characters
 

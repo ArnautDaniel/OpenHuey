@@ -47,10 +47,11 @@ void *func_001BF7A0(u8 *o, s32 flags);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002D4680(void *self, u8 *p);
+void Fades_Start(void *self, u8 *p);
 
 /* Game's base class constructor. */
-void *func_0020E7F0(Game *game) {
+/* 0x0020E7F0 */
+void *GameBase_ctor(Game *game) {
     gSystemData = (u8 *)game;
     game->vtbl = D_0046BEE0;
     game->nextMode = 0;
@@ -61,7 +62,8 @@ void *func_0020E7F0(Game *game) {
 
 /* Starts a 16.16 fade of channel i from `from` to `to` over `frames` (12 bits) frames. */
 /* The original null-checks the address of each member (inlined constructors). */
-void func_002D4680(void *self, u8 *p) {
+/* 0x002D4680 */
+void Fades_Start(void *self, u8 *p) {
     u32 a = (u32)p;
     s32 i;
 
@@ -116,10 +118,11 @@ extern void *D_0046BF20[], *D_0046BF2C[];
 extern u8 D_0047E360[], D_0047E3C0[16], D_0047E3D0[16];
 extern const PTMF sGameStateNull;
 
-extern void func_001B80C0(u8 *r);
+extern void RenderState_Defaults(u8 *r);
 
 /* System object constructor. */
-void *func_0020E340(u8 *s) {
+/* 0x0020E340 */
+void *System_ctor(u8 *s) {
     u8 *p;
     s32 i;
 
@@ -128,7 +131,7 @@ void *func_0020E340(u8 *s) {
     AT(s, 0x20, void **) = D_0046AD88;
     gPad = (VObject *)(s + 0x40);
     AT(s, 0x40, void **) = D_0046ADD0;
-    func_002D4680(s + 0x40, D_0047E360);
+    Fades_Start(s + 0x40, D_0047E360);
     for (i = 0; i < 16; i++) {
         D_0047E3C0[i] = i;
     }
@@ -145,7 +148,7 @@ void *func_0020E340(u8 *s) {
     gRenderer = (VObject *)(s + 0x460);
     AT(s, 0x3A4, PTMF) = sGameStateNull;
     AT(s, 0x460, void **) = D_0046AC50;
-    func_001B80C0(s + 0x460);
+    RenderState_Defaults(s + 0x460);
 
     p = s + 0x305280;
     gAdx = p;
@@ -188,7 +191,8 @@ void *func_0020E340(u8 *s) {
 extern u32 _fbss;                 /* first word of .bss: libgraph table entry 2 */
 
 /* Renderer state (system +0x460) defaults: 640x512 display, draw buffers, colour 0x80808080. */
-void func_001B80C0(u8 *r) {
+/* 0x001B80C0 */
+void RenderState_Defaults(u8 *r) {
     u32 i;
 
     AT(r, 0x304BE8, s32) = 0;
@@ -243,7 +247,8 @@ void *func_001BC320(u8 *o, s32 flags) {
 }
 
 /* Heap (vtable 0x46A1C0) setup: memory, size, block table, block count; then its init (+0xC). */
-void func_00169260(VObject *h, void *base, u32 size, void *blocks, s32 count) {
+/* 0x00169260 */
+void Heap_Setup(VObject *h, void *base, u32 size, void *blocks, s32 count) {
     AT(h, 0x4, void *) = base;
     AT(h, 0x8, u32) = size;
     AT(h, 0xC, void *) = blocks;
@@ -297,7 +302,8 @@ extern void *D_0046BF08[], *D_004699E0[], *D_0046A1C0[];
 
 /* Game +0x400A00: the scene table (4 scene pointers) and the scene heap after it (Game.sceneHeap,
  * 0x10D9000 bytes from +0x40). */
-void *func_0020E280(u8 *t) {
+/* 0x0020E280 */
+void *SceneTable_ctor(u8 *t) {
     VObject *heap = (VObject *)(t + 0x10D9040);
     s32 i;
 
@@ -312,13 +318,14 @@ void *func_0020E280(u8 *t) {
     for (i = 0; i < 4; i++) {
         AT(t, 0x4 + i * 4, void *) = NULL;
     }
-    func_00169260(heap, t + 0x40, 0x10D9000, t + 0x10D9054, 10);
+    Heap_Setup(heap, t + 0x40, 0x10D9000, t + 0x10D9054, 10);
     return t;
 }
 
 extern void *D_00469A60[];
 
-void *func_0020E260(VObject *o) {
+/* 0x0020E260 */
+void *Camera_ctor(VObject *o) {
     gCamera = o;
     o->vtbl = D_00469A60;
     return o;
@@ -355,7 +362,8 @@ void *func_0020E180(void *e) {
 extern void *D_004562B0, *D_004562A8;   /* the two pools */
 
 /* Game +0x14D9DD0: pool of 64 x 0xC and 462 x 0x14 entries. */
-void *func_0020E1A0(u8 *p) {
+/* 0x0020E1A0 */
+void *SmallPool_ctor(u8 *p) {
     D_004562B0 = p;
     func_00100340(p, func_0020E240, func_0020D970, 0xC, 0x40);
     func_00100340(p + 0x300, func_0020E210, func_0020D9C0, 0x14, 0x1CE);
@@ -363,7 +371,8 @@ void *func_0020E1A0(u8 *p) {
 }
 
 /* Game +0x14DC530: pool of 32 x 0xC and 632 x 0x50 entries. */
-void *func_0020E110(u8 *p) {
+/* 0x0020E110 */
+void *BigPool_ctor(u8 *p) {
     D_004562A8 = p;
     func_00100340(p, func_0020E190, func_0020D8D0, 0xC, 0x20);
     func_00100340(p + 0x180, func_0020E180, func_0020D920, 0x50, 0x278);
@@ -402,7 +411,8 @@ void *func_001F4600(u8 *o) {
 }
 
 /* ... init (from Game_Init) */
-void func_001F44D0(u8 *o) {
+/* 0x001F44D0 */
+void Slots_Init(u8 *o) {
     Slots_Reset(o);
 }
 
@@ -488,7 +498,8 @@ extern void func_001AACC0(void *snd);     /* ADX sound system tick */
 
 /* +0x10 end of frame: finish the renderer's frame, wait for the vblank (at least two since the
  * last frame: the game runs at 30 fps), restart the timers, send the frame, then tick the parts. */
-void func_001BEEF0(u8 *s) {
+/* 0x001BEEF0 */
+void System_EndFrame(u8 *s) {
     s32 n;
 
     func_001B87D0(s + 0x460);
@@ -518,7 +529,8 @@ void func_001BEEF0(u8 *s) {
 /* ---- the rest of the system object (2026-10-05) ---- */
 
 /* the pads (+0x40): close the socket, end the library */
-void func_001BE480(u8 *pads) {
+/* 0x001BE480 */
+void Pads_Shutdown(u8 *pads) {
     func_001EFB40(AT(pads, 0x40, s32));
     func_001EF9D0();
 }
@@ -577,7 +589,8 @@ extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046A
 extern void *D_0046AEC0[], *D_0046AED0[], *D_0046AE60[], *D_0046F4F0[], *D_0046AE30[];
 
 /* destructor (vtable +0x8): the members in reverse, each with its vtable chain and global cleared */
-void *func_001BE7A0(u8 *s, s32 flags) {
+/* 0x001BE7A0 */
+void *System_dtor(u8 *s, s32 flags) {
     u8 *p;
 
     if (s == NULL) {
@@ -646,12 +659,13 @@ void *func_001BE7A0(u8 *s, s32 flags) {
 }
 
 /* +0x18 shutdown: the vblank handlers off, then each part's shutdown, then reset the GS */
-void func_001BEDD0(u8 *s) {
+/* 0x001BEDD0 */
+void System_Shutdown(u8 *s) {
     func_0026CC80(2);
     func_0026CC80(3);
     RemoveIntcHandler(3, AT(s, 0x18, s32));
     RemoveIntcHandler(2, AT(s, 0x14, s32));
-    func_001BE480(s + 0x40);
+    Pads_Shutdown(s + 0x40);
     MemCard_Shutdown((MemCard *)(s + 0x390));
     func_001EEA38();
     Loader_CloseAll(s + 0x319900);
@@ -661,7 +675,8 @@ void func_001BEDD0(u8 *s) {
 }
 
 /* +0x14 frame without the vblank wait: finish and send the renderer's frame, tick the parts */
-void func_001BEE70(u8 *s) {
+/* 0x001BEE70 */
+void System_FrameNoWait(u8 *s) {
     func_001B87D0(s + 0x460);
     func_0023C310();
     func_001B85B0(s + 0x460);

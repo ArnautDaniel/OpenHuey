@@ -41,8 +41,8 @@ static const s32 sFootBones[4] = { 0xB, 0xF, 0x17, 0x1C };
 
 extern u8 D_00456EB0[];
 extern u8 D_00456F70[];
-void *func_0020BF70(void);
-void *func_0020C110(void);
+void *DogModelA_Table(void);
+void *DogModelB_Table(void);
 
 static void HewieModel_Destroy(u8 *m, s32 flags) {
     AT(m, 0x0, void **) = D_0046B240;
@@ -60,14 +60,16 @@ static void HewieModel_Destroy(u8 *m, s32 flags) {
 }
 
 /* +0x8 */
-void *func_001F7D40(u8 *m, s32 flags) {
+/* 0x001F7D40 */
+void *DogModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         HewieModel_Destroy(m, flags);
     }
     return m;
 }
 
-void *func_0020BDE0(u8 *m, s32 flags) {
+/* 0x0020BDE0 */
+void *DogModelA_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046B8F0;
         HewieModel_Destroy(m, flags);
@@ -75,7 +77,8 @@ void *func_0020BDE0(u8 *m, s32 flags) {
     return m;
 }
 
-void *func_0020BF80(u8 *m, s32 flags) {
+/* 0x0020BF80 */
+void *DogModelB_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046B9B0;
         HewieModel_Destroy(m, flags);
@@ -87,7 +90,8 @@ extern u8 D_00456ED0[], D_00456EF0[], D_00456F10[], D_00456F30[], D_00456F50[];
 extern u8 D_00456E10[], D_00456E30[], D_00456E50[], D_00456E70[], D_00456E90[];
 
 /* (vtable D_0046B8F0 +0xA0) its table for kind k (0..4), NULL for others */
-u8 *func_0020BEF0(u8 *m, s32 k) {
+/* 0x0020BEF0 */
+u8 *DogModelA_KindTable(u8 *m, s32 k) {
     switch (k) {
     case 0: return D_00456F50;
     case 1: return D_00456F30;
@@ -98,12 +102,14 @@ u8 *func_0020BEF0(u8 *m, s32 k) {
     return NULL;
 }
 
-void *func_0020BF70(void) {
+/* 0x0020BF70 */
+void *DogModelA_Table(void) {
     return D_00456F70;
 }
 
 /* (vtable D_0046B9B0's) the same for the other model */
-u8 *func_0020C090(u8 *m, s32 k) {
+/* 0x0020C090 */
+u8 *DogModelB_KindTable(u8 *m, s32 k) {
     switch (k) {
     case 0: return D_00456E90;
     case 1: return D_00456E70;
@@ -114,14 +120,16 @@ u8 *func_0020C090(u8 *m, s32 k) {
     return NULL;
 }
 
-void *func_0020C110(void) {
+/* 0x0020C110 */
+void *DogModelB_Table(void) {
     return D_00456EB0;
 }
 
 /* ---- small methods ---- */
 
 /* +0xC: once loaded: the plain model's setup, then his own state cleared */
-void func_001F9570(u8 *m) {
+/* 0x001F9570 */
+void DogModel_Loaded(u8 *m) {
     s32 i;
 
     func_002DE0A0(m);
@@ -145,50 +153,60 @@ void func_001F9570(u8 *m) {
 }
 
 /* +0x10 */
-void func_001F9560(u8 *m) {
+/* 0x001F9560 */
+void DogModel_Frame(u8 *m) {
     func_002DE070(m);
 }
 
 /* +0xB4: his secondary-motion table */
-void func_001F7EA0(u8 *m) {
+/* 0x001F7EA0 */
+void DogModel_SecondaryMotion(u8 *m) {
     AT(m, 0x874, u8 *) = D_003D5F90;
 }
 
 /* +0x88: his head bone */
-s32 func_001F7EB0(u8 *m) {
+/* 0x001F7EB0 */
+s32 DogModel_HeadBone(u8 *m) {
     return 0x1F;
 }
 
 /* +0x60: his head's position */
-void func_001F7EC0(u8 *m, f32 *out) {
+/* 0x001F7EC0 */
+void DogModel_HeadPos(u8 *m, f32 *out) {
     sceVu0CopyVector(out, Skel_Bone(SKEL(m), 0x1F) + 12);
 }
 
 /* +0x28: the model matrix (both body frames) = `mtx` */
-void func_001F7F10(u8 *m, f32 (*mtx)[4]) {
+/* 0x001F7F10 */
+void DogModel_SetMatrix(u8 *m, f32 (*mtx)[4]) {
     sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
     sceVu0CopyMatrix((f32 (*)[4])(m + 0xB40), mtx);
 }
 
 /* +0x8C .. +0x98: his mesh parts */
-s32 func_001F7F50(u8 *m) {
+/* 0x001F7F50 */
+s32 DogModel_Part0(u8 *m) {
     return 9;
 }
 
-s32 func_001F7F60(u8 *m) {
+/* 0x001F7F60 */
+s32 DogModel_Part1(u8 *m) {
     return 0xD;
 }
 
-s32 func_001F7F70(u8 *m) {
+/* 0x001F7F70 */
+s32 DogModel_Part2(u8 *m) {
     return 0x15;
 }
 
-s32 func_001F7F80(u8 *m) {
+/* 0x001F7F80 */
+s32 DogModel_Part3(u8 *m) {
     return 0x1A;
 }
 
 /* +0x6C: half his hip height (bone 29 below his position), as an offset */
-void func_001F8110(u8 *m, f32 *out) {
+/* 0x001F8110 */
+void DogModel_HalfHip(u8 *m, f32 *out) {
     f32 hip[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
 
@@ -205,7 +223,8 @@ void func_001F8110(u8 *m, f32 *out) {
 /* +0x64: foot `foot` (0..3) on the ground at the motion's time + dt: each of the two blended
  * motions (0xA0 apart) samples its contact track for that pair of legs; the foot is planted
  * when both say so, or the current one (+0x540) when only one has the track */
-u8 func_001F8B50(u8 *m, s32 foot, s32 dt) {
+/* 0x001F8B50 */
+u8 DogModel_FootDown(u8 *m, s32 foot, s32 dt) {
     f32 c[2][4] __attribute__((aligned(16))) = { { 0 } };
     s32 pair = (foot >> 1) * 8;
     void **trkA = &AT(m, 0x5BC + pair, void *);
@@ -236,7 +255,8 @@ u8 func_001F8B50(u8 *m, s32 foot, s32 dt) {
 }
 
 /* +0x18: each frame: the feet's contact from the animation */
-void func_001F7FA0(u8 *m) {
+/* 0x001F7FA0 */
+void DogModel_FeetContact(u8 *m) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
@@ -246,7 +266,8 @@ void func_001F7FA0(u8 *m) {
 }
 
 /* +0x54: no foot on the ground */
-void func_001F8190(u8 *m) {
+/* 0x001F8190 */
+void DogModel_FeetUp(u8 *m) {
     AT(m, 0xB80, u8) = 0;
     AT(m, 0xB81, u8) = 0;
     AT(m, 0xB82, u8) = 0;
@@ -254,14 +275,16 @@ void func_001F8190(u8 *m) {
 }
 
 /* +0x50: place the feet afresh */
-void func_001F81B0(u8 *m) {
+/* 0x001F81B0 */
+void DogModel_FeetReplace(u8 *m) {
     AT(m, 0x950, u8) = 0;
     VCALL(m, 0x54, void (*)(u8 *))(m);
 }
 
 /* the legs' IK set up from the bind pose, the feet put on the targets, solved keeping their
    poses */
-void func_001F8450(u8 *m, f32 *fr, f32 *fl, f32 *hr, f32 *hl) {
+/* 0x001F8450 */
+void DogModel_LegIK(u8 *m, f32 *fr, f32 *fl, f32 *hr, f32 *hl) {
     f32 d[4] __attribute__((aligned(16)));
     u8 *b = AT(m, 0x4C0, u8 *) + 0x10;
 
@@ -294,7 +317,8 @@ static void foot_at(u8 *m, s32 i, f32 *out) {
 /* +0x4C: each frame, plant the feet: a foot that stays on the ground is held where it was
  * planted; one lifting off eases from there to the animation over 4 frames (from 5); the
  * first time, all go where the animation has them */
-void func_001F81D0(u8 *m) {
+/* 0x001F81D0 */
+void DogModel_PlantFeet(u8 *m) {
     f32 at[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
     s32 i;
@@ -340,7 +364,7 @@ void func_001F81D0(u8 *m) {
         }
         AT(m, 0x8E0 + i, u8) = 0;
     }
-    func_001F8450(m, (f32 *)(m + 0x8A0), (f32 *)(m + 0x8B0), (f32 *)(m + 0x8C0), (f32 *)(m + 0x8D0));
+    DogModel_LegIK(m, (f32 *)(m + 0x8A0), (f32 *)(m + 0x8B0), (f32 *)(m + 0x8C0), (f32 *)(m + 0x8D0));
 }
 
 /* ---- the body on the floor ---- */
@@ -388,7 +412,8 @@ static void frame_along(f32 (*f)[4], const f32 *dir) {
 /* +0x40: the body frames for character `a`: the front one from his position to the floor
  * point `ahead` along him, the back one from the floor point `behind` (negative: behind him)
  * to his position; both his own matrix when not on the floor */
-void func_001F8650(u8 *m, u8 *a, f32 ahead, f32 behind) {
+/* 0x001F8650 */
+void DogModel_BodyFrames(u8 *m, u8 *a, f32 ahead, f32 behind) {
     f32 floor[4] __attribute__((aligned(16)));
     f32 mtx[4][4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
@@ -419,7 +444,8 @@ void func_001F8650(u8 *m, u8 *a, f32 ahead, f32 behind) {
 /* +0x48: how level the floor under him runs along his body (the horizontal part of the unit
  * direction between the floor points `ahead` and `behind` along him); 1 when not on
  * the floor */
-f32 func_001F8910(u8 *m, u8 *a, f32 ahead, f32 behind) {
+/* 0x001F8910 */
+f32 DogModel_FloorLevel(u8 *m, u8 *a, f32 ahead, f32 behind) {
     f32 floor[4] __attribute__((aligned(16)));
     f32 mtx[4][4] __attribute__((aligned(16)));
     f32 pb[4] __attribute__((aligned(16)));
@@ -506,7 +532,8 @@ static void neck_turn(u8 *m, f32 (*b)[4], s32 ref, f32 k) {
 /* +0x14: adjust bone `bone`'s matrix `b` as it is built (`parent`: for the root, the motion's
  * own rotation): the root (0) on the back frame; bone 16 (the shoulders) on the front frame;
  * the spine (18) bent with the slope; neck and head (29, 30, 31) turned */
-void func_001F8D40(u8 *m, s32 bone, f32 (*b)[4], f32 (*parent)[4]) {
+/* 0x001F8D40 */
+void DogModel_AdjustBone(u8 *m, s32 bone, f32 (*b)[4], f32 (*parent)[4]) {
     f32 t[4][4] __attribute__((aligned(16)));
     f32 u[4][4] __attribute__((aligned(16)));
     f32 r[4][4] __attribute__((aligned(16)));

@@ -35,7 +35,7 @@ extern const u32 D_003B2EA8[];   /* the step functions (PTMFs, 16-byte aligned) 
 #define NODE(s, t) ((s) + 0x44 + (t) * 0x18)
 #define NODE_INDEX(s, n) ((u32)((u8 *)(n) - ((s) + 0x44)) / 0x18)
 
-void *func_001AABD0(u8 *o, s32 flags);
+void *PathPlanBase_dtor(u8 *o, s32 flags);
 
 /* a search's step: (planner->*step)(search) */
 static inline s32 search_step(u8 *pl, u8 *s) {
@@ -65,7 +65,8 @@ static inline void tri_centre(NavMesh *nm, u32 t, f32 *out) {
 }
 
 /* +0x8 destructor */
-void *func_001A4970(void *o, s32 flags) {
+/* 0x001A4970 */
+void *PathPlan_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ABB0;
         if (o != NULL) {
@@ -84,7 +85,8 @@ void *func_001A4970(void *o, s32 flags) {
 /* the estimates to the goal (+0x10) of every triangle for the request kinds 3..5: the distance
  * from its centre to the goal point (`req` +0x8: 0 plain, 1 heights x 10, 2 also +1000 on
  * triangles flagged 0x40) */
-void func_001A49E0(void *pl, u8 *s, u8 *req) {
+/* 0x001A49E0 */
+void PathPlan_Estimates(void *pl, u8 *s, u8 *req) {
     NavMesh *nm;
     u32 n, t;
     u8 *node;
@@ -139,7 +141,8 @@ void func_001A49E0(void *pl, u8 *s, u8 *req) {
 
 /* step for a start already at the goal: the path is the start node alone (+0x40198 start,
  * +0x4019A goal triangle) */
-s32 func_001A4C60(u8 *pl, u8 *s) {
+/* 0x001A4C60 */
+s32 PathPlan_StepAtGoal(u8 *pl, u8 *s) {
     AT(pl, 0x40198, s16) = AT(s, 0x4, s32);
     AT(pl, 0x4019A, s16) = AT(s, 0x8, s32);
     AT(s, 0x10048, u8 *) = NODE(s, AT(s, 0x4, s32));
@@ -155,7 +158,8 @@ static inline u32 tri_flags(NavMesh *nm, u32 t) {
 /* step for kind 0, breadth first: the queue's head (+0xC044) expanded, its new neighbours (not
  * stopped by +0xC) queued; one at the goal (flag 4, or triangle flags of +0x10) ends it. 0 to
  * go on, the steps when found, -1 / -steps when it can't be reached */
-s32 func_001A8040(void *pl, u8 *s) {
+/* 0x001A8040 */
+s32 PathPlan_StepBreadth(void *pl, u8 *s) {
     NavMesh *nm;
     u8 *cur;
     NavTri *tri;
@@ -211,7 +215,8 @@ s32 func_001A8040(void *pl, u8 *s) {
 
 /* step for kind 1, depth first: as kind 0, but the head's new neighbours take its place at
  * the front of the list */
-s32 func_001A7C30(void *pl, u8 *s) {
+/* 0x001A7C30 */
+s32 PathPlan_StepDepth(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur;
@@ -280,7 +285,8 @@ s32 func_001A7C30(void *pl, u8 *s) {
 /* step for kind 6, greedy best first: the node +0x10044 expanded; its new neighbours get the
  * estimate (heights x 10, +5 on triangles flagged 0x40) and go into the list (by +8) sorted by
  * it; a seen neighbour cheaper to come from becomes the node's parent */
-s32 func_001A5750(void *pl, u8 *s) {
+/* 0x001A5750 */
+s32 PathPlan_StepGreedy(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur, *head;
@@ -382,7 +388,8 @@ s32 func_001A5750(void *pl, u8 *s) {
  * the stack keeps only the nodes better than the bound (the rest go to the deferred list
  * +0xE044, +0x42) and is popped; with it empty, the deepest deferred node's best unexpanded
  * ancestor (by f) comes back */
-s32 func_001A5BB0(void *pl, u8 *s) {
+/* 0x001A5BB0 */
+s32 PathPlan_StepBounded(void *pl, u8 *s) {
 #ifdef HG_NATIVE
     static u8 *sNew0;   /* (the original reads its new[0] stale from the last step's frame) */
 #endif
@@ -542,7 +549,8 @@ s32 func_001A5BB0(void *pl, u8 *s) {
 /* step for kind 3, greedy best first on the sorted list (+0xC044, the head expanded): its new
  * neighbours, sorted by the estimate (+0x10), are merged in; the best of them replaces the head,
  * found with the goal node as a sentinel past the end (its estimate set above it) */
-s32 func_001A6D70(void *pl, u8 *s) {
+/* 0x001A6D70 */
+s32 PathPlan_StepGreedySorted(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur;
@@ -723,7 +731,8 @@ static inline __attribute__((always_inline)) void open_merge(u8 *s, u8 **nbs, s3
  * +2 (a cheaper way to an open node moves it up), within 30 of the start (blocked triangles
  * explored without the check): the first triangle
  * further (or the list running out) ends it at the nearest one seen (+0x10058) */
-s32 func_001A4CC0(void *pl, u8 *s) {
+/* 0x001A4CC0 */
+s32 PathPlan_StepCheapNear(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur;
@@ -812,7 +821,8 @@ s32 func_001A4CC0(void *pl, u8 *s) {
 
 /* step for kind 2, cheapest first (Dijkstra) by the cost so far (+0xC) on the sorted list,
  * places kept at +2 */
-s32 func_001A7320(void *pl, u8 *s) {
+/* 0x001A7320 */
+s32 PathPlan_StepDijkstra(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur;
@@ -883,7 +893,8 @@ s32 func_001A7320(void *pl, u8 *s) {
 
 /* step for kind 4, A*: by f = g + h (+0x14) on the sorted list, places kept at +2 in the open
  * list and in the closed list (+0xE044, +0x42); a closed node reached cheaper is opened again */
-s32 func_001A6260(void *pl, u8 *s) {
+/* 0x001A6260 */
+s32 PathPlan_StepAStar(void *pl, u8 *s) {
     u8 *nbs[3];
     NavMesh *nm;
     u8 *cur;
@@ -977,7 +988,8 @@ s32 func_001A6260(void *pl, u8 *s) {
 
 /* the found path's triangles (+0x40198, start first, +0x40190 their count) from the end node
  * back; the goal becomes the end's triangle (its centre) if it isn't */
-void func_001A9D20(u8 *pl, u8 *s) {
+/* 0x001A9D20 */
+void PathPlan_Trace(u8 *pl, u8 *s) {
     u8 *n = AT(s, 0x10048, u8 *);
     s32 count = 0, i;
     u32 t;
@@ -1025,14 +1037,15 @@ static inline __attribute__((always_inline)) u32 line_walk(NavMesh *nm, u32 t, f
 /* the found path smoothed (+0x41198, +0x40194, at most 0x30): from each kept triangle a straight
  * line to the goal ends it; else the farthest path triangle in sight (tried 5 at a time, then
  * one at a time) is the next kept one. 0, or -1 (no path, or too long) */
-s32 func_001A95F0(u8 *pl, u8 *s) {
+/* 0x001A95F0 */
+s32 PathPlan_Smooth(u8 *pl, u8 *s) {
     NavMesh *nm;
     f32 from[4] __attribute__((aligned(16)));
     f32 to[4] __attribute__((aligned(16)));
     u32 goal, cur, prev = NAV_NONE;
     s32 n, k = 0, i = 0, seen = 0, j, end;
 
-    func_001A9D20(pl, s);
+    PathPlan_Trace(pl, s);
     n = AT(pl, 0x40190, s32);
     if (n == 0) {
         return -1;
@@ -1118,11 +1131,12 @@ s32 func_001A95F0(u8 *pl, u8 *s) {
 }
 
 /* +0x40 the length of search `id`'s path (-1 when it has none) */
-f32 func_001A8300(VObject *pl, s32 id) {
+/* 0x001A8300 */
+f32 PathPlan_PathLength(VObject *pl, s32 id) {
     if (id == -1) {
         return -1.0f;
     }
-    if (func_001A95F0((u8 *)pl, SEARCH(pl, id)) == 0) {
+    if (PathPlan_Smooth((u8 *)pl, SEARCH(pl, id)) == 0) {
         return VCALL(pl, 0x30, f32 (*)(VObject *, s32))(pl, id);
     }
     return -1.0f;
@@ -1130,7 +1144,8 @@ f32 func_001A8300(VObject *pl, s32 id) {
 
 /* +0x3C the length (x / z) of path points from + 1 .. to - 1, from `pos` (points 0xC bytes:
  * triangle, x, z) */
-f32 func_001A8380(void *pl, const f32 *pos, s32 from, s32 to, const u8 *pts) {
+/* 0x001A8380 */
+f32 PathPlan_PointsLength(void *pl, const f32 *pos, s32 from, s32 to, const u8 *pts) {
     f32 x = pos[0], z = pos[2], len = 0.0f;
     const u8 *p = pts + (from + 1) * 0xC;
     s32 i;
@@ -1148,7 +1163,8 @@ f32 func_001A8380(void *pl, const f32 *pos, s32 from, s32 to, const u8 *pts) {
 
 /* +0x24 go `dist` along the path (`n` points, 0xC each: triangle, x, z) from point `i` at
  * (`*tri`, `pos`): the triangle and x / z reached; the point passed last (`n` at its end) */
-s32 func_001A8400(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32 dist) {
+/* 0x001A8400 */
+s32 PathPlan_Advance(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32 dist) {
     f32 p[4] __attribute__((aligned(16)));
     f32 next[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1213,7 +1229,8 @@ static inline void set_on(NavMesh *nm, u32 t, f32 *pos) {
 
 /* +0x20 as +0x24, following the nav mesh: the triangle reached is found by walking the line
  * (or, off it, from the last point's triangle on), and the point is put on it */
-s32 func_001A85E0(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32 dist) {
+/* 0x001A85E0 */
+s32 PathPlan_AdvanceOnMesh(void *pl, u32 *tri, f32 *pos, s32 i, s32 n, const u8 *pts, f32 dist) {
     f32 p[4] __attribute__((aligned(16)));
     f32 next[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1306,7 +1323,8 @@ static inline s32 edge_cross(NavMesh *nm, u32 t, f32 *cross, f32 *from, f32 *to)
 /* +0x1C search `id`'s path as points (0xC each: triangle, x, z) in `out`: the start, then the
  * edge crossings on the way to each smoothed triangle's centre (a doubled one: the middle of
  * the edge on to the next, and its centre), and the goal; their count (-1: no path) */
-s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
+/* 0x001A8960 */
+s32 PathPlan_Points(u8 *pl, s32 id, u8 *out) {
     f32 cross[4] __attribute__((aligned(16)));
     f32 from[4] __attribute__((aligned(16)));
     f32 to[4] __attribute__((aligned(16)));
@@ -1317,7 +1335,7 @@ s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
     u32 t;
     s32 i = 1, at = 1, count = 1, r;
 
-    if (func_001A95F0(pl, s) != 0) {
+    if (PathPlan_Smooth(pl, s) != 0) {
         return -1;
     }
     t = AT(s, 0x4, u32);
@@ -1406,7 +1424,8 @@ s32 func_001A8960(u8 *pl, s32 id, u8 *out) {
  * from each point through the smoothed triangles' centres (a doubled one: the middle of the edge
  * on) by cubic Hermite pieces of 8 steps, their tangents halved until every step stays on the
  * walkable mesh (else, after 10 tries, a straight step); the count (-1: no path) */
-s32 func_001A8DC0(u8 *pl, s32 id, u8 *out) {
+/* 0x001A8DC0 */
+s32 PathPlan_Curve(u8 *pl, s32 id, u8 *out) {
     f32 a[4] __attribute__((aligned(16)));   /* the piece's start */
     f32 b[4] __attribute__((aligned(16)));   /* its end */
     f32 c[4] __attribute__((aligned(16)));   /* the next centre */
@@ -1421,7 +1440,7 @@ s32 func_001A8DC0(u8 *pl, s32 id, u8 *out) {
     u16 *p;
     s32 m, i = 0, k = 0;
 
-    if (func_001A95F0(pl, s) != 0) {
+    if (PathPlan_Smooth(pl, s) != 0) {
         return -1;
     }
     m = AT(pl, 0x40194, s32);
@@ -1589,7 +1608,8 @@ s32 func_001A8DC0(u8 *pl, s32 id, u8 *out) {
 }
 
 /* +0x14 run search 0 to its end */
-void func_001A9F90(u8 *pl) {
+/* 0x001A9F90 */
+void PathPlan_RunSearch0(u8 *pl) {
     u8 *s = SEARCH(pl, 0);
 
     while (search_step(pl, s) == 0) {
@@ -1597,7 +1617,8 @@ void func_001A9F90(u8 *pl) {
 }
 
 /* +0x10 a step of search `id` */
-void func_001A9FF0(u8 *pl, s32 id) {
+/* 0x001A9FF0 */
+void PathPlan_Step(u8 *pl, s32 id) {
     if (id == -1) {
         return;
     }
@@ -1608,7 +1629,8 @@ void func_001A9FF0(u8 *pl, s32 id) {
  * kind, +0xC start triangle, +0x10 start point, +0x20 goal triangle, +0x30 goal point, +0x40
  * stop flags) in search `id` (-1: search 3 if free); the search, or -1 (a point off its
  * triangle, or none free) */
-s32 func_001AA040(u8 *pl, u8 *req, s32 id) {
+/* 0x001AA040 */
+s32 PathPlan_Start(u8 *pl, u8 *req, s32 id) {
     NavMesh *nm;
     u8 *s, *start;
     u32 n, t;
@@ -1661,7 +1683,7 @@ s32 func_001AA040(u8 *pl, u8 *req, s32 id) {
         AT(s, 0x10, s32) = 0;
         AT(NODE(s, AT(s, 0x8, s32)), 0x0, u16) |= 4;
     }
-    func_001A49E0(pl, s, req);
+    PathPlan_Estimates(pl, s, req);
     start = NODE(s, AT(s, 0x4, s32));
     if (AT(req, 0x4, s32) != 7 && (AT(start, 0x0, u16) & 4)) {
         if (AT(s, 0x4, s32) != AT(s, 0x8, s32)) {
@@ -1712,7 +1734,8 @@ s32 func_001AA040(u8 *pl, u8 *req, s32 id) {
 }
 
 /* +0x38 the triangle of search `id`'s path end (-1: none) */
-s32 func_001AA720(u8 *pl, s32 id) {
+/* 0x001AA720 */
+s32 PathPlan_EndTri(u8 *pl, s32 id) {
     if (id != -1) {
         u8 *s = SEARCH(pl, id);
 
@@ -1725,7 +1748,8 @@ s32 func_001AA720(u8 *pl, s32 id) {
 
 /* +0x34 cut search `id`'s path back past the triangles with flags `mask` at its end: the goal
  * becomes the first one left (its centre) */
-void func_001AA790(u8 *pl, s32 id, u32 mask) {
+/* 0x001AA790 */
+void PathPlan_CutBack(u8 *pl, s32 id, u32 mask) {
     NavMesh *nm = gNavMesh;
     u8 *s, *end, *n;
     u32 t;
@@ -1760,7 +1784,8 @@ void func_001AA790(u8 *pl, s32 id, u32 mask) {
 
 /* +0x30 the length (x / z) of search `id`'s last path: start point, the centres of its
  * triangles, goal point */
-f32 func_001AA910(u8 *pl, s32 id) {
+/* 0x001AA910 */
+f32 PathPlan_LastLength(u8 *pl, s32 id) {
     f32 len = 0.0f;
     f32 p[4] __attribute__((aligned(16)));
     f32 c[4] __attribute__((aligned(16)));
@@ -1790,7 +1815,8 @@ f32 func_001AA910(u8 *pl, s32 id) {
 }
 
 /* +0x2C the triangle of search `id`'s path end and its centre (-1: none) */
-s32 func_001AAAE0(u8 *pl, s32 id, f32 *centre) {
+/* 0x001AAAE0 */
+s32 PathPlan_EndCentre(u8 *pl, s32 id, f32 *centre) {
     if (id != -1) {
         u8 *s = SEARCH(pl, id);
 
@@ -1805,7 +1831,8 @@ s32 func_001AAAE0(u8 *pl, s32 id, f32 *centre) {
 }
 
 /* destructor (vtable D_0046AC00) */
-void *func_001AABD0(u8 *o, s32 flags) {
+/* 0x001AABD0 */
+void *PathPlanBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AC00;
         gSceneGameF29740 = NULL;

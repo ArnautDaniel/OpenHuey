@@ -602,22 +602,22 @@ extern const PTMF D_0044AE10, D_0044AE20;
  * the screen's rows and cells refreshed; once up, "obtained" with the item's name (and count)
  * in a box, its sound played once (+0x152) - or message 5 for none; when done and confirmed,
  * the item added, the places cleared (but +0x150), the task closed and the next state
- * (func_00322970: D_0044AE10, else D_0044AE20) */
+ * (Synth_CountMaterials: D_0044AE10, else D_0044AE20) */
 /* 0x0037ED50 */
 void ItemFound_StateShow(u8 *o) {
     Task *t = (Task *)(o + 0x14);
-    u8 flags = func_00322CD0(o, (s8)o[0x14A] >= 0);
+    u8 flags = ItemFound_Step(o, (s8)o[0x14A] >= 0);
     s32 id = -1, i;
 
     for (i = 0; i < 10; i++) {
-        func_00323510(o, i, o[0x120 + i], 0);
+        SlotMachine_DrawRow(o, i, o[0x120 + i], 0);
     }
     for (i = 0; i < 22; i++) {
         u8 k = D_00460A00[i];
         s8 c = o[0x12F + k];
 
         if (c != -1 && c != 4) {
-            func_003230B0(o, k, c);
+            SlotMachine_DrawCell(o, k, c);
         }
     }
     if (flags & 1) {
@@ -647,7 +647,7 @@ void ItemFound_StateShow(u8 *o) {
     }
     if ((flags & 0x80) && (D_0047E36C & MENU_CONFIRM)) {
         if (id != -1) {
-            func_00261090((u8 *)gSubScreen + 8, id, o[0x14B]);
+            Items_Give((u8 *)gSubScreen + 8, id, o[0x14B]);
         }
         for (i = 0; i < 0x40; i++) {
             if (i != 0x38) {
@@ -656,7 +656,7 @@ void ItemFound_StateShow(u8 *o) {
         }
         Task_Close(t);
         AT(o, 0x10, s32) = 0;
-        if (func_00322970(o)) {
+        if (Synth_CountMaterials(o)) {
             ptmf_set((PTMF *)(o + 0x4), &D_0044AE10);
         } else {
             ptmf_set((PTMF *)(o + 0x4), &D_0044AE20);

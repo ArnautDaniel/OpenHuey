@@ -332,7 +332,7 @@ Scene *SceneGame_ctor(Scene *g) {
     func_002D1470(prog + 0x73EB00);
     func_002D13B0(prog + 0x73EB60);
     func_00176780((u8 *)((Progress *)prog));
-    func_00169260((VObject *)(prog + 0x6FBF00), prog + 0x1FBF00, 0x500000, prog + 0x6FBF14, 0x22);
+    Heap_Setup((VObject *)(prog + 0x6FBF00), prog + 0x1FBF00, 0x500000, prog + 0x6FBF14, 0x22);
     AT(prog, 0x6FC214, s32) = 0x2A;   /* the entry: room 0x2A (a new game) */
     g->vtbl = SceneGame_vtable;
     AT(g, SG_PROGRESS, void **) = D_0047A7E8;
@@ -596,7 +596,7 @@ void func_003A0160(Scene *g) {
 
     AT(g, 0x44, s32) = 0;
     AT(g, 0x73EE40, s32) = 0;
-    func_00225550((u8 *)g + 0xF6CBB0);
+    CamDirector_NewRoom((u8 *)g + 0xF6CBB0);
     func_001792C0(prog, 0);
     func_0039D310(g);
     if (AT(g, 0xF6CD28, u8) == 1) {
@@ -612,7 +612,7 @@ void func_003A0160(Scene *g) {
     func_002E2650((u8 *)g + 0x706480);
     VCALL(g, 0xDC, void (*)(Scene *))(g);
     func_00175430(prog);
-    func_002252B0((u8 *)g + 0xF6CBB0, AT(g, 0x74881C, s32));
+    CamDirector_RoomStart((u8 *)g + 0xF6CBB0, AT(g, 0x74881C, s32));
     if (!(AT(g, 0xF6CD28, u8) & 0x80)) {
         func_00124F20((Character *)((u8 *)gCharPlayer), 0xFF);
         AT(g, 0xF6CD28, u8) |= 0x80;
@@ -973,7 +973,7 @@ void func_0039EAB0(Scene *g) {
         }
         *flags &= ~1;
         func_001776F0(prog);
-        func_00224EE0(cam);
+        CamDirector_Ease(cam);
         VCALL(g, 0xDC, void (*)(Scene *))(g);
         func_00209390((u8 *)ev, 1);
         func_00173670(prog);
@@ -998,7 +998,7 @@ void func_0039EAB0(Scene *g) {
             ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(
                 cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
         }
-        func_00224C60(cam);
+        CamDirector_Track(cam);
         func_00209390((u8 *)ev, 3);
         if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
             *flags = (*flags & ~0x3F0) | 0x3F0;
@@ -1048,7 +1048,7 @@ void func_0039EAB0(Scene *g) {
             func_002E2650((u8 *)g + 0x706480);
             VCALL(g, 0xDC, void (*)(Scene *))(g);
             func_00175430(prog);
-            func_002252B0(cam, AT(g, 0x74881C, s32));
+            CamDirector_RoomStart(cam, AT(g, 0x74881C, s32));
             func_001792C0(prog, AT(g, 0x1170, u8));
             for (i = 0; i < 6; i++) {
                 if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
@@ -1057,7 +1057,7 @@ void func_0039EAB0(Scene *g) {
             }
             func_002E2740((u8 *)g + 0x706480);
             func_00209390((u8 *)ev, 3);
-            func_00224C20(cam);
+            CamDirector_Update(cam);
             *flags |= 1;
         }
     }
@@ -1076,7 +1076,7 @@ void func_0039EAB0(Scene *g) {
 
     func_0031E0D0((u8 *)g + 0x1053480);
     if ((*flags & 0xF) == 0) {
-        func_00224C20(cam);
+        CamDirector_Update(cam);
     }
     if ((*flags & 0xF) == 0) {
         if (((*flags >> 4) & 0x3F) == 0) {
@@ -1088,7 +1088,7 @@ void func_0039EAB0(Scene *g) {
         }
         func_0011FEB0(rooms);
         if (!Progress_TestFlag(prog, 0x17)) {
-            func_00260EC0((u8 *)g + 0xF87248);
+            Items_Update((u8 *)g + 0xF87248);
         }
         func_002A7630((u8 *)g + 0x1004);
         func_002D75C0((u8 *)g + 0x6FC380);
@@ -2002,7 +2002,7 @@ void func_0039D990(Scene *g) {
     s32 i;
 
     func_001776F0(prog);
-    func_00224EE0(cam);
+    CamDirector_Ease(cam);
     VCALL(g, 0xDC, void (*)(Scene *))(g);
     func_00209390((u8 *)ev, 1);
     func_00173670(prog);
@@ -2017,21 +2017,21 @@ void func_0039D990(Scene *g) {
 
         ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
     }
-    func_00224C60(cam);
+    CamDirector_Track(cam);
     func_00209390((u8 *)ev, 3);
     if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
         *flags = (*flags & ~0x3F0) | 0x3F0;
     } else {
         *flags &= ~0x3F0;
     }
-    func_00224C20(cam);
+    CamDirector_Update(cam);
     if (((*flags >> 4) & 0x3F) == 0) {
         func_00176440(prog);
         func_001762B0(prog);
     }
     func_0011FEB0((u8 *)g + 0x73EE80);
     if (((*flags >> 4) & 0x3F) == 0) {
-        func_00260EC0((u8 *)g + 0xF87248);
+        Items_Update((u8 *)g + 0xF87248);
         func_002A7630((u8 *)g + 0x1004);
         func_002D75C0((u8 *)g + 0x6FC380);
         func_002671F0((u8 *)g + 0xF6CD30);
@@ -2066,9 +2066,9 @@ void func_0039E7D0(Scene *g) {
     if (D_0047E37C & 1) {
         Progress_SetFlag(prog, 4);
     }
-    func_00224EE0(cam);
-    func_00224C60(cam);
-    func_00224C20(cam);
+    CamDirector_Ease(cam);
+    CamDirector_Track(cam);
+    CamDirector_Update(cam);
     func_00209390((u8 *)g + SG_EVENT, 3);
     if (AT(g, 0xF88938, u8) != 0 && !(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 2, 1);
@@ -2097,9 +2097,9 @@ void func_0039E380(Scene *g) {
 
     GameOver_Update((GameOver *)((u8 *)g + 0x73EB40));
     if (AT(g, 0x73EB41, u8) != 0 && !Progress_TestFlag(prog, 8)) {
-        func_00224EE0(cam);
-        func_00224C60(cam);
-        func_00224C20(cam);
+        CamDirector_Ease(cam);
+        CamDirector_Track(cam);
+        CamDirector_Update(cam);
         func_00209390((u8 *)g + SG_EVENT, 3);
         func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
         func_00267160((u8 *)g + 0xF6CD30);
@@ -2674,7 +2674,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     AT(g, 0x40, void **) = D_0047A7E8;
     AT(g, 0x1053480, void **) = D_00473440;
     Task_dtor((Task *)(g + 0x10644C8), -1);
-    func_002D0C10(g + 0x1053480, 0);
+    AvoidPromptBase_dtor(g + 0x1053480, 0);
     D_0045D1F0 = NULL;
     AT(g, 0x1053424, void **) = D_0046A110;
     AT(g, 0x1053424, void **) = D_0046A100;
@@ -2728,10 +2728,10 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_00120980(g + 0x73EE80);
     func_0021A2E0(g + 0x748200, -1);
     func_002A8520(g + 0x7481E0, -1);
-    func_002D0D60(g + 0x7455C0, -1);
+    PlacedThings_dtor(g + 0x7455C0, -1);
     Doors_dtor(g + 0x7404C0, -1);
     func_0021B0F0((VObject *)(g + 0x73F370), -1);
-    func_00179F60(g + 0x73F260, -1);
+    NavMesh_dtor(g + 0x73F260, -1);
     func_00268110(g + 0x73F1C0, -1);
     func_0025C850(g + 0x73EE80, -1);
     AT(g, 0x40, void **) = Progress_vtable;
@@ -2751,7 +2751,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     }
     func_00179B10(g + 0x73EBA0, -1);
     func_00179AC0(g + 0x73EB40, -1);
-    func_002D0DF0(g + 0x706480, -1);
+    Creatures_dtor(g + 0x706480, -1);
     func_002D0EE0(g + 0x6FC380, -1);
     func_002D00A0(g + 0x6FC258, -1);
     Heap_dtor((Heap *)(g + 0x6FBF40), -1);

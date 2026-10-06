@@ -383,8 +383,8 @@ s32 EventCond_Eval(VObject *ev) {
     case 0x2C:   /* the director's +0x2C */
         r = VCALL(gCamDirector, 0x2C, s32 (*)(VObject *))(gCamDirector);
         break;
-    case 0x2F:   /* the item manager's func_00260540 under 10 */
-        r = func_00260540((u8 *)gSubScreen + 0x8) < 10;
+    case 0x2F:   /* the item manager's Items_CountItem3F under 10 */
+        r = Items_CountItem3F((u8 *)gSubScreen + 0x8) < 10;
         break;
     case 0x11: {   /* the room's +0x2C test pc[1] (with the context's character and the pc) */
         VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
@@ -470,7 +470,7 @@ s32 EventCond_Eval(VObject *ev) {
     }
     case 0x39: {   /* at least pc[2] of this script's item pc[1] */
         s32 id = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[1]);
-        u32 n = (u8)func_00260CF0((u8 *)gSubScreen + 0x8, id);
+        u32 n = (u8)Items_Count((u8 *)gSubScreen + 0x8, id);
 
         if (!((s32)n < (s32)PC(ev)[2])) {
             r = 1;

@@ -491,10 +491,10 @@ static void cmd_gift(VObject *ev, Progress *p) {
         u8 *t = D_003D6A90 + D_003D6A60[AT(gCharSlot2, 0x153C, u8)] * 16;
 
         item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, t[AT(p, 0x875, u8) * 2 + 1]);
-        if (t[AT(p, 0x875, u8) * 2] != 0 && func_00260CF0(items, item) != 0) {
+        if (t[AT(p, 0x875, u8) * 2] != 0 && Items_Count(items, item) != 0) {
             item = 0x75;
         }
-        if ((u8)func_00260CF0(items, item) < 0x63) {
+        if ((u8)Items_Count(items, item) < 0x63) {
             break;
         }
         AT(p, 0x875, u8)++;
@@ -504,7 +504,7 @@ static void cmd_gift(VObject *ev, Progress *p) {
 
         Msg_SetParamSystem((u8 *)ev + 0x708, 0, item & 0xFFFF);
         im = gSubScreen;
-        func_00261090((u8 *)im + 0x8, item, 1);
+        Items_Give((u8 *)im + 0x8, item, 1);
         VCALL(im, 0x20, void (*)(VObject *, s32, s32))(im, 0, item);
         AT(ev, 0x703, u8) = 1;
         AT(p, 0x875, u8)++;
@@ -1259,7 +1259,7 @@ void EventCmd_Run(VObject *ev) {
         pc = PC(ev);
         n = pc[3];
         id = VCALL(ev, 0xD0, s32 (*)(VObject *, u32))(ev, be16(pc + 1));
-        func_00261090((u8 *)gSubScreen + 0x8, id, n);
+        Items_Give((u8 *)gSubScreen + 0x8, id, n);
         break;
     }
     case 0x88: {   /* a noise of loudness pc[1] in this room at triangle be16 pc[2..3] */
@@ -2179,7 +2179,7 @@ void EventCmd_Flags(VObject *ev) {
                            VCALL(ev, 0xD0, u32 (*)(VObject *, u32))(ev, n) & 0xFFFF);
         break;
     case 0x0C:
-        func_00260BB0((u8 *)gSubScreen + 8, n);
+        Items_UseId((u8 *)gSubScreen + 8, n);
         break;
     case 0x0D:   /* give / take an item, with the pickup sound */
         if (AT(p, 0x30, u32) & 0x8000) {

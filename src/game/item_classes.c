@@ -2274,7 +2274,7 @@ s32 func_002CCDE0(void) {
     return 4;
 }
 
-/* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, func_00261090
+/* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, Items_Give
    (2, 1)) and Progress +0x84 bit 31 is set */
 s32 func_002CCED0(void *o) {
     if (AT(o, 0x10, u32) < 9001) {
@@ -2283,7 +2283,7 @@ s32 func_002CCED0(void *o) {
         }
         return 0;
     }
-    func_00261090((u8 *)gSubScreen + 8, 2, 1);
+    Items_Give((u8 *)gSubScreen + 8, 2, 1);
     AT(gProgress, 0x84, u32) |= 0x80000000;
     return 2;
 }
