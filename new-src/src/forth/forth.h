@@ -134,6 +134,11 @@ Word *forth_prim(Forth *f, const char *name, Code code);
 Word *forth_constant(Forth *f, const char *name, Cell value);
 Word *forth_fconstant(Forth *f, const char *name, Float value);
 
+/* for words that parse: the next name in the input (length 0 at the end) */
+const char *forth_parse_name(Forth *f, size_t *len);
+/* lay down a literal in the definition being compiled */
+void forth_compile_literal(Forth *f, Cell x);
+
 /* tasks: run a word as a task; each frame forth_run_tasks gives every ready task a turn */
 Task *forth_spawn(Forth *f, Word *w);
 void forth_run_tasks(Forth *f);

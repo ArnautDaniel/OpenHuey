@@ -782,6 +782,15 @@ static int parse_float(const char *s, size_t n, Float *out) {
     return n > 0 && end == buf + n;
 }
 
+const char *forth_parse_name(Forth *f, size_t *len) {
+    return parse_word(f, len);
+}
+
+void forth_compile_literal(Forth *f, Cell x) {
+    comma(f, (Cell)f->w_lit);
+    comma(f, x);
+}
+
 /* ---- the outer interpreter ---- */
 
 static void interpret(Forth *f) {

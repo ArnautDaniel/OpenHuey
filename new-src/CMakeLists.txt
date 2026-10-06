@@ -28,3 +28,17 @@ foreach(t ${FORTH_TESTS})
     get_filename_component(name "${t}" NAME_WE)
     add_test(NAME ${name} COMMAND forth-tool "${CMAKE_CURRENT_SOURCE_DIR}/tests/tester.fs" "${t}")
 endforeach()
+
+# ---- the game ----
+find_package(SDL3 REQUIRED CONFIG)
+find_package(OpenGL REQUIRED)
+add_executable(hg2
+    src/main.c
+    src/core/files.c
+    src/platform/gl.c src/platform/platform.c
+    src/render/render.c
+    src/data/pac.c src/data/tex.c src/data/roommesh.c
+    src/game/room.c src/game/console.c
+    src/forth/bind_engine.c)
+target_link_libraries(hg2 PRIVATE forth SDL3::SDL3 OpenGL::GL)
+target_compile_definitions(hg2 PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\"")
