@@ -651,3 +651,530 @@ void SaveScreen_Load(BootCard *b) {
         Task_Run(&b->task);
     }
 }
+
+/* ---- saving (the sub screen's save page, mode 1) ---- */
+
+#include "progress.h"
+
+extern VObject *gFileLoader;
+extern Progress *gProgress;
+extern const char *func_0037E3F0(void);   /* the game data file's name */
+extern void func_002A76E0(u8 *p);         /* four bytes cleared */
+extern void func_002A8060(u8 *p);         /* a fresh save's progress */
+extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */
+extern s32 D_0047B264;                    /* the last check's status */
+extern s32 D_0047B268;                    /* the empty saves written so far */
+extern const char D_0045D210[];           /* "%d" */
+extern const char D_0045D220[], D_0045D230[];   /* "SUBSCR\\ICON.SYS", "SUBSCR\\ICON00.ICO" */
+extern const char D_0045D248[], D_0045D258[];   /* the card's "icon.sys", "icon00.ico" */
+
+#define MEMCARD_CREATE(mc, port, name, buf, size) \
+    VCALL(mc, 0x10, void (*)(MemCard *, s32, const char *, void *, s32))(mc, port, name, buf, size)
+#define MEMCARD_WRITE(mc, port, buf, off, size) \
+    VCALL(mc, 0x14, void (*)(MemCard *, s32, void *, s32, s32))(mc, port, buf, off, size)
+#define MEMCARD_FORMAT(mc, port) VCALL(mc, 0x1C, void (*)(MemCard *, s32))(mc, port)
+
+/* the byte sum of `p`[4 .. n) */
+static inline u32 bytes_sum(const u8 *p, s32 n) {
+    u32 sum = 0;
+    s32 i;
+
+    for (i = 4; i < n; i++) {
+        sum += p[i];
+    }
+    return sum;
+}
+
+/* the system data's sum made right */
+static inline void sys_resum(SysData *s) {
+    s->sum = bytes_sum((u8 *)s, 0x50);
+}
+
+/* each save's state from its header: 0 used, 1 empty, 2 broken */
+static inline void slots_scan(BootCard *b) {
+    s32 i;
+
+    for (i = 0; i < 12; i++) {
+        u8 *h = SAVE_HEADER(b->sys, i);
+
+        if (!header_valid(h)) {
+            b->slots[i] = 2;
+        } else if (AT32(h, 4) == -1) {
+            b->slots[i] = 1;
+        } else {
+            b->slots[i] = 0;
+        }
+    }
+}
+
+/* the system data as read kept (restored if what is read is bad) */
+static inline void sys_keep(BootCard *b) {
+    sys_copy(&b->saved, b->sys);
+    b->saved.flags = b->sys->flags;
+}
+
+/* the game saved into save `cursor`: its header marked, the progress written (progress +0x70)
+ * and its place kept in the system data (and system flag 0x100000 set); the sums of the system
+ * data, the header and the save made right */
+void func_002BD6A0(BootCard *b) {
+    u8 *h;
+
+    SAVE_HEADER(b->sys, b->cursor)[8] = 0;
+    VCALL(gProgress, 0x70, void (*)(Progress *, u8))(gProgress, b->cursor);
+    b->sys->flags = b->cursor;
+    AT(D_0044E978, 0x2C, u32) |= 0x100000;
+    sys_resum(b->sys);
+    h = SAVE_HEADER(b->sys, b->cursor);
+    AT32(h, 0) = bytes_sum(h, 0x18);
+    h = (u8 *)b->sys + SAVE_DATA_OFF;
+    AT32(h, 0) = bytes_sum(h, SAVE_SIZE);
+}
+
+/* fresh game data: no last save; 12 empty headers; an empty save area (a new game's progress,
+ * its sum left -1) */
+void func_002BD8C0(BootCard *b) {
+    u8 *d;
+    s32 i;
+
+    b->sys->flags = 0;
+    sys_resum(b->sys);
+    for (i = 0; i < 12; i++) {
+        u8 *h = SAVE_HEADER(b->sys, i);
+
+        AT32(h, 4) = -1;
+        h[8] = 0;
+        h[9] = 0xFF;
+        h[0xA] = 0;
+        h[0xB] = 0xFF;
+        func_002A76E0(h + 0x13);
+        AT32(h, 0) = bytes_sum(h, 0x18);
+    }
+    d = (u8 *)b->sys + SAVE_DATA_OFF;
+    for (i = 0; i < 5; i++) {
+        AT32(d, 4 + i * 4) = -1;
+    }
+    d[0x18F0] = 0;
+    for (i = 0; i < 6; i++) {
+        d[0x18 + i] = 0xFF;
+        d[0x1E + i] = 0;
+    }
+    for (i = 0; i < 8; i++) {
+        AT32(d, 0x30 + i * 4) = 0;
+    }
+    func_002A8060(d + 0x50);
+    AT32(d, 0) = -1;
+}
+
+/* Save the game. Messages open at the screen's place (`hidden`: 1 for a save without the list -
+ * only the system data is written).
+ * States: 0 the icons loaded; 1 start ("hidden": which card, 50); 2 choosing the card; 3
+ * checking it (no data: 4, "create it?"; unformatted: 5, "format?" then 6 / 7 formatting); 8
+ * the 12 empty saves written, then the icon (9) and icon.sys (10); 11 the system data read; 12
+ * choosing the save (13: "overwrite?"); 14..17 written in turn: the system data, the save's
+ * header sum spoiled (D_0047ABF8), the save, its header; 18 done; 50 "which card"; 100 / 101 a message, then back to 1; 150
+ * saved; 200 "quit?"; 300 cancelled / finished (-1) */
+void func_002BDAB0(BootCard *b) {
+    MemCard *mc = D_0044FF00;
+    u8 flags = 0;
+    s32 st;
+    u32 pad;
+
+    if (b->state < 0) {
+        return;
+    }
+    switch (b->state) {
+    case 0: {
+        VObject *ld = gFileLoader;
+
+        AT(D_0044E978, 0xC, u8) = 0;
+        b->port = 0;
+        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D220, b->buf0);
+        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D230, b->buf1);
+        b->state++;
+    }
+        /* fall through */
+    case 1:
+        b->cursor = 0;
+        D_0047B268 = 0;
+        Msg_PrintfParam(&b->task, 1, D_0045D210, 0xC5);
+        if (b->hidden != 0) {
+            Task_OpenAt(&b->task, 0x3E, (u8)b->hidden);
+            b->state = 50;
+        } else {
+            Task_Open(&b->task, 0x30);
+            b->state++;
+        }
+        break;
+    case 2:
+        if (D_0047E36C & MENU_CONFIRM) {
+            MEMCARD_CHECK(mc, b->port);
+            Msg_PrintfParam(&b->task, 0, D_0045D210, b->port + 1);
+            Task_OpenAt(&b->task, 0x13, (u8)b->hidden);
+            b->state++;
+            Sound_PlaySE(SE_DECIDE);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            Task_OpenAt(&b->task, 0x3D, (u8)b->hidden);
+            b->state = 200;
+            Sound_PlaySE(SE_CANCEL);
+        } else {
+            pad = D_0047E36C;
+            if ((pad & MENU_LEFT) || (pad & MENU_PREV)) {
+                if (b->port != 0) {
+                    b->port = 0;
+                    Sound_PlaySE(SE_CURSOR);
+                }
+            } else if ((pad & MENU_RIGHT) || (pad & MENU_NEXT)) {
+                if (b->port != 1) {
+                    b->port = 1;
+                    Sound_PlaySE(SE_CURSOR);
+                }
+            }
+        }
+        flags |= 2;
+        break;
+    case 3:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        D_0047B264 = st;
+        if (st == MC_NO_CARD) {
+            Task_OpenAt(&b->task, 0x14, (u8)b->hidden);
+            b->state = 101;
+        } else if (st == MC_NO_ROOM) {
+            Task_OpenAt(&b->task, 0x31, (u8)b->hidden);
+            b->state = 101;
+        } else if (st != MC_HAS_DATA) {
+            Task_OpenAt(&b->task, 0x32, (u8)b->hidden);
+            MEMCARD_POLL(mc, b->port);
+            b->state++;
+        } else {
+            sys_keep(b);
+            MEMCARD_READ(mc, b->port, b->sys, 0, b->hidden == 0 ? SAVE_DATA_OFF : 0x50);
+            b->state = 11;
+        }
+        break;
+    case 4:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (b->task.mode == 0) {
+            b->cursor = b->task.answer;
+            if (b->cursor == 1) {
+                b->state = 1;
+            } else if (mc->status != 0) {
+                Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
+                Sound_PlaySE(SE_BUZZER);
+                b->state = 101;
+            } else {
+                func_002BD8C0(b);
+                if (D_0047B264 == MC_UNFORMATTED) {
+                    Task_OpenAt(&b->task, 0x35, (u8)b->hidden);
+                    MEMCARD_POLL(mc, b->port);
+                    b->state++;
+                } else {
+                    Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
+                    MEMCARD_CREATE(mc, b->port, func_0037E3F0(), b->sys, SAVE_DATA_OFF);
+                    b->state = 8;
+                }
+            }
+        } else if (st != 0) {
+            Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+            b->state = 101;
+        } else {
+            MEMCARD_POLL(mc, b->port);
+        }
+        break;
+    case 5:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (b->task.mode == 0) {
+            b->cursor = b->task.answer;
+            if (b->cursor == 1) {
+                b->state = 1;
+            } else if (mc->status != 0) {
+                Task_OpenAt(&b->task, 0x37, (u8)b->hidden);
+                Sound_PlaySE(SE_BUZZER);
+                b->state = 101;
+            } else {
+                Task_OpenAt(&b->task, 0x36, (u8)b->hidden);
+                MEMCARD_CHECK(mc, b->port);
+                b->state++;
+            }
+        } else if (st != 0) {
+            Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+            b->state = 101;
+        } else {
+            MEMCARD_POLL(mc, b->port);
+        }
+        break;
+    case 6:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st == MC_UNFORMATTED) {
+            MEMCARD_FORMAT(mc, b->port);
+            b->state++;
+        } else if (st == MC_NO_CARD) {
+            Task_OpenAt(&b->task, 0x14, (u8)b->hidden);
+            b->state = 101;
+        } else {
+            Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+            b->state = 101;
+        }
+        break;
+    case 7:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st == 0) {
+            Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
+            MEMCARD_CREATE(mc, b->port, func_0037E3F0(), b->sys, SAVE_DATA_OFF);
+            b->state++;
+        } else {
+            Task_OpenAt(&b->task, 0x37, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 101;
+        }
+        break;
+    case 8:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st != 0) {
+            Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 101;
+        } else if ((u32)D_0047B268 < 12) {
+            MEMCARD_WRITE(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, D_0047B268 * SAVE_SIZE + SAVE_DATA_OFF,
+                          SAVE_SIZE);
+            D_0047B268++;
+        } else {
+            MEMCARD_CREATE(mc, b->port, D_0045D258, b->buf1, 0x1CF58);
+            b->state++;
+        }
+        break;
+    case 9:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st == 0) {
+            MEMCARD_CREATE(mc, b->port, D_0045D248, b->buf0, 0x3C4);
+            b->state++;
+        } else {
+            Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 101;
+        }
+        break;
+    case 10:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st != 0) {
+            Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 101;
+        } else if (b->hidden == 0) {
+            sys_keep(b);
+            MEMCARD_READ(mc, b->port, b->sys, 0, SAVE_DATA_OFF);
+            b->state++;
+        } else {
+            Task_OpenAt(&b->task, 0x3A, (u8)b->hidden);
+            Sound_Play(D_0044E560, 0xD, SE_BANK_MENU);
+            b->state = 150;
+        }
+        break;
+    case 11:
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st != 0 || !sys_valid(b->sys)) {
+            sys_copy(b->sys, &b->saved);
+            b->sys->flags = b->saved.flags;
+        } else {
+            SaveScreen_MergeSystem(b, &b->saved, b->sys);
+            b->cursor = b->sys->flags;
+        }
+        if (b->hidden != 0) {
+            sys_resum(b->sys);
+            Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
+            MEMCARD_WRITE(mc, b->port, b->sys, 0, 0x50);
+            b->state = 18;
+            break;
+        }
+        if (mc->status != 0) {
+            Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 101;
+            break;
+        }
+        slots_scan(b);
+        Task_OpenAt(&b->task, 0x38, (u8)b->hidden);
+        MEMCARD_POLL(mc, b->port);
+        b->state++;
+        /* fall through */
+    case 12:
+        st = mc->status;
+        if (st == 0) {
+            MEMCARD_POLL(mc, b->port);
+        } else if (st > 0) {
+            Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+            b->state = 101;
+            break;
+        }
+        pad = D_0047E36C;
+        if (pad & MENU_CONFIRM) {
+            if (b->slots[b->cursor] == 0) {
+                Task_OpenAt(&b->task, 0x3C, (u8)b->hidden);
+                MEMCARD_POLL(mc, b->port);
+                b->state++;
+            } else {
+                Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
+                func_002BD6A0(b);
+                slots_scan(b);
+                b->state = 14;
+            }
+            Sound_PlaySE(SE_DECIDE);
+        } else if (pad & MENU_CANCEL) {
+            b->state = 1;
+            Sound_PlaySE(SE_CANCEL);
+        } else {
+            u32 row = (u32)b->cursor % 6;
+            u32 col = (u32)b->cursor / 6 * 6;
+
+            pad = D_0047E36C;
+            if (pad & MENU_UP) {
+                b->cursor = (row != 0 ? row - 1 : 5) + col;
+                Sound_PlaySE(SE_CURSOR);
+            } else if (pad & MENU_DOWN) {
+                b->cursor = (row + 1 < 6 ? row + 1 : 0) + col;
+                Sound_PlaySE(SE_CURSOR);
+            } else if ((pad & MENU_LEFT) || (pad & MENU_RIGHT)) {
+                b->cursor = ((u32)b->cursor + 6) % 12;
+                Sound_PlaySE(SE_CURSOR);
+            }
+        }
+        flags |= 4;
+        break;
+    case 13:
+        st = mc->status;
+        if (st >= 0) {
+            if (b->task.mode) {
+                if (st != 0) {
+                    Task_OpenAt(&b->task, 0x15, (u8)b->hidden);
+                    b->state = 101;
+                } else {
+                    MEMCARD_POLL(mc, b->port);
+                }
+            } else if (b->task.answer == 1) {
+                Task_OpenAt(&b->task, 0x38, (u8)b->hidden);
+                MEMCARD_POLL(mc, b->port);
+                b->state = 12;
+            } else if (st != 0) {
+                Task_OpenAt(&b->task, 0x3B, (u8)b->hidden);
+                Sound_PlaySE(SE_BUZZER);
+                b->state = 100;
+            } else {
+                Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
+                func_002BD6A0(b);
+                slots_scan(b);
+                b->state++;
+            }
+        }
+        flags |= 4;
+        break;
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+        flags |= 4;
+        st = mc->status;
+        if (st < 0) {
+            break;
+        }
+        if (st != 0) {
+            Task_OpenAt(&b->task, 0x3B, (u8)b->hidden);
+            Sound_PlaySE(SE_BUZZER);
+            b->state = 100;
+            break;
+        }
+        switch (b->state) {
+        case 14:
+            MEMCARD_WRITE(mc, b->port, b->sys, 0, 0x50);
+            break;
+        case 15:
+            MEMCARD_WRITE(mc, b->port, &D_0047ABF8, b->cursor * 0x18 + 0x50, 4);
+            break;
+        case 16:
+            MEMCARD_WRITE(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, b->cursor * SAVE_SIZE + SAVE_DATA_OFF,
+                          SAVE_SIZE);
+            break;
+        case 17:
+            MEMCARD_WRITE(mc, b->port, SAVE_HEADER(b->sys, b->cursor), b->cursor * 0x18 + 0x50, 0x18);
+            break;
+        case 18:
+            Task_OpenAt(&b->task, 0x3A, (u8)b->hidden);
+            Sound_Play(D_0044E560, 0xD, SE_BANK_MENU);
+            b->state = 150;
+            goto done;
+        }
+        b->state++;
+        break;
+    case 50:
+        if (b->task.mode) {
+            break;
+        }
+        b->port = b->task.answer;
+        if (b->port == 2) {
+            Task_OpenAt(&b->task, 0x3F, (u8)b->hidden);
+            b->state = 200;
+            break;
+        }
+        MEMCARD_CHECK(mc, b->port);
+        Msg_PrintfParam(&b->task, 0, D_0045D210, b->port + 1);
+        Task_OpenAt(&b->task, 0x13, (u8)b->hidden);
+        b->state = 3;
+        break;
+    case 100:
+        flags |= 4;
+        /* fall through */
+    case 101:
+        if (!b->task.mode) {
+            b->state = 1;
+        }
+        break;
+    case 150:
+        if (b->task.mode == 0) {
+            b->state = 300;
+        }
+        flags |= 4;
+        break;
+    case 200:
+        if (b->task.mode) {
+            break;
+        }
+        b->state = b->task.answer == 0 ? 300 : 1;
+        break;
+    default:
+        AT(D_0044E978, 0xC, u8) = 1;
+        Task_Close(&b->task);
+        b->state = -1;
+        break;
+    }
+done:
+    savescreen_draw(b, flags);
+    if (b->task.mode) {
+        Task_Run(&b->task);
+    }
+}
