@@ -3584,7 +3584,7 @@ void func_00327CA0(Character *c) {
 
 extern void func_002E3130(f32 (*m)[4], const f32 *pos, f32 angle);
 extern void func_002E2DD0(f32 *out, f32 (*m)[4], const f32 *v);
-extern void func_00124530(Actor *a, f32 target, f32 step);
+extern f32 func_00124530(Actor *a, f32 target, f32 step);
 extern void func_002EF9E0(void *threat, f32 amount);
 extern const f32 D_0042C610[4][4];   /* where it grabs from, around Fiona */
 
@@ -3859,4 +3859,109 @@ void func_00328960(Character *c) {
 
 void func_00328E00(Character *c) {
     cr19_watch(c, 0, 1);
+}
+
+/* +0x38 the room is entered (func_00325B60); in the room being played it is in play (off the
+   mesh: somewhere on its level, state 0), else not */
+void func_0032AA50(Character *c) {
+    u8 *k = CR(c);
+    s32 room;
+
+    func_00325B60(c);
+    room = c->a.room;
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        if (c->a.navTri == NAV_NONE) {
+            func_00124890(&c->a, AT(k, 0x0, s32));
+            AT(k, 0x69, u8) = 0;
+            AT(k, 0x62, u8) = 0;
+        }
+        c->a.disabled = 0;
+    } else {
+        c->a.disabled = 1;
+    }
+}
+
+extern void func_002DCDD0(void *m, Character *c, f32 lift, f32 b);
+extern void func_001F6AF0(void *m);
+
+/* +0x40 its model matrix (raised by +0x28 in state 0xB) unless out of contact, then the
+   model's update */
+void func_0032AE80(Character *c) {
+    u8 *k = CR(c);
+
+    if (c->a.disabled == 0) {
+        if (AT(k, 0x62, u8) == 0xB) {
+            VCALL(c->motion, 0x40, void (*)(void *, Character *, f32, f32))(c->motion, c, AT(k, 0x28, f32), 0.0f);
+        } else {
+            func_002DCDD0(c->motion, c, 0.0f, 0.0f);
+        }
+    }
+    func_001F6AF0(c->motion);
+}
+
+/* its model released (+0xD1 loaded: the model's +0x10) */
+void func_0032BEB0(Character *c) {
+    AT(c, 0xD0, u8) = 0;
+    if (AT(c, 0xD1, u8) != 0) {
+        VCALL(c->motion, 0x10, void (*)(void *))(c->motion);
+        AT(c, 0xD1, u8) = 0;
+    }
+}
+
+/* its model's data from the creature manager's file (+0x24: offsets at +0x4.. to its parts),
+   its kind (+0x20) into +0x1528 and the model; the model set up (+0xC) */
+void func_0032BF00(Character *c) {
+    VObject *mgr = (VObject *)D_0044F258;
+    u8 *d = VCALL_AT(mgr, 0x28, 0x24, u8 *(*)(VObject *))(mgr);
+    u8 *m = c->motion;
+
+    AT(m, 0x4C0, u8 *) = AT(d, 0x4, s32) != 0 ? d + AT(d, 0x4, s32) : NULL;
+    AT(m, 0x4D0, u8 *) = AT(d, 0x8, s32) != 0 ? d + AT(d, 0x8, s32) : NULL;
+    AT(m, 0x4CC, u8 *) = AT(d, 0xC, s32) != 0 ? d + AT(d, 0xC, s32) : NULL;
+    AT(m, 0x4C4, u8 *) = AT(d, 0x10, s32) != 0 ? d + AT(d, 0x10, s32) : NULL;
+    AT(c, 0x1528, u8) = VCALL_AT(mgr, 0x28, 0x20, u8 (*)(VObject *))(mgr);
+    AT(c, 0xD0, u8) = 1;
+    VCALL(c->motion, 0xC, void (*)(void *))(c->motion);
+    AT(c, 0xD1, u8) = 1;
+    AT(c->motion, 0x24, u8) = AT(c, 0x1528, u8);
+}
+
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* turn toward `at` (+0x10C) unless its model is busy (+0x550 > 0): the turn's phase +0x10
+   restarts at 34 degrees (+0x18 4), a step of 14 degrees x sin(phase) (the model's +0x1C its
+   rate) and its sway +0x14 grows by 14 x that; once the turn is done (func_00124530 0) the
+   phase mirrors past 90 and +0x18 is 8. (At 180 and over - never, as it restarts - it would
+   snap to the heading.) */
+void func_0032B080(Character *c, f32 *at) {
+    static const union { u32 u; f32 f; } k14deg = {0x3E7A35DE}, kPi = {0x40490FDB};
+    u8 *k = CR(c);
+    f32 s, r, h, ph;
+
+    AT(c, 0x10C, f32) = func_001244D0(&c->a, at);
+    if (!(AT(c->motion, 0x550, f32) <= 0.0f)) {
+        return;
+    }
+    AT(k, 0x10, f32) = 30.0f;
+    AT(k, 0x14, s32) = 0;
+    AT(k, 0x18, f32) = 4.0f;
+    ph = *(volatile f32 *)(k + 0x10) + 4.0f;   /* (reloaded, so computed at run time) */
+    AT(k, 0x10, f32) = ph;
+    s = func_0031C248(kPi.f * ph / 180.0f);
+    AT(AT(c->motion, 0x6A4, u8 *), 0x1C, f32) = s;
+    r = func_00124530(&c->a, AT(c, 0x10C, f32), s * k14deg.f);
+    AT(k, 0x14, f32) = 0.0f + AT(k, 0x14, f32) + 14.0f * s;
+    if (AT(k, 0x10, f32) < 180.0f) {
+        if (0.0f == r) {
+            if (AT(k, 0x10, f32) < 90.0f) {
+                AT(k, 0x10, f32) = 180.0f - AT(k, 0x10, f32);
+            }
+            AT(k, 0x18, f32) = 8.0f;
+        }
+        return;
+    }
+    h = func_002E2D00(AT(c, 0x10C, f32));
+    c->a.angle[1] = h;
+    sceVu0UnitMatrix(c->a.rot);
+    sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
 }
