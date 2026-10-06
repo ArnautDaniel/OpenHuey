@@ -4040,3 +4040,202 @@ void func_0038A990(SubScreen *s) {
     }
     sub_fade_back(s);
 }
+
+/* ---- the art gallery's picture ---- */
+
+extern const PTMF D_0044C070;
+
+#define ART_X(s) SUB_PAGE(s, 0x4, s16)       /* the picture's centre on screen */
+#define ART_Y(s) SUB_PAGE(s, 0x6, s16)
+#define ART_ZOOM(s) SUB_PAGE(s, 0x8, u8)     /* shown at full size */
+#define ART_BARS(s) SUB_PAGE(s, 0x9, u8)     /* the name and help bars shown */
+#define ART_HELP(s) SUB_PAGE(s, 0xA, u8)
+#define ART_STEP(s) SUB_PAGE(s, 0xB, u8)     /* 0 fading in, 1 / 2 the help, 3 / 4 leaving, 0xFF shown */
+#define ART_TURN(s) SUB_PAGE(s, 0xC, u8)     /* the moves turned round */
+
+/* a stick past its half way (it pans the picture, 8 pixels at full) */
+#define ART_STICK(v) ((v) < -0.5f || !((v) <= 0.5f))
+
+#ifdef HG_NATIVE
+/* state: an art gallery picture, the work buffer's 512-wide image (896 lines up to picture
+ * 0x15, else 448) at half or full size. Fades in; select the bars, start the help (a shade
+ * over it, start again back), confirm turns the moves round, the d-pad / left stick pan, L3
+ * centres, R3 zooms about the centre, kept on screen; cancel fades out back to the list
+ * (D_0044C070). Then the fade's background, the picture (a GL sprite of the image sent to VRAM)
+ * and the bars (its name, the help) */
+void func_00386990(SubScreen *s) {
+    Task *t = &s->text;
+
+    switch (ART_STEP(s)) {
+    case 0:
+    case 2:
+        if (s->fade > 0) {
+            s->fade -= 0x10;
+        } else {
+            s->fading = 0;
+            s->fade = 0;
+            ART_STEP(s) = 0xFF;
+        }
+        break;
+    case 1:
+        if (s->fade < 0x60) {
+            s->fade += 0x10;
+        } else {
+            s->fading = 0;
+            s->fade = 0x60;
+            ART_STEP(s) = 0xFF;
+        }
+        break;
+    case 3:
+        if (s->fade < 0x80) {
+            s->fade += 0x10;
+        } else {
+            s->fading = 1;
+            s->fade = 0x80;
+            s->fadeStep = -0x10;
+            ART_STEP(s) = 4;
+        }
+        break;
+    case 4:
+        if (s->fade > 0) {
+            s->fade -= 0x10;
+        } else {
+            s->fading = 0;
+            s->fade = 0;
+            s->fadeStep = 0;
+            ptmf_set(&s->state, &D_0044C070);
+        }
+        break;
+    default:
+        if (D_0047E37C & PAD_SELECT) {
+            ART_BARS(s) ^= 1;
+            Sound_PlaySE(SE_DECIDE);
+        } else if (D_0047E37C & PAD_START) {
+            if (!s->fading) {
+                ART_HELP(s) ^= 1;
+                s->fading = 1;
+                ART_STEP(s) = ART_HELP(s) ? 1 : 2;
+                Sound_PlaySE(SE_DECIDE);
+            }
+        } else {
+            s16 d;
+
+            if (D_0047E36C & MENU_CONFIRM) {
+                ART_TURN(s) ^= 1;
+                if (ART_TURN(s) == 0) {
+                    SubScreen_DrawPart(s, 0x2C, 0xD8, 0x1A, 0x80, 0);
+                    SubScreen_DrawPart(s, 0x1B4, 0xD8, 0x1B, 0x80, 0);
+                } else {
+                    SubScreen_DrawPart(s, 0x1B4, 0xD8, 0x1A, 0x80, 0);
+                    SubScreen_DrawPart(s, 0x2C, 0xD8, 0x1B, 0x80, 0);
+                }
+                Sound_PlaySE(SE_DECIDE);
+            }
+            d = ART_TURN(s) ? -1 : 1;
+            if (D_0047E374 & PAD_UP) {
+                ART_Y(s) -= d;
+            }
+            if (D_0047E374 & PAD_DOWN) {
+                ART_Y(s) += d;
+            }
+            if (D_0047E374 & PAD_LEFT) {
+                ART_X(s) -= d;
+            }
+            if (D_0047E374 & PAD_RIGHT) {
+                ART_X(s) += d;
+            }
+            if (ART_STICK(D_0047E3A0)) {
+                ART_X(s) = (s32)((f32)ART_X(s) + (8.0f * (f32)d) * D_0047E3A0);
+            }
+            if (ART_STICK(D_0047E3A8)) {
+                ART_Y(s) = (s32)((f32)ART_Y(s) + (8.0f * (f32)d) * D_0047E3A8);
+            }
+            if (D_0047E37C & PAD_L3) {
+                ART_X(s) = 0x100;
+                ART_Y(s) = 0xE0;
+                Sound_PlaySE(SE_DECIDE);
+            }
+            if (D_0047E37C & PAD_R3) {
+                ART_ZOOM(s) ^= 1;
+                if (ART_ZOOM(s) == 0) {
+                    ART_X(s) = ((ART_X(s) - 0x100) >> 1) + 0x100;
+                    ART_Y(s) = ((ART_Y(s) - 0xE0) >> 1) + 0xE0;
+                } else {
+                    ART_X(s) = ((ART_X(s) - 0x100) << 1) + 0x100;
+                    ART_Y(s) = ((ART_Y(s) - 0xE0) << 1) + 0xE0;
+                }
+                Sound_PlaySE(SE_DECIDE);
+            }
+            if (ART_ZOOM(s) == 0) {
+                if (ART_X(s) < 0x80) {
+                    ART_X(s) = 0x80;
+                } else if (ART_X(s) > 0x180) {
+                    ART_X(s) = 0x180;
+                }
+                if (ART_Y(s) < 0x70) {
+                    ART_Y(s) = 0x70;
+                } else if (ART_Y(s) > 0x150) {
+                    ART_Y(s) = 0x150;
+                }
+            } else {
+                if (ART_X(s) < 0) {
+                    ART_X(s) = 0;
+                } else if (ART_X(s) > 0x200) {
+                    ART_X(s) = 0x200;
+                }
+                if (ART_Y(s) < 0) {
+                    ART_Y(s) = 0;
+                } else if (ART_Y(s) > 0x1C0) {
+                    ART_Y(s) = 0x1C0;
+                }
+            }
+        }
+        if (!s->fading) {
+            if (ART_HELP(s)) {
+                Task_ShowText(t, 0x20, 0x20, 0, Task_MessageText(t, 0x1C5), 0x80, 0x33, 0x10, 0x15);
+            } else if (D_0047E36C & MENU_CANCEL) {
+                s->fading = 1;
+                ART_STEP(s) = 3;
+                Sound_PlaySE(SE_CANCEL);
+            }
+        }
+        break;
+    }
+    sub_fade_back(s);
+    if (ART_STEP(s) == 4) {
+        func_00386550(s);
+        return;
+    }
+    {
+        s32 h = SUB_PAGE(s, 0x0, u8) < 0x15 ? 0x380 : 0x1C0;
+        s32 hw, hh;
+        u8 *buf;
+
+        if (ART_ZOOM(s) == 0) {
+            hw = 0x80;
+            hh = h >> 2;
+        } else {
+            hw = 0x100;
+            hh = h >> 1;
+        }
+        buf = VCALL(gProgress, 0x88, u8 *(*)(Progress *))(gProgress);
+        if ((u8)VCALL(D_0044E4F0, 0x48, s32 (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, buf + 0x200000,
+                                                                                     0x200, h, 0xC0000, 1)) {
+            const u8 *tex = gl2d_image(0xC0000 >> 6);
+
+            if (tex != NULL) {
+                gl2d_sprite(1, ART_X(s) - hw, ART_Y(s) - hh, ART_X(s) + hw, ART_Y(s) + hh, tex, 0, 0, 0x200, h,
+                            0x80808080, 0, 0);
+            }
+        }
+        if (ART_BARS(s)) {
+            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31,
+                                            -1);
+            Task_ShowText(t, 0x20, 0x10, 1, Task_MessageText(t, (u16)(SUB_PAGE(s, 0x0, u8) + 0x190)), 0x80 - s->fade,
+                          0x33, 0x10, 0x15);
+            Task_ShowText(t, 0x20, 0x198, 0, Task_MessageText(t, 0x9E), 0x80 - s->fade, 0x33, 0x10, 0x15);
+        }
+    }
+}
+#endif
