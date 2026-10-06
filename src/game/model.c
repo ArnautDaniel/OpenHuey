@@ -5334,6 +5334,79 @@ void *func_0038C9E0(u8 *m) {
     return m;
 }
 
+extern void *D_00470390[];
+
+/* the full base with its two parts, then the shared layout of the 0x1310-byte models: 4 parts
+ * (0x50, +0x9A0), 4 members (0x40, +0xAE0), 12 parts (0x60, +0xC20), 5 members (0x70, +0x10E0) */
+static inline void model_1310(u8 *m, void **vtbl) {
+    u8 *e;
+
+    func_0016F4B0(m);
+    AT(m, 0x0, void **) = D_0046C160;
+    func_001706F0(m + 0x8D0);
+    func_001706F0(m + 0x930);
+    AT(m, 0x0, void **) = vtbl;
+    func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+    for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
+        AT(e, 0x30, void **) = D_004703A0;
+    }
+    AT(m, 0xC14, s32) = 0;
+    AT(m, 0xC10, s32) = 0;
+    func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
+    AT(m, 0x10D4, s32) = 0;
+    AT(m, 0x10D0, s32) = 0;
+    for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+}
+
+/* the gallery's 0x1310-byte model, vtable D_00473BD0 */
+void *func_0038CC90(u8 *m) {
+    model_1310(m, D_00473BD0);
+    return m;
+}
+
+/* the same with 4 more parts (0x50, +0x1310), vtable D_00470480 */
+void *func_0038CEE0(u8 *m) {
+    model_1310(m, D_00470480);
+    func_00100340(m + 0x1310, func_00170D10, func_00170CB0, 0x50, 4);
+    AT(m, 0x1484, s32) = 0;
+    AT(m, 0x1480, s32) = 0;
+    return m;
+}
+
+/* a model on the full base with its two parts, vtable D_004702D0: 4 members (0x40, +0x9A0,
+ * their +0x30 / +0x34 cleared), 6 parts (0x50, +0xAA0), 2 + 2 members (0x70 at +0xC80, 0x40 at
+ * +0xD60), 10 parts (0x70, +0xDE0), 5 members (0x70, +0x1240), one (+0x1470, vtable at +0x30)
+ * and 2 parts (0x50, +0x14D0) */
+void *func_0038D160(u8 *m) {
+    u8 *e;
+
+    func_0016F4B0(m);
+    AT(m, 0x0, void **) = D_0046C160;
+    func_001706F0(m + 0x8D0);
+    func_001706F0(m + 0x930);
+    AT(m, 0x0, void **) = D_004702D0;
+    for (e = m + 0x9A0; e < m + 0xAA0; e += 0x40) {
+        AT(e, 0x34, s32) = 0;
+        AT(e, 0x30, s32) = 0;
+    }
+    func_00100340(m + 0xAA0, func_00170F90, func_00170F30, 0x50, 6);
+    for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+    for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
+        AT(e, 0x30, void **) = D_004703A0;
+    }
+    func_00100340(m + 0xDE0, func_00170F10, func_00170EB0, 0x70, 0xA);
+    for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+    AT(m, 0x14A0, void **) = D_00470440;
+    func_00100340(m + 0x14D0, func_00170670, func_001702F0, 0x50, 2);
+    return m;
+}
+
 /* kind 33 */
 void func_0016F420(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);

@@ -3049,3 +3049,71 @@ void func_00388FF0(SubScreen *s) {
         Progress_SetFlag(p, 4);
     }
 }
+
+/* ---- the model gallery's models ---- */
+
+extern void *func_002DC6E0(u32 size, void *p);   /* placement new */
+extern void *func_001700E0(u8 *m, s32 kind);
+extern void *func_002089F0(u8 *m), *func_00208650(u8 *m), *func_002083D0(u8 *m);
+extern void *func_00208420(u8 *m, s32 kind), *func_002084D0(u8 *m, s32 kind);
+extern void *func_00208210(u8 *m, u8 kind), *func_00208180(u8 *m, u8 kind), *func_002080D0(u8 *m, u8 kind);
+extern void *func_0038D4D0(u8 *m), *func_0038D160(u8 *m), *func_0038CEE0(u8 *m), *func_0038CC90(u8 *m);
+extern void *func_0038CB60(u8 *m), *func_0038C9E0(u8 *m), *func_0038C960(u8 *m), *func_0038C910(u8 *m);
+extern void *func_0016F4B0(u8 *m), *func_0038C8D0(void *o), *func_0038C890(u8 *m);
+extern VObject *gBootMessage;   /* (also the characters' texture sets) */
+
+/* the gallery's model `k` made in the work memory (+0xA8DFC): its class by the entry, the
+ * loaded .PCK's parts hooked up (+0x4C0 / +0x4D0 / +0x4CC / +0x4C4), its textures as texture
+ * set 2 (+0xA8DF0, and +0xA8DF4 if any), the marker file (+0xA8DF8, model +0x4D4), set up
+ * (+0xC), +0x24 2; entries 11 / 12 take variant 0 (+0x34), 15 / 16 the other (+0x2C). NULL past
+ * entry 31. */
+u8 *func_0038C160(SubScreen *s, u8 k) {
+    u8 *mem = AT(s, 0xA8DFC, u8 *), *m, *pck;
+    VObject *bm;
+
+#define NEW(size, ctor) (mem == NULL ? NULL : (m = func_002DC6E0(size, mem)) == NULL ? NULL : (u8 *)(ctor))
+    switch (k) {
+    case 0: m = NEW(0x1270, func_001700E0(m, 0)); break;
+    case 1: m = NEW(0x18E0, func_002089F0(m)); break;
+    case 2: m = NEW(0x17A0, func_00208650(m)); break;
+    case 3: m = NEW(0xD50, func_00208420(m, 7)); break;
+    case 4: m = NEW(0xDE0, func_002084D0(m, 6)); break;
+    case 5: m = NEW(0x9B0, func_002083D0(m)); break;
+    case 6: m = NEW(0xB90, func_00208210(m, 0)); break;
+    case 7: m = NEW(0xB90, func_00208180(m, 1)); break;
+    case 8: m = NEW(0xB90, func_002080D0(m, 2)); break;
+    case 9: case 10: m = NEW(0xBA0, func_0038D4D0(m)); break;
+    case 11: case 12: m = NEW(0x1580, func_0038D160(m)); break;
+    case 13: case 14: m = NEW(0x1490, func_0038CEE0(m)); break;
+    case 15: case 16: m = NEW(0x1310, func_0038CC90(m)); break;
+    case 17: case 18: m = NEW(0xD00, func_0038CB60(m)); break;
+    case 19: case 20: m = NEW(0x1500, func_0038C9E0(m)); break;
+    case 21: case 22: m = NEW(0x1160, func_0038C960(m)); break;
+    case 23: m = NEW(0x9A0, func_0038C910(m)); break;
+    case 25: m = NEW(0x890, func_0038C8D0(m)); break;
+    case 27: m = NEW(0x890, func_0038C890(m)); break;
+    case 24: case 26: case 28: case 29: case 30: case 31: m = NEW(0x890, func_0016F4B0(m)); break;
+    default:
+        return NULL;
+    }
+#undef NEW
+    pck = AT(s, 0xA8DEC, u8 *);
+    AT(m, 0x4C0, u8 *) = AT(pck, 0x4, s32) ? pck + AT(pck, 0x4, s32) : NULL;
+    AT(m, 0x4D0, u8 *) = AT(pck, 0x8, s32) ? pck + AT(pck, 0x8, s32) : NULL;
+    AT(m, 0x4CC, u8 *) = AT(pck, 0xC, s32) ? pck + AT(pck, 0xC, s32) : NULL;
+    AT(m, 0x4C4, u8 *) = AT(pck, 0x10, s32) ? pck + AT(pck, 0x10, s32) : NULL;
+    bm = gBootMessage;
+    VCALL(bm, 0x8, void (*)(VObject *, s32, void *))(bm, 2, AT(s, 0xA8DF0, void *));
+    if (AT(s, 0xA8DF4, void *) != NULL) {
+        VCALL(bm, 0x10, void (*)(VObject *, s32, void *, s32))(bm, 2, AT(s, 0xA8DF4, void *), 0);
+    }
+    AT(m, 0x4D4, void *) = AT(s, 0xA8DF8, void *);
+    VCALL(m, 0xC, void (*)(u8 *))(m);
+    AT(m, 0x24, u8) = 2;
+    if (k == 0x10 || k == 0xF) {
+        VCALL(m, 0x2C, void (*)(u8 *))(m);
+    } else if (k == 0xC || k == 0xB) {
+        VCALL(m, 0x34, void (*)(u8 *, s32))(m, 0);
+    }
+    return m;
+}
